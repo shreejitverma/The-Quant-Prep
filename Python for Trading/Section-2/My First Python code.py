@@ -211,7 +211,7 @@ print (total_marks)
 
 # Python Program to calculate the square of number
 num = 8
-   num_sq = num ** 2
+num_sq = num ** 2
 print (num_sq)
 
 
