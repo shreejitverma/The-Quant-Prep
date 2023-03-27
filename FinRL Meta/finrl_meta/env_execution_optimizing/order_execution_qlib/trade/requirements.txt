@@ -7,4 +7,4 @@ tqdm==4.50.2
 tianshou==0.3.0.post1
 env==0.1.0
 PyYAML==5.4.1
-redis==3.5.3
+redis==4.5.3
