@@ -1,0 +1,64 @@
+/*
+Placeholder for custom user CSS
+
+mainly to be overridden in profile/static/custom/custom.css
+
+This will always be an empty file in IPython
+*/
+
+
+@font-face {
+	font-family: 'Open Sans';
+	font-style: normal;
+	font-weight: 400;
+	src: url(OpenSans-Regular.ttf) format('truetype');
+}
+
+body {
+font-family: 'Open Sans', sans-serif; 
+color: #0B79BD
+}
+
+.text_cell_render h1 {color: #0B79BD}
+.text_cell_render h2 {color: #0B79BD}
+.text_cell_render h3 {color: #0B79BD}
+.text_cell_render h4 {color: #0B79BD}
+.text_cell_render h5 {color: #0B79BD}
+.text_cell_render h6 {color: #0B79BD}
+
+div.text_cell_render 
+{color: #6D6E71}
+
+div.cell.border-box-sizing.code_cell.running {
+	border: 3px solid #111;
+}
+
+.CodeMirror {
+	font-family: 'Courier';
+	font-style: normal;
+	font-weight: 500;
+	font-size: 16px;
+}
+
+div.prompt {
+	font-family: 'Courier';
+	font-size: 16px;
+}
+
+div.output_area pre {
+	font-family: 'Courier';
+	font-size: 16px;
+}
+
+#new_notebook {
+     display: none;
+}
+
+#copy_notebook {
+     display: none;
+}
+
+#open_notebook {
+     display: none;
+}
+

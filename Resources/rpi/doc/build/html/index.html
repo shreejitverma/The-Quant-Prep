@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Raspberry Pi for Serious Things &mdash; Raspberry Pi for Serious Things</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Raspberry Pi for Serious Things" href="#" />
+    <link rel="next" title="Basic Configurations" href="00_basic_config.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="00_basic_config.html" title="Basic Configurations"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="raspberry-pi-for-serious-things">
+<h1>Raspberry Pi for Serious Things<a class="headerlink" href="#raspberry-pi-for-serious-things" title="Permalink to this headline">¶</a></h1>
+<p>This Web site and tutorial is about setting up and using the Raspberry Pi for some serious things. Among others, it covers so far:</p>
+<ul class="simple">
+<li>using the RPi via <strong>SSH access</strong> and a <strong>fixed IP address</strong> (<a class="reference internal" href="00_basic_config.html#fixip"><em>Fixed IP Address</em></a>)</li>
+<li>using the RPi as <strong>FTP server</strong> (<a class="reference internal" href="01_ftp_server.html#ftp-server"><em>Raspberry Pi as FTP Server</em></a>)</li>
+<li>doing Python-based <strong>data analytics</strong> with the RPi (<a class="reference internal" href="02_data_analytics.html#data-analytics"><em>Raspberry Pi for Data Analytics</em></a>)</li>
+<li>building and deploying <strong>Web apps</strong> on the RPi (<a class="reference internal" href="03_web_apps.html#web-apps"><em>Web Apps with Raspberry Pi</em></a>)</li>
+<li>using the RPi as <strong>Git server</strong> (<a class="reference internal" href="04_git_server.html#git-server"><em>Git Server with Raspberry Pi</em></a>)</li>
+<li>simple <strong>Webcam surveillance</strong> with the RPi (<a class="reference internal" href="05_webcam.html#webcam"><em>Webcam Surveillance</em></a>)</li>
+</ul>
+<p>I assume that you have bought a RPi and all the equipment necessary to use it (power plug, etc.). It is recommended to start using the RPi connected to the Web via an Ethernet cable (for convenience and speed).</p>
+<p>Several topics and projects of this tutorial are also interesting for those not (yet) having a RPi but having available or being willing to rent a (small) <strong>cloud server instance</strong> e.g. from <strong>DigitalOcean</strong>. These start at <strong>5 USD per month</strong> for a 1 core, 512 MB, 20 GB SSD configuration. Just follow this link to <strong>register</strong>: <a class="reference external" href="https://www.digitalocean.com/?refcode=fbe512dd3dac">https://www.digitalocean.com/?refcode=fbe512dd3dac</a>.</p>
+<p>The majority of examples and projects should also be working with alternative hardware like <strong>BananaPi</strong> (<a class="reference external" href="http://www.bananapi.com">http://www.bananapi.com</a>) or <strong>Odroid</strong> (cf. <a class="reference external" href="http://www.hardkernel.com/main/products/prdt_info.php">http://www.hardkernel.com/main/products/prdt_info.php</a>) as long as a <strong>Debian Linux derivative</strong> (e.g. Raspbian, Ubuntu) is installed.</p>
+<div class="section" id="setting-up-the-rpi">
+<h2>Setting up the RPi<a class="headerlink" href="#setting-up-the-rpi" title="Permalink to this headline">¶</a></h2>
+<p>The first step is to build a bootable SD card for the RPi. We will use a <strong>Raspbian Debian Wheezy</strong> operating system (OS) image in the following which you can download here: <a class="reference external" href="http://www.raspberrypi.org/downloads/">http://www.raspberrypi.org/downloads/</a>.</p>
+<p>Using a <strong>Mac</strong>, you can do the following to write the downloaded image to the  SD card. First, insert the SD card. On the shell type:</p>
+<div class="highlight-python"><div class="highlight"><pre>diskutil list
+</pre></div>
+</div>
+<p>Using <strong>Linux</strong> (eg Ubuntu), type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">df</span> <span class="o">-</span><span class="n">h</span>
+</pre></div>
+</div>
+<p>This gives you a list of all disk drives. Identify the SD card with a name like <tt class="docutils literal"><span class="pre">diskX</span></tt>.</p>
+<p>Then unmount the SD card on the <strong>Mac</strong> as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>diskutil unmountDisk /dev/diskX
+</pre></div>
+</div>
+<p>Under <strong>Linux</strong> do:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">umount</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">diskX</span>
+</pre></div>
+</div>
+<p>The next step&#8212;both on Mac/Linux&#8212;is to <strong>write the OS image</strong> to the SD card:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo dd bs=1m if=os-image.img of=/dev/diskX
+</pre></div>
+</div>
+<p>Here, replace the image name and the disk name with those that apply for you.</p>
+</div>
+<div class="section" id="booting-the-rpi">
+<h2>Booting the RPi<a class="headerlink" href="#booting-the-rpi" title="Permalink to this headline">¶</a></h2>
+<p>You should connect a <strong>monitor</strong> via a HDMI cable to the RPi and a <strong>keyboard</strong> via USB (I am using a keyboard and mouse, both connected via the same USB token). Put the SD card into the RPi and connect it to the power plug. It should now <strong>boot</strong>.</p>
+<p>You will be directed to an options screen where you can do different things, like for example:</p>
+<ul class="simple">
+<li><strong>expand the file system</strong> to use the full capacity of your SD card (which you should do)</li>
+<li><strong>change the root/pi password</strong> (which I assume in the following you do not do)</li>
+<li><strong>enable SSH access</strong> (via Advanced Options, which you should do)</li>
+</ul>
+<p>After finishing the options setting procedure, the RPi has to <strong>re-boot</strong>. Once rebooted, you should login as user <tt class="docutils literal"><span class="pre">pi</span></tt> with password <tt class="docutils literal"><span class="pre">raspberry</span></tt> (if not changed before). Then type:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get update
+</pre></div>
+</div>
+<p>This might take a while. After that, upgrade your system with:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get upgrade
+</pre></div>
+</div>
+<p>From here on, you can further use the RPi with a monitor and keyboard connected or you can use it via <tt class="docutils literal"><span class="pre">ssh</span></tt> access as one of the small projects explains.</p>
+</div>
+<div class="section" id="small-projects-with-the-rpi">
+<h2>Small Projects with the RPi<a class="headerlink" href="#small-projects-with-the-rpi" title="Permalink to this headline">¶</a></h2>
+<p>Having set up the RPi, you can now move on and implement one or more of the following smaller projects. Ideally, you should <strong>follow them in the sequence as listed below</strong> since later projects assume (at least to some extent) that you have successfully finished earlier ones.</p>
+<p>The documentation is structured as follows:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="00_basic_config.html">Basic Configurations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="00_basic_config.html#ssh-access">SSH Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_basic_config.html#enlarging-the-swap-capacity">Enlarging the Swap Capacity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_basic_config.html#other-useful-stuff">Other Useful Stuff</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="01_ftp_server.html">Raspberry Pi as FTP Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_data_analytics.html">Raspberry Pi for Data Analytics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="02_data_analytics.html#installing-data-analytics-libraries">Installing Data Analytics Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_data_analytics.html#interactive-data-analytics">Interactive Data Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_data_analytics.html#fast-i-o-operations">Fast I/O Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="03_web_apps.html">Web Apps with Raspberry Pi</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="03_web_apps.html#a-first-example">A First Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_web_apps.html#historical-stock-price-data">Historical Stock Price Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_web_apps.html#generating-interactive-d3-plots">Generating Interactive D3 Plots</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="04_git_server.html">Git Server with Raspberry Pi</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="04_git_server.html#using-a-usb-storage-device">Using a USB Storage Device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_git_server.html#remote-repository-on-the-rpi">Remote Repository on the RPi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_git_server.html#generating-local-git-repository">Generating Local Git Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="05_webcam.html">Webcam Surveillance</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="05_webcam.html#installing-motion">Installing Motion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_webcam.html#basic-configurations">Basic Configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_webcam.html#starting-motion">Starting Motion</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="about-the-author">
+<h2>About the Author<a class="headerlink" href="#about-the-author" title="Permalink to this headline">¶</a></h2>
+<p>Yves Hilpisch is managing partner of The Python Quants GmbH (Germany) and co-founder of The Python Quants LLC (New York City). The Python Quants provide, among others, the <strong>Python Quant Platform</strong> as a solution for browser-based, interactive, collaborative financial analytics (cf. <a class="reference external" href="http://quant-platform.com">http://quant-platform.com</a>). On this platform (for which free trials are available) you can also immediately try our open source financial analytics library DX Analytics (<a class="reference external" href="http://dx-analytics.com">http://dx-analytics.com</a>).</p>
+</div>
+<div class="section" id="copyright-disclaimer">
+<h2>Copyright &amp; Disclaimer<a class="headerlink" href="#copyright-disclaimer" title="Permalink to this headline">¶</a></h2>
+<p>© Dr. Yves J. Hilpisch | The Python Quants GmbH</p>
+<p>This Web site comes with no representations or warranties, to the extent
+permitted by applicable law.</p>
+<p><a class="reference external" href="http://www.pythonquants.com">http://www.pythonquants.com</a> | <a class="reference external" href="mailto:rpi&#37;&#52;&#48;pythonquants&#46;com">rpi<span>&#64;</span>pythonquants<span>&#46;</span>com</a> |
+<a class="reference external" href="http://twitter.com/dyjh">http://twitter.com/dyjh</a></p>
+<p><strong>Python Quant Platform</strong> | <a class="reference external" href="http://quant-platform.com">http://quant-platform.com</a></p>
+<p><strong>Derivatives Analytics with Python (Wiley Finance)</strong> |
+<a class="reference external" href="http://eu.wiley.com/WileyCDA/WileyTitle/productCd-1119037999.html">http://eu.wiley.com/WileyCDA/WileyTitle/productCd-1119037999.html</a></p>
+<p><strong>Python for Finance (O&#8217;Reilly)</strong> |
+<a class="reference external" href="http://shop.oreilly.com/product/0636920032441.do">http://shop.oreilly.com/product/0636920032441.do</a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/tpq_logo_more_left_cut.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Raspberry Pi for Serious Things</a><ul>
+<li><a class="reference internal" href="#setting-up-the-rpi">Setting up the RPi</a></li>
+<li><a class="reference internal" href="#booting-the-rpi">Booting the RPi</a></li>
+<li><a class="reference internal" href="#small-projects-with-the-rpi">Small Projects with the RPi</a></li>
+<li><a class="reference internal" href="#about-the-author">About the Author</a></li>
+<li><a class="reference internal" href="#copyright-disclaimer">Copyright &amp; Disclaimer</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="00_basic_config.html"
+                        title="next chapter">Basic Configurations</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="00_basic_config.html" title="Basic Configurations"
+             >next</a> |</li>
+        <li><a href="#">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Yves J. Hilpisch.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

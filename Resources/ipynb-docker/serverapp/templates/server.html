@@ -1,0 +1,21 @@
+<!-- server.html -->
+{% extends "layout.html" %}
+
+{% block body %}
+
+
+    <h1>The Jupyter Notebook Server for {{ first_name }}</h1>
+
+	<div class="linktext">
+	    <br><br><br>
+            Your <b>password</b> to access the server is (copy it): <br><br><b><font color="green">{{ pw }}</font></b><br><br>
+   	    To access your server follow this <a href="https://docker.quant-platform.com:{{ port }}" target="_blank">link</a> (and paste the password).<br>
+            <br>The server uses SSL encryption &mdash; you might need to add a security exception in your browser.<br>
+            <br><br>(Have a look at the example files e.g. for plotting configurations.)
+	    <br><br><br>Thank you for visiting.    
+	</div>
+
+
+
+
+{% endblock %}

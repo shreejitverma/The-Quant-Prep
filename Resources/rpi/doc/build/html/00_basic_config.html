@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Basic Configurations &mdash; Raspberry Pi for Serious Things</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Raspberry Pi for Serious Things" href="index.html" />
+    <link rel="next" title="Raspberry Pi as FTP Server" href="01_ftp_server.html" />
+    <link rel="prev" title="Raspberry Pi for Serious Things" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="01_ftp_server.html" title="Raspberry Pi as FTP Server"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Raspberry Pi for Serious Things"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="basic-configurations">
+<span id="basic-config"></span><h1>Basic Configurations<a class="headerlink" href="#basic-configurations" title="Permalink to this headline">¶</a></h1>
+<p>This section is about some basic, useful configurations of the RPi.</p>
+<div class="section" id="ssh-access">
+<span id="id1"></span><h2>SSH Access<a class="headerlink" href="#ssh-access" title="Permalink to this headline">¶</a></h2>
+<p>When the RPi boots, being connected via Ethernet cable to a router, it shows at the end of the boot output the <strong>IP address</strong> under which it is connected. Alternatively, for example, using your admin access to your router, identify the IP address under which the RPi is connected. Then using another computer connected to the local network, open the shell and <tt class="docutils literal"><span class="pre">ssh</span></tt> to the RPi as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>ssh pi@192.168.178.xx
+</pre></div>
+</div>
+<p>Here, replace the IP address that applies for you. After you are prompted for it, type in the password <tt class="docutils literal"><span class="pre">raspberry</span></tt>. You should now be connected with the RPi.</p>
+<div class="section" id="fixed-ip-address">
+<span id="fixip"></span><h3>Fixed IP Address<a class="headerlink" href="#fixed-ip-address" title="Permalink to this headline">¶</a></h3>
+<p>A <strong>fixed IP address</strong> for the RPi is helpful for a number of reasons. I have configured the router such that the RPi always gets the same IP address, say 192.168.178.xx. For the RPi type the following to <strong>edit the respective settings</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo nano /etc/network/interfaces
+</pre></div>
+</div>
+<p>Replace the following line:</p>
+<div class="highlight-python"><div class="highlight"><pre>iface eth0 inet dhcp
+</pre></div>
+</div>
+<p>by these lines:</p>
+<div class="highlight-python"><div class="highlight"><pre>iface eth0 inet static
+address 192.168.178.xx
+netmask 255.255.255.0
+gateway 192.168.178.1
+</pre></div>
+</div>
+<p>Exit the editor with <tt class="docutils literal"><span class="pre">ctrl+x</span></tt> saving the changes. Finally, <strong>restart</strong> the network service by:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo /etc/init.d/networking restart
+</pre></div>
+</div>
+<p>Henceforth, the RPi should be reachable under 192.168.178.xx.</p>
+</div>
+<div class="section" id="public-ip-address">
+<h3>Public IP Address<a class="headerlink" href="#public-ip-address" title="Permalink to this headline">¶</a></h3>
+<p>Using a service like <a class="reference external" href="http://whatismyipaddress.com/">http://whatismyipaddress.com/</a>, you can figure out what your <strong>public router IP address</strong> is (depending on your router this might change regularly; modern ones at least keep their addresses until the next re-boot).</p>
+<p>Say, you have figured out that the address is xx.yy.zz.100. Configuring your router to make the IP address of your RPi 192.168.178.xx an &#8220;exposed host&#8221;, should enable you to access the RPi from anywhere via:</p>
+<div class="highlight-python"><div class="highlight"><pre>ssh pi@xx.yy.zz.100
+</pre></div>
+</div>
+<p>Knowing your public IP, you can also set an <strong>A record</strong> (cf. <a class="reference external" href="http://support.dnsimple.com/articles/a-record/">http://support.dnsimple.com/articles/a-record/</a>) of one of your domains to access the RPi, like <tt class="docutils literal"><span class="pre">http://rpi.mydomain.net</span></tt> (which should have an A record equal to the public IP xx.yy.zz.100).</p>
+</div>
+<div class="section" id="using-public-keys">
+<h3>Using Public Keys<a class="headerlink" href="#using-public-keys" title="Permalink to this headline">¶</a></h3>
+<p>Connecting to the RPi via <tt class="docutils literal"><span class="pre">ssh</span></tt> generally asks for a password. However, you can also generate <strong>RSA keys</strong> and copy the public key to the RPi which then allows you the <tt class="docutils literal"><span class="pre">ssh</span></tt> to the RPi without typing your password again and again (when using the same machine and/or keys). Generate keys (if you haven&#8217;t yet) via:</p>
+<div class="highlight-python"><div class="highlight"><pre>ssh-keygen -t rsa
+</pre></div>
+</div>
+<p>Then <strong>copy the public key</strong> via (Linux):</p>
+<div class="highlight-python"><div class="highlight"><pre>ssh-copy-id pi@192.168.178.xx
+</pre></div>
+</div>
+<p>On the Mac see, for example, <a class="reference external" href="https://github.com/beautifulcode/ssh-copy-id-for-OSX">https://github.com/beautifulcode/ssh-copy-id-for-OSX</a>.</p>
+</div>
+</div>
+<div class="section" id="enlarging-the-swap-capacity">
+<h2>Enlarging the Swap Capacity<a class="headerlink" href="#enlarging-the-swap-capacity" title="Permalink to this headline">¶</a></h2>
+<p>The typical RPi comes with 512 MB of memory only. This might not be enough in certain scenarios. One way to increase the memory (if only virtually) is to work with a larger than normal <strong>swap partition</strong>. The following steps generate a <strong>1 GB</strong> swap partition for the RPi.</p>
+<p>First, make a <strong>swap directory and swap file</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo mkdir /media/swap
+sudo dd if=/dev/zero of=/media/swap/swapfile.img bs=1024 count=1M
+</pre></div>
+</div>
+<p>Second, generate the <strong>swap filesystem</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo mkswap /media/swap/swapfile.img
+</pre></div>
+</div>
+<p>Third, <strong>edit</strong> the following file:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo nano /etc/fstab
+</pre></div>
+</div>
+<p><strong>Add</strong> this line to that file:</p>
+<div class="highlight-python"><div class="highlight"><pre>/media/swap/swapfile.img swap swap sw 0 0
+</pre></div>
+</div>
+<p>Fourth, <strong>activate</strong> the swap file:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo swapon /media/swap/swapfile.img
+</pre></div>
+</div>
+<p>Finally, you can <strong>check</strong> whether the new swap configuration is indeed active&#8212;either via htop or as follws:</p>
+<div class="highlight-python"><div class="highlight"><pre>pi@rpi ~ $ cat /proc/swaps
+Filename                                Type            Size    Used    Priority
+/var/swap                               file            102396  6064    -1
+/media/swap/swapfile.img                file            1048572 0       -2
+pi@rpi ~ $
+</pre></div>
+</div>
+</div>
+<div class="section" id="other-useful-stuff">
+<h2>Other Useful Stuff<a class="headerlink" href="#other-useful-stuff" title="Permalink to this headline">¶</a></h2>
+<p>This section provides a collection of other useful tools to work with the RPi (and other Linux/Debian-based servers).</p>
+<div class="section" id="session-management-with-screen">
+<h3>Session Management with Screen<a class="headerlink" href="#session-management-with-screen" title="Permalink to this headline">¶</a></h3>
+<p>A really helpful tool when working via <tt class="docutils literal"><span class="pre">ssh</span></tt> access is <strong>Screen</strong> (cf. <a class="reference external" href="http://ss64.com/bash/screen.html">http://ss64.com/bash/screen.html</a>). It allows you to have <strong>multiple shells</strong> running at the same time, to disconnect from them and later reconnect. Install it via:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install screen
+</pre></div>
+</div>
+<p>To start it, type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">screen</span>
+</pre></div>
+</div>
+<p>A new shell is created by <tt class="docutils literal"><span class="pre">ctrl+a</span></tt> then <tt class="docutils literal"><span class="pre">c</span></tt>. You switch to the next shell with <tt class="docutils literal"><span class="pre">ctrl+a</span></tt> and then <tt class="docutils literal"><span class="pre">n</span></tt> (more commands are found under the above link).</p>
+<p>Later when you reconnect via <tt class="docutils literal"><span class="pre">ssh</span></tt> to the RPi you can <strong>reattach to your Screen session</strong> via:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">screen</span> <span class="o">-</span><span class="n">r</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="system-monitoring-with-htop">
+<h3>System Monitoring with htop<a class="headerlink" href="#system-monitoring-with-htop" title="Permalink to this headline">¶</a></h3>
+<p>Of course, there a many <strong>useful tools</strong> available in the Linux/RPi world. One you should install as well is <strong>htop</strong> (cf. <a class="reference external" href="http://manpages.ubuntu.com/manpages/oneiric/man1/htop.1.html">http://manpages.ubuntu.com/manpages/oneiric/man1/htop.1.html</a>)</p>
+<p>You can install it via:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install htop
+</pre></div>
+</div>
+<p>Running htop gives you an overview over the <strong>usage of the system resources and the processes running</strong> (including their memory consumption and CPU usage).</p>
+<p>Running htop might give you an output like this one:</p>
+<img alt="_images/htop.png" src="_images/htop.png" />
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/tpq_logo_more_left_cut.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Basic Configurations</a><ul>
+<li><a class="reference internal" href="#ssh-access">SSH Access</a><ul>
+<li><a class="reference internal" href="#fixed-ip-address">Fixed IP Address</a></li>
+<li><a class="reference internal" href="#public-ip-address">Public IP Address</a></li>
+<li><a class="reference internal" href="#using-public-keys">Using Public Keys</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#enlarging-the-swap-capacity">Enlarging the Swap Capacity</a></li>
+<li><a class="reference internal" href="#other-useful-stuff">Other Useful Stuff</a><ul>
+<li><a class="reference internal" href="#session-management-with-screen">Session Management with Screen</a></li>
+<li><a class="reference internal" href="#system-monitoring-with-htop">System Monitoring with htop</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Raspberry Pi for Serious Things</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="01_ftp_server.html"
+                        title="next chapter">Raspberry Pi as FTP Server</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/00_basic_config.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="01_ftp_server.html" title="Raspberry Pi as FTP Server"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Raspberry Pi for Serious Things"
+             >previous</a> |</li>
+        <li><a href="index.html">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Yves J. Hilpisch.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

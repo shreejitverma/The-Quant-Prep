@@ -1,0 +1,11 @@
+_store
+plotly_creds
+*.h5
+*.csv
+*.bcolz
+*.hdf5
+*.sql
+*.png
+*.jpg
+*.jpeg
+.ipynb*

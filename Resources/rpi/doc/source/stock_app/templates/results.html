@@ -1,0 +1,16 @@
+<!-- results.html -->
+{% extends "layout.html" %}
+
+{% block body %}
+
+
+    <h1>Results for Symbol {{ symbol }}</h1>
+
+    <img width=100% src="{{ url_for('static', filename='results.png') }}">
+
+    <br><br>
+
+    {{ table | safe }}
+
+
+{% endblock %}

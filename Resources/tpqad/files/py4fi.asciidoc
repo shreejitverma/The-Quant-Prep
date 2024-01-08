@@ -1,0 +1,18 @@
+= Python for Finance
+Dr. Yves J. Hilpisch | <training@tpq.io>
+The Python Quants GmbH | www.tpq.io
+:doctype: book
+:source-highlighter: coderay
+// :coderay-css: inline
+:listing-caption: Listing
+:pdf-page-size: A4
+:icons: font
+:toc: left
+:toclevels: 2
+:numbered:
+:auto-fit:
+:docinfo:
+// :imagesdir: images
+
+
+include::why_python.asciidoc[]

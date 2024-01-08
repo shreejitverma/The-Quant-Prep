@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Git Server with Raspberry Pi &mdash; Raspberry Pi for Serious Things</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Raspberry Pi for Serious Things" href="index.html" />
+    <link rel="next" title="Webcam Surveillance" href="05_webcam.html" />
+    <link rel="prev" title="Web Apps with Raspberry Pi" href="03_web_apps.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="05_webcam.html" title="Webcam Surveillance"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="03_web_apps.html" title="Web Apps with Raspberry Pi"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="git-server-with-raspberry-pi">
+<span id="git-server"></span><h1>Git Server with Raspberry Pi<a class="headerlink" href="#git-server-with-raspberry-pi" title="Permalink to this headline">¶</a></h1>
+<p>The version control system <strong>Git</strong> (cf. the excellent documentation under <a class="reference external" href="http://git-scm.com/">http://git-scm.com/</a>) has become really popular recently. One reason for this is the success of <strong>Github</strong> (cf. <a class="reference external" href="http:github.com">http:github.com</a>) as a (open source) code hosting platform based on Git. There are now also similar, alternative platforms available, like <strong>Codebreak</strong> (<a class="reference external" href="http://codebreak.com">http://codebreak.com</a>).</p>
+<p>While, for example, Codebreak let&#8217;s you store as many private Git repositories as you like, with Github you have to pay for this feature. However, in principle, every server can serve as a Git server (even if not with the many nice, graphical features the aforementioned platforms provide).</p>
+<p>To use the RPi as a <strong>Git server</strong> (or a &#8220;remote Git repository storage system&#8221;) does not require software-wise anything more the <strong>Git installed</strong> on the RPi. It should be installed already, if not do:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install git
+</pre></div>
+</div>
+<p>In addition, the RPi must be configured for <strong>SSH access</strong> (cf. <a class="reference internal" href="00_basic_config.html#ssh-access"><em>SSH Access</em></a>).</p>
+<div class="section" id="using-a-usb-storage-device">
+<h2>Using a USB Storage Device<a class="headerlink" href="#using-a-usb-storage-device" title="Permalink to this headline">¶</a></h2>
+<p>In what follows, we use a <strong>USB storage device</strong> to store the remote Git repositories. This allows to move your valuable backups/versions of your Git repositories and to access them from other devices as well.</p>
+<p>Put a formatted USB stick into your RPi. The look up the <strong>mounting information</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo blkid
+</pre></div>
+</div>
+<p>In my case, it is mounted as <tt class="docutils literal"><span class="pre">/dev/sda1</span></tt>. We want to <strong>permanently link</strong> the USB storage device to a directory in our home folder:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mkdir</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="o">/</span><span class="n">usb</span>
+</pre></div>
+</div>
+<p><strong>Edit</strong> the following file:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo nano /etc/fstab
+</pre></div>
+</div>
+<p>and <strong>add</strong> the line:</p>
+<div class="highlight-python"><div class="highlight"><pre>/dev/sda1 /home/pi/usb ext4 uid=pi, gid=pi, umask=0022, sync, auto, nosuid, rw, nouser 0 0
+</pre></div>
+</div>
+<p>where some parameters might need to be changed due to your configuration (e.g. the directory or <tt class="docutils literal"><span class="pre">vfat</span></tt> instead of <tt class="docutils literal"><span class="pre">ext4</span></tt> for the file system).</p>
+<p>After a <strong>reboot</strong>, you should now be able to permanently access the (&#8220;any&#8221;) USB drive plugged into your RPi via <tt class="docutils literal"><span class="pre">/home/pi/usb</span></tt>.</p>
+</div>
+<div class="section" id="remote-repository-on-the-rpi">
+<h2>Remote Repository on the RPi<a class="headerlink" href="#remote-repository-on-the-rpi" title="Permalink to this headline">¶</a></h2>
+<p>Now that we have a proper storage device configured, we can <strong>add a remote repository</strong> to an existing one (I assume you are working with Git already and have a few repositories to use now; if not see below).</p>
+<p>In my case, I take the repository of this tutorial which you can also find under <a class="reference external" href="http://github.com/yhilpisch/rpi">http://github.com/yhilpisch/rpi</a> as an example. Now do <strong>on the RPi</strong> the following:</p>
+<div class="highlight-python"><div class="highlight"><pre>cd /home/pi/usb
+mkdir rpi.git
+cd rpi.git
+git init --bare
+</pre></div>
+</div>
+<p>Then navigate on your <strong>local machine</strong> to the Git repository you want to push to the remote RPi location and do (cf. also <a class="reference internal" href="00_basic_config.html#fixip"><em>Fixed IP Address</em></a> for the domain name):</p>
+<div class="highlight-python"><div class="highlight"><pre>git remote add rpi pi@rpi.mydomain.net:/home/pi/usb/rpi.git
+</pre></div>
+</div>
+<p>Then, you should be able to do something like:</p>
+<div class="highlight-python"><div class="highlight"><pre>git push rpi master
+</pre></div>
+</div>
+<p>You can then, for instance, <strong>clone the repository</strong> to some other location via:</p>
+<div class="highlight-python"><div class="highlight"><pre>git clone pi@rpi.mydomain.net:/home/pi/usb/rpi.git
+</pre></div>
+</div>
+<p>Of course, you can also generate a <strong>new user</strong>, say <tt class="docutils literal"><span class="pre">git</span></tt>, whose credentials you can easily and safely share with members of your team or with friends. You only have to make sure that this new user has read (or even maybe write) rights to the respective Git repository/folder (e.g. <tt class="docutils literal"><span class="pre">sudo</span> <span class="pre">chmod</span> <span class="pre">-R</span> <span class="pre">755</span> <span class="pre">/home/pi/usb/rpi</span></tt>).</p>
+</div>
+<div class="section" id="generating-local-git-repository">
+<h2>Generating Local Git Repository<a class="headerlink" href="#generating-local-git-repository" title="Permalink to this headline">¶</a></h2>
+<p>If you <strong>do not have</strong> an example <strong>Git repository</strong> (but Git installed locally), you can do the following steps <strong>locally</strong> (assuming the the remote location was set up as above):</p>
+<div class="highlight-python"><div class="highlight"><pre>mkdir rpi
+cd rpi
+git init
+# copy now some files into the the new directory
+git add --all .
+git commit -am &#39;Initial commit message.&#39;
+git remote add rpi pi@rpi.mydomain.net:/home/pi/usb/rpi.git
+git push rpi master
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/tpq_logo_more_left_cut.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Git Server with Raspberry Pi</a><ul>
+<li><a class="reference internal" href="#using-a-usb-storage-device">Using a USB Storage Device</a></li>
+<li><a class="reference internal" href="#remote-repository-on-the-rpi">Remote Repository on the RPi</a></li>
+<li><a class="reference internal" href="#generating-local-git-repository">Generating Local Git Repository</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="03_web_apps.html"
+                        title="previous chapter">Web Apps with Raspberry Pi</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="05_webcam.html"
+                        title="next chapter">Webcam Surveillance</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/04_git_server.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="05_webcam.html" title="Webcam Surveillance"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="03_web_apps.html" title="Web Apps with Raspberry Pi"
+             >previous</a> |</li>
+        <li><a href="index.html">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Yves J. Hilpisch.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

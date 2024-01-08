@@ -1,0 +1,39 @@
+<!-- layout.html -->
+<!doctype html>
+<title>Jupyter in Docker Containers (The Python Quants)</title>
+
+<head>
+
+</head>
+
+<link rel=stylesheet type=text/css
+      href="{{ url_for('static', filename='style.css') }}">
+
+<link href='http://fonts.googleapis.com/css?family=PT+Sans'
+      rel='stylesheet' type='text/css'>
+
+<link rel="shortcut icon"
+      href="http://hilpisch.com/favicon.ico">
+
+<div class=page>
+  
+  <div class=logo>
+    <img src='http://hilpisch.com/tpq_logo.png' alt="TPQ Logo">
+  </div>
+  
+  <div class=metanav>
+    <a href="{{ url_for('main')}}">back to main</a>
+  </div>
+  {% block body %}
+
+  {% endblock %}
+<div class=footer>
+<br><br>
+<a href="mailto:platform@pythonquants.com" target="_blank">Email</a> |
+<a href="http://github.com/yhilpisch/ipynb-docker" target="_blank">Github Repo</a> |
+<a href="http://pythonquants.com/imprint.html" target="_blank">Imprint</a> |
+<a href="https://analytics.quant-platform.com/documents/PQP_Terms_Conditions_Trial.pdf" target="_blank">Terms & Conditions</a> |
+<a href="https://analytics.quant-platform.com/documents/TPQ_Privacy_Aug_2014.pdf" target="_blank">Privacy Policy</a> |
+<a href="http://pythonquants.com" target="_blank">&copy; The Python Quants GmbH</a> 
+</div>
+</div>

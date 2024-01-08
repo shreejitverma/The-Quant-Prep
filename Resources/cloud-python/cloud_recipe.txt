@@ -1,0 +1,31 @@
+STEPS TO SET-UP CLOUD INSTANCE
+WITH JUPYTER NOTEBOOK
+
+Generate private/public RSA key pair
+------------------------------------
+ssh-keygen -t rsa
+copy keys to ~/.ssh
+
+
+Set-up DigitalOcean account
+---------------------------
+https://m.do.co/c/fbe512dd3dac
+(if you register via this link, you get 10 USD bonus)
+
+
+Create a Droplet (provide public RSA key):
+------------------------------------------
+provide public RSA key during creation
+copy IP-ADDRESS after creation
+
+
+On the shell do:
+----------------
+git clone http://github.com/yhilpisch/cloud-python
+cd cloud-python
+bash setup_server.sh IP-ADDRESS (replace with your address!!)
+
+
+Running a Jupyter Notebook server:
+----------------------------------
+http://jupyter-notebook.readthedocs.io/en/latest/public_server.html
