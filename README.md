@@ -32,16 +32,16 @@ Whether you are aiming for a **Quantitative Researcher** role (heavy math/stats/
 We have curated specialized resources that target the specific requirements of HFT and Prop Trading interviews.
 
 ### ⚡ Low Latency & Systems
-*   **C++ Mastery:** [Order Matching Engine](./06_quantitative_development/cpp_low_latency/examples/order_matching_engine.cpp) (Limit Order Book implementation) & [Modern C++ Cheatsheet](./06_quantitative_development/cpp_low_latency/modern_cpp_interview.md).
-*   **Market Data:** [ITCH Feed Handler](./06_quantitative_development/data_engineering/market_data/itch_parser_mock.py) (Binary protocol parsing).
-*   **Java Performance:** [GC-Free Coding](./06_quantitative_development/java_low_latency/README.md) for firms like IMC/Optiver.
-*   **HFT Architecture:** [Hardware & Network](./06_quantitative_development/system_design/architecture_notes/hft_architecture.md) deep dive.
+*   **C++ Mastery:** [Order Matching Engine](./06_quantitative_development/cpp_low_latency/examples/order_matching_engine.cpp) & [Memory Pool Allocator](./06_quantitative_development/cpp_low_latency/examples/memory_pool.cpp).
+*   **Market Data:** [ITCH Feed Handler](./06_quantitative_development/data_engineering/market_data/itch_parser_mock.py).
+*   **Java Performance:** [GC-Free Coding](./06_quantitative_development/java_low_latency/README.md).
+*   **Architecture:** [HFT Infrastructure](./06_quantitative_development/system_design/architecture_notes/hft_architecture.md).
 
 ### 🧠 Interview Mastery
-*   **The Roadmap:** [8-Week Study Plan](./07_interview_preparation/study_roadmap.md) taking you from zero to offer-ready.
-*   **Jane Street Guide:** [Probability & Betting](./07_interview_preparation/company_insights/jane_street_guide.md) strategies.
+*   **The Roadmap:** [8-Week Study Plan](./07_interview_preparation/study_roadmap.md).
+*   **Quant Strategies:** [Pairs Trading (Stat Arb)](./05_algorithmic_trading/strategies/systematic_strategies/pairs_trading_stat_arb.ipynb) & [Event-Driven Backtester](./05_algorithmic_trading/backtesting_frameworks/simple_event_driven.py).
+*   **Jane Street Guide:** [Probability & Betting](./07_interview_preparation/company_insights/jane_street_guide.md).
 *   **Quant Math:** [Green Book Companion](./01_foundations/mathematics/probability/quant_probability_guide.md).
-*   **Strategies:** [Pairs Trading (Stat Arb)](./05_algorithmic_trading/strategies/systematic_strategies/pairs_trading_stat_arb.ipynb) full workflow.
 
 ---
 
