@@ -10,10 +10,12 @@ Welcome to **The Quant Prep**. This repository has been structured into a rigoro
 
 We have added specialized content for High Frequency Trading (HFT) and Prop Trading interviews:
 
-*   **⚡ C++ Low Latency:** [Lock-Free Ring Buffer](./06_quantitative_development/cpp_low_latency/examples/lock_free_spsc_queue.cpp), Memory Models, Kernel Bypass.
-*   **🏢 Company Guides:** [Jane Street Prep](./07_interview_preparation/company_insights/jane_street_guide.md) (Probability Puzzles & Betting).
-*   **🏗️ System Design:** [HFT Architecture](./06_quantitative_development/system_design/architecture_notes/hft_architecture.md) (FPGA, Microwaves, Colocation).
-*   **📊 Microstructure:** [Limit Order Book Sim](./05_algorithmic_trading/market_microstructure/simulation_tools/limit_order_book_sim.py).
+*   **📅 Study Plan:** [8-Week Quant Roadmap](./07_interview_preparation/study_roadmap.md) (Step-by-step preparation guide).
+*   **⚡ C++ Low Latency:** [Modern C++ Cheatsheet](./06_quantitative_development/cpp_low_latency/modern_cpp_interview.md) & [Lock-Free Ring Buffer](./06_quantitative_development/cpp_low_latency/examples/lock_free_spsc_queue.cpp).
+*   **🧠 Quant CS:** [Data Structures for Finance](./01_foundations/cs_basics/algorithms/quant_data_structures.md) (Order Books, Ring Buffers).
+*   **📐 Mathematics:** [Linear Algebra](./01_foundations/mathematics/linear_algebra/linear_algebra_for_quants.md) & [Probability Guide](./01_foundations/mathematics/probability/quant_probability_guide.md).
+*   **🏢 Company Guides:** [Jane Street Prep](./07_interview_preparation/company_insights/jane_street_guide.md).
+*   **🏗️ System Design:** [Distributed Computing](./06_quantitative_development/system_design/distributed_compute.md) & [HFT Architecture](./06_quantitative_development/system_design/architecture_notes/hft_architecture.md).
 
 ---
 

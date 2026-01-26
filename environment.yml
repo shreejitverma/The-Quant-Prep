@@ -1,0 +1,26 @@
+name: quant_prep_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - statsmodels
+  - pytorch
+  - tensorflow
+  - jupyterlab
+  - yfinance
+  - ta-lib
+  - networkx
+  - pip
+  - pip:
+    - finrl
+    - gym
+    - stable-baselines3
+    - ccxt
+    - backtrader
