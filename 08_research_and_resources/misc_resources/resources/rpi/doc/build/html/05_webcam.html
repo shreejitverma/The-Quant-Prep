@@ -1,0 +1,345 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Webcam Surveillance &mdash; Raspberry Pi for Serious Things</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Raspberry Pi for Serious Things" href="index.html" />
+    <link rel="prev" title="Git Server with Raspberry Pi" href="04_git_server.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="04_git_server.html" title="Git Server with Raspberry Pi"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="webcam-surveillance">
+<span id="webcam"></span><h1>Webcam Surveillance<a class="headerlink" href="#webcam-surveillance" title="Permalink to this headline">¶</a></h1>
+<p>Since the RPi has two <strong>USB slots</strong> (model A &amp; B) or even four (model B+) it is easy to connect and use a webcam with it. Modern, simple webcams&#8212;even with infrared light&#8212;start below 10 USD. More professional equipment can, of course, also be used.</p>
+<p>This small project <strong>focuses on the software side</strong> of setting up an automated webcam surveillance system and not on the hardware side (which is probably determined by your specific purpose and maybe budget). I am using a rather small, simple USB webcam with infrared light to have some basic night filming capabilities available.</p>
+<div class="section" id="installing-motion">
+<h2>Installing Motion<a class="headerlink" href="#installing-motion" title="Permalink to this headline">¶</a></h2>
+<p>There is an excellent off-the-shelve, open source software called <strong>Motion</strong> available (cf. <a class="reference external" href="http://www.lavrsen.dk/foswiki/bin/view/Motion/WebHome">http://www.lavrsen.dk/foswiki/bin/view/Motion/WebHome</a>). It is installed as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install motion
+</pre></div>
+</div>
+<p>You find Motion <strong>configuration files</strong> generally in the directory <tt class="docutils literal"><span class="pre">/etc/motion</span></tt>. We will only need the one called <tt class="docutils literal"><span class="pre">motion.conf</span></tt>. You should make a <strong>new folder</strong> like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mkdir</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="o">/</span><span class="n">motion</span>
+</pre></div>
+</div>
+<p>and <strong>copy</strong> the configuration file to it:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo cp /etc/motion/motion.conf /home/pi/motion
+</pre></div>
+</div>
+<p>You should also create another folder like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mkdir</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="o">/</span><span class="n">motion</span><span class="o">/</span><span class="n">media</span>
+</pre></div>
+</div>
+<p>That&#8217;s already it for the installation of Motion.</p>
+</div>
+<div class="section" id="basic-configurations">
+<h2>Basic Configurations<a class="headerlink" href="#basic-configurations" title="Permalink to this headline">¶</a></h2>
+<p>Motion is a powerful and mature system. However, in what follows we are mainly interested in the following <strong>capabilities</strong>:</p>
+<ul class="simple">
+<li><strong>detect a motion</strong> defined by the number of pixels changed</li>
+<li>take <strong>single pictures</strong> and store them locally or do something else (e.g. sending by email, putting on a remote FTP server)</li>
+<li>make <strong>video recordings</strong> and store them locally or do something else (e.g. email, FTP)</li>
+<li>live <strong>video transmission</strong> via HTTP</li>
+</ul>
+<p>Here is an example Motion <strong>configuration file</strong> <tt class="docutils literal"><span class="pre">motion.conf</span></tt> for <a class="reference download internal" href="_downloads/motion.conf"><tt class="xref download docutils literal"><span class="pre">download</span></tt></a>. There is lots of inline documentation and the majority of <strong>options</strong> is self-explaining (e.g. resolution of pictures/videos).</p>
+<p>Motion saves&#8212;if configured&#8212;pictures and videos locally. More interesting are options to define some <strong>action</strong> depending on a certain <strong>event</strong> starting or ending. There are multiple such events, like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">on_event_start</span>
+<span class="n">on_picture_save</span>
+<span class="n">on_movie_end</span>
+</pre></div>
+</div>
+<p>These are the three that we want to use (for details see the configuration file). In particular, we want to <strong>implement</strong> the following:</p>
+<ul class="simple">
+<li>send an email on an event starting</li>
+<li>send a saved picture to a remote FTP server</li>
+<li>send an email with the video attached on a movie ended/saved</li>
+</ul>
+<p>This provides a rather <strong>high security level</strong> since:</p>
+<ul class="simple">
+<li>you are notified as soon as some event is detected</li>
+<li>every single picture is transfered via FTP as soon as saved</li>
+<li>you get by email every saved video</li>
+</ul>
+<p>In particular the <strong>FTP transfer</strong> (which is pretty quick since a typical picture will be relatively small with, say, 20kb) prevents a person to simply remove the whole RPi with the pictures and videos stored.</p>
+<div class="section" id="send-email-on-event-start">
+<h3>Send Email on Event Start<a class="headerlink" href="#send-email-on-event-start" title="Permalink to this headline">¶</a></h3>
+<p>Having Python available on the RPi allows us to use a Python script for sending emails. I assume that you have <strong>two email accounts</strong> which you use for this purpose, say <tt class="docutils literal"><span class="pre">rpi&#64;mydomain.net</span></tt> to send email and <tt class="docutils literal"><span class="pre">me&#64;mydomain.net</span></tt> to receive emails.</p>
+<p>The following Python script provides the basic <strong>functionality to send emails</strong> (<a class="reference download internal" href="_downloads/mail_simple.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>; place it in the <tt class="docutils literal"><span class="pre">motion</span></tt> folder as created above):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># Sending emails in combination</span>
+<span class="c"># with Motion surveillance software</span>
+<span class="c">#</span>
+<span class="c"># (c) Dr. Yves J. Hilpisch</span>
+<span class="c"># The Python Quants GmbH</span>
+<span class="c">#</span>
+
+<span class="kn">import</span> <span class="nn">smtplib</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">email.MIMEMultipart</span> <span class="kn">import</span> <span class="n">MIMEMultipart</span>
+<span class="kn">from</span> <span class="nn">email.MIMEText</span> <span class="kn">import</span> <span class="n">MIMEText</span>
+
+
+<span class="n">fromaddr</span> <span class="o">=</span> <span class="s">&#39;rpi@mydomain.net&#39;</span>
+<span class="n">toaddrs</span>  <span class="o">=</span> <span class="s">&#39;me@mydomain.net&#39;</span>  <span class="c"># can be list of strings</span>
+<span class="n">subject</span> <span class="o">=</span> <span class="s">&#39;Security Alert.&#39;</span>
+
+<span class="c">#</span>
+<span class="c"># Email object</span>
+<span class="c"># </span>
+<span class="n">msg</span> <span class="o">=</span> <span class="n">MIMEMultipart</span><span class="p">()</span>
+<span class="n">msg</span><span class="p">[</span><span class="s">&#39;From&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fromaddr</span>
+<span class="n">msg</span><span class="p">[</span><span class="s">&#39;To&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">toaddrs</span>
+<span class="n">msg</span><span class="p">[</span><span class="s">&#39;Subject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject</span>
+
+<span class="c">#</span>
+<span class="c"># Email body</span>
+<span class="c">#</span>
+<span class="n">body</span> <span class="o">=</span> <span class="s">&#39;A motion has been detected.</span><span class="se">\n</span><span class="s">Time: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+<span class="n">msg</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">MIMEText</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="s">&#39;plain&#39;</span><span class="p">))</span>
+
+<span class="c">#</span>
+<span class="c"># Connecting to SMTP server and</span>
+<span class="c"># sending the email</span>
+<span class="c">#</span>
+<span class="n">smtp</span> <span class="o">=</span> <span class="n">smtplib</span><span class="o">.</span><span class="n">SMTP</span><span class="p">()</span>
+<span class="n">smtp</span><span class="o">.</span><span class="n">set_debuglevel</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">smtp</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;smtp.mydomain.net&#39;</span><span class="p">,</span> <span class="mi">587</span><span class="p">)</span>
+<span class="n">smtp</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;username&#39;</span><span class="p">,</span> <span class="s">&#39;password&#39;</span><span class="p">)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">as_string</span><span class="p">()</span>
+<span class="n">smtp</span><span class="o">.</span><span class="n">sendmail</span><span class="p">(</span><span class="n">fromaddr</span><span class="p">,</span> <span class="n">toaddrs</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<span class="n">smtp</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+
+<span class="c">#</span>
+<span class="c"># Output</span>
+<span class="c">#</span>
+<span class="k">print</span> <span class="s">&quot;Message length is &quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+<span class="k">print</span> <span class="n">text</span>
+</pre></div>
+</div>
+<p>Having this script available, we can do the following configuration:</p>
+<div class="highlight-python"><div class="highlight"><pre>on_event_start python mail_simple.py
+</pre></div>
+</div>
+<p>Whenever an event starts, you then get notified by Motion about it.</p>
+</div>
+<div class="section" id="store-pictures-on-ftp-server">
+<h3>Store Pictures on FTP Server<a class="headerlink" href="#store-pictures-on-ftp-server" title="Permalink to this headline">¶</a></h3>
+<p>The following assumes that you have available a <strong>server with FTP access</strong> (maybe another RPi, cf. <a class="reference internal" href="01_ftp_server.html#ftp-server"><em>Raspberry Pi as FTP Server</em></a>). You should install the FTP uploader <strong>wput</strong> (cf. <a class="reference external" href="http://wput.sourceforge.net/wput.1.html">http://wput.sourceforge.net/wput.1.html</a>) on the RPi first:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install wput
+</pre></div>
+</div>
+<p>The <strong>configuration</strong> then is straightforward:</p>
+<div class="highlight-python"><div class="highlight"><pre>on_picture_save wput -B ftp://user:password@mydomain.net %f
+</pre></div>
+</div>
+<p>Here, <tt class="docutils literal"><span class="pre">%f</span></tt> is the placeholder for the <strong>filename</strong> of the picture provided by Motion (this can be configured as well in the configuration file).</p>
+</div>
+<div class="section" id="send-email-on-movie-end">
+<h3>Send Email on Movie End<a class="headerlink" href="#send-email-on-movie-end" title="Permalink to this headline">¶</a></h3>
+<p>The final security measure we implement is <strong>sending a saved video recording by email</strong>. The following Python script allows to send <strong>emails with attachement</strong> (<a class="reference download internal" href="_downloads/mail_attach.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>; place it in the <tt class="docutils literal"><span class="pre">motion</span></tt> folder as created above):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># Sending emails in combination</span>
+<span class="c"># with Motion surveillance software</span>
+<span class="c">#</span>
+<span class="c"># (c) Dr. Yves J. Hilpisch</span>
+<span class="c"># The Python Quants GmbH</span>
+<span class="c">#</span>
+
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">smtplib</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">email.MIMEMultipart</span> <span class="kn">import</span> <span class="n">MIMEMultipart</span>
+<span class="kn">from</span> <span class="nn">email.MIMEText</span> <span class="kn">import</span> <span class="n">MIMEText</span>
+<span class="kn">from</span> <span class="nn">email.MIMEBase</span> <span class="kn">import</span> <span class="n">MIMEBase</span>
+<span class="kn">from</span> <span class="nn">email</span> <span class="kn">import</span> <span class="n">Encoders</span>
+
+<span class="n">fromaddr</span> <span class="o">=</span> <span class="s">&#39;rpi@mydomain.net&#39;</span>
+<span class="n">toaddrs</span>  <span class="o">=</span> <span class="s">&#39;me@mydomain.net&#39;</span>  <span class="c"># can be list of strings</span>
+<span class="n">subject</span> <span class="o">=</span> <span class="s">&#39;Video Recorded.&#39;</span>
+
+<span class="c">#</span>
+<span class="c"># Email object</span>
+<span class="c"># </span>
+<span class="n">msg</span> <span class="o">=</span> <span class="n">MIMEMultipart</span><span class="p">()</span>
+<span class="n">msg</span><span class="p">[</span><span class="s">&#39;From&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fromaddr</span>
+<span class="n">msg</span><span class="p">[</span><span class="s">&#39;To&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">toaddrs</span>
+<span class="n">msg</span><span class="p">[</span><span class="s">&#39;Subject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject</span>
+
+
+<span class="c">#</span>
+<span class="c"># Email attachement</span>
+<span class="c">#</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;input_file&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;Input file&#39;</span><span class="p">)</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+<span class="n">part</span> <span class="o">=</span> <span class="n">MIMEBase</span><span class="p">(</span><span class="s">&#39;application&#39;</span><span class="p">,</span> <span class="s">&quot;octet-stream&quot;</span><span class="p">)</span>
+<span class="n">part</span><span class="o">.</span><span class="n">set_payload</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="s">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+<span class="n">Encoders</span><span class="o">.</span><span class="n">encode_base64</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+
+<span class="n">part</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s">&#39;Content-Disposition&#39;</span><span class="p">,</span>
+                <span class="s">&#39;attachment; filename=&quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
+
+<span class="n">msg</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+
+<span class="c">#</span>
+<span class="c"># Email body</span>
+<span class="c">#</span>
+<span class="n">body</span> <span class="o">=</span> <span class="s">&#39;This video has been recorded due to a motion just detected.&#39;</span>
+<span class="n">body</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">Time: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+<span class="n">msg</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">MIMEText</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="s">&#39;plain&#39;</span><span class="p">))</span>
+
+<span class="c">#</span>
+<span class="c"># Connecting to SMTP server and</span>
+<span class="c"># sending the email</span>
+<span class="c">#</span>
+<span class="n">smtp</span> <span class="o">=</span> <span class="n">smtplib</span><span class="o">.</span><span class="n">SMTP</span><span class="p">()</span>
+<span class="n">smtp</span><span class="o">.</span><span class="n">set_debuglevel</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">smtp</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;smtp.mydomain.net&#39;</span><span class="p">,</span> <span class="mi">587</span><span class="p">)</span>
+<span class="n">smtp</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;username&#39;</span><span class="p">,</span> <span class="s">&#39;password&#39;</span><span class="p">)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">as_string</span><span class="p">()</span>
+<span class="n">smtp</span><span class="o">.</span><span class="n">sendmail</span><span class="p">(</span><span class="n">fromaddr</span><span class="p">,</span> <span class="n">toaddrs</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<span class="n">smtp</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+
+<span class="c"># Shell output</span>
+<span class="k">print</span> <span class="s">&quot;Message length is &quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+<span class="k">print</span> <span class="n">text</span>
+</pre></div>
+</div>
+<p>The configuration shouldn&#8217;t now come as a suprise given the previous two:</p>
+<div class="highlight-python"><div class="highlight"><pre>on_movie_end python mail_attach.py %f
+</pre></div>
+</div>
+<p>This sends an email with the video/movie attached when it is save (the event ends).</p>
+</div>
+<div class="section" id="live-video-streaming">
+<h3>Live Video Streaming<a class="headerlink" href="#live-video-streaming" title="Permalink to this headline">¶</a></h3>
+<p>When you have a <strong>fixed, public IP</strong> (cf. <a class="reference internal" href="00_basic_config.html#fixip"><em>Fixed IP Address</em></a>), you can easily <strong>stream the video</strong> as captured by the webcam in real-time. You might need or want to adjust the standard <strong>port</strong> for the streaming (by default 8081) to another port, say WXYZ, in the configuration file. You then should be able, when Motion is running, to access the live stream under:</p>
+<div class="highlight-python"><div class="highlight"><pre>http://rpi.mydomain.net:WXYZ
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="starting-motion">
+<h2>Starting Motion<a class="headerlink" href="#starting-motion" title="Permalink to this headline">¶</a></h2>
+<p>To <strong>start</strong> Motion, simply navigate to the directory previously created:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cd</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="o">/</span><span class="n">motion</span>
+</pre></div>
+</div>
+<p>and type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">motion</span>
+</pre></div>
+</div>
+<p>Motion then takes the <strong>local configuration file</strong> for the execution. The <strong>pictures and videos</strong> should be saved in the sub-folder <tt class="docutils literal"><span class="pre">media</span></tt>. In addition, <strong>emails</strong> are sent as configured and pictures transfered to the remote <strong>FTP server</strong>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/tpq_logo_more_left_cut.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Webcam Surveillance</a><ul>
+<li><a class="reference internal" href="#installing-motion">Installing Motion</a></li>
+<li><a class="reference internal" href="#basic-configurations">Basic Configurations</a><ul>
+<li><a class="reference internal" href="#send-email-on-event-start">Send Email on Event Start</a></li>
+<li><a class="reference internal" href="#store-pictures-on-ftp-server">Store Pictures on FTP Server</a></li>
+<li><a class="reference internal" href="#send-email-on-movie-end">Send Email on Movie End</a></li>
+<li><a class="reference internal" href="#live-video-streaming">Live Video Streaming</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#starting-motion">Starting Motion</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="04_git_server.html"
+                        title="previous chapter">Git Server with Raspberry Pi</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/05_webcam.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="04_git_server.html" title="Git Server with Raspberry Pi"
+             >previous</a> |</li>
+        <li><a href="index.html">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Yves J. Hilpisch.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

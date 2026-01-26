@@ -1,0 +1,158 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+In this notebook we will use ANN to predict the market movement
+
+```{r}
+
+library(quantmod)
+getSymbols("^DJI", src="yahoo")
+dow_jones <- DJI[,"DJI.Close"]
+
+return <- Delt(dow_jones)
+
+average10 <- rollapply(dow_jones,10,mean)
+average20 <- rollapply(dow_jones,20,mean)
+
+std10 <- rollapply(dow_jones,10,sd)
+std20 <- rollapply(dow_jones,20,sd)
+
+rsi5 <- RSI(dow_jones,5,"SMA")
+rsi14 <- RSI(dow_jones,14,"SMA")
+
+macd12269 <- MACD(dow_jones,12,26,9,"SMA")
+macd7205 <- MACD(dow_jones,7,20,5,"SMA")
+
+bollinger_bands <- BBands(dow_jones,20,"SMA",2)
+
+direction <- data.frame(matrix(NA,dim(dow_jones)[1],1))
+
+lagreturn <- (dow_jones - Lag(dow_jones,20)) / Lag(dow_jones,20)
+
+direction[lagreturn > 0.02] <- "1"
+direction[lagreturn < -0.02] <- "-1"
+direction[lagreturn < 0.02 & lagreturn > -0.02] <- "0"
+
+dow_jones <- cbind(dow_jones,average10,average20,std10,std20,rsi5,rsi14,macd12269,macd7205,bollinger_bands)
+
+train_sdate<- "2010-01-01"
+train_edate<- "2013-12-31"
+vali_sdate<- "2016-01-01"
+vali_edate<- "2016-12-31"
+test_sdate<- "2017-01-01"
+test_edate<- "2017-09-10"
+
+trainrow<- which(index(dow_jones) >= train_sdate& index(dow_jones) <= train_edate)
+valirow<- which(index(dow_jones) >= vali_sdate& index(dow_jones) <= vali_edate)
+testrow<- which(index(dow_jones) >= test_sdate& index(dow_jones) <= test_edate)
+
+traindji<- dow_jones[trainrow,]
+validji<- dow_jones[valirow,]
+testdji<- dow_jones[testrow,]
+
+
+```
+
+```{r}
+trainme <- apply(traindji,2,mean)
+trainstd <- apply(traindji,2,sd)
+
+```
+
+
+```{r}
+trainidn <- (matrix(1,dim(traindji)[1],dim(traindji)[2]))
+valiidn <- (matrix(1,dim(validji)[1],dim(validji)[2]))
+testidn <- (matrix(1,dim(testdji)[1],dim(testdji)[2]))
+```
+
+Normalizing the three datasets and only then can we use them in the neural networks. We will do it by using the mean and the std
+
+```{r}
+
+norm_traindji <- (traindji - t(trainme*t(trainidn)))/t(trainstd*t(trainidn))
+norm_validji <- (validji - t(trainme*t(valiidn)))/t(trainstd*t(valiidn))
+norm_testdji <- (testdji - t(trainme*t(testidn)))/t(trainstd*t(testidn))
+
+```
+
+```{r}
+traindir <- direction[trainrow,1]
+validir <- direction[valirow,1]
+testdir <- direction[testrow,1]
+```
+
+This is the NNET package that is going to help us with the 
+
+```{r}
+#install.packages("nnet")
+library(nnet)
+```
+
+Implementing ANN
+```{r}
+set.seed(1)
+neural_network <- nnet(norm_traindji,class.ind(traindir),size = 4, trace = T)
+neural_network
+
+```
+
+```{r}
+dim(norm_traindji)
+vali_pred <- predict(neural_network,norm_validji)
+head(vali_pred)
+```
+
+```{r}
+vali_pred_class <- data.frame(matrix(NA,dim(vali_pred)[1],1))
+
+vali_pred_class[vali_pred[,"-1"]>0.5,1] <- "-1"
+vali_pred_class[vali_pred[,"1"]>0.5,1] <- "1"
+vali_pred_class[vali_pred[,"0"]>0.5,1] <- "0"
+```
+
+Now we will be checking the forecast accuracy using the caret library
+
+```{r}
+#install.packages("caret")
+library(caret)
+matrix <- confusionMatrix(factor(vali_pred_class[,1],levels=1:2),factor(validir,levels = 1:2))
+matrix
+```
+
+```{r}
+class(vali_pred_class[,1])
+class(validir)
+#confusionMatrix(validir,vali_pred_class[, 1])
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

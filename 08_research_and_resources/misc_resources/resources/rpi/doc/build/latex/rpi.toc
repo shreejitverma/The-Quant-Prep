@@ -1,0 +1,24 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}Setting up the RPi}{3}{chapter.1}
+\contentsline {chapter}{\numberline {2}Booting the RPi}{5}{chapter.2}
+\contentsline {chapter}{\numberline {3}Small Projects with the RPi}{7}{chapter.3}
+\contentsline {section}{\numberline {3.1}Basic Configurations}{7}{section.3.1}
+\contentsline {subsection}{\numberline {3.1.1}SSH Access}{7}{subsection.3.1.1}
+\contentsline {subsubsection}{Fixed IP Address}{7}{subsubsection*.3}
+\contentsline {subsubsection}{Public IP Address}{8}{subsubsection*.4}
+\contentsline {subsubsection}{Using Public Keys}{8}{subsubsection*.5}
+\contentsline {subsection}{\numberline {3.1.2}Other Useful Tools \& Configurations}{8}{subsection.3.1.2}
+\contentsline {subsubsection}{Session Management with Screen}{8}{subsubsection*.6}
+\contentsline {subsubsection}{System Monitoring with htop}{9}{subsubsection*.7}
+\contentsline {subsubsection}{Enlarging the Swap Capacity}{9}{subsubsection*.8}
+\contentsline {section}{\numberline {3.2}Raspberry Pi as FTP Server}{10}{section.3.2}
+\contentsline {section}{\numberline {3.3}Raspberry Pi for Data Analytics}{10}{section.3.3}
+\contentsline {subsection}{\numberline {3.3.1}Installing Data Analytics Libraries}{11}{subsection.3.3.1}
+\contentsline {subsection}{\numberline {3.3.2}Interactive Data Analytics}{11}{subsection.3.3.2}
+\contentsline {subsection}{\numberline {3.3.3}Fast I/O Operations}{13}{subsection.3.3.3}
+\contentsline {section}{\numberline {3.4}Web Apps with Raspberry Pi}{15}{section.3.4}
+\contentsline {subsection}{\numberline {3.4.1}A First Example}{15}{subsection.3.4.1}
+\contentsline {subsection}{\numberline {3.4.2}Historical Stock Price Data}{16}{subsection.3.4.2}
+\contentsline {subsection}{\numberline {3.4.3}Generating Interactive D3 Plots}{21}{subsection.3.4.3}
+\contentsline {chapter}{\numberline {4}About the Author}{25}{chapter.4}
+\contentsline {chapter}{\numberline {5}Copyright \& Disclaimer}{27}{chapter.5}

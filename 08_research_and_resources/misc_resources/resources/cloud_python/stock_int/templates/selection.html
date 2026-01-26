@@ -1,0 +1,39 @@
+<!-- selection.html
+(c) Dr Yves J Hilpisch
+The Python Quants GmbH
+-->
+{% extends "layout.html" %}
+
+{% macro render_field(field) %}
+  <dd>{{ field.label }}
+  <dd>{{ field(**kwargs)|safe }}
+  {% if field.errors %}
+    <ul class=errors>
+    {% for error in field.errors %}
+      <dd>{{ error }}</dd>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  </dd>
+{% endmacro %}
+
+{% block body %}
+
+  <div class="form">
+  <form action="{{ url_for('main') }}" method=post
+   enctype="multipart/form-data">
+    <dl>
+      <dd><h1>Search for a Ticker Symbol</h1></dd><br>
+
+      <dd>Data will be retrieved from Yahoo! Finance.<br>Make sure to use a valid ticker symbol.</dd><br><br>
+
+      <dd>{{ render_field( form.symbol ) }}</dd><br>
+      <dd>{{ render_field( form.trend1 ) }}</dd><br>
+      <dd>{{ render_field( form.trend2 ) }}</dd><br>
+      <dd>{{ render_field( form.submit ) }}</dd><br>
+
+    </dl>
+  </form>
+  </div>
+
+{% endblock %}

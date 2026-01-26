@@ -1,0 +1,320 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Raspberry Pi for Data Analytics &mdash; Raspberry Pi for Serious Things</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Raspberry Pi for Serious Things" href="index.html" />
+    <link rel="next" title="Web Apps with Raspberry Pi" href="03_web_apps.html" />
+    <link rel="prev" title="Raspberry Pi as FTP Server" href="01_ftp_server.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="03_web_apps.html" title="Web Apps with Raspberry Pi"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="01_ftp_server.html" title="Raspberry Pi as FTP Server"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="raspberry-pi-for-data-analytics">
+<span id="data-analytics"></span><h1>Raspberry Pi for Data Analytics<a class="headerlink" href="#raspberry-pi-for-data-analytics" title="Permalink to this headline">¶</a></h1>
+<p>This example is about data analytics with Python (cf. <a class="reference external" href="http://python.org">http://python.org</a>) and IPython (cf. <a class="reference external" href="http://ipython.org">http://ipython.org</a>) on the RPi. Before we install it, first install the Python PIP installer by:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install python-pip python-dev build-essential
+</pre></div>
+</div>
+<div class="section" id="installing-data-analytics-libraries">
+<h2>Installing Data Analytics Libraries<a class="headerlink" href="#installing-data-analytics-libraries" title="Permalink to this headline">¶</a></h2>
+<p>Any serious data analytics effort with Python generally includes to some extent the <strong>pandas</strong> library (cf. <a class="reference external" href="http://pandas.pydata.org">http://pandas.pydata.org</a>). To install it, <strong>upgrade the NumPy</strong> library first (cf. <a class="reference external" href="http://scipy.org">http://scipy.org</a>):</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo pip install numpy --upgrade
+</pre></div>
+</div>
+<p>This might take quite a while (1h+) due to the library being pretty large and the RPi not being that quick in compiling it. Then <strong>install pandas</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo pip install pandas
+</pre></div>
+</div>
+<p>This also takes some time (again 1h+). Also install the <strong>matplotlib</strong> plotting library (with some updates/dependencies) as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo easy_install -U distribute
+sudo apt-get install libpng-dev libjpeg8-dev libfreetype6-dev
+sudo pip install matplotlib
+</pre></div>
+</div>
+<p>And, oh wonder, this also takes quite a while to install and compile. We might want to install another useful library, namely <strong>PyTables</strong> (cf. <a class="reference external" href="http://pytables.org">http://pytables.org</a>) for efficient I/O with Python:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo pip install numexpr
+sudo pip install cython
+sudo apt-get install libhdf5-serial-dev
+sudo pip install tables
+</pre></div>
+</div>
+<p>All this taken together takes a few hours in total. However, your patience will pay off: your RPi will be equipped with <strong>state-of-the-art Python-based data analytics libraries</strong> that can be used then for a wide range of data collection, crunching and storage tasks. Finally, install the IPython interactive analytics environment:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo pip install ipython
+</pre></div>
+</div>
+</div>
+<div class="section" id="interactive-data-analytics">
+<h2>Interactive Data Analytics<a class="headerlink" href="#interactive-data-analytics" title="Permalink to this headline">¶</a></h2>
+<p>Now <strong>start IPython</strong> on the shell via:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ipython</span>
+</pre></div>
+</div>
+<p>You should then see something like:</p>
+<div class="highlight-python"><div class="highlight"><pre>pi@rpi /home/ftp $ ipython
+Python 2.7.3 (default, Mar 18 2014, 05:13:23)
+Type &quot;copyright&quot;, &quot;credits&quot; or &quot;license&quot; for more information.
+
+IPython 2.3.1 -- An enhanced Interactive Python.
+?         -&gt; Introduction and overview of IPython&#39;s features.
+%quickref -&gt; Quick reference.
+help      -&gt; Python&#39;s own help system.
+object?   -&gt; Details about &#39;object&#39;, use &#39;object??&#39; for extra details.
+
+In [1]:
+</pre></div>
+</div>
+<p>Now let&#8217;s retrieve some <strong>stock quotes for the Apple stock</strong>:</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">pandas.io.data</span> <span class="kn">as</span> <span class="nn">web</span>
+
+<span class="gp">In [2]: </span><span class="n">aapl</span> <span class="o">=</span> <span class="n">web</span><span class="o">.</span><span class="n">DataReader</span><span class="p">(</span><span class="s">&#39;AAPL&#39;</span><span class="p">,</span> <span class="n">data_source</span><span class="o">=</span><span class="s">&#39;yahoo&#39;</span><span class="p">)</span>
+
+<span class="gp">In [3]: </span><span class="n">aapl</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
+<span class="gh">Out[3]: </span><span class="go"></span>
+<span class="go">              Open    High     Low   Close    Volume  Adj Close</span>
+<span class="go">Date                                                           </span>
+<span class="go">2014-12-23  113.23  113.33  112.46  112.54  26028400     112.54</span>
+<span class="go">2014-12-24  112.58  112.71  112.01  112.01  14479600     112.01</span>
+<span class="go">2014-12-26  112.10  114.52  112.01  113.99  33721000     113.99</span>
+<span class="go">2014-12-29  113.79  114.77  113.70  113.91  27598900     113.91</span>
+<span class="go">2014-12-30  113.65  113.91  112.12  112.52   2489300     112.52</span>
+</pre></div>
+</div>
+<p>Next, let us caculate two different <strong>moving averages</strong> (42 days &amp; 252 days):</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [4]: </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="gp">In [5]: </span><span class="n">aapl</span><span class="p">[</span><span class="s">&#39;42d&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">rolling_mean</span><span class="p">(</span><span class="n">aapl</span><span class="p">[</span><span class="s">&#39;Adj Close&#39;</span><span class="p">],</span> <span class="n">window</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="gp">In [6]: </span><span class="n">aapl</span><span class="p">[</span><span class="s">&#39;252d&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">rolling_mean</span><span class="p">(</span><span class="n">aapl</span><span class="p">[</span><span class="s">&#39;Adj Close&#39;</span><span class="p">],</span> <span class="n">window</span><span class="o">=</span><span class="mi">252</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, a plot of the index closing values and the moving averages:</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [7]: </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="gp">In [8]: </span><span class="n">aapl</span><span class="p">[[</span><span class="s">&#39;Adj Close&#39;</span><span class="p">,</span> <span class="s">&#39;42d&#39;</span><span class="p">,</span> <span class="s">&#39;252d&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&#39;Apple Inc.&#39;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;source/aapl.png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <strong>saved png plot</strong> might then look like below.</p>
+<img alt="_images/aapl.png" src="_images/aapl.png" />
+<p>Via the shell (either directly or via <tt class="docutils literal"><span class="pre">ssh</span></tt> access) such figures cannot be displayed. However, you could imagine to run a Web site on the RPi where the figure is included and displayed via html (see <a class="reference internal" href="03_web_apps.html#web-apps"><em>Web Apps with Raspberry Pi</em></a>). You could also send such a graphical output/result to yourself or someone else e.g. by email or FTP transfer.</p>
+</div>
+<div class="section" id="fast-i-o-operations">
+<h2>Fast I/O Operations<a class="headerlink" href="#fast-i-o-operations" title="Permalink to this headline">¶</a></h2>
+<p>When using the RPi for data collection purposes, it might be beneficial to have efficient I/O capabilities available. This is where the PyTables library comes into play. The following is a Python script (<a class="reference download internal" href="_downloads/data_collection.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>) that collects stock data for a number of symbols and stores the data on disk in HDF5 format (cf. <a class="reference external" href="http://hdfgroup.org">http://hdfgroup.org</a>).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># Collecting and Storing Stock Price Data</span>
+<span class="c"># with Python/pandas/PyTables</span>
+<span class="c">#</span>
+<span class="c"># (c) Dr. Yves J. Hilpisch</span>
+<span class="c"># The Python Quants GmbH</span>
+<span class="c"># </span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pandas.io.data</span> <span class="kn">as</span> <span class="nn">web</span>
+
+<span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;AAPL&#39;</span><span class="p">,</span> <span class="s">&#39;YHOO&#39;</span><span class="p">,</span> <span class="s">&#39;MSFT&#39;</span><span class="p">]</span>
+
+<span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;data.h5&#39;</span>
+
+<span class="c">#</span>
+<span class="c"># Collecting the data</span>
+<span class="c">#</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+<span class="n">store</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c"># dictionary to store DataFrame objects</span>
+
+<span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
+    <span class="n">store</span><span class="p">[</span><span class="n">sym</span><span class="p">]</span> <span class="o">=</span> <span class="n">web</span><span class="o">.</span><span class="n">DataReader</span><span class="p">(</span><span class="n">sym</span><span class="p">,</span> <span class="n">data_source</span><span class="o">=</span><span class="s">&#39;yahoo&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s">&#39;2000/1/1&#39;</span><span class="p">)</span>
+
+<span class="c">#</span>
+<span class="c"># Storing data in HDF5 database</span>
+<span class="c">#</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+<span class="n">h5</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>  <span class="c"># open database file</span>
+
+<span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
+    <span class="n">h5</span><span class="p">[</span><span class="n">sym</span><span class="p">]</span> <span class="o">=</span> <span class="n">store</span><span class="p">[</span><span class="n">sym</span><span class="p">]</span>  <span class="c"># write DataFrame to disk</span>
+
+<span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c"># close database</span>
+
+<span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>  <span class="c"># delete file on disk</span>
+<span class="c">#</span>
+<span class="c"># Output</span>
+<span class="c">#</span>
+<span class="k">print</span> <span class="s">&quot;Time needed to collect data in sec. </span><span class="si">%5.2f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;Time needed to store data in sec.   </span><span class="si">%5.2f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Running the script from the shell yields an output like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>pi@rpi ~ $ python data_collection.py
+Time needed to collect data in sec.  1.61
+Time needed to store data in sec.    1.40
+</pre></div>
+</div>
+<p>The data gathered and stored by this Python script is not that large. The following script (<a class="reference download internal" href="_downloads/large_data_set.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>) generates a set with pseudo-random sample data which is <strong>80 MB in size</strong> and writes it to disk.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># Storing a Larger Data Set on Disk</span>
+<span class="c"># with Python/pandas/PyTables</span>
+<span class="c">#</span>
+<span class="c"># (c) Dr. Yves J. Hilpisch</span>
+<span class="c"># The Python Quants GmbH</span>
+<span class="c"># </span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;data.h5&#39;</span>
+
+<span class="c">#</span>
+<span class="c"># Generating the sample data</span>
+<span class="c">#</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="mi">10000000</span><span class="p">)</span>  <span class="c"># random data</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c"># pandas DataFrame object</span>
+
+<span class="c">#</span>
+<span class="c"># Storing data in HDF5 database</span>
+<span class="c">#</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+<span class="n">h5</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>  <span class="c"># open database file</span>
+<span class="n">h5</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>  <span class="c"># write DataFrame to disk</span>
+<span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c"># close database file</span>
+
+<span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>  <span class="c"># delete file on disk</span>
+<span class="c">#</span>
+<span class="c"># Output</span>
+<span class="c">#</span>
+<span class="k">print</span> <span class="s">&quot;Size of data set in bytes </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">data</span><span class="o">.</span><span class="n">nbytes</span>
+<span class="k">print</span> <span class="s">&quot;Time needed to generate data in sec. </span><span class="si">%5.2f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;Time needed to store data in sec.    </span><span class="si">%5.2f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Running this script yields an output like follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>pi@rpi ~ $ python large_data_set.py
+Size of data set in bytes 80000000
+Time needed to generate data in sec. 10.24
+Time needed to store data in sec.     9.39
+</pre></div>
+</div>
+<p>It takes less than 10 seconds to write 80 MB of data to the SD card (times here might vary significantly depending on the card type used). You see that you can even process <strong>larger data sets</strong> (although not &#8220;big data&#8221;) with the  RPi.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/tpq_logo_more_left_cut.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Raspberry Pi for Data Analytics</a><ul>
+<li><a class="reference internal" href="#installing-data-analytics-libraries">Installing Data Analytics Libraries</a></li>
+<li><a class="reference internal" href="#interactive-data-analytics">Interactive Data Analytics</a></li>
+<li><a class="reference internal" href="#fast-i-o-operations">Fast I/O Operations</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="01_ftp_server.html"
+                        title="previous chapter">Raspberry Pi as FTP Server</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="03_web_apps.html"
+                        title="next chapter">Web Apps with Raspberry Pi</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/02_data_analytics.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="03_web_apps.html" title="Web Apps with Raspberry Pi"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="01_ftp_server.html" title="Raspberry Pi as FTP Server"
+             >previous</a> |</li>
+        <li><a href="index.html">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Yves J. Hilpisch.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

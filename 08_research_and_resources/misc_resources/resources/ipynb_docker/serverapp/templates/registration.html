@@ -1,0 +1,43 @@
+<!-- registration.html -->
+{% extends "layout.html" %}
+
+{% macro render_field(field) %}
+  <dd>{{ field.label }}
+  <dd>{{ field(**kwargs)|safe }}
+  {% if field.errors %}
+    <ul class=errors>
+    {% for error in field.errors %}
+      <dd>{{ error }}</dd>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  </dd>
+{% endmacro %}
+
+{% block body %}
+
+  <div class="form">
+  <form action="{{ url_for('main') }}" method=post
+   enctype="multipart/form-data">
+    <dl>
+      <dd><h1>Fire up your own, temporary Jupyter Notebook server.</h1></dd><br>
+
+      <dd>This whole page is for illustration only.<br>
+	You can easily start your own Jupyter server in a Docker container.<br>
+	  However, the service might be shut down at any time.<br>
+	Files, data, notebooks, etc. then get lost.</dd><br><br>
+
+       {% if error %}
+            <p class=errors><strong>Error:</strong> {{ error }}</p>
+       {% endif %}  
+
+      <dd>{{ render_field( form.first_name ) }}</dd><br>
+      <dd>{{ render_field( form.last_name ) }}</dd><br>
+      <dd>{{ render_field( form.email ) }}</dd><br>
+      <dd>{{ form.submit | safe }}</dd>
+
+    </dl>
+  </form>
+  </div>
+
+{% endblock %}

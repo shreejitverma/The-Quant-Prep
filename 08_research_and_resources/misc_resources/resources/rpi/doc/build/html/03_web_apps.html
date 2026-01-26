@@ -1,0 +1,576 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Web Apps with Raspberry Pi &mdash; Raspberry Pi for Serious Things</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Raspberry Pi for Serious Things" href="index.html" />
+    <link rel="next" title="Git Server with Raspberry Pi" href="04_git_server.html" />
+    <link rel="prev" title="Raspberry Pi for Data Analytics" href="02_data_analytics.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="04_git_server.html" title="Git Server with Raspberry Pi"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="02_data_analytics.html" title="Raspberry Pi for Data Analytics"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="web-apps-with-raspberry-pi">
+<span id="web-apps"></span><h1>Web Apps with Raspberry Pi<a class="headerlink" href="#web-apps-with-raspberry-pi" title="Permalink to this headline">¶</a></h1>
+<p>Having implemented the small project about data analytics with Python, we are now well equipped to do something useful with the data analytics capabilities. In particular, we want to build a small <strong>Web app</strong> that serves a page where you can decide on a ticker symbol and you get back historical stock price data for that symbol.</p>
+<p>The framework we are going to use is called <strong>Flask</strong> (cf. <a class="reference external" href="http://flask.pocoo.org/">http://flask.pocoo.org/</a>) and has become quite popular recently in the Python world. Installation in this case is straightforward:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo pip install Flask
+sudo pip install flask-wtf
+</pre></div>
+</div>
+<p>To get our Web app to be build served, we need a <strong>Web server</strong>. A popular choice in the Python world is <strong>Tornado</strong> (cf. <a class="reference external" href="http://www.tornadoweb.org/en/stable/">http://www.tornadoweb.org/en/stable/</a>). Install it via:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo pip install tornado
+</pre></div>
+</div>
+<p>This should also be quick and straightforward. This is almost all we need to use the RPi as a Web server for Web sites or applications.</p>
+<div class="section" id="a-first-example">
+<h2>A First Example<a class="headerlink" href="#a-first-example" title="Permalink to this headline">¶</a></h2>
+<p>Let us see if we can implement the <strong>&#8220;Hello World!&#8221; example</strong> of Flask and get it served with Tornado. First the Web app itself:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># From http://flask.pocoo.org</span>
+<span class="c">#</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span> 
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s">&quot;Hello World!&quot;</span>
+</pre></div>
+</div>
+<p>As you see, a few lines of code suffice for a propor Web application&#8212;even if it is only a very small one. The <a class="reference download internal" href="_downloads/flask_test.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a> for this Python module.</p>
+<p>Next, we need to wrap the app into a <strong>WSGI container</strong> (cf. <a class="reference external" href="http://en.wikipedia.org/wiki/Web_Server_Gateway_Interface">http://en.wikipedia.org/wiki/Web_Server_Gateway_Interface</a>) to be served by Tornado:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># From http://flask.pocoo.org</span>
+<span class="c">#</span>
+<span class="kn">from</span> <span class="nn">tornado.wsgi</span> <span class="kn">import</span> <span class="n">WSGIContainer</span>
+<span class="kn">from</span> <span class="nn">tornado.httpserver</span> <span class="kn">import</span> <span class="n">HTTPServer</span>
+<span class="kn">from</span> <span class="nn">tornado.ioloop</span> <span class="kn">import</span> <span class="n">IOLoop</span>
+<span class="kn">from</span> <span class="nn">flask_test</span> <span class="kn">import</span> <span class="n">app</span>
+
+<span class="n">http_server</span> <span class="o">=</span> <span class="n">HTTPServer</span><span class="p">(</span><span class="n">WSGIContainer</span><span class="p">(</span><span class="n">app</span><span class="p">))</span>
+<span class="n">http_server</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">5000</span><span class="p">)</span>  <span class="c"># serving on port 5000</span>
+<span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Again only a few lines of code. The <a class="reference download internal" href="_downloads/web_serve.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a> for this script. If you execute this last script via:</p>
+<div class="highlight-python"><div class="highlight"><pre>python web_serve.py
+</pre></div>
+</div>
+<p>you should be able to see the result when going to the <strong>fixed IP or domain of your RPi</strong> in combination with port 5000 (cf. <a class="reference internal" href="00_basic_config.html#fixip"><em>Fixed IP Address</em></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre>http://xx.yy.zz.100:5000
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre>http://rpi.mydomain.net:5000
+</pre></div>
+</div>
+</div>
+<div class="section" id="historical-stock-price-data">
+<h2>Historical Stock Price Data<a class="headerlink" href="#historical-stock-price-data" title="Permalink to this headline">¶</a></h2>
+<p>This Web application retrieves historical stock price data for a user given <strong>ticker symbol</strong> and calculates <strong>two different trends (moving averages)</strong>. It then outputs a figure with the data and results as well as a HTML table with the raw data.</p>
+<p>Let us start with the <strong>Web app code</strong> itself:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># Historical Stock Prices</span>
+<span class="c"># with the RPi using Python &amp; Flask</span>
+<span class="c">#</span>
+<span class="c"># stock_data.py</span>
+<span class="c">#</span>
+<span class="c"># (c) Dr. Yves J. Hilpisch</span>
+<span class="c"># The Python Quants</span>
+<span class="c">#</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pandas.io.data</span> <span class="kn">as</span> <span class="nn">web</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">url_for</span>
+<span class="kn">from</span> <span class="nn">forms</span> <span class="kn">import</span> <span class="n">SymbolSearch</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="s">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">SymbolSearch</span><span class="p">(</span><span class="n">csrf_enabled</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s">&#39;POST&#39;</span> <span class="ow">and</span> <span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s">&#39;results&#39;</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s">&#39;symbol&#39;</span><span class="p">],</span>
+                            <span class="n">trend1</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s">&#39;trend1&#39;</span><span class="p">],</span>
+                            <span class="n">trend2</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s">&#39;trend2&#39;</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&#39;selection.html&#39;</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+
+<span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/symbol/&lt;symbol&gt;+&lt;trend1&gt;+&lt;trend2&gt;&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">results</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">trend1</span><span class="p">,</span> <span class="n">trend2</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">web</span><span class="o">.</span><span class="n">DataReader</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">data_source</span><span class="o">=</span><span class="s">&#39;yahoo&#39;</span><span class="p">)</span>
+    <span class="n">data</span><span class="p">[</span><span class="s">&#39;Trend 1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">rolling_mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">&#39;Adj Close&#39;</span><span class="p">],</span> <span class="n">window</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">trend1</span><span class="p">))</span>
+    <span class="n">data</span><span class="p">[</span><span class="s">&#39;Trend 2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">rolling_mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">&#39;Adj Close&#39;</span><span class="p">],</span> <span class="n">window</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">trend2</span><span class="p">))</span>
+    <span class="n">data</span><span class="p">[[</span><span class="s">&#39;Adj Close&#39;</span><span class="p">,</span> <span class="s">&#39;Trend 1&#39;</span><span class="p">,</span> <span class="s">&#39;Trend 2&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s">&#39;results.png&#39;</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;static/&#39;</span> <span class="o">+</span> <span class="n">output</span><span class="p">)</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span><span class="o">.</span><span class="n">to_html</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&#39;results.html&#39;</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span>
+                            <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <a class="reference download internal" href="_downloads/stock_data.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a> for this Python script.</p>
+<p>We need a simple <strong>WTF form</strong> for data input (<a class="reference download internal" href="_downloads/forms.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># Data input form</span>
+<span class="c"># forms.py</span>
+<span class="c">#</span>
+
+<span class="kn">from</span> <span class="nn">wtforms</span> <span class="kn">import</span> <span class="n">TextField</span>
+<span class="kn">from</span> <span class="nn">wtforms.fields</span> <span class="kn">import</span> <span class="n">SubmitField</span>
+<span class="kn">from</span> <span class="nn">wtforms.validators</span> <span class="kn">import</span> <span class="n">DataRequired</span>
+<span class="kn">from</span> <span class="nn">flask.ext.wtf</span> <span class="kn">import</span> <span class="n">Form</span>
+
+<span class="k">class</span> <span class="nc">SymbolSearch</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
+    <span class="n">symbol</span> <span class="o">=</span> <span class="n">TextField</span><span class="p">(</span><span class="s">&#39;&lt;b&gt;Symbol&lt;/b&gt; (eg AAPL, MSFT)&#39;</span><span class="p">,</span>
+                        <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">DataRequired</span><span class="p">()])</span>
+    <span class="n">trend1</span> <span class="o">=</span> <span class="n">TextField</span><span class="p">(</span><span class="s">&#39;&lt;b&gt;Trend 1&lt;/b&gt; (eg 20, 42)&#39;</span><span class="p">,</span>
+                        <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">DataRequired</span><span class="p">()])</span>
+    <span class="n">trend2</span> <span class="o">=</span> <span class="n">TextField</span><span class="p">(</span><span class="s">&#39;&lt;b&gt;Trend 2&lt;/b&gt; (eg 100, 252)&#39;</span><span class="p">,</span>
+                        <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">DataRequired</span><span class="p">()])</span>
+    <span class="n">submit</span> <span class="o">=</span> <span class="n">SubmitField</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The major <strong>layout template</strong> (<a class="reference download internal" href="_downloads/layout.html"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>:</p>
+<div class="highlight-html"><div class="highlight"><pre><span class="c">&lt;!-- layout.html --&gt;</span>
+<span class="cp">&lt;!doctype html&gt;</span>
+<span class="nt">&lt;title&gt;</span>Historical Stock Prices<span class="nt">&lt;/title&gt;</span>
+
+<span class="nt">&lt;head&gt;</span>
+
+<span class="nt">&lt;/head&gt;</span>
+
+<span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">stylesheet</span> <span class="na">type=</span><span class="s">text/css</span>
+      <span class="na">href=</span><span class="s">&quot;{{ url_for(&#39;static&#39;, filename=&#39;style.css&#39;) }}&quot;</span><span class="nt">&gt;</span>
+
+<span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">&#39;http://fonts.googleapis.com/css?family=PT+Sans&#39;</span>
+      <span class="na">rel=</span><span class="s">&#39;stylesheet&#39;</span> <span class="na">type=</span><span class="s">&#39;text/css&#39;</span><span class="nt">&gt;</span>
+
+<span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">&quot;shortcut icon&quot;</span>
+      <span class="na">href=</span><span class="s">&quot;http://hilpisch.com/favicon.ico&quot;</span><span class="nt">&gt;</span>
+
+<span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">page</span><span class="nt">&gt;</span>
+  
+  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">logo</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">&#39;http://hilpisch.com/tpq_logo.png&#39;</span> <span class="na">alt=</span><span class="s">&quot;TPQ Logo&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+  
+  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">metanav</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{{ url_for(&#39;main&#39;)}}&quot;</span><span class="nt">&gt;</span>back to search<span class="nt">&lt;/a&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+  {% block body %}
+
+  {% endblock %}
+<span class="nt">&lt;/div&gt;</span>
+</pre></div>
+</div>
+<p>The sub-template for the <strong>data input</strong> (<a class="reference download internal" href="_downloads/selection.html"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>):</p>
+<div class="highlight-html"><div class="highlight"><pre><span class="c">&lt;!-- selection.html --&gt;</span>
+{% extends &quot;layout.html&quot; %}
+
+{% macro render_field(field) %}
+  <span class="nt">&lt;dd&gt;</span>{{ field.label }}
+  <span class="nt">&lt;dd&gt;</span>{{ field(**kwargs)|safe }}
+  {% if field.errors %}
+    <span class="nt">&lt;ul</span> <span class="na">class=</span><span class="s">errors</span><span class="nt">&gt;</span>
+    {% for error in field.errors %}
+      <span class="nt">&lt;dd&gt;</span>{{ error }}<span class="nt">&lt;/dd&gt;</span>
+    {% endfor %}
+    <span class="nt">&lt;/ul&gt;</span>
+  {% endif %}
+  <span class="nt">&lt;/dd&gt;</span>
+{% endmacro %}
+
+{% block body %}
+
+  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;form&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">&quot;{{ url_for(&#39;main&#39;) }}&quot;</span> <span class="na">method=</span><span class="s">post</span>
+   <span class="na">enctype=</span><span class="s">&quot;multipart/form-data&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;dl&gt;</span>
+      <span class="nt">&lt;dd&gt;&lt;h1&gt;</span>Search for a Ticker Symbol<span class="nt">&lt;/h1&gt;&lt;/dd&gt;&lt;br&gt;</span>
+
+      <span class="nt">&lt;dd&gt;</span>Data will be retrieved from Yahoo! Finance.<span class="nt">&lt;br&gt;</span>Make sure to use a valid ticker symbol.<span class="nt">&lt;/dd&gt;&lt;br&gt;&lt;br&gt;</span>
+
+      <span class="nt">&lt;dd&gt;</span>{{ render_field( form.symbol ) }}<span class="nt">&lt;/dd&gt;&lt;br&gt;</span>
+      <span class="nt">&lt;dd&gt;</span>{{ render_field( form.trend1 ) }}<span class="nt">&lt;/dd&gt;&lt;br&gt;</span>
+      <span class="nt">&lt;dd&gt;</span>{{ render_field( form.trend2 ) }}<span class="nt">&lt;/dd&gt;&lt;br&gt;</span>
+      <span class="nt">&lt;dd&gt;</span>{{ render_field( form.submit ) }}<span class="nt">&lt;/dd&gt;&lt;br&gt;</span>
+
+    <span class="nt">&lt;/dl&gt;</span>
+  <span class="nt">&lt;/form&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+
+{% endblock %}
+</pre></div>
+</div>
+<p>And the sub-template for the <strong>results output</strong> (<a class="reference download internal" href="_downloads/results.html"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>):</p>
+<div class="highlight-html"><div class="highlight"><pre><span class="c">&lt;!-- results.html --&gt;</span>
+{% extends &quot;layout.html&quot; %}
+
+{% block body %}
+
+
+    <span class="nt">&lt;h1&gt;</span>Results for Symbol {{ symbol }}<span class="nt">&lt;/h1&gt;</span>
+
+    <span class="nt">&lt;img</span> <span class="na">width=</span><span class="s">100%</span> <span class="na">src=</span><span class="s">&quot;{{ url_for(&#39;static&#39;, filename=&#39;results.png&#39;) }}&quot;</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;br&gt;&lt;br&gt;</span>
+
+    {{ table | safe }}
+
+
+{% endblock %}
+</pre></div>
+</div>
+<p>Also, a bit of <strong>CSS</strong> styling (<a class="reference download internal" href="_downloads/style.css"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>)</p>
+<div class="highlight-css"><div class="highlight"><pre><span class="c">/* style.css */</span>
+<span class="nt">body</span> <span class="p">{</span> <span class="k">font-family</span><span class="o">:</span> <span class="s1">&#39;PT Sans&#39;</span><span class="o">,</span> <span class="k">sans-serif</span><span class="p">;</span> <span class="k">background</span><span class="o">:</span> <span class="m">#eee</span><span class="p">;</span> <span class="p">}</span>
+<span class="nt">a</span><span class="o">,</span> <span class="nt">h1</span><span class="o">,</span> <span class="nt">h2</span> <span class="p">{</span> <span class="k">color</span><span class="o">:</span> <span class="m">#021A80</span><span class="p">;</span> <span class="p">}</span>
+<span class="nt">h1</span><span class="o">,</span> <span class="nt">h2</span> <span class="p">{</span> <span class="k">font-family</span><span class="o">:</span> <span class="s1">&#39;PT Sans&#39;</span><span class="o">,</span> <span class="k">sans-serif</span><span class="p">;</span> <span class="k">margin</span><span class="o">:</span> <span class="m">0</span><span class="p">;</span> <span class="k">text-align</span><span class="o">:</span> <span class="k">center</span><span class="p">;}</span>
+<span class="nt">h1</span> <span class="p">{</span> <span class="k">font-size</span><span class="o">:</span> <span class="m">1.4em</span><span class="p">;</span> <span class="k">border-bottom</span><span class="o">:</span> <span class="m">2px</span> <span class="k">solid</span> <span class="m">#eee</span><span class="p">;</span> <span class="p">}</span>
+<span class="nt">h2</span> <span class="p">{</span> <span class="k">font-size</span><span class="o">:</span> <span class="m">1.0em</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="nt">a</span><span class="nd">:link</span> <span class="p">{</span> <span class="k">color</span><span class="o">:</span> <span class="m">#B40404</span><span class="p">;</span> <span class="k">text-decoration</span><span class="o">:</span><span class="k">none</span><span class="p">;</span> <span class="p">}</span>
+<span class="nt">a</span><span class="nd">:visited</span> <span class="p">{</span> <span class="k">color</span><span class="o">:</span> <span class="m">#B40404</span><span class="p">;</span> <span class="k">text-decoration</span><span class="o">:</span><span class="k">none</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="nc">.dataframe</span> <span class="p">{</span> <span class="k">margin-left</span><span class="o">:</span> <span class="k">auto</span><span class="p">;</span> <span class="k">margin-right</span><span class="o">:</span> <span class="k">auto</span><span class="p">;}</span>
+
+<span class="nc">.page</span> <span class="p">{</span> <span class="k">font-family</span><span class="o">:</span> <span class="s1">&#39;PT Sans&#39;</span><span class="o">,</span> <span class="k">sans-serif</span><span class="p">;</span> <span class="k">margin</span><span class="o">:</span> <span class="m">2em</span> <span class="k">auto</span><span class="p">;</span> <span class="k">width</span><span class="o">:</span> <span class="m">66em</span><span class="p">;</span> 
+                  <span class="k">padding</span><span class="o">:</span> <span class="m">0.8em</span><span class="p">;</span> <span class="k">background</span><span class="o">:</span> <span class="nb">white</span><span class="p">;</span> <span class="k">color</span><span class="o">:</span> <span class="m">#021A80</span><span class="p">}</span>
+
+<span class="nc">.metanav</span> <span class="p">{</span> <span class="k">text-align</span><span class="o">:</span> <span class="k">right</span><span class="p">;</span> <span class="k">font-size</span><span class="o">:</span> <span class="m">1em</span><span class="p">;</span> <span class="k">padding</span><span class="o">:</span> <span class="m">0.3em</span><span class="p">;</span>
+                  <span class="k">margin-bottom</span><span class="o">:</span> <span class="m">1em</span><span class="p">;</span> <span class="k">background</span><span class="o">:</span> <span class="m">#fafafa</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="nc">.logo</span> <span class="nt">img</span> <span class="p">{</span> <span class="k">width</span><span class="o">:</span> <span class="m">30</span><span class="o">%</span><span class="p">;</span> <span class="k">display</span><span class="o">:</span> <span class="k">block</span><span class="p">;</span> <span class="k">margin-right</span><span class="o">:</span> <span class="k">auto</span><span class="p">;</span>
+            <span class="k">margin-left</span><span class="o">:</span> <span class="k">auto</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="nc">.errors</span> <span class="p">{</span> <span class="k">font-size</span><span class="o">:</span> <span class="m">0.8em</span><span class="p">;</span> <span class="k">color</span><span class="o">:</span> <span class="nb">red</span><span class="p">;}</span>
+
+<span class="nc">.form</span> <span class="p">{</span><span class="k">text-align</span><span class="o">:</span> <span class="k">center</span><span class="p">;}</span>
+</pre></div>
+</div>
+<p>Finally, the <strong>Tornado WSGI wrapper</strong> for the app (<a class="reference download internal" href="_downloads/run_stock_app.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># WSGI Wrapper for the</span>
+<span class="c"># Historical Stock Data App</span>
+<span class="c">#</span>
+<span class="c"># run_stock_app.py</span>
+<span class="c">#</span>
+<span class="kn">from</span> <span class="nn">tornado.wsgi</span> <span class="kn">import</span> <span class="n">WSGIContainer</span>
+<span class="kn">from</span> <span class="nn">tornado.httpserver</span> <span class="kn">import</span> <span class="n">HTTPServer</span>
+<span class="kn">from</span> <span class="nn">tornado.ioloop</span> <span class="kn">import</span> <span class="n">IOLoop</span>
+<span class="kn">from</span> <span class="nn">stock_data</span> <span class="kn">import</span> <span class="n">app</span>
+
+<span class="n">http_server</span> <span class="o">=</span> <span class="n">HTTPServer</span><span class="p">(</span><span class="n">WSGIContainer</span><span class="p">(</span><span class="n">app</span><span class="p">))</span>
+<span class="n">http_server</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">8888</span><span class="p">)</span>  <span class="c"># serving on port 8888</span>
+<span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>All these files should be placed in the following <strong>folder structure</strong>:</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="gp">In [2]: </span><span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="s">&#39;./source/stock_app&#39;</span><span class="p">):</span>
+<span class="gp">   ...: </span>    <span class="k">print</span> <span class="n">path</span>
+<span class="gp">   ...: </span>    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+<span class="gp">   ...: </span>        <span class="k">print</span> <span class="n">f</span>
+<span class="gp">   ...: </span>
+<span class="go">./source/stock_app</span>
+<span class="go">forms.py</span>
+<span class="go">forms.pyc</span>
+<span class="go">run_stock_app.py</span>
+<span class="go">stock_data.py</span>
+<span class="go">stock_data.pyc</span>
+<span class="go">./source/stock_app/static</span>
+<span class="go">results.png</span>
+<span class="go">style.css</span>
+<span class="go">./source/stock_app/templates</span>
+<span class="go">layout.html</span>
+<span class="go">results.html</span>
+<span class="go">selection.html</span>
+</pre></div>
+</div>
+<p>When the working directory is <tt class="docutils literal"><span class="pre">stock_app</span></tt>, the following command then runs the Web app:</p>
+<div class="highlight-python"><div class="highlight"><pre>python run_stock_app.py
+</pre></div>
+</div>
+<p>You should now be able to access the Web application via (cf. <a class="reference internal" href="00_basic_config.html#fixip"><em>Fixed IP Address</em></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre>http://xx.yy.zz.100:8888
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre>http://rpi.mydomain.net:8888
+</pre></div>
+</div>
+<p>The <strong>starting/main page</strong> for the data input might then look like (here the app is run locally):</p>
+<a class="reference internal image-reference" href="_images/stock_app_main.png"><img alt="_images/stock_app_main.png" src="_images/stock_app_main.png" style="width: 856.02px; height: 529.98px;" /></a>
+<p>The <strong>results output page</strong> looks like this:</p>
+<a class="reference internal image-reference" href="_images/stock_app_results.png"><img alt="_images/stock_app_results.png" src="_images/stock_app_results.png" style="width: 856.02px; height: 529.98px;" /></a>
+</div>
+<div class="section" id="generating-interactive-d3-plots">
+<h2>Generating Interactive D3 Plots<a class="headerlink" href="#generating-interactive-d3-plots" title="Permalink to this headline">¶</a></h2>
+<p>Modern Web applications generally rely on <strong>nicely rendered, interactive graphics</strong>. The following example slightly adjusts the previous one to accomplish exaclty that. The main tool used here is <strong>plotly</strong> (cf. <a class="reference external" href="http://plot.ly">http://plot.ly</a>), a graphics engine that allows to easily transform static Python/matplotlib plots into interactive <strong>D3.js</strong> plots (<a class="reference external" href="http://d3js.org/">http://d3js.org/</a>) or to directly generate such plots from Python.</p>
+<p>You need to <strong>install plotly</strong> as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo pip install plotly
+</pre></div>
+</div>
+<p>You also need to create an account on the Web site <a class="reference external" href="http://plot.ly">http://plot.ly</a>.</p>
+<p>The major <strong>changes</strong> have be made in the main application module (<a class="reference download internal" href="_downloads/stock_interactive.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># Historical Stock Prices</span>
+<span class="c"># with the RPi using Python &amp; Flask &amp; Plotly</span>
+<span class="c">#</span>
+<span class="c"># stock_interactive.py</span>
+<span class="c">#</span>
+<span class="c"># (c) Dr. Yves J. Hilpisch</span>
+<span class="c"># The Python Quants</span>
+<span class="c">#</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pandas.io.data</span> <span class="kn">as</span> <span class="nn">web</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">plotly.plotly</span> <span class="kn">as</span> <span class="nn">ply</span>
+<span class="kn">from</span> <span class="nn">plotly.graph_objs</span> <span class="kn">import</span> <span class="n">Figure</span><span class="p">,</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">XAxis</span><span class="p">,</span> <span class="n">YAxis</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">url_for</span>
+<span class="kn">from</span> <span class="nn">forms</span> <span class="kn">import</span> <span class="n">SymbolSearch</span>
+
+<span class="c">#</span>
+<span class="c"># Needed for plotly usage</span>
+<span class="c">#</span>
+
+<span class="n">ply</span><span class="o">.</span><span class="n">sign_in</span><span class="p">(</span><span class="s">&#39;yves&#39;</span><span class="p">,</span> <span class="s">&#39;token&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">df_to_plotly</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Converting a pandas DataFrame to plotly compatible format.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="o">==</span><span class="s">&quot;DatetimeIndex&quot;</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">format</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span> 
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">df</span><span class="p">:</span>
+        <span class="n">lines</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">lines</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">lines</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">lines</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
+    <span class="n">lines_plotly</span> <span class="o">=</span> <span class="p">[</span><span class="n">lines</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">df</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">lines_plotly</span>
+
+<span class="c">#</span>
+<span class="c"># Main app</span>
+<span class="c">#</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="s">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">SymbolSearch</span><span class="p">(</span><span class="n">csrf_enabled</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s">&#39;POST&#39;</span> <span class="ow">and</span> <span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s">&#39;results&#39;</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s">&#39;symbol&#39;</span><span class="p">],</span>
+                            <span class="n">trend1</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s">&#39;trend1&#39;</span><span class="p">],</span>
+                            <span class="n">trend2</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s">&#39;trend2&#39;</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&#39;selection.html&#39;</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+
+<span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/symbol/&lt;symbol&gt;+&lt;trend1&gt;+&lt;trend2&gt;&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">results</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">trend1</span><span class="p">,</span> <span class="n">trend2</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">web</span><span class="o">.</span><span class="n">DataReader</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">data_source</span><span class="o">=</span><span class="s">&#39;yahoo&#39;</span><span class="p">)</span>
+    <span class="n">data</span><span class="p">[</span><span class="s">&#39;Trend 1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">rolling_mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">&#39;Adj Close&#39;</span><span class="p">],</span> <span class="n">window</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">trend1</span><span class="p">))</span>
+    <span class="n">data</span><span class="p">[</span><span class="s">&#39;Trend 2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">rolling_mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">&#39;Adj Close&#39;</span><span class="p">],</span> <span class="n">window</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">trend2</span><span class="p">))</span>
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span>
+        <span class="n">xaxis</span><span class="o">=</span><span class="n">XAxis</span><span class="p">(</span><span class="n">showgrid</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">gridcolor</span><span class="o">=</span><span class="s">&#39;#bdbdbd&#39;</span><span class="p">,</span> <span class="n">gridwidth</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">yaxis</span><span class="o">=</span><span class="n">YAxis</span><span class="p">(</span><span class="n">showgrid</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">gridcolor</span><span class="o">=</span><span class="s">&#39;#bdbdbd&#39;</span><span class="p">,</span> <span class="n">gridwidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df_to_plotly</span><span class="p">(</span><span class="n">data</span><span class="p">[[</span><span class="s">&#39;Adj Close&#39;</span><span class="p">,</span> <span class="s">&#39;Trend 1&#39;</span><span class="p">,</span> <span class="s">&#39;Trend 2&#39;</span><span class="p">]]),</span>
+                <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+    <span class="n">plot</span> <span class="o">=</span> <span class="n">ply</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">auto_open</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span><span class="o">.</span><span class="n">to_html</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&#39;plotly.html&#39;</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span>
+                            <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We also need to <strong>adjust the results output template file</strong> (<a class="reference download internal" href="_downloads/plotly.html"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>):</p>
+<div class="highlight-html"><div class="highlight"><pre><span class="c">&lt;!-- plotly.html --&gt;</span>
+{% extends &quot;layout.html&quot; %}
+
+{% block body %}
+
+
+    <span class="nt">&lt;h1&gt;</span>Results for Symbol {{ symbol }}<span class="nt">&lt;/h1&gt;</span>
+
+    <span class="nt">&lt;iframe</span>
+
+    <span class="na">width=</span><span class="s">100%</span> <span class="na">height=</span><span class="s">&quot;650&quot;</span> <span class="na">frameborder=</span><span class="s">&quot;0&quot;</span> <span class="na">seamless=</span><span class="s">&quot;seamless&quot;</span> <span class="na">scrolling=</span><span class="s">&quot;no&quot;</span>
+
+    <span class="na">src=</span><span class="s">&quot;{{ plot }}.embed?width=100%&amp;height=650&quot;</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;/iframe&gt;</span>
+
+    <span class="nt">&lt;br&gt;&lt;br&gt;</span>
+
+    {{ table | safe }}
+
+
+{% endblock %}
+</pre></div>
+</div>
+<p>Also, the <strong>WSGI wrapping</strong> is to be adjusted slightly (<a class="reference download internal" href="_downloads/run_stock_int.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">link</span></tt></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># WSGI Wrapper for the</span>
+<span class="c"># Historical Stock Data App (Interactive)</span>
+<span class="c">#</span>
+<span class="c"># run_stock_int.py</span>
+<span class="c"># </span>
+<span class="kn">from</span> <span class="nn">tornado.wsgi</span> <span class="kn">import</span> <span class="n">WSGIContainer</span>
+<span class="kn">from</span> <span class="nn">tornado.httpserver</span> <span class="kn">import</span> <span class="n">HTTPServer</span>
+<span class="kn">from</span> <span class="nn">tornado.ioloop</span> <span class="kn">import</span> <span class="n">IOLoop</span>
+<span class="kn">from</span> <span class="nn">stock_interactive</span> <span class="kn">import</span> <span class="n">app</span>
+
+<span class="n">http_server</span> <span class="o">=</span> <span class="n">HTTPServer</span><span class="p">(</span><span class="n">WSGIContainer</span><span class="p">(</span><span class="n">app</span><span class="p">))</span>
+<span class="n">http_server</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">8888</span><span class="p">)</span>  <span class="c"># serving on port 8888</span>
+<span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Everything else remains the same. Your <strong>folder structure</strong> should now look like follows:</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [3]: </span><span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="s">&#39;./source/stock_int&#39;</span><span class="p">):</span>
+<span class="gp">   ...: </span>    <span class="k">print</span> <span class="n">path</span>
+<span class="gp">   ...: </span>    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+<span class="gp">   ...: </span>        <span class="k">print</span> <span class="n">f</span>
+<span class="gp">   ...: </span>
+<span class="go">./source/stock_int</span>
+<span class="go">forms.py</span>
+<span class="go">forms.pyc</span>
+<span class="go">run_stock_int.py</span>
+<span class="go">stock_interactive.py</span>
+<span class="go">./source/stock_int/static</span>
+<span class="go">style.css</span>
+<span class="go">./source/stock_int/templates</span>
+<span class="go">layout.html</span>
+<span class="go">plotly.html</span>
+<span class="go">selection.html</span>
+</pre></div>
+</div>
+<p>If everything runs as desired, the <strong>results page</strong> of the interactive version should look like below (here the app runs locally):</p>
+<a class="reference internal image-reference" href="_images/stock_app_plotly.png"><img alt="_images/stock_app_plotly.png" src="_images/stock_app_plotly.png" style="width: 856.02px; height: 529.98px;" /></a>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/tpq_logo_more_left_cut.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Web Apps with Raspberry Pi</a><ul>
+<li><a class="reference internal" href="#a-first-example">A First Example</a></li>
+<li><a class="reference internal" href="#historical-stock-price-data">Historical Stock Price Data</a></li>
+<li><a class="reference internal" href="#generating-interactive-d3-plots">Generating Interactive D3 Plots</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="02_data_analytics.html"
+                        title="previous chapter">Raspberry Pi for Data Analytics</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="04_git_server.html"
+                        title="next chapter">Git Server with Raspberry Pi</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/03_web_apps.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="04_git_server.html" title="Git Server with Raspberry Pi"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="02_data_analytics.html" title="Raspberry Pi for Data Analytics"
+             >previous</a> |</li>
+        <li><a href="index.html">Serious RPi</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Yves J. Hilpisch.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

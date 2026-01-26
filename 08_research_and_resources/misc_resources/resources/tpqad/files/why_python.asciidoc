@@ -1,0 +1,230 @@
+
+[[why_python_for_finance]]
+== Why Python for Finance
+
+[role="align_me_right"]
+[quote, Hugo Banziger]
+____
+Banks are essentially technology firms.
+____
+
+
+
+=== Finance and Python Syntax
+
+Most people who make their first steps with Python in a finance context may attack an algorithmic problem. This is similar to a scientist who, for example, wants to solve a differential equation, wants to evaluate an integral or simply wants to visualize some data. In general, at this stage, there is only little thought spent on topics like a formal development process, testing, documentation or deployment. However, this especially seems to be the stage when people fall in love with Python. A major reason for this might be that Python syntax is generally quite close to the mathematical syntax used to describe scientific problems or financial algorithms.
+
+This aspect can be illustrated by a financial algorithm, namely the valuation of a European call option by Monte Carlo simulation. The example considers a Black-Scholes-Merton (BSM) setup in which the option's underlying risk factor follows a geometric Brownian motion.
+
+Assume the following numerical _parameter values_ for the valuation:
+
+* initial stock index level latexmath:[S_0 = 100]
+* strike price of the European call option latexmath:[K = 105]
+* time-to-maturity latexmath:[T = 1] year
+* constant, riskless short rate latexmath:[r = 0.05]
+* constant volatility latexmath:[\sigma = 0.2]
+
+
+In the BSM model, the index level at maturity is a random variable, given by <<bsm_rv>> with latexmath:[z] being a standard normally distributed random variable.
+
+[[bsm_rv]]
+[latexmath]
+.Black-Scholes-Merton (1973) index level at maturity
+++++
+\begin{equation}
+S_T = S_0 \exp \left( \left( r - \frac{1}{2} \sigma^2 \right) T + \sigma \sqrt{T} z \right)
+\end{equation}
+++++
+
+The following is an _algorithmic description_ of the Monte Carlo valuation procedure:
+
+. draw latexmath:[I] pseudo-random numbers latexmath:[z(i), i \in \{1, 2, ..., I \}], from the standard normal distribution
+. calculate all resulting index levels at maturity latexmath:[S_T(i)] for given latexmath:[z(i)] and <<bsm_rv>>
+. calculate all inner values of the option at maturity as latexmath:[h_T(i)= \max \left(S_T(i) - K, 0 \right)]
+. estimate the option present value via the Monte Carlo estimator as given in <<bsm_mcs_est>>
+
+[[bsm_mcs_est]]
+[latexmath]
+.Monte Carlo estimator for European option
+++++
+\begin{equation}
+C_0 \approx e^{-rT} \frac{1}{I} \sum_I h_T(i)
+\end{equation}
+++++
+
+This problem and algorithm is now to be translated into Python code. The code below implements the required steps.
+
+[source,python]
+----
+include::code/why_python.txt[tags=MONTE_CARLO]
+----
+<1> The model and simulation parameter values are defined.
+<2> `NumPy` is used here as the main package.
+<3> The seed value for the random number generator is fixed.
+<4> Standard normally distributed random numbers are drawn.
+<5> End-of-period values are simulated.
+<6> The option payoffs at maturity are calculated.
+<7> The Monte Carlo estimator is evaluated.
+<8> The resulting value estimate is printed.
+
+Three aspects are worth highlighting:
+
+syntax::
+    the Python syntax is indeed quite close to the mathematical syntax, e.g., when it comes to the parameter value assignments
+translation::
+    every mathematical and/or algorithmic statement can generally be translated into a _single_ line of Python code
+vectorization::
+    one of the strengths of `NumPy` is the compact, vectorized syntax, e.g., allowing for 100,000 calculations within a single line of code
+
+This code can be used in an interactive environment like `IPython` or `Jupyter Notebook`. However, code that is meant to be reused regularly typically gets organized in so-called _modules_ (or _scripts_), which are single Python files (technically text files) with the suffix `.py`. Such a module could in this case look like <<bsm_mcs_euro>> and could be saved as a file named `bsm_mcs_euro.py`.
+
+
+[[bsm_mcs_euro]]
+.Monte Carlo valuation of European call option
+====
+[source, python]
+----
+include::code/bsm_mcs_euro.py[]
+----
+====
+
+The algorithmic example in this subsection illustrates that Python, with its very syntax, is well suited to complement the classic duo of scientific languages, English and mathematics. It seems that adding `Python` to the set of scientific languages makes it more well rounded. One then has:
+
+* *English* for _writing, talking_ about scientific and financial problems, etc.
+* *Mathematics* for _concisely, exactly describing and modeling_ abstract aspects, algorithms, complex quantities, etc.
+* *Python* for _technically modeling and implementing_ abstract aspects, algorithms, complex quantities, etc.
+
+.Mathematics and Python Syntax
+[TIP]
+====
+There is hardly any programming language that comes as close to mathematical syntax as Python. Numerical algorithms are therefore in general straightforward to translate from the mathematical representation into the `Pythonic` implementation. This makes prototyping, development and code maintenance in finance quite efficient with Python.
+====
+
+In some areas, it is common practice to use _pseudo-code_ and therewith to introduce a fourth language family member. The role of pseudo-code is to represent, for example, financial algorithms in a more technical fashion that is both still close to the mathematical representation and already quite close to the technical implementation. In addition to the algorithm itself, pseudo-code takes into account how computers work in principle.
+
+This practice generally has its cause in the fact that with most (compiled) programming languages the technical implementation is quite "`far away`" from its formal, mathematical representation. The majority of programming languages make it necessary to include so many elements that are only technically required that it is hard to see the equivalence between the mathematics and the code.
+
+Nowadays, Python is often used in a _pseudo-code way_ since its syntax is almost analogous to the mathematics and since the technical "`overhead`" is kept to a minimum. This is accomplished by a number of high-level concepts embodied in the language that not only have their advantages but also come in general with risks and/or other costs. However, it is safe to say that with Python you can, whenever the need arises, follow the same strict implementation and coding practices that other languages might require from the outset. In that sense, Python can provide the best of both worlds: _high-level abstraction_ and _rigorous implementation_.
+
+
+=== Efficiency and Productivity Through Python
+
+At a high level, benefits from using Python can be measured in three dimensions:
+
+efficiency::
+    how can Python help in getting results faster, in saving costs, and in saving time?
+productivity::
+    how can Python help in getting more done with the same resources (people, assets, etc.)?
+quality::
+    what does Python allow to do that alternative technologies do not allow for?
+
+A discussion of these aspects can by nature not be exhaustive. However, it can highlight some arguments as a starting point.
+
+==== Shorter Time-to-Results
+
+A field where the efficiency of Python becomes quite obvious is interactive data analytics. This is a field that benefits tremendously from such powerful tools as `IPython`, `Jupyter Notebook` and packages like `pandas`.
+
+Consider a finance student, writing her master's thesis and interested in S&P 500 index values. She wants to analyze historical index levels for, say, a few years to see how the volatility of the index has fluctuated over time. She wants to find evidence that volatility, in contrast to some typical model assumptions, fluctuates over time and is far from being constant. The results should also be visualized. She mainly has to do the following:
+
+* retrieve index level data from the web
+* calculate the annualized rolling standard deviation of the log returns (volatility)
+* plot the index level data and the volatility results
+
+These tasks are complex enough that not too long ago one would have considered them to be something for professional financial analysts only. Today, even the finance student can easily cope with such problems. The code below shows how exactly this works -- without worrying about syntax details at this stage (everything is explained in detail in subsequent chapters).
+
+[source,python]
+----
+include::code/why_python.txt[tags=SPX_EXAMPLE]
+----
+<1> This imports `NumPy` and `pandas`.
+<2> This imports `matplotlib` and configures the plotting style and approach for `Jupyter`.
+<3> `pd.read_csv()` allows the retrieval of remotely or locally stored data sets in `CSV` form.
+<4> A sub-set of the data is picked and `NaN` ("not a number") values eliminated.
+<5> This shows some meta-information about the data set.
+<6> The log returns are calculated in vectorized fashion ("`no looping`" on the Python level).
+<7> The rolling, annualized volatility is derived.
+<8> This finally plots the two time series.
+
+<<spx_vola>> shows the graphical result of this brief interactive session. It can be considered almost amazing that a few lines of code suffice to implement three rather complex tasks typically encountered in financial analytics: data gathering, complex and repeated mathematical calculations as well as visualization of the results. The example illustrates that `pandas` makes working with whole time series almost as simple as doing mathematical operations on floating-point numbers.
+
+[[spx_vola]]
+.S&P 500 closing values and annualized volatility
+image::images/spx_volatility.png[]
+
+Translated to a professional finance context, the example implies that financial analysts can -- when applying the right Python tools and packages that provide high-level abstractions -- focus on their very domain and not on the technical intrinsicalities. Analysts can react faster, providing valuable insights almost in real-time and making sure they are one step ahead of the competition. This example of _increased efficiency_ can easily translate into measurable bottom-line effects.
+
+==== Ensuring High Performance
+
+In general, it is accepted that Python has a rather concise syntax and that it is relatively efficient to code with. However, due to the very nature of Python being an interpreted language, the _prejudice_ persists that Python often is too slow for compute-intensive tasks in finance. Indeed, depending on the specific implementation approach, Python can be really slow. But it _does not have to be slow_ -- it can be highly performing in almost any application area. In principle, one can distinguish at least three different strategies for better performance:
+
+idioms and paradigms::
+    in general, many different ways can lead to the same result in Python, but sometimes with rather different performance characteristics; "`simply`" choosing the right way (e.g., a specific implementation approach, such as the judicious use of data structures, avoiding loops through vectorization or the use of a specific package such as `pandas`) can improve results significantly
+compiling::
+    nowadays, there are several performance packages available that provide compiled versions of important functions or that compile Python code statically or dynamically (at runtime or call time) to machine code, which can make such functions orders of magnitude faster than pure Python code; popular ones are `Cython` and `Numba`
+parallelization::
+    many computational tasks, in particular in finance, can significantly benefit from parallel execution; this is nothing special to Python but something that can easily be accomplished with it
+
+[TIP]
+.Performance Computing with Python
+====
+Python per se is not a high-performance computing technology. However, Python has developed into an ideal platform to access current performance technologies. In that sense, Python has become something like a _glue language_ for performance computing technologies.
+====
+
+Later chapters illustrate all three strategies in detail. This sub-section sticks to a simple, but still realistic, example that touches upon all three strategies. A quite common task in financial analytics is to evaluate complex mathematical expressions on large arrays of numbers. To this end, Python itself provides everything needed.
+
+[source,python]
+----
+include::code/why_python.txt[tags=PARADIGM_1]
+----
+
+The Python interpreter needs about 1.4 seconds in this case to evaluate the function `f` 2,500,000 times. The same task can be implemented using `NumPy`, which provides optimized (i.e., _pre-compiled_), functions to handle such array-based operations.
+
+[source,python]
+----
+include::code/why_python.txt[tags=PARADIGM_2]
+----
+
+Using `NumPy` considerably reduces the execution time to about 80 milliseconds. However, there is even a package specifically dedicated to this kind of task. It is called `numexpr`, for "`numerical expressions." It _compiles_ the expression to improve upon the performance of the general `NumPy` functionality by, for example, avoiding in-memory copies of `ndarray` objects along the way.
+
+[source,python]
+----
+include::code/why_python.txt[tags=PARADIGM_3]
+----
+
+Using this more specialized approach further reduces execution time to about 40 milliseconds. However, `numexpr` also has built-in capabilities to parallelize the execution of the respective operation. This allows us to use multiple threads of a CPU.
+
+[source,python]
+----
+include::code/why_python.txt[tags=PARADIGM_4]
+----
+
+Parallelization brings execution time further down to below 15 milliseconds in this case, with four threads utilized. Overall, this is a performance improvement of more than 90 times. Note, in particular, that this kind of improvement is possible without altering the basic problem/algorithm and without knowing any detail about compiling or parallelization approaches. The capabilities are accessible from a high level even by non-experts. However, one has to be aware, of course, of which capabilities and options exist.
+
+The example shows that Python provides a number of options to make more out of existing resources -- i.e., to _increase productivity_. With the parallel approach, three times as many calculations can be accomplished in the same amount of time as compared to the sequential approach -- in this case simply by telling Python to use multiple available CPU threads instead of just one.
+
+
+=== Conclusions
+
+Python as a language -- and even more so as an ecosystem -- is an ideal technological framework for the financial industry as whole and the individual working in finance alike. It is characterized by a number of benefits, like an elegant syntax, efficient development approaches and usability for prototyping _as well as_ production. With its huge amount of available packages, libraries and tools, Python seems to have answers to most questions raised by recent developments in the financial industry in terms of analytics, data volumes and frequency, compliance and regulation, as well as technology itself. It has the potential to provide a _single, powerful, consistent framework_ with which to streamline end-to-end development and production efforts even across larger financial institutions.
+
+In addition, Python has become the programming language of choice for _artificial intelligence_ in general and _machine and deep learning_ in particular. Python is therefore both the right language for _data-driven finance_ as well as for _AI-first finance_, two recent trends that are about to reshape finance and the financial industry in fundamental ways.
+
+
+=== Further Resources
+
+The following books cover several aspects only touched upon in this chapter in more detail (e.g. Python tools, derivatives analytics, machine learning in general, machine learning in finance):
+
+* Hilpisch, Yves (2015): _Derivatives Analytics with Python_. Wiley Finance, Chichester, England. http://dawp.tpq.io[].
+* López de Prado, Marcos (2018): _Advances in Financial Machine Learning_. John Wiley & Sons, Hoboken.
+* VanderPlas, Jake (2016): _Python Data Science Handbook_. O'Reilly, Beijing et al.
+
+When it comes to algorithmic trading, the author's company offers a range of online training programs that focus on Python and other tools and techniques required in this rapidly growing field:
+
+* http://pyalgo.tpq.io[] -- online training course
+* http://certificate.tpq.io[] -- online training program
+
+Sources referenced in this chapter are, among others, the following:
+
+* Ding, Cubillas (2010): "`Optimizing the OTC Pricing and Valuation Infrastructure.`" _Celent study_.
+* Lewis, Michael (2014): _Flash Boys_. W. W. Norton & Company, New York.
+* Patterson, Scott (2010): _The Quants._ Crown Business, New York.

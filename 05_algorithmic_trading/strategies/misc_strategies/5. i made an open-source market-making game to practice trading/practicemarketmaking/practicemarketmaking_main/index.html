@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1394867867914611"
+     crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-1394867867914611">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roman's Market-Making Game</title>
+    <link rel="icon" type="image/png" href="qg_icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e2f;
+            color: #e1e1e6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            width: 100%;
+            background-color: #2b2b3c;
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: sticky;
+            top: 0;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            color: #76c7c0;
+            margin: 0;
+        }
+
+        #chart-container {
+            width: 71%;
+            height: 300px;
+            background-color: #26263d;
+            border: 1px solid #3e3e5c;
+            border-radius: 8px;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .quote-board, .price-table {
+            width: 90%;
+            max-width: 1200px;
+            background-color: #26263d;
+            border: 1px solid #3e3e5c;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .quote-board table, .price-table table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        .quote-board th, .quote-board td, .price-table th, .price-table td {
+            padding: 5px;
+            border: 1px solid #3e3e5c;
+        }
+
+        .quote-board th, .price-table th {
+            background-color: #3e3e5c;
+            color: #e1e1e6;
+        }
+
+        .quote-board td, .price-table td {
+            background-color: #1e1e2f;
+            color: #e1e1e6;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: #3e3e5c;
+            border-radius: 5px;
+            margin: 10px 0;
+            height: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #76c7c0;
+            width: 100%;
+            transition: width 0.3s;
+        }
+
+        .realization {
+            text-align: center;
+            color: #76c7c0;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .roles {
+            display: flex;
+            gap: 10px;
+        }
+
+        .roles button {
+            background-color: #3e3e5c;
+            color: #e1e1e6;
+            border: none;
+            padding: 5px 15px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .roles button:hover {
+            background-color: #76c7c0;
+            color: #1e1e2f;
+        }
+
+        .roles button.active {
+            background-color: #76c7c0;
+            color: #1e1e2f;
+        }
+
+        .game-container {
+            width: 90%;
+            max-width: 1200px;
+            background-color: #26263d;
+            border: 1px solid #3e3e5c;
+            border-radius: 8px;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .market {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+
+        .market button {
+            background-color: #3e3e5c;
+            color: #e1e1e6;
+            border: none;
+            padding: 5px 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        .market button.buy {
+            background-color: #28a745;
+        }
+
+        .market button.sell {
+            background-color: #dc3545;
+        }
+
+        .market button:hover {
+            background-color: #76c7c0;
+            color: #1e1e2f;
+        }
+
+        .market .inputs {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .market .inputs input {
+            padding: 5px;
+            border: 1px solid #3e3e5c;
+            border-radius: 5px;
+            background-color: #1e1e2f;
+            color: #e1e1e6;
+            flex: 1;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .pl-display {
+            margin-top: 5px;
+            text-align: center;
+            color: #76c7c0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Roman's Market-Making Game</h1>
+    </header>
+    
+    <div id="social-bar">
+    <a href="https://quantguild.medium.com/" target="_blank" title="Medium">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+            <path d="M2.05 6.64v10.72l6.56-5.36-6.56-5.36zm19.9-.07L18.35 8.5v7l3.59 1.94v-10.87zm-9.45 5.43 7.3 6.46H9.86l-7.36-6.45 7.35-6.45h7.61zm-1.85 5.53 3.53 2.02 3.53-2.02H9.66z"/>
+        </svg>
+    </a>
+    <a href="https://www.linkedin.com/in/rmp99/" target="_blank" title="LinkedIn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+            <path d="M22.23 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.46c.98 0 1.77-.78 1.77-1.73V1.73C24 .77 23.21 0 22.23 0zM7.12 20.3H3.56V9.11h3.56v11.19zM5.34 7.51C4.09 7.51 3 6.41 3 5.15c0-1.26 1.1-2.36 2.34-2.36 1.26 0 2.36 1.1 2.36 2.36 0 1.26-1.1 2.36-2.36 2.36zm14.96 12.79h-3.56v-5.41c0-1.29-.03-2.95-1.81-2.95-1.81 0-2.09 1.42-2.09 2.89v5.47h-3.56V9.11h3.41v1.52h.05c.47-.89 1.61-1.81 3.32-1.81 3.55 0 4.21 2.34 4.21 5.39v6.09z"/>
+        </svg>
+    </a>
+    <a href="https://www.youtube.com/@QuantGuild" target="_blank" title="YouTube">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+            <path d="M23.49 6.8a2.88 2.88 0 0 0-2-2C19.77 4.34 12 4.34 12 4.34s-7.77 0-9.49.46a2.88 2.88 0 0 0-2 2A30.17 30.17 0 0 0 0 12a30.17 30.17 0 0 0 .51 5.2 2.88 2.88 0 0 0 2 2c1.72.46 9.49.46 9.49.46s7.77 0 9.49-.46a2.88 2.88 0 0 0 2-2A30.17 30.17 0 0 0 24 12a30.17 30.17 0 0 0-.51-5.2zM9.75 15.44V8.56l6.19 3.44-6.19 3.44z"/>
+        </svg>
+    </a>
+    <a href="https://github.com/romanmichaelpaolucci" target="_blank" title="GitHub">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+            <path d="M12 .3a11.7 11.7 0 0 0-3.7 22.81c.59.11.81-.26.81-.57v-2c-3.31.72-4-1.59-4-1.59-.54-1.41-1.31-1.79-1.31-1.79-1.07-.73.08-.71.08-.71 1.19.08 1.81 1.22 1.81 1.22 1.06 1.81 2.79 1.29 3.47.99.11-.78.41-1.29.75-1.59-2.65-.3-5.44-1.33-5.44-5.91 0-1.31.47-2.38 1.22-3.22-.11-.3-.53-1.52.12-3.18 0 0 1-.33 3.3 1.21a11.49 11.49 0 0 1 6 0c2.3-1.54 3.3-1.21 3.3-1.21.65 1.66.23 2.88.12 3.18.76.84 1.22 1.91 1.22 3.22 0 4.59-2.8 5.6-5.47 5.89.42.37.8 1.09.8 2.21v3.28c0 .31.21.68.82.57A11.7 11.7 0 0 0 12 .3z"/>
+        </svg>
+    </a>
+</div>
+    
+    <style>
+    
+    #social-bar {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin: 10px 0;
+        background-color: #2b2b3c;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    #social-bar a {
+        color: #e1e1e6;
+        transition: color 0.3s, transform 0.3s;
+    }
+
+    #social-bar a:hover {
+        color: #76c7c0;
+        transform: scale(1.2);
+    }
+
+    #social-bar svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    </style>
+
+
+    <div class="content">
+        <div id="chart-container">
+            <canvas id="pl-chart"></canvas>
+        </div>
+
+        <div class="price-table hidden" id="price-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bid</th>
+                        <th>Offer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="bid-price">-</td>
+                        <td id="offer-price">-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="quote-board">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Dice</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Dice 1</td>
+                        <td id="dice-1-value">H</td>
+                    </tr>
+                    <tr>
+                        <td>Dice 2</td>
+                        <td id="dice-2-value">H</td>
+                    </tr>
+                    <tr>
+                        <td>Dice 3</td>
+                        <td id="dice-3-value">H</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div id="realization" class="realization hidden">Realization: </div>
+            <div id="pl-display" class="pl-display hidden">P/L: </div>
+        </div>
+
+        <div class="roles">
+            <button id="market-maker-btn">Market Maker</button>
+            <button id="market-participant-btn">Market Participant</button>
+        </div>
+
+        <div class="game-container" id="game-container">
+            <div class="market" id="market-maker-controls" class="hidden">
+                <div class="inputs">
+                    <input type="number" id="midpoint" placeholder="Midpoint Price">
+                    <input type="number" id="spread" placeholder="Spread">
+                </div>
+
+                <button id="submit-market">Submit Market</button>
+            </div>
+
+            <div class="market" id="market-participant-controls" class="hidden">
+                <div class="inputs">
+                    <input type="number" id="qty" placeholder="Quantity">
+                </div>
+                <button id="buy-btn" class="buy">Buy</button>
+                <button id="sell-btn" class="sell">Sell</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            const marketMakerBtn = document.getElementById("market-maker-btn");
+            const marketParticipantBtn = document.getElementById("market-participant-btn");
+            const gameContainer = document.getElementById("game-container");
+            const marketMakerControls = document.getElementById("market-maker-controls");
+            const marketParticipantControls = document.getElementById("market-participant-controls");
+            const realization = document.getElementById("realization");
+            const progressBar = document.getElementById("progress-bar");
+            const priceTable = document.getElementById("price-table");
+            const bidPrice = document.getElementById("bid-price");
+            const offerPrice = document.getElementById("offer-price");
+            const qtyInput = document.getElementById("qty");
+            const buyBtn = document.getElementById("buy-btn");
+            const sellBtn = document.getElementById("sell-btn");
+            const plDisplay = document.getElementById("pl-display");
+
+            let action = null;
+            let lockedPrice = null;
+            let lockedQty = null;
+
+            marketMakerBtn.addEventListener("click", () => {
+                gameContainer.style.display = "flex";
+                marketMakerControls.classList.remove("hidden");
+                marketParticipantControls.classList.add("hidden");
+                priceTable.classList.add("hidden");
+                marketMakerBtn.classList.add("active");
+                marketParticipantBtn.classList.remove("active");
+            });
+
+            marketParticipantBtn.addEventListener("click", () => {
+                gameContainer.style.display = "flex";
+                marketParticipantControls.classList.remove("hidden");
+                marketMakerControls.classList.add("hidden");
+                priceTable.classList.remove("hidden");
+                updateBidOffer();
+                marketParticipantBtn.classList.add("active");
+                marketMakerBtn.classList.remove("active");
+            });
+
+            buyBtn.addEventListener("click", () => {
+                action = "buy";
+                lockedPrice = parseInt(offerPrice.textContent);
+                lockedQty = parseInt(qtyInput.value) || 0;
+                buyBtn.disabled = true;
+                sellBtn.disabled = true;
+
+                const purchaseInfo = document.createElement("div");
+                purchaseInfo.id = "purchase-info";
+                purchaseInfo.style.textAlign = "center";
+                purchaseInfo.style.color = "#76c7c0";
+                purchaseInfo.style.fontWeight = "bold";
+                purchaseInfo.textContent = `Purchased ${lockedQty} @ Offer: ${lockedPrice}`;
+                priceTable.parentNode.insertBefore(purchaseInfo, priceTable);
+            });
+
+            sellBtn.addEventListener("click", () => {
+                action = "sell";
+                lockedPrice = parseInt(bidPrice.textContent);
+                lockedQty = parseInt(qtyInput.value) || 0;
+                buyBtn.disabled = true;
+                sellBtn.disabled = true;
+
+                const saleInfo = document.createElement("div");
+                saleInfo.id = "purchase-info";
+                saleInfo.style.textAlign = "center";
+                saleInfo.style.color = "#dc3545";
+                saleInfo.style.fontWeight = "bold";
+                saleInfo.textContent = `Sold ${lockedQty} @ Bid: ${lockedPrice}`;
+                priceTable.parentNode.insertBefore(saleInfo, priceTable);
+            });
+            
+            // Toggle visibility of the market-result based on the selected role
+            function toggleMarketResultVisibility() {
+                const resultDiv = document.getElementById("market-result");
+                if (marketMakerBtn.classList.contains("active")) {
+                    if (resultDiv) {
+                        resultDiv.style.display = "block"; // Show for Market Maker
+                    }
+                } else if (marketParticipantBtn.classList.contains("active")) {
+                    if (resultDiv) {
+                        resultDiv.style.display = "none"; // Hide for Market Participant
+                    }
+                }
+            }
+
+            // Add toggle logic to role buttons
+            marketMakerBtn.addEventListener("click", () => {
+                gameContainer.style.display = "flex";
+                marketMakerControls.classList.remove("hidden");
+                marketParticipantControls.classList.add("hidden");
+                priceTable.classList.add("hidden");
+                marketMakerBtn.classList.add("active");
+                marketParticipantBtn.classList.remove("active");
+
+                toggleMarketResultVisibility(); // Adjust market-result visibility
+            });
+
+            marketParticipantBtn.addEventListener("click", () => {
+                gameContainer.style.display = "flex";
+                marketParticipantControls.classList.remove("hidden");
+                marketMakerControls.classList.add("hidden");
+                priceTable.classList.remove("hidden");
+                updateBidOffer();
+                marketParticipantBtn.classList.add("active");
+                marketMakerBtn.classList.remove("active");
+
+                toggleMarketResultVisibility(); // Adjust market-result visibility
+            });
+
+
+            function resetPurchaseState() {
+                buyBtn.disabled = false;
+                sellBtn.disabled = false;
+                lockedPrice = null;
+                lockedQty = null;
+                action = null;
+
+                // Remove purchase info if it exists
+                const purchaseInfo = document.getElementById("purchase-info");
+                if (purchaseInfo) {
+                    purchaseInfo.remove();
+                }
+            }
+
+            const ctx = document.getElementById("pl-chart").getContext("2d");
+            let cumulativePL = 0;
+            const plData = {
+                labels: [],
+                datasets: [{
+                    label: "Cumulative P/L",
+                    data: [],
+                    borderColor: "#76c7c0",
+                    backgroundColor: "rgba(118, 199, 192, 0.2)",
+                    borderWidth: 2,
+                    tension: 0.1,
+                }]
+            };
+
+            // Initialize the chart
+            const plChart = new Chart(ctx, {
+                type: "line",
+                data: plData,
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Trades",
+                                color: "#e1e1e6",
+                            },
+                            ticks: {
+                                color: "#e1e1e6",
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: "Cumulative P/L",
+                                color: "#e1e1e6",
+                            },
+                            ticks: {
+                                color: "#e1e1e6",
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: "#e1e1e6",
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update chart with new P/L
+            function updatePLChart(pl) {
+                cumulativePL += pl;
+                const tradeCount = plData.labels.length + 1;
+                plData.labels.push(`Trade ${tradeCount}`);
+                plData.datasets[0].data.push(cumulativePL);
+                plChart.update();
+            }
+
+            // Integrate with the realization logic
+            let storedDiceValues = [];
+
+            function updateDiceValues() {
+                const dice1 = document.getElementById("dice-1-value");
+                const dice2 = document.getElementById("dice-2-value");
+                const dice3 = document.getElementById("dice-3-value");
+
+                // Generate initial random states for all dice
+                let diceValues = [
+                    Math.random() > 0.5 ? Math.ceil(Math.random() * 6) : "H",
+                    Math.random() > 0.5 ? Math.ceil(Math.random() * 6) : "H",
+                    Math.random() > 0.5 ? Math.ceil(Math.random() * 6) : "H",
+                ];
+
+                // Ensure at least one dice is hidden
+                if (!diceValues.includes("H")) {
+                    const randomIndex = Math.floor(Math.random() * 3);
+                    diceValues[randomIndex] = "H";
+                }
+
+                // Update the displayed dice values
+                [dice1.textContent, dice2.textContent, dice3.textContent] = diceValues;
+
+                // Store the current dice state for realization
+                storedDiceValues = diceValues;
+            }
+
+            let storedBid = null;
+            let storedOffer = null;
+
+            function updateBidOffer() {
+                const bid = Math.max(3, Math.min(18, Math.ceil(Math.random() * 16 + 2))); // Ensures bid is between 3 and 18
+                const offer = Math.min(18, bid + 2 + Math.floor(Math.random() * 2)); // Spread of 2-3, max offer 18
+
+                // Update displayed values
+                bidPrice.textContent = bid;
+                offerPrice.textContent = offer;
+
+                // Store current bid-offer values for the round
+                storedBid = bid;
+                storedOffer = offer;
+            }
+
+            
+        function updateRealization() {
+    const realizationValue = storedDiceValues.reduce((acc, value) => {
+        if (value === "H") return acc + Math.ceil(Math.random() * 6); // Hidden dice generate random values
+        return acc + parseFloat(value); // Use the visible dice value
+    }, 0);
+
+    realization.textContent = `Realization: ${realizationValue}`;
+    realization.classList.remove("hidden");
+
+    const isMarketMaker = marketMakerBtn.classList.contains("active");
+    const isMarketParticipant = marketParticipantBtn.classList.contains("active");
+
+    if (isMarketMaker && window.marketResult) {
+        const { buyers, sellers, bid, offer, spread } = window.marketResult;
+
+        // Calculate net position and quantities
+        const netQty = sellers - buyers; // Positive: net long, Negative: net short
+        const matchedQty = Math.min(buyers, sellers); // Matched trades for spread collection
+
+        // Calculate P/L components
+        const spreadCollected = spread * matchedQty; // Spread revenue from matched trades
+        const realizedPL = netQty * (realizationValue - (netQty > 0 ? bid : offer)); // Realized P/L from imbalance
+
+        // Total P/L
+        const totalPL = spreadCollected + realizedPL;
+
+        // Display P/L
+        plDisplay.textContent = `P/L: ${totalPL.toFixed(2)} (Spread Collected: ${spreadCollected.toFixed(2)}, Realized P/L: ${realizedPL.toFixed(2)})`;
+        plDisplay.classList.remove("hidden");
+
+        // Update the live chart
+        updatePLChart(totalPL);
+
+        // Reset market result
+        window.marketResult = null;
+    }
+
+    if (isMarketParticipant && action && lockedPrice !== null && lockedQty !== null) {
+        const pl = action === "buy"
+            ? (realizationValue - lockedPrice) * lockedQty // Bought at offer
+            : (lockedPrice - realizationValue) * lockedQty; // Sold at bid
+
+        plDisplay.textContent = `P/L: ${pl.toFixed(2)}`;
+        plDisplay.classList.remove("hidden");
+
+        // Update the live chart
+        updatePLChart(pl);
+
+        // Reset participant-specific data
+        resetPurchaseState();
+    }
+}
+
+
+
+
+            function resetProgressBar() {
+                progressBar.style.width = "100%";
+                let progress = 100;
+
+                const interval = setInterval(() => {
+                    progress -= 6.67;
+                    progressBar.style.width = `${progress}%`;
+
+                    if (progress <= 0) {
+                        clearInterval(interval);
+
+                        // Compute realization and update
+                        updateRealization();
+
+                        // Update dice and bid-offer for the next round
+                        updateDiceValues();
+                        updateBidOffer();
+
+                        resetPurchaseState(); // Allow user to buy/sell again
+                        resetProgressBar(); // Restart the progress bar
+                    }
+                }, 1000);
+            }
+
+            // Initialize the game with random dice values, bid-offer values, and calculate initial realization
+            function initializeGame() {
+                // Set initial dice values
+                const dice1 = document.getElementById("dice-1-value");
+                const dice2 = document.getElementById("dice-2-value");
+                const dice3 = document.getElementById("dice-3-value");
+
+                const initialDiceValues = [
+                    Math.ceil(Math.random() * 6),
+                    Math.ceil(Math.random() * 6),
+                    Math.ceil(Math.random() * 6),
+                ];
+
+                // Display the dice values
+                [dice1.textContent, dice2.textContent, dice3.textContent] = ["H", "H", "H"];
+
+                // Store the initial dice values for realization
+                storedDiceValues = initialDiceValues;
+
+                // Set initial bid-offer values
+                updateBidOffer();
+            }
+            
+            let storedMidpoint = null;
+            let storedSpread = null;
+
+            function updateMarket(midpoint, spread) {
+                const bid = Math.max(3, midpoint - spread / 2); // Calculate bid
+                const offer = Math.min(18, midpoint + spread / 2); // Calculate offer
+
+                bidPrice.textContent = bid.toFixed(2);
+                offerPrice.textContent = offer.toFixed(2);
+
+                storedMidpoint = midpoint;
+                storedSpread = spread;
+            }
+
+            document.getElementById("submit-market").addEventListener("click", () => {
+                const midpoint = parseFloat(document.getElementById("midpoint").value) || 0;
+                const spread = parseFloat(document.getElementById("spread").value) || 0;
+
+                if (midpoint <= 0 || spread <= 0) {
+                    alert("Please provide valid midpoint and spread values.");
+                    return;
+                }
+
+                // Calculate bid and offer prices
+                const bid = Math.max(3, midpoint - spread / 2);
+                const offer = Math.min(18, midpoint + spread / 2);
+
+                // Update displayed bid and offer prices
+                bidPrice.textContent = bid.toFixed(2);
+                offerPrice.textContent = offer.toFixed(2);
+
+                storedMidpoint = midpoint;
+                storedSpread = spread;
+
+                // Calculate the expected value of dice (H = 3.5)
+                const expectedDiceValues = storedDiceValues.map(value => (value === "H" ? 3.5 : parseFloat(value)));
+                const expectedOutcome = expectedDiceValues.reduce((acc, value) => acc + value, 0);
+
+                // Calculate edge for buyers and sellers
+                const edgeBuy = Math.max(0, Math.min(1, (offer - expectedOutcome) / spread)); // Edge for buyers
+                const edgeSell = Math.max(0, Math.min(1, (expectedOutcome - bid) / spread));  // Edge for sellers
+
+                // Simulate quantity of buyers and sellers
+                const nBuy = 100; // Number of buyers
+                const nSell = 100; // Number of sellers
+                const buyers = Math.round(edgeSell * nBuy);
+                const sellers = Math.round(edgeBuy * nSell);
+
+                // Display the market result
+                const resultDiv = document.getElementById("market-result");
+                const resultText = `Purchased ${buyers} @ Offer: ${offer.toFixed(2)}, Sold ${sellers} @ Bid: ${bid.toFixed(2)}`;
+                if (!resultDiv) {
+                    const newResultDiv = document.createElement("div");
+                    newResultDiv.id = "market-result";
+                    newResultDiv.style.textAlign = "center";
+                    newResultDiv.style.color = "#76c7c0";
+                    newResultDiv.style.fontWeight = "bold";
+                    newResultDiv.textContent = resultText;
+                    priceTable.parentNode.insertBefore(newResultDiv, priceTable.nextSibling);
+                } else {
+                    resultDiv.textContent = resultText;
+                }
+
+                // Store results for P/L calculation after realization
+                window.marketResult = { buyers, sellers, bid, offer, spread };
+            });
+
+ 
+            initializeGame();
+            resetProgressBar();
+        });
+    </script>
+</body>
+</html>

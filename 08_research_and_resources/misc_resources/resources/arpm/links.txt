@@ -1,0 +1,35 @@
+ARPM PYTHON CONFERENCE
+======================
+
+http://github.com/yhilpisch/arpm
+
+http://arpm-1.pqp.io:4000
+
+http://arpm-2.pqp.io:4000
+
+* which group are you in (1 or 2)?
+* go to the respective web site
+* register (first, last, email)
+* receive email with link and password
+* login and follow the tutorial
+* you got 1GB or RAM
+* execute only one thing at a time
+* close notebooks when finished
+* THE SERVERS WILL BE SHUT DOWN TONIGHT
+
+PYTHON FOR FINANCE
+==================
+Book discount AUTHD (40/50% for print/online) on http://oreilly.com
+
+WIFI
+====
+guest133
+uciaduci
+
+Github Repo
+===========
+git clone http://github.com/yhilpisch/arpm
+cd arpm
+jupyter notebook
+
+

@@ -1,0 +1,12 @@
+hypothesis :- 
+
+The index BANKNIFTY is dependent on 9 constituent banks namely: -
+
+HDFC,SBI,ICICI,AXIS,KOTAK,FEDERAL,BANDHAN,INDUSIND,RBL
+the changes in 15 minutes time window of each bank is provided in the columns [B:J]
+
+column K contains BANK NIFTY change in the similar time frame
+column L is up_shifted BANK NIFTY by 1 which we try to predict 
+
+we are trying to extrapolate the movement of the banks to the next 15 minutes depending
+on the movement of the constituents banks movement

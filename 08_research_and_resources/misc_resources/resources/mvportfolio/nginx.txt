@@ -1,0 +1,39 @@
+===============
+HOSTING OF PAGE
+===============
+
+Copy all the files to the remote location via
+
+    rsync -avz _build/html root@$IP_ADDRESS:/usr/mvportfolio
+    
+Change the folder access rights on the server via
+
+    sudo chmod -R 755 /usr/mvportfolio/
+
+Install nginx on the remote Droplet via
+
+    sudo apt-get install nginx
+
+Rename the default nginx configuration file via
+
+    mv /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/default_copy
+
+Create a new one ...
+
+    vim /etc/nginx/sites-enabled/default
+
+... and paste this to the file
+
+    server {
+        listen $IP_ADDRESS:80;
+        server_name mvp.YOUR_DOMAIN.COM;
+
+        root /usr/mvportfolio/html/;
+        index index.html;
+    }
+
+The sub-domain needs to be configured on DigitalOcean ("Networking").
+
+Start the service via
+
+    service nginx start
