@@ -21,14 +21,14 @@ os.chdir('H:/')
 
 #etl
 def prepare(grand):
-    
+
     global D
     D={}
-    
+
     for i in grand['Year'].unique():
         D[i]=grand[grand['Year']==i]
         D[i].reset_index(inplace=True,drop=True)
-        
+
     return D
 
 
@@ -44,7 +44,7 @@ def get_ans(quadratic_coeff,linear_coeff,inequality_coeff,
     ans=cvxopt.solvers.qp(P=quadratic_coeff,q=linear_coeff,
                           G=inequality_coeff,h=inequality_value,
                           A=equality_coeff,b=equality_value)['x']
-    
+
     return list(ans)
 
 
@@ -53,7 +53,7 @@ def get_ans(quadratic_coeff,linear_coeff,inequality_coeff,
 
 #linear version
 def get_production(initial_guess):
-    
+
     #create profit
     price=D[currentyear]['price']
     linear_coeff=cvxopt.matrix(initial_guess-price)
@@ -77,12 +77,12 @@ def get_production(initial_guess):
 
     #use -1 to achieve larger than
     inequality_value=cvxopt.matrix(np.multiply(np.multiply(area_hist,eco_lifespan),-1))
-    
+
     #cvxopt
     estimate=get_ans(quadratic_coeff,linear_coeff,inequality_coeff,
            inequality_value,equality_coeff,equality_value)
-    
-    
+
+
     return estimate
 
 
@@ -91,7 +91,7 @@ def get_production(initial_guess):
 
 #quadratic version
 def get_production(initial_guess):
-    
+
     #get historical price
     price_hist=np.mat(D[currentyear-1]['price']).T
 
@@ -130,7 +130,7 @@ def get_production(initial_guess):
     #we use the same upperbound as perennial
     area_hist=D[currentyear-1]['area']
     eco_lifespan=D[currentyear]['eco lifespan'].tolist()
-    
+
     #smaller than
     upperblock=np.diag(D[currentyear]['yield_i'])
 
@@ -141,7 +141,7 @@ def get_production(initial_guess):
     #concat
     inequality_coeff=cvxopt.matrix(np.append(upperblock,lowerblock,axis=0))
     inequality_value=cvxopt.matrix((area_hist*upperbound).append(np.multiply(np.multiply(area_hist,eco_lifespan),-1)))
-    
+
     #cvxopt
     estimate=get_ans(quadratic_coeff,linear_coeff,inequality_coeff,
                inequality_value,equality_coeff,equality_value)
@@ -155,14 +155,14 @@ def get_production(initial_guess):
 
 #compute sse
 def costfunction(initial_guess):
-    
+
     #cvxopt
     estimate=get_production(initial_guess)
-    
+
     actual=D[currentyear]['production'].tolist()
-    
+
     cost=sum(np.power(np.divide(np.subtract(actual,estimate),actual),2))
-    
+
     return cost
 
 
@@ -176,24 +176,24 @@ def ls_estimate(initial_guess,diagnosis=True):
         #get sse before least square
         sse_original=costfunction(initial_guess)
         print(f'Initial SSE: {round(sse_original,2)}')
-    
+
     #least square
     least_square=scipy.optimize.minimize(costfunction,
                                          x0=(initial_guess),
                                          method='Nelder-Mead')
-    
+
     #if successful return result
     #else print the issue
-    if least_square.success:               
+    if least_square.success:
 
         if diagnosis:
             sse=costfunction(least_square.x)
             print(f'Result SSE: {round(sse,2)}')
 
         return least_square.x
-    
+
     else:
-        
+
         print(least_square)
 
         return [0]
@@ -204,31 +204,31 @@ def ls_estimate(initial_guess,diagnosis=True):
 
 #using random initial value to find the best starting point
 def find_init(num=10):
-    
+
     global currentyear
-    
+
     dic={}
-    
+
     #try random cost
     for _ in range(num):
 
         initial_guess=pd.Series([i*rd.random() for i in D[currentyear]['price']])
 
         ans=ls_estimate(initial_guess,diagnosis=False)
-        
+
         if len(ans)>1:
-            
+
             sample=[]
-            
+
             #get average sse of all years
             for currentyear in range(beginyear,endyear):
-                          
+
                 cost=costfunction(ans)
                 sample.append(cost)
-            
+
             dic[np.mean(sample)]=initial_guess
-        
-        
+
+
     return dict(sorted(dic.items()))
 
 
@@ -237,7 +237,7 @@ def find_init(num=10):
 
 #write init values into txt
 def write_file(dic):
-    
+
     f=open('init.txt','w')
 
     for i in dic:
@@ -246,7 +246,7 @@ def write_file(dic):
             f.write(j+'\n')
 
     f.close()
-    
+
     return
 
 
@@ -255,7 +255,7 @@ def write_file(dic):
 
 #use production to compute price
 def compute_price(production):
-    
+
     #get historical price
     price_hist=np.mat(D[currentyear-1]['price']).T
 
@@ -277,10 +277,10 @@ def compute_price(production):
 
     #create gamma
     gamma=np.mat(D[currentyear]['gamma']).T
-    
+
     #predict price
     price_est=price_hist+delta_pop*beta+delta_gdp*gamma-(alpha*production*-1)+(alpha*production_hist*-1)
-    
+
     return price_est.ravel().tolist()[0]
 
 
@@ -395,18 +395,18 @@ cost_optimal=[46.45261724887184,
 
 # #cost linear system
 # def cost_func(x):
-    
+
 #     temp=[None for _ in range(len(x))]
 #     for i in range(len(x)):
 #         temp[i]=ss[i]*tt-ss[i]*sum(x)-x[i]
-    
+
 #     return temp
 
 # #create margin weighted cost
 # dick={}
 
 # for currentyear in range(beginyear,endyear):
-    
+
 #     global ss
 #     ss=D[currentyear]['production']/sum(D[currentyear]['production'])
 
@@ -430,13 +430,13 @@ cost_optimal=[46.45261724887184,
 X={}
 
 for currentyear in range(beginyear,endyear):
-        
+
     x=get_production(cost_optimal)
     X[currentyear]=x
 
 #plot predicted production
 for ii in range(len(X[currentyear])):
-    
+
     Y=[D[i]['production'][ii] for i in range(beginyear,endyear)]
 
     fig=plt.figure(figsize=(10,5))
@@ -473,12 +473,12 @@ plt.show()
 #plot predicted price
 price_predict={}
 for currentyear in range(beginyear,endyear):
-    
+
     price_predict[currentyear]=compute_price(np.mat(X[currentyear]).T)
 
 #plot predicted price
 for ii in range(len(price_predict[currentyear])):
-    
+
     Y=[D[i]['price'][ii] for i in range(beginyear,endyear)]
 
     fig=plt.figure(figsize=(10,5))
@@ -559,7 +559,7 @@ for currentyear in range(beginyear,endyear):
     D[currentyear]['area']=0.0
     D[currentyear]['price']=0.0
     D[currentyear]['Year']=currentyear
-    
+
     D[currentyear]['production']=get_production(cost_optimal)
     D[currentyear]['price']=compute_price(np.mat(D[currentyear]['production']).T)
     D[currentyear]['area']=np.multiply(D[currentyear]['production'],D[currentyear]['yield_i'])
@@ -570,7 +570,7 @@ for currentyear in range(beginyear,endyear):
 
 #plot predicted production
 for ii in range(len(D[currentyear])):
-    
+
     fig=plt.figure(figsize=(10,5))
     ax=fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
@@ -598,7 +598,7 @@ plt.show()
 
 #plot predicted price
 for ii in range(len(D[currentyear])):
-    
+
     fig=plt.figure(figsize=(10,5))
     ax=fig.add_subplot(111)
     ax.spines['top'].set_visible(False)

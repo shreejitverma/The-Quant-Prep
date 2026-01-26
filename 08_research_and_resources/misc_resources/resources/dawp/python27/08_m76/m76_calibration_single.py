@@ -101,7 +101,7 @@ def generate_plot(opt, options):
     ax[0].set_ylabel('option values')
     ax[0].grid(True)
     xv = options.index.values
-    ax[1] = plt.bar(xv - 5 / 2., options['Model'] - options['Call'], 
+    ax[1] = plt.bar(xv - 5 / 2., options['Model'] - options['Call'],
                     width=5)
     plt.ylabel('difference')
     plt.xlim(min(xv) - 10, max(xv) + 10)

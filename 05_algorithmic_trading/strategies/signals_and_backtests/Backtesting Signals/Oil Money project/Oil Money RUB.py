@@ -24,7 +24,7 @@ df.dropna(inplace=True)
 
 # In[3]:
 
-#this is the part to create r squared of different regressors 
+#this is the part to create r squared of different regressors
 #in different years for stepwise regression
 #we can use locals to create lists for different currency
 #each list contains r squared of different years
@@ -38,7 +38,7 @@ for i in df.columns:
             y=df['rub'][str(j):str(j)]
             m=sm.OLS(y,x).fit()
             var[i].append(m.rsquared)
-           
+
 
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
@@ -51,16 +51,16 @@ colorlist=['#c0334d','#d6618f','#f3d4a0','#f1931b']
 bar=locals()
 for j in range(len(year)):
     bar[j]=[var[i][j] for i in df.columns if i!='rub']
-    plt.bar(np.arange(1,len([i for i in df.columns if i!='rub'])*2+1,2)+j*width,            
+    plt.bar(np.arange(1,len([i for i in df.columns if i!='rub'])*2+1,2)+j*width,
             bar[j],width=width,label=year[j],color=colorlist[j])
-    
+
 plt.legend(loc=0)
 plt.title('Stepwise Regression Year by Year')
 plt.ylabel('R Squared')
 plt.xlabel('Regressors')
-plt.xticks(np.arange(1,len([i for i in df.columns if i!='rub'])*2+1,2)+(len(year)-1)*width/2,            
-           ['Urals Crude', 'Japanese\nYen',             
-            'Euro', 'Henry Hub', 'Chinese\nYuan',             
+plt.xticks(np.arange(1,len([i for i in df.columns if i!='rub'])*2+1,2)+(len(year)-1)*width/2,
+           ['Urals Crude', 'Japanese\nYen',
+            'Euro', 'Henry Hub', 'Chinese\nYuan',
             'Korean\nWon', 'Ukrainian\nHryvnia'],fontsize=10)
 plt.show()
 
@@ -79,7 +79,7 @@ for i in df.columns:
             y=df['rub'][:str(j)]
             m=sm.OLS(y,x).fit()
             var[i].append(m.rsquared)
-           
+
 
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
@@ -90,16 +90,16 @@ colorlist=['#04060f','#03353e','#0294a5','#a79c93']
 bar=locals()
 for j in range(len(year)):
     bar[j]=[var[i][j] for i in df.columns if i!='rub']
-    plt.bar(np.arange(1,len([i for i in df.columns if i!='rub'])*2+1,2)+j*width,            
+    plt.bar(np.arange(1,len([i for i in df.columns if i!='rub'])*2+1,2)+j*width,
             bar[j],width=width,label=year[j],color=colorlist[j])
-    
+
 plt.legend(loc=0)
 plt.title('Stepwise Regression Year Cumulated')
 plt.ylabel('R Squared')
 plt.xlabel('Regressors')
-plt.xticks(np.arange(1,len([i for i in df.columns if i!='rub'])*2+1,2)+(len(year)-1)*width/2,            
-           ['Urals Crude', 'Japanese\nYen',             
-            'Euro', 'Henry Hub', 'Chinese\nYuan',             
+plt.xticks(np.arange(1,len([i for i in df.columns if i!='rub'])*2+1,2)+(len(year)-1)*width/2,
+           ['Urals Crude', 'Japanese\nYen',
+            'Euro', 'Henry Hub', 'Chinese\nYuan',
             'Korean\nWon', 'Ukrainian\nHryvnia'],fontsize=10)
 plt.show()
 
@@ -171,7 +171,7 @@ plt.show()
 #plot actual vs fitted line chart for each year
 #including one sigma and two sigma confidence interval
 for i in df.index.year.drop_duplicates():
-    
+
     temp=df.loc[str(i):str(i)]
     train=temp.iloc[:int(len(temp)/3)]
     test=temp.iloc[int(len(temp)/3):]
@@ -180,31 +180,31 @@ for i in df.index.year.drop_duplicates():
     m=sm.OLS(y,x).fit()
     forecast=m.predict(sm.add_constant(test['urals']))
     resid=np.std(train['rub']-m.predict())
-    
+
     ax=plt.figure(figsize=(10,5)).add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    
+
     ax.plot(test.index, \
             forecast, \
             label='Fitted',c='#f5ca99')
     test['rub'].plot(label='Actual',c='#ed5752')
-    
-    
+
+
     ax.fill_between(test.index, \
                     forecast+resid, \
                     forecast-resid, \
                     color='#1e1f26', \
                     alpha=0.8, \
                     label='1 Sigma')
-    
+
     ax.fill_between(test.index, \
                     forecast+2*resid, \
                     forecast-2*resid, \
                     color='#d0e1f9', \
                      alpha=0.7, \
                      label='2 Sigma')
-    
+
     plt.legend(loc='best')
     plt.title(f'{i} Russian Ruble Positions\nR Squared {round(m.rsquared*100,2)}%\n')
     plt.ylabel('RUBAUD')

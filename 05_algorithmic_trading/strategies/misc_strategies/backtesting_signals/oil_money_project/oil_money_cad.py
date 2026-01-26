@@ -26,10 +26,10 @@ def dual_axis_plot(xaxis,data1,data2,fst_color='r',
                     sec_color='b',fig_size=(10,5),
                    x_label='',y_label1='',y_label2='',
                    legend1='',legend2='',grid=False,title=''):
-    
+
     fig=plt.figure(figsize=fig_size)
     ax=fig.add_subplot(111)
-    
+
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label1, color=fst_color)
@@ -53,18 +53,18 @@ def dual_axis_plot(xaxis,data1,data2,fst_color='r',
 
 #get distance between a point and a line
 def get_distance(x,y,a,b):
-    
+
     temp1=y-x*a-b
     temp2=(a**2+1)**0.5
-    
+
     return np.abs(temp1/temp2)
 
 #create line equation from two points
 def get_line_params(x1,y1,x2,y2):
-    
+
     a=(y1-y2)/(x1-x2)
     b=y1-a*x1
-    
+
     return a,b
 
 
@@ -112,7 +112,7 @@ for i in df.columns:
             y=df['cad']
             m=sm.OLS(y,x).fit()
             var[str(i)]=m.rsquared
-     
+
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -125,10 +125,10 @@ colorlist=['#9499a6','#9499a6','#9499a6','#9499a6',
 temp=list(df.columns)
 for i in temp:
     if i!='cad':
-        plt.bar(temp.index(i)+width,            
+        plt.bar(temp.index(i)+width,
             var[str(i)],width=width,label=i,
                color=colorlist[temp.index(i)])
- 
+
 plt.title('Regressions on Loonie')
 plt.ylabel('R Squared\n')
 plt.xlabel('\nRegressors')
@@ -218,28 +218,28 @@ for i in range(1, 8):
 a,b=get_line_params(0,sse[0],len(sse)-1,sse[-1])
 
 distance=[]
-for i in range(len(sse)):    
+for i in range(len(sse)):
     distance.append(get_distance(i,sse[i],a,b))
 
 dual_axis_plot(np.arange(1,len(distance)+1),sse,distance,
                x_label='Numbers of Cluster',y_label1='Sum of Squared Error',
                y_label2='Perpendicular Distance',legend1='SSE',legend2='Distance',
                title='Elbow Method for K Means',fst_color='#116466',sec_color='#e85a4f')
-  
-  
-  
+
+
+
 # In[11]:
 
 #using silhouette score to find optimal number of clusters
 
 sil=[]
 for n in range(2,8):
-    
+
     clf=KMeans(n).fit(x)
     projection=clf.predict(x)
-        
+
     sil.append(silhouette_score(x,projection))
-    
+
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -285,8 +285,8 @@ ax.scatter3D(xdata[df['class']==1],ydata[df['class']==1],
              label='After {}'.format(threshold.strftime('%Y-%m-%d')))
 ax.grid(False)
 for i in ax.w_xaxis, ax.w_yaxis, ax.w_zaxis:
-    i.pane.set_visible(False)  
-    
+    i.pane.set_visible(False)
+
 ax.set_xlabel('WCS')
 ax.set_ylabel('Loonie')
 ax.set_zlabel('Date')
@@ -297,7 +297,7 @@ plt.show()
 
 #to generate gif, u can use the following code
 #it generates 3d figures from different angles
-#use imageio to concatenate 
+#use imageio to concatenate
 """
 for ii in range(0,360,10):
     ax.view_init(elev=10., azim=ii)
@@ -305,7 +305,7 @@ for ii in range(0,360,10):
 
 import imageio
 
-filenames=["movie%d.png" % (ii) for ii in range(0,360,10)] 
+filenames=["movie%d.png" % (ii) for ii in range(0,360,10)]
 
 images=list(map(lambda filename:imageio.imread(filename),
                 filenames))
@@ -340,15 +340,15 @@ plt.show()
 #create 1 std, 2 std band
 
 for i in range(2):
-    
+
     x_train,x_test,y_train,y_test=train_test_split(
         sm.add_constant(df['wcs'][df['class']==i]),
         df['cad'][df['class']==i],test_size=0.5,shuffle=False)
-    
+
     m=sm.OLS(y_test,x_test).fit()
-    
+
     forecast=m.predict(x_test)
-    
+
     ax=plt.figure(figsize=(10,5)).add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -360,14 +360,14 @@ for i in range(2):
                     color='#0f1626', \
                     alpha=0.6, \
                     label='1 Sigma')
-    
+
     ax.fill_between(y_test.index,
                     forecast+2*np.std(m.resid),
                     forecast-2*np.std(m.resid),
                     color='#0f1626', \
                     alpha=0.8, \
                     label='2 Sigma')
-    
+
     plt.legend(loc=0)
     title='Before '+threshold.strftime('%Y-%m-%d') if i==0 else 'After '+threshold.strftime('%Y-%m-%d')
     plt.title(f'{title}\nCanadian Dollar Positions\nR Squared {round(m.rsquared*100,2)}%\n')

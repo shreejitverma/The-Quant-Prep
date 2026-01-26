@@ -52,7 +52,7 @@ Say, you have figured out that the address is xx.yy.zz.100. Configuring your rou
 
     ssh pi@xx.yy.zz.100
 
-Knowing your public IP, you can also set an **A record** (cf. http://support.dnsimple.com/articles/a-record/) of one of your domains to access the RPi, like ``http://rpi.mydomain.net`` (which should have an A record equal to the public IP xx.yy.zz.100). 
+Knowing your public IP, you can also set an **A record** (cf. http://support.dnsimple.com/articles/a-record/) of one of your domains to access the RPi, like ``http://rpi.mydomain.net`` (which should have an A record equal to the public IP xx.yy.zz.100).
 
 Using Public Keys
 ^^^^^^^^^^^^^^^^^^^^
@@ -137,4 +137,4 @@ Running htop gives you an overview over the **usage of the system resources and 
 
 Running htop might give you an output like this one:
 
-.. image:: htop.png 
+.. image:: htop.png

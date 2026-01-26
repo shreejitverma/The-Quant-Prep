@@ -56,17 +56,17 @@ def demo_continuous_action_off_policy():  # [ElegantRL.2021.10.10]
     if env_name in {'BipedalWalkerHardcore-v3', 'BipedalWalkerHardcore-v2'}:
         '''EpisodeReturn: (-200) -150 ~ 300 (334)
         TotalStep (2e6) 4e6
-        
+
         Step 12e5,  Reward  20
         Step 18e5,  Reward 135
         Step 25e5,  Reward 202
         Step 43e5,  Reward 309, UsedTime 68ks,  ModSAC, worker_num=4
-        
+
         Step 14e5,  Reward  15
         Step 18e5,  Reward 117
         Step 28e5,  Reward 212
         Step 45e5,  Reward 306,  UsedTime 67ks,  ModSAC, worker_num=4
-        
+
         Step  8e5,  Reward  13
         Step 16e5,  Reward 136
         Step 23e5,  Reward 219
@@ -415,7 +415,7 @@ def demo_pybullet_off_policy():
         args.break_step = int(8e7)
         args.if_allow_break = False
     if env_name == 'ReacherBulletEnv-v0':
-        """EpisodeReturn (-37) 0 ~ 18 (29) 
+        """EpisodeReturn (-37) 0 ~ 18 (29)
         TotalStep: (4e4) 5e4  # low eval_times
         """
         args.explore_rate = 0.9
@@ -514,7 +514,7 @@ def demo_pybullet_on_policy():
         Step 1e6, Return: 18,  UsedTime 30ks, PPO eval_times =< 4
 
         eval_times = 64
-        The probability of the following results is only 25%.      
+        The probability of the following results is only 25%.
         0  5.00e+05    3.23 |    3.23   12.6    149     0 |   -0.03   0.64  -0.03  -0.51
         0  3.55e+06    7.69 |    7.69   10.3    149     0 |   -0.19   0.56  -0.04  -0.59
         0  5.07e+06    9.72 |    7.89    7.6    149     0 |    0.27   0.24   0.02  -0.71
@@ -530,7 +530,7 @@ def demo_pybullet_on_policy():
         0  6.16e+06    5.24 |    4.80    9.2    149     0 |    0.03   0.15  -0.00  -0.81
         0  7.40e+06   12.99 |   12.99   13.2    149     0 |    0.07   0.19  -0.03  -0.91
         0  1.01e+07   18.09 |   18.09    7.6    149     0 |    0.18   0.16  -0.00  -1.09
-        0  1.06e+06    3.25 |    3.25    7.6    149     0 |   -0.21   0.72  -0.05  -0.51 
+        0  1.06e+06    3.25 |    3.25    7.6    149     0 |   -0.21   0.72  -0.05  -0.51
         0  2.13e+06    3.56 |    0.94    6.1    149     0 |    0.08   0.54   0.02  -0.56
         0  5.85e+06   11.61 |   11.61   11.0    149     0 |    0.13   0.22  -0.05  -0.78
         0  9.04e+06   14.07 |   13.57   10.5    149     0 |    0.27   0.17   0.01  -1.05

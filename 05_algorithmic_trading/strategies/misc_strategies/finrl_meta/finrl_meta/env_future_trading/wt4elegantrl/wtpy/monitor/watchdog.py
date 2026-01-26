@@ -38,7 +38,7 @@ class WatcherSink:
 
     def on_trade(self, appid:str, chnl:str, trdInfo:dict):
         pass
-    
+
     def on_notify(self, appid:str, chnl:str, message:str):
         pass
 
@@ -139,7 +139,7 @@ class AppInfo(EventSink):
                     if self.cmd_line.upper() == cmdLine.upper():
                         self._procid = pid
                         self.__logger__.info("应用%s挂载成功，进程ID: %d" % (self._id, self._procid))
-     
+
                         if self._mq_url != '':
                             # 如果事件接收器为空或者url发生了改变，则需要重新创建
                             bNeedCreate = self._evt_receiver is None or self._evt_receiver.url != self._mq_url
@@ -207,7 +207,7 @@ class AppInfo(EventSink):
     def restart(self):
         if self._procid is not None:
             self.stop()
-        
+
         self.run()
 
     def update_state(self, pids):
@@ -219,7 +219,7 @@ class AppInfo(EventSink):
             self._procid = None
             if self._sink is not None:
                 self._sink.on_stop(self._id)
-        
+
 
     def tick(self, pids):
         self._ticks += 1
@@ -233,7 +233,7 @@ class AppInfo(EventSink):
                 self.__schedule__()
 
             self._ticks = 0
-    
+
     def __schedule__(self):
         weekflag = self._weekflag
 
@@ -254,7 +254,7 @@ class AppInfo(EventSink):
         for tInfo in self.__info__["schedule"]["tasks"]:
             if not tInfo["active"]:
                 continue
-            
+
             if "lastDate" in tInfo:
                 lastDate = tInfo["lastDate"]
             else:
@@ -296,7 +296,7 @@ class AppInfo(EventSink):
     def on_trade(self, chnl:str, trdInfo:dict):
         if self._sink is not None:
             self._sink.on_trade(self._id, chnl, trdInfo)
-    
+
     # EventSink.on_notify
     def on_notify(self, chnl:str, message:str):
         if self._sink is not None:
@@ -395,7 +395,7 @@ class WatchDog:
 
         appInfo = self.__apps__[appid]
         appInfo.restart()
-    
+
     def isRunning(self, appid:str):
         if appid not in self.__apps__:
             return False
@@ -406,7 +406,7 @@ class WatchDog:
     def getAppConf(self, appid:str):
         if appid not in self.__apps__:
             return None
-        
+
         appInfo = self.__apps__[appid]
         return appInfo.getConf()
 
@@ -429,7 +429,7 @@ class WatchDog:
         appConf = self.__app_conf__[appid]
         appInst = self.__apps__[appid]
         appInst.applyConf(appConf)
-        
+
         cur = self.__db_conn__.cursor()
         sql = "UPDATE schedules SET mqurl='%s',modifytime=datetime('now','localtime') WHERE appid='%s';" % (mqurl, appid)
         print(sql)
@@ -467,7 +467,7 @@ class WatchDog:
                     task3='%s',task4='%s',task5='%s',task6='%s',mqurl='%s',modifytime=datetime('now','localtime') WHERE appid='%s';" % (
                     appConf["path"], appConf["folder"], appConf["param"], stype, appConf["span"], guard, redirect, schedule, appConf["schedule"]["weekflag"],
                     json.dumps(appConf["schedule"]["tasks"][0]),json.dumps(appConf["schedule"]["tasks"][1]),json.dumps(appConf["schedule"]["tasks"][2]),
-                    json.dumps(appConf["schedule"]["tasks"][3]),json.dumps(appConf["schedule"]["tasks"][4]),json.dumps(appConf["schedule"]["tasks"][5]), 
+                    json.dumps(appConf["schedule"]["tasks"][3]),json.dumps(appConf["schedule"]["tasks"][4]),json.dumps(appConf["schedule"]["tasks"][5]),
                     appConf["mqurl"], appid)
         cur.execute(sql)
         self.__db_conn__.commit()

@@ -1,5 +1,5 @@
 #
-# 
+#
 # Black-Scholes-Merton Implied Volatilities of
 # Call Options on the EURO STOXX 50
 # Option Quotes from 30. September 2014

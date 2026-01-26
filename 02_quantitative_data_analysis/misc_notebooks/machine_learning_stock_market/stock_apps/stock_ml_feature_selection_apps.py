@@ -18,7 +18,7 @@ from sklearn.model_selection import train_test_split
 import warnings
 warnings.filterwarnings("ignore")
 
-# yahoo finance used to fetch data 
+# yahoo finance used to fetch data
 import yfinance as yf
 yf.pdr_override()
 
@@ -49,7 +49,7 @@ def input_symbol():
 def Univariate_Selection():
     from sklearn.feature_selection import SelectKBest
     from sklearn.feature_selection import chi2
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -83,27 +83,27 @@ def Univariate_Selection():
     print("")
     print(US.sort_values('Univariate_Selection',ascending=0))
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()    
-        
-        
-#***********************************************************************************************************************#     
+        exit()
+
+
+#***********************************************************************************************************************#
 # Recursive Feature Elimination
 def Recursive_Feature_Elimination():
     from sklearn.feature_selection import RFE
     from sklearn.linear_model import LogisticRegression
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -128,26 +128,26 @@ def Recursive_Feature_Elimination():
     Selected = Selected.reset_index()
     print(Selected[Selected['RFE'] == True])
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()    
-        
+        exit()
 
-#***********************************************************************************************************************#     
+
+#***********************************************************************************************************************#
 # Principal Component Analysis
 def Principal_Component_Analysis():
     from sklearn.decomposition import PCA
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -167,26 +167,26 @@ def Principal_Component_Analysis():
     print(("Explained Variance: %s") % fit.explained_variance_ratio_)
     print(fit.components_)
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()    
-        
+        exit()
 
-#***********************************************************************************************************************#     
+
+#***********************************************************************************************************************#
 # Feature Importance
 def Feature_Importance():
     from sklearn.ensemble import ExtraTreesClassifier
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -207,26 +207,26 @@ def Feature_Importance():
     ET = ET.reset_index()
     print(ET.sort_values(['Extra Trees'],ascending=0))
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()    
-        
-        
-#***********************************************************************************************************************#     
+        exit()
+
+
+#***********************************************************************************************************************#
 # Random Forest Classifier
 def Random_Forest_Classifier():
     from sklearn.ensemble import RandomForestClassifier
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -245,27 +245,27 @@ def Random_Forest_Classifier():
     RFC = RFC.reset_index()
     print(RFC.sort_values(['RFC'],ascending=0))
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()           
-        
+        exit()
 
-#***********************************************************************************************************************#     
+
+#***********************************************************************************************************************#
 # Chi Square on Features
 def Chi_Square_on_Features():
     from sklearn.feature_selection import SelectKBest
     from sklearn.feature_selection import chi2
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -286,27 +286,27 @@ def Chi_Square_on_Features():
     chi_sq = chi_sq.reset_index()
     print(chi_sq.sort_values('Chi_Square',ascending=0))
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()  
+        exit()
 
-                 
-#***********************************************************************************************************************#     
+
+#***********************************************************************************************************************#
 # L1 Feature Selection
 def L1_Feature_Selection():
     from sklearn.svm import LinearSVC
     from sklearn.feature_selection import SelectFromModel
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -325,26 +325,26 @@ def L1_Feature_Selection():
     l1 = l1.reset_index()
     print(l1[l1['L1'] == True])
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()           
-        
-        
-#***********************************************************************************************************************#     
+        exit()
+
+
+#***********************************************************************************************************************#
 # Multicollinearity Variance Inflation Factor
 def Multicollinearity_Variance_Inflation_Factor():
     from statsmodels.stats.outliers_influence import variance_inflation_factor
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -357,7 +357,7 @@ def Multicollinearity_Variance_Inflation_Factor():
     def calculate_vif(features):
         vif = pd.DataFrame()
         vif["Features"] = features.columns
-        vif["VIF"] = [variance_inflation_factor(features.values, i) for i in range(features.shape[1])]    
+        vif["VIF"] = [variance_inflation_factor(features.values, i) for i in range(features.shape[1])]
         return(vif)
     vif = calculate_vif(features)
     while vif['VIF'][vif['VIF'] > 10].any():
@@ -366,32 +366,32 @@ def Multicollinearity_Variance_Inflation_Factor():
         vif = calculate_vif(features)
     print(vif)
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()           
+        exit()
 
 
 
 
 #***********************************************************************************************************************#
 #******************************************************* Menu **********************************************************#
-#***********************************************************************************************************************#  
+#***********************************************************************************************************************#
 def menu():
-    ans = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'] 
-    print(""" 
-              
+    ans = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+    print("""
+
                            MENU
-                       FEATURE SELECTION      
+                       FEATURE SELECTION
                   ---------------------------
                   1. Univariate Selection
                   2. Recursive Feature Elimination
@@ -404,10 +404,10 @@ def menu():
                   9. Beginning Menu
                   10. Exit the Program
                   """)
-    user_input = input("Command (1-10): ") 
+    user_input = input("Command (1-10): ")
     while user_input not in ans:
         print("Error: Please enter a valid option 1-10")
-        user_input=input("Command: ")             
+        user_input=input("Command: ")
     if user_input == '1':
         Univariate_Selection()
     elif user_input == '2':
@@ -424,26 +424,26 @@ def menu():
         L1_Feature_Selection()
     elif user_input == '8':
         Multicollinearity_Variance_Inflation_Factor()
-    elif user_input == "9":  
+    elif user_input == "9":
         beginning()
     elif user_input == "10":
-        exit() 
-        
-        
-#***********************************************************************************************************************#    
-#*************************************************** Start of Program **************************************************# 
-#***********************************************************************************************************************#  
+        exit()
+
+
+#***********************************************************************************************************************#
+#*************************************************** Start of Program **************************************************#
+#***********************************************************************************************************************#
 def beginning():
     print()
     print("----------Welcome to Feature Selection for Machine Learning--------")
     print("""
 Please choose option 1 or 2
-              
+
 1. Menu
-2. Exit Program 
+2. Exit Program
 ---------------------------------------------""")
-    ans = ['1', '2'] 
-    user_input=input("What is your Option?: ")    
+    ans = ['1', '2']
+    user_input=input("What is your Option?: ")
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
@@ -451,7 +451,7 @@ Please choose option 1 or 2
         menu()
     elif user_input=="2":
         exit()
-  
-    
-#***********************************************************************************************************************#     
+
+
+#***********************************************************************************************************************#
 beginning()

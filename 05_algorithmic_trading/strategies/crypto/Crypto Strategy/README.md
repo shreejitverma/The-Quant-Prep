@@ -14,7 +14,7 @@ pip install crypto-strategy[full]
 ```
 
 ## Usage
-### Backtest Strategy 
+### Backtest Strategy
 
 1. Moving Average Strategy
 
@@ -36,9 +36,9 @@ pip install crypto-strategy[full]
 - Example: Find the best params using 1h data with mmi filter and ts_stop
     ```
     BestMaStrategy(
-        symbols=['BTCUSDT', 'ETHUSDT'], 
-        freq='1h', 
-        res_dir='results/best-1h-ma-mmi-filter', 
+        symbols=['BTCUSDT', 'ETHUSDT'],
+        freq='1h',
+        res_dir='results/best-1h-ma-mmi-filter',
         flag_filters='mmi',
         flag_stop='ts_stop'
     )
@@ -61,8 +61,8 @@ pip install crypto-strategy[full]
         ```
         BestBoStrategy(
             symbols = 'BTCUSDT',
-            freq = '4h', 
-            res_dir = 'results/best-4h-bo_rev-vol-filter', 
+            freq = '4h',
+            res_dir = 'results/best-4h-bo_rev-vol-filter',
             flag_filters = 'vol',
             flag_stop = 'sl_stop',
         )
@@ -98,9 +98,9 @@ BestMacdStrategy(symbols, freq, res_dir, flag_filter)
     - Example: Inspect MA strategy `linear_reg` with `n1=30 & n2=280` and `sl_stop=0.1 & tp_stop=0.1`
         ```
         InspectMaStrategy(
-            symbols, 
-            freq='4h', 
-            name='linear_reg', n1=30, n2=280, 
+            symbols,
+            freq='4h',
+            name='linear_reg', n1=30, n2=280,
             stop_vars={'sl_stop':0.1, 'tp_stop':0.1})
         ```
 
@@ -121,8 +121,8 @@ BestMacdStrategy(symbols, freq, res_dir, flag_filter)
     - Example: Inspect 4h BTCUSDT breakout strategy with volume filter and trailing stop
         ```
         InspectBoStrategy(
-            'BTCUSDT', 
-            freq='4h', 
+            'BTCUSDT',
+            freq='4h',
             long_window=100, short_window=50,
             flag_filter='vol', timeperiod=20, multiplier=2,
             stop_vars={'ts_stop':0.1})

@@ -45,9 +45,9 @@ x_disc_list = ['Full Truncation', 'Partial Truncation', 'Truncation',
                'Absorption', 'Reflection', 'Higham-Mao', 'Simple Reflection']
                 # discretization schemes for SRD process
 
-anti_paths = [False, True] 
+anti_paths = [False, True]
   # antithetic paths for variance reduction
-moment_matching = [False, True] 
+moment_matching = [False, True]
   # random number correction (std + mean + drift)
 
 t_list = [1.0 / 12, 1.0, 2.0]  # maturity list
@@ -143,7 +143,7 @@ def SRD_generate_paths(x_disc, x0, kappa, theta, sigma,
 
 def H93_generate_paths(S0, r, v, row, cho_matrix):
     ''' Simulation of Heston (1993) index process.
-    
+
     Parameters
     ==========
     S0: float
@@ -239,7 +239,7 @@ if __name__ == '__main__':
                 for T in t_list:  # maturity list
                     # memory clean-up
                     v, S, rand, h = 0.0, 0.0, 0.0, 0.0
-                    M = int(M0 * T)  # number of total time steps 
+                    M = int(M0 * T)  # number of total time steps
                     dt = T / M  # time interval in years
                     # random numbers
                     rand = random_number_generator(M, I)
@@ -287,11 +287,11 @@ if __name__ == '__main__':
                             'PY1_acc': PY1_acc, 'PY2_acc': PY2_acc,
                             'PY_acc': PY1_acc or PY2_acc},
                             index=[0,])
-                        
+
                         if verbose:
-                            print tmpl_2 % (T, K, V0, V0_MCS, error, 
+                            print tmpl_2 % (T, K, V0, V0_MCS, error,
                                         rel_error, PY1_acc, PY2_acc)
-                        
+
                         results = results.append(res, ignore_index=True)
 
     if write:

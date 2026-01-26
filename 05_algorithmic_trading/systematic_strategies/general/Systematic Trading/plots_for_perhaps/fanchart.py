@@ -46,12 +46,12 @@ def geostd(x):
     if type(x) is pd.core.frame.DataFrame:
         return x.apply(geostd, 0)
     gm=geomean(x)
-    
+
     def _gsone(xitem, gm):
         return (np.log((1+xitem)/(1+gm)))**2.0
-        
+
     items=[_gsone(xitem, gm) for xitem in x.values]
-    
+
     return np.exp((np.mean(items))**.5)-1.0
 
 
@@ -71,7 +71,7 @@ for period in range(period_length)[1:]:
         choose=[int(random()*len(data.index)) for notused in range(period)]
         subdata=data.iloc[choose,]
         subdata.index=pd.date_range(pd.datetime(1990,1,1), periods=period, freq="A")
-        
+
         portfolio_returns=subdata.SP500*equity_weight+subdata.US10*bond_weight
         gmeans=finalpr(portfolio_returns)
         periodres.append(gmeans)
@@ -79,7 +79,7 @@ for period in range(period_length)[1:]:
     med=np.percentile(periodres,50)*1000
     m5=np.percentile(periodres,5)*1000
     m95=np.percentile(periodres,95)*1000
-    
+
     results.append([m5,med,m95])
 
 results=np.array(results)
@@ -101,7 +101,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 

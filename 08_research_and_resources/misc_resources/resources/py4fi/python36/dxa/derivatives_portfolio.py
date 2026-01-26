@@ -40,7 +40,7 @@ class derivatives_portfolio(object):
     get_positions :
         prints information about the single portfolio positions
     get_statistics :
-        returns a pandas DataFrame object with portfolio statistics 
+        returns a pandas DataFrame object with portfolio statistics
     '''
 
     def __init__(self, name, positions, val_env, assets,
@@ -68,7 +68,7 @@ class derivatives_portfolio(object):
             # collect all underlyings
             # add to set; avoids redundancy
             self.underlyings.add(positions[pos].underlying)
-        
+
         # generate general time grid
         start = self.val_env.constants['starting_date']
         end = self.val_env.constants['final_date']
@@ -91,7 +91,7 @@ class derivatives_portfolio(object):
         time_grid.sort()
         self.time_grid = np.array(time_grid)
         self.val_env.add_list('time_grid', self.time_grid)
- 
+
         if correlations is not None:
             # take care of correlations
             ul_list = sorted(self.underlyings)
@@ -122,7 +122,7 @@ class derivatives_portfolio(object):
 
 
             # add all to valuation environment that is
-            # to be shared with every underlying   
+            # to be shared with every underlying
             self.val_env.add_list('cholesky_matrix', cholesky_matrix)
             self.val_env.add_list('random_numbers', random_numbers)
             self.val_env.add_list('rn_set', rn_set)

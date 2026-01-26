@@ -49,7 +49,7 @@ def prepare(target_land,target_prod,target_prix):
     global D
     D={}
 
-    for currentyear in range(beginyear,endyear):   
+    for currentyear in range(beginyear,endyear):
 
         temp1=target_prod[target_prod['Year']==currentyear].merge(
         target_area[target_area['Year']==currentyear],on=['Item', 'Year'],how='outer')
@@ -63,11 +63,11 @@ def prepare(target_land,target_prod,target_prix):
 
         data=temp1.merge(temp2,on=['Item', 'Year', 'type', 'lifespan'],how='outer')
 
-        D[currentyear]=data                
-    
+        D[currentyear]=data
+
     #compute eco lifespan for perennials
     for currentyear in range(beginyear,endyear):
-        
+
         eco_lifespan=[default_discount for _ in range(len(D[currentyear]))]
         indices=D[currentyear]['lifespan'].dropna().index
         perennial=D[currentyear]['lifespan'].dropna().apply(lambda x:(x*eco_coeff-1)/(x*eco_coeff))
@@ -332,18 +332,18 @@ grand.to_csv('grand.csv',index=False)
 
 # #create synthetic control unit
 # for ii in ss['Item'].unique():
-    
+
 #     print(ii)
-    
+
 #     #cleanse data
 #     temp=prix[prix['Item']==ii][prix['Year'].isin(range(beginyear,endyear))][prix['Element']=='Producer Price (USD/tonne)'][prix['Months']=='Annual value']
 #     temp=temp.pivot(index='Year',columns='Area',values='Value')
-    
+
 #     #delete null data
 #     for i in temp:
 #         if temp[i].isnull().any() and i!='Malaysia':
 #             del temp[i]
-    
+
 #     #train
 #     x=temp.loc[temp['Malaysia'].dropna().index]
 #     del x['Malaysia']
@@ -352,10 +352,10 @@ grand.to_csv('grand.csv',index=False)
 #     y.reset_index(inplace=True,drop=True)
 
 #     m=sm.OLS(y,x).fit()
-    
+
 #     #train result
 #     print(m.predict(),y.tolist())
-    
+
 #     #test result
 #     test=temp[temp['Malaysia'].isnull()]
 #     test=test[[i for i in test.columns if i!='Malaysia']]

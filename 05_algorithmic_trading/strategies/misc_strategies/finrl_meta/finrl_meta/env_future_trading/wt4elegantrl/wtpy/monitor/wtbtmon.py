@@ -1,6 +1,6 @@
 '''
 Descripttion: 回测管理模块
-version: 
+version:
 Author: Wesley
 Date: 2021-08-11 14:03:33
 LastEditors: Wesley
@@ -70,7 +70,7 @@ class WtBtTask(BtEventSink):
         self.logger = logger
         self.folder = folder
         self.sink = sink
-        
+
         self._cmd_line = None
         self._mq_url = "ipc:///wtpy/bt_%s.ipc" % (btid)
         self._ticks = 0
@@ -230,7 +230,7 @@ class WtBtMon(BtTaskSink):
     def get_strategies(self, user:str) -> list:
         if user not in self.user_stras:
             bSucc = self.__load_user_data__(user)
-        
+
             if not bSucc:
                 return None
 
@@ -298,7 +298,7 @@ class WtBtMon(BtTaskSink):
         self.user_stras[user].pop(straid)
         self.__save_user_data__(user)
         return True
-    
+
     def has_strategy(self, user:str, straid:str, btid:str = None) -> bool:
         if user not in self.user_bts:
             bSucc = self.__load_user_data__(user)
@@ -425,7 +425,7 @@ class WtBtMon(BtTaskSink):
                 tItem["fee"] = float(cells[4])
 
             funds.append(tItem)
-        
+
         return funds
 
     def get_bt_trades(self, user:str, straid:str, btid:str) -> list:
@@ -473,7 +473,7 @@ class WtBtMon(BtTaskSink):
                 item["fee"] = float(cells[4])
 
             items.append(item)
-        
+
         return items
 
     def get_bt_rounds(self, user:str, straid:str, btid:str) -> list:
@@ -517,7 +517,7 @@ class WtBtMon(BtTaskSink):
             }
 
             items.append(item)
-        
+
         return items
 
     def get_bt_signals(self, user:str, straid:str, btid:str) -> list:
@@ -556,7 +556,7 @@ class WtBtMon(BtTaskSink):
             }
 
             items.append(item)
-        
+
         return items
 
     def get_bt_summary(self, user:str, straid:str, btid:str) -> list:
@@ -651,7 +651,7 @@ class WtBtMon(BtTaskSink):
 
             if not bSucc:
                 return None
-        
+
         btState = self.get_bt_state(user, straid, btid)
         if btState is None:
             return None
@@ -690,14 +690,14 @@ class WtBtMon(BtTaskSink):
 
         if user not in self.user_bts:
             self.user_bts[user] = dict()
-            
+
         btid = gen_btid(user, straid)
 
         # 生成回测目录
         folder = os.path.join(self.path, user, straid, "backtests")
         if not os.path.exists(folder):
             os.mkdir(folder)
-        
+
         folder = os.path.join(folder, btid)
         os.mkdir(folder)
 
@@ -808,7 +808,7 @@ class WtBtMon(BtTaskSink):
         self.user_stras[user][straid]["perform"] = summaryObj
 
         self.__save_user_data__(user)
-    
+
     def __save_tasks__(self):
         obj = self.task_infos
 
@@ -840,9 +840,9 @@ class WtBtMon(BtTaskSink):
             else:
                 # 之前记录过测回测任务，执行完成了，要更新回测数据
                 self.__update_bt_result__(tInfo["user"], tInfo["straid"], btid)
-        
+
         self.__save_tasks__()
-            
+
 
     def on_start(self, user:str, straid:str, btid:str):
         pass

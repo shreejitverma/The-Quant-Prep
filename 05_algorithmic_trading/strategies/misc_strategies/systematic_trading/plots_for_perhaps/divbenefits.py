@@ -10,24 +10,24 @@ import pickle
 import pandas as pd
 
 lines = ["--","-","-."]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 
 def twocorrelatedseries(no_periods, period_mean, period_mean2, period_vol, corr):
 
-    means = [period_mean, period_mean2]  
+    means = [period_mean, period_mean2]
     stds = [period_vol]*2
-    covs = [[stds[0]**2          , stds[0]*stds[1]*corr], 
-            [stds[0]*stds[1]*corr,           stds[1]**2]] 
+    covs = [[stds[0]**2          , stds[0]*stds[1]*corr],
+            [stds[0]*stds[1]*corr,           stds[1]**2]]
 
     m = np.random.multivariate_normal(means, covs, no_periods).T
 
     data1=m[0]
     data2=m[1]
-    
+
     empirical_corr=np.corrcoef(data1, data2)[0][1]
-    
-    
-    
+
+
+
     return empirical_corr
 
 
@@ -61,7 +61,7 @@ print np.mean(corrdist)
 def linehist(x, color="blue", linestyle="-", bins=10, linewidth=1):
     y,binEdges =np.histogram(x, bins=bins)
     bincenters = 0.5*(binEdges[1:]+binEdges[:-1])
-    plot(bincenters,y,'-', color=color, linestyle=linestyle, linewidth=linewidth) 
+    plot(bincenters,y,'-', color=color, linestyle=linestyle, linewidth=linewidth)
 
 linehist(corrdist, bins=50, linewidth=2)
 
@@ -85,7 +85,7 @@ plt.axvline(0.75, linestyle="--")
 plt.axvline(0.8, linestyle="--")
 plt.axvline(0.92, linestyle="--")
 
-    
+
 #xlabel("Difference in annual % returns between managers")
 
 rcParams.update({'font.size': 18})
@@ -97,7 +97,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 

@@ -9,7 +9,7 @@ def train(start_date, end_date, ticker_list, data_source, time_interval,
           **kwargs):
     # process data using unified data processor
     dp = DataProcessor(data_source, start_date, end_date, time_interval, **kwargs)
-    price_array, tech_array, turbulence_array = dp.run(ticker_list, 
+    price_array, tech_array, turbulence_array = dp.run(ticker_list,
                                                        technical_indicator_list,
                                                        if_vix)
     data_config = {'price_array': price_array,
@@ -69,6 +69,6 @@ def train(start_date, end_date, ticker_list, data_source, time_interval,
         print('Training finished!')
         trained_model.save(cwd)
         print('Trained model saved in ' + str(cwd))
-          
+
     else:
         raise ValueError('DRL library input is NOT supported. Please check.')

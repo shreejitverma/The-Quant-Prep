@@ -1,6 +1,6 @@
 '''
 Descripttion: Automatically generated file comment
-version: 
+version:
 Author: Wesley
 Date: 2021-07-27 09:53:43
 LastEditors: Wesley
@@ -24,7 +24,7 @@ class WtMQWrapper:
     # api可以作为公共变量
     api = None
     ver = "Unknown"
-    
+
     # 构造函数，传入动态库名
     def __init__(self, mgr):
         self._mgr = mgr

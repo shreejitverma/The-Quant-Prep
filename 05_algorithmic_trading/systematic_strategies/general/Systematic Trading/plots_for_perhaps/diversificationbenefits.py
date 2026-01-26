@@ -51,13 +51,13 @@ for (cidx, cfactor) in enumerate(cfactors):
                 variance=new_std**2
                 gmm=basearithmean- costs[nx] - variance/2.0
                 gsr=(gmm - riskfree) / new_std
-                
+
             smallres_sr.append(gsr)
             smallres_gmm.append(gmm*100.0)
             smallres_std.append(new_std)
-        
+
         print("Cfactor %f ndim %d GMM %f STD %f SR %f" % (cfactor, ndim, gmm, new_std, gsr))
-          
+
     results_sr.append(smallres_sr)
     results_gmm.append(smallres_gmm)
     results_std.append(smallres_std)
@@ -66,12 +66,12 @@ for (cidx, cfactor) in enumerate(cfactors):
 from itertools import cycle
 
 lines =           ["-",   "--",   "-.",     ":", "-"]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue", "green", "red", "blue"])
 
 for r in range(len(results_sr)):
     plot(results_sr[r], color=next(colorcycler), linestyle=next(linecycler), linewidth=3)
-    
+
 #xticks(range(len(ndimlist))[0::2], ndimlist[0::2])
 xticks(range(len(ndimlist)), ndimlist)
 legend(cfactors, loc="top left", title="Correlations", prop={'size': 18})
@@ -93,7 +93,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 
@@ -104,7 +104,7 @@ show()
 
 for r in range(len(results_gmm)):
     plot(results_gmm[r], color=next(colorcycler), linestyle=next(linecycler), linewidth=3)
-    
+
 #xticks(range(len(ndimlist))[0::2], ndimlist[0::2])
 xticks(range(len(ndimlist)), ndimlist)
 legend(cfactors, loc="top left", title="Correlations", prop={'size': 18})
@@ -123,7 +123,7 @@ show()
 
 for r in range(len(results_std)):
     plot(results_std[r], color=next(colorcycler), linestyle=next(linecycler), linewidth=3)
-    
+
 #xticks(range(len(ndimlist))[0::2], ndimlist[0::2])
 xticks(range(len(ndimlist)), ndimlist)
 legend(cfactors, loc="top left", title="Correlations", prop={'size': 18})

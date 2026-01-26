@@ -19,16 +19,16 @@ setup(
 
     # Package structure
     #
-    # find_packages searches through a set of directories 
+    # find_packages searches through a set of directories
     # looking for packages
     packages = find_packages('src', exclude = ['*.tests', '*.tests.*', 'tests.*', 'tests']),
-    
+
     # package_dir directive maps package names to directories.
     # package_name:package_directory
     package_dir = {'': 'src'},
 
-    # Not all packages are capable of running in compressed form, 
-    # because they may expect to be able to access either source 
+    # Not all packages are capable of running in compressed form,
+    # because they may expect to be able to access either source
     # code or data files as normal operating system files.
     zip_safe = True,
 
@@ -41,8 +41,8 @@ setup(
 
     # Dependencies
     #
-    # Dependency expressions have a package name on the left-hand 
-    # side, a version on the right-hand side, and a comparison 
+    # Dependency expressions have a package name on the left-hand
+    # side, a version on the right-hand side, and a comparison
     # operator between them, e.g. == exact version, >= this version
     # or higher
     install_requires = ['tables>=3.1.1', 'pandas>=0.13.1'],

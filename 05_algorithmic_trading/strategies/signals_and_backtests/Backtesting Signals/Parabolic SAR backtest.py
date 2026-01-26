@@ -4,7 +4,7 @@
 
 
 #parabolic stop and reverse is very useful for trend following
-#sar is an indicator below the price when its an uptrend 
+#sar is an indicator below the price when its an uptrend
 #and above the price when its a downtrend
 #it is very painful to calculate sar, though
 #and many explanations online including wiki cannot clearly explain the process
@@ -28,14 +28,14 @@ import pandas as pd
 #plz check the links above to understand more about it
 
 def parabolic_sar(new):
-    
+
     #this is common accelerating factors for forex and commodity
     #for equity, af for each step could be set to 0.01
     initial_af=0.02
     step_af=0.02
     end_af=0.2
-    
-    
+
+
     new['trend']=0
     new['sar']=0.0
     new['real sar']=0.0
@@ -51,7 +51,7 @@ def parabolic_sar(new):
 
     #calculation
     for i in range(2,len(new)):
-        
+
         temp=new['sar'][i-1]+new['af'][i-1]*(new['ep'][i-1]-new['sar'][i-1])
         if new['trend'][i-1]<0:
             new.at[i,'sar']=max(temp,new['High'][i-1],new['High'][i-2])
@@ -60,15 +60,15 @@ def parabolic_sar(new):
             new.at[i,'sar']=min(temp,new['Low'][i-1],new['Low'][i-2])
             temp=-1 if new['sar'][i]>new['Low'][i] else new['trend'][i-1]+1
         new.at[i,'trend']=temp
-    
-        
+
+
         if new['trend'][i]<0:
             temp=min(new['Low'][i],new['ep'][i-1]) if new['trend'][i]!=-1 else new['Low'][i]
         else:
             temp=max(new['High'][i],new['ep'][i-1]) if new['trend'][i]!=1 else new['High'][i]
         new.at[i,'ep']=temp
-    
-    
+
+
         if np.abs(new['trend'][i])==1:
             temp=new['ep'][i-1]
             new.at[i,'af']=initial_af
@@ -79,8 +79,8 @@ def parabolic_sar(new):
             else:
                 new.at[i,'af']=min(end_af,new['af'][i-1]+step_af)
         new.at[i,'real sar']=temp
-       
-        
+
+
     return new
 
 # In[3]:
@@ -91,16 +91,16 @@ def parabolic_sar(new):
 # https://github.com/je-suis-tm/quant-trading/blob/master/MACD%20oscillator%20backtest.py
 
 def signal_generation(df,method):
-    
+
         new=method(df)
 
         new['positions'],new['signals']=0,0
         new['positions']=np.where(new['real sar']<new['Close'],1,0)
         new['signals']=new['positions'].diff()
-        
+
         return new
 
-    
+
 
 
 
@@ -110,15 +110,15 @@ def signal_generation(df,method):
 #still similar to macd
 
 def plot(new,ticker):
-    
+
     fig=plt.figure()
     ax=fig.add_subplot(111)
-    
+
     new['Close'].plot(lw=3,label='%s'%ticker)
     new['real sar'].plot(linestyle=':',label='Parabolic SAR',color='k')
     ax.plot(new.loc[new['signals']==1].index,new['Close'][new['signals']==1],marker='^',color='g',label='LONG',lw=0,markersize=10)
     ax.plot(new.loc[new['signals']==-1].index,new['Close'][new['signals']==-1],marker='v',color='r',label='SHORT',lw=0,markersize=10)
-    
+
     plt.legend()
     plt.grid(True)
     plt.title('Parabolic SAR')
@@ -129,7 +129,7 @@ def plot(new,ticker):
 # In[5]:
 
 def main():
-    
+
     #download data via fix yahoo finance library
     stdate=('2016-01-01')
     eddate=('2018-01-01')
@@ -140,7 +140,7 @@ def main():
     slicer=450
 
     df=yf.download(ticker,start=stdate,end=eddate)
-    
+
     #delete adj close and volume
     #as we dont need them
     del df['Adj Close']
@@ -157,7 +157,7 @@ def main():
 
     #shorten our plotting horizon and plot
     new=new[slicer:]
-    plot(new,ticker) 
+    plot(new,ticker)
 
 #how to calculate stats could be found from my other code called Heikin-Ashi
 # https://github.com/je-suis-tm/quant-trading/blob/master/heikin%20ashi%20backtest.py

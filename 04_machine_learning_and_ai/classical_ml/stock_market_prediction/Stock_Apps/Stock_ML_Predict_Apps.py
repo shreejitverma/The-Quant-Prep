@@ -15,12 +15,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from sklearn.model_selection import cross_val_score
-from sklearn.svm import SVR 
+from sklearn.svm import SVR
 
 import warnings
 warnings.filterwarnings("ignore")
 
-# yahoo finance used to fetch data 
+# yahoo finance used to fetch data
 import yfinance as yf
 yf.pdr_override()
 
@@ -47,11 +47,11 @@ def input_symbol():
 
 # Logistic Regression
 def stock_logistic_regression():
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
- 
+
     df = df.drop(['Date'], axis=1)
     X = df.loc[:, df.columns != 'Adj Close']
     y = np.where (df['Adj Close'].shift(-1) > df['Adj Close'],1,-1)
@@ -71,7 +71,7 @@ def stock_logistic_regression():
 
 # Linear Regression
 def stock_linear_regression():
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -81,7 +81,7 @@ def stock_linear_regression():
     lr = LinearRegression()
     lr.fit(X, Y)
     lr.predict(X)
-    
+
     plt.figure(figsize=(12,8))
     plt.scatter(df['Adj Close'], lr.predict(X))
     plt.plot(X, lr.predict(X), color = 'red')
@@ -90,7 +90,7 @@ def stock_linear_regression():
     plt.grid()
     plt.title(sym + ' Prices vs Predicted Prices')
     plt.show()
-    print('____________Summary:____________')      
+    print('____________Summary:____________')
     print('Estimate intercept coefficient:', lr.intercept_)
     print('Number of coefficients:', len(lr.coef_))
     print('Accuracy Score:', lr.score(X, Y))
@@ -99,7 +99,7 @@ def stock_linear_regression():
 
 # Support Vector Regression
 def stock_svr():
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -110,30 +110,30 @@ def stock_svr():
     svr_lin  = SVR(kernel='linear', C=1e3)
     svr_poly = SVR(kernel='poly', C=1e3, degree=2)
     svr_rbf = SVR(kernel='rbf', C=1e3, gamma=0.1)
-    
+
     # Fit regression model
     svr_lin .fit(dates, prices)
     svr_poly.fit(dates, prices)
     svr_rbf.fit(dates, prices)
-    
+
     plt.figure(figsize=(12,8))
     plt.scatter(dates, prices, c='k', label='Data')
     plt.plot(dates, svr_lin.predict(dates), c='g', label='Linear model')
-    plt.plot(dates, svr_rbf.predict(dates), c='r', label='RBF model')    
+    plt.plot(dates, svr_rbf.predict(dates), c='r', label='RBF model')
     plt.plot(dates, svr_poly.predict(dates), c='b', label='Polynomial model')
     plt.xlabel('Date')
     plt.ylabel('Price')
     plt.title('Support Vector Regression')
     plt.legend()
     plt.show()
-    print('____________Summary:____________')   
+    print('____________Summary:____________')
     print('Linear Model:', svr_rbf.predict(x)[0])
     print('RBF Model:', svr_lin.predict(x)[0])
     print('Polynomial Model:', svr_poly.predict(x)[0])
     print("")
     return
 
-    
+
 def main():
     run_program = True
     while run_program:
@@ -142,18 +142,18 @@ def main():
         for i in range(1, len(options)+1):
             print("{} - {}".format(i, options[i-1]))
         choice = int(input())
-        
+
         if choice == 1:
-        print("____________Linear Regression_____________")    
+        print("____________Linear Regression_____________")
              stock_linear_regression()
         elif choice == 2:
         print("____________Logistic Regression_____________")
              stock_logistic_regression()
         elif choice == 3:
         print("____________Support Vector Regression_____________")
-             stock_logistic_regression()    
+             stock_logistic_regression()
         elif choice == 4:
-             run_program = False             
+             run_program = False
 
 
 if __name__ == "__main__":

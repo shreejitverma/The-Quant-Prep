@@ -2,15 +2,15 @@
 # coding: utf-8
 
 # ### <span style="color:brown">Notebook Instructions</span>
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
-# ## A Simple User-Defined Function 
-# 
+# ## A Simple User-Defined Function
+#
 # Let us create a simple mathematical function.
-# 
+#
 # The syntax for constructing a function is:
 # <pre>
 # def function_name (parameter-list):
@@ -18,7 +18,7 @@
 #     return a value, if required
 # </pre>
 # Let us create ‘my_function’.
-# 
+#
 
 # In[28]:
 
@@ -43,14 +43,14 @@ my_function (5,3) ## 5 raise to 3 = 125
 
 
 # ## Bollinger Band Function
-# 
+#
 # This is the function which we discussed in the video unit.
 
 # In[31]:
 
 
-def Bollinger_Bands (data, n): 
-    
+def Bollinger_Bands (data, n):
+
     #MA = data['Close'].rolling(window=n).mean() # Calculating the moving average
     MA = pd.rolling_mean(data['Close'],n)
 
@@ -59,7 +59,7 @@ def Bollinger_Bands (data, n):
 
     data['Lower_BB'] = MA - (2 * SD) # Lower Bollinger Band
     data['Upper_BB'] = MA + (2 * SD) # Upper Bollinger Band
-   
+
     return data
 
 
@@ -78,7 +78,7 @@ nifty.head()
 # In[33]:
 
 
-# Calling Bollinger Bands for 'Nifty' index price data 
+# Calling Bollinger Bands for 'Nifty' index price data
 
 n = 21 # We have kept the window of the moving average as 21 days
 
@@ -108,7 +108,7 @@ plt.show()
 # In[35]:
 
 
-# Calling Bollinger Bands for 'Infosys' price data 
+# Calling Bollinger Bands for 'Infosys' price data
 
 import pandas as pd
 
@@ -140,5 +140,5 @@ plt.show()
 
 
 # ### <span style="color:brown"> In the upcoming iPython Notebook:</span>
-# 
+#
 # We will understand the <b>Lambda</b> operator and its relation with functions.

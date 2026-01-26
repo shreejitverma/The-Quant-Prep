@@ -376,7 +376,7 @@ def get_qq_table_single(
     df = pd.concat([clean_ref_index_series,clean_index_series],join='outer',axis=1).fillna(method='ffill')
     ret = df.pct_change(1).dropna()
 
-    metric_function = _choose_metric_function(metric)    
+    metric_function = _choose_metric_function(metric)
 
     q1 = ret.iloc[:, 0].quantile(q=.2)
     q2 = ret.iloc[:, 0].quantile(q=.4)

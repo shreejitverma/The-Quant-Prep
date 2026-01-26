@@ -6,7 +6,7 @@ Raspberry Pi for Data Analytics
 
 This example is about data analytics with Python (cf. http://python.org) and IPython (cf. http://ipython.org) on the RPi. Before we install it, first install the Python PIP installer by::
 
-    sudo apt-get install python-pip python-dev build-essential 
+    sudo apt-get install python-pip python-dev build-essential
 
 Installing Data Analytics Libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,7 +30,7 @@ And, oh wonder, this also takes quite a while to install and compile. We might w
     sudo pip install numexpr
     sudo pip install cython
     sudo apt-get install libhdf5-serial-dev
-    sudo pip install tables 
+    sudo pip install tables
 
 All this taken together takes a few hours in total. However, your patience will pay off: your RPi will be equipped with **state-of-the-art Python-based data analytics libraries** that can be used then for a wide range of data collection, crunching and storage tasks. Finally, install the IPython interactive analytics environment::
 
@@ -46,7 +46,7 @@ Now **start IPython** on the shell via::
 You should then see something like::
 
     pi@rpi /home/ftp $ ipython
-    Python 2.7.3 (default, Mar 18 2014, 05:13:23) 
+    Python 2.7.3 (default, Mar 18 2014, 05:13:23)
     Type "copyright", "credits" or "license" for more information.
 
     IPython 2.3.1 -- An enhanced Interactive Python.
@@ -55,7 +55,7 @@ You should then see something like::
     help      -> Python's own help system.
     object?   -> Details about 'object', use 'object??' for extra details.
 
-    In [1]: 
+    In [1]:
 
 Now let's retrieve some **stock quotes for the Apple stock**:
 
@@ -66,9 +66,9 @@ Now let's retrieve some **stock quotes for the Apple stock**:
     In [2]: aapl = web.DataReader('AAPL', data_source='yahoo')
 
     In [3]: aapl.tail()
-    Out[3]: 
+    Out[3]:
                   Open    High     Low   Close    Volume  Adj Close
-    Date                                                           
+    Date
     2014-12-16  106.37  110.16  106.26  106.75  60790700     106.75
     2014-12-17  107.12  109.84  106.82  109.41  53411800     109.41
     2014-12-18  111.87  112.65  110.66  112.65  59006200     112.65
@@ -110,7 +110,7 @@ When using the RPi for data collection purposes, it might be beneficial to have 
 
 Running the script from the shell yields an output like this::
 
-    pi@rpi ~ $ python data_collection.py 
+    pi@rpi ~ $ python data_collection.py
     Time needed to collect data in sec.  1.61
     Time needed to store data in sec.    1.40
 
@@ -121,7 +121,7 @@ The data gathered and stored by this Python script is not that large. The follow
 
 Running this script yields an output like follows::
 
-    pi@rpi ~ $ python large_data_set.py 
+    pi@rpi ~ $ python large_data_set.py
     Size of data set in bytes 80000000
     Time needed to generate data in sec. 10.24
     Time needed to store data in sec.     9.39

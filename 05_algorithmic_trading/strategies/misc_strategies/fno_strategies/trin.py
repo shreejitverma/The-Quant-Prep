@@ -61,7 +61,7 @@ trade_cause = list()
 Data['mAvg'] = Data['TRIN'].rolling(sma).mean()         #calculating the moving average of the TRIN
 Data['TRIN_prev'] = Data['TRIN'].shift(1)               #moving average shifted ahead to check for crossover
 Data.to_csv("tempr_data.csv")                           #data stored in tempr_data.csv excel file
-Data = pd.read_csv("tempr_data.csv")                    
+Data = pd.read_csv("tempr_data.csv")
 #calculating the standard deviation
 sigma = variance_calculator(Data['TRIN'],Data['mAvg'],sma)#calculating the standard deviation
 k_sigma = k*sigma
@@ -80,7 +80,7 @@ s = Data['TRIN'].size#..............size of the TRIN series
 #this loop checks for TRIN crossing LBB,UBB,MaVG AND PLACES THE BUY/SELL ORDER
 
 for i in range(s):
-	
+
     pro = 0 # profit at each trade
     #variables to be used for comarison
     future_cost = Data['future'][i]#...........cost of big S&P 500 futures bought
@@ -91,7 +91,7 @@ for i in range(s):
     mAvg     =   Data['mAvg'][i]#..............moving average
     USL      =   Data['USL'][i]#...............upper stoploss band
     LSL      =   Data['LSL'][i] #..............lower stoploss band
-    
+
     #comparisons stored as boolean variables to place order accordingly
     UBB_cross        =   (TRIN > UBB) and (TRIN_prev < UBB)# .......Check if TRIN crosses upper bollinger band
     LBB_cross        =   (TRIN < LBB) and (TRIN_prev > LBB)# .......Check if TRIN crosses lower bollinger band
@@ -102,38 +102,38 @@ for i in range(s):
 
     if(UBB_cross and (not buy_flag) and flag ==1): #...........places "BUY" order if TRIN crosses upper bollinger band to open a trade
         flag = 0
-        buy_flag = True      
+        buy_flag = True
         sell_flag = False
         transaction_start_price = future_cost #............price at which S&P 500 future bought when order is placed
         order_details = [1,"Buy" , "UBB crossed" , "0" , "position taken"]
-	
+
     elif (LBB_cross and (not sell_flag) and flag ==1): #.......places "SELL" order if TRIN crosses lower bollinger band to open a trade
         flag = 0
-        sell_flag = True  
+        sell_flag = True
         buy_flag = False
         transaction_start_price = future_cost
         order_details = [-1,"Sell" , "LBB crossed" , "0" , "position taken"]
-	
-    elif (mAvg_cross_up and flag==0 and (not buy_flag)) : #........places "BUY" order if TRIN crosses mAvg from low to high to close a trade  
+
+    elif (mAvg_cross_up and flag==0 and (not buy_flag)) : #........places "BUY" order if TRIN crosses mAvg from low to high to close a trade
         flag = 1
-        buy_flag = False 
+        buy_flag = False
         sell_flag = False
         pro = future_cost -transaction_start_price
         order_details = [1,"Buy" , "mAvg crossed" , "0" , "position closed"]
-		
+
     elif( LSL_cross and flag == 0 and (not buy_flag)): #......places "BUY" order if TRIN crosses lower stoploss band to close a trade
         flag = 1
         buy_flag = False
         sell_flag = False
         pro = future_cost - transaction_start_price
         order_details = [1,"Buy" , "LSB crossed" , "stoploss executed" , "position closed"]
-    
+
     elif((future_cost - transaction_start_price) > abs_SL and flag == 0 and (not buy_flag)):#......places "BUY " order if TRIN crosses lower stoploss #absolute value
         flag = 1
         buy_flag = False
         sell_flag = False
         pro = future_cost - transaction_start_price
-        order_details = [1,"Buy" , "LSB crossed" , "stoploss executed abs" , "position closed"]		
+        order_details = [1,"Buy" , "LSB crossed" , "stoploss executed abs" , "position closed"]
 
     elif (mAvg_cross_down and flag==0 and (not sell_flag)):#.....places "SELL" order if TRIN crosses mAvg from high to low to close a trade
         flag = 1
@@ -141,7 +141,7 @@ for i in range(s):
         buy_flag = False
         pro = -(future_cost - transaction_start_price)
         order_details = [-1,"Sell" , "mAvg crossed (h to l)" , "0" , "position closed"]
-    
+
     elif(USL_cross and flag==0 and (not sell_flag)):# ..places "SELL" order if TRIN crosses upper stoploss band to close a trade
         flag = 1
         sell_flag = False
@@ -162,7 +162,7 @@ for i in range(s):
             if(buy_flag==1 and sell_flag==0): tempo = (Data['future'][i] -transaction_start_price) * 500
             if(buy_flag==0 and sell_flag==1): tempo= (-Data['future'][i] +transaction_start_price) * 500
         order_details = [0,"No trade" , "no trade" , "0" , tempo]
-	
+
 
     profit.append(pro)
     order.append(order_details[0])

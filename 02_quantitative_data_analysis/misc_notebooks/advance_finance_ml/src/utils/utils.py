@@ -7,7 +7,7 @@ os.environ['THEANO_FLAGS'] = 'device=cpu'
 import pymc3 as pm
 import pandas as pd
 import numpy as np
-import dask 
+import dask
 import dask.dataframe
 import decimal
 import logzero
@@ -95,17 +95,17 @@ def custom_describe(df, nidx=3, nfeats=20):
 
     print(df.shape)
     nrows = df.shape[0]
-    
+
     rndidx = np.random.randint(0,len(df),nidx)
     dfdesc = df.describe().T
 
     for col in ['mean','std']:
         dfdesc[col] = dfdesc[col].apply(lambda x: np.round(x,2))
- 
+
     dfout = pd.concat((df.iloc[rndidx].T, dfdesc, df.dtypes), axis=1, join='outer')
     dfout = dfout.loc[df.columns.values]
     dfout.rename(columns={0:'dtype'}, inplace=True)
-    
+
     # add count nonNAN, min, max for string cols
     nan_sum = df.isnull().sum()
     dfout['count'] = nrows - nan_sum
@@ -114,7 +114,7 @@ def custom_describe(df, nidx=3, nfeats=20):
     dfout['nunique'] = df.apply(pd.Series.nunique)
     dfout['nan_count'] = nan_sum
     dfout['pct_nan'] = nan_sum / nrows
-    
+
     return dfout.iloc[:nfeats, :]
 
 
@@ -143,11 +143,11 @@ def plot_traces(trcs, retain=2500, varnames=None):
 
     if varnames: nrows = len(varnames)
     else: nrows = len(trcs.varnames)
-    
+
     plt.style.use('seaborn-dark-palette')
     plt.rcParams['font.family'] = 'DejaVu Sans Mono'
     line_cols = ['mean','hpd_2.5','hpd_97.5']
-    ax = pm.traceplot(trcs[-retain:], varnames=varnames, figsize=(12, nrows*1.5), 
+    ax = pm.traceplot(trcs[-retain:], varnames=varnames, figsize=(12, nrows*1.5),
                       lines={k: v[line_cols[0]] for k,v in df_smry.iterrows()})
 
     for i,var in enumerate(df_smry.index):
@@ -159,21 +159,21 @@ def plot_traces(trcs, retain=2500, varnames=None):
             ax[i,0].annotate('{:.2f}'.format(mn), xy=(mn,0), xycoords='data',
                              xytext=(5,10), textcoords='offset points', rotation=90,
                              va='bottom', fontsize='large', color='#AA0022')
-        except: 
+        except:
             pass
-        
+
     for i, mn in enumerate(df_smry['hpd_2.5']):
         try:
             ax[i,0].annotate('{:.2f}'.format(mn), xy=(mn,15), xycoords='data',
                              xytext=(5,10), textcoords='offset points', rotation=90,
                              va='top', fontsize='medium', color='#AA0022')
-        except: 
+        except:
             pass
-        
+
     for i, mn in enumerate(df_smry['hpd_97.5']):
         try:
             ax[i,0].annotate('{:.2f}'.format(mn), xy=(mn,15), xycoords='data',
                              xytext=(5,10), textcoords='offset points', rotation=90,
                              va='top', fontsize='medium', color=blue)#'#AA0022')
-        except: 
-            pass  
+        except:
+            pass

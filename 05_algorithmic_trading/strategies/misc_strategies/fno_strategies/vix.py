@@ -24,10 +24,10 @@ buy_sell = list() #.....................a list which tells buy/sell in words!
 stoploss = list()
 pro = 0 # profit( which happens( +/-) at the end of each transaction )
 v=0 #.................................. V is the buying price and 3/4 % above v will be the selling price
-thresh = 22  #..........................VIX threshold for placing a buy order 
+thresh = 22  #..........................VIX threshold for placing a buy order
 change_1 = 5 #..........................% above which to sell for a profit
 change_2 = 5 #..........................% below which to sell in a stoploss
-buy_flag = False#.......................indicates if last order was a buy 
+buy_flag = False#.......................indicates if last order was a buy
 sell_flag = True # ....................indicates if last order is a sell
 s = Data['future'].size#................size of the VIX dataset
 c_1 = (1 + (change_1)/float(100) ) #....c_1 is the value above which the sell order will execute in a successful trade
@@ -41,31 +41,31 @@ for i in range(s):
 		order_details = [-1,"Buy" , "0", "position taken"]
 		buy_flag = True
 		sell_flag =False
-		v = Data['future'][i] #..............................PRICE AT WHICH WE "BUY"                       
-	
+		v = Data['future'][i] #..............................PRICE AT WHICH WE "BUY"
+
 	elif(Data['future'][i] >= (c_1)*v and (not sell_flag)):#...IF future price is c_1 times v, then "SELL" ( profit )
 		buy_flag = False
 		sell_flag = True
 		pro = (Data['future'][i] - v) #profit= (selling price - the buying price)
 		order_details = [1,"Sell" , "0", "position closed"]
-		
+
 	elif(Data['future'][i] <= (c_2)*v and (not sell_flag)):#...IF future price is c_2 times v , then "SELL" ( loss )
 		buy_flag = False
 		sell_flag = True
 		pro = (Data['future'][i] - v)
-		order_details = [1,"Sell" , "Stoploss executed", "position closed"] 
+		order_details = [1,"Sell" , "Stoploss executed", "position closed"]
 	else:
 		if(buy_flag ==1): x = (Data['future'][i] - v ) * 500* 2
 		else: x = "0"
 		order_details = [0,"No trade" , "0", x]
-	
+
 	profit.append(pro)
 	order.append(order_details[0])
 	buy_sell.append(order_details[1])
 	stoploss.append(order_details[2])
 	mtm.append(order_details[3])
 
-	
+
 #buy/sell logic ends================================================================================================================
 
 Data['stoploss'] = pd.Series()

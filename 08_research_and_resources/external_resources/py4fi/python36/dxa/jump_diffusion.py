@@ -8,9 +8,9 @@ from sn_random_numbers import sn_random_numbers
 from simulation_class import simulation_class
 
 class jump_diffusion(simulation_class):
-    ''' Class to generate simulated paths based on 
+    ''' Class to generate simulated paths based on
     the Merton (1976) jump diffusion model.
-    
+
     Attributes
     ==========
     name : string
@@ -19,7 +19,7 @@ class jump_diffusion(simulation_class):
         market environment data for simulation
     corr : Boolean
         True if correlated with other model object
-        
+
     Methods
     =======
     update :
@@ -58,7 +58,7 @@ class jump_diffusion(simulation_class):
         if self.time_grid is None:
             self.generate_time_grid()
               # method from generic simulation class
-        # number of dates for time grid    
+        # number of dates for time grid
         M = len(self.time_grid)
         # number of paths
         I = self.paths
@@ -74,7 +74,7 @@ class jump_diffusion(simulation_class):
             # if correlated, use random number object as provided
             # in market environment
             sn1 = self.random_numbers
-        
+
         # standard normally distributed pseudorandom numbers
         # for the jump component
         sn2 = sn_random_numbers((1, M, I),
@@ -99,6 +99,6 @@ class jump_diffusion(simulation_class):
             paths[t] = paths[t - 1] * (np.exp((short_rate - rj
                                         - 0.5 * self.volatility ** 2) * dt
                                     + self.volatility * np.sqrt(dt) * ran)
-                                    + (np.exp(self.mu + self.delt * 
+                                    + (np.exp(self.mu + self.delt *
                                         sn2[t]) - 1) * poi)
         self.instrument_values = paths

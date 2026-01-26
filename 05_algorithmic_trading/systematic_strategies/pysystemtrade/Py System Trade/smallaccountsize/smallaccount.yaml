@@ -8,7 +8,7 @@ trading_rules:
      data:
          - "rawdata.get_daily_prices"
          - "rawdata.daily_returns_volatility"
-     other_args: 
+     other_args:
          Lfast: 2
          Lslow: 8
      forecast_scalar: 10.6
@@ -18,7 +18,7 @@ trading_rules:
      data:
          - "rawdata.get_daily_prices"
          - "rawdata.daily_returns_volatility"
-     other_args: 
+     other_args:
          Lfast: 4
          Lslow: 16
      forecast_scalar: 7.5
@@ -28,7 +28,7 @@ trading_rules:
      data:
          - "rawdata.get_daily_prices"
          - "rawdata.daily_returns_volatility"
-     other_args: 
+     other_args:
          Lfast: 8
          Lslow: 32
      forecast_scalar: 5.3
@@ -38,7 +38,7 @@ trading_rules:
      data:
          - "rawdata.get_daily_prices"
          - "rawdata.daily_returns_volatility"
-     other_args: 
+     other_args:
          Lfast: 16
          Lslow: 64
      forecast_scalar: 3.75
@@ -48,7 +48,7 @@ trading_rules:
      data:
          - "rawdata.get_daily_prices"
          - "rawdata.daily_returns_volatility"
-     other_args: 
+     other_args:
          Lfast: 32
          Lslow: 128
      forecast_scalar: 2.65
@@ -58,7 +58,7 @@ trading_rules:
      data:
          - "rawdata.get_daily_prices"
          - "rawdata.daily_returns_volatility"
-     other_args: 
+     other_args:
          Lfast: 64
          Lslow: 256
      forecast_scalar: 1.87

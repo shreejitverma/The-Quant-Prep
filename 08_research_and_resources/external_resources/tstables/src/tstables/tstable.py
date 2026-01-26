@@ -68,7 +68,7 @@ class TsTable:
             dt_partitions[day] = tuple((self.__ts_to_dt(s_ts),self.__ts_to_dt(e_ts)))
 
         return dt_partitions
-    
+
     @classmethod
     def __dt_to_ts(self,dt):
         delta = dt - self.EPOCH
@@ -138,7 +138,7 @@ class TsTable:
                 continue
 
             if (max_group_dt is not None) and (max_group_dt < group_dt):
-                
+
                 if group.ts_data.nrows == 0:
                     group_max_ts = None
                 else:
@@ -148,7 +148,7 @@ class TsTable:
                     max_ts = group_max_ts
                     max_group_dt = group_dt
             elif (max_group_dt is None):
-            
+
                 if group.ts_data.nrows == 0:
                     group_max_ts = None
                 else:
@@ -158,7 +158,7 @@ class TsTable:
                     max_ts = group_max_ts
                     max_group_dt = group_dt
 
-        
+
         return max_ts
 
     def __get_min_ts(self):
@@ -181,7 +181,7 @@ class TsTable:
                     min_ts = group_min_ts
                     min_group_dt = group_dt
             elif (min_group_dt is None):
-                
+
                 if group.ts_data.nrows == 0:
                     group_min_ts = None
                 else:
@@ -191,7 +191,7 @@ class TsTable:
                     min_ts = group_min_ts
                     min_group_dt = group_dt
 
-        
+
         return min_ts
 
     def min_dt(self):
@@ -210,7 +210,7 @@ class TsTable:
 
         if start_dt > end_dt:
             raise AttributeError('start_dt must be <= end_dt')
-        
+
 
         partitions = self.__dtrange_to_partition_ranges(start_dt,end_dt)
         sorted_pkeys = sorted(partitions.keys())
@@ -280,7 +280,7 @@ class TsTable:
             raise ValueError("rows parameter cannot be converted into a recarray object compliant "
                              "with table '%s'.  The error was: <%s>" % (str(self), exc))
 
-        # Confirm that first column is Int64. This is an additional constraint of TsTables.     
+        # Confirm that first column is Int64. This is an additional constraint of TsTables.
         if not wbufRA.dtype[0] == numpy.dtype('int64'):
             raise ValueError("first column must be of type numpy.int64.")
 
@@ -339,7 +339,7 @@ class TsTable:
 
         ts_data = self.__fetch_or_create_partition_table(partition_dt)
         ts_data.append(rows)
-    
+
     def __fetch_partition_group(self,partition_dt):
         """Fetches a partition group, or returns `False` if the partition group does not exist
         """
@@ -355,7 +355,7 @@ class TsTable:
         """
 
         p_array = self.__partition_date_to_path_array(partition_dt)
-        
+
         # For each component, fetch the group or create it
         # Year
         try:
@@ -396,7 +396,6 @@ class TsTable:
 
 
 
-        
 
 
 
@@ -404,4 +403,5 @@ class TsTable:
 
 
 
-    
+
+

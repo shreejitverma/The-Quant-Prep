@@ -8,7 +8,7 @@ Financial modeling is the task of building an abstract representation (a model) 
 
 ## Model 1 : Amortization Schedule
 
-An amortization schedule is a complete table of periodic loan payments, showing the amount of principal and the amount of interest that comprise each payment until the loan is paid off at the end of its term. 
+An amortization schedule is a complete table of periodic loan payments, showing the amount of principal and the amount of interest that comprise each payment until the loan is paid off at the end of its term.
 
 ### Components of a Amortization Schedule in a Financial Model
 
@@ -22,12 +22,12 @@ The number of years over which you will repay this loan.
 
 #### Interest rate
 
-Annual fixed interest rate for this loan. 
+Annual fixed interest rate for this loan.
 
 #### Payment per period
 
 Includes principal payment and interest payment (PI).
-While each periodic payment is the same amount early in the schedule, the majority of each payment is interest; later in the schedule, the majority of each payment covers the loan's principal. 
+While each periodic payment is the same amount early in the schedule, the majority of each payment is interest; later in the schedule, the majority of each payment covers the loan's principal.
 
 #### Total interest
 

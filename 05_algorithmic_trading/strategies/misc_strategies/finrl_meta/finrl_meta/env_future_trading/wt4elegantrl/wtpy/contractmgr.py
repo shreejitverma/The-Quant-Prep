@@ -33,7 +33,7 @@ class ContractMgr:
                 cInfo.code = code
                 cInfo.name = cObj["name"]
                 cInfo.product = cObj["product"]
-                
+
                 #股票标准代码为SSE.000001，期货标准代码为SHFE.rb.2010
                 if cInfo.code[:len(cInfo.product)] == cInfo.product:
                     cInfo.stdCode = exchg + "." + cInfo.product + "." + cInfo.code[len(cInfo.product):]
@@ -52,7 +52,7 @@ class ContractMgr:
                 stdCode = items[0] + "." + items[1] + items[2]
         if stdCode not in self.__contracts__:
             return None
-            
+
         return self.__contracts__[stdCode]
 
     def getTotalCodes(self) -> list:
@@ -60,5 +60,5 @@ class ContractMgr:
         for code in self.__contracts__:
             codes.append(self.__contracts__[code].stdCode)
         return codes
-        
+
 

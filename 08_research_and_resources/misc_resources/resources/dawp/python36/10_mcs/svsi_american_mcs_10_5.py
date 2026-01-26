@@ -285,7 +285,7 @@ for alpha in it.product(py_list, x_disc_list, m_list, paths_list,
                         'LSM_pure': V0_LSM, 'LSM_convar': V0_CV,
                         'SE': SE, 'error': error, 'rel_error': rel_error,
                         'PY1_acc': PY1_acc, 'PY2_acc': PY2_acc,
-                        'PY_acc': PY1_acc or PY2_acc}, 
+                        'PY_acc': PY1_acc or PY2_acc},
                         index=[0,])
 
                     z += 1  # option counter

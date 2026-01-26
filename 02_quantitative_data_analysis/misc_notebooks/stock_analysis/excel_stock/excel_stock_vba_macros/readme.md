@@ -2,10 +2,10 @@
 
 # Excel VBA
 ### Description:
-#### VBA (Visual Basic for Applications) is the programming language of Excel and other Office programs. Create VBA or Macros relate to investing or trading.  
+#### VBA (Visual Basic for Applications) is the programming language of Excel and other Office programs. Create VBA or Macros relate to investing or trading.
 
 
 
-## Author  
-### * Tin Hang  
+## Author
+### * Tin Hang
 

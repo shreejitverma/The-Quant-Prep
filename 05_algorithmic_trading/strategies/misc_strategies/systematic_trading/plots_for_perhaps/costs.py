@@ -9,7 +9,7 @@ from itertools import cycle
 from datetime import datetime as dt
 
 lines = ["-","--","-.", ]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue"])
 
 from random import gauss
@@ -25,12 +25,12 @@ results=[]
 for cost in costladder:
     x=[1+(mean - cost)]*nlength
     x=np.cumprod(x)
-    
+
     x=x*100.0
     x=pd.Series(x, pd.date_range(pd.datetime(2016,1,1), periods=nlength, freq="D"))
-    
+
     results.append(x)
-    
+
 results=pd.concat(results, axis=1)
 rel_labels=["%d bp" % (cost*10000.0) for cost in costladder]
 results.columns = rel_labels
@@ -54,7 +54,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 

@@ -20,11 +20,11 @@ import fix_yahoo_finance as yf
 
 #simple moving average
 def macd(signals):
-    
-    
+
+
     signals['ma1']=signals['Close'].rolling(window=ma1,min_periods=1,center=False).mean()
     signals['ma2']=signals['Close'].rolling(window=ma2,min_periods=1,center=False).mean()
-    
+
     return signals
 
 
@@ -39,7 +39,7 @@ def macd(signals):
 #the difference between is sometimes positive, it sometimes becomes negative
 #thats why it is named as moving average converge/diverge oscillator
 def signal_generation(df,method):
-    
+
     signals=method(df)
     signals['positions']=0
 
@@ -62,11 +62,11 @@ def signal_generation(df,method):
 
 #plotting the backtesting result
 def plot(new, ticker):
-    
+
     #the first plot is the actual close price with long/short positions
     fig=plt.figure()
     ax=fig.add_subplot(111)
-    
+
     new['Close'].plot(label=ticker)
     ax.plot(new.loc[new['signals']==1].index,new['Close'][new['signals']==1],label='LONG',lw=0,marker='^',c='g')
     ax.plot(new.loc[new['signals']==-1].index,new['Close'][new['signals']==-1],label='SHORT',lw=0,marker='v',c='r')
@@ -74,9 +74,9 @@ def plot(new, ticker):
     plt.legend(loc='best')
     plt.grid(True)
     plt.title('Positions')
-    
+
     plt.show()
-    
+
     #the second plot is long/short moving average with oscillator
     #note that i use bar chart for oscillator
     fig=plt.figure()
@@ -94,22 +94,22 @@ def plot(new, ticker):
 
     new['ma1'].plot(label='ma1')
     new['ma2'].plot(label='ma2',linestyle=':')
-    
+
     plt.legend(loc='best')
     plt.grid(True)
     plt.show()
 
-    
+
 # In[5]:
 
 def main():
-    
+
     #input the long moving average and short moving average period
     #for the classic MACD, it is 12 and 26
     #once a upon a time you got six trading days in a week
     #so it is two week moving average versus one month moving average
     #for now, the ideal choice would be 10 and 21
-    
+
     global ma1,ma2,stdate,eddate,ticker,slicer
 
     #macd is easy and effective
@@ -129,7 +129,7 @@ def main():
 
     #downloading data
     df=yf.download(ticker,start=stdate,end=eddate)
-    
+
     new=signal_generation(df,macd)
     new=new[slicer:]
     plot(new, ticker)

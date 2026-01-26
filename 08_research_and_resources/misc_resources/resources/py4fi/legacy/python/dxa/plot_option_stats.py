@@ -30,7 +30,7 @@ def plot_option_stats(s_list, p_list, d_list, v_list):
     plt.plot(s_list, d_list, 'b')
     plt.grid(True); plt.legend(loc=0)
     plt.ylim(min(d_list) - 0.1, max(d_list) + 0.1)
-    plt.setp(sub2.get_xticklabels(), visible=False) 
+    plt.setp(sub2.get_xticklabels(), visible=False)
     sub3 = plt.subplot(313)
     plt.plot(s_list, v_list, 'yo', label='Vega')
     plt.plot(s_list, v_list, 'b')

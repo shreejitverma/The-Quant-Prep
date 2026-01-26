@@ -21,7 +21,7 @@ class WtWrapper:
     # api可以作为公共变量
     api = None
     ver = "Unknown"
-    
+
     # 构造函数，传入动态库名
     def __init__(self, engine):
         self._engine = engine
@@ -30,7 +30,7 @@ class WtWrapper:
         a = (paths[:-1] + (dllname,))
         _path = os.path.join(*a)
         self.api = cdll.LoadLibrary(_path)
-        
+
         self.api.get_version.restype = c_char_p
         self.api.cta_get_last_entertime.restype = c_uint64
         self.api.cta_get_first_entertime.restype = c_uint64
@@ -239,7 +239,7 @@ class WtWrapper:
             tick["bidqty"] = list()
             tick["askprice"] = list()
             tick["askqty"] = list()
-            
+
             tick["total_volume"] = realTick.total_volume
             tick["volume"] = realTick.volume
             tick["total_turnover"] = realTick.total_turnover
@@ -271,7 +271,7 @@ class WtWrapper:
     def on_hftstra_channel_evt(self, id:int, trader:str, evtid:int):
         engine = self._engine
         ctx = engine.get_context(id)
-        
+
         if evtid == CHNL_EVENT_READY:
             ctx.on_channel_ready()
         elif evtid == CHNL_EVENT_LOST:
@@ -317,7 +317,7 @@ class WtWrapper:
                 break
             else:
                 curOrdQue["volumes"].append(newOrdQue.volumes[i])
-        
+
         if ctx is not None:
             ctx.on_order_queue(stdCode, curOrdQue)
 
@@ -345,7 +345,7 @@ class WtWrapper:
 
             item_list[i] = curOrdDtl
             addr += szItem
-            
+
         if ctx is not None:
             ctx.on_get_order_queue(bytes.decode(stdCode), item_list, isLast)
 
@@ -361,7 +361,7 @@ class WtWrapper:
         curOrdDtl["price"] = newOrdDtl.price
         curOrdDtl["volume"] = newOrdDtl.volume
         curOrdDtl["otype"] = newOrdDtl.otype
-        
+
         if ctx is not None:
             ctx.on_order_detail(stdCode, curOrdDtl)
 
@@ -383,7 +383,7 @@ class WtWrapper:
 
             item_list[i] = curOrdDtl
             addr += szItem
-            
+
         if ctx is not None:
             ctx.on_get_order_detail(bytes.decode(stdCode), item_list, isLast)
 
@@ -401,10 +401,10 @@ class WtWrapper:
         curTrans["volume"] = newTrans.volume
         curTrans["askorder"] = newTrans.askorder
         curTrans["bidorder"] = newTrans.bidorder
-        
+
         if ctx is not None:
             ctx.on_transaction(stdCode, curTrans)
-        
+
     def on_hftstra_get_transaction(self, d:int, stdCode:str, newTrans:POINTER(WTSTransStruct), count:int, isLast:bool):
         engine = self._engine
         ctx = engine.get_context(id)
@@ -424,7 +424,7 @@ class WtWrapper:
             curTrans["bidorder"] = realTrans.bidorder
             trans_list[i] = curTrans
             addr += szTrans
-            
+
         if ctx is not None:
             ctx.on_get_transaction(bytes.decode(stdCode), trans_list, isLast)
 
@@ -434,7 +434,7 @@ class WtWrapper:
         parser = engine.get_extended_parser(id)
         if parser is None:
             return
-        
+
         if evtId == EVENT_PARSER_INIT:
             parser.init(engine)
         elif evtId == EVENT_PARSER_CONNECT:
@@ -545,7 +545,7 @@ class WtWrapper:
         self.cb_engine_event = CB_ENGINE_EVENT(self.on_engine_event)
         try:
             self.api.register_evt_callback(self.cb_engine_event)
-            self.api.register_hft_callbacks(self.cb_stra_init, self.cb_stra_tick, self.cb_stra_bar, 
+            self.api.register_hft_callbacks(self.cb_stra_init, self.cb_stra_tick, self.cb_stra_bar,
                 self.cb_hftstra_chnl_evt, self.cb_hftstra_order, self.cb_hftstra_trade, self.cb_hftstra_entrust,
                 self.cb_hftstra_orddtl, self.cb_hftstra_ordque, self.cb_hftstra_trans, self.cb_session_event)
             self.api.init_porter(bytes(logCfg, encoding = "utf8"), isFile, bytes(genDir, encoding = "utf8"))
@@ -656,7 +656,7 @@ class WtWrapper:
         @id     策略id
         '''
         return self.api.cta_get_all_position(id, CB_STRATEGY_GET_POSITION(self.on_stra_get_position))
-    
+
     def cta_get_position(self, id:int, stdCode:str, usertag:str = ""):
         '''
         获取持仓\n
@@ -679,7 +679,7 @@ class WtWrapper:
     def cta_get_price(self, stdCode:str) -> float:
         '''
         @stdCode   合约代码\n
-        @return     指定合约的最新价格 
+        @return     指定合约的最新价格
         '''
         return self.api.cta_get_price(bytes(stdCode, encoding = "utf8"))
 
@@ -702,14 +702,14 @@ class WtWrapper:
     def cta_get_date(self) -> int:
         '''
         获取当前日期\n
-        @return    当前日期 
+        @return    当前日期
         '''
         return self.api.cta_get_date()
 
     def cta_get_time(self) -> int:
         '''
         获取当前时间\n
-        @return    当前时间 
+        @return    当前时间
         '''
         return self.api.cta_get_time()
 
@@ -717,7 +717,7 @@ class WtWrapper:
         '''
         获取当前持仓的首次进场时间\n
         @stdCode    合约代码\n
-        @return     进场时间，格式如201907260932 
+        @return     进场时间，格式如201907260932
         '''
         return self.api.cta_get_first_entertime(id, bytes(stdCode, encoding = "utf8"))
 
@@ -725,7 +725,7 @@ class WtWrapper:
         '''
         获取当前持仓的最后进场时间\n
         @stdCode    合约代码\n
-        @return     进场时间，格式如201907260932 
+        @return     进场时间，格式如201907260932
         '''
         return self.api.cta_get_last_entertime(id, bytes(stdCode, encoding = "utf8"))
 
@@ -733,7 +733,7 @@ class WtWrapper:
         '''
         获取当前持仓的最后出场时间\n
         @stdCode    合约代码\n
-        @return     进场时间，格式如201907260932 
+        @return     进场时间，格式如201907260932
         '''
         return self.api.cta_get_last_exittime(id, bytes(stdCode, encoding = "utf8"))
 
@@ -751,9 +751,9 @@ class WtWrapper:
         @id         策略id\n
         @stdCode    合约代码\n
         @usertag    进场标记\n
-        @return     进场时间，格式如201907260932 
+        @return     进场时间，格式如201907260932
         '''
-        return self.api.cta_get_detail_entertime(id, bytes(stdCode, encoding = "utf8"), bytes(usertag, encoding = "utf8")) 
+        return self.api.cta_get_detail_entertime(id, bytes(stdCode, encoding = "utf8"), bytes(usertag, encoding = "utf8"))
 
     def cta_get_detail_cost(self, id:int, stdCode:str, usertag:str) -> float:
         '''
@@ -761,9 +761,9 @@ class WtWrapper:
         @id         策略id\n
         @stdCode    合约代码\n
         @usertag    进场标记\n
-        @return     开仓价 
+        @return     开仓价
         '''
-        return self.api.cta_get_detail_cost(id, bytes(stdCode, encoding = "utf8"), bytes(usertag, encoding = "utf8")) 
+        return self.api.cta_get_detail_cost(id, bytes(stdCode, encoding = "utf8"), bytes(usertag, encoding = "utf8"))
 
     def cta_get_detail_profit(self, id:int, stdCode:str, usertag:str, flag:int):
         '''
@@ -772,9 +772,9 @@ class WtWrapper:
         @stdCode       合约代码\n
         @usertag    进场标记\n
         @flag       盈亏记号，0-浮动盈亏，1-最大浮盈，2-最大亏损（负数）\n
-        @return     盈亏 
+        @return     盈亏
         '''
-        return self.api.cta_get_detail_profit(id, bytes(stdCode, encoding = "utf8"), bytes(usertag, encoding = "utf8"), flag) 
+        return self.api.cta_get_detail_profit(id, bytes(stdCode, encoding = "utf8"), bytes(usertag, encoding = "utf8"), flag)
 
     def cta_save_user_data(self, id:int, key:str, val:str):
         '''
@@ -802,7 +802,7 @@ class WtWrapper:
         @stdCode    品种代码
         '''
         self.api.cta_sub_ticks(id, bytes(stdCode, encoding = "utf8"))
-  
+
     ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''SEL接口'''
     def sel_get_bars(self, id:int, stdCode:str, period:str, count:int):
@@ -863,7 +863,7 @@ class WtWrapper:
     def sel_get_price(self, stdCode:str):
         '''
         @stdCode   合约代码\n
-        @return 指定合约的最新价格 
+        @return 指定合约的最新价格
         '''
         return self.api.sel_get_price(bytes(stdCode, encoding = "utf8"))
 
@@ -879,14 +879,14 @@ class WtWrapper:
     def sel_get_date(self):
         '''
         获取当前日期\n
-        @return    当前日期 
+        @return    当前日期
         '''
         return self.api.sel_get_date()
 
     def sel_get_time(self):
         '''
         获取当前时间\n
-        @return    当前时间 
+        @return    当前时间
         '''
         return self.api.sel_get_time()
 
@@ -1003,28 +1003,28 @@ class WtWrapper:
     def hft_get_price(self, stdCode:str):
         '''
         @stdCode   合约代码\n
-        @return 指定合约的最新价格 
+        @return 指定合约的最新价格
         '''
         return self.api.hft_get_price(bytes(stdCode, encoding = "utf8"))
 
     def hft_get_date(self):
         '''
         获取当前日期\n
-        @return    当前日期 
+        @return    当前日期
         '''
         return self.api.hft_get_date()
 
     def hft_get_time(self):
         '''
         获取当前时间\n
-        @return    当前时间 
+        @return    当前时间
         '''
         return self.api.hft_get_time()
 
     def hft_get_secs(self):
         '''
         获取当前时间\n
-        @return    当前时间 
+        @return    当前时间
         '''
         return self.api.hft_get_secs()
 
@@ -1114,7 +1114,7 @@ class WtWrapper:
         '''
         创建策略环境\n
         @name      策略名称
-        @return    系统内策略ID 
+        @return    系统内策略ID
         '''
         return self.api.create_cta_context(bytes(name, encoding = "utf8") )
 
@@ -1124,7 +1124,7 @@ class WtWrapper:
         @name      策略名称
         @trader    交易通道ID
         @agent     数据是否托管
-        @return    系统内策略ID 
+        @return    系统内策略ID
         '''
         return self.api.create_hft_context(bytes(name, encoding = "utf8"), bytes(trader, encoding = "utf8"), agent)
 
@@ -1132,9 +1132,9 @@ class WtWrapper:
         '''
         创建策略环境\n
         @name      策略名称
-        @return    系统内策略ID 
+        @return    系统内策略ID
         '''
-        return self.api.create_sel_context(bytes(name, encoding = "utf8"), date, time, 
+        return self.api.create_sel_context(bytes(name, encoding = "utf8"), date, time,
             bytes(period, encoding = "utf8"), bytes(trdtpl, encoding = "utf8"), bytes(session, encoding = "utf8"))
 
     def reg_cta_factories(self, factFolder:str):
@@ -1149,4 +1149,3 @@ class WtWrapper:
     def reg_exe_factories(self, factFolder:str):
         return self.api.reg_exe_factories(bytes(factFolder, encoding = "utf8") )
 
-    

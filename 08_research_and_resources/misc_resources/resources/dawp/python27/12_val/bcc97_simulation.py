@@ -19,7 +19,7 @@ from H93_calibration import S0, kappa_r, theta_r, sigma_r, r0
 #
 opt = np.load('11_cal/opt_full.npy')
 kappa_v, theta_v, sigma_v, rho, v0, lamb, mu, delta = opt
-        
+
 
 #
 # Simulation Parameters
@@ -143,7 +143,7 @@ def SRD_generate_paths(x0, kappa, theta, sigma, T, M, I,
 def B96_generate_paths(S0, r, v, lamb, mu, delta, rand, row1, row2,
                        cho_matrix, T, M, I, moment_matching):
     ''' Simulation of Bates (1996) index process.
-    
+
     Parameters
     ==========
     S0: float

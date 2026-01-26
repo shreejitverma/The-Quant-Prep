@@ -63,7 +63,7 @@ On the shell, create an environment with `conda`:
 Clone the Github repository to your local working folder:
 
     git clone --depth=1 http://github.com/yhilpisch/packaging
-    
+
 Navigate to the repository folder and install the package:
 
     cd packaging
@@ -80,9 +80,9 @@ Alternatively, install the `pylib` package via
 You can also install the `pylib` package via
 
     pip install -i https://test.pypi.org/simple/ pylib
-    
+
 ### First Steps
-    
+
 Start a Python interactive session session and e.g. execute:
 
     >>> import pylib

@@ -39,11 +39,11 @@ import scipy.stats
 #its open, close, high, low require a different approach
 #please refer to the website mentioned above
 def heikin_ashi(data):
-    
+
     df=data.copy()
-    
+
     df.reset_index(inplace=True)
-        
+
     #heikin ashi close
     df['HA close']=(df['Open']+df['Close']+df['High']+df['Low'])/4
 
@@ -54,7 +54,7 @@ def heikin_ashi(data):
     #heikin ashi open
     for n in range(1,len(df)):
         df.at[n,'HA open']=(df['HA open'][n-1]+df['HA close'][n-1])/2
-        
+
     #heikin ashi high/low
     temp=pd.concat([df['HA open'],df['HA close'],df['Low'],df['High']],axis=1)
     df['HA high']=temp.apply(max,axis=1)
@@ -62,7 +62,7 @@ def heikin_ashi(data):
 
     del df['Adj Close']
     del df['Volume']
-    
+
     return df
 
 
@@ -77,9 +77,9 @@ def heikin_ashi(data):
 #you have to satisfy all four conditions to long/short
 #nevertheless, the exit signal only has three conditions
 def signal_generation(df,method,stls):
-        
+
     data=method(df)
-    
+
     data['signals']=0
 
     #i use cumulated sum to check how many positions i have longed
@@ -89,12 +89,12 @@ def signal_generation(df,method,stls):
     data['cumsum']=0
 
     for n in range(1,len(data)):
-        
+
         #long triggered
         if (data['HA open'][n]>data['HA close'][n] and data['HA open'][n]==data['HA high'][n] and
             np.abs(data['HA open'][n]-data['HA close'][n])>np.abs(data['HA open'][n-1]-data['HA close'][n-1]) and
             data['HA open'][n-1]>data['HA close'][n-1]):
-            
+
             data.at[n,'signals']=1
             data['cumsum']=data['signals'].cumsum()
 
@@ -102,14 +102,14 @@ def signal_generation(df,method,stls):
             #accumulate too many longs
             if data['cumsum'][n]>stls:
                 data.at[n,'signals']=0
-        
+
         #exit positions
-        elif (data['HA open'][n]<data['HA close'][n] and data['HA open'][n]==data['HA low'][n] and 
+        elif (data['HA open'][n]<data['HA close'][n] and data['HA open'][n]==data['HA low'][n] and
         data['HA open'][n-1]<data['HA close'][n-1]):
-            
+
             data.at[n,'signals']=-1
             data['cumsum']=data['signals'].cumsum()
-        
+
 
             #clear all longs
             #if there are no long positions in my portfolio
@@ -119,7 +119,7 @@ def signal_generation(df,method,stls):
 
             if data['cumsum'][n]<0:
                 data.at[n,'signals']=0
-                
+
     return data
 
 
@@ -133,18 +133,18 @@ def signal_generation(df,method,stls):
 #use line plot to construct high and low
 def candlestick(df,ax=None,titlename='',highcol='High',lowcol='Low',
                 opencol='Open',closecol='Close',xcol='Date',
-                colorup='r',colordown='g',**kwargs):  
-    
+                colorup='r',colordown='g',**kwargs):
+
     #bar width
     #use 0.6 by default
     dif=[(-3+i)/10 for i in range(7)]
-    
+
     if not ax:
         ax=plt.figure(figsize=(10,5)).add_subplot(111)
-    
+
     #construct the bars one by one
     for i in range(len(df)):
-        
+
         #width is 0.6 by default
         #so 7 data points required for each bar
         x=[i+j for j in dif]
@@ -152,10 +152,10 @@ def candlestick(df,ax=None,titlename='',highcol='High',lowcol='Low',
         y2=[df[closecol].iloc[i]]*7
 
         barcolor=colorup if y1[0]>y2[0] else colordown
-        
+
         #no high line plot if open/close is high
         if df[highcol].iloc[i]!=max(df[opencol].iloc[i],df[closecol].iloc[i]):
-            
+
             #use generic plot to viz high and low
             #use 1.001 as a scaling factor
             #to prevent high line from crossing into the bar
@@ -163,15 +163,15 @@ def candlestick(df,ax=None,titlename='',highcol='High',lowcol='Low',
                      [df[highcol].iloc[i],
                       max(df[opencol].iloc[i],
                           df[closecol].iloc[i])*1.001],c='k',**kwargs)
-    
+
         #same as high
-        if df[lowcol].iloc[i]!=min(df[opencol].iloc[i],df[closecol].iloc[i]):             
-            
+        if df[lowcol].iloc[i]!=min(df[opencol].iloc[i],df[closecol].iloc[i]):
+
             plt.plot([i,i],
                      [df[lowcol].iloc[i],
                       min(df[opencol].iloc[i],
                           df[closecol].iloc[i])*0.999],c='k',**kwargs)
-        
+
         #treat the bar as fill between
         plt.fill_between(x,y1,y2,
                          edgecolor='k',
@@ -180,13 +180,13 @@ def candlestick(df,ax=None,titlename='',highcol='High',lowcol='Low',
     #only show 5 xticks
     plt.xticks(range(0,len(df),len(df)//5),df[xcol][0::len(df)//5].dt.date)
     plt.title(titlename)
-    
-    
+
+
 #plotting the backtesting result
-def plot(df,ticker):    
-    
+def plot(df,ticker):
+
     df.set_index(df['Date'],inplace=True)
-    
+
     #first plot is Heikin-Ashi candlestick
     #use candlestick function and set Heikin-Ashi O,C,H,L
     ax1=plt.subplot2grid((200,1), (0,0), rowspan=120,ylabel='HA price')
@@ -218,10 +218,10 @@ def plot(df,ticker):
 
 
 #backtesting
-#initial capital 10k to calculate the actual pnl  
+#initial capital 10k to calculate the actual pnl
 #100 shares to buy of every position
-def portfolio(data,capital0=10000,positions=100):   
-        
+def portfolio(data,capital0=10000,positions=100):
+
     #cumsum column is created to check the holding of the position
     data['cumsum']=data['signals'].cumsum()
 
@@ -242,18 +242,18 @@ def portfolio(data,capital0=10000,positions=100):
 
 #plotting the asset value change of the portfolio
 def profit(portfolio):
-        
+
     fig=plt.figure()
     bx=fig.add_subplot(111)
-    
+
     portfolio['total asset'].plot(label='Total Asset')
-    
+
     #long/short position markers related to the portfolio
     #the same mechanism as the previous one
     #replace close price with total asset value
     bx.plot(portfolio['signals'].loc[portfolio['signals']==1].index,portfolio['total asset'][portfolio['signals']==1],lw=0,marker='^',c='g',label='long')
     bx.plot(portfolio['signals'].loc[portfolio['signals']<0].index,portfolio['total asset'][portfolio['signals']<0],lw=0,marker='v',c='r',label='short')
-    
+
     plt.legend(loc='best')
     plt.grid(True)
     plt.xlabel('Date')
@@ -272,7 +272,7 @@ def profit(portfolio):
 #you can use summation to do approximation as well
 #it is a more reasonable ratio to measure the risk adjusted return
 #normal distribution doesnt explain the fat tail of returns
-#so i use student T cumulated distribution function instead 
+#so i use student T cumulated distribution function instead
 #to make our life easier, i do not use empirical distribution
 #the cdf of empirical distribution is much more complex
 #check wikipedia for more details
@@ -323,7 +323,7 @@ def mdd(series):
 
 
 # In[9]:
-    
+
 
 #stats calculation
 def stats(portfolio,trading_signals,stdate,eddate,capital0=10000):
@@ -332,9 +332,9 @@ def stats(portfolio,trading_signals,stdate,eddate,capital0=10000):
 
     #get the min and max of return
     maximum=np.max(portfolio['return'])
-    minimum=np.min(portfolio['return'])    
+    minimum=np.min(portfolio['return'])
 
-    #growth_rate denotes the average growth rate of portfolio 
+    #growth_rate denotes the average growth rate of portfolio
     #use geometric average instead of arithmetic average for percentage growth
     growth_rate=(float(portfolio['total asset'].iloc[-1]/capital0))**(1/len(trading_signals))-1
 
@@ -347,7 +347,7 @@ def stats(portfolio,trading_signals,stdate,eddate,capital0=10000):
     #return of benchmark
     return_of_benchmark=float(benchmark['Close'].iloc[-1]/benchmark['Open'].iloc[0]-1)
 
-    #rate_of_benchmark denotes the average growth rate of benchmark 
+    #rate_of_benchmark denotes the average growth rate of benchmark
     #use geometric average instead of arithmetic average for percentage growth
     rate_of_benchmark=(return_of_benchmark+1)**(1/len(trading_signals))-1
 
@@ -376,7 +376,7 @@ def stats(portfolio,trading_signals,stdate,eddate,capital0=10000):
     #so every long is always one, and short cannot be larger than the stop loss limit
     stats['numbers of longs']=trading_signals['signals'].loc[trading_signals['signals']==1].count()
     stats['numbers of shorts']=trading_signals['signals'].loc[trading_signals['signals']<0].count()
-    stats['numbers of trades']=stats['numbers of shorts']+stats['numbers of longs']  
+    stats['numbers of trades']=stats['numbers of shorts']+stats['numbers of longs']
 
     #to get the total length of trades
     #given that cumsum indicates the holding of positions
@@ -395,11 +395,11 @@ def stats(portfolio,trading_signals,stdate,eddate,capital0=10000):
 # In[10]:
 
 def main():
-    
+
     #initializing
 
     #stop loss positions, the maximum long positions we can get
-    #without certain constraints, you will long indefinites times 
+    #without certain constraints, you will long indefinites times
     #as long as the market condition triggers the signal
     #in a whipsaw condition, it is suicidal
     stls=3
@@ -425,8 +425,8 @@ def main():
     stats(portfolio_details,trading_signals,stdate,eddate)
 
     #note that this is the only py file with complete stats calculation
-    
-    
-    
+
+
+
 if __name__ == '__main__':
     main()

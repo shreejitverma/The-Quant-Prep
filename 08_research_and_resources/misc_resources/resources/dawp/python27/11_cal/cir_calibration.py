@@ -24,14 +24,14 @@ from CIR_zcb_valuation_gen import B
 # Source: http://www.emmi-benchmarks.eu
 # on 30. September 2014
 #
-t_list = np.array((1, 7, 14, 30, 60, 90, 180, 270, 360)) / 360. 
+t_list = np.array((1, 7, 14, 30, 60, 90, 180, 270, 360)) / 360.
 r_list =  np.array((-0.032, -0.013, -0.013, 0.007, 0.043,
                     0.083, 0.183, 0.251, 0.338)) / 100
 
 factors = (1 + t_list * r_list)
 zero_rates = 1 / t_list * np.log(factors)
 
-r0 = r_list[0] # 0.0  # set to zero 
+r0 = r_list[0] # 0.0  # set to zero
 
 #
 # Interpolation of Market Data
@@ -50,7 +50,7 @@ def plot_term_structure():
     plt.plot(t_list, r_list, 'ro', label='rates')
     plt.plot(tn_list, ts_list, 'b', label='interpolation', lw=1.5)
       # cubic splines
-    plt.plot(tn_list, de_list, 'g--', label='1st derivative', lw=1.5) 
+    plt.plot(tn_list, de_list, 'g--', label='1st derivative', lw=1.5)
       # first derivative
     plt.legend(loc=0)
     plt.xlabel('time horizon in years')
@@ -68,7 +68,7 @@ def CIR_forward_rate(opt):
     ==========
     kappa_r: float
         mean-reversion factor
-    theta_r: float 
+    theta_r: float
         long-run mean
     sigma_r: float
         volatility factor

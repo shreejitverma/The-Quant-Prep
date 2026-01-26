@@ -40,7 +40,7 @@ where some parameters might need to be changed due to your configuration (e.g. t
 After a **reboot**, you should now be able to permanently access the ("any") USB drive plugged into your RPi via ``/home/pi/usb``.
 
 
-Remote Repository on the RPi 
+Remote Repository on the RPi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now that we have a proper storage device configured, we can **add a remote repository** to an existing one (I assume you are working with Git already and have a few repositories to use now; if not see below).

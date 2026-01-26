@@ -306,7 +306,7 @@ def srjd_get_parameter_series(pricing_date_list):
         vstoxx_model, option_models = srjd_get_option_models(pricing_date,
                                                         option_selection,
                                                         futures)
-        if first:    
+        if first:
             # global optimization to start with
             opt = spo.brute(srjd_mean_squared_error,
                 ((1.25, 6.51, 0.75),   # range for kappa

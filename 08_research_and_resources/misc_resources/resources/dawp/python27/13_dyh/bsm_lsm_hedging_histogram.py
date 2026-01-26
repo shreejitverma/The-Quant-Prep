@@ -47,7 +47,7 @@ def BSM_dynamic_hedge_mcs(M=50, I=10000):
         po[0] = V_2  # initial portfolio value
         bo = V_2 - delta[0] * S0  # initial bond position value
         for s in range(1, t, 1):  # for all times up to i-1
-            po[s] = delta[s - 1] * S[s, p] + bo * math.exp(r * dt) 
+            po[s] = delta[s - 1] * S[s, p] + bo * math.exp(r * dt)
               # portfolio payoff
             bo = po[s] - delta[s] * S[s, p]  # bond position value
             if s == t - 1:  # at exercise/expiration date

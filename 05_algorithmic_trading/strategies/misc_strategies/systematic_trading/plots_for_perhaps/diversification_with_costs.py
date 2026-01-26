@@ -14,7 +14,7 @@ def make_corr(dimension, offdiag=0.0):
     return corr
 
 periodlabels=["Stocks", "Industries", "Countrys", "Regions"]
-cfactors=[0.85]*3+  [0.75]*3+     [0.85]*3 +[0.6]*2 
+cfactors=[0.85]*3+  [0.75]*3+     [0.85]*3 +[0.6]*2
 ndimlist=[1, 5, 10, 1, 5, 15,   1, 5, 10,   1, 4]
 ## take these values from diversification benefits plot
 basestd_stock=0.25
@@ -51,9 +51,9 @@ for ( basestd, appzero, ndim, cfactor) in zip(
         variance=new_std**2
         gmm=basearithmean- variance/2.0
         gsr=(gmm - riskfree) / new_std
-        
-        
-          
+
+
+
     results_sr.append(gsr)
     results_gmm.append(gmm*100.0)
     results_std.append(new_std)
@@ -66,12 +66,12 @@ results_std=[results_std[0:3], [None]*3+results_std[3:6], [None]*6+results_std[6
 from itertools import cycle
 
 lines =           ["-",   "--",   "-.",     ":"]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue", "green", "black"])
 
 for r in range(len(results_sr)):
     plot(results_sr[r], color=next(colorcycler), linestyle=next(linecycler), linewidth=3)
-    
+
 #xticks(range(len(ndimlist))[0::2], ndimlist[0::2])
 xticks(range(len(ndimlist)), ndimlist)
 legend(periodlabels, loc="top left",  prop={'size': 18})
@@ -88,7 +88,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 
@@ -99,7 +99,7 @@ show()
 
 for r in range(len(results_gmm)):
     plot(results_gmm[r], color=next(colorcycler), linestyle=next(linecycler), linewidth=3)
-    
+
 #xticks(range(len(ndimlist))[0::2], ndimlist[0::2])
 xticks(range(len(ndimlist)), ndimlist)
 legend(periodlabels, loc="top left",  prop={'size': 18})
@@ -117,7 +117,7 @@ show()
 
 for r in range(len(results_std)):
     plot(results_std[r], color=next(colorcycler), linestyle=next(linecycler), linewidth=3)
-    
+
 #xticks(range(len(ndimlist))[0::2], ndimlist[0::2])
 xticks(range(len(ndimlist)), ndimlist)
 legend(periodlabels, loc="top left",  prop={'size': 18})

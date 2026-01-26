@@ -42,10 +42,10 @@ def calc_stats(weights, basestd, basearithmean, corrmatrix=None, cfactor=1.0, co
     variance=new_std**2
     gmm=basearithmean- variance/2.0
     gsr=(gmm - riskfree) / new_std
-    
+
     cost_gmm = gmm - cost
     cost_gsr = (cost_gmm - riskfree) / new_std
-    
+
     return (gmm, new_std, gsr, cost_gmm, cost_gsr)
 
 #print calc_stats(weights, basestd, basearithmean, cfactor=cfactor)
@@ -79,7 +79,7 @@ sector_counts=dict([(sector, sum(tsx_weights.Sector==sector)) for sector in sect
 topdown_weights=[]
 for (tidx, sector) in enumerate(tsx_weights.Sector):
     topdown_weights.append(weight_each_sector * (1.0/sector_counts[sector]))
-    
+
 ##cap weights
 cap_weights=list(tsx_weights.Weight.values)
 cap_weights=cap_weights/sum(cap_weights)
@@ -106,11 +106,11 @@ for (tidx, sector) in enumerate(tsx_weights.Sector):
     else:
         random_topdown_weights.append(weight_each_sector)
         done_this_sector.append(sector)
-        
+
 print calc_stats(random_topdown_weights, basestd, basearithmean, corrmatrix)
-    
+
 psize=10
-        
+
 import random
 ### multiple times
 all_gmeans=[]
@@ -119,7 +119,7 @@ all_sr=[]
 for notused in range(10000):
     things=[int(np.ceil(random.uniform(0,61))) for notused2 in range(psize*2)]
     things=list(set(things)) ## make unique
-    things=things[:psize] ##only need 10 
+    things=things[:psize] ##only need 10
     random_weights=[]
     for (tidx, sector) in enumerate(tsx_weights.Sector):
         if tidx in things:
@@ -129,6 +129,6 @@ for notused in range(10000):
     stats = calc_stats(random_weights, basestd, basearithmean, corrmatrix)
     all_gmeans.append(stats[0])
     all_sr.append(stats[2])
-    
+
 np.mean(all_gmeans)
 np.mean(all_sr)

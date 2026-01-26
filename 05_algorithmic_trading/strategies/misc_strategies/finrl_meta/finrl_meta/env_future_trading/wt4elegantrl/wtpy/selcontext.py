@@ -22,7 +22,7 @@ class SelContext:
         self.__id__ = id            #策略ID
         self.__bar_cache__ = dict() #K线缓存
         self.__tick_cache__ = dict()    #tTick缓存，每次都重新去拉取，这个只做中转用，不在python里维护副本
-        self.__sname__ = stra.name()    
+        self.__sname__ = stra.name()
         self.__engine__ = engine          #交易环境
         self.__pos_cache__ = None
 
@@ -102,7 +102,7 @@ class SelContext:
         @message    消息内容\n
         '''
         self.__wrapper__.sel_log_text(self.__id__, message)
-        
+
     def stra_get_date(self):
         '''
         获取当前日期\n
@@ -165,7 +165,7 @@ class SelContext:
         cnt = self.__wrapper__.cta_get_ticks(self.__id__, stdCode, count)
         if cnt == 0:
             return None
-        
+
         df_ticks = self.__tick_cache__[stdCode]
         return df_ticks
 
@@ -193,7 +193,7 @@ class SelContext:
         @return 设置结果TRUE/FALSE
         '''
         self.__wrapper__.sel_set_position(self.__id__, stdCode, qty, usertag)
-        
+
     def user_save_data(self, key:str, val):
         '''
         保存用户数据

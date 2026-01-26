@@ -45,14 +45,14 @@ def generate_html():
         </head>
         <body>
             <h1>Daily Market Signals</h1>
-    
+
             <!-- *** Section 1 *** --->
             <h2>The other solution is cloud based, make_subplotsmore interactive</h2>
             <h2>This in my opinion is more suitable for more static, like daily updates</h2>
             <div>
                 ''' + div_table1 + '''
             </div>
-            
+
             <h2>...more...</h2>
             <div>
             </div>

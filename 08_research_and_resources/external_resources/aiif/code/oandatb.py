@@ -1,7 +1,7 @@
 #
 # Oanda Trading Bot
 # and Deployment Code
-# 
+#
 # (c) Dr. Yves J. Hilpisch
 # Artificial Intelligence in Finance
 #
@@ -106,8 +106,8 @@ class OandaTradingBot(tpqoa.tpqoa):
                         suppress=True, ret=True)
                 self.report_trade(time, 'SHORT', order)
                 self.position = -1
-                
-                
+
+
 if __name__ == '__main__':
     agent = pickle.load(open('trading.bot', 'rb'))
     otb = OandaTradingBot('../../../data/aiif.cfg', agent, '5s',

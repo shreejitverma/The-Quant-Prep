@@ -16,7 +16,7 @@ class WtDtEngine:
         @logprofile 日志模块配置文件
         '''
         self.__wrapper__.initialize(cfgfile, logprofile)
-    
+
     def run(self):
         '''
         运行数据引擎

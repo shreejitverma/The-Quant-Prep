@@ -4,7 +4,7 @@ def sn_random_numbers(shape, antithetic=True, moment_matching=True,
                       fixed_seed=False):
     ''' Returns an array of shape shape with (pseudo)random numbers
     that are standard normally distributed.
-    
+
     Parameters
     ==========
     shape : tuple (o, n, m)
@@ -15,7 +15,7 @@ def sn_random_numbers(shape, antithetic=True, moment_matching=True,
         matching of first and second moments
     fixed_seed : Boolean
         flag to fix the seed
-    
+
     Results
     =======
     ran : (o, n, m) array of (pseudo)random numbers

@@ -16,7 +16,7 @@ from sklearn.model_selection import train_test_split
 import warnings
 warnings.filterwarnings("ignore")
 
-# yahoo finance used to fetch data 
+# yahoo finance used to fetch data
 import yfinance as yf
 yf.pdr_override()
 
@@ -42,7 +42,7 @@ def input_symbol():
     return symbol
 
 def preprocessing_dataset():
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -74,7 +74,7 @@ def preprocessing_dataset():
     print(Y_test)
     return
 
-    
+
 def main():
     run_program = True
     while run_program:
@@ -86,11 +86,11 @@ def main():
         for i in range(1, len(options)+1):
             print("{} - {}".format(i, options[i-1]))
         choice = int(input())
-        
+
         if choice == 1:
              preprocessing_dataset()
         elif choice == 2:
-             run_program = False             
+             run_program = False
 
 
 if __name__ == "__main__":

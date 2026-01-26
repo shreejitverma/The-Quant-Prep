@@ -4,7 +4,7 @@ from wtpy.apps.datahelper.DHTushare import DHTushare
 from wtpy.apps.datahelper.DHRqData import DHRqData
 
 class DHFactory:
-    
+
     @staticmethod
     def createHelper(name:str) -> BaseDataHelper:
         '''

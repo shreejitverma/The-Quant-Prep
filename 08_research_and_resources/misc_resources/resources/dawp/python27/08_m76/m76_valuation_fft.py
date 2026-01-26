@@ -101,7 +101,7 @@ def M76_value_call_FFT(S0, K, T, r, sigma, lamb, mu, delta):
                                    - M76_characteristic_function(
                                      v, x0, T, r, sigma, lamb, mu, delta)
                 / ((vo + 1j * alpha) ** 2 - 1j * (vo + 1j * alpha)))
-    
+
     # Numerical FFT Routine
     delt = np.zeros(N, dtype=np.float)
     delt[0] = 1

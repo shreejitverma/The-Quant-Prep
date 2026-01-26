@@ -14,7 +14,7 @@ def add_time_feature(df, symbol, dt_col_name='time'):
     feed a fixed StopLoss (SL = 200) and PT = SL * ratio
     action space: [action[0,2],ratio[0,10]]
     rewards is point
-    
+
     add hourly, dayofweek(0-6, Sun-Sat)
     Args:
         file (str): file path/name.csv
@@ -52,11 +52,11 @@ def tech_indictors(df):
 
 
 def split_timeserious(df, key_ts='dt', freq='W', symbol=''):
-    """import df and split into hour, daily, weekly, monthly based and 
+    """import df and split into hour, daily, weekly, monthly based and
     save into subfolder
 
     Args:
-        df (pandas df with timestamp is part of multi index): 
+        df (pandas df with timestamp is part of multi index):
         spliter (str): H, D, W, M, Y
     """
 

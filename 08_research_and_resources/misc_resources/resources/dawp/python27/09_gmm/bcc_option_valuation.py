@@ -77,7 +77,7 @@ def BCC_call_value(S0, K, T, r, kappa_v, theta_v, sigma_v, rho, v0,
         present value of European call option
 
     '''
-    int_value = quad(lambda u: BCC_int_func(u, S0, K, T, r, kappa_v, theta_v, 
+    int_value = quad(lambda u: BCC_int_func(u, S0, K, T, r, kappa_v, theta_v,
                 sigma_v, rho, v0, lamb, mu, delta), 0, np.inf, limit=250)[0]
     call_value = max(0, S0 - np.exp(-r * T) * np.sqrt(S0 * K)
                             / np.pi * int_value)
@@ -167,7 +167,7 @@ def BCC_int_func(u, S0, K, T, r, kappa_v, theta_v, sigma_v, rho, v0,
     Fourier-based approach: integration function.
 
     Parameter definitions see function BCC_call_value.'''
-    char_func_value = BCC_char_func(u - 1j * 0.5, T, r, kappa_v, theta_v, 
+    char_func_value = BCC_char_func(u - 1j * 0.5, T, r, kappa_v, theta_v,
                         sigma_v, rho, v0, lamb, mu, delta)
     int_func_value = 1 / (u ** 2 + 0.25) \
             * (np.exp(1j * u * np.log(S0 / K)) * char_func_value).real

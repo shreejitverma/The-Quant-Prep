@@ -1,4 +1,4 @@
-import pandas as pd 
+import pandas as pd
 import os
 
 data_path = '../data/'

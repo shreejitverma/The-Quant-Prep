@@ -3,7 +3,7 @@
 # Historical Stock Data App (Interactive)
 #
 # run_stock_int.py
-# 
+#
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop

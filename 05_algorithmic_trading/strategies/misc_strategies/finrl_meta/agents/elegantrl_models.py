@@ -43,7 +43,7 @@ class DRLAgent:
         self.price_array = price_array
         self.tech_array = tech_array
         self.turbulence_array = turbulence_array
-        
+
     def get_model(self, model_name, model_kwargs):
         env_config = {
             "price_array": self.price_array,

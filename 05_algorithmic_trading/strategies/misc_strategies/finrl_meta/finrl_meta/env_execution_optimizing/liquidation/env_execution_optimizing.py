@@ -137,7 +137,7 @@ class MarketEnvironment():
         info.done1 = False
         info.done2 = False
 
-        # During training, if the DDPG fails to sell all the stocks before the given 
+        # During training, if the DDPG fails to sell all the stocks before the given
         # number of trades or if the total number shares remaining is less than 1, then stop transacting,
         # set the done Flag to True, return the current implementation shortfall, and give a negative reward.
         # The negative reward is given in the else statement below.
@@ -157,7 +157,7 @@ class MarketEnvironment():
             info.expected_variance2 = self.singleStepVariance * self.tau * self.totalSRSQ2
             info.utility2 = info.expected_shortfall2 + self.llambda2 * info.expected_variance2
 
-        # We don't add noise before the first trade    
+        # We don't add noise before the first trade
         if self.k == 0:
             info.price = self.prevImpactedPrice
         else:
@@ -165,8 +165,8 @@ class MarketEnvironment():
             info.price = self.prevImpactedPrice + np.sqrt(self.singleStepVariance * self.tau) * random.normalvariate(0,
                                                                                                                      1)
 
-        # If we are transacting, the stock price is affected by the number of shares we sell. The price evolves 
-        # according to the Almgren and Chriss price dynamics model. 
+        # If we are transacting, the stock price is affected by the number of shares we sell. The price evolves
+        # according to the Almgren and Chriss price dynamics model.
         if self.transacting1:
 
             # If action is an ndarray then extract the number from the array
@@ -197,14 +197,14 @@ class MarketEnvironment():
 
         if self.transacting1 or self.transacting2:
 
-            # Since we are not selling fractions of shares, round up the total number of shares to sell to the nearest integer. 
+            # Since we are not selling fractions of shares, round up the total number of shares to sell to the nearest integer.
             info.share_to_sell_now1 = np.around(sharesToSellNow1)
             info.share_to_sell_now2 = np.around(sharesToSellNow2)
             # Calculate the permanent and temporary impact on the stock price according the AC price dynamics model
             info.currentPermanentImpact = self.permanentImpact(info.share_to_sell_now1 + info.share_to_sell_now2)
             info.currentTemporaryImpact = self.temporaryImpact(info.share_to_sell_now1 + info.share_to_sell_now2)
 
-            # Apply the temporary impact on the current stock price    
+            # Apply the temporary impact on the current stock price
             info.exec_price = info.price - info.currentTemporaryImpact
 
             # Calculate the current total capture

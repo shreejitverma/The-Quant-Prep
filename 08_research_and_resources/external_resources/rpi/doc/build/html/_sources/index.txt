@@ -22,7 +22,7 @@ I assume that you have bought a RPi and all the equipment necessary to use it (p
 Several topics and projects of this tutorial are also interesting for those not (yet) having a RPi but having available or being willing to rent a (small) **cloud server instance** e.g. from **DigitalOcean**. These start at **5 USD per month** for a 1 core, 512 MB, 20 GB SSD configuration. Just follow this link to **register**: https://www.digitalocean.com/?refcode=fbe512dd3dac.
 
 The majority of examples and projects should also be working with alternative hardware like **BananaPi** (http://www.bananapi.com) or **Odroid** (cf. http://www.hardkernel.com/main/products/prdt_info.php) as long as a **Debian Linux derivative** (e.g. Raspbian, Ubuntu) is installed.
- 
+
 
 Setting up the RPi
 ~~~~~~~~~~~~~~~~~~~~
@@ -97,7 +97,7 @@ About the Author
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Yves Hilpisch is managing partner of The Python Quants GmbH (Germany) and co-founder of The Python Quants LLC (New York City). The Python Quants provide, among others, the **Python Quant Platform** as a solution for browser-based, interactive, collaborative financial analytics (cf. http://quant-platform.com). On this platform (for which free trials are available) you can also immediately try our open source financial analytics library DX Analytics (http://dx-analytics.com).
-   
+
 
 .. Indices and tables
 .. ------------------

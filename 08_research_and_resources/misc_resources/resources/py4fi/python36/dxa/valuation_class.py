@@ -5,7 +5,7 @@
 
 class valuation_class(object):
     ''' Basic class for single-factor valuation.
-    
+
     Attributes
     ==========
     name : string
@@ -16,13 +16,13 @@ class valuation_class(object):
         market environment data for valuation
     payoff_func : string
         derivatives payoff in Python syntax
-        Example: 'np.maximum(maturity_value - 100, 0)' 
+        Example: 'np.maximum(maturity_value - 100, 0)'
         where maturity_value is the NumPy vector with
         respective values of the underlying
-        Example: 'np.maximum(instrument_values - 100, 0)' 
+        Example: 'np.maximum(instrument_values - 100, 0)'
         where instrument_values is the NumPy matrix with
         values of the underlying over the whole time/path grid
-        
+
     Methods
     =======
     update:

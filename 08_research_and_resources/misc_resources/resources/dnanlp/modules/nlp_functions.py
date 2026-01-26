@@ -37,7 +37,7 @@ def clean_up_html(t):
 
 def clean_up_text(t, numbers=False, punctuation=False):
     ''' Cleans up a text, e.g. HTML document,
-        from HTML tags and also cleans up the 
+        from HTML tags and also cleans up the
         text body.
     '''
     try:
@@ -57,7 +57,7 @@ def clean_up_text(t, numbers=False, punctuation=False):
     t = re.sub(r"\'ll", " will ", t)
     t = re.sub(r'\s+', ' ', t)
     t = re.sub(r"\\", "", t)
-    t = re.sub(r"\'", "", t)    
+    t = re.sub(r"\'", "", t)
     t = re.sub(r"\"", "", t)
     if numbers:
         t = re.sub('[^a-zA-Z ?!]+', '', t)
@@ -76,7 +76,7 @@ def nltk_lemma(word):
         return word
     else:
         return lemma
-    
+
 def tokenize(text, min_char=3, lemma=True, stop=True,
              numbers=False):
     ''' Tokenizes a text and implements some
@@ -97,11 +97,11 @@ def generate_word_cloud(text, no, name=None):
     ''' Generates a word cloud bitmap given a
         text document (string).
         It uses the Term Frequency (TF) and
-        Inverse Document Frequency (IDF) 
+        Inverse Document Frequency (IDF)
         vectorization approach to derive the
         importance of a word -- represented
         by the size of the word in the word cloud.
-        
+
     Parameters
     ==========
     text: str

@@ -20,20 +20,20 @@ from scipy.stats import ttest_ind
 def make_binary(xseries, rounded=False):
     """
     Turn a forecast into a binary version +10, -10
-    
+
     We do this in two ways:
-    
+
     - true binary
-    - rounded binary. If abs(x)<5, forecast is zero. Else forecast is 
+    - rounded binary. If abs(x)<5, forecast is zero. Else forecast is
     """
-    
+
     if rounded:
         (min_value, max_value)=(-5.0, 5.0)
     else:
         (min_value, max_value)=(0.0, 0.0)
 
     return xseries.apply(make_binary_row,  args=(min_value, max_value))
-    
+
 
 def make_binary_row(x, min_value,max_value):
     """
@@ -44,7 +44,7 @@ def make_binary_row(x, min_value,max_value):
         return -10.0
     elif x>max_value:
         return 10.0
-    
+
     return 0.0
 
 
@@ -74,7 +74,7 @@ for code in code_list:
         ## carry
     else:
         forecast=calc_ewmac_forecast(price, Lfast)
-    
+
     stdev=volatility(price)*root_days_in_week
     price_volatility=100*stdev/current_price
     next_weeks_return =price.shift(-5) - price
@@ -83,18 +83,18 @@ for code in code_list:
 
     fcastStack.append(forecast)
     vnStack.append(next_weeks_vol_norm_return)
-    
+
     binary1forecast=make_binary(forecast, rounded=False)
     binary2forecast=make_binary(forecast, rounded=True)
 
     binary1Stack.append(binary1forecast)
     binary2Stack.append(binary2forecast)
-    
+
     volStack.append(price_volatility)
-    
+
     priceStack.append(price)
     currentpriceStack.append(current_price)
-    
+
 fcastStack_all=pd.concat(fcastStack, axis=0).values
 vnStack_all=pd.concat(vnStack, axis=0).values
 
@@ -105,7 +105,7 @@ for idx in range(len(fcastpoints))[1:]:
     condp=[vnStack_all[i] for i in range(len(vnStack_all)) if fcastStack_all[i]>=fcastpoints[idx-1] and fcastStack_all[i]<fcastpoints[idx]]
     condp=[x for x in condp if not np.isnan(x)]
     conditionals.append(condp)
-    
+
 
 for idx in range(len(conditionals)):
     print "Bin %d to %d: mean %.1f" % (int(fcastpoints[idx]), int(fcastpoints[idx+1]), np.mean(conditionals[idx])*100)
@@ -137,33 +137,33 @@ for codeidx in range(len(code_list)):
     code=code_list[codeidx]
     price_volatility=volStack[codeidx]
 
-    ## really low vol screws up position calculation; we'd never 
+    ## really low vol screws up position calculation; we'd never
     #price_volatility=cap_series(price_volatility, capmin=0.01)
-    
+
     price=priceStack[codeidx]
     current_price=currentpriceStack[codeidx]
     forecast=fcastStack[codeidx]
     forecast_binary1=binary1Stack[codeidx]
     forecast_binary2=binary2Stack[codeidx]
-    
+
     ##  block value = value of a 1% move
     block_value=current_price*0.01*pointsizedict[code]
-    
+
     instr_cccy_volatility=block_value*price_volatility
     ## note we're not doing a portfolio here, so don't need currency
     instr_value_volatility=instr_cccy_volatility
-        
+
     vol_scalar=daily_cash_vol_target/instr_value_volatility
-        
+
     subsys_position_natural=forecast*vol_scalar/10.0
-    
+
     subsys_position_binary1=forecast_binary1*vol_scalar/10.0
     subsys_position_binary2=forecast_binary2*vol_scalar/10.0
-    
+
     p1=calculate_pandl(subsys_position_natural, price, pointsizedict[code])
     p2=calculate_pandl(subsys_position_binary1, price, pointsizedict[code])
     p3=calculate_pandl(subsys_position_binary2, price, pointsizedict[code])
-                
+
     sr1=sharpe(p1)
     sr2=sharpe(p2)
     sr3=sharpe(p3)
@@ -194,11 +194,11 @@ b2_pandlstack.cumsum().ffill().plot("Binary 2")
 plt.legend()
 plt.show()
 
-x1=natural_pandlstack.cumsum() - b1_pandlstack.cumsum() 
+x1=natural_pandlstack.cumsum() - b1_pandlstack.cumsum()
 x1.ffill().plot()
 plt.show()
 
-x2=natural_pandlstack.cumsum() - b2_pandlstack.cumsum() 
+x2=natural_pandlstack.cumsum() - b2_pandlstack.cumsum()
 x2.ffill().plot()
 plt.show()
 

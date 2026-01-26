@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split
 import warnings
 warnings.filterwarnings("ignore")
 
-# yahoo finance used to fetch data 
+# yahoo finance used to fetch data
 import yfinance as yf
 yf.pdr_override()
 
@@ -44,7 +44,7 @@ def input_symbol():
 
 # Rescaled Dataset
 def Rescale_Dataset():
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -75,25 +75,25 @@ def Rescale_Dataset():
     print("")
     print(Y_test)
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()    
-        
-        
-#***********************************************************************************************************************#     
-# Binarize Data 
+        exit()
+
+
+#***********************************************************************************************************************#
+# Binarize Data
 def Binarize_Dataset():
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -123,25 +123,25 @@ def Binarize_Dataset():
     print("")
     print(Y_test)
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()    
-        
+        exit()
 
-#***********************************************************************************************************************#     
-# Standardize Data  
+
+#***********************************************************************************************************************#
+# Standardize Data
 def Standardize_Dataset():
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -171,69 +171,12 @@ def Standardize_Dataset():
     print("")
     print(Y_test)
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
-    while user_input not in ans:
-        print("Error: Please enter a a valid option 1-2")
-        user_input=input("Command: ")
-    if user_input=="1":
-        menu()
-    elif user_input=="2":
-        exit()    
-        
-
-
-
-#***********************************************************************************************************************#
-#******************************************************* Menu **********************************************************#
-#***********************************************************************************************************************#  
-def menu():
-    ans = ['1', '2', '3', '4', '0'] 
-    print(""" 
-              
-                           MENU
-                     PREPROCESSING DATASET       
-                  ---------------------------
-                  1. Rescaled Data
-                  2. Binarize Data 
-                  3. Standardize Data  
-                  4. Beginning Menu
-                  0. Exit the Program
-                  """)
-    user_input = input("Command (0-3): ") 
-    while user_input not in ans:
-        print("Error: Please enter a valid option 0-3")
-        user_input=input("Command: ")             
-    if user_input == '1':
-        Rescaled_Dataset()
-    elif user_input == '2':
-        Binarize_Dataset()
-    elif user_input == '3':
-        Standardize_Dataset()
-    elif user_input == "4":  
-        beginning()
-    elif user_input == "0":
-        exit() 
-        
-        
-#***********************************************************************************************************************#    
-#*************************************************** Start of Program **************************************************# 
-#***********************************************************************************************************************#  
-def beginning():
-    print()
-    print("----------Welcome to Preprocessing Dataset--------")
-    print("""
-Please choose option 1 or 2
-              
-1. Menu
-2. Exit Program 
----------------------------------------------""")
-    ans = ['1', '2'] 
-    user_input=input("What is your Option?: ")    
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
@@ -241,7 +184,64 @@ Please choose option 1 or 2
         menu()
     elif user_input=="2":
         exit()
-  
-    
-#***********************************************************************************************************************#     
-beginning()      
+
+
+
+
+#***********************************************************************************************************************#
+#******************************************************* Menu **********************************************************#
+#***********************************************************************************************************************#
+def menu():
+    ans = ['1', '2', '3', '4', '0']
+    print("""
+
+                           MENU
+                     PREPROCESSING DATASET
+                  ---------------------------
+                  1. Rescaled Data
+                  2. Binarize Data
+                  3. Standardize Data
+                  4. Beginning Menu
+                  0. Exit the Program
+                  """)
+    user_input = input("Command (0-3): ")
+    while user_input not in ans:
+        print("Error: Please enter a valid option 0-3")
+        user_input=input("Command: ")
+    if user_input == '1':
+        Rescaled_Dataset()
+    elif user_input == '2':
+        Binarize_Dataset()
+    elif user_input == '3':
+        Standardize_Dataset()
+    elif user_input == "4":
+        beginning()
+    elif user_input == "0":
+        exit()
+
+
+#***********************************************************************************************************************#
+#*************************************************** Start of Program **************************************************#
+#***********************************************************************************************************************#
+def beginning():
+    print()
+    print("----------Welcome to Preprocessing Dataset--------")
+    print("""
+Please choose option 1 or 2
+
+1. Menu
+2. Exit Program
+---------------------------------------------""")
+    ans = ['1', '2']
+    user_input=input("What is your Option?: ")
+    while user_input not in ans:
+        print("Error: Please enter a a valid option 1-2")
+        user_input=input("Command: ")
+    if user_input=="1":
+        menu()
+    elif user_input=="2":
+        exit()
+
+
+#***********************************************************************************************************************#
+beginning()

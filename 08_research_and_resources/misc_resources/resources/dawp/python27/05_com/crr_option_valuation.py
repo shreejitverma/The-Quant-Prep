@@ -66,7 +66,7 @@ def CRR_option_value(S0, K, T, r, sigma, otype, M=4):
         V = np.maximum(S - K, 0)  # inner values for European call option
     else:
         V = np.maximum(K - S, 0)  # inner values for European put option
-    
+
     z = 0
     for t in range(M - 1, -1, -1):  # backwards iteration
         V[0:M - z, t] = (q * V[0:M - z, t + 1]

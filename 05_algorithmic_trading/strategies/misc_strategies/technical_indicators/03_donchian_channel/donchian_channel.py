@@ -11,4 +11,3 @@ def doncian_channel(series, period =14):
     mid_channel = (upper_channel +  lower_channel)/2
 
     return upper_channel, mid_channel, lower_channel
-    

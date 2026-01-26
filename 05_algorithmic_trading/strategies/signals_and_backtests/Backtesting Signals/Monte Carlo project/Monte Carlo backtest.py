@@ -39,7 +39,7 @@ from sklearn.model_selection import train_test_split
 
 # In[2]:
 
-#this list is purely designed to generate gradient color 
+#this list is purely designed to generate gradient color
 global colorlist
 colorlist=['#fffb77',
  '#fffa77',
@@ -209,41 +209,41 @@ colorlist=['#fffb77',
 #theoretically speaking, the larger the better
 #given the constrained computing power
 #we have to take a balance point between efficiency and effectiveness
-def monte_carlo(data,testsize=0.5,simulation=100,**kwargs):    
-    
+def monte_carlo(data,testsize=0.5,simulation=100,**kwargs):
+
     #train test split as usual
     df,test=train_test_split(data,test_size=testsize,shuffle=False,**kwargs)
     forecast_horizon=len(test)
-    
+
     #we only care about close price
     #if there has been dividend issued
     #we use adjusted close price instead
     df=df.loc[:,['Close']]
-        
+
     #here we use log return
     returnn=np.log(df['Close'].iloc[1:]/df['Close'].shift(1).iloc[1:])
     drift=returnn.mean()-returnn.var()/2
-    
+
     #we use dictionary to store predicted time series
     d={}
-    
+
     #we use geometric brownian motion to compute the next price
     # https://en.wikipedia.org/wiki/Geometric_Brownian_motion
     for counter in range(simulation):
         d[counter]=[df['Close'].iloc[0]]
-      
+
         #we dont just forecast the future
         #we need to compare the forecast with the historical data as well
         #thats why the data range is training horizon plus testing horizon
         for i in range(len(df)+forecast_horizon-1):
-         
+
             #we use standard normal distribution to generate pseudo random number
             #which is sufficient for our monte carlo simulation
             sde=drift+returnn.std()*rd.gauss(0,1)
             temp=d[counter][-1]*np.exp(sde)
-        
+
             d[counter].append(temp.item())
-    
+
     #to determine which simulation is the best fit
     #we use simple criterias, the smallest standard deviation
     #we iterate through every simulation and compare it with actual data
@@ -251,13 +251,13 @@ def monte_carlo(data,testsize=0.5,simulation=100,**kwargs):
     std=float('inf')
     pick=0
     for counter in range(simulation):
-    
+
         temp=np.std(np.subtract(
                     d[counter][:len(df)],df['Close']))
         if temp<std:
             std=temp
             pick=counter
-    
+
     return forecast_horizon,d,pick
 
 
@@ -265,7 +265,7 @@ def monte_carlo(data,testsize=0.5,simulation=100,**kwargs):
 
 #result plotting
 def plot(df,forecast_horizon,d,pick,ticker):
-    
+
     #the first plot is to plot every simulation
     #and highlight the best fit with the actual dataset
     #we only look at training horizon in the first figure
@@ -286,7 +286,7 @@ def plot(df,forecast_horizon,d,pick,ticker):
     plt.ylabel('Price')
     plt.xlabel('Date')
     plt.show()
-    
+
     #the second figure plots both training and testing horizons
     #we compare the best fitted plus forecast with the actual history
     #the figure reveals why monte carlo simulation in trading is house of cards
@@ -320,7 +320,7 @@ def plot(df,forecast_horizon,d,pick,ticker):
 #sim_delta denotes how many steps it takes to reach the max from the min
 #its kinda like range(simu_start,simu_end,simu_delta)
 def test(df,ticker,simu_start=100,simu_end=1000,simu_delta=100,**kwargs):
-    
+
     table=pd.DataFrame()
     table['Simulations']=np.arange(simu_start,simu_end+simu_delta,simu_delta)
     table.set_index('Simulations',inplace=True)
@@ -336,16 +336,16 @@ def test(df,ticker,simu_start=100,simu_end=1000,simu_delta=100,**kwargs):
     #vice versa
     for i in np.arange(simu_start,simu_end+1,simu_delta):
         print(i)
-        
+
         forecast_horizon,d,pick=monte_carlo(df,simulation=i,**kwargs)
-        
+
         actual_return=np.sign( \
                               df['Close'].iloc[len(df)-forecast_horizon]-df['Close'].iloc[-1])
-        
+
         best_fitted_return=np.sign(d[pick][len(df)-forecast_horizon]-d[pick][-1])
         table.at[i,'Prediction']=np.where(actual_return==best_fitted_return,1,-1)
-        
-    #we plot the horizontal bar chart 
+
+    #we plot the horizontal bar chart
     #to show the accuracy does not increase over the number of simulations
     ax=plt.figure(figsize=(10,5)).add_subplot(111)
     ax.spines['right'].set_position('center')
@@ -369,14 +369,14 @@ def test(df,ticker,simu_start=100,simu_end=1000,simu_delta=100,**kwargs):
 #why the extreme? well if we are risk quants, we care about value at risk, dont we
 #if quants only look at one sigma event, the portfolio performance would be devastating
 def main():
-    
+
     stdate='2016-01-15'
     eddate='2019-01-15'
     ticker='GE'
 
     df=yf.download(ticker,start=stdate,end=eddate)
     df.index=pd.to_datetime(df.index)
-    
+
     forecast_horizon,d,pick=monte_carlo(df)
     plot(df,forecast_horizon,d,pick,ticker)
     test(df,ticker)

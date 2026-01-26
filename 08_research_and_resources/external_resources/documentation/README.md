@@ -74,11 +74,11 @@ On the shell, create an environment with `conda`:
 Clone the Github repository to your local working folder:
 
     git clone http://github.com/yhilpisch/documentation
-    
+
 Navigate to the repository folder and execute a doctest as well as build the documentation:
 
     cd documentation
-    
+
 Uncomment in `pylib/mod.py` the following code
 
     >>> # from pylib import *
@@ -93,9 +93,9 @@ Build the HTML documentation:
 
 The HTML documents are found in `_build`.
 
-    
+
 ## First Steps
-    
+
 Start a Python interactive session session and e.g. execute:
 
     >>> import pylib

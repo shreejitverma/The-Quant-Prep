@@ -21,18 +21,18 @@ class LimitOrderBook:
 
     def add_order(self, side, price, qty):
         order = Order(id(object), side, price, qty, time.time())
-        
+
         if side == 'buy':
             # Check for immediate match (crossing the spread)
             while self.best_ask is not None and price >= self.best_ask and qty > 0:
                 match_qty = self._match(order)
                 qty -= match_qty
-            
+
             if qty > 0:
                 self.bids[price].append(order)
                 if self.best_bid is None or price > self.best_bid:
                     self.best_bid = price
-                    
+
         elif side == 'sell':
             # Check for immediate match
             while self.best_bid is not None and price <= self.best_bid and qty > 0:
@@ -59,9 +59,9 @@ class LimitOrderBook:
         while aggressive_order.qty > 0 and resting_orders:
             resting_order = resting_orders[0]
             trade_qty = min(aggressive_order.qty, resting_order.qty)
-            
+
             print(f"TRADE: {trade_qty} @ {resting_order.price}")
-            
+
             aggressive_order.qty -= trade_qty
             resting_order.qty -= trade_qty
             matched += trade_qty
@@ -84,11 +84,11 @@ if __name__ == "__main__":
     lob.add_order('sell', 101, 100)
     lob.add_order('sell', 102, 50)
     lob.add_order('buy', 99, 100)
-    
+
     print(f"Best Bid: {lob.best_bid}, Best Ask: {lob.best_ask}")
-    
+
     print("\n--- Aggressive Buy (Crossing Spread) ---")
     lob.add_order('buy', 102, 120) # Should consume 100@101 and 20@102
-    
+
     print(f"Best Bid: {lob.best_bid}, Best Ask: {lob.best_ask}")
 

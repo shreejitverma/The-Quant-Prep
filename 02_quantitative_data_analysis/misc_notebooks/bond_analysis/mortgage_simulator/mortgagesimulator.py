@@ -21,17 +21,17 @@ col1, col2 = st.beta_columns(2)
 with col1:
     st.subheader("Home Value")
     home_value = st.number_input("Enter your home value($): ", min_value=0.0, format='%f')
-    
+
     st.subheader("Loan Interest Rate")
     interest_rate = st.number_input("Enter your home loan interest rate(%): ", min_value=0.0, format='%f')
 
 with col2:
     st.subheader("Down Payment Percent")
     down_payment_percent = st.number_input("Enter your down payment percent(%): ", min_value=0.0, format='%f')
-    
+
     st.subheader("Target Payment Period (Years)")
     payment_years = st.number_input("Enter your target payment period (years): ", min_value=3, format='%d')
-    
+
 
 down_payment = home_value* (down_payment_percent / 100)
 loan_amount = home_value - down_payment
@@ -52,22 +52,22 @@ interest_pay_arr = np.zeros(payment_months)
 principal_pay_arr = np.zeros(payment_months)
 
 for i in range(0, payment_months):
-    
+
     if i == 0:
         previous_principal_remaining = loan_amount
     else:
         previous_principal_remaining = principal_remaining[i-1]
-        
+
     interest_payment = round(previous_principal_remaining*periodic_interest_rate, 2)
     principal_payment = round(monthly_installment - interest_payment, 2)
-    
+
     if previous_principal_remaining - principal_payment < 0:
         principal_payment = previous_principal_remaining
-    
-    interest_pay_arr[i] = interest_payment 
+
+    interest_pay_arr[i] = interest_payment
     principal_pay_arr[i] = principal_payment
     principal_remaining[i] = previous_principal_remaining - principal_payment
-    
+
 
 month_num = np.arange(payment_months)
 month_num = month_num + 1
@@ -105,7 +105,7 @@ fig.add_trace(
 
 fig.append_trace(
         go.Scatter(
-            x=month_num, 
+            x=month_num,
             y=interest_pay_arr,
             name="Interest Payment"
         ),
@@ -138,7 +138,7 @@ cumulative_interest_paid = np.cumsum(interest_pay_arr)
 fig = go.Figure()
 fig.add_trace(
         go.Scatter(
-            x=month_num, 
+            x=month_num,
             y=cumulative_home_equity,
             name="Cumulative Home Equity"
         )
@@ -146,7 +146,7 @@ fig.add_trace(
 
 fig.add_trace(
         go.Scatter(
-            x=month_num, 
+            x=month_num,
             y=cumulative_interest_paid,
             name="Cumulative Interest Paid"
         )
@@ -176,7 +176,7 @@ st.header("**Forecast Growth**")
 st.subheader("Forecast Growth (Per Year)")
 forecast_growth = st.number_input("Enter your forecast growth rate(%): ",  format='%f')
 
-growth_per_month = (forecast_growth / 12.0) / 100 
+growth_per_month = (forecast_growth / 12.0) / 100
 growth_array = np.full(payment_months, growth_per_month)
 forecast_cumulative_growth = np.cumprod(1+growth_array)
 forecast_home_value= home_value*forecast_cumulative_growth
@@ -186,7 +186,7 @@ forecast_home_equity = cumulative_percent_owned*forecast_home_value
 fig = go.Figure()
 fig.add_trace(
         go.Scatter(
-            x=month_num, 
+            x=month_num,
             y=forecast_home_value,
             name="Forecast Home Value"
         )
@@ -194,7 +194,7 @@ fig.add_trace(
 
 fig.add_trace(
         go.Scatter(
-            x=month_num, 
+            x=month_num,
             y=forecast_home_equity,
             name="Forecast Home Equity Owned"
         )
@@ -202,7 +202,7 @@ fig.add_trace(
 
 fig.add_trace(
         go.Scatter(
-            x=month_num, 
+            x=month_num,
             y=principal_remaining,
             name="Remaining Principal"
         )
@@ -224,5 +224,5 @@ fig.update_layout(title='Forecast Home Value Vs Forecast Home Equity Over Time',
 
 st.plotly_chart(fig, use_container_width=True)
 
-    
+
 

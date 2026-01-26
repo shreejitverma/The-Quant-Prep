@@ -109,29 +109,29 @@ class MomentumFactors:
         #（收盘价-收盘价的N日简单平均）/ 收盘价的N日简单平均*100，在此n取5
         mac =  ma(close, N)
         return (close - mac) /  (mac * 100)
-    
+
     # 10日乖离率  'ic_mean': '-0.043967'
     def bias_10_days(close, N=10):
         # （收盘价-收盘价的N日简单平均）/ 收盘价的N日简单平均*100，在此n取10
         mac =  ma(close, N)
         return (close - mac) /  (mac * 100)
-    
+
     # 60日乖离率 'ic_mean': '-0.039533'
     def bias_60_days(close, N=60):
         # （收盘价-收盘价的N日简单平均）/ 收盘价的N日简单平均*100，在此n取60
         mac =  ma(close, N)
         return (close - mac) /  (mac * 100)
-    
+
     # 当前股价除以过去一个月股价均值再减1 'ic_mean': '-0.039303'
     def price_1_month(close, N=21):
         # 当日收盘价 / mean(过去一个月(21天)的收盘价) -1
         return close / close.rolling(N).mean() - 1
-    
+
     # 当前股价除以过去三个月股价均值再减1 'ic_mean': '-0.034927'
     def price_3_monthes(close, N=61):
         # 当日收盘价 / mean(过去三个月(61天)的收盘价) -1
         return close / close.rolling(N).mean() - 1
-    
+
     # 6日变动速率（Price Rate of Change） 'ic_mean': '-0.030587'
     def roc_6_days(close, N=6):
         # ①AX=今天的收盘价—6天前的收盘价
@@ -140,70 +140,70 @@ class MomentumFactors:
         BX = close.shift(N)
         AX = close - BX
         return AX / (BX * 100)
-    
+
     # 12日变动速率（Price Rate of Change） 'ic_mean': '-0.034748'
     def roc_12_days(close, N=12):
         # ①AX=今天的收盘价—12天前的收盘价 ②BX=12天前的收盘价 ③ROC=AX/BX*100
         BX = close.shift(N)
         AX = close - BX
         return AX / (BX * 100)
-    
+
     # 20日变动速率（Price Rate of Change）  'ic_mean': '-0.031276'
     def roc_20_days(close, N=20):
         #  ①AX=今天的收盘价—20天前的收盘价 ②BX=20天前的收盘价 ③ROC=AX/BX*100
         BX = close.shift(N)
         AX = close - BX
         return AX / (BX * 100)
-    
+
     # 单日价量趋势  'ic_mean': '-0.051037'
     def single_day_vpt(df):
         # （今日收盘价 - 昨日收盘价）/ 昨日收盘价 * 当日成交量  # (复权方法为基于当日前复权)
         sft = df['close_price'].shift(1)
         return (df['close_price'] - sft) / sft * df['volume']
-    
+
     # 单日价量趋势6日均值 'ic_mean': '-0.032458'
     def single_day_vpt_6(df):
         # ma(single_day_VPT, 6)
         sft = df['close_price'].shift(1)
         return pd.Series(ma((df['close_price'] - sft) / sft * df['volume'], 6))
-    
+
     # 单日价量趋势12均值 'ic_mean': '-0.031016'
     def single_day_vpt_12(df):
         # ma(single_day_VPT, 12)
         sft = df['close_price'].shift(1)
         return pd.Series(ma((df['close_price'] - sft) / sft * df['volume'], 12))
-    
+
     # 10日顺势指标 'ic_mean': '-0.038179'
     def cci_10_days(df, N=10):
         #  CCI:=(TYP-ma(TYP,N))/(0.015*avedev(TYP,N)) TYP:=(HIGH+LOW+CLOSE)/3 N:=10
         TYP = (df['high_price'] + df['low_price'] + df['close_price']) / 3
         return (TYP - ma(TYP,N)) / (0.015 * avedev(TYP,N))
-    
+
     # 15日顺势指标 'ic_mean': '-0.035973'
     def cci_15_days(df, N=15):
         #  CCI:=(TYP-ma(TYP,N))/(0.015*avedev(TYP,N)) TYP:=(HIGH+LOW+CLOSE)/3 N:=15
         TYP = (df['high_price'] + df['low_price'] + df['close_price']) / 3
         return (TYP - ma(TYP, N)) / (0.015 * avedev(TYP, N))
-    
+
     # 20日顺势指标 'ic_mean': '-0.033437'
     def cci_20_days(df, N=20):
         # CCI:=(TYP-ma(TYP,N))/(0.015*avedev(TYP,N)) TYP:=(HIGH+LOW+CLOSE)/3 N:=20
         TYP = (df['high_price'] + df['low_price'] + df['close_price']) / 3
         return (TYP - ma(TYP, N)) / (0.015 * avedev(TYP, N))
-    
+
     # 当前交易量相比过去1个月日均交易量 与过去过去20日日均收益率乘积 'ic_mean': '-0.032789'
     # def Volume1M(volume, profit):
     #     # 当日交易量 / 过去20日交易量MEAN * 过去20日收益率MEAN
     def volume_1_month(df, N=21):
         # 当日交易量 / 过去20日交易量MEAN * 过去20日收益率MEAN
         return df['volume'] / df['volume'].rolling(N).mean() * df['target'].rolling(N).mean()
-    
 
-    
+
+
     # 多头力道 'ic_mean': '-0.039968'
     def bull_power(df, timeperiod=13):
         return (df['high_price'] - ema(df['close_price'], timeperiod)) / df['close_price']
-    
+
 class EmotionFactors:
     '''
     情绪类因子
@@ -259,7 +259,7 @@ class EmotionFactors:
         # 20日成交额的标准差
         trades = df['close_price'] * df['volume']
         return pd.Series(std(trades, N))
-    
+
     # 成交量的5日指数移动平均 'ic_mean': '-0.035'
     def vema_5_days(volume, N=5):
         #
@@ -317,7 +317,7 @@ class EmotionFactors:
         ho = (df['high_price'] - df['open_price']).rolling(N).sum()
         ol = (df['open_price'] - df['low_price']).rolling(N).sum()
         return ho / (ol * 100)
-    
+
 class extraFacters:
     '''
     特殊因子
@@ -347,7 +347,7 @@ class extraFacters:
         zscore = (section[-1]-mu)/sigma
         #计算右偏RSRS标准分
         return pd.Series(zscore*beta*r2)
-    
+
     def vix():
         pass
 

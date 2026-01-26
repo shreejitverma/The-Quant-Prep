@@ -8,9 +8,9 @@ def variance_calculator(series, series_average, win_len):
     temp = series.subtract(series_average) # Difference a-b
     temp2 = temp.apply(lambda x:x**2)  # Square them.. (a-b)^2
     temp3 = temp2.rolling(sma - 1).mean() # Summation (a-b)^2 / (sma - 1)
-    sigma = temp3.apply(lambda x: math.sqrt(x)) 
+    sigma = temp3.apply(lambda x: math.sqrt(x))
     return sigma
- 
+
 # Getting the Data
 data1 = quandl.get("CHRIS/CME_SP1", authtoken = "9EfoixVwAcrEgCSe7y_F" , start_date = "2017-07-27")
 declining = quandl.get("URC/NYSE_DEC", authtoken = "9EfoixVwAcrEgCSe7y_F" , start_date = "2017-07-27")
@@ -45,7 +45,7 @@ data= pd.read_csv("tempr_data.csv")
 
 sma = 22 #  Moving Average Window length
 k = 1.5 # Constant representing 'k' times sigma away from moving average (fir Bollinger bands)
-l = 2 # cons.representing 'l' times sigma away from Bollinger band (for stoploss band) 
+l = 2 # cons.representing 'l' times sigma away from Bollinger band (for stoploss band)
 pro = 0  # Profit Variable
 flag = 1 # Flag is there for begin first transaction -- transaction should start with LBB/UBB crossing only
 buy_flag = False
@@ -108,7 +108,7 @@ for i in range(s):
         sell_flag = False
         transaction_start_price = future_cost
         order_details = [1, "Buy", "UBB Crossed", "0", "Position taken"]
-    
+
     elif(LBB_cross and (not sell_flag) and flag == 1):
         flag = 0
         sell_flag = True

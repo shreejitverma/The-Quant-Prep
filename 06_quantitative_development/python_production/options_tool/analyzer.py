@@ -46,7 +46,7 @@ class IBApp(EWrapper, EClient):
 
 
 class VolatilityCrushAnalyzer:
-    
+
     def __init__(self, root):
         self.root = root
         self.root.title("Volatility Crush Analyzer")
@@ -220,7 +220,7 @@ class VolatilityCrushAnalyzer:
         self.analyze_btn = ttk.Button(scenario_frame, text="Analyze Scenario", command=self.analyze_scenario, state="disabled")
         self.analyze_btn.grid(row=2, column=0, columnspan=2, pady=(10, 0))
 
-    
+
     def setup_pnl_section(self, parent, row):
         pnl_frame = ttk.LabelFrame(parent, text="P/L Analysis", padding="10")
         pnl_frame.grid(row=row, column=0, sticky=(tk.W, tk.E), pady=(0, 15))
@@ -293,7 +293,7 @@ class VolatilityCrushAnalyzer:
                     self.ib_app.run()
                 except Exception as e:
                     self.update_status(f"Connection error: {e}")
-            
+
             thread = threading.Thread(target=connect_thread, daemon=True)
             thread.start()
 
@@ -306,7 +306,7 @@ class VolatilityCrushAnalyzer:
                     except:
                         pass
                 time.sleep(.1)
-            
+
             if self.ib_app.connected:
                 try:
                     server_version = self.ib_app.serverVersion()
@@ -344,7 +344,7 @@ class VolatilityCrushAnalyzer:
             self.update_status('Disconnected from IB TWS')
         except Exception as e:
             self.update_status(f'Disconnect error {e}')
-    
+
     def clear_data(self):
         self.current_spot = None
         self.current_iv = None
@@ -367,7 +367,7 @@ class VolatilityCrushAnalyzer:
                 label.config(text="$0.00", foreground='black')
             else:
                 label.config(text='0.000' if 'delta' in str(label) or 'gamma' in str(label) else "0.00", foreground='black')
-        
+
         if hasattr(self, 'ib_app') and self.ib_app:
             self.ib_app.historical_data.clear()
 
@@ -428,7 +428,7 @@ class VolatilityCrushAnalyzer:
         else:
             self.update_status("No historical price data received")
             return
-        
+
         if 2 in self.ib_app.historical_data and len(self.ib_app.historical_data[2]) > 0:
             iv_data = self.ib_app.historical_data[2]
             latest_iv = iv_data[-1]
@@ -437,13 +437,13 @@ class VolatilityCrushAnalyzer:
         else:
             self.update_status("No historical IV data received")
             return
-        
+
         self.spot_price_var.set(f"{self.current_spot:.2f}")
         self.strike_var.set(f"{self.current_spot:.2f}")
         self.iv_var.set(f"{self.current_iv*100:.4f}")
 
         self.price_current_straddle()
-    
+
 
     def price_current_straddle(self):
         try:
@@ -454,7 +454,7 @@ class VolatilityCrushAnalyzer:
         except ValueError:
             messagebox.showerror("Error", "Please enter a valid number for all parameters")
             return
-        
+
         iv_decimal = iv_percent / 100
         T = days_to_expiry / 365.0
         r = self.risk_free_rate
@@ -493,7 +493,7 @@ class VolatilityCrushAnalyzer:
         except ValueError:
             messagebox.showerror("Error", "Invalid spot price or IV values")
             return
-        
+
         try:
             K = float(self.strike_var.get())
             days_to_expiry = int(self.days_var.get())
@@ -537,27 +537,27 @@ class VolatilityCrushAnalyzer:
         d1 = (np.log(S/K) + (r + .5*sigma**2)*T) / (sigma * np.sqrt(T))
         d2 = d1 - sigma * np.sqrt(T)
         return S * norm.cdf(d1) - K * np.exp(-r*T) * norm.cdf(d2)
-    
+
     def black_scholes_put(self, S, K, T, r, sigma):
         d1 = (np.log(S/K) + (r + .5*sigma**2)*T) / (sigma * np.sqrt(T))
         d2 = d1 - sigma * np.sqrt(T)
-        return K * np.exp(-r*T) * norm.cdf(-d2) - S * norm.cdf(-d1) 
-    
+        return K * np.exp(-r*T) * norm.cdf(-d2) - S * norm.cdf(-d1)
+
     def calculate_delta(self, S, K, T, r, sigma, option_type='call'):
         d1 = (np.log(S/K) + (r + .5*sigma**2)*T) / (sigma * np.sqrt(T))
         if option_type == 'call':
             return norm.cdf(d1)
         else:
             return -norm.cdf(-d1)
-    
+
     def calculate_gamma(self, S, K, T, r, sigma):
         d1 = (np.log(S/K) + (r + .5*sigma**2)*T) / (sigma * np.sqrt(T))
         return norm.pdf(d1) / (S * sigma * np.sqrt(T))
-    
+
     def calculate_vega(self, S, K, T, r, sigma):
         d1 = (np.log(S/K) + (r + .5*sigma**2)*T) / (sigma * np.sqrt(T))
         return S * norm.pdf(d1)*np.sqrt(T) / 100
-    
+
     def calculate_theta(self, S, K, T, r, sigma, option_type='call'):
         d1 = (np.log(S/K) + (r + .5*sigma**2)*T) / (sigma * np.sqrt(T))
         d2 = d1 - sigma * np.sqrt(T)
@@ -569,9 +569,9 @@ class VolatilityCrushAnalyzer:
             theta = (-S * norm.pdf(d1) * sigma / (2 * np.sqrt(T))
                      + r * K * np.exp(-r*T) * norm.cdf(d2)) / 365
         return theta
-    
 
-    
+
+
 def main():
     root = tk.Tk()
     app = VolatilityCrushAnalyzer(root)
@@ -580,7 +580,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-    
+
 
 
 

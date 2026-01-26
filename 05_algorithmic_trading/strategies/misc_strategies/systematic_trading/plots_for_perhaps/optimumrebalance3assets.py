@@ -19,13 +19,13 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 
 
 lines = ["-","--","-."]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue", "green"])
 
 def uniquets(df3):
@@ -41,7 +41,7 @@ def read_ts_csv(fname, dindex="Date"):
     dateindex=[dt.strptime(dx, "%d/%m/%y") for dx in list(data[dindex])]
     data.index=dateindex
     del(data[dindex])
-    
+
     return data
 
 def calc_asset_returns(rawdata, tickers):
@@ -64,7 +64,7 @@ def get_div_yield(tickname, rawdata):
     div_tr = div * total_returns
     last_year_divs = pd.rolling_mean(div_tr, 12, min_periods=1)*12.0
     div_yield = last_year_divs / total_returns
-    
+
     return div_yield
 
 
@@ -72,63 +72,63 @@ SRdifftable=[     -0.25, -0.2, -0.15,  -0.1, -0.05, 0.0, 0.05, 0.1,  0.15, 0.2, 
 multipliers=[.6,    .66, .77,     .85,  .94,   1.0, 1.11, 1.19, 1.3, 1.37, 1.48]
 
 def risk_weights_with_model(rowidx, forecast, match_rawweights, SRdifftable, multipliers):
-    
+
     start_weights=list(match_rawweights.irow(rowidx).values)
     SRdifflist = list(forecast.irow(rowidx).values)
-    
+
     def process(SRdiff):
-        
+
         if np.isnan(SRdiff):
             return 1.0
-        
+
         if SRdiff>0.25:
             SRdiff=0.25
         if SRdiff<-0.25:
             SRdiff=-0.25
-        
+
         return np.interp(SRdiff, SRdifftable, multipliers)
-    
+
     new_risk_weights=[process(SRdiff)*start_wt for SRdiff, start_wt in zip(SRdifflist, start_weights)]
     new_risk_weights=[wt/sum(new_risk_weights) for wt in new_risk_weights]
-    
+
     return new_risk_weights
 
 def yield_forecast(data, vols):
-    
+
     normyields = yields/vols
 
     avgyield= normyields.mean(axis=1)
     avgyield = pd.DataFrame(np.array([avgyield]*len(data.columns), ndmin=2).transpose(), data.index)
-    avgyield.columns=normyields.columns   
-    
+    avgyield.columns=normyields.columns
+
     diff = normyields - avgyield
-    
+
     return diff*3.0
 
 
 def trailing_forecast( data, vols):
-    
+
     annindex=data.cumsum()
     annreturns=annindex - annindex.shift(12)
-    normreturns=annreturns/vols    
-    
+    normreturns=annreturns/vols
+
     avgreturn = normreturns.mean(axis=1)
     avgreturn = pd.DataFrame(np.array([avgreturn]*len(data.columns), ndmin=2).transpose(), data.index)
     avgreturn.columns=normreturns.columns
-    
+
     diff = normreturns - avgreturn
-    
+
     return diff*.5
 
 
 def calc_ts_new_risk_weights(data, vols, rawweights, SRdifftable, multipliers, forecast_func):
-    
+
     forecast=forecast_func( data, vols)
     match_rawweights=rawweights.reindex(forecast.index, method="ffill")
-    
-    new_weights=[risk_weights_with_model(rowidx, forecast, match_rawweights, SRdifftable, multipliers) for 
+
+    new_weights=[risk_weights_with_model(rowidx, forecast, match_rawweights, SRdifftable, multipliers) for
                  rowidx in range(len(forecast))]
-    
+
     return pd.DataFrame(new_weights, match_rawweights.index, columns=match_rawweights.columns)
 
 def get_equities_data(case="devall"):
@@ -157,7 +157,7 @@ def get_equities_data(case="devall"):
         tickers=list(refdata[(refdata.EmorDEV=="DEV") & (refdata.Type=="Country")].Country.values) #mom 12bp
         hc_risk_weights=pd.read_csv("/home/rob/workspace/systematictradingexamples/plots_for_perhaps/devhcweights.csv")
         initial_risk_weights=[hc_risk_weights[hc_risk_weights.Country==code].Weight.values[0] for code in tickers]
-        
+
     elif case=="emall":
         tickers=list(refdata[(refdata.EmorDEV=="EM") & (refdata.Type=="Country")].Country.values) #mom 7bp
     elif case=="all":
@@ -181,10 +181,10 @@ def get_equities_data(case="devall"):
 
     yields=pd.concat([get_div_yield(tickname, rawdata) for tickname in tickers], axis=1, names=tickers)
     yields.columns=tickers
-        
+
     initial_stdev=[vl(refdata[refdata.Country==ticker].EmorDEV.values[0]) for ticker in tickers]
 
-    
+
 
     return data, initial_stdev, initial_risk_weights, yields
 
@@ -192,39 +192,39 @@ def get_equities_data(case="devall"):
 def get_some_crossasset_data():
 
     rawdata=read_ts_csv("/home/rob/workspace/systematictradingexamples/plots_for_perhaps/MSCI_data.csv")
-    
+
     data=pd.read_csv("/home/rob/workspace/systematictradingexamples/plots_for_perhaps/USmonthlyreturns.csv")
-    
+
     data = data[1190:]
-    
-    
-    
+
+
+
     dindex="Date"
     dateindex=[dt.strptime(dx, "%d/%m/%Y") for dx in list(data[dindex])]
     data.index=dateindex
     del(data[dindex])
-    
+
     USeqyield = data.SP_Yield
     USbondyield = data.Bond_Yield
 
 
     asset_returns2=calc_asset_returns(rawdata, ["UK"])
     asset_returns2.columns=["UK_Equity"]
-    
+
     UKequityyield=get_div_yield("UK", rawdata)*100.0
-    
+
     asset_returns=data[["SP_TR", "Bond_TR"]]
     asset_returns.columns=["US_Equity", "US_Bond"]
-    
+
     asset_returns.index = [x + pd.DateOffset(months=1) for x in asset_returns.index]
     asset_returns.index = [x - pd.DateOffset(days=1) for x in asset_returns.index]
-    
-    
+
+
     data=pd.concat([asset_returns, asset_returns2], axis=1)
     data = data.cumsum().ffill().reindex(asset_returns.index).diff()
-    
+
     data.columns=["US Equity" ,"US Bond", "UK Equity"]
-    
+
     yields=pd.concat([USeqyield, USbondyield, UKequityyield], axis=1)
     yields=yields.ffill().reindex(data.index).ffill()
     yields.columns=["US Equity" ,"US Bond", "UK Equity"]
@@ -261,7 +261,7 @@ def calc_shares_from_risk_weight(risk_weights, stdevlist, account_value, prices)
     cash_weights=calc_cash_weights_from_risk_weight(risk_weights, stdevlist)
     shares=calc_shares_from_cash_weight(cash_weights, account_value, prices)
     return shares
-    
+
 calc_shares_from_risk_weight([.25,.25,.5], [.2,.15,.22],10000, [2,5, (30/1.5)])
 
 def implied_cash_weights(numb_shares, prices, account_value):
@@ -270,7 +270,7 @@ def implied_cash_weights(numb_shares, prices, account_value):
 def risk_weights_implied_by(numb_shares, prices, account_value, stdevlist):
     cash_weights=implied_cash_weights(numb_shares, prices, account_value)
     risk_weights=[x*y for (x,y) in zip(cash_weights,stdevlist)]
-    
+
     total_cash=np.sum(cash_weights)
     total_risk=np.sum(risk_weights)
 
@@ -285,12 +285,12 @@ risk_weights_implied_by([1204,642,218], [2.0,5.0, (30/1.5)], 10000, [.2,.15,.22]
 
 START_PRICE=10.0
 
-def calc_initial_share_count( start_portfolio_value, risk_weights=[], stdevlist=[] 
+def calc_initial_share_count( start_portfolio_value, risk_weights=[], stdevlist=[]
                              ):
     start_prices=[START_PRICE]*len(risk_weights) ## by construction
     return calc_shares_from_risk_weight(risk_weights, stdevlist, start_portfolio_value, start_prices)
-    
-    
+
+
 
 tradecosts_US=[[100,                       1000,  5000,      10000,          1000000],
                [1.1,                      1.5,    3.5,       6.,           2500.0]]
@@ -317,21 +317,21 @@ def generate_fitting_dates(data, date_method, rollyears=20):
     generate a list 4 tuples, one element for each year in the data
     each tuple contains [fit_start, fit_end, period_start, period_end] datetime objects
     the last period will be a 'stub' if we haven't got an exact number of years
-    
+
     date_method can be one of 'in_sample', 'expanding', 'rolling'
-    
-    if 'rolling' then use rollyears variable  
+
+    if 'rolling' then use rollyears variable
     """
-    
+
     start_date=data.index[0]
     end_date=data.index[-1]
-    
+
     ## generate list of dates, one year apart, including the final date
     yearstarts=list(pd.date_range(start_date, end_date, freq="12M"))
     if yearstarts[-1]<end_date:
         yearstarts=yearstarts+[end_date]
-   
-    ## loop through each period     
+
+    ## loop through each period
     periods=[]
     for tidx in range(len(yearstarts))[1:-1]:
         ## these are the dates we test in
@@ -348,14 +348,14 @@ def generate_fitting_dates(data, date_method, rollyears=20):
             fit_start=yearstarts[yearidx_to_use]
         else:
             raise Exception("don't recognise date_method %s" % date_method)
-            
+
         if date_method=="in_sample":
             fit_end=end_date
         elif date_method in ['rolling', 'expanding']:
             fit_end=period_start
         else:
             raise Exception("don't recognise date_method %s " % date_method)
-        
+
         periods.append([fit_start, fit_end, period_start, period_end])
 
     ## give the user back the list of periods
@@ -374,62 +374,62 @@ FLAG_BAD_RETURN=0.0000001
 def fix_mus(mean_list):
     """
     Replace nans with unfeasibly large negatives
-    
+
     result will be zero weights for these assets
     """
-    
+
     def _fixit(x):
         if np.isnan(x):
             return FLAG_BAD_RETURN
         else:
             return x
-    
+
     mean_list=[_fixit(x) for x in mean_list]
-    
+
     return mean_list
 
 def un_fix_weights(mean_list, weights):
     """
     When mean has been replaced, use nan weight
     """
-    
+
     def _unfixit(xmean, xweight):
         if xmean==FLAG_BAD_RETURN:
             return 0.0
         elif xmean<0.0:
             return 0.0
-            
+
         return xweight
-    
+
     fixed_weights=[_unfixit(xmean, xweight) for (xmean, xweight) in zip(mean_list, weights)]
-    
+
     return fixed_weights
 
 
 def fix_sigma(sigma):
     """
     Replace nans with zeros
-    
+
     """
-    
+
     def _fixit(x):
         if np.isnan(x):
             return 0.0
         else:
             return x
-    
+
     sigma=[[_fixit(x) for x in sigma_row] for sigma_row in sigma]
-    
+
     sigma=np.array(sigma)
-    
+
     return sigma
 
 
 
 def must_have_item(slice_data):
     """
-    Returns the columns of slice_data for which we have at least one non nan value  
-    
+    Returns the columns of slice_data for which we have at least one non nan value
+
     :param slice_data: Data to get correlations from
     :type slice_data: pd.DataFrame
 
@@ -437,30 +437,30 @@ def must_have_item(slice_data):
 
     >>>
     """
-        
+
     def _any_data(xseries):
         data_present=[not np.isnan(x) for x in xseries]
-        
+
         return any(data_present)
-    
+
     some_data=slice_data.apply(_any_data, axis=0)
     some_data_flags=list(some_data.values)
-    
+
     return some_data_flags
 
 
 def optimise( sigma, mean_list):
-    
+
     ## will replace nans with big negatives
     mean_list=fix_mus(mean_list)
-    
+
     ## replaces nans with zeros
     sigma=fix_sigma(sigma)
-    
+
     mus=np.array(mean_list, ndmin=2).transpose()
     number_assets=sigma.shape[1]
     start_weights=[1.0/number_assets]*number_assets
-    
+
     ## Constraints - positive weights, adding to 1.0
     bounds=[(0.0,1.0)]*number_assets
     cdict=[{'type':'eq', 'fun':addem}]
@@ -468,17 +468,17 @@ def optimise( sigma, mean_list):
 
     ## anything that had a nan will now have a zero weight
     weights=ans['x']
-    
+
     ## put back the nans
     weights=un_fix_weights(mean_list, weights)
-    
+
     return weights
 
 def clean_weights(weights,  must_haves=None, fraction=0.5):
     """
     Make's sure we *always* have some weights where they are needed, by replacing nans
     Allocates fraction of pro-rata weight equally
-    
+
     :param weights: The weights to clean
     :type weights: list of float
 
@@ -503,33 +503,33 @@ def clean_weights(weights,  must_haves=None, fraction=0.5):
     >>> clean_weights([np.nan, np.nan, np.nan],  must_haves=[False,False,False], fraction=1.0)
     [0.0, 0.0, 0.0]
     """
-    ### 
+    ###
 
     if must_haves is None:
         must_haves=[True]*len(weights)
-    
+
     if not any(must_haves):
         return [0.0]*len(weights)
-    
+
     needs_replacing=[(np.isnan(x) or x==0.0) and must_haves[i] for (i,x) in enumerate(weights)]
     keep_empty=[(np.isnan(x) or x==0.0) and not must_haves[i] for (i,x) in enumerate(weights)]
     no_replacement_needed=[(not keep_empty[i]) and (not needs_replacing[i]) for (i,x) in enumerate(weights)]
 
     if not any(needs_replacing):
         return weights
-    
+
     missing_weights=sum(needs_replacing)
 
     total_for_missing_weights=fraction*missing_weights/(
         float(np.nansum(no_replacement_needed)+np.nansum(missing_weights)))
-    
+
     adjustment_on_rest=(1.0-total_for_missing_weights)
-    
+
     each_missing_weight=total_for_missing_weights/missing_weights
-    
-    def _good_weight(value, idx, needs_replacing, keep_empty, 
+
+    def _good_weight(value, idx, needs_replacing, keep_empty,
                      each_missing_weight, adjustment_on_rest):
-            
+
         if needs_replacing[idx]:
             return each_missing_weight
         if keep_empty[idx]:
@@ -538,14 +538,14 @@ def clean_weights(weights,  must_haves=None, fraction=0.5):
             return 0.0
         return value*adjustment_on_rest
 
-    weights=[_good_weight(value, idx, needs_replacing, keep_empty, 
-                          each_missing_weight, adjustment_on_rest) 
+    weights=[_good_weight(value, idx, needs_replacing, keep_empty,
+                          each_missing_weight, adjustment_on_rest)
              for (idx, value) in enumerate(weights)]
-    
+
     ## This process will screw up weights - let's fix them
     xsum=sum(weights)
     weights=[x/xsum for x in weights]
-    
+
     return weights
 
 
@@ -555,14 +555,14 @@ def correlation_matrix(returns):
 
     We use weekly returns because otherwise end of day effects, especially over time zones, give
     unrealistically low correlations
-    
+
     """
     asset_index=returns.cumsum().ffill()
     asset_index=asset_index.resample('1W') ## Only want index, fill method is irrelevant
     asset_index = asset_index - asset_index.shift(1)
 
     return asset_index.corr().values
-    
+
 
 def create_dull_pd_matrix(dullvalue=0.0, dullname="A", startdate=pd.datetime(1970,1,1).date(), enddate=datetime.datetime.now().date(), index=None):
     """
@@ -570,11 +570,11 @@ def create_dull_pd_matrix(dullvalue=0.0, dullname="A", startdate=pd.datetime(197
     """
     if index is None:
         index=pd.date_range(startdate, enddate)
-    
+
     dullvalue=np.array([dullvalue]*len(index))
-    
+
     ans=pd.DataFrame(dullvalue, index, columns=[dullname])
-    
+
     return ans
 
 def addem(weights):
@@ -589,14 +589,14 @@ def variance(weights, sigma):
 def neg_SR(weights, sigma, mus):
     ## Returns minus the Sharpe Ratio (as we're minimising)
 
-    """    
+    """
     estreturn=250.0*((np.matrix(x)*mus)[0,0])
     variance=(variance(x,sigma)**.5)*16.0
     """
     estreturn=(np.matrix(weights)*mus)[0,0]
     std_dev=(variance(weights,sigma)**.5)
 
-    
+
     return -estreturn/std_dev
 
 def sigma_from_corr(std, corr):
@@ -606,22 +606,22 @@ def sigma_from_corr(std, corr):
 
 def basic_opt(std,corr,mus):
     sigma=sigma_from_corr(std, corr)
-    
+
     ans=optimise(sigma, list(mus))
-    
+
     return ans
 
 def neg_SR_riskfree(weights, sigma, mus, riskfree=0.005):
     ## Returns minus the Sharpe Ratio (as we're minimising)
 
-    """    
+    """
     estreturn=250.0*((np.matrix(x)*mus)[0,0])
     variance=(variance(x,sigma)**.5)*16.0
     """
     estreturn=(np.matrix(weights)*mus)[0,0] - riskfree
     std_dev=(variance(weights,sigma)**.5)
 
-    
+
     return -estreturn/std_dev
 
 
@@ -630,7 +630,7 @@ def equalise_vols(returns, default_vol):
     Normalises returns so they have the in sample vol of defaul_vol (annualised)
     Assumes daily returns
     """
-    
+
     factors=(default_vol/16.0)/returns.std(axis=0)
     facmat=create_dull_pd_matrix(dullvalue=factors, dullname=returns.columns, index=returns.index)
     norm_returns=returns*facmat
@@ -658,21 +658,21 @@ def opt_shrinkage(returns, shrinkage_factors, equalisevols=True, default_vol=0.2
     Returns the optimal portfolio for the dataframe returns using shrinkage
 
     shrinkage_factors is a tuple, shrinkage of mean and correlation
-    
+
     If equalisevols=True then normalises returns to have same standard deviation; the weights returned
        will be 'risk weightings'
-       
-    
+
+
     """
-    
+
     if equalisevols:
         use_returns=equalise_vols(returns, default_vol)
     else:
         use_returns=returns
-    
+
     (shrinkage_mean, shrinkage_corr)=shrinkage_factors
 
-    ## Sigma matrix 
+    ## Sigma matrix
     ## Use correlation and then convert back to variance
     est_corr=use_returns.corr().values
     avg_corr=get_avg_corr(est_corr)
@@ -680,7 +680,7 @@ def opt_shrinkage(returns, shrinkage_factors, equalisevols=True, default_vol=0.2
 
     sigma_corr=shrinkage_corr*prior_corr+(1-shrinkage_corr)*est_corr
     cov_vector=use_returns.std().values
-    
+
     sigma=cov_vector*sigma_corr*cov_vector
     sigma=fix_sigma(sigma)
 
@@ -689,60 +689,60 @@ def opt_shrinkage(returns, shrinkage_factors, equalisevols=True, default_vol=0.2
     avg_return=np.mean(use_returns.mean())
     est_mus=np.array([use_returns[asset_name].mean() for asset_name in use_returns.columns], ndmin=2).transpose()
     prior_mus=np.array([avg_return for asset_name in use_returns.columns], ndmin=2).transpose()
-    
+
     mus=shrinkage_mean*prior_mus+(1-shrinkage_mean)*est_mus
 
     mean_list=list(mus.transpose()[0])
     mean_list=fix_mus(mean_list)
     mus=np.array(mean_list, ndmin=2).transpose()
 
-    
+
     ## Starting weights
     number_assets=use_returns.shape[1]
     start_weights=[1.0/number_assets]*number_assets
-    
+
     ## Constraints - positive weights, adding to 1.0
     bounds=[(0.0,1.0)]*number_assets
     cdict=[{'type':'eq', 'fun':addem}]
-    
+
     ans=minimize(neg_SR, start_weights, (sigma, mus), method='SLSQP', bounds=bounds, constraints=cdict, tol=0.00001)
     weights=ans['x']
     weights=un_fix_weights(mean_list, weights)
-    
+
     weights=clean_weights(weights, must_haves)
-        
+
     return weights
 
 def markosolver(returns, equalisemeans=False, equalisevols=True, default_vol=0.2, default_SR=1.0,
                 must_haves=[]):
     """
     Returns the optimal portfolio for the dataframe returns
-    
-    If equalisemeans=True then assumes all assets have same return if False uses the asset means    
-    
+
+    If equalisemeans=True then assumes all assets have same return if False uses the asset means
+
     If equalisevols=True then normalises returns to have same standard deviation; the weights returned
        will be 'risk weightings'
-       
+
     Note if usemeans=True and equalisevols=True effectively assumes all assets have same sharpe ratio
-    
+
     """
-        
+
     if equalisevols:
         use_returns=equalise_vols(returns, default_vol)
     else:
         use_returns=returns
-    
 
-    ## Sigma matrix 
+
+    ## Sigma matrix
     sigma=use_returns.cov().values
     sigma=fix_sigma(sigma)
 
-    ## Expected mean returns    
+    ## Expected mean returns
     if equalisemeans:
         ## Don't use the data - Set to the average Sharpe Ratio
         avg_return=np.mean(use_returns.mean())
         mus=[avg_return for asset_name in use_returns.columns]
-        
+
         mus=np.array(mus, ndmin=2).transpose()
         mus[np.isnan(use_returns.mean().values)]=np.nan
 
@@ -753,20 +753,20 @@ def markosolver(returns, equalisemeans=False, equalisevols=True, default_vol=0.2
     mean_list=fix_mus(mean_list)
     mus=np.array(mean_list, ndmin=2).transpose()
 
-    
+
     ## Starting weights
     number_assets=use_returns.shape[1]
     start_weights=[1.0/number_assets]*number_assets
-    
+
     ## Constraints - positive weights, adding to 1.0
     bounds=[(0.0,1.0)]*number_assets
     cdict=[{'type':'eq', 'fun':addem}]
-    
+
     ans=minimize(neg_SR, start_weights, (sigma, mus), method='SLSQP', bounds=bounds, constraints=cdict, tol=0.00001)
-    weights=ans['x']    
+    weights=ans['x']
 
     weights=un_fix_weights(mean_list, weights)
-    
+
     weights=clean_weights(weights, must_haves)
 
     return weights
@@ -774,95 +774,95 @@ def markosolver(returns, equalisemeans=False, equalisevols=True, default_vol=0.2
 
 def bootstrap_portfolio(returns_to_bs, monte_carlo=200, monte_length=250, equalisemeans=False, equalisevols=True, default_vol=0.2, default_SR=1.0,
                         must_haves=[]):
-    
+
     """
     Given dataframe of returns; returns_to_bs, performs a bootstrap optimisation
-    
+
     We run monte_carlo numbers of bootstraps
-    Each one contains monte_length days drawn randomly, with replacement 
+    Each one contains monte_length days drawn randomly, with replacement
     (so *not* block bootstrapping)
-    
+
     The other arguments are passed to the optimisation function markosolver
-    
+
     Note - doesn't deal gracefully with missing data. Will end up downweighting stuff depending on how
-      much data is missing in each boostrap. You'll need to think about how to solve this problem. 
-    
+      much data is missing in each boostrap. You'll need to think about how to solve this problem.
+
     """
-    
-    
+
+
     weightlist=[]
     for unused_index in range(monte_carlo):
         bs_idx=[int(random.uniform(0,1)*len(returns_to_bs)) for i in range(monte_length)]
-        
-        returns=returns_to_bs.iloc[bs_idx,:] 
+
+        returns=returns_to_bs.iloc[bs_idx,:]
         weight=markosolver(returns, equalisemeans=equalisemeans, equalisevols=equalisevols, default_vol=default_vol, default_SR=default_SR,
                            must_haves=must_haves)
         weightlist.append(weight)
-        
+
     ### We can take an average here; only because our weights always add up to 1. If that isn't true
     ###    then you will need to some kind of renormalisation
-     
+
     theweights_mean=list(np.mean(weightlist, axis=0))
-    
+
     theweights_mean=[x/sum(theweights_mean) for x in theweights_mean]
-    
+
     return theweights_mean
 
-def optimise_over_periods(data, date_method, fit_method, rollyears=20, equalisemeans=False, equalisevols=True, 
+def optimise_over_periods(data, date_method, fit_method, rollyears=20, equalisemeans=False, equalisevols=True,
                           monte_carlo=200, monte_length=250, shrinkage_factors=(0.5, 0.5)):
     """
     Do an optimisation
-    
+
     Returns data frame of weights
-    
+
     Note if fitting in sample weights will be somewhat boring
-    
+
     Doesn't deal with eg missing data in certain subperiods
-    
-    
+
+
     """
-    
+
     ## Get the periods
     fit_periods=generate_fitting_dates(data, date_method, rollyears=rollyears)
-    
+
     ## Do the fitting
     ## Build up a list of weights, which we'll concat
     weight_list=[]
     for fit_tuple in fit_periods:
         ## Fit on the slice defined by first two parts of the tuple
         period_subset_data=data[fit_tuple[0]:fit_tuple[1]]
-        
+
         ## Can be slow, if bootstrapping, so indicate where we are
-        
+
         print "Fitting data for %s to %s" % (str(fit_tuple[2]), str(fit_tuple[3]))
 
         current_period_data=data[fit_tuple[2]:fit_tuple[3]]
         must_haves=must_have_item(current_period_data)
 
-        
+
         if fit_method=="one_period":
             weights=markosolver(period_subset_data, equalisemeans=equalisemeans, equalisevols=equalisevols, must_haves=must_haves)
         elif fit_method=="bootstrap":
-            weights=bootstrap_portfolio(period_subset_data, equalisemeans=equalisemeans, 
-                                        equalisevols=equalisevols, monte_carlo=monte_carlo, 
+            weights=bootstrap_portfolio(period_subset_data, equalisemeans=equalisemeans,
+                                        equalisevols=equalisevols, monte_carlo=monte_carlo,
                                         monte_length=monte_length, must_haves=must_haves)
         elif fit_method=="shrinkage":
-            weights=opt_shrinkage(period_subset_data, shrinkage_factors=shrinkage_factors, equalisevols=equalisevols, 
+            weights=opt_shrinkage(period_subset_data, shrinkage_factors=shrinkage_factors, equalisevols=equalisevols,
                                   must_haves=must_haves)
-            
+
         else:
             raise Exception("Fitting method %s unknown" % fit_method)
-        
+
         ## We adjust dates slightly to ensure no overlaps
         dindex=[fit_tuple[2]]
-        
+
         ## create a double row to delineate start and end of test period
         weight_row=pd.DataFrame([weights], index=dindex, columns=data.columns)
-        
+
         weight_list.append(weight_row)
-        
+
     weight_df=pd.concat(weight_list, axis=0)
-    
+
     return weight_df
 
 
@@ -888,10 +888,10 @@ def calc_trade_size(numb_shares, current_optimal_risk_weights, stdevlist, curren
     ## positive means buy
 
     sparecash=sum(differences) ## positive means spare cash
-    
+
     #bigenoughdifferences=[abs(x)>windowsize for x in prop_differences]
     bigenoughdifferences=[abs(x)>(windowsize1a+windowsize2a) for x in differences]
-    
+
     if not any(bigenoughdifferences):
         return [0.0]*len(numb_shares)
 
@@ -900,38 +900,38 @@ def calc_trade_size(numb_shares, current_optimal_risk_weights, stdevlist, curren
             return x - windowsize1a
         else:
             return windowsize1a + x
-    
+
     difflist=[sizeit(x, windowsize1a) for idx, x in enumerate(differences) if bigenoughdifferences[idx]]
-    
+
     nettrade=sum(difflist)
-    
+
     ## if nettrade>0 want to buy, if sparecash<0 have to sell
     ## if nettrade>0 want to buy, if sparecash<nettrade have to buy less
     ## if nettrade<0 want to sell, if sparecash>0 can do so
     ## if nettrade<0 want to sell, if sparecash<nettrade have to sell more
-    
+
     desirednet= min(sparecash,nettrade) ## spare cash means can buy more
     avgnet=desirednet/len(difflist)
-    
+
     def _did(bigenough, diffvalue, avgnet):
         if bigenough:
             return diffvalue+avgnet
         return 0.0
-    
+
     diffstoapply=[_did(bigenough, diffvalue, avgnet) for bigenough, diffvalue in zip(bigenoughdifferences, differences)]
-    
+
     cash_weights_to_trade_to=[x+y for x,y in zip(current_cash_weights, diffstoapply)]
-    
+
     correct_share_count=calc_shares_from_cash_weight(cash_weights_to_trade_to, current_account_value, current_prices)
-    
+
     def tradeit(bigenough, correctshares, currentshares):
         if bigenough:
             return correctshares - currentshares
         return 0.0
-    
+
     tradelist=[x-y for (x,y) in zip(correct_share_count, numb_shares)]
 
-    
+
     return tradelist
 
 ## graphs showing
@@ -939,13 +939,13 @@ def calc_trade_size(numb_shares, current_optimal_risk_weights, stdevlist, curren
 ## first graph:
 ##  pick on as example. For a given country and setup and account size (usevaryingvol=False, fixedriskweights)
 
-## for different setup [country, portfolio value, 
+## for different setup [country, portfolio value,
 
-    
+
 start_portfolio_value=100000
 country="US"
 yearband=5 ## blocks to divide data into
-    
+
 
 
 #datatype="Three_assets"
@@ -964,10 +964,10 @@ for idx in range(12):
 
 stdevest[stdevest==0]=np.nan
 
-#bootstrapped_weights=optimise_over_periods(data, "rolling", "bootstrap", rollyears=5, equalisemeans=True, equalisevols=True, 
+#bootstrapped_weights=optimise_over_periods(data, "rolling", "bootstrap", rollyears=5, equalisemeans=True, equalisevols=True,
 #                                  monte_carlo=50, monte_length=12*5)
 
-bootstrapped_weights=optimise_over_periods(data, "rolling", "shrinkage", rollyears=5,  equalisevols=True, 
+bootstrapped_weights=optimise_over_periods(data, "rolling", "shrinkage", rollyears=5,  equalisevols=True,
                                   shrinkage_factors=(1.0, 0.8))
 
 
@@ -984,7 +984,7 @@ min_sizes=[0.0, 100.0, 250.0, 500.0, 750.0, 1000.0]
 
 
 
-    
+
 start_date=data.index[0]
 end_date=data.index[-1]
 
@@ -1009,8 +1009,8 @@ parameter_set_names=["Baseline", "Varying vol", "Use correlations", "Yield model
                      "Vol + correlation",
                      "Vol + correlation + momentum", "Vol + correlation + yield"]
 
-parameter_set=[(False, False, "None"), (True, False, "None"), 
-               (False, True, "None"), (False, False, "yields"), (False, False, "momentum"), 
+parameter_set=[(False, False, "None"), (True, False, "None"),
+               (False, True, "None"), (False, False, "yields"), (False, False, "momentum"),
                (True, True, "None"),
                (True, True, "momentum"), (True, True, "yields")]
 
@@ -1018,7 +1018,7 @@ parameter_set=[(False, False, "None"), (True, False, "None"),
 really_big_fat=[]
 
 for min_trade_size in min_sizes:
-    windowsize2=min_trade_size / start_portfolio_value    
+    windowsize2=min_trade_size / start_portfolio_value
 
     big_fat_results_dict=dict(turnover=dict(), netreturn=dict(), costs=dict(), percentile_gross=dict(),
                               percentile_net=dict(), grossreturn=dict())
@@ -1026,32 +1026,32 @@ for min_trade_size in min_sizes:
     #for par_name, unpicked_parameters in zip(parameter_set_names, parameter_set):
     for par_name, unpicked_parameters in zip(['Baseline'], [(True, True, "momentum")]):
     #for par_name, unpicked_parameters in zip(['Baseline'], [(False, False, "None")]):
-    
-        usevaryingvol, usebootstrapsweights, usemodel = unpicked_parameters 
-    
+
+        usevaryingvol, usebootstrapsweights, usemodel = unpicked_parameters
+
         if usevaryingvol:
             vols=stdevest
         else:
             vols=pd.DataFrame([initial_stdev]*len(data), data.index)
             vols.columns=data.columns
-            
+
         if usebootstrapsweights:
             rawweights=copy(bootstrapped_weights)
         else:
             rawweights=copy(fixed_weights)
-        
+
         if usemodel is "yields":
-            weights=calc_ts_new_risk_weights(data, vols, rawweights, SRdifftable, multipliers, yield_forecast) 
-        
+            weights=calc_ts_new_risk_weights(data, vols, rawweights, SRdifftable, multipliers, yield_forecast)
+
         elif usemodel is "momentum":
-            weights=calc_ts_new_risk_weights(data, vols, rawweights, SRdifftable, multipliers, trailing_forecast) 
-            
+            weights=calc_ts_new_risk_weights(data, vols, rawweights, SRdifftable, multipliers, trailing_forecast)
+
         elif usemodel is "None":
             weights=copy(rawweights)
-        
+
         ## assume monthly dividends
         ## it's unlikely to matter in practice
-        
+
         ## any subsetting should be done here
         big_fat_results_dict['turnover'][par_name]=[]
         big_fat_results_dict['grossreturn'][par_name]=[]
@@ -1059,110 +1059,110 @@ for min_trade_size in min_sizes:
         big_fat_results_dict['costs'][par_name]=[]
         big_fat_results_dict['percentile_gross'][par_name]=[]
         big_fat_results_dict['percentile_net'][par_name]=[]
-        
+
         for windowsize1 in windowsizelist:
             results=dict(turnover=[], grossreturn=[], netreturn=[], costs=[])
-                
+
             for (start_date, end_date) in zip(yearstarts, yearends):
-            
+
                 print ("%s %.2f %.2f %s %s " % (par_name, windowsize1, windowsize2, str(start_date), str(end_date)))
-        
+
                 use_data=data[start_date:end_date]
-                
+
                 useyields=yields.reindex(use_data.index).ffill()
                 usestdev=vols.reindex(use_data.index).ffill()
                 useweights=uniquets(weights).reindex(use_data.index, method="ffill")
-                
+
                 pricereturns= use_data - useyields/1200.0
                 priceindex=(pricereturns+1.0)
                 priceindex=priceindex.cumprod()*START_PRICE
-        
+
                 ann_time_factor=12.0/len(priceindex.index)
-                
-                numb_shares=calc_initial_share_count(start_portfolio_value, risk_weights=list(useweights.irow(0).values), stdevlist=list(vols.irow(0).values), 
+
+                numb_shares=calc_initial_share_count(start_portfolio_value, risk_weights=list(useweights.irow(0).values), stdevlist=list(vols.irow(0).values),
                                              )
                 cash=start_portfolio_value - get_account_value([START_PRICE]*len(priceindex.columns), 0.0, numb_shares)
-                
+
                 ## loop
-                
+
                 idx=1
-                
+
                 accvalue=[start_portfolio_value]
                 costs=[0.0]
                 turnover=[0.0]
-                
+
                 while idx<(len(priceindex.index)):
                     stdevlist=list(usestdev.irow(idx).values)
-                        
+
                     current_optimal_risk_weights = list(useweights.irow(idx).values)
-                        
-                    
+
+
                     current_prices=get_current_prices(idx, priceindex)
-                    
+
                     this_months_divis=get_monthly_divis(idx, numb_shares, useyields, current_prices)
-                    
-                    
+
+
                     current_account_value=get_account_value(current_prices, cash, numb_shares)
-                    
-                    shares_traded = calc_trade_size(numb_shares, current_optimal_risk_weights, 
-                                                    stdevlist, current_account_value, current_prices, 
-                                                    windowsize1, windowsize2) 
-                    
-                    
+
+                    shares_traded = calc_trade_size(numb_shares, current_optimal_risk_weights,
+                                                    stdevlist, current_account_value, current_prices,
+                                                    windowsize1, windowsize2)
+
+
                     numb_shares = [x+y for x,y in zip(shares_traded, numb_shares)]
-                    
+
                     ## Note - this thing will compound like crazy so need to take 5 year snapshots
                     ## This is also a good thing with respect to averaging
-                    
+
                     value_traded = [(x*y) for x,y in zip(shares_traded, current_prices)]
-                    
+
                     commissions=np.sum([cost_trade(abs(x*y), country) for x,y in zip(shares_traded, current_prices)])
-                    
+
                     cash = cash + this_months_divis + (-np.sum(value_traded))  - commissions
-                    
+
                     accvalue.append(current_account_value)
                     costs.append(commissions)
                     turnover.append(np.sum([abs(x) for x in value_traded]))
-                    
+
                     #print ("Account value %.1f Cash %.1f" % (current_account_value, cash))
-                        
+
                     idx=idx+1
-                
+
                 ## all of these need annualising
-                
+
                 finalvalue=(accvalue[-1]/start_portfolio_value)-1.0
                 totalcosts=np.sum(costs)/start_portfolio_value
                 totalturnover=np.sum(turnover)/(start_portfolio_value)
-                
-                
+
+
                 annual_turnover = totalturnover*ann_time_factor
                 annual_return=((finalvalue+1.0)**ann_time_factor)-1.0
                 annual_costs = totalcosts *ann_time_factor
-                
-                results['turnover'].append(annual_turnover) 
+
+                results['turnover'].append(annual_turnover)
                 results['grossreturn'].append(annual_return+annual_costs)
                 results['netreturn'].append(annual_return)
                 results['costs'].append(annual_costs)
-                                            
+
             ## 75% Rule
             ## 75% of gross return; less costs
-            
+
             avg_turnover=np.nanmean(results['turnover'])
             avg_gross=np.nanmean(results['grossreturn'])
             avg_net=np.nanmean(results['netreturn'])
             avg_costs=np.nanmean(results['costs'])
             percentile_gross=np.percentile(results['grossreturn'],25.0)
             percentile_net=percentile_gross - avg_costs
-            
-            big_fat_results_dict['turnover'][par_name].append(avg_turnover)    
-            big_fat_results_dict['grossreturn'][par_name].append(avg_gross)    
-            big_fat_results_dict['netreturn'][par_name].append(avg_net)    
-            big_fat_results_dict['costs'][par_name].append(avg_costs)    
+
+            big_fat_results_dict['turnover'][par_name].append(avg_turnover)
+            big_fat_results_dict['grossreturn'][par_name].append(avg_gross)
+            big_fat_results_dict['netreturn'][par_name].append(avg_net)
+            big_fat_results_dict['costs'][par_name].append(avg_costs)
             big_fat_results_dict['percentile_gross'][par_name].append(percentile_gross)
             big_fat_results_dict['percentile_net'][par_name].append(percentile_net)
 
     really_big_fat.append(big_fat_results_dict)
-    
+
 ## plot the results
 ## with no trimming
 
@@ -1248,7 +1248,7 @@ rcParams.update({'font.size': 18})
 file_process("Baselineturnover_%s_%dK_%s" % (country, int(start_portfolio_value/1000.0), datatype))
 
 plt.show()
-    
+
 ax=plt.subplot(111)
 
 costs=pd.DataFrame([thing['costs']['Baseline'] for thing in really_big_fat])*100.0

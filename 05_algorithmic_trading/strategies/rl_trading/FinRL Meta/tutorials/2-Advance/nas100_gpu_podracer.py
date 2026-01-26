@@ -1,6 +1,6 @@
 import sys
 from neo_finrl.agents.elegantrl.run import *
-import torch 
+import torch
 import numpy as np
 
 def demo_nas100_GPU_Podracer():  # 1.7+ 2.0+
@@ -43,5 +43,5 @@ def demo_nas100_GPU_Podracer():  # 1.7+ 2.0+
     episode_returns = np.asarray(episode_returns,dtype = float)
     print(episode_returns[-1])
     np.save('./episode_returns.npy', episode_returns)
-    
+
 demo_nas100_GPU_Podracer()

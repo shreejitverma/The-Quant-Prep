@@ -9,7 +9,7 @@ def variance_calculator(series, series_average, win_len):
     temp = series.subtract(series_average) # Difference a-b
     temp2 = temp.apply(lambda x:x**2)  # Square them.. (a-b)^2
     temp3 = temp2.rolling(sma - 1).mean() # Summation (a-b)^2 / (sma - 1)
-    sigma = temp3.apply(lambda x: math.sqrt(x)) 
+    sigma = temp3.apply(lambda x: math.sqrt(x))
     return sigma
 
 def fetch_data(string1, string2, string3, filename):
@@ -29,7 +29,7 @@ Data['PCR'] = Data['S&P PUT-CALL RATIO']
 
 sma = 20 #  Moving Average Window length
 k = 1.5 # Constant representing 'k' times sigma away from moving average (fir Bollinger bands)
-l = 2 # cons.representing 'l' times sigma away from Bollinger band (for stoploss band) 
+l = 2 # cons.representing 'l' times sigma away from Bollinger band (for stoploss band)
 pro = 0  # Profit Variable
 flag = 1 # Flag is there for begin first transaction -- transaction should start with LBB/UBB crossing only
 buy_flag = False
@@ -60,10 +60,10 @@ Data['order'] = pd.Series() # list which contains the orders: BUY / SELL / Do No
 s = Data['PCR'].size  # Total Number of Data point
 
 for i in range(s):
-    
+
     pro = 0    # Profit at each trade
     future_cost = Data['future'][i]   # Cost of big S&P 500 futures bought
-    PCR = Data['PCR'][i] # Put Call ratio 
+    PCR = Data['PCR'][i] # Put Call ratio
     PCR_prev = Data['PCR_prev'][i]  # Previous day's put call ratio
     LBB = Data['LBB'][i]  # Lower Bollinger Band
     UBB = Data['UBB'][i]  # # Upper Bollinger Band

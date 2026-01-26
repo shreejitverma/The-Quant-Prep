@@ -38,7 +38,7 @@ r0 = r_list[0]  # initial short rate (Eonia 30.09.2014)
 
 #
 # Market Implied Volatilities
-# 
+#
 for row, option in options.iterrows():
     call = call_option(S0, option['Strike'], option['Date'],
                         option['Maturity'], option['r'], 0.15)
@@ -78,7 +78,7 @@ def BCC_iv_error_function(p0):
         mean squared error
     '''
     global i, min_MSE
-    kappa_v, theta_v, sigma_v, rho, v0, lamb, mu, delta = p0 
+    kappa_v, theta_v, sigma_v, rho, v0, lamb, mu, delta = p0
     if kappa_v < 0.0 or theta_v < 0.005 or sigma_v < 0.0 or \
         rho < -1.0 or rho > 1.0 or v0 < 0.0 or lamb < 0.0 or \
         mu < -.6 or mu > 0.0 or delta < 0.0:
@@ -108,7 +108,7 @@ def BCC_iv_calibration_full():
     p0 = np.load('11_cal/opt_full.npy')
 
     # local, convex minimization
-    opt = fmin(BCC_iv_error_function, p0,  
+    opt = fmin(BCC_iv_error_function, p0,
                  xtol=0.000001, ftol=0.000001,
                  maxiter=450, maxfun=650)
     np.save('11_cal/opt_iv', opt)
@@ -116,7 +116,7 @@ def BCC_iv_calibration_full():
 
 def BCC_calculate_model_values(p0):
     ''' Calculates all model values given parameter vector p0. '''
-    kappa_v, theta_v, sigma_v, rho, v0, lamb, mu, delta = p0  
+    kappa_v, theta_v, sigma_v, rho, v0, lamb, mu, delta = p0
     values = []
     for row, option in options.iterrows():
         model_value = BCC_call_value(S0, option['Strike'], option['T'],

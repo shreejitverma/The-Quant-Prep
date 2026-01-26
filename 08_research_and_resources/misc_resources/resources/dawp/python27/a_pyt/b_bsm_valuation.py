@@ -18,7 +18,7 @@ vola = 0.25  # constant volatility factor of diffusion
 
 def BSM_call_value(S0, K, T, r, vola):
     ''' Analytical European call option value for Black-Scholes-Merton (1973).
-    
+
     Parameters
     ==========
     S0: float

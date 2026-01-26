@@ -20,7 +20,7 @@ Installing from source via `Git` and `Github`:
     git clone https://github.com/yhilpisch/tpqps
     cd tpqps
     python setup.py install
-    
+
 Using `pip` in combination with `Github`:
 
     pip install git+git://github.com/yhilpisch/tpqps

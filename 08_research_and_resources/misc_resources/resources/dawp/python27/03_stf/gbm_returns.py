@@ -24,7 +24,7 @@ def dN(x, mu, sigma):
 
     Parameters
     ==========
-    mu : float 
+    mu : float
         expected value
     sigma : float
         standard deviation
@@ -155,7 +155,7 @@ def realized_volatility(data):
 def rolling_statistics(data):
     ''' Calculates and plots rolling statistics (mean, std, correlation). '''
     plt.figure(figsize=(11, 8))
-    
+
     plt.subplot(311)
     mr = pd.rolling_mean(data['returns'], 252) * 252
     mr.plot()

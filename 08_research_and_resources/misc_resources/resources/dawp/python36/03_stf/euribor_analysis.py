@@ -13,7 +13,7 @@ from GBM_returns import *
 
 
 def read_euribor_data():
-    ''' Reads historical Euribor data from Excel file, calculates log returns, 
+    ''' Reads historical Euribor data from Excel file, calculates log returns,
     realized variance and volatility.'''
     EBO = pd.read_excel('./03_stf/EURIBOR_current.xlsx',
                         index_col=0)

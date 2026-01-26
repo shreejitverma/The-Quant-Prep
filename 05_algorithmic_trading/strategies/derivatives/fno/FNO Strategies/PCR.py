@@ -34,7 +34,7 @@ l = 1 #...............................constant representing 'l' times sigma away
 flag = 1 #............................flag is there to begin first transaction--- transaction should start with LBB/UBB crossing only
 pro = 0 #.............................profit variable
 transaction_start_price = 0
-buy_flag = False 
+buy_flag = False
 sell_flag = False
 abs_SL = 5
 mtm = list()
@@ -67,7 +67,7 @@ s = Data['PCR'].size#.................size of the PCR series
 #this loop checks for PCR crossing LBB,UBB,MaVG,stoploss_bands and places the buy/sell order..
 
 for i in range(s):
-	
+
 	pro = 0 # profit at each trade
 	#variables to be used for comarison
 	future_cost = Data['future'][i]#...........cost of big S&P 500 futures bought
@@ -78,7 +78,7 @@ for i in range(s):
 	mAvg     =   Data['mAvg'][i]#..............moving average
 	USL      =   Data['USL'][i]#...............upper stoploss band
 	LSL      =   Data['LSL'][i] #..............lower stoploss band
-    
+
     #comparisons stored as boolean variables to place order accordingly
 	UBB_cross        =   (PCR > UBB) and (PCR_prev < UBB)# .......Check if PCR crosses upper bollinger band
 	LBB_cross        =   (PCR < LBB) and (PCR_prev > LBB)# .......Check if PCR crosses lower bollinger band
@@ -89,25 +89,25 @@ for i in range(s):
 
 	if(UBB_cross and (not buy_flag) and flag ==1): #...........places "BUY" order if PCR crosses upper bollinger band to open a trade
 		flag = 0
-		buy_flag = True      
+		buy_flag = True
 		sell_flag = False
 		transaction_start_price = future_cost #............price at which S&P 500 future bought when order is placed
 		order_details = [1,"Buy" , "UBB crossed" , "0" , "position taken"]
-	
+
 	elif (LBB_cross and (not sell_flag) and flag ==1): #.......places "SELL" order if PCR crosses lower bollinger band to open a trade
 		flag = 0
-		sell_flag = True  
+		sell_flag = True
 		buy_flag = False
 		transaction_start_price = future_cost
 		order_details = [-1,"Sell" , "LBB crossed" , "0" , "position taken"]
-	
-	elif (mAvg_cross_up and flag==0 and (not buy_flag)) : #........places "BUY" order if PCR crosses mAvg from low to high to close a trade  
+
+	elif (mAvg_cross_up and flag==0 and (not buy_flag)) : #........places "BUY" order if PCR crosses mAvg from low to high to close a trade
 		flag = 1
-		buy_flag = False 
+		buy_flag = False
 		sell_flag = False
 		pro = future_cost -transaction_start_price
 		order_details = [1,"Buy" , "mAvg crossed" , "0" , "position closed"]
-		
+
 	elif( LSL_cross and flag == 0 and (not buy_flag)):#......places "BUY" order if PCR crosses lower stoploss band to close a trade
 		flag = 1
 		buy_flag = False
@@ -119,22 +119,22 @@ for i in range(s):
 		buy_flag = False
 		sell_flag = False
 		pro = future_cost - transaction_start_price
-		order_details = [1,"Buy" , "LSB crossed" , "stoploss executed abs" , "position closed"]		
-				
+		order_details = [1,"Buy" , "LSB crossed" , "stoploss executed abs" , "position closed"]
+
 	elif (mAvg_cross_down and flag==0 and (not sell_flag)):#.....places "SELL" order if PCR crosses mAvg from high to low to close a trade
 		flag = 1
 		sell_flag = False
 		buy_flag = False
 		pro = -(Data['future'][i] - transaction_start_price)
 		order_details = [-1,"Sell" , "mAvg crossed (h to l)" , "0" , "position closed"]
-					
+
 	elif(USL_cross and flag==0 and (not sell_flag)):# ..places "SELL" order if PCR crosses upper stoploss band to close a trade
 		flag = 1
 		sell_flag = False
 		buy_flag = False
 		pro = -(Data['future'][i] - transaction_start_price)
 		order_details = [-1,"Sell" , "USB crossed" , "stoploss executed" , "position closed"]
-	
+
 	elif((-future_cost + transaction_start_price) > abs_SL and flag==0 and (not sell_flag)):# ..places "SELL" order if PCR crosses upper stoploss #absolute value
 		flag = 1
 		sell_flag = False
@@ -149,7 +149,7 @@ for i in range(s):
 			if(buy_flag==1 and sell_flag==0): tempo = (Data['future'][i] -transaction_start_price) * 500
 			if(buy_flag==0 and sell_flag==1): tempo= (-Data['future'][i] +transaction_start_price) * 500
 		order_details = [0,"No trade" , "no trade" , "0" , tempo]
-	
+
 
 	profit.append(pro)
 	order.append(order_details[0])

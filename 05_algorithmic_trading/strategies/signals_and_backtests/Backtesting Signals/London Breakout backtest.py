@@ -49,7 +49,7 @@ import pandas as pd
 # In[2]:
 
 def london_breakout(df):
-    
+
     df['signals']=0
 
     #cumsum is the cumulated sum of signals
@@ -64,7 +64,7 @@ def london_breakout(df):
 
 
 def signal_generation(df,method):
-    
+
     #tokyo_price is a list to store average price of
     #the last trading hour of tokyo market
     #we use max, min to define the real threshold later
@@ -75,7 +75,7 @@ def signal_generation(df,method):
     #i am using 100 basis points
     #for instance, we have defined our upper and lower thresholds
     #however, when london market opens
-    #the price goes skyrocketing 
+    #the price goes skyrocketing
     #say 200 basis points above upper threshold
     #i personally wouldnt get in the market as its too risky
     #also, my stop loss and target is 50 basis points
@@ -93,10 +93,10 @@ def signal_generation(df,method):
     #this is the price when we execute a trade
     #we need to save it to set up the stop loss
     executed_price=float(0)
-    
+
     signals=method(df)
     signals['date']=pd.to_datetime(signals['date'])
-    
+
     #this is the core part
     #the time complexity for this part is extremely high
     #as there are too many constraints
@@ -104,14 +104,14 @@ def signal_generation(df,method):
     #plz let me know
 
     for i in range(len(signals)):
-        
+
         #as mentioned before
         #the dataset use eastern standard time
         #so est 2am is the last hour before london starts
         #we try to append all the price into the list called threshold
         if signals['date'][i].hour==2:
             tokyo_price.append(signals['price'][i])
-            
+
         #est 3am which is gmt 8am
         #thats when london market starts
         #good morning city of london and canary wharf!
@@ -130,7 +130,7 @@ def signal_generation(df,method):
             signals.at[i,'lower']=lower
 
             tokyo_price=[]
-            
+
         #prior to 30 minutes i have mentioned before
         #as long as its under 30 minutes after market opening
         #signals will be generated once conditions are met
@@ -142,7 +142,7 @@ def signal_generation(df,method):
             #again, we wanna keep track of thresholds during signal generation periods
             signals.at[i,'upper']=upper
             signals.at[i,'lower']=lower
-            
+
             #this is the condition of signals generation
             #when the price is above upper threshold
             #we set signals to 1 which implies long
@@ -169,7 +169,7 @@ def signal_generation(df,method):
                     #its for stop loss calculation
                     executed_price=signals['price'][i]
 
-            #vice versa    
+            #vice versa
             if signals['price'][i]-lower<0:
                 signals.at[i,'signals']=-1
 
@@ -183,7 +183,7 @@ def signal_generation(df,method):
 
                 else:
                     executed_price=signals['price'][i]
-                    
+
         #when its gmt 5 pm, london market closes
         #we use cumsum to see if there is any position left open
         #we take -cumsum as a signal
@@ -191,7 +191,7 @@ def signal_generation(df,method):
         elif signals['date'][i].hour==12:
             signals['cumsum']=signals['signals'].cumsum()
             signals.at[i,'signals']=-signals['cumsum'][i]
-            
+
         #during london trading hour after opening but before closing
         #we still use cumsum to check our open positions
         #if there is any open position
@@ -200,20 +200,20 @@ def signal_generation(df,method):
         #we clear positions to claim profit or loss
         else:
             signals['cumsum']=signals['signals'].cumsum()
-            
+
             if signals['cumsum'][i]!=0:
                 if signals['price'][i]>executed_price+risky_stop/2:
                     signals.at[i,'signals']=-signals['cumsum'][i]
-                    
+
                 if signals['price'][i]<executed_price-risky_stop/2:
                     signals.at[i,'signals']=-signals['cumsum'][i]
-    
+
     return signals
 
 
 
 def plot(new):
-    
+
     #the first plot is price with LONG/SHORT positions
     fig=plt.figure()
     ax=fig.add_subplot(111)
@@ -222,7 +222,7 @@ def plot(new):
 
     ax.plot(new.loc[new['signals']==1].index,new['price'][new['signals']==1],lw=0,marker='^',c='g',label='LONG')
     ax.plot(new.loc[new['signals']==-1].index,new['price'][new['signals']==-1],lw=0,marker='v',c='r',label='SHORT')
-      
+
     #this is the part where i add some vertical line to indicate market beginning and ending
     date=new.index[0].strftime('%Y-%m-%d')
     plt.axvline('%s 03:00:00'%(date),linestyle=':',c='k')
@@ -250,7 +250,7 @@ def plot(new):
     bx.plot(news.loc[news['signals']==-1].index,news['price'][news['signals']==-1],lw=0,marker='v',markersize=10,c='r',label='SHORT')
 
     #i only need to plot non zero thresholds
-    #zero is the value outta market opening period 
+    #zero is the value outta market opening period
     bx.plot(news.loc[news['upper']!=0].index,news['upper'][news['upper']!=0],lw=0,marker='.',markersize=7,c='#BC8F8F',label='upper threshold')
     bx.plot(news.loc[news['lower']!=0].index,news['lower'][news['lower']!=0],lw=0,marker='.',markersize=5,c='#FF4500',label='lower threshold')
     bx.plot(news['price'],label='price')
@@ -263,11 +263,11 @@ def plot(new):
     plt.title('%s Market Opening'%date)
     plt.legend(loc='best')
     plt.show()
-    
-    
+
+
 # In[3]:
 def main():
-    
+
     df=pd.read_csv('gbpusd.csv')
 
     signals=signal_generation(df,london_breakout)

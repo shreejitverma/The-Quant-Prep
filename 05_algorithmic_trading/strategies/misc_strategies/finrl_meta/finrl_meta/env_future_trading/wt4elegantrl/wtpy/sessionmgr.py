@@ -46,7 +46,7 @@ class SessionInfo:
             curMinute -= 1440
         elif curMinute < 0:
             curMinute += 1440
-        
+
         return math.floor(curMinute/60)*100 + curMinute%60
 
     def originalTime(self, offTime:int):
@@ -56,7 +56,7 @@ class SessionInfo:
             curMinute -= 1440
         elif curMinute < 0:
             curMinute += 1440
-        
+
         return math.floor(curMinute/60)*100 + curMinute%60
 
     def getOpenTime(self, bOffset:bool = False):
@@ -82,7 +82,7 @@ class SessionInfo:
     def getTradingMins(self):
         if len(self.sections) == 0:
             return 0
-        
+
         if self.totalMins == 0:
             for sec in self.sections:
                 s = sec.stime
@@ -102,7 +102,7 @@ class SessionInfo:
         for sec in self.sections:
             if sec.etime == offTime:
                 return True
-        
+
         return False
 
     def	isInTradingTime(self, rawTime:int, bStrict:bool = False):
@@ -112,7 +112,7 @@ class SessionInfo:
 
         if bStrict and self.isLastOfSection(rawTime):
             return False
-            
+
         return True
 
     def isFirstOfSection(self, rawTime:int):
@@ -121,7 +121,7 @@ class SessionInfo:
         for sec in self.sections:
             if sec.stime == offTime:
                 return True
-        
+
         return False
 
     def timeToMinutes(self, rawTime:int):
@@ -194,7 +194,7 @@ class SessionMgr:
         f.close()
 
         sessions_dict = json.loads(content)
-        for sid in sessions_dict:            
+        for sid in sessions_dict:
             if sid in self.__sessions__:
                 continue
 

@@ -7,7 +7,7 @@ import numpy as np
 def get_year_deltas(date_list, day_count=365.):
     ''' Return vector of floats with day deltas in years.
     Initial value normalized to zero.
-    
+
     Parameters
     ==========
     date_list : list or array
@@ -15,7 +15,7 @@ def get_year_deltas(date_list, day_count=365.):
     day_count : float
         number of days for a year
         (to account for different conventions)
-    
+
     Results
     =======
     delta_list : array

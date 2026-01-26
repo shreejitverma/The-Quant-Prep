@@ -300,7 +300,7 @@ class InspectBoStrategy(InspectStrategy):
     ts_stop: ts_stop params
     strategy: currently supports 'bo'
     '''
-    def __init__(self, 
+    def __init__(self,
                  symbol: str,
                  freq: str,
                  long_window: int,

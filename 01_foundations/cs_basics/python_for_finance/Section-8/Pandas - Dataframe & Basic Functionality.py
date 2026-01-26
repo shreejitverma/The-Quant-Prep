@@ -2,13 +2,13 @@
 # coding: utf-8
 
 # ### <span style="color:brown">Notebook Instructions</span>
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
 # # Notebook Contents
-# 
+#
 # ##### <span style="color:green">1. Creating Data Frames </span>
 # ##### <span style="color:green">2. Customizing index of a Data Frame</span>
 # #####  <span style="color:green">3. Rearranging the order of columns in a Data Frame</span>
@@ -20,8 +20,8 @@
 # ##### <span style="color:green">9. Sorting a Data Frame using a column</span>
 # ##### <span style="color:green">10. Just for Fun</span>
 
-# ## Creating Data Frames 
-# 
+# ## Creating Data Frames
+#
 # The underlying idea of a Data Frame is based on 'spreadsheets'. In other words, data frames stores data in discrete Rows and Columns where each column can be named (something that is not possible in Arrays but is possible in Series). There are also multiple columns in a Data Frame (as opposed to Series, where there can be only one discrete indexed column).<br>
 # <br>
 # The constructor for a Data Frame is <font color=red>pandas.DataFrame(data=None, index=None)</font> or if you are using 'pd' as alias, then it would be <font color=red>pd.Series()</font><br>
@@ -47,8 +47,8 @@ my_portfolio_frame = pd.DataFrame (my_portfolio) # We have passed the 'data' arg
 my_portfolio_frame
 
 
-# ## Customizing index of a Data Frame 
-# 
+# ## Customizing index of a Data Frame
+#
 # In the above output, you can see that the 'index' is the default one which starts from 0,1,...4. One can even customize the index for a better understanding of the Data Frame, while working with it.
 
 # In[19]:
@@ -61,8 +61,8 @@ my_portfolio_frame = pd.DataFrame (my_portfolio, index=ordinals) #Please notice 
 my_portfolio_frame
 
 
-# ## Rearranging the order of columns in a Data Frame 
-# 
+# ## Rearranging the order of columns in a Data Frame
+#
 # We can also define or rearrange the order of columns.
 
 # In[20]:
@@ -76,38 +76,38 @@ my_portfolio_frame
 
 
 # ## Existing Column as the index of dataframe
-# 
-# If we want to create a more useful index of our existing Data Frame, we can do that using the column 'stock name' as our index. It will make more sense than the 'ordinals' index. 
+#
+# If we want to create a more useful index of our existing Data Frame, we can do that using the column 'stock name' as our index. It will make more sense than the 'ordinals' index.
 
 # In[21]:
 
 
-my_portfolio_frame = pd.DataFrame (my_portfolio, 
+my_portfolio_frame = pd.DataFrame (my_portfolio,
                                    columns = ["quantity_owned","average_buy_price"],
                                    index = my_portfolio ["stock_name"])
 
 my_portfolio_frame
 
 
-# ## Accessing column from a data frame 
-# 
+# ## Accessing column from a data frame
+#
 # It is even possible to just veiw one single or selective columns of the entire data frame.
 
 # In[22]:
 
 
-# The index at present is the 'stock_name'. Refer to above code. 
+# The index at present is the 'stock_name'. Refer to above code.
 
 # This makes sense if we just want to know the quantity of stock that we own for each stock (which is our index, currently)
 
 print (my_portfolio_frame["quantity_owned"])
 
 
-# ## Loading and viewing data in a Data Frame 
-# 
+# ## Loading and viewing data in a Data Frame
+#
 # This is something that we have seen in the 'Data Visualisation' section of this course. We can even import data from online sources and view them as data frames or we can take a local 'csv' file of a stock data and view them as data frame.
-# 
-# 
+#
+#
 
 # In[23]:
 
@@ -119,7 +119,7 @@ print (my_portfolio_frame["quantity_owned"])
 import numpy as np
 import pandas as pd
 
-infy = pd.read_csv ('C:/Users/academy/Desktop/infy_data.csv') 
+infy = pd.read_csv ('C:/Users/academy/Desktop/infy_data.csv')
 
 
 # In[24]:
@@ -146,9 +146,9 @@ infy.head () # You will see the top 5 rows
 infy.tail () # You will see the bottom 5 rows
 
 
-# ## Dropping Rows and Columns from a Data Frame 
-# 
-# In the above Infosys stock data, it is not necessary that you need all the columns which are present in the .csv file. Hence, to make your data frame more understandable, you may drop the columns that you do not need using drop function. 
+# ## Dropping Rows and Columns from a Data Frame
+#
+# In the above Infosys stock data, it is not necessary that you need all the columns which are present in the .csv file. Hence, to make your data frame more understandable, you may drop the columns that you do not need using drop function.
 
 # In[28]:
 
@@ -181,9 +181,9 @@ print(infy_new)
 infy_new.drop (infy_new.index [[3,4]] )
 
 
-# ## Renaming Columns of a Data Frame 
-# 
-# If we want to rename the column names according to our wish, for better understanding while dealing with the data frame, we can also in python. 
+# ## Renaming Columns of a Data Frame
+#
+# If we want to rename the column names according to our wish, for better understanding while dealing with the data frame, we can also in python.
 
 # In[31]:
 
@@ -195,8 +195,8 @@ infy_new=infy_new.rename(columns={'Date':'Date','Open Price':'Open','High Price'
 infy_new.head()
 
 
-# ## Sorting a Data Frame using a column 
-# 
+# ## Sorting a Data Frame using a column
+#
 # Sometimes it becomes necessary to sort a stock price data frame, based on the 'Closing Price'.
 
 # In[32]:
@@ -209,7 +209,7 @@ infy_new = infy_new.sort_values(by="Close", ascending=False)
 print(infy_new)
 
 
-# ## Just for Fun 
+# ## Just for Fun
 
 # In[33]:
 
@@ -231,4 +231,4 @@ df
 
 # ### <span style="color:green">In the upcoming iPython Notebook:</span> <br>
 # We will understand Statistics and Statistical Functions on a Data Frame.
-# 
+#

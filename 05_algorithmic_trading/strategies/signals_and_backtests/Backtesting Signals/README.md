@@ -35,7 +35,7 @@ Most scripts inside this repository are technical indicator automated trading. T
 
 * <a href=https://github.com/je-suis-tm/quant-trading#6-oil-money-project>Oil Money Project</a>
 
-* <a href=https://github.com/je-suis-tm/quant-trading#2-pair-trading>Pair Trading</a> 
+* <a href=https://github.com/je-suis-tm/quant-trading#2-pair-trading>Pair Trading</a>
 
 * <a href=https://github.com/je-suis-tm/quant-trading#13-portfolio-optimization-project>Portfolio Optimization Project</a>
 
@@ -47,19 +47,19 @@ Most scripts inside this repository are technical indicator automated trading. T
 
 #### Technical Indicators
 
-* <a href=https://github.com/je-suis-tm/quant-trading#5-awesome-oscillator>Awesome Oscillator</a> 
+* <a href=https://github.com/je-suis-tm/quant-trading#5-awesome-oscillator>Awesome Oscillator</a>
 
-* <a href=https://github.com/je-suis-tm/quant-trading#9-bollinger-bands-pattern-recognition>Bollinger Bands Pattern Recognition</a> 
+* <a href=https://github.com/je-suis-tm/quant-trading#9-bollinger-bands-pattern-recognition>Bollinger Bands Pattern Recognition</a>
 
-* <a href=https://github.com/je-suis-tm/quant-trading#7-dual-thrust>Dual Thrust</a> 
+* <a href=https://github.com/je-suis-tm/quant-trading#7-dual-thrust>Dual Thrust</a>
 
-* <a href=https://github.com/je-suis-tm/quant-trading#3-heikin-ashi-candlestick>Heikin-Ashi Candlestick</a> 
+* <a href=https://github.com/je-suis-tm/quant-trading#3-heikin-ashi-candlestick>Heikin-Ashi Candlestick</a>
 
-* <a href=https://github.com/je-suis-tm/quant-trading#4-london-breakout>London Breakout</a> 
+* <a href=https://github.com/je-suis-tm/quant-trading#4-london-breakout>London Breakout</a>
 
-* <a href=https://github.com/je-suis-tm/quant-trading#1-macd-oscillator>MACD Oscillator</a> 
+* <a href=https://github.com/je-suis-tm/quant-trading#1-macd-oscillator>MACD Oscillator</a>
 
-* <a href=https://github.com/je-suis-tm/quant-trading#8-parabolic-sar>Parabolic SAR</a> 
+* <a href=https://github.com/je-suis-tm/quant-trading#8-parabolic-sar>Parabolic SAR</a>
 
 * <a href=https://github.com/je-suis-tm/quant-trading#10-relative-strength-index-pattern-recognition>Relative Strength Index Pattern Recognition</a>
 
@@ -83,7 +83,7 @@ Most scripts inside this repository are technical indicator automated trading. T
 
 * <a href=https://github.com/je-suis-tm/web-scraping>Web Scraping</a>
 
-* <a href=https://finance.yahoo.com>Yahoo Finance</a>/<a href=https://pypi.org/project/fix-yahoo-finance>fix_yahoo_finance package</a>/<a href=https://pypi.org/project/yfinance>yfinance package</a> 
+* <a href=https://finance.yahoo.com>Yahoo Finance</a>/<a href=https://pypi.org/project/fix-yahoo-finance>fix_yahoo_finance package</a>/<a href=https://pypi.org/project/yfinance>yfinance package</a>
 
 <br>
 
@@ -103,7 +103,7 @@ For the strategy itself, we compute long term moving average and short term movi
 
 ### 2. Pair trading
 
-Pair trading is the basic form of statistics arbitrage. It relies on the assumption that two cointegrated stocks would not drift too far away from each other. First step, we select two stocks and run <a href=https://en.wikipedia.org/wiki/Error_correction_model#Engle_and_Granger_2-step_approach>Engle-Granger two step analysis</a>. Once the criteria of cointegration is met, we standardize the residual and set one sigma away (two tailed) as the threshold. After that, we compute the current standardized residual of the selected stocks accordingly. When the standardized residual exceeds the threshold, it generates the trading signal. The simple rule is we always long the cheap stock and short the expensive stock. 
+Pair trading is the basic form of statistics arbitrage. It relies on the assumption that two cointegrated stocks would not drift too far away from each other. First step, we select two stocks and run <a href=https://en.wikipedia.org/wiki/Error_correction_model#Engle_and_Granger_2-step_approach>Engle-Granger two step analysis</a>. Once the criteria of cointegration is met, we standardize the residual and set one sigma away (two tailed) as the threshold. After that, we compute the current standardized residual of the selected stocks accordingly. When the standardized residual exceeds the threshold, it generates the trading signal. The simple rule is we always long the cheap stock and short the expensive stock.
 
 The core idea of pair trading is <a href=https://en.wikipedia.org/wiki/Cointegration>cointegration</a>. Metaphorically speaking, cointegration is like a couple in a clingy relationship where two parties are crazy-glued together. Yet, most relationships break sooner or later, and only the very few can make it to the marriage (from a statistics perspective, not being pessimistic). Hence, it is important to frequently check on the status quo of cointegration before any pair trading order execution (the same applies to relationships).
 
@@ -115,7 +115,7 @@ The core idea of pair trading is <a href=https://en.wikipedia.org/wiki/Cointegra
 
 ### 3. Heikin-Ashi candlestick
 
-Heikin-Ashi, the exotic name actually referring to 'Average Bar' in Japanese, is an alternative style of candlestick chart. The sophisticated rules of Heiki-Ashi are designed to filter out the noise for momentum trading. Hence, Heikin-Ashi shows more consecutive bars in contrast to the standard candlestick, which makes price momentum and reverse points more distinguishable in figures. Arguably it should outperform the standard candlestick in sideways and choppy markets. 
+Heikin-Ashi, the exotic name actually referring to 'Average Bar' in Japanese, is an alternative style of candlestick chart. The sophisticated rules of Heiki-Ashi are designed to filter out the noise for momentum trading. Hence, Heikin-Ashi shows more consecutive bars in contrast to the standard candlestick, which makes price momentum and reverse points more distinguishable in figures. Arguably it should outperform the standard candlestick in sideways and choppy markets.
 
 For the strategy itself, initially we make a few transformations on four vital benchmarks - Open, Close, High, Low. The next step is to apply unique Heikin-Ashi rules on Heikin-Ashi Open, Close, High, Low to generate trading signals. The downside of Heikin-Ashi (or any momentum trading strategies) is the slow response. Thus, we should set up the stop loss position accordingly so that we don't get caught up in any flash crash.
 
@@ -163,7 +163,7 @@ The rules of awesome oscillator could be found in <a href=https://www.tradingvie
 
 ### 6. Oil Money project
 
-This project is inspired by an <a href=https://www.bloomberg.com/news/articles/2018-05-20/crude-oil-s-surge-is-putting-the-petro-back-in-petrocurrencies>article</a> on oil-backed foreign exchange. Amid the bullish outlook for crude oil, the currency exchange of oil producing countries would also bounce back. Does this statement really hold? 
+This project is inspired by an <a href=https://www.bloomberg.com/news/articles/2018-05-20/crude-oil-s-surge-is-putting-the-petro-back-in-petrocurrencies>article</a> on oil-backed foreign exchange. Amid the bullish outlook for crude oil, the currency exchange of oil producing countries would also bounce back. Does this statement really hold?
 
 According to the article by Bloomberg (or many other similar research), researchers examine the correlation between petrocurrency and oil price, instead of the causality. But correlation does not equal to causality. Correlation could be a coincidence of a math game. We simply cannot draw the conclusion that oil price moves the currency. Some researchers even use bootstrapping which greatly destroys the autocorrelation of a time series. Thus, it is vital to apply academic analysis and computer simulation on some petrocurrencies to test the causality of oil.
 
@@ -185,7 +185,7 @@ Rules of dual thrust can be found in <a href=https://www.quantconnect.com/tutori
 
 ### 8. Parabolic SAR
 
-Parabolic SAR is an indicator to identify stop and reverse of a trend. Usually, Parabolic SAR is presented as dotted line either above or below the price in charts. When the price is an uptrend, SAR curve would sit below the price. When the price is downtrend, SAR curve would rise above the price. Parabolic SAR is always considered as a symbol of resistance to the price momentum. When SAR curve and the price curve cross over, it is when trade orders are supposed to be executed. 
+Parabolic SAR is an indicator to identify stop and reverse of a trend. Usually, Parabolic SAR is presented as dotted line either above or below the price in charts. When the price is an uptrend, SAR curve would sit below the price. When the price is downtrend, SAR curve would rise above the price. Parabolic SAR is always considered as a symbol of resistance to the price momentum. When SAR curve and the price curve cross over, it is when trade orders are supposed to be executed.
 
 The building of this strategy seems very simple, but the construction of the indicator is extremely painful due to the involvement of recursive calculation. Illustration on how to compute Parabolic SAR can be found in <a href=https://en.wikipedia.org/wiki/Parabolic_SAR>Wikipedia</a> but it is not very well explained. To get a clear idea of the calculation, my personal recommendation is to take a look at the <a href=https://www.box.com/s/gbtrjuoktgyag56j6lv0>spreadsheet</a> made by joeu2004.
 
@@ -197,9 +197,9 @@ It is worth mentioning that SAR and RSI (which will be featured in a later chapt
 
 ### 9. Bollinger Bands Pattern Recognition
 
-Bollinger Bands is a very simple but powerful indicator. There are three bands of this indicator. The mid band is the moving average on the price series (usually takes 20 lags). The upper and lower bands are two moving standard deviations away from the mid band. Bollinger Bands can be used to test for various types of strategies. 
+Bollinger Bands is a very simple but powerful indicator. There are three bands of this indicator. The mid band is the moving average on the price series (usually takes 20 lags). The upper and lower bands are two moving standard deviations away from the mid band. Bollinger Bands can be used to test for various types of strategies.
 
-For volatility trading, contraction and expansion of the band width are crucial elements. Any distinct momentum clustering (it can take form of either upward or downward) would result in a Bollinger Bands expansion. And the oscillation in a horizontal channel would result in a Bollinger Bands contraction. 
+For volatility trading, contraction and expansion of the band width are crucial elements. Any distinct momentum clustering (it can take form of either upward or downward) would result in a Bollinger Bands expansion. And the oscillation in a horizontal channel would result in a Bollinger Bands contraction.
 
 For momentum trading, the phenomenon of 'walking the band' indicates the resistance and support level of the underlying asset. In a strong trend, the price constantly attempts to touch or break through the upper/lower band along with Bollinger Bands moving towards the same direction.
 
@@ -231,7 +231,7 @@ For details of head-shoulder pattern, please refer to <a href=https://www.invest
 
 ### 11. Monte Carlo project
 
-Monte Carlo, my first thought on these two words is the grand casino, where you meet Famke Janssen in tuxedo and introduce yourself, 'Bond, James Bond'. Indeed, the simulation is named after the infamous casino. It actually refers to the computer simulation of massive amount of random events. This unconventional mathematical method is extremely powerful in the study of stochastic process. 
+Monte Carlo, my first thought on these two words is the grand casino, where you meet Famke Janssen in tuxedo and introduce yourself, 'Bond, James Bond'. Indeed, the simulation is named after the infamous casino. It actually refers to the computer simulation of massive amount of random events. This unconventional mathematical method is extremely powerful in the study of stochastic process.
 
 Here comes the argument on Linkedin that caught my eyes the other day. "Stock price can be seemed as a Wiener Process. Hence, we can use Monte Carlo simulation to predict the stock price." said a data science blog. Well, in order to be a Wiener Process, we have to assume the stock price is continuous in time. In reality, the market closes. The overnight volatility exists. But that is not the biggest issue here. The biggest issue is, can we really use Monte Carlo simulation to predict the stock price, even a range or its direction?
 
@@ -263,7 +263,7 @@ Modern portfolio theory was introduced in 1952 by Nobel laureate Harry Markowitz
 
 I know a lot of you have complained that this repository isn’t quantitative enough. You are yelling for the ultimate weapon of math destruction such as Poisson process or Jensen’s inequality. Well, the objective of quantitative trading is churning out more :euro: rather than deploying an elegant closed form equation. If you crave for intellectual challenge in mathematics, you are always welcome to check out my <a href=https://github.com/je-suis-tm/graph-theory>Graph Theory</a> repository. Nevertheless, I believe the birth of this project will meet your picky demand. Buon appetito :yum:
 
-:tangerine: :pineapple: :melon: :corn: and :sweet_potato: are something we have been taking for granted. Up until COVID-19, we finally come to senses that farmers are one of our low-paid essential workers. This project is dedicated to the optimal allocation of agricultural resources. By trading agricultural market, we are able to eliminate the inefficiency in the crop market. Ideally no food will be wasted and farmers will be fairly compensated. 
+:tangerine: :pineapple: :melon: :corn: and :sweet_potato: are something we have been taking for granted. Up until COVID-19, we finally come to senses that farmers are one of our low-paid essential workers. This project is dedicated to the optimal allocation of agricultural resources. By trading agricultural market, we are able to eliminate the inefficiency in the crop market. Ideally no food will be wasted and farmers will be fairly compensated.
 
 The project per se intends to leverage convex optimization to approximate farmers’ plantation planning for different crops. Assuming farmers are Homo Economicus, their end game is to maximize the profit regarding the price impact from supply and demand. Their decision is constrained by arable land area and biological features of crops. We develop this smart model accordingly to acquire a head start in trading :rice: :coffee: and :chocolate_bar:
 
@@ -281,7 +281,7 @@ VIX is the fear gauge of S&P 500 index. By using <a href=https://www.mathopenref
 
 ### 16. Wisdom of Crowds Project
 
-Every now and then, we read some bulge brackets hit the headline, “XXX will reach 99999€ in 20YY”. Some forecasts hit the bull’s eye but most projections are as accurate as astrology. Price prediction can be easily influenced by the cognitive bias. In the financial market, there is merit to the idea that <a href=https://www.investopedia.com/terms/c/consensusestimate.asp>consensus estimate</a> is the best oracle. By harnessing the power of ensemble learning, we are about to leverage <a href=https://github.com/je-suis-tm/machine-learning/blob/master/Wisdom%20of%20Crowds%20project/dawid%20skene.ipynb>Dawid-Skene model</a> and <a href=https://github.com/je-suis-tm/machine-learning/blob/master/Wisdom%20of%20Crowds%20project/platt%20burges.ipynb>Platt-Burges model</a> to eliminate the idiosyncratic noise associate with each individual judgement. The end game is to reveal the underlying intrinsic value generated by the collective knowledge of research analysts from different investment banks. Is wisdom of crowds a crystal ball for trading? 
+Every now and then, we read some bulge brackets hit the headline, “XXX will reach 99999€ in 20YY”. Some forecasts hit the bull’s eye but most projections are as accurate as astrology. Price prediction can be easily influenced by the cognitive bias. In the financial market, there is merit to the idea that <a href=https://www.investopedia.com/terms/c/consensusestimate.asp>consensus estimate</a> is the best oracle. By harnessing the power of ensemble learning, we are about to leverage <a href=https://github.com/je-suis-tm/machine-learning/blob/master/Wisdom%20of%20Crowds%20project/dawid%20skene.ipynb>Dawid-Skene model</a> and <a href=https://github.com/je-suis-tm/machine-learning/blob/master/Wisdom%20of%20Crowds%20project/platt%20burges.ipynb>Platt-Burges model</a> to eliminate the idiosyncratic noise associate with each individual judgement. The end game is to reveal the underlying intrinsic value generated by the collective knowledge of research analysts from different investment banks. Is wisdom of crowds a crystal ball for trading?
 
 ![alt text](https://github.com/je-suis-tm/machine-learning/blob/master/Wisdom%20of%20Crowds%20project/preview/y1%20forecast%20bias.png)
 

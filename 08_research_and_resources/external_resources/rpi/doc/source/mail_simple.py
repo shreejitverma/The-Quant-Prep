@@ -18,7 +18,7 @@ subject = 'Security Alert.'
 
 #
 # Email object
-# 
+#
 msg = MIMEMultipart()
 msg['From'] = fromaddr
 msg['To'] = toaddrs

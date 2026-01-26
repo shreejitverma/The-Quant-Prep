@@ -3,11 +3,11 @@
 
 # # Notebook Instructions
 # <i>You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter</b>. While a cell is running, a [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook [8].</i>
-# 
+#
 # <i>Enter edit mode by pressing <b>`Enter`</b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area.</i>
 
 # ## Pandas.read_csv
-# 
+#
 # Pandas.read_csv() function helps you to read Comma Seperated Files using Python and converts it into a dataframe.
 
 # In[1]:
@@ -52,7 +52,7 @@ infy.tail () # You will see the bottom 5 rows
 # We will see more of this in the <b>Pandas</b> section of our course.
 
 # ### In the upcoming iPython notebook:
-# 
+#
 # We will learn about <b>2D plotting</b> of financial market data, but before that let us solve an exercise on this.
-# 
+#
 # Happy Learning!

@@ -100,9 +100,9 @@ class Binance(_Base):
     def get_binance_bars(self, last_datetime, symbol):
         '''
         klines api returns data in the following order:
-        open_time, open_price, high_price, low_price, close_price, 
-        volume, close_time, quote_asset_volume, n_trades, 
-        taker_buy_base_asset_volume, taker_buy_quote_asset_volume, 
+        open_time, open_price, high_price, low_price, close_price,
+        volume, close_time, quote_asset_volume, n_trades,
+        taker_buy_base_asset_volume, taker_buy_quote_asset_volume,
         ignore
         '''
         req_params = {"symbol": symbol, 'interval': self.interval,
@@ -111,7 +111,7 @@ class Binance(_Base):
         # For debugging purposes, uncomment these lines and if they throw an error
         # then you may have an error in req_params
         # r = requests.get(self.url, params=req_params)
-        # print(r.text) 
+        # print(r.text)
         df = pd.DataFrame(requests.get(self.url, params=req_params).json())
 
         if df.empty:
@@ -128,22 +128,22 @@ class Binance(_Base):
         df.reset_index(drop=True, inplace=True)
 
         return df
-    
+
     def get_newest_bars(self, symbols, interval, limit):
         merged_df = pd.DataFrame()
         for symbol in symbols:
             req_params = {"symbol": symbol, 'interval': interval, 'limit': limit}
-    
+
             df = pd.DataFrame(requests.get(self.url, params=req_params).json(), index=range(limit))
-            
+
             if df.empty:
                 return None
-            
+
             df = df.iloc[:, 0:6]
             df.columns = ['datetime','open','high','low','close','volume']
-    
+
             df[['open','high','low','close','volume']] = df[['open','high','low','close','volume']].astype(float)
-    
+
             # No stock split and dividend announcement, hence adjusted close is the same as close
             df['adjusted_close'] = df['close']
             df['datetime'] = df.datetime.apply(lambda x: dt.datetime.fromtimestamp(x/1000.0))
@@ -151,7 +151,7 @@ class Binance(_Base):
             df = df.rename(columns = {'datetime':'time'})
             df.reset_index(drop=True, inplace=True)
             merged_df = merged_df.append(df)
-            
+
         return merged_df
 
     def dataframe_with_limit(self, symbol):
@@ -319,7 +319,7 @@ class Binance(_Base):
                 # favor continuous series
                 # dailyfinal.dropna(inplace=True)
 
-                # implemented T-1 day ffill day start missing values 
+                # implemented T-1 day ffill day start missing values
                 # guaranteed first csv is tminus1 day
                 if i == 0:
                     tmr = dailyfinal.index[0].date() + dt.timedelta(1)

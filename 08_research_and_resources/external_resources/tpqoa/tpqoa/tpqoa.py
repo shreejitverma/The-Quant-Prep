@@ -440,7 +440,7 @@ class tpqoa(object):
         response = self.ctx.position.list_open(self.account_id).body
         positions = [p.dict() for p in response.get('positions')]
         return positions
-    
+
     def cancel_order(self, order_id):
         ''' Cancels an order (e.g. SL order).
 

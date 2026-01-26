@@ -20,7 +20,7 @@ def compute_subindex(data, delta_T, R):
 
     data: pandas.DataFrame object
         contains the option data
-    delta_T: float 
+    delta_T: float
         time interval
     R: float
         discount factor
@@ -70,11 +70,11 @@ def compute_subindex(data, delta_T, R):
                          / (data["Strike price"]) ** 2)
       # the single OTM values
 
-    fterm = 1. / delta_T * (forward_Price / K_0 - 1) ** 2 
+    fterm = 1. / delta_T * (forward_Price / K_0 - 1) ** 2
       # the forward term
-    
+
     sigma = 2 / delta_T * np.sum(data.MFactor) - fterm  # summing up
-    
+
     subVSTOXX = 100 * math.sqrt(sigma)
 
     return subVSTOXX

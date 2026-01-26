@@ -4,7 +4,7 @@ TsTables is a Python package to store time series data in HDF5 files using PyTab
 series data into daily partitions and provides functions to query for subsets of data across
 partitions.
 
-Its goals are to support a workflow where tons (gigabytes) of time series data are 
+Its goals are to support a workflow where tons (gigabytes) of time series data are
 appended periodically to a HDF5 file, and need to be read many times (quickly) for analytical models
 and research.
 
@@ -62,17 +62,17 @@ You can run the unit test suite from the command line at the root of the reposit
 ## Preliminary benchmarks
 
 The main goal of TsTables is to make it very fast to read subsets of data, given a date range. TsTables currently
-includes a simple benchmark to track progress towards that goal. To run it, after installing the package, you can run 
+includes a simple benchmark to track progress towards that goal. To run it, after installing the package, you can run
 `tstables_benchmark` from the command line or you can import the package in a Python console and run it directly.
 
 ```python
 import tstables
 tstables.Benchmark.main()
 ```
-    
+
 Running the benchmark both prints results out to the screen and saves them in `benchmark.txt`.
 
-The benchmark loads one year of random secondly data (just the timestamp column and a 32-bit integer "price" column) 
+The benchmark loads one year of random secondly data (just the timestamp column and a 32-bit integer "price" column)
 into a file, and then it reads random one hour chunks of data.
 
 Currently, here's some benchmarks of TsTables (from a MacBook Pro with a SSD):
@@ -83,8 +83,8 @@ Append one month of data (2.67 million rows)                | 0.711 seconds
 Fetch one hour of data into memory                          | 0.305 seconds
 File size (one year of data, 32 million rows, uncompressed) | 391.6 MB
 
-HDF5 supports zlib and other compression algorithms, which can be enabled through PyTables to reduce the file 
-size. Without compression, the HDF5 file size is approximately 1.8% larger than the raw data in binary form, a 
+HDF5 supports zlib and other compression algorithms, which can be enabled through PyTables to reduce the file
+size. Without compression, the HDF5 file size is approximately 1.8% larger than the raw data in binary form, a
 drastically lower overhead than CSV files.
 
 ## Contributing

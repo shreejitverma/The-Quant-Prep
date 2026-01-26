@@ -1,24 +1,24 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# <img src = 'img/logo.png' style = "height:70px; width:70px;float:right;"> 
+# <img src = 'img/logo.png' style = "height:70px; width:70px;float:right;">
 # <h1><center> Webscrapping to MySQL</center></h1>
-# 
+#
 # In this script we attempt to obtain market quotes from [investing.com](https://www.investing.com/). Despite there being an existent API from [investing.com](https://www.investing.com/) in Python (check out [`investpy`](https://pypi.org/project/investpy/)), this is a fun little project to introduce webscrapping with 2 important python packages: `Selenium` and `BeautifulSoup`.
-# 
+#
 # Finally, we will do a quick overview of SQL and how to input the data we've scraped to MySQL. To do this, we will use the `mysql` package in Python.
-# 
-# `Selenium` is an API that allows us to use Selenium Webdriver to automate tasks on our browser. Using `selenium` we can direct our browser to specific pages where we want to scrape our data. 
-# 
+#
+# `Selenium` is an API that allows us to use Selenium Webdriver to automate tasks on our browser. Using `selenium` we can direct our browser to specific pages where we want to scrape our data.
+#
 # `BeautifulSoup` on the other hand allows us to extract useful information from the pages we've obtained from `selenium`.
-# 
-# 
+#
+#
 # ### Workflow
 # 1. Set up selenium
 # 2. Connect to [investing.com](https://www.investing.com/)
 # 3. Parse HTML page using beautifulSoup
 # 4. Store data in MySQL
-# 
+#
 # <h2><center> 0. Import packages </center></h2>
 
 # In[1]:
@@ -27,12 +27,12 @@
 from bs4 import BeautifulSoup
 import requests
 import re
-import time 
+import time
 import pandas as pd
 import os
 from datetime import datetime as dt
 import time
-import itertools 
+import itertools
 
 # Selenium Related packages
 ###############################
@@ -47,7 +47,7 @@ import mysql.connector
 
 
 # <h2><center>1. Set up Selenium </center></h2>
-# 
+#
 # ### Log in to investing.com
 
 # In[2]:
@@ -86,7 +86,7 @@ driver.find_element_by_link_text("Sign In").click()
 driver.get(url)
 
 
-# ### Define pages of interest 
+# ### Define pages of interest
 
 # In[3]:
 
@@ -114,20 +114,20 @@ def pageExtractor(region, assetType):
     tableElements = content.find_elements_by_xpath("//td[@class = 'bold left noWrap elp plusIconTd']")
     links = [elem.find_elements_by_tag_name("a")[0].get_attribute("href")
                 for elem in tableElements]
-    
+
     htmlPages = []
     for link in links:
         driver.get(link)
         driver.find_element_by_link_text("Historical Data").click()
-        
+
         # Wait for page to load
         time.sleep(2)
         try:
             elem = driver.find_element_by_id("widgetFieldDateRange")
         except:
             print(link)
-            next 
-            
+            next
+
         # Change first date to 01/01/1970
         driver.find_element_by_id("widgetField").click()
         startDate = driver.find_element_by_id("startDate")
@@ -164,24 +164,24 @@ def pageExtractor(region, assetType):
 
         # Extract page as HTML
         htmlTable.append(BeautifulSoup(driver.page_source, 'html.parser'))
-        
+
         htmlPages.append(htmlTable)
         driver.find_element_by_link_text("Markets").click()
         driver.find_element_by_link_text(region).click()
         driver.find_element_by_link_text(assetType).click()
-        
+
     return(htmlPages)
 
 
 # <h2><center> 2. BeautifulSoup to extract quotes </center></h2>
-# 
+#
 # Create a function to clean quotes from HTML and extract a table of quotes.
 
 # In[5]:
 
 
 def quoteExtractor(HTMLInput):
-    # Find all table rows(tr) of a table 
+    # Find all table rows(tr) of a table
     htmlTable = HTMLInput.find_all('tr')
 
     # Find text on the line
@@ -208,10 +208,10 @@ def quoteExtractor(HTMLInput):
 
     'Find column names'
     # Find column headers by class
-    colnames = [line.find_all('th', 
+    colnames = [line.find_all('th',
                               {"class": {"noWrap pointer", "first left noWrap pointer"}}) for line in htmlTable]
 
-    # Remove empty classes 
+    # Remove empty classes
     colnames = list(filter(None, colnames))
     cols = [line.find_all(text = True) for line in colnames[0]]
 
@@ -221,7 +221,7 @@ def quoteExtractor(HTMLInput):
     'Assign column names to columns'
     # Select only the first 6 columns
     quoteData = pd.DataFrame(quoteList)
-    quoteData.columns = fields 
+    quoteData.columns = fields
 
     validRows = list(filter(regexDates.match, quoteData['Date']))
     validDates = [(quote in validRows) for quote in quoteData['Date']]
@@ -236,12 +236,12 @@ def quoteExtractor(HTMLInput):
     # Change quotes from strings to floats
     quoteCleaner = lambda x: [float(re.sub(",", "", quote)) for quote in  x]
     quoteData[['Price', 'Open', 'High', 'Low']] = quoteData[['Price', 'Open', 'High', 'Low']].apply(quoteCleaner)
-    
+
     return quoteData[['Date', 'Price', 'Open', 'High', 'Low']]
 
 
 # <h2><center> 3. Data into SQL </center></h2>
-# 
+#
 # ### Create market data schema
 
 # In[6]:
@@ -280,7 +280,7 @@ def tableCreator(table_name, colnames, coltype):
 
     # Execute commands
     mycursor.execute(sqlCommand + columnDefs  + ')')
-    
+
     print(table_name + ' created.')
 
 
@@ -344,7 +344,7 @@ tableCreator('fund_quotes', colnames, coltypes)
 
 # Create stock quote parameters
 colnames = ['id', 'name', 'Ticker', 'Industry', 'Sector', 'Beta', 'EPS', 'Shares']
-coltypes = ['INT AUTO_INCREMENT PRIMARY KEY NOT NULL', 
+coltypes = ['INT AUTO_INCREMENT PRIMARY KEY NOT NULL',
            'VARCHAR(45)',
            'VARCHAR(45)',
            'VARCHAR(45)',

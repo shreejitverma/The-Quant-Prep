@@ -251,7 +251,7 @@ def plot_efficient_frontier(tr_risk=1e-6):
         V = np.append(V, env.get_AC_variance(env.total_shares))
         U = np.append(U, env.compute_AC_utility(env.total_shares))
 
-    # Plot E vs V and use U for the colorbar    
+    # Plot E vs V and use U for the colorbar
     cm = plt.cm.get_cmap('gist_rainbow')
     sc = plt.scatter(V, E, s=20, c=U, cmap=cm)
     plt.colorbar(sc, label='AC Utility', format=mticker.StrMethodFormatter('${x:,.0f}'))
@@ -283,7 +283,7 @@ def round_trade_list(trl):
     # Rounding the number of shares in the trading list sometimes results in selling more or less
     # shares than we have available. We calculate the difference between to total number of shares
     # sold in the original trading list and the number of shares sold in the rounded list.
-    # This difference will be used to correct for rounding errors. 
+    # This difference will be used to correct for rounding errors.
     res = np.around(trl.sum() - trl_rd.sum())
 
     # Correct the number of shares sold due to rounding errors if necessary

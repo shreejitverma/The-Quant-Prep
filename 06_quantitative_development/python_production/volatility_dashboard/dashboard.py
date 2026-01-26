@@ -29,7 +29,7 @@ class IBApp(EWrapper, EClient):
         self.connected = True
         print("Connected to IBTWS")
 
-    
+
     def historicalData(self, reqId, bar):
         if reqId not in self.historical_data:
             self.historical_data[reqId] = []
@@ -186,7 +186,7 @@ class ImpliedVolatilityDashboard:
                     self.ib_app.run()
                 except Exception as e:
                     self.log_message(f"Connection error: {e}")
-            
+
             thread = threading.Thread(target=connect_thread, daemon=True)
             thread.start()
 
@@ -220,7 +220,7 @@ class ImpliedVolatilityDashboard:
             self.update_current_vol_display()
 
             self.log_message("Disconnected from IBTWS")
-        
+
         except Exception as e:
             self.log_message(f"Disconnect Error: {e}")
 
@@ -234,7 +234,7 @@ class ImpliedVolatilityDashboard:
 
         self.log_message(f"Querying Implied Volatility for {symbol}...")
 
-        self.ib_app.historical_data.clear()    
+        self.ib_app.historical_data.clear()
 
         contract = self.create_equity_contract(symbol)
 
@@ -284,7 +284,7 @@ class ImpliedVolatilityDashboard:
     def process_implied_volatility(self):
         if self.equity_data is None:
             return
-        
+
         self.log_message("Processing iVol Data")
         self.log_message("All iVol Data is Annualized")
 
@@ -316,7 +316,7 @@ class ImpliedVolatilityDashboard:
                 range_text = f"Min: {vol_min:.3f} | Mean: {vol_mean:.3f} | Max: {vol_max:.3f}"
             else:
                 range_text = "N/A"
-            
+
             self.vol_range_label.config(text=range_text)
 
             # TRY YOURSELF: Make this based on percentiles (25%, 75%)
@@ -335,12 +335,12 @@ class ImpliedVolatilityDashboard:
             self.regime_label.config(text="N/A")
             self.percentile_label.config(text="N/A")
             self.reversion_label.config(text="N/A")
-        
+
 
     def update_regime_analysis(self):
         if self.volatility_data is None or self.current_implied_vol is None:
             return
-        
+
         current_percentile = self.volatility_data['iv_percentile'].iloc[-1]
 
         if current_percentile > .8:
@@ -371,7 +371,7 @@ class ImpliedVolatilityDashboard:
         else:
             reversion = 'NEUTRAL'
             rcolor = 'black'
-        
+
         self.reversion_label.config(text=reversion, foreground=rcolor)
 
 
@@ -380,7 +380,7 @@ class ImpliedVolatilityDashboard:
         if self.equity_data is None or self.volatility_data is None:
             messagebox.showerror("Error", "No iVOL Data is Available for Analysis")
             return
-        
+
         self.log_message("Analyzing iVOL Data")
 
         vol_forward_30d = self.volatility_data['implied_vol'].rolling(window=30, min_periods=1).mean().shift(-30)
@@ -412,7 +412,7 @@ class ImpliedVolatilityDashboard:
             intersection_x = intercept1 / (1-slope1)
         else:
             intersection_x = analysis_df['current_vol'].median()
-        
+
         high_vol_regime = analysis_df['current_vol'] > intersection_x
         low_vol_regime = analysis_df['current_vol'] <= intersection_x
 
@@ -451,13 +451,13 @@ class ImpliedVolatilityDashboard:
         self.ax1.legend()
         self.ax1.grid(True, alpha=.3)
 
-        self.ax2.scatter(analysis_df.loc[high_vol_regime, 'current_vol'], 
+        self.ax2.scatter(analysis_df.loc[high_vol_regime, 'current_vol'],
                          analysis_df.loc[high_vol_regime, 'vol_diff'],
                          alpha=.6, s=20, color='red', label='High Vol Regime')
-        self.ax2.scatter(analysis_df.loc[low_vol_regime, 'current_vol'], 
+        self.ax2.scatter(analysis_df.loc[low_vol_regime, 'current_vol'],
                          analysis_df.loc[low_vol_regime, 'vol_diff'],
                          alpha=.6, s=20, color='blue', label='Low Vol Regime')
-        
+
         if slope_high is not None:
             x_high = analysis_df.loc[high_vol_regime, 'current_vol']
             if len(x_high) > 0:
@@ -465,7 +465,7 @@ class ImpliedVolatilityDashboard:
                 y_pred_high = slope_high * x_range_high + intercept_high
                 self.ax2.plot(x_range_high, y_pred_high, 'r-', linewidth=2,
                               label=f"High Vol R^2 = {r_high**2:.3f}")
-                
+
         if slope_low is not None:
             x_low = analysis_df.loc[low_vol_regime, 'current_vol']
             if len(x_high) > 0:
@@ -473,11 +473,11 @@ class ImpliedVolatilityDashboard:
                 y_pred_low = slope_low * x_range_low + intercept_low
                 self.ax2.plot(x_range_low, y_pred_low, 'r-', linewidth=2,
                               label=f"Low Vol R^2 = {r_low**2:.3f}")
-                
+
         self.ax2.axhline(y = 0, color='k', linestyle='--', linewidth=1, alpha=.7, label='No Change (y=0)')
         self.ax2.axvline(x = intersection_x, color='g', linestyle=':', linewidth=1, alpha=.7,
                          label=f"Regime Split (Vol={intersection_x:.3f})")
-        
+
         self.ax2.set_xlabel("Current Implied Volatility")
         self.ax2.set_ylabel("Vol Difference (Forward - Current)")
         self.ax2.set_title("Vol Difference vs Current Vol (Regime Analysis)")
@@ -486,18 +486,18 @@ class ImpliedVolatilityDashboard:
 
         self.ax3.plot(self.volatility_data.index, self.volatility_data['implied_vol'],
                       label="Implied Volatility", linewidth=1)
-        
+
         vol_75th = self.volatility_data['implied_vol'].quantile(.75)
         vol_25th = self.volatility_data['implied_vol'].quantile(.25)
 
         self.ax3.axhline(y=vol_75th, color='red', linestyle='--', alpha=.7, label='75th Percentile')
         self.ax3.axhline(y=vol_25th, color='green', linestyle='--', alpha=.7, label='25th Percentile')
         self.ax3.axhline(y=self.volatility_data['implied_vol'].mean(), color='black', linestyle='--', alpha=.7, label='Mean')
-    
+
         if self.current_implied_vol is not None:
             self.ax3.scatter(self.volatility_data.index[-1], self.current_implied_vol,
                              color='red', s=100, zorder=5, label='Current iVOL')
-        
+
         self.ax3.set_xlabel('Date')
         self.ax3.set_ylabel('Implied Volatility')
         self.ax3.set_title("Implied Volatility Time Series with Regime Bands")
@@ -530,7 +530,7 @@ if __name__ == "__main__":
 
 
 
-                
+
 
 
 

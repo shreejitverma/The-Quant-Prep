@@ -9,12 +9,12 @@ from valuation_class import valuation_class
 class valuation_mcs_american(valuation_class):
     ''' Class to value American options with arbitrary payoff
     by single-factor Monte Carlo simulation.
-        
+
     Methods
     =======
     generate_payoff :
         returns payoffs given the paths and the payoff function
-    present_value : 
+    present_value :
         returns present value (LSM Monte Carlo estimator)
         according to Longstaff-Schwartz (2001)
     '''

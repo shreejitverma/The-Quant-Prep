@@ -5,14 +5,14 @@
 
 class market_environment(object):
     ''' Class to model a market environment relevant for valuation.
-    
+
     Attributes
     ==========
     name: string
         name of the market environment
     pricing_date : datetime object
         date of the market environment
-    
+
     Methods
     =======
     add_constant :
@@ -65,4 +65,3 @@ class market_environment(object):
             self.lists[key] = env.lists[key]
         for key in env.curves:
             self.curves[key] = env.curves[key]
-        

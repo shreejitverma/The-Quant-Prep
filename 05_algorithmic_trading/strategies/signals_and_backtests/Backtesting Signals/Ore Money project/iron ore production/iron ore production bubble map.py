@@ -46,14 +46,14 @@ size=df['iron ore production']/max(df['iron ore production'])*40000
 #this is crucial if we use a different map projection
 x,y=m(df['longitude'].tolist(),df['latitude'].tolist())
 
-m.scatter(x,y, s=size, linewidths=2, edgecolors="#6c6b74",           
+m.scatter(x,y, s=size, linewidths=2, edgecolors="#6c6b74",
           alpha=0.8,c=df['iron ore production'],cmap='autumn_r')
 
 for i in range(len(x)):
-    plt.text(x[i],y[i],               
-             '%s '%(df['region'][i]),              
-             horizontalalignment='center', 
-            verticalalignment='center', 
+    plt.text(x[i],y[i],
+             '%s '%(df['region'][i]),
+             horizontalalignment='center',
+            verticalalignment='center',
              size=25)
 
 cb=plt.colorbar(ticks=[10000,800000])

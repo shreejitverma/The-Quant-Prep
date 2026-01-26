@@ -33,7 +33,7 @@ T = 1.0  # time horizon
 
 def futures_price(V0, kappa_V, theta_V, zeta_V, T):
     ''' Futures pricing formula in GL96 model.
-     
+
      V0: float (positive)
         current volatility level
      kappa_V: float (positive)
@@ -72,7 +72,7 @@ def cx(K, gamma, nu, lambda_V, exact=True):
 
 def call_price(V0, kappa_V, theta_V, sigma_V, zeta_V, T, r, K):
     ''' Call option pricing formula in GL96 Model
-     
+
      V0: float (positive)
         current volatility level
      kappa_V: float (positive)
@@ -91,7 +91,7 @@ def call_price(V0, kappa_V, theta_V, sigma_V, zeta_V, T, r, K):
         strike price of the option
     '''
     D = math.exp(-r * T)  # discount factor
-    
+
     alpha = kappa_V * theta_V
     beta = kappa_V + zeta_V
     gamma = 4 * beta / (sigma_V ** 2 * (1 - math.exp(-beta * T)))

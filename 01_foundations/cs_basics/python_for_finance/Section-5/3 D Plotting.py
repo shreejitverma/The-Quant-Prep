@@ -2,15 +2,15 @@
 # coding: utf-8
 
 # ## Notebook Instructions
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
 # ## 3D plotting
-# 
+#
 # (Optional Read)
-# 
+#
 # We are going to plot a 3 dimensional figure using 3 datasets.<br>
 # <br>
 # Not many financial data visualisations benefit from 3-D plotting but one of the applications is the volatility surfaces showing implied volatilities simultaneously.<br>
@@ -53,12 +53,12 @@ implied_volatility = (strike_price - 100) ** 2/ (100 * strike_price)/ time
 
 import matplotlib.pyplot as plt
 
-# Importing the required packages for 3D plotting 
+# Importing the required packages for 3D plotting
 from mpl_toolkits.mplot3d import Axes3D
 
 fig = plt.figure (figsize = (9,6))
 
-# If 'fig' is a variable holding a figure, fig.gca() returns the axes associated with the figure. 
+# If 'fig' is a variable holding a figure, fig.gca() returns the axes associated with the figure.
 # With this 3 dimensional axes is enabled
 axis = fig.gca (projection = '3d')
 
@@ -76,7 +76,7 @@ plt.show()
 
 
 # ### In the upcoming iPython notebook:
-# 
+#
 # We will learn about Candlesticks in Python. Even that is an optional read.
-# 
+#
 # Happy Learning!

@@ -1,6 +1,6 @@
 '''
 Descripttion: Automatically generated file comment
-version: 
+version:
 Author: Wesley
 Date: 2021-07-27 09:53:43
 LastEditors: Wesley

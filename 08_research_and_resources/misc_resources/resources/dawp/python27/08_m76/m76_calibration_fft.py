@@ -31,7 +31,7 @@ r = 0.0005  # ECB base rate
 # Option Selection
 tol = 0.02
 options = data[(np.abs(data['Strike'] - S0) / S0) < tol]
-     
+
 #
 # Error Function
 #

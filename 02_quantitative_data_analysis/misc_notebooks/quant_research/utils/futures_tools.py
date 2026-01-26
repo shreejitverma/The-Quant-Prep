@@ -118,7 +118,7 @@ def get_seasonal_contracts(futures_asofdate: pd.Timestamp, contracts: List[str],
     # go back year by year until first leg expires, e.g. on 2/20/2019 CLH2019 expired
     # then find the total business days to its expiry
     # (anchor_day, anchor_contract) pair is (asofdate, first leg contract) pair going back yrs_back
-    # e.g. (12/1/2018, CLH2020), (12/1/2017, CLH2019), ...., 
+    # e.g. (12/1/2018, CLH2020), (12/1/2017, CLH2019), ....,
     # the first one is not complete/ not yet expired as of 12/1/2019, while the second one is complete/expired.
     yrs_back = 0
     anchor_days = []

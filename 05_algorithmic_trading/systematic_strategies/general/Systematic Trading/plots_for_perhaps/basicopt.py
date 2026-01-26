@@ -11,7 +11,7 @@ import pickle
 import pandas as pd
 
 lines = ["--","-","-."]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 
 from optimisation import *
 
@@ -30,32 +30,32 @@ def cgm(weights, mus, std_dev):
 def geo_SR(weights, sigma, mus):
     ## Returns minus the Sharpe Ratio (as we're minimising)
 
-    """    
+    """
     estreturn=250.0*((np.matrix(x)*mus)[0,0])
     variance=(variance(x,sigma)**.5)*16.0
     """
     std_dev=csd(weights, sigma)
     geomean = cgm(weights,  mus, std_dev)
-    
+
     return -geomean/std_dev
 
 def arith_SR(weights, sigma, mus):
     ## Returns minus the Sharpe Ratio (as we're minimising)
 
-    """    
+    """
     estreturn=250.0*((np.matrix(x)*mus)[0,0])
     variance=(variance(x,sigma)**.5)*16.0
     """
     std_dev=csd(weights, sigma)
     amean = creturn(weights,  mus)
-    
+
     return -amean/std_dev
 
 def basic_opt(std,corr,mus):
     number_assets=mus.shape[0]
     sigma=sigma_from_corr(std, corr)
     start_weights=[1.0/number_assets]*number_assets
-    
+
     ## Constraints - positive weights, adding to 1.0
     bounds=[(0.0,1.0)]*number_assets
     cdict=[{'type':'eq', 'fun':addem}]
@@ -98,11 +98,11 @@ for bondweight in bondwts:
     weights=wtfunc(bondweight)
     sigma=sigma_from_corr(std, corr)
     std_dev=csd(weights, sigma)
-    
+
     sds.append(std_dev)
     rets.append(creturn(weights, mus))
     gms.append(cgm(weights, mus, std_dev))
-    
+
     gsr.append(-geo_SR(weights, sigma, mus))
     asr.append(-arith_SR(weights, sigma, mus))
 
@@ -112,7 +112,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 

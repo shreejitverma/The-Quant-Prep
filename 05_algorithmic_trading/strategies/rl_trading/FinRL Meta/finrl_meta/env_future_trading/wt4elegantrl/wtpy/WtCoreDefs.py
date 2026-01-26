@@ -182,7 +182,7 @@ class TickList(CacheList):
 
 # 回调函数定义
 #策略初始化回调
-CB_STRATEGY_INIT = CFUNCTYPE(c_void_p, c_ulong) 
+CB_STRATEGY_INIT = CFUNCTYPE(c_void_p, c_ulong)
 #策略tick数据推送回调
 CB_STRATEGY_TICK = CFUNCTYPE(c_void_p, c_ulong, c_char_p, POINTER(WTSTickStruct))
 #策略获取tick数据的单条tick同步回调
@@ -196,7 +196,7 @@ CB_STRATEGY_GET_BAR = CFUNCTYPE(c_void_p, c_ulong, c_char_p, c_char_p, POINTER(W
 #策略获取全部持仓的同步回调
 CB_STRATEGY_GET_POSITION = CFUNCTYPE(c_void_p, c_ulong, c_char_p, c_double, c_bool)
 #交易日开始结束事件回调
-CB_SESSION_EVENT = CFUNCTYPE(c_void_p, c_ulong, c_ulong, c_bool) 
+CB_SESSION_EVENT = CFUNCTYPE(c_void_p, c_ulong, c_ulong, c_bool)
 
 #引擎事件回调(交易日开启结束等)
 CB_ENGINE_EVENT = CFUNCTYPE(c_void_p, c_ulong, c_ulong, c_ulong)
@@ -243,7 +243,7 @@ class EngineType(Enum):
     ET_HFT = 1000
     ET_SEL = 1001
 
-        
+
 '''
 Parser外接实现
 '''

@@ -41,12 +41,12 @@ def geostd(x):
     if type(x) is pd.core.frame.DataFrame:
         return x.apply(geostd, 0)
     gm=geomean(x)
-    
+
     def _gsone(xitem, gm):
         return (np.log((1+xitem)/(1+gm)))**2.0
-        
+
     items=[_gsone(xitem, gm) for xitem in x.values]
-    
+
     return np.exp((np.mean(items))**.5)-1.0
 
 
@@ -66,7 +66,7 @@ for monte in range(monte_runs):
     subdata=data.iloc[choose,]
     subdata.index=pd.date_range(pd.datetime(1990,1,1), periods=period_length, freq="A")
     portfolio=subdata.SP500*.6+subdata.US10*.4
-    
+
     gmeans=geomean(subdata)
     if gmeans.SP500>gmeans.US10:
         eqbeatbonds=eqbeatbonds+1
@@ -74,10 +74,10 @@ for monte in range(monte_runs):
         eqbeatcash=eqbeatcash+1
     if gmeans.US10>gmeans.TBILL:
         bobeatcash=bobeatcash+1
-        
+
     if gmeans.SP500>geomean(portfolio):
         eqbeatport=eqbeatport+1
-        
+
 ## portfolio optimisation
 wts=[0.4, 0.6]
 wts=wts+[1-sum(wts)]

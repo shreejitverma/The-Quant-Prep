@@ -79,7 +79,7 @@ def nested_monte_carlo(St, J):
 
     Parameters
     ==========
-    St : float 
+    St : float
         start value for S
     J : int
         number of paths to simulate
@@ -124,7 +124,7 @@ for pa in para:
         S = generate_paths(I1)  # generate stock price paths
         h = inner_values(S)  # inner values
         V = inner_values(S)  # value matrix
-        rg = np.zeros((M + 1, reg + 1), dtype=np.float) 
+        rg = np.zeros((M + 1, reg + 1), dtype=np.float)
             # regression parameter matrix
 
         itm = np.greater(h, 0)  # ITM paths

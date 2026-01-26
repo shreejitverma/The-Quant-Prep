@@ -38,9 +38,9 @@ class LiveSurfaceApp(EWrapper, EClient):
         # Initialize the API client
         EClient.__init__(self, self)
         # Dictionary to store Implied Volatility values keyed by request ID
-        self.iv_dict = {}  
+        self.iv_dict = {}
         # Map request IDs to (Expiration, Strike) tuples
-        self.id_map = {}   
+        self.id_map = {}
         # Lists to hold available option chain parameters
         self.expirations = []
         self.strikes = []
@@ -93,7 +93,7 @@ def start_app(symbol='SPY'):
     # Instantiate the app and connect to TWS (Default port 7497)
     app = LiveSurfaceApp()
     app.connect('127.0.0.1', 7497, clientId=35)
-    
+
     # Start the API message loop in a background thread
     api_thread = threading.Thread(target=run_loop, args=(app,), daemon=True)
     api_thread.start()
@@ -105,7 +105,7 @@ def start_app(symbol='SPY'):
     underlying.secType = 'STK'
     underlying.exchange = 'SMART'
     underlying.currency = 'USD'
-    
+
     # Request contract details to find the internal conId
     app.reqContractDetails(1, underlying)
     app.resolved.wait(timeout=5)
@@ -121,7 +121,7 @@ def start_app(symbol='SPY'):
 
     # Filter for the next 6 expirations and strikes within 2% of spot
     today = time.strftime('%Y%m%d')
-    target_exps = [e for e in app.expirations if e >= today][:6] 
+    target_exps = [e for e in app.expirations if e >= today][:6]
     target_strikes = [s for s in app.strikes if spot * 0.98 <= s <= spot * 1.02]
 
     # Iterate through filtered chain and request IV for each contract
@@ -162,11 +162,11 @@ def live_desktop_plot(app):
     fig = plt.figure(figsize=(16, 9))
     fig.canvas.manager.set_window_title('Quant Guild - Live Volatility Surface')
     fig.patch.set_facecolor('#0b0d0f')
-    
+
     # Define subplots: 3D Surface on left, 2D Skew on right
     ax_3d = plt.subplot2grid((1, 3), (0, 0), colspan=2, projection='3d')
     ax_skew = plt.subplot2grid((1, 3), (0, 2))
-    
+
     # Initialize UI Button for locking/unlocking the view
     state = PlotState()
     ax_button = plt.axes([0.42, 0.03, 0.12, 0.04])
@@ -178,7 +178,7 @@ def live_desktop_plot(app):
     btn.on_clicked(state.toggle)
 
     print("--- Quant Guild Desktop Live Mode Started ---")
-    
+
     try:
         while True:
             # Check if UI is not locked before refreshing data
@@ -190,7 +190,7 @@ def live_desktop_plot(app):
                     iv = app.iv_dict[rid]
                     exp, strike = app.id_map[rid]
                     current_data.append({'Expiry': exp, 'Strike': strike, 'IV': iv})
-                
+
                 # Minimum data threshold to build a meaningful surface
                 if len(current_data) > 10:
                     # Convert to DataFrame and Pivot to create a grid
@@ -198,39 +198,39 @@ def live_desktop_plot(app):
                     pivot = df.pivot_table(index='Expiry', columns='Strike', values='IV').sort_index().sort_index(axis=1)
                     # Fill missing data points using linear interpolation
                     pivot = pivot.interpolate(method='linear', axis=0).bfill().ffill()
-                    
+
                     # Create coordinate meshes for 3D plotting
                     X, Y_idx = np.meshgrid(pivot.columns, np.arange(len(pivot.index)))
                     Z = pivot.values
-                    
+
                     # Save current camera angle to prevent reset during redraw
                     curr_elev, curr_azim = ax_3d.elev, ax_3d.azim
-                    
+
                     # Redraw the 3D IV Surface
-                    ax_3d.clear() 
+                    ax_3d.clear()
                     ax_3d.set_facecolor('#0b0d0f')
                     ax_3d.plot_surface(X, Y_idx, Z, cmap='magma', edgecolor='white', lw=0.1, alpha=0.9)
-                    
+
                     # Format 3D axis labels and title
                     ax_3d.set_yticks(np.arange(len(pivot.index)))
                     ax_3d.set_yticklabels(pivot.index, fontsize=8)
                     ax_3d.set_title(f"LIVE IV SURFACE | {time.strftime('%H:%M:%S')}", color='white')
                     ax_3d.view_init(elev=curr_elev, azim=curr_azim)
-                    
+
                     # Redraw the 2D Skew for the nearest expiration
                     ax_skew.clear()
                     ax_skew.set_facecolor('#161b22')
                     nearest_exp = pivot.index[0]
                     skew_data = pivot.iloc[0]
-                    
+
                     # Plot IV vs Strike and indicate the spot price line
                     ax_skew.plot(skew_data.index, skew_data.values, marker='o', color='#00f2ff')
                     ax_skew.axvline(x=app.spot_price, color='#ff3e3e', linestyle='--')
                     ax_skew.set_title(f"FRONT-MONTH SKEW: {nearest_exp}", color='white')
-                    
+
             # Pause to allow Matplotlib to process the drawing events
-            plt.pause(0.5) 
-            
+            plt.pause(0.5)
+
     except KeyboardInterrupt:
         # Graceful shutdown on manual interruption
         app.disconnect()

@@ -60,7 +60,7 @@ def check_auth():
     usrInfo = session.get("userinfo")
     # session里没有用户信息
     if usrInfo is None:
-        
+
         return False, {
             "result":-999,
             "message":"请先登录"
@@ -163,7 +163,7 @@ def get_cfg_tree(root:str, name:str):
 
     filepath = os.path.join(root, 'generated')
     ret["children"].append(get_path_tree(filepath, 'generated', True))
-        
+
     return ret
 
 def get_path_tree(root:str, name:str, hasFile:bool = True):
@@ -302,7 +302,7 @@ class WtMonSvr(WatcherSink):
                 }
             else:
                 bar_list = [curBar.to_dict  for curBar in bars]
-                
+
                 ret = {
                     "result":0,
                     "message":"Ok",
@@ -311,7 +311,7 @@ class WtMonSvr(WatcherSink):
 
             return pack_rsp(ret)
 
-        
+
         # 拉取用户策略列表
         @app.route("/bt/qrystras", methods=["POST"])
         def qry_my_stras():
@@ -902,7 +902,7 @@ class WtMonSvr(WatcherSink):
         '''下面是API接口的编写'''
         @app.route("/mgr/login", methods=["POST"])
         def cmd_login():
-            
+
             bSucc, json_data = parse_data()
             if not bSucc:
                 return pack_rsp(json_data)
@@ -1057,7 +1057,7 @@ class WtMonSvr(WatcherSink):
                         "datmod":datmod,
                         "env":env,
                         "mqurl":mqurl
-                    }   
+                    }
 
                     if self.__data_mgr__.add_group(grpInfo):
                         ret = {
@@ -1140,7 +1140,7 @@ class WtMonSvr(WatcherSink):
             bSucc, adminInfo = check_auth()
             if not bSucc:
                 return pack_rsp(adminInfo)
-            
+
             grpid = get_param(json_data, "groupid")
             if not self.__data_mgr__.has_group(grpid):
                 ret = {
@@ -1158,7 +1158,7 @@ class WtMonSvr(WatcherSink):
                 self.__data_mgr__.log_action(adminInfo, "stopgrp", grpid)
 
             return pack_rsp(ret)
-        
+
         # 组合启动
         @app.route("/mgr/startgrp", methods=["POST"])
         def cmd_start_group():
@@ -1169,7 +1169,7 @@ class WtMonSvr(WatcherSink):
             bSucc, adminInfo = check_auth()
             if not bSucc:
                 return pack_rsp(adminInfo)
-            
+
             grpid = get_param(json_data, "groupid")
             if not self.__data_mgr__.has_group(grpid):
                 ret = {
@@ -1252,7 +1252,7 @@ class WtMonSvr(WatcherSink):
 
             #这里本来是要做检查的，算了，先省事吧
             isGrp = get_param(json_data, "group", bool, False)
-            
+
             self._dog.applyAppConf(json_data, isGrp)
             ret = {
                 "result":0,
@@ -1439,7 +1439,7 @@ class WtMonSvr(WatcherSink):
                         }
 
             return pack_rsp(ret)
-        
+
         # 查询策略列表
         @app.route("/mgr/qrystras", methods=["POST"])
         def qry_strategys():
@@ -1563,7 +1563,7 @@ class WtMonSvr(WatcherSink):
                     "message":"",
                     "trades": self.__data_mgr__.get_trades(gid, sid)
                 }
-                    
+
 
             return pack_rsp(ret)
 
@@ -1592,7 +1592,7 @@ class WtMonSvr(WatcherSink):
                     "message":"",
                     "signals": self.__data_mgr__.get_signals(gid, sid)
                 }
-                    
+
 
             return pack_rsp(ret)
 
@@ -1806,13 +1806,13 @@ class WtMonSvr(WatcherSink):
             users = self.__data_mgr__.get_users()
             for usrInfo in users:
                 usrInfo.pop("passwd")
-            
+
             ret = {
                 "result":0,
                 "message":"",
                 "users": users
             }
-                
+
 
             return pack_rsp(ret)
 
@@ -1914,7 +1914,7 @@ class WtMonSvr(WatcherSink):
                 "result":0,
                 "message":"",
                 "actions": self.__data_mgr__.get_actions(sdate, edate)
-            }   
+            }
 
             return pack_rsp(ret)
 
@@ -1931,13 +1931,13 @@ class WtMonSvr(WatcherSink):
 
             schedules = self._dog.get_apps()
             for appid in schedules:
-                schedules[appid]["group"] = self.__data_mgr__.has_group(appid)                
+                schedules[appid]["group"] = self.__data_mgr__.has_group(appid)
 
             ret = {
                 "result":0,
                 "message":"",
                 "schedules": schedules
-            }   
+            }
 
             return pack_rsp(ret)
 
@@ -1950,7 +1950,7 @@ class WtMonSvr(WatcherSink):
             bSucc, adminInfo = check_auth()
             if not bSucc:
                 return pack_rsp(adminInfo)
-            
+
             appid = get_param(json_data, "appid")
             if not self._dog.has_app(appid):
                 ret = {
@@ -1978,7 +1978,7 @@ class WtMonSvr(WatcherSink):
             bSucc, adminInfo = check_auth()
             if not bSucc:
                 return pack_rsp(adminInfo)
-            
+
             appid = get_param(json_data, "appid")
             if not self._dog.has_app(appid):
                 ret = {
@@ -2007,7 +2007,7 @@ class WtMonSvr(WatcherSink):
             bSucc, adminInfo = check_auth()
             if not bSucc:
                 return pack_rsp(adminInfo)
-            
+
             filename = os.getcwd() + "/logs/WtMonSvr.log"
             content,lines = get_tail(filename, 100, "UTF-8")
             ret = {
@@ -2093,7 +2093,7 @@ class WtMonSvr(WatcherSink):
                     "message":"",
                     "positions": self.__data_mgr__.get_group_positions(gid)
                 }
-                    
+
 
             return pack_rsp(ret)
 
@@ -2121,7 +2121,7 @@ class WtMonSvr(WatcherSink):
                     "message":"",
                     "trades": self.__data_mgr__.get_group_trades(gid)
                 }
-                    
+
 
             return pack_rsp(ret)
 
@@ -2149,10 +2149,10 @@ class WtMonSvr(WatcherSink):
                     "message":"",
                     "rounds": self.__data_mgr__.get_group_rounds(gid)
                 }
-                    
+
 
             return pack_rsp(ret)
-        
+
         # 查询组合资金
         @app.route("/mgr/qryportfunds", methods=["POST"])
         def qry_group_funds():
@@ -2177,7 +2177,7 @@ class WtMonSvr(WatcherSink):
                     "message":"",
                     "funds": self.__data_mgr__.get_group_funds(gid)
                 }
-                    
+
 
             return pack_rsp(ret)
 
@@ -2205,7 +2205,7 @@ class WtMonSvr(WatcherSink):
                     "message":"",
                     "performance": self.__data_mgr__.get_group_performances(gid)
                 }
-                    
+
             return pack_rsp(ret)
 
         # 查询组合过滤器
@@ -2232,7 +2232,7 @@ class WtMonSvr(WatcherSink):
                     "message":"",
                     "filters": self.__data_mgr__.get_group_filters(gid)
                 }
-                    
+
             return pack_rsp(ret)
 
         # 提交组合过滤器
@@ -2267,12 +2267,12 @@ class WtMonSvr(WatcherSink):
                     }
 
             return pack_rsp(ret)
-            
-    
+
+
     def __run_impl__(self, port:int, host:str):
         self._dog.run()
         self.push_svr.run(port = port, host = host)
-    
+
     def run(self, port:int = 8080, host="0.0.0.0", bSync:bool = True):
         if bSync:
             self.__run_impl__(port, host)
@@ -2292,7 +2292,7 @@ class WtMonSvr(WatcherSink):
     def on_stop(self, grpid:str):
         if self.__data_mgr__.has_group(grpid):
             self.push_svr.notifyGrpEvt(grpid, 'stop')
-    
+
     def on_output(self, grpid:str, tag:str, time:int, message:str):
         if self.__data_mgr__.has_group(grpid):
             self.push_svr.notifyGrpLog(grpid, tag, time, message)
@@ -2302,6 +2302,6 @@ class WtMonSvr(WatcherSink):
 
     def on_trade(self, grpid:str, chnl:str, trdInfo:dict):
         self.push_svr.notifyGrpChnlEvt(grpid, chnl, 'trade', trdInfo)
-    
+
     def on_notify(self, grpid:str, chnl:str, message:str):
         self.push_svr.notifyGrpChnlEvt(grpid, chnl, 'notify', message)

@@ -21,7 +21,7 @@ for t in range(1, M + 1):
     S[t] = S[t - 1] * np.exp((r - 0.5 * sigma ** 2) * dt
                                   + sigma * math.sqrt(dt) * z)
       # vectorized operation per time step over all paths
-    
+
 # Calculating the Monte Carlo estimator
 C0 = math.exp(-r * T) * np.sum(np.maximum(S[-1] - K, 0)) / I
 

@@ -36,7 +36,7 @@ class PushServer:
             if len(groupid) == 0:
                 emit('setgroup', {"result":-2, "message":"组合ID不能为空"})
             else:
-                session["groupid"] = groupid         
+                session["groupid"] = groupid
 
     def run(self, port:int, host:str):
         self.sockio.run(self.app, host, port)

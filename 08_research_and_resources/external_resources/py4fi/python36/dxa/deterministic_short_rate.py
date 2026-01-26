@@ -7,17 +7,17 @@ from constant_short_rate import *
 class deterministic_short_rate(object):
     ''' Class for discounting based on deterministic short rates,
     derived from a term structure of unit Zero-Coupon Bond yields
-    
+
     Attributes
     ==========
     name : string
         name of the object
     yield_list : list/array of (time, yield) tuples
         input yields with time attached
-    
+
     Methods
     =======
-    get_interpolated_yields : 
+    get_interpolated_yields :
         return interpolated yield curve given a time list/array
     get_forward_rates :
         return forward rates given a time list/array

@@ -11,7 +11,7 @@ from twisted.test.test_amp import THING_I_DONT_UNDERSTAND
 
 
 lines = ["-","--","-."]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue", "green"])
 
 def read_ts_csv(fname, dindex="Date"):
@@ -19,7 +19,7 @@ def read_ts_csv(fname, dindex="Date"):
     dateindex=[dt.strptime(dx, "%d/%m/%y") for dx in list(data[dindex])]
     data.index=dateindex
     del(data[dindex])
-    
+
     return data
 
 def calc_asset_returns(rawdata, tickers):
@@ -61,7 +61,7 @@ data.columns=["US Equity" ,"US Bond", "UK Equity"]
 def linehist(x, color="blue", linestyle="-"):
     y,binEdges =np.histogram(x)
     bincenters = 0.5*(binEdges[1:]+binEdges[:-1])
-    plot(bincenters,y,'-', color=color, linestyle=linestyle) 
+    plot(bincenters,y,'-', color=color, linestyle=linestyle)
 
 
 """
@@ -81,13 +81,13 @@ monte_length=len(data)
 
 for unused_index in range(monte_carlo):
     bs_idx=[int(random.uniform(0,1)*len(data)) for i in range(monte_length)]
-    returns=data.iloc[bs_idx,:] 
+    returns=data.iloc[bs_idx,:]
     means.append(list(12.0*returns.mean()))
     stds.append(list((12**.5)*returns.std()))
     srs.append(list((12**.5)*returns.mean()/returns.std()))
     cm=returns.corr().values
     corrs.append([cm[0][1], cm[0][2],cm[1][2]])
-    
+
 codes=data.columns
 corrnames=["US Equity / US Bond", "US Equity / UK Equity", "US Bond / UK Equity"]
 
@@ -117,7 +117,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 
@@ -195,16 +195,16 @@ def relative_item(data, func=None, usecorr=False):
         mean_ts = mycorr(data)
     else:
         mean_ts=pd.rolling_apply(data, 60, func)
-    
+
     avg_ts=mean_ts.mean(axis=1)
     avg_ts=pd.concat([avg_ts, avg_ts, avg_ts], axis=1)
     avg_ts.columns = mean_ts.columns
-    
+
     if usecorr:
         mean_ts=mean_ts - avg_ts
     else:
         mean_ts=mean_ts / avg_ts
-    
+
     return mean_ts
 
 def sr(xdata):
@@ -214,10 +214,10 @@ def mycorr(data):
     c1=pd.rolling_corr(data['US Equity'], data['US Bond'], window=60)
     c2=pd.rolling_corr(data['US Equity'], data['UK Equity'], window=60)
     c3=pd.rolling_corr(data['US Bond'], data['UK Equity'], window=60)
-    
+
     thing = pd.concat([c1,c2,c3], axis=1)
     thing.columns=["US Equity / US Bond", "US Equity / UK Equity", "US Bond / UK Equity"]
-    
+
     return thing
 
 mean_ts=relative_item(data, np.mean)

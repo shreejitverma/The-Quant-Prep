@@ -37,7 +37,7 @@ Created on Tue Feb  6 11:57:46 2018
 #i am talking about nvidia and amd, two gpu companies
 #after bitcoin mining boom and machine learning hype
 #stock price of nvidia went skyrocketing
-#on the contrary amd didnt change much 
+#on the contrary amd didnt change much
 #the cointegrated relationship just broke up
 #so be extremely cautious with cointegration
 #there is no such thing as riskless statistical arbitrage
@@ -62,33 +62,33 @@ import statsmodels.api as sm
 #check the following material for further details
 # https://warwick.ac.uk/fac/soc/economics/staff/gboero/personal/hand2_cointeg.pdf
 def EG_method(X,Y,show_summary=False):
-    
+
     #step 1
     #estimate long run equilibrium
     model1=sm.OLS(Y,sm.add_constant(X)).fit()
     epsilon=model1.resid
-    
+
     if show_summary:
         print('\nStep 1\n')
         print(model1.summary())
-    
+
     #check p value of augmented dickey fuller test
     #if p value is no larger than 5%, stationary test is passed
     if sm.tsa.stattools.adfuller(epsilon)[1]>0.05:
         return False,model1
-    
+
     #take first order difference of X and Y plus the lagged residual from step 1
     X_dif=sm.add_constant(pd.concat([X.diff(),epsilon.shift(1)],axis=1).dropna())
-    Y_dif=Y.diff().dropna()        
-    
+    Y_dif=Y.diff().dropna()
+
     #step 2
     #estimate error correction model
     model2=sm.OLS(Y_dif,X_dif).fit()
-    
+
     if show_summary:
         print('\nStep 2\n')
         print(model2.summary())
-    
+
     #adjustment coefficient must be negative
     if list(model2.params)[-1]>0:
         return False,model1
@@ -105,81 +105,81 @@ def EG_method(X,Y,show_summary=False):
 #if the status is valid, we check the signals
 #when z stat gets above the upper bound
 #we long the bearish one and short the bullish one, vice versa
-def signal_generation(asset1,asset2,method,bandwidth=250):    
-    
+def signal_generation(asset1,asset2,method,bandwidth=250):
+
     signals=pd.DataFrame()
     signals['asset1']=asset1['Close']
     signals['asset2']=asset2['Close']
-    
+
     #signals only imply holding
-    signals['signals1']=0    
+    signals['signals1']=0
     signals['signals2']=0
-    
+
     #initialize
     prev_status=False
     signals['z']=np.nan
     signals['z upper limit']=np.nan
     signals['z lower limit']=np.nan
-    signals['fitted']=np.nan    
+    signals['fitted']=np.nan
     signals['residual']=np.nan
-    
+
     #signal processing
     for i in range(bandwidth,len(signals)):
-        
+
         #cointegration test
         coint_status,model=method(signals['asset1'].iloc[i-bandwidth:i],
                                   signals['asset2'].iloc[i-bandwidth:i])
-                
+
         #cointegration breaks
         #clear existing positions
-        if prev_status and not coint_status:           
+        if prev_status and not coint_status:
             if signals.at[signals.index[i-1],'signals1']!=0:
                 signals.at[signals.index[i],'signals1']=0
                 signals.at[signals.index[i],'signals2']=0
                 signals['z'].iloc[i:]=np.nan
                 signals['z upper limit'].iloc[i:]=np.nan
                 signals['z lower limit'].iloc[i:]=np.nan
-                signals['fitted'].iloc[i:]=np.nan    
+                signals['fitted'].iloc[i:]=np.nan
                 signals['residual'].iloc[i:]=np.nan
-        
+
         #cointegration starts
         #set the trigger conditions
         #this is no forward bias
         #just to minimize the calculation done in pandas
         if not prev_status and coint_status:
-            
-            #predict the price to compute the residual       
+
+            #predict the price to compute the residual
             signals['fitted'].iloc[i:]=model.predict(sm.add_constant(signals['asset1'].iloc[i:]))
             signals['residual'].iloc[i:]=signals['asset2'].iloc[i:]-signals['fitted'].iloc[i:]
-            
+
             #normalize the residual to get z stat
             #z should be a white noise following N(0,1)
             signals['z'].iloc[i:]=(signals['residual'].iloc[i:]-np.mean(model.resid))/np.std(model.resid)
-                        
+
             #create thresholds
             #conventionally one sigma is the threshold
             #two sigma reaches 95% which is relatively difficult to trigger
             signals['z upper limit'].iloc[i:]=signals['z'].iloc[i]+np.std(model.resid)
             signals['z lower limit'].iloc[i:]=signals['z'].iloc[i]-np.std(model.resid)
-        
+
         #as z stat cannot exceed both upper and lower bounds at the same time
         #the lines below hold
-        if coint_status and signals['z'].iloc[i]>signals['z upper limit'].iloc[i]:            
-             signals.at[signals.index[i],'signals1']=1            
-        if coint_status and signals['z'].iloc[i]<signals['z lower limit'].iloc[i]:            
+        if coint_status and signals['z'].iloc[i]>signals['z upper limit'].iloc[i]:
+             signals.at[signals.index[i],'signals1']=1
+        if coint_status and signals['z'].iloc[i]<signals['z lower limit'].iloc[i]:
              signals.at[signals.index[i],'signals1']=-1
-                
-        prev_status=coint_status    
-    
+
+        prev_status=coint_status
+
     #signals only imply holding
     #we take the first order difference to obtain the execution signal
     signals['positions1']=signals['signals1'].diff()
-    
+
     #only need to generate trading signal of one asset
     #the other one should be the opposite direction
     signals['signals2']=-signals['signals1']
-    signals['positions2']=signals['signals2'].diff()   
-    
+    signals['positions2']=signals['signals2'].diff()
+
     return signals
 
 
@@ -187,12 +187,12 @@ def signal_generation(asset1,asset2,method,bandwidth=250):
 
 
 #position visualization
-def plot(data,ticker1,ticker2):    
-   
+def plot(data,ticker1,ticker2):
+
     fig=plt.figure(figsize=(10,5))
-    bx=fig.add_subplot(111)   
+    bx=fig.add_subplot(111)
     bx2=bx.twinx()
-    
+
     #viz two different assets
     asset1_price,=bx.plot(data.index,data['asset1'],
                           c='#113aac',alpha=0.7)
@@ -234,7 +234,7 @@ def plot(data,ticker1,ticker2):
     plt.xlabel('Date')
     plt.grid(True)
     plt.show()
-  
+
 
 
 # In[6]:
@@ -264,7 +264,7 @@ def portfolio(data):
     portfolio['total asset1']=portfolio['holdings1']+portfolio['cash1']
     portfolio['return1']=portfolio['total asset1'].pct_change()
     portfolio['positions1']=data['positions1']
-    
+
     data['cumsum2']=data['positions2'].cumsum()
     portfolio['asset2']=data['asset2']
     portfolio['holdings2']=data['cumsum2']*data['asset2']*positions2
@@ -272,38 +272,38 @@ def portfolio(data):
     portfolio['total asset2']=portfolio['holdings2']+portfolio['cash2']
     portfolio['return2']=portfolio['total asset2'].pct_change()
     portfolio['positions2']=data['positions2']
- 
+
     portfolio['z']=data['z']
     portfolio['total asset']=portfolio['total asset1']+portfolio['total asset2']
     portfolio['z upper limit']=data['z upper limit']
     portfolio['z lower limit']=data['z lower limit']
-    
+
     #plotting the asset value change of the portfolio
     fig=plt.figure(figsize=(10,5))
     ax=fig.add_subplot(111)
     ax2=ax.twinx()
- 
+
     total_asset_performance,=ax.plot(portfolio['total asset'],c='#46344e')
     z_stats,=ax2.plot(portfolio['z'],c='#4f4a41',alpha=0.2)
- 
+
     threshold=ax2.fill_between(portfolio.index,portfolio['z upper limit'],
                        portfolio['z lower limit'],
                        alpha=0.2,color='#ffb48f')
-     
+
     #due to the opposite direction of trade for 2 assets
-    #we will not plot positions on asset performance    
+    #we will not plot positions on asset performance
     ax.set_ylabel('Asset Value')
     ax2.set_ylabel('Z Statistics',rotation=270)
     ax.yaxis.labelpad=15
     ax2.yaxis.labelpad=15
     ax.set_xlabel('Date')
     ax.xaxis.labelpad=15
-    
+
     plt.legend([z_stats,threshold,total_asset_performance],
                ['Z Statistics', 'Z Statistics +-1 Sigma',
                 'Total Asset Performance'],loc='best')
 
-    plt.grid(True)   
+    plt.grid(True)
     plt.title('Total Asset')
     plt.show()
 
@@ -314,7 +314,7 @@ def portfolio(data):
 
 
 def main():
-    
+
     #the sample i am using are NVDA and AMD from 2013 to 2014
     stdate='2013-01-01'
     eddate='2014-12-31'
@@ -323,7 +323,7 @@ def main():
 
     #extract data
     asset1=yf.download(ticker1,start=stdate,end=eddate)
-    asset2=yf.download(ticker2,start=stdate,end=eddate)  
+    asset2=yf.download(ticker2,start=stdate,end=eddate)
 
     #create signals
     signals=signal_generation(asset1,asset2,EG_method)
@@ -332,11 +332,11 @@ def main():
     ind=signals['z'].dropna().index[0]
 
     #viz positions
-    plot(signals[ind:],ticker1,ticker2)    
+    plot(signals[ind:],ticker1,ticker2)
 
     #viz portfolio performance
     portfolio_details=portfolio(signals[ind:])
-    
+
     #the performance metrics of investment could be found in another strategy called Heikin-Ashi
     # https://github.com/je-suis-tm/quant-trading/blob/master/heikin%20ashi%20backtest.py
 

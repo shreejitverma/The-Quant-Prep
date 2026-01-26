@@ -5,26 +5,26 @@
                 "Ctrl Shift R"
             ],
             "selector": "body"},
-        
+
         {"command": "runmenu:run-all",
             "keys": [
                 "Ctrl Shift A"
             ],
             "selector": "body"},
-        
+
         {"command": "runmenu:restart-and-run-all",
             "keys": [
                 "Ctrl Shift N"
             ],
             "selector": "body"},
-        
+
         {"command": "notebook:run-all-above",
             "keys": [
                 "Ctrl Shift Y"
             ],
             "selector": "body"},
-                 
-                
+
+
         {"command": "application:activate-next-tab",
          "keys": [
              "Ctrl Shift ]"

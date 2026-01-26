@@ -88,7 +88,7 @@ class BaseDataReporter:
                 time.sleep(1)
                 continue
             else:
-                taskid = self.__tasks__.pop(0)                
+                taskid = self.__tasks__.pop(0)
                 if taskid == self.TaskReportRTData:
                     self.__do_report_rt_data__()
                 elif taskid == self.TaskReportSettleData:
@@ -127,4 +127,3 @@ class BaseDataReporter:
         self.__tasks__.append(self.TaskReportInitData)
         if self.__thrd_task__ is None:
             self.__start__()
-        

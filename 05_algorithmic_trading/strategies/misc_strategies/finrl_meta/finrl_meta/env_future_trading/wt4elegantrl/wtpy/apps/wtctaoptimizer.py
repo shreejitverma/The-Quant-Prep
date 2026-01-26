@@ -98,7 +98,7 @@ class WtCtaOptimizer:
         '''
         self.fixed_params[name] = val
         return
-    
+
     def set_strategy(self, typeName:type, name_prefix:str):
         '''
         设置策略\n
@@ -195,13 +195,13 @@ class WtCtaOptimizer:
 
                         val_str = val_str[:-1]
                         thisGrp[name] = curVal
-                        endix += name 
+                        endix += name
                         endix += "_"
                         endix += val_str
                         endix += "_"
                     else:
                         thisGrp[name] = curVal
-                        endix += name 
+                        endix += name
                         endix += "_"
                         endix += str(curVal)
                         endix += "_"
@@ -215,7 +215,7 @@ class WtCtaOptimizer:
                 thisGrp["end_time"] = end_time
                 stra_names[straName] = thisGrp
                 param_groups.append(thisGrp)
-        
+
         # 将每一组参数和对应的策略ID落地到文件中，方便后续的分析
         f = open(markerfile, "w")
         f.write(json.dumps(obj=stra_names, sort_keys=True, indent=4))
@@ -250,10 +250,10 @@ class WtCtaOptimizer:
         avgprof_win = winamout/wintimes if wintimes>0 else 0        # 单次盈利均值
         avgprof_lose = loseamount/losetimes if losetimes>0 else 0   # 单次亏损均值
         winloseratio = abs(avgprof_win/avgprof_lose) if avgprof_lose!=0 else "N/A"   # 单次盈亏均值比
-            
+
         max_consecutive_wins = 0    # 最大连续盈利次数
         max_consecutive_loses = 0   # 最大连续亏损次数
-        
+
         avg_bars_in_winner = total_winbarcnts/wintimes if wintimes>0 else "N/A"
         avg_bars_in_loser = total_losebarcnts/losetimes if losetimes>0 else "N/A"
 
@@ -267,7 +267,7 @@ class WtCtaOptimizer:
             else:
                 consecutive_wins = 0
                 consecutive_loses += 1
-            
+
             max_consecutive_wins = max(max_consecutive_wins, consecutive_wins)
             max_consecutive_loses = max(max_consecutive_loses, consecutive_loses)
 
@@ -318,7 +318,7 @@ class WtCtaOptimizer:
         # 去掉多余的参数
         params.pop("start_time")
         params.pop("end_time")
-        
+
         if self.cpp_stra_module is not None:
             params.pop("name")
             engine.setExternalCtaStrategy(name, self.cpp_stra_module, self.cpp_stra_type, params)
@@ -391,7 +391,7 @@ class WtCtaOptimizer:
             if not os.path.exists(filename):
                 print("%s不存在，请检查数据" % (filename))
                 continue
-                
+
             f = open(filename, "r")
             content = f.read()
             f.close()
@@ -416,10 +416,10 @@ class WtCtaOptimizer:
             if not os.path.exists(filename):
                 print("%s不存在，请检查数据" % (filename))
                 continue
-                
+
             time_range = (params["start_time"],params["end_time"])
             self.__ayalyze_result__(straName, time_range, params)
-            
+
             f = open(filename, "r")
             content = f.read()
             f.close()
@@ -439,4 +439,4 @@ class WtCtaOptimizer:
             except:
                 pass
 
-                
+

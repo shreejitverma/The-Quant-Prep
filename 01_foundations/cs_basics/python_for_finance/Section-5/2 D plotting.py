@@ -3,11 +3,11 @@
 
 # # Notebook Instructions
 # <i>You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter</b>. While a cell is running, a [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook [8].</i>
-# 
+#
 # <i>Enter edit mode by pressing <b>`Enter`</b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area.</i>
 
 # ## Data Visualization
-# 
+#
 # This python notebook is for understanding the capabilities of 'matplotlib' library. Matplotlib is a reliable, robust and easy to use library for standard plots and is flexible when it comes to complex plots and customizations.
 
 # In[74]:
@@ -29,7 +29,7 @@ infy.head ()
 
 # Preparing Data to visualise
 
-infy_close = infy [['Date','Close Price']] # The columns which we require 
+infy_close = infy [['Date','Close Price']] # The columns which we require
 
 infy_close.set_index('Date', inplace=True) # Setting index as date
 
@@ -39,7 +39,7 @@ infy_close
 
 
 # ### Importing libraries
-# 
+#
 # To begin with, we will import the required libraries. The main plotting functions are found in the sublibrary matplotlib.pyplot.
 
 # In[76]:
@@ -53,7 +53,7 @@ plt.show ()
 
 
 # ### A better plot representation
-# 
+#
 # There are always different requirements and plotting style for presenting graphs/reports. Let us try out a few functions and customize it.
 
 # In[77]:
@@ -65,13 +65,13 @@ get_ipython().magic(u'matplotlib inline')
 # This customizes the size of the plot as per the inputs. Here 14,5 represents the breadth and length of the plot.
 plt.figure(figsize = (14,5))
 
-# This helps in plotting the blue color of the ‘infy_close’ series line graph. 
+# This helps in plotting the blue color of the ‘infy_close’ series line graph.
 plt.plot(infy_close, 'b')
 # plt.plot (infy_close, 'g') # to plot green color
 
 # This helps in plotting the discrete red data points of the closing prices of ‘infy_close’ series.
 plt.plot(infy_close,'ro')
-# Here ‘r’ stands for ‘red’ and ‘o’ stands for circles while plotting our discrete data points. 
+# Here ‘r’ stands for ‘red’ and ‘o’ stands for circles while plotting our discrete data points.
 # That is why the points are colored red and default line color is blue.
 
 # This gives a grid layout to the plot.
@@ -80,10 +80,10 @@ plt.grid(True)
 # This gives the title to the plot.
 plt.title ('Infosys Close Price Representation')
 
-# This labels the x axis 
+# This labels the x axis
 plt.xlabel ('Trading Days')
 
-# This labels the y axis 
+# This labels the y axis
 plt.ylabel ('Infosys Close Price')
 
 
@@ -92,7 +92,7 @@ plt.show ()
 
 
 # ### Plot with labelled datasets
-# 
+#
 # Something that is different in this cell is the fact that we are plotting two datasets or columns in this case.
 
 # In[78]:
@@ -142,36 +142,36 @@ plt.show()
 
 
 # ### Scatter Plots
-# 
+#
 # (Optional Read)
-# 
+#
 # In a scatter plot, the values of one data serve as the x values  for the other data set. Such plots are usually used while plotting financial time series. Matplotlib provides a specific function to generate scatter plots known as the plt.scatter() function.
 
 # In[80]:
 
 
 import numpy as np
- 
+
 y = np.random.standard_normal((100,2)) # Random data created
 
 plt.figure (figsize = (7,5))
 
 # The function 'scatter' is called to our 'plt' object
-plt.scatter(y[:,0], y[:,1], marker='o') 
+plt.scatter(y[:,0], y[:,1], marker='o')
 
 plt.grid(True)
 plt.xlabel ('1st dataset')
 plt.ylabel ('2nd dataset')
 plt.title('Scatter Plot')
-plt.show() 
+plt.show()
 
 
-# ### Plotting a histogram 
-# 
+# ### Plotting a histogram
+#
 # (Optional Read)
-# 
+#
 # Another type of plot apart from line graphs are histograms. They are often used in the context of financial returns. The code puts the frequency value of two datasets next to each other in the same plot. We use the plt.hist() function to plot the diagram.
-# 
+#
 
 # In[81]:
 
@@ -179,7 +179,7 @@ plt.show()
 # Random data created
 
 np.random.seed(100)
-y = np.random.standard_normal((25,2)).cumsum(axis=0) 
+y = np.random.standard_normal((25,2)).cumsum(axis=0)
 
 plt.figure(figsize=(10,5))
 
@@ -195,7 +195,7 @@ plt.show()
 
 
 # ### In the upcoming iPython notebook:
-# 
+#
 # We will learn about 3-D plotting in Python. 3-D plotting is an optional read.
-# 
+#
 # Happy Learning!

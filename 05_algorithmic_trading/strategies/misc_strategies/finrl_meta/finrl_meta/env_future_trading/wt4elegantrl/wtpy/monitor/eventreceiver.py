@@ -21,7 +21,7 @@ class EventSink:
 
     def on_trade(self, chnl:str, trdInfo:dict):
         pass
-    
+
     def on_notify(self, chnl:str, message:str):
         pass
 
@@ -86,10 +86,10 @@ TOPIC_BT_FUND   = "BT_FUND"     # 每日资金变化
 class BtEventSink:
     def __init__(self):
         pass
-    
+
     def on_begin(self):
         pass
-    
+
     def on_finish(self):
         pass
 

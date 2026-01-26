@@ -1,6 +1,6 @@
 '''
 Descripttion: Automatically generated file comment
-version: 
+version:
 Author: Wesley
 Date: 2021-05-24 15:05:01
 LastEditors: Wesley
@@ -30,7 +30,7 @@ def getModuleName(lType:LoaderType)->str:
     else:
         raise Exception('Invalid loader type')
         return
-    
+
     paths = os.path.split(__file__)
     exename = ph.getModule(filename)
     a = (paths[:-1] + (exename,))

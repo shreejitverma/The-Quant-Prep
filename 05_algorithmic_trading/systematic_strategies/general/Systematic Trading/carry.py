@@ -7,7 +7,7 @@ Required: pandas, matplotlib
 
 USE AT YOUR OWN RISK! No warranty is provided or implied.
 
-Handling of NAN's and Inf's isn't done here (except within pandas), 
+Handling of NAN's and Inf's isn't done here (except within pandas),
 And there is no error handling!
 
 """

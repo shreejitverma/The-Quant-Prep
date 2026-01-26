@@ -22,7 +22,7 @@ class CtaContext:
         self.__id__ = id            #策略ID
         self.__bar_cache__ = dict() #K线缓存
         self.__tick_cache__ = dict()    #tTick缓存，每次都重新去拉取，这个只做中转用，不在python里维护副本
-        self.__sname__ = stra.name()    
+        self.__sname__ = stra.name()
         self.__engine__ = engine          #交易环境
         self.__pos_cache__ = None
 
@@ -99,7 +99,7 @@ class CtaContext:
         @period     K线基础周期
         @times      周期倍数
         @newBar     最新K线
-        '''        
+        '''
         key = "%s#%s" % (stdCode, period)
 
         if key not in self.__bar_cache__:
@@ -134,7 +134,7 @@ class CtaContext:
         @return int，格式如20180513
         '''
         return self.__wrapper__.cta_get_tdate()
-        
+
     def stra_get_date(self):
         '''
         获取当前日期\n
@@ -222,7 +222,7 @@ class CtaContext:
         cnt = self.__wrapper__.cta_get_ticks(self.__id__, stdCode, count)
         if cnt == 0:
             return None
-        
+
         df_ticks = self.__tick_cache__[stdCode]
         return df_ticks
 
@@ -251,7 +251,7 @@ class CtaContext:
         @return 设置结果TRUE/FALSE
         '''
         self.__wrapper__.cta_set_position(self.__id__, stdCode, qty, usertag, limitprice, stopprice)
-        
+
 
     def stra_enter_long(self, stdCode:str, qty:float, usertag:str = "", limitprice:float = 0.0, stopprice:float = 0.0):
         '''
@@ -345,7 +345,7 @@ class CtaContext:
         @stdCode       合约代码\n
         @usertag    进场标记\n
         @flag       盈亏记号，0-浮动盈亏，1-最大浮盈，-1-最大亏损（负数）
-        @return     盈亏 
+        @return     盈亏
         '''
         return self.__wrapper__.cta_get_detail_profit(self.__id__, stdCode, usertag, flag)
 
@@ -354,7 +354,7 @@ class CtaContext:
         获取指定标记的持仓的开仓价
         @stdCode       合约代码\n
         @usertag    进场标记\n
-        @return     开仓价 
+        @return     开仓价
         '''
         return self.__wrapper__.cta_get_detail_cost(self.__id__, stdCode, usertag)
 
@@ -363,7 +363,7 @@ class CtaContext:
         获取指定标记的持仓的进场时间\n
         @stdCode       合约代码\n
         @usertag    进场标记\n
-        @return     进场时间，格式如201907260932 
+        @return     进场时间，格式如201907260932
         '''
         return self.__wrapper__.cta_get_detail_entertime(self.__id__, stdCode, usertag)
 

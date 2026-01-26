@@ -15,7 +15,7 @@ from .WtDtServo import WtDtServo
 from wtpy.wrapper.WtExecApi import WtExecApi
 from wtpy.wrapper.ContractLoader import ContractLoader,LoaderType
 
-__all__ = ["BaseCtaStrategy", "BaseSelStrategy", "BaseHftStrategy", "WtEngine", "CtaContext", "SelContext", "HftContext", 
+__all__ = ["BaseCtaStrategy", "BaseSelStrategy", "BaseHftStrategy", "WtEngine", "CtaContext", "SelContext", "HftContext",
             "WtBtEngine", "WtDtEngine", "WtExecApi","WTSTickStruct","WTSBarStruct","BaseIndexWriter","BaseIndexWriter",
             "EngineType", "WtKlineData", "WtHftData","ContractLoader", "BaseDataReporter", "BaseExtParser", "BaseExtExecuter",
             "LoaderType", "WtDtServo", "WtMsgQue", "WtMQClient", "WtMQServer"]

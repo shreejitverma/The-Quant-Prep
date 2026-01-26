@@ -29,29 +29,29 @@ def set_parameters(otype, M):
         T = 1.0  # time-to-maturity
         r = 0.06  # short rate
         sigma = 0.2  # volatility
-        
+
     elif otype == 2:
         # Parameters -- Short Condor Spread
         S0 = 100.  # initial stock level
         T = 1.0  # time-to-maturity
         r = 0.05  # short rate
         sigma = 0.5  # volatility
-        
+
     else:
         raise ValueError('Option type not known.')
-    
+
     # Numerical Parameters
     dt = T / M  # time interval
     df = math.exp(-r * dt)  # discount factor
     u = math.exp(sigma * math.sqrt(dt))  # up-movement
     d = 1 / u  # down-movement
     q = (math.exp(r * dt) - d) / (u - d)  # martingale probability
-    
+
     return S0, T, r, sigma, M, dt, df, u, d, q
 
 
 def inner_value(S, otype):
-    ''' Inner value functions for American put option and short condor spread 
+    ''' Inner value functions for American put option and short condor spread
     option with American exercise.
 
     Parameters

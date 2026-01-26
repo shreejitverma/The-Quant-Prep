@@ -5,7 +5,7 @@
 
 /**
  * @brief Lock-Free Single Producer Single Consumer (SPSC) Ring Buffer.
- * 
+ *
  * Key Concepts for Interviews:
  * 1. std::atomic for thread-safe indices.
  * 2. std::memory_order_acquire/release to ensure visibility without full fences.
@@ -44,7 +44,7 @@ public:
 
 private:
     std::vector<T> buffer_{Size};
-    
+
     // Align to cache line size (usually 64 bytes) to prevent false sharing
     alignas(64) std::atomic<size_t> head_;
     alignas(64) std::atomic<size_t> tail_;
@@ -57,7 +57,7 @@ int main() {
         for (int i = 0; i < 1000; ++i) {
             while (!rb.push(i)) {
                 // Spin wait strategy often used in low latency
-                std::this_thread::yield(); 
+                std::this_thread::yield();
             }
         }
     });

@@ -200,7 +200,7 @@ class fixed_bond:
                     self.accrued_period = 0
                     self.accrued_days = 0
                     self.accrued_interest = 0
-        
+
         self.discount_periods = []
         for i in range(self.number_of_periods):
             self.discount_periods.append(self.discount_period+i)
@@ -213,7 +213,7 @@ class fixed_bond:
 
         #generating a cash flow table and calculating reoffer cash price
         #table - coupon number / coupon date / cash flow / discount rate / discount period / npv
-        df = pd.DataFrame(np.column_stack([self.cash_flow_periods, self.cash_flow_dates, self.cash_flow_amounts, self.discount_rates, self.discount_periods]), 
+        df = pd.DataFrame(np.column_stack([self.cash_flow_periods, self.cash_flow_dates, self.cash_flow_amounts, self.discount_rates, self.discount_periods]),
                                columns=['coupon number', 'coupon_date', 'cash_flow', 'discount_rate', 'discount_period'])
         df['npv'] = (df.cash_flow / (df.discount_rate**df.discount_period))
 

@@ -41,12 +41,12 @@ def geostd(x):
     if type(x) is pd.core.frame.DataFrame:
         return x.apply(geostd, 0)
     gm=geomean(x)
-    
+
     def _gsone(xitem, gm):
         return (np.log((1+xitem)/(1+gm)))**2.0
-        
+
     items=[_gsone(xitem, gm) for xitem in x.values]
-    
+
     return np.exp((np.mean(items))**.5)-1.0
 
 
@@ -55,7 +55,7 @@ data=pd_readcsv("/home/rob/workspace/systematictradingexamples/plots_for_perhaps
 portfolios=dict([("All Equities", [0.0,1.0]),
                  ("Maximum risk",[.2,.8]),
                  ("Compromise",[.4,.6]),
-("Maximum SR",[.68,.32])                 
+("Maximum SR",[.68,.32])
                  ])
 
 ## resampled version
@@ -65,18 +65,18 @@ monte_runs=100000
 results=dict([("All Equities", []),
                  ("Maximum risk",[]),
                  ("Compromise",[]),
-("Maximum SR",[])                 
+("Maximum SR",[])
                  ])
 for monte in range(monte_runs):
     choose=[int(random()*len(data.index)) for notused in range(period_length)]
     subdata=data.iloc[choose,]
     subdata.index=pd.date_range(pd.datetime(1990,1,1), periods=period_length, freq="A")
-    
+
     for resname in results.keys():
         bond_weight=portfolios[resname][0]
         equity_weight=portfolios[resname][1]
         portfolio_returns=subdata.SP500*equity_weight+subdata.US10*bond_weight
-    
+
         gmeans=geomean(portfolio_returns)
         results[resname].append(gmeans)
 
@@ -94,8 +94,8 @@ def linehist(x, color="blue", linestyle="-"):
     y,binEdges =np.histogram(x, bins=50)
     bincenters = 0.5*(binEdges[1:]+binEdges[:-1])
     plot(bincenters,y,'-', color=color, linestyle=linestyle)
-    
-    return list(y),list(bincenters) 
+
+    return list(y),list(bincenters)
 
 def revperc(x, a):
 
@@ -106,7 +106,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 

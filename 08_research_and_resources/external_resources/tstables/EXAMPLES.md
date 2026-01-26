@@ -7,7 +7,7 @@ This document shows you a few examples of how to use TsTables to store and acces
 ### Fetch the daily EURUSD exchange rate from FRED
 
 This example fetches the daily EURUSD exchange rate from FRED, the St. Louis Fed's online database
-of economic data. TsTables isn't really designed for storing daily data, but this simple example 
+of economic data. TsTables isn't really designed for storing daily data, but this simple example
 illustrates how you can get a Pandas DataFrame and append it to a time series.
 
 ```python
@@ -32,7 +32,7 @@ end = datetime(2014,5,2)
 
 euro = web.DataReader("DEXUSEU", "fred", start, end)
 ts.append(euro)
-f.flush() 
+f.flush()
 
 # Now, read in a month of data
 read_start_dt = datetime(2014,1,1)
@@ -43,8 +43,8 @@ jan = ts.read_range(read_start_dt,read_end_dt)
 
 ### Load one month of minutely bitcoin price data
 
-This example loads one month of minutely [Bitcoin Price Index](http://coindesk.com/price) from 
-CoinDesk. First, you'll need to download 
+This example loads one month of minutely [Bitcoin Price Index](http://coindesk.com/price) from
+CoinDesk. First, you'll need to download
 [this CSV file](http://afiedler.github.io/tstables/bpi_2014_01.csv). This example assumes that you've
 stored the CSV file in the current directory.
 

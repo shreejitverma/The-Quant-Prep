@@ -66,7 +66,7 @@ def CIR_generate_paths(x0, kappa, theta, sigma, T, M, I, x_disc='exact'):
                 N = np.random.poisson(l / 2, I)
                 chi = np.random.chisquare(d + 2 * N, I)
                 x[t] = c * chi
-    
+
     else:
         # Euler scheme (full truncation)
         for t in xrange(1, M + 1):
@@ -121,7 +121,7 @@ def graphical_comparison(M=50, x_disc='exact'):
     ax[0].set_ylim(min(CIR_values) - 0.005, max(CIR_values) + 0.005)
     ax[0].set_ylabel('option values')
     ax[0].set_title('maturity $T=2$')
-    ax[1].bar(t_list - 0.025 / 2., MCS_values - CIR_values, 
+    ax[1].bar(t_list - 0.025 / 2., MCS_values - CIR_values,
                     width=0.025)
     plt.ylabel('difference')
     plt.xlim(min(t_list) - 0.1, max(t_list) + 0.1)

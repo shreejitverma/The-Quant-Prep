@@ -9,9 +9,9 @@ from simulation_class import simulation_class
 
 
 class square_root_diffusion(simulation_class):
-    ''' Class to generate simulated paths based on 
+    ''' Class to generate simulated paths based on
     the Cox-Ingersoll-Ross (1985) square-root diffusion model.
-    
+
     Attributes
     ==========
     name : string
@@ -20,7 +20,7 @@ class square_root_diffusion(simulation_class):
         market environment data for simulation
     corr : Boolean
         True if correlated with other model object
-        
+
     Methods
     =======
     update :

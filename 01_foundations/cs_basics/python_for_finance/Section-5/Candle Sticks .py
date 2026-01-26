@@ -2,25 +2,25 @@
 # coding: utf-8
 
 # ## Notebook Instructions
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
-# ## Plotting Candle sticks 
-# 
+# ## Plotting Candle sticks
+#
 # The following code will help you to plot an interactive graph of the S&P 500 index using candlesticks.
 
 # In[ ]:
 
 
-from iexfinance import get_historical_data 
+from iexfinance import get_historical_data
 from datetime import datetime
 
 start = datetime(2017, 1, 1) # starting date: year-month-date
 end = datetime(2018, 5, 13) # ending date: year-month-date
 
-df = get_historical_data('SPY', start=start, end=end, output_format='pandas') 
+df = get_historical_data('SPY', start=start, end=end, output_format='pandas')
 df.head()
 
 
@@ -38,15 +38,15 @@ from bokeh.plotting import figure, show, output_file
 # In[ ]:
 
 
-# Indexing 
+# Indexing
 import pandas as pd
 w = 12*60*60*1000 # half day in ms
 df.index = pd.to_datetime(df.index)
 
 
 # ## Remember:
-# 
-# 1. If the opening price is greater than the closing price then a green candle stick has to be created to represent the day. 
+#
+# 1. If the opening price is greater than the closing price then a green candle stick has to be created to represent the day.
 # 2. If the opening price is less than the closing price then a red candlestick is to be created to represent the day.
 # 1. We will use 'inc' and 'dec' as the varieble to capture this facr further in the code
 
@@ -126,7 +126,7 @@ p.vbar(df.index[dec],w,df.open[dec],df.close[dec], fill_color="#F2583E",line_col
 
 # Generates simple standalone HTML documents for Bokeh visualization
 
-output_file("candlestick.html", title="candlestick.py example")  
+output_file("candlestick.html", title="candlestick.py example")
 
 
 # In[ ]:
@@ -140,7 +140,7 @@ show(p)
 
 
 # ### In the upcoming iPython notebook:
-# 
+#
 # We will learn about Functions in Python
-# 
+#
 # Happy Learning!

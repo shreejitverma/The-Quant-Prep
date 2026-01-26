@@ -52,7 +52,7 @@ class WtMsgQue:
     def get_client(self, client_id:int) -> WtMQClient:
         if client_id not in self._clients:
             return None
-        
+
         return self._clients[client_id]
 
     def on_mq_message(self, client_id:int, topic:str, message:str, dataLen:int):
@@ -75,7 +75,7 @@ class WtMsgQue:
         id = server.id
         if id not in self._servers:
             return
-        
+
         self._wrapper.destroy_server(id)
         self._servers.pop(id)
 
@@ -91,8 +91,7 @@ class WtMsgQue:
         id = client.id
         if id not in self._clients:
             return
-        
+
         self._wrapper.destroy_client(id)
         self._clients.pop(id)
-        
-        
+

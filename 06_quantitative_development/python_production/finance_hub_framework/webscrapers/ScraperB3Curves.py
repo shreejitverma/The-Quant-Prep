@@ -44,7 +44,7 @@ class ScraperB3Curves(object):
             *ZND: Zinco
             *TODOS: All above
     """
-    
+
 
     def scrape(self, curve, start_date, end_date):
         """
@@ -74,9 +74,9 @@ class ScraperB3Curves(object):
             df_date = self._scrapecurve_single_date(curve, d)
             if not isinstance(df_date, int):
                 dfOut = pd.concat([dfOut, df_date], join='outer')
-        
+
         dfOut2 = dfOut.reset_index(drop = True)
-        
+
         return dfOut2
 
 
@@ -86,13 +86,13 @@ class ScraperB3Curves(object):
         :param date: should be in american convention mm/dd/yyyy
         :return: DataFrame
         """
-        
+
         def replace_all(text, dic):
             for i in dic:
                 text = text.replace(i, "")
             textout = text
             return textout
-        
+
         #base url
         strURL = "http://www2.bmf.com.br/pages/portal/bmfbovespa/boletim1/TxRef1.asp?Data=" + str(dtAux.day).zfill(2) + "/" + str(dtAux.month).zfill(2) +"/" + str(dtAux.year) + "&Data1=" + str(dtAux.year) + str(dtAux.month).zfill(2) + str(dtAux.day).zfill(2) + "&slcTaxa=" + curve
         #loading
@@ -101,7 +101,7 @@ class ScraperB3Curves(object):
         soup = BeautifulSoup(response.text, 'html.parser')
         #def output
         df_date = pd.DataFrame(columns = ['Refdate', 'Curve', 'Type', 'Maturity', 'Value'])
-        
+
         #split what we are looking for, table contents
         tabelas1 = soup.find_all(class_='tabelaConteudo1')
         #exit condition
@@ -109,12 +109,12 @@ class ScraperB3Curves(object):
         tabelas2 = soup.find_all(class_='tabelaConteudo2')
         if curve == "TODOS":
             title = soup.find_all(class_='tabelaTituloEspecial tabelaTitulo')
-        else: 
+        else:
             title = soup.find_all(class_='tabelaTitulo')
             title = title[1:]
-            
+
         subtitle = soup.find_all(class_='tabelaItem')
-        
+
         #load data from even lines
         tabelas1 = [el.get_text() for el in tabelas1]
         #load data from odd lines
@@ -133,20 +133,20 @@ class ScraperB3Curves(object):
 		#maket it understandable
         repls = ['\r\n','\n','(1)','(2)','(3)','(4)']
         subtitle = [replace_all(el, repls) for el in subtitle]
-        
+
         #loading vars
         iEntry = 0
         iLastEntry = 0
         dbLastMaturity = 0
         dbMaturity = 0
-        
+
         #treating data
         for el in tabelas1:
             if el.isnumeric():
                 #here we are starting a new curve maturity
                 dbLastMaturity = dbMaturity
                 dbMaturity = int(el)
-                
+
                 #should we start a new set of curves?
                 if dbLastMaturity > dbMaturity:
                     iLastEntry = iEntry
@@ -157,7 +157,7 @@ class ScraperB3Curves(object):
                         iEntry = 0
                 else:
                     iEntry = iLastEntry
-                    
+
             else:
                 #pick value
                 dbValue = float(el.strip().replace("\r\n", "").replace(",", "."))

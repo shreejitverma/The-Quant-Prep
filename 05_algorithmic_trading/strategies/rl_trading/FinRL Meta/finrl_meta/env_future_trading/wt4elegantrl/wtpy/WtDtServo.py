@@ -63,7 +63,7 @@ class WtDtServo:
         self.__cfg_commited__ = False
         self.local_api = None
         self.server_inst = None
-        self.remote_api = None    
+        self.remote_api = None
 
     def __check_config__(self):
         '''
@@ -90,11 +90,11 @@ class WtDtServo:
         if self.__config__ is not None:
             raise Exception('WtDtServo is already in local mode')
             return
-        
+
         self.remote_api = WtDtRemoteServo(url)
 
 
-    def setBasefiles(self, commfile:str="./common/commodities.json", contractfile:str="./common/contracts.json", 
+    def setBasefiles(self, commfile:str="./common/commodities.json", contractfile:str="./common/contracts.json",
                 holidayfile:str="./common/holidays.json", sessionfile:str="./common/sessions.json", hotfile:str="./common/hots.json"):
         '''
         C接口初始化
@@ -109,12 +109,12 @@ class WtDtServo:
 
     def setStorage(self, path:str = "./storage/"):
         self.__config__["data"]["store"]["path"] = path
-    
+
     def commitConfig(self):
         if self.remote_api is not None:
             raise Exception('WtDtServo is already in remote mode')
             return
-            
+
         if self.__cfg_commited__:
             return
 
@@ -127,7 +127,7 @@ class WtDtServo:
 
     def __server_impl__(self, port:int, host:str):
         self.server_inst.run(port = port, host = host)
-        
+
     def runServer(self, port:int = 8081, host="0.0.0.0", bSync:bool = True):
         if self.remote_api is not None:
             raise Exception('WtDtServo is already in remote mode')
@@ -165,7 +165,7 @@ class WtDtServo:
                     }
                 else:
                     bar_list = [curBar.to_dict  for curBar in bars]
-                    
+
                     ret = {
                         "result":0,
                         "message":"Ok",
@@ -211,7 +211,7 @@ class WtDtServo:
                         curTick.pop("ask_qty")
 
                         tick_list.append(curTick)
-                    
+
                     ret = {
                         "result":0,
                         "message":"Ok",
@@ -239,7 +239,7 @@ class WtDtServo:
         '''
         if self.remote_api is not None:
             return self.remote_api.get_bars(stdCode=stdCode, period=period, fromTime=fromTime, dataCount=dataCount, endTime=endTime)
-        
+
         self.commitConfig()
 
         if (fromTime is None and dataCount is None) or (fromTime is not None and dataCount is not None):
@@ -313,8 +313,8 @@ class WtDtRemoteServo:
             bs.diff = curBar["diff"]
             barCache.append(bs)
         return barCache
-            
-        
+
+
 
     def get_ticks(self, stdCode:str, fromTime:int = None, dataCount:int = None, endTime:int = 0) -> TickList:
         '''

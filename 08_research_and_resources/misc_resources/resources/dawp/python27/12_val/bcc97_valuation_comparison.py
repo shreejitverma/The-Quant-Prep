@@ -50,7 +50,7 @@ def compare_values(M0=50, I=50000):
             ra = -math.log(B0T) / T  # average short rate/yield
             C0 = BCC_call_value(S0, K, T, ra, kappa_v, theta_v, sigma_v,
                                 rho, v0, lamb, mu, delta)
-            
+
             results.append((T, K, C0, V0_mcs, V0_mcs - C0))
 
     print " %6s | %6s | %7s | %7s | %7s" % ('T', 'K', 'C0', 'MCS', 'DIFF')

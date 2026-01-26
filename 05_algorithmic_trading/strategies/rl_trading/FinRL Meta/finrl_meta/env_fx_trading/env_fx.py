@@ -24,8 +24,8 @@ class tgym(gym.Env):
         logic will force to Close all positions at last Close price (game over).
     7. Must have df column name: [(time_col),(asset_col), Open,Close,High,Low,day] (case sensitive)
     8. Addition indicators can add during the data process. 78 available TA indicator from Finta
-    9. Customized observation list handled in json config file. 
-    10. ProfitTaken = fraction_action * max_profit_taken + SL. 
+    9. Customized observation list handled in json config file.
+    10. ProfitTaken = fraction_action * max_profit_taken + SL.
     11. SL is pre-fixed
     12. Limit order can be configure, if limit_order == True, the action will preset buy or sell at Low or High of the bar,
         with a limit_order_expiration (n bars). It will be triggered if the price go cross. otherwise, it will be drop off
@@ -34,19 +34,19 @@ class tgym(gym.Env):
         file -- create a transaction log
         graph -- create transaction in graph (under development)
     14.
-    15. Reward, we want to incentivize profit that is sustained over long periods of time. 
-        At each step, we will set the reward to the account balance multiplied by 
-        some fraction of the number of time steps so far.The purpose of this is to delay 
-        rewarding the agent too fast in the early stages and allow it to explore 
-        sufficiently before optimizing a single strategy too deeply. 
+    15. Reward, we want to incentivize profit that is sustained over long periods of time.
+        At each step, we will set the reward to the account balance multiplied by
+        some fraction of the number of time steps so far.The purpose of this is to delay
+        rewarding the agent too fast in the early stages and allow it to explore
+        sufficiently before optimizing a single strategy too deeply.
         It will also reward agents that maintain a higher balance for longer,
         rather than those who rapidly gain money using unsustainable strategies.
-    16. Observation_space contains all of the input variables we want our agent 
-        to consider before making, or not making a trade. We want our agent to “see” 
-        the forex data points (Open price, High, Low, Close, time serial, TA) in the game window, 
-        as well a couple other data points like its account balance, current positions, 
-        and current profit.The intuition here is that for each time step, we want our agent 
-        to consider the price action leading up to the current price, as well as their 
+    16. Observation_space contains all of the input variables we want our agent
+        to consider before making, or not making a trade. We want our agent to “see”
+        the forex data points (Open price, High, Low, Close, time serial, TA) in the game window,
+        as well a couple other data points like its account balance, current positions,
+        and current profit.The intuition here is that for each time step, we want our agent
+        to consider the price action leading up to the current price, as well as their
         own portfolio’s status in order to make an informed decision for the next action.
     17. reward is forex trading unit Point, it can be configure for each trading pair
     """

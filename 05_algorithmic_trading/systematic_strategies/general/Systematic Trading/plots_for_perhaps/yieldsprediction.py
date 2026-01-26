@@ -8,7 +8,7 @@ def read_ts_csv(fname, dindex="Date"):
     dateindex=[dt.strptime(dx, "%d/%m/%y") for dx in list(data[dindex])]
     data.index=dateindex
     del(data[dindex])
-    
+
     return data
 
 
@@ -22,9 +22,9 @@ def get_div_yield(tickname, rawdata):
     div_tr = div * total_returns
     last_year_divs = pd.rolling_mean(div_tr, 12, min_periods=1)*12.0
     div_yield = last_year_divs / total_returns
-    
+
     return div_yield
-    
+
 def get_monthly_tr(tickname, rawdata):
     total_returns=rawdata[tickname+"_TR"]
     return (total_returns / total_returns.shift(1)) - 1.0
@@ -42,7 +42,7 @@ def risk_weight_with_model(SRdiff, old_weight):
 
     SRdifftable=[     -0.25, -0.2, -0.15,  -0.1, -0.05, 0.0, 0.05, 0.1,  0.15, 0.2, 0.25]
     multipliers=[.6,    .66, .77,     .85,  .94,   1.0, 1.11, 1.19, 1.3, 1.37, 1.48]
-    
+
     """
     if SRdiff>0.25:
         SRdiff=0.25
@@ -50,33 +50,33 @@ def risk_weight_with_model(SRdiff, old_weight):
         SRdiff=-0.25
     """
     multiplier=np.interp(SRdiff, SRdifftable, multipliers)
-    
+
     new_weight=old_weight*multiplier
 
     return new_weight
 
 def new_risk_weights(SRdiff_list, old_risk_weights):
-    
-    new_weights=[risk_weight_with_model(SRdiff, old_weight) 
+
+    new_weights=[risk_weight_with_model(SRdiff, old_weight)
                  for (SRdiff, old_weight) in zip(SRdiff_list, old_risk_weights)]
-    
+
     total_weight=sum(new_weights)
-    
+
     new_weights=[new_wt/total_weight for new_wt in new_weights]
-    
+
     return new_weights
-    
+
 ## 1/N
 
 def calc_ts_weights(tickers, rawdata, SRdiff_list_ts):
-    
+
     old_risk_weights=[1.0/len(tickers)]*len(tickers)
-    
+
     new_weights=[new_risk_weights(SRdiff_list, old_risk_weights) for SRdiff_list
                  in SRdiff_list_ts]
-    
+
     return pd.DataFrame(new_weights, rawdata.index, tickers)
-    
+
 def calc_ts_fixed_weights(rawdata, tickers, risk_weights):
     return pd.DataFrame([risk_weights]*len(rawdata.index), rawdata.index, columns=tickers)
 
@@ -108,23 +108,23 @@ def two_year_fix(weights):
 def relative_div_predictor(tickers, rawdata):
     all_divs=pd.concat([get_div_yield(tickname, rawdata) for tickname in tickers], axis=1, names=tickers)
     all_divs.columns=tickers
-    
+
     vol_ts=pd.DataFrame([vols]*len(rawdata.index), rawdata.index, columns=tickers)
 
     divs_SR=all_divs / vol_ts
 
     SR_avg=divs_SR.median(axis=1)
     SR_avg=expand_boring(SR_avg, tickers)
-    
+
     rel_SR=divs_SR - SR_avg
-    
+
     return rel_SR
 
 def relative_div(tickers, rawdata):
 
     rel_SR=relative_div_predictor(tickers, rawdata)
-    
-    SRdiff_list_ts=[list(rel_SR.irow(idx).values*2.5) for idx in range(len(rawdata.index))] 
+
+    SRdiff_list_ts=[list(rel_SR.irow(idx).values*2.5) for idx in range(len(rawdata.index))]
 
     risk_weights_ts=calc_ts_weights(tickers, rawdata, SRdiff_list_ts)
 
@@ -133,26 +133,26 @@ def relative_div(tickers, rawdata):
 def relative_ts_div_predictor(tickers, rawdata):
     all_divs=pd.concat([get_div_yield(tickname, rawdata) for tickname in tickers], axis=1, names=tickers)
     all_divs.columns=tickers
-   
+
     vol_ts=pd.DataFrame([vols]*len(rawdata.index), rawdata.index, columns=tickers)
 
     divs_SR=all_divs / vol_ts
 
     divs_SR_ts_avg=pd.rolling_mean(divs_SR, 600, min_periods=1)
-    
+
     norm_SR=divs_SR - divs_SR_ts_avg
 
     SR_avg=norm_SR.median(axis=1)
     SR_avg=expand_boring(SR_avg, tickers)
 
-    
+
     rel_SR=norm_SR - SR_avg
 
     return rel_SR
 
 def relative_ts_div(tickers, rawdata):
     rel_SR = relative_ts_div_predictor(tickers, rawdata)
-    SRdiff_list_ts=[list(rel_SR.irow(idx).values*2.5) for idx in range(len(rawdata.index))] 
+    SRdiff_list_ts=[list(rel_SR.irow(idx).values*2.5) for idx in range(len(rawdata.index))]
 
     risk_weights_ts=calc_ts_weights(tickers, rawdata, SRdiff_list_ts)
 
@@ -170,7 +170,7 @@ def mom_predictor(tickers, rawdata):
     SR_avg=mom_SR.median(axis=1)
     SR_avg=expand_boring(SR_avg, tickers)
 
-    
+
     rel_SR=mom_SR - SR_avg
 
     return rel_SR
@@ -178,21 +178,21 @@ def mom_predictor(tickers, rawdata):
 
 def momentum(tickers, rawdata):
     rel_SR=mom_predictor(tickers, rawdata)
-    SRdiff_list_ts=[list(rel_SR.irow(idx).values*.5) for idx in range(len(rawdata.index))] 
+    SRdiff_list_ts=[list(rel_SR.irow(idx).values*.5) for idx in range(len(rawdata.index))]
 
     risk_weights_ts=calc_ts_weights(tickers, rawdata, SRdiff_list_ts)
-    
+
     return risk_weights_ts
 
 def mom_rel(tickers, rawdata):
     a1=momentum(tickers, rawdata)
-    a2=relative_ts_div(tickers, rawdata)    
-    
+    a2=relative_ts_div(tickers, rawdata)
+
     return (a1+a2)/2.0
 
 def fixed(tickers, rawdata):
-    
-    SRdiff_list_ts=[[0.0]*len(tickers)]*len(rawdata.index) 
+
+    SRdiff_list_ts=[[0.0]*len(tickers)]*len(rawdata.index)
 
     risk_weights_ts=calc_ts_weights(tickers, rawdata, SRdiff_list_ts)
 
@@ -200,11 +200,11 @@ def fixed(tickers, rawdata):
 
 
 def portfolio_return(asset_returns, cash_weights):
-    
+
     portfolio_returns=asset_returns*cash_weights
-    
+
     portfolio_returns=portfolio_returns.sum(axis=1)
-    
+
     return portfolio_returns
 
 def port_return(tickers, rawdata, risk_wt_function):
@@ -216,12 +216,12 @@ def port_return(tickers, rawdata, risk_wt_function):
     cash_weights=~np.isnan(asset_returns)*cash_weights
 
     def normalise_weights(new_weights):
-        total_weight=sum(new_weights) 
+        total_weight=sum(new_weights)
         return [new_wt/total_weight for new_wt in new_weights]
-    
+
     cash_weights=cash_weights.apply(normalise_weights, axis=1)
     cash_weights=cash_weights.shift(1)
-    
+
     ans=portfolio_return(asset_returns, cash_weights)
     return ans
 
@@ -260,7 +260,7 @@ for case in caselist:
     alldatatoplot_pvalue['relative_div'][case]=[]
     alldatatoplot_pvalue['relative_ts_div'][case]=[]
     alldatatoplot_pvalue['momentum'][case]=[]
-    
+
     if case=="emdev":
         tickers=["EM", "DEV"] #mom 9bp
     elif case=="devregions":
@@ -295,50 +295,50 @@ for case in caselist:
     else:
         raise Exception()
 
-    
+
     def vl(emordev):
         if emordev=="EM":
             return .23
         else:
             return .15
-        
+
     vols=[vl(refdata[refdata.Country==ticker].EmorDEV.values[0]) for ticker in tickers]
-    
+
     ## Use a filter function for each comparision
     ## Returns a list of "tickers"
-    
+
     ## replace this function
-    
+
     p1=port_return(tickers, rawdata, fixed)
-    
+
     p2=port_return(tickers, rawdata, relative_div)
-    
-    
+
+
     p3=port_return(tickers, rawdata, relative_ts_div)
-    
+
     p4=port_return(tickers, rawdata, momentum)
-    
+
     p5=port_return(tickers, rawdata, mom_rel)
 
     relative_div_predictor(tickers, rawdata).plot()
     title("relative div")
     show()
-    
+
     """
     mom_predictor(tickers, rawdata).plot()
     title("mom")
     show()
     """
-    
+
     all=pd.concat([p1,p2,p3,p4, p5], axis=1)
     all.columns=[ "Fixed","Relative div", "Norm div", "mom", "mom+ndiv"]
-    
-    
+
+
     def sharpe(x):
         return (12*.5)*x.mean()/x.std()
 
     print(case)
-        
+
     print(all.apply(sharpe, axis=0))
 
     """
@@ -347,38 +347,38 @@ for case in caselist:
     show()
 
     """
-    
-    
-    
-    
+
+
+
+
     vol_ts=pd.DataFrame([vols]*len(rawdata.index), rawdata.index, columns=tickers)
     for nmonths in [1,3,6,12,24,36,60,120]:
         fwd_return=[get_forward_tr(tickname, rawdata, nmonths) for tickname in tickers]
         fwd_return=pd.concat(fwd_return, axis=1)
         fwd_return.columns=tickers
-        
+
         fwd_SR=fwd_return / (vol_ts * ((nmonths/12.0)**.5))
 
         SR_avg=fwd_SR.mean(axis=1)
         SR_avg=expand_boring(SR_avg, tickers)
 
         rel_SR=fwd_SR - SR_avg
-                
+
         stacked_SR=sum([list(rel_SR.loc[:,ticker].values) for ticker in tickers],[])
-        
-        predictors=[relative_div_predictor(tickers, rawdata.shift(1)), 
+
+        predictors=[relative_div_predictor(tickers, rawdata.shift(1)),
                     relative_ts_div_predictor(tickers, rawdata).shift(1),
                     mom_predictor(tickers, rawdata).shift(1)]
-        
+
         for (predname, predset) in zip(["relative_div","relative_ts_div","momentum"], predictors):
             stack_pred=sum([list(predset.loc[:,ticker].values) for ticker in tickers],[])
             valididx=[~np.isnan(stacked_SR[idx]) & ~np.isnan(stack_pred[idx]) for idx in range(len(stacked_SR))]
             stack_pred_valid=[stack_pred[idx] for idx in range(len(stack_pred)) if valididx[idx]]
             stack_SR_valid=[stacked_SR[idx] for idx in range(len(stacked_SR)) if valididx[idx]]
-            
+
             slope, intercept, r_value, p_value, std_err=stats.linregress(stack_pred_valid, stack_SR_valid)
-            
-            print("%s for %d months ahead, predictor %s, slope %.3f p_value %.4f R2 %.4f" % (case, 
+
+            print("%s for %d months ahead, predictor %s, slope %.3f p_value %.4f R2 %.4f" % (case,
                   nmonths, predname, slope, p_value, r_value))
 
             alldatatoplot_slope[predname][case].append(slope)
@@ -412,14 +412,14 @@ for predname in ["relative_div","relative_ts_div","momentum"]:
     legend(caselist, loc="top left")
     title(predname)
     show()
-    
+
 for predname in ["relative_div","relative_ts_div","momentum"]:
     for (colur, case) in zip(colors, caselist):
         plot([1,3,6,12,24,36,60,120], alldatatoplot_pvalue[predname][case], color=colur)
     legend(caselist, loc="top left")
     title(predname)
     show()
-    
+
 plot([1,3,6,12,24,36,60,120], alldatatoplot_slope[predname]["all"])
 plot([1,3,6,12,24,36,60,120], alldatatoplot_slope[predname]["emdev"])
 legend(["all", "emdev"])

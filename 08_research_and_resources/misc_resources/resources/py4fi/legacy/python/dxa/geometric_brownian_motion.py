@@ -8,9 +8,9 @@ from sn_random_numbers import sn_random_numbers
 from simulation_class import simulation_class
 
 class geometric_brownian_motion(simulation_class):
-    ''' Class to generate simulated paths based on 
+    ''' Class to generate simulated paths based on
     the Black-Scholes-Merton geometric Brownian motion model.
-    
+
     Attributes
     ==========
     name : string
@@ -19,7 +19,7 @@ class geometric_brownian_motion(simulation_class):
         market environment data for simulation
     corr : Boolean
         True if correlated with other model simulation object
-        
+
     Methods
     =======
     update :
@@ -44,7 +44,7 @@ class geometric_brownian_motion(simulation_class):
         if self.time_grid is None:
             self.generate_time_grid()
               # method from generic simulation class
-        # number of dates for time grid    
+        # number of dates for time grid
         M = len(self.time_grid)
         # number of paths
         I = self.paths

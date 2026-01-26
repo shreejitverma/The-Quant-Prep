@@ -2,15 +2,15 @@
 # coding: utf-8
 
 # ## <span style="color:brown">Notebook Instructions</span>
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
-# In this notebook, we will have a look at the different descripive statistical functions available in Python. 
-# 
+# In this notebook, we will have a look at the different descripive statistical functions available in Python.
+#
 # ## Notebook Contents
-# 
+#
 # ##### <span style="color:green">1. Indexing using .loc()</span>
 # ##### <span style="color:green">2. Indexing using .iloc()</span>
 # #####  <span style="color:green">3. Indexing using .ix()</span>
@@ -24,12 +24,12 @@
 
 # # Loading and Viewing Data
 
-# Before we start, let us import OHLC time series data of Infosys stock for only 'two weeks'. With a smaller data frame, understanding 'Indexing' would be more intutive. 
+# Before we start, let us import OHLC time series data of Infosys stock for only 'two weeks'. With a smaller data frame, understanding 'Indexing' would be more intutive.
 
 # In[31]:
 
 
-# Loading and Viewing data 
+# Loading and Viewing data
 
 import numpy as np
 import pandas as pd
@@ -46,17 +46,17 @@ infy # This is the entire 'Infosys two weeks' time series data frame.
 # In[33]:
 
 
-infy.shape # This data frame has 10 rows and 12 columns 
+infy.shape # This data frame has 10 rows and 12 columns
 
 
 # ## Indexing
-# 
+#
 # Indexing provides us with the axis labelling information in pandas. Further, it helps us to identify the exact position of data, which is important while analysing data. <br>
 # <br>
 # While sudying indexing, we will also focus on how to slice and dice the data according to our needs in a Data Frame.
 
 # ## Indexing using .loc()
-# 
+#
 # It is a 'label-location' based indexer for selection of data points.
 
 # In[34]:
@@ -69,7 +69,7 @@ infy.shape # This data frame has 10 rows and 12 columns
 import pandas as pd
 import numpy as np
 
-#select all rows for a specific column 
+#select all rows for a specific column
 
 print (infy.loc[:,'Close Price'])
 
@@ -99,7 +99,7 @@ print (infy.loc[:4,['Close Price','Open Price']])
 # In[37]:
 
 
-# Select the rows 2 to 7 of all the columns from the data frame 
+# Select the rows 2 to 7 of all the columns from the data frame
 
 print (infy.loc[2:7])
 
@@ -121,7 +121,7 @@ print (infy.loc[4]>1130)
 
 
 # ## Indexing using .iloc()
-# 
+#
 # Another way to perform indexing is using the 'iloc()' method.
 
 # In[40]:
@@ -175,11 +175,11 @@ print (infy.iloc[:,1:3])
 
 
 # ## Indexing using .ix()
-# 
+#
 # Another way to perform indexing is using the 'ix()' method.
-# 
+#
 # ##### <span style="color:red">ix indexer has been depricated in the latest version of pandas, but we having discussed it just for your information</span>
-# 
+#
 
 # In[45]:
 
@@ -206,7 +206,7 @@ print (infy.ix[2:5,'Close Price'])
 # In[47]:
 
 
-# You will be able to understand this by now! 
+# You will be able to understand this by now!
 
 print (infy.ix[2:5, 4:9])
 
@@ -224,13 +224,13 @@ print (infy['Close Price'])
 # In[49]:
 
 
-# Choosing multiple columns from a data Frame 
+# Choosing multiple columns from a data Frame
 
 print (infy[['Open Price', 'High Price', 'Low Price', 'Close Price']])
 
 
 # ## Missing Values
-# 
+#
 # Missing values are values that are absent from the data frame. Usually, all the data frames that you would work on, would be large and there will be a case of 'missing values' in most of them. <br>
 # <br>
 # Hence, it becomes important for you to learn how to handle these missing values.
@@ -240,7 +240,7 @@ print (infy[['Open Price', 'High Price', 'Low Price', 'Close Price']])
 
 # We have deliberately created 'missing values' in the same 'Infosys two weeks' data which you have used above.
 
-# Have a look at the entire data frame 
+# Have a look at the entire data frame
 
 import numpy as np
 import pandas as pd
@@ -251,10 +251,10 @@ infy
 
 
 # ## DataFrame.isnull()
-# 
+#
 # This method returns a Boolean result.<br>
 # <br>
-# It will return 'True' if the data point has a 'NaN' (Not a Number) value. Missing data is represented by a NaN value. 
+# It will return 'True' if the data point has a 'NaN' (Not a Number) value. Missing data is represented by a NaN value.
 
 # In[52]:
 
@@ -273,10 +273,10 @@ print (infy.isnull())
 
 
 # ## DataFrame.notnull()
-# 
+#
 # This method returns a Boolean result.<br>
 # <br>
-# It will return 'Flase' if the data point is not a 'NaN' (Not a Number) value. Missing data is represented by a NaN value. 
+# It will return 'Flase' if the data point is not a 'NaN' (Not a Number) value. Missing data is represented by a NaN value.
 
 # In[54]:
 
@@ -285,8 +285,8 @@ print (infy['Close Price'].notnull())
 
 
 # ## DataFrame.fillna()
-# 
-# The .fillna() method will fill all the 'NaN' Values of the entire data frame or of the requested columns with a scalar value of your choice. 
+#
+# The .fillna() method will fill all the 'NaN' Values of the entire data frame or of the requested columns with a scalar value of your choice.
 
 # In[55]:
 
@@ -307,7 +307,7 @@ print (infy['Close Price'].fillna(5))
 # In[57]:
 
 
-# If we want to do 'fillna()' using the 'backfill' method, then backfill will the take the value from the next row 
+# If we want to do 'fillna()' using the 'backfill' method, then backfill will the take the value from the next row
 # and fill the NaN value with that same value
 
 print (infy['Close Price'])
@@ -336,7 +336,7 @@ print (infy['Close Price'].fillna(method='bfill'))
 # In[60]:
 
 
-# If we want to do 'fillna()' using the 'ffill' method, then ffill will the take the value from the previous row.. 
+# If we want to do 'fillna()' using the 'ffill' method, then ffill will the take the value from the previous row..
 # ..and fill the NaN value with that same value
 
 print (infy['Close Price'])
@@ -355,7 +355,7 @@ print (infy['Close Price'].fillna(method='pad'))
 
 
 # ## DataFrame.dropna()
-# 
+#
 # This method will drop the entire 'row' or 'column' which has even a single 'NaN' value present, as per the request.
 
 # In[62]:
@@ -375,7 +375,7 @@ print (infy.dropna(axis=1))
 
 
 # ## Replacing values
-# 
+#
 # Replacing helps us to select any data point in the entire data frame and replace it with the value of our choice.
 
 # In[64]:
@@ -423,10 +423,10 @@ print (infy['Close Price'].replace({1147.55:3000}))
 print (infy['Close Price'].replace({NaN:1000000})) # We cannot replace NaN values, since they are not defined.
 
 
-# ## Reindexing 
-# 
-# Reindexing changes the row labels and column labels of a DataFrame.<br> 
-# <br> 
+# ## Reindexing
+#
+# Reindexing changes the row labels and column labels of a DataFrame.<br>
+# <br>
 # To reindex means to conform the data to match a given set of labels along a particular axis.
 
 # In[69]:

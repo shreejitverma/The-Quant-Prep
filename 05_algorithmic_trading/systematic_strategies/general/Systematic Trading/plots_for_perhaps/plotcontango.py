@@ -11,7 +11,7 @@ import pickle
 import pandas as pd
 
 lines = ["--","-","-."]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 
 
 import Quandl
@@ -24,7 +24,7 @@ def get_quandl(code):
     print quandldef
     data = Quandl.get(quandldef, authtoken=authtoken)
 
-    data.columns=["value"]    
+    data.columns=["value"]
     return data.iloc[:,0]
 
 
@@ -71,7 +71,7 @@ def get_adj_price(instrument_code):
 
 
 def get_interest():
-    
+
     authtoken='qWXuZcdwzwQ2GJQ88sNb'
     quandldef='FRED/INTDSRUSM193N'
     print quandldef
@@ -128,7 +128,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 

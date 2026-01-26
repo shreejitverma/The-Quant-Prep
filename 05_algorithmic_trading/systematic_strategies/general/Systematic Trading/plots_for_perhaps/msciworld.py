@@ -25,7 +25,7 @@ def calc_stats(weights, basestd, basearithmean, corrmatrix=None, cfactor=1.0):
     variance=new_std**2
     gmm=basearithmean- variance/2.0
     gsr=(gmm - riskfree) / new_std
-    
+
     return (gmm, new_std, gsr)
 
 
@@ -56,7 +56,7 @@ region_counts=dict([(region, sum(tsx_weights.Region==region)) for region in regi
 topdown_weights=[]
 for (tidx, region) in enumerate(tsx_weights.Region):
     topdown_weights.append(weight_each_region * (1.0/region_counts[region]))
-    
+
 ##cap weights
 cap_weights=list(tsx_weights.weight.values)
 cap_weights=cap_weights/sum(cap_weights)

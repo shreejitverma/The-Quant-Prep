@@ -20,7 +20,7 @@ I assume that you have **cloned the repository** on an appropriate infrastructur
 
 ```
 git clone --depth=1 https://github.com/yhilpisch/ipynb-docker
-``` 
+```
 
 ## Docker Containers
 

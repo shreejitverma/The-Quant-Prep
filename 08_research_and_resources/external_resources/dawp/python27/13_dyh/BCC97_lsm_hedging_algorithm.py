@@ -223,4 +223,4 @@ def BCC97_hedge_run(p):
     print "MSE             %7.3f" % (np.sum(errs ** 2) / len(errs))
     print "Average Error   %7.3f" % (np.sum(errs) / len(errs))
     print "Total P&L       %7.3f" % np.sum(errs)
-    return S[:, p], po, vt, errs, t     
+    return S[:, p], po, vt, errs, t

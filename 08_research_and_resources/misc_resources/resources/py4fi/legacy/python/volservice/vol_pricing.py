@@ -5,7 +5,7 @@
 # -- WSGI application for web service
 #
 from vol_pricing_service import get_option_value
-from werkzeug.wrappers import Request, Response 
+from werkzeug.wrappers import Request, Response
 from werkzeug.serving import run_simple
 
 def application(environ, start_response):

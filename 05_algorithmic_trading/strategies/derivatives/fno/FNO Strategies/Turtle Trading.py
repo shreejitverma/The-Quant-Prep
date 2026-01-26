@@ -19,14 +19,14 @@ import pandas as pd
 # Define a function to calculate the strategy performance on a stock
 def strategy_performance(stock_ticker):
     stock = pdr.get_data_yahoo(stock_ticker, start = "2009-01-01", end = "2017-11-10")
-    
+
     # Compute 55 days breakout and mean
     # 5 days high
     stock['high'] = stock.Close.shift(1).rolling(window = 55).max()
 
     # 55 days low
     stock['low'] = stock.Close.shift(1).rolling(window = 55).min()
-    
+
     # 55 days mean
     stock['avg'] = stock.Close.shift(1).rolling(window = 55).mean()
 

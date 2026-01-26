@@ -88,7 +88,7 @@ class IBApp(EWrapper, EClient):
 # =============================================================================
 class OHLCBar:
     """Represents a single OHLC (Open-High-Low-Close) candlestick bar."""
-    
+
     def __init__(self, timestamp, open_price):
         self.timestamp = timestamp                      # When bar started
         self.open = open_price                          # First price in bar
@@ -119,12 +119,12 @@ class OHLCBar:
 # which regime we're in based on:
 #   1. The TRANSITION MATRIX: How likely is it to switch between regimes?
 #   2. The EMISSION MODEL: What volatility do we expect to see in each regime?
-# 
+#
 # The model works by maintaining a probability distribution over regimes and
 # updating it each time we observe a new bar's volatility using Bayesian inference.
 # =============================================================================
 class MarkovRegime:
-    
+
     def __init__(self):
         pass
 
@@ -220,7 +220,7 @@ class LiveMarketDashboard:
         header_frame.grid(row=0, column=0, sticky='ew', pady=(0, 15))
 
         # Application title
-        title_label = tk.Label(header_frame, text="◈ LIVE REGIME SWITCHING", 
+        title_label = tk.Label(header_frame, text="◈ LIVE REGIME SWITCHING",
                               font=('JetBrains Mono', 18, 'bold'),
                               bg='#0d1117', fg='#58a6ff')
         title_label.pack(side='left')
@@ -253,7 +253,7 @@ class LiveMarketDashboard:
         self.connect_btn = ttk.Button(conn_section, text="Connect", command=self.connect_ib)
         self.connect_btn.pack(side='left', padx=(0, 5))
 
-        self.disconnect_btn = ttk.Button(conn_section, text="Disconnect", 
+        self.disconnect_btn = ttk.Button(conn_section, text="Disconnect",
                                          command=self.disconnect_ib, state='disabled',
                                          style='Accent.TButton')
         self.disconnect_btn.pack(side='left')
@@ -274,12 +274,12 @@ class LiveMarketDashboard:
         symbol_entry.pack(side='left', padx=(0, 15))
 
         # Start/Stop stream button
-        self.stream_btn = ttk.Button(data_section, text="▶ Start Stream", 
+        self.stream_btn = ttk.Button(data_section, text="▶ Start Stream",
                                      command=self.toggle_stream, state='disabled')
         self.stream_btn.pack(side='left', padx=(0, 5))
 
         # Recalibrate regime model button
-        self.recal_btn = ttk.Button(data_section, text="⟳ Recalibrate", 
+        self.recal_btn = ttk.Button(data_section, text="⟳ Recalibrate",
                                     command=self.recalibrate_model, state='disabled')
         self.recal_btn.pack(side='left', padx=(0, 15))
 
@@ -287,7 +287,7 @@ class LiveMarketDashboard:
         price_frame = ttk.Frame(data_section)
         price_frame.pack(side='right')
 
-        ttk.Label(price_frame, text="Last Price:", 
+        ttk.Label(price_frame, text="Last Price:",
                  font=('Segoe UI', 10)).pack(side='left', padx=(0, 5))
         self.price_label = tk.Label(price_frame, text="---.--",
                                    font=('JetBrains Mono', 16, 'bold'),
@@ -312,7 +312,7 @@ class LiveMarketDashboard:
         # Create stat labels: Bars count, High, Low, Current Regime, Ticks per bar
         self.stats_labels = {}
         stats = [('Bars', '0'), ('High', '--'), ('Low', '--'), ('Regime', '--'), ('Ticks/Bar', '0')]
-        
+
         for i, (name, val) in enumerate(stats):
             frame = ttk.Frame(stats_frame)
             frame.pack(side='left', padx=15)
@@ -325,11 +325,11 @@ class LiveMarketDashboard:
     def setup_chart(self):
         # Initialize matplotlib figure with dark theme
         plt.style.use('dark_background')
-        
+
         # Create figure and axis
         self.fig, self.ax = plt.subplots(figsize=(12, 6), facecolor='#0d1117')
         self.ax.set_facecolor('#161b22')
-        
+
         # Style axis spines (borders) and ticks
         self.ax.tick_params(colors='#8b949e', labelsize=9)
         self.ax.spines['bottom'].set_color('#30363d')
@@ -337,7 +337,7 @@ class LiveMarketDashboard:
         self.ax.spines['left'].set_color('#30363d')
         self.ax.spines['right'].set_color('#30363d')
         self.ax.grid(True, alpha=0.2, color='#30363d', linestyle='--')
-        
+
         # Set axis labels and initial title
         self.ax.set_xlabel('Time', color='#8b949e', fontsize=10)
         self.ax.set_ylabel('Price', color='#8b949e', fontsize=10)
@@ -401,7 +401,7 @@ class LiveMarketDashboard:
         try:
             if self.streaming:
                 self.stop_stream()
-            
+
             self.ib_app.disconnect()
             self.connected = False
             # Reset UI to disconnected state
@@ -439,7 +439,7 @@ class LiveMarketDashboard:
             self.regime_model = MarkovRegime()
 
         contract = self.create_contract(symbol)
-        
+
         # Fetch 5 minutes of historical 5-second bars for regime calibration
         self.ib_app.historical_data.clear()
         self.ib_app.hist_done.clear()
@@ -470,7 +470,7 @@ class LiveMarketDashboard:
         # Stop market data streaming and cleanup
         self.running = False
         self.streaming = False
-        
+
         # Cancel market data subscription
         try:
             self.ib_app.cancelMktData(1)
@@ -492,7 +492,7 @@ class LiveMarketDashboard:
             with self.bar_lock:
                 # Store tick in price history
                 self.price_history.append((timestamp, value))
-                
+
                 # Create new bar or update existing one
                 if self.current_bar is None:
                     self.current_bar = OHLCBar(timestamp, value)
@@ -507,17 +507,17 @@ class LiveMarketDashboard:
         # Background thread that finalizes bars when their time period expires
         while self.running:
             time.sleep(0.1)                             # Check every 100ms
-            
+
             with self.bar_lock:
                 if self.current_bar is not None and self.bar_start_time is not None:
                     elapsed = (datetime.now() - self.bar_start_time).total_seconds()
-                    
+
                     # If bar duration exceeded, finalize bar and start new one
                     if elapsed >= self.bar_duration:
                         self.ohlc_bars.append(self.current_bar)
                         # Determine regime using Markov filtering (transition probs + emission likelihood)
                         self.regime_model.get_regime(list(self.ohlc_bars))
-                        
+
                         # Initialize new bar with last close price as open
                         last_price = self.current_bar.close
                         self.current_bar = OHLCBar(datetime.now(), last_price)
@@ -535,7 +535,7 @@ class LiveMarketDashboard:
     def draw_ohlc_chart(self):
         # Render the candlestick chart with regime background colors
         self.ax.clear()
-        
+
         # Get thread-safe copy of bar data
         with self.bar_lock:
             bars = list(self.ohlc_bars)
@@ -590,9 +590,9 @@ class LiveMarketDashboard:
             )
 
             # ** Commented out for now ** will add bg_colors for regime model later
-            #bg = Rectangle((i - 0.5, y_min), 1, y_max - y_min, 
+            #bg = Rectangle((i - 0.5, y_min), 1, y_max - y_min,
             #              facecolor=self.regime_model.bg_colors[bar.regime], alpha=0.4, zorder=0)
-            
+
             self.ax.add_patch(bg)
 
             # Determine candlestick color: green=bullish (close>=open), red=bearish
@@ -600,10 +600,10 @@ class LiveMarketDashboard:
             body_bottom, body_height = min(bar.open, bar.close), max(abs(bar.close - bar.open), 0.001)
 
             # Draw candlestick body
-            rect = Rectangle((i - width/2, body_bottom), width, body_height, 
+            rect = Rectangle((i - width/2, body_bottom), width, body_height,
                             facecolor=color, edgecolor=edge_color, linewidth=1.5, alpha=0.9, zorder=2)
             self.ax.add_patch(rect)
-            
+
             # Draw lower wick (low to body bottom)
             self.ax.plot([i, i], [bar.low, body_bottom], color=edge_color, linewidth=1.5, zorder=1)
             # Draw upper wick (body top to high)
@@ -615,7 +615,7 @@ class LiveMarketDashboard:
 
         # Configure axes appearance
         self.ax.set_facecolor('#161b22')
-        
+
         # Set x-axis labels to bar timestamps
         x_labels = [bar.timestamp.strftime('%H:%M:%S') for bar in bars]
         self.ax.set_xticks(range(len(bars)))
@@ -635,7 +635,7 @@ class LiveMarketDashboard:
 
         self.ax.set_xlabel('Time', color='#8b949e', fontsize=10)
         self.ax.set_ylabel('Price', color='#8b949e', fontsize=10)
-        
+
         # Set title showing symbol, current regime, and bar count
         symbol = self.symbol_var.get().upper()
         regime_names = ['LOW', 'MED', 'HIGH']
@@ -660,19 +660,19 @@ class LiveMarketDashboard:
 
         # Update bar count
         self.stats_labels['Bars'].config(text=str(len(bars)))
-        
+
         # Update session high/low
         all_highs = [b.high for b in bars]
         all_lows = [b.low for b in bars]
         self.stats_labels['High'].config(text=f"{max(all_highs):.2f}")
         self.stats_labels['Low'].config(text=f"{min(all_lows):.2f}")
-        
+
         # Update regime display with color coding
         regime_names = ['LOW', 'MED', 'HIGH']
         regime_colors = ['#3fb950', '#d29922', '#f85149']
         curr_regime = bars[-1].regime if bars else 0
         self.stats_labels['Regime'].config(text=regime_names[curr_regime], fg=regime_colors[curr_regime])
-        
+
         # Update ticks per bar for current forming bar
         if current:
             self.stats_labels['Ticks/Bar'].config(text=str(current.tick_count))

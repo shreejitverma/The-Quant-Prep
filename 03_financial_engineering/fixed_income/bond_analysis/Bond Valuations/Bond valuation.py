@@ -34,9 +34,9 @@ class BondCalculations:
     coupon_payment_frequency: a string
         It is interest payment frequency and it takes any value: 'annually', 'semi-annually', 'quarterly', 'monthly' , 'weekly', 'daily'
         Example: coupon_payment_frequency = 'annually' (default)
-        
+
     """
-    
+
     def __init__(self,
                  principal_amount: np.float,
                  coupon_rate: np.float,
@@ -44,7 +44,7 @@ class BondCalculations:
                  bond_maturity_date: np.str,
                  discount_rate: np.float,
                  coupon_payment_frequency: np.str = 'annual'):
-        
+
         self.principal_amount = principal_amount
         self.coupon_rate = coupon_rate
         self.bond_issue_date = datetime.strptime(bond_issue_date, '%Y-%m-%d').date()
@@ -62,7 +62,7 @@ class BondCalculations:
             'daily'        : 365
         }
 
-    def present_value(self, 
+    def present_value(self,
                       row: pd.Series) -> np.float:
         """
         This is used in the method "bond_value()" to calculate the present value from future date and amount.
@@ -84,13 +84,13 @@ class BondCalculations:
         Summary
         ===========
         Computes future cash flows and the value of the bond (expected selling price).
-        
+
         Returns
         ========
         A tuple with two elements:
             a dataframe: contains all the cash flows
             a float: value of the bond
-        
+
         Calculation
         ===========
         The present value of a bond is: sum of present value (PV) of all future interest payments receivable and present value (PV) of future principal amount receivable.
@@ -99,26 +99,26 @@ class BondCalculations:
         no_of_days_btw_payments = (365 / self.payments_per_year[self.coupon_payment_frequency])
         no_of_periods = np.floor((self.bond_maturity_date - self.bond_issue_date).days / no_of_days_btw_payments) + 1
         periods = [self.bond_issue_date + timedelta(days = (i * no_of_days_btw_payments)) for i in np.arange(no_of_periods)]
-        
+
         # The maturity date will be last period in the periods list
         self.bond_maturity_date = periods[-1]
-        
+
         df = pd.DataFrame({
             'receivable_date'  : periods,
             'receivable_amount': (self.principal_amount * self.coupon_rate) / self.payments_per_year[self.coupon_payment_frequency]
         })
-    
+
         # Keeping only those dates where the coupon payment will be received
         df = df[df['receivable_date'] > self.cd]
-    
+
         # On the maturity date, along with final coupon payment, the principal amount will also be received.
         df.loc[df.index.max(), 'receivable_amount'] += self.principal_amount
-    
+
         df['present_value'] = df.apply(func = self.present_value, axis = 1)
-    
+
         return df, round(df['present_value'].sum(), 0)
-    
-    def yield_calculations(self, 
+
+    def yield_calculations(self,
                            current_bond_price: np.float) -> (np.float, np.float):
         """
         Summary
@@ -128,25 +128,25 @@ class BondCalculations:
             return earned if held the bond for a year.
         Yield to maturity
             return earned if held the bond till maturity.
-        
+
         Parameters
         ==========
         current_bond_price: a float
             The current market price of the bond.
             Example: If the current market price of the bond is 127.25, then current_bond_price = 127.25
-        
+
         Returns
         =======
         A tuple with two elements:
             a float: current_yield
             a float: approximated yield to maturity
-        
+
         Calculation
         ===========
                           r * F
         Current yield = ---------
                             P
-        
+
                              F - P
                         C + -------
                                n
@@ -174,7 +174,7 @@ def user_input_and_checks():
     This function will ask the user to enter the necessary details about the bond.
      It then checks if the entered values are valid.
      If not, it will repeatedly asks until a valid value is given.
-    
+
     Returns
     ========
     a dictionary

@@ -56,7 +56,7 @@ def error_function(p0):
     p0: list
         set of parameters for calibration
     '''
-    global i 
+    global i
     call_prices = valuation_function(p0)
     kappa_V, theta_V, sigma_V = p0
     pen = 0.
@@ -71,7 +71,7 @@ def error_function(p0):
         MSE = np.sum((call_prices - call_quotes) ** 2) / len(call_quotes) + pen
 
     if i == 0:
-            print ("{:>6s} {:>6s} {:>6s}".format('kappa', 'theta', 'sigma') 
+            print ("{:>6s} {:>6s} {:>6s}".format('kappa', 'theta', 'sigma')
                  + "{:>12s}".format('MSE'))
 
     # print intermediate results: every 100th iteration
@@ -84,7 +84,7 @@ def error_function(p0):
 
 def model_calibration(option_data, rel=False, mat='2014-07-18'):
     ''' Function for global and local model calibration.
-    
+
     option_data: pandas DataFrame object
         option quotes to be used
     relative: bool
@@ -128,7 +128,7 @@ def plot_calibration_results(opt):
 
     opt: list
         options results from calibration
-    '''   
+    '''
     call_values = valuation_function(opt)
     diffs = call_values - call_quotes
     plt.figure()

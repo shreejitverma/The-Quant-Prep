@@ -66,7 +66,7 @@ def inner_value(S, otype):
     if otype == 1:
         return np.maximum(40. - S, 0)
     elif otype == 2:
-        return np.minimum(40., np.maximum(90. - S, 0) + 
+        return np.minimum(40., np.maximum(90. - S, 0) +
                           np.maximum(S - 110., 0))
     else:
         raise ValueError('Option type not known.')

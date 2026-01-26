@@ -20,7 +20,7 @@ subject = 'Video Recorded.'
 
 #
 # Email object
-# 
+#
 msg = MIMEMultipart()
 msg['From'] = fromaddr
 msg['To'] = toaddrs

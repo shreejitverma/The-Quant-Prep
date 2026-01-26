@@ -4,7 +4,7 @@
 #
 # (c) Dr. Yves J. Hilpisch
 # The Python Quants GmbH
-# 
+#
 import os
 from time import time
 import numpy as np

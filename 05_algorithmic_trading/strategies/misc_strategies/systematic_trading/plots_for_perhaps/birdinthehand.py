@@ -8,7 +8,7 @@ cost=0.012 - 0.005
 stdev=0.302 - 0.289
 
 ## generate guassian points from benefit
-volstructure=[ 1.645*stdev, 1.28*stdev, 0.6666*stdev] 
+volstructure=[ 1.645*stdev, 1.28*stdev, 0.6666*stdev]
 midbenefit=0.302 - 0.25
 
 x=[0.0, 1.0]
@@ -33,7 +33,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 

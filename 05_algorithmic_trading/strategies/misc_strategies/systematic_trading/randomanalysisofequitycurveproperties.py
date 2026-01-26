@@ -12,7 +12,7 @@ import scipy.stats as st
 def plot_random_curves(pddf_rand_data):
 
     pddf_rand_data.cumsum().plot(colormap="Pastel2", legend=False)
-    
+
     avg_random=pddf_rand_data.cumsum().mean(axis=1)
     avg_random.plot(color="k")
 
@@ -35,7 +35,7 @@ Do the bootstrap of many random curves
 
 length_bdays=length_backtest_years*DAYS_IN_YEAR
 
-random_curves=[skew_returns_annualised(annualSR=annualSR, want_skew=want_skew, size=length_bdays) 
+random_curves=[skew_returns_annualised(annualSR=annualSR, want_skew=want_skew, size=length_bdays)
                for NotUsed in range(number_of_random_curves)]
 
 ## Turn into a dataframe

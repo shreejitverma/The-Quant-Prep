@@ -13,17 +13,17 @@ class MysqlHelper(DBHelper):
             'port':port
         }
         self.conn:pymysql.Connection = None
-    
+
     def __get_conn__(self):
         if self.conn is None:
             self.conn = pymysql.connect(**self.params)
-        
+
         try:
             self.conn.ping()
         except:
             self.conn = pymysql.connect(**self.params)
 
-        return self.conn 
+        return self.conn
 
     def initDB(self):
         paths = os.path.split(__file__)
@@ -54,7 +54,7 @@ class MysqlHelper(DBHelper):
                     sql = "REPLACE INTO %s(exchange,`code`,`date`,open,high,low,close,settle,volume,turnover,interest,diff_interest) VALUES" % (tbname)
                 else:
                     sql = "REPLACE INTO %s(exchange,`code`,`date`,`time`,open,high,low,close,volume,turnover,interest,diff_interest) VALUES" % (tbname)
-            
+
             if isDay:
                 subsql = "('%s','%s',%d,%f,%f,%f,%f," % (curBar["exchange"], curBar["code"], curBar["date"], curBar["open"], curBar["high"], curBar["low"], curBar["close"])
                 if "settle" in curBar:

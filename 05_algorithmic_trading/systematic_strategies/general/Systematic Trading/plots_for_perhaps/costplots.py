@@ -14,7 +14,7 @@ results=pd.read_csv(filename)
 results.columns=[""]+list(results.columns[1:])
 results.index=results.iloc[:,0]
 
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue", "green"])
 
 
@@ -33,7 +33,7 @@ frame.get_xaxis().set_ticks_position('none')
 frame.set_xticklabels([])
 
 
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue", "green"])
 
 plt.subplot(2,1,2)
@@ -69,7 +69,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 
@@ -84,7 +84,7 @@ results=pd.read_csv(filename)
 results.columns=[""]+list(results.columns[1:])
 results.index=results.iloc[:,0]
 
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue", "green"])
 
 
@@ -110,7 +110,7 @@ frame.set_xlim([current_xlim[0]-0.1, current_xlim[1]+.1])
 frame.set_xticklabels([])
 
 
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue", "green"])
 
 plt.subplot(2,1,2)

@@ -46,7 +46,7 @@ options = data[(np.abs(data['Strike'] - S0) / S0) < tol]
 # options = data[data['Strike'].isin([3100, 3150, 3225, 3300, 3350])]
 
 #
-# Adding Time-to-Maturity and Short Rates 
+# Adding Time-to-Maturity and Short Rates
 #
 for row, option in options.iterrows():
     T = (option['Maturity'] - option['Date']).days / 365.
@@ -82,7 +82,7 @@ def H93_error_function(p0):
         mean squared error
     '''
     global i, min_MSE
-    kappa_v, theta_v, sigma_v, rho, v0 = p0 
+    kappa_v, theta_v, sigma_v, rho, v0 = p0
     if kappa_v < 0.0 or theta_v < 0.005 or sigma_v < 0.0 or \
                 rho < -1.0 or rho > 1.0:
        return 500.0
@@ -114,7 +114,7 @@ def H93_calibration_full():
 
     # second run with local, convex minimization
     # (dig deeper where promising)
-    opt = fmin(H93_error_function, p0,  
+    opt = fmin(H93_error_function, p0,
                  xtol=0.000001, ftol=0.000001,
                  maxiter=750, maxfun=900)
     np.save('11_cal/opt_sv', np.array(opt))
@@ -122,7 +122,7 @@ def H93_calibration_full():
 
 def H93_calculate_model_values(p0):
     ''' Calculates all model values given parameter vector p0. '''
-    kappa_v, theta_v, sigma_v, rho, v0 = p0  
+    kappa_v, theta_v, sigma_v, rho, v0 = p0
     values = []
     for row, option in options.iterrows():
         model_value = H93_call_value(S0, option['Strike'], option['T'],

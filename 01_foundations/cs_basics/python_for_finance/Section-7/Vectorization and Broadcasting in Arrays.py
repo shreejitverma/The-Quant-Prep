@@ -2,19 +2,19 @@
 # coding: utf-8
 
 # ## Notebook Instructions
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
 # ## Vectorization
-# 
-# Vectorization of code helps us write complex codes in a compact way and execute them faster. 
-# 
+#
+# Vectorization of code helps us write complex codes in a compact way and execute them faster.
+#
 # It allows to **operate** or apply a function on a complex object, like an array, "at once" rather than iterating over the individual elements. Numpy supports vectorization in an efficient way.
 
 # # Notebook Contents
-# 
+#
 # ##### <span style="color:green">1) 1D or 2D Array operations with a scalar</span>
 # ##### <span style="color:green">2) 2D Array operations with another 2D array</span>
 # ##### <span style="color:green">3) 2D Array operations with a 1D array or vector</span>
@@ -22,7 +22,7 @@
 # ##### <span style="color:green">5) Just for fun</span>
 
 # ### <span style="color:green">Array operations with a scalar </span>
-# 
+#
 # Every element of the array is added/multiplied/operated with the given scalar. We will discuss:
 # - Addition
 # - Subtraction
@@ -78,15 +78,15 @@ print(V_m)
 # In[53]:
 
 
-V_e = V2 ** 2 #See the output and suggest what this operation is? 
+V_e = V2 ** 2 #See the output and suggest what this operation is?
 
 print(V_e)
 
 
 # ### <span style="color:green">2D Array operations with another 2D array</span>
-# 
-# This is only possible when the shape of the two arrays is the same. For example, a (2,2) array can be operated with another (2,2) array. 
-# 
+#
+# This is only possible when the shape of the two arrays is the same. For example, a (2,2) array can be operated with another (2,2) array.
+#
 
 # In[54]:
 
@@ -132,7 +132,7 @@ print(A - B)
 # In[58]:
 
 
-# Multiplication of 2 arrays  
+# Multiplication of 2 arrays
 
 A1 = np.array([ [1, 2, 3], [4, 5, 6] ]) # Array of shape 2,3
 A2 = np.array([ [1, 0, -1], [0, 1, -1] ]) # Array of shape 2,3
@@ -146,9 +146,9 @@ print("As you can see above, the multiplication happens element by element.")
 # You can further try out various combinations yourself, in combining scalars and arithmetic operations to get a hand on vectorization.
 
 # ### <span style="color:green">Broadcasting allows 2D Array operations with a 1D array or vector </span>
-# 
+#
 # Numpy also supports broadcasting. Broadcasting allows us to combine objects of <b>different shapes</b> within a single operation.
-# 
+#
 # But, do remember that to perform this operation one of the matix needs to be a vector with its length equal to one of the dimensions of the other matrix.
 
 # #### Try changing the shape of B and observe the results
@@ -237,7 +237,7 @@ A[:, np.newaxis] * B
 
 
 # ### <span style="color:green">Other operations  </span>
-# 
+#
 # - Comparison operators: Comparing arrays and the elements of two similar shaped arrays
 # - Logical operators: AND/OR operants
 
@@ -291,5 +291,5 @@ print(np.logical_and(a, b))
 
 
 # This is where we will end our iPython notebooks on Numpy.
-# 
+#
 # ### Happy Learning!

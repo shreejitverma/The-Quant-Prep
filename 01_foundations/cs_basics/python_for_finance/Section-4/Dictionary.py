@@ -2,18 +2,18 @@
 # coding: utf-8
 
 # ## Notebook Instructions
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
 # # Dictionaries
-# 
+#
 # A dictionary is generally used for mapping. Similarly, a dictionary in Python also has mapping between its “Key” and “Value” pairs. You can access the dictionary using ‘keys’ to get the information or ‘value’ stored within these ‘keys’.
-# 
-# 
+#
+#
 # ## Creating & Printing Dictionaries
-# 
+#
 # Dictionaries are enclosed in brace brackets and the key:value pair should be separated by a comma.
 
 # In[165]:
@@ -59,7 +59,7 @@ new_dict ['Rose'], new_dict ['Hockley']
 
 
 # ## Dictionary Manipulations
-# 
+#
 # Let us have a look at the few functions for accessing or manipulating dictionaries.
 
 # <b>len (x_dict)</b> <br>
@@ -108,7 +108,7 @@ print (new_dict)
 
 # x_dict.<b>pop (key) </b> <br>
 # It will pop a 'value' of the reqired key.
-# 
+#
 
 # In[175]:
 
@@ -123,7 +123,7 @@ print (new_dict) # Our latest dictionary
 
 
 # <b>sorted</b> (x_dict) <br>
-# 
+#
 # The dictionary will get sorted by its values.
 
 # In[177]:
@@ -144,11 +144,11 @@ sorted (new_dict) # keys sorted by values
 # In[179]:
 
 
-new_dict.clear () 
+new_dict.clear ()
 
 print (new_dict)
 
 
 # ### In the upcoming iPython Notebook
-# 
+#
 # We will see, how 'Tuples' and 'Sets' are used.

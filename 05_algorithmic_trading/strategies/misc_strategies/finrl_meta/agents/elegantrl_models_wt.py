@@ -33,7 +33,7 @@ class DRLAgent:
 
     def __init__(self, env):
         self.env = env
-        
+
     def get_model(self, model_name, model_kwargs):
         env = self.env
         agent = MODELS[model_name]()

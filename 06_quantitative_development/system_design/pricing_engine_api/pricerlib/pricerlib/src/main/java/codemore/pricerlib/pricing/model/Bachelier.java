@@ -49,7 +49,7 @@ public class Bachelier implements Model{
 
         // Calculate the price of the caplet
         double price = Math.exp(-r * T) * sigmaT * (Matlib.normCDF(D) * D + Matlib.normPDF(D));
-        
+
         return price;
     }
 

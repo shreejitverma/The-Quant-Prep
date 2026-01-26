@@ -19,10 +19,10 @@ def calc_stats(weights, basestd, basearithmean, corrmatrix=None, cfactor=1.0, co
     variance=new_std**2
     gmm=basearithmean- variance/2.0
     gsr=(gmm - riskfree) / new_std
-    
+
     cost_gmm = gmm - cost
     cost_gsr = (cost_gmm - riskfree) / new_std
-    
+
     return (gmm, new_std, gsr, cost_gmm, cost_gsr)
 
 

@@ -57,7 +57,7 @@ class DHBaostock(BaseDataHelper):
             if rs.error_code != '0':
                 print("Error occured: %s" % (rs.error_msg))
                 continue
-    
+
             while rs.next():
                 items = rs.get_row_data()
                 date = int(items[1].replace("-",""))
@@ -66,7 +66,7 @@ class DHBaostock(BaseDataHelper):
                     "date": date,
                     "factor": factor
                 })
-        
+
         print("Writing adjust factors into file %s..." % (filename))
         f = open(filename, 'w+')
         f.write(json.dumps(stocks, sort_keys=True, indent=4, ensure_ascii=False))
@@ -77,7 +77,7 @@ class DHBaostock(BaseDataHelper):
 
         if start_date is None:
             start_date = datetime(year=1990, month=1, day=1)
-        
+
         if end_date is None:
             end_date = datetime.now()
 
@@ -109,7 +109,7 @@ class DHBaostock(BaseDataHelper):
             else:
                 exchg = 'SZSE'
             count += 1
-            
+
             print("Fetching %s bars of %s(%d/%s)..." % (period, code, count, length))
             rs = bs.query_history_k_data_plus(code=code, fields=fields, start_date=start_date, end_date=end_date, frequency=freq)
             content = "date,time,open,high,low,close,volume,turnover\n"
@@ -149,7 +149,7 @@ class DHBaostock(BaseDataHelper):
             else:
                 exchg = 'SZSE'
             count += 1
-            
+
             print("Fetching adjust factors of %s(%d/%s)..." % (code, count, length))
             stocks[exchg][code[3:]] = list()
             rs = bs.query_adjust_factor(code=code, start_date="1990-01-01")
@@ -157,7 +157,7 @@ class DHBaostock(BaseDataHelper):
             if rs.error_code == '0':
                 print("Error occured: %s" % (rs.error_msg))
                 continue
-    
+
             while rs.next():
                 items = rs.get_row_data()
                 date = int(items[1].replace("-",""))
@@ -166,7 +166,7 @@ class DHBaostock(BaseDataHelper):
                     "date": date,
                     "factor": factor
                 })
-        
+
         print("Writing adjust factors into database...")
         dbHelper.writeFactors(stocks)
 
@@ -175,7 +175,7 @@ class DHBaostock(BaseDataHelper):
 
         if start_date is None:
             start_date = datetime(year=1990, month=1, day=1)
-        
+
         if end_date is None:
             end_date = datetime.now()
 
@@ -204,7 +204,7 @@ class DHBaostock(BaseDataHelper):
             else:
                 exchg = 'SZSE'
             count += 1
-            
+
             print("Fetching %s bars of %s(%d/%s)..." % (period, code, count, length))
             rs = bs.query_history_k_data_plus(code=code, fields=fields, start_date=start_date, end_date=end_date, frequency=freq)
             bars = []

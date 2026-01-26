@@ -25,7 +25,7 @@ class HftContext:
         self.__ordque_cache__ = dict()  #委托队列缓存，用法同__tick_cache__
         self.__orddtl_cache__ = dict()  #逐笔委托缓存，用法同__tick_cache__
         self.__trans_cache__ = dict()   #逐笔成交缓存，用法同__tick_cache__
-        self.__sname__ = stra.name()    
+        self.__sname__ = stra.name()
         self.__engine__ = engine          #交易环境
 
         self.is_backtest = self.__engine__.is_backtest
@@ -128,7 +128,7 @@ class HftContext:
         @period K线基础周期
         @times  周期倍数
         @newBar 最新K线
-        '''        
+        '''
         key = "%s#%s" % (code, period)
 
         if key not in self.__bar_cache__:
@@ -149,7 +149,7 @@ class HftContext:
         @message    消息内容\n
         '''
         self.__wrapper__.hft_log_text(self.__id__, message)
-        
+
     def stra_get_date(self):
         '''
         获取当前日期\n
@@ -212,7 +212,7 @@ class HftContext:
         cnt = self.__wrapper__.hft_get_ticks(self.__id__, code, count)
         if cnt == 0:
             return None
-        
+
         hftData = self.__tick_cache__[code]
         return hftData
 
@@ -226,7 +226,7 @@ class HftContext:
         cnt = self.__wrapper__.hft_get_ordque(self.__id__, code, count)
         if cnt == 0:
             return None
-        
+
         hftData = self.__ordque_cache__[code]
         return hftData
 
@@ -240,7 +240,7 @@ class HftContext:
         cnt = self.__wrapper__.hft_get_orddtl(self.__id__, code, count)
         if cnt == 0:
             return None
-        
+
         hftData = self.__orddtl_cache__[code]
         return hftData
 
@@ -254,7 +254,7 @@ class HftContext:
         cnt = self.__wrapper__.hft_get_trans(self.__id__, code, count)
         if cnt == 0:
             return None
-        
+
         hftData = self.__trans_cache__[code]
         return hftData
 
@@ -353,7 +353,7 @@ class HftContext:
         idstr = self.__wrapper__.hft_buy(self.__id__, stdCode, price, qty, userTag)
         if len(idstr) == 0:
             return list()
-            
+
         ids = idstr.split(",")
         localids = list()
         for localid in ids:
@@ -371,7 +371,7 @@ class HftContext:
         idstr = self.__wrapper__.hft_sell(self.__id__, stdCode, price, qty, userTag)
         if len(idstr) == 0:
             return list()
-            
+
         ids = idstr.split(",")
         localids = list()
         for localid in ids:

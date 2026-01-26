@@ -2,13 +2,13 @@
 # coding: utf-8
 
 # ## <span style="color:brown">Notebook Instructions</span>
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
 # # Notebook Contents
-# 
+#
 # ##### <span style="color:green">1. Why are we studying series?</span>
 # ##### <span style="color:green">2. Series datastructure</span>
 # #####  <span style="color:green">3. Methods or Functions</span>
@@ -19,13 +19,13 @@
 # In python, understanding Series is a natural predecessor to understanding dataframes.<br>
 # <br>
 # Series are indexed data frame with only one data column. It is easier to understand them first before moving to study complex data frames.
-# 
+#
 
-# # Series 
-# 
+# # Series
+#
 # A series is a one-dimensional labelled 'array-like' object. The labels are nothing but the index of the data. <br>
 # Or <br>
-# A series is a special case of a two-dimensional array, which has only 2 columns- one column is for the index and the other column is for data. 
+# A series is a special case of a two-dimensional array, which has only 2 columns- one column is for the index and the other column is for data.
 
 # In[1]:
 
@@ -42,7 +42,7 @@ print (My_Series_int)
 # In[2]:
 
 
-import pandas 
+import pandas
 
 My_Series_flt = pandas.Series ([10.1, 20.2, 30.4, 40.4, 50.5, 60.6]) # Series created using a list
 
@@ -61,19 +61,19 @@ My_Series_mixed = pd.Series ([10.1, 20, 'jay' , 40.4]) # Series created using a 
 print (My_Series_mixed)
 
 
-# The above series returns an 'object' datatype since a Python object is created at this instance. 
+# The above series returns an 'object' datatype since a Python object is created at this instance.
 
 # Let us have a look at few other ways of creating series objects.
 
 # In[4]:
 
 
-# Defining series objects with individual indices 
+# Defining series objects with individual indices
 
 countries = ['India', 'USA', 'Japan', 'Russia', 'China']
 leaders = ['Narendra Modi', 'Donald Trump', 'Shinzo Abe', 'Vladimir Putin', 'Xi Jinpin']
 
-S = pd.Series (leaders, index=countries) # Index is explicitly defined here 
+S = pd.Series (leaders, index=countries) # Index is explicitly defined here
 S
 
 
@@ -131,8 +131,8 @@ print(S3+S4)
 # It is important to understand how to deal with NaN values, because when you import actual time series data, you are bound to find some missing or corrupted data.
 
 # ## Methods or Functions
-# 
-# We will have a look at few important methods or functions that can be applied on Series. 
+#
+# We will have a look at few important methods or functions that can be applied on Series.
 
 # ##### <span style="color:black">Series.index</span>
 # It is useful to know the range of the index when the series is large.
@@ -140,7 +140,7 @@ print(S3+S4)
 # In[7]:
 
 
-My_Series = pd.Series ([10,20,30,40,50]) # Give a better example pls, maybe import data and show range for it? 
+My_Series = pd.Series ([10,20,30,40,50]) # Give a better example pls, maybe import data and show range for it?
 
 print (My_Series.index)
 
@@ -184,19 +184,19 @@ print (S3 + S4)
 print ((S3 + S4).dropna())
 
 
-# In the above output, we have produced the (S3 + S4) addition of the values and along with the series elements, and we have even dropped the 'NaN' values. 
+# In the above output, we have produced the (S3 + S4) addition of the values and along with the series elements, and we have even dropped the 'NaN' values.
 
 # ##### <span style="color:black">Series.fillna(1)</span>
-# Another way to deal with the 'NaN' values is to fill a custom value of your choice. Here, we are filling the 'NaN' values with the value '1'. 
+# Another way to deal with the 'NaN' values is to fill a custom value of your choice. Here, we are filling the 'NaN' values with the value '1'.
 
 # In[12]:
 
 
-print ((S3 + S4).fillna(1)) # The output is self-explanatory in this case 
+print ((S3 + S4).fillna(1)) # The output is self-explanatory in this case
 
 
 # ## pandas.Series.apply()
-# 
+#
 # If at all one wants to 'apply' any functions on a particular series, for eg. one wants to 'sine' of each value in the series, then it is possible in pandas.
 # <br>
 # <font color=red>Series.apply (func)</font>
@@ -208,7 +208,7 @@ print ((S3 + S4).fillna(1)) # The output is self-explanatory in this case
 
 import numpy as np #Create a new series as My_Series
 
-My_Series = pd.Series([10, 20, 30, 40, 50, 60]) 
+My_Series = pd.Series([10, 20, 30, 40, 50, 60])
 
 print (My_Series)
 

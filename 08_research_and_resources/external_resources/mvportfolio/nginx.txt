@@ -5,7 +5,7 @@ HOSTING OF PAGE
 Copy all the files to the remote location via
 
     rsync -avz _build/html root@$IP_ADDRESS:/usr/mvportfolio
-    
+
 Change the folder access rights on the server via
 
     sudo chmod -R 755 /usr/mvportfolio/

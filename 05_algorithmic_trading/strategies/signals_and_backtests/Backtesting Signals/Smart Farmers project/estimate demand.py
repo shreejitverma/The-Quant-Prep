@@ -20,18 +20,18 @@ os.chdir('H:/')
 
 #create xy for least square
 def create_xy(target_crop,grande,malay_gdp,malay_pop):
-    
+
     y=grande['price'][target_crop]
 
     x=pd.concat([malay_gdp['Value'],malay_pop['Value'],
                        grande['production'][target_crop]],axis=1)
 
     x=sm.add_constant(x)
-    
+
     #set production negative
     x[target_crop.lower()]=x[target_crop].apply(lambda x:-1*x)
     del x[target_crop]
-    
+
     return x,y
 
 
@@ -42,17 +42,17 @@ def create_xy(target_crop,grande,malay_gdp,malay_pop):
 def lin_reg(crops,grande,malay_gdp,malay_pop,viz=False):
 
     D={}
-    
+
     #run regression
     for target_crop in crops:
-        
+
         #create xy
         x,y=create_xy(target_crop,grande,malay_gdp,malay_pop)
-        
+
         m=sm.OLS(y,sm.add_constant(x)).fit()
 
         D[target_crop]=(m.rsquared,m.params.tolist())
-        
+
         #viz
         if viz:
             fig=plt.figure(figsize=(10,5))
@@ -84,7 +84,7 @@ def constrained_ols(x,y):
     #diagonal matrix
     #use -1 to achieve larger than
     inequality_coeff[::len(x.columns)+1]=-1
-    
+
     #no constraint for the constant
     inequality_coeff[0,0]=0
     inequality_value=cvxopt.matrix([0.0 for _ in range(len(x.columns))])
@@ -93,7 +93,7 @@ def constrained_ols(x,y):
 
     ans=cvxopt.solvers.qp(P=quadratic_coeff,q=linear_coeff,
                           G=inequality_coeff,h=inequality_value)['x']
-    
+
     return ans
 
 
@@ -102,9 +102,9 @@ def constrained_ols(x,y):
 
 #create params by using constrained ols
 def get_params(crops,grande,malay_gdp,malay_pop,viz=False):
-    
+
     D={}
-    
+
     for target_crop in crops:
 
         #create xy
@@ -132,7 +132,7 @@ def get_params(crops,grande,malay_gdp,malay_pop,viz=False):
             plt.show()
 
         D[target_crop]=list(ans)
-        
+
     return D
 
 
@@ -207,7 +207,7 @@ D2=get_params(crops,grande,malay_gdp,malay_pop,viz=True)
 # #replace unsuccessful result with ols
 # for i in D2:
 #     if len([j for j in D2[i] if j<0])>0:
-#         D2[i]=D1[i][1]        
+#         D2[i]=D1[i][1]
 
 
 # In[15]:
@@ -260,7 +260,7 @@ palm.columns=['Palm oil','Rubber1','Rubber2']
 
 cme=pd.read_csv('cme.csv')
 
-#extract cme palm oil futures 
+#extract cme palm oil futures
 palm_futures=cme[cme['date']==cme['date'].iloc[-1]][cme['product_id']==2457]
 
 palm_futures=palm_futures[['expiration_date','prior_settle']]

@@ -9,4 +9,3 @@ def bbands(series, period = 14, deviation = 2):
     lower_band = moving_average - (deviation * moving_std)
 
     return upper_band, moving_average, lower_band
-    

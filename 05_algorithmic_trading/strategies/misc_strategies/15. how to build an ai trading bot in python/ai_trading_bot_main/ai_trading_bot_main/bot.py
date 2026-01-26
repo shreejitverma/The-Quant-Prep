@@ -142,7 +142,7 @@ class TradingBotGUI:
         if not symbol or not levels.isdigit() or not drawdown.replace('.', '', 1).isdigit():
             messagebox.showerror("Error", "Invalid Input")
             return
-        
+
         levels = int(levels)
         drawdown = float(drawdown) / 100
         entry_price = fetch_mock_api(symbol)['price']
@@ -164,25 +164,25 @@ class TradingBotGUI:
         if not selected_items:
             messagebox.showwarning("Warning", "No Equity is Selected")
             return
-        
+
         for item in selected_items:
             symbol = self.tree.item(item)['values'][0]
             self.equities[symbol]['status'] = "On" if self.equities[symbol]['status'] == "Off" else "Off"
 
         self.save_equities()
         self.refresh_table()
-    
+
     def remove_selected_equity(self):
         selected_items = self.tree.selection()
         if not selected_items:
             messagebox.showwarning("Warning", "No Equity Selected")
             return
-        
+
         for item in selected_items:
             symbol = self.tree.item(item)['values'][0]
             if symbol in self.equities:
                 del self.equities[symbol]
-        
+
         self.save_equities()
         self.refresh_table()
 
@@ -190,7 +190,7 @@ class TradingBotGUI:
         message = self.chat_input.get()
         if not message:
             return
-        
+
         response = chatgpt_response(message)
 
         self.chat_output.config(state=tk.NORMAL)
@@ -244,13 +244,13 @@ class TradingBotGUI:
                     time.sleep(2)
                     entry_price = self.get_max_entry_price(symbol)
                 print(entry_price)
-                
+
                 level_prices = {i+1:round(entry_price*(1-data['drawdown']*(i+1)), 2) for i in range(len(data['levels']))}
                 existing_levels = self.equities.get(symbol, {}).get('levels', {})
                 for level, price in level_prices.items():
                     if level not in existing_levels and -level not in existing_levels:
                         existing_levels[level] = price
-                
+
                 self.equities[symbol]['entry_price'] = entry_price
                 self.equities[symbol]['levels'] = existing_levels
                 self.equities[symbol]['position'] = 1
@@ -267,7 +267,7 @@ class TradingBotGUI:
     def place_order(self, symbol, price, level):
         if -level in self.equities[symbol]['levels'] or '-1' in self.equities[symbol]['levels'].keys():
             return
-        
+
         try:
             api.submit_order(
                 symbol=symbol,
@@ -286,7 +286,7 @@ class TradingBotGUI:
     def refresh_table(self):
         for row in self.tree.get_children():
             self.tree.delete(row)
-        
+
         for symbol, data in self.equities.items():
             self.tree.insert("", "end", values=(
                 symbol,
@@ -300,11 +300,11 @@ class TradingBotGUI:
         while self.running:
             time.sleep(5)
             self.trade_systems()
-    
+
     def save_equities(self):
         with open(DATA_FILE, 'w') as f:
             json.dump(self.equities, f)
-    
+
     def load_equities(self):
         try:
             with open(DATA_FILE, 'r') as f:
@@ -316,14 +316,14 @@ class TradingBotGUI:
         self.running = False
         self.save_equities()
         self.root.destroy()
-    
+
 if __name__ == '__main__':
     root = tk.Tk()
     app = TradingBotGUI(root)
     root.protocol("WM_DELETE_WINDOW", app.on_close)
     root.mainloop()
 
-            
+
 
 
 

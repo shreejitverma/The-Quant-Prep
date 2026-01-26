@@ -8,7 +8,7 @@ import yfinance as yf
 try:
     import exchange_calendars as tc
 except:
-    print('Cannot import exchange_calendars.', 
+    print('Cannot import exchange_calendars.',
           'If you are using python>=3.7, please install it.')
     import trading_calendars as tc
     print('Use trading_calendars instead for yahoofinance processor..')

@@ -140,16 +140,16 @@ class Wt4RLSimpleEvaluator2(SimpleCTAEnv):
     env_num = 1
     max_step = 1500
     if_discrete = False
-    
+
     @property
     def state_dim(self):
         return self.observation_space.shape[0]
-    
+
     @property
     def action_dim(self):
         # if len(self.action_space.shape) > 0 else 10
         return self.action_space.shape[0]
-    
+
     def __init__(self):  # mode=3可以打开详细调试模式
         super().__init__(**{
             'time_range': (
@@ -158,7 +158,7 @@ class Wt4RLSimpleEvaluator2(SimpleCTAEnv):
                 # (201706301600, 201801011600),
                 # (201801011600, 201806301600),
                 # (201806301600, 201901011600),
-    
+
                 (202012311600, 202101311600),
             ),
             'slippage': 0,
@@ -253,7 +253,7 @@ if __name__ == '__main__':
         # train_and_evaluate(args)
 
         train_and_evaluate(args)
-        
+
     @command()
     def test():
         environment = Wt4RLSimpleEvaluator2()

@@ -33,7 +33,7 @@ for i in range(I):
                                   + sigma * sqrt(dt) * z)
             path.append(St)
     S.append(path)
-    
+
 # Calculating the Monte Carlo estimator
 C0 = exp(-r * T) * sum([max(path[-1] - K, 0) for path in S]) / I
 

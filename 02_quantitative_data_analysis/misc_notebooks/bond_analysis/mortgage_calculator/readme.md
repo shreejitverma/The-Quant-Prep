@@ -8,8 +8,8 @@ Code to compute monthly P and I payments for a mortgate loan.
 
 The following user-defined input variables are required:
 
-1) Sales Price 
-2) Down Payment 
+1) Sales Price
+2) Down Payment
 3) Mortgage Type
 4) Interest Rate
 

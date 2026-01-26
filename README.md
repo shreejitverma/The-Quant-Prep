@@ -12,7 +12,7 @@ Whether you are aiming for a **Quantitative Researcher** role (heavy math/stats/
 
 ---
 
-## 🗺️ The 8-Stage Learning Pathway
+##  The 8-Stage Learning Pathway
 
 | Stage | Module | Focus Area | Key Topics |
 | :--- | :--- | :--- | :--- |
@@ -27,17 +27,17 @@ Whether you are aiming for a **Quantitative Researcher** role (heavy math/stats/
 
 ---
 
-## 💎 Premium Content Highlights
+##  Premium Content Highlights
 
 We have curated specialized resources that target the specific requirements of HFT and Prop Trading interviews.
 
-### ⚡ Low Latency & Systems
+###  Low Latency & Systems
 *   **C++ Mastery:** [Modern C++ Cheatsheet](./06_quantitative_development/cpp_low_latency/modern_cpp_interview.md) covering Smart Pointers, Move Semantics, and Lock-Free programming.
 *   **HFT Architecture:** [Hardware & Network](./06_quantitative_development/system_design/architecture_notes/hft_architecture.md) deep dive into FPGA, Kernel Bypass, and Colocation.
 *   **Java Performance:** [GC-Free Coding](./06_quantitative_development/java_low_latency/README.md) for firms like IMC/Optiver.
 *   **Distributed Systems:** [Grid Computing](./06_quantitative_development/system_design/distributed_compute.md) for massive risk calculations.
 
-### 🧠 Interview Mastery
+###  Interview Mastery
 *   **The Roadmap:** [8-Week Study Plan](./07_interview_preparation/study_roadmap.md) taking you from zero to offer-ready.
 *   **Jane Street Guide:** [Probability & Betting](./07_interview_preparation/company_insights/jane_street_guide.md) strategies specifically for prop trading interviews.
 *   **Quant Math:** [Green Book Companion](./01_foundations/mathematics/probability/quant_probability_guide.md) and [Linear Algebra Essentials](./01_foundations/mathematics/linear_algebra/linear_algebra_for_quants.md).
@@ -45,7 +45,7 @@ We have curated specialized resources that target the specific requirements of H
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 Ensure you have `conda` installed.
@@ -67,7 +67,7 @@ Ensure you have `conda` installed.
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 This is a community-driven project. We welcome contributions!
 Please read our [Contributing Guidelines](./CONTRIBUTING.md) before submitting a Pull Request.

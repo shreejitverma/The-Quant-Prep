@@ -56,9 +56,9 @@ def relative_position(df, h):
 
     df_min = df.rolling(h).min()
     df_max = df.rolling(h).max()
-    
+
     df_rp = (df-df_min)/(df_max-df_min)
-    
+
     return df_rp
 
 def relative_strength_index(df, h=14):
@@ -70,7 +70,7 @@ def relative_strength_index(df, h=14):
 
     # Calculates daily price change from t to t+1
     df_delta = df.diff().dropna()
-    
+
     up, down = df_delta.copy(), df_delta.copy()
     up[up < 0] = 0
     down[down > 0] = 0

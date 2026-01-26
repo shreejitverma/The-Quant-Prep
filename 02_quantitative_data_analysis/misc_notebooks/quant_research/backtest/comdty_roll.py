@@ -46,7 +46,7 @@ class ComdtyMonthlyRoll(qt.StrategyBase):
         df_time_idx = self._data_board.get_hist_time_index()
 
         df_live_futures = futures_tools.get_futures_chain(meta_data = self.df_meta, asofdate = self.current_time.replace(tzinfo=None))     # remove tzinfo
-        # front_contract = df_live_futures.index[0] 
+        # front_contract = df_live_futures.index[0]
         rollout_contract = df_live_futures.index[self.n_rollout]
         rollin_contract = df_live_futures.index[self.n_rollout+1]
         exp_date = pytz.timezone('US/Eastern').localize(df_live_futures.Last_Trade_Date[0])       # front contract
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     df_future.index = df_future.index.tz_localize('US/Eastern')
     test_start_date = datetime(2019, 1, 1, 0, 0, 0, 0, pytz.timezone('US/Eastern'))
     test_end_date = datetime(2021, 12, 30, 0, 0, 0, 0, pytz.timezone('US/Eastern'))
-    
+
     init_capital = 50.0
     if do_optimize:          # parallel parameter search
         params_list = []

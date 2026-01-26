@@ -20,11 +20,11 @@ def cost_curve(x,y1,y2=[],
                hline_var=0,hline_color='k',hline_name='',
                colormap='tab20c',legends=[],notes=[],
                ylabel='',xlabel='',title='',fig_size=(10,5)):
-    
+
     ax=plt.figure(figsize=fig_size).add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    
+
     #set bar location on x axis
     wid=x
     cumwid=[0]
@@ -35,18 +35,18 @@ def cost_curve(x,y1,y2=[],
     cmap=plt.cm.get_cmap(colormap)
     colors=[cmap(i) for i in np.linspace(0,1,len(y1))]
     colors2=[tuple([i/1.3 for i in j if i!=1]+[1.0]) for j in colors]
-    
+
     for i in range(len(y1)):
-        plt.bar(cumwid[i],            
+        plt.bar(cumwid[i],
                 y1[i],width=wid[i],label=legends[i] if len(legends)>0 else '',
                    color=colors[i],align='edge')
-        
+
         if len(y2)>0:
-            plt.bar(cumwid[i],            
+            plt.bar(cumwid[i],
                     y2[i],width=wid[i],
                    color=colors2[i],bottom=y1[i],align='edge'
                    )
-    
+
     #plot percentile line if needed
     plt.axhline(y=hline_var, linestyle='--',
                 c=hline_color,label=hline_name)
@@ -56,14 +56,14 @@ def cost_curve(x,y1,y2=[],
     ax.xaxis.labelpad=10
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
-    
+
     #slightly expand x axis to look nicer
     plt.xlim(min(cumwid),max(cumwid)+list(wid)[-1])
     plt.xticks([min(cumwid),
                 np.mean([min(cumwid),
                          max(cumwid)+list(wid)[-1]]),
                 1.01*max(cumwid)+list(wid)[-1]])
-    
+
     #if cost curve breakdown is provided
     #add legends to the right
     if len(y2)>0:
@@ -73,12 +73,12 @@ def cost_curve(x,y1,y2=[],
         plt.text(1.1*max(cumwid)+list(wid)[-1],
              list(y1)[-1]+list(y2)[-1]/2,notes[1],
                 verticalalignment='center', horizontalalignment='center')
-    
+
     #legends of cost curve for different entities is plotted below the chart
-    plt.legend(loc=6,bbox_to_anchor=(0.12, -0.4), ncol=4)    
-    
+    plt.legend(loc=6,bbox_to_anchor=(0.12, -0.4), ncol=4)
+
     plt.show()
-    
+
 
 
 # In[3]:

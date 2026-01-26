@@ -9,7 +9,7 @@ Firstly, run the `Bond valuation.py` which will install all necessary packages, 
 
 ## 1. Bond value and cash flows
 
-#### Example  
+#### Example
 _A bond XYZ is issued on "2021-12-25" with the maturity date "2026-12-24" for a face value of £100,000 and coupon rate of 7% per annum to be paid semi-annually. If the current risk free return (discount rate) available in the market is 6.5% per annum, then what would be the value of the bond?_
 
 ```python
@@ -45,16 +45,16 @@ Since the tenure of the bond is 5 years and the interest amount paid is semi-ann
 
 The value of the bond is the sum of present values of all futures payments which came to £102,107. Since, the face value is £100,000 it will be therefore a bargain if you buy the bond.
 
-#### Points to note  
-* if bond value > market price of the bond, the bond is at a premium price  
-* if bond value < market price of the bond, the bond is at a discount price  
-* if bond value = market price of the bond, the bond is at a par value  
+#### Points to note
+* if bond value > market price of the bond, the bond is at a premium price
+* if bond value < market price of the bond, the bond is at a discount price
+* if bond value = market price of the bond, the bond is at a par value
 
 
 
-## 2. Current yield and Yield to maturity  
+## 2. Current yield and Yield to maturity
 
-#### Example  
+#### Example
 _Considering the same example above, if the market price for the bond is £110,000, then what is the current yield and yield to maturity of the bond?_
 
 Current yield is the return earned if the bond is held for one year.
@@ -70,10 +70,10 @@ print(ytm)
 0.04762
 
 ```
-The current yield is 0.06364 or 6.36% and the yield to maturity is 0.04762 or 4.76%.  
+The current yield is 0.06364 or 6.36% and the yield to maturity is 0.04762 or 4.76%.
 Even though the coupon rate is 7%, the current yield and yield to maturity are lower because the bond is available at a premium (£110,000 instead of £100,000).
 
-#### Example  
+#### Example
 _Considering the same example above, if the market price for the bond is £90,000, then what is the current yield and yield to maturity of the bond?_
 
 ```python
@@ -86,19 +86,19 @@ print(ytm)
 0.09474
 
 ```
-The current yield is 0.07778 or 7.78% and the yield to maturity is 0.09474 or 9.47%.  
+The current yield is 0.07778 or 7.78% and the yield to maturity is 0.09474 or 9.47%.
 Even though the coupon rate is 7%, the current yield and yield to maturity are higher because the bond is available at a discounted rate (£90,000 instead of £100,000).
 
-#### Points to note  
-* if bond coupon rate > YTM, the bond is at a premium price  
-* if bond coupon rate < YTM, the bond is at a discount price  
-* if bond coupon rate = YTM, the bond is at a par value  
+#### Points to note
+* if bond coupon rate > YTM, the bond is at a premium price
+* if bond coupon rate < YTM, the bond is at a discount price
+* if bond coupon rate = YTM, the bond is at a par value
 
-## Notes  
+## Notes
 * When comparing two bonds, choose the one with higher yield to maturity which indicates the higher profitability of the bond.
 * Note that all my calculations assume that the coupon payments are reinvested as they are received.
 * Also, the present value calculation relies on the start date:
-    - if the bond was already issued, then the current date will be taken into account. 
+    - if the bond was already issued, then the current date will be taken into account.
     - if the bond will be issued in the near future, then the issue date will be taken into account.
     - Therefore, if you repeat my examples above, the output will be different since your current date is different from mine.
 

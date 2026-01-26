@@ -27,8 +27,8 @@ class derivatives_position(object):
     get_info :
         prints information about the derivative position
     '''
-    
-    
+
+
     def __init__(self, name, quantity, underlying, mar_env, otype, payoff_func):
         self.name = name
         self.quantity = quantity
@@ -37,7 +37,7 @@ class derivatives_position(object):
         self.otype = otype
         self.payoff_func = payoff_func
 
-    
+
     def get_info(self):
         print "NAME"
         print self.name, '\n'

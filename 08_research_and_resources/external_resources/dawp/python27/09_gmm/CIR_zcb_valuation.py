@@ -42,7 +42,7 @@ def b2(alpha):
 
 
 def B(alpha):
-    ''' Function to value unit zero-coupon bonds in Cox-Ingersoll-Ross (1985) 
+    ''' Function to value unit zero-coupon bonds in Cox-Ingersoll-Ross (1985)
     model.
 
     Parameters
@@ -62,7 +62,7 @@ def B(alpha):
     =======
     zcb_value: float
         zero-coupon bond present value
-    ''' 
+    '''
     b_1 = b1(alpha)
     b_2 = b2(alpha)
     kappa_r, theta_r, sigma_r, r0, T = alpha

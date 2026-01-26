@@ -21,7 +21,7 @@
 #i recommend u to read a tutorial from fidelity
 #who else can explain the concept of options than one of the largest mutual funds
 # https://www.fidelity.com/learning-center/investment-products/options/options-strategy-guide/long-straddle
-#in simple words, options are a financial derivative 
+#in simple words, options are a financial derivative
 #that enables u to trade underlying asset at certain price in the future
 #and options straddle enable you to profit from a certain level of volatility
 #in this script, we are only gonna talk about long straddle
@@ -81,14 +81,14 @@ import re
 #this is a fundamental requirement of options straddle
 
 def find_strike_price(df):
-    
+
     temp=[re.search('\d{4}',i).group() for i in df.columns]
     target=[]
 
     for i in set(temp):
         if temp.count(i)>1:
             target.append(i)
-            
+
     return target
 
 
@@ -99,9 +99,9 @@ def find_strike_price(df):
 #merging option price information with spot price
 
 def straddle(options,spot,contractsize,strikeprice):
-        
-    option=options[[i for i in options.columns if strikeprice in i]] 
-    
+
+    option=options[[i for i in options.columns if strikeprice in i]]
+
     df=pd.merge(spot,option,left_index=True,right_index=True)
 
     temp=[]
@@ -116,12 +116,12 @@ def straddle(options,spot,contractsize,strikeprice):
             temp.append(i)
 
     df.columns=temp
-    
+
     #we multiply contract size with spot price here
     #it makes our life a lot easier later with visualization
 
     df['spot']=df['spot'].apply(lambda x:x*contractsize)
-    
+
     return df
 
 
@@ -132,11 +132,11 @@ def straddle(options,spot,contractsize,strikeprice):
 #just find the option pair at the closest price we can
 
 def signal_generation(df,threshold):
-    
+
     df['signals']=np.where(
         np.abs(
             df['call']-df['put'])<threshold,
-        1,0)  
+        1,0)
 
     return df
 
@@ -145,32 +145,32 @@ def signal_generation(df,threshold):
 
 #ploting the payoff diagram
 def plot(df,strikeprice,contractsize):
-    
+
     #finding trading signal
     #if no signal is found
     #we declare no suitable entry point for options straddle
-    
+
     ind=df[df['signals']!=0].index
 
     if ind.empty:
         print('Strike Price at',strikeprice,'\nNo trades available.\n')
-        return 
-    
+        return
+
     #calculate how much profit we can gain outta this
-    
+
     profit=np.abs(
         df['spot'].iloc[-1]-int(strikeprice)*contractsize
     )-df['call'][ind[0]]-df['put'][ind[0]]
 
     y=[]
-    
+
     #we use these two variables to plot how much we can profit at different spot price
-    
+
     begin=round(int(strikeprice)*contractsize-5*(df['call'][ind[0]]+df['put'][ind[0]]),0)
     end=round(int(strikeprice)*contractsize+5*(df['call'][ind[0]]+df['put'][ind[0]]),0)+1
-    
+
     x=list(np.arange(int(begin),int(end)))
-    
+
     #as u can see from the pic
     # https://github.com/je-suis-tm/quant-trading/blob/master/preview/options%20straddle%20payoff%20diagram.png
     #we only make money (green color) if the spot price is outside of a range
@@ -186,33 +186,33 @@ def plot(df,strikeprice,contractsize):
             group1=x.index(j)
         if temp>0 and group1>0 and group2<0:
             group2=x.index(j)
-        
+
 
     ax=plt.figure(figsize=(10,5)).add_subplot(111)
     ax.spines['bottom'].set_position(('data',0))
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
-    
+
     #pnl in different colors, red is loss, green is profit
-    
+
     plt.plot(x[:group1],y[:group1],c='#57bc90',lw=5)
     plt.plot(x[group2:],y[group2:],c='#57bc90',lw=5)
     plt.plot(x[group1:group2],y[group1:group2],c='#ec576b',lw=5)
-    
+
     #ploting strike price
-    
+
     plt.plot([int(strikeprice)*contractsize,
               int(strikeprice)*contractsize],
               [0,-(df['call'][ind[0]]+df['put'][ind[0]])],
               linestyle=':',lw=3,c='#ec576b',alpha=0.5)
-    
+
     #ploting spot price
-    
+
     plt.axvline(df['spot'].iloc[-1],lw=5,
                 linestyle='--',c='#e5e338',alpha=0.5)
-    
+
     #adding annotations
-    
+
     plt.annotate('Strike Price',
                  xy=(int(strikeprice)*contractsize,
                      0),
@@ -222,7 +222,7 @@ def plot(df,strikeprice,contractsize):
                                  facecolor='#c5c1c0',),
                  va='center',ha='center'
                  )
- 
+
     plt.annotate('Lower Breakeven Point',
                  xy=(int(strikeprice)*contractsize-(df['call'][ind[0]]+df['put'][ind[0]]),
                      0),
@@ -232,7 +232,7 @@ def plot(df,strikeprice,contractsize):
                                  facecolor='#c5c1c0'),
                  va='center',ha='center'
                  )
- 
+
     plt.annotate('Upper Breakeven Point',
                  xy=(int(strikeprice)*contractsize+(df['call'][ind[0]]+df['put'][ind[0]]),
                      0),
@@ -252,11 +252,11 @@ def plot(df,strikeprice,contractsize):
                                  facecolor='#c5c1c0'),
                  va='center',ha='left'
                  )
-    
+
     #limit x ticks to 3 for a tidy look
-    
+
     plt.locator_params(axis='x',nbins=3)
-    
+
     plt.title(f'Long Straddle Options Strategy\nP&L {round(profit,2)}')
     plt.ylabel('Profit & Loss')
     plt.xlabel('Price',labelpad=50)
@@ -281,28 +281,28 @@ threshold=2
 # In[7]:
 
 def main():
-    
+
     data=pd.ExcelFile('stoxx50.xlsx')
-    
+
     aug=data.parse('aug')
     aug.set_index('Dates',inplace=True)
     aug.index=pd.to_datetime(aug.index)
-    
+
     spot=data.parse('spot')
     spot.set_index('Dates',inplace=True)
     spot.index=pd.to_datetime(spot.index)
-    
+
     target=find_strike_price(aug)
-    
+
     #we iterate through all the available option pairs
     #to find the optimal strike price to maximize our profit
-    
+
     for strikeprice in target:
-      
+
         df=straddle(aug,spot,contractsize,strikeprice)
-        
+
         signal=signal_generation(df,threshold)
-        
+
         plot(signal,strikeprice,contractsize)
 
 

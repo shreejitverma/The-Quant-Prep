@@ -11,7 +11,7 @@ from twisted.test.test_amp import THING_I_DONT_UNDERSTAND
 
 
 lines = ["-","--","-."]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue", "green"])
 
 def read_ts_csv(fname, dindex="Date"):
@@ -19,7 +19,7 @@ def read_ts_csv(fname, dindex="Date"):
     dateindex=[dt.strptime(dx, "%d/%m/%y") for dx in list(data[dindex])]
     data.index=dateindex
     del(data[dindex])
-    
+
     return data
 
 def calc_asset_returns(rawdata, tickers):
@@ -42,7 +42,7 @@ def basic_opt(std,corr,mus):
     number_assets=mus.shape[0]
     sigma=sigma_from_corr(std, corr)
     start_weights=[1.0/number_assets]*number_assets
-    
+
     ## Constraints - positive weights, adding to 1.0
     bounds=[(0.0,1.0)]*number_assets
     cdict=[{'type':'eq', 'fun':addem}]

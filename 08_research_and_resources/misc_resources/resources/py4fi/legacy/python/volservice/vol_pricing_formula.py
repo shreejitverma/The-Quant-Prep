@@ -38,7 +38,7 @@ def calculate_option_value(V0, kappa, theta, sigma, zeta, T, r, K):
         net present value of volatility call option
     '''
     D = np.exp(-r * T)  # discount factor
-    
+
     # variables
     alpha = kappa * theta
     beta = kappa + zeta
@@ -48,7 +48,7 @@ def calculate_option_value(V0, kappa, theta, sigma, zeta, T, r, K):
     cx1 = 1 - ncx2.cdf(gamma * K, nu + 4, lamb)
     cx2 = 1 - ncx2.cdf(gamma * K, nu + 2, lamb)
     cx3 = 1 - ncx2.cdf(gamma * K, nu, lamb)
-    
+
     # formula for European call price
     value = (D * np.exp(-beta * T) * V0 * cx1
       + D * (alpha / beta) * (1 - np.exp(-beta * T))

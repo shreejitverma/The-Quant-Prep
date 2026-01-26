@@ -2,15 +2,15 @@
 # coding: utf-8
 
 # ## Notebook Instructions
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
 # # Lists
-# 
+#
 # Lists in Python, are used to store heterogeneous types of data. Lists are mutable i.e. one can change the content within a list, without changing its identity.
-# 
+#
 # ## Creating Lists
 # List are enclosed by square brackets and elements should be separated by comma.
 
@@ -57,7 +57,7 @@ type (new_list)
 # In[64]:
 
 
-my_list = [10,20,30,40] # This is the 'original' list which you have cerated 
+my_list = [10,20,30,40] # This is the 'original' list which you have cerated
 
 print (my_list)
 
@@ -217,12 +217,12 @@ print (new_list)
 
 
 # ### In the upcoming iPython Notebook
-# 
+#
 # We will see, how Lists are used as:
-# 
+#
 # 1. 'Stacks'
 # 2. 'Queues'
 # 3. 'Graphs'
 # 4. 'Trees'
-# 
+#
 # So, Stay Tuned!

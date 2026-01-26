@@ -11,7 +11,7 @@ from .base import (
     trend_strategy,
     mmi_filter, ang_filter,
     BestStrategy, InspectStrategy, CheckIndicators
-) 
+)
 
 
 RANGE_WINDOW = np.arange(30, 300, 10)
@@ -353,5 +353,5 @@ def returns_timeline(
         show_fig=False
     )
     daily_returns = ins.portfolio.daily_returns()
-    acc_returns = get_acc_returns(daily_returns) 
+    acc_returns = get_acc_returns(daily_returns)
     return acc_returns

@@ -37,7 +37,7 @@ def stdCodeToRQ(stdCode:str):
         else:
             return items[1] + "88"
 
-    
+
 
 
 class DHRqData(BaseDataHelper):
@@ -60,7 +60,7 @@ class DHRqData(BaseDataHelper):
             "SSE":{},
             "SZSE":{}
         }
-        
+
         #个股列表
         if hasStock:
             print("Fetching stock list...")
@@ -73,11 +73,11 @@ class DHRqData(BaseDataHelper):
                 else:
                     exchg = "SZSE"
                 sInfo = dict()
-                sInfo["exchg"] = exchg                    
+                sInfo["exchg"] = exchg
                 sInfo["code"] = rawcode
                 sInfo["name"] = row["symbol"]
-                sInfo["product"] = "STK"            
-                
+                sInfo["product"] = "STK"
+
                 stocks[sInfo["exchg"]][rawcode] = sInfo
 
         if hasIndex:
@@ -92,11 +92,11 @@ class DHRqData(BaseDataHelper):
                 else:
                     exchg = "SZSE"
                 sInfo = dict()
-                sInfo["exchg"] = exchg                    
+                sInfo["exchg"] = exchg
                 sInfo["code"] = rawcode
                 sInfo["name"] = row["symbol"]
-                sInfo["product"] = "IDX"            
-                
+                sInfo["product"] = "IDX"
+
                 stocks[sInfo["exchg"]][rawcode] = sInfo
 
         print("Writing code list into file %s..." % (filename))
@@ -121,7 +121,7 @@ class DHRqData(BaseDataHelper):
             stocks[exchg][code] = list()
             print("Fetching adjust factors of %s(%d/%s)..." % (code, count, length))
             df_factors = rq.get_ex_factor(order_book_ids=rq_code, start_date="1990-01-01")
-    
+
             for idx, row in df_factors.iterrows():
                 date = row['announcement_date'].to_pydatetime()
                 date = date + timedelta(days=1)
@@ -130,7 +130,7 @@ class DHRqData(BaseDataHelper):
                     "date": int(date.strftime("%Y%m%d")),
                     "factor": factor
                 })
-        
+
         print("Writing adjust factors into file %s..." % (filename))
         f = open(filename, 'w+')
         f.write(json.dumps(stocks, sort_keys=True, indent=4, ensure_ascii=False))
@@ -139,7 +139,7 @@ class DHRqData(BaseDataHelper):
     def dmpBarsToFile(self, folder:str, codes:list, start_date:datetime=None, end_date:datetime=None, period:str="day"):
         if start_date is None:
             start_date = datetime(year=1990, month=1, day=1)
-        
+
         if end_date is None:
             end_date = datetime.now()
 
@@ -158,13 +158,13 @@ class DHRqData(BaseDataHelper):
             filetag = 'm1'
         else:
             raise Exception("Unrecognized period")
-        
+
         count = 0
         length = len(codes)
         for stdCode in codes:
             count += 1
             rq_code = stdCodeToRQ(stdCode)
-            
+
             print("Fetching %s bars of %s(%d/%s)..." % (period, stdCode, count, length))
             df_bars = rq.get_price(order_book_ids = rq_code,start_date=start_date, end_date=end_date,frequency=freq,adjust_type='none',expect_df=True)
             content = "date,time,open,high,low,close,volume,turnover,hold\n"
@@ -217,7 +217,7 @@ class DHRqData(BaseDataHelper):
             stocks[exchg][code] = list()
             print("Fetching adjust factors of %s(%d/%s)..." % (code, count, length))
             df_factors = rq.get_ex_factor(order_book_ids=rq_code, start_date="1990-01-01")
-    
+
             for idx, row in df_factors.iterrows():
                 date = row['announcement_date'].to_pydatetime()
                 date = date + timedelta(days=1)
@@ -226,14 +226,14 @@ class DHRqData(BaseDataHelper):
                     "date": int(date.strftime("%Y%m%d")),
                     "factor": factor
                 })
-        
+
         print("Writing adjust factors into database...")
         dbHelper.writeFactors(stocks)
 
     def dmpBarsToDB(self, dbHelper:DBHelper, codes:list, start_date:datetime=None, end_date:datetime=None, period:str="day"):
         if start_date is None:
             start_date = datetime(year=1990, month=1, day=1)
-        
+
         if end_date is None:
             end_date = datetime.now()
 
@@ -248,7 +248,7 @@ class DHRqData(BaseDataHelper):
             freq = '1m'
         else:
             raise Exception("Unrecognized period")
-        
+
         count = 0
         length = len(codes)
         for stdCode in codes:
@@ -257,7 +257,7 @@ class DHRqData(BaseDataHelper):
             code = stdCode[(len(exchg)+1):]
             rq_code = stdCodeToRQ(stdCode)
             count += 1
-            
+
             print("Fetching %s bars of %s(%d/%s)..." % (period, stdCode, count, length))
             df_bars = rq.get_price(order_book_ids = rq_code,start_date=start_date, end_date=end_date,frequency=freq,adjust_type='none',expect_df=True)
             bars = list()

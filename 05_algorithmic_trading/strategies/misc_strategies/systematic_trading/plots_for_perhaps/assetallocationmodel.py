@@ -12,7 +12,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 
@@ -51,35 +51,35 @@ def ts_calc_cash_weights(risk_weights_ts):
     return risk_weights_ts.apply(calc_cash_weights, 1)
 
 def risk_weights_with_model(SRdiffs, risk_weights, SRdifftable, multipliers, absolute=False):
-    
+
     multiplier_equity=np.interp(SRdiffs[0], SRdifftable, multipliers)
     multipliers_bonds=np.interp(-SRdiffs[1], SRdifftable, multipliers)
-    
+
     new_risk_weights=[risk_weights[0]*multiplier_equity, risk_weights[1]*multipliers_bonds]
-    
+
     if sum(new_risk_weights)>1.0 or not absolute:
         ## Normalise...
         new_risk_weights=[wt/sum(new_risk_weights) for wt in new_risk_weights]
-    
+
     return new_risk_weights
 
 def yield_forecast(data, vols):
     eqyield = data.SP_Yield/100.0
     bondyield = data.Bond_Yield/100.0
-    
+
     eqreturn = eqyield / vols[0]
     bondreturn = bondyield / vols[1]
 
     avgreturn = pd.concat([eqreturn, bondreturn], axis=1).mean(axis=1)
-    
+
     diff = eqreturn - avgreturn
-    
+
     return diff*3.0
 
 def yield_forecast_ts(data, vols):
     eqyield = data.SP_Yield
     bondyield = data.Bond_Yield
-    
+
     eqreturn = eqyield / vols[0]
     bondreturn = bondyield / vols[1]
 
@@ -88,44 +88,44 @@ def yield_forecast_ts(data, vols):
 
 
     diff = eqreturn - bondreturn
-    
+
     return diff*3.0
 
 
 
 def trailing_forecast( data, vols):
-    
+
     eqreturn=(data.SP_TR_Index / data.SP_TR_Index.shift(12))-1
     bondreturn=(data.Bond_TR_Index / data.Bond_TR_Index.shift(12))-1
-    
+
     eqreturn=eqreturn / vols[0]
     bondreturn=bondreturn / vols[1]
-    
-        
+
+
     return [eqreturn*.25, bondreturn*.25]
 
 def calc_ts_new_risk_weights(data, vols, risk_weights, SRdifftable, multipliers, forecast_func, absolute=False):
-    
+
     forecasts=forecast_func( data, vols)
     forecasts=pd.concat(forecasts,axis=1)
-    new_weights=[risk_weights_with_model(list(forecasts.irow(frow).values), risk_weights, SRdifftable, multipliers, absolute) for 
+    new_weights=[risk_weights_with_model(list(forecasts.irow(frow).values), risk_weights, SRdifftable, multipliers, absolute) for
                  frow in range(len(forecasts))]
-    
+
     return pd.DataFrame(new_weights, data.Date, columns=["Equity", "Bond"])
 
 def calc_ts_fixed_weights(data, risk_weights):
     return pd.DataFrame([risk_weights]*len(data.index), data.Date, columns=["Equity", "Bond"])
-    
+
 def portfolio_return(data, cash_weights):
-    
+
     asset_returns=data[["SP_TR", "Bond_TR"]]
     asset_returns.columns=["Equity", "Bond"]
     asset_returns.index=data.Date
-    
+
     portfolio_returns=asset_returns*cash_weights.shift(1)
-    
+
     portfolio_returns=portfolio_returns.sum(axis=1)
-    
+
     return portfolio_returns
 
 def two_year_fix(weights):
@@ -282,24 +282,24 @@ for nmonths in [1,3,6,12,24,36,60,120]:
     fwd_return=[get_forward_tr(tickname, rawdata, nmonths) for tickname in tickers]
     fwd_return=pd.concat(fwd_return, axis=1)
     fwd_return.columns=tickers
-    
+
     fwd_SR=fwd_return / (vol_ts * ((nmonths/12.0)**.5))
     rel_SR=fwd_SR.Stocks - fwd_SR.Bonds
-    
+
     stacked_SR=rel_SR.values
-    
-    predictors=[yield_forecast(data, vols).shift(1), 
+
+    predictors=[yield_forecast(data, vols).shift(1),
                 yield_forecast_ts(data, vols).shift(1),
                 trailing_forecast(data, vols).shift(1)]
-    
+
     for (predname, predset) in zip(["relative_div","relative_ts_div","momentum"], predictors):
         stack_pred=list(predset.values)
         valididx=[~np.isnan(stacked_SR[idx]) & ~np.isnan(stack_pred[idx]) for idx in range(len(stacked_SR))]
         stack_pred_valid=[stack_pred[idx] for idx in range(len(stack_pred)) if valididx[idx]]
         stack_SR_valid=[stacked_SR[idx] for idx in range(len(stacked_SR)) if valididx[idx]]
-        
+
         slope, intercept, r_value, p_value, std_err=stats.linregress(stack_pred_valid, stack_SR_valid)
-        
+
         print("%d months ahead, predictor %s, slope %.3f p_value %.4f R2 %.4f" % (
               nmonths, predname, slope, p_value, r_value))
 

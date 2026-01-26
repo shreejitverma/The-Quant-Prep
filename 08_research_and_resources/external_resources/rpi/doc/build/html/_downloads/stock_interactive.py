@@ -29,7 +29,7 @@ def df_to_plotly(df):
     if df.index.__class__.__name__=="DatetimeIndex":
         x = df.index.format()
     else:
-        x = df.index.values 
+        x = df.index.values
     lines = {}
     for key in df:
         lines[key] = {}

@@ -6,14 +6,14 @@ from get_year_deltas import *
 
 class constant_short_rate(object):
     ''' Class for constant short rate discounting.
-    
+
     Attributes
     ==========
     name : string
         name of the object
     short_rate : float (positive)
         constant rate for discounting
-    
+
     Methods
     =======
     get_discount_factors :

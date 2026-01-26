@@ -111,7 +111,7 @@ for vr in var_red:  # variance reduction techniques
     for steps in steps_list:  # number of time steps
         for paths in paths_list:  # number of paths
             t1 = time.time()
-            d1 = datetime.now() 
+            d1 = datetime.now()
             abs_errors = []
             rel_errors = []
             l = 0.0
@@ -150,9 +150,9 @@ for vr in var_red:  # variance reduction techniques
                         ## Output
                         br = "    ----------------------------------"
                         print "\n  Results for Strike %4.2f\n" % K
-                        print ("    European Op. Value MCS    %8.4f" %  
+                        print ("    European Op. Value MCS    %8.4f" %
                                     call_estimate)
-                        print ("    European Op. Value Closed %8.4f" % 
+                        print ("    European Op. Value Closed %8.4f" %
                                     call_value)
                         print "    Valuation Error (abs)     %8.4f" % diff
                         print "    Valuation Error (rel)     %8.4f" % rdiff

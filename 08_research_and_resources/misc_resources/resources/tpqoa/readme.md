@@ -19,7 +19,7 @@ Installing from source via `Git` and `Github`:
     git clone https://github.com/yhilpisch/tpqoa
     cd tpqoa
     python setup.py install
-    
+
 Using `pip` in combination with `Github`:
 
     pip install git+git://github.com/yhilpisch/tpqoa
@@ -85,10 +85,10 @@ help(oanda.get_history)
 ```
 
     Help on method get_history in module tpqoa.tpqoa:
-    
+
     get_history(instrument, start, end, granularity, price, localize=True) method of tpqoa.tpqoa.tpqoa instance
         Retrieves historical data for instrument.
-        
+
         Parameters
         ==========
         instrument: string
@@ -99,12 +99,12 @@ help(oanda.get_history)
             a string like 'S5', 'M1' or 'D'
         price: string
             one of 'A' (ask), 'B' (bid) or 'M' (middle)
-        
+
         Returns
         =======
         data: pd.DataFrame
             pandas DataFrame object with data
-    
+
 
 
 
@@ -129,14 +129,14 @@ data.info()
     <class 'pandas.core.frame.DataFrame'>
     DatetimeIndex: 261 entries, 2022-06-14 21:00:00 to 2023-06-14 21:00:00
     Data columns (total 6 columns):
-     #   Column    Non-Null Count  Dtype  
-    ---  ------    --------------  -----  
+     #   Column    Non-Null Count  Dtype
+    ---  ------    --------------  -----
      0   o         261 non-null    float64
      1   h         261 non-null    float64
      2   l         261 non-null    float64
      3   c         261 non-null    float64
-     4   volume    261 non-null    int64  
-     5   complete  261 non-null    bool   
+     4   volume    261 non-null    int64
+     5   complete  261 non-null    bool
     dtypes: bool(1), float64(4), int64(1)
     memory usage: 12.5 KB
 
@@ -147,7 +147,7 @@ print(data.head())
 ```
 
                                o        h        l        c  volume  complete
-    time                                                                     
+    time
     2022-06-14 21:00:00  1.04114  1.05078  1.03593  1.04466  204826      True
     2022-06-15 21:00:00  1.04444  1.06014  1.03809  1.05524  183417      True
     2022-06-16 21:00:00  1.05496  1.05612  1.04445  1.04938  156233      True
@@ -204,10 +204,10 @@ help(oanda.create_order)
 ```
 
     Help on method create_order in module tpqoa.tpqoa:
-    
+
     create_order(instrument, units, price=None, sl_distance=None, tsl_distance=None, tp_price=None, comment=None, touch=False, suppress=False, ret=False) method of tpqoa.tpqoa.tpqoa instance
         Places order with Oanda.
-        
+
         Parameters
         ==========
         instrument: string
@@ -232,7 +232,7 @@ help(oanda.create_order)
             whether to suppress print out
         ret: boolean
             whether to return the order object
-    
+
 
 
 
@@ -242,10 +242,10 @@ help(oanda.create_order)
 oanda.create_order('EUR_USD', units=100, sl_distance=0.002)
 ```
 
-    
-    
-     {'id': '3608', 'time': '2023-06-27T06:58:16.307275954Z', 'userID': 13834683, 'accountID': '101-004-13834683-001', 'batchID': '3607', 'requestID': '61122547747050135', 'type': 'ORDER_FILL', 'orderID': '3607', 'instrument': 'EUR_USD', 'units': '100.0', 'gainQuoteHomeConversionFactor': '0.910326029089', 'lossQuoteHomeConversionFactor': '0.919475034407', 'price': 1.09309, 'fullVWAP': 1.09309, 'fullPrice': {'type': 'PRICE', 'bids': [{'price': 1.09294, 'liquidity': '10000000'}], 'asks': [{'price': 1.09309, 'liquidity': '10000000'}], 'closeoutBid': 1.09294, 'closeoutAsk': 1.09309}, 'reason': 'MARKET_ORDER', 'pl': '0.0', 'financing': '0.0', 'commission': '0.0', 'guaranteedExecutionFee': '0.0', 'accountBalance': '101295.189', 'tradeOpened': {'tradeID': '3608', 'units': '100.0', 'price': 1.09309, 'guaranteedExecutionFee': '0.0', 'halfSpreadCost': '0.0069', 'initialMarginRequired': '3.33'}, 'halfSpreadCost': '0.0069'} 
-    
+
+
+     {'id': '3608', 'time': '2023-06-27T06:58:16.307275954Z', 'userID': 13834683, 'accountID': '101-004-13834683-001', 'batchID': '3607', 'requestID': '61122547747050135', 'type': 'ORDER_FILL', 'orderID': '3607', 'instrument': 'EUR_USD', 'units': '100.0', 'gainQuoteHomeConversionFactor': '0.910326029089', 'lossQuoteHomeConversionFactor': '0.919475034407', 'price': 1.09309, 'fullVWAP': 1.09309, 'fullPrice': {'type': 'PRICE', 'bids': [{'price': 1.09294, 'liquidity': '10000000'}], 'asks': [{'price': 1.09309, 'liquidity': '10000000'}], 'closeoutBid': 1.09294, 'closeoutAsk': 1.09309}, 'reason': 'MARKET_ORDER', 'pl': '0.0', 'financing': '0.0', 'commission': '0.0', 'guaranteedExecutionFee': '0.0', 'accountBalance': '101295.189', 'tradeOpened': {'tradeID': '3608', 'units': '100.0', 'price': 1.09309, 'guaranteedExecutionFee': '0.0', 'halfSpreadCost': '0.0069', 'initialMarginRequired': '3.33'}, 'halfSpreadCost': '0.0069'}
+
 
 
 
@@ -254,23 +254,23 @@ oanda.create_order('EUR_USD', units=100, sl_distance=0.002)
 oanda.create_order('EUR_USD', units=-100)
 ```
 
-    
-    
-     {'id': '3611', 'time': '2023-06-27T06:58:16.523945599Z', 'userID': 13834683, 'accountID': '101-004-13834683-001', 'batchID': '3610', 'requestID': '61122547747050332', 'type': 'ORDER_FILL', 'orderID': '3610', 'instrument': 'EUR_USD', 'units': '-100.0', 'gainQuoteHomeConversionFactor': '0.910326029089', 'lossQuoteHomeConversionFactor': '0.919475034407', 'price': 1.09294, 'fullVWAP': 1.09294, 'fullPrice': {'type': 'PRICE', 'bids': [{'price': 1.09294, 'liquidity': '10000000'}], 'asks': [{'price': 1.09309, 'liquidity': '9999900'}], 'closeoutBid': 1.09294, 'closeoutAsk': 1.09309}, 'reason': 'MARKET_ORDER', 'pl': '-0.0138', 'financing': '0.0', 'commission': '0.0', 'guaranteedExecutionFee': '0.0', 'accountBalance': '101295.1752', 'tradesClosed': [{'tradeID': '3608', 'units': '-100.0', 'price': 1.09294, 'realizedPL': '-0.0138', 'financing': '0.0', 'guaranteedExecutionFee': '0.0', 'halfSpreadCost': '0.0069'}], 'halfSpreadCost': '0.0069'} 
-    
 
 
-## Canceling Orders 
+     {'id': '3611', 'time': '2023-06-27T06:58:16.523945599Z', 'userID': 13834683, 'accountID': '101-004-13834683-001', 'batchID': '3610', 'requestID': '61122547747050332', 'type': 'ORDER_FILL', 'orderID': '3610', 'instrument': 'EUR_USD', 'units': '-100.0', 'gainQuoteHomeConversionFactor': '0.910326029089', 'lossQuoteHomeConversionFactor': '0.919475034407', 'price': 1.09294, 'fullVWAP': 1.09294, 'fullPrice': {'type': 'PRICE', 'bids': [{'price': 1.09294, 'liquidity': '10000000'}], 'asks': [{'price': 1.09309, 'liquidity': '9999900'}], 'closeoutBid': 1.09294, 'closeoutAsk': 1.09309}, 'reason': 'MARKET_ORDER', 'pl': '-0.0138', 'financing': '0.0', 'commission': '0.0', 'guaranteedExecutionFee': '0.0', 'accountBalance': '101295.1752', 'tradesClosed': [{'tradeID': '3608', 'units': '-100.0', 'price': 1.09294, 'realizedPL': '-0.0138', 'financing': '0.0', 'guaranteedExecutionFee': '0.0', 'halfSpreadCost': '0.0069'}], 'halfSpreadCost': '0.0069'}
+
+
+
+## Canceling Orders
 
 
 ```python
 order = oanda.create_order('EUR_USD', units=10000, sl_distance=0.01, ret=True)
 ```
 
-    
-    
-     {'id': '3614', 'time': '2023-06-27T06:58:33.953341530Z', 'userID': 13834683, 'accountID': '101-004-13834683-001', 'batchID': '3613', 'requestID': '61122547818369950', 'type': 'ORDER_FILL', 'orderID': '3613', 'instrument': 'EUR_USD', 'units': '10000.0', 'gainQuoteHomeConversionFactor': '0.910363508679', 'lossQuoteHomeConversionFactor': '0.919512890676', 'price': 1.09304, 'fullVWAP': 1.09304, 'fullPrice': {'type': 'PRICE', 'bids': [{'price': 1.0929, 'liquidity': '10000000'}], 'asks': [{'price': 1.09304, 'liquidity': '10000000'}], 'closeoutBid': 1.0929, 'closeoutAsk': 1.09304}, 'reason': 'MARKET_ORDER', 'pl': '0.0', 'financing': '0.0', 'commission': '0.0', 'guaranteedExecutionFee': '0.0', 'accountBalance': '101295.1752', 'tradeOpened': {'tradeID': '3614', 'units': '10000.0', 'price': 1.09304, 'guaranteedExecutionFee': '0.0', 'halfSpreadCost': '0.6405', 'initialMarginRequired': '333.0'}, 'halfSpreadCost': '0.6405'} 
-    
+
+
+     {'id': '3614', 'time': '2023-06-27T06:58:33.953341530Z', 'userID': 13834683, 'accountID': '101-004-13834683-001', 'batchID': '3613', 'requestID': '61122547818369950', 'type': 'ORDER_FILL', 'orderID': '3613', 'instrument': 'EUR_USD', 'units': '10000.0', 'gainQuoteHomeConversionFactor': '0.910363508679', 'lossQuoteHomeConversionFactor': '0.919512890676', 'price': 1.09304, 'fullVWAP': 1.09304, 'fullPrice': {'type': 'PRICE', 'bids': [{'price': 1.0929, 'liquidity': '10000000'}], 'asks': [{'price': 1.09304, 'liquidity': '10000000'}], 'closeoutBid': 1.0929, 'closeoutAsk': 1.09304}, 'reason': 'MARKET_ORDER', 'pl': '0.0', 'financing': '0.0', 'commission': '0.0', 'guaranteedExecutionFee': '0.0', 'accountBalance': '101295.1752', 'tradeOpened': {'tradeID': '3614', 'units': '10000.0', 'price': 1.09304, 'guaranteedExecutionFee': '0.0', 'halfSpreadCost': '0.6405', 'initialMarginRequired': '333.0'}, 'halfSpreadCost': '0.6405'}
+
 
 
 
@@ -324,10 +324,10 @@ oanda.cancel_order(int(order['id']) + 1)
 order = oanda.create_order('EUR_USD', units=-10000)
 ```
 
-    
-    
-     {'id': '3618', 'time': '2023-06-27T06:58:36.381641548Z', 'userID': 13834683, 'accountID': '101-004-13834683-001', 'batchID': '3617', 'requestID': '61122547830955203', 'type': 'ORDER_FILL', 'orderID': '3617', 'instrument': 'EUR_USD', 'units': '-10000.0', 'gainQuoteHomeConversionFactor': '0.910359343552', 'lossQuoteHomeConversionFactor': '0.919508683689', 'price': 1.09291, 'fullVWAP': 1.09291, 'fullPrice': {'type': 'PRICE', 'bids': [{'price': 1.09291, 'liquidity': '10000000'}], 'asks': [{'price': 1.09304, 'liquidity': '9990000'}], 'closeoutBid': 1.09291, 'closeoutAsk': 1.09304}, 'reason': 'MARKET_ORDER', 'pl': '-1.1954', 'financing': '0.0', 'commission': '0.0', 'guaranteedExecutionFee': '0.0', 'accountBalance': '101293.9798', 'tradesClosed': [{'tradeID': '3614', 'units': '-10000.0', 'price': 1.09291, 'realizedPL': '-1.1954', 'financing': '0.0', 'guaranteedExecutionFee': '0.0', 'halfSpreadCost': '0.5947'}], 'halfSpreadCost': '0.5947'} 
-    
+
+
+     {'id': '3618', 'time': '2023-06-27T06:58:36.381641548Z', 'userID': 13834683, 'accountID': '101-004-13834683-001', 'batchID': '3617', 'requestID': '61122547830955203', 'type': 'ORDER_FILL', 'orderID': '3617', 'instrument': 'EUR_USD', 'units': '-10000.0', 'gainQuoteHomeConversionFactor': '0.910359343552', 'lossQuoteHomeConversionFactor': '0.919508683689', 'price': 1.09291, 'fullVWAP': 1.09291, 'fullPrice': {'type': 'PRICE', 'bids': [{'price': 1.09291, 'liquidity': '10000000'}], 'asks': [{'price': 1.09304, 'liquidity': '9990000'}], 'closeoutBid': 1.09291, 'closeoutAsk': 1.09304}, 'reason': 'MARKET_ORDER', 'pl': '-1.1954', 'financing': '0.0', 'commission': '0.0', 'guaranteedExecutionFee': '0.0', 'accountBalance': '101293.9798', 'tradesClosed': [{'tradeID': '3614', 'units': '-10000.0', 'price': 1.09291, 'realizedPL': '-1.1954', 'financing': '0.0', 'guaranteedExecutionFee': '0.0', 'halfSpreadCost': '0.5947'}], 'halfSpreadCost': '0.5947'}
+
 
 
 ## Account-Related Methods
@@ -338,10 +338,10 @@ help(oanda.get_account_summary)
 ```
 
     Help on method get_account_summary in module tpqoa.tpqoa:
-    
+
     get_account_summary(detailed=False) method of tpqoa.tpqoa.tpqoa instance
         Returns summary data for Oanda account.
-    
+
 
 
 
@@ -393,10 +393,10 @@ help(oanda.get_transactions)
 ```
 
     Help on method get_transactions in module tpqoa.tpqoa:
-    
+
     get_transactions(tid=0) method of tpqoa.tpqoa.tpqoa instance
         Retrieves and returns transactions data.
-    
+
 
 
 
@@ -405,10 +405,10 @@ help(oanda.print_transactions)
 ```
 
     Help on method print_transactions in module tpqoa.tpqoa:
-    
+
     print_transactions(tid=0) method of tpqoa.tpqoa.tpqoa instance
         Prints basic transactions data.
-    
+
 
 
 

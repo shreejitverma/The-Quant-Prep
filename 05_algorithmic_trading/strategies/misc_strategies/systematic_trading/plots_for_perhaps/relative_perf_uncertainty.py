@@ -10,14 +10,14 @@ import pickle
 import pandas as pd
 
 lines = ["--","-","-."]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 
 def twocorrelatedseries(dindex, daily_mean, daily_mean2, daily_vol, corr):
 
-    means = [daily_mean, daily_mean2]  
+    means = [daily_mean, daily_mean2]
     stds = [daily_vol]*2
-    covs = [[stds[0]**2          , stds[0]*stds[1]*corr], 
-            [stds[0]*stds[1]*corr,           stds[1]**2]] 
+    covs = [[stds[0]**2          , stds[0]*stds[1]*corr],
+            [stds[0]*stds[1]*corr,           stds[1]**2]]
 
     no_periods=len(dindex)
 
@@ -26,12 +26,12 @@ def twocorrelatedseries(dindex, daily_mean, daily_mean2, daily_vol, corr):
     data1=pd.TimeSeries(m[0], dindex)
     data2=pd.TimeSeries(m[1], dindex)
     diff=12*(np.mean(data1)- np.mean(data2)) - 0.01 ## account for costs
-    
+
     SR1=(12**.5)*data1.mean()/data1.std()
     SR2=(12**.5)*data2.mean()/data1.std()
     diffS=SR1 - SR2
-    
-    return (diff, diffS) 
+
+    return (diff, diffS)
 
 
 
@@ -41,7 +41,7 @@ def twocorrelatedseries(dindex, daily_mean, daily_mean2, daily_vol, corr):
 annual_vol=0.20
 monthly_vol=annual_vol/12**.5
 
-annual_mean1=(annual_vol*.3) 
+annual_mean1=(annual_vol*.3)
 monthly_mean1=annual_mean1/12
 
 annual_mean2=annual_vol*.3
@@ -71,12 +71,11 @@ for year_length in year_list:
         roll_list=[twocorrelatedseries(dindex, monthly_mean1, monthly_mean2, monthly_vol, corr=corr) for ii in range(monte_carlos)]
         means=[x[0] for x in roll_list]
         SR=[x[1] for x in roll_list]
-        
-        print "For %d years; correlation %.2f the SR figure is %.4f and mean figure is %.4f" % (year_length, 
+
+        print "For %d years; correlation %.2f the SR figure is %.4f and mean figure is %.4f" % (year_length,
                                                     corr, np.std(SR)*magic_number, np.std(means)*magic_number)
-        
+
         mean_magic= np.std(means)*magic_number
         count=sum([x>mean_magic for x in means])
-        
+
         print "Out of 100 managers %f were good" % (float(count)*(100.0/monte_carlos))
-        

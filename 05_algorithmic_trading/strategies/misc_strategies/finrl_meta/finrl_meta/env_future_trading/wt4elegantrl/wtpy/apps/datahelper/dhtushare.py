@@ -11,7 +11,7 @@ def transCode(stdCode:str) -> str:
         exchg = "SH"
     elif exchg == "SZSE":
         exchg = "SZ"
-    
+
     if exchg in ['SH','SZ']:
         rawCode = ''
         if len(items) > 2:
@@ -27,7 +27,7 @@ def transCode(stdCode:str) -> str:
             rawCode = ''.join(items[1:])
     return rawCode.upper() + "." + exchg
 
-    
+
 
 class DHTushare(BaseDataHelper):
 
@@ -56,7 +56,7 @@ class DHTushare(BaseDataHelper):
             "SSE":{},
             "SZSE":{}
         }
-        
+
         #个股列表
         if hasStock:
             print("Fetching stock list...")
@@ -73,8 +73,8 @@ class DHTushare(BaseDataHelper):
                 code = rawcode #code[-2:] + rawcode
                 sInfo["code"] = code
                 sInfo["name"] = row["name"]
-                sInfo["product"] = pid            
-                
+                sInfo["product"] = pid
+
                 stocks[sInfo["exchg"]][code] = sInfo
 
         if hasIndex:
@@ -86,14 +86,14 @@ class DHTushare(BaseDataHelper):
                 rawcode = code[:6]
                 if rawcode[0] != '0':
                     continue
-                
+
                 sInfo = dict()
                 sInfo["exchg"] = "SSE"
                 code = rawcode #"SH" + rawcode
                 sInfo["code"] = code
                 sInfo["name"] = row["name"]
-                sInfo["product"] = "IDX"            
-                
+                sInfo["product"] = "IDX"
+
                 stocks[sInfo["exchg"]][code] = sInfo
 
             #深证指数列表
@@ -104,14 +104,14 @@ class DHTushare(BaseDataHelper):
                 rawcode = code[:6]
                 if rawcode[:3] != '399':
                     continue
-                
+
                 sInfo = dict()
                 sInfo["exchg"] = "SZSE"
                 code = rawcode  #"SZ" + rawcode
                 sInfo["code"] = code
                 sInfo["name"] = row["name"]
-                sInfo["product"] = "IDX"            
-                
+                sInfo["product"] = "IDX"
+
                 stocks[sInfo["exchg"]][code] = sInfo
 
         print("Writing code list into file %s..." % (filename))
@@ -162,7 +162,7 @@ class DHTushare(BaseDataHelper):
     def __dmp_bars_to_file_from_pro__(self, folder:str, codes:list, start_date:datetime=None, end_date:datetime=None, period:str="day"):
         if start_date is None:
             start_date = datetime(year=1990, month=1, day=1)
-        
+
         if end_date is None:
             end_date = datetime.now()
 
@@ -201,7 +201,7 @@ class DHTushare(BaseDataHelper):
             elif exchg not in ['SSE','SZSE']:
                 asset_type = "FT"
             count += 1
-            
+
             print("Fetching %s bars of %s(%d/%s)..." % (period, code, count, length))
             df_bars = ts.pro_bar(api=self.api, ts_code=ts_code, start_date=start_date, end_date=end_date, freq=freq, asset=asset_type)
             df_bars = df_bars.iloc[::-1]
@@ -235,7 +235,7 @@ class DHTushare(BaseDataHelper):
     def __dmp_bars_to_file_from_old__(self, folder:str, codes:list, start_date:datetime=None, end_date:datetime=None, period:str="day"):
         if start_date is None:
             start_date = datetime(year=1990, month=1, day=1)
-        
+
         if end_date is None:
             end_date = datetime.now()
 
@@ -263,7 +263,7 @@ class DHTushare(BaseDataHelper):
             count += 1
             if (exchg == 'SSE' and code[0] == '0') | (exchg == 'SZSE' and code[:3] == '399'):
                 raise Exception("Old api only supports stocks")
-            
+
             print("Fetching %s bars of %s(%d/%s)..." % (period, code, count, length))
             df_bars = ts.get_k_data(code, start=start_date, end=end_date, ktype=freq)
             content = "date,time,open,high,low,close,volume\n"
@@ -337,7 +337,7 @@ class DHTushare(BaseDataHelper):
     def __dmp_bars_to_db_from_pro__(self, dbHelper:DBHelper, codes:list, start_date:datetime=None, end_date:datetime=None, period:str="day"):
         if start_date is None:
             start_date = datetime(year=1990, month=1, day=1)
-        
+
         if end_date is None:
             end_date = datetime.now()
 
@@ -376,11 +376,11 @@ class DHTushare(BaseDataHelper):
             elif exchg not in ['SSE','SZSE']:
                 asset_type = "FT"
             count += 1
-            
+
             print("Fetching %s bars of %s(%d/%s)..." % (period, code, count, length))
             df_bars = ts.pro_bar(api=self.api, ts_code=ts_code, start_date=start_date, end_date=end_date, freq=freq, asset=asset_type)
             bars = []
-            for idx, row in df_bars.iterrows():          
+            for idx, row in df_bars.iterrows():
                 if isDay:
                     trade_date = row["trade_date"]
                     bars.append({
@@ -418,7 +418,7 @@ class DHTushare(BaseDataHelper):
     def __dmp_bars_to_db_from_old__(self, dbHelper:DBHelper, codes:list, start_date:datetime=None, end_date:datetime=None, period:str="day"):
         if start_date is None:
             start_date = datetime(year=1990, month=1, day=1)
-        
+
         if end_date is None:
             end_date = datetime.now()
 
@@ -443,11 +443,11 @@ class DHTushare(BaseDataHelper):
             if (exchg == 'SSE' and code[0] == '0') | (exchg == 'SZSE' and code[:3] == '399'):
                 raise Exception("Old api only supports stocks")
             count += 1
-            
+
             print("Fetching %s bars of %s(%d/%s)..." % (period, code, count, length))
             df_bars = ts.get_k_data(code, start=start_date, end=end_date, ktype=freq)
             bars = []
-            for idx, row in df_bars.iterrows():          
+            for idx, row in df_bars.iterrows():
                 if isDay:
                     trade_date = row["date"]
                     bars.append({

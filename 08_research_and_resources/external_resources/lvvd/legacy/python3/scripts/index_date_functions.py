@@ -18,14 +18,14 @@ def third_friday(date):
     date: datetime object
         date of month for which third Friday is to be found
     '''
-    
+
     number_days = date.day
     first_day = date - dt.timedelta(number_days - 1)
       # Reduce the given date to the first of the month.
       # Year and month stay the same.
     week_day = first_day.weekday()
       # What weekday is the first of the month (Mon=0, Tue=1, ...)
-    day_delta = 4 - week_day  # distance to the next Friday 
+    day_delta = 4 - week_day  # distance to the next Friday
     if day_delta < 0:
         day_delta += 7
     third_friday = first_day + dt.timedelta(day_delta + 14)
@@ -46,7 +46,7 @@ def first_settlement_day(date):
 
     delta = (settlement_day_in_month - date).days
       # where are we relative to the settlement date in that month?
-    
+
     if delta > 1:  # more than 1 day before ?
         return settlement_day_in_month
          # yes: take the settlement dates of this and the next month
@@ -88,7 +88,7 @@ def not_a_day_before_expiry(date):
     else:
         return True
 
-        
+
 def compute_delta(date, settlement_day):
     ''' Computes the time (in seconds) from date 0:00 to the first settlement
     date 8:30 AM
@@ -98,15 +98,15 @@ def compute_delta(date, settlement_day):
     settlement_day: datetime object
         relevant settlement day
     '''
-   
+
     dummy_time_1 = dt.timedelta(seconds=43200)
       # seconds from midnight to 12:00
     dummy_time_2 = dt.timedelta(seconds=23400)
       # seconds from 17:30 to midnight
     settlement_date = settlement_day + dummy_time_1 + dummy_time_2
     delta_T_dummy = settlement_date - date
-    delta_T = ((delta_T_dummy.days - 1) * 24 * 60 * 60 + 
+    delta_T = ((delta_T_dummy.days - 1) * 24 * 60 * 60 +
                 delta_T_dummy.seconds) / TYEAR
     return delta_T
 
-                    
+

@@ -21,10 +21,10 @@ def dual_axis_plot(xaxis,data1,data2,fst_color='r',
                     sec_color='b',fig_size=(10,5),
                    x_label='',y_label1='',y_label2='',
                    legend1='',legend2='',grid=False,title=''):
-    
+
     fig=plt.figure(figsize=fig_size)
     ax=fig.add_subplot(111)
-    
+
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label1, color=fst_color)
@@ -50,7 +50,7 @@ def dual_axis_plot(xaxis,data1,data2,fst_color='r',
 
 # In[3]:
 
-#read dataframe    
+#read dataframe
 df=pd.read_csv('vas crude copaud.csv',encoding='utf-8')
 df.set_index('date',inplace=True)
 df.index=pd.to_datetime(df.index)
@@ -68,7 +68,7 @@ for i in df.columns:
             y=df['cop']
             m=sm.OLS(y,x).fit()
             D[i]=m.rsquared
-            
+
 D=dict(sorted(D.items(),key=lambda x:x[1],reverse=True))
 
 
@@ -87,7 +87,7 @@ for i in D:
         colorlist.append('#f4d6bc')
     else:
         colorlist.append('#cdc8c8')
-        
+
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -95,10 +95,10 @@ ax.spines['right'].set_visible(False)
 width=0.7
 
 for i in D:
-    plt.bar(list(D.keys()).index(i)+width,            
+    plt.bar(list(D.keys()).index(i)+width,
             D[i],width=width,label=i,
             color=colorlist[list(D.keys()).index(i)])
- 
+
 plt.title('Regressions on COP')
 plt.ylabel('R Squared\n')
 plt.xlabel('\nRegressors')
@@ -216,11 +216,11 @@ plt.show()
 x_train,x_test,y_train,y_test=train_test_split(
         sm.add_constant(df['vasconia'][:'2016']),
         df['cop'][:'2016'],test_size=0.5,shuffle=False)
-    
+
 m=sm.OLS(y_test,x_test).fit()
-    
+
 forecast=m.predict(x_test)
-    
+
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -229,17 +229,17 @@ y_test.plot(label='Actual',c='#ffd604')
 ax.fill_between(y_test.index,
                     forecast+np.std(m.resid),
                     forecast-np.std(m.resid),
-                    color='#F4A688', 
-                    alpha=0.6, 
+                    color='#F4A688',
+                    alpha=0.6,
                     label='1 Sigma')
-    
+
 ax.fill_between(y_test.index,
                     forecast+2*np.std(m.resid),
                     forecast-2*np.std(m.resid),
-                    color='#8c7544', 
-                    alpha=0.8, 
+                    color='#8c7544',
+                    alpha=0.8,
                     label='2 Sigma')
-    
+
 plt.legend(loc=0)
 plt.title(f'Colombian Peso Positions\nR Squared {round(m.rsquared*100,2)}%\n')
 plt.xlabel('\nDate')
@@ -254,11 +254,11 @@ plt.show()
 x_train,x_test,y_train,y_test=train_test_split(
         sm.add_constant(df['vasconia']['2017':]),
         df['cop']['2017':],test_size=0.5,shuffle=False)
-    
+
 m=sm.OLS(y_test,x_test).fit()
-    
+
 forecast=m.predict(x_test)
-    
+
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -267,17 +267,17 @@ y_test.plot(label='Actual',c='#ffd604')
 ax.fill_between(y_test.index,
                     forecast+np.std(m.resid),
                     forecast-np.std(m.resid),
-                    color='#F4A688', 
-                    alpha=0.6, 
+                    color='#F4A688',
+                    alpha=0.6,
                     label='1 Sigma')
-    
+
 ax.fill_between(y_test.index,
                     forecast+2*np.std(m.resid),
                     forecast-2*np.std(m.resid),
                     color='#8c7544', \
                     alpha=0.8, \
                     label='2 Sigma')
-    
+
 plt.legend(loc=0)
 plt.title(f'Colombian Peso Positions\nR Squared {round(m.rsquared*100,2)}%\n')
 plt.xlabel('\nDate')
@@ -317,10 +317,10 @@ for holdingt in range(5,20):
         signals=om.signal_generation(dataset,'vasconia','cop',om.oil_money,
                                      holding_threshold=holdingt,
                                      stop=round(stopp,4))
-        
+
         p=om.portfolio(signals,'cop')
         dic[holdingt,round(stopp,4)]=p['asset'].iloc[-1]/p['asset'].iloc[0]-1
-     
+
 profile=pd.DataFrame({'params':list(dic.keys()),'return':list(dic.values())})
 
 

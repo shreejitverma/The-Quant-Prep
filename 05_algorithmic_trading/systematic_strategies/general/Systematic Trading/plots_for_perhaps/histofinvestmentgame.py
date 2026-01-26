@@ -7,17 +7,17 @@ import numpy as np
 from itertools import cycle
 
 lines = ["-","--","-."]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue", "green"])
 
 def linehist(x, color="blue", linestyle="-", bins=10, linewidth=1):
     y,binEdges =np.histogram(x, bins=bins)
     bincenters = 0.5*(binEdges[1:]+binEdges[:-1])
-    plot(bincenters,y,'-', color=color, linestyle=linestyle, linewidth=linewidth) 
+    plot(bincenters,y,'-', color=color, linestyle=linestyle, linewidth=linewidth)
 
 data=[-.6, -.5,
        -.3, -.3, -.3,
-      -.2, -.2, 
+      -.2, -.2,
       -.1,-.1,-.1,-.1,
       0.0, 0.0,0.0, 0.0,0.0,0.0,
       .1, .1,.1,.1,.1,
@@ -32,7 +32,7 @@ frame.get_yaxis().set_visible(False)
 frame.set_xlim([-0.8, 0.8])
 frame.set_xticks([-.8, -.4, 0.0,.4, 0.8])
 
-    
+
 
 
 rcParams.update({'font.size': 18})
@@ -43,7 +43,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 
@@ -94,7 +94,7 @@ frame.set_xlim([-0.1, 0.3])
 frame.set_xticks([-.1, 0.0, 0.1,.2, 0.3])
 
 #frame.annotate("Actual return 0.086", xy=(0.086, 12000),xytext=(0.086, 25000), arrowprops=dict(facecolor='black', shrink=0.05))
-    
+
 
 rcParams.update({'font.size': 18})
 

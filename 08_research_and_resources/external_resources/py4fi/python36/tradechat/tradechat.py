@@ -1,8 +1,8 @@
 # Tradechat
-# 
+#
 # A simple example for a web-based chat room
 # based on Flask and SQLite3.
-# 
+#
 
 import os
 import datetime as dt
@@ -40,7 +40,7 @@ def get_db():
     return g.sqlite_db
 
 
-def init_db(): 
+def init_db():
     ''' Creates the TC database tables.'''
     with app.app_context():
         db = get_db()

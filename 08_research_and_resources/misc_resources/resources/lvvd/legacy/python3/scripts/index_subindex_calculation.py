@@ -102,7 +102,7 @@ def make_subindex(path):
 
     # the data source, created with index_collect_option_data.py
     datastore = pd.HDFStore(path + 'index_option_series.h5', 'r')
-    
+
     max_date = dt.datetime.today()  # find the latest date in the source
     for series in datastore.keys():
         dummy_date = datastore[series].index.get_level_values(0)[0]
@@ -165,7 +165,7 @@ def make_subindex(path):
             V3[day] = compute_subindex(data_2, delta_T_2,
                                        math.exp(0.001 * delta_T_2))
             T3[day] = settlement_date_2
-    
+
     datastore.close()
     # create the pandas DataFrame object and return it
     df = pd.DataFrame(data={'V6I1': V1, 'Expiry V6I1': T1, 'V6I2': V2,

@@ -69,7 +69,7 @@ class WtEngine:
             self.__config__["env"]["product"] = {
                 "session":"TRADING"
             }
-    
+
     def getEngineType(self):
         return self.__engine_type
 

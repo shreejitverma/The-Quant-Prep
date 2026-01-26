@@ -32,20 +32,20 @@ To render the example files (see `files` folder) with Asciidoctor, do the follow
 **Second**, on the shell in the `files` folder, parse the executed and saved Jupyter Notebook via
 
     python nb_parse.py code/why_python.ipynb
-    
+
 This creates a text file with location and name `code/why_python.txt`.
 
 **Third**, on the shell, execute
 
     asciidoctor -a stem=latexmath py4fi.asciidoc
-    
+
 to render a **HTML version**.
 
 **Fourth**, on the shell, execute
 
     asciidoctor-pdf -r asciidoctor-mathematical -a pdf-style=basic-theme.yml py4fi.asciidoc
     rm *.png
-    
+
 to render a **PDF version** and delete temporary `png` files.
 
 ## `nb_parse.py`

@@ -37,7 +37,7 @@ class WtDataHelper:
         a = (paths[:-1] + (dllname,))
         _path = os.path.join(*a)
         self.api = cdll.LoadLibrary(_path)
-        
+
         self.cb_dthelper_log = CB_DTHELPER_LOG(on_log_output)
         self.api.resample_bars.argtypes = [c_char_p, CB_DTHELPER_BAR, CB_DTHELPER_COUNT, c_uint64, c_uint64, c_char_p, c_uint, c_char_p, CB_DTHELPER_LOG]
 
@@ -153,7 +153,7 @@ class WtDataHelper:
         @sessInfo   交易时间模板
         '''
         bar_cache = BarList()
-        if 0 == self.api.resample_bars(bytes(barFile, encoding="utf8"), CB_DTHELPER_BAR(bar_cache.on_read_bar), CB_DTHELPER_COUNT(bar_cache.on_data_count), 
+        if 0 == self.api.resample_bars(bytes(barFile, encoding="utf8"), CB_DTHELPER_BAR(bar_cache.on_read_bar), CB_DTHELPER_COUNT(bar_cache.on_data_count),
                 fromTime, endTime, bytes(period,'utf8'), times, bytes(sessInfo.toString(),'utf8'), self.cb_dthelper_log):
             return None
         else:

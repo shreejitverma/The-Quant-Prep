@@ -11,8 +11,8 @@ from GBM_returns import *
 
 # Read Data for Euribor from Excel file
 def read_euribor_data():
-    ''' Reads historical Euribor data from Excel file, calculates log returns, 
-    realized variance and volatility.''' 
+    ''' Reads historical Euribor data from Excel file, calculates log returns,
+    realized variance and volatility.'''
     EBO = pd.read_excel('./03_stf/EURIBOR_current.xlsx',
                         index_col=0, parse_dates=True)
     EBO['returns'] = np.log(EBO['1w'] / EBO['1w'].shift(1))

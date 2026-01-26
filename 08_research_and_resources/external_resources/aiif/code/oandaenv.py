@@ -53,8 +53,8 @@ class OandaEnv:
         ''' Method to retrieve data from Oanda.
         '''
         self.fn = f'../data/'
-        self.fn += f'oanda_{self.symbol}_{self.start}_{self.end}_'  
-        self.fn += f'{self.granularity}_{self.price}.csv' 
+        self.fn += f'oanda_{self.symbol}_{self.start}_{self.end}_'
+        self.fn += f'{self.granularity}_{self.price}.csv'
         self.fn = self.fn.replace(' ', '_').replace('-', '_').replace(':', '_')
         print(self.fn)
         try:
@@ -110,7 +110,7 @@ class OandaEnv:
         '''
         correct = action == self.data['d'].iloc[self.bar]
         ret = self.data['r'].iloc[self.bar] * self.leverage
-        reward_1 = 1 if correct else 0 
+        reward_1 = 1 if correct else 0
         reward_2 = abs(ret) if correct else -abs(ret)
         reward = reward_1 + reward_2 * self.leverage
         self.treward += reward_1

@@ -2,17 +2,17 @@
 # coding: utf-8
 
 # ## Notebook Instructions
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
 # # Modules
-# 
+#
 # Any file in python which has a .py extension can be a module. A module can consist of arbitrary objects, classes, attributes or functions which can be imported by users.
 
 # ### Importing Modules
-# 
+#
 # There are different ways to import modules. Let us begin by importing the 'math' module.
 
 # In[67]:
@@ -42,7 +42,7 @@ math.sin (1) # The sine value of 1
 
 
 # ### The dir () function
-# 
+#
 # The built-in function called dir() is used to find out what functions a module defines. It returns a sorted list of strings.
 
 # In[71]:
@@ -65,7 +65,7 @@ from scipy import mean # We will import only the 'mean' object from the 'scipy' 
 mean ([1,2,3,4,5]) # This will give arithmetic mean of the numbers
 
 
-# But if we want to find out, the harmonic mean. The following cells is the piece of code. 
+# But if we want to find out, the harmonic mean. The following cells is the piece of code.
 
 # In[74]:
 
@@ -79,7 +79,7 @@ from scipy import stats
 stats.hmean ([1,2,3,4,5])
 
 
-# If at all you require to import all the objects from the module, you may use * 
+# If at all you require to import all the objects from the module, you may use *
 
 # In[76]:
 

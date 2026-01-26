@@ -101,7 +101,7 @@ def make_subindex(path):
 
     # the data source, created with index_collect_option_data.py
     datastore = pd.HDFStore(path + 'index_option_series_2015.h5', 'r')
-    
+
     max_date = dt.datetime.today()  # find the latest date in the source
     for series in datastore.keys():
         dummy_date = datastore[series].index.get_level_values(0)[0]

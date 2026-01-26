@@ -389,10 +389,10 @@ class AnbimaHolidays(object):
 
     def check_date(self, date):
         """This function checks if a specific date is an ANBIMA holiday or not
-        
+
         Arguments:
             date : datetime object
-                A Datetime Object which represents the date the user wants to check. 
+                A Datetime Object which represents the date the user wants to check.
         """
 
         if type(date) is datetime.day:

@@ -12,14 +12,14 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 
 
 
 lines = ["-","--","-."]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue", "green"])
 
 def read_ts_csv(fname, dindex="Date"):
@@ -27,7 +27,7 @@ def read_ts_csv(fname, dindex="Date"):
     dateindex=[dt.strptime(dx, "%d/%m/%y") for dx in list(data[dindex])]
     data.index=dateindex
     del(data[dindex])
-    
+
     return data
 
 def calc_asset_returns(rawdata, tickers):
@@ -47,9 +47,9 @@ data=calc_asset_returns(rawdata, ["DEV_NORTHAM", "DEV_EUROPE", "DEV_ASIA"])
 def linehist(x, color="blue", linestyle="-", lw=1, passed_axis=None):
     y,binEdges =np.histogram(x)
     bincenters = 0.5*(binEdges[1:]+binEdges[:-1])
-    
+
     if passed_axis is None:
-        plot(bincenters,y,'-', color=color, linestyle=linestyle, lw=lw) 
+        plot(bincenters,y,'-', color=color, linestyle=linestyle, lw=lw)
     else:
         passed_axis.plot(bincenters,y,'-', color=color, linestyle=linestyle, lw=lw)
 
@@ -69,12 +69,12 @@ monte_length=len(data)
 allcorrs=[]
 for unused_index in range(monte_carlo):
     bs_idx=[int(random.uniform(0,1)*len(data)) for i in range(monte_length)]
-    returns=data.iloc[bs_idx,:] 
+    returns=data.iloc[bs_idx,:]
     cm=returns.corr().values
     clist=[cm[0][1], cm[0][2],cm[1][2]]
     corrs.append(clist)
     allcorrs=allcorrs+clist
-    
+
 codes=data.columns
 corrnames=["America / Europe", "America / Asia", "Europe / Asia", "All"]
 
@@ -121,12 +121,12 @@ monte_length=len(data)
 allcorrs=[]
 for unused_index in range(monte_carlo):
     bs_idx=[int(random.uniform(0,1)*len(data)) for i in range(monte_length)]
-    returns=data.iloc[bs_idx,:] 
+    returns=data.iloc[bs_idx,:]
     cm=returns.corr().values
     clist=[cm[0][1], cm[0][2],cm[1][2]]
     corrs.append(clist)
     allcorrs=allcorrs+clist
-    
+
 codes=data.columns
 corrnames=["EMEA / Latam", "EMEA / Asia", "Latam / Asia"]
 
@@ -162,7 +162,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 
@@ -179,10 +179,10 @@ monte_length=len(data)
 
 for unused_index in range(monte_carlo):
     bs_idx=[int(random.uniform(0,1)*len(data)) for i in range(monte_length)]
-    returns=data.iloc[bs_idx,:] 
+    returns=data.iloc[bs_idx,:]
     cm=returns.corr().values
     corrs.append(cm[0][1])
-    
+
 corrs.sort()
 point75=corrs[int(len(corrs)*.75)]
 
@@ -198,14 +198,14 @@ monte_length=len(data)
 
 for unused_index in range(monte_carlo):
     bs_idx=[int(random.uniform(0,1)*len(data)) for i in range(monte_length)]
-    returns=data.iloc[bs_idx,:] 
+    returns=data.iloc[bs_idx,:]
     cm=returns.corr().values
     cm=np.tril(cm, k=-1)
     cm[cm==0]=np.NAN
     cx=[]
     for ci in cm:
         cx=cx+list(ci)
-        
+
     clist=cx
     corrs.append(clist)
 
@@ -224,7 +224,7 @@ ax2 = ax1.twinx()
 
 linehist(allcorrs, lw=3, color="black", passed_axis=ax1)
 
-    
+
 for cs in corrstack:
     linehist(cs,  color="gray", passed_axis=ax2)
 
@@ -247,7 +247,7 @@ regions=dict(emea_dev=["UK", "IRELAND", "GERMANY", "AUSTRIA", "SWITZERLAND", "NE
                 latam_em=["BRAZIL", "MEXICO", "CHILE", "COLOMBIA", "PERU"],
                emea_em=[ "RUSSIA", "POLAND", "HUNGARY", "CZECH", "GREECE", "TURKEY", "QATAR",
                      "UAE", "EGYPT", "SOUTH_AFRICA"],
-               asia_em=["CHINA", "INDIA", "TAIWAN", "KOREA", "MALAYSIA", "INDONESIA", "THAILAND", 
+               asia_em=["CHINA", "INDIA", "TAIWAN", "KOREA", "MALAYSIA", "INDONESIA", "THAILAND",
                      "PHILLIPINES"])
 
 devlist=["emea_dev", "asia_dev", "america_dev"]
@@ -263,23 +263,23 @@ for region in regionlist:
 
     monte_carlo=100
     monte_length=len(data)
-    
+
     for unused_index in range(monte_carlo):
         bs_idx=[int(random.uniform(0,1)*len(data)) for i in range(monte_length)]
-        returns=data.iloc[bs_idx,:] 
+        returns=data.iloc[bs_idx,:]
         cm=returns.corr().values
         cm=np.tril(cm, k=-1)
         cm[cm==0]=np.NAN
         cx=[]
         for ci in cm:
             cx=cx+list(ci)
-            
+
         clist=cx
         corrs.append(clist)
-    
+
     corrs=np.array(corrs)
     corrs=corrs.transpose()
-    
+
     for citem in corrs:
         if not all(np.isnan(citem)):
             corrstack.append(list(citem))
@@ -291,7 +291,7 @@ ax2 = ax1.twinx()
 
 
 
-    
+
 for cs in corrstack:
     linehist(cs,  color="lightskyblue", passed_axis=ax2)
 linehist(corrstack[113],  color="black",  passed_axis=ax2)

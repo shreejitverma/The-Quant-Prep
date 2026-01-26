@@ -88,7 +88,7 @@ class IBApp(EWrapper, EClient):
 # =============================================================================
 class OHLCBar:
     """Represents a single OHLC (Open-High-Low-Close) candlestick bar."""
-    
+
     def __init__(self, timestamp, open_price):
         self.timestamp = timestamp                      # When bar started
         self.open = open_price                          # First price in bar
@@ -119,20 +119,20 @@ class OHLCBar:
 # which regime we're in based on:
 #   1. The TRANSITION MATRIX: How likely is it to switch between regimes?
 #   2. The EMISSION MODEL: What volatility do we expect to see in each regime?
-# 
+#
 # The model works by maintaining a probability distribution over regimes and
 # updating it each time we observe a new bar's volatility using Bayesian inference.
 # =============================================================================
 class MarkovRegime:
     """
     3-state Markov Chain Regime Switching model for volatility classification.
-    
+
     Uses a transition probability matrix and Gaussian emission distributions to
     compute the posterior probability of each regime given observed volatility.
     The regime is determined by the highest likelihood of observing the realized
     bar volatility, weighted by transition probabilities from the previous state.
     """
-    
+
     def __init__(self):
         # =====================================================================
         # MODEL CONFIGURATION
@@ -145,57 +145,57 @@ class MarkovRegime:
         self.current_state = 0                          # Current most likely regime
         self.colors = ['#3fb950', '#d29922', '#f85149'] # Regime label colors: green, orange, red
         self.bg_colors = ['#1a3d1a', '#3d3319', '#3d1a1a']  # Muted background colors for chart
-        
+
         # =====================================================================
         # STATE PROBABILITY VECTOR (aka "belief state" or "filtered distribution")
         # =====================================================================
         # This vector holds our current belief about which regime we're in:
         #   state_probs[i] = P(regime = i | all observations so far)
-        # 
+        #
         # At any time, these probabilities sum to 1. For example:
         #   [0.7, 0.2, 0.1] means 70% chance LOW, 20% MED, 10% HIGH
-        # 
+        #
         # We start with uniform (equal) probabilities since we have no information yet.
         self.state_probs = np.array([1/3, 1/3, 1/3])
-        
+
         # =====================================================================
         # TRANSITION PROBABILITY MATRIX (the "Markov" part)
         # =====================================================================
         # The transition matrix captures the MARKOV PROPERTY: the probability of
         # the next state depends ONLY on the current state, not on history.
-        # 
+        #
         # T[i,j] = P(next_regime = j | current_regime = i)
-        # 
+        #
         # Reading the matrix:
         #   Row i = "If we're currently in regime i, what's the probability of..."
         #   Column j = "...transitioning to regime j?"
-        # 
+        #
         # Each row must sum to 1 (we must go somewhere).
-        # 
+        #
         # The HIGH diagonal values (0.80-0.90) mean regimes are "sticky" - once
         # we're in a regime, we tend to stay there. This reflects market reality:
         # calm periods cluster together, as do volatile periods.
         self.transition_matrix = np.array([
             # To:    LOW   MED   HIGH
             [0.90, 0.08, 0.02],  # From LOW:  90% stay, 8% -> med, 2% -> high
-            [0.10, 0.80, 0.10],  # From MED:  10% -> low, 80% stay, 10% -> high  
+            [0.10, 0.80, 0.10],  # From MED:  10% -> low, 80% stay, 10% -> high
             [0.02, 0.08, 0.90]   # From HIGH: 2% -> low, 8% -> med, 90% stay
         ])
         # Notice: It's hard to jump directly from LOW to HIGH (only 2% chance).
         # Transitions typically go through the MED regime first.
-        
+
         # =====================================================================
         # EMISSION DISTRIBUTION PARAMETERS (the "Hidden" part)
         # =====================================================================
         # Each regime "emits" volatility values according to a Gaussian distribution.
         # This is the EMISSION MODEL: P(observed_volatility | regime)
-        # 
+        #
         # Why Gaussian? It's a reasonable assumption that volatility within a regime
         # is normally distributed around some mean with some variance.
-        # 
+        #
         # emission_means[i] = Expected (average) volatility when in regime i
         # emission_stds[i]  = Standard deviation of volatility when in regime i
-        # 
+        #
         # These parameters are calibrated from historical data.
         # LOW regime:  mean=0.05%, std=0.03% (tight, small movements)
         # MED regime:  mean=0.20%, std=0.10% (moderate movements)
@@ -206,14 +206,14 @@ class MarkovRegime:
     def calibrate(self, hist_bars):
         """
         Calibrate emission distribution parameters and transition matrix from historical data.
-        
+
         Uses k-means style clustering to estimate regime-specific volatility distributions,
         then estimates transition probabilities from observed regime sequences.
         """
         # Need enough data to get meaningful statistics
         if len(hist_bars) < 20:
             return
-        
+
         # =====================================================================
         # STEP 1: COMPUTE HISTORICAL VOLATILITIES
         # =====================================================================
@@ -221,24 +221,24 @@ class MarkovRegime:
         # This measures the price range as a fraction of the closing price
         vols = np.array([(b['h'] - b['l']) / b['c'] if b['c'] > 0 else 0 for b in hist_bars])
         vols = vols[vols > 0]  # Remove zero volatility bars (no price movement)
-        
+
         if len(vols) < 20:
             return
-        
+
         # =====================================================================
         # STEP 2: ASSIGN BARS TO REGIMES USING PERCENTILES
         # =====================================================================
         # We split the volatility distribution into thirds:
         #   Bottom 33% of volatilities -> LOW regime
-        #   Middle 33% of volatilities -> MED regime  
+        #   Middle 33% of volatilities -> MED regime
         #   Top 33% of volatilities    -> HIGH regime
         p33, p67 = np.percentile(vols, 33), np.percentile(vols, 67)
-        
+
         # Create array of regime assignments (0, 1, or 2 for each bar)
         regime_assignments = np.zeros(len(vols), dtype=int)
         regime_assignments[vols >= p33] = 1   # MED if above 33rd percentile
         regime_assignments[vols >= p67] = 2   # HIGH if above 67th percentile
-        
+
         # =====================================================================
         # STEP 3: ESTIMATE EMISSION PARAMETERS (mean and std for each regime)
         # =====================================================================
@@ -253,13 +253,13 @@ class MarkovRegime:
                 # Std = spread of the Gaussian (how much variation within regime)
                 # Use max() to prevent zero std which would cause division errors
                 self.emission_stds[regime] = max(np.std(regime_vols), 1e-6)
-        
+
         # Ensure means are properly ordered: LOW < MED < HIGH
         # (in case percentile assignment didn't perfectly separate them)
         sorted_indices = np.argsort(self.emission_means)
         self.emission_means = self.emission_means[sorted_indices]
         self.emission_stds = self.emission_stds[sorted_indices]
-        
+
         # =====================================================================
         # STEP 4: ESTIMATE TRANSITION MATRIX FROM REGIME SEQUENCE
         # =====================================================================
@@ -270,7 +270,7 @@ class MarkovRegime:
             prev_regime = regime_assignments[t-1]  # Where we were
             curr_regime = regime_assignments[t]     # Where we went
             transition_counts[prev_regime, curr_regime] += 1
-        
+
         # Convert counts to probabilities by normalizing each row
         for i in range(self.n_states):
             row_sum = transition_counts[i].sum()
@@ -278,10 +278,10 @@ class MarkovRegime:
                 # Add 0.1 smoothing to each cell to avoid zero probabilities
                 # (Laplace smoothing - ensures all transitions are possible)
                 self.transition_matrix[i] = (transition_counts[i] + 0.1) / (row_sum + 0.3)
-        
+
         # Reset state probabilities after calibration (start fresh)
         self.state_probs = np.array([1/3, 1/3, 1/3])
-        
+
         print(f"Calibrated emission means: {self.emission_means}")
         print(f"Calibrated emission stds: {self.emission_stds}")
 
@@ -289,94 +289,94 @@ class MarkovRegime:
         """
         Compute the probability density of observing volatility 'vol' given 'regime'.
         Uses Gaussian (normal) distribution as the emission model.
-        
+
         This answers: "If we're in this regime, how likely is it to see this volatility?"
         """
         mean = self.emission_means[regime]  # Expected volatility for this regime
         std = self.emission_stds[regime]    # Spread of volatility for this regime
-        
+
         # =====================================================================
         # GAUSSIAN PROBABILITY DENSITY FUNCTION (PDF)
         # =====================================================================
         # Formula: P(x) = (1 / (σ * √(2π))) * exp(-0.5 * ((x - μ) / σ)²)
-        # 
+        #
         # Where:
         #   x = observed volatility (vol)
         #   μ = mean (expected volatility for regime)
         #   σ = standard deviation (spread)
-        # 
+        #
         # The PDF gives a higher value when vol is close to the mean,
         # and lower values as vol moves away from the mean.
         coeff = 1 / (std * np.sqrt(2 * np.pi))  # Normalization constant
         exponent = -0.5 * ((vol - mean) / std) ** 2  # Squared distance from mean
         return coeff * np.exp(exponent)
-        # 
+        #
         # Example: If LOW regime has mean=0.001 and we observe vol=0.001,
         # the likelihood is high. If we observe vol=0.01, likelihood is very low.
 
     def get_regime(self, bars):
         """
         Determine the current regime using the Markov Chain filtering approach.
-        
+
         This is the core inference algorithm that uses Bayes' rule to update
         our belief about which regime we're in based on observed volatility.
         """
         if not bars:
             return self.current_state
-        
+
         # Get the most recent bar's volatility - this is our new observation
         current_bar = bars[-1]
         vol = current_bar.volatility  # (high - low) / close
-        
+
         if vol <= 0:
             current_bar.regime = self.current_state
             return self.current_state
-        
+
         # =====================================================================
         # STEP 1: PREDICTION STEP (Time Update)
         # =====================================================================
         # Before seeing the new observation, predict where we might be based
         # on where we were and the transition probabilities.
-        # 
+        #
         # Math: prior[j] = Σᵢ T[i,j] * state_probs[i]
         # "Sum over all possible previous states, weighted by their probability"
-        # 
+        #
         # In matrix form: prior = T^T @ state_probs
         # (T^T is transpose because we want column j from each row)
         prior_probs = self.transition_matrix.T @ self.state_probs
-        # 
+        #
         # Example: If state_probs = [0.8, 0.15, 0.05] (80% sure we're in LOW),
         # then prior might be [0.75, 0.18, 0.07] after applying transition probs.
-        
+
         # =====================================================================
         # STEP 2: COMPUTE EMISSION LIKELIHOODS
         # =====================================================================
         # For each regime, compute: "How likely is this volatility if we're in that regime?"
-        # 
+        #
         # likelihoods[i] = P(vol | regime = i)
-        # 
+        #
         # This uses the Gaussian PDF for each regime's emission distribution.
         likelihoods = np.array([self._gaussian_likelihood(vol, i) for i in range(self.n_states)])
-        # 
+        #
         # Example: If vol=0.001 (low volatility):
         #   likelihoods might be [0.95, 0.30, 0.05]
         #   HIGH likelihood for LOW regime, low likelihood for HIGH regime
-        
+
         # =====================================================================
         # STEP 3: UPDATE STEP (Measurement Update) - BAYES' RULE
         # =====================================================================
         # Combine the prior (where transition matrix says we should be) with
         # the likelihood (what the observed volatility suggests).
-        # 
+        #
         # Bayes' Rule: P(regime | vol) ∝ P(vol | regime) × P(regime)
         #                posterior    ∝   likelihood    ×   prior
-        # 
+        #
         # The regime with high prior AND high likelihood wins.
         posterior_probs = prior_probs * likelihoods
-        # 
+        #
         # Example: If prior = [0.75, 0.18, 0.07] and likelihoods = [0.95, 0.30, 0.05]
         # Then posterior ∝ [0.75*0.95, 0.18*0.30, 0.07*0.05] = [0.7125, 0.054, 0.0035]
-        
+
         # Normalize so probabilities sum to 1
         # This is the denominator in Bayes' rule: P(vol) = Σᵢ P(vol|i)P(i)
         prob_sum = posterior_probs.sum()
@@ -385,13 +385,13 @@ class MarkovRegime:
         else:
             # Fallback to prior if all likelihoods are zero (shouldn't happen)
             posterior_probs = prior_probs
-        # 
+        #
         # After normalization: [0.926, 0.070, 0.004] = 92.6% sure we're in LOW
-        
+
         # Save updated belief for next iteration (this is the "filtering" part)
         # Our belief state carries forward through time
         self.state_probs = posterior_probs
-        
+
         # =====================================================================
         # STEP 4: SELECT MOST LIKELY REGIME (Maximum A Posteriori - MAP)
         # =====================================================================
@@ -399,10 +399,10 @@ class MarkovRegime:
         # This is our best guess given all the evidence
         self.current_state = int(np.argmax(posterior_probs))
         current_bar.regime = self.current_state
-        # 
+        #
         # The regime with highest probability "wins" - this is what we display
         # on the chart and use for trading decisions
-        
+
         return self.current_state
 
 
@@ -488,7 +488,7 @@ class LiveMarketDashboard:
         header_frame.grid(row=0, column=0, sticky='ew', pady=(0, 15))
 
         # Application title
-        title_label = tk.Label(header_frame, text="◈ LIVE REGIME SWITCHING", 
+        title_label = tk.Label(header_frame, text="◈ LIVE REGIME SWITCHING",
                               font=('JetBrains Mono', 18, 'bold'),
                               bg='#0d1117', fg='#58a6ff')
         title_label.pack(side='left')
@@ -521,7 +521,7 @@ class LiveMarketDashboard:
         self.connect_btn = ttk.Button(conn_section, text="Connect", command=self.connect_ib)
         self.connect_btn.pack(side='left', padx=(0, 5))
 
-        self.disconnect_btn = ttk.Button(conn_section, text="Disconnect", 
+        self.disconnect_btn = ttk.Button(conn_section, text="Disconnect",
                                          command=self.disconnect_ib, state='disabled',
                                          style='Accent.TButton')
         self.disconnect_btn.pack(side='left')
@@ -542,12 +542,12 @@ class LiveMarketDashboard:
         symbol_entry.pack(side='left', padx=(0, 15))
 
         # Start/Stop stream button
-        self.stream_btn = ttk.Button(data_section, text="▶ Start Stream", 
+        self.stream_btn = ttk.Button(data_section, text="▶ Start Stream",
                                      command=self.toggle_stream, state='disabled')
         self.stream_btn.pack(side='left', padx=(0, 5))
 
         # Recalibrate regime model button
-        self.recal_btn = ttk.Button(data_section, text="⟳ Recalibrate", 
+        self.recal_btn = ttk.Button(data_section, text="⟳ Recalibrate",
                                     command=self.recalibrate_model, state='disabled')
         self.recal_btn.pack(side='left', padx=(0, 15))
 
@@ -555,7 +555,7 @@ class LiveMarketDashboard:
         price_frame = ttk.Frame(data_section)
         price_frame.pack(side='right')
 
-        ttk.Label(price_frame, text="Last Price:", 
+        ttk.Label(price_frame, text="Last Price:",
                  font=('Segoe UI', 10)).pack(side='left', padx=(0, 5))
         self.price_label = tk.Label(price_frame, text="---.--",
                                    font=('JetBrains Mono', 16, 'bold'),
@@ -580,7 +580,7 @@ class LiveMarketDashboard:
         # Create stat labels: Bars count, High, Low, Current Regime, Ticks per bar
         self.stats_labels = {}
         stats = [('Bars', '0'), ('High', '--'), ('Low', '--'), ('Regime', '--'), ('Ticks/Bar', '0')]
-        
+
         for i, (name, val) in enumerate(stats):
             frame = ttk.Frame(stats_frame)
             frame.pack(side='left', padx=15)
@@ -593,11 +593,11 @@ class LiveMarketDashboard:
     def setup_chart(self):
         # Initialize matplotlib figure with dark theme
         plt.style.use('dark_background')
-        
+
         # Create figure and axis
         self.fig, self.ax = plt.subplots(figsize=(12, 6), facecolor='#0d1117')
         self.ax.set_facecolor('#161b22')
-        
+
         # Style axis spines (borders) and ticks
         self.ax.tick_params(colors='#8b949e', labelsize=9)
         self.ax.spines['bottom'].set_color('#30363d')
@@ -605,7 +605,7 @@ class LiveMarketDashboard:
         self.ax.spines['left'].set_color('#30363d')
         self.ax.spines['right'].set_color('#30363d')
         self.ax.grid(True, alpha=0.2, color='#30363d', linestyle='--')
-        
+
         # Set axis labels and initial title
         self.ax.set_xlabel('Time', color='#8b949e', fontsize=10)
         self.ax.set_ylabel('Price', color='#8b949e', fontsize=10)
@@ -669,7 +669,7 @@ class LiveMarketDashboard:
         try:
             if self.streaming:
                 self.stop_stream()
-            
+
             self.ib_app.disconnect()
             self.connected = False
             # Reset UI to disconnected state
@@ -707,7 +707,7 @@ class LiveMarketDashboard:
             self.regime_model = MarkovRegime()
 
         contract = self.create_contract(symbol)
-        
+
         # Fetch 5 minutes of historical 5-second bars for regime calibration
         self.ib_app.historical_data.clear()
         self.ib_app.hist_done.clear()
@@ -738,7 +738,7 @@ class LiveMarketDashboard:
         # Stop market data streaming and cleanup
         self.running = False
         self.streaming = False
-        
+
         # Cancel market data subscription
         try:
             self.ib_app.cancelMktData(1)
@@ -770,7 +770,7 @@ class LiveMarketDashboard:
             with self.bar_lock:
                 # Store tick in price history
                 self.price_history.append((timestamp, value))
-                
+
                 # Create new bar or update existing one
                 if self.current_bar is None:
                     self.current_bar = OHLCBar(timestamp, value)
@@ -785,17 +785,17 @@ class LiveMarketDashboard:
         # Background thread that finalizes bars when their time period expires
         while self.running:
             time.sleep(0.1)                             # Check every 100ms
-            
+
             with self.bar_lock:
                 if self.current_bar is not None and self.bar_start_time is not None:
                     elapsed = (datetime.now() - self.bar_start_time).total_seconds()
-                    
+
                     # If bar duration exceeded, finalize bar and start new one
                     if elapsed >= self.bar_duration:
                         self.ohlc_bars.append(self.current_bar)
                         # Determine regime using Markov filtering (transition probs + emission likelihood)
                         self.regime_model.get_regime(list(self.ohlc_bars))
-                        
+
                         # Initialize new bar with last close price as open
                         last_price = self.current_bar.close
                         self.current_bar = OHLCBar(datetime.now(), last_price)
@@ -813,7 +813,7 @@ class LiveMarketDashboard:
     def draw_ohlc_chart(self):
         # Render the candlestick chart with regime background colors
         self.ax.clear()
-        
+
         # Get thread-safe copy of bar data
         with self.bar_lock:
             bars = list(self.ohlc_bars)
@@ -846,7 +846,7 @@ class LiveMarketDashboard:
         width = 0.6                                     # Candlestick body width
         for i, bar in enumerate(bars):
             # Draw regime background rectangle spanning full height
-            bg = Rectangle((i - 0.5, y_min), 1, y_max - y_min, 
+            bg = Rectangle((i - 0.5, y_min), 1, y_max - y_min,
                           facecolor=self.regime_model.bg_colors[bar.regime], alpha=0.4, zorder=0)
             self.ax.add_patch(bg)
 
@@ -855,10 +855,10 @@ class LiveMarketDashboard:
             body_bottom, body_height = min(bar.open, bar.close), max(abs(bar.close - bar.open), 0.001)
 
             # Draw candlestick body
-            rect = Rectangle((i - width/2, body_bottom), width, body_height, 
+            rect = Rectangle((i - width/2, body_bottom), width, body_height,
                             facecolor=color, edgecolor=edge_color, linewidth=1.5, alpha=0.9, zorder=2)
             self.ax.add_patch(rect)
-            
+
             # Draw lower wick (low to body bottom)
             self.ax.plot([i, i], [bar.low, body_bottom], color=edge_color, linewidth=1.5, zorder=1)
             # Draw upper wick (body top to high)
@@ -870,7 +870,7 @@ class LiveMarketDashboard:
 
         # Configure axes appearance
         self.ax.set_facecolor('#161b22')
-        
+
         # Set x-axis labels to bar timestamps
         x_labels = [bar.timestamp.strftime('%H:%M:%S') for bar in bars]
         self.ax.set_xticks(range(len(bars)))
@@ -890,7 +890,7 @@ class LiveMarketDashboard:
 
         self.ax.set_xlabel('Time', color='#8b949e', fontsize=10)
         self.ax.set_ylabel('Price', color='#8b949e', fontsize=10)
-        
+
         # Set title showing symbol, current regime, and bar count
         symbol = self.symbol_var.get().upper()
         regime_names = ['LOW', 'MED', 'HIGH']
@@ -915,19 +915,19 @@ class LiveMarketDashboard:
 
         # Update bar count
         self.stats_labels['Bars'].config(text=str(len(bars)))
-        
+
         # Update session high/low
         all_highs = [b.high for b in bars]
         all_lows = [b.low for b in bars]
         self.stats_labels['High'].config(text=f"{max(all_highs):.2f}")
         self.stats_labels['Low'].config(text=f"{min(all_lows):.2f}")
-        
+
         # Update regime display with color coding
         regime_names = ['LOW', 'MED', 'HIGH']
         regime_colors = ['#3fb950', '#d29922', '#f85149']
         curr_regime = bars[-1].regime if bars else 0
         self.stats_labels['Regime'].config(text=regime_names[curr_regime], fg=regime_colors[curr_regime])
-        
+
         # Update ticks per bar for current forming bar
         if current:
             self.stats_labels['Ticks/Bar'].config(text=str(current.tick_count))

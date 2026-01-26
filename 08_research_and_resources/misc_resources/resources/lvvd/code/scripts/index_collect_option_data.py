@@ -160,21 +160,21 @@ def parse_data(data, date):
     dataset: pandas DataFrame object
         transformed option raw data
     '''
-    
+
     data_list = list()
     date_value = dt.date(date.year, date.month, date.day)
     soup = BeautifulSoup(data, 'html.parser')
-    
+
     tables = soup.select('table.dataTable')
     if len(tables) != 1:
         raise ValueError('table selector is not unique')
     else:
         table = tables[0]
     columns = ['Pricing day',] + [cell.get_text() for cell in table.find_all('th')]
-        
+
     for line in table.find_all('tr')[:-1]:
         data_list.append([date_value,]+[float(cell.get_text().replace(',','')) for cell in line.find_all('td')])
-    
+
     dataset = pd.DataFrame(data_list, columns=columns)
     dataset = dataset.set_index(['Pricing day','Strike price'])
     return dataset

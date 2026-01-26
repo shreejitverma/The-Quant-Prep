@@ -1,6 +1,6 @@
 '''
 Descripttion: Automatically generated file comment
-version: 
+version:
 Author: Wesley
 Date: 2021-02-26 16:28:57
 LastEditors: Wesley
@@ -43,4 +43,3 @@ class PlatformHelper:
 
         dllname += prefix + moduleName + ext
         return dllname
-            

@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 import time
 from threading import Thread, Event
-import numpy as np  
+import numpy as np
 
 # Import IB API classes
 from ibapi.client import EClient
@@ -112,22 +112,22 @@ class IBKRDataCollector(EWrapper, EClient):
     def calculate_custom_volatility(self, prices_df):
         """
         Calculate custom volatility measure using 30-day lookback period and annualization.
-        
+
         Args:
             prices_df (pd.DataFrame): DataFrame with daily closing prices
-        
+
         Returns:
             pd.Series: Custom volatility measure
         """
         # Calculate daily returns
         daily_returns = prices_df['close'].pct_change()
-        
+
         # Calculate 30-day rolling standard deviation
         rolling_std = daily_returns.rolling(window=30).std()
-        
+
         # Annualize the volatility (multiply by sqrt(252) for daily data)
         custom_volatility = rolling_std * np.sqrt(252)
-        
+
         return custom_volatility.rename('Custom Volatility')
 
     def get_historical_volatility_data(self, symbol: str, duration_str: str, bar_size_setting: str):
@@ -231,7 +231,7 @@ class IBKRDataCollector(EWrapper, EClient):
         if self.data_storage['prices']:
             prices_df = pd.DataFrame(self.data_storage['prices'])
             prices_df.set_index('date', inplace=True)
-            
+
             # Calculate custom volatility measure
             self.data_storage['custom_volatility'] = self.calculate_custom_volatility(prices_df)
             print("\nCalculated custom volatility measure.")
@@ -263,7 +263,7 @@ class IBKRDataCollector(EWrapper, EClient):
 # --- How to run this example ---
 def main():
     collector = IBKRDataCollector()
-    
+
     # 1. Start the API client's message loop in a separate thread
     collector.run()
 
@@ -287,7 +287,7 @@ def main():
             # Save implied volatility to CSV
             data['implied_volatility'].to_csv('implied_volatility_5y.csv')
             print("Implied volatility data saved to 'implied_volatility_5y.csv'")
-            
+
         if not data['realized_volatility'].empty:
             print(f"Realized Volatility Data (last 5):")
             print(data['realized_volatility'].tail())

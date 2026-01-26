@@ -4,7 +4,7 @@
 #
 # (c) Dr. Yves J. Hilpisch
 # The Python Quants GmbH
-# 
+#
 from setuptools import setup
 
 with open('README.md', 'r') as f:

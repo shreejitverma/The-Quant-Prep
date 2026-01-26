@@ -48,7 +48,7 @@ class ComdtySpreadMonthlyRoll(qt.StrategyBase):
         df_time_idx = self._data_board.get_hist_time_index()
 
         df_live_futures = futures_tools.get_futures_chain(meta_data = self.df_meta, asofdate = self.current_time.replace(tzinfo=None))     # remove tzinfo
-        # front_contract = df_live_futures.index[0] 
+        # front_contract = df_live_futures.index[0]
         leg1 = df_live_futures.index[self.n_leg1]
         leg1new = df_live_futures.index[self.n_leg1+1]
         leg2 = df_live_futures.index[self.n_leg2]
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     df_future.index = df_future.index.tz_localize('US/Eastern')
     test_start_date = datetime(2019, 1, 1, 0, 0, 0, 0, pytz.timezone('US/Eastern'))
     test_end_date = datetime(2021, 12, 30, 0, 0, 0, 0, pytz.timezone('US/Eastern'))
-    
+
     init_capital = 50.0
     if do_optimize:          # parallel parameter search
         params_list = []

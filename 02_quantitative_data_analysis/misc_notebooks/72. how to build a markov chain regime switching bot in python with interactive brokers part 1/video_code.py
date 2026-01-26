@@ -28,7 +28,7 @@ class IBApp(EWrapper, EClient):
     def error(self, reqId, errorCode, errorString, advancedOrderRejectJson=""):
         if errorCode in [2104, 2106, 2158, 2176]:
             return
-        
+
         if errorCode == 10167:
             print("Note: Using Delayed Market Data")
             return
@@ -39,7 +39,7 @@ class IBApp(EWrapper, EClient):
     def nextValidId(self, orderId):
         self.connected = True
         print("Connected to TWS")
-    
+
     def historicalData(self, reqId, bar):
         if reqId not in self.historical_data:
             self.historical_data[reqId] = []
@@ -47,9 +47,9 @@ class IBApp(EWrapper, EClient):
 
     def historcalDataEnd(self, reqId, start, end):
         self.hist_done.set()
-    
+
     def tickPrice(self, reqId, tickType, price, attrib):
-        
+
         if price <= 0:
             return
 
@@ -64,7 +64,7 @@ class IBApp(EWrapper, EClient):
 
     def tickSize(self, reqId, tickType, size):
         return
-    
+
     def tickString(self, reqId, tickType, value):
         pass
 
@@ -88,7 +88,7 @@ class OHLCBar:
     @property
     def volatility(self):
         return (self.high - self.low) / self.close if self.close > 0 else 0
-    
+
 class MarkovRegime:
 
     def __init__(self):
@@ -110,7 +110,7 @@ class LiveMarketDashboard:
         self.root.title('Live Market Data Dashboard')
         self.root.geometry('1200x800')
         self.root.configure(bg='#0d1117')
-        
+
         self.style = ttk.Style()
         self.style.theme_use('clam')
         self.configure_dark_theme()
@@ -134,7 +134,7 @@ class LiveMarketDashboard:
 
         self.setup_ui()
         self.setup_chart()
-    
+
     def configure_dark_theme(self):
         bg_color = '#0d1117'
         fg_color = '#c9d1d9'
@@ -156,7 +156,7 @@ class LiveMarketDashboard:
         self.style.configure('Accent.TButton', background='#da3633', foreground='white')
         self.style.map('Accent.TButton',
                        background=[('active', '#f85149'), ('disabled', '#21262d')])
-    
+
     def setup_ui(self):
         main_frame = ttk.Frame(self.root, padding='15')
         main_frame.grid(row=0, column=0, sticky='nsew')
@@ -202,7 +202,7 @@ class LiveMarketDashboard:
                                           command=self.disconnect_ib, state='disabled',
                                           style='Accent.TButton')
         self.disconnect_btn.pack(side='left')
-        
+
         sep = ttk.Separator(control_frame, orient='horizontal')
         sep.pack(fill='x', pady=10)
 
@@ -249,7 +249,7 @@ class LiveMarketDashboard:
         self.stats_labels = {}
         stats = [('Bars', '0'), ('High', '--'), ('Low', '--'),
                  ('Regime', '--'), ('Ticks/Bar', '0')]
-        
+
         for i, (name, val) in enumerate(stats):
             frame = ttk.Frame(stats_frame)
             frame.pack(side='left', padx=15)
@@ -327,7 +327,7 @@ class LiveMarketDashboard:
         try:
             if self.streaming:
                 self.stop_stream()
-            
+
             self.ib_app.disconnect()
             self.connected = False
             self.connect_btn.config(state='normal')
@@ -337,30 +337,30 @@ class LiveMarketDashboard:
 
         except Exception as e:
             print(f"Disconnect error: {e}")
-    
+
 
     def toggle_stream(self):
         if not self.streaming:
             self.start_stream()
         else:
             self.stop_stream()
-    
+
     def start_stream(self):
         if not self.connected:
             return
-        
+
         symbol = self.symbol_var.get().upper()
         if not symbol:
             messagebox.showerror('Error', 'Please enter a symbol')
             return
-        
+
         with self.bar_lock:
             self.ohlc_bars.clear()
             self.current_bar = None
             self.bar_start_time = None
             self.price_history.clear()
             self.regime_model = MarkovRegime()
-        
+
         contract = self.create_contract(symbol)
 
         self.ib_app.historical_data.clear()
@@ -443,7 +443,7 @@ class LiveMarketDashboard:
         with self.bar_lock:
             bars = list(self.ohlc_bars)
             current = self.current_bar
-        
+
         if current is not None:
             bars = bars + [current]
 
@@ -452,7 +452,7 @@ class LiveMarketDashboard:
             self.ax.set_title('Waiting for data. . .', color='#c9d1d9', fontsize=12, fontweight='bold')
             self.ax.grid(True, alpha=.2, color='#30363d', linestyle='--')
             return
-        
+
         all_prices = [bar.low for bar in bars] + [bar.high for bar in bars]
         price_min, price_max = min(all_prices), max(all_prices)
         price_range = price_max - price_min
@@ -498,7 +498,7 @@ class LiveMarketDashboard:
 
             if i == len(bars) - 1 and current is not None:
                 self.ax.axvline(x=i, color='#58a6ff', alpha=.3, linestyle=':', linewidth=2)
-            
+
         self.ax.set_facecolor('#161b22')
 
         x_labels = [bar.timestamp.strftime('%H:%M:%S') for bar in bars]
@@ -522,7 +522,7 @@ class LiveMarketDashboard:
 
         self.fig.tight_layout()
         self.canvas.draw_idle()
-    
+
     def update_stats(self):
         with self.bar_lock:
             bars = list(self.ohlc_bars)
@@ -530,10 +530,10 @@ class LiveMarketDashboard:
 
         if current:
             bars = bars + [current]
-        
+
         if not bars:
             return
-        
+
         self.stats_labels['Bars'].config(text=str(len(bars)))
 
         all_highs = [b.high for b in bars]
@@ -548,13 +548,13 @@ class LiveMarketDashboard:
 
         if current:
             self.stats_labels['Ticks/Bar'].config(text=str(current.tick_count))
-        
+
     def on_closing(self):
         self.running = False
 
         if hasattr(self, '_after_id'):
             self.root.after_cancel(self._after_id)
-        
+
         if self.connected:
             try:
                 if self.streaming:

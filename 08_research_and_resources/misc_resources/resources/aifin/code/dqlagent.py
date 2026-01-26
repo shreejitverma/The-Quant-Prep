@@ -37,7 +37,7 @@ class DQLAgent:
         self.n_features = n_features
         self.env = env
         self._create_model(hu)
-        
+
     def _create_model(self, hu):
         self.model = Sequential()
         self.model.add(Dense(hu, activation='relu',
@@ -45,7 +45,7 @@ class DQLAgent:
         self.model.add(Dense(hu, activation='relu'))
         self.model.add(Dense(2, activation='linear'))
         self.model.compile(loss='mse', optimizer=opt)
-        
+
     def _reshape(self, state):
         if state.ndim == 1:
             return np.reshape(state, [1, self.n_features])
@@ -53,12 +53,12 @@ class DQLAgent:
             return np.reshape(state, [1, state.shape[0], state.shape[1]])
         else:
             return state
-            
+
     def act(self, state):
         if random.random() < self.epsilon:
             return self.env.action_space.sample()
         return np.argmax(self.model.predict(state)[0])
-        
+
     def replay(self):
         batch = random.sample(self.memory, self.batch_size)
         for state, action, next_state, reward, done in batch:
@@ -75,7 +75,7 @@ class DQLAgent:
             self.model.fit(state, target, epochs=1, verbose=False)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
-            
+
     def learn(self, episodes):
         for e in range(1, episodes + 1):
             state, _ = self.env.reset()
@@ -86,7 +86,7 @@ class DQLAgent:
                 next_state = self._reshape(next_state)
                 self.memory.append(
                     [state, action, next_state, reward, done])
-                state = next_state 
+                state = next_state
                 if done:
                     self.trewards.append(f)
                     self.max_treward = max(self.max_treward, f)
@@ -97,7 +97,7 @@ class DQLAgent:
             if len(self.memory) > self.batch_size:
                 self.replay()
         print()
-        
+
     def test(self, episodes):
         ma = self.env.min_accuracy
         self.env.min_accuracy = 0.5

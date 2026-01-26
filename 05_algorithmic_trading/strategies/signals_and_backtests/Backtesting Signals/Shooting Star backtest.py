@@ -52,16 +52,16 @@ def shooting_star(data,lower_bound,body_size):
     df['condition6']=np.where(
         df['Close'].shift(1)>=df['Close'].shift(2),1,0)
 
-    #the next candle's high must stay 
-    #below the high of the shooting star 
+    #the next candle's high must stay
+    #below the high of the shooting star
     df['condition7']=np.where(
         df['High'].shift(-1)<=df['High'],1,0)
 
-    #the next candle's close below 
+    #the next candle's close below
     #the close of the shooting star
     df['condition8']=np.where(
         df['Close'].shift(-1)<=df['Close'],1,0)
-    
+
     return df
 
 
@@ -89,7 +89,7 @@ def signal_generation(df,method,
 
     #shooting star is a short signal
     data['signals']=-data['signals']
-    
+
     #find exit position
     idxlist=data[data['signals']==-1].index
     for ind in idxlist:
@@ -116,7 +116,7 @@ def signal_generation(df,method,
 
     #create positions
     data['positions']=data['signals'].cumsum()
-    
+
     return data
 
 
@@ -132,18 +132,18 @@ def candlestick(df,ax=None,highlight=None,titlename='',
                 highcol='High',lowcol='Low',
                 opencol='Open',closecol='Close',xcol='Date',
                 colorup='r',colordown='g',highlightcolor='y',
-                **kwargs):  
-    
+                **kwargs):
+
     #bar width
     #use 0.6 by default
     dif=[(-3+i)/10 for i in range(7)]
-    
+
     if not ax:
         ax=plt.figure(figsize=(10,5)).add_subplot(111)
-    
+
     #construct the bars one by one
     for i in range(len(df)):
-        
+
         #width is 0.6 by default
         #so 7 data points required for each bar
         x=[i+j for j in dif]
@@ -151,10 +151,10 @@ def candlestick(df,ax=None,highlight=None,titlename='',
         y2=[df[closecol].iloc[i]]*7
 
         barcolor=colorup if y1[0]>y2[0] else colordown
-        
+
         #no high line plot if open/close is high
         if df[highcol].iloc[i]!=max(df[opencol].iloc[i],df[closecol].iloc[i]):
-            
+
             #use generic plot to viz high and low
             #use 1.001 as a scaling factor
             #to prevent high line from crossing into the bar
@@ -162,20 +162,20 @@ def candlestick(df,ax=None,highlight=None,titlename='',
                      [df[highcol].iloc[i],
                       max(df[opencol].iloc[i],
                           df[closecol].iloc[i])*1.001],c='k',**kwargs)
-    
+
         #same as high
-        if df[lowcol].iloc[i]!=min(df[opencol].iloc[i],df[closecol].iloc[i]):             
-            
+        if df[lowcol].iloc[i]!=min(df[opencol].iloc[i],df[closecol].iloc[i]):
+
             plt.plot([i,i],
                      [df[lowcol].iloc[i],
                       min(df[opencol].iloc[i],
                           df[closecol].iloc[i])*0.999],c='k',**kwargs)
-        
+
         #treat the bar as fill between
         plt.fill_between(x,y1,y2,
                          edgecolor='k',
                          facecolor=barcolor,**kwargs)
-        
+
         if highlight:
             if df[highlight].iloc[i]==-1:
                 plt.fill_between(x,y1,y2,
@@ -192,8 +192,8 @@ def candlestick(df,ax=None,highlight=None,titlename='',
 
 
 #plotting the backtesting result
-def plot(data,name):   
-    
+def plot(data,name):
+
     #first plot is candlestick to showcase
     ax1=plt.subplot2grid((250,1),(0,0),
                          rowspan=120,
@@ -202,7 +202,7 @@ def plot(data,name):
                 highlight='signals',
                 highlightcolor='#FFFF00')
 
-    #the second plot is the actual price 
+    #the second plot is the actual price
     #with long/short positions as up/down arrows
     ax2=plt.subplot2grid((250,1),(130,0),
                          rowspan=120,
@@ -212,7 +212,7 @@ def plot(data,name):
              data['Close'],
              label=name)
 
-    #long/short positions are attached to 
+    #long/short positions are attached to
     #the real close price of the stock
     #set the line width to zero
     #thats why we only observe markers
@@ -228,7 +228,7 @@ def plot(data,name):
     #only show five tickers
     plt.xticks(range(0,len(data),len(data)//5),
                data['Date'][0::len(data)//5].dt.date)
-    
+
     plt.grid(True)
     plt.legend(loc='lower left')
     plt.tight_layout(pad=0.1)
@@ -239,7 +239,7 @@ def plot(data,name):
 
 
 def main():
-    
+
     #initializing
     stdate='2000-01-01'
     eddate='2021-11-04'

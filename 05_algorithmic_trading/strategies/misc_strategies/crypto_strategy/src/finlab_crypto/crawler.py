@@ -114,7 +114,7 @@ def get_nbars_binance(symbol, interval, nbars, client):
         pd.DataFrame: OHLCV data for all
 
     """
-    def interval_to_seconds(interval): 
+    def interval_to_seconds(interval):
         return int(interval[:-1]) * {'m': 60, 'h': 60 * 60, 'd': 60 * 60 * 24}[interval[-1]]
 
     # calculate crawl time interval

@@ -33,7 +33,7 @@ public class Annealing implements Calibrator {
 
         // Population
         this.NP = DIM * 10;
-        
+
         // Cross over rate
         this.CR = 0.4;
 

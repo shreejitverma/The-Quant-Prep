@@ -27,7 +27,7 @@ def fourier_series(x, n):
     Returns
     =======
     fourier_values : float or array of floats
-        numbers according to Fourier series approximation 
+        numbers according to Fourier series approximation
     '''
     fourier_values = np.pi / 2
     for i in range(1, n + 1):

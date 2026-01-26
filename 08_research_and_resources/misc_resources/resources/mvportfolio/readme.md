@@ -14,11 +14,11 @@ The Python Quants GmbH
 
 `mvportfolio` is a simple Python package to analyze and manage investment portfolios according to the Mean-Variance Portfolio (MVP) theory.
 
-<img src="http://hilpisch.com/images/finaince_visual_low.png" width="300px"> 
+<img src="http://hilpisch.com/images/finaince_visual_low.png" width="300px">
 
 ## Installation
 
-### From Source 
+### From Source
 
 Open a terminal an execute
 

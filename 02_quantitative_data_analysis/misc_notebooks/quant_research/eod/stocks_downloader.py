@@ -115,7 +115,7 @@ def download_stocks_hist_1m_data() -> None:
                     continue
                 if ((df.index[-1].hour != 15) and (df.index[-1].minute != 59)) and ((df.index[-1].hour != 12) and (df.index[-1].minute != 59)):      # corrupted
                     df = df.iloc[:-1, :]      # might have next 9:30
-                    if ((df.index[-1].hour != 15) and (df.index[-1].minute != 59)) and ((df.index[-1].hour != 12) and (df.index[-1].minute != 59)):    
+                    if ((df.index[-1].hour != 15) and (df.index[-1].minute != 59)) and ((df.index[-1].hour != 12) and (df.index[-1].minute != 59)):
                         if sym == 'SPY':
                            print('SPY end time failed', df.index[-1])
                         continue

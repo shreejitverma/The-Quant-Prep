@@ -139,7 +139,7 @@ class WtBtEngine:
         self.__config__["cta"]["strategy"]["id"] = id
         self.__config__["cta"]["strategy"]["name"] = typeName
         self.__config__["cta"]["strategy"]["params"] = params
-        
+
 
     def setExternalHftStrategy(self, id:str, module:str, typeName:str, params:dict):
         '''

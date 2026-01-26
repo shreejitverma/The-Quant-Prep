@@ -7,8 +7,8 @@ class BaseCtaStrategy:
     '''
     def __init__(self, name:str):
         self.__name__ = name
-        
-    
+
+
     def name(self) -> str:
         return self.__name__
 
@@ -37,7 +37,7 @@ class BaseCtaStrategy:
         @curTDate   交易日，格式为20210220
         '''
         return
-    
+
     def on_calculate(self, context:CtaContext):
         '''
         K线闭合时调用，一般作为策略的核心计算模块
@@ -93,8 +93,8 @@ class BaseHftStrategy:
     '''
     def __init__(self, name:str):
         self.__name__ = name
-        
-    
+
+
     def name(self) -> str:
         return self.__name__
 
@@ -107,7 +107,7 @@ class BaseHftStrategy:
         @context    策略运行上下文
         '''
         return
-    
+
     def on_session_begin(self, context:HftContext, curTDate:int):
         '''
         交易日开始事件
@@ -244,8 +244,8 @@ class BaseSelStrategy:
     '''
     def __init__(self, name:str):
         self.__name__ = name
-        
-    
+
+
     def name(self) -> str:
         return self.__name__
 
@@ -258,7 +258,7 @@ class BaseSelStrategy:
         @context    策略运行上下文
         '''
         return
-    
+
     def on_session_begin(self, context:SelContext, curTDate:int):
         '''
         交易日开始事件
@@ -274,7 +274,7 @@ class BaseSelStrategy:
         @curTDate   交易日，格式为20210220
         '''
         return
-    
+
     def on_calculate(self, context:SelContext):
         '''
         K线闭合时调用，一般作为策略的核心计算模块

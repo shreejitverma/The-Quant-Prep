@@ -16,12 +16,12 @@ from sklearn.linear_model import LogisticRegression
 # from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from sklearn.model_selection import cross_validate
-from sklearn.svm import SVR 
+from sklearn.svm import SVR
 
 import warnings
 warnings.filterwarnings("ignore")
 
-# yahoo finance used to fetch data 
+# yahoo finance used to fetch data
 import yfinance as yf
 yf.pdr_override()
 
@@ -48,11 +48,11 @@ def input_symbol():
 
 # Logistic Regression
 def stock_logistic_regression():
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
- 
+
     df = df.drop(['Date'], axis=1)
     X = df.loc[:, df.columns != 'Adj Close']
     y = np.where (df['Adj Close'].shift(-1) > df['Adj Close'],1,-1)
@@ -66,28 +66,28 @@ def stock_logistic_regression():
     print(metrics.classification_report(y_test, predicted))
     print(model.score(X_test,y_test))
     cross_val = cross_validate(LogisticRegression(), X, y, scoring='accuracy', cv=10)
-    print('_____________Summary:_____________') 
+    print('_____________Summary:_____________')
     print(cross_val)
     print(cross_val.mean())
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()    
-        
+        exit()
+
 
 # Linear Regression
 def stock_linear_regression():
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -97,7 +97,7 @@ def stock_linear_regression():
     lr = LinearRegression()
     lr.fit(X, Y)
     lr.predict(X)
-    
+
     plt.figure(figsize=(12,8))
     plt.scatter(df['Adj Close'], lr.predict(X))
     plt.plot(X, lr.predict(X), color = 'red')
@@ -106,29 +106,29 @@ def stock_linear_regression():
     plt.grid()
     plt.title(sym + ' Prices vs Predicted Prices')
     plt.show()
-    print('_____________Summary:_____________')       
+    print('_____________Summary:_____________')
     print('Estimate intercept coefficient:', lr.intercept_)
     print('Number of coefficients:', len(lr.coef_))
     print('Accuracy Score:', lr.score(X, Y))
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
     if user_input=="1":
         menu()
     elif user_input=="2":
-        exit()    
-        
+        exit()
+
 
 # Support Vector Regression
 def stock_svr():
-    s = start_date() 
+    s = start_date()
     e = end_date()
     sym = input_symbol()
     df = yf.download(sym, s, e)
@@ -139,89 +139,33 @@ def stock_svr():
     svr_lin  = SVR(kernel='linear', C=1e3)
     svr_poly = SVR(kernel='poly', C=1e3, degree=2)
     svr_rbf = SVR(kernel='rbf', C=1e3, gamma=0.1)
-    
+
     # Fit regression model
     svr_lin .fit(dates, prices)
     svr_poly.fit(dates, prices)
     svr_rbf.fit(dates, prices)
-    
+
     plt.figure(figsize=(12,8))
     plt.scatter(dates, prices, c='k', label='Data')
     plt.plot(dates, svr_lin.predict(dates), c='g', label='Linear model')
-    plt.plot(dates, svr_rbf.predict(dates), c='r', label='RBF model')    
+    plt.plot(dates, svr_rbf.predict(dates), c='r', label='RBF model')
     plt.plot(dates, svr_poly.predict(dates), c='b', label='Polynomial model')
     plt.xlabel('Date')
     plt.ylabel('Price')
     plt.title('Support Vector Regression')
     plt.legend()
     plt.show()
-    print('_____________Summary:_____________') 
+    print('_____________Summary:_____________')
     print('Linear Model:', svr_rbf.predict(x)[0])
     print('RBF Model:', svr_lin.predict(x)[0])
     print('Polynomial Model:', svr_poly.predict(x)[0])
     print("")
-    ans = ['1', '2'] 
-    user_input=input("""                  
-What would you like to do next? Enter option 1 or 2.  
+    ans = ['1', '2']
+    user_input=input("""
+What would you like to do next? Enter option 1 or 2.
 1. Menu
 2. Exit
-Command: """)   
-    while user_input not in ans:
-        print("Error: Please enter a a valid option 1-2")
-        user_input=input("Command: ")
-    if user_input=="1":
-        menu()
-    elif user_input=="2":
-        exit()    
-        
-
-#***********************************************************************************************************************#
-#******************************************************* Menu **********************************************************#
-#***********************************************************************************************************************#  
-def menu():
-    ans = ['1', '2', '3', '4', '0'] 
-    print(""" 
-              
-                           MENU
-                  MACHINE LEARNING PREDICTION        
-                  ---------------------------
-                  1.Linear Regression
-                  2.Logistic Regressions
-                  3.Support Vector Regression
-                  4.Beginning Menu
-                  0.Exit the Program
-                  """)
-    user_input = input("Command (0-3): ") 
-    while user_input not in ans:
-        print("Error: Please enter a valid option 0-3")
-        user_input=input("Command: ")             
-    if user_input == '1':
-        stock_linear_regression()
-    elif user_input == '2':
-        stock_logistic_regression()
-    elif user_input == '3':
-        stock_svr()
-    elif user_input == "4":  
-        beginning()
-    elif user_input == "0":
-        exit() 
-        
-        
-#***********************************************************************************************************************#    
-#*************************************************** Start of Program **************************************************# 
-#***********************************************************************************************************************#  
-def beginning():
-    print()
-    print("----------Welcome to Machine Learning Predictions--------")
-    print("""
-Please choose option 1 or 2
-              
-1. Menu
-2. Exit Program 
-
----------------------------------------------""")
-    ans = ['1', '2'] 
-    user_input=input("What is your Option?: ")    
+Command: """)
     while user_input not in ans:
         print("Error: Please enter a a valid option 1-2")
         user_input=input("Command: ")
@@ -229,7 +173,63 @@ Please choose option 1 or 2
         menu()
     elif user_input=="2":
         exit()
-  
-    
-#***********************************************************************************************************************#     
-beginning()      
+
+
+#***********************************************************************************************************************#
+#******************************************************* Menu **********************************************************#
+#***********************************************************************************************************************#
+def menu():
+    ans = ['1', '2', '3', '4', '0']
+    print("""
+
+                           MENU
+                  MACHINE LEARNING PREDICTION
+                  ---------------------------
+                  1.Linear Regression
+                  2.Logistic Regressions
+                  3.Support Vector Regression
+                  4.Beginning Menu
+                  0.Exit the Program
+                  """)
+    user_input = input("Command (0-3): ")
+    while user_input not in ans:
+        print("Error: Please enter a valid option 0-3")
+        user_input=input("Command: ")
+    if user_input == '1':
+        stock_linear_regression()
+    elif user_input == '2':
+        stock_logistic_regression()
+    elif user_input == '3':
+        stock_svr()
+    elif user_input == "4":
+        beginning()
+    elif user_input == "0":
+        exit()
+
+
+#***********************************************************************************************************************#
+#*************************************************** Start of Program **************************************************#
+#***********************************************************************************************************************#
+def beginning():
+    print()
+    print("----------Welcome to Machine Learning Predictions--------")
+    print("""
+Please choose option 1 or 2
+
+1. Menu
+2. Exit Program
+
+---------------------------------------------""")
+    ans = ['1', '2']
+    user_input=input("What is your Option?: ")
+    while user_input not in ans:
+        print("Error: Please enter a a valid option 1-2")
+        user_input=input("Command: ")
+    if user_input=="1":
+        menu()
+    elif user_input=="2":
+        exit()
+
+
+#***********************************************************************************************************************#
+beginning()

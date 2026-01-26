@@ -33,7 +33,7 @@ sigma = 0.2  # constant volatility of diffusion
 def BSM_call_value(S0, K, T, r, sigma):
     ''' Valuation of European call option in BSM Model.
     --> Analytical Formula.
-    
+
     Parameters
     ==========
     S0: float

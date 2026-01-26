@@ -174,7 +174,7 @@ def construct_curve_spread_fly():
     generic_futures_hist_prices_dict = data_loader.load_comdty_generic_hist_prices()
     inter_comdty_spread_hist_data_dict = data_loader.load_inter_comdty_spread_hist_prices()
     generic_inter_comdty_hist_prices_dict = data_loader.load_inter_comdty_generic_hist_prices()
-    
+
     combined_root_syms = list(generic_futures_hist_prices_dict.keys())
     combined_root_syms.extend(list(generic_inter_comdty_hist_prices_dict.keys()))
 

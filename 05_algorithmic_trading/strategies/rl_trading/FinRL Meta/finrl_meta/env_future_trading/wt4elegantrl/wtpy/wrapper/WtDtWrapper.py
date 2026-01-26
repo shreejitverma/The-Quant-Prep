@@ -1,6 +1,6 @@
 '''
 Descripttion: Automatically generated file comment
-version: 
+version:
 Author: Wesley
 Date: 2021-07-27 09:53:43
 LastEditors: Wesley
@@ -23,7 +23,7 @@ class WtDtWrapper:
     # api可以作为公共变量
     api = None
     ver = "Unknown"
-    
+
     # 构造函数，传入动态库名
     def __init__(self):
         paths = os.path.split(__file__)
@@ -79,7 +79,7 @@ class WtDtWrapper:
         parser = engine.get_extended_parser(id)
         if parser is None:
             return
-        
+
         if evtId == EVENT_PARSER_INIT:
             parser.init(engine)
         elif evtId == EVENT_PARSER_CONNECT:

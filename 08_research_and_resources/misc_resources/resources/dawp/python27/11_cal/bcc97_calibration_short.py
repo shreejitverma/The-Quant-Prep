@@ -91,7 +91,7 @@ def BCC_error_function(p0):
     if local_opt:
         penalty = np.sqrt(np.sum((p0 - opt1) ** 2)) * 1
         return MSE + penalty
-    return MSE 
+    return MSE
 
 #
 # Calibration

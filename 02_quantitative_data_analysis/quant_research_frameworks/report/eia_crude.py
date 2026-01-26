@@ -90,12 +90,12 @@ def generate_html(today):
                   width: 50%;
                   border: 1px solid #ddd;
                 }}
-                
+
                 th, td {{
                   text-align: left;
                   padding: 16px;
                 }}
-                
+
                 tr:nth-child(even) {{
                   background-color: #f2f2f2;
                 }}

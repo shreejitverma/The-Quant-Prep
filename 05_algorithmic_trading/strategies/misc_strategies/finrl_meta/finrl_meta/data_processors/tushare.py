@@ -16,7 +16,7 @@ class Tushare(_Base):
         token : str
             get from https://waditu.com/ after registration
         adj: str
-            Whether to use adjusted closing price. Default is None. 
+            Whether to use adjusted closing price. Default is None.
             If you want to use forward adjusted closing price or 前复权. pleses use 'qfq'
             If you want to use backward adjusted closing price or 后复权. pleses use 'hfq'
     """
@@ -41,7 +41,7 @@ class Tushare(_Base):
     def download_data(self, ticker_list: List[str]):
         """
         `pd.DataFrame`
-            7 columns: A tick symbol, date, open, high, low, close and volume 
+            7 columns: A tick symbol, date, open, high, low, close and volume
             for the specified stock ticker
         """
         assert self.time_interval == "1d", "Not supported currently"

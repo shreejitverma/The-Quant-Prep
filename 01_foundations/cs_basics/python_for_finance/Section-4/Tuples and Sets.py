@@ -2,15 +2,15 @@
 # coding: utf-8
 
 # ## Notebook Instructions
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
 # # Tuples
-# 
+#
 # Tuple is an immutable list. Similar to lists, a tuple can contain heterogeneous sequence of elements, but it is not possible to append, edit or remove any individual elements within a tuple.
-# 
+#
 # ## Creating Tuples
 # Tuples are enclosed in parenthesis and the items within them are separated by commas.
 
@@ -50,8 +50,8 @@ type (new_tup)
 
 
 # ## Can we manipulate a tuple?
-# 
-# There are no methods supported by tuples that can help us manipulate a tuple once formed. Tuple does not even support assigning a new item at any particular index. 
+#
+# There are no methods supported by tuples that can help us manipulate a tuple once formed. Tuple does not even support assigning a new item at any particular index.
 
 # In[6]:
 
@@ -70,17 +70,17 @@ my_tup [0] # Returning the item at the 0th index
 # In[865]:
 
 
-my_tup [0] = "40" # Assigning a new item to the 0th index 
+my_tup [0] = "40" # Assigning a new item to the 0th index
 
 
 # In[866]:
 
 
-my_tup.append (50) # Trying to Append '50' at the 4th index of the created tuple. 
+my_tup.append (50) # Trying to Append '50' at the 4th index of the created tuple.
 
 
 # But we can certainly find the length of a tuple.
-# 
+#
 # <b>len</b> (x) <br>
 # It returns the length of the tuple.
 
@@ -91,9 +91,9 @@ len (my_tup)
 
 
 # # Sets
-# 
+#
 # A set is an unordered collection with no duplicate elements. They are useful to create lists that hold only unique values and are also mutable. The elements of a set can be anything like numbers, strings or characters.
-# 
+#
 # ## Creating & Printing Sets
 # Curly braces or the set () function can be used to create sets and the items within them are separated by commas.
 
@@ -154,7 +154,7 @@ print (y_set)
 
 
 # ## Set Operations
-# 
+#
 # You can even perform mathematical operations like set union, set intersection, set difference and symmetric difference amongst different datasets.
 
 # In[1]:
@@ -165,7 +165,7 @@ print (y_set)
 x_set = set ('ABCDE')
 y_set = set ('CDEFG')
 
-print (x_set) 
+print (x_set)
 print (y_set)
 
 
@@ -200,7 +200,7 @@ x_set & y_set # Intersection can be performed by using the ampersand '&' operato
 
 
 # <b> x.difference(y) </b> <br>
-# This method returns the items of 'set 1' which are not common (repetitive) to the 'set 2', as a new set. 
+# This method returns the items of 'set 1' which are not common (repetitive) to the 'set 2', as a new set.
 
 # In[843]:
 
@@ -239,7 +239,7 @@ print (y_set)
 
 
 # <b>x.isdisjoint(y)</b> <br>
-# This method returns True if two sets have null intersection. 
+# This method returns True if two sets have null intersection.
 
 # In[847]:
 
@@ -287,7 +287,7 @@ y_set < x_set # One can check a subset using a less than '<' operator.
 
 
 # <b>x.issuperset(y)</b><br>
-# This method returns True for 'Set 1' if all the elements of Set 2 are present in 'Set 1'. 
+# This method returns True for 'Set 1' if all the elements of Set 2 are present in 'Set 1'.
 
 # In[852]:
 
@@ -397,5 +397,5 @@ print (x_set)
 
 
 # ### This is where we will end this section on Data Structures
-# 
+#
 # Stay tuned for the next Section.

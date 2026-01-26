@@ -7,7 +7,7 @@
 #i call it oil money
 #cuz its a statistical arbitrage on crude benchmark and petrocurrency
 #the inspiration came from an article i read
-#it suggested to trade on petrocurrency when the oil price went uprising 
+#it suggested to trade on petrocurrency when the oil price went uprising
 #plus overall volatility for forex market was low
 #the first thing is to build up a model to explore the causality
 #we split the historical datasets into two parts
@@ -48,9 +48,9 @@
 # https://github.com/je-suis-tm/quant-trading/blob/master/Oil%20Money%20project/Oil%20Money%20RUB.py
 
 #after targetting at norwegian krone, we have to choose a currency to evaluate nok
-#take a look at norway's biggest trading partners 
+#take a look at norway's biggest trading partners
 #we should include us dollar, euro and uk sterling as well as brent crude price in our model
-#in addition, the base currency would be japanese yen 
+#in addition, the base currency would be japanese yen
 #cuz its not a big trading partner with norway
 #which implies it doesnt have much correlation with nok
 #preparation is done, lets get started!
@@ -60,7 +60,7 @@ import statsmodels.api as sm
 import pandas as pd
 import numpy as np
 import seaborn as sns
-from sklearn.linear_model import ElasticNetCV as en 
+from sklearn.linear_model import ElasticNetCV as en
 from statsmodels.tsa.stattools import adfuller as adf
 import os
 os.chdir('d:/')
@@ -100,10 +100,10 @@ def dual_axis_plot(xaxis,data1,data2,fst_color='r',
                     sec_color='b',fig_size=(10,5),
                    x_label='',y_label1='',y_label2='',
                    legend1='',legend2='',grid=False,title=''):
-    
+
     fig=plt.figure(figsize=fig_size)
     ax=fig.add_subplot(111)
-    
+
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label1, color=fst_color)
@@ -124,12 +124,12 @@ def dual_axis_plot(xaxis,data1,data2,fst_color='r',
     plt.grid(grid)
     plt.title(title)
     plt.show()
-    
+
 #nok vs ir
 dual_axis_plot(df.index,df['nok'],df['interest rate'],
                fst_color='#34262b',sec_color='#cb2800',
                fig_size=(10,5),x_label='Date',
-               y_label1='NOKJPY',y_label2='Norges Bank Interest Rate 
+               y_label1='NOKJPY',y_label2='Norges Bank Interest Rate
                %',
                legend1='NOKJPY',legend2='Interest Rate',
                grid=False,title='NOK vs Interest Rate')
@@ -141,7 +141,7 @@ dual_axis_plot(df.index,df['nok'],df['brent'],
                y_label1='NOKJPY',y_label2='Brent in JPY',
                legend1='NOKJPY',legend2='Brent',
                grid=False,title='NOK vs Brent')
-               
+
 #nok vs gdp
 #cuz gdp is released quarterly
 #we need to convert nok into quarterly data as well
@@ -175,7 +175,7 @@ print(model.summary(),'\n')
 #check the link below for more details
 # https://github.com/je-suis-tm/machine-learning/blob/master/coordinate%20descent%20for%20elastic%20net.ipynb
 m=en(alphas=[0.0001, 0.0005, 0.001, 0.01, 0.1, 1, 10],
-     l1_ratio=[.01, .1, .5, .9, .99],  max_iter=5000).fit(x0[x0.index<'2017-04-25'], y)  
+     l1_ratio=[.01, .1, .5, .9, .99],  max_iter=5000).fit(x0[x0.index<'2017-04-25'], y)
 print(m.intercept_,m.coef_)
 
 
@@ -245,19 +245,19 @@ signals['signals']=0
 index=list(signals.columns).index('signals')
 
 for j in range(len(signals)):
-    
+
     if signals['nok'].iloc[j]>signals['upper'].iloc[j]:
-        signals.iloc[j,index]=-1  
-          
+        signals.iloc[j,index]=-1
+
     if signals['nok'].iloc[j]<signals['lower'].iloc[j]:
-        signals.iloc[j,index]=1 
-       
+        signals.iloc[j,index]=1
+
     signals['cumsum']=signals['signals'].cumsum()
 
     if signals['cumsum'].iloc[j]>1 or signals['cumsum'].iloc[j]<-1:
         signals.iloc[j,index]=0
-  
-    if signals['nok'].iloc[j]>signals['stop profit'].iloc[j]:         
+
+    if signals['nok'].iloc[j]>signals['stop profit'].iloc[j]:
         signals['cumsum']=signals['signals'].cumsum()
         signals.iloc[j,index]=-signals['cumsum'].iloc[j]+1
         signals['cumsum']=signals['signals'].cumsum()
@@ -385,7 +385,7 @@ ero=model.resid
 print(adf(ero))
 print(model.summary())
 
-#(-2.5593457642922992, 0.10169409761939013, 0, 1030, 
+#(-2.5593457642922992, 0.10169409761939013, 0, 1030,
 #{'1%': -3.4367147300588341, '5%': -2.8643501440982058, '10%': -2.5682662399849185}, -1904.8360920752475)
 #0.731199409071
 #unfortunately, the residual hasnt even reached 90% confidence interval
@@ -470,7 +470,7 @@ om.profit(p,'nok')
 
 #but thats not enough, we are not happy with the return
 #come on, 2 percent return?
-#i may as well as deposit the money into the current account 
+#i may as well as deposit the money into the current account
 #and get 0.75% risk free interest rate
 #therefore, we gotta try different holding period and stop loss/profit point
 #the double loop is very slow, i almost wanna do it in julia
@@ -481,10 +481,10 @@ for holdingt in range(5,20):
         signals=om.signal_generation(dataset,'brent','nok',om.oil_money \
                                      holding_threshold=holdingt, \
                                      stop=stopp)
-        
+
         p=om.portfolio(signals,'nok')
         dic[holdingt,stopp]=p['asset'].iloc[-1]/p['asset'].iloc[0]-1
-     
+
 profile=pd.DataFrame({'params':list(dic.keys()),'return':list(dic.values())})
 
 

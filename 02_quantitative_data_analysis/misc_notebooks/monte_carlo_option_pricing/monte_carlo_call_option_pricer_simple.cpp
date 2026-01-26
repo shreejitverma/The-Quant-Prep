@@ -3,11 +3,11 @@
 #include <cmath>
 using namespace std;
 
-double SimpleMonteCarlo1(double Expiry, 
-                         double Strike, 
-                         double Spot, 
-                         double Vol, 
-                         double r, 
+double SimpleMonteCarlo1(double Expiry,
+                         double Strike,
+                         double Spot,
+                         double Vol,
+                         double r,
                          unsigned long NumberOfPaths)
 {
     double varience = Vol * Vol * Expiry;

@@ -42,7 +42,7 @@ def cmt_rate_fill_date(cmt_rate):
     #revert to the original form
     cmt_rate=cmt_rate.melt(id_vars='Date',value_vars=['1 Mo', '1 Yr', '10 Yr', '2 Mo', '2 Yr', '20 Yr', '3 Mo',
            '3 Yr', '30 Yr', '5 Yr', '6 Mo', '7 Yr'])
-    
+
     return cmt_rate
 
 
@@ -64,17 +64,17 @@ def get_settlement_day(current_day,time_horizon,
                                                                    microsecond=0,
                                                                     months=+time_horizon-1)
 
-    
+
     #adjust to the nth last day of the month
     settlement_day=month_end
-    
+
     #use loop to skip non trading day
     correct=False
-    
+
     #count the month end if its a weekday
     counter=1 if dt.datetime.weekday(settlement_day) in range(5) else 0
     while not correct:
-        
+
         #cannot be a weekend day or a federal holiday
         if (dt.datetime.weekday(settlement_day) in range(5)) and \
         (str(settlement_day)[:10] not in public_holidays) and \
@@ -82,11 +82,11 @@ def get_settlement_day(current_day,time_horizon,
             correct=True
         else:
             settlement_day-=dt.timedelta(days=1)
-            
+
             #weekday is counted even if its federal holiday
             if (dt.datetime.weekday(settlement_day) in range(5)):
                 counter+=1
-        
+
     return settlement_day
 
 
@@ -132,7 +132,7 @@ def get_forward_strike(options,
 
     #find the strike price no larger than forward level
     strike=find_forward.index[find_forward.index<=forward][-1]
-    
+
     return forward,strike
 
 
@@ -171,7 +171,7 @@ def get_options_call_inclusion(options,strike):
 
     #cleanse
     options_call_inclusion.reset_index(inplace=True,drop=True)
-    
+
     return options_call_inclusion
 
 
@@ -211,7 +211,7 @@ def get_options_put_inclusion(options,strike):
 
     #cleanse
     options_put_inclusion.reset_index(inplace=True,drop=True)
-    
+
     return options_put_inclusion
 
 
@@ -228,7 +228,7 @@ def compute_sigma(forward,strike,
     for i in [options_call_inclusion,
               options_put_inclusion]:
         for j in i.index:
-            
+
             #interval between strike prices
             if j-1<0:
                 delta=abs(i['options-strikePrice'][j]-i['options-strikePrice'][j+1])
@@ -241,7 +241,7 @@ def compute_sigma(forward,strike,
 
     #replace bid ask spread midpoint with prior settle
     sigma=contributions*2/time_to_expiration-((forward/strike-1)**2)/time_to_expiration
-    
+
     return sigma
 
 
@@ -258,7 +258,7 @@ def compute_vix(time_to_expiration_front,
     sum1=time_to_expiration_front*sigma_front*(time_to_expiration_rear*num_of_mins_year-num_of_mins_timeframe)/(time_to_expiration_rear*num_of_mins_year-time_to_expiration_front*num_of_mins_year)
     sum2=time_to_expiration_rear*sigma_rear*(num_of_mins_timeframe-time_to_expiration_front*num_of_mins_year)/(time_to_expiration_rear*num_of_mins_year-time_to_expiration_front*num_of_mins_year)
     vix=((sum1+sum2)*num_of_mins_year/num_of_mins_timeframe)**0.5*100
-    
+
     return vix
 
 
@@ -271,10 +271,10 @@ def vix_calculator(df,cmt_rate,calendar,
                    timeframe_front,timeframe_rear,
                    expiration_hour,expiration_day,
                    num_of_mins_timeframe,num_of_mins_year):
-    
+
     #us federal holidays
     federal_holidays=calendar['DATE'].tolist()
-    
+
     #daily treasury yield curve rate
     interest_rate_front=cmt_rate['value'][cmt_rate['maturity']==f'{timeframe_front} Mo'][cmt_rate['Date']==tradedate].item()/100
     interest_rate_rear=cmt_rate['value'][cmt_rate['maturity']==f'{timeframe_rear} Mo'][cmt_rate['Date']==tradedate].item()/100
@@ -333,7 +333,7 @@ def vix_calculator(df,cmt_rate,calendar,
     options_put_rear_inclusion=get_options_put_inclusion(
         options_rear,strike_rear)
 
-    #use put call avg 
+    #use put call avg
     #if strike price exists in the out of money dataset
     for i in [options_call_front_inclusion,
               options_put_front_inclusion]:
@@ -363,7 +363,7 @@ def vix_calculator(df,cmt_rate,calendar,
                     sigma_front,sigma_rear,
                     num_of_mins_timeframe,
                     num_of_mins_year)
-    
+
     return vix
 
 

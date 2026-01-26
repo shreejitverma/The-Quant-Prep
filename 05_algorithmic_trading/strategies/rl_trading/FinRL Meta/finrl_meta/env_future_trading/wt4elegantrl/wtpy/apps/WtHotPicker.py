@@ -27,12 +27,12 @@ class DayData:
         self.hold = 0  # 空盘量(总持？持仓量)
 
 def extractPID(code):
-    
+
     for idx in range(0, len(code)):
         c = code[idx]
-        if '0' <= c and c <= '9': 
+        if '0' <= c and c <= '9':
             break
-    
+
     return code[:idx]
 
 def readFileContent(filename):
@@ -65,7 +65,7 @@ def countFridays(curDate:datetime.datetime):
     while checkDate < curDate:
         if checkDate.weekday() == 4:
             count += 1
-        
+
         checkDate += datetime.timedelta(days=1)
 
     if wd < 4:
@@ -147,7 +147,7 @@ class WtCacheMonExchg(WtCacheMon):
             return None
 
         root = dom.documentElement
-        
+
         items = {}
         days = root.getElementsByTagName("dailydata")
         for day in days:
@@ -185,7 +185,7 @@ class WtCacheMonExchg(WtCacheMon):
         content = httpGet("http://www.shfe.com.cn/data/dailydata/kx/kx%s.dat" % (dtStr))
         if len(content) == 0:
             return None
-        
+
         items = {}
         root = json.loads(content)
         for day in root['o_curinstrument']:
@@ -247,7 +247,7 @@ class WtCacheMonExchg(WtCacheMon):
             if len(ay) == 0:
                 continue
 
-            item.pid = ay[0]    
+            item.pid = ay[0]
 
             close = doc(tdlis[5]).text()
             if close != '':
@@ -455,7 +455,7 @@ class WtCacheMonSS(WtCacheMon):
             if len(line) == 0:
                 break
             items = line.split(",")
-            
+
             exchg = items[1]
             if exchg not in cacheItem:
                 cacheItem[exchg] = dict()
@@ -533,7 +533,7 @@ class WtMailNotifier:
         @hotMap         主力映射文件
         '''
         dtStr = nextDT.strftime('%Y.%m.%d')
-    
+
         import smtplib
         from email.mime.text import MIMEText
         from email.mime.multipart import MIMEMultipart
@@ -556,8 +556,8 @@ class WtMailNotifier:
                 content +=  '品种%s.%s的次主力合约已切换,下个交易日(%s)生效, %s -> %s\n' % (exchg, pid, dtStr, item["from"], item["to"])
 
         msg_mp = MIMEMultipart()
-        msg_mp['From'] = sender  # 发送者          
-        
+        msg_mp['From'] = sender  # 发送者
+
         subject = '主力合约换月邮件<%s>' % (dtStr)
         msg_mp['Subject'] = Header(subject, 'utf-8')
 
@@ -591,7 +591,7 @@ class WtMailNotifier:
 
         try:
             smtpObj.ehlo()
-            smtpObj.login(self.user, self.pwd) 
+            smtpObj.login(self.user, self.pwd)
             logging.info("%s 登录成功 %s:%d", self.user, self.mail_host, self.mail_port)
         except smtplib.SMTPException as ex:
             logging.error("邮箱初始化失败：{}".format(ex))
@@ -625,7 +625,7 @@ class WtHotPicker:
         设置日行情缓存器
         '''
         self.cache_monitor = cacher
-        
+
     def set_mail_notifier(self, notifier:WtMailNotifier):
         '''
         设置邮件通知器
@@ -707,11 +707,11 @@ class WtHotPicker:
                         #如果主力合约月份大于等于次主力合约，则次主力递延一位
                         if hot.month >= sec.month:
                             sec = ay[-3]
-                        
+
                         seconds[pid] = sec.code
 
                     hots[pid] = hot.code
-                    
+
                 for key in hots.keys():
                     nextDT = curDT + datetime.timedelta(days=1)
                     if key not in lastHots:
@@ -786,11 +786,11 @@ class WtHotPicker:
             # 日期递增
             curDT = curDT + datetime.timedelta(days=1)
         return hot_switches,sec_switches
-    
+
     def merge_switch_list(self, total, exchg, switch_list):
         '''
         合并主力切换规则
-        
+
         @total          已有的全部切换规则
         @exchg          交易所代码
         @switcg_list    新的切换规则
@@ -799,7 +799,7 @@ class WtHotPicker:
             total[exchg] = switch_list
             logging.info("[%s]全市场主力切换规则重构" % (exchg))
             return True, total
-        
+
         bChanged = False
         for pid in switch_list:
             if pid not in total[exchg]:
@@ -827,7 +827,7 @@ class WtHotPicker:
 
         if beginDate is None:
             beginDate = datetime.datetime.strptime("2016-01-01", '%Y-%m-%d')
-        
+
         total_hots = dict()
         total_secs = dict()
 
@@ -837,7 +837,7 @@ class WtHotPicker:
         for exchg in exchanges:
             self.current_hots[exchg] = dict()
             self.current_secs[exchg] = dict()
-        
+
         hot_changes = dict()
         sec_changes = dict()
         curDate = beginDate
@@ -870,7 +870,7 @@ class WtHotPicker:
         output = open(self.marker_file, 'w')
         output.write(json.dumps(marker, sort_keys=True, indent = 4))
         output.close()
-        
+
         logging.info("主力切换规则已更新")
 
         output = open(self.hot_file, 'w')
@@ -894,7 +894,7 @@ class WtHotPicker:
             self.mail_notifier.notify(hot_changes, sec_changes, endDate, hotFile, "hotmap.json", secFile, "secmap.json")
 
         return total_hots,total_secs
-  
+
     def execute_increment(self, endDate:datetime.datetime = None, exchanges = ["CFFEX", "SHFE", "CZCE", "DCE", "INE"]):
         '''
         增量更新主力切换规则
@@ -938,7 +938,7 @@ class WtHotPicker:
             beginDT = datetime.datetime.strptime(lastDate, "%Y%m%d") + datetime.timedelta(days=1)
         else:
             beginDT = datetime.datetime.strptime("2016-01-01", '%Y-%m-%d')
-        
+
         self.current_hots = dict()
         self.current_secs = dict()
 
@@ -957,7 +957,7 @@ class WtHotPicker:
             for pid in total_secs[exchg]:
                 ay = total_secs[exchg][pid]
                 self.current_secs[exchg][pid] = ay[-1]["to"]
-        
+
         bChanged = False
         hot_changes = dict()
         sec_changes = dict()
@@ -983,7 +983,7 @@ class WtHotPicker:
         output = open(markerFile, 'w')
         output.write(json.dumps(marker, sort_keys=True, indent = 4))
         output.close()
-        
+
         if bChanged:
             logging.info("主力切换规则已更新")
 

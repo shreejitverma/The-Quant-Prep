@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 from StringIO import *
 from index_date_functions import *
- 
+
 #
 # The URL template
 #
@@ -35,7 +35,7 @@ def collect_option_series(month, year, start):
     year: int
         maturity year
     start: datetime object
-        starting date 
+        starting date
     '''
     end = dt.datetime.today()
     delta = (end - start).days
@@ -67,7 +67,7 @@ def get_data(month, year, date):
     calls = parse_data(data, date)  # parse the raw data
     calls = calls.rename(columns={"Daily settlem. price": "Call_Price"})
     calls = pd.DataFrame(calls.pop('Call_Price').astype(float))
-    
+
     data = get_data_from_www("Put", month, year, date_string)
       # the same for puts
     puts = parse_data(data, date)
@@ -110,7 +110,7 @@ def merge_and_filter(puts, calls):
     puts: pandas DataFrame object
         put option data
     calls: pandas DataFrame object
-        call option data 
+        call option data
     '''
 
     df = calls.join(puts, how='inner')  # merges the two time series
@@ -160,7 +160,7 @@ def data_collection(path):
     ''' Main function which saves data into the HDF5 file
     'index_option_series.h5' for later use.
     '''
-    store = pd.HDFStore(path + 'index_option_series.h5', 'a') 
+    store = pd.HDFStore(path + 'index_option_series.h5', 'a')
       # file to store data
 
     today = dt.datetime.today()

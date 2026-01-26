@@ -7,7 +7,7 @@ Required: pandas, matplotlib
 
 USE AT YOUR OWN RISK! No warranty is provided or implied.
 
-Handling of NAN's and Inf's isn't done here (except within pandas), 
+Handling of NAN's and Inf's isn't done here (except within pandas),
 And there is no error handling!
 
 """
@@ -16,7 +16,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from common import pd_readcsv, cap_series, ewmac_forecast_scalar, get_price_for_instrument
 
-    
+
 """
 get some data
 """
@@ -30,7 +30,7 @@ price=get_price_for_instrument(code)
 
 ## Shouldn't need changing
 vol_lookback=25
-    
+
 """
 Calculate the ewmac trading fule forecast, given a price and EWMA speeds Lfast, Lslow and vol_lookback
 
@@ -42,7 +42,7 @@ Lslow=4*Lfast
 
 d1=pd.datetime(2007,1,1)
 d2=pd.datetime(2009,12,31)
-    
+
 ## We don't need to calculate the decay parameter, just use the span directly
 
 fast_ewma=pd.ewma(price, span=Lfast)
@@ -60,7 +60,7 @@ plt.title("Raw EWMAC")
 plt.show()
 
 ## volatility adjustment
-stdev_returns=pd.ewmstd(price - price.shift(1), span=vol_lookback)    
+stdev_returns=pd.ewmstd(price - price.shift(1), span=vol_lookback)
 vol_adj_ewmac=raw_ewmac/stdev_returns
 
 vol_adj_ewmac[d1:d2].plot()

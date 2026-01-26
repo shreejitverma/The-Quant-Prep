@@ -31,9 +31,9 @@ happywithcurve=False
 
 while not happywithcurve:
     ## generate a new Curve
-    equitycurves=[arbitrary_timeseries(autocorr_skewed_returns(rho, want_mean,  want_stdev, 
+    equitycurves=[arbitrary_timeseries(autocorr_skewed_returns(rho, want_mean,  want_stdev,
                   want_skew, size=length_period), index_start=pd.datetime(1995,1,1))
-                  for want_mean in want_mean_list]    
+                  for want_mean in want_mean_list]
     equitycurves_pd=pd.concat(equitycurves, axis=1)
     equitycurves_pd.columns=["A", "B"]
     equitycurves_pd.cumsum().plot()

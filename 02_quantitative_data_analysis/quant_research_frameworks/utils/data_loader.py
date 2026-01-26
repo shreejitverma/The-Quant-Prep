@@ -53,7 +53,7 @@ def load_futures_meta(root: str = None) -> pd.DataFrame:
     """
     df_futures_contracts_meta = pd.read_csv(os.path.join(global_settings.root_path, 'data/config/futures_contract_meta.csv'), index_col=0, keep_default_na=False)
     df_futures_contracts_meta['Last_Trade_Date'] = pd.to_datetime(df_futures_contracts_meta['Last_Trade_Date'])
-    
+
     if not root is None:
         try:
             df_futures_contracts_meta = df_futures_contracts_meta[df_futures_contracts_meta.Root==root]

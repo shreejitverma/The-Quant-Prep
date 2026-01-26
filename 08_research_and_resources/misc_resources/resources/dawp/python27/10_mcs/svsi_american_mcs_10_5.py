@@ -73,9 +73,9 @@ x_disc_list = ['Full Truncation', 'Partial Truncation', 'Truncation',
 
 control_variate = [True]
   # use of control variate
-anti_paths = [True] 
+anti_paths = [True]
   # antithetic paths for variance reduction
-moment_matching = [True] 
+moment_matching = [True]
   # random number correction (std + mean + drift)
 
 t_list = [1.0 / 12, 0.25, 0.5]  # maturity list
@@ -178,7 +178,7 @@ for alpha in it.product(py_list, x_disc_list, m_list, paths_list,
             correlation_matrix[1] = [rho, 1.0, 0.0]
             correlation_matrix[2] = [0.0, 0.0, 1.0]
             cho_matrix = np.linalg.cholesky(correlation_matrix)
-            
+
             z = 0  # option counter
             S, r, v, h, V, matrix = 0, 0, 0, 0, 0, 0
             gc.collect()
@@ -235,17 +235,17 @@ for alpha in it.product(py_list, x_disc_list, m_list, paths_list,
                         erg = np.zeros((I), dtype=np.float)
                         np.put(erg, relevant, cv)
                         V[t] = np.where(h[t] > erg, h[t], V[t + 1] * df)
-                    
+
                     # final discounting step
                     df = np.exp(-(r[0] + r[1]) / 2 * dt)
-                    
+
                     ## European Option Values
                     C0 = H93_call_value(S0, K, T, ra, kappa_v,
                                         theta_v, sigma_v, rho, v0)
 
                     P0 = C0 + K * B0T - S0
                     P0_MCS = B0T * np.sum(h[-1]) / I
-                    
+
                     x = B0T * h[-1]
                     y = V[1] * df
 
@@ -268,7 +268,7 @@ for alpha in it.product(py_list, x_disc_list, m_list, paths_list,
                     V0_CV = max(np.sum(y_cv) / I, h[0, 0])
                     # pure LSM
                     V0_LSM = max(np.sum(y) / I, h[0, 0])
-                    
+
                     ## Errors
                     error = V0_CV - V0
                     rel_error = error / V0
@@ -284,7 +284,7 @@ for alpha in it.product(py_list, x_disc_list, m_list, paths_list,
                         'LSM_pure': V0_LSM, 'LSM_convar': V0_CV,
                         'SE': SE, 'error': error, 'rel_error': rel_error,
                         'PY1_acc': PY1_acc, 'PY2_acc': PY2_acc,
-                        'PY_acc': PY1_acc or PY2_acc}, 
+                        'PY_acc': PY1_acc or PY2_acc},
                         index=[0,])
 
                     z += 1 # option counter
@@ -292,7 +292,7 @@ for alpha in it.product(py_list, x_disc_list, m_list, paths_list,
                     if verbose:
                         print tmpl_2 % (T, K, V0, V0_LSM, V0_CV, P0,
                             P0_MCS, error, rel_error, PY1_acc, PY2_acc)
-                    
+
                     results = results.append(res, ignore_index=True)
 
 if write:

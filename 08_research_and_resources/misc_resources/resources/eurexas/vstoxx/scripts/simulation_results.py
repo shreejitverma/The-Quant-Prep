@@ -9,7 +9,7 @@
 # For illustration purposes only.
 # August 2014
 #
-import numpy as np 
+import numpy as np
 import pandas as pd
 import datetime as dt
 import matplotlib.pyplot as plt

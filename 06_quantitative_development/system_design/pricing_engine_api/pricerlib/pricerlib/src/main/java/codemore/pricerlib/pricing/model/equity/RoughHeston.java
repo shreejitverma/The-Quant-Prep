@@ -195,7 +195,7 @@ public class RoughHeston implements EquityModel{
     public void setRho(double rho) {
         this.rho = rho;
     }
-    
+
     public void setParameters(HashMap<String, Double> parameters) {
         this.parameters = parameters;
     }

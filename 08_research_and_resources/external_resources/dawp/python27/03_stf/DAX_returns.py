@@ -11,8 +11,8 @@ from GBM_returns import *
 
 # Read Data for DAX from the Web
 def read_dax_data():
-    ''' Reads historical DAX data from Yahoo! Finance, calculates log returns, 
-    realized variance and volatility.''' 
+    ''' Reads historical DAX data from Yahoo! Finance, calculates log returns,
+    realized variance and volatility.'''
     DAX = web.DataReader('^GDAXI', data_source='yahoo',
                     start='30-09-2004', end='30-09-2014')
     DAX.rename(columns={'Adj Close' : 'index'}, inplace=True)

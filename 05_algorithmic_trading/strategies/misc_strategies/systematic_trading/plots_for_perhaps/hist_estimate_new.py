@@ -11,7 +11,7 @@ from twisted.test.test_amp import THING_I_DONT_UNDERSTAND
 
 
 lines = ["-","--"]
-linecycler = cycle(lines)    
+linecycler = cycle(lines)
 colorcycler=cycle(["red", "blue"])
 
 def read_ts_csv(fname, dindex="Date"):
@@ -19,7 +19,7 @@ def read_ts_csv(fname, dindex="Date"):
     dateindex=[dt.strptime(dx, "%d/%m/%y") for dx in list(data[dindex])]
     data.index=dateindex
     del(data[dindex])
-    
+
     return data
 
 def calc_asset_returns(rawdata, tickers):
@@ -65,7 +65,7 @@ data=data[['SP500','US10']]
 def linehist(x, color="blue", linestyle="-"):
     y,binEdges =np.histogram(x, bins=50)
     bincenters = 0.5*(binEdges[1:]+binEdges[:-1])
-    plot(bincenters,y,'-', color=color, linestyle=linestyle) 
+    plot(bincenters,y,'-', color=color, linestyle=linestyle)
 
 
 """
@@ -104,7 +104,7 @@ monte_length=len(data)
 for unused_index in range(monte_carlo):
     bs_idx=[int(random.uniform(0,1)*len(data)) for i in range(monte_length)]
     returns=data.iloc[bs_idx,:]
-    ## GEOMETRIC 
+    ## GEOMETRIC
     gm=geomean(returns)
     gmeans.append(list(gm))
     gdiff.append(gm[0] - gm[1])
@@ -115,7 +115,7 @@ for unused_index in range(monte_carlo):
     gdiffsr.append(sr[0] - sr[1])
     cm=returns.corr().values
     corrs.append([cm[0][1]])
-    
+
 codes=data.columns
 
 
@@ -148,7 +148,7 @@ def file_process(filename):
     fig.set_size_inches(18.5,10.5)
     fig.savefig("/home/rob/%s.png" % filename,dpi=300)
     fig.savefig("/home/rob/%sLOWRES.png" % filename,dpi=50)
-    
+
     Image.open("/home/rob/%s.png" % filename).convert('L').save("/home/rob/%s.jpg" % filename)
     Image.open("/home/rob/%sLOWRES.png" % filename).convert('L').save("/home/rob/%sLOWRES.jpg" % filename)
 

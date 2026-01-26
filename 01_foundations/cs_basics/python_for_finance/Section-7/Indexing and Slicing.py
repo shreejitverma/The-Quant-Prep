@@ -2,15 +2,15 @@
 # coding: utf-8
 
 # ### <span style="color:brown">Notebook Instructions</span>
-# 
+#
 # <i> You can run the notebook document sequentially (one cell a time) by pressing <b> shift + enter </b>. While a cell is running, In [*] will display on the left. When it has been run, a number will display indicating the order in which it was run in the notebook. Example: In [8]: </i>
-# 
+#
 # <i> Enter edit mode by pressing <b> Enter </b> or using the mouse to click on a cell's editor area. Edit mode is indicated by a green cell border and a prompt showing in the editor area. </i>
 
 # We will continue from where we left in the previous notebook.
-# 
+#
 # # Notebook Contents
-# 
+#
 # ##### <span style="color:green">1. Indexing</span>
 # ##### <span style="color:green">2. Slicing</span>
 # #####  <span style="color:green">3. Arrays of 1s and 0s</span>
@@ -18,15 +18,15 @@
 
 # ## Indexing
 
-# We can access the elements of an array using its **index**. Index gives the location of an element of an array. 
-# 
+# We can access the elements of an array using its **index**. Index gives the location of an element of an array.
+#
 # - The first index is '0'.
 # - The second index is '1' and so on.
 # - The second last index is '-2'.
 # - The last index is '-1'.
-# 
+#
 # ### <span style="color:green">Indexing in a one-dimensional array</span>
-# 
+#
 # A one-dimensional array is indexed just like a list.
 
 # In[62]:
@@ -66,13 +66,13 @@ print (A [-2])
 
 
 # ### <span style="color:green">Indexing in a two-dimensional array</span>
-# 
-# A 2-Dimensional Array consists of rows and columns, so you need to specify both rows and columns, to locate an element. 
+#
+# A 2-Dimensional Array consists of rows and columns, so you need to specify both rows and columns, to locate an element.
 
 # In[66]:
 
 
-# Create a 2-Dimensional Array 
+# Create a 2-Dimensional Array
 
 A = np.array ([ [1,2,3], [4,5,6], [7,8,9], [10,11,12] ])
 
@@ -114,26 +114,26 @@ print (A [2,1])
 # In[71]:
 
 
-# Can you guess what will be the output of these print statement? 
+# Can you guess what will be the output of these print statement?
 
 print (A [4,3])
 
 
-# ## Slicing 
-# 
-# When you want to select a certain section of an array, then you slice it. It could be a bunch of elements in a one-dimensional array and/or entire rows and columns in a two-dimensional array. 
-# 
+# ## Slicing
+#
+# When you want to select a certain section of an array, then you slice it. It could be a bunch of elements in a one-dimensional array and/or entire rows and columns in a two-dimensional array.
+#
 # ### <span style="color:green">Slicing a one-dimensional array  </span>
-# 
+#
 # You can slice a one-dimensional array in various ways:
 # - Print first few elements
 # - Print last few elements
 # - Print middle elements
-# - Print elements after certain step. 
-# 
-# Syntax: 
+# - Print elements after certain step.
+#
+# Syntax:
 # ####  <span style="color:blue">array_name [start: stop: step]</span>
-# 
+#
 
 # In[72]:
 
@@ -173,21 +173,21 @@ print (A [::2])
 # In[74]:
 
 
-# Can you guess what will be the output of these print statement? 
+# Can you guess what will be the output of these print statement?
 
 print (A [::3])
 
 
 # ### <span style="color:green">Slicing a two-dimensional array  </span>
-# 
+#
 # You can slice a two-dimensional array in various ways:
 # - Print a row or a column
 # - Print multiple rows or columns
 # - Print a section of table for given rows and columns
 # - Print first and/or last rows and/or columns.
-# - Print rows and columns after certain step. 
-# 
-# Syntax: 
+# - Print rows and columns after certain step.
+#
+# Syntax:
 # ####  <span style="color:blue">array_name [row start: row stop: row step], [col start, col stop, col step]</span>
 
 # In[138]:
@@ -200,7 +200,7 @@ A = np.array([
 [10, 11, 12, 13, 14],
 [20, 21, 22, 23, 24],
 [30, 31, 32, 33, 34],
-[40, 41, 42, 43, 44] 
+[40, 41, 42, 43, 44]
 ])
 
 print (A)
@@ -227,7 +227,7 @@ print(A[:,1]) # Column 2
 
 print(A[:2,]) #Rows 1 & 2
 
-print(A[:,1:3]) #Columns 2 & 3 
+print(A[:,1:3]) #Columns 2 & 3
 
 
 # In[142]:
@@ -237,7 +237,7 @@ print(A[:,1:3]) #Columns 2 & 3
 
 print(A[:3,]) # Printing first three rows
 
-print(A[:,3:]) # Printing 4th column and onwards 
+print(A[:,3:]) # Printing 4th column and onwards
 
 
 # In[143]:
@@ -301,7 +301,7 @@ print(A[:, 1:10:2]) # Print Columns 2,4, 6, 8, 10
 # In[151]:
 
 
-# This will print an intersection of elements of rows 0, 2, 4 and columns 0, 3, 9, 6 
+# This will print an intersection of elements of rows 0, 2, 4 and columns 0, 3, 9, 6
 
 print(A2 [::2, ::3])
 
@@ -309,7 +309,7 @@ print(A2 [::2, ::3])
 # In[152]:
 
 
-# Let us print all the rows and columns 
+# Let us print all the rows and columns
 
 print (A2 [::,::])
 
@@ -371,8 +371,8 @@ print(Z)
 
 
 # ## Identity Function
-# 
-# An Identity Array has equal number of rows and columns. It is a square array so that the diagonal elements are all 'ones'. 
+#
+# An Identity Array has equal number of rows and columns. It is a square array so that the diagonal elements are all 'ones'.
 
 # In[159]:
 
@@ -391,5 +391,5 @@ print (I)
 
 
 # ### In the upcoming iPython Notebook:
-# 
+#
 # We will continue understanding about arrays and learn about Vectorization, Arithmetic Operation, Broadcasting and Array Comparisons.

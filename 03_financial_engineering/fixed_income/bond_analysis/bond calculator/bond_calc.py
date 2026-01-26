@@ -100,7 +100,7 @@ def _price() -> float:
     float
         The price of the desired bond.
     """
-    
+
     face = float(input("> Face value: $"))
     apr = float(input("> APR (enter as number, e.g., '5' for 5%): "))/100
     coupon = float(input("> Annual coupon rate (enter as number, e.g., '5' for 5%): "))/100
@@ -178,7 +178,7 @@ def _duration_convexity() -> tuple:
     tuple
         The Macaulay Duration, modified duration, and convexity of a bond, in this order.
     """
-    
+
     n = int(input("> Years to maturity: "))
     freq = int(input("> Coupon payments per year: "))
     coupon = float(input("> Annual coupon rate (enter as number, e.g., '5' for 5%): "))/100

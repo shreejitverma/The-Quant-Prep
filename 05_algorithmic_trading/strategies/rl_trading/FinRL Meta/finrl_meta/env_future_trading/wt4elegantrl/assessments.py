@@ -64,8 +64,8 @@ class SimpleAssessment(Assessment):  # 借鉴了neofinrl
         # fee = context.stra_get_fund_data(3)
 
         self.__assets__.append(self._init_assets_+dynbalance)  # 账户实时的动态权益
-        
-        
+
+
         if len(self.__reward__) > 1:
             reward = (self.__assets__[-1]-self.__assets__[-2]) \
                 / self._init_assets_ * 12 #* 0.382
@@ -75,7 +75,7 @@ class SimpleAssessment(Assessment):  # 借鉴了neofinrl
             #     self.__successive__ += 1
             # else:
             #     self.__successive__ = 1
-                
+
             # reward *= self.__successive__
 
             # if self.__assets__[-1] > self.__assets__[-2]: #
@@ -143,7 +143,7 @@ class SimpleAssessment(Assessment):  # 借鉴了neofinrl
                 self.__successive__ += 1
             else:
                 self.__successive__ = 1
-                
+
             reward = -0.00001
             reward += (self.__assets__[-1] /
                     self.__assets__[-2] - 1) * 0.382 * self.__successive__

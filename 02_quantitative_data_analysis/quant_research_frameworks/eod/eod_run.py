@@ -188,7 +188,7 @@ def main(args):
             logging.info('finished updating futures spread and fly --------')
         except:
             logging.error('futures spread and fly failed.')
-        time.sleep(3)        
+        time.sleep(3)
 
     # ------------- copy if valid -------------------------- #
     if args.backup:
