@@ -2,7 +2,7 @@
 
 Top firms (Jane Street, HRT, Optiver) use Modern C++ (14/17/20). "C with Classes" is not enough.
 
-## 🚀 Key Features
+##  Key Features
 
 ### 1. Smart Pointers (`<memory>`)
 *   **`std::unique_ptr`:** Exclusive ownership. No overhead vs raw pointer. Use by default.
@@ -27,10 +27,10 @@ Top firms (Jane Street, HRT, Optiver) use Modern C++ (14/17/20). "C with Classes
 *   **Memory Order:** `memory_order_relaxed`, `memory_order_acquire`, `memory_order_release`.
     *   *Interview Q:* Explain why `volatile` is NOT for thread safety (it's for hardware-mapped I/O).
 
-## ⚠️ Common Pitfalls
+##  Common Pitfalls
 *   **Virtual Functions:** Avoid in the "Hot Path" (execution path). V-table lookups cause cache misses. Use **CRTP (Curiously Recurring Template Pattern)** for static polymorphism.
 *   **Exceptions:** Often disabled in HFT (try/catch has overhead). Use error codes or `std::optional`.
 *   **Dynamic Allocation:** Avoid `new`/`malloc` in the critical loop. Pre-allocate everything.
 
-## 📝 Practice Question
+##  Practice Question
 *"Implement a `shared_ptr` class from scratch, handling the reference count atomically."*

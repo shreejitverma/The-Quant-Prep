@@ -2,7 +2,7 @@
 
 Jane Street is known for its focus on probability, mental math, and market intuition. They don't just want the right answer; they want to see *how* you think and how you handle uncertainty.
 
-## 🧠 Types of Questions
+##  Types of Questions
 
 ### 1. Probability Puzzles
 *   **The Coin Flip Series:** "I flip a coin. If H, I stop. If T, I flip again. What is the expected number of flips?" (Geometric Distribution)
@@ -19,13 +19,13 @@ Jane Street is known for its focus on probability, mental math, and market intui
 *   "How much does the Empire State Building weigh?"
     *   *Strategy:* Break it down. Volume * Density. Number of floors * Area per floor * ...
 
-## 💡 Key Concepts to Master
+##  Key Concepts to Master
 1.  **Expected Value (EV):** $E[X] = \sum x_i p_i$. Always calculate the "fair value" first.
 2.  **Conditional Probability:** Bayes' Theorem is your best friend.
 3.  **Linearity of Expectation:** $E[A+B] = E[A] + E[B]$. Crucial for simplifying complex sums.
 4.  **Sizing Bets:** Kelly Criterion $f^* = \frac{bp - q}{b}$. Don't bet the house on a 51% edge.
 
-## 📝 Practice Problem
+##  Practice Problem
 **Game:** You have a 100-sided die (1-100). You roll it once. You can choose to keep the roll ($) or pay $1 to roll again. You can do this as many times as you want. What is the fair value of this game?
 
 **Solution Approach:**

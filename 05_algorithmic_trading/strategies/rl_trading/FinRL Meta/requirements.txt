@@ -24,7 +24,7 @@ gputil
 # market data & paper trading API
 exchange_calendars
 alpaca_trade_api>=2.1.0
-ccxt==1.66.32 # >=1.66.32
+ccxt>=1.66.32 # >=1.66.32
 jqdatasdk
 wrds
 
@@ -39,4 +39,4 @@ wheel>=0.33.6
 pre-commit
 
 # FinRL-meta
-pandas_market_calendars==3.2
+pandas_market_calendars>=3.2

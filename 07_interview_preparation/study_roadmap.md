@@ -1,4 +1,4 @@
-# 🗓️ The 8-Week Quant Interview Study Roadmap
+#  The 8-Week Quant Interview Study Roadmap
 
 This roadmap is designed to take you from "competent coder" to "Quant Developer/Researcher" ready for interviews at top firms.
 
@@ -54,7 +54,7 @@ This roadmap is designed to take you from "competent coder" to "Quant Developer/
 *   **Behavioral:** "Why this firm?", "Tell me about a time you optimized code."
 *   **Review:** Go over your weak spots from the mocks.
 
-## 📚 Daily Habits
+##  Daily Habits
 1.  **Read Market News:** Bloomberg, FT (Know where the S&P 500 is).
 2.  **One LeetCode:** Focus on Medium/Hard arrays/strings/DP.
 3.  **Mental Math:** Practice 2-digit multiplication.

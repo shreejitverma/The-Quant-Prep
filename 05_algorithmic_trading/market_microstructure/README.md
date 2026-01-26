@@ -2,7 +2,7 @@
 
 Understanding the mechanics of the order book and the behavior of market participants is crucial for HFT and Alpha generation.
 
-## 📚 Syllabus
+##  Syllabus
 
 1.  **Limit Order Book (LOB)**
     *   Price-Time Priority
@@ -26,7 +26,7 @@ Understanding the mechanics of the order book and the behavior of market partici
     *   Binary Protocols (OUCH, ITCH)
     *   Co-location & FPGA
 
-## 📝 Key Concepts
+##  Key Concepts
 *   **Latency Arbitrage:** Exploiting speed differences between exchanges.
 *   **Spoofing & Layering:** (Illegal) Manipulation tactics to identify.
 *   **Rebate Capturing:** Maker-Taker fees strategies.

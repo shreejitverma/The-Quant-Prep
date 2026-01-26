@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to **The Quant Prep**! We aim to build the ultimate resource for aspiring Quantitative Developers and Researchers.
 
-## 🛠️ How to Contribute
+##  How to Contribute
 
 1.  **Fork the repository** and clone it locally.
 2.  **Choose a task:**
@@ -14,7 +14,7 @@ Thank you for your interest in contributing to **The Quant Prep**! We aim to bui
 4.  **Commit your changes:** Please use clear commit messages.
 5.  **Push to your fork** and submit a **Pull Request (PR)**.
 
-## 📏 Standards
+##  Standards
 
 *   **File Naming:** Use `snake_case` for all files and directories (e.g., `black_scholes_model.py`, not `BlackScholes.py`).
 *   **Code Quality:**
@@ -22,8 +22,8 @@ Thank you for your interest in contributing to **The Quant Prep**! We aim to bui
     *   **C++:** Follow Google C++ Style Guide. Use smart pointers and modern C++ features.
 *   **Notebooks:** Clear outputs, markdown cells explaining the logic, and math using LaTeX.
 
-## 🧪 Testing
+##  Testing
 If adding code, please provide a simple unit test or an example usage script to verify correctness.
 
-## 🤝 Code of Conduct
+##  Code of Conduct
 Be respectful and constructive in discussions. This is a learning community.

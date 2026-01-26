@@ -309,7 +309,7 @@ class VolatilityCrushAnalyzer:
         
     def setup_status_section(self, parent, row):
         """Setup status section"""
-        status_frame = ttk.LabelFrame(parent, text="ℹ️ Status", padding="10")
+        status_frame = ttk.LabelFrame(parent, text="ℹ Status", padding="10")
         status_frame.grid(row=row, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 15))
         status_frame.columnconfigure(0, weight=1)
         status_frame.rowconfigure(0, weight=1)

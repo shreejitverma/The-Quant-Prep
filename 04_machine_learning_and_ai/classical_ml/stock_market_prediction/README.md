@@ -156,7 +156,7 @@ https://www.python.org/
 <h3 align="left">Tools:</h3>
 <p align="left"> </a> <a href="https://anaconda.org/" target="_blank"> <img src="https://www.clipartkey.com/mpngs/m/227-2271689_transparent-anaconda-logo-png.png" alt="Anaconda" width="80" height="80"/> </a> <a href="https://www.spyder-ide.org/" target="_blank"> <img src="https://www.kindpng.com/picc/m/86-862450_spyder-python-logo-png-transparent-png.png" alt="Spyder" width="80" height="80"/> </a> <a href="https://jupyter.org/" target="_blank"> <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/Jupyter_logo.svg" alt="Jupyter Notebook" width="80" height="80"/> </a> <a href="https://notepad-plus-plus.org/" target="_blank"> <img src="https://logos-download.com/wp-content/uploads/2019/07/Notepad_Logo.png" alt="Notepad++" width="80" height="80"/> </a> <a href="https://www.jetbrains.com/pycharm/" target="_blank"> <img src="https://brandeps.com/logo-download/P/Pycharm-logo-vector-01.svg" alt="Notepad++" width="80" height="80"/> </a> </p>  
 
-<a href="https://www.buymeacoffee.com/lastancientone"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a Book&emoji=📚&slug=lastancientone&button_colour=000000&font_colour=ffffff&font_family=Lato&outline_colour=ffffff&coffee_colour=FFDD00" /></a>  
+<a href="https://www.buymeacoffee.com/lastancientone"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a Book&emoji=&slug=lastancientone&button_colour=000000&font_colour=ffffff&font_family=Lato&outline_colour=ffffff&coffee_colour=FFDD00" /></a>  
 
 ## Authors  
 ### Tin Hang
@@ -166,4 +166,4 @@ https://www.python.org/
 
 ### Certain portions of the code may encounter issues stemming from updates or obsolescence within specific library packages. Consequently, adjustments will be necessary, contingent upon the Python package library employed. It may be imperative to either upgrade or downgrade certain libraries accordingly.  
 
-## 🔴 Warning: This is not financial advice; it should not be relied upon for investment or trading decisions, as it is for educational purposes only.  
+##  Warning: This is not financial advice; it should not be relied upon for investment or trading decisions, as it is for educational purposes only.  

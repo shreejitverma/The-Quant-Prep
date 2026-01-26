@@ -2,7 +2,7 @@
 
 Quantitative firms run massive simulations (e.g., VaR, Greeks) that cannot fit on a single machine.
 
-## 🏗️ Core Architectures
+##  Core Architectures
 
 ### 1. The Compute Grid (HTC)
 *   **High Throughput Computing:** Unlike HPC (tightly coupled MPI), Finance uses loose coupling.
@@ -19,10 +19,10 @@ Quantitative firms run massive simulations (e.g., VaR, Greeks) that cannot fit o
 *   **The Problem:** Moving terabytes of tick data to compute nodes is slow.
 *   **Solution:** Move compute to data. Use distributed filesystems (HDFS, S3) or columnar stores (KDB+, Parquet).
 
-## 🚀 Caching & Memoization
+##  Caching & Memoization
 *   **Memoization:** If inputs (Spot, Vol, Time) haven't changed, don't re-price the option. Return cached Greeks.
 *   **Dependency Graph:** Only re-calculate downstream nodes affected by an upstream market data change.
 
-## 🔑 Key Interview Question
+##  Key Interview Question
 *"Design a system to calculate the real-time VaR (Value at Risk) of a global multi-asset portfolio with 1 million trades."*
 *   **Hint:** Sharding by Asset Class vs Sharding by Risk Factor.

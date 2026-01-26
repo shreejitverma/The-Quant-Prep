@@ -2,7 +2,7 @@
 
 This module covers the essential C++ concepts required for High Frequency Trading (HFT) and low-latency systems development.
 
-## 📚 Syllabus
+##  Syllabus
 
 1.  **Memory Management**
     *   Stack vs Heap
@@ -26,12 +26,12 @@ This module covers the essential C++ concepts required for High Frequency Tradin
     *   Kernel Bypass (Solarflare, DPDK)
     *   Socket Optimization (`SO_BUSYPOLL`)
 
-## 🛠️ Key Libraries
+##  Key Libraries
 *   **Boost:** Asio, Interprocess
 *   **Folly:** Facebook's open-source library
 *   **QuickFIX:** For FIX protocol messaging
 
-## 📝 Practice Projects
+##  Practice Projects
 1.  Implement a Lock-free Ring Buffer.
 2.  Build a simple Order Matching Engine.
 3.  Create a FIX Message Parser using TMP.

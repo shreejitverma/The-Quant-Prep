@@ -2,7 +2,7 @@
 
 To compete at the microsecond (or nanosecond) level, HFT firms rely on specialized architecture that bypasses standard operating system overheads.
 
-## 🏗️ The Stack (From Wire to Strategy)
+##  The Stack (From Wire to Strategy)
 
 ### 1. The Physical Layer (L1)
 *   **Colocation:** Servers are physically located in the exchange's data center (e.g., NASDAQ's data center in Carteret, NJ) to minimize the speed of light travel time.
@@ -26,7 +26,7 @@ To compete at the microsecond (or nanosecond) level, HFT firms rely on specializ
 *   **Pre-Trade Risk:** Must check limits (max position, max notional) in nanoseconds.
 *   **Smart Order Routing (SOR):** Deciding which venue to send the order to for the best price/rebate.
 
-## 📐 Diagram
+##  Diagram
 
 ```mermaid
 graph TD
@@ -39,7 +39,7 @@ graph TD
     Execution -->|TCP/Binary Order| Exchange
 ```
 
-## 🔑 Key Optimization Techniques
+##  Key Optimization Techniques
 1.  **Warm-up:** Running dummy loops to keep CPU caches hot.
 2.  **Branch Prediction Optimization:** writing code that favors the "happy path" (e.g., `if (unlikely(error))`).
 3.  **Zero-Copy:** Never copying data buffers; passing pointers instead.

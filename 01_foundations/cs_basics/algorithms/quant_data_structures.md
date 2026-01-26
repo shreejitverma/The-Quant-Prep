@@ -2,7 +2,7 @@
 
 Quant coding interviews differ from Big Tech. They focus less on "invert a binary tree" and more on structures used in **Trading Engines** and **Data Analysis**.
 
-## ⚡ Critical Data Structures
+##  Critical Data Structures
 
 ### 1. Hash Maps (Dictionaries)
 *   **Use Case:** Order ID lookup, Symbol mapping.
@@ -24,7 +24,7 @@ Quant coding interviews differ from Big Tech. They focus less on "invert a binar
 *   **Use Case:** Time Series data.
 *   **Optimization:** **Cache Locality**. Iterating over a contiguous array is orders of magnitude faster than a Linked List due to CPU prefetching.
 
-## 🧮 Essential Algorithms
+##  Essential Algorithms
 
 ### 1. Sliding Window
 *   **Problem:** "Calculate the 10-day Moving Average."
@@ -41,6 +41,6 @@ Quant coding interviews differ from Big Tech. They focus less on "invert a binar
 *   **Problem:** "Find the k-th largest element (e.g., 95th percentile Latency)."
 *   **Complexity:** O(n) average.
 
-## 🛠️ Practice
+##  Practice
 *   Implement a **Matching Engine**: Takes Buy/Sell orders and executes matches.
 *   Implement a **Moving Median** class.

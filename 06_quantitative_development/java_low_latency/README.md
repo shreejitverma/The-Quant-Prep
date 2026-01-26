@@ -2,7 +2,7 @@
 
 While C++ is King in HFT, Java is widely used in electronic trading (banks, some prop shops) for its rapid development cycle and mature ecosystem.
 
-## 🚀 Key Concepts
+##  Key Concepts
 
 1.  **Garbage Collection (GC) Avoidance:**
     *   **Object Pooling:** Reusing objects instead of creating new ones to prevent "Stop-the-world" GC pauses.
@@ -15,10 +15,10 @@ While C++ is King in HFT, Java is widely used in electronic trading (banks, some
 3.  **Thread Affinity:**
     *   Binding critical threads (e.g., market data handler) to specific CPU cores to maximize cache hits.
 
-## 📝 Example: GC-Free Ring Buffer Pattern
+##  Example: GC-Free Ring Buffer Pattern
 
 See `examples/RingBuffer.java` (Mock implementation).
 
-## 📚 Resources
+##  Resources
 *   [LMAX Disruptor Architecture](https://lmax-exchange.github.io/disruptor/)
 *   "Java Performance: The Definitive Guide" by Scott Oaks

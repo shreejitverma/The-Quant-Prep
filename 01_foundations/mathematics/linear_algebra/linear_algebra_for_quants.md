@@ -2,7 +2,7 @@
 
 Linear Algebra is the engine room of quantitative finance, powering everything from Portfolio Optimization to Machine Learning.
 
-## 🔑 Key Concepts
+##  Key Concepts
 
 ### 1. Eigenvalues and Eigenvectors
 *   **Definition:** $Av = \lambda v$.
@@ -28,7 +28,7 @@ Linear Algebra is the engine room of quantitative finance, powering everything f
 *   **Application:** Calculating Hedge Ratios, Beta, and Factor Loadings.
 *   **Numerical Stability:** Solving $Ax=b$ via `inv(X'X)` is numerically unstable. Use QR decomposition or SVD instead.
 
-## 📝 Common Interview Questions
+##  Common Interview Questions
 1.  **"What is the geometric interpretation of the determinant?"** (Volume scaling factor).
 2.  **"How do you generate correlated random normals?"** (Cholesky Decomposition).
 3.  **"What happens if your Covariance Matrix is not invertible?"** (Multicollinearity - use Ridge Regression or PCA).

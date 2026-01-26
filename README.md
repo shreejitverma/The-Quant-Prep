@@ -6,20 +6,20 @@ Welcome to **The Quant Prep**. This repository has been structured into a rigoro
 
 ---
 
-## 🚀 Premium Resources for Top-Tier Firms
+##  Premium Resources for Top-Tier Firms
 
 We have added specialized content for High Frequency Trading (HFT) and Prop Trading interviews:
 
-*   **📅 Study Plan:** [8-Week Quant Roadmap](./07_interview_preparation/study_roadmap.md) (Step-by-step preparation guide).
-*   **⚡ C++ Low Latency:** [Modern C++ Cheatsheet](./06_quantitative_development/cpp_low_latency/modern_cpp_interview.md) & [Lock-Free Ring Buffer](./06_quantitative_development/cpp_low_latency/examples/lock_free_spsc_queue.cpp).
-*   **🧠 Quant CS:** [Data Structures for Finance](./01_foundations/cs_basics/algorithms/quant_data_structures.md) (Order Books, Ring Buffers).
-*   **📐 Mathematics:** [Linear Algebra](./01_foundations/mathematics/linear_algebra/linear_algebra_for_quants.md) & [Probability Guide](./01_foundations/mathematics/probability/quant_probability_guide.md).
-*   **🏢 Company Guides:** [Jane Street Prep](./07_interview_preparation/company_insights/jane_street_guide.md).
-*   **🏗️ System Design:** [Distributed Computing](./06_quantitative_development/system_design/distributed_compute.md) & [HFT Architecture](./06_quantitative_development/system_design/architecture_notes/hft_architecture.md).
+*   ** Study Plan:** [8-Week Quant Roadmap](./07_interview_preparation/study_roadmap.md) (Step-by-step preparation guide).
+*   ** C++ Low Latency:** [Modern C++ Cheatsheet](./06_quantitative_development/cpp_low_latency/modern_cpp_interview.md) & [Lock-Free Ring Buffer](./06_quantitative_development/cpp_low_latency/examples/lock_free_spsc_queue.cpp).
+*   ** Quant CS:** [Data Structures for Finance](./01_foundations/cs_basics/algorithms/quant_data_structures.md) (Order Books, Ring Buffers).
+*   ** Mathematics:** [Linear Algebra](./01_foundations/mathematics/linear_algebra/linear_algebra_for_quants.md) & [Probability Guide](./01_foundations/mathematics/probability/quant_probability_guide.md).
+*   ** Company Guides:** [Jane Street Prep](./07_interview_preparation/company_insights/jane_street_guide.md).
+*   ** System Design:** [Distributed Computing](./06_quantitative_development/system_design/distributed_compute.md) & [HFT Architecture](./06_quantitative_development/system_design/architecture_notes/hft_architecture.md).
 
 ---
 
-## 🗺️ Learning Roadmap
+##  Learning Roadmap
 
 ### [01. Foundations](./01_foundations)
 *Prerequisites for entering the field.*
@@ -77,10 +77,10 @@ We have added specialized content for High Frequency Trading (HFT) and Prop Trad
 
 ---
 
-## 🚀 How to Use This Repo
+##  How to Use This Repo
 1.  **Assess your level:** Start at Stage 01 if you are new, or jump to Stage 05/06 if you are an experienced dev.
 2.  **Code along:** Don't just read notebooks. Clone the repo and modify the strategies.
 3.  **Build a Portfolio:** Use the concepts in Stage 05 to build a live trading bot or a backtesting engine to showcase in interviews.
 
-## 🤝 Contribution
+##  Contribution
 Contributions are welcome! Please follow the `snake_case` naming convention for all new files and directories.

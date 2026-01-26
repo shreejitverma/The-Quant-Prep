@@ -14,4 +14,4 @@ https://www.mathworks.com/?s_tid=gn_logo
 ## Author     
 ### * Tin Hang  
 
-## 🔴 Warning: This is not financial advisor.  Do not use this to invest or trade. It is for educational purpose. 
+##  Warning: This is not financial advisor.  Do not use this to invest or trade. It is for educational purpose. 
