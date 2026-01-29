@@ -33,15 +33,16 @@ We have curated specialized resources that target the specific requirements of H
 
 ### ⚡ Low Latency & Systems
 *   **C++ Mastery:** [Order Matching Engine](./06_quantitative_development/cpp_low_latency/examples/order_matching_engine.cpp), [Lock-Free Queue](./06_quantitative_development/cpp_low_latency/examples/lock_free_spsc_queue.cpp), & [Memory Pool](./06_quantitative_development/cpp_low_latency/examples/memory_pool.cpp).
+*   **Concurrency:** [Multithreaded Monte Carlo](./06_quantitative_development/cpp_low_latency/examples/multithreaded_monte_carlo.cpp) (std::async, std::future).
 *   **Template Metaprogramming:** [Compile-Time Greeks](./06_quantitative_development/cpp_low_latency/examples/compile_time_greeks.cpp) (C++20 `consteval` LUTs).
-*   **Market Data:** [ITCH Feed Handler](./06_quantitative_development/data_engineering/market_data/itch_parser_mock.py).
 *   **Architecture:** [HFT Infrastructure](./06_quantitative_development/system_design/architecture_notes/hft_architecture.md).
 
 ### 🧠 Interview Mastery
 *   **The Roadmap:** [8-Week Study Plan](./07_interview_preparation/study_roadmap.md).
 *   **Quant Strategies:** [Avellaneda-Stoikov Market Making](./05_algorithmic_trading/strategies/market_microstructure/avellaneda_stoikov_mm.py) & [Pairs Trading](./05_algorithmic_trading/strategies/systematic_strategies/pairs_trading_stat_arb.ipynb).
+*   **AI/ML:** [LSTM Time Series Forecasting](./04_machine_learning_and_ai/deep_learning/lstm_price_prediction.ipynb) (PyTorch).
+*   **Backtesting:** [Performance Metrics Library](./05_algorithmic_trading/backtesting_frameworks/performance_metrics.py) (Sharpe, Sortino, Drawdown).
 *   **Jane Street Guide:** [Probability & Betting](./07_interview_preparation/company_insights/jane_street_guide.md).
-*   **Quant Math:** [Green Book Companion](./01_foundations/mathematics/probability/quant_probability_guide.md).
 
 ---
 
