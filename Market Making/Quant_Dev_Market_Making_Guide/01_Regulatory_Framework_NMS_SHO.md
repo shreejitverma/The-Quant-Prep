@@ -18,7 +18,7 @@ As a quantitative developer in market making, you operate at the intersection of
 **Interview Readiness Targets:**
 *   Explain trade-through protection and ISO mechanics on a whiteboard.
 *   Design a compliant market making quote engine with SHO locate/close-out logic.
-*   Analyze maker-taker fee structures and their impact on liquidity provision strategies.
+*   Analyze maker-taker vs. inverted fee structures and their impact on liquidity provision strategies.
 *   Debug routing failures involving protected quotes and locked/crossed markets.
 
 ---
@@ -119,57 +119,33 @@ For stocks <$1.00: Sub-penny increments are permitted (e.g., $0.9999, $0.9998).
 
 **Edge Case:** Sub-penny *executions* are allowed (e.g., midpoint matching at $100.005), but you cannot *display* sub-penny quotes. Your order management system must handle this distinction.
 
-### 1.5 Market Data Rules (Rules 601-603)
+### 1.5 Market Data Rules (Rules 601-603) and The SIP
 
-Reg NMS updated rules governing consolidation and dissemination of quotes and trades:
-*   **Rule 601:** Dissemination of transaction reports and quotation information.
-*   **Rule 602:** Dissemination of quotations in NMS securities.
-*   **Rule 603:** Distribution and display of information with respect to quotations.
+Reg NMS requires the consolidation of data.
+*   **Rule 603:** Requires exchanges to provide their best quotes and trades to the **Securities Information Processor (SIP)**.
 
-**Critical for Market Makers:** These rules define the Securities Information Processor (SIP) feeds that distribute consolidated NBBO. The SIP is the "official" source for protected quotes under Rule 611, even though direct feeds are faster.
+#### 1.5.1 SIP vs. Direct Feeds
+*   **SIP (Consolidated):** Aggregates A, B, C... calculates NBBO -> Broadcasts to public.
+    *   *Latency:* High (~20-50 microseconds processing + transmission).
+    *   *Use Case:* Compliance, Retail, Display.
+*   **Direct Feeds (Proprietary):** Exchange A -> Broadcasts directly to subscribers.
+    *   *Latency:* Ultra-low (Nanoseconds/Microseconds).
+    *   *Use Case:* Trading, Pricing, HFT.
 
-**Latency Arbitrage:** SIP latency (typically 300μs - 5ms slower than direct feeds) creates opportunities and risks:
-*   **Opportunity:** Trading against stale SIP NBBO using direct feed data.
-*   **Risk:** Regulatory reliance on SIP for trade-through calculations means your direct feed advantage is legally constrained.
+**The "Latency Arbitrage" Trade:**
+HFT firms subscribe to Direct Feeds. They calculate the "Future NBBO" faster than the SIP can publish the "Current NBBO".
+*   If Price moves on Direct Feed -> HFT sees it -> HFT executes against stale SIP-pegged orders (e.g., dark pool midpoints) before they update.
 
-**System Design:** Production market making systems maintain both direct feeds (for speed) and SIP feeds (for compliance validation).
+### 1.6 Best Execution (FINRA Rule 5310 vs Reg NMS)
 
-### 1.6 NMS Impact on Market Making Strategy
+**Confusion Point:** Reg NMS Rule 611 requires "Order Protection" (don't trade worse). FINRA Rule 5310 requires "Best Execution" (find the best market).
 
-#### 1.6.1 Quote Competition Dynamics
-Reg NMS transformed market making from venue-specific to cross-venue competition.
-*   **Pre-NMS:** NYSE specialists had informational/temporal advantages; could see order flow before executing.
-*   **Post-NMS:** All protected quotes compete equally; speed and price are primary differentiators.
+*   **Rule 611 (NMS):** "Do not trade through a protected quote." (A floor for performance).
+*   **Rule 5310 (FINRA):** "Use reasonable diligence to ascertain the best market." (A ceiling for performance).
+    *   **Factors:** Price, volatility, liquidity, speed, transaction costs.
+    *   **Routing to Affiliates:** You cannot route to your own ATS if an external exchange offers a better price + rebate net of fees.
 
-**For Quant Devs:** Your quote engine competes with every other market maker across all lit venues simultaneously. Latency to update quotes in response to NBBO changes is critical.
-
-#### 1.6.2 Maker-Taker Economics
-Exchanges use maker-taker pricing to incentivize liquidity provision.
-
-**Typical Structure:**
-*   **Maker rebate:** $0.0020/share (20 mils) – paid to you for posting resting orders.
-*   **Taker fee:** $0.0030/share (30 mils) – charged for removing liquidity.
-*   **Exchange profit:** $0.0010/share spread.
-
-**Market Making P&L Formula:**
-`P&L = (Spread Capture) + (Maker Rebates) - (Adverse Selection) - (Inventory Risk)`
-
-**Example:**
-*   Post bid @ $100.00, ask @ $100.02 (2-cent spread).
-*   Fill 10,000 shares on each side (neutral inventory).
-*   Gross spread: 10,000 × $0.02 = $200.
-*   Maker rebates: 20,000 × $0.0020 = $40.
-*   Gross revenue: $240.
-*   Assume adverse selection costs $0.005/share:
-    *   Adverse selection: 20,000 × $0.005 = $100.
-    *   Net P&L: $240 - $100 = $140.
-
-**Strategy Insight:** At tight spreads (1-2 cents), maker rebates can represent 20-30% of gross revenue. Venue selection and rebate optimization are first-order effects.
-
-#### 1.6.3 Dark Pool Considerations
-Rule 611 does not require routing to dark pools (their quotes aren't protected). But your market making system must decide when to post liquidity in dark venues vs. lit exchanges.
-*   **Lit venues:** Maker rebates, but exposed to adverse selection from informed flow seeing your quotes.
-*   **Dark pools:** No rebates, but reduced information leakage and potential price improvement.
+**Quant Impact:** Your Smart Order Router (SOR) must optimize for *Total Consideration* (Price + Fee/Rebate + Fill Probability), not just the displayed price.
 
 ---
 
@@ -177,7 +153,7 @@ Rule 611 does not require routing to dark pools (their quotes aren't protected).
 
 ### 2.1 Why Short Selling Needs Regulation
 
-**Core Problem:** "Naked" short selling (selling without arranging to borrow) can create failures to deliver (FTDs), where the seller cannot deliver shares by T+2 settlement. Persistent FTDs distort price discovery and settlement integrity.
+**Core Problem:** "Naked" short selling (selling without arranging to borrow) can create failures to deliver (FTDs), where the seller cannot deliver shares by T+1 settlement. Persistent FTDs distort price discovery and settlement integrity.
 
 **Reg SHO Objective:** Establish clear rules for short sale marking, locate, close-out, and a circuit breaker to prevent abusive short selling while preserving legitimate market making and hedging.
 
@@ -191,201 +167,43 @@ Every equity order must be marked as:
 
 **Market Maker Compliance:** Your order management system (OMS) must tag every sell order with the correct marking. This requires real-time inventory tracking to determine long/short status.
 
-#### 2.2.2 Common Marking Errors (Interview Red Flags)
-1.  **Failure to aggregate accounts:** Marking long on Account A when short on Account B (same beneficial owner).
-2.  **Mislabeling hedges:** Marking a short sale as "long" because it hedges an options position (still short unless you own underlying).
-3.  **Delayed inventory updates:** Using stale position data resulting in incorrect marks.
+### 2.3 Rule 203: Locate and Delivery Requirements
 
-**System Design Requirement:** Atomic position updates synchronized with order marking logic. Race conditions between fills and position updates create regulatory risk.
+#### 2.3.1 Rule 203(a): Long Sales (Delivery)
+If you mark an order **Long**, you *must* deliver the securities by settlement date.
+*   **Restriction:** You cannot mark "Long" if you are lending the shares out or if you know you cannot deliver.
 
-### 2.3 Rule 203(b): Locate Requirement
-
-#### 2.3.1 Basic Locate Obligation
+#### 2.3.2 Rule 203(b): Short Sales (Locate)
 Before executing a short sale, a broker-dealer must:
-1.  Borrow or arrange to borrow the security, OR
-2.  Have reasonable grounds to believe the security can be borrowed and delivered by settlement.
-The locate must be obtained and documented **before** the short sale.
+1.  **Borrow** the security, OR
+2.  Have **reasonable grounds to believe** the security can be borrowed and delivered by settlement (The "Locate").
 
-#### 2.3.2 What Constitutes "Reasonable Grounds"
-**Acceptable locate sources:**
-*   Easy-to-borrow list: Securities generally available from lending desk.
-*   Specific borrow arrangement: Confirmation from securities lending desk.
-*   Reasonable grounds belief: Based on recent locate history for that security.
+**Acceptable Locate Sources:**
+*   **Easy-to-borrow (ETB) list:** Daily list of liquid stocks. Blanket locate.
+*   **Hard-to-Borrow (HTB):** Requires specific Locate ID from lending desk.
 
-**Not Acceptable:**
-*   Relying solely on prior-day locate for a new trading day.
-*   Assuming a large-cap stock is always available without verification.
-
-#### 2.3.3 Bona Fide Market Maker Exception to Locate (CRITICAL)
+#### 2.3.3 Bona Fide Market Maker Exception (Rule 203(b)(2)(iii))
 **Exemption:** Market makers engaged in **bona fide market making activities** are exempt from the locate requirement.
+*   **Why?** To provide continuous liquidity.
+*   **Condition:** Must maintain continuous, two-sided quotes. "Hit and run" quoting does not qualify.
 
-**Rationale:** Market makers must provide continuous two-sided liquidity, often in fast-moving markets where obtaining a locate for every short sale would introduce unacceptable delays.
+### 2.4 Rule 204: Close-Out and Buy-In (T+1 Era)
 
-**SEC Definition of Bona Fide Market Making:**
-1.  Regularly and continuously quote on both bid and ask sides.
-2.  Quotes must be at or near the market (competitive pricing).
-3.  Quotes must be widely available to investors and broker-dealers (not hidden/anonymous).
-4.  Market making activity must be legitimate liquidity provision, not speculation.
+#### 2.4.1 FTD Mechanics
+*   **T (Trade):** Short sale.
+*   **T+1 (Settlement):** Shares due. If not delivered -> FTD.
+*   **NSCC CNS System:** The Continuous Net Settlement system tracks the net fail.
 
-**What Is NOT Bona Fide Market Making:**
-*   Posting quotes only briefly or only on one side.
-*   "Speculative selling strategies" disguised as market making.
-*   Routinely executing shorts away from the market maker's quotes.
-*   Arrangements to use the exemption to facilitate another party's locate avoidance.
+#### 2.4.2 Buy-In Deadlines
+*   **Rule 204(a):** Participants must close out FTDs by the beginning of trading hours on **T+2** (Settlement + 1).
+*   **Market Makers (Rule 204(a)(3)):** Extended to **T+3** (Settlement + 2) for bona fide market making fails.
 
-#### 2.3.4 FINRA Supervisory Expectations (Production System Requirements)
-FINRA's examination reports emphasize firms must demonstrate compliance with bona fide market making requirements through:
+**The "Buy-In":** If you fail to close out, you must purchase securities ("Buy-In") to cover the deficit immediately.
 
-**Monitoring and Controls:**
-*   **Where quotes are placed:** Lit exchanges vs. dark pools; visible vs. hidden orders.
-*   **Frequency and timing of quoting:** Continuous presence vs. sporadic quoting.
-*   **Proprietary vs. customer flow:** Ratio of prop trades to customer order facilitation.
-*   **Quote competitiveness:** Spread width, distance from NBBO, time at NBBO.
-
-**Red Flags for Supervisory Systems:**
-*   Quotes posted only briefly (e.g., milliseconds).
-*   Quotes posted anonymously or non-competitively (far from market).
-*   Quotes only on one side of the market.
-*   High ratio of proprietary directional trades vs. market making fills.
-
-**Interview Question:** *"Design a real-time compliance system to validate bona fide market making status."*
-
-**Answer Framework:**
-```python
-class BonafideMarketMakerMonitor:
-    def __init__(self, symbol: str):
-        self.symbol = symbol
-        self.bid_quote_time = 0.0
-        self.ask_quote_time = 0.0
-        self.total_bid_time = 0.0
-        self.total_ask_time = 0.0
-        self.prop_short_volume = 0
-        self.customer_facilitation_volume = 0
-        self.quote_updates = []
-
-    def on_quote_update(self, side: str, price: float, size: int, nbbo_bid: float, nbbo_ask: float, timestamp: float):
-        """Track quoting continuity and competitiveness"""
-        # Check quote competitiveness (within N cents of NBBO)
-        if side == 'bid':
-            competitive = (nbbo_bid - price) <= 0.03  # Within 3 cents
-            if competitive:
-                self.total_bid_time += (timestamp - self.bid_quote_time)
-            self.bid_quote_time = timestamp
-        elif side == 'ask':
-            competitive = (price - nbbo_ask) <= 0.03
-            if competitive:
-                self.total_ask_time += (timestamp - self.ask_quote_time)
-            self.ask_quote_time = timestamp
-            
-        self.quote_updates.append({
-            'side': side, 'price': price, 'nbbo_bid': nbbo_bid, 
-            'nbbo_ask': nbbo_ask, 'timestamp': timestamp
-        })
-
-    def on_short_sale(self, is_customer_facilitation: bool, volume: int):
-        """Track short sale activity classification"""
-        if is_customer_facilitation:
-            self.customer_facilitation_volume += volume
-        else:
-            self.prop_short_volume += volume
-
-    def validate_bonafide_status(self, current_time: float, trading_hours: float) -> tuple[bool, str]:
-        """Validate continuous two-sided quoting and activity mix"""
-        bid_uptime_pct = self.total_bid_time / trading_hours
-        ask_uptime_pct = self.total_ask_time / trading_hours
-        
-        # Requirement: >80% uptime on both sides (example threshold)
-        if bid_uptime_pct < 0.80:
-            return False, f"Insufficient bid quoting: {bid_uptime_pct:.1%}"
-        if ask_uptime_pct < 0.80:
-            return False, f"Insufficient ask quoting: {ask_uptime_pct:.1%}"
-        
-        # Check proprietary vs customer ratio
-        total_volume = self.prop_short_volume + self.customer_facilitation_volume
-        if total_volume > 0:
-            prop_ratio = self.prop_short_volume / total_volume
-            if prop_ratio > 0.70:  # Example: >70% prop trades is suspicious
-                return False, f"Excessive proprietary short volume: {prop_ratio:.1%}"
-        
-        return True, "Compliant bona fide market making"
-```
-
-**Key Metrics to Track:**
-*   Bid/ask quote uptime percentage per symbol per day.
-*   Average spread vs. NBBO spread.
-*   Time-weighted presence at NBBO.
-*   Short volume classification (customer facilitation vs. proprietary speculation).
-
-### 2.4 Rule 204: Close-Out Requirement
-
-#### 2.4.1 Settlement Timeline and FTD Triggers
-*   **Standard Settlement:** T+2 (trade date + 2 business days).
-*   **Example:**
-    *   Monday (T): Trade executed, short sale of 10,000 shares.
-    *   Wednesday (T+2): Settlement date – must deliver shares to buyer.
-    *   Thursday (T+3): If shares not delivered, FTD is recorded at NSCC.
-
-#### 2.4.2 Close-Out Deadlines
-If a fail-to-deliver occurs, Rule 204 requires:
-*   **For clearing participants:** Must close out the FTD by purchasing or borrowing securities no later than the beginning of regular trading hours on **T+3** (settlement day + 1 business day).
-*   **If close-out fails:** The broker-dealer and any broker-dealer for which it clears cannot effect further short sales in that security without **pre-borrowing** (arranging borrow before order entry) until the FTD is closed out and the purchase/borrow settles.
-
-#### 2.4.3 Pre-Borrow Restriction (Penalty for Failed Close-Out)
-*   **Trigger:** Failed to close out FTD by T+3 deadline.
-*   **Penalty:** Cannot execute any short sales in that security without pre-borrow until:
-    1.  The fail is closed out (via purchase or borrow), AND
-    2.  The close-out transaction settles.
-*   **Market Maker Exception Does NOT Apply:** Even bona fide market makers are subject to pre-borrow restrictions if they fail to close out.
-
-**System Design Implication:** Your risk system must maintain per-symbol FTD status and block short sales (or require pre-borrow flag) when close-out failures occur.
-
-```cpp
-// C++ Pre-Borrow Check in Order Entry
-struct SymbolSettlementState {
-    std::string symbol;
-    int64_t outstanding_ftd_shares;
-    bool pre_borrow_required;
-    std::chrono::system_clock::time_point close_out_deadline;
-};
-
-class Rule204Compliance {
-private:
-    std::unordered_map<std::string, SymbolSettlementState> settlement_states_;
-
-public:
-    bool validate_short_sale(const std::string& symbol, int64_t quantity, bool has_pre_borrow) {
-        auto it = settlement_states_.find(symbol);
-        if (it == settlement_states_.end()) {
-            return true; // No outstanding FTD
-        }
-        
-        if (it->second.pre_borrow_required && !has_pre_borrow) {
-            // Block short sale - pre-borrow restriction active
-            return false;
-        }
-        
-        return true;
-    }
-
-    void on_ftd_reported(const std::string& symbol, int64_t ftd_shares, 
-                         std::chrono::system_clock::time_point settlement_date) {
-        auto& state = settlement_states_[symbol];
-        state.symbol = symbol;
-        state.outstanding_ftd_shares += ftd_shares;
-        // T+3 close-out deadline
-        state.close_out_deadline = settlement_date + std::chrono::hours(24);
-    }
-
-    void check_close_out_deadlines(std::chrono::system_clock::time_point current_time) {
-        for (auto& [symbol, state] : settlement_states_) {
-            if (state.outstanding_ftd_shares > 0 && current_time > state.close_out_deadline) {
-                // Missed close-out deadline - activate pre-borrow requirement
-                state.pre_borrow_required = true;
-            }
-        }
-    }
-};
-```
+#### 2.4.3 Pre-Borrow Penalty (Rule 204(b))
+If a participant has an FTD and fails to close it out by the deadline:
+*   **Penalty:** They cannot short sell *that security* without a **Pre-Borrow** (actually arranging the borrow, not just a locate) until the fail is cleared.
+*   **Impact:** Massive operational friction. Your algo essentially stops trading the short side of that symbol.
 
 ### 2.5 Rule 201: Alternative Uptick Rule (Short Sale Circuit Breaker)
 
@@ -466,7 +284,7 @@ A security becomes a threshold security when aggregate FTDs meet both criteria:
 These levels must persist for 5 consecutive settlement days.
 
 #### 2.6.2 Additional Close-Out Requirements
-For threshold securities, if FTDs persist for 13 consecutive settlement days, Rule 203(b)(3) imposes an **immediate close-out obligation** (stricter than Rule 204's T+3).
+For threshold securities, if FTDs persist for 13 consecutive settlement days, Rule 203(b)(3) imposes an **immediate close-out obligation** (stricter than Rule 204's T+2/T+3).
 
 **Market Maker Impact:** Even with bona fide market making exemption, you face accelerated close-out deadlines for threshold securities. Your settlement monitoring must flag these automatically.
 
@@ -475,11 +293,42 @@ Threshold securities lists are published by exchanges (e.g., Nasdaq, NYSE) and u
 
 ---
 
-## Part III: Production System Design – Integrating NMS and SHO
+## Part III: Compliance, Reporting & Interplay
 
-### 3.1 Smart Order Router (SOR) Requirements
+### 3.1 NMS & SHO Interplay
 
-#### 3.1.1 Core Routing Logic
+#### 3.1.1 ISOs and Short Sales
+Can you send an Intermarket Sweep Order (ISO) that is also a Short Sale?
+*   **Yes:** But you must ensure the ISO limit price complies with Rule 201 (if active).
+*   **Scenario:** Stock $XYZ$ is restricted (Rule 201). NBB is $10.00.
+    *   You want to sweep the book down to $9.95.
+    *   **Restriction:** You cannot short sell at $10.00 or lower.
+    *   **Result:** You cannot send a Short Sell ISO priced at $9.95. You must price it at $10.01 or higher (if NBB is $10.00).
+    *   **Exception:** If you are a Market Maker with "Short Exempt" status, you can sell down, but you must be careful not to abuse the exemption.
+
+### 3.2 Reporting Obligations
+
+#### 3.2.1 Consolidated Audit Trail (CAT)
+*   **Scope:** Records every order, route, cancel, and trade.
+*   **Requirement:** Report by 8:00 AM T+1.
+*   **Clock Sync:** 50ms tolerance (1ms for electronic). PTP Required.
+
+#### 3.2.2 Rule 13f-2 (Form SHO)
+*   **New Rule (2023):** Institutional investment managers must report short positions.
+*   **Threshold:** Gross short position > $10M or > 2.5% of shares outstanding.
+*   **Frequency:** Monthly reporting (Form SHO). The SEC aggregates and publishes data.
+
+#### 3.2.3 Form ATS-N
+*   **Scope:** Alternative Trading Systems (Dark Pools) must disclose their operations.
+*   **Relevance:** Helps Quants understand how their orders are prioritized in dark pools (e.g., segmentation of HFT vs. Retail flow).
+
+---
+
+## Part IV: Production System Design – Integrating NMS and SHO
+
+### 4.1 Smart Order Router (SOR) Requirements
+
+#### 4.1.1 Core Routing Logic
 Your SOR must satisfy Reg NMS Rule 611 (order protection) while optimizing for execution quality, fees, and latency.
 
 **High-Level SOR Algorithm:**
@@ -498,7 +347,7 @@ Your SOR must satisfy Reg NMS Rule 611 (order protection) while optimizing for e
 5.  Tag orders appropriately: ISO, short/long/short exempt, etc.
 6.  Monitor fills and route remaining quantity if partial fill.
 
-#### 3.1.2 ISO Sweep Logic (Detailed)
+#### 4.1.2 ISO Sweep Logic (Detailed)
 ```cpp
 struct ProtectedQuote {
     std::string venue;
@@ -567,9 +416,9 @@ public:
 ```
 **Latency Constraint:** ISOs must be sent **simultaneously** to comply with Rule 611. In practice, "simultaneous" means within microseconds. Use non-blocking I/O and parallel socket sends.
 
-### 3.2 Market Making Quote Engine with SHO Compliance
+### 4.2 Market Making Quote Engine with SHO Compliance
 
-#### 3.2.1 High-Level Architecture
+#### 4.2.1 High-Level Architecture
 ```
 ┌─────────────────────────────────────────────────────────┐
 │              Market Data Feed Handler                   │
@@ -612,7 +461,7 @@ public:
 └─────────────────────────────────────────────────────────┘
 ```
 
-#### 3.2.2 Continuous Two-Sided Quoting (Bona Fide Requirement)
+#### 4.2.2 Continuous Two-Sided Quoting (Bona Fide Requirement)
 ```cpp
 class MarketMakingEngine {
 private:
@@ -729,179 +578,20 @@ public:
 };
 ```
 
-### 3.3 Compliance Monitoring and Reporting
-
-#### 3.3.1 Daily Compliance Metrics
-Your production system must generate end-of-day reports demonstrating regulatory compliance:
-
-**Reg NMS Metrics:**
-*   Trade-through incidents (executions worse than protected quotes without valid exception).
-*   ISO usage percentage and sweep completion rate.
-*   Locked/crossed quote incidents and duration.
-*   NBBO participation rate (time spent at NBBO vs. away).
-
-**Reg SHO Metrics:**
-*   Short sale marking accuracy audit (sample fills vs. inventory).
-*   Locate documentation completeness.
-*   FTD incidents, close-out timing, pre-borrow restriction activations.
-*   Bona fide market making uptime (two-sided quote presence %).
-*   Rule 201 circuit breaker compliance (short sales during restriction).
-
-#### 3.3.2 Example Compliance Dashboard SQL Queries
-
-```sql
--- Trade-through detection query
-SELECT 
-    trade_time, 
-    symbol, 
-    execution_price, 
-    nbbo_bid, 
-    nbbo_ask, 
-    side,
-    CASE 
-        WHEN side = 'BUY' AND execution_price > nbbo_ask THEN 'POTENTIAL_TRADE_THROUGH'
-        WHEN side = 'SELL' AND execution_price < nbbo_bid THEN 'POTENTIAL_TRADE_THROUGH'
-        ELSE 'OK'
-    END AS compliance_status
-FROM executions e
-JOIN nbbo_snapshots n ON e.symbol = n.symbol 
-    AND n.snapshot_time = (SELECT MAX(snapshot_time) 
-                           FROM nbbo_snapshots 
-                           WHERE symbol = e.symbol AND snapshot_time <= e.trade_time)
-WHERE execution_date = CURRENT_DATE 
-AND is_iso = FALSE
-HAVING compliance_status = 'POTENTIAL_TRADE_THROUGH';
-
--- Bona fide market making validation query
-SELECT 
-    symbol,
-    SUM(CASE WHEN bid_size > 0 THEN 1 ELSE 0 END) / COUNT(*) AS bid_uptime_pct,
-    SUM(CASE WHEN ask_size > 0 THEN 1 ELSE 0 END) / COUNT(*) AS ask_uptime_pct,
-    AVG(bid_price - nbbo_bid) AS avg_bid_distance,
-    AVG(ask_price - nbbo_ask) AS avg_ask_distance
-FROM quote_snapshots
-WHERE snapshot_date = CURRENT_DATE
-GROUP BY symbol
-HAVING bid_uptime_pct < 0.80 OR ask_uptime_pct < 0.80;
-
--- Rule 204 close-out monitoring
-SELECT 
-    symbol,
-    settlement_date,
-    ftd_shares,
-    close_out_deadline,
-    close_out_time,
-    CASE
-        WHEN close_out_time IS NULL AND CURRENT_TIMESTAMP > close_out_deadline 
-            THEN 'MISSED_DEADLINE'
-        WHEN close_out_time > close_out_deadline THEN 'LATE_CLOSEOUT'
-        ELSE 'COMPLIANT'
-    END AS status
-FROM fails_to_deliver
-WHERE settlement_date >= CURRENT_DATE - INTERVAL '10 days';
-```
-
 ---
 
-## Part IV: Interview Preparation – Key Questions and Frameworks
+## Part V: Market Impact & Strategy
 
-### 4.1 Whiteboard Question: Design a Compliant Market Making System
-**Question:** *"Walk me through the architecture of a low-latency market making system that complies with Reg NMS and Reg SHO. Focus on the critical compliance checkpoints."*
+### 5.1 Fragmentation and Latency Arbitrage
+Reg NMS Rule 611 (Order Protection) unintentionally encouraged fragmentation. Because you *must* route to the best price, new exchanges could start up, post a better price, and *force* everyone to route to them.
+*   **Result:** 16+ exchanges, 50+ dark pools.
+*   **Strategy:** HFT firms place servers at every data center (NJ locations: Secaucus, Carteret, Mahwah). They use microwave networks to transmit price changes from Chicago (Futures) to NJ (Equities) faster than fiber optic cables.
 
-**Answer Framework:**
-1.  **Market Data Layer:**
-    *   Consume direct feeds (ITCH, PITCH) + SIP for compliance validation.
-    *   Maintain order book depth and NBBO tracker.
-    *   Latency: <10μs for direct feed processing.
-2.  **Signal Generation:**
-    *   Spread modeling (bid/ask targets).
-    *   Inventory risk management (position limits, skew).
-    *   Adverse selection detection.
-3.  **Pre-Trade Risk Checks (CRITICAL):**
-    *   For each quote update:
-        *   a. Lock/cross check against NBBO (Rule 610).
-        *   b. Short sale marking based on inventory (Rule 200).
-        *   c. Bona fide validation: competitive pricing, two-sided presence (Rule 203(b)).
-        *   d. Pre-borrow check if FTD closeout failed (Rule 204).
-        *   e. Circuit breaker price test if Rule 201 triggered.
-        *   f. Position limits, capital utilization.
-4.  **Order Management:**
-    *   FIX/binary protocol engines for exchange connectivity.
-    *   Order state machines (new, partial fill, filled, canceled).
-    *   Fill handling and inventory updates.
-5.  **Post-Trade Compliance:**
-    *   Settlement monitoring (T+2 tracking).
-    *   FTD detection and close-out logic.
-    *   Daily compliance reporting.
-6.  **Monitoring/Surveillance:**
-    *   Real-time alerting for compliance violations.
-    *   Quote uptime metrics per symbol.
-    *   Trade-through incident tracking.
-
-**Bonus Points:** Discuss specific latency optimizations (kernel bypass, FPGA parsing, lock-free data structures) while maintaining compliance correctness.
-
-### 4.2 Case Study: Handling a Rule 201 Circuit Breaker Event
-**Scenario:** You're market making in TSLA. At 11:30 AM, TSLA drops from $250.00 (prior close) to $224.50, triggering the Rule 201 circuit breaker. Current NBB is $224.50.
-
-**Questions:**
-1.  What happens to your existing quotes?
-2.  What price can you quote on the ask side for the rest of the day?
-3.  Does the restriction apply to your firm's customer order facilitation?
-4.  When does the restriction expire?
-
-**Answers:**
-1.  **Existing quotes:** Your ask quote at $224.60 is now non-compliant (must be >$224.50, so ≥$224.51). Exchange will likely reject or cancel your quote. You must update immediately.
-2.  **Ask side pricing:** You can only quote ≥$224.51 (above current NBB). As NBB moves, your minimum ask price updates dynamically.
-3.  **Customer facilitation:** If you're facilitating a customer short sale order, the customer's order is subject to Rule 201 unless marked "short exempt" for a valid reason. Your firm's market making quotes can be marked "short exempt" if bona fide, but this doesn't automatically extend to customer orders.
-4.  **Expiration:** End of day Wednesday + all of Thursday trading hours (assuming circuit breaker triggered Tuesday).
-
-**System Response:**
-```python
-Detect circuit breaker activation
-if price <= trigger_price:
-    circuit_breaker.activate()
-    
-Update quote logic
-if circuit_breaker.is_active():
-    min_ask_price = current_nbb + 0.01  # Above NBB
-    ask_price = max(calculated_ask_price, min_ask_price)
-    
-Mark quotes as short exempt (if bona fide market maker)
-if ask_requires_short_sell:
-    order_params['short_sale_type'] = 'SHORT_EXEMPT'
-```
-
-### 4.3 Scenario: Optimizing Routing with Maker-Taker Fees
-**Scenario:** You need to fill a 5,000 share buy order in AAPL. Current NBBO is $180.00 × $180.01.
-**Protected quotes:**
-*   Nasdaq: 2,000 @ $180.01 (maker rebate: $0.0030/share, taker fee: $0.0030/share)
-*   NYSE: 2,000 @ $180.01 (maker rebate: $0.0020/share, taker fee: $0.0030/share)
-*   BATS: 1,500 @ $180.01 (maker rebate: $0.0025/share, taker fee: $0.0025/share)
-
-**Question:** How do you route this order to minimize total cost?
-
-**Analysis:**
-*   **Aggressive (take liquidity) costs:**
-    *   Nasdaq: 2,000 × $0.0030 = $6.00
-    *   NYSE: 2,000 × $0.0030 = $6.00
-    *   BATS: 1,500 × $0.0025 = $3.75
-    *   Total taker fees: $15.75
-*   **But you could instead:**
-    1.  Post passive order at $180.00 (join bid).
-    2.  Wait for fills (become the maker).
-    3.  Earn rebates instead of paying fees.
-*   **If filled as maker at $180.00:**
-    *   Save $0.01/share on price = $50.00
-    *   Earn $0.0025/share rebate (average) = $12.50
-    *   Total savings: $62.50
-
-**Trade-off:** Execution certainty (immediate fill vs. risk of adverse selection if price moves to $180.02+)
-
-**Optimal Strategy (market making context):**
-*   Post at $180.00 for 3,000 shares (partial size).
-*   If not filled within 100ms (parameterized), sweep at $180.01 with ISO.
-*   Balances rebate capture with execution certainty.
-*   This optimization is why maker-taker is central to market making P&L.
+### 5.2 The "Maker-Taker" Arb
+Strategy: Capture the rebate.
+*   **Scenario:** Stock is $10.00 Bid / $10.01 Ask.
+*   **Action:** Join the Bid at $10.00 on a high-rebate venue (e.g., Maker rebate 0.0030).
+*   **Profit:** If filled, you buy at $10.00. If you sell instantly at $10.00 on a Taker-Maker venue (paying 0.0010 fee), you netted $0.0020 profit per share without the price moving.
 
 ---
 
@@ -916,19 +606,65 @@ if ask_requires_short_sell:
 | **Reg SHO Rule 200** | 17 CFR § 242.200 | Marking Requirements (Long/Short/Short Exempt) |
 | **Reg SHO Rule 201** | 17 CFR § 242.201 | Circuit Breaker (Alternative Uptick Rule) |
 | **Reg SHO Rule 203(b)** | 17 CFR § 242.203(b) | Locate Requirement + Bona Fide Market Maker Exception |
-| **Reg SHO Rule 204** | 17 CFR § 242.204 | Close-Out Requirement (T+3, Pre-Borrow Restriction) |
+| **Reg SHO Rule 204** | 17 CFR § 242.204 | Close-Out Requirement (T+1 Standard, Pre-Borrow Restriction) |
+| **FINRA Rule 5310** | FINRA Rule 5310 | Best Execution |
+| **Rule 613** | 17 CFR § 242.613 | Consolidated Audit Trail (CAT) |
+| **Rule 13f-2** | 17 CFR § 240.13f-2 | Reporting of Short Position (Form SHO) |
 
 ---
 
-## Appendix B: Glossary of Terms
+## Appendix B: Glossary & Reference
 
-*   **NBBO:** National Best Bid and Offer – highest bid and lowest ask across all protected quotes.
-*   **Protected Quotation:** Automated, displayed, immediately executable quote disseminated via SIP.
-*   **ISO:** Intermarket Sweep Order – order type that sweeps protected quotes at better prices.
-*   **FTD:** Fail to Deliver – when seller cannot deliver shares by T+2 settlement.
-*   **Threshold Security:** Stock with persistent FTDs (≥10,000 shares and ≥0.5% of float for 5 days).
-*   **Bona Fide Market Making:** Continuous, competitive, two-sided quoting for legitimate liquidity provision.
-*   **Maker-Taker:** Fee structure where makers receive rebates and takers pay fees.
-*   **SIP:** Securities Information Processor – consolidates quotes/trades across exchanges.
-*   **Locate:** Confirmation that shares can be borrowed for short sale (required under Rule 203(b)).
-*   **Pre-Borrow:** Requirement to arrange borrow before order entry (penalty for failed close-out).
+This section provides in-depth explanations for key terms, focusing on their practical application in quantitative development and market microstructure.
+
+### NBBO (National Best Bid and Offer)
+*   **Definition:** The consolidated highest bid and lowest offer price for a security across all protected US exchanges.
+*   **Source:** Disseminated by the SIP (Securities Information Processor).
+*   **Quant Relevance:** This is the "Speed Limit" of the market. You cannot execute a buy order above the National Best Offer or a sell order below the National Best Bid without violating Reg NMS (unless an ISO exception applies). Your algorithms must constantly track the NBBO to ensure compliance and calculate optimal quoting prices.
+
+### Protected Quotation
+*   **Definition:** A quote that is automated (electronic), immediately accessible, and is the best price on its respective exchange.
+*   **Why "Protected"?** Under Reg NMS Rule 611, other exchanges cannot "trade through" (ignore) this quote. If NYSE has a protected bid of $10.00, Nasdaq cannot execute a sell at $9.99.
+*   **Quant Relevance:** If your quote is "protected", you are guaranteed to receive flow before inferior prices are executed. This is the foundation of queue priority across the national market.
+
+### ISO (Intermarket Sweep Order)
+*   **Definition:** A limit order type that instructs the receiving exchange to "execute this order immediately without checking for better prices elsewhere, because I have already sent orders to clear those better prices."
+*   **Mechanism:** It is a flag sent in the order message (e.g., `OrdType=Limit` + `ExecInst=ISO`).
+*   **Quant Relevance:** This is the primary tool for HFT liquidity taking. It allows you to trade faster by bypassing the exchange's internal router. However, it shifts the liability of Reg NMS compliance from the exchange to **you**. If you send an ISO and cause a trade-through, *you* are liable.
+
+### FTD (Fail to Deliver)
+*   **Definition:** When a seller does not deliver the securities to the buyer by the settlement date (T+1).
+*   **Consequence:** Triggers Reg SHO Rule 204 close-out obligations.
+*   **Quant Relevance:** Persistent FTDs can lead to a "Pre-Borrow" penalty, which effectively bans you from short selling that stock without a confirmed, expensive manual borrow. This can kill a market making strategy for that symbol.
+
+### Threshold Security
+*   **Definition:** A stock that has had a significant number of FTDs (≥10,000 shares and 0.5% of float) for 5 consecutive settlement days.
+*   **Quant Relevance:** These stocks are "radioactive" for short selling. They carry higher risk of buy-ins (forced closure of your short position by the clearing firm) and stricter close-out deadlines (13 days). Your system should automatically flag these and potentially widen spreads or reduce short-side size.
+
+### Bona Fide Market Making
+*   **Definition:** An activity where a firm continuously posts two-sided, competitive quotes to provide liquidity to the market.
+*   **Privilege:** Grants an exemption from the "Locate" requirement (you don't need to find a borrow before shorting).
+*   **Quant Relevance:** This is the license to print money in HFT. Without it, you cannot effectively market make because finding a borrow for every short sale would be too slow (latency) and operationally complex. You must maintain strict "uptime" metrics to preserve this status.
+
+### Maker-Taker
+*   **Definition:** A pricing model where the exchange pays a rebate to the liquidity provider ("Maker") and charges a fee to the liquidity remover ("Taker").
+*   **Inverted (Taker-Maker):** The reverse—Makers pay, Takers get paid.
+*   **Quant Relevance:** Rebates are often the difference between profit and loss. A strategy might break even on the spread but profit solely from the $0.0030/share rebate. Your routing logic must account for these fees in the alpha model (e.g., `ExpectedProfit = Alpha + Rebate - Fee`).
+
+### SIP (Securities Information Processor)
+*   **Definition:** The central processing facility that consolidates data from all exchanges to produce the NBBO. (e.g., UTP for Nasdaq-listed, CTA for NYSE-listed).
+*   **Latency:** The SIP is slower than direct proprietary feeds (ITCH, XDP).
+*   **Quant Relevance:** "Latency Arbitrage" often involves exploiting the time difference between the fast direct feeds and the slow SIP. You see the price move on ITCH before the SIP updates the NBBO, allowing you to pick off stale quotes that rely on the SIP.
+
+### Locate
+*   **Definition:** A regulatory requirement (Reg SHO Rule 203) to have "reasonable grounds to believe" that a security can be borrowed before executing a short sale.
+*   **Quant Relevance:** For non-market maker strategies (e.g., statistical arbitrage), you *must* get a Locate ID from your prime broker before sending a short order. This adds latency and cost.
+
+### Pre-Borrow
+*   **Definition:** A penalty state where a broker/dealer is required to actually *arrange* the borrow (not just "locate" or "believe") before every short sale.
+*   **Trigger:** Violation of Rule 204 close-out requirements.
+*   **Quant Relevance:** This is a "penalty box." It adds massive friction to trading. Avoid at all costs.
+
+### CAT (Consolidated Audit Trail)
+*   **Definition:** A massive database created by the SEC to track every order, route, cancellation, and execution in the US equity and options markets.
+*   **Quant Relevance:** It imposes strict reporting requirements. Your system must log every event with high-precision timestamps (nanoseconds) and synchronize clocks perfectly. Failure to report correctly leads to massive fines.
