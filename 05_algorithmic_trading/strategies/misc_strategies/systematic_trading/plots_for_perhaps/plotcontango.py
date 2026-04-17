@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import datetime as dt
 import Image
@@ -19,7 +20,7 @@ import Quandl
 
 def get_quandl(code):
     QUANDLDICT=dict(GOLD="COM/WLD_GOLD", CORN="COM/PMAIZMT_USD", CRUDE_W="COM/WLD_CRUDE_WTI")
-    authtoken='qWXuZcdwzwQ2GJQ88sNb'
+    authtoken=os.environ.get("QUANDL_API_KEY", "")
     quandldef=QUANDLDICT[code]
     print quandldef
     data = Quandl.get(quandldef, authtoken=authtoken)
@@ -72,7 +73,7 @@ def get_adj_price(instrument_code):
 
 def get_interest():
 
-    authtoken='qWXuZcdwzwQ2GJQ88sNb'
+    authtoken=os.environ.get("QUANDL_API_KEY", "")
     quandldef='FRED/INTDSRUSM193N'
     print quandldef
     data = Quandl.get(quandldef, authtoken=authtoken)
@@ -140,6 +141,3 @@ show()
 
 data3.plot()
 show()
-
-
-

@@ -1,3 +1,4 @@
+import os
 #Copyright QuantInsti Quantitative Learning Private Limited
 
 
@@ -22,8 +23,8 @@ def fetch_data(string1,string2,string3,filename):
 	return w
 
 #the data pulled from quandl and stored locally for faster execution
-Data1 = fetch_data( "CHRIS/CME_SP1", "mq-W7Z-QXBDZ1MxaN-Vy", "2014-12-12" ,"local_future.csv")
-Data = fetch_data("CBOE/SPX_PC","mq-W7Z-QXBDZ1MxaN-Vy", "2014-12-12","local_data.csv")
+Data1 = fetch_data( "CHRIS/CME_SP1", os.environ.get("QUANDL_API_KEY", ""), "2014-12-12" ,"local_future.csv")
+Data = fetch_data("CBOE/SPX_PC",os.environ.get("QUANDL_API_KEY", ""), "2014-12-12","local_data.csv")
 
 Data['future'] = Data1['Last']
 Data['PCR'] = Data['S&P PUT-CALL RATIO'] # PCR IS Put Call Ratio
