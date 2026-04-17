@@ -30,3 +30,11 @@ jobs:
       run: |
         g++ -o memory_pool 06_quantitative_development/cpp_low_latency/examples/memory_pool.cpp
         ./memory_pool
+
+    - name: Build and Run C++ Unit Tests
+      run: |
+        g++ -std=c++17 -Wall -Wextra -Werror \
+            -I 06_quantitative_development/cpp_low_latency/examples \
+            tests/cpp/test_udp_receiver_mock.cpp \
+            -o test_udp_receiver_mock
+        ./test_udp_receiver_mock
