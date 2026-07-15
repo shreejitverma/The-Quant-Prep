@@ -120,7 +120,10 @@ For stocks <$1.00: Sub-penny increments are permitted (e.g., $0.9999, $0.9998).
 **Edge Case:** Sub-penny *executions* are allowed (e.g., midpoint matching at $100.005), but you cannot *display* sub-penny quotes. Your order management system must handle this distinction.
 
 ### 1.5 Market Data Rules (Rules 601-603) and The SIP
-
+4 - Reg NMS updated rules governing consolidation and dissemination of quotes and trades:                          
+**Rule 601:** Dissemination of transaction reports and quotation information.                              
+**Rule 602:** Dissemination of quotations in NMS securities.                                               
+**Rule 603:** Distribution and display of information with respect to quotations. 
 Reg NMS requires the consolidation of data.
 *   **Rule 603:** Requires exchanges to provide their best quotes and trades to the **Securities Information Processor (SIP)**.
 
@@ -147,6 +150,43 @@ HFT firms subscribe to Direct Feeds. They calculate the "Future NBBO" faster tha
 
 **Quant Impact:** Your Smart Order Router (SOR) must optimize for *Total Consideration* (Price + Fee/Rebate + Fill Probability), not just the displayed price.
 
+#### 1.6.2 Maker-Taker Economics                                                                               
+Exchanges use maker-taker pricing to incentivize liquidity provision.                                          
+**Typical Structure:**                                                                                         
+**Maker rebate:** $0.0020/share (20 mils) – paid to you for posting resting orders.   
+**Taker fee:** $0.0030/share (30 mils) – charged for removing liquidity.                                   │
+**Exchange profit:** $0.0010/share spread.                                                                 │
+
+**Inverted Venues (Taker-Maker):**                                                                             
+ -  Some venues (e.g., specific Nasdaq/CBOE order books) invert the model:                                         
+  - *   **Maker Fee:** You PAY to post liquidity.                                                                  
+  - *   **Taker Rebate:** You GET PAID to remove liquidity.                                                        
+  - *   **Why?** To attract taker flow. A market maker might post here if they *really* want to get filled, effectively paying for queue priority.                                                                           
+  
+**Market Making P&L Formula:**                                                                                 
+`P&L = (Spread Capture) + (Maker Rebates) - (Adverse Selection) - (Inventory Risk)`                            
+                                                                                                                
+**Example:**                                                                                                   
+*   Post bid @ $100.00, ask @ $100.02 (2-cent spread).                                                         
+*   Fill 10,000 shares on each side (neutral inventory).                                                      
+*   Gross spread: 10,000 × $0.02 = $200.                                                                       
+*   Maker rebates: 20,000 × $0.0020 = $40.                                                                     
+*   Gross revenue: $240.                                                                                       
+*   Assume adverse selection costs $0.005/share:                                                              
+*   Adverse selection: 20,000 × $0.005 = $100.                                                                 
+*   Net P&L: $240 - $100 = $140.                                                                                
+**Strategy Insight:** At tight spreads (1-2 cents), maker rebates can represent 20-30% of gross revenue. Venue selection and rebate optimization are first-order effects.                                                      
+
+#### 1.6.3 Best Execution (FINRA Rule 5310 / Reg NMS Implications)                                             
+While Reg NMS mandates "Order Protection" (don't trade *worse* than the best price), "Best Execution" requires broker-dealers to use "reasonable diligence" to ascertain the best market for the security.                      
+**Factors:** Price, volatility, liquidity, speed, likelihood of execution.                                 
+**Quant Impact:** Your SOR cannot just route to the venue with the highest rebate if it means lower fill probability or higher latency for a client order.                                                                
+
+#### 1.6.4 Dark Pool Considerations                                                                            
+Rule 611 does not require routing to dark pools (their quotes aren't protected). But your market making system must decide when to post liquidity in dark venues vs. lit exchanges.  
+**Lit venues:** Maker rebates, but exposed to adverse selection from informed flow seeing your quotes.     
+**Dark pools:** No rebates, but reduced information leakage and potential price improvement.               
+**Strategy Insight:** A common market making strategy is to post on both lit and dark venues, using the dark pool to capture hidden liquidity while maintaining a presence on lit markets for rebate capture and price discovery.
 ---
 
 ## Part II: Regulation SHO – Short Selling, Settlement, and Market Maker Exceptions
