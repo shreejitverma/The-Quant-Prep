@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
@@ -19,7 +20,7 @@ holdings = [100,200,300,400,500,600,700]          # number of shares in each ass
 # download historical data from quandl
 hist_data = {}
 for asset in assets:
-    data = quandl.get('wiki/'+asset, start_date='2015-01-01', end_date='2017-12-31', authtoken='ay68s2CUzKbVuy8GAqxj')
+    data = quandl.get('wiki/'+asset, start_date='2015-01-01', end_date='2017-12-31', authtoken=os.environ.get("QUANDL_API_KEY", ""))
     hist_data[asset] = data['Adj. Close']
 hist_data = pd.concat(hist_data, axis=1)
 

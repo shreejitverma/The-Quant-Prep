@@ -250,7 +250,7 @@ def quoteExtractor(HTMLInput):
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="xj6yFfEtOA3NjaLT*tx0"
+  password=os.environ.get("MYSQL_PASSWORD", "")
 )
 
 mycursor = mydb.cursor()
@@ -370,4 +370,3 @@ coltypes = ['INT AUTO_INCREMENT PRIMARY KEY NOT NULL', 'DATE NOT NULL', 'INT',
 
 # Create stock quotes
 tableCreator('bond_spread_quotes', colnames, coltypes)
-

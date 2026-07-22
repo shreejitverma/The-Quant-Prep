@@ -19,7 +19,8 @@ from forms import Registration
 charset = string.uppercase + string.lowercase + string.punctuation
 
 app = Flask(__name__)
-app.secret_key = '\xb6\xa5hA\x01{\x0f\xd6su\xeb\xd6:4\x13u^O\x15f\xe3\xaf*\xde'
+# Secret key must be provided via environment in production.
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))
 
 
 # Configuration of the App
@@ -92,10 +93,18 @@ def server(first_name):
     for i in range(8):
         pw += random.choice(charset)
     pws = passwd(pw)
-    os.system("sudo docker run -d -t -e 'PW=%s' -e 'PORT=%d' -p %d:%d -m 500m jupserver"
-			% (pws, port, port, port))
+    import subprocess
+    # pass args as a list to avoid any future shell-injection risk
+    subprocess.run([
+        'sudo', 'docker', 'run', '-d', '-t',
+        '-e', 'PW=%s' % pws,
+        '-e', 'PORT=%d' % port,
+        '-p', '%d:%d' % (port, port),
+        '-m', '500m', 'jupserver',
+    ], check=False)
     return render_template('server.html', first_name=first_name, port=port, pw=pw)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8888, debug=True)
+    app.run(host='127.0.0.1', port=8888,
+            debug=os.environ.get('FLASK_DEBUG', '0') == '1')
