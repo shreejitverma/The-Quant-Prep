@@ -6,6 +6,8 @@
 #include <cstring>
 #include <vector>
 
+#include "udp_receiver_mock.hpp"
+
 /**
  * Mock UDP Multicast Receiver for Market Data.
  * 
@@ -16,16 +18,11 @@
  * 1. Non-blocking sockets (using fcntl).
  * 2. UDP Multicast Group joining.
  * 3. Raw byte parsing into structs.
+ *
+ * The MarketUpdate layout and parse_market_update() helper live in
+ * udp_receiver_mock.hpp so they can be exercised by unit tests in
+ * tests/cpp/test_udp_receiver_mock.cpp without opening sockets.
  */
-
-#pragma pack(push, 1)
-struct MarketUpdate {
-    char msg_type;     // 'A' for Add, 'E' for Execute
-    uint32_t symbol_id;
-    uint32_t price;
-    uint32_t quantity;
-};
-#pragma pack(pop)
 
 class MarketDataReceiver {
 private:
@@ -75,9 +72,14 @@ public:
             ssize_t n = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)&from, &fromlen);
             if (n < 0) break;
 
-            if (n >= sizeof(MarketUpdate)) {
-                MarketUpdate* update = reinterpret_cast<MarketUpdate*>(buffer);
-                process_update(*update);
+            MarketUpdate update;
+            ParseStatus status = parse_market_update(buffer, static_cast<std::size_t>(n), update);
+            if (status == ParseStatus::Ok) {
+                process_update(update);
+            } else {
+                std::cerr << "Dropping malformed datagram (status="
+                          << static_cast<int>(status) << ", bytes=" << n << ")"
+                          << std::endl;
             }
         }
     }
