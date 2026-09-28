@@ -1,68 +1,63 @@
+"""Strategy performance metrics with the conventions interviewers check.
+
+- Sharpe: mean excess return over its standard deviation, annualised by sqrt(periods per year).
+- Sortino: mean excess return over the downside deviation sqrt(mean(min(r - target, 0)^2)),
+  averaged over *all* observations, not the standard deviation of the losing ones.
+- Max drawdown: measured from running peaks of the price path including the starting price.
+- Calmar: compound annual growth rate over the absolute max drawdown.
+Degenerate inputs (zero variance, no downside, no drawdown) return NaN rather than a
+misleading number.
+"""
+
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 
+
 class PerformanceMetrics:
-    """
-    Library for calculating Strategy Performance Metrics.
-    """
-    
     @staticmethod
-    def calculate_returns(prices):
-        """Calculates simple percent returns."""
+    def calculate_returns(prices: pd.Series) -> pd.Series:
+        """Simple returns r_t = P_t / P_{t-1} - 1."""
         return prices.pct_change().dropna()
 
     @staticmethod
-    def sharpe_ratio(returns, risk_free_rate=0.0, periods_per_year=252):
-        """
-        Sharpe Ratio = (Mean Return - Risk Free) / Std Dev
-        """
-        excess_returns = returns - risk_free_rate / periods_per_year
-        if returns.std() == 0:
-            return 0.0
-        return np.sqrt(periods_per_year) * excess_returns.mean() / returns.std()
+    def sharpe_ratio(returns: pd.Series, risk_free_rate: float = 0.0, periods_per_year: int = 252) -> float:
+        excess = returns - risk_free_rate / periods_per_year
+        sd = excess.std(ddof=1)
+        return float(np.sqrt(periods_per_year) * excess.mean() / sd) if sd > 0 else float("nan")
 
     @staticmethod
-    def sortino_ratio(returns, risk_free_rate=0.0, periods_per_year=252):
-        """
-        Sortino Ratio = (Mean Return - Risk Free) / Downside Deviation
-        """
-        excess_returns = returns - risk_free_rate / periods_per_year
-        downside_returns = returns[returns < 0]
-        
-        downside_std = downside_returns.std()
-        if downside_std == 0:
-            return 0.0
-            
-        return np.sqrt(periods_per_year) * excess_returns.mean() / downside_std
+    def sortino_ratio(returns: pd.Series, target: float = 0.0, periods_per_year: int = 252) -> float:
+        """``target`` is the per-period minimum acceptable return (0, or the per-period risk-free rate)."""
+        excess = returns - target
+        downside_dev = np.sqrt(np.mean(np.minimum(excess, 0.0) ** 2))
+        return float(np.sqrt(periods_per_year) * excess.mean() / downside_dev) if downside_dev > 0 else float("nan")
 
     @staticmethod
-    def max_drawdown(prices):
-        """
-        Calculates Maximum Drawdown (Peak to Valley).
-        """
-        cumulative = (1 + prices.pct_change().dropna()).cumprod()
-        peak = cumulative.cummax()
-        drawdown = (cumulative - peak) / peak
-        return drawdown.min()
+    def max_drawdown(prices: pd.Series) -> float:
+        """Most negative peak-to-trough move, as a fraction (for example -0.065)."""
+        return float((prices / prices.cummax() - 1.0).min())
 
     @staticmethod
-    def calmar_ratio(returns, prices, periods_per_year=252):
-        """
-        Calmar Ratio = Annualized Return / Max Drawdown
-        """
-        max_dd = abs(PerformanceMetrics.max_drawdown(prices))
-        if max_dd == 0:
-            return 0.0
-            
-        annual_return = returns.mean() * periods_per_year
-        return annual_return / max_dd
+    def cagr(prices: pd.Series, periods_per_year: int = 252) -> float:
+        periods = len(prices) - 1
+        if periods <= 0:
+            return float("nan")
+        return float((prices.iloc[-1] / prices.iloc[0]) ** (periods_per_year / periods) - 1.0)
+
+    @staticmethod
+    def calmar_ratio(prices: pd.Series, periods_per_year: int = 252) -> float:
+        mdd = abs(PerformanceMetrics.max_drawdown(prices))
+        return PerformanceMetrics.cagr(prices, periods_per_year) / mdd if mdd > 0 else float("nan")
+
 
 if __name__ == "__main__":
-    # Test Data
-    prices = pd.Series([100, 102, 104, 103, 105, 108, 101, 103], name="Price")
+    prices = pd.Series([100, 102, 104, 103, 105, 108, 101, 103], name="Price", dtype=float)
     returns = PerformanceMetrics.calculate_returns(prices)
-    
-    print(f"Sharpe Ratio:   {PerformanceMetrics.sharpe_ratio(returns):.4f}")
-    print(f"Sortino Ratio:  {PerformanceMetrics.sortino_ratio(returns):.4f}")
-    print(f"Max Drawdown:   {PerformanceMetrics.max_drawdown(prices):.4f}")
-    print(f"Calmar Ratio:   {PerformanceMetrics.calmar_ratio(returns, prices):.4f}")
+    print(f"Sharpe ratio:  {PerformanceMetrics.sharpe_ratio(returns):.4f}")
+    print(f"Sortino ratio: {PerformanceMetrics.sortino_ratio(returns):.4f}")
+    print(f"Max drawdown:  {PerformanceMetrics.max_drawdown(prices):.4f}")
+    print(f"CAGR:          {PerformanceMetrics.cagr(prices):.4f}")
+    print(f"Calmar ratio:  {PerformanceMetrics.calmar_ratio(prices):.4f}")
+    assert abs(PerformanceMetrics.max_drawdown(pd.Series([100.0, 90.0, 95.0])) + 0.1) < 1e-12  # first-move drawdown counts
