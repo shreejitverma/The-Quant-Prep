@@ -14,6 +14,7 @@ The seed notes (status `seed` in `./qp syllabus`) are the writing backlog.
 ./qp check                                        # schema, prerequisites, cards, links, style
 ./qp index                                        # regenerate section README tables
 python3 -m unittest discover -s tools/tests -t .  # platform tests
+gitleaks dir . --no-banner --redact               # committed secrets
 ruff check . && ruff format --check .             # Python lint and format
 ```
 

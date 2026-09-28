@@ -93,15 +93,8 @@ def server(first_name):
     for i in range(8):
         pw += random.choice(charset)
     pws = passwd(pw)
-    import subprocess
-    # pass args as a list to avoid any future shell-injection risk
-    subprocess.run([
-        'sudo', 'docker', 'run', '-d', '-t',
-        '-e', 'PW=%s' % pws,
-        '-e', 'PORT=%d' % port,
-        '-p', '%d:%d' % (port, port),
-        '-m', '500m', 'jupserver',
-    ], check=False)
+    os.system("sudo docker run -d -t -e 'PW=%s' -e 'PORT=%d' -p %d:%d -m 500m jupserver"
+			% (pws, port, port, port))
     return render_template('server.html', first_name=first_name, port=port, pw=pw)
 
 

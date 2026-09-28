@@ -1,0 +1,20 @@
+# gitleaks configuration: the default rules plus notebook-aware coverage.
+[extend]
+useDefault = true
+
+# Notebook source lines are JSON strings, so an assignment such as key = "..." is stored as key = \"...\",
+# which the default generic rule does not match.
+[[rules]]
+id = "notebook-escaped-credential"
+description = "Credential assigned inside a JSON-escaped notebook source string"
+regex = '''(?i)[\w.-]{0,30}(?:key|secret|token|passw(?:or)?d|pwd|auth)[\w.-]{0,20}\s*=\s*\\"([\w.=+/-]{10,150})\\"'''
+entropy = 3.5
+keywords = ["key", "secret", "token", "passw", "pwd", "auth"]
+[[rules.allowlists]]
+description = "Placeholders such as YOUR_ALPACA_API_SECRET"
+regexes = ['''(?i)^your_''']
+
+# Binary and bulk data files carry no hand-written credentials and dominate scan time.
+[[allowlists]]
+description = "Binary and bulk data files"
+paths = ['''(?i)\.(?:h5|hdf5|dsb|bif|png|jpe?g|gif|svg|ico|pdf|xlsx?|csv|parquet|pkl|pickle|npy|npz|zip|gz|tar|mp4|woff2?|ttf)$''']

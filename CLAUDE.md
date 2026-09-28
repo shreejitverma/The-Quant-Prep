@@ -35,6 +35,7 @@ Run before committing; CI (`.github/workflows/ci.yml`) and `.no-mistakes.yaml` r
 ./qp check              # add --strict-sde when ../SDE-Interview-Prep is cloned
 ./qp index              # regenerate section README tables after adding or renaming notes
 python3 -m unittest discover -s tools/tests -t .
+gitleaks dir . --no-banner --redact   # reviewed non-secrets live in .gitleaksignore
 ruff check . && ruff format --check .
 ```
 
