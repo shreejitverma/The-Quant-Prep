@@ -1,3 +1,11 @@
+---
+type: guide
+track: [quant-dev]
+tier: advanced
+status: draft
+sources: []
+---
+
 # Nasdaq OUCH Protocol Mastery: Order Entry Architecture & Implementation
 
 **Target Audience:** Quantitative Developers, HFT Engineers

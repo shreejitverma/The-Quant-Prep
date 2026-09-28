@@ -1,3 +1,11 @@
+---
+type: guide
+track: [quant-dev, quant-trader]
+tier: advanced
+status: draft
+sources: []
+---
+
 # Quant Dev (Market Making): Regulation NMS + Regulation SHO
 *A practical, production-oriented learning document for U.S. equities market making systems.*
 
@@ -98,15 +106,15 @@ This is the “quant dev” heart of the document: implement compliance as expli
 - **Reg SHO compliance**: marking engine (Rule 200), locate service (Rule 203), Rule-201 state machine, FTD/close-out monitor (Rule 204). [sec](https://www.sec.gov/investor/pubs/regsho.htm)
 
 ### 4.2 Runtime compliance gates (what must happen before sending an order)
-**Gate A — Marking (Rule 200):** assign long/short/short-exempt based on ownership/position state and current exemptions. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
+**Gate A - Marking (Rule 200):** assign long/short/short-exempt based on ownership/position state and current exemptions. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
 
-**Gate B — Locate (Rule 203):** if short, require a valid locate approval (qty + expiry + documentation) before “effecting” the short sale. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
+**Gate B - Locate (Rule 203):** if short, require a valid locate approval (qty + expiry + documentation) before “effecting” the short sale. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
 
-**Gate C — Circuit breaker (Rule 201):** if active, block/adjust impermissible short sale pricing for execution/display according to your implementation scope. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
+**Gate C - Circuit breaker (Rule 201):** if active, block/adjust impermissible short sale pricing for execution/display according to your implementation scope. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
 
-**Gate D — Trade-through prevention (Rule 611):** verify intended execution won’t trade through a protected quote unless a documented exception workflow is used (including ISO compliance responsibilities where applicable). [law.cornell](https://www.law.cornell.edu/cfr/text/17/242.611)
+**Gate D - Trade-through prevention (Rule 611):** verify intended execution won’t trade through a protected quote unless a documented exception workflow is used (including ISO compliance responsibilities where applicable). [law.cornell](https://www.law.cornell.edu/cfr/text/17/242.611)
 
-**Gate E — Settlement/FTD constraints (Rule 204):** integrate FTD/close-out state to tighten short permissions and operational capacity when needed. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
+**Gate E - Settlement/FTD constraints (Rule 204):** integrate FTD/close-out state to tighten short permissions and operational capacity when needed. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
 
 ### 4.3 Audit log schema (what you must be able to replay)
 Log every order decision with:
@@ -166,11 +174,11 @@ Interview payoff: you can explain “how we prove we complied” under asynchron
 ***
 
 ## 8. Source anchors
-- SEC — Key Points About Regulation SHO (Rules 200, 201, 203, 204 summary; timing; close-out description). [sec](https://www.sec.gov/investor/pubs/regsho.htm)
-- 17 CFR § 242.611 — Rule 611 text (policies/procedures, surveillance, exceptions, ISO responsibility). [law.cornell](https://www.law.cornell.edu/cfr/text/17/242.611)
-- SEC PDF — Rule 611 memo (overview of Reg NMS key rules; Rules 603/610/611/612). [sec](https://www.sec.gov/spotlight/emsac/memo-rule-611-regulation-nms.pdf)
-- SEC PDF — Rule 611 / Rule 610 FAQ (overview; describes 610 fair access/fee limit and 611 trade-through prevention). [sec](https://www.sec.gov/divisions/marketreg/rule611faq.pdf)
-- SEC Staff guidance/FAQ — notes on Reg SHO and SRO conformity (Rule 201(e) prohibition on conflicting SRO rules). [sec](https://www.sec.gov/rules-regulations/staff-guidance/trading-markets-frequently-asked-questions-8)
+- SEC - Key Points About Regulation SHO (Rules 200, 201, 203, 204 summary; timing; close-out description). [sec](https://www.sec.gov/investor/pubs/regsho.htm)
+- 17 CFR § 242.611 - Rule 611 text (policies/procedures, surveillance, exceptions, ISO responsibility). [law.cornell](https://www.law.cornell.edu/cfr/text/17/242.611)
+- SEC PDF - Rule 611 memo (overview of Reg NMS key rules; Rules 603/610/611/612). [sec](https://www.sec.gov/spotlight/emsac/memo-rule-611-regulation-nms.pdf)
+- SEC PDF - Rule 611 / Rule 610 FAQ (overview; describes 610 fair access/fee limit and 611 trade-through prevention). [sec](https://www.sec.gov/divisions/marketreg/rule611faq.pdf)
+- SEC Staff guidance/FAQ - notes on Reg SHO and SRO conformity (Rule 201(e) prohibition on conflicting SRO rules). [sec](https://www.sec.gov/rules-regulations/staff-guidance/trading-markets-frequently-asked-questions-8)
 
 
 ***

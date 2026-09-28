@@ -1,3 +1,11 @@
+---
+type: guide
+track: [quant-dev, quant-trader]
+tier: advanced
+status: draft
+sources: []
+---
+
 # Market Making Quant Dev (Equities + Options): Reg NMS + Reg SHO + Feeds/Protocols + System Design
 *C++ low-latency core + Python analytics. Built to support exchange MM, wholesaler/internalizer, and multi-venue electronic MM.*
 
@@ -140,11 +148,11 @@ Your planner should generate a deterministic set of child orders: (a) ISO to tar
 ### 4.2 Reg SHO: marking, locate, Rule 201, and settlement discipline
 SEC’s Reg SHO overview lists marking (Rule 200), circuit breaker (Rule 201), locate (Rule 203), and close-out (Rule 204) as core requirements. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
 
-#### Gate A — Rule 200 marking (hot path)
+#### Gate A - Rule 200 marking (hot path)
 - Every outgoing sell order is marked `long`, `short`, or `short_exempt`. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
 - Engineering invariant: marking is derived from a single, race-free “position truth” (net position + pending + locate/borrow state), not from scattered caches.
 
-#### Gate B — Rule 203 locate (hot path)
+#### Gate B - Rule 203 locate (hot path)
 Before effecting a short sale, broker-dealers must have reasonable grounds to believe shares can be borrowed and delivered, with documentation. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
 Engineering invariant: `send_short_order()` requires a valid `locate_id` (unless your policy engine flags a permitted market making exception), and the locate consumption is atomic with the order send.
 
@@ -153,7 +161,7 @@ Suggested locate service design:
 - `consume_locate(locate_id, qty)` (atomic decrement)
 - `reclaim_on_cancel(fill_qty)` for accurate utilization
 
-#### Gate C — Rule 201 circuit breaker (hot path)
+#### Gate C - Rule 201 circuit breaker (hot path)
 Rule 201 is triggered by a ≥10% down move and imposes restrictions for the remainder of the day and the next day per the SEC’s summary. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
 Engineering invariant: your equity short-sell routing layer consults a `Rule201State` per symbol and blocks/adjusts orders that would be impermissible during the active window. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
 
@@ -161,9 +169,9 @@ Engineering invariant: your equity short-sell routing layer consults a `Rule201S
 - Implement Rule 201 restriction logic for **equities** (covered securities) and treat options as not directly covered by the rule’s price test, consistent with common guidance. [ccbjournal](https://ccbjournal.com/articles/short-sales-sec-adopts-modified-uptick-rule-subject-circuit-breaker)
 - Still, connect options quoting/hedging risk limits to the underlying equity’s Rule 201 state to avoid pathological hedge behavior during an SSR regime.
 
-#### Gate D — Rule 204 close-out / FTD controls (post-trade feeds back into pre-trade)
+#### Gate D - Rule 204 close-out / FTD controls (post-trade feeds back into pre-trade)
 Rule 204 requires close-out of failures to deliver by purchasing/borrowing like-kind and quantity by specified deadlines, per SEC summary. [sec](https://www.sec.gov/investor/pubs/regsho.htm)
-Engineering invariant: settlement state is an input to trading capacity—if your clearing reports show elevated fails or approaching deadlines, your system tightens short permissions and may require pre-borrow workflows.
+Engineering invariant: settlement state is an input to trading capacity-if your clearing reports show elevated fails or approaching deadlines, your system tightens short permissions and may require pre-borrow workflows.
 
 Minimum FTD monitoring features:
 - Per symbol: `ftd_qty`, `age`, `next_deadline`, “restriction mode” boolean

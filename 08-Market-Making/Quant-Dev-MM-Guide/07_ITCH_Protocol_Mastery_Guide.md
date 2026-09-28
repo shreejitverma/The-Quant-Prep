@@ -1,3 +1,11 @@
+---
+type: guide
+track: [quant-dev]
+tier: advanced
+status: draft
+sources: []
+---
+
 # Nasdaq ITCH Protocol Mastery: Architecture, Evolution, and Implementation
 
 **Target Audience:** Quantitative Developers, High-Frequency Trading Engineers

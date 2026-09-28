@@ -1,3 +1,11 @@
+---
+type: guide
+track: [quant-dev]
+tier: advanced
+status: draft
+sources: []
+---
+
 # Trading System Architecture Design
 
 **Goal:** Modular, fault-tolerant, low-latency system.

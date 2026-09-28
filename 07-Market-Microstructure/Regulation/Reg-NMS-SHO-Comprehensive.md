@@ -1,3 +1,11 @@
+---
+type: guide
+track: [quant-dev, quant-trader]
+tier: advanced
+status: draft
+sources: []
+---
+
 Regulation NMS & SHO: Comprehensive Guide for Quantitative Developers in Market Making
 Target Role: Quantitative Developer – Market Making Firm
 Focus Areas: Low-latency execution, microstructure arbitrage, liquidity provision, regulatory compliance

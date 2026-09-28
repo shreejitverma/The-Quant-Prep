@@ -1,3 +1,11 @@
+---
+type: moc
+track: [quant-dev]
+tier: advanced
+status: draft
+sources: []
+---
+
 # Quantitative Developer Guide: Market Making & Microstructure
 
 This repository contains a comprehensive guide for Quantitative Developers specializing in electronic market making. The content covers the regulatory framework, low-latency market data protocols, quantitative models, and system architecture.

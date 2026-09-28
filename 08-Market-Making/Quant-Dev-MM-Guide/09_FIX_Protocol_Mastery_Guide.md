@@ -1,3 +1,11 @@
+---
+type: guide
+track: [quant-dev]
+tier: advanced
+status: draft
+sources: []
+---
+
 # FIX Protocol Mastery: Architecture, Engines, and Optimization
 
 **Target Audience:** Quantitative Developers, Trading Systems Engineers

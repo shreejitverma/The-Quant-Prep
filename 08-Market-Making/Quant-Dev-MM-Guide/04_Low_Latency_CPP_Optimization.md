@@ -1,3 +1,11 @@
+---
+type: guide
+track: [quant-dev]
+tier: advanced
+status: draft
+sources: []
+---
+
 # Low-Latency C++ Optimization for High-Frequency Trading
 
 **Target:** Sub-microsecond (<1µs) tick-to-trade latency.

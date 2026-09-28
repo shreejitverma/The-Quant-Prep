@@ -1,3 +1,11 @@
+---
+type: guide
+track: [quant-dev, quant-trader]
+tier: advanced
+status: draft
+sources: []
+---
+
 # Regulation NMS & SHO: Comprehensive Guide for Quantitative Developers in Market Making
 
 **Target Role:** Quantitative Developer – Market Making Firm  
@@ -688,7 +696,7 @@ This section provides in-depth explanations for key terms, focusing on their pra
 
 ### Maker-Taker
 *   **Definition:** A pricing model where the exchange pays a rebate to the liquidity provider ("Maker") and charges a fee to the liquidity remover ("Taker").
-*   **Inverted (Taker-Maker):** The reverse—Makers pay, Takers get paid.
+*   **Inverted (Taker-Maker):** The reverse - Makers pay, Takers get paid.
 *   **Quant Relevance:** Rebates are often the difference between profit and loss. A strategy might break even on the spread but profit solely from the $0.0030/share rebate. Your routing logic must account for these fees in the alpha model (e.g., `ExpectedProfit = Alpha + Rebate - Fee`).
 
 ### SIP (Securities Information Processor)

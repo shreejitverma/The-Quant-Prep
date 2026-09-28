@@ -1,3 +1,11 @@
+---
+type: guide
+track: [quant-dev]
+tier: advanced
+status: draft
+sources: []
+---
+
 # Quantitative Models & Strategies in Market Making
 
 **Focus:** Mathematical frameworks for quoting, inventory management, and alpha signals.
@@ -13,14 +21,14 @@ The fundamental goal is to maximize terminal wealth utility while managing inven
 This is the seminal paper for high-frequency market making.
 
 **Core Assumptions:**
-*   **Mid-price ($S_t$)** follows a geometric Brownian motion or arithmetic Brownian motion:
+*   **Mid-price ($S_t$)** follows an arithmetic Brownian motion (the paper also treats a geometric variant):
     $$dS_t = \sigma dW_t$$
 *   **Arrival Rates ($\lambda$)**: The probability of a limit order being filled follows a Poisson process with intensity decaying exponentially with distance ($\delta$) from the mid-price:
     $$\lambda(\delta) = A e^{-k\delta}$$
     Where:
     *   $\delta$: Spread (Distance from mid-price)
     *   $A$: Base arrival intensity
-    *   $k$: Order book liquidity parameter (higher $k$ = thinner book)
+    *   $k$: How fast fill intensity decays with distance from the mid. Higher $k$ means fills concentrate near the touch (a more competitive, liquid book), so the optimal spread is tighter.
 
 **The Objective Function:**
 Maximize expected exponential utility of terminal wealth:
@@ -28,10 +36,16 @@ $$u(w) = -e^{-\gamma w}$$
 Where $\gamma$ is the risk aversion parameter.
 
 **The Solution (Optimal Quotes):**
-The optimal bid ($r_b^*$) and ask ($r_a^*$) prices are:
+The indifference (reservation) ask and bid prices for inventory $q$ are:
 
-$$r_a^* = S_t + \frac{1}{2}\delta^* + (2q - 1)\frac{\gamma \sigma^2 (T-t)}{2}$$
-$$r_b^* = S_t - \frac{1}{2}\delta^* + (2q + 1)\frac{\gamma \sigma^2 (T-t)}{2}$$
+$$r^a = S_t + (1 - 2q)\frac{\gamma \sigma^2 (T-t)}{2}, \qquad r^b = S_t - (1 + 2q)\frac{\gamma \sigma^2 (T-t)}{2}$$
+
+Their average is the reservation price $r^*$ below.
+With the exponential-intensity approximation, the optimal quotes are symmetric around $r^*$:
+
+$$p^{a,b} = r^* \pm \frac{1}{2}\left[\gamma \sigma^2 (T-t) + \frac{2}{\gamma}\ln\left(1 + \frac{\gamma}{k}\right)\right]$$
+
+A long inventory ($q > 0$) lowers both quotes: you sell more readily and buy less readily.
 
 **Key Interpretations:**
 1.  **Reservation Price ($r^*$)**: The price at which the MM is indifferent between buying and selling.
@@ -40,9 +54,10 @@ $$r_b^* = S_t - \frac{1}{2}\delta^* + (2q + 1)\frac{\gamma \sigma^2 (T-t)}{2}$$
     *   If inventory $q < 0$ (Short): Reservation price shifts *up*.
     *   **Term:** $q \gamma \sigma^2 (T-t)$ is the inventory risk premium.
 
-2.  **Optimal Spread ($\delta^*$)**:
-    $$\delta^* = \frac{2}{\gamma} \ln(1 + \frac{\gamma}{k})$$
-    *   The spread is independent of inventory in the standard model.
+2.  **Optimal total spread ($\delta^a + \delta^b$)**:
+    $$\delta^a + \delta^b = \gamma \sigma^2 (T-t) + \frac{2}{\gamma} \ln\left(1 + \frac{\gamma}{k}\right)$$
+    *   The spread is independent of inventory in the standard model; inventory only shifts the centre ($r^*$).
+    *   The first term is an inventory-risk charge that shrinks to zero at the horizon; the second is the liquidity term.
     *   It depends on risk aversion ($\gamma$) and market liquidity ($k$).
 
 ---

@@ -1,3 +1,11 @@
+---
+type: guide
+track: [quant-dev]
+tier: advanced
+status: draft
+sources: []
+---
+
 # Nasdaq TotalView-ITCH 5.0: Technical Guide for Quantitative Developers
 
 **Protocol Version:** 5.0  
