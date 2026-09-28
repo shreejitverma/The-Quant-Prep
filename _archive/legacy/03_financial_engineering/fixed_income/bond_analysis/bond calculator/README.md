@@ -10,7 +10,9 @@ $ git clone https://github.com/shreysrins/bond-calculator.git
 ```
 
 ## Dependencies
-This code was developed and tested in Python 3.7. You can check your version of Python with the following terminal command:
+This code was developed and tested in Python 3.7.
+The current `requirements.txt` needs Python 3.8 or 3.9: NumPy 1.22 dropped Python 3.7 and SciPy 1.6 supports only Python 3.7 to 3.9.
+You can check your version of Python with the following terminal command:
 ```bash
 $ python3 --version
 ```
@@ -19,9 +21,7 @@ Install all dependencies by opening a terminal and running:
 ```bash
 $ pip3 install -r requirements.txt
 ```
- - pyfiglet >= 0.8.post1 (`pip3 install pyfiglet`)
- - NumPy ~= v1.19.4 (`pip3 install numpy`)
- - SciPy ~= v1.6.2 (`pip3 install scipy`)
+The version constraints for pyfiglet, NumPy and SciPy live in `requirements.txt`.
 
 ## Usage
 Open a terminal and navigate to the directory in which this repository is stored. If you installed in your home directory, this is done with:
