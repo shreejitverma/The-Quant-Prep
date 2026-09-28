@@ -11,4 +11,7 @@ git rev-parse --verify --quiet "$base^{commit}" >/dev/null || {
   echo "scan-secrets: base '$base' is not a known commit; fetch it first" >&2
   exit 1
 }
-exec gitleaks git --no-banner --redact --log-opts="$base..HEAD" .
+# git log omits merge diffs by default; remerge (git 2.36+) shows only what a merge adds beyond git's own
+# automatic merge, so a secret slipped into a merge or its conflict resolution is scanned without re-scanning
+# everything merged in.
+exec gitleaks git --no-banner --redact --log-opts="--diff-merges=remerge $base..HEAD" .
