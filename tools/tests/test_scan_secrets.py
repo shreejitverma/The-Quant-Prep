@@ -19,10 +19,10 @@ REPO = Path(__file__).resolve().parents[2]
 SCRIPT = REPO / "tools" / "scan-secrets.sh"
 
 
-def fake_token(seed: int) -> str:
+def fake_token(seed: int, alphabet: str = string.ascii_letters + string.digits, length: int = 32) -> str:
     # Built at run time so the test file itself carries no credential-shaped literal.
     rng = random.Random(seed)
-    return "".join(rng.choice(string.ascii_letters + string.digits) for _ in range(32))
+    return "".join(rng.choice(alphabet) for _ in range(length))
 
 
 @unittest.skipUnless(shutil.which("gitleaks") and shutil.which("git"), "gitleaks and git are required")
@@ -126,6 +126,45 @@ class ScanSecretsTest(unittest.TestCase):
         self.commit("octopus")
         self.assertEqual(self.git("rev-list", "--min-parents=3", "--count", "HEAD"), "1")
         self.assert_leak()
+
+    # The shapes below are the ones the redacted archive files used; the default gitleaks rules miss them.
+
+    def test_subscripted_token_assignment_fails(self) -> None:
+        self.write("tushare.py", f"kwargs['token'] = '{fake_token(11, string.hexdigits[:16], 56)}'\n")
+        self.commit("add token")
+        self.assert_leak()
+
+    def test_password_with_punctuation_fails(self) -> None:
+        value = fake_token(12, length=12) + "*" + fake_token(13, length=7)
+        self.write("db.py", f'conn = connect(\n  password="{value}"\n)\n')
+        self.commit("add password")
+        self.assert_leak()
+
+    def test_password_with_punctuation_in_notebook_fails(self) -> None:
+        value = fake_token(14, length=12) + "*" + fake_token(15, length=7)
+        self.write("db.ipynb", '{"source": ["  password=\\"' + value + '\\"\\n"]}\n')
+        self.commit("add password")
+        self.assert_leak()
+
+    def test_positional_quandl_key_fails(self) -> None:
+        key = fake_token(16, string.ascii_letters + string.digits + "-_", 20)
+        self.write("pcr.py", f'Data = fetch_data("CBOE/SPX_PC","{key}", "2014-12-12","local_data.csv")\n')
+        self.commit("add quandl key")
+        self.assert_leak()
+
+    def test_redacted_shapes_without_literals_pass(self) -> None:
+        self.write(
+            "redacted.py",
+            "kwargs['timeperiod'] = 14\n"
+            "kwargs['token'] = os.environ.get('TUSHARE_TOKEN', '')\n"
+            'password = "your_password"\n'
+            'Data = fetch_data("CBOE/SPX_PC", os.environ.get("QUANDL_API_KEY", ""), "2014-12-12", "local_data.csv")\n'
+            'Data = fetch_data("CHRIS/CME_SP1", "", "2017-07-31", "local_future.csv")\n'
+            f"kwargs['token'] = 'Tsk_{fake_token(17, string.hexdigits[:16], 14)}...'\n"
+            f"c.NotebookApp.password = 'sha1:{fake_token(18, string.hexdigits[:16], 12)}:{fake_token(19, string.hexdigits[:16], 40)}'\n",
+        )
+        self.commit("redacted")
+        self.assert_clean()
 
     def test_unknown_base_is_an_error(self) -> None:
         self.base = "deadbeefdeadbeef"

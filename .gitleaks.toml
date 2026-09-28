@@ -14,6 +14,38 @@ keywords = ["key", "secret", "token", "passw", "pwd", "auth"]
 description = "Placeholders such as YOUR_ALPACA_API_SECRET"
 regexes = ['''(?i)^your_''']
 
+# A subscripted assignment such as kwargs['token'] = '...' puts the key name inside brackets,
+# which the default generic rule does not match. Dots are excluded from the value so truncated examples such as '<prefix>...' pass.
+[[rules]]
+id = "subscripted-credential"
+description = "Credential assigned through a subscript key"
+regex = '''(?i)\[\s*\\?["'][\w.-]{0,30}(?:key|secret|token|passw(?:or)?d|pwd|auth)[\w.-]{0,20}\\?["']\s*\]\s*=\s*\\?["']([\w=+/-]{10,150})\\?["']'''
+entropy = 3.5
+keywords = ["key", "secret", "token", "passw", "pwd", "auth"]
+[[rules.allowlists]]
+description = "Placeholders such as YOUR_TOKEN"
+regexes = ['''(?i)^your_''']
+
+# Passwords often contain punctuation such as * or !, which the default generic rule's value charset excludes.
+[[rules]]
+id = "password-with-punctuation"
+description = "Password literal containing punctuation, in source or a JSON-escaped notebook string"
+regex = '''(?i)\b(?:passw(?:or)?d|pwd)\s*[:=]\s*\\?["']([^\s"'\\]{8,64})\\?["']'''
+entropy = 3.5
+keywords = ["passw", "pwd"]
+[[rules.allowlists]]
+description = "Placeholders such as YOUR_PASSWORD, and salted hashes such as Jupyter's sha1:<salt>:<digest>"
+regexes = ['''(?i)^your_''', '''^(?:sha1|sha256|argon2):''']
+
+# Quandl (Nasdaq Data Link) keys are 20 characters and are often passed positionally after a dataset code,
+# as in fetch_data("CBOE/SPX_PC", "<key>", ...), where no keyword names them.
+[[rules]]
+id = "quandl-positional-key"
+description = "Quandl API key passed positionally after a dataset code"
+regex = '''["'][A-Z0-9_]+/[A-Z0-9_.]+["']\s*,\s*["']([A-Za-z0-9_-]{20})["']'''
+entropy = 3.5
+keywords = ["/"]
+
 # Binary and bulk data files carry no hand-written credentials and dominate scan time.
 [[allowlists]]
 description = "Binary and bulk data files"
