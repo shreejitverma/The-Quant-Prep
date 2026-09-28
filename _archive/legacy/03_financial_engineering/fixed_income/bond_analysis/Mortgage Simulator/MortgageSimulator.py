@@ -9,6 +9,7 @@ import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
+import numpy_financial as npf
 
 st.set_page_config(
     page_title="Mortgage Loan Simulator")
@@ -16,7 +17,7 @@ st.set_page_config(
 st.title("Mortgage Loan Simulator")
 
 st.header("**Mortgage Details**")
-col1, col2 = st.beta_columns(2)
+col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Home Value")
@@ -38,7 +39,7 @@ loan_amount = home_value - down_payment
 payment_months = payment_years*12
 interest_rate = interest_rate / 100
 periodic_interest_rate = (1+interest_rate)**(1/12) - 1
-monthly_installment = -1*np.pmt(periodic_interest_rate , payment_months, loan_amount)
+monthly_installment = -1*npf.pmt(periodic_interest_rate , payment_months, loan_amount)
 
 st.subheader("**Down Payment:** $" + str(round(down_payment,2)))
 st.subheader("**Loan Amount:** $" + str(round(loan_amount, 2)))

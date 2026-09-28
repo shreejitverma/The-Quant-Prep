@@ -16,7 +16,7 @@ st.title("Financial Planning Calculator")
 
 st.header("**Monthly Income**")
 st.subheader("Salary")
-colAnnualSal, colTax = st.beta_columns(2)
+colAnnualSal, colTax = st.columns(2)
 
 with colAnnualSal:
     salary = st.number_input("Enter your annual salary($): ", min_value=0.0, format='%f')
@@ -28,7 +28,7 @@ salary_after_taxes = salary * (1 - tax_rate)
 monthly_takehome_salary = round(salary_after_taxes / 12.0, 2)
 
 st.header("**Monthly Expenses**")
-colExpenses1, colExpenses2 = st.beta_columns(2)
+colExpenses1, colExpenses2 = st.columns(2)
 
 with colExpenses1:
     st.subheader("Monthly Rental")
@@ -62,7 +62,7 @@ st.subheader("Monthly Savings: $" + str(round(monthly_savings, 2)))
 st.markdown("---")
 
 st.header("**Forecast Savings**")
-colForecast1, colForecast2 = st.beta_columns(2)
+colForecast1, colForecast2 = st.columns(2)
 with colForecast1:
     st.subheader("Forecast Year")
     forecast_year = st.number_input("Enter your forecast year (Min 1 year): ", min_value=0,format='%d')
