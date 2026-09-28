@@ -23,10 +23,11 @@ def _link(section: Section, note: Note) -> str:
 def render(section: Section) -> str:
     topics = [n for n in section.notes if n.trackable]
     other = [n for n in section.notes if not n.trackable and not n.id.startswith("moc:")]
-    lines = [START, ""]
+    lines = [START]
     if topics:
         hours = sum(n.est_hours for n in topics)
         lines += [
+            "",
             f"{len(topics)} topics, about {hours:g} study hours. Tracks: T = trader, R = researcher, D = developer.",
             "",
             "| # | Topic | Tracks | Tier | Hours | Status | Cards |",
@@ -63,4 +64,10 @@ def update_readme(vault: Vault, section: Section, apply: bool) -> bool:
 
 
 def update_all(vault: Vault, apply: bool = True) -> list[str]:
-    return [s.folder for s in vault.sections if not s.library and update_readme(vault, s, apply)]
+    return [s.folder for s in vault.sections if indexed(vault, s) and update_readme(vault, s, apply)]
+
+
+def indexed(vault: Vault, section: Section) -> bool:
+    """Libraries and READMEs with ``index: false`` (hand-curated lists) get no generated block."""
+    readme = vault.notes.get(f"moc:{section.folder}")
+    return not section.library and not (readme and str(readme.meta.get("index")).lower() == "false")
