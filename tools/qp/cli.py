@@ -424,7 +424,7 @@ def cmd_bank(vault: Vault, store: Store | None, args) -> int:
         f"wrote: {len(written)} file(s)",
         help_lines=[
             "answers go in <bank>/answers/*.json as {id: {topic, answer, verified, duplicate_of}}",
-            *(["orphaned answers match no question in source.tsv; re-key them to the new ids in bank.json"] if orphans else []),
+            *(["orphaned answers match no question in source.tsv; re-key them in answers/*.json"] if orphans else []),
             "`qp check` validates the generated notes; `qp review` now includes answered cards",
         ],
     )
