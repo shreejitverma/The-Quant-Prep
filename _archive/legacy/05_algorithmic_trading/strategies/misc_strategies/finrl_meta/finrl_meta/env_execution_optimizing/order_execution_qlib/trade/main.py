@@ -81,7 +81,7 @@ if __name__ == "__main__":
                 host=os.environ["REDIS_SERVER"],
                 port=os.environ["REDIS_PORT"],
                 db=0,
-                charset="utf-8",
+                encoding="utf-8",
                 decode_responses=True,
             )
             with open(config_path + "/configs.yml") as f:
