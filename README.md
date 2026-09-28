@@ -1,82 +1,77 @@
 # The Quant Prep
-### The Ultimate Roadmap for Quantitative Developers & Researchers
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
-[![C++](https://img.shields.io/badge/C%2B%2B-17%2F20-blue)](https://isocpp.org/)
-[![Status](https://img.shields.io/badge/Status-Active-success)]()
+A complete, self-tracking preparation system for senior **quant trader**, **quant researcher** and **quant developer** interviews at proprietary trading firms, market makers, HFT firms and multi-manager hedge funds: Jane Street, Optiver, Citadel and Citadel Securities, Two Sigma, DRW, Squarepoint, Radix, Akuna, SIG, Millennium, Balyasny, HRT, Jump, IMC, Tower, Five Rings, D. E. Shaw and AQR.
 
-**The Quant Prep** is a comprehensive, open-source curriculum designed to bridge the gap between academic theory and the rigorous demands of top-tier financial firms like **Jane Street, Citadel, Hudson River Trading, Optiver, and Two Sigma**.
+It is three things over one set of Markdown notes:
 
-Whether you are aiming for a **Quantitative Researcher** role (heavy math/stats/ML) or a **Quantitative Developer** role (low-latency C++/systems), this repository provides the code, theory, and interview preparation you need.
+- **A syllabus**: 162 topics in 13 subjects, each with learning objectives, prerequisites, tier (core, advanced, senior), study hours, and spaced-repetition question cards.
+- **A progress platform**: the `qp` command line and a local web dashboard for readiness by track and by firm, a prerequisite-ordered weekly plan, daily card review, and timed drills (arithmetic sprint, 80-in-8 numerical test, market-making game).
+- **An Obsidian vault**: open the folder in Obsidian to read; question cards are collapsible callouts.
 
----
+General software engineering (DSA, C++, system design, low-latency systems) lives in [SDE-Interview-Prep](https://github.com/shreejitverma/SDE-Interview-Prep) and is linked, not copied: see the [SDE Link Map](00-Start-Here/SDE-Link-Map.md).
 
-##  The 8-Stage Learning Pathway
+## Quick start
 
-| Stage | Module | Focus Area | Key Topics |
-| :--- | :--- | :--- | :--- |
-| **01** | [**Foundations**](./01_foundations) | Core Skills | Linear Algebra, Probability, Algorithms, Python for Finance |
-| **02** | [**Quant Data Analysis**](./02_quantitative_data_analysis) | Data Science | Time Series (ARIMA/GARCH), Econometrics, Exploratory Analysis |
-| **03** | [**Financial Engineering**](./03_financial_engineering) | Mathematics | Derivatives Pricing, Black-Scholes, Stochastic Calculus, Monte Carlo |
-| **04** | [**Machine Learning**](./04_machine_learning_and_ai) | AI/Alpha | Classical ML, Deep Learning (LSTM), NLP, Reinforcement Learning |
-| **05** | [**Algorithmic Trading**](./05_algorithmic_trading) | Strategy | Backtesting, Market Microstructure, Risk Management, Stat Arb |
-| **06** | [**Quant Development**](./06_quantitative_development) | Production | C++ Low Latency, System Design, HFT Architecture, Performance |
-| **07** | [**Interview Prep**](./07_interview_preparation) | Cracking It | Coding Puzzles, Quant Math, Brain Teasers, Company Guides |
-| **08** | [**Research & Resources**](./08_research_and_resources) | Deep Dives | Seminal Papers, Datasets, External Tools |
+Python 3.10+ and nothing else:
 
----
+```sh
+git clone https://github.com/shreejitverma/The-Quant-Prep.git && cd The-Quant-Prep
+./qp profile --tracks quant-trader --hours 12   # your target role(s) and weekly hours
+./qp                                            # readiness, today's reviews, what to study next
+./qp serve --open                               # dashboard at http://127.0.0.1:8765/
+```
 
-## 💎 Premium Content Highlights
+Then read [Start Here](00-Start-Here/README.md): [Tracks](00-Start-Here/Tracks.md), the [Roadmap](00-Start-Here/Roadmap.md) and [Using the Platform](00-Start-Here/Using-the-Platform.md).
+Progress is stored outside the repo (`~/.local/share/quant-prep/`, or `$QP_HOME`).
 
-We have curated specialized resources that target the specific requirements of HFT and Prop Trading interviews.
+## Syllabus
 
-### ⚡ Low Latency & Systems
-*   **C++ Mastery:** [Order Matching Engine](./06_quantitative_development/cpp_low_latency/examples/order_matching_engine.cpp), [Lock-Free Queue](./06_quantitative_development/cpp_low_latency/examples/lock_free_spsc_queue.cpp), & [Memory Pool](./06_quantitative_development/cpp_low_latency/examples/memory_pool.cpp).
-*   **Networking:** [UDP Market Data Receiver](./06_quantitative_development/cpp_low_latency/examples/udp_receiver_mock.cpp) (Multicast & Non-blocking).
-*   **Optimization:** [Microbenchmark Utils](./06_quantitative_development/cpp_low_latency/examples/microbenchmark_utils.hpp).
-*   **Concurrency:** [Multithreaded Monte Carlo](./06_quantitative_development/cpp_low_latency/examples/multithreaded_monte_carlo.cpp).
+| # | Subject | Focus |
+| :--- | :--- | :--- |
+| 01 | [Probability](01-Probability/README.md) | Combinatorics to martingales; the most-tested subject in trader and researcher interviews. |
+| 02 | [Statistics and Econometrics](02-Statistics-and-Econometrics/README.md) | Estimation, testing, regression, time series, volatility models, Kalman filters. |
+| 03 | [Linear Algebra and Optimization](03-Linear-Algebra-and-Optimization/README.md) | Spectral methods, PCA, covariance, convex optimisation, numerics. |
+| 04 | [Stochastic Calculus](04-Stochastic-Calculus/README.md) | Brownian motion, Ito, SDEs, risk-neutral pricing, Black-Scholes. |
+| 05 | [Derivatives and Volatility](05-Derivatives-and-Volatility/README.md) | Parity, Greeks, hedging P&L, smiles, surfaces, Monte Carlo, vol trading. |
+| 06 | [Fixed Income and Asset Classes](06-Fixed-Income-and-Asset-Classes/README.md) | Curves, duration, swaps, short-rate models, credit, FX, ETFs, commodities, crypto. |
+| 07 | [Market Microstructure](07-Market-Microstructure/README.md) | Order books, spread models, impact, execution, Reg NMS, microprice. |
+| 08 | [Market Making](08-Market-Making/README.md) | Fair value, inventory models, quoting, hedging, options MM, games, systems. |
+| 09 | [Alpha Research and Portfolio](09-Alpha-Research-and-Portfolio/README.md) | Research process, signals, factors, backtesting, overfitting, portfolio construction. |
+| 10 | [Machine Learning for Finance](10-Machine-Learning-for-Finance/README.md) | Leakage-safe validation, ensembles, deep and reinforcement learning, NLP. |
+| 11 | [Risk and Trading](11-Risk-and-Trading/README.md) | Kelly, betting, VaR and ES, limits, P&L attribution, trading judgement. |
+| 12 | [Quant Development](12-Quant-Development/README.md) | Order books, feed handlers, backtesters, pricing libraries, risk checks; bridges to SDE-Interview-Prep. |
+| 13 | [Interview Playbook](13-Interview-Playbook/README.md) | Formats, mental math, brainteasers, estimation, trading games, behavioural, senior expectations. |
+| 14 | [Firms](14-Firms/README.md) | One guide per firm: roles, process, what they test, a focused plan. |
+| 15 | [Resources](15-Resources/README.md) | Books, papers, datasets and tools. |
 
-### 🧠 Interview Mastery
-*   **The Roadmap:** [8-Week Study Plan](./07_interview_preparation/study_roadmap.md).
-*   **Portfolio Construction:** [Black-Litterman Model](./03_financial_engineering/portfolio_optimization/black_litterman_model.ipynb) (Advanced optimization).
-*   **Stochastic Calculus:** [SDE Solver (Euler-Maruyama)](./03_financial_engineering/stochastic_calculus/sde_solver_euler_maruyama.py).
-*   **Quant Strategies:** [Avellaneda-Stoikov MM](./05_algorithmic_trading/strategies/market_microstructure/avellaneda_stoikov_mm.py) & [Pairs Trading](./05_algorithmic_trading/strategies/systematic_strategies/pairs_trading_stat_arb.ipynb).
-*   **Visual Intuition:** [Options Greeks Dashboard](./03_financial_engineering/derivatives_pricing/greeks_visualization.ipynb).
-*   **Jane Street Guide:** [Probability & Betting](./07_interview_preparation/company_insights/jane_street_guide.md).
+Each section README carries a generated table of its topics with status and card counts.
+Notes marked `seed` are the writing backlog: objectives and references exist, full content does not yet.
 
----
+## Runnable code
 
-##  Getting Started
+| Code | Where |
+| :--- | :--- |
+| Price-time order book and matching engine, lock-free SPSC queue, object pool, multicast receiver, compile-time N(x) table, multithreaded Monte Carlo (C++20) | [12-Quant-Development/code/cpp](12-Quant-Development/code/cpp/) |
+| ITCH parser, Python benchmarking | [12-Quant-Development/code/python](12-Quant-Development/code/python/) |
+| Avellaneda-Stoikov market-making simulator | [08-Market-Making/code](08-Market-Making/code/) |
+| Event-driven backtester (next-bar fills), performance metrics, pairs trading, Black-Litterman | [09-Alpha-Research-and-Portfolio/code](09-Alpha-Research-and-Portfolio/code/) |
+| Execution algorithms, Euler-Maruyama SDE solver, Greeks visualisation, LSTM baseline | sections [07](07-Market-Microstructure/code/), [04](04-Stochastic-Calculus/code/), [05](05-Derivatives-and-Volatility/code/), [10](10-Machine-Learning-for-Finance/code/) |
 
-### Prerequisites
-Ensure you have `conda` installed.
+Build a C++ example with `g++ -std=c++20 -O2 -pthread <file>.cpp`; run Python examples with the packages in `environment.yml`.
 
-1.  **Clone the Repository**
-    ```bash
-    git clone https://github.com/shreejitverma/The-Quant-Prep.git
-    cd The-Quant-Prep
-    ```
+## Repository layout
 
-2.  **Set Up Environment**
-    ```bash
-    conda env create -f environment.yml
-    conda activate quant_prep_env
-    ```
+```
+00-Start-Here/     tracks, roadmap, platform guide, note conventions, SDE link map
+01-..15-           the syllabus (Markdown notes, code/ folders beside the notes that use them)
+tools/qp/          the qp CLI, local server and dashboard (standard library only)
+tools/tests/       platform tests
+_archive/          the pre-2026 notebook collection and superseded drafts, outside the curriculum
+```
 
-3.  **Run a Backtest**
-    Navigate to `05_algorithmic_trading` and try running a sample strategy to verify your setup.
+## Contributing
 
----
+Read [Note Conventions](00-Start-Here/Note-Conventions.md) and [CONTRIBUTING](CONTRIBUTING.md).
+Before a pull request: `./qp check`, `./qp index`, `python3 -m unittest discover -s tools/tests -t .`, and `ruff check .`.
 
-##  Contributing
-
-This is a community-driven project. We welcome contributions!
-Please read our [Contributing Guidelines](./CONTRIBUTING.md) before submitting a Pull Request.
-
-*   **Bug Reports:** Open an issue if you find a mistake.
-*   **New Content:** Have a unique trading strategy or a better explanation of Ito's Lemma? Submit it!
-
----
-
-**Maintained by:** [Shreejit Verma](https://github.com/shreejitverma)
+Maintained by [Shreejit Verma](https://github.com/shreejitverma). MIT licence.

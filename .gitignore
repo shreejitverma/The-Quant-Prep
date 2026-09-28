@@ -1,1 +1,24 @@
 .DS_Store
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+build/
+*.o
+*.out
+
+# Obsidian: settings are shared, per-machine state is not
+.obsidian/workspace*.json
+.obsidian/cache
+.obsidian/plugins/*/main.js
+.obsidian/plugins/*/manifest.json
+.obsidian/plugins/*/styles.css
+.obsidian/plugins/obsidian-spaced-repetition/data.json
+.trash/
+
+# Personal trading journals and portfolio never leave this machine
+16-Trading-and-Investing/Private/*
+!16-Trading-and-Investing/Private/README.md
+
+# Private overlay (question banks and notes that must never be published); qp loads it locally
+private/
