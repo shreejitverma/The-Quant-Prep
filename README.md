@@ -1,6 +1,6 @@
 # The Quant Prep
 
-A complete, self-tracking preparation system for senior **quant trader**, **quant researcher** and **quant developer** interviews at proprietary trading firms, market makers, HFT firms and multi-manager hedge funds: Jane Street, Optiver, Citadel and Citadel Securities, Two Sigma, DRW, Squarepoint, Radix, Akuna, SIG, Millennium, Balyasny, HRT, Jump, IMC, Tower, Five Rings and D. E. Shaw.
+A complete, self-tracking preparation system for senior **quant trader**, **quant researcher** and **quant developer** interviews at proprietary trading firms, market makers, HFT firms and multi-manager hedge funds: Jane Street, Optiver, Citadel and Citadel Securities, Two Sigma, DRW, Squarepoint, Radix, Akuna, SIG, Millennium, Balyasny, HRT, Jump, IMC, Tower, Five Rings, D. E. Shaw and AQR.
 
 It is three things over one set of Markdown notes:
 

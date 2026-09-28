@@ -18,6 +18,7 @@ Start with the [Firm Comparison](Firm-Comparison.md).
 ### Supporting material
 
 - [Akuna Capital](Akuna-Capital.md) (firm)
+- [AQR Capital Management](AQR.md) (firm)
 - [Balyasny Asset Management](Balyasny.md) (firm)
 - [Citadel and Citadel Securities](Citadel-and-Citadel-Securities.md) (firm)
 - [D. E. Shaw](DE-Shaw.md) (firm)

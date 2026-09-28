@@ -20,6 +20,7 @@ sources: []
 | Firm | Type | Main products or strategies | Roles hired | What interviews emphasise | Notable languages or tech |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | [Akuna Capital](Akuna-Capital.md) | Market maker | Options market making | Trader, quant, developer | Reported: mental maths, sequences, probability, options and market making under time pressure | Reported: coding test in Python or C++ |
+| [AQR Capital Management](AQR.md) | Hedge fund (systematic) | Factor and style premia across equity, macro and arbitrage; long-only and alternative | Research and portfolio management, portfolio implementation, engineering, risk | Reported: finance, programming, mathematics and statistics, two interviewers per round | Not stated |
 | [Balyasny](Balyasny.md) | Hedge fund (multi-manager) | Equities L/S, fixed income and macro, commodities, multi-asset arbitrage, systematic | QR and analysts in pods, central technology, data and AI | Varies by pod; reported: statistics, past research, modelling and markets | Not stated |
 | [Citadel and Citadel Securities](Citadel-and-Citadel-Securities.md) | Hedge fund and market maker (two firms) | Multi-strategy hedge fund; market making in equities, options, fixed income and FX | QR, QT, software engineer | Published guides and reports: maths, probability and a small coding task, then technical and behavioural rounds | Not stated |
 | [D. E. Shaw](DE-Shaw.md) | Hedge fund | Quantitative, discretionary and hybrid strategies across asset classes | Quant analyst, QR, developer, fundamental analyst | Per the firm: probability, statistics, algorithms, logic, programming and how you reason | Not stated |
@@ -42,7 +43,7 @@ sources: []
 - Match the firm type to the work you want: market makers and prop firms reward fast pricing and risk decisions, HFT firms reward engineering and short-horizon research, and hedge funds reward slower, portfolio-level research.
 - Traders who enjoy options and fast games will find the most overlap at [Optiver](Optiver.md), [IMC](IMC-Trading.md), [SIG](Susquehanna-SIG.md), [Akuna](Akuna-Capital.md) and [Jane Street](Jane-Street.md).
 - Engineers who want low-latency C++ and systems work should look at [HRT](Hudson-River-Trading.md), [Jump](Jump-Trading.md), [Tower](Tower-Research-Capital.md), [Radix](Radix-Trading.md) and the market makers' technology teams.
-- Researchers who prefer statistics, ML and portfolio construction tend to fit [Two Sigma](Two-Sigma.md), [D. E. Shaw](DE-Shaw.md), [Squarepoint](Squarepoint-Capital.md) and the systematic pods at multi-manager platforms.
+- Researchers who prefer statistics, ML and portfolio construction tend to fit [Two Sigma](Two-Sigma.md), [AQR](AQR.md), [D. E. Shaw](DE-Shaw.md), [Squarepoint](Squarepoint-Capital.md) and the systematic pods at multi-manager platforms.
 - On multi-manager platforms such as [Millennium](Millennium.md), [Balyasny](Balyasny.md) and Citadel, you are largely choosing a PM and a team, so evaluate the pod as carefully as the firm.
 - Team-of-teams firms such as Tower also make the hiring team the main variable.
 - Stability differs: pod and team roles are closer to P&L but depend on that team's results, while central and firm-wide roles are usually more stable.
