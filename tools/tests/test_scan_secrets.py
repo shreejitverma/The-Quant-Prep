@@ -17,6 +17,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 SCRIPT = REPO / "tools" / "scan-secrets.sh"
+# Flask key names are split so this file carries no assignment the flask-secret-key-literal rule would flag.
+FLASK_KEY = "secret" + "_key"
+FLASK_CONFIG_KEY = FLASK_KEY.upper()
 
 
 def fake_token(seed: int, alphabet: str = string.ascii_letters + string.digits, length: int = 32) -> str:
@@ -164,6 +167,53 @@ class ScanSecretsTest(unittest.TestCase):
             f"c.NotebookApp.password = 'sha1:{fake_token(18, string.hexdigits[:16], 12)}:{fake_token(19, string.hexdigits[:16], 40)}'\n",
         )
         self.commit("redacted")
+        self.assert_clean()
+
+    # Flask session keys: any literal is a committed key, whatever its characters.
+
+    def test_flask_secret_key_with_punctuation_fails(self) -> None:
+        self.write("app.py", f'app.{FLASK_KEY} = "{fake_token(20, string.ascii_letters + "!@#$%^&*", 24)}"\n')
+        self.commit("add key")
+        self.assert_leak()
+
+    def test_flask_secret_key_escaped_bytes_fails(self) -> None:
+        value = "".join(f"\\x{b:02x}" for b in random.Random(21).randbytes(24))
+        self.write("app.py", f"app.config['{FLASK_CONFIG_KEY}'] = b'{value}'\n")
+        self.commit("add key")
+        self.assert_leak()
+
+    def test_flask_secret_key_in_notebook_fails(self) -> None:
+        value = fake_token(22, string.ascii_letters + "!@#$%^&*", 16)
+        self.write("app.ipynb", '{"source": ["' + FLASK_CONFIG_KEY + ' = \\"' + value + '\\"\\n"]}\n')
+        self.commit("add key")
+        self.assert_leak()
+
+    def test_removed_wtpy_secret_key_fails(self) -> None:
+        self.write("wtmonsvr.py", f'        app.{FLASK_KEY} = "!@#$%^&*()"\n')
+        self.commit("restore wtpy key")
+        self.assert_leak()
+
+    def test_removed_server_app_secret_key_fails(self) -> None:
+        # The removed key is a real one, so it is read from the base commit rather than copied into the tree.
+        path = "_archive/legacy/08_research_and_resources/external_resources/ipynb-docker/serverapp/server_app.py"
+        old = subprocess.run(["git", "show", f"8f23d84:{path}"], cwd=REPO, capture_output=True, text=True)
+        if old.returncode != 0:
+            self.skipTest("base commit 8f23d84 is not in this clone")
+        line = next(ln for ln in old.stdout.splitlines() if ln.startswith(f"app.{FLASK_KEY} = "))
+        self.write("server_app.py", line + "\n")
+        self.commit("restore server_app key")
+        self.assert_leak()
+
+    def test_flask_secret_key_from_environment_passes(self) -> None:
+        self.write(
+            "app.py",
+            'app.secret_key = os.environ.get("WTPY_SECRET_KEY") or os.urandom(24)\n'
+            "app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY')\n"
+            "SECRET_KEY = os.urandom(24)\n"
+            "if app.secret_key == 'x':\n    pass\n"
+            f'secret_key = "YOUR_ALPACA_SECRET"\nsecret_key_file = "{fake_token(23, length=16)}.txt"\n',
+        )
+        self.commit("env keys")
         self.assert_clean()
 
     def test_unknown_base_is_an_error(self) -> None:
