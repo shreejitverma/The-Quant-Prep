@@ -20,6 +20,12 @@ def _link(section: Section, note: Note) -> str:
     return f"[{note.title}]({rel.replace(' ', '%20')})"
 
 
+def public_cards(note: Note) -> int:
+    """Cards defined in public notes only: private overlay cards merged into a topic must never
+    leak into the committed README tables (and would make them differ between machines)."""
+    return sum(1 for c in note.cards if not c.note_id.startswith("private:"))
+
+
 def render(section: Section) -> str:
     topics = [n for n in section.notes if n.trackable]
     other = [n for n in section.notes if not n.trackable and not n.id.startswith("moc:")]
@@ -35,7 +41,8 @@ def render(section: Section) -> str:
         ]
         for n in topics:
             tracks = "".join(TRACK_ABBR.get(t, "?") for t in n.tracks)
-            lines.append(f"| {n.order:02d} | {_link(section, n)} | {tracks} | {n.tier} | {n.est_hours:g} | {n.status} | {len(n.cards)} |")
+            row = f"| {n.order:02d} | {_link(section, n)} | {tracks} | {n.tier} | {n.est_hours:g} | {n.status} | {public_cards(n)} |"
+            lines.append(row)
     if other:
         lines += ["", "### Supporting material", ""]
         lines += [f"- {_link(section, n)} ({n.type})" for n in other]

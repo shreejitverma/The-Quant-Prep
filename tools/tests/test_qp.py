@@ -562,6 +562,7 @@ class QuestionBank(TempRepo):
                 ids["Reve"]: {"topic": "middle", "duplicate_of": ids["A qu"]},
             }
         )
+        moc.update_all(self.vault())  # public README tables are current before the private import
         topics = {n.id: n.title for n in self.vault().topics()}
         built = bank.build(self.bankdir, "wsq")
         bank.render(self.bankdir, built, "Demo", topics)
@@ -577,6 +578,7 @@ class QuestionBank(TempRepo):
         self.assertNotIn(ids["Unan"], v.cards)  # unanswered questions are listed, not carded
         self.assertIn(ids["Unan"], (self.bankdir / "notes" / "unsorted.md").read_text())
         self.assertIn(ids["Flip"], [c.id for c in planner.due_cards(v, self.store())])
+        self.assertEqual(moc.update_all(v, apply=False), [], "private cards must not change public README tables")
         self.assertEqual(check.check_vault(v), [])
 
     def test_duplicate_chains_resolve_to_root_and_cycles_are_ignored(self):
