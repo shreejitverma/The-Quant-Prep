@@ -77,6 +77,7 @@ mkdir -p private/my-bank && cp export.tsv private/my-bank/source.tsv
 
 The importer merges duplicate questions (keeping every firm that asked), gives each question a stable id derived from its text, and writes one note per syllabus topic plus `By-Firm.md`.
 Answers live in `private/my-bank/answers/*.json` as `{id: {topic, answer, verified, duplicate_of}}`; re-running the import after refreshing `source.tsv` keeps them.
+A merged question takes its id from the first variant seen, so a refresh that reorders or drops that variant changes the id; the import then lists the orphaned answer ids so you can re-key them in `answers/*.json`.
 Questions without an answer are listed under "Not yet answered" and stay out of review until answered.
 
 ## Reading in Obsidian
