@@ -13,7 +13,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import drills, moc, planner
+from . import bank, drills, moc, planner
 from .check import check_vault
 from .state import GRADES, MASTERY_LABELS, StateError, Store
 from .vault import REPO_ROOT, TRACK_LABELS, TRACKS, Note, Vault, load_vault
@@ -405,6 +405,29 @@ def cmd_index(vault: Vault, store: Store | None, args) -> int:
     return EXIT_OK
 
 
+def cmd_bank(vault: Vault, store: Store | None, args) -> int:
+    folder = Path(args.folder).resolve()
+    if not (folder / "source.tsv").exists():
+        raise CliError(f"{folder}/source.tsv not found", hint="put the exported firm/category/question TSV there")
+    if not args.allow_public and vault.root in folder.parents and folder.relative_to(vault.root).parts[0] != "private":
+        raise CliError("question banks must live under private/ so they are never committed", hint="--allow-public overrides")
+    topics = {n.id: n.title for n in vault.topics()}
+    questions = bank.build(folder, args.prefix)
+    written = bank.render(folder, questions, args.name, topics)
+    s = bank.summary(questions)
+    emit(
+        f"bank: {args.name} at {folder}",
+        f"rows: {s['rows']}, unique questions: {s['unique']}, answered: {s['answered']}, verified: {s['verified']}, "
+        f"unsorted: {s['unsorted']}, folded duplicates: {s['semantic_duplicates']}",
+        f"wrote: {len(written)} file(s)",
+        help_lines=[
+            "answers go in <bank>/answers/*.json as {id: {topic, answer, verified, duplicate_of}}",
+            "`qp check` validates the generated notes; `qp review` now includes answered cards",
+        ],
+    )
+    return EXIT_OK
+
+
 def cmd_serve(vault: Vault, store: Store, args) -> int:
     from .server import serve
 
@@ -473,6 +496,11 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("files", nargs="*")
     sp.add_argument("--strict-sde", action="store_true", help="fail when the SDE-Interview-Prep clone is missing")
     add("index", cmd_index, "regenerate section README tables")
+    sp = add("bank", cmd_bank, "import a firm/category/question TSV into the private overlay")
+    sp.add_argument("folder", help="bank folder containing source.tsv, e.g. private/wsq-question-bank")
+    sp.add_argument("--prefix", default="wsq", help="card id prefix")
+    sp.add_argument("--name", default="WSQ", help="display name used in note titles")
+    sp.add_argument("--allow-public", action="store_true", help="allow a bank folder outside private/")
     sp = add("serve", cmd_serve, "run the local web dashboard")
     sp.add_argument("--host", default="127.0.0.1")
     sp.add_argument("--port", type=int, default=8765)
@@ -480,7 +508,7 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-NO_STATE = {cmd_check, cmd_index}
+NO_STATE = {cmd_check, cmd_index, cmd_bank}
 
 
 def main(argv: list[str] | None = None) -> int:

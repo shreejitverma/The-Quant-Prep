@@ -53,6 +53,7 @@ The file is plain JSON and every write is atomic.
 | `./qp serve [--open]` | Local dashboard. |
 | `./qp check` | Validate notes, cards, links and style (CI runs this). |
 | `./qp index` | Regenerate the topic tables in section READMEs. |
+| `./qp bank <folder>` | Import a private question bank into the overlay (see below). |
 
 ## How the numbers are computed
 
@@ -60,6 +61,23 @@ The file is plain JSON and every write is atomic.
 - Track and firm readiness are averages of topic readiness weighted by study hours and tier (core 1.0, advanced 0.6, senior 0.4).
 - Card scheduling is SM-2 style: "again" repeats the card today, "good" goes 1 day, 3 days, then multiplies by the card's ease.
 - New cards are capped per day (`./qp profile --new-cards N`, default 20) so the review queue stays manageable.
+
+## Private overlay and question banks
+
+`private/` (or the folder in `$QP_PRIVATE`) holds material that must never be published: question banks from courses or colleagues, personal notes.
+Git ignores it, and `./qp check` fails if any file in it is ever tracked.
+`qp` loads it next to the syllabus: a private note with `extends: <topic-id>` adds its cards to that topic, so they count toward the topic's readiness, the track and firm scores, and the daily review queue.
+
+Import a bank exported as a tab-separated file of firm, category and question:
+
+```sh
+mkdir -p private/my-bank && cp export.tsv private/my-bank/source.tsv
+./qp bank private/my-bank --prefix my --name "My bank"
+```
+
+The importer merges duplicate questions (keeping every firm that asked), gives each question a stable id derived from its text, and writes one note per syllabus topic plus `By-Firm.md`.
+Answers live in `private/my-bank/answers/*.json` as `{id: {topic, answer, verified, duplicate_of}}`; re-running the import after refreshing `source.tsv` keeps them.
+Questions without an answer are listed under "Not yet answered" and stay out of review until answered.
 
 ## Reading in Obsidian
 

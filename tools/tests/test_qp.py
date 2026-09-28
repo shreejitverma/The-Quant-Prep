@@ -16,7 +16,7 @@ from http.server import ThreadingHTTPServer
 from pathlib import Path
 from unittest import mock
 
-from tools.qp import check, drills, moc, planner, server
+from tools.qp import bank, check, drills, moc, planner, server
 from tools.qp.state import CardSchedule, StateError, Store, schedule
 from tools.qp.vault import load_vault, note_id_for, parse_cards, parse_scalar, split_frontmatter
 
@@ -519,3 +519,82 @@ class Api(TempRepo):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class QuestionBank(TempRepo):
+    SOURCE = (
+        "Jane Street\tprobability\tFlip two coins. P(two heads)?\n"
+        "Optiver\tprobability\tFlip two coins.  P(two heads)?\n"  # same after normalisation
+        "\tbayes\tA question\n"
+        "continued on the next line\n"
+        "Citadel\tcoding\t\n"
+        "Reverse a list.\n"
+        "IMC Trading\tlogic\tUnanswered puzzle\n"
+    )
+
+    def setUp(self):
+        super().setUp()
+        self.bankdir = self.root / "private" / "demo"
+        (self.bankdir / "answers").mkdir(parents=True)
+        (self.bankdir / "source.tsv").write_text(self.SOURCE)
+
+    def test_parse_and_dedupe(self):
+        rows = bank.parse_source(self.SOURCE)
+        self.assertEqual(len(rows), 5)
+        self.assertEqual(rows[2], ("", "bayes", "A question continued on the next line"))
+        self.assertEqual(rows[3], ("Citadel", "coding", "Reverse a list."))
+        qs = bank.dedupe(rows, "wsq")
+        self.assertEqual(len(qs), 4)
+        coin = next(q for q in qs.values() if q.prompt.startswith("Flip"))
+        self.assertEqual((coin.firms, coin.reports), (["Jane Street", "Optiver"], 2))
+        self.assertEqual(bank.question_id("wsq", "Flip two coins. P(two heads)?"), coin.id)  # stable id
+
+    def answer(self, **entries):
+        (self.bankdir / "answers" / "a.json").write_text(json.dumps(entries))
+
+    def test_overlay_cards_join_topics_and_readiness(self):
+        qs = bank.dedupe(bank.parse_source(self.SOURCE), "wsq")
+        ids = {q.prompt[:4]: q.id for q in qs.values()}
+        self.answer(
+            **{
+                ids["Flip"]: {"topic": "base", "answer": "1/4", "verified": True},
+                ids["A qu"]: {"topic": "middle", "answer": "x"},
+                ids["Reve"]: {"topic": "middle", "duplicate_of": ids["A qu"]},
+            }
+        )
+        topics = {n.id: n.title for n in self.vault().topics()}
+        built = bank.build(self.bankdir, "wsq")
+        bank.render(self.bankdir, built, "Demo", topics)
+        self.assertEqual(bank.summary(built)["semantic_duplicates"], 1)
+        self.assertEqual(built[ids["A qu"]].firms, ["Citadel"])  # folded from the duplicate
+        v = self.vault()
+        self.assertEqual(v.sections[-1].folder, "private")
+        base = v.notes["base"]
+        self.assertIn(ids["Flip"], [c.id for c in base.cards])  # merged into the public topic
+        self.assertFalse(v.notes["base-demo"].trackable if "base-demo" in v.notes else False)
+        overlay = next(n for n in v.notes.values() if n.extends == "base")
+        self.assertFalse(overlay.trackable)
+        self.assertNotIn(ids["Unan"], v.cards)  # unanswered questions are listed, not carded
+        self.assertIn(ids["Unan"], (self.bankdir / "notes" / "unsorted.md").read_text())
+        self.assertIn(ids["Flip"], [c.id for c in planner.due_cards(v, self.store())])
+        self.assertEqual(check.check_vault(v), [])
+
+    def test_unknown_topic_rejected(self):
+        qs = bank.dedupe(bank.parse_source(self.SOURCE), "wsq")
+        self.answer(**{next(iter(qs)): {"topic": "no-such-topic", "answer": "x"}})
+        with self.assertRaises(ValueError):
+            bank.render(self.bankdir, bank.build(self.bankdir, "wsq"), "Demo", {n.id: n.title for n in self.vault().topics()})
+
+    def test_extends_unknown_topic_is_an_error(self):
+        (self.root / "private" / "x.md").write_text(
+            "---\ntype: problem-set\ntrack: [quant-trader]\ntier: core\nstatus: draft\nextends: ghost\nest_hours: 1\n---\n\n# X\n"
+        )
+        self.assertTrue(any("extends unknown topic" in e for e in self.vault().errors))
+
+    def test_tracked_private_file_fails_check(self):
+        import subprocess
+
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        (self.root / "private" / "leak.md").write_text("secret\n")
+        subprocess.run(["git", "add", "-f", "private/leak.md"], cwd=self.root, check=True)
+        self.assertIn("private", {f.rule for f in check.check_vault(self.vault())})

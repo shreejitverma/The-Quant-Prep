@@ -272,7 +272,7 @@ async function viewSyllabus(params) {
       const done = rows.filter((n) => n.mastery >= 3).length;
       const filtering = state.q || state.tier || state.written || state.tracks.size;
       return h("details", { class: "section-group", open: filtering || state.open === sec.folder || !state.open ? true : null, id: sec.folder },
-        h("summary", {}, h("span", { class: "caret" }, "▸"), h("h2", {}, sec.title),
+        h("summary", {}, h("span", { class: "caret" }, "▸"), h("h2", {}, sec.title), sec.private ? h("span", { class: "chip", title: "Loaded from your private overlay; never committed" }, "private") : null,
           rows.length ? h("span", { class: "faint num" }, `${done}/${rows.length} solid`) : null,
           sec.readme ? h("a", { href: `#/note/${encodeURIComponent(sec.readme)}`, class: "btn small", onclick: (e) => e.stopPropagation() }, "Overview") : null),
         h("div", { class: "panel" }, rows.length ? h("table", { class: "t" },

@@ -70,4 +70,4 @@ def update_all(vault: Vault, apply: bool = True) -> list[str]:
 def indexed(vault: Vault, section: Section) -> bool:
     """Libraries and READMEs with ``index: false`` (hand-curated lists) get no generated block."""
     readme = vault.notes.get(f"moc:{section.folder}")
-    return not section.library and not (readme and str(readme.meta.get("index")).lower() == "false")
+    return not section.library and not section.private and not (readme and str(readme.meta.get("index")).lower() == "false")

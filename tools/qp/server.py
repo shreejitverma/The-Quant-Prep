@@ -152,6 +152,7 @@ class App:
                     "folder": sec.folder,
                     "title": sec.title,
                     "library": sec.library,
+                    "private": sec.private,
                     "notes": [self.topic_row(n) for n in sec.notes if not n.id.startswith("moc:")],
                     "readme": next((n.id for n in sec.notes if n.id == f"moc:{sec.folder}"), None),
                 }

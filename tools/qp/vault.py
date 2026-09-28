@@ -6,6 +6,7 @@ into plain dataclasses and never writes to them (see ``moc.py`` for the one writ
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -25,6 +26,7 @@ STATUSES = ("seed", "draft", "solid", "canonical")
 TRACKABLE_TYPES = ("concept", "problem-set", "playbook")
 NOTE_TYPES = TRACKABLE_TYPES + ("reference", "firm", "moc", "guide")
 # Folders inside a section that never hold notes.
+PRIVATE_DIR = "private"
 SKIP_DIRS = {"code", "protocol-specs", "_archive", "node_modules", "__pycache__"}
 
 
@@ -80,8 +82,14 @@ class Note:
         return float(value) if isinstance(value, (int, float)) else 0.0
 
     @property
+    def extends(self) -> str | None:
+        value = self.meta.get("extends")
+        return str(value).lower() if value else None
+
+    @property
     def trackable(self) -> bool:
-        return self.type in TRACKABLE_TYPES
+        # A private note that extends a syllabus topic contributes cards to that topic instead.
+        return self.type in TRACKABLE_TYPES and not self.extends
 
 
 @dataclass
@@ -91,6 +99,7 @@ class Section:
     title: str
     notes: list[Note] = field(default_factory=list)
     library: bool = False
+    private: bool = False
 
 
 @dataclass
@@ -191,10 +200,10 @@ def note_id_for(path: Path) -> str:
     return (m.group(2) if m else stem).lower()
 
 
-def load_note(root: Path, rel: Path, section: str) -> Note:
-    text = (root / rel).read_text(encoding="utf-8")
+def load_note(root: Path, rel: Path, section: str, source: Path | None = None, nid: str | None = None) -> Note:
+    text = (source or root / rel).read_text(encoding="utf-8")
     meta, body, body_start = split_frontmatter(text)
-    nid = note_id_for(rel)
+    nid = nid or note_id_for(rel)
     m = ORDER_RE.match(rel.stem)
     heading = HEADING_RE.search(body)
     title = heading.group(1) if heading else rel.stem.replace("-", " ")
@@ -216,11 +225,30 @@ def section_info(root: Path, folder: str) -> tuple[str, bool]:
     return title, library
 
 
+def private_root(root: Path) -> Path:
+    """The private overlay: ``$QP_PRIVATE`` if set, else ``<repo>/private`` (gitignored)."""
+    env = os.environ.get("QP_PRIVATE")
+    return Path(env).expanduser() if env else root / PRIVATE_DIR
+
+
 def load_vault(root: Path = REPO_ROOT) -> Vault:
     sections: list[Section] = []
     notes: dict[str, Note] = {}
     cards: dict[str, Card] = {}
     errors: list[str] = []
+
+    def add(note: Note, section: Section) -> None:
+        if note.id in notes:
+            errors.append(f"{note.path}: duplicate note id {note.id!r} (also {notes[note.id].path})")
+            return
+        notes[note.id] = note
+        for card in note.cards:
+            if card.id in cards:
+                errors.append(f"{note.path}:{card.line}: duplicate card id {card.id!r} (also in {cards[card.id].note_id})")
+                continue
+            cards[card.id] = card
+        section.notes.append(note)
+
     for folder in sorted(p.name for p in root.iterdir() if p.is_dir() and SECTION_RE.match(p.name)):
         title, library = section_info(root, folder)
         section = Section(folder, int(folder[:2]), title, library=library)
@@ -230,20 +258,37 @@ def load_vault(root: Path = REPO_ROOT) -> Vault:
             if any(part in SKIP_DIRS or part.startswith(".") for part in rel.parts[1:-1]):
                 continue
             try:
-                note = load_note(root, rel, folder)
+                add(load_note(root, rel, folder), section)
             except (VaultError, UnicodeDecodeError) as exc:
                 errors.append(f"{rel}: {exc}")
-                continue
-            if note.id in notes:
-                errors.append(f"{rel}: duplicate note id {note.id!r} (also {notes[note.id].path})")
-                continue
-            notes[note.id] = note
-            for card in note.cards:
-                if card.id in cards:
-                    errors.append(f"{rel}:{card.line}: duplicate card id {card.id!r} (also in {cards[card.id].note_id})")
-                    continue
-                cards[card.id] = card
-            section.notes.append(note)
         section.notes.sort(key=lambda n: (n.path.parent != Path(folder), n.path.parent.as_posix(), n.order, n.id))
         sections.append(section)
+
+    proot = private_root(root)
+    if proot.is_dir():
+        section = Section(PRIVATE_DIR, 99, "Private", private=True)
+        readme = proot / "README.md"
+        if readme.exists():
+            _, body, _ = split_frontmatter(readme.read_text(encoding="utf-8"))
+            m = HEADING_RE.search(body)
+            section.title = m.group(1) if m else section.title
+        for path in sorted(proot.rglob("*.md")):
+            inner = path.relative_to(proot)
+            if any(part in SKIP_DIRS or part.startswith(".") for part in inner.parts[:-1]):
+                continue
+            rel = Path(PRIVATE_DIR) / inner  # display path; the file may live outside the repo
+            try:
+                # namespaced so a private note can never shadow a syllabus id
+                nid = "moc:private" if inner.as_posix().lower() == "readme.md" else f"private:{inner.with_suffix('').as_posix().lower()}"
+                add(load_note(root, rel, PRIVATE_DIR, source=path, nid=nid), section)
+            except (VaultError, UnicodeDecodeError) as exc:
+                errors.append(f"{rel}: {exc}")
+        section.notes.sort(key=lambda n: (n.path.parent.as_posix(), n.order, n.id))
+        sections.append(section)
+        for note in section.notes:  # merge overlay cards into the topics they extend
+            target = notes.get(note.extends) if note.extends else None
+            if note.extends and (target is None or not target.trackable):
+                errors.append(f"{note.path}: extends unknown topic {note.extends!r}")
+            elif target is not None:
+                target.cards.extend(note.cards)
     return Vault(root, sections, notes, cards, errors)

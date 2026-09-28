@@ -8,11 +8,12 @@ from __future__ import annotations
 
 import os
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import unquote
 
-from .vault import NOTE_TYPES, STATUSES, TIERS, TRACKS, Vault
+from .vault import NOTE_TYPES, PRIVATE_DIR, STATUSES, TIERS, TRACKS, Vault
 
 SDE_URL = "https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/"
 SDE_ENV = "SDE_REPO"
@@ -130,6 +131,7 @@ def check_vault(vault: Vault, strict_sde: bool = False, files: list[Path] | None
             if not card.answer:
                 findings.append(Finding(p, card.line, "card", f"card {card.id!r} has no answer"))
     findings += prereq_cycles(vault)
+    findings += private_not_tracked(vault)
     targets = (
         files
         if files is not None
@@ -140,6 +142,17 @@ def check_vault(vault: Vault, strict_sde: bool = False, files: list[Path] | None
         findings += check_links(vault, rel, text, sde)
         findings += check_style(rel, text)
     return sorted(findings, key=lambda f: (f.path, f.line, f.rule))
+
+
+def private_not_tracked(vault: Vault) -> list[Finding]:
+    """The private overlay must never be committed: fail if git tracks anything under it."""
+    if not (vault.root / ".git").exists():
+        return []
+    try:
+        out = subprocess.run(["git", "ls-files", "--", PRIVATE_DIR], cwd=vault.root, capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError) as exc:
+        return [Finding(PRIVATE_DIR, 1, "private", f"could not verify the private overlay is untracked: {exc}")]
+    return [Finding(line, 1, "private", "private overlay file is tracked by git; run git rm --cached") for line in out.splitlines()]
 
 
 def prereq_cycles(vault: Vault) -> list[Finding]:

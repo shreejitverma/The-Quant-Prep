@@ -23,6 +23,7 @@ Everything committed here is public.
 
 ## Private data
 
+- `private/` is the gitignored private overlay (question banks, personal notes); `qp` loads it with ids namespaced `private:` and merges cards from notes with `extends: <topic>` into that topic. `./qp check` fails if anything under it is tracked. Never copy its content into public notes.
 - Learner progress lives outside the repo (`$QP_HOME`, default `~/.local/share/quant-prep/`); never write it into the repo.
 - `16-Trading-and-Investing/Private/` is gitignored except its README; personal trades and portfolios go only there.
 

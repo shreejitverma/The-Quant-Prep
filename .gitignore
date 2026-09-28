@@ -19,3 +19,6 @@ build/
 # Personal trading journals and portfolio never leave this machine
 16-Trading-and-Investing/Private/*
 !16-Trading-and-Investing/Private/README.md
+
+# Private overlay (question banks and notes that must never be published); qp loads it locally
+private/
