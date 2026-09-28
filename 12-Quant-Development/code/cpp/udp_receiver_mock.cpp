@@ -43,7 +43,10 @@ public:
 
         // 2. Allow multiple sockets to use the same PORT
         int reuse = 1;
-        setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse));
+        if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
+            perror("SO_REUSEADDR");
+            exit(1);
+        }
 
         // 3. Setup Address
         memset(&addr, 0, sizeof(addr));
@@ -57,11 +60,15 @@ public:
             exit(1);
         }
 
-        // 5. Join Multicast Group (Simplified Mock)
-        struct ip_mreq mreq;
+        // 5. Join the multicast group on the default interface. Production feed handlers pin
+        //    the interface (the NIC facing the exchange) instead of INADDR_ANY.
+        struct ip_mreq mreq {};
         mreq.imr_multiaddr.s_addr = inet_addr(ip);
         mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-        // setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq));
+        if (setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
+            perror("IP_ADD_MEMBERSHIP");
+            exit(1);
+        }
         
         std::cout << "Listening for Market Data on " << ip << ":" << port << "..." << std::endl;
     }
@@ -75,9 +82,12 @@ public:
             ssize_t n = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)&from, &fromlen);
             if (n < 0) break;
 
-            if (n >= sizeof(MarketUpdate)) {
-                MarketUpdate* update = reinterpret_cast<MarketUpdate*>(buffer);
-                process_update(*update);
+            if (static_cast<size_t>(n) >= sizeof(MarketUpdate)) {
+                // memcpy, not reinterpret_cast: a char buffer carries no MarketUpdate object and may be
+                // misaligned, so casting would be undefined behaviour. Compilers turn this into plain loads.
+                MarketUpdate update;
+                std::memcpy(&update, buffer, sizeof(update));
+                process_update(update);
             }
         }
     }

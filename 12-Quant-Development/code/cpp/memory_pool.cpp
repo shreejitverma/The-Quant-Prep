@@ -1,88 +1,76 @@
-#include <iostream>
-#include <vector>
+// Fixed-size object pool for low-latency code.
+//
+// Why pools on a hot path: general-purpose allocators take locks or thread caches, have
+// data-dependent latency, and scatter objects across memory. A pool pre-allocates slots
+// in large blocks, so steady-state allocate/deallocate is O(1), allocation-free and cache
+// friendly. (malloc does not usually make a system call; the cost is variance, not syscalls.)
+//
+// Design: slots are raw, suitably aligned storage (objects are constructed only when
+// handed out), and free slots form an intrusive singly linked list threaded through
+// the slots themselves, so deallocate never allocates. Not thread-safe by design: give
+// each thread its own pool. Build: g++ -std=c++20 -O2 memory_pool.cpp
+
 #include <cassert>
+#include <cstddef>
+#include <iostream>
+#include <memory>
+#include <new>
+#include <utility>
+#include <vector>
 
-/**
- * Simple Memory Pool Allocator for low-latency applications.
- * 
- * In HFT, we avoid 'new' and 'delete' on the hot path because:
- * 1. They involve a system call (context switch).
- * 2. They can cause heap fragmentation.
- * 3. Allocation time is non-deterministic.
- * 
- * This pool pre-allocates a chunk of memory and manages it manually.
- */
-
-template <typename T, size_t BlockSize = 4096>
-class MemoryPool {
-private:
+template <typename T, std::size_t SlotsPerBlock = 4096>
+class ObjectPool {
+    union Slot {
+        Slot* next;  // valid while the slot is free
+        alignas(T) std::byte storage[sizeof(T)];
+    };
     struct Block {
-        T data[BlockSize];
+        Slot slots[SlotsPerBlock];
     };
 
-    std::vector<Block*> blocks;
-    std::vector<T*> free_list;
-    size_t current_block_index;
-    size_t current_slot_index;
+    std::vector<std::unique_ptr<Block>> blocks_;
+    Slot* free_ = nullptr;
+    std::size_t live_ = 0;
+
+    void grow() {
+        auto block = std::make_unique<Block>();
+        for (std::size_t i = SlotsPerBlock; i-- > 0;) {  // thread in reverse so slots hand out in address order
+            block->slots[i].next = free_;
+            free_ = &block->slots[i];
+        }
+        blocks_.push_back(std::move(block));
+    }
 
 public:
-    MemoryPool() {
-        current_block_index = 0;
-        current_slot_index = 0;
-        allocate_block();
+    explicit ObjectPool(std::size_t reserve_blocks = 1) {
+        blocks_.reserve(reserve_blocks);
+        for (std::size_t i = 0; i < reserve_blocks; ++i) grow();
+    }
+    ~ObjectPool() { assert(live_ == 0 && "objects still alive when the pool is destroyed"); }
+    ObjectPool(const ObjectPool&) = delete;
+    ObjectPool& operator=(const ObjectPool&) = delete;
+
+    template <typename... Args>
+    [[nodiscard]] T* create(Args&&... args) {
+        if (free_ == nullptr) grow();  // slow path: only when the reserve is exhausted
+        Slot* slot = free_;
+        free_ = slot->next;
+        T* obj = ::new (static_cast<void*>(slot->storage)) T{std::forward<Args>(args)...};
+        ++live_;
+        return obj;
     }
 
-    ~MemoryPool() {
-        for (auto block : blocks) {
-            delete block;
-        }
+    void destroy(T* obj) noexcept {
+        if (obj == nullptr) return;
+        obj->~T();
+        auto* slot = reinterpret_cast<Slot*>(obj);  // storage is the union's first byte
+        slot->next = free_;
+        free_ = slot;
+        --live_;
     }
 
-    // Disable copy
-    MemoryPool(const MemoryPool&) = delete;
-    MemoryPool& operator=(const MemoryPool&) = delete;
-
-    T* allocate() {
-        // 1. Prefer picking from the free list (reusing returned memory)
-        if (!free_list.empty()) {
-            T* ptr = free_list.back();
-            free_list.pop_back();
-            return ptr;
-        }
-
-        // 2. If block is full, allocate a new one
-        if (current_slot_index >= BlockSize) {
-            allocate_block();
-            current_block_index++;
-            current_slot_index = 0;
-        }
-
-        // 3. Return next slot in current block
-        return &(blocks[current_block_index]->data[current_slot_index++]);
-    }
-
-    void deallocate(T* ptr) {
-        // In a real pool, we might want to check if ptr belongs to us.
-        // For speed, we just push to free list for reuse.
-        free_list.push_back(ptr);
-    }
-
-    template<typename... Args>
-    T* construct(Args&&... args) {
-        T* ptr = allocate();
-        new(ptr) T(std::forward<Args>(args)...); // Placement new
-        return ptr;
-    }
-
-    void destroy(T* ptr) {
-        ptr->~T();
-        deallocate(ptr);
-    }
-
-private:
-    void allocate_block() {
-        blocks.push_back(new Block());
-    }
+    [[nodiscard]] std::size_t live() const noexcept { return live_; }
+    [[nodiscard]] std::size_t capacity() const noexcept { return blocks_.size() * SlotsPerBlock; }
 };
 
 struct Order {
@@ -92,29 +80,18 @@ struct Order {
 };
 
 int main() {
-    MemoryPool<Order> pool;
+    ObjectPool<Order> pool;
+    Order* o1 = pool.create(1, 100.5, 10.0);
+    Order* o2 = pool.create(2, 100.6, 20.0);
+    std::cout << "order " << o1->id << " @ " << o1->price << ", order " << o2->id << " @ " << o2->price << '\n';
 
-    std::cout << "Allocating orders from pool..." << std::endl;
-    
-    // Fast allocation without malloc overhead
-    Order* o1 = pool.construct(1, 100.5, 10);
-    Order* o2 = pool.construct(2, 100.6, 20);
-
-    std::cout << "Order 1: " << o1->id << " @ " << o1->price << std::endl;
-
-    // Reuse memory
+    const void* freed_slot = o1;  // remember the address, not the dangling pointer
     pool.destroy(o1);
-    Order* o3 = pool.construct(3, 101.0, 5); // Should reuse o1's slot
+    Order* o3 = pool.create(3, 101.0, 5.0);
+    std::cout << "order " << o3->id << " reused the freed slot: " << std::boolalpha << (static_cast<const void*>(o3) == freed_slot)
+              << "\nlive " << pool.live() << " of capacity " << pool.capacity() << '\n';
 
-    std::cout << "Order 3 (Reused): " << o3->id << " @ " << o3->price << std::endl;
-    
-    // Address verification
-    std::cout << "Addr o1 (freed): " << o1 << std::endl;
-    std::cout << "Addr o3 (new):   " << o3 << std::endl;
-    
-    if (o1 == o3) {
-        std::cout << "Success: Memory was recycled!" << std::endl;
-    }
-
-    return 0;
+    pool.destroy(o2);
+    pool.destroy(o3);
+    return pool.live() == 0 ? 0 : 1;
 }
