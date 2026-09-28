@@ -1,0 +1,61 @@
+# gitleaks configuration: the default rules plus notebook-aware coverage.
+[extend]
+useDefault = true
+
+# Notebook source lines are JSON strings, so an assignment such as key = "..." is stored as key = \"...\",
+# which the default generic rule does not match.
+[[rules]]
+id = "notebook-escaped-credential"
+description = "Credential assigned inside a JSON-escaped notebook source string"
+regex = '''(?i)[\w.-]{0,30}(?:key|secret|token|passw(?:or)?d|pwd|auth)[\w.-]{0,20}\s*=\s*\\"([\w.=+/-]{10,150})\\"'''
+entropy = 3.5
+keywords = ["key", "secret", "token", "passw", "pwd", "auth"]
+[[rules.allowlists]]
+description = "Placeholders such as YOUR_ALPACA_API_SECRET"
+regexes = ['''(?i)^your_''']
+
+# A subscripted assignment such as kwargs['token'] = '...' puts the key name inside brackets,
+# which the default generic rule does not match. Dots are excluded from the value so truncated examples such as '<prefix>...' pass.
+[[rules]]
+id = "subscripted-credential"
+description = "Credential assigned through a subscript key"
+regex = '''(?i)\[\s*\\?["'][\w.-]{0,30}(?:key|secret|token|passw(?:or)?d|pwd|auth)[\w.-]{0,20}\\?["']\s*\]\s*=\s*\\?["']([\w=+/-]{10,150})\\?["']'''
+entropy = 3.5
+keywords = ["key", "secret", "token", "passw", "pwd", "auth"]
+[[rules.allowlists]]
+description = "Placeholders such as YOUR_TOKEN"
+regexes = ['''(?i)^your_''']
+
+# Passwords often contain punctuation such as * or !, which the default generic rule's value charset excludes.
+[[rules]]
+id = "password-with-punctuation"
+description = "Password literal containing punctuation, in source or a JSON-escaped notebook string"
+regex = '''(?i)\b(?:passw(?:or)?d|pwd)\s*[:=]\s*\\?["']([^\s"'\\]{8,64})\\?["']'''
+entropy = 3.5
+keywords = ["passw", "pwd"]
+[[rules.allowlists]]
+description = "Placeholders such as YOUR_PASSWORD, and salted hashes such as Jupyter's sha1:<salt>:<digest>"
+regexes = ['''(?i)^your_''', '''^(?:sha1|sha256|argon2):''']
+
+# Any literal assigned to a Flask session key is a committed key, whatever its characters (punctuation, \x escapes).
+# Matches app.secret_key, app.config['SECRET_KEY'] and SECRET_KEY, in source or a JSON-escaped notebook string;
+# a bare lowercase secret_key variable (such as an Alpaca credential name) is left to the other rules.
+[[rules]]
+id = "flask-secret-key-literal"
+description = "String or bytes literal assigned to a Flask session key"
+regex = '''(?:\.secret_key|\bSECRET_KEY)(?:\\?["']\s*\])?\s*=\s*[bBrRuU]{0,2}(?:'((?:[^'\\\r\n]|\\[^\r\n])+)'|"((?:[^"\\\r\n]|\\[^"\r\n])+)"|\\"((?:[^"\\\r\n]|\\[^"\r\n])+)\\")'''
+keywords = ["secret_key"]
+
+# Quandl (Nasdaq Data Link) keys are 20 characters and are often passed positionally after a dataset code,
+# as in fetch_data("CBOE/SPX_PC", "<key>", ...), where no keyword names them.
+[[rules]]
+id = "quandl-positional-key"
+description = "Quandl API key passed positionally after a dataset code"
+regex = '''["'][A-Z0-9_]+/[A-Z0-9_.]+["']\s*,\s*["']([A-Za-z0-9_-]{20})["']'''
+entropy = 3.5
+keywords = ["/"]
+
+# Binary and bulk data files carry no hand-written credentials and dominate scan time.
+[[allowlists]]
+description = "Binary and bulk data files"
+paths = ['''(?i)\.(?:h5|hdf5|dsb|bif|png|jpe?g|gif|svg|ico|pdf|xlsx?|csv|parquet|pkl|pickle|npy|npz|zip|gz|tar|mp4|woff2?|ttf)$''']

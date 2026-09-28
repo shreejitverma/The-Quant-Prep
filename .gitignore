@@ -22,3 +22,14 @@ build/
 
 # Private overlay (question banks and notes that must never be published); qp loads it locally
 private/
+
+# Secrets and keys: never commit credentials
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+credentials.json
+secrets.json

@@ -19,7 +19,8 @@ from forms import Registration
 charset = string.uppercase + string.lowercase + string.punctuation
 
 app = Flask(__name__)
-app.secret_key = '\xb6\xa5hA\x01{\x0f\xd6su\xeb\xd6:4\x13u^O\x15f\xe3\xaf*\xde'
+# Secret key must be provided via environment in production.
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))
 
 
 # Configuration of the App
@@ -98,4 +99,5 @@ def server(first_name):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8888, debug=True)
+    app.run(host='127.0.0.1', port=8888,
+            debug=os.environ.get('FLASK_DEBUG', '0') == '1')

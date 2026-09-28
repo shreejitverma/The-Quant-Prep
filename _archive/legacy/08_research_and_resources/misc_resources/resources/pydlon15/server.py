@@ -1,4 +1,5 @@
 #!flask/bin/python
+import os
 import numpy as np
 import datetime as dt
 from flask import Flask, jsonify
@@ -21,4 +22,4 @@ def get_tasks():
     return jsonify({'tick': tick})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=os.environ.get('FLASK_DEBUG', '0') == '1')

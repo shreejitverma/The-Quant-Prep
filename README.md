@@ -72,6 +72,6 @@ _archive/          the pre-2026 notebook collection and superseded drafts, outsi
 ## Contributing
 
 Read [Note Conventions](00-Start-Here/Note-Conventions.md) and [CONTRIBUTING](CONTRIBUTING.md).
-Before a pull request: `./qp check`, `./qp index`, `python3 -m unittest discover -s tools/tests -t .`, and `ruff check .`.
+Before a pull request, run the checks listed in [CONTRIBUTING](CONTRIBUTING.md#workflow), including the secret scan.
 
 Maintained by [Shreejit Verma](https://github.com/shreejitverma). MIT licence.

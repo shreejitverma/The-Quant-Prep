@@ -1,0 +1,30 @@
+# Reviewed gitleaks findings in the frozen _archive tree that are not live credentials.
+# iexcloud.py: truncated example token in a docstring.
+# datamgr.py / DataMgr.py: upstream wtpy built-in account hash, left as upstream shipped it.
+# *_Explainable_DRL.ipynb: GitHub's public release-bucket key id inside expired presigned URLs.
+# tpqeod.py: upstream sentinel compared against to swap in the public 'demo' token.
+# Add an entry only after confirming the value is not a credential; never to silence a real one.
+_archive/legacy/05_algorithmic_trading/strategies/misc_strategies/finrl_meta/finrl_meta/data_processors/iexcloud.py:generic-api-key:114
+_archive/legacy/05_algorithmic_trading/strategies/misc_strategies/finrl_meta/finrl_meta/env_future_trading/wt4elegantrl/wtpy/monitor/datamgr.py:generic-api-key:370
+_archive/legacy/05_algorithmic_trading/strategies/misc_strategies/finrl_meta/tutorials/2_advance/finrl_portfolioallocation_explainable_drl.ipynb:aws-access-token:181
+_archive/legacy/05_algorithmic_trading/strategies/misc_strategies/finrl_meta/tutorials/2_advance/finrl_portfolioallocation_explainable_drl.ipynb:aws-access-token:182
+_archive/legacy/05_algorithmic_trading/strategies/rl_trading/FinRL Meta/finrl_meta/data_processors/iexcloud.py:generic-api-key:114
+_archive/legacy/05_algorithmic_trading/strategies/rl_trading/FinRL Meta/finrl_meta/env_future_trading/wt4elegantrl/wtpy/monitor/DataMgr.py:generic-api-key:370
+_archive/legacy/05_algorithmic_trading/strategies/rl_trading/FinRL Meta/tutorials/2-Advance/FinRL_PortfolioAllocation_Explainable_DRL.ipynb:aws-access-token:181
+_archive/legacy/05_algorithmic_trading/strategies/rl_trading/FinRL Meta/tutorials/2-Advance/FinRL_PortfolioAllocation_Explainable_DRL.ipynb:aws-access-token:182
+_archive/legacy/08_research_and_resources/external_resources/aifin/code/tpqeod.py:generic-api-key:515
+_archive/legacy/08_research_and_resources/external_resources/aifin/code/tpqeod.py:generic-api-key:552
+_archive/legacy/08_research_and_resources/external_resources/aifin/code/tpqeod.py:generic-api-key:585
+_archive/legacy/08_research_and_resources/external_resources/aifin/code/tpqeod.py:generic-api-key:615
+_archive/legacy/08_research_and_resources/external_resources/aifin/code/tpqeod.py:generic-api-key:873
+_archive/legacy/08_research_and_resources/external_resources/aifin/code/tpqeod.py:generic-api-key:906
+_archive/legacy/08_research_and_resources/external_resources/aifin/code/tpqeod.py:generic-api-key:939
+_archive/legacy/08_research_and_resources/external_resources/aifin/code/tpqeod.py:generic-api-key:972
+_archive/legacy/08_research_and_resources/misc_resources/resources/aifin/code/tpqeod.py:generic-api-key:515
+_archive/legacy/08_research_and_resources/misc_resources/resources/aifin/code/tpqeod.py:generic-api-key:552
+_archive/legacy/08_research_and_resources/misc_resources/resources/aifin/code/tpqeod.py:generic-api-key:585
+_archive/legacy/08_research_and_resources/misc_resources/resources/aifin/code/tpqeod.py:generic-api-key:615
+_archive/legacy/08_research_and_resources/misc_resources/resources/aifin/code/tpqeod.py:generic-api-key:873
+_archive/legacy/08_research_and_resources/misc_resources/resources/aifin/code/tpqeod.py:generic-api-key:906
+_archive/legacy/08_research_and_resources/misc_resources/resources/aifin/code/tpqeod.py:generic-api-key:939
+_archive/legacy/08_research_and_resources/misc_resources/resources/aifin/code/tpqeod.py:generic-api-key:972

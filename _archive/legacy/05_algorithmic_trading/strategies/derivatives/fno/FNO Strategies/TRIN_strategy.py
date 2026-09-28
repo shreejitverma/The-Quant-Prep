@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import quandl
 import matplotlib.pyplot as plt
@@ -12,11 +13,11 @@ def variance_calculator(series, series_average, win_len):
     return sigma
 
 # Getting the Data
-data1 = quandl.get("CHRIS/CME_SP1", authtoken = "9EfoixVwAcrEgCSe7y_F" , start_date = "2017-07-27")
-declining = quandl.get("URC/NYSE_DEC", authtoken = "9EfoixVwAcrEgCSe7y_F" , start_date = "2017-07-27")
-advancing = quandl.get("URC/NYSE_ADV", authtoken = "9EfoixVwAcrEgCSe7y_F" , start_date = "2017-07-27")
-adv_vol = quandl.get("URC/NYSE_ADV_VOL", authtoken = "9EfoixVwAcrEgCSe7y_F" , start_date = "2017-07-27")
-dec_vol = quandl.get("URC/NYSE_DEC_VOL", authtoken = "9EfoixVwAcrEgCSe7y_F" , start_date = "2017-07-27")
+data1 = quandl.get("CHRIS/CME_SP1", authtoken = os.environ.get("QUANDL_API_KEY", "") , start_date = "2017-07-27")
+declining = quandl.get("URC/NYSE_DEC", authtoken = os.environ.get("QUANDL_API_KEY", "") , start_date = "2017-07-27")
+advancing = quandl.get("URC/NYSE_ADV", authtoken = os.environ.get("QUANDL_API_KEY", "") , start_date = "2017-07-27")
+adv_vol = quandl.get("URC/NYSE_ADV_VOL", authtoken = os.environ.get("QUANDL_API_KEY", "") , start_date = "2017-07-27")
+dec_vol = quandl.get("URC/NYSE_DEC_VOL", authtoken = os.environ.get("QUANDL_API_KEY", "") , start_date = "2017-07-27")
 
 data = declining
 data['declining'] = declining['Numbers of Stocks']

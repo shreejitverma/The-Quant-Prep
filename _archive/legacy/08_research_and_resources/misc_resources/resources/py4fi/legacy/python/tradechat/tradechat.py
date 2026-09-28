@@ -18,9 +18,10 @@ app = Flask(__name__)
 app.config.update(dict(
     DATABASE=os.path.join(app.root_path, 'tradechat.db'),
       # the SQLite3 database file ("TC database")
-    DEBUG=True,
-    SECRET_KEY='secret_key',
-      # use secure key here for real applications
+    DEBUG=os.environ.get('FLASK_DEBUG', '0') == '1',
+    SECRET_KEY=os.environ.get('FLASK_SECRET_KEY', os.urandom(24).hex()),
+      # NOTE: never commit a real SECRET_KEY. Provide one via the
+      # FLASK_SECRET_KEY environment variable in production.
 ))
 app.config.from_envvar('TC_SETTINGS', silent=True)
   # do not complain if no config file exists

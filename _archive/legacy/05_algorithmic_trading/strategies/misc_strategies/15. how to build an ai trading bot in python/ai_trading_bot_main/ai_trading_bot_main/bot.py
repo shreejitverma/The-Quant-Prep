@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from tkinter import ttk, messagebox
 import json
@@ -9,9 +10,10 @@ import openai
 
 DATA_FILE = "equities.json"
 
-key = "KEY_ALPACA"
-secret_key = "SECRET_KEY_ALPCA"
-BASE_URL = "https://paper-api.alpaca.markets/"
+# Never hardcode API credentials. Provide them via environment variables.
+key = os.environ.get("ALPACA_API_KEY", "")
+secret_key = os.environ.get("ALPACA_API_SECRET", "")
+BASE_URL = os.environ.get("ALPACA_BASE_URL", "https://paper-api.alpaca.markets/")
 api = tradeapi.REST(key, secret_key, BASE_URL, api_version="v2")
 
 def fetch_portfolio():
@@ -67,7 +69,7 @@ def chatgpt_response(message):
     response = openai.ChatCompletion.create(
         model="gpt-4",
         messages=[{"role":"system", "content":pre_prompt}],
-        api_key = "SECRET_KEY_OPENAI"
+        api_key=os.environ.get("OPENAI_API_KEY", "")
     )
     return response['choices'][0]['message']['content']
 
@@ -322,10 +324,3 @@ if __name__ == '__main__':
     app = TradingBotGUI(root)
     root.protocol("WM_DELETE_WINDOW", app.on_close)
     root.mainloop()
-
-
-
-
-
-
-

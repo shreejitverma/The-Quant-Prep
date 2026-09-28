@@ -90,7 +90,7 @@ TRADE_END_DATE = '2020-01-03'
 
 TIME_INTERVAL = "1d"
 kwargs = {}
-kwargs['token'] = '27080ec403c0218f96f388bca1b1d85329d563c91a43672239619ef5'
+kwargs['token'] = 'YOUR_TUSHARE_TOKEN'
 p = DataProcessor(data_source='tushare', start_date=TRAIN_START_DATE, end_date=TRADE_END_DATE, time_interval=TIME_INTERVAL, **kwargs)
 
 

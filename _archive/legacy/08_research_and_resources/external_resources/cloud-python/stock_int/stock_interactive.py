@@ -1,3 +1,4 @@
+import os
 #
 # Historical Stock Prices
 # using Python & Flask & Plotly
@@ -44,4 +45,4 @@ def results(symbol, trend1, trend2):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7777, debug=True)
+    app.run(host='127.0.0.1', port=7777, debug=os.environ.get('FLASK_DEBUG', '0') == '1')

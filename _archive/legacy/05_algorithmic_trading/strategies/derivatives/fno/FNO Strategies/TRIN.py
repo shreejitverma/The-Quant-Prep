@@ -1,3 +1,4 @@
+import os
 #Copyright QuantInsti Quantitative Learning Private Limited
 
 #importing required libraries
@@ -15,11 +16,11 @@ def variance_calculator(series,series_average,win_len):
 	return sigma
 
 
-Data1 = quandl.get("CHRIS/CME_SP1", authtoken="mq-W7Z-QXBDZ1MxaN-Vy", start_date="2014-12-12")
-declining = quandl.get("URC/NYSE_DEC", authtoken = "mq-W7Z-QXBDZ1MxaN-Vy", start_date="2014-12-12")
-advancing = quandl.get("URC/NYSE_ADV", authtoken = "mq-W7Z-QXBDZ1MxaN-Vy",start_date="2014-12-12")
-adv_vol = quandl.get("URC/NYSE_ADV_VOL", authtoken = "mq-W7Z-QXBDZ1MxaN-Vy",start_date="2014-12-12")
-dec_vol = quandl.get("URC/NYSE_DEC_VOL", authtoken = "mq-W7Z-QXBDZ1MxaN-Vy",start_date="2014-12-12")
+Data1 = quandl.get("CHRIS/CME_SP1", authtoken=os.environ.get("QUANDL_API_KEY", ""), start_date="2014-12-12")
+declining = quandl.get("URC/NYSE_DEC", authtoken = os.environ.get("QUANDL_API_KEY", ""), start_date="2014-12-12")
+advancing = quandl.get("URC/NYSE_ADV", authtoken = os.environ.get("QUANDL_API_KEY", ""),start_date="2014-12-12")
+adv_vol = quandl.get("URC/NYSE_ADV_VOL", authtoken = os.environ.get("QUANDL_API_KEY", ""),start_date="2014-12-12")
+dec_vol = quandl.get("URC/NYSE_DEC_VOL", authtoken = os.environ.get("QUANDL_API_KEY", ""),start_date="2014-12-12")
 Data = declining
 Data['declining'] = declining['Numbers of Stocks']
 Data['advancing'] = advancing['Numbers of Stocks']
