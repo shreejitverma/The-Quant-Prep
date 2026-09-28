@@ -1,0 +1,8 @@
+{
+  "autoSaveInterval": 0,
+  "autoPushInterval": 0,
+  "autoPullInterval": 0,
+  "autoBackupAfterFileChange": false,
+  "disablePush": true,
+  "autoPullOnBoot": true
+}

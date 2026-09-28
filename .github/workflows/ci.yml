@@ -1,43 +1,80 @@
-name: Quant Prep CI
+name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  build-and-test:
+  content-and-platform:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
-        
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install numpy pandas pytest
-        
-    - name: Run Unit Tests
-      run: |
-        python -m pytest tests/
-        
-    - name: Verify C++ Examples
-      run: |
-        # memory_pool.cpp uses parenthesized aggregate initialization
-        # (Order(int, double, int) on a struct with no ctor), which
-        # requires C++20.
-        g++ -std=c++20 -o memory_pool 06_quantitative_development/cpp_low_latency/examples/memory_pool.cpp
-        ./memory_pool
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: shreejitverma/SDE-Interview-Prep
+          path: SDE-Interview-Prep
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Curriculum check (notes, cards, links, style, SDE links)
+        env:
+          SDE_REPO: ${{ github.workspace }}/SDE-Interview-Prep
+          QP_HOME: ${{ runner.temp }}/qp
+        run: ./qp check --strict-sde
+      - name: Platform tests
+        run: python -m unittest discover -s tools/tests -t .
+      - name: Ruff
+        run: |
+          python -m pip install --upgrade pip ruff
+          ruff check .
+          ruff format --check .
+      - name: Python examples run
+        run: |
+          python -m pip install numpy pandas
+          python 09-Alpha-Research-and-Portfolio/code/simple_event_driven.py
+          python 09-Alpha-Research-and-Portfolio/code/performance_metrics.py
+          python 12-Quant-Development/code/python/itch_parser_mock.py
 
-    - name: Build and Run C++ Unit Tests
-      run: |
-        g++ -std=c++17 -Wall -Wextra -Werror \
-            -I 06_quantitative_development/cpp_low_latency/examples \
-            tests/cpp/test_udp_receiver_mock.cpp \
-            -o test_udp_receiver_mock
-        ./test_udp_receiver_mock
+  cpp-examples:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cxx: [g++, clang++]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build all examples warning-free
+        working-directory: 12-Quant-Development/code/cpp
+        run: |
+          for f in *.cpp; do
+            ${{ matrix.cxx }} -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -pthread -o "/tmp/${f%.cpp}" "$f"
+          done
+      - name: Run examples under sanitizers
+        working-directory: 12-Quant-Development/code/cpp
+        run: |
+          for f in memory_pool compile_time_greeks order_matching_engine lock_free_spsc_queue multithreaded_monte_carlo; do
+            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -pthread -o "/tmp/san_$f" "$f.cpp"
+            "/tmp/san_$f"
+          done
+      - name: Run concurrent examples under ThreadSanitizer
+        working-directory: 12-Quant-Development/code/cpp
+        run: |
+          for f in lock_free_spsc_queue multithreaded_monte_carlo; do
+            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=thread -pthread -o "/tmp/tsan_$f" "$f.cpp"
+            "/tmp/tsan_$f"
+          done
+      - name: Unit tests, warning-free and under ASan/UBSan
+        working-directory: 12-Quant-Development/code/cpp
+        run: |
+          for t in tests/test_*.cpp; do
+            n=$(basename "${t%.cpp}")
+            ${{ matrix.cxx }} -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -I . -o "/tmp/$n" "$t"
+            "/tmp/$n"
+            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -I . -o "/tmp/san_$n" "$t"
+            "/tmp/san_$n"
+          done

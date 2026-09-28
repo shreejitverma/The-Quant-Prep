@@ -1,0 +1,44 @@
+**GERMANY (Mittelstand Hidden Champions)**
+1. Rational AG (RAA) -> Industrials/Germany
+2. Symrise AG (SY1) -> Materials/Germany
+3. Fuchs SE (FPE3) -> Materials/Germany
+4. Sartorius (SRT3) -> Healthcare/Germany
+5. Nemetschek (NEM) -> Technology/Germany
+6. CTS Eventim (EVD) -> Communication Services/Germany
+7. Sixt SE (SIX2) -> Industrials/Germany
+8. Carl Zeiss Meditec (AFX) -> Healthcare/Germany
+
+**BRAZIL (The Latin Compounders)**
+9. WEG SA (WEGE3) -> Industrials/Brazil
+10. Raia Drogasil (RADL3) -> Healthcare/Brazil
+11. Itaú Unibanco (ITUB4) -> Financials/Brazil
+12. Localiza (RENT3) -> Industrials/Brazil
+13. Equatorial Energia (EQTL3) -> Utilities/Brazil
+
+**SOUTH EAST ASIA (Asian Tigers)**
+14. DBS Bank (D05) -> Financials/Singapore
+15. Bank Central Asia (BBCA) -> Financials/Indonesia
+16. CP All (CPALL) -> Consumer Staples/Thailand
+17. Public Bank (PBBANK) -> Financials/Malaysia
+18. Sea Ltd (SE) -> Technology/Singapore
+
+**NORDICS (The Quality High-Performers)**
+19. Investor AB (INVE.B) -> Financials/Sweden
+20. Atlas Copco (ATCO.A) -> Industrials/Sweden
+21. Assa Abloy (ASSA.B) -> Industrials/Sweden
+22. Hexagon AB (HEXA.B) -> Technology/Sweden
+23. Novo Nordisk (NVO) -> Healthcare/Europe (Denmark)
+
+**HISTORICAL CAUTIONARY TALES (Anti-Compounders)**
+24. General Electric (GE) -> Historical/General Electric (The Fall from Godhood)
+25. IBM (IBM) -> Historical/IBM (The Innovation Trap)
+26. Xerox (XRX) -> Historical/Xerox (Missing the Graphic Interface)
+27. Kodak (KODK) -> Historical/Kodak (The Digital Blindness)
+28. Nokia (NOK) -> Historical/Nokia (The Platform Burning)
+
+**ADDITIONAL GLOBAL TITANS**
+29. L'Oréal (OR.PA) -> Consumer Staples/Europe (France)
+30. Hermès (RMS.PA) -> Consumer Discretionary/Europe (France)
+31. Ferrari (RACE.MI) -> Consumer Discretionary/Europe (Italy)
+32. TSMC (TSM) -> Technology/Taiwan
+33. Samsung Electronics (005930) -> Technology/South Korea

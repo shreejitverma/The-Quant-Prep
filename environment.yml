@@ -1,26 +1,20 @@
-name: quant_prep_env
+# Environment for the runnable examples and notebooks in the syllabus (section code/ folders).
+# The qp platform itself needs only Python 3.10+ and no packages.
+# Notebooks under _archive/ may need extra packages; install those per notebook.
+name: quant_prep
 channels:
   - conda-forge
-  - defaults
 dependencies:
-  - python=3.10
+  - python=3.12
   - numpy
   - pandas
   - scipy
+  - statsmodels
   - scikit-learn
+  - lightgbm
+  - pytorch
   - matplotlib
   - seaborn
-  - statsmodels
-  - pytorch
-  - tensorflow
   - jupyterlab
   - yfinance
-  - ta-lib
-  - networkx
-  - pip
-  - pip:
-    - finrl
-    - gym
-    - stable-baselines3
-    - ccxt
-    - backtrader
+  - ruff
