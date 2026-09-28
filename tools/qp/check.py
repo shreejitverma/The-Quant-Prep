@@ -54,7 +54,7 @@ def line_of(text: str, index: int) -> int:
     return text.count("\n", 0, index) + 1
 
 
-def check_links(vault: Vault, path: Path, text: str, sde: Path | None) -> list[Finding]:
+def check_links(path: Path, source: Path, text: str, sde: Path | None) -> list[Finding]:
     out = []
     clean = strip_code(text)
     for m in LINK_RE.finditer(clean):
@@ -72,7 +72,7 @@ def check_links(vault: Vault, path: Path, text: str, sde: Path | None) -> list[F
         rel = unquote(target.split("#", 1)[0])
         if not rel:
             continue
-        resolved = (vault.root / path.parent / rel).resolve()
+        resolved = (source.parent / rel).resolve()
         if not resolved.exists():
             out.append(Finding(str(path), line, "link", f"broken relative link {target}"))
     return out
@@ -137,9 +137,11 @@ def check_vault(vault: Vault, strict_sde: bool = False, files: list[Path] | None
         if files is not None
         else sorted({n.path for n in vault.notes.values()} | {Path(x) for x in ("README.md",) if (vault.root / x).exists()})
     )
+    sources = {n.path: n.source for n in vault.notes.values()}
     for rel in targets:
-        text = (vault.root / rel).read_text(encoding="utf-8")
-        findings += check_links(vault, rel, text, sde)
+        source = sources.get(rel, vault.root / rel)
+        text = source.read_text(encoding="utf-8")
+        findings += check_links(rel, source, text, sde)
         findings += check_style(rel, text)
     return sorted(findings, key=lambda f: (f.path, f.line, f.rule))
 

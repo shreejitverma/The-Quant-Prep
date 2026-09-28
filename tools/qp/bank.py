@@ -12,6 +12,7 @@ A bank lives in one folder (normally under ``private/``, which git ignores):
 
 Re-running the import after refreshing ``source.tsv`` keeps every existing answer and id:
 ids are derived from the normalised question text, and answers live in their own files.
+If a refresh re-keys a near-duplicate cluster, ``qp bank`` lists the orphaned answer ids to re-key.
 """
 
 from __future__ import annotations
@@ -207,6 +208,11 @@ def render(bank: Path, questions: dict[str, Question], name: str, topics: dict[s
     (bank / "By-Firm.md").write_text("\n".join(lines).rstrip() + "\n")
     written.append(bank / "By-Firm.md")
     return written
+
+
+def orphaned_answers(bank: Path, questions: dict[str, Question]) -> list[str]:
+    """Answer ids that match no current question, e.g. after a refreshed source re-keyed a cluster."""
+    return sorted(qid for qid in load_answers(bank) if qid not in questions)
 
 
 def summary(questions: dict[str, Question]) -> dict:

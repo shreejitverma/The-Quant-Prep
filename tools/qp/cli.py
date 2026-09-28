@@ -415,13 +415,16 @@ def cmd_bank(vault: Vault, store: Store | None, args) -> int:
     questions = bank.build(folder, args.prefix)
     written = bank.render(folder, questions, args.name, topics)
     s = bank.summary(questions)
+    orphans = bank.orphaned_answers(folder, questions)
     emit(
         f"bank: {args.name} at {folder}",
         f"rows: {s['rows']}, unique questions: {s['unique']}, answered: {s['answered']}, verified: {s['verified']}, "
         f"unsorted: {s['unsorted']}, folded duplicates: {s['semantic_duplicates']}",
+        f"orphaned answers[{len(orphans)}]: {', '.join(orphans)}" if orphans else "orphaned answers: 0",
         f"wrote: {len(written)} file(s)",
         help_lines=[
             "answers go in <bank>/answers/*.json as {id: {topic, answer, verified, duplicate_of}}",
+            *(["orphaned answers match no question in source.tsv; re-key them to the new ids in bank.json"] if orphans else []),
             "`qp check` validates the generated notes; `qp review` now includes answered cards",
         ],
     )

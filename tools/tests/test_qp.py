@@ -6,6 +6,7 @@ import datetime as dt
 import json
 import os
 import random
+import shutil
 import tempfile
 import threading
 import unittest
@@ -595,6 +596,25 @@ class QuestionBank(TempRepo):
         self.answer(**{next(iter(qs)): {"topic": "no-such-topic", "answer": "x"}})
         with self.assertRaises(ValueError):
             bank.render(self.bankdir, bank.build(self.bankdir, "wsq"), "Demo", {n.id: n.title for n in self.vault().topics()})
+
+    def test_answers_for_rekeyed_questions_are_reported(self):
+        qs = bank.dedupe(bank.parse_source(self.SOURCE), "wsq")
+        self.answer(**{next(iter(qs)): {"answer": "x"}, "wsq-gone-00000": {"answer": "lost"}})
+        self.assertEqual(bank.orphaned_answers(self.bankdir, bank.build(self.bankdir, "wsq")), ["wsq-gone-00000"])
+
+    def test_external_private_overlay_checks_clean(self):
+        external = Path(self.tmp.name) / "outside"
+        (external / "notes").mkdir(parents=True)
+        (external / "notes" / "a.md").write_text("---\ntype: reference\ntrack: [quant-trader]\ntier: core\nstatus: draft\n---\n\n# A\n")
+        (external / "index.md").write_text(
+            "---\ntype: reference\ntrack: [quant-trader]\ntier: core\nstatus: draft\n---\n\n# Index\n\nSee [a](notes/a.md).\n"
+        )
+        shutil.rmtree(self.root / "private")
+        moc.update_all(self.vault())
+        with mock.patch.dict(os.environ, {"QP_PRIVATE": str(external)}):
+            v = self.vault()
+            self.assertIn("private:index", v.notes)
+            self.assertEqual(check.check_vault(v), [])
 
     def test_extends_unknown_topic_is_an_error(self):
         (self.root / "private" / "x.md").write_text(

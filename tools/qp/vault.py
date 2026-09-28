@@ -52,6 +52,7 @@ class Note:
     title: str
     meta: dict
     body: str
+    source: Path  # the file on disk; differs from root / path for an external $QP_PRIVATE overlay
     cards: list[Card] = field(default_factory=list)
 
     @property
@@ -201,13 +202,14 @@ def note_id_for(path: Path) -> str:
 
 
 def load_note(root: Path, rel: Path, section: str, source: Path | None = None, nid: str | None = None) -> Note:
-    text = (source or root / rel).read_text(encoding="utf-8")
+    source = source or root / rel
+    text = source.read_text(encoding="utf-8")
     meta, body, body_start = split_frontmatter(text)
     nid = nid or note_id_for(rel)
     m = ORDER_RE.match(rel.stem)
     heading = HEADING_RE.search(body)
     title = heading.group(1) if heading else rel.stem.replace("-", " ")
-    note = Note(nid, rel, section, int(m.group(1)) if m else 99, title, meta, body)
+    note = Note(nid, rel, section, int(m.group(1)) if m else 99, title, meta, body, source)
     note.cards = parse_cards(body, nid, body_start)
     return note
 
