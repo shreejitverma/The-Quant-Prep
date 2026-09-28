@@ -19,6 +19,7 @@ ruff check . && ruff format --check .             # Python lint and format
 ```
 
 The secret scan checks only the commits your branch adds, which keeps it fast.
+It includes what a merge commit adds beyond git's automatic merge, such as a conflict resolution, so a secret cannot slip in through a merge.
 For an audit of the whole tree, run `gitleaks dir . --no-banner --redact` (several minutes, because `_archive/` is large).
 Reviewed findings that are not credentials are listed in `.gitleaksignore`; add one only after confirming the value is not a secret.
 

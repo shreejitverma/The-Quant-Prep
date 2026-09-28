@@ -14,4 +14,8 @@ git rev-parse --verify --quiet "$base^{commit}" >/dev/null || {
 # git log omits merge diffs by default; remerge (git 2.36+) shows only what a merge adds beyond git's own
 # automatic merge, so a secret slipped into a merge or its conflict resolution is scanned without re-scanning
 # everything merged in.
-exec gitleaks git --no-banner --redact --log-opts="--diff-merges=remerge $base..HEAD" .
+gitleaks git --no-banner --redact --log-opts="--diff-merges=remerge $base..HEAD" .
+# remerge emits nothing for octopus merges (3+ parents), so scan those against their first parent instead.
+if [ -n "$(git rev-list --min-parents=3 -1 "$base..HEAD")" ]; then
+  gitleaks git --no-banner --redact --log-opts="--min-parents=3 --diff-merges=first-parent $base..HEAD" .
+fi
