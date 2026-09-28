@@ -45,8 +45,8 @@ int g_total = 0;
         }                                                                       \
     } while (0)
 
-// Helper: serialize a MarketUpdate into a byte buffer the same way the
-// sender side would write it on the wire.
+// Helper: serialize a MarketUpdate into a byte buffer in host byte order,
+// the layout parse_market_update expects.
 void encode(const MarketUpdate& in, char* out) {
     std::memcpy(out, &in, sizeof(MarketUpdate));
 }
@@ -253,6 +253,30 @@ void test_parse_does_not_mutate_out_on_size_error() {
     EXPECT(out.quantity == 0xCCCCCCCCu);
 }
 
+void test_parse_does_not_mutate_out_on_invalid_msg_type() {
+    // A full-size datagram with a bad msg_type must also leave `out` intact.
+    MarketUpdate src{};
+    src.msg_type = 'X';
+    src.symbol_id = 1u;
+    src.price = 2u;
+    src.quantity = 3u;
+    char buf[sizeof(MarketUpdate)] = {};
+    encode(src, buf);
+
+    MarketUpdate out{};
+    out.msg_type = 'Z';
+    out.symbol_id = 0xAAAAAAAAu;
+    out.price = 0xBBBBBBBBu;
+    out.quantity = 0xCCCCCCCCu;
+
+    ParseStatus status = parse_market_update(buf, sizeof(buf), out);
+    EXPECT(status == ParseStatus::InvalidMsgType);
+    EXPECT(out.msg_type == 'Z');
+    EXPECT(out.symbol_id == 0xAAAAAAAAu);
+    EXPECT(out.price == 0xBBBBBBBBu);
+    EXPECT(out.quantity == 0xCCCCCCCCu);
+}
+
 }  // namespace
 
 int main() {
@@ -268,6 +292,7 @@ int main() {
     RUN_TEST(test_rejects_invalid_msg_type);
     RUN_TEST(test_invalid_msg_type_check_runs_after_size_check);
     RUN_TEST(test_parse_does_not_mutate_out_on_size_error);
+    RUN_TEST(test_parse_does_not_mutate_out_on_invalid_msg_type);
 
     std::cout << "\n" << (g_total - g_failures) << "/" << g_total
               << " assertions passed" << std::endl;

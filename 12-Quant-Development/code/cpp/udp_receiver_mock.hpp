@@ -35,7 +35,8 @@ enum class ParseStatus {
 
 /**
  * Validate a raw datagram and, on success, populate `out` with the
- * parsed MarketUpdate. Uses memcpy instead of reinterpret_cast to
+ * parsed MarketUpdate; on any error `out` is left untouched.
+ * Multi-byte fields are read in host byte order. Uses memcpy instead of reinterpret_cast to
  * avoid strict aliasing / alignment undefined behavior when the
  * caller hands us an unaligned byte buffer.
  *
@@ -51,10 +52,12 @@ inline ParseStatus parse_market_update(const char* buffer,
     if (n < sizeof(MarketUpdate)) {
         return ParseStatus::BufferTooSmall;
     }
-    std::memcpy(&out, buffer, sizeof(MarketUpdate));
-    if (out.msg_type != 'A' && out.msg_type != 'E') {
+    MarketUpdate parsed;
+    std::memcpy(&parsed, buffer, sizeof(MarketUpdate));
+    if (parsed.msg_type != 'A' && parsed.msg_type != 'E') {
         return ParseStatus::InvalidMsgType;
     }
+    out = parsed;
     return ParseStatus::Ok;
 }
 
