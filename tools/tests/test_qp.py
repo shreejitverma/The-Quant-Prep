@@ -527,7 +527,7 @@ class QuestionBank(TempRepo):
         "Optiver\tprobability\tFlip two coins.  P(two heads)?\n"  # same after normalisation
         "\tbayes\tA question\n"
         "continued on the next line\n"
-        "Citadel\tcoding\t\n"
+        "Citadel\tcoding\n"  # trailing tab stripped: the question is on the next line
         "Reverse a list.\n"
         "IMC Trading\tlogic\tUnanswered puzzle\n"
     )
@@ -578,6 +578,15 @@ class QuestionBank(TempRepo):
         self.assertIn(ids["Unan"], (self.bankdir / "notes" / "unsorted.md").read_text())
         self.assertIn(ids["Flip"], [c.id for c in planner.due_cards(v, self.store())])
         self.assertEqual(check.check_vault(v), [])
+
+    def test_duplicate_chains_resolve_to_root_and_cycles_are_ignored(self):
+        qs = bank.dedupe(bank.parse_source(self.SOURCE), "wsq")
+        a, b, c, d = sorted(qs)
+        self.answer(**{a: {"duplicate_of": b}, b: {"duplicate_of": c}, c: {"answer": "x", "topic": "base"}, d: {"duplicate_of": d}})
+        built = bank.build(self.bankdir, "wsq")
+        self.assertEqual((built[a].duplicate_of, built[b].duplicate_of), (c, c))
+        self.assertIsNone(built[d].duplicate_of)
+        self.assertEqual(built[c].reports, sum(q.reports for q in qs.values() if q.id in (a, b, c)))
 
     def test_unknown_topic_rejected(self):
         qs = bank.dedupe(bank.parse_source(self.SOURCE), "wsq")

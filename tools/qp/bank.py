@@ -61,8 +61,10 @@ def parse_source(text: str) -> list[tuple[str, str, str]]:
     """Rows of (firm, category, question). Continuation lines are joined with a space."""
     rows: list[list[str]] = []
     for raw in text.splitlines():
-        parts = raw.split("\t")
-        if len(parts) >= 3 and parts[1].strip().lower() in CATEGORIES:
+        parts = raw.rstrip().split("\t")
+        # a row whose second cell is a category starts a question, even when the question text
+        # itself is on the following lines (editors often strip the trailing tab)
+        if len(parts) >= 2 and parts[1].strip().lower() in CATEGORIES:
             rows.append([parts[0].strip(), parts[1].strip().lower(), "\t".join(parts[2:]).strip()])
         elif rows and raw.strip():
             rows[-1][2] = f"{rows[-1][2]} {raw.strip()}".strip()
@@ -111,11 +113,25 @@ def build(bank: Path, prefix: str) -> dict[str, Question]:
         q.answer = entry.get("answer", q.answer)
         q.verified = bool(entry.get("verified", q.verified))
         q.duplicate_of = entry.get("duplicate_of") or None
-    # fold semantic duplicates (declared in answers) into their canonical question
-    for q in list(questions.values()):
-        target = questions.get(q.duplicate_of or "")
-        if target is None or target is q:
-            q.duplicate_of = None
+
+    # fold semantic duplicates (declared in answers) into their canonical question, following
+    # chains (a -> b -> c) to the root and ignoring cycles and dangling targets
+    def root(q: Question) -> Question | None:
+        seen = {q.id}
+        cur = q
+        while cur.duplicate_of:
+            nxt = questions.get(cur.duplicate_of)
+            if nxt is None or nxt.id in seen:
+                return None
+            seen.add(nxt.id)
+            cur = nxt
+        return cur if cur is not q else None
+
+    roots = {q.id: root(q) for q in questions.values()}
+    for q in questions.values():
+        target = roots[q.id]
+        q.duplicate_of = target.id if target else None
+        if target is None:
             continue
         target.reports += q.reports
         target.firms += [f for f in q.firms if f not in target.firms]
