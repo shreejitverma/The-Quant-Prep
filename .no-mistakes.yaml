@@ -1,6 +1,6 @@
 # no-mistakes gate commands; CI (.github/workflows/ci.yml) runs the same checks.
-# lint: curriculum schema, links, style; committed secrets; Python lint and format.
+# lint: curriculum schema, links, style; secrets in the branch's commits; Python lint and format.
 # test: platform tests.
 commands:
-  lint: './qp check && gitleaks dir . --no-banner --redact && ruff check . && ruff format --check .'
+  lint: './qp check && tools/scan-secrets.sh && ruff check . && ruff format --check .'
   test: 'python3 -m unittest discover -s tools/tests -t .'

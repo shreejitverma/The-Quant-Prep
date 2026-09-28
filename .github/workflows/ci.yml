@@ -48,13 +48,23 @@ jobs:
       GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
     steps:
       - uses: actions/checkout@v4
-      - name: Scan the tree for committed secrets
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks
         run: |
           tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
           curl -sSfL -o "$RUNNER_TEMP/$tarball" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/$tarball"
           echo "$GITLEAKS_SHA256  $RUNNER_TEMP/$tarball" | sha256sum -c -
           tar -xzf "$RUNNER_TEMP/$tarball" -C "$RUNNER_TEMP" gitleaks
-          "$RUNNER_TEMP/gitleaks" dir . --no-banner --redact
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      - name: Scan the new commits for secrets
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$(printf %s "$BASE_SHA" | tr -d 0)" ]; then
+            BASE_SHA=$(git rev-parse HEAD~1)
+          fi
+          tools/scan-secrets.sh "$BASE_SHA"
 
   cpp-examples:
     runs-on: ubuntu-latest

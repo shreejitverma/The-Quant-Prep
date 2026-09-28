@@ -14,9 +14,13 @@ The seed notes (status `seed` in `./qp syllabus`) are the writing backlog.
 ./qp check                                        # schema, prerequisites, cards, links, style
 ./qp index                                        # regenerate section README tables
 python3 -m unittest discover -s tools/tests -t .  # platform tests
-gitleaks dir . --no-banner --redact               # committed secrets
+tools/scan-secrets.sh                             # secrets in your commits vs origin/main
 ruff check . && ruff format --check .             # Python lint and format
 ```
+
+The secret scan checks only the commits your branch adds, which keeps it fast.
+For an audit of the whole tree, run `gitleaks dir . --no-banner --redact` (several minutes, because `_archive/` is large).
+Reviewed findings that are not credentials are listed in `.gitleaksignore`; add one only after confirming the value is not a secret.
 
 ## Standards
 
