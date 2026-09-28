@@ -367,6 +367,7 @@ async function viewReview() {
       graded++;
       if (g === "again") queue.push({ ...c, new: false });
       i++; revealed = false; draw();
+      updateBadge(); // the nav badge counts what is still due, so it shrinks as the session progresses
     } catch (err) { toast(err.message); } finally { busy = false; }
   }
   const onKey = (e) => {
@@ -573,9 +574,12 @@ async function viewFirm(id) {
 }
 
 // ---------- router ----------
+let badgeSeq = 0;
 async function updateBadge(n) {
   const b = document.getElementById("due-badge");
+  const seq = ++badgeSeq; // only the latest call may paint, so a slow earlier fetch cannot overwrite a newer count
   if (n === undefined) { try { n = (await api("summary")).queue; } catch { return; } }
+  if (seq !== badgeSeq) return;
   b.hidden = !n; b.textContent = n;
 }
 
@@ -599,7 +603,7 @@ async function route() {
     else $app.replaceChildren(h("div", { class: "empty" }, h("h2", {}, "Not found"), h("a", { href: "#/" }, "Dashboard")));
     document.title = `${document.querySelector("#app h1")?.textContent || "Quant Prep"} - Quant Prep`;
   } catch (err) { showError(err); }
-  if (name !== "review") updateBadge();
+  updateBadge();
 }
 
 window.addEventListener("hashchange", route);
