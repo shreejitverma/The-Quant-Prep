@@ -58,7 +58,7 @@ jobs:
         working-directory: 12-Quant-Development/code/cpp
         run: |
           for f in memory_pool compile_time_greeks order_matching_engine lock_free_spsc_queue multithreaded_monte_carlo; do
-            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer -pthread -o "/tmp/san_$f" "$f.cpp"
+            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -pthread -o "/tmp/san_$f" "$f.cpp"
             "/tmp/san_$f"
           done
       - name: Run concurrent examples under ThreadSanitizer
@@ -67,4 +67,14 @@ jobs:
           for f in lock_free_spsc_queue multithreaded_monte_carlo; do
             ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=thread -pthread -o "/tmp/tsan_$f" "$f.cpp"
             "/tmp/tsan_$f"
+          done
+      - name: Unit tests, warning-free and under ASan/UBSan
+        working-directory: 12-Quant-Development/code/cpp
+        run: |
+          for t in tests/test_*.cpp; do
+            n=$(basename "${t%.cpp}")
+            ${{ matrix.cxx }} -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -I . -o "/tmp/$n" "$t"
+            "/tmp/$n"
+            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -I . -o "/tmp/san_$n" "$t"
+            "/tmp/san_$n"
           done

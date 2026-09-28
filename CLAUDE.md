@@ -39,4 +39,5 @@ ruff check . && ruff format --check .
 ```
 
 C++ examples in `12-Quant-Development/code/cpp` must build with `-std=c++20 -Wall -Wextra -Wpedantic -Werror` on GCC and Clang and run clean under ASan/UBSan (TSan for the concurrent ones).
+Their unit tests live in `12-Quant-Development/code/cpp/tests/test_*.cpp` (framework-free, exit non-zero on failure) and CI runs each one warning-free and under ASan/UBSan.
 Changes reach GitHub only through the `no-mistakes` pipeline.
