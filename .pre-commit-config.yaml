@@ -16,3 +16,12 @@ repos:
         language: pygrep
         types: [text]
         exclude: ^\.git/
+
+  - repo: local
+    hooks:
+      - id: qp-check
+        name: qp check (curriculum schema, links, style)
+        entry: ./qp check
+        language: system
+        pass_filenames: false
+        files: \.md$

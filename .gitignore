@@ -1,15 +1,29 @@
 .DS_Store
-
-# Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
+*.pyc
 .venv/
-venv/
-env/
+.ipynb_checkpoints/
+build/
+*.o
+*.out
 
-# Secrets / keys -- never commit credentials
+# Obsidian: settings are shared, per-machine state is not
+.obsidian/workspace*.json
+.obsidian/cache
+.obsidian/plugins/*/main.js
+.obsidian/plugins/*/manifest.json
+.obsidian/plugins/*/styles.css
+.obsidian/plugins/obsidian-spaced-repetition/data.json
+.trash/
+
+# Personal trading journals and portfolio never leave this machine
+16-Trading-and-Investing/Private/*
+!16-Trading-and-Investing/Private/README.md
+
+# Private overlay (question banks and notes that must never be published); qp loads it locally
+private/
+
+# Secrets and keys: never commit credentials
 .env
 .env.*
 !.env.example

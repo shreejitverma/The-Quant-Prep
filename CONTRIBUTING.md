@@ -1,30 +1,33 @@
 # Contributing to The Quant Prep
 
-Thank you for your interest in contributing to **The Quant Prep**! We aim to build the ultimate resource for aspiring Quantitative Developers and Researchers.
+Contributions that make a note more correct, clearer, or more complete are the most valuable ones.
+The seed notes (status `seed` in `./qp syllabus`) are the writing backlog.
 
-## How to Contribute
+## Workflow
 
-1.  **Fork the repository** and clone it locally.
-2.  **Choose a task:**
-    *   Add a solution to a coding puzzle (LeetCode/HackerRank style).
-    *   Implement a trading strategy backtest.
-    *   Write a guide on a mathematical concept (e.g., Stochastic Calculus).
-    *   Improve documentation or fix bugs.
-3.  **Create a branch:** `git checkout -b feature/new-strategy`.
-4.  **Commit your changes:** Please use clear commit messages.
-5.  **Push to your fork** and submit a **Pull Request (PR)**.
+1. Fork and clone; create a branch.
+2. Write or fix notes following [Note Conventions](00-Start-Here/Note-Conventions.md).
+3. Run the checks below and fix everything they report.
+4. Open a pull request describing what changed and how you verified any numbers.
+
+```sh
+./qp check                                        # schema, prerequisites, cards, links, style
+./qp index                                        # regenerate section README tables
+python3 -m unittest discover -s tools/tests -t .  # platform tests
+ruff check . && ruff format --check .             # Python lint and format
+```
 
 ## Standards
 
-*   **No Emojis:** Do not use emojis in commit messages, code comments, or documentation files.
-*   **File Naming:** Use `snake_case` for all files and directories (e.g., `black_scholes_model.py`, not `BlackScholes.py`).
-*   **Code Quality:**
-    *   **Python:** Follow PEP 8. Use docstrings for functions.
-    *   **C++:** Follow Google C++ Style Guide. Use smart pointers and modern C++ features.
-*   **Notebooks:** Clear outputs, markdown cells explaining the logic, and math using LaTeX.
+- **Correctness first.** Every number in a note or card is computed, not remembered; say how you checked it in the pull request.
+- **No emojis and no em dashes** anywhere, including code comments and commit messages; use a plain `-`.
+- **One sentence per line** in Markdown prose.
+- **File names.** Notes use `NN-Title-Case-With-Hyphens.md` so they sort in study order; code uses `snake_case`.
+- **Python:** type hints where they clarify, ruff-clean, seeded randomness in examples, no work at import time.
+- **C++:** C++20, RAII and clear ownership, no undefined behaviour; examples must build warning-free with `-Wall -Wextra -Wpedantic` on GCC and Clang.
+- **Firm guides:** only sourced facts, with sources listed; mark anything reported but unverified.
+- **Third-party material:** link to it; do not copy book text, paid course material or other people's notebooks into the syllabus.
 
-## Testing
-If adding code, please provide a simple unit test or an example usage script to verify correctness.
+## Code of conduct
 
-## Code of Conduct
-Be respectful and constructive in discussions. This is a learning community.
+Be respectful and constructive. This is a learning community.
