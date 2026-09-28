@@ -6,6 +6,12 @@ status: draft
 sources: []
 ---
 
+> [!warning] Written for T+2 settlement
+> US equities moved to T+1 settlement on May 28, 2024, so the Rule 204 dates below are one settlement day late: fails now arise on T+1, the general close-out deadline is T+2, and long-sale and bona fide market making fails get until T+4.
+> The Rule 610(c) fee cap and Rule 612 tick size changes adopted in 2024 take effect in November 2027, and in June 2026 the SEC proposed rescinding Rule 611 and the locked and crossed market rule.
+> It also wrongly lists bona fide market making as a Rule 201 short exempt case, omits the 0.3% Rule 610(c) cap for quotes below $1.00, and measures the threshold security 0.5% test against float instead of total shares outstanding.
+> The current version is [the Reg NMS and SHO guide](../../08-Market-Making/Quant-Dev-MM-Guide/01_Regulatory_Framework_NMS_SHO.md).
+
 Regulation NMS & SHO: Comprehensive Guide for Quantitative Developers in Market Making
 Target Role: Quantitative Developer – Market Making Firm
 Focus Areas: Low-latency execution, microstructure arbitrage, liquidity provision, regulatory compliance
@@ -58,12 +64,14 @@ Why ISOs Matter for Market Makers[25]:
 Interview Question: "How would you detect if a venue is systematically ignoring protected quotes?"
 Answer Framework: Monitor execution prices vs. NBBO timestamp-synchronized across venues; flag trades executing worse than protected quotes without ISO marking; calculate slippage distribution and test for statistical significance of trade-throughs.
 1.2.3 Other Rule 611 Exceptions (Know These)
-Beyond ISOs, Rule 611 provides eight other exceptions[25]:
-1.	Benchmark/VWAP orders: Trades priced using algorithmic benchmarks
-2.	Stopped orders: Where a trading center guarantees a price
-3.	Flickering quotes: Protected quotes that were displayed <1 second ago
-4.	Orders for which protection not required: Manual quotes, non-NMS securities
-5.	Self-help exception: When a venue becomes inaccessible/non-operational
+Rule 611(b) lists nine exceptions; ISOs are two of them ((b)(5) and (b)(6)), leaving seven others[25]:
+1.	Self-help ((b)(1)): The venue displaying the protected quote was failing or materially delayed
+2.	Not regular way ((b)(2)): Transactions that are not regular-way contracts
+3.	Single-price auctions ((b)(3)): Opening, reopening and closing transactions
+4.	Crossed markets ((b)(4)): The protected bid exceeded the protected offer at execution
+5.	Benchmark orders ((b)(7)): Price not based on the quote when material terms were set, such as VWAP
+6.	Flickering quotes ((b)(8)): The traded-through venue displayed an equal or worse quote within one second before the trade
+7.	Stopped orders ((b)(9)): Executions of certain customer stopped orders
 Market Maker Relevance: The "flickering quote" exception is critical. If your quote updates faster than SIP latency (~1-5ms typical), aggressive participants may trade through your stale SIP price legally. This drives direct feed adoption in market making[22].
  
 1.3 Rule 610: Access Rule (Fair Access and Fee Caps)

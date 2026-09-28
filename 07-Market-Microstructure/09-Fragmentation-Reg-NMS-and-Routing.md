@@ -21,7 +21,7 @@ sources: []
 
 ## In this repo and SDE-Interview-Prep
 
-- Deep dives in this repo: [Reg NMS and SHO, practical](Regulation/Reg-NMS-SHO-Practical.md) and [Reg NMS and SHO, comprehensive](Regulation/Reg-NMS-SHO-Comprehensive.md).
+- Deep dives in this repo: [Reg NMS and SHO, practical](Regulation/Reg-NMS-SHO-Practical.md) and [Reg NMS and SHO for market making](../08-Market-Making/Quant-Dev-MM-Guide/01_Regulatory_Framework_NMS_SHO.md).
 - [Market fragmentation and Reg NMS (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Market%20Fragmentation%20and%20Reg%20NMS.md)
 
 ## Further reading

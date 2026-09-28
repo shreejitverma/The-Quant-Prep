@@ -33,7 +33,6 @@ Regulatory deep dives live in [Regulation/](Regulation/).
 
 ### Supporting material
 
-- [Check 1: Pre-borrow restriction (Rule 204)](Regulation/Reg-NMS-SHO-Comprehensive.md) (guide)
 - [Quant Dev (Market Making): Regulation NMS + Regulation SHO](Regulation/Reg-NMS-SHO-Practical.md) (guide)
 
 <!-- qp:moc:end -->

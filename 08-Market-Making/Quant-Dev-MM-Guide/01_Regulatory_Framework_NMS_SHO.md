@@ -79,12 +79,14 @@ Rule 611 prohibits trading centers from executing trades at prices inferior to p
 **Answer Framework:** Monitor execution prices vs. NBBO timestamp-synchronized across venues; flag trades executing worse than protected quotes without ISO marking; calculate slippage distribution and test for statistical significance of trade-throughs.
 
 #### 1.2.3 Other Rule 611 Exceptions (Know These)
-Beyond ISOs, Rule 611 provides eight other exceptions:
-1.  **Benchmark/VWAP orders:** Trades priced using algorithmic benchmarks.
-2.  **Stopped orders:** Where a trading center guarantees a price.
-3.  **Flickering quotes:** Protected quotes that were displayed <1 second ago.
-4.  **Orders for which protection not required:** Manual quotes, non-NMS securities.
-5.  **Self-help exception:** When a venue becomes inaccessible/non-operational.
+Rule 611(b) lists nine exceptions; the ISO covers two of them ((b)(5) received ISOs and (b)(6) routed ISOs), leaving seven others:
+1.  **Self-help ((b)(1)):** The venue displaying the protected quote was experiencing a failure, material delay or malfunction.
+2.  **Not regular way ((b)(2)):** Transactions that are not regular-way contracts.
+3.  **Single-price auctions ((b)(3)):** Single-priced opening, reopening or closing transactions.
+4.  **Crossed markets ((b)(4)):** The protected bid was higher than the protected offer when the trade executed.
+5.  **Benchmark orders ((b)(7)):** Executions whose price is not based on the quoted price at the time the material terms were set, such as VWAP.
+6.  **Flickering quotes ((b)(8)):** The traded-through venue had displayed, within one second (<1 second) before the trade, a best bid or offer equal to or worse than the trade price.
+7.  **Stopped orders ((b)(9)):** Executions of certain customer stopped orders.
 
 **Market Maker Relevance:** The "flickering quote" exception is critical. If your quote updates faster than SIP latency (~1-5ms typical), aggressive participants may trade through your stale SIP price legally. This drives direct feed adoption in market making.
 
@@ -92,6 +94,12 @@ Beyond ISOs, Rule 611 provides eight other exceptions:
 
 #### 1.3.1 Access Fee Caps
 Rule 610 limits fees that trading centers can charge for accessing protected quotations to **$0.003 per share (30 mils)** for stocks ≥$1.00.
+For quotations priced below $1.00 the cap is **0.3% of the quotation price** per share.
+
+> [!warning] Pending changes
+> In September 2024 the SEC amended Rule 610(c) to cut the cap to $0.001 per share (10 mils) for quotes at $1.00 or more and to 0.1% of the quote price below $1.00.
+> An SEC exemptive order of June 11, 2026 moved the compliance date to the first business day of November 2027, so the $0.003 cap still applies until then.
+> On the same day the SEC proposed rescinding Rule 611 and the Rule 610(e) locked and crossed market requirement; as proposals, they do not change current obligations.
 
 **Why This Matters:** Fee caps prevent venues from "hiding" execution costs in access charges. For market makers, this creates a level playing field where maker-taker rebates are constrained, affecting profitability calculations.
 
@@ -118,7 +126,10 @@ Rule 610 requires markets to establish rules preventing participants from displa
 For stocks priced ≥$1.00, trading centers cannot accept or rank orders in increments smaller than **$0.01**.
 *   Allowed: $100.00, $100.01, $100.02
 *   Prohibited: $100.001, $100.0099
-For stocks <$1.00: Sub-penny increments are permitted (e.g., $0.9999, $0.9998).
+For stocks <$1.00: Sub-penny increments are permitted down to **$0.0001** (e.g., $0.9999, $0.9998); $0.00005 and $0.12345 are prohibited.
+
+> [!warning] Pending change
+> The 2024 amendments add a $0.005 increment for stocks at $1.00 or more whose time-weighted average quoted spread over an evaluation period was $0.015 or less; the compliance date is the first business day of November 2027.
 
 #### 1.4.2 Why This Rule Exists
 **Problem:** Sub-penny "pennying" allowed high-frequency traders to jump queue by improving price by $0.0001, effectively front-running resting orders without meaningful price improvement.
@@ -244,7 +255,8 @@ Before executing a short sale, a broker-dealer must:
 
 #### 2.4.2 Buy-In Deadlines
 *   **Rule 204(a):** Participants must close out FTDs by the beginning of trading hours on **T+2** (Settlement + 1).
-*   **Market Makers (Rule 204(a)(3)):** Extended to **T+3** (Settlement + 2) for bona fide market making fails.
+*   **Market Makers (Rule 204(a)(3)):** Extended to **T+4** (Settlement + 3) for bona fide market making fails: the rule allows until the third consecutive settlement day following the settlement date.
+*   **Long sales (Rule 204(a)(1)):** The same T+4 deadline applies to fails from sales of securities the seller owns.
 
 **The "Buy-In":** If you fail to close out, you must purchase securities ("Buy-In") to cover the deficit immediately.
 
@@ -273,12 +285,19 @@ Once triggered, short sales can only be executed at a price **above the current 
     *   Restriction lasts: Tuesday 10:30 AM - 4:00 PM AND Wednesday 9:30 AM - 4:00 PM.
 
 #### 2.5.3 Exceptions to Rule 201
-Certain orders are marked "short exempt" and not subject to the price test:
-1.  **Market maker quotes:** Bona fide market making activity (subject to ongoing SEC/FINRA scrutiny).
-2.  **Certain arbitrage activities:** Basket/index arbitrage, merger arbitrage, hedging related instruments.
-3.  **Over-the-counter transactions:** Trades not on an exchange.
+A trading center may execute a short sale marked "short exempt" at or below the NBB only when the submitting broker-dealer has a reasonable basis to believe one of the Rule 201(d) cases applies:
+1.  **Delayed delivery ((d)(1)):** The seller owns the security and will deliver once restrictions on delivery are removed.
+2.  **Odd lots ((d)(2)):** A market maker offsets customer odd-lot orders or liquidates an odd-lot position.
+3.  **Domestic arbitrage ((d)(3)):** Arbitrage against a security convertible or exchangeable into the covered security.
+4.  **International arbitrage ((d)(4)):** Arbitrage against the same security bought in a foreign market.
+5.  **Over-allotment ((d)(5)):** An underwriter or syndicate member covering an over-allotment or lay-off sale.
+6.  **Riskless principal ((d)(6)):** A riskless principal transaction.
+7.  **VWAP ((d)(7)):** A qualifying volume-weighted average price transaction.
 
-**Market Maker Implication:** Your quotes can provide liquidity on both sides even during circuit breaker, but you must mark properly as "short exempt" and maintain bona fide activity standards.
+Rule 201(c) also lets a broker-dealer mark an order "short exempt" when it identifies the order as priced above the NBB at the time of submission.
+
+**Market Maker Implication:** There is no bona fide market making exception; the SEC declined to add one when it adopted Rule 201 in 2010.
+While the restriction is active your short-side quotes must be priced above the NBB, so the quote engine must reprice or pull its offer rather than mark it "short exempt".
 
 #### 2.5.4 System Implementation
 ```python
@@ -309,7 +328,7 @@ class Rule201CircuitBreaker:
             return True  # Restriction expired
             
         if is_short_exempt:
-            return True  # Market maker or other exemption
+            return True  # Rule 201(c) or (d) exception
             
         # Price test: must be above NBB
         return price > current_nbb
@@ -332,7 +351,7 @@ A security becomes a threshold security when aggregate FTDs meet both criteria:
 These levels must persist for 5 consecutive settlement days.
 
 #### 2.6.2 Additional Close-Out Requirements
-For threshold securities, if FTDs persist for 13 consecutive settlement days, Rule 203(b)(3) imposes an **immediate close-out obligation** (stricter than Rule 204's T+2/T+3).
+For threshold securities, if FTDs persist for 13 consecutive settlement days, Rule 203(b)(3) imposes an **immediate close-out obligation** (in addition to Rule 204's T+2 and T+4 deadlines).
 
 **Market Maker Impact:** Even with bona fide market making exemption, you face accelerated close-out deadlines for threshold securities. Your settlement monitoring must flag these automatically.
 
@@ -352,7 +371,7 @@ Can you send an Intermarket Sweep Order (ISO) that is also a Short Sale?
     *   You want to sweep the book down to $9.95.
     *   **Restriction:** You cannot short sell at $10.00 or lower.
     *   **Result:** You cannot send a Short Sell ISO priced at $9.95. You must price it at $10.01 or higher (if NBB is $10.00).
-    *   **Exception:** If you are a Market Maker with "Short Exempt" status, you can sell down, but you must be careful not to abuse the exemption.
+    *   **No market maker exception:** Bona fide market making does not qualify for "short exempt"; only a Rule 201(d) case lets the ISO sell at or below the NBB.
 
 ### 3.2 Reporting Obligations
 
@@ -686,7 +705,7 @@ This section provides in-depth explanations for key terms, focusing on their pra
 *   **Quant Relevance:** Persistent FTDs can lead to a "Pre-Borrow" penalty, which effectively bans you from short selling that stock without a confirmed, expensive manual borrow. This can kill a market making strategy for that symbol.
 
 ### Threshold Security
-*   **Definition:** A stock that has had a significant number of FTDs (≥10,000 shares and 0.5% of float) for 5 consecutive settlement days.
+*   **Definition:** A stock that has had a significant number of FTDs (≥10,000 shares and 0.5% of total shares outstanding) for 5 consecutive settlement days.
 *   **Quant Relevance:** These stocks are "radioactive" for short selling. They carry higher risk of buy-ins (forced closure of your short position by the clearing firm) and stricter close-out deadlines (13 days). Your system should automatically flag these and potentially widen spreads or reduce short-side size.
 
 ### Bona Fide Market Making
