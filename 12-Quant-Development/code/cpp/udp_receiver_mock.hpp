@@ -41,7 +41,7 @@ enum class ParseStatus {
  * caller hands us an unaligned byte buffer.
  *
  * Only 'A' (Add) and 'E' (Execute) message types are accepted, matching
- * the comment in udp_receiver_mock.cpp.
+ * the MarketUpdate::msg_type comment above.
  */
 inline ParseStatus parse_market_update(const char* buffer,
                                        std::size_t n,
