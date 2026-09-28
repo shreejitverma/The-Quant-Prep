@@ -23,4 +23,5 @@ Useful starting points:
 ## `superseded/`
 
 Short early guides by the repo author that the new syllabus notes replace (probability, linear algebra, data structures, study roadmap, Jane Street notes, modern C++, HFT architecture, distributed compute, Java low latency), plus the original toy strategy test.
+The Reg NMS and SHO market-making drafts (`Reg-NMS-SHO-Comprehensive.md` and its PDF) predate T+1 settlement and carry known errors; [the current guide](../08-Market-Making/Quant-Dev-MM-Guide/01_Regulatory_Framework_NMS_SHO.md) replaces them.
 Their content is covered, and extended, by the notes linked from [Start Here](../00-Start-Here/README.md).
