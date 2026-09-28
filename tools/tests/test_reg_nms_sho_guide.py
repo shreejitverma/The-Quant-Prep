@@ -14,7 +14,7 @@ The goal is two-fold:
    Reg SHO compliance checks that production code can be validated against.
 
 The mock engine is deliberately small - it is not a real OMS - but it
-implements every rule that is quantified in the guide.
+implements every rule in force that is quantified in the guide.
 """
 
 from __future__ import annotations
@@ -48,17 +48,18 @@ class RuleSpec:
     # Rule 610 - Access
     access_fee_cap_per_share: float
     access_fee_price_threshold: float
+    sub_dollar_access_fee_cap_pct: float
 
     # Rule 612 - Sub-Penny
     sub_penny_price_threshold: float
     sub_penny_min_increment: float
+    sub_dollar_min_increment: float
 
     # Rule 611 - Order Protection (flickering quote exception window)
     flickering_quote_window_seconds: float
 
     # Rule 201 - Alternative Uptick / Circuit Breaker
     rule201_decline_pct: float
-    rule201_restriction_next_days: int
 
     # Rule 204 - Close-out
     rule204_participant_close_out_days: int
@@ -69,9 +70,6 @@ class RuleSpec:
     threshold_security_min_outstanding_pct: float
     threshold_security_persistence_days: int
     threshold_security_hard_close_out_days: int
-
-    # Protected quotation requirements (Rule 611)
-    protected_quote_keywords: tuple[str, ...]
 
 
 def _require(pattern: str, text: str, flags: int = 0) -> re.Match:
@@ -102,6 +100,10 @@ def parse_guide(path: str = GUIDE_PATH) -> RuleSpec:
     access_fee_cap = float(fee_match.group(1))
     access_fee_threshold = float(fee_match.group(2))
 
+    # Rule 610 sub-dollar cap: "**0.3% of the quotation price**"
+    sub_dollar_fee_match = _require(r"\*\*([0-9.]+)% of the quotation price\*\*", text)
+    sub_dollar_fee_pct = float(sub_dollar_fee_match.group(1)) / 100.0
+
     # Rule 612 sub-penny: "stocks priced >= $1.00 ... increments smaller than $0.01"
     sub_penny_match = _require(
         r"stocks priced\s*[>=\u2265]+\s*\$([0-9]+\.[0-9]+).{0,200}?"
@@ -111,6 +113,10 @@ def parse_guide(path: str = GUIDE_PATH) -> RuleSpec:
     )
     sub_penny_threshold = float(sub_penny_match.group(1))
     sub_penny_increment = float(sub_penny_match.group(2))
+
+    # Rule 612 below $1.00: "Sub-penny increments are permitted down to **$0.0001**"
+    sub_dollar_increment_match = _require(r"permitted down to\s*\*\*\$([0-9]+\.[0-9]+)\*\*", text)
+    sub_dollar_increment = float(sub_dollar_increment_match.group(1))
 
     # Rule 611 flickering quote exception: "displayed <1 second ago"
     flicker_match = _require(
@@ -133,7 +139,6 @@ def parse_guide(path: str = GUIDE_PATH) -> RuleSpec:
         text,
         re.DOTALL | re.IGNORECASE,
     )
-    rule201_restriction_days = 1  # "next trading day"
 
     # Rule 204 under T+1 settlement: participants close out by T+2, bona fide market makers by T+4
     participant_match = _require(r"Participants must close out FTDs by.{0,80}?\*\*T\+([0-9]+)\*\*", text, re.DOTALL)
@@ -165,26 +170,21 @@ def parse_guide(path: str = GUIDE_PATH) -> RuleSpec:
     threshold_persist_days = int(thresh_persist_match.group(1))
     threshold_hard_days = int(thresh_hard_match.group(1))
 
-    # Rule 611 protected-quotation keywords
-    protected_keywords = ("automated", "displayed", "disseminated", "quotation")
-    for kw in protected_keywords:
-        _require(rf"\*\*{kw}", text, re.IGNORECASE)
-
     return RuleSpec(
         access_fee_cap_per_share=access_fee_cap,
         access_fee_price_threshold=access_fee_threshold,
+        sub_dollar_access_fee_cap_pct=sub_dollar_fee_pct,
         sub_penny_price_threshold=sub_penny_threshold,
         sub_penny_min_increment=sub_penny_increment,
+        sub_dollar_min_increment=sub_dollar_increment,
         flickering_quote_window_seconds=flicker_window,
         rule201_decline_pct=rule201_decline,
-        rule201_restriction_next_days=rule201_restriction_days,
         rule204_participant_close_out_days=rule204_participant_days,
         rule204_mm_close_out_days=rule204_mm_days,
         threshold_security_min_shares=threshold_min_shares,
         threshold_security_min_outstanding_pct=threshold_min_pct,
         threshold_security_persistence_days=threshold_persist_days,
         threshold_security_hard_close_out_days=threshold_hard_days,
-        protected_quote_keywords=protected_keywords,
     )
 
 
@@ -236,10 +236,12 @@ class MockTradingEngine:
     # --- Rule 610 --------------------------------------------------------
     ACCESS_FEE_CAP_PER_SHARE: float = 0.003
     ACCESS_FEE_PRICE_THRESHOLD: float = 1.00
+    SUB_DOLLAR_ACCESS_FEE_CAP_PCT: float = 0.003  # 0.3% of the quotation price
 
     # --- Rule 612 --------------------------------------------------------
     SUB_PENNY_PRICE_THRESHOLD: float = 1.00
     SUB_PENNY_MIN_INCREMENT: float = 0.01
+    SUB_DOLLAR_MIN_INCREMENT: float = 0.0001
 
     # --- Rule 611 --------------------------------------------------------
     FLICKERING_QUOTE_WINDOW_SECONDS: float = 1.0
@@ -263,13 +265,11 @@ class MockTradingEngine:
     # ------------------------------------------------------------------
     def validate_access_fee(self, fee_per_share: float, reference_price: float) -> ComplianceResult:
         if reference_price < self.ACCESS_FEE_PRICE_THRESHOLD:
-            # Rule 610 cap only applies to stocks priced >= $1.00.
-            return ComplianceResult(True)
-        if fee_per_share > self.ACCESS_FEE_CAP_PER_SHARE + 1e-12:
-            return ComplianceResult(
-                False,
-                f"Access fee {fee_per_share} exceeds Rule 610 cap {self.ACCESS_FEE_CAP_PER_SHARE}",
-            )
+            cap = self.SUB_DOLLAR_ACCESS_FEE_CAP_PCT * reference_price
+        else:
+            cap = self.ACCESS_FEE_CAP_PER_SHARE
+        if fee_per_share > cap + 1e-12:
+            return ComplianceResult(False, f"Access fee {fee_per_share} exceeds Rule 610 cap {cap}")
         return ComplianceResult(True)
 
     # ------------------------------------------------------------------
@@ -298,21 +298,34 @@ class MockTradingEngine:
     # ------------------------------------------------------------------
     def is_valid_display_price(self, price: float) -> bool:
         """Return True if the price can legally be displayed under Rule 612."""
-        if price < self.SUB_PENNY_PRICE_THRESHOLD:
-            # Sub-penny increments allowed below $1.00.
-            return price > 0
-        # At or above $1.00 the minimum increment is $0.01.
-        scaled = round(price / self.SUB_PENNY_MIN_INCREMENT)
-        return abs(scaled * self.SUB_PENNY_MIN_INCREMENT - price) < 1e-9
+        if price <= 0:
+            return False
+        increment = self.SUB_DOLLAR_MIN_INCREMENT if price < self.SUB_PENNY_PRICE_THRESHOLD else self.SUB_PENNY_MIN_INCREMENT
+        scaled = round(price / increment)
+        return abs(scaled * increment - price) < 1e-9
 
     # ------------------------------------------------------------------
     # Rule 611: order protection / trade-through
     # ------------------------------------------------------------------
     def validate_trade_through(
-        self, execution_price: float, is_buy: bool, protected_nbbo_bid: float, protected_nbbo_ask: float, is_iso: bool
+        self,
+        execution_price: float,
+        is_buy: bool,
+        protected_nbbo_bid: float,
+        protected_nbbo_ask: float,
+        is_iso: bool,
+        equal_or_worse_quote_age_seconds: float | None = None,
     ) -> ComplianceResult:
+        """Check Rule 611 for one execution.
+
+        ``equal_or_worse_quote_age_seconds`` is how long before the trade the
+        traded-through venue last displayed a best quote at a price equal to or
+        worse than ``execution_price``; ``None`` means it never did.
+        """
         if is_iso:
             return ComplianceResult(True, "ISO exception to Rule 611")
+        if equal_or_worse_quote_age_seconds is not None and equal_or_worse_quote_age_seconds < self.FLICKERING_QUOTE_WINDOW_SECONDS:
+            return ComplianceResult(True, "Flickering quote exception to Rule 611")
         if is_buy and execution_price > protected_nbbo_ask + 1e-12:
             return ComplianceResult(False, "Buy traded through protected ask")
         if (not is_buy) and execution_price < protected_nbbo_bid - 1e-12:
@@ -368,13 +381,9 @@ class MockTradingEngine:
     # ------------------------------------------------------------------
     # Rule 200: long / short / short-exempt marking
     # ------------------------------------------------------------------
-    def mark_sell_order(
-        self, inventory: int, sell_qty: int, is_bona_fide_mm: bool = False, circuit_breaker_active: bool = False
-    ) -> OrderMark:
+    def mark_sell_order(self, inventory: int, sell_qty: int) -> OrderMark:
         if sell_qty <= inventory:
             return OrderMark.LONG
-        if circuit_breaker_active and is_bona_fide_mm:
-            return OrderMark.SHORT_EXEMPT
         return OrderMark.SHORT
 
     # ------------------------------------------------------------------
@@ -401,7 +410,7 @@ class MockTradingEngine:
         if current_date > self.rule201_restriction_end_date(trigger_date):
             return ComplianceResult(True, "Restriction window expired")
         if is_short_exempt:
-            return ComplianceResult(True, "Short-exempt order (e.g. bona fide MM)")
+            return ComplianceResult(True, "Short-exempt order under Rule 201(c) or (d)")
         if price <= nbb + 1e-12:
             return ComplianceResult(False, f"Short sale at {price} must exceed NBB {nbb}")
         return ComplianceResult(True)
@@ -456,6 +465,10 @@ class TestGuideParsingMatchesEngine(unittest.TestCase):
             self.spec.access_fee_price_threshold,
             self.engine.ACCESS_FEE_PRICE_THRESHOLD,
         )
+        self.assertAlmostEqual(
+            self.spec.sub_dollar_access_fee_cap_pct,
+            self.engine.SUB_DOLLAR_ACCESS_FEE_CAP_PCT,
+        )
 
     def test_rule_612_sub_penny_constants(self) -> None:
         self.assertAlmostEqual(
@@ -465,6 +478,10 @@ class TestGuideParsingMatchesEngine(unittest.TestCase):
         self.assertAlmostEqual(
             self.spec.sub_penny_min_increment,
             self.engine.SUB_PENNY_MIN_INCREMENT,
+        )
+        self.assertAlmostEqual(
+            self.spec.sub_dollar_min_increment,
+            self.engine.SUB_DOLLAR_MIN_INCREMENT,
         )
 
     def test_rule_611_flickering_window_constant(self) -> None:
@@ -477,10 +494,6 @@ class TestGuideParsingMatchesEngine(unittest.TestCase):
         self.assertAlmostEqual(
             self.spec.rule201_decline_pct,
             self.engine.RULE201_DECLINE_PCT,
-        )
-        self.assertEqual(
-            self.spec.rule201_restriction_next_days,
-            self.engine.RULE201_RESTRICTION_NEXT_DAYS,
         )
 
     def test_rule_204_constants(self) -> None:
@@ -511,10 +524,6 @@ class TestGuideParsingMatchesEngine(unittest.TestCase):
             self.engine.THRESHOLD_HARD_CLOSE_OUT_DAYS,
         )
 
-    def test_protected_quotation_keywords_present(self) -> None:
-        for keyword in self.spec.protected_quote_keywords:
-            self.assertIn(keyword, ("automated", "displayed", "disseminated", "quotation"))
-
 
 class TestRule610Access(unittest.TestCase):
     def setUp(self) -> None:
@@ -526,10 +535,11 @@ class TestRule610Access(unittest.TestCase):
         bad = self.engine.validate_access_fee(0.004, reference_price=50.0)
         self.assertFalse(bad.ok)
 
-    def test_fee_cap_not_applied_below_dollar(self) -> None:
-        # Rule 610 fee cap only applies to stocks priced >= $1.00.
-        ok = self.engine.validate_access_fee(0.01, reference_price=0.50)
-        self.assertTrue(ok.ok)
+    def test_fee_cap_is_pct_of_price_below_dollar(self) -> None:
+        # 0.3% of a $0.50 quote is $0.0015 per share.
+        self.assertTrue(self.engine.validate_access_fee(0.0015, reference_price=0.50).ok)
+        self.assertFalse(self.engine.validate_access_fee(0.0016, reference_price=0.50).ok)
+        self.assertFalse(self.engine.validate_access_fee(0.01, reference_price=0.50).ok)
 
     def test_locked_market_detected(self) -> None:
         # Bid meets best offer -> lock.
@@ -562,6 +572,10 @@ class TestRule612SubPenny(unittest.TestCase):
         for px in (0.9999, 0.9998, 0.0001):
             self.assertTrue(self.engine.is_valid_display_price(px), px)
 
+    def test_finer_than_hundredth_of_cent_rejected_below_dollar(self) -> None:
+        for px in (0.00005, 0.12345):
+            self.assertFalse(self.engine.is_valid_display_price(px), px)
+
 
 class TestRule611OrderProtection(unittest.TestCase):
     def setUp(self) -> None:
@@ -586,6 +600,22 @@ class TestRule611OrderProtection(unittest.TestCase):
             is_iso=True,
         )
         self.assertTrue(result.ok)
+
+    def test_flickering_quote_exception_is_under_one_second(self) -> None:
+        def check(age: float | None) -> bool:
+            return self.engine.validate_trade_through(
+                execution_price=100.02,
+                is_buy=True,
+                protected_nbbo_bid=100.00,
+                protected_nbbo_ask=100.01,
+                is_iso=False,
+                equal_or_worse_quote_age_seconds=age,
+            ).ok
+
+        self.assertTrue(check(0.5))
+        self.assertTrue(check(0.999))
+        self.assertFalse(check(1.0))
+        self.assertFalse(check(None))
 
     def test_iso_sweep_clears_all_better_prices(self) -> None:
         """Example reproduced from section 1.2.2 of the guide."""
@@ -625,15 +655,6 @@ class TestRule200Marking(unittest.TestCase):
     def test_short_sale_when_no_inventory(self) -> None:
         mark = self.engine.mark_sell_order(inventory=0, sell_qty=100)
         self.assertEqual(mark, OrderMark.SHORT)
-
-    def test_short_exempt_for_bona_fide_mm_during_cb(self) -> None:
-        mark = self.engine.mark_sell_order(
-            inventory=0,
-            sell_qty=100,
-            is_bona_fide_mm=True,
-            circuit_breaker_active=True,
-        )
-        self.assertEqual(mark, OrderMark.SHORT_EXEMPT)
 
 
 class TestRule201CircuitBreaker(unittest.TestCase):

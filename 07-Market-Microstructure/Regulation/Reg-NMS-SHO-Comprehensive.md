@@ -9,6 +9,7 @@ sources: []
 > [!warning] Written for T+2 settlement
 > US equities moved to T+1 settlement on May 28, 2024, so the Rule 204 dates below are one settlement day late: fails now arise on T+1, the general close-out deadline is T+2, and long-sale and bona fide market making fails get until T+4.
 > The Rule 610(c) fee cap and Rule 612 tick size changes adopted in 2024 take effect in November 2027, and in June 2026 the SEC proposed rescinding Rule 611 and the locked and crossed market rule.
+> It also wrongly lists bona fide market making as a Rule 201 short exempt case and omits the 0.3% Rule 610(c) cap for quotes below $1.00.
 > The current version is [the Reg NMS and SHO guide](../../08-Market-Making/Quant-Dev-MM-Guide/01_Regulatory_Framework_NMS_SHO.md).
 
 Regulation NMS & SHO: Comprehensive Guide for Quantitative Developers in Market Making

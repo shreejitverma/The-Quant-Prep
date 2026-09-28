@@ -94,6 +94,7 @@ Rule 611(b) lists nine exceptions; the ISO covers two of them ((b)(5) received I
 
 #### 1.3.1 Access Fee Caps
 Rule 610 limits fees that trading centers can charge for accessing protected quotations to **$0.003 per share (30 mils)** for stocks ≥$1.00.
+For quotations priced below $1.00 the cap is **0.3% of the quotation price** per share.
 
 > [!warning] Pending changes
 > In September 2024 the SEC amended Rule 610(c) to cut the cap to $0.001 per share (10 mils) for quotes at $1.00 or more and to 0.1% of the quote price below $1.00.
@@ -125,7 +126,7 @@ Rule 610 requires markets to establish rules preventing participants from displa
 For stocks priced ≥$1.00, trading centers cannot accept or rank orders in increments smaller than **$0.01**.
 *   Allowed: $100.00, $100.01, $100.02
 *   Prohibited: $100.001, $100.0099
-For stocks <$1.00: Sub-penny increments are permitted (e.g., $0.9999, $0.9998).
+For stocks <$1.00: Sub-penny increments are permitted down to **$0.0001** (e.g., $0.9999, $0.9998); $0.00005 and $0.12345 are prohibited.
 
 > [!warning] Pending change
 > The 2024 amendments add a $0.005 increment for stocks at $1.00 or more whose time-weighted average quoted spread over an evaluation period was $0.015 or less; the compliance date is the first business day of November 2027.
@@ -284,12 +285,19 @@ Once triggered, short sales can only be executed at a price **above the current 
     *   Restriction lasts: Tuesday 10:30 AM - 4:00 PM AND Wednesday 9:30 AM - 4:00 PM.
 
 #### 2.5.3 Exceptions to Rule 201
-Certain orders are marked "short exempt" and not subject to the price test:
-1.  **Market maker quotes:** Bona fide market making activity (subject to ongoing SEC/FINRA scrutiny).
-2.  **Certain arbitrage activities:** Basket/index arbitrage, merger arbitrage, hedging related instruments.
-3.  **Over-the-counter transactions:** Trades not on an exchange.
+A trading center may execute a short sale marked "short exempt" at or below the NBB only when the submitting broker-dealer has a reasonable basis to believe one of the Rule 201(d) cases applies:
+1.  **Delayed delivery ((d)(1)):** The seller owns the security and will deliver once restrictions on delivery are removed.
+2.  **Odd lots ((d)(2)):** A market maker offsets customer odd-lot orders or liquidates an odd-lot position.
+3.  **Domestic arbitrage ((d)(3)):** Arbitrage against a security convertible or exchangeable into the covered security.
+4.  **International arbitrage ((d)(4)):** Arbitrage against the same security bought in a foreign market.
+5.  **Over-allotment ((d)(5)):** An underwriter or syndicate member covering an over-allotment or lay-off sale.
+6.  **Riskless principal ((d)(6)):** A riskless principal transaction.
+7.  **VWAP ((d)(7)):** A qualifying volume-weighted average price transaction.
 
-**Market Maker Implication:** Your quotes can provide liquidity on both sides even during circuit breaker, but you must mark properly as "short exempt" and maintain bona fide activity standards.
+Rule 201(c) also lets a broker-dealer mark an order "short exempt" when it identifies the order as priced above the NBB at the time of submission.
+
+**Market Maker Implication:** There is no bona fide market making exception; the SEC declined to add one when it adopted Rule 201 in 2010.
+While the restriction is active your short-side quotes must be priced above the NBB, so the quote engine must reprice or pull its offer rather than mark it "short exempt".
 
 #### 2.5.4 System Implementation
 ```python
@@ -320,7 +328,7 @@ class Rule201CircuitBreaker:
             return True  # Restriction expired
             
         if is_short_exempt:
-            return True  # Market maker or other exemption
+            return True  # Rule 201(c) or (d) exception
             
         # Price test: must be above NBB
         return price > current_nbb
@@ -363,7 +371,7 @@ Can you send an Intermarket Sweep Order (ISO) that is also a Short Sale?
     *   You want to sweep the book down to $9.95.
     *   **Restriction:** You cannot short sell at $10.00 or lower.
     *   **Result:** You cannot send a Short Sell ISO priced at $9.95. You must price it at $10.01 or higher (if NBB is $10.00).
-    *   **Exception:** If you are a Market Maker with "Short Exempt" status, you can sell down, but you must be careful not to abuse the exemption.
+    *   **No market maker exception:** Bona fide market making does not qualify for "short exempt"; only a Rule 201(d) case lets the ISO sell at or below the NBB.
 
 ### 3.2 Reporting Obligations
 
