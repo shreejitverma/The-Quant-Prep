@@ -240,7 +240,7 @@ class WtMonSvr(WatcherSink):
         self._dog = WatchDog(sink=self, db=self.__data_mgr__.get_db(), logger=self.logger)
 
         app = Flask(__name__, instance_relative_config=True, static_folder=static_folder, static_url_path=static_url_path)
-        app.secret_key = "!@#$%^&*()"
+        app.secret_key = os.environ.get("WTPY_SECRET_KEY") or os.urandom(24)
         Compress(app)
         # app.debug = True
         self.app = app

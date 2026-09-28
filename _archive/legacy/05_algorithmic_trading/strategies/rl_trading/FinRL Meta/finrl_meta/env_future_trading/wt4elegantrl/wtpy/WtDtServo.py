@@ -7,6 +7,7 @@ from flask_compress  import Compress
 
 import urllib.request
 import io
+import os
 import gzip
 
 import json
@@ -134,7 +135,7 @@ class WtDtServo:
             return
 
         app = Flask(__name__)
-        app.secret_key = "!@#$%^&*()"
+        app.secret_key = os.environ.get("WTPY_SECRET_KEY") or os.urandom(24)
         Compress(app)
 
         self.server_inst = app
