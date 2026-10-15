@@ -5,7 +5,7 @@ tier: advanced
 status: draft
 prereqs: [swaps-and-curve-building, money-markets-repo-and-overnight-rates]
 est_hours: 5
-sources: [Piterbarg - Funding beyond discount collateral view Risk Magazine 2010, Ametrano and Bianchetti - Everything you always wanted to know about multiple interest rate curve bootstrapping, Bianchetti - Two curves one price collateral storage and basis Risk 2010, BIS - Covered interest parity lost understanding the cross-currency basis BIS Quarterly Review 2016]
+sources: [Piterbarg - Funding beyond discounting collateral agreements and derivatives pricing Risk 2010, Ametrano and Bianchetti - Everything you always wanted to know about multiple interest rate curve bootstrapping, Bianchetti - Two curves one price Risk 2010, BIS - Covered interest parity lost understanding the cross-currency basis BIS Quarterly Review 2016]
 ---
 
 # Multi-Curve and CSA Discounting
@@ -67,10 +67,10 @@ Tenor basis spreads exist because lending for 6 months unsecured entails greater
 
 A standard cross-currency basis swap (XCCY) exchanges floating interest payments in two different currencies on agreed principal amounts.
 Principal is exchanged at the prevailing spot foreign exchange rate $S_0$ at inception and returned at the same spot rate at maturity.
-In standard market convention, the non-USD leg pays a floating rate flat (e.g., 3-month Euribor or €STR), while the USD leg pays 3-month SOFR plus a cross-currency basis spread $\beta_{\text{XCCY}}$.
+In standard market convention, the USD leg pays SOFR flat, while the non-USD leg pays its floating rate (e.g., 3-month Euribor or €STR) plus a cross-currency basis spread $\beta_{\text{XCCY}}$.
 Under classical Covered Interest Parity (CIP), no-arbitrage between spot and forward foreign exchange dictates that $\beta_{\text{XCCY}} = 0$.
 Post-2008, CIP failed systematically, with $\beta_{\text{XCCY}}$ trading persistently negative for major currencies versus the US dollar (e.g., EUR, JPY).
-A negative spread means non-US borrowers must accept a discount on USD cash lending or pay a premium to borrow US dollars synthetically.
+A negative spread means the party that swaps EUR into USD receives the EUR rate minus $|\beta_{\text{XCCY}}|$ on its EUR while paying SOFR flat, so non-US borrowers pay a premium to borrow US dollars synthetically.
 The persistent basis is driven by heavy global demand for US dollar assets, coupled with bank balance sheet constraints under Basel III (the leverage ratio and liquidity coverage ratio) that penalize arbitrageurs for intermediating currency flows.
 
 ### Collateral currency choice and cheapest-to-deliver optionality
@@ -79,7 +79,7 @@ Many legacy and multi-currency CSAs permit the collateral posting party to choos
 If cash collateral is posted in currency $k$, it earns the overnight rate $c_t^{(k)}$.
 The posting party naturally selects the currency that minimizes its economic cost, creating an embedded cheapest-to-deliver (CTD) collateral option:
 $$c_t^{\text{eff}} = \max_k \left( c_t^{(k)} - \text{cost of funding currency } k \right).$$
-Valuing derivatives under a multi-currency CSA requires pricing this collateral switching option, which shifts effective discount factors upward and lowers derivative asset values.
+Valuing derivatives under a multi-currency CSA requires pricing this collateral switching option, which raises the effective discount rate, lowers effective discount factors, and lowers derivative asset values.
 
 ### How it is implemented
 
@@ -88,7 +88,7 @@ Valuing derivatives under a multi-currency CSA requires pricing this collateral 
 - Algorithm: construct OIS curves from overnight instruments; bootstrap tenor curves from vanilla and basis swaps; calibrate cross-currency discount curves to match XCCY quotes.
 - Complexity: $O(K \cdot N)$ where $K$ is the number of curves and $N$ is the number of instruments in the global bootstrap.
 - Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `par_swap_rate_dual_curve`.
-- System context: the curve and surface service (planned section 18) (planned section).
+- System context: the curve and surface service (planned section).
 
 ## Worked examples
 
@@ -103,7 +103,7 @@ The single-curve OIS par swap rate is:
 $$S_{\text{single}} = \frac{1 - P_{\text{ois}}(2)}{A_{\text{ois}}} = \frac{1 - 0.933352}{1.904226} = \frac{0.066648}{1.904226} = 3.5000\%.$$
 Now suppose the floating leg references a term index whose forwarding zero rates trade at a 20 bp credit and liquidity spread over OIS zeros:
 $P_{\text{proj}}(1) = \frac{1}{1 + 0.032} = 0.968992 \implies F(0, 1) = \frac{1}{0.968992} - 1 = 3.2000\%$.
-$P_{\text{proj}}(2) = \frac{1}{(1 + 0.037)^2} = 0.930219 \implies F(1, 2) = \frac{0.968992}{0.930219} - 1 = 4.2024\%$.
+$P_{\text{proj}}(2) = \frac{1}{(1 + 0.037)^2} = 0.929913 \implies F(1, 2) = \frac{0.968992}{0.929913} - 1 = 4.2024\%$.
 
 Calculate floating leg present value discounted at OIS:
 $$\text{Coupon 1 PV} = \tau_1 \cdot P_{\text{ois}}(1) \cdot F(0, 1) = 1.0 \times 0.970874 \times 0.032000 = 0.031068.$$
@@ -119,34 +119,33 @@ Dual-curve pricing adds $3.6913\% - 3.5000\% = 19.13\text{ bps}$ to the fixed sw
 Consider a 1-year tenor basis swap exchanging 3-month floating for 6-month floating.
 Assume flat OIS discounting at $3.00\%$ continuous: $P(0, t) = e^{-0.03 t}$.
 $P(0.25) = 0.992528$, $P(0.50) = 0.985112$, $P(0.75) = 0.977751$, $P(1.00) = 0.970446$.
-Quarterly OIS annuity: $A_4 = 0.25 \times (0.992528 + 0.985112 + 0.977751 + 0.970446) = 0.981460$.
+Quarterly OIS annuity: $A_4 = 0.25 \times (0.992528 + 0.985112 + 0.977751 + 0.970446) = 0.981459$.
 Semiannual OIS annuity: $A_2 = 0.50 \times (0.985112 + 0.970446) = 0.977779$.
 Suppose the forward rates projected from respective curves are:
 Quarterly 3M forwards: $F_3 = [3.20\%, 3.30\%, 3.40\%, 3.50\%]$.
 Semiannual 6M forwards: $F_6 = [3.45\%, 3.65\%]$.
 Present value of 3-month leg without spread:
-$$PV_3 = 0.25 \times [0.992528(0.032) + 0.985112(0.033) + 0.977751(0.034) + 0.970446(0.035)] = 0.032876.$$
+$$PV_3 = 0.25 \times [0.992528(0.032) + 0.985112(0.033) + 0.977751(0.034) + 0.970446(0.035)] = 0.032870.$$
 Present value of 6-month leg:
-$$PV_6 = 0.50 \times [0.985112(0.0345) + 0.970446(0.0365)] = 0.034703.$$
+$$PV_6 = 0.50 \times [0.985112(0.0345) + 0.970446(0.0365)] = 0.034704.$$
 The 3-month versus 6-month par basis spread $\beta_{3v6}$ added to the 3-month leg is:
-$$\beta_{3v6} = \frac{PV_6 - PV_3}{A_4} = \frac{0.034703 - 0.032876}{0.981460} = \frac{0.001827}{0.981460} = 0.1861\% = 18.61\text{ bps}.$$
+$$\beta_{3v6} = \frac{PV_6 - PV_3}{A_4} = \frac{0.034704 - 0.032870}{0.981459} = \frac{0.001834}{0.981459} = 0.1869\% = 18.69\text{ bps}.$$
 
 ### Example 3: cross-currency swap pricing and synthetic dollar borrowing
 
 A European bank borrows $100{,}000{,}000$ USD for 1 year via a mark-to-market cross-currency swap against EUR.
 Current spot FX rate is $S_0 = 1.1000$ USD per EUR, so the bank posts $100{,}000{,}000 / 1.1000 = 90{,}909{,}091$ EUR.
-The EUR leg receives €STR flat at $3.50\%$.
-The USD cross-currency basis spread is $\beta_{\text{XCCY}} = -25\text{ bps}$.
-The bank pays USD SOFR plus the basis spread: $\text{USD Rate} = \text{SOFR} + (-0.0025) = \text{SOFR} - 25\text{ bps}$.
-Because the European bank is desperate for USD funding, the foreign counterparty is willing to pay the USD holder a subsidized rate, meaning the EUR borrower pays a lower interest rate on the borrowed USD.
-Conversely, if an entity has USD and wants to invest in EUR synthetically, it earns €STR $+ 25\text{ bps}$ hedged back into dollars.
+The EUR/USD cross-currency basis spread is $\beta_{\text{XCCY}} = -25\text{ bps}$, quoted on the EUR leg.
+The bank pays USD SOFR flat on the borrowed dollars and receives €STR plus the basis on its EUR: $3.50\% + (-0.25\%) = 3.25\%$.
+If the bank funds its EUR at €STR ($3.50\%$), it loses $25\text{ bps}$ on the EUR leg, so its all-in cost of the synthetic dollars is SOFR $+ 25\text{ bps}$.
+That $25\text{ bps}$ is the premium the USD-hungry European bank pays for dollar funding.
+Conversely, a USD holder that swaps dollars into EUR pays only €STR $- 25\text{ bps}$ on the EUR it receives, so investing that EUR at €STR earns SOFR $+ 25\text{ bps}$ hedged back into dollars.
 
 ### Example 4: real-world case, covered interest parity failure during the 2020 dash for cash
 
-In March 2020, as the COVID-19 pandemic triggered global financial turmoil, foreign corporations and financial institutions faced acute US dollar cash shortages.
-The 3-month EUR/USD cross-currency basis spread plummeted from $-15$ basis points to below $-100$ basis points, while JPY/USD basis dropped to $-140$ basis points (source: Federal Reserve Bank of New York, "The Dollar's Role in the Global Economy", Staff Reports No. 945, October 2020).
-Traditional market makers could not exploit this arbitrage because bank regulatory metrics, specifically the Supplementary Leverage Ratio (SLR), restricted banks from expanding their balance sheets to accommodate cross-currency repo and forward trades.
-The basis only stabilized after the Federal Reserve expanded bilateral swap lines with foreign central banks, supplying hundreds of billions of dollars in central bank liquidity.
+In March 2020, as the COVID-19 pandemic triggered global financial turmoil, foreign corporations and financial institutions faced acute US dollar cash shortages, and the EUR/USD and JPY/USD cross-currency bases moved sharply negative.
+Dealers could not fully arbitrage the gap because leverage-based capital rules, such as the Supplementary Leverage Ratio (SLR), made it costly to expand balance sheets for cross-currency and FX forward trades.
+The Federal Reserve cut the price of its standing dollar swap lines with five central banks on 15 March 2020 and opened temporary swap lines with nine more on 19 March 2020, supplying dollars through foreign central banks, after which the basis narrowed (source: Federal Reserve press releases of 15 and 19 March 2020).
 
 ## Pitfalls
 
@@ -175,8 +174,8 @@ The basis only stabilized after the Federal Reserve expanded bilateral swap line
 > Post-crisis bank regulation (e.g., Basel III leverage ratio) limits dealers from expanding balance sheets to arbitrate the gap.
 
 > [!question]- fi-cross-currency-basis-sign | If the 5-year EUR/USD cross-currency basis spread is $-25$ bps, what interest rate does a party borrowing USD against EUR collateral pay?
-> The party pays USD reference rate (SOFR) minus 25 bps.
-> A negative spread means synthetic USD borrowing carries an embedded premium, lowering the nominal floating coupon paid by the borrower.
+> By convention the basis sits on the EUR leg: the party pays SOFR flat on the USD and receives the EUR rate minus 25 bps on its EUR.
+> Relative to funding the EUR at the EUR rate, its all-in USD cost is SOFR plus 25 bps, the premium for synthetic dollar borrowing.
 
 > [!question]- fi-cheapest-to-deliver-csa | How does an embedded collateral currency choice option affect the present value of a swap?
 > The party posting collateral has the option to deliver whichever currency has the cheapest effective financing rate.
@@ -201,9 +200,9 @@ The basis only stabilized after the Federal Reserve expanded bilateral swap line
 
 ## Further reading
 
-- Piterbarg, "Funding Beyond Discount: Collateral View", *Risk Magazine*, 2010.
+- Piterbarg, "Funding Beyond Discounting: Collateral Agreements and Derivatives Pricing", *Risk*, 2010.
 - Ametrano and Bianchetti, *Everything You Always Wanted to Know About Multiple Interest Rate Curve Bootstrapping but Were Afraid to Ask*.
-- Bianchetti, "Two Curves, One Price: Collateral, Storage, and Basis", *Risk Magazine*, 2010.
+- Bianchetti, "Two Curves, One Price", *Risk*, 2010.
 - Borio, McCauley, McGuire, and Sushko, "Covered Interest Parity Lost: Understanding the Cross-Currency Basis", *BIS Quarterly Review*, 2016.
 
 ## In this repo and SDE-Interview-Prep

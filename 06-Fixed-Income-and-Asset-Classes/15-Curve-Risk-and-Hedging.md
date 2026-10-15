@@ -5,7 +5,7 @@ tier: advanced
 status: draft
 prereqs: [curve-construction-numerics]
 est_hours: 5
-sources: [Litterman and Scheinkman - Common factors affecting bond returns Journal of Fixed Income 1991, Ho - Key rate durations Journal of Fixed Income 1992, Tuckman and Serrat - Fixed Income Securities 4th ed. chapters 4 to 6, Bank of England - Financial Stability Report on the September-October 2022 gilt market dysfunction]
+sources: [Litterman and Scheinkman - Common factors affecting bond returns Journal of Fixed Income 1991, Ho - Key rate durations Journal of Fixed Income 1992, Tuckman and Serrat - Fixed Income Securities 4th ed. chapters 4 to 6, Bank of England - Financial Stability Report December 2022]
 ---
 
 # Curve Risk and Hedging
@@ -28,7 +28,7 @@ sources: [Litterman and Scheinkman - Common factors affecting bond returns Journ
 - Construct a key-rate duration profile for a bond or portfolio under triangular or localized bumps.
 - Interpret the empirical findings of Litterman and Scheinkman (1991) and explain the economic drivers of Level, Slope, and Curvature.
 - Construct duration-neutral and regression-weighted butterfly trades (e.g., 2s5s10s) and compute their carry and roll-down.
-- Explain how basis risk and curve twists caused severe losses during the 2022 UK Gilt crisis.
+- Explain how leverage and collateral calls turned a jump in long gilt yields into a liquidity spiral during the 2022 UK gilt crisis.
 
 ## Core concepts
 
@@ -95,7 +95,7 @@ The weights are chosen to neutralize empirical slope shocks, insulating the trad
 - Algorithm: calculate cash-flow sensitivities to zero rates; apply inverse Jacobian to compute par sensitivities; solve linear equations for hedge notional.
 - Complexity: $O(K^2)$ where $K$ is the number of benchmark curve pillars.
 - Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `map_zero_risk_to_par_risk` and Jacobian inversion.
-- System context: the risk engine (planned section 18) (planned section).
+- System context: the risk engine (planned section).
 
 ## Worked examples
 
@@ -119,18 +119,19 @@ $$\frac{\partial PV}{\partial s} = \left( J_{\mathbf{s}, \mathbf{z}}^{-1} \right
 $$\text{Par DV01}_1 = 0.000000.$$
 $$\text{Par DV01}_2 = 0.000000.$$
 $$\text{Par DV01}_3 = 279.2525 \times 10^{-4} = 0.027925.$$
-Total par DV01 equals $0.027925$, matching the bond's modified duration times price times $10^{-4}$.
+Total par DV01 equals $100 \cdot A_3 \times 10^{-4} = 0.027925$, the DV01 of the 3-year par swap on the bootstrapped curve.
+It differs from the bond's own yield DV01, modified duration times price times $10^{-4} = 100 \cdot \frac{1 - 1.04^{-3}}{0.04} \times 10^{-4} = 0.027751$, because bumping the 3-year par quote is a different scenario from bumping the bond's flat $4\%$ yield.
 Notice the critical insight: reporting zero DV01s suggests the bond has exposure to the 1-year and 2-year rates; reporting par DV01s confirms that the benchmark par bond has zero exposure to the 1y and 2y market rates.
 
 ### Example 2: 2s10s curve steepener sizing
 
 A hedge fund initiates a 2s10s steepener with $\$10{,}000$ DV01 on the 10-year leg.
-Market parameters:
+Market parameters: an annual-pay par swap curve with $s_1, \dots, s_{10} = 3.00, 3.50, 3.75, 3.90, 4.00, 4.10, 4.20, 4.30, 4.40, 4.50\%$, bootstrapped as in Note 03 with `bootstrap_single_curve`.
 2-year swap par rate: $s_2 = 3.50\%$, Annuity $A_2 = 1.9042 \implies \text{DV01}_2 = \$190.42$ per million notional.
-10-year swap par rate: $s_{10} = 4.50\%$, Annuity $A_{10} = 8.1109 \implies \text{DV01}_{10} = \$811.09$ per million notional.
+10-year swap par rate: $s_{10} = 4.50\%$, Annuity $A_{10} = 8.0335 \implies \text{DV01}_{10} = \$803.35$ per million notional.
 To achieve $\$10{,}000$ DV01 on the 10-year leg:
-$$N_{10} = \frac{\$10{,}000}{\$811.09 / \text{M}} = \$12.329\text{ million}.$$
-The trader pays fixed on $\$12.329\text{M}$ of 10-year swaps.
+$$N_{10} = \frac{\$10{,}000}{\$803.35 / \text{M}} = \$12.448\text{ million}.$$
+The trader pays fixed on $\$12.448\text{M}$ of 10-year swaps.
 To make the trade duration-neutral, the trader receives fixed on the 2-year swap with matching total DV01 of $\$10{,}000$:
 $$N_2 = \frac{\$10{,}000}{\$190.42 / \text{M}} = \$52.515\text{ million}.$$
 Net parallel DV01 of the package is $\$0$.
@@ -142,27 +143,29 @@ Total profit: $\$100{,}000$.
 ### Example 3: 2s5s10s duration-neutral butterfly weights
 
 A desk constructs a long 2s5s10s butterfly: receive 2y wings, receive 10y wings, pay 5y belly.
-Annuities:
-$A_2 = 1.9042$, $A_5 = 4.4120$, $A_{10} = 8.1109$.
+Annuities from the Example 2 curve ($s_5 = 4.00\%$):
+$A_2 = 1.9042$, $A_5 = 4.4775$, $A_{10} = 8.0335$.
 Assume belly notional $N_5 = \$100\text{ million}$ (payer).
 Belly DV01:
-$$\text{DV01}_5 = 100{,}000{,}000 \cdot 4.4120 \times 10^{-4} = \$44{,}120.$$
-Under a 50/50 barbell allocation, each wing absorbs half of the belly DV01 ($\$22{,}060$):
+$$\text{DV01}_5 = 100{,}000{,}000 \cdot 4.4775 \times 10^{-4} = \$44{,}775.$$
+Under a 50/50 barbell allocation, each wing absorbs half of the belly DV01 ($\$22{,}387.50$):
 2-year wing notional:
-$$N_2 = \frac{\$22{,}060}{1.9042 \times 10^{-4}} = \$115.849\text{ million}.$$
+$$N_2 = \frac{\$22{,}387.50}{1.9042 \times 10^{-4}} = \$117.569\text{ million}.$$
 10-year wing notional:
-$$N_{10} = \frac{\$22{,}060}{8.1109 \times 10^{-4}} = \$27.198\text{ million}.$$
+$$N_{10} = \frac{\$22{,}387.50}{8.0335 \times 10^{-4}} = \$27.868\text{ million}.$$
 Check duration neutrality:
-Total wing DV01: $115.849\text{M} \times 1.9042 \times 10^{-4} + 27.198\text{M} \times 8.1109 \times 10^{-4} = \$22{,}060 + \$22{,}060 = \$44{,}120$.
-Belly DV01: $\$44{,}120$.
+Total wing DV01: $117.569\text{M} \times 1.9042 \times 10^{-4} + 27.868\text{M} \times 8.0335 \times 10^{-4} = \$22{,}387.50 + \$22{,}387.50 = \$44{,}775$.
+Belly DV01: $\$44{,}775$.
 Net DV01 is exactly $\$0$.
 
-### Example 4: real-world case, the September 2022 UK Gilt crisis and LDI margin spirals
+### Example 4: real-world case, the September 2022 UK gilt crisis and LDI collateral spirals
 
-In September 2022, following the UK government's "mini-budget" announcement of unfunded tax cuts, long-dated UK government bond yields experienced an unprecedented shock: the 30-year gilt yield surged by over $130\text{ basis points}$ in three days, while 2-year yields rose far less, causing extreme curve steepening and convexity losses (source: Bank of England, "Financial Stability Report: The Gilt Market Dysfunction of September-October 2022", December 2022).
-UK defined-benefit pension funds operating Liability-Driven Investment (LDI) strategies held long receiver swaps and leveraged gilt positions designed to match long-term pension liabilities on a parallel duration basis.
-Because their hedges were structured on parallel duration assumptions without sufficient collateral buffers for violent curve steepening and basis widening, the funds faced massive variation margin calls exceeding $£30\text{ billion}$.
-To raise cash, the funds were forced into a self-reinforcing fire-sale of gilts, threatening systemic insolvency until the Bank of England intervened with a temporary $£65\text{ billion}$ emergency bond-buying facility.
+In late September 2022, after the UK government's "mini-budget", yields on long-dated gilts rose sharply in a few days.
+UK defined-benefit pension schemes running Liability-Driven Investment (LDI) strategies held leveraged gilt and swap positions that hedged the interest rate risk of their long-dated liabilities.
+On value the hedges worked: as long yields rose, liabilities fell along with the hedge assets.
+The failure was liquidity: leveraged LDI funds faced collateral calls faster than they could raise cash, sold long gilts to meet them, and pushed yields higher, which triggered further calls.
+The Bank of England broke the spiral with temporary purchases of long-dated gilts from 28 September to 14 October 2022 under its financial stability remit (source: Bank of England, statement on the end of gilt market operations, October 2022; Bank of England, *Financial Stability Report*, December 2022).
+The lesson for curve risk is that a DV01-matched hedge still needs a collateral buffer sized for the largest plausible level move at the long end.
 
 ## Pitfalls
 
@@ -203,9 +206,9 @@ To raise cash, the funds were forced into a self-reinforcing fire-sale of gilts,
 > In an upward-sloping curve, the 10-year fixed rate paid exceeds the 2-year fixed rate received.
 > In the absence of rate shifts, the position pays more interest than it receives each period, causing negative carry.
 
-> [!question]- fi-ldi-crisis-duration-failure | Why did parallel duration hedges fail for UK pension funds during the 2022 Gilt crisis?
-> The 30-year yield surged over 130 bps in days while short rates rose much less, producing catastrophic steepening.
-> The funds were duration-neutral to parallel shifts but had massive slope and leverage exposure, triggering fatal variation margin calls.
+> [!question]- fi-ldi-crisis-collateral-spiral | Why did leveraged LDI hedges fail UK pension schemes during the 2022 gilt crisis even though they matched liability rate risk?
+> On value the hedges worked: as long gilt yields jumped, liabilities fell along with the leveraged gilt and swap positions.
+> The failure was liquidity: collateral calls arrived faster than funds could raise cash, forced gilt sales pushed yields higher and triggered more calls, until the Bank of England's temporary gilt purchases broke the spiral.
 
 > [!question]- fi-pca-belly-curvature | Why is the 5-year sector of the yield curve called the "belly" in curvature trades?
 > It sits between the monetary-policy-anchored short end (2-year) and the pension/macro-anchored long end (10-year to 30-year).
@@ -220,7 +223,7 @@ To raise cash, the funds were forced into a self-reinforcing fire-sale of gilts,
 - Litterman and Scheinkman, "Common Factors Affecting Bond Returns", *Journal of Fixed Income*, 1991.
 - Ho, "Key Rate Durations: Measures of Interest Rate Risks", *Journal of Fixed Income*, 1992.
 - Tuckman and Serrat, *Fixed Income Securities*, chapters 4 to 6.
-- Bank of England, *Financial Stability Report*, December 2022 (Analysis of the LDI gilt crisis).
+- Bank of England, *Financial Stability Report*, December 2022.
 
 ## In this repo and SDE-Interview-Prep
 

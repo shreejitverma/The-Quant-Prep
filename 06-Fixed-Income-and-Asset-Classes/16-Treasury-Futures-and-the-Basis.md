@@ -5,7 +5,7 @@ tier: advanced
 status: draft
 prereqs: [bonds-duration-and-convexity, money-markets-repo-and-overnight-rates]
 est_hours: 4
-sources: [CME Group - Treasury Futures Delivery Process and Conversion Factor Specifications, Tuckman and Serrat - Fixed Income Securities 4th ed. chapter 13, Burghardt and Belton - The Treasury Bond Basis 3rd ed., Federal Reserve Board - The Treasury Market in Spring 2020 and the Response of the Federal Reserve 2021]
+sources: [CME Group - Treasury Futures Delivery Process and Conversion Factor Specifications, Tuckman and Serrat - Fixed Income Securities 4th ed. chapter 13, Burghardt and Belton - The Treasury Bond Basis 3rd ed., Barth and Kahn - Hedge Funds and the Treasury Cash-Futures Disconnect OFR Working Paper 21-01 2021]
 ---
 
 # Treasury Futures and the Basis
@@ -16,7 +16,7 @@ sources: [CME Group - Treasury Futures Delivery Process and Conversion Factor Sp
 
 ## TL;DR
 
-- US Treasury futures (TU, FV, TY, US, WN) standardize interest rate risk across benchmark maturities through physical delivery of eligible Treasury securities.
+- US Treasury futures (TU, FV, TY, TN, US, UB) standardize interest rate risk across benchmark maturities through physical delivery of eligible Treasury securities.
 - The CME conversion factor (CF) normalizes coupon and maturity differences by pricing each deliverable bond to yield a hypothetical $6.00\%$.
 - The cheapest-to-deliver (CTD) bond minimizes net basis (or maximizes the Implied Repo Rate) and dictates futures price movements.
 - Delivery options embedded in futures contracts (quality, timing, wild card) give the short position flexibility, causing futures to trade at a discount to theoretical forward prices.
@@ -24,7 +24,7 @@ sources: [CME Group - Treasury Futures Delivery Process and Conversion Factor Sp
 
 ## Learning objectives
 
-- Identify CME Treasury futures contract specifications across the 2-year (TU), 5-year (FV), 10-year (TY), 30-year (US), and Ultra (WN) contracts.
+- Identify CME Treasury futures contract specifications across the 2-year (TU), 5-year (FV), 10-year (TY), Ultra 10-year (TN), Treasury Bond (US), and Ultra Bond (UB) contracts.
 - Calculate conversion factors using the CME formula and explain the mathematical rule determining which bond is cheapest to deliver.
 - Compute gross basis, carry, net basis (basis net of carry), and the Implied Repo Rate (IRR).
 - Describe the three delivery options: quality/switch option, timing option, and wild card option.
@@ -37,9 +37,10 @@ sources: [CME Group - Treasury Futures Delivery Process and Conversion Factor Sp
 CME Group lists standardized Treasury futures covering distinct sectors of the yield curve:
 - 2-Year Treasury Note (TU): Deliverable maturity between $1$ year $9$ months and $2$ years.
 - 5-Year Treasury Note (FV): Deliverable maturity between $4$ years $2$ months and $5$ years $3$ months.
-- 10-Year Treasury Note (TY): Deliverable maturity between $6$ years $6$ months and $7$ years $11$ months (short 10y) or $9$ years $5$ months and $10$ years (standard 10y).
+- 10-Year Treasury Note (TY): Deliverable maturity of at least $6$ years $6$ months and less than $8$ years.
+- Ultra 10-Year Treasury Note (TN): Deliverable maturity between $9$ years $5$ months and $10$ years.
 - Treasury Bond (US): Deliverable maturity between $15$ years and $25$ years.
-- Ultra Treasury Bond (WN): Deliverable maturity of at least $25$ years.
+- Ultra Treasury Bond (UB): Deliverable maturity of at least $25$ years.
 A single futures contract does not reference one specific bond; instead, the short party may choose to deliver any Treasury issue satisfying the contract's maturity criteria.
 
 ### The conversion factor system
@@ -63,7 +64,8 @@ $$\text{Gross Basis} = P_{\text{spot}}^{\text{clean}} - F \times \text{CF}.$$
 Holding the cash bond to delivery generates carry:
 $$\text{Carry} = \text{Coupon Accrued to Delivery} - \text{Financing Cost} = AI_{\text{delivery}} - AI_{\text{spot}} - P_{\text{spot}}^{\text{dirty}} \cdot r_{\text{repo}} \cdot \frac{d}{360}.$$
 The net basis (basis net of carry) subtracts carry from gross basis:
-$$\text{Net Basis} = \text{Gross Basis} - \text{Carry} = P_{\text{spot}}^{\text{dirty}} - \left( F \times \text{CF} + AI_{\text{delivery}} \right) P_{\text{disc}}(0, T_{\text{del}}).$$
+$$\text{Net Basis} = \text{Gross Basis} - \text{Carry} = P_{\text{spot}}^{\text{dirty}} \left( 1 + r_{\text{repo}} \frac{d}{360} \right) - \left( F \times \text{CF} + AI_{\text{delivery}} \right).$$
+The net basis is therefore the gap between the bond's repo-financed forward dirty price and the invoice price, both measured at delivery.
 The cheapest-to-deliver (CTD) bond is the issue with the lowest net basis.
 Alternatively, the CTD maximizes the Implied Repo Rate (IRR):
 $$\text{IRR} = \frac{F \times \text{CF} + AI_{\text{delivery}} - P_{\text{spot}}^{\text{dirty}}}{P_{\text{spot}}^{\text{dirty}}} \times \frac{360}{d}.$$
@@ -76,15 +78,15 @@ General CTD selection rules based on the level of market yields:
 Because the short position holds several strategic choices, the futures contract trades at a discount to the theoretical forward price of the CTD bond:
 1. Quality option (switch option): The short party can switch delivery to a different bond if market yields move or if a specific issue becomes cheap in repo.
 2. Timing option: The short party can choose to deliver on any business day during the delivery month, choosing whether to collect carry on the cash bond or deliver early.
-3. Wild card option: CME futures trading halts at 2:00 p.m. Central Time, fixing the futures settlement price, but the short party has until 8:00 p.m. to submit a notice of intention to deliver.
-If cash Treasury prices fall sharply after 2:00 p.m., the short party can buy depressed cash bonds and immediately deliver them at the locked-in 2:00 p.m. futures price.
+3. Wild card option: the invoice price uses the futures settlement price, which CME sets at 2:00 p.m. Central Time, but the short party can submit its notice of intention to deliver until the clearing house deadline later that evening (see the CME rulebook for the current time).
+If cash Treasury prices fall sharply after the settlement price is set, the short party can buy cheaper cash bonds and deliver them against the already-fixed settlement price.
 The value of these options is reflected in the positive net basis of the CTD bond.
 
 ### The cash-futures basis trade and funding risk
 
 The basis trade is an arbitrage strategy executed by hedge funds and relative value desks:
 - Long the cash Treasury bond (CTD).
-- Short the Treasury futures contract sized by the conversion factor: $N_{\text{fut}} = \frac{N_{\text{cash}}}{\text{CF}}$.
+- Short the Treasury futures contract sized by the conversion factor: $N_{\text{fut}} = N_{\text{cash}} \times \text{CF}$, because $F \approx P_{\text{CTD}} / \text{CF}$ makes one contract move $1/\text{CF}$ times as much as the same face amount of the CTD.
 - Finance the cash bond in the bilateral or cleared repo market.
 Because net basis represents the value of delivery options, the trade captures carry and basis convergence towards expiration.
 Because gross margins are thin (a few basis points), hedge funds typically lever the trade $20\text{x}$ to $50\text{x}$ via overnight or short-term repo.
@@ -97,7 +99,7 @@ The critical vulnerability is funding liquidity risk: if overnight repo rates sp
 - Algorithm: compute CF using CME analytical formula; evaluate invoice price for each deliverable; calculate IRR; sort bonds descending by IRR.
 - Complexity: $O(M)$ where $M$ is the number of bonds in the deliverable basket (typically 15 to 30 bonds).
 - Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `cme_conversion_factor` and `treasury_futures_basis`.
-- System context: intraday risk and pre-trade limits (planned section 18) (planned section).
+- System context: intraday risk and pre-trade limits (planned section).
 
 ## Worked examples
 
@@ -152,23 +154,25 @@ $$\text{IRR}_C = \frac{111.50 - 111.50}{111.50} \times \frac{360}{90} = 0.000\%.
 Comparing the two issues:
 Bond A offers an IRR of $2.687\%$, whereas Bond C offers an IRR of $0.000\%$.
 Because Bond A has the higher IRR (and lower gross basis), Bond A is significantly cheaper to deliver than Bond C.
+This outcome departs from the yield-level rule above only because the two prices are not set off one yield.
+Bond A's $94.00$ implies a semiannual yield of about $4.761\%$, while Bond C's $111.00$ implies about $4.614\%$, so Bond C trades rich to Bond A.
+Priced at Bond A's $4.761\%$ yield, Bond C would be worth $109.7665$, giving $\text{IRR}_C = \frac{111.50 - 110.2665}{110.2665} \times 4 = 4.475\%$, and Bond C, the lower-duration bond, would be cheapest to deliver as the rule predicts.
 
 ### Example 4: real-world case, the March 2020 Treasury basis blowout
 
-In early March 2020, extreme economic uncertainty surrounding the spread of COVID-19 triggered a massive flight to safety across global asset markets.
-Large macro asset managers rapidly reallocated billions of dollars out of equities and into Treasury futures, pushing futures prices to substantial premiums relative to cash Treasuries.
-Relative-value hedge funds aggressively scaled up their cash-futures basis positions, purchasing cheap cash Treasuries and shorting expensive futures contracts, funding their positions with up to $40\text{x}$ to $60\text{x}$ leverage via the bilateral repo market (source: Federal Reserve Board, "The Treasury Market in Spring 2020 and the Response of the Federal Reserve", FEDS Notes, June 2021).
-However, as prime broker dealers faced their own balance sheet limits under the Supplementary Leverage Ratio (SLR), repo haircuts expanded and overnight liquidity dried up.
-Simultaneously, bid-ask spreads on off-the-run Treasuries exploded from fractions of a basis point to over $10\text{ to }20\text{ basis points}$.
-Unable to finance their cash bond inventory, hedge funds were hit with cascading margin calls and forced into fire-sales of cash Treasuries, causing cash yields to spike even as equity markets crashed.
-The basis trade unwound violently until the Federal Reserve intervened on March 15, 2020, committing to purchase over $\$1.6\text{ trillion}$ in Treasuries and offering unlimited repo liquidity.
+In March 2020, the COVID-19 dash for cash hit the Treasury market.
+Relative-value hedge funds held large cash-futures basis positions: long cash Treasuries financed in repo, short Treasury futures.
+Barth and Kahn estimate that at its peak the trade was associated with more than half of hedge funds' Treasury positions and about a quarter of dealers' repo lending (source: Barth and Kahn, "Hedge Funds and the Treasury Cash-Futures Disconnect", OFR Working Paper 21-01, 2021).
+As cash Treasuries cheapened against futures, repo terms tightened and dealer balance sheets were constrained, so margin calls forced funds to unwind by selling cash Treasuries into an already illiquid market.
+The Federal Reserve announced purchases of at least $\$500\text{ billion}$ of Treasuries on 15 March 2020 and made the purchases open-ended on 23 March 2020.
+Barth and Kahn conclude that the hedge fund selling was more a consequence of the market disruption than its root cause.
 
 ## Pitfalls
 
 - Using clean prices instead of dirty prices in the Implied Repo Rate calculation, miscalculating financing costs.
 - Assuming the CTD bond is fixed: yield shifts can cause the CTD to switch abruptly to a different issue in the basket.
 - Neglecting the delivery options embedded in futures contracts, leading to overestimation of theoretical futures values.
-- Miscalculating hedge ratios: hedging a cash bond with futures requires scaling notional by the conversion factor: $N_{\text{fut}} = \frac{N_{\text{cash}}}{\text{CF}}$.
+- Miscalculating hedge ratios: hedging the CTD with futures requires scaling notional by the conversion factor, $N_{\text{fut}} = N_{\text{cash}} \times \text{CF}$; dividing by CF over-hedges by a factor of $1/\text{CF}^2$.
 - Assuming repo funding is permanent: funding cash bonds with overnight repo creates catastrophic rollover and liquidity risk during market stress.
 
 ## Interview questions
@@ -194,20 +198,20 @@ The basis trade unwound violently until the Federal Reserve intervened on March 
 > Net basis subtracts the carry (coupon earned minus repo financing cost) to delivery: $\text{Net Basis} = \text{Gross Basis} - \text{Carry}$.
 
 > [!question]- fi-futures-wild-card-option | Explain the wild card delivery option embedded in Treasury futures.
-> CME futures settlement prices lock at 2:00 p.m. Central Time, but the short party has until 8:00 p.m. to issue a delivery notice.
-> If cash bond prices plunge between 2:00 p.m. and 8:00 p.m., the short can purchase cheap cash bonds and deliver them at the higher 2:00 p.m. price.
+> The invoice price uses the futures settlement price set at 2:00 p.m. Central Time, but the short can give notice of intention to deliver until the clearing house deadline later that evening.
+> If cash bond prices fall in that window, the short can buy the cheaper bonds and deliver them at the earlier, higher settlement price.
 
 > [!question]- fi-basis-trade-leverage-hazard | Why do cash-futures basis trades rely on high leverage and what makes this risky?
 > The basis spread between cash and futures is only a few basis points, requiring 20x to 50x leverage to achieve attractive returns.
 > If repo funding rates spike or haircuts increase, the desk faces margin calls on both cash and futures, risking forced liquidation.
 
 > [!question]- fi-futures-hedge-ratio-cf | If you hold $\$10\text{M}$ of a cash bond with $\text{CF} = 0.85$, how many futures contracts (face value $\$100{,}000$) do you short to hedge?
-> Notional required: $\frac{\$10{,}000{,}000}{0.85} = \$11{,}764{,}706$.
-> Short $\frac{\$11{,}764{,}706}{\$100{,}000} \approx 118$ contracts.
+> Futures notional required: $\$10{,}000{,}000 \times 0.85 = \$8{,}500{,}000$, because one contract moves $1/\text{CF}$ times as much as the same face of the CTD.
+> Short $\frac{\$8{,}500{,}000}{\$100{,}000} = 85$ contracts.
 
 > [!question]- fi-march-2020-basis-dislocation | What caused the Treasury basis trade to blow out in March 2020?
-> Heavy asset manager buying pushed futures to large premiums, but repo market dislocations and bank balance sheet constraints prevented arbitrageurs from financing cash bonds.
-> Hedge funds faced margin spirals and fire-sold cash Treasuries, driving cash prices down and futures up.
+> In the dash for cash, cash Treasuries cheapened sharply against futures while repo terms tightened and dealer balance sheets were constrained.
+> Leveraged basis funds faced margin calls and unwound, selling cash Treasuries into an illiquid market and widening the basis further.
 
 > [!question]- fi-ctd-switch-risk | What is switch risk for a trader running a cash-futures basis trade?
 > The risk that yield curve shifts or repo rate moves cause the CTD bond to switch to a different issue in the basket.
@@ -218,7 +222,7 @@ The basis trade unwound violently until the Federal Reserve intervened on March 
 - CME Group, *Treasury Futures Delivery Process and Conversion Factor Specifications*.
 - Tuckman and Serrat, *Fixed Income Securities*, chapter 13.
 - Burghardt and Belton, *The Treasury Bond Basis: An In-Depth Guide to the US Treasury Markets*, 3rd ed.
-- Federal Reserve Board, *The Treasury Market in Spring 2020 and the Response of the Federal Reserve*, FEDS Notes, 2021.
+- Barth and Kahn, *Hedge Funds and the Treasury Cash-Futures Disconnect*, OFR Working Paper 21-01, 2021.
 
 ## In this repo and SDE-Interview-Prep
 

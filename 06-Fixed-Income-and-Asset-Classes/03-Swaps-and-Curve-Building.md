@@ -84,7 +84,7 @@ This recursive algorithm is triangular and solves in $O(m)$ operations without i
 - Algorithm: generate cash flow schedule for both legs, lookup discount factors for payment dates, project forward rates on floating dates, multiply and sum.
 - Complexity: $O(n)$ where $n$ is the number of payment periods in the swap.
 - Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `par_swap_rate_single_curve`, `swap_annuity`, and `bootstrap_single_curve`.
-- System context: the curve and surface service (planned section 18) (planned section).
+- System context: the curve and surface service (planned section).
 
 ## Worked examples
 
@@ -131,15 +131,15 @@ The desk is exposed to falling rates and wants to hedge directional curve risk u
 Annuity of 3-year swap: $A_3 = 2.792525 \implies \text{DV01}_3 = 27{,}925.25$.
 Annuity of 1-year swap: $A_1 = P(0, 1) = 0.970874 \implies \text{DV01}_1 = 9{,}708.74$ per $100{,}000{,}000$ notional.
 Hedge ratio:
-$$N_1 = N_3 \cdot \frac{A_3}{A_1} = 100{,}000{,}000 \cdot \frac{2.792525}{0.970874} = 287{,}629{,}987.$$
+$$N_1 = N_3 \cdot \frac{A_3}{A_1} = 100{,}000{,}000 \cdot \frac{2.792525}{0.970874} = 287{,}630{,}063.$$
 The trader pays fixed on $287.63$ million of 1-year swaps to neutralize parallel curve exposure.
 Residual curve risk remains: if the curve steepens (1-year rate falls while 3-year rate rises), the position suffers losses on both legs.
 
 ### Example 4: real-world case, the 2008 Lehman collapse and single-curve breakdown
 
-Prior to August 2007, the spread between 3-month USD LIBOR and the overnight Fed Funds OIS rate traded in a tight 5 to 10 basis point band.
+Prior to August 2007, the spread between 3-month USD LIBOR and the overnight Fed Funds OIS rate was small and stable.
 Single-curve swap models treated the Libor forwarding rate and the discounting rate as identical.
-During the global financial crisis of 2008 and following Lehman Brothers' default in September 2008, the 3-month Libor-OIS spread blew out to an unprecedented peak of 364 basis points in October 2008 (source: Federal Reserve Bank of St. Louis FRED series `TEDRATE` and `USD3MTD156N`).
+During the global financial crisis of 2008 and following Lehman Brothers' default in September 2008, the 3-month Libor-OIS spread blew out to about 365 basis points on 10 October 2008 (source: Sengupta and Tam, "The LIBOR-OIS Spread as a Summary Indicator", Federal Reserve Bank of St. Louis Economic Synopses, 2008).
 Because swap collateral posted under standard Credit Support Annexes earned the overnight rate, discounting future swap cash flows at Libor significantly mispriced counterparty and replacement costs.
 The crisis forced the global derivatives industry to abandon single-curve pricing and adopt the multi-curve framework.
 
@@ -148,7 +148,7 @@ The crisis forced the global derivatives industry to abandon single-curve pricin
 - Assuming floating leg cash flows telescope in modern multi-curve markets: telescoping occurs only when forwarding and discounting curves are identical.
 - Overlooking payment frequency mismatches between legs: an annual fixed leg versus quarterly floating leg requires separate schedule generators.
 - Using clean par rates without adjusting for differing day-count conventions on the fixed leg (30/360) and floating leg (ACT/360).
-- Confusing payer and receiver conventions: a payer swap is long interest rates (benefits when rates rise) and has positive duration.
+- Confusing payer and receiver conventions: a payer swap is short duration (benefits when rates rise), so its duration $-\frac{1}{V}\frac{\partial V}{\partial y}$ is negative.
 - Extrapolating the curve beyond the longest liquid swap pillar with flat zero rates instead of flat forward rates.
 
 ## Interview questions
@@ -181,7 +181,7 @@ The crisis forced the global derivatives industry to abandon single-curve pricin
 > Execute 4.474 times the notional in the 2-year swap with the opposite direction.
 
 > [!question]- fi-single-curve-breakdown | Why did single-curve swap pricing break down during the 2008 financial crisis?
-> Credit and liquidity risk drove the 3-month Libor-OIS spread from 10 bps to over 360 bps.
+> Credit and liquidity risk drove the 3-month Libor-OIS spread from a small, stable level to about 365 bps in October 2008.
 > Swap collateral posted under CSAs earned the overnight rate, requiring overnight OIS discounting while floating cash flows reflected Libor risk.
 
 > [!question]- fi-bootstrap-triangular | Why is standard swap bootstrapping triangular rather than requiring an iterative multi-dimensional solver?
@@ -189,7 +189,7 @@ The crisis forced the global derivatives industry to abandon single-curve pricin
 
 > [!question]- fi-swap-daycount-friction | How does day count convention mismatch between fixed leg (30/360) and floating leg (ACT/360) affect par rate quoting?
 > $1$ year on 30/360 is $\frac{360}{360} = 1.0$, whereas on ACT/360 it is $\frac{365}{360} \approx 1.0139$.
-> Ignoring this convention mismatch causes systematic pricing discrepancies of several tenths of a basis point.
+> Ignoring the mismatch misstates a year's accrual by $\frac{365}{360} - 1 = 1.39\%$, which on a $4\%$ coupon is $0.04 \times \frac{5}{360} = 5.56$ bps of running rate.
 
 ## Further reading
 

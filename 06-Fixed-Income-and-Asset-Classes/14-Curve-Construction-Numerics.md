@@ -60,7 +60,7 @@ The choice of interpolation variable and functional form dictates the shape of t
 | Method | Interpolated Variable | Implied Forward Rate $f(0, t)$ | Properties and Production Pitfalls |
 | :--- | :--- | :--- | :--- |
 | Log-linear on $P$ | $\ln P(t)$ linear | Piecewise constant | Simple, robust, guarantees $P > 0$; forward rates jump discontinuously at pillars. |
-| Linear on $z$ | $z(t) = -\frac{\ln P}{t}$ linear | $f(t) = z(t) + t z'(t)$ linear | Forwards are continuous but exhibit saw-tooth spikes at pillars; $z'(t)$ jumps. |
+| Linear on $z$ | $z(t) = -\frac{\ln P}{t}$ linear | $f(t) = z(t) + t z'(t)$ piecewise linear | $z'(t)$ jumps at each pillar $T_k$, so forwards jump by $T_k$ times that change, giving a saw-tooth. |
 | Natural Cubic Spline | $z(t)$ or $P(t)$ $C^2$ cubic | Smooth quadratic or rational | Visually smooth; non-local oscillations can produce negative forward rates. |
 | Monotone Convex | Forward rates $f(t)$ | Continuous, monotone | Hagan-West (2006); eliminates spurious oscillations while preserving monotonicity. |
 
@@ -106,7 +106,7 @@ Inverting $J_{\mathbf{s}, \mathbf{z}}$ via back-substitution provides $J_{\mathb
 - Algorithm: triangular forward substitution for bootstrapping; Newton-Raphson iteration with Jacobian if non-linear; analytical evaluation of $P(t)$ and $f(t)$.
 - Complexity: $O(n)$ for triangular bootstrap; $O(n^2)$ for analytical Jacobian construction and inversion.
 - Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `DiscountCurve`, `swap_jacobian`, and `map_zero_risk_to_par_risk`.
-- System context: the curve and surface service (planned section 18) (planned section).
+- System context: the curve and surface service (planned section).
 
 ## Worked examples
 
@@ -166,13 +166,6 @@ $$\frac{\partial PV}{\partial s_1} = (-3.8835)(0.970874) + (-7.4668)(-0.017076) 
 $$\frac{\partial PV}{\partial s_2} = (-7.4668)(0.985604) + (-277.1493)(-0.026554) = -7.3593 + 7.3593 = 0.0000.$$
 $$\frac{\partial PV}{\partial s_3} = (-277.1493)(1.007589) = -279.2525 = -100 \cdot A_3.$$
 The Jacobian maps zero risk into exact par market risk: the 3-year par bond has zero sensitivity to 1-year and 2-year market par quotes, and exactly $-A_3 \times 100$ sensitivity to the 3-year market quote.
-
-### Example 4: real-world case, cubic spline failure in negative rate regimes
-
-During the 2011 to 2016 period of ultra-low and negative interest rates in Japan and the Eurozone, major investment banks discovered that legacy curve construction libraries using natural cubic splines on zero rates produced severe anomalies (source: Le Floc'h, "More on the Hagan-West Monotone Convex Interpolator", 2014; Bank of Japan Financial System Report, October 2016).
-Between the 7-year and 10-year swap pillars, the cubic spline dipped, generating negative forward rates in periods where all observed deposit and swap rates were strictly positive.
-Hedge funds detected this mathematical artifact and executed risk-free forward rate box trades against dealers whose automated pricing models relied on unconstrained splines.
-This flaw forced top-tier banks to decommission natural cubic splines across front-office pricing engines and replace them with monotone convex interpolation.
 
 ## Pitfalls
 

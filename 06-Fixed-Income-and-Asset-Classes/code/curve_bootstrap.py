@@ -285,13 +285,8 @@ def main() -> None:
     proj_curve = DiscountCurve([1.0, 2.0], proj_dfs)
     s_dual = par_swap_rate_dual_curve(ois_curve, proj_curve, [1.0, 2.0])
 
-    f1 = proj_curve.forward_rate(0.0, 1.0)
-    f2 = proj_curve.forward_rate(1.0, 2.0)
-    pv_float_expected = p1_expected * f1 + p2_expected * f2
-    s_dual_expected = pv_float_expected / (p1_expected + p2_expected)
-    assert abs(s_dual - s_dual_expected) < 1e-12
-    # Verify dual-curve par swap rate is 3.6913%
-    assert abs(s_dual - 0.036913) < 1e-4
+    # Hand-computed in note 13 Example 1: 0.0702914 / 1.9042259 = 3.69134%.
+    assert abs(s_dual - 0.0369134) < 1e-7
 
     # 5. Treasury futures conversion factor & basis
     cf_4 = cme_conversion_factor(0.04, 10)
