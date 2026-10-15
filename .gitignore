@@ -20,6 +20,17 @@ build/
 16-Trading-and-Investing/Private/*
 !16-Trading-and-Investing/Private/README.md
 
+# CFA: copyrighted third-party material (curriculum extracts, prep-provider slides) and personal
+# study logs never leave this machine; the pipeline's curriculum extracts live in build/ (ignored above)
+17-CFA/Private/*
+!17-CFA/Private/README.md
+17-CFA/CFA-L-2/22-Attempts/*
+!17-CFA/CFA-L-2/22-Attempts/.gitkeep
+17-CFA/CFA-L-2/23-Error-Log/*
+!17-CFA/CFA-L-2/23-Error-Log/.gitkeep
+17-CFA/CFA-L-2/24-Weekly-Reviews/*
+!17-CFA/CFA-L-2/24-Weekly-Reviews/.gitkeep
+
 # Private overlay (question banks and notes that must never be published); qp loads it locally
 private/
 

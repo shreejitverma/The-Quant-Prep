@@ -1,0 +1,438 @@
+{
+ "nodes": [
+  {
+   "id": "LM01-Intercorporate-Investments",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM01-Intercorporate-Investments.md",
+   "x": 0,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM02-Employee-Compensation-Post-Employment-and-Share-Based.md",
+   "x": 460,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM03-Multinational-Operations",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM03-Multinational-Operations.md",
+   "x": 920,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM04-Analysis-of-Financial-Institutions",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM04-Analysis-of-Financial-Institutions.md",
+   "x": 1380,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM05-Evaluating-Quality-of-Financial-Reports.md",
+   "x": 0,
+   "y": 260,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM06-Integration-of-Financial-Statement-Analysis-Techniques.md",
+   "x": 460,
+   "y": 260,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM05-Residual-Income-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM05-Residual-Income-Valuation.md",
+   "x": 2000,
+   "y": 260,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Corporate-Restructuring",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/04-Corporate-Issuers/LM04-Corporate-Restructuring.md",
+   "x": 2000,
+   "y": 520,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM03-Free-Cash-Flow-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM03-Free-Cash-Flow-Valuation.md",
+   "x": 2000,
+   "y": 780,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/04-Corporate-Issuers/LM01-Analysis-of-Dividends-and-Share-Repurchases.md",
+   "x": 2000,
+   "y": 1040,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/02-Economics/LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value.md",
+   "x": 2000,
+   "y": 1300,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/07-Derivatives/LM01-Pricing-and-Valuation-of-Forward-Commitments.md",
+   "x": 2000,
+   "y": 1560,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Credit-Analysis-Models",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM04-Credit-Analysis-Models.md",
+   "x": 2000,
+   "y": 1820,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM05-Measuring-and-Managing-Market-Risk",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM05-Measuring-and-Managing-Market-Risk.md",
+   "x": 2000,
+   "y": 2080,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples.md",
+   "x": 2000,
+   "y": 2340,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  }
+ ],
+ "edges": [
+  {
+   "id": "LM01-Intercorporate-Investments->LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromNode": "LM01-Intercorporate-Investments",
+   "toNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the same OCI-versus-profit-or-loss discipline used for FVOCI assets governs pens"
+  },
+  {
+   "id": "LM01-Intercorporate-Investments->LM03-Multinational-Operations",
+   "fromNode": "LM01-Intercorporate-Investments",
+   "toNode": "LM03-Multinational-Operations",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "consolidation of foreign subsidiaries applies the acquisition method mechanics h"
+  },
+  {
+   "id": "LM01-Intercorporate-Investments->LM04-Analysis-of-Financial-Institutions",
+   "fromNode": "LM01-Intercorporate-Investments",
+   "toNode": "LM04-Analysis-of-Financial-Institutions",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "banks hold most of their balance sheet in IFRS 9 categories, so the amortized co"
+  },
+  {
+   "id": "LM01-Intercorporate-Investments->LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromNode": "LM01-Intercorporate-Investments",
+   "toNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "choice of equity method versus consolidation, SPE structuring and goodwill impai"
+  },
+  {
+   "id": "LM01-Intercorporate-Investments->LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromNode": "LM01-Intercorporate-Investments",
+   "toNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the ratio comparison table here is applied in the integration case, where the an"
+  },
+  {
+   "id": "LM01-Intercorporate-Investments->LM05-Residual-Income-Valuation",
+   "fromNode": "LM01-Intercorporate-Investments",
+   "toNode": "LM05-Residual-Income-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "residual income models start from book value of equity, which depends on whether"
+  },
+  {
+   "id": "LM01-Intercorporate-Investments->LM04-Corporate-Restructuring",
+   "fromNode": "LM01-Intercorporate-Investments",
+   "toNode": "LM04-Corporate-Restructuring",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "acquisitions are analysed in corporate issuers for value creation; this module s"
+  },
+  {
+   "id": "LM02-Employee-Compensation-Post-Employment-and-Share-Based->LM01-Intercorporate-Investments",
+   "fromNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "toNode": "LM01-Intercorporate-Investments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the same fair value and net-presentation logic (funded status is one of the few "
+  },
+  {
+   "id": "LM02-Employee-Compensation-Post-Employment-and-Share-Based->LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "toNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "pension assumptions (discount rate, salary growth, expected return, volatility) "
+  },
+  {
+   "id": "LM02-Employee-Compensation-Post-Employment-and-Share-Based->LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "toNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the analyst adjustments here (SBC out of FCF, net pension liability into debt, a"
+  },
+  {
+   "id": "LM02-Employee-Compensation-Post-Employment-and-Share-Based->LM03-Free-Cash-Flow-Valuation",
+   "fromNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "toNode": "LM03-Free-Cash-Flow-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "this module decides what FCFF and FCFE contain: service cost expensed, net inter"
+  },
+  {
+   "id": "LM02-Employee-Compensation-Post-Employment-and-Share-Based->LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "toNode": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "buybacks that offset SBC dilution are why the curriculum treats SBC as economica"
+  },
+  {
+   "id": "LM03-Multinational-Operations->LM01-Intercorporate-Investments",
+   "fromNode": "LM03-Multinational-Operations",
+   "toNode": "LM01-Intercorporate-Investments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "translation is applied to a subsidiary that has already been consolidated with t"
+  },
+  {
+   "id": "LM03-Multinational-Operations->LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromNode": "LM03-Multinational-Operations",
+   "toNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the functional currency designation, the placement of transaction gains in opera"
+  },
+  {
+   "id": "LM03-Multinational-Operations->LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromNode": "LM03-Multinational-Operations",
+   "toNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the integration case decomposes reported growth into organic and currency compon"
+  },
+  {
+   "id": "LM03-Multinational-Operations->LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "fromNode": "LM03-Multinational-Operations",
+   "toNode": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the direction of the currency move is the input to every table here; purchasing "
+  },
+  {
+   "id": "LM03-Multinational-Operations->LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromNode": "LM03-Multinational-Operations",
+   "toNode": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "forward contracts and options are the instruments companies use to hedge the tra"
+  },
+  {
+   "id": "LM04-Analysis-of-Financial-Institutions->LM01-Intercorporate-Investments",
+   "fromNode": "LM04-Analysis-of-Financial-Institutions",
+   "toNode": "LM01-Intercorporate-Investments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the IFRS 9 categories (amortised cost, FVOCI, FVTPL), the US GAAP debt "
+  },
+  {
+   "id": "LM04-Analysis-of-Financial-Institutions->LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromNode": "LM04-Analysis-of-Financial-Institutions",
+   "toNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "benefit plans are the \"off-balance-sheet\" item whose funding shortfalls can drai"
+  },
+  {
+   "id": "LM04-Analysis-of-Financial-Institutions->LM03-Multinational-Operations",
+   "fromNode": "LM04-Analysis-of-Financial-Institutions",
+   "toNode": "LM03-Multinational-Operations",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "currency translation adjustments reduce a global bank's capital when the home cu"
+  },
+  {
+   "id": "LM04-Analysis-of-Financial-Institutions->LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromNode": "LM04-Analysis-of-Financial-Institutions",
+   "toNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the discretionary-versus-objective test (allowance versus charge-offs, reserve r"
+  },
+  {
+   "id": "LM04-Analysis-of-Financial-Institutions->LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromNode": "LM04-Analysis-of-Financial-Institutions",
+   "toNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "common-size analysis of assets and revenues, and the habit of decomposing a rati"
+  },
+  {
+   "id": "LM04-Analysis-of-Financial-Institutions->LM04-Credit-Analysis-Models",
+   "fromNode": "LM04-Analysis-of-Financial-Institutions",
+   "toNode": "LM04-Credit-Analysis-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "expected loss, probability of default, and loss given default are the modelling "
+  },
+  {
+   "id": "LM04-Analysis-of-Financial-Institutions->LM05-Measuring-and-Managing-Market-Risk",
+   "fromNode": "LM04-Analysis-of-Financial-Institutions",
+   "toNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "VaR mechanics, confidence level, holding period, and the limits of VaR as a sing"
+  },
+  {
+   "id": "LM05-Evaluating-Quality-of-Financial-Reports->LM01-Intercorporate-Investments",
+   "fromNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "toNode": "LM01-Intercorporate-Investments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the equity method (why an unconsolidated 49% investee overstates return"
+  },
+  {
+   "id": "LM05-Evaluating-Quality-of-Financial-Reports->LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "toNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "pension discount rate and other actuarial estimates are the unbiased-measurement"
+  },
+  {
+   "id": "LM05-Evaluating-Quality-of-Financial-Reports->LM03-Multinational-Operations",
+   "fromNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "toNode": "LM03-Multinational-Operations",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "translation adjustments in OCI, functional currency choices, and the segment-shi"
+  },
+  {
+   "id": "LM05-Evaluating-Quality-of-Financial-Reports->LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "toNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "takes the balance-sheet-based and cash-flow-based accruals ratios (Formulas 17 a"
+  },
+  {
+   "id": "LM05-Evaluating-Quality-of-Financial-Reports->LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "toNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "normalized earnings and the treatment of non-recurring items feed the E in P/E; "
+  },
+  {
+   "id": "LM05-Evaluating-Quality-of-Financial-Reports->LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "toNode": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the cash flow quality test that OCF covers capex, dividends, and debt repayment "
+  },
+  {
+   "id": "LM06-Integration-of-Financial-Statement-Analysis-Techniques->LM01-Intercorporate-Investments",
+   "fromNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "toNode": "LM01-Intercorporate-Investments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the equity method is why income from associates appears as a single after-tax li"
+  },
+  {
+   "id": "LM06-Integration-of-Financial-Statement-Analysis-Techniques->LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "toNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the IAS 19 revision that changed benefit obligations is the reason the 2011 bala"
+  },
+  {
+   "id": "LM06-Integration-of-Financial-Statement-Analysis-Techniques->LM03-Multinational-Operations",
+   "fromNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "toNode": "LM03-Multinational-Operations",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "translating the L'Or\u00e9al holding from EUR to CHF and the translation reserve insi"
+  },
+  {
+   "id": "LM06-Integration-of-Financial-Statement-Analysis-Techniques->LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "toNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "defines the balance-sheet and cash-flow accruals ratios, the CFO-to-operating-in"
+  },
+  {
+   "id": "LM06-Integration-of-Financial-Statement-Analysis-Techniques->LM03-Free-Cash-Flow-Valuation",
+   "fromNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "toNode": "LM03-Free-Cash-Flow-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "FCFE and FCFF are the formal versions of the cash flow after reinvestment used h"
+  },
+  {
+   "id": "LM06-Integration-of-Financial-Statement-Analysis-Techniques->LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "toNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the implied Nestl\u00e9-only P/E after removing L'Or\u00e9al is a sum-of-the-parts applica"
+  }
+ ]
+}

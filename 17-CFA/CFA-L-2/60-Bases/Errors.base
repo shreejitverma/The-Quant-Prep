@@ -1,0 +1,38 @@
+filters:
+  and:
+    - type == "cfa-error"
+views:
+  - type: table
+    name: Unresolved
+    filters:
+      and:
+        - resolved != true
+    order:
+      - date
+      - lm
+      - los
+      - cause
+      - rule
+    sort:
+      - property: date
+        direction: DESC
+  - type: table
+    name: By cause
+    groupBy:
+      property: cause
+    order:
+      - date
+      - lm
+      - los
+      - rule
+      - resolved
+  - type: table
+    name: By module
+    groupBy:
+      property: lm
+    order:
+      - date
+      - los
+      - cause
+      - rule
+      - resolved

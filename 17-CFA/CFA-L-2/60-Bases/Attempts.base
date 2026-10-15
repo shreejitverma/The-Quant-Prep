@@ -1,0 +1,35 @@
+filters:
+  and:
+    - type == "cfa-attempt"
+formulas:
+  percent: round(100 * score / max)
+views:
+  - type: table
+    name: All attempts
+    order:
+      - date
+      - source
+      - topic
+      - score
+      - max
+      - formula.percent
+      - minutes_used
+      - confidence
+    sort:
+      - property: date
+        direction: DESC
+  - type: table
+    name: Mocks
+    filters:
+      and:
+        - source.contains("Mock")
+    order:
+      - date
+      - source
+      - score
+      - max
+      - formula.percent
+      - minutes_used
+    sort:
+      - property: date
+        direction: ASC

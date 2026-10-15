@@ -1,0 +1,443 @@
+{
+ "nodes": [
+  {
+   "id": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions.md",
+   "x": 0,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results.md",
+   "x": 460,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM03-Model-Misspecification",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM03-Model-Misspecification.md",
+   "x": 920,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM04-Extensions-of-Multiple-Regression",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM04-Extensions-of-Multiple-Regression.md",
+   "x": 1380,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM05-Time-Series-Analysis",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM05-Time-Series-Analysis.md",
+   "x": 0,
+   "y": 260,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM06-Machine-Learning",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM06-Machine-Learning.md",
+   "x": 460,
+   "y": 260,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM07-Big-Data-Projects",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM07-Big-Data-Projects.md",
+   "x": 920,
+   "y": 260,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM04-Using-Multifactor-Models",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM04-Using-Multifactor-Models.md",
+   "x": 2000,
+   "y": 260,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM06-Backtesting-and-Simulation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM06-Backtesting-and-Simulation.md",
+   "x": 2000,
+   "y": 520,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM02-Economic-Growth",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/02-Economics/LM02-Economic-Growth.md",
+   "x": 2000,
+   "y": 780,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  }
+ ],
+ "edges": [
+  {
+   "id": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions->LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "fromNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "toNode": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "takes the Exhibit 4 output shown here (R-squared, adjusted R-squared, F, t-stati"
+  },
+  {
+   "id": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions->LM03-Model-Misspecification",
+   "fromNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "toNode": "LM03-Model-Misspecification",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the five assumptions listed here are tested formally there (Breusch-Pagan for he"
+  },
+  {
+   "id": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions->LM04-Extensions-of-Multiple-Regression",
+   "fromNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "toNode": "LM04-Extensions-of-Multiple-Regression",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "dummy independent variables mentioned here as discrete regressors, the logistic "
+  },
+  {
+   "id": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions->LM05-Time-Series-Analysis",
+   "fromNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "toNode": "LM05-Time-Series-Analysis",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the independence-of-errors assumption is the one most often broken with monthly "
+  },
+  {
+   "id": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions->LM06-Machine-Learning",
+   "fromNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "toNode": "LM06-Machine-Learning",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supervised learning generalises the regression process here, and penalised regre"
+  },
+  {
+   "id": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions->LM07-Big-Data-Projects",
+   "fromNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "toNode": "LM07-Big-Data-Projects",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the model-building loop (specify, estimate, diagnose, adjust) reappears as the d"
+  },
+  {
+   "id": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions->LM04-Using-Multifactor-Models",
+   "fromNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "toNode": "LM04-Using-Multifactor-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the Fama-French factor regressions used as examples here are the estimation engi"
+  },
+  {
+   "id": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions->LM06-Backtesting-and-Simulation",
+   "fromNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "toNode": "LM06-Backtesting-and-Simulation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "factor-model coefficients estimated by regression feed backtests, and the fat-ta"
+  },
+  {
+   "id": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results->LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromNode": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "toNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the ANOVA table, the meaning of SSE, SSR, SST, the standard error of es"
+  },
+  {
+   "id": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results->LM03-Model-Misspecification",
+   "fromNode": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "toNode": "LM03-Model-Misspecification",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "explains why a high R-squared can hide omitted-variable bias, heteroskedasticity"
+  },
+  {
+   "id": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results->LM04-Extensions-of-Multiple-Regression",
+   "fromNode": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "toNode": "LM04-Extensions-of-Multiple-Regression",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "extends the same F-test and prediction logic to dummy variables, interaction ter"
+  },
+  {
+   "id": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results->LM05-Time-Series-Analysis",
+   "fromNode": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "toNode": "LM05-Time-Series-Analysis",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "reuses adjusted R-squared, AIC and BIC to choose autoregressive lag length, and "
+  },
+  {
+   "id": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results->LM06-Machine-Learning",
+   "fromNode": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "toNode": "LM06-Machine-Learning",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the overfitting and parsimony ideas here become bias-variance trade-off, penalis"
+  },
+  {
+   "id": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results->LM07-Big-Data-Projects",
+   "fromNode": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "toNode": "LM07-Big-Data-Projects",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "model selection by information criteria and holdout performance is the template "
+  },
+  {
+   "id": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results->LM04-Using-Multifactor-Models",
+   "fromNode": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "toNode": "LM04-Using-Multifactor-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the five-factor and Fama-French comparisons in this module are the statistical s"
+  },
+  {
+   "id": "LM03-Model-Misspecification->LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromNode": "LM03-Model-Misspecification",
+   "toNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the six assumptions whose violations this module diagnoses, and the res"
+  },
+  {
+   "id": "LM03-Model-Misspecification->LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "fromNode": "LM03-Model-Misspecification",
+   "toNode": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the t-test, F-test, $R^2$ and adjusted $R^2$ machinery; this module exp"
+  },
+  {
+   "id": "LM03-Model-Misspecification->LM04-Extensions-of-Multiple-Regression",
+   "fromNode": "LM03-Model-Misspecification",
+   "toNode": "LM04-Extensions-of-Multiple-Regression",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "extends the misspecification agenda to influential observations, dummy variables"
+  },
+  {
+   "id": "LM03-Model-Misspecification->LM05-Time-Series-Analysis",
+   "fromNode": "LM03-Model-Misspecification",
+   "toNode": "LM05-Time-Series-Analysis",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "serial correlation becomes the central object; autoregressive models, the autoco"
+  },
+  {
+   "id": "LM03-Model-Misspecification->LM06-Backtesting-and-Simulation",
+   "fromNode": "LM03-Model-Misspecification",
+   "toNode": "LM06-Backtesting-and-Simulation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the out-of-sample principle from Exhibit 1 and the data-pooling warning (structu"
+  },
+  {
+   "id": "LM04-Extensions-of-Multiple-Regression->LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromNode": "LM04-Extensions-of-Multiple-Regression",
+   "toNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the OLS model, the assumption of no exact linear relationship among reg"
+  },
+  {
+   "id": "LM04-Extensions-of-Multiple-Regression->LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "fromNode": "LM04-Extensions-of-Multiple-Regression",
+   "toNode": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the joint F test and adjusted $R^2$ are the tools used to test a block of dummie"
+  },
+  {
+   "id": "LM04-Extensions-of-Multiple-Regression->LM03-Model-Misspecification",
+   "fromNode": "LM04-Extensions-of-Multiple-Regression",
+   "toNode": "LM03-Model-Misspecification",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "influential points that are valid data point to omitted variables or violated as"
+  },
+  {
+   "id": "LM04-Extensions-of-Multiple-Regression->LM05-Time-Series-Analysis",
+   "fromNode": "LM04-Extensions-of-Multiple-Regression",
+   "toNode": "LM05-Time-Series-Analysis",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "seasonal dummies here foreshadow seasonality handling in autoregressive models, "
+  },
+  {
+   "id": "LM04-Extensions-of-Multiple-Regression->LM06-Machine-Learning",
+   "fromNode": "LM04-Extensions-of-Multiple-Regression",
+   "toNode": "LM06-Machine-Learning",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "logistic regression is the baseline binary classifier; the sentiment classificat"
+  },
+  {
+   "id": "LM04-Extensions-of-Multiple-Regression->LM04-Using-Multifactor-Models",
+   "fromNode": "LM04-Extensions-of-Multiple-Regression",
+   "toNode": "LM04-Using-Multifactor-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "factor and style membership (value, growth, blend) is encoded with dummies exact"
+  },
+  {
+   "id": "LM05-Time-Series-Analysis->LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromNode": "LM05-Time-Series-Analysis",
+   "toNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the assumption of uncorrelated errors that trend models must satisfy, and why it"
+  },
+  {
+   "id": "LM05-Time-Series-Analysis->LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "fromNode": "LM05-Time-Series-Analysis",
+   "toNode": "LM02-Evaluating-Regression-Model-Fit-and-Interpreting-Model-Results",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "t-tests on coefficients and the meaning of $R^2$ and the standard error of the e"
+  },
+  {
+   "id": "LM05-Time-Series-Analysis->LM03-Model-Misspecification",
+   "fromNode": "LM05-Time-Series-Analysis",
+   "toNode": "LM03-Model-Misspecification",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the Durbin-Watson test and the consequences of serial correlation and heterosked"
+  },
+  {
+   "id": "LM05-Time-Series-Analysis->LM04-Extensions-of-Multiple-Regression",
+   "fromNode": "LM05-Time-Series-Analysis",
+   "toNode": "LM04-Extensions-of-Multiple-Regression",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "dummy variables and logistic models are alternatives to seasonal lags for season"
+  },
+  {
+   "id": "LM05-Time-Series-Analysis->LM06-Machine-Learning",
+   "fromNode": "LM05-Time-Series-Analysis",
+   "toNode": "LM06-Machine-Learning",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "out-of-sample validation and the in-sample versus out-of-sample distinction carr"
+  },
+  {
+   "id": "LM05-Time-Series-Analysis->LM06-Backtesting-and-Simulation",
+   "fromNode": "LM05-Time-Series-Analysis",
+   "toNode": "LM06-Backtesting-and-Simulation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "(09-Portfolio-Management): rolling-window backtests and regime shifts are the po"
+  },
+  {
+   "id": "LM05-Time-Series-Analysis->LM02-Economic-Growth",
+   "fromNode": "LM05-Time-Series-Analysis",
+   "toNode": "LM02-Economic-Growth",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "(02-Economics): log-linear trends and constant growth rates are the statistical "
+  },
+  {
+   "id": "LM06-Machine-Learning->LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromNode": "LM06-Machine-Learning",
+   "toNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "multiple regression is the supervised-learning baseline here; Exhibit 1 translat"
+  },
+  {
+   "id": "LM06-Machine-Learning->LM04-Extensions-of-Multiple-Regression",
+   "fromNode": "LM06-Machine-Learning",
+   "toNode": "LM04-Extensions-of-Multiple-Regression",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "logistic regression appears in Exhibit 2 as the classifier the candidate already"
+  },
+  {
+   "id": "LM06-Machine-Learning->LM05-Time-Series-Analysis",
+   "fromNode": "LM06-Machine-Learning",
+   "toNode": "LM05-Time-Series-Analysis",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the prohibition on k-fold cross-validation for time series and the walk-forward "
+  },
+  {
+   "id": "LM06-Machine-Learning->LM07-Big-Data-Projects",
+   "fromNode": "LM06-Machine-Learning",
+   "toNode": "LM07-Big-Data-Projects",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "takes the concepts here into a full workflow, gives the explicit F1 formula and "
+  },
+  {
+   "id": "LM06-Machine-Learning->LM06-Backtesting-and-Simulation",
+   "fromNode": "LM06-Machine-Learning",
+   "toNode": "LM06-Backtesting-and-Simulation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the walk-forward information-ratio back-test of the DNN stock picks is the rolli"
+  },
+  {
+   "id": "LM07-Big-Data-Projects->LM06-Machine-Learning",
+   "fromNode": "LM07-Big-Data-Projects",
+   "toNode": "LM06-Machine-Learning",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the vocabulary this module applies: supervised versus unsupervised, ove"
+  },
+  {
+   "id": "LM07-Big-Data-Projects->LM04-Extensions-of-Multiple-Regression",
+   "fromNode": "LM07-Big-Data-Projects",
+   "toNode": "LM04-Extensions-of-Multiple-Regression",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "logistic regression is the classifier of the case study; its output is a probabi"
+  },
+  {
+   "id": "LM07-Big-Data-Projects->LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromNode": "LM07-Big-Data-Projects",
+   "toNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the feature selection diagnostics named here, heteroskedasticity and multicollin"
+  },
+  {
+   "id": "LM07-Big-Data-Projects->LM05-Time-Series-Analysis",
+   "fromNode": "LM07-Big-Data-Projects",
+   "toNode": "LM05-Time-Series-Analysis",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the Financial Phrase Bank is explicitly cross-sectional, which is why random k-f"
+  },
+  {
+   "id": "LM07-Big-Data-Projects->LM06-Backtesting-and-Simulation",
+   "fromNode": "LM07-Big-Data-Projects",
+   "toNode": "LM06-Backtesting-and-Simulation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the discipline of scoring a model only on data it never saw, and the trade-off b"
+  }
+ ]
+}

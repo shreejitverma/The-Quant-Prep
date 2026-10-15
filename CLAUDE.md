@@ -5,7 +5,8 @@ Everything committed here is public.
 
 ## Layout
 
-- `00-Start-Here/` guides; `01-` to `15-` the syllabus; `16-Trading-and-Investing/` a free-form Obsidian library (`curriculum: false`, not validated by `qp`).
+- `00-Start-Here/` guides; `01-` to `15-` the syllabus; `16-Trading-and-Investing/` and `17-CFA/` free-form Obsidian libraries (`curriculum: false`, not validated by `qp`).
+- `17-CFA/` is the CFA Level II platform: notes are governed by `17-CFA/scripts/cfa_l2/NOTE_SPEC.md`, `ITEMSET_SPEC.md` and `MOCK_SPEC.md`, progress lives in `17-CFA/CFA-L-2/00-Strategy/Build-Checklist.md`, and `verify_notes.py` and `verify_practice.py` there must pass before shipping anything under `17-CFA/CFA-L-2/`. They read the gitignored curriculum extracts, so run them from the main checkout, or from a worktree with `CFA_BUILD` and `CFA_PRIVATE` set to the main checkout's `build/cfa_l2` and `17-CFA/Private`; CI cannot run them.
 - `tools/qp/` the platform: `vault.py` (parsing), `state.py` (progress, SM-2), `planner.py`, `drills.py`, `check.py`, `moc.py`, `cli.py`, `server.py`, `web/` (static app). Standard library only.
 - `tools/obsidian/` plugin lock and bootstrap; `.obsidian/` shared settings only.
 - `_archive/` pre-2026 material and superseded drafts; never edit, index or link it from the syllabus.
@@ -26,6 +27,7 @@ Everything committed here is public.
 - `private/` is the gitignored private overlay (question banks, personal notes); `qp` loads it with ids namespaced `private:` and merges cards from notes with `extends: <topic>` into that topic. `./qp check` fails if anything under it is tracked. Never copy its content into public notes.
 - Learner progress lives outside the repo (`$QP_HOME`, default `~/.local/share/quant-prep/`); never write it into the repo.
 - `16-Trading-and-Investing/Private/` is gitignored except its README; personal trades and portfolios go only there.
+- `17-CFA/Private/` is gitignored except its README: CFA Institute curriculum text, prep-provider slides and the official reference lists go only there, and the curriculum extracts stay in the ignored `build/cfa_l2/`. CFA attempt, error and weekly-review logs (`17-CFA/CFA-L-2/22-` to `24-`) are personal and ignored too. Public CFA notes and item sets may quote LOS statements and the CFA Institute Code of Ethics and Standards of Professional Conduct (which CFA Institute publishes freely), and may rework curriculum examples step by step, always with volume and page cites; restated end-of-module problems go only in `17-CFA/Private/CFA-L-2/Practice-Problems/`, embedded from the note's Practice problems section; never paste curriculum summaries, lists, problem sets or slides into a public note. Derived CFA progress (mastery, status and review dates in note frontmatter, and the study board) is published by the author's choice.
 
 ## Checks
 

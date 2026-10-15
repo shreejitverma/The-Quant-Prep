@@ -1,0 +1,81 @@
+{
+ "nodes": [
+  {
+   "id": "LM01-Code-of-Ethics-and-Standards-of-Professional-Conduct",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/10-Ethics/LM01-Code-of-Ethics-and-Standards-of-Professional-Conduct.md",
+   "x": 0,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM02-Guidance-for-Standards-I-VII",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/10-Ethics/LM02-Guidance-for-Standards-I-VII.md",
+   "x": 460,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM03-Application-of-the-Code-and-Standards-Level-II",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/10-Ethics/LM03-Application-of-the-Code-and-Standards-Level-II.md",
+   "x": 920,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  }
+ ],
+ "edges": [
+  {
+   "id": "LM01-Code-of-Ethics-and-Standards-of-Professional-Conduct->LM02-Guidance-for-Standards-I-VII",
+   "fromNode": "LM01-Code-of-Ethics-and-Standards-of-Professional-Conduct",
+   "toNode": "LM02-Guidance-for-Standards-I-VII",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "takes every sub-standard in the table above and supplies the guidance, recommend"
+  },
+  {
+   "id": "LM01-Code-of-Ethics-and-Standards-of-Professional-Conduct->LM03-Application-of-the-Code-and-Standards-Level-II",
+   "fromNode": "LM01-Code-of-Ethics-and-Standards-of-Professional-Conduct",
+   "toNode": "LM03-Application-of-the-Code-and-Standards-Level-II",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the Level II item-set cases; every case answer is stated as \"violated Standard X"
+  },
+  {
+   "id": "LM02-Guidance-for-Standards-I-VII->LM01-Code-of-Ethics-and-Standards-of-Professional-Conduct",
+   "fromNode": "LM02-Guidance-for-Standards-I-VII",
+   "toNode": "LM01-Code-of-Ethics-and-Standards-of-Professional-Conduct",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "LM01 supplies the verbatim Code components and the structure of the seven Standa"
+  },
+  {
+   "id": "LM02-Guidance-for-Standards-I-VII->LM03-Application-of-the-Code-and-Standards-Level-II",
+   "fromNode": "LM02-Guidance-for-Standards-I-VII",
+   "toNode": "LM03-Application-of-the-Code-and-Standards-Level-II",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "LM03 consumes this module wholesale; its long vignettes assume you can already a"
+  },
+  {
+   "id": "LM03-Application-of-the-Code-and-Standards-Level-II->LM01-Code-of-Ethics-and-Standards-of-Professional-Conduct",
+   "fromNode": "LM03-Application-of-the-Code-and-Standards-Level-II",
+   "toNode": "LM01-Code-of-Ethics-and-Standards-of-Professional-Conduct",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the exact text and structure of the Code's six components and Standards"
+  },
+  {
+   "id": "LM03-Application-of-the-Code-and-Standards-Level-II->LM02-Guidance-for-Standards-I-VII",
+   "fromNode": "LM03-Application-of-the-Code-and-Standards-Level-II",
+   "toNode": "LM02-Guidance-for-Standards-I-VII",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the guidance, recommended procedures, and definitional boundaries (mate"
+  }
+ ]
+}

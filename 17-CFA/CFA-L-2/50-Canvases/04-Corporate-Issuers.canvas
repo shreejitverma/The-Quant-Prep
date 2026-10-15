@@ -1,0 +1,282 @@
+{
+ "nodes": [
+  {
+   "id": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/04-Corporate-Issuers/LM01-Analysis-of-Dividends-and-Share-Repurchases.md",
+   "x": 0,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/04-Corporate-Issuers/LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis.md",
+   "x": 460,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM03-Cost-of-Capital-Advanced-Topics",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/04-Corporate-Issuers/LM03-Cost-of-Capital-Advanced-Topics.md",
+   "x": 920,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM04-Corporate-Restructuring",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/04-Corporate-Issuers/LM04-Corporate-Restructuring.md",
+   "x": 1380,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM02-Discounted-Dividend-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM02-Discounted-Dividend-Valuation.md",
+   "x": 2000,
+   "y": 260,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM02-Employee-Compensation-Post-Employment-and-Share-Based.md",
+   "x": 2000,
+   "y": 520,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM02-Guidance-for-Standards-I-VII",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/10-Ethics/LM02-Guidance-for-Standards-I-VII.md",
+   "x": 2000,
+   "y": 780,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Equity-Valuation-Applications-and-Processes",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM01-Equity-Valuation-Applications-and-Processes.md",
+   "x": 2000,
+   "y": 1040,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM06-Private-Company-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM06-Private-Company-Valuation.md",
+   "x": 2000,
+   "y": 1300,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM01-The-Term-Structure-and-Interest-Rate-Dynamics.md",
+   "x": 2000,
+   "y": 1560,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Intercorporate-Investments",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM01-Intercorporate-Investments.md",
+   "x": 2000,
+   "y": 1820,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples.md",
+   "x": 2000,
+   "y": 2080,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  }
+ ],
+ "edges": [
+  {
+   "id": "LM01-Analysis-of-Dividends-and-Share-Repurchases->LM02-Discounted-Dividend-Valuation",
+   "fromNode": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "toNode": "LM02-Discounted-Dividend-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the payout policies here are the inputs there; the target payout adjustment mode"
+  },
+  {
+   "id": "LM01-Analysis-of-Dividends-and-Share-Repurchases->LM03-Cost-of-Capital-Advanced-Topics",
+   "fromNode": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "toNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the buyback EPS rule compares the earnings yield with the after-tax cost of debt"
+  },
+  {
+   "id": "LM01-Analysis-of-Dividends-and-Share-Repurchases->LM04-Corporate-Restructuring",
+   "fromNode": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "toNode": "LM04-Corporate-Restructuring",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "distributions and restructurings are competing uses of free cash flow; a debt-fu"
+  },
+  {
+   "id": "LM01-Analysis-of-Dividends-and-Share-Repurchases->LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis",
+   "fromNode": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "toNode": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the agency framework behind Jensen's free cash flow hypothesis is the same gover"
+  },
+  {
+   "id": "LM01-Analysis-of-Dividends-and-Share-Repurchases->LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromNode": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "toNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "companies repurchase shares to offset dilution from option and share-based award"
+  },
+  {
+   "id": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis->LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromNode": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis",
+   "toNode": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "governance quality drives payout discipline; agency conflicts between managers a"
+  },
+  {
+   "id": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis->LM03-Cost-of-Capital-Advanced-Topics",
+   "fromNode": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis",
+   "toNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "this module says \"raise the discount rate for ESG risk\"; LM03 supplies the machi"
+  },
+  {
+   "id": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis->LM04-Corporate-Restructuring",
+   "fromNode": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis",
+   "toNode": "LM04-Corporate-Restructuring",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "stranded assets and ESG-driven impairments are triggers for the divestitures and"
+  },
+  {
+   "id": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis->LM02-Guidance-for-Standards-I-VII",
+   "fromNode": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis",
+   "toNode": "LM02-Guidance-for-Standards-I-VII",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "using material nonpublic ESG information, greenwashing claims in client communic"
+  },
+  {
+   "id": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis->LM01-Equity-Valuation-Applications-and-Processes",
+   "fromNode": "LM02-Environmental-Social-and-Governance-ESG-Considerations-in-Investment-Analysis",
+   "toNode": "LM01-Equity-Valuation-Applications-and-Processes",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "ESG integration is a worked instance of the valuation process: forecast adjustme"
+  },
+  {
+   "id": "LM03-Cost-of-Capital-Advanced-Topics->LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "toNode": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "payout policy sets the dividend yield and the buyback flows that feed the DDM-im"
+  },
+  {
+   "id": "LM03-Cost-of-Capital-Advanced-Topics->LM04-Corporate-Restructuring",
+   "fromNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "toNode": "LM04-Corporate-Restructuring",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the WACC built here is the discount rate for restructuring and acquisition evalu"
+  },
+  {
+   "id": "LM03-Cost-of-Capital-Advanced-Topics->LM02-Discounted-Dividend-Valuation",
+   "fromNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "toNode": "LM02-Discounted-Dividend-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the Gordon growth and multistage models are developed fully there; this module i"
+  },
+  {
+   "id": "LM03-Cost-of-Capital-Advanced-Topics->LM06-Private-Company-Valuation",
+   "fromNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "toNode": "LM06-Private-Company-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the expanded CAPM, build-up approach, size and company-specific premia and the d"
+  },
+  {
+   "id": "LM03-Cost-of-Capital-Advanced-Topics->LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "toNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the choice of risk-free proxy, the slope of the curve that signs the bill-versus"
+  },
+  {
+   "id": "LM04-Corporate-Restructuring->LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromNode": "LM04-Corporate-Restructuring",
+   "toNode": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "buyback EPS and BVPS mechanics feed the dividend recapitalization and the post-d"
+  },
+  {
+   "id": "LM04-Corporate-Restructuring->LM03-Cost-of-Capital-Advanced-Topics",
+   "fromNode": "LM04-Corporate-Restructuring",
+   "toNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the component costs of debt and equity and the top-down and bottom-up c"
+  },
+  {
+   "id": "LM04-Corporate-Restructuring->LM01-Intercorporate-Investments",
+   "fromNode": "LM04-Corporate-Restructuring",
+   "toNode": "LM01-Intercorporate-Investments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the accounting engines behind every case study, equity method for sub-50% stakes"
+  },
+  {
+   "id": "LM04-Corporate-Restructuring->LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromNode": "LM04-Corporate-Restructuring",
+   "toNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the multiples toolkit (EV/EBITDA, EV/sales, P/E, P/CF) that comparable company a"
+  },
+  {
+   "id": "LM04-Corporate-Restructuring->LM06-Private-Company-Valuation",
+   "fromNode": "LM04-Corporate-Restructuring",
+   "toNode": "LM06-Private-Company-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "control premiums and marketability discounts formalize why acquisition multiples"
+  }
+ ]
+}
