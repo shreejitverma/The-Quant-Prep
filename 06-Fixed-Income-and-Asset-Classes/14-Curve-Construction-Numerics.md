@@ -97,7 +97,7 @@ Using the chain rule via discount factors $P_k = \exp(-T_k z_k)$:
 $$\frac{\partial s_i}{\partial z_j} = \sum_{k=1}^i \frac{\partial s_i}{\partial P_k} \frac{\partial P_k}{\partial z_j} = \frac{\partial s_i}{\partial P_j} \cdot \left( -T_j P_j \right).$$
 For a par swap where $s_i = \frac{1 - P_i}{A_i}$ with $A_i = \sum_{k=1}^i P_k$:
 $$\frac{\partial s_i}{\partial P_j} = -\frac{s_i}{A_i} \quad (j < i), \qquad \frac{\partial s_i}{\partial P_i} = -\frac{1 + s_i}{A_i}.$$
-Inverting $J_{\mathbf{s}, \mathbf{z}}$ via back-substitution provides $J_{\mathbf{z}, \mathbf{s}} = J_{\mathbf{s}, \mathbf{z}}^{-1} = \left[ \frac{\partial z_i}{\partial s_j} \right]$, which transforms zero sensitivities into market quote sensitivities instantly.
+Inverting $J_{\mathbf{s}, \mathbf{z}}$ via forward substitution provides $J_{\mathbf{z}, \mathbf{s}} = J_{\mathbf{s}, \mathbf{z}}^{-1} = \left[ \frac{\partial z_i}{\partial s_j} \right]$, which transforms zero sensitivities into market quote sensitivities instantly.
 
 ### How it is implemented
 
@@ -154,7 +154,7 @@ Notice that all diagonal terms are approximately $1.0$, while off-diagonals refl
 
 ### Example 3: inverting the Jacobian to map zero risk to par market risk
 
-Inverting $J_{\mathbf{s}, \mathbf{z}}$ via lower triangular back-substitution yields:
+Inverting $J_{\mathbf{s}, \mathbf{z}}$ via lower triangular forward substitution yields:
 $$J_{\mathbf{z}, \mathbf{s}} = J_{\mathbf{s}, \mathbf{z}}^{-1} = \begin{pmatrix} 0.970874 & 0 & 0 \\ -0.017076 & 0.985604 & 0 \\ -0.013144 & -0.026554 & 1.007589 \end{pmatrix}.$$
 Now consider a 3-year par bond with cash flows $[4, 4, 104]$ at $T = 1, 2, 3$.
 Zero-rate sensitivities: $\frac{\partial PV}{\partial z_k} = -k \cdot CF_k \cdot P_k$.
