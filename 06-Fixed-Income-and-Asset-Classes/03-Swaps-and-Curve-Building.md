@@ -148,7 +148,7 @@ The crisis forced the global derivatives industry to abandon single-curve pricin
 - Assuming floating leg cash flows telescope in modern multi-curve markets: telescoping occurs only when forwarding and discounting curves are identical.
 - Overlooking payment frequency mismatches between legs: an annual fixed leg versus quarterly floating leg requires separate schedule generators.
 - Using clean par rates without adjusting for differing day-count conventions on the fixed leg (30/360) and floating leg (ACT/360).
-- Confusing payer and receiver conventions: a payer swap is short duration (benefits when rates rise), so its duration $-\frac{1}{V}\frac{\partial V}{\partial y}$ is negative.
+- Confusing payer and receiver conventions: a payer swap is short duration (benefits when rates rise): $\frac{\partial V}{\partial y} > 0$, so its dollar duration and DV01 have the opposite sign to a long bond's.
 - Extrapolating the curve beyond the longest liquid swap pillar with flat zero rates instead of flat forward rates.
 
 ## Interview questions

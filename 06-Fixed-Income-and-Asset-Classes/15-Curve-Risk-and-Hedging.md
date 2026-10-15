@@ -218,7 +218,8 @@ The lesson for curve risk is that a DV01-matched hedge still needs a collateral 
 
 > [!question]- fi-jacobian-hedge-solution | How do you calculate the exact notional of $K$ benchmark instruments required to immunize a portfolio against non-parallel curve shifts?
 > Compute the portfolio's par sensitivity vector $\mathbf{v}_{\text{par}} = (J^T)^{-1} \mathbf{v}_{\text{zero}}$.
-> The required hedge notional vector is $\mathbf{N}_{\text{hedge}} = -\mathbf{v}_{\text{par}} \oslash \mathbf{DV01}_{\text{benchmarks}}$.
+> Each hedge notional is $N_i = -v_{\text{par}, i} / h_i$, where $h_i = \partial V_i / \partial s_i$ per unit notional of benchmark $i$ ($+A_i$ for a payer swap, $-A_i$ for a receiver), measured in the same per-unit-rate scale as $\mathbf{v}_{\text{par}}$.
+> For the Example 1 par bond, $N_3 = 279.2525 / 2.792525 = 100$ notional of the 3-year payer swap per $100$ face.
 
 ## Further reading
 
