@@ -4,7 +4,7 @@ A complete, self-tracking preparation system for senior **quant trader**, **quan
 
 It is three things over one set of Markdown notes:
 
-- **A syllabus**: 168 topics in 13 subjects, each with learning objectives, prerequisites, tier (core, advanced, senior), study hours, and spaced-repetition question cards.
+- **A syllabus**: 180 topics in 13 subjects, each with learning objectives, prerequisites, tier (core, advanced, senior), study hours, and spaced-repetition question cards.
 - **A progress platform**: the `qp` command line and a local web dashboard for readiness by track and by firm, a prerequisite-ordered weekly plan, daily card review, and timed drills (arithmetic sprint, 80-in-8 numerical test, market-making game).
 - **An Obsidian vault**: open the folder in Obsidian to read; question cards are collapsible callouts.
 
@@ -38,7 +38,7 @@ Progress is stored outside the repo (`~/.local/share/quant-prep/`, or `$QP_HOME`
 | 08 | [Market Making](08-Market-Making/README.md) | Fair value, inventory models, quoting, hedging, options MM, games, systems. |
 | 09 | [Alpha Research and Portfolio](09-Alpha-Research-and-Portfolio/README.md) | Research process, signals, factors, backtesting, overfitting, portfolio construction. |
 | 10 | [Machine Learning for Finance](10-Machine-Learning-for-Finance/README.md) | Leakage-safe validation, ensembles, deep and reinforcement learning, NLP. |
-| 11 | [Risk and Trading](11-Risk-and-Trading/README.md) | Kelly, betting, VaR and ES, limits, P&L attribution, trading judgement. |
+| 11 | [Risk and Trading](11-Risk-and-Trading/README.md) | Kelly, betting, VaR and ES, stress testing, drawdowns and limits, P&L attribution and Greek risk, risk factors, scenario generation, sensitivities and revaluation, trading judgement. |
 | 12 | [Quant Development](12-Quant-Development/README.md) | Order books, feed handlers, backtesters, pricing libraries, risk checks; bridges to SDE-Interview-Prep. |
 | 13 | [Interview Playbook](13-Interview-Playbook/README.md) | Formats, mental math, brainteasers, estimation, trading games, behavioural, senior expectations. |
 | 14 | [Firms](14-Firms/README.md) | One guide per firm: roles, process, what they test, a focused plan. |
@@ -56,6 +56,7 @@ Notes marked `seed` are the writing backlog: objectives and references exist, fu
 | Day counts, schedules, bond pricing and risk, overnight-rate compounding, curve bootstrapping, dual-curve swap pricing, Jacobian par risk, Treasury futures basis, CDS hazard bootstrap, TIPS indexation, mortgage prepayment, Gaussian copula tranche loss | [06-Fixed-Income-and-Asset-Classes/code](06-Fixed-Income-and-Asset-Classes/code/) |
 | Avellaneda-Stoikov market-making simulator | [08-Market-Making/code](08-Market-Making/code/) |
 | Event-driven backtester (next-bar fills), performance metrics, pairs trading, Black-Litterman | [09-Alpha-Research-and-Portfolio/code](09-Alpha-Research-and-Portfolio/code/) |
+| Finite-difference Greeks bump engine, Taylor revaluation proxies, Cholesky Monte Carlo and filtered historical scenarios, rates stress scenarios, full versus proxy VaR and ES | [11-Risk-and-Trading/code](11-Risk-and-Trading/code/) |
 | Execution algorithms, Euler-Maruyama SDE solver, Greeks visualisation, LSTM baseline | sections [07](07-Market-Microstructure/code/), [04](04-Stochastic-Calculus/code/), [05](05-Derivatives-and-Volatility/code/), [10](10-Machine-Learning-for-Finance/code/) |
 
 Build a C++ example with `g++ -std=c++20 -O2 -pthread <file>.cpp`; run Python examples with the packages in `environment.yml`.
