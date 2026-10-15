@@ -39,8 +39,9 @@ A day-count fraction $\tau(d_1,d_2)$ turns two dates into an accrual factor: int
 | :--- | :--- | :--- |
 | ACT/360 | actual days / 360 | USD and EUR money markets, floating legs |
 | ACT/365F | actual days / 365 | GBP money markets, many bond markets |
-| 30/360 (US bond basis) | $\frac{360\Delta Y+30\Delta M+(D_2-D_1)}{360}$ with day-31 adjustments | US corporates and agencies, USD swap fixed legs |
-| ACT/ACT (ISDA) | actual days in each calendar year over that year's length (365 or 366) | Treasury-style bonds |
+| 30/360 (US bond basis) | $\frac{360\Delta Y+30\Delta M+(D_2-D_1)}{360}$ with day-31 adjustments | US corporates and agencies, legacy LIBOR-era USD swap fixed legs (SOFR OIS fixed legs are ACT/360) |
+| ACT/ACT (ISDA) | actual days in each calendar year over that year's length (365 or 366) | some swap and derivative legs |
+| ACT/ACT (ICMA) | actual days accrued over (coupon frequency times actual days in the coupon period) | US Treasuries and most government bonds |
 
 Typical uses vary by product and are set in the term sheet; never infer a convention from the currency alone.
 Day-count conventions are part of the rate: a quoted 5% is only a number once the convention is stated.
@@ -86,7 +87,7 @@ Notional 1,000,000, 5%, 15 Feb 2024 to 15 Aug 2024 (182 actual days, 2024 is a l
 | ACT/360 | $182/360=0.505556$ | 25,277.78 |
 | ACT/365F | $182/365=0.498630$ | 24,931.51 |
 | 30/360 | $180/360=0.5$ | 25,000.00 |
-| ACT/ACT | $182/366=0.497268$ | 24,863.39 |
+| ACT/ACT (ISDA) | $182/366=0.497268$ | 24,863.39 |
 
 The spread between the highest and lowest is 414.39 on one million, so a convention mismatch on a 5bn book is real money.
 
