@@ -40,6 +40,7 @@ jobs:
           python 09-Alpha-Research-and-Portfolio/code/simple_event_driven.py
           python 09-Alpha-Research-and-Portfolio/code/performance_metrics.py
           python 12-Quant-Development/code/python/itch_parser_mock.py
+          python 06-Fixed-Income-and-Asset-Classes/code/bond_pricing.py
 
   secrets:
     runs-on: ubuntu-latest
