@@ -283,8 +283,8 @@ At a meeting on 9 February 2026, Viklund states: "Model 2 is the one to hedge wi
 
 1. The Breusch-Pagan test statistic for Model 1 and the conclusion at the 5% significance level are closest to: (LOS: los-01-03-b)
    - A. 3.06; there is no evidence of conditional heteroskedasticity.
-   - B. 8.77; there is evidence of conditional heteroskedasticity.
-   - C. 8.77; there is no evidence of conditional heteroskedasticity.
+   - B. 8.77; there is no evidence of conditional heteroskedasticity.
+   - C. 8.77; there is evidence of conditional heteroskedasticity.
 2. The Durbin-Watson statistic for Model 1 and the most appropriate conclusion about serial correlation are: (LOS: los-01-03-c)
    - A. 1.93; the residuals show no serial correlation, so the OLS standard errors of Model 1 are reliable.
    - B. 1.93; serial correlation up to lag 12 is present even though first-order autocorrelation is negligible, so Newey-West standard errors should be used and the coefficient estimates remain consistent.
@@ -295,8 +295,8 @@ At a meeting on 9 February 2026, Viklund states: "Model 2 is the one to hedge wi
    - C. 15.38 and 10.77.
 4. To decide whether HBC has a significant BDI exposure to hedge, the specification, standard errors, and conclusion most consistent with avoiding model misspecification are: (LOS: los-01-03-a)
    - A. Model 2 with Newey-West standard errors; $t = 0.68$, so HBC has no significant BDI exposure.
-   - B. Model 1 with Newey-West standard errors; $t = 3.66$, so the BDI exposure is significant.
-   - C. Model 1 with White standard errors; $t = 4.20$, so the BDI exposure is significant.
+   - B. Model 1 with White standard errors; $t = 4.20$, so the BDI exposure is significant.
+   - C. Model 1 with Newey-West standard errors; $t = 3.66$, so the BDI exposure is significant.
 
 ## Item set 5 (06-02): Okonkwo Family Office: Step-Up Note Paths
 
@@ -573,7 +573,7 @@ She adds that she will consider the long-run implications of South Africa's risi
    - C. overvalued by about 18.8%.
 3. The explanation that Nkosi should most appropriately substitute for the sentence in his draft is that: (LOS: los-02-01-j)
    - A. a current account deficit raises the demand for the deficit country's currency, so the rand's strength was the expected result of the wider deficit.
-   - B. investment and financing flows dominate exchange rate movements in the short run because asset prices and portfolio allocations adjust quickly, while trade flows adjust with long lags, so a persistent deficit weighs on the currency mainly over the long run.
+   - B. investment and financing flows dominate in the short run because asset prices adjust quickly, while a persistent deficit weighs on the rand mainly over the long run.
    - C. rising external debt raises the market's estimate of a deficit country's long-run equilibrium exchange rate, which supported the rand during the first nine months.
 4. Under the Mundell-Fleming model, the most likely short-run effect of this morning's announcements on the ZAR/EUR rate is that it will: (LOS: los-02-01-k)
    - A. rise.
@@ -676,7 +676,7 @@ His client Rhian Castell holds 100,000 shares of Oriel Packaging plc, a UK maker
 Castell bought the shares several years ago at GBP 12.00 per share.
 
 After several years of strong trading, Oriel has accumulated GBP 90 million of surplus cash that earns close to zero.
-The board intends to return the full amount to shareholders early in 2026, after the regular dividend for 2026 has been paid.
+The board intends to return the full amount to shareholders early in 2026, in addition to the regular dividend for 2026.
 It is choosing between a one-time special cash dividend and a repurchase of shares at the current market price.
 Exhibit 1 presents data Okafor has gathered.
 
@@ -706,6 +706,7 @@ Exhibit 2: Oriel Packaging, forecast for 2026 before any special distribution (G
 Castell pays tax at 30% on dividends and at 20% on realized capital gains.
 Ferndale also manages a charitable foundation that owns Oriel shares and pays no tax.
 To compare the two routes for Castell, Okafor assumes that the share price falls by the amount of any special dividend on the ex-dividend date, and that a repurchase at the market price leaves the share price unchanged.
+He evaluates both routes from the current share price of GBP 18.00.
 He also assumes Castell tenders her shares pro rata, selling the same fraction of her holding as the fraction of Oriel's shares the company buys back.
 He measures her wealth as after-tax cash plus the market value of the shares she keeps, ignoring any tax on gains she has not realized.
 
@@ -724,9 +725,9 @@ She plans to recompute Oriel's 2026 FCFE coverage ratio if the board chooses the
    - B. GBP 18,000.
    - C. GBP 42,000.
 2. If Oriel repurchases shares with the GBP 90 million at the current market price, its book value per share after the repurchase is closest to: (LOS: los-04-01-k)
-   - A. GBP 14.00.
-   - B. GBP 20.70.
-   - C. GBP 23.00.
+   - A. GBP 20.70.
+   - B. GBP 23.00.
+   - C. GBP 25.00.
 3. The answer to Mancuso's question is closest to: (LOS: los-04-01-j)
    - A. 6.00%.
    - B. 8.00%.
@@ -877,12 +878,12 @@ The third is that the spin off is less likely than a sale of Sensing to a compet
    - C. EUR19.00.
 3. Vantorra's pro forma EPS for the first full year after the separation is closest to: (LOS: los-04-04-d)
    - A. EUR0.63.
-   - B. EUR0.76.
-   - C. EUR1.13.
+   - B. EUR0.70.
+   - C. EUR0.76.
 4. Which of Brandt's conclusions about the initial evaluation of the spin off is most accurate? (LOS: los-04-04-b)
-   - A. The first conclusion.
-   - B. The second conclusion.
-   - C. The third conclusion.
+   - A. The conclusion about the announcement-day share price gain.
+   - B. The conclusion about antitrust scrutiny.
+   - C. The conclusion about the current share price.
 
 ## Item set 13 (06-04): Fenwick Mutual: Migration Drag Across the Maturity Spectrum
 
@@ -1006,8 +1007,8 @@ To isolate the effect of that choice, she asks how Kaskade's results would have 
    - C. CHF 18.9 million.
 3. The 2027 impairment loss on the Seeblick investment recognized by Kaskade, and the impairment loss Helvetic Re recognizes on the same facts, are closest to: (LOS: los-03-01-b)
    - A. CHF 27 million and CHF 42 million.
-   - B. CHF 46 million and CHF 42 million.
-   - C. CHF 36 million and CHF 51 million.
+   - B. CHF 36 million and CHF 51 million.
+   - C. CHF 46 million and CHF 42 million.
 4. Had Kaskade designated Bond D at fair value through profit or loss, its combined 2026 and 2027 pre-tax profit would have been: (LOS: los-03-01-c)
    - A. higher by CHF 2.53 million.
    - B. higher by CHF 4.24 million.
@@ -1024,8 +1025,8 @@ She is reviewing Ostrander Precision Castings Inc., a US producer of investment-
 Ostrander has 90 million shares outstanding, and the shares trade at USD 30.00.
 All figures are in USD millions, and the tax rate is 25%.
 
-In 2024 Ostrander bought a competitor with a large bridge loan, which lifted its debt to 55% of total capital at market values.
-Management has since announced a plan to reduce debt to 35% of total capital over the next three years and to hold it there, and 2025 was the first year of the plan.
+In 2024 Ostrander bought a competitor with a large bridge loan, which lifted its debt to 55% of total capital at market values by the end of that year.
+Management has since announced a plan to reduce debt to 35% of total capital at market values and then to hold it there, and the large 2025 repayment was the first and largest step.
 
 Exhibit 1: Ostrander statement of cash flows, 2025 (USD millions)
 
@@ -1061,7 +1062,7 @@ Exhibit 2: Ostrander capital and market data
 | Risk-free rate | 4.0% |
 | Equity beta | 1.20 |
 | Equity risk premium | 5.5% |
-| Current weights: debt, equity | 55%, 45% |
+| Weights at the end of 2024: debt, equity | 55%, 45% |
 | Target weights after the plan: debt, equity | 35%, 65% |
 
 Achebe first reconstructs 2025 FCFF and FCFE from the cash flow statement.
@@ -1082,8 +1083,8 @@ The fund buys only shares whose estimated value exceeds the market price.
    - C. USD 228 million.
 2. Ostrander's 2025 FCFE is closest to: (LOS: los-05-03-d)
    - A. USD -292 million.
-   - B. USD -212 million.
-   - C. USD -242 million.
+   - B. USD -242 million.
+   - C. USD -212 million.
 3. Holloway's statement is best described as: (LOS: los-05-03-a)
    - A. correct.
    - B. incorrect, because FCFF for a levered company must be discounted at the required return on equity.
@@ -1123,8 +1124,8 @@ Exhibit 2 summarizes them.
 
 | Deal | Structure | Current spread |
 |---|---|---|
-| Veldhoven Pharma (Netherlands) for Ashby Biologics (United States) | Cross-border, friendly; needs approval from both countries' regulators | 6.1% |
-| Corrin Foods for Pell Bakeries (both United States) | Domestic, friendly, horizontal | 2.4% |
+| Veldhoven Pharma (acquirer, Netherlands) for Ashby Biologics (target, United States) | Cross-border, friendly; needs approval from both countries' regulators | 6.1% |
+| Corrin Foods (acquirer) for Pell Bakeries (target), both United States | Domestic, friendly, horizontal | 2.4% |
 
 Moyo makes two statements about the merger book.
 
@@ -1341,7 +1342,8 @@ The fund's economist, Beatrix Holm, adds two statements to the committee pack.
 
 Statement 1: "Research on government yields finds that monetary policy explains most of the variation in short- and intermediate-term yields, whereas inflation expectations explain most of the variation in long-term yields."
 
-Statement 2: "The finance ministry plans to shorten the average maturity of its new bond issuance. By adding duration supply to the market, this should raise the bond risk premium and push long-term yields higher."
+Statement 2: "The finance ministry plans to shorten the average maturity of its new bond issuance."
+"By adding duration supply to the market, this should raise the bond risk premium and push long-term yields higher."
 
 Dufour wants each statement checked before the pack is circulated.
 
@@ -1508,12 +1510,12 @@ Solberg's stress scenario for FY2026 assumes a 100 basis point parallel rise in 
    - C. €970.0 million and €190.0 million.
 3. The most appropriate response to Novak's January 2026 note is that: (LOS: los-03-05-h)
    - A. Novak is correct, because operating cash flow well above net income is the clearest indicator of high earnings quality.
-   - B. Novak is incorrect, because the rise in gross PP&E as a share of total assets with no change in strategy is consistent with operating costs being capitalized, which moves outflows to investing activities and inflates operating cash flow.
-   - C. Novak is incorrect, because strongly negative accruals indicate that Brenmoor is recognizing revenue before it is earned.
+   - B. Novak is incorrect, because strongly negative accruals indicate that Brenmoor is recognizing revenue before it is earned.
+   - C. Novak is incorrect, because the rise in gross PP&E as a share of total assets with no change in strategy is consistent with operating costs being capitalized, which moves outflows to investing activities and inflates operating cash flow.
 4. Based on Exhibit 3, the effect of Solberg's stress scenario as a percentage of Brenmoor's FY2025 pre-tax income is closest to: (LOS: los-03-05-m)
-   - A. $-1.5\%$.
+   - A. $-10.7\%$.
    - B. $-8.0\%$.
-   - C. $-10.7\%$.
+   - C. $-1.5\%$.
 
 ## Item set 22 (10-02): Pembrook and Vale Advisers: Conduct Beyond the Portfolio
 
@@ -1660,17 +1662,17 @@ For each, the committee wants to know which Standard, if any, is engaged, and wh
 > 4. B: carry factor omitted from put delta (wrong formula variant); C: no-carry delta parity applied to a currency option (wrong formula variant).
 
 > [!success]- Item set 4 (01-03)
-> 1. **B.** The total degrees of freedom in Exhibit 2 are 107, so $n = 107 + 1 = 108$. The unadjusted $R^2$ of the auxiliary regression is $9{,}406.0 / 115{,}843.0 = 0.081196$, or 0.0812 rounded. $\chi^2_{BP} = nR^2 = 108 \times 0.081196 = 8.7692$. The degrees of freedom equal the $k = 3$ regressors, so the 5% critical value is 7.815, and $8.7692 > 7.815$ (p-value 0.0325) rejects the null of no conditional heteroskedasticity at 5%, though not at 1% (11.345). A is wrong because it reports the F-statistic of the auxiliary regression, $(9{,}406.0/3)/(106{,}437.0/104) = 3{,}135.3333/1{,}023.4327 = 3.0635$, instead of $nR^2$, and compares it with the chi-square critical value. C is wrong because it counts the intercept as a regressor and uses 4 degrees of freedom, whose 5% critical value 9.488 exceeds 8.7692.
+> 1. **C.** The total degrees of freedom in Exhibit 2 are 107, so $n = 107 + 1 = 108$. The unadjusted $R^2$ of the auxiliary regression is $9{,}406.0 / 115{,}843.0 = 0.081196$, or 0.0812 rounded. $\chi^2_{BP} = nR^2 = 108 \times 0.081196 = 8.7692$. The degrees of freedom equal the $k = 3$ regressors, so the 5% critical value is 7.815, and $8.7692 > 7.815$ (p-value 0.0325) rejects the null of no conditional heteroskedasticity at 5%, though not at 1% (11.345). A is wrong because it reports the F-statistic of the auxiliary regression, $(9{,}406.0/3)/(106{,}437.0/104) = 3{,}135.3333/1{,}023.4327 = 3.0635$, instead of $nR^2$, and compares it with the chi-square critical value. B is wrong because it counts the intercept as a regressor and uses 4 degrees of freedom, whose 5% critical value 9.488 exceeds 8.7692.
 > 2. **B.** $DW = 11{,}256.5 / 5{,}832.4 = 1.9300$, where the denominator is the residual sum of squares of Model 1, so $r \approx 1 - 1.9300/2 = 0.0350$ and first-order serial correlation is negligible. The Breusch-Godfrey statistic is distributed $F(p, n - p - k - 1) = F(12, 108 - 12 - 3 - 1) = F(12, 92)$, and $2.31 > 1.859$ (p-value 0.0126), so serial correlation up to lag 12 is present; the Durbin-Watson test misses it because it detects only first-order serial correlation. Because no regressor is a lagged dependent variable, the coefficients remain consistent and only the standard errors are understated, so Newey-West (HAC) standard errors are required, and they also handle the conditional heteroskedasticity found in question 1. A is wrong because it relies on the Durbin-Watson statistic alone and ignores the Breusch-Godfrey rejection. C is wrong because it divides by the total sum of squares, $11{,}256.5 / 11{,}001.3 = 1.0232$ (implied $r \approx 0.4884$), and because serial correlation makes coefficients inconsistent only when a lagged dependent variable is a regressor.
 > 3. **B.** $VIF_{BDI} = 1/(1 - 0.935) = 15.3846$ in Model 2, against $1/(1 - 0.300) = 1.4286$ in Model 1. The sampling variance of a coefficient is proportional to its VIF, so with the MSE and the variance of BDI unchanged the standard error rises by $\sqrt{15.3846 / 1.4286} = \sqrt{10.7692} = 3.2817$. The Exhibit 3 ratio $0.1383 / 0.0420 = 3.2929$ is slightly larger because the MSE rises from $5{,}832.4/104 = 56.0808$ to about 56.4805 when a degree of freedom is lost. A is wrong because it uses the squared pairwise correlation as $R_j^2$: $1/(1 - 0.95^2) = 10.2564$ and $\sqrt{10.2564/1.4286} = 2.6795$; with more than two regressors the auxiliary $R^2$, not the pairwise correlation, determines the VIF. C is wrong because it reports the variance ratio, 10.7692, as the standard error ratio instead of taking its square root.
-> 4. **B.** The CAPE series is a component of the BDI, so adding it violates parsimony and economic reasoning: it raises $R^2$ only from 0.4698 to 0.4712, lowers adjusted $R^2$ from 0.4546 to 0.4507, and creates serious multicollinearity (VIF 15.38 > 10). The correct specification is Model 1, whose BDI VIF of 1.43 raises no concern, with Newey-West standard errors because questions 1 and 2 found conditional heteroskedasticity and serial correlation: $t = 0.2150 / 0.0588 = 3.6565 > 1.983$, so the BDI exposure is significant at 5%. A is wrong because $t = 0.1320 / 0.1936 = 0.6818$ is small only because multicollinearity inflates the standard error; concluding there is no exposure is a Type II error, and the correction is to drop the redundant regressor, not to reinterpret the model. C is wrong because White standard errors correct only for heteroskedasticity; $t = 0.2150 / 0.0512 = 4.1992$ still overstates significance because it ignores the serial correlation found in question 2.
+> 4. **C.** The CAPE series is a component of the BDI, so adding it violates parsimony and economic reasoning: it raises $R^2$ only from 0.4698 to 0.4712, lowers adjusted $R^2$ from 0.4546 to 0.4507, and creates serious multicollinearity (VIF 15.38 > 10). The correct specification is Model 1, whose BDI VIF of 1.43 raises no concern, with Newey-West standard errors because questions 1 and 2 found conditional heteroskedasticity and serial correlation: $t = 0.2150 / 0.0588 = 3.6565 > 1.983$, so the BDI exposure is significant at 5%. A is wrong because $t = 0.1320 / 0.1936 = 0.6818$ is small only because multicollinearity inflates the standard error; concluding there is no exposure is a Type II error, and the correction is to drop the redundant regressor, not to reinterpret the model. B is wrong because White standard errors correct only for heteroskedasticity; $t = 0.2150 / 0.0512 = 4.1992$ still overstates significance because it ignores the serial correlation found in question 2.
 >
 > **Distractor design**
 >
-> 1. A uses the auxiliary regression's F-statistic in place of $nR^2$; C counts the intercept in the chi-square degrees of freedom.
+> 1. A uses the auxiliary regression's F-statistic in place of $nR^2$; B counts the intercept in the chi-square degrees of freedom.
 > 2. A trusts the first-order Durbin-Watson test over the Breusch-Godfrey test; C divides by the total instead of the residual sum of squares and applies the lagged-dependent-variable consequence to a model without one.
 > 3. A uses the squared pairwise correlation instead of the auxiliary $R^2$; C reports the variance inflation ratio as the standard error ratio.
-> 4. A reads a multicollinearity-inflated standard error as absence of exposure; C uses heteroskedasticity-only standard errors when serial correlation is also present.
+> 4. A reads a multicollinearity-inflated standard error as absence of exposure; B uses heteroskedasticity-only standard errors when serial correlation is also present.
 
 > [!success]- Item set 5 (06-02)
 > 1. **C.** Adjacent rates at the same date satisfy $i_H = i_L e^{2\sigma}$, so $\sigma = \ln(i_H / i_L)/2$.
@@ -1832,11 +1834,11 @@ For each, the committee wants to know which Standard, if any, is engaged, and wh
 > Only the gain above her cost basis is taxed, and at a lower rate, which is the tax advantage that leads companies and investors to prefer repurchases when capital gains are taxed more lightly than dividends (V4 p.40).
 > A is wrong because the equivalence of dividends and repurchases at the market price holds only when taxes and information content are the same; here they are not (V4 p.38).
 > B is wrong because it taxes the entire 180,000 of sale proceeds at 20% instead of only the 60,000 gain: tax of 36,000 leaves wealth of 1,764,000, an advantage of only 18,000, the same figure obtained by applying the 10-point rate difference to the full distribution.
-> 2. **C.** BVPS before the repurchase $= 18.00 / 0.80 = 22.50$, so book equity $= 22.50 \times 50 = 1{,}125$ million.
+> 2. **B.** BVPS before the repurchase $= 18.00 / 0.80 = 22.50$, so book equity $= 22.50 \times 50 = 1{,}125$ million.
 > After spending 90 million to buy 5 million shares: $BVPS = (1{,}125 - 90) / (50 - 5) = 1{,}035 / 45 = 23.0000$.
 > BVPS rises because the repurchase price of 18.00 is below the pre-repurchase BVPS of 22.50, so Lindqvist is right on this point (V4 p.37).
-> A is wrong because it inverts the price-to-book ratio, $BVPS = 18.00 \times 0.80 = 14.40$, giving equity of 720 million and $(720 - 90) / 45 = 14.0000$.
-> B is wrong because it divides the reduced equity by the original share count: $1{,}035 / 50 = 20.7000$.
+> A is wrong because it divides the reduced equity by the original share count: $1{,}035 / 50 = 20.7000$.
+> C is wrong because it removes the repurchased shares from the denominator but leaves book equity at its pre-repurchase level, ignoring the 90 million paid out: $1{,}125 / 45 = 25.0000$.
 > 3. **C.** A debt-financed repurchase leaves EPS unchanged when the after-tax cost of debt equals the earnings yield (V4 p.36).
 > Earnings yield $= 1 / 12.5 = 8.00\%$, so the breakeven after-tax rate is 8.00% and the breakeven pretax rate is $0.08 / (1 - 0.25) = 10.6667\%$.
 > The lenders' quoted 7.2% pretax is $7.2\% \times 0.75 = 5.40\%$ after tax, below the earnings yield, so the proposed loan would be accretive.
@@ -1852,7 +1854,7 @@ For each, the committee wants to know which Standard, if any, is engaged, and wh
 > **Distractor design**
 >
 > 1. A: dividend-repurchase equivalence applied despite different tax rates (condition ignored); B: capital gains tax applied to full proceeds rather than to the gain over cost basis (wrong tax base).
-> 2. A: price-to-book ratio inverted when deriving BVPS (misread exhibit); B: post-repurchase equity divided by pre-repurchase share count (mismatched numerator and denominator).
+> 2. A: post-repurchase equity divided by pre-repurchase share count (mismatched numerator and denominator); C: pre-repurchase equity divided by post-repurchase share count, so the cash paid out is never deducted (mismatched numerator and denominator).
 > 3. A: earnings yield multiplied rather than divided by $(1 - t)$ (wrong formula variant); B: pretax borrowing rate compared directly with the earnings yield (before-tax vs after-tax).
 > 4. B: debt repayment added to FCFE (sign error on net borrowing); C: repurchases omitted from the coverage denominator (wrong formula variant).
 
@@ -1901,23 +1903,23 @@ For each, the committee wants to know which Standard, if any, is engaged, and wh
 > Equivalently, the sum of the two enterprise values, $4{,}212 + 2{,}349 = 6{,}561$, exceeds Vantorra's trading EV of $240 \times 14.00 + 2{,}800 = 6{,}160$ by 401, even after the EUR10 million a year of dis-synergies ($52 + 18 - 60$).
 > A is wrong because it deducts Vantorra's pre-separation net debt of 2,800, ignoring the repayment funded by the special dividend: $(4{,}212 - 2{,}800)/240 + 6.4542 = 5.8833 + 6.4542 = 12.3375$.
 > C is wrong because it ignores the EUR800 million Quellis borrows, counting the special dividend twice: $9.2167 + 2{,}349/240 = 9.2167 + 9.7875 = 19.0042$.
-> 3. **B.** Before the separation: EBITDA $= 520 + 180 - 60 = 640$; EBIT $= 640 - 170 = 470$; EBT $= 470 - 0.05 \times 3{,}000 + 0.02 \times 200 = 470 - 150 + 4 = 324$; net income $= 243$; EPS $= 243/240 = 1.0125$.
+> 3. **C.** Before the separation: EBITDA $= 520 + 180 - 60 = 640$; EBIT $= 640 - 170 = 470$; EBT $= 470 - 0.05 \times 3{,}000 + 0.02 \times 200 = 470 - 150 + 4 = 324$; net income $= 243$; EPS $= 243/240 = 1.0125$.
 > After the separation: EBIT $= 468 - 120 = 348$; interest expense $= 0.05 \times 2{,}200 = 110$; interest income $= 4$.
 > EBT $= 348 - 110 + 4 = 242$; tax $= 60.5$; net income $= 181.5$.
 > A spin off is a stock dividend of Quellis shares, so Vantorra's share count stays at 240 million: EPS $= 181.5/240 = 0.7563$.
 > A is wrong because it keeps the pre-separation interest expense, ignoring the EUR800 million debt repayment: $(348 - 150 + 4) \times 0.75 = 151.5$, and $151.5/240 = 0.6313$.
-> C is wrong because it treats the distribution like a share repurchase and cuts Vantorra's share count by one-third: $181.5/160 = 1.1344$.
-> 4. **B.** Once a restructuring is announced, the market prices in its expected impact immediately, including the risk that it is not completed, so the current share price already reflects it.
+> B is wrong because it also charges Quellis's EUR18 million of standalone corporate costs to Vantorra, when those costs sit at Quellis: EBITDA $= 520 - 52 - 18 = 450$; EBIT $= 330$; EBT $= 330 - 110 + 4 = 224$; net income $= 168$; and $168/240 = 0.7000$.
+> 4. **C.** Once a restructuring is announced, the market prices in its expected impact immediately, including the risk that it is not completed, so the current share price already reflects it.
 > A is wrong because research finds no correlation between announcement-day returns and excess returns two or more years later; the price reaction is not a verdict on long-run value creation.
-> C is wrong because a spin off creates two independent companies without concentrating market power, so it avoids the antitrust scrutiny that a sale to a competitor can attract.
+> B is wrong because a spin off creates two independent companies without concentrating market power, so it avoids the antitrust scrutiny that a sale to a competitor can attract.
 > Its execution risk comes from the several quarters needed to separate the businesses and from leaving the valuation to the market.
 >
 > **Distractor design**
 >
 > 1. B skips the standalone corporate costs of the spun-off company; C applies a transaction multiple, with its embedded control premium, to a spin off.
 > 2. A omits the debt repayment funded by the special dividend; C ignores the debt the spun-off company takes on and double counts the dividend.
-> 3. A ignores the interest saved on the repaid debt; C reduces the parent's share count as if the spin off were a buyback.
-> 4. A trusts the announcement-day return; C reverses the regulatory advantage of a spin off over a sale to a competitor.
+> 3. A ignores the interest saved on the repaid debt; B double counts the corporate functions by charging the spun-off company's standalone costs to the parent as well.
+> 4. A trusts the announcement-day return; B reverses the regulatory advantage of a spin off over a sale to a competitor.
 
 > [!success]- Item set 13 (06-04)
 > 1. **A.** Use the BBB row and the ten-year bucket, where Bond L's current spread is 1.70%.
@@ -1965,8 +1967,8 @@ For each, the committee wants to know which Standard, if any, is engaged, and wh
 > 3. **A.** Carrying amount before impairment $= 284 + 0.30 \times 20 - 3 - 0.30 \times 30 = 284 + 6 - 3 - 9 = 278$.
 > IFRS compares the carrying amount with the recoverable amount, the higher of value in use and fair value less costs to sell: $\max(251,\ 236 - 4) = \max(251,\ 232) = 251$, so the loss $= 278 - 251 = 27$.
 > US GAAP writes an equity method investment down to fair value when the decline is other than temporary: loss $= 278 - 236 = 42$.
-> B is wrong because it uses the lower of the two IFRS measures as the recoverable amount, $278 - 232 = 46$.
-> C is wrong because it leaves the dividends out of the roll-forward, giving a carrying amount of $284 + 6 - 3 = 287$ and losses of $287 - 251 = 36$ and $287 - 236 = 51$.
+> B is wrong because it leaves the dividends out of the roll-forward, giving a carrying amount of $284 + 6 - 3 = 287$ and losses of $287 - 251 = 36$ and $287 - 236 = 51$.
+> C is wrong because it uses the lower of the two IFRS measures as the recoverable amount, $278 - 232 = 46$.
 > 4. **A.** Under FVPL, income is the coupon plus the change in fair value; under amortized cost it is effective interest.
 > 2026: FVPL $= 6.0 + (187.40 - 185.82) = 7.58$ against 9.2910, a difference of $-1.7110$.
 > 2027: FVPL $= 6.0 + (195.10 - 187.40) = 13.70$ against 9.4556, a difference of $+4.2444$.
@@ -1978,7 +1980,7 @@ For each, the committee wants to know which Standard, if any, is engaged, and wh
 >
 > 1. A: one period instead of two (period error); C: straight-line discount accretion instead of the effective interest method (wrong formula variant).
 > 2. A: FVOCI debt treated as FVOCI equity, no recycling on sale; C: FVOCI equity gain recycled as if it were debt (category swap).
-> 3. B: recoverable amount taken as the lower rather than the higher of value in use and fair value less costs to sell; C: dividends omitted from the equity method roll-forward (chained carrying amount error).
+> 3. B: dividends omitted from the equity method roll-forward (chained carrying amount error); C: recoverable amount taken as the lower rather than the higher of value in use and fair value less costs to sell.
 > 4. B: single period compared instead of the cumulative two years (period error); C: fair value change added on top of effective interest, double counting the accretion.
 
 > [!success]- Item set 15 (05-03)
@@ -1988,12 +1990,12 @@ For each, the committee wants to know which Standard, if any, is engaged, and wh
 > $FCFF = CFO + Int(1-t) - FCInv = 348 + 90 - 240 = 198$.
 > A is wrong because it deducts working capital investment a second time: $WCInv = 40 + 25 - 18 = 47$ and $198 - 47 = 151$.
 > C is wrong because it adds back the full interest instead of the after-tax amount: $348 + 120 - 240 = 228$.
-> 2. **C.** Net borrowing $= 50 - 400 = -350$, counting both notes payable and long-term debt.
+> 2. **B.** Net borrowing $= 50 - 400 = -350$, counting both notes payable and long-term debt.
 > $FCFE = CFO - FCInv + \text{Net borrowing} = 348 - 240 - 350 = -242$.
 > Check from FCFF: $198 - 90 - 350 = -242$.
 > Check from uses: $FCFE = \Delta \text{Cash} + \text{Dividends} + \text{Net share repurchases} = -272 + 60 - 30 = -242$, where the share issuance is a negative repurchase.
 > A is wrong because it omits the increase in notes payable from net borrowing: $348 - 240 - 400 = -292$.
-> B is wrong because it treats the share issuance as a source of FCFE: $-242 + 30 = -212$; share issues are transactions with shareholders and do not change free cash flow.
+> C is wrong because it treats the share issuance as a source of FCFE: $-242 + 30 = -212$; share issues are transactions with shareholders and do not change free cash flow.
 > 3. **A.** FCFF is preferred for a levered company with negative FCFE or a changing capital structure.
 > FCFF is before all debt flows, so its growth reflects operating fundamentals rather than a repayment schedule, and WACC is less sensitive to changes in leverage than the cost of equity.
 > B is wrong because FCFF belongs to all capital providers and is discounted at WACC; only FCFE is discounted at the required return on equity.
@@ -2004,14 +2006,14 @@ For each, the committee wants to know which Standard, if any, is engaged, and wh
 > Equity $= 4{,}505.9081 - 1{,}480 = 3{,}025.9081$, using the market value of debt; per share $= 3{,}025.9081/90 = 33.62$.
 > The estimate exceeds the USD 30.00 price, so the shares are undervalued and qualify for purchase.
 > A is wrong because it omits the tax shield on debt: $WACC = 0.35(6.4\%) + 6.89\% = 9.13\%$, firm value $= 205.92/0.0513 = 4{,}014.0351$, and $(4{,}014.0351 - 1{,}480)/90 = 28.16$, which reverses the conclusion.
-> C is wrong because it uses the current 55/45 weights instead of the long-run target: $WACC = 0.55(4.8\%) + 0.45(10.6\%) = 7.41\%$, firm value $= 205.92/0.0341 = 6{,}038.7097$, and $(6{,}038.7097 - 1{,}480)/90 = 50.65$.
+> C is wrong because it uses the end-2024 55/45 weights instead of the long-run target: $WACC = 0.55(4.8\%) + 0.45(10.6\%) = 7.41\%$, firm value $= 205.92/0.0341 = 6{,}038.7097$, and $(6{,}038.7097 - 1{,}480)/90 = 50.65$.
 >
 > **Distractor design**
 >
 > 1. A: WCInv subtracted from CFO although CFO already contains it (double count); C: full interest added back (before-tax vs after-tax).
-> 2. A: notes payable omitted from net borrowing (missed debt layer); B: share issuance treated as a determinant of FCFE (use vs determinant).
+> 2. A: notes payable omitted from net borrowing (missed debt layer); C: share issuance treated as a determinant of FCFE (use vs determinant).
 > 3. B: FCFF matched with the cost of equity (cash flow and discount rate mismatched); C: negative FCFE taken as a reason to abandon free cash flow models (wrong model criterion).
-> 4. A: debt tax shield omitted from WACC (before-tax vs after-tax), which flips the conclusion; C: current rather than target weights used in a perpetuity (misread exhibit).
+> 4. A: debt tax shield omitted from WACC (before-tax vs after-tax), which flips the conclusion; C: end-2024 rather than target weights used in a perpetuity (misread exhibit).
 
 > [!success]- Item set 16 (08-04)
 > 1. **A.** In a stub trade, the subsidiary legs are weighted by the parent's ownership percentages, so each parent share shorted is offset by buying subsidiary shares equal to the ownership percentage.
@@ -2184,22 +2186,22 @@ For each, the committee wants to know which Standard, if any, is engaged, and wh
 > The correction also cuts net income by $(240.0 - 12.0) \times (1 - 0.25) = 171.0$ to 240.0, but net income does not enter either measure.
 > B is wrong because it reduces operating cash flow but leaves the 240.0 in capital expenditures ($910.0 - 1{,}020.0 = -110.0$), counting the same payment twice.
 > C is wrong because it deducts the after-tax amount from operating cash flow ($1{,}150.0 - 240.0 \times 0.75 = 970.0$; $970.0 - 780.0 = 190.0$), although taxes paid are unaffected, so the full pre-tax cash payment moves.
-> 3. **B.** Gross PP&E rose from 38.0% and 39.0% of total assets to 44.0% and 49.0% with no change in strategy and only modest subscriber growth, the balance sheet build-up that must offset an under-reported expense.
+> 3. **C.** Gross PP&E rose from 38.0% and 39.0% of total assets to 44.0% and 49.0% with no change in strategy and only modest subscriber growth, the balance sheet build-up that must offset an under-reported expense.
 > Capitalized operating costs are reported as investing outflows, so operating cash flow above net income and negative accruals give a false sense of security; the investing section and the common-size balance sheet should be checked before OCF is trusted.
 > A is wrong because OCF above net income is not proof of quality when the cash outflows have been classified as investing.
-> C is wrong because premature revenue recognition raises receivables and accruals; strongly negative accruals point the other way, and the problem here is expense capitalization, not revenue.
+> B is wrong because premature revenue recognition raises receivables and accruals; strongly negative accruals point the other way, and the problem here is expense capitalization, not revenue.
 > 4. **B.** The rate rise reduces pre-tax income by 26.0; with symmetric sensitivities, a 10% depreciation of the pound reduces it by 18.0.
 > Combined effect $= -26.0 - 18.0 = -44.0$; as a percentage of pre-tax income $= -44.0/548.0 = -8.03\%$.
 > The zloty sensitivity is not part of the scenario.
-> A is wrong because it applies the pound sensitivity with the wrong sign, as if the pound appreciated ($(-26.0 + 18.0)/548.0 = -1.46\%$).
-> C is wrong because it divides a pre-tax effect by net income ($-44.0/411.0 = -10.71\%$).
+> A is wrong because it divides a pre-tax effect by net income ($-44.0/411.0 = -10.71\%$).
+> C is wrong because it applies the pound sensitivity with the wrong sign, as if the pound appreciated ($(-26.0 + 18.0)/548.0 = -1.46\%$).
 >
 > **Distractor design**
 >
 > 1. B: lower accruals read as lower quality (direction error); C: operating income used instead of net income (misread exhibit, decoy number).
 > 2. B: payment removed from OCF but left in capex (double count); C: after-tax amount moved although taxes paid are unaffected (before-tax vs after-tax error).
-> 3. A: OCF above net income treated as proof of quality (false sense of security); C: negative accruals linked to premature revenue (sign error).
-> 4. A: currency move applied with the wrong sign (sign error); C: pre-tax sensitivity scaled by net income (before-tax vs after-tax error).
+> 3. A: OCF above net income treated as proof of quality (false sense of security); B: negative accruals linked to premature revenue (sign error).
+> 4. A: pre-tax sensitivity scaled by net income (before-tax vs after-tax error); C: currency move applied with the wrong sign (sign error).
 
 > [!success]- Item set 22 (10-02)
 > 1. **C.** Opinions about the examination's difficulty or pass rate are permitted, but naming topics tested or not tested reveals confidential program information and violates Standard VII(A).

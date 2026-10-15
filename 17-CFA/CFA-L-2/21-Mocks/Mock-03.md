@@ -50,8 +50,8 @@ Exhibit 2: 3-year discount rate components (annual compounding)
 
 | Component | Today | Scenario change |
 |---|---|---|
-| Real default-free rate | 1.20% | -0.40 percentage points |
-| Expected inflation | 2.30% | -0.50 percentage points |
+| Real default-free rate | 0.85% | -0.40 percentage points |
+| Expected inflation | 2.30% | -0.70 percentage points |
 | Inflation-uncertainty premium | 0.30% | +0.10 percentage points |
 | Credit premium, Pellow Water (Aa) | 0.70% | +0.50 percentage points |
 | Credit premium, Brackmoor Steel (B) | 4.20% | +2.60 percentage points |
@@ -61,7 +61,7 @@ The committee measures relative performance as the difference between two bonds'
 
 After the stress results are presented, Calder and Oyelaran discuss what the curve will say once the scenario has played out.
 
-Calder: "After the repricing, the curve will slope upward from 2.35% at three months to 3.35% at ten years, and that slope will tell us that the market expects the central bank to raise rates again."
+Calder: "After the repricing, the curve will slope upward from 1.80% at two years to 3.35% at ten years, and that slope will tell us that the market expects the central bank to raise rates again."
 
 Oyelaran: "Even if the market expected short rates to stay where they are, the curve would still slope upward, because long-dated government bonds hedge bad economic times less well than short-dated ones."
 
@@ -76,9 +76,9 @@ Oyelaran: "Even if the market expected short rates to stay where they are, the c
    - B. 1.55%.
    - C. 1.90%.
 3. Under the scenario, the amount by which the Pellow Water bond's price return exceeds the Brackmoor Steel bond's price return is closest to: (LOS: los-09-01-f)
-   - A. 1.93 percentage points.
-   - B. 5.47 percentage points.
-   - C. 5.70 percentage points.
+   - A. 1.95 percentage points.
+   - B. 5.48 percentage points.
+   - C. 5.78 percentage points.
 4. Regarding the statements made by Calder and Oyelaran about the post-scenario curve, which is correct? (LOS: los-09-01-d)
    - A. Calder's statement only.
    - B. Oyelaran's statement only.
@@ -106,7 +106,7 @@ Exhibit 1: Norrland Streaming at 1 January 2026
 | Content library: fair value in excess of book value, remaining life 3 years | 90 |
 | Norrland brand: internally developed, never recognized by Norrland, fair value, indefinite life | 60 |
 | Freehold land: fair value in excess of book value | 30 |
-| Estimated cost of closing Norrland's Leeds studio, planned by Aldercrest after the deal | 25 |
+| Estimated cost of closing Norrland's Leeds studio, planned by Aldercrest for 2027 | 25 |
 
 No obligation to close the Leeds studio existed at the acquisition date.
 All other Norrland assets and liabilities have fair values equal to book values.
@@ -130,9 +130,9 @@ He wants to know how much the goodwill election moves that ratio.
 Pembridge's colleague, Freya Lindqvist, covers a US peer that reports under US GAAP.
 She makes two statements about how a US GAAP company would have reported the same acquisition.
 
-Statement 1: "A US GAAP reporter would be required to measure the non-controlling interest at fair value, so on your forecasts it would report the lower of the two 2026 return on equity figures you computed for Aldercrest."
+Statement 1: "A US GAAP reporter would be required to measure the non-controlling interest at its share of identifiable net assets, so on your forecasts it would report the higher of the two 2026 return on equity figures you computed for Aldercrest."
 
-Statement 2: "A US GAAP reporter would not recognize the Norrland brand, because Norrland developed it internally and never recorded it, so its goodwill would be larger than Aldercrest's."
+Statement 2: "A US GAAP reporter would recognize the Norrland brand at its fair value even though Norrland developed it internally and never recorded it, so its identifiable net assets, and its goodwill under the full goodwill method, would be the same as Aldercrest's."
 
 ### Questions
 
@@ -141,17 +141,17 @@ Statement 2: "A US GAAP reporter would not recognize the Norrland brand, because
    - B. £45 million.
    - C. £66 million.
 2. If Aldercrest elects the partial goodwill method, the non-controlling interest on its consolidated balance sheet at 31 December 2026 is closest to: (LOS: los-03-01-a)
-   - A. £336 million.
-   - B. £348 million.
-   - C. £354 million.
+   - A. £318 million.
+   - B. £336 million.
+   - C. £348 million.
 3. Aldercrest's 2026 return on equity under the partial goodwill method and under the full goodwill method, respectively, is closest to: (LOS: los-03-01-c)
    - A. 13.52% and 13.39%.
-   - B. 16.22% under both methods.
-   - C. 15.60% and 15.45%.
+   - B. 15.60% and 15.45%.
+   - C. 16.22% under both methods.
 4. Which of Lindqvist's statements is correct? (LOS: los-03-01-b)
    - A. Statement 1 only.
-   - B. Statement 2 only.
-   - C. Both statements.
+   - B. Both statements.
+   - C. Statement 2 only.
 
 ## Item set 3 (06-02): Castellane Endowment: Strip Prices and an Amortizing Note
 
@@ -303,8 +303,8 @@ Marchetti decides to settle the question by following the regression process str
    - C. 20.3 times that in the lowest quintile, indicating that the relationship between P/B and the independent variables is not linear.
 4. Regarding the 14 April and 15 April statements, the most appropriate next step under the regression process is to: (LOS: los-01-01-a)
    - A. use the model to rank banks, because the overall fit is significant and the specification is the best of the candidates.
-   - B. adjust the model and re-estimate it, because the residual analysis shows that a regression assumption is not satisfied.
-   - C. re-estimate the model as a logistic regression, because P/B is bounded below by zero.
+   - B. re-estimate the model as a logistic regression, because P/B is bounded below by zero.
+   - C. adjust the model and re-estimate it, because the residual analysis shows that a regression assumption is not satisfied.
 
 ## Item set 5 (02-01): Harrowgate Global Bond Fund Yen Hedge Book
 
@@ -404,7 +404,7 @@ Exhibit 1: Trend models of monthly volume, July 2016 to June 2024 (96 observatio
 | Trend coefficient | 1.818 | 0.00812 |
 | t-statistic of trend coefficient | 38.62 | 44.18 |
 | $R^2$ | 0.9408 | 0.9541 |
-| Standard error of regression | 11.35 | 0.0361 |
+| Standard error of regression | 12.78 | 0.0499 |
 | Durbin-Watson statistic | 0.44 | 0.58 |
 
 The 5% lower Durbin-Watson critical value $d_l$ for 96 observations and one regressor is 1.65.
@@ -1165,9 +1165,9 @@ Kestrelmoor's share price has risen about 20% since the January 2025 grants.
 
 At a team meeting on 20 February 2026, Dufresne and her associate, Marc Ouellet, discuss the 2026 awards.
 
-Dufresne states: "Holding the other inputs constant, the longer expected life raises the grant-date fair value of the 2026 options, while the higher dividend yield lowers it."
+Dufresne states: "The lower volatility assumption will reduce the grant-date fair value of the 2026 RSU grants, and the 20% share price rise will increase the remaining expense on the 2025 grants."
 
-Ouellet states: "The lower volatility assumption will also reduce the grant-date fair value of the 2026 RSU grants, and the 20% share price rise will increase the remaining expense on the 2025 grants."
+Ouellet replies: "Holding the other inputs constant, the longer expected life raises the grant-date fair value of the 2026 options, while the higher dividend yield lowers it."
 
 ### Questions
 
@@ -1645,12 +1645,12 @@ If the quote is attractive instead, he wants the trades that would lock in the d
 > $BEI = \theta_{t,s} + \pi_{t,s}$, and the premium becomes $0.35\% + 0.10\% = 0.45\%$, so $\theta_{t,5} = 1.90\% - 0.45\% = 1.45\%$, down from $2.40\% - 0.35\% = 2.05\%$ today.
 > B is wrong because it subtracts today's 0.35% premium instead of the scenario's 0.45%: $1.90\% - 0.35\% = 1.55\%$.
 > C is wrong because it reads the break-even rate as a pure inflation forecast and ignores the inflation-uncertainty premium.
-> 3. **C.** The 3-year default-free component falls by $-0.40 - 0.50 + 0.10 = -0.80$ percentage points, from 3.80% to 3.00%.
-> Pellow: yield moves from $3.80\% + 0.70\% = 4.50\%$ to $3.00\% + 1.20\% = 4.20\%$, so the return is $(1.0450/1.0420)^3 - 1 = +0.8662\%$.
-> Brackmoor: yield moves from $3.80\% + 4.20\% = 8.00\%$ to $3.00\% + 6.80\% = 9.80\%$, so the return is $(1.0800/1.0980)^3 - 1 = -4.8378\%$.
-> The difference is $0.8662\% - (-4.8378\%) = 5.7041$ percentage points, which is the quality outperformance expected as the cycle turns down and the quality spread widens.
-> A is wrong because it treats the bonds as 1-year instruments and drops the exponent: $(1.0450/1.0420 - 1) - (1.0800/1.0980 - 1) = 0.2879\% + 1.6393\% = 1.93$ points.
-> B is wrong because it applies only the credit premium changes and ignores the fall in default-free rates: Pellow $(1.0450/1.0500)^3 - 1 = -1.4218\%$, Brackmoor $(1.0800/1.1060)^3 - 1 = -6.8880\%$, difference 5.47 points.
+> 3. **C.** The 3-year default-free component is $0.85\% + 2.30\% + 0.30\% = 3.45\%$ today and falls by $-0.40 - 0.70 + 0.10 = -1.00$ percentage point, to 2.45%.
+> Pellow: yield moves from $3.45\% + 0.70\% = 4.15\%$ to $2.45\% + 1.20\% = 3.65\%$, so the return is $(1.0415/1.0365)^3 - 1 = +1.4542\%$.
+> Brackmoor: yield moves from $3.45\% + 4.20\% = 7.65\%$ to $2.45\% + 6.80\% = 9.25\%$, so the return is $(1.0765/1.0925)^3 - 1 = -4.3296\%$.
+> The difference is $1.4542\% - (-4.3296\%) = 5.7837$ percentage points, about 5.78, which is the quality outperformance expected as the cycle turns down and the quality spread widens.
+> A is wrong because it treats the bonds as 1-year instruments and drops the exponent: $(1.0415/1.0365 - 1) - (1.0765/1.0925 - 1) = 0.4824\% + 1.4645\% = 1.95$ points.
+> B is wrong because it applies only the credit premium changes and ignores the fall in default-free rates: Pellow $(1.0415/1.0465)^3 - 1 = -1.4265\%$, Brackmoor $(1.0765/1.1025)^3 - 1 = -6.9093\%$, difference 5.48 points.
 > 4. **B.** Longer-dated government bonds are less negatively correlated with bad times than short-dated bonds, so investors demand a bond risk premium that rises with maturity, and a curve can slope upward even with flat rate expectations.
 > Because the slope mixes rate expectations with maturity-increasing premiums, it cannot on its own reveal that the market expects hikes; expectations are indeterminate, so Calder is wrong.
 > A is wrong because it reads rate expectations directly off an upward slope.
@@ -1669,29 +1669,29 @@ If the quote is attractive instead, he wants the trades that would lock in the d
 > Partial goodwill $= 498 - 0.60 \times 780 = 498 - 468 = 30$.
 > B is wrong because it deducts the 25 closure cost as an assumed liability, $498 - 0.60 \times 755 = 498 - 453 = 45$.
 > C is wrong because it leaves out the unrecorded brand, $498 - 0.60 \times 720 = 498 - 432 = 66$.
-> 2. **A.** Under partial goodwill the non-controlling interest at acquisition is $0.40 \times 780 = 312$.
+> 2. **B.** Under partial goodwill the non-controlling interest at acquisition is $0.40 \times 780 = 312$.
 > Norrland's income for consolidation is after amortization of the content library step-up, $90 / 3 = 30$; the brand and land step-ups are not amortized, so adjusted net income $= 135 - 30 = 105$.
 > The non-controlling interest rises by its share of adjusted income, $0.40 \times 105 = 42$, and falls by its share of dividends, $0.40 \times 45 = 18$.
 > Non-controlling interest at 31 December 2026 $= 312 + 42 - 18 = 336$.
-> B is wrong because it gives the non-controlling interest its share of Norrland's unadjusted income, $312 + 0.40 \times 135 - 18 = 348$, although the non-controlling interest bears its share of the step-up amortization.
-> C is wrong because it does not deduct the dividends paid to the non-controlling shareholders, $312 + 42 = 354$.
+> A is wrong because it charges the whole content library step-up amortization to the non-controlling interest instead of only its 40% share, $312 + (0.40 \times 135 - 30) - 18 = 312 + 24 - 18 = 318$.
+> C is wrong because it gives the non-controlling interest its share of Norrland's unadjusted income, $312 + 0.40 \times 135 - 18 = 348$, although the non-controlling interest bears its share of the step-up amortization.
 > 3. **A.** Consolidated net income $= 210 + 105 = 315$; the non-controlling interest's share is 42, so net income attributable to Aldercrest $= 315 - 42 = 273$, which equals $210 + 0.60 \times 105$ and is the same under both goodwill methods.
 > Equity attributable to Aldercrest's shareholders at year end $= 1{,}500 + 273 - 90 = 1{,}683$; Norrland's dividend to Aldercrest is intra-group and eliminated.
 > Partial goodwill: total equity $= 1{,}683 + 336 = 2{,}019$, and return on equity $= 273 / 2{,}019 = 0.1352 = 13.52\%$.
 > Full goodwill: the non-controlling interest starts at $0.40 \times 830 = 332$, where $830 = 498 / 0.60$, and ends at $332 + 42 - 18 = 356$; total equity $= 1{,}683 + 356 = 2{,}039$, and return on equity $= 273 / 2{,}039 = 0.1339 = 13.39\%$.
-> B is wrong because it leaves the non-controlling interest out of total equity, $273 / 1{,}683 = 16.22\%$, which also hides the difference between the two methods.
-> C is wrong because it uses consolidated net income before the non-controlling interest's share, $315 / 2{,}019 = 15.60\%$ and $315 / 2{,}039 = 15.45\%$.
-> 4. **A.** Statement 1 is correct: US GAAP requires the full goodwill method, which measures the non-controlling interest at fair value; total equity is 20 higher ($356$ against $336$) on identical net income to the parent, so return on equity is the lower figure, 13.39%.
-> Statement 2 is incorrect: under both IFRS and US GAAP the acquirer recognizes the acquiree's identifiable intangible assets at fair value, including internally developed intangibles the acquiree never recognized.
-> B is wrong because it rejects the full goodwill requirement and accepts a recognition rule that neither framework applies.
-> C is wrong because Statement 2 misstates the recognition of acquired intangibles under US GAAP.
+> B is wrong because it uses consolidated net income before the non-controlling interest's share, $315 / 2{,}019 = 15.60\%$ and $315 / 2{,}039 = 15.45\%$.
+> C is wrong because it leaves the non-controlling interest out of total equity, $273 / 1{,}683 = 16.22\%$, which also hides the difference between the two methods.
+> 4. **C.** Statement 1 is incorrect: US GAAP requires the full goodwill method, which measures the non-controlling interest at fair value, so total equity is 20 higher ($356$ against $336$) on identical net income to the parent and the US GAAP reporter shows the lower figure, 13.39%, not the higher one.
+> Statement 2 is correct: under both IFRS and US GAAP the acquirer recognizes the acquiree's identifiable intangible assets at fair value, including internally developed intangibles the acquiree never recognized, so the brand sits in identifiable net assets under either framework and full goodwill is the same 50.
+> A is wrong because it accepts the reversed measurement of the non-controlling interest and rejects a recognition rule that both frameworks apply.
+> B is wrong because Statement 1 misstates the US GAAP measurement of the non-controlling interest.
 >
 > **Distractor design**
 >
 > 1. B: post-acquisition restructuring cost recognized as an assumed liability; C: unrecorded acquiree intangible left out of identifiable net assets.
-> 2. B: NCI share taken on unadjusted subsidiary income (step-up amortization ignored); C: dividends to NCI not deducted in the roll-forward.
-> 3. B: NCI excluded from total equity (presentation error that also erases the method difference); C: consolidated net income used instead of income attributable to the parent.
-> 4. B: full goodwill requirement denied and a false intangible recognition rule accepted (IFRS vs US GAAP); C: accepts the false recognition rule alongside the correct goodwill rule.
+> 2. A: whole step-up amortization charged to the NCI rather than its ownership share; C: NCI share taken on unadjusted subsidiary income (step-up amortization ignored).
+> 3. B: consolidated net income used instead of income attributable to the parent; C: NCI excluded from total equity (presentation error that also erases the method difference).
+> 4. A: US GAAP non-controlling interest measured at its share of identifiable net assets, which is the IFRS partial goodwill election (IFRS vs US GAAP swap); B: accepts the reversed goodwill measurement alongside the correct intangible recognition rule.
 
 > [!success]- Item set 3 (06-02)
 > 1. **C.** A coupon bond is a package of zero-coupon bonds, so each cash flow is valued at the strip price for its date.
@@ -1741,17 +1741,17 @@ If the quote is attractive instead, he wants the trades that would lock in the d
 > The mean residual stays close to zero in every quintile, with no systematic sign pattern, so nothing in Exhibit 3 points to a curved relationship.
 > A is wrong because it compares standard deviations, $0.270 / 0.060 = 4.5$, and reports the result as a variance ratio.
 > C is wrong because it pairs the correct ratio with the wrong assumption; a linearity problem would show as mean residuals that change sign systematically across the fitted range, not as widening dispersion around a zero mean.
-> 4. **B.** After estimation, the first gate of the regression process is whether the assumptions are satisfied, and a no at that gate routes to adjusting the model and re-estimating it (V1 pp.6-7).
+> 4. **C.** After estimation, the first gate of the regression process is whether the assumptions are satisfied, and a no at that gate routes to adjusting the model and re-estimating it (V1 pp.6-7).
 > Question 3 shows that the homoskedasticity assumption fails, so the fit, significance, and best-model results that Okafor cites cannot yet be relied on, because those statistics depend on the assumptions (V1 p.10).
 > A is wrong because it skips the assumption gate; a significant F-test and a high R-squared come later in the process and do not override a failed assumption check.
-> C is wrong because the choice of logistic regression is made at the first fork, when the dependent variable is discrete, such as a 0/1 flag (V1 p.5); P/B is continuous, and a lower bound at zero does not make it discrete.
+> B is wrong because the choice of logistic regression is made at the first fork, when the dependent variable is discrete, such as a 0/1 flag (V1 p.5); P/B is continuous, and a lower bound at zero does not make it discrete.
 >
 > **Distractor design**
 >
 > - Q1: A divides CET1 capital by total assets instead of risk-weighted assets (misread exhibit); B computes ROE on ending instead of average equity (wrong formula variant).
 > - Q2: A drops the 1.5-point size of the CET1 change (per-unit error); C inverts the ratio of the two partial slopes (swapped roles of the variables).
 > - Q3: A reports a standard deviation ratio as a variance ratio; C attaches the correct ratio to the linearity assumption instead of homoskedasticity (wrong assumption).
-> - Q4: A skips the assumption gate in favour of fit and model comparison; C applies the discrete-dependent-variable fork to a bounded but continuous variable.
+> - Q4: A skips the assumption gate in favour of fit and model comparison; B applies the discrete-dependent-variable fork to a bounded but continuous variable.
 
 > [!success]- Item set 5 (02-01)
 > 1. **B.** USD is the base currency of the JPY/USD quote, and selling JPY forward means buying USD forward, so the fund pays the offer on both spot and points (V2 p.16).
@@ -1820,7 +1820,7 @@ If the quote is attractive instead, he wants the trades that would lock in the d
 > [!success]- Item set 7 (07-01)
 > 1. **A.** With continuous compounding, the dividend yield is a carry benefit: $f_0 = 4{,}250\,e^{(0.0360 - 0.0240)(0.5)} = 4{,}250\,e^{0.0060} = 4{,}275.5767$.
 > The quoted 4,268.00 is below the model price, so the futures is cheap and the trade is reverse carry arbitrage: buy the futures, short the index basket, and lend the proceeds.
-> At expiration the lent proceeds plus forgone dividends net to 4,275.5767 while the futures purchase costs 4,268.00, a riskless gain of 7.5767 index points.
+> At expiration the lent proceeds net of the dividends owed on the shorted basket grow to 4,275.5767 while the futures purchase costs 4,268.00, a riskless gain of 7.5767 index points.
 > Present value per point is $7.5767\,e^{-0.0360(0.5)} = 7.4415$, so per contract $7.4415 \times 50 = 372.07$.
 > B is wrong because it reports the profit at expiration, $7.5767 \times 50 = 378.83$, without discounting it to today.
 > C is wrong because it reverses the exponent to $(0.0240 - 0.0360)$, giving a model price of 4,224.5763 that makes the futures look rich; the resulting carry trade value $(4{,}268.00 - 4{,}224.5763)e^{-0.018} \times 50 = 2{,}132.45$ is a phantom.
@@ -1833,7 +1833,7 @@ If the quote is attractive instead, he wants the trades that would lock in the d
 > C is wrong because it ignores both dividends and prices the forward as $\text{FV}(S_0)$ alone.
 > 3. **B.** Only the dividend still to be paid is a remaining carry benefit, and the current rate of 4.5% applies.
 > $\text{PV}(D_2) = 0.65/(1.045)^{2/12} = 0.6452$, so $F_t = (55.40 - 0.6452)(1.045)^{5/12} = 55.7682$.
-> $V_t = (F_t - F_0)/(1.045)^{5/12} = (55.7682 - 52.8057)/1.018508 = 2.9626/1.018510 = 2.9087$.
+> $V_t = (F_t - F_0)/(1.045)^{5/12} = (55.7682 - 52.8057)/1.018508 = 2.9626/1.018508 = 2.9087$.
 > A is wrong because it also deducts the dividend already paid when rebuilding the forward price, $F_t = 55.7682 - 0.60(1.045)^{5/12} = 55.1571$, giving 2.3087.
 > C is wrong because it ignores the pending dividend, $F_t = 55.40(1.045)^{5/12} = 56.4254$, giving 3.5540.
 > 4. **B.** Statement 1 is incorrect: the carry model uses only the index level, the financing rate, the carry benefit, and time, so expectations of the future index level never enter the no-arbitrage price.
@@ -2124,16 +2124,16 @@ If the quote is attractive instead, he wants the trades that would lock in the d
 > Forecast profit or loss $= 36.0 - 14.674 = 21.3260$, an expense.
 > B is wrong because it applies the old 4.0% discount rate: $36.0 - 4.0\% \times 319.0 = 36.0 - 12.76 = 23.2400$.
 > C is wrong because it drops net interest income, confusing the valuation rule that a surplus is ignored in the enterprise value bridge with the accounting, which still recognises net interest on a net pension asset when no asset ceiling applies.
-> 4. **A.** Dufresne is correct: option fair value rises with a longer expected life and falls with a higher dividend yield, so the two changes pull in opposite directions.
-> Ouellet is incorrect on both points: an RSU's fair value is the share price adjusted for dividends not received, so volatility does not enter; and grant-date fair value is measured once, so a later share price rise does not change the expense on the 2025 grants.
-> B and C are wrong because each accepts Ouellet's statement.
+> 4. **B.** Ouellet is correct: option fair value rises with a longer expected life and falls with a higher dividend yield, so the two changes pull in opposite directions.
+> Dufresne is incorrect on both points: an RSU's fair value is the share price adjusted for dividends not received, so volatility does not enter; and grant-date fair value is measured once, so a later share price rise does not change the expense on the 2025 grants.
+> A and C are wrong because each accepts Dufresne's statement.
 >
 > **Distractor design**
 >
 > 1. A omits the defined contribution cost from compensation; C ignores capitalisation into inventory and expenses production labour as incurred.
 > 2. B reverses the sign of net interest on a surplus; C applies the US GAAP past service cost treatment to an IFRS reporter.
 > 3. B uses the opening instead of the closing discount rate (period); C applies the valuation rule for surpluses to the income statement.
-> 4. B and C apply option pricing inputs to RSUs and remeasure existing grants after a share price move.
+> 4. A and C apply option pricing inputs to RSUs and remeasure existing grants after a share price move.
 
 > [!success]- Item set 17 (08-01)
 > 1. **C.** Basis $=$ spot $-$ near futures and calendar spread $=$ near futures $-$ far futures.

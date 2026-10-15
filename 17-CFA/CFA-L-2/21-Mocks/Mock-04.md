@@ -154,8 +154,8 @@ She also wants to know whether Corvina's working capital cycle is a source or a 
    - C. 27.4 days.
 4. Ibarra's most appropriate conclusion for the credit committee about Corvina's financial leverage from 2023 to 2025 is that financial risk: (LOS: los-03-06-a)
    - A. is essentially unchanged, because the DuPont leverage ratio and the current ratio are stable.
-   - B. has increased, because interest-bearing debt has replaced less onerous long-term obligations and cash flow coverage of debt has weakened.
-   - C. has decreased, because employee benefit and other long-term liabilities fell by more than half.
+   - B. has decreased, because employee benefit and other long-term liabilities fell by more than half.
+   - C. has increased, because interest-bearing debt has replaced less onerous long-term obligations and cash flow coverage of debt has weakened.
 
 ## Item set 3 (09-06): Almendra Gestion: Backtesting a European Earnings Yield Strategy
 
@@ -498,7 +498,7 @@ Feldmann asks Reyes for a stress case in which the foundation holds ETF G for si
    - A. USD 0.50 million.
    - B. USD 1.36 million.
    - C. USD 2.19 million.
-3. For the ETF used in Question 2, the highest price per share at which an AP could fill Reyes's order with newly created shares without a loss, and the party that bears the creation costs, are: (LOS: los-09-03-a)
+3. For the ETF used in Question 2, the lowest price per share at which an AP could fill Reyes's order with newly created shares without a loss, and the party that bears the creation costs, are: (LOS: los-09-03-a)
    - A. USD 32.03, borne by the foundation through the price it pays.
    - B. USD 32.11, borne by the foundation through the price it pays.
    - C. USD 32.11, borne by all ETF G shareholders in proportion to their holdings.
@@ -727,13 +727,13 @@ Mehta plans to finish his review by computing Beneish model indices for 2025.
    - B. 27.7%.
    - C. 31.0%.
 3. If warranty expense in 2024 and 2025 is restated to the historical claims rate of 2.0% of reported revenue, the growth in Tarrant's 2025 pre-tax income is closest to: (LOS: los-03-05-b)
-   - A. $+7.9\%$.
+   - A. $-8.6\%$.
    - B. $-0.7\%$.
-   - C. $-8.6\%$.
+   - C. $+7.9\%$.
 4. Mehta's review of the proxy statement and the Form 4 filings is most closely associated with which step in evaluating the quality of financial reports? (LOS: los-03-05-c)
    - A. Develop an understanding of the company and its industry.
-   - B. Learn about management.
-   - C. Make comparisons with prior years and with peers.
+   - B. Make comparisons with prior years and with peers.
+   - C. Learn about management.
 
 ## Item set 11 (10-03): Corrigan & Pell Wealth Partners: Accountants, a Consultant, and a New Hire
 
@@ -1014,12 +1014,12 @@ Renner plans to present one conclusion on Solvenna's control structure, one on i
    - C. concentrated ownership with concentrated voting power, which creates a principal-principal conflict between Aurum and minority shareholders.
 3. The difference between Solvenna's non-performing loan ratio and the peer ratio, and the adjustment most consistent with Renner's role, are best described as: (LOS: los-04-02-d)
    - A. 47 bp above peers; widen the credit spread assumption relative to peers.
-   - B. 60 bp above peers; widen the credit spread assumption relative to peers.
-   - C. 60 bp above peers; raise the risk premium in the cost of equity and look for upside from Aurum's push for a new CEO.
+   - B. 60 bp above peers; raise the risk premium in the cost of equity and look for upside from Aurum's push for a new CEO.
+   - C. 60 bp above peers; widen the credit spread assumption relative to peers.
 4. The feature in Exhibit 3 that most likely increases Solvenna's governance risk is the: (LOS: los-04-02-b)
    - A. advisory rather than binding nature of the say-on-pay vote.
-   - B. absence of a dedicated board risk committee, given that only one director has banking or risk management experience.
-   - C. clawback policy's coverage of restatements and misconduct.
+   - B. clawback policy's coverage of restatements and misconduct.
+   - C. absence of a dedicated board risk committee, given that only one director has banking or risk management experience.
 
 ## Item set 15 (09-04): Saltmarsh Mutual Assurance: APT Without a Risk-Free Asset
 
@@ -1209,7 +1209,7 @@ The six-month forward four-year swap rate is 3.70%, and the current four-year sw
 The present value annuity factor for the forward swap's four annual settlement dates is 3.5512.
 Pritchard wants the value of the matching receiver swaption, with the same exercise rate, expiry, and notional, that is consistent with the dealer's payer quote.
 
-Finally, the same dealer offers to sell Marlow the nine-month option described in Exhibit 2 at GBP 34,500.
+Finally, the same dealer offers to sell Marlow, for GBP 34,500, the nine-month option that hedges the mortgage block repricing, priced off the Exhibit 2 inputs.
 Cole's own forecast of the FRA-rate volatility over the next nine months is 17%.
 
 ### Questions
@@ -1299,21 +1299,21 @@ Quintero: "Before I accept either point, I will rebuild Model 3's fit statistics
 ### Questions
 
 1. The adjusted R-squared of Model 3, and what it implies about the t-statistic of CREDIT in Model 3, are: (LOS: los-01-02-a)
-   - A. 0.596; the absolute value of CREDIT's t-statistic exceeds 1.0
+   - A. 0.596; the absolute value of CREDIT's t-statistic is below 1.0
    - B. 0.628; the absolute value of CREDIT's t-statistic exceeds 1.0
-   - C. 0.596; the absolute value of CREDIT's t-statistic is below 1.0
+   - C. 0.596; the absolute value of CREDIT's t-statistic exceeds 1.0
 2. For Quintero's joint test at the 5% level, the F-statistic and the conclusion are: (LOS: los-01-02-b)
-   - A. 3.84; reject the null hypothesis, so CLEAR and CREDIT should be retained
-   - B. 2.74; fail to reject the null hypothesis, so Model 1 is supported
+   - A. 2.74; fail to reject the null hypothesis, so Model 1 is supported
+   - B. 3.84; reject the null hypothesis, so CLEAR and CREDIT should be retained
    - C. 4.24; reject the null hypothesis, so CLEAR and CREDIT should be retained
 3. The AIC of Model 3, and the models that satisfy Tessaline's policy for pricing and for the goodness-of-fit report, respectively, are closest to: (LOS: los-01-02-a)
    - A. -122.06; Model 3 for pricing and Model 2 for goodness of fit
    - B. -122.06; Model 2L for pricing and Model 2L for goodness of fit
    - C. -115.76; Model 2 for pricing and Model 2 for goodness of fit
 4. Using the model Tessaline's policy requires for pricing, the implied value of Brennholt Logistics Park is closest to: (LOS: los-01-02-c)
-   - A. EUR 167.1 million
+   - A. EUR 156.8 million
    - B. EUR 163.7 million
-   - C. EUR 156.8 million
+   - C. EUR 167.1 million
 
 ## Item set 19 (08-02): Pellworth Capital: Pricing the Corvanne Self-Storage Portfolio
 
@@ -1485,15 +1485,15 @@ Exhibit 1: Candidate bonds for the one-year trade (per 100 of par)
 
 | Bond | Issuer | Exposure | Recovery rate | Probability of default | Agency rating |
 |---|---|---|---|---|---|
-| X | Arcadia Hotels | 106.00 | 40% | 1.20% | BB |
+| X | Arcadia Hotels | 106.00 | 40% | 1.20% | BB- |
 | Y | Quillon Mining | 99.00 | 30% | 1.05% | BB |
-| Z | Stellan Pharma | 94.00 | 20% | 1.00% | B+ |
+| Z | Stellan Pharma | 94.00 | 20% | 1.00% | BB+ |
 
 For the longer holding, Adeyemi analyzes a senior unsecured bond issued by Pemberton Freight Rail.
 The bond has three years to maturity, pays a 5.25% coupon annually, and trades at 105.50 per 100 of par.
 He assumes that the government bond yield curve is flat at 2.25%, that there is no interest rate volatility, and that default can occur only on coupon dates.
 The fund's credit research group supplies a risk-neutral annual (hazard) probability of default of 1.80% and a recovery rate of 45% of the exposure.
-Adeyemi notes that the historical one-year default rate for issuers with Pemberton's rating is 0.90% and that the bond's modified duration is 2.79.
+Adeyemi notes that the historical one-year default rate for issuers with Pemberton's rating is 0.90% and that the bond's modified duration is 2.77.
 
 Exhibit 2: Inputs for the Pemberton bond (per 100 of par)
 
@@ -1655,18 +1655,18 @@ Her draft offers three candidate reasons, and Thibodeau asks her to keep only th
 > Cash conversion cycle $= 39.9635 + 61.5729 - 77.8309 = 23.7056$ days, up from $21.2679$ days in 2024, so working capital is a modest and growing use of liquidity driven by the inventory build.
 > A is wrong because it measures days payables against cost of sales, $725 / 3{,}290 \times 365 = 80.4331$, giving $39.9635 + 61.5729 - 80.4331 = 21.1033$.
 > C is wrong because it uses year-end rather than average balances: $41.2956 + 67.6748 - 81.5882 = 27.3822$.
-> 4. **B.** The DuPont leverage ratio moved only from $6{,}100 / 3{,}175 = 1.9213$ to $6{,}550 / 3{,}335 = 1.9640$, but long-term financial debt rose from $18.67\%$ to $30.09\%$ of long-term capital while employee benefit and other long-term liabilities fell from $17.01\%$ to $7.16\%$.
+> 4. **C.** The DuPont leverage ratio moved only from $6{,}100 / 3{,}175 = 1.9213$ to $6{,}550 / 3{,}335 = 1.9640$, but long-term financial debt rose from $18.67\%$ to $30.09\%$ of long-term capital while employee benefit and other long-term liabilities fell from $17.01\%$ to $7.16\%$.
 > Bond debt carries fixed maturities and interest and is more onerous than the pension obligation it replaced, so the mix of obligations became riskier within an almost unchanged asset-to-equity multiple.
 > Cash flow confirms it: cash generated from operations to total debt fell from $930 / 1{,}520 = 61.18\%$ to $980 / 1{,}950 = 50.26\%$, years to repay rose from 2.81 to 3.48, and cash interest coverage fell from $930 / 70 = 13.29$ to $980 / 96 = 10.21$.
 > A is wrong because it relies on the single leverage ratio and the current ratio, which cannot show a change in the nature of financing.
-> C is wrong because the fall in employee benefit liabilities was funded by issuing bonds, so it is a substitution of a more onerous obligation, not a reduction in leverage.
+> B is wrong because the fall in employee benefit liabilities was funded by issuing bonds, so it is a substitution of a more onerous obligation, not a reduction in leverage.
 >
 > **Distractor design**
 >
 > 1. A: total assets used as the denominator instead of long-term capital (wrong formula variant); C: current financial debt included in long-term capital (misread exhibit).
 > 2. A: current financial debt left out of total debt (misread exhibit); B: expenditure on intangible assets left out of reinvestment (wrong formula variant).
 > 3. A: days payables on cost of sales instead of purchases (wrong formula variant); C: year-end instead of average balances (period error).
-> 4. A: single DuPont leverage ratio read as the whole capital structure; C: fall in pension liabilities read as deleveraging, ignoring that bonds funded it.
+> 4. A: single DuPont leverage ratio read as the whole capital structure; B: fall in pension liabilities read as deleveraging, ignoring that bonds funded it.
 
 > [!success]- Item set 3 (09-06)
 > 1. **C.** Trailing earnings yield $= \text{trailing 12-month EPS} / \text{price}$, where trailing EPS is the sum of the last four reported quarters.
@@ -1912,23 +1912,23 @@ Her draft offers three candidate reasons, and Thibodeau asks her to keep only th
 > The reported Q4 share of 25.0% broke sharply from roughly 33.0% in each of Q1 to Q3 (for example, $63.0/191.0 = 32.98\%$ in Q3); an erratic licence and services mix under a multiple-deliverable policy is the cue to question the allocation.
 > A is wrong because it adds the 3.0 of earned services but leaves Q4 total revenue at 200.0, ignoring the 9.0 of services revenue that must be deferred ($53.0/200.0 = 26.50\%$).
 > C is wrong because it moves the whole 12.0 of services into Q4 services revenue with no deferral ($62.0/200.0 = 31.00\%$).
-> 3. **C.** Normal warranty expense is $0.02 \times 690.0 = 13.80$ in 2024 and $0.02 \times 752.0 = 15.04$ in 2025.
+> 3. **A.** Normal warranty expense is $0.02 \times 690.0 = 13.80$ in 2024 and $0.02 \times 752.0 = 15.04$ in 2025.
 > 2024 expense was overstated by $25.80 - 13.80 = 12.00$, and 2025 expense was understated by $15.04 - 3.04 = 12.00$.
 > Restated pre-tax income: 2024 $= 140.0 + 12.0 = 152.0$; 2025 $= 151.0 - 12.0 = 139.0$.
 > Growth $= 139.0/152.0 - 1 = -8.55\%$, so the reported increase is manufactured by smoothing: the reserve built in the strong year was released in the weak year, and Whitlow's conclusion does not hold.
-> A is wrong because it is the reported growth ($151.0/140.0 - 1 = +7.86\%$), which accepts the smoothed figures.
 > B is wrong because it removes the 2025 release but leaves the excess 2024 accrual in place ($139.0/140.0 - 1 = -0.71\%$); a timing choice affects both periods.
-> 4. **B.** Evaluating management's incentives to misreport, including compensation tied to reported results and sales of shares by insiders, is the "learn about management" step.
+> C is wrong because it is the reported growth ($151.0/140.0 - 1 = +7.86\%$), which accepts the smoothed figures.
+> 4. **C.** Evaluating management's incentives to misreport, including compensation tied to reported results and sales of shares by insiders, is the "learn about management" step.
 > The incentive is live: reported revenue growth is $752.0/690.0 - 1 = 8.99\%$, just above the 8% bonus hurdle, while removing the 9.0 of deferred services revenue gives $743.0/690.0 - 1 = 7.68\%$, below it.
 > A is wrong because understanding the company and industry concerns how the business makes money and which performance measures matter, which Mehta did from the industry reports.
-> C is wrong because comparisons with prior years and peers concern changes in accounting policies and financial ratios, not management's pay or share sales.
+> B is wrong because comparisons with prior years and peers concern changes in accounting policies and financial ratios, not management's pay or share sales.
 >
 > **Distractor design**
 >
 > 1. A: prior and current year inverted (wrong formula variant, confusion with GMI and DEPI); C: goodwill left out of soft assets (misread exhibit).
 > 2. A: earned services added but deferred revenue left in the total (incomplete adjustment); C: services reclassified into Q4 without deferral (timing error).
-> 3. A: reported figures accepted (smoothing missed); B: only the release year adjusted (one-sided timing adjustment).
-> 4. A: company and industry step confused with management step (wrong step); C: comparison step confused with management step (wrong step).
+> 3. B: only the release year adjusted (one-sided timing adjustment); C: reported figures accepted (smoothing missed).
+> 4. A: company and industry step confused with management step (wrong step); B: comparison step confused with management step (wrong step).
 
 > [!success]- Item set 11 (10-03)
 > 1. **A.** Brochure fee $= 2{,}000{,}000 \times 0.0100 + 1{,}200{,}000 \times 0.0075 = 20{,}000 + 9{,}000 = 29{,}000$.
@@ -2034,24 +2034,24 @@ Her draft offers three candidate reasons, and Thibodeau asks her to keep only th
 > Voting caps are legal restrictions on the voting rights of large share positions, often imposed to deter foreign control of strategic companies, and they produce concentrated ownership with dispersed voting power.
 > B is wrong because concentrated voting power without majority economics arises from dual-class shares or pyramids, and here the cap works in the opposite direction.
 > C is wrong because a principal-principal conflict requires a controlling shareholder with concentrated voting power, which the cap denies Aurum.
-> 3. **B.** Solvenna's NPL ratio $= 1{,}092 / 52{,}000 = 0.0210$, or 2.10%.
+> 3. **C.** Solvenna's NPL ratio $= 1{,}092 / 52{,}000 = 0.0210$, or 2.10%.
 > Peer NPL ratio $= 3{,}285 / 219{,}000 = 0.0150$, or 1.50%.
 > The gap is $2.10\% - 1.50\% = 0.60\%$, or 60 bp, which signals weaker underwriting and, by proxy, weaker governance.
 > Renner is a credit analyst, so ESG integration focuses on mitigating downside risk, and the adjustment is a wider credit spread relative to peers.
 > A is wrong because it uses total assets as the denominator ($1{,}092 / 68{,}000 = 0.016059$ and $3{,}285 / 290{,}000 = 0.011328$, a gap of about 47 bp) instead of total loans outstanding.
-> C is wrong because raising the cost of equity and identifying opportunities are equity-analysis tools; a bondholder's upside is capped because the bond redeems at par.
-> 4. **B.** Board committees, including risk and compliance, should exist and be sufficiently independent, and directors' skills should match the company's core operations.
+> B is wrong because raising the cost of equity and identifying opportunities are equity-analysis tools; a bondholder's upside is capped because the bond redeems at par.
+> 4. **C.** Board committees, including risk and compliance, should exist and be sufficiently independent, and directors' skills should match the company's core operations.
 > A bank that leaves risk oversight to a full board with only one director experienced in banking or risk management lags every peer on the function most central to its business, which is consistent with its elevated NPL ratio.
 > A is wrong because say-on-pay is a provision allowing shareholders to vote on or give feedback about executive remuneration; an advisory vote still gives shareholders a voice and reduces rather than increases governance risk.
-> C is wrong because a clawback policy that recovers pay after restatements or misconduct is a protective feature.
+> B is wrong because a clawback policy that recovers pay after restatements or misconduct is a protective feature.
 > The board's 7 of 13 independent directors ($7 / 13 = 0.5385$) and independent chair are also strengths, and 2 long-tenured directors are a minor concern.
 >
 > **Distractor design**
 >
 > 1. A: denominator error (capped votes divided by all shares, unvotable shares not removed); C: voting cap ignored (shares owned read as votes controlled).
 > 2. B: voting-cap cell confused with the dual-class or pyramid cell of the ownership-voting matrix; C: large block read as control despite the cap.
-> 3. A: wrong denominator (total assets instead of total loans); C: correct ratio with the equity-analysis tool and opportunity focus applied to a bond analysis.
-> 4. A: shareholder-protective feature read as a risk because the vote is non-binding; C: protective clawback policy read as a risk.
+> 3. A: wrong denominator (total assets instead of total loans); B: correct ratio with the equity-analysis tool and opportunity focus applied to a bond analysis.
+> 4. A: shareholder-protective feature read as a risk because the vote is non-binding; B: protective clawback policy read as a risk.
 
 > [!success]- Item set 15 (09-04)
 > 1. **B.** With no risk-free asset the APT equation is $E(R_p) = \lambda_0 + \lambda_1 \beta_{p,1}$, and two well-diversified portfolios give two equations in two unknowns.
@@ -2106,7 +2106,7 @@ Her draft offers three candidate reasons, and Thibodeau asks her to keep only th
 > The yield to maturity and yesterday's futures quote are decoys.
 > 4. **A.** A forward on this specific bond settles on the clean price with no conversion factor, and today's no-arbitrage clean forward price for the same delivery date is $F_t = \text{FV}(B_0 + AI_0) - AI_T - FVCI = 97.8115$, which equals $Q_0 \times CF$ from Question 3.
 > $V_t = (97.8115 - 96.40)/(1.034)^{120/360} = 1.4115/1.011207 = 1.3959$ per 100 par.
-> Position value $= 0.013959 \times 30{,}000{,}000 = \text{EUR }418{,}766$.
+> Position value $= 0.0139589 \times 30{,}000{,}000 = \text{EUR }418{,}766$.
 > B is wrong because it does not discount the locked-in difference from delivery to today: $0.014115 \times 30{,}000{,}000 = 423{,}459$.
 > C is wrong because it uses the full forward price $F_t + AI_T = 98.8615$ against a clean contract price, giving 730,275.
 >
@@ -2152,17 +2152,17 @@ Her draft offers three candidate reasons, and Thibodeau asks her to keep only th
 > 4. A: implied volatility direction reversed (price-volatility mapping); C: implied volatility treated as a certain forecast of realized volatility (concept confusion).
 
 > [!success]- Item set 18 (01-02)
-> 1. **A.** The overall F-statistic is $F = \frac{R^2 / k}{(1 - R^2) / (n - k - 1)}$, so $R^2 = \frac{kF}{kF + (n - k - 1)} = \frac{5 \times 19.60}{98.00 + 58} = \frac{98.00}{156.00} = 0.62821$.
+> 1. **C.** The overall F-statistic is $F = \frac{R^2 / k}{(1 - R^2) / (n - k - 1)}$, so $R^2 = \frac{kF}{kF + (n - k - 1)} = \frac{5 \times 19.60}{98.00 + 58} = \frac{98.00}{156.00} = 0.62821$.
 >    $\bar{R}^2 = 1 - \left(\frac{n-1}{n-k-1}\right)(1 - R^2) = 1 - (63 / 58)(0.37179) = 1 - 0.40385 = 0.59615$, equivalently $1 - 63 / 156 = 0.59615$.
 >    Model 3 is Model 2 plus CREDIT, and adjusted R-squared rises from 0.5857 to 0.5962, which happens only if the added variable's $|t|$ exceeds 1.0.
 >    Cross-check: the nested F for CREDIT alone is $\frac{0.62821 - 0.6120}{0.37179 / 58} = 2.5280 = t^2$, so $|t| = 1.5900$, above 1.0 but below $t_{0.025}(58) = 2.002$.
+>    A is wrong because it compares Model 3's adjusted R-squared of 0.5962 with Model 2's unadjusted R-squared of 0.6120, sees a "fall", and infers $|t| < 1$; like must be compared with like.
 >    B is wrong because 0.628 is Model 3's unadjusted R-squared.
->    C is wrong because it compares Model 3's adjusted R-squared of 0.5962 with Model 2's unadjusted R-squared of 0.6120, sees a "fall", and infers $|t| < 1$; like must be compared with like.
-> 2. **A.** $H_0: b_{CLEAR} = b_{CREDIT} = 0$ against $H_a$: at least one is not zero; restricted Model 1, unrestricted Model 3, $q = 2$, $n - k - 1 = 58$.
+> 2. **B.** $H_0: b_{CLEAR} = b_{CREDIT} = 0$ against $H_a$: at least one is not zero; restricted Model 1, unrestricted Model 3, $q = 2$, $n - k - 1 = 58$.
 >    Because $SSE = SST(1 - R^2)$ and SST is common to both models, the nested F can be written in R-squared form: $F = \frac{(R^2_U - R^2_R) / q}{(1 - R^2_U) / (n - k - 1)} = \frac{(0.62821 - 0.5790) / 2}{0.37179 / 58} = \frac{0.024603}{0.0064103} = 3.8380$.
 >    In sums of squares: $SST = 63 \times 0.58^2 = 21.1932$, $SSE_1 = 21.1932 \times 0.4210 = 8.9223$, $SSE_3 = 21.1932 \times 0.37179 = 7.8795$, and $\frac{(8.9223 - 7.8795) / 2}{7.8795 / 58} = 3.8380$.
 >    3.84 exceeds $F_{0.05}(2, 58) = 3.156$, so reject (p-value 0.0272; the test would not reject at 1% against 4.991); CLEAR and CREDIT jointly explain cap rates.
->    B is wrong because it substitutes adjusted R-squareds into the R-squared form: $\frac{(0.59615 - 0.5580) / 2}{0.40385 / 58} = 2.7398$, which flips the decision; the identity $SSE = SST(1 - R^2)$ holds only for unadjusted R-squared.
+>    A is wrong because it substitutes adjusted R-squareds into the R-squared form: $\frac{(0.59615 - 0.5580) / 2}{0.40385 / 58} = 2.7398$, which flips the decision; the identity $SSE = SST(1 - R^2)$ holds only for unadjusted R-squared.
 >    C is wrong because it divides by $SSE / n$ instead of $SSE / (n - k - 1)$: $0.024603 / (0.37179 / 64) = 4.2350$; the conclusion happens to be right but the statistic is not.
 > 3. **A.** $SST = (n - 1)s_Y^2 = 21.1932$ and $SSE_3 = 7.8795$ from Question 2, so $n \ln(SSE / n) = 64 \ln(7.8795 / 64) = 64 \ln(0.123118) = -134.0554$.
 >    $AIC_3 = -134.0554 + 2(6) = -122.0554$ and $BIC_3 = -134.0554 + 4.1589(6) = -109.1021$.
@@ -2170,20 +2170,20 @@ Her draft offers three candidate reasons, and Thibodeau asks her to keep only th
 >    BIC is lowest for Model 2 (-110.53 versus -109.47 and -109.10), so Model 2 is reported as the best goodness of fit; BIC's penalty of 4.1589 per parameter outweighs CREDIT's fit gain of $64 \ln(7.8795 / 8.2230) = -2.7304$, while AIC's penalty of 2 does not.
 >    B is wrong because AIC, BIC and R-squared are comparable only across models with the same dependent variable; Model 2L explains ln(CAP), whose much smaller residuals make its criteria look far lower without saying anything about fit to CAP.
 >    C is wrong because it puts $SSE / (n - k - 1)$ inside the logarithm instead of $SSE / n$: $64 \ln(7.8795 / 58) + 12 = -127.7552 + 12 = -115.7552$, which is above Model 2's printed -121.33 and makes Model 2 look best on both criteria.
-> 4. **A.** The pricing model is Model 3, the AIC choice from Question 3, and every term stays in the equation, including CREDIT; AGE $= 2026 - 2008 = 18$.
+> 4. **C.** The pricing model is Model 3, the AIC choice from Question 3, and every term stays in the equation, including CREDIT; AGE $= 2026 - 2008 = 18$.
 >    $\hat{Y} = 5.10 + 0.012(18) + 0.021(18) - 0.085(12.2) - 0.064(4.5) - 0.0045(60)$.
 >    Terms: $5.10 + 0.2160 + 0.3780 - 1.0370 - 0.2880 - 0.2700 = 4.0990$%.
 >    Value $= NOI / CAP = 6.85 / 0.040990 = 167.11$, about EUR 167.1 million.
+>    A is wrong because it follows Voss and drops the CREDIT term from Model 3: $4.0990 + 0.2700 = 4.3690$%, and $6.85 / 0.043690 = 156.79$; the slopes were estimated jointly, and Question 2 shows CREDIT and CLEAR belong in the model.
 >    B is wrong because it prices with Model 2, the goodness-of-fit (BIC) model rather than the prediction (AIC) model: $5.02 + 0.2340 + 0.3960 - 1.1468 - 0.3195 = 4.1837$%, and $6.85 / 0.041837 = 163.73$.
->    C is wrong because it follows Voss and drops the CREDIT term from Model 3: $4.0990 + 0.2700 = 4.3690$%, and $6.85 / 0.043690 = 156.79$; the slopes were estimated jointly, and Question 2 shows CREDIT and CLEAR belong in the model.
 >    The asking price and the standard error of the forecast are not needed for the point value.
 >
 > **Distractor design**
 >
-> 1. B: unadjusted R-squared reported; C: Model 3's adjusted R-squared compared with Model 2's unadjusted R-squared.
-> 2. B: adjusted R-squareds substituted into the R-squared form of the nested F; C: $SSE / n$ used in the denominator instead of $SSE / (n - k - 1)$.
+> 1. A: Model 3's adjusted R-squared compared with Model 2's unadjusted R-squared; B: unadjusted R-squared reported.
+> 2. A: adjusted R-squareds substituted into the R-squared form of the nested F; C: $SSE / n$ used in the denominator instead of $SSE / (n - k - 1)$.
 > 3. B: information criteria compared across models with different dependent variables; C: $SSE / (n - k - 1)$ used inside the AIC logarithm instead of $SSE / n$.
-> 4. B: forecast from the goodness-of-fit (BIC) model instead of the prediction (AIC) model; C: an estimated term dropped from the forecast equation.
+> 4. A: an estimated term dropped from the forecast equation; B: forecast from the goodness-of-fit (BIC) model instead of the prediction (AIC) model.
 
 > [!success]- Item set 19 (08-02)
 > 1. **B.** Vacancy and collection loss: $0.11 \times 3{,}600{,}000 = 396{,}000$.
@@ -2220,9 +2220,9 @@ Her draft offers three candidate reasons, and Thibodeau asks her to keep only th
 
 > [!success]- Item set 20 (06-03)
 > 1. **C.** With annual steps, each node is $e^{2\sigma} = e^{0.30} = 1.3499$ times the node below it (V6 p.137).
-> Middle $= 3.7496\% \times e^{0.30} = 5.0614\%$; upper $= 3.7496\% \times e^{0.60} = 3.7496\% \times 1.8221 = 6.8322\%$.
+> Middle $= 3.7496\% \times e^{0.30} = 5.0614\%$; upper $= 3.7496\% \times e^{0.60} = 3.7496\% \times 1.8221 = 6.832\%$, which is option C (the unrounded lower node of 3.749561% gives 6.8322%).
 > A is wrong because it applies the factor only once, which gives the middle node.
-> B is wrong because it sets $t = 2$ (years from today) instead of the one-year time step and applies the factor once: $3.7496\% \times e^{0.30\sqrt{2}} = 3.7496\% \times 1.5285 = 5.7311\%$.
+> B is wrong because it sets $t = 2$ (years from today) instead of the one-year time step and applies the factor once: $3.7496\% \times e^{0.30\sqrt{2}} = 3.7496\% \times 1.5285 = 5.731\%$.
 > 2. **B.** Add 100 bps to every node: Year 0 4.4000%; Year 1 6.0853% and 4.7673%; Year 2 7.8322%, 6.0614% and 4.7496% (V6 p.145).
 > Year 2: $105.50/1.078322 = 97.8372$; $105.50/1.060614 = 99.4707$; $105.50/1.047496 = 100.7164 \to$ called at 100.
 > Year 1 upper: $(5.50 + 0.5 \times (97.8372 + 99.4707))/1.060853 = 98.1794$, not called.
@@ -2257,7 +2257,7 @@ Her draft offers three candidate reasons, and Thibodeau asks her to keep only th
 > Ranking by expected loss: X (0.7632), Z (0.7520), Y (0.7277).
 > B is wrong because it ranks on the probability of default alone (1.20%, 1.05%, 1.00%), which measures default risk, not credit risk.
 > C is wrong because it ranks on loss given default alone (75.20, 69.30, 63.60) and ignores the probability of default.
-> The agency ratings are a decoy; the question asks for the ranking implied by Adeyemi's own assumptions.
+> The agency ratings order the issuers by default probability, so reading them off reproduces the ranking in B; credit risk needs the loss given default as well.
 > 2. **A.** Build the CVA table with conditional PODs: $POD_1 = 1.80\%$; $POD_2 = 1.80\% \times 98.2000\% = 1.7676\%$; $POD_3 = 1.80\% \times 96.4324\% = 1.7358\%$.
 > LGD $= 0.55 \times$ exposure: 61.0794, 59.5012, 57.8875.
 > Expected losses: $61.0794 \times 0.018000 = 1.0994$; $59.5012 \times 0.017676 = 1.0517$; $57.8875 \times 0.017358 = 1.0048$.

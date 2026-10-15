@@ -67,13 +67,13 @@ In the remaining 75% of outcomes, she uses her multiple-based value as the base 
    - B. Pryce's statement only.
    - C. Both statements.
 2. Marrowby's ESG-adjusted 2027 earnings per share is closest to: (LOS: los-04-02-d)
-   - A. GBP 1.71.
-   - B. GBP 1.81.
-   - C. GBP 2.04.
+   - A. GBP 1.55.
+   - B. GBP 1.71.
+   - C. GBP 1.81.
 3. Carvalho's multiple-based value of Marrowby's equity per share is closest to: (LOS: los-04-02-d)
-   - A. GBP 27.37.
-   - B. GBP 30.79.
-   - C. GBP 34.88.
+   - A. GBP 24.80.
+   - B. GBP 27.37.
+   - C. GBP 30.79.
 4. The probability-weighted value of Marrowby's equity per share from Carvalho's scenario analysis is closest to: (LOS: los-04-02-d)
    - A. GBP 21.47.
    - B. GBP 23.43.
@@ -149,12 +149,12 @@ Ventimiglia notes that CAMELS ratings run from 1 to 5 for each component and for
    - C. rising premium rates, as a shortage of underwriting capacity develops.
 3. Based on Exhibit 3, Corrib's trading revenue per unit of risk in 2025 most likely indicates: (LOS: los-03-04-d)
    - A. a ratio of 83.6 times, a slight deterioration from 2024.
-   - B. a ratio of 97.5 times, an improvement from 79.2 times in 2024.
-   - C. a ratio of 97.5 times, weaker risk-adjusted trading performance than the peer bank.
+   - B. a ratio of 97.5 times, weaker risk-adjusted trading performance than the peer bank.
+   - C. a ratio of 97.5 times, an improvement from 79.2 times in 2024.
 4. Which of Pryce's statements about the CAMELS approach is correct? (LOS: los-03-04-c)
    - A. Statement 1.
-   - B. Statement 2.
-   - C. Statement 3.
+   - B. Statement 3.
+   - C. Statement 2.
 
 ## Item set 3 (05-03): Castellan Specialty Glass: Building FCFF from Sales
 
@@ -355,7 +355,7 @@ Haddad replies that she will show the committee the Time 0 value from the rebuil
 
 1. The lower one-year forward rate at Time 1 that is consistent with the vendor's calibration is closest to: (LOS: los-06-02-d)
    - A. 3.2590%.
-   - B. 3.5916%.
+   - B. 3.5917%.
    - C. 3.6018%.
 2. Using the rebuilt tree, the value of the 5.50% agency bond at the lower node at Time 1 is closest to: (LOS: los-06-02-e)
    - A. 101.8841.
@@ -1006,16 +1006,16 @@ Lindqvist confirms that the dilution term measures the net change in shares outs
 
 1. Using the Grinold-Kroner decomposition and Lindqvist's assumptions, the expected long-run nominal return on Varnholm equities is closest to: (LOS: los-02-02-b)
    - A. 4.00%.
-   - B. 6.00%.
-   - C. 7.50%.
+   - B. 5.30%.
+   - C. 6.00%.
 2. Holding inflation, real growth, and the dilution term at the values used in Question 1, the annual repricing (change in the P/E) implied by Mensah's 9.0% price appreciation forecast is closest to: (LOS: los-02-02-b)
    - A. 3.00%.
    - B. 4.60%.
    - C. 6.60%.
 3. Mensah's draft sentence about the machinery tax credit is best described as: (LOS: los-02-02-d)
    - A. correct, because investment in physical capital shifts the production function upward and raises its slope at every capital-to-labor ratio.
-   - B. incorrect, because the credit mainly produces capital deepening, a movement along the production function whose effect on productivity growth fades as the marginal product of capital declines.
-   - C. incorrect, because capital deepening has no effect on labor productivity at any horizon in a high-income economy.
+   - B. incorrect, because capital deepening has no effect on labor productivity at any horizon in a high-income economy.
+   - C. incorrect, because the credit mainly produces capital deepening, a movement along the production function whose effect on productivity growth fades as the marginal product of capital declines.
 4. The growth theory most consistent with Mensah's appendix excerpt is: (LOS: los-02-02-i)
    - A. classical growth theory.
    - B. neoclassical growth theory.
@@ -1612,8 +1612,8 @@ Exhibit 4: Out-of-sample forecast errors for $y_t$, actual minus forecast (perce
 
 | Month (2025) | AR(1) error | Revised model error |
 |---|---|---|
-| January | $-9.6$ | 1.8 |
-| February | 6.8 | $-1.4$ |
+| January | $-13.2$ | 1.8 |
+| February | 10.4 | $-1.4$ |
 | March | $-4.1$ | 2.1 |
 | April | 3.9 | $-0.6$ |
 | May | $-7.2$ | 2.2 |
@@ -1648,28 +1648,28 @@ The jump in $R^2$ from 0.0341 to 0.5124 is in-sample fit, so the out-of-sample r
 > Pryce is incorrect: the relevance of ESG factors is industry-specific; energy and steel are dominated by environmental factors and banks by social factors, while for a toy maker with repeated recalls the material factor is product safety, a social factor.
 > B is wrong because it accepts the claim that environmental factors dominate every industry.
 > C is wrong because Pryce's statement ignores industry-specific materiality.
-> 2. **A.** Adjusted revenue $= 2{,}400 \times (1 - 0.030) = 2{,}328.00$.
+> 2. **B.** Adjusted revenue $= 2{,}400 \times (1 - 0.030) = 2{,}328.00$.
 > Adjusted COGS ratio $= 46.0\% + 1.5\% = 47.5\%$, so COGS $= 2{,}328.00 \times 0.475 = 1{,}105.80$.
 > Adjusted operating income $= 2{,}328.00 - 1{,}105.80 - 820 = 402.20$.
 > Non-operating expenses $= 0.05 \times 402.20 = 20.11$.
 > Pretax income $= 402.20 - 20.11 - 40 = 342.09$, net income $= 342.09 \times (1 - 0.25) = 256.5675$, and EPS $= 256.5675 / 150 = 1.7104$.
-> B is wrong because it omits the non-operating expense adjustment ($(402.20 - 40) \times 0.75 / 150 = 1.8110$).
-> C is wrong because it subtracts the 1.5-point cost increase from the COGS ratio (44.5%), giving COGS of 1,035.96, operating income of 472.04, non-operating expenses of 23.602, and EPS of $408.438 \times 0.75 / 150 = 2.0422$.
-> 3. **A.** Value $= 1.7104 \times 16.0 = 27.37$.
+> A is wrong because it applies the adjusted 47.5% COGS ratio to unadjusted revenue while still using adjusted revenue in the operating income line, giving COGS of $2{,}400 \times 0.475 = 1{,}140.00$, operating income of $2{,}328.00 - 1{,}140.00 - 820 = 368.00$, non-operating expenses of 18.40, pretax income of 309.60, and EPS of $309.60 \times 0.75 / 150 = 1.5480$.
+> C is wrong because it omits the non-operating expense adjustment ($(402.20 - 40) \times 0.75 / 150 = 1.8110$).
+> 3. **B.** Value $= 1.7104 \times 16.0 = 27.37$.
 > In equity analysis, ESG integration can adjust forecast financials and a price multiple together, and here both adjustments reduce value.
-> B is wrong because it applies the peer multiple without the brand-risk adjustment ($1.7104 \times 18.0 = 30.79$).
-> C is wrong because it applies the adjusted multiple to the unadjusted EPS; before the ESG adjustments, operating income is $2{,}400 - 1{,}104 - 820 = 476$, net income is $(476 - 40) \times 0.75 = 327$, and EPS is $327 / 150 = 2.18$, so $2.18 \times 16.0 = 34.88$.
+> A is wrong because it applies the 14.5x trailing multiple at which Marrowby's shares currently trade instead of the forward multiple Carvalho selected ($1.7104 \times 14.5 = 24.80$).
+> C is wrong because it applies the peer multiple without the brand-risk adjustment ($1.7104 \times 18.0 = 30.79$).
 > 4. **C.** Probability-weighted value $= 0.75 \times 27.37 + 0.25 \times 19.50 = 20.5275 + 4.8750 = 25.40$.
 > Scenario analysis is one of the ways ESG integration enters an equity valuation, alongside adjustments to forecasts, discount rates, and multiples.
 > A is wrong because it swaps the probabilities ($0.25 \times 27.37 + 0.75 \times 19.50 = 21.47$).
 > B is wrong because it takes a simple average of the two scenario values ($(27.3672 + 19.50) / 2 = 23.4336$, using the unrounded multiple-based value $1.71045 \times 16.0 = 27.3672$), ignoring the stated probabilities.
-> The current share price of GBP 24.10 and the 14.5x trailing multiple play no role in the calculation.
+> The current share price of GBP 24.10 plays no role in the scenario calculation.
 >
 > **Distractor design**
 >
 > 1. B: environmental factors assumed material in every industry (industry-specific relevance ignored); C: accepts that claim alongside the correct SASB description.
-> 2. B: one of three forecast adjustments omitted (non-operating expense); C: sign error on the COGS ratio adjustment.
-> 3. B: partial integration (forecast adjusted, multiple left at the peer average); C: unadjusted EPS paired with the adjusted multiple.
+> 2. A: adjusted COGS ratio applied to unadjusted revenue (revenue reduction dropped from the cost line only); C: one of three forecast adjustments omitted (non-operating expense).
+> 3. A: trailing multiple at which the shares trade used in place of the analyst's forward multiple; C: partial integration (forecast adjusted, multiple left at the peer average).
 > 4. A: scenario probabilities swapped; B: equal weighting in place of the stated probabilities.
 
 > [!success]- Item set 2 (03-04)
@@ -1684,20 +1684,20 @@ The jump in $R^2$ from 0.0341 to 0.5124 is in-sample fit, so the out-of-sample r
 > In the P&C cycle, such profits attract new entrants, as Pryce observes, and the added capacity and price competition lower premium rates, so combined ratios rise towards a soft market.
 > B is wrong because exits follow a soft market with high combined ratios, not a period of strong underwriting profits.
 > C is wrong because new capacity is entering, not leaving; rising rates from scarce capacity describe the move from a soft market into a hard one.
-> 3. **B.** Reward to risk $= \text{annual trading revenue} / \text{average daily VaR}$.
+> 3. **C.** Reward to risk $= \text{annual trading revenue} / \text{average daily VaR}$.
 > 2025: $468 / 4.8 = 97.50$ times; 2024: $412 / 5.2 = 79.23$ times, an improvement of $97.50 / 79.23 - 1 = 23.1\%$.
 > A is wrong because it uses year-end VaR instead of average daily VaR: $468 / 5.6 = 83.57$ times against $412 / 4.9 = 84.08$ times.
-> C is wrong because VaR is useful for tracking one bank's trend but not for comparing banks, whose VaR assumptions differ, so the peer's 110 times does not show that Corrib's performance is weaker.
-> 4. **B.** The composite rating is not a simple average; each examiner weights the components by judgment, so identical component ratings can produce different composites unless all six ratings are the same.
+> B is wrong because VaR is useful for tracking one bank's trend but not for comparing banks, whose VaR assumptions differ, so the peer's 110 times does not show that Corrib's performance is weaker.
+> 4. **C.** Statement 2 is correct: the composite rating is not a simple average; each examiner weights the components by judgment, so identical component ratings can produce different composites unless all six ratings are the same.
 > A is wrong because the order of the CAMELS letters does not rank importance; under Basel III, capital and liquidity carry equal weight.
-> C is wrong because ratings run from 1 (best) to 5 (worst), so a 5 is the weakest liquidity position.
+> B is wrong because ratings run from 1 (best) to 5 (worst), so a 5 is the weakest liquidity position.
 >
 > **Distractor design**
 >
 > 1. A: claims paid used instead of statutory losses, omitting the reserve increase (cash versus accrual); C: net premiums earned used as the expense-ratio denominator (earned versus written).
 > 2. B: exit phase of the cycle placed after a profitable hard market (cycle order reversed); C: capacity shortage assumed when capacity is entering (cycle direction reversed).
-> 3. A: year-end VaR used instead of average daily VaR (misread exhibit); C: VaR-based ratio compared across banks (improper cross-company use).
-> 4. A: letter order read as a weighting scheme (framework misconception); C: rating scale inverted (1 is best, 5 is worst).
+> 3. A: year-end VaR used instead of average daily VaR (misread exhibit); B: VaR-based ratio compared across banks (improper cross-company use).
+> 4. A: letter order read as a weighting scheme (framework misconception); B: rating scale inverted (1 is best, 5 is worst).
 
 > [!success]- Item set 3 (05-03)
 > 1. **B.** Incremental fixed capital rate $= (390 - 240)/(2{,}700 - 2{,}400) = 150/300 = 50\%$.
@@ -1776,8 +1776,8 @@ The jump in $R^2$ from 0.0341 to 0.5124 is in-sample fit, so the out-of-sample r
 > Upper node: $V_H = 103.70/1.050603 = 98.7052$, so $V_L = 198.8000 - 98.7052 = 100.0948$.
 > Lower rate: $i_{1,L} = 103.70/100.0948 - 1 = 3.6018\%$.
 > A is wrong because it adopts Brandt's 22% swaption volatility, $5.0603\% \times e^{-0.44} = 3.2590\%$, a rate that does not reprice the benchmark and ignores the vendor's actual calibration.
-> B is wrong because it places the two rates symmetrically around the implied forward rate, $2 \times 4.3260\% - 5.0603\% = 3.5916\%$, where the forward is $1.037112^2/1.031 - 1 = 4.3260\%$ on spots of 3.1000% and 3.7112%; lognormal rates are spread multiplicatively, so their average sits slightly above the forward.
-> 2. **B.** Implied volatility from Question 1: $\sigma = \ln(5.0603\%/3.6018\%)/2 = 0.3400/2 = 17.00\%$.
+> B is wrong because it places the two rates symmetrically around the implied forward rate, $2 \times 4.3260\% - 5.0603\% = 3.5917\%$, where the forward is $1.037112^2/1.031 - 1 = 4.3260\%$ on spots of 3.1000% and 3.7112%; lognormal rates are spread multiplicatively, so their average sits slightly above the forward.
+> 2. **B.** The volatility the vendor used follows from the two Time 1 rates recovered in Question 1: $\sigma = \ln(5.0603\%/3.6018\%)/2 = 0.3400/2 = 17.00\%$.
 > Missing Time 2 rates: middle $6.7944\% \times e^{-0.34} = 4.8361\%$, lower $6.7944\% \times e^{-0.68} = 3.4422\%$.
 > Time 2 values of the 105.50 final cash flow: $105.50/1.067944 = 98.7880$, $105.50/1.048361 = 100.6333$, $105.50/1.034422 = 101.9893$.
 > Lower Time 1 node: $[5.50 + 0.5(100.6333 + 101.9893)]/1.036018 = 106.8113/1.036018 = 103.0979$.
@@ -2048,29 +2048,29 @@ The jump in $R^2$ from 0.0341 to 0.5124 is in-sample fit, so the out-of-sample r
 > 4. A: price used in place of book value in the numerator; B: required return without beta carried into the implied growth equation.
 
 > [!success]- Item set 14 (02-02)
-> 1. **B.** The dilution term is $\Delta S = nbb + rd$, where buybacks shrink shares, so $nbb = -1.0\%$ and $\Delta S = -1.0\% + 0.7\% = -0.3000\%$.
+> 1. **C.** The dilution term is $\Delta S = nbb + rd$, where buybacks shrink shares, so $nbb = -1.0\%$ and $\Delta S = -1.0\% + 0.7\% = -0.3000\%$.
 > $E(R_e) = dy + \Delta(P/E) + i + g - \Delta S = 1.6\% + 0 + 2.2\% + 1.9\% - (-0.3\%) = 6.0000\%$.
 > A is wrong because it treats the buybacks as an increase in shares outstanding: $\Delta S = 1.0\% + 0.7\% = 1.7\%$, giving $1.6\% + 2.2\% + 1.9\% - 1.7\% = 4.0000\%$.
-> C is wrong because it uses last year's cyclical real growth of 3.4% instead of sustainable potential growth: $1.6\% + 2.2\% + 3.4\% + 0.3\% = 7.5000\%$.
-> The current and average P/E are decoys for this question because repricing is set to zero.
+> B is wrong because it double counts relative dynamism, first netting it out of real growth and then again through the dilution term: $g = 1.9\% - 0.7\% = 1.2000\%$, giving $1.6\% + 2.2\% + 1.2\% + 0.3\% = 5.3000\%$.
+> The current and average P/E are decoys for this question because repricing is set to zero, and last year's 3.4% real growth is a decoy because Lindqvist requires a sustainable rate.
 > 2. **B.** Price appreciation excludes the dividend yield, so it equals $\Delta(P/E) + i + g - \Delta S$.
 > Implied repricing $= 9.0\% - (2.2\% + 1.9\% + 0.3\%) = 9.0\% - 4.4\% = 4.6000\%$ a year.
 > Compounded over 20 years, this takes the P/E from 26 to $26 \times 1.046^{20} = 63.92$, against a long-run average of 19, so the forecast depends on a repricing term that cannot persist over a long horizon.
 > A is wrong because it treats the 9.0% as a total return and also subtracts the dividend yield: $9.0\% - 1.6\% - 4.4\% = 3.0000\%$.
 > C is wrong because it treats buybacks as dilution, as in Question 1's option A: $9.0\% - (2.2\% + 1.9\% - 1.7\%) = 6.6000\%$.
-> 3. **B.** In a high-income economy with very high capital per worker, extra machinery raises the capital-to-labor ratio, a movement along the per capita production function where diminishing returns are strong.
+> 3. **C.** In a high-income economy with very high capital per worker, extra machinery raises the capital-to-labor ratio, a movement along the per capita production function where diminishing returns are strong.
 > The boost to labor productivity growth is transitional, lasting only while capital grows faster than labor, and it fades as the marginal product of capital falls toward its cost; only technological progress shifts the function upward and sustains per capita growth.
 > A is wrong because it attributes to capital deepening the upward shift that belongs to TFP growth.
-> C is wrong because capital deepening does raise labor productivity; its effect is small and temporary at high capital per worker, not zero.
+> B is wrong because capital deepening does raise labor productivity; its effect is small and temporary at high capital per worker, not zero.
 > 4. **A.** The classical (Malthusian) model holds that income above subsistence triggers population growth, diminishing marginal returns to labor on fixed land pull per capita income back to subsistence, and technological progress yields a larger but not richer population.
 > B is wrong because the neoclassical model predicts sustained growth of output per worker at $\theta/(1-\alpha)$ driven by TFP, with no population feedback returning income to subsistence.
 > C is wrong because endogenous growth theory predicts permanent per capita growth from knowledge externalities and constant returns to broad capital, the opposite of the excerpt's reversion to subsistence.
 >
 > **Distractor design**
 >
-> 1. A reverses the sign of net buybacks in the dilution term; C uses cyclical actual growth instead of sustainable potential growth.
+> 1. A reverses the sign of net buybacks in the dilution term; B double counts relative dynamism, netting it out of real growth and again through the dilution term.
 > 2. A treats price appreciation as a total return and subtracts the dividend yield; C reverses the sign of net buybacks.
-> 3. A confuses capital deepening with TFP progress; C denies any effect of capital deepening on labor productivity.
+> 3. A confuses capital deepening with TFP progress; B denies any effect of capital deepening on labor productivity.
 > 4. B and C attach sustained per capita growth theories to a description of reversion to subsistence income.
 
 > [!success]- Item set 15 (05-06)
@@ -2304,7 +2304,7 @@ The jump in $R^2$ from 0.0341 to 0.5124 is in-sample fit, so the out-of-sample r
 > C is wrong because it uses the December 2023 change, $y_{t-12} = \ln(131.60/118.40) = 0.10570$, as the seasonal input: $\hat{y} = 0.0024 - 0.00985 + 0.07261 = 0.06517$ and $138.20 \times e^{0.06517} = 147.51$.
 >
 > 4. **A.** Revised model squared errors: 3.24, 1.96, 4.41, 0.36, 4.84, 0.49; sum 15.30; mean $15.30/6 = 2.55$; RMSE $= \sqrt{2.55} = 1.5969$.
-> AR(1) squared errors: 92.16, 46.24, 16.81, 15.21, 51.84, 108.16; sum 330.42; mean $330.42/6 = 55.07$; RMSE $= \sqrt{55.07} = 7.4209$.
+> AR(1) squared errors: 174.24, 108.16, 16.81, 15.21, 51.84, 108.16; sum 474.42; mean $474.42/6 = 79.07$; RMSE $= \sqrt{79.07} = 8.8921$.
 > The model with the smaller out-of-sample RMSE is the more accurate, so the revised model wins out of sample, consistent with its better in-sample fit; Wieland is right that the out-of-sample record should decide.
 > B is wrong because 2.55 is the mean squared error; the square root has not been taken.
 > C is wrong because the mean error ($0.2/6 = 0.03$ for the AR(1) versus $4.8/6 = 0.80$ for the revised model) measures bias, and large positive and negative errors cancel in it; accuracy is judged by RMSE.
