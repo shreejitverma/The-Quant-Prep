@@ -121,7 +121,6 @@ Identifiers the specs rely on:
 | `21-Mocks` | `Mock-01` to `Mock-06` |
 | `22-Attempts`, `23-Error-Log` | Created from the CFA Attempt and CFA Error templates through Templater folder templates; read by `mastery.py`; personal, gitignored |
 | `24-Weekly-Reviews` | Created from the CFA Weekly Review template; personal, gitignored |
-| `30-Flashcards` | Spaced-repetition decks |
 | `40-Formula-Sheets`, `50-Canvases`, `51-Diagrams`, `60-Bases`, `70-Slides` | Generated artifacts; regenerate, do not hand-edit |
 
 ## Resuming a build
