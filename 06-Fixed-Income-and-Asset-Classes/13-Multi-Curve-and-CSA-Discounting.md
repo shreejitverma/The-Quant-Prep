@@ -101,7 +101,7 @@ OIS discount factors: $P_{\text{ois}}(1) = \frac{1}{1 + 0.030} = 0.970874$ and $
 OIS annuity: $A_{\text{ois}} = 0.970874 + 0.933352 = 1.904226$.
 The single-curve OIS par swap rate is:
 $$S_{\text{single}} = \frac{1 - P_{\text{ois}}(2)}{A_{\text{ois}}} = \frac{1 - 0.933352}{1.904226} = \frac{0.066648}{1.904226} = 3.5000\%.$$
-Now suppose the floating leg references a term index whose forwarding zero rates trade at a 20 bp credit and liquidity spread over OIS zeros:
+Now suppose the floating leg references a term index whose annual forwarding zero rates sit 20 bp above the OIS par rates ($3.0\%$ and $3.5\%$) as a credit and liquidity spread:
 $P_{\text{proj}}(1) = \frac{1}{1 + 0.032} = 0.968992 \implies F(0, 1) = \frac{1}{0.968992} - 1 = 3.2000\%$.
 $P_{\text{proj}}(2) = \frac{1}{(1 + 0.037)^2} = 0.929913 \implies F(1, 2) = \frac{0.968992}{0.929913} - 1 = 4.2024\%$.
 
@@ -185,7 +185,7 @@ The Federal Reserve cut the price of its standing dollar swap lines with five ce
 > In an MTM cross-currency swap, the non-base currency notional is periodically adjusted to match spot FX fluctuations, with a cash balancing settlement.
 > This removes large accumulated foreign exchange exposure, reducing counterparty credit risk and capital requirements.
 
-> [!question]- fi-dual-curve-spread-effect | If the forwarding zero rates exceed OIS zero rates by 20 bps, how does the dual-curve par swap rate compare to the single-curve OIS swap rate?
+> [!question]- fi-dual-curve-spread-effect | If the forwarding zero rates sit 20 bps above the OIS par rates, how does the dual-curve par swap rate compare to the single-curve OIS swap rate?
 > The dual-curve par swap rate is higher than the single-curve OIS rate by approximately the 20 bp spread.
 > Higher projected floating cash flows require a higher fixed coupon to balance the swap at inception.
 

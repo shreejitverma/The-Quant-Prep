@@ -279,7 +279,7 @@ def main() -> None:
     assert abs(d_pv_ds[2] - (-annuity_3 * 100.0)) < 1e-9
 
     # 4. Dual-curve swap pricing
-    # OIS curve with 3.0%, 3.5%; Projection curve with 20bp credit/liquidity spread
+    # OIS curve with 3.0%, 3.5% par rates; projection zeros 20bp above those par rates
     ois_curve = DiscountCurve([1.0, 2.0], [p1_expected, p2_expected])
     proj_dfs = [1.0 / 1.032, 1.0 / (1.037**2)]
     proj_curve = DiscountCurve([1.0, 2.0], proj_dfs)

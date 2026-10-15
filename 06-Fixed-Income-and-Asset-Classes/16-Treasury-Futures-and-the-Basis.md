@@ -143,20 +143,20 @@ If the prevailing actual financing rate for Bond A in general collateral repo is
 ### Example 3: identifying the cheapest-to-deliver bond
 
 Compare Bond A against Bond C ($6\%$ coupon, 10 years to maturity, $\text{CF} = 1.0000$):
-Clean spot price: $P_{\text{spot}}^{\text{clean}} = 111.00$, dirty spot $111.50$.
-Accrued interest at delivery: $1.50$.
+Clean spot price: $P_{\text{spot}}^{\text{clean}} = 111.00$.
+On the same dates as Bond A ($0.125$ years accrued at spot, $0.375$ years at delivery), a $6\%$ coupon accrues $AI_{\text{spot}} = 0.75$, so dirty spot is $111.75$, and $AI_{\text{delivery}} = 2.25$.
 Invoice price for Bond C:
-$$\text{Invoice Price}_C = 110.00 \times 1.0000 + 1.50 = 111.50.$$
+$$\text{Invoice Price}_C = 110.00 \times 1.0000 + 2.25 = 112.25.$$
 Gross basis for Bond C:
 $$\text{Gross Basis}_C = 111.00 - 110.00 = 1.0000.$$
 Implied Repo Rate for Bond C:
-$$\text{IRR}_C = \frac{111.50 - 111.50}{111.50} \times \frac{360}{90} = 0.000\%.$$
+$$\text{IRR}_C = \frac{112.25 - 111.75}{111.75} \times \frac{360}{90} = 1.790\%.$$
 Comparing the two issues:
-Bond A offers an IRR of $2.687\%$, whereas Bond C offers an IRR of $0.000\%$.
+Bond A offers an IRR of $2.687\%$, whereas Bond C offers an IRR of $1.790\%$.
 Because Bond A has the higher IRR (and lower gross basis), Bond A is significantly cheaper to deliver than Bond C.
 This outcome departs from the yield-level rule above only because the two prices are not set off one yield.
 Bond A's $94.00$ implies a semiannual yield of about $4.761\%$, while Bond C's $111.00$ implies about $4.614\%$, so Bond C trades rich to Bond A.
-Priced at Bond A's $4.761\%$ yield, Bond C would be worth $109.7665$, giving $\text{IRR}_C = \frac{111.50 - 110.2665}{110.2665} \times 4 = 4.475\%$, and Bond C, the lower-duration bond, would be cheapest to deliver as the rule predicts.
+Priced at Bond A's $4.761\%$ yield, Bond C would be worth $109.7665$, dirty $110.5165$, giving $\text{IRR}_C = \frac{112.25 - 110.5165}{110.5165} \times 4 = 6.274\%$, and Bond C, the lower-duration bond, would be cheapest to deliver as the rule predicts.
 
 ### Example 4: real-world case, the March 2020 Treasury basis blowout
 

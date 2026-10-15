@@ -139,6 +139,8 @@ If the 2s10s curve steepens by $10\text{ bps}$ (e.g., 2-year yield drops 5 bps a
 Gain on 2-year leg: $\$10{,}000 \times (+5\text{ bps}) = +\$50{,}000$.
 Gain on 10-year leg: $\$10{,}000 \times (+5\text{ bps}) = +\$50{,}000$.
 Total profit: $\$100{,}000$.
+Carry: with both floating legs fixing at the 1-year rate of $3.00\%$, first-year carry is $52.515\text{M} \times (3.50\% - 3.00\%) - 12.448\text{M} \times (4.50\% - 3.00\%) = \$262{,}575 - \$186{,}720 = +\$75{,}855$.
+Per unit of DV01 a receiver carries $(s - r)/A$, so this DV01-neutral steepener carries positively because $(3.50\% - 3.00\%)/1.9042 = 0.26\%$ exceeds $(4.50\% - 3.00\%)/8.0335 = 0.19\%$.
 
 ### Example 3: 2s5s10s duration-neutral butterfly weights
 
@@ -172,7 +174,7 @@ The lesson for curve risk is that a DV01-matched hedge still needs a collateral 
 - Hedging long-dated cash flows with 2-year swaps based on parallel DV01, leaving the book completely exposed to curve steepening and PCA slope shocks.
 - Using zero-rate DV01s directly for trading hedges rather than converting to market par quote sensitivities via the Jacobian.
 - Forgetting that butterfly weights depend on the choice of weighting scheme (50/50 DV01 vs regression-neutral), which determines whether the trade is exposed to slope residuals.
-- Omitting carry and roll-down when analyzing curve trades: a steepener trade often carries negatively in an upward-sloping yield curve environment.
+- Omitting carry and roll-down when analyzing curve trades: a DV01-neutral steepener carries negatively when $(s_2 - r)/A_2 < (s_{10} - r)/A_{10}$, for example under a flat front end and a steep long end, even though it carries positively on the Example 2 curve.
 - Re-estimating PCA covariance matrices over short sample windows that omit major monetary tightening or easing cycles.
 
 ## Interview questions
@@ -202,9 +204,9 @@ The lesson for curve risk is that a DV01-matched hedge still needs a collateral 
 > A regression-weighted butterfly neutralizes exposure to empirical slope changes (PC2) as well as parallel shifts (PC1).
 > It isolates pure curvature (PC3), whereas a 50/50 butterfly can suffer large losses if the curve steepens or flattens dramatically.
 
-> [!question]- fi-curve-trade-carry-cost | Why do curve steepeners often suffer from negative carry in an upward-sloping yield curve?
-> In an upward-sloping curve, the 10-year fixed rate paid exceeds the 2-year fixed rate received.
-> In the absence of rate shifts, the position pays more interest than it receives each period, causing negative carry.
+> [!question]- fi-curve-trade-carry-cost | When does a DV01-neutral 2s10s steepener (receive 2y, pay 10y) carry negatively?
+> Against a common floating rate $r$, a receiver carries $(s - r)/A$ per unit of DV01, so the steepener carries negatively only when $(s_2 - r)/A_2 < (s_{10} - r)/A_{10}$, for example when the front end is flat ($s_2 \approx r$) but the long end is steep.
+> Comparing the two fixed rates alone is wrong: on the Example 2 curve ($r = 3.00\%$) the steepener earns $52.515\text{M} \times 0.50\% - 12.448\text{M} \times 1.50\% = +\$75{,}855$ in the first year.
 
 > [!question]- fi-ldi-crisis-collateral-spiral | Why did leveraged LDI hedges fail UK pension schemes during the 2022 gilt crisis even though they matched liability rate risk?
 > On value the hedges worked: as long gilt yields jumped, liabilities fell along with the leveraged gilt and swap positions.
