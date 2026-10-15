@@ -43,6 +43,7 @@ jobs:
           python 06-Fixed-Income-and-Asset-Classes/code/bond_pricing.py
           python 06-Fixed-Income-and-Asset-Classes/code/curve_bootstrap.py
           python 06-Fixed-Income-and-Asset-Classes/code/rates_models.py
+          python 06-Fixed-Income-and-Asset-Classes/code/credit_bootstrap.py
 
   secrets:
     runs-on: ubuntu-latest
