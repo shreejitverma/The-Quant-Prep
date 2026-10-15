@@ -1,0 +1,18 @@
+filters:
+  and:
+    - type == "cfa-itemset"
+views:
+  - type: table
+    name: Bank
+    order:
+      - file.name
+      - topic
+      - lm
+      - difficulty
+      - attempts
+      - source
+    sort:
+      - property: topic
+        direction: ASC
+      - property: lm
+        direction: ASC

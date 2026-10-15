@@ -1,0 +1,46 @@
+filters:
+  and:
+    - type == "cfa-lm"
+views:
+  - type: table
+    name: All modules
+    order:
+      - file.name
+      - topic
+      - lm
+      - status
+      - mastery
+      - next_review
+      - difficulty
+      - weight_band
+    sort:
+      - property: topic_code
+        direction: ASC
+      - property: lm
+        direction: ASC
+  - type: table
+    name: Due for review
+    filters:
+      and:
+        - next_review <= today()
+    order:
+      - file.name
+      - topic
+      - mastery
+      - next_review
+    sort:
+      - property: next_review
+        direction: ASC
+  - type: table
+    name: Weakest first
+    filters:
+      and:
+        - status != "not-started"
+    order:
+      - file.name
+      - topic
+      - mastery
+      - status
+    sort:
+      - property: mastery
+        direction: ASC

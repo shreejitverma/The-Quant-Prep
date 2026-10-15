@@ -1,0 +1,267 @@
+{
+ "nodes": [
+  {
+   "id": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM01-The-Term-Structure-and-Interest-Rate-Dynamics.md",
+   "x": 0,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM02-The-Arbitrage-Free-Valuation-Framework",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM02-The-Arbitrage-Free-Valuation-Framework.md",
+   "x": 460,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options.md",
+   "x": 920,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM04-Credit-Analysis-Models",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM04-Credit-Analysis-Models.md",
+   "x": 1380,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM05-Credit-Default-Swaps",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM05-Credit-Default-Swaps.md",
+   "x": 0,
+   "y": 260,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/07-Derivatives/LM01-Pricing-and-Valuation-of-Forward-Commitments.md",
+   "x": 2000,
+   "y": 260,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Economics-and-Investment-Markets",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM01-Economics-and-Investment-Markets.md",
+   "x": 2000,
+   "y": 520,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM02-Valuation-of-Contingent-Claims",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/07-Derivatives/LM02-Valuation-of-Contingent-Claims.md",
+   "x": 2000,
+   "y": 780,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Analysis-of-Financial-Institutions",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM04-Analysis-of-Financial-Institutions.md",
+   "x": 2000,
+   "y": 1040,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  }
+ ],
+ "edges": [
+  {
+   "id": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics->LM02-The-Arbitrage-Free-Valuation-Framework",
+   "fromNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "toNode": "LM02-The-Arbitrage-Free-Valuation-Framework",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the spot curve, discount function and forward rates built here are the calibrati"
+  },
+  {
+   "id": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics->LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "fromNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "toNode": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "option values in callable and putable bonds depend on the interest rate volatili"
+  },
+  {
+   "id": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics->LM04-Credit-Analysis-Models",
+   "fromNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "toNode": "LM04-Credit-Analysis-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "credit spread measures build on the benchmark curves and the Z-spread defined he"
+  },
+  {
+   "id": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics->LM05-Credit-Default-Swaps",
+   "fromNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "toNode": "LM05-Credit-Default-Swaps",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "CDS spreads join the swap spread, TED and MRR-OIS in the toolkit of market-impli"
+  },
+  {
+   "id": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics->LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "toNode": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the par swap equation (fixed leg PV = floating leg PV = 1) is exactly how Deriva"
+  },
+  {
+   "id": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics->LM01-Economics-and-Investment-Markets",
+   "fromNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "toNode": "LM01-Economics-and-Investment-Markets",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the bond risk premium, the policy-driven short rate, and the business cycle beha"
+  },
+  {
+   "id": "LM02-The-Arbitrage-Free-Valuation-Framework->LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromNode": "LM02-The-Arbitrage-Free-Valuation-Framework",
+   "toNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the raw material this module consumes, the par, spot and forward curves"
+  },
+  {
+   "id": "LM02-The-Arbitrage-Free-Valuation-Framework->LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "fromNode": "LM02-The-Arbitrage-Free-Valuation-Framework",
+   "toNode": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the entire payoff of calibration; LM3 takes the calibrated tree and backward ind"
+  },
+  {
+   "id": "LM02-The-Arbitrage-Free-Valuation-Framework->LM04-Credit-Analysis-Models",
+   "fromNode": "LM02-The-Arbitrage-Free-Valuation-Framework",
+   "toNode": "LM04-Credit-Analysis-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "reuses the arbitrage-free framework with credit-risky cash flows, discounting ex"
+  },
+  {
+   "id": "LM02-The-Arbitrage-Free-Valuation-Framework->LM02-Valuation-of-Contingent-Claims",
+   "fromNode": "LM02-The-Arbitrage-Free-Valuation-Framework",
+   "toNode": "LM02-Valuation-of-Contingent-Claims",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the derivatives reading applies the same binomial lattice logic to options, with"
+  },
+  {
+   "id": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options->LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromNode": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "toNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the spot, par and forward rate machinery and the equivalence between th"
+  },
+  {
+   "id": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options->LM02-The-Arbitrage-Free-Valuation-Framework",
+   "fromNode": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "toNode": "LM02-The-Arbitrage-Free-Valuation-Framework",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "builds and calibrates the binomial interest rate tree and proves backward induct"
+  },
+  {
+   "id": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options->LM04-Credit-Analysis-Models",
+   "fromNode": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "toNode": "LM04-Credit-Analysis-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "takes over where OAS stops, making default probabilities and recovery explicit i"
+  },
+  {
+   "id": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options->LM02-Valuation-of-Contingent-Claims",
+   "fromNode": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "toNode": "LM02-Valuation-of-Contingent-Claims",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the Derivatives treatment of option valuation on binomial trees; the conversion "
+  },
+  {
+   "id": "LM04-Credit-Analysis-Models->LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromNode": "LM04-Credit-Analysis-Models",
+   "toNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the spot, forward and bootstrapping machinery reused here to build benc"
+  },
+  {
+   "id": "LM04-Credit-Analysis-Models->LM02-The-Arbitrage-Free-Valuation-Framework",
+   "fromNode": "LM04-Credit-Analysis-Models",
+   "toNode": "LM02-The-Arbitrage-Free-Valuation-Framework",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the calibrated binomial tree and backward induction from that module are the eng"
+  },
+  {
+   "id": "LM04-Credit-Analysis-Models->LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "fromNode": "LM04-Credit-Analysis-Models",
+   "toNode": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "volatility changes option-free bond values only through credit (this module's po"
+  },
+  {
+   "id": "LM04-Credit-Analysis-Models->LM05-Credit-Default-Swaps",
+   "fromNode": "LM04-Credit-Analysis-Models",
+   "toNode": "LM05-Credit-Default-Swaps",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "hazard rates, POD, LGD and the expected-loss logic built here price CDS protecti"
+  },
+  {
+   "id": "LM04-Credit-Analysis-Models->LM04-Analysis-of-Financial-Institutions",
+   "fromNode": "LM04-Credit-Analysis-Models",
+   "toNode": "LM04-Analysis-of-Financial-Institutions",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the credit analysis of banks in FSA complements the covered bond and securitizat"
+  },
+  {
+   "id": "LM05-Credit-Default-Swaps->LM04-Credit-Analysis-Models",
+   "fromNode": "LM05-Credit-Default-Swaps",
+   "toNode": "LM04-Credit-Analysis-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the machinery this module reuses without re-deriving it, expected expos"
+  },
+  {
+   "id": "LM05-Credit-Default-Swaps->LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromNode": "LM05-Credit-Default-Swaps",
+   "toNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the credit curve is built by analogy to the benchmark term structure from LM1, a"
+  },
+  {
+   "id": "LM05-Credit-Default-Swaps->LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromNode": "LM05-Credit-Default-Swaps",
+   "toNode": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the derivatives reading prices swaps as the difference in present values of two "
+  }
+ ]
+}

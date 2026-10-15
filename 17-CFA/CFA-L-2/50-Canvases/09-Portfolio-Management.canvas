@@ -1,0 +1,404 @@
+{
+ "nodes": [
+  {
+   "id": "LM01-Economics-and-Investment-Markets",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM01-Economics-and-Investment-Markets.md",
+   "x": 0,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM02-Analysis-of-Active-Portfolio-Management",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM02-Analysis-of-Active-Portfolio-Management.md",
+   "x": 460,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM03-Exchange-Traded-Funds-Mechanics-and-Applications",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM03-Exchange-Traded-Funds-Mechanics-and-Applications.md",
+   "x": 920,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM04-Using-Multifactor-Models",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM04-Using-Multifactor-Models.md",
+   "x": 1380,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM05-Measuring-and-Managing-Market-Risk",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM05-Measuring-and-Managing-Market-Risk.md",
+   "x": 0,
+   "y": 260,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM06-Backtesting-and-Simulation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM06-Backtesting-and-Simulation.md",
+   "x": 460,
+   "y": 260,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM01-The-Term-Structure-and-Interest-Rate-Dynamics.md",
+   "x": 2000,
+   "y": 260,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM02-Economic-Growth",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/02-Economics/LM02-Economic-Growth.md",
+   "x": 2000,
+   "y": 520,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM02-Discounted-Dividend-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM02-Discounted-Dividend-Valuation.md",
+   "x": 2000,
+   "y": 780,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions.md",
+   "x": 2000,
+   "y": 1040,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples.md",
+   "x": 2000,
+   "y": 1300,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Extensions-of-Multiple-Regression",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM04-Extensions-of-Multiple-Regression.md",
+   "x": 2000,
+   "y": 1560,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Hedge-Fund-Strategies",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/08-Alternative-Investments/LM04-Hedge-Fund-Strategies.md",
+   "x": 2000,
+   "y": 1820,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM02-Valuation-of-Contingent-Claims",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/07-Derivatives/LM02-Valuation-of-Contingent-Claims.md",
+   "x": 2000,
+   "y": 2080,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options.md",
+   "x": 2000,
+   "y": 2340,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Analysis-of-Financial-Institutions",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM04-Analysis-of-Financial-Institutions.md",
+   "x": 2000,
+   "y": 2600,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM05-Time-Series-Analysis",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM05-Time-Series-Analysis.md",
+   "x": 2000,
+   "y": 2860,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM07-Big-Data-Projects",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM07-Big-Data-Projects.md",
+   "x": 2000,
+   "y": 3120,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  }
+ ],
+ "edges": [
+  {
+   "id": "LM01-Economics-and-Investment-Markets->LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromNode": "LM01-Economics-and-Investment-Markets",
+   "toNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the Fixed Income treatment of the same curve, where this module's expectations-p"
+  },
+  {
+   "id": "LM01-Economics-and-Investment-Markets->LM02-Economic-Growth",
+   "fromNode": "LM01-Economics-and-Investment-Markets",
+   "toNode": "LM02-Economic-Growth",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the growth-accounting and convergence logic behind LOS c, since trend G"
+  },
+  {
+   "id": "LM01-Economics-and-Investment-Markets->LM02-Discounted-Dividend-Valuation",
+   "fromNode": "LM01-Economics-and-Investment-Markets",
+   "toNode": "LM02-Discounted-Dividend-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "applies this module's Equation 15 and 16 machinery to actual equity valuation, w"
+  },
+  {
+   "id": "LM01-Economics-and-Investment-Markets->LM02-Analysis-of-Active-Portfolio-Management",
+   "fromNode": "LM01-Economics-and-Investment-Markets",
+   "toNode": "LM02-Analysis-of-Active-Portfolio-Management",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "consumes the premiums built here as the passive baseline; active value added is "
+  },
+  {
+   "id": "LM01-Economics-and-Investment-Markets->LM04-Using-Multifactor-Models",
+   "fromNode": "LM01-Economics-and-Investment-Markets",
+   "toNode": "LM04-Using-Multifactor-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "generalizes the single stochastic discount factor into multiple priced risk fact"
+  },
+  {
+   "id": "LM01-Economics-and-Investment-Markets->LM05-Measuring-and-Managing-Market-Risk",
+   "fromNode": "LM01-Economics-and-Investment-Markets",
+   "toNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the risk decomposition here (rates, inflation, credit, equity, liquidity) is the"
+  },
+  {
+   "id": "LM02-Analysis-of-Active-Portfolio-Management->LM01-Economics-and-Investment-Markets",
+   "fromNode": "LM02-Analysis-of-Active-Portfolio-Management",
+   "toNode": "LM01-Economics-and-Investment-Markets",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the equilibrium view of expected returns and risk premiums that active "
+  },
+  {
+   "id": "LM02-Analysis-of-Active-Portfolio-Management->LM04-Using-Multifactor-Models",
+   "fromNode": "LM02-Analysis-of-Active-Portfolio-Management",
+   "toNode": "LM04-Using-Multifactor-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "provides the multi-factor risk models that define active security returns as res"
+  },
+  {
+   "id": "LM02-Analysis-of-Active-Portfolio-Management->LM06-Backtesting-and-Simulation",
+   "fromNode": "LM02-Analysis-of-Active-Portfolio-Management",
+   "toNode": "LM06-Backtesting-and-Simulation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the toolkit for estimating the ex post inputs this module consumes (realized IC,"
+  },
+  {
+   "id": "LM02-Analysis-of-Active-Portfolio-Management->LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromNode": "LM02-Analysis-of-Active-Portfolio-Management",
+   "toNode": "LM01-Basics-of-Multiple-Regression-and-Underlying-Assumptions",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the correlation and covariance mechanics behind IC and TC (cross-sectional corre"
+  },
+  {
+   "id": "LM03-Exchange-Traded-Funds-Mechanics-and-Applications->LM04-Using-Multifactor-Models",
+   "fromNode": "LM03-Exchange-Traded-Funds-Mechanics-and-Applications",
+   "toNode": "LM04-Using-Multifactor-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "factor and smart beta ETFs are the cheapest implementation vehicle for the facto"
+  },
+  {
+   "id": "LM03-Exchange-Traded-Funds-Mechanics-and-Applications->LM05-Measuring-and-Managing-Market-Risk",
+   "fromNode": "LM03-Exchange-Traded-Funds-Mechanics-and-Applications",
+   "toNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the risk measures in LM05 drive the ETF applications here; beta, duration, and c"
+  },
+  {
+   "id": "LM03-Exchange-Traded-Funds-Mechanics-and-Applications->LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromNode": "LM03-Exchange-Traded-Funds-Mechanics-and-Applications",
+   "toNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "(05-Equity-Valuation): the screening rules inside value, dividend, and quality f"
+  },
+  {
+   "id": "LM04-Using-Multifactor-Models->LM02-Analysis-of-Active-Portfolio-Management",
+   "fromNode": "LM04-Using-Multifactor-Models",
+   "toNode": "LM02-Analysis-of-Active-Portfolio-Management",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "takes this module's information ratio and active risk and builds the full active"
+  },
+  {
+   "id": "LM04-Using-Multifactor-Models->LM05-Measuring-and-Managing-Market-Risk",
+   "fromNode": "LM04-Using-Multifactor-Models",
+   "toNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the factor covariance machinery behind active factor risk reappears in VaR and r"
+  },
+  {
+   "id": "LM04-Using-Multifactor-Models->LM06-Backtesting-and-Simulation",
+   "fromNode": "LM04-Using-Multifactor-Models",
+   "toNode": "LM06-Backtesting-and-Simulation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the rolling-window backtest used to build the benchmark and risk parity multifac"
+  },
+  {
+   "id": "LM04-Using-Multifactor-Models->LM04-Extensions-of-Multiple-Regression",
+   "fromNode": "LM04-Using-Multifactor-Models",
+   "toNode": "LM04-Extensions-of-Multiple-Regression",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the regression toolkit this module consumes; macro models regress retur"
+  },
+  {
+   "id": "LM04-Using-Multifactor-Models->LM04-Hedge-Fund-Strategies",
+   "fromNode": "LM04-Using-Multifactor-Models",
+   "toNode": "LM04-Hedge-Fund-Strategies",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "applies conditional factor models (factor exposures that switch between normal a"
+  },
+  {
+   "id": "LM05-Measuring-and-Managing-Market-Risk->LM04-Using-Multifactor-Models",
+   "fromNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "toNode": "LM04-Using-Multifactor-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the factor machinery behind risk decomposition; the module's first step"
+  },
+  {
+   "id": "LM05-Measuring-and-Managing-Market-Risk->LM06-Backtesting-and-Simulation",
+   "fromNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "toNode": "LM06-Backtesting-and-Simulation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "takes over where this module stops, backtesting is how VaR's \"reliability can be"
+  },
+  {
+   "id": "LM05-Measuring-and-Managing-Market-Risk->LM02-Valuation-of-Contingent-Claims",
+   "fromNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "toNode": "LM02-Valuation-of-Contingent-Claims",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "derives the delta, gamma, and vega this module uses as given; knowing the BSM so"
+  },
+  {
+   "id": "LM05-Measuring-and-Managing-Market-Risk->LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "fromNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "toNode": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "provides the effective duration and convexity toolkit and the full-revaluation l"
+  },
+  {
+   "id": "LM05-Measuring-and-Managing-Market-Risk->LM04-Analysis-of-Financial-Institutions",
+   "fromNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "toNode": "LM04-Analysis-of-Financial-Institutions",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the FSA view of the same banks and insurers profiled here; capital adequacy, liq"
+  },
+  {
+   "id": "LM06-Backtesting-and-Simulation->LM04-Using-Multifactor-Models",
+   "fromNode": "LM06-Backtesting-and-Simulation",
+   "toNode": "LM04-Using-Multifactor-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the factor models being backtested here; the eight fundamental factors,"
+  },
+  {
+   "id": "LM06-Backtesting-and-Simulation->LM05-Measuring-and-Managing-Market-Risk",
+   "fromNode": "LM06-Backtesting-and-Simulation",
+   "toNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "defines VaR, CVaR and the estimation approaches (historical, parametric, Monte C"
+  },
+  {
+   "id": "LM06-Backtesting-and-Simulation->LM02-Analysis-of-Active-Portfolio-Management",
+   "fromNode": "LM06-Backtesting-and-Simulation",
+   "toNode": "LM02-Analysis-of-Active-Portfolio-Management",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the Sharpe-ratio and information-ratio machinery for judging active strategies; "
+  },
+  {
+   "id": "LM06-Backtesting-and-Simulation->LM05-Time-Series-Analysis",
+   "fromNode": "LM06-Backtesting-and-Simulation",
+   "toNode": "LM05-Time-Series-Analysis",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "(Quantitative Methods): non-stationarity and regime shifts are why long backtest"
+  },
+  {
+   "id": "LM06-Backtesting-and-Simulation->LM07-Big-Data-Projects",
+   "fromNode": "LM06-Backtesting-and-Simulation",
+   "toNode": "LM07-Big-Data-Projects",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "(Quantitative Methods): cross-validation, out-of-sample discipline, overfitting "
+  }
+ ]
+}

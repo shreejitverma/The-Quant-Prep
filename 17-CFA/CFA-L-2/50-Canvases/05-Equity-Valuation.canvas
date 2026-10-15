@@ -1,0 +1,472 @@
+{
+ "nodes": [
+  {
+   "id": "LM01-Equity-Valuation-Applications-and-Processes",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM01-Equity-Valuation-Applications-and-Processes.md",
+   "x": 0,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM02-Discounted-Dividend-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM02-Discounted-Dividend-Valuation.md",
+   "x": 460,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM03-Free-Cash-Flow-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM03-Free-Cash-Flow-Valuation.md",
+   "x": 920,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples.md",
+   "x": 1380,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM05-Residual-Income-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM05-Residual-Income-Valuation.md",
+   "x": 0,
+   "y": 260,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM06-Private-Company-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM06-Private-Company-Valuation.md",
+   "x": 460,
+   "y": 260,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM05-Evaluating-Quality-of-Financial-Reports.md",
+   "x": 2000,
+   "y": 260,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM02-Guidance-for-Standards-I-VII",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/10-Ethics/LM02-Guidance-for-Standards-I-VII.md",
+   "x": 2000,
+   "y": 520,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/04-Corporate-Issuers/LM01-Analysis-of-Dividends-and-Share-Repurchases.md",
+   "x": 2000,
+   "y": 780,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM03-Cost-of-Capital-Advanced-Topics",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/04-Corporate-Issuers/LM03-Cost-of-Capital-Advanced-Topics.md",
+   "x": 2000,
+   "y": 1040,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM06-Integration-of-Financial-Statement-Analysis-Techniques.md",
+   "x": 2000,
+   "y": 1300,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM02-Employee-Compensation-Post-Employment-and-Share-Based.md",
+   "x": 2000,
+   "y": 1560,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/08-Alternative-Investments/LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities.md",
+   "x": 2000,
+   "y": 1820,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Intercorporate-Investments",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM01-Intercorporate-Investments.md",
+   "x": 2000,
+   "y": 2080,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Corporate-Restructuring",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/04-Corporate-Issuers/LM04-Corporate-Restructuring.md",
+   "x": 2000,
+   "y": 2340,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Hedge-Fund-Strategies",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/08-Alternative-Investments/LM04-Hedge-Fund-Strategies.md",
+   "x": 2000,
+   "y": 2600,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  }
+ ],
+ "edges": [
+  {
+   "id": "LM01-Equity-Valuation-Applications-and-Processes->LM02-Discounted-Dividend-Valuation",
+   "fromNode": "LM01-Equity-Valuation-Applications-and-Processes",
+   "toNode": "LM02-Discounted-Dividend-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the first absolute model; this module's definitions of intrinsic value, going-co"
+  },
+  {
+   "id": "LM01-Equity-Valuation-Applications-and-Processes->LM03-Free-Cash-Flow-Valuation",
+   "fromNode": "LM01-Equity-Valuation-Applications-and-Processes",
+   "toNode": "LM03-Free-Cash-Flow-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the company-level cash flow definitions (FCFF, FCFE) introduced here as alternat"
+  },
+  {
+   "id": "LM01-Equity-Valuation-Applications-and-Processes->LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromNode": "LM01-Equity-Valuation-Applications-and-Processes",
+   "toNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the method of comparables and the \"relatively undervalued versus undervalued\" di"
+  },
+  {
+   "id": "LM01-Equity-Valuation-Applications-and-Processes->LM05-Residual-Income-Valuation",
+   "fromNode": "LM01-Equity-Valuation-Applications-and-Processes",
+   "toNode": "LM05-Residual-Income-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "residual income is the third company-level cash flow definition named here (acco"
+  },
+  {
+   "id": "LM01-Equity-Valuation-Applications-and-Processes->LM06-Private-Company-Valuation",
+   "fromNode": "LM01-Equity-Valuation-Applications-and-Processes",
+   "toNode": "LM06-Private-Company-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "fair market value, investment value, control premiums, lack of marketability dis"
+  },
+  {
+   "id": "LM01-Equity-Valuation-Applications-and-Processes->LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromNode": "LM01-Equity-Valuation-Applications-and-Processes",
+   "toNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "Exhibit 3's earnings quality indicators, the accrual decomposition and the Tango"
+  },
+  {
+   "id": "LM01-Equity-Valuation-Applications-and-Processes->LM02-Guidance-for-Standards-I-VII",
+   "fromNode": "LM01-Equity-Valuation-Applications-and-Processes",
+   "toNode": "LM02-Guidance-for-Standards-I-VII",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "Exhibit 7 lists Standards I(B), I(C), V(A), V(B) and V(C) as the conduct rules f"
+  },
+  {
+   "id": "LM02-Discounted-Dividend-Valuation->LM01-Equity-Valuation-Applications-and-Processes",
+   "fromNode": "LM02-Discounted-Dividend-Valuation",
+   "toNode": "LM01-Equity-Valuation-Applications-and-Processes",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the intrinsic value versus price framework, the required return estimat"
+  },
+  {
+   "id": "LM02-Discounted-Dividend-Valuation->LM03-Free-Cash-Flow-Valuation",
+   "fromNode": "LM02-Discounted-Dividend-Valuation",
+   "toNode": "LM03-Free-Cash-Flow-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "takes the FCFF and FCFE definitions sketched here (cash from operations less cap"
+  },
+  {
+   "id": "LM02-Discounted-Dividend-Valuation->LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromNode": "LM02-Discounted-Dividend-Valuation",
+   "toNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the justified leading and trailing P/E derived here from the Gordon model are th"
+  },
+  {
+   "id": "LM02-Discounted-Dividend-Valuation->LM05-Residual-Income-Valuation",
+   "fromNode": "LM02-Discounted-Dividend-Valuation",
+   "toNode": "LM05-Residual-Income-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "residual income, book value plus the present value of earnings above the require"
+  },
+  {
+   "id": "LM02-Discounted-Dividend-Valuation->LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromNode": "LM02-Discounted-Dividend-Valuation",
+   "toNode": "LM01-Analysis-of-Dividends-and-Share-Repurchases",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "dividend policy, payout stability and the wealth-neutrality of buybacks at marke"
+  },
+  {
+   "id": "LM02-Discounted-Dividend-Valuation->LM03-Cost-of-Capital-Advanced-Topics",
+   "fromNode": "LM02-Discounted-Dividend-Valuation",
+   "toNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the cost of equity that discounts every dividend here is estimated there, includ"
+  },
+  {
+   "id": "LM03-Free-Cash-Flow-Valuation->LM02-Discounted-Dividend-Valuation",
+   "fromNode": "LM03-Free-Cash-Flow-Valuation",
+   "toNode": "LM02-Discounted-Dividend-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the DCF machinery this module reuses, the Gordon algebra behind every c"
+  },
+  {
+   "id": "LM03-Free-Cash-Flow-Valuation->LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromNode": "LM03-Free-Cash-Flow-Valuation",
+   "toNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the P/E-times-terminal-earnings alternative for terminal value comes from there,"
+  },
+  {
+   "id": "LM03-Free-Cash-Flow-Valuation->LM05-Residual-Income-Valuation",
+   "fromNode": "LM03-Free-Cash-Flow-Valuation",
+   "toNode": "LM05-Residual-Income-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the model of choice when expected free cash flows are negative within the foreca"
+  },
+  {
+   "id": "LM03-Free-Cash-Flow-Valuation->LM06-Private-Company-Valuation",
+   "fromNode": "LM03-Free-Cash-Flow-Valuation",
+   "toNode": "LM06-Private-Company-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "private-company income approaches discount normalized FCFF or FCFE built exactly"
+  },
+  {
+   "id": "LM03-Free-Cash-Flow-Valuation->LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromNode": "LM03-Free-Cash-Flow-Valuation",
+   "toNode": "LM06-Integration-of-Financial-Statement-Analysis-Techniques",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the statement-level detective work, articulation problems, classification choice"
+  },
+  {
+   "id": "LM03-Free-Cash-Flow-Valuation->LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromNode": "LM03-Free-Cash-Flow-Valuation",
+   "toNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the accounting behind the share-based compensation and pension items this module"
+  },
+  {
+   "id": "LM03-Free-Cash-Flow-Valuation->LM03-Cost-of-Capital-Advanced-Topics",
+   "fromNode": "LM03-Free-Cash-Flow-Valuation",
+   "toNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "builds the WACC and cost of equity that discount FCFF and FCFE here, including t"
+  },
+  {
+   "id": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples->LM02-Discounted-Dividend-Valuation",
+   "fromNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "toNode": "LM02-Discounted-Dividend-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "every justified multiple here is the Gordon growth model divided by a fundamenta"
+  },
+  {
+   "id": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples->LM03-Free-Cash-Flow-Valuation",
+   "fromNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "toNode": "LM03-Free-Cash-Flow-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "FCFE and FCFF definitions feed P/FCFE, the justified P/CF from a constant-growth"
+  },
+  {
+   "id": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples->LM05-Residual-Income-Valuation",
+   "fromNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "toNode": "LM05-Residual-Income-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "justified P/B equals $1 + PV(\\text{residual income})/B_0$, so P/B above 1 means "
+  },
+  {
+   "id": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples->LM06-Private-Company-Valuation",
+   "fromNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "toNode": "LM06-Private-Company-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the guideline public company and guideline transactions methods are this module'"
+  },
+  {
+   "id": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples->LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "toNode": "LM05-Evaluating-Quality-of-Financial-Reports",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "underlying earnings, normalized EPS, revenue recognition abuses (bill-and-hold, "
+  },
+  {
+   "id": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples->LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities",
+   "fromNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "toNode": "LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "P/FFO and P/AFFO for REITs are sector-specific price multiples built with the sa"
+  },
+  {
+   "id": "LM05-Residual-Income-Valuation->LM02-Discounted-Dividend-Valuation",
+   "fromNode": "LM05-Residual-Income-Valuation",
+   "toNode": "LM02-Discounted-Dividend-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the RI model is the DDM rewritten through the clean surplus relation, the justif"
+  },
+  {
+   "id": "LM05-Residual-Income-Valuation->LM03-Free-Cash-Flow-Valuation",
+   "fromNode": "LM05-Residual-Income-Valuation",
+   "toNode": "LM03-Free-Cash-Flow-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "FCFE and FCFF are the alternatives the selection LOS compares against; RI is pre"
+  },
+  {
+   "id": "LM05-Residual-Income-Valuation->LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromNode": "LM05-Residual-Income-Valuation",
+   "toNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "justified P/B from fundamentals, the implied growth and implied ROE backed out o"
+  },
+  {
+   "id": "LM05-Residual-Income-Valuation->LM01-Intercorporate-Investments",
+   "fromNode": "LM05-Residual-Income-Valuation",
+   "toNode": "LM01-Intercorporate-Investments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "book value of equity, goodwill and the treatment of acquired intangibles determi"
+  },
+  {
+   "id": "LM05-Residual-Income-Valuation->LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromNode": "LM05-Residual-Income-Valuation",
+   "toNode": "LM02-Employee-Compensation-Post-Employment-and-Share-Based",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "pension remeasurements and share-based payment reserves are the OCI items that v"
+  },
+  {
+   "id": "LM05-Residual-Income-Valuation->LM03-Cost-of-Capital-Advanced-Topics",
+   "fromNode": "LM05-Residual-Income-Valuation",
+   "toNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the required return on equity that sets the equity charge, and the WACC that set"
+  },
+  {
+   "id": "LM06-Private-Company-Valuation->LM02-Discounted-Dividend-Valuation",
+   "fromNode": "LM06-Private-Company-Valuation",
+   "toNode": "LM02-Discounted-Dividend-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the growing-perpetuity engine and the r > g condition behind the CCM, t"
+  },
+  {
+   "id": "LM06-Private-Company-Valuation->LM03-Free-Cash-Flow-Valuation",
+   "fromNode": "LM06-Private-Company-Valuation",
+   "toNode": "LM03-Free-Cash-Flow-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "defines FCFF and FCFE, the WACC versus cost-of-equity discounting rule, and the "
+  },
+  {
+   "id": "LM06-Private-Company-Valuation->LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromNode": "LM06-Private-Company-Valuation",
+   "toNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the method of comparables, EV construction, and multiple selection that the GPCM"
+  },
+  {
+   "id": "LM06-Private-Company-Valuation->LM05-Residual-Income-Valuation",
+   "fromNode": "LM06-Private-Company-Valuation",
+   "toNode": "LM05-Residual-Income-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the residual income concept that the excess earnings method reimplements with pe"
+  },
+  {
+   "id": "LM06-Private-Company-Valuation->LM03-Cost-of-Capital-Advanced-Topics",
+   "fromNode": "LM06-Private-Company-Valuation",
+   "toNode": "LM03-Cost-of-Capital-Advanced-Topics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "(04-Corporate-Issuers): the expanded CAPM, build-up method, size and company-spe"
+  },
+  {
+   "id": "LM06-Private-Company-Valuation->LM04-Corporate-Restructuring",
+   "fromNode": "LM06-Private-Company-Valuation",
+   "toNode": "LM04-Corporate-Restructuring",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "(04-Corporate-Issuers): the acquisition context for control premiums, synergies,"
+  },
+  {
+   "id": "LM06-Private-Company-Valuation->LM04-Hedge-Fund-Strategies",
+   "fromNode": "LM06-Private-Company-Valuation",
+   "toNode": "LM04-Hedge-Fund-Strategies",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "(08-Alternative-Investments): activist and event-driven strategies that buy infl"
+  }
+ ]
+}

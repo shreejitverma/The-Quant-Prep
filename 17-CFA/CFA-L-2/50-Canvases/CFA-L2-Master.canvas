@@ -1,0 +1,362 @@
+{
+ "nodes": [
+  {
+   "id": "01-Quantitative-Methods",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/50-Canvases/01-Quantitative-Methods.canvas",
+   "x": 0,
+   "y": 0,
+   "width": 400,
+   "height": 240
+  },
+  {
+   "id": "02-Economics",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/50-Canvases/02-Economics.canvas",
+   "x": 460,
+   "y": 0,
+   "width": 400,
+   "height": 240
+  },
+  {
+   "id": "03-Financial-Statement-Analysis",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/50-Canvases/03-Financial-Statement-Analysis.canvas",
+   "x": 920,
+   "y": 0,
+   "width": 400,
+   "height": 240
+  },
+  {
+   "id": "04-Corporate-Issuers",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/50-Canvases/04-Corporate-Issuers.canvas",
+   "x": 1380,
+   "y": 0,
+   "width": 400,
+   "height": 240
+  },
+  {
+   "id": "05-Equity-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/50-Canvases/05-Equity-Valuation.canvas",
+   "x": 1840,
+   "y": 0,
+   "width": 400,
+   "height": 240
+  },
+  {
+   "id": "06-Fixed-Income",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/50-Canvases/06-Fixed-Income.canvas",
+   "x": 0,
+   "y": 300,
+   "width": 400,
+   "height": 240
+  },
+  {
+   "id": "07-Derivatives",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/50-Canvases/07-Derivatives.canvas",
+   "x": 460,
+   "y": 300,
+   "width": 400,
+   "height": 240
+  },
+  {
+   "id": "08-Alternative-Investments",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/50-Canvases/08-Alternative-Investments.canvas",
+   "x": 920,
+   "y": 300,
+   "width": 400,
+   "height": 240
+  },
+  {
+   "id": "09-Portfolio-Management",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/50-Canvases/09-Portfolio-Management.canvas",
+   "x": 1380,
+   "y": 300,
+   "width": 400,
+   "height": 240
+  },
+  {
+   "id": "10-Ethics",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/50-Canvases/10-Ethics.canvas",
+   "x": 1840,
+   "y": 300,
+   "width": 400,
+   "height": 240
+  }
+ ],
+ "edges": [
+  {
+   "id": "01-Quantitative-Methods->09-Portfolio-Management",
+   "fromNode": "01-Quantitative-Methods",
+   "toNode": "09-Portfolio-Management",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "01-Quantitative-Methods->02-Economics",
+   "fromNode": "01-Quantitative-Methods",
+   "toNode": "02-Economics",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "02-Economics->07-Derivatives",
+   "fromNode": "02-Economics",
+   "toNode": "07-Derivatives",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "02-Economics->03-Financial-Statement-Analysis",
+   "fromNode": "02-Economics",
+   "toNode": "03-Financial-Statement-Analysis",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "02-Economics->09-Portfolio-Management",
+   "fromNode": "02-Economics",
+   "toNode": "09-Portfolio-Management",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "02-Economics->01-Quantitative-Methods",
+   "fromNode": "02-Economics",
+   "toNode": "01-Quantitative-Methods",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "03-Financial-Statement-Analysis->05-Equity-Valuation",
+   "fromNode": "03-Financial-Statement-Analysis",
+   "toNode": "05-Equity-Valuation",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "03-Financial-Statement-Analysis->04-Corporate-Issuers",
+   "fromNode": "03-Financial-Statement-Analysis",
+   "toNode": "04-Corporate-Issuers",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "03-Financial-Statement-Analysis->02-Economics",
+   "fromNode": "03-Financial-Statement-Analysis",
+   "toNode": "02-Economics",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "03-Financial-Statement-Analysis->07-Derivatives",
+   "fromNode": "03-Financial-Statement-Analysis",
+   "toNode": "07-Derivatives",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "03-Financial-Statement-Analysis->06-Fixed-Income",
+   "fromNode": "03-Financial-Statement-Analysis",
+   "toNode": "06-Fixed-Income",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "03-Financial-Statement-Analysis->09-Portfolio-Management",
+   "fromNode": "03-Financial-Statement-Analysis",
+   "toNode": "09-Portfolio-Management",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "04-Corporate-Issuers->05-Equity-Valuation",
+   "fromNode": "04-Corporate-Issuers",
+   "toNode": "05-Equity-Valuation",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "04-Corporate-Issuers->03-Financial-Statement-Analysis",
+   "fromNode": "04-Corporate-Issuers",
+   "toNode": "03-Financial-Statement-Analysis",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "04-Corporate-Issuers->10-Ethics",
+   "fromNode": "04-Corporate-Issuers",
+   "toNode": "10-Ethics",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "04-Corporate-Issuers->06-Fixed-Income",
+   "fromNode": "04-Corporate-Issuers",
+   "toNode": "06-Fixed-Income",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "05-Equity-Valuation->03-Financial-Statement-Analysis",
+   "fromNode": "05-Equity-Valuation",
+   "toNode": "03-Financial-Statement-Analysis",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "05-Equity-Valuation->10-Ethics",
+   "fromNode": "05-Equity-Valuation",
+   "toNode": "10-Ethics",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "05-Equity-Valuation->04-Corporate-Issuers",
+   "fromNode": "05-Equity-Valuation",
+   "toNode": "04-Corporate-Issuers",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "05-Equity-Valuation->08-Alternative-Investments",
+   "fromNode": "05-Equity-Valuation",
+   "toNode": "08-Alternative-Investments",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "06-Fixed-Income->07-Derivatives",
+   "fromNode": "06-Fixed-Income",
+   "toNode": "07-Derivatives",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "06-Fixed-Income->09-Portfolio-Management",
+   "fromNode": "06-Fixed-Income",
+   "toNode": "09-Portfolio-Management",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "06-Fixed-Income->03-Financial-Statement-Analysis",
+   "fromNode": "06-Fixed-Income",
+   "toNode": "03-Financial-Statement-Analysis",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "07-Derivatives->06-Fixed-Income",
+   "fromNode": "07-Derivatives",
+   "toNode": "06-Fixed-Income",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "07-Derivatives->02-Economics",
+   "fromNode": "07-Derivatives",
+   "toNode": "02-Economics",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "07-Derivatives->08-Alternative-Investments",
+   "fromNode": "07-Derivatives",
+   "toNode": "08-Alternative-Investments",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "07-Derivatives->09-Portfolio-Management",
+   "fromNode": "07-Derivatives",
+   "toNode": "09-Portfolio-Management",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "08-Alternative-Investments->07-Derivatives",
+   "fromNode": "08-Alternative-Investments",
+   "toNode": "07-Derivatives",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "08-Alternative-Investments->05-Equity-Valuation",
+   "fromNode": "08-Alternative-Investments",
+   "toNode": "05-Equity-Valuation",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "08-Alternative-Investments->06-Fixed-Income",
+   "fromNode": "08-Alternative-Investments",
+   "toNode": "06-Fixed-Income",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "08-Alternative-Investments->09-Portfolio-Management",
+   "fromNode": "08-Alternative-Investments",
+   "toNode": "09-Portfolio-Management",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "09-Portfolio-Management->06-Fixed-Income",
+   "fromNode": "09-Portfolio-Management",
+   "toNode": "06-Fixed-Income",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "09-Portfolio-Management->02-Economics",
+   "fromNode": "09-Portfolio-Management",
+   "toNode": "02-Economics",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "09-Portfolio-Management->05-Equity-Valuation",
+   "fromNode": "09-Portfolio-Management",
+   "toNode": "05-Equity-Valuation",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "09-Portfolio-Management->01-Quantitative-Methods",
+   "fromNode": "09-Portfolio-Management",
+   "toNode": "01-Quantitative-Methods",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "09-Portfolio-Management->08-Alternative-Investments",
+   "fromNode": "09-Portfolio-Management",
+   "toNode": "08-Alternative-Investments",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "09-Portfolio-Management->07-Derivatives",
+   "fromNode": "09-Portfolio-Management",
+   "toNode": "07-Derivatives",
+   "fromSide": "bottom",
+   "toSide": "top"
+  },
+  {
+   "id": "09-Portfolio-Management->03-Financial-Statement-Analysis",
+   "fromNode": "09-Portfolio-Management",
+   "toNode": "03-Financial-Statement-Analysis",
+   "fromSide": "bottom",
+   "toSide": "top"
+  }
+ ]
+}

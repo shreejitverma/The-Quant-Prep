@@ -1,0 +1,148 @@
+{
+ "nodes": [
+  {
+   "id": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/07-Derivatives/LM01-Pricing-and-Valuation-of-Forward-Commitments.md",
+   "x": 0,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM02-Valuation-of-Contingent-Claims",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/07-Derivatives/LM02-Valuation-of-Contingent-Claims.md",
+   "x": 460,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM01-The-Term-Structure-and-Interest-Rate-Dynamics.md",
+   "x": 2000,
+   "y": 260,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/02-Economics/LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value.md",
+   "x": 2000,
+   "y": 520,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Introduction-to-Commodities-and-Commodity-Derivatives",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/08-Alternative-Investments/LM01-Introduction-to-Commodities-and-Commodity-Derivatives.md",
+   "x": 2000,
+   "y": 780,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM02-The-Arbitrage-Free-Valuation-Framework",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM02-The-Arbitrage-Free-Valuation-Framework.md",
+   "x": 2000,
+   "y": 1040,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options.md",
+   "x": 2000,
+   "y": 1300,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM05-Measuring-and-Managing-Market-Risk",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM05-Measuring-and-Managing-Market-Risk.md",
+   "x": 2000,
+   "y": 1560,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  }
+ ],
+ "edges": [
+  {
+   "id": "LM01-Pricing-and-Valuation-of-Forward-Commitments->LM02-Valuation-of-Contingent-Claims",
+   "fromNode": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "toNode": "LM02-Valuation-of-Contingent-Claims",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "consumes this module's no-arbitrage toolkit; the binomial option lattice reuses "
+  },
+  {
+   "id": "LM01-Pricing-and-Valuation-of-Forward-Commitments->LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromNode": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "toNode": "LM01-The-Term-Structure-and-Interest-Rate-Dynamics",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the spot and forward curve machinery; the FRA fixed rate is exactly tha"
+  },
+  {
+   "id": "LM01-Pricing-and-Valuation-of-Forward-Commitments->LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "fromNode": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "toNode": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "develops covered interest rate parity in full; here the same relation appears as"
+  },
+  {
+   "id": "LM01-Pricing-and-Valuation-of-Forward-Commitments->LM01-Introduction-to-Commodities-and-Commodity-Derivatives",
+   "fromNode": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "toNode": "LM01-Introduction-to-Commodities-and-Commodity-Derivatives",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "takes the carry cost side seriously; storage, insurance, and convenience yield g"
+  },
+  {
+   "id": "LM02-Valuation-of-Contingent-Claims->LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromNode": "LM02-Valuation-of-Contingent-Claims",
+   "toNode": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the carry arbitrage machinery behind every underlying used here; the FR"
+  },
+  {
+   "id": "LM02-Valuation-of-Contingent-Claims->LM02-The-Arbitrage-Free-Valuation-Framework",
+   "fromNode": "LM02-Valuation-of-Contingent-Claims",
+   "toNode": "LM02-The-Arbitrage-Free-Valuation-Framework",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the fixed-income binomial tree is the same backward induction used for the inter"
+  },
+  {
+   "id": "LM02-Valuation-of-Contingent-Claims->LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "fromNode": "LM02-Valuation-of-Contingent-Claims",
+   "toNode": "LM03-Valuation-and-Analysis-of-Bonds-with-Embedded-Options",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "values callable and putable bonds by running this module's exercise test at ever"
+  },
+  {
+   "id": "LM02-Valuation-of-Contingent-Claims->LM05-Measuring-and-Managing-Market-Risk",
+   "fromNode": "LM02-Valuation-of-Contingent-Claims",
+   "toNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the portfolio-management treatment of Greeks in risk systems; delta and gamma fr"
+  }
+ ]
+}

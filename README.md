@@ -65,6 +65,7 @@ Build a C++ example with `g++ -std=c++20 -O2 -pthread <file>.cpp`; run Python ex
 ```
 00-Start-Here/     tracks, roadmap, platform guide, note conventions, SDE link map
 01-..15-           the syllabus (Markdown notes, code/ folders beside the notes that use them)
+16-, 17-           Obsidian libraries outside the syllabus: trading and investing; the CFA Level II platform
 tools/qp/          the qp CLI, local server and dashboard (standard library only)
 tools/tests/       platform tests
 _archive/          the pre-2026 notebook collection and superseded drafts, outside the curriculum

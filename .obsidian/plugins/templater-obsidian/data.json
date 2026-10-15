@@ -1,0 +1,18 @@
+{
+  "templates_folder": "Templates",
+  "trigger_on_file_creation": true,
+  "enable_folder_templates": true,
+  "syntax_highlighting": true,
+  "syntax_highlighting_mobile": true,
+  "enable_ribbon_icon": true,
+  "folder_templates": [
+    {
+      "folder": "17-CFA/CFA-L-2/22-Attempts",
+      "template": "Templates/CFA-Attempt-Template.md"
+    },
+    {
+      "folder": "17-CFA/CFA-L-2/23-Error-Log",
+      "template": "Templates/CFA-Error-Template.md"
+    }
+  ]
+}

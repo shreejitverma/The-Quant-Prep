@@ -1,0 +1,234 @@
+{
+ "nodes": [
+  {
+   "id": "LM01-Introduction-to-Commodities-and-Commodity-Derivatives",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/08-Alternative-Investments/LM01-Introduction-to-Commodities-and-Commodity-Derivatives.md",
+   "x": 0,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM02-Overview-of-Types-of-Real-Estate-Investment",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/08-Alternative-Investments/LM02-Overview-of-Types-of-Real-Estate-Investment.md",
+   "x": 460,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/08-Alternative-Investments/LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities.md",
+   "x": 920,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM04-Hedge-Fund-Strategies",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/08-Alternative-Investments/LM04-Hedge-Fund-Strategies.md",
+   "x": 1380,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/07-Derivatives/LM01-Pricing-and-Valuation-of-Forward-Commitments.md",
+   "x": 2000,
+   "y": 260,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM06-Private-Company-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM06-Private-Company-Valuation.md",
+   "x": 2000,
+   "y": 520,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Credit-Analysis-Models",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/06-Fixed-Income/LM04-Credit-Analysis-Models.md",
+   "x": 2000,
+   "y": 780,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples.md",
+   "x": 2000,
+   "y": 1040,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM03-Free-Cash-Flow-Valuation",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/05-Equity-Valuation/LM03-Free-Cash-Flow-Valuation.md",
+   "x": 2000,
+   "y": 1300,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM04-Using-Multifactor-Models",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM04-Using-Multifactor-Models.md",
+   "x": 2000,
+   "y": 1560,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM05-Measuring-and-Managing-Market-Risk",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM05-Measuring-and-Managing-Market-Risk.md",
+   "x": 2000,
+   "y": 1820,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM02-Valuation-of-Contingent-Claims",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/07-Derivatives/LM02-Valuation-of-Contingent-Claims.md",
+   "x": 2000,
+   "y": 2080,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  }
+ ],
+ "edges": [
+  {
+   "id": "LM01-Introduction-to-Commodities-and-Commodity-Derivatives->LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromNode": "LM01-Introduction-to-Commodities-and-Commodity-Derivatives",
+   "toNode": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the cost-of-carry pricing of futures that this module's contango/backwa"
+  },
+  {
+   "id": "LM01-Introduction-to-Commodities-and-Commodity-Derivatives->LM02-Overview-of-Types-of-Real-Estate-Investment",
+   "fromNode": "LM01-Introduction-to-Commodities-and-Commodity-Derivatives",
+   "toNode": "LM02-Overview-of-Types-of-Real-Estate-Investment",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the next real-asset class in this topic; contrasts usefully because real estate,"
+  },
+  {
+   "id": "LM01-Introduction-to-Commodities-and-Commodity-Derivatives->LM04-Hedge-Fund-Strategies",
+   "fromNode": "LM01-Introduction-to-Commodities-and-Commodity-Derivatives",
+   "toNode": "LM04-Hedge-Fund-Strategies",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "managed futures and global macro strategies trade these commodity futures and ha"
+  },
+  {
+   "id": "LM02-Overview-of-Types-of-Real-Estate-Investment->LM01-Introduction-to-Commodities-and-Commodity-Derivatives",
+   "fromNode": "LM02-Overview-of-Types-of-Real-Estate-Investment",
+   "toNode": "LM01-Introduction-to-Commodities-and-Commodity-Derivatives",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the topic's other real-asset class; commodities generate no operating cash flow "
+  },
+  {
+   "id": "LM02-Overview-of-Types-of-Real-Estate-Investment->LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities",
+   "fromNode": "LM02-Overview-of-Types-of-Real-Estate-Investment",
+   "toNode": "LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "consumes this module directly; the REIT and REOC definitions, FFO, NOI, and the "
+  },
+  {
+   "id": "LM02-Overview-of-Types-of-Real-Estate-Investment->LM06-Private-Company-Valuation",
+   "fromNode": "LM02-Overview-of-Types-of-Real-Estate-Investment",
+   "toNode": "LM06-Private-Company-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the income approach here is the same discounted cash flow logic with NOI in plac"
+  },
+  {
+   "id": "LM02-Overview-of-Types-of-Real-Estate-Investment->LM04-Credit-Analysis-Models",
+   "fromNode": "LM02-Overview-of-Types-of-Real-Estate-Investment",
+   "toNode": "LM04-Credit-Analysis-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the credit view of the same collateral; LTV and DSC introduced here are the unde"
+  },
+  {
+   "id": "LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities->LM02-Overview-of-Types-of-Real-Estate-Investment",
+   "fromNode": "LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities",
+   "toNode": "LM02-Overview-of-Types-of-Real-Estate-Investment",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the raw material this module securitizes, property subtypes and their e"
+  },
+  {
+   "id": "LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities->LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromNode": "LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities",
+   "toNode": "LM04-Market-Based-Valuation-Price-and-Enterprise-Value-Multiples",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "P/FFO and P/AFFO are sector-specific price multiples; the peer-comparison logic,"
+  },
+  {
+   "id": "LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities->LM03-Free-Cash-Flow-Valuation",
+   "fromNode": "LM03-Investments-in-Real-Estate-through-Publicly-Traded-Securities",
+   "toNode": "LM03-Free-Cash-Flow-Valuation",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the two-step DDM with a Gordon terminal value and the CAPM discount rate are the"
+  },
+  {
+   "id": "LM04-Hedge-Fund-Strategies->LM01-Introduction-to-Commodities-and-Commodity-Derivatives",
+   "fromNode": "LM04-Hedge-Fund-Strategies",
+   "toNode": "LM01-Introduction-to-Commodities-and-Commodity-Derivatives",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "managed futures and global macro trade the commodity futures curves built there;"
+  },
+  {
+   "id": "LM04-Hedge-Fund-Strategies->LM04-Using-Multifactor-Models",
+   "fromNode": "LM04-Hedge-Fund-Strategies",
+   "toNode": "LM04-Using-Multifactor-Models",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the conditional linear factor model is a multifactor return model with regime du"
+  },
+  {
+   "id": "LM04-Hedge-Fund-Strategies->LM05-Measuring-and-Managing-Market-Risk",
+   "fromNode": "LM04-Hedge-Fund-Strategies",
+   "toNode": "LM05-Measuring-and-Managing-Market-Risk",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "Sharpe vs Sortino, maximum drawdown, serial autocorrelation as an illiquidity fl"
+  },
+  {
+   "id": "LM04-Hedge-Fund-Strategies->LM02-Valuation-of-Contingent-Claims",
+   "fromNode": "LM04-Hedge-Fund-Strategies",
+   "toNode": "LM02-Valuation-of-Contingent-Claims",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "convertible arbitrage delta hedging and gamma trading, merger arbitrage's bond-p"
+  }
+ ]
+}

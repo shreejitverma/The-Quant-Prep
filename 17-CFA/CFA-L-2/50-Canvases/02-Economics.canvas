@@ -1,0 +1,120 @@
+{
+ "nodes": [
+  {
+   "id": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/02-Economics/LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value.md",
+   "x": 0,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM02-Economic-Growth",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/02-Economics/LM02-Economic-Growth.md",
+   "x": 460,
+   "y": 0,
+   "width": 400,
+   "height": 200
+  },
+  {
+   "id": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/07-Derivatives/LM01-Pricing-and-Valuation-of-Forward-Commitments.md",
+   "x": 2000,
+   "y": 260,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM03-Multinational-Operations",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/03-Financial-Statement-Analysis/LM03-Multinational-Operations.md",
+   "x": 2000,
+   "y": 520,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM01-Economics-and-Investment-Markets",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/09-Portfolio-Management/LM01-Economics-and-Investment-Markets.md",
+   "x": 2000,
+   "y": 780,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  },
+  {
+   "id": "LM05-Time-Series-Analysis",
+   "type": "file",
+   "file": "17-CFA/CFA-L-2/01-Quantitative-Methods/LM05-Time-Series-Analysis.md",
+   "x": 2000,
+   "y": 1040,
+   "width": 400,
+   "height": 200,
+   "color": "4"
+  }
+ ],
+ "edges": [
+  {
+   "id": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value->LM02-Economic-Growth",
+   "fromNode": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "toNode": "LM02-Economic-Growth",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "growth theory supplies the long-run fundamentals behind this module's anchors; r"
+  },
+  {
+   "id": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value->LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromNode": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "toNode": "LM01-Pricing-and-Valuation-of-Forward-Commitments",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the derivatives reading prices currency forwards with the identical covered inte"
+  },
+  {
+   "id": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value->LM03-Multinational-Operations",
+   "fromNode": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "toNode": "LM03-Multinational-Operations",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "FSA's translation of foreign subsidiaries consumes the spot rates modeled here; "
+  },
+  {
+   "id": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value->LM01-Economics-and-Investment-Markets",
+   "fromNode": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "toNode": "LM01-Economics-and-Investment-Markets",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the portfolio management reading generalizes this module's mechanics, linking po"
+  },
+  {
+   "id": "LM02-Economic-Growth->LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "fromNode": "LM02-Economic-Growth",
+   "toNode": "LM01-Currency-Exchange-Rates-Understanding-Equilibrium-Value",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "supplies the PPP machinery this module uses for cross-country GDP comparison, an"
+  },
+  {
+   "id": "LM02-Economic-Growth->LM01-Economics-and-Investment-Markets",
+   "fromNode": "LM02-Economic-Growth",
+   "toNode": "LM01-Economics-and-Investment-Markets",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "consumes this module's outputs; real short rates driven by expected consumption "
+  },
+  {
+   "id": "LM02-Economic-Growth->LM05-Time-Series-Analysis",
+   "fromNode": "LM02-Economic-Growth",
+   "toNode": "LM05-Time-Series-Analysis",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "the trend and log-linear trend models there are the standard toolkit for estimat"
+  }
+ ]
+}
