@@ -61,7 +61,7 @@ The choice of interpolation variable and functional form dictates the shape of t
 | :--- | :--- | :--- | :--- |
 | Log-linear on $P$ | $\ln P(t)$ linear | Piecewise constant | Simple, robust, guarantees $P > 0$; forward rates jump discontinuously at pillars. |
 | Linear on $z$ | $z(t) = -\frac{\ln P}{t}$ linear | $f(t) = z(t) + t z'(t)$ piecewise linear | $z'(t)$ jumps at each pillar $T_k$, so forwards jump by $T_k$ times that change, giving a saw-tooth. |
-| Natural Cubic Spline | $z(t)$ or $P(t)$ $C^2$ cubic | Smooth quadratic or rational | Visually smooth; non-local oscillations can produce negative forward rates. |
+| Natural Cubic Spline | $z(t)$ or $P(t)$ $C^2$ cubic | Smooth cubic (spline on $z$) or rational (spline on $P$) | Visually smooth; non-local oscillations can produce negative forward rates. |
 | Monotone Convex | Forward rates $f(t)$ | Continuous, monotone | Hagan-West (2006); eliminates spurious oscillations while preserving monotonicity. |
 
 ### The Hagan-West monotone convex method

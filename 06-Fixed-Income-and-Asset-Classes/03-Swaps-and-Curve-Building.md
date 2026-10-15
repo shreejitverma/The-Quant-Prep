@@ -127,7 +127,7 @@ If market par rates rise by 1 bp to 4.01%, the new MTM is $100{,}000{,}000 \cdot
 ### Example 3: DV01 hedge between 3-year and 1-year swap
 
 A desk is long $100{,}000{,}000$ of a 3-year receiver swap ($K = 4.00\%$).
-The desk is exposed to falling rates and wants to hedge directional curve risk using 1-year swaps.
+The desk is exposed to rising rates and wants to hedge directional curve risk using 1-year swaps.
 Annuity of 3-year swap: $A_3 = 2.792525 \implies \text{DV01}_3 = 27{,}925.25$.
 Annuity of 1-year swap: $A_1 = P(0, 1) = 0.970874 \implies \text{DV01}_1 = 9{,}708.74$ per $100{,}000{,}000$ notional.
 Hedge ratio:
