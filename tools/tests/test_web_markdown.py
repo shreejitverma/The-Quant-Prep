@@ -59,6 +59,17 @@ class InlineMathTest(unittest.TestCase):
     def test_display_maths_with_escaped_dollar(self):
         self.assertEqual(self.render(r"$$N = \frac{\$10}{\$2}$$"), r"[D:N = \frac{\$10}{\$2}]")
 
+    def test_display_maths_with_delimiters_on_own_lines(self):
+        # Obsidian renders a $$ block split over lines as one display equation.
+        self.assertEqual(self.render("a\n\n$$\nE[X] = \\$1\n$$\n\nb"), "a\n\n[D:E[X] = \\$1]\n\nb")
+        # An unclosed $$ leaves the following lines as ordinary text.
+        self.assertEqual(self.render("$$\nx"), "$$\nx")
+
+    def test_card_prompt_is_one_element_in_the_summary(self):
+        # The summary is a flex row: the Q badge and the prompt must be its only two items.
+        out = self.render("> [!question]- fi-x | Find $P_3$ given $s$\n> answer")
+        self.assertIn("<summary><span>Find [I:P_3] given [I:s]</span></summary>", out)
+
 
 if __name__ == "__main__":
     unittest.main()

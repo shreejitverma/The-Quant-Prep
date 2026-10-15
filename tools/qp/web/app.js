@@ -124,11 +124,17 @@ function renderMarkdown(src) {
       const titleHtml = window.marked ? marked.parseInline(protect(title)) : protect(title);
       const bodyMd = protect(body.join("\n"));
       if (fold) {
-        out.push(`<details class="callout callout-${type}"${idAttr}${fold === "+" ? " open" : ""}><summary>${titleHtml}</summary>`, `<div class="callout-body">`, "", bodyMd, "", `</div></details>`, "");
+        out.push(`<details class="callout callout-${type}"${idAttr}${fold === "+" ? " open" : ""}><summary><span>${titleHtml}</span></summary>`, `<div class="callout-body">`, "", bodyMd, "", `</div></details>`, "");
       } else {
-        out.push(`<div class="callout callout-${type}"><div class="callout-title">${titleHtml || type}</div>`, `<div class="callout-body">`, "", bodyMd, "", `</div></div>`, "");
+        out.push(`<div class="callout callout-${type}"><div class="callout-title"><span>${titleHtml || type}</span></div>`, `<div class="callout-body">`, "", bodyMd, "", `</div></div>`, "");
       }
       continue;
+    }
+    // A display block whose $$ delimiters sit on their own lines spans several lines; protect it whole.
+    if ((line.replace(/`[^`]*`/g, "").match(/\$\$/g) || []).length % 2) {
+      let j = i + 1;
+      while (j < lines.length && !lines[j].includes("$$")) j++;
+      if (j < lines.length) { out.push(protect(lines.slice(i, j + 1).join("\n"))); i = j; continue; }
     }
     // inline code spans keep their dollars
     out.push(line.split(/(`[^`]*`)/).map((seg, k) => (k % 2 ? seg : protect(seg))).join(""));
