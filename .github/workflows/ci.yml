@@ -42,6 +42,7 @@ jobs:
           python 12-Quant-Development/code/python/itch_parser_mock.py
           python 06-Fixed-Income-and-Asset-Classes/code/bond_pricing.py
           python 06-Fixed-Income-and-Asset-Classes/code/curve_bootstrap.py
+          python 06-Fixed-Income-and-Asset-Classes/code/rates_models.py
 
   secrets:
     runs-on: ubuntu-latest
