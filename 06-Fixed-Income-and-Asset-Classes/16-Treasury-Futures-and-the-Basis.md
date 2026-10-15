@@ -128,6 +128,7 @@ Evaluate Bond A ($4\%$ coupon, $\text{CF} = 0.851225$):
 Clean spot price: $P_{\text{spot}}^{\text{clean}} = 94.00$.
 Spot accrued interest: $AI_{\text{spot}} = 0.50 \implies P_{\text{spot}}^{\text{dirty}} = 94.50$.
 Accrued interest at delivery: $AI_{\text{delivery}} = 1.50$.
+The accrued amounts are illustrative: the conversion factor and the yields in Example 3 treat each bond as having exactly $10$ years ($20$ semiannual periods) to maturity and ignore the stub period that these accruals imply.
 
 Gross basis:
 $$\text{Gross Basis} = P_{\text{spot}}^{\text{clean}} - F \cdot \text{CF} = 94.00 - 110.00 \times 0.851225 = 94.00 - 93.6348 = 0.3652.$$

@@ -147,8 +147,15 @@ def par_swap_rate_dual_curve(
 # ---------------------------------------------------------------- bootstrap & jacobian
 
 
+def _require_annual_pillars(maturities: list[float]) -> None:
+    """The annual-pay bootstrap and Jacobian need pillars exactly 1, 2, ..., n years."""
+    if maturities != [float(k) for k in range(1, len(maturities) + 1)]:
+        raise ValueError("Pillars must be consecutive whole years 1, 2, ..., n")
+
+
 def bootstrap_single_curve(maturities: list[float], par_rates: list[float]) -> DiscountCurve:
     """Bootstrap a single curve from sequential annual par swap rates."""
+    _require_annual_pillars(maturities)
     n = len(maturities)
     if len(par_rates) != n:
         raise ValueError("Mismatched maturities and rates")
@@ -169,6 +176,7 @@ def bootstrap_single_curve(maturities: list[float], par_rates: list[float]) -> D
 
 def swap_jacobian(curve: DiscountCurve, maturities: list[float], par_rates: list[float]) -> list[list[float]]:
     """Jacobian matrix J = [ds_i / dz_j] relating par swap quotes to pillar zero rates."""
+    _require_annual_pillars(maturities)
     n = len(maturities)
     # Zero rates at pillars: z_j = -ln(P_j) / T_j
     # We compute ds_i / dz_j via chain rule: (ds_i / dP_k) * (dP_k / dz_k)
@@ -181,7 +189,7 @@ def swap_jacobian(curve: DiscountCurve, maturities: list[float], par_rates: list
         a_i = a[i]
         for k in range(i + 1):
             ds_dp_k = -s_i / a_i if k < i else -(1.0 + s_i) / a_i
-            dp_k_dz_k = -(k + 1) * p[k]
+            dp_k_dz_k = -maturities[k] * p[k]
             j_s_z[i][k] = ds_dp_k * dp_k_dz_k
     return j_s_z
 
@@ -245,6 +253,21 @@ def main() -> None:
     assert abs(par_swap_rate_single_curve(curve, [1.0]) - 0.03) < 1e-12
     assert abs(par_swap_rate_single_curve(curve, [1.0, 2.0]) - 0.035) < 1e-12
     assert abs(par_swap_rate_single_curve(curve, [1.0, 2.0, 3.0]) - 0.04) < 1e-12
+
+    # Reject pillars other than 1, 2, ..., n years
+    for bad_pillars in ([2.0, 5.0, 10.0], [1.0, 2.0, 4.0], [0.5, 1.0, 1.5]):
+        try:
+            bootstrap_single_curve(bad_pillars, par_rates)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"bootstrap_single_curve accepted pillars {bad_pillars}")
+        try:
+            swap_jacobian(curve, bad_pillars, par_rates)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"swap_jacobian accepted pillars {bad_pillars}")
 
     # Check log-linear interpolation at midpoint 1.5y
     mid_df = curve.df(1.5)
