@@ -55,8 +55,8 @@ A schedule is a function of: start, end, frequency, roll day, end-of-month flag,
 ### Stubs and end-of-month
 
 If the term is not a whole number of periods, a short or long stub exists at the front or back.
-End-of-month: if the start date is the last business day of a month, subsequent dates roll to the last business day of their months.
-Without this flag, a semiannual schedule starting on Friday 28 February 2025 steps from the anchor to 28 August 2025 instead of 31 August, and one starting on 30 April steps to 30 October instead of 31 October.
+End-of-month: if the start date is the last business day of a month, subsequent unadjusted dates sit at the end of their months, and the business-day roll is applied afterwards.
+Without this flag, a semiannual schedule starting on Friday 28 February 2025 steps from the anchor to an unadjusted 28 August 2025 instead of 31 August (which Modified Following then rolls to Friday 29 August), and one starting on 30 April steps to 30 October instead of 31 October.
 
 ### IMM dates
 

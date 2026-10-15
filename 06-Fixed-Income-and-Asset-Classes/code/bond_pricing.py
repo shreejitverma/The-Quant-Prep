@@ -139,6 +139,7 @@ def main() -> None:
     # Without an end-of-month flag, anchor stepping leaves month-end starts off month end.
     assert add_months(date(2025, 2, 28), 6) == date(2025, 8, 28)
     assert add_months(date(2025, 4, 30), 6) == date(2025, 10, 30)
+    assert modified_following(date(2025, 8, 31)) == date(2025, 8, 29)
     # ACT/ACT across a year boundary: 184 days of 2023 plus 182 days of leap 2024.
     assert abs(yearfrac(date(2023, 7, 1), date(2024, 7, 1), "ACT/ACT") - (184 / 365 + 182 / 366)) < 1e-12
     assert abs(yearfrac(date(2023, 7, 1), date(2024, 7, 1), "ACT/365F") - 366 / 365) < 1e-12
