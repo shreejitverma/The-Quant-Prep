@@ -24,7 +24,7 @@ sources: [ISDA 2006 Definitions section 4.16 day count fractions - licensed text
 
 ## Learning objectives
 
-- Compute accrual fractions under ACT/360, ACT/365F, 30/360 and ACT/ACT.
+- Compute accrual fractions under ACT/360, ACT/365F, 30/360 and ACT/ACT (ISDA and ICMA).
 - Generate a schedule with a roll convention, end-of-month rule and stubs.
 - List the calendar and date-adjustment choices that move a swap's PV.
 - Explain why conventions are product, currency and leg specific.
@@ -71,7 +71,7 @@ Futures and standardised CDS and swap contracts reference them; the 2026 dates a
 - Algorithm: generate unadjusted dates by stepping months from the anchor, apply the end-of-month rule, roll each date, compute fractions.
 - Complexity: $O(n)$ per schedule; cache by specification hash.
 - Pitfalls: leap years, holiday calendar versions, dates in the wrong timezone, fixing dates versus accrual dates, regenerating a schedule differently between the pricer and the risk engine.
-- Code: [`code/bond_pricing.py`](code/bond_pricing.py) implements the four conventions, month stepping and Modified Following.
+- Code: [`code/bond_pricing.py`](code/bond_pricing.py) implements ACT/360, ACT/365F, US 30/360 and ACT/ACT (ISDA), month stepping and Modified Following.
 - System context: the trade representation and curve service (planned section).
 
 ## Worked examples
@@ -91,7 +91,7 @@ Notional 1,000,000, 5%, 15 Feb 2024 to 15 Aug 2024 (182 actual days, 2024 is a l
 
 The spread between the highest and lowest is 414.39 on one million, so a convention mismatch on a 5bn book is real money.
 
-### Example 2: ACT/ACT across a leap year
+### Example 2: ACT/ACT (ISDA) across a leap year
 
 1 July 2023 to 1 July 2024 has 366 actual days, split 184 days in 2023 (365-day year) and 182 days in 2024 (366-day year): $184/365+182/366=1.001377$.
 Under ACT/365F the same period is $366/365=1.002740$.
@@ -114,7 +114,7 @@ Migrating a trade changes the schedule, the lookback or lockout, and the payment
 ## Pitfalls
 
 - Using ACT/365 for a leg that is ACT/360, a roughly 1.4% error in every coupon.
-- Forgetting leap-year effects in ACT/ACT versus ACT/365F.
+- Forgetting leap-year effects in ACT/ACT (ISDA) versus ACT/365F.
 - Implementing 30/360 without the day-31 rule or confusing US and European variants.
 - Dropping the end-of-month flag, so schedules drift from month ends.
 - Using one calendar for both fixing and payment when the product specifies two.
@@ -159,7 +159,7 @@ Migrating a trade changes the schedule, the lookback or lockout, and the payment
 > Wrong day count on a leg; missing end-of-month flag; holiday calendar mismatch between systems; fixing and payment dates mixed up.
 > Also: leap years and regenerating the schedule differently in pricer and risk.
 
-> [!question]- fi-actact-vs-act365 | Why is ACT/ACT over 1 July 2023 to 1 July 2024 not exactly 1.0 and how does it compare to ACT/365F?
+> [!question]- fi-actact-vs-act365 | Why is ACT/ACT (ISDA) over 1 July 2023 to 1 July 2024 not exactly 1.0 and how does it compare to ACT/365F?
 > The period is 366 days across a leap year; ISDA ACT/ACT gives 1.001377, ACT/365F gives 366/365 = 1.002740.
 
 > [!question]- fi-calendar-versioning | Why version holiday calendars in a trading system?
