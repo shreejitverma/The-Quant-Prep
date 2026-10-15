@@ -23,7 +23,7 @@ While Hagan's asymptotic formula provides instantaneous calibration, practitione
 
 - Map the structure of the fixed income volatility cube across strike, expiry, and tenor dimensions.
 - Formulate the SABR stochastic differential equations and identify the role of each parameter ($\alpha, \beta, \rho, \nu$).
-- Evaluate Hagan's asymptotic formula for implied Black and normal volatility.
+- Evaluate Hagan's asymptotic formula for implied Black (lognormal) volatility.
 - Implement shifted SABR for negative and near-zero forward interest rates.
 - Execute a production calibration workflow: fixing $\beta$, solving for $\alpha$ at ATM, and fitting $(\rho, \nu)$ to out-of-the-money quotes.
 - Diagnose and remediate negative density and wing arbitrage in the asymptotic Hagan expansion.
@@ -42,7 +42,7 @@ The swaption volatility cube is the primary pricing and risk-management input fo
 
 ### 2. The SABR Model Formulation
 
-Patrick Hagan, Deep Kumar, Andrew Lesniewski, and Diana Woodward (2002) introduced the SABR (Stochastic Alpha, Beta, Rho) model to provide a parsimonious, arbitrage-free representation of forward price smiles.
+Patrick Hagan, Deep Kumar, Andrew Lesniewski, and Diana Woodward (2002) introduced the SABR (Stochastic Alpha, Beta, Rho) model to provide a parsimonious stochastic-volatility representation of forward rate smiles; its asymptotic implied-vol formula is not arbitrage-free in the wings (see section 6).
 Under the forward measure $\mathbb{Q}^T$ associated with the settlement of forward rate $F(t)$, the SABR dynamics are:
 $$dF(t) = \alpha(t) F(t)^\beta dW_1(t)$$
 $$d\alpha(t) = \nu \alpha(t) dW_2(t)$$
@@ -150,10 +150,12 @@ Because $\rho = -0.25 < 0$, the smile exhibits pronounced negative skew: the 2% 
 
 ### Example 2: Parameter Sensitivity of the SABR Smile
 Consider how changing SABR parameters affects the volatility smile generated in Example 1:
+All values below come from `sabr_lognormal_vol` in [`rates_models.py`](code/rates_models.py) with $T = 1$.
 1. **Increasing $\nu$ from $0.40$ to $0.80$:** Increases the curvature of the wings.
-The 2% strike vol rises from $27.54\%$ to $33.20\%$, and the 6% strike vol rises from $16.54\%$ to $20.15\%$, while the ATM vol changes only marginally (by the $\nu^2 T$ term).
-2. **Changing $\rho$ from $-0.25$ to $0.0$:** Eliminates the directional skew, centering the minimum of the smile close to the ATM forward rate ($F = 4\%$).
-3. **Changing $\rho$ to $+0.30$:** Inverts the skew, causing out-of-the-money payer swaptions ($K = 6\%$) to trade at a higher volatility than out-of-the-money receiver swaptions ($K = 2\%$).
+The 2% strike vol rises from $27.54\%$ to $36.76\%$, and the 6% strike vol rises from $16.54\%$ to $20.69\%$, while the ATM vol changes only from $17.68\%$ to $18.27\%$ (through the $\nu$ terms of $\Gamma$).
+2. **Changing $\rho$ from $-0.25$ to $0.0$:** Removes the vol-correlation skew but not the backbone skew: with $\beta = 0.5$ the smile is $25.47\%$ (2%), $17.74\%$ (ATM), $18.25\%$ (6%), still higher on the low-strike side.
+3. **Changing $\rho$ to $+0.30$:** Flattens the skew further, to $22.44\%$ (2%), $17.75\%$ (ATM), $19.97\%$ (6%).
+The 6% strike still trades below the 2% strike because the $\beta = 0.5$ backbone pushes the other way; at $\rho = +0.50$ the skew inverts, with $19.94\%$ (2%) against $20.95\%$ (6%).
 
 ### Example 3: Shifted SABR for a Negative Rate
 Suppose the 2-year EUR forward swap rate is $F = -0.50\% = -0.0050$.
@@ -163,7 +165,7 @@ $$F' = F + s = -0.0050 + 0.0300 = 0.0250 \quad (2.50\%)$$
 For an ATM strike $K = -0.0050$, the shifted strike is $K' = 0.0250$.
 Using parameters $\alpha = 0.035, \beta = 0.5, \rho = -0.25, \nu = 0.40$:
 The shifted forward rate $F' = 0.0250$ is strictly positive, enabling direct application of Hagan's formula.
-Our reference implementation [`rates_models.py`](code/rates_models.py) yields a valid implied volatility of $22.25\%$ on shifted coordinates.
+For a 1-year option, `shifted_sabr_lognormal_vol(-0.005, -0.005, 1.0, 0.035, 0.5, -0.25, 0.40, shift=0.03)` in [`rates_models.py`](code/rates_models.py) yields a shifted lognormal implied volatility of $22.35\%$ (a 2-year option gives $22.57\%$).
 
 ## Pitfalls
 
@@ -224,6 +226,6 @@ Our reference implementation [`rates_models.py`](code/rates_models.py) yields a 
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/rates_models.py`](code/rates_models.py) (Hagan SABR lognormal and normal implied vol, shifted SABR).
+- Code: [`code/rates_models.py`](code/rates_models.py) (Hagan SABR implied lognormal vol, shifted SABR).
 - Prereq: [Rates Options: Caps and Swaptions](05-Rates-Options-Caps-and-Swaptions.md).
 - Next: [Term Structure Models: HJM, LGM, and LMM](19-Term-Structure-Models-HJM-LGM-LMM.md).

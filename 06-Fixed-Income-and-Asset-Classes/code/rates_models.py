@@ -4,7 +4,7 @@ Pure Python 3.10+ standard library implementation of fixed income rates models:
 1. Standard normal CDF and PDF, erf-based.
 2. Black-76 model for interest rate caps, floors, and European swaptions.
 3. Bachelier normal model for low-rate and negative-rate environments.
-4. Hagan et al. (2002) SABR model asymptotic formulas (lognormal and normal vols).
+4. Hagan et al. (2002) SABR asymptotic implied lognormal (Black) vol, plain and shifted.
 5. Convexity adjustments (Futures vs Forward, CMS replication / duration adjustment, in-arrears).
 6. Hull-White 1-factor model analytics (ZCB options, Jamshidian decomposition for swaptions).
 7. Hull-White trinomial tree for Bermudan swaption pricing and early exercise valuation.
@@ -107,6 +107,49 @@ def black76_delta(
         return -annuity * norm_cdf(-d1)
 
 
+def _solve_implied_vol(
+    price_at: Callable[[float], float],
+    vega_at: Callable[[float], float],
+    target_price: float,
+    lower_bound: float,
+    upper_bound: float,
+    initial_vol: float,
+    max_iter: int,
+    tol: float,
+) -> float:
+    """Safeguarded Newton solve of price_at(vol) = target_price on a bracket [lo, hi].
+
+    The price is increasing in vol, equal to lower_bound at vol = 0 and tending to upper_bound.
+    Raises ValueError when the target is outside the no-arbitrage bounds or the solver does not converge.
+    """
+    if not lower_bound < target_price < upper_bound:
+        raise ValueError(f"Target price {target_price} is outside the no-arbitrage bounds ({lower_bound}, {upper_bound}).")
+    if initial_vol <= 0.0:
+        raise ValueError("Initial volatility must be positive.")
+
+    lo, hi = 0.0, initial_vol
+    for _ in range(max_iter):
+        if price_at(hi) >= target_price:
+            break
+        lo, hi = hi, 2.0 * hi
+    else:
+        raise ValueError(f"Could not bracket the implied volatility for target price {target_price}.")
+
+    vol = hi
+    for _ in range(max_iter):
+        diff = price_at(vol) - target_price
+        if abs(diff) < tol:
+            return vol
+        if diff > 0.0:
+            hi = vol
+        else:
+            lo = vol
+        vega = vega_at(vol)
+        newton = vol - diff / vega if vega > 0.0 else lo
+        vol = newton if lo < newton < hi else 0.5 * (lo + hi)
+    raise ValueError(f"Implied volatility solver did not converge for target price {target_price}.")
+
+
 def implied_black_vol(
     target_price: float,
     forward: float,
@@ -118,20 +161,27 @@ def implied_black_vol(
     max_iter: int = 100,
     tol: float = 1e-8,
 ) -> float:
-    """Invert Black-76 formula to find implied lognormal volatility."""
-    vol = initial_vol
-    for _ in range(max_iter):
-        p = black76_price(forward, strike, vol, t_exp, annuity, is_call)
-        diff = p - target_price
-        if abs(diff) < tol:
-            return vol
-        v = black76_vega(forward, strike, vol, t_exp, annuity)
-        if abs(v) < 1e-14:
-            break
-        vol -= diff / v
-        if vol <= 1e-5:
-            vol = 1e-5
-    return vol
+    """Invert Black-76 formula to find implied lognormal volatility.
+
+    Raises ValueError if the price violates A*max(F-K, 0) < price < A*F (call) or
+    A*max(K-F, 0) < price < A*K (put), or if the solver does not converge.
+    """
+    if t_exp <= 0.0 or annuity <= 0.0:
+        raise ValueError("Expiry and annuity must be positive to imply a volatility.")
+    if is_call:
+        lower, upper = annuity * max(forward - strike, 0.0), annuity * forward
+    else:
+        lower, upper = annuity * max(strike - forward, 0.0), annuity * strike
+    return _solve_implied_vol(
+        lambda v: black76_price(forward, strike, v, t_exp, annuity, is_call),
+        lambda v: black76_vega(forward, strike, v, t_exp, annuity),
+        target_price,
+        lower,
+        upper,
+        initial_vol,
+        max_iter,
+        tol,
+    )
 
 
 # ============================================================================
@@ -196,20 +246,23 @@ def implied_normal_vol(
     max_iter: int = 100,
     tol: float = 1e-9,
 ) -> float:
-    """Invert Bachelier formula to find implied normal volatility (in bp/yr or rate/yr)."""
-    vol = initial_vol
-    for _ in range(max_iter):
-        p = bachelier_price(forward, strike, vol, t_exp, annuity, is_call)
-        diff = p - target_price
-        if abs(diff) < tol:
-            return vol
-        v = bachelier_vega(forward, strike, vol, t_exp, annuity)
-        if abs(v) < 1e-14:
-            break
-        vol -= diff / v
-        if vol <= 1e-6:
-            vol = 1e-6
-    return vol
+    """Invert Bachelier formula to find implied normal volatility (in rate/yr).
+
+    Raises ValueError if the price is not above intrinsic A*max(+/-(F-K), 0) or the solver does not converge.
+    """
+    if t_exp <= 0.0 or annuity <= 0.0:
+        raise ValueError("Expiry and annuity must be positive to imply a volatility.")
+    intrinsic = annuity * max(forward - strike if is_call else strike - forward, 0.0)
+    return _solve_implied_vol(
+        lambda v: bachelier_price(forward, strike, v, t_exp, annuity, is_call),
+        lambda v: bachelier_vega(forward, strike, v, t_exp, annuity),
+        target_price,
+        intrinsic,
+        math.inf,
+        initial_vol,
+        max_iter,
+        tol,
+    )
 
 
 # ============================================================================
@@ -311,9 +364,10 @@ def shifted_sabr_lognormal_vol(
 
 
 def futures_rate_convexity_adjustment(sigma: float, t1: float, t2: float) -> float:
-    """Hull-White / Ho-Lee convexity adjustment between futures rate and forward rate.
+    """Ho-Lee convexity adjustment between futures rate and forward rate.
 
-    Under daily cash margining, futures rate exceeds forward rate:
+    Under daily cash margining, futures rate exceeds forward rate. This is the
+    a -> 0 (Ho-Lee) limit of the Hull-White adjustment, continuously compounded:
     R_fut - R_fwd = 1/2 * sigma^2 * t1 * t2.
 
     Args:
@@ -391,6 +445,31 @@ def hw_b(a: float, t: float, big_t: float) -> float:
     return (1.0 - math.exp(-a * (big_t - t))) / a
 
 
+def hw_zcb_price_from_state(
+    p0_t: float,
+    p0_big_t: float,
+    t: float,
+    big_t: float,
+    x: float,
+    a: float,
+    sigma: float,
+) -> float:
+    """Hull-White zero-coupon bond P(t, T) given the zero-mean OU state x(t) = r(t) - phi(t).
+
+    With dx = -a x dt + sigma dW, x(0) = 0 (Brigo-Mercurio, section 3.3):
+    P(t, T) = P(0, T) / P(0, t) * exp(-B x - B * sigma^2/(2a^2) (1 - e^{-at})^2 - sigma^2/(4a) (1 - e^{-2at}) B^2),
+    with B = B(t, T); the a -> 0 limits are sigma^2 t^2 / 2 and sigma^2 t / 2.
+    """
+    b = hw_b(a, t, big_t)
+    if abs(a) < 1e-10:
+        drift_shift = 0.5 * sigma * sigma * t * t
+        convexity = 0.5 * sigma * sigma * t
+    else:
+        drift_shift = sigma * sigma / (2.0 * a * a) * (1.0 - math.exp(-a * t)) ** 2
+        convexity = sigma * sigma / (4.0 * a) * (1.0 - math.exp(-2.0 * a * t))
+    return (p0_big_t / p0_t) * math.exp(-b * x - b * drift_shift - convexity * b * b)
+
+
 def hw_zcb_option_price(
     p0_t: float,
     p0_s: float,
@@ -456,35 +535,27 @@ def hw_swaption_jamshidian(
     p0_t = discount_curve(t_exp)
     p0_ti = [discount_curve(t) for t in ti]
 
-    # Find r* at expiry T such that sum ci * P(T, T_i; r*) = 1
-    # Under HW1F, P(T, T_i; r) = A(T, T_i) * exp(-B(T, T_i) * r)
-    # where A(T, T_i) = (P(0, T_i) / P(0, T)) * exp(B(T, T_i)*f(0,T) - sigma^2/(4a)*(1-exp(-2aT))*B^2)
-    # We calibrate r* with root finding:
-    b_values = [hw_b(a, t_exp, t) for t in ti]
-    var_alpha = (sigma * sigma / (4.0 * a)) * (1.0 - math.exp(-2.0 * a * t_exp)) if abs(a) > 1e-10 else 0.0
+    # Find the state x* at expiry T such that sum ci * P(T, T_i; x*) = 1;
+    # P(T, T_i; x) is strictly decreasing in x, so bisection on a sign-changing bracket converges.
+    def bond_price(i: int, x: float) -> float:
+        return hw_zcb_price_from_state(p0_t, p0_ti[i], t_exp, ti[i], x, a, sigma)
 
-    def bond_price(i: int, r_diff: float) -> float:
-        # r_diff is (r(T) - f(0, T))
-        return (p0_ti[i] / p0_t) * math.exp(-b_values[i] * r_diff - var_alpha * (b_values[i] ** 2))
+    def portfolio_value(x: float) -> float:
+        return sum(c * bond_price(i, x) for i, c in enumerate(ci)) - 1.0
 
-    def portfolio_value(r_diff: float) -> float:
-        return sum(c * bond_price(i, r_diff) for i, c in enumerate(ci)) - 1.0
-
-    # 1D root search for r_diff*
-    r_low, r_high = -0.50, 0.50
+    x_low, x_high = -0.50, 0.50
+    if portfolio_value(x_low) < 0.0 or portfolio_value(x_high) > 0.0:
+        raise ValueError("Jamshidian critical state lies outside [-0.5, 0.5]; strike is unrealistic for this curve.")
     for _ in range(100):
-        r_mid = 0.5 * (r_low + r_high)
-        val = portfolio_value(r_mid)
-        if abs(val) < 1e-12:
-            break
-        if val > 0:  # rates higher -> prices lower -> portfolio value drops
-            r_low = r_mid
+        x_mid = 0.5 * (x_low + x_high)
+        if portfolio_value(x_mid) > 0.0:
+            x_low = x_mid
         else:
-            r_high = r_mid
-    r_star = 0.5 * (r_low + r_high)
+            x_high = x_mid
+    x_star = 0.5 * (x_low + x_high)
 
     # Individual strike prices for zero bonds
-    ki = [bond_price(i, r_star) for i in range(n_coupons)]
+    ki = [bond_price(i, x_star) for i in range(n_coupons)]
 
     # Swaption is portfolio of zero-coupon bond options
     # Payer swaption = Put option on coupon bond = sum of puts on zeros
@@ -522,121 +593,108 @@ def hw_bermudan_swaption_tree(
     is_payer: bool = True,
     dt: float = 0.25,
 ) -> tuple[float, float, float]:
-    """Valuation of Bermudan swaption vs European swaption via Hull-White trinomial tree.
+    """Valuation of a co-terminal Bermudan swaption vs the European on its first exercise date.
+
+    Uses the Hull-White (1994) trinomial tree on the zero-mean OU state x = r - alpha(t):
+    dx = -a x dt + sigma dW, node spacing dx = sigma * sqrt(3 dt), nodes truncated at
+    j_max = ceil(0.184 / (a dt)) with the standard edge branching, and alpha_m fitted to the
+    discount curve by forward induction on Arrow-Debreu prices. Exercising at t_m enters the
+    swap from t_m to swap_end, valued with the analytic bond price hw_zcb_price_from_state.
+
+    Every exercise time must lie on the dt grid and on the swap coupon schedule ending at swap_end.
 
     Returns:
         (bermudan_price, european_price, early_exercise_premium)
     """
-    total_time = swap_end
-    n_steps = int(round(total_time / dt))
+    if a <= 0.0 or sigma <= 0.0 or dt <= 0.0 or swap_freq <= 0:
+        raise ValueError("Mean reversion, volatility, time step and swap frequency must be positive.")
+    if not exercise_times:
+        raise ValueError("At least one exercise time is required.")
+    n_steps = int(round(swap_end / dt))
+    if n_steps < 1 or abs(n_steps * dt - swap_end) > 1e-9:
+        raise ValueError(f"swap_end {swap_end} must be a positive multiple of dt {dt}.")
+    tau = 1.0 / swap_freq
+    exercise_steps: set[int] = set()
+    for t_ex in exercise_times:
+        step = int(round(t_ex / dt))
+        n_coupons = int(round((swap_end - t_ex) * swap_freq))
+        if abs(step * dt - t_ex) > 1e-9 or abs(t_ex + n_coupons * tau - swap_end) > 1e-9 or not 0 < step < n_steps:
+            raise ValueError(f"Exercise time {t_ex} must lie strictly inside (0, swap_end) on the dt grid and the coupon schedule.")
+        exercise_steps.add(step)
+    first_exercise_step = min(exercise_steps)
+
     dx = sigma * math.sqrt(3.0 * dt)
-    j_max = int(math.ceil(0.184 / (a * dt))) if a * dt > 1e-6 else 100
+    j_max = int(math.ceil(0.184 / (a * dt)))
 
-    # Build state variable x_j = j * dx, probabilities
-    # Calibration of alpha_m to discount curve P(0, t_m)
-    # Q(m, j): Arrow-Debreu state prices
-    q_prev = {0: 1.0}
-    alpha = [0.0] * n_steps
+    def node_range(m: int) -> range:
+        width = min(m, j_max)
+        return range(-width, width + 1)
 
+    # Branching is time-homogeneous: node j maps to (center, p_up, p_mid, p_down).
+    # The expected move of x over dt is -a * j * dx * dt; e is that move relative to the center, in units of dx.
+    branches: dict[int, tuple[int, float, float, float]] = {}
+    for j in node_range(n_steps):
+        shift = -1 if j >= j_max else (1 if j <= -j_max else 0)
+        e = -a * j * dt - shift
+        probs = (1.0 / 6.0 + 0.5 * (e * e + e), 2.0 / 3.0 - e * e, 1.0 / 6.0 + 0.5 * (e * e - e))
+        if min(probs) < 0.0:
+            raise ValueError(f"Negative branching probability at node {j}; reduce dt for mean reversion a = {a}.")
+        branches[j] = (j + shift, *probs)
+
+    # Forward induction: alpha_m makes the tree reprice P(0, t_{m+1}).
+    alpha: list[float] = []
+    q: dict[int, float] = {0: 1.0}
     for m in range(n_steps):
-        t_m = m * dt
-        # Match discount factor P(0, t_{m+1})
-        # P(0, t_{m+1}) = sum_j Q(m, j) * exp(-(alpha_m + j*dx)*dt)
-        # alpha_m = (1/dt) * ln( sum_j Q(m, j) * exp(-j*dx*dt) / P(0, t_{m+1}) )
-        p_target = discount_curve(t_m + dt)
-        sum_q_exp = sum(q * math.exp(-j * dx * dt) for j, q in q_prev.items())
-        alpha_m = (1.0 / dt) * math.log(sum_q_exp / p_target)
-        alpha[m] = alpha_m
-
+        sum_q_exp = sum(q_j * math.exp(-j * dx * dt) for j, q_j in q.items())
+        alpha_m = math.log(sum_q_exp / discount_curve((m + 1) * dt)) / dt
+        alpha.append(alpha_m)
         if m == n_steps - 1:
             break
+        q_next = {j: 0.0 for j in node_range(m + 1)}
+        for j, q_j in q.items():
+            center, p_u, p_m, p_d = branches[j]
+            weight = q_j * math.exp(-(alpha_m + j * dx) * dt)
+            q_next[center + 1] += weight * p_u
+            q_next[center] += weight * p_m
+            q_next[center - 1] += weight * p_d
+        q = q_next
 
-        # Advance state prices to m + 1
-        q_next: dict[int, float] = {}
-        for j, q in q_prev.items():
-            discount = math.exp(-(alpha_m + j * dx) * dt)
-            # Branching
-            eta = -a * j * dt
-            k = int(round(eta / dx))
-            # Bound k within +/- 1 from current node
-            k_eff = max(-1, min(1, k))
-            # Standard Hull-White trinomial probabilities
-            eta_rel = eta - k_eff * dx
-            p_u = 1.0 / 6.0 + 0.5 * (eta_rel * eta_rel / (dx * dx) + eta_rel / dx)
-            p_m = 2.0 / 3.0 - (eta_rel * eta_rel / (dx * dx))
-            p_d = 1.0 / 6.0 + 0.5 * (eta_rel * eta_rel / (dx * dx) - eta_rel / dx)
-
-            center = j + k_eff
-            for delta_node, prob in [(1, p_u), (0, p_m), (-1, p_d)]:
-                target_node = center + delta_node
-                q_next[target_node] = q_next.get(target_node, 0.0) + q * discount * prob
-        q_prev = q_next
-
-    # Backward induction for European and Bermudan
-    # Terminal payoff at swap_end is 0
-    val_berm: dict[int, float] = {j: 0.0 for j in q_prev}
-    val_euro: dict[int, float] = {j: 0.0 for j in q_prev}
-
-    ex_set = set(round(t, 4) for t in exercise_times)
-    first_ex = min(exercise_times)
-
+    # Backward induction; the swap has no value at swap_end.
+    val_berm = {j: 0.0 for j in node_range(n_steps)}
+    val_euro = {j: 0.0 for j in node_range(n_steps)}
     for m in range(n_steps - 1, -1, -1):
         t_m = m * dt
-        alpha_m = alpha[m]
-        val_berm_next: dict[int, float] = {}
-        val_euro_next: dict[int, float] = {}
-
-        # Check if t_m is an exercise date
-        is_exercise = round(t_m, 4) in ex_set
-        is_first_ex = abs(t_m - first_ex) < 1e-4
-
-        # For nodes at step m
-        all_j = range(-min(m, j_max), min(m, j_max) + 1)
-        for j in all_j:
-            eta = -a * j * dt
-            k = int(round(eta / dx))
-            k_eff = max(-1, min(1, k))
-            eta_rel = eta - k_eff * dx
-            p_u = 1.0 / 6.0 + 0.5 * (eta_rel * eta_rel / (dx * dx) + eta_rel / dx)
-            p_m = 2.0 / 3.0 - (eta_rel * eta_rel / (dx * dx))
-            p_d = 1.0 / 6.0 + 0.5 * (eta_rel * eta_rel / (dx * dx) - eta_rel / dx)
-
-            center = j + k_eff
-            disc = math.exp(-(alpha_m + j * dx) * dt)
-
-            c_berm = disc * (p_u * val_berm.get(center + 1, 0.0) + p_m * val_berm.get(center, 0.0) + p_d * val_berm.get(center - 1, 0.0))
-            c_euro = disc * (p_u * val_euro.get(center + 1, 0.0) + p_m * val_euro.get(center, 0.0) + p_d * val_euro.get(center - 1, 0.0))
-
+        is_exercise = m in exercise_steps
+        if is_exercise:
+            p0_m = discount_curve(t_m)
+            coupon_times = [t_m + (i + 1) * tau for i in range(int(round((swap_end - t_m) * swap_freq)))]
+            p0_coupons = [discount_curve(t) for t in coupon_times]
+        new_berm: dict[int, float] = {}
+        new_euro: dict[int, float] = {}
+        for j in node_range(m):
+            center, p_u, p_m, p_d = branches[j]
+            disc = math.exp(-(alpha[m] + j * dx) * dt)
+            cont_berm = disc * (p_u * val_berm[center + 1] + p_m * val_berm[center] + p_d * val_berm[center - 1])
+            cont_euro = disc * (p_u * val_euro[center + 1] + p_m * val_euro[center] + p_d * val_euro[center - 1])
             if is_exercise:
-                # Compute swap intrinsic value at node (m, j)
-                # Swap from t_m to swap_end
-                # Swap NPV = (1 - P(t_m, swap_end)) - strike * sum dt_i * P(t_m, t_i) for payer
-                swap_cf_times = [t_m + (i + 1) * (1.0 / swap_freq) for i in range(int(round((swap_end - t_m) * swap_freq)))]
-                r_m = alpha_m + j * dx
-                p_t_end = math.exp(-hw_b(a, 0, swap_end - t_m) * (r_m - alpha_m)) * (discount_curve(swap_end) / discount_curve(t_m))
-                annuity_val = sum(
-                    (1.0 / swap_freq) * math.exp(-hw_b(a, 0, ti - t_m) * (r_m - alpha_m)) * (discount_curve(ti) / discount_curve(t_m))
-                    for ti in swap_cf_times
-                )
-                swap_npv = (1.0 - p_t_end) - strike * annuity_val if is_payer else strike * annuity_val - (1.0 - p_t_end)
-                intrinsic = max(0.0, swap_npv)
-
-                val_berm_next[j] = max(c_berm, intrinsic)
-                if is_first_ex:
-                    val_euro_next[j] = max(c_euro, intrinsic)
-                else:
-                    val_euro_next[j] = c_euro
-            else:
-                val_berm_next[j] = c_berm
-                val_euro_next[j] = c_euro
-
-        val_berm = val_berm_next
-        val_euro = val_euro_next
+                x = j * dx
+                bonds = [
+                    hw_zcb_price_from_state(p0_m, p0_i, t_m, t_i, x, a, sigma) for t_i, p0_i in zip(coupon_times, p0_coupons, strict=True)
+                ]
+                annuity_val = tau * sum(bonds)
+                payer_npv = (1.0 - bonds[-1]) - strike * annuity_val
+                intrinsic = max(0.0, payer_npv if is_payer else -payer_npv)
+                cont_berm = max(cont_berm, intrinsic)
+                if m == first_exercise_step:
+                    cont_euro = max(cont_euro, intrinsic)
+            new_berm[j] = cont_berm
+            new_euro[j] = cont_euro
+        val_berm = new_berm
+        val_euro = new_euro
 
     berm_price = val_berm[0]
     euro_price = val_euro[0]
-    premium = berm_price - euro_price
-    return berm_price, euro_price, premium
+    return berm_price, euro_price, berm_price - euro_price
 
 
 # ============================================================================
@@ -656,13 +714,30 @@ def run_tests() -> None:
     annuity = 3.80
     c = black76_price(f, k, vol, t_exp, annuity, is_call=True)
     p = black76_price(f, k, vol, t_exp, annuity, is_call=False)
-    # Put-call parity: C - P = annuity * (F - K) = 0 when F == K
+    # ATM closed form: C = A * F * (2 * Phi(sigma * sqrt(T) / 2) - 1)
+    expected_atm_black = annuity * f * (2.0 * norm_cdf(0.5 * vol * math.sqrt(t_exp)) - 1.0)
+    assert abs(c - expected_atm_black) < 1e-12, f"Black ATM closed form mismatch: {c} vs {expected_atm_black}"
     assert abs(c - p) < 1e-12, f"ATM call-put parity failed: {c} vs {p}"
-    assert c > 0.0, "Option price must be positive."
+    # Put-call parity away from the money: C - P = A * (F - K)
+    f_itm = 0.045
+    c_itm = black76_price(f_itm, k, vol, t_exp, annuity, is_call=True)
+    p_itm = black76_price(f_itm, k, vol, t_exp, annuity, is_call=False)
+    assert abs((c_itm - p_itm) - annuity * (f_itm - k)) < 1e-12, f"Black put-call parity failed: {c_itm - p_itm}"
 
-    # Test implied vol inverter
+    # Implied vol inverter: round trips, a deep OTM price, and prices outside the no-arbitrage bounds
     imp_vol = implied_black_vol(c, f, k, t_exp, annuity, is_call=True)
     assert abs(imp_vol - vol) < 1e-6, f"Implied vol mismatch: {imp_vol} vs {vol}"
+    imp_vol_put = implied_black_vol(p_itm, f_itm, k, t_exp, annuity, is_call=False)
+    assert abs(imp_vol_put - vol) < 1e-6, f"Implied put vol mismatch: {imp_vol_put} vs {vol}"
+    otm_vol = implied_black_vol(0.0002, 0.04, 0.08, 1.0, 1.0)
+    assert abs(black76_price(0.04, 0.08, otm_vol, 1.0, 1.0) - 0.0002) < 1e-8, f"Deep OTM implied vol does not reprice: {otm_vol}"
+    for bad_price in (0.05, 0.0, -0.001):
+        try:
+            implied_black_vol(bad_price, 0.04, 0.08, 1.0, 1.0)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"implied_black_vol accepted price {bad_price} outside (0, A*F)")
 
     # 2. Bachelier Normal Model
     # When rates are zero or negative:
@@ -677,6 +752,18 @@ def run_tests() -> None:
     assert abs(bn_c - expected_atm) < 1e-10, f"Bachelier ATM exact mismatch: {bn_c} vs {expected_atm}"
     imp_norm_vol = implied_normal_vol(bn_c, fn, kn, t_exp, annuity, is_call=True)
     assert abs(imp_norm_vol - norm_vol) < 1e-7, "Bachelier implied normal vol inverter failed."
+    # Put-call parity away from the money: C - P = A * (F - K)
+    bn_c_otm = bachelier_price(fn, 0.0030, norm_vol, t_exp, annuity, is_call=True)
+    bn_p_itm = bachelier_price(fn, 0.0030, norm_vol, t_exp, annuity, is_call=False)
+    assert abs((bn_c_otm - bn_p_itm) - annuity * (fn - 0.0030)) < 1e-12, "Bachelier put-call parity failed."
+    imp_norm_vol_otm = implied_normal_vol(bn_c_otm, fn, 0.0030, t_exp, annuity, is_call=True)
+    assert abs(imp_norm_vol_otm - norm_vol) < 1e-7, f"Bachelier OTM implied vol mismatch: {imp_norm_vol_otm}"
+    try:
+        implied_normal_vol(0.5 * annuity * 0.0050, 0.0050, 0.0, t_exp, annuity, is_call=True)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("implied_normal_vol accepted a price below intrinsic value")
 
     # 3. SABR Model (Hagan 2002)
     alpha = 0.035
@@ -703,9 +790,16 @@ def run_tests() -> None:
 
     # CMS convexity adjustment
     adj_cms = cms_rate_annuity_adjustment(s0=0.04, sigma_s=0.20, t1=5.0, swap_tenor=10, freq=1)
-    # Exact CMS adjustment for 10y CMS fixing in 5y is ~15.93 bps
     adj_cms_bps = adj_cms * 10000.0
-    assert abs(adj_cms_bps - 15.93004) < 1e-3, f"CMS adjustment out of expected range: {adj_cms_bps} bps"
+
+    # Oracle: closed-form annuity A(s) = (1 - (1 + s)^-n) / s with a central finite-difference derivative
+    def closed_form_annuity(s: float) -> float:
+        return (1.0 - (1.0 + s) ** -10) / s
+
+    h = 1e-6
+    d_annuity_fd = (closed_form_annuity(0.04 + h) - closed_form_annuity(0.04 - h)) / (2.0 * h)
+    expected_cms = 0.04**2 * 0.20**2 * 5.0 * (-d_annuity_fd / closed_form_annuity(0.04))
+    assert abs(adj_cms - expected_cms) < 1e-10, f"CMS adjustment {adj_cms} vs finite-difference oracle {expected_cms}"
 
     # In-arrears convexity adjustment
     adj_arrears = in_arrears_convexity_adjustment(f0=0.04, sigma_f=0.25, t1=1.0, tau=0.5)
@@ -726,9 +820,41 @@ def run_tests() -> None:
         sigma=0.012,
         is_payer=True,
     )
-    assert hw_swaption > 0.005, f"HW Jamshidian swaption price too small: {hw_swaption}"
+    # Model-free swap parity: payer - receiver = P(0, T) - P(0, T_n) - K * A(0)
+    for k_par in (0.03, 0.04, 0.05):
+        payer = hw_swaption_jamshidian(flat_curve, k_par, 1.0, 5.0, 1, 0.03, 0.012, is_payer=True)
+        receiver = hw_swaption_jamshidian(flat_curve, k_par, 1.0, 5.0, 1, 0.03, 0.012, is_payer=False)
+        fwd_swap = flat_curve(1.0) - flat_curve(6.0) - k_par * sum(flat_curve(1.0 + i) for i in range(1, 6))
+        assert abs((payer - receiver) - fwd_swap) < 1e-10, f"Jamshidian payer-receiver parity failed at K={k_par}"
+    # Oracle: Bachelier with the normal vol of the swap rate implied by the HW state (sigma_x * |dS/dx|),
+    # a first-order independent approximation; the HW swap rate is close to Gaussian for these parameters.
+    var_x = 0.012**2 * (1.0 - math.exp(-2.0 * 0.03 * 1.0)) / (2.0 * 0.03)
+    eps = 1e-6
+
+    def hw_swap_rate(x: float) -> float:
+        bonds = [hw_zcb_price_from_state(flat_curve(1.0), flat_curve(1.0 + i), 1.0, 1.0 + i, x, 0.03, 0.012) for i in range(1, 6)]
+        return (1.0 - bonds[-1]) / sum(bonds)
+
+    ds_dx = (hw_swap_rate(eps) - hw_swap_rate(-eps)) / (2.0 * eps)
+    annuity_5y = sum(flat_curve(1.0 + i) for i in range(1, 6))
+    fwd_rate_5y = (flat_curve(1.0) - flat_curve(6.0)) / annuity_5y
+    bachelier_check = bachelier_price(fwd_rate_5y, 0.04, abs(ds_dx) * math.sqrt(var_x), 1.0, annuity_5y)
+    assert abs(hw_swaption - bachelier_check) / bachelier_check < 0.02, f"Jamshidian {hw_swaption} vs Bachelier {bachelier_check}"
 
     # 6. Hull-White Trinomial Tree Bermudan vs European
+    # Oracle: with a single exercise date the tree must converge to the analytic Jamshidian price.
+    for k_tree, rel_tol in ((0.04, 0.01), (0.05, 0.04)):
+        jamshidian_1y4y = hw_swaption_jamshidian(flat_curve, k_tree, 1.0, 4.0, 1, 0.03, 0.012, is_payer=True)
+        berm_single, euro_single, _ = hw_bermudan_swaption_tree(flat_curve, k_tree, [1.0], 5.0, 1, 0.03, 0.012, is_payer=True, dt=0.1)
+        assert abs(berm_single - euro_single) < 1e-15, "Single-date Bermudan must equal the European."
+        assert abs(euro_single - jamshidian_1y4y) / jamshidian_1y4y < rel_tol, (
+            f"Tree European {euro_single} vs Jamshidian {jamshidian_1y4y} at K={k_tree}"
+        )
+    # Horizon beyond 0.184 / a: nodes are truncated at j_max, so the edge branching is exercised.
+    jamshidian_long = hw_swaption_jamshidian(flat_curve, 0.04, 10.0, 10.0, 1, 0.03, 0.012, is_payer=False)
+    _, euro_long, _ = hw_bermudan_swaption_tree(flat_curve, 0.04, [10.0], 20.0, 1, 0.03, 0.012, is_payer=False, dt=0.1)
+    assert abs(euro_long - jamshidian_long) / jamshidian_long < 0.01, f"Long tree {euro_long} vs Jamshidian {jamshidian_long}"
+
     ex_times = [1.0, 2.0, 3.0, 4.0]
     berm_p, euro_p, premium = hw_bermudan_swaption_tree(
         discount_curve=flat_curve,
@@ -739,10 +865,18 @@ def run_tests() -> None:
         a=0.03,
         sigma=0.012,
         is_payer=True,
-        dt=0.25,
+        dt=0.05,
     )
-    assert berm_p >= euro_p, f"Bermudan swaption ({berm_p}) must be >= European ({euro_p})"
-    assert premium >= 0.0, f"Early exercise premium must be non-negative: {premium}"
+    # A Bermudan is worth at least every co-terminal European it contains (each priced analytically).
+    coterminal = [hw_swaption_jamshidian(flat_curve, 0.04, t, 5.0 - t, 1, 0.03, 0.012, is_payer=True) for t in ex_times]
+    assert berm_p >= max(coterminal) * 0.99, f"Bermudan {berm_p} below max co-terminal European {max(coterminal)}"
+    assert abs(premium - (berm_p - euro_p)) < 1e-15, "Premium must equal Bermudan minus European."
+    try:
+        hw_bermudan_swaption_tree(flat_curve, 0.04, [1.1], 5.0, 1, 0.03, 0.012, dt=0.25)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Off-grid exercise time must be rejected.")
 
     print(f"Black-76 ATM 2y swaption price (A={annuity}): {c:.6f}")
     print(f"Bachelier normal 2y swaption price (vol=80bp): {bn_c:.6f}")
@@ -750,7 +884,8 @@ def run_tests() -> None:
     print(f"Futures convexity adjustment: {adj_fut * 10000:.2f} bps")
     print(f"CMS 10y in 5y convexity adjustment: {adj_cms_bps:.2f} bps")
     print(f"Hull-White 1F 1y into 5y European swaption (Jamshidian): {hw_swaption:.6f}")
-    print(f"Hull-White tree Bermudan 1y..4y into 5y: {berm_p:.6f}, European: {euro_p:.6f}, Premium: {premium:.6f}")
+    print(f"Hull-White co-terminal Europeans into 5y (Jamshidian): {', '.join(f'{v:.6f}' for v in coterminal)}")
+    print(f"Hull-White tree (dt=0.05) Bermudan 1y..4y into 5y: {berm_p:.6f}, European: {euro_p:.6f}, Premium: {premium:.6f}")
     print("All rates models tests passed successfully!")
 
 

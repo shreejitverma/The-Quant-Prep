@@ -57,19 +57,21 @@ This positive correlation between mark-to-market profits and financing rates mak
 In equilibrium, arbitrageurs short futures and buy forwards, forcing the futures rate $R_{\text{fut}}$ to trade above the forward rate $R_{\text{fwd}}$:
 $$R_{\text{fut}} > R_{\text{fwd}}$$
 
-Under the 1-factor Hull-White Gaussian model where short-rate volatility is $\sigma$, the theoretical difference is:
-$$\text{Adj}_{\text{fut}} = R_{\text{fut}}(0) - R_{\text{fwd}}(0) = \frac{\sigma^2}{2 a^2} \left(1 - e^{-a T_1}\right) \left(1 - e^{-a(T_2 - T_1)}\right) e^{-a T_1} \dots$$
-In the limit as mean reversion $a \to 0$ (Ho-Lee dynamics):
+Under the 1-factor Hull-White Gaussian model with short-rate volatility $\sigma$ and mean reversion $a$, the theoretical difference between continuously compounded rates is (Hull, *Options, Futures, and Other Derivatives*):
+$$\text{Adj}_{\text{fut}} = R_{\text{fut}}(0) - R_{\text{fwd}}(0) = \frac{B(T_1, T_2)}{T_2 - T_1}\left[B(T_1, T_2)\left(1 - e^{-2 a T_1}\right) + 2 a B(0, T_1)^2\right]\frac{\sigma^2}{4 a}$$
+with $B(t, T) = \frac{1 - e^{-a(T - t)}}{a}$.
+In the limit as mean reversion $a \to 0$ (Ho-Lee dynamics), $B(t, T) \to T - t$ and:
 $$\text{Adj}_{\text{fut}} = \frac{1}{2} \sigma^2 T_1 T_2$$
 where $T_1$ is the futures contract expiration and $T_2$ is the maturity of the underlying reference rate.
-For a 5-year expiry, this adjustment exceeds 20 to 30 basis points; failure to subtract this adjustment when bootstrapping yield curves causes significant overestimation of long-term zero rates.
+The adjustment grows with the square of maturity: for a 3-month rate with a 5-year expiry ($T_1 = 5$, $T_2 = 5.25$) and $\sigma = 1.2\%$, Ho-Lee gives $\frac{1}{2} \times 0.012^2 \times 5 \times 5.25 = 18.9$ bps, and Hull-White with $a = 0.03$ gives 16.2 bps.
+Failure to subtract this adjustment when bootstrapping yield curves causes significant overestimation of long-term zero rates.
 
 ### 3. Constant Maturity Swap (CMS) Adjustments
 
 A Constant Maturity Swap (CMS) is an interest rate swap where one leg pays a fixed or floating rate, and the other leg pays a long-term swap rate (such as the 10-year or 30-year swap rate $S_{10y}(t)$) reset periodically.
-Consider a single CMS payment at time $T_p$ with reset date $T_1$.
-Under the zero-coupon bond measure $\mathbb{Q}^{T_p}$ associated with payment numeraire $P(t, T_p)$, the expected CMS payoff is:
-$$\mathbb{E}^{T_p}[S(T_1)]$$
+Consider a single CMS payment of the swap rate fixing at $T_1$, paid at $T_1$ (a payment delay adds a further timing adjustment; see Pitfalls).
+Under the zero-coupon bond measure $\mathbb{Q}^{T_1}$ associated with payment numeraire $P(t, T_1)$, the expected CMS payoff is:
+$$\mathbb{E}^{T_1}[S(T_1)]$$
 
 However, the swap rate $S(t)$ is naturally a martingale only under the **annuity measure** $\mathbb{Q}^A$, where the numeraire is the multi-year swap annuity:
 $$A(t) = \sum_{i=1}^n \tau_i P(t, T_i)$$
@@ -88,9 +90,10 @@ where $-\frac{A'(S(0))}{A(S(0))}$ is the modified duration of the underlying swa
 
 #### Static Replication via Swaptions (Hagan 2003)
 In practice, the linear approximation underestimates tail risk because CMS payoffs depend on extreme rates.
-Patrick Hagan (2003) demonstrated that any European CMS payoff $g(S)$ can be statically replicated using a portfolio of European payer and receiver swaptions using the Carr-Madan spanning identity:
-$$\mathbb{E}^{T_1}[g(S(T_1))] = g(S(0))\frac{P(0, T_1)}{A(0)} + \int_0^{S(0)} h''(K) \text{Receiver}(K) dK + \int_{S(0)}^\infty h''(K) \text{Payer}(K) dK$$
-where $h(K) = g(K) \frac{P(T_1, T_1; K)}{A(T_1; K)}$.
+Patrick Hagan (2003) demonstrated that any European CMS payoff $g(S)$ can be statically replicated using a portfolio of European payer and receiver swaptions using the Carr-Madan spanning identity.
+Write the payoff's price under the annuity measure, $V_{\text{CMS}}(0) = P(0, T_1)\,\mathbb{E}^{T_1}[g(S(T_1))] = A(0)\,\mathbb{E}^A[h(S(T_1))]$ with $h(s) = \frac{g(s)}{A(s)}$, where $A(s)$ maps the swap rate to the annuity (for example the flat-yield annuity of the Linear Duration Approximation above).
+Spanning $h$ around $S(0)$ and using $A(0)\,\mathbb{E}^A[(S - K)^+] = \text{Payer}(K)$, $A(0)\,\mathbb{E}^A[(K - S)^+] = \text{Receiver}(K)$ and $\mathbb{E}^A[S(T_1)] = S(0)$:
+$$V_{\text{CMS}}(0) = A(0)\,h(S(0)) + \int_0^{S(0)} h''(K) \text{Receiver}(K) dK + \int_{S(0)}^\infty h''(K) \text{Payer}(K) dK$$
 Because the replication spans strikes $K \in (0, \infty)$, pricing CMS derivatives accurately requires integrating across the entire market swaption volatility smile (typically calibrated via SABR).
 
 ### 4. In-Arrears Rate Adjustments
@@ -102,8 +105,8 @@ In an **in-arrears swap**, the floating coupon fixing at $T_1$ pays immediately 
 Under the payment measure $\mathbb{Q}^{T_1}$, the change of numeraire from $P(t, T_2)$ to $P(t, T_1)$ introduces an adjustment:
 $$\frac{P(T_1, T_1)}{P(T_1, T_2)} = 1 + \tau L(T_1)$$
 The expected rate is:
-$$\mathbb{E}^{T_1}[L(T_1)] = L(0) + \frac{\text{Cov}^{T_2}(L(T_1), 1 + \tau L(T_1))}{\mathbb{E}^{T_2}[P(T_1, T_2) / P(T_1, T_1)]}$$
-Under a lognormal model with volatility $\sigma_L$:
+$$\mathbb{E}^{T_1}[L(T_1)] = L(0) + \frac{\text{Cov}^{T_2}(L(T_1), 1 + \tau L(T_1))}{\mathbb{E}^{T_2}[P(T_1, T_1) / P(T_1, T_2)]} = L(0) + \frac{\tau \text{Var}^{T_2}(L(T_1))}{1 + \tau L(0)}$$
+Under a lognormal model with volatility $\sigma_L$, $\text{Var}^{T_2}(L(T_1)) = L(0)^2 (e^{\sigma_L^2 T_1} - 1) \approx L(0)^2 \sigma_L^2 T_1$, so to first order:
 $$\text{Adj}_{\text{arrears}} = \frac{\tau L(0)^2 \sigma_L^2 T_1}{1 + \tau L(0)}$$
 Because the adjustment is strictly positive, an in-arrears floating leg always has a higher forward value than a standard floating leg.
 
@@ -112,19 +115,19 @@ Because the adjustment is strictly positive, an in-arrears floating leg always h
 A **quanto derivative** has a payoff determined by an underlying asset or rate in a foreign currency, but cash-settled in a domestic currency at a fixed exchange rate (e.g., paying the 3-month EURIBOR rate in USD with 1 EUR = 1 USD notional).
 
 Let $S_f(t)$ be the foreign rate, and let $X(t)$ be the exchange rate (domestic currency per unit of foreign currency).
-Under the foreign risk-neutral measure $\mathbb{Q}^f$, $S_f(t)$ is a martingale (or has standard domestic drift).
+Under the foreign pricing measure $\mathbb{Q}^f$, $S_f(t)$ follows a lognormal process with relative drift $\mu_f$ ($\mu_f = 0$ for a forward rate under its own foreign forward measure).
 However, domestic pricing must be conducted under the domestic risk-neutral measure $\mathbb{Q}^d$.
 The change of measure from foreign to domestic involves the stochastic exchange rate:
 $$\frac{d\mathbb{Q}^d}{d\mathbb{Q}^f}\Bigg|_t = \frac{X(t) B_f(t)}{X(0) B_d(t)}$$
-Applying Girsanov's theorem, the drift of the foreign asset under the domestic measure acquires an adjustment:
-$$dS_f(t) = \mu_f dt - \rho_{S, X} \sigma_S \sigma_X dt + \sigma_S dW^d(t)$$
+Applying Girsanov's theorem, the relative drift of the foreign rate under the domestic measure acquires an adjustment:
+$$\frac{dS_f(t)}{S_f(t)} = \left(\mu_f - \rho_{S, X} \sigma_S \sigma_X\right) dt + \sigma_S dW^d(t)$$
 where:
-- $\sigma_S$ is the foreign asset volatility.
+- $\sigma_S$ is the foreign rate's lognormal volatility.
 - $\sigma_X$ is the FX volatility.
 - $\rho_{S, X}$ is the correlation between the foreign rate and the exchange rate.
 
-The quanto adjustment is:
-$$\text{Adj}_{\text{quanto}} = -\rho_{S, X} \sigma_S \sigma_X T$$
+With constant parameters, $\mathbb{E}^d[S_f(T)] = \mathbb{E}^f[S_f(T)] e^{-\rho_{S, X} \sigma_S \sigma_X T}$, so for a forward rate ($\mu_f = 0$) the quanto adjustment is:
+$$\text{Adj}_{\text{quanto}} = S_f(0)\left(e^{-\rho_{S, X} \sigma_S \sigma_X T} - 1\right) \approx -\rho_{S, X} \sigma_S \sigma_X S_f(0) T$$
 If a foreign interest rate is positively correlated with the foreign currency strengthening against the dollar ($\rho > 0$), the expected foreign rate under the domestic USD measure is depressed by the covariance term.
 
 ## Worked examples
@@ -150,30 +153,34 @@ Assume forward swap rate $S(0) = 4.0\%$, annual payment frequency ($freq = 1$), 
 1. Compute the annuity factor $A(S(0))$ for a 10-year swap at $4\%$:
 $$A(0.04) = \sum_{i=1}^{10} \frac{1}{(1.04)^i} = \frac{1 - (1.04)^{-10}}{0.04} = \frac{1 - 0.675564}{0.04} = 8.110896$$
 2. Compute the derivative of annuity $A'(S(0))$:
-$$A'(0.04) = -\sum_{i=1}^{10} \frac{i}{(1.04)^{i+1}} = -40.38075$$
+$$A'(0.04) = -\sum_{i=1}^{10} \frac{i}{(1.04)^{i+1}} = -40.37716$$
 3. Compute the relative duration:
-$$\text{Dur}_{\text{rel}} = -\frac{A'(0.04)}{A(0.04)} = \frac{40.38075}{8.110896} = 4.97858$$
+$$\text{Dur}_{\text{rel}} = -\frac{A'(0.04)}{A(0.04)} = \frac{40.37716}{8.110896} = 4.97814$$
 4. Evaluate the convexity adjustment:
 $$\text{Adj}_{\text{CMS}} \approx S(0)^2 \sigma_S^2 T_1 \times \text{Dur}_{\text{rel}}$$
 $$S(0)^2 \sigma_S^2 T_1 = (0.04)^2 \times (0.20)^2 \times 5.0 = 0.0016 \times 0.04 \times 5.0 = 0.000320$$
-$$\text{Adj}_{\text{CMS}} = 0.000320 \times 4.97858 = 0.00159315 = 15.93 \text{ bps}$$
+$$\text{Adj}_{\text{CMS}} = 0.000320 \times 4.97814 = 0.00159300 = 15.93 \text{ bps}$$
 Our reference implementation [`rates_models.py`](code/rates_models.py) yields:
 `cms_rate_annuity_adjustment(0.04, 0.20, 5.0, 10, 1) == 0.001593` ($15.93\text{ bps}$).
 The expected 10-year CMS fixing is $4.0000\% + 0.1593\% = 4.1593\%$.
 
 ### Example 3: Quanto Interest Rate Swap Adjustment
 A US bank enters a quanto swap paying USD floating against the 10-year German Bund swap rate in USD notional with 3-year maturity ($T = 3.0$).
-Foreign EUR swap rate volatility is $\sigma_S = 18.0\%$, EUR/USD exchange rate volatility is $\sigma_{FX} = 12.0\%$, and correlation between the Bund rate and EUR/USD is $\rho = 0.40$.
-Calculate the annual quanto drift adjustment.
+The forward EUR swap rate is $S_f(0) = 3.0\%$, its lognormal volatility is $\sigma_S = 18.0\%$, EUR/USD exchange rate volatility is $\sigma_{FX} = 12.0\%$, and correlation between the Bund rate and EUR/USD is $\rho = 0.40$.
+Calculate the quanto drift and the adjustment to the rate fixing in 3 years.
 
-Substitute into the quanto formula:
-$$\text{Adj}_{\text{quanto}} = -\rho \sigma_S \sigma_{FX} = -0.40 \times 0.18 \times 0.12 = -0.00864 = -86.4 \text{ bps/year}$$
-Over the 3-year term, the forward expectation of the foreign rate under the domestic USD measure is shifted downward by $86.4\text{ bps}$ per annum relative to the native EUR forward rate.
+The relative drift adjustment is:
+$$-\rho \sigma_S \sigma_{FX} = -0.40 \times 0.18 \times 0.12 = -0.00864 \text{ per year}$$
+In rate units this is $-0.00864 \times S_f(0) = -0.00864 \times 0.03 = -0.0002592$, a downward drift of about 2.59 bps per year.
+Over the 3-year term:
+$$\text{Adj}_{\text{quanto}} = 0.03 \times \left(e^{-0.00864 \times 3} - 1\right) = 0.03 \times (-0.025587) = -0.0007676 = -7.68 \text{ bps}$$
+The linear approximation $-\rho \sigma_S \sigma_{FX} S_f(0) T = -7.78$ bps is close.
+The expected Bund swap rate under the domestic USD measure is $3.0\% - 0.0768\% = 2.9232\%$.
 
 ## Pitfalls
 
 - **Neglecting the futures convexity adjustment in curve construction:** Inserting raw futures quotes directly into discount curve bootstrapping without subtracting $\frac{1}{2}\sigma^2 T_1 T_2$ artificially raises forward rates at the 2y to 5y sector, mispricing interest rate swaps and swaptions.
-- **Using normal volatility in lognormal adjustment formulas:** Substituting a normal volatility (e.g., 80 bps = 0.0080) into a lognormal convexity formula ($S^2 \sigma^2 T$) produces an error of four orders of magnitude; the lognormal formula requires dimensionless percentage volatility (e.g., 0.20).
+- **Using normal volatility in lognormal adjustment formulas:** Substituting a normal volatility (e.g., 80 bps = 0.0080) into a lognormal convexity formula ($S^2 \sigma^2 T$) understates the adjustment by a factor of $(0.20 / 0.0080)^2 = 625$, nearly three orders of magnitude; the lognormal formula requires dimensionless percentage volatility (e.g., 0.20).
 - **Truncating the swaption smile in CMS replication:** Integrating swaption prices over a narrow strike range (e.g. $\pm 100\text{ bps}$) misses significant mass in the far wings; because CMS payoffs are linear in the rate, tail swaption prices contribute significantly to the integral.
 - **Assuming correlation $\rho$ is constant in quanto pricing:** Correlation between exchange rates and interest rates is notoriously unstable across economic cycles; stress testing quanto portfolios requires bumping correlation across the entire $[-1, 1]$ interval.
 - **Ignoring the payment delay in CMS:** CMS fixings often occur at $T_1$ with payment delayed to $T_2$; this introduces a secondary timing adjustment that partially offsets the positive annuity adjustment.
@@ -210,7 +217,7 @@ Over the 3-year term, the forward expectation of the foreign rate under the dome
 > Paying a rate fixing at $T_1$ at $T_1$ instead of $T_2$ removes the discount factor $(1 + \tau L)^{-1}$; because higher rates reduce the discount factor, paying without discounting increases the expected payoff.
 
 > [!question]- fi-convexity-quanto-drift | Write the drift adjustment for a quanto interest rate under the domestic measure.
-> Drift adjustment $= -\rho_{S, X} \sigma_S \sigma_X$.
+> The relative drift $dS_f / S_f$ gains $-\rho_{S, X} \sigma_S \sigma_X$, so the absolute drift adjustment is $-\rho_{S, X} \sigma_S \sigma_X S_f$.
 > $\rho_{S, X}$ is the correlation between the foreign rate and the exchange rate, $\sigma_S$ is the foreign rate volatility, and $\sigma_X$ is the FX volatility.
 
 > [!question]- fi-convexity-curve-bootstrap-impact | What happens if a desk bootstraps a discount curve using futures quotes without convexity adjustments?

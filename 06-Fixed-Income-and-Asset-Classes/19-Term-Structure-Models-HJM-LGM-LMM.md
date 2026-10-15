@@ -78,12 +78,13 @@ Instead of tracking instantaneous short rates, LGM defines a single Gaussian sta
 $$dx(t) = \sigma(t) dW(t), \quad x(0) = 0$$
 where $\sigma(t)$ is a deterministic volatility function.
 
-All zero-coupon bond prices are expressed analytically in terms of $x(t)$:
-$$P(t, T) = \frac{P(0, T)}{P(0, t)} \exp\left( -H(t, T) x(t) - \frac{1}{2} H(t, T)^2 \zeta(t) \right)$$
+With numeraire $N(t) = \frac{1}{P(0, t)} \exp\left( H(t) x(t) + \frac{1}{2} H(t)^2 \zeta(t) \right)$, the reduced bond price $P(t, T)/N(t) = P(0, T) \exp\left( -H(T) x(t) - \frac{1}{2} H(T)^2 \zeta(t) \right)$ is a martingale, and all zero-coupon bond prices are expressed analytically in terms of $x(t)$:
+$$P(t, T) = \frac{P(0, T)}{P(0, t)} \exp\left( -\left(H(T) - H(t)\right) x(t) - \frac{1}{2} \left(H(T)^2 - H(t)^2\right) \zeta(t) \right)$$
 where:
-- $H(t, T)$ is a deterministic mean-reversion scale function.
-For constant mean reversion $a$: $H(t, T) = \frac{1 - e^{-a(T - t)}}{a}$.
-- $\zeta(t) = \int_0^t \sigma(s)^2 e^{-2a(t - s)} ds$ is the cumulative variance of the process.
+- $H(T)$ is a deterministic, increasing function of maturity alone that encodes mean reversion.
+For constant mean reversion $a$: $H(T) = \frac{1 - e^{-a T}}{a}$.
+- $\zeta(t) = \int_0^t \sigma(s)^2 ds$ is the variance of $x(t)$.
+Hull-White with constant $(a, \sigma_{HW})$ is recovered with $\sigma(s) = \sigma_{HW} e^{a s}$, so $\zeta(t) = \sigma_{HW}^2 \frac{e^{2 a t} - 1}{2 a}$.
 
 LGM is functionally equivalent to the 1-factor Hull-White model, but decouples the state variable $x(t)$ from the yield curve baseline $P(0, T)$.
 This separation simplifies numerical PDE grids and Monte Carlo simulation paths, making LGM the standard model of choice across Tier-1 investment bank fixed income desks for Bermudan swaptions and callable debt.
@@ -175,7 +176,7 @@ The forward rate volatility decays exponentially with maturity, preventing the e
 
 ### Example 3: 2-Factor LMM Drift Calculation
 Consider an LMM with two quarterly forward rates $L_1$ and $L_2$ ($T_1 = 0.5\text{y}$, $T_2 = 0.75\text{y}$, $\tau_2 = 0.25$).
-Let $L_2(t) = 4.0\% = 0.04$, with volatility $\sigma_1 = 20.0\%$ and $\sigma_2 = 18.0\%$.
+Let $L_1(t) = L_2(t) = 4.0\% = 0.04$, with volatility $\sigma_1 = 20.0\%$ and $\sigma_2 = 18.0\%$.
 The correlation between $L_1$ and $L_2$ is $\rho_{12} = 0.85$.
 Calculate the drift of $L_1(t)$ under the terminal measure $\mathbb{Q}^{T_2}$.
 
@@ -187,8 +188,9 @@ Compute the numerator:
 $$\tau_2 L_2(t) = 0.25 \times 0.04 = 0.01$$
 $$\sigma_1 \sigma_2 \rho_{12} = 0.20 \times 0.18 \times 0.85 = 0.0306$$
 Evaluate the drift:
-$$\mu_1(t) = -\frac{0.01}{1.01} \times 0.0306 = -0.009901 \times 0.0306 = -0.000303 = -3.03 \text{ bps/year}$$
-Under the terminal measure $\mathbb{Q}^{T_2}$, the forward rate $L_1(t)$ drifts downward at approximately $3.03\text{ bps}$ per annum due to the covariance with the discounting bond $P(t, T_2)$.
+$$\mu_1(t) = -\frac{0.01}{1.01} \times 0.0306 = -0.009901 \times 0.0306 = -0.000303 \text{ per year}$$
+This is the drift of $dL_1 / L_1$; the absolute drift is $L_1(t) \mu_1(t) = 0.04 \times (-0.000303) = -0.0000121$, about $-0.12\text{ bps}$ per year.
+Under the terminal measure $\mathbb{Q}^{T_2}$, the forward rate $L_1(t)$ drifts downward at approximately $0.12\text{ bps}$ per annum due to the covariance with the discounting bond $P(t, T_2)$.
 
 ## Pitfalls
 

@@ -138,9 +138,9 @@ However, each caplet in reality has its own forward expiry $T_{i-1}$ and experie
 Using a single flat volatility creates internal arbitrage across maturities.
 
 **Caplet stripping** is the bootstrapping procedure that extracts spot caplet volatilities $\{\sigma_i\}_{i=2}^n$ from market quotes of standard caps:
-1. From the 1-year cap (single caplet maturing at $T_1$), solve for $\sigma_2$ directly.
-2. Given market prices for the 2-year cap:
-$$\text{Cap}(T_2) = \text{Caplet}_2(\sigma_2) + \text{Caplet}_3(\sigma_3)$$
+1. The 2-year cap contains a single live caplet (fixing at $T_1$, paying at $T_2$), so solve for $\sigma_2$ directly.
+2. Given market prices for the 3-year cap:
+$$\text{Cap}(T_3) = \text{Caplet}_2(\sigma_2) + \text{Caplet}_3(\sigma_3)$$
 Since $\sigma_2$ is known from step 1, solve for $\sigma_3$ using 1D root-finding on $\text{Caplet}_3$.
 3. Proceed sequentially for all cap maturities.
 Because market caps are liquid only at discrete annual pillars (1y, 2y, 3y, 5y, 7y, 10y), practitioners interpolate cap prices or fit smooth parametric curves (such as cubic splines or Nelson-Siegel functions) to avoid jagged caplet volatilities.
@@ -156,13 +156,13 @@ Compute $d_1$ and $d_2$:
 $$d_1 = \frac{\ln(0.04 / 0.04) + 0.5 \times (0.353553)^2}{0.353553} = \frac{0 + 0.0625}{0.353553} = 0.176777$$
 $$d_2 = d_1 - \sigma \sqrt{T} = 0.176777 - 0.353553 = -0.176777$$
 Evaluate cumulative normal functions:
-$$\Phi(0.176777) = 0.570198$$
-$$\Phi(-0.176777) = 1 - 0.570198 = 0.429802$$
+$$\Phi(0.176777) = 0.570158$$
+$$\Phi(-0.176777) = 1 - 0.570158 = 0.429842$$
 Evaluate swaption price:
-$$\text{Price} = 3.80 \times [0.04 \times 0.570198 - 0.04 \times 0.429802]$$
-$$\text{Price} = 3.80 \times 0.04 \times [0.570198 - 0.429802] = 0.152 \times 0.140396 = 0.021340$$
-Using our reference implementation [`rates_models.py`](code/rates_models.py):
-$$\text{Exact Price} = 0.021328 \quad (213.28 \text{ bps})$$
+$$\text{Price} = 3.80 \times [0.04 \times 0.570158 - 0.04 \times 0.429842]$$
+$$\text{Price} = 3.80 \times 0.04 \times [0.570158 - 0.429842] = 0.152 \times 0.140316 = 0.021328$$
+Our reference implementation [`rates_models.py`](code/rates_models.py) gives the same value:
+$$\text{Price} = 0.021328 \quad (213.28 \text{ bps})$$
 
 ### Example 2: Bachelier Normal Swaption in Negative Rate Environment
 Price a 2-year European payer swaption on a negative forward rate $F(0) = -20\text{ bps} = -0.0020$, strike $K = -0.0020$, normal volatility $\sigma_N = 80\text{ bp/year} = 0.0080$, expiry $T = 2.0\text{ years}$, and annuity factor $A(0) = 3.80$.
@@ -170,26 +170,27 @@ Price a 2-year European payer swaption on a negative forward rate $F(0) = -20\te
 Because $F(0) = K$, $d = 0$:
 $$\text{Price} = A(0) \times \frac{\sigma_N \sqrt{T}}{\sqrt{2\pi}} = 3.80 \times \frac{0.0080 \times \sqrt{2.0}}{\sqrt{2\pi}}$$
 $$\sigma_N \sqrt{T} = 0.0080 \times 1.414214 = 0.011314$$
-$$\frac{0.011314}{\sqrt{2\pi}} = \frac{0.011314}{2.506628} = 0.0045136$$
-$$\text{Price} = 3.80 \times 0.0045136 = 0.017152 \quad (171.52 \text{ bps})$$
-Our reference implementation [`rates_models.py`](code/rates_models.py) yields:
-$$\text{Exact Bachelier Price} = 0.017151 \quad (171.51 \text{ bps})$$
+$$\frac{0.011314}{\sqrt{2\pi}} = \frac{0.011314}{2.506628} = 0.0045135$$
+$$\text{Price} = 3.80 \times 0.0045135 = 0.017151 \quad (171.51 \text{ bps})$$
+Our reference implementation [`rates_models.py`](code/rates_models.py) gives the same value, $0.017151$.
 The Black-76 model would fail on this trade due to negative arguments.
 
 ### Example 3: Stripping a 2-Period Caplet
-Suppose $P(0, 1) = 0.9615$, $P(0, 2) = 0.9200$, 1y forward rate $F_1 = 4.0\%$, 2y forward rate $F_2 = 4.5\%$, and strike $K = 4.0\%$.
-An annual 1y cap (which pays at $T=2$ based on $F(1)$) trades at 75 bps of notional ($0.0075$).
-Determine the spot volatility of the 1y forward caplet using Black-76.
+Suppose $P(0, 1) = 0.9615$, $P(0, 2) = 0.9200$ and strike $K = 4.0\%$ with annual accrual $\tau = 1$.
+A 2-year annual cap trades at 75 bps of notional ($0.0075$).
+Determine the spot volatility of its caplet using Black-76.
 
-The cap has only 1 caplet fixing at $T_1 = 1.0$ and paying at $T_2 = 2.0$:
-$$\text{Caplet}_1 = 1.0 \times P(0, 2) \times [F_1 \Phi(d_1) - K \Phi(d_2)] = 0.0075$$
-$$0.9200 \times [0.04 \Phi(d_1) - 0.04 \Phi(d_2)] = 0.0075$$
-$$[0.04 \Phi(d_1) - 0.04 \Phi(d_2)] = \frac{0.0075}{0.9200} = 0.008152$$
-Inverting Black-76 with $F = K = 0.04$:
-$$0.04 \times (2\Phi(0.5 \sigma_1 \sqrt{1}) - 1) = 0.008152$$
-$$2\Phi(0.5 \sigma_1) - 1 = \frac{0.008152}{0.04} = 0.203804$$
-$$\Phi(0.5 \sigma_1) = 0.601902 \implies 0.5 \sigma_1 \approx 0.2582 \implies \sigma_1 \approx 51.64\%$$
-The spot caplet volatility is 51.64%.
+The first period's rate is already fixed at inception, so the 2-year cap contains a single live caplet, fixing at $T_1 = 1.0$ and paying at $T_2 = 2.0$.
+Its underlying is the forward rate for $[1, 2]$:
+$$F_2 = \frac{1}{\tau}\left(\frac{P(0, 1)}{P(0, 2)} - 1\right) = \frac{0.9615}{0.9200} - 1 = 0.045109$$
+The caplet price is:
+$$\text{Caplet}_2 = \tau P(0, 2) \left[F_2 \Phi(d_1) - K \Phi(d_2)\right] = 0.0075$$
+$$0.045109 \Phi(d_1) - 0.04 \Phi(d_2) = \frac{0.0075}{0.9200} = 0.008152$$
+with $d_{1,2} = \frac{\ln(F_2 / K) \pm \frac{1}{2}\sigma_2^2 T_1}{\sigma_2 \sqrt{T_1}}$ and option expiry $T_1 = 1.0$ (the fixing date, not the payment date).
+Because $F_2 \neq K$ there is no closed form; a 1D root solve (`implied_black_vol(0.0075, 0.045109, 0.04, 1.0, 0.92)` in [`rates_models.py`](code/rates_models.py)) gives:
+$$\sigma_2 = 30.81\%, \quad d_1 = 0.544165, \quad d_2 = 0.236060$$
+Check: $0.045109 \times \Phi(0.544165) - 0.04 \times \Phi(0.236060) = 0.045109 \times 0.706836 - 0.04 \times 0.593307 = 0.008152$.
+The spot caplet volatility is 30.81%.
 
 ## Pitfalls
 

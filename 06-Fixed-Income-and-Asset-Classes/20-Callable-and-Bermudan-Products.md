@@ -140,24 +140,26 @@ The swap has fixed strike $K = 4.0\%$ and annual coupons.
 The Bermudan swaption can be exercised at $T = 1.0, 2.0, 3.0, 4.0\text{ years}$ into a swap expiring at $T = 5.0\text{ years}$.
 The Hull-White parameters are $a = 0.03$ and $\sigma = 0.012$.
 
-Using our reference implementation [`rates_models.py`](code/rates_models.py):
-1. **European Swaption (exercise at $T = 1.0$ only):**
-$$\text{Price}(\text{European}) = 0.008592 \quad (85.92 \text{ bps})$$
+Using `hw_bermudan_swaption_tree` in our reference implementation [`rates_models.py`](code/rates_models.py) with time step $\Delta t = 0.05$:
+1. **European Swaption (exercise at $T = 1.0$ only, 1y into 4y):**
+$$\text{Price}(\text{European}) = 0.0176082 \quad (176.08 \text{ bps})$$
+The analytic Jamshidian price of the same 1y into 4y swaption is $0.017568$, so the tree is within $0.23\%$.
 2. **Bermudan Swaption (exercise at $T \in \{1, 2, 3, 4\}$):**
-$$\text{Price}(\text{Bermudan}) = 0.014364 \quad (143.64 \text{ bps})$$
+$$\text{Price}(\text{Bermudan}) = 0.0232815 \quad (232.82 \text{ bps})$$
 3. **Early Exercise Premium:**
-$$\text{Premium} = \text{Price}(\text{Bermudan}) - \text{Price}(\text{European}) = 0.014364 - 0.008592 = 0.005772 \quad (57.72 \text{ bps})$$
-The flexibility to exercise at years 2, 3, or 4 adds 57.72 bps of value (an increase of over 67% above the European option value).
+$$\text{Premium} = \text{Price}(\text{Bermudan}) - \text{Price}(\text{European}) = 0.0232815 - 0.0176082 = 0.0056733 \quad (56.73 \text{ bps})$$
+The flexibility to exercise at years 2, 3, or 4 adds 56.73 bps of value, 32.2% above the European option value.
+The Bermudan also exceeds the most valuable single co-terminal European, the 2y into 3y at $0.017794$ (Jamshidian), as it must.
 
 ### Example 2: Negative Convexity in a Callable Bond
 Consider a 30-year bond with a 6.0% annual coupon, callable at par ($100$) in 5 years.
 Compare its price sensitivity when market yields shift from 8% down to 4%:
-- **At 8% Yield:** The bond trades at a deep discount ($P \approx 77.4$).
+- **At 8% Yield:** The bond trades at a deep discount ($P = 77.48$).
 The call option is far out of the money.
-Modified duration is approximately $11.5\text{ years}$.
-A 100 bp drop in yields increases price by $\approx 11.5\%$.
-- **At 4% Yield:** Straight bond price would be $134.6$, but the callable bond is capped near $100$ plus near-term coupon value ($P \approx 108.9$).
-Effective duration collapses from $11.5\text{ years}$ to $3.8\text{ years}$ (approaching the 5-year call maturity).
+Modified duration is $11.79\text{ years}$.
+A 100 bp drop in yields to 7% raises the price to $87.59$, a gain of $13.0\%$ (more than the $11.79\%$ duration estimate because of positive convexity).
+- **At 4% Yield:** Straight bond price would be $134.58$, but the callable bond is priced to the call date: 5 years of coupons plus par gives $P = 108.90$.
+Duration collapses from $11.79\text{ years}$ to the $4.32\text{-year}$ modified duration of that 5-year cash flow stream.
 The second derivative $\frac{\partial^2 P}{\partial y^2}$ turns negative: price appreciation slows as yields continue to fall.
 
 ### Example 3: Longstaff-Schwartz Regression Step
