@@ -154,7 +154,7 @@ A desk observes par CDS quotes:
 - 5-year: $150\text{ bps}$ ($0.0150$)
 
 Using our reference implementation [`credit_bootstrap.py`](code/credit_bootstrap.py):
-1. **1-Year Hazard Rate:** Bootstrapped $\lambda_1 = 0.0168$ ($1.68\%$).
+1. **1-Year Hazard Rate:** Bootstrapped $\lambda_1 = 0.0166$ ($1.66\%$).
 2. **5-Year Cumulative Survival:** $Q(5.0) = 88.04\%$.
 3. **5-Year RPV01:** $\text{RPV01} = 4.28$.
 4. **5-Year Upfront Fee on 100 bp standard coupon:**

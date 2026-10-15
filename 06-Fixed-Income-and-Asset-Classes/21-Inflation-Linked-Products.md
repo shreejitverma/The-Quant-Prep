@@ -88,9 +88,9 @@ At trade inception ($t = 0$), party A and party B agree on a fixed inflation rat
 No cash flows occur until maturity $T$.
 
 At maturity $T$, a single net payment is exchanged on notional $N$:
-$$\text{Payoff}_{\text{Payer}} = N \times \left[ \left(\frac{\text{CPI}(T)}{\text{CPI}(0)}\right) - (1 + K)^T \right]$$
-- **Inflation Payer:** Pays the floating realized cumulative percentage inflation return $\frac{\text{CPI}(T)}{\text{CPI}(0)} - 1$.
-- **Inflation Receiver:** Pays the fixed compounded rate $(1 + K)^T - 1$.
+$$\text{Payoff}_{\text{Inflation Receiver}} = N \times \left[ \left(\frac{\text{CPI}(T)}{\text{CPI}(0)}\right) - (1 + K)^T \right]$$
+- **Inflation Receiver (fixed payer):** Pays the fixed compounded rate $(1 + K)^T - 1$ and receives realized inflation, so the payoff above is positive when realized inflation exceeds $K$.
+- **Inflation Payer (fixed receiver):** Pays the floating realized cumulative percentage inflation return $\frac{\text{CPI}(T)}{\text{CPI}(0)} - 1$; its payoff is the negative of the payoff above.
 
 The fair breakeven swap rate $K$ equates the present value of the two legs to zero:
 $$(1 + K)^T = \mathbb{E}_{\mathbb{Q}}\left[ \frac{\text{CPI}(T)}{\text{CPI}(0)} \right]$$
@@ -101,7 +101,7 @@ In a Year-on-Year inflation swap, cash flows occur annually.
 At each annual date $t_i$, the floating leg pays annual realized inflation:
 $$\text{Floating Payment}(t_i) = N \times \left[ \frac{\text{CPI}(t_i)}{\text{CPI}(t_{i-1})} - 1 \right]$$
 against a fixed rate $K_{\text{YoY}}$.
-Unlike ZCIS, which compounds continuously to terminal maturity, YoY swaps pay individual one-year forward inflation rates discounted on intermediate dates.
+Unlike ZCIS, which compounds the fixed rate annually to a single terminal payment, YoY swaps pay individual one-year forward inflation rates discounted on intermediate dates.
 Because the payment dates differ from the terminal measure, YoY swap rates require a convexity adjustment relative to forward rates extracted from ZCIS curves.
 
 ### 4. The Jarrow-Yildirim (JY) Foreign-Currency Model

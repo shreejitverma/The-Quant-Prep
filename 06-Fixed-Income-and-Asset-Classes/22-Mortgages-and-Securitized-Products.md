@@ -187,16 +187,17 @@ Our reference implementation [`credit_bootstrap.py`](code/credit_bootstrap.py) y
 ### Example 3: Implied Financing Rate in a Dollar Roll
 A mortgage trader holds a 30-year Fannie Mae 6.0% TBA with a current-month settlement price of $P_1 = 101.50$ (settling in 30 days).
 The forward-month TBA trades at $P_2 = 101.125$ (settling in 60 days).
-The drop is $P_1 - P_2 = 101.50 - 101.125 = 0.375$ ($37.5\text{ ticks}$).
+The drop is $P_1 - P_2 = 101.50 - 101.125 = 0.375$ ($12/32$, i.e. $12\text{ ticks}$).
 Over the 30-day roll period, the expected coupon plus interest earned on reinvested principal is estimated at $\$0.48$ per $\$100$ par.
 Calculate the implied financing rate locked in by rolling the position.
 
-Net benefit of rolling:
-$$\text{Net Cost} = \text{Drop} + \text{Expected Cash Flow Given Up} = 0.375 - 0.480 = -0.105$$
-The trader borrows cash at an effective financing rate:
-$$\text{Implied Rate} \approx \frac{\text{Cash Returned} - \text{Cost}}{\text{Borrowing Base}} \times \frac{360}{30}$$
-If the implied financing rate clears at $3.80\%$ while the Treasury repo rate is $4.50\%$, the roll is trading $70\text{ bps}$ "on special".
-The trader earns an extra 70 bps by financing MBS in the dollar roll rather than in the general collateral repo market.
+Rolling means selling the pool for front-month settlement at $P_1$ and buying it back for forward settlement at $P_2$, giving up the $0.48$ of cash flows in between.
+The cost of that financing is the cash flow given up net of the drop:
+$$\text{Net Cost} = \text{Expected Cash Flow Given Up} - \text{Drop} = 0.480 - 0.375 = 0.105$$
+The trader effectively borrows $P_1$ for 30 days and repays $P_2$ plus the forgone cash flows, so:
+$$\text{Implied Rate} = \frac{P_2 + 0.480 - P_1}{P_1} \times \frac{360}{30} = \frac{0.105}{101.50} \times 12 = 1.24\%$$
+With the Treasury repo rate at $4.50\%$, the roll is trading $4.50\% - 1.24\% = 3.26\%$ ($326\text{ bps}$) "on special".
+The trader saves 326 bps by financing MBS in the dollar roll rather than in the general collateral repo market.
 
 ## Pitfalls
 

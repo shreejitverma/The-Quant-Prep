@@ -110,7 +110,7 @@ Solving the discounted cash flow equation:
 
 $$99.995924 = \frac{2.25}{(1 + y/2)^{0.6685}} + \sum_{k=2}^{10} \frac{2.25}{(1 + y/2)^{k - 1 + 0.6685}} + \frac{100}{(1 + y/2)^{9.6685}}$$
 
-Evaluating numerically yields a semi-annual compounded yield of $y = 4.670\%$ per annum ($y/2 = 2.335\%$).
+Evaluating numerically yields a semi-annual compounded yield of $y = 4.674\%$ per annum ($y/2 = 2.337\%$).
 
 ---
 
@@ -309,17 +309,19 @@ $$d_1 = \frac{-0.082238 + 0.000438}{0.029610} = \frac{-0.081800}{0.029610} \appr
 $$d_2 = d_1 - \sigma_P = -2.7626 - 0.0296 = -2.7922$$
 
 Step 4: Standard normal CDF values:
-$\Phi(-2.7626) \approx 0.002867$ and $\Phi(-2.7922) \approx 0.002618$.
+$\Phi(-2.7626) \approx 0.0028671$ and $\Phi(-2.7922) \approx 0.0026174$.
 
 Step 5: Call option price:
 
-$$\text{Call} = P(0, 1) [F_B \Phi(d_1) - K \Phi(d_2)] = 0.9600 \times [0.8750 \times 0.002867 - 0.9500 \times 0.002618]$$
+$$\text{Call} = P(0, 1) [F_B \Phi(d_1) - K \Phi(d_2)] = 0.9600 \times [0.8750 \times 0.0028671 - 0.9500 \times 0.0026174]$$
 
-$$0.8750 \times 0.002867 \approx 0.002509$$
+$$0.8750 \times 0.0028671 \approx 0.0025087$$
 
-$$0.9500 \times 0.002618 \approx 0.002487$$
+$$0.9500 \times 0.0026174 \approx 0.0024865$$
 
-$$\text{Call} = 0.9600 \times (0.002509 - 0.002487) = 0.9600 \times 0.000022 \approx \$0.0000211 \text{ per } \$1 \text{ notional}$$
+$$\text{Call} = 0.9600 \times (0.0025087 - 0.0024865) = 0.9600 \times 0.00002216 \approx \$0.0000213 \text{ per } \$1 \text{ notional}$$
+
+Carrying full precision through $\Phi(d_1)$ and $\Phi(d_2)$ gives $\$2.127 \times 10^{-5}$.
 
 The call is deep out-of-the-money ($F_B = 0.875$ vs $K = 0.950$), yielding a tiny premium.
 
@@ -347,15 +349,15 @@ $$d_1 = \frac{0.057158 + \frac{1}{2}(0.220)^2 \times 1.0}{0.220} = \frac{0.05715
 $$d_2 = d_1 - 0.220 = 0.3698 - 0.2200 = 0.1498$$
 
 Step 2: Normal probabilities:
-$\Phi(0.3698) \approx 0.64424$, $\Phi(0.1498) \approx 0.55954$.
+$\Phi(0.3698) \approx 0.6442383$, $\Phi(0.1498) \approx 0.5595431$.
 
 Step 3: Caplet payout in forward terms:
 
-$$F \Phi(d_1) - K \Phi(d_2) = 0.0450 \times 0.64424 - 0.0425 \times 0.55954 = 0.028991 - 0.023780 = 0.005211$$
+$$F \Phi(d_1) - K \Phi(d_2) = 0.0450 \times 0.6442383 - 0.0425 \times 0.5595431 = 0.028990724 - 0.023780582 = 0.005210142$$
 
 Step 4: Present value per $\$10,000,000$ notional:
 
-$$\text{Caplet} = \$10,000,000 \times 0.9350 \times 0.50 \times 0.005211 = \$4,675,000 \times 0.005211 \approx \$24,361.43$$
+$$\text{Caplet} = \$10,000,000 \times 0.9350 \times 0.50 \times 0.005211 = \$4,675,000 \times 0.005210142 \approx \$24,357.41$$
 
 ---
 
@@ -395,7 +397,7 @@ The recovery rate is $R = 40\%$ ($LGD = 0.60$).
 The risk-free discount rate is flat at $r = 4.00\%$.
 1. Compute the constant hazard rate $\lambda$ under the par spread approximation rule.
 2. Calculate the exact 5-year survival probability $Q(5)$.
-3. If the contract trades on standard 100 bps fixed coupon with $\text{RPV01} = 4.28$, compute the upfront fee as a percentage of notional.
+3. If the contract trades on the standard 100 bps fixed coupon, compute the upfront fee as a percentage of notional.
 
 **Solution:**
 
@@ -403,20 +405,23 @@ Step 1: Hazard rate approximation:
 
 $$\lambda \approx \frac{S}{1 - R} = \frac{0.0150}{1 - 0.40} = \frac{0.0150}{0.60} = 0.0250 \quad (2.50\% \text{ per annum})$$
 
-(Under exact discrete quarterly bootstrapping in `code/credit_bootstrap.py`, accounting for premium accrual on default, the bootstrapped hazard rate is $3.37\%$).
+(Bootstrapping this single 150 bp quote exactly in `code/credit_bootstrap.py`, with quarterly premiums, accrual on default and discounting, gives $\lambda = 2.4875\%$, so the shortcut is off by about $0.5\%$ of its value.)
 
 Step 2: 5-year survival probability (using `credit_bootstrap.py`):
 
 $$Q(5) = e^{-0.0250 \times 5} \approx 0.8825 \quad (88.25\%)$$
 
-Under exact bootstrapping, $Q(5) = 88.04\%$.
+Under exact bootstrapping, $Q(5) = e^{-0.024875 \times 5} = 88.30\%$.
 
 Step 3: Upfront fee calculation:
 Market spread is $150$ bps, standard coupon is $100$ bps:
 
-$$\text{Upfront Fee (\%)} \approx (S - C) \times \text{RPV01} = (0.0150 - 0.0100) \times 4.28 = 0.0050 \times 4.28 = 0.0214 \quad (2.14\%)$$
+The exact single-quote curve gives $\text{RPV01} = 4.2487$.
+Because that flat curve reprices the 150 bp quote to par, $\text{PV}_{\text{protection}} = S \times \text{RPV01}$ and the upfront is exactly:
 
-The protection buyer pays an upfront fee of $2.14\%$ of notional ($\$214,000$ per $\$10,000,000$).
+$$\text{Upfront Fee (\%)} = (S - C) \times \text{RPV01} = (0.0150 - 0.0100) \times 4.2487 = 0.0050 \times 4.2487 = 0.021244 \quad (2.12\%)$$
+
+The protection buyer pays an upfront fee of $2.12\%$ of notional ($\$212,437$ per $\$10,000,000$).
 
 ---
 
@@ -452,7 +457,7 @@ Therefore, **Bond A is the Cheapest-to-Deliver (CTD)**.
 
 ### Problem 12: SOFR in Arrears Convexity Adjustment
 
-A floating-rate note coupon pays compounded SOFR fixing over $[T_1, T_2]$ on payment date $T_1$ (paid in advance / in arrears timing mismatch).
+A swap leg pays a term SOFR rate that fixes at $T_1$ for the accrual period $[T_1, T_2]$, but pays it at the fixing date $T_1$ instead of at the natural payment date $T_2$ (the in-arrears timing mismatch).
 $T_1 = 2.0$ years, $T_2 = 2.5$ years ($\tau = 0.50$).
 The forward SOFR rate is $F = 4.00\%$ ($0.0400$).
 The annual volatility of forward SOFR is $\sigma = 20.0\%$ ($0.200$).
@@ -584,10 +589,10 @@ $$\text{CPR}_{150\% \text{ PSA}}(30) = 1.50 \times 6.0\% = 9.0\%$$
 
 ### Problem 16: Gaussian Copula CDO Tranche Loss and P&L Attribution
 
-A portfolio has 100 identical credits with default probability $p = 5.0\%$, correlation $\rho = 0.30$, and recovery $R = 40\%$ ($LGD = 0.60$).
+A large homogeneous portfolio (the $N \to \infty$ limit of identical credits) has default probability $p = 5.0\%$, correlation $\rho = 0.30$, and recovery $R = 40\%$ ($LGD = 0.60$).
 Using Li's one-factor Gaussian copula:
 1. Calculate the conditional default probability under an extreme market factor realization of $M = -2.0$ standard deviations.
-2. Given portfolio loss distribution results from `code/credit_bootstrap.py`, verify the expected loss for an Equity Tranche $[0\%, 3\%]$ versus a Senior Tranche $[7\%, 10\%]$.
+2. Given the large homogeneous portfolio (LHP) loss distribution from `code/credit_bootstrap.py`, verify the expected loss for an Equity Tranche $[0\%, 3\%]$ versus a Senior Tranche $[7\%, 10\%]$.
 3. A fund holds $\$50,000,000$ notional of a bond portfolio with $\text{DV01} = \$35,000$, dollar convexity $C_{\$} = \$3,500,000,000$, and daily carry of $+\$1,200$. Over 1 day, yields rise by $+8$ bps ($\Delta y = +0.0008$). Compute the total predicted daily P&L.
 
 **Solution:**
@@ -618,40 +623,42 @@ $$\text{Total Predicted P\&L} = -\$280,000 + \$1,120 + \$1,200 = -\$277,680$$
 
 - **Ignoring Compounding Conventions:** Mixing semi-annual bond yields with continuously compounded forward rates creates significant pricing errors.
 - **Neglecting Prepayment Optionality in MBS Duration:** Applying standard cash flow duration to MBS ignores negative convexity and drastically misstates risk during rate rallies.
-- **Forgetting Accrual of Coupon on Default in CDS:** Approximating CDS spread as simply $\lambda(1 - R)$ ignores discount factors and coupon accrual between payment dates, causing a $10\%-15\%$ drift in hazard rate calibration.
+- **Treating the Credit Triangle as an Exact Bootstrap:** $\lambda \approx S/(1 - R)$ ignores discounting and premium accrual and returns an average hazard rate to maturity, not a forward one.
+For a single flat 150 bp quote the error is small ($2.49\%$ exact versus $2.50\%$, Problem 10).
+On the upward-sloping 100/120/150 bp curve of [Credit and CDS](06-Credit-and-CDS.md), the bootstrapped $(3\text{y}, 5\text{y}]$ forward hazard is $3.37\%$, about $35\%$ above the shortcut.
 - **Assuming Gaussian Tail Dependence in Senior Tranches:** Relying on the Gaussian copula for super-senior tranches underestimates joint default clustering during systemic contagion.
 - **Inconsistent Delivery Month Alignment in Futures Basis:** Comparing cash Treasury settlement against futures settlement without accounting for financing over the delivery window causes false arbitrage signals.
 
 ## Interview questions
 
-> [!question]- bond-accrued-interest-actual | How is accrued interest calculated on US Treasury notes, and why is actual/actual day count preferred over 30/360?
+> [!question]- fi-ps-bond-accrued-interest-actual | How is accrued interest calculated on US Treasury notes, and why is actual/actual day count preferred over 30/360?
 > US Treasury notes calculate accrued interest as the semi-annual coupon multiplied by actual elapsed days since the last coupon divided by the actual number of days in the current coupon period. Actual/actual eliminates distortions caused by 28, 29, 30, and 31-day months, providing exact pro-rata ownership of cash flows.
 
-> [!question]- modified-vs-macaulay-duration | What is the mathematical and economic relationship between Macaulay duration and Modified duration?
+> [!question]- fi-ps-modified-vs-macaulay-duration | What is the mathematical and economic relationship between Macaulay duration and Modified duration?
 > Macaulay duration is the weighted average maturity of a bond's cash flows measured in years. Modified duration equals Macaulay duration divided by $(1 + y/m)$ for a bond with compounding frequency $m$. Economically, modified duration measures the exact percentage price sensitivity of the bond with respect to a change in yield: $\frac{1}{P}\frac{\partial P}{\partial y} = -D_{\text{mod}}$.
 
-> [!question]- par-swap-rate-formula | State the formula for a par interest rate swap rate in terms of discount factors, and explain why the principal does not exchange.
+> [!question]- fi-ps-par-swap-rate-formula | State the formula for a par interest rate swap rate in terms of discount factors, and explain why the principal does not exchange.
 > The par swap rate is $S_n = \frac{1 - P(0, T_n)}{\sum_{i=1}^n \tau_i P(0, T_i)}$. The principal does not exchange because both fixed and floating legs are referenced to the identical notional at inception and maturity, meaning hypothetical principal exchanges exactly cancel out.
 
-> [!question]- vasicek-mean-reversion-property | In the Vasicek short-rate model, what is the role of the parameter $a$, and what happens as $a \to 0$?
+> [!question]- fi-ps-vasicek-mean-reversion-property | In the Vasicek short-rate model, what is the role of the parameter $a$, and what happens as $a \to 0$?
 > Parameter $a$ is the speed of mean reversion, dictating how rapidly the short rate returns to its long-term mean $b$ with half-life $t_{1/2} = \ln(2)/a$. As $a \to 0$, mean reversion disappears, $B(t, T) \to T - t$, and the model reduces to Ho-Lee, where interest rate volatility grows linearly with maturity.
 
-> [!question]- bachelier-vs-black-swaptions | Why has the fixed income market largely transitioned from Black-76 lognormal models to Bachelier normal models for swaptions?
+> [!question]- fi-ps-bachelier-vs-black-swaptions | Why has the fixed income market largely transitioned from Black-76 lognormal models to Bachelier normal models for swaptions?
 > The Black-76 lognormal model requires strictly positive interest rates and breaks down mathematically when rates are negative or near zero, as log-volatilities explode to infinity. The Bachelier model assumes arithmetic Brownian motion, natively accommodates negative interest rates, and expresses volatility intuitively in basis points per year.
 
-> [!question]- ctd-implied-repo-rate | Define the Implied Repo Rate (IRR) for a deliverable Treasury bond and explain how it determines the Cheapest-to-Deliver (CTD).
+> [!question]- fi-ps-ctd-implied-repo-rate | Define the Implied Repo Rate (IRR) for a deliverable Treasury bond and explain how it determines the Cheapest-to-Deliver (CTD).
 > The Implied Repo Rate is the theoretical rate of return earned by buying a cash Treasury bond, selling the corresponding Treasury futures contract, and delivering the bond into the contract at maturity. The Cheapest-to-Deliver (CTD) bond is the deliverable bond that maximizes the Implied Repo Rate.
 
-> [!question]- sofr-convexity-adjustment-sign | Why does a forward SOFR rate paid in arrears require a positive convexity adjustment?
-> When a forward rate is paid in arrears (fixing at $T_1$ but discounted from payment at $T_1$ rather than $T_2$), the payoff is positively correlated with the discount factor. Under the payment forward measure, higher fixing rates coincide with higher discount factors, shifting the expected payoff upward and requiring a positive convexity premium.
+> [!question]- fi-ps-sofr-convexity-adjustment-sign | Why does a forward SOFR rate paid in arrears require a positive convexity adjustment?
+> The forward $F$ is a martingale only under the $T_2$-forward measure, where a fixing paid at $T_2$ is discounted by $P(T_1, T_2) = 1/(1 + \tau R)$, which is low exactly when the fixing $R$ is high. Paying at $T_1$ removes that discounting, so high fixings are no longer offset by low discount factors. Removing this negative covariance between the rate and $P(T_1, T_2)$ makes the expected fixing under the $T_1$-forward measure exceed $F$, so the adjustment is positive.
 
-> [!question]- sabr-rho-parameter | In the SABR volatility model, what market feature is controlled by the correlation parameter $\rho$?
+> [!question]- fi-ps-sabr-rho-parameter | In the SABR volatility model, what market feature is controlled by the correlation parameter $\rho$?
 > Parameter $\rho$ represents the instantaneous correlation between the forward rate Brownian motion and the volatility Brownian motion. A negative $\rho$ produces a downward-sloping volatility skew (typical in rates, where yields drop as volatility rises during flight-to-safety), while $\rho = 0$ generates a symmetric smile.
 
-> [!question]- smm-vs-cpr-prepayment | What is the relationship between Single Monthly Mortality (SMM) and Constant Prepayment Rate (CPR)?
+> [!question]- fi-ps-smm-vs-cpr-prepayment | What is the relationship between Single Monthly Mortality (SMM) and Constant Prepayment Rate (CPR)?
 > SMM is the percentage of outstanding mortgage pool principal prepaid in a single month. CPR is the annualized compound equivalent: $\text{CPR} = 1 - (1 - \text{SMM})^{12}$. Conversely, $\text{SMM} = 1 - (1 - \text{CPR})^{1/12}$.
 
-> [!question]- pnl-attribution-gamma-term | In fixed income P&L attribution, what is the convexity (gamma) P&L term, and why is it always positive for long unhedged vanilla bond positions?
+> [!question]- fi-ps-pnl-attribution-gamma-term | In fixed income P&L attribution, what is the convexity (gamma) P&L term, and why is it always positive for long unhedged vanilla bond positions?
 > The convexity P&L term is $\frac{1}{2} C_{\$} (\Delta y)^2 = \frac{1}{2} P \cdot C \cdot (\Delta y)^2$. Because vanilla non-callable bonds possess strictly positive convexity ($C > 0$) and $(\Delta y)^2 \ge 0$, this term is always non-negative, providing positive gamma gains regardless of whether yields rise or fall.
 
 ## Further reading

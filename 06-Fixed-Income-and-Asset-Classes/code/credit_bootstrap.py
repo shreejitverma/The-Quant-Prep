@@ -122,128 +122,68 @@ class CDSHazardCurve:
         self._bootstrap()
 
     def _bootstrap(self) -> None:
-        for idx, quote in enumerate(self.quotes):
-            t_curr = quote.tenor
-            par_spread = quote.spread
-
+        for quote in self.quotes:
             # Solve for hazard rate lambda on (t_prev, t_curr] such that
-            # PV_premium(par_spread) == PV_protection
-            def objective(lam_guess: float, tc: float = t_curr, i: int = idx, ps: float = par_spread) -> float:
-                # Compute premium and protection legs over all intervals up to t_curr
-                pv_prem, pv_prot = self._legs_value(tc, i, lam_guess)
-                return pv_prot - ps * pv_prem
+            # PV_protection == par_spread * RPV01
+            def objective(lam_guess: float, q: CDSQuote = quote) -> float:
+                trial = self.hazard_rates + [lam_guess]
+                rpv01_val, prot_val = self._legs(q.tenor, lambda t: self._survival(t, trial))
+                return prot_val - q.spread * rpv01_val
 
-            # 1D root search for lambda
-            lam_low, lam_high = 1e-6, 1.0
+            # Objective increases with lambda; bisect only on a bracketed root
+            lam_low, lam_high = 0.0, 1.0
+            if objective(lam_low) > 0.0 or objective(lam_high) < 0.0:
+                raise ValueError(
+                    f"CDS quote at tenor {quote.tenor}y needs a forward hazard rate outside "
+                    f"[{lam_low}, {lam_high}]; the spread curve is not arbitrage-free or too distressed."
+                )
             for _ in range(80):
                 lam_mid = 0.5 * (lam_low + lam_high)
-                val = objective(lam_mid)
-                if abs(val) < 1e-12:
-                    break
-                if val > 0:  # higher hazard rate increases protection more than premium
+                if objective(lam_mid) > 0.0:
                     lam_high = lam_mid
                 else:
                     lam_low = lam_mid
             self.hazard_rates.append(0.5 * (lam_low + lam_high))
 
-    def _survival_prob_up_to_idx(self, t: float, curr_idx: int) -> float:
+    def _survival(self, t: float, hazard_rates: Sequence[float]) -> float:
+        """Q(t) for piecewise constant hazards on the leading pillars, flat beyond the last one."""
         if t <= 0.0:
             return 1.0
-        prob = 1.0
-        for i in range(curr_idx):
-            p_prev = self.pillars[i - 1] if i > 0 else 0.0
-            p_curr = self.pillars[i]
+        log_q = 0.0
+        p_prev = 0.0
+        for p_curr, lam in zip(self.pillars, hazard_rates, strict=False):
             if t <= p_curr:
-                prob *= math.exp(-self.hazard_rates[i] * (t - p_prev))
-                return prob
-            else:
-                prob *= math.exp(-self.hazard_rates[i] * (p_curr - p_prev))
-        return prob
+                return math.exp(log_q - lam * (t - p_prev))
+            log_q -= lam * (p_curr - p_prev)
+            p_prev = p_curr
+        return math.exp(log_q - hazard_rates[-1] * (t - p_prev))
 
     def survival_prob(self, t: float) -> float:
         """Evaluate survival probability Q(t) = P(tau > t)."""
-        if t <= 0.0:
-            return 1.0
-        prob = 1.0
-        for i, p_curr in enumerate(self.pillars):
-            p_prev = self.pillars[i - 1] if i > 0 else 0.0
-            lam = self.hazard_rates[i]
-            if t <= p_curr:
-                prob *= math.exp(-lam * (t - p_prev))
-                return prob
-            else:
-                prob *= math.exp(-lam * (p_curr - p_prev))
-        # Extrapolate flat hazard rate beyond last pillar
-        last_p = self.pillars[-1]
-        last_lam = self.hazard_rates[-1]
-        prob *= math.exp(-last_lam * (t - last_p))
-        return prob
+        return self._survival(t, self.hazard_rates)
 
-    def _legs_value(
-        self,
-        t_mat: float,
-        curr_idx: int,
-        curr_lam: float,
-    ) -> tuple[float, float]:
-        """Compute (RPV01, PV_protection) up to t_mat with trial hazard rate for interval curr_idx."""
-        n_periods = int(round(t_mat * self.payment_freq))
-        pv_prem = 0.0
-        pv_prot = 0.0
-
-        for k in range(1, n_periods + 1):
-            t_k = k * self.dt
-            t_prev = (k - 1) * self.dt
-            df_k = self.discount_curve(t_k)
-            df_mid = self.discount_curve(0.5 * (t_prev + t_k))
-
-            # Determine survival probs at t_prev and t_k
-            def q_eval(time_pt: float) -> float:
-                if curr_idx == 0:
-                    return math.exp(-curr_lam * time_pt)
-                p_bound = self.pillars[curr_idx - 1]
-                if time_pt <= p_bound:
-                    return self._survival_prob_up_to_idx(time_pt, curr_idx)
-                base = self._survival_prob_up_to_idx(p_bound, curr_idx)
-                return base * math.exp(-curr_lam * (time_pt - p_bound))
-
-            q_prev = q_eval(t_prev)
-            q_k = q_eval(t_k)
-            prob_default = q_prev - q_k
-
-            # Premium accrual with default mid-period
-            pv_prem += self.dt * df_k * (q_k + 0.5 * prob_default)
-            # Protection payout at mid-point
-            pv_prot += self.lgd * df_mid * prob_default
-
-        return pv_prem, pv_prot
-
-    def rpv01(self, tenor: float) -> float:
-        """Risky PV01 (present value of 1 basis point running premium per unit notional)."""
+    def _legs(self, tenor: float, survival: Callable[[float], float]) -> tuple[float, float]:
+        """(RPV01, PV_protection) with mid-period premium accrual and mid-point default settlement."""
         n_periods = int(round(tenor * self.payment_freq))
-        val = 0.0
-        for k in range(1, n_periods + 1):
-            t_k = k * self.dt
-            t_prev = (k - 1) * self.dt
-            df_k = self.discount_curve(t_k)
-            q_prev = self.survival_prob(t_prev)
-            q_k = self.survival_prob(t_k)
-            val += self.dt * df_k * (q_k + 0.5 * (q_prev - q_k))
-        return val
-
-    def upfront_fee(self, tenor: float, coupon: float) -> float:
-        """Upfront fee as a percentage of notional for a standard coupon contract."""
-        rpv01_val = self.rpv01(tenor)
-        # Protection leg value
-        n_periods = int(round(tenor * self.payment_freq))
+        rpv01_val = 0.0
         prot_val = 0.0
         for k in range(1, n_periods + 1):
             t_k = k * self.dt
             t_prev = (k - 1) * self.dt
-            df_mid = self.discount_curve(0.5 * (t_prev + t_k))
-            q_prev = self.survival_prob(t_prev)
-            q_k = self.survival_prob(t_k)
-            prot_val += self.lgd * df_mid * (q_prev - q_k)
+            q_prev = survival(t_prev)
+            q_k = survival(t_k)
+            prob_default = q_prev - q_k
+            rpv01_val += self.dt * self.discount_curve(t_k) * (q_k + 0.5 * prob_default)
+            prot_val += self.lgd * self.discount_curve(0.5 * (t_prev + t_k)) * prob_default
+        return rpv01_val, prot_val
 
+    def rpv01(self, tenor: float) -> float:
+        """Risky PV01 (present value of 1 basis point running premium per unit notional)."""
+        return self._legs(tenor, self.survival_prob)[0]
+
+    def upfront_fee(self, tenor: float, coupon: float) -> float:
+        """Upfront fee as a percentage of notional for a standard coupon contract."""
+        rpv01_val, prot_val = self._legs(tenor, self.survival_prob)
         # Upfront paid by protection buyer = PV_protection - Coupon * RPV01
         return prot_val - coupon * rpv01_val
 
@@ -312,11 +252,13 @@ def psa_cpr(month: int, psa_speed: float = 100.0) -> float:
 def gaussian_copula_loss_distribution(
     default_prob: float,
     rho: float,
-    n_names: int = 100,
     recovery_rate: float = 0.40,
     n_quad_pts: int = 61,
 ) -> list[tuple[float, float]]:
-    """Compute portfolio loss distribution using Li's one-factor Gaussian copula.
+    """Large homogeneous portfolio (N -> infinity) loss distribution under Li's one-factor Gaussian copula.
+
+    Each quadrature node m of the market factor contributes its deterministic conditional
+    loss (1 - R) * p(m) with probability weight phi(m) dm; there is no finite-N binomial term.
 
     Returns:
         List of (loss_fraction, probability) pairs.
@@ -327,7 +269,7 @@ def gaussian_copula_loss_distribution(
     sqrt_one_minus_rho = math.sqrt(1.0 - rho)
     k_thresh = norm_inv(default_prob)
 
-    # Discretize standard normal market factor M via mid-point rule from -4 to +4
+    # Discretize standard normal market factor M via mid-point rule from -4.5 to +4.5
     m_min, m_max = -4.5, 4.5
     dm = (m_max - m_min) / n_quad_pts
 
@@ -378,21 +320,35 @@ def run_tests() -> None:
         CDSQuote(tenor=5.0, spread=0.0150),  # 150 bps
     ]
     cds_curve = CDSHazardCurve(discount_curve, quotes, recovery_rate=0.40)
-    # Quick approximation rule: lambda ≈ spread / (1 - R) = 0.0150 / 0.60 = 0.0250 (2.5%)
+    # Defining property: the bootstrapped curve reprices every input quote to par
+    for q in quotes:
+        par = cds_curve.upfront_fee(q.tenor, coupon=0.0) / cds_curve.rpv01(q.tenor)
+        assert abs(par - q.spread) < 1e-8, f"{q.tenor}y quote not repriced: {par} vs {q.spread}"
     lam_5y = cds_curve.hazard_rates[-1]
-    assert 0.020 < lam_5y < 0.035, f"Hazard rate out of expected range: {lam_5y}"
-    # Survival probability over 5 years ≈ exp(-0.025 * 5) ≈ 0.88
     surv_5y = cds_curve.survival_prob(5.0)
-    assert 0.85 < surv_5y < 0.92, f"5y survival probability mismatch: {surv_5y}"
-
-    # RPV01 for 5y CDS (typically ~4.2 to 4.5 for 5y)
     rpv01_5y = cds_curve.rpv01(5.0)
-    assert 4.0 < rpv01_5y < 4.8, f"RPV01 out of range: {rpv01_5y}"
-
-    # Upfront fee for 5y CDS with 100 bp coupon
+    # Upfront on a 100 bp coupon equals (par spread - coupon) * RPV01 at the 5y pillar
     upfront = cds_curve.upfront_fee(5.0, coupon=0.0100)
-    # Upfront ≈ (Spread - Coupon) * RPV01 ≈ (150bp - 100bp) * 4.4 ≈ 2.2% of notional
-    assert 0.015 < upfront < 0.030, f"Upfront fee mismatch: {upfront}"
+    assert abs(upfront - (0.0150 - 0.0100) * rpv01_5y) < 1e-10, f"Upfront fee mismatch: {upfront}"
+
+    # Flat single quote: closed-form constant hazard for quarterly legs with mid-period
+    # accrual and mid-point protection. Per period the protection-to-premium ratio is
+    # LGD * e^{r dt / 2} * (u - 1) / (dt / 2 * (u + 1)) with u = e^{lambda dt}, so
+    # u = (LGD c + s dt / 2) / (LGD c - s dt / 2) with c = e^{r dt / 2}.
+    s_flat, dt, lgd = 0.0150, 0.25, 0.60
+    c = math.exp(0.5 * 0.04 * dt)
+    lam_closed = math.log((lgd * c + 0.5 * s_flat * dt) / (lgd * c - 0.5 * s_flat * dt)) / dt
+    flat_curve = CDSHazardCurve(discount_curve, [CDSQuote(tenor=5.0, spread=s_flat)], recovery_rate=0.40)
+    assert abs(flat_curve.hazard_rates[0] - lam_closed) < 1e-12, f"Flat hazard mismatch: {flat_curve.hazard_rates[0]}"
+    assert abs(flat_curve.survival_prob(5.0) - math.exp(-5.0 * lam_closed)) < 1e-12
+
+    # A spread curve that needs a negative forward hazard must be rejected, not clamped
+    try:
+        CDSHazardCurve(discount_curve, [CDSQuote(1.0, 0.0300), CDSQuote(2.0, 0.0050)])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Inverted curve implying a negative forward hazard was not rejected")
 
     # 2. TIPS and Inflation
     beir = breakeven_inflation_rate(nominal_yield=0.0425, real_yield=0.0185)

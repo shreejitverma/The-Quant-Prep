@@ -224,7 +224,7 @@ $$L(M = -2.5) = 0.60 \times 0.3709 = 0.2225 \quad (22.25\%)$$
 - For Equity [0%, 3%]: Portfolio loss (22.25%) exceeds detachment (3%), so equity tranche is completely wiped out ($100\%$ loss).
 - For Senior [7%, 10%]: Portfolio loss (22.25%) exceeds detachment (10%), so senior tranche is completely wiped out ($100\%$ loss).
 
-**Step 4: Unconditional tranche expected losses (from `credit_bootstrap.py` quadrature):**
+**Step 4: Unconditional tranche expected losses (from the large homogeneous portfolio quadrature in `credit_bootstrap.py`):**
 - Total expected portfolio loss: $\mathbb{E}[L] = p \times (1 - R) = 0.05 \times 0.60 = 3.00\%$.
 - Equity tranche [0%, 3%] expected loss: $54.08\%$.
 - Senior tranche [7%, 10%] expected loss: $8.67\%$.
@@ -239,34 +239,34 @@ $$L(M = -2.5) = 0.60 \times 0.3709 = 0.2225 \quad (22.25\%)$$
 
 ## Interview questions
 
-> [!question]- cdx-itraxx-composition | What are the differences between CDX and iTraxx indices regarding constituent count, geography, and standard roll dates?
+> [!question]- fi-cdx-itraxx-composition | What are the differences between CDX and iTraxx indices regarding constituent count, geography, and standard roll dates?
 > CDX covers North American corporate issuers (CDX NA IG has 125 investment grade names; CDX NA HY has 100 high yield names), while iTraxx covers European and Asian issuers (iTraxx Europe has 125 investment grade names; iTraxx Crossover has 75 sub-investment grade names). Both families roll semi-annually on March 20 and September 20 into a new on-the-run series.
 
-> [!question]- standard-cds-coupons | Why did CDS indices adopt standardized fixed coupons of 100 bps and 500 bps, and how are market differences settled?
+> [!question]- fi-cdx-standard-cds-coupons | Why did CDS indices adopt standardized fixed coupons of 100 bps and 500 bps, and how are market differences settled?
 > Standardized coupons were introduced in the 2009 "Big Bang" protocol to facilitate central clearing, fungibility, and liquid multilateral netting. Because running coupons are fixed at 100 bps (for IG) or 500 bps (for HY), any difference with the prevailing market par spread is settled via an upfront cash fee at trade inception approximately equal to $(S_{\text{index}} - C) \times \text{RPV01}$.
 
-> [!question]- credit-index-basis | Define the CDS index basis and explain why an index often trades tighter than the weighted sum of its single-name components.
+> [!question]- fi-cdx-credit-index-basis | Define the CDS index basis and explain why an index often trades tighter than the weighted sum of its single-name components.
 > The index basis is $S_{\text{index}} - \frac{1}{N}\sum_{i=1}^N S_i$. The basis is frequently negative because the index provides superior liquidity, lower bid-ask spreads, and streamlined clearing compared to single names. Investors accept a lower spread on the index for instant portfolio diversification and lower transaction costs.
 
-> [!question]- default-event-index-settlement | What happens to a CDS index when one of its constituent reference entities declares bankruptcy?
+> [!question]- fi-cdx-default-event-index-settlement | What happens to a CDS index when one of its constituent reference entities declares bankruptcy?
 > When a credit event occurs, an auction determines the final recovery price $R$ for the defaulted firm. The protection seller pays $(1 - R) \times \frac{1}{N}$ of the original index notional to the protection buyer. The defaulted entity is subsequently removed from the index, and the ongoing running coupon is paid on the reduced notional $(N - 1)/N$.
 
-> [!question]- one-factor-copula-formulation | In David Li's one-factor Gaussian copula model, explain how the latent variable $X_i = \sqrt{\rho} M + \sqrt{1 - \rho} Z_i$ induces correlation while preserving marginal distributions.
+> [!question]- fi-cdx-one-factor-copula-formulation | In David Li's one-factor Gaussian copula model, explain how the latent variable $X_i = \sqrt{\rho} M + \sqrt{1 - \rho} Z_i$ induces correlation while preserving marginal distributions.
 > The latent variables $X_i$ follow standard normal distributions $\mathcal{N}(0, 1)$ because $M$ and $Z_i$ are independent standard normal variables with variance $(\sqrt{\rho})^2 + (\sqrt{1 - \rho})^2 = \rho + (1 - \rho) = 1$. The correlation between any two distinct firms $i$ and $j$ is $\text{Cov}(X_i, X_j) = \rho$. The marginal default probability $p_i(t)$ is preserved by setting the default threshold to $c_i = \Phi^{-1}(p_i(t))$.
 
-> [!question]- lhp-approximation-vasicek | How does the Large Homogeneous Portfolio (LHP) approximation simplify portfolio loss modeling under the Gaussian copula?
+> [!question]- fi-cdx-lhp-approximation-vasicek | How does the Large Homogeneous Portfolio (LHP) approximation simplify portfolio loss modeling under the Gaussian copula?
 > Under the LHP approximation, as the number of credits $N \to \infty$ with identical default probability $p$ and correlation $\rho$, the idiosyncratic shocks $Z_i$ diversify away completely conditional on the systemic factor $M$. By the Law of Large Numbers, the conditional portfolio loss becomes deterministic: $L(M=m) = (1 - R) \Phi\left(\frac{\Phi^{-1}(p) - \sqrt{\rho} m}{\sqrt{1 - \rho}}\right)$, enabling fast numerical integration without Monte Carlo simulation.
 
-> [!question]- compound-correlation-deficiency | Why does compound correlation fail as a robust pricing metric for synthetic CDO mezzanine tranches?
+> [!question]- fi-cdx-compound-correlation-deficiency | Why does compound correlation fail as a robust pricing metric for synthetic CDO mezzanine tranches?
 > Compound correlation is the implied correlation that matches the price of an isolated tranche $[A, D]$. For mezzanine tranches, the expected tranche loss is non-monotonic with respect to correlation: both very low correlation (defaults contained in equity) and very high correlation (few defaults or entire portfolio defaults) can produce identical expected losses for intermediate mezzanine layers. This produces non-unique dual solutions or instances where no real correlation root exists.
 
-> [!question]- base-correlation-concept | Explain how the base correlation curve resolves the non-monotonicity problem of compound correlation.
+> [!question]- fi-cdx-base-correlation-concept | Explain how the base correlation curve resolves the non-monotonicity problem of compound correlation.
 > Base correlation defines correlation exclusively for equity tranches $[0, K]$. Because the value of an equity tranche is strictly monotonically decreasing with respect to correlation, every base correlation is unique and guaranteed to exist. Any intermediate tranche $[A, D]$ is priced consistently as the difference between two base tranches $[0, D]$ and $[0, A]$.
 
-> [!question]- gaussian-copula-tail-dependence | What is the asymptotic tail dependence coefficient of a bivariate Gaussian copula with correlation $\rho < 1$, and why was this fatal in 2008?
+> [!question]- fi-cdx-gaussian-copula-tail-dependence | What is the asymptotic tail dependence coefficient of a bivariate Gaussian copula with correlation $\rho < 1$, and why was this fatal in 2008?
 > The lower tail dependence coefficient is zero: $\lim_{u \to 0} P(U_1 < u \mid U_2 < u) = 0$. In extreme negative events, the Gaussian copula treats defaults as asymptotically independent. In reality, credit defaults cluster severely during economic stress. The model therefore drastically underpredicted the simultaneous default of multiple senior assets, leading to severe underpricing of CDO tail risk.
 
-> [!question]- super-senior-tranche-risk | Why were super-senior CDO tranches [30% - 100%] considered risk-free before 2008, and why did they incur catastrophic losses?
+> [!question]- fi-cdx-super-senior-tranche-risk | Why were super-senior CDO tranches [30% - 100%] considered risk-free before 2008, and why did they incur catastrophic losses?
 > Super-senior tranches required cumulative portfolio credit losses to exceed 30% before absorbing any loss, which had never occurred in historical corporate portfolios. However, when applied to CDO-squared structures backed by subprime mezzanine mortgage paper, underlying default correlations converged toward 1 during the nationwide housing crash, completely breaching subordination buffers and wiping out super-senior tranches.
 
 ## Further reading
@@ -275,7 +275,7 @@ $$L(M = -2.5) = 0.60 \times 0.3709 = 0.2225 \quad (22.25\%)$$
 - John Hull and Alan White (2004), "Valuation of a CDO and an n-th to Default CDS Without Monte Carlo Simulation", *Journal of Derivatives*.
 - Bruce Tuckman and Angel Serrat, *Fixed Income Securities: Tools for Today's Markets*, Chapter 19: "Credit Default Swaps".
 - Markit (2009), "The CDS Big Bang: Understanding the Changes to the Global CDS Contract and Market Conventions".
-- S. L. Heston and C. Zhou (2000), "On the Rate of Convergence of the Vasicek Portfolio Credit Loss Model".
+- Oldrich Vasicek (2002), "The Distribution of Loan Portfolio Value", *Risk*.
 
 ## In this repo and SDE-Interview-Prep
 

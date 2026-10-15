@@ -159,8 +159,8 @@ Relative value quants identify mispriced curve points by tracking the rolling ti
 
 $$Z(t) = \frac{\text{Fly Spread}(t) - \mu_{\text{rolling}}(t)}{\sigma_{\text{rolling}}(t)}$$
 
-- When $Z(t) > +2.0$, the body is unusually cheap relative to wings (fly spread too high). Quants execute a **Long Fly** (buy wings, sell body) anticipating mean reversion.
-- When $Z(t) < -2.0$, the body is rich relative to wings. Quants execute a **Short Fly** (sell wings, buy body).
+- When $Z(t) > +2.0$, the body is unusually cheap relative to wings (fly spread too high). Quants execute a **Short Fly** (buy body, sell wings), which profits when the body richens and the fly spread mean-reverts down.
+- When $Z(t) < -2.0$, the body is rich relative to wings (fly spread too low). Quants execute a **Long Fly** (buy wings, sell body), which profits when the body cheapens and the fly spread mean-reverts up.
 - Key risk: Regime change. Macro rate cycles or Treasury auction supply can cause spreads to trend persistently, turning statistical RV mean-reversion trades into large drawdowns.
 
 ## Worked examples
@@ -250,34 +250,34 @@ The trade is strictly immune to a parallel yield curve shift.
 
 ## Interview questions
 
-> [!question]- pnl-carry-vs-rolldown | Explain the distinction between Carry and Roll-down in fixed income performance attribution.
+> [!question]- fi-rv-pnl-carry-vs-rolldown | Explain the distinction between Carry and Roll-down in fixed income performance attribution.
 > Carry is the net cash flow earned over time assuming yield levels remain constant, consisting of coupon accrued minus the financing/repo cost. Roll-down is the price appreciation that occurs as the bond ages toward maturity along an upward-sloping yield curve, capturing the lower yield assigned to shorter maturities under an unchanged spot curve.
 
-> [!question]- bull-vs-bear-steepeners | Contrast a Bull Steepener with a Bear Steepener in terms of macro drivers and relative yield shifts.
+> [!question]- fi-rv-bull-vs-bear-steepeners | Contrast a Bull Steepener with a Bear Steepener in terms of macro drivers and relative yield shifts.
 > A Bull Steepener occurs when front-end yields decline faster than back-end yields, typically triggered by central bank rate cuts during monetary easing. A Bear Steepener occurs when long-end yields rise faster than short-end yields, driven by rising inflation expectations, supply pressures, or expanding fiscal deficits while short rates remain anchored.
 
-> [!question]- butterfly-spread-definition | Define a yield curve butterfly spread (body vs. wings) and explain what a widening butterfly indicates.
+> [!question]- fi-rv-butterfly-spread-definition | Define a yield curve butterfly spread (body vs. wings) and explain what a widening butterfly indicates.
 > A butterfly spread combines two outer tenors ("wings", $T_1$ and $T_3$) and an intermediate tenor ("body", $T_2$): $\text{Fly} = 2 \cdot y(T_2) - (y(T_1) + y(T_3))$. A widening butterfly spread means the body yield is rising relative to the wings, indicating that intermediate maturities are cheapening and curve curvature is increasing.
 
-> [!question]- 50-50-dv01-limitation | Why is a 50-50 DV01 weighted butterfly vulnerable to yield curve slope changes (twist risk)?
+> [!question]- fi-rv-fifty-fifty-dv01-limitation | Why is a 50-50 DV01 weighted butterfly vulnerable to yield curve slope changes (twist risk)?
 > A 50-50 DV01 weighting allocates equal DV01 to the short and long wings. However, yield volatility is substantially higher at short tenors ($\sigma_2 > \sigma_{10}$). If the curve steepens, the front-end yield drops more than the long-end yield rises, causing the short wing to gain more than the long wing loses, leaving the portfolio exposed to directional curve tilt.
 
-> [!question]- regression-beta-butterfly | How does regression beta weighting improve butterfly immunization compared to simple 50-50 DV01?
+> [!question]- fi-rv-regression-beta-butterfly | How does regression beta weighting improve butterfly immunization compared to simple 50-50 DV01?
 > Regression beta weighting estimates the statistical sensitivity $\Delta y_2 = \beta_1 \Delta y_1 + \beta_3 \Delta y_3$ from historical data or principal component analysis. The wing notionals are weighted to simultaneously immunize against both a parallel shift ($\sum \text{DV01}_i = 0$) and a slope rotation ($\sum \text{DV01}_i \cdot \text{Slope}_i = 0$), eliminating first-order twist leakage.
 
-> [!question]- asset-swap-spread-asw | What is an Asset Swap Spread (ASW), and what risks does it isolate?
+> [!question]- fi-rv-asset-swap-spread-asw | What is an Asset Swap Spread (ASW), and what risks does it isolate?
 > An asset swap combines a fixed-rate bond with an interest rate swap that pays the bond's fixed coupons and receives floating benchmark rates (SOFR/Euribor) plus a constant spread $s_{\text{ASW}}$. ASW isolates the credit risk, liquidity premium, and financing basis of the specific bond by stripping out underlying benchmark interest rate duration.
 
-> [!question]- par-par-vs-market-value-asw | Distinguish between a Par-Par Asset Swap and a Market-Value (Proceeds) Asset Swap.
+> [!question]- fi-rv-par-par-vs-market-value-asw | Distinguish between a Par-Par Asset Swap and a Market-Value (Proceeds) Asset Swap.
 > In a par-par asset swap, the swap notional equals the bond par value, and an upfront cash exchange of $(100 - P)$ reconciles any bond price premium or discount. In a market-value asset swap, the swap notional equals the dirty purchase price of the bond, eliminating initial cash exchange but introducing a terminal notional mismatch at maturity when the bond redeems at par.
 
-> [!question]- repo-specialness-impact | How does a bond trading "on special" in the repo market affect relative value trading strategies?
+> [!question]- fi-rv-repo-specialness-impact | How does a bond trading "on special" in the repo market affect relative value trading strategies?
 > When a bond is on special, high demand to borrow it drives its repo financing rate well below general collateral (GC) rates (sometimes near zero or negative). A trader shorting the special bond must pay a punitive borrowing fee, which eats into trade profitability and can force premature liquidation of basis or relative value positions.
 
-> [!question]- zscore-relative-value-risks | Why can relying solely on rolling Z-scores of curve spreads be dangerous for relative value hedge funds?
+> [!question]- fi-rv-zscore-relative-value-risks | Why can relying solely on rolling Z-scores of curve spreads be dangerous for relative value hedge funds?
 > Z-scores assume that curve spreads fluctuate around a stationary, mean-reverting mean. During macroeconomic regime shifts, central bank policy overhauls, or sovereign debt supply surges, spreads can trend structurally away from historical averages. A Z-score strategy will continue doubling down into widening divergence, causing severe drawdowns.
 
-> [!question]- box-trade-mechanics | What is a yield curve box trade, and how is it used to exploit spread dislocations?
+> [!question]- fi-rv-box-trade-mechanics | What is a yield curve box trade, and how is it used to exploit spread dislocations?
 > A box trade combines two curve spread trades across different tenor pairs (e.g., long 2s5s steepener and long 10s30s flattener). It isolates changes in the spread of spreads ($[y_5 - y_2] - [y_{30} - y_{10}]$), hedging out both level and general slope to capture localized curve kinks, supply imbalances, or segmented investor demand.
 
 ## Further reading
