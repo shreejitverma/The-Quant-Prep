@@ -49,4 +49,5 @@ The CFA Institute curriculum and third-party prep material are copyrighted, so t
 - `CFA-L-2/22-Attempts/`, `23-Error-Log/` and `24-Weekly-Reviews/` (gitignored except a placeholder): personal study logs.
 
 Everything committed here is the author's own work: notes paraphrase the curriculum and cite volume and page, worked examples are reworked step by step, item sets and mocks are original, and learning outcome statements are quoted with their source.
+By the author's choice, the Ethics notes and item sets quote the freely published CFA Institute Code of Ethics and Standards of Professional Conduct verbatim, with volume and page cites.
 Derived study progress is published deliberately: `mastery.py` writes mastery, status and review dates into each note's frontmatter and rebuilds the study board.
