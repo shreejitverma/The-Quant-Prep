@@ -107,7 +107,7 @@ All calculations below match the verified assertions in `code/curve_bootstrap.py
 
 ### Example 1: conversion factor calculation
 
-Calculate the CME conversion factor for two 10-year Treasury notes:
+Calculate the CME conversion factor for two 10-year Treasury notes, both deliverable into the Ultra 10-Year (TN) contract:
 Bond A: $4.00\%$ coupon, 10 years to maturity ($Y = 10$).
 Bond B: $6.00\%$ coupon, 10 years to maturity ($Y = 10$).
 
@@ -122,7 +122,7 @@ Because Bond A has a coupon below the $6\%$ benchmark, its conversion factor is 
 
 ### Example 2: gross basis, invoice price, and implied repo rate
 
-Current 10-year Treasury futures price: $F = 110.00$.
+Current Ultra 10-Year (TN) futures price: $F = 110.00$.
 Delivery takes place in $d = 90\text{ days}$.
 Evaluate Bond A ($4\%$ coupon, $\text{CF} = 0.851225$):
 Clean spot price: $P_{\text{spot}}^{\text{clean}} = 94.00$.
@@ -142,7 +142,7 @@ If the prevailing actual financing rate for Bond A in general collateral repo is
 
 ### Example 3: identifying the cheapest-to-deliver bond
 
-Compare Bond A against Bond C ($6\%$ coupon, $\text{CF} = 1.0000$):
+Compare Bond A against Bond C ($6\%$ coupon, 10 years to maturity, $\text{CF} = 1.0000$):
 Clean spot price: $P_{\text{spot}}^{\text{clean}} = 111.00$, dirty spot $111.50$.
 Accrued interest at delivery: $1.50$.
 Invoice price for Bond C:
@@ -162,7 +162,7 @@ Priced at Bond A's $4.761\%$ yield, Bond C would be worth $109.7665$, giving $\t
 
 In March 2020, the COVID-19 dash for cash hit the Treasury market.
 Relative-value hedge funds held large cash-futures basis positions: long cash Treasuries financed in repo, short Treasury futures.
-Barth and Kahn estimate that at its peak the trade was associated with more than half of hedge funds' Treasury positions and about a quarter of dealers' repo lending (source: Barth and Kahn, "Hedge Funds and the Treasury Cash-Futures Disconnect", OFR Working Paper 21-01, 2021).
+Barth and Kahn find that the trade grew to make up as much as half of all hedge fund Treasury positions and around a quarter of dealers' repo lending (source: Barth and Kahn, "Hedge Funds and the Treasury Cash-Futures Disconnect", OFR Working Paper 21-01, 2021).
 As cash Treasuries cheapened against futures, repo terms tightened and dealer balance sheets were constrained, so margin calls forced funds to unwind by selling cash Treasuries into an already illiquid market.
 The Federal Reserve announced purchases of at least $\$500\text{ billion}$ of Treasuries on 15 March 2020 and made the purchases open-ended on 23 March 2020.
 Barth and Kahn conclude that the hedge fund selling was more a consequence of the market disruption than its root cause.
@@ -172,7 +172,7 @@ Barth and Kahn conclude that the hedge fund selling was more a consequence of th
 - Using clean prices instead of dirty prices in the Implied Repo Rate calculation, miscalculating financing costs.
 - Assuming the CTD bond is fixed: yield shifts can cause the CTD to switch abruptly to a different issue in the basket.
 - Neglecting the delivery options embedded in futures contracts, leading to overestimation of theoretical futures values.
-- Miscalculating hedge ratios: hedging the CTD with futures requires scaling notional by the conversion factor, $N_{\text{fut}} = N_{\text{cash}} \times \text{CF}$; dividing by CF over-hedges by a factor of $1/\text{CF}^2$.
+- Miscalculating hedge ratios: hedging the CTD with futures requires scaling notional by the conversion factor, $N_{\text{fut}} = N_{\text{cash}} \times \text{CF}$; dividing by CF misstates the hedge by a factor of $1/\text{CF}^2$ (an over-hedge when $\text{CF} < 1$).
 - Assuming repo funding is permanent: funding cash bonds with overnight repo creates catastrophic rollover and liquidity risk during market stress.
 
 ## Interview questions
