@@ -56,12 +56,12 @@ A schedule is a function of: start, end, frequency, roll day, end-of-month flag,
 
 If the term is not a whole number of periods, a short or long stub exists at the front or back.
 End-of-month: if the start date is the last business day of a month, subsequent dates roll to the last business day of their months.
-Without this flag, adding six months to 31 August gives 28 February (clamped), then 28 August, which drifts away from month end.
+Without this flag, a semiannual schedule starting on Friday 28 February 2025 steps from the anchor to 28 August 2025 instead of 31 August, and one starting on 30 April steps to 30 October instead of 31 October.
 
 ### IMM dates
 
 IMM dates are the third Wednesday of March, June, September and December.
-Futures and standardised CDS and swap contracts reference them; the 2026 dates are 18 March, 17 June, 16 September and 16 December (computed with the repo script).
+Futures and standardised CDS and swap contracts reference them; the 2026 dates are 18 March, 17 June, 16 September and 16 December (checked by `code/bond_pricing.py`).
 
 ### How it is implemented
 
@@ -75,7 +75,7 @@ Futures and standardised CDS and swap contracts reference them; the 2026 dates a
 
 ## Worked examples
 
-All numbers are from `code/bond_pricing.py`, run in this session.
+The fractions and dates below are checked by `code/bond_pricing.py`, run in this session; interest amounts are the arithmetic shown.
 
 ### Example 1: same rate, four conventions
 
@@ -141,7 +141,7 @@ Migrating a trade changes the schedule, the lookback or lockout, and the payment
 
 > [!question]- fi-eom-rule | What does the end-of-month rule do and why is it needed?
 > If the start date is the last business day of a month, all subsequent unadjusted dates sit at month end.
-> Without it, 31 Aug + 6 months clamps to 28 Feb and later dates drift off month end.
+> Without it, a 28 Feb 2025 start steps to 28 Aug 2025 instead of 31 Aug, so dates sit off month end.
 
 > [!question]- fi-imm-dates | What are IMM dates and what are the 2026 ones?
 > Third Wednesday of March, June, September and December.

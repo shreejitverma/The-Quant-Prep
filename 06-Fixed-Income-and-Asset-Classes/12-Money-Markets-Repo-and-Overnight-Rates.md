@@ -43,7 +43,7 @@ The rate is the repo rate; the borrower of cash is a repo seller and the lender 
 ### General collateral versus specials
 
 General collateral (GC) is the rate on any acceptable Treasury collateral.
-A security in unusual demand, for example because many are short it, trades special: the lender of that security accepts a lower cash rate.
+A security in unusual demand, for example because many are short it, trades special: the borrower of that security (the cash lender) accepts a lower rate on its cash.
 So a short seller borrowing a special bond pays by receiving less interest on cash, and the extra return to the security holder is the specialness $=r_{GC}-r_{special}$.
 
 ### Funding a bond position
@@ -94,9 +94,9 @@ Interest $=98{,}000{,}000\times0.053\times7/360=100{,}994.44$.
 Daily SOFR-style fixings (illustrative): 5.00% on three days, 5.10% on Thursday (1 day) and 5.10% on Friday applying 3 days over the weekend: total 7 days.
 Day-weighted simple average: $(0.05\cdot3+0.051\cdot4)/7=5.0571\%$.
 Compounded: $\big[(1+0.05/360)^3(1+0.051/360)(1+0.051\cdot3/360)-1\big]\cdot360/7=5.058965\%$.
-Compounding adds about 0.24 bp over seven days at these levels, and the effect scales with the length of the period and the rate level.
+Compounding adds about 0.18 bp over seven days at these levels, and the effect scales with the length of the period and the rate level.
 
-### Example 3: positive carry on a repo-financed bond
+### Example 3: negative carry on a repo-financed bond
 
 A 4% annual-pay bond held 30 days with dirty value 100, financed at 5% repo ACT/360: coupon accrual $=4\times30/365=0.3288$ per 100, repo cost $=100\times0.05\times30/360=0.4167$; carry $=-0.0879$ per 100.
 Negative carry: a rising price of at least 0.0879 over the month is needed to break even.
@@ -136,7 +136,7 @@ That is why replacement rates are transaction-based overnight rates, and why the
 
 > [!question]- fi-compound-vs-average | Why does compounding differ from the simple day-weighted average of fixings?
 > Interest on interest: the product of growth factors exceeds one plus the sum, by cross terms of order $r^2d_id_j/B^2$.
-> Over a week at 5% it is about 0.24 bp.
+> Over a week at 5% it is about 0.18 bp.
 
 > [!question]- fi-gc-special | What is a special and who benefits?
 > A security whose repo rate is below GC because demand to borrow it is high.

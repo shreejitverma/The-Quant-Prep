@@ -136,8 +136,20 @@ def main() -> None:
     assert abs(yearfrac(s, e, "ACT/ACT") - 182 / 366) < 1e-12
     # Month-end roll: 31 Jan plus one month clamps to 29 Feb in a leap year.
     assert add_months(date(2024, 1, 31), 1) == date(2024, 2, 29)
-    # Saturday 30 Nov 2024 rolls back to Friday 29 Nov under modified following.
+    # Without an end-of-month flag, anchor stepping leaves month-end starts off month end.
+    assert add_months(date(2025, 2, 28), 6) == date(2025, 8, 28)
+    assert add_months(date(2025, 4, 30), 6) == date(2025, 10, 30)
+    # ACT/ACT across a year boundary: 184 days of 2023 plus 182 days of leap 2024.
+    assert abs(yearfrac(date(2023, 7, 1), date(2024, 7, 1), "ACT/ACT") - (184 / 365 + 182 / 366)) < 1e-12
+    assert abs(yearfrac(date(2023, 7, 1), date(2024, 7, 1), "ACT/365F") - 366 / 365) < 1e-12
+    # US 30/360 from 31 Jan to 31 Mar: both day-31s become 30, so 60 days.
+    assert abs(yearfrac(date(2024, 1, 31), date(2024, 3, 31), "30/360") - 60 / 360) < 1e-12
+    # Saturdays 30 Nov 2024 and 31 May 2025 roll back to the Friday under modified following.
     assert modified_following(date(2024, 11, 30)) == date(2024, 11, 29)
+    assert modified_following(date(2025, 5, 31)) == date(2025, 5, 30)
+    # 2026 IMM dates are Wednesdays on days 15 to 21 of the quarterly months.
+    for m, d in ((3, 18), (6, 17), (9, 16), (12, 16)):
+        assert date(2026, m, d).weekday() == 2 and 15 <= d <= 21
 
     # 2-year 5% annual bullet at 4%: P = 5/1.04 + 105/1.04^2 by hand.
     cfs = cashflows(0.05, 2)
@@ -158,8 +170,28 @@ def main() -> None:
     # Duration-convexity approximation for a +100bp shock vs full reprice.
     approx = hand * (-modified_duration(cfs, 0.04) * 0.01 + 0.5 * conv * 0.01**2)
     assert abs((price(cfs, 0.05) - hand) - approx) < 1e-3
-    # Par bond: coupon equals yield gives price 100 and a known duration for 3y annual.
-    assert abs(price(cashflows(0.03, 3), 0.03) - 100.0) < 1e-10
+    # Par bond: price 100 and modified duration equal to the annuity factor (1 - (1+y)^-n) / y.
+    par3 = cashflows(0.03, 3)
+    assert abs(price(par3, 0.03) - 100.0) < 1e-10
+    assert abs(modified_duration(par3, 0.03) - (1 - 1.03**-3) / 0.03) < 1e-12
+    par10 = cashflows(0.04, 10)
+    d10 = (1 - 1.04**-10) / 0.04
+    assert abs(price(par10, 0.04) - 100.0) < 1e-10
+    assert abs(modified_duration(par10, 0.04) - d10) < 1e-12
+    assert abs(macaulay_duration(par10, 0.04) - 1.04 * d10) < 1e-12
+    assert abs(convexity(par10, 0.04) - 80.754) < 1e-3
+    assert abs(dv01(par10, 0.04) - 0.081109) < 1e-6
+    assert abs(price(par10, 0.05) - 92.2783) < 1e-4
+    assert abs(price(par10, 0.03) - 108.5302) < 1e-4
+    c10 = convexity(par10, 0.04)
+    assert abs(100 * (-d10 * 0.01 + 0.5 * c10 * 0.01**2) - (-7.707)) < 1e-3
+    assert abs(100 * (d10 * 0.01 + 0.5 * c10 * 0.01**2) - 8.515) < 1e-3
+    # 10-year zero: price 100/1.04^10, Macaulay duration 10, convexity T(T+1)/(1+y)^2.
+    zero = [(10.0, 100.0)]
+    assert abs(price(zero, 0.04) - 100 / 1.04**10) < 1e-12
+    assert abs(price(zero, 0.04) - 67.5564) < 1e-4
+    assert abs(macaulay_duration(zero, 0.04) - 10.0) < 1e-12
+    assert abs(convexity(zero, 0.04) - 110 / 1.04**2) < 1e-12
 
     # Compounding in arrears: 5 business days (Mon to Fri, 3 days over weekend) at 5.00% then 5.10%.
     r = compound_in_arrears([0.05, 0.05, 0.05, 0.051, 0.051], [1, 1, 1, 1, 3])

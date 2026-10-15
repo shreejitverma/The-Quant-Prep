@@ -68,7 +68,7 @@ For a long position convexity is valuable and is paid for in lower yield; a barb
 
 ## Worked examples
 
-All numbers are printed by `code/bond_pricing.py` or the helper calls shown, run in this session.
+Examples 1 to 3 are checked by `code/bond_pricing.py`, run in this session; Example 4 is the arithmetic shown.
 
 ### Example 1: 2-year 5% annual bond at a 4% yield
 

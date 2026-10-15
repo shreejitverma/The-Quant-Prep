@@ -16,7 +16,7 @@ Enough of every major asset class to trade it or model it; deep rates knowledge 
 
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
-| 01 | [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md) | TR | core | 4 | draft | 11 |
+| 01 | [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md) | TRD | core | 4 | draft | 11 |
 | 02 | [Bonds, Duration and Convexity](02-Bonds-Duration-and-Convexity.md) | TR | core | 4 | draft | 12 |
 | 03 | [Interest Rate Swaps and Curve Building](03-Swaps-and-Curve-Building.md) | TRD | advanced | 4 | seed | 0 |
 | 04 | [Short-Rate Models](04-Short-Rate-Models.md) | R | advanced | 4 | seed | 0 |
