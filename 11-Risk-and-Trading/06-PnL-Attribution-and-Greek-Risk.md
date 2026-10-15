@@ -125,7 +125,7 @@ As market volatility surfaces shift dynamically, second-order cross Greeks becom
   - OTM call options have positive vanna; OTM put options have negative vanna.
   - When the market crashes and volatility spikes ($\Delta S < 0, \Delta \sigma > 0$), vanna generates significant directional delta shifts that require immediate re-hedging.
 - **Volga / Vomma ($\frac{\partial^2 V}{\partial \sigma^2} = \frac{\partial \mathcal{V}}{\partial \sigma}$):** Measures the convexity of option price with respect to implied volatility.
-  - Always positive for vanilla options; peaks in out-of-the-money wings.
+  - For vanilla options $\text{Volga} = \mathcal{V} d_1 d_2 / \sigma$: slightly negative at the money-forward (where $d_1 > 0 > d_2$), positive in the wings, peaking out of the money.
   - Volga explains why long OTM wings gain value disproportionately when market volatility explodes.
 - **Charm / Delta Decay ($-\frac{\partial \Delta}{\partial t}$):** Measures how option delta decays over time toward expiry.
   - An ITM call delta drifts toward 1.0; an OTM call delta drifts toward 0.0.
@@ -154,7 +154,7 @@ An options trader holds a long straddle on stock $XYZ$:
 - Total portfolio Greeks:
   - $\Delta = 0.0$ (delta neutral).
   - $\Gamma = +1,200 \text{ per } \$1 \text{ move}$.
-  - $\Theta = -\$1,562.50 \text{ per day}$ ($\Delta t = 1/252$).
+  - $\Theta = -\$1,488.10 \text{ per day}$ ($-\frac{1}{2}\sigma^2 S^2 \Gamma \Delta t = -0.5 \times 0.0625 \times 10,000 \times 1,200 / 252$, with $\Delta t = 1/252$).
   - $\mathcal{V} = +\$6,250 \text{ per } 1\% \text{ vol point}$ ($+\$625,000 \text{ per unit vol}$).
   - $\text{Vanna} = +\$25,000 \text{ per } \$1 \text{ stock move per unit vol}$.
   - $\text{Volga} = +\$1,250,000 \text{ per unit vol squared}$.
@@ -179,7 +179,7 @@ $$\Delta \Pi_{\text{Gamma}} = \frac{1}{2} \Gamma (\Delta S)^2 = \frac{1}{2} \tim
 
 Step 3: Theta P&L (Time Decay):
 
-$$\Delta \Pi_{\text{Theta}} = \Theta \times 1 = -\$1,562.50$$
+$$\Delta \Pi_{\text{Theta}} = \Theta \times 1 = -\$1,488.10$$
 
 Step 4: Vega P&L (Vol Crush):
 
@@ -195,14 +195,14 @@ $$\Delta \Pi_{\text{Volga}} = \frac{1}{2} \text{Volga} \times (\Delta \sigma)^2 
 
 Step 7: Total Predicted P&L:
 
-$$\Delta \Pi_{\text{predicted}} = \$0 + \$9,600 - \$1,562.50 - \$25,000 - \$4,000 + \$1,000 = -\$19,962.50$$
+$$\Delta \Pi_{\text{predicted}} = \$0 + \$9,600 - \$1,488.10 - \$25,000 - \$4,000 + \$1,000 = -\$19,888.10$$
 
 Step 8: Compute Unexplained P&L ($\epsilon$):
 
-$$\epsilon = \Delta \Pi_{\text{actual}} - \Delta \Pi_{\text{predicted}} = -\$13,500.00 - (-\$19,962.50) = +\$6,462.50$$
+$$\epsilon = \Delta \Pi_{\text{actual}} - \Delta \Pi_{\text{predicted}} = -\$13,500.00 - (-\$19,888.10) = +\$6,388.10$$
 
 Explanation: The 4-point stock move generated a $+\$9,600$ gamma profit, but the 4-vol-point post-earnings volatility crush caused a $-\$25,000$ vega loss and $-\$4,000$ vanna drag.
-The $+\$6,462.50$ positive residual arose because the option was deeply non-linear over a $\$4.00$ gap, causing higher-order speed and vol cross-derivatives to cushion the loss relative to second-order Taylor estimates.
+The $+\$6,388.10$ positive residual arose because the option was deeply non-linear over a $\$4.00$ gap, causing higher-order speed and vol cross-derivatives to cushion the loss relative to second-order Taylor estimates.
 
 ### Example 2: Discrete Hedging Error Estimation (Derman-Kamal)
 
@@ -247,34 +247,34 @@ Increasing rebalancing frequency to 4 times per day ($N = 84$) reduces standard 
 
 ## Interview questions
 
-> [!question]- pnl-attribution-equation | State the second-order Taylor expansion P&L attribution equation for an equity options portfolio.
+> [!question]- risk-pnl-attribution-equation | State the second-order Taylor expansion P&L attribution equation for an equity options portfolio.
 > Total P&L is decomposed into first, second, and cross-order Greeks: $\Delta \Pi = \Delta \cdot \Delta S + \frac{1}{2}\Gamma \cdot (\Delta S)^2 + \Theta \cdot \Delta t + \mathcal{V} \cdot \Delta \sigma + \text{Vanna} \cdot \Delta S \Delta \sigma + \frac{1}{2}\text{Volga} \cdot (\Delta \sigma)^2 + \rho \cdot \Delta r + \epsilon$, where $\epsilon$ represents unexplained residual leakage.
 
-> [!question]- theta-gamma-pde-relationship | What is the relationship between Theta and Gamma in the Black-Scholes model for a delta-neutral portfolio?
+> [!question]- risk-theta-gamma-pde-relationship | What is the relationship between Theta and Gamma in the Black-Scholes model for a delta-neutral portfolio?
 > Under the Black-Scholes PDE with zero interest rates and dividends, $\Theta + \frac{1}{2}\sigma_{\text{imp}}^2 S^2 \Gamma = 0$, meaning $\Theta = -\frac{1}{2}\sigma_{\text{imp}}^2 S^2 \Gamma$. Theta and Gamma are perfect economic mirror images: positive gamma (convexity) requires paying continuous negative theta (time decay), while positive theta income requires accepting negative gamma risk.
 
-> [!question]- daily-breakeven-move-rule | Derive the daily break-even asset move for a delta-hedged options position using the Rule of 16.
+> [!question]- risk-daily-breakeven-move-rule | Derive the daily break-even asset move for a delta-hedged options position using the Rule of 16.
 > Setting daily delta-hedged P&L $\frac{1}{2}\Gamma (\Delta S)^2 + \Theta \Delta t = 0$ yields $(\Delta S)^2 = \sigma_{\text{imp}}^2 S^2 \Delta t$. Taking the square root for a 1-day horizon ($\Delta t = 1/252$) and applying $\sqrt{252} \approx 16$ gives $|\Delta S_{\text{break-even}}| \approx \frac{\sigma_{\text{imp}}}{16} \times S$. The underlying asset must move by more than $\sigma/16$ percent in a day for gamma gains to outpace theta decay.
 
-> [!question]- variance-spread-pnl | How does the cumulative P&L of a delta-hedged option relate to realized and implied volatility?
+> [!question]- risk-variance-spread-pnl | How does the cumulative P&L of a delta-hedged option relate to realized and implied volatility?
 > The cumulative P&L equals the dollar-gamma-weighted integral of the variance spread: $\text{P\&L} \approx \frac{1}{2}\int_0^T S_t^2 \Gamma_t (\sigma_{\text{realized}}^2(t) - \sigma_{\text{implied}}^2) dt$. If realized volatility exceeds implied volatility over the option's life, the delta-hedged position generates a net profit, confirming that delta-hedged options trading is an arbitrage on variance.
 
-> [!question]- vanna-economic-meaning | What is Vanna ($\partial^2 V / \partial S \partial \sigma$), and why is it critical during market sell-offs?
+> [!question]- risk-vanna-economic-meaning | What is Vanna ($\partial^2 V / \partial S \partial \sigma$), and why is it critical during market sell-offs?
 > Vanna measures the sensitivity of delta to shifts in implied volatility (or vega to underlying price). During a market crash, equity prices fall while implied volatility spikes ($\Delta S < 0, \Delta \sigma > 0$). Negative vanna on downside puts causes portfolio delta to become rapidly more short, requiring automated buying to remain delta-neutral and creating significant cross-factor P&L.
 
-> [!question]- volga-economic-meaning | What is Volga (Vomma), and which options positions benefit from it?
-> Volga is the second derivative of option value with respect to implied volatility: $\frac{\partial^2 V}{\partial \sigma^2} = \frac{\partial \mathcal{V}}{\partial \sigma}$. It measures volatility convexity. Vanilla options have strictly positive volga, peaking in out-of-the-money options. Long OTM strangle positions benefit heavily from volga when market volatility surges non-linearly.
+> [!question]- risk-volga-economic-meaning | What is Volga (Vomma), and which options positions benefit from it?
+> Volga is the second derivative of option value with respect to implied volatility: $\frac{\partial^2 V}{\partial \sigma^2} = \frac{\partial \mathcal{V}}{\partial \sigma}$. It measures volatility convexity. For vanilla options $\text{Volga} = \mathcal{V} d_1 d_2 / \sigma$, which is slightly negative at the money-forward (where $d_1 > 0 > d_2$) and positive in the wings, peaking out of the money. Long OTM strangle positions benefit heavily from volga when market volatility surges non-linearly.
 
-> [!question]- charm-delta-decay | What is Charm, and why must market makers re-hedge over non-trading weekends?
+> [!question]- risk-charm-delta-decay | What is Charm, and why must market makers re-hedge over non-trading weekends?
 > Charm is the rate of change of delta with respect to time ($-\partial \Delta / \partial t$). Over a weekend, two full days of time elapse with zero price movement. In-the-money option deltas drift closer to 1.0, while out-of-the-money deltas drift closer to 0.0. Market makers must anticipate this charm decay on Friday afternoon to avoid arriving Monday morning with unwanted directional delta exposure.
 
-> [!question]- unexplained-pnl-root-causes | What are the three most common causes of high unexplained P&L ($\epsilon$) on an equity options desk?
+> [!question]- risk-unexplained-pnl-root-causes | What are the three most common causes of high unexplained P&L ($\epsilon$) on an equity options desk?
 > First, discrete rebalancing latency, where large intraday asset price swings occur between hedging intervals. Second, volatility skew twists, where implied volatilities across strikes move heterogeneously while the risk system applies a single parallel vega shock. Third, inaccurate corporate action data, such as unexpected ex-dividend dates or sudden changes in borrow rates.
 
-> [!question]- derman-kamal-hedging-error | According to the Derman-Kamal formula, how does discrete hedging error scale with rebalancing frequency?
-> Discrete hedging error standard deviation scales inversely with the square root of the number of rebalancing intervals: $\sigma_{\text{hedge}} \propto \frac{\mathcal{V} \cdot \sigma}{\sqrt{N}}$. Doubling rebalancing frequency (e.g., from daily to four times a day) reduces tracking variance by half and error standard deviation by $\approx 29\%$.
+> [!question]- risk-derman-kamal-hedging-error | According to the Derman-Kamal formula, how does discrete hedging error scale with rebalancing frequency?
+> Discrete hedging error standard deviation scales inversely with the square root of the number of rebalancing intervals: $\sigma_{\text{hedge}} \propto \frac{\mathcal{V} \cdot \sigma}{\sqrt{N}}$. Doubling rebalancing frequency (e.g., from daily to twice a day) halves the tracking variance and cuts the error standard deviation by $1 - 1/\sqrt{2} \approx 29\%$; quadrupling it (daily to four times a day) halves the standard deviation.
 
-> [!question]- ladder-risk-reports | What is a Greek ladder risk report, and why is it superior to scalar Greek summary metrics?
+> [!question]- risk-ladder-risk-reports | What is a Greek ladder risk report, and why is it superior to scalar Greek summary metrics?
 > A Greek ladder report revalues the portfolio across a grid of discrete underlying price bumps (e.g., $-10\%, -5\%, -2\%, 0\%, +2\%, +5\%, +10\%$) and volatility shifts (e.g., $-5\text{ pts}, 0, +5\text{ pts}$). It is superior to scalar Greek numbers because it exposes non-linear convexity traps, gamma flips, and vanna interactions that single-point Taylor approximations conceal.
 
 ## Further reading

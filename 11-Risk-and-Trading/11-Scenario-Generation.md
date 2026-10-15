@@ -97,9 +97,11 @@ For every random normal draw $\mathbf{z}_m \sim \mathcal{N}(0, \mathbf{I})$, inc
 
 $$\Delta \mathbf{x}_m^{(1)} = \mathbf{L} \mathbf{z}_m, \quad \Delta \mathbf{x}_m^{(2)} = -\mathbf{L} \mathbf{z}_m$$
 
-Because the linear component of portfolio P&L is perfectly negatively correlated across antithetic pairs, the variance of the sample mean drops significantly:
+The fair benchmark for one antithetic pair is the average of two independent draws, whose variance is $\frac{1}{2}\text{Var}(\Delta V)$:
 
-$$\text{Var}\left(\frac{\Delta V(\mathbf{z}) + \Delta V(-\mathbf{z})}{2}\right) = \frac{1}{2}\text{Var}(\Delta V) + \frac{1}{2}\text{Cov}(\Delta V(\mathbf{z}), \Delta V(-\mathbf{z})) < \text{Var}(\Delta V)$$
+$$\text{Var}\left(\frac{\Delta V(\mathbf{z}) + \Delta V(-\mathbf{z})}{2}\right) = \frac{1}{2}\text{Var}(\Delta V) + \frac{1}{2}\text{Cov}(\Delta V(\mathbf{z}), \Delta V(-\mathbf{z})) < \frac{1}{2}\text{Var}(\Delta V) \iff \text{Cov}(\Delta V(\mathbf{z}), \Delta V(-\mathbf{z})) < 0$$
+
+The linear component of portfolio P&L is perfectly negatively correlated across the pair, so the covariance is negative whenever delta dominates; a pure even (gamma-only) payoff gives positive covariance and antithetics then increase variance.
 
 #### 2. Quasi-Monte Carlo (Low-Discrepancy Sequences)
 Pseudorandom number generators suffer from random clumping and empty gaps in multidimensional space.
@@ -199,37 +201,37 @@ The resulting shock pairs an equity gain of $+1.51\%$ with an interest rate rall
 
 ## Interview questions
 
-> [!question]- historical-vs-monte-carlo-scenarios | Compare Historical Simulation and Parametric Monte Carlo scenario generation in terms of computational cost, tail modeling, and sample size flexibility.
+> [!question]- risk-historical-vs-monte-carlo-scenarios | Compare Historical Simulation and Parametric Monte Carlo scenario generation in terms of computational cost, tail modeling, and sample size flexibility.
 > Historical Simulation is non-parametric, requires no distribution fitting, and natively captures fat tails and non-linear cross-correlations, but is constrained to observed sample size $T$ and lags volatility shifts. Parametric Monte Carlo allows generating arbitrary scenario counts ($M = 100,000+$) and enables fast convergence via variance reduction, but relies on assumed distributions (often multivariate normal) that underestimate tail crashes and non-linear correlation clustering.
 
-> [!question]- filtered-historical-simulation-concept | How does Filtered Historical Simulation (FHS) solve the limitations of standard historical simulation?
+> [!question]- risk-filtered-historical-simulation-concept | How does Filtered Historical Simulation (FHS) solve the limitations of standard historical simulation?
 > Standard historical simulation weights a calm historical return equally with a volatile one. FHS standardizes historical returns by the volatility prevailing on the date the return occurred ($r_t / \sigma_t$), creating independent standardized residuals. It then multiplies these residuals by current prevailing volatility ($\sigma_{\text{current}}$). This captures both empirical fat-tailed distributions and real-time volatility clustering.
 
-> [!question]- cholesky-generation-algorithm | Outline the mathematical algorithm to generate $M$ correlated multivariate normal scenarios given covariance matrix $\mathbf{\Sigma}$.
+> [!question]- risk-cholesky-generation-algorithm | Outline the mathematical algorithm to generate $M$ correlated multivariate normal scenarios given covariance matrix $\mathbf{\Sigma}$.
 > 1. Compute the lower triangular Cholesky factor $\mathbf{L}$ such that $\mathbf{\Sigma} = \mathbf{L} \mathbf{L}^T$.
 > 2. For each scenario $m = 1, \dots, M$, generate an $N$-dimensional vector $\mathbf{z}_m$ of independent standard normal random variables $\mathcal{N}(0, 1)$ using Box-Muller or inverse CDF transforms.
 > 3. Compute correlated shocks $\Delta \mathbf{x}_m = \mathbf{\mu} + \mathbf{L} \mathbf{z}_m$.
 > 4. Verify that $\frac{1}{M}\sum \Delta \mathbf{x} \Delta \mathbf{x}^T \to \mathbf{\Sigma}$ as $M \to \infty$.
 
-> [!question]- student-t-copula-advantage | Why is a Student-t copula superior to a Gaussian copula for generating multi-asset market risk scenarios?
+> [!question]- risk-student-t-copula-advantage | Why is a Student-t copula superior to a Gaussian copula for generating multi-asset market risk scenarios?
 > The Gaussian copula has zero asymptotic tail dependence: as events become more extreme, the probability of joint simultaneous default or crash approaches zero. The Student-t copula possesses positive symmetric tail dependence parameterized by degrees of freedom $\nu$. Even with moderate linear correlation, the Student-t copula generates joint clustered crashes across asset classes during tail events.
 
-> [!question]- antithetic-variates-variance-reduction | How do antithetic variates reduce estimator variance in Monte Carlo scenario generation?
+> [!question]- risk-antithetic-variates-variance-reduction | How do antithetic variates reduce estimator variance in Monte Carlo scenario generation?
 > For each simulated random vector $\mathbf{z}$, the engine also computes the portfolio revaluation under its opposite $-\mathbf{z}$. Because linear Greek components (Delta) respond symmetrically ($\Delta V(-\mathbf{z}) \approx -\Delta V(\mathbf{z})$), the covariance between the antithetic pairs is strongly negative. Averaging the pairs cancels first-order variance, reducing standard error without increasing bias.
 
-> [!question]- sobol-sequences-vs-pseudorandom | Why do Sobol quasi-Monte Carlo sequences achieve faster convergence than pseudorandom numbers?
+> [!question]- risk-sobol-sequences-vs-pseudorandom | Why do Sobol quasi-Monte Carlo sequences achieve faster convergence than pseudorandom numbers?
 > Pseudorandom numbers cluster randomly, leaving large empty voids and dense clusters in the sampling space, yielding an error convergence rate of $O(1/\sqrt{M})$. Sobol sequences are deterministic low-discrepancy numbers engineered to maximize uniform coverage of the unit hypercube, achieving asymptotic error convergence of approximately $O(1/M)$ for low to moderate dimensions.
 
-> [!question]- latin-hypercube-sampling-principles | What is Latin Hypercube Sampling (LHS), and how does it guarantee tail representation?
+> [!question]- risk-latin-hypercube-sampling-principles | What is Latin Hypercube Sampling (LHS), and how does it guarantee tail representation?
 > LHS divides the cumulative probability range $[0, 1]$ of each risk factor into $M$ equal strata of width $1/M$ and draws exactly one random point within each stratum. By randomly shuffling assignments across variables, LHS guarantees that every segment of the marginal distribution, including the extreme 1% tails, is sampled evenly across the simulation grid.
 
-> [!question]- square-root-of-time-scaling-limits | What are the statistical risks of scaling 1-day simulated scenarios to a 10-day horizon using $\sqrt{10}$?
+> [!question]- risk-square-root-of-time-scaling-limits | What are the statistical risks of scaling 1-day simulated scenarios to a 10-day horizon using $\sqrt{10}$?
 > The $\sqrt{T}$ scaling rule strictly requires that daily returns be independent and identically distributed (i.i.d.) random variables. In real financial markets, returns exhibit strong autocorrelation, mean reversion in interest rates, and volatility clustering (GARCH). Scaling by $\sqrt{10}$ ignores compounding path dependency, underestimating risk during persistent trending panics and overestimating risk for mean-reverting curves.
 
-> [!question]- mean-reverting-scenario-drift | How must interest rate and commodity scenarios be modeled over long multi-year projection horizons?
+> [!question]- risk-mean-reverting-scenario-drift | How must interest rate and commodity scenarios be modeled over long multi-year projection horizons?
 > Over multi-year horizons, pure random walks allow interest rates and commodity prices to diffuse to unrealistically negative or astronomical levels. Long-horizon simulation engines incorporate mean reversion (e.g., Ornstein-Uhlenbeck or Hull-White drift $a(b - r_t)dt$), pulling simulated yields back toward macroeconomic equilibrium levels and preventing artificial variance explosion.
 
-> [!question]- scenario-ghost-features | What is a "ghost feature" in historical simulation, and how does it impact risk monitoring?
+> [!question]- risk-scenario-ghost-features | What is a "ghost feature" in historical simulation, and how does it impact risk monitoring?
 > A ghost feature occurs when an extreme market shock (e.g., a one-day 10% market crash) abruptly rolls out of a 250-day rolling historical window. On day 251, the calculated VaR drops discontinuously overnight, even though prevailing market risk has not changed. This creates an artificial illusion of safety and can trigger unwarranted portfolio risk expansion.
 
 ## Further reading

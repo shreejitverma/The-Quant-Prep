@@ -170,7 +170,7 @@ The Cholesky factor enables direct generation of correlated risk factor shocks i
 ### Example 2: PCA Yield Curve Factor Shocks
 
 A quant performs PCA on a 3-tenor yield curve (2y, 5y, 10y).
-The first two eigenvectors (normalized) are:
+The first two eigenvectors (rounded to two decimals) are:
 - Level ($\mathbf{v}_1$): $[0.55, 0.60, 0.58]^T$ with standard deviation $\sigma_1 = 12.0 \text{ bps} = 0.0012$.
 - Slope ($\mathbf{v}_2$): $[-0.70, -0.10, +0.70]^T$ with standard deviation $\sigma_2 = 6.0 \text{ bps} = 0.0006$.
 
@@ -192,7 +192,8 @@ The 2s10s curve spread ($y_{10} - y_2$) changes by:
 
 $$\Delta(y_{10} - y_2) = +8.4 \text{ bps} - (-8.4 \text{ bps}) = +16.8 \text{ bps}$$
 
-The orthogonal PCA slope factor produces an exact $16.8$ bp curve steepening with zero net parallel displacement.
+The slope factor produces a $16.8$ bp 2s10s steepening.
+Because the rounded eigenvectors are only approximately orthogonal ($\mathbf{v}_1 \cdot \mathbf{v}_2 = -0.385 - 0.060 + 0.406 = -0.039$), the shock is not perfectly free of level: the three tenor shifts sum to $-8.4 - 1.2 + 8.4 = -1.2$ bp.
 
 ## Pitfalls
 
@@ -204,34 +205,34 @@ The orthogonal PCA slope factor produces an exact $16.8$ bp curve steepening wit
 
 ## Interview questions
 
-> [!question]- return-conventions-rates-vs-equities | Why are equity risk factors modeled using geometric log returns while interest rate yields are modeled using arithmetic changes?
+> [!question]- risk-return-conventions-rates-vs-equities | Why are equity risk factors modeled using geometric log returns while interest rate yields are modeled using arithmetic changes?
 > Equity prices are strictly non-negative and scale multiplicatively, making logarithmic returns $\ln(S_t/S_{t-1})$ stationary and scale-invariant. Interest rate yields and credit spreads are already rates of return expressed in percentage or basis points; modeling them with relative percentage returns produces exploding volatilities near zero, fails when rates are negative, and misaligns with fixed income linear DV01 sensitivities.
 
-> [!question]- pca-eigenvector-interpretation | In fixed income term structure analysis, what do the first three principal components represent economically?
+> [!question]- risk-pca-eigenvector-interpretation | In fixed income term structure analysis, what do the first three principal components represent economically?
 > The first three principal components represent Level, Slope, and Curvature. Level (PC1) accounts for 85-90% of variance and reflects parallel shifts where all tenors move in tandem. Slope (PC2) accounts for 7-10% of variance and represents curve rotation where short and long yields move oppositely. Curvature (PC3) accounts for 2-3% of variance and captures butterfly bending where intermediate tenors flex relative to the wings.
 
-> [!question]- ewma-vs-sample-covariance | What are the primary advantages of an Exponentially Weighted Moving Average (EWMA) covariance matrix over an unweighted sample covariance matrix?
+> [!question]- risk-ewma-vs-sample-covariance | What are the primary advantages of an Exponentially Weighted Moving Average (EWMA) covariance matrix over an unweighted sample covariance matrix?
 > EWMA assigns geometrically decaying weights to past returns ($\lambda^{t}$), allowing the covariance estimate to adapt quickly to sudden volatility surges and clustering. Furthermore, EWMA eliminates "ghost features", where an extreme historical event abruptly drops out of an unweighted sample window after $N$ days and causes artificial discontinuous risk drops.
 
-> [!question]- ledoit-wolf-shrinkage-rationale | Why is Ledoit-Wolf shrinkage necessary when estimating covariance matrices for large asset universes ($N > T$)?
+> [!question]- risk-ledoit-wolf-shrinkage-rationale | Why is Ledoit-Wolf shrinkage necessary when estimating covariance matrices for large asset universes ($N > T$)?
 > When the number of assets $N$ is large relative to sample size $T$, sample covariance matrices suffer from severe estimation noise, overstating large eigenvalues and understating small eigenvalues. Ledoit-Wolf shrinkage pulls the sample covariance matrix toward a well-conditioned structured target (e.g., identity or single-factor matrix) using an analytically optimal weighting that minimizes expected mean squared error.
 
-> [!question]- non-positive-definite-matrix-fix | What causes an empirical correlation matrix to become non-positive-definite, and how can it be repaired?
+> [!question]- risk-non-positive-definite-matrix-fix | What causes an empirical correlation matrix to become non-positive-definite, and how can it be repaired?
 > Non-positive-definiteness is caused by missing or asynchronous data, pairwise deletion of missing observations, or blending multiple data sources. It is repaired by eigenvalue clipping (setting negative eigenvalues to a tiny positive constant $\epsilon$ and scaling back to unit diagonals) or applying Higham's algorithm, which finds the mathematically closest positive semi-definite matrix under the Frobenius norm.
 
-> [!question]- cholesky-decomposition-usage | How is the Cholesky factorization $\mathbf{\Sigma} = \mathbf{L} \mathbf{L}^T$ used in multi-factor Monte Carlo simulations?
+> [!question]- risk-cholesky-decomposition-usage | How is the Cholesky factorization $\mathbf{\Sigma} = \mathbf{L} \mathbf{L}^T$ used in multi-factor Monte Carlo simulations?
 > Cholesky factorization decomposes the symmetric positive-definite covariance matrix $\mathbf{\Sigma}$ into a lower triangular matrix $\mathbf{L}$. Given a vector of independent standard normal random draws $\mathbf{z} \sim \mathcal{N}(0, \mathbf{I})$, correlated risk factor shocks are generated via the linear transformation $\Delta \mathbf{x} = \mathbf{L} \mathbf{z}$, preserving the full cross-factor covariance structure: $\text{Cov}(\Delta \mathbf{x}) = \mathbf{L} \mathbf{I} \mathbf{L}^T = \mathbf{\Sigma}$.
 
-> [!question]- marchenko-pastur-distribution | What does the Marchenko-Pastur distribution tell quants about empirical correlation matrices?
+> [!question]- risk-marchenko-pastur-distribution | What does the Marchenko-Pastur distribution tell quants about empirical correlation matrices?
 > The Marchenko-Pastur theorem defines the theoretical distribution of eigenvalues for a pure noise random matrix with ratio $q = N/T$. In empirical covariance matrices, eigenvalues falling inside the Marchenko-Pastur noise band represent purely random statistical noise rather than genuine economic co-movement, justifying eigenvalue filtering and PCA truncation.
 
-> [!question]- factor-model-dimension-reduction | How does an equity factor model (such as Barra or Fama-French) reduce the computational complexity of covariance estimation?
+> [!question]- risk-factor-model-dimension-reduction | How does an equity factor model (such as Barra or Fama-French) reduce the computational complexity of covariance estimation?
 > In an equity universe with $N = 3,000$ stocks, estimating a full covariance matrix requires $N(N+1)/2 \approx 4.5 \times 10^6$ parameters. A linear factor model decomposes stock returns into $K \ll N$ common factor exposures plus idiosyncratic risk: $r_i = \mathbf{\beta}_i^T \mathbf{f} + \epsilon_i$. This reduces estimation to a $K \times K$ factor covariance matrix and $N$ diagonal specific variances, reducing parameter count from millions to a few thousand.
 
-> [!question]- volatility-surface-risk-factor-grids | How are continuous implied volatility surfaces discretized into standardized risk factors?
+> [!question]- risk-volatility-surface-risk-factor-grids | How are continuous implied volatility surfaces discretized into standardized risk factors?
 > Implied volatility surfaces are mapped onto a fixed grid parameterized by standardized option delta or moneyness (e.g., 10-delta put, 25-delta put, ATM, 25-delta call, 10-delta call) across fixed time-to-expiry buckets (e.g., 1m, 3m, 6m, 1y, 2y). This moneyness parameterization preserves stability as spot prices drift, preventing strike-drifting distortions.
 
-> [!question]- extreme-value-theory-fat-tails | Why do risk managers fit Generalized Pareto Distributions (GPD) to empirical risk factor tails instead of assuming normal distributions?
+> [!question]- risk-extreme-value-theory-fat-tails | Why do risk managers fit Generalized Pareto Distributions (GPD) to empirical risk factor tails instead of assuming normal distributions?
 > Financial asset returns exhibit fat tails and excess kurtosis that Gaussian models systematically underpredict. Extreme Value Theory (EVT) proves that for any well-behaved distribution, observations exceeding a sufficiently high threshold follow a Generalized Pareto Distribution (GPD), providing asymptotically sound estimates of extreme tail quantiles and tail risk.
 
 ## Further reading

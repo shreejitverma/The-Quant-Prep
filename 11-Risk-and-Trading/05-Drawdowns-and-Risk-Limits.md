@@ -84,13 +84,14 @@ $$\mathbb{E}[\text{MDD}(T)] \approx \sqrt{\frac{\pi}{2}} \cdot \sigma \sqrt{T} \
 When drift is positive, the trajectory trends upward, preventing drawdowns from growing indefinitely with $\sqrt{T}$.
 For large $T$, expected maximum drawdown scales logarithmically with the evaluation horizon:
 
-$$\mathbb{E}[\text{MDD}(T)] \approx \frac{\sigma^2}{2\mu} \left[ \ln\left( \frac{2\mu^2 T}{\sigma^2} \right) + 2\gamma - 1 \right] = \frac{\sigma}{2S} \left[ \ln(2 S^2 T) + 2\gamma - 1 \right]$$
+$$\mathbb{E}[\text{MDD}(T)] \approx \frac{\sigma^2}{2\mu} \left[ \ln\left( \frac{2\mu^2 T}{\sigma^2} \right) + \gamma \right] = \frac{\sigma}{2S} \left[ \ln(2 S^2 T) + \gamma \right]$$
 
 where $\gamma \approx 0.5772$ is the Euler-Mascheroni constant.
+This is the large-$T$ limit $Q_p(x) \to \frac{1}{4}\ln x + 0.49088$ of Magdon-Ismail and Atiya's $\mathbb{E}[\text{MDD}] = \frac{2\sigma^2}{\mu} Q_p\left(\frac{\mu^2 T}{2\sigma^2}\right)$, since $0.49088 \times 4 - \ln 4 \approx \gamma$.
 This analytical result reveals that:
 - Expected maximum drawdown is inversely proportional to the Sharpe ratio $S$.
 - Doubling strategy volatility doubles the expected dollar drawdown.
-- Over realistic multi-year horizons (e.g., 5-10 years), even high-Sharpe strategies ($S = 1.5$) reliably experience drawdowns equal to $1.5$ to $2.5$ times their annual standard deviation.
+- Over realistic multi-year horizons (e.g., 5-10 years), even high-Sharpe strategies ($S = 1.5$) reliably experience drawdowns equal to about $1.23$ times (5 years) to $1.46$ times (10 years) their annual standard deviation.
 
 ### Performance Metrics Based on Drawdowns
 
@@ -193,24 +194,22 @@ $$2 S^2 T = 2 \times 1.50^2 \times 3.0 = 2 \times 2.25 \times 3.0 = 13.50$$
 
 $$\ln(2 S^2 T) = \ln(13.50) \approx 2.60269$$
 
-Step 3: Add Euler-Mascheroni constant terms:
+Step 3: Add the Euler-Mascheroni constant:
 
-$$2\gamma - 1 = 2(0.577215) - 1 = 1.15443 - 1 = 0.15443$$
-
-$$\text{Bracket Sum} = 2.60269 + 0.15443 = 2.75712$$
+$$\text{Bracket Sum} = 2.60269 + 0.57722 = 3.17991$$
 
 Step 4: Compute Expected Maximum Drawdown:
 
-$$\mathbb{E}[\text{MDD}] \approx 0.03333 \times 2.75712 \approx 0.0919 \quad (9.19\%)$$
+$$\mathbb{E}[\text{MDD}] \approx 0.03333 \times 3.17991 \approx 0.1060 \quad (10.60\%)$$
 
-Over a 3-year horizon, a Sharpe 1.5 fund with 10% volatility should expect a maximum peak-to-trough drawdown of approximately $9.2\%$.
+Over a 3-year horizon, a Sharpe 1.5 fund with 10% volatility should expect a maximum peak-to-trough drawdown of approximately $10.6\%$.
 If the evaluation window extends to $T = 10$ years:
 
 $$2 S^2 T = 2 \times 2.25 \times 10 = 45.0 \implies \ln(45.0) \approx 3.80666$$
 
-$$\mathbb{E}[\text{MDD}_{10y}] \approx 0.03333 \times (3.80666 + 0.15443) = 0.03333 \times 3.96109 \approx 0.1320 \quad (13.20\%)$$
+$$\mathbb{E}[\text{MDD}_{10y}] \approx 0.03333 \times (3.80666 + 0.57722) = 0.03333 \times 4.38388 \approx 0.1461 \quad (14.61\%)$$
 
-Even an exceptional Sharpe 1.5 strategy faces a 13.2% expected drawdown over a decade.
+Even an exceptional Sharpe 1.5 strategy faces a 14.6% expected drawdown over a decade.
 
 ### Example 2: Drawdown-Triggered De-Risking Mechanics
 
@@ -261,34 +260,34 @@ This illustrates the mathematical cost of de-risking: risk reduction prevents te
 
 ## Interview questions
 
-> [!question]- expected-mdd-vs-sharpe | How does expected maximum drawdown scale with the Sharpe ratio and time horizon for a continuous drift-diffusion process?
+> [!question]- risk-expected-mdd-vs-sharpe | How does expected maximum drawdown scale with the Sharpe ratio and time horizon for a continuous drift-diffusion process?
 > For a process with positive drift, expected maximum drawdown scales inversely with the Sharpe ratio: $\mathbb{E}[\text{MDD}] \propto \frac{\sigma}{2S} \ln(S^2 T)$. Higher Sharpe ratios compress drawdown magnitude, but drawdowns still grow logarithmically with evaluation time $T$. In zero-drift regimes, expected drawdown scales with the square root of time: $\mathbb{E}[\text{MDD}] \approx 1.2533 \sigma \sqrt{T}$.
 
-> [!question]- calmar-ratio-definition | Define the Calmar ratio and explain why institutional investors often prefer it over the Sharpe ratio.
+> [!question]- risk-calmar-ratio-definition | Define the Calmar ratio and explain why institutional investors often prefer it over the Sharpe ratio.
 > The Calmar ratio is the ratio of annualized compound return to the maximum drawdown observed over a specified window (typically 36 months): $\text{Calmar} = \text{Return} / \text{MDD}$. Allocators prefer the Calmar ratio because it measures return against actual severe peak-to-trough capital loss rather than symmetric standard deviation, directly penalizing crash risk and tail clustering.
 
-> [!question]- de-risking-dilemma-explanation | What is the "de-risking dilemma" faced by quantitative hedge fund risk managers during severe drawdowns?
+> [!question]- risk-de-risking-dilemma-explanation | What is the "de-risking dilemma" faced by quantitative hedge fund risk managers during severe drawdowns?
 > When a fund suffers a drawdown, cutting leverage protects capital against terminal ruin if performance continues to deteriorate. However, if the underlying alpha strategy has positive edge and rebounds, the reduced position size generates proportionally smaller dollar profits, permanently locking in realized losses and prolonging the time required to regain the high water mark.
 
-> [!question]- recovery-return-asymmetry | Why does a 50% drawdown require a 100% return to break even, and what are the implications for position sizing?
+> [!question]- risk-recovery-return-asymmetry | Why does a 50% drawdown require a 100% return to break even, and what are the implications for position sizing?
 > If capital drops from 100 to 50, the base against which future percentage gains are measured is halved. To return to 100, the fund must generate 50 points of profit on a 50-point base, which is $50/50 = 100\%$. This non-linear asymmetry implies that position sizing must be constrained conservatively (e.g., via fractional Kelly) to avoid large drawdowns where recovery becomes mathematically improbable.
 
-> [!question]- trailing-vs-hard-drawdown-stops | Contrast a hard stop-loss limit with a trailing drawdown limit.
+> [!question]- risk-trailing-vs-hard-drawdown-stops | Contrast a hard stop-loss limit with a trailing drawdown limit.
 > A hard stop-loss limit triggers when cumulative portfolio loss from inception reaches a fixed dollar or percentage threshold (e.g., $-10\%$ of initial capital). A trailing drawdown limit triggers when portfolio equity declines by a specified percentage from its peak high water mark, locking in accrued profits and resetting dynamically as the portfolio reaches new equity peaks.
 
-> [!question]- cppi-mechanism | Explain the operational mechanism of Constant Proportion Portfolio Insurance (CPPI).
+> [!question]- risk-cppi-mechanism | Explain the operational mechanism of Constant Proportion Portfolio Insurance (CPPI).
 > CPPI dynamically allocates capital between a risky asset and a risk-free reserve based on the cushion: $\text{Exposure} = m \cdot (\text{Equity} - \text{Floor})$, where $m > 1$ is the multiplier and $\text{Floor}$ is the capital threshold that must never be breached. As equity drops toward the floor, the cushion shrinks, automatically forcing risk exposure down to zero before the floor is violated.
 
-> [!question]- volatility-targeting-drawdown-mitigation | How does volatility targeting dynamically stabilize drawdowns during market panics?
+> [!question]- risk-volatility-targeting-drawdown-mitigation | How does volatility targeting dynamically stabilize drawdowns during market panics?
 > Volatility targeting sets position size inversely proportional to rolling realized volatility: $w_t = w_{\text{base}} \times (\sigma_{\text{target}} / \hat{\sigma}_t)$. During market panics, asset volatility surges by $2\times$ to $5\times$. The rule-based engine automatically sells assets and scales back gross leverage as volatility expands, systematically capping dollar losses without relying on ad-hoc discretionary stops.
 
-> [!question]- underwater-period-significance | What is an underwater period, and why is drawdown duration often more damaging to hedge funds than drawdown magnitude?
+> [!question]- risk-underwater-period-significance | What is an underwater period, and why is drawdown duration often more damaging to hedge funds than drawdown magnitude?
 > The underwater period is the total time elapsed between setting a high water mark, reaching a trough, and fully recovering back to that peak. Extended underwater periods demoralize trading talent, prevent managers from earning performance fees (due to high water mark covenants), and trigger investor redemptions, frequently causing hedge fund closures even if ultimate insolvency is avoided.
 
-> [!question]- gross-vs-net-leverage-limits | Why do prime brokers and risk committees enforce separate limits on gross leverage and net leverage?
+> [!question]- risk-gross-vs-net-leverage-limits | Why do prime brokers and risk committees enforce separate limits on gross leverage and net leverage?
 > Net leverage measures directional market beta exposure ($\text{Long} - \text{Short}$), while gross leverage measures total balance sheet exposure ($\text{Long} + \text{Short}$). A market-neutral book can have zero net leverage while running $10\times$ gross leverage. High gross leverage exposes the fund to factor rotation, short squeezes, borrow cost spikes, and margin liquidation risks that net leverage metrics completely hide.
 
-> [!question]- psychological-drawdown-limits | Why do proprietary trading desks implement mandatory "cooling-off" desk halts after consecutive losing sessions?
+> [!question]- risk-psychological-drawdown-limits | Why do proprietary trading desks implement mandatory "cooling-off" desk halts after consecutive losing sessions?
 > Following severe drawdowns, human and algorithmic traders are prone to tilt, behavioral loss aversion, and reckless risk escalation (gambler's fallacy or "revenge trading") to rapidly recover losses. Mandatory cooling-off periods enforce emotional de-escalation, mandate trade reconciliation, and ensure model assumptions are re-verified before fresh capital is committed.
 
 ## Further reading

@@ -18,70 +18,11 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 SQRT_TWO = math.sqrt(2.0)
-SQRT_TWO_PI = math.sqrt(2.0 * math.pi)
 
 
 def norm_cdf(x: float) -> float:
     """Standard normal cumulative distribution function."""
     return 0.5 * (1.0 + math.erf(x / SQRT_TWO))
-
-
-def norm_inv(p: float) -> float:
-    """Acklam's approximation for inverse standard normal CDF."""
-    if p <= 0.0 or p >= 1.0:
-        raise ValueError("Probability must be strictly between 0 and 1.")
-
-    a = [
-        -3.969683028665376e01,
-        2.209460984245205e02,
-        -2.759285104469687e02,
-        1.383577518672690e02,
-        -3.066479806614716e01,
-        2.506628277459239e00,
-    ]
-    b = [
-        -5.447609879822406e01,
-        1.615858368580409e02,
-        -1.556989798598866e02,
-        6.680131188771972e01,
-        -1.328068155288572e01,
-    ]
-    c = [
-        -7.784894002430293e-03,
-        -3.223964580411365e-01,
-        -2.400758277161838e00,
-        -2.549732539343734e00,
-        4.374664141464968e00,
-        2.938163982698783e00,
-    ]
-    d = [
-        7.784695709041462e-03,
-        3.224671290700398e-01,
-        2.445134137142996e00,
-        3.754408661907416e00,
-    ]
-
-    q_low = 0.02425
-    q_high = 1.0 - q_low
-
-    if q_low <= p <= q_high:
-        q = p - 0.5
-        r = q * q
-        return (
-            (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5])
-            * q
-            / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1.0)
-        )
-    elif p < q_low:
-        q = math.sqrt(-2.0 * math.log(p))
-        return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / (
-            (((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0
-        )
-    else:
-        q = math.sqrt(-2.0 * math.log(1.0 - p))
-        return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / (
-            (((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0
-        )
 
 
 # ============================================================================
@@ -281,18 +222,22 @@ def generate_parametric_scenarios(
 
 def filter_historical_scenarios(
     historical_returns: Sequence[Sequence[float]],
-    historical_vols: Sequence[float],
-    current_vol: float,
+    historical_vols: Sequence[Sequence[float]],
+    current_vols: Sequence[float],
 ) -> list[list[float]]:
-    """Volatility-scaled filtered historical simulation (Hull-White / GARCH scaling)."""
-    num_scenarios = len(historical_returns)
-    num_factors = len(historical_returns[0])
-    filtered: list[list[float]] = []
+    """Per-factor volatility-scaled filtered historical simulation (Hull-White).
 
-    for t in range(num_scenarios):
-        scale = current_vol / max(1e-6, historical_vols[t])
-        shock = [historical_returns[t][j] * scale for j in range(num_factors)]
-        filtered.append(shock)
+    Scenario t, factor j becomes r[t][j] * current_vols[j] / historical_vols[t][j].
+    Shape mismatches raise ValueError via zip(strict=True).
+    """
+    if any(v <= 0.0 for v in current_vols):
+        raise ValueError("current_vols must be strictly positive")
+
+    filtered: list[list[float]] = []
+    for returns, vols in zip(historical_returns, historical_vols, strict=True):
+        if any(v <= 0.0 for v in vols):
+            raise ValueError("historical_vols must be strictly positive")
+        filtered.append([r * c / v for r, c, v in zip(returns, current_vols, vols, strict=True)])
 
     return filtered
 
@@ -451,6 +396,8 @@ def run_tests() -> None:
         s = factors[0]
         r = factors[1]
         vol = factors[2]
+        if s <= 0.0 or vol <= 0.0:
+            raise ValueError(f"Spot and vol must be positive: S={s}, vol={vol}")
         k = 100.0
         t = 1.0
         d1 = (math.log(s / k) + (r + 0.5 * vol * vol) * t) / (vol * math.sqrt(t))
@@ -470,47 +417,111 @@ def run_tests() -> None:
     assert abs(grad[0] - 0.63683) < 1e-3, f"Delta mismatch: {grad[0]}"
 
     # Analytical BS gamma: N'(d1) / (S * sigma * sqrt(T))
-    # N'(0.35) = exp(-0.35^2 / 2) / sqrt(2*pi) ≈ 0.37524 / 2.50663 ≈ 0.14970 / 20 = 0.01876
+    # N'(0.35) = exp(-0.35^2 / 2) / sqrt(2*pi) ≈ 0.37524 / 20 = 0.01876
     assert abs(hessian[0][0] - 0.01876) < 1e-4, f"Gamma mismatch: {hessian[0][0]}"
 
     # Analytical BS vega: S * N'(d1) * sqrt(T) ≈ 100 * 0.37524 = 37.52
     assert abs(grad[2] - 37.524) < 1e-2, f"Vega mismatch: {grad[2]}"
 
-    # 2. Covariance and Cholesky
-    # 3x3 covariance matrix for [S, r, sigma]
-    # S vol: 20%, rate vol: 100 bps (0.01), vol of vol: 40% (0.08)
+    try:
+        black_scholes_call([100.0, 0.05, -0.10])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Pricing at negative vol must be rejected")
+
+    # 2. Bump engine and Taylor proxy on a quadratic, where both are exact.
+    # q(x) = c.x + 0.5 x^T A x has gradient c + A x and Hessian A.
+    c_lin = [1.0, -3.0]
+    a_quad = [[2.0, 0.5], [0.5, 1.0]]
+
+    def quadratic(x: Sequence[float]) -> float:
+        lin = c_lin[0] * x[0] + c_lin[1] * x[1]
+        quad = a_quad[0][0] * x[0] ** 2 + 2.0 * a_quad[0][1] * x[0] * x[1] + a_quad[1][1] * x[1] ** 2
+        return lin + 0.5 * quad
+
+    x0 = [1.0, 2.0]
+    # c + A x0 = [1 + 2 + 1, -3 + 0.5 + 2] = [4.0, -0.5]
+    exact_grad = [4.0, -0.5]
+    q_grad = compute_gradient(quadratic, x0, [0.1, 0.1])
+    q_hess = compute_hessian(quadratic, x0, [0.1, 0.1])
+    for i in range(2):
+        assert abs(q_grad[i] - exact_grad[i]) < 1e-9, f"Quadratic gradient mismatch: {q_grad}"
+        for j in range(2):
+            assert abs(q_hess[i][j] - a_quad[i][j]) < 1e-9, f"Quadratic Hessian mismatch: {q_hess}"
+    dx_q = [0.3, -0.7]
+    exact_pnl = quadratic([x0[0] + dx_q[0], x0[1] + dx_q[1]]) - quadratic(x0)
+    taylor_pnl = evaluate_taylor_pnl(exact_grad, a_quad, dx_q)
+    assert abs(taylor_pnl - exact_pnl) < 1e-12, f"Taylor P&L mismatch: {taylor_pnl} vs {exact_pnl}"
+
+    # 3. Covariance and Cholesky
+    # Shock SDs: spot $5.00 (5% of S), rate 25 bp, vol 2 vol points.
+    # Correlations: spot-rate +0.20, spot-vol -0.50, rate-vol 0.
     cov = [
-        [0.0400, -0.0004, -0.0030],
-        [-0.0004, 0.0001, 0.00005],
-        [-0.0030, 0.00005, 0.0100],
+        [25.0, 0.0025, -0.05],
+        [0.0025, 0.00000625, 0.0],
+        [-0.05, 0.0, 0.0004],
     ]
     chol = cholesky_decomposition(cov)
-    assert chol[0][0] == math.sqrt(0.0400) == 0.20
-    # Reconstruct cov[0][0]
-    assert abs(chol[0][0] ** 2 - cov[0][0]) < 1e-8
+    for i in range(3):
+        for j in range(3):
+            rebuilt = sum(chol[i][k] * chol[j][k] for k in range(3))
+            assert abs(rebuilt - cov[i][j]) < 1e-12, f"L L^T mismatch at ({i}, {j})"
 
-    # 3. Parametric scenario generation
+    # 4. Parametric scenario generation
     scenarios = generate_parametric_scenarios(cov, num_scenarios=2000, seed=123)
     assert len(scenarios) == 2000
     assert len(scenarios[0]) == 3
 
-    # Sample variance check for factor 0 (should be close to 0.04)
+    # Sample variance check for factor 0 (should be close to 25.0)
     s0_vals = [s[0] for s in scenarios]
     s0_var = sum(x * x for x in s0_vals) / len(s0_vals)
-    assert 0.035 < s0_var < 0.045, f"Scenario variance mismatch: {s0_var}"
+    assert 22.5 < s0_var < 27.5, f"Scenario variance mismatch: {s0_var}"
 
-    # 4. Compare Full Revaluation vs Taylor Proxy
+    # 5. Compare Full Revaluation vs Taylor Proxy
+    v0 = black_scholes_call(base)
     comp = compare_full_vs_proxy(black_scholes_call, base, grad, hessian, scenarios)
+    print(f"Base call value V0: {v0:.4f}")
     print(f"MAE Full vs Delta-Gamma Proxy: {comp.mae:.4f}")
     print(f"RMSE Full vs Proxy: {comp.rmse:.4f}")
+    print(f"Max abs error Full vs Proxy: {comp.max_error:.4f}")
     print(f"Full 99% VaR: {comp.full_var_99:.2f}, Proxy 99% VaR: {comp.proxy_var_99:.2f}")
     print(f"Full 99% ES: {comp.full_es_99:.2f}, Proxy 99% ES: {comp.proxy_es_99:.2f}")
-    # Non-linear tail divergence: Taylor proxy understates extreme tail convexity
-    assert abs(comp.full_var_99 - comp.proxy_var_99) < 2.5, "VaR discrepancy too large"
+    # A long call is worth at least zero, so no full-revaluation loss can exceed V0.
+    assert max(-p for p in comp.full_reval_pnl) < v0, "Full-revaluation loss exceeds premium"
+    assert comp.full_es_99 >= comp.full_var_99, "ES below VaR"
 
-    # 5. Stress testing macro scenarios
+    # 6. Filtered historical simulation, per-factor scaling.
+    # Note 11 Example 1: -0.022 * 0.024 / 0.011 = -0.048.
+    # Second factor (rates): 0.0010 * 0.0010 / 0.0005 = 0.0020.
+    fhs = filter_historical_scenarios([[-0.022, 0.0010]], [[0.011, 0.0005]], [0.024, 0.0010])
+    assert abs(fhs[0][0] - (-0.048)) < 1e-12, f"FHS equity mismatch: {fhs[0][0]}"
+    assert abs(fhs[0][1] - 0.0020) < 1e-12, f"FHS rates mismatch: {fhs[0][1]}"
+    try:
+        filter_historical_scenarios([[-0.022]], [[0.0]], [0.024])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("FHS must reject a zero historical vol")
+    try:
+        filter_historical_scenarios([[-0.022, 0.0010]], [[0.011]], [0.024, 0.0010])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("FHS must reject a vol row with the wrong number of factors")
+
+    # 7. Stress scenarios match their names: steepeners widen 2s10s,
+    # flatteners narrow it, parallel shifts move every tenor equally.
+    # Tenors: [2y, 5y, 10y, 30y].
     stresses = standard_rates_stress_scenarios()
-    assert len(stresses) == 6
+    for sc in stresses:
+        spread_change = sc.shocks[2] - sc.shocks[0]
+        if "Steepener" in sc.name:
+            assert spread_change > 0.0, f"{sc.name} does not steepen 2s10s"
+        if "Flattener" in sc.name:
+            assert spread_change < 0.0, f"{sc.name} does not flatten 2s10s"
+        if "Parallel" in sc.name:
+            assert len(set(sc.shocks)) == 1, f"{sc.name} is not parallel"
     print(f"Loaded {len(stresses)} standard rates stress scenarios.")
 
     print("All risk analytics, scenario generation, and bump engine tests passed!")

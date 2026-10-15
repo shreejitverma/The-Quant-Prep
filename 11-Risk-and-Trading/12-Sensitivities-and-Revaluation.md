@@ -163,30 +163,39 @@ With $h = 0.01$, subtraction preserves 12+ digits of precision, providing a clea
 
 ### Example 2: Revaluation Comparison Diagnostics
 
-Using the reference implementation in `code/risk_analytics.py`, compare Full Revaluation against a Delta-Gamma Taylor proxy for a portfolio across 2,000 correlated scenarios.
+Using the reference implementation in `code/risk_analytics.py`, compare Full Revaluation against a Delta-Gamma Taylor proxy (with cross-gamma) for a long 1-year at-the-money call ($K = 100$, $r = 5\%$, $\sigma = 20\%$) across 2,000 correlated scenarios.
 The portfolio Greeks at base factors are:
-- Spot $S = 100.0$, Delta $\delta = 0.6368$, Gamma $\Gamma = 0.0188$.
+- Spot $S = 100.0$, Delta $\delta = 0.6368$, Gamma $\Gamma = 0.0188$, Vega $\mathcal{V} = 37.52$.
 - Base option value $V_0 = 10.4506$.
-Under 2,000 generated Monte Carlo scenarios:
-- Mean Absolute Error (MAE): $0.1193$
-- Root Mean Squared Error (RMSE): $0.4038$
-- 99% Full Revaluation VaR: $\$10.68$
-- 99% Delta-Gamma Proxy VaR: $\$9.01$
-- 99% Full Revaluation Expected Shortfall: $\$11.80$
-- 99% Delta-Gamma Proxy Expected Shortfall: $\$10.33$
 
-Analyze the error metrics and explain why the Taylor proxy understates 99% VaR.
+The scenarios shock $[S, r, \sigma]$ jointly normally with standard deviations $\$5.00$ (5% of spot), 25 bp and 2 vol points, and correlations $+0.20$ (spot-rate), $-0.50$ (spot-vol) and $0$ (rate-vol).
+Under the 2,000 generated scenarios:
+- Mean Absolute Error (MAE): $0.0197$
+- Root Mean Squared Error (RMSE): $0.0442$
+- Maximum absolute error: $0.7452$
+- 99% Full Revaluation VaR: $\$5.38$
+- 99% Delta-Gamma Proxy VaR: $\$5.32$
+- 99% Full Revaluation Expected Shortfall: $\$5.88$
+- 99% Delta-Gamma Proxy Expected Shortfall: $\$5.91$
+
+Analyze the error metrics and explain why the proxy tracks the 99% tail this closely here.
 
 **Solution:**
 
 Step 1: Analyze Error Diagnostics:
-- The MAE across all 2,000 scenarios is low ($\$0.12$ on a $\$10.45$ option, $\approx 1.1\%$), confirming that for small and moderate moves ($\pm 1$ standard deviation), the Delta-Gamma expansion tracks full revaluation with high fidelity.
-- The RMSE ($\$0.40$) is noticeably higher than MAE, indicating that errors are concentrated in the tails.
+- The MAE is $\$0.0197$ on a $\$10.45$ option ($0.0197 / 10.4506 \approx 0.19\%$), so for typical moves the Delta-Gamma expansion tracks full revaluation closely.
+- RMSE is $0.0442 / 0.0197 \approx 2.2$ times MAE and the maximum error is $0.7452 / 0.0197 \approx 38$ times MAE: the error is concentrated in a few extreme scenarios.
+- The maximum error sits in the largest rally ($\Delta S = +\$15.93$ together with $\Delta \sigma = -8.2$ vol points), where full revaluation gains $\$10.71$ and the proxy only $\$9.97$: once spot and vol both move about 3 or more standard deviations, third- and higher-order terms matter.
 
-Step 2: Tail Divergence Analysis:
-- Full 99% VaR is $\$10.68$, while Proxy 99% VaR is $\$9.01$, underestimating tail risk by $\$1.67$ ($15.6\%$).
-- Expected Shortfall is similarly underestimated ($\$11.80$ full vs $\$10.33$ proxy).
-- Economic cause: A long call option has bounded downside (maximum loss is the premium $\$10.45$). When underlying spot drops heavily, full revaluation price converges asymptotically to $0$. However, a quadratic Taylor polynomial $V_0 + \delta \Delta S + \frac{1}{2}\Gamma (\Delta S)^2$ is a parabola: for very large negative $\Delta S$, the positive $\frac{1}{2}\Gamma (\Delta S)^2$ term begins turning upward, artificially reducing estimated losses and understating true tail VaR.
+Step 2: Tail Analysis:
+- Proxy 99% VaR understates full revaluation by $\$0.06$ ($(5.381 - 5.316) / 5.381 \approx 1.2\%$), while proxy 99% ES overstates it by $\$0.03$ ($(5.909 - 5.878) / 5.878 \approx 0.5\%$).
+- The worst 1% of losses come from spot drops of $\$8.48$ to $\$15.04$ (1.7 to 3.0 standard deviations), well inside the range where the quadratic is accurate.
+- Sanity bound: a long call cannot lose more than its premium, and every full-revaluation loss is below $V_0 = \$10.45$ (the worst is $\$6.98$); the proxy's worst loss is $\$7.22$.
+
+Step 3: When the parabola fails:
+- The quadratic $\delta \Delta S + \frac{1}{2}\Gamma (\Delta S)^2$ turns upward only beyond its vertex at $\Delta S = -\delta / \Gamma = -0.6368 / 0.01876 \approx -\$33.9$.
+- The largest simulated drop here is $\$15.04$, so the proxy never reaches the regime where it starts reporting artificial gains on large drops.
+- Under crash-sized shocks beyond a 34% drop, the proxy loss shrinks while the true loss keeps approaching the $\$10.45$ premium, and the proxy then understates tail VaR.
 
 ## Pitfalls
 
@@ -198,34 +207,34 @@ Step 2: Tail Divergence Analysis:
 
 ## Interview questions
 
-> [!question]- full-revaluation-vs-taylor-tradeoff | What are the core computational and mathematical trade-offs between Full Revaluation and Taylor series proxy models in enterprise risk engines?
+> [!question]- risk-full-revaluation-vs-taylor-tradeoff | What are the core computational and mathematical trade-offs between Full Revaluation and Taylor series proxy models in enterprise risk engines?
 > Full Revaluation revalues every trade using its exact pricing library under all scenarios, guaranteeing 100% pricing accuracy and capturing non-linearities, but incurs high computational cost ($O(K \cdot M)$). Taylor series proxies approximate P&L via precomputed Greeks (Delta, Gamma, Vega), executing millions of scenario evaluations in milliseconds via matrix multiplication, but suffer from truncation error in extreme tails and break down for non-smooth payoffs.
 
-> [!question]- optimal-finite-difference-bump-size | Derive the optimal step size $h$ for central difference first derivatives, balancing truncation and cancellation error.
+> [!question]- risk-optimal-finite-difference-bump-size | Derive the optimal step size $h$ for central difference first derivatives, balancing truncation and cancellation error.
 > Central difference truncation error is $O(h^2) \approx c_1 h^2$. Floating-point roundoff cancellation error is $O(\epsilon_{\text{mach}} / h) \approx c_2 \frac{\epsilon_{\text{mach}}}{h}$. Total error $E(h) = c_1 h^2 + c_2 \frac{\epsilon_{\text{mach}}}{h}$ is minimized by setting $\frac{dE}{dh} = 2 c_1 h - c_2 \frac{\epsilon_{\text{mach}}}{h^2} = 0 \implies h^3 \propto \epsilon_{\text{mach}} \implies h_{\text{opt}} \sim \epsilon_{\text{mach}}^{1/3} \cdot x \approx 10^{-5}$ to $10^{-6} \cdot x$.
 
-> [!question]- aad-adjoint-algorithmic-differentiation | What is Adjoint Algorithmic Differentiation (AAD), and why is it revolutionary for quantitative risk management?
+> [!question]- risk-aad-adjoint-algorithmic-differentiation | What is Adjoint Algorithmic Differentiation (AAD), and why is it revolutionary for quantitative risk management?
 > AAD is an exact analytical differentiation technique based on the reverse chain rule. Instead of revaluing the pricing model $N$ times via finite difference bumps ($O(N)$ runtime), AAD records the forward execution tape and sweeps backward once, calculating all partial derivatives with respect to all $N$ input factors simultaneously in $O(1)$ runtime (typically $3-5\times$ the cost of a single pricing call).
 
-> [!question]- diagonal-vs-cross-gamma | Contrast diagonal gamma with cross-gamma, and explain the computational penalty of computing full cross-gamma matrices.
+> [!question]- risk-diagonal-vs-cross-gamma | Contrast diagonal gamma with cross-gamma, and explain the computational penalty of computing full cross-gamma matrices.
 > Diagonal gamma $\Gamma_{ii} = \frac{\partial^2 V}{\partial x_i^2}$ measures curvature with respect to a single risk factor in isolation, requiring $2N$ bumps. Cross-gamma $\Gamma_{ij} = \frac{\partial^2 V}{\partial x_i \partial x_j}$ measures interaction between two distinct factors. Evaluating full cross-gamma requires $2N(N-1)$ additional bumps ($O(N^2)$), which becomes computationally prohibitive for books with thousands of risk factors.
 
-> [!question]- taylor-proxy-tail-underestimation | Why does a Delta-Gamma Taylor proxy often underestimate Value at Risk (VaR) for portfolios containing long options?
+> [!question]- risk-taylor-proxy-tail-underestimation | Why does a Delta-Gamma Taylor proxy often underestimate Value at Risk (VaR) for portfolios containing long options?
 > For a long call option, losses are bounded by the paid premium, as the price cannot drop below zero. A second-order Taylor expansion is a symmetric parabola: for severe negative asset shocks, the quadratic $\frac{1}{2}\Gamma (\Delta S)^2$ term begins expanding upward, creating artificial gains that soften simulated losses and cause the proxy to understate 99% tail VaR.
 
-> [!question]- chebyshev-grid-revaluation | How does Chebyshev polynomial interpolation accelerate portfolio revaluation while preserving non-linear accuracy?
+> [!question]- risk-chebyshev-grid-revaluation | How does Chebyshev polynomial interpolation accelerate portfolio revaluation while preserving non-linear accuracy?
 > Chebyshev interpolation pre-calculates exact full revaluations on a structured multidimensional grid of Chebyshev collocation nodes across a bounding box of risk factors. It fits smooth orthogonal polynomial surfaces that are evaluated in microseconds during Monte Carlo simulations, eliminating 99% of pricing library calls while guaranteeing uniform minimax error bounds.
 
-> [!question]- barrier-options-taylor-failure | Why do sensitivity proxies fail completely for knock-out barrier options?
+> [!question]- risk-barrier-options-taylor-failure | Why do sensitivity proxies fail completely for knock-out barrier options?
 > Barrier options have discontinuous second derivatives and sharp delta cliffs near the barrier level. A small move can cause the option to knock out, resulting in a step-function price drop to zero. A smooth polynomial Taylor expansion cannot represent discontinuities, predicting moderate linear or quadratic changes when the contract has actually suffered a total loss.
 
-> [!question]- forward-vs-central-difference | Why is central finite difference preferred over forward difference despite requiring twice as many pricing calls?
+> [!question]- risk-forward-vs-central-difference | Why is central finite difference preferred over forward difference despite requiring twice as many pricing calls?
 > Forward difference $\frac{V(x+h) - V(x)}{h}$ has first-order truncation error $O(h)$, requiring a tiny step size that exacerbates roundoff error. Central difference $\frac{V(x+h) - V(x-h)}{2h}$ causes odd-order error terms to cancel out via symmetry, achieving second-order error $O(h^2)$, providing significantly higher accuracy and numerical stability for a modest $2\times$ computational cost.
 
-> [!question]- basel-frtb-curvature-charge | How does the Basel FRTB Standardised Approach (SbM) compute the Curvature risk charge?
-> FRTB SbM calculates Curvature risk as the incremental non-linear loss beyond linear delta: $CVR_k = -\min(V(x_k + h_k) - V(x_k) - \delta_k h_k, V(x_k - h_k) - V(x_k) + \delta_k h_k, 0)$, where $h_k$ is the prescribed regulatory stress bump. This requires two full revaluations per risk factor, explicitly isolating non-linear gamma loss.
+> [!question]- risk-basel-frtb-curvature-charge | How does the Basel FRTB Standardised Approach (SbM) compute the Curvature risk charge?
+> FRTB SbM calculates Curvature risk as the incremental non-linear loss beyond linear delta: $CVR_k = -\min(V(x_k + h_k) - V(x_k) - \delta_k h_k, V(x_k - h_k) - V(x_k) + \delta_k h_k)$, where $h_k$ is the prescribed regulatory stress bump. This requires two full revaluations per risk factor, explicitly isolating non-linear gamma loss. $CVR_k$ itself can be negative; the floor at zero applies later, in the bucket-level aggregation $K_b = \sqrt{\max(0, \sum_k \max(CVR_k, 0)^2 + \sum_k \sum_{l \ne k} \rho_{kl} CVR_k CVR_l \psi(CVR_k, CVR_l))}$.
 
-> [!question]- floating-point-cancellation-definition | What is catastrophic floating-point cancellation in numerical risk calculations?
+> [!question]- risk-floating-point-cancellation-definition | What is catastrophic floating-point cancellation in numerical risk calculations?
 > Catastrophic cancellation occurs when two nearly equal floating-point numbers are subtracted. The leading identical significant digits cancel out, shifting remaining unrounded bits into high-significance positions and amplifying floating-point representation noise. In finite difference engines with microscopic bumps, this destroys derivative precision.
 
 ## Further reading

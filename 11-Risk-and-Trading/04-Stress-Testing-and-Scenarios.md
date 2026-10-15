@@ -149,7 +149,7 @@ Step 5: Total Portfolio Stress Loss:
 
 $$\Delta \text{P\&L}_{\text{total}} = -\$41,400,000 - \$9,350,000 + \$14,000,000 - \$5,880,000 = -\$42,630,000$$
 
-The oil hedge offset $\$14\text{M}$ of losses, but simultaneous equity decline, bond sell-off, and credit widening resulted in a $\$42.63\text{M}$ drawdown (21.3% of total equity capital).
+The oil hedge offset $\$14\text{M}$ of losses, but simultaneous equity decline, bond sell-off, and credit widening resulted in a $\$42.63\text{M}$ drawdown (21.3% of the $\$200\text{M}$ equity book's market value).
 
 ### Example 2: Reverse Stress Testing a Relative Value Book
 
@@ -191,34 +191,34 @@ Reverse stress testing reveals that a $-19.4\%$ momentum factor crash (such as t
 
 ## Interview questions
 
-> [!question]- var-vs-stress-testing | Why can a financial institution with acceptable daily VaR still fail during a market crisis?
+> [!question]- risk-var-vs-stress-testing | Why can a financial institution with acceptable daily VaR still fail during a market crisis?
 > VaR is a percentile metric calibrated to historical data under normal market conditions, typically over a 99% confidence level. It does not measure the severity of losses in the 1% tail (tail risk), assumes continuous liquidity to execute hedges, and relies on correlation stability. In a crisis, liquidity evaporates, assets move in non-linear jumps, and correlations converge toward 1, generating losses far exceeding statistical VaR projections.
 
-> [!question]- reverse-stress-testing-concept | What is Reverse Stress Testing, and how does it differ from traditional forward stress testing?
+> [!question]- risk-reverse-stress-testing-concept | What is Reverse Stress Testing, and how does it differ from traditional forward stress testing?
 > Traditional stress testing applies a predetermined set of shocks (e.g., equities down 20%, yields up 100 bps) and calculates portfolio loss. Reverse stress testing starts from a predefined terminal failure state (e.g., capital depletion, breach of regulatory ratios, or liquidity exhaustion) and solves backward to identify the most plausible combination of market shocks that causes that failure.
 
-> [!question]- correlation-breakdown-crisis | Explain the phenomenon "in a crisis, all correlations go to 1" from a structural and liquidity perspective.
+> [!question]- risk-correlation-breakdown-crisis | Explain the phenomenon "in a crisis, all correlations go to 1" from a structural and liquidity perspective.
 > During market panics, leveraged funds face severe variation margin calls and investor redemption notices. To generate immediate cash, managers are forced to liquidate whatever assets are most liquid, regardless of fundamentals. This synchronized selling pressure across unrelated asset classes overwhelms dealer balance sheets, causing previously uncorrelated or negatively correlated assets to plunge together.
 
-> [!question]- historical-replay-limitations | What are the primary drawbacks of relying exclusively on historical crisis replays (e.g., 2008 Lehman or 2020 COVID) for stress testing?
+> [!question]- risk-historical-replay-limitations | What are the primary drawbacks of relying exclusively on historical crisis replays (e.g., 2008 Lehman or 2020 COVID) for stress testing?
 > Historical scenarios suffer from hindsight bias and lookback limitations: market structure, regulatory environments, and trading instruments evolve continuously. Products that dominate modern portfolios (e.g., zero-day options, private credit, SOFR derivatives) did not exist in historical crises, and future dislocations will inevitably stem from novel catalysts and institutional vulnerabilities.
 
-> [!question]- conditional-scenario-expansion | How does conditional scenario expansion propagate shocks from a few primary market drivers to thousands of portfolio risk factors?
+> [!question]- risk-conditional-scenario-expansion | How does conditional scenario expansion propagate shocks from a few primary market drivers to thousands of portfolio risk factors?
 > Conditional scenario expansion partitions the joint covariance matrix into primary factors $\mathbf{x}_1$ and secondary factors $\mathbf{x}_2$. Under a linear regression framework, conditional expected shocks are computed as $\mathbb{E}[\Delta \mathbf{x}_2 \mid \Delta \mathbf{x}_1 = \mathbf{s}_1] = \mathbf{\Sigma}_{21} \mathbf{\Sigma}_{11}^{-1} \mathbf{s}_1$, preserving historical statistical covariance while ensuring portfolio-wide pricing consistency.
 
-> [!question]- ccar-severely-adverse-scenario | What is the purpose of the US Federal Reserve's CCAR "Severely Adverse" scenario?
+> [!question]- risk-ccar-severely-adverse-scenario | What is the purpose of the US Federal Reserve's CCAR "Severely Adverse" scenario?
 > CCAR evaluates whether major US bank holding companies have sufficient Common Equity Tier 1 (CET1) capital to absorb losses, continue lending, and meet obligations during a severe hypothetical recession. The Severely Adverse scenario features severe global economic contraction, elevated unemployment, commercial real estate collapses, and acute stress in financial markets over a 9-quarter projection horizon.
 
-> [!question]- liquidity-adjusted-stress-testing | Why must stress testing include market liquidity adjustments rather than pure mark-to-market valuations?
+> [!question]- risk-liquidity-adjusted-stress-testing | Why must stress testing include market liquidity adjustments rather than pure mark-to-market valuations?
 > In severe crises, market depth shrinks and bid-ask spreads widen dramatically. Attempting to liquidate large positions incurs substantial price impact and liquidation slippage. A position marked at mid-price under normal liquidity may suffer an additional 10-30% haircut when liquidated in a distressed market, transforming a manageable paper loss into actual insolvency.
 
-> [!question]- cash-margin-drain-in-stress | How can a delta-hedged options portfolio experience terminal distress during a market shock even if its net economic loss is small?
+> [!question]- risk-cash-margin-drain-in-stress | How can a delta-hedged options portfolio experience terminal distress during a market shock even if its net economic loss is small?
 > While positive gamma delta-hedged portfolios may experience long-term economic gains, extreme price moves trigger massive immediate variation margin calls on short futures or exchange-cleared hedges. If the fund exhausts its unencumbered cash reserves and collateral buffers before the trade settles, clearing brokers liquidate the position at the worst possible time, locking in catastrophic failure.
 
-> [!question]- non-linear-payoff-stress-testing | Why do linear risk factor sensitivities (Delta) fail to predict stress test losses for portfolios containing options and mortgage-backed securities?
+> [!question]- risk-non-linear-payoff-stress-testing | Why do linear risk factor sensitivities (Delta) fail to predict stress test losses for portfolios containing options and mortgage-backed securities?
 > Portfolios containing options or MBS exhibit strong non-linearity (gamma and negative convexity). For small shocks, linear delta provides an accurate approximation. For large shocks (e.g., 4-6 standard deviations), higher-order terms dominate: option deltas shift rapidly, MBS prepayments surge or dry up completely, and losses expand quadratically or exponentially rather than linearly.
 
-> [!question]- macro-scenario-feedback-loops | What are secondary feedback loops in macroeconomic stress testing?
+> [!question]- risk-macro-scenario-feedback-loops | What are secondary feedback loops in macroeconomic stress testing?
 > Secondary feedback loops occur when an initial market shock triggers institutional reactions that amplify the original shock. Examples include margin call liquidations driving asset prices down further, bank credit tightening inducing corporate defaults, and risk-limit-triggered automated selling cascades (e.g., portfolio insurance in 1987 or volatility-targeting fund deleveraging in 2020).
 
 ## Further reading
