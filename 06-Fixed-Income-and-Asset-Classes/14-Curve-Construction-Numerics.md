@@ -216,7 +216,7 @@ The Jacobian maps zero risk into exact par market risk: the 3-year par bond has 
 > This daily settlement makes futures rates higher than forward rates, requiring a convexity adjustment: $F_{\text{fwd}} \approx F_{\text{fut}} - \frac{1}{2} \sigma^2 T_1 T_2$.
 
 > [!question]- fi-curve-extrapolation-hazard | What is the danger of extrapolating zero rates flat beyond the last liquid pillar?
-> Flat zero extrapolation forces forward rates to drift toward the long zero rate: $f(t) = z_{\text{last}} + t z'(t) = z_{\text{last}}$, which alters long-term duration and misprices ultra-long liabilities.
+> With $z$ flat beyond the last pillar, $z'(t) = 0$, so $f(t) = z_{\text{last}} + t z'(t) = z_{\text{last}}$: the instantaneous forward jumps discontinuously at the last pillar to the flat zero level (down when the curve slopes up, e.g. from $4.9474\%$ to $3.9482\%$ on the Note 03 curve), which alters long-term duration and misprices ultra-long liabilities.
 > Best practice extrapolates the instantaneous forward rate flat.
 
 ## Further reading

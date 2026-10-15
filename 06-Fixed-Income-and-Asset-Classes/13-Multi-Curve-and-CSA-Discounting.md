@@ -107,8 +107,8 @@ $P_{\text{proj}}(2) = \frac{1}{(1 + 0.037)^2} = 0.929913 \implies F(1, 2) = \fra
 
 Calculate floating leg present value discounted at OIS:
 $$\text{Coupon 1 PV} = \tau_1 \cdot P_{\text{ois}}(1) \cdot F(0, 1) = 1.0 \times 0.970874 \times 0.032000 = 0.031068.$$
-$$\text{Coupon 2 PV} = \tau_2 \cdot P_{\text{ois}}(2) \cdot F(1, 2) = 1.0 \times 0.933352 \times 0.042024 = 0.039224.$$
-$$PV_{\text{float}} = 0.031068 + 0.039224 = 0.070291.$$
+$$\text{Coupon 2 PV} = \tau_2 \cdot P_{\text{ois}}(2) \cdot F(1, 2) = 1.0 \times 0.933352 \times 0.042024 = 0.039223.$$
+$$PV_{\text{float}} = 0.031068 + 0.039223 = 0.070291.$$
 
 The dual-curve par swap rate is:
 $$S_{\text{dual}} = \frac{PV_{\text{float}}}{A_{\text{ois}}} = \frac{0.070291}{1.904226} = 3.6913\%.$$

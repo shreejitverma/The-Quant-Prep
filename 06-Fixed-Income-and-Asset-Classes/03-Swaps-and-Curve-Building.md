@@ -18,7 +18,7 @@ sources: [Tuckman and Serrat - Fixed Income Securities 4th ed. chapter 7, Brigo 
 
 - A vanilla interest rate swap exchanges fixed coupon payments for floating reference rate fixings on a specified notional without exchanging principal.
 - The par swap rate $S$ equates the present value of the fixed leg to the present value of the floating leg: $S = \frac{P(0, T_0) - P(0, T_n)}{\sum_{i=1}^n \tau_i P(0, T_i)}$.
-- The swap annuity (or PV01) $A = \sum_{i=1}^n \tau_i P(0, T_i)$ measures the dollar sensitivity of the swap to a one basis point change in the par rate.
+- The swap annuity $A = \sum_{i=1}^n \tau_i P(0, T_i)$ is the swap's value sensitivity per unit notional to a unit change in the par rate; $A \times 10^{-4}$ is the per-basis-point figure (PV01).
 - In a single-curve setting, the floating leg telescopes to $P(0, T_0) - P(0, T_n)$, which equals par minus the terminal zero-coupon bond.
 - Yield curve bootstrapping inverts market par swap quotes into zero-coupon discount factors sequentially from short to long maturities.
 
@@ -45,7 +45,7 @@ Principal is never exchanged at inception or maturity, making the swap an off-ba
 Let $P(0, T)$ denote the discount factor to maturity $T$.
 The present value of the fixed leg paying coupon $K$ at times $T_1, \dots, T_n$ with accrual fractions $\tau_i$ is
 $$PV_{\text{fixed}} = N \sum_{i=1}^n \tau_i P(0, T_i) K = N \cdot K \cdot A(0, T_n),$$
-where $A(0, T_n) = \sum_{i=1}^n \tau_i P(0, T_i)$ is the swap annuity (or DV01 per unit notional).
+where $A(0, T_n) = \sum_{i=1}^n \tau_i P(0, T_i)$ is the swap annuity (PV01 per unit notional is $A \times 10^{-4}$).
 On the floating leg, the forward rate covering $[T_{i-1}, T_i]$ in a single-curve model is $F(0; T_{i-1}, T_i) = \frac{1}{\tau_i} \left( \frac{P(0, T_{i-1})}{P(0, T_i)} - 1 \right)$.
 The present value of each floating payment is $\tau_i P(0, T_i) F(0; T_{i-1}, T_i) = P(0, T_{i-1}) - P(0, T_i)$.
 Summing across all $n$ periods yields a telescoping series:
@@ -162,7 +162,7 @@ The crisis forced the global derivatives industry to abandon single-curve pricin
 > A floating leg pays forward interest that exactly compensates for the time value of money over the coupon period.
 > Holding a floating leg is economically equivalent to buying a floating-rate note for 100, receiving coupon interest, and having principal returned at maturity.
 
-> [!question]- fi-swap-annuity-def | Define the swap annuity (PV01) and explain its relationship to swap DV01.
+> [!question]- fi-swap-annuity-def | Define the swap annuity and explain its relationship to swap DV01.
 > The annuity $A(0, T_n) = \sum_{i=1}^n \tau_i P(0, T_i)$ represents the present value of receiving 1 basis currency unit per period.
 > Swap DV01 is the dollar value change for a 1 basis point shift in par swap rate: $\text{DV01} = N \cdot A(0, T_n) \times 10^{-4}$.
 
