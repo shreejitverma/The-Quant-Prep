@@ -99,7 +99,8 @@ function renderMarkdown(src) {
   const stash = (tex, display) => { math.push([tex, display]); return `@@M${math.length - 1}@@`; };
   const protect = (text) => text
     .replace(/\$\$([\s\S]+?)\$\$/g, (_, t) => stash(t.trim(), true))
-    .replace(/(^|[^\\$])\$(?!\s)([^\n$]+?)(?<!\s)\$(?!\d)/g, (_, pre, t) => pre + stash(t, false));
+    // Inline maths may contain escaped dollars (\$); an escaped dollar never closes it.
+    .replace(/(^|[^\\$])\$(?!\s)((?:\\\$|[^\n$])+?)(?<![\s\\])\$(?!\d)/g, (_, pre, t) => pre + stash(t, false));
   // Protect maths outside code, and turn Obsidian callouts into HTML blocks.
   const out = [];
   const lines = src.split("\n");
