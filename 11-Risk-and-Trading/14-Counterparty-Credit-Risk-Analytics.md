@@ -227,13 +227,13 @@ Under the Basel envelope rule, $\text{EEE}(t) = \max(\text{EEE}(t - \Delta t), \
 $$\text{EEE}(t) = \$159,124.02 \quad \forall t \ge 2.3$$
 
 Step 3: Effective EPE (over 1-year capital horizon):
-Evaluating average EEE over the interval $[0, 1.0]$ across time steps $i=1 \dots 10$:
+Integrating EEE over the interval $[0, 1.0]$ using the time grid endpoints:
 
-$$\text{EEPE} = \frac{1}{1.0} \int_0^{1.0} \text{EEE}(t) dt \approx \$109,591.94$$
+$$\text{EEPE} = \frac{1}{1.0} \int_0^{1.0} \text{EEE}(t) dt \approx \$102,386.87$$
 
 Step 4: Regulatory Exposure at Default (EAD):
 
-$$\text{EAD} = \alpha \times \text{EEPE} = 1.4 \times \$109,591.94 \approx \$153,428.72$$
+$$\text{EAD} = \alpha \times \text{EEPE} = 1.4 \times \$102,386.87 \approx \$143,341.62$$
 
 ## Pitfalls
 

@@ -145,17 +145,31 @@ def _calculate_exposure_metrics(grid: list[float], values: list[list[float]]) ->
         else:
             effective_ee[i] = max(effective_ee[i - 1], ee[i])
 
-    # Expected Positive Exposure (EPE): integral of EE / maturity
-    maturity = grid[-1]
-    dt = grid[1] - grid[0]
-    epe = sum(ee[1:]) * dt / maturity if maturity > 0 else 0.0
+    def time_average(profile: list[float], horizon: float) -> float:
+        if horizon <= 0.0:
+            return 0.0
 
-    # Effective EPE: average of Effective EE over 1 year (standard Basel metric)
-    one_year_steps = [i for i, t in enumerate(grid) if t <= 1.0 and i > 0]
-    if one_year_steps:
-        effective_epe = sum(effective_ee[i] for i in one_year_steps) / len(one_year_steps)
-    else:
-        effective_epe = effective_ee[0]
+        area = 0.0
+        left_time = grid[0]
+        left_value = profile[0]
+        for right_time, right_value in zip(grid[1:], profile[1:]):
+            if left_time >= horizon:
+                break
+            end_time = min(right_time, horizon)
+            fraction = (end_time - left_time) / (right_time - left_time)
+            end_value = left_value + fraction * (right_value - left_value)
+            area += (left_value + end_value) * 0.5 * (end_time - left_time)
+            if end_time == horizon:
+                break
+            left_time = right_time
+            left_value = right_value
+        return area / horizon
+
+    # Expected Positive Exposure (EPE): time-average EE over maturity
+    epe = time_average(ee, grid[-1])
+
+    # Effective EPE: time-average Effective EE over the first year or tenor
+    effective_epe = time_average(effective_ee, min(1.0, grid[-1]))
 
     return ExposureProfile(
         grid=grid,
