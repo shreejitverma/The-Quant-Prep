@@ -3,6 +3,7 @@
 Output: build/cfa_l2/<topic-slug>/LM<nn>.txt and build/cfa_l2/manifest.json
 Pages are separated by form feeds in the .txt so downstream parsers can cite printed pages.
 """
+
 from __future__ import annotations
 
 import json
@@ -72,9 +73,18 @@ def main() -> int:
                     "chars": len(text),
                 }
             )
-            print(f"V{vol} LM{n} {title!r}: pdf {i+1}-{end}, printed {i+1-offset}-{end-offset}, {len(text)} chars")
+            print(f"V{vol} LM{n} {title!r}: pdf {i + 1}-{end}, printed {i + 1 - offset}-{end - offset}, {len(text)} chars")
         manifest["topics"].append(
-            {"code": code, "slug": slug, "volume": vol, "name": name, "weight": weight, "pdf": pdf.name, "pages": len(pages), "modules": entries}
+            {
+                "code": code,
+                "slug": slug,
+                "volume": vol,
+                "name": name,
+                "weight": weight,
+                "pdf": pdf.name,
+                "pages": len(pages),
+                "modules": entries,
+            }
         )
     (BUILD / "manifest.json").write_text(json.dumps(manifest, indent=2))
     total = sum(len(t["modules"]) for t in manifest["topics"])

@@ -1,4 +1,5 @@
 """Gate for the extraction layer: every module must have LOS, examples, and practice problems with solutions."""
+
 from __future__ import annotations
 
 import json
@@ -36,7 +37,10 @@ def main() -> int:
                 ok += 1
             else:
                 failures.append((topic["code"], module["lm"], status))
-            print(f"{topic['code']:>4} {module['lm']:>2} {n_los:>3} {n_ex:>3} {n_pp:>3} {n_sol:>3} {len(d['equations']):>4} {d['needs_review_count']:>6}  {status}")
+            print(
+                f"{topic['code']:>4} {module['lm']:>2} {n_los:>3} {n_ex:>3} {n_pp:>3} {n_sol:>3} {len(d['equations']):>4} "
+                f"{d['needs_review_count']:>6}  {status}"
+            )
     print(f"\ncoverage: {ok}/{total} modules pass")
     return 0 if ok == total else 1
 

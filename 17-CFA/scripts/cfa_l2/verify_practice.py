@@ -1,13 +1,26 @@
-"""Gate for the practice layer: item sets per LM and their structure, mock composition, SRS decks parse."""
+"""Gate for the practice layer: item sets per LM and their structure, mock composition and freshness, SRS decks parse."""
+
 from __future__ import annotations
 
 import json
 import re
 import sys
 
-from cfa_common import BUILD, EM_DASH, EMOJI_RE, L2, read_frontmatter
+from build_mocks import render_mocks
+from cfa_common import BUILD, EM_DASH, EMOJI_RE, L2, load_manifest, read_frontmatter
 
-BANDS = {"01": (5, 10), "02": (5, 10), "03": (10, 15), "04": (5, 10), "05": (10, 15), "06": (10, 15), "07": (5, 10), "08": (5, 10), "09": (10, 15), "10": (10, 15)}
+BANDS = {
+    "01": (5, 10),
+    "02": (5, 10),
+    "03": (10, 15),
+    "04": (5, 10),
+    "05": (10, 15),
+    "06": (10, 15),
+    "07": (5, 10),
+    "08": (5, 10),
+    "09": (10, 15),
+    "10": (10, 15),
+}
 REQUIRED_KEYS = ("type", "topic", "topic_code", "topic_slug", "lm", "title", "los", "difficulty", "minutes", "source", "attempts", "tags")
 FRESH_MOCKS = ("mock-03", "mock-04", "mock-05", "mock-06")
 
@@ -56,8 +69,27 @@ def check_itemset(note, fm: dict, body: str, los_ids: set[str]) -> list[str]:
     return fails
 
 
+def stale_mocks(expected: dict[str, str], mocks_dir) -> list[str]:
+    """Mocks are generated from the item sets; any committed mock that differs from a fresh render is stale.
+
+    This is the check that was missing when Mocks 3 to 6 drifted from their audited item sets (21 of 88 sets,
+    some with flipped answer keys) while every other gate passed.
+    """
+    fails = []
+    for name, text in sorted(expected.items()):
+        path = mocks_dir / name
+        if not path.exists():
+            fails.append(f"{name}: missing; run build_mocks.py")
+        elif path.read_text() != text:
+            fails.append(f"{name}: stale against its item sets; run build_mocks.py")
+    for path in sorted(mocks_dir.glob("Mock-*.md")):
+        if path.name not in expected:
+            fails.append(f"{path.name}: not produced by build_mocks.py")
+    return fails
+
+
 def main() -> int:
-    manifest = json.loads((BUILD / "manifest.json").read_text())
+    manifest = load_manifest()
     los_ids = set(json.loads((BUILD / "los_index.json").read_text()))
     failures = []
     counts: dict[str, int] = {}
@@ -104,6 +136,7 @@ def main() -> int:
             if not (lo - 2.5 <= pct <= hi + 2.5):
                 failures.append(f"{mock.name}: topic {c} is {pct:.0f}% ({by[c]} sets), band {lo}-{hi}%")
         print(f"{mock.name}: {len(sets)} item sets")
+    failures += stale_mocks(render_mocks()[0], L2 / "21-Mocks")
     cards, dupes = 0, 0
     seen = set()
     for note in L2.rglob("*.md"):

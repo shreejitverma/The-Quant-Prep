@@ -33,7 +33,7 @@ From the repository root:
 ```sh
 python3 17-CFA/scripts/cfa_l2/notes_todo.py        # learning-module notes still missing or too thin
 python3 17-CFA/scripts/cfa_l2/verify_notes.py      # gate: sections, LOS coverage, formula IDs, style
-python3 17-CFA/scripts/cfa_l2/verify_practice.py   # gate: item sets, mock composition, flashcard decks
+python3 17-CFA/scripts/cfa_l2/verify_practice.py   # gate: item sets, mocks vs their item sets, flashcard decks
 python3 17-CFA/scripts/cfa_l2/mastery.py           # recompute mastery and rebuild the study board
 ```
 
