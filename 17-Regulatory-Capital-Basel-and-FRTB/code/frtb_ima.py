@@ -150,7 +150,7 @@ def compute_spearman_rank_correlation(x: Sequence[float], y: Sequence[float]) ->
     sum_sq_y = sum(value**2 for value in centered_y)
     if sum_sq_x == 0.0 or sum_sq_y == 0.0:
         return 0.0
-    covariance = sum(x_rank * y_rank for x_rank, y_rank in zip(centered_x, centered_y))
+    covariance = sum(x_rank * y_rank for x_rank, y_rank in zip(centered_x, centered_y, strict=True))
     return covariance / math.sqrt(sum_sq_x * sum_sq_y)
 
 
