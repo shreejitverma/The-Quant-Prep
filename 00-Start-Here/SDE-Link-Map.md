@@ -21,7 +21,7 @@ Links point at `https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/..
 | :--- | :--- | :--- |
 | Quant trader | Sections 01, 05, 07, 08, 11, 13 | Coding screens only: [DSA topics](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/03-Data-Structures-Algorithms/01-Topics/README.md) |
 | Quant researcher | Sections 01-04, 09, 10, 13 | [Python advanced guide](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/02-Programming-Languages/Python/Ultimate-Python-Advanced-Guide.md), [LeetCode quant set (Python)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/02-Programming-Languages/Python/LeetCode-Quant-Complete-Python-Full.md) |
-| Quant developer | Sections 07, 08, 12 plus the maths the desk uses | Most of it: see below |
+| Quant developer | Sections 07, 08, 12, 18 plus the maths the desk uses | Most of it: see below |
 
 ## Quant developer: what to take from SDE-Interview-Prep
 
@@ -54,6 +54,7 @@ The [low-latency vault home](https://github.com/shreejitverma/SDE-Interview-Prep
 
 - [System design](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/README.md).
 - [Performance engineering](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/12-Performance-Engineering/README.md) and the [profiling guide](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/12-Performance-Engineering/02-Profiling/profiling_guide.md).
+- Enterprise trading stacks, curve services, risk engines, and batch pipelines: see [Pricing and Risk Systems](../18-Pricing-and-Risk-Systems/README.md).
 
 ## Everyone: behavioural and application
 
@@ -64,4 +65,4 @@ The [low-latency vault home](https://github.com/shreejitverma/SDE-Interview-Prep
 ## Ownership rule
 
 When a note would fit both repos, it lives where its core skill lives: a pricing model belongs here even if its code is C++; a lock-free queue belongs in SDE-Interview-Prep even though trading firms ask about it.
-Bridge notes in [12-Quant-Development](../12-Quant-Development/README.md) summarise what a quant developer needs and link across.
+Bridge notes in [12-Quant-Development](../12-Quant-Development/README.md) and [18-Pricing-and-Risk-Systems](../18-Pricing-and-Risk-Systems/README.md) summarise what a quant developer needs and link across.
