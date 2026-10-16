@@ -58,10 +58,10 @@ def single_auction() -> None:
     ys = beta * (vs - p0) + us
     ps = p0 + lam * ys
     slope = float(np.cov(vs, ys)[0, 1] / ys.var())
-    check("MC regression slope of v on y", slope, 9.994e-5, 1e-8)
-    check("MC insider mean profit", float(np.mean((vs - ps) * beta * (vs - p0))), 9_982.0, 1.0)
-    check("MC Var(v - p)", float(np.var(vs - ps)), 1.998, 1e-3)
-    check("MC corr(p, v)^2", float(np.corrcoef(ps, vs)[0, 1] ** 2), 0.4997, 1e-4)
+    check("MC regression slope of v on y", slope, 9.994e-5, 5e-9)
+    check("MC insider mean profit", float(np.mean((vs - ps) * beta * (vs - p0))), 9_982.0, 0.5)
+    check("MC Var(v - p)", float(np.var(vs - ps)), 1.998, 0.0005)
+    check("MC corr(p, v)^2", float(np.corrcoef(ps, vs)[0, 1] ** 2), 0.4997, 5e-5)
 
     # Doubling noise trading
     check("lambda with 2*sigma_u", sigma_v / (2 * 2 * sigma_u), 5e-5, 1e-15)
@@ -149,13 +149,13 @@ def multi_period() -> None:
     for n, (l1, se, pr) in expected.items():
         r = sequential(n)
         forward_check(r)
-        check(f"N={n} lambda_1", r["lambdas"][0], l1, 1e-4)
-        check(f"N={n} Sigma_N/Sigma_0", r["sigmas"][-1], se, 1e-4)
-        check(f"N={n} profit", r["profit"], pr, 1e-4)
+        check(f"N={n} lambda_1", r["lambdas"][0], l1, 5e-5)
+        check(f"N={n} Sigma_N/Sigma_0", r["sigmas"][-1], se, 5e-5)
+        check(f"N={n} profit", r["profit"], pr, 5e-5)
     mc = monte_carlo_profit(sequential(2), 2_000_000, seed=5)
-    check("N=2 Monte Carlo insider profit", mc, 0.6205, 1e-4)
+    check("N=2 Monte Carlo insider profit", mc, 0.6205, 5e-5)
     mc10 = monte_carlo_profit(sequential(10), 1_000_000, seed=6)
-    check("N=10 Monte Carlo insider profit", mc10, 0.8438, 1e-4)
+    check("N=10 Monte Carlo insider profit", mc10, 0.8438, 5e-5)
 
 
 if __name__ == "__main__":

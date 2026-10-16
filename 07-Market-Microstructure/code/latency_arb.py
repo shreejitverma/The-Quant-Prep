@@ -38,19 +38,19 @@ def bcs_equilibrium() -> None:
     print("== Budish-Cramton-Shim zero-profit spread, exponential jumps ==")
     lam_fund, lam_jump, mean_jump, c_speed = 1.0, 0.5, 0.01, 0.0005
     h = bcs_half_spread(lam_fund, lam_jump, mean_jump)
-    check("half-spread h ($)", h, 0.0035173, 1e-7)
-    check("spread s = 2h ($)", 2 * h, 0.0070347, 1e-7)
-    check("h / mean jump (Lambert W(0.5))", h / mean_jump, 0.351734, 1e-6)
+    check("half-spread h ($)", h, 0.0035173, 5e-8)
+    check("spread s = 2h ($)", 2 * h, 0.0070347, 5e-8)
+    check("h / mean jump (Lambert W(0.5))", h / mean_jump, 0.351734, 5e-7)
     check("revenue from fundamental traders per second", lam_fund * h, sniping_cost_rate(h, lam_jump, mean_jump), 1e-12)
     n_firms = lam_fund * h / c_speed
-    check("entry N = lam_fund h / c_speed", n_firms, 7.0346, 1e-4)
+    check("entry N = lam_fund h / c_speed", n_firms, 7.0347, 5e-5)
     check("total speed spend N c_speed per second", n_firms * c_speed, lam_fund * h, 1e-12)
     h2 = bcs_half_spread(lam_fund, 1.0, mean_jump)
-    check("spread with twice as many jumps", 2 * h2, 0.0113429, 1e-7)
+    check("spread with twice as many jumps", 2 * h2, 0.0113429, 5e-8)
     h3 = bcs_half_spread(2.0, lam_jump, mean_jump)
-    check("spread with twice as many fundamental traders", 2 * h3, 0.0040778, 1e-7)
+    check("spread with twice as many fundamental traders", 2 * h3, 0.0040778, 5e-8)
     # Stylised batching: only jumps in the last delta of a batch interval tau can be sniped
-    for ratio, spread, tol in ((0.1, 0.00095345, 1e-8), (0.001, 0.000009995, 1e-9)):
+    for ratio, spread, tol in ((0.1, 0.00095345, 5e-9), (0.001, 0.000009995, 5e-10)):
         h_b = bcs_half_spread(lam_fund, lam_jump, mean_jump, exposure=ratio)
         check(f"spread when sniping exposure is scaled by delta/tau = {ratio}", 2 * h_b, spread, tol)
 
@@ -75,8 +75,8 @@ def stale_quote_race() -> None:
 
     print("== Propagation delay ==")
     c_km_per_ms = 299.792458
-    check("vacuum one-way time for 1,000 km (ms)", 1_000 / c_km_per_ms, 3.33564, 1e-5)
-    check("fibre one-way time for 1,000 km, index 1.47 (ms)", 1.47 * 1_000 / c_km_per_ms, 4.90339, 1e-5)
+    check("vacuum one-way time for 1,000 km (ms)", 1_000 / c_km_per_ms, 3.33564, 5e-6)
+    check("fibre one-way time for 1,000 km, index 1.47 (ms)", 1.47 * 1_000 / c_km_per_ms, 4.90339, 5e-6)
     check("round-trip saving reported for Spread Networks: 16 ms to 13 ms", 16 - 13, 3.0)
 
 

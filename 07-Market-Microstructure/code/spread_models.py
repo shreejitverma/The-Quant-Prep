@@ -41,11 +41,11 @@ def roll_simulation() -> None:
     dp = np.diff(p)
     check("theoretical Var(dp)", sigma**2 + 2 * c**2, 0.015, 1e-12)
     check("theoretical Cov(dp_t, dp_t-1)", -(c**2), -0.0025, 1e-12)
-    check("sample Var(dp)", float(dp.var()), 0.01491, 1e-5)
-    check("sample Cov(dp_t, dp_t-1)", autocov1(dp), -0.00247, 1e-5)
+    check("sample Var(dp)", float(dp.var()), 0.01491, 5e-6)
+    check("sample Cov(dp_t, dp_t-1)", autocov1(dp), -0.00247, 5e-6)
     c_hat = roll_estimate(p)
-    check("Roll half-spread estimate", c_hat, 0.0497, 1e-4)
-    check("Roll spread estimate (2c)", 2 * c_hat, 0.0994, 1e-4)
+    check("Roll half-spread estimate", c_hat, 0.0497, 5e-5)
+    check("Roll spread estimate (2c)", 2 * c_hat, 0.0994, 5e-5)
 
     # Persistent order flow: q follows a symmetric Markov chain with autocorrelation rho
     rho = 0.5
@@ -56,7 +56,7 @@ def roll_simulation() -> None:
         qp[t] = qp[t - 1] if stay[t] else -qp[t - 1]
     pp = m + c * qp
     check("theoretical Roll estimate with rho=0.5: c(1-rho)", c * (1 - rho), 0.025, 1e-12)
-    check("Roll estimate with persistent flow", roll_estimate(pp), 0.0249, 1e-4)
+    check("Roll estimate with persistent flow", roll_estimate(pp), 0.0249, 5e-5)
 
     # Short windows: how often is the autocovariance positive so the estimator is undefined?
     window, c_small = 50, 0.02
@@ -68,7 +68,7 @@ def roll_simulation() -> None:
         if autocov1(np.diff(mm + c_small * qq)) >= 0:
             pos += 1
     frac = pos / trials
-    check("share of 50-trade windows with positive autocovariance (c=0.02, sigma=0.10)", frac, 0.345, 1e-3)
+    check("share of 50-trade windows with positive autocovariance (c=0.02, sigma=0.10)", frac, 0.345, 0.0005)
 
 
 def gm_quotes(v_low: float, v_high: float, pi_high: float, mu: float) -> tuple[float, float]:
@@ -87,15 +87,16 @@ def glosten_milgrom() -> None:
     mean = v_low + (v_high - v_low) * pi_high
     check("prior mean", mean, 99.0, 1e-12)
     check("P(H | buy)", (ask - v_low) / (v_high - v_low), 0.25 / 0.475, 1e-12)
+    check("P(H | buy) value", (ask - v_low) / (v_high - v_low), 0.5263, 5e-5)
     check("P(buy | H)", mu + (1 - mu) / 2, 0.625, 1e-12)
     check("P(buy | L)", (1 - mu) / 2, 0.375, 1e-12)
     check("P(H | sell)", (bid - v_low) / (v_high - v_low), 0.15 / 0.525, 1e-12)
-    check("P(H | sell) value", (bid - v_low) / (v_high - v_low), 0.285714, 1e-6)
-    check("ask", ask, 100.263158, 1e-6)
-    check("bid", bid, 97.857143, 1e-6)
-    check("spread", ask - bid, 2.406015, 1e-6)
-    check("ask minus prior mean", ask - mean, 1.263158, 1e-6)
-    check("prior mean minus bid", mean - bid, 1.142857, 1e-6)
+    check("P(H | sell) value", (bid - v_low) / (v_high - v_low), 0.285714, 5e-7)
+    check("ask", ask, 100.263158, 5e-7)
+    check("bid", bid, 97.857143, 5e-7)
+    check("spread", ask - bid, 2.406015, 5e-7)
+    check("ask minus prior mean", ask - mean, 1.263158, 5e-7)
+    check("prior mean minus bid", mean - bid, 1.142857, 5e-7)
 
     # Zero expected profit: gains from uninformed trades equal losses to informed trades
     buy_h, buy_l = mu + (1 - mu) / 2, (1 - mu) / 2
@@ -105,7 +106,7 @@ def glosten_milgrom() -> None:
         profit += pv * (pb * (ask - v) + ps * (v - bid))
     check("market maker expected profit per trade", profit, 0.0, 1e-12)
     uninformed_gain = (1 - mu) * 0.5 * ((ask - mean) + (mean - bid))
-    check("expected gain from uninformed per trade", uninformed_gain, 0.902256, 1e-6)
+    check("expected gain from uninformed per trade", uninformed_gain, 0.902256, 5e-7)
 
     # Symmetric case pi = 1/2: half-spread = mu (V_H - V_L) / 2
     b2, a2 = gm_quotes(v_low, v_high, 0.5, mu)
@@ -128,8 +129,8 @@ def glosten_milgrom() -> None:
             spreads_at[k] = float(np.mean(a_k - b_k))
             p_high_at[k] = float(pis.mean())
     for k, want_p, want_s in ((10, 0.6504, 1.5996), (25, 0.8225, 0.8565), (50, 0.9340, 0.3242)):
-        check(f"mean P(H) after {k} trades", p_high_at[k], want_p, 1e-4)
-        check(f"mean spread after {k} trades", spreads_at[k], want_s, 1e-4)
+        check(f"mean P(H) after {k} trades", p_high_at[k], want_p, 5e-5)
+        check(f"mean spread after {k} trades", spreads_at[k], want_s, 5e-5)
 
 
 def decomposition() -> None:
@@ -143,13 +144,13 @@ def decomposition() -> None:
     x = np.column_stack([q[1:], q[:-1]])
     coef, *_ = np.linalg.lstsq(x, dp, rcond=None)
     theta_hat, phi_hat = coef[0] + coef[1], -coef[1]
-    check("coefficient on q_t (theta + phi)", float(coef[0]), 0.0500, 1e-4)
-    check("coefficient on q_t-1 (-phi)", float(coef[1]), -0.0300, 1e-4)
-    check("adverse selection theta", float(theta_hat), 0.0199, 1e-4)
-    check("transitory phi", float(phi_hat), 0.0300, 1e-4)
-    check("adverse-selection share of the half-spread", float(theta_hat / (theta_hat + phi_hat)), 0.399, 1e-3)
+    check("coefficient on q_t (theta + phi)", float(coef[0]), 0.0500, 5e-5)
+    check("coefficient on q_t-1 (-phi)", float(coef[1]), -0.0300, 5e-5)
+    check("adverse selection theta", float(theta_hat), 0.0199, 5e-5)
+    check("transitory phi", float(phi_hat), 0.0300, 5e-5)
+    check("adverse-selection share of the half-spread", float(theta_hat / (theta_hat + phi_hat)), 0.399, 0.0005)
     check("theoretical Roll estimate sqrt(phi(theta+phi))", math.sqrt(phi * (theta + phi)), 0.0387298, 1e-6)
-    check("Roll estimate on the same data", roll_estimate(p), 0.0387, 1e-4)
+    check("Roll estimate on the same data", roll_estimate(p), 0.0387, 5e-5)
 
 
 def card_numbers() -> None:

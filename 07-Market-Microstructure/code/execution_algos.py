@@ -48,12 +48,12 @@ def schedules() -> None:
     assert abs(PROFILE.sum() - 1.0) < 1e-12
     twap = twap_schedule(100_000, 13)
     vwap = vwap_schedule(100_000, PROFILE)
-    check("TWAP slice", float(twap[0]), 7_692.3077, 1e-4)
+    check("TWAP slice", float(twap[0]), 7_692.3077, 5e-5)
     check("VWAP first bucket", float(vwap[0]), 12_000.0, 1e-6)
     check("VWAP lunchtime bucket", float(vwap[6]), 5_000.0, 1e-6)
     check("VWAP last bucket", float(vwap[-1]), 14_000.0, 1e-6)
     # Tracking: the share of the order done after the first hour
-    check("TWAP done after 1 hour (%)", float(twap[:2].sum() / 1_000), 15.3846, 1e-4)
+    check("TWAP done after 1 hour (%)", float(twap[:2].sum() / 1_000), 15.3846, 5e-5)
     check("VWAP done after 1 hour (%)", float(vwap[:2].sum() / 1_000), 21.0, 1e-9)
 
     print("== POV at 10% of a 2,000,000-share day, order 150,000 ==")
@@ -107,16 +107,16 @@ def implementation_shortfall() -> None:
     check("paper portfolio P&L ($)", paper_pnl, 60_000.0, 1e-6)
     check("real portfolio P&L ($)", real_pnl, 19_600.0, 1e-6)
     check("paper minus real equals shortfall", paper_pnl - real_pnl, total, 1e-6)
-    check("arrival slippage of executed shares (bp)", (avg - p_arrival) / p_arrival * 1e4, 49.9002, 1e-4)
+    check("arrival slippage of executed shares (bp)", (avg - p_arrival) / p_arrival * 1e4, 49.9002, 5e-5)
 
     print("== VWAP benchmark and participation ==")
     vwap_interval = 50.30
     check("slippage vs interval VWAP ($/share)", avg - vwap_interval, 0.05, 1e-12)
-    check("slippage vs interval VWAP (bp)", (avg - vwap_interval) / vwap_interval * 1e4, 9.9404, 1e-4)
+    check("slippage vs interval VWAP (bp)", (avg - vwap_interval) / vwap_interval * 1e4, 9.9404, 5e-5)
     w = 0.30  # our share of interval volume
     others_vwap = (vwap_interval - w * avg) / (1 - w)
-    check("VWAP of everyone else", others_vwap, 50.278571, 1e-6)
-    check("our price minus others' VWAP", avg - others_vwap, 0.071429, 1e-6)
+    check("VWAP of everyone else", others_vwap, 50.278571, 5e-7)
+    check("our price minus others' VWAP", avg - others_vwap, 0.071429, 5e-7)
     check("measured slippage = (1 - w) x true slippage", (1 - w) * (avg - others_vwap), avg - vwap_interval, 1e-12)
 
     print("== Post-trade reversion ==")
@@ -131,17 +131,17 @@ def tca_noise() -> None:
     sigma_daily, horizon_days = 0.02, 0.5
     # Average of a Brownian path over a uniform schedule: sd = sigma sqrt(T/3)
     sd_bp = sigma_daily * math.sqrt(horizon_days / 3) * 1e4
-    check("sd of arrival slippage, uniform half-day schedule (bp)", sd_bp, 81.65, 0.01)
+    check("sd of arrival slippage, uniform half-day schedule (bp)", sd_bp, 81.65, 0.005)
     n = (1.96 * sd_bp / 5.0) ** 2
-    check("orders to detect a 5 bp mean at 1.96 standard errors", n, 1_024.4, 0.1)
+    check("orders to detect a 5 bp mean at 1.96 standard errors", n, 1_024.4, 0.05)
     # Comparing two algorithms (two-sample test, 5% two-sided, 80% power): n per arm = 2 ((z_a + z_b) sd / diff)^2
     z_alpha, z_power = 1.959964, 0.841621
     n_arm = 2 * ((z_alpha + z_power) * sd_bp / 5.0) ** 2
-    check("orders per algorithm to compare two algorithms at 80% power", n_arm, 4_186.0, 1.0)
+    check("orders per algorithm to compare two algorithms at 80% power", n_arm, 4_186.0, 0.5)
     rng = np.random.default_rng(8)
     steps, paths = 1_000, 20_000
     w = np.cumsum(rng.standard_normal((paths, steps)) * math.sqrt(horizon_days / steps), axis=1)
-    check("simulated sd of the path average (bp)", float(w.mean(axis=1).std() * sigma_daily * 1e4), 81.85, 0.01)
+    check("simulated sd of the path average (bp)", float(w.mean(axis=1).std() * sigma_daily * 1e4), 81.85, 0.005)
 
 
 if __name__ == "__main__":

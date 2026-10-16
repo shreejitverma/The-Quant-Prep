@@ -96,9 +96,9 @@ def main() -> None:
     fees = {q.venue: q.taker_fee for q in BOOK}
     fee_total = sum(f[1] * fees[f[0]] for f in fills)
     check("shares filled", filled, 1_300, 0)
-    check("average price", avg, 20.024615, 1e-6)
+    check("average price", avg, 20.024615, 5e-7)
     check("taker fees paid ($)", fee_total, 2.85, 1e-9)
-    check("all-in average price", avg + fee_total / filled, 20.026808, 1e-6)
+    check("all-in average price", avg + fee_total / filled, 20.026808, 5e-7)
     check("residual shares left to rest at 20.03", 2_000 - filled, 700, 0)
 
     print("== Fee-aware choice at the same displayed price ==")

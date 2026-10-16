@@ -31,9 +31,9 @@ def p02_gm() -> None:
     p1 = 0.5 * sell_h / (0.5 * sell_h + 0.5 * sell_l)
     check("P3 P(H | one sell)", p1, 0.3)
     p2 = p1 * sell_h / (p1 * sell_h + (1 - p1) * sell_l)
-    check("P3 P(H | two sells)", p2, 0.155172, 1e-6)
+    check("P3 P(H | two sells)", p2, 0.155172, 5e-7)
     check("P3 P(H | two sells) as 0.09 / 0.58", p2, 0.09 / 0.58, 1e-12)
-    check("P3 next bid after one sell", v_low + (v_high - v_low) * p2, 48.62069, 1e-5)
+    check("P3 next bid after one sell", v_low + (v_high - v_low) * p2, 48.62069, 5e-6)
 
 
 def p04_kyle() -> None:
@@ -45,7 +45,7 @@ def p04_kyle() -> None:
     check("P4 price move for 10,000 net shares", lam * 10_000, 0.25)
     check("P5 lambda with 4x noise variance", sv / (2 * 2 * su), 1.25e-5, 1e-15)
     check("P5 profit with 4x noise variance", sv * 2 * su / 2, 45_000.0)
-    check("P6 posterior sd with sigma_v = 2", math.sqrt(4 / 2), 1.414214, 1e-6)
+    check("P6 posterior sd with sigma_v = 2", math.sqrt(4 / 2), 1.414214, 5e-7)
 
 
 def p07_impact() -> None:
@@ -54,20 +54,20 @@ def p07_impact() -> None:
     check("P7 ratio for 9% vs 4% ADV", math.sqrt(0.09 / 0.04), 1.5)
     check("P8 dollar cost of 200,000 x $40 at 30 bp", 200_000 * 40 * bp / 1e4, 24_000.0, 1e-6)
     check("P9 permanent impact under fair pricing (bp, peak 30)", 30 * 2 / 3, 20.0)
-    check("P10 power-law beta=1/2 impact left at 4T (continuum)", math.sqrt(4) - math.sqrt(3), 0.267949, 1e-6)
+    check("P10 power-law beta=1/2 impact left at 4T (continuum)", math.sqrt(4) - math.sqrt(3), 0.267949, 5e-7)
     k = 0.142 * (0.2 / 0.4) ** 0.6 * 200
-    check("P11 Almgren et al. temporary cost (bp)", k, 18.7370, 1e-4)
+    check("P11 Almgren et al. temporary cost (bp)", k, 18.7370, 5e-5)
 
 
 def p12_ac() -> None:
     lam, sigma, eta, x, t_end = 2e-6, 0.5, 1e-6, 500_000.0, 2.0
     kappa = math.sqrt(lam * sigma**2 / eta)
-    check("P12 kappa (1/day)", kappa, 0.707107, 1e-6)
+    check("P12 kappa (1/day)", kappa, 0.707107, 5e-7)
     frac = math.sinh(kappa * (t_end - 1)) / math.sinh(kappa * t_end)
-    check("P12 fraction left after 1 day", frac, 0.396639, 1e-6)
+    check("P12 fraction left after 1 day", frac, 0.396639, 5e-7)
     check("P12 TWAP fraction left after 1 day", 0.5, 0.5)
     check("P13 TWAP temporary cost eta X^2 / T", eta * x**2 / t_end, 125_000.0, 1e-6)
-    check("P13 TWAP cost std sigma X sqrt(T/3)", sigma * x * math.sqrt(t_end / 3), 204_124.1, 0.1)
+    check("P13 TWAP cost std sigma X sqrt(T/3)", sigma * x * math.sqrt(t_end / 3), 204_124.1, 0.05)
 
 
 def p14_tca() -> None:
@@ -82,10 +82,10 @@ def p14_tca() -> None:
     check("P14 opportunity", opportunity, 4_000.0, 1e-6)
     check("P14 fees", fees, 160.0, 1e-9)
     check("P14 total shortfall", total, 12_160.0, 1e-6)
-    check("P14 shortfall in bp of 1.5M", total / 1_500_000 * 1e4, 81.0667, 1e-4)
+    check("P14 shortfall in bp of 1.5M", total / 1_500_000 * 1e4, 81.0667, 5e-5)
     others = (30.16 - 0.25 * 30.20) / 0.75
-    check("P15 others' VWAP", others, 30.146667, 1e-6)
-    check("P15 true slippage vs others (cents)", (30.20 - others) * 100, 5.3333, 1e-4)
+    check("P15 others' VWAP", others, 30.146667, 5e-7)
+    check("P15 true slippage vs others (cents)", (30.20 - others) * 100, 5.3333, 5e-5)
     check("P16 POV 20% child vs 400,000 others", 0.2 / 0.8 * 400_000, 100_000.0, 1e-6)
 
 

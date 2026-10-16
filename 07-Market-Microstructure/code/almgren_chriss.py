@@ -71,7 +71,7 @@ def brute_force(lam: float) -> np.ndarray:
 
 def main() -> None:
     check("eta tilde", ETA_TILDE, 2.4375e-6, 1e-15)
-    check("annualised vol on $50 (sigma*sqrt(250)/50)", SIGMA * math.sqrt(250) / 50, 0.3004, 1e-4)
+    check("annualised vol on $50 (sigma*sqrt(250)/50)", SIGMA * math.sqrt(250) / 50, 0.3004, 5e-5)
 
     print("== Trajectories (holdings in thousands of shares) ==")
     lams = (0.0, 1e-7, 1e-6, 1e-5)
@@ -100,12 +100,12 @@ def main() -> None:
     for lam in lams:
         e, sd = summary[lam]
         kap = 0.0 if lam == 0 else kappa(lam)
-        check(f"lambda={lam:g} kappa (1/day)", kap, {0.0: 0.0, 1e-7: 0.1923, 1e-6: 0.6062, 1e-5: 1.8568}[lam], 1e-4)
-        check(f"lambda={lam:g} expected cost ($)", e, expected_summary[lam][0], 1.0)
-        check(f"lambda={lam:g} std of cost ($)", sd, expected_summary[lam][1], 1.0)
+        check(f"lambda={lam:g} kappa (1/day)", kap, {0.0: 0.0, 1e-7: 0.1923, 1e-6: 0.6062, 1e-5: 1.8568}[lam], 5e-5)
+        check(f"lambda={lam:g} expected cost ($)", e, expected_summary[lam][0], 0.5)
+        check(f"lambda={lam:g} std of cost ($)", sd, expected_summary[lam][1], 0.5)
 
-    check("cost increase TWAP -> lambda=1e-7 ($)", summary[1e-7][0] - summary[0.0][0], 7_733.0, 1.0)
-    check("std decrease TWAP -> lambda=1e-7 ($)", summary[0.0][1] - summary[1e-7][1], 73_599.0, 1.0)
+    check("cost increase TWAP -> lambda=1e-7 ($)", summary[1e-7][0] - summary[0.0][0], 7_733.0, 0.5)
+    check("std decrease TWAP -> lambda=1e-7 ($)", summary[0.0][1] - summary[1e-7][1], 73_599.0, 0.5)
     # Closed-form trade list n_k = 2 sinh(kappa tau / 2) / sinh(kappa T) * cosh(kappa (T - t_{k-1/2})) X
     k6 = kappa(1e-6)
     mid_times = (np.arange(1, N + 1) - 0.5) * TAU
@@ -122,24 +122,24 @@ def main() -> None:
     e_now, v_now = cost_moments(x_now)
     check("sell everything in the first interval: expected cost", e_now, 5_062_500.0, 1e-6)
     check("sell everything in the first interval: variance", v_now, 0.0, 1e-9)
-    check("continuous kappa for lambda=1e-6: sqrt(lam sigma^2/eta)", math.sqrt(1e-6 * SIGMA**2 / ETA), 0.6008, 1e-4)
-    check("characteristic time 1/kappa (days) for lambda=1e-6", 1 / kappa(1e-6), 1.6497, 1e-4)
+    check("continuous kappa for lambda=1e-6: sqrt(lam sigma^2/eta)", math.sqrt(1e-6 * SIGMA**2 / ETA), 0.6008, 5e-5)
+    check("characteristic time 1/kappa (days) for lambda=1e-6", 1 / kappa(1e-6), 1.6497, 5e-5)
 
     print("== Efficient frontier and a VaR-style choice ==")
     grid = np.logspace(-9, -4, 501)
     best = min(grid, key=lambda lam: cost_moments(trajectory(lam))[0] + 1.645 * math.sqrt(cost_moments(trajectory(lam))[1]))
     e_b, v_b = cost_moments(trajectory(best))
-    check("lambda minimising E + 1.645 sd", float(best), 1.2023e-6, 1e-10)
-    check("its expected cost ($)", e_b, 1_005_856.0, 1.0)
-    check("its std ($)", math.sqrt(v_b), 684_581.0, 1.0)
-    check("its E + 1.645 sd ($)", e_b + 1.645 * math.sqrt(v_b), 2_131_992.0, 1.0)
-    check("TWAP E + 1.645 sd ($)", e_twap + 1.645 * sd_twap, 2_540_507.0, 1.0)
-    check("extra expected cost vs TWAP ($)", e_b - e_twap, 330_856.0, 1.0)
-    check("reduction in E + 1.645 sd vs TWAP ($)", e_twap + 1.645 * sd_twap - (e_b + 1.645 * math.sqrt(v_b)), 408_515.0, 1.0)
+    check("lambda minimising E + 1.645 sd", float(best), 1.2023e-6, 5e-11)
+    check("its expected cost ($)", e_b, 1_005_856.0, 0.5)
+    check("its std ($)", math.sqrt(v_b), 684_581.0, 0.5)
+    check("its E + 1.645 sd ($)", e_b + 1.645 * math.sqrt(v_b), 2_131_992.0, 0.5)
+    check("TWAP E + 1.645 sd ($)", e_twap + 1.645 * sd_twap, 2_540_507.0, 0.5)
+    check("extra expected cost vs TWAP ($)", e_b - e_twap, 330_856.0, 0.5)
+    check("reduction in E + 1.645 sd vs TWAP ($)", e_twap + 1.645 * sd_twap - (e_b + 1.645 * math.sqrt(v_b)), 408_515.0, 0.5)
     # Frontier slope: near TWAP, dE/dsd is zero (first-order risk reduction is free)
     e1, v1 = cost_moments(trajectory(1e-9))
-    check("cost increase from TWAP at lambda=1e-9 ($)", e1 - e_twap, 0.915, 1e-3)
-    check("std decrease from TWAP at lambda=1e-9 ($)", sd_twap - math.sqrt(v1), 807.5, 0.1)
+    check("cost increase from TWAP at lambda=1e-9 ($)", e1 - e_twap, 0.915, 0.0005)
+    check("std decrease from TWAP at lambda=1e-9 ($)", sd_twap - math.sqrt(v1), 807.5, 0.05)
 
     print("== VWAP as the risk-neutral optimum with volume-scaled impact ==")
     volume = np.array([16.0, 11.0, 8.0, 7.0, 6.0, 6.0, 7.0, 9.0, 12.0, 18.0])  # % of day per bucket
@@ -156,7 +156,7 @@ def main() -> None:
         "cost ratio TWAP vs VWAP schedule under volume-scaled impact",
         float(np.sum((X / 10) ** 2 / volume) / np.sum(n_opt**2 / volume)),
         1.1475,
-        1e-4,
+        5e-5,
     )
 
 
