@@ -144,7 +144,8 @@ function renderMarkdown(src) {
   // Without the markdown renderer and the sanitizer (offline), show the raw text rather than unsanitized HTML.
   if (!window.marked || !window.DOMPurify) return escaped;
   const html = marked.parse(md, { gfm: true }).replace(/@@M(\d+)@@/g, (_, n) => renderTex(math[+n][0], math[+n][1]));
-  return DOMPurify.sanitize(html, { ADD_ATTR: ["open", "data-card"] });
+  const diagrams = html.replace(/<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/g, '<div class="mermaid">$1</div>');
+  return DOMPurify.sanitize(diagrams, { ADD_ATTR: ["open", "data-card"] });
 }
 
 function resolvePath(base, rel) {
@@ -158,6 +159,10 @@ function resolvePath(base, rel) {
 
 function mdView(body, notePath, paths) {
   const div = h("div", { class: "md", html: renderMarkdown(body) });
+  if (window.mermaid) {
+    mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });
+    mermaid.run({ nodes: div.querySelectorAll(".mermaid") }).catch((err) => console.error("Could not render Mermaid diagram", err));
+  }
   div.querySelectorAll("a[href]").forEach((a) => {
     const href = a.getAttribute("href");
     if (/^[a-z]+:/i.test(href)) { a.target = "_blank"; a.rel = "noopener"; return; }

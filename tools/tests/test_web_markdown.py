@@ -19,7 +19,10 @@ const [appPath, input] = process.argv.slice(1);
 const ctx = {
   document: { getElementById: () => null },
   addEventListener: () => {},
-  marked: { parse: (s) => s, parseInline: (s) => s },
+  marked: {
+    parse: (s) => s.replace(/```mermaid\n([\s\S]*?)```/g, (_, body) => `<pre><code class="language-mermaid">${body.replace(/\n$/, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`),
+    parseInline: (s) => s,
+  },
   DOMPurify: { sanitize: (s) => s },
   katex: { renderToString: (t, o) => `[${o.displayMode ? "D" : "I"}:${t}]` },
 };
@@ -69,6 +72,10 @@ class InlineMathTest(unittest.TestCase):
         # The summary is a flex row: the Q badge and the prompt must be its only two items.
         out = self.render("> [!question]- fi-x | Find $P_3$ given $s$\n> answer")
         self.assertIn("<summary><span>Find [I:P_3] given [I:s]</span></summary>", out)
+
+    def test_mermaid_fence_becomes_a_diagram_container(self):
+        out = self.render("```mermaid\nflowchart TB\n  A --> B\n```")
+        self.assertIn('<div class="mermaid">flowchart TB\n  A --&gt; B</div>', out)
 
 
 if __name__ == "__main__":
