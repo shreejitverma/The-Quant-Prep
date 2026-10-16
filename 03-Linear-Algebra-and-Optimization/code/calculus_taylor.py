@@ -173,8 +173,15 @@ def limits_and_series() -> None:
     k = np.arange(1, 200)
     check("sum k/2^k", float((k / 2.0**k).sum()), 2.0, 1e-12)
     check("sum k^2/2^k", float((k**2 / 2.0**k).sum()), 6.0, 1e-12)
-    check("pi^2/6", math.pi**2 / 6, 1.644934, 1e-6)
-    check("ln 2 (alternating harmonic)", math.log(2), 0.693147, 1e-6)
+    big_n = 100_000
+    kk = np.arange(1, big_n + 1, dtype=float)
+    basel = float((1 / kk**2).sum()) + 1 / big_n
+    check("sum 1/k^2 to N plus the 1/N tail (error below 1/N^2)", basel, 1.644934, 1e-6)
+    check("against pi^2/6", basel, math.pi**2 / 6, 1 / big_n**2)
+    alternating = np.cumsum((-1.0) ** (kk + 1) / kk)
+    ln2 = float(0.5 * (alternating[-1] + alternating[-2]))
+    check("alternating harmonic, mean of partial sums N - 1 and N (error below 1/N^2)", ln2, 0.693147, 1e-6)
+    check("against ln 2", ln2, math.log(2), 1 / big_n**2)
     h100 = sum(1 / i for i in range(1, 101))
     check("H_100", h100, 5.187378, 1e-6)
     gamma_em = 0.5772156649015329

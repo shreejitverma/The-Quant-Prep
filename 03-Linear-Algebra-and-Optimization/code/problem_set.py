@@ -91,12 +91,14 @@ def spectral_cards() -> None:
         "\n[la-ps-det-trace-from-eigenvalues, la-eig-trace-det, la-eig-two-by-two, la-ps-two-by-two-eigenvectors, "
         "la-ps-householder-reflector, la-ps-product-of-pd, la-ps-rotation-eigenvalues]"
     )
-    lam = np.array([1.0, 2.0, 3.0])
-    check("tr A", lam.sum(), 6.0, 1e-12)
-    check("det A", np.prod(lam), 6.0, 1e-12)
-    check("det(A^2 + I)", np.prod(lam**2 + 1), 100.0, 1e-12)
-    check("tr(A^-1)", np.sum(1 / lam), 11 / 6, 1e-12)
-    check("tr(A^-1) decimal", np.sum(1 / lam), 1.833333, 1e-6)
+    q_orth = np.linalg.qr(np.random.default_rng(3).standard_normal((3, 3)))[0]
+    a = q_orth @ np.diag([1.0, 2.0, 3.0]) @ q_orth.T
+    check("A = Q diag(1, 2, 3) Q': max |A - A'|", np.abs(a - a.T).max(), 0.0, 1e-15)
+    check("tr A", np.trace(a), 6.0, 1e-12)
+    check("det A", np.linalg.det(a), 6.0, 1e-12)
+    check("det(A^2 + I)", np.linalg.det(a @ a + np.eye(3)), 100.0, 1e-12)
+    check("tr(A^-1)", np.trace(np.linalg.inv(a)), 11 / 6, 1e-12)
+    check("tr(A^-1) decimal", np.trace(np.linalg.inv(a)), 1.833333, 1e-6)
     m = np.array([[4.0, 1.0], [2.0, 3.0]])
     check("trace of [[4,1],[2,3]]", np.trace(m), 7.0, 1e-12)
     check("det of [[4,1],[2,3]]", np.linalg.det(m), 10.0, 1e-12)

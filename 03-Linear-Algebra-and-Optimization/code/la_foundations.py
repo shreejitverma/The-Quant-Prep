@@ -151,9 +151,6 @@ def two_by_two_powers() -> None:
     check("A^10 diagonal", a10[0, 0], 29525, 1e-6)
     check("A^10 off-diagonal", a10[0, 1], 29524, 1e-6)
     check("3^10 = lambda_max^10", lam[1] ** 10, 59049, 1e-6)
-    lam3 = np.array([1.0, 2.0, 3.0])
-    check("card: trace with eigenvalues 1, 2, 3", lam3.sum(), 6.0, 0)
-    check("card: det with eigenvalues 1, 2, 3", lam3.prod(), 6.0, 0)
     assert np.array_equal(np.linalg.matrix_power(a.astype(np.int64), 10), np.array([[29525, 29524], [29524, 29525]]))
 
 

@@ -153,7 +153,7 @@ Computing $\text{inv}(H_{10})\,b$ instead leaves a relative residual of order $1
 ### Normal equations versus QR: the Lauchli matrix
 
 $A = \begin{pmatrix} 1 & 1 \\ \delta & 0 \\ 0 & \delta\end{pmatrix}$ with $\delta = 10^{-8}$ and $b = (2, \delta, \delta)$, so the exact least-squares solution is $(1, 1)$.
-$\kappa_2(A) = \sqrt{2 + \delta^2}/\delta = 1.41 \times 10^8$, large but harmless for QR, which recovers $(1, 1)$ within its $\kappa u = 1.6 \times 10^{-8}$ error bound (exactly, in the reference run).
+$\kappa_2(A) = \sqrt{2 + \delta^2}/\delta = 1.41 \times 10^8$, large but harmless for QR, which recovers $(1, 1)$ within its $\kappa u = 1.6 \times 10^{-8}$ error bound, to rounding error.
 But $A^\top A = \begin{pmatrix} 1 + \delta^2 & 1 \\ 1 & 1 + \delta^2\end{pmatrix}$ and $\text{fl}(1 + 10^{-16}) = 1$: the computed matrix is exactly singular (rank 1), and the normal equations have no answer at all.
 
 ### Losing orthogonality

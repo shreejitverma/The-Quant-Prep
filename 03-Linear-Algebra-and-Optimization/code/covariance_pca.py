@@ -165,7 +165,7 @@ def non_psd_repair() -> None:
     check("Higham rho12", near[0, 1], 0.743410, 1e-6)
     check("Higham rho23", near[1, 2], 0.105318, 1e-6)
     check("Higham distance (Frobenius)", np.linalg.norm(near - bad), 0.346792, 1e-6)
-    check("Higham min eigenvalue", np.linalg.eigvalsh(near)[0], 0.0, 1e-9)
+    check("Higham min eigenvalue", np.linalg.eigvalsh(near)[0], 0.0, 1e-12)
     check("Higham iterations (tol 1e-12)", iters, 30, 0)
     lo, _ = third_correlation_range(near[0, 1], near[0, 2])
     check("Higham result sits on the PSD boundary (rho23 - lower bound)", near[1, 2] - lo, 0.0, 1e-8)
