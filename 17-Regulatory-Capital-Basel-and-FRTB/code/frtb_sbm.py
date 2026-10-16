@@ -249,11 +249,7 @@ def calculate_drc_non_sec(positions: Sequence[DRCPosition]) -> float:
         net_jtd[key] = net_jtd.get(key, 0.0) + jtd
         ratings.setdefault(key, p.rating)
 
-    long_obligors = {
-        (bucket, obligor)
-        for (bucket, obligor, _seniority), jtd in net_jtd.items()
-        if jtd > 0.0
-    }
+    long_obligors = {(bucket, obligor) for (bucket, obligor, _seniority), jtd in net_jtd.items() if jtd > 0.0}
     bucket_totals: dict[str, list[float]] = {}
     for (bucket, obligor, seniority), jtd in net_jtd.items():
         totals = bucket_totals.setdefault(bucket, [0.0, 0.0, 0.0, 0.0])
@@ -357,16 +353,13 @@ def run_tests() -> None:
     # Short Senior Bond Obligor X ($5M notional, LGD 40%, rating BBB -> RW 6%)
     # Long Senior Bond Obligor Y ($8M notional, LGD 40%, rating BB -> RW 15%)
     p1 = DRCPosition(
-        obligor_id="X", rating="BBB", seniority="senior", bucket="Corporates",
-        notional=10_000_000.0, market_value=0.0, is_long=True
+        obligor_id="X", rating="BBB", seniority="senior", bucket="Corporates", notional=10_000_000.0, market_value=0.0, is_long=True
     )
     p2 = DRCPosition(
-        obligor_id="X", rating="BBB", seniority="senior", bucket="Corporates",
-        notional=5_000_000.0, market_value=0.0, is_long=False
+        obligor_id="X", rating="BBB", seniority="senior", bucket="Corporates", notional=5_000_000.0, market_value=0.0, is_long=False
     )
     p3 = DRCPosition(
-        obligor_id="Y", rating="BB", seniority="senior", bucket="Corporates",
-        notional=8_000_000.0, market_value=0.0, is_long=True
+        obligor_id="Y", rating="BB", seniority="senior", bucket="Corporates", notional=8_000_000.0, market_value=0.0, is_long=True
     )
 
     drc_capital = calculate_drc_non_sec([p1, p2, p3])
