@@ -71,7 +71,9 @@ flowchart TB
 
 Models are categorized into three tiers based on risk exposure:
 
-$$\text{Materiality Score} = w_1 \times \text{Financial Impact} + w_2 \times \text{Model Complexity} + w_3 \times \text{Regulatory Scrutiny}$$
+$$\text{Materiality Score} = w_1 S_1 + w_2 S_2 + w_3 S_3 + w_4 S_4$$
+
+where $S_1$ through $S_4$ are the 1-to-5 scores for Financial Exposure, Model Complexity, Regulatory Scrutiny, and Client Impact, respectively, and the weights sum to 1.
 
 - **Tier 1 (High Materiality):**
   Exotic derivatives pricing, firm-wide VaR/ES engines, FRTB IMA models, and CECL/IFRS 9 credit reserve models.

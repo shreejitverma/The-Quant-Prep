@@ -117,7 +117,7 @@ The calculation service exposes a low-latency gRPC / JSON interface:
 
 $$\text{Multiplier} = \min\left(1.0, 0.05 + 0.95 \times \exp\left( \frac{V - C}{2 \times 0.95 \times \text{AddOn}_{\text{total}}} \right)\right)$$
 
-- **Output:** Netting set EAD, Asset-class Add-on breakdown, Multiplier, and Risk-Weighted Assets ($\text{RWA} = 12.5 \times \text{EAD} \times RW_{\text{cpty}}$).
+- **Output:** Netting set EAD, Asset-class Add-on breakdown, Multiplier, and Risk-Weighted Assets ($\text{RWA} = \text{EAD} \times RW_{\text{cpty}}$). The factor $12.5$ converts an 8% minimum capital requirement into an equivalent RWA amount; it is not part of the RWA calculation.
 
 ### 4. BCBS 239 End-to-End Data Lineage Requirements
 

@@ -113,9 +113,9 @@ Where:
 #### Funding Valuation Adjustment (FVA)
 Decomposed into Funding Cost Adjustment (FCA) and Funding Benefit Adjustment (FBA):
 
-$$\text{FVA} = \int_0^T D(0, t) \, s_{\text{fund}}(t) \, \mathbb{E}^{\mathbb{Q}}\left[ V(t) - C(t) \right] dt$$
+$$\text{FVA} = \int_0^T D(0, t) \, \left( s_{\text{borrow}}(t) \, \mathbb{E}^{\mathbb{Q}}\left[ (V(t) - C(t))^+ \right] - s_{\text{lend}}(t) \, \mathbb{E}^{\mathbb{Q}}\left[ (C(t) - V(t))^+ \right] \right) dt$$
 
-Where $s_{\text{fund}}(t)$ is the bank's unsecured borrowing spread over the collateral discount rate.
+Here $s_{\text{borrow}}$ is the unsecured borrowing spread and $s_{\text{lend}}$ is the excess-cash lending spread, both relative to the collateral discount rate. Under the asymmetric convention used here, excess cash earns only the risk-free rate, so $s_{\text{lend}} = 0$ and the FBA term is zero.
 
 ### 4. American Monte Carlo (AMC) for Path-Dependent Contracts
 
@@ -254,7 +254,7 @@ Even though the counterparty is fully collateralized with daily Variation Margin
 
 > [!question]- sys-11-08 | What is the relationship between FVA and DVA in asymmetric funding models?
 > If a bank can fund itself at its own credit spread, FVA and DVA partially offset.
-> However, modern asymmetric funding models recognize that while a bank pays an unsecured borrowing spread ($s_{\text{borrow}} > 0$) when borrowing funds (FCA), it often earns only risk-free rates when depositing excess cash, preventing full DVA/FVA offset.
+> However, under the asymmetric funding convention used here, the bank pays an unsecured borrowing spread ($s_{\text{borrow}} > 0$) on positive funding needs (FCA) and earns only risk-free rates on excess cash ($s_{\text{lend}} = 0$), so there is no spread-based FBA to offset DVA.
 
 > [!question]- sys-11-09 | What is the ISDA Standard Initial Margin Model (SIMM)?
 > ISDA SIMM is a standardized, sensitivity-based mathematical methodology used across global financial institutions to calculate bilateral Initial Margin for uncleared derivatives.

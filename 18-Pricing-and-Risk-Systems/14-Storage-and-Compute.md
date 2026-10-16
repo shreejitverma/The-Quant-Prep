@@ -176,8 +176,8 @@ A quantitative researcher analyzes the results in Python:
 - Apache Arrow Zero-Copy IPC:
   - C++ writes floating-point arrays directly into a shared-memory buffer (`/dev/shm` via POSIX `shm_open`).
   - Python maps the shared memory segment using `pyarrow.ipc.open_stream(buffer)`.
-  - Python's NumPy/Pandas array references the **exact same physical RAM addresses** used by C++.
-  - Data transfer time: **$0.00\text{ seconds}$** (Zero-copy pointer handoff).
+  - Python's NumPy/Pandas array views the same shared backing memory; each process may map it at a different virtual address.
+  - The shared-memory setup, mapping, and buffer access take nonzero time, while avoiding a second copy of the array payload.
 
 ## Pitfalls
 
@@ -195,7 +195,7 @@ A quantitative researcher analyzes the results in Python:
 
 > [!question]- sys-14-02 | How does Apache Arrow eliminate serialization overhead in quantitative analytics?
 > Apache Arrow defines a standardized, language-independent columnar memory layout for flat and hierarchical data.
-> Systems written in different languages (C++, Python, Java, Rust) can share data via shared-memory pointers without copying or serializing bytes.
+> Systems written in different languages (C++, Python, Java, Rust) can access shared-memory buffers through process-local mappings, avoiding payload copies or serialization when their data layouts are compatible.
 
 > [!question]- sys-14-03 | What is double-delta compression and why is it effective for financial timestamps?
 > Double-delta compression stores the second difference of timestamps: $D = (t_i - t_{i-1}) - (t_{i-1} - t_{i-2})$.
@@ -214,7 +214,7 @@ A quantitative researcher analyzes the results in Python:
 > However, maintaining fast reads requires background merging and compaction across hierarchical SSTable files, causing write amplification that consumes disk I/O.
 
 > [!question]- sys-14-07 | How does POSIX shared memory (`/dev/shm`) improve IPC latency between trading services?
-> POSIX shared memory maps a common region of physical RAM directly into the address spaces of multiple processes.
+> POSIX shared memory maps the same shared backing region into multiple process address spaces, potentially at different virtual addresses, avoiding payload copying while still incurring setup, mapping, and access time.
 > Processes communicate at memory bus speeds ($< 100\text{ nanoseconds}$) without passing through operating system socket buffers or network protocol stacks.
 
 > [!question]- sys-14-08 | What is an Apache Iceberg table format and how does it benefit financial data lakes?
