@@ -48,6 +48,7 @@ jobs:
           python 11-Risk-and-Trading/code/exposure_xva.py
           python 17-Regulatory-Capital-Basel-and-FRTB/code/basel_credit_saccr.py
           python 17-Regulatory-Capital-Basel-and-FRTB/code/frtb_sbm.py
+          python 17-Regulatory-Capital-Basel-and-FRTB/code/frtb_ima.py
 
   secrets:
     runs-on: ubuntu-latest
