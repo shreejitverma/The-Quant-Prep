@@ -356,9 +356,18 @@ def run_tests() -> None:
     # Long Senior Bond Obligor X ($10M notional, LGD 40%, rating BBB -> RW 6%)
     # Short Senior Bond Obligor X ($5M notional, LGD 40%, rating BBB -> RW 6%)
     # Long Senior Bond Obligor Y ($8M notional, LGD 40%, rating BB -> RW 15%)
-    p1 = DRCPosition(obligor_id="X", rating="BBB", seniority="senior", bucket="Corporates", notional=10_000_000.0, market_value=0.0, is_long=True)
-    p2 = DRCPosition(obligor_id="X", rating="BBB", seniority="senior", bucket="Corporates", notional=5_000_000.0, market_value=0.0, is_long=False)
-    p3 = DRCPosition(obligor_id="Y", rating="BB", seniority="senior", bucket="Corporates", notional=8_000_000.0, market_value=0.0, is_long=True)
+    p1 = DRCPosition(
+        obligor_id="X", rating="BBB", seniority="senior", bucket="Corporates",
+        notional=10_000_000.0, market_value=0.0, is_long=True
+    )
+    p2 = DRCPosition(
+        obligor_id="X", rating="BBB", seniority="senior", bucket="Corporates",
+        notional=5_000_000.0, market_value=0.0, is_long=False
+    )
+    p3 = DRCPosition(
+        obligor_id="Y", rating="BB", seniority="senior", bucket="Corporates",
+        notional=8_000_000.0, market_value=0.0, is_long=True
+    )
 
     drc_capital = calculate_drc_non_sec([p1, p2, p3])
     # Obligor X net JTD = +4M - 2M = +2M, RW = 6% -> 120,000
