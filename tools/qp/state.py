@@ -25,7 +25,8 @@ try:  # POSIX advisory locks; on Windows only the in-process lock applies
 except ImportError:  # pragma: no cover
     fcntl = None
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+V1_DEFAULT_TRACKS = {"quant-trader", "quant-research", "quant-dev"}
 MASTERY_LABELS = ("unseen", "studied", "practiced", "solid", "interview-ready")
 GRADES = ("again", "hard", "good", "easy")
 MIN_EASE = 1.3
@@ -39,6 +40,15 @@ def default_profile() -> dict:
 
 class StateError(RuntimeError):
     pass
+
+
+def migrate_v1(data: dict) -> dict:
+    """Version 2 added the quant-risk track; a stored copy of the old three-track default gains it."""
+    profile = dict(data.get("profile", {}))
+    tracks = profile.get("tracks")
+    if isinstance(tracks, list) and len(tracks) == len(V1_DEFAULT_TRACKS) and set(tracks) == V1_DEFAULT_TRACKS:
+        profile["tracks"] = [*tracks, "quant-risk"]
+    return {**data, "version": 2, "profile": profile}
 
 
 def default_home() -> Path:
@@ -151,6 +161,8 @@ class Store:
             data = json.loads(self.path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
             raise StateError(f"{self.path} is not valid JSON ({exc}); restore state.json.bak or move it aside") from exc
+        if data.get("version") == 1:
+            data = migrate_v1(data)
         if data.get("version") != SCHEMA_VERSION:
             raise StateError(f"{self.path} has schema version {data.get('version')!r}, expected {SCHEMA_VERSION}")
         base = empty_state()

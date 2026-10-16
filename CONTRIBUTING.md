@@ -16,7 +16,7 @@ The seed notes (status `seed` in `./qp syllabus`) are the writing backlog.
 python3 -m unittest discover -s tools/tests -t .  # platform tests
 tools/scan-secrets.sh                             # secrets in your commits vs origin/main
 ruff check . && ruff format --check .             # Python lint and format
-python3 tools/run_examples.py                     # every example runs and its asserted numbers hold (needs numpy, pandas, matplotlib)
+python3 tools/run_examples.py                     # every example runs cleanly; asserted numbers fail on drift (needs numpy, pandas, matplotlib)
 ```
 
 The secret scan checks only the commits your branch adds, which keeps it fast.

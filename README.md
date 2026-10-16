@@ -63,7 +63,7 @@ Notes marked `seed` are the writing backlog: objectives and references exist, fu
 | Basel credit SA and IRB, SA-CCR, FRTB sensitivities-based method, DRC and RRAO, FRTB IMA (ES, NMRF, backtesting, PLA), liquidity and IRRBB | [17-Regulatory-Capital-Basel-and-FRTB/code](17-Regulatory-Capital-Basel-and-FRTB/code/) |
 | Reference pricing and risk engine | [18-Pricing-and-Risk-Systems/code](18-Pricing-and-Risk-Systems/code/) |
 
-Examples print and assert every number their notes quote, so a drifted number fails CI.
+Every example must run cleanly in CI; examples that assert their numbers also fail CI when a quoted number drifts.
 Run them all with `python tools/run_examples.py` (needs numpy, pandas and matplotlib; `--list` shows them), or one at a time with `python <file>.py`.
 Build a C++ example with `g++ -std=c++20 -O2 -pthread <file>.cpp`.
 

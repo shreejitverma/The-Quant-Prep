@@ -2,7 +2,8 @@
 
 An example is a ``.py`` file under ``NN-Section/code/`` of a curriculum section (library sections
 with ``curriculum: false`` are skipped) that has an ``if __name__ == "__main__":`` guard.
-Examples print their numbers and assert them, so a non-zero exit means a note's numbers drifted.
+Every example must run cleanly; examples that assert their numbers also fail when a note's numbers drift.
+Examples run with ``MPLBACKEND=Agg`` unless the caller sets it, so plots never open a window.
 A file opts out with a line ``# qp-examples: skip <reason>``; the reason is printed.
 
 Usage: python tools/run_examples.py [--list] [--timeout SECONDS] [paths ...]
@@ -11,6 +12,7 @@ Usage: python tools/run_examples.py [--list] [--timeout SECONDS] [paths ...]
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import subprocess
 import sys
@@ -55,13 +57,16 @@ def discover(root: Path) -> list[Example]:
 def run(root: Path, examples: list[Example], timeout: float) -> list[tuple[Example, str]]:
     """Run each example from the repo root; return (example, failure detail) for the failures."""
     failures = []
+    env = {**os.environ, "MPLBACKEND": os.environ.get("MPLBACKEND", "Agg")}
     for ex in examples:
         if ex.skip:
             print(f"skip  {ex.path}  ({ex.skip})")
             continue
         start = time.monotonic()
         try:
-            proc = subprocess.run([sys.executable, str(ex.path)], cwd=root, capture_output=True, text=True, timeout=timeout, check=False)
+            proc = subprocess.run(
+                [sys.executable, str(ex.path)], cwd=root, env=env, capture_output=True, text=True, timeout=timeout, check=False
+            )
         except subprocess.TimeoutExpired:
             failures.append((ex, f"timed out after {timeout:g}s"))
             print(f"FAIL  {ex.path}  (timeout)")
@@ -76,17 +81,24 @@ def run(root: Path, examples: list[Example], timeout: float) -> list[tuple[Examp
     return failures
 
 
+def selects(arg: str, path: Path) -> bool:
+    """True if ``arg`` names the example ``path`` or a directory containing it."""
+    arg = arg.removeprefix("./").rstrip("/")
+    rel = path.as_posix()
+    return rel == arg or rel.startswith(arg + "/")
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--list", action="store_true", help="list discovered examples and exit")
     ap.add_argument("--timeout", type=float, default=600.0, help="per-example timeout in seconds")
     ap.add_argument("--root", type=Path, default=REPO_ROOT, help=argparse.SUPPRESS)
-    ap.add_argument("paths", nargs="*", help="only run examples whose path starts with one of these")
+    ap.add_argument("paths", nargs="*", help="only run these examples, or the examples under these directories")
     args = ap.parse_args(argv)
     root = args.root.resolve()
     examples = discover(root)
     if args.paths:
-        examples = [e for e in examples if any(e.path.as_posix().startswith(p.rstrip("/")) for p in args.paths)]
+        examples = [e for e in examples if any(selects(p, e.path) for p in args.paths)]
     if args.list:
         for e in examples:
             print(f"{e.path}" + (f"  (skip: {e.skip})" if e.skip else ""))

@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import contextlib
 import io
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from tools import run_examples
 
@@ -65,6 +67,23 @@ class RunExamples(unittest.TestCase):
         code, out = self.main("01-Alpha/code/good.py")
         self.assertEqual(code, 0)
         self.assertIn("examples: 1 passed, 0 failed, 0 skipped", out)
+
+    def test_path_filter_matches_whole_path_components(self):
+        self.write("01-Alpha/code/good_extra.py", GUARD + "    raise SystemExit(1)\n")
+        code, out = self.main("--list", "01-Alpha/code/good")
+        self.assertEqual(out.strip(), "0 example(s)")
+        code, out = self.main("--list", "./01-Alpha/code/sub/")
+        self.assertEqual(out.splitlines(), ["01-Alpha/code/sub/deep.py", "1 example(s)"])
+        code, out = self.main("./01-Alpha/code/good.py")
+        self.assertEqual(code, 0)
+        self.assertIn("examples: 1 passed, 0 failed, 0 skipped", out)
+
+    def test_examples_default_to_a_headless_plot_backend(self):
+        self.write("01-Alpha/code/backend.py", "import os\n" + GUARD + "    assert os.environ['MPLBACKEND'] == 'Agg'\n")
+        with mock.patch.dict(os.environ):
+            os.environ.pop("MPLBACKEND", None)
+            code, out = self.main("01-Alpha/code/backend.py")
+        self.assertEqual(code, 0, out)
 
     def test_nothing_to_run_is_an_error(self):
         code, out = self.main("99-Nothing")

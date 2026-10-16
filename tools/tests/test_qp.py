@@ -239,6 +239,34 @@ class StoreBehaviour(TempRepo):
         other = Store(Path(self.tmp.name) / "other-home")
         self.assertIn("quant-risk", other.profile["tracks"])
 
+    def write_state(self, version: int, tracks: list[str]) -> None:
+        self.home.mkdir()
+        state = {
+            "version": version,
+            "profile": {"tracks": tracks, "hours_per_week": 7},
+            "topics": {},
+            "cards": {"a-one": {"due": "2026-01-09"}},
+        }
+        (self.home / "state.json").write_text(json.dumps(state))
+
+    def test_v1_state_on_old_default_tracks_gains_risk_track_and_saves_as_v2(self):
+        self.write_state(1, ["quant-dev", "quant-trader", "quant-research"])
+        s = self.store()
+        self.assertEqual(s.profile["tracks"], ["quant-dev", "quant-trader", "quant-research", "quant-risk"])
+        self.assertEqual((s.profile["hours_per_week"], s.data["cards"]["a-one"]["due"]), (7, "2026-01-09"))
+        s.save()
+        saved = json.loads((self.home / "state.json").read_text())
+        self.assertEqual(saved["version"], 2)
+        self.assertEqual(saved["profile"]["tracks"], ["quant-dev", "quant-trader", "quant-research", "quant-risk"])
+
+    def test_v1_state_with_chosen_tracks_keeps_them(self):
+        self.write_state(1, ["quant-trader"])
+        self.assertEqual(self.store().profile["tracks"], ["quant-trader"])
+
+    def test_v2_state_with_three_tracks_is_not_migrated(self):
+        self.write_state(2, ["quant-trader", "quant-research", "quant-dev"])
+        self.assertEqual(self.store().profile["tracks"], ["quant-trader", "quant-research", "quant-dev"])
+
     def test_rejects_bad_mastery(self):
         with self.assertRaises(StateError):
             self.store().set_mastery("base", 7)
