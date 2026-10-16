@@ -2,7 +2,9 @@
 ticker: V
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 11%
+  implied_growth_rate: 12.5%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 3.36%
     peg_ratio: 1.69
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:07
 market_data:
   ticker: V
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 0.82
   52w_high: 375.51
   52w_low: 293.89
+  data_quality: ok
+---
 
 # Stock: Visa (V)
 

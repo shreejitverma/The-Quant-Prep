@@ -1,8 +1,9 @@
 import os
 import re
-import yaml
+from pathlib import Path
 
-VAULT_ROOT = "16-Trading-and-Investing/Investing/Stock Research"
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+VAULT_ROOT = str(REPO_ROOT / "16-Trading-and-Investing" / "Investing" / "Stock Research")
 
 def extract_metrics(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:

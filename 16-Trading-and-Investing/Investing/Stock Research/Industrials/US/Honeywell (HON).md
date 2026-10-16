@@ -2,7 +2,9 @@
 ticker: HON
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 20%
+  implied_growth_rate: 19.9%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 1.95%
     peg_ratio: 2.16
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:22
 market_data:
   ticker: HON
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 2.0
   52w_high: 248.18
   52w_low: 186.76
+  data_quality: ok
+---
 
 # Stock: Honeywell (HON)
 

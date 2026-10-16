@@ -2,7 +2,9 @@
 ticker: WEGE3
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 15%
+  implied_growth_rate: 14.5%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: BRL
   returns:
@@ -16,18 +18,15 @@ value_metrics:
   valuation:
     fcf_yield: 2.90%
     peg_ratio: 1.15
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:24
 market_data:
   ticker: WEGE3
-  price: None
-  market_cap: None
-  pe_ratio: None
   dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  data_quality: missing
+  missing: price market_cap pe_ratio 52w_high 52w_low
+---
 
 # Stock: WEG SA (WEGE3)
 

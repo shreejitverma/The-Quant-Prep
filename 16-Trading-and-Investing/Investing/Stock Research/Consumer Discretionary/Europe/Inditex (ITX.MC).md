@@ -2,7 +2,9 @@
 ticker: ITX.MC
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 14%
+  implied_growth_rate: 13.1%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 3.22%
     peg_ratio: 3.26
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:27
 market_data:
   ticker: ITX.MC
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 1.22
   52w_high: 58.28
   52w_low: 40.8
+  data_quality: ok
+---
 
 # Stock: Inditex (ITX.MC)
 

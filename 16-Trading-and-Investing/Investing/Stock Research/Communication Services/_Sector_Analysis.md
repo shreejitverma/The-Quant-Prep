@@ -13,7 +13,7 @@ tags: [quant, benchmark, communication services]
 | NetEase (NTES) | 22.13% | 15.21% | 0.06 | 43.40% |
 
 ## Investment Logic
-- **Quality Dominance**: Higher ROE combined with low Debt/Equity indicates a strong structural moat ([Economic Moat](obsidian://open?vault=shreejit-verma-obsidian&file=Mental%20Models%2FWarren%20Buffett%2FEconomic%20Moat)).
+- **Quality Dominance**: Higher ROE combined with low Debt/Equity indicates a strong structural moat ([[Economic Moat]]).
 - **Growth Gap**: Compare 10y CAGR with current ROE to identify if the company is effectively reinvesting its capital.
 
 ---

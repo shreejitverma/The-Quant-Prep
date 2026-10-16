@@ -2,7 +2,9 @@
 ticker: ULVR.L
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 72%
+  implied_growth_rate: 2.8%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: GBp
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 6.89%
     peg_ratio: 10.40
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:18
 market_data:
   ticker: ULVR.L
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 4.02
   52w_high: 5542.11
   52w_low: 3648.5
+  data_quality: ok
+---
 
 # Stock: Unilever (ULVR.L)
 

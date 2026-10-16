@@ -1,7 +1,9 @@
 import os
 import re
+from pathlib import Path
 
-VAULT_ROOT = "16-Trading-and-Investing/Investing/Stock Research"
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+VAULT_ROOT = str(REPO_ROOT / "16-Trading-and-Investing" / "Investing" / "Stock Research")
 
 def generate_moc():
     print("Regenerating Global Stock Research MOC (Final Polish)...")

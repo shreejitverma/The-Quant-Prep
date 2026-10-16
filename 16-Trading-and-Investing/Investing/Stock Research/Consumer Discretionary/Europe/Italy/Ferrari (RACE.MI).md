@@ -2,7 +2,9 @@
 ticker: RACE.MI
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 21%
+  implied_growth_rate: 20.2%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 1.90%
     peg_ratio: 3.77
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:28
 market_data:
   ticker: RACE.MI
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 1.22
   52w_high: 447.5
   52w_low: 269.0
+  data_quality: ok
+---
 
 # Stock: Ferrari (RACE.MI)
 

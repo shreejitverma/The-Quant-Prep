@@ -2,7 +2,9 @@
 ticker: NKE
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 18%
+  implied_growth_rate: 20.1%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 1.92%
     peg_ratio: 1.59
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:26
 market_data:
   ticker: NKE
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 3.55
   52w_high: 80.17
   52w_low: 41.35
+  data_quality: ok
+---
 
 # Stock: Nike (NKE)
 

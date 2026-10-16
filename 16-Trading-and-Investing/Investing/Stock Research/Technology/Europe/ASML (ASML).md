@@ -2,7 +2,9 @@
 ticker: ASML
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 24%
+  implied_growth_rate: 23.1%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 1.54%
     peg_ratio: 2.42
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:13
 market_data:
   ticker: ASML
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 0.54
   52w_high: 1654.2
   52w_low: 683.48
+  data_quality: ok
+---
 
 # Stock: ASML (ASML)
 

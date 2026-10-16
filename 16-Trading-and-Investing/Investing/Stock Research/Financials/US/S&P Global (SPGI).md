@@ -2,7 +2,9 @@
 ticker: SPGI
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 10%
+  implied_growth_rate: 9.4%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 4.22%
     peg_ratio: 1.49
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:07
 market_data:
   ticker: SPGI
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 0.92
   52w_high: 579.05
   52w_low: 381.61
+  data_quality: ok
+---
 
 # Stock: S&P Global (SPGI)
 

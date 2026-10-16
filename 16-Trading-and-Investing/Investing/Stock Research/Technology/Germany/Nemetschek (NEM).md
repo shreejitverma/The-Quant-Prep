@@ -2,7 +2,9 @@
 ticker: NEM
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 1%
+  implied_growth_rate: 8.5%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 4.52%
     peg_ratio: 1.26
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:13
 market_data:
   ticker: NEM
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 0.95
   52w_high: 134.88
   52w_low: 52.08
+  data_quality: ok
+---
 
 # Stock: Nemetschek (NEM)
 

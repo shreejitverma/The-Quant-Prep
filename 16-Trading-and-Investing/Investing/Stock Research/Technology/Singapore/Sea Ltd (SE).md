@@ -2,7 +2,9 @@
 ticker: SE
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 22%
+  implied_growth_rate: 22.6%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 1.60%
     peg_ratio: 1.29
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:13
 market_data:
   ticker: SE
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 0
   52w_high: 199.3
   52w_low: 77.05
+  data_quality: ok
+---
 
 # Stock: Sea Ltd (SE)
 

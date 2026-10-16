@@ -2,7 +2,9 @@
 ticker: NTES
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: -25%
+  implied_growth_rate: -25.9%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 43.40%
     peg_ratio: 1.30
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:29
 market_data:
   ticker: NTES
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 2.46
   52w_high: 159.55
   52w_low: 106.06
+  data_quality: ok
+---
 
 # Stock: NetEase (NTES)
 

@@ -2,7 +2,9 @@
 ticker: AFX
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: 10.5%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,18 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 3.89%
     peg_ratio: 0.96
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:16
 market_data:
   ticker: AFX
-  price: None
-  market_cap: None
-  pe_ratio: None
   dividend_yield: 0
   52w_high: 2221.0
   52w_low: 2200.0
+  data_quality: missing
+  missing: price market_cap pe_ratio
+---
 
 # Stock: Carl Zeiss Meditec (AFX)
 

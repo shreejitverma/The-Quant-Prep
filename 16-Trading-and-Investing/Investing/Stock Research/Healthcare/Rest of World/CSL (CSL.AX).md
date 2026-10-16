@@ -2,7 +2,9 @@
 ticker: CSL.AX
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 11%
+  implied_growth_rate: 10.2%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: AUD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 3.99%
     peg_ratio: 1.82
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:17
 market_data:
   ticker: CSL.AX
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 4.41
   52w_high: 275.79
   52w_low: 93.64
+  data_quality: ok
+---
 
 # Stock: CSL (CSL.AX)
 

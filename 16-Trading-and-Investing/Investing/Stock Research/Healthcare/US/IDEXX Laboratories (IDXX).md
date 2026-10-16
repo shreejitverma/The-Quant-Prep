@@ -2,7 +2,9 @@
 ticker: IDXX
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 22%
+  implied_growth_rate: 21.2%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 1.77%
     peg_ratio: 3.61
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:15
 market_data:
   ticker: IDXX
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 0
   52w_high: 769.98
   52w_low: 504.56
+  data_quality: ok
+---
 
 # Stock: IDEXX Laboratories (IDXX)
 

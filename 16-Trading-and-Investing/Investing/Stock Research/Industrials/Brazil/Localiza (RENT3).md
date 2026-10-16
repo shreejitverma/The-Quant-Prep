@@ -2,7 +2,9 @@
 ticker: RENT3
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: -14.3%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: BRL
   returns:
@@ -16,18 +18,15 @@ value_metrics:
   valuation:
     fcf_yield: 22.51%
     peg_ratio: 0.58
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:23
 market_data:
   ticker: RENT3
-  price: None
-  market_cap: None
-  pe_ratio: None
   dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  data_quality: missing
+  missing: price market_cap pe_ratio 52w_high 52w_low
+---
 
 # Stock: Localiza (RENT3)
 

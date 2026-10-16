@@ -2,7 +2,9 @@
 ticker: MA
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 12%
+  implied_growth_rate: 11.2%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 3.70%
     peg_ratio: 1.58
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:08
 market_data:
   ticker: MA
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 0.7
   52w_high: 601.77
   52w_low: 480.5
+  data_quality: ok
+---
 
 # Stock: Mastercard (MA)
 

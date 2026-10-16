@@ -2,7 +2,9 @@
 ticker: BBCA
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: n/a
+  implied_growth_status: non_positive_fcf
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: IDR
   returns:
@@ -16,18 +18,19 @@ value_metrics:
   valuation:
     fcf_yield: -0.76%
     peg_ratio: 1.58
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:10
 market_data:
   ticker: BBCA
   price: 100.93
-  market_cap: None
   pe_ratio: 19.750153
   dividend_yield: 1.74
   52w_high: 101.28
   52w_low: 78.68
+  data_quality: missing
+  missing: market_cap
+---
 
 # Stock: Bank Central Asia (BBCA)
 

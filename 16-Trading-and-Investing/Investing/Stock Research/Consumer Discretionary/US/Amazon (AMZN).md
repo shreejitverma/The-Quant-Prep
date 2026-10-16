@@ -2,7 +2,9 @@
 ticker: AMZN
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 46%
+  implied_growth_rate: 45.0%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 0.34%
     peg_ratio: 1.83
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:25
 market_data:
   ticker: AMZN
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 0
   52w_high: 278.56
   52w_low: 196.0
+  data_quality: ok
+---
 
 # Stock: Amazon (AMZN)
 

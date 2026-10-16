@@ -2,7 +2,9 @@
 ticker: NESTLEIND
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: 24.6%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: INR
   returns:
@@ -16,18 +18,15 @@ value_metrics:
   valuation:
     fcf_yield: 1.38%
     peg_ratio: 0.00
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:20
 market_data:
   ticker: NESTLEIND
-  price: None
-  market_cap: None
-  pe_ratio: None
   dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  data_quality: missing
+  missing: price market_cap pe_ratio 52w_high 52w_low
+---
 
 # Stock: Nestle India (NESTLEIND)
 
