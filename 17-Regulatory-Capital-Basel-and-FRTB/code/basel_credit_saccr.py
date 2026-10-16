@@ -11,6 +11,8 @@ version in force from 1 January 2023) and cited by chapter and paragraph:
 `run_tests()` reproduces the Basel Committee's own published numbers:
 all 144 illustrative IRB risk weights in CRE99.2 Table 1, the output floor example in RBC20.13,
 the five SA-CCR sample portfolios in CRE99.20 to CRE99.97 and the margin examples in CRE99.98 to CRE99.115.
+It also computes, prints and asserts every number quoted in notes 03 (credit risk capital) and 04 (SA-CCR),
+each to within half a unit of its last quoted decimal.
 Run it with `python 17-Regulatory-Capital-Basel-and-FRTB/code/basel_credit_saccr.py`.
 """
 
@@ -139,6 +141,8 @@ def corporate_correlation(pd: float, sales_eur_m: float | None = None, large_or_
     R = 0.12 w + 0.24 (1 - w), w = (1 - e^{-50 PD}) / (1 - e^{-50}).
     SMEs with consolidated sales S < EUR 50m subtract 0.04 (1 - (S - 5) / 45), S floored at 5 (CRE31.8).
     Large regulated (total assets >= USD 100bn) and all unregulated financials multiply R by 1.25 (CRE31.7).
+    Applying the 1.25 multiplier before the SME deduction is an ordering choice of this implementation:
+    CRE31.7 and CRE31.8 do not say how to combine them (a financial institution with sales below EUR 50m is rare).
     """
     w = _pd_weight(pd, 50.0)
     r = 0.12 * w + 0.24 * (1.0 - w)
@@ -329,8 +333,12 @@ class Trade:
     entity: str = ""
     option: OptionTerms | None = None
     cdo_attach_detach: tuple[float, float] | None = None
-    basis: bool = False  # CRE52.46: separate hedging set and half the supervisory factor
+    basis: str = ""  # CRE52.46: the specific basis (pair of risk factors); each basis is its own hedging set at half the factor
     volatility: bool = False  # CRE52.47: separate hedging set and five times the supervisory factor
+
+    def __post_init__(self) -> None:
+        if self.basis and self.volatility:
+            raise ValueError(f"{self.trade_id}: a trade is either a basis or a volatility transaction, not both")
 
 
 def supervisory_duration(start: float, end: float) -> float:
@@ -365,12 +373,20 @@ def mpor_floor_days(
     return floor
 
 
+def option_d(trade: Trade) -> float:
+    """CRE52.40: d = (ln((P + lambda) / (K + lambda)) + 0.5 sigma^2 T) / (sigma sqrt(T)) with the supervisory volatility."""
+    if trade.option is None:
+        raise ValueError(f"{trade.trade_id} is not an option")
+    o = trade.option
+    vol = SUPERVISORY[(trade.asset_class, trade.subclass)][2]
+    return (math.log((o.underlying + o.shift) / (o.strike + o.shift)) + 0.5 * vol**2 * o.expiry) / (vol * math.sqrt(o.expiry))
+
+
 def supervisory_delta(trade: Trade) -> float:
     """CRE52.39 to CRE52.41: +1/-1 for linear trades, Black-Scholes style delta for options, tranche formula for CDOs."""
     if trade.option is not None:
         o = trade.option
-        vol = SUPERVISORY[(trade.asset_class, trade.subclass)][2]
-        d = (math.log((o.underlying + o.shift) / (o.strike + o.shift)) + 0.5 * vol**2 * o.expiry) / (vol * math.sqrt(o.expiry))
+        d = option_d(trade)
         if o.call:
             delta = norm_cdf(d)
         else:
@@ -401,7 +417,8 @@ def _sf_scale(trade: Trade) -> float:
     return 0.5 if trade.basis else 5.0 if trade.volatility else 1.0
 
 
-def _hs_key(trade: Trade) -> tuple[str, bool, bool]:
+def _hs_key(trade: Trade) -> tuple[str, str, bool]:
+    """Hedging set: currency, pair or commodity group, split by specific basis (CRE52.46) and volatility (CRE52.47)."""
     return (trade.hedging_set, trade.basis, trade.volatility)
 
 
@@ -456,7 +473,8 @@ def _single_factor(addons: Iterable[tuple[float, float]]) -> tuple[float, float,
 def addon_credit_or_equity(trades: Sequence[Trade], margined: bool, mpor_days: float) -> tuple[float, dict]:
     """CRE52.61 (credit) and CRE52.66 (equity): entity add-ons combined with the single-factor formula.
 
-    Basis and volatility trades form their own hedging sets (CRE52.46 to CRE52.47) whose add-ons are summed.
+    Non-basis, non-volatility trades share one hedging set (CRE52.45); each specific basis is a separate hedging set
+    (CRE52.46) and volatility trades form one more (CRE52.47); hedging-set add-ons are summed.
     """
     by_hs: dict[tuple, dict[str, list]] = defaultdict(dict)
     for t in trades:
@@ -639,36 +657,393 @@ def cre99_portfolios() -> dict[str, NettingSet]:
     }
 
 
+# CRE99.40, CRE99.58, CRE99.76, CRE99.79 and CRE99.97 print each sample EAD rounded to USD thousands.
+CRE99_PUBLISHED_EAD = {"ex1": 569, "ex2": 381, "ex3": 5_406, "ex4": 936, "ex5": 1_879}
+
+QUOTED_LOG: list[str] = []
+
+
+def quoted(label: str, value: float, expected: float, decimals: int) -> float:
+    """Print a number that a note quotes and assert that it rounds to the quoted figure.
+
+    The tolerance is half a unit in the last quoted decimal place, so a figure quoted as 82.06 must lie in [82.055, 82.065].
+    """
+    tol = 0.5 * 10.0**-decimals + 1e-9
+    assert abs(value - expected) <= tol, f"{label}: computed {value!r}, quoted {expected}"
+    QUOTED_LOG.append(label)
+    print(f"    {label}: {value:,.{decimals}f}")
+    return value
+
+
 def _close(a: float, b: float, tol: float) -> bool:
     return abs(a - b) <= tol
+
+
+def maturity_adjustment(pd: float, maturity: float) -> float:
+    """CRE31.5: (1 + (M - 2.5) b) / (1 - 1.5 b)."""
+    b = maturity_b(pd)
+    return (1.0 + (maturity - 2.5) * b) / (1.0 - 1.5 * b)
+
+
+def _check_cre99_table_1() -> None:
+    """All 144 risk weights of CRE99.2 Table 1: 141 within the 0.005 rounding of the table, 3 off by at most 0.006."""
+    worst = 0.0
+    within_rounding = 0
+    beyond: dict[tuple[float, int], float] = {}
+    for pd, published in CRE99_TABLE_1.items():
+        for col, (mine, theirs) in enumerate(zip(cre99_table_1_row(pd), published, strict=True)):
+            diff = abs(mine - theirs)
+            worst = max(worst, diff)
+            assert diff <= 0.006, (pd, col, mine, theirs)
+            if diff <= 0.005:
+                within_rounding += 1
+            else:
+                beyond[(pd, col)] = mine
+    print(f"  CRE99 Table 1: {within_rounding} of 144 IRB risk weights within 0.005 pct points, {len(beyond)} beyond, max {worst:.4f}")
+    quoted("Table 1 cells within 0.005 pct points", within_rounding, 141, 0)
+    quoted("Table 1 max abs difference (pct points)", worst, 0.006, 3)
+    # Columns: 2 = mortgage LGD 45%, 4 = other retail LGD 45%, 5 = other retail LGD 85%.
+    assert set(beyond) == {(0.015, 2), (0.001, 5), (0.013, 4)}, beyond
+    quoted("PD 1.5% mortgage LGD 45% RW (published 73.45)", beyond[(0.015, 2)], 73.444, 3)
+    quoted("PD 0.1% other retail LGD 85% RW (published 21.08)", beyond[(0.001, 5)], 21.086, 3)
+    quoted("PD 1.3% other retail LGD 45% RW (published 50.80)", beyond[(0.013, 4)], 50.794, 3)
+
+
+def _check_credit_note() -> None:
+    """Every computed number quoted in 03-Credit-Risk-Capital-SA-and-IRB.md."""
+    q = quoted
+    print("  Note 03, core concepts")
+    q("RWA scalar 1 / 8%", 1.0 / 0.08, 12.5, 1)
+    q("8% capital per 100 at RW 100%", 100 * 1.00 / 12.5, 8, 0)
+    q("corporate R at PD 0 (%)", corporate_correlation(0.0) * 100, 24, 0)
+    q("corporate R at PD 1 (%)", corporate_correlation(1.0) * 100, 12, 0)
+    q("large financial R at PD 0 (%)", corporate_correlation(0.0, large_or_unregulated_fi=True) * 100, 30, 0)
+    q("large financial R at PD 1 (%)", corporate_correlation(1.0, large_or_unregulated_fi=True) * 100, 15, 0)
+    q("HVCRE R at PD 0 (%)", hvcre_correlation(0.0) * 100, 30, 0)
+    q("HVCRE R at PD 1 (%)", hvcre_correlation(1.0) * 100, 12, 0)
+    q("other retail R at PD 0 (%)", retail_correlation(0.0, "other") * 100, 16, 0)
+    q("other retail R at PD 1 (%)", retail_correlation(1.0, "other") * 100, 3, 0)
+    q("maximum SME deduction (sales <= EUR 5m)", corporate_correlation(0.01) - corporate_correlation(0.01, sales_eur_m=1.0), 0.04, 2)
+    q("MA at PD 0.1%, M 2.5", maturity_adjustment(0.001, 2.5), 1.588, 3)
+    q("MA at PD 0.1%, M 5", maturity_adjustment(0.001, 5.0), 2.569, 3)
+    q("MA at PD 10%, M 2.5", maturity_adjustment(0.10, 2.5), 1.099, 3)
+    q("MA at PD 10%, M 5", maturity_adjustment(0.10, 5.0), 1.263, 3)
+    assert _close(maturity_adjustment(0.01, 1.0), 1.0, 1e-15)
+    q("K at LGD 45%, M 2.5, PD 0.05%", irb_corporate(0.0005, 0.45, 1.0).k, 0.0157, 4)
+    q("K at LGD 45%, M 2.5, PD 30%", irb_corporate(0.30, 0.45, 1.0).k, 0.1991, 4)
+    q("K at LGD 45%, M 2.5, PD 50%", irb_corporate(0.50, 0.45, 1.0).k, 0.1743, 4)
+    peak = max(range(1, 1000), key=lambda i: irb_corporate(i / 1000, 0.45, 1.0).k) / 1000
+    q("PD at which K peaks, LGD 45%, M 2.5 (%)", peak * 100, 30, 0)
+
+    print("  Note 03, Example 1: F-IRB corporate PD 1%, LGD 40%, M 2.5, EAD 10,000,000")
+    pd, lgd, ead = 0.01, 0.40, 10_000_000
+    w = _pd_weight(pd, 50.0)
+    r = corporate_correlation(pd)
+    g_pd, g_q = norm_ppf(pd), norm_ppf(CONFIDENCE)
+    numerator = g_pd + math.sqrt(r) * g_q
+    arg = numerator / math.sqrt(1.0 - r)
+    q("w50", w, 0.393469, 6)
+    q("1 - w50", 1.0 - w, 0.606531, 6)
+    q("R", r, 0.192784, 6)
+    q("G(0.01)", g_pd, -2.326348, 6)
+    q("G(0.999)", g_q, 3.090232, 6)
+    q("sqrt(R)", math.sqrt(r), 0.439071, 6)
+    q("sqrt(1 - R)", math.sqrt(1.0 - r), 0.898452, 6)
+    q("numerator", numerator, -0.969515, 6)
+    q("argument", arg, -1.079095, 6)
+    q("stressed PD", norm_cdf(arg), 0.140273, 6)
+    q("unexpected loss per unit", lgd * norm_cdf(arg) - pd * lgd, 0.052109, 6)
+    q("ln 0.01", math.log(pd), -4.605170, 6)
+    q("b", maturity_b(pd), 0.137486, 6)
+    q("MA", maturity_adjustment(pd, 2.5), 1.259810, 6)
+    corp = irb_corporate(pd, lgd, ead)
+    q("K", corp.k, 0.065648, 6)
+    q("RW (%)", corp.risk_weight * 100, 82.06, 2)
+    q("RWA", corp.rwa, 8_205_938, 0)
+    q("capital K x EAD", corp.k * ead, 656_475, 0)
+    assert _close(0.08 * corp.rwa, corp.k * ead, 1e-6)
+    q("EL", corp.expected_loss, 40_000, 0)
+    q("SA RWA, BBB", sa_corporate_rw("BBB") * ead, 7_500_000, 0)
+    q("SA RWA, unrated", sa_corporate_rw(None) * ead, 10_000_000, 0)
+    fi = irb_corporate(pd, FIRB_LGD_SENIOR_FINANCIAL, ead, large_or_unregulated_fi=True)
+    q("large bank R", fi.correlation, 0.240980, 6)
+    q("large bank RW (%)", fi.risk_weight * 100, 117.95, 2)
+    q("large bank RWA", fi.rwa, 11_794_939, 0)
+
+    print("  Note 03, Example 2: SME with sales EUR 10m")
+    sme = irb_corporate(pd, lgd, 1.0, sales_eur_m=10.0)
+    arg_sme = (g_pd + math.sqrt(sme.correlation) * g_q) / math.sqrt(1.0 - sme.correlation)
+    q("SME deduction", 0.04 * (1.0 - (10.0 - 5.0) / 45.0), 0.035556, 6)
+    q("SME R", sme.correlation, 0.157228, 6)
+    q("sqrt(R)", math.sqrt(sme.correlation), 0.396520, 6)
+    q("sqrt(1 - R)", math.sqrt(1.0 - sme.correlation), 0.918026, 6)
+    q("argument", arg_sme, -1.199322, 6)
+    q("stressed PD", norm_cdf(arg_sme), 0.115201, 6)
+    q("unexpected loss per unit", lgd * norm_cdf(arg_sme) - pd * lgd, 0.042081, 6)
+    for m, large, small in ((1.0, 65.14, 52.60), (2.5, 82.06, 66.27), (5.0, 110.26, 89.04)):
+        q(f"large corporate RW at M {m} (%)", irb_corporate(pd, lgd, 1.0, m).risk_weight * 100, large, 2)
+        q(f"SME RW at M {m} (%)", irb_corporate(pd, lgd, 1.0, m, sales_eur_m=10.0).risk_weight * 100, small, 2)
+    rw1, rw5 = irb_corporate(pd, lgd, 1.0, 1.0).risk_weight, irb_corporate(pd, lgd, 1.0, 5.0).risk_weight
+    q("RW increase from M 1 to M 5 (%)", (rw5 / rw1 - 1.0) * 100, 69, 0)
+    q("SME saving at M 2.5 (%)", (1.0 - sme.risk_weight / corp.risk_weight) * 100, 19, 0)
+
+    print("  Note 03, Example 3: revolver 20,000,000 limit, 5,000,000 drawn, PD 2%")
+    drawn, undrawn = 5_000_000, 15_000_000
+    ead_sa = drawn + SA_CCF["commitment"] * undrawn
+    q("SA and F-IRB EAD", ead_sa, 11_000_000, 0)
+    q("EAD if unconditionally cancellable", drawn + SA_CCF["unconditionally_cancellable"] * undrawn, 6_500_000, 0)
+    ead_floor = drawn + 0.5 * SA_CCF["commitment"] * undrawn
+    q("A-IRB EAD floor", ead_floor, 8_000_000, 0)
+    rev = irb_corporate(0.02, lgd, ead_sa)
+    q("R", rev.correlation, 0.164146, 6)
+    q("b", rev.b, 0.110770, 6)
+    q("K", rev.k, 0.081674, 6)
+    q("RW (%)", rev.risk_weight * 100, 102.09, 2)
+    q("RW (fraction)", rev.risk_weight, 1.020926, 6)
+    q("F-IRB RWA", rev.rwa, 11_230_191, 0)
+    q("RWA at the A-IRB EAD floor", irb_corporate(0.02, lgd, ead_floor).rwa, 8_167_412, 0)
+    q("SA unrated RWA", sa_corporate_rw(None) * ead_sa, 11_000_000, 0)
+
+    print("  Note 03, Example 4: retail IRB mortgage PD 0.5%, LGD 10%, LTV 55%")
+    mort = irb_retail(0.005, 0.10, 1_000_000, "mortgage")
+    q("stressed PD", conditional_pd(0.005, mort.correlation), 0.067363, 6)
+    q("K", mort.k, 0.006236, 6)
+    q("RW (%)", mort.risk_weight * 100, 7.80, 2)
+    q("RWA", mort.rwa, 77_954, 0)
+    q("SA RW at 55% LTV (%)", sa_residential_re_rw(0.55) * 100, 25, 0)
+    q("72.5% of SA RW (%)", OUTPUT_FLOOR * sa_residential_re_rw(0.55) * 100, 18.125, 3)
+    q("RW at the 5% LGD floor (%)", irb_retail(0.005, 0.05, 1.0, "mortgage").risk_weight * 100, 3.90, 2)
+    q("floored RWA, RBC20.13", floored_rwa(76, 140), 101.5, 1)
+    q("floored RWA with the RBC90.2 cap", floored_rwa(76, 140, cap=TRANSITIONAL_CAP), 95, 0)
+    q("floored RWA at the 2026 calibration", floored_rwa(76, 140, calibration=OUTPUT_FLOOR_PHASE_IN[2026]), 91, 0)
+
+    print("  Note 03, Example 5 and pitfalls")
+    rw_05, rw_3 = irb_corporate(0.005, lgd, 1.0).risk_weight, irb_corporate(0.03, lgd, 1.0).risk_weight
+    q("RW at PD 0.5% (%)", rw_05 * 100, 61.88, 2)
+    q("RW at PD 3% (%)", rw_3 * 100, 114.17, 2)
+    q("ratio", rw_3 / rw_05, 1.845, 3)
+    for p, uplift in ((0.0005, 36), (0.01, 28), (0.10, 17)):
+        base = irb_corporate(p, 0.45, 1.0).risk_weight
+        multiplied = irb_corporate(p, 0.45, 1.0, large_or_unregulated_fi=True).risk_weight
+        q(f"1.25 multiplier RW uplift at PD {p:.2%} (%)", (multiplied / base - 1.0) * 100, uplift, 0)
+
+    print("  Note 03, interview cards")
+    q("w50 at PD 7%", _pd_weight(0.07, 50.0), 0.97, 2)
+    q("MA at PD 1%, M 2.5", maturity_adjustment(pd, 2.5), 1.2598, 4)
+    q("R at PD 1%", corp.correlation, 0.1928, 4)
+    q("stressed PD at PD 1% (%)", conditional_pd(pd, corp.correlation) * 100, 14.03, 2)
+    q("stressed PD at PD 1%", conditional_pd(pd, corp.correlation), 0.14027, 5)
+    q("unexpected loss per unit", lgd * norm_cdf(arg) - pd * lgd, 0.05211, 5)
+    q("PD x LGD", pd * lgd, 0.004, 3)
+    q("b at PD 1%", corp.b, 0.1375, 4)
+    q("K at PD 1%", corp.k, 0.06565, 5)
+    q("RW at PD 1% with the pre-2017 LGD 45% (%)", irb_corporate(pd, 0.45, 1.0).risk_weight * 100, 92.32, 2)
+    q("SME R at sales EUR 10m", sme.correlation, 0.1572, 4)
+    e_s, e_u = 60.0 * (1.0 - 0.40), 100.0 - 60.0 * (1.0 - 0.40)
+    q("E_S", e_s, 36, 0)
+    q("E_U", e_u, 64, 0)
+    q("F-IRB LGD* with 60 of real estate (%)", firb_secured_lgd(100.0, 0.0, 60.0, 0.40, 0.20, FIRB_LGD_SENIOR_CORPORATE) * 100, 32.8, 1)
+
+
+def _check_saccr_note(p: dict[str, NettingSet]) -> None:
+    """Every computed number quoted in 04-Counterparty-Credit-Risk-SA-CCR.md (USD thousands)."""
+    q = quoted
+    print("  Note 04, core concepts")
+    mf10 = maturity_factor_margined(10)
+    q("margined MF at the 10-day MPOR floor", mf10, 0.30, 2)
+    q("add-on removed by daily margining for M >= 1y (%)", (1.0 - mf10 / maturity_factor_unmargined(5.0)) * 100, 70, 0)
+    q("multiplier one add-on out of the money (%)", pfe_multiplier(-1.0, 0.0, 1.0) * 100, 61.1, 1)
+    q("SD as E grows with S = 0", supervisory_duration(0.0, 1_000.0), 20, 0)
+    q("minimum EAD per unit add-on, alpha x floor", ALPHA * MULTIPLIER_FLOOR, 0.07, 2)
+    # Margined MF exceeds unmargined MF while M < 2.25 x MPOR: 22.5 business days at the 10-day floor (CRE52.2 FAQ1).
+    crossover_days = (mf10 / 1.0) ** 2 * BUSINESS_DAYS_PER_YEAR
+    q("margined MF > unmargined MF below M (business days)", crossover_days, 22.5, 1)
+    assert mf10 > maturity_factor_unmargined(22 / BUSINESS_DAYS_PER_YEAR)
+    assert mf10 < maturity_factor_unmargined(23 / BUSINESS_DAYS_PER_YEAR)
+    assert maturity_factor_margined(14) > maturity_factor_unmargined(31 / BUSINESS_DAYS_PER_YEAR)  # 2.25 x 14 = 31.5
+
+    print("  Note 04, Example 1: IR swaps and a swaption, unmargined")
+    ir = p["ex1"].trades
+    r1 = saccr_ead(p["ex1"])
+    for t, sd in zip(ir, (7.8694, 3.6254, 7.4856), strict=True):
+        q(f"{t.trade_id} supervisory duration", supervisory_duration(t.start, t.end), sd, 4)
+    for t, d in zip(ir, (78_694, 36_254, 37_428), strict=True):
+        q(f"{t.trade_id} adjusted notional", adjusted_notional(t), d, 0)
+    q("swaption d", option_d(ir[2]), 0.614643, 6)
+    q("swaption delta", supervisory_delta(ir[2]), -0.2694, 4)
+    for t, d in zip(ir, (78_694, -36_254, -10_083), strict=True):
+        q(f"{t.trade_id} effective notional", effective_notional(t, False, 10), d, 0)
+    usd = r1.detail["IR"][("USD", "", False)]
+    eur = r1.detail["IR"][("EUR", "", False)]
+    q("V", r1.v, 60, 0)
+    q("RC", r1.rc, 60, 0)
+    q("multiplier", r1.multiplier, 1, 0)
+    q("EN_USD", usd["EN"], 59_270, 0)
+    q("AddOn_USD", usd["AddOn"], 296.35, 2)
+    q("EN_EUR", eur["EN"], 10_083, 0)
+    q("AddOn_EUR", eur["AddOn"], 50.41, 2)
+    q("AddOn_IR", r1.addon_aggregate, 346.8, 1)
+    q("EAD", r1.ead, 569.5, 1)
+    no_offset = saccr_ead(p["ex1"], ir_offset=False)
+    q("AddOn_IR without cross-bucket offset", no_offset.addon_aggregate, 625.2, 1)
+    q("EAD without cross-bucket offset", no_offset.ead, 959.2, 1)
+    q("USD net D_B3 + D_B2 (card)", usd["DB"][2] + usd["DB"][1], 42_440, 0)
+    q("10-year SD (card)", supervisory_duration(0.0, 10.0), 7.87, 2)
+    q("4-year SD (card)", supervisory_duration(0.0, 4.0), 3.63, 2)
+
+    print("  Note 04, Example 2: credit default swaps")
+    cr_trades = p["ex2"].trades
+    r2 = saccr_ead(p["ex2"])
+    cr = r2.detail["CREDIT"][("", False)]
+    q("V", r2.v, -20, 0)
+    q("RC", r2.rc, 0, 0)
+    for t, sd in zip(cr_trades, (2.7858, 5.1836, 4.4240), strict=True):
+        q(f"{t.trade_id} supervisory duration", supervisory_duration(t.start, t.end), sd, 4)
+    for t, d in zip(cr_trades, (27_858, -51_836, 44_240), strict=True):
+        q(f"{t.trade_id} effective notional", effective_notional(t, False, 10), d, 0)
+    for e, a in (("Firm A", 105.9), ("Firm B", -279.9), ("CDX.IG", 168.1)):
+        q(f"AddOn {e}", cr["entities"][e], a, 1)
+    q("systematic term", cr["systematic"], 47.5, 1)
+    q("systematic term squared", cr["systematic"] ** 2, 2_253, 0)
+    q("idiosyncratic term", cr["idiosyncratic"], 77_344, 0)
+    q("AddOn_Credit", r2.addon_aggregate, 282.1, 1)
+    q("multiplier", r2.multiplier, 0.9652, 4)
+    q("PFE", r2.pfe, 272.3, 1)
+    q("EAD", r2.ead, 381.2, 1)
+
+    print("  Note 04, Example 3: commodity forwards")
+    co_trades = p["ex3"].trades
+    r3 = saccr_ead(p["ex3"])
+    co = r3.detail["COMMODITY"]
+    q("V", r3.v, 20, 0)
+    q("RC", r3.rc, 20, 0)
+    q("multiplier", r3.multiplier, 1, 0)
+    q("MF at 9 months", maturity_factor_unmargined(0.75), 0.8660, 4)
+    for t, d in zip(co_trades, (8_660, -20_000, 10_000), strict=True):
+        q(f"{t.trade_id} effective notional", effective_notional(t, False, 10), d, 0)
+    q("EN_crude", sum(effective_notional(t, False, 10) for t in co_trades[:2]), -11_340, 0)
+    q("AddOn_energy", co[("ENERGY", "", False)]["AddOn"], 2_041.2, 1)
+    q("AddOn_metals", co[("METALS", "", False)]["AddOn"], 1_800, 0)
+    q("AddOn_Commodity", r3.addon_aggregate, 3_841.2, 1)
+    q("EAD", r3.ead, 5_405.6, 1)
+
+    print("  Note 04, Example 4: Examples 1 and 2 in one netting set")
+    r4 = saccr_ead(p["ex4"])
+    assert _close(r4.addon_aggregate, r1.addon_aggregate + r2.addon_aggregate, 1e-9)
+    q("V", r4.v, 40, 0)
+    q("RC", r4.rc, 40, 0)
+    q("AddOn", r4.addon_aggregate, 628.9, 1)
+    q("multiplier", r4.multiplier, 1, 0)
+    q("EAD", r4.ead, 936.5, 1)
+    q("EAD of the two sets separately", r1.ead + r2.ead, 950.7, 1)
+
+    print("  Note 04, Example 5: Examples 1 and 3 margined weekly")
+    ns5 = p["ex5"]
+    r5 = saccr_ead(ns5)
+    q("V", r5.v, 80, 0)
+    q("V - C", r5.v - ns5.collateral, -120, 0)
+    q("TH + MTA - NICA", ns5.threshold + ns5.mta - ns5.nica, -145, 0)
+    q("RC", r5.rc, 0, 0)
+    q("MPOR (business days)", ns5.mpor_days, 14, 0)
+    q("MF", maturity_factor_margined(ns5.mpor_days), 0.354965, 6)
+    q("MF (card)", maturity_factor_margined(ns5.mpor_days), 0.355, 3)
+    for t, d in zip(ir, (27_934, -12_869, -3_579), strict=True):
+        q(f"{t.trade_id} effective notional", effective_notional(t, True, ns5.mpor_days), d, 0)
+    q("EN_USD", r5.detail["IR"][("USD", "", False)]["EN"], 21_039, 0)
+    q("AddOn_USD", r5.detail["IR"][("USD", "", False)]["AddOn"], 105.2, 1)
+    q("AddOn_EUR", r5.detail["IR"][("EUR", "", False)]["AddOn"], 17.9, 1)
+    q("AddOn_IR", r5.addons["IR"], 123.1, 1)
+    for t, d in zip(co_trades, (3_550, -7_099, 3_550), strict=True):
+        q(f"{t.trade_id} effective notional", effective_notional(t, True, ns5.mpor_days), d, 0)
+    # CRE99.90 prints -7,100 for trade 2 because it applies MF rounded to 0.355: 0.355 x 20,000 = 7,100.
+    assert round(round(maturity_factor_margined(ns5.mpor_days), 3) * co_trades[1].notional) == 7_100
+    q("AddOn_energy", r5.detail["COMMODITY"][("ENERGY", "", False)]["AddOn"], 638.94, 2)
+    q("AddOn_metals", r5.detail["COMMODITY"][("METALS", "", False)]["AddOn"], 638.94, 2)
+    q("AddOn_Commodity", r5.addons["COMMODITY"], 1_277.87, 2)
+    q("AddOn aggregate", r5.addon_aggregate, 1_401.0, 1)
+    q("multiplier", r5.multiplier, 0.9581, 4)
+    q("PFE", r5.pfe, 1_342.3, 1)
+    q("EAD", r5.ead, 1_879.2, 1)
+    unm = saccr_ead(NettingSet(ns5.trades, collateral=ns5.collateral))
+    q("EAD of the same set unmargined", unm.ead, 5_779.7, 1)
+    q("EAD reduction from the CSA (%)", (1.0 - r5.ead / unm.ead) * 100, 67, 0)
+    assert r5.ead < unm.ead  # the CRE52.2 cap does not bind
+
+    print("  Note 04, Example 6: CRE99.98 to CRE99.115 margin examples (V, C, TH, MTA, NICA)")
+    cases = (
+        ("VM received, IA 10", 80, 90, 0, 1, 10, -9, 0),
+        ("MTA 1, IM 10 each way unsegregated", 80, 79.5, 0, 1, 0, 1, 1),
+        ("bankruptcy-remote IM at CCP", -50, -50, 0, 0, 0, 0, 0),
+        ("IM at CCP not bankruptcy remote", -50, -60, 0, 0, -10, 10, 10),
+        ("maintenance margin 140%", 50, 80, 0, 0, 20, -20, 0),
+    )
+    for name, v, c, th, mta, nica, level, rc in cases:
+        q(f"{name}: TH + MTA - NICA", th + mta - nica, level, 0)
+        q(f"{name}: RC", replacement_cost(v, c, True, th, mta, nica), rc, 0)
+    q("card: V - C with VM 79.5", 80 - 79.5, 0.5, 1)
+
+    print("  Note 04, Example 7: CDO tranche deltas")
+    tranche = {}
+    for a, dd, quote, decimals in ((0.03, 0.07, 5.335, 3), (0.0, 0.03, 10.56, 2), (0.15, 1.0, 0.323, 3)):
+        t = Trade("T", "CREDIT", "INDEX_IG", 1.0, 0.0, 5.0, end=5.0, entity="CDX", cdo_attach_detach=(a, dd))
+        tranche[(a, dd)] = supervisory_delta(t)
+        q(f"delta {a:.0%} to {dd:.0%} bought protection", tranche[(a, dd)], quote, decimals)
+    q("15% to 100% senior tranche delta (card)", tranche[(0.15, 1.0)], 0.32, 2)
+    q("equity / senior delta ratio", tranche[(0.0, 0.03)] / tranche[(0.15, 1.0)], 33, 0)
+
+    print("  Note 04, CRE99 sample EADs against the published figures (rounded to USD thousands)")
+    for key, published in CRE99_PUBLISHED_EAD.items():
+        ead = saccr_ead(p[key]).ead
+        assert abs(ead - published) <= 0.5, (key, ead, published)
+        QUOTED_LOG.append(f"{key} EAD against CRE99")
+        print(f"    {key} EAD: {ead:,.2f}, published {published:,}")
+
+
+def _check_basis_hedging_sets() -> None:
+    """CRE52.46: a separate hedging set for each specific basis, each at half the supervisory factor."""
+    a = Trade("B1", "CREDIT", "A", 10_000, 0.0, 5.0, end=5.0, entity="Firm C", basis="Firm C bond vs CDS")
+    b = Trade("B2", "CREDIT", "A", 10_000, 0.0, 5.0, end=5.0, entity="Firm C", basis="Firm C senior vs subordinated")
+    total, detail = addon_credit_or_equity((a, b), margined=False, mpor_days=10)
+    assert len(detail) == 2, detail
+    single = addon_credit_or_equity((a,), margined=False, mpor_days=10)[0]
+    # Each basis is alone in its hedging set, so no systematic offset between them and the add-ons simply add.
+    assert _close(total, 2.0 * single, 1e-9)
+    unscaled = Trade("B3", "CREDIT", "A", 10_000, 0.0, 5.0, end=5.0, entity="Firm C")
+    assert _close(single, 0.5 * addon_credit_or_equity((unscaled,), margined=False, mpor_days=10)[0], 1e-9)
+    # Two trades on the same basis share one hedging set and net.
+    short = Trade("B4", "CREDIT", "A", 10_000, 0.0, 5.0, direction=-1, end=5.0, entity="Firm C", basis="Firm C bond vs CDS")
+    same_total, same_detail = addon_credit_or_equity((a, short), margined=False, mpor_days=10)
+    assert len(same_detail) == 1 and _close(same_total, 0.0, 1e-9)
+    # The same rule for interest rates: two bases in one currency are two hedging sets.
+    ir_a = Trade("I1", "IR", "", 10_000, 0.0, 5.0, end=5.0, hedging_set="USD", basis="3M Libor vs 6M Libor")
+    ir_b = Trade("I2", "IR", "", 10_000, 0.0, 5.0, end=5.0, hedging_set="USD", basis="1M Libor vs OIS")
+    assert len(addon_ir((ir_a, ir_b), margined=False, mpor_days=10)[1]) == 2
+    print("  CRE52.46: two different credit bases give two hedging sets at half the factor; one basis nets in one set")
 
 
 def run_tests() -> None:
     print("Basel credit risk and SA-CCR self-checks")
 
     # --- SA risk weights and CCFs -------------------------------------------------
-    assert sa_sovereign_rw("AA-") == 0.0 and sa_sovereign_rw("A+") == 0.20 and sa_sovereign_rw("B-") == 1.00
-    assert sa_sovereign_rw("CCC") == 1.50 and sa_sovereign_rw(None) == 1.00
-    assert sa_bank_rw_ecra("A") == 0.30 and sa_bank_rw_ecra("A", short_term=True) == 0.20
+    sov = [sa_sovereign_rw(r) for r in ("AA-", "A+", "BBB-", "BB+", "B-", "CCC", None)]
+    assert sov == [0.0, 0.20, 0.50, 1.00, 1.00, 1.50, 1.00], sov
+    assert [sa_bank_rw_ecra(r) for r in ("AA-", "A", "BBB", "BB", "B", "CCC")] == [0.20, 0.30, 0.50, 1.00, 1.00, 1.50]
+    assert [sa_bank_rw_ecra(r, short_term=True) for r in ("AA-", "A", "BBB", "BB", "B", "CCC")] == [0.20, 0.20, 0.20, 0.50, 0.50, 1.50]
     assert sa_bank_rw_scra("A", cet1_ge_14_and_lev_ge_5=True) == 0.30 and sa_bank_rw_scra("B") == 0.75
-    assert sa_corporate_rw("BBB") == 0.75 and sa_corporate_rw("BB-") == 1.00 and sa_corporate_rw("B+") == 1.50
+    assert [sa_bank_rw_scra(g) for g in "ABC"] == [0.40, 0.75, 1.50]
+    assert [sa_bank_rw_scra(g, short_term=True) for g in "ABC"] == [0.20, 0.50, 1.50]
+    assert [sa_corporate_rw(r) for r in ("AA-", "A", "BBB", "BB-", "B+", "CCC", None)] == [0.20, 0.50, 0.75, 1.00, 1.50, 1.50, 1.00]
     assert sa_corporate_rw(None, sme=True) == 0.85
-    assert sa_residential_re_rw(0.55) == 0.25 and sa_residential_re_rw(0.85) == 0.40 and sa_residential_re_rw(1.10) == 0.70
+    assert [sa_retail_rw(k) for k in ("regulatory", "transactor", "other")] == [0.75, 0.45, 1.00]
+    ltv = [sa_residential_re_rw(x) for x in (0.50, 0.55, 0.80, 0.85, 1.00, 1.10)]
+    assert ltv == [0.20, 0.25, 0.30, 0.40, 0.50, 0.70], ltv
     # CRE20.83 footnote 120: EUR 70,000 loan on EUR 100,000 property, loan splitting -> RWA 22,250.
     assert _close(0.20 * 55_000 + 0.75 * (70_000 - 55_000), 22_250, 1e-9)
 
-    # --- IRB: all 144 risk weights of CRE99.2 Table 1 ------------------------------
-    worst = 0.0
-    for pd, published in CRE99_TABLE_1.items():
-        for mine, theirs in zip(cre99_table_1_row(pd), published, strict=True):
-            worst = max(worst, abs(mine - theirs))
-            assert abs(mine - theirs) <= 0.006, (pd, mine, theirs)
-    print(f"  CRE99 Table 1: 144 IRB risk weights reproduced, max abs difference {worst:.4f} pct points")
-
-    corp = irb_corporate(0.01, 0.40, 1_000_000, 2.5)
-    print(f"  Corporate PD 1% LGD 40% M 2.5: R {corp.correlation:.6f} b {corp.b:.6f} K {corp.k:.6f} RW {corp.risk_weight:.4%}")
-    assert _close(corp.risk_weight * 100, 82.06, 0.006)
+    # --- IRB -----------------------------------------------------------------------
+    _check_cre99_table_1()
     # 1.25 multiplier for large financials (CRE31.7) at PD 1%.
+    corp = irb_corporate(0.01, 0.40, 1.0)
     fi = irb_corporate(0.01, 0.45, 1.0, 2.5, large_or_unregulated_fi=True)
     assert _close(fi.correlation, 1.25 * corp.correlation, 1e-12)
     # PD floor (CRE32.4) binds for a corporate but not for a sovereign.
@@ -676,71 +1051,14 @@ def run_tests() -> None:
     # At M = 1 the full maturity adjustment (1 + (M - 2.5) b) / (1 - 1.5 b) is exactly 1.
     k1 = irb_corporate(0.01, 0.40, 1.0, 1.0).k
     assert _close(k1, 0.40 * conditional_pd(0.01, corp.correlation) - 0.01 * 0.40, 1e-15)
-    # F-IRB secured LGD (CRE32.10 to CRE32.11): 100 loan, 60 of real estate collateral at 40% haircut, senior corporate.
-    # E_S = 60 x 0.6 = 36, E_U = 64, LGD* = (0.40 x 64 + 0.20 x 36) / 100 = 0.328.
-    lgd_star = firb_secured_lgd(100.0, 0.0, 60.0, 0.40, 0.20, FIRB_LGD_SENIOR_CORPORATE)
-    assert _close(lgd_star, 0.328, 1e-12)
-    print(f"  F-IRB LGD* with 60 of real estate on a 100 loan: {lgd_star:.4f}")
 
-    # --- Output floor: RBC20.13 Table 1 and RBC90.2 ------------------------------
-    assert _close(floored_rwa(76, 140), 101.5, 1e-9)
-    assert _close(floored_rwa(76, 140, cap=TRANSITIONAL_CAP), 95.0, 1e-9)
-    assert _close(floored_rwa(76, 140, calibration=OUTPUT_FLOOR_PHASE_IN[2026]), 91.0, 1e-9)
-    print("  Output floor RBC20.13: 101.5; with RBC90.2 cap: 95.0; at the 2026 65% calibration: 91.0")
-
-    # --- SA-CCR: the five CRE99 sample portfolios --------------------------------
+    # --- SA-CCR: the CRE99 sample portfolios, structural checks ---------------------
     p = cre99_portfolios()
-    ir_trades = p["ex1"].trades
-    assert [round(supervisory_duration(t.start, t.end), 2) for t in ir_trades] == [7.87, 3.63, 7.49]
-    assert [round(adjusted_notional(t)) for t in ir_trades] == [78_694, 36_254, 37_428]
-    assert round(supervisory_delta(ir_trades[2]), 4) == -0.2694
-    assert [round(effective_notional(t, False, 10)) for t in ir_trades] == [78_694, -36_254, -10_083]
-
-    r1 = saccr_ead(p["ex1"])
-    usd = r1.detail["IR"][("USD", False, False)]
-    eur = r1.detail["IR"][("EUR", False, False)]
-    print(f"  Ex1 IR: EN_USD {usd['EN']:,.0f} AddOn_USD {usd['AddOn']:,.1f} AddOn_EUR {eur['AddOn']:,.1f}")
-    print(f"  Ex1 IR: V {r1.v:,.0f} RC {r1.rc:,.0f} AddOn {r1.addon_aggregate:,.1f} multiplier {r1.multiplier:.4f} EAD {r1.ead:,.1f}")
-
     r2 = saccr_ead(p["ex2"])
-    cr = r2.detail["CREDIT"][(False, False)]
-    assert [round(cr["entities"][e]) for e in ("Firm A", "Firm B", "CDX.IG")] == [106, -280, 168]
-    assert round(cr["systematic"], 1) == 47.5 and round(cr["idiosyncratic"]) == 77_344
-    assert [round(adjusted_notional(t)) for t in p["ex2"].trades] == [27_858, 51_836, 44_240]
-    print(
-        f"  Ex2 credit: systematic^2 {cr['systematic'] ** 2:,.0f} idiosyncratic {cr['idiosyncratic']:,.0f}"
-        f" AddOn {r2.addon_aggregate:,.1f} multiplier {r2.multiplier:.4f} EAD {r2.ead:,.1f}"
-    )
-
+    cr = r2.detail["CREDIT"][("", False)]
+    assert [round(cr["entities"][e]) for e in ("Firm A", "Firm B", "CDX.IG")] == [106, -280, 168]  # CRE99.52
     r3 = saccr_ead(p["ex3"])
-    co = r3.detail["COMMODITY"]
-    assert round(effective_notional(p["ex3"].trades[0], False, 10)) == 8_660
-    assert round(co[("ENERGY", False, False)]["types"]["Crude oil"]) == -2_041
-    assert round(co[("METALS", False, False)]["types"]["Silver"]) == 1_800
-    print(f"  Ex3 commodity: V {r3.v:,.0f} RC {r3.rc:,.0f} AddOn {r3.addon_aggregate:,.1f} EAD {r3.ead:,.1f}")
-
-    r4 = saccr_ead(p["ex4"])
-    assert _close(r4.addon_aggregate, r1.addon_aggregate + r2.addon_aggregate, 1e-9)
-    print(f"  Ex4 IR + credit: V {r4.v:,.0f} RC {r4.rc:,.0f} AddOn {r4.addon_aggregate:,.1f} EAD {r4.ead:,.1f}")
-
-    r5 = saccr_ead(p["ex5"])
-    mf = maturity_factor_margined(14)
-    assert [round(effective_notional(t, True, 14)) for t in p["ex1"].trades] == [27_934, -12_869, -3_579]
-    # CRE99.90 prints -7,100 for trade 2; 20,000 x 0.354965 = -7,099.3, so the table rounds to the nearest 50.
-    published = [3_550, -7_100, 3_550]
-    assert all(_close(effective_notional(t, True, 14), x, 1.0) for t, x in zip(p["ex3"].trades, published, strict=True))
-    assert r5.rc == 0.0 and _close(r5.v, 80, 1e-9)
-    print(
-        f"  Ex5 margined: MF {mf:.6f} RC {r5.rc:,.0f} AddOn_IR {r5.addons['IR']:,.1f} AddOn_COM {r5.addons['COMMODITY']:,.1f}"
-        f" multiplier {r5.multiplier:.4f} EAD {r5.ead:,.1f}"
-    )
-
-    # --- Replacement cost with margin agreements: CRE99.98 to CRE99.115 -------------
-    assert replacement_cost(80, 90, True, 0, 1, 10) == 0.0  # Example 1
-    assert replacement_cost(80, 79.5 + 10 - 10, True, 0, 1, 0) == 1.0  # Example 2
-    assert replacement_cost(-50, -50, True, 0, 0, 0) == 0.0  # Example 3
-    assert replacement_cost(-50, -60, True, 0, 0, -10) == 10.0  # Example 4
-    assert replacement_cost(50, 80, True, 0, 0, 20) == 0.0  # Example 5
+    assert round(r3.detail["COMMODITY"][("ENERGY", "", False)]["types"]["Crude oil"]) == -2_041  # CRE99.70
     assert rc_shared_margin_agreement([30, -10], 15) == 15.0
 
     # --- Multiplier behaviour (CRE52.23) and MPOR floors (CRE52.50 to CRE52.51) -------
@@ -748,12 +1066,12 @@ def run_tests() -> None:
     assert _close(pfe_multiplier(-1e9, 0, 100), MULTIPLIER_FLOOR, 1e-12)
     assert mpor_floor_days() == 10 and mpor_floor_days(daily_margin=False, remargin_period_days=5) == 14
     assert mpor_floor_days(trades_in_netting_set=6000) == 20 and mpor_floor_days(disputes_exceeding_mpor_last_two_quarters=3) == 20
-    # CDO tranche delta (CRE52.41): 3% to 7% tranche, protection bought.
-    cdo = Trade("T1", "CREDIT", "INDEX_IG", 1.0, 0.0, 5.0, direction=+1, end=5.0, entity="CDX", cdo_attach_detach=(0.03, 0.07))
-    print(f"  CDO 3-7% tranche supervisory delta (bought protection): {supervisory_delta(cdo):.4f}")
-    # Margined EAD never exceeds unmargined EAD (CRE52.2).
-    unm = saccr_ead(NettingSet(p["ex5"].trades, collateral=200))
-    assert r5.ead <= unm.ead + 1e-9
+    _check_basis_hedging_sets()
+
+    # --- Every number quoted in notes 03 and 04 --------------------------------------
+    _check_credit_note()
+    _check_saccr_note(p)
+    print(f"  {len(QUOTED_LOG)} numbers quoted in notes 03 and 04 computed, printed and asserted")
     print("All Basel credit risk and SA-CCR checks passed.")
 
 

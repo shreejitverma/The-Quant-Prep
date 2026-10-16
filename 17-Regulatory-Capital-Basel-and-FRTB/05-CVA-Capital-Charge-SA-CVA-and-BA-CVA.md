@@ -167,7 +167,7 @@ For counterparty credit spread, $\rho_{kl} = \rho_{tenor}\, \rho_{name}\, \rho_{
 
 ### How it is implemented
 
-`code/basel_cva.py` implements reduced and full BA-CVA (with SNH, IH and HMA) and the SA-CVA bucket and cross-bucket aggregation with the hedging disallowance; its examples take EADs straight from the SA-CCR engine in `code/basel_credit_saccr.py`.
+`code/basel_cva.py` implements reduced and full BA-CVA (with SNH, IH and HMA) and the SA-CVA bucket and cross-bucket aggregation with the hedging disallowance; its examples take EADs straight from the SA-CCR engine in `code/basel_credit_saccr.py`, and its self-check computes, prints and asserts every number quoted on this page.
 
 In production, BA-CVA is a light aggregation on top of SA-CCR or IMM output: EAD, effective maturity and counterparty sector and quality per netting set, plus the CDS hedge book with reference names, legal-relation flags and notionals.
 The hard parts are reference data (sector and IG or HY mapping, legal hierarchies for $r_{hc}$) and making the hedge designation auditable.
@@ -192,7 +192,8 @@ flowchart LR
 
 ## Worked examples
 
-The EADs below are the CRE99 SA-CCR sample netting sets from [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md), in USD thousands; effective maturities are notional-weighted (CRE32.49) with the one-year floor; every number is printed by `code/basel_cva.py`.
+The EADs below are the CRE99 SA-CCR sample netting sets from [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md), in USD thousands; effective maturities are notional-weighted (CRE32.49) with the one-year floor; every number is printed and asserted by `code/basel_cva.py`.
+Intermediate values are shown rounded, but each step is computed from unrounded inputs, so recomputing a step from the rounded figures can differ in the last digit.
 
 ### Example 1: reduced BA-CVA for three counterparties
 
@@ -202,7 +203,7 @@ The EADs below are the CRE99 SA-CCR sample netting sets from [Counterparty Credi
 | Corp B, industrial HY (credit book) | 381.2 | 4.6667 | 0.891902 | 7.0% | 79.34 |
 | Sovereign C, IG (commodity book) | 5,405.6 | 2.4375 | 0.941464 | 0.5% | 44.30 |
 
-For Bank A, $M = (10,000 \times 10 + 10,000 \times 4 + 5,000 \times 11)/25,000 = 7.8$, $DF = (1 - e^{-0.39})/0.39 = 0.828059$, and $SCVA = 0.05 \times 7.8 \times 569.5 \times 0.828059/1.4 = 131.36$.
+For Bank A, $M = (10,000 \times 10 + 10,000 \times 4 + 5,000 \times 11)/25,000 = 7.8$, $DF = (1 - e^{-0.39})/0.39 = 0.828059$, and with the unrounded EAD of 569.47, $SCVA = 0.05 \times 7.8 \times 569.47 \times 0.828059/1.4 = 131.36$.
 $\sum_c SCVA_c = 255.00$, so the systematic term is $(0.5 \times 255.00)^2 = 16,256.8$ and the idiosyncratic term is $0.75 \times 25,513.5 = 19,135.1$.
 $K_{reduced} = \sqrt{35,392.0} = 188.13$, capital is $0.65 \times 188.13 = 122.28$ and RWA is 1,528.5.
 For comparison, the root-sum-square is 159.73 and the plain sum 255.00.
@@ -310,7 +311,8 @@ Adding a bucket 3 (industrials, IG 3%) counterparty with sensitivity 5,000 ($WS 
 
 > [!question]- reg-sa-cva-risk-classes | Which risk classes and measures make up SA-CVA, and what is excluded compared with FRTB SA?
 > Delta for interest rates, FX, counterparty credit spread, reference credit spread, equity and commodity; vega for all of these except counterparty credit spread (MAR50.43, MAR50.45).
-> There is no curvature, no default risk charge and no residual risk add-on (MAR50.27), no three-correlation-scenario rule, and the total is scaled by $m_{CVA} = 1$ (MAR50.41).
+> There is no curvature and no default risk charge (MAR50.27), and no residual risk add-on because SA-CVA capital is only the sum of the delta and vega charges (MAR50.42).
+> There is also no three-correlation-scenario rule, and the total is scaled by $m_{CVA} = 1$ (MAR50.41).
 
 > [!question]- reg-cva-over-hedge-index | Can buying more index protection increase full BA-CVA capital? Why?
 > Yes.
@@ -335,4 +337,4 @@ Adding a bucket 3 (industrials, IG 3%) counterparty with sensitivity 5,000 ($WS 
 - [FRTB: Sensitivities-Based Method - Delta](07-FRTB-Sensitivities-Based-Method-Delta.md) for the market-risk method SA-CVA is adapted from.
 - [XVA](../11-Risk-and-Trading/15-XVA.md) for CVA, DVA, FVA and KVA as pricing adjustments.
 - [XVA Engine](../18-Pricing-and-Risk-Systems/11-XVA-Engine.md) for exposure simulation and sensitivities in production.
-- `code/basel_cva.py` reproduces every number on this page.
+- `code/basel_cva.py` computes, prints and asserts every number on this page.

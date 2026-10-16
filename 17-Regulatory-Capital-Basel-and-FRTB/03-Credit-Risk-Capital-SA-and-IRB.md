@@ -32,7 +32,8 @@ sources: [Basel Committee on Banking Supervision - The Basel Framework (consolid
 ### Where credit RWA sits
 
 Minimum capital ratios are set against RWA, the sum of credit, market and operational risk RWA (RBC20.4).
-Credit RWA covers banking-book exposures, counterparty credit risk, CVA, securitisations, equity in funds and settlement risk (RBC20.6).
+Credit RWA covers banking-book exposures, counterparty credit risk, equity investments in funds, securitisations, exposures to central counterparties and settlement risk (RBC20.6(1) to (6)).
+CVA risk RWA is not part of it: it sits in market risk RWA (RBC20.9(2)).
 For every approach the bridge between a capital charge and RWA is the same constant: $\text{RWA} = 12.5 \cdot K \cdot \text{EAD}$, the reciprocal of the 8% minimum total capital ratio.
 A risk weight of 100% therefore means 8 units of capital per 100 of exposure before buffers.
 
@@ -49,7 +50,8 @@ Banks must perform due diligence and move a rated exposure at least one bucket h
 | Corporates | 20% | 50% | 75% | 100% | 150% | 150% | 100% | CRE20.42 to CRE20.43 Table 10 |
 
 Unrated banks fall under the SCRA: Grade A 40%, Grade B 75%, Grade C 150%, with 20%, 50% and 150% for short-term exposures, and 30% for Grade A banks with CET1 of at least 14% and a Tier 1 leverage ratio of at least 5% (CRE20.21 Table 7 and footnote 98).
-Unrated corporate SMEs (consolidated sales of EUR 50m or less) take 85% (CRE20.47); where external ratings are not allowed, "investment grade" corporates may take 65% (CRE20.46).
+Unrated corporate SMEs (consolidated sales of EUR 50m or less) take 85% (CRE20.47).
+Where external ratings are not allowed, corporates take 100% except "investment grade" corporates, which may take 65%, and all corporate SMEs, which take 85% (CRE20.44, CRE20.46 to CRE20.47).
 Retail takes 75% for regulatory retail, 45% for transactors (cards repaid in full for 12 months) and 100% for other retail (CRE20.66 to CRE20.68).
 Residential mortgages not dependent on property cash flows take a whole-loan risk weight by loan-to-value: 20% up to 50% LTV, 25% to 60%, 30% to 80%, 40% to 90%, 50% to 100%, 70% above (CRE20.82 Table 11); loan splitting is a jurisdictional alternative (CRE20.83).
 Listed equity takes 250% and speculative unlisted equity 400% (CRE20.57).
@@ -68,8 +70,9 @@ Off-balance-sheet items become exposures through credit conversion factors (CRE2
 
 Under F-IRB the bank estimates PD and uses supervisory LGD, EAD and M; under A-IRB it also estimates LGD, EAD and M (CRE30.33).
 Both must use the supervisory risk-weight functions; only the inputs are the bank's.
+Retail has no foundation approach: retail IRB banks always estimate PD, LGD and EAD (CRE30.42).
 The 2017 reforms removed A-IRB for corporates in groups with consolidated revenue above EUR 500m and for banks, securities firms and other financial institutions, and removed IRB entirely for equities (CRE30.34).
-The revenue test uses audited consolidated figures averaged over three years (CRE30.35).
+The revenue test uses audited consolidated figures, either averaged over the prior three years or the latest amounts updated by the bank every three years (CRE30.35).
 
 ### From Merton to Vasicek: deriving the formula
 
@@ -152,12 +155,12 @@ Implementation dates differ by jurisdiction; see [Implementation Status by Juris
 
 | Topic | Paragraphs |
 | :--- | :--- |
-| RWA definition, output floor, base of floor, example | RBC20.4, RBC20.6, RBC20.11 to RBC20.13 |
+| RWA definition, output floor, base of floor, example | RBC20.4, RBC20.6, RBC20.9, RBC20.11 to RBC20.13 |
 | Output floor phase-in and cap | RBC90.1 to RBC90.2 |
 | SA risk weights: sovereigns, banks, corporates, SMEs | CRE20.7, CRE20.18 to CRE20.21, CRE20.42 to CRE20.47 |
 | SA equity, retail, residential real estate | CRE20.57, CRE20.66 to CRE20.68, CRE20.82 to CRE20.83 |
 | SA credit conversion factors | CRE20.94 to CRE20.101 |
-| IRB approaches and A-IRB restrictions | CRE30.33 to CRE30.35 |
+| IRB approaches and A-IRB restrictions | CRE30.33 to CRE30.35, CRE30.42 |
 | IRB risk-weight functions | CRE31.2 to CRE31.16 |
 | PD, LGD, EAD and M rules and floors | CRE32.3 to CRE32.67 |
 | EL and provisions | CRE35, CAP10.19, CAP30.13 |
@@ -166,7 +169,10 @@ Implementation dates differ by jurisdiction; see [Implementation Status by Juris
 ### How it is implemented
 
 `code/basel_credit_saccr.py` implements the SA tables, CCFs, every CRE31 correlation function, the maturity adjustment, the PD floors, F-IRB secured LGD and the output floor.
-Its self-check recomputes all 144 risk weights of the Basel Committee's CRE99.2 Table 1 and matches each to within 0.006 percentage points, which is the rounding in the published table.
+Its self-check recomputes all 144 risk weights of the Basel Committee's CRE99.2 Table 1.
+141 match to within 0.005 percentage points, the rounding of the two-decimal table.
+The other three differ by at most 0.006 points: PD 1.5% mortgage at LGD 45% (73.444 against 73.45), PD 0.1% other retail at LGD 85% (21.086 against 21.08) and PD 1.3% other retail at LGD 45% (50.794 against 50.80).
+It also computes, prints and asserts every number quoted on this page.
 
 In production the IRB calculation is the cheap part; the work is in the data that feeds it.
 A credit RWA engine typically runs as a nightly or month-end batch over the banking book: facility and obligor master data, the rating model's PD per grade, LGD and CCF models, collateral and guarantee links, and netting agreements.
@@ -191,6 +197,9 @@ flowchart LR
 ```
 
 ## Worked examples
+
+Every number below is printed and asserted by `code/basel_credit_saccr.py`.
+Intermediate values are shown rounded, but each step is computed from unrounded inputs, so recomputing a step from the rounded figures can differ in the last digit.
 
 ### Example 1: an F-IRB corporate loan against the SA
 
@@ -231,7 +240,7 @@ F-IRB RWA is $1.020926 \times 11,000,000 = 11,230,191$; at the A-IRB EAD floor i
 
 ### Example 4: a prime mortgage and the output floor
 
-An A-IRB residential mortgage of 1,000,000 with PD 0.5%, LGD 10% and LTV 55%.
+A retail IRB residential mortgage of 1,000,000 with PD 0.5%, LGD 10% and LTV 55% (retail IRB has no foundation and advanced split; the bank estimates PD, LGD and EAD, CRE30.42).
 With $R = 0.15$ the stressed PD is 0.067363, so $K = 0.10 \times (0.067363 - 0.005) = 0.006236$ and the risk weight is 7.80% (RWA 77,954).
 The SA whole-loan risk weight at 55% LTV is 25% (CRE20.82), so 72.5% of SA is 18.125%, more than double the IRB figure.
 Even at the 5% LGD floor (CRE32.58) the IRB risk weight would be 3.90%, so model refinements cannot help once the floor binds in aggregate.
@@ -303,7 +312,8 @@ The framework's mitigants are the requirement that PD be a long-run average of o
 > [!question]- reg-downturn-lgd-definition | What constitutes a "downturn LGD" under regulatory guidelines, and how does it differ from historical average LGD?
 > A downturn LGD reflects the losses expected in an economic downturn, when default rates are high and collateral values are depressed, rather than the long-run average over good and bad years.
 > It is required because recoveries and default rates are positively dependent on the same cycle, which the IRB formula itself does not model (it stresses PD but not LGD).
-> CRE36.83 requires each facility's LGD to reflect economic downturn conditions where necessary and to be no lower than the long-run default-weighted average; supervisors specify the method, and since 2017 A-IRB LGDs are also floored (CRE32.16).
+> CRE36.83 requires each facility's LGD to reflect economic downturn conditions where necessary and to be no lower than the long-run default-weighted average; banks may use loss severities observed in high-loss periods or conservative forecasts, and supervisors will continue to monitor and encourage the development of appropriate approaches.
+> Since 2017 A-IRB LGDs are also floored (CRE32.16).
 
 > [!question]- reg-vasicek-gaussian-copula-limitation | What is the primary mathematical critique of the Gaussian assumption in the Vasicek credit model?
 > The Gaussian one-factor model has no tail dependence: joint extreme defaults become relatively less likely the further into the tail you go, whereas observed default clustering is fatter-tailed.
@@ -328,7 +338,7 @@ The framework's mitigants are the requirement that PD be a long-run average of o
 > [!question]- reg-sa-corporate-rw-table | Give the SA risk weights for a rated corporate exposure and for an unrated SME.
 > AAA to AA- 20%, A 50%, BBB 75%, BB+ to BB- 100%, below BB- 150%, unrated 100% (CRE20.42 to CRE20.43 Table 10).
 > An unrated corporate SME (sales of EUR 50m or less) takes 85% (CRE20.47), and an SME meeting the regulatory retail criteria takes 75%.
-> In jurisdictions that do not allow ratings, investment-grade corporates may take 65% and the rest 100% (CRE20.44 to CRE20.46).
+> In jurisdictions that do not allow ratings, corporates take 100% except investment-grade corporates, which may take 65%, and all corporate SMEs, which take 85% (CRE20.44, CRE20.46 to CRE20.47).
 
 > [!question]- reg-airb-scope-restrictions | Which exposures lost access to A-IRB or IRB in the 2017 reforms?
 > Equity lost IRB entirely and goes to the SA (CRE30.34).
@@ -359,4 +369,4 @@ The framework's mitigants are the requirement that PD be a long-run average of o
 - [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md) for derivative EAD, which then goes through the risk weights on this page.
 - [Credit Basics: Hazard Rates and CDS](../06-Fixed-Income-and-Asset-Classes/06-Credit-and-CDS.md) for market-implied PDs, which are not the same as the through-the-cycle PDs used here.
 - [Regulatory Reporting Pipeline](../18-Pricing-and-Risk-Systems/12-Regulatory-Reporting-Pipeline.md) for how these numbers are produced and reconciled at scale.
-- `code/basel_credit_saccr.py` reproduces every number on this page and all of CRE99.2 Table 1.
+- `code/basel_credit_saccr.py` computes, prints and asserts every number on this page and reproduces all of CRE99.2 Table 1.

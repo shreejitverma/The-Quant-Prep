@@ -5,17 +5,18 @@
    with the counterparty credit spread delta parameters of MAR50.63 to MAR50.65.
 
 Formulas are transcribed from the Basel Framework formula images for MAR50 and cited by paragraph.
-The worked examples reuse the SA-CCR netting sets of `basel_credit_saccr.py` (CRE99.22 to CRE99.59) as EAD inputs.
+The worked examples reuse the SA-CCR netting sets of `basel_credit_saccr.py` (CRE99.22 to CRE99.59) as EAD inputs,
+and `run_tests()` computes, prints and asserts every number quoted in note 05 (CVA capital).
 Run with `python 17-Regulatory-Capital-Basel-and-FRTB/code/basel_cva.py`.
 """
 
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 
-from basel_credit_saccr import cre99_portfolios, saccr_ead
+from basel_credit_saccr import QUOTED_LOG, cre99_portfolios, quoted, saccr_ead
 
 RHO = 0.50  # MAR50.14(2)
 BETA = 0.25  # MAR50.20
@@ -155,7 +156,11 @@ class SACVASensitivity:
     s_hdg: float  # sensitivity of the market value of eligible hedges
 
 
-def sa_cva_bucket(sens: Sequence[SACVASensitivity], rho: callable) -> tuple[float, float]:
+Correlation = Callable[[SACVASensitivity, SACVASensitivity], float]
+CrossBucketCorrelation = Callable[[str, str], float]
+
+
+def sa_cva_bucket(sens: Sequence[SACVASensitivity], rho: Correlation) -> tuple[float, float]:
     """MAR50.53(1): K_b = sqrt(sum WS_k^2 + sum_{k != l} rho_kl WS_k WS_l + R sum (WS_k^Hdg)^2), WS_k = WS^CVA - WS^Hdg."""
     ws = [s.rw * s.s_cva - s.rw * s.s_hdg for s in sens]
     ws_hdg = [s.rw * s.s_hdg for s in sens]
@@ -167,13 +172,18 @@ def sa_cva_bucket(sens: Sequence[SACVASensitivity], rho: callable) -> tuple[floa
     return math.sqrt(max(total, 0.0)), sum(ws)
 
 
-def sa_cva_risk_class(buckets: dict[str, Sequence[SACVASensitivity]], rho: callable, gamma: callable) -> float:
+def bucket_s(k_b: float, sum_ws: float) -> float:
+    """MAR50.53(3): S_b = max(-K_b, min(sum_k WS_k, K_b))."""
+    return max(-k_b, min(sum_ws, k_b))
+
+
+def sa_cva_risk_class(buckets: dict[str, Sequence[SACVASensitivity]], rho: Correlation, gamma: CrossBucketCorrelation) -> float:
     """MAR50.53(2) to (3): K = m_CVA sqrt(sum K_b^2 + sum_{b != c} gamma_bc S_b S_c), S_b = max(-K_b, min(sum WS_k, K_b))."""
     kb: dict[str, float] = {}
     sb: dict[str, float] = {}
     for b, sens in buckets.items():
         kb[b], s = sa_cva_bucket(sens, rho)
-        sb[b] = max(-kb[b], min(s, kb[b]))
+        sb[b] = bucket_s(kb[b], s)
     total = sum(k * k for k in kb.values())
     for b in buckets:
         for c in buckets:
@@ -192,12 +202,17 @@ def ccs_rho(tenor_k: float, tenor_l: float, same_name: bool, legally_related: bo
 
 def run_tests() -> None:
     print("Basel CVA capital self-checks")
+    q = quoted
+    first = len(QUOTED_LOG)
 
-    # Supervisory discount factor: DF(1) = (1 - e^-0.05) / 0.05.
+    # Supervisory discount factor: DF(M) is the average of exp(-0.05 t) over [0, M].
     assert abs(supervisory_df(1.0) - (1 - math.exp(-0.05)) / 0.05) < 1e-15
-    assert abs(supervisory_df(5.0) - 0.884797) < 1e-6
+    print("  Note 05, supervisory discount factor (card)")
+    for m, df in ((1.0, 0.975), (5.0, 0.885), (10.0, 0.787)):
+        q(f"DF at {m:g} years", supervisory_df(m), df, 3)
 
     # EADs from the CRE99 SA-CCR sample netting sets; M_NS is the notional-weighted maturity (CRE32.49).
+    print("  Note 05, Example 1: reduced BA-CVA for three counterparties")
     p = cre99_portfolios()
     ead1, ead2, ead3 = (saccr_ead(p[k]).ead for k in ("ex1", "ex2", "ex3"))
     m1 = (10_000 * 10 + 10_000 * 4 + 5_000 * 11) / 25_000
@@ -207,65 +222,124 @@ def run_tests() -> None:
     corp = Counterparty("Corp B (industrial HY)", ba_cva_rw("basic_materials_energy_industrials", False), [NettingSetExposure(ead2, m2)])
     sov = Counterparty("Sovereign C (IG)", ba_cva_rw("sovereign", True), [NettingSetExposure(ead3, m3)])
     cps = [bank, corp, sov]
-
     scva = [stand_alone_cva(c) for c in cps]
-    for c, s, ns in zip(cps, scva, (bank, corp, sov), strict=True):
-        m = ns.netting_sets[0].maturity
-        print(f"  {c.name}: EAD {ns.netting_sets[0].ead:,.1f} M {m:.4f} DF {supervisory_df(m):.6f} RW {c.rw:.3f} SCVA {s:,.2f}")
-    red = ba_cva(cps)
-    print(f"  Reduced BA-CVA: K_reduced {red.k_reduced:,.2f} capital {red.capital:,.2f} RWA {red.rwa:,.2f}")
-    # K_reduced lies between the zero-correlation root-sum-square and the plain sum of SCVA_c.
-    assert math.sqrt(sum(s * s for s in scva)) <= red.k_reduced <= sum(scva)
-
-    # Full BA-CVA: buy 5y protection directly on Bank A sized to its SCVA, plus an index hedge.
-    df5 = supervisory_df(5.0)
-    b_direct = scva[0] / (0.05 * 5.0 * df5)  # notional whose SNH equals Bank A's SCVA
-    hedged_bank = Counterparty(bank.name, bank.rw, bank.netting_sets, [SingleNameHedge(b_direct, 5.0, 0.05, "direct")])
-    full_direct = ba_cva([hedged_bank, corp, sov], full=True)
-    print(
-        f"  Full BA-CVA, direct CDS notional {b_direct:,.1f} on Bank A: SNH {snh(hedged_bank):,.2f}"
-        f" K_hedged {full_direct.k_hedged:,.2f} K_full {full_direct.k_full:,.2f} capital {full_direct.capital:,.2f}"
+    rows = (
+        (bank, 569.5, 569.47, 7.8000, 0.828059, 5.0, 131.36),
+        (corp, 381.2, 381.24, 4.6667, 0.891902, 7.0, 79.34),
+        (sov, 5_405.6, 5_405.62, 2.4375, 0.941464, 0.5, 44.30),
     )
+    for (c, ead_1dp, ead_2dp, m, df, rw, s_c), s in zip(rows, scva, strict=True):
+        ns = c.netting_sets[0]
+        q(f"{c.name} EAD", ns.ead, ead_1dp, 1)
+        q(f"{c.name} EAD (2 dp)", ns.ead, ead_2dp, 2)
+        q(f"{c.name} M_NS", ns.maturity, m, 4)
+        q(f"{c.name} DF", supervisory_df(ns.maturity), df, 6)
+        q(f"{c.name} RW (%)", c.rw * 100, rw, 1)
+        q(f"{c.name} SCVA", s, s_c, 2)
+    q("DF for Bank A, (1 - exp(-0.39)) / 0.39", (1 - math.exp(-0.39)) / 0.39, 0.828059, 6)
+    total = sum(scva)
+    sum_sq = sum(s * s for s in scva)
+    q("sum SCVA", total, 255.00, 2)
+    q("systematic term (rho sum SCVA)^2", (RHO * total) ** 2, 16_256.8, 1)
+    q("sum SCVA^2", sum_sq, 25_513.5, 1)
+    q("idiosyncratic term (1 - rho^2) sum SCVA^2", (1 - RHO**2) * sum_sq, 19_135.1, 1)
+    q("K_reduced^2", (RHO * total) ** 2 + (1 - RHO**2) * sum_sq, 35_392.0, 1)
+    red = ba_cva(cps)
+    q("K_reduced", red.k_reduced, 188.13, 2)
+    q("reduced BA-CVA capital", red.capital, 122.28, 2)
+    q("reduced BA-CVA RWA", red.rwa, 1_528.5, 1)
+    q("root-sum-square of SCVA", math.sqrt(sum_sq), 159.73, 2)
+    # K_reduced lies between the zero-correlation root-sum-square and the plain sum of SCVA_c.
+    assert math.sqrt(sum_sq) <= red.k_reduced <= total
+
+    # Full BA-CVA: buy 5y protection directly on Bank A sized to its SCVA.
+    print("  Note 05, Example 2: full BA-CVA with a direct and a proxy CDS")
+    df5 = supervisory_df(5.0)
+    q("DF at 5 years", df5, 0.884797, 6)
+    b_direct = scva[0] / (0.05 * 5.0 * df5)  # notional whose SNH equals Bank A's SCVA
+    q("direct CDS notional B", b_direct, 593.9, 1)
+    hedged_bank = Counterparty(bank.name, bank.rw, bank.netting_sets, [SingleNameHedge(b_direct, 5.0, 0.05, "direct")])
     assert abs(snh(hedged_bank) - scva[0]) < 1e-9 and hma(hedged_bank) == 0.0
+    full_direct = ba_cva([hedged_bank, corp, sov], full=True)
+    q("unhedged SCVA_B + SCVA_C", scva[1] + scva[2], 123.64, 2)
+    q("K_hedged, direct hedge", full_direct.k_hedged, 100.08, 2)
+    q("K_full, direct hedge", full_direct.k_full, 122.09, 2)
+    q("capital, direct hedge", full_direct.capital, 79.36, 2)
+    q("capital reduction, direct hedge (%)", (1 - full_direct.capital / red.capital) * 100, 35, 0)
     # The beta floor: even a perfect hedge of everything leaves beta x K_reduced.
     assert full_direct.k_full >= BETA * full_direct.k_reduced
-
     # Same notional but a proxy name sharing sector and region (r = 50%): less offset and an HMA term.
     proxy_bank = Counterparty(bank.name, bank.rw, bank.netting_sets, [SingleNameHedge(b_direct, 5.0, 0.05, "sector_region")])
     full_proxy = ba_cva([proxy_bank, corp, sov], full=True)
-    print(f"  Full BA-CVA, proxy CDS (r = 0.5): SNH {snh(proxy_bank):,.2f} HMA {hma(proxy_bank):,.2f} capital {full_proxy.capital:,.2f}")
+    q("SNH, proxy hedge", snh(proxy_bank), 65.68, 2)
+    q("HMA, proxy hedge", hma(proxy_bank), 12_941.9, 1)
+    q("capital, proxy hedge", full_proxy.capital, 116.86, 2)
+    q("capital reduction, proxy hedge (%)", (1 - full_proxy.capital / red.capital) * 100, 4, 0)
     assert full_proxy.capital > full_direct.capital
+    # Every counterparty hedged directly and exactly: K_hedged = 0 and capital is the beta floor.
+    all_hedged = [
+        Counterparty(c.name, c.rw, c.netting_sets, [SingleNameHedge(s / (c.rw * 5.0 * df5), 5.0, c.rw, "direct")])
+        for c, s in zip(cps, scva, strict=True)
+    ]
+    floor = ba_cva(all_hedged, full=True)
+    assert abs(floor.k_hedged) < 1e-9
+    q("capital with every counterparty hedged directly", floor.capital, 30.57, 2)
+    q("beta floor 0.65 x 0.25 x K_reduced", DS_BA_CVA * BETA * red.k_reduced, 30.57, 2)
 
     # Index hedge: IG financials index, RW 5% x 0.7 (MAR50.24(4)(1)), 5y.
     # Sized so IH = rho x sum SCVA_c, it zeroes the systematic term; at 2,000 notional it over-hedges and capital rises.
+    print("  Note 05, Example 3: index hedges and over-hedging")
     rw_index = 0.05 * 0.7
-    b_right = RHO * sum(scva) / (rw_index * 5.0 * df5)
-    right = ba_cva(cps, [IndexHedge(b_right, 5.0, rw_index)], full=True)
-    over = ba_cva(cps, [IndexHedge(2_000, 5.0, rw_index)], full=True)
-    print(f"  Full BA-CVA, index notional {b_right:,.1f} (IH = rho sum SCVA): K_hedged {right.k_hedged:,.2f} capital {right.capital:,.2f}")
-    print(f"  Full BA-CVA, index notional 2,000.0 (over-hedged): K_hedged {over.k_hedged:,.2f} capital {over.capital:,.2f}")
+    q("index RW (%)", rw_index * 100, 3.5, 1)
+    b_right = RHO * total / (rw_index * 5.0 * df5)
+    right_hedge, over_hedge = IndexHedge(b_right, 5.0, rw_index), IndexHedge(2_000, 5.0, rw_index)
+    q("IH = rho sum SCVA", ih([right_hedge]), 127.50, 2)
+    q("IH = rho sum SCVA (card)", ih([right_hedge]), 127.5, 1)
+    q("index notional for IH = rho sum SCVA", b_right, 823.4, 1)
+    right = ba_cva(cps, [right_hedge], full=True)
+    over = ba_cva(cps, [over_hedge], full=True)
+    q("K_hedged, right-sized index", right.k_hedged, 138.33, 2)
+    q("capital, right-sized index", right.capital, 98.01, 2)
+    q("IH at notional 2,000", ih([over_hedge]), 309.68, 2)
+    q("IH at notional 2,000 (card)", ih([over_hedge]), 309.7, 1)
+    q("K_hedged, over-hedged", over.k_hedged, 228.74, 2)
+    q("capital, over-hedged", over.capital, 142.08, 2)
     assert right.capital < red.capital < over.capital
 
     # SA-CVA: one counterparty credit spread bucket (financials, bucket 2, IG RW 5%), 5y tenor.
     # CVA spread sensitivity 10,000 per unit spread; a direct CDS hedge with sensitivity 10,000.
+    print("  Note 05, Example 4: SA-CVA counterparty credit spread bucket")
+
     def rho(a: SACVASensitivity, b: SACVASensitivity) -> float:
         return ccs_rho(5.0, 5.0, a.factor == b.factor, False, True)
 
     unhedged = [SACVASensitivity("Bank A 5y", "2", 0.05, 10_000.0, 0.0)]
     hedged = [SACVASensitivity("Bank A 5y", "2", 0.05, 10_000.0, 10_000.0)]
-    k_unh, _ = sa_cva_bucket(unhedged, rho)
-    k_hed, _ = sa_cva_bucket(hedged, rho)
-    print(f"  SA-CVA bucket: unhedged K_b {k_unh:,.2f}; perfectly hedged K_b {k_hed:,.2f} (sqrt(R) x WS_hdg)")
-    assert abs(k_unh - 500.0) < 1e-9 and abs(k_hed - 50.0) < 1e-9
+    k_unh, ws_unh = sa_cva_bucket(unhedged, rho)
+    k_hed, ws_hed = sa_cva_bucket(hedged, rho)
+    q("WS unhedged", ws_unh, 500, 0)
+    q("K_b unhedged", k_unh, 500, 0)
+    q("WS with a direct CDS", ws_hed, 0, 0)
+    q("K_b with a direct CDS", k_hed, 50, 0)
+    q("K_b reduction from a perfect hedge (%)", (1 - k_hed / k_unh) * 100, 90, 0)
+    q("sqrt(R) (%)", math.sqrt(HEDGING_DISALLOWANCE_R) * 100, 10, 0)
 
     # Two names in one bucket, same tenor and quality, unrelated names: rho = 1.0 x 0.5 x 1.0 = 0.5.
     two = [SACVASensitivity("Bank A 5y", "2", 0.05, 10_000.0, 0.0), SACVASensitivity("Bank B 5y", "2", 0.05, 0.0, 10_000.0)]
+    q("rho for unrelated names, same tenor and quality", rho(two[0], two[1]), 0.5, 1)
     k_two, s_two = sa_cva_bucket(two, rho)
-    print(f"  SA-CVA bucket with a different-name hedge: K_b {k_two:,.2f} sum WS {s_two:,.2f}")
+    q("K_b with a different-name hedge", k_two, 502.49, 2)
     assert abs(k_two - math.sqrt(500**2 + 500**2 - 2 * 0.5 * 500 * 500 + 0.01 * 500**2)) < 1e-9
+    bucket3 = [SACVASensitivity("Corp 5y", "3", 0.03, 5_000.0, 0.0)]
+    k3, ws3 = sa_cva_bucket(bucket3, rho)
+    q("bucket 3 WS", ws3, 150, 0)
+    q("bucket 3 K_b", k3, 150, 0)
+    q("bucket 3 S_b", bucket_s(k3, ws3), 150, 0)
+    q("bucket 2 S_b", bucket_s(k_two, s_two), 0, 0)
+    k_class = sa_cva_risk_class({"2": two, "3": bucket3}, rho, lambda b, c: 0.05)
+    q("SA-CVA counterparty credit spread delta K, gamma 5%", k_class, 524.40, 2)
 
-    k_class = sa_cva_risk_class({"2": two, "3": [SACVASensitivity("Corp 5y", "3", 0.03, 5_000.0, 0.0)]}, rho, lambda b, c: 0.05)
-    print(f"  SA-CVA counterparty credit spread delta, buckets 2 and 3 with gamma 5%: K {k_class:,.2f}")
+    print(f"  {len(QUOTED_LOG) - first} numbers quoted in note 05 computed, printed and asserted")
     print("All Basel CVA checks passed.")
 
 
