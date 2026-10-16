@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-risk]
 tier: senior
 status: solid
 prereqs: [frtb-default-risk-charge-and-residual-risk-add-on, var-and-expected-shortfall]

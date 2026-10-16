@@ -18,20 +18,37 @@ import threading
 from dataclasses import dataclass
 from pathlib import Path
 
+from .vault import TRACKS
+
 try:  # POSIX advisory locks; on Windows only the in-process lock applies
     import fcntl
 except ImportError:  # pragma: no cover
     fcntl = None
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+V1_DEFAULT_TRACKS = {"quant-trader", "quant-research", "quant-dev"}
 MASTERY_LABELS = ("unseen", "studied", "practiced", "solid", "interview-ready")
 GRADES = ("again", "hard", "good", "easy")
 MIN_EASE = 1.3
-DEFAULT_PROFILE = {"tracks": ["quant-trader", "quant-research", "quant-dev"], "hours_per_week": 10, "new_cards_per_day": 20}
+DEFAULT_PROFILE = {"tracks": list(TRACKS), "hours_per_week": 10, "new_cards_per_day": 20}
+
+
+def default_profile() -> dict:
+    """A fresh copy, so mutating one store's track list never changes the default."""
+    return {**DEFAULT_PROFILE, "tracks": list(DEFAULT_PROFILE["tracks"])}
 
 
 class StateError(RuntimeError):
     pass
+
+
+def migrate_v1(data: dict) -> dict:
+    """Version 2 added the quant-risk track; a stored copy of the old three-track default gains it."""
+    profile = dict(data.get("profile", {}))
+    tracks = profile.get("tracks")
+    if isinstance(tracks, list) and len(tracks) == len(V1_DEFAULT_TRACKS) and set(tracks) == V1_DEFAULT_TRACKS:
+        profile["tracks"] = [*tracks, "quant-risk"]
+    return {**data, "version": 2, "profile": profile}
 
 
 def default_home() -> Path:
@@ -52,7 +69,7 @@ def now_iso() -> str:
 
 
 def empty_state() -> dict:
-    return {"version": SCHEMA_VERSION, "profile": dict(DEFAULT_PROFILE), "topics": {}, "cards": {}, "drills": [], "activity": {}}
+    return {"version": SCHEMA_VERSION, "profile": default_profile(), "topics": {}, "cards": {}, "drills": [], "activity": {}}
 
 
 @dataclass
@@ -144,11 +161,13 @@ class Store:
             data = json.loads(self.path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
             raise StateError(f"{self.path} is not valid JSON ({exc}); restore state.json.bak or move it aside") from exc
+        if data.get("version") == 1:
+            data = migrate_v1(data)
         if data.get("version") != SCHEMA_VERSION:
             raise StateError(f"{self.path} has schema version {data.get('version')!r}, expected {SCHEMA_VERSION}")
         base = empty_state()
         base.update(data)
-        base["profile"] = {**DEFAULT_PROFILE, **data.get("profile", {})}
+        base["profile"] = {**default_profile(), **data.get("profile", {})}
         return base
 
     def refresh(self) -> None:

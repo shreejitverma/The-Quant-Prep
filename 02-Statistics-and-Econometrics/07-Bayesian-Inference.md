@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research]
+track: [quant-research, quant-risk]
 tier: advanced
 status: seed
 prereqs: [estimation-mle-and-method-of-moments]

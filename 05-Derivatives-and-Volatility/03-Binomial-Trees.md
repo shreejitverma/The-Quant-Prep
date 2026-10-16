@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-trader, quant-research, quant-dev, quant-risk]
 tier: core
 status: solid
 prereqs: [option-payoffs-and-put-call-parity]

@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-trader, quant-research, quant-dev, quant-risk]
 tier: advanced
 status: draft
 prereqs: [stress-testing-and-scenarios]

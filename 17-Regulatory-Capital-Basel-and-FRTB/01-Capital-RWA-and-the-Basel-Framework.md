@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-risk]
 tier: core
 status: draft
 prereqs: [var-and-expected-shortfall]

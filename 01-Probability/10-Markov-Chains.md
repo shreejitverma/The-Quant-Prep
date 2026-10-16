@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-trader, quant-research, quant-dev, quant-risk]
 tier: core
 status: solid
 prereqs: [conditional-probability-and-bayes, expectation-variance-and-linearity]

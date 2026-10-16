@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-dev]
+track: [quant-trader, quant-dev, quant-risk]
 tier: core
 status: draft
 prereqs: [the-greeks]

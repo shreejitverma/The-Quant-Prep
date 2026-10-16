@@ -1,6 +1,6 @@
 ---
 type: problem-set
-track: [quant-trader, quant-research]
+track: [quant-trader, quant-research, quant-risk]
 tier: advanced
 status: draft
 prereqs: [credit-advanced-cds-indices-and-tranches, fixed-income-pnl-and-relative-value]

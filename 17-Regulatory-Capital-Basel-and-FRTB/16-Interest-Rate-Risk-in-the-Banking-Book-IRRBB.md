@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-risk]
 tier: advanced
 status: draft
 prereqs: [leverage-ratio-and-liquidity-ratios-lcr-and-nsfr]

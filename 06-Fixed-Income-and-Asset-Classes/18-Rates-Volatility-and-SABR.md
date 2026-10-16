@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research]
+track: [quant-research, quant-risk]
 tier: senior
 status: draft
 prereqs: [rates-options-caps-and-swaptions, stochastic-volatility-heston-and-sabr]

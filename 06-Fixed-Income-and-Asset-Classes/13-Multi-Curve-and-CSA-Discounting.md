@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research, quant-dev]
+track: [quant-research, quant-dev, quant-risk]
 tier: advanced
 status: draft
 prereqs: [swaps-and-curve-building, money-markets-repo-and-overnight-rates]

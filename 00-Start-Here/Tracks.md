@@ -8,7 +8,7 @@ sources: []
 
 # Tracks
 
-Every topic is tagged with the tracks that need it: T (quant trader), R (quant researcher), D (quant developer).
+Every topic is tagged with the tracks that need it: T (quant trader), R (quant researcher), D (quant developer), Q (quant risk and strats).
 Set yours with `./qp profile --tracks quant-trader quant-research` (any combination); plans, review queues and readiness all follow it.
 
 ## Quant trader
@@ -55,3 +55,23 @@ Priorities, in order:
 5. Probability basics: [Counting](../01-Probability/01-Counting-and-Combinatorics.md), [Conditional Probability](../01-Probability/02-Conditional-Probability-and-Bayes.md) and [Expectation](../01-Probability/04-Expectation-Variance-and-Linearity.md), which quant firms ask developers too.
 
 Senior developers are additionally asked to design whole systems (an exchange, a market data platform, a risk engine), reason about latency budgets and failure modes, and describe systems they owned in production (see [Pricing and Risk Systems](../18-Pricing-and-Risk-Systems/README.md) and [Regulatory Capital, Basel, and FRTB](../17-Regulatory-Capital-Basel-and-FRTB/README.md)).
+
+## Quant risk and strats
+
+What the job is: the sell-side and risk side of quantitative finance.
+Desk quants and strats build and calibrate pricing models for rates, credit, FX and equity derivatives desks at investment banks.
+Market risk quants own VaR, expected shortfall, stress testing and the FRTB internal model.
+Counterparty and XVA quants model exposure and price CVA, FVA and KVA.
+Model validation teams challenge all of these models independently, and risk technology teams build the engines that run them overnight and intraday.
+What interviews test: probability and stochastic calculus, derivatives pricing and Greeks, numerical methods (Monte Carlo, PDEs, calibration), yield curves and rates products, risk measures and their estimation, regulatory capital for risk roles, and C++ or Python.
+
+Priorities, in order:
+
+1. [Probability](../01-Probability/README.md) and [Stochastic Calculus](../04-Stochastic-Calculus/README.md), through [Risk-Neutral Pricing](../04-Stochastic-Calculus/04-Risk-Neutral-Pricing-and-FTAP.md) and the [Black-Scholes Derivation](../04-Stochastic-Calculus/07-Black-Scholes-Derivation.md).
+2. [Derivatives and Volatility](../05-Derivatives-and-Volatility/README.md): Greeks, hedging P&L, smiles and surfaces, Monte Carlo.
+3. [Fixed Income](../06-Fixed-Income-and-Asset-Classes/README.md): curves, swaps, multi-curve discounting, curve risk, rates volatility and credit.
+4. [Risk and Trading](../11-Risk-and-Trading/README.md): [VaR and Expected Shortfall](../11-Risk-and-Trading/03-VaR-and-Expected-Shortfall.md), sensitivities and revaluation, risk factor modelling, counterparty credit risk and XVA.
+5. [Regulatory Capital, Basel, and FRTB](../17-Regulatory-Capital-Basel-and-FRTB/README.md): capital and RWA, SA-CCR, CVA capital, and the FRTB standardised and internal model approaches.
+6. [Pricing and Risk Systems](../18-Pricing-and-Risk-Systems/README.md): how pricing libraries, risk engines, P&L and FRTB platforms are built and run.
+
+Senior risk quants and strats are additionally asked to defend a model to validators and regulators, explain what drives a desk's capital and how to reduce it, and design the risk and capital architecture of a trading business.

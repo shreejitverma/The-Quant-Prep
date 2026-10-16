@@ -1,6 +1,6 @@
 ---
 type: problem-set
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-dev, quant-risk]
 tier: senior
 status: draft
 prereqs: [industry-landscape]

@@ -1,10 +1,10 @@
 # The Quant Prep
 
-A complete, self-tracking preparation system for senior **quant trader**, **quant researcher** and **quant developer** interviews at proprietary trading firms, market makers, HFT firms and multi-manager hedge funds: Jane Street, Optiver, Citadel and Citadel Securities, Two Sigma, DRW, Squarepoint, Radix, Akuna, SIG, Millennium, Balyasny, HRT, Jump, IMC, Tower, Five Rings, D. E. Shaw and AQR.
+A complete, self-tracking preparation system for senior **quant trader**, **quant researcher** and **quant developer** interviews at proprietary trading firms, market makers, HFT firms and multi-manager hedge funds (Jane Street, Optiver, Citadel and Citadel Securities, Two Sigma, DRW, Squarepoint, Radix, Akuna, SIG, Millennium, Balyasny, HRT, Jump, IMC, Tower, Five Rings, D. E. Shaw and AQR), and for **quant risk and strats** roles at banks: desk quants, market risk and FRTB, counterparty risk and XVA, model validation and risk technology.
 
 It is three things over one set of Markdown notes:
 
-- **A syllabus**: 180 topics in 13 subjects, each with learning objectives, prerequisites, tier (core, advanced, senior), study hours, and spaced-repetition question cards.
+- **A syllabus**: more than 200 topics in 15 subjects, each with learning objectives, prerequisites, tier (core, advanced, senior), study hours, and spaced-repetition question cards; `./qp syllabus` and each section README give live counts.
 - **A progress platform**: the `qp` command line and a local web dashboard for readiness by track and by firm, a prerequisite-ordered weekly plan, daily card review, and timed drills (arithmetic sprint, 80-in-8 numerical test, market-making game).
 - **An Obsidian vault**: open the folder in Obsidian to read; question cards are collapsible callouts.
 
@@ -41,6 +41,8 @@ Progress is stored outside the repo (`~/.local/share/quant-prep/`, or `$QP_HOME`
 | 11 | [Risk and Trading](11-Risk-and-Trading/README.md) | Kelly, betting, VaR and ES, stress testing, drawdowns and limits, P&L attribution and Greek risk, risk factors, scenario generation, sensitivities and revaluation, trading judgement. |
 | 12 | [Quant Development](12-Quant-Development/README.md) | Order books, feed handlers, backtesters, pricing libraries, risk checks; bridges to SDE-Interview-Prep. |
 | 13 | [Interview Playbook](13-Interview-Playbook/README.md) | Formats, mental math, brainteasers, estimation, trading games, behavioural, senior expectations. |
+| 17 | [Regulatory Capital, Basel, and FRTB](17-Regulatory-Capital-Basel-and-FRTB/README.md) | Capital and RWA, credit SA and IRB, SA-CCR, CVA capital, FRTB standardised and internal models, liquidity, IRRBB, stress testing, BCBS 239. |
+| 18 | [Pricing and Risk Systems](18-Pricing-and-Risk-Systems/README.md) | Front-to-back architecture, trade and market data, curve and pricing services, risk, P&L, FRTB and XVA engines, EOD batch, governance. |
 | 14 | [Firms](14-Firms/README.md) | One guide per firm: roles, process, what they test, a focused plan. |
 | 15 | [Resources](15-Resources/README.md) | Books, papers, datasets and tools. |
 
@@ -58,16 +60,22 @@ Notes marked `seed` are the writing backlog: objectives and references exist, fu
 | Event-driven backtester (next-bar fills), performance metrics, pairs trading, Black-Litterman | [09-Alpha-Research-and-Portfolio/code](09-Alpha-Research-and-Portfolio/code/) |
 | Finite-difference Greeks bump engine, Taylor revaluation proxies, Cholesky Monte Carlo and filtered historical scenarios, rates stress scenarios, full versus proxy VaR and ES | [11-Risk-and-Trading/code](11-Risk-and-Trading/code/) |
 | Execution algorithms, Euler-Maruyama SDE solver, Greeks visualisation, LSTM baseline | sections [07](07-Market-Microstructure/code/), [04](04-Stochastic-Calculus/code/), [05](05-Derivatives-and-Volatility/code/), [10](10-Machine-Learning-for-Finance/code/) |
+| Basel credit SA and IRB, SA-CCR, FRTB sensitivities-based method, DRC and RRAO, FRTB IMA (ES, NMRF, backtesting, PLA), liquidity and IRRBB | [17-Regulatory-Capital-Basel-and-FRTB/code](17-Regulatory-Capital-Basel-and-FRTB/code/) |
+| Reference pricing and risk engine | [18-Pricing-and-Risk-Systems/code](18-Pricing-and-Risk-Systems/code/) |
 
-Build a C++ example with `g++ -std=c++20 -O2 -pthread <file>.cpp`; run Python examples with the packages in `environment.yml`.
+Every example must run cleanly in CI; examples that assert their numbers also fail CI when a quoted number drifts.
+Run them all with `python tools/run_examples.py` (needs numpy, pandas and matplotlib; `--list` shows them), or one at a time with `python <file>.py`.
+Build a C++ example with `g++ -std=c++20 -O2 -pthread <file>.cpp`.
 
 ## Repository layout
 
 ```
 00-Start-Here/     tracks, roadmap, platform guide, note conventions, SDE link map
 01-..15-           the syllabus (Markdown notes, code/ folders beside the notes that use them)
-16-, 17-           Obsidian libraries outside the syllabus: trading and investing; the CFA Level II platform
+16-, 17-CFA/       Obsidian libraries outside the syllabus: trading and investing; the CFA Level II platform
+17-, 18-           regulatory capital (Basel, FRTB) and pricing and risk systems, inside the syllabus
 tools/qp/          the qp CLI, local server and dashboard (standard library only)
+tools/run_examples.py  runs every Python example (CI does too)
 tools/tests/       platform tests
 _archive/          the pre-2026 notebook collection and superseded drafts, outside the curriculum
 ```

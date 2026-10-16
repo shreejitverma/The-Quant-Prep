@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-risk]
 tier: advanced
 status: solid
 prereqs: [frtb-sensitivities-based-method-delta]

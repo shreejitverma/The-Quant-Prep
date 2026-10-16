@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research]
+track: [quant-research, quant-risk]
 tier: advanced
 status: seed
 prereqs: [volatility-surface-construction, change-of-measure-and-girsanov]

@@ -2,8 +2,9 @@
 // Quant Prep dashboard. Vanilla JS, no build step. All data comes from the local qp API.
 
 const $app = document.getElementById("app");
-const TRACKS = { "quant-trader": "Quant Trader", "quant-research": "Quant Researcher", "quant-dev": "Quant Developer" };
-const TRACK_ABBR = { "quant-trader": "T", "quant-research": "R", "quant-dev": "D" };
+// Track labels and abbreviations come from the server (tools/qp/vault.py) at startup.
+let TRACKS = {};
+let TRACK_ABBR = {};
 const MASTERY = ["unseen", "studied", "practiced", "solid", "interview-ready"];
 let drillCleanup = null;
 
@@ -191,7 +192,7 @@ async function viewDashboard() {
     kpi("Review queue", String(s.queue), `${s.counts.cards_due} due, ${s.counts.cards_seen} of ${s.counts.cards} cards seen`),
     kpi("Mature cards", String(s.counts.cards_mature), "interval of 21 days or more"),
     kpi("Syllabus written", `${written}/${topics}`, "topics at solid or canonical"));
-  const tracks = h("div", { class: "grid g3" }, s.tracks.map((t) =>
+  const tracks = h("div", { class: "grid g4" }, s.tracks.map((t) =>
     h("div", { class: `panel track-card ${t.active ? "" : "inactive"}` },
       h("div", { class: "row" }, h("h3", {}, t.label), h("span", { class: "spacer" }), t.active ? null : h("span", { class: "chip" }, "not targeted")),
       h("div", { class: "pct" }, pct(t.readiness)),
@@ -267,9 +268,10 @@ async function viewSyllabus(params) {
   }, label));
   const written = h("button", { class: "chip toggle", type: "button", onclick: (e) => { state.written = !state.written; e.target.classList.toggle("on"); draw(); } }, "Written only");
   function draw() {
-    body.replaceChildren(...cat.sections.map((sec) => {
+    // flatMap with [] for hidden sections: replaceChildren would render a null as the text "null".
+    body.replaceChildren(...cat.sections.flatMap((sec) => {
       if (sec.library) {
-        if (state.q || state.tier || state.written || state.tracks.size) return null;
+        if (state.q || state.tier || state.written || state.tracks.size) return [];
         return h("div", { class: "section-group" }, h("div", { class: "row" }, h("h2", {}, sec.title), h("span", { class: "chip" }, "library"),
           h("span", { class: "spacer" }), sec.readme ? h("a", { class: "btn small", href: `#/note/${encodeURIComponent(sec.readme)}` }, "Overview") : null),
           h("p", { class: "muted", style: { margin: "6px 0 0" } }, "Free-form research notes, best read in Obsidian. Not part of the tracked syllabus."));
@@ -280,7 +282,7 @@ async function viewSyllabus(params) {
         && (!state.written || n.status === "solid" || n.status === "canonical")
         && (!state.tracks.size || n.tracks.some((t) => state.tracks.has(t))));
       const extra = sec.notes.filter((n) => n.mastery === null && n.type !== "firm");
-      if (!rows.length && (state.q || state.tier || state.written || state.tracks.size)) return null;
+      if (!rows.length && (state.q || state.tier || state.written || state.tracks.size)) return [];
       const done = rows.filter((n) => n.mastery >= 3).length;
       const filtering = state.q || state.tier || state.written || state.tracks.size;
       return h("details", { class: "section-group", open: filtering || state.open === sec.folder || !state.open ? true : null, id: sec.folder },
@@ -621,5 +623,8 @@ async function route() {
 window.addEventListener("hashchange", route);
 window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("side-foot").textContent = "Local only. Progress stays on this machine.";
-  route();
+  api("catalog")
+    .then((cat) => { TRACKS = cat.tracks; TRACK_ABBR = cat.track_abbr; })
+    .catch(showError)
+    .finally(route);
 });

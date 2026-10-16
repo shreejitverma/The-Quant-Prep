@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research]
+track: [quant-research, quant-risk]
 tier: senior
 status: draft
 prereqs: [term-structure-models-hjm-lgm-lmm, monte-carlo-pricing-and-variance-reduction]
