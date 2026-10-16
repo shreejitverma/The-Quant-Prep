@@ -25,6 +25,7 @@ cd The-Quant-Prep
 
 Keep SDE-Interview-Prep cloned next to this repo (`../SDE-Interview-Prep`) so cross-repo links can be checked.
 For the runnable examples in each section's `code/` folder, use `environment.yml` (conda) or `uv run --with numpy --with scipy --with pandas --with matplotlib python <file>`.
+`python tools/run_examples.py` runs every example, the way CI does; every example must run cleanly, and examples that assert their numbers fail when a note's numbers drift.
 
 ## Where progress is stored
 
@@ -32,12 +33,15 @@ Progress is personal and is never written into the repo.
 It lives in `~/.local/share/quant-prep/state.json`, or in `$QP_HOME/state.json` if you set `QP_HOME`.
 Point `QP_HOME` at a private, backed-up folder to keep progress across machines.
 The file is plain JSON and every write is atomic.
+A version 1 file whose tracks are exactly the old default (quant-trader, quant-research and quant-dev) gains quant-risk on load, because section 17 and 18 notes used to be tagged for all three; any other saved track list is left as it is.
+The file is written as version 2 on the next save.
 
 ## Commands
 
 | Command | What it does |
 | :--- | :--- |
 | `./qp` | Readiness per track, today's review queue, next topics, top firms. |
+| `./qp profile [--tracks T ...] [--hours H] [--new-cards N]` | Your target tracks (`quant-trader`, `quant-research`, `quant-dev`, `quant-risk`), weekly hours and daily new cards. |
 | `./qp syllabus [--track T] [--section S] [--tier core]` | Every topic with status, cards and your mastery. |
 | `./qp show <topic> [--full]` | Objectives, prerequisites, what it unlocks, its cards. |
 | `./qp mark <topic> <0-4>` | Record mastery: 1 studied, 2 practiced, 3 solid, 4 interview-ready. |

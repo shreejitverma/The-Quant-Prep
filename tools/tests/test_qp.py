@@ -110,6 +110,18 @@ class VaultParsing(unittest.TestCase):
         self.assertEqual(cards[0].answer, "A1\nmore")
         self.assertEqual(cards[0].line, 10)
 
+    def test_cards_inside_fenced_code_are_examples_not_cards(self):
+        body = "```markdown\n" + card("x-example") + "```\n\n" + card("x-real") + "\n~~~\n" + card("x-tilde") + "~~~\n"
+        self.assertEqual([c.id for c in parse_cards(body, "n", 1)], ["x-real"])
+
+    def test_nested_short_fences_do_not_close_longer_fence(self):
+        body = "````markdown\n```yaml\n" + card("x-example") + "```\n" + card("x-also-example") + "````\n" + card("x-real")
+        self.assertEqual([c.id for c in parse_cards(body, "n", 1)], ["x-real"])
+
+    def test_backtick_in_info_string_does_not_open_fence(self):
+        body = " ```example`\n" + card("x-real")
+        self.assertEqual([c.id for c in parse_cards(body, "n", 1)], ["x-real"])
+
     def test_note_ids(self):
         self.assertEqual(note_id_for(Path("01-A/03-The-Greeks.md")), "the-greeks")
         self.assertEqual(note_id_for(Path("14-Firms/Jane-Street.md")), "jane-street")
@@ -219,6 +231,41 @@ class StoreBehaviour(TempRepo):
                 s.set_profile(**bad)
         s.set_profile(hours_per_week=12)
         self.assertEqual(self.store().profile["hours_per_week"], 12)
+
+    def test_default_profile_has_every_track_and_is_not_shared(self):
+        first = self.store()
+        self.assertEqual(first.profile["tracks"], ["quant-trader", "quant-research", "quant-dev", "quant-risk"])
+        first.profile["tracks"].remove("quant-risk")  # an in-place edit must not leak into the default
+        other = Store(Path(self.tmp.name) / "other-home")
+        self.assertIn("quant-risk", other.profile["tracks"])
+
+    def write_state(self, version: int, tracks: list[str]) -> None:
+        self.home.mkdir()
+        state = {
+            "version": version,
+            "profile": {"tracks": tracks, "hours_per_week": 7},
+            "topics": {},
+            "cards": {"a-one": {"due": "2026-01-09"}},
+        }
+        (self.home / "state.json").write_text(json.dumps(state))
+
+    def test_v1_state_on_old_default_tracks_gains_risk_track_and_saves_as_v2(self):
+        self.write_state(1, ["quant-dev", "quant-trader", "quant-research"])
+        s = self.store()
+        self.assertEqual(s.profile["tracks"], ["quant-dev", "quant-trader", "quant-research", "quant-risk"])
+        self.assertEqual((s.profile["hours_per_week"], s.data["cards"]["a-one"]["due"]), (7, "2026-01-09"))
+        s.save()
+        saved = json.loads((self.home / "state.json").read_text())
+        self.assertEqual(saved["version"], 2)
+        self.assertEqual(saved["profile"]["tracks"], ["quant-dev", "quant-trader", "quant-research", "quant-risk"])
+
+    def test_v1_state_with_chosen_tracks_keeps_them(self):
+        self.write_state(1, ["quant-trader"])
+        self.assertEqual(self.store().profile["tracks"], ["quant-trader"])
+
+    def test_v2_state_with_three_tracks_is_not_migrated(self):
+        self.write_state(2, ["quant-trader", "quant-research", "quant-dev"])
+        self.assertEqual(self.store().profile["tracks"], ["quant-trader", "quant-research", "quant-dev"])
 
     def test_rejects_bad_mastery(self):
         with self.assertRaises(StateError):
@@ -433,6 +480,17 @@ class Index(TempRepo):
         self.assertIn("[Middle](02-Middle.md)", text)
         self.assertEqual(moc.update_all(self.vault()), [])
 
+    def test_risk_track_is_valid_and_abbreviated(self):
+        write_note(self.root, "01-Alpha/05-Capital.md", "Capital", "", track="quant-dev, quant-risk")
+        self.assertEqual([f for f in check.check_vault(self.vault()) if f.rule == "schema"], [])
+        moc.update_all(self.vault())
+        text = (self.root / "01-Alpha" / "README.md").read_text()
+        self.assertIn("| 05 | [Capital](05-Capital.md) | DQ |", text)
+        self.assertIn("Q = risk and strats", text)
+        v, s = self.vault(), self.store()
+        self.assertEqual(planner.track_summary(v, s, "quant-risk").topics, 1)
+        self.assertEqual(planner.track_summary(v, s, "quant-trader").topics, 3)
+
 
 class Api(TempRepo):
     def setUp(self):
@@ -466,6 +524,17 @@ class Api(TempRepo):
         code, row = self.call("/api/mark", {"id": "base", "level": 2})
         self.assertEqual((code, row["mastery"]), (200, 2))
         self.assertEqual(self.store().mastery("base"), 2)
+
+    def test_catalog_lists_tracks_and_profile_accepts_risk_track(self):
+        code, cat = self.call("/api/catalog")
+        self.assertEqual(code, 200)
+        self.assertEqual(cat["tracks"]["quant-risk"], "Quant Risk and Strats")
+        self.assertEqual(cat["track_abbr"], {"quant-trader": "T", "quant-research": "R", "quant-dev": "D", "quant-risk": "Q"})
+        code, _ = self.call("/api/profile", {"tracks": ["quant-risk"]})
+        self.assertEqual(code, 200)
+        self.assertEqual(self.store().profile["tracks"], ["quant-risk"])
+        code, _ = self.call("/api/profile", {"tracks": ["quant-astronaut"]})
+        self.assertEqual(code, 400)
 
     def test_cross_origin_post_refused(self):
         code, body = self.call("/api/mark", {"id": "base", "level": 2}, {"Origin": "http://evil.example"})

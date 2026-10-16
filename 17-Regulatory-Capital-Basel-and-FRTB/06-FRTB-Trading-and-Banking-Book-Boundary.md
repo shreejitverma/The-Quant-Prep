@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-risk]
 tier: advanced
 status: draft
 prereqs: [cva-capital-charge-sa-cva-and-ba-cva]

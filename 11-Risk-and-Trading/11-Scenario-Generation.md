@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research]
+track: [quant-research, quant-risk]
 tier: advanced
 status: draft
 prereqs: [risk-factor-modelling]

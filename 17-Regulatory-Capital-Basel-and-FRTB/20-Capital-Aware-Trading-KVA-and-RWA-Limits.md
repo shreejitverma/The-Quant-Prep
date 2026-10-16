@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-trader, quant-risk]
 tier: senior
 status: draft
 prereqs: [implementation-status-by-jurisdiction]

@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research]
+track: [quant-research, quant-risk]
 tier: advanced
 status: seed
 prereqs: [time-series-stationarity-and-arma, bayesian-inference]

@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research]
+track: [quant-research, quant-risk]
 tier: core
 status: solid
 prereqs: [linear-regression-ols]

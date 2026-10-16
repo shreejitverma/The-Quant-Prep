@@ -1,3 +1,4 @@
+// qp-examples: no-run (opens a multicast UDP socket and blocks; tests/test_udp_receiver_mock.cpp covers its logic)
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>

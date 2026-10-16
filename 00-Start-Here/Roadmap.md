@@ -46,6 +46,7 @@ Exit bar: a consistent Zetamac-style score you are happy with, and the probabili
 
 - Trader: [Derivatives and Volatility](../05-Derivatives-and-Volatility/README.md) topics 01-07 and 13, [Market Making](../08-Market-Making/README.md) topics 01-06 and 10, [Kelly and sizing](../11-Risk-and-Trading/01-Kelly-Criterion-and-Position-Sizing.md).
 - Researcher: [Statistics and Econometrics](../02-Statistics-and-Econometrics/README.md) core topics, [Linear Algebra and Optimization](../03-Linear-Algebra-and-Optimization/README.md) core topics, [Alpha Research](../09-Alpha-Research-and-Portfolio/README.md) topics 01-10, [ML for Finance](../10-Machine-Learning-for-Finance/README.md) topics 01-03.
+- Risk and strats: [Stochastic Calculus](../04-Stochastic-Calculus/README.md) core, [Derivatives](../05-Derivatives-and-Volatility/README.md) core, [Fixed Income](../06-Fixed-Income-and-Asset-Classes/README.md) core, [VaR and Expected Shortfall](../11-Risk-and-Trading/03-VaR-and-Expected-Shortfall.md), and the core topics of [Regulatory Capital, Basel, and FRTB](../17-Regulatory-Capital-Basel-and-FRTB/README.md).
 - Developer: [Quant Development](../12-Quant-Development/README.md) core topics, [Limit Order Books](../07-Market-Microstructure/01-Limit-Order-Books-and-Order-Types.md), [Market Making Systems](../08-Market-Making/11-Market-Making-Systems-Architecture.md), and the options basics in [Derivatives](../05-Derivatives-and-Volatility/README.md) 01-05.
 
 Exit bar: every core topic in your track at mastery 3.
@@ -53,7 +54,7 @@ Exit bar: every core topic in your track at mastery 3.
 ### Phase 3: Depth and differentiation (weeks 13-20)
 
 Advanced-tier topics in your track, plus the adjacent track's core (traders learn microstructure and alpha basics; researchers learn market making and execution; developers learn the pricing and statistics their users need).
-For quantitative risk, sell-side desks, and enterprise architecture, study [Regulatory Capital, Basel, and FRTB](../17-Regulatory-Capital-Basel-and-FRTB/README.md) and [Pricing and Risk Systems](../18-Pricing-and-Risk-Systems/README.md).
+Risk and strats candidates take the advanced FRTB, counterparty and XVA topics, then the system design of [Pricing and Risk Systems](../18-Pricing-and-Risk-Systems/README.md); developers heading for bank risk technology take the same systems section.
 
 ### Phase 4: Firm targeting (last 3-4 weeks before interviews)
 

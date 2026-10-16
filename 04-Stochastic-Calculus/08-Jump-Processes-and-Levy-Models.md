@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research]
+track: [quant-research, quant-risk]
 tier: senior
 status: seed
 prereqs: [poisson-processes, black-scholes-derivation]

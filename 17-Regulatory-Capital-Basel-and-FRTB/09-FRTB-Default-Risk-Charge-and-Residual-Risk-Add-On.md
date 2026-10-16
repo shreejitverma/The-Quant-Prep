@@ -1,361 +1,390 @@
 ---
 type: concept
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [frtb-sensitivities-based-method-vega-and-curvature]
-est_hours: 4
-sources: [Basel Committee on Banking Supervision - Minimum capital requirements for market risk (BCBS d457 2019), European Banking Authority - Technical Standards on the Standardised Approach for Market Risk (2022), International Swaps and Derivatives Association - FRTB Default Risk Charge Implementation Guide (2021)]
+est_hours: 5
+sources: [Basel Framework MAR20 Standardised approach general provisions and structure (version effective 1 January 2023), Basel Framework MAR22 Standardised approach default risk capital requirement (version effective 1 January 2023), Basel Framework MAR23 Standardised approach residual risk add-on (version effective 1 January 2023), BCBS (2019) Minimum capital requirements for market risk (d457)]
 ---
 
 # FRTB: Default Risk Charge and Residual Risk Add-On
 
 ## TL;DR
 
-The Sensitivities-Based Method (SbM) models market risk under the assumption of continuous price diffusion and daily mark-to-market spread adjustments.
-However, credit instruments are fundamentally exposed to catastrophic jump-to-default (JTD) risk, and exotic derivatives carry structural model risks that cannot be represented by standardized delta, vega, and curvature factor shocks.
-To ensure comprehensive capital adequacy, the FRTB Standardised Approach incorporates two mandatory non-SbM capital charges: the Default Risk Charge (DRC) and the Residual Risk Add-On (RRAO).
-The Default Risk Charge (Basel MAR22) captures the jump-to-default risk of corporate bonds, credit default swaps, and equities held in the trading book.
-DRC computes net Jump-to-Default (JTD) losses per obligor using supervisory Loss Given Default (LGD) parameters, applies credit-rating risk weights, and restricts offsetting between long and short positions through a prescribed hedge-benefit ratio ($WtS$).
-The Residual Risk Add-On (Basel MAR23) acts as a strict regulatory backstop against complex, non-standard instruments.
-RRAO levies a mandatory, non-offsettable capital charge directly on the gross notional of exotic derivatives: 1.0% of gross notional for instruments with exotic payoffs or exotic underlyings, and 0.1% for instruments bearing other residual risks.
+- The DRC captures jump-to-default (JTD) risk that credit spread shocks miss, calibrated to the banking book credit treatment; the RRAO captures what no sensitivity can (MAR20.4(2), MAR20.4(3), MAR22.1).
+- Gross JTD is the loss if the obligor defaults today: $\max(LGD \cdot N + P\&L, 0)$ for a long credit exposure and $\min(LGD \cdot N + P\&L, 0)$ for a short, with LGD 100% for equity and non-senior debt, 75% for senior debt and 25% for covered bonds (MAR22.11, MAR22.12).
+- JTDs below one year are scaled by maturity with a three-month floor; longs and shorts of one obligor offset only when the short is equally or more junior; then net positions are risk-weighted by rating (0.5% for AAA to 100% for defaulted) (MAR22.15 to MAR22.24).
+- Within each of three buckets (corporates, sovereigns, local governments) net shorts are discounted by the hedge benefit ratio $HBR = \sum L / (\sum L + \sum |S|)$, the bucket charge is floored at zero, and buckets are simply added (MAR22.23 to MAR22.26).
+- The CTP DRC allows negative index-level charges and halves them when aggregating: +100 and -100 give 50 (MAR22.44, MAR22.45).
+- The RRAO is 1.0% of gross notional for exotic underlyings (longevity, weather, future realised volatility) and 0.1% for other residual risks (gap, correlation, behavioural), with no netting except exact back-to-back trades (MAR23).
 
 ## Learning objectives
 
-- Analyze why continuous diffusion models in SbM fail to capture catastrophic default events and why a standalone Default Risk Charge (DRC) is legally mandated.
-- Derive the Jump-to-Default (JTD) formulas for long and short debt and equity positions under supervisory LGD schedules.
-- Apply the supervisory netting rules for JTD exposures across seniority tiers and maturities.
-- Calculate the Weighted-to-Short ($WtS$) ratio and formulate the non-securitisation DRC capital aggregation equation.
-- Distinguish between non-securitisation DRC, non-CTP securitisation DRC, and Correlation Trading Portfolio (CTP) DRC.
-- Classify exotic derivatives subject to the 1.0% versus 0.1% Residual Risk Add-On (RRAO) gross notional capital charges.
-- Evaluate the strategic trading desk impact of RRAO on barrier options, digital options, variance swaps, and structured products.
+- Derive the gross JTD formula and apply it to bonds, CDS, sold puts and bought calls.
+- Apply maturity scaling, seniority-constrained offsetting and the hedge benefit ratio by hand.
+- Explain the differences in DRC treatment for non-securitisations, securitisations and the CTP.
+- Decide whether an instrument is in the RRAO and at which rate.
+- Assemble the full SA capital requirement and design the DRC part of an FRTB engine.
 
 ## Core concepts
 
-### Why a separate Default Risk Charge is required
+### Why a separate default charge
 
-In the FRTB Sensitivities-Based Method (SbM), Credit Spread Risk (CSR) measures the mark-to-market impact of a 1 basis point shift in credit spreads, aggregated under a 97.5% confidence level.
-However, if a corporate bond issuer defaults:
-- The bond's price does not diffuse smoothly downward; it jumps discontinuously from par (e.g., $100$) to its post-default recovery value (e.g., $40$), inflicting an immediate 60% loss.
-- Equity shares issued by the obligor jump to zero.
-- Credit spread sensitivities ($CS01$) calibrated to small spread moves cannot capture this total loss of principal.
-Under the Basel II 1996 Market Risk Amendment, banks held the Incremental Default and Migration Risk Charge (IRC); FRTB replaces IRC with the standardized Default Risk Charge (DRC, MAR22), establishing a deterministic, transparent jump-to-default framework.
+The SbM credit spread charge shocks spreads by up to 12% (1,200bp) for non-securitisation buckets, but a default is a jump to recovery that no continuous spread shock reproduces.
+Basel 2.5 covered it through the specific risk charges of the standardised approach and, for internal models, the incremental risk charge; the FRTB SA covers it with the DRC, calibrated "based on the credit risk treatment in the banking book in order to reduce the potential discrepancy in capital requirements for similar risk exposures across the bank", with limited hedging recognition (MAR20.4(2)).
+The DRC is computed separately for non-securitisations, securitisations (non-CTP) and securitisations (CTP), with no diversification between the three (MAR22.2, MAR22.4).
+Terminology (MAR22.1): offsetting nets exposures to the same obligor in full; hedging gives partial credit for shorts in different obligors.
 
-### Jump-to-Default (JTD) calculation
+### Long and short
 
-For each credit and equity instrument held in the trading book, the bank calculates the net loss if the reference entity suffers immediate bankruptcy:
+A long exposure is one that loses on default; a short one gains (MAR22.10).
+Direction is about default, not about buying or selling: a sold put on a bond is long credit, and bought CDS protection is short credit.
+Credit and equity derivatives are looked through to each constituent issuer (MAR22.5), and the JTD-equivalent of a multi-name product is the value change when that one name defaults with zero recovery (FAQ to MAR22.5).
 
-#### Long positions
-A long position suffers a loss when the obligor defaults:
-$$\text{JTD}_{\text{long}} = \max\left(LGD \cdot \text{Notional} + \text{MtM}, 0\right)$$
-where $\text{MtM}$ is the current market value (positive for assets, negative for liabilities).
-If an asset was purchased at par ($100$) and is currently marked at $100$, $\text{MtM} = 0$ (or embedded in notional), yielding a loss of $LGD \times \text{Notional}$.
+### Gross JTD
 
-#### Short positions
-A short position (e.g., short bond or bought single-name CDS protection) produces a gain when the obligor defaults:
-$$\text{JTD}_{\text{short}} = \min\left(-LGD \cdot \text{Notional} + \text{MtM}, 0\right)$$
-By convention, $\text{JTD}_{\text{long}} > 0$ represents an exposure (potential loss), while $\text{JTD}_{\text{short}} < 0$ represents a hedge (potential gain).
+For each exposure separately (MAR22.9):
 
-#### Supervisory Loss Given Default (LGD) schedule
-Under MAR22.11, banks must apply supervisory LGD parameters based on instrument seniority:
-- Senior debt instruments: $LGD = 40\%$.
-- Subordinated debt instruments: $LGD = 75\%$.
-- Equity instruments: $LGD = 100\%$.
-- Covered bonds: $LGD = 15\%$.
+$$JTD_{long} = \max\left(LGD \times N + P\&L,\; 0\right), \qquad JTD_{short} = \min\left(LGD \times N + P\&L,\; 0\right)$$
 
-### Netting and offsetting rules for DRC
+where $N$ is the bond-equivalent notional, signed positive for longs and negative for shorts, and $P\&L = \text{market value} - N$ is the mark-to-market gain or loss already taken (MAR22.11, MAR22.13).
 
-Offsetting between long and short JTD positions is subject to strict supervisory constraints:
-1. **Obligor matching**: Netting is permitted only between positions referencing the exact same legal entity. Positions across parent and subsidiary or across different corporate entities cannot be netted.
-2. **Seniority matching**:
-   - Long and short positions within the same seniority tier (e.g., senior debt vs senior CDS) offset dollar-for-dollar.
-   - A short position in subordinated debt cannot offset a long position in senior debt (subordinated debt is lower in the capital structure and defaults first).
-   - An equity position can offset an equity short, but equity cannot offset debt.
-3. **Maturity filtering**: Long and short positions with maturity $< 1\text{ year}$ receive maturity scaling:
-   $$\text{JTD}_{\text{scaled}} = \text{JTD} \cdot \frac{M}{1.0}$$
-   where $M$ is the residual maturity in years, floored at 0.25 years (3 months). Positions with maturity $\ge 1.0\text{ year}$ receive $100\%$ weight.
+Derivation for a long bond: on default the position drops from its market value $MV$ to the recovery $(1 - LGD) N$, so the loss is $MV - (1 - LGD)N = LGD \cdot N + (MV - N)$.
+The P&L term stops double counting: a bond already marked down to 60 cannot lose its full face value again.
 
-### DRC aggregation for non-securitisations
+LGD (MAR22.12): 100% for equity and non-senior debt, 75% for senior debt, 25% for covered bonds, and no LGD multiplication where the payoff does not depend on recovery (for example a knock-out on default).
 
-Positions are grouped into three supervisory buckets: Corporates, Sovereigns, and Local Governments/Municipalities.
-Within each bucket, the capital charge is computed as:
-$$\text{DRC} = \max\left(0, \sum_{i \in \text{Long}} RW_i \cdot \text{JTD}_i - WtS \cdot \sum_{j \in \text{Short}} RW_j \cdot |\text{JTD}_j|\right)$$
-where $RW$ is the supervisory risk weight determined by external credit rating:
+Notional and market value by instrument (MAR22.14 Table 1):
 
-| Credit Rating Band | Supervisory Risk Weight ($RW$) |
-| :--- | :--- |
-| **AAA** | 0.5% |
-| **AA** | 2.0% |
-| **A** | 3.0% |
-| **BBB** | 6.0% |
-| **BB** | 15.0% |
-| **B** | 30.0% |
-| **CCC** | 50.0% |
-| **Defaulted** | 100.0% |
+| Instrument | Notional | Bond-equivalent market value | P&L |
+| :--- | :--- | :--- | :--- |
+| Bond | face value | market value of the bond | market value - face value |
+| CDS (sold protection) | CDS notional | CDS notional + CDS MtM (as printed) | - CDS MtM (as printed) |
+| Sold put on a bond | option notional | strike amount - abs(option MtM) | (strike amount - abs(option MtM)) - notional |
+| Bought call on a bond | 0 | option MtM | option MtM |
 
-#### The Weighted-to-Short ($WtS$) ratio
-The parameter $WtS$ restricts the degree to which short positions can offset long positions across different obligors within the same bucket:
-$$WtS = \frac{\sum_{i \in \text{Long}} \text{JTD}_i}{\sum_{i \in \text{Long}} \text{JTD}_i + \sum_{j \in \text{Short}} |\text{JTD}_j|}$$
-Properties of $WtS$:
-- If the bank holds only long positions ($\text{Short} = 0$), $WtS = 1.0$, and the capital is the simple sum of weighted long JTDs.
-- If the bank holds equal gross long and short positions ($\sum \text{Long} = \sum |\text{Short}|$), $WtS = 0.50$. The bank receives only 50% recognition of its short hedges against other obligors.
-- $WtS$ enforces the reality that shorting Corporate X does not eliminate default risk on Corporate Y unless systemic market-wide defaults occur.
+The table describes a long credit position with a mark-to-market loss and says the CDS and option MtM values enter in absolute value; the printed CDS row ("notional + MtM" with P&L "- MtM") is not self-consistent under any single sign reading, so engines must document their convention; the reference engine takes the economic reading for a protection seller with a loss $\ell \ge 0$: market value $N - \ell$ and P&L $-\ell$.
+A bought call has zero notional because it will not be exercised after a default; its loss is its current mark-to-market value, captured through the P&L term (MAR22.14(1)(c)).
+Convertible bonds must include the P&L of their equity option, not be treated as vanilla bonds (FAQ to MAR22.14).
 
-### Residual Risk Add-On (RRAO)
+### Maturity scaling
 
-The Residual Risk Add-On (Basel MAR23) acts as a strict, non-modelable capital surcharge designed to capture all risks that fall outside the Standardised Approach SbM and DRC frameworks.
+To reflect defaults within the one-year capital horizon, JTDs of exposures maturing in under one year, and their hedges, are scaled by maturity as a fraction of a year; exposures of one year or more are not scaled (MAR22.15).
+The scaling applies to gross JTD (footnote 296), and the weight is floored at one quarter, so anything shorter than three months counts as three months (MAR22.18).
+Cash equities are assigned either three months or more than one year, at the bank's discretion, with nothing in between (MAR22.16 and FAQ).
+For derivatives the contract maturity counts, not the underlying's (MAR22.17).
+In the MAR22.15 FAQ example, a 1-month index future with a market value of -10m hedged by 10m of the constituent stocks treats both as three months: $\tfrac14 \times 10 - \tfrac14 \times 10 = 0$.
 
-#### Why RRAO exists
-Standardized sensitivity frameworks rely on predictable, continuous risk factors (yield curves, credit spreads, spot prices).
-Certain exotic derivatives possess payoffs that cannot be captured by delta, vega, and curvature:
-- Path dependency (barrier crossings, lookback options).
-- Discontinuous cliff-edge payoffs (digital options).
-- Non-standard underlyings lacking liquid term-structures (weather, catastrophe, longevity).
-- Correlation and gap risk (variance swaps, best-of options).
-To prevent banks from accumulating dangerous, uncapitalized tail risks in exotic trading books, regulators impose a flat, non-offsettable capital levy directly on gross notional.
+### Netting to the obligor
 
-#### The RRAO capital formula
-$$\text{RRAO} = \sum_{i \in \text{Exotic}} \text{Gross Notional}_i \cdot 1.0\% + \sum_{j \in \text{Other}} \text{Gross Notional}_j \cdot 0.1\%$$
+Longs and shorts of the same obligor offset if the short is the same or lower seniority than the long (MAR22.19(1)).
+A short equity can offset a long bond; a short bond cannot offset a long equity.
+Guaranteed bonds follow the credit risk mitigation rules to decide whether the exposure is to the issuer or the guarantor (MAR22.19(2)).
+A three-month short against a long of more than one year offsets only a quarter of its size (MAR22.19(3)(b)); if both are under a year, both are scaled (MAR22.20).
+Offsetting can leave both a net long and a net short for one obligor, for example a long equity and a short senior bond (MAR22.21).
 
-#### 1.0% Gross notional charge
-Levied on instruments bearing:
-1. **Exotic underlyings**: Natural disaster derivatives, weather derivatives, freight, longevity, carbon emission allowances (unless covered by SbM), mortality risk.
-2. **Exotic payoffs / non-linearities**:
-   - Barrier options and digital (binary) options.
-   - Lookback and Asian (averaging) options.
-   - Multi-asset correlation derivatives: Correlation swaps, covariance swaps, basket options with non-linear payoff weights, rainbow/best-of options.
-   - Volatility derivatives: Variance swaps, volatility swaps, gamma swaps.
+### Non-securitisation DRC
 
-#### 0.1% Gross notional charge
-Levied on instruments with other residual risks:
-1. Instruments subject to prepayment risk (e.g., mortgage loans and consumer receivables with unmodelled prepayment options).
-2. Callable corporate bonds and structured notes where the callability is linked to exotic triggers.
+Three buckets: corporates, sovereigns, and local governments and municipalities (MAR22.22).
+Sovereigns, public sector entities and MDBs may receive a 0% default risk weight at national discretion (MAR22.7).
 
-#### Zero offsetting under RRAO
-Crucially, RRAO permits **zero netting and zero hedging recognition**:
-- If a desk buys a barrier option with notional $\$100\text{M}$ and sells an identical barrier option with notional $\$100\text{M}$ to a client, gross notional is $\$200\text{M}$.
-- Total RRAO capital is $\$200,000,000 \times 1.0\% = \$2,000,000$.
-Because RRAO cannot be hedged away, it imposes a massive economic drag on complex structured derivative desks, incentivizing banks to simplify trade architectures.
+Default risk weights by credit quality, the same in every bucket (MAR22.24):
+
+| AAA | AA | A | BBB | BB | B | CCC | Unrated | Defaulted |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 0.5% | 2% | 3% | 6% | 15% | 30% | 50% | 15% | 100% |
+
+With two external ratings mapping to different weights the higher weight applies; with three or more, take the two lowest weights and apply the higher of those (FAQ to MAR22.24).
+
+Hedge benefit ratio and bucket charge (MAR22.23, MAR22.25):
+
+$$HBR = \frac{\sum \text{net } JTD_{long}}{\sum \text{net } JTD_{long} + \sum \left|\text{net } JTD_{short}\right|}$$
+
+$$DRC_b = \max\left[\sum_{i \in long} RW_i \cdot \text{net } JTD_i \;-\; HBR \times \sum_{i \in short} RW_i \cdot \left|\text{net } JTD_i\right|,\; 0\right]$$
+
+HBR uses unweighted amounts, and the total is $\sum_b DRC_b$ with no hedging across buckets (MAR22.26).
+
+What HBR does: if net longs $L$ and net shorts $S$ carry the same risk weight $RW$, then $DRC_b = RW \cdot L \cdot \frac{L}{L + S}$.
+A perfectly matched long-short book in different names ($L = S$) keeps half of its long charge: $6\% \times 100 \times \tfrac12 = 3$ on 100 of BBB longs.
+A book that is mostly short ($S \gg L$) has $HBR \to 0$ and gets almost no credit for its shorts, but the floor at zero means it never gets negative capital either.
+The 2016 version of the standard called this quantity the weighted-to-short ratio (WtS); the current text calls it the HBR.
+
+### Securitisation non-CTP DRC
+
+The JTD is the market value of the securitisation exposure, with no LGD because the risk weights already contain it (MAR22.27).
+Offsetting is allowed only within one specific securitisation exposure (same pool and same tranche), or where a collection of shorts perfectly replicates a long through decomposition (MAR22.29, MAR22.30); underlying names or a non-tranched index may be decomposed into replicating tranches, in which case they leave the non-securitisation DRC (MAR22.28).
+Buckets are corporates (all regions) plus 11 asset classes times four regions (Asia, Europe, North America, other) (MAR22.31).
+Risk weights come from the banking book securitisation framework (CRE40 to CRE44) with the maturity component set to zero (that is, a one-year maturity assumed), and a cash position's charge may be capped at its fair value (MAR22.34); HBR applies within buckets, and buckets are added (MAR22.33, MAR22.35).
+
+### Securitisation CTP DRC
+
+The JTD of tranches is their market value, and single-name and index hedges in the CTP also use market value (MAR22.36, MAR22.37).
+An nth-to-default product is a tranche attaching at $(N-1)/n$ and detaching at $N/n$ of an $n$-name basket (MAR22.38): a third-to-default on 10 names is a 20% to 30% tranche.
+Offsetting is allowed across maturities within the same index family, series and tranche, and by exact replication or model-based decomposition into single-name equivalents for vanilla products only; different tranches, series or index families never offset (MAR22.39).
+Each index is a bucket, and bespoke tranches go to the bucket of their index (MAR22.40, MAR22.41).
+Within an index the charge is $DRC_b = \sum RW \cdot JTD_{long} - HBR_{ctp} \sum RW \cdot |JTD_{short}|$, where $HBR_{ctp}$ is computed across the whole CTP and there is no floor, so $DRC_b$ can be negative (MAR22.44).
+Across indices (MAR22.45):
+
+$$DRC_{CTP} = \max\left[\sum_b \left(\max(DRC_b, 0) + 0.5 \min(DRC_b, 0)\right),\; 0\right]$$
+
+With +100 for CDX North America IG and -100 for Major Sovereign the total is $\max(100 - 50, 0) = 50$: cross-index hedges are discounted twice, once by $HBR_{ctp}$ and once by the 0.5 (footnote 297).
+
+### Residual risk add-on
+
+Scope (MAR23.2 to MAR23.5):
+
+- Exotic underlying: an underlying outside every SbM and DRC risk factor, such as longevity, weather, natural disasters and future realised volatility (MAR23.3 and its FAQ).
+- Other residual risks: instruments subject to vega or curvature whose payoff cannot be written or perfectly replicated as a finite linear combination of vanilla options on a single equity price, commodity price, exchange rate, bond price, CDS price or interest rate swap; and CTP instruments other than eligible hedges (MAR23.4).
+- Typical examples: gap risk (barriers, Asians, digitals), correlation risk (baskets, best-of, spread, basis, Bermudan and quanto options), behavioural risk (retail prepayment options) (MAR23.5); bonds with multiple call dates are path-dependent options and are in scope (FAQ to MAR23.4).
+
+Not in scope by themselves (MAR23.6): cheapest-to-deliver optionality, smile risk, correlation risk of multi-underlying plain vanilla European or American options and their linear combinations (including index options), dividend risk of derivatives whose underlying is not purely dividends, and qualifying index instruments.
+Exclusions (MAR23.7): an instrument exactly matched by a third-party back-to-back trade is excluded, as is its hedge; listed or centrally clearable instruments are excluded from the other-residual-risk category but stay in if their underlying is exotic.
+Imperfect hedges such as dividend swaps against dividend risk stay in (FAQ to MAR23.7).
+
+Calculation (MAR23.8): the RRAO scope must not change the scope of delta, vega, curvature or DRC; the add-on is the simple sum of gross notionals times 1.0% for exotic underlyings and 0.1% for other residual risks.
+Where the RRAO is not prudent enough, the supervisor adds a Pillar 2 charge (footnote 299).
+
+### Total SA capital
+
+$$\text{SA capital} = \text{SbM} + \text{DRC} + \text{RRAO}, \qquad \text{RWA} = 12.5 \times \text{SA capital}$$
+
+(MAR20.1, MAR20.4.)
+
+```mermaid
+flowchart LR
+    S["SbM: max over 3 scenarios of sum(delta, vega, curvature) across 7 risk classes"] --> T["SA capital"]
+    D1["DRC non-securitisation: sum over 3 buckets"] --> D["DRC"]
+    D2["DRC securitisation non-CTP: sum over buckets"] --> D
+    D3["DRC CTP: max(sum(max(DRC_b,0) + 0.5 min(DRC_b,0)), 0)"] --> D
+    D --> T
+    R["RRAO: 1.0% exotic + 0.1% other, gross notional"] --> T
+    T --> W["RWA = 12.5 x SA capital"]
+```
 
 ### Regulatory text map
 
-- **MAR22.1 - MAR22.8**: Scope and general principles of the Default Risk Charge.
-- **MAR22.9 - MAR22.19**: Jump-to-default (JTD) formulas, supervisory LGD schedules, and rating-based risk weights.
-- **MAR22.20 - MAR22.35**: DRC aggregation for non-securitisations and the $WtS$ hedge benefit ratio.
-- **MAR22.36 - MAR22.60**: DRC for securitisations (non-CTP and CTP correlation trading portfolio).
-- **MAR23.1 - MAR23.8**: Residual Risk Add-On (RRAO) - Scope, exotic payoff taxonomy, and 1.0% / 0.1% gross notional charges.
+| Rule | Paragraph |
+| :--- | :--- |
+| Structure of the SA, DRC calibration, RRAO purpose | MAR20.4 |
+| DRC scope, steps, no diversification across classes | MAR22.1 to MAR22.4 |
+| Look-through, CTP hedges, sovereigns, funds | MAR22.5 to MAR22.8 |
+| Gross JTD, direction, LGD, notional | MAR22.9 to MAR22.14 |
+| Maturity scaling | MAR22.15 to MAR22.18 |
+| Offsetting | MAR22.19 to MAR22.21 |
+| Non-securitisation buckets, HBR, risk weights, aggregation | MAR22.22 to MAR22.26 |
+| Securitisation non-CTP | MAR22.27 to MAR22.35 |
+| Securitisation CTP | MAR22.36 to MAR22.45 |
+| RRAO scope, exemptions, exclusions, calculation | MAR23.1 to MAR23.8 |
 
 ### How it is implemented
 
-The reference module `code/frtb_sbm.py` implements non-securitisation DRC using `DRCPosition`, `calculate_jtd`, and `calculate_drc_non_sec`.
-The position record supplies obligor, rating, seniority, bucket, notional, market value, and long/short direction; the calculation applies the built-in LGD and rating weight tables, nets by bucket, obligor, and seniority, then computes bucket-level weighted-to-short capital.
-This module does not implement maturity scaling, securitisation DRC, RRAO, or trade-taxonomy integration.
-
-The following diagram summarizes the regulatory process; it is conceptual and is not fully implemented by the reference module.
+The DRC is a position-level computation, unlike the sensitivity-level SbM:
 
 ```mermaid
 flowchart TD
-    A["Trading Book Position"] --> B{"Position Type"}
-    
-    B -- "Credit / Equity / Bond" --> C["Default Risk Charge (DRC) Pipeline"]
-    B -- "Exotic Payoff / Underlying" --> D["Residual Risk Add-On (RRAO) Pipeline"]
-    
-    C --> E["Evaluate Jump-to-Default: JTD = LGD * Notional + MtM"]
-    E --> F["Apply Supervisory LGD: Senior 40%, Sub 75%, Equity 100%"]
-    F --> G["Net JTD across Identical Obligor & Seniority Tier"]
-    G --> H["Apply Credit Rating Risk Weights (AAA 0.5% to CCC 50%)"]
-    H --> I["Calculate Hedge Benefit Ratio: WtS = Long / (Long + Short)"]
-    I --> J["DRC = max(0, Sum RW_i * JTD_i - WtS * Sum RW_j * |JTD_j|)"]
-    
-    D --> K{"Exotic Payoff or Underlying?"}
-    K -- "Barrier, Digital, Variance, Correlation" --> L["Multiply Gross Notional by 1.0%"]
-    K -- "Prepayment or Callable Risk" --> M["Multiply Gross Notional by 0.1%"]
-    L & M --> N["RRAO Capital = Sum(1.0% * Notional) + Sum(0.1% * Notional)"]
-    
-    J & N --> O["Total Non-SbM Capital = DRC + RRAO"]
+    A["Positions with issuer, seniority, rating, notional, MV, maturity"] --> B["Look-through of credit and equity derivatives to issuers (MAR22.5)"]
+    B --> C["Gross JTD with LGD and P&L (MAR22.11)"]
+    C --> D["Maturity weight min(max(M, 0.25), 1) (MAR22.15, MAR22.18)"]
+    D --> E["Offset per obligor, shorts junior or equal to longs (MAR22.19)"]
+    E --> F["Bucket, risk weight by rating, HBR (MAR22.23, MAR22.24)"]
+    F --> G["Bucket DRC floored at 0, summed (MAR22.25, MAR22.26)"]
 ```
+
+The data-quality burden sits in reference data: an issuer hierarchy (to find "the same obligor" across bonds, CDS and equity), seniority of every instrument, ratings with the multi-rating rule, maturity, and the look-through of indices and tranches.
+The seniority-constrained offset is a small matching problem per obligor; processing shorts from the most senior to the most junior is optimal, because every long that a senior short may offset is also eligible for any more junior short.
+The RRAO is a classification problem: a product taxonomy flag per trade (exotic underlying, other residual risk, exempt, back-to-back) maintained by product control, with the gross notional definition fixed per product type.
+The reference engine [code/frtb_sbm.py](code/frtb_sbm.py) implements `DRCPosition.gross_jtd`, `net_jtd`, `drc_non_securitisation`, `drc_ctp_total` and `rrao`; the system view is in [FRTB Engine](../18-Pricing-and-Risk-Systems/10-FRTB-Engine.md).
 
 ## Worked examples
 
-### Example 1: DRC non-securitisation calculation with long and short positions
+Numbers are printed by `python 17-Regulatory-Capital-Basel-and-FRTB/code/frtb_sbm.py` (sections [6] to [8]).
 
-Consider a corporate trading desk holding positions across two distinct obligors (verified in `code/frtb_sbm.py`):
+### Example 1: a corporate and sovereign book
 
-**Obligor X (Credit Rating: BBB $\implies RW = 6.0\%$)**
-- Position 1: Long Senior Unsecured Bond, Notional = $\$10,000,000$, $\text{MtM} = \$0$.
-  - Senior debt $\implies LGD = 40\% = 0.40$.
-  - $\text{JTD}_1 = 0.40 \cdot \$10,000,000 + \$0 = +\$4,000,000.00$.
-- Position 2: Short Senior Unsecured Bond, Notional = $\$5,000,000$, $\text{MtM} = \$0$.
-  - $\text{JTD}_2 = -(0.40 \cdot \$5,000,000) = -\$2,000,000.00$.
-- Both positions reference the identical legal entity (Obligor X) and same seniority (Senior Unsecured).
-- Net JTD for Obligor X:
-  $$\text{Net JTD}_X = +\$4,000,000.00 - \$2,000,000.00 = +\$2,000,000.00$$
+| Obligor | Instrument | Rating | Notional | Market value | Maturity | Gross JTD | Weight |
+| :--- | :--- | :--- | ---: | ---: | ---: | ---: | ---: |
+| ALPHA | long senior bond | BBB | 10,000,000 | 9,500,000 | 5y | 7,000,000 | 1.00 |
+| ALPHA | short equity | BBB | -4,000,000 | -4,000,000 | 5y | -4,000,000 | 1.00 |
+| ALPHA | short senior bond | BBB | -2,000,000 | -2,000,000 | 0.5y | -1,500,000 | 0.50 |
+| BETA | long non-senior bond | BB | 6,000,000 | 5,400,000 | 3y | 5,400,000 | 1.00 |
+| BETA | short senior bond | BB | -5,000,000 | -5,000,000 | 3y | -3,750,000 | 1.00 |
+| GAMMA | bought CDS protection, senior | A | -8,000,000 | -8,000,000 | 4y | -6,000,000 | 1.00 |
+| SOVX | long sovereign bond | AA | 20,000,000 | 20,000,000 | 0.1y | 15,000,000 | 0.25 |
 
-**Obligor Y (Credit Rating: BB $\implies RW = 15.0\%$)**
-- Position 3: Long Senior Unsecured Bond, Notional = $\$8,000,000$, $\text{MtM} = \$0$.
-  - Senior debt $\implies LGD = 40\%$.
-  - $\text{JTD}_3 = 0.40 \cdot \$8,000,000 = +\$3,200,000.00$.
-- Net JTD for Obligor Y:
-  $$\text{Net JTD}_Y = +\$3,200,000.00$$
+Gross JTD checks: ALPHA long $0.75 \times 10{,}000{,}000 + (9{,}500{,}000 - 10{,}000{,}000) = 7{,}000{,}000$; BETA long non-senior $1.00 \times 6{,}000{,}000 - 600{,}000 = 5{,}400{,}000$.
 
-**Aggregation across obligors:**
-After obligor-level netting, the portfolio contains two net long exposures and zero net short exposures:
-$$\sum_{\text{Long}} \text{JTD}_i = \$2,000,000.00 + \$3,200,000.00 = \$5,200,000.00$$
-$$\sum_{\text{Short}} |\text{JTD}_j| = \$0.00$$
-The weighted-to-short ratio is $WtS = \frac{\$5,200,000}{\$5,200,000 + 0} = 1.00$.
-Total DRC capital:
-$$\text{DRC} = RW_X \cdot \text{Net JTD}_X + RW_Y \cdot \text{Net JTD}_Y$$
-$$\text{DRC} = 0.060 \cdot \$2,000,000.00 + 0.150 \cdot \$3,200,000.00 = \$120,000.00 + \$480,000.00 = \$600,000.00$$
+Netting:
 
-### Example 2: Hedged DRC calculation with cross-obligor short positions
+- ALPHA: the short equity (most junior) and the short senior bond (same seniority) may both offset the long senior bond; the six-month short counts at half, so net long is $7{,}000{,}000 - 4{,}000{,}000 - 0.5 \times 1{,}500{,}000 = 2{,}250{,}000$.
+- BETA: the short senior bond is more senior than the long non-senior bond, so it cannot offset it; net long 5,400,000 and net short 3,750,000 both remain.
+- GAMMA: net short 6,000,000.
+- SOVX: the 0.1y maturity is floored at three months, so $15{,}000{,}000 \times 0.25 = 3{,}750{,}000$.
 
-Suppose the desk in Example 1 also enters into a short CDS position on **Obligor Z**:
-- Obligor Z: Credit Rating A ($\implies RW = 3.0\%$).
-- Position 4: Bought protection on Senior Debt, Notional = $\$5,000,000$, $\text{MtM} = \$0$.
-- $\text{JTD}_Z = -(0.40 \cdot \$5,000,000) = -\$2,000,000.00$.
+Corporates bucket: $\sum L = 2.25 + 5.40 = 7.65$ million, $\sum |S| = 3.75 + 6.00 = 9.75$ million, $HBR = 7.65 / 17.40 = 0.43966$.
+$DRC = (6\% \times 2.25 + 15\% \times 5.40) - 0.43966 \times (15\% \times 3.75 + 3\% \times 6.00)$ million $= 0.9450 - 0.43966 \times 0.7425$ million $= 618{,}556$.
+Sovereigns bucket: $2\% \times 3{,}750{,}000 = 75{,}000$, unless the national discretion of MAR22.7 sets a 0% weight.
+Total non-securitisation DRC: 693,556.
 
-**Step 1: Unweighted totals**
-$$\sum_{\text{Long}} \text{JTD}_i = \$2,000,000.00 + \$3,200,000.00 = \$5,200,000.00$$
-$$\sum_{\text{Short}} |\text{JTD}_j| = \$2,000,000.00$$
+Notice what the A-rated CDS hedge does: without it the bucket has $HBR = 7.65 / 11.40 = 0.67105$ and a charge of 567,533; adding 6m of short JTD in a different name lowers HBR to 0.43966 for every short in the bucket, so the charge rises by 51,023 to 618,556.
+Because net shorts sit in the HBR denominator (MAR22.23), a cross-name hedge with a low risk weight can increase the DRC; meanwhile BETA's same-name short senior bond, blocked by the seniority rule, is treated like a hedge in a different name.
 
-**Step 2: Weighted totals**
-$$\text{Long Weighted} = \$120,000.00 + \$480,000.00 = \$600,000.00$$
-$$\text{Short Weighted} = RW_Z \cdot |\text{JTD}_Z| = 0.030 \cdot \$2,000,000.00 = \$60,000.00$$
+### Example 2: a sold put on a bond
 
-**Step 3: Hedge benefit ratio ($WtS$)**
-$$WtS = \frac{\$5,200,000.00}{\$5,200,000.00 + \$2,000,000.00} = \frac{5,200,000}{7,200,000} = 0.722222$$
+A bank sells a put on 10m face of a senior BBB bond with a strike of 95% (strike amount 9.5m); the option is marked at 0.3m.
+Bond-equivalent market value $= 9{,}500{,}000 - 300{,}000 = 9{,}200{,}000$, P&L $= 9{,}200{,}000 - 10{,}000{,}000 = -800{,}000$, and $JTD = 0.75 \times 10{,}000{,}000 - 800{,}000 = 6{,}700{,}000$ (MAR22.14 Table 1).
+Check: on default the seller pays 9.5m for a bond recovering 2.5m, a 7.0m loss, of which the 0.3m option liability is already marked, leaving 6.7m; a lower strike gives a lower JTD, as the text notes.
 
-**Step 4: DRC capital calculation**
-$$\text{DRC} = \max\left(0, \text{Long Weighted} - WtS \cdot \text{Short Weighted}\right)$$
-$$\text{DRC} = \$600,000.00 - 0.722222 \cdot \$60,000.00 = \$600,000.00 - \$43,333.33 = \$556,666.67$$
-Even though the desk bought $\$5\text{M}$ in CDS protection, the $\$60,000$ short risk weight only provides $\$43,333.33$ in capital relief because $WtS = 0.722$, penalizing cross-obligor basis risk.
+### Example 3: CTP aggregation and nth-to-default
 
-### Example 3: RRAO calculation for an exotic structured equity desk
+With index-level charges of +100 (CDX North America IG) and -100 (Major Sovereign), $DRC_{CTP} = \max(100 + 0.5 \times (-100), 0) = 50$, the worked figure of MAR22.45.
+A third-to-default basket on 10 names is a 20% to 30% tranche for risk-weighting (MAR22.38).
 
-An exotic equity derivatives desk maintains the following portfolio of structured client trades:
-1. **Trade 1: Reverse Convertible Structured Notes with Down-and-In Barrier**
-   - Linked to S&P 500.
-   - Gross Notional: $\$50,000,000$.
-   - Feature: Down-and-in barrier is an exotic payoff non-linearity $\implies 1.0\%$ charge.
-   - $\text{RRAO}_1 = \$50,000,000 \cdot 1.0\% = \$500,000.00$.
+### Example 4: RRAO
 
-2. **Trade 2: Client Variance Swap on Euro Stoxx 50**
-   - Sold $\$200,000 / \text{vol point}$ variance swap; total underlying contract notional equivalent: $\$25,000,000$.
-   - Feature: Volatility/variance derivative $\implies 1.0\%$ charge.
-   - $\text{RRAO}_2 = \$25,000,000 \cdot 1.0\% = \$250,000.00$.
+| Instrument | Category | Gross notional | Rate | Add-on |
+| :--- | :--- | ---: | ---: | ---: |
+| Variance swaps (future realised volatility) | exotic underlying | 50,000,000 | 1.0% | 500,000 |
+| Barrier options (gap risk) | other residual risk | 200,000,000 | 0.1% | 200,000 |
+| Bermudan swaptions and multi-callable bonds | other residual risk | 120,000,000 | 0.1% | 120,000 |
+| Total | | | | 820,000 |
 
-3. **Trade 3: S&P 500 Out-of-the-Money Digital Put Options**
-   - Notional: $\$10,000,000$.
-   - Feature: Discontinuous digital payoff $\implies 1.0\%$ charge.
-   - $\text{RRAO}_3 = \$10,000,000 \cdot 1.0\% = \$100,000.00$.
+A listed barrier option would be excluded from the 0.1% category, and an exact back-to-back with a third party would remove both legs (MAR23.7).
 
-4. **Trade 4: Long Agency Residential MBS Portfolio with Prepayment Optionality**
-   - Notional: $\$100,000,000$.
-   - Feature: Prepayment risk without exotic payoffs $\implies 0.1\%$ charge.
-   - $\text{RRAO}_4 = \$100,000,000 \cdot 0.1\% = \$100,000.00$.
+### Example 5: the full SA charge
 
-**Total RRAO Capital:**
-$$\text{RRAO}_{\text{total}} = \$500,000 + \$250,000 + \$100,000 + \$100,000 = \$950,000.00$$
-Even if the desk perfectly hedged the delta, vega, and gamma of these trades with liquid exchange-traded futures and options, the bank must hold $\$950,000$ in non-reducible RRAO capital.
+Combining the delta, vega and curvature examples of the previous notes with Examples 1 and 4:
+
+| Scenario | GIRR | CSR | Equity delta | Equity vega | Equity curvature | SbM total |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| medium | 9,030,582 | 19,326,148 | 2,992,882 | 746,244 | 1,714,031 | 33,809,887 |
+| high | 7,416,873 | 18,255,992 | 3,027,338 | 732,262 | 1,693,244 | 31,125,709 |
+| low | 10,396,770 | 19,449,454 | 2,958,025 | 759,968 | 1,734,569 | 35,298,785 |
+
+SbM is the low-scenario total, 35,298,785; SA capital is $35{,}298{,}785 + 693{,}556 + 820{,}000 = 36{,}812{,}341$ and RWA is $12.5 \times 36{,}812{,}341 = 460{,}154{,}265$ (the engine works with unrounded values, so displayed components can differ from the totals by one unit).
+In this book the equity delta alone would pick the high scenario, but the hedged GIRR and CSR books dominate, so the whole portfolio is charged at low correlations.
+
+### Example 6: agency MBS in the SA (a Basel FAQ case)
+
+Non-tranched MBS issued by government-sponsored enterprises such as Fannie Mae and Freddie Mac go to CSR non-securitisation bucket 2 with a 1.0% risk weight, and their DRC LGD is 75% (senior debt) unless they meet the covered bond definition (FAQs to MAR21.51 and MAR22.12).
+The answer shows how much of the SA lives in FAQs: the main text never mentions GSE securities.
 
 ## Pitfalls
 
-- **Seniority mismatch in JTD netting**: Attempting to net a long subordinated bond against a short senior bond; subordinated debt defaults before senior debt, meaning the short position provides zero protection when the subordinated tranche is wiped out.
-- **Assuming SbM CSR hedges cover DRC**: Buying single-name CDS reduces SbM delta capital, but unless the CDS precisely matches the reference entity and seniority, it provides only partial offset in DRC via the discounted $WtS$ formula.
-- **Treating equity as having standard debt LGD**: Applying a 40% LGD to equity positions in the trading book; equities are completely subordinate to all debt claims, mandating $LGD = 100\%$.
-- **Ignoring RRAO on seemingly plain structured notes**: Issuing capital-guaranteed structured notes with digital coupon triggers; the digital coupon trigger subjects the entire gross notional to the 1.0% RRAO charge.
-- **Gross notional inflation under multi-leg exotic structures**: Booking multi-leg barrier options as individual trade legs rather than a single packaged instrument; each leg adds to the gross notional sum, multiplying the RRAO penalty.
+- Using recovery-style LGDs from credit models (40%, 60%) instead of the prescribed 100%, 75% and 25%.
+- Deciding direction by "bought" or "sold" instead of by the loss on default; a sold put on a bond is long credit.
+- Forgetting the P&L term and double counting losses already marked.
+- Scaling net JTD instead of gross JTD for maturity (footnote 296), or failing to floor short maturities at three months.
+- Letting a senior short offset a junior long of the same obligor.
+- Computing HBR from risk-weighted amounts; it uses unweighted net JTD.
+- Netting across the corporates, sovereigns and local government buckets, or across the three DRC classes.
+- Flooring CTP index-level charges at zero before the MAR22.45 aggregation.
+- Netting RRAO notionals of offsetting trades that are not exact back-to-backs, or excluding a listed instrument whose underlying is exotic.
+- Treating the RRAO as optional because a desk "hedges" its exotics: hedges stay in unless they match exactly.
 
 ## Interview questions
 
 > [!question]- reg-drc-vs-sbm-csr-difference | What is the fundamental difference between Credit Spread Risk (CSR) in SbM and the Default Risk Charge (DRC)?
-> Credit Spread Risk (CSR) in SbM captures the mark-to-market loss resulting from continuous, marginal shifts in credit spreads (e.g., a corporate bond spread widening from 100 bps to 150 bps) while the obligor remains solvent.
-> The Default Risk Charge (DRC) captures the catastrophic jump-to-default (JTD) loss if the corporate obligor enters formal bankruptcy.
-> When bankruptcy occurs, the bond price drops instantaneously to its recovery value (e.g., from 100 to 40), wiping out 60% of par value, and equity drops to zero.
-> Because continuous sensitivity metrics ($CS01$) cannot model this discontinuous loss of principal, DRC is calculated as a standalone capital charge held entirely in addition to SbM.
+> CSR prices continuous spread moves through CS01 times a spread shock, while the DRC prices the discrete jump to recovery on default, position by position (MAR22.1).
+> The DRC uses LGD, notional and P&L to compute the loss on an immediate default, with ratings-based weights calibrated to the banking book (MAR20.4(2)).
+> A short-dated distressed bond can have small CS01 and a large JTD; a long-dated IG bond the reverse.
 
 > [!question]- reg-jtd-supervisory-lgd-values | What are the mandatory supervisory LGD values used in the FRTB Jump-to-Default calculation across asset seniorities?
-> Under Basel MAR22.11, supervisory LGD values are strictly fixed:
-> - Senior debt instruments: $LGD = 40\%$.
-> - Subordinated debt instruments: $LGD = 75\%$.
-> - Equity instruments: $LGD = 100\%$.
-> - Covered bonds: $LGD = 15\%$.
-> These fixed supervisory parameters eliminate internal model discretion, preventing banks from artificially lowering capital by assuming optimistic recovery rates.
+> 100% for equity and non-senior debt, 75% for senior debt, 25% for covered bonds (MAR22.12).
+> No LGD is applied where the instrument's price does not depend on the recovery rate, such as a knock-out on default.
+> Securitisation JTD is the market value with no LGD, because the securitisation risk weights already contain it (MAR22.27).
 
 > [!question]- reg-wts-ratio-economic-meaning | What is the economic rationale behind the Weighted-to-Short ($WtS$) ratio in the non-securitisation DRC formula?
-> The DRC formula aggregates capital as:
-> $$\text{DRC} = \max\left(0, \sum_{\text{Long}} RW_i \text{JTD}_i - WtS \sum_{\text{Short}} RW_j |\text{JTD}_j|\right)$$
-> where $WtS = \frac{\sum \text{Long}}{\sum \text{Long} + \sum |\text{Short}|}$.
-> If short positions on Corporate X could offset long positions on Corporate Y dollar-for-dollar, a desk could buy $\$100\text{M}$ of junk bonds and short $\$100\text{M}$ of high-grade bonds, reporting zero default capital.
-> In reality, Corporate Y can default while Corporate X remains solvent, leaving the bank fully exposed.
-> The $WtS$ ratio discounts the hedging credit granted to short positions across different obligors:
-> - When long and short exposures are balanced, $WtS = 0.50$, cutting the short hedge value in half.
-> - As long exposure dominates, $WtS \to 1.0$, allowing greater hedge recognition only when the portfolio is overwhelmingly net long.
+> The 2016 text's WtS is the current hedge benefit ratio $HBR = \sum L / (\sum L + \sum |S|)$, computed on unweighted net JTD (MAR22.23).
+> It discounts shorts in different obligors because they are imperfect hedges: default correlation and basis risk mean a short in one name does not offset a long in another.
+> With equal risk weights $DRC = RW \cdot L^2 / (L + S)$, so a matched book keeps half its long charge, and a mostly-short book gets almost no credit for its shorts.
 
 > [!question]- reg-rrao-rationale-and-scope | Why did the Basel Committee introduce the Residual Risk Add-On (RRAO), and why does it forbid netting?
-> The RRAO (MAR23) was designed as a non-modelable backstop to capture non-linear, gap, and correlation risks that cannot be decomposed into standard SbM delta, vega, and curvature factors.
-> Exotic instruments (such as barrier options, digital options, variance swaps, and weather derivatives) contain complex path-dependencies and cliff-edge risks that break standardized risk grids during market panics.
-> Supervisors forbid netting and hedging recognition (levying 1.0% or 0.1% on gross absolute notional) because:
-> 1. Two offsetting barrier options with slightly different trigger conditions can decouple during high-volatility gap moves.
-> 2. Exotic derivatives carry substantial legal, model, and liquidity risks during market stress.
-> 3. The gross notional penalty creates an intentional economic disincentive against accumulating large, complex structured derivative books.
+> Because the SbM and DRC cannot capture every risk without becoming unduly complex (MAR20.4(3)): exotic underlyings and gap, correlation and behavioural risks have no sensitivity in the framework.
+> It is a deliberately simple backstop: gross notional times 1.0% or 0.1% (MAR23.8).
+> Netting is not allowed because hedges of these risks are themselves imperfect; only exact back-to-back trades with a third party are excluded (MAR23.7).
 
 > [!question]- reg-rrao-rate-split-10-vs-01 | Which instruments receive the 1.0% RRAO charge versus the 0.1% RRAO charge?
-> - **1.0% Gross Notional Charge**: Instruments with exotic payoffs or exotic underlyings:
->   - Exotic underlyings: Weather, natural disasters, mortality, longevity, freight.
->   - Exotic payoffs: Barrier options, digital/binary options, Asian options, lookback options, variance swaps, volatility swaps, correlation swaps, best-of options.
-> - **0.1% Gross Notional Charge**: Instruments with other residual risks:
->   - Instruments subject to prepayment risk (residential mortgage loans, unmodelled prepayment options).
->   - Corporate callable bonds and structured notes with embedded non-exotic optionality.
+> 1.0% for instruments with an exotic underlying, outside every SbM and DRC risk factor: longevity, weather, natural disasters, future realised volatility (MAR23.3).
+> 0.1% for other residual risks: options whose payoff is not a finite linear combination of single-underlying vanillas (barriers, Asians, digitals, baskets, best-of, spread, Bermudan and quanto options, multi-callable bonds) and non-hedge CTP instruments (MAR23.4, MAR23.5).
+> Listed or clearable instruments leave the 0.1% category but not the 1.0% one.
 
-> [!question]- reg-drc-seniority-offsetting-restriction | Why does FRTB forbid a short position in subordinated debt from offsetting a long position in senior debt of the same obligor?
-> In the corporate capital structure, subordinated debt absorbs losses prior to senior debt.
-> In a distressed scenario:
-> - An obligor may restructure or undergo a debt-for-equity swap where subordinated debtholders suffer a 100% loss, while senior debtholders recover 100% of principal.
-> - If a bank held a long position in senior debt and a short position in subordinated debt, the senior debt suffers zero loss while the short subordinated position generates a payout, creating an apparent profit.
-> - However, if the firm defaults suddenly with low recovery, the senior debt suffers losses ($LGD = 40\%$) while the subordinated debt was already trading at distressed pennies on the dollar, providing insufficient cash payout to cover senior losses.
-> To prevent structural misalignments, supervisors forbid lower-seniority shorts from hedging higher-seniority longs.
+> [!question]- reg-drc-seniority-offsetting-restriction | Can a short position in subordinated debt offset a long position in senior debt of the same obligor, and what about the reverse?
+> Yes for the first: a short offsets a long of the same obligor when the short has the same or lower seniority (MAR22.19(1)).
+> No for the reverse: a short senior bond cannot offset a long subordinated bond or a long equity.
+> The logic is the recovery waterfall: when the obligor defaults, the junior position loses at least as much as the senior one, so a junior short covers a senior long, but a senior short may recover while the junior long is wiped out.
 
 > [!question]- reg-maturity-scaling-in-drc | How does FRTB treat maturities less than 1 year in the JTD calculation?
-> Under MAR22.14, for positions with contractual maturity less than 1.0 year, the calculated JTD is scaled proportionally by maturity:
-> $$\text{JTD}_{\text{scaled}} = \text{JTD} \cdot \frac{M}{1.0}$$
-> where $M$ is the residual maturity in years, floored at 0.25 years (3 months).
-> For example, a 6-month corporate bond ($M = 0.50$) has its JTD cut in half ($0.50 / 1.0 = 50\%$).
-> This scaling reflects that the probability of an obligor defaulting over a 3-month or 6-month window is lower than over a full 1-year capital horizon.
-> Positions with maturity $\ge 1.0$ year receive 100% weighting (no scaling above 1.0).
+> Gross JTD of exposures under one year, and of their hedges, is multiplied by maturity in years (MAR22.15), with the weight floored at 0.25 (MAR22.18).
+> A three-month short hedging a five-year long offsets only a quarter of its size (MAR22.19(3)(b)); if both are under a year both are scaled (MAR22.20).
+> Cash equity is assigned three months or more than one year, nothing in between (MAR22.16).
 
 > [!question]- reg-rrao-impact-on-variance-swaps | How does RRAO economically impact an equity desk trading variance swaps?
-> A variance swap pays the difference between realized variance and a pre-agreed strike: $\text{Payoff} = N_{\text{var}} \times (\sigma_{\text{realized}}^2 - K_{\text{var}})$.
-> Because variance swaps have non-linear quadratic volatility payoffs, they fall under the 1.0% RRAO charge.
-> For a market-making desk trading $\$100\text{M}$ of gross variance swap notional with institutional clients:
-> - The desk faces a mandatory annual capital charge of $\$100,000,000 \times 1.0\% = \$1,000,000$.
-> - Even if the desk enters into an offsetting $\$100\text{M}$ variance swap with another dealer to hedge the variance risk, gross notional doubles to $\$200\text{M}$, and RRAO capital doubles to $\$2,000,000$.
-> This punitive, non-offsettable capital charge has forced banks to shift client volatility trading toward exchange-traded options and standardized futures.
+> A variance swap's underlying is future realised variance, an exotic underlying (MAR23.3 and its FAQ), so it attracts 1.0% of gross notional, ten times the rate on a barrier option.
+> The add-on applies to every leg including hedges, unless a trade is exactly matched back-to-back with a third party (MAR23.7).
+> The desk must also fix the notional convention (variance or vega notional) consistently with the product's definition, because the add-on is linear in it.
 
 > [!question]- reg-equity-short-drc-offsetting | Can a short single-stock equity position offset a long corporate bond position in DRC?
-> No.
-> Under MAR22.12, equity positions cannot be used to offset debt positions across different seniority tiers.
-> While a short equity position gains when a firm approaches bankruptcy, equity prices often hit near-zero levels long before formal credit default occurs (during restructuring talks).
-> By the time the debt actually defaults, the equity short may have already been closed out or squeezed by short-sellers, leaving the bond position completely unhedged during the credit close-out.
-> Therefore, equity positions can offset only identical equity positions on the same reference entity.
+> Yes, if both are on the same obligor: equity is the most junior claim, so a short equity may offset a long bond (MAR22.19(1)).
+> The equity JTD uses a 100% LGD and a maturity of three months or more than one year (MAR22.16), so a three-month equity short offsets only a quarter of its size against a long bond of more than one year.
+> A short equity in a different obligor is only a hedge, discounted by the HBR.
 
 > [!question]- reg-drc-securitisations-approach | How does the Default Risk Charge treat securitization positions compared to corporate bonds?
-> Securitization positions (CDOs, CLOs, ABS) cannot be evaluated under the simple single-name DRC formula.
-> Instead, MAR22 mandates that:
-> - Securitisations are segregated into two distinct regimes: Non-CTP (traditional securitisations) and CTP (Correlation Trading Portfolio).
-> - Non-CTP securitisations must use the banking book securitisation hierarchy: SEC-IRBA (internal ratings), SEC-ERBA (external ratings), or SEC-SA (standardised approach), applying capital charges based on tranche attachment and detachment points.
-> - Securitisations face a strict capital floor and cannot receive diversification benefits against corporate bonds or sovereigns.
+> Securitisation JTD is the market value with no LGD (MAR22.27), offsetting is limited to the same pool and tranche or exact replication (MAR22.29, MAR22.30), buckets are asset class times region (MAR22.31), and risk weights come from the banking book securitisation framework with a one-year maturity (MAR22.34).
+> The CTP is separate: each index is a bucket, index-level charges can be negative, and they are combined with $\max(DRC_b, 0) + 0.5 \min(DRC_b, 0)$ (MAR22.44, MAR22.45).
+> No diversification is recognised between the three DRC classes (MAR22.4).
+
+> [!question]- reg-jtd-formula-derivation | Derive the gross JTD of a long bond with face value $N$, market value $MV$ and LGD.
+> On default the bond falls from $MV$ to recovery $(1 - LGD) N$, so the loss is $MV - (1 - LGD)N = LGD \cdot N + (MV - N) = LGD \cdot N + P\&L$ (MAR22.11).
+> It is floored at zero for a long and capped at zero for a short.
+> A senior bond with $N = 10$m and $MV = 9.5$m has $JTD = 7.5 - 0.5 = 7.0$m.
+
+> [!question]- reg-drc-sold-put-direction | Is a sold put on a bond a long or short DRC exposure, and what is its JTD with notional 10m, strike 95% and option MtM 0.3m on a senior bond?
+> Long: the seller loses on default (MAR22.10(2)).
+> Bond-equivalent MV $= 9.5 - 0.3 = 9.2$m, P&L $= -0.8$m, $JTD = 0.75 \times 10 - 0.8 = 6.7$m (MAR22.14 Table 1).
+> Equivalently, the seller pays 9.5m for a bond worth 2.5m, a 7.0m loss, minus the 0.3m already marked.
+
+> [!question]- reg-drc-hbr-matched-book | A corporates bucket holds 100 of net long BBB JTD and 100 of net short BBB JTD in different names. What is the DRC?
+> $HBR = 100 / 200 = 0.5$, so $DRC = 6\% \times 100 - 0.5 \times 6\% \times 100 = 3$ (MAR22.23, MAR22.25).
+> Half the long charge survives because the shorts are only hedges.
+> If the shorts were on the same obligors at equal or junior seniority, they would offset first and the DRC would be zero.
+
+> [!question]- reg-drc-hedge-can-increase-charge | Can buying CDS protection on a different obligor increase the non-securitisation DRC? Give the mechanism.
+> Yes: net shorts enter the denominator of $HBR = \sum L / (\sum L + \sum |S|)$, so a new short lowers the credit given to every existing short in the bucket (MAR22.23, MAR22.25).
+> If the new short carries a low risk weight, its own weighted credit is smaller than the credit lost on existing high-weight shorts.
+> In the worked example, adding 6m of A-rated protection (3%) lowers HBR from 0.67105 to 0.43966 and raises the corporates charge from 567,533 to 618,556.
+
+> [!question]- reg-drc-ctp-aggregation | Why can a CTP index-level DRC be negative, and how are index-level charges aggregated?
+> $HBR_{ctp}$ is computed across the whole CTP and the index-level formula has no zero floor, so an index whose shorts dominate gives a negative charge (MAR22.44).
+> The total is $\max\left[\sum_b (\max(DRC_b, 0) + 0.5 \min(DRC_b, 0)), 0\right]$, so +100 and -100 give 50 (MAR22.45).
+> The 0.5 is a second discount for basis risk between different indices (footnote 297).
+
+> [!question]- reg-nth-to-default-tranche | How is a fourth-to-default product on a 20-name basket treated in the CTP DRC?
+> As a tranche attaching at $(4-1)/20 = 15\%$ and detaching at $4/20 = 20\%$ (MAR22.38).
+> Its risk weight then comes from the banking book securitisation framework with a one-year maturity (MAR22.42).
+> It can offset only an identical tranche or an exact replication, never a different tranche of the same basket (MAR22.39).
+
+> [!question]- reg-rrao-exemptions | Name five risk types that do not by themselves put an instrument in the RRAO.
+> Cheapest-to-deliver optionality, smile risk, correlation risk of multi-underlying plain vanilla European or American options and their linear combinations (including index options), dividend risk of derivatives whose underlying is not purely dividends, and qualifying index instruments (MAR23.6).
+> An instrument can still be in scope for another reason, for example a barrier on an index.
+> Bonds with multiple call dates are in scope as path-dependent options (FAQ to MAR23.4).
+
+> [!question]- reg-drc-rating-disagreement | An issuer has ratings mapping to 3%, 6% and 15% default risk weights. Which applies?
+> 6%: with three or more ratings, take the two lowest risk weights (3% and 6%) and apply the higher of them (FAQ to MAR22.24, consistent with CRE21).
+> With two ratings mapping to different weights, the higher weight applies.
+> Unrated exposures take 15%.
 
 ## Further reading
 
-- Basel Committee on Banking Supervision. *Minimum capital requirements for market risk*. BCBS 457, January 2019.
-- Basel Committee on Banking Supervision. *Consolidated Basel Framework: MAR22 - Standardised approach: default risk charge*. Bank for International Settlements, 2020.
-- Basel Committee on Banking Supervision. *Consolidated Basel Framework: MAR23 - Standardised approach: residual risk add-on*. Bank for International Settlements, 2020.
-- International Swaps and Derivatives Association (ISDA). *Residual Risk Add-On (RRAO): Industry Impact and Calibration Analysis*. ISDA Research Papers, 2021.
-- Gregory, Jon. *The xVA Challenge: Counterparty Credit Risk, Funding, Collateral and Capital*. Wiley, 4th edition, 2020.
+- Basel Committee on Banking Supervision, Basel Framework, MAR20, MAR22 and MAR23 (version effective 1 January 2023).
+- Basel Committee on Banking Supervision, *Minimum capital requirements for market risk*, January 2019 (d457).
+- Basel Committee on Banking Supervision, Basel Framework, CRE40 to CRE44, for the securitisation risk weights the DRC borrows.
+- John C. Hull, *Risk Management and Financial Institutions*, Wiley, chapters on the Fundamental Review of the Trading Book.
 
 ## In this repo and SDE-Interview-Prep
 
-- 07-FRTB-Sensitivities-Based-Method-Delta.md - FRTB Standardised Approach delta sensitivities and multi-bucket aggregation.
-- 08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md - Vega risk, liquidity horizons, and full revaluation curvature risk.
-- `code/frtb_sbm.py` - Reference implementation of FRTB SbM, curvature calculation, and DRC non-securitisation engine.
+- [FRTB: SbM Delta](07-FRTB-Sensitivities-Based-Method-Delta.md) and [FRTB: Vega and Curvature](08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md) - the SbM half of the SA.
+- [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) - the banking book treatment the DRC is calibrated to.
+- [Credit Advanced: CDS Indices and Tranches](../06-Fixed-Income-and-Asset-Classes/23-Credit-Advanced-CDS-Indices-and-Tranches.md) - the CTP products.
+- [code/frtb_sbm.py](code/frtb_sbm.py) - reference engine; every example above is its output.
+- [FRTB Engine](../18-Pricing-and-Risk-Systems/10-FRTB-Engine.md) - the production system.

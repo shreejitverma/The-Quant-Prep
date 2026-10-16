@@ -17,9 +17,17 @@ SECTION_RE = re.compile(r"^(\d\d)-[A-Za-z0-9-]+$")
 ORDER_RE = re.compile(r"^(\d\d)-(.+)$")
 CARD_RE = re.compile(r"^> \[!question\]-?\s+([a-z0-9][a-z0-9-]*)\s*\|\s*(.+?)\s*$")
 HEADING_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
+FENCE_OPEN_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 
-TRACKS = ("quant-trader", "quant-research", "quant-dev")
-TRACK_LABELS = {"quant-trader": "Quant Trader", "quant-research": "Quant Researcher", "quant-dev": "Quant Developer"}
+# quant-risk covers sell-side strats and desk quants, market and credit risk quants, XVA and model validation.
+TRACKS = ("quant-trader", "quant-research", "quant-dev", "quant-risk")
+TRACK_LABELS = {
+    "quant-trader": "Quant Trader",
+    "quant-research": "Quant Researcher",
+    "quant-dev": "Quant Developer",
+    "quant-risk": "Quant Risk and Strats",
+}
+TRACK_ABBR = {"quant-trader": "T", "quant-research": "R", "quant-dev": "D", "quant-risk": "Q"}
 TIERS = ("core", "advanced", "senior")
 STATUSES = ("seed", "draft", "solid", "canonical")
 # Note types whose mastery is tracked. Everything else is supporting material.
@@ -175,10 +183,23 @@ def split_frontmatter(text: str) -> tuple[dict, str, int]:
 
 
 def parse_cards(body: str, note_id: str, first_line: int) -> list[Card]:
+    """Question callouts in the body; examples inside fenced code blocks are not cards."""
     cards: list[Card] = []
     lines = body.splitlines()
+    fence = ""
     i = 0
     while i < len(lines):
+        if fence:
+            marker = re.escape(fence[0]) + "{" + str(len(fence)) + ",}"
+            if re.match(r"^ {0,3}" + marker + r"[ \t]*$", lines[i]):
+                fence = ""
+            i += 1
+            continue
+        f = FENCE_OPEN_RE.match(lines[i])
+        if f and not (f.group(1)[0] == "`" and "`" in lines[i][f.end() :]):
+            fence = f.group(1)
+            i += 1
+            continue
         m = CARD_RE.match(lines[i])
         if not m:
             i += 1

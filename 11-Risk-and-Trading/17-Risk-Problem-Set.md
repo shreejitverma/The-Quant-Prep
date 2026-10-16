@@ -1,6 +1,6 @@
 ---
 type: problem-set
-track: [quant-trader, quant-research]
+track: [quant-trader, quant-research, quant-risk]
 tier: core
 status: draft
 prereqs: [kelly-criterion-and-position-sizing, var-and-expected-shortfall, xva, liquidity-and-model-risk]

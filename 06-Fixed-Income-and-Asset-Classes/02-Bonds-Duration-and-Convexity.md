@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research]
+track: [quant-trader, quant-research, quant-risk]
 tier: core
 status: draft
 prereqs: [discounting-and-yield-curves]

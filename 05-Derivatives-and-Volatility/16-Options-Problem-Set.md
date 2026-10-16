@@ -1,6 +1,6 @@
 ---
 type: problem-set
-track: [quant-trader, quant-research]
+track: [quant-trader, quant-research, quant-risk]
 tier: core
 status: solid
 prereqs: [delta-hedging-and-gamma-scalping, option-strategies-and-volatility-trading]
