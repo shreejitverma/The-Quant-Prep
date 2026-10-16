@@ -50,6 +50,7 @@ jobs:
           python 17-Regulatory-Capital-Basel-and-FRTB/code/frtb_sbm.py
           python 17-Regulatory-Capital-Basel-and-FRTB/code/frtb_ima.py
           python 17-Regulatory-Capital-Basel-and-FRTB/code/basel_liquidity_irrbb.py
+          python 18-Pricing-and-Risk-Systems/code/systems_pricing_engine.py
 
   secrets:
     runs-on: ubuntu-latest
