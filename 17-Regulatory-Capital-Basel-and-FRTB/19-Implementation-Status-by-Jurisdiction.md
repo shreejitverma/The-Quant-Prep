@@ -5,7 +5,7 @@ tier: advanced
 status: draft
 prereqs: [bcbs-239-risk-data-aggregation]
 est_hours: 4
-sources: [European Union - Capital Requirements Regulation III (CRR3 2024), Federal Reserve Board - Re-proposal on Basel III Endgame Rules (2024), UK Prudential Regulation Authority - Implementation of the Basel 3.1 standards (PS9/24 2024), Basel Committee on Banking Supervision - Basel III Monitoring Report (2024)]
+sources: [European Union - Capital Requirements Regulation III and Delegated Regulation (EU) 2025/1496, Federal Reserve Board - March 19 2026 capital proposals, UK Prudential Regulation Authority - PS1/26 Implementation of Basel 3.1 final rules, Basel Committee on Banking Supervision - Basel III Monitoring Report (2024)]
 ---
 
 # Implementation Status by Jurisdiction
@@ -14,18 +14,19 @@ sources: [European Union - Capital Requirements Regulation III (CRR3 2024), Fede
 
 While the Basel Committee on Banking Supervision (BCBS) establishes international regulatory capital benchmarks, individual sovereign jurisdictions enact them through domestic legislation.
 This creates divergence across timelines, technical rules, and capital floors.
-The European Union enacted Capital Requirements Regulation III (CRR3) effective January 1, 2025, incorporating temporary relief for unrated corporates, residential real estate, and legacy CVA corporate exemptions.
-The United States proposed the "Basel III Endgame" for banks with assets exceeding $100 billion, sparking industry pushback that resulted in a major 2024 re-proposal scaling back capital surcharges and adjusting the Operational Risk Internal Loss Multiplier.
-The United Kingdom Prudential Regulation Authority (PRA) finalized its "Basel 3.1" rulebook effective January 1, 2026, alongside a simplified regime for smaller domestic institutions.
-These geographic divergences introduce regulatory arbitrage opportunities and booking model fragmentation across multinational investment banks.
+The European Union’s CRR3 has applied since January 1, 2025, with transitional treatments and a separate delay for FRTB market-risk own-funds requirements.
+In the United States, the agencies issued new capital proposals on March 19, 2026; the proposal for the largest and most internationally active banks uses one calculation instead of the dual calculation in the 2024 re-proposal.
+Those US proposals remain proposals, and the cited agency release gives no first-application date.
+The UK PRA finalized Basel 3.1 in PS1/26, with most rules taking effect January 1, 2027 and the market-risk internal model approach taking effect January 1, 2028.
+Differences in enacted rules, proposals, and implementation dates affect cross-border capital planning, but do not by themselves establish an arbitrage opportunity.
 
 ## Learning objectives
 
 - Map the implementation timelines and legislative instruments across the European Union (CRR3), the United States (Basel III Endgame), and the United Kingdom (Basel 3.1).
 - Identify key jurisdictional deviations from the BCBS baseline, including EU corporate CVA exemptions and transitional output floor arrangements.
-- Analyze the US Basel III Endgame evolution from the initial July 2023 Notice of Proposed Rulemaking (NPR) to the September 2024 re-proposal.
+- Distinguish the March 2026 US proposals from the earlier 2023 NPR and 2024 re-proposal, including the proposed single-calculation framework and the absence of a stated first-application date.
 - Quantify cross-border capital disparities for identical derivative and credit portfolios under divergent EU versus US regulatory treatments.
-- Contrast the Collins Amendment dual-stack requirement in the United States with European and British single-stack capital frameworks.
+- Compare the US agencies’ proposed single-calculation framework for the largest banks with the enacted EU and UK frameworks, while distinguishing proposals from effective rules.
 - Evaluate the strategic implications of cross-border regulatory arbitrage on global bank booking models and legal entity structures.
 
 ## Core concepts
@@ -34,56 +35,50 @@ These geographic divergences introduce regulatory arbitrage opportunities and bo
 
 ```
 +---------------------------------------------------------------------------------------------------+
-| Feature               | European Union (CRR3)       | United States (Endgame)   | United Kingdom (Basel 3.1)|
+| Feature               | European Union (CRR3)       | United States (March 2026 proposal) | United Kingdom (Basel 3.1)|
 +---------------------------------------------------------------------------------------------------+
-| Effective Date        | January 1, 2025             | Mid-2025 to 2026 (Phased) | January 1, 2026           |
-| Primary Legislation   | CRR3 / CRD VI               | Dodd-Frank Joint Rule     | PRA Policy Statements     |
-| Scope                 | All credit institutions     | Category I-IV (> $100B)   | All PRA-regulated banks   |
-| Output Floor Path     | 50% (2025) -> 72.5% (2030)  | 72.5% (Phased transition) | 50% (2026) -> 72.5% (2030)|
-| CVA Exemptions        | Preserved (Sovereigns, NFCs)| No exemptions (Full SA)   | Narrowed exemptions       |
-| Credit Models         | Retains F-IRB and A-IRB     | Eliminates internal credit| Retains F-IRB and A-IRB   |
-| Capital Framework     | Single stack + Output Floor | Dual stack (Standardized  | Single stack + Output     |
-|                       |                             | vs Expanded ERBA)         | Floor                     |
+| Status / date         | CRR3 applies from Jan 1, 2025 | March 19, 2026 proposals; no first-application date stated | Most rules Jan 1, 2027; market-risk IMA Jan 1, 2028 |
+| Legal basis / status | CRR3 / CRD VI                | Existing rules; March 2026 agency proposal | PRA Rulebook / PS1/26 |
+| Scope                 | CRR3 institutions            | Largest internationally active banks; others may opt in | PRA-regulated firms in scope |
+| Output Floor Path     | Transitional CRR3 schedule   | Proposal; see draft rules for transition | Transitional schedule begins 2027; 72.5% terminal floor |
+| CVA Exemptions        | CRR3 treatment applies       | Proposal details govern; not final | Basel 3.1 treatment applies |
+| Credit Models         | Retains F-IRB and A-IRB     | Proposed standardized credit-risk approaches | Retains F-IRB and A-IRB   |
+| Capital Framework     | CRR3 rules + output floor    | March 2026 proposal: one calculation for largest banks | Basel 3.1 rules + output floor |
 +---------------------------------------------------------------------------------------------------+
 ```
 
 ### 2. European Union: CRR3 and CRD VI
 
-The European Parliament and Council finalized CRR3 in May 2024, taking effect on January 1, 2025:
+CRR3 has applied since January 1, 2025. Relevant market-risk timing was subsequently changed by Commission Delegated Regulation (EU) 2025/1496:
 - **Unrated Corporate Transitional Treatment:** Because European corporate borrowers rely on bank loans rather than public debt ratings, an unrated corporate with an internal PD equivalent to investment grade receives a favorable transitional risk weight of $65\%$ (rather than $100\%$) through 2032.
 - **Preservation of CVA Exemptions:** The EU retained historical exemptions from CVA capital charges for derivative transactions with non-financial corporates (NFCs), sovereigns, and pension funds to protect hedging costs for the real economy.
-- **FRTB Implementation Postponement:** To maintain parity with US delays, the European Commission postponed the mandatory market risk own funds requirement (FRTB SA/IMA) from January 2025 to January 2026, while keeping FRTB reporting requirements active.
+- **FRTB Own-Funds Application:** Delegated Regulation (EU) 2025/1496 defers the application of FRTB market-risk own-funds requirements to January 1, 2027. Until then, the prior CRR market-risk framework continues to apply.
 
 ### 3. United States: Basel III Endgame
 
-In July 2023, the Fed, FDIC, and OCC issued a joint NPR targeting large banks ($>\$100\text{B}$ in assets).
-Key flashpoints and the September 2024 re-proposal:
-- **Capital Impact Scaling:** The original NPR was projected to increase aggregate Tier 1 common capital requirements by approximately $16\%$ to $19\%$ for G-SIBs. The 2024 re-proposal narrowed this increase to approximately $9\%$.
-- **Elimination of Internal Models for Credit Risk:** The US framework completely eliminates internal ratings-based (A-IRB) approaches for credit risk, forcing large banks to use the new Expanded Risk-Based Approach (ERBA), a standardized framework.
-- **The Collins Amendment Dual-Stack:** Under Dodd-Frank Section 171, US banks must compute their capital requirements under two distinct stacks:
-  1. Standardized Approach (Pillar 1 minimum).
-  2. Expanded Risk-Based Approach (ERBA).
-  The binding capital constraint is whichever stack produces the higher RWA.
-- **Operational Risk Internal Loss Multiplier (ILM):** The re-proposal neutralized the ILM to $1.0$ (neutral historical loss scaling) or allowed banks to base it purely on business volume rather than punitive historical loss history.
+On March 19, 2026, the Fed, FDIC, and OCC requested comment on new capital proposals. The proposal primarily for the largest, most internationally active banks would use one rather than two sets of calculations for risk-based capital requirements; other banks could elect to adopt it, and the market-risk component would apply only to banks with significant trading activity.
+- **Proposal status:** These remain proposed rules, not effective requirements. The comment period closed June 18, 2026; the agencies’ announcement does not state a first-application date.
+- **Earlier proposals:** The July 2023 NPR and September 2024 re-proposal are historical stages, not the current proposal. Do not present the 2024 dual-calculation design, impact estimates, or operational-risk calibration as the current proposed framework.
+- **Credit risk models:** The March 2026 proposal continues to eliminate internal models for credit risk, as described in the agency statements; the details remain subject to the proposed rule and any final action.
 
 ### 4. United Kingdom: PRA Basel 3.1
 
-The PRA finalized its Basel 3.1 policy via PS9/24 and PS17/24:
-- **Implementation Date:** Set to January 1, 2026, aligning closely with international counterparts.
-- **Transitional Floor:** 5-year phase-in: $50\%$ in 2026, $55\%$ in 2027, $60\%$ in 2028, $65\%$ in 2029, and reaching the terminal $72.5\%$ in 2030.
-- **Strong and Simple Regime:** Established the Small Domestic Deposit Takers (SDDT) regime, exempting non-systemic, domestically focused UK banks from complex Basel 3.1 rules while maintaining prudential soundness.
+The PRA published final Basel 3.1 rules in PS1/26.
+- **Implementation dates:** Most rules take effect January 1, 2027; the market-risk internal model approach (IMA) takes effect January 1, 2028.
+- **Transitional floor:** The output floor transition is aligned to the delayed implementation, reaching the terminal $72.5\%$ in 2032.
+- **Strong and Simple Regime:** The PRA has finalized a simplified capital regime for Small Domestic Deposit Takers (SDDTs), with its own scope and requirements.
 
 ### 5. Cross-Border Arbitrage and Booking Models
 
 Disparities in local rules incentivize multinational financial institutions to optimize booking models:
-- **CVA Carve-Outs:** Booking over-the-counter (OTC) derivative hedges with uncollateralized corporate clients in an EU legal entity rather than a US broker-dealer to avoid heavy CVA capital charges.
-- **Trading Desk Relocations:** Aligning internal risk-booking models with jurisdictions offering delayed FRTB capital enforcement or more favorable market risk parameters.
+- **CVA Differences:** Jurisdiction-specific CVA scope and exemptions can affect the capital treatment of OTC derivatives; determine the applicable enacted rule for each entity and counterparty before drawing a booking conclusion.
+- **Trading Desk Relocations:** Implementation timing and market-risk approaches differ, including the EU 2027 own-funds date and UK 2028 IMA date; verify applicable local rules rather than assuming a general capital advantage.
 
 ## Worked examples
 
-### Example 1: Cross-Border CVA Capital Disparity (EU vs. US Booking Entity)
+### Example 1: Illustrative CVA Calculation Under Assumed Rules
 
-A global investment bank negotiates an uncollateralized 5-year Interest Rate Swap (IRS) with a European airline (a non-financial corporate without an external credit rating):
+This calculation is an illustrative comparison of assumed treatments, not a statement of the current US proposal or a recommendation to book a trade in a particular entity. A global bank models an uncollateralized 5-year Interest Rate Swap (IRS) with a European airline (a non-financial corporate without an external credit rating):
 - Netting Set Mark-to-Market Value: $\$10\text{ million}$
 - Notional: $\$250\text{ million}$
 - SA-CCR EAD: $\$18,500,000$
@@ -97,9 +92,9 @@ A global investment bank negotiates an uncollateralized 5-year Interest Rate Swa
 - CVA RWA: $\$0.00$
 - CVA Capital Cost (at 10% hurdle rate on CET1): $\$0.00$
 
-#### Option B: Booked in New York (US Subsidiary under US Basel III Endgame)
-- Under the US Basel III Endgame, there are **no exemptions** for commercial end-users, non-financial corporates, or sovereigns.
-- The bank must compute CVA capital under the Basic Approach for CVA (BA-CVA) or Standardized CVA (SA-CVA).
+#### Option B: Assumed treatment for a separate entity
+- For this arithmetic illustration only, assume the applicable rules require a CVA capital calculation and that the entity uses the reduced BA-CVA formula below.
+- This assumed calculation does not establish the treatment under the March 2026 US proposal, which is not yet final.
 - Applying Reduced BA-CVA:
 
 $$K_{\text{CVA}} = \alpha \times RW \times M \times \text{EAD} = 0.5 \times 0.014 \times 3.5 \times \$18,500,000$$
@@ -117,13 +112,11 @@ $$\text{Required Capital} = 12.0\% \times \$5,665,625 = \$679,875$$
 
 $$\text{Annual Drag} = 12\% \times \$679,875 = \$81,585\text{ per year}$$
 
-Conclusion:
-Booking the trade in the US legal entity imposes an immediate $\$679,875$ capital commitment and $\$81,585$ annual drag that does not exist in the EU.
-The bank's structuring desk will route the transaction through its European entity to preserve client pricing competitiveness.
+Under these assumptions, the calculated capital requirement is $\$679,875$ and annual drag is $\$81,585$. Actual entity-level treatment depends on the rules in force and the transaction facts; this example alone does not support a booking recommendation.
 
-### Example 2: US Collins Amendment Dual-Stack Evaluation
+### Example 2: Effect of the March 2026 US Single-Calculation Proposal
 
-A US Category II bank evaluates its credit portfolio under the dual-stack regime:
+The March 2026 proposal for the largest, most internationally active banks would replace the 2024 proposal’s two-calculation design with one calculation for risk-based capital compliance. The following arithmetic is only a contrast with a hypothetical two-calculation design, not a description of a current or proposed binding US requirement:
 - Total Standardized Approach RWA (Stack 1): $\$500,000\text{ million}$
 - Total Expanded Risk-Based Approach (ERBA) RWA (Stack 2):
   - Credit Risk (Standardized ERBA): $\$410,000\text{ million}$
@@ -131,30 +124,26 @@ A US Category II bank evaluates its credit portfolio under the dual-stack regime
   - Operational Risk (SMA): $\$60,000\text{ million}$
   - Total ERBA RWA: $\$410,000 + \$45,000 + \$60,000 = \$515,000\text{ million}$
 
-The bank holds $\$60,000\text{ million}$ of Tier 1 Common Equity (CET1).
+Assume solely for this illustration that the bank holds $\$60,000\text{ million}$ of CET1.
 
 Capital Ratios:
 - Standardized Approach Ratio: $\frac{\$60,000}{\$500,000} = 12.00\%$
 - ERBA Ratio: $\frac{\$60,000}{\$515,000} = 11.65\%$
 
-Binding Determination:
-- Under Dodd-Frank Section 171, the bank's binding capital ratio is the lower ratio ($11.65\%$), which corresponds to the higher RWA stack ($\$515,000\text{ million}$).
-- If market volatility temporarily drops market risk RWA to $\$25,000\text{ million}$, total ERBA RWA becomes $\$495,000\text{ million}$.
-- In that scenario, Stack 1 becomes binding at $\$500,000\text{ million}$, preventing the bank from benefiting from the reduction in ERBA RWA.
+Under a hypothetical rule requiring both calculations, the higher RWA would be $\$515,000\text{ million}$. The March 2026 proposal instead describes one calculation for the covered banks, so the maximum-of-two-stacks determination above is not a description of that proposal. The agencies’ release does not specify a first-application date.
 
 ## Pitfalls
 
-- **Assuming Global Parity in CVA Exemptions:** Assuming that European exemptions for corporate hedging apply in the US or UK causes severe undercapitalization on US-booked derivatives.
-- **Ignoring the US Collins Floor:** When modeling RWA optimization for US banks, analysts frequently optimize only ERBA without realizing that the Standardized Approach acts as a non-diversifiable hard floor.
-- **Overlooking Transitional Phase-In Schedules:** Output floors do not jump to $72.5\%$ immediately on day one; they step up annually from $50\%$ to $72.5\%$ over a 5-year horizon, altering medium-term capital planning.
+- **Assuming Global Parity in CVA Exemptions:** Assuming that an exemption in one jurisdiction applies in another can understate capital; check the current rule and counterparty facts for each entity.
+- **Confusing US proposal stages:** The 2024 re-proposal described two calculations; the March 2026 proposal for the largest banks describes one. Keep proposal history separate from current binding requirements.
+- **Overlooking Transitional Phase-In Schedules:** Output floors do not jump to $72.5\%$ immediately on day one; check the local transition dates and percentages when modeling medium-term capital requirements.
 - **Neglecting Extraterritoriality in Risk Models:** Cross-border banks operating in London, New York, and Frankfurt must maintain dual-reporting engines running local variations of SA-CCR and FRTB simultaneously.
-- **Assuming Internal Models Are Dead Globally:** While the US eliminated internal models for credit risk under ERBA, the EU and UK retained Advanced and Foundation IRB, maintaining substantial modeling advantages for European banks.
+- **Confusing Proposed and Effective Credit Rules:** The March 2026 US proposal uses standardized credit-risk approaches for covered banks, while the EU and UK Basel 3.1 rules retain IRB approaches subject to restrictions. Keep the US proposal distinct from effective requirements.
 
 ## Interview questions
 
-> [!question]- reg-19-01 | What is the Collins Amendment, and how does it affect US capital adequacy?
-> Enacted under Section 171 of the Dodd-Frank Act, the Collins Amendment mandates that capital requirements for large US banking organizations cannot be less than the generally applicable Standardized Approach.
-> This forces US institutions to maintain a dual-stack calculation where the Standardized Approach forms an immovable regulatory capital floor.
+> [!question]- reg-19-01 | How does the March 2026 US proposal change the calculation design?
+> Section 171 of the Dodd-Frank Act establishes a statutory capital floor. Separately, the March 2026 proposal for the largest, most internationally active banks would use one rather than two sets of calculations for risk-based capital compliance. It is a proposal, and the agency announcement does not state a first-application date.
 
 > [!question]- reg-19-02 | How does the EU CRR3 treat unrated corporate exposures differently from the BCBS baseline?
 > Under BCBS rules, unrated corporates receive a $100\%$ risk weight under the Standardized Approach.
@@ -167,16 +156,15 @@ Binding Determination:
 > The SDDT regime (part of the PRA's "Strong and Simple" framework) exempts smaller, domestic-focused UK banks from complex Basel 3.1 standards.
 > It replaces them with a streamlined, conservative capital regime that reduces compliance costs while ensuring safety.
 
-> [!question]- reg-19-05 | What major change did the US Federal Reserve introduce in its September 2024 Basel III Endgame re-proposal regarding operational risk?
-> The Fed neutralized the Internal Loss Multiplier (ILM) to $1.0$ (or allowed banks to calculate operational risk without punitive historical loss multipliers), substantially reducing the operational risk capital surcharge that was heavily criticized in the initial 2023 NPR.
+> [!question]- reg-19-05 | What is the status of the US capital proposals issued in March 2026?
+> The agencies issued proposals on March 19, 2026, and the comment period closed June 18, 2026. The proposal for the largest, most internationally active banks uses one rather than two sets of risk-based capital calculations. The announcement does not state a first-application date.
 
 > [!question]- reg-19-06 | How does the implementation timeline for FRTB market risk differ between the EU and the US?
-> Both jurisdictions delayed mandatory FRTB own funds requirements.
-> The EU postponed capital compliance to January 2026 while maintaining FRTB reporting requirements, aligning with US delays to maintain a level playing field for global trading desks.
+> The EU deferred FRTB market-risk own-funds application to January 1, 2027 under Delegated Regulation (EU) 2025/1496. The US March 2026 proposal includes market-risk requirements for banks with significant trading activity, but the agencies’ release does not state an application date.
 
-> [!question]- reg-19-07 | What is the primary difference in credit risk modeling permitted between the EU and US Basel III finalization?
-> The EU and UK retained internal ratings-based approaches (A-IRB and F-IRB) with revised input floors.
-> The US completely abolished internal models for credit risk in large banks, forcing institutions to rely exclusively on the standardized Expanded Risk-Based Approach (ERBA).
+> [!question]- reg-19-07 | How do credit risk approaches differ across the EU, UK, and March 2026 US proposal?
+> The EU and UK Basel 3.1 frameworks retain foundation and advanced IRB approaches subject to revised requirements.
+> The March 2026 US proposal uses standardized credit-risk approaches for the covered banks; it remains a proposal and has no first-application date in the agencies’ announcement.
 
 > [!question]- reg-19-08 | What is the phase-in schedule for the Basel III output floor?
 > The output floor phases in over five years:
@@ -187,15 +175,15 @@ Binding Determination:
 > Year 5: $72.5\%$ terminal floor.
 
 > [!question]- reg-19-09 | How does regulatory fragmentation lead to booking model restructuring in multinational investment banks?
-> Differences in capital rules (such as EU CVA exemptions or differential treatment of equity exposures) lead multinational banks to establish specialized booking hubs.
-> Transactions are executed in jurisdictions with the lowest capital consumption and back-to-back hedged internally.
+> Differences in capital rules can affect booking and legal-entity decisions, but a capital difference alone does not determine the appropriate booking location.
+> Banks must assess applicable rules, transaction facts, and supervisory requirements for each entity.
 
-> [!question]- reg-19-10 | What is the threshold for a bank to be subject to the US Basel III Endgame rules?
-> The rules apply to Category I through IV banking organizations with total consolidated assets of $\$100\text{ billion}$ or more, significantly expanding the scope beyond only the largest G-SIBs.
+> [!question]- reg-19-10 | What is the application date for the US proposals issued in March 2026?
+> The agencies’ March 19, 2026 announcement does not state a first-application date. Any application date depends on subsequent final rules.
 
 ## Further reading
 
 - European Banking Authority. *Opinion on the implementation of the Basel III framework in the EU*. EBA/Op/2023/12.
-- Board of Governors of the Federal Reserve System. *Statement on Basel III Endgame Re-proposal*. Press Release, September 2024.
-- Prudential Regulation Authority. *Implementation of the Basel 3.1 standards*. Bank of England Policy Statements PS9/24 and PS17/24.
+- Federal Reserve Board, FDIC, and OCC. *Agencies request comment on proposals to modernize the regulatory capital framework*. March 19, 2026.
+- Prudential Regulation Authority. *Implementation of Basel 3.1: Final rules*. Policy Statement PS1/26, January 2026.
 - Institute of International Finance. *Global Harmonization and Basel III Implementation*. IIF Policy Brief, 2024.

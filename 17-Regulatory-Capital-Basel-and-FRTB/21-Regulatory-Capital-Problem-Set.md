@@ -41,7 +41,7 @@ The Basel III/IV regulatory capital stack establishes minimum solvency constrain
 $$\text{RWA}_{\text{Binding}} = \max\left(\text{RWA}_{\text{Internal Models}}, 72.5\% \times \text{RWA}_{\text{Standardized}}\right)$$
 
 Where:
-- $\text{RWA}_{\text{Standardized}} = \text{Credit SA} + \text{FRTB SA} + \text{Operational Risk SMA} + \text{CVA Charge}$.
+- $\text{RWA}_{\text{Standardized}} = \text{Credit SA} + \text{FRTB SA} + \text{Operational Risk SMA} + 12.5 \times \text{CVA capital charge}$.
 - Phased in from $50\%$ to $72.5\%$ over five years.
 
 ### 3. Vasicek ASRF Credit Risk Formula
@@ -71,15 +71,15 @@ The bank's risk department compiles the following risk-weighted asset projection
   - Credit Risk (A-IRB): $\$280,000\text{ million}$
   - Market Risk (FRTB IMA): $\$35,000\text{ million}$
   - Operational Risk (SMA): $\$45,000\text{ million}$
-  - CVA Capital Charge: $\$10,000\text{ million}$
-  - Total Internal RWA: $\$280,000 + \$35,000 + \$45,000 + \$10,000 = \$370,000\text{ million}$
+  - CVA Capital Charge: $\$10,000\text{ million}$ (equivalent to $\$125,000\text{ million}$ RWA at the 8% minimum capital ratio)
+  - Total Internal RWA: $\$280,000 + \$35,000 + \$45,000 + \$125,000 = \$485,000\text{ million}$
 
 - Standardized Stack ($\text{RWA}_{\text{Standardized}}$):
   - Credit Risk (SA): $\$420,000\text{ million}$
   - Market Risk (FRTB SA): $\$55,000\text{ million}$
   - Operational Risk (SMA): $\$45,000\text{ million}$
-  - CVA Capital (SA-CVA): $\$16,000\text{ million}$
-  - Total Standardized RWA: $\$420,000 + \$55,000 + \$45,000 + \$16,000 = \$536,000\text{ million}$
+  - CVA Capital (SA-CVA): $\$16,000\text{ million}$ (equivalent to $\$200,000\text{ million}$ RWA at the 8% minimum capital ratio)
+  - Total Standardized RWA: $\$420,000 + \$55,000 + \$45,000 + \$200,000 = \$720,000\text{ million}$
 
 The bank's capital components are:
 - Common Equity Tier 1 (CET1): $\$44,000\text{ million}$
@@ -98,20 +98,20 @@ Supervisory requirements applicable to the bank:
 
 Compute the standardized floor threshold:
 
-$$\text{Floor Threshold} = 72.5\% \times \text{RWA}_{\text{Standardized}} = 0.725 \times \$536,000\text{ million} = \$388,600\text{ million}$$
+$$\text{Floor Threshold} = 72.5\% \times \text{RWA}_{\text{Standardized}} = 0.725 \times \$720,000\text{ million} = \$522,000\text{ million}$$
 
 Compare with Internal Models RWA:
 
-$$\text{RWA}_{\text{Internal}} = \$370,000\text{ million} < \$388,600\text{ million}$$
+$$\text{RWA}_{\text{Internal}} = \$485,000\text{ million} < \$522,000\text{ million}$$
 
 The output floor binds!
 The bank must report and capitalize against the higher floor RWA:
 
-$$\text{Binding RWA} = \$388,600\text{ million}$$
+$$\text{Binding RWA} = \$522,000\text{ million}$$
 
 RWA Increase from floor:
 
-$$\Delta\text{RWA} = \$388,600 - \$370,000 = \$18,600\text{ million (+5.03\%)}$$
+$$\Delta\text{RWA} = \$522,000 - \$485,000 = \$37,000\text{ million (+7.63\%)}$$
 
 #### Step 2: Total Required Capital Target Calculation
 
@@ -135,28 +135,29 @@ Total Capital Target Ratio:
 
 #### Step 3: Capital Adequacy and Buffer Surplus/Deficit
 
-Actual capital ratios based on binding RWA of $\$388,600\text{ million}$:
+Actual capital ratios based on binding RWA of $\$522,000\text{ million}$:
 - Actual CET1 Ratio:
 
-$$\text{CET1 Ratio} = \frac{\$44,000}{\$388,600} = 11.3227\% \approx 11.32\%$$
+$$\text{CET1 Ratio} = \frac{\$44,000}{\$522,000} = 8.4291\% \approx 8.43\%$$
 
 - CET1 Cushion above Target:
 
-$$\text{CET1 Surplus} = 11.3227\% - 9.84375\% = +1.47895\% \approx +1.48\%$$
-$$\text{Surplus in Dollars} = 0.0147895 \times \$388,600\text{ million} = +\$5,747.2\text{ million}$$
+$$\text{CET1 Surplus} = 8.4291\% - 9.84375\% = -1.41465\% \approx -1.41\%$$
+$$\text{Surplus in Dollars} = -0.0141465 \times \$522,000\text{ million} \approx -\$7,384.4\text{ million}$$
 
 - Actual Total Capital Ratio:
 
 $$\text{Total Capital} = \$44,000 + \$6,000 + \$8,000 = \$58,000\text{ million}$$
-$$\text{Total Capital Ratio} = \frac{\$58,000}{\$388,600} = 14.9254\% \approx 14.93\%$$
+$$\text{Total Capital Ratio} = \frac{\$58,000}{\$522,000} = 11.1111\% \approx 11.11\%$$
 
 - Total Capital Surplus above $14.0\%$ Target:
 
-$$\text{Total Surplus} = 14.9254\% - 14.0\% = +0.9254\% \approx +\$3,596.1\text{ million}$$
+$$\text{Total Surplus} = 11.1111\% - 14.0\% = -2.8889\% \approx -\$15,080\text{ million}$$
 
 Conclusion:
-The bank safely passes all regulatory capital ratios even with the output floor binding.
-However, the floor consumes $\$18,600\text{ million}$ of RWA capacity, reducing the CET1 surplus from $\$7,577\text{ million}$ (under internal models) to $\$5,747\text{ million}$, a reduction of $\$1,830\text{ million}$ in deployable surplus equity.
+The bank breaches the CET1 and total capital targets after the output floor binds.
+Even before the floor, its $\$485,000\text{ million}$ internal RWA implies CET1 of 9.07% and total capital of 11.96%, both below the stated targets.
+The floor raises RWA to $\$522,000\text{ million}$, reducing CET1 to 8.43% and total capital to 11.11%.
 
 ### Problem 2: SA-CCR Margined vs. Unmargined Netting Set Comparison
 
@@ -176,22 +177,22 @@ Supervisory parameters:
 Maturity Buckets and Supervisory Delta:
 - Trade 1 (Time-to-maturity 5y, Time-to-start 0): Bucket 3 ($> 5$ years? 5y is Bucket 2: 1 to 5 years).
   - Let's classify: Bucket 1 is $\le 1$ year, Bucket 2 is $> 1$ and $\le 5$ years, Bucket 3 is $> 5$ years.
-  - Trade 1: 5y $\to$ Bucket 2. Direction: Long rates ($\delta_1 = +1$).
-  - Trade 2: 10y $\to$ Bucket 3. Direction: Short rates ($\delta_2 = -1$).
-  - Trade 3: 2y $\to$ Bucket 2. Direction: Long rates ($\delta_3 = +1$).
+  - Trade 1: 5y $\to$ Bucket 2. Receive-fixed value falls when rates rise ($\delta_1 = -1$).
+  - Trade 2: 10y $\to$ Bucket 3. Pay-fixed value rises when rates rise ($\delta_2 = +1$).
+  - Trade 3: 2y $\to$ Bucket 2. Receive-fixed value falls when rates rise ($\delta_3 = -1$).
 
 Effective Notional within Buckets:
 - Bucket 2:
-  $$D_{2,1} = \delta_1 \times N_1 \times SD_1 = +1 \times \$100\text{M} \times 4.4240 = +\$442.40\text{M}$$
-  $$D_{2,3} = \delta_3 \times N_3 \times SD_3 = +1 \times \$80\text{M} \times 1.9033 = +\$152.26\text{M}$$
-  $$D_{\text{Bucket 2}} = 442.40 + 152.26 = +\$594.66\text{M}$$
+  $$D_{2,1} = \delta_1 \times N_1 \times SD_1 = -1 \times \$100\text{M} \times 4.4240 = -\$442.40\text{M}$$
+  $$D_{2,3} = \delta_3 \times N_3 \times SD_3 = -1 \times \$80\text{M} \times 1.9033 = -\$152.26\text{M}$$
+  $$D_{\text{Bucket 2}} = -442.40 - 152.26 = -\$594.66\text{M}$$
 - Bucket 3:
-  $$D_{\text{Bucket 3}} = \delta_2 \times N_2 \times SD_2 = -1 \times \$50\text{M} \times 7.8694 = -\$393.47\text{M}$$
+  $$D_{\text{Bucket 3}} = \delta_2 \times N_2 \times SD_2 = +1 \times \$50\text{M} \times 7.8694 = +\$393.47\text{M}$$
 
 Aggregated Effective Notional for Currency (USD):
 
 $$D_{\text{USD}} = \sqrt{ D_{\text{Bucket 2}}^2 + D_{\text{Bucket 3}}^2 + 1.4 \times D_{\text{Bucket 2}} \times D_{\text{Bucket 3}} }$$
-$$D_{\text{USD}} = \sqrt{ (594.66)^2 + (-393.47)^2 + 1.4 \times (594.66) \times (-393.47) }$$
+$$D_{\text{USD}} = \sqrt{ (-594.66)^2 + (393.47)^2 + 1.4 \times (-594.66) \times (393.47) }$$
 $$D_{\text{USD}} = \sqrt{ 353,620.5 + 154,818.6 - 327,575.5 } = \sqrt{ 180,863.6 } = \$425.28\text{ million}$$
 
 Add-On for IR Asset Class:
