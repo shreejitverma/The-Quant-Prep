@@ -1,4 +1,4 @@
-"""Gate for the practice layer: item sets per LM and their structure, mock composition, SRS decks parse."""
+"""Gate for the practice layer: item sets per LM and their structure, mock composition and freshness, SRS decks parse."""
 
 from __future__ import annotations
 
