@@ -117,16 +117,38 @@ class TestStockNotes(unittest.TestCase):
         val = stock_notes.dcf_value(5.0, res.rate)
         self.assertAlmostEqual(val, 100.0, delta=0.01)
 
-    def test_implied_growth_from_fcf_yield(self):
-        res_zero = stock_notes.implied_growth_from_fcf_yield(0.0)
-        self.assertEqual(res_zero.status, "missing_fcf")
+    def test_gordon_growth_oracle(self):
+        # Closed-form oracle: When growth g equals terminal growth tg (0.03),
+        # P = FCF * (1 + g) / (r - g) = 1.0 * 1.03 / 0.07 = 14.714285714285715
+        p_oracle = 1.03 / 0.07
+        res = stock_notes.solve_implied_growth(p_oracle, 1.0)
+        self.assertEqual(res.status, "solved")
+        self.assertIsNotNone(res.rate)
+        self.assertAlmostEqual(res.rate, 0.03, places=4)
 
-        res_neg = stock_notes.implied_growth_from_fcf_yield(-0.02)
-        self.assertEqual(res_neg.status, "non_positive_fcf")
+        # Yield oracle: FCF yield = FCF / P = 0.07 / 1.03
+        y_oracle = 0.07 / 1.03
+        res_y = stock_notes.implied_growth_from_fcf_yield(y_oracle)
+        self.assertEqual(res_y.status, "solved")
+        self.assertIsNotNone(res_y.rate)
+        self.assertAlmostEqual(res_y.rate, 0.03, places=4)
 
-        res_ok = stock_notes.implied_growth_from_fcf_yield(0.05)
-        self.assertEqual(res_ok.status, "solved")
-        self.assertIsNotNone(res_ok.rate)
+    def test_normalize_market_data_drops_dividend_when_price_missing(self):
+        lines = [
+            "market_data:",
+            "  price: None",
+            "  market_cap: 0",
+            "  dividend_yield: 0",
+        ]
+        norm, missing = stock_notes.normalize_market_data(lines)
+        self.assertIn("dividend_yield", missing)
+        fields = stock_notes.block_fields(stock_notes.get_block(norm, "market_data"))
+        self.assertNotIn("dividend_yield", fields)
+
+    def test_currency_mismatch_guard(self):
+        res = stock_notes.implied_growth_from_fcf_yield(0.05, ticker="NTES")
+        self.assertEqual(res.status, "currency_mismatch")
+        self.assertIsNone(res.rate)
 
 
 if __name__ == "__main__":

@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Schneider Electric (SU.PA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Leader in energy management and industrial automation. Beneficiary of electrification and data center trends.

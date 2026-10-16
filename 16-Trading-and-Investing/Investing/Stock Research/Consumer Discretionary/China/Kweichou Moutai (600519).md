@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:27
 market_data:
   ticker: 600519
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Kweichou Moutai (600519)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Ultra-premium Baijiu maker. Cultural icon with extreme pricing power and supply scarcity.

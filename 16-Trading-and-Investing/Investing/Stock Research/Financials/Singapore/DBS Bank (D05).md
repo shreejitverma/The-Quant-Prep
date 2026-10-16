@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:10
 market_data:
   ticker: D05
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: DBS Bank (D05)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Southeast Asia's largest bank. Digital transformation leader with dominant positioning in Singapore and expansion into India/Indonesia.

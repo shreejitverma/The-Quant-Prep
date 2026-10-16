@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:09
 market_data:
   ticker: ITUB4
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Itaú Unibanco (ITUB4)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Largest private bank in Latin America. Highly profitable with a strong technology moat and conservative risk management.

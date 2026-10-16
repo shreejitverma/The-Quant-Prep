@@ -7,8 +7,6 @@ priority: low
 ---
 # Stock: Nokia (NOK)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The 'Platform Burning' tale. Dominated mobile phones but was decimated by the iPhone/Android shift due to software failure.
@@ -30,4 +28,6 @@ Lynch: 'The game can change overnight.'
 - [Warren Buffett](obsidian://open?vault=shreejit-verma-obsidian&file=Billionaires%2FWarren%20Buffett%2FWarren%20Buffett)
 - [Charlie Munger](obsidian://open?vault=shreejit-verma-obsidian&file=Mental%20Models%2F_Index_Mental%20Models)
 - [Benjamin Graham](obsidian://open?vault=shreejit-verma-obsidian&file=Money%20Models%2FBenjamin%20Graham%2FBenjamin%20Graham)
+
+
 

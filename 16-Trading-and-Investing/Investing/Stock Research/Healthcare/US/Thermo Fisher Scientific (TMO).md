@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Thermo Fisher Scientific (TMO)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The 'Amazon of Life Sciences.' Massive scale in laboratory equipment and consumables. Essential to R&D.

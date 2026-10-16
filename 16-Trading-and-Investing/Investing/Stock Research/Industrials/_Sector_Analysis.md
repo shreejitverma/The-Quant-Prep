@@ -22,7 +22,7 @@ tags: [quant, benchmark, industrials]
 | Localiza (RENT3) | 8.53% | 18.23% | 1.66 | 22.51% |
 
 ## Investment Logic
-- **Quality Dominance**: Higher ROE combined with low Debt/Equity indicates a strong structural moat ([[Economic Moat]]).
+- **Quality Dominance**: Higher ROE combined with low Debt/Equity indicates a strong structural moat ([Economic Moat](obsidian://open?vault=shreejit-verma-obsidian&file=Mental%20Models%2FWarren%20Buffett%2FEconomic%20Moat)).
 - **Growth Gap**: Compare 10y CAGR with current ROE to identify if the company is effectively reinvesting its capital.
 
 ---

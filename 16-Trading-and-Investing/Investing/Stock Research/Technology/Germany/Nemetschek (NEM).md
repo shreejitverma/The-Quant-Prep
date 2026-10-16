@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Nemetschek (NEM)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 European leader in AEC (Architecture, Engineering, Construction) software. Strong position in BIM (Building Information Modeling).

@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Air Liquide (AI.PA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Industrial gas giant. Long-term take-or-pay contracts with customers. Essential to semi, healthcare, and energy.

@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Sea Ltd (SE)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The 'Amazon/Tencent of SE Asia'. Dominant in e-commerce (Shopee) and gaming (Garena), with growing fintech (SeaMoney).

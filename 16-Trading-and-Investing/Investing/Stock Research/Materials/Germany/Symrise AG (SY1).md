@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:05
 market_data:
   ticker: SY1
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Symrise AG (SY1)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Global leader in flavors and fragrances. Highly defensive industry with high barriers to entry and sticky customer relationships.

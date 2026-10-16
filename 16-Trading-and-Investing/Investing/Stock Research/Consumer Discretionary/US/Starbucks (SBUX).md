@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Starbucks (SBUX)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Global coffee powerhouse. Massive loyalty program and digital ecosystem. Expanding in China.

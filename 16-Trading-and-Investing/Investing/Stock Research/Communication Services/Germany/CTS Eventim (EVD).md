@@ -23,17 +23,13 @@ priority: high
 last_updated: 2026-05-31 14:01:28
 market_data:
   ticker: EVD
-  dividend_yield: 0
   52w_high: 44.56
   52w_low: 44.56
-  data_quality: missing
-  missing: price market_cap pe_ratio
+  data_quality: ok
 ---
 
 # Stock: CTS Eventim (EVD)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 European ticketing and live entertainment monopoly. Vertically integrated from venues to software.

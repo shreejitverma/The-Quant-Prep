@@ -1,7 +1,8 @@
 """Fetch historical fundamental metrics and superinvestor ratios via yfinance.
 
-Uses stock_notes helpers to maintain clean YAML frontmatter and preserve
-all existing fields (tags, ticker, market_data, etc.).
+Uses stock_notes helpers to maintain clean YAML frontmatter, preserve
+all existing fields, guard against cross-currency calculation errors,
+and never substitute placeholder 0 or 1 for missing data.
 """
 
 from __future__ import annotations
@@ -21,14 +22,15 @@ except ImportError:
     yf = None
 
 
-def get_cagr(history, years: float) -> float:
+def get_cagr(history, years: float) -> str:
     if history is None or history.empty or len(history) < 20 or years <= 0:
-        return 0.0
+        return "N/A"
     end_price = history["Close"].iloc[-1]
     start_price = history["Close"].iloc[0]
     if start_price <= 0:
-        return 0.0
-    return float(((end_price / start_price) ** (1 / years) - 1) * 100)
+        return "N/A"
+    cagr = ((end_price / start_price) ** (1 / years) - 1) * 100
+    return f"{cagr:.2f}%"
 
 
 def update_value_metrics(file_path: Path, original_ticker: str) -> bool:
@@ -47,40 +49,52 @@ def update_value_metrics(file_path: Path, original_ticker: str) -> bool:
     actual_years_10 = (hist_10y.index[-1] - hist_10y.index[0]).days / 365.25 if not hist_10y.empty else 0
     actual_years_5 = (hist_5y.index[-1] - hist_5y.index[0]).days / 365.25 if not hist_5y.empty else 0
 
-    cagr_10y = get_cagr(hist_10y, actual_years_10) if actual_years_10 > 1 else 0.0
-    cagr_5y = get_cagr(hist_5y, actual_years_5) if actual_years_5 > 1 else 0.0
+    cagr_10y_str = get_cagr(hist_10y, actual_years_10) if actual_years_10 > 1 else "N/A"
+    cagr_5y_str = get_cagr(hist_5y, actual_years_5) if actual_years_5 > 1 else "N/A"
+
+    quote_currency = info.get("currency")
+    financial_currency = info.get("financialCurrency") or quote_currency
 
     roe = info.get("returnOnEquity") or info.get("returnOnEquity_avg")
     roa = info.get("returnOnAssets")
-    debt_to_equity = (info.get("debtToEquity") or 0) / 100
-    peg_ratio = info.get("pegRatio", 0)
+    raw_dte = info.get("debtToEquity")
+    debt_to_equity = f"{(raw_dte / 100):.2f}" if raw_dte is not None else "N/A"
+    raw_peg = info.get("pegRatio")
+    peg_ratio = f"{raw_peg:.2f}" if raw_peg is not None else "N/A"
     gross_margin = info.get("grossMargins")
     fcf = info.get("freeCashflow") or info.get("operatingCashflow")
-    market_cap = info.get("marketCap", 1)
-    fcf_yield = (fcf / market_cap) * 100 if (fcf and market_cap) else 0.0
-    currency = info.get("currency", "USD")
+    market_cap = info.get("marketCap")
 
     roe_str = f"{roe * 100:.2f}%" if roe is not None else "N/A"
     roa_str = f"{roa * 100:.2f}%" if roa is not None else "N/A"
     gm_str = f"{gross_margin * 100:.2f}%" if gross_margin is not None else "N/A"
+
+    # Currency guard: do not compute cross-currency ratios
+    currency_ok = stock_notes.check_currency_guard(financial_currency, quote_currency)
+    if not currency_ok:
+        fcf_yield_str = "currency_mismatch"
+    elif fcf and market_cap and market_cap > 0:
+        fcf_yield_str = f"{(fcf / market_cap) * 100:.2f}%"
+    else:
+        fcf_yield_str = "N/A"
 
     today_str = datetime.now().strftime("%Y-%m-%d")
 
     val_block = [
         "value_metrics:",
         f"  last_deep_fetch: {today_str}",
-        f"  currency: {currency}",
+        f"  currency: {quote_currency or 'USD'}",
         "  returns:",
-        f"    cagr_10y: {cagr_10y:.2f}%",
-        f"    cagr_5y: {cagr_5y:.2f}%",
+        f"    cagr_10y: {cagr_10y_str}",
+        f"    cagr_5y: {cagr_5y_str}",
         "  quality:",
         f"    roe: {roe_str}",
         f"    roa: {roa_str}",
         f"    gross_margin: {gm_str}",
-        f"    debt_to_equity: {debt_to_equity:.2f}",
+        f"    debt_to_equity: {debt_to_equity}",
         "  valuation:",
-        f"    fcf_yield: {fcf_yield:.2f}%",
-        f"    peg_ratio: {peg_ratio:.2f}",
+        f"    fcf_yield: {fcf_yield_str}",
+        f"    peg_ratio: {peg_ratio}",
     ]
 
     content = file_path.read_text(encoding="utf-8")
@@ -90,7 +104,7 @@ def update_value_metrics(file_path: Path, original_ticker: str) -> bool:
 
     fm = stock_notes.set_block(fm, "value_metrics", val_block)
     # Re-apply reverse DCF calculation based on the new fcf_yield
-    fm, _ = stock_notes.apply_implied_growth(fm)
+    fm, _ = stock_notes.apply_implied_growth(fm, ticker=original_ticker)
 
     new_content = stock_notes.join_note(fm, body)
     file_path.write_text(new_content, encoding="utf-8")

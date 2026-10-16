@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Stryker (SYK)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Medical technology leader in orthopedics and surgical equipment. Strong innovation pipeline and sales culture.

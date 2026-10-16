@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Sherwin-Williams (SHW)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Largest paint retailer in the US. Massive distribution network and brand loyalty among professional contractors.

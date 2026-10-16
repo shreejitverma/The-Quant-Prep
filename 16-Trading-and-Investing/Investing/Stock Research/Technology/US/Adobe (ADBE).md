@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Adobe (ADBE)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Creative Cloud monopoly. Successfully transitioned to SaaS. Integrating Firefly AI into workflows.

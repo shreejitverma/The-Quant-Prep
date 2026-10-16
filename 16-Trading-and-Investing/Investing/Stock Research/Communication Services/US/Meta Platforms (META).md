@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Meta Platforms (META)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Social media hegemony across FB, IG, WhatsApp. Massive pivot to AI-driven discovery and VR/AR infrastructure.

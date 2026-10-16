@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:23
 market_data:
   ticker: RENT3
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Localiza (RENT3)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Dominant car rental and fleet management company in Brazil. Superior cost of capital and used car sales engine.

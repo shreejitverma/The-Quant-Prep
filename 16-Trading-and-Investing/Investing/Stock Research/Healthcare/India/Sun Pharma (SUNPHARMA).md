@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:17
 market_data:
   ticker: SUNPHARMA
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Sun Pharma (SUNPHARMA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Largest Indian pharma company. Specialty focus (Dermatology, Ophthalmology) in the US market.

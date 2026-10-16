@@ -7,8 +7,6 @@ priority: high
 ---
 # Stock: TSMC (TSM)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The world's most important company. The sole provider of cutting-edge semiconductor manufacturing.

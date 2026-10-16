@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Alphabet (GOOGL)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Dominant search monopoly with massive data advantages and 'moonshot' optionality through Other Bets. Leading in AI infrastructure (TPUs, Gemini).

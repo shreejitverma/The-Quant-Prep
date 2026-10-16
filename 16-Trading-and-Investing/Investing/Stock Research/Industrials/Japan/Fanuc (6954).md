@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:24
 market_data:
   ticker: 6954
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Fanuc (6954)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Leader in factory automation and CNC machines. High margins and dominant global market share.

@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Commonwealth Bank (CBA.AX)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Largest Australian bank. Dominant retail deposit base and digital leadership.

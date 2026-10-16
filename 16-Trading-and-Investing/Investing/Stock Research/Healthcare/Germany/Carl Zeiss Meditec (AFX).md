@@ -23,17 +23,13 @@ priority: high
 last_updated: 2026-05-31 14:01:16
 market_data:
   ticker: AFX
-  dividend_yield: 0
   52w_high: 2221.0
   52w_low: 2200.0
-  data_quality: missing
-  missing: price market_cap pe_ratio
+  data_quality: ok
 ---
 
 # Stock: Carl Zeiss Meditec (AFX)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Global leader in ophthalmology and microsurgery technology. Beneficiary of aging global demographics.

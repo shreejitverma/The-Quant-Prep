@@ -7,8 +7,6 @@ priority: low
 ---
 # Stock: IBM (IBM)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The 'Innovation Trap'. Dominated the mainframe era but failed to lead in PC, Cloud, and AI transitions despite deep R&D.
@@ -30,4 +28,6 @@ Buffett: 'Even a great moat can be filled in by technology shifts.'
 - [Warren Buffett](obsidian://open?vault=shreejit-verma-obsidian&file=Billionaires%2FWarren%20Buffett%2FWarren%20Buffett)
 - [Charlie Munger](obsidian://open?vault=shreejit-verma-obsidian&file=Mental%20Models%2F_Index_Mental%20Models)
 - [Benjamin Graham](obsidian://open?vault=shreejit-verma-obsidian&file=Money%20Models%2FBenjamin%20Graham%2FBenjamin%20Graham)
+
+
 

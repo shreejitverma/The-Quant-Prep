@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:19
 market_data:
   ticker: MARICO
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Marico (MARICO)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Leader in coconut oil (Parachute) and hair oils. Expanding into healthy foods.

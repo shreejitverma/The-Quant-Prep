@@ -34,8 +34,6 @@ market_data:
 
 # Stock: L’Oréal (OR.PA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 World leader in beauty. Massive brand portfolio and R&D budget. Digital marketing powerhouse.

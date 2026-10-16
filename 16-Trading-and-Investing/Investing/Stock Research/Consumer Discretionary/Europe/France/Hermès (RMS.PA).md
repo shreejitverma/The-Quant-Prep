@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Hermès (RMS.PA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The pinnacle of luxury. Extreme scarcity and craftsmanship-led growth.

@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Ferrari (RACE.MI)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 A luxury brand disguised as a car company. Veblen good with waiting lists and high pricing power.

@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:19
 market_data:
   ticker: HINDUNILVR
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Hindustan Unilever (HINDUNILVR)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 FMCG giant with reach into almost every Indian household. Powerhouse of brands.

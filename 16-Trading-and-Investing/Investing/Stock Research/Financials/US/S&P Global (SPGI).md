@@ -34,8 +34,6 @@ market_data:
 
 # Stock: S&P Global (SPGI)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Essential credit rating oligopoly. High-margin data services. Critical infrastructure for global debt markets.

@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Intuit (INTU)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Financial software giant (TurboTax, QuickBooks). Dominates small business accounting and consumer tax filing.

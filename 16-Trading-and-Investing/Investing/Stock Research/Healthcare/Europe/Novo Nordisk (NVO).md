@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Novo Nordisk (NVO)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Global leader in diabetes and obesity care. Dominant position in GLP-1 medications (Ozempic/Wegovy).

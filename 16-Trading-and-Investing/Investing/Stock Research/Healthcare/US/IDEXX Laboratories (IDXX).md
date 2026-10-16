@@ -34,8 +34,6 @@ market_data:
 
 # Stock: IDEXX Laboratories (IDXX)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Dominant player in veterinary diagnostics. Beneficiary of the 'humanization of pets' trend.

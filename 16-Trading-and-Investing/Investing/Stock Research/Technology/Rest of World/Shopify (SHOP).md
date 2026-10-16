@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Shopify (SHOP)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 E-commerce platform for entrepreneurs. Scaling into payments and logistics. High merchant loyalty.

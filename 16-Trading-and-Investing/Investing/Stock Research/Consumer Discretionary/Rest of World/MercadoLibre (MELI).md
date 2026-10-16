@@ -34,8 +34,6 @@ market_data:
 
 # Stock: MercadoLibre (MELI)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The 'Amazon/PayPal of Latin America.' Massive tailwinds in e-commerce and fintech penetration.

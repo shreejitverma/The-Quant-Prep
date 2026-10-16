@@ -7,8 +7,6 @@ priority: low
 ---
 # Stock: Xerox (XRX)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The 'Missing the Graphic Interface' tale. Invented the future (GUI, Mouse, Ethernet) at PARC but failed to commercialize it.
@@ -30,4 +28,6 @@ Lynch: 'The company that had it all and gave it away.'
 - [Warren Buffett](obsidian://open?vault=shreejit-verma-obsidian&file=Billionaires%2FWarren%20Buffett%2FWarren%20Buffett)
 - [Charlie Munger](obsidian://open?vault=shreejit-verma-obsidian&file=Mental%20Models%2F_Index_Mental%20Models)
 - [Benjamin Graham](obsidian://open?vault=shreejit-verma-obsidian&file=Money%20Models%2FBenjamin%20Graham%2FBenjamin%20Graham)
+
+
 

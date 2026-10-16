@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:11
 market_data:
   ticker: HEXA.B
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Hexagon AB (HEXA.B)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Global leader in digital reality solutions (sensors, software, autonomous technologies).

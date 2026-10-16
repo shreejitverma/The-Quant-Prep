@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Moody’s (MCO)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The other half of the rating duopoly. Massive pricing power and recurring revenue from data analytics.

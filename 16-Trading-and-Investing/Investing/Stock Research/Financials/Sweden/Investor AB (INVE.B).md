@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:06
 market_data:
   ticker: INVE.B
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Investor AB (INVE.B)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Investment vehicle of the Wallenberg family. Provides exposure to high-quality Swedish industrials (ABB, Atlas Copco, etc.).

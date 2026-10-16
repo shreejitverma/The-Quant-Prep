@@ -43,18 +43,25 @@ def update_stock_file(file_path: Path, original_ticker: str) -> bool:
     if market_cap is None or market_cap == 0:
         missing.append("market_cap")
 
-    market_data_block = ["market_data:", f"  ticker: {yf_ticker}"]
-    if current_price:
-        market_data_block.append(f"  price: {current_price} {currency}")
-    if market_cap:
-        market_data_block.append(f"  market_cap: {market_cap:,} {currency}")
-    if pe_ratio is not None:
+    market_data_block = [
+        "market_data:",
+        f"  ticker: {yf_ticker}",
+        f"  currency: {currency}",
+    ]
+    if current_price and current_price > 0:
+        market_data_block.append(f"  price: {current_price}")
+    if market_cap and market_cap > 0:
+        market_data_block.append(f"  market_cap: {market_cap}")
+    if pe_ratio is not None and pe_ratio > 0:
         market_data_block.append(f"  pe_ratio: {pe_ratio:.2f}")
     if div_yield is not None:
-        market_data_block.append(f"  dividend_yield: {div_yield * 100:.2f}%")
-    if high_52:
+        if current_price and current_price > 0:
+            market_data_block.append(f"  dividend_yield: {div_yield:.2f}")
+        elif div_yield > 0:
+            market_data_block.append(f"  dividend_yield: {div_yield:.2f}")
+    if high_52 and high_52 > 0:
         market_data_block.append(f"  52w_high: {high_52}")
-    if low_52:
+    if low_52 and low_52 > 0:
         market_data_block.append(f"  52w_low: {low_52}")
 
     quality = "missing" if missing else "ok"
@@ -68,7 +75,6 @@ def update_stock_file(file_path: Path, original_ticker: str) -> bool:
         print(f"Skipping {file_path}: no frontmatter")
         return False
 
-    # Update last_updated and market_data in frontmatter
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     fm = stock_notes.set_block(fm, "last_updated", [f"last_updated: {now_str}"])
     fm = stock_notes.set_block(fm, "market_data", market_data_block)

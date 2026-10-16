@@ -34,8 +34,6 @@ market_data:
 
 # Stock: L'Oréal (OR.PA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The world's largest beauty company. A master of brand building and global distribution.

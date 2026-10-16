@@ -7,8 +7,6 @@ priority: low
 ---
 # Stock: General Electric (GE)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 A cautionary tale of over-financialization and diworsification. From 'Godhood' under Jack Welch to near-collapse.
@@ -30,4 +28,6 @@ Munger: 'A classic example of how incentives and culture can go wrong.'
 - [Warren Buffett](obsidian://open?vault=shreejit-verma-obsidian&file=Billionaires%2FWarren%20Buffett%2FWarren%20Buffett)
 - [Charlie Munger](obsidian://open?vault=shreejit-verma-obsidian&file=Mental%20Models%2F_Index_Mental%20Models)
 - [Benjamin Graham](obsidian://open?vault=shreejit-verma-obsidian&file=Money%20Models%2FBenjamin%20Graham%2FBenjamin%20Graham)
+
+
 

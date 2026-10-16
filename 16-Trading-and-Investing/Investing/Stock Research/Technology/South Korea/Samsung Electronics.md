@@ -7,8 +7,6 @@ priority: high
 ---
 # Stock: Samsung Electronics (005930)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 A vertically integrated tech titan. Leader in Memory (DRAM/NAND) and high-end OLED displays.

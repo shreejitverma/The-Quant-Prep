@@ -2,8 +2,8 @@
 ticker: ULVR.L
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 2.8%
-  implied_growth_status: solved
+  implied_growth_rate: n/a
+  implied_growth_status: currency_mismatch
   implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: GBp
@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Unilever (ULVR.L)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Global FMCG giant with massive exposure to emerging markets.

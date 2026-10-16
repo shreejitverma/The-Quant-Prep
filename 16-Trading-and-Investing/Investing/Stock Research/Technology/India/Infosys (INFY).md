@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Infosys (INFY)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 IT services giant. Massive talent pool and global delivery model. Expanding into Cloud and AI consulting.

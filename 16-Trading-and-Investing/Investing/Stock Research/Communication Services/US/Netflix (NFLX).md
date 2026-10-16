@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Netflix (NFLX)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Streaming pioneer with massive scale and data advantages. Moving into live sports and gaming.

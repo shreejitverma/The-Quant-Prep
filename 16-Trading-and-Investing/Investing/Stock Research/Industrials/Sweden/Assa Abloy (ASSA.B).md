@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:22
 market_data:
   ticker: ASSA.B
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Assa Abloy (ASSA.B)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Global leader in access solutions (locks, doors, entrance automation). Growth through continuous M&A.

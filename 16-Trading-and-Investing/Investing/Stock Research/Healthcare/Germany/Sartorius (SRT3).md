@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:16
 market_data:
   ticker: SRT3
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Sartorius (SRT3)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Mission-critical supplier to the biopharma industry. Dominant in 'single-use' technologies for biologic drug manufacturing.

@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Salesforce (CRM)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 CRM pioneer and market leader. Expanding into 'Data Cloud' and AI agents. Strong ecosystem through Slack and Mulesoft.

@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Fair Isaac (FICO)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Standardized credit scoring (FICO Score). Embedded in almost every US lending decision.

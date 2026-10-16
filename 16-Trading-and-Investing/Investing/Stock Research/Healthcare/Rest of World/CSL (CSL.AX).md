@@ -2,8 +2,8 @@
 ticker: CSL.AX
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 10.2%
-  implied_growth_status: solved
+  implied_growth_rate: n/a
+  implied_growth_status: currency_mismatch
   implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: AUD
@@ -34,8 +34,6 @@ market_data:
 
 # Stock: CSL (CSL.AX)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Global leader in blood plasma products and vaccines. High-barrier-to-entry industry.

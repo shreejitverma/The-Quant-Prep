@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Lowe’s (LOW)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Home improvement duopoly. Focusing on 'Pro' customers to close the gap with Home Depot.

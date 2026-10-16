@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Siemens (SIE.DE)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Industrial technology powerhouse. Pivoting towards 'Digital Industries' and software-led automation.

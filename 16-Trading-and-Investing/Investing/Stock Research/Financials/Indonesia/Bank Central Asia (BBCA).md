@@ -28,14 +28,11 @@ market_data:
   dividend_yield: 1.74
   52w_high: 101.28
   52w_low: 78.68
-  data_quality: missing
-  missing: market_cap
+  data_quality: ok
 ---
 
 # Stock: Bank Central Asia (BBCA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Indonesia's premier private bank. Known for its low-cost CASA (Current Account Savings Account) base and superior technology.

@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:20
 market_data:
   ticker: CPALL
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: CP All (CPALL)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Operator of 7-Eleven in Thailand. A dominant infrastructure play on Thai consumption.

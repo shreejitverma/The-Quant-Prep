@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:24
 market_data:
   ticker: SIX2
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Sixt SE (SIX2)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Premium car rental company with superior technology and fleet management. Family-run with an owner-operator mindset.

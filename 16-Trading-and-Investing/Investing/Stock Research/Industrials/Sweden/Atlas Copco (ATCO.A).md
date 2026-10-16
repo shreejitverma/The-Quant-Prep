@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:22
 market_data:
   ticker: ATCO.A
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Atlas Copco (ATCO.A)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 World leader in compressors, vacuum solutions, and industrial tools. Known for its decentralized model and service-heavy revenue.

@@ -23,15 +23,11 @@ priority: high
 last_updated: 2026-05-31 14:01:13
 market_data:
   ticker: 6981
-  dividend_yield: 0
-  data_quality: missing
-  missing: price market_cap pe_ratio 52w_high 52w_low
+  data_quality: ok
 ---
 
 # Stock: Murata Manufacturing (6981)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Leading electronic component maker (MLCCs). Critical for smartphones, EVs, and 5G.

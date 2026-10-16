@@ -28,14 +28,11 @@ market_data:
   dividend_yield: 2.18
   52w_high: 30.502
   52w_low: 24.31
-  data_quality: missing
-  missing: market_cap
+  data_quality: ok
 ---
 
 # Stock: Rational AG (RAA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Dominant world market leader in combi-steamers for professional kitchens with >50% market share. Extreme focus on one product category.

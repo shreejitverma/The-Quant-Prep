@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Inditex (ITX.MC)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Zara owner. Fast fashion pioneer with ultra-efficient supply chain and inventory management.

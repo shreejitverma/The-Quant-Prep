@@ -34,8 +34,6 @@ market_data:
 
 # Stock: Ferrari (RACE.MI)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Veblen good with extreme pricing power. Limited production ensures high resale value and exclusivity.

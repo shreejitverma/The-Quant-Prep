@@ -2,8 +2,9 @@
 
 - Relocates misplaced `market_data` and `last_updated` blocks into the frontmatter.
 - Normalizes `market_data`: removes placeholder values (None, null, 0) and tags `data_quality: missing` or `ok`.
-- Replaces fake `implied_growth_rate: 0%` with solved rate or explicit failure status (missing_fcf, non_positive_fcf).
-- Updates note status to `status: stub` for boilerplate single-line company notes.
+- Replaces fake `implied_growth_rate: 0%` with solved rate or explicit failure status (missing_fcf, non_positive_fcf, currency_mismatch).
+- Updates note status from `complete` to `status: stub` for boilerplate company notes.
+- Strips body inline Dataview fields (status:: ..., priority:: ...) that conflict with frontmatter.
 - Repairs corrupted frontmatter in Historical corporate failure case studies.
 """
 
@@ -35,7 +36,7 @@ def migrate_historical_note(path: Path) -> None:
     m_body = re.search(r"(# Stock:.*)", content, flags=re.DOTALL)
     if not m_body:
         return
-    body = m_body.group(1).lstrip()
+    body = stock_notes.strip_inline_metadata(m_body.group(1).lstrip())
 
     new_content = f"""---
 ticker: {ticker}
@@ -60,19 +61,23 @@ def migrate_ticker_note(path: Path, ticker: str) -> dict[str, int]:
     if fm is None:
         raise stock_notes.NoteFormatError(f"Missing frontmatter in {path}")
 
-    # 2. Mark boilerplate company notes as status: stub
-    # Replace existing status in frontmatter if present, else add
+    # Strip conflicting inline metadata fields from body
+    body = stock_notes.strip_inline_metadata(body)
+
+    # 2. Mark boilerplate company notes as status: stub only if currently complete
     status_block = stock_notes.get_block(fm, "status")
     if status_block is not None:
-        fm = stock_notes.set_block(fm, "status", ["status: stub"])
+        curr_status = status_block[0].partition(":")[2].strip()
+        if curr_status == "complete":
+            fm = stock_notes.set_block(fm, "status", ["status: stub"])
     else:
         fm.append("status: stub")
 
     # 3. Normalize market data
     fm, missing = stock_notes.normalize_market_data(fm)
 
-    # 4. Apply reverse DCF solve
-    fm, implied_res = stock_notes.apply_implied_growth(fm)
+    # 4. Apply reverse DCF solve with currency check
+    fm, implied_res = stock_notes.apply_implied_growth(fm, ticker=ticker)
 
     new_text = stock_notes.join_note(fm, body)
     path.write_text(new_text, encoding="utf-8")

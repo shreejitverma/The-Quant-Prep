@@ -107,18 +107,23 @@ class NoteFormatError(ValueError):
 # ---------------------------------------------------------------- tickers
 
 
-def extract_ticker(filename: str) -> str | None:
-    """Return the ticker inside the last parentheses of a file name, or None.
+def extract_ticker(filename: str, content: str | None = None) -> str | None:
+    """Return the ticker inside the last parentheses of a file name or frontmatter, or None.
 
     Historical case-study notes such as "Kodak (The Digital Blindness).md" are rejected
     because their parenthetical is a title, not a ticker.
     """
     matches = _TICKER.findall(filename)
-    if not matches:
-        return None
-    candidate = matches[-1]
-    if len(candidate) <= 10 and candidate.upper() == candidate and " " not in candidate:
-        return candidate
+    if matches:
+        candidate = matches[-1]
+        if len(candidate) <= 10 and candidate.upper() == candidate and " " not in candidate:
+            return candidate
+    if content:
+        m = re.search(r"^ticker:\s*([A-Za-z0-9._-]+)", content, flags=re.MULTILINE)
+        if m:
+            cand = m.group(1).strip()
+            if len(cand) <= 10:
+                return cand
     return None
 
 
@@ -129,9 +134,10 @@ def yahoo_symbol(ticker: str) -> str:
 def iter_ticker_notes(root: Path = STOCK_ROOT) -> Iterator[tuple[Path, str]]:
     """Yield (path, ticker) for every ticker note, skipping the Historical case files."""
     for path in sorted(root.rglob("*.md")):
-        if "Historical" in path.relative_to(root).parts:
+        if "Historical" in path.relative_to(root).parts or path.name.startswith("_"):
             continue
-        ticker = extract_ticker(path.name)
+        text = path.read_text(encoding="utf-8")
+        ticker = extract_ticker(path.name, text)
         if ticker:
             yield path, ticker
 
@@ -249,6 +255,28 @@ def relocate_misplaced_blocks(text: str) -> tuple[str, list[str]]:
     return join_note(frontmatter, "\n".join(body_lines[i:])), moved
 
 
+# Known ADRs or cross-border listings where financial statements and market price currencies diverge
+KNOWN_CURRENCY_MISMATCHES = {"NTES", "3690.HK", "CSL.AX", "ULVR.L"}
+
+
+def check_currency_guard(financial_currency: str | None, quote_currency: str | None) -> bool:
+    """Return True if currencies match or are unknown; False if confirmed mismatch."""
+    if not financial_currency or not quote_currency:
+        return True
+    return financial_currency.upper() == quote_currency.upper()
+
+
+def strip_inline_metadata(body: str) -> str:
+    """Remove body inline Dataview fields (status:: ..., priority:: ...) that shadow frontmatter."""
+    lines = body.split("\n")
+    cleaned = [
+        line
+        for line in lines
+        if not re.match(r"^(status|priority)::\s*", line.strip())
+    ]
+    return "\n".join(cleaned)
+
+
 # ---------------------------------------------------------------- market data
 
 
@@ -257,6 +285,7 @@ def normalize_market_data(lines: list[str]) -> tuple[list[str], list[str]]:
 
     Values of None, null, empty or exactly 0 for price-like fields are fetch failures,
     so they are removed, listed under `missing`, and `data_quality` becomes `missing`.
+    When price is missing, dividend_yield: 0 is also treated as a placeholder failure.
     Returns (new_lines, missing_fields).
     """
     block = get_block(lines, "market_data")
@@ -264,13 +293,28 @@ def normalize_market_data(lines: list[str]) -> tuple[list[str], list[str]]:
         return lines, []
     kept = [block[0]]
     missing: list[str] = []
+    has_price = False
+
+    # Check first if price is present and non-zero
     for line in block[1:]:
         key, _, value = line.strip().partition(":")
+        if key == "price" and value.strip() not in ("None", "null", "", "0", "0.0"):
+            has_price = True
+            break
+
+    for line in block[1:]:
+        key, _, value = line.strip().partition(":")
+        v = value.strip()
         if key in ("data_quality", "missing"):
             continue
-        if value.strip() in ("None", "null", "", "0", "0.0") and key != "dividend_yield":
+        if v in ("None", "null", ""):
             missing.append(key)
             continue
+        if v in ("0", "0.0"):
+            # If price is missing, dividend_yield: 0 is a fetch failure, not a true zero dividend
+            if key != "dividend_yield" or not has_price:
+                missing.append(key)
+                continue
         kept.append(line)
     kept.append(f"  data_quality: {'missing' if missing else 'ok'}")
     if missing:
@@ -340,11 +384,13 @@ def parse_percent(value: str | None) -> float | None:
         return None
 
 
-def implied_growth_from_fcf_yield(fcf_yield: float | None) -> ImpliedGrowth:
+def implied_growth_from_fcf_yield(fcf_yield: float | None, ticker: str | None = None) -> ImpliedGrowth:
     """Reverse DCF on a yield basis: price / FCF per share equals 1 / FCF yield.
 
     A stored yield of exactly 0 means the fetch had no FCF, not that FCF is zero.
     """
+    if ticker and ticker in KNOWN_CURRENCY_MISMATCHES:
+        return ImpliedGrowth("currency_mismatch")
     if fcf_yield is None or fcf_yield == 0:
         return ImpliedGrowth("missing_fcf")
     if fcf_yield < 0:
@@ -352,13 +398,14 @@ def implied_growth_from_fcf_yield(fcf_yield: float | None) -> ImpliedGrowth:
     return solve_implied_growth(1.0 / fcf_yield, 1.0)
 
 
-def implied_growth_lines(result: ImpliedGrowth) -> list[str]:
+def implied_growth_lines(result: ImpliedGrowth, basis: str | None = None) -> list[str]:
     """The three value_metrics lines that record a reverse DCF result."""
     rate = "n/a" if result.rate is None else f"{result.rate * 100:.1f}%"
-    basis = (
-        f"fcf_yield r={DCF_DISCOUNT_RATE:.0%} terminal={DCF_TERMINAL_GROWTH:.0%} "
-        f"years={DCF_YEARS} range={DCF_GROWTH_LOW:.0%} to {DCF_GROWTH_HIGH:.0%}"
-    )
+    if basis is None:
+        basis = (
+            f"fcf_yield r={DCF_DISCOUNT_RATE:.0%} terminal={DCF_TERMINAL_GROWTH:.0%} "
+            f"years={DCF_YEARS} range={DCF_GROWTH_LOW:.0%} to {DCF_GROWTH_HIGH:.0%}"
+        )
     return [
         f"  implied_growth_rate: {rate}",
         f"  implied_growth_status: {result.status}",
@@ -366,13 +413,22 @@ def implied_growth_lines(result: ImpliedGrowth) -> list[str]:
     ]
 
 
-def apply_implied_growth(lines: list[str]) -> tuple[list[str], ImpliedGrowth | None]:
+def replace_implied_growth(lines: list[str], result: ImpliedGrowth, basis: str | None = None) -> list[str]:
+    """Shared helper to replace implied growth fields inside value_metrics block."""
+    block = get_block(lines, "value_metrics")
+    if block is None:
+        return lines
+    stale = ("implied_growth_rate:", "implied_growth_status:", "implied_growth_basis:")
+    body = [line for line in block[1:] if not line.strip().startswith(stale)]
+    new_block = [block[0], *implied_growth_lines(result, basis), *body]
+    return set_block(lines, "value_metrics", new_block)
+
+
+def apply_implied_growth(lines: list[str], ticker: str | None = None) -> tuple[list[str], ImpliedGrowth | None]:
     """Recompute implied growth inside `value_metrics` from its own `valuation.fcf_yield`."""
     block = get_block(lines, "value_metrics")
     if block is None:
         return lines, None
-    result = implied_growth_from_fcf_yield(parse_percent(block_fields(block).get("valuation.fcf_yield")))
-    stale = ("implied_growth_rate:", "implied_growth_status:", "implied_growth_basis:")
-    body = [line for line in block[1:] if not line.strip().startswith(stale)]
-    new_block = [block[0], *implied_growth_lines(result), *body]
-    return set_block(lines, "value_metrics", new_block), result
+    fcf_yield = parse_percent(block_fields(block).get("valuation.fcf_yield"))
+    result = implied_growth_from_fcf_yield(fcf_yield, ticker=ticker)
+    return replace_implied_growth(lines, result), result
