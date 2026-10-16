@@ -72,7 +72,7 @@ Futures and standardised CDS and swap contracts reference them; the 2026 dates a
 - Complexity: $O(n)$ per schedule; cache by specification hash.
 - Pitfalls: leap years, holiday calendar versions, dates in the wrong timezone, fixing dates versus accrual dates, regenerating a schedule differently between the pricer and the risk engine.
 - Code: [`code/bond_pricing.py`](code/bond_pricing.py) implements ACT/360, ACT/365F, US 30/360 and ACT/ACT (ISDA), month stepping and Modified Following.
-- System context: the trade representation and curve service (planned section).
+- System context: [trade representation](../18-Pricing-and-Risk-Systems/02-Trade-Representation-and-Lifecycle.md) and the [curve service](../18-Pricing-and-Risk-Systems/04-Curve-and-Surface-Service.md).
 
 ## Worked examples
 

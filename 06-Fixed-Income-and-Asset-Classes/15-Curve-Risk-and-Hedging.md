@@ -95,7 +95,7 @@ The weights are chosen to neutralize empirical slope shocks, insulating the trad
 - Algorithm: calculate cash-flow sensitivities to zero rates; apply inverse Jacobian to compute par sensitivities; solve linear equations for hedge notional.
 - Complexity: $O(K^2)$ where $K$ is the number of benchmark curve pillars.
 - Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `map_zero_risk_to_par_risk` and Jacobian inversion.
-- System context: the risk engine (planned section).
+- System context: risk and PnL controls in the [front-to-back architecture](../18-Pricing-and-Risk-Systems/01-Front-to-Back-Architecture.md).
 
 ## Worked examples
 
