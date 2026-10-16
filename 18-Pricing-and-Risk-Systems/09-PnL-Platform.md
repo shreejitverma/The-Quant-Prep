@@ -81,7 +81,7 @@ flowchart TB
 
     subgraph PricingServices["Pricing Platforms"]
         FOPricer[Front Office Pricing Engine]
-        RiskPricer[Risk Engine (Risk Factor Model)]
+        RiskPricer["Risk Engine (Risk Factor Model)"]
     end
 
     subgraph PnLEngine["PnL Platform Core"]

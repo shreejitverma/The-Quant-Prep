@@ -42,8 +42,8 @@ flowchart TB
     subgraph RFETPipeline["Risk Factor Eligibility Pipeline (RFET)"]
         RealPriceObs[Real Price Verifier: 24 obs / 90-day gap]
         ModellableSplit{Modellable?}
-        MRF[Modellable Factors (IMCC)]
-        NMRF[Non-Modellable Factors (SES)]
+        MRF["Modellable Factors (IMCC)"]
+        NMRF["Non-Modellable Factors (SES)"]
     end
 
     subgraph CoreEngines["FRTB Core Calculation Engines"]
