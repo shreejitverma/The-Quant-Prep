@@ -114,6 +114,10 @@ class VaultParsing(unittest.TestCase):
         body = "```markdown\n" + card("x-example") + "```\n\n" + card("x-real") + "\n~~~\n" + card("x-tilde") + "~~~\n"
         self.assertEqual([c.id for c in parse_cards(body, "n", 1)], ["x-real"])
 
+    def test_nested_short_fences_do_not_close_longer_fence(self):
+        body = "````markdown\n```yaml\n" + card("x-example") + "```\n" + card("x-also-example") + "````\n" + card("x-real")
+        self.assertEqual([c.id for c in parse_cards(body, "n", 1)], ["x-real"])
+
     def test_note_ids(self):
         self.assertEqual(note_id_for(Path("01-A/03-The-Greeks.md")), "the-greeks")
         self.assertEqual(note_id_for(Path("14-Firms/Jane-Street.md")), "jane-street")

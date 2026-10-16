@@ -186,15 +186,21 @@ def parse_cards(body: str, note_id: str, first_line: int) -> list[Card]:
     """Question callouts in the body; examples inside fenced code blocks are not cards."""
     cards: list[Card] = []
     lines = body.splitlines()
-    fence = ""  # the opening marker while inside a fenced block
+    fence = ""
     i = 0
     while i < len(lines):
-        f = FENCE_OPEN_RE.match(lines[i])
-        if f and (not fence or f.group(1).startswith(fence)):
-            fence = "" if fence else f.group(1)
+        if fence:
+            marker = re.escape(fence[0]) + "{" + str(len(fence)) + ",}"
+            if re.match(r"^ {0,3}" + marker + r"[ \t]*$", lines[i]):
+                fence = ""
             i += 1
             continue
-        m = None if fence else CARD_RE.match(lines[i])
+        f = FENCE_OPEN_RE.match(lines[i])
+        if f:
+            fence = f.group(1)
+            i += 1
+            continue
+        m = CARD_RE.match(lines[i])
         if not m:
             i += 1
             continue
