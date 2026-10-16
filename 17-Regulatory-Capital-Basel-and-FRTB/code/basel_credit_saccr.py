@@ -268,10 +268,7 @@ def calculate_saccr(netting_set: SACCRNettingSet) -> SACCRResult:
                 mf = 1.5 * math.sqrt(netting_set.mpor_days / 250.0)
             else:
                 mf = math.sqrt(min(max(t.maturity, 10.0 / 250.0), 1.0))
-            eff_fx_notionals[t.currency_pair] = (
-                eff_fx_notionals.get(t.currency_pair, 0.0)
-                + t.notional * t.supervisory_delta * mf
-            )
+            eff_fx_notionals[t.currency_pair] = eff_fx_notionals.get(t.currency_pair, 0.0) + t.notional * t.supervisory_delta * mf
 
     addon_fx = sf_fx * sum(abs(notional) for notional in eff_fx_notionals.values())
 
@@ -443,9 +440,7 @@ def run_tests() -> None:
         SACCRTrade("FX", 10_000_000.0, 1.0, 0.0, 0.0, 5.0 / 250.0, "EUR/USD"),
         SACCRTrade("FX", 10_000_000.0, -1.0, 0.0, 0.0, 5.0 / 250.0, "USD/JPY"),
     ]
-    fx_result = calculate_saccr(
-        SACCRNettingSet(short_fx_trades, False, 0.0, 0.0)
-    )
+    fx_result = calculate_saccr(SACCRNettingSet(short_fx_trades, False, 0.0, 0.0))
     assert math.isclose(fx_result.addon_fx, 160_000.0)
 
     # Margined netting set: C = $180k, TH = $50k, MTA = $10k
