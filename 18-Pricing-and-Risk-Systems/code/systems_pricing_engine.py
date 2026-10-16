@@ -225,7 +225,7 @@ class PnLExplainEngine:
         pv_t1 = SwapPricingEngine.pv(swap, curve_t1)
         actual_pnl = pv_t1 - pv_t0
 
-        shifts = [r1 - r0 for r0, r1 in zip(curve_t0.zero_rates, curve_t1.zero_rates)]
+        shifts = [r1 - r0 for r0, r1 in zip(curve_t0.zero_rates, curve_t1.zero_rates, strict=True)]
         bump = 1e-4
         pillar_gradients = []
         pillar_curvatures = []
@@ -239,8 +239,8 @@ class PnLExplainEngine:
             pillar_gradients.append((pv_up_i - pv_dn_i) / (2.0 * bump))
             pillar_curvatures.append((pv_up_i - 2.0 * pv_t0 + pv_dn_i) / (bump**2))
 
-        delta_pnl = sum(g * shift for g, shift in zip(pillar_gradients, shifts))
-        gamma_pnl = 0.5 * sum(gamma * shift**2 for gamma, shift in zip(pillar_curvatures, shifts))
+        delta_pnl = sum(g * shift for g, shift in zip(pillar_gradients, shifts, strict=True))
+        gamma_pnl = 0.5 * sum(gamma * shift**2 for gamma, shift in zip(pillar_curvatures, shifts, strict=True))
         for i in range(len(shifts)):
             for j in range(i + 1, len(shifts)):
                 pp = list(curve_t0.zero_rates)
