@@ -27,13 +27,14 @@ def equicorrelation_cards() -> None:
     lam = np.linalg.eigvalsh(j)
     check("J_5 largest eigenvalue", lam[-1], 5.0, 1e-12)
     check("J_5 number of zero eigenvalues", int((np.abs(lam) < 1e-12).sum()), 4, 0)
-    c = 0.5 * np.eye(4) + 0.5 * np.ones((4, 4))
+    rho, n = 0.5, 4
+    c = (1 - rho) * np.eye(n) + rho * np.ones((n, n))
     check("det((1 - 0.5) I + 0.5 J), n = 4", np.linalg.det(c), 0.3125, 1e-12)
-    check("0.5^3 x 2.5", 0.5**3 * 2.5, 0.3125, 1e-12)
+    check("(1 - rho)^(n - 1) (1 + (n - 1) rho) = 0.5^3 x 2.5", (1 - rho) ** (n - 1) * (1 + (n - 1) * rho), 0.3125, 1e-12)
     inv = np.linalg.inv(c)
     check("inverse diagonal 2(1 - 0.2)", inv[0, 0], 1.6, 1e-12)
     check("inverse off-diagonal -2 x 0.2", inv[0, 1], -0.4, 1e-12)
-    check("rho / (1 + (n - 1) rho)", 0.5 / (1 + 3 * 0.5), 0.2, 1e-12)
+    check("rho / (1 + (n - 1) rho) = -(1 - rho) x inverse off-diagonal", -(1 - rho) * inv[0, 1], 0.2, 1e-12)
     check("eigenvalue 1 + (n - 1) rho", np.linalg.eigvalsh(c)[-1], 2.5, 1e-12)
     check("eigenvalue 1 - rho", np.linalg.eigvalsh(c)[0], 0.5, 1e-12)
     vol = np.full(4, 0.2)
@@ -53,7 +54,7 @@ def equicorrelation_cards() -> None:
         lo, hi = (lo, mid) if min_eig(mid) >= 0 else (mid, hi)
     check("n = 4 lower bound: most negative rho with min eigenvalue >= 0 (bisection)", hi, -0.333333, 1e-6)
     check("min eigenvalue at rho = -1/3", min_eig(-1 / 3), 0.0, 1e-12)
-    check("min eigenvalue at rho = -1/3 - 0.01 (negative)", min_eig(-1 / 3 - 0.01), -0.03, 1e-12)
+    check("min eigenvalue at rho = -1/3 - 1e-6 (negative)", min_eig(-1 / 3 - 1e-6), -3e-6, 1e-12)
     check("equal-weight variance 1'C1/16 at rho = -1/3", np.ones(4) @ equicorr(-1 / 3) @ np.ones(4) / 16, 0.0, 1e-12)
 
 
@@ -63,13 +64,21 @@ def correlation_cards() -> None:
     hw = math.sqrt((1 - r12**2) * (1 - r13**2))
     check("rho23 lower (0.6, 0.8)", r12 * r13 - hw, 0.0, 1e-12)
     check("rho23 upper (0.6, 0.8)", r12 * r13 + hw, 0.96, 1e-12)
-    c = np.array([[1.0, 0.9, 0.2], [0.9, 1.0, 0.6], [0.2, 0.6, 1.0]])
-    lo, hi = 0.9 * 0.6 - math.sqrt(0.19 * 0.64), 0.9 * 0.6 + math.sqrt(0.19 * 0.64)
-    check("centre 0.9 x 0.6", 0.9 * 0.6, 0.54, 1e-12)
-    check("half-width sqrt(0.19 x 0.64)", math.sqrt(0.19 * 0.64), 0.3487, 1e-4)
+    rho12, rho23 = 0.9, 0.6
+
+    def corr3(rho13: float) -> np.ndarray:
+        return np.array([[1.0, rho12, rho13], [rho12, 1.0, rho23], [rho13, rho23, 1.0]])
+
+    c = corr3(0.2)
+    centre, half = rho12 * rho23, math.sqrt((1 - rho12**2) * (1 - rho23**2))
+    lo, hi = centre - half, centre + half
+    check("centre 0.9 x 0.6", centre, 0.54, 1e-12)
+    check("half-width sqrt(0.19 x 0.64)", half, 0.3487, 1e-4)
     check("half-width for (0.6, 0.8)", hw, 0.48, 1e-12)
     check("feasible rho13 lower given 0.9 and 0.6", lo, 0.1913, 1e-4)
     check("feasible rho13 upper", hi, 0.8887, 1e-4)
+    for edge in (lo, hi):
+        check(f"min eigenvalue at the edge rho13 = {edge:.4f} (singular)", np.linalg.eigvalsh(corr3(edge))[0], 0.0, 1e-12)
     check("det of the candidate matrix", np.linalg.det(c), 0.006, 1e-12)
     check("min eigenvalue of the candidate", np.linalg.eigvalsh(c)[0], 0.00337, 1e-5)
     c_bad = c.copy()
@@ -109,7 +118,7 @@ def spectral_cards() -> None:
     ev = np.sort(np.real(np.linalg.eigvals(ab)))
     check("AB eigenvalue min (positive)", ev[0], 4 - math.sqrt(7), 1e-12)
     check("AB eigenvalue max", ev[1], 4 + math.sqrt(7), 1e-12)
-    check("4 - sqrt 7", 4 - math.sqrt(7), 1.354249, 1e-6)
+    check("AB eigenvalue min decimal 4 - sqrt 7", ev[0], 1.354249, 1e-6)
     rot = np.array([[0.0, -1.0], [1.0, 0.0]])
     ev = np.linalg.eigvals(rot)
     check("90-degree rotation eigenvalue modulus", np.abs(ev).max(), 1.0, 1e-12)
@@ -194,7 +203,8 @@ def rayleigh_and_quadratic_cards() -> None:
     ev = np.linalg.eigvalsh(m)
     check("eigenvalue u'v - |u||v|", ev[0], 1 - math.sqrt(2), 1e-12)
     check("eigenvalue u'v + |u||v|", ev[2], 1 + math.sqrt(2), 1e-12)
-    check("1 + sqrt 2", 1 + math.sqrt(2), 2.414214, 1e-6)
+    check("eigenvalue 1 + sqrt 2 decimal", ev[2], 2.414214, 1e-6)
+    check("eigenvalue 1 - sqrt 2 decimal", ev[0], -0.414214, 1e-6)
 
 
 def sherman_morrison_card() -> None:
@@ -307,13 +317,22 @@ def optimization_cards() -> None:
 
 def taylor_cards() -> None:
     print("\n[la-ps-taylor-mental-math]")
-    check("e^0.05", math.exp(0.05), 1.051271, 1e-6)
-    check("x^2/2 at 0.05", 0.05**2 / 2, 0.00125, 1e-15)
-    check("1 + x + x^2/2 at 0.05", 1 + 0.05 + 0.00125, 1.05125, 1e-12)
-    check("ln 1.02", math.log(1.02), 0.0198026, 1e-7)
-    check("x - x^2/2 at 0.02", 0.02 - 0.0002, 0.0198, 1e-12)
-    check("sqrt(1.04)", math.sqrt(1.04), 1.019804, 1e-6)
-    check("1 + x/2 - x^2/8 at 0.04", 1 + 0.02 - 0.0002, 1.0198, 1e-12)
+    x = 0.05
+    exp_two = 1 + x + x**2 / 2
+    check("e^0.05", math.exp(x), 1.051271, 1e-6)
+    check("x^2/2 at 0.05", x**2 / 2, 0.00125, 1e-15)
+    check("1 + x + x^2/2 at 0.05", exp_two, 1.05125, 1e-12)
+    check("e^0.05 - (1 + x + x^2/2), close to the next term x^3/6", math.exp(x) - exp_two, x**3 / 6, 5e-7)
+    x = 0.02
+    log_two = x - x**2 / 2
+    check("ln 1.02", math.log1p(x), 0.0198026, 1e-7)
+    check("x - x^2/2 at 0.02", log_two, 0.0198, 1e-12)
+    check("ln 1.02 - (x - x^2/2), close to the next term x^3/3", math.log1p(x) - log_two, x**3 / 3, 1e-7)
+    x = 0.04
+    sqrt_two = 1 + x / 2 - x**2 / 8
+    check("sqrt(1.04)", math.sqrt(1 + x), 1.019804, 1e-6)
+    check("1 + x/2 - x^2/8 at 0.04", sqrt_two, 1.0198, 1e-12)
+    check("sqrt(1.04) - (1 + x/2 - x^2/8), close to the next term x^3/16", math.sqrt(1 + x) - sqrt_two, x**3 / 16, 2e-7)
 
 
 def main() -> None:

@@ -204,12 +204,16 @@ def limits_and_series() -> None:
 
 def lagrange_remainder() -> None:
     print("\n[07] Lagrange remainder for e^0.1 with the quadratic Taylor polynomial")
-    approx = 1 + 0.1 + 0.1**2 / 2
+    x = 0.1
+    approx = 1 + x + x**2 / 2
+    error = math.exp(x) - approx
+    upper, lower = 1.106 * x**3 / 6, x**3 / 6
     check("quadratic approximation", approx, 1.105, 1e-12)
-    check("e^0.1", math.exp(0.1), 1.1051709, 1e-7)
-    check("actual error", math.exp(0.1) - approx, 0.00017092, 1e-8)
-    check("bound e^0.1 * 0.1^3 / 6 (using e^0.1 < 1.106)", 1.106 * 0.1**3 / 6, 0.00018433, 1e-8)
-    check("lower bound 0.1^3 / 6", 0.1**3 / 6, 0.00016667, 1e-8)
+    check("e^0.1", math.exp(x), 1.1051709, 1e-7)
+    check("actual error", error, 0.00017092, 1e-8)
+    check("bound e^0.1 * 0.1^3 / 6 (using e^0.1 < 1.106)", upper, 0.00018433, 1e-8)
+    check("lower bound 0.1^3 / 6", lower, 0.00016667, 1e-8)
+    assert math.exp(x) < 1.106 and lower <= error <= upper, "the Lagrange remainder lies between the bounds"
 
 
 # ---------------------------------------------------------------------------

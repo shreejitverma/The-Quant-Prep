@@ -123,7 +123,7 @@ def scalar_roots() -> None:
     x_b, it_b = bisection(f, 2.0, 3.0, 1e-12)
     check("bisection root", x_b, ROOT, 1e-12)
     check("bisection iterations to width 1e-12", it_b, 40, 0)
-    check("ceil(log2(1 / 1e-12))", math.ceil(math.log2(1e12)), 40, 0)
+    check("ceil(log2(width / tol)) for [2, 3] to 1e-12", math.ceil(math.log2((3.0 - 2.0) / 1e-12)), 40, 0)
     x_n, it_n, path = newton(f, df, 2.0, 1e-14)
     check("Newton root", x_n, ROOT, 1e-15)
     check("Newton iterations from x0 = 2", it_n, 5, 0)
@@ -282,7 +282,7 @@ def implied_vol_examples() -> None:
     c = bs_call(100.0, 100.0, 0.5, 0.0, 0.20)
     check("ATM call price", c, 5.6372, 1e-4)
     check("sqrt(2 pi / T) C / S", math.sqrt(2 * math.pi / 0.5) * c / 100, 0.19983, 1e-5)
-    check("card: sqrt(4 pi) x 0.0564", math.sqrt(4 * math.pi) * 0.0564, 0.19993, 1e-5)
+    check("card: sqrt(4 pi) x C/S rounded to 0.0564", math.sqrt(4 * math.pi) * round(c / 100, 4), 0.19993, 1e-5)
     check("1 / sqrt(2 pi)", 1 / math.sqrt(2 * math.pi), 0.3989, 1e-4)
 
 

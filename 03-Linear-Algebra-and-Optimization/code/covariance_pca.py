@@ -123,7 +123,7 @@ def cholesky_example() -> None:
     check("simulated rho13", sample[0, 2], 0.3019, 5e-5)
     check("simulated rho23", sample[1, 2], 0.2015, 5e-5)
     check("max |simulated - true| correlation", np.abs(sample - c).max(), 0.0, 0.005)
-    check("sampling scale 1/sqrt(200000)", 1 / math.sqrt(200_000), 0.0022, 1e-4)
+    check("sampling scale 1/sqrt(200000)", 1 / math.sqrt(len(x)), 0.0022, 1e-4)
 
 
 def equicorrelation_bound() -> None:
@@ -148,9 +148,12 @@ def non_psd_repair() -> None:
         cholesky_lower(bad)
     except ValueError as exc:
         print(f"cholesky fails as expected: {exc}")
-        check("L22 = sqrt(1 - 0.81)", math.sqrt(0.19), 0.43589, 1e-5)
-        check("L32 = (0 - 0.81) / L22", -0.81 / math.sqrt(0.19), -1.85826, 1e-5)
-        check("third pivot 1 - 0.81 - L32^2", 1 - 0.81 - 0.81**2 / 0.19, -3.2632, 1e-4)
+        l21, l31 = bad[1, 0] / math.sqrt(bad[0, 0]), bad[2, 0] / math.sqrt(bad[0, 0])
+        l22 = math.sqrt(bad[1, 1] - l21**2)
+        l32 = (bad[2, 1] - l31 * l21) / l22
+        check("L22 = sqrt(1 - 0.81)", l22, 0.43589, 1e-5)
+        check("L32 = (0 - 0.81) / L22", l32, -1.85826, 1e-5)
+        check("third pivot 1 - 0.81 - L32^2", bad[2, 2] - l31**2 - l32**2, -3.2632, 1e-4)
     else:
         raise AssertionError("Cholesky should fail on a non-PSD matrix")
 

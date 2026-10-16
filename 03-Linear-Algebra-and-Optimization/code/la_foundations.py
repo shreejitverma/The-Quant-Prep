@@ -150,7 +150,7 @@ def two_by_two_powers() -> None:
     a10 = vec @ np.diag(lam**10) @ vec.T
     check("A^10 diagonal", a10[0, 0], 29525, 1e-6)
     check("A^10 off-diagonal", a10[0, 1], 29524, 1e-6)
-    check("3^10", 3**10, 59049, 0)
+    check("3^10 = lambda_max^10", lam[1] ** 10, 59049, 1e-6)
     lam3 = np.array([1.0, 2.0, 3.0])
     check("card: trace with eigenvalues 1, 2, 3", lam3.sum(), 6.0, 0)
     check("card: det with eigenvalues 1, 2, 3", lam3.prod(), 6.0, 0)
@@ -165,13 +165,14 @@ def regime_markov_chain() -> None:
     pi = np.real(left[:, k] / left[:, k].sum())
     check("pi calm", pi[0], 2 / 3, 1e-12)
     check("pi stressed", pi[1], 1 / 3, 1e-12)
-    check("second eigenvalue", np.sort(np.real(lam))[0], 0.7, 1e-12)
-    check("deviation factor after 10 steps 0.7^10", 0.7**10, 0.0282475, 1e-7)
+    second = float(np.sort(np.real(lam))[0])
+    check("second eigenvalue", second, 0.7, 1e-12)
+    check("deviation factor after 10 steps 0.7^10", second**10, 0.0282475, 1e-7)
     p10 = np.linalg.matrix_power(p, 10)
     check("P^10[calm, calm]", p10[0, 0], 2 / 3 + (1 / 3) * 0.7**10, 1e-12)
-    check("half-life of deviation (steps)", math.log(2) / -math.log(0.7), 1.94335, 1e-5)
-    check("mean calm spell", 1 / 0.1, 10.0, 1e-12)
-    check("mean stressed spell", 1 / 0.2, 5.0, 1e-12)
+    check("half-life of deviation (steps)", math.log(2) / -math.log(second), 1.94335, 1e-5)
+    check("mean calm spell 1/(1 - P[calm, calm])", 1 / (1 - p[0, 0]), 10.0, 1e-12)
+    check("mean stressed spell 1/(1 - P[stressed, stressed])", 1 / (1 - p[1, 1]), 5.0, 1e-12)
 
 
 CORR3 = np.array([[1.0, 0.6, 0.3], [0.6, 1.0, 0.5], [0.3, 0.5, 1.0]])

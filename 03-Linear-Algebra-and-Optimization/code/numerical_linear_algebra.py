@@ -210,14 +210,14 @@ def lauchli_normal_equations() -> None:
     b = np.array([2.0, delta, delta])  # exact solution (1, 1)
     check("cond_2(A)", np.linalg.cond(a), math.sqrt(2 + delta**2) / delta, 1e-3)
     check("cond_2(A) value", np.linalg.cond(a), 1.414214e8, 1e2)
-    check("kappa u", np.linalg.cond(a) * np.finfo(float).eps / 2, 1.57e-8, 1e-10)
+    kappa_u = check("kappa u", np.linalg.cond(a) * np.finfo(float).eps / 2, 1.57e-8, 1e-10)
     ata = a.T @ a
     check("fl(1 + delta^2) == 1", float(ata[0, 0] == 1.0), 1.0, 0)
     check("rank of computed A'A", np.linalg.matrix_rank(ata), 1, 0)
     q, r = householder_qr(a)
     x_qr = back_sub(r[:2, :2], (q.T @ b)[:2])
-    check("QR solution x1", x_qr[0], 1.0, 1e-7)
-    check("QR solution x2", x_qr[1], 1.0, 1e-7)
+    check("QR solution x1 (within kappa u)", x_qr[0], 1.0, kappa_u)
+    check("QR solution x2 (within kappa u)", x_qr[1], 1.0, kappa_u)
     check_between("max |Q'Q - I| (Householder)", np.abs(q.T @ q - np.eye(3)).max(), 0.0, 1e-14)
 
 
