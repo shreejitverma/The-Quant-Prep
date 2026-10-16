@@ -184,6 +184,52 @@ def scenario_scaling_breaks_psd() -> None:
     check("Schur: base o base min eigenvalue", np.linalg.eigvalsh(base * base)[0], 0.1388, 1e-4)
 
 
+# Basel Framework MAR21.57, Table 5: CSR non-securitisation cross-sector correlations for sectors 1 to 8
+# (buckets 1-8 investment grade, 9-15 the same sectors high yield and non-rated, 16 other sector,
+# 17 IG indices, 18 HY indices).
+CSR_SECTOR_GAMMA = {
+    (1, 2): 0.75, (1, 3): 0.10, (1, 4): 0.20, (1, 5): 0.25, (1, 6): 0.20, (1, 7): 0.15, (1, 8): 0.10,
+    (2, 3): 0.05, (2, 4): 0.15, (2, 5): 0.20, (2, 6): 0.15, (2, 7): 0.10, (2, 8): 0.10,
+    (3, 4): 0.05, (3, 5): 0.15, (3, 6): 0.20, (3, 7): 0.05, (3, 8): 0.20,
+    (4, 5): 0.20, (4, 6): 0.25, (4, 7): 0.05, (4, 8): 0.05,
+    (5, 6): 0.25, (5, 7): 0.05, (5, 8): 0.15,
+    (6, 7): 0.05, (6, 8): 0.20,
+    (7, 8): 0.05,
+}  # fmt: skip
+
+
+def csr_inter_bucket_gamma(b: int, c: int) -> float:
+    """MAR21.57: gamma_bc = gamma_rating x gamma_sector for CSR non-securitisation buckets 1 to 18."""
+    if b == c:
+        return 1.0
+    rating = 0.5 if b <= 15 and c <= 15 and (b <= 8) != (c <= 8) else 1.0
+    sb, sc = (b - 8 if 9 <= b <= 15 else b), (c - 8 if 9 <= c <= 15 else c)
+    if sb == sc:
+        sector = 1.0
+    elif 16 in (sb, sc):
+        sector = 0.0
+    elif {sb, sc} == {17, 18}:
+        sector = 0.75
+    elif sb in (17, 18) or sc in (17, 18):
+        sector = 0.45
+    else:
+        sector = CSR_SECTOR_GAMMA[(min(sb, sc), max(sb, sc))]
+    return rating * sector
+
+
+def frtb_csr_matrix_not_psd() -> None:
+    print("\n[04] Basel FRTB CSR non-securitisation inter-bucket correlation matrix (MAR21.57)")
+    buckets = range(1, 19)
+    medium = np.array([[csr_inter_bucket_gamma(b, c) for c in buckets] for b in buckets])
+    off = ~np.eye(18, dtype=bool)
+    high, low = medium.copy(), medium.copy()
+    high[off] = np.minimum(1.25 * medium[off], 1.0)  # MAR21.6(2)
+    low[off] = np.maximum(2 * medium[off] - 1, 0.75 * medium[off])  # MAR21.6(3)
+    check("CSR gamma, medium scenario: min eigenvalue", np.linalg.eigvalsh(medium)[0], -0.2203, 1e-4)
+    check("CSR gamma, high scenario: min eigenvalue", np.linalg.eigvalsh(high)[0], -0.5254, 1e-4)
+    check("CSR gamma, low scenario: min eigenvalue", np.linalg.eigvalsh(low)[0], 0.0848, 1e-4)
+
+
 def sample_covariance_rank() -> None:
     print("\n[04] sample covariance with N > T")
     rng = np.random.default_rng(3)
@@ -384,6 +430,7 @@ def main() -> None:
     equicorrelation_bound()
     non_psd_repair()
     scenario_scaling_breaks_psd()
+    frtb_csr_matrix_not_psd()
     sample_covariance_rank()
     cov, vec, lam = yield_curve_pca()
     pca_butterfly(cov, vec, lam)

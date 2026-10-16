@@ -396,6 +396,10 @@ def rebalance_with_costs() -> None:
     check("KKT stationarity residual", np.abs(r_d).max(), 0.0, 1e-9)
     check("KKT complementarity max s_i z_i", float((res.s * res.z).max()), 0.0, 1e-9)
     check("buy and sell never both positive", float(np.minimum(res.x[n : 2 * n], res.x[2 * n :]).max()), 0.0, 1e-8)
+    # The same problem without the turnover cap: the optimiser sells asset 5 all the way to zero.
+    free = interior_point(q, c, a, b, g[:-1], h[:-1])
+    check("no cap: weight of asset 5", free.x[n - 1], 0.0, 1e-6)
+    check("no cap: turnover |w - w0|_1", np.abs(free.x[:n] - w0).sum(), 0.4717, 1e-4)
 
 
 def main() -> None:

@@ -98,7 +98,9 @@ Gaussian copulas, basket and spread options, CVA exposure simulation and multi-a
 
 The Basel FRTB standardised approach is an instructive case.
 It prescribes inter-bucket correlations $\gamma_{bc}$ entry by entry and aggregates bucket risks as $\sqrt{\sum_bK_b^2 + \sum_b\sum_{c \ne b}\gamma_{bc}S_bS_c}$, with an alternative specification in MAR21.4(5)(b) for when the quantity under the root is negative, and it also requires the calculation under scaled-up and scaled-down correlation scenarios.
-The quantity under the root is a quadratic form in $\Gamma$, so it can only be guaranteed non-negative when $\Gamma$ is PSD; this repo's FRTB engine found that the credit-spread (non-securitisation) inter-bucket matrix is not PSD, so a production engine must still guard the square root ([FRTB Sensitivities-Based Method: Delta](../17-Regulatory-Capital-Basel-and-FRTB/07-FRTB-Sensitivities-Based-Method-Delta.md)).
+The quantity under the root is a quadratic form in $\Gamma$, so it can only be guaranteed non-negative when $\Gamma$ is PSD.
+The credit-spread non-securitisation matrix of MAR21.57 ($\gamma_{bc} = \gamma^{\text{rating}}_{bc}\gamma^{\text{sector}}_{bc}$ over buckets 1 to 18, Table 5) is not: its smallest eigenvalue is $-0.2203$ as prescribed, $-0.5254$ in the high-correlation scenario and $+0.0848$ only in the low one.
+Even with the alternative specification, $\lvert S_b\rvert \le K_b$ bounds the radicand below by $S^\top\Gamma S$, which can be negative when $\Gamma$ is not PSD, so a production engine must still guard the square root ([FRTB Sensitivities-Based Method: Delta](../17-Regulatory-Capital-Basel-and-FRTB/07-FRTB-Sensitivities-Based-Method-Delta.md)).
 
 Entrywise transforms are the subtle part.
 The Schur product theorem says the Hadamard (entrywise) product of two PSD matrices is PSD, so $C \circ C$ is always valid; but a cap such as $\min(1.25\rho, 1)$ is not a Hadamard product and can break PSD (worked example below).
@@ -126,6 +128,8 @@ flowchart TD
 - Higham (2002): find $\min\lVert C - X\rVert_F$ over the intersection of the PSD cone $\mathcal{S}$ and the unit-diagonal set $\mathcal{U}$ by alternating projections.
   Projection onto $\mathcal{S}$ clips negative eigenvalues; projection onto $\mathcal{U}$ resets the diagonal.
   Plain alternation converges to a point in the intersection but not the nearest one; Dykstra's correction (subtract the previous PSD-step increment before projecting) makes it converge to the nearest.
+  The correction is needed only on the cone step: $\mathcal{U}$ is an affine subspace, and for affine sets plain projection already behaves correctly in Dykstra's scheme.
+  Convergence is only linear and can be slow when the input is far from valid, which is what motivates the Newton method below.
   Weighted norms $\lVert W^{1/2}(C - X)W^{1/2}\rVert_F$ keep trusted entries closer to their inputs.
 - Qi and Sun (2006) solve the dual with a Newton method that converges quadratically; it is the method of choice for large matrices.
 - Shrinkage towards a structured target, $\delta F + (1 - \delta)S$ with $\delta$ chosen as in Ledoit and Wolf, gives a PD estimate when the problem is noise rather than inconsistency ([Covariance Estimation and Shrinkage](../09-Alpha-Research-and-Portfolio/11-Covariance-Estimation-and-Shrinkage.md)).
@@ -248,10 +252,10 @@ The eigenvalue on $\mathbf{1}$ is $1 + 4\rho$: exactly 0 at $\rho = -0.25$ (the 
 > Yes. $\rho_{12} = \rho_{13} = 0.8$, $\rho_{23} = 0.3$ is valid, but the scenario gives $1, 1, 0.375$: if 1 equals 2 and 1 equals 3 then 2 must equal 3, and the smallest eigenvalue is $-0.2391$.
 
 > [!question]- la-cov-schur-product | Is the entrywise square of a correlation matrix a correlation matrix?
-> Yes, by the Schur product theorem: the Hadamard product of PSD matrices is PSD, and the diagonal stays 1. It is the correlation matrix of $X_iY_i$ for independent copies, but caps and floors are not Hadamard products and can break PSD.
+> Yes, by the Schur product theorem: the Hadamard product of PSD matrices is PSD, and the diagonal stays 1. It is the correlation matrix of $X_iY_i$ for independent zero-mean copies $X$ and $Y$ with correlation matrix $C$, but caps and floors are not Hadamard products and can break PSD.
 
 > [!question]- la-cov-frtb-not-psd | Why must an FRTB standardised-approach engine guard the square root in the across-bucket aggregation?
-> The radicand is a quadratic form in the prescribed inter-bucket correlation matrix, and the credit-spread (non-securitisation) matrix is not PSD, so even after the MAR21.4(5)(b) alternative specification the value is not guaranteed non-negative. Floor at zero and escalate rather than silently produce a NaN.
+> The radicand is a quadratic form in the prescribed inter-bucket correlation matrix, and the MAR21.57 credit-spread (non-securitisation) matrix is not PSD (smallest eigenvalue $-0.2203$, and $-0.5254$ in the high-correlation scenario), so even after the MAR21.4(5)(b) alternative specification the value is not guaranteed non-negative. Floor at zero and escalate rather than silently produce a NaN.
 
 > [!question]- la-cov-what-breaks | You feed a non-PSD covariance to a mean-variance optimiser. What happens?
 > Some portfolio has "negative variance", so the optimiser can lower risk without bound by scaling it up; with leverage limits it piles into that direction. Cholesky-based simulation fails outright. Always check the smallest eigenvalue first.
@@ -273,4 +277,4 @@ The eigenvalue on $\mathbf{1}$ is $1 + 4\rho$: exactly 0 at $\rho = -0.25$ (the 
 - Houduo Qi and Defeng Sun, "A Quadratically Convergent Newton Method for Computing the Nearest Correlation Matrix", *SIAM Journal on Matrix Analysis and Applications* 28(2) (2006).
 - Riccardo Rebonato and Peter Jaeckel, "The Most General Methodology to Create a Valid Correlation Matrix for Risk Management and Option Pricing Purposes", *Journal of Risk* 2(2) (1999).
 - Olivier Ledoit and Michael Wolf, "Honey, I Shrunk the Sample Covariance Matrix", *Journal of Portfolio Management* 30(4) (2004).
-- Basel Committee on Banking Supervision, *Basel Framework*, MAR21 (standardised approach: sensitivities-based method), consolidated text as of 2026-10.
+- Basel Committee on Banking Supervision, *Basel Framework*, MAR21 (standardised approach: sensitivities-based method), in particular MAR21.4(5), MAR21.6 and MAR21.57, consolidated text as of 2026-10.

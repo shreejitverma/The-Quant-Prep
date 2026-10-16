@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [vectors-matrices-and-linear-maps]
 est_hours: 4
-sources: [Strang - Introduction to Linear Algebra 5th ed ch 6, Horn and Johnson - Matrix Analysis 2nd ed ch 1 4 6 and 8, Trefethen and Bau - Numerical Linear Algebra (SIAM 1997) lectures 24-28, Golub and Van Loan - Matrix Computations 4th ed ch 7-8, Norris - Markov Chains (Cambridge 1997) ch 1, Israel Rosenthal and Wei - Finding Generators for Markov Chains via Empirical Transition Matrices (Mathematical Finance 2001)]
+sources: [Strang - Introduction to Linear Algebra 5th ed ch 6, Horn and Johnson - Matrix Analysis 2nd ed ch 1 2 4 6 and 8, Trefethen and Bau - Numerical Linear Algebra (SIAM 1997) lectures 24-28, Golub and Van Loan - Matrix Computations 4th ed ch 7-8, Norris - Markov Chains (Cambridge 1997) ch 1, Israel Rosenthal and Wei - Finding Generators for Markov Chains via Empirical Transition Matrices (Mathematical Finance 2001)]
 ---
 
 # Eigendecomposition and the Spectral Theorem
@@ -63,7 +63,7 @@ $$
 \begin{pmatrix} x_t \\ x_{t-1}\end{pmatrix} = \begin{pmatrix} \phi_1 & \phi_2 \\ 1 & 0\end{pmatrix}\begin{pmatrix} x_{t-1} \\ x_{t-2}\end{pmatrix} + \begin{pmatrix} \varepsilon_t \\ 0\end{pmatrix},
 $$
 
-and it is covariance-stationary iff both eigenvalues (roots of $\lambda^2 - \phi_1\lambda - \phi_2$) lie strictly inside the unit circle; complex roots mean damped oscillation (a business-cycle or bid-ask bounce pattern in the autocorrelation function).
+and it is covariance-stationary iff both eigenvalues (roots of $\lambda^2 - \phi_1\lambda - \phi_2$) lie strictly inside the unit circle; complex roots mean a damped pseudo-cycle in the autocorrelation function, and a negative real root gives sign-alternating autocorrelations.
 Fibonacci is the same with $\phi_1 = \phi_2 = 1$: eigenvalues $\varphi = (1 + \sqrt5)/2$ and $-1/\varphi$, so $F_n = (\varphi^n - (-1/\varphi)^n)/\sqrt5$, the nearest integer to $\varphi^n/\sqrt5$.
 Time-series context: [Stationarity and ARMA](../02-Statistics-and-Econometrics/08-Time-Series-Stationarity-and-ARMA.md) and [Cointegration and VAR](../02-Statistics-and-Econometrics/10-Cointegration-and-VAR.md), where the rank of $\Pi$ in the VECM counts cointegrating vectors.
 
@@ -98,7 +98,7 @@ R(x) = \frac{x^\top Ax}{x^\top x} = \frac{\sum_i\lambda_ic_i^2}{\sum_ic_i^2} \in
 $$
 
 with the extremes attained at the corresponding eigenvectors.
-Courant-Fischer extends this: $\lambda_k$ is the max over $k$-dimensional subspaces of the min of $R$ on that subspace.
+Courant-Fischer extends this: with eigenvalues in decreasing order, $\lambda_k$ is the max over $k$-dimensional subspaces of the min of $R$ on that subspace.
 
 Finance readings:
 
@@ -262,7 +262,7 @@ $\begin{pmatrix} 1 & 1 \\ 1 & 0\end{pmatrix}^{30}$ has $F_{30} = 832040$ off the
 ## Further reading
 
 - Gilbert Strang, *Introduction to Linear Algebra*, 5th edition, chapter 6.
-- Roger Horn and Charles Johnson, *Matrix Analysis*, 2nd edition, chapters 1 and 4 (spectral theorem, Rayleigh quotient, Courant-Fischer), 6 (Gershgorin) and 8 (Perron-Frobenius).
+- Roger Horn and Charles Johnson, *Matrix Analysis*, 2nd edition, chapters 1, 2 and 4 (spectral theorem, Rayleigh quotient, Courant-Fischer), 6 (Gershgorin) and 8 (Perron-Frobenius).
 - Lloyd N. Trefethen and David Bau, *Numerical Linear Algebra*, SIAM 1997, lectures 24-28 (eigenvalue algorithms).
 - Gene Golub and Charles Van Loan, *Matrix Computations*, 4th edition, chapters 7-8.
 - James Norris, *Markov Chains*, Cambridge University Press 1997, chapter 1.

@@ -253,7 +253,7 @@ For least squares with $m = 10{,}000$ and $n = 100$: normal equations $1.0033 \t
 
 ## Further reading
 
-- Lloyd N. Trefethen and David Bau, *Numerical Linear Algebra*, SIAM 1997, lectures 7-8 (Gram-Schmidt, Householder), 10-23 (least squares, conditioning, stability, LU, Cholesky) and 38 (conjugate gradients).
+- Lloyd N. Trefethen and David Bau, *Numerical Linear Algebra*, SIAM 1997, lectures 7-8 and 10 (QR, Gram-Schmidt, Householder), 11-23 (least squares, conditioning, stability, LU, Cholesky) and 38 (conjugate gradients).
 - Gene Golub and Charles Van Loan, *Matrix Computations*, 4th edition, chapters 1-5 and 11.
 - Nicholas J. Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd edition, SIAM 2002 (floating point, summation, LU, Cholesky, QR).
 - David Goldberg, "What Every Computer Scientist Should Know About Floating-Point Arithmetic", *ACM Computing Surveys* 23(1) (1991).

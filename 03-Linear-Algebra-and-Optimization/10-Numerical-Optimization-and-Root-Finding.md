@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [calculus-and-taylor-expansions]
 est_hours: 4
-sources: [Nocedal and Wright - Numerical Optimization 2nd ed ch 2-3 5-7 and 10, Brent - Algorithms for Minimization without Derivatives (Prentice-Hall 1973) ch 4, Press Teukolsky Vetterling and Flannery - Numerical Recipes 3rd ed ch 9-10 and 15.5, Manaster and Koehler - The Calculation of Implied Variances from the Black-Scholes Model - A Note (Journal of Finance 1982), Brenner and Subrahmanyam - A Simple Formula to Compute the Implied Standard Deviation (Financial Analysts Journal 1988), Jaeckel - Lets Be Rational (Wilmott 2015), Nelson and Siegel - Parsimonious Modeling of Yield Curves (Journal of Business 1987), Polyak - Some Methods of Speeding up the Convergence of Iteration Methods (USSR Computational Mathematics and Mathematical Physics 1964)]
+sources: [Nocedal and Wright - Numerical Optimization 2nd ed ch 2-3 5-7 and 10, Brent - Algorithms for Minimization without Derivatives (Prentice-Hall 1973) ch 4, Press Teukolsky Vetterling and Flannery - Numerical Recipes 3rd ed ch 9-10 and 15.5, Manaster and Koehler - The Calculation of Implied Variances from the Black-Scholes Model - A Note (Journal of Finance 1982), Brenner and Subrahmanyam - A Simple Formula to Compute the Implied Standard Deviation (Financial Analysts Journal 1988), Jaeckel - Lets Be Rational (Wilmott 2015), Nelson and Siegel - Parsimonious Modeling of Yield Curves (Journal of Business 1987), Levenberg - A Method for the Solution of Certain Non-Linear Problems in Least Squares (Quarterly of Applied Mathematics 1944), Marquardt - An Algorithm for Least-Squares Estimation of Nonlinear Parameters (SIAM Journal 1963), Polyak - Some Methods of Speeding up the Convergence of Iteration Methods (USSR Computational Mathematics and Mathematical Physics 1964)]
 ---
 
 # Numerical Optimization and Root Finding
@@ -53,7 +53,8 @@ Failure modes:
 | Slow, linear convergence | multiple root ($f'(r) = 0$) | the ratio is $1 - 1/m$ for multiplicity $m$; use $x - mf/f'$ |
 | Divergence to infinity or out of the domain | bad start, function not convex near the root | better seed, safeguards |
 
-Newton for $\sqrt{a}$ is $x \leftarrow (x + a/x)/2$ (Heron's method), which hardware and libraries use for square roots and reciprocals.
+Newton for $\sqrt{a}$ is $x \leftarrow (x + a/x)/2$ (Heron's method).
+The division-free variants, $x \leftarrow x(2 - ax)$ for $1/a$ and $x \leftarrow x(3 - ax^2)/2$ for $1/\sqrt{a}$, are how fast reciprocal and reciprocal-square-root routines refine a low-precision hardware estimate.
 
 ### Secant and Brent
 
@@ -94,11 +95,11 @@ flowchart TD
 | Method | Uses | Local rate | Cost per step | Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | Gradient descent | $\nabla f$ | linear, $(\kappa - 1)/(\kappa + 1)$ on quadratics with the best fixed step | $O(n)$ plus a gradient | slow when ill-conditioned |
-| Heavy ball (Polyak) / Nesterov | $\nabla f$ | linear, $(\sqrt\kappa - 1)/(\sqrt\kappa + 1)$ | same | the basis of momentum in ML |
+| Heavy ball (Polyak) / Nesterov | $\nabla f$ | linear, $(\sqrt\kappa - 1)/(\sqrt\kappa + 1)$ for heavy ball on quadratics, about $1 - 1/\sqrt\kappa$ for Nesterov on strongly convex $f$ | same | the basis of momentum in ML |
 | Newton | $\nabla f$, $\nabla^2f$ | quadratic | Hessian plus an $O(n^3)$ solve | affine invariant; modify the Hessian if not PD |
 | BFGS | $\nabla f$ | superlinear | $O(n^2)$ | rank-two update of an inverse-Hessian estimate |
 | L-BFGS | $\nabla f$ | superlinear in practice | $O(mn)$, memory $m$ around 5-20 | default for large smooth problems |
-| Nonlinear CG | $\nabla f$ | superlinear-ish | $O(n)$ | very large problems |
+| Nonlinear CG | $\nabla f$ | linear (n-step quadratic with restarts) | $O(n)$ | very large problems |
 
 Line searches make these globally convergent: the Armijo condition $f(x + tp) \le f(x) + c_1t\nabla f^\top p$ guarantees sufficient decrease, and the Wolfe curvature condition keeps BFGS updates positive definite ($s^\top y > 0$).
 The BFGS update of the inverse Hessian approximation is
@@ -277,4 +278,6 @@ Generate yields from $\beta = (4\%, -2\%, 1\%)$, $\tau = 2$ on ten tenors (3-mon
 - Menachem Brenner and Marti Subrahmanyam, "A Simple Formula to Compute the Implied Standard Deviation", *Financial Analysts Journal* 44(5) (1988).
 - Peter Jaeckel, "Let's Be Rational", *Wilmott* (2015).
 - Charles Nelson and Andrew Siegel, "Parsimonious Modeling of Yield Curves", *Journal of Business* 60(4) (1987).
+- Kenneth Levenberg, "A Method for the Solution of Certain Non-Linear Problems in Least Squares", *Quarterly of Applied Mathematics* 2(2) (1944).
+- Donald Marquardt, "An Algorithm for Least-Squares Estimation of Nonlinear Parameters", *Journal of the Society for Industrial and Applied Mathematics* 11(2) (1963).
 - Boris Polyak, "Some Methods of Speeding up the Convergence of Iteration Methods", *USSR Computational Mathematics and Mathematical Physics* 4(5) (1964).

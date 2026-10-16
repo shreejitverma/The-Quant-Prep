@@ -61,7 +61,7 @@ Return conventions follow directly:
 | $(1 - 1/n)^n \to e^{-1}$ | $0.99^{100} = 0.3660$ against $0.3679$; "probability a given item is never picked in $n$ draws" |
 | $\lim_{x \to 0}(1 - \cos x)/x^2$, $\lim(e^x - 1 - x)/x^2$ | $1/2$ and $1/2$ (read the second-order term) |
 | $\lim_{x \to 0^+}x^x$, $\lim n^{1/n}$ | 1 and 1 (take logs: $x\ln x \to 0$, $\ln n/n \to 0$) |
-| Stirling | $n! \approx \sqrt{2\pi n}(n/e)^n(1 + 1/(12n))$ |
+| Stirling | $n! \approx \sqrt{2\pi n}(n/e)^ne^{1/(12n)}$ |
 | $\sum_{k \ge 1}kx^k = x/(1 - x)^2$ | at $x = 1/2$: 2; and $\sum k^2/2^k = 6$ |
 | $\sum 1/k^2 = \pi^2/6 = 1.6449$, $\sum(-1)^{k+1}/k = \ln 2$ | |
 | $H_n = \sum_{k \le n}1/k \approx \ln n + \gamma + 1/(2n)$, $\gamma = 0.5772$ | coupon collector, records |

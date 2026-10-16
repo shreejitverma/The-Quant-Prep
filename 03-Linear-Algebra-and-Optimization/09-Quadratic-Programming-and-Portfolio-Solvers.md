@@ -148,7 +148,7 @@ The bisection projection used by the solvers gives the same point.
 Start from equal weights $w_0 = 0.2$, charge 20 bp per unit traded on each side, cap total traded weight at $\lVert w - w_0\rVert_1 \le 0.2$, $\gamma = 4$, long-only.
 With buys and sells as separate variables (15 variables, 6 equalities, 16 inequalities) the interior-point solver converges in 13 iterations to $(0.2787, 0.2213, 0.2, 0.2, 0.1)$.
 The turnover cap binds exactly (turnover $0.2$) with shadow price $0.0165$ of utility per unit of extra turnover, assets 3 and 4 are not traded at all (inside their no-trade band), buys and sells are never both positive, and the stationarity and complementarity residuals are zero to $10^{-9}$.
-"Without the cap the optimiser would sell asset 5 down to zero; the cap and the costs decide how far it gets today, and the multiplier tells the PM what a looser cap would be worth."
+"Without the cap the optimiser sells asset 5 all the way to zero and trades $0.47$ of the book; the cap and the costs decide how far it gets today, and the multiplier tells the PM what a looser cap would be worth."
 
 ## Pitfalls
 

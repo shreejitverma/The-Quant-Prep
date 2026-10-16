@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [eigendecomposition-and-spectral-theorem]
 est_hours: 3
-sources: [Strang - Introduction to Linear Algebra 5th ed ch 7, Trefethen and Bau - Numerical Linear Algebra (SIAM 1997) lectures 4 5 and 11, Golub and Van Loan - Matrix Computations 4th ed ch 2 5 and 8, Eckart and Young - The Approximation of One Matrix by Another of Lower Rank (Psychometrika 1936), Hastie Tibshirani and Friedman - The Elements of Statistical Learning 2nd ed ch 3.4, Halko Martinsson and Tropp - Finding Structure with Randomness (SIAM Review 2011)]
+sources: [Strang - Introduction to Linear Algebra 5th ed ch 7, Trefethen and Bau - Numerical Linear Algebra (SIAM 1997) lectures 4 5 and 11, Golub and Van Loan - Matrix Computations 4th ed ch 2 5 and 8, Eckart and Young - The Approximation of One Matrix by Another of Lower Rank (Psychometrika 1936), Mirsky - Symmetric Gauge Functions and Unitarily-Invariant Norms (Quarterly Journal of Mathematics 1960), Hastie Tibshirani and Friedman - The Elements of Statistical Learning 2nd ed sections 3.4-3.5, Halko Martinsson and Tropp - Finding Structure with Randomness (SIAM Review 2011)]
 ---
 
 # SVD and Low-Rank Approximation
@@ -64,6 +64,11 @@ $$
 $$
 
 Proof idea for the 2-norm: $B$ has a null space of dimension $n - k$, which must intersect the $(k + 1)$-dimensional span of $v_1, \dots, v_{k+1}$; on a unit vector $x$ in that intersection, $\lVert(A - B)x\rVert = \lVert Ax\rVert \ge \sigma_{k+1}$.
+
+Proof for the Frobenius norm, from Weyl's inequality for singular values, $\sigma_{i+j-1}(X + Y) \le \sigma_i(X) + \sigma_j(Y)$.
+Take $X = A - B$, $Y = B$ and $j = k + 1$: since $\text{rank}\,B \le k$, $\sigma_{k+1}(B) = 0$, so $\sigma_{i+k}(A) \le \sigma_i(A - B)$ for every $i$.
+Squaring and summing, $\lVert A - B\rVert_F^2 = \sum_i\sigma_i(A - B)^2 \ge \sum_i\sigma_{i+k}(A)^2 = \lVert A - A_k\rVert_F^2$.
+Eckart and Young (1936) proved the Frobenius case; Mirsky (1960) extended it to every unitarily invariant norm, which is why the theorem carries both names.
 
 The ratio $\sum_{i \le k}\sigma_i^2/\sum_i\sigma_i^2$ is the share of "energy" (for a demeaned data matrix, of total variance) captured by rank $k$; on a returns matrix it is exactly the PCA explained-variance ratio ([PCA and Factor Structure](05-PCA-and-Factor-Structure.md)).
 
@@ -173,7 +178,7 @@ Rank 1 captures about $86.5\%$ of the energy, rank 2 about $95.6\%$ and rank 3 a
 > $\lVert A\rVert_2 = \sigma_1$, $\lVert A\rVert_F = \sqrt{\sum_i\sigma_i^2}$, $\kappa_2 = \sigma_1/\sigma_n$ (square invertible $A$). So $\lVert A\rVert_2 \le \lVert A\rVert_F \le \sqrt{r}\lVert A\rVert_2$.
 
 > [!question]- la-svd-eckart-young | State the Eckart-Young theorem with both error formulas.
-> The truncated SVD $A_k$ minimises $\lVert A - B\rVert$ over rank-$\le k$ matrices $B$, in both the 2-norm and the Frobenius norm, with errors $\sigma_{k+1}$ and $\sqrt{\sum_{i>k}\sigma_i^2}$.
+> The truncated SVD $A_k$ minimises $\lVert A - B\rVert$ over rank-$\le k$ matrices $B$, in both the 2-norm and the Frobenius norm, with errors $\sigma_{k+1}$ and $\sqrt{\sum_{i>k}\sigma_i^2}$. Proof sketch: any rank-$k$ $B$ has a null space meeting $\text{span}(v_1, \dots, v_{k+1})$, where $\lVert Ax\rVert \ge \sigma_{k+1}$ (2-norm); Weyl's inequality gives $\sigma_i(A - B) \ge \sigma_{i+k}(A)$, then sum the squares (Frobenius).
 
 > [!question]- la-svd-rank-one-error | What is the best rank-one approximation of $\begin{pmatrix} 3 & 0 \\ 4 & 5\end{pmatrix}$ and its error?
 > $\begin{pmatrix} 1.5 & 1.5 \\ 4.5 & 4.5\end{pmatrix} = \sigma_1u_1v_1^\top$ with $u_1 = (1, 3)/\sqrt{10}$, $v_1 = (1, 1)/\sqrt2$; the error is $\sigma_2 = \sqrt5 = 2.2361$ in both norms.
@@ -222,5 +227,6 @@ Rank 1 captures about $86.5\%$ of the energy, rank 2 about $95.6\%$ and rank 3 a
 - Lloyd N. Trefethen and David Bau, *Numerical Linear Algebra*, SIAM 1997, lectures 4-5 (SVD) and 11 (least squares).
 - Gene Golub and Charles Van Loan, *Matrix Computations*, 4th edition, chapters 2, 5 and 8.
 - Carl Eckart and Gale Young, "The Approximation of One Matrix by Another of Lower Rank", *Psychometrika* 1(3) (1936).
-- Trevor Hastie, Robert Tibshirani and Jerome Friedman, *The Elements of Statistical Learning*, 2nd edition, section 3.4 (ridge, PCR and the SVD).
+- Leon Mirsky, "Symmetric Gauge Functions and Unitarily-Invariant Norms", *Quarterly Journal of Mathematics* 11(1) (1960).
+- Trevor Hastie, Robert Tibshirani and Jerome Friedman, *The Elements of Statistical Learning*, 2nd edition, sections 3.4 (ridge and the SVD) and 3.5 (principal-component regression).
 - Nathan Halko, Per-Gunnar Martinsson and Joel Tropp, "Finding Structure with Randomness: Probabilistic Algorithms for Constructing Approximate Matrix Decompositions", *SIAM Review* 53(2) (2011).

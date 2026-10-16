@@ -122,7 +122,8 @@ $$
 w_{\text{tan}} = \frac{\Sigma^{-1}(\mu - r\mathbf{1})}{\mathbf{1}^\top\Sigma^{-1}(\mu - r\mathbf{1})}, \qquad SR_{\max} = \sqrt{(\mu - r\mathbf{1})^\top\Sigma^{-1}(\mu - r\mathbf{1})},
 $$
 
-and an investor maximising $w^\top(\mu - r\mathbf{1}) - \tfrac\gamma2w^\top\Sigma w$ holds $w = \Sigma^{-1}(\mu - r\mathbf{1})/\gamma$ in risky assets and the rest in cash.
+The normalisation needs $\mathbf{1}^\top\Sigma^{-1}(\mu - r\mathbf{1}) = B - rA > 0$, that is $r < \mu_{\text{GMV}} = B/A$; if $r$ exceeds the GMV mean, the normalised portfolio is the tangency point on the inefficient lower branch (it minimises the Sharpe ratio), while the Sharpe-maximising position, still a positive multiple of $\Sigma^{-1}(\mu - r\mathbf{1})$, is net short the risky assets with more than 100% in cash; at $r = B/A$ there is no tangency portfolio.
+An investor maximising $w^\top(\mu - r\mathbf{1}) - \tfrac\gamma2w^\top\Sigma w$ holds $w = \Sigma^{-1}(\mu - r\mathbf{1})/\gamma$ in risky assets and the rest in cash.
 Practical caveats (estimation error, error maximisation, shrinkage, Black-Litterman) are in [Mean-Variance Portfolio Construction](../09-Alpha-Research-and-Portfolio/10-Mean-Variance-Portfolio-Construction.md).
 
 Maximising the Sharpe ratio directly is not a concave problem, but it is homogeneous: substitute $y = \kappa w$ with the normalisation $(\mu - r\mathbf{1})^\top y = 1$, minimise $y^\top\Sigma y$ (a QP, with any homogeneous constraints such as $y \ge 0$ kept), then rescale $w = y/\mathbf{1}^\top y$.
@@ -149,7 +150,7 @@ Vols $15\%$, $20\%$, $25\%$; correlations $\rho_{12} = 0.3$, $\rho_{13} = 0.2$, 
 - GMV: weights $(0.6616, 0.2228, 0.1156)$, vol $1/\sqrt{A} = 13.33\%$, mean $B/A = 5.91\%$.
 - Frontier at $m = 8\%$: the $5 \times 5$ KKT system $\begin{pmatrix} 2\Sigma & -\mu & -\mathbf{1} \\ \mu^\top & 0 & 0 \\ \mathbf{1}^\top & 0 & 0\end{pmatrix}\begin{pmatrix} w \\ \lambda \\ \nu\end{pmatrix} = \begin{pmatrix} 0 \\ m \\ 1\end{pmatrix}$ gives weights $(0.1048, 0.2903, 0.6048)$ and vol $19.17\%$, matching $\sqrt{(Am^2 - 2Bm + C)/D}$.
 - Shadow price: $\lambda = 2(Am - B)/D = 1.8169$; a finite difference of $\sigma^2(m)$ gives the same number, so raising the return target by 10 bp costs about $0.0018$ of variance.
-- Tangency: weights $(0.3831, 0.2566, 0.3603)$, expected return $6.95\%$, vol $15.00\%$, Sharpe $0.3302$.
+- Tangency (valid because $r = 2\%$ is below the GMV mean $5.91\%$): weights $(0.3831, 0.2566, 0.3603)$, expected return $6.95\%$, vol $15.00\%$, Sharpe $0.3302$.
 - Mean-variance investor with $\gamma = 4$: holds $55.02\%$ in the risky assets (in tangency proportions) and the rest in cash, with portfolio vol $8.26\%$.
 
 ### Long-only KKT by hand

@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [svd-and-low-rank-approximation, covariance-matrices-and-psd]
 est_hours: 4
-sources: [Hastie Tibshirani and Friedman - The Elements of Statistical Learning 2nd ed ch 14.5, Jolliffe - Principal Component Analysis 2nd ed (Springer 2002), Litterman and Scheinkman - Common Factors Affecting Bond Returns (Journal of Fixed Income 1991), Avellaneda and Lee - Statistical Arbitrage in the US Equities Market (Quantitative Finance 2010), Marchenko and Pastur - Distribution of Eigenvalues for Some Sets of Random Matrices (Math USSR Sbornik 1967), Laloux Cizeau Bouchaud and Potters - Noise Dressing of Financial Correlation Matrices (Physical Review Letters 1999), Plerou et al - Universal and Nonuniversal Properties of Cross Correlations in Financial Time Series (Physical Review Letters 1999), Bun Bouchaud and Potters - Cleaning Large Correlation Matrices - Tools from Random Matrix Theory (Physics Reports 2017), Bouchaud Bonart Donier and Gould - Trades Quotes and Prices (Cambridge 2018)]
+sources: [Hastie Tibshirani and Friedman - The Elements of Statistical Learning 2nd ed ch 14.5, Jolliffe - Principal Component Analysis 2nd ed (Springer 2002), Litterman and Scheinkman - Common Factors Affecting Bond Returns (Journal of Fixed Income 1991), Avellaneda and Lee - Statistical Arbitrage in the US Equities Market (Quantitative Finance 2010), Marchenko and Pastur - Distribution of Eigenvalues for Some Sets of Random Matrices (Math USSR Sbornik 1967), Laloux Cizeau Bouchaud and Potters - Noise Dressing of Financial Correlation Matrices (Physical Review Letters 1999), Plerou et al - Universal and Nonuniversal Properties of Cross Correlations in Financial Time Series (Physical Review Letters 1999), Bun Bouchaud and Potters - Cleaning Large Correlation Matrices - Tools from Random Matrix Theory (Physics Reports 2017), Potters and Bouchaud - A First Course in Random Matrix Theory (Cambridge 2020)]
 ---
 
 # PCA and Factor Structure
@@ -253,4 +253,4 @@ In the same sample, all 100 weights of the first eigenvector have the same sign:
 - Laurent Laloux, Pierre Cizeau, Jean-Philippe Bouchaud and Marc Potters, "Noise Dressing of Financial Correlation Matrices", *Physical Review Letters* 83 (1999).
 - Vasiliki Plerou, Parameswaran Gopikrishnan, Bernd Rosenow, Luis Amaral and H. Eugene Stanley, "Universal and Nonuniversal Properties of Cross Correlations in Financial Time Series", *Physical Review Letters* 83 (1999).
 - Joel Bun, Jean-Philippe Bouchaud and Marc Potters, "Cleaning Large Correlation Matrices: Tools from Random Matrix Theory", *Physics Reports* 666 (2017).
-- Jean-Philippe Bouchaud, Julius Bonart, Jonathan Donier and Martin Gould, *Trades, Quotes and Prices*, Cambridge University Press 2018.
+- Marc Potters and Jean-Philippe Bouchaud, *A First Course in Random Matrix Theory: for Physicists, Engineers and Data Scientists*, Cambridge University Press 2020 (Marchenko-Pastur, eigenvalue cleaning).
