@@ -168,45 +168,11 @@ $$\text{AddOn}_{\text{FX}} = \sum_k \text{AddOn}_{\text{FX}, k}$$
 
 ### How it is implemented
 
-- **Inputs**: Trade FpML/CDM schemas, notional, start time $S$, end time $E$, asset class, underlying curve/index, buy/sell indicator, option strike, option expiry, netting set ID, CSA terms (threshold $\text{TH}$, minimum transfer amount $\text{MTA}$, initial margin $\text{NICA}$, margin period of risk $\text{MPOR}$), portfolio mark-to-market $V$, posted collateral $C$.
-- **Outputs**: Replacement Cost $\text{RC}$, PFE multiplier, asset class add-ons, aggregate add-on, PFE, total Exposure at Default $\text{EAD}$.
-- **Data model**: Trade $\to$ Netting Set $\to$ CSA Agreement $\to$ Legal Entity.
-- **Algorithm**:
-  1. Parse trades into asset class hedging sets.
-  2. For IR: calculate duration factor $\frac{e^{-0.05 S} - e^{-0.05 E}}{0.05}$ and assign trades to buckets 1, 2, or 3.
-  3. Apply maturity factor $MF$ (margined or unmargined).
-  4. Aggregate effective notionals algebraically within buckets; calculate bucket add-ons.
-  5. Apply inter-bucket correlation matrix to compute $\text{AddOn}_{\text{IR}}$.
-  6. Compute FX, credit, equity, and commodity add-ons; sum to obtain $\text{AddOn}^{\text{aggregate}}$.
-  7. Evaluate Replacement Cost $\text{RC}$ using collateral balance and CSA parameters.
-  8. Calculate PFE multiplier with floor at 0.05 and cap at 1.0.
-  9. Multiply $(\text{RC} + \text{Multiplier} \cdot \text{AddOn}^{\text{aggregate}})$ by $1.4$ to produce EAD.
-- **Complexity**: $O(N)$ across $N$ trades in the netting set; negligible compute overhead compared to Monte Carlo IMM engines.
-- **Numerical pitfalls**: Exponent overflow in multiplier calculation when $(V - C) \gg \text{AddOn}$; handling zero-add-on edge cases when netting set is fully cancelled; correctly matching currency pairs in cross-currency swaps.
-- **Systems integration**: Feeds the SA-CCR calculation service and regulatory reporting pipeline described in 18-Pricing-and-Risk-Systems.
-
-```mermaid
-flowchart TD
-    A["Bilateral OTC Derivative Portfolio"] --> B["Group by Netting Set & CSA Agreement"]
-    B --> C["Mark-to-Market V & Net Collateral C"]
-    C --> D{"CSA Margined?"}
-    D -- "No" --> E["RC = max(V - C, 0)"]
-    D -- "Yes" --> F["RC = max(V - C, TH + MTA - NICA, 0)"]
-
-    A --> G["Asset Class Classification"]
-    G --> H["IR Hedging Sets: Duration Factor & Maturity Buckets"]
-    G --> I["FX Hedging Sets: Currency Pair Directional Netting"]
-    G --> J["Credit / Equity / Commodity Hedging Sets"]
-
-    H & I & J --> K["Asset Class AddOns with Correlation Aggregation"]
-    K --> L["Aggregate AddOn = Sum(AddOn_class)"]
-
-    C & L --> M["PFE Multiplier = min(1.0, 0.05 + 0.95 * exp((V - C)/(2 * 0.95 * AddOn)))"]
-    L & M --> N["PFE = Multiplier * Aggregate AddOn"]
-
-    E & F & N --> O["EAD = 1.4 * (RC + PFE)"]
-    O --> P["Credit RWA = EAD * RiskWeight_counterparty"]
-```
+The reference function `calculate_saccr` accepts a netting set with trades, margin status, MTM, collateral, and CSA parameters.
+Its trade model supports interest-rate and FX asset classes, with notional, supervisory delta, start/end times, residual maturity, and an optional currency pair.
+It calculates RC, IR and FX add-ons, PFE, and EAD; it does not parse trade schemas or calculate credit, equity, or commodity add-ons.
+The implementation pools IR trades into three maturity buckets and aggregates FX trades by currency pair; FX notionals are used as supplied, with no currency conversion.
+These implementation limits do not change the broader regulatory methodology described in this topic.
 
 ## Worked examples
 
@@ -411,4 +377,4 @@ Instead, prime brokers held static collateral of only 10-15%, failed to model li
 
 - [03-Credit-Risk-Capital-SA-and-IRB.md](03-Credit-Risk-Capital-SA-and-IRB.md) - Standardised and IRB credit capital, Vasicek model, and output floors.
 - [05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md](05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md) - Regulatory CVA capital framework and eligible CVA hedges.
-- `code/basel_credit_saccr.py` - Reference implementation of SA-CCR for margined and unmargined netting sets.
+- `code/basel_credit_saccr.py` - Reference implementation of selected SA-CCR calculations for margined and unmargined netting sets.

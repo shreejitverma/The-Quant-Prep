@@ -133,37 +133,9 @@ Basel CRE54 establishes strict criteria governing which financial instruments qu
 
 ### How it is implemented
 
-- **Inputs**: Netting set SA-CCR EADs, effective maturities $M_c$, counterparty credit ratings, eligible single-name CDS notional and tenors, index CDS hedges, market risk delta/vega sensitivities (for SA-CVA).
-- **Outputs**: Supervisory discount factor $DF_c$, counterparty sensitivity $S_{\text{CVA}, c}$, unhedged capital $K^{\text{unhedged}}$, hedged capital $K^{\text{hedged}}$, total CVA capital requirement $K_{\text{CVA}}$, CVA RWA ($K_{\text{CVA}} \times 12.5$).
-- **Data model**: Netting Set $\to$ Counterparty Rating $\to$ Eligible CDS Hedges $\to$ Portfolio CVA Cube.
-- **Algorithm**:
-  1. For each counterparty $c$, extract SA-CCR EAD and effective maturity $M_c$.
-  2. Compute supervisory discount factor $DF_c = \frac{1 - e^{-0.05 M_c}}{0.05 M_c}$.
-  3. Look up supervisory risk weight $RW_c$ based on credit rating.
-  4. Compute sensitivity $S_{\text{CVA}, c} = RW_c \cdot \frac{M_c}{1.4} \cdot \text{EAD}_c \cdot DF_c$.
-  5. Under Reduced BA-CVA, evaluate $\sqrt{(\rho \sum S_c)^2 + (1 - \rho^2) \sum S_c^2}$ with $\rho = 0.50$.
-  6. Under Full BA-CVA, incorporate net single-name CDS and index hedges; blend via $\beta = 0.25$.
-  7. Multiply $K_{\text{CVA}}$ by 12.5 to produce CVA RWA.
-- **Complexity**: $O(C)$ for BA-CVA where $C$ is the number of counterparties; $O(C \times K)$ for SA-CVA where $K$ is the number of market and credit risk factors.
-- **Numerical pitfalls**: Near-zero maturity ($M_c \to 0$) requires Taylor expansion of $DF_c \approx 1 - 0.025 M_c$ to avoid $0/0$ division; cross-entity hedge mapping errors (mismatching CDS reference entity legal entity identifier with OTC counterparty LEI).
-- **Systems integration**: Directly integrated into the XVA engine and regulatory reporting platform documented in 18-Pricing-and-Risk-Systems.
-
-```mermaid
-flowchart TD
-    A["Bilateral OTC Derivative Portfolio"] --> B["Compute SA-CCR EAD per Netting Set"]
-    B --> C["Extract Effective Maturity M_c & Counterparty Rating"]
-    C --> D["Compute Supervisory Discount Factor DF_c & Weight RW_c"]
-    D --> E["Calculate Gross Sensitivity S_cva,c = RW_c * (M_c / 1.4) * EAD_c * DF_c"]
-
-    E --> F{"Approach Selection"}
-    F -- "Reduced BA-CVA" --> G["K_reduced = sqrt((0.5 * Sum S)^2 + 0.75 * Sum S^2)"]
-    F -- "Full BA-CVA" --> H["Incorporate Single-Name CDS & Index CDS Hedges"]
-    H --> I["Blend: K_full = 0.25 * K_unhedged + 0.75 * K_hedged"]
-    F -- "SA-CVA (Approved)" --> J["FRTB-style Sensitivities-Based Method: Delta, Vega, Curvature"]
-
-    G & I & J --> K["Total CVA Capital Requirement K_CVA"]
-    K --> L["CVA Risk-Weighted Assets: RWA_CVA = 12.5 * K_CVA"]
-```
+The reference function `calculate_reduced_ba_cva` accepts counterparty records containing a rating bucket, EAD, and effective maturity, then returns Reduced BA-CVA capital.
+It does not calculate SA-CVA, Full BA-CVA hedge recognition, or CVA RWA.
+The broader approaches and their regulatory formulas are covered above; this code implements only the reduced formula.
 
 ## Worked examples
 
@@ -347,4 +319,4 @@ The subsequent failure of the monolines demonstrated that counterparty credit ri
 
 - [04-Counterparty-Credit-Risk-SA-CCR.md](04-Counterparty-Credit-Risk-SA-CCR.md) - Standardised approach for counterparty credit risk and EAD calculation.
 - [15-XVA.md](../11-Risk-and-Trading/15-XVA.md) - In-depth XVA mechanics, CVA/DVA/FVA modeling, and desk hedging workflows.
-- `code/basel_credit_saccr.py` - Reference implementation of BA-CVA and SA-CCR analytics.
+- `code/basel_credit_saccr.py` - Reference implementation of Reduced BA-CVA and selected SA-CCR analytics.

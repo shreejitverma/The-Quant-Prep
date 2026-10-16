@@ -143,35 +143,10 @@ For banks with highly optimized A-IRB mortgage and high-grade corporate portfoli
 
 ### How it is implemented
 
-- **Inputs**: Facility type, drawn amount, committed undrawn amount, currency, external rating, internal rating grade, calibrated 1-year PD, downturn LGD, contractual payment schedules (for cash-flow maturity $M$), obligor annual turnover $S$.
-- **Outputs**: Regulatory EAD, asset correlation $\rho$, 99.9% conditional default probability $PD(0.999)$, maturity adjustment factor $M_{\text{adj}}$, unexpected loss capital requirement $K$, risk-weighted assets RWA, expected loss EL.
-- **Data model**: Hierarchical relationship linking Legal Entity $\to$ Obligor $\to$ Facility/Netting Agreement $\to$ Collateral Allocations.
-- **Algorithm**:
-  1. Calculate drawn + undrawn EAD using supervisory or modelled CCF.
-  2. Compute cash-flow weighted effective maturity $M = \frac{\sum_t t \cdot CF_t}{\sum_t CF_t}$, bounded by $[1.0, 5.0]$.
-  3. Evaluate asset correlation $\rho(PD)$ with SME size adjustment.
-  4. Compute normal quantile $\Phi^{-1}(PD)$ and conditional default probability at confidence $\alpha = 0.999$.
-  5. Calculate maturity factor $b(PD)$ and maturity multiplier $M_{\text{adj}}$.
-  6. Compute capital charge $K$ and scale by $12.5 \cdot \text{EAD}$ to produce RWA.
-- **Complexity**: $O(N)$ across $N$ facilities in the banking book; embarrassingly parallel execution.
-- **Numerical pitfalls**: Normal quantile rational approximation near zero ($PD < 10^{-5}$) requires high-precision algorithms (e.g., Acklam or Wichura); exponent overflow in $\rho(PD)$ when $PD$ is unscaled; division by zero when $b(PD) = 1 / 1.5$.
-- **Systems integration**: Feeds the capital aggregation engine and RWA reporting warehouse in 18-Pricing-and-Risk-Systems.
-
-```mermaid
-flowchart TD
-    A["Obligor Rating & Financials"] --> B["1-Year PD Calibration (min 0.05%)"]
-    C["Collateral & Seniority"] --> D["Downturn LGD (F-IRB 45%, A-IRB floored)"]
-    E["Drawn Balance & Commitments"] --> F["EAD Calculation via CCF"]
-    G["Cash Flow Schedule"] --> H["Effective Maturity M in [1, 5] years"]
-
-    B --> I["Asset Correlation rho(PD) with SME Deduction"]
-    B --> J["Maturity Factor b(PD) & Multiplier M_adj"]
-    B & I --> K["99.9% Conditional Default Probability"]
-    
-    D & K & B & J --> L["Unexpected Loss Capital Requirement K"]
-    L & F --> M["Credit Risk RWA = K * 12.5 * EAD"]
-    M --> N["Basel IV Output Floor Check: max(RWA_IRB, 72.5% * RWA_SA)"]
-```
+The reference function `calculate_vasicek_irb` accepts PD, LGD, maturity in years, EAD, confidence level, and firm turnover in millions of euros.
+It returns asset correlation, conditional PD, maturity adjustment, capital requirement per unit EAD, and RWA.
+It does not calculate facility EAD, calibrate PD or LGD, enforce the regulatory maturity bounds, compute expected loss, or apply the output floor.
+The implementation follows the corporate, bank, and sovereign Vasicek formula; the surrounding regulatory workflow remains described above.
 
 ## Worked examples
 
@@ -336,4 +311,4 @@ This systemic feedback loop prompted the Basel Committee to overhaul capital sta
 
 - [01-Capital-RWA-and-the-Basel-Framework.md](01-Capital-RWA-and-the-Basel-Framework.md) - Foundational capital stack, CET1/Tier 2 ratios, and regulatory buffers.
 - [04-Counterparty-Credit-Risk-SA-CCR.md](04-Counterparty-Credit-Risk-SA-CCR.md) - SA-CCR replacement cost, PFE add-ons, and regulatory netting sets.
-- `code/basel_credit_saccr.py` - Reference Python implementation of the Vasicek ASRF credit model and SA-CCR engine.
+- `code/basel_credit_saccr.py` - Reference Python implementation of the Vasicek ASRF credit model and selected SA-CCR calculations.
