@@ -255,7 +255,7 @@ $\begin{pmatrix} 1 & 1 \\ 1 & 0\end{pmatrix}^{30}$ has $F_{30} = 832040$ off the
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [la_foundations.py](code/la_foundations.py) computes and asserts every number above (powers, regime chain, power iteration, Gershgorin, equicorrelation, AR(2), Fibonacci).
+- Code: [la_foundations.py](code/la_foundations.py) computes and asserts every number above (powers, regime chain, power iteration, Gershgorin, equicorrelation, AR(2), Fibonacci) except the $2 \times 2$ and trace-determinant examples, which [problem_set.py](code/problem_set.py) asserts.
 - SDE bridge: [matrix exponentiation in C++](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/03-Data-Structures-Algorithms/04-Gold-Standard-Cpp-Patterns/Math-and-Bit-Manipulation/matrix_exponentiation.cpp) computes linear recurrences in $O(\log n)$ multiplications by repeated squaring, the integer version of $A^k$.
 - Related: [Markov Chains](../01-Probability/10-Markov-Chains.md), [PCA and Factor Structure](05-PCA-and-Factor-Structure.md), [Covariance Matrices and PSD](04-Covariance-Matrices-and-PSD.md).
 

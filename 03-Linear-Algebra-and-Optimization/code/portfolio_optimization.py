@@ -127,7 +127,9 @@ def duality_toy() -> None:
     g = lam - lam**2 / 4
     check("dual optimum lambda*", lam[np.argmax(g)], 2.0, 1e-5)
     check("dual optimal value d*", g.max(), 1.0, 1e-12)
-    check("primal optimal value p* (x* = 1)", 1.0**2, 1.0, 0)
+    x = np.linspace(1, 5, 400_001)
+    check("primal optimum x* (grid over x >= 1)", x[np.argmin(x**2)], 1.0, 1e-12)
+    check("primal optimal value p*", (x**2).min(), 1.0, 1e-12)
 
 
 # ---------------------------------------------------------------------------
@@ -344,7 +346,7 @@ def solver_comparison() -> None:
     check("P2 expected return", w_as @ MU5, 0.057768, 1e-6)
     check("P2 vol", math.sqrt(w_as @ sigma @ w_as), 0.119076, 1e-6)
     check("P2 max |PG - active set|", np.abs(w_pg - w_as).max(), 0.0, 1e-9)
-    check("P2 max |IPM - active set|", np.abs(ipm.x - w_as).max(), 0.0, 1e-6)
+    check("P2 max |IPM - active set| (about 3e-7)", np.abs(ipm.x - w_as).max(), 3e-7, 5e-8)
     k = kkt_budget_box(q, c, lo, hi, w_as)
     check("P2 KKT stationarity residual", k["stationarity"], 0.0, 1e-12)
     check("P2 smallest bound multiplier (>= 0)", k["min bound multiplier"], 0.000370, 1e-6)

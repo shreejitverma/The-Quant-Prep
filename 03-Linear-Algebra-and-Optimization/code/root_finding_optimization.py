@@ -444,7 +444,7 @@ def nelson_siegel_fit() -> None:
     check("poor start: beta2", p[2], -0.009600, 1e-6)
     check("poor start: RMSE (bp) at the local minimum", rmse_bp, 0.746, 1e-3)
     grad = ns_jacobian(p).T @ (nelson_siegel(p) - y)
-    check("poor start: |J'r| at the stall (stationary)", np.abs(grad).max(), 0.0, 1e-12)
+    check("poor start: |J'r| at the stall (stationary)", np.abs(grad).max(), 0.0, 1e-13)
     tau0, beta0 = ns_profile_tau(y, np.arange(0.25, 10.0001, 0.05))
     check("profile over tau: best grid tau", tau0, 2.0, 1e-9)
     p, it, ok = levenberg_marquardt(y, np.concatenate([beta0, [tau0]]))

@@ -240,7 +240,7 @@ In the same sample, all 100 weights of the first eigenvector have the same sign:
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [covariance_pca.py](code/covariance_pca.py) builds the yield-curve covariance, runs the PCA, solves the butterfly, simulates the MP noise and the cleaning experiment, and asserts every number above.
+- Code: [covariance_pca.py](code/covariance_pca.py) builds the yield-curve covariance, runs the PCA, solves the butterfly, simulates the MP noise and the cleaning experiment, and asserts every number above except the parameter counts, which [problem_set.py](code/problem_set.py) asserts.
 - Related: [Covariance Matrices and PSD](04-Covariance-Matrices-and-PSD.md), [Curve Risk and Hedging](../06-Fixed-Income-and-Asset-Classes/15-Curve-Risk-and-Hedging.md), [Risk Factor Modelling](../11-Risk-and-Trading/10-Risk-Factor-Modelling.md), [Statistical Arbitrage and Pairs Trading](../09-Alpha-Research-and-Portfolio/06-Statistical-Arbitrage-and-Pairs-Trading.md).
 
 ## Further reading

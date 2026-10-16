@@ -182,7 +182,7 @@ On Rosenbrock's function from $(-1.2, 1)$ with Armijo backtracking and a gradien
 Generate yields from $\beta = (4\%, -2\%, 1\%)$, $\tau = 2$ on ten tenors (3-month yield $2.18\%$, 30-year $3.93\%$).
 
 - From $(3.5\%, -1.5\%, 0.5\%, 1.5)$, LM recovers the parameters exactly in 12 iterations.
-- From $(3\%, -1\%, 0\%, 1)$ it stops at $\tau = 0.811$, $\beta_2 = -0.0096$ with a 0.746 bp RMS error and $J^\top r$ zero to $10^{-14}$: a genuine local minimum with a sub-basis-point fit and the wrong sign on the curvature factor.
+- From $(3\%, -1\%, 0\%, 1)$ it stops at $\tau = 0.811$, $\beta_2 = -0.0096$ with a 0.746 bp RMS error and $J^\top r$ below $10^{-13}$: a genuine local minimum with a sub-basis-point fit and the wrong sign on the curvature factor.
 - Profiling $\tau$ on a grid from 0.25 to 10 picks $\tau = 2.0$, and LM from there recovers the truth.
 - With 1 bp of noise added (seed 8), LM from the good start returns $\tau$ about $1.955$ and $\beta_2$ about $0.00906$ with about $0.596$ bp RMS error.
 
@@ -265,7 +265,7 @@ Generate yields from $\beta = (4\%, -2\%, 1\%)$, $\tau = 2$ on ten tenors (3-mon
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [root_finding_optimization.py](code/root_finding_optimization.py) implements bisection, Newton, secant, Brent, plain and safeguarded implied-vol solvers, gradient descent, heavy ball, Newton and BFGS with backtracking, and Levenberg-Marquardt, and computes and asserts every number above.
+- Code: [root_finding_optimization.py](code/root_finding_optimization.py) implements bisection, Newton, secant, Brent, plain and safeguarded implied-vol solvers, gradient descent, heavy ball, Newton and BFGS with backtracking, and Levenberg-Marquardt, and computes and asserts every number above except the $\sqrt2$ Newton iterates and the bisection counts, which [problem_set.py](code/problem_set.py) asserts.
 - SDE bridge: [binary search](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/03-Data-Structures-Algorithms/01-Topics/Searching/BinarySearch/README.md) is bisection on a sorted array; [Black-Scholes](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/05-Quantitative-Finance/01-Mathematics/Option-Pricing/black_scholes.py) gives the pricer an implied-vol solver inverts.
 - Related: [Implied Volatility and the Smile](../05-Derivatives-and-Volatility/07-Implied-Volatility-and-the-Smile.md), [Volatility Surface Construction](../05-Derivatives-and-Volatility/08-Volatility-Surface-Construction.md), [Pricing Library Design](../12-Quant-Development/10-Pricing-Library-Design.md).
 

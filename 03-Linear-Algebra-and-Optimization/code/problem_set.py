@@ -2,7 +2,8 @@
 
 Run: uv run --no-project --with numpy python 03-Linear-Algebra-and-Optimization/code/problem_set.py
 
-Each block names the card id it backs.
+Each block names the card ids it backs: the la-ps cards of note 11, plus the cards of notes 01, 02, 05 and 10
+whose numbers are asserted here.
 """
 
 from __future__ import annotations
@@ -63,12 +64,19 @@ def correlation_cards() -> None:
 
 
 def spectral_cards() -> None:
-    print("\n[la-ps-det-trace-from-eigenvalues, la-ps-two-by-two-eigenvalues, la-ps-rotation-eigenvalues]")
+    print(
+        "\n[la-ps-det-trace-from-eigenvalues, la-eig-trace-det, la-eig-two-by-two, la-ps-two-by-two-eigenvectors, "
+        "la-ps-householder-reflector, la-ps-product-of-pd, la-ps-rotation-eigenvalues]"
+    )
     lam = np.array([1.0, 2.0, 3.0])
+    check("tr A", lam.sum(), 6.0, 1e-12)
+    check("det A", np.prod(lam), 6.0, 1e-12)
     check("det(A^2 + I)", np.prod(lam**2 + 1), 100.0, 1e-12)
     check("tr(A^-1)", np.sum(1 / lam), 11 / 6, 1e-12)
     check("tr(A^-1) decimal", np.sum(1 / lam), 1.833333, 1e-6)
     m = np.array([[4.0, 1.0], [2.0, 3.0]])
+    check("trace of [[4,1],[2,3]]", np.trace(m), 7.0, 1e-12)
+    check("det of [[4,1],[2,3]]", np.linalg.det(m), 10.0, 1e-12)
     ev = np.sort(np.real(np.linalg.eigvals(m)))
     check("eigenvalue of [[4,1],[2,3]] (small)", ev[0], 2.0, 1e-12)
     check("eigenvalue of [[4,1],[2,3]] (large)", ev[1], 5.0, 1e-12)
@@ -153,10 +161,16 @@ def portfolio_cards() -> None:
 
 
 def rayleigh_and_quadratic_cards() -> None:
-    print("\n[la-ps-rayleigh-max, la-ps-xy-nonconvex, la-ps-uv-plus-vu-rank]")
+    print("\n[la-ps-courant-fischer-second, la-ps-xy-nonconvex, la-ps-uv-plus-vu-rank]")
     a = np.array([[2.0, 1.0], [1.0, 2.0]])
     check("max x'Ax on the unit circle", np.linalg.eigvalsh(a)[-1], 3.0, 1e-12)
     check("min x'Ax on the unit circle", np.linalg.eigvalsh(a)[0], 1.0, 1e-12)
+    q = np.linalg.qr(np.array([[1.0, 1.0], [1.0, -1.0]]))[0][:, 1:]
+    lam_c, vec_c = np.linalg.eigh(q.T @ a @ q)
+    x_c = q @ vec_c[:, -1]
+    check("max x'Ax over unit x orthogonal to (1, 1)", lam_c[-1], 1.0, 1e-12)
+    check("maximiser |x_1 + x_2| (orthogonal to (1, 1))", abs(x_c.sum()), 0.0, 1e-12)
+    check("maximiser |x_1 - x_2| = sqrt 2", abs(x_c[0] - x_c[1]), math.sqrt(2), 1e-12)
     h = np.array([[0.0, 1.0], [1.0, 0.0]])
     check("Hessian of x1 x2: eigenvalue min", np.linalg.eigvalsh(h)[0], -1.0, 1e-12)
     u = np.array([1.0, 0.0, 0.0])
@@ -178,7 +192,10 @@ def sherman_morrison_card() -> None:
 
 
 def numerical_cards() -> None:
-    print("\n[la-ps-near-singular-condition, la-ps-newton-sqrt2, la-ps-bisection-count, la-ps-gd-step-size, la-ps-cholesky-2x2]")
+    print(
+        "\n[la-ps-near-singular-condition, la-opt-newton-sqrt2, la-opt-bisection-count, la-ps-newton-reciprocal, "
+        "la-ps-gd-step-size, la-ps-cholesky-2x2]"
+    )
     m = np.array([[1.0, 1.0], [1.0, 1.0001]])
     check("cond_2 of [[1,1],[1,1.0001]]", np.linalg.cond(m), 40002.0, 1.0)
     ev = np.linalg.eigvalsh(m)
@@ -192,7 +209,13 @@ def numerical_cards() -> None:
     for k, want in enumerate((1.5, 1.416667, 1.414216, 1.41421356)):
         check(f"Newton sqrt 2 iterate {k + 1}", path[k], want, 5e-7 if k < 3 else 5e-9)
     check("Newton sqrt 2 iterate 4 error", abs(path[3] - math.sqrt(2)), 1.6e-12, 1e-13)
-    check("bisection steps to 1e-6 from width 1", math.ceil(math.log2(1e6)), 20, 0)
+    for tol, want in ((1e-6, 20), (1e-12, 40)):
+        lo, hi, steps = 1.0, 2.0, 0
+        while hi - lo > tol:
+            mid = 0.5 * (lo + hi)
+            lo, hi = (mid, hi) if mid * mid < 2 else (lo, mid)
+            steps += 1
+        check(f"bisection steps to {tol:g} from width 1", steps, want, 0)
     x, recip = 0.3, []
     for _ in range(3):
         x = x * (2 - 3 * x)
@@ -208,7 +231,7 @@ def numerical_cards() -> None:
 
 
 def counting_cards() -> None:
-    print("\n[la-ps-covariance-parameter-count, la-ps-sample-cov-rank]")
+    print("\n[la-pca-factor-param-count, la-ps-sample-cov-rank]")
     n, k = 500, 10
     check("free parameters in a 500 x 500 covariance", n * (n + 1) // 2, 125250, 0)
     check("K = 10 factor model: N K + K(K+1)/2 + N", n * k + k * (k + 1) // 2 + n, 5555, 0)
@@ -229,9 +252,25 @@ def optimization_cards() -> None:
     check("closest point to origin on x + 2y = 5: x", point[0], 1.0, 1e-12)
     check("closest point: y", point[1], 2.0, 1e-12)
     check("distance sqrt 5", np.linalg.norm(point), math.sqrt(5), 1e-12)
-    # min x^2 + y^2 s.t. x + y >= 2: x = y = 1, gradient 2x = lambda
-    check("KKT multiplier for x + y >= 2", 2 * 1.0, 2.0, 1e-12)
-    check("optimal value", 2.0, 2.0, 0)
+    ones = np.ones(2)
+
+    def halfspace_projection(b: float) -> np.ndarray:
+        return max(b, 0.0) / (ones @ ones) * ones
+
+    x_star = halfspace_projection(2.0)
+    check("min x^2 + y^2 s.t. x + y >= 2: x", x_star[0], 1.0, 1e-12)
+    check("min x^2 + y^2 s.t. x + y >= 2: y", x_star[1], 1.0, 1e-12)
+    check("optimal value", x_star @ x_star, 2.0, 1e-12)
+    g = np.linspace(-3.0, 3.0, 601)
+    gx, gy = np.meshgrid(g, g)
+    f = np.where(gx + gy >= 2 - 1e-12, gx**2 + gy**2, np.inf)
+    k = np.unravel_index(np.argmin(f), f.shape)
+    check("grid search optimum x (step 0.01)", gx[k], 1.0, 1e-9)
+    check("grid search optimum y", gy[k], 1.0, 1e-9)
+    h = 1e-6
+    lam = (halfspace_projection(2 + h) @ halfspace_projection(2 + h) - halfspace_projection(2 - h) @ halfspace_projection(2 - h)) / (2 * h)
+    check("KKT multiplier for x + y >= 2 (dV/db)", lam, 2.0, 1e-6)
+    check("stationarity residual max |2x - lambda (1, 1)|", np.abs(2 * x_star - lam * ones).max(), 0.0, 1e-6)
 
 
 def taylor_cards() -> None:

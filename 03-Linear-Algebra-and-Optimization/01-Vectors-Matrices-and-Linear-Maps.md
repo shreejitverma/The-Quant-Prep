@@ -259,7 +259,7 @@ GMV weights $\Sigma^{-1}\mathbf{1}/(\mathbf{1}^\top\Sigma^{-1}\mathbf{1})$ come 
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [la_foundations.py](code/la_foundations.py) computes and asserts every number in the worked examples (replication, projection, hedge ratio, Sherman-Morrison).
+- Code: [la_foundations.py](code/la_foundations.py) computes and asserts every number in the worked examples (replication, projection, hedge ratio, Sherman-Morrison); [problem_set.py](code/problem_set.py) asserts the hat-matrix trace card.
 - Next: [Eigendecomposition and the Spectral Theorem](02-Eigendecomposition-and-Spectral-Theorem.md), [SVD and Low-Rank Approximation](03-SVD-and-Low-Rank-Approximation.md), [Linear Regression and OLS](../02-Statistics-and-Econometrics/04-Linear-Regression-OLS.md).
 
 ## Further reading

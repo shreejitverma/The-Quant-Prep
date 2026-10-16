@@ -64,8 +64,15 @@ def replication_incomplete_market() -> None:
     for t in (1e-9, 0.25, 0.5 - 1e-9):
         q = np.array([t, 1 - 2 * t, t])
         assert np.abs(x.T @ q - prices).max() < 1e-12 and np.all(q > 0)
-    check("mid Arrow price bound as t -> 0", 1 - 2 * 0.0, 1.0, 0)
-    check("mid Arrow price bound as t -> 1/2", 1 - 2 * 0.5, 0.0, 0)
+    vertices = []
+    for basis in ((0, 1), (0, 2), (1, 2)):
+        q = np.zeros(3)
+        q[list(basis)] = np.linalg.solve(x[list(basis)].T, prices)
+        if np.all(q >= -1e-12):
+            vertices.append(q)
+    mid = [q[1] for q in vertices]
+    check("mid Arrow price upper bound (max q_2 over vertices, not attained by q > 0)", max(mid), 1.0, 1e-12)
+    check("mid Arrow price lower bound (min q_2 over vertices, not attained by q > 0)", min(mid), 0.0, 1e-12)
 
 
 def min_variance_hedge() -> None:
@@ -275,6 +282,8 @@ def eckart_young_random() -> None:
     err = np.linalg.norm(a - ak)
     check("rank-5 Frobenius error = sqrt(sum tail sigma^2)", err, math.sqrt((s[k:] ** 2).sum()), 1e-9)
     check("rank-5 2-norm error = sigma_6", np.linalg.norm(a - ak, 2), s[k], 1e-9)
+    check("rank-5 Frobenius error (quoted)", err, 29.76, 5e-3)
+    check("rank-5 2-norm error (quoted)", np.linalg.norm(a - ak, 2), 9.33, 5e-3)
     best_random = min(np.linalg.norm(a - q @ (q.T @ a)) for q in (np.linalg.qr(rng.standard_normal((50, k)))[0] for _ in range(200)))
     assert best_random > err, "no random rank-5 projection beats the truncated SVD"
     check("best of 200 random rank-5 projections (seed 7)", best_random, 35.2497, 1e-3)

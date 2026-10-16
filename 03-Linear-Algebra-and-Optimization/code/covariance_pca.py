@@ -100,8 +100,9 @@ def third_correlation_examples() -> None:
     check("angle check: cos(acos 0.9 + acos 0.9)", math.cos(2 * math.acos(0.9)), 0.62, 1e-12)
     check("acos 0.9 in degrees", math.degrees(math.acos(0.9)), 25.842, 1e-3)
     check("maximum angle 2 acos 0.9 in degrees", 2 * math.degrees(math.acos(0.9)), 51.684, 1e-3)
-    check("rho12 rho13 for (0.9, 0.9)", 0.81, 0.81, 0)
-    check("sqrt((1 - 0.81)(1 - 0.81))", math.sqrt(0.19 * 0.19), 0.19, 1e-12)
+    r12 = r13 = 0.9
+    check("rho12 rho13 for (0.9, 0.9)", r12 * r13, 0.81, 1e-12)
+    check("sqrt((1 - 0.81)(1 - 0.81))", math.sqrt((1 - r12**2) * (1 - r13**2)), 0.19, 1e-12)
 
 
 def cholesky_example() -> None:
@@ -118,9 +119,10 @@ def cholesky_example() -> None:
     z = rng.standard_normal((200_000, 3))
     x = z @ low.T
     sample = np.corrcoef(x, rowvar=False)
-    check("simulated rho12 (seed 42, 200k)", sample[0, 1], 0.5, 0.005)
-    check("simulated rho13", sample[0, 2], 0.3, 0.005)
-    check("simulated rho23", sample[1, 2], 0.2, 0.005)
+    check("simulated rho12 (seed 42, 200k)", sample[0, 1], 0.5027, 5e-5)
+    check("simulated rho13", sample[0, 2], 0.3019, 5e-5)
+    check("simulated rho23", sample[1, 2], 0.2015, 5e-5)
+    check("max |simulated - true| correlation", np.abs(sample - c).max(), 0.0, 0.005)
     check("sampling scale 1/sqrt(200000)", 1 / math.sqrt(200_000), 0.0022, 1e-4)
 
 
@@ -285,6 +287,7 @@ def yield_curve_pca() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     vec = vec * np.sign(vec[-1])  # sign convention: positive 30y loading
     share = lam / lam.sum()
     check("total variance (bp^2/day)", lam.sum(), (VOLS_BP**2).sum(), 1e-9)
+    check("total variance (quoted)", lam.sum(), 364.88, 5e-3)
     check("PC1 share", share[0], 0.8634, 1e-4)
     check("PC2 share", share[1], 0.0953, 1e-4)
     check("PC3 share", share[2], 0.0185, 1e-4)
