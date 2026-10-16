@@ -721,8 +721,8 @@ def demo_rfet_and_ses() -> None:
     assert rd.modellable and not rd.passes_24_rule and rd.passes_100_rule
     calibration_start = a - timedelta(days=3 * RFET_WINDOW_DAYS - 1)
     recent_20 = [a - timedelta(days=d) for d in range(0, 360, 18)]
-    earlier_52 = [a - timedelta(days=365 + d) for d in range(0, 728, 14)][:52]
-    long_window = rfet(recent_20 + earlier_52, a, calibration_start, a)
+    earlier_55 = [a - timedelta(days=365 + 13 * i) for i in range(55)]
+    long_window = rfet(recent_20 + earlier_55, a, calibration_start, a)
     assert long_window.observation_days == 20 and long_window.min_obs_in_90_days >= 4
     assert long_window.passes_24_rule and not long_window.passes_100_rule
     assert regulatory_bucket("C", 5.0) == 3 and regulatory_bucket("A", 30.0) == 8 and regulatory_bucket("D", 0.5) == 3
