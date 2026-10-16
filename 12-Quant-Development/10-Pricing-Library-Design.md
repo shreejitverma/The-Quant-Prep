@@ -56,15 +56,22 @@ QuantLib is the reference open-source design and interviewers often ask about it
   `RelinkableHandle<T>::linkTo(...)` swaps what the slot points to (for example from one curve to a bumped curve) and notifies everything that holds the handle.
 - **Term structures.** `YieldTermStructure` exposes `discount(t)`, `zeroRate(...)` and `forwardRate(...)`; `BlackVolTermStructure` exposes `blackVol(t, K)` and `blackVariance(t, K)`.
   Curves built from quotes (bootstrapped curves) observe their quotes and rebuild lazily.
-- **Process.** `GeneralizedBlackScholesProcess` takes handles to the spot quote, dividend curve, risk-free curve and Black vol surface; the Black-Scholes-Merton process is its standard instance.
+- **Process.** `GeneralizedBlackScholesProcess` takes handles to the spot quote, dividend curve, risk-free curve and Black vol surface; `BlackScholesMertonProcess` is the usual subclass.
 - **LazyObject and Instrument.** `Instrument` derives from `LazyObject`.
   `NPV()` calls `calculate()`, which runs `performCalculations()` only if the object is not already calculated; `update()` marks it dirty and forwards the notification.
+  With the build option `QL_FASTER_LAZY_OBJECTS` (on by default in the current CMake and autotools builds, as of 2026-10) a lazy object forwards only the first notification after each calculation and drops the rest until it is recalculated; `alwaysForwardNotifications()` restores forwarding of every notification for one object.
   `freeze()` and `unfreeze()` suspend recalculation, `recalculate()` forces it.
 - **PricingEngine.** An engine owns an `arguments` and a `results` structure.
   `Instrument::setPricingEngine(engine)` registers the instrument with the engine; at pricing time the instrument's `setupArguments(...)` fills the engine's arguments, the engine's `calculate()` fills its results and the instrument's `fetchResults(...)` copies them back.
   `AnalyticEuropeanEngine(process)` is the closed-form engine for European vanillas.
 - **Global evaluation date.** `Settings::instance().evaluationDate()` is a singleton that defines "today" for every object in the process; changing it notifies everything that depends on it.
-  QuantLib can be compiled with a sessions option (`QL_ENABLE_SESSIONS`) that gives each session or thread its own settings.
+  QuantLib can be compiled with a sessions option (`QL_ENABLE_SESSIONS`) that makes singletons, the evaluation date among them, per-thread.
+- **Bulk updates.** `ObservableSettings::instance().disableUpdates(true)` defers notifications while many quotes are set, and `enableUpdates()` then updates each affected observer once.
+
+Term structures carry design choices that interviewers probe.
+A bootstrapped `PiecewiseYieldCurve<Discount, LogLinear>` interpolates log discount factors linearly, which is the same as piecewise-constant instantaneous forwards: positive discount factors and no forward overshoot, at the price of a forward curve with jumps at the pillars.
+Linear interpolation on zero rates gives a sawtooth forward curve; smooth splines give smooth forwards but let one quote move rates far from its pillar, which makes bucketed risk non-local.
+Curves also need a day counter, a calendar, a reference date tied to the evaluation date, and an explicit extrapolation policy; the production version of this service is in [Curve and Surface Service](../18-Pricing-and-Risk-Systems/04-Curve-and-Surface-Service.md).
 
 ```mermaid
 flowchart LR
@@ -201,6 +208,8 @@ A pricing graph is shared mutable state in several places:
 - in-place bumps of shared quotes, which make bump-and-reprice inherently single-threaded per graph;
 - QuantLib's global evaluation date, and engines whose `arguments` and `results` are members.
 
+QuantLib's `QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN` build option does not change this: its documented purpose is safe observer deregistration when objects are destroyed on another thread, as with the asynchronous garbage collectors behind the Java and .NET bindings, and it is slower than the default.
+
 Two calls to `NPV()` on one instrument from two threads race on the cache even though `NPV()` is const.
 Standard remedies, in order of preference:
 
@@ -211,7 +220,8 @@ Standard remedies, in order of preference:
 ### Lifetime and ownership
 
 Observer links are raw back-pointers, so destruction order matters.
-The demo removes both directions of the link in both destructors, and the instrument holds its engine through `std::shared_ptr`; an earlier draft held a raw `PricingEngine*` and AddressSanitizer reported a stack-use-after-scope when a temporary engine died before the instrument switched away from it.
+The demo removes both directions of the link in both destructors, and the instrument holds its engine through `std::shared_ptr`.
+With a raw `PricingEngine*` the demo's engine-swap loop, which hands the instrument a temporary engine per step count, would dangle as soon as each temporary died; AddressSanitizer reports that as a use-after-free, which is why the examples run under ASan in CI.
 QuantLib uses shared pointers (and `Handle`) throughout for the same reason.
 
 ### Versioning and reproducibility
@@ -264,9 +274,9 @@ Monte Carlo with 100,000 antithetic pairs and seed 42 gives $10.4372 \pm 0.0231$
 | ---: | ---: | ---: | ---: |
 | 1 | 9.294e-3 | -8.596e-5 | 9.381e-3 |
 | 0.1 | 9.372e-4 | -8.599e-7 | 9.381e-4 |
-| 0.01 | 9.380e-5 | -8.599e-9 | 9.381e-5 |
+| 0.01 | 9.380e-5 | -8.60e-9 | 9.381e-5 |
 | 1e-3 | 9.381e-6 | -7.741e-11 | 9.381e-6 |
-| 1e-4 | 9.381e-7 | 2.384e-11 | 9.381e-7 |
+| 1e-4 | 9.38e-7 | 2.384e-11 | 9.381e-7 |
 | 1e-5 | 9.341e-8 | -2.959e-10 | 9.381e-8 |
 | 1e-6 | 1.169e-8 | 3.701e-9 | 9.381e-9 |
 | 1e-8 | -5.070e-7 | -4.182e-7 | 9.381e-11 |
@@ -276,8 +286,9 @@ Reading it as you would in an interview:
 the forward error tracks $\tfrac12\Gamma h$ to three figures down to $h = 10^{-4}$, so it is first order;
 the central error falls 100 times per decade of $h$ until about $h = 10^{-3}$, so it is second order;
 below that both are swamped by round-off, which grows like $1/h$, and at $h = 10^{-10}$ the "derivative" is wrong in the fifth decimal.
-The best forward error here is about $10^{-8}$ near $h = 10^{-6}$, and the best central error is a few $10^{-11}$ near $h = 10^{-3}$ to $10^{-4}$, consistent with $\sqrt\epsilon$ and $\epsilon^{1/3}$ times a spot of 100.
-The rows from $h = 10^{-5}$ down are round-off dominated and their exact digits depend on the platform's `exp` and `erfc`; the program asserts only their size.
+The best forward error here is about $10^{-8}$ near $h = 10^{-6}$, and the best central error is of order $10^{-11}$ near $h = 10^{-3}$ to $10^{-4}$, consistent with $\sqrt\epsilon$ and $\epsilon^{1/3}$ times a spot of 100.
+The forward column from $h = 10^{-5}$ down and the central column from $h = 10^{-3}$ down sit at the round-off floor, so their exact digits depend on the platform's `exp` and `erfc` and on the order of operations (these were printed on macOS arm64); the program asserts only their size.
+Two entries are quoted to three figures because one ulp of price round-off, divided by the bump, already approaches their fourth figure (about $10^{-13}$ for the central difference at $h = 0.01$ and $1.8 \times 10^{-11}$ for the forward difference at $h = 10^{-4}$); every other entry is asserted at the four figures shown.
 With market-standard bumps, central vega with a 1 vol point bump is $37.5210$ against $37.5240$ analytic, and central rho with a 1 bp bump is $53.2325$, equal to analytic at four decimals.
 
 ### 5. AAD on the Black-Scholes formula
@@ -325,13 +336,13 @@ The instrument repriced 4 times (the initial price plus one per step), each time
 > Notifications are cheap flag flips; pricing is expensive. A quote that ticks often must not reprice thousands of instruments nobody reads, so updates only mark dependants dirty, and work happens on the next `NPV()`. In the demo three `NPV()` calls cost one calculation, and a spot change costs one more only when asked.
 
 > [!question]- qd-pricelib-notification-storm | What causes a notification storm, and how do you prevent it?
-> Re-forwarding notifications from objects that are already dirty, and notifying on unchanged values, across a deep, high fan-out graph. Forward only when transitioning from calculated to dirty, compare before notifying in `setValue`, freeze objects during bulk updates, or replace the live graph with batch dependency evaluation.
+> Re-forwarding notifications from objects that are already dirty, and notifying on unchanged values, across a deep, high fan-out graph. Forward only when transitioning from calculated to dirty (QuantLib's default `QL_FASTER_LAZY_OBJECTS` behaviour), compare before notifying in `setValue`, freeze objects or defer notifications (`ObservableSettings::disableUpdates(true)`) during bulk updates, or replace the live graph with batch dependency evaluation.
 
 > [!question]- qd-pricelib-fd-error | Give the error terms of forward and central finite-difference delta.
 > Forward: $\tfrac12\Gamma h$ truncation plus about $2\epsilon\lvert V\rvert/h$ round-off. Central: $\tfrac16 V'''h^2$ truncation plus round-off of the same $1/h$ order. Optimal $h$ scales like $\sqrt\epsilon \approx 1.49 \times 10^{-8}$ (forward) and $\epsilon^{1/3} \approx 6.06 \times 10^{-6}$ (central) times the input's scale.
 
 > [!question]- qd-pricelib-fd-numbers | For the 1-year ATM call ($\Gamma = 0.01876$), what is the forward-difference delta error with $h = 0.01$, and what happens at $h = 10^{-10}$?
-> About $\tfrac12 \times 0.01876 \times 0.01 = 9.38 \times 10^{-5}$ (the demo measures $9.380 \times 10^{-5}$). At $h = 10^{-10}$ round-off dominates and the error is of order $10^{-5}$ ($1.104 \times 10^{-5}$ on the author's machine), worse than a bump of $0.1$ would give.
+> About $\tfrac12 \times 0.01876 \times 0.01 = 9.38 \times 10^{-5}$ (the demo measures $9.380 \times 10^{-5}$). At $h = 10^{-10}$ round-off dominates and the error is of order $10^{-5}$ ($1.104 \times 10^{-5}$ on macOS arm64; the digits are platform-dependent), worse than $h = 10^{-3}$ ($9.381 \times 10^{-6}$) or $h = 10^{-4}$ ($9.38 \times 10^{-7}$).
 
 > [!question]- qd-pricelib-desk-bump | Why do desks bump spot by 1% and vol by 1 point instead of using the optimal tiny $h$?
 > They want the P&L of a realistic move, convexity included, and a bump that is robust to model noise and numerical engines (trees, Monte Carlo). Tiny bumps measure a pure derivative that is fragile under Monte Carlo noise and non-smooth engines.
@@ -358,7 +369,7 @@ The instrument repriced 4 times (the initial price plus one per step), each time
 > No. The lazy cache and `calculated` flag are mutable state written by a const method, so two threads race. Give each thread its own graph, make engines pure functions of an immutable snapshot, or lock around the calculation.
 
 > [!question]- qd-pricelib-global-date | What is the problem with QuantLib's global evaluation date in a multi-threaded risk server?
-> `Settings::instance().evaluationDate()` is process-wide, so two threads valuing as of different dates interfere, and changing it notifies every dependent object. Options are one process per valuation date, or building with QuantLib's sessions option so each thread gets its own settings.
+> `Settings::instance().evaluationDate()` is process-wide, so two threads valuing as of different dates interfere, and changing it notifies every dependent object. Options are one process per valuation date, or building with QuantLib's sessions option (`QL_ENABLE_SESSIONS`) so each thread gets its own singletons.
 
 > [!question]- qd-pricelib-reference-trap | A colleague writes `const auto& r = option.results();`, then bumps spot and reprices, then reads `r.delta`. What do they get?
 > The delta at the bumped spot, not the original: `r` refers to the instrument's cache, which the reprice overwrote. Copy the results when you need a stable snapshot; the repo's demo does exactly that.
@@ -368,6 +379,9 @@ The instrument repriced 4 times (the initial price plus one per step), each time
 
 > [!question]- qd-pricelib-engine-validation | How do you test a new pricing engine?
 > Against known answers (closed form where it exists), against an independent engine on the same instrument within the stated numerical error, against model-free identities (put-call parity, bounds, monotonicity in strike and vol), and with convergence tests in steps or paths. Freeze the results as a regression suite with explicit tolerances.
+
+> [!question]- qd-pricelib-curve-interp | You bootstrap a discount curve. Why is log-linear interpolation on discount factors a common default, and what does it cost?
+> It is equivalent to piecewise-constant instantaneous forwards between pillars, so discount factors stay positive and decreasing whenever the forwards are positive, and each quote's effect stays local to its own interval, which keeps bucketed risk clean. The cost is a forward curve with jumps at the pillars, which matters for products sensitive to forward smoothness; splines smooth the forwards but spread one quote's bump across distant maturities.
 
 > [!question]- qd-pricelib-calibration-graph | How does calibration fit into an observer-based design?
 > The solver sets model-parameter quotes; notifications invalidate the dependent process, engines and calibration instruments; the solver reads their repriced values and iterates. In the demo, Newton on the vol quote reaches $0.241117$ for a call price of 12 in 3 steps with 4 reprices.

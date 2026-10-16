@@ -113,9 +113,9 @@ int main() {
     const double crrTable[6] = {10.4107, 10.4850, 10.4306, 10.4680, 10.4466, 10.4486};
     for (int i = 0; i < 6; ++i) check(near(crrPx[i], crrTable[i], 5e-5), "CRR price table entry");
     std::printf("    N x error for even N: %.3f %.3f %.3f %.3f\n", 50 * crrErr[0], 100 * crrErr[2], 500 * crrErr[4], 1000 * crrErr[5]);
-    check(near(50 * crrErr[0], -1.99, 0.03) && near(100 * crrErr[2], -2.00, 0.03) && near(500 * crrErr[4], -2.00, 0.03) &&
-              near(1000 * crrErr[5], -2.00, 0.03),
-          "even-N CRR error ~ -2.0 / N");
+    check(near(50 * crrErr[0], -1.995, 5e-4) && near(100 * crrErr[2], -1.997, 5e-4) && near(500 * crrErr[4], -1.999, 5e-4) &&
+              near(1000 * crrErr[5], -1.999, 5e-4),
+          "even-N CRR N x error = -1.995 -1.997 -1.999 -1.999 (about -2 / N)");
 
     call.setPricingEngine(std::make_shared<MonteCarloEuropeanEngine>(process, 100000, 42));
     const OptionResults m = call.results();
@@ -152,15 +152,22 @@ int main() {
     // Balancing truncation against round-off: forward h* ~ sqrt(eps) x scale, central h* ~ cbrt(eps) x scale.
     const double eps = std::numeric_limits<double>::epsilon();
     std::printf("    eps %.3e, sqrt(eps) %.2e, cbrt(eps) %.2e\n", eps, std::sqrt(eps), std::cbrt(eps));
+    check(eps == 0x1p-52 && near(eps, 2.220e-16, 5e-20), "eps = 2^-52 = 2.220e-16");
     check(near(std::sqrt(eps), 1.49e-8, 5e-11) && near(std::cbrt(eps), 6.06e-6, 5e-9), "optimal-step constants");
     check(std::fabs(cenErr[4]) < 1e-9, "central at h=1e-4 is accurate to 1e-9");
-    // The table the note quotes. Truncation-dominated entries are deterministic to 3 significant
-    // figures; round-off-dominated entries depend on the platform libm, so only their size is asserted.
-    const double fwdTable[5] = {9.294e-3, 9.372e-4, 9.380e-5, 9.381e-6, 9.381e-7};
-    const double cenTable[3] = {-8.596e-5, -8.599e-7, -8.599e-9};
-    for (int i = 0; i < 5; ++i) check(std::fabs(fwdErr[i] / fwdTable[i] - 1.0) < 2e-3, "forward error table entry");
-    check(std::fabs(fwdErr[5] / 9.341e-8 - 1.0) < 3e-2, "forward error at h=1e-5 (round-off starting to show)");
-    for (int i = 0; i < 3; ++i) check(std::fabs(cenErr[i] / cenTable[i] - 1.0) < 2e-3, "central error table entry");
+    // The table the note quotes, each entry asserted at the rounding the note prints. Two entries are
+    // quoted to 3 figures because one ulp of price round-off is already 1.8e-11 at h = 1e-4 (forward)
+    // and about 1e-13 at h = 0.01 (central), close to the 4th figure. Round-off-dominated entries
+    // (forward from h = 1e-5, central from h = 1e-3) depend on the platform libm and are asserted by size only.
+    const double fwdTable[5] = {9.294e-3, 9.372e-4, 9.380e-5, 9.381e-6, 9.38e-7};
+    const double fwdTol[5] = {5e-7, 5e-8, 5e-9, 5e-10, 5e-10};
+    const double cenTable[3] = {-8.596e-5, -8.599e-7, -8.60e-9};
+    const double cenTol[3] = {5e-9, 5e-11, 5e-12};
+    for (int i = 0; i < 5; ++i) check(near(fwdErr[i], fwdTable[i], fwdTol[i]), "forward error table entry at quoted rounding");
+    // The gamma h / 2 column is 9.381e-3 x h in every row, asserted at the 4 figures printed.
+    for (double h : hs) check(near(0.5 * c.gamma * h, 9.381e-3 * h, 5e-7 * h), "gamma h / 2 column = 9.381e-3 x h");
+    check(std::fabs(fwdErr[5] / 9.341e-8 - 1.0) < 3e-2, "forward error at h=1e-5, platform-dependent: size only");
+    for (int i = 0; i < 3; ++i) check(near(cenErr[i], cenTable[i], cenTol[i]), "central error table entry at quoted rounding");
     for (int i = 3; i < 7; ++i) check(std::fabs(cenErr[i]) < 1e-8, "central error below 1e-8 for h in [1e-6, 1e-3]");
     check(std::fabs(fwdErr[6]) > 1e-9 && std::fabs(fwdErr[6]) < 1e-7, "forward error at h=1e-6 is about 1e-8");
     check(std::fabs(fwdErr[7]) > 1e-8 && std::fabs(fwdErr[7]) < 1e-5 && std::fabs(cenErr[7]) > 1e-8 && std::fabs(cenErr[7]) < 1e-5,
@@ -189,6 +196,9 @@ int main() {
     // dV/dq for a call is -S T exp(-qT) N(d1) = -100 * delta here.
     check(near(g.dividendRho, -100.0 * c.delta, 1e-10), "AAD dividend rho = -S T delta");
     check(g.tapeNodes == 28, "tape has 28 nodes");
+    check(near(g.delta, 0.6368306512, 5e-11) && near(g.vega, 37.524035, 5e-7) && near(g.rho, 53.232482, 5e-7) &&
+              near(g.dividendRho, -63.683065, 5e-7),
+          "printed AAD Greeks 0.6368306512 37.524035 53.232482 -63.683065");
 
     // 6. Calibration: solve the vol quote so the option reprices to a market price of 12.
     const int before = call.recalculations();

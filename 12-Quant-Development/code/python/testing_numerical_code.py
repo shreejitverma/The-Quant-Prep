@@ -96,7 +96,7 @@ def section_float_comparison() -> dict:
         "ulp1": math.ulp(1.0),
         "ulp100": math.ulp(100.0),
         "ulp1e6": math.ulp(1e6),
-        "eps_half": 2.0**-53,
+        "eps_half": math.ulp(1.0) / 2,  # unit roundoff u = 2^-53, derived from the measured ulp at 1.0
         "isclose_default": math.isclose(s, 0.3),
         "isclose_zero": math.isclose(1e-20, 0.0),
         "isclose_zero_abs": math.isclose(1e-20, 0.0, abs_tol=1e-12),
@@ -121,6 +121,9 @@ def section_float_comparison() -> dict:
     assert out["ulp1"] == 2.220446049250313e-16 and out["ulp100"] == 1.4210854715202004e-14
     assert out["ulp1e6"] == 1.1641532182693481e-10
     assert out["eps_half"] == 1.1102230246251565e-16
+    # Note 14 Core concepts and card qd-testing-ulp-size quote these at 3 significant figures.
+    assert f"{out['ulp1']:.2e}" == "2.22e-16" and f"{out['eps_half']:.2e}" == "1.11e-16"
+    assert f"{out['ulp1e6']:.2e}" == "1.16e-10"
     assert out["isclose_default"] and not out["isclose_zero"] and out["isclose_zero_abs"]
     assert out["np_isclose_small"]
     assert out["np_isclose_asym_ab"] is True and out["np_isclose_asym_ba"] is False and out["math_isclose_sym"]
@@ -131,6 +134,18 @@ def section_float_comparison() -> dict:
 # ---------------------------------------------------------------------------
 # 2. Summation order
 # ---------------------------------------------------------------------------
+
+
+def kahan_sum(xs) -> float:
+    """Kahan compensated summation: carry the rounding error of each addition into the next."""
+    total = 0.0
+    comp = 0.0
+    for v in xs:
+        y = v - comp
+        t = total + y
+        comp = (t - total) - y  # what was lost when y was added to total
+        total = t
+    return total
 
 
 def chunked_sum(x: list[float], chunks: int) -> float:
@@ -160,6 +175,7 @@ def section_summation() -> dict:
         "rev_ulps": ulp_distance(rev, exact),
         "distinct_chunk_sums": distinct,
         "worst_ulps": worst,
+        "kahan_ulps": ulp_distance(kahan_sum(x), exact),
         "big_naive": naive_sum(big),
         "big_fsum": math.fsum(big),
         "big_builtin": sum(big),
@@ -169,10 +185,13 @@ def section_summation() -> dict:
     print(f"   100000 uniforms on [-1000, 1000] (SplitMix64 seed 14): fsum = {exact!r}")
     print(f"   ulps from the correctly rounded sum: forward loop {out['fwd_ulps']}, reversed loop {out['rev_ulps']}")
     print(f"   chunked loops with 1, 2, 4, 8, 16 chunks give {distinct} distinct results; worst {worst} ulps")
+    print(f"   Kahan compensated loop: {out['kahan_ulps']} ulps from fsum")
     print(f"   loop over [1e16, 1, -1e16] = {out['big_naive']!r}, fsum = {out['big_fsum']!r}, builtin sum = {out['big_builtin']!r}")
     assert left == 0.6000000000000001 and right == 0.6
+    assert exact == -18009.51879856792  # fsum is correctly rounded, so this is platform-independent
     assert out["fwd_ulps"] == 179 and out["rev_ulps"] == 103
     assert distinct == 5 and worst == 533
+    assert out["kahan_ulps"] == 0
     assert out["big_naive"] == 0.0 and out["big_fsum"] == 1.0
     if sys.version_info >= (3, 12):  # builtin sum() of floats is compensated (Neumaier) from Python 3.12
         assert out["big_builtin"] == 1.0
@@ -228,12 +247,25 @@ def bs_put(s: float, k: float, r: float, sigma: float, t: float) -> float:
     return k * math.exp(-r * t) * norm_cdf(-d2) - s * norm_cdf(-d1)
 
 
+def pinned_normals(seed: int, n: int) -> np.ndarray:
+    """Standard normals from the raw PCG64 stream through Box-Muller.
+
+    The raw 64-bit stream is fixed by the PCG64 algorithm and the seed; Generator.standard_normal
+    is a distribution method that NEP 19 allows to change in feature releases, so a test that pins
+    an exact Monte Carlo estimate builds its normals from the raw stream instead.
+    """
+    raw = np.random.PCG64(seed).random_raw(n + n % 2)
+    u = (raw >> np.uint64(11)).astype(np.float64) * 2.0**-53  # uniforms on [0, 1)
+    radius = np.sqrt(-2.0 * np.log(1.0 - u[0::2]))  # 1 - u is in (0, 1], so the log is finite
+    angle = 2.0 * math.pi * u[1::2]
+    return np.concatenate([radius * np.cos(angle), radius * np.sin(angle)])[:n]
+
+
 def section_mc_tolerance() -> dict:
     s, k, r, sig, t = 100.0, 100.0, 0.05, 0.2, 1.0
     exact = bs_call(s, k, r, sig, t)
-    rng = np.random.default_rng(2024)
     n = 200_000
-    z = rng.standard_normal(n)
+    z = pinned_normals(2024, n)
     st = s * np.exp((r - 0.5 * sig * sig) * t + sig * math.sqrt(t) * z)
     pay = math.exp(-r * t) * np.maximum(st - k, 0.0)
     est = float(pay.mean())
@@ -244,16 +276,16 @@ def section_mc_tolerance() -> dict:
     out = {"exact": exact, "est": est, "se": se, "z": zscore, "p4": p_false_4, "p3": p_false_3}
     print("4. Monte Carlo tolerance")
     print(f"   BS call S=K=100 r=5% vol=20% T=1: {exact:.4f}")
-    print(f"   MC with 200000 paths (seed 2024): {est:.4f}, standard error {se:.4f}, z = {zscore:.2f}")
+    print(f"   MC with 200000 paths (PCG64 raw stream, Box-Muller, seed 2024): {est:.4f}, standard error {se:.4f}, z = {zscore:.2f}")
     print(f"   false-failure probability of a 4-SE two-sided test {p_false_4:.2e}, of a 3-SE test {p_false_3:.2e}")
     print(f"   with 1000 such tests per CI run at 3 SE, expected false failures {1000 * p_false_3:.1f}")
     print(f"   with 1000 such tests per CI run at 4 SE, expected false failures {1000 * p_false_4:.2f}")
-    assert abs(1000 * p_false_4 - 0.06) < 0.005
-    assert abs(exact - 10.4506) < 5e-5
+    # Note 14 example 3 and card qd-testing-mc-tolerance, at the quoted rounding.
+    assert f"{exact:.4f}" == "10.4506"
     assert abs(zscore) < 4.0
-    assert abs(se - 0.033) < 0.002
-    assert abs(p_false_4 - 6.33e-5) < 1e-7 and abs(p_false_3 - 2.70e-3) < 1e-5
-    assert abs(1000 * p_false_3 - 2.7) < 0.05
+    assert f"{est:.4f}" == "10.3970" and f"{se:.4f}" == "0.0328" and f"{zscore:.2f}" == "-1.63"
+    assert f"{p_false_4:.2e}" == "6.33e-05" and f"{p_false_4:.1e}" == "6.3e-05" and f"{p_false_3:.2e}" == "2.70e-03"
+    assert f"{1000 * p_false_3:.1f}" == "2.7" and f"{1000 * p_false_4:.2f}" == "0.06"
     return out
 
 

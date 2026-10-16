@@ -131,7 +131,7 @@ void test_bytes() {
 
 void test_pmr() {
     EXPECT(pmr_heap_allocations(100) == 0);
-    EXPECT(pmr_heap_allocations(1000) >= 1);
+    EXPECT(pmr_heap_allocations(1000) == 1);  // one upstream block for the reserved 8000 bytes
 }
 
 }  // namespace

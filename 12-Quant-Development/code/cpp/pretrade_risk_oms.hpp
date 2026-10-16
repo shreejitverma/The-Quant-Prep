@@ -11,6 +11,11 @@
 //   * Idempotent execution-report handling: duplicates are ignored by ExecID, every report is
 //     reconciled against our own CumQty/LeavesQty, and any inconsistency trips the kill switch
 //     (fail safe: when the books disagree, stop sending).
+//   * The races of the FIX 4.4 order state change matrices (Volume 4, Appendix D, B.1.b to B.1.d):
+//     while our cancel or replace is in flight, a report the venue sent before seeing it carries
+//     the underlying OrdStatus (New or Partially filled), and one sent after carries Pending Cancel
+//     or Pending Replace, which takes precedence even over Filled; both are accepted. An order that
+//     fills completely while a cancel is pending stays pending until the venue's cancel reject.
 //
 // Prices are integer cents and quantities integer shares, so every check is exact.
 // Single-threaded by design: a real gateway pins this to one core and feeds it from a queue.
@@ -60,6 +65,9 @@ enum class ExecType : char {
 inline bool isTerminal(OrdStatus s) {
     return s == OrdStatus::Filled || s == OrdStatus::Canceled || s == OrdStatus::Rejected || s == OrdStatus::Expired;
 }
+
+// A cancel or replace we sent and the venue has not yet answered.
+inline bool isPending(OrdStatus s) { return s == OrdStatus::PendingCancel || s == OrdStatus::PendingReplace; }
 
 inline const char* toString(OrdStatus s) {
     switch (s) {
@@ -273,7 +281,7 @@ public:
     ApplyResult onCancelReject(const std::string& requestClOrdId) {
         Order* o = find(requestClOrdId);
         if (o == nullptr) return ApplyResult::UnknownOrder;
-        if (o->status != OrdStatus::PendingCancel && o->status != OrdStatus::PendingReplace) return ApplyResult::IllegalTransition;
+        if (!isPending(o->status)) return ApplyResult::IllegalTransition;
         o->status = restoredStatus(*o);
         o->pendingQty = 0;
         o->pendingPriceCents = 0;
@@ -358,8 +366,9 @@ private:
         if (o.qty <= 0 || o.priceCents <= 0 || o.priceCents > kMaxPriceCents) return RejectReason::InvalidOrder;
         if (o.qty > limits_.maxOrderQty) return RejectReason::MaxQuantity;
         const auto ref = referencePx_.find(o.symbol);
-        if (ref == referencePx_.end() || ref->second <= 0) return RejectReason::NoReferencePrice;  // fail closed
-        // Integer collar: price * 10000 vs ref * (10000 +- bps); kMaxPriceCents keeps the product in range.
+        if (ref == referencePx_.end() || ref->second <= 0 || ref->second > kMaxPriceCents)
+            return RejectReason::NoReferencePrice;  // fail closed
+        // Integer collar: price * 10000 vs ref * (10000 +- bps); kMaxPriceCents keeps both products in range.
         if (o.side == Side::Buy && o.priceCents * 10000 > ref->second * (10000 + limits_.priceCollarBps)) return RejectReason::PriceCollar;
         if (o.side == Side::Sell && o.priceCents * 10000 < ref->second * (10000 - limits_.priceCollarBps)) return RejectReason::PriceCollar;
         if (o.priceCents > std::numeric_limits<std::int64_t>::max() / o.qty) return RejectReason::MaxNotional;
@@ -377,13 +386,16 @@ private:
     }
 
     bool throttleAllows(std::uint64_t nowNs) {
-        while (!sent_.empty() && nowNs - sent_.front() >= limits_.throttleWindowNs) sent_.pop_front();
+        // Expire only entries that are really older than the window: a clock that steps backwards
+        // must not wrap the unsigned difference and empty the window (that would fail open).
+        while (!sent_.empty() && nowNs >= sent_.front() && nowNs - sent_.front() >= limits_.throttleWindowNs) sent_.pop_front();
         return sent_.size() < limits_.maxMessagesPerWindow;
     }
     void recordMessage(std::uint64_t nowNs) { sent_.push_back(nowNs); }
 
     bool isRepeat(const NewOrder& o, std::uint64_t nowNs) {
-        while (!recentOrders_.empty() && nowNs - recentOrders_.front().t >= limits_.repeatWindowNs) recentOrders_.pop_front();
+        while (!recentOrders_.empty() && nowNs >= recentOrders_.front().t && nowNs - recentOrders_.front().t >= limits_.repeatWindowNs)
+            recentOrders_.pop_front();
         for (const Recent& r : recentOrders_)
             if (r.symbol == o.symbol && r.side == o.side && r.qty == o.qty && r.px == o.priceCents) return true;
         return false;
@@ -400,19 +412,32 @@ private:
         return RejectReason::None;
     }
 
+    // The status the venue reports while it has not yet seen our pending cancel or replace.
+    OrdStatus underlying(const Order& o) const { return isPending(o.status) ? restoredStatus(o) : o.status; }
+    void setUnderlying(Order& o, OrdStatus s) {
+        if (isPending(o.status)) {
+            statusBeforePending_[o.key] = s;  // pending states take precedence in OrdStatus
+        } else {
+            o.status = s;
+        }
+    }
+
     ApplyResult apply(Order& o, const ExecReport& er) {
         switch (er.execType) {
             case ExecType::PendingNew:
-                if (o.status != OrdStatus::PendingNew) return ApplyResult::IllegalTransition;
-                return ApplyResult::Applied;
+                if (underlying(o) != OrdStatus::PendingNew) return ApplyResult::IllegalTransition;
+                return reconcile(o, er);
             case ExecType::New:
-                if (o.status != OrdStatus::PendingNew) return ApplyResult::IllegalTransition;
-                o.status = OrdStatus::New;
+                // The ack may arrive after we already sent a cancel or replace (Appendix D, B.1.d).
+                if (underlying(o) != OrdStatus::PendingNew) return ApplyResult::IllegalTransition;
+                setUnderlying(o, OrdStatus::New);
                 return reconcile(o, er);
             case ExecType::Rejected:
-                if (o.status != OrdStatus::PendingNew) return ApplyResult::IllegalTransition;
+                if (underlying(o) != OrdStatus::PendingNew) return ApplyResult::IllegalTransition;
                 o.status = OrdStatus::Rejected;
                 o.leavesQty = 0;
+                o.pendingQty = 0;
+                o.pendingPriceCents = 0;
                 return reconcile(o, er);
             case ExecType::Trade: {
                 // A fill may arrive while a cancel or replace is pending, or before the New ack.
@@ -422,19 +447,17 @@ private:
                 o.leavesQty -= er.lastQty;
                 o.fillNotionalCents += er.lastQty * er.lastPxCents;
                 position_[o.symbol] += o.side == Side::Buy ? er.lastQty : -er.lastQty;
-                if (o.leavesQty == 0) {
-                    o.status = OrdStatus::Filled;
-                } else if (o.status == OrdStatus::New || o.status == OrdStatus::PendingNew) {
-                    o.status = OrdStatus::PartiallyFilled;
-                } else if (o.status == OrdStatus::PendingCancel || o.status == OrdStatus::PendingReplace) {
-                    statusBeforePending_[o.key] = OrdStatus::PartiallyFilled;  // pending states take precedence
-                }
+                // While a cancel is pending, even a completing fill leaves OrdStatus at Pending Cancel
+                // (Appendix D, B.1.c); the venue's cancel reject then reports Filled.
+                setUnderlying(o, o.leavesQty == 0 ? OrdStatus::Filled : OrdStatus::PartiallyFilled);
                 return reconcile(o, er);
             }
             case ExecType::PendingCancel:
+                if (o.status != OrdStatus::PendingCancel) return ApplyResult::IllegalTransition;
+                return reconcile(o, er);
             case ExecType::PendingReplace:
-                if (o.status != OrdStatus::PendingCancel && o.status != OrdStatus::PendingReplace) return ApplyResult::IllegalTransition;
-                return ApplyResult::Applied;
+                if (o.status != OrdStatus::PendingReplace) return ApplyResult::IllegalTransition;
+                return reconcile(o, er);
             case ExecType::Canceled:
             case ExecType::Expired:
                 // Solicited (after our cancel) or unsolicited (IOC remainder, end of day) cancel.
@@ -442,26 +465,36 @@ private:
                 o.status = er.execType == ExecType::Canceled ? OrdStatus::Canceled : OrdStatus::Expired;
                 o.leavesQty = 0;
                 o.pendingQty = 0;
+                o.pendingPriceCents = 0;
                 return reconcile(o, er);
             case ExecType::Replaced:
                 if (o.status != OrdStatus::PendingReplace) return ApplyResult::IllegalTransition;
-                o.orderQty = o.pendingQty;
+                // Fills that crossed the replace may have used up the new quantity: the venue then
+                // amends the order quantity to CumQty and reports Filled (Appendix D, C.3.b and C.3.c).
+                o.orderQty = std::max(o.pendingQty, o.cumQty);
                 o.priceCents = o.pendingPriceCents;
                 o.leavesQty = o.orderQty - o.cumQty;
                 o.currentClOrdId = er.clOrdId;
                 o.pendingQty = 0;
                 o.pendingPriceCents = 0;
-                o.status = o.cumQty > 0 ? OrdStatus::PartiallyFilled : OrdStatus::New;
+                if (o.leavesQty == 0) {
+                    o.status = OrdStatus::Filled;
+                } else {
+                    o.status = o.cumQty > 0 ? OrdStatus::PartiallyFilled : OrdStatus::New;
+                }
                 return reconcile(o, er);
         }
         return ApplyResult::IllegalTransition;
     }
 
     // Our book must agree with the venue's CumQty, LeavesQty and OrdStatus on every report.
-    static ApplyResult reconcile(const Order& o, const ExecReport& er) {
+    // While a cancel or replace is pending the venue may report either the pending status (it has
+    // seen the request) or the underlying one (the report crossed our request on the wire).
+    ApplyResult reconcile(const Order& o, const ExecReport& er) const {
         if (er.cumQty != o.cumQty || er.leavesQty != o.leavesQty) return ApplyResult::Inconsistent;
         if (!isTerminal(o.status) && o.cumQty + o.leavesQty != o.orderQty) return ApplyResult::Inconsistent;
-        if (er.ordStatus != o.status) return ApplyResult::Inconsistent;
+        const bool statusOk = er.ordStatus == o.status || (isPending(o.status) && er.ordStatus == underlying(o));
+        if (!statusOk) return ApplyResult::Inconsistent;
         return ApplyResult::Applied;
     }
 

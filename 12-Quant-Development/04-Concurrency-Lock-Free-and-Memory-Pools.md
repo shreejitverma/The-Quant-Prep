@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [cpp-for-trading-systems]
 est_hours: 5
-sources: [ISO/IEC 14882:2020 (C++20) [intro.races] and [atomics.order], Williams - C++ Concurrency in Action 2nd ed (Manning 2019) ch 5 and 7, Herlihy and Shavit - The Art of Multiprocessor Programming 2nd ed (Morgan Kaufmann 2020) ch 3 and 10, Boehm and Adve - Foundations of the C++ Concurrency Memory Model (PLDI 2008), Sewell Sarkar Owens Zappa Nardelli and Myreen - x86-TSO (CACM 2010), Michael - Hazard Pointers - Safe Memory Reclamation for Lock-Free Objects (IEEE TPDS 2004), Fraser - Practical Lock-Freedom (Cambridge PhD thesis UCAM-CL-TR-579 2004), Treiber - Systems Programming - Coping with Parallelism (IBM RJ 5118 1986), Vyukov - Bounded MPMC queue (1024cores.net), Thompson Farley Barker Gee and Stewart - Disruptor (LMAX technical paper 2011), WG21 P0371R1 (consume discouraged) P2530R3 (hazard pointers) and P2545R4 (RCU)]
+sources: [ISO/IEC 14882:2020 (C++20) [intro.races] and [atomics.order], Williams - C++ Concurrency in Action 2nd ed (Manning 2019) ch 5 and 7, Herlihy Shavit Luchangco and Spear - The Art of Multiprocessor Programming 2nd ed (Morgan Kaufmann 2020) ch 3 and 10, Boehm and Adve - Foundations of the C++ Concurrency Memory Model (PLDI 2008), Boehm - Can Seqlocks Get Along with Programming Language Memory Models (MSPC 2012), Sewell Sarkar Owens Zappa Nardelli and Myreen - x86-TSO (CACM 2010), Michael - Hazard Pointers - Safe Memory Reclamation for Lock-Free Objects (IEEE TPDS 2004), Fraser - Practical Lock-Freedom (Cambridge PhD thesis UCAM-CL-TR-579 2004), Treiber - Systems Programming - Coping with Parallelism (IBM RJ 5118 1986), Vyukov - Bounded MPMC queue (1024cores.net), Thompson Farley Barker Gee and Stewart - Disruptor (LMAX technical paper 2011), WG21 P0371R1 (consume discouraged) P3475 (consume deprecated in C++26) P2530R3 (hazard pointers) and P2545R4 (RCU)]
 ---
 
 # Concurrency, Lock-Free Queues and Memory Pools
@@ -13,11 +13,11 @@ sources: [ISO/IEC 14882:2020 (C++20) [intro.races] and [atomics.order], Williams
 ## TL;DR
 
 - A data race (two threads, one writing, no happens-before between them, not both atomic) is undefined behaviour; atomics plus memory orders create the happens-before edges that make plain data safe to share.
-- Release on the writer and acquire on the reader is enough for message passing (the pattern inside every queue); only `seq_cst` forbids the store-buffering outcome that breaks Dekker-style flags.
+- Release on the writer and acquire on the reader is enough for message passing (the pattern inside every queue); only `seq_cst` (operations or fences) forbids the store-buffering outcome that breaks Dekker-style flags.
 - The SPSC ring buffer is the workhorse between pinned threads: one writer per index, release to publish, acquire to consume, cached copies of the other side's index, indices padded onto separate cache lines.
 - Lock-free structures that recycle nodes must solve ABA (tags, or never-freed index pools) and reclamation (hazard pointers, epochs, RCU); bounded index-based designs sidestep both.
-- Steady state must not allocate: object pools and arenas measured about 1.6 and 1.3 ns per allocate-and-free on the test machine, against 12.5 ns for `new`/`delete`, and their latency does not depend on allocator state.
-- Prove lock-free code with ThreadSanitizer, not with passing tests: weakening one acquire to relaxed in the SPSC ring still passed its functional checksum but TSan reported the race.
+- Steady state must not allocate: object pools and arenas measured about 2.0 and 1.3 ns per allocate-and-free on the test machine, against 11.9 ns for `new`/`delete`, and their latency does not depend on allocator state.
+- Prove lock-free code with ThreadSanitizer, not with passing tests: weakening one acquire to relaxed in the SPSC ring passed its functional checksum in 10 of 20 runs on the test machine, while TSan reported the race on every run.
 
 ## Learning objectives
 
@@ -32,7 +32,7 @@ sources: [ISO/IEC 14882:2020 (C++20) [intro.races] and [atomics.order], Williams
 ### The C++ memory model in five definitions
 
 - Sequenced-before: the order of evaluations within one thread.
-- Synchronizes-with: a release store (or stronger) to an atomic synchronizes with an acquire load (or stronger) that reads the value it wrote.
+- Synchronizes-with: a release store (or stronger) to an atomic synchronizes with an acquire load (or stronger) that reads the value it wrote, or any later value in its release sequence (since C++20, the unbroken run of read-modify-writes that follow it in modification order); a release fence followed by any store, read by any load followed by an acquire fence, synchronizes the two fences the same way.
 - Happens-before: the transitive closure of sequenced-before and synchronizes-with (plus inter-thread rules); if A happens-before B, B sees A's effects.
 - Data race: two conflicting accesses (same location, at least one write) in different threads, at least one not atomic, neither happening before the other; a program with a data race has undefined behaviour ([intro.races]).
 - Modification order: every atomic object has a single total order of writes that all threads agree on, even with `relaxed`.
@@ -44,7 +44,7 @@ sources: [ISO/IEC 14882:2020 (C++20) [intro.races] and [atomics.order], Williams
 | `release` (stores) | Earlier reads and writes cannot move after it | Producer publishing a slot |
 | `acq_rel` (read-modify-write) | Both | CAS that both takes and publishes |
 | `seq_cst` | Acquire/release plus one total order over all `seq_cst` operations | Flags where store-then-load ordering matters (Dekker, Peterson); the default |
-| `consume` | Intended dependency ordering; discouraged since P0371R1 and implemented as `acquire` by mainstream compilers | Do not use |
+| `consume` | Intended dependency ordering; discouraged since P0371R1 (C++17), implemented as `acquire` by mainstream compilers, deprecated in C++26 (P3475) | Do not use |
 
 ### Two litmus tests every interviewer knows
 
@@ -54,10 +54,10 @@ With `relaxed` on either side there is no happens-before edge, the access to `da
 
 Store buffering: `x = y = 0`; thread 1 does `x = 1; r1 = y;`, thread 2 does `y = 1; r2 = x;`.
 With release stores and acquire loads, `r1 == 0 && r2 == 0` is allowed, and it happens on x86 too, because each core's store sits in its store buffer while the following load executes.
-Only `seq_cst` on all four operations forbids it, by putting them in one total order.
+Only `seq_cst` on all four operations forbids it, by putting them in one total order (equivalently, a `seq_cst` fence between the store and the load in each thread).
 
 Hardware: x86 is TSO (total store order); the only reordering it shows is a store followed by a later load, so acquire loads and release stores compile to plain `mov`, while a `seq_cst` store needs `xchg` or `mfence`.
-ARMv8 is weakly ordered; acquire and release map to `LDAR` and `STLR`, which also satisfy `seq_cst`.
+ARMv8 is weakly ordered; release stores map to `STLR` and acquire loads to `LDAR`, or to the weaker `LDAPR` on cores with ARMv8.3 RCpc support (Apple clang emits `LDAPR` for the SPSC ring on the test machine); `LDAR` and `STLR` together also satisfy `seq_cst`.
 Code that is correct only because x86 is strong breaks when it is ported, which is one reason to test on ARM too.
 
 ### Progress guarantees
@@ -98,6 +98,21 @@ Design of `SpscQueue` in [lock_free.hpp](code/cpp/lock_free.hpp):
 
 The LMAX Disruptor (Thompson et al., 2011) generalises the same ideas to one ring with many consumers tracking their own sequence numbers.
 
+### Spin locks and seqlocks
+
+`SpinLock` in [lock_free.hpp](code/cpp/lock_free.hpp) is test-and-test-and-set: `lock()` tries `exchange(true, acquire)` and, if the lock was taken, spins on a relaxed load until it looks free before trying again; `unlock()` is `store(false, release)`.
+The acquire RMW pairs with the previous owner's release, so everything done inside one critical section happens-before the next one.
+Spinning on a plain load keeps a shared copy of the line in each waiter's cache instead of bouncing it with failed exchanges, and a `pause` (x86) or `yield` (ARM) hint in the loop eases the spin.
+A spin lock only makes sense for critical sections of a few dozen nanoseconds on dedicated cores: if the owner is preempted, every waiter burns its whole time slice.
+
+`Seqlock<T>` publishes a small snapshot (top of book, a limit set) from one writer to many readers without ever blocking the writer.
+The writer makes the sequence odd, writes the data, then stores the next even value with release; a reader loads the sequence with acquire, copies the data, re-reads the sequence, and keeps the copy only if both reads returned the same even value.
+The data must be atomics (relaxed or stronger), not plain memory: a reader that overlaps a write would otherwise be in a data race, which is undefined behaviour even though the torn copy is thrown away.
+Ordering is the subtle part (Boehm, 2012): the reader's re-read of the sequence must not move before its data loads, and a reader that sees any new data must also see the odd sequence that preceded it.
+The repo version makes the data stores release and the data loads acquire, which gives both properties without fences (free on x86, `STLR` and `LDAPR` per word on ARM); Boehm's fence-based variant is cheaper on ARM.
+Writers are wait-free, readers can retry indefinitely under a continuous stream of writes, so seqlocks suit small, frequently read, less frequently written data.
+In [tests/test_lock_free.cpp](code/cpp/tests/test_lock_free.cpp) three readers check an invariant across four words of every snapshot while the writer publishes 100,000 versions; removing the reader's second sequence check made that test report torn snapshots in each of three runs on the test machine.
+
 ### Memory reclamation and ABA
 
 A Treiber stack pops by reading `head = A` and `next(A) = B`, then `CAS(head, A, B)`.
@@ -113,33 +128,36 @@ When nodes are heap-allocated, freeing them is the hard part:
 | Epoch-based reclamation (Fraser 2004) | Readers enter and leave epochs; memory retired in epoch $e$ is freed once every thread has moved past $e$ | Cheap reads; a stalled reader blocks all reclamation |
 | RCU (read-copy-update) | Readers run without writes; writers publish a new version and free the old after a grace period | Very cheap reads, suited to read-mostly data such as configuration and reference data |
 
-C++26 adds `<hazard_pointer>` (P2530R3) and `<rcu>` (P2545R4) to the standard library.
+C++26 adds `<hazard_pointer>` (P2530R3) and `<rcu>` (P2545R4) to the standard library, both with production implementation experience in Meta's Folly library (P2545R4 notes that Folly implements a near-superset of the RCU proposal).
+As of 2026-10 neither GCC 16's libstdc++ nor Apple clang 21's libc++ ships them (the feature-test macros `__cpp_lib_hazard_pointer` and `__cpp_lib_rcu` are undefined on the test machine), so production code still uses Folly or the userspace RCU library liburcu.
 Trading systems often avoid the problem entirely: bounded rings of values, preallocated index pools, and single-writer ownership.
 
 ### Memory pools and arenas
 
 General-purpose allocators are fast on average but their latency depends on state: size-class lookup, thread-cache refills, page faults on fresh memory, and occasional returns to the OS.
 `ObjectPool<T>` in [memory_pool.hpp](code/cpp/memory_pool.hpp) preallocates blocks of slots and threads a free list through the free slots; `create` pops, `destroy` pushes, both O(1), and the last freed slot is the next used (cache-warm, LIFO).
+`create` unlinks the slot only after the constructor succeeds (and restores the link the constructor may have overwritten if it throws), so a throwing constructor leaks nothing; the test suite checks this.
 `Arena` bumps a pointer through one buffer and frees everything at once with `reset()`, for per-message or per-batch scratch data; it never runs destructors, so it only accepts trivially destructible types and returns `nullptr` when exhausted instead of growing.
 `std::pmr::monotonic_buffer_resource` is the standard-library arena (see [C++ for Trading Systems](02-Cpp-for-Trading-Systems.md)).
 A pool is single-threaded by design; share one across threads only through a lock-free free list such as `TaggedIndexStack` over slot indices, or give each thread its own.
 
 ### Measured on the test machine
 
-[concurrency_bench.cpp](code/cpp/concurrency_bench.cpp), one run on an Apple M3 Pro under macOS, Apple clang 21 at `-O2`, threads not pinned (macOS does not expose hard affinity), machine-dependent:
+[concurrency_bench.cpp](code/cpp/concurrency_bench.cpp), one run on an Apple M3 Pro (6 performance and 6 efficiency cores) under macOS, Apple clang 21 at `-O2`, threads not pinned (macOS does not expose hard affinity), machine-dependent:
 
 | Benchmark | Result |
 | :--- | :--- |
-| SPSC ring, 1 producer and 1 consumer, 5,000,000 items | 14.09 ns per item (71.0 M items/s) |
-| Vyukov MPMC, same transfer | 10.80 ns per item (92.6 M items/s) |
-| Mutex plus `std::deque`, same transfer | 55.30 ns per item (18.1 M items/s) |
-| Ping-pong round trip through two SPSC rings | median 89.2 ns, p99 372.5 ns (means of batches of 100) |
-| `new` plus `delete`, 32-byte object | 12.46 ns per pair |
-| `ObjectPool` create plus destroy | 1.62 ns per pair |
+| SPSC ring, 1 producer and 1 consumer, 5,000,000 items | 6.26 ns per item (159.8 M items/s) |
+| Vyukov MPMC, same transfer | 6.68 ns per item (149.8 M items/s) |
+| Mutex plus `std::deque`, same transfer | 26.06 ns per item (38.4 M items/s) |
+| Ping-pong round trip through two SPSC rings | median 89.2 ns, p99 98.3 ns (means of batches of 100) |
+| `new` plus `delete`, 32-byte object | 11.88 ns per pair |
+| `ObjectPool` create plus destroy | 2.04 ns per pair |
 | `Arena` allocate plus reset | 1.29 ns per allocation |
 
-In this one-producer one-consumer throughput test the two lock-free queues ran within run-to-run noise of each other and their order changed between runs; both were about 4 to 5 times faster than the mutex queue.
-The ping-pong median was 99.6 ns in one run and 236.2 ns in another, depending on which cores the scheduler chose; on a tuned Linux host you pin both threads to isolated cores on the same socket and the variation disappears.
+Across five runs in one session the SPSC transfer ranged from 3.35 to 11.73 ns per item, the MPMC from 6.32 to 6.68 ns and the mutex queue from 23.51 to 26.06 ns, so the mutex queue was 2.1 to 7.6 times slower than the SPSC ring and 3.7 to 3.9 times slower than the MPMC queue.
+In a pure throughput test the two lock-free queues are within run-to-run noise of each other: when the consumer keeps up, the ring runs nearly empty and both sides touch the same slot lines, so thread placement dominates.
+The ping-pong median ranged from 81.2 to 89.2 ns; on a tuned Linux host you pin both threads to isolated performance cores on the same socket and most of the variation disappears.
 
 ## Worked examples
 
@@ -154,8 +172,9 @@ Every pair of conflicting accesses is ordered by happens-before: no data race.
 ### A test that passes on broken code
 
 Change the consumer's `head.load(acquire)` to `relaxed` and run the demo [lock_free_spsc_queue.cpp](code/cpp/lock_free_spsc_queue.cpp), which transfers 200,000 updates and checks sequence numbers and a price checksum.
-On the test machine the functional checks still passed ("received 200000 updates, 0 sequence gaps, price checksum ok"), but the ThreadSanitizer build reported `data race` in `SpscQueue::try_pop`.
-The bug is real (the consumer may read a slot before the producer's write is visible) even when the hardware and timing happen to hide it; only a happens-before checker finds it reliably.
+On the test machine (ARM, so weakly ordered) the `-O2` build passed in 10 of 20 runs ("received 200000 updates, 0 sequence gaps, price checksum ok") and failed in the other 10 with 2 to 16 sequence gaps: the consumer really did read slots before the producer's writes were visible.
+The ThreadSanitizer build reported `data race` in `SpscQueue::try_pop` on every one of 5 runs.
+A single passing stress run proves nothing, and on x86, where the hardware never reorders loads with loads, the stress test can pass every time while the program still has undefined behaviour; only a happens-before checker finds the bug reliably.
 
 ### ABA, step by step
 
@@ -182,6 +201,7 @@ That is the floor for handing a message from a feed-handler thread to a strategy
 - Making everything `relaxed` because "x86 is strongly ordered": the compiler can still reorder, and ARM will.
 - Using `compare_exchange_weak` outside a loop: it may fail spuriously.
 - Computing `size()` of a concurrent queue and acting on it; it is stale the moment it is read.
+  Reading two counters non-atomically can be worse than stale: `head - tail` with head read first can pair an old head with a newer tail and wrap to about $2^{64}$, so `SpscQueue::size()` reads tail first and clamps the result to the capacity (a test samples it from a third thread).
 - Putting the producer and consumer indices in the same cache line, or next to the payload array.
 - Using modulo with a non-power-of-two capacity on the hot path, or wrapping 32-bit indices.
 - Freeing nodes in a lock-free structure without a reclamation scheme.
@@ -198,7 +218,7 @@ That is the floor for handing a message from a feed-handler thread to a strategy
 > A release store keeps earlier reads and writes before it; an acquire load keeps later ones after it. If the acquire reads the value written by the release, everything before the release happens-before everything after the acquire.
 
 > [!question]- qd-conc-seq-cst-why | Give a case where acquire/release is not enough and `seq_cst` is required.
-> Store buffering (Dekker): each thread stores its flag then loads the other's. With acquire/release both can read 0; only `seq_cst` on all four operations puts them in one total order and forbids it.
+> Store buffering (Dekker): each thread stores its flag then loads the other's. With acquire/release both can read 0; only `seq_cst` on all four operations (or a `seq_cst` fence between each thread's store and load) puts them in one total order and forbids it.
 
 > [!question]- qd-conc-x86-vs-arm | Which reorderings does x86 allow, and how does that affect compiled atomics?
 > x86-TSO only lets a later load pass an earlier store to a different address. Acquire loads and release stores are plain `mov`; a `seq_cst` store needs `xchg` or `mfence`. ARMv8 is weak and uses `LDAR`/`STLR`.
@@ -228,7 +248,7 @@ That is the floor for handing a message from a feed-handler thread to a strategy
 > Hazard pointers: readers publish what they dereference, reclamation scans them; bounded garbage, but a store and fence per access. Epochs: cheap reads, memory freed when all threads pass an epoch; one stalled thread blocks all reclamation.
 
 > [!question]- qd-conc-cpp26-reclamation | What does C++26 add for safe memory reclamation?
-> `<hazard_pointer>` (P2530R3) and `<rcu>` (P2545R4): standard hazard pointers and read-copy-update.
+> `<hazard_pointer>` (P2530R3) and `<rcu>` (P2545R4): standard hazard pointers and read-copy-update, both with implementation experience in Folly. As of 2026-10 libstdc++ (GCC 16) and Apple's libc++ do not ship them yet, so production code uses Folly or liburcu.
 
 > [!question]- qd-conc-volatile | Does `volatile` make a variable safe to share between threads?
 > No. It forbids the compiler from eliding or merging accesses but gives no atomicity and no inter-thread ordering; concurrent non-atomic access is still a data race. Use `std::atomic`.
@@ -237,23 +257,32 @@ That is the floor for handing a message from a feed-handler thread to a strategy
 > `weak` may fail spuriously (LL/SC hardware), so use it in a retry loop where a spurious failure just loops; use `strong` when a single attempt's result is acted on.
 
 > [!question]- qd-conc-pool-why | Why use an object pool on the hot path, and what are its limits?
-> O(1) allocate and free with no allocator state dependence, no system calls, cache-warm LIFO reuse. Measured: 1.62 ns per create-destroy pair vs 12.46 ns for new/delete. Limits: fixed object size, single-threaded unless paired with a lock-free free list, capacity planned up front.
+> O(1) allocate and free with no allocator state dependence, no system calls, cache-warm LIFO reuse. Measured: 2.04 ns per create-destroy pair vs 11.88 ns for new/delete. Limits: fixed object size, single-threaded unless paired with a lock-free free list, capacity planned up front.
 
 > [!question]- qd-conc-arena | What is an arena allocator and when is it the right choice?
 > Bump-pointer allocation from one buffer, freed all at once by `reset()`. Ideal for scratch data with a common lifetime (one message, one batch, one request); it cannot free individual objects and must not hold types with non-trivial destructors.
 
 > [!question]- qd-conc-tsan | What does ThreadSanitizer catch that a stress test does not?
-> Data races that did not cause a visible failure in that run: it tracks happens-before and reports conflicting accesses without an ordering edge. Weakening one acquire in the SPSC ring passed the functional checks but TSan reported the race.
+> Data races that did not cause a visible failure in that run: it tracks happens-before and reports conflicting accesses without an ordering edge. Weakening one acquire in the SPSC ring passed the functional checks in 10 of 20 runs on the ARM test machine (and can pass every time on x86), while TSan reported the race on every run.
 
 > [!question]- qd-conc-mutex-vs-lockfree | When is a mutex the better choice than a lock-free queue?
 > When contention is low, critical sections are short, there are many producers and consumers, or simplicity and auditability matter more than a few hundred nanoseconds. Uncontended mutexes are cheap; the cost appears under contention, when threads block in the kernel.
 
+> [!question]- qd-conc-spinlock | Write a spin lock. Which memory orders, and why test-and-test-and-set?
+> `lock`: loop on `exchange(true, acquire)`; while it returns true, spin on `load(relaxed)` with a pause hint until the lock looks free. `unlock`: `store(false, release)`. Acquire on lock and release on unlock order consecutive critical sections; spinning on a load keeps a shared copy of the line in each waiter's cache instead of hammering it with failed RMWs.
+
+> [!question]- qd-conc-seqlock | How does a seqlock work, and what makes it correct in C++?
+> One writer makes the sequence odd, writes the data, then stores the next even value with release; readers load the sequence (acquire), copy the data, re-read the sequence, and retry unless both reads were the same even value. The data must be atomics (relaxed or stronger) to avoid a data race, and the orders must keep the re-read after the data loads and make any new data imply the odd sequence: release data stores and acquire data loads, or Boehm's fence recipe. Writer is wait-free; readers may retry.
+
+> [!question]- qd-conc-release-sequence | A Treiber stack's pop CAS is acquire-only, yet a later pop that reads the head it installed still sees the `next` field written by an earlier push. Why?
+> Release sequences: a release operation heads the run of read-modify-writes that follow it in the atomic's modification order, and an acquire that reads any value in that run synchronizes with the release. Every write to the head is a CAS, so each push's release covers all later pops.
+
 > [!question]- qd-conc-core-to-core | How would you measure core-to-core latency, and what did it come to here?
-> Ping-pong a value between two threads through two SPSC rings and halve the round trip. On the test machine the median round trip was 89.2 ns, about 45 ns one way, with thread placement changing it run to run.
+> Ping-pong a value between two threads through two SPSC rings and halve the round trip. On the test machine the median round trip was 89.2 ns, about 45 ns one way, with thread placement changing it run to run (81.2 to 89.2 ns over five runs).
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [lock_free.hpp](code/cpp/lock_free.hpp) (`SpscQueue`, `MpmcQueue`, `TaggedIndexStack`), [memory_pool.hpp](code/cpp/memory_pool.hpp) (`ObjectPool`, `Arena`), demos [lock_free_spsc_queue.cpp](code/cpp/lock_free_spsc_queue.cpp) and [memory_pool.cpp](code/cpp/memory_pool.cpp), benchmark [concurrency_bench.cpp](code/cpp/concurrency_bench.cpp), tests [tests/test_lock_free.cpp](code/cpp/tests/test_lock_free.cpp) (run under TSan), and [multithreaded_monte_carlo.cpp](code/cpp/multithreaded_monte_carlo.cpp).
+- Code: [lock_free.hpp](code/cpp/lock_free.hpp) (`SpscQueue`, `MpmcQueue`, `TaggedIndexStack`, `SpinLock`, `Seqlock`), [memory_pool.hpp](code/cpp/memory_pool.hpp) (`ObjectPool`, `Arena`), demos [lock_free_spsc_queue.cpp](code/cpp/lock_free_spsc_queue.cpp) and [memory_pool.cpp](code/cpp/memory_pool.cpp), benchmark [concurrency_bench.cpp](code/cpp/concurrency_bench.cpp), tests [tests/test_lock_free.cpp](code/cpp/tests/test_lock_free.cpp) (run under TSan), and [multithreaded_monte_carlo.cpp](code/cpp/multithreaded_monte_carlo.cpp) (task-parallel Monte Carlo with one seeded engine per task and no shared mutable state, checked against Black-Scholes).
 - Related: [Low-Latency Engineering](03-Low-Latency-Engineering.md), [System Design for Trading](06-System-Design-for-Trading.md).
 - [C++ memory model and memory orders (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/C%2B%2B%20Memory%20Model%20and%20Memory%20Orders.md)
 - [Lock-free SPSC ring buffer design (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/Lock-Free%20SPSC%20Ring%20Buffer%20Design.md)
@@ -264,8 +293,9 @@ That is the floor for handing a message from a feed-handler thread to a strategy
 ## Further reading
 
 - Anthony Williams, *C++ Concurrency in Action*, 2nd edition (Manning, 2019), chapter 5 (memory model and atomics) and chapter 7 (lock-free data structures).
-- Maurice Herlihy and Nir Shavit, *The Art of Multiprocessor Programming*, 2nd edition (Morgan Kaufmann, 2020), chapters 3 (correctness and progress) and 10 (queues and ABA).
+- Maurice Herlihy, Nir Shavit, Victor Luchangco and Michael Spear, *The Art of Multiprocessor Programming*, 2nd edition (Morgan Kaufmann, 2020), chapters 3 (correctness and progress) and 10 (queues and ABA).
 - Hans Boehm and Sarita Adve, "Foundations of the C++ Concurrency Memory Model", PLDI 2008.
+- Hans Boehm, "Can Seqlocks Get Along with Programming Language Memory Models?", MSPC 2012.
 - Peter Sewell, Susmit Sarkar, Scott Owens, Francesco Zappa Nardelli and Magnus Myreen, "x86-TSO: A Rigorous and Usable Programmer's Model for x86 Multiprocessors", *Communications of the ACM* 53(7), 2010.
 - Maged Michael, "Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects", *IEEE Transactions on Parallel and Distributed Systems* 15(6), 2004.
 - Keir Fraser, *Practical Lock-Freedom*, PhD thesis, University of Cambridge, technical report UCAM-CL-TR-579, 2004.

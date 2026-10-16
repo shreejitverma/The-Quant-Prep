@@ -185,6 +185,19 @@ int main() {
         std::printf("  %-15s p50 %5llu ns  p99 %6llu ns  p99.9 %7llu ns\n", kinds[k], static_cast<unsigned long long>(e.by_kind[k].p50),
                     static_cast<unsigned long long>(e.by_kind[k].p99), static_cast<unsigned long long>(e.by_kind[k].p999));
     std::printf("  max over all operations %llu ns\n", static_cast<unsigned long long>(e.max));
+    // Observed granularity: the median nonzero advance of the raw counter. On Apple M3 the AArch64
+    // virtual counter reports 1 GHz but advances in steps of about 42 ns.
+    const double hz = qpbench::cycle_counter_hz();
+    std::vector<std::uint64_t> steps(1001);
+    for (auto& st : steps) {
+        const std::uint64_t c0 = qpbench::cycle_counter();
+        std::uint64_t c1 = c0;
+        while (c1 == c0) c1 = qpbench::cycle_counter();
+        st = c1 - c0;
+    }
+    std::nth_element(steps.begin(), steps.begin() + 500, steps.end());
+    std::printf("  latency counter reports %.0f Hz and advances in steps of %.0f ns (median): percentiles are quantised to that step\n",
+                hz, static_cast<double>(steps[500]) * 1e9 / hz);
 
     std::mt19937_64 rng(7);
     std::geometric_distribution<int> depth(0.3);

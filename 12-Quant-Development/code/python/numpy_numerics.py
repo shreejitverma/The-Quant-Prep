@@ -10,6 +10,7 @@ Run: uv run --no-project --with numpy python 12-Quant-Development/code/python/nu
 from __future__ import annotations
 
 import math
+import sys
 import time
 
 import numpy as np
@@ -39,15 +40,19 @@ def broadcasting() -> None:
         raise AssertionError("expected a broadcasting error")
     except ValueError as e:
         print("r - r.mean(axis=1) raises:", str(e).split(" with shapes")[0])
+        assert "operands could not be broadcast together" in str(e)
     e2 = r - r.mean(axis=1, keepdims=True)
     assert np.abs(e2.mean(axis=1)).max() < 1e-15
     # Pairwise distance matrix without loops: (n,1,k) - (1,n,k) -> (n,n,k).
     x = rng.normal(size=(100, 3))
-    dist = np.sqrt(((x[:, None, :] - x[None, :, :]) ** 2).sum(-1))
-    tmp_small, tmp_big = 100 * 100 * 3 * 8, 100_000 * 100_000 * 3 * 8
+    diff = x[:, None, :] - x[None, :, :]
+    dist = np.sqrt((diff**2).sum(-1))
+    tmp_small = diff.nbytes  # the temporary actually materialised at n = 100
+    tmp_big = tmp_small * (100_000 // 100) ** 2  # the (n, n, 3) temporary scales as n^2
     print("pairwise distance matrix shape:", dist.shape, "temporary bytes:", tmp_small, "at n=1e5:", f"{tmp_big / 1e9:.0f} GB")
-    assert tmp_small == 240_000 and tmp_big == 240e9
+    assert diff.shape == (100, 100, 3) and tmp_small == 240_000 and f"{tmp_big / 1e9:.0f}" == "240"
     print(f"temporary bytes at n=1e5: {tmp_big:.1e}")
+    assert f"{tmp_big:.1e}" == "2.4e+11"
     assert dist.shape == (100, 100) and np.allclose(np.diag(dist), 0.0)
 
 
@@ -59,8 +64,8 @@ def layout() -> None:
     assert c.strides == (8000, 8) and f.strides == (8, 8000) and c.T.strides == (8, 8000)
     assert c.T.flags["F_CONTIGUOUS"] and not c.T.flags["C_CONTIGUOUS"]
     s = c[:, ::2]
-    print("c[:, ::2] strides:", s.strides, "contiguous:", s.flags["C_CONTIGUOUS"])
-    assert s.strides == (8000, 16) and not s.flags["C_CONTIGUOUS"]
+    print("c[:, ::2] shape:", s.shape, "strides:", s.strides, "contiguous:", s.flags["C_CONTIGUOUS"])
+    assert s.shape == (1000, 500) and s.strides == (8000, 16) and not s.flags["C_CONTIGUOUS"]
     print("float32 (1000,1000) bytes:", np.zeros((1000, 1000), np.float32).nbytes)
     assert np.zeros((1000, 1000), np.float32).nbytes == 4_000_000
 
@@ -101,14 +106,16 @@ def floats() -> None:
     s = 0.1 + 0.2
     print("0.1 + 0.2 =", repr(s), " == 0.3:", s == 0.3, " difference:", repr(s - 0.3))
     assert s != 0.3 and s - 0.3 == 2.0**-54
+    assert repr(s) == "0.30000000000000004" and f"{s - 0.3:.2e}" == "5.55e-17"
     print("isclose(0.1 + 0.2, 0.3):", math.isclose(s, 0.3))
     assert math.isclose(s, 0.3)
     e64, e32 = np.finfo(np.float64).eps, np.finfo(np.float32).eps
     print("eps float64:", repr(float(e64)), " eps float32:", repr(float(e32)))
     assert e64 == 2.0**-52 and e32 == 2.0**-23
+    assert f"{e64:.2e}" == "2.22e-16" and f"{e32:.2e}" == "1.19e-07"
     print("float32(16777217) =", int(np.float32(16777217)), " float64(2**53 + 1) =", int(np.float64(2**53 + 1)))
     assert int(np.float32(16777217)) == 16777216 and int(np.float64(2**53 + 1)) == 2**53
-    # Prices as float32 lose cents above 2**24 / 100 dollars of resolution needs.
+    # float32 has 24 significand bits: above 131,072 its spacing is 1/64 > 0.01, so neighbouring cent prices collide.
     p = np.float32(123456.78)
     print("float32(123456.78) =", repr(float(p)), " error:", f"{abs(float(p) - 123456.78):.6f}")
     assert float(p) == 123456.78125
@@ -129,9 +136,11 @@ def summation() -> None:
     print(f"float32 n=1e7 of 0.1: exact {exact:.4f}, sequential {seq:.4f}, pairwise np.sum {pair:.4f}")
     print(f"sequential relative error {100 * (seq - exact) / exact:.2f}%; stored float32(0.1) = {float(np.float32(0.1)):.15f}")
     assert f"{float(np.float32(0.1)):.15f}" == "0.100000001490116"
-    assert abs(100 * (seq - exact) / exact - 8.79) < 0.005
-    assert abs(exact - 1000000.0149011612) < 1e-6
-    assert abs(seq - 1087937.0) < 1.0
+    assert f"{100 * (seq - exact) / exact:.2f}" == "8.79"
+    assert f"{exact:.4f}" == "1000000.0149"
+    assert seq == 1087937.0
+    # np.sum's blocking (and so its last digits, 1000000.1250 on the author's machine) is platform-dependent;
+    # note 11 labels it so and the claim asserted is only that its error is below 1.
     assert abs(pair - exact) < 1.0
     # float64 with a Python loop versus np.sum versus fsum.
     rng = np.random.default_rng(1)
@@ -142,7 +151,16 @@ def summation() -> None:
     ex = math.fsum(y.tolist())
     print(f"float64 n=1e6: |loop - fsum| {abs(loop - ex):.3e}, |np.sum - fsum| {abs(float(np.sum(y)) - ex):.3e}")
     assert abs(float(np.sum(y)) - ex) <= abs(loop - ex) + 1e-6
-    assert abs(abs(loop - ex) - 1.994e-05) < 5e-8
+    assert f"{abs(loop - ex):.3e}" == "1.994e-05" and f"{abs(loop - ex):.1e}" == "2.0e-05"
+    # Since Python 3.12 the built-in sum() of floats is compensated (Neumaier), unlike a += loop.
+    tenth = [0.1] * 10
+    acc = 0.0
+    for v in tenth:
+        acc += v
+    print(f"sum([0.1] * 10) = {sum(tenth)!r}, += loop = {acc!r}")
+    assert acc == 0.9999999999999999
+    if sys.version_info >= (3, 12):
+        assert sum(tenth) == 1.0
 
 
 def variance() -> None:
@@ -174,7 +192,8 @@ def variance() -> None:
     print(f"sum of squares {sum_sq:.3e}, its ulp {float(np.spacing(sum_sq))}")
     assert abs(sum_sq - 4.00000008e18) < 1e10 and np.spacing(sum_sq) == 512.0
     assert wv == 30.0 and tp == 30.0 and nv != 30.0
-    assert nv == -170.66666666666666
+    assert nv == -170.66666666666666 and f"{nv:.2f}" == "-170.67"
+    assert f"{sum_sq:.1e}" == "4.0e+18"
 
 
 def overflow() -> None:
@@ -189,10 +208,11 @@ def overflow() -> None:
     wrong = int((price * qty)[0])
     right = int(price.astype(np.int64)[0] * qty.astype(np.int64)[0])
     print(f"int32 notional {wrong}, int64 notional {right} (= ${right / 1e4:,.2f})")
-    assert right == 2_500_000_000 and wrong == 2_500_000_000 - 2**32
+    assert right == 2_500_000_000 and wrong == -1_794_967_296
+    assert wrong == right - 2**32  # exactly 2^32 less
     u = np.array([3], dtype=np.uint32) - np.array([5], dtype=np.uint32)
     print("uint32 3 - 5 =", int(u[0]))
-    assert int(u[0]) == 2**32 - 2
+    assert int(u[0]) == 4_294_967_294
 
 
 def rolling() -> None:
@@ -218,13 +238,17 @@ def rolling() -> None:
     tail_direct = float(big[-w:].mean())
     err_cs, err_dir = abs(tail_cumsum - tail_exact), abs(tail_direct - tail_exact)
     print(f"rolling mean of 1e8 + noise after 1e6 points: cumsum error {err_cs:.2e}, direct window mean error {err_dir:.2e}")
-    assert 1e-5 < err_cs < 1e-4 and err_dir < 1e-7
+    # Note 11 example 4: cumsum error about 4e-5; the direct mean is off by at most one ulp of 1e8 (about 1.5e-8).
+    # The cumsum is strictly sequential, so its error is deterministic; the direct mean's last bit may vary by platform.
+    assert f"{err_cs:.0e}" == "4e-05"
+    ulp_1e8 = float(np.spacing(1e8))
+    assert err_dir <= ulp_1e8 and f"{ulp_1e8:.1e}" == "1.5e-08"
     # Max drawdown is path dependent but still vectorises with a running maximum.
     pnl = np.array([0.0, 3.0, 1.0, 4.0, -2.0, 5.0, 2.0])
     peak = np.maximum.accumulate(pnl)
     mdd = float((peak - pnl).max())
-    print("max drawdown of", pnl.tolist(), "=", mdd)
-    assert mdd == 6.0
+    print("running peak", peak.tolist(), "max drawdown of", pnl.tolist(), "=", mdd)
+    assert peak.tolist() == [0.0, 3.0, 3.0, 4.0, 4.0, 5.0, 5.0] and mdd == 6.0
 
 
 def ewma_closed_form() -> None:
@@ -234,7 +258,7 @@ def ewma_closed_form() -> None:
     # y_t = (1 - alpha)^t [ y_0 + alpha * sum_{s<=t} x_s (1 - alpha)^{-s} ]
     limit = math.log(np.finfo(np.float64).max) / -math.log(1 - alpha)
     print(f"(1 - alpha)^(-s) overflows float64 for s > {limit:.1f} when alpha = {alpha}")
-    assert abs(limit - 6736.7) < 0.05
+    assert f"{limit:.1f}" == "6736.7" and f"{limit:,.0f}" == "6,737"
 
     def loop(x: np.ndarray) -> np.ndarray:
         y = np.empty_like(x)

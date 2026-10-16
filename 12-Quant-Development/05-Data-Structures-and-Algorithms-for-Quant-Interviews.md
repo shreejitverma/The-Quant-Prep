@@ -15,7 +15,7 @@ sources: [Cormen Leiserson Rivest and Stein - Introduction to Algorithms 4th ed 
 - Quant coding rounds are LeetCode-medium problems in a trading costume: heaps for top-k and merging feeds, two heaps or a monotonic deque for streaming statistics, sweeps for intervals, hash maps for O(1) lookups, DP for trade sequencing, graphs for dependencies and currency arbitrage.
 - State the complexity before coding, and say why the structure achieves it: a heap of size $k$ makes top-$k$ O(n log k); a monotonic deque makes sliding max O(n) because each index enters and leaves once.
 - Streams are the quant twist: you see each tick once, so the answer must update in O(log n) or O(1) per event with bounded memory (running median, rolling max, Welford variance).
-- Numerical care is part of correctness: the naive one-pass variance of 1e9 + (4, 7, 13, 16) returns 0.0 in floating point while Welford's update returns the exact 22.5.
+- Numerical care is part of correctness: the naive one-pass variance of 1e9 + (4, 7, 13, 16) returns -128.0 (a negative variance) in float64 while Welford's update returns the exact 22.5.
 - Test against brute force on random inputs before claiming correctness; every routine here is cross-checked that way in [qd_dsa_patterns.py](code/python/qd_dsa_patterns.py).
 
 ## Learning objectives
@@ -156,8 +156,8 @@ Six assets with high-correlation pairs (0, 1), (1, 2), (3, 4) form 3 clusters: {
 ### Dependency order and currency arbitrage
 
 Dependencies: swap pricer needs the OIS and projection curves, the projection curve needs the OIS curve, the OIS curve and the vol surface need fixings.
-Kahn's order: fixings, ois_curve, projection_curve, swap_pricer, vol_surface; a two-node cycle returns no order.
-Rates USD to EUR 0.9, EUR to GBP 0.8, GBP to USD 1.4: the product around the loop is 1.008, so Bellman-Ford on $-\ln$ weights finds the cycle EUR, GBP, USD.
+Kahn's order, breaking ties alphabetically so the result is reproducible: fixings, ois_curve, projection_curve, swap_pricer, vol_surface; a two-node cycle returns no order.
+Rates USD to EUR 0.9, EUR to GBP 0.8, GBP to USD 1.4, plus a back-quote EUR to USD 1.1: the product around the loop USD, EUR, GBP is 1.008, so Bellman-Ford on $-\ln$ weights finds the cycle EUR, GBP, USD; the two-leg loop USD, EUR, USD multiplies to 0.99 and is not an arbitrage.
 Fewest conversions from CAD to KRW over the edges USD-EUR, EUR-JPY, USD-CAD, JPY-KRW is 4 by BFS.
 
 ### Trading DP
@@ -176,7 +176,9 @@ Splitting clips 7, 2, 5, 10, 8 into at most 2 contiguous child orders, the small
 ### Variance that loses every digit
 
 For 2, 4, 4, 4, 5, 5, 7, 9 Welford gives mean 5, population variance 4 and sample variance 4.571429.
-For $10^9$ + (4, 7, 13, 16) the naive one-pass formula returns 0.0 and Welford returns 22.5, the exact population variance of 4, 7, 13, 16.
+For $10^9$ + (4, 7, 13, 16) the naive one-pass formula with plain left-to-right sums returns -128.0, a negative variance, and Welford returns 22.5, the exact population variance of 4, 7, 13, 16.
+Even exactly rounded sums (`math.fsum`, or the compensated built-in `sum` of Python 3.12 and later) only improve the naive answer to 0.0: the squares near $10^{18}$ are already rounded to multiples of 128, and the sums near $4 \times 10^{18}$ to multiples of 512, before the subtraction.
+The garbage value depends on summation order, so the same formula can print a different wrong number on another machine or library (the [problem set](15-Quant-Dev-Problem-Set.md) shows -170.67 for the sample variance).
 
 ## Pitfalls
 
@@ -263,7 +265,7 @@ For $10^9$ + (4, 7, 13, 16) the naive one-pass formula returns 0.0 and Welford r
 > Binary search the answer $X$ between the largest clip and the total; feasibility (greedily pack clips while the sum stays at most $X$) is monotone in $X$. O(n log(sum)). For 7, 2, 5, 10, 8 and $m = 2$ the answer is 18.
 
 > [!question]- qd-dsa-welford | Why use Welford's algorithm for streaming variance?
-> The naive $\sum x^2 - (\sum x)^2/n$ cancels catastrophically when the mean is large relative to the spread: for $10^9$ + (4, 7, 13, 16) it gives 0.0, while Welford's one-pass update gives the exact 22.5.
+> The naive $\sum x^2 - (\sum x)^2/n$ cancels catastrophically when the mean is large relative to the spread: for $10^9$ + (4, 7, 13, 16) it gives a population variance of -128.0 with left-to-right sums (0.0 even with exactly rounded sums), while Welford's one-pass update gives the exact 22.5.
 
 > [!question]- qd-dsa-hash-worst-case | When is a hash map not O(1)?
 > Worst case O(n) per operation when many keys collide (adversarial input or a weak hash), and an O(n) pause when it rehashes on growth. On a hot path, reserve capacity at startup and use a good hash.

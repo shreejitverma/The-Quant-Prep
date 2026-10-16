@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [order-book-and-matching-engine]
 est_hours: 4
-sources: [Nasdaq - TotalView-ITCH 5.0 Interface Specification version 5.0 (03/06/2015) in protocol-specs, Nasdaq - MoldUDP64 Protocol Specification V1.00, Nasdaq - SoupBinTCP Specification Version 3.00, Nasdaq - OUCH Version 4.2 (updated October 2025), FIX Trading Community - Simple Binary Encoding Technical Specification v1.0, FIX Trading Community - FIX 4.4 specification, Stevens Fenner and Rudoff - UNIX Network Programming Vol 1 3rd ed ch 21 (multicasting)]
+sources: [Nasdaq - TotalView-ITCH 5.0 Interface Specification version 5.0 (03/06/2015) in protocol-specs, Nasdaq - MoldUDP64 Protocol Specification V1.00, Nasdaq - SoupBinTCP Specification Version 3.00, Nasdaq - OUCH Version 4.2 (updated October 2025), FIX Trading Community - Simple Binary Encoding Technical Specification v1.0, FIX Trading Community - FIX 4.4 specification, CME Group Client Systems Wiki - MDP 3.0 SBE Technical Headers and SBE Decoding Example, Linux kernel documentation - ip-sysctl (rp_filter), Stevens Fenner and Rudoff - UNIX Network Programming Vol 1 3rd ed ch 21 (multicasting)]
 ---
 
 # Market Data Feed Handlers and Protocols
@@ -79,10 +79,22 @@ UDP gives no retransmission, no ordering and no flow control, so a slow receiver
 Three mechanisms make it usable:
 
 - **Sequence numbers** on every message (or packet) so loss is detectable.
-- **Redundant lines**: the same sequenced stream on two multicast groups, usually over physically separate networks, so a loss on one line is almost always present on the other.
+- **Redundant lines**: the same sequenced stream on two multicast groups, usually over physically separate networks, so a packet lost on one line almost always arrives on the other.
 - **Recovery services**: a retransmission (re-request) server for small gaps and a snapshot or replay service for large ones or for a late start.
 
 Order entry and recovery sessions use TCP instead, because they need reliable, ordered, point-to-point delivery.
+
+### The receive path: where packets are actually lost
+
+Many gaps are created on your side of the wire, so know every place a packet can die between the exchange and the handler:
+
+- **Switch buffers**: a microburst from many ports into one egress port overflows the switch queue; the drop happens before your host sees anything, and only the other line or a resend can repair it.
+- **NIC receive ring**: if the core draining the ring falls behind (a context switch, a page fault, a burst longer than the ring), new frames find no free descriptor and are dropped; the NIC's drop counters show it.
+- **Socket receive buffer**: with the kernel stack, a datagram that does not fit in `SO_RCVBUF` is discarded and counted as a UDP receive buffer error (`RcvbufErrors` in `/proc/net/snmp` on Linux); the requested size is capped by `net.core.rmem_max`.
+- **Reverse-path filtering**: with Linux `rp_filter` in strict mode (1), a packet arriving on an interface that is not the best route back to its source is discarded, which silently kills one line when A and B arrive on different NICs; feed hosts use loose mode (2) or 0 on those interfaces.
+- **The handler itself**: if decode and book building cannot keep up with the burst rate, every buffer above eventually fills.
+
+The fixes are the low-latency toolkit: a dedicated isolated core that busy-polls, kernel bypass (the application reads the NIC rings directly), large rings and buffers sized for the worst burst rather than the average, and drop counters exported to monitoring so a rising count pages someone before a gap does.
 
 ### MoldUDP64 framing
 
@@ -101,7 +113,7 @@ Messages after the first are numbered implicitly: a packet with sequence number 
 Heartbeats are typically sent once per second and carry the next expected sequence number, which is how a receiver notices that the last packet before a quiet period was lost.
 End-of-session packets also carry the next expected sequence number and replace heartbeats for a short while, the last chance to re-request.
 A Request Packet (Session 10, Sequence Number 8, Requested Message Count 2) sent unicast to a re-request server returns a normal downstream packet; if the requested messages do not fit in one UDP packet, only those that fit are returned.
-The receiver flow in the spec is exactly the arbitration logic below: check the session, compare the sequence number with the next expected one, re-request on a mismatch, and handle end of session.
+The spec's example receiver flow is the single-line core of the arbitration logic below: check the session, compare the sequence number with the next expected one, re-request on a mismatch, and handle end of session.
 
 ### SoupBinTCP
 
@@ -162,22 +174,25 @@ For a packet carrying $[s, e)$:
 - $e \le$ `next_expected`: duplicate (the other line already delivered it), drop.
 - $s \le$ `next_expected` $< e$: deliver from `next_expected` onward, advance, then drain any buffered packets that have become contiguous.
 - $s >$ `next_expected`: a gap is open; copy the packet into the reorder buffer and wait.
+  If a packet with the same first sequence is already buffered, keep whichever reaches further: a resend may be packetised differently from the multicast copy.
 
 A heartbeat whose next expected sequence exceeds `next_expected` also opens a gap, even with nothing buffered.
-The gap policy is a latency trade-off: waiting a few microseconds for line B fills almost every single-line loss, while waiting too long stalls every consumer of the book.
-Firms tune the wait from measured A/B skew and fall back to a retransmission request, then to a snapshot when the buffer overflows or the request is refused.
+The gap policy is a latency trade-off: waiting about as long as the measured A/B skew fills almost every single-line loss, while waiting longer stalls every consumer of the book.
+Firms tune the wait from the measured skew distribution and fall back to a retransmission request, then to a snapshot when the buffer overflows or the request is refused.
+On a MoldUDP64 channel an unrecoverable gap taints every instrument on the channel, because you cannot know which stock locates the missing messages touched; feeds that also carry a per-instrument sequence number (CME's `RptSeq`, below) let a handler limit recovery to the instruments that actually skipped.
 
 ```mermaid
 stateDiagram-v2
+    direction LR
     [*] --> Live
-    Live --> GapOpen: packet ahead of next expected or heartbeat beyond it
-    GapOpen --> Live: other line fills the gap, buffer drains
+    Live --> GapOpen: gap seen
+    GapOpen --> Live: other line fills it
     GapOpen --> Retransmitting: wait budget expires
-    Retransmitting --> Live: resend fills the gap, buffer drains
-    Retransmitting --> SnapshotRecovery: resend refused, too slow or gap too large
+    Retransmitting --> Live: resend fills gap
+    Retransmitting --> SnapshotRecovery: resend refused or too slow
     GapOpen --> SnapshotRecovery: reorder buffer full
-    SnapshotRecovery --> Live: apply snapshot then buffered messages after its sequence
-    Live --> Stale: no data and no heartbeat within timeout
+    SnapshotRecovery --> Live: snapshot then newer buffered data
+    Live --> Stale: silent past timeout
     Stale --> SnapshotRecovery: line restored
     note right of SnapshotRecovery
         Book for affected symbols is marked
@@ -193,6 +208,13 @@ stateDiagram-v2
 - **Replay** from the start of the session over SoupBinTCP (log in with sequence 1) is the slow, exact path, used for a cold start or to rebuild a day for research.
 
 During recovery the affected books are stale; strategies must not quote off them, and the stale flag should be part of the normalized event stream.
+
+### Slow consumers and conflation
+
+The exchange will not slow down for you, so a feed handler can never apply back-pressure: if a consumer falls behind, something else must give.
+Consumers that need every event (the book builder itself, the recorder) get a dedicated core or a queue sized for the worst burst, and an overflow is an error that forces recovery.
+Consumers that only need the current state (a slower strategy, a GUI, risk) get a conflated view: the handler overwrites a per-instrument latest-value slot (top of book or a depth snapshot plus a version counter) and the consumer reads the newest value when it is ready, skipping intermediate updates.
+Conflation bounds memory and latency for slow readers at the price of losing the event history, so it is wrong for anything that counts trades or volume.
 
 ### Order entry: OUCH
 
@@ -213,6 +235,14 @@ Cancel Order specifies the new intended order size, so 0 cancels the whole order
   The header layout is the schema's `messageHeader` composite; the v1.0 spec recommends blockLength, templateId, schemaId, version, numGroups and numVarDataFields, six uint16 fields in 12 octets.
   Byte order is a schema attribute, default little-endian, while the optional Simple Open Framing Header (uint32 message length, uint16 encoding type) is always big-endian.
   CME MDP 3.0 uses SBE.
+
+CME MDP 3.0 is the standard contrast to ITCH over MoldUDP64, per CME's Client Systems Wiki (as of 2026-10):
+
+- Every UDP packet starts with a 12-byte technical header: MsgSeqNum (uint32) and SendingTime (uint64, nanoseconds since the Unix epoch).
+- MsgSeqNum numbers packets, not messages, separately per channel, and resets weekly; MoldUDP64 numbers messages.
+- Each message is a uint16 MsgSize followed by the 8-byte SBE header blockLength, templateId, schemaId and version (the first four of the six recommended fields), then the body; everything is little-endian.
+- Book entries carry a per-instrument sequence number `RptSeq`, so a handler can tell which instruments a packet gap actually affected and recover them individually.
+- Prices are integer mantissas with a constant exponent (for example $-9$) declared in the schema rather than sent on the wire.
 
 | Protocol | Encoding | Byte order | Framing and sequencing | Typical use |
 | :--- | :--- | :--- | :--- | :--- |
@@ -245,7 +275,7 @@ The demo encodes sequence 2 of its session and prints:
 ```
 
 Read it against the spec offsets: `41` is `A` (Add Order, 36 bytes); Stock Locate `0001` is 1; Tracking Number 0; Timestamp `1F1ACED9F3E8` is 34,200,000,001,000 ns after midnight, one microsecond after 09:30:00; Order Reference 1; `42` is `B`; Shares `0000012C` is 300; Stock is ASCII `QPDEMO` padded with two spaces; Price `000F4240` is 1,000,000, so with four implied decimals 100.0000.
-In C++ read each field with byte shifts or `memcpy` plus a byte swap, never by casting the buffer to a packed struct pointer: the buffer is unaligned and the cast violates strict aliasing.
+In C++ read each field with `memcpy` into a local plus a byte swap (at `-O2` that is one load and one byte-swap instruction, `bswap` on x86 and `rev` on ARM; byte-shift loops are equally correct but the compiler does not always merge them, so check the assembly on the hot path), never by casting the buffer to a struct pointer: no object of that type lives in the buffer, so the access breaks the aliasing and object-lifetime rules (C++23 adds `std::start_lifetime_as` for exactly this), `#pragma pack` is a compiler extension whose misaligned members cannot safely be bound to pointers or references, and the host is little-endian anyway.
 
 ### 2. Two lines, three losses, one retransmission
 
@@ -265,7 +295,7 @@ Line A loses 4..5, line B loses 6..8, and both lose 11..13; B trails A.
 | A, B | heartbeat 17, end of session 17 | no data | 0 | 11 |
 
 Neither line had 11..13, so the handler sends a Request Packet for sequence 11, count 3; the reply delivers 11..13 and drains the buffered 14..16, 6 messages.
-Totals: 2 gaps detected, 2 packets buffered, 3 duplicate packets dropped, 5 messages first delivered from A, 5 from B, 6 after retransmission, 16 delivered exactly once in order.
+Totals: 2 gaps detected, 2 packets buffered, 3 duplicate packets dropped, 5 messages delivered while processing line A arrivals (1..3 and 9..10), 5 while processing the line B arrival that filled the first gap (4..5 plus the A copy of 6..8 it unblocked), 6 on the retransmission (11..13 plus the buffered 14..16), and 16 delivered exactly once in order.
 The 510 bytes of ITCH payload equal the spec lengths summed: $12 + 6 \times 36 + 40 + 2 \times 31 + 2 \times 23 + 35 + 36 + 44 + 19$.
 The rebuilt book has bids 100.0100 x 200 (order 2 replaced into order 6, then 50 executed), 100.0000 x 200 (order 1 after 100 executed with price; order 5 deleted), 99.9900 x 100, and one ask level 100.0200 x 450 (order 3 after a 150 cancel plus order 7 after a 100 cancel); 5 orders are live.
 The demo asserts that this book is identical to the one built from the loss-free stream.
@@ -289,15 +319,18 @@ The unit test `test_heartbeat_reveals_tail_gap` asserts this case.
 
 ## Pitfalls
 
-- Casting the receive buffer to a packed struct: unaligned access and strict-aliasing undefined behaviour, plus host-endian reads of big-endian fields.
+- Casting the receive buffer to a packed struct: aliasing and lifetime undefined behaviour in ISO C++, misaligned member pointers, plus host-endian reads of big-endian fields.
 - Trusting length fields: read a block length, then check it against the bytes remaining before touching the data; deliver a packet only after the whole packet validates.
 - Treating modify messages as absolute sizes: `E`, `C`, `X` are deltas, and `U` needs the side and stock copied from the original order.
 - Applying `P` trades or non-printable `C` executions to volume twice, or `P` to the displayed book at all.
 - Assuming stock locate codes are stable across days.
 - Arbitrating by arrival time instead of sequence number, or dropping a packet that overlaps the next expected sequence instead of delivering its new tail.
 - Waiting forever for line B: every consumer of the book stalls; bound the wait and escalate to retransmission and snapshot.
+- Leaving Linux reverse-path filtering strict on the feed NICs, or `SO_RCVBUF` at its default: one line or a whole burst disappears before the handler sees it.
+- Letting a slow consumer block the handler; give it a conflated latest-value view instead.
 - Quoting from a book that is recovering; publish a stale flag.
 - Converting prices to `double` at the handler: keep integer ticks until the last possible moment.
+  Going the other way, scale with rounding, never truncation: `int(0.57 * 10000)` is 5699 because the product is 5699.999999999999, and truncation mis-scales 5,228 of the 99,999 cent prices from 0.01 to 999.99 ([itch_parser_mock.py](code/python/itch_parser_mock.py) asserts the count).
 - Measuring feed latency as local time minus exchange timestamp without synchronized clocks.
 
 ## Interview questions
@@ -339,13 +372,13 @@ The unit test `test_heartbeat_reveals_tail_gap` asserts this case.
 > Exchange prices are fixed-point integers (ITCH Price(4) has four implied decimals); doubles cannot represent most decimal prices exactly, so equality, level lookup and aggregation by price break. Convert only at the edge that needs a float.
 
 > [!question]- qd-feed-struct-cast | What is wrong with `auto* m = reinterpret_cast<const AddOrder*>(buf);` on a packed struct?
-> Unaligned access and strict-aliasing violations are undefined behaviour, and the fields are big-endian so a little-endian host reads garbage. Read each field with `memcpy` or byte shifts into a local and convert from network order.
+> No `AddOrder` object exists in the buffer, so reading through the pointer is undefined behaviour under the aliasing and lifetime rules (C++23 `std::start_lifetime_as` is the sanctioned route); packing is a compiler extension and its misaligned members cannot be bound to references or pointers; and the fields are big-endian, so a little-endian host reads garbage. Read each field with `memcpy` into a local and convert from network order; at `-O2` that is one load plus one byte-swap instruction.
 
 > [!question]- qd-feed-validate-first | Why validate a whole packet before delivering any message in it?
 > A corrupt later block means the packet cannot be trusted; delivering the first half would advance the sequence and apply messages you then cannot account for. Validate all lengths, then deliver, so a packet is all or nothing.
 
 > [!question]- qd-feed-gap-policy | How long should you wait for line B before requesting a retransmission?
-> Long enough to cover the measured A/B skew tail (typically microseconds on co-located lines) and no longer, because every consumer of the book stalls while you wait. Then request a resend, and fall back to a snapshot when the reorder buffer fills or the request fails.
+> Long enough to cover the tail of the measured A/B skew distribution and no longer, because every consumer of the book stalls while you wait. Then request a resend, and fall back to a snapshot when the reorder buffer fills or the request fails.
 
 > [!question]- qd-feed-snapshot-merge | How do you merge a snapshot with live data?
 > Keep buffering live messages, load the snapshot and its sequence number, discard buffered messages at or below that number, apply the rest in order, then mark the book live. Without the sequence number you cannot know which live messages the snapshot already contains.
@@ -368,9 +401,18 @@ The unit test `test_heartbeat_reveals_tail_gap` asserts this case.
 > [!question]- qd-feed-locate | What is the ITCH stock locate code and what must you not assume about it?
 > A small integer assigned daily from 1 via Stock Directory messages, at the same offset in every message so it can index an array directly. It is stable intraday but must not be assumed stable across days.
 
+> [!question]- qd-feed-where-lost | Your handler reports gaps that the exchange says it never had. Where do you look?
+> On your own side of the wire: switch microburst drops, NIC ring overruns, socket receive buffer overflows (`RcvbufErrors` in `/proc/net/snmp`), strict `rp_filter` discarding one line on a multi-NIC host, and a handler too slow for the burst. Check each drop counter before blaming the venue.
+
+> [!question]- qd-feed-conflation | A risk process cannot keep up with the full feed. What do you do?
+> Give it a conflated view: the handler overwrites a per-instrument latest-value slot with a version counter and the consumer reads the newest state when ready. Never let it back-pressure the handler, since the exchange will not slow down; conflation is wrong only for consumers that must count every event.
+
+> [!question]- qd-feed-mdp3-seq | How does CME MDP 3.0 sequencing differ from MoldUDP64, and why does it matter for recovery?
+> MDP 3.0 numbers packets per channel (uint32 MsgSeqNum in a 12-byte packet header, reset weekly) and adds a per-instrument `RptSeq`; MoldUDP64 numbers messages and has no per-instrument counter. With `RptSeq` a handler can recover only the instruments that skipped, while an unrecoverable MoldUDP64 gap taints every instrument on the channel.
+
 ## In this repo and SDE-Interview-Prep
 
-- Code: [itch50_feed_handler.hpp](code/cpp/itch50_feed_handler.hpp) (ITCH 5.0 decode and encode, MoldUDP64 framing, `LineArbitrator`, `BookBuilder`), the worked session in [itch50_feed_handler.cpp](code/cpp/itch50_feed_handler.cpp), and tests including fuzzing in [test_itch50_feed_handler.cpp](code/cpp/tests/test_itch50_feed_handler.cpp).
+- Code: [itch50_feed_handler.hpp](code/cpp/itch50_feed_handler.hpp) (ITCH 5.0 decode and encode, MoldUDP64 framing, `LineArbitrator` with a bounded reorder buffer that reports `BufferFull` for escalation to a snapshot, `BookBuilder`), the worked session in [itch50_feed_handler.cpp](code/cpp/itch50_feed_handler.cpp), and tests including fuzzing in [test_itch50_feed_handler.cpp](code/cpp/tests/test_itch50_feed_handler.cpp).
 - Earlier code: [itch_parser_mock.py](code/python/itch_parser_mock.py) (a simplified mock format, not real ITCH) and [udp_receiver_mock.cpp](code/cpp/udp_receiver_mock.cpp).
 - Protocol guides in this repo: [ITCH](../08-Market-Making/Quant-Dev-MM-Guide/07_ITCH_Protocol_Mastery_Guide.md), [OUCH](../08-Market-Making/Quant-Dev-MM-Guide/08_OUCH_Protocol_Mastery_Guide.md), [FIX](../08-Market-Making/Quant-Dev-MM-Guide/09_FIX_Protocol_Mastery_Guide.md); specs in [protocol-specs](protocol-specs/).
 - Related notes: [Order Book and Matching Engine](07-Order-Book-and-Matching-Engine.md), [Low-Latency Engineering](03-Low-Latency-Engineering.md), [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md), [Quant Dev Problem Set](15-Quant-Dev-Problem-Set.md).
@@ -387,4 +429,6 @@ The unit test `test_heartbeat_reveals_tail_gap` asserts this case.
 - Nasdaq, *MoldUDP64 Protocol Specification* V1.00 and *SoupBinTCP* Version 3.00, from nasdaqtrader.com technical specifications.
 - Nasdaq, *O\*U\*C\*H Version 4.2*, nasdaqtrader.com trading products specifications.
 - FIX Trading Community, *Simple Binary Encoding* technical specification v1.0 (github.com/FIXTradingCommunity/fix-simple-binary-encoding), sections Message Structure and Message Schema.
+- CME Group Client Systems Wiki, *MDP 3.0 - SBE Technical Headers* and *MDP 3.0 - SBE Decoding Example* (cmegroupclientsite.atlassian.net): packet header, message header and a byte-by-byte decode.
+- Linux kernel documentation, *IP Sysctl* (`rp_filter`), docs.kernel.org/networking/ip-sysctl.html.
 - W. Richard Stevens, Bill Fenner and Andrew Rudoff, *UNIX Network Programming, Volume 1*, 3rd edition, chapter 21 (multicasting).

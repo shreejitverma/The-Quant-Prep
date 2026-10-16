@@ -69,7 +69,9 @@ Attributes are what make q queries fast:
 | `g#` grouped | hash index from value to row positions | `sym` in the RDB, which is in arrival order |
 | `u#` unique | values unique; hash lookup | keys |
 
-Joins: `aj[`sym`time;trade;quote]` is the as-of join (for each trade row, the quote columns from the last quote with the same `sym` and time at or before the trade's time); `aj0` is the same but takes the time from the matched quote; `wj` (window join) applies aggregations to the quotes inside a time window around each trade.
+Joins: `aj[`sym`time;trade;quote]` is the as-of join (for each trade row, the quote columns from the last quote with the same `sym` and time at or before the trade's time); the result keeps the trade's time, while `aj0` is the same but takes the time from the matched quote.
+`aj` is fast only when the quote table is grouped by `sym` with time ascending within each symbol: `g#` on `sym` in memory, `p#` on disk; KX documents a severe penalty for any other layout.
+`wj` (window join) applies aggregations to the quotes in a closed window $[t + w_0, t + w_1]$ around each trade, and also counts the quote prevailing on entry to the window (quotes are a step function); `wj1` uses only quotes that arrive inside the window.
 Query the HDB with the date constraint first, so only the needed partitions are mapped.
 
 ### Parquet and Arrow
@@ -122,6 +124,7 @@ Variants:
 - `side = right` includes a quote stamped exactly at the trade time; whether that quote was really in force before the trade depends on feed ordering, which is why the sequence number matters.
 - A **tolerance** rejects matches older than a maximum age, so a stale quote from before a halt is not used as the prevailing price.
 - The **forward** join (first quote at or after the trade) uses information published after the trade: look-ahead.
+- A **by** key (pandas `merge_asof(..., by="sym")`, the leading columns of q's `aj`) restricts matches to the same symbol; pandas also requires both frames sorted on the time key and rejects unsorted input.
 
 ### Point-in-time joins
 
@@ -159,7 +162,7 @@ The script also checks the `searchsorted` join against a brute-force scan on 3,0
 
 ### 2. How a forward join biases an effective-spread study
 
-Each trade hits the prevailing quote (half-spread 0.05) and the next quote moves 0.02 toward the trade (impact), plus noise; 50,000 trades, seed 6.
+Each trade hits the prevailing quote (half-spread 0.05) and the next quote moves 0.02 toward the trade (impact), plus Gaussian noise with standard deviation 0.01; 50,000 trades, seed 6.
 The effective half-spread $\text{sign}\times(p - \text{mid})$ measured with the backward join is about 0.050, the truth.
 With the forward join the "mid" is the post-trade quote, so the measured half-spread is about 0.030: the study understates trading costs by 40% because it used the price impact of the very trade it was measuring.
 
@@ -180,7 +183,7 @@ Sorting within a partition is what turns statistics into an index.
 
 200,000 synthetic ticks (int64 nanosecond time with exponential gaps, int64 Price(4) moving in one-cent steps, int32 size, one side byte) are 4,200,000 bytes at 21 bytes per row.
 With zlib level 6 (zlib 1.2.12 on the author's machine): row-oriented records compress 3.27x, the same data stored column by column 4.02x, and columns delta-encoded first (time gaps as int32, price changes as int8) 4.89x.
-Columns put similar values together, and deltas turn slowly varying series into small repeated integers, which is what Parquet's DELTA_BINARY_PACKED and kdb+'s compressed files exploit; the script asserts only the ordering and that the delta layout beats 3x, because the exact sizes depend on the zlib version.
+Columns put similar values together, which is what general-purpose codecs on column files exploit (Parquet's codecs and kdb+'s file compression with gzip, snappy, lz4hc or zstd), and deltas turn slowly varying series into small repeated integers, which is what Parquet's DELTA_BINARY_PACKED encoding adds; the script asserts the three ratios exactly only under zlib 1.2.12 and otherwise only the ordering and that the delta layout beats 3x, because the exact sizes depend on the zlib version.
 
 ### 6. Capacity estimate
 
@@ -227,6 +230,9 @@ An 18 GB day fits in the memory of one large RDB host, the peak rate sets the in
 
 > [!question]- qd-tick-aj-semantics | What does `aj[`sym`time;trade;quote]` return?
 > The trade table with quote columns from, for each trade, the last quote with the same `sym` and time at or before the trade's time. `aj0` returns the matched quote's time instead of the trade's; `wj` aggregates all quotes in a window around each trade.
+
+> [!question]- qd-tick-wj-wj1 | How do q's `wj` and `wj1` differ, and which would you use to compute the time-weighted spread over the 10 seconds before each trade?
+> Both aggregate quotes in a closed window around each trade; `wj` also includes the quote prevailing when the window opens, `wj1` only quotes that arrive inside it. For a time-weighted spread you need the quote in force at the window start (quotes are a step function), so `wj`; `wj1` would drop the opening state of the window whenever no quote arrived at its start.
 
 > [!question]- qd-tick-asof-algorithm | Implement an as-of join on sorted arrays. What is the complexity?
 > Per symbol, `j = searchsorted(quote_times, trade_times, side="right") - 1`, with $-1$ meaning no prior quote: $O(m\log n)$ for $m$ trades and $n$ quotes, or $O(m + n)$ as a merge when both sides are sorted. Validate against a brute-force scan.

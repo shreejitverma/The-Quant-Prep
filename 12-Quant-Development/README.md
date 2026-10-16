@@ -20,19 +20,19 @@ See [SDE-Link-Map](../00-Start-Here/SDE-Link-Map.md) for everything that lives i
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
 | 01 | [The Quant Developer Role and Stack](01-Quant-Developer-Role-and-Stack.md) | D | core | 2 | solid | 16 |
-| 02 | [C++ for Trading Systems](02-Cpp-for-Trading-Systems.md) | D | core | 8 | solid | 20 |
-| 03 | [Low-Latency Engineering](03-Low-Latency-Engineering.md) | D | core | 10 | solid | 21 |
-| 04 | [Concurrency, Lock-Free Queues and Memory Pools](04-Concurrency-Lock-Free-and-Memory-Pools.md) | D | core | 5 | solid | 20 |
+| 02 | [C++ for Trading Systems](02-Cpp-for-Trading-Systems.md) | D | core | 8 | solid | 22 |
+| 03 | [Low-Latency Engineering](03-Low-Latency-Engineering.md) | D | core | 10 | solid | 23 |
+| 04 | [Concurrency, Lock-Free Queues and Memory Pools](04-Concurrency-Lock-Free-and-Memory-Pools.md) | D | core | 5 | solid | 23 |
 | 05 | [Data Structures and Algorithms for Quant Interviews](05-Data-Structures-and-Algorithms-for-Quant-Interviews.md) | RD | core | 20 | solid | 25 |
-| 06 | [System Design for Trading](06-System-Design-for-Trading.md) | D | core | 6 | solid | 18 |
-| 07 | [Order Book and Matching Engine Implementation](07-Order-Book-and-Matching-Engine.md) | D | core | 5 | solid | 18 |
-| 08 | [Market Data Feed Handlers and Protocols](08-Market-Data-Feed-Handlers-and-Protocols.md) | D | core | 4 | solid | 22 |
-| 09 | [Backtester and Exchange Simulator Design](09-Backtester-and-Simulator-Design.md) | D | core | 4 | solid | 20 |
-| 10 | [Pricing Library Design](10-Pricing-Library-Design.md) | D | advanced | 4 | solid | 20 |
-| 11 | [Numerical Python: NumPy, pandas and Numba](11-Numerical-Python-NumPy-and-Numba.md) | RD | core | 3 | solid | 21 |
-| 12 | [Tick Data Storage and Time-Series Databases](12-Tick-Data-Storage-and-Time-Series-Databases.md) | D | advanced | 3 | solid | 20 |
-| 13 | [Risk Checks and Order Management Systems](13-Risk-Checks-and-Order-Management.md) | D | core | 3 | solid | 20 |
-| 14 | [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md) | D | core | 3 | solid | 21 |
+| 06 | [System Design for Trading](06-System-Design-for-Trading.md) | D | core | 6 | solid | 19 |
+| 07 | [Order Book and Matching Engine Implementation](07-Order-Book-and-Matching-Engine.md) | D | core | 5 | solid | 21 |
+| 08 | [Market Data Feed Handlers and Protocols](08-Market-Data-Feed-Handlers-and-Protocols.md) | D | core | 4 | solid | 25 |
+| 09 | [Backtester and Exchange Simulator Design](09-Backtester-and-Simulator-Design.md) | D | core | 4 | solid | 21 |
+| 10 | [Pricing Library Design](10-Pricing-Library-Design.md) | D | advanced | 4 | solid | 21 |
+| 11 | [Numerical Python: NumPy, pandas and Numba](11-Numerical-Python-NumPy-and-Numba.md) | RD | core | 3 | solid | 24 |
+| 12 | [Tick Data Storage and Time-Series Databases](12-Tick-Data-Storage-and-Time-Series-Databases.md) | D | advanced | 3 | solid | 21 |
+| 13 | [Risk Checks and Order Management Systems](13-Risk-Checks-and-Order-Management.md) | D | core | 3 | solid | 21 |
+| 14 | [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md) | D | core | 3 | solid | 22 |
 | 15 | [Quant Dev Problem Set](15-Quant-Dev-Problem-Set.md) | D | core | 6 | solid | 43 |
 
 <!-- qp:moc:end -->

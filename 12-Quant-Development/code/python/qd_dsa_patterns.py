@@ -500,8 +500,9 @@ def main() -> None:
     assert merge_intervals(sessions) == [(570, 660), (780, 900)]
     lifetimes = [(0, 10), (2, 5), (4, 12), (5, 8), (11, 13)]
     mc = max_concurrent(lifetimes)
-    print("max concurrent live orders:", mc)
-    assert mc == 3
+    live_at_4 = sum(1 for s, e in lifetimes if s <= 4 < e)
+    print("max concurrent live orders:", mc, " live at time 4:", live_at_4)
+    assert mc == 3 and live_at_4 == 3
 
     cache = LRUCache(2)
     cache.put("AAPL", 1.0)
@@ -547,9 +548,12 @@ def main() -> None:
 
     rates = {("USD", "EUR"): 0.9, ("EUR", "GBP"): 0.8, ("GBP", "USD"): 1.4, ("EUR", "USD"): 1.1}
     cyc = fx_arbitrage_cycle(rates)
-    product = 0.9 * 0.8 * 1.4
-    print("FX arbitrage cycle:", cyc, f"rate product {product:.3f}")
-    assert cyc is not None and set(cyc) == {"USD", "EUR", "GBP"} and math.isclose(product, 1.008)
+    assert cyc is not None
+    product = math.prod(rates[(cyc[i], cyc[(i + 1) % len(cyc)])] for i in range(len(cyc)))
+    two_leg = rates[("USD", "EUR")] * rates[("EUR", "USD")]
+    print("FX arbitrage cycle:", cyc, f"rate product {product:.3f}, two-leg USD-EUR-USD product {two_leg:.2f}")
+    assert cyc == ["EUR", "GBP", "USD"] and f"{product:.3f}" == "1.008"
+    assert f"{two_leg:.2f}" == "0.99" and two_leg < 1  # the EUR to USD back-quote alone is not an arbitrage
     assert fx_arbitrage_cycle({("USD", "EUR"): 0.9, ("EUR", "USD"): 1 / 0.9 - 1e-6}) is None
 
     hops = bfs_hops([("USD", "EUR"), ("EUR", "JPY"), ("USD", "CAD"), ("JPY", "KRW")], "CAD", "KRW")
@@ -589,12 +593,20 @@ def main() -> None:
 
     n, mean, m2 = welford([2, 4, 4, 4, 5, 5, 7, 9])
     print(f"Welford: n {n}, mean {mean}, population var {m2 / n}, sample var {m2 / (n - 1):.6f}")
-    assert n == 8 and mean == 5 and m2 / n == 4 and math.isclose(m2 / (n - 1), 32 / 7)
+    assert n == 8 and mean == 5 and m2 / n == 4 and f"{m2 / (n - 1):.6f}" == "4.571429"
     big = [1e9 + x for x in (4.0, 7.0, 13.0, 16.0)]
-    naive_var = (sum(x * x for x in big) - sum(big) ** 2 / 4) / 4
+    s1 = s2 = 0.0
+    for x in big:  # plain left-to-right float sums, as a C++ loop would do
+        s1 += x
+        s2 += x * x
+    naive_var = (s2 - s1 * s1 / 4) / 4
+    # Exactly rounded sums (math.fsum; Python 3.12+ built-in sum is also compensated) still lose every digit.
+    naive_exact_sums = (math.fsum(x * x for x in big) - math.fsum(big) ** 2 / 4) / 4
     _, _, m2b = welford(big)
-    print(f"variance of 1e9 + (4, 7, 13, 16): naive one-pass {naive_var}, Welford {m2b / 4}")
-    assert m2b / 4 == 22.5 and naive_var == 0.0  # catastrophic cancellation: every digit lost
+    print(f"variance of 1e9 + (4, 7, 13, 16): naive one-pass {naive_var}, with exactly rounded sums {naive_exact_sums}, Welford {m2b / 4}")
+    assert m2b / 4 == 22.5 and naive_var == -128.0 and naive_exact_sums == 0.0  # catastrophic cancellation
+    print(f"ulp near 1e18: {math.ulp(1e18):.0f}, ulp near 4e18: {math.ulp(4e18):.0f}")
+    assert math.ulp(1e18) == 128 and math.ulp(4e18) == 512
 
     # Brute-force cross-checks on seeded random inputs.
     for _ in range(200):

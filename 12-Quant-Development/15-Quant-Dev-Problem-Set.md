@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [order-book-and-matching-engine, concurrency-lock-free-and-memory-pools, market-data-feed-handlers-and-protocols, backtester-and-simulator-design, risk-checks-and-order-management, testing-trading-and-numerical-code]
 est_hours: 6
-sources: [Nasdaq - TotalView-ITCH 5.0 Interface Specification (version 5.0 - 03/06/2015), Nasdaq - MoldUDP64 Protocol Specification V1.00, 17 CFR 240.15c3-5 - Risk management controls for brokers or dealers with market access (75 FR 69825 - Nov 15 2010), SEC Release No. 34-70694 - In the Matter of Knight Capital Americas LLC (October 16 2013), FIX Trading Community - FIX 4.4 specification, Higham - Accuracy and Stability of Numerical Algorithms 2nd ed (SIAM 2002) ch 1 2 4, Almgren and Chriss - Optimal Execution of Portfolio Transactions - Journal of Risk 3(2) 2000, Borror - Q for Mortals]
+sources: [Nasdaq - TotalView-ITCH 5.0 Interface Specification (version 5.0 - 03/06/2015), Nasdaq - MoldUDP64 Protocol Specification V1.00, 17 CFR 240.15c3-5 - Risk management controls for brokers or dealers with market access (75 FR 69825 - Nov 15 2010), SEC Release No. 34-70694 - In the Matter of Knight Capital Americas LLC (October 16 2013), FIX Trading Community - FIX 4.4 specification, Higham - Accuracy and Stability of Numerical Algorithms 2nd ed (SIAM 2002) ch 1 2 4, Toth Lemperiere Deremble de Lataillade Kockelkoren and Bouchaud - Anomalous Price Impact and the Critical Nature of Liquidity in Financial Markets - Physical Review X 1 021006 (2011), Borror - Q for Mortals]
 ---
 
 # Quant Dev Problem Set
@@ -104,15 +104,20 @@ The two rules bracket reality; a simulator should say which one it uses and repo
 
 "Black-Scholes call, $S = K = 100$, $r = 5\%$, $\sigma = 20\%$, $T = 1$. Analytic delta 0.6368. Which bump size?"
 Forward difference has truncation $\tfrac{h}{2}\Gamma$ and round-off $\epsilon C/h$, optimal near $\sqrt{\epsilon}S = 1.49 \times 10^{-6}$; central difference has truncation $O(h^2)$, optimal near $\epsilon^{1/3}S = 6.06 \times 10^{-4}$.
-Measured errors: forward at its optimal $h$ is $1.7 \times 10^{-8}$, central at its optimal $h$ is $3.0 \times 10^{-11}$.
+Measured errors on the reference machine: forward at its optimal $h$ is $1.7 \times 10^{-8}$, central at its optimal $h$ is $3.0 \times 10^{-11}$.
+Both are mostly truncation, $\tfrac{h}{2}\Gamma = 1.40 \times 10^{-8}$ and $\tfrac{h^2}{6}|\partial^3 C/\partial S^3| = 3.15 \times 10^{-11}$; round-off moves the last digit with the platform's libm.
 With $h = 1$ the errors are $9.29 \times 10^{-3}$ (forward, close to $\Gamma/2 = 0.0094$) and $8.60 \times 10^{-5}$ (central).
-With $h = 10^{-12}$ the central error explodes to the order of $10^{-2}$ ($8.0 \times 10^{-3}$ on the reference machine; the digits depend on libm rounding), because the two prices agree in almost every digit and the difference is round-off.
+With $h = 10^{-12}$ the central error explodes to the order of $10^{-2}$ ($8.0 \times 10^{-3}$ on the reference machine; the digits depend on libm rounding), for two reasons.
+First, $100 \pm 10^{-12}$ is not representable (one ulp at 100 is $1.42 \times 10^{-14}$), so the step actually taken is $0.9948$ times the nominal one, and dividing by the nominal $2h$ alone costs $3.3 \times 10^{-3}$ of delta.
+Second, the two prices agree in almost every digit, so their round-off divided by a tiny $h$ supplies the rest.
+Computing the step as $(S + h) - (S - h)$ removes the first error, not the second.
 
 ### 6. Negative variance from the textbook formula
 
 "Prices are $10^9 + \{4, 7, 13, 16\}$ in some fixed-point unit. Compute the sample variance."
 Exact: mean offset 10, squared deviations $36 + 9 + 9 + 36 = 90$, sample variance $90/3 = 30$.
-The one-pass formula $(\sum x^2 - (\sum x)^2/n)/(n-1)$ in float64 returns $-170.67$: the sums are near $4 \times 10^{18}$ where one ulp is 512, so the subtraction cancels every meaningful digit.
+The one-pass formula $(\sum x^2 - (\sum x)^2/n)/(n-1)$ in float64 with left-to-right sums returns $-170.67$: the sums are near $4 \times 10^{18}$ where one ulp is 512, so the subtraction cancels every meaningful digit.
+Exactly rounded sums (`math.fsum`) only improve that to 0.0, because each square was already rounded; the wrong answer also changes with summation order, which is why the [DSA note](05-Data-Structures-and-Algorithms-for-Quant-Interviews.md) shows a different wrong value for the population variance.
 Welford's update and NumPy's two-pass `np.var(x, ddof=1)` both return exactly 30.
 
 ### 7. Worst-case position check
@@ -207,10 +212,10 @@ With payoff standard deviation 15 and 100,000 paths the standard error is 0.0474
 > Call 10.4506, put 5.5735. Parity check $C - P = K(1 - e^{-rT}) = 4.8771$. Delta 0.6368, gamma 0.018762, vega 37.524 per unit vol.
 
 > [!question]- qd-ps-bump-size | Optimal bump for forward and central difference delta at $S = 100$?
-> Forward about $\sqrt{\epsilon}S = 1.49 \times 10^{-6}$ (error $1.7 \times 10^{-8}$); central about $\epsilon^{1/3}S = 6.06 \times 10^{-4}$ (error $3.0 \times 10^{-11}$). Each balances $O(h)$ or $O(h^2)$ truncation against $\epsilon|f|/h$ round-off.
+> Forward about $\sqrt{\epsilon}S = 1.49 \times 10^{-6}$ (error $1.7 \times 10^{-8}$ on the reference machine); central about $\epsilon^{1/3}S = 6.06 \times 10^{-4}$ (error $3.0 \times 10^{-11}$). Each balances $O(h)$ or $O(h^2)$ truncation against $\epsilon|f|/h$ round-off.
 
 > [!question]- qd-ps-bump-too-small | What happens to a central-difference delta with $h = 10^{-12}$?
-> It is wrong in the third decimal (error of order $10^{-2}$, $8.0 \times 10^{-3}$ on the reference machine). The two prices agree to almost all digits, so the difference is mostly round-off divided by a tiny $h$.
+> It is wrong in the second decimal (error of order $10^{-2}$, $8.0 \times 10^{-3}$ on the reference machine). $100 \pm 10^{-12}$ is not representable, so the step taken is 0.9948 of the nominal one, which alone costs $3.3 \times 10^{-3}$; the rest is round-off in two prices that agree in almost every digit, divided by a tiny $h$.
 
 > [!question]- qd-ps-bump-count | A trade depends on 50 curve pillars and 200 vol nodes. How many pricings for bump-and-reprice sensitivities, and what does AAD change?
 > 251 one-sided or 501 central pricings. Reverse-mode AAD returns all 250 sensitivities from one forward pass and one backward sweep, at a small constant multiple of one pricing and independent of the number of inputs, at the cost of memory for the tape.
@@ -219,7 +224,7 @@ With payoff standard deviation 15 and 100,000 paths the standard error is 0.0474
 > 400,000,000 bytes (381.47 MiB); strides (40000, 8); the transpose is a view with strides (8, 40000). No data moves.
 
 > [!question]- qd-ps-column-sum-cache | Why is summing one column of that C-order array slow?
-> `a[:, 0]` is a view with stride 40,000 bytes, so each of the 10,000 elements sits on its own 64-byte cache line: 640,000 bytes move for 80,000 useful, an 8x amplification, and the prefetcher sees a large stride.
+> `a[:, 0]` is a view with stride 40,000 bytes, so each of the 10,000 elements sits on its own 64-byte cache line: 640,000 bytes move for 80,000 useful, an 8x amplification; every access also lands on a different page (4 KiB on x86 Linux, 16 KiB on Apple silicon, both smaller than the stride), so most hardware prefetchers, which stop at page boundaries, cannot help and the TLB misses too.
 
 > [!question]- qd-ps-broadcast | What shape does broadcasting (3, 1, 5) with (4, 1) give? And (3, 2) with (3,)?
 > (3, 4, 5): align from the right, so (4, 1) acts as (1, 4, 1) and size-1 axes stretch. (3, 2) with (3,) is an error: trailing sizes 2 and 3 differ and neither is 1.
@@ -228,7 +233,7 @@ With payoff standard deviation 15 and 100,000 paths the standard error is 0.0474
 > float32 represents integers exactly only up to $2^{24} = 16{,}777{,}216$; there the ulp is 2, so $2^{24} + 1$ rounds back to $2^{24}$ and single-share updates vanish. Use 64-bit integers.
 
 > [!question]- qd-ps-negative-variance | Sample variance of $10^9 + \{4, 7, 13, 16\}$ by $(\sum x^2 - (\sum x)^2/n)/(n-1)$ in float64?
-> $-170.67$ instead of 30: the sums are near $4 \times 10^{18}$, where one ulp is 512, so the subtraction cancels all meaningful digits. Welford or two-pass gives exactly 30.
+> $-170.67$ with left-to-right sums (0.0 even with exactly rounded sums) instead of 30: the sums are near $4 \times 10^{18}$, where one ulp is 512, so the subtraction cancels all meaningful digits. Welford or two-pass gives exactly 30.
 
 > [!question]- qd-ps-int32-notional | Price 100.0000 as ITCH Price(4) (1,000,000) times 5,000 shares in int32 arrays: result?
 > 705,032,704 instead of 5,000,000,000: NumPy wraps fixed-width integer arithmetic silently ($5 \times 10^9 - 2^{32}$). Widen to int64 before multiplying.
@@ -291,5 +296,5 @@ With payoff standard deviation 15 and 100,000 paths the standard error is 0.0474
 - 17 CFR 240.15c3-5, Risk management controls for brokers or dealers with market access (75 FR 69825, November 15, 2010).
 - SEC, *In the Matter of Knight Capital Americas LLC*, Release No. 34-70694 (October 16, 2013).
 - Nicholas Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd edition (SIAM 2002), chapters 1, 2 and 4.
-- Robert Almgren and Neil Chriss, "Optimal Execution of Portfolio Transactions", *Journal of Risk* 3(2) (2000).
+- Bence Toth, Yves Lemperiere, Cyril Deremble, Joachim de Lataillade, Julien Kockelkoren and Jean-Philippe Bouchaud, "Anomalous Price Impact and the Critical Nature of Liquidity in Financial Markets", *Physical Review X* 1, 021006 (2011): evidence for and a mechanism behind the square-root impact law.
 - Jeffry Borror, *Q for Mortals*.

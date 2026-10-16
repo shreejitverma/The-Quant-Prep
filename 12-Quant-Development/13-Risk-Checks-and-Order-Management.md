@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [market-making-systems-architecture]
 est_hours: 3
-sources: [SEC Rule 15c3-5 - 17 CFR 240.15c3-5 - Risk management controls for brokers or dealers with market access (75 FR 69825 - Nov. 15 2010), SEC - Risk Management Controls for Brokers or Dealers with Market Access - final rule release (75 Fed. Reg. 69792 - Nov. 15 2010), SEC Release No. 34-70694 (Oct. 16 2013) - In the Matter of Knight Capital Americas LLC, FIX Trading Community - FIX 4.4 specification - ExecutionReport and the OrdStatus (39) and ExecType (150) code sets, Commission Delegated Regulation (EU) 2017/589 (MiFID II RTS 6) on algorithmic trading controls]
+sources: [SEC Rule 15c3-5 - 17 CFR 240.15c3-5 - Risk management controls for brokers or dealers with market access (75 FR 69825 - Nov. 15 2010), SEC - Risk Management Controls for Brokers or Dealers with Market Access - final rule release (75 Fed. Reg. 69792 - Nov. 15 2010), SEC Release No. 34-70694 (Oct. 16 2013) - In the Matter of Knight Capital Americas LLC, FIX Trading Community - FIX 4.4 specification - ExecutionReport - the OrdStatus (39) and ExecType (150) code sets and the Volume 4 Appendix D order state change matrices, Commission Delegated Regulation (EU) 2017/589 (MiFID II RTS 6) on algorithmic trading controls]
 ---
 
 # Risk Checks and Order Management Systems
@@ -98,12 +98,16 @@ How each clause becomes code:
 | (c)(1)(ii) "price or size parameters, on an order-by-order basis" | price collar, max quantity, max notional | `PriceCollar`, `MaxQuantity`, `MaxNotional` |
 | (c)(1)(ii) "or over a short period of time" | message and volume throttles | `Throttle` |
 | (c)(1)(ii) "indicate duplicative orders" | unique ClOrdID, repeated identical order detection | `DuplicateClOrdId`, `RepeatedOrder` |
+| (c)(2)(i) pre-order regulatory requirements | for example Regulation SHO: mark every sell long, short or short exempt (Rule 200(g)) and have a locate before a short sale (Rule 203(b)) | outside the gateway |
 | (c)(2)(ii) restricted persons or securities | restricted list | `RestrictedSymbol` |
+| (c)(2)(iii) access only for pre-approved persons and accounts | session and account entitlements | outside the gateway |
 | (c)(2)(iv) immediate post-trade reports | drop copy to an independent monitor | outside the gateway |
 
 The EU analogue for firms engaged in algorithmic trading is Commission Delegated Regulation (EU) 2017/589 (RTS 6 under MiFID II); the detailed requirements of both regimes are covered in [Intraday Risk and Pre-Trade Limits](../18-Pricing-and-Risk-Systems/08-Intraday-Risk-and-Pre-Trade-Limits.md).
 
 The SEC's order against Knight Capital (Release No. 34-70694, October 16, 2013) found violations of Rule 15c3-5 after an August 1, 2012 router malfunction in which, per the order, 212 parent orders produced more than 4 million executions in 154 stocks in about 45 minutes; what the order says about controls, deployment and testing is summarised in [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md).
+Two findings map straight onto the design principles below: Knight's position limits "did not account for the firm's exposure from outstanding orders", and its 9.5% price cap on parent orders did not apply to orders received before the open for the opening auction, which is where the 212 parent orders came from.
+The order also found violations of paragraphs (b) (an inadequate written description of the controls), (e) (inadequate reviews) and (e)(2) (the CEO certified that "processes" existed rather than that the controls complied), and of Regulation SHO Rules 200(g) and 203(b).
 
 ### The check catalogue
 
@@ -119,6 +123,7 @@ The SEC's order against Knight Capital (Release No. 34-70694, October 16, 2013) 
 | Throttle | messages over $N$ per rolling window | count only orders that would go out; never throttle cancels | order storms, exchange penalties |
 | Position limit | worst-case position beyond limit | position + all open orders on that side + new order | many small orders that each pass |
 | Credit or capital | gross exposure beyond limit | absolute positions at reference plus open order notional | aggregate exposure across symbols and sides |
+| Self-match prevention | an order that would trade against the firm's own resting order | check the firm's own resting orders, or use the venue's self-trade prevention | wash trades between the firm's own strategies |
 
 Design principles that interviews probe:
 
@@ -144,6 +149,8 @@ Key tags: ClOrdID (11) is the client's id for each request (every cancel and rep
 ExecType (150) says what this report is about; OrdStatus (39) says what state the order is in afterwards.
 FIX 4.4 values of ExecType: 0 New, 3 Done for day, 4 Canceled, 5 Replaced, 6 Pending Cancel, 7 Stopped, 8 Rejected, 9 Suspended, A Pending New, B Calculated, C Expired, D Restated, E Pending Replace, F Trade (partial fill or fill), G Trade Correct, H Trade Cancel, I Order Status; the older values 1 and 2 (partial fill, fill) were replaced by F.
 FIX 4.4 values of OrdStatus: 0 New, 1 Partially filled, 2 Filled, 3 Done for day, 4 Canceled, 5 Replaced (retired in FIX 4.3), 6 Pending Cancel, 7 Stopped, 8 Rejected, 9 Suspended, A Pending New, B Calculated, C Expired, D Accepted for bidding, E Pending Replace.
+When an order is in several states at once, OrdStatus reports the one with the highest precedence, and Pending Cancel and Pending Replace outrank everything else, including Filled.
+The FIX 4.4 order state change matrices (Volume 4, Appendix D) spell out every race below message by message; the scenario ids quoted here are from that appendix.
 
 ```mermaid
 stateDiagram-v2
@@ -151,6 +158,7 @@ stateDiagram-v2
     PendingNew --> New: 150=0
     PendingNew --> Rejected: 150=8
     PendingNew --> PartiallyFilled: 150=F before the ack
+    PendingNew --> PendingCancel: 35=F sent before the ack
     New --> PartiallyFilled: 150=F, leaves above 0
     New --> Filled: 150=F, leaves 0
     PartiallyFilled --> PartiallyFilled: 150=F, leaves above 0
@@ -159,14 +167,15 @@ stateDiagram-v2
     PartiallyFilled --> PendingCancel: 35=F sent
     New --> PendingReplace: 35=G sent
     PartiallyFilled --> PendingReplace: 35=G sent
-    PendingCancel --> PendingCancel: 150=F, leaves above 0
+    PendingCancel --> PendingCancel: 150=F even to leaves 0, or a late 150=0
     PendingCancel --> Canceled: 150=4
-    PendingCancel --> Filled: 150=F, leaves 0
+    PendingCancel --> Filled: 35=9 after the order filled
     PendingCancel --> PartiallyFilled: 35=9 after a fill
     PendingCancel --> New: 35=9 with no fill
+    PendingReplace --> PendingReplace: 150=F
     PendingReplace --> New: 150=5, no fills yet
     PendingReplace --> PartiallyFilled: 150=5 after fills
-    PendingReplace --> Filled: 150=F, leaves 0
+    PendingReplace --> Filled: 150=5 when fills used up the new quantity, or 35=9
     New --> Canceled: unsolicited 150=4
     PartiallyFilled --> Canceled: unsolicited 150=4
     New --> Expired: 150=C
@@ -179,13 +188,15 @@ stateDiagram-v2
 
 The transitions that bite in production:
 
-- **Fill racing a cancel.** A fill can arrive after you sent 35=F; the order stays Pending Cancel with the fill booked, and if the fill completes the order the venue answers your cancel with an OrderCancelReject (35=9).
-  Pending states are reported in preference to Partially filled.
+- **Fill racing a cancel.** A fill can arrive after you sent 35=F; the order stays Pending Cancel with the fill booked, and if the fill completes the order the venue answers your cancel with an OrderCancelReject (35=9) whose OrdStatus is Filled (B.1.c).
+  The fill's own OrdStatus depends on timing: a fill the venue sent before it saw your cancel says 1 Partially filled (B.1.b), and one sent after the venue acknowledged it with 150=6 says 6 Pending Cancel, even when it fills the order completely (B.1.c).
+  Reconciliation must accept either while your request is in flight; demanding 6 trips the kill switch on a normal race.
 - **Cancel reject.** 35=9 returns the order to its pre-pending state, updated by any fills that arrived meanwhile.
 - **Replace in flight.** Until 150=5 arrives, either the old or the new terms can execute, so exposure is max(old leaves, new leaves) at the worse price.
-  A replace cannot reduce quantity below CumQty.
+  A replace cannot leave an order below CumQty: if fills crossing the request reach or pass the new quantity, the venue amends the order quantity to CumQty and reports 150=5 with OrdStatus Filled (C.3.b, C.3.c).
 - **Unsolicited cancels and expiries.** IOC remainders, end of day, venue-side risk or cancel-on-disconnect produce 150=4 or 150=C with no request from you.
 - **Fill before acknowledgement.** Some flows deliver a fill before the New ack; treat it as an implicit acknowledgement.
+  Likewise a cancel sent before the ack can be followed by the ack itself (150=0, OrdStatus 0) and only then by the cancel (B.1.d, B.1.e).
 - **Terminal means terminal.** A report that moves a Filled, Canceled, Rejected or Expired order is not a state change you apply; it is evidence that your book and the venue's disagree.
 
 ### Idempotency and reconciliation
@@ -240,6 +251,7 @@ E3 books 300: Filled, CumQty 500, LeavesQty 0, AvgPx $(200 \times 100.00 + 300 \
 
 O7 is acknowledged and we send a cancel with ClOrdID C7 (OrigClOrdID O7): Pending Cancel.
 Before the venue processes it, 100 shares fill: the order stays Pending Cancel with CumQty 100 and LeavesQty 700.
+That fill report carries OrdStatus 1, not 6, because the venue sent it before it saw the cancel; the gateway accepts either while the cancel is pending and does not trip the kill switch.
 The cancel confirmation (150=4, ClOrdID C7, OrigClOrdID O7) arrives: Canceled, LeavesQty 0.
 The position is 600, not 500: dropping fills that arrive in a pending state is a classic position break.
 
@@ -309,13 +321,13 @@ Re-arming is a separate, deliberate human action.
 > Keep the set of processed ExecIDs (17) and ignore repeats before touching state; reports are replayed after resend requests (with PossDupFlag 43) and arrive again on drop copies. Applying a fill twice doubles the position.
 
 > [!question]- qd-oms-exectype-vs-ordstatus | What is the difference between ExecType (150) and OrdStatus (39)?
-> ExecType is the event this report announces (New, Trade, Canceled, Replaced, Pending Cancel and so on); OrdStatus is the order's resulting state. A fill on an order with a cancel pending has ExecType F (Trade) and OrdStatus 6 (Pending Cancel).
+> ExecType is the event this report announces (New, Trade, Canceled, Replaced, Pending Cancel and so on); OrdStatus is the order's resulting state, the highest-precedence one if several apply. A fill on an order whose cancel the venue has acknowledged has ExecType F (Trade) and OrdStatus 6 (Pending Cancel).
 
 > [!question]- qd-oms-fix44-trade | In FIX 4.4, how is a fill reported in ExecType?
 > ExecType F (Trade), for both partial fills and fills; OrdStatus then says 1 (Partially filled) or 2 (Filled). The pre-4.3 ExecType values 1 and 2 were replaced by F.
 
 > [!question]- qd-oms-fill-during-cancel | You sent a cancel, then receive a fill for 100 of the remaining 800. What state is the order in, and what is the position impact?
-> Still Pending Cancel, with CumQty up by 100 and LeavesQty 700; the 100 shares are a real position. When the cancel confirms, leaves go to 0 and the order is Canceled. If the fill had completed the order, the venue would reject the cancel (35=9).
+> Still Pending Cancel, with CumQty up by 100 and LeavesQty 700; the 100 shares are a real position. The report says OrdStatus 1 if the venue sent it before seeing the cancel and 6 if after, so accept both. When the cancel confirms, leaves go to 0 and the order is Canceled. If the fill had completed the order, its report would still say 6 (Pending Cancel outranks Filled) and the venue would reject the cancel with 35=9 and OrdStatus 2.
 
 > [!question]- qd-oms-replace-exposure | How should a cancel/replace from 100 at 105.00 to 300 at 104.00 be risk-checked?
 > On the worst case while it is in flight: either set of terms can execute, so count max(old leaves, new leaves) = 300 shares at the worse price 105.00. The repo's gateway then reports a worst-case long of 900 and gross exposure of USD 101,550 for the example book.
@@ -333,7 +345,10 @@ Re-arming is a separate, deliberate human action.
 > No fresh reference price for a collar; an execution report for an unknown order, an overfill, an illegal transition or a CumQty mismatch; loss of the risk state or drop copy. In each case block new risk and cancel live orders rather than continue with unknown exposure.
 
 > [!question]- qd-oms-knight-lesson | Per the SEC's order in Release No. 34-70694, which Rule 15c3-5 controls did Knight lack?
-> The order finds Knight lacked controls reasonably designed to prevent erroneous orders immediately before orders reached the market from its router ((c)(1)(ii)), and lacked automated firm-wide capital thresholds that would prevent order entry ((c)(1)(i)); its post-execution position monitor relied on human monitoring and did not stop order entry.
+> The order finds Knight lacked controls reasonably designed to prevent erroneous orders immediately before orders reached the market from its router ((c)(1)(ii)), and lacked pre-set firm-wide capital thresholds linked to automated controls that would prevent order entry ((c)(1)(i)); its position limits ignored outstanding orders, and its post-execution position monitor relied entirely on human monitoring and did not stop order entry. It also found violations of (b), (e) and (e)(2).
+
+> [!question]- qd-oms-pending-precedence | Your order has a cancel pending and a fill arrives for all remaining shares. What OrdStatus does the fill carry under FIX 4.4, and what comes next?
+> OrdStatus 6 (Pending Cancel) if the venue had already acknowledged the cancel, because pending states outrank Filled; LeavesQty is 0. The venue then rejects the cancel with 35=9 carrying OrdStatus 2 (Filled), and only then is the order terminal in your book (FIX 4.4 Appendix D, B.1.c).
 
 > [!question]- qd-oms-hot-path | How do you keep pre-trade checks fast enough for an HFT order path?
 > One thread owns the risk state and processes orders and execution reports in sequence, so there are no locks; integer arithmetic on preallocated per-symbol state; constant-time checks (running totals of open quantity and notional instead of scans); no allocation or I/O on the path, with logging off-thread. Hardware or venue-provided risk layers take the same checks further.

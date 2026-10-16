@@ -8,7 +8,8 @@ Backs the numbers in 12-Quant-Development/12-Tick-Data-Storage-and-Time-Series-D
 * A point-in-time join on knowledge timestamps versus a naive join on the period a value describes.
 * Capacity arithmetic from stated assumptions, and row-group pruning with min/max statistics.
 * zlib compression of row versus columnar versus delta-encoded layouts of seeded synthetic ticks.
-  Compressed sizes depend on the zlib version, so they are asserted only against loose bounds.
+  Compressed sizes depend on the zlib version: the quoted ratios are asserted exactly under the zlib
+  version they were produced with (1.2.12) and only against ordering bounds otherwise.
 
 Run: uv run --no-project --with numpy python 12-Quant-Development/code/python/tick_storage_asof.py
 """
@@ -91,6 +92,10 @@ def hand_example() -> None:
     assert back.tolist() == [-1, 1, 1, 2, 4]
     assert fwd.tolist() == [0, 1, 2, -1, -1]
     assert tol.tolist() == [-1, 1, 1, -1, 4]
+    # The quote times in note 12 example 1's table.
+    assert [int(q_time[k]) if k >= 0 else None for k in back] == [None, 200, 200, 300, 250]
+    assert [int(q_time[k]) if k >= 0 else None for k in fwd] == [100, 200, 300, None, None]
+    assert [int(q_time[k]) if k >= 0 else None for k in tol] == [None, 200, 200, None, 250]
 
 
 def random_check() -> None:
@@ -163,7 +168,7 @@ SCHEMA = {
 }
 
 
-def capacity(ratio: float) -> None:
+def capacity(ratio: float = 5.0) -> None:
     print("== Capacity estimate (assumptions, not facts)")
     events_per_day = 500e6  # assumption: normalized depth-of-book events per day for a broad equity universe
     row = sum(SCHEMA.values())
@@ -180,11 +185,12 @@ def capacity(ratio: float) -> None:
     print(f"row {row} B; raw/day {raw_day / 1e9:.1f} GB; raw/year {raw_year / 1e12:.2f} TB; raw 10y {raw_total / 1e12:.1f} TB")
     print(f"compressed 10y at an assumed ratio {ratio:.1f}: {raw_total / ratio / 1e12:.2f} TB")
     print(f"average {avg_rate:,.0f} events/s; peak {peak_rate:,.0f} events/s = {peak_rate * row / 1e6:.1f} MB/s")
-    assert row == 36
-    assert raw_day == 18e9 and abs(raw_year - 4.536e12) < 1 and abs(raw_total - 45.36e12) < 1
-    assert round(avg_rate) == 21368 and round(peak_rate) == 427350
-    assert abs(peak_rate * row / 1e6 - 15.38) < 0.01
-    assert abs(raw_total / ratio / 1e12 - 9.072) < 1e-9 or ratio != 5.0
+    # Note 12 example 6 table and card qd-tick-capacity-estimate, at the quoted rounding.
+    assert row == 36 and ratio == 5.0
+    assert f"{raw_day / 1e9:.1f}" == "18.0" and f"{raw_year / 1e12:.2f}" == "4.54" and f"{raw_total / 1e12:.1f}" == "45.4"
+    assert f"{raw_total / ratio / 1e12:.2f}" == "9.07"
+    assert f"{avg_rate:,.0f}" == "21,368" and f"{peak_rate:,.0f}" == "427,350"
+    assert f"{peak_rate * row / 1e6:.1f}" == "15.4"
 
 
 def pruning() -> None:
@@ -242,6 +248,8 @@ def compression(seed: int = 9, n: int = 200_000) -> float:
     assert rec.itemsize == 21 and len(raw) == 21 * n
     assert 1.2 < r_row < r_col < r_del
     assert r_del > 3.0
+    if zlib.ZLIB_RUNTIME_VERSION == "1.2.12":  # the version the note's quoted ratios were produced with
+        assert (round(r_row, 2), round(r_col, 2), round(r_del, 2)) == (3.27, 4.02, 4.89)
     return r_del
 
 
@@ -250,14 +258,15 @@ def main() -> None:
     random_check()
     eb, ef = effective_spread_bias()
     print(f"== Effective half-spread: backward join {eb:.4f}, forward join {ef:.4f} (true 0.05, impact 0.02)")
-    assert abs(eb - 0.05) < 0.002 and abs(ef - 0.03) < 0.002
+    # Note 12 example 2 and card qd-tick-forward-join-bias quote about 0.050, about 0.030 and 40%.
+    assert f"{eb:.3f}" == "0.050" and f"{ef:.3f}" == "0.030"
     print(f"   inputs 50,000 trades, seed 6; understatement {100 * (eb - ef) / eb:.0f}%")
-    assert abs(100 * (eb - ef) / eb - 40) < 4
+    assert f"{100 * (eb - ef) / eb:.0f}" == "40"
     point_in_time()
     pruning()
     r = compression()
     assert 4.0 < r < 6.0  # so the 5x planning assumption below is in line with the measurement
-    capacity(5.0)
+    capacity()
     print("all assertions passed")
 
 

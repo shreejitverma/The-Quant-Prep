@@ -119,6 +119,7 @@ PingPong ping_pong() {
 struct Node {
     std::int64_t a, b, c, d;  // 32 bytes, an order-sized object
 };
+static_assert(sizeof(Node) == 32, "the note quotes a 32-byte object");
 
 struct AllocResult {
     double heap, pool, arena;

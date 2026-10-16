@@ -12,17 +12,21 @@ from __future__ import annotations
 import bisect
 import math
 import struct
+import zlib
 from dataclasses import dataclass
 
 import numpy as np
 
 
-def close(a: float, b: float, tol: float) -> bool:
-    return abs(a - b) <= tol
-
-
 def show(label: str, value: object) -> None:
     print(f"{label}: {value}")
+
+
+def check(label: str, value: object, quoted: str, fmt: str = "") -> None:
+    """Print a computed value at the note's rounding and assert it equals the literal the note quotes."""
+    shown = format(value, fmt)
+    print(f"{label}: {shown}")
+    assert shown == quoted, f"{label}: computed {shown}, the note quotes {quoted}"
 
 
 # ---------------------------------------------------------------------------
@@ -109,12 +113,11 @@ def ab_double_loss(packets_per_day: float, p_loss: float) -> tuple[float, float,
 
 
 def itch_field_ranges() -> dict[str, float]:
-    max_price_raw = 2_000_000_000  # 200,000.0000 with 4 implied decimals
+    max_price_raw = round(200_000.0000 * 10**4)  # Price(4): 4 implied decimal places
     ns_per_day = 86_400 * 10**9
     max_ts = 2**48 - 1
     return {
         "max_price_raw": max_price_raw,
-        "max_price_hex": int("77359400", 16),
         "uint32_max": 2**32 - 1,
         "int32_max": 2**31 - 1,
         "ns_per_day": ns_per_day,
@@ -182,13 +185,15 @@ def seq_wrap(rate: float) -> tuple[float, float]:
 # ---------------------------------------------------------------------------
 
 
-def queue_fill(ahead: int, my_qty: int, events: list[tuple[str, int]], cancels_from_ahead: bool) -> tuple[int, int | None]:
+def queue_fill(ahead: int, my_qty: int, events: list[tuple[str, int]], cancels_from_ahead: bool) -> tuple[int, int | None, list[int]]:
     """FIFO queue: trades eat from the front; cancels shrink 'ahead' only if assumed ahead of us.
 
-    Returns (filled quantity, index of the event that completed the fill or None).
+    Returns (filled quantity, index of the event that completed the fill or None, shares ahead
+    initially and after each event).
     """
     filled = 0
     done_at = None
+    trace = [ahead]
     for i, (kind, q) in enumerate(events):
         if kind == "trade":
             eat_ahead = min(ahead, q)
@@ -200,11 +205,17 @@ def queue_fill(ahead: int, my_qty: int, events: list[tuple[str, int]], cancels_f
                 done_at = i
         elif kind == "cancel_ahead" and cancels_from_ahead:
             ahead = max(0, ahead - q)
-    return filled, done_at
+        trace.append(ahead)
+    return filled, done_at, trace
 
 
 def sqrt_impact(sigma_daily: float, q: float, v: float, y: float = 1.0) -> float:
     return y * sigma_daily * math.sqrt(q / v)
+
+
+def order_arrival_us(feed_us: float, strategy_us: float, entry_us: float) -> float:
+    """Time after the print at which the order reaches the matching engine."""
+    return feed_us + strategy_us + entry_us
 
 
 # ---------------------------------------------------------------------------
@@ -251,6 +262,11 @@ def fd_delta_errors() -> dict[str, float]:
     ctr_big = (c(s + 1.0) - c(s - 1.0)) / 2.0
     tiny = 1e-12
     ctr_tiny = (c(s + tiny) - c(s - tiny)) / (2 * tiny)
+    # S +- 1e-12 is not representable: the step actually taken differs from the nominal 2h.
+    step_ratio = ((s + tiny) - (s - tiny)) / (2 * tiny)
+    d1 = (math.log(s / k) + (r + 0.5 * vol * vol) * t) / (vol * math.sqrt(t))
+    gamma = npdf(d1) / (s * vol * math.sqrt(t))
+    speed = -gamma / s * (d1 / (vol * math.sqrt(t)) + 1.0)  # third derivative of the call in S
     return {
         "exact": exact,
         "h_fwd": h_fwd,
@@ -260,7 +276,27 @@ def fd_delta_errors() -> dict[str, float]:
         "err_fwd_h1": abs(fwd_big - exact),
         "err_ctr_h1": abs(ctr_big - exact),
         "err_ctr_tiny": abs(ctr_tiny - exact),
+        "trunc_fwd_opt": h_fwd / 2 * gamma,
+        "trunc_ctr_opt": h_ctr**2 / 6 * abs(speed),
+        "step_ratio": step_ratio,
+        "step_error_tiny": exact * (1.0 - step_ratio),
     }
+
+
+def bump_pricings(n_inputs: int, central: bool) -> int:
+    """Count pricer calls for bump-and-reprice sensitivities to every input."""
+    calls = 0
+
+    def price(bump: tuple[int, int] | None) -> None:
+        nonlocal calls
+        calls += 1
+
+    price(None)  # base price
+    for i in range(n_inputs):
+        price((i, +1))
+        if central:
+            price((i, -1))
+    return calls
 
 
 # ---------------------------------------------------------------------------
@@ -292,10 +328,16 @@ def numpy_facts() -> dict[str, object]:
     return out
 
 
-def naive_vs_welford() -> tuple[float, float, float]:
+def naive_vs_welford() -> tuple[float, float, float, float]:
     x = 1e9 + np.array([4.0, 7.0, 13.0, 16.0])
     n = len(x)
-    naive = (np.sum(x * x) - np.sum(x) ** 2 / n) / (n - 1)
+    s1 = s2 = 0.0
+    for v in x.tolist():  # plain left-to-right sums: deterministic IEEE arithmetic on every platform
+        s1 += v
+        s2 += v * v
+    naive = (s2 - s1 * s1 / n) / (n - 1)
+    # Exactly rounded sums do not rescue the formula: the squares are already rounded.
+    naive_exact_sums = (math.fsum(v * v for v in x.tolist()) - math.fsum(x.tolist()) ** 2 / n) / (n - 1)
     mean = 0.0
     m2 = 0.0
     for i, v in enumerate(x, 1):
@@ -304,7 +346,14 @@ def naive_vs_welford() -> tuple[float, float, float]:
         m2 += d * (v - mean)
     welford = m2 / (n - 1)
     two_pass = float(np.var(x, ddof=1))
-    return float(naive), welford, two_pass
+    return naive, naive_exact_sums, welford, two_pass
+
+
+def column_cache_lines(a: np.ndarray, col: int, line: int = 64) -> int:
+    """Distinct cache lines touched when reading one column of a 2-D array."""
+    base = a.__array_interface__["data"][0]
+    addrs = base + np.arange(a.shape[0], dtype=np.int64) * a.strides[0] + col * a.strides[1]
+    return len(set((addrs // line).tolist()))
 
 
 def int32_notional() -> tuple[int, int]:
@@ -326,6 +375,13 @@ def capacity(msgs_per_day: float, bytes_per_msg: float, days: int, ratio: float,
     comp_year = raw_year / ratio
     total = comp_year * years * replicas
     return {"raw_day_gb": raw_day / 1e9, "raw_year_tb": raw_year / 1e12, "comp_year_tb": comp_year / 1e12, "total_tb": total / 1e12}
+
+
+def partitions_read(days: int, buckets: int, symbol: str) -> tuple[int, int]:
+    """Date x hash-bucket partitions in total, and those a one-symbol query over all days must open."""
+    bucket = zlib.crc32(symbol.encode()) % buckets
+    parts = [(d, b) for d in range(days) for b in range(buckets)]
+    return len(parts), sum(1 for _, b in parts if b == bucket)
 
 
 def asof_join(trade_t: list[int], quote_t: list[int], tolerance: int | None, forward: bool = False) -> list[int | None]:
@@ -350,6 +406,16 @@ def asof_join(trade_t: list[int], quote_t: list[int], tolerance: int | None, for
 
 def worst_case_long(position: int, open_buys: int, new_buy: int) -> int:
     return position + open_buys + new_buy
+
+
+def buy_collar(reference: float, pct: float, price: float) -> tuple[bool, float]:
+    upper = reference * (1.0 + pct)
+    return price <= upper, upper
+
+
+def leaves_after_replace(new_order_qty: int, cum_qty: int) -> int:
+    """FIX: OrderQty on a cancel/replace includes what has already executed."""
+    return max(new_order_qty - cum_qty, 0)
 
 
 def token_bucket(capacity_tokens: float, rate: float, arrivals: list[tuple[float, int]]) -> list[int]:
@@ -395,22 +461,23 @@ def two_sided_tail(z: float) -> float:
 
 
 def main() -> None:
+    print("== constants ==")
+    check("float64 machine epsilon", float(np.finfo(float).eps), "2.22e-16", ".2e")
+    check("float32 integers exact up to 2^24", float(np.float32(2**24)), "16,777,216", ",.0f")
+
     print("== 08 feed handlers ==")
     bw = feed_bandwidth(2_000_000)
-    show("UDP payload max, room for blocks", (bw["udp_payload_max"], bw["blocks_room"]))
-    assert (bw["udp_payload_max"], bw["blocks_room"]) == (1472, 1452)
-    show("message block bytes", bw["block"])
-    show("messages per 1500-byte MTU packet", bw["per_packet"])
-    show("IP packet bytes", bw["ip_bytes"])
-    show("wire bytes per frame", bw["wire_bytes"])
-    show("packets per second", f"{bw['pps']:.1f}")
-    show("Gbit/s batched", f"{bw['gbps_batched']:.3f}")
-    show("wire bytes single-message frame", bw["single_wire"])
-    show("Gbit/s one message per packet", f"{bw['gbps_single']:.3f}")
-    assert bw["block"] == 38 and bw["per_packet"] == 38 and bw["ip_bytes"] == 1492 and bw["wire_bytes"] == 1530
-    assert close(bw["pps"], 52_631.6, 0.1)
-    assert close(bw["gbps_batched"], 0.644, 0.001)
-    assert bw["single_wire"] == 124 and close(bw["gbps_single"], 1.984, 1e-9)
+    check("UDP payload max", bw["udp_payload_max"], "1472")
+    check("room for blocks after the MoldUDP64 header", bw["blocks_room"], "1452")
+    check("message block bytes", bw["block"], "38")
+    check("messages per 1500-byte MTU packet", bw["per_packet"], "38")
+    check("IP packet bytes", bw["ip_bytes"], "1492")
+    check("wire bytes per frame", bw["wire_bytes"], "1530")
+    check("packets per second", bw["pps"], "52,631.6", ",.1f")
+    check("Gbit/s batched", bw["gbps_batched"], "0.644", ".3f")
+    check("wire bytes single-message frame", bw["single_wire"], "124")
+    check("Gbit/s one message per packet", bw["gbps_single"], "1.984", ".3f")
+    check("unbatched / batched bandwidth", bw["gbps_single"] / bw["gbps_batched"], "3", ".0f")
 
     g = gap_example()
     show("gap requests (seq, count)", g.requests)
@@ -421,145 +488,138 @@ def main() -> None:
     assert g.applied == list(range(1001, 1009)) and g.expected == 1009 and g.duplicates == 2
 
     single, both, days = ab_double_loss(20e6, 1e-5)
-    show("expected single-line losses per day", f"{single:.0f}")
-    show("expected double losses per day", f"{both:.4f}")
-    show("days between double losses", f"{days:.0f}")
-    assert close(single, 200, 1e-9) and close(both, 0.002, 1e-12) and close(days, 500, 1e-6)
+    check("expected single-line losses per day", single, "200", ".0f")
+    check("expected double losses per day", both, "0.002", ".3f")
+    check("days between double losses", days, "500", ".0f")
 
     fr = itch_field_ranges()
-    show("max Price(4) raw", fr["max_price_raw"])
-    show("int32 max", f"{fr['int32_max']:,}")
-    show("ns per day", fr["ns_per_day"])
-    show("48-bit timestamp max hours", f"{fr['ts48_hours']:.1f}")
-    show("32-bit ns counter wraps after seconds", f"{fr['ts32_seconds']:.3f}")
-    assert fr["max_price_raw"] == fr["max_price_hex"] < fr["int32_max"] < fr["uint32_max"]
-    assert fr["ns_per_day"] == 8.64e13 < fr["ts48_max"] and close(fr["ts48_hours"], 78.2, 0.05)
-    assert close(fr["ts32_seconds"], 4.295, 0.001)
+    check("max Price(4) raw", fr["max_price_raw"], "2,000,000,000", ",")
+    check("max Price(4) raw in hex", hex(fr["max_price_raw"]), "0x77359400")
+    check("int32 max", fr["int32_max"], "2,147,483,647", ",")
+    assert fr["max_price_raw"] < fr["int32_max"] < fr["uint32_max"]
+    check("ns per day", float(fr["ns_per_day"]), "8.64e+13", ".2e")
+    assert fr["ns_per_day"] < fr["ts48_max"]
+    check("48-bit timestamp max hours", fr["ts48_hours"], "78.2", ".1f")
+    check("32-bit ns counter wraps after seconds", fr["ts32_seconds"], "4.295", ".3f")
 
     bids, asks = build_book()
     show("bids (px*1e4: qty)", dict(sorted(bids.items(), reverse=True)))
     show("asks (px*1e4: qty)", dict(sorted(asks.items())))
+    bid_levels = [f"{px / 1e4:.4f} x {q}" for px, q in sorted(bids.items(), reverse=True)]
+    ask_levels = [f"{px / 1e4:.4f} x {q}" for px, q in sorted(asks.items())]
+    check("bid levels", bid_levels, "['10.0150 x 120', '10.0100 x 150']")
+    check("ask levels", ask_levels, "['10.0300 x 200']")
     best_bid, best_ask = max(bids), min(asks)
-    show("best bid", best_bid / 1e4)
-    show("best ask", best_ask / 1e4)
-    show("spread", f"{(best_ask - best_bid) / 1e4:.4f}")
-    show("mid", f"{(best_ask + best_bid) / 2e4:.4f}")
-    assert bids == {100_150: 120, 100_100: 150} and asks == {100_300: 200}
-    assert best_ask - best_bid == 150 and (best_ask + best_bid) == 200_450
+    check("spread", (best_ask - best_bid) / 1e4, "0.0150", ".4f")
+    check("mid", (best_ask + best_bid) / 2e4, "10.0225", ".4f")
 
     discard, apply = snapshot_merge(5_000_100, 5_000_200, 5_000_123)
-    show("snapshot merge: discard, apply", (discard, apply))
-    assert (discard, apply) == (24, 77)
+    check("snapshot merge: discard", discard, "24")
+    check("snapshot merge: apply", apply, "77")
 
     years64, minutes32 = seq_wrap(1e7)
-    show("64-bit sequence wrap at 10M msg/s (years)", f"{years64:,.0f}")
-    show("32-bit sequence wrap at 1M msg/s (minutes)", f"{minutes32:.1f}")
-    assert close(years64, 58_454, 1) and close(minutes32, 71.6, 0.05)
+    check("64-bit sequence wrap at 10M msg/s (years)", years64, "58,454", ",.0f")
+    check("32-bit sequence wrap at 1M msg/s (minutes)", minutes32, "71.6", ".1f")
 
     print("== 09 backtester ==")
     events = [("trade", 1_500), ("cancel_ahead", 1_000), ("trade", 1_200), ("trade", 600)]
-    ahead_path = [4_000, 4_000 - 1_500, 4_000 - 1_500 - 1_000, 4_000 - 1_500 - 1_000 - 1_200]
-    show("shares ahead after each event (order-level)", ahead_path)
-    assert ahead_path == [4_000, 2_500, 1_500, 300]
-    pes_ahead = 4_000 - 1_500 - 1_200 - 600
-    show("shares ahead after 600 trade (pessimistic)", pes_ahead)
-    assert pes_ahead == 700
     opt = queue_fill(4_000, 300, events, cancels_from_ahead=True)
     pes = queue_fill(4_000, 300, events, cancels_from_ahead=False)
-    show("queue fill, cancels ahead of us (filled, event)", opt)
-    show("queue fill, cancels behind us (filled, event)", pes)
-    assert opt == (300, 3) and pes == (0, None)
+    check("shares ahead before the 600 trade (order-level)", opt[2][:4], "[4000, 2500, 1500, 300]")
+    check("shares ahead after the 600 trade (pessimistic)", pes[2][-1], "700")
+    check("queue fill, cancels ahead of us (filled, event)", opt[:2], "(300, 3)")
+    check("queue fill, cancels behind us (filled, event)", pes[:2], "(0, None)")
     pes_more = queue_fill(4_000, 300, [*events, ("trade", 1_000)], cancels_from_ahead=False)
-    show("pessimistic after one more 1000 trade", pes_more)
-    assert pes_more == (300, 4)
+    check("pessimistic after one more 1000 trade", pes_more[:2], "(300, 4)")
 
     imp = sqrt_impact(0.02, 500_000, 10_000_000)
-    show("square-root impact (fraction)", f"{imp:.5f}")
-    show("impact bp", f"{imp * 1e4:.1f}")
-    show("impact cost on 500k shares at $40", f"{imp * 500_000 * 40:,.0f}")
-    assert close(imp * 1e4, 44.7, 0.05) and close(imp * 500_000 * 40, 89_443, 1)
+    check("square-root impact (fraction)", imp, "0.00447", ".5f")
+    check("impact bp", imp * 1e4, "44.7", ".1f")
+    check("impact cost on 500k shares at $40", imp * 500_000 * 40, "89,443", ",.0f")
 
-    arrival = 15 + 5 + 30
-    show("earliest order arrival us", arrival)
-    assert arrival == 50
+    check("earliest order arrival us", order_arrival_us(15, 5, 30), "50", ".0f")
 
     print("== 10 pricing library ==")
     p = bs(100, 100, 0.05, 0.2, 1.0)
-    show("call", f"{p['call']:.4f}")
-    show("put", f"{p['put']:.4f}")
-    show("parity C - P", f"{p['call'] - p['put']:.4f}")
-    show("K(1 - e^-rT)", f"{100 * (1 - math.exp(-0.05)):.4f}")
-    show("delta", f"{p['delta']:.4f}")
-    show("gamma", f"{p['gamma']:.6f}")
-    show("vega", f"{p['vega']:.3f}")
-    assert close(p["call"], 10.4506, 5e-5) and close(p["put"], 5.5735, 5e-5)
-    assert close(p["call"] - p["put"], 100 * (1 - math.exp(-0.05)), 1e-12)
-    assert close(p["delta"], 0.6368, 5e-5) and close(p["gamma"], 0.018762, 5e-7) and close(p["vega"], 37.524, 5e-4)
+    check("call", p["call"], "10.4506", ".4f")
+    check("put", p["put"], "5.5735", ".4f")
+    check("parity C - P", p["call"] - p["put"], "4.8771", ".4f")
+    check("K(1 - e^-rT)", 100 * (1 - math.exp(-0.05)), "4.8771", ".4f")
+    check("delta", p["delta"], "0.6368", ".4f")
+    check("gamma", p["gamma"], "0.018762", ".6f")
+    check("vega", p["vega"], "37.524", ".3f")
 
     fd = fd_delta_errors()
-    show("forward optimal h", f"{fd['h_fwd']:.2e}")
-    show("central optimal h", f"{fd['h_ctr']:.2e}")
-    show("err forward h*", f"{fd['err_fwd_opt']:.1e}")
-    show("err central h*", f"{fd['err_ctr_opt']:.1e}")
-    show("err forward h=1", f"{fd['err_fwd_h1']:.2e}")
-    show("err central h=1", f"{fd['err_ctr_h1']:.2e}")
-    show("gamma / 2", f"{p['gamma'] / 2:.4f}")
-    assert close(p["gamma"] / 2, 0.0094, 5e-5)
-    show("err central h=1e-12", f"{fd['err_ctr_tiny']:.1e}")
-    assert close(fd["h_fwd"], 1.49e-6, 0.01e-6) and close(fd["h_ctr"], 6.06e-4, 0.01e-4)
-    assert fd["err_ctr_opt"] < 1e-9 and fd["err_fwd_opt"] < 1e-6
+    check("forward optimal h", fd["h_fwd"], "1.49e-06", ".2e")
+    check("central optimal h", fd["h_ctr"], "6.06e-04", ".2e")
+    check("truncation forward h*: h/2 gamma", fd["trunc_fwd_opt"], "1.40e-08", ".2e")
+    check("truncation central h*: h^2/6 |speed|", fd["trunc_ctr_opt"], "3.15e-11", ".2e")
+    # The note quotes these three "on the reference machine" (1.7e-08, 3.0e-11, 8.0e-03): round-off
+    # moves them with the platform's libm, so assert bands around the quoted values, not digits.
+    show("err forward h* (libm-dependent)", f"{fd['err_fwd_opt']:.1e}")
+    show("err central h* (libm-dependent)", f"{fd['err_ctr_opt']:.1e}")
+    show("err central h=1e-12 (libm-dependent)", f"{fd['err_ctr_tiny']:.1e}")
+    assert 1.0e-8 < fd["err_fwd_opt"] < 2.5e-8 and 1.0e-11 < fd["err_ctr_opt"] < 6.0e-11
+    assert 1e-3 < fd["err_ctr_tiny"] < 5e-2
     assert fd["err_ctr_opt"] < fd["err_fwd_opt"]
-    assert close(fd["err_fwd_h1"], 9.29e-3, 0.01e-3) and close(fd["err_ctr_h1"], 8.60e-5, 0.01e-5)
-    assert fd["err_ctr_tiny"] > 1e-6
+    check("err forward h=1", fd["err_fwd_h1"], "9.29e-03", ".2e")
+    check("err central h=1", fd["err_ctr_h1"], "8.60e-05", ".2e")
+    check("gamma / 2", p["gamma"] / 2, "0.0094", ".4f")
+    check("ulp at 100", float(np.spacing(100.0)), "1.42e-14", ".2e")
+    check("actual step / nominal step at h=1e-12", fd["step_ratio"], "0.9948", ".4f")
+    check("delta error from the step alone", fd["step_error_tiny"], "3.3e-03", ".1e")
 
-    n_inputs = 50 + 200
-    show("bump pricings one-sided, central", (n_inputs + 1, 2 * n_inputs + 1))
-    assert (n_inputs + 1, 2 * n_inputs + 1) == (251, 501)
+    check("bump pricings one-sided", bump_pricings(50 + 200, central=False), "251")
+    check("bump pricings central", bump_pricings(50 + 200, central=True), "501")
 
     print("== 11 numerical python ==")
     nf = numpy_facts()
-    for key, val in nf.items():
-        show(key, val)
-    assert nf["bytes"] == 400_000_000 and close(float(nf["mib"]), 381.47, 0.005)
-    assert nf["strides"] == (40_000, 8) and nf["strides_T"] == (8, 40_000)
+    check("array bytes", nf["bytes"], "400,000,000", ",")
+    check("array MiB", nf["mib"], "381.47", ".2f")
+    check("strides", nf["strides"], "(40000, 8)")
+    check("strides of the transpose", nf["strides_T"], "(8, 40000)")
     assert nf["col_is_view"] and nf["col_stride"] == (40_000,)
-    assert nf["broadcast"] == (3, 4, 5) and nf["broadcast_32_3"] == "error"
-    assert nf["float32_2_24_plus_1"] == 2**24 and nf["ulp_f32_2_24"] == 2.0
-    assert close(float(nf["ulp_f64_100"]), 1.42e-14, 0.01e-14)
-    assert close(float(nf["sum_01_02_minus_03"]), 5.55e-17, 0.01e-17)
-    lines_touched = 10_000
-    show("cache lines touched for a column sum", lines_touched)
-    show("bytes moved vs useful", (lines_touched * 64, 10_000 * 8))
-    assert lines_touched * 64 // (10_000 * 8) == 8
+    check("broadcast (3, 1, 5) with (4, 1)", nf["broadcast"], "(3, 4, 5)")
+    check("broadcast (3, 2) with (3,)", nf["broadcast_32_3"], "error")
+    check("float32 2^24 + 1", nf["float32_2_24_plus_1"], "16,777,216", ",.0f")
+    check("float32 ulp at 2^24", nf["ulp_f32_2_24"], "2", ".0f")
+    check("0.1 + 0.2 - 0.3", nf["sum_01_02_minus_03"], "5.55e-17", ".2e")
+    a = np.zeros((10_000, 5_000))
+    lines = column_cache_lines(a, 0)
+    check("column stride bytes", a[:, 0].strides[0], "40,000", ",")
+    assert a[:, 0].strides[0] > 16 * 1024  # larger than a 4 KiB or 16 KiB page
+    check("bytes moved for a column sum", lines * 64, "640,000", ",")
+    check("useful bytes", a.shape[0] * a.itemsize, "80,000", ",")
+    check("amplification", lines * 64 / (a.shape[0] * a.itemsize), "8", ".0f")
 
-    naive, welford, two_pass = naive_vs_welford()
-    show("naive one-pass variance", naive)
-    sq_dev = sum((v - 10.0) ** 2 for v in (4.0, 7.0, 13.0, 16.0))
-    show("sum of squared deviations", sq_dev)
-    assert sq_dev == 90.0
-    show("ulp at 4e18", float(np.spacing(4e18)))
-    assert np.spacing(4e18) == 512.0
-    show("welford variance", welford)
-    show("numpy two-pass variance", two_pass)
-    assert welford == 30.0 and two_pass == 30.0 and close(naive, -170.67, 0.01)
+    naive, naive_exact_sums, welford, two_pass = naive_vs_welford()
+    check("naive one-pass variance, left-to-right sums", naive, "-170.67", ".2f")
+    check("naive one-pass variance, exactly rounded sums", naive_exact_sums, "0.0", ".1f")
+    sq_devs = [(v - 10.0) ** 2 for v in (4.0, 7.0, 13.0, 16.0)]
+    check("squared deviations", [int(d) for d in sq_devs], "[36, 9, 9, 36]")
+    check("sum of squared deviations", sum(sq_devs), "90", ".0f")
+    check("ulp at 4e18", float(np.spacing(4e18)), "512", ".0f")
+    assert welford == 30.0 and two_pass == 30.0  # exactly 30
+    check("welford variance", welford, "30", ".0f")
 
     wrapped, exact = int32_notional()
-    show("int32 price*qty wrapped", wrapped)
-    show("exact", exact)
-    assert exact == 5_000_000_000 and wrapped == exact - 2**32
+    check("int32 price*qty wrapped", wrapped, "705,032,704", ",")
+    check("exact", exact, "5,000,000,000", ",")
+    assert wrapped == exact - 2**32
 
     print("== 12 tick storage ==")
     cap = capacity(400e6, 40, 252, 4.0, 10, 3)
-    for key, val in cap.items():
-        show(key, f"{val:.3f}")
-    assert close(cap["raw_day_gb"], 16.0, 1e-9) and close(cap["raw_year_tb"], 4.032, 1e-9)
-    assert close(cap["comp_year_tb"], 1.008, 1e-9) and close(cap["total_tb"], 30.24, 1e-9)
+    check("raw GB per day", cap["raw_day_gb"], "16", ".0f")
+    check("raw TB per year", cap["raw_year_tb"], "4.032", ".3f")
+    check("compressed TB per year", cap["comp_year_tb"], "1.008", ".3f")
+    check("total TB", cap["total_tb"], "30.24", ".2f")
 
-    parts_total, parts_read = 252 * 64, 252
-    show("partitions total, read", (parts_total, parts_read))
-    assert parts_total == 16_128 and parts_total // parts_read == 64
-    show("column fraction read (3 of 20)", 3 / 20)
-    assert close(3 / 20, 0.15, 1e-12)
+    parts_total, parts_read = partitions_read(252, 64, "AAPL")
+    check("partitions total", parts_total, "16,128", ",")
+    check("partitions read", parts_read, "252")
+    check("fraction of partitions read", f"1/{parts_total // parts_read}", "1/64")
+    widths = [8] * 20  # equal-width columns
+    check("column fraction read (3 of 20)", sum(widths[:3]) / sum(widths), "15%", ".0%")
 
     trades = [10, 25, 40, 55]
     quotes = [5, 20, 30, 50]
@@ -567,74 +627,54 @@ def main() -> None:
     tol = asof_join(trades, quotes, 8)
     fwd = asof_join(trades, quotes, None, forward=True)
     show("as-of backward quote index", back)
-    show("as-of with tolerance 8", tol)
-    show("forward (look-ahead) index", fwd)
-    assert back == [0, 1, 2, 3] and tol == [0, 1, None, 3] and fwd == [1, 2, 3, None]
+    check("as-of with tolerance 8: quote times", [None if j is None else quotes[j] for j in tol], "[5, 20, None, 50]")
+    check("forward (look-ahead): quote times", [None if j is None else quotes[j] for j in fwd], "[20, 30, 50, None]")
+    check("staleness of the trade at 40", 40 - quotes[back[2]], "10")
 
     print("== 13 risk and OMS ==")
     wc = worst_case_long(3_000, 4_000, 4_000)
-    show("worst-case long", wc)
-    assert wc == 11_000 > 10_000
-    netted = wc - 2_500
-    show("netting open sells would give", netted)
-    assert netted == 8_500
-    collar_hi = 50.00 * 1.05
-    show("buy collar upper bound", f"{collar_hi:.2f}")
-    assert close(collar_hi, 52.50, 1e-12)
-    assert collar_hi < 53.00
-    show("notional 10,000 x 250 (millions)", 10_000 * 250 / 1e6)
-    assert 10_000 * 250 == 2_500_000 > 1_000_000
+    check("worst-case long", wc, "11,000", ",")
+    assert wc > 10_000  # rejected
+    check("netting open sells would give", wc - 2_500, "8,500", ",")
+    ok, upper = buy_collar(50.00, 0.05, 53.00)
+    check("buy collar upper bound", upper, "52.50", ".2f")
+    assert not ok  # the buy at 53.00 is rejected
+    notional = 10_000 * 250.00
+    check("notional 10,000 x 250 (millions)", notional / 1e6, "2.5", ".1f")
+    assert notional > 1_000_000  # rejected
     acc = token_bucket(20, 100, [(0.0, 50), (0.1, 15)])
-    show("token bucket accepted", acc)
-    assert acc == [20, 10]
-    show("token bucket rejected", 65 - sum(acc))
-    assert 65 - sum(acc) == 35
-    legs = [round(q * px, 2) for q, px in [(300, 10.00), (200, 10.02), (500, 10.05)]]
-    show("fill notionals", legs)
-    assert legs == [3000.0, 2004.0, 5025.0]
-    rows = exec_reports(1_000, [(300, 10.00), (200, 10.02), (500, 10.05)])
-    for cum, leaves, avg in rows:
-        show("CumQty, LeavesQty, AvgPx", (cum, leaves, round(avg, 4)))
-    assert [(c, lv) for c, lv, _ in rows] == [(300, 700), (500, 500), (1000, 0)]
-    assert close(rows[1][2], 10.008, 1e-9) and close(rows[2][2], 10.029, 1e-9)
-    replace_leaves = 600 - 500
-    show("leaves after replace to 600 with 500 filled", replace_leaves)
-    assert replace_leaves == 100
+    check("token bucket accepted", acc, "[20, 10]")
+    check("token bucket rejected", 65 - sum(acc), "35")
+    fills = [(300, 10.00), (200, 10.02), (500, 10.05)]
+    check("fill notionals", [f"{q * px:.0f}" for q, px in fills], "['3000', '2004', '5025']")
+    rows = exec_reports(1_000, fills)
+    check("CumQty, LeavesQty", [(c, lv) for c, lv, _ in rows], "[(300, 700), (500, 500), (1000, 0)]")
+    check("AvgPx after fill 1", rows[0][2], "10.0000", ".4f")
+    check("AvgPx after fill 2", rows[1][2], "10.008", ".3f")
+    check("AvgPx after fill 3", rows[2][2], "10.029", ".3f")
+    check("leaves after replace to 600 with 500 filled", leaves_after_replace(600, 500), "100")
 
     print("== 14 testing ==")
-    d = ulp_distance(0.1 + 0.2, 0.3)
-    show("ulp distance 0.1+0.2 vs 0.3", d)
-    assert d == 1
-    show("ulp at 0.3", float(np.spacing(0.3)))
-    assert close(float(np.spacing(0.3)), 5.55e-17, 0.01e-17)
-    show("(1e16 + 1) - 1e16", (1e16 + 1.0) - 1e16)
-    show("(1e16 - 1e16) + 1", (1e16 - 1e16) + 1.0)
-    assert (1e16 + 1.0) - 1e16 == 0.0 and (1e16 - 1e16) + 1.0 == 1.0
+    check("ulp distance 0.1+0.2 vs 0.3", ulp_distance(0.1 + 0.2, 0.3), "1")
+    check("ulp at 0.3", float(np.spacing(0.3)), "5.55e-17", ".2e")
+    check("(1e16 + 1) - 1e16", (1e16 + 1.0) - 1e16, "0", ".0f")
+    check("(1e16 - 1e16) + 1", (1e16 - 1e16) + 1.0, "1", ".0f")
+    check("ulp at 1e16", float(np.spacing(1e16)), "2", ".0f")
     se = 15.0 / math.sqrt(100_000)
-    show("MC standard error", f"{se:.4f}")
-    show("4 SE tolerance", f"{4 * se:.3f}")
-    assert close(4 * se, 0.190, 5e-4)
+    check("MC standard error", se, "0.0474", ".4f")
+    check("4 SE tolerance", 4 * se, "0.190", ".3f")
     p4 = two_sided_tail(4.0)
     p3 = two_sided_tail(3.0)
-    show("two-sided P(|Z|>4)", f"{p4:.2e}")
-    show("two-sided P(|Z|>3)", f"{p3:.5f}")
-    show("1 - P(|Z|>3)", f"{1 - p3:.4f}")
-    assert close(1 - p3, 0.9973, 5e-5)
-    flaky = 1 - (1 - p3) ** 200
-    show("P(any of 200 3-SE tests fails)", f"{flaky:.3f}")
-    flaky4 = 1 - (1 - p4) ** 200
-    show("P(any of 200 4-SE tests fails)", f"{flaky4:.4f}")
-    assert close(se, 0.0474, 5e-5) and close(p4, 6.33e-5, 0.01e-5) and close(p3, 0.0027, 5e-5)
-    assert close(flaky, 0.418, 5e-4) and close(flaky4, 0.0126, 5e-5)
-    fuzz = 1 - (1 - 1 / 65_536) ** 100_000
-    show("P(hit 2-byte value in 100k random inputs)", f"{fuzz:.3f}")
-    assert close(fuzz, 0.783, 5e-4)
+    check("two-sided P(|Z|>4)", p4, "6.33e-05", ".2e")
+    check("two-sided P(|Z|>3)", p3, "0.00270", ".5f")
+    check("1 - P(|Z|>3)", 1 - p3, "0.9973", ".4f")
+    check("P(any of 200 3-SE tests fails)", 1 - (1 - p3) ** 200, "0.418", ".3f")
+    check("P(any of 200 4-SE tests fails)", 1 - (1 - p4) ** 200, "0.0126", ".4f")
+    check("P(hit 2-byte value in 100k random inputs)", 1 - (1 - 1 / 65_536) ** 100_000, "0.783", ".3f")
     eps = float(np.finfo(float).eps)
-    show("float64 eps, unit roundoff", (f"{eps:.2e}", f"{eps / 2:.2e}"))
     assert eps == 2.0**-52
-    naive_bound = 1_000_000 * np.finfo(float).eps / 2
-    show("naive summation relative bound n*u for n=1e6", f"{naive_bound:.2e}")
-    assert close(naive_bound, 1.11e-10, 0.01e-10)
+    check("unit roundoff u = eps/2", eps / 2, "1.11e-16", ".2e")
+    check("naive summation relative bound n*u for n=1e6", 1_000_000 * eps / 2, "1.11e-10", ".2e")
 
     print("all problem-set numbers asserted")
 

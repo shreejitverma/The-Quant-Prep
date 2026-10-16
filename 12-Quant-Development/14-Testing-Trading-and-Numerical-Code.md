@@ -66,6 +66,7 @@ Library traps:
 - NumPy `np.isclose(a, b)` uses $|a - b| \le \text{atol} + \text{rtol}\,|b|$ with defaults `rtol=1e-05`, `atol=1e-08`: it is asymmetric (`np.isclose(1, 2, rtol=0.5, atol=0)` is `True`, swapped it is `False`), and the default `atol` makes every pair of quantities below about $10^{-8}$ "equal", for example `1e-9` and `2e-9`; set `atol` explicitly for small quantities such as discount-factor sensitivities or probabilities of default.
 
 A tolerance should come from an error analysis, not from loosening until the test passes: the condition number of the problem times the algorithm's error bound (for recursive summation, $|\hat{s} - s| \le (n-1)u\sum|x_i|$ to first order, Higham chapter 4), the truncation error of a finite difference, or the standard error of a simulation.
+Kahan's compensated summation carries each addition's rounding error into the next term, and its bound $|\hat{s} - s| \le (2u + O(nu^2))\sum|x_i|$ (Higham chapter 4) no longer grows with $n$ to first order; it is the cheap fix when a long running total (P&L, position notional, a Monte Carlo accumulator) must not drift.
 
 ### Reproducibility and determinism
 
@@ -78,7 +79,8 @@ Sources of run-to-run difference, and the fix for each:
   Tests that pin exact counts therefore use a self-contained generator (this note's code uses SplitMix64).
   For parallel streams spawn independent children (`np.random.SeedSequence(seed).spawn(k)`), never seed workers with `seed + i` ad hoc.
 - **Summation order.** Floating-point addition is not associative, so a parallel reduction whose chunking depends on thread count gives different bits on different machines.
-  Fix the chunking (a deterministic reduction tree), or use compensated or exact summation (`math.fsum`) where it matters.
+  Fix the chunking (a deterministic reduction tree), or use compensated (Kahan) or exact summation (`math.fsum`) where it matters.
+  Compilers do not reassociate floating-point sums unless allowed to (`-ffast-math` or `-fassociative-math`), which is one more reason to keep those flags off code with golden outputs.
 - **Compiler and platform.** FMA contraction, `-ffast-math`, vectorized reductions and different `libm` implementations change the last bits; pin flags, and keep cross-platform golden tolerances above that noise.
 - **Iteration order.** Python randomizes `str` hashes per process (`PYTHONHASHSEED`), so iterating a `set` of strings can change order between runs; C++ `unordered_map` order depends on the implementation.
   Sort before emitting output.
@@ -172,12 +174,14 @@ The ulp distance between `0.0` and `-0.0` is 0, and between the smallest positiv
 Sum 100,000 uniforms on $[-1000, 1000]$ (SplitMix64 seed 14).
 The correctly rounded sum (`math.fsum`) is `-18009.51879856792`; a left-to-right loop is 179 ulps away, the reversed loop 103 ulps, and splitting into 1, 2, 4, 8 or 16 chunks (as a parallel reduction would) gives 5 different results, the worst 533 ulps away.
 None of them is a bug; a test that compares bits across thread counts is.
+A Kahan compensated loop over the same data lands exactly on the `math.fsum` result, 0 ulps away.
 The extreme case: a loop over `[1e16, 1.0, -1e16]` returns `0.0` while `math.fsum` returns `1.0`, and from Python 3.12 the built-in `sum()` of floats also returns `1.0` because it uses compensated summation.
 
 ### 3. Monte Carlo tolerance and the false-failure budget
 
 Black-Scholes call, $S = K = 100$, $r = 5\%$, $\sigma = 20\%$, $T = 1$: analytic $10.4506$.
-With 200,000 paths the estimate is about 10.4437 with standard error 0.0329, a z-score of about -0.21 (NumPy `Generator`, seed 2024; the exact estimate can change with NumPy versions because distribution streams are not guaranteed).
+With 200,000 paths the estimate is 10.3970 with standard error 0.0328, a z-score of -1.63, comfortably inside a 4-SE tolerance.
+The normals come from the raw PCG64 stream (seed 2024) through a Box-Muller transform, so the estimate is fixed by the algorithm and the seed; `Generator.standard_normal` is a distribution method that NEP 19 allows to change in a NumPy feature release, so a test that pins an exact estimate must not use it.
 A two-sided 4-SE test fails falsely with probability $6.33 \times 10^{-5}$, a 3-SE test with $2.70 \times 10^{-3}$; with 1000 such tests per CI run, 3 SE gives 2.7 false failures per run on average, which is a flaky suite by construction.
 Use 4 to 5 SE and enough paths that the tolerance is still tight enough to catch real bugs.
 
@@ -192,8 +196,8 @@ The fixed version passes 2000 random cases.
 ### 5. Metamorphic tests on a pricer, and why they need tolerances
 
 On 10,000 random parameter sets (SplitMix64 seed 6) the Black-Scholes implementation satisfies put-call parity to a relative error below the asserted $10^{-13}$ (the author's run prints a maximum of 5.6e-16) and homogeneity to the same level, with no bound violations.
-An exact monotonicity check (bump $S$ or $\sigma$ by 1% and require the price not to fall) reports 6 violations on the author's machine, all rounding noise: with a tolerance of $10^{-12}S$ there are 0.
-The count of strict violations depends on the platform's `libm`, which is itself a lesson: assert the tolerant version.
+An exact monotonicity check (bump $S$ or $\sigma$ by 1% and require the price not to fall) reports a handful of violations, all rounding noise: with a tolerance of $10^{-12}S$ there are 0.
+The count of strict violations depends on the platform's `libm` (6 on the macOS machine used to write this note; the script asserts only that it is nonzero and below 100), which is itself a lesson: assert the tolerant version.
 
 ### 6. Fuzzing a length-prefixed parser
 
@@ -240,6 +244,9 @@ The diff points straight at the cause: event ordering, not strategy logic.
 
 > [!question]- qd-testing-sum-order | Why can a parallel sum give different bits on different machines, and what do you do?
 > Floating-point addition is not associative and the chunking follows the thread count. Fix the reduction tree, use compensated or exact summation where it matters, or compare with a tolerance derived from $(n-1)u\sum|x_i|$.
+
+> [!question]- qd-testing-kahan | How does Kahan summation work, and why use it for a long running total?
+> Keep a compensation term: `y = x - c; t = s + y; c = (t - s) - y; s = t`, so each addition's rounding error is subtracted from the next term. Its error bound is about $2u\sum|x_i|$, independent of $n$ to first order, versus $(n-1)u\sum|x_i|$ for a plain loop; on 100,000 uniforms the plain loop is 179 ulps from the correctly rounded sum and Kahan is 0. It breaks under `-ffast-math`, which may simplify `(t - s) - y` to zero.
 
 > [!question]- qd-testing-seed-portability | You seeded `std::mt19937` and used `std::uniform_int_distribution`; why do Linux and macOS builds disagree?
 > The standard fixes the engine's output sequence but not the distribution's algorithm, so libstdc++ and libc++ map the same engine output to different integers. Use your own mapping (or your own small generator) when exact values matter.

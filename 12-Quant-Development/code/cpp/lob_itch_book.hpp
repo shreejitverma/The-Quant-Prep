@@ -22,6 +22,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <unordered_map>
 #include <vector>
@@ -61,14 +62,20 @@ class BookBuilder {
     };
     std::uint16_t locate_;
     std::unordered_map<std::uint64_t, Resting> orders_;
-    std::map<std::uint32_t, std::uint64_t> bids_;  // price -> displayed shares
+    std::map<std::uint32_t, std::uint64_t, std::greater<>> bids_;  // price -> displayed shares, best first
     std::map<std::uint32_t, std::uint64_t> asks_;
 
-    void level_add(bool buy, std::uint32_t price, std::int64_t delta) {
-        auto& side = buy ? bids_ : asks_;
+    template <typename LevelMap>
+    static void bump(LevelMap& side, std::uint32_t price, std::int64_t delta) {
         auto it = side.try_emplace(price, 0).first;
         it->second = static_cast<std::uint64_t>(static_cast<std::int64_t>(it->second) + delta);
         if (it->second == 0) side.erase(it);
+    }
+    void level_add(bool buy, std::uint32_t price, std::int64_t delta) {
+        if (buy)
+            bump(bids_, price, delta);
+        else
+            bump(asks_, price, delta);
     }
 
     Status add(std::uint64_t ref, char side, std::uint32_t shares, std::uint32_t price) {
@@ -174,7 +181,7 @@ public:
         const auto it = asks_.find(price);
         return it == asks_.end() ? 0 : it->second;
     }
-    [[nodiscard]] std::uint32_t best_bid() const { return bids_.empty() ? 0 : bids_.rbegin()->first; }
+    [[nodiscard]] std::uint32_t best_bid() const { return bids_.empty() ? 0 : bids_.begin()->first; }
     [[nodiscard]] std::uint32_t best_ask() const { return asks_.empty() ? 0 : asks_.begin()->first; }
     [[nodiscard]] std::size_t live_orders() const { return orders_.size(); }
 };

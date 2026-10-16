@@ -70,7 +70,7 @@ Components and their contracts:
 - **Data handler**: reads the tape (order-by-order, depth snapshots or trades) in exchange-time order and schedules each event once; it never lets a consumer peek ahead.
 - **Event heap**: a priority queue of `(timestamp, seq, kind, payload)`; `seq` is a global insertion counter, so equal timestamps resolve in scheduling order and the run is reproducible.
 - **Simulated exchange**: a replica of the venue's book plus your resting orders, with a queue model, a fill model and a fee model; it sees tape events at their exchange timestamps.
-- **Strategy**: receives market data at exchange time plus market-data latency and fill reports at fill time plus report latency; it can only act through `send`, which stamps the order with the current simulated time.
+- **Strategy**: receives market data at exchange time plus market-data latency and fill reports at fill time plus report latency (the repo's simulator reuses the market-data latency for reports); it can only act through `send`, which stamps the order with the current simulated time.
 - **Risk**: the same pre-trade checks as production ([Risk Checks and Order Management](13-Risk-Checks-and-Order-Management.md)), because a strategy that only works when limits are ignored does not work.
 - **Portfolio**: position, cash, fees and marks; it is updated from fills, never from the strategy's intentions.
 
@@ -97,6 +97,7 @@ What happens next depends on the data:
 | Optimistic | $A \leftarrow \max(0, A - c)$ | Overstates fills |
 
 The repo's simulator uses pro rata; a trade at your price consumes $A$ first and only the excess fills you; a size increase joins behind you; a trade strictly through your price fills all of your remaining quantity at your limit.
+A book update that shows an opposite quote at or through your resting price also means you would have traded (the incoming order would have matched you); a simulator must either fill you there or flag the tape as inconsistent with your order, and the repo's known-answer tape is built so this never happens.
 Calibrate the rule by comparing simulated fill rates with live fill rates on the same orders: this "sim versus live" reconciliation is the single most valuable test a trading-simulation team runs.
 
 ### Market orders, marketable limits and impact
@@ -106,10 +107,18 @@ Replaying history assumes your orders do not change what other participants did 
 That is acceptable when your size is small relative to the displayed liquidity and false when it is not.
 Two standard ways to put impact back:
 
-- **Square-root rule of thumb**: the average cost of a metaorder of $Q$ shares in a stock with daily volume $V$ and daily volatility $\sigma$ is about $Y\sigma\sqrt{Q/V}$ with $Y$ of order 1 (Bouchaud, Bonart, Donier and Gould, *Trades, Quotes and Prices*, the chapter on the square-root law).
+- **Square-root rule of thumb**: the price impact of a metaorder of $Q$ shares in a stock with daily volume $V$ and daily volatility $\sigma$ is about $Y\sigma\sqrt{Q/V}$ with $Y$ of order 1 (Bouchaud, Bonart, Donier and Gould, *Trades, Quotes and Prices*, the chapter on the square-root law).
+  This is the price move by the end of the metaorder; if impact grows as the square root of the quantity executed so far, the average execution cost per share is $\frac{1}{Q}\int_0^Q Y\sigma\sqrt{q/V}\,dq = \tfrac{2}{3}Y\sigma\sqrt{Q/V}$, so practitioners treat the formula as a cost estimate up to an order-one factor.
 - **Almgren and Chriss (2000)**: permanent impact linear in trading rate shifts the price for all later trades; temporary impact linear in rate affects only the current trade; the optimal schedule trades off expected cost against variance of cost.
 
 In a simulator, impact is applied by shifting the replayed book after your fills (permanent part) and by worsening your own execution price (temporary part); both are parameters to calibrate, not facts.
+
+### Adverse selection and markouts
+
+A passive fill is not a random event: you are filled when someone wants to trade with you, which is disproportionately just before the price moves against you.
+The trade-through rule makes this visible: in the known-answer tape below the second passive fill at 100.00 happens as the market trades at 99.99, so the order is filled exactly when it is worst to own.
+A simulator that fills passive orders whenever the price touches the level, or at a fixed probability, misses this and overstates market-making PnL.
+The diagnostic is the markout: the mid a fixed horizon after each fill minus the fill price (signed by side), averaged per order type and horizon; compare simulated and live markout curves, not only fill rates.
 
 ### Fees and rebates
 
@@ -209,6 +218,7 @@ That is the test to keep in CI: it catches unordered iteration, wall-clock reads
 - A strategy class with backtest-only branches, so the code that made money in simulation is not the code that trades.
 - Calibrating fill and impact models on the same period you evaluate the strategy on.
 - Trusting a simulator that has never been reconciled against live fills.
+- Ignoring a book update that shows an opposite quote at or through your resting price, so your order sits locked or crossed against the tape without trading.
 
 ## Interview questions
 
@@ -268,6 +278,9 @@ That is the test to keep in CI: it catches unordered iteration, wall-clock reads
 
 > [!question]- qd-bt-parallel-days | How do you make a multi-year tick-level backtest fast without breaking determinism?
 > Make days independent (state reset or carried positions passed explicitly), run days in parallel, each with its own seed derived from (base seed, date), and merge results in date order. Speed comes from parallelism, not from relaxing the event order within a day.
+
+> [!question]- qd-bt-markout | Your simulated market-making strategy has the same passive fill rate as live trading but far better PnL. What do you check?
+> Markouts: the signed mid move a fixed horizon after each fill, simulated versus live. Matching fill rates says nothing about which fills you got; live fills are adversely selected (you are filled just before the price moves through you), and a touch-based or random fill model fills you on benign moves too. Fix the queue and trade-through model until the markout curves agree.
 
 > [!question]- qd-bt-fees-config | Why should fees, tick sizes and lot sizes live in point-in-time configuration?
 > They change (fee tiers, tick-size regimes, round-lot definitions), so a backtest of 2019 must use 2019 values; hard-coding today's values is a form of look-ahead and silently changes PnL.

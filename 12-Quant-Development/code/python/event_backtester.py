@@ -18,6 +18,7 @@ Design (one instrument, prices in integer ticks of $0.01, times in integer micro
     reduce `ahead` pro rata: ahead -= cancelled * ahead / others_at_level.
   - An increase in displayed size joins behind us and does not change `ahead`.
   - A trade strictly through our price fills all of our remaining quantity at our limit.
+* At most one of our orders rests per (side, price); a second one raises.
 * Market orders walk the latest book on the opposite side, level by level.
 * The tape does not contain our orders, so our fills do not remove liquidity from later tape
   events (the standard "no market impact on replay" assumption, stated explicitly).
@@ -153,6 +154,9 @@ class SimulatedExchange:
                 raise RuntimeError(f"market order {o.oid} exhausted the book with {left} unfilled")
             return fills
         if left > 0:  # the unfilled remainder of a limit order rests at the back of the queue
+            if any(r.side == o.side and r.price == o.price for r in self.resting.values()):
+                # The queue model tracks one of our orders per level (`tracked` is keyed by level).
+                raise RuntimeError(f"order {o.oid}: already resting at {o.side} {o.price}")
             size = self._level_size(self._side_levels(o.side), o.price)
             self.resting[o.oid] = RestingOrder(o.oid, o.side, o.price, left, float(size), t)
             self.tracked[(o.side, o.price)] = size
@@ -292,9 +296,11 @@ def known_answer_tape() -> list[tuple[int, object]]:
         (41, Book(((10000, 260), (9999, 800)), ((10001, 300), (10002, 600)))),
         (50, Trade(10000, 150, "S")),
         (51, Book(((10000, 110), (9999, 800)), ((10001, 300), (10002, 600)))),
-        (58, Book(((9999, 800), (9998, 500)), ((10000, 200), (10001, 300)))),  # bid level pulled
+        # Bid level pulled. The asks stay above our 100.00 bid: an ask at or below a price where we rest
+        # would have traded with us, and this simulator does not infer fills from book updates.
+        (58, Book(((9999, 800), (9998, 500)), ((10001, 300), (10002, 600)))),
         (60, Trade(9999, 400, "S")),  # trades through our 100.00 bid
-        (70, Book(((9999, 60), (9998, 500)), ((10000, 200), (10001, 300)))),
+        (70, Book(((9999, 60), (9998, 500)), ((10001, 300), (10002, 600)))),
     ]
 
 
@@ -468,18 +474,20 @@ def main() -> None:
     # Theory: half the time consecutive prints sit on opposite sides; then the contrarian signal earns the
     # half-spread h. Otherwise the signal is noise with zero mean. So E[same] is about h / 2 = 0.0025.
     print(f"  theory: same-print about h/2 = {0.005 / 2:.4f}, next-event exactly -h = {-0.005:.4f}")
+    # Note 09 example 3 quotes the seed-11 printed value +0.00251 and the theory value about +0.0025.
+    assert f"{same:+.5f}" == "+0.00251"
     assert abs(same - 0.0025) < 0.0002
-    # Same-print fill harvests about half of the half-spread per trade; a realistic fill pays the half-spread.
-    assert 0.0022 < same < 0.0028
-    assert abs(nxt - (-0.005)) < 1e-12
+    # A realistic fill pays the half-spread exactly: -h = -0.0050.
+    assert f"{nxt:+.4f}" == "-0.0050" and abs(nxt - (-0.005)) < 1e-12
 
     print("Square-root impact")
     for vol, part in ((0.02, 0.01), (0.02, 0.04), (0.015, 0.10)):
         bps = sqrt_impact_bps(vol, part)
         print(f"  sigma {vol:.3f}, Q/V {part:.2f}: {bps:.1f} bp")
-    assert abs(sqrt_impact_bps(0.02, 0.01) - 20.0) < 1e-9
-    assert abs(sqrt_impact_bps(0.02, 0.04) - 40.0) < 1e-9
-    assert abs(sqrt_impact_bps(0.015, 0.10) - 47.43416490252569) < 1e-9
+    # Note 09 example 4 and card qd-bt-sqrt-impact quote 20.0, 40.0 and 47.4 bp.
+    assert f"{sqrt_impact_bps(0.02, 0.01):.1f}" == "20.0"
+    assert f"{sqrt_impact_bps(0.02, 0.04):.1f}" == "40.0"
+    assert f"{sqrt_impact_bps(0.015, 0.10):.1f}" == "47.4"
 
     print("all assertions passed")
 

@@ -4,7 +4,8 @@
 //
 // Covers: each check at its boundary, illegal transitions, duplicate execution reports,
 // overfills and reconciliation failures tripping the kill switch, fills racing a cancel,
-// replace exposure, cancel rejects, and kill-switch behaviour. Framework-free.
+// replace exposure, cancel rejects, kill-switch behaviour, the FIX 4.4 Appendix D cancel
+// scenarios B.1.b to B.1.d, and fail-closed handling of clock steps. Framework-free.
 
 #include "pretrade_risk_oms.hpp"
 
@@ -215,8 +216,9 @@ void test_replace_checks_worst_case_and_applies() {
     EXPECT(gw.submit({"o", "ABC", Side::Buy, 1000, 5'000}, 0) == RejectReason::None);
     EXPECT(gw.submit({"q", "ABC", Side::Buy, 900, 4'990}, 20 * kMs) == RejectReason::None);  // worst case 1900
     ack(gw, "o", "e1", 1000);
-    // Growing o to 1101 would allow 2001 long in the worst case.
+    // 1101 is above the 1000-share order limit, so the per-order check fires first.
     EXPECT(gw.requestReplace("o", "r1", 1101, 5'000, 40 * kMs) == RejectReason::MaxQuantity);
+    // With a looser order limit, growing o to 1101 would allow 2001 long in the worst case.
     RiskLimits l = limits();
     l.maxOrderQty = 5000;
     l.maxOrderNotionalCents = 100'000'000;
@@ -251,6 +253,97 @@ void test_kill_switch_lists_live_orders_and_allows_cancels() {
     EXPECT(gw.killReason() == "manual");               // the first reason is kept
 }
 
+// FIX 4.4 Volume 4, Appendix D, B.1.b: a fill that crosses our cancel on the wire carries the
+// venue's pre-cancel OrdStatus (1), a later one carries Pending Cancel (6); both must be accepted.
+void test_fix44_b1b_fill_crossing_cancel() {
+    RiskLimits l = limits();
+    l.maxOrderQty = 10'000;
+    l.maxOrderNotionalCents = 100'000'000;
+    l.maxAbsPosition = 20'000;
+    l.creditLimitCents = 100'000'000;
+    RiskGateway gw(l);
+    gw.setReferencePrice("ABC", 5'000);
+    EXPECT(gw.submit({"X", "ABC", Side::Buy, 10'000, 5'000}, 0) == RejectReason::None);
+    ack(gw, "X", "e1", 10'000);
+    EXPECT(gw.onExecutionReport({"e2", "X", "", ExecType::Trade, OrdStatus::PartiallyFilled, 2'000, 5'000, 8'000, 2'000}) == ApplyResult::Applied);
+    EXPECT(gw.requestCancel("X", "Y") == RejectReason::None);
+    EXPECT(gw.onExecutionReport({"e3", "X", "", ExecType::Trade, OrdStatus::PartiallyFilled, 3'000, 5'000, 5'000, 5'000}) == ApplyResult::Applied);
+    EXPECT(gw.order("X")->status == OrdStatus::PendingCancel);
+    EXPECT(gw.onExecutionReport({"e4", "Y", "X", ExecType::PendingCancel, OrdStatus::PendingCancel, 0, 0, 5'000, 5'000}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"e5", "X", "", ExecType::Trade, OrdStatus::PendingCancel, 1'000, 5'000, 4'000, 6'000}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"e6", "Y", "X", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 6'000}) == ApplyResult::Applied);
+    EXPECT(gw.position("ABC") == 6'000);
+    EXPECT(!gw.killed());
+}
+
+// B.1.c: the order fills completely while the cancel is pending. Pending Cancel takes precedence
+// over Filled in that fill's OrdStatus, and the venue's cancel reject then reports Filled.
+void test_fix44_b1c_filled_while_pending_cancel() {
+    RiskGateway gw = gateway();
+    EXPECT(gw.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw, "X", "e1", 100);
+    EXPECT(gw.requestCancel("X", "Y") == RejectReason::None);
+    EXPECT(gw.onExecutionReport({"e2", "Y", "X", ExecType::PendingCancel, OrdStatus::PendingCancel, 0, 0, 100, 0}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"e3", "X", "", ExecType::Trade, OrdStatus::PendingCancel, 100, 5'000, 0, 100}) == ApplyResult::Applied);
+    EXPECT(gw.order("X")->status == OrdStatus::PendingCancel && gw.order("X")->leavesQty == 0);
+    EXPECT(gw.openQty("ABC", Side::Buy) == 0);  // nothing left that can execute
+    EXPECT(gw.onCancelReject("Y") == ApplyResult::Applied);
+    EXPECT(gw.order("X")->status == OrdStatus::Filled);
+    EXPECT(gw.position("ABC") == 100);
+    EXPECT(!gw.killed());
+}
+
+// B.1.d: a cancel sent before the ack; the venue acks the order (39=0), then cancels it.
+void test_fix44_b1d_cancel_before_ack() {
+    RiskGateway gw = gateway();
+    EXPECT(gw.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    EXPECT(gw.requestCancel("X", "Y") == RejectReason::None);
+    EXPECT(gw.onExecutionReport({"e1", "Y", "X", ExecType::PendingCancel, OrdStatus::PendingCancel, 0, 0, 100, 0}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"e2", "X", "", ExecType::New, OrdStatus::New, 0, 0, 100, 0}) == ApplyResult::Applied);
+    EXPECT(gw.order("X")->status == OrdStatus::PendingCancel);
+    EXPECT(gw.onExecutionReport({"e3", "Y", "X", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 0}) == ApplyResult::Applied);
+    EXPECT(gw.order("X")->status == OrdStatus::Canceled);
+    // Second half of B.1.d: canceled before it is ever accepted.
+    EXPECT(gw.submit({"A", "ABC", Side::Buy, 50, 5'000}, 20 * kMs) == RejectReason::None);
+    EXPECT(gw.requestCancel("A", "B") == RejectReason::None);
+    EXPECT(gw.onExecutionReport({"e4", "B", "A", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 0}) == ApplyResult::Applied);
+    EXPECT(!gw.killed());
+}
+
+// A replace whose new quantity is used up by fills while it is pending completes the order
+// (FIX 4.4 Appendix D, C.3.b and C.3.c).
+void test_replace_overtaken_by_fills() {
+    RiskGateway gw = gateway();
+    EXPECT(gw.submit({"o", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw, "o", "e1", 100);
+    EXPECT(gw.onExecutionReport({"e2", "o", "", ExecType::Trade, OrdStatus::PartiallyFilled, 40, 5'000, 60, 40}) == ApplyResult::Applied);
+    EXPECT(gw.requestReplace("o", "r", 60, 5'000, 20 * kMs) == RejectReason::None);  // shrink to 60
+    EXPECT(gw.onExecutionReport({"e3", "o", "", ExecType::Trade, OrdStatus::PartiallyFilled, 20, 5'000, 40, 60}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"e4", "r", "o", ExecType::Replaced, OrdStatus::Filled, 0, 0, 0, 60}) == ApplyResult::Applied);
+    EXPECT(gw.order("o")->status == OrdStatus::Filled && gw.order("o")->orderQty == 60);
+    // Appendix D, C.3.c: replace 100 -> 70 crosses a fill of 80; the venue amends the order to 80, Filled.
+    EXPECT(gw.submit({"p", "ABC", Side::Buy, 100, 5'010}, 40 * kMs) == RejectReason::None);
+    ack(gw, "p", "f1", 100);
+    EXPECT(gw.requestReplace("p", "rp", 70, 5'010, 60 * kMs) == RejectReason::None);
+    EXPECT(gw.onExecutionReport({"f2", "p", "", ExecType::Trade, OrdStatus::PartiallyFilled, 80, 5'010, 20, 80}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"f3", "rp", "p", ExecType::Replaced, OrdStatus::Filled, 0, 0, 0, 80}) == ApplyResult::Applied);
+    EXPECT(gw.order("p")->status == OrdStatus::Filled && gw.order("p")->orderQty == 80);
+    EXPECT(!gw.killed());
+}
+
+// Fail closed on bad clocks and absurd references instead of wrapping or overflowing.
+void test_clock_step_back_and_reference_bound() {
+    RiskLimits l = limits();
+    l.maxMessagesPerWindow = 1;
+    RiskGateway gw(l);
+    gw.setReferencePrice("ABC", 5'000);
+    EXPECT(gw.submit({"t1", "ABC", Side::Buy, 1, 5'000}, 5'000 * kMs) == RejectReason::None);
+    // The clock steps back 1 s: the unsigned age must not wrap and empty the window.
+    EXPECT(gw.submit({"t2", "ABC", Side::Buy, 2, 5'000}, 4'000 * kMs) == RejectReason::Throttle);
+    gw.setReferencePrice("HUGE", kMaxPriceCents + 1);
+    EXPECT(gw.submit({"h1", "HUGE", Side::Buy, 1, 1'000}, 6'000 * kMs) == RejectReason::NoReferencePrice);
+}
+
 }  // namespace
 
 int main() {
@@ -269,6 +362,11 @@ int main() {
     RUN_TEST(test_fill_racing_cancel_then_cancel_reject);
     RUN_TEST(test_replace_checks_worst_case_and_applies);
     RUN_TEST(test_kill_switch_lists_live_orders_and_allows_cancels);
+    RUN_TEST(test_fix44_b1b_fill_crossing_cancel);
+    RUN_TEST(test_fix44_b1c_filled_while_pending_cancel);
+    RUN_TEST(test_fix44_b1d_cancel_before_ack);
+    RUN_TEST(test_replace_overtaken_by_fills);
+    RUN_TEST(test_clock_step_back_and_reference_bound);
     std::cout << "\n" << (g_total - g_failures) << "/" << g_total << " assertions passed" << std::endl;
     return g_failures == 0 ? 0 : 1;
 }

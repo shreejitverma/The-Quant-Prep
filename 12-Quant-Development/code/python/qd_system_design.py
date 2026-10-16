@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
 import random
 from collections import deque
 from dataclasses import dataclass, field
@@ -48,13 +47,13 @@ def capacity() -> None:
     print(f"   {packets_per_s:,.0f} packets/s -> {gbps:.3f} Gbit/s")
     assert packet_payload == 780 and wire_bytes_per_packet == 846
     assert packets_per_s == 250_000
-    assert math.isclose(gbps, 1.692)
+    assert f"{gbps:.3f}" == "1.692"
 
     print("1b. per-message processing budget for one thread at peak")
     budget_ns = 1e9 / peak_msgs_per_s
     budget_at_target = budget_ns * utilization_target
     print(f"   {budget_ns:.0f} ns per message to keep up; {budget_at_target:.0f} ns at {utilization_target:.0%} utilization")
-    assert budget_ns == 200 and math.isclose(budget_at_target, 140)
+    assert budget_ns == 200 and f"{budget_at_target:.0f}" == "140"
 
     print("1c. daily capture storage")
     msgs_per_day = avg_msgs_per_s * session_s
@@ -62,17 +61,17 @@ def capacity() -> None:
     print(f"   {msgs_per_day:,.0f} messages/day, {raw_gb:,.1f} GB raw, {raw_gb / compression:,.1f} GB at {compression:.0f}x compression")
     print(f"   one year of 252 sessions compressed: {252 * raw_gb / compression / 1000:,.1f} TB")
     assert msgs_per_day == 23_400_000_000
-    assert math.isclose(raw_gb, 889.2)
-    assert math.isclose(raw_gb / compression, 222.3)
-    assert math.isclose(252 * raw_gb / compression / 1000, 56.0196)
+    assert f"{raw_gb:.1f}" == "889.2"
+    assert f"{raw_gb / compression:.1f}" == "222.3"
+    assert f"{252 * raw_gb / compression / 1000:.1f}" == "56.0"
 
     print("1d. sequence number width")
     wrap_32_s = 2**32 / peak_msgs_per_s
     years_64 = 2**64 / 1e9 / (365.25 * 24 * 3600)
     print(f"   a 32-bit sequence number wraps after {wrap_32_s:,.0f} s ({wrap_32_s / 60:.1f} min) at peak")
     print(f"   a 64-bit counter at 1e9 per second lasts {years_64:,.0f} years")
-    assert round(wrap_32_s) == 859 and math.isclose(wrap_32_s / 60, 14.3, abs_tol=0.05)
-    assert round(years_64) == 585
+    assert f"{wrap_32_s:.0f}" == "859" and f"{wrap_32_s / 60:.1f}" == "14.3"
+    assert f"{years_64:.0f}" == "585"
 
     print("1e. recovery: replay from the last snapshot")
     snapshot_interval_s = 300

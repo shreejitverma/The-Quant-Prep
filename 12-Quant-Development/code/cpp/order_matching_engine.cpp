@@ -9,6 +9,7 @@
 // tests/test_lob_engine.cpp. Prices are integer ticks (here: cents).
 // Build: clang++ -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror order_matching_engine.cpp
 
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -68,11 +69,20 @@ int main() {
     check(ev[1] == Event{EventType::Fill, 5, 1, 10100, 300, Reason::None}, "fill 300 @ 101.00 against order 1 (time priority)");
     check(ev[2] == Event{EventType::Fill, 5, 2, 10100, 200, Reason::None}, "fill 200 @ 101.00 against order 2");
     check(ev[3] == Event{EventType::Fill, 5, 3, 10200, 100, Reason::None}, "fill 100 @ 102.00 against order 3");
-    const Qty notional = 300 * 10100 + 200 * 10100 + 100 * 10200;
-    std::printf("    filled 600, notional %lld cents, average price %.4f\n", static_cast<long long>(notional), notional / 600.0 / 100.0);
-    check(notional == 6'070'000, "notional 60,700.00");
-    check(notional * 10'000 / 600 / 100 == 1'011'666, "average price 101.1666... (prints 101.1667)");
-    check(book.best_ask() == 10200 && book.depth_at(Side::Sell, 10200) == 400, "order 3 keeps 400 at 102.00");
+    // Notional and average price from the engine's fill events, not from the expected fills.
+    Qty filled = 0;
+    Qty notional = 0;  // cents x shares
+    for (const auto& e : ev)
+        if (e.type == EventType::Fill) {
+            filled += e.qty;
+            notional += e.qty * e.price;
+        }
+    const double avg = static_cast<double>(notional) / static_cast<double>(filled) / 100.0;
+    std::printf("    filled %lld, notional %.2f, average price %.4f\n", static_cast<long long>(filled), static_cast<double>(notional) / 100.0, avg);
+    check(filled == 600, "qd-lobimpl-walk-book: 600 filled");
+    check(notional == 6'070'000, "qd-lobimpl-walk-book: notional 60,700.00");
+    check(std::lround(avg * 1e4) == 1'011'667, "qd-lobimpl-walk-book: average price 101.1667");
+    check(book.best_ask() == 10200 && book.depth_at(Side::Sell, 10200) == 400, "qd-lobimpl-walk-book: 400 remain offered at 102.00");
 
     std::printf("2. cancel/replace and priority\n");
     OrderBook pq(1024);
@@ -128,6 +138,10 @@ int main() {
     auction.submit(limit(43, Side::Sell, 9900, 15), ev);
     auction.submit(limit(44, Side::Sell, 10000, 25), ev);
     auction.submit(limit(45, Side::Sell, 10200, 20), ev);
+    // Independent recomputation of the note's table (and card qd-lobimpl-auction-numeric) from the
+    // order list; the engine's clearing price is checked against it below.
+    const Qty want_buy[] = {60, 60, 30, 10};
+    const Qty want_sell[] = {15, 40, 40, 60};
     const Qty want_exec[] = {15, 40, 30, 10};
     int k = 0;
     for (Price p : {9900, 10000, 10100, 10200}) {
@@ -138,13 +152,14 @@ int main() {
             if (sp <= p) sell += sq;
         std::printf("    price %lld: buy %lld sell %lld executable %lld\n", static_cast<long long>(p), static_cast<long long>(buy),
                     static_cast<long long>(sell), static_cast<long long>(std::min(buy, sell)));
-        check(std::min(buy, sell) == want_exec[k++], "executable volume table");
+        check(buy == want_buy[k] && sell == want_sell[k] && std::min(buy, sell) == want_exec[k], "qd-lobimpl-auction-numeric: volume table");
+        ++k;
     }
     ev.clear();
     const auto res = auction.uncross(10050, ev);
     std::printf("    clearing price %lld volume %lld imbalance %lld, %zu fills\n", static_cast<long long>(res->price),
                 static_cast<long long>(res->volume), static_cast<long long>(res->imbalance), ev.size());
-    check(res->price == 10000 && res->volume == 40 && res->imbalance == 20, "auction clears 40 @ 100.00, buy imbalance 20");
+    check(res->price == 10000 && res->volume == 40 && res->imbalance == 20, "qd-lobimpl-auction-numeric: clears 40 @ 100.00, buy imbalance 20");
     Qty traded = 0;
     for (const auto& e : ev) traded += e.qty;
     check(traded == 40 && ev.size() == 4, "four fills totalling 40");
@@ -181,6 +196,11 @@ int main() {
     check(st == it::Status::Ok && bb.applied == 7 && bb.skipped == 1 && bb.errors == 0, "stream counts");
     check(stream.size() == 3 * (2 + 36) + (2 + 31) + (2 + 23) + (2 + 35) + (2 + 36) + (2 + 19), "framed size");
     check(stream.size() == 268, "framed size is 268 bytes");
+    std::printf("    ITCH lengths: A %zu F %zu E %zu C %zu X %zu D %zu U %zu\n", it::message_length('A'), it::message_length('F'),
+                it::message_length('E'), it::message_length('C'), it::message_length('X'), it::message_length('D'), it::message_length('U'));
+    check(it::message_length('A') == 36 && it::message_length('F') == 40 && it::message_length('E') == 31 && it::message_length('C') == 36 &&
+              it::message_length('X') == 23 && it::message_length('D') == 19 && it::message_length('U') == 35,
+          "qd-lobimpl-itch-lengths: ITCH 5.0 sections 4.3 and 4.4");
     check(bb.best_bid() == 1'000'100 && bb.bid_shares(1'000'100) == 150, "bid 150 = order 2's 200 - 50");
     check(bb.best_ask() == 1'000'200 && bb.ask_shares(1'000'200) == 400, "replaced ask 400 @ 100.0200");
     check(bb.live_orders() == 2, "orders 2 and 4 remain");

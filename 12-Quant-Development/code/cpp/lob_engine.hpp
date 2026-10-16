@@ -2,17 +2,28 @@
 //
 // Data structures
 //   - Orders live in a preallocated pool (std::vector<OrderNode>) addressed by 32-bit index, with a
-//     free list: no allocation per order in steady state.
+//     free list: the pool itself never allocates after construction.
 //   - Each price level is a FIFO, an intrusive doubly linked list threaded through the pool by index
 //     (prev/next), so cancel of any order is O(1) once it is found.
-//   - Levels are kept in one std::map<Price, Level> per side: best bid is the last bid key, best ask
-//     the first ask key. O(log L) to create or erase a level, O(1) to reach the best one.
-//     (Production engines often replace the map by an array indexed by tick; lob_bench.cpp measures both.)
-//   - OrderId -> pool index in a hash map reserved for the pool capacity.
+//   - Levels are kept in one std::map<Price, Level, PriceOrder> per side, ordered so that begin() is
+//     the best price on both sides (descending bids, ascending asks). O(log L) to create a level,
+//     amortised O(1) to erase one through a stored iterator, O(1) to reach the best one.
+//     (Do not key bids ascending and read std::prev(end()): libc++ caches only the leftmost node, so
+//     that is O(log L) there; libstdc++ also caches the rightmost. Production engines often replace
+//     the map by an array indexed by tick; lob_bench.cpp measures both.)
+//   - OrderId -> pool index in a std::unordered_map reserved for the pool capacity. reserve() only
+//     presizes the bucket array: every insert still allocates a node, and each new price level
+//     allocates a map node. Production engines remove both (open-addressing id table or a dense id
+//     array, preallocated level arrays).
+//
+// Exception policy: the only operations that can throw are those allocations and the caller's event
+// vector growing. A half-applied command leaves no consistent book to recover, so the commands are
+// noexcept and std::bad_alloc terminates the process rather than corrupting state.
 //
 // Supported: limit and market orders; Day (rest), IOC and FOK time in force; post-only;
 // self-trade prevention (cancel resting, cancel aggressor, cancel both); cancel; cancel/replace
-// (a quantity decrease at the same price keeps priority, anything else loses it); and a
+// (a quantity decrease at the same price keeps priority, anything else loses it; the quantity is
+// the new open quantity, not FIX OrderQty, which counts the already-executed part); and a
 // single-price call auction (pre-open phase, then uncross).
 //
 // Events are appended to a caller-owned vector so the engine itself does no I/O.
@@ -22,9 +33,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <iterator>
 #include <map>
 #include <optional>
+#include <stdexcept>
 #include <unordered_map>
 #include <vector>
 
@@ -94,7 +105,13 @@ class OrderBook {
         Qty total = 0;
         std::uint32_t count = 0;
     };
-    using LevelMap = std::map<Price, Level>;
+    // One comparator type for both sides keeps a single LevelMap (and iterator) type while making
+    // begin() the best level on each side.
+    struct PriceOrder {
+        bool descending = false;
+        bool operator()(Price a, Price b) const noexcept { return descending ? b < a : a < b; }
+    };
+    using LevelMap = std::map<Price, Level, PriceOrder>;
 
     struct OrderNode {
         OrderId id = 0;
@@ -111,12 +128,13 @@ class OrderBook {
     std::vector<OrderNode> nodes_;
     std::vector<std::uint32_t> free_;
     std::unordered_map<OrderId, std::uint32_t> index_;
-    LevelMap bids_;
-    LevelMap asks_;
+    LevelMap bids_{PriceOrder{true}};  // best (highest) bid first
+    LevelMap asks_{PriceOrder{false}};  // best (lowest) ask first
     Phase phase_ = Phase::Continuous;
 
 public:
     explicit OrderBook(std::size_t max_orders, Phase phase = Phase::Continuous) : phase_(phase) {
+        if (max_orders >= kNil) throw std::length_error("OrderBook: pool indices are 32-bit");
         nodes_.resize(max_orders);
         free_.reserve(max_orders);
         for (std::size_t i = max_orders; i-- > 0;) free_.push_back(static_cast<std::uint32_t>(i));
@@ -126,7 +144,7 @@ public:
     // ------------------------------------------------------------------ queries
     [[nodiscard]] std::optional<Price> best_bid() const {
         if (bids_.empty()) return std::nullopt;
-        return std::prev(bids_.end())->first;
+        return bids_.begin()->first;
     }
     [[nodiscard]] std::optional<Price> best_ask() const {
         if (asks_.empty()) return std::nullopt;
@@ -156,7 +174,7 @@ public:
     }
 
     // ------------------------------------------------------------------ commands (HOT PATH)
-    void submit(const NewOrder& o, std::vector<Event>& out) {
+    void submit(const NewOrder& o, std::vector<Event>& out) noexcept {
         if (o.qty <= 0) return reject(o.id, Reason::BadQuantity, out);
         if (o.type == OrdType::Limit && o.price <= 0) return reject(o.id, Reason::BadPrice, out);
         if (o.type == OrdType::Market && o.post_only) return reject(o.id, Reason::BadPrice, out);
@@ -186,7 +204,7 @@ public:
         }
     }
 
-    void cancel(OrderId id, std::vector<Event>& out) {
+    void cancel(OrderId id, std::vector<Event>& out) noexcept {
         const auto it = index_.find(id);
         if (it == index_.end()) return reject(id, Reason::UnknownOrder, out);
         const std::uint32_t i = it->second;
@@ -197,7 +215,7 @@ public:
     // Cancel/replace. Same price and a quantity no larger than the open quantity: amend in place and
     // keep queue position. Otherwise: cancel and re-enter as a new Day limit order (loses priority,
     // and may trade immediately if the new price crosses).
-    void replace(OrderId old_id, OrderId new_id, Price new_price, Qty new_qty, std::vector<Event>& out) {
+    void replace(OrderId old_id, OrderId new_id, Price new_price, Qty new_qty, std::vector<Event>& out) noexcept {
         const auto it = index_.find(old_id);
         if (it == index_.end()) return reject(new_id, Reason::UnknownOrder, out);
         if (new_qty <= 0) return reject(new_id, Reason::BadQuantity, out);
@@ -235,7 +253,7 @@ public:
         for (Price p : candidates) {
             Qty buy = 0;
             Qty sell = 0;
-            for (auto it = bids_.lower_bound(p); it != bids_.end(); ++it) buy += it->second.total;
+            for (auto it = bids_.begin(); it != bids_.end() && it->first >= p; ++it) buy += it->second.total;
             for (auto it = asks_.begin(); it != asks_.end() && it->first <= p; ++it) sell += it->second.total;
             const AuctionResult r{p, std::min(buy, sell), buy - sell};
             if (r.volume == 0) continue;
@@ -245,13 +263,13 @@ public:
     }
 
     // Executes the auction at a single price, then switches to continuous trading.
-    std::optional<AuctionResult> uncross(Price reference, std::vector<Event>& out) {
+    std::optional<AuctionResult> uncross(Price reference, std::vector<Event>& out) noexcept {
         const auto result = indicative_auction(reference);
         phase_ = Phase::Continuous;
         if (!result) return result;
         const Price p = result->price;
         while (!bids_.empty() && !asks_.empty()) {
-            auto bit = std::prev(bids_.end());
+            auto bit = bids_.begin();
             auto ait = asks_.begin();
             if (bit->first < p || ait->first > p) break;
             const std::uint32_t b = bit->second.head;
@@ -287,7 +305,7 @@ private:
     bool would_cross(const NewOrder& o) const {
         const LevelMap& opp = o.side == Side::Buy ? asks_ : bids_;
         if (opp.empty()) return false;
-        return crosses(o, o.side == Side::Buy ? opp.begin()->first : std::prev(opp.end())->first);
+        return crosses(o, opp.begin()->first);
     }
 
     // Exactly the quantity match() would fill, walking in priority order and applying STP.
@@ -306,13 +324,8 @@ private:
             }
             return true;
         };
-        if (o.side == Side::Buy) {
-            for (auto it = opp.begin(); it != opp.end() && crosses(o, it->first); ++it)
-                if (!visit_level(it->second)) break;
-        } else {
-            for (auto it = opp.rbegin(); it != opp.rend() && crosses(o, it->first); ++it)
-                if (!visit_level(it->second)) break;
-        }
+        for (auto it = opp.begin(); it != opp.end() && crosses(o, it->first); ++it)
+            if (!visit_level(it->second)) break;
         return avail;
     }
 
@@ -320,7 +333,7 @@ private:
     bool match(const NewOrder& o, Qty& remaining, std::vector<Event>& out) {
         LevelMap& opp = o.side == Side::Buy ? asks_ : bids_;
         while (remaining > 0 && !opp.empty()) {
-            auto lit = o.side == Side::Buy ? opp.begin() : std::prev(opp.end());
+            const auto lit = opp.begin();
             if (!crosses(o, lit->first)) break;
             const Price px = lit->first;
             std::uint32_t cur = lit->second.head;

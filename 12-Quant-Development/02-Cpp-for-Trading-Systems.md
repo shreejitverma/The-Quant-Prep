@@ -58,7 +58,7 @@ The repo's `ResourceHandle` in [cpp_idioms.hpp](code/cpp/cpp_idioms.hpp) is a mo
 
 An rvalue reference `T&&` binds to temporaries and to objects cast with `std::move`.
 `std::move` does not move anything: it is a cast to an rvalue reference that permits a move constructor or move assignment to be chosen.
-A moved-from object is in a valid but unspecified state; only assign to it or destroy it.
+A moved-from standard-library object is in a valid but unspecified state; only assign to it, destroy it, or call functions without preconditions on it (your own types guarantee whatever they document).
 
 The detail interviews probe: `std::vector` relocates its elements when it grows, and it uses `std::move_if_noexcept`.
 If the move constructor is not `noexcept` and a copy constructor exists, the vector copies, to keep the strong exception guarantee (if a move threw halfway, the old buffer would be half-moved and unrecoverable).
@@ -71,7 +71,12 @@ For 1000 `emplace_back` calls without `reserve`, capacity doubles from 1 in both
 | either, after `reserve(1000)` | 0 | 0 |
 
 These counts are printed and asserted by [cpp_idioms_demo.cpp](code/cpp/cpp_idioms_demo.cpp) under both Clang (libc++) and GCC (libstdc++).
-Pass sink parameters by value and move them in; return by value and rely on copy elision (guaranteed for prvalues since C++17).
+Pass sink parameters by value and move them in; return by value and rely on copy elision (guaranteed for prvalues since C++17; named return value optimisation is permitted but not guaranteed).
+
+`T&&` where `T` is a deduced template parameter (or `auto&&`) is a forwarding reference, not an rvalue reference.
+It binds to both lvalues and rvalues: for an lvalue argument of type `U`, `T` deduces to `U&` and reference collapsing turns `U& &&` into `U&`.
+`std::forward<T>(x)` casts back to the argument's original value category, which is how `emplace_back` and `make_unique` pass constructor arguments through without extra copies.
+Using `std::move` on a forwarding reference is a bug: it moves from a caller's lvalue.
 
 ### Templates, CRTP, variant and virtual dispatch
 
@@ -92,8 +97,10 @@ Measured by [dispatch_bench.cpp](code/cpp/dispatch_bench.cpp) (4096 strategy obj
 | `std::variant`, two types in random order | 4.48 |
 | `std::variant`, same objects sorted by type | 0.87 |
 
+The CRTP figure is below one clock cycle per call, which is possible only because inlining let Clang vectorise the loop (`-Rpass=loop-vectorize` reports width 2, interleave 4): what inlining buys is not a cheaper call but the optimisations that a call boundary blocks.
 The lesson is the prediction, not the keyword: sorting the same variants by type cut the cost from 4.48 to 0.87 ns.
 The same source built with GCC 16 measured 1.17 ns for the random virtual case, because GCC enables `-fdevirtualize-speculatively` at `-O2` and, seeing two `final` implementations in the translation unit, turns the indirect call into compares and inlined bodies; rebuilt with `-fno-devirtualize-speculatively` it measured 4.60 ns.
+GCC 16 also ran the random-order variant case at 0.80 ns, so the same source can rank the dispatch styles differently under two compilers.
 Read the assembly (Compiler Explorer, `objdump -d`) before arguing about virtual dispatch.
 
 ### constexpr and compile-time work
@@ -118,13 +125,14 @@ Members are laid out in declaration order, each aligned to its own alignment, an
 On the hot path, put fields used together in the same cache line, split cold fields out, and keep data written by different threads on different lines (see [Low-Latency Engineering](03-Low-Latency-Engineering.md)).
 
 The ABI (application binary interface) fixes layout, calling convention and name mangling between separately compiled code.
-Small trivially copyable structs (up to 16 bytes) are passed in registers by the x86-64 System V and AArch64 calling conventions; a type with a non-trivial copy constructor or destructor is passed by hidden reference.
-ABI breaks happen: libstdc++ changed `std::string` and `std::list` in GCC 5 and kept both versions behind `_GLIBCXX_USE_CXX11_ABI`, so mixing binaries built with different settings fails at link time.
+Small trivially copyable structs (up to 16 bytes) are passed in registers by the x86-64 System V and AArch64 calling conventions; under the Itanium C++ ABI a type with a non-trivial copy constructor, move constructor or destructor is passed by hidden reference to a temporary.
+That is why `std::unique_ptr<T>` passed by value is not free: it is the size of a raw pointer, but its non-trivial destructor forces it through memory.
+ABI breaks happen: libstdc++ changed `std::string` and `std::list` in GCC 5 and kept both versions behind `_GLIBCXX_USE_CXX11_ABI`, so mixing binaries built with different settings typically fails at link time with undefined references to `std::__cxx11::` symbols.
 Inlining needs the definition visible at the call site: put hot small functions in headers, or use link-time optimisation (`-flto`).
 
 ### Errors: exceptions versus error codes
 
-Exceptions are zero-cost when not thrown on modern ABIs (table-based unwinding), but a throw allocates the exception object and walks unwind tables.
+Exceptions are close to zero-cost when not thrown on modern ABIs (table-based unwinding; the remaining cost is code size and some optimisations the compiler forgoes around calls that may throw), but a throw allocates the exception object and walks unwind tables.
 Measured by [dispatch_bench.cpp](code/cpp/dispatch_bench.cpp) on the same machine (machine- and OS-dependent): a failed validation returned as an error code cost 0.33 ns per call, a throw and catch cost about 14,700 ns.
 On the hot path return an `expected`-style result (`std::expected` in C++23; the repo's minimal `Expected<T, E>` for C++20) marked `[[nodiscard]]`, and make entry points `noexcept`.
 Exceptions remain the right tool on the cold path, where a constructor that cannot establish its invariant should throw.
@@ -152,7 +160,15 @@ Undefined behaviour means the standard places no requirement on the program; opt
 | Uninitialised read | A struct field left unset on one code path | Default member initialisers |
 | Shift past width | `1 << 32` on a 32-bit int | Use `uint64_t{1} << n` with `n < 64` |
 
-ASan finds memory errors, UBSan finds overflow, bad shifts and misaligned access, and TSan finds data races; every C++ example in this section runs clean under all three.
+ASan finds memory errors, UBSan finds overflow, bad shifts and misaligned access, and TSan finds data races; every C++ example in this section runs clean under ASan and UBSan, and the multithreaded ones under TSan.
+
+### The memory model in one paragraph
+
+A data race (two threads access the same non-atomic object, at least one writes, and neither access happens before the other) is undefined behaviour ([intro.races]), even if the hardware would have done something sensible.
+`std::atomic` operations take a `std::memory_order`: `relaxed` gives atomicity and nothing else; a `release` store and an `acquire` load that reads the stored value synchronise, so every write before the store is visible after the load; `seq_cst` (the default) adds one total order over all `seq_cst` operations.
+On x86-64, acquire loads and release stores are plain `mov` instructions because the hardware is TSO, while a `seq_cst` store needs `xchg` (or `mov` plus `mfence`); on AArch64 they map to `ldar` and `stlr`.
+`volatile` gives neither atomicity nor ordering.
+The full treatment, with the SPSC ring and TSan, is in [Concurrency, Lock-Free Queues and Memory Pools](04-Concurrency-Lock-Free-and-Memory-Pools.md).
 
 ## Worked examples
 
@@ -181,7 +197,8 @@ In integer ticks with scale $10^4$, the top level is exactly `1100000`.
 
 "Price is ITCH Price(4) as `int64_t`, quantity is `int64_t`. When can `price * qty` overflow?"
 The maximum price is 200,000.0000, raw $2 \times 10^9$, so overflow needs $q > \lfloor (2^{63} - 1) / (2 \times 10^9) \rfloor = 4{,}611{,}686{,}018$.
-That is unreachable for one equity order, but sums of notionals over a day, or products of raw prices with raw prices, overflow far sooner; check or widen.
+ITCH carries share counts as 4-byte unsigned integers, so the largest single product is $(2^{32} - 1) \times 2 \times 10^9 = 8{,}589{,}934{,}590{,}000{,}000{,}000$, which fits under $2^{63} - 1 \approx 9.22 \times 10^{18}$: one feed-bounded order cannot overflow.
+Sums of notionals over a day, products of raw prices with raw prices, or quantities from a wider source overflow far sooner; check or widen.
 
 ### Shrinking a struct by reordering
 
@@ -192,19 +209,25 @@ Ordering by decreasing alignment gives 8 + 8 + 3 = 19 bytes of data, padded to 2
 
 - Using `std::move` on a `const` object: the move constructor cannot bind, so it silently copies.
 - Returning `std::move(local)`: it disables copy elision; return the local by name.
-- Forgetting `noexcept` on move operations, and on destructors of types used in containers.
+- Forgetting `noexcept` on user-written move operations (destructors are implicitly `noexcept`; never mark one `noexcept(false)`).
 - Storing `std::string_view` or `std::span` members that outlive the buffer they view.
 - Keeping an iterator or reference into a `std::vector` or `std::unordered_map` across an insertion that can reallocate or rehash.
 - Comparing prices as `double`, or converting a decimal string to `double` and back.
 - Believing `volatile` gives atomicity or ordering; it does neither in C++.
 - Benchmarking at `-O0`, or letting the optimiser delete the code under test; keep results alive and check the assembly.
 - Calling a virtual function from a constructor or destructor: it dispatches to the class being constructed, not the derived one.
-- Throwing from a destructor, which calls `std::terminate` during unwinding.
+- Throwing from a destructor: destructors are implicitly `noexcept`, so an exception escaping one calls `std::terminate`.
 
 ## Interview questions
 
 > [!question]- qd-cpp-std-move-does | What does `std::move` actually do?
 > Nothing at run time: it is a `static_cast` to `T&&`, which lets overload resolution pick a move constructor or move assignment. The move, if any, happens in that function.
+
+> [!question]- qd-cpp-forwarding-reference | What is the difference between `T&&` in `void f(Order&& o)` and in `template <class T> void f(T&& x)`?
+> The first is an rvalue reference: it binds only to rvalues. The second is a forwarding reference: `T` deduces to `U&` for an lvalue, reference collapsing gives `U&`, so it binds to anything; pass it on with `std::forward<T>(x)`, never `std::move`, or you move from the caller's lvalue.
+
+> [!question]- qd-cpp-memory-order-basics | What does a release store paired with an acquire load guarantee, and what does it cost on x86-64?
+> If the acquire load reads the value written by the release store, every write before the store in the writer thread is visible to the reader after the load. On x86-64 both compile to plain `mov` instructions (TSO already forbids those reorderings), so the cost is only the compiler reorderings it forbids; a `seq_cst` store needs `xchg` or `mov` plus `mfence`.
 
 > [!question]- qd-cpp-noexcept-vector | Why should move constructors be `noexcept`, and what happens if they are not?
 > `std::vector` relocates with `move_if_noexcept`: a throwing move with an available copy constructor makes it copy, to keep the strong exception guarantee. Measured here: 1000 appends cost 1023 copies instead of 1023 moves.
@@ -228,13 +251,13 @@ Ordering by decreasing alignment gives 8 + 8 + 3 = 19 bytes of data, padded to 2
 > For a closed set of alternatives known at compile time, such as message types: the value is stored inline without heap allocation, `std::visit` dispatch is visible to the optimiser, and adding a type forces every visitor to handle it.
 
 > [!question]- qd-cpp-devirtualization | Your virtual-call benchmark is fast with GCC and slow with Clang. Why might that be?
-> GCC enables speculative devirtualization at `-O2`: with few known implementations it compares the vtable pointer and inlines each body. Measured here: 1.17 ns with GCC, 4.60 ns with `-fno-devirtualize-speculatively`. Read the assembly before concluding anything.
+> GCC enables speculative devirtualization at `-O2`: with few known implementations it compares the call target against them and inlines each body behind the compare. Measured here (M3 Pro, machine-dependent): 1.17 ns with GCC, 4.60 ns with `-fno-devirtualize-speculatively`, against 5.01 ns with Clang. Read the assembly before concluding anything.
 
 > [!question]- qd-cpp-fixed-point | Why not store prices as `double`?
 > Decimal ticks like 0.01 are not representable in binary, so arithmetic drifts (1000 additions of 0.01 to 100.0 give an error of `5.116e-12`) and equality and hashing break. Use integer ticks with an implied scale, like ITCH Price(4).
 
 > [!question]- qd-cpp-overflow-threshold | Prices are int64 with 4 implied decimals, maximum 200,000.0000. Above what quantity does `price * qty` overflow?
-> 4,611,686,018: $\lfloor (2^{63}-1) / (2 \times 10^9) \rfloor$. Signed overflow is undefined behaviour, so check with `__builtin_mul_overflow` or prove the bound.
+> 4,611,686,018: $\lfloor (2^{63}-1) / (2 \times 10^9) \rfloor$. Signed overflow is undefined behaviour, so check with `__builtin_mul_overflow` or prove the bound (an ITCH 4-byte share count cannot exceed it, but daily sums can).
 
 > [!question]- qd-cpp-padding | What is `sizeof` of `struct {bool a; double b; bool c; int64_t d; bool e;}` on x86-64 Linux, and how do you shrink it?
 > 40 bytes: each bool is padded to 8 before an 8-byte member and the tail pads to 8. Reordering largest-first gives 19 bytes of data padded to 24.
@@ -243,7 +266,7 @@ Ordering by decreasing alignment gives 8 + 8 + 3 = 19 bytes of data, padded to 2
 > Zero cost applies only when nothing is thrown. A throw allocates and unwinds through tables: measured here at about 14,700 ns per throw and catch on macOS, versus 0.33 ns for an error code. Use `expected`-style results and `noexcept` entry points.
 
 > [!question]- qd-cpp-strict-aliasing | How do you read a big-endian `uint32_t` at an unaligned offset of a packet buffer without UB?
-> `std::memcpy` into a `uint32_t` and byte-swap (or assemble from bytes). `reinterpret_cast` to `uint32_t*` violates alignment and strict aliasing; `memcpy` compiles to a single load anyway.
+> `std::memcpy` into a `uint32_t` and byte-swap (or assemble from bytes). `reinterpret_cast` to `uint32_t*` violates alignment and strict aliasing; `memcpy` of a constant size compiles to a single load (plus a byte-swap instruction) anyway.
 
 > [!question]- qd-cpp-ub-list | Name five kinds of undefined behaviour you would look for in a code review of trading code.
 > Signed overflow, out-of-bounds indexing, dangling references or views (including iterator invalidation), data races, strict-aliasing or misaligned access through `reinterpret_cast`. Also uninitialised reads and shifts past the width.
@@ -252,7 +275,7 @@ Ordering by decreasing alignment gives 8 + 8 + 3 = 19 bytes of data, padded to 2
 > Allocation by pointer bump from a buffer you supply (for example on the stack), no per-object free, release all at once. A `pmr::vector` of 100 int64 values in a 4 KiB buffer made 0 heap allocations here.
 
 > [!question]- qd-cpp-shared-ptr-cost | Why is `std::shared_ptr` discouraged on the hot path?
-> Every copy and destruction is an atomic reference-count update (a cache line bounced between cores when shared), the control block is a heap allocation unless `make_shared` merges it, and the last owner runs the destructor at an unpredictable place.
+> Every copy and destruction (not moves) is an atomic reference-count update (a cache line bounced between cores when shared), the control block is a heap allocation unless `make_shared` merges it, and the last owner runs the destructor at an unpredictable place.
 
 > [!question]- qd-cpp-moved-from | What can you do with a moved-from `std::string`?
 > Assign to it or destroy it; it is valid but in an unspecified state. Do not rely on it being empty.

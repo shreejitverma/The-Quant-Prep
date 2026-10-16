@@ -44,7 +44,7 @@ void test_bucket_mapping_is_monotone_and_bounded() {
         }
         prev = i;
         const std::uint64_t up = H::bucket_upper(i);
-        if (up < v || static_cast<double>(up - v) > static_cast<double>(v) / 64.0) {  // relative error < 2^-6
+        if (up < v || (up > v && (up - v) * 64 >= v)) {  // never under-reports; overstates by strictly less than v / 64
             EXPECT(false);
             return;
         }

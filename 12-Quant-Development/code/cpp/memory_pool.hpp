@@ -64,8 +64,15 @@ public:
     [[nodiscard]] T* create(Args&&... args) {
         if (free_ == nullptr) grow();  // slow path: only when the reserve is exhausted
         Slot* slot = free_;
-        free_ = slot->next;
-        T* obj = ::new (static_cast<void*>(slot->storage)) T{std::forward<Args>(args)...};
+        Slot* const next = slot->next;  // read before construction overwrites the link
+        T* obj = nullptr;
+        try {
+            obj = ::new (static_cast<void*>(slot->storage)) T{std::forward<Args>(args)...};
+        } catch (...) {
+            slot->next = next;  // the constructor may have scribbled over the link: restore it
+            throw;              // free_ still points at this slot, so nothing leaks
+        }
+        free_ = next;
         ++live_;
         return obj;
     }
@@ -73,7 +80,11 @@ public:
     void destroy(T* obj) noexcept {
         if (obj == nullptr) return;
         obj->~T();
-        auto* slot = reinterpret_cast<Slot*>(obj);  // storage is the union's first byte
+        // obj points at the T that lived in the slot's storage, at offset 0 of the union. The T is
+        // gone but the Slot object is not; launder turns the address back into a Slot pointer
+        // (strictly valid when sizeof(Slot) == sizeof(T), i.e. T is at least pointer-sized; for
+        // smaller T it is the usual intrusive free-list idiom that every mainstream compiler supports).
+        Slot* slot = std::launder(reinterpret_cast<Slot*>(obj));
         slot->next = free_;
         free_ = slot;
         --live_;
@@ -97,6 +108,7 @@ public:
     // Returns nullptr when the arena is exhausted: the caller decides (reject, fall back, alarm).
     // align must be a power of two.
     [[nodiscard]] void* allocate(std::size_t bytes, std::size_t align) noexcept {
+        assert(align != 0 && (align & (align - 1)) == 0 && "alignment must be a power of two");
         const auto base = reinterpret_cast<std::uintptr_t>(buffer_.get());
         const std::uintptr_t aligned = (base + used_ + (align - 1)) & ~(static_cast<std::uintptr_t>(align) - 1);
         const std::size_t offset = static_cast<std::size_t>(aligned - base);

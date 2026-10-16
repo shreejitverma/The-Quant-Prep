@@ -297,6 +297,8 @@ inline void apply(FlowStats& s, const Message& m) noexcept {
                    [&s](const AddOrderMsg&) noexcept { ++s.adds; },
                    [&s](const CancelOrderMsg&) noexcept { ++s.cancels; },
                    [&s](const TradeMsg& t) noexcept {
+                       // Unchecked on purpose: inputs here are feed-bounded (price <= 2e9 raw, qty < 2^32),
+                       // so one product fits in int64; a production accumulator would still check the sum.
                        s.traded_qty += t.qty;
                        s.traded_notional += t.price * t.qty;
                    },

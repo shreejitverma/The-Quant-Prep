@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [cpp-for-trading-systems, limit-order-books-and-order-types]
 est_hours: 5
-sources: [Harris - Trading and Exchanges (Oxford 2003) ch 5-6, Bouchaud Bonart Donier and Gould - Trades Quotes and Prices (Cambridge 2018) ch 3, Gould Porter Williams McDonald Fenn and Howison - Limit Order Books (Quantitative Finance 2013), Nasdaq TotalView-ITCH 5.0 specification (2015) sections 3 4.3 and 4.4, Nasdaq MoldUDP64 protocol specification, Cormen Leiserson Rivest and Stein - Introduction to Algorithms 4th ed (MIT Press 2022) ch 10 and 13]
+sources: [Harris - Trading and Exchanges (Oxford 2003) ch 5-6, Bouchaud Bonart Donier and Gould - Trades Quotes and Prices (Cambridge 2018) ch 3, Gould Porter Williams McDonald Fenn and Howison - Limit Order Books (Quantitative Finance 2013), Nasdaq TotalView-ITCH 5.0 specification (2015) sections 3 4.3 and 4.4, Nasdaq MoldUDP64 protocol specification, CME Group Client Systems Wiki - CME Globex Matching Algorithms, Cboe Europe - Periodic Auctions factsheet (2017), Cormen Leiserson Rivest and Stein - Introduction to Algorithms 4th ed (MIT Press 2022) ch 10 and 13]
 ---
 
 # Order Book and Matching Engine Implementation
@@ -16,7 +16,7 @@ sources: [Harris - Trading and Exchanges (Oxford 2003) ch 5-6, Bouchaud Bonart D
 - The standard implementation: orders in a preallocated pool, each level an intrusive doubly linked list through the pool (O(1) cancel), an order-id hash map to find an order, and a price-ordered container of levels (a tree for generality, a tick-indexed array for speed).
 - Matching walks the opposite side from the best level, filling FIFO until the incoming order is done or no longer crosses; IOC and market orders cancel the remainder, FOK checks fillable quantity first, post-only rejects anything that would cross, and self-trade prevention decides what to cancel when both sides belong to one owner.
 - Cancel/replace keeps queue priority only for a size reduction at the same price; any price change or size increase re-enters at the back.
-- Measured on an Apple M3 Pro, the repo's engine processed a synthetic flow at 67.7 ns per operation on average, and a tick-indexed array served level updates at 4.11 ns against 23.65 ns for `std::map`; correctness is checked by differential testing against a naive reference over 20,000 random operations.
+- Measured on an Apple M3 Pro (machine-dependent), the repo's engine processed a synthetic flow at 62.4 ns per operation on average, and a tick-indexed array served level updates at 3.69 ns against 20.28 ns for `std::map`; correctness is checked by differential testing against a naive reference over 20,000 random adds, cancels, replaces, IOC, FOK and market orders.
 
 ## Learning objectives
 
@@ -48,7 +48,7 @@ A correct engine maintains, after every event:
 | Levels per side | Array indexed by tick offset | O(1) access, scan to the next non-empty level when the best empties | Fastest; needs a bounded price band and a rebase strategy |
 | Orders in a level | Intrusive doubly linked list through a pool | O(1) append, O(1) remove anywhere | Needs the order's index; no allocation |
 | Orders in a level | `std::deque` with lazy deletion | O(1) append, cancel marks a tombstone | Simple; tombstones accumulate and must be skipped |
-| Order lookup | Hash map from order id to pool index | O(1) expected | Reserve at startup; a dense id space allows a plain array |
+| Order lookup | Hash map from order id to pool index | O(1) expected | `std::unordered_map::reserve` only presizes buckets and every insert still allocates a node; use open addressing, or a plain array when the id space is dense |
 
 Complexity of the repo's engine ([lob_engine.hpp](code/cpp/lob_engine.hpp)), with $L$ levels on a side and $k$ resting orders filled or skipped:
 
@@ -58,20 +58,24 @@ Complexity of the repo's engine ([lob_engine.hpp](code/cpp/lob_engine.hpp)), wit
 | Add creating a level | O(log L) |
 | Cancel by id | O(1) expected to find and unlink, O(1) amortised to erase an emptied level via its stored iterator |
 | Aggressive order | O(k + levels crossed) |
-| Best bid or ask | O(1) |
+| Best bid or ask | O(1): `begin()` of each side |
 | FOK pre-check | O(orders inspected until the quantity is covered) |
+
+The bid map is keyed in descending price order so that `begin()` is the best level on both sides.
+Keying bids ascending and reading `std::prev(end())` is O(1) in libstdc++, which caches the rightmost node, but O(log L) in libc++, which caches only the leftmost.
+The engine's commands are `noexcept`: the only failures left are allocations (map and hash-map nodes, the caller's event vector), a half-applied command leaves no consistent book to recover, so `std::bad_alloc` terminates instead of corrupting state.
 
 ### Why cache behaviour decides the design
 
 A cancel deep in a large book touches the hash bucket, the order node and its two neighbours: four potential cache misses at around 100 ns each when the book is large and cold (see the measured ladder in [Low-Latency Engineering](03-Low-Latency-Engineering.md)).
 32-bit pool indices instead of 64-bit pointers halve the size of the link fields, contiguous pools keep neighbouring orders close, and arrays of levels avoid the per-node allocations and pointer chasing of trees.
-Measured by [lob_bench.cpp](code/cpp/lob_bench.cpp) for 2,000,000 add-or-remove operations near the touch on one side (Apple M3 Pro, Apple clang 21, `-O2`, one run, machine-dependent):
+Measured by [lob_bench.cpp](code/cpp/lob_bench.cpp) for 2,000,000 add-or-remove operations near the touch on one side (Apple M3 Pro, Apple clang 21, `-O2`, median of three runs, machine-dependent):
 
 | Level container | ns per operation |
 | :--- | ---: |
-| `std::map` | 23.65 |
-| Sorted `std::vector`, best at the back | 16.43 |
-| Tick-indexed array | 4.11 |
+| `std::map` | 20.28 |
+| Sorted `std::vector`, best at the back | 15.61 |
+| Tick-indexed array | 3.69 |
 
 All three agreed on the best price after every operation.
 
@@ -99,6 +103,9 @@ flowchart TD
 ```
 
 Fills execute at the resting order's price: the aggressor gets any price improvement.
+The engine allocates FIFO within a level; other allocation rules exist.
+CME Globex documents several, among them FIFO, pro-rata (each resting order receives a share of the incoming quantity proportional to its size, fractional lots rounded down and the residual allocated FIFO), and variants that first give a percentage to the order that set the price or to lead market makers.
+Pro-rata rewards size over speed, so participants over-quote (show more than they want filled) and queue position matters less; an interviewer at a futures firm will expect you to know both.
 The engine emits events (accepted, fill, cancelled, replaced, rejected) into a caller-owned vector and performs no I/O.
 
 ### Order types
@@ -134,6 +141,7 @@ stateDiagram-v2
     Resting --> Requeued: replace price or size up
     PartiallyFilled --> Requeued: replace price or size up
     Requeued --> Resting
+    Requeued --> PartiallyFilled: new price crosses
     Resting --> Cancelled: cancel or self-trade prevention
     PartiallyFilled --> Cancelled: cancel or self-trade prevention
     Filled --> [*]
@@ -159,6 +167,8 @@ At the uncross a single clearing price is chosen; the common rule set is:
 1. Maximise executable volume, where at price $p$ buy volume is $B(p) = \sum_{\text{bids} \ge p} q$, sell volume is $S(p) = \sum_{\text{asks} \le p} q$, and executable volume is $\min(B(p), S(p))$.
 2. Then minimise the absolute imbalance $\lvert B(p) - S(p)\rvert$.
 3. Then choose the price closest to a reference price (for example the previous close); the engine finally breaks remaining ties with the lower price.
+
+Some venues insert a market-pressure step between 2 and 3 (Cboe Europe's Periodic Auctions list maximum executable volume, minimum surplus, market pressure, reference price): with a surplus on the buy side take the highest remaining candidate, with a surplus on the sell side the lowest.
 
 Candidates are the limit prices present in the book.
 Orders then execute at that one price in price-time priority.
@@ -187,22 +197,23 @@ Feed handling end to end (sessions, gaps, arbitration) is the subject of [Market
 ### Engine throughput
 
 [lob_bench.cpp](code/cpp/lob_bench.cpp) drives the engine with a seeded synthetic flow (45% passive adds near the touch, 45% cancels of random live orders, 10% marketable IOC orders) of 2,000,000 operations.
-One run on the Apple M3 Pro: 67.7 ns per operation on average (14.8 million operations per second), 439,659 fills, 958 orders resting at the end.
-Per-operation latency read with the raw counter, which advances in 42 ns steps on this machine, so the low percentiles are quantised:
+Median of three runs on the Apple M3 Pro (machine-dependent): 62.4 ns per operation on average (16.0 million operations per second).
+Per-operation latency read with the raw counter, which reports 1 GHz but advances in steps of about 42 ns on this machine (the bench measures and prints the step), so the low percentiles are quantised; the three runs agreed on every percentile:
 
 | Operation | p50 | p99 | p99.9 |
 | :--- | ---: | ---: | ---: |
-| Passive add | 42 ns | 84 ns | 167 ns |
-| Cancel | 42 ns | 125 ns | 335 ns |
-| Marketable IOC | 42 ns | 167 ns | 419 ns |
+| Passive add | 42 ns | 84 ns | 125 ns |
+| Cancel | 42 ns | 84 ns | 125 ns |
+| Marketable IOC | 42 ns | 125 ns | 167 ns |
 
-The slowest single operation took 46,994 ns: an OS interruption, not the engine, on an untuned desktop.
+The slowest single operation varied between runs from about 6 to 12 microseconds, far above p99.9: on an untuned desktop that is most likely an interrupt or a descheduling, which is why production engines pin cores and isolate them from the OS.
 
 ### Testing the engine
 
 - Unit tests for each rule: validation, market orders on an empty book, cancel in the middle of a queue, every replace variant, every STP mode, FOK with STP, auction phase rules.
-- Differential testing: [tests/test_lob_engine.cpp](code/cpp/tests/test_lob_engine.cpp) runs 20,000 seeded random adds, cancels, IOC and market orders through the engine and through a deliberately naive reference (linear scans, obviously correct), and requires identical event streams and identical depth at every price after every operation, plus an uncrossed book.
-- Sanitizers: the engine, demo and tests run clean under ASan, UBSan and TSan.
+- Differential testing: [tests/test_lob_engine.cpp](code/cpp/tests/test_lob_engine.cpp) runs 20,000 seeded random adds, cancels, cancel/replaces (size down, size up, reprice), IOC, FOK and market orders through the engine and through a deliberately naive reference (linear scans, obviously correct), and requires identical event streams and identical depth at every price after every operation, plus an uncrossed book.
+  The test also asserts that replaces, FOK kills and fills actually occurred, so it cannot pass vacuously; seeded bugs (a size increase keeping priority, fills at the aggressor's price, a missing FOK pre-check) each make it fail.
+- Sanitizers: the engine, demo and tests run clean under ASan and UBSan (they are single-threaded, so TSan has nothing to check).
 
 ## Worked examples
 
@@ -257,6 +268,9 @@ The 268-byte stream applies 7 messages, skips 1 (other stock), with 0 errors; th
 - Erasing a map entry or a list node while iterating it, and then using the invalidated iterator.
 - Executing at the aggressor's price instead of the resting order's price.
 - Letting a replace keep priority on a size increase or price change.
+- Treating FIX `OrderQty` (tag 38) on a cancel/replace as the new open quantity: FIX defines it as the total intended quantity including what has already executed, so open quantity is `OrderQty - CumQty`, and a replace that races a fill can leave nothing open.
+- Reading the best bid as `std::prev(bids.end())` and assuming O(1): true in libstdc++, O(log L) in libc++; order the bid side descending.
+- Assuming `reserve` makes `std::unordered_map` allocation-free: it presizes buckets, but each insert still allocates a node.
 - A FOK pre-check that counts liquidity STP would skip or stop at.
 - Floating-point prices as map keys.
 - Trusting feed messages: a replace for an unknown reference, an execution larger than the order, or a truncated block must be reported, not applied.
@@ -271,7 +285,7 @@ The 268-byte stream applies 7 messages, skips 1 (other stock), with 0 errors; th
 > Look the order up by id in a hash map to get its node, unlink it from its level's doubly linked list using its prev and next links, update the level total, and erase the level through a stored iterator or index if it is now empty.
 
 > [!question]- qd-lobimpl-map-vs-array | `std::map` of levels or an array indexed by tick: which and why?
-> An array gives O(1) level access and contiguous memory (measured 4.11 vs 23.65 ns per operation here) but needs a bounded price band, a rebase when price drifts, and a scan to find the next level when the best empties. A tree handles any price range with O(log L) operations.
+> An array gives O(1) level access and contiguous memory (measured 3.69 vs 20.28 ns per operation here, machine-dependent) but needs a bounded price band, a rebase when price drifts, and a scan to find the next level when the best empties. A tree handles any price range with O(log L) operations.
 
 > [!question]- qd-lobimpl-fill-price | At what price does an aggressive order execute?
 > At each resting order's price, level by level, so the aggressor receives any price improvement; a buy limit at 102.00 against offers at 101.00 pays 101.00.
@@ -281,6 +295,15 @@ The 268-byte stream applies 7 messages, skips 1 (other stock), with 0 errors; th
 
 > [!question]- qd-lobimpl-replace-priority | Which amendments keep queue priority?
 > Typically only a quantity reduction at the same price. A price change or a quantity increase is treated as cancel plus new order and goes to the back of the queue.
+
+> [!question]- qd-lobimpl-fix-replace-qty | A FIX cancel/replace lowers OrderQty on a partly filled order. How is the new open quantity computed, and what if a fill races the replace?
+> Open quantity is OrderQty minus CumQty, because FIX defines OrderQty on a replace as the total intended quantity including what has already executed. If fills arrive first and CumQty reaches the new OrderQty, nothing is left open and the order is done; a gateway that passes OrderQty straight through as open quantity over-sizes the order.
+
+> [!question]- qd-lobimpl-pro-rata | How does pro-rata matching differ from FIFO, and how does it change participant behaviour?
+> Pro-rata splits an incoming order across the resting orders at a price in proportion to their size (fractional lots rounded down, residual allocated FIFO), instead of filling the earliest first. Size is rewarded rather than speed, so participants over-quote and queue position matters less; CME Globex uses FIFO, pro-rata and hybrid allocation algorithms depending on the product.
+
+> [!question]- qd-lobimpl-best-bid-libcxx | Your bids are a `std::map` keyed ascending and you read the best bid as `std::prev(bids.end())`. What is the cost?
+> O(1) in libstdc++, which caches the rightmost node, but O(log L) in libc++, which caches only the leftmost and walks down from the root. Key the bid side descending (a comparator) so the best level is `begin()` on both sides.
 
 > [!question]- qd-lobimpl-fok | How do you implement fill-or-kill correctly?
 > Before matching, walk the opposite side in priority order exactly as matching would, applying self-trade rules, and sum fillable quantity; cancel the whole order if it falls short, otherwise match. Never match first and roll back.
@@ -304,19 +327,19 @@ The 268-byte stream applies 7 messages, skips 1 (other stock), with 0 errors; th
 > 36, 31, 23, 19 and 35 bytes (Add with MPID is 40, Executed With Price 36).
 
 > [!question]- qd-lobimpl-itch-replace | How does an ITCH Order Replace change the book?
-> The original reference is removed entirely; a new order with a new reference, the given shares and price, and the original side is added (and loses time priority).
+> The original reference is removed entirely; a new order with a new reference, the given shares and price, and the original side (plus stock and attribution, which the message omits) is added. The spec calls it a cancel-replace, so a book builder places the new reference at the back of its level's queue.
 
 > [!question]- qd-lobimpl-invariants | Which invariants would you assert after every event in a test build?
 > Book not crossed in continuous trading, level totals equal the sum of open quantities, no zero-quantity resting orders, FIFO order within each level, and quantity conservation per order.
 
 > [!question]- qd-lobimpl-differential | How do you gain confidence that an optimised matching engine is correct?
-> Differential testing against a simple reference model on many seeded random sequences, comparing every event and the depth at every price after every step, plus unit tests per rule and sanitizer runs. Here 20,000 operations matched exactly.
+> Differential testing against a simple reference model on many seeded random sequences, comparing every event and the depth at every price after every step, plus unit tests per rule and sanitizer runs. Here 20,000 operations, including replaces and FOK orders, matched exactly; check the test can fail by seeding a bug into the engine.
 
 > [!question]- qd-lobimpl-hot-cancel | Why can cancels be the slowest operation in a large book?
 > A cancel of a random order touches cold memory: the hash bucket, the order node and both neighbours, each a potential DRAM miss of around 100 ns, while adds and executions mostly touch the hot top of the book.
 
 > [!question]- qd-lobimpl-benchmark-numbers | What did the repo's engine measure, and what should you not conclude from it?
-> 67.7 ns per operation on average on an Apple M3 Pro for a synthetic flow, with p99.9 between 167 and 419 ns by operation type. Do not conclude production latency: the clock was quantised to 42 ns, the machine untuned, and the flow synthetic.
+> 62.4 ns per operation on average on an Apple M3 Pro for a synthetic flow, with p99.9 between 125 and 167 ns by operation type (machine-dependent). Do not conclude production latency: the clock was quantised to 42 ns, the machine untuned, the flow synthetic, and the book small and cache-resident.
 
 ## In this repo and SDE-Interview-Prep
 
@@ -330,7 +353,8 @@ The 268-byte stream applies 7 messages, skips 1 (other stock), with 0 errors; th
 
 ## Further reading
 
-- Larry Harris, *Trading and Exchanges* (Oxford University Press, 2003), chapters 5 and 6: order-driven markets, precedence rules, auctions.
+- Larry Harris, *Trading and Exchanges* (Oxford University Press, 2003), chapters 5 (Market Structures) and 6 (Order-Driven Market Mechanisms): precedence rules, continuous and call auctions.
+- CME Group Client Systems Wiki, *CME Globex Matching Algorithms*: FIFO, pro-rata, allocation and lead-market-maker variants.
 - Jean-Philippe Bouchaud, Julius Bonart, Jonathan Donier and Martin Gould, *Trades, Quotes and Prices* (Cambridge University Press, 2018), chapter 3: the limit order book.
 - Martin Gould, Mason Porter, Stacy Williams, Mark McDonald, Daniel Fenn and Sam Howison, "Limit Order Books", *Quantitative Finance* 13(11), 2013.
 - Nasdaq, *TotalView-ITCH 5.0* specification (in [protocol-specs](protocol-specs/)), and the MoldUDP64 protocol specification.

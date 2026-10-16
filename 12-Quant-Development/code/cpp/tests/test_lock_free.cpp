@@ -9,6 +9,8 @@
 #include <atomic>
 #include <cstdint>
 #include <iostream>
+#include <mutex>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
@@ -60,6 +62,12 @@ void test_spsc_two_threads() {
         for (std::uint64_t i = 0; i < kN; ++i)
             while (!q.try_push(i)) std::this_thread::yield();
     });
+    std::atomic<bool> done{false};
+    std::atomic<bool> size_ok{true};
+    std::thread observer([&] {  // size() from a third thread must stay within [0, N] (no wrap-around)
+        while (!done.load(std::memory_order_relaxed))
+            if (q.size() > q.capacity()) size_ok.store(false);
+    });
     std::uint64_t next = 0;
     bool in_order = true;
     std::uint64_t v = 0;
@@ -72,7 +80,10 @@ void test_spsc_two_threads() {
         }
     }
     producer.join();
+    done.store(true);
+    observer.join();
     EXPECT(in_order);
+    EXPECT(size_ok.load());
     EXPECT(q.size() == 0);
 }
 
@@ -205,6 +216,82 @@ void test_pool_reuse_and_growth() {
     EXPECT(pool.live() == 0);
 }
 
+struct Fragile {  // constructor throws on demand
+    std::int64_t v;
+    explicit Fragile(std::int64_t x) : v(x) {
+        if (x < 0) throw std::runtime_error("bad");
+    }
+};
+
+void test_pool_constructor_throw_leaks_nothing() {
+    qpmem::ObjectPool<Fragile, 4> pool;
+    Fragile* a = pool.create(1);
+    bool threw = false;
+    try {
+        (void)pool.create(-1);
+    } catch (const std::runtime_error&) {
+        threw = true;
+    }
+    EXPECT(threw);
+    EXPECT(pool.live() == 1);
+    std::vector<Fragile*> rest;  // the 3 remaining slots must all still be handed out, no growth
+    for (int i = 0; i < 3; ++i) rest.push_back(pool.create(10 + i));
+    EXPECT(pool.capacity() == 4);
+    pool.destroy(a);
+    for (Fragile* f : rest) pool.destroy(f);
+    EXPECT(pool.live() == 0);
+}
+
+// ------------------------------------------------------------------ spin lock and seqlock
+void test_spinlock_mutual_exclusion() {
+    qpconc::SpinLock lock;
+    std::int64_t counter = 0;  // plain int: only the lock orders the accesses (TSan checks this)
+    std::vector<std::thread> threads;
+    for (int t = 0; t < 4; ++t)
+        threads.emplace_back([&] {
+            for (int k = 0; k < 20'000; ++k) {
+                std::lock_guard<qpconc::SpinLock> g(lock);
+                ++counter;
+            }
+        });
+    for (auto& t : threads) t.join();
+    EXPECT(counter == 80'000);
+    EXPECT(lock.try_lock());
+    EXPECT(!lock.try_lock());
+    lock.unlock();
+}
+
+struct Snapshot {  // invariant: b == 2a, c == 3a, d == ~a
+    std::uint64_t a, b, c, d;
+};
+
+void test_seqlock_never_returns_torn_snapshot() {
+    qpconc::Seqlock<Snapshot> sl;
+    constexpr std::uint64_t kVersions = 100'000;
+    sl.store(Snapshot{0, 0, 0, ~std::uint64_t{0}});
+    std::atomic<bool> stop{false};
+    std::atomic<bool> torn{false};
+    std::atomic<bool> went_back{false};
+    std::vector<std::thread> readers;
+    for (int r = 0; r < 3; ++r)
+        readers.emplace_back([&] {
+            std::uint64_t last = 0;
+            while (!stop.load(std::memory_order_relaxed)) {
+                Snapshot s{};
+                if (!sl.try_load(s)) continue;
+                if (s.b != 2 * s.a || s.c != 3 * s.a || s.d != ~s.a) torn.store(true);
+                if (s.a < last) went_back.store(true);
+                last = s.a;
+            }
+        });
+    for (std::uint64_t v = 1; v <= kVersions; ++v) sl.store(Snapshot{v, 2 * v, 3 * v, ~v});
+    stop.store(true);
+    for (auto& t : readers) t.join();
+    EXPECT(!torn.load());
+    EXPECT(!went_back.load());
+    EXPECT(sl.load().a == kVersions);
+}
+
 void test_arena_alignment_and_exhaustion() {
     qpmem::Arena arena(256);
     auto* c = static_cast<char*>(arena.allocate(1, 1));
@@ -233,6 +320,9 @@ int main() {
     test_aba_with_tag_is_detected();
     test_tagged_stack_stress();
     test_pool_reuse_and_growth();
+    test_pool_constructor_throw_leaks_nothing();
+    test_spinlock_mutual_exclusion();
+    test_seqlock_never_returns_torn_snapshot();
     test_arena_alignment_and_exhaustion();
     std::cout << (g_total - g_failures) << "/" << g_total << " assertions passed" << std::endl;
     return g_failures == 0 ? 0 : 1;

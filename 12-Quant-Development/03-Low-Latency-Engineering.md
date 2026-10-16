@@ -13,9 +13,9 @@ sources: [Hennessy and Patterson - Computer Architecture - A Quantitative Approa
 ## TL;DR
 
 - Tick-to-trade latency is a budget across wire, NIC, kernel or bypass, decode, book, strategy, risk and encode; you can only cut what you measure, stage by stage, as percentiles.
-- Memory dominates: a dependent load that hits L1 cost about 1.1 ns on the test machine, one that misses to DRAM about 110 to 120 ns; keep the hot working set small and contiguous.
-- Data written by different threads must live on different cache lines; on the test machine two threads incrementing counters 8 bytes apart ran about 3 times slower than counters 256 bytes apart.
-- Predictable branches are nearly free and unpredictable ones cost several nanoseconds each; the same loop ran 12 times faster on sorted data.
+- Memory dominates: a dependent load that hits L1 cost about 1.1 ns on the test machine, one that misses to DRAM about 105 to 115 ns; keep the hot working set small and contiguous.
+- Data written by different threads must live on different cache lines; on the test machine two threads incrementing counters 8 bytes apart ran about 3.8 times slower than counters 64 or more bytes apart.
+- Predictable branches are nearly free and unpredictable ones cost several nanoseconds each; the same loop ran about 9.6 times faster on sorted data.
 - Remove the OS from the hot path: isolate and pin cores, busy-poll, kernel bypass (DPDK, OpenOnload, ef_vi), huge pages, locked memory, no interrupts on trading cores.
 - Report p50, p99, p99.9 and max from a histogram, timestamp at the wire (hardware or PTP-disciplined clocks), and beware coordinated omission: a closed-loop benchmark understated the p99 of a stalled server by a factor of 28,601 in the simulation below.
 
@@ -73,20 +73,20 @@ Propagation in fibre with a group index of 1.468 is 4.897 µs per km, against 3.
 
 Each level is larger and slower; a miss at one level costs the latency of the next.
 The pointer-chasing benchmark in [latency_lab.cpp](code/cpp/latency_lab.cpp) builds a random single cycle (Sattolo's algorithm) through a working set, one node per 128-byte block, so every load depends on the previous one and the prefetcher cannot help.
-Measured on an Apple M3 Pro (performance-core L1D 128 KiB and shared L2 16 MiB, 128-byte cache lines and 16 KiB pages, as reported by `sysctl`), Apple clang 21 at `-O2`, one run:
+Measured on an Apple M3 Pro (6 performance and 6 efficiency cores; performance-core L1D 128 KiB and shared L2 16 MiB, 128-byte cache lines and 16 KiB pages, as reported by `sysctl`), Apple clang 21 at `-O2`, threads not pinned; one run, machine-dependent:
 
 | Working set | ns per dependent load | Where it lives |
 | ---: | ---: | :--- |
-| 16 KiB | 1.13 | L1 |
-| 64 KiB | 1.13 | L1 |
-| 256 KiB | 5.13 | L2 |
-| 1 MiB | 7.57 | L2 |
-| 4 MiB | 37.08 | L2, shared with other work |
-| 16 MiB | 111.69 | L2 capacity exceeded, DRAM |
-| 64 MiB | 119.05 | DRAM plus TLB misses |
-| 256 MiB | 120.50 | DRAM plus TLB misses |
+| 16 KiB | 1.11 | L1 |
+| 64 KiB | 1.09 | L1 |
+| 256 KiB | 4.87 | L2 |
+| 1 MiB | 6.61 | L2 |
+| 4 MiB | 8.61 | L2 |
+| 16 MiB | 25.51 | At L2 capacity: partly L2, partly DRAM |
+| 64 MiB | 106.24 | DRAM plus TLB misses |
+| 256 MiB | 113.55 | DRAM plus TLB misses |
 
-The 4 MiB point varied between about 10 and 80 ns across runs on the same machine, because the L2 is shared with every other process on the cluster: on a shared host your cache is not yours.
+Across five runs in one session the 16 MiB point ranged from 20.37 to 93.94 ns and the 1 MiB point from 6.11 to 12.74 ns, because the L2 is shared with every other process on the cluster: on a shared host your cache is not yours.
 Rules that follow: keep the per-message working set in L1 and L2; prefer arrays and struct-of-arrays to pointer-based structures; preallocate and reuse (a freed, recently used slot is cache-warm); avoid touching cold data on the hot path, including logging buffers.
 
 ### TLBs and huge pages
@@ -101,31 +101,32 @@ Lock memory with `mlockall(MCL_CURRENT | MCL_FUTURE)` and touch every page at st
 
 Caches keep lines coherent: before a core writes a line it must own it exclusively, invalidating copies elsewhere.
 Two threads writing different variables in the same line therefore bounce the line between cores although they share no data.
-Measured by [latency_lab.cpp](code/cpp/latency_lab.cpp) (two threads, relaxed `fetch_add` on their own counter, median of 5 runs, same machine):
+Measured by [latency_lab.cpp](code/cpp/latency_lab.cpp) (two threads, relaxed `fetch_add` on their own counter, median of 5 repetitions, same machine and run as above):
 
 | Distance between the counters | ns per increment |
 | ---: | ---: |
-| 8 bytes | 7.80 |
-| 64 bytes | 3.62 |
-| 128 bytes | 2.75 |
-| 256 bytes | 2.45 |
+| 8 bytes | 7.46 |
+| 64 bytes | 1.97 |
+| 128 bytes | 1.96 |
+| 256 bytes | 1.96 |
 
-On this machine most of the penalty disappears at 64 bytes and the rest at 128.
-Pad to 128 bytes in portable code: it covers Apple Silicon's reported 128-byte line and x86's adjacent-line prefetcher, which fetches 64-byte lines in pairs.
-Do not use `std::hardware_destructive_interference_size` in a header or a wire format: its value differs between compilers.
+In five runs the 8-byte case cost 6.62 to 7.50 ns and every larger distance 1.90 to 1.98 ns: on this chip the penalty vanished at 64 bytes, although `sysctl` reports a 128-byte line, so measure rather than trust the reported line size.
+Pad to 128 bytes in portable code anyway: it covers x86's adjacent-line (spatial) prefetcher, which pulls 64-byte lines in 128-byte-aligned pairs, and any platform whose coherence unit really is 128 bytes.
+Do not use `std::hardware_destructive_interference_size` in a header or a wire format: its value can change with the compiler, its version and tuning flags such as `-mtune`, so it is not ABI-stable (GCC warns when a header uses it).
 
 ### Branch prediction
 
 Modern cores predict branch outcomes and speculate; a misprediction flushes the pipeline.
-The benchmark sums the bytes that are at least 128 in a 4 MiB array, with an empty `asm volatile` in the taken branch so the compiler must keep a real branch:
+The benchmark sums the bytes that are at least 128 in a 4 MiB array, with an empty `asm volatile` in the taken branch so the compiler must keep a real branch (median of 7 timings, same machine and run as above, machine-dependent):
 
 | Variant | ns per element |
 | :--- | ---: |
-| Branchy, random data | 3.850 |
-| Branchy, sorted data | 0.314 |
-| Branchless (mask arithmetic, vectorised by the compiler) | 0.057 |
+| Branchy, random data | 2.975 |
+| Branchy, sorted data | 0.311 |
+| Branchless (mask arithmetic, vectorised by the compiler into NEON code) | 0.058 |
 
-Same instructions, same data values, about 12 times slower when the outcome is random.
+Same instructions, same data values, about 9.6 times slower when the outcome is random (2.857 to 2.975 ns against 0.295 to 0.311 ns across five runs).
+With random bytes the branch is taken half the time and no predictor can beat a coin flip, so about one in two iterations mispredicts: $(2.975 - 0.311) / 0.5 \approx 5.3$ ns per misprediction on this machine.
 Remedies: make the common case straight-line; replace data-dependent branches with arithmetic or conditional selects; batch work by type so branches become predictable; use `[[likely]]` only when a profile shows mispredictions.
 
 ### NUMA and PCIe locality
@@ -145,6 +146,13 @@ Pin the trading threads, allocate their memory (`numactl --cpunodebind --membind
 | Frequency and idle states | Performance governor, shallow C-states only | Avoid the exit latency of deep sleep states and frequency ramps |
 | Memory | Huge pages, `mlockall`, prefault | No TLB storms or page faults during trading |
 | Scheduling class | `SCHED_FIFO` for the trading thread | Never preempted by normal tasks; a busy-looping FIFO thread can starve kernel work on that core, so isolate first |
+| Simultaneous multithreading | Hyper-threading off in the BIOS, or the sibling hardware thread left idle | The sibling shares the core's L1, L2 and execution ports, so its work becomes your jitter |
+
+### Keeping the hot path warm
+
+A strategy that fires a few times a day finds its code, data and branch history evicted by everything that ran in between: the first real order pays cold instruction-cache, data-cache, TLB and branch-predictor misses exactly when speed matters.
+Practitioners keep the path warm by running the full decision path on every market-data event (or on a timer) in a dry-run mode that builds the order and stops just before the send, and by touching the order, risk and session state they will need.
+The warm-up traffic must be indistinguishable to the CPU from the real path, but it must never be able to reach the exchange, so the final send is gated by a flag checked as late as possible.
 
 ### Kernel bypass
 
@@ -162,7 +170,7 @@ Beyond software, FPGA NICs run feed parsing and order generation in hardware for
 
 `rdtsc` reads the x86 timestamp counter; on CPUs with an invariant TSC (`constant_tsc` and `nonstop_tsc` flags) it ticks at a fixed rate regardless of frequency scaling and sleep states, but it must be calibrated to nanoseconds and is not ordered with surrounding instructions (`rdtscp`, or `lfence` before `rdtsc`, orders it).
 On AArch64 the equivalent is the generic timer, `cntvct_el0`, with its frequency in `cntfrq_el0`.
-Measured on the test machine: `steady_clock::now()` cost 14.7 ns per call with libc++ and advanced in steps of 42 ns; the same call through Homebrew GCC's libstdc++ cost 14.0 ns but advanced in steps of 1000 ns; the raw counter reported a nominal 1000 MHz, cost 9.2 ns per read, and also advanced in steps of 42 ticks.
+Measured on the test machine (machine-dependent): `steady_clock::now()` cost 14.2 ns per call with libc++ and advanced in steps of 42 ns; the same call through Homebrew GCC 16's libstdc++ cost 13.3 ns but advanced in steps of 1000 ns; the raw counter reported a nominal 1000 MHz, cost 8.9 ns per read, and also advanced in steps of 42 ticks.
 So a single reading on this Mac cannot resolve anything shorter than about 42 ns: time batches, or use a platform with a finer counter.
 Always measure your clock before measuring anything with it.
 
@@ -171,8 +179,8 @@ Regulation sets a floor: under MiFID II RTS 25 (Commission Delegated Regulation 
 
 ### Measuring latency correctly
 
-- Report percentiles (p50, p99, p99.9, max), never only the mean: in the jitter test below the mean was 863.8 ns while p99.9 was 9,375 ns.
-- Record into a histogram, not a growing vector: the repo's `LatencyHistogram` in [microbenchmark_utils.hpp](code/cpp/microbenchmark_utils.hpp) is log-linear in the style of HdrHistogram, with O(1) allocation-free `record()` and a reported value never below the true one by more than 1/64 relative.
+- Report percentiles (p50, p99, p99.9, max), never only the mean: in the jitter test below the mean was 818.0 ns while the max was 7,542 ns.
+- Record into a histogram, not a growing vector: the repo's `LatencyHistogram` in [microbenchmark_utils.hpp](code/cpp/microbenchmark_utils.hpp) is log-linear in the style of HdrHistogram, with O(1) allocation-free `record()`; it reports the upper edge of a bucket, so a percentile is never below the true value and overstates it by less than 1/64 relative (7 sub-bucket bits: each power-of-two range split into 64 buckets).
 - Measure under load and on production-like hardware: an idle core, a warm cache and a microbenchmark loop flatter everything.
 - Tails compound across stages: if each of $k$ independent stages exceeds its own p99 with probability 1%, the path hits at least one stage's p99 with probability $1 - 0.99^k$, which is 4.90% for $k = 5$, 9.56% for $k = 10$ and 63.40% for $k = 100$ (Dean and Barroso's "tail at scale").
 - Keep headroom: in an M/M/1 queue with 300 ns service time, mean time in system is 600 ns at 50% utilization, 750 ns at 60%, 3,000 ns at 90% and 30,000 ns at 99%; latency explodes long before throughput saturates.
@@ -204,20 +212,22 @@ Inside a data centre, with metres of cable, the order flips and serialization pl
 ### Reading a cache ladder
 
 "Your book update is several times slower at p50 in production than in the benchmark. Why?"
-The benchmark's book fits in L1 and L2 (1.13 to 7.57 ns per dependent load on the test machine); in production the book, the order-id hash map and the strategy state compete with everything else, and a few DRAM misses at about 110 to 120 ns each explain the gap.
+The benchmark's book fits in L1 and L2 (1.09 to 8.61 ns per dependent load on the test machine); in production the book, the order-id hash map and the strategy state compete with everything else, and a few DRAM misses at about 105 to 115 ns each explain the gap.
 Check with hardware counters (`perf stat -e cache-misses`), then shrink and colocate the hot data.
 
 ### Diagnosing false sharing
 
 "Two threads each update their own statistics counter in a shared struct, and throughput halves when the second thread starts."
 The counters share a cache line, which moves between the cores on every write.
-On the test machine, 8 bytes apart cost 7.80 ns per increment and 256 bytes apart 2.45 ns.
+On the test machine, 8 bytes apart cost 7.46 ns per increment and 64 or more bytes apart about 1.96 ns.
 Fix with `alignas(128)` per counter or per-thread structs, and keep read-mostly data on separate lines from written data.
 
 ### The mean that lied
 
-The jitter test times a fixed 1000-step dependent arithmetic chain 200,000 times on the test machine: p50 833 ns, p90 834 ns, p99 1,167 ns, p99.9 9,375 ns, max 219,833 ns, mean 863.8 ns.
-The mean says "about 860 ns"; one call in a thousand took more than 9 µs and the worst took 220 µs, from interrupts, preemption and frequency changes on an untuned desktop OS.
+The jitter test times a fixed 1000-step dependent arithmetic chain 200,000 times on the test machine (same run as above): p50 792 ns, p90 834 ns, p99 1,000 ns, p99.9 1,125 ns, max 7,542 ns, mean 818.0 ns.
+The values move in steps of about 42 ns because that is the clock's resolution, which is why the mean can even fall below the median.
+The mean says "about 820 ns"; the worst call took 9.5 times the median, and across five runs the max ranged from 7,542 to 12,833 ns while p99.9 stayed at 1,125 ns.
+An earlier run, taken while other heavy processes shared the machine, recorded p99.9 9,375 ns and max 219,833 ns for the same code: interrupts, preemption and frequency changes on an untuned, shared desktop OS set the tail, not the code.
 Those tails are what core isolation, pinning and interrupt steering remove.
 
 ### Coordinated omission in one sentence
@@ -249,19 +259,19 @@ With a closed-loop tester, a 2 s freeze becomes one slow sample among 58,000; me
 > Light in fibre travels at about c/1.468, 4.897 µs per km, versus 3.336 µs per km in air: a 31.9% saving over the same distance, and radio paths are also straighter than fibre routes.
 
 > [!question]- qd-lowlat-cache-numbers | Roughly what does a dependent load cost from L1, L2 and DRAM?
-> Order of 1 ns, several ns, and around 100 ns. Measured on an Apple M3 Pro: 1.13 ns (16 KiB set), 5 to 8 ns (256 KiB to 1 MiB), 110 to 120 ns (16 MiB and up). Always measure on your hardware.
+> Order of 1 ns, several ns, and around 100 ns. Measured on an Apple M3 Pro: 1.11 ns (16 KiB set), 4.87 to 8.61 ns (256 KiB to 4 MiB), 106 to 114 ns (64 MiB and up). Always measure on your hardware.
 
 > [!question]- qd-lowlat-pointer-chase | How do you measure memory latency rather than bandwidth?
 > Pointer chasing: a random single cycle through the working set so each load's address depends on the previous load, defeating prefetchers and out-of-order overlap; divide time by the number of loads.
 
 > [!question]- qd-lowlat-false-sharing | What is false sharing and how do you fix it?
-> Two threads write different variables on the same cache line, so the line ping-pongs between cores. Measured: 7.80 ns per increment 8 bytes apart vs 2.45 ns 256 bytes apart. Fix with alignment and padding (128 bytes is the safe value) or per-thread data.
+> Two threads write different variables on the same cache line, so the line ping-pongs between cores. Measured: 7.46 ns per increment 8 bytes apart vs 1.96 ns 256 bytes apart. Fix with alignment and padding (128 bytes is the safe value) or per-thread data.
 
 > [!question]- qd-lowlat-why-128 | Why pad to 128 bytes rather than 64?
-> Apple Silicon reports 128-byte cache lines, and x86 adjacent-line prefetchers pull 64-byte lines in pairs, so 64-byte padding can still interfere. 128 is safe on both; `hardware_destructive_interference_size` varies by compiler.
+> x86 adjacent-line (spatial) prefetchers pull 64-byte lines in 128-byte-aligned pairs, so 64-byte padding can still interfere, and some cores report 128-byte lines. 128 is safe everywhere for a few bytes of padding; on the M3 Pro test machine 64 bytes already removed the penalty, which is why you measure. `hardware_destructive_interference_size` can vary with compiler and flags, so it is not ABI-stable.
 
 > [!question]- qd-lowlat-branch-sorted | Why does summing elements above a threshold run faster on sorted data?
-> The branch becomes predictable (long runs of not-taken then taken), so there are almost no mispredictions. Measured: 3.850 ns per element random vs 0.314 sorted; a branchless version ran at 0.057.
+> The branch becomes predictable (long runs of not-taken then taken), so there are almost no mispredictions. Measured: 2.975 ns per element random vs 0.311 sorted; a branchless version, which the compiler vectorised, ran at 0.058.
 
 > [!question]- qd-lowlat-huge-pages | Why use huge pages for trading processes?
 > TLB reach is entries times page size; 2 MiB pages cover 512 times more memory per entry than 4 KiB pages (a 1536-entry TLB: 6 MiB vs 3 GiB), avoiding page walks on large books and pools. Use explicit huge pages or `madvise`; avoid THP `always`.
@@ -288,7 +298,7 @@ With a closed-loop tester, a 2 s freeze becomes one slow sample among 58,000; me
 > RTS 25 (Delegated Regulation 2017/574) Annex Table 2: maximum divergence from UTC of 100 microseconds and timestamp granularity of 1 microsecond or better for high-frequency algorithmic trading.
 
 > [!question]- qd-lowlat-percentiles | Why report p99.9 and max instead of the mean?
-> Trading losses come from the slow events (missed fills, stale quotes), and latency distributions are heavily right-skewed. In the jitter test the mean was 863.8 ns while p99.9 was 9,375 ns and max 219,833 ns.
+> Trading losses come from the slow events (missed fills, stale quotes), and latency distributions are heavily right-skewed. In the jitter test the mean was 818.0 ns while the max was 7,542 ns, and with other load on the machine p99.9 reached 9,375 ns and max 219,833 ns.
 
 > [!question]- qd-lowlat-tail-at-scale | Each of 10 independent stages exceeds its p99 1% of the time. How often does a request hit at least one slow stage?
 > $1 - 0.99^{10} = 9.56\%$. With 100 stages it is 63.40%: tails compound, so per-stage tails must be far tighter than the end-to-end target.
@@ -301,6 +311,12 @@ With a closed-loop tester, a 2 s freeze becomes one slow sample among 58,000; me
 
 > [!question]- qd-lowlat-histogram | How do you record latencies on the hot path without distorting them?
 > Into a preallocated log-linear histogram (HdrHistogram style): O(1) `record`, no allocation, bounded relative error, percentiles read off afterwards; or copy raw timestamps to a ring drained by another thread.
+
+> [!question]- qd-lowlat-warm-path | Your strategy trades a few times a day and its first order is always slow. Why, and what do you do?
+> Between signals, other work evicts its code, data, TLB entries and branch history, so the first real order runs cold. Run the full decision path continuously in a dry-run mode that builds the order and stops just before the send, touch the state it needs, and gate the final send with a late check so warm-up traffic can never reach the exchange.
+
+> [!question]- qd-lowlat-smt | Why disable hyper-threading (SMT) on trading cores?
+> The sibling hardware thread shares the core's L1, L2, TLB and execution ports, so whatever runs there evicts your data and steals issue slots at random times: that is jitter. Turn SMT off or leave the sibling idle on isolated cores.
 
 ## In this repo and SDE-Interview-Prep
 
@@ -321,7 +337,7 @@ With a closed-loop tester, a 2 s freeze becomes one slow sample among 58,000; me
 - Ulrich Drepper, "What Every Programmer Should Know About Memory" (2007).
 - Brendan Gregg, *Systems Performance*, 2nd edition (Addison-Wesley, 2020), chapters 6 (CPUs), 7 (memory) and 10 (network).
 - Jeffrey Dean and Luiz Andre Barroso, "The Tail at Scale", *Communications of the ACM* 56(2), 2013.
-- Gil Tene, "How NOT to Measure Latency" (talk, 2015), and the HdrHistogram library.
+- Gil Tene, "How NOT to Measure Latency" (talk given at QCon from 2012 and at QCon San Francisco and Strange Loop in 2015), and the HdrHistogram library.
 - Commission Delegated Regulation (EU) 2017/574 (RTS 25) on the accuracy of business clocks.
 - IEEE 1588-2019, Precision Time Protocol.
 - DPDK Programmer's Guide (dpdk.org) and the AMD Solarflare OpenOnload and ef_vi user guides.

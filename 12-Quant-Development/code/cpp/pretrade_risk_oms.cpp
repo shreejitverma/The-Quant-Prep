@@ -80,7 +80,12 @@ int main() {
     check(send(gw, "O4", "XYZ", Side::Sell, 100, 9'499, 2) == RejectReason::PriceCollar, "sell collar at 94.99");
     check(send(gw, "O5", "RST", Side::Buy, 10, 5'000, 2) == RejectReason::RestrictedSymbol, "restricted");
     check(send(gw, "O5b", "NOREF", Side::Buy, 10, 5'000, 2) == RejectReason::NoReferencePrice, "no reference fails closed");
-    check(send(gw, "O5c", "XYZ", Side::Buy, 900, 10'000, 3) == RejectReason::MaxNotional, "900 x $100 = $90,000 > $80,000");
+    const std::int64_t o5cQty = 900;
+    const std::int64_t o5cPx = 10'000;
+    std::printf("    O5c notional $%.2f against the $%.2f limit\n", static_cast<double>(o5cQty * o5cPx) / 100.0,
+                static_cast<double>(limits.maxOrderNotionalCents) / 100.0);
+    check(o5cQty * o5cPx == 9'000'000 && o5cQty * o5cPx > limits.maxOrderNotionalCents, "$90,000 above $80,000");
+    check(send(gw, "O5c", "XYZ", Side::Buy, o5cQty, o5cPx, 3) == RejectReason::MaxNotional, "O5c rejected for max notional");
     check(send(gw, "O6", "XYZ", Side::Buy, 500, 10'000, 10) == RejectReason::RepeatedOrder, "repeat of O1 inside 50 ms");
     check(send(gw, "O7", "XYZ", Side::Buy, 800, 10'000, 100) == RejectReason::None, "O7 accepted, worst-case long 1400");
     const std::int64_t openBuys = gw.openQty("XYZ", Side::Buy);
@@ -91,34 +96,48 @@ int main() {
     const std::int64_t grossBefore = gw.grossExposureCents();
     std::printf("    gross exposure of open orders: $%.2f\n", static_cast<double>(grossBefore) / 100.0);
     check(grossBefore == 14'050'000, "gross $140,500");
-    const std::int64_t o9Notional = 700 * 10'100;
-    std::printf("    O9 notional $%.2f, gross with O9 $%.2f\n", static_cast<double>(o9Notional) / 100.0,
-                static_cast<double>(grossBefore + o9Notional) / 100.0);
-    check(o9Notional == 7'070'000 && grossBefore + o9Notional == 21'120'000, "70,700 and 211,200");
-    check(send(gw, "O9", "XYZ", Side::Sell, 700, 10'100, 150) == RejectReason::CreditLimit, "140,500 + 70,700 > 200,000");
+    const std::int64_t o9Qty = 700;
+    const std::int64_t o9Px = 10'100;
+    const std::int64_t o9Notional = o9Qty * o9Px;  // the same product the gateway adds to gross exposure
+    const std::int64_t worstShortWithO9 = gw.position("XYZ") - gw.openQty("XYZ", Side::Sell) - o9Qty;
+    std::printf("    O9 notional $%.2f, gross with O9 $%.2f; worst-case short with O9 %lld\n", static_cast<double>(o9Notional) / 100.0,
+                static_cast<double>(grossBefore + o9Notional) / 100.0, static_cast<long long>(worstShortWithO9));
+    check(o9Notional == 7'070'000, "O9 notional $70,700");
+    check(grossBefore + o9Notional == 21'120'000 && grossBefore + o9Notional > limits.creditLimitCents, "$211,200 above $200,000");
+    check(worstShortWithO9 == -700 && worstShortWithO9 >= -limits.maxAbsPosition, "short side 0 - 0 - 700 within -1500");
+    check(send(gw, "O9", "XYZ", Side::Sell, o9Qty, o9Px, 150) == RejectReason::CreditLimit, "O9 rejected for credit");
     check(send(gw, "O10", "XYZ", Side::Sell, 100, 10'050, 200) == RejectReason::Throttle, "4th order inside 1 s");
     check(send(gw, "O10b", "XYZ", Side::Sell, 100, 10'050, 1000) == RejectReason::None, "O1 slot expired at t = 1000 ms");
 
     std::printf("[2] execution reports, idempotency and the state machine\n");
     check(report(gw, {"E1", "O1", "", ExecType::New, OrdStatus::New, 0, 0, 500, 0}) == oms::ApplyResult::Applied, "O1 ack");
+    check(gw.order("O1")->status == OrdStatus::New && gw.order("O1")->leavesQty == 500, "E1: New, leaves 500");
     check(report(gw, {"E2", "O1", "", ExecType::Trade, OrdStatus::PartiallyFilled, 200, 10'000, 300, 200}) == oms::ApplyResult::Applied,
           "O1 partial");
     check(report(gw, {"E2", "O1", "", ExecType::Trade, OrdStatus::PartiallyFilled, 200, 10'000, 300, 200}) == oms::ApplyResult::Duplicate,
           "replayed E2 ignored");
-    check(gw.order("O1")->cumQty == 200, "cum unchanged by duplicate");
+    check(gw.order("O1")->cumQty == 200 && gw.order("O1")->leavesQty == 300 && gw.order("O1")->status == OrdStatus::PartiallyFilled,
+          "E2: partially filled, cum 200 leaves 300, unchanged by the duplicate");
     check(report(gw, {"E3", "O1", "", ExecType::Trade, OrdStatus::Filled, 300, 9'998, 0, 500}) == oms::ApplyResult::Applied, "O1 filled");
     const double avgPx = gw.order("O1")->avgPx();
     std::printf("    O1 AvgPx (tag 6) = %.3f, XYZ position %lld\n", avgPx, static_cast<long long>(gw.position("XYZ")));
     check(std::fabs(avgPx - 99.988) < 1e-9, "avg px 99.988");
+    check(gw.order("O1")->status == OrdStatus::Filled && gw.order("O1")->cumQty == 500 && gw.order("O1")->leavesQty == 0,
+          "E3: filled, cum 500 leaves 0");
     check(gw.position("XYZ") == 500, "position 500");
 
-    // Cancel O7, but 100 shares fill while the cancel is pending: the fill must be booked.
+    // Cancel O7, but 100 shares fill while the cancel is in flight: the fill must be booked. The
+    // venue sent this fill before it saw the cancel, so it reports OrdStatus 1 (Partially filled),
+    // not 6 (FIX 4.4 Appendix D, B.1.b); our book stays Pending Cancel and accepts either.
     check(report(gw, {"E4", "O7", "", ExecType::New, OrdStatus::New, 0, 0, 800, 0}) == oms::ApplyResult::Applied, "O7 ack");
     check(gw.requestCancel("O7", "C7") == RejectReason::None, "cancel sent");
     check(gw.order("O7")->status == OrdStatus::PendingCancel, "pending cancel");
-    check(report(gw, {"E5", "O7", "", ExecType::Trade, OrdStatus::PendingCancel, 100, 10'000, 700, 100}) == oms::ApplyResult::Applied,
-          "fill during pending cancel");
+    check(report(gw, {"E5", "O7", "", ExecType::Trade, OrdStatus::PartiallyFilled, 100, 10'000, 700, 100}) == oms::ApplyResult::Applied,
+          "fill that crossed the cancel");
+    check(gw.order("O7")->status == OrdStatus::PendingCancel && !gw.killed(), "still pending cancel, no false kill");
+    check(gw.order("O7")->cumQty == 100 && gw.order("O7")->leavesQty == 700, "cum 100, leaves 700");
     check(report(gw, {"E6", "C7", "O7", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 100}) == oms::ApplyResult::Applied, "O7 canceled");
+    check(gw.order("O7")->status == OrdStatus::Canceled && gw.order("O7")->leavesQty == 0, "O7 canceled, leaves 0");
     check(gw.position("XYZ") == 600, "position 600 after the racing fill");
 
     // Replace O3b: 100 @ 105.00 -> 300 @ 104.00, risk-checked on the worst case of old and new.
@@ -140,11 +159,13 @@ int main() {
     std::printf("[3] an impossible report trips the kill switch\n");
     check(report(gw, {"E9", "O1", "", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 500}) == oms::ApplyResult::IllegalTransition,
           "cancel of a filled order is illegal");
-    const auto cancels = gw.engageKillSwitch("operator confirm");
+    check(gw.killed(), "kill switch engaged automatically by the illegal report");
+    check(gw.killReason() == "execution report does not reconcile with the order book", "kill reason");
+    const auto cancels = gw.engageKillSwitch("operator confirm");  // returns the cancels to send; the first reason is kept
     std::printf("    kill switch %s (%s); cancels to send: %zu", gw.killed() ? "ON" : "off", gw.killReason().c_str(), cancels.size());
     for (const auto& k : cancels) std::printf(" %s", k.c_str());
     std::printf("\n");
-    check(gw.killed(), "kill switch engaged automatically");
+    check(gw.killReason() == "execution report does not reconcile with the order book", "first kill reason kept");
     check(cancels.size() == 2 && cancels[0] == "O10b" && cancels[1] == "O3b", "two live orders to cancel");
     check(send(gw, "O11", "XYZ", Side::Sell, 10, 10'000, 2000) == RejectReason::KillSwitch, "new orders blocked");
     check(gw.requestCancel("O3b", "C3") == RejectReason::None, "cancels still allowed under the kill switch");
@@ -154,11 +175,20 @@ int main() {
     const volatile double collarFactor = 1.0 + 0.15;  // volatile: keep the computation at run time
     const double floatLimit = 100.0 * collarFactor;
     const bool floatAccepts = 115.00 <= floatLimit;
-    const bool intAccepts = std::int64_t{11'500} * 10'000 <= std::int64_t{10'000} * (10'000 + 1'500);
-    std::printf("    double: 100.0 * (1 + 0.15) = %.17g -> buy at 115.00 %s\n", floatLimit, floatAccepts ? "accepted" : "rejected");
-    std::printf("    integer cents: 11500 * 10000 <= 10000 * 11500 -> buy at 115.00 %s\n", intAccepts ? "accepted" : "rejected");
-    check(floatLimit < 115.0 && !floatAccepts, "floating-point collar wrongly rejects the edge");
-    check(intAccepts, "integer collar accepts the edge");
+    char floatText[32];
+    std::snprintf(floatText, sizeof(floatText), "%.17g", floatLimit);
+    // The same 15% collar in the gateway's integer-cent check.
+    oms::RiskLimits wide = limits;
+    wide.priceCollarBps = 1'500;
+    oms::RiskGateway collarGw(wide);
+    collarGw.setReferencePrice("XYZ", 10'000);
+    const RejectReason atEdge = collarGw.submit({"K1", "XYZ", Side::Buy, 1, 11'500}, 0);
+    const RejectReason pastEdge = collarGw.submit({"K2", "XYZ", Side::Buy, 1, 11'501}, 0);
+    std::printf("    double: 100.0 * (1 + 0.15) = %s -> buy at 115.00 %s\n", floatText, floatAccepts ? "accepted" : "rejected");
+    std::printf("    gateway, integer cents, 15%% collar: buy at 115.00 -> %s, at 115.01 -> %s\n", oms::toString(atEdge),
+                oms::toString(pastEdge));
+    check(std::string(floatText) == "114.99999999999999" && !floatAccepts, "floating-point collar wrongly rejects the edge");
+    check(atEdge == RejectReason::None && pastEdge == RejectReason::PriceCollar, "integer collar accepts 115.00, rejects 115.01");
 
     if (g_failures != 0) {
         std::fprintf(stderr, "%d assertion(s) failed\n", g_failures);

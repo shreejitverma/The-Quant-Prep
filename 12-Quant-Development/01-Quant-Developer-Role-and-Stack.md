@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 2
-sources: [Harris - Trading and Exchanges - Market Microstructure for Practitioners (Oxford 2003) ch 1-6, Narang - Inside the Black Box 2nd ed (Wiley 2013) ch 1-2 and 14-15, Bouchaud Bonart Donier and Gould - Trades Quotes and Prices (Cambridge 2018) ch 1-3, Joshi - C++ Design Patterns and Derivatives Pricing 2nd ed (Cambridge 2008) ch 1, Kerrisk - The Linux Programming Interface (No Starch 2010), Nasdaq TotalView-ITCH 5.0 specification (2015), SEC Rule 15c3-5 Market Access Rule (17 CFR 240.15c3-5), SEC press release 2013-222 - Knight Capital charged with violations of market access rule (2013-10-16)]
+sources: [Harris - Trading and Exchanges - Market Microstructure for Practitioners (Oxford 2003) ch 1-6, Narang - Inside the Black Box 2nd ed (Wiley 2013) ch 1-2 and 14-15, Bouchaud Bonart Donier and Gould - Trades Quotes and Prices (Cambridge 2018) ch 1-3, Joshi - C++ Design Patterns and Derivatives Pricing 2nd ed (Cambridge 2008) ch 1, Kerrisk - The Linux Programming Interface (No Starch 2010), Nasdaq TotalView-ITCH 5.0 specification (revision of 2023-04-28), SEC Rule 15c3-5 Market Access Rule (17 CFR 240.15c3-5), SEC press release 2013-222 - Knight Capital charged with violations of market access rule (2013-10-16)]
 ---
 
 # The Quant Developer Role and Stack
@@ -155,7 +155,7 @@ Close them visibly: a small C++ project with an order book, unit tests, sanitize
 > Market data is one-to-many and latency-critical, so multicast sends each packet once to all subscribers and lost packets are recovered by sequence-number gap detection and retransmission or snapshots. Orders are one-to-one and must be reliable and ordered per session, which TCP gives.
 
 > [!question]- qd-role-15c3-5 | What is SEC Rule 15c3-5 and why does a developer care?
-> The US Market Access Rule: brokers with market access must have pre-trade risk controls (credit and capital thresholds, erroneous-order checks) and supervisory procedures. Developers build and test those checks on the order path, so their latency and correctness are part of the job.
+> The US Market Access Rule (17 CFR 240.15c3-5): a broker-dealer with market access must have risk management controls and supervisory procedures, including pre-trade financial controls (credit and capital thresholds, blocking erroneous orders by price, size or duplication) and regulatory controls (pre-order-entry requirements, restricted securities, authorised users only), under its direct and exclusive control. Developers build and test those checks on the order path, so their latency and correctness are part of the job.
 
 > [!question]- qd-role-junior-vs-senior | What changes between a junior and a senior quant-dev interview?
 > Juniors are judged on coding speed, correctness and language mechanics. Seniors are judged on design trade-offs, measurement discipline, failure handling and incident ownership; "how did you measure that" and "what happens when this fails" dominate.
@@ -173,7 +173,7 @@ Close them visibly: a small C++ project with an order book, unit tests, sanitize
 > Session and order-routing protocols such as FIX; binary exchange market-data protocols such as Nasdaq ITCH 5.0; binary order-entry protocols such as Nasdaq OUCH; encodings such as SBE. Internally, firms also define their own binary messages over shared memory or multicast.
 
 > [!question]- qd-role-controls-interview | Why do controls (kill switches, limits, audit) come up in developer interviews?
-> Because a software error on the order path can lose a large amount of money in minutes; the Knight Capital incident on 1 August 2012 cost more than $460 million in the first 45 minutes after the open, per SEC press release 2013-222. Designing for safe failure is part of the role.
+> Because a software error on the order path can lose a large amount of money in minutes. Per SEC press release 2013-222, in the first 45 minutes after the open on 1 August 2012 Knight Capital sent more than 4 million orders while trying to fill 212 customer orders, and the firm eventually lost more than $460 million. Designing for safe failure is part of the role.
 
 > [!question]- qd-role-lock-free-judgement | A candidate says they would make every queue lock-free. What is the senior response?
 > Use lock-free structures only where contention or latency has been measured to matter and the design is simple and testable (an SPSC ring between two pinned threads). Elsewhere a mutex is simpler, correct and fast enough; the cost of a subtle memory-ordering bug is far higher than a few hundred nanoseconds.

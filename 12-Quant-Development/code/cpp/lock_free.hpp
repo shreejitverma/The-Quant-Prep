@@ -3,8 +3,10 @@
 //   SpscQueue<T, N>        bounded single-producer single-consumer ring buffer (wait-free)
 //   MpmcQueue<T, N>        Dmitry Vyukov's bounded multi-producer multi-consumer queue
 //   TaggedIndexStack<N>    Treiber stack of indices with an ABA tag (a lock-free free list)
+//   SpinLock               test-and-test-and-set lock (acquire on lock, release on unlock)
+//   Seqlock<T>             single-writer sequence lock for a small trivially copyable snapshot
 //
-// Every memory order below names the happens-before edge it creates. All three are tested under
+// Every memory order below names the happens-before edge it creates. All of them are tested under
 // ThreadSanitizer in tests/test_lock_free.cpp.
 
 #pragma once
@@ -13,6 +15,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <memory>
 #include <optional>
 #include <type_traits>
@@ -90,9 +93,15 @@ public:
         return true;
     }
 
-    // Approximate when called concurrently; exact when both sides are quiescent.
+    // Approximate when called concurrently; exact when both sides are quiescent. The two counters
+    // cannot be read at one instant. Reading head first can pair an old head with a newer, larger
+    // tail, and the unsigned difference wraps to about 2^64. So tail is read first (a head read
+    // afterwards is never smaller: the consumer only advanced tail after seeing head that far), and
+    // the result is clamped to N, because both sides may have moved on between the two loads.
     [[nodiscard]] std::size_t size() const noexcept {
-        return static_cast<std::size_t>(p_.head.load(std::memory_order_acquire) - c_.tail.load(std::memory_order_acquire));
+        const std::uint64_t t = c_.tail.load(std::memory_order_acquire);
+        const std::uint64_t h = p_.head.load(std::memory_order_acquire);
+        return static_cast<std::size_t>(h - t < N ? h - t : N);
     }
 };
 
@@ -235,6 +244,85 @@ private:
     std::array<std::atomic<std::uint32_t>, N> next_{};
     alignas(kPad) std::atomic<std::uint64_t> head_{pack(0, kNil)};
     std::uint32_t tag_step_;
+};
+
+// ---------------------------------------------------------------------------------------------
+// Test-and-test-and-set spin lock. lock() is an acquire RMW, unlock() a release store: everything
+// a thread did inside the critical section happens-before whatever the next owner does inside it.
+// Waiters spin on a relaxed load (a shared, read-only copy of the line in their own cache) and only
+// retry the exchange when the lock looks free, so they do not bounce the line with failed RMWs.
+// Only for very short critical sections on dedicated cores: a preempted owner makes everyone spin.
+// ---------------------------------------------------------------------------------------------
+inline void cpu_relax() noexcept {
+#if defined(__x86_64__) || defined(__i386__)
+    __builtin_ia32_pause();  // PAUSE: eases the spin-loop exit and frees resources for the SMT sibling
+#elif defined(__aarch64__)
+    __asm__ volatile("yield");
+#endif
+}
+
+class SpinLock {
+    std::atomic<bool> locked_{false};
+
+public:
+    void lock() noexcept {
+        for (;;) {
+            if (!locked_.exchange(true, std::memory_order_acquire)) return;  // pairs with unlock's release
+            while (locked_.load(std::memory_order_relaxed)) cpu_relax();
+        }
+    }
+    [[nodiscard]] bool try_lock() noexcept {
+        return !locked_.load(std::memory_order_relaxed) && !locked_.exchange(true, std::memory_order_acquire);
+    }
+    void unlock() noexcept { locked_.store(false, std::memory_order_release); }
+};
+
+// ---------------------------------------------------------------------------------------------
+// Seqlock: one writer publishes a small snapshot (top of book, a risk limit set) that many readers
+// copy without ever blocking the writer. The sequence is odd while a write is in progress; a reader
+// accepts its copy only if it saw the same even sequence before and after reading the data.
+// The data words are relaxed-or-stronger atomics, not plain memory: a reader overlapping a write
+// would otherwise be a data race (undefined behaviour), even though it discards the torn copy.
+// Orders (fence-free variant, Boehm 2012): the writer's data stores are release, so a reader that
+// sees any new word also sees the odd sequence stored before it, and its final sequence load
+// (kept after the data loads by their acquire) detects the overlap. The reader's first load is
+// acquire and pairs with the writer's final release, so an unchanged even sequence means it read
+// one complete version. Writer: wait-free. Readers: retry while a write overlaps (not lock-free).
+// ---------------------------------------------------------------------------------------------
+template <typename T>
+    requires std::is_trivially_copyable_v<T> && std::is_default_constructible_v<T>
+class Seqlock {
+    static constexpr std::size_t kWords = (sizeof(T) + 7) / 8;
+    alignas(kPad) std::atomic<std::uint64_t> seq_{0};
+    std::array<std::atomic<std::uint64_t>, kWords> words_{};
+
+public:
+    // Single writer thread only.
+    void store(const T& value) noexcept {
+        std::array<std::uint64_t, kWords> buf{};
+        std::memcpy(buf.data(), &value, sizeof(T));
+        const std::uint64_t s = seq_.load(std::memory_order_relaxed);  // own counter
+        seq_.store(s + 1, std::memory_order_relaxed);                   // odd: write in progress
+        for (std::size_t i = 0; i < kWords; ++i) words_[i].store(buf[i], std::memory_order_release);
+        seq_.store(s + 2, std::memory_order_release);  // even: publishes the complete version
+    }
+
+    // Any thread. False if a write overlapped the read; the caller retries or uses its last copy.
+    [[nodiscard]] bool try_load(T& out) const noexcept {
+        const std::uint64_t s0 = seq_.load(std::memory_order_acquire);
+        if (s0 & 1u) return false;
+        std::array<std::uint64_t, kWords> buf{};
+        for (std::size_t i = 0; i < kWords; ++i) buf[i] = words_[i].load(std::memory_order_acquire);
+        if (seq_.load(std::memory_order_relaxed) != s0) return false;
+        std::memcpy(&out, buf.data(), sizeof(T));
+        return true;
+    }
+
+    [[nodiscard]] T load() const noexcept {
+        T out{};
+        while (!try_load(out)) cpu_relax();
+        return out;
+    }
 };
 
 }  // namespace qpconc

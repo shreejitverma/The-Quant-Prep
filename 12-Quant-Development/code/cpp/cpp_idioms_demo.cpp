@@ -4,7 +4,9 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <limits>
+#include <optional>
 
 #include "cpp_idioms.hpp"
 
@@ -19,6 +21,13 @@ void check(bool ok, const char* what) {
     }
 }
 
+// True when `v` printed with `fmt` is exactly the literal the note quotes.
+bool prints_as(double v, const char* fmt, const char* literal) {
+    char buf[64];
+    std::snprintf(buf, sizeof buf, fmt, v);
+    return std::strcmp(buf, literal) == 0;
+}
+
 }  // namespace
 
 int main() {
@@ -27,11 +36,12 @@ int main() {
     // Floating-point prices drift; integer ticks do not.
     const double sum = 0.1 + 0.2;
     std::printf("0.1 + 0.2 == 0.3 ? %s, difference %.6e\n", sum == 0.3 ? "true" : "false", sum - 0.3);
-    check(sum != 0.3, "0.1 + 0.2 differs from 0.3 in binary64");
+    check(sum - 0.3 == 0x1p-54 && prints_as(sum - 0.3, "%.6e", "5.551115e-17"), "0.1 + 0.2 - 0.3 = 2^-54 = 5.551115e-17");
     double px = 100.0;
     for (int i = 0; i < 1000; ++i) px += 0.01;  // walk up 1000 ticks of 0.01
     std::printf("100.0 + 1000 x 0.01 in double = %.15f (exact 110), error %.3e\n", px, px - 110.0);
-    check(px != 110.0, "accumulated double drift is non-zero");
+    check(prints_as(px, "%.15f", "110.000000000005116") && prints_as(px - 110.0, "%.3e", "5.116e-12"),
+          "accumulated double drift: 110.000000000005116, error 5.116e-12");
     Price ip = *parse_price("100");
     const Price tick = *parse_price("0.01");
     for (int i = 0; i < 1000; ++i) ip = ip + tick;
@@ -43,9 +53,17 @@ int main() {
     const std::int64_t max_qty = std::numeric_limits<std::int64_t>::max() / max_px.raw;
     std::printf("max price raw %lld, largest qty without int64 overflow %lld\n", static_cast<long long>(max_px.raw),
                 static_cast<long long>(max_qty));
+    check(max_px.raw == 2'000'000'000, "ITCH maximum price 200,000.0000 is raw 2,000,000,000");
     check(max_qty == 4'611'686'018LL, "overflow threshold");
     check(checked_notional(max_px, max_qty).has_value(), "at threshold fits");
     check(!checked_notional(max_px, max_qty + 1).has_value(), "one more overflows");
+    // ITCH share counts are 4-byte unsigned, so a single feed-bounded product always fits in int64.
+    const std::int64_t itch_max_shares = std::numeric_limits<std::uint32_t>::max();
+    const auto itch_max_notional = checked_notional(max_px, itch_max_shares);
+    std::printf("max ITCH shares %lld, max single notional raw %lld\n", static_cast<long long>(itch_max_shares),
+                static_cast<long long>(itch_max_notional.value_or(-1)));
+    check(itch_max_shares < max_qty, "ITCH quantity is below the overflow threshold");
+    check(itch_max_notional == std::optional<std::int64_t>{8'589'934'590'000'000'000LL}, "max ITCH notional");
 
     // Layout.
     std::printf("sizeof(PaddedQuote) = %zu, sizeof(PackedQuote) = %zu\n", sizeof(PaddedQuote), sizeof(PackedQuote));
@@ -70,7 +88,7 @@ int main() {
     const long large = pmr_heap_allocations(1000);
     std::printf("pmr heap allocations: 100 elements -> %ld, 1000 elements -> %ld\n", small, large);
     check(small == 0, "small vector served from the stack buffer");
-    check(large >= 1, "large vector spills to the upstream resource");
+    check(large == 1, "large vector spills to the upstream resource once");
 
     // Error codes.
     const auto ok = validate_order(*parse_price("101.25"), 300, 1'000'000'000);

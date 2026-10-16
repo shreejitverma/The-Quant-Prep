@@ -359,6 +359,7 @@ enum class PacketAction {
     EndOfSession,
     Malformed,
     WrongSession,
+    BufferFull,      // reorder buffer at capacity: caller must escalate to snapshot recovery
 };
 
 struct ArbStats {
@@ -407,11 +408,21 @@ public:
             return PacketAction::Duplicate;
         }
         if (h.sequence > next_) {
-            if (buffer_.size() >= max_buffered_) return PacketAction::Malformed;  // caller must resync
-            if (!buffer_.emplace(h.sequence, std::vector<std::uint8_t>(p, p + n)).second) {
-                ++stats_.duplicate_packets;  // the other line's copy is already buffered
-                return PacketAction::Duplicate;
+            auto existing = buffer_.find(h.sequence);
+            if (existing != buffer_.end()) {
+                // Same first sequence already buffered (normally the other
+                // line's identical copy). Keep whichever packet reaches
+                // further: a resend may be packetised differently, and
+                // dropping a longer copy would lose its extra messages.
+                if (end <= packet_end(existing->second)) {
+                    ++stats_.duplicate_packets;
+                    return PacketAction::Duplicate;
+                }
+                existing->second.assign(p, p + n);
+                return PacketAction::Buffered;
             }
+            if (buffer_.size() >= max_buffered_) return PacketAction::BufferFull;
+            buffer_.emplace(h.sequence, std::vector<std::uint8_t>(p, p + n));
             ++stats_.buffered_packets;
             note_gap_state();
             return PacketAction::Buffered;
@@ -460,6 +471,11 @@ private:
             });
             deliver_from(h.sequence, msgs);
         }
+    }
+
+    // One past the last sequence number of a buffered (already validated) packet.
+    static std::uint64_t packet_end(const std::vector<std::uint8_t>& pkt) {
+        return read_be(pkt.data() + 10, 8) + read_be(pkt.data() + 18, 2);
     }
 
     void note_gap_state() {
@@ -594,6 +610,7 @@ private:
     ApplyStatus add(std::uint64_t ref, std::uint16_t locate, char side, std::uint32_t price, std::uint32_t shares) {
         if (side != 'B' && side != 'S') return ApplyStatus::BadSide;
         if (orders_.count(ref) != 0) return ApplyStatus::DuplicateOrder;
+        if (shares == 0) return ApplyStatus::Ok;  // zero display shares: dead on arrival, never rests
         orders_.emplace(ref, Order{locate, side, price, shares});
         Book& b = books_[locate];
         if (side == 'B') {

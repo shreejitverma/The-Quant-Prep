@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 3
-sources: [Harris et al. - Array programming with NumPy - Nature 585 (2020), NumPy documentation - Broadcasting and Copies and views and numpy.sum notes (numpy.org), Numba documentation - A ~5 minute guide and Automatic parallelization (numba.readthedocs.io), Goldberg - What Every Computer Scientist Should Know About Floating-Point Arithmetic - ACM Computing Surveys 23(1) (1991), Higham - Accuracy and Stability of Numerical Algorithms 2nd ed (SIAM 2002) ch 2 and 4, Welford - Note on a Method for Calculating Corrected Sums of Squares and Products - Technometrics 4(3) (1962)]
+sources: [Harris et al. - Array programming with NumPy - Nature 585 (2020), NumPy documentation - Broadcasting and Copies and views and numpy.sum notes (numpy.org), Numba documentation - A ~5 minute guide and Automatic parallelization and Performance tips (numba.readthedocs.io), Numba 0.59.0 release notes - removal of object mode fall-back, pandas 3.0.0 release notes - Copy-on-Write (January 2026), Python documentation - built-in sum changed in 3.12, Goldberg - What Every Computer Scientist Should Know About Floating-Point Arithmetic - ACM Computing Surveys 23(1) (1991), Higham - Accuracy and Stability of Numerical Algorithms 2nd ed (SIAM 2002) ch 2 and 4, Welford - Note on a Method for Calculating Corrected Sums of Squares and Products - Technometrics 4(3) (1962)]
 ---
 
 # Numerical Python: NumPy, pandas and Numba
@@ -66,7 +66,7 @@ Two shapes are compatible if, aligned from the right, each pair of dimensions is
 | `x += 1` / `x = x + 1` | in place / new array | same buffer / new buffer |
 
 Two consequences: writing to a slice of a shared array mutates the caller's data, and an innocent-looking reshape or mask inside a hot loop allocates.
-In pandas the same ambiguity produces `SettingWithCopyWarning`; pandas' Copy-on-Write mode (opt-in in pandas 2.x) makes every derived object behave as a copy until it is written.
+In pandas 2.x the same ambiguity produces `SettingWithCopyWarning`; pandas 3.0 (January 2026) makes Copy-on-Write the only behaviour, so every derived object acts as a copy and `SettingWithCopyWarning` is gone: chained assignment such as `df[mask]["b"] = 0` never writes to `df` (pandas warns with `ChainedAssignmentError`), and the fix is one `df.loc[mask, "b"] = 0`.
 
 ### Floating point in one table
 
@@ -85,8 +85,9 @@ Represent prices as integers in the venue's tick units (ITCH uses 4 implied deci
 
 ### Summation and variance
 
-Relative to $\sum|x_i|$, naive sequential summation of $n$ terms has a worst-case error bound that grows like $n\epsilon$, pairwise summation like $\epsilon\log_2 n$, and compensated (Kahan) summation like $2\epsilon$ independent of $n$ while $n\epsilon \ll 1$; `math.fsum` is correctly rounded (Higham, *Accuracy and Stability of Numerical Algorithms*, chapter 4).
+With unit roundoff $u = \epsilon/2 = 2^{-53}$ and relative to $\sum|x_i|$, naive sequential summation of $n$ terms has a worst-case error bound of about $(n-1)u$, pairwise summation about $u\log_2 n$, and compensated (Kahan) summation $2u + O(nu^2)$, independent of $n$ while $nu \ll 1$; `math.fsum` is correctly rounded (Higham, *Accuracy and Stability of Numerical Algorithms*, chapter 4).
 The NumPy documentation for `numpy.sum` notes that it uses partial pairwise summation for floating-point input (always when no axis is given), whereas `np.cumsum` is strictly sequential.
+Python's built-in `sum()` has used a compensated (Neumaier) algorithm for floats since Python 3.12, so `sum([0.1] * 10)` is exactly `1.0` while an explicit `+=` loop gives `0.9999999999999999`: a hand-written loop and `sum()` no longer agree.
 
 The one-pass variance $\frac{1}{n-1}(\sum x^2 - (\sum x)^2/n)$ subtracts two nearly equal large numbers when the mean is large relative to the spread, which is the normal case for prices.
 Welford's update keeps a running mean and a running sum of squared deviations:
@@ -132,7 +133,14 @@ The options, in order of effort:
 
 Numba (not installed in this repo's environment, so nothing here is run) is a just-in-time compiler that translates a subset of Python and NumPy into machine code through LLVM.
 `@njit` (equivalently `@jit(nopython=True)`) compiles in nopython mode, where the function must not touch Python objects; compilation happens on the first call for each new combination of argument types, so the first call is slow and later calls run at compiled speed.
-`cache=True` writes the compiled code to disk so later processes skip recompilation; `parallel=True` with `numba.prange` parallelises loops whose iterations are independent.
+Since Numba 0.59 plain `@jit` also defaults to nopython mode and the old silent fall-back to object mode is removed, so code Numba cannot type fails with a `TypingError` instead of quietly running at interpreter speed.
+Passing explicit signatures (`@njit("float64[:](float64[:], float64)")`) compiles eagerly at decoration time and rejects other argument types.
+The options that matter in practice:
+
+- `cache=True` writes the compiled code to disk so later processes skip recompilation.
+- `parallel=True` with `numba.prange` parallelises loops whose iterations are independent (and recognised reductions such as `acc += ...`).
+- `nogil=True` releases the GIL inside the compiled function, so ordinary Python threads can run it concurrently.
+- `fastmath=True` turns on LLVM fast-math flags, including reassociation: a sum loop that must otherwise accumulate in strict order can be vectorised with SIMD, but the result changes in the last bits, NaN and infinity handling is no longer guaranteed, and compensated algorithms such as Kahan summation can be optimised away.
 Supported: scalar arithmetic, loops, NumPy arrays and many NumPy functions, tuples and typed containers; unsupported: arbitrary Python objects, most of pandas, and most third-party libraries.
 
 ```python
@@ -184,7 +192,7 @@ Casting either operand to int64 before multiplying fixes it.
 ### 4. Rolling means three ways
 
 For a window of 20 on 10,000 standard normals, the cumsum difference and `sliding_window_view(x, 20).mean(axis=1)` both agree with a Python loop to better than $10^{-14}$, and the window view shares memory with `x`.
-On a series around $10^8$ of length $10^6$, the cumsum version's last window mean is off by about $4 \times 10^{-5}$ while a direct window mean is off by about $10^{-8}$: prefix-sum differences inherit the rounding error of a running total near $10^{14}$.
+On a series around $10^8$ of length $10^6$, the cumsum version's last window mean is off by about $4 \times 10^{-5}$ while a direct window mean is off by at most one ulp of $10^8$, about $1.5 \times 10^{-8}$: prefix-sum differences inherit the rounding error of a running total near $10^{14}$.
 
 ### 5. When the closed form overflows
 
@@ -243,7 +251,7 @@ The script asserts only that the vectorised version is at least 3 times faster, 
 > About 1,087,937 instead of about 1,000,000 (an error of 8.79%). As the running total grows its ulp grows, and each added 0.1 is rounded to a multiple of that ulp. Pairwise summation (`np.sum`), float64 accumulation or `math.fsum` fixes it.
 
 > [!question]- qd-np-sum-error-orders | Compare the error growth of sequential, pairwise and compensated summation.
-> Worst-case bounds relative to $\sum|x_i|$: sequential about $n\epsilon$, pairwise about $\epsilon\log_2 n$, Kahan about $2\epsilon$ independent of $n$ (while $n\epsilon \ll 1$). `math.fsum` is correctly rounded.
+> Worst-case bounds relative to $\sum|x_i|$, with unit roundoff $u = 2^{-53}$: sequential about $(n-1)u$, pairwise about $u\log_2 n$, Kahan $2u + O(nu^2)$, independent of $n$ while $nu \ll 1$. `math.fsum` is correctly rounded.
 
 > [!question]- qd-np-negative-variance | The one-pass formula gives a sample variance of $-170.67$ for $10^9 + \{4, 7, 13, 16\}$. What is the true value and the fix?
 > 30. Catastrophic cancellation: $\sum x^2$ is about $4 \times 10^{18}$ with an ulp of 512, larger than the true difference 90. Use Welford's online update or a two-pass centred formula.
@@ -258,7 +266,7 @@ The script asserts only that the vectorised version is at least 3 times faster, 
 > Differences can be negative and unsigned arithmetic wraps: `uint32(3) - uint32(5)` is 4,294,967,294, which looks like a huge gap or position instead of an error.
 
 > [!question]- qd-np-cumsum-rolling | What is the trade-off of computing rolling means as differences of a cumsum?
-> It is $O(n)$ regardless of window, but each output is a difference of two large running totals, so the absolute error grows with the total: on a long series near $10^8$ it was about $4 \times 10^{-5}$ versus about $10^{-8}$ for a direct window mean. Re-anchor periodically or use a windowed reduction.
+> It is $O(n)$ regardless of window, but each output is a difference of two large running totals, so the absolute error grows with the total: on a long series near $10^8$ it was about $4 \times 10^{-5}$ versus at most one ulp of $10^8$ (about $1.5 \times 10^{-8}$) for a direct window mean. Re-anchor periodically or use a windowed reduction.
 
 > [!question]- qd-np-sliding-window | What does `sliding_window_view(x, w)` return and what does it cost?
 > A read-only strided view of shape `(n - w + 1, w)` that shares memory with `x` (no copy). Reductions over it cost $O(nw)$ arithmetic but run in compiled code.
@@ -271,6 +279,15 @@ The script asserts only that the vectorised version is at least 3 times faster, 
 
 > [!question]- qd-np-numba-limits | When is Numba the wrong choice?
 > When the code uses arbitrary Python objects, pandas or third-party libraries (nopython mode does not support them), when the logic must be shared with a C++ production system, or when the bottleneck is I/O or memory bandwidth rather than interpreter overhead.
+
+> [!question]- qd-np-numba-fastmath | What does `fastmath=True` buy in Numba, and when must you not use it?
+> It enables LLVM fast-math flags, chiefly reassociation, so a strict-order sum loop can be vectorised with SIMD (often a large speed-up for reductions). Do not use it where the exact operation order matters: compensated (Kahan) summation can be simplified away, NaN and infinity checks may be removed, and results change in the last bits, which breaks bit-exact regression tests.
+
+> [!question]- qd-np-numba-nopython-default | A colleague says "`@jit` falls back to object mode if it cannot compile, so it is always safe to add". Is that true today?
+> No. Since Numba 0.59 the object-mode fall-back is removed and `@jit` defaults to nopython mode, so an untypeable function raises a `TypingError` at its first call. Before 0.59 the fall-back silently ran the function at interpreter speed, which hid the fact that nothing had been compiled.
+
+> [!question]- qd-np-builtin-sum | In Python 3.12 or later, `sum([0.1] * 10) == 1.0` is `True`, but an explicit `t += x` loop over the same list gives `0.9999999999999999`. Why?
+> Since Python 3.12 the built-in `sum()` uses compensated (Neumaier) summation for floats, while the loop rounds after every addition. Do not assume a hand-written loop, `sum()`, `np.sum` (pairwise) and `math.fsum` (correctly rounded) agree to the last bit.
 
 > [!question]- qd-np-drawdown | How do you compute the maximum drawdown of a PnL path without a Python loop?
 > `(np.maximum.accumulate(p) - p).max()`. For $[0, 3, 1, 4, -2, 5, 2]$ the running peak is $[0, 3, 3, 4, 4, 5, 5]$ and the maximum drawdown is 6.
@@ -290,6 +307,8 @@ The script asserts only that the vectorised version is at least 3 times faster, 
 - Charles R. Harris et al., "Array programming with NumPy", *Nature* 585, 357-362 (2020).
 - NumPy documentation: "Broadcasting", "Copies and views", and the notes to `numpy.sum` on pairwise summation (numpy.org/doc).
 - Numba documentation: "A ~5 minute guide to Numba" and "Automatic parallelization with @jit" (numba.readthedocs.io).
+- Numba 0.59.0 release notes (object-mode fall-back removed, `nopython=True` the default) and the "Performance Tips" page on `fastmath`.
+- pandas 3.0.0 release notes, "What's new in 3.0.0" (January 21, 2026): Copy-on-Write and the removal of `SettingWithCopyWarning`.
 - David Goldberg, "What Every Computer Scientist Should Know About Floating-Point Arithmetic", *ACM Computing Surveys* 23(1) (1991).
 - Nicholas J. Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd edition (SIAM, 2002), chapter 2 (floating point) and chapter 4 (summation).
 - B. P. Welford, "Note on a Method for Calculating Corrected Sums of Squares and Products", *Technometrics* 4(3) (1962).

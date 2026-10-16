@@ -189,8 +189,8 @@ int main() {
         {'A', 5}, {'B', 5}, {'A', -1}, {'B', -1}, {'A', -2}, {'B', -2}};
     std::uint64_t from_a = 0;
     std::uint64_t from_b = 0;
-    const char* action_names[] = {"delivered", "duplicate", "buffered", "heartbeat", "end of session", "malformed",
-                                  "wrong session"};
+    const char* action_names[] = {"delivered", "duplicate",     "buffered",   "heartbeat",
+                                  "end of session", "malformed", "wrong session", "buffer full"};
     std::vector<PacketAction> actions;
     std::vector<std::uint64_t> delivered_per_arrival;
     std::vector<std::uint64_t> next_after;
@@ -255,8 +255,8 @@ int main() {
     std::printf("gaps detected                %llu\n", static_cast<unsigned long long>(s.gaps_detected));
     std::printf("packets buffered ahead of gap %llu\n", static_cast<unsigned long long>(s.buffered_packets));
     std::printf("duplicate packets dropped    %llu\n", static_cast<unsigned long long>(s.duplicate_packets));
-    std::printf("messages first seen on A     %llu\n", static_cast<unsigned long long>(from_a));
-    std::printf("messages first seen on B     %llu\n", static_cast<unsigned long long>(from_b));
+    std::printf("delivered on line A arrivals %llu\n", static_cast<unsigned long long>(from_a));
+    std::printf("delivered on line B arrivals %llu\n", static_cast<unsigned long long>(from_b));
     std::printf("retransmission request       seq %llu count %llu\n", static_cast<unsigned long long>(gap_first),
                 static_cast<unsigned long long>(gap_size));
     std::printf("messages from retransmission %llu\n", static_cast<unsigned long long>(from_retrans));
@@ -278,8 +278,8 @@ int main() {
     check(s.gaps_detected == 2, "two gaps: 4..5 (filled by B) and 11..13 (retransmitted)");
     check(s.buffered_packets == 2, "packets 3 and 6 were buffered");
     check(s.duplicate_packets == 3, "B copies of packets 1, 4 and 6 dropped");
-    check(from_a == 5, "A delivered 1..3 and 9..10");
-    check(from_b == 5, "B delivered 4..5 then drained 6..8");
+    check(from_a == 5, "A arrivals delivered 1..3 and 9..10");
+    check(from_b == 5, "B arrival 4..5 delivered it and drained the A copy of 6..8");
     check(gap_first == 11 && gap_size == 3, "request 11 for 3");
     check(from_retrans == 6, "retransmission delivers 11..13 and drains 14..16");
     check(s.delivered_messages == 16, "every message delivered once");
@@ -294,7 +294,9 @@ int main() {
     check(book.live_orders() == 5, "orders 1 3 6 7 8 live");
     check(book.depth(kLocate, 'B') == reference.depth(kLocate, 'B'), "bids equal loss-free reference");
     check(book.depth(kLocate, 'S') == reference.depth(kLocate, 'S'), "asks equal loss-free reference");
-    check(ref_top.bid_price == top.bid_price && ref_top.ask_shares == top.ask_shares, "top equals reference");
+    check(ref_top.has_bid == top.has_bid && ref_top.bid_price == top.bid_price && ref_top.bid_shares == top.bid_shares &&
+              ref_top.has_ask == top.has_ask && ref_top.ask_price == top.ask_price && ref_top.ask_shares == top.ask_shares,
+          "top equals reference");
 
     // ---- 7. One Add Order on the wire, byte by byte ----
     char hex[2 * 36 + 1] = {};
@@ -330,25 +332,40 @@ int main() {
     std::printf("ns per day %llu needs %d bits; 48-bit max %llu ns = %.1f hours\n",
                 static_cast<unsigned long long>(ns_per_day), bits_needed, static_cast<unsigned long long>(max48),
                 static_cast<double>(max48) / 3.6e12);
+    check(ns_per_day == 86'400'000'000'000ull, "a day is 86,400,000,000,000 ns");
     check(bits_needed == 47, "a day of nanoseconds needs 47 bits");
+    check(max48 == 281'474'976'710'655ull, "48 bits reach 281,474,976,710,655 ns");
     check(max48 > ns_per_day, "48 bits cover a day");
     check(std::abs(static_cast<double>(max48) / 3.6e12 - 78.2) < 0.05, "48 bits cover 78.2 hours");
     std::printf("Price(4) maximum 0x%08X = %.4f\n", kMaxPrice4, px(kMaxPrice4));
     check(kMaxPrice4 == 0x77359400u, "spec maximum price in hex");
+    check(px(kMaxPrice4) == 200'000.0, "Price(4) maximum is 200,000.0000");
+    check(std::uint64_t{kMaxPrice4} < (1ull << 32), "fits a 4-byte unsigned field");
 
-    // MoldUDP64 payload efficiency for k Add Orders (36 bytes) per packet:
-    // 36k / (20 + 38k). Wire: + UDP 8 + IPv4 20 + Ethernet 14 header + 4 FCS
-    // + 8 preamble + 12 inter-frame gap = 66 bytes per frame.
-    const double eff1 = 36.0 / (20.0 + 38.0);
-    const double eff10 = 360.0 / (20.0 + 380.0);
-    const double frame1 = 20.0 + 38.0 + 66.0;
-    const double pps_10g = 10e9 / (frame1 * 8.0);
-    std::printf("Mold efficiency, 1 add/packet %.4f, 10 adds/packet %.4f\n", eff1, eff10);
-    std::printf("one add per frame: %.0f bytes on the wire, %.2f million packets/s at 10 Gb/s\n", frame1,
-                pps_10g / 1e6);
-    check(std::abs(eff1 - 0.6207) < 5e-5, "eff1");
-    check(std::abs(eff10 - 0.9) < 1e-12, "eff10");
-    check(frame1 == 124.0, "124 bytes per frame");
+    // MoldUDP64 payload efficiency for k Add Orders per packet, measured on
+    // packets the encoder actually builds: 36k / (20 + 38k).
+    auto mold_bytes = [&](std::size_t k) {
+        const std::vector<std::vector<std::uint8_t>> body(k, wire[1]);  // wire[1] is the 36-byte Add Order
+        return build_mold_packet(session, 1, body).size();
+    };
+    const std::size_t add_len = wire[1].size();
+    const std::size_t mold1 = mold_bytes(1);
+    const std::size_t mold10 = mold_bytes(10);
+    const double eff1 = static_cast<double>(add_len) / static_cast<double>(mold1);
+    const double eff10 = static_cast<double>(10 * add_len) / static_cast<double>(mold10);
+    // Per-frame cost below MoldUDP64: UDP 8 + IPv4 20 + Ethernet header 14 + FCS 4 + preamble 8 + inter-frame gap 12.
+    const std::size_t below_mold = 8 + 20 + 14 + 4 + 8 + 12;
+    const std::size_t frame1 = mold1 + below_mold;
+    const double pps_10g = 10e9 / (static_cast<double>(frame1) * 8.0);
+    std::printf("Mold packet bytes, 1 add %zu, 10 adds %zu; efficiency %.4f and %.4f\n", mold1, mold10, eff1, eff10);
+    std::printf("one add per frame: %zu bytes on the wire (%zu below MoldUDP64), %.2f million packets/s at 10 Gb/s\n", frame1,
+                below_mold, pps_10g / 1e6);
+    check(add_len == 36, "Add Order is 36 bytes");
+    check(mold1 == 20 + 38 && mold10 == 20 + 38 * 10, "20 + 38k bytes per packet");
+    check(std::abs(eff1 - 0.6207) < 5e-5, "efficiency 0.6207 for one add");
+    check(std::abs(eff10 - 0.9000) < 5e-5, "efficiency 0.9000 for ten adds");
+    check(below_mold == 66, "66 bytes per frame below MoldUDP64");
+    check(frame1 == 124, "124 bytes per frame");
     check(std::abs(pps_10g / 1e6 - 10.08) < 5e-3, "10.08 Mpps");
 
     if (g_failures != 0) {

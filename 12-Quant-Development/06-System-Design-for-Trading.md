@@ -15,7 +15,7 @@ sources: [Harris - Trading and Exchanges (Oxford 2003) ch 5-6, Kleppmann - Desig
 - Every trading system is the same pipeline: market data in, book building, strategy, pre-trade risk, order gateway, exchange, with drop copy, journaling and monitoring alongside; design the critical path for latency and everything else for correctness and auditability.
 - Put a sequencer in front of a deterministic state machine: one total order of inputs, a journal of that order, and logic that depends on nothing else (no wall clock, no unordered iteration, no uninitialised memory) gives replicas that agree, replay that reproduces bugs, and recovery from snapshot plus journal tail.
 - Market data is lossy UDP multicast made reliable by sequence numbers: arbitrate A and B feeds, detect gaps, recover from retransmission or a snapshot, and never trade on a book you know is stale.
-- Pre-trade risk checks sit on the order path and must be both fast and fail-safe; SEC Rule 15c3-5 requires them for broker-dealers with market access, and Knight Capital's 2012 loss of $460 million in about 45 minutes is the standard lesson in why.
+- Pre-trade risk checks sit on the order path and must be both fast and fail-safe; SEC Rule 15c3-5 requires them for broker-dealers with market access, and Knight Capital's 2012 runaway router (about 45 minutes of erroneous orders, then a $460 million loss) is the standard lesson in why.
 - Size everything from stated assumptions and show the arithmetic: at 5 million messages per second one thread has 200 ns per message, a 32-bit sequence number wraps in 859 seconds, and a day of 1 million messages per second is 889.2 GB raw.
 
 ## Learning objectives
@@ -71,6 +71,7 @@ flowchart LR
 - Book builder: applies add, execute, cancel, delete and replace messages per order to maintain the venue's book (see [Order Book and Matching Engine](07-Order-Book-and-Matching-Engine.md)).
 - Strategy: computes fair value and decides quotes or orders; owns its inventory state.
 - Pre-trade risk: price bands (fat-finger), maximum order size and notional, position and credit limits, order and message rate limits, self-trade prevention, and the kill switch; it is on the critical path, so it is engineered like the rest of it.
+  Rule 15c3-5(c)(1) itself requires two families, pre-set credit or capital thresholds and erroneous-order controls (price or size parameters, duplicative orders), plus regulatory controls in (c)(2); the rest is firm practice and venue rules.
 - Order gateway: speaks the venue protocol (FIX or a binary protocol such as Nasdaq OUCH), manages the session (logon, sequence numbers, resend on reconnect, throttles), and tracks order state from acknowledgements and fills.
 - Drop copy: an independent copy of executions sent by the venue or broker to post-trade systems; reconciling it against the gateway's own view catches lost messages and runaway behaviour.
 - Recorder: captures every inbound and outbound message with timestamps, so any session can be replayed through the same code.
@@ -193,6 +194,7 @@ Requirements: one-to-many, lowest latency to all subscribers fairly, recoverable
 Design: the matching engine emits sequenced events; a publisher packs them into MoldUDP64-style packets on two multicast channels (A and B) through separate network paths; a retransmission service answers requests for ranges of sequence numbers from the journal; a snapshot service publishes full book state periodically for late joiners and long gaps.
 Sizing: at the assumed peak, 250,000 packets per second of 846 bytes is 1.692 Gbit/s per channel, comfortably within 10 GbE with burst headroom; sequence numbers are 64-bit because 32 bits would wrap in 859 s at that rate.
 Fairness: identical cable lengths and switch paths per subscriber in the colocation facility, measured with hardware timestamps.
+Slow consumers: multicast never waits for a receiver, so a subscriber that falls behind sees gaps and must recover itself; inside a firm, where data is re-distributed over TCP or shared memory, the publisher must never block on its slowest reader, so a lagging consumer either gets conflated data (only the latest state per instrument, which suits a risk dashboard but not a book builder) or is disconnected and told to resynchronise from a snapshot.
 
 ### "Our strategy and our risk system disagree about our position"
 
@@ -226,7 +228,7 @@ If retransmission is too slow or unavailable, rebuild from a snapshot and replay
 ## Interview questions
 
 > [!question]- qd-sysdesign-hft-components | Name the components of an HFT trading system and mark the latency-critical path.
-> Feed handler, book builder, strategy, pre-trade risk, order gateway (critical path); drop copy, post-trade, recorder and journal, monitoring, kill switch, research replay (off the critical path, fed asynchronously).
+> Feed handler, book builder, strategy, pre-trade risk, order gateway (critical path); drop copy, post-trade, recorder and journal, monitoring, research replay (off the critical path, fed asynchronously). The kill switch is operated from off the path, but its flag is checked inside pre-trade risk on every order.
 
 > [!question]- qd-sysdesign-ab-arbitration | What is A/B feed arbitration?
 > Venues publish the same sequenced feed on two multicast channels over separate paths. The handler takes the first copy of each sequence number from either feed and discards the duplicate, so a drop on one path is covered by the other without waiting for retransmission.
@@ -246,6 +248,9 @@ If retransmission is too slow or unavailable, rebuild from a snapshot and replay
 > [!question]- qd-sysdesign-snapshot | Why take snapshots if the journal already allows full replay?
 > To bound recovery time: replaying a whole day at the assumed 23.4 billion messages and 20 million per second takes 1,170 s, while replaying from a 300 s snapshot takes at most 75 s at peak.
 
+> [!question]- qd-sysdesign-slow-consumer | One consumer of your internal market data bus falls behind. What do you do?
+> Never let it slow the publisher or the other consumers. Either conflate for it (keep only the latest state per instrument, acceptable for dashboards and risk views, not for a book builder that needs every order message) or cut it off and make it resynchronise from a snapshot plus the sequenced stream; bound every per-consumer queue and alert on lag.
+
 > [!question]- qd-sysdesign-seq-width | Why must sequence numbers be 64-bit?
 > At 5 million messages per second a 32-bit counter wraps after 859 s (14.3 minutes); a 64-bit counter at a billion per second lasts 585 years.
 
@@ -262,7 +267,7 @@ If retransmission is too slow or unavailable, rebuild from a snapshot and replay
 > The OMS manages the order lifecycle and books and records: orders, allocations, positions, compliance. The EMS manages execution in the market: algorithms, routing, connectivity, real-time TCA.
 
 > [!question]- qd-sysdesign-pretrade-checks | Which pre-trade risk checks sit on the order path?
-> Price bands, maximum order size and notional, position and credit limits, order and message rate limits, duplicate-order checks, self-trade prevention, and the kill switch; required in the US for market access by Rule 15c3-5.
+> Price bands, maximum order size and notional, position and credit limits, order and message rate limits, duplicate-order checks, self-trade prevention, and the kill switch. In the US, Rule 15c3-5(c)(1) requires broker-dealers with market access to reject orders that breach pre-set credit or capital thresholds and erroneous orders (price or size parameters, duplicates); rate limits, self-trade prevention and kill switches are firm practice and venue rules on top.
 
 > [!question]- qd-sysdesign-knight | What happened at Knight Capital and what controls would have contained it?
 > Per the SEC order, new code was not deployed to one of eight servers, and a repurposed flag reactivated dormant code that sent child orders endlessly: 4 million executions, 397 million shares, about 45 minutes, a $460 million loss. Automated verified deployment, removal of dead code, hard order-rate and position limits, drop-copy reconciliation and a usable kill switch.
@@ -302,5 +307,5 @@ If retransmission is too slow or unavailable, rebuild from a snapshot and replay
 - Leslie Lamport, "Time, Clocks, and the Ordering of Events in a Distributed System", *Communications of the ACM* 21(7), 1978.
 - Diego Ongaro and John Ousterhout, "In Search of an Understandable Consensus Algorithm", USENIX ATC 2014 (Raft).
 - Martin Fowler, "The LMAX Architecture" (martinfowler.com, 2011), and the LMAX Disruptor technical paper (2011).
-- Larry Harris, *Trading and Exchanges* (Oxford University Press, 2003), chapters 5 and 6 on market structures and order-driven markets.
+- Larry Harris, *Trading and Exchanges: Market Microstructure for Practitioners* (Oxford University Press, 2003), chapters 5 (Market Structures) and 6 (Order-Driven Market Mechanisms).
 - SEC, *In the Matter of Knight Capital Americas LLC*, Release No. 34-70694, 2013.

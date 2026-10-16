@@ -91,7 +91,7 @@ def main() -> None:
     assert math.isclose(naive["max_ms"], 2000.05, abs_tol=1e-6)
     assert math.isclose(naive["p99_ms"], 0.05, abs_tol=1e-9)
     assert math.isclose(naive["p999_ms"], 0.05, abs_tol=1e-9)
-    assert math.isclose(naive["mean_ms"], 4900 / 58_000, abs_tol=1e-9)
+    assert round(naive["mean_ms"], 4) == 0.0845, naive["mean_ms"]  # quoted mean, 4 decimals
 
     # Open loop: every request intended during the stall waits for it, then for the backlog to drain.
     assert true["n"] == 60_000
@@ -99,7 +99,7 @@ def main() -> None:
     assert math.isclose(true["p50_ms"], 0.05, abs_tol=1e-9)
     assert math.isclose(true["p99_ms"], 1430.05, abs_tol=1e-6), true["p99_ms"]
     assert math.isclose(true["p999_ms"], 1943.05, abs_tol=1e-6), true["p999_ms"]
-    assert math.isclose(true["mean_ms"], 2_109_263.25 / 60_000, abs_tol=1e-6), true["mean_ms"]
+    assert round(true["mean_ms"], 4) == 35.1544, true["mean_ms"]  # quoted mean, 4 decimals
     assert true["over_10ms"] == 2_095, true["over_10ms"]
 
     ratio = true["p99_ms"] / naive["p99_ms"]

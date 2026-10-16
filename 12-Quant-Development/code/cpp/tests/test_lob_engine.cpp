@@ -1,6 +1,7 @@
 // Tests for lob_engine.hpp and lob_itch_book.hpp (07-Order-Book-and-Matching-Engine.md).
 // Edge cases, plus a randomized differential test against a deliberately naive reference
-// matcher (linear scans, obviously correct) over 20,000 seeded operations. Framework-free.
+// matcher (linear scans, obviously correct) over 20,000 seeded adds, cancels, cancel/replaces,
+// IOC, FOK and market orders. Framework-free.
 
 #include "lob_engine.hpp"
 #include "lob_itch_book.hpp"
@@ -163,16 +164,25 @@ class ReferenceBook {  // O(n) everything; correct by inspection
     std::uint64_t seq_ = 0;
 
 public:
+    static bool crosses(const NewOrder& o, const RefOrder& r) {
+        return r.side != o.side && (o.type == OrdType::Market || (o.side == Side::Buy ? r.price <= o.price : r.price >= o.price));
+    }
     std::vector<Event> submit(const NewOrder& o) {
         std::vector<Event> ev{{EventType::Accepted, o.id, 0, o.price, o.qty, Reason::None}};
+        if (o.tif == Tif::Fok) {  // all crossing liquidity, no STP in this test
+            Qty avail = 0;
+            for (const auto& r : book_)
+                if (crosses(o, r)) avail += r.qty;
+            if (avail < o.qty) {
+                ev.push_back({EventType::Cancelled, o.id, 0, o.price, o.qty, Reason::FokNotFillable});
+                return ev;
+            }
+        }
         Qty rem = o.qty;
         while (rem > 0) {
             auto best = book_.end();
             for (auto it = book_.begin(); it != book_.end(); ++it) {
-                if (it->side == o.side) continue;
-                const bool crosses =
-                    o.type == OrdType::Market || (o.side == Side::Buy ? it->price <= o.price : it->price >= o.price);
-                if (!crosses) continue;
+                if (!crosses(o, *it)) continue;
                 if (best == book_.end()) {
                     best = it;
                     continue;
@@ -204,6 +214,25 @@ public:
             }
         return {{EventType::Rejected, id, 0, 0, 0, Reason::UnknownOrder}};
     }
+    // Same price and no larger: amend in place, keep the arrival sequence. Otherwise cancel and
+    // re-enter as a new Day limit with a fresh sequence number (back of the queue).
+    std::vector<Event> replace(OrderId old_id, OrderId new_id, Price px, Qty q) {
+        for (auto it = book_.begin(); it != book_.end(); ++it) {
+            if (it->id != old_id) continue;
+            std::vector<Event> ev{{EventType::Replaced, new_id, old_id, px, q, Reason::None}};
+            if (px == it->price && q <= it->qty) {
+                it->id = new_id;
+                it->qty = q;
+                return ev;
+            }
+            const Side s = it->side;
+            book_.erase(it);
+            const auto more = submit(NewOrder{new_id, 1, s, OrdType::Limit, Tif::Day, px, q});
+            ev.insert(ev.end(), more.begin(), more.end());
+            return ev;
+        }
+        return {{EventType::Rejected, new_id, 0, 0, 0, Reason::UnknownOrder}};
+    }
     Qty depth(Side s, Price p) const {
         Qty d = 0;
         for (const auto& o : book_)
@@ -219,23 +248,39 @@ void test_differential_against_reference() {
     std::vector<Event> ev;
     OrderId next_id = 1;
     int mismatches = 0;
-    for (int step = 0; step < 20'000 && mismatches == 0; ++step) {
+    int replaces = 0, fok_kills = 0, fills = 0;
+    int steps = 0;
+    for (; steps < 20'000 && mismatches == 0; ++steps) {
         const int r = static_cast<int>(rng() % 100);
         std::vector<Event> want;
         ev.clear();
-        if (r < 25 && next_id > 1) {
+        if (r < 20 && next_id > 1) {
             const OrderId id = 1 + rng() % (next_id - 1);
             fast.cancel(id, ev);
             want = ref.cancel(id);
+        } else if (r < 35 && next_id > 1) {  // cancel/replace: size down, size up or reprice
+            const OrderId span = std::min<OrderId>(next_id - 1, 40);  // recent ids: mostly still live
+            const OrderId old_id = next_id - 1 - rng() % span;
+            const OrderId new_id = next_id++;
+            const auto px = static_cast<Price>(95 + rng() % 11);
+            const auto q = static_cast<Qty>(1 + rng() % 20);
+            fast.replace(old_id, new_id, px, q, ev);
+            want = ref.replace(old_id, new_id, px, q);
         } else {
             NewOrder o{next_id++, 1, (rng() & 1) ? Side::Buy : Side::Sell, OrdType::Limit, Tif::Day,
                        static_cast<Price>(95 + rng() % 11), static_cast<Qty>(1 + rng() % 20)};
-            if (r >= 90) o.tif = Tif::Ioc;
+            if (r >= 85) o.tif = Tif::Ioc;
+            if (r >= 91) o.tif = Tif::Fok;
             if (r >= 97) o.type = OrdType::Market;
             fast.submit(o, ev);
             want = ref.submit(o);
         }
         if (ev != want) ++mismatches;
+        for (const auto& e : ev) {
+            replaces += e.type == EventType::Replaced;
+            fok_kills += e.reason == Reason::FokNotFillable;
+            fills += e.type == EventType::Fill;
+        }
         for (Price p = 95; p <= 105; ++p)
             if (fast.depth_at(Side::Buy, p) != ref.depth(Side::Buy, p) || fast.depth_at(Side::Sell, p) != ref.depth(Side::Sell, p))
                 ++mismatches;
@@ -243,7 +288,11 @@ void test_differential_against_reference() {
         const auto ba = fast.best_ask();
         if (bb && ba && *bb >= *ba) ++mismatches;  // continuous book is never crossed after matching
     }
+    std::cout << "differential: " << steps << " operations, " << replaces << " replaces, " << fok_kills << " FOK kills, " << fills
+              << " fills, " << mismatches << " mismatches" << std::endl;
     EXPECT(mismatches == 0);
+    EXPECT(steps == 20'000);  // the note quotes 20,000 operations (card qd-lobimpl-differential)
+    EXPECT(replaces > 0 && fok_kills > 0 && fills > 0);  // every path was actually exercised
 }
 
 // ------------------------------------------------------------------ ITCH builder errors

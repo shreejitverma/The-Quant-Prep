@@ -130,6 +130,72 @@ void test_replace_and_executed_with_price_offsets() {
     EXPECT(wc[18] == 9 && wc[22] == 8 && wc[30] == 7 && wc[31] == 'N' && wc[35] == 6);
 }
 
+void test_lengths_equal_sum_of_spec_field_widths() {
+    // Each spec length re-derived from the field widths listed in the spec's
+    // message formats: the 11-byte common header (type 1, locate 2, tracking 2,
+    // timestamp 6) plus the type's own fields. Independent of message_length().
+    struct Layout {
+        char type;
+        std::vector<std::size_t> fields;
+    };
+    const std::vector<Layout> layouts = {
+        {'S', {1}},                                         // Event Code
+        {'R', {8, 1, 1, 4, 1, 1, 2, 1, 1, 1, 1, 1, 4, 1}},  // Stock .. Inverse Indicator
+        {'H', {8, 1, 1, 4}},                                // Stock, Trading State, Reserved, Reason
+        {'A', {8, 1, 4, 8, 4}},                             // Ref, Buy/Sell, Shares, Stock, Price
+        {'F', {8, 1, 4, 8, 4, 4}},                          // as A plus Attribution
+        {'E', {8, 4, 8}},                                   // Ref, Executed Shares, Match
+        {'C', {8, 4, 8, 1, 4}},                             // as E plus Printable, Execution Price
+        {'X', {8, 4}},                                      // Ref, Canceled Shares
+        {'D', {8}},                                         // Ref
+        {'U', {8, 8, 4, 4}},                                // Original Ref, New Ref, Shares, Price
+        {'P', {8, 1, 4, 8, 4, 8}},                          // Ref, Buy/Sell, Shares, Stock, Price, Match
+        {'Q', {8, 8, 4, 8, 1}},                             // Shares, Stock, Cross Price, Match, Cross Type
+        {'B', {8}},                                         // Match
+    };
+    const std::size_t header = 1 + 2 + 2 + 6;
+    EXPECT(header == 11);
+    for (const auto& l : layouts) {
+        std::size_t len = header;
+        for (std::size_t w : l.fields) len += w;
+        EXPECT(len == message_length(l.type));
+    }
+}
+
+void test_last_field_ends_at_spec_length() {
+    // encode() sizes its buffer from message_length(), so w.size() alone is
+    // circular; check that the last field is written into the last bytes.
+    DecodedMessage m;
+    m.type = 'S';
+    m.event_code = 'C';
+    EXPECT(encode(m)[11] == 'C' && encode(m).size() == 12);
+    m = DecodedMessage{};
+    m.type = 'E';
+    m.match_number = 0x0102030405060708ull;
+    auto w = encode(m);
+    EXPECT(w.size() == 31 && w[23] == 0x01 && w[30] == 0x08);  // Match Number offset 23 length 8
+    m = DecodedMessage{};
+    m.type = 'X';
+    m.shares = 0x0A0B0C0Du;
+    w = encode(m);
+    EXPECT(w.size() == 23 && w[19] == 0x0A && w[22] == 0x0D);  // Canceled Shares offset 19 length 4
+    m = DecodedMessage{};
+    m.type = 'D';
+    m.order_ref = 0x1112131415161718ull;
+    w = encode(m);
+    EXPECT(w.size() == 19 && w[11] == 0x11 && w[18] == 0x18);  // Order Reference offset 11 length 8
+    m = DecodedMessage{};
+    m.type = 'F';
+    m.attribution = {'Q', 'P', 'M', 'M'};
+    w = encode(m);
+    EXPECT(w.size() == 40 && w[36] == 'Q' && w[39] == 'M');  // Attribution offset 36 length 4
+    m = DecodedMessage{};
+    m.type = 'P';
+    m.match_number = 0x2122232425262728ull;
+    w = encode(m);
+    EXPECT(w.size() == 44 && w[36] == 0x21 && w[43] == 0x28);  // Match Number offset 36 length 8
+}
+
 void test_round_trip_every_decoded_type() {
     const char types[] = {'S', 'A', 'F', 'E', 'C', 'X', 'D', 'U', 'P'};
     SplitMix64 rng{7};
@@ -219,6 +285,27 @@ void test_mold_malformed_delivers_nothing() {
     EXPECT(calls == 0);
 }
 
+void test_mold_packet_and_request_offsets() {
+    // MoldUDP64 V1.00 downstream packet: Session 0..9, Sequence Number 10..17,
+    // Message Count 18..19, then per block a 2-byte length and the message.
+    DecodedMessage d;
+    d.type = 'D';
+    d.order_ref = 0x55;
+    const auto pkt = build_mold_packet(kSession, 0x0102030405060708ull, {encode(d), encode(d)});
+    EXPECT(pkt.size() == 20 + 2 * (2 + 19));
+    EXPECT(std::equal(kSession.begin(), kSession.end(), pkt.begin()));
+    EXPECT(pkt[10] == 0x01 && pkt[17] == 0x08);           // Sequence Number offset 10 length 8
+    EXPECT(pkt[18] == 0x00 && pkt[19] == 0x02);           // Message Count offset 18 length 2
+    EXPECT(pkt[20] == 0x00 && pkt[21] == 19);             // first Message Length offset 20
+    EXPECT(pkt[22] == 'D' && pkt[22 + 19 - 1] == 0x55);   // first Message Data offset 22
+    EXPECT(pkt[41] == 0x00 && pkt[42] == 19 && pkt[43] == 'D');  // second block follows directly
+    // Request Packet: Session 10, Sequence Number 8, Requested Message Count 2.
+    const auto req = build_mold_request(kSession, 11, 3);
+    EXPECT(req.size() == 20);
+    EXPECT(std::equal(kSession.begin(), kSession.end(), req.begin()));
+    EXPECT(read_be(req.data() + 10, 8) == 11 && read_be(req.data() + 18, 2) == 3);
+}
+
 void test_heartbeat_reveals_tail_gap() {
     // Losing the last packet before a quiet period is only visible through
     // the next heartbeat, which carries the next expected sequence number.
@@ -261,9 +348,72 @@ void test_overlapping_packet_delivers_only_new_messages() {
     EXPECT((got == std::vector<std::uint64_t>{1, 2, 3, 4}));
 }
 
+void test_card_overlap_8_to_12_while_expecting_10() {
+    // Card qd-feed-overlap: a packet carrying 8..12 arrives while 10 is next.
+    DecodedMessage d;
+    d.type = 'D';
+    std::vector<std::uint64_t> got;
+    LineArbitrator arb([&](std::uint64_t s, const std::uint8_t*, std::size_t) { got.push_back(s); });
+    const auto p1_9 = build_mold_packet(kSession, 1, std::vector<std::vector<std::uint8_t>>(9, encode(d)));
+    const auto p8_12 = build_mold_packet(kSession, 8, std::vector<std::vector<std::uint8_t>>(5, encode(d)));
+    EXPECT(arb.on_packet(p1_9.data(), p1_9.size()) == PacketAction::Delivered);
+    EXPECT(arb.next_expected() == 10);
+    got.clear();
+    EXPECT(arb.on_packet(p8_12.data(), p8_12.size()) == PacketAction::Delivered);
+    EXPECT((got == std::vector<std::uint64_t>{10, 11, 12}));
+    EXPECT(arb.next_expected() == 13);
+}
+
+void test_longer_copy_of_buffered_packet_is_kept() {
+    // Line A buffers 3..4 behind a gap; a differently packetised copy 3..6
+    // (for example a resend) must not be discarded as a duplicate.
+    DecodedMessage d;
+    d.type = 'D';
+    std::vector<std::uint64_t> got;
+    LineArbitrator arb([&](std::uint64_t s, const std::uint8_t*, std::size_t) { got.push_back(s); });
+    const auto p1 = build_mold_packet(kSession, 1, {encode(d)});                                   // 1
+    const auto p34 = build_mold_packet(kSession, 3, {encode(d), encode(d)});                       // 3..4
+    const auto p36 = build_mold_packet(kSession, 3, {encode(d), encode(d), encode(d), encode(d)});  // 3..6
+    const auto p2 = build_mold_packet(kSession, 2, {encode(d)});                                   // 2
+    EXPECT(arb.on_packet(p1.data(), p1.size()) == PacketAction::Delivered);
+    EXPECT(arb.on_packet(p34.data(), p34.size()) == PacketAction::Buffered);
+    EXPECT(arb.on_packet(p36.data(), p36.size()) == PacketAction::Buffered);   // longer copy replaces
+    EXPECT(arb.on_packet(p34.data(), p34.size()) == PacketAction::Duplicate);  // shorter copy dropped
+    EXPECT(arb.buffered() == 1);
+    EXPECT(arb.on_packet(p2.data(), p2.size()) == PacketAction::Delivered);
+    EXPECT((got == std::vector<std::uint64_t>{1, 2, 3, 4, 5, 6}));
+    EXPECT(arb.next_expected() == 7 && !arb.missing().has_value());
+}
+
+void test_full_reorder_buffer_is_reported() {
+    DecodedMessage d;
+    d.type = 'D';
+    LineArbitrator arb([](std::uint64_t, const std::uint8_t*, std::size_t) {}, 1, 2);
+    const auto p3 = build_mold_packet(kSession, 3, {encode(d)});
+    const auto p5 = build_mold_packet(kSession, 5, {encode(d)});
+    const auto p7 = build_mold_packet(kSession, 7, {encode(d)});
+    EXPECT(arb.on_packet(p3.data(), p3.size()) == PacketAction::Buffered);
+    EXPECT(arb.on_packet(p5.data(), p5.size()) == PacketAction::Buffered);
+    EXPECT(arb.on_packet(p7.data(), p7.size()) == PacketAction::BufferFull);
+    EXPECT(arb.buffered() == 2 && arb.next_expected() == 1);
+}
+
 // ---------------------------------------------------------------------------
 // Book building
 // ---------------------------------------------------------------------------
+
+void test_zero_share_add_never_rests() {
+    BookBuilder b;
+    DecodedMessage a;
+    a.type = 'A';
+    a.stock_locate = 4;
+    a.order_ref = 1;
+    a.side = 'B';
+    a.shares = 0;
+    a.price = 100'000;
+    EXPECT(b.apply(a) == ApplyStatus::Ok);
+    EXPECT(b.live_orders() == 0 && b.levels(4, 'B') == 0 && !b.top(4).has_bid);
+}
 
 void test_book_rejects_inconsistent_updates() {
     BookBuilder b;
@@ -294,6 +444,34 @@ void test_book_rejects_inconsistent_updates() {
     e.shares = 100;
     EXPECT(b.apply(e) == ApplyStatus::Ok);
     EXPECT(b.live_orders() == 0 && b.levels(3, 'B') == 0 && !b.top(3).has_bid);
+}
+
+void test_card_cumulative_deltas_300_e100_x150() {
+    // Card qd-feed-itch-deltas: Add 300, Executed 100, Cancel 150 leaves 50
+    // displayed; the order dies when display shares reach zero.
+    BookBuilder b;
+    DecodedMessage a;
+    a.type = 'A';
+    a.stock_locate = 2;
+    a.order_ref = 7;
+    a.side = 'B';
+    a.shares = 300;
+    a.price = 1'000'000;
+    EXPECT(b.apply(a) == ApplyStatus::Ok);
+    DecodedMessage e;
+    e.type = 'E';
+    e.order_ref = 7;
+    e.shares = 100;
+    EXPECT(b.apply(e) == ApplyStatus::Ok);
+    DecodedMessage x;
+    x.type = 'X';
+    x.order_ref = 7;
+    x.shares = 150;
+    EXPECT(b.apply(x) == ApplyStatus::Ok);
+    EXPECT(b.level(2, 'B', 1'000'000) == 50 && b.live_orders() == 1);
+    x.shares = 50;
+    EXPECT(b.apply(x) == ApplyStatus::Ok);
+    EXPECT(b.live_orders() == 0 && b.levels(2, 'B') == 0);
 }
 
 void test_replace_keeps_side_and_locate() {
@@ -529,14 +707,22 @@ int main() {
     RUN_TEST(test_message_lengths_match_spec);
     RUN_TEST(test_add_order_offsets_are_big_endian);
     RUN_TEST(test_replace_and_executed_with_price_offsets);
+    RUN_TEST(test_lengths_equal_sum_of_spec_field_widths);
+    RUN_TEST(test_last_field_ends_at_spec_length);
     RUN_TEST(test_round_trip_every_decoded_type);
     RUN_TEST(test_truncated_unknown_and_empty);
     RUN_TEST(test_mold_heartbeat_and_end_of_session);
     RUN_TEST(test_mold_malformed_delivers_nothing);
+    RUN_TEST(test_mold_packet_and_request_offsets);
     RUN_TEST(test_heartbeat_reveals_tail_gap);
     RUN_TEST(test_wrong_session_rejected);
     RUN_TEST(test_overlapping_packet_delivers_only_new_messages);
+    RUN_TEST(test_card_overlap_8_to_12_while_expecting_10);
+    RUN_TEST(test_longer_copy_of_buffered_packet_is_kept);
+    RUN_TEST(test_full_reorder_buffer_is_reported);
     RUN_TEST(test_book_rejects_inconsistent_updates);
+    RUN_TEST(test_zero_share_add_never_rests);
+    RUN_TEST(test_card_cumulative_deltas_300_e100_x150);
     RUN_TEST(test_replace_keeps_side_and_locate);
     RUN_TEST(test_property_arbitration_rebuilds_reference_book);
     RUN_TEST(test_fuzz_decode_random_bytes);
