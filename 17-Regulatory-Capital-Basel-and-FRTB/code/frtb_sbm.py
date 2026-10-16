@@ -559,11 +559,12 @@ class DRCPosition:
     maturity_years: float
     lgd_applies: bool = True  # MAR22.12(4)
     long_credit: bool | None = None  # MAR22.10; None means sign of notional
+    cash_equity: bool = True
 
     def __post_init__(self) -> None:
         if self.notional == 0 and self.long_credit is None:
             raise ValueError("zero-notional position needs an explicit long_credit direction (MAR22.10)")
-        if self.seniority == "equity" and not (self.maturity_years == 0.25 or self.maturity_years > 1.0):
+        if self.seniority == "equity" and self.cash_equity and not (self.maturity_years == 0.25 or self.maturity_years > 1.0):
             raise ValueError("cash equity takes a maturity of three months or more than one year (MAR22.16)")
 
     @property
@@ -591,9 +592,11 @@ def net_jtd(positions: Sequence[DRCPosition]) -> list[tuple[str, str, float, flo
     for any more junior short, so this greedy order maximises the permitted offset.
     """
     out: list[tuple[str, str, float, float]] = []
-    obligors = {(p.bucket, p.obligor) for p in positions}
-    for bucket, obligor in sorted(obligors):
-        mine = [p for p in positions if (p.bucket, p.obligor) == (bucket, obligor)]
+    grouped: dict[tuple[str, str], list[DRCPosition]] = {}
+    for p in positions:
+        grouped.setdefault((p.bucket, p.obligor), []).append(p)
+    for bucket, obligor in sorted(grouped):
+        mine = grouped[(bucket, obligor)]
         longs = [[p, p.gross_jtd * p.maturity_weight] for p in mine if p.is_long]
         shorts = sorted(([p, p.gross_jtd * p.maturity_weight] for p in mine if not p.is_long), key=lambda x: SENIORITY_RANK[x[0].seniority])
         for short in shorts:
@@ -874,6 +877,8 @@ def example_drc() -> dict[str, float]:
     sold_put = DRCPosition("DELTA", "corporates", "senior", "BBB", 10_000_000.0, 9_500_000.0 - 300_000.0, 2.0)
     print(f"  sold put on a bond (MAR22.14 Table 1): bond-equivalent MV 9,200,000, gross JTD {fmt(sold_put.gross_jtd)}")
     assert close(sold_put.gross_jtd, 6_700_000.0)
+    equity_derivative = DRCPosition("ZETA", "corporates", "equity", "BBB", 1_000_000.0, 1_000_000.0, 0.5, cash_equity=False)
+    assert equity_derivative.maturity_weight == 0.5
     # Nth-to-default as a tranche (MAR22.38): third-to-default on 10 names attaches at 2/10 and detaches at 3/10.
     assert (3 - 1) / 10 == 0.2 and 3 / 10 == 0.3
     print(f"  CTP aggregation check (MAR22.45): +100 and -100 -> {drc_ctp_total([100.0, -100.0]):.0f}")
