@@ -13,8 +13,8 @@ specific volatility and market cap driven by the current month's size exposure.
 4. Specific risk estimated from residuals.
 5. Risk decomposition of a signal-weighted book, before and after neutralisation.
 6. Statistical (PCA) factor model: the eigenvalue count against the noise edge, with controls for
-   heteroskedastic noise and drifting exposures, and how much of each true factor's return the top
-   principal components span.
+   heteroskedastic noise and for exposures frozen at month 0 (noise-free and noisy), and how much of
+   each true factor's return the top principal components span.
 
 Run: uv run --no-project --with numpy python 09-Alpha-Research-and-Portfolio/code/factor_models.py
 """
@@ -200,28 +200,52 @@ def section_risk_decomposition(d: dict[str, np.ndarray], f_hat: np.ndarray) -> N
 def section_pca(d: dict[str, np.ndarray]) -> None:
     print("== 6. Statistical factor model (PCA) ==")
     X, r, f = d["X"], d["r"], d["f"]
-    R = r - r.mean(axis=0)
-    eig, vec = np.linalg.eigh(R @ R.T / N)  # T x T dual problem
-    order = np.argsort(eig)[::-1]
-    eig, vec = eig[order], vec[:, order]
+    fc = f - f.mean(axis=0)
+
+    def spectrum(panel: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Eigenvalues (descending) and PC time series of the T x T dual matrix of a demeaned panel."""
+        c = panel - panel.mean(axis=0)
+        e, v = np.linalg.eigh(c @ c.T / N)
+        order = np.argsort(e)[::-1]
+        return e[order], v[:, order]
+
+    def r2_on_pcs(v: np.ndarray, k: int) -> np.ndarray:
+        """R^2 of each true factor return series on the top k PC time series (orthonormal columns)."""
+        P = v[:, :k]
+        return 1 - ((fc - P @ (P.T @ fc)) ** 2).sum(axis=0) / (fc**2).sum(axis=0)
+
+    eig, vec = spectrum(r)
     sigma2 = float(d["spec_vol"].__pow__(2).mean())
     mp_edge = sigma2 * (1 + np.sqrt(T / N)) ** 2  # Marchenko-Pastur upper edge for the dual T x T matrix
-    n_above = int((eig > mp_edge).sum())
     check("Marchenko-Pastur upper edge (dual matrix)", mp_edge, 0.01670, 0.00001, ".5f")
-    check("eigenvalues above the noise edge", n_above, 13, 0, "d")
+    check("eigenvalues above the noise edge", int((eig > mp_edge).sum()), 13, 0, "d")
     check("top eigenvalue share of total variance", eig[0] / eig.sum(), 0.169, 0.001, ".3f")
-    # Control: the same factor returns and noise with exposures frozen at month 0.
+
+    # Controls with exposures frozen at month 0: the noise-free signal, then the same signal plus the same noise.
     u = r - np.einsum("tnk,tk->tn", X, f)
-    R0 = np.einsum("nk,tk->tn", X[0], f) + u
-    R0 -= R0.mean(axis=0)
-    n_frozen = int((np.linalg.eigvalsh(R0 @ R0.T / N) > mp_edge).sum())
-    check("eigenvalues above the edge with exposures frozen at month 0", n_frozen, 9, 0, "d")
+    signal0 = np.einsum("nk,tk->tn", X[0], f)
+    eig_s, vec_s = spectrum(signal0)
+    for i, e in enumerate([0.2449, 0.0550, 0.0327, 0.0233], start=1):
+        check(f"frozen noise-free signal: eigenvalue {i}", eig_s[i - 1], e, 0.00005, ".4f")
+    check("frozen noise-free signal: eigenvalue 5 (largest industry spread)", eig_s[4], 0.0074, 0.00005, ".4f")
+    check("frozen noise-free signal: eigenvalue 13 (smallest industry spread)", eig_s[12], 0.0029, 0.00005, ".4f")
+    check("frozen noise-free signal: eigenvalues above the edge", int((eig_s > mp_edge).sum()), 4, 0, "d")
+    r2_s = r2_on_pcs(vec_s, 4)
+    check("frozen noise-free signal, top 4 PCs: mean R^2 of industry factors", float(r2_s[:N_IND].mean()), 0.844, 0.001, ".3f")
+    for j, (name, e) in enumerate(zip(STYLES, [0.995, 0.994, 0.996], strict=True)):
+        check(f"frozen noise-free signal, top 4 PCs: R^2 of {name}", float(r2_s[N_IND + j]), e, 0.001, ".3f")
+    eig0, vec0 = spectrum(signal0 + u)
+    check("frozen exposures plus noise: eigenvalues above the edge", int((eig0 > mp_edge).sum()), 9, 0, "d")
+    r2_0 = r2_on_pcs(vec0, 13)
+    for j, (name, e) in enumerate(zip(STYLES, [0.949, 0.958, 0.978], strict=True)):
+        check(f"frozen exposures plus noise, k=13: R^2 of {name}", float(r2_0[N_IND + j]), e, 0.001, ".3f")
+
     rng = np.random.default_rng(9)
     counts = []
     for _ in range(20):
-        u = d["spec_vol"] * rng.standard_normal((T, N))
-        u -= u.mean(axis=0)
-        counts.append(int((np.linalg.eigvalsh(u @ u.T / N) > mp_edge).sum()))
+        noise = d["spec_vol"] * rng.standard_normal((T, N))
+        noise -= noise.mean(axis=0)
+        counts.append(int((np.linalg.eigvalsh(noise @ noise.T / N) > mp_edge).sum()))
     check("pure heteroskedastic noise: mean eigenvalues above the edge (20 draws)", float(np.mean(counts)), 0.55, 0.001, ".2f")
     expected = {
         1: [0.833, 0.038, 0.002, 0.000],
@@ -229,9 +253,7 @@ def section_pca(d: dict[str, np.ndarray]) -> None:
         13: [0.905, 0.565, 0.634, 0.856],
     }
     for k in (1, 10, 13):
-        P = vec[:, :k]  # PC time series (orthonormal columns)
-        fc = f - f.mean(axis=0)
-        r2 = 1 - ((fc - P @ (P.T @ fc)) ** 2).sum(axis=0) / (fc**2).sum(axis=0)
+        r2 = r2_on_pcs(vec, k)
         check(f"k={k}: mean R^2 of industry factors on PCs", float(r2[:N_IND].mean()), expected[k][0], 0.001, ".3f")
         for j, name in enumerate(STYLES):
             check(f"k={k}: R^2 of {name} factor on PCs", float(r2[N_IND + j]), expected[k][j + 1], 0.001, ".3f")
