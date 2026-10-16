@@ -55,6 +55,7 @@ Notes marked `seed` are the writing backlog: objectives and references exist, fu
 | :--- | :--- |
 | Price-time order book and matching engine, lock-free SPSC queue, object pool, multicast receiver, compile-time N(x) table, multithreaded Monte Carlo (C++20) | [12-Quant-Development/code/cpp](12-Quant-Development/code/cpp/) |
 | ITCH parser, Python benchmarking | [12-Quant-Development/code/python](12-Quant-Development/code/python/) |
+| Linear maps, eigendecomposition and SVD, covariance PSD repair and PCA, numerical linear algebra, Taylor expansions, KKT and QP portfolio solvers, root finding and implied volatility, problem-set checks | [03-Linear-Algebra-and-Optimization/code](03-Linear-Algebra-and-Optimization/code/) |
 | Day counts, schedules, bond pricing and risk, overnight-rate compounding, curve bootstrapping, dual-curve swap pricing, Jacobian par risk, Treasury futures basis, CDS hazard bootstrap, TIPS indexation, mortgage prepayment, Gaussian copula tranche loss | [06-Fixed-Income-and-Asset-Classes/code](06-Fixed-Income-and-Asset-Classes/code/) |
 | Avellaneda-Stoikov market-making simulator | [08-Market-Making/code](08-Market-Making/code/) |
 | Event-driven backtester (next-bar fills), performance metrics, pairs trading, Black-Litterman | [09-Alpha-Research-and-Portfolio/code](09-Alpha-Research-and-Portfolio/code/) |
