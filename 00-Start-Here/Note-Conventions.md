@@ -72,7 +72,7 @@ Each card is a collapsible Obsidian callout whose title line carries a stable id
 > $1/6$. Six of the 36 equally likely ordered outcomes sum to 7: (1,6), (2,5), ..., (6,1).
 ```
 
-- The id is kebab-case, unique across the whole repo, and starts with the section prefix: `prob`, `stat`, `la`, `sc`, `deriv`, `fi`, `ms`, `mm`, `alpha`, `ml`, `risk`, `qd`, `int`.
+- The id is kebab-case, unique across the whole repo, and starts with the section prefix: `prob`, `stat`, `la`, `sc`, `deriv`, `fi`, `ms`, `mm`, `alpha`, `ml`, `risk`, `qd`, `int`, `reg`, `sys`.
 - Never change an id once published: review history is keyed on it.
 - The prompt stays on the title line; the answer is every following line that starts with `>`.
 - Leave a blank line between cards, or Markdown merges them into one quote.

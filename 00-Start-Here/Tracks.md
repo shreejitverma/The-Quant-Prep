@@ -54,4 +54,4 @@ Priorities, in order:
 4. The [low-latency systems vault](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/00%20Home.md) for HFT roles.
 5. Probability basics: [Counting](../01-Probability/01-Counting-and-Combinatorics.md), [Conditional Probability](../01-Probability/02-Conditional-Probability-and-Bayes.md) and [Expectation](../01-Probability/04-Expectation-Variance-and-Linearity.md), which quant firms ask developers too.
 
-Senior developers are additionally asked to design whole systems (an exchange, a market data platform, a risk engine), reason about latency budgets and failure modes, and describe systems they owned in production.
+Senior developers are additionally asked to design whole systems (an exchange, a market data platform, a risk engine), reason about latency budgets and failure modes, and describe systems they owned in production (see [Pricing and Risk Systems](../18-Pricing-and-Risk-Systems/README.md) and [Regulatory Capital, Basel, and FRTB](../17-Regulatory-Capital-Basel-and-FRTB/README.md)).
