@@ -57,7 +57,7 @@ Computing KVA requires simulating regulatory calculations forward in time:
 - **CVA Capital Charges:**
   Under BA-CVA or SA-CVA, the capital charge depends on simulated counterparty credit spreads and remaining effective maturity $M(t) = T - t$.
 - **Asymmetry and Floors:**
-  Unlike economic capital (which is often modeled via smooth Gaussian copulas), regulatory capital includes non-linear supervisory floors (e.g., SA-CCR $5\%$ replacement cost floor, output floors).
+  Unlike economic capital (which is often modeled via smooth Gaussian copulas), regulatory capital includes non-linear supervisory floors (e.g., the SA-CCR multiplier floor of $5\%$ of the add-on, output floors).
   These floors keep $K(t) > 0$ even when portfolio mark-to-market is deep out-of-the-money.
 
 ### 3. Standalone vs. Marginal (Incremental) KVA

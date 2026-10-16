@@ -2,379 +2,410 @@
 type: concept
 track: [quant-risk]
 tier: core
-status: draft
+status: solid
 prereqs: [credit-risk-capital-sa-and-irb]
-est_hours: 4
-sources: [Basel Committee on Banking Supervision - The Standardised Approach for Measuring Counterparty Credit Risk Exposures (BCBS 279 2014), Basel Committee on Banking Supervision - Basel III: Finalising post-crisis reforms (2017), Jon Gregory - Counterparty Credit Risk and Credit Value Adjustment (2015), Michael Pykhtin and Steven Zhu - A Guide to Modeling Counterparty Credit Risk (2007)]
+est_hours: 6
+sources: [Basel Committee on Banking Supervision - The Basel Framework (consolidated) chapters CRE50 CRE52 CRE53 CRE54 CRE99 MAR50 (version in force 1 January 2023 retrieved 2026-10-16), Basel Committee on Banking Supervision - The standardised approach for measuring counterparty credit risk exposures (BCBS 279 March 2014), Jon Gregory - The xVA Challenge 4th edition (Wiley 2020)]
 ---
 
 # Counterparty Credit Risk: SA-CCR
 
 ## TL;DR
 
-The Standardised Approach for Counterparty Credit Risk (SA-CCR, Basel CRE52) replaced the obsolete Current Exposure Method (CEM) and Standardised Method (SM) for measuring bilateral OTC derivative exposures.
-SA-CCR resolves the fundamental shortcomings of CEM by differentiating between margined and unmargined netting sets, recognizing economic netting and directional hedging within asset classes, and incorporating collateral thresholds and margin periods of risk.
-Exposure at Default (EAD) is determined by scaling the sum of Replacement Cost (RC) and Potential Future Exposure (PFE) by a supervisory scalar $\alpha = 1.4$:
-$$\text{EAD} = 1.4 \cdot (\text{RC} + \text{PFE})$$
-Replacement Cost reflects instantaneous mark-to-market loss if the counterparty defaults today, accounting for collateral held, margin thresholds, and minimum transfer amounts.
-Potential Future Exposure measures potential exposure expansion over a 1-year unmargined horizon or the Margin Period of Risk (MPOR) under collateralized CSAs.
-PFE is calculated as the product of a non-linear collateral multiplier and an aggregate add-on across five derivative asset classes: Interest Rate (IR), Foreign Exchange (FX), Credit, Equity, and Commodity.
+- SA-CCR (CRE52) sets the exposure at default of every derivative netting set as $EAD = 1.4 \cdot (RC + PFE)$; the EAD then takes the counterparty's credit risk weight like a loan.
+- Replacement cost is today's loss on default: $\max(V - C, 0)$ unmargined, $\max(V - C, TH + MTA - NICA, 0)$ margined, where TH + MTA - NICA is the largest exposure that would not trigger a margin call.
+- PFE is a multiplier times an aggregate add-on; add-ons are built trade by trade as effective notional $D = d \cdot MF \cdot \delta$ times a supervisory factor, netted within hedging sets and summed across five asset classes with no diversification between them.
+- Margining cuts PFE through the maturity factor: $1.5\sqrt{MPOR/250}$ instead of $\sqrt{\min(M, 1)}$, which is 0.30 instead of 1 at the 10-day floor; the multiplier lets negative MtM and excess collateral reduce PFE, but never below 5% of the add-on.
+- The Basel Committee's five sample portfolios in CRE99 give EADs of 569.5, 381.2, 5,405.6, 936.5 and 1,879.2 (USD thousands), which CRE99 prints rounded as 569, 381, 5,406, 936 and 1,879; `code/basel_credit_saccr.py` reproduces every published intermediate value.
 
 ## Learning objectives
 
-- Understand the historical drivers and systemic failure modes that led the Basel Committee to replace the Current Exposure Method (CEM) with SA-CCR.
-- Formulate the Replacement Cost (RC) equations for unmargined and margined netting sets under bilateral Credit Support Annexes (CSAs).
-- Derive the non-linear PFE collateral multiplier and evaluate its asymptotic behavior under deep in-the-money and out-of-the-money collateralization.
-- Calculate supervisory duration, adjusted notional, and maturity factors ($MF$) across margined and unmargined trades.
-- Construct supervisory hedging sets and evaluate intra-bucket and inter-bucket correlation aggregation across interest rate maturity buckets.
-- Trace the role of the supervisory multiplier $\alpha = 1.4$ and its historical calibration to the Internal Model Method (IMM).
-- Contrast SA-CCR with the Internal Model Method (IMM) for calculating Effective Expected Positive Exposure (EEPE).
+- Compute RC, the multiplier, add-ons and EAD for unmargined and margined netting sets by hand.
+- Derive the supervisory duration and the maturity factors and explain what each is approximating.
+- Compute supervisory deltas for options and CDO tranches and allocate trades to hedging sets and maturity buckets.
+- State the supervisory factors, correlations and option volatilities of CRE52.72 and the MPOR floors of CRE52.50 to CRE52.51.
+- Compare SA-CCR with IMM and explain where EAD goes next (counterparty risk weight, CVA capital, CCP rules).
+- Design the data flow of a production SA-CCR engine.
 
 ## Core concepts
 
-### The transition from CEM to SA-CCR
+### Scope and the netting set
 
-Under the 1988 Basel I accord, banks computed counterparty credit exposure using the Current Exposure Method (CEM):
-$$\text{EAD}_{\text{CEM}} = \max(V, 0) + \text{AddOn}_{\text{gross}} \cdot \left(0.4 + 0.6 \cdot \text{NGR}\right)$$
-CEM suffered from critical structural flaws:
-1. It failed to differentiate between margined and unmargined counterparties, treating daily cash-collateralized hedge funds identically to uncollateralized sovereigns.
-2. It measured directional risk poorly; opposite payer and receiver swap positions within the same currency could not offset gross notionals, creating absurdly punitive capital charges for balanced market-making books.
-3. The supervisory add-on factors were fixed percentage scalars calibrated in the 1980s that ignored the duration of long-dated interest rate swaps.
-4. CEM gave zero mathematical recognition to collateral thresholds, independent amounts, or Minimum Transfer Amounts (MTA).
-In 2014, the Basel Committee finalized SA-CCR (BCBS 279), effective globally as part of the post-crisis Basel III and Basel IV reforms (CRE52).
+SA-CCR applies to OTC derivatives, exchange-traded derivatives and long settlement transactions for banks without IMM approval (CRE52.1); securities financing transactions use the CRE22 collateral rules instead.
+EAD is computed per netting set, and a trade not covered by a legally enforceable bilateral netting agreement is its own netting set (CRE52.1, CRE50.15).
+Netting is recognised only with a contract that creates a single legal obligation, written and reasoned legal opinions for each relevant jurisdiction, and procedures to keep them current (CRE52.7 to CRE52.8).
+A netting set is margined only if the counterparty must post variation margin to the bank; a one-way agreement where only the bank posts is unmargined (CRE52.2).
 
-### The master EAD equation
+### The EAD equation and alpha
 
-Under SA-CCR, Exposure at Default for a given netting set is defined as:
-$$\text{EAD} = \alpha \cdot (\text{RC} + \text{PFE})$$
-where $\alpha = 1.4$.
-The scalar $\alpha = 1.4$ carries over from the Basel II Internal Model Method (IMM).
-It was calibrated by Picoult, Canabarro, and Duffie to capture model risk, systemic correlation across counterparty exposures, extreme wrong-way risk, and the gap between unhedged portfolio variance and single-factor portfolio assumptions.
+$$EAD = \alpha \cdot (RC + PFE), \qquad \alpha = 1.4 \quad \text{(CRE52.1)}.$$
+Alpha comes from the internal models method, where EAD is $\alpha \times$ Effective EPE (CRE53.11) and alpha is defined as the ratio of economic capital from a full joint simulation of exposures across counterparties to economic capital computed as if each counterparty's EPE were a fixed loan amount (CRE53.16).
+So it corrects for what treating EPE as a loan equivalent misses.
+CRE53.14 sets alpha at 1.4, and CRE53.15 lets supervisors require a higher alpha, listing factors that may call for one: low granularity of counterparties, particularly high exposure to general wrong-way risk, particularly high correlation of market values across counterparties and other institution-specific characteristics of CCR exposures.
+IMM banks may estimate their own alpha subject to a floor of 1.2 (CRE53.16); SA-CCR has no such option.
 
-### Replacement Cost (RC)
+### Replacement cost
 
-Replacement Cost represents the current loss exposure if the counterparty defaulted immediately.
+Unmargined (CRE52.10): $RC = \max(V - C, 0)$, where V is the net MtM of the netting set and C the haircut value of net collateral held, measured under the NICA methodology.
+Margined (CRE52.18): $RC = \max(V - C, TH + MTA - NICA, 0)$, where C now also includes net variation margin received (positive) or posted (negative).
+TH is the threshold below which the counterparty need not post, MTA the minimum transfer amount, and NICA the net independent collateral amount: collateral (other than VM) posted by the counterparty that the bank can seize, less unsegregated collateral posted by the bank (CRE52.16 to CRE52.17).
+$TH + MTA - NICA$ is the largest exposure the bank can have without being able to call margin, so it is the right "current" exposure for a margined set even when $V - C$ is smaller (CRE52.19).
+Collateral the bank posts into a bankruptcy-remote account is not in NICA, because it would come back on the counterparty's default (CRE52.17).
+Non-cash collateral is haircut using the repo haircuts scaled to one year for unmargined sets and to the MPOR for margined sets (CRE52.5, CRE52.11).
 
-#### Unmargined netting sets
-For netting sets without a bilateral margin agreement:
-$$\text{RC} = \max(V - C, 0)$$
-where $V$ is the current mark-to-market portfolio value (positive from the bank's perspective), and $C$ is the net collateral currently held by the bank (cash and securities, adjusted for supervisory haircuts).
+### Potential future exposure and the multiplier
 
-#### Margined netting sets
-For netting sets governed by a bilateral Credit Support Annex (CSA) with daily or periodic variation margin:
-$$\text{RC} = \max(V - C, \text{TH} + \text{MTA} - \text{NICA}, 0)$$
-where:
-- $\text{TH}$ is the bilateral threshold above which the counterparty must post variation margin.
-- $\text{MTA}$ is the Minimum Transfer Amount below which collateral calls are not executed.
-- $\text{NICA}$ is the Net Independent Collateral Amount (initial margin or independent amount posted by the counterparty minus independent amount posted by the bank).
-The term $\text{TH} + \text{MTA} - \text{NICA}$ captures the largest uncollateralized exposure the bank can legally face before a margin call is triggered under the contract.
+$$PFE = \text{multiplier} \cdot AddOn^{aggregate}, \qquad \text{multiplier} = \min\left\{1;\; F + (1 - F)\exp\left(\frac{V - C}{2(1 - F)\,AddOn^{aggregate}}\right)\right\}, \quad F = 5\%.$$
+(CRE52.20 and CRE52.23.)
+When the set is under-collateralised ($V - C \ge 0$) the multiplier is 1; when it is over-collateralised or out of the money it decays exponentially in $(V - C)$ measured in units of the add-on, and never falls below 5% (CRE52.21 to CRE52.23).
+The function is continuous at $V = C$, with slope $1/(2 AddOn)$ there, so a netting set 1 add-on out of the money keeps $0.05 + 0.95 e^{-1/1.9} = 61.1\%$ of its PFE.
+The add-ons themselves are stylised Effective EPE calculations for at-the-money trades (CRE52.29 footnote 227); the multiplier is how SA-CCR corrects them for moneyness and over-collateralisation.
 
-### Potential Future Exposure (PFE) and the multiplier
+### Aggregate add-on: the effective notional pipeline
 
-Potential Future Exposure captures the risk of adverse market price movements over the exposure horizon:
-$$\text{PFE} = \text{Multiplier} \cdot \text{AddOn}^{\text{aggregate}}$$
-The aggregate add-on $\text{AddOn}^{\text{aggregate}}$ is the sum of the asset class add-ons:
-$$\text{AddOn}^{\text{aggregate}} = \sum_{a \in \{\text{IR}, \text{FX}, \text{Credit}, \text{Equity}, \text{Commodity}\}} \text{AddOn}^{(a)}$$
+There is no diversification across the five asset classes: $AddOn^{aggregate} = \sum_a AddOn^{(a)}$ (CRE52.25).
+Each trade is allocated to an asset class by its primary risk driver (CRE52.26 to CRE52.28) and gets an effective notional $D_i = d_i \cdot MF_i \cdot \delta_i$ (CRE52.30).
 
-The non-linear PFE multiplier recognizes excess collateral (over-collateralization) held by the bank:
-$$\text{Multiplier} = \min\left(1.0, 0.05 + 0.95 \cdot \exp\left(\frac{V - C}{2 \cdot 0.95 \cdot \text{AddOn}^{\text{aggregate}}}\right)\right)$$
-Key properties of the multiplier:
-1. If $V \ge C$ (uncollateralized or under-collateralized), the exponential term is $\ge 1.0$, and the multiplier hits its cap of $1.0$.
-2. If $C > V$ (over-collateralized), $V - C < 0$, causing the exponential term to decay towards zero.
-3. The multiplier is bounded below by a hard supervisory floor of $0.05$ (5%).
-Even if a counterparty posts billions of dollars in excess initial margin, the bank cannot reduce its PFE add-on below 5%, ensuring minimum capital coverage against extreme tail gap risk and market illiquidity during close-out.
+**Adjusted notional $d_i$.**
+For interest rate and credit derivatives it is the notional times the supervisory duration (CRE52.34):
+$$SD_i = \frac{e^{-0.05 S_i} - e^{-0.05 E_i}}{0.05}, \quad \text{floored at } 10/250 \text{ years}.$$
+This is $\int_{S}^{E} e^{-0.05 t}\,dt$, the present value of a unit continuous annuity from $S$ to $E$ at 5%, which is the PV01 of a par swap per unit of rate: the regulator's proxy for interest rate sensitivity.
+With $S = 0$ it tends to 20 as $E$ grows, and never exceeds it.
+For FX it is the foreign leg notional in the reporting currency, or the larger leg if neither is in the reporting currency (CRE52.35); for equity and commodity it is price times units (CRE52.36).
+Amortising notionals use the time-weighted average, leveraged swaps are scaled up, and trades that reset to zero value on fixed dates use the time to the next reset as maturity (CRE52.37).
 
-### Trade-level adjusted notional and supervisory delta
+**Time parameters.**
+$M_i$ is the latest date the contract can still be active, $S_i$ and $E_i$ the start and end of the referenced period, and $T_i$ the latest exercise date of an option (CRE52.31).
+A cash-settled 6-month swaption on a 5-year swap has $M = 0.5$, $S = 0.5$, $E = 5.5$; the physically settled one has $M = 5.5$ (CRE52.32 Table 1).
 
-Each derivative transaction $i$ is converted into an effective supervisory exposure:
-$$D_i = d_i \cdot \delta_i \cdot MF_i$$
-where:
-- $d_i$ is the supervisory adjusted notional.
-- $\delta_i$ is the supervisory delta.
-- $MF_i$ is the maturity factor.
+**Maturity factor $MF_i$.**
+Unmargined: $MF = \sqrt{\min(M_i, 1)/1}$ with $M_i$ floored at ten business days (CRE52.48 to CRE52.49).
+Margined: $MF = \tfrac{3}{2}\sqrt{MPOR_i / 1\text{ year}}$ with MPOR in business days over 250 (CRE52.52 to CRE52.53).
+Both rescale a one-year calibration by the square root of the risk horizon: one year (or the remaining maturity) for unmargined trades, the MPOR for margined ones.
+The standard prescribes the 3/2 without deriving it.
+Because of it the margined factor exceeds the unmargined one whenever $M < 2.25 \times MPOR$, which is 22.5 business days at the 10-day floor; CRE52.2 FAQ1 discusses the case of trades of 10 business days or less, and the cap in CRE52.2 neutralises the effect.
+At the 10-day floor the margined factor is exactly $1.5\sqrt{10/250} = 0.30$, so daily margining removes 70% of the add-on of any trade longer than a year; the PFE also depends on the multiplier, which changes with the collateral.
 
-#### Adjusted notional for interest rate derivatives
-Because long-dated interest rate swaps have greater duration and price sensitivity than short-dated swaps, the adjusted notional scales nominal notional $N_i$ by supervisory duration:
-$$d_i = N_i \cdot \frac{e^{-0.05 \cdot S_i} - e^{-0.05 \cdot E_i}}{0.05}$$
-where $S_i$ is the start time in years ($S_i = 0$ for spot-starting swaps), and $E_i$ is the end time in years.
-For all other asset classes (FX, Equity, Credit), $d_i = N_i$ (converted to domestic base currency).
+**Supervisory delta $\delta_i$.**
+Linear trades take +1 if long the primary risk factor and -1 if short (CRE52.39).
+Options take a Black-Scholes delta with zero rates and the supervisory volatility (CRE52.40):
+$$\delta = \pm N(d) \text{ (calls)}, \quad \mp N(-d) \text{ (puts)}, \quad d = \frac{\ln(P_i/K_i) + \tfrac12 \sigma_i^2 T_i}{\sigma_i \sqrt{T_i}},$$
+with + for bought calls and sold puts.
+The forward should be used for $P_i$ where appropriate (CRE52.40 FAQ1), and when $P/K$ is not positive (negative rates) both are shifted by a supervisor-recommended $\lambda$ (CRE52.40 FAQ2).
+CDO tranches with attachment $A$ and detachment $D$ take $\delta = \pm 15/((1 + 14A)(1 + 14D))$, positive for bought protection (CRE52.41); an n-th-to-default on m names uses $A = (n-1)/m$, $D = n/m$ (footnote 230).
+Digitals are replicated by a collar at $0.95K$ and $1.05K$; caps and floors may be split into caplets (CRE52.42 to CRE52.43).
 
-#### Supervisory delta ($\delta_i$)
-- Plain vanilla linear derivatives (swaps, forwards, futures):
-  - Long instrument / receive floating / pay fixed: $\delta_i = +1.0$.
-  - Short instrument / pay floating / receive fixed: $\delta_i = -1.0$.
-- Non-linear derivatives (options):
-  - Computed using the standard Black-Scholes formula with prescribed supervisory volatilities $\sigma_j$ (e.g., $\sigma_{\text{IR}} = 50\%$, $\sigma_{\text{FX}} = 15\%$, $\sigma_{\text{Equity}} = 120\%$).
-  - Long call / short put: $\delta_i > 0$.
-  - Long put / short call: $\delta_i < 0$.
+### Supervisory parameters (CRE52.72 Table 2)
 
-#### Maturity factor ($MF_i$)
-- Unmargined transactions:
-  $$MF_i^{\text{unmargined}} = \sqrt{\frac{\min(M_i, 1.0)}{1.0}}$$
-  where $M_i$ is the residual maturity in years, floored at 10 business days ($10/250 = 0.04$).
-  For any trade with residual maturity $M_i \ge 1.0$ year, $MF = 1.0$.
-- Margined transactions:
-  $$MF_i^{\text{margined}} = 1.5 \cdot \sqrt{\frac{\text{MPOR}}{250}}$$
-  where $\text{MPOR}$ is the Margin Period of Risk in business days.
-  For centrally cleared netting sets, the regulatory minimum MPOR is 10 days ($MF = 1.5 \times \sqrt{10/250} = 1.5 \times 0.2 = 0.30$).
-  For non-centrally cleared netting sets with more than 5,000 trades, the supervisory MPOR floor is 20 days ($MF = 1.5 \times \sqrt{20/250} \approx 0.424$).
+| Asset class | Subclass | Supervisory factor | Correlation | Option volatility |
+| :--- | :--- | ---: | ---: | ---: |
+| Interest rate | | 0.50% | n/a | 50% |
+| Foreign exchange | | 4.0% | n/a | 15% |
+| Credit, single name | AAA, AA | 0.38% | 50% | 100% |
+| Credit, single name | A | 0.42% | 50% | 100% |
+| Credit, single name | BBB | 0.54% | 50% | 100% |
+| Credit, single name | BB | 1.06% | 50% | 100% |
+| Credit, single name | B | 1.6% | 50% | 100% |
+| Credit, single name | CCC | 6.0% | 50% | 100% |
+| Credit, index | IG | 0.38% | 80% | 80% |
+| Credit, index | SG | 1.06% | 80% | 80% |
+| Equity, single name | | 32% | 50% | 120% |
+| Equity, index | | 20% | 80% | 75% |
+| Commodity | Electricity | 40% | 40% | 150% |
+| Commodity | Oil and gas, metals, agricultural, other | 18% | 40% | 70% |
 
-### Asset class hedging sets and correlation aggregation
+Each factor is calibrated so that the add-on reflects the Effective EPE of a single at-the-money linear trade of unit notional and one-year maturity (CRE52.44 footnote 231).
+Basis transactions (two risk factors in one currency, such as 3m versus 6m rates or Brent versus Henry Hub) form their own hedging set per basis with half the factor; volatility transactions (variance swaps, options on volatility) form their own hedging sets with five times the factor (CRE52.46 to CRE52.47, CRE52.73).
+Cross-currency swaps are not basis transactions; they are treated as non-basis FX contracts (CRE52.46 footnote 232), and supervisors may require complex trades to be allocated to more than one asset class (CRE52.28).
 
-#### Interest rate derivatives
-Interest rate derivatives in the same currency belong to a single hedging set.
-Trades are divided into three maturity buckets based on end time $E_i$:
-- Bucket 1: $E_i \le 1\text{ year}$
-- Bucket 2: $1\text{ year} < E_i \le 5\text{ years}$
-- Bucket 3: $E_i > 5\text{ years}$
-Within each bucket $b$, the effective notional is the algebraic sum of adjusted positions:
-$$D_{j, b} = \sum_{i \in \text{Bucket } b} d_i \cdot \delta_i \cdot MF_i$$
-The bucket add-on is $A_{j, b} = SF_{\text{IR}} \cdot |D_{j, b}|$, where $SF_{\text{IR}} = 0.50\%$.
-The aggregate interest rate add-on combines buckets using prescribed supervisory correlations:
-$$\rho_{12} = 0.70, \quad \rho_{23} = 0.70, \quad \rho_{13} = 0.30$$
-$$\text{AddOn}_{\text{IR}} = \sqrt{A_1^2 + A_2^2 + A_3^2 + 1.4 A_1 A_2 + 1.4 A_2 A_3 + 0.6 A_1 A_3}$$
-Because opposite positions within the same bucket offset fully ($\pm 1$), while positions across buckets offset partially via the correlation matrix, SA-CCR accurately captures curve slope and basis risk.
+### Asset-class aggregation
 
-#### Foreign exchange derivatives
-Each currency pair forms a distinct hedging set.
-The supervisory factor is $SF_{\text{FX}} = 4.0\%$.
-Within each currency pair, all trades offset directionally:
-$$\text{AddOn}_{\text{FX}, k} = SF_{\text{FX}} \cdot \left| \sum_{i \in \text{Pair } k} d_i \cdot \delta_i \cdot MF_i \right|$$
-The total FX add-on is the simple sum across all currency pairs:
-$$\text{AddOn}_{\text{FX}} = \sum_k \text{AddOn}_{\text{FX}, k}$$
+**Interest rates (CRE52.57).**
+One hedging set per currency, three maturity buckets by end date $E_i$: under 1 year, 1 to 5 years, over 5 years.
+Effective notionals add within a bucket and combine across buckets as
+$$EN_{HS} = \left[D_{B1}^2 + D_{B2}^2 + D_{B3}^2 + 1.4 D_{B1} D_{B2} + 1.4 D_{B2} D_{B3} + 0.6 D_{B1} D_{B3}\right]^{1/2},$$
+which is a quadratic form with correlations 70% between adjacent buckets and 30% between the short and long bucket; a bank may instead use $|D_{B1}| + |D_{B2}| + |D_{B3}|$.
+$AddOn_{HS} = 0.5\% \cdot EN_{HS}$, summed over currencies; inflation derivatives may form their own hedging set per currency at the same factor (CRE52.57 FAQ1).
 
-### Supervisory factors summary table
+**FX (CRE52.59).**
+One hedging set per currency pair with full offset: $AddOn_{HS} = 4\% \cdot |EN_{HS}|$, summed over pairs.
 
-| Asset Class | Sub-class / Rating | Supervisory Factor ($SF$) | Supervisory Volatility ($\sigma$) |
-| :--- | :--- | :--- | :--- |
-| **Interest Rate** | All currencies | 0.50% | 50% |
-| **Foreign Exchange** | All currency pairs | 4.00% | 15% |
-| **Credit Single Name** | AAA / AA | 0.38% | 100% |
-| **Credit Single Name** | A | 0.42% | 100% |
-| **Credit Single Name** | BBB | 0.54% | 100% |
-| **Credit Single Name** | BB | 1.06% | 100% |
-| **Credit Single Name** | B / CCC | 1.60% / 6.00% | 100% |
-| **Credit Index** | Investment Grade / High Yield | 0.38% / 1.06% | 80% |
-| **Equity Single Name** | Large Cap / Small Cap | 20.0% / 32.0% | 120% |
-| **Equity Index** | Developed / Emerging | 16.0% / 24.0% | 75% |
-| **Commodity** | Energy / Metals / Agriculture | 18.0% - 40.0% | 70% - 150% |
+**Credit and equity (CRE52.61, CRE52.66).**
+A single hedging set; effective notionals add per entity (each index is its own entity), $AddOn_{entity} = SF_{entity} \cdot EN_{entity}$, and
+$$AddOn = \left[\left(\sum_e \rho_e\, AddOn_e\right)^2 + \sum_e (1 - \rho_e^2)\,AddOn_e^2\right]^{1/2}.$$
+This is a one-factor model: the first term lets systematic components offset fully, the second gives no offset for idiosyncratic components (CRE52.62).
+A higher correlation lowers the charge for long-short books and raises it for one-directional books (CRE52.63).
+Banks may not estimate volatilities or betas; only the two equity factors are allowed (CRE52.68).
+
+**Commodities (CRE52.70).**
+Four hedging sets (energy, metals, agricultural, other), commodity types netted within a set by the same one-factor formula with $\rho = 40\%$, and no offset between sets.
+National supervisors may require finer commodity types where basis risk is material (CRE52.71).
+
+```mermaid
+flowchart TD
+    subgraph ADDON["Add-on side, per trade then per hedging set"]
+        T["Trades in a netting set"] --> A["Allocate by primary risk driver"]
+        A --> D["Effective notional D = d x MF x delta"]
+        D --> IR["IR: per currency, 3 maturity buckets, x 0.5%"]
+        D --> FX["FX: per currency pair, abs x 4%"]
+        D --> CE["Credit and equity: entity add-ons, one-factor formula"]
+        D --> CO["Commodity: 4 sets, one-factor formula per set"]
+        IR --> S["AddOn aggregate = sum over asset classes"]
+        FX --> S
+        CE --> S
+        CO --> S
+    end
+    subgraph COLL["Collateral side, per netting set"]
+        V["V = net MtM, C = VM and NICA after haircuts"] --> RC["RC: unmargined or margined"]
+    end
+    S --> M["Multiplier, floored at 5%"]
+    V --> M
+    M --> P["PFE = multiplier x AddOn"]
+    RC --> E["EAD = 1.4 x (RC + PFE)"]
+    P --> E
+    E --> CAP["Margined EAD capped at unmargined EAD"]
+```
+
+### Margin period of risk
+
+The MPOR is the time from the last exchange of collateral with a defaulting counterparty until it is closed out and the market risk re-hedged (CRE50.19).
+Floors for non-centrally-cleared sets (CRE52.50 to CRE52.51):
+
+| Situation | MPOR floor |
+| :--- | :--- |
+| Daily margin agreement | 10 business days |
+| Re-margining every N business days | 9 + N business days |
+| More than 5,000 trades not with a CCP | 20 business days |
+| Illiquid collateral or an OTC derivative that cannot easily be replaced | 20 business days |
+| More than two margin call disputes lasting longer than the MPOR in the previous two quarters | twice the applicable floor, for the next two quarters |
+
+Floors for cleared trades are in CRE54.
+A margined set's EAD is capped at the EAD of the same set computed as unmargined (CRE52.2), which neutralises the anomaly that the 3/2 factor makes very short margined trades look riskier than unmargined ones (CRE52.2 FAQ1).
+
+### Special cases
+
+- Sold options outside netting and margin agreements with premium paid up front may have EAD set to zero (CRE52.1 FAQ1).
+- Sold credit protection outside netting and margin agreements may have EAD capped at the unpaid premium (CRE52.1 FAQ2).
+- Linear products such as swaps may not be decomposed into simpler contracts; options such as caps may be (CRE52.1 FAQ3).
+- Several margin agreements in one netting set split it into sub-netting sets (CRE52.74); one margin agreement covering several netting sets uses $RC_{MA} = \max\{\sum_{NS} \max(V_{NS}, 0) - \max(C_{MA}, 0), 0\} + \max\{\sum_{NS} \min(V_{NS}, 0) - \min(C_{MA}, 0), 0\}$ and unmargined PFEs summed across netting sets (CRE52.75 to CRE52.76).
+
+### SA-CCR versus IMM and where EAD goes
+
+IMM simulates the netting set's future MtM under a model approved by the supervisor, computes expected exposure $EE_t$, takes its running maximum (Effective EE) and averages it over the first year to get Effective EPE (CRE53.12 to CRE53.13).
+EAD is $\alpha \cdot$ Effective EPE, and capital is the higher of the result with current and with stress-calibrated parameters (CRE53.7, CRE53.11).
+IMM is excluded from the base of the output floor, so an IMM bank must also run SA-CCR (RBC20.12).
+EAD then takes the counterparty's credit risk weight: SA (CRE20) or IRB.
+Under IRB, F-IRB uses $M = 2.5$ (CRE32.44); where M is measured (A-IRB, or F-IRB when the supervisor requires it), M for a netted derivative set is the notional-weighted average maturity of its trades (CRE32.49); CVA banks may cap the maturity adjustment at 1 (MAR50.12).
+Trade exposures of a clearing member to a qualifying CCP take a 2% risk weight (CRE54.7).
+The same EAD feeds BA-CVA, which is why errors here are counted twice; see [CVA Capital Charge](05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md).
 
 ### Regulatory text map
 
-- **CRE50**: Counterparty credit risk - Overview and scope of application.
-- **CRE51**: Counterparty credit risk - Definitions and qualifying criteria for netting agreements.
-- **CRE52**: Standardised approach for counterparty credit risk (SA-CCR) - Detailed methodology, replacement cost formulas, hedging sets, and supervisory factors.
-- **CRE53**: Internal Model Method (IMM) for counterparty credit risk - EPE/EEPE simulation, 1-year stressed effective EPE, backtesting, and validation.
+| Topic | Paragraphs |
+| :--- | :--- |
+| Scope, EAD formula, alpha | CRE52.1, FAQ1 to FAQ3 |
+| Margined versus unmargined, cap | CRE52.2 |
+| Netting recognition | CRE52.7 to CRE52.8, CRE50.15 |
+| Replacement cost, NICA, margined RC | CRE52.3 to CRE52.19 |
+| PFE and multiplier | CRE52.20 to CRE52.23 |
+| Asset classes and aggregation | CRE52.24 to CRE52.30, CRE52.55 to CRE52.71 |
+| Time parameters, adjusted notional, delta | CRE52.31 to CRE52.43 |
+| Supervisory factors and hedging sets | CRE52.44 to CRE52.47, CRE52.72 to CRE52.73 |
+| Maturity factors and MPOR | CRE52.48 to CRE52.53, CRE50.19 |
+| Multiple netting sets and margin agreements | CRE52.74 to CRE52.77 |
+| IMM, Effective EPE, alpha | CRE53.7, CRE53.11 to CRE53.21 |
+| CCP trade exposures | CRE54.7 |
+| Sample portfolios and margin examples | CRE99.20 to CRE99.115 |
 
 ### How it is implemented
 
-The reference function `calculate_saccr` accepts a netting set with trades, margin status, MTM, collateral, and CSA parameters.
-Its trade model supports interest-rate and FX asset classes, with notional, supervisory delta, start/end times, residual maturity, and an optional currency pair.
-It calculates RC, IR and FX add-ons, PFE, and EAD; it does not parse trade schemas or calculate credit, equity, or commodity add-ons.
-The implementation pools IR trades into three maturity buckets and aggregates FX trades by currency pair; FX notionals are used as supplied, with no currency conversion.
-These implementation limits do not change the broader regulatory methodology described in this topic.
+`code/basel_credit_saccr.py` implements the full chapter: supervisory duration, both maturity factors, option and tranche deltas, all five asset-class aggregations, a separate hedging set at half the factor for each specific basis and volatility hedging sets at five times the factor, margined and unmargined RC, the multiplier, the margined cap, the MPOR floors and the shared margin agreement RC.
+Its self-check reproduces every intermediate number printed in CRE99.20 to CRE99.97 and the five margin examples of CRE99.98 to CRE99.115, and computes, prints and asserts every number quoted on this page.
+
+A production SA-CCR engine is mostly a data-integration problem.
+Inputs are the trade population (from trade capture, with lifecycle state), legal netting agreements and their enforceability flags, CSAs (threshold, MTA, IA, margin frequency, eligible collateral), collateral balances from the collateral system (VM and IM, segregated or not), MtM from the official end-of-day valuation, and reference data for ratings and commodity types.
+The engine classifies each trade (asset class, hedging set, basis or volatility flag, $M$, $S$, $E$, $T$, $P$, $K$, direction), computes effective notionals, aggregates per netting set and writes EAD with full drill-down so that a capital analyst can explain any change.
+Complexity is linear in trades; the heavy parts are the classification rules, which must be versioned like code, and the reconciliation of netting-set membership between the legal, collateral and risk systems.
+It typically runs in the [EOD Risk Batch](../18-Pricing-and-Risk-Systems/13-EOD-Risk-Batch.md) and feeds the [Regulatory Reporting Pipeline](../18-Pricing-and-Risk-Systems/12-Regulatory-Reporting-Pipeline.md) and the CVA engine.
 
 ## Worked examples
 
-### Example 1: Unmargined interest rate swap netting set
+All five examples are the Basel Committee's sample portfolios (CRE99.20 to CRE99.97); amounts are USD thousands and every number is printed and asserted by `code/basel_credit_saccr.py`.
+Intermediate values are shown rounded, but each step is computed from unrounded inputs, so recomputing a step from the rounded figures can differ in the last digit.
 
-Consider an uncollateralized netting set with a commercial counterparty containing two USD interest rate swaps (verified in `code/basel_credit_saccr.py`):
-- Current portfolio mark-to-market: $V = \$200,000$
-- Current collateral: $C = \$0$
-- Contract type: Unmargined bilateral agreement
+### Example 1: interest rate swaps and a swaption, unmargined
 
-**Trade 1: 5-Year Payer Swap**
-- Notional $N_1 = \$10,000,000$
-- Direction: Payer (pay fixed, receive floating) $\to \delta_1 = +1.0$
-- Start time $S_1 = 0.0\text{ years}$, End time $E_1 = 5.0\text{ years}$, Maturity $M_1 = 5.0\text{ years}$
+Trades: a 10-year USD swap receiving floating (long rates, notional 10,000, MtM 30), a 4-year USD swap paying floating (short, 10,000, MtM -20), and a bought physically settled 1-into-10-year EUR swaption to pay floating (5,000, MtM 50).
+$V = 60$, no collateral, so $RC = 60$ and the multiplier is 1.
+Supervisory durations: $(1 - e^{-0.5})/0.05 = 7.8694$, $(1 - e^{-0.2})/0.05 = 3.6254$ and $(e^{-0.05} - e^{-0.55})/0.05 = 7.4856$, so adjusted notionals are 78,694, 36,254 and 37,428.
+The swaption is economically a bought put on the forward swap rate: with $P = 6\%$, $K = 5\%$, $\sigma = 50\%$ and $T = 1$, $d = (\ln 1.2 + 0.125)/0.5 = 0.614643$ and $\delta = -N(-0.614643) = -0.2694$.
+All trades are longer than a year, so $MF = 1$ and effective notionals are 78,694, -36,254 and -10,083.
+USD hedging set: $D_{B2} = -36,254$ and $D_{B3} = 78,694$, so $EN = [36,254^2 + 78,694^2 - 1.4 \times 36,254 \times 78,694]^{1/2} = 59,270$ and $AddOn = 0.005 \times 59,270 = 296.35$.
+EUR hedging set: $EN = 10,083$, $AddOn = 50.41$.
+$AddOn^{IR} = 296.35 + 50.41 = 346.8$ and $EAD = 1.4 \times (60 + 346.8) = 569.5$.
+Without cross-bucket offset ($|D_{B2}| + |D_{B3}|$) the add-on would be 625.2 and EAD 959.2.
 
-**Trade 2: 2-Year Receiver Swap**
-- Notional $N_2 = \$10,000,000$
-- Direction: Receiver (receive fixed, pay floating) $\to \delta_2 = -1.0$
-- Start time $S_2 = 0.0\text{ years}$, End time $E_2 = 2.0\text{ years}$, Maturity $M_2 = 2.0\text{ years}$
+### Example 2: credit default swaps and the multiplier
 
-**Step 1: Replacement Cost**
-$$\text{RC} = \max(V - C, 0) = \max(\$200,000 - \$0, 0) = \$200,000.00$$
+Trades: bought protection on Firm A (AA, 3 years, 10,000, MtM 20), sold protection on Firm B (BBB, 6 years, 10,000, MtM -40), bought protection on CDX.IG (5 years, 10,000, MtM 0).
+$V = -20$, so $RC = 0$ and the multiplier will be below 1.
+Supervisory durations 2.7858, 5.1836 and 4.4240 give effective notionals 27,858, -51,836 and 44,240.
+Entity add-ons: $27,858 \times 0.38\% = 105.9$, $-51,836 \times 0.54\% = -279.9$, $44,240 \times 0.38\% = 168.1$.
+Systematic term: $0.5 \times 105.9 + 0.5 \times (-279.9) + 0.8 \times 168.1 = 47.5$, squared 2,253.
+Idiosyncratic term: $0.75 \times 105.9^2 + 0.75 \times 279.9^2 + 0.36 \times 168.1^2 = 77,344$.
+$AddOn^{Credit} = \sqrt{2,253 + 77,344} = 282.1$.
+Multiplier: $0.05 + 0.95 \exp(-20/(2 \times 0.95 \times 282.1)) = 0.9652$, so $PFE = 272.3$ and $EAD = 1.4 \times 272.3 = 381.2$.
 
-**Step 2: Adjusted notional and maturity factors**
-Supervisory duration factors:
-$$\text{Factor}_1 = \frac{e^{-0.05 \cdot 0} - e^{-0.05 \cdot 5.0}}{0.05} = \frac{1 - e^{-0.25}}{0.05} = \frac{1 - 0.778801}{0.05} = \frac{0.221199}{0.05} = 4.423984$$
-$$\text{Factor}_2 = \frac{e^{-0.05 \cdot 0} - e^{-0.05 \cdot 2.0}}{0.05} = \frac{1 - e^{-0.10}}{0.05} = \frac{1 - 0.904837}{0.05} = \frac{0.095163}{0.05} = 1.903252$$
-Adjusted notionals:
-$$d_1 = \$10,000,000 \cdot 4.423984 = \$44,239,843.40$$
-$$d_2 = \$10,000,000 \cdot 1.903252 = \$19,032,516.40$$
-Because the contract is unmargined and $M \ge 1.0$:
-$$MF_1 = \sqrt{\frac{\min(5.0, 1.0)}{1.0}} = 1.0, \quad MF_2 = \sqrt{\frac{\min(2.0, 1.0)}{1.0}} = 1.0$$
+### Example 3: commodity forwards and hedging sets
 
-**Step 3: Bucket assignment and effective notionals**
-- Trade 1 has $E_1 = 5.0\text{ years} \to \text{Bucket 2}$ ($1 < E \le 5$):
-  $$D_2 = d_1 \cdot \delta_1 \cdot MF_1 = +\$44,239,843.40$$
-- Trade 2 has $E_2 = 2.0\text{ years} \to \text{Bucket 2}$ ($1 < E \le 5$):
-  $$D_2 \text{ addition} = d_2 \cdot \delta_2 \cdot MF_2 = -\$19,032,516.40$$
-Net effective notional in Bucket 2:
-$$D_{\text{Bucket 2}} = \$44,239,843.40 - \$19,032,516.40 = \$25,207,327.00$$
-Buckets 1 and 3 are empty ($D_1 = 0, D_3 = 0$).
+Trades: long WTI forward (10,000, 9 months, MtM -50), short Brent forward (20,000, 2 years, MtM -30), long silver forward (10,000, 5 years, MtM 100).
+$V = 20$, $RC = 20$, multiplier 1.
+The 9-month trade has $MF = \sqrt{0.75} = 0.8660$, so effective notionals are 8,660, -20,000 and 10,000.
+WTI and Brent are the same commodity type (crude oil) unless the supervisor requires otherwise, so $EN_{crude} = -11,340$ and the energy add-on is $|-11,340 \times 18\%| = 2,041.2$; the metals add-on is $10,000 \times 18\% = 1,800$.
+No offset between energy and metals, so $AddOn = 3,841.2$ and $EAD = 1.4 \times (20 + 3,841.2) = 5,405.6$.
 
-**Step 4: AddOn calculation**
-The supervisory factor for interest rate derivatives is $SF_{\text{IR}} = 0.50\% = 0.0050$:
-$$A_1 = 0, \quad A_2 = 0.0050 \cdot \$25,207,327.00 = \$126,036.635, \quad A_3 = 0$$
-Evaluating inter-bucket aggregation:
-$$\text{AddOn}_{\text{IR}} = \sqrt{A_2^2} = A_2 = \$126,036.635 \approx \$126,036.64$$
+### Example 4: combining Examples 1 and 2
 
-**Step 5: Multiplier and PFE**
-Here $V - C = \$200,000 > 0$:
-$$\text{Exponent} = \frac{\$200,000}{2 \cdot 0.95 \cdot \$126,036.635} = \frac{200,000}{239,469.61} = 0.835179$$
-$$\exp(0.835179) = 2.305228$$
-$$\text{Multiplier} = \min(1.0, 0.05 + 0.95 \cdot 2.305228) = \min(1.0, 2.239967) = 1.000000$$
-The multiplier is capped at 1.0:
-$$\text{PFE} = 1.000000 \cdot \$126,036.635 = \$126,036.64$$
+$V = 60 - 20 = 40$, $RC = 40$, and the add-ons simply add: $346.8 + 282.1 = 628.9$.
+Because $V > 0$ the multiplier is now 1: the negative MtM of the credit trades that cut PFE in Example 2 is absorbed by the positive IR MtM.
+$EAD = 1.4 \times (40 + 628.9) = 936.5$, against $569.5 + 381.2 = 950.7$ for the two sets separately.
 
-**Step 6: Exposure at Default**
-$$\text{EAD} = 1.4 \cdot (\text{RC} + \text{PFE}) = 1.4 \cdot (\$200,000.00 + \$126,036.64) = 1.4 \cdot \$326,036.64 = \$456,451.29$$
+### Example 5: margined netting set with independent amount
 
-### Example 2: Margined interest rate swap netting set
+Examples 1 and 3 under one weekly-margined CSA: $TH = 0$, $MTA = 5$, net independent amount 150, total collateral held 200 (50 VM plus 150 IA).
+$V = 30 - 20 + 50 - 50 - 30 + 100 = 80$, so $RC = \max(80 - 200, 0 + 5 - 150, 0) = 0$.
+Weekly re-margining gives $MPOR = 9 + 5 = 14$ business days (CRE52.50(2)), so $MF = 1.5\sqrt{14/250} = 0.354965$ for every trade.
+IR effective notionals become 27,934, -12,869 and -3,579; $EN_{USD} = 21,039$ and $AddOn^{IR} = 105.2 + 17.9 = 123.1$.
+Commodity effective notionals become 3,550, -7,099 and 3,550 (CRE99.90 prints -7,100 because it applies MF rounded to 0.355); $AddOn^{Commodity} = 638.94 + 638.94 = 1,277.87$.
+$AddOn^{aggregate} = 1,401.0$; with $V - C = -120$ the multiplier is $0.05 + 0.95 \exp(-120/(2 \times 0.95 \times 1,401.0)) = 0.9581$, so $PFE = 1,342.3$ and $EAD = 1,879.2$.
+The same trades and collateral treated as unmargined give EAD 5,779.7, so the CSA cuts EAD by 67%; the cap of CRE52.2 does not bind.
 
-Consider the identical swap portfolio from Example 1, but governed by a bilateral variation margin agreement (CSA):
-- Mark-to-market: $V = \$200,000$
-- Posted collateral: $C = \$180,000$
-- Collateral threshold: $\text{TH} = \$50,000$
-- Minimum Transfer Amount: $\text{MTA} = \$10,000$
-- Independent collateral: $\text{NICA} = \$0$
-- Margin Period of Risk: $\text{MPOR} = 10\text{ business days}$
+### Example 6: replacement cost under real margin agreements
 
-**Step 1: Margined Replacement Cost**
-$$\text{RC} = \max(V - C, \text{TH} + \text{MTA} - \text{NICA}, 0)$$
-$$V - C = \$200,000 - \$180,000 = \$20,000$$
-$$\text{TH} + \text{MTA} - \text{NICA} = \$50,000 + \$10,000 - \$0 = \$60,000$$
-$$\text{RC} = \max(\$20,000, \$60,000, 0) = \$60,000.00$$
-The threshold plus MTA term dominates because the bank is contractually exposed to uncollateralized swings up to $\$60,000$ before calling margin.
+From CRE99.98 to CRE99.115 (EUR millions):
 
-**Step 2: Margined maturity factor**
-For daily margined netting sets with $\text{MPOR} = 10\text{ days}$:
-$$MF^{\text{margined}} = 1.5 \cdot \sqrt{\frac{10}{250}} = 1.5 \cdot \sqrt{0.04} = 1.5 \cdot 0.20 = 0.300000$$
+| Case | V | C | TH + MTA - NICA | RC |
+| :--- | ---: | ---: | ---: | ---: |
+| VM fully received, IA of 10 held | 80 | 90 | -9 | 0 |
+| MTA of 1, IM of 10 each way, unsegregated | 80 | 79.5 | 1 | 1 |
+| Clearing member, bankruptcy-remote IM at CCP | -50 | -50 | 0 | 0 |
+| Same, IM not bankruptcy-remote | -50 | -60 | 10 | 10 |
+| Maintenance margin at 140% of MtM | 50 | 80 | -20 | 0 |
 
-**Step 3: Margined AddOn calculation**
-Effective notional in Bucket 2:
-$$D_{\text{Bucket 2}} = (\$44,239,843.40 - \$19,032,516.40) \cdot 0.30 = \$25,207,327.00 \cdot 0.30 = \$7,562,198.10$$
-$$\text{AddOn}_{\text{IR}} = 0.0050 \cdot \$7,562,198.10 = \$37,810.99$$
+The fourth case shows why segregation matters: unsegregated IM posted to a CCP is lost on the CCP's default, so it appears as exposure.
 
-**Step 4: Margined multiplier and PFE**
-$$V - C = \$20,000$$
-$$\text{Exponent} = \frac{\$20,000}{2 \cdot 0.95 \cdot \$37,810.99} = \frac{20,000}{71,840.88} = 0.278393$$
-$$\exp(0.278393) = 1.321027$$
-$$\text{Multiplier} = \min(1.0, 0.05 + 0.95 \cdot 1.321027) = 1.000000$$
-$$\text{PFE} = 1.000000 \cdot \$37,810.99 = \$37,810.99$$
+### Example 7: tranche deltas
 
-**Step 5: Margined EAD**
-$$\text{EAD} = 1.4 \cdot (\$60,000.00 + \$37,810.99) = 1.4 \cdot \$97,810.99 = \$136,935.39$$
-Collateralizing the portfolio reduces total EAD from $\$456,451.29$ to $\$136,935.39$, achieving a 70.0% capital reduction.
-
-### Example 3: The Archegos collapse and non-linear counterparty exposures
-
-In March 2021, family office Archegos Capital Management defaulted on total return swaps (TRS) linked to highly concentrated equity positions (ViacomCBS, Discovery, Baidu), imposing $\$10\text{ billion}$ in losses across global prime brokers (Credit Suisse, Nomura, Morgan Stanley).
-Several prime brokers utilized legacy counterparty credit metrics or granted zero-threshold, low-initial-margin CSAs based on competitive pressure.
-Under standard SA-CCR rules:
-- Single-stock equities carry a punitive supervisory factor of $SF = 32\%$ for small-cap / volatile names and supervisory volatility $\sigma = 120\%$.
-- Directional equity swaps do not offset unless they reference the identical legal entity.
-- If prime brokers had rigorously enforced SA-CCR capital charges into trade pricing (via KVA), the capital required to hold $\$50\text{ billion}$ of gross synthetic equity exposures without liquid collateral would have forced margin requirements exceeding 25-35%.
-Instead, prime brokers held static collateral of only 10-15%, failed to model liquidation horizon expansion beyond standard 10-day MPORs for concentrated positions, and suffered catastrophic losses when multi-billion dollar liquidations crashed equity market prices.
+For protection bought on a 3% to 7% tranche, $\delta = 15/((1 + 0.42)(1 + 0.98)) = 5.335$; for the 0% to 3% equity tranche $\delta = 15/1.42 = 10.56$; for the 15% to 100% senior tranche $\delta = 15/(3.1 \times 15) = 0.323$.
+The equity tranche is about 33 times as sensitive per unit of notional as the senior tranche, which is the regulator's stylised version of tranche leverage.
 
 ## Pitfalls
 
-- **Neglecting the CSA threshold in margined RC**: Calculating margined Replacement Cost simply as $\max(V - C, 0)$ and forgetting $\text{TH} + \text{MTA} - \text{NICA}$ understates exposure when positive thresholds exist.
-- **Assuming full offset between cross-currency swaps**: Cross-currency basis swaps involve exchange of principal at maturity; in SA-CCR, the FX legs must be separated from the IR legs and allocated to the FX hedging set, creating substantial FX add-on charges.
-- **MPOR floor violations under disputed margin calls**: If a counterparty has a history of disputing margin calls or settlement delays, supervisory rules mandate doubling the Margin Period of Risk from 10 days to 20 days, which scales margined $MF$ by $\sqrt{2} \approx 1.414$.
-- **Ignoring non-linear option delta sensitivity**: Using simple nominal notional for deep out-of-the-money options overstates capital; using unhedged linear approximations for near-the-money options understates gamma and tail jump risk.
-- **Applying unmargined maturity factors to margined netting sets**: Unmargined trades scale with $\sqrt{\min(M, 1.0)}$, whereas margined trades scale with $1.5 \sqrt{\text{MPOR}/250}$; confusing the two formulas produces massive errors in regulatory capital reporting.
+- Treating a one-way CSA where only the bank posts as margined; it is unmargined, and the VM the bank posted enters C with a negative sign (CRE52.2 and footnote 223).
+- Using $\max(V - C, 0)$ for a margined set and forgetting $TH + MTA - NICA$, which understates RC whenever there is a threshold.
+- Counting bankruptcy-remote IM posted by the bank in NICA, or forgetting unsegregated IM posted by the bank, which is exposure (CRE52.17, CRE99.110).
+- Splitting credit derivatives into one hedging set per entity: the credit and equity classes each have a single hedging set with partial offset through the one-factor formula (CRE52.45).
+- Using made-up equity factors: there are only two, 32% single name and 20% index (CRE52.68, CRE52.72).
+- Applying the unmargined maturity factor to margined sets or vice versa, or using calendar days for MPOR instead of business days over 250.
+- Missing the 20-day MPOR triggers (more than 5,000 trades, illiquid collateral, hard-to-replace trades) and the dispute doubling, which apply only after more than two disputes (CRE52.51).
+- Using spot instead of forward for $P_i$ in option deltas, or failing on negative rates without the shift of CRE52.40 FAQ2.
+- Netting across asset classes or across commodity hedging sets: SA-CCR recognises neither (CRE52.25, CRE52.69).
+- Running the margined calculation without the cap at the unmargined EAD (CRE52.2).
 
 ## Interview questions
 
 > [!question]- reg-saccr-alpha-rationale | Why is Exposure at Default (EAD) in SA-CCR multiplied by the regulatory scalar $\alpha = 1.4$?
-> The scalar $\alpha = 1.4$ was originally calibrated by David Canabarro, Darrell Duffie, and Joe Picoult during the design of the Basel II Internal Model Method (IMM).
-> It reflects the ratio between a comprehensive credit portfolio economic capital measure and an unadjusted single-factor Expected Positive Exposure (EPE).
-> Specifically, $\alpha$ compensates for:
-> 1. Systemic correlation between exposure and counterparty creditworthiness (general wrong-way risk).
-> 2. The non-Gaussian nature and severe fat-tailed skewness of multi-asset derivative exposure distributions.
-> 3. Market volatility clustering and model risk inherent in standardized netting and add-on formulas.
-> 4. The diversification benefit shortfall when aggregating across uncorrelated trading books in a stressed bank.
+> Alpha converts expected positive exposure into a loan-equivalent amount that gives the right capital when exposures are random and correlated.
+> CRE53.16 defines it as economic capital from a full joint simulation of counterparty exposures divided by economic capital treating each counterparty's EPE as a fixed loan.
+> CRE53.15 lets supervisors require a higher alpha and lists factors that may call for one: low granularity of counterparties, particularly high general wrong-way risk, particularly high correlation of market values across counterparties and other institution-specific characteristics.
+> SA-CCR takes the IMM value of 1.4 because its add-ons are calibrated as stylised Effective EPE; IMM banks may estimate their own alpha with a floor of 1.2.
 
 > [!question]- reg-saccr-pfe-multiplier-asymptotics | What are the asymptotic limits of the SA-CCR PFE multiplier, and what economic reality does each limit represent?
-> The PFE multiplier is given by:
-> $$\text{Multiplier} = \min\left(1.0, 0.05 + 0.95 \cdot \exp\left(\frac{V - C}{2 \cdot 0.95 \cdot \text{AddOn}^{\text{aggregate}}}\right)\right)$$
-> - Upper limit ($1.0$): When $V \ge C$, the exponential argument is non-negative, the exponential term is $\ge 1.0$, and the multiplier is capped at $1.0$. This represents an uncollateralized or under-collateralized netting set where current exposure is fully unhedged.
-> - Lower limit ($0.05$): When the counterparty posts vast amounts of excess collateral ($C \gg V$), $V - C \to -\infty$, and the exponential term approaches zero, driving the multiplier to its supervisory floor of $0.05$ (5%).
-> This 5% floor reflects residual tail risk: no matter how much collateral is posted, there is always non-zero gap risk, margin dispute risk, settlement failure, and market illiquidity during the liquidation period.
+> It is 1 whenever $V - C \ge 0$ (under-collateralised or in the money), so the full add-on applies.
+> As $V - C \to -\infty$ (deeply out of the money or heavily over-collateralised) it decays exponentially to the 5% floor (CRE52.22 to CRE52.23).
+> The floor keeps some PFE because collateral can lose value and the portfolio can move back into the money over the close-out period; at one add-on out of the money the multiplier is 61.1%.
 
 > [!question]- reg-saccr-supervisory-duration-derivation | Why does SA-CCR define the adjusted notional for interest rate swaps using an exponential discount formula rather than simple contractual maturity?
-> The adjusted notional is defined as:
-> $$d_i = N_i \cdot \frac{e^{-0.05 \cdot S_i} - e^{-0.05 \cdot E_i}}{0.05}$$
-> This formula represents the standard continuous bond price sensitivity (duration) under an assumed flat continuous yield of 5%.
-> Because an interest rate swap's DV01 (dollar value of an 01) is proportional to its modified duration rather than its nominal principal, a 30-year swap has much greater market risk than a 2-year swap with the same notional.
-> The term $\frac{1 - e^{-0.05 T}}{0.05}$ caps the effective duration as $T \to \infty$ at $1 / 0.05 = 20\text{ years}$, preventing perpetual or ultra-long swaps from generating unbounded regulatory capital requirements while accurately reflecting duration roll-down.
+> Because what matters for exposure is rate sensitivity, which grows less than linearly with maturity.
+> $SD = (e^{-0.05S} - e^{-0.05E})/0.05 = \int_S^E e^{-0.05t}dt$ is the PV of a continuous annuity at 5%, the PV01 per unit rate of a par swap from S to E, floored at ten business days (CRE52.34).
+> It is 7.87 for a 10-year swap against 3.63 for a 4-year swap, and with $S = 0$ it tends to 20 as maturity grows.
 
 > [!question]- reg-saccr-ir-correlation-matrix | How does SA-CCR prevent basis and curve slope risk from being netted away in interest rate portfolios?
-> SA-CCR divides interest rate trades in the same currency into three maturity buckets ($<1\text{ year}$, $1\text{ to } 5\text{ years}$, $>5\text{ years}$).
-> Full algebraic netting ($\delta = \pm 1$) is permitted only within the same maturity bucket.
-> Across buckets, effective notionals are aggregated using a supervisory correlation matrix:
-> $$\rho_{12} = 0.70, \quad \rho_{23} = 0.70, \quad \rho_{13} = 0.30$$
-> Because the correlations are strictly less than 1.0 (particularly $\rho_{13} = 0.30$ between short-term and long-term rates), opposite positions across different tenors (such as a 1-year receiver vs a 10-year payer) receive only partial offset.
-> This ensures capital is held against curve steepening, flattening, and butterfly twists.
+> It nets fully only within maturity buckets (under 1 year, 1 to 5, over 5, by end date) and combines buckets with $EN = [D_1^2 + D_2^2 + D_3^2 + 1.4D_1D_2 + 1.4D_2D_3 + 0.6D_1D_3]^{1/2}$, which is a 70% correlation between adjacent buckets and 30% between short and long (CRE52.57).
+> Different currencies are separate hedging sets, and same-currency basis trades get their own hedging set per basis at half the factor (CRE52.46).
+> In the CRE99 Example 1, a 10-year long against a 4-year short gives $EN = 59,270$ rather than the net 42,440.
 
 > [!question]- reg-margined-rc-th-mta-role | Explain why margined Replacement Cost includes the term $\text{TH} + \text{MTA} - \text{NICA}$.
-> Under a collateralized CSA, variation margin is only transferred when the uncollateralized exposure exceeds the threshold $\text{TH}$ plus the Minimum Transfer Amount $\text{MTA}$.
-> If a counterparty's mark-to-market rises from zero to $\text{TH} + \text{MTA} - \$1$, the bank cannot legally issue a margin call.
-> If the counterparty defaults at that exact instant, the bank suffers an uncollateralized loss equal to that gap.
-> Subtracting Net Independent Collateral Amount ($\text{NICA}$) reflects that any initial margin held permanently cushions this threshold gap.
-> Therefore, the bank's operational replacement cost can never be lower than $\text{TH} + \text{MTA} - \text{NICA}$.
+> It is the largest exposure that can exist without triggering a variation margin call, so the bank can be exposed to that much at the moment of default even if current collateral covers V (CRE52.19).
+> Independent collateral the bank holds (NICA) reduces that level, and the result is floored at zero.
+> Example: V = 80, VM held 79.5, MTA 1, NICA 0 gives $RC = \max(0.5, 1, 0) = 1$ (CRE99.102 to CRE99.104).
 
 > [!question]- reg-saccr-vs-imm-methodology | What are the core technical differences between SA-CCR and the Internal Model Method (IMM) for counterparty credit risk?
-> SA-CCR is an analytical, rules-based framework using supervisory duration, fixed volatility add-ons, and parametric correlation formulas evaluated on a single snapshot of portfolio data.
-> IMM is an internal Monte Carlo simulation framework that:
-> 1. Simulates thousands of joint multi-asset market risk paths over horizons up to 30 years using calibrated term-structure and volatility models.
-> 2. Fully revalues every derivative contract across all paths and future time grids.
-> 3. Generates the full profile of Expected Exposure ($EE(t)$) accounting for path-dependent collateralization and margin call dynamics.
-> 4. Computes Effective Expected Positive Exposure (EEPE) by taking the non-decreasing envelope of $EE(t)$ and averaging over the first year.
-> EAD under IMM is $1.4 \times \text{EEPE}$, which captures complex non-linear path-dependent payoffs that SA-CCR's static add-ons cannot.
+> SA-CCR is a closed-form formula on today's trades: supervisory durations, factors, deltas and correlations, with collateral recognised through RC, the multiplier and the margined maturity factor.
+> IMM simulates future MtM paths of each netting set with an approved model, including collateral, computes Effective EE and Effective EPE over the first year, and sets $EAD = \alpha \cdot$ Effective EPE, using the higher of current and stressed calibrations (CRE53.7, CRE53.11 to CRE53.13).
+> IMM is excluded from the output floor base, so IMM banks also run SA-CCR (RBC20.12).
 
 > [!question]- reg-mpor-floors-basel-iv | What are the mandatory supervisory floors for the Margin Period of Risk (MPOR) under Basel guidelines?
-> Under Basel CRE52:
-> - Centrally cleared transactions with daily variation margin: minimum MPOR is 10 business days.
-> - Bilateral (non-cleared) netting sets: standard minimum MPOR is 10 business days.
-> - Bilateral netting sets with more than 5,000 transactions: minimum MPOR is 20 business days.
-> - Netting sets containing illiquid collateral or exotic derivatives that cannot be easily re-hedged: minimum MPOR is 20 business days.
-> - Netting sets with two or more margin call disputes in the preceding two quarters that lasted longer than the current MPOR: minimum MPOR is doubled (typically to 20 or 40 business days).
+> For non-centrally-cleared sets: 10 business days with daily margining, 9 + N with re-margining every N days (CRE52.50).
+> 20 days if the set has more than 5,000 trades or contains illiquid collateral or hard-to-replace derivatives, and the floor is doubled for two quarters after more than two disputes longer than the MPOR in the last two quarters (CRE52.51).
+> Cleared trades follow CRE54, not these floors.
 
 > [!question]- reg-saccr-fx-hedging-set-structure | How are cross-currency swaps treated across hedging sets in SA-CCR?
-> A cross-currency swap involves both interest rate risk in two distinct currencies and foreign exchange risk.
-> In SA-CCR, the contract must be mathematically bifurcated:
-> 1. The interest rate legs are split into two separate single-currency interest rate transactions, each allocated to its respective currency's IR hedging set.
-> 2. The exchange of principal (or synthetic FX forward exposure) is allocated to the FX hedging set corresponding to that specific currency pair.
-> This prevents banks from hiding foreign exchange market risk within interest rate hedging sets.
+> FX derivatives form one hedging set per currency pair with full offset and a 4% factor on $|EN|$ (CRE52.59).
+> The standard says derivatives with two floating legs in different currencies, such as cross-currency swaps, are not basis transactions but non-basis FX contracts (CRE52.46 footnote 232), with the adjusted notional of the foreign leg (CRE52.35).
+> Supervisors may also require a complex trade to be allocated to more than one asset class (CRE52.28), so some jurisdictions add the interest rate legs to the IR hedging sets; check the local rule.
 
 > [!question]- reg-negative-mtm-impact-on-ead | Can a deeply out-of-the-money derivative portfolio have a zero EAD under SA-CCR?
-> No.
-> Even if a bank has a massively negative mark-to-market ($V \ll 0$) or holds massive collateral ($C \gg V$), Replacement Cost is floored at zero ($\text{RC} \ge 0$).
-> Furthermore, while the negative mark-to-market reduces the PFE multiplier, the multiplier is bounded below by the supervisory floor of $0.05$ (5%).
-> As long as the netting set contains open derivative positions, $\text{AddOn}^{\text{aggregate}} > 0$, guaranteeing:
-> $$\text{EAD} \ge 1.4 \cdot (0 + 0.05 \cdot \text{AddOn}^{\text{aggregate}}) = 0.07 \cdot \text{AddOn}^{\text{aggregate}} > 0$$
-> EAD can never be zero for open derivative contracts.
+> In general no: RC is floored at zero and the multiplier at 5%, so $EAD \ge 1.4 \times 0.05 \times AddOn = 0.07 \cdot AddOn$.
+> The exceptions are a sold option outside netting and margin agreements whose premium was paid up front, which may have EAD of zero, and sold credit protection outside such agreements, which may be capped at unpaid premium (CRE52.1 FAQ1 and FAQ2).
 
 > [!question]- reg-credit-derivatives-in-saccr | How does SA-CCR handle single-name Credit Default Swaps (CDS) compared to index CDS?
-> Single-name CDS and index CDS belong to the Credit asset class but are separated into distinct hedging sets:
-> - Each single-name entity constitutes its own independent hedging set; long and short protection on the same reference entity offset, but positions across different reference entities do not offset.
-> - Credit indices (e.g., CDX IG, iTraxx Europe) form separate hedging sets; an index position cannot be netted directly against single-name constituent CDS positions unless a strict supervisory decomposition is applied.
-> Supervisory factors range from 0.38% (AAA/AA single name, IG index) to 6.00% (CCC single name), reflecting credit spread volatility.
+> All credit derivatives sit in a single hedging set (CRE52.45); each single name and each index is a separate entity with its own add-on (CRE52.61).
+> Single names take 0.38% to 6.0% by rating with 50% correlation and indices 0.38% (IG) or 1.06% (SG) with 80% correlation (CRE52.72).
+> Entities offset only through the systematic term of the one-factor formula; long and short on the same entity net fully, and an index is not decomposed into constituents.
+
+> [!question]- reg-saccr-cre99-ex1 | Walk through the EAD of a 10-year receive-float swap, a 4-year pay-float swap and a long payer swaption in another currency, unmargined, net MtM 60.
+> EAD 569.5 (USD thousands, CRE99 Example 1).
+> Adjusted notionals 78,694, 36,254 and 37,428; the swaption delta is -0.2694, so effective notionals are 78,694, -36,254 and -10,083.
+> USD: $EN = 59,270$, add-on 296.35; EUR add-on 50.41; $EAD = 1.4 \times (60 + 346.8)$.
+
+> [!question]- reg-saccr-margined-mf | By how much does daily margining reduce the add-on of a 5-year swap under SA-CCR?
+> By 70%.
+> Unmargined $MF = \sqrt{\min(5, 1)} = 1$; margined at the 10-day floor $MF = 1.5\sqrt{10/250} = 0.30$ (CRE52.48, CRE52.52).
+> With weekly margining (MPOR 14) the factor is 0.355.
+> The PFE falls by the same 70% only if the multiplier is unchanged, and RC also changes to the margined formula.
+
+> [!question]- reg-saccr-option-delta | What delta does SA-CCR use for a bought put, and what volatility goes in?
+> $\delta = -N(-d)$ with $d = (\ln(P/K) + 0.5\sigma^2T)/(\sigma\sqrt{T})$, zero rates, and the supervisory volatility of CRE52.72 (50% for rates, 15% FX, 100% single-name credit, 120% single-name equity).
+> The forward should be used for P where appropriate, and negative rates are handled by shifting P and K by a supervisor-recommended lambda (CRE52.40 FAQ1 and FAQ2).
+
+> [!question]- reg-saccr-no-cross-asset | Does SA-CCR recognise diversification between asset classes or between commodity groups?
+> No.
+> The aggregate add-on is the simple sum of asset-class add-ons (CRE52.25), and commodity add-ons are summed across the energy, metals, agricultural and other hedging sets (CRE52.70).
+> Offsets exist only within hedging sets: fully for IR within a maturity bucket and FX within a pair, partially through cross-bucket correlations and the one-factor formula.
+
+> [!question]- reg-saccr-cdo-delta | What is the SA-CCR supervisory delta for bought protection on a 3% to 7% tranche, and why is it larger than 1?
+> 5.335, from $15/((1 + 14 \times 0.03)(1 + 14 \times 0.07))$ (CRE52.41).
+> A thin junior tranche moves several times as much as the same notional of the index, and the formula is the regulator's stylised tranche leverage; the 0% to 3% tranche gets 10.56 and the 15% to 100% senior tranche 0.32.
+
+> [!question]- reg-saccr-margined-cap | Why is the EAD of a margined netting set capped at its unmargined EAD?
+> CRE52.2 imposes the cap so that a large threshold that small trades would never reach does not create exposure beyond the unmargined measure.
+> It also neutralises an anomaly: the margined factor $1.5\sqrt{MPOR/250}$ exceeds the unmargined $\sqrt{M}$ whenever $M < 2.25 \times MPOR$, which is 22.5 business days at the 10-day floor, and the cap removes that effect (CRE52.2 FAQ1).
+
+> [!question]- reg-ccp-trade-exposure | What risk weight does a clearing member apply to its trade exposure to a qualifying CCP, and why is segregation of initial margin relevant?
+> 2% (CRE54.7).
+> Initial margin posted to the CCP that is not bankruptcy remote is exposure to the CCP: in the CRE99 example it raises RC from 0 to 10 because NICA becomes -10 (CRE99.110 to CRE99.112).
 
 ## Further reading
 
-- Basel Committee on Banking Supervision. *The standardised approach for measuring counterparty credit risk exposures*. BCBS 279, March 2014.
-- Basel Committee on Banking Supervision. *Basel III: Finalising post-crisis reforms*. Bank for International Settlements, December 2017.
-- Gregory, Jon. *Counterparty Credit Risk and Credit Value Adjustment: A Continuing Challenge for Global Financial Markets*. Wiley, 2nd edition, 2012.
-- Canabarro, Eduardo, and Darrell Duffie. "Measuring and Marking Counterparty Risk." *Asset/Liability Management of Financial Institutions*, Institutional Investor Books, 2003.
-- Pykhtin, Michael, and Steven Zhu. "A Guide to Modeling Counterparty Credit Risk." *GARP Risk Review*, July/August 2007.
+- Basel Committee on Banking Supervision, *The Basel Framework*, chapters CRE50, CRE52, CRE53, CRE54 and CRE99, https://www.bis.org/basel_framework/.
+- Basel Committee on Banking Supervision, *The standardised approach for measuring counterparty credit risk exposures*, BCBS 279, March 2014 (the original standard and its calibration rationale).
+- Gregory, J., *The xVA Challenge*, 4th edition, Wiley, 2020, chapters on exposure and regulatory capital.
 
 ## In this repo and SDE-Interview-Prep
 
-- [03-Credit-Risk-Capital-SA-and-IRB.md](03-Credit-Risk-Capital-SA-and-IRB.md) - Standardised and IRB credit capital, Vasicek model, and output floors.
-- [05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md](05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md) - Regulatory CVA capital framework and eligible CVA hedges.
-- `code/basel_credit_saccr.py` - Reference implementation of selected SA-CCR calculations for margined and unmargined netting sets.
+- [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) for the risk weights that EAD is multiplied by.
+- [CVA Capital Charge: SA-CVA and BA-CVA](05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md), which reuses this EAD.
+- [Counterparty Credit Risk Analytics](../11-Risk-and-Trading/14-Counterparty-Credit-Risk-Analytics.md) for EE, PFE and EPE as risk measures rather than capital inputs.
+- [XVA Engine](../18-Pricing-and-Risk-Systems/11-XVA-Engine.md) for exposure simulation in production.
+- `code/basel_credit_saccr.py` computes, prints and asserts every number on this page.

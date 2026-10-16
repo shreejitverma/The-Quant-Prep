@@ -308,7 +308,7 @@ Posting daily margin with an $\$800,000$ cash cushion eliminates over $73\%$ of 
 > A cleared swap faces a qualifying CCP with a $2\%$ risk weight and zero CVA capital charge, lowering required lifetime capital $K(t)$ to near-zero.
 
 > [!question]- reg-21-11 | What is the supervisory floor on LGD for senior corporate exposures under the Advanced IRB approach?
-> Under Basel III finalisation, supervisory input floors establish an LGD floor of $25\%$ for unsecured senior corporate exposures and $10\%$ to $15\%$ for fully collateralized corporate exposures.
+> Under Basel III finalisation, supervisory input floors establish an LGD floor of $25\%$ for unsecured senior corporate exposures and $0\%$, $10\%$, $10\%$ and $15\%$ for exposures secured by financial collateral, receivables, real estate and other physical collateral (CRE32.16).
 
 > [!question]- reg-21-12 | How does the Leverage Ratio act as a backstop to the risk-weighted capital framework?
 > The Leverage Ratio is non-risk-weighted: $\text{Leverage Ratio} = \frac{\text{Tier 1 Capital}}{\text{Total Leverage Exposure}} \ge 3.0\%$.

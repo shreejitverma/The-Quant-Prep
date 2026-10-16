@@ -18,9 +18,9 @@ The rules that govern bank balance sheets, trading desks, counterparty exposures
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
 | 01 | [Capital, RWA, and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) | TRD | core | 4 | draft | 10 |
 | 02 | [Basel I, II, 2.5, III, and IV Evolution](02-Basel-I-II-2.5-III-IV-Evolution.md) | TRD | core | 4 | draft | 10 |
-| 03 | [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) | TRD | core | 4 | draft | 10 |
-| 04 | [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md) | TRD | core | 4 | draft | 10 |
-| 05 | [CVA Capital Charge: SA-CVA and BA-CVA](05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md) | TRD | core | 4 | draft | 10 |
+| 03 | [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) | TRD | core | 6 | solid | 17 |
+| 04 | [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md) | TRD | core | 6 | solid | 17 |
+| 05 | [CVA Capital Charge: SA-CVA and BA-CVA](05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md) | TRD | core | 6 | solid | 16 |
 | 06 | [FRTB: Trading and Banking Book Boundary](06-FRTB-Trading-and-Banking-Book-Boundary.md) | TRD | advanced | 4 | draft | 10 |
 | 07 | [FRTB: Sensitivities-Based Method - Delta](07-FRTB-Sensitivities-Based-Method-Delta.md) | TRD | advanced | 6 | solid | 20 |
 | 08 | [FRTB: Sensitivities-Based Method - Vega and Curvature](08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md) | TRD | advanced | 6 | solid | 17 |
