@@ -113,20 +113,20 @@ A risk engine sums $1,000,000$ small trade sensitivity contributions ($v_i = 0.0
   - Adding $0.0001$ to $100,000.00$ in single precision (24-bit significand) drops the low bits because $100,000 \approx 2^{16.6}$, while $0.0001 \approx 2^{-13.3}$. The scale difference exceeds the 24-bit precision window, causing the addition to vanish: $100,000.0 + 0.0001 = 100,000.0$.
   - After $1,000,000$ additions, the accumulated sum is still $100,000.00$ instead of $100,100.00$ (a $\$100$ error).
 
-Kahan Summation Algorithm:
+Kahan Summation Algorithm (using single precision to match the standard-summation comparison):
 ```cpp
-double sum = 0.0;
-double c = 0.0; // Running compensation for lost low-order bits
+float sum = 100000.0f;
+float c = 0.0f;
 
-for (double val : trades) {
-    double y = val - c;      // Subtract previously lost bits from incoming value
-    double t = sum + y;      // Add to running sum (low bits of y may be lost)
-    c = (t - sum) - y;       // Recover the lost bits: (t - sum) cancels high part
-    sum = t;                 // Update sum
+for (float val : trades) {
+    float y = val - c;
+    float t = sum + y;
+    c = (t - sum) - y;
+    sum = t;
 }
 ```
 
-By continuously capturing the lost low-order bits in variable `c`, Kahan summation eliminates floating-point drift, ensuring bit-exact alignment across CPU architectures.
+By tracking low-order rounding error in `c`, Kahan summation can recover contributions that ordinary single-precision addition loses. Its results are more accurate, but bit-for-bit agreement across CPU architectures requires additional controls on execution order, compiler behavior, and hardware.
 
 ### Example 2: Sizing Synchronous DR Replication Bandwidth (New York to Chicago)
 

@@ -18,7 +18,7 @@ It presents four end-to-end system design interview case studies:
 2. **Design an Ultra-Low Latency Pre-Deal XVA Quoting Service** (delivering incremental CVA, FVA, and MVA in under 50 milliseconds).
 3. **Design a Resilient End-of-Day Risk Batch Orchestrator** (managing critical path dependencies, idempotent retries, and sub-DAG backfills across 50,000 cores).
 4. **Design a Reactive Multi-Curve and Volatility Surface Service** (leveraging DAG dirty-flag caching, analytic Jacobians, and lock-free thread safety).
-Each problem includes comprehensive functional requirements, non-functional requirements, data schemas, API definitions, and complete ASCII/Mermaid architectural blueprints.
+Each case presents functional and non-functional requirements, with data schemas and architectural designs where applicable; the cases vary in how much implementation detail they provide.
 
 ## Learning objectives
 
@@ -53,7 +53,7 @@ When presenting a financial system design:
 #### 1. Requirements & Scale
 - **Functional Scope:**
   - Compute Sensitivities-Based Method (SbM) Delta, Vega, and Curvature across 7 risk classes (GIRR, CSR non-sec, CSR sec-ctp, CSR sec non-ctp, Equity, Commodity, FX).
-  - Evaluate each risk class across three supervisory correlation regimes: Medium ($\rho, \gamma$), High ($1.25\rho, 1.25\gamma$), Low ($2\rho - 1, 2\gamma - 1$).
+  - Evaluate each risk class across three supervisory correlation regimes: Medium ($\rho, \gamma$), High ($\min(1.25\rho, 1), \min(1.25\gamma, 1)$), Low ($0.75\rho, 0.75\gamma$).
   - Calculate Default Risk Charge (DRC) and Residual Risk Add-On (RRAO).
   - Output binding capital: $K = \max(K_{\text{med}}, K_{\text{high}}, K_{\text{low}}) + K_{\text{DRC}} + K_{\text{RRAO}}$.
 - **Non-Functional Scale:**
@@ -182,14 +182,14 @@ flowchart LR
 - **Non-Functional Scale:**
   - Concurrency: $10,000$ parallel pricing queries/second.
   - Recalibration latency on quote update: $< 5\text{ milliseconds}$.
-  - Thread safety: Zero locking contention for reader threads.
+  - Thread safety: Minimize reader contention while serving immutable curve snapshots.
 
 #### 2. Architectural Design
 - **Memory Architecture:**
   - Master curve state is represented as an immutable C++ data structure wrapped in `std::shared_ptr<const YieldCurve>`.
   - The curve calibration service evaluates recalibrations on a background worker thread.
   - When calibration finishes, the service executes an atomic pointer exchange (`std::atomic_store`) updating the master pointer.
-  - Reader threads load the atomic pointer in 1 clock cycle (`std::atomic_load`) and read immutable memory with zero lock contention.
+  - Reader threads use `std::atomic_load` to obtain immutable snapshots. Atomic operations on `std::shared_ptr` are not guaranteed to be lock-free, so measure their cost against the service's latency requirements.
 - **DAG Dirty Propagation:**
   - Each node tracks dependent children.
   - A quote tick triggers a bitset update marking dirty flags downstream.
@@ -216,9 +216,9 @@ flowchart LR
 > They pre-calculate and cache baseline netting set exposure distributions overnight, evaluate the candidate trade analytically forward in time, and use second-order Taylor expansions or pre-trained machine learning surrogates to approximate incremental exposure.
 
 > [!question]- sys-18-03 | In a reactive curve service, how do you achieve lock-free thread safety across thousands of reader threads?
-> By enforcing immutability and atomic pointer swaps.
-> Calibrated curves are stored as immutable objects; recalibrations execute on background threads, and once verified, an atomic pointer swap updates the active reference.
-> Reader threads obtain a shared pointer with zero mutex locking, avoiding thread contention.
+> By publishing immutable calibrated curves through atomic shared-pointer operations.
+> Recalibrations execute on background threads, and once verified, an atomic store updates the active reference.
+> Readers avoid application-managed mutexes, but the standard does not guarantee atomic shared-pointer operations are lock-free; measure contention and latency on the target implementation.
 
 > [!question]- sys-18-04 | What is the Critical Path Method (CPM) and how does it prevent EOD risk batch SLA breaches?
 > CPM identifies the longest sequence of dependent tasks that have zero float (slack).
