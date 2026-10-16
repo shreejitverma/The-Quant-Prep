@@ -18,10 +18,12 @@ sources: []
 - Separate instruments, market data, models and pricers cleanly.
 - Explain calibration, caching and algorithmic differentiation for Greeks.
 
-## In this repo and SDE-Interview-Prep
-
-- Code: [compile_time_greeks.cpp](code/cpp/compile_time_greeks.cpp).
-
 ## Further reading
 
 - Mark Joshi, *C++ Design Patterns and Derivatives Pricing*
+
+## In this repo and SDE-Interview-Prep
+
+- Production pricing library architecture: [Pricing Library Architecture](../18-Pricing-and-Risk-Systems/05-Pricing-Library-Architecture.md).
+- Distributed grid compute and cloud pricing: [Pricing at Scale](../18-Pricing-and-Risk-Systems/06-Pricing-at-Scale.md).
+- Code: [compile_time_greeks.cpp](code/cpp/compile_time_greeks.cpp).

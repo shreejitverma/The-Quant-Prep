@@ -53,6 +53,7 @@ Exit bar: every core topic in your track at mastery 3.
 ### Phase 3: Depth and differentiation (weeks 13-20)
 
 Advanced-tier topics in your track, plus the adjacent track's core (traders learn microstructure and alpha basics; researchers learn market making and execution; developers learn the pricing and statistics their users need).
+For quantitative risk, sell-side desks, and enterprise architecture, study [Regulatory Capital, Basel, and FRTB](../17-Regulatory-Capital-Basel-and-FRTB/README.md) and [Pricing and Risk Systems](../18-Pricing-and-Risk-Systems/README.md).
 
 ### Phase 4: Firm targeting (last 3-4 weeks before interviews)
 
