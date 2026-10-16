@@ -196,7 +196,7 @@ def parse_cards(body: str, note_id: str, first_line: int) -> list[Card]:
             i += 1
             continue
         f = FENCE_OPEN_RE.match(lines[i])
-        if f:
+        if f and not (f.group(1)[0] == "`" and "`" in lines[i][f.end() :]):
             fence = f.group(1)
             i += 1
             continue

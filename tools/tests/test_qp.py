@@ -118,6 +118,10 @@ class VaultParsing(unittest.TestCase):
         body = "````markdown\n```yaml\n" + card("x-example") + "```\n" + card("x-also-example") + "````\n" + card("x-real")
         self.assertEqual([c.id for c in parse_cards(body, "n", 1)], ["x-real"])
 
+    def test_backtick_in_info_string_does_not_open_fence(self):
+        body = " ```example`\n" + card("x-real")
+        self.assertEqual([c.id for c in parse_cards(body, "n", 1)], ["x-real"])
+
     def test_note_ids(self):
         self.assertEqual(note_id_for(Path("01-A/03-The-Greeks.md")), "the-greeks")
         self.assertEqual(note_id_for(Path("14-Firms/Jane-Street.md")), "jane-street")
