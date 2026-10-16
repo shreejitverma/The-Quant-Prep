@@ -178,7 +178,8 @@ Splitting clips 7, 2, 5, 10, 8 into at most 2 contiguous child orders, the small
 For 2, 4, 4, 4, 5, 5, 7, 9 Welford gives mean 5, population variance 4 and sample variance 4.571429.
 For $10^9$ + (4, 7, 13, 16) the naive one-pass formula with plain left-to-right sums returns -128.0, a negative variance, and Welford returns 22.5, the exact population variance of 4, 7, 13, 16.
 Even exactly rounded sums (`math.fsum`, or the compensated built-in `sum` of Python 3.12 and later) only improve the naive answer to 0.0: the squares near $10^{18}$ are already rounded to multiples of 128, and the sums near $4 \times 10^{18}$ to multiples of 512, before the subtraction.
-The garbage value depends on summation order, so the same formula can print a different wrong number on another machine or library (the [problem set](15-Quant-Dev-Problem-Set.md) shows -170.67 for the sample variance).
+The garbage value depends on summation order, so the same formula can print a different wrong number on another machine or library.
+The [problem set](15-Quant-Dev-Problem-Set.md) shows -170.67 for the sample variance from the same sums: the numerator is -512 in both, divided by $n - 1 = 3$ there and by $n = 4$ here.
 
 ## Pitfalls
 

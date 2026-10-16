@@ -599,12 +599,16 @@ def main() -> None:
     for x in big:  # plain left-to-right float sums, as a C++ loop would do
         s1 += x
         s2 += x * x
-    naive_var = (s2 - s1 * s1 / 4) / 4
+    naive_numerator = s2 - s1 * s1 / 4
+    naive_var = naive_numerator / 4
     # Exactly rounded sums (math.fsum; Python 3.12+ built-in sum is also compensated) still lose every digit.
     naive_exact_sums = (math.fsum(x * x for x in big) - math.fsum(big) ** 2 / 4) / 4
     _, _, m2b = welford(big)
     print(f"variance of 1e9 + (4, 7, 13, 16): naive one-pass {naive_var}, with exactly rounded sums {naive_exact_sums}, Welford {m2b / 4}")
     assert m2b / 4 == 22.5 and naive_var == -128.0 and naive_exact_sums == 0.0  # catastrophic cancellation
+    # The problem set's sample variance -170.67 divides the same -512 numerator by n - 1 = 3.
+    print(f"naive numerator {naive_numerator}, over n - 1: {naive_numerator / 3:.2f}")
+    assert naive_numerator == -512.0 and f"{naive_numerator / 3:.2f}" == "-170.67"
     print(f"ulp near 1e18: {math.ulp(1e18):.0f}, ulp near 4e18: {math.ulp(4e18):.0f}")
     assert math.ulp(1e18) == 128 and math.ulp(4e18) == 512
 

@@ -594,6 +594,8 @@ def main() -> None:
 
     naive, naive_exact_sums, welford, two_pass = naive_vs_welford()
     check("naive one-pass variance, left-to-right sums", naive, "-170.67", ".2f")
+    # The DSA note's -128.0 is the same numerator divided by n = 4 instead of n - 1 = 3.
+    check("naive numerator sum(x^2) - sum(x)^2 / n", naive * 3, "-512", ".0f")
     check("naive one-pass variance, exactly rounded sums", naive_exact_sums, "0.0", ".1f")
     sq_devs = [(v - 10.0) ** 2 for v in (4.0, 7.0, 13.0, 16.0)]
     check("squared deviations", [int(d) for d in sq_devs], "[36, 9, 9, 36]")

@@ -201,7 +201,8 @@ That is the floor for handing a message from a feed-handler thread to a strategy
 - Making everything `relaxed` because "x86 is strongly ordered": the compiler can still reorder, and ARM will.
 - Using `compare_exchange_weak` outside a loop: it may fail spuriously.
 - Computing `size()` of a concurrent queue and acting on it; it is stale the moment it is read.
-  Reading two counters non-atomically can be worse than stale: `head - tail` with head read first can pair an old head with a newer tail and wrap to about $2^{64}$, so `SpscQueue::size()` reads tail first and clamps the result to the capacity (a test samples it from a third thread).
+  Reading two counters non-atomically can be worse than stale: `head - tail` with head read first can pair an old head with a newer tail and wrap to about $2^{64}$, so `SpscQueue::size()` reads tail first and clamps the result to the capacity.
+Because of the clamp no test can observe the wrap; the unit test only calls `size()` from a third thread so that ThreadSanitizer checks the reads are race-free.
 - Putting the producer and consumer indices in the same cache line, or next to the payload array.
 - Using modulo with a non-power-of-two capacity on the hot path, or wrapping 32-bit indices.
 - Freeing nodes in a lock-free structure without a reclamation scheme.
@@ -282,7 +283,7 @@ That is the floor for handing a message from a feed-handler thread to a strategy
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [lock_free.hpp](code/cpp/lock_free.hpp) (`SpscQueue`, `MpmcQueue`, `TaggedIndexStack`, `SpinLock`, `Seqlock`), [memory_pool.hpp](code/cpp/memory_pool.hpp) (`ObjectPool`, `Arena`), demos [lock_free_spsc_queue.cpp](code/cpp/lock_free_spsc_queue.cpp) and [memory_pool.cpp](code/cpp/memory_pool.cpp), benchmark [concurrency_bench.cpp](code/cpp/concurrency_bench.cpp), tests [tests/test_lock_free.cpp](code/cpp/tests/test_lock_free.cpp) (run under TSan), and [multithreaded_monte_carlo.cpp](code/cpp/multithreaded_monte_carlo.cpp) (task-parallel Monte Carlo with one seeded engine per task and no shared mutable state, checked against Black-Scholes).
+- Code: [lock_free.hpp](code/cpp/lock_free.hpp) (`SpscQueue`, `MpmcQueue`, `TaggedIndexStack`, `SpinLock`, `Seqlock`), [memory_pool.hpp](code/cpp/memory_pool.hpp) (`ObjectPool`, `Arena`), demos [lock_free_spsc_queue.cpp](code/cpp/lock_free_spsc_queue.cpp) and [memory_pool.cpp](code/cpp/memory_pool.cpp), benchmark [concurrency_bench.cpp](code/cpp/concurrency_bench.cpp), tests [tests/test_lock_free.cpp](code/cpp/tests/test_lock_free.cpp) (CI runs them under TSan), and [multithreaded_monte_carlo.cpp](code/cpp/multithreaded_monte_carlo.cpp) (task-parallel Monte Carlo with one seeded engine per task and no shared mutable state, checked against Black-Scholes).
 - Related: [Low-Latency Engineering](03-Low-Latency-Engineering.md), [System Design for Trading](06-System-Design-for-Trading.md).
 - [C++ memory model and memory orders (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/C%2B%2B%20Memory%20Model%20and%20Memory%20Orders.md)
 - [Lock-free SPSC ring buffer design (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/Lock-Free%20SPSC%20Ring%20Buffer%20Design.md)

@@ -6,8 +6,8 @@
 //   SpinLock               test-and-test-and-set lock (acquire on lock, release on unlock)
 //   Seqlock<T>             single-writer sequence lock for a small trivially copyable snapshot
 //
-// Every memory order below names the happens-before edge it creates. All of them are tested under
-// ThreadSanitizer in tests/test_lock_free.cpp.
+// Every memory order below names the happens-before edge it creates. All of them are stress-tested
+// in tests/test_lock_free.cpp, which CI also builds and runs under ThreadSanitizer.
 
 #pragma once
 
@@ -133,8 +133,11 @@ public:
     MpmcQueue(const MpmcQueue&) = delete;
     MpmcQueue& operator=(const MpmcQueue&) = delete;
 
+    // The assignment must not throw: once the CAS has claimed a position, a throw would leave the
+    // cell unpublished and wedge the queue for every later producer and consumer.
     template <typename U>
-    [[nodiscard]] bool try_push(U&& value) noexcept(std::is_nothrow_assignable_v<T&, U&&>) {
+    [[nodiscard]] bool try_push(U&& value) noexcept {
+        static_assert(std::is_nothrow_assignable_v<T&, U&&>, "push an rvalue or a type whose assignment cannot throw");
         std::uint64_t pos = enqueue_pos_.load(std::memory_order_relaxed);
         Cell* cell;
         for (;;) {

@@ -328,7 +328,7 @@ def section_metamorphic() -> dict:
     print(f"   bound violations {bound_violations}")
     print(f"   max |C(3S,3K) - 3C(S,K)| / 3S = {max_homog:.1e}")
     assert max_parity < 1e-13 and max_homog < 1e-13
-    assert 0 < mono_violations < 100, "libm-dependent count; the point is that it is not zero"
+    assert mono_violations < 100, "libm-dependent count (6 on macOS, possibly 0 elsewhere): never assert it"
     assert mono_violations_tol == 0 and bound_violations == 0
     return out
 

@@ -100,8 +100,30 @@ void test_reference_and_restricted_fail_closed() {
     gw.setReferencePrice("BAD", 1'000);
     EXPECT(gw.submit({"r1", "BAD", Side::Buy, 1, 1'000}, 0) == RejectReason::RestrictedSymbol);
     EXPECT(gw.submit({"r2", "NEW", Side::Buy, 1, 1'000}, 0) == RejectReason::NoReferencePrice);
-    gw.setReferencePrice("ZERO", 0);
+    EXPECT(!gw.setReferencePrice("ZERO", 0));
     EXPECT(gw.submit({"r3", "ZERO", Side::Buy, 1, 1'000}, 0) == RejectReason::NoReferencePrice);
+}
+
+// A corrupt reference for a held symbol must not shrink the credit aggregate.
+void test_bad_reference_for_held_symbol_fails_closed() {
+    RiskLimits l = limits();
+    l.creditLimitCents = 10'500'000;  // $105,000
+    RiskGateway gw(l);
+    EXPECT(gw.setReferencePrice("XYZ", 10'000));
+    gw.setReferencePrice("ABC", 5'000);
+    EXPECT(gw.submit({"x", "XYZ", Side::Buy, 1000, 10'000}, 0) == RejectReason::None);
+    ack(gw, "x", "e1", 1000);
+    EXPECT(gw.onExecutionReport({"e2", "x", "", ExecType::Trade, OrdStatus::Filled, 1000, 10'000, 0, 1000}) == ApplyResult::Applied);
+    EXPECT(gw.grossExposureCents() == 10'000'000);  // 1000 x $100.00
+    // $100,000 held + $10,000 new is over the $105,000 limit.
+    EXPECT(gw.submit({"a1", "ABC", Side::Buy, 200, 5'000}, 20 * kMs) == RejectReason::CreditLimit);
+    EXPECT(!gw.setReferencePrice("XYZ", 0));
+    EXPECT(!gw.setReferencePrice("XYZ", -1));
+    EXPECT(gw.submit({"a2", "ABC", Side::Buy, 200, 5'000}, 40 * kMs) == RejectReason::CreditLimit);
+    EXPECT(gw.submit({"a3", "ABC", Side::Buy, 1, 5'000}, 60 * kMs) == RejectReason::CreditLimit);
+    EXPECT(gw.submit({"x2", "XYZ", Side::Sell, 1, 10'000}, 80 * kMs) == RejectReason::NoReferencePrice);
+    EXPECT(gw.setReferencePrice("XYZ", 10'000));
+    EXPECT(gw.submit({"a4", "ABC", Side::Buy, 100, 5'000}, 100 * kMs) == RejectReason::None);  // $105,000 exactly
 }
 
 void test_duplicate_ids_are_burned_even_when_rejected() {
@@ -180,6 +202,16 @@ void test_illegal_transitions_trip_kill_switch() {
     EXPECT(gw.submit({"o3", "ABC", Side::Buy, 2, 5'000}, 40 * kMs) == RejectReason::None);
 }
 
+void test_bad_last_px_is_inconsistent() {
+    for (const std::int64_t px : {std::int64_t{0}, std::int64_t{-5'000}, kMaxPriceCents + 1, INT64_MAX / 2}) {
+        RiskGateway gw = gateway();
+        EXPECT(gw.submit({"o", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+        ack(gw, "o", "e1", 100);
+        EXPECT(gw.onExecutionReport({"e2", "o", "", ExecType::Trade, OrdStatus::PartiallyFilled, 3, px, 97, 3}) == ApplyResult::Inconsistent);
+        EXPECT(gw.killed() && gw.position("ABC") == 0 && gw.order("o")->cumQty == 0);
+    }
+}
+
 void test_overfill_and_mismatch_are_inconsistent() {
     RiskGateway gw = gateway();
     EXPECT(gw.submit({"o", "ABC", Side::Sell, 100, 5'000}, 0) == RejectReason::None);
@@ -251,6 +283,51 @@ void test_kill_switch_lists_live_orders_and_allows_cancels() {
     EXPECT(gw.requestCancel("b", "cb") == RejectReason::None);
     EXPECT(gw.engageKillSwitch("again").size() == 1);  // b is pending cancel, only c remains
     EXPECT(gw.killReason() == "manual");               // the first reason is kept
+}
+
+// The kill switch must be able to cancel an order whose replace is still in flight.
+void test_kill_switch_cancels_order_with_pending_replace() {
+    // Venue applies the replace, then the cancel.
+    RiskGateway gw = gateway();
+    EXPECT(gw.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw, "X", "e1", 100);
+    EXPECT(gw.requestReplace("X", "R", 300, 4'900, 20 * kMs) == RejectReason::None);
+    const auto cancels = gw.engageKillSwitch("manual");
+    EXPECT(cancels.size() == 1 && cancels[0] == "X");
+    EXPECT(gw.requestCancel("X", "C") == RejectReason::None);
+    EXPECT(gw.order("X")->status == OrdStatus::PendingCancel);
+    EXPECT(gw.engageKillSwitch("again").empty());
+    EXPECT(gw.openQty("ABC", Side::Buy) == 300);  // either set of replace terms can still trade
+    EXPECT(gw.grossExposureCents() == 1'500'000);  // 300 x $50.00, the worse price
+    EXPECT(gw.onExecutionReport({"e2", "R", "X", ExecType::PendingReplace, OrdStatus::PendingReplace, 0, 0, 100, 0}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"e3", "X", "", ExecType::Trade, OrdStatus::PendingCancel, 10, 5'000, 90, 10}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"e4", "R", "X", ExecType::Replaced, OrdStatus::PendingCancel, 0, 0, 290, 10}) == ApplyResult::Applied);
+    EXPECT(gw.order("X")->status == OrdStatus::PendingCancel && gw.order("X")->orderQty == 300);
+    EXPECT(gw.onExecutionReport({"e5", "C", "R", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 10}) == ApplyResult::Applied);
+    EXPECT(gw.order("X")->status == OrdStatus::Canceled && gw.openQty("ABC", Side::Buy) == 0);
+    EXPECT(gw.position("ABC") == 10 && gw.killReason() == "manual");
+
+    // Venue rejects the replace; the cancel still stands and then completes.
+    RiskGateway gw2 = gateway();
+    EXPECT(gw2.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw2, "X", "e1", 100);
+    EXPECT(gw2.requestReplace("X", "R", 300, 4'900, 20 * kMs) == RejectReason::None);
+    EXPECT(gw2.requestCancel("X", "C") == RejectReason::None);
+    EXPECT(gw2.onCancelReject("R") == ApplyResult::Applied);
+    EXPECT(gw2.order("X")->status == OrdStatus::PendingCancel && gw2.openQty("ABC", Side::Buy) == 100);
+    EXPECT(gw2.onExecutionReport({"e2", "C", "X", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 0}) == ApplyResult::Applied);
+    EXPECT(gw2.order("X")->status == OrdStatus::Canceled && !gw2.killed());
+
+    // Venue rejects the cancel; the replace is still pending and then applies.
+    RiskGateway gw3 = gateway();
+    EXPECT(gw3.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw3, "X", "e1", 100);
+    EXPECT(gw3.requestReplace("X", "R", 300, 4'900, 20 * kMs) == RejectReason::None);
+    EXPECT(gw3.requestCancel("X", "C") == RejectReason::None);
+    EXPECT(gw3.onCancelReject("C") == ApplyResult::Applied);
+    EXPECT(gw3.order("X")->status == OrdStatus::PendingReplace);
+    EXPECT(gw3.onExecutionReport({"e2", "R", "X", ExecType::Replaced, OrdStatus::New, 0, 0, 300, 0}) == ApplyResult::Applied);
+    EXPECT(gw3.order("X")->status == OrdStatus::New && gw3.order("X")->priceCents == 4'900 && !gw3.killed());
 }
 
 // FIX 4.4 Volume 4, Appendix D, B.1.b: a fill that crosses our cancel on the wire carries the
@@ -340,7 +417,7 @@ void test_clock_step_back_and_reference_bound() {
     EXPECT(gw.submit({"t1", "ABC", Side::Buy, 1, 5'000}, 5'000 * kMs) == RejectReason::None);
     // The clock steps back 1 s: the unsigned age must not wrap and empty the window.
     EXPECT(gw.submit({"t2", "ABC", Side::Buy, 2, 5'000}, 4'000 * kMs) == RejectReason::Throttle);
-    gw.setReferencePrice("HUGE", kMaxPriceCents + 1);
+    EXPECT(!gw.setReferencePrice("HUGE", kMaxPriceCents + 1));
     EXPECT(gw.submit({"h1", "HUGE", Side::Buy, 1, 1'000}, 6'000 * kMs) == RejectReason::NoReferencePrice);
 }
 
@@ -351,6 +428,7 @@ int main() {
     RUN_TEST(test_collar_boundary_both_sides);
     RUN_TEST(test_notional_boundary_and_overflow_guard);
     RUN_TEST(test_reference_and_restricted_fail_closed);
+    RUN_TEST(test_bad_reference_for_held_symbol_fails_closed);
     RUN_TEST(test_duplicate_ids_are_burned_even_when_rejected);
     RUN_TEST(test_repeat_window_boundary);
     RUN_TEST(test_throttle_rolling_window);
@@ -358,10 +436,12 @@ int main() {
     RUN_TEST(test_credit_limit_is_gross);
     RUN_TEST(test_lifecycle_and_duplicate_reports);
     RUN_TEST(test_illegal_transitions_trip_kill_switch);
+    RUN_TEST(test_bad_last_px_is_inconsistent);
     RUN_TEST(test_overfill_and_mismatch_are_inconsistent);
     RUN_TEST(test_fill_racing_cancel_then_cancel_reject);
     RUN_TEST(test_replace_checks_worst_case_and_applies);
     RUN_TEST(test_kill_switch_lists_live_orders_and_allows_cancels);
+    RUN_TEST(test_kill_switch_cancels_order_with_pending_replace);
     RUN_TEST(test_fix44_b1b_fill_crossing_cancel);
     RUN_TEST(test_fix44_b1c_filled_while_pending_cancel);
     RUN_TEST(test_fix44_b1d_cancel_before_ack);

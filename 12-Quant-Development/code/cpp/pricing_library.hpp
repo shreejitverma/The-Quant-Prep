@@ -251,12 +251,13 @@ public:
         const double s = process_.spot();
         const double t = a.expiry;
         const double sigma = process_.vol(t, a.strike);
+        if (t <= 0.0 || sigma <= 0.0 || s <= 0.0) throw std::domain_error("CRR engine needs t, sigma, S > 0");
         const double dt = t / steps_;
         const double u = std::exp(sigma * std::sqrt(dt));
         const double d = 1.0 / u;
         const double growth = std::exp((process_.rate() - process_.dividendYield()) * dt);
         const double p = (growth - d) / (u - d);
-        if (p <= 0.0 || p >= 1.0) throw std::domain_error("CRR probability outside (0, 1); use more steps");
+        if (!(p > 0.0 && p < 1.0)) throw std::domain_error("CRR probability outside (0, 1); use more steps");
         const double disc = std::exp(-process_.rate() * dt);
         const auto n = static_cast<std::size_t>(steps_);
         std::vector<double> v(n + 1);

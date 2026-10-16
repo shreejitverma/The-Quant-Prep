@@ -117,7 +117,8 @@ Computing the step as $(S + h) - (S - h)$ removes the first error, not the secon
 "Prices are $10^9 + \{4, 7, 13, 16\}$ in some fixed-point unit. Compute the sample variance."
 Exact: mean offset 10, squared deviations $36 + 9 + 9 + 36 = 90$, sample variance $90/3 = 30$.
 The one-pass formula $(\sum x^2 - (\sum x)^2/n)/(n-1)$ in float64 with left-to-right sums returns $-170.67$: the sums are near $4 \times 10^{18}$ where one ulp is 512, so the subtraction cancels every meaningful digit.
-Exactly rounded sums (`math.fsum`) only improve that to 0.0, because each square was already rounded; the wrong answer also changes with summation order, which is why the [DSA note](05-Data-Structures-and-Algorithms-for-Quant-Interviews.md) shows a different wrong value for the population variance.
+Exactly rounded sums (`math.fsum`) only improve that to 0.0, because each square was already rounded; the wrong answer can also change with summation order.
+The [DSA note](05-Data-Structures-and-Algorithms-for-Quant-Interviews.md) shows -128.0 for the population variance because it divides the same numerator, $-512$, by $n = 4$ instead of $n - 1 = 3$.
 Welford's update and NumPy's two-pass `np.var(x, ddof=1)` both return exactly 30.
 
 ### 7. Worst-case position check

@@ -196,8 +196,8 @@ The fixed version passes 2000 random cases.
 ### 5. Metamorphic tests on a pricer, and why they need tolerances
 
 On 10,000 random parameter sets (SplitMix64 seed 6) the Black-Scholes implementation satisfies put-call parity to a relative error below the asserted $10^{-13}$ (the author's run prints a maximum of 5.6e-16) and homogeneity to the same level, with no bound violations.
-An exact monotonicity check (bump $S$ or $\sigma$ by 1% and require the price not to fall) reports a handful of violations, all rounding noise: with a tolerance of $10^{-12}S$ there are 0.
-The count of strict violations depends on the platform's `libm` (6 on the macOS machine used to write this note; the script asserts only that it is nonzero and below 100), which is itself a lesson: assert the tolerant version.
+An exact monotonicity check (bump $S$ or $\sigma$ by 1% and require the price not to fall) can report a handful of violations, all rounding noise: with a tolerance of $10^{-12}S$ there are 0.
+The count of strict violations is machine-dependent because it depends on the platform's `libm` (6 on the macOS machine used to write this note, and another `libm` may give 0), so the script asserts only the tolerant count, which is itself a lesson: assert the tolerant version.
 
 ### 6. Fuzzing a length-prefixed parser
 

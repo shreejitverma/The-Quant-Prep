@@ -31,6 +31,20 @@ void test_nearest_rank_percentile() {
     EXPECT(qpbench::percentile(v, 100) == 100);
     EXPECT(qpbench::percentile(v, 0) == 1);
     EXPECT(qpbench::percentile({}, 50) == 0);
+    // ceil(7% of 100) = 7 and ceil(99.9% of 1000) = 999: both are one rank too high in floating point.
+    EXPECT(qpbench::percentile(v, 7) == 7);
+    std::vector<double> w;
+    for (int i = 1; i <= 1000; ++i) w.push_back(i);
+    EXPECT(qpbench::percentile(w, 99.9) == 999);
+    EXPECT(qpbench::percentile(w, 99.99) == 1000);
+    EXPECT(qpbench::percentile(w, 0.1) == 1 && qpbench::percentile(w, 0.2) == 2);
+    // The histogram reports exact values below 2^SubBits, so it must give the same literal ranks.
+    qpbench::LatencyHistogram<10> h;
+    for (std::uint64_t i = 1; i <= 1000; ++i) h.record(i);
+    EXPECT(h.percentile(99.9) == 999 && h.percentile(7) == 70 && h.percentile(50) == 500);
+    qpbench::LatencyHistogram<7> small;
+    for (std::uint64_t i = 1; i <= 100; ++i) small.record(i);
+    EXPECT(small.percentile(7) == 7 && small.percentile(99) == 99);
 }
 
 void test_bucket_mapping_is_monotone_and_bounded() {

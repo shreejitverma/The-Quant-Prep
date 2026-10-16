@@ -192,6 +192,24 @@ void test_missing_engine_throws_and_stays_dirty() {
     EXPECT(!call.isCalculated());  // a failed calculation must not leave a stale "calculated" flag
 }
 
+// A zero vol quote makes u = d = 1; with r == q the CRR probability is 0/0 = NaN, which must not
+// slip through as a price.
+void test_crr_rejects_degenerate_tree() {
+    Market m;
+    m.vol.setValue(0.0);
+    m.dividend.setValue(0.05);  // r == q
+    EuropeanOption call(OptionType::Call, 100.0, 1.0);
+    call.setPricingEngine(std::make_shared<BinomialCrrEngine>(m.process, 100));
+    bool threw = false;
+    try {
+        (void)call.NPV();
+    } catch (const std::domain_error&) {
+        threw = true;
+    }
+    EXPECT(threw);
+    EXPECT(!call.isCalculated());
+}
+
 void test_calibration_recovers_vol() {
     Market m;
     EuropeanOption call(OptionType::Call, 120.0, 0.5);
@@ -216,6 +234,7 @@ int main() {
     RUN_TEST(test_old_engine_no_longer_invalidates);
     RUN_TEST(test_observer_lifetime_either_order);
     RUN_TEST(test_missing_engine_throws_and_stays_dirty);
+    RUN_TEST(test_crr_rejects_degenerate_tree);
     RUN_TEST(test_calibration_recovers_vol);
     std::cout << "\n" << (g_total - g_failures) << "/" << g_total << " assertions passed" << std::endl;
     return g_failures == 0 ? 0 : 1;

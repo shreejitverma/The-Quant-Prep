@@ -100,6 +100,25 @@ void test_replace_variants() {
     EXPECT(ev.back().reason == Reason::UnknownOrder);
 }
 
+void test_post_only_replace() {
+    OrderBook b(16);
+    std::vector<Event> ev;
+    b.submit(limit(1, Side::Sell, 101, 10), ev);
+    NewOrder po = limit(2, Side::Buy, 100, 10);
+    po.post_only = true;
+    b.submit(po, ev);
+    ev.clear();
+    b.replace(2, 3, 102, 10, ev);  // repricing through the offer must not turn the maker into a taker
+    EXPECT(ev.size() == 1 && ev[0] == (Event{EventType::Rejected, 3, 0, 0, 0, Reason::PostOnlyWouldCross}));
+    EXPECT(b.open_qty(2) == 10 && !b.open_qty(3) && b.depth_at(Side::Sell, 101) == 10);
+    ev.clear();
+    b.replace(2, 4, 99, 10, ev);  // a non-crossing reprice keeps the order post-only
+    EXPECT(ev.size() == 2 && ev[0].type == EventType::Replaced && ev[1].type == EventType::Accepted);
+    ev.clear();
+    b.replace(4, 5, 101, 10, ev);
+    EXPECT(ev.size() == 1 && ev[0].reason == Reason::PostOnlyWouldCross && b.open_qty(4) == 10);
+}
+
 void test_stp_modes() {
     for (Stp mode : {Stp::CancelResting, Stp::CancelAggressor, Stp::CancelBoth}) {
         OrderBook b(16);
@@ -334,6 +353,7 @@ int main() {
     test_market_order_and_empty_book();
     test_cancel_middle_of_queue_and_level_cleanup();
     test_replace_variants();
+    test_post_only_replace();
     test_stp_modes();
     test_auction_phase_rules();
     test_differential_against_reference();

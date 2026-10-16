@@ -120,6 +120,7 @@ class OrderBook {
         Qty qty = 0;
         Side side = Side::Buy;
         Stp stp = Stp::None;
+        bool post_only = false;
         std::uint32_t prev = kNil;
         std::uint32_t next = kNil;
         LevelMap::iterator level{};
@@ -214,7 +215,8 @@ public:
 
     // Cancel/replace. Same price and a quantity no larger than the open quantity: amend in place and
     // keep queue position. Otherwise: cancel and re-enter as a new Day limit order (loses priority,
-    // and may trade immediately if the new price crosses).
+    // and may trade immediately if the new price crosses). A post-only order stays post-only: a
+    // replace that would cross is rejected and the original order is left untouched.
     void replace(OrderId old_id, OrderId new_id, Price new_price, Qty new_qty, std::vector<Event>& out) noexcept {
         const auto it = index_.find(old_id);
         if (it == index_.end()) return reject(new_id, Reason::UnknownOrder, out);
@@ -234,7 +236,8 @@ public:
             out.push_back({EventType::Replaced, new_id, old_id, new_price, new_qty, Reason::None});
             return;
         }
-        const NewOrder fresh{new_id, n.trader, n.side, OrdType::Limit, Tif::Day, new_price, new_qty, false, n.stp};
+        const NewOrder fresh{new_id, n.trader, n.side, OrdType::Limit, Tif::Day, new_price, new_qty, n.post_only, n.stp};
+        if (fresh.post_only && would_cross(fresh)) return reject(new_id, Reason::PostOnlyWouldCross, out);
         remove_resting(i);
         out.push_back({EventType::Replaced, new_id, old_id, new_price, new_qty, Reason::None});
         submit(fresh, out);
@@ -375,7 +378,7 @@ private:
         LevelMap& side = o.side == Side::Buy ? bids_ : asks_;
         const auto lit = side.try_emplace(o.price).first;
         Level& l = lit->second;
-        nodes_[i] = OrderNode{o.id, o.trader, o.price, qty, o.side, o.stp, l.tail, kNil, lit};
+        nodes_[i] = OrderNode{o.id, o.trader, o.price, qty, o.side, o.stp, o.post_only, l.tail, kNil, lit};
         if (l.tail != kNil)
             nodes_[l.tail].next = i;
         else

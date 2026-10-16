@@ -43,12 +43,12 @@ class ObjectPool {
     std::size_t live_ = 0;
 
     void grow() {
-        auto block = std::make_unique<Block>();
+        blocks_.push_back(std::make_unique<Block>());  // own the block before any slot is reachable from free_
+        Block& block = *blocks_.back();
         for (std::size_t i = SlotsPerBlock; i-- > 0;) {  // thread in reverse so slots hand out in address order
-            block->slots[i].next = free_;
-            free_ = &block->slots[i];
+            block.slots[i].next = free_;
+            free_ = &block.slots[i];
         }
-        blocks_.push_back(std::move(block));
     }
 
 public:

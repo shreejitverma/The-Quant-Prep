@@ -105,14 +105,14 @@ jobs:
             ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -pthread -o "/tmp/san_$f" "$src"
             "/tmp/san_$f"
           done
-      - name: Run concurrent examples under ThreadSanitizer
+      - name: Run concurrent examples and unit tests under ThreadSanitizer
         working-directory: 12-Quant-Development/code/cpp
         run: |
-          for src in *.cpp; do
-            f="${src%.cpp}"
+          for src in *.cpp tests/test_*.cpp; do
+            f=$(basename "${src%.cpp}")
             grep -q "qp-examples: no-run" "$src" && continue
             grep -q "#include <thread>" "$src" || continue
-            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=thread -pthread -o "/tmp/tsan_$f" "$src"
+            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=thread -pthread -I . -o "/tmp/tsan_$f" "$src"
             "/tmp/tsan_$f"
           done
       - name: Unit tests, warning-free and under ASan/UBSan

@@ -17,6 +17,7 @@
 #include <array>
 #include <bit>
 #include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -88,15 +89,20 @@ inline void do_not_optimize(const T& value) noexcept {
     __asm__ volatile("" : : "r,m"(value) : "memory");
 }
 
+// 1-based nearest rank ceil(q / 100 * n) in [1, n], computed in integers from q in thousandths of
+// a percent (exact for q with up to three decimals): in double, 99.9 / 100 * 1000 is
+// 999.0000000000001 and its ceiling would be one rank too high.
+inline std::uint64_t nearest_rank(double q, std::uint64_t n) noexcept {
+    const auto q_milli = static_cast<std::uint64_t>(std::clamp(std::llround(q * 1000.0), 0LL, 100'000LL));
+    const std::uint64_t rank = (q_milli * n + 99'999) / 100'000;
+    return std::clamp<std::uint64_t>(rank, 1, n);
+}
+
 // Nearest-rank percentile: the smallest sample with at least q percent of the data at or below it.
 inline double percentile(std::vector<double> sample, double q) {
     if (sample.empty()) return 0.0;
     std::sort(sample.begin(), sample.end());
-    const double rank = q / 100.0 * static_cast<double>(sample.size());
-    std::size_t idx = static_cast<std::size_t>(rank);
-    if (static_cast<double>(idx) < rank) ++idx;  // ceil
-    if (idx == 0) idx = 1;
-    return sample[std::min(idx, sample.size()) - 1];
+    return sample[nearest_rank(q, sample.size()) - 1];
 }
 
 // Log-linear histogram over non-negative integer values (e.g. nanoseconds).
@@ -143,10 +149,7 @@ public:
     // Nearest-rank percentile, reported as the upper edge of the bucket holding that rank.
     [[nodiscard]] std::uint64_t percentile(double q) const noexcept {
         if (total_ == 0) return 0;
-        const double rank_d = q / 100.0 * static_cast<double>(total_);
-        auto rank = static_cast<std::uint64_t>(rank_d);
-        if (static_cast<double>(rank) < rank_d) ++rank;
-        if (rank == 0) rank = 1;
+        const std::uint64_t rank = nearest_rank(q, total_);
         std::uint64_t seen = 0;
         for (std::size_t i = 0; i < kBuckets; ++i) {
             seen += counts_[i];

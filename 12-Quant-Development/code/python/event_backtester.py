@@ -379,20 +379,20 @@ def bid_ask_bounce(seed: int, n: int, half_spread: float) -> tuple[float, float]
     Same-print fill (look-ahead): execute at the very print that produced the signal.
     Realistic fill: execute on the next event, crossing the spread (buy at ask, sell at bid).
     Returns the mean PnL per trade, in the same units as the mid, for both assumptions,
-    holding each position for one print and marking out at the next mid.
+    each holding its position for one print and marking out at the mid of the print after its entry.
     """
     rng = np.random.default_rng(seed)
     mid = 100.0 + np.cumsum(rng.normal(0.0, 0.001, n))
     side = rng.choice([-1.0, 1.0], n)  # -1 print at bid, +1 print at ask
     prints = mid + side * half_spread
     sig = -np.sign(np.diff(prints))  # contrarian: +1 buy after a down-tick
-    sig = sig[:-1]  # signal from print t uses prints[t] and prints[t+1]; need one more print to exit
-    t = np.arange(1, n - 1)
+    sig = sig[:-2]  # signal at print t uses prints[t-1] and prints[t]; the realistic leg needs two more prints
+    t = np.arange(1, n - 2)
     # Look-ahead fill at the print that produced the signal, exit at the next mid.
     pnl_same = sig * (mid[t + 1] - prints[t])
-    # Realistic fill at the next event crossing the spread, exit at that next event's mid.
+    # Realistic fill at the next event crossing the spread, exit one print later at the following mid.
     entry = mid[t + 1] + sig * half_spread
-    pnl_next = sig * (mid[t + 1] - entry)
+    pnl_next = sig * (mid[t + 2] - entry)
     mask = sig != 0
     return float(pnl_same[mask].mean()), float(pnl_next[mask].mean())
 
@@ -473,12 +473,13 @@ def main() -> None:
     print(f"  mean PnL per trade, same-print fill {same:+.5f}, next-event fill {nxt:+.5f}")
     # Theory: half the time consecutive prints sit on opposite sides; then the contrarian signal earns the
     # half-spread h. Otherwise the signal is noise with zero mean. So E[same] is about h / 2 = 0.0025.
-    print(f"  theory: same-print about h/2 = {0.005 / 2:.4f}, next-event exactly -h = {-0.005:.4f}")
+    print(f"  theory: same-print about h/2 = {0.005 / 2:.4f}, next-event about -h = {-0.005:.4f}")
     # Note 09 example 3 quotes the seed-11 printed value +0.00251 and the theory value about +0.0025.
     assert f"{same:+.5f}" == "+0.00251"
     assert abs(same - 0.0025) < 0.0002
-    # A realistic fill pays the half-spread exactly: -h = -0.0050.
-    assert f"{nxt:+.4f}" == "-0.0050" and abs(nxt - (-0.005)) < 1e-12
+    # A realistic fill pays the half-spread h and then holds one mid step, which is independent of the
+    # signal and has mean 0, so E[next] = -h; the standard error is 0.001 / sqrt(trades), about 2.2e-6.
+    assert f"{nxt:+.4f}" == "-0.0050" and abs(nxt - (-0.005)) < 5 * 0.001 / np.sqrt(200_000)
 
     print("Square-root impact")
     for vol, part in ((0.02, 0.01), (0.02, 0.04), (0.015, 0.10)):

@@ -194,6 +194,8 @@ The transitions that bite in production:
 - **Cancel reject.** 35=9 returns the order to its pre-pending state, updated by any fills that arrived meanwhile.
 - **Replace in flight.** Until 150=5 arrives, either the old or the new terms can execute, so exposure is max(old leaves, new leaves) at the worse price.
   A replace cannot leave an order below CumQty: if fills crossing the request reach or pass the new quantity, the venue amends the order quantity to CumQty and reports 150=5 with OrdStatus Filled (C.3.b, C.3.c).
+- **Cancel over a pending replace.** A cancel may be sent while a replace is still in flight, with OrigClOrdID set to the last accepted ClOrdID; the order is then Pending Cancel, either set of terms can still execute, and the venue answers the replace and the cancel separately.
+  Refusing that cancel would leave the order live under the kill switch until the replace resolves.
 - **Unsolicited cancels and expiries.** IOC remainders, end of day, venue-side risk or cancel-on-disconnect produce 150=4 or 150=C with no request from you.
 - **Fill before acknowledgement.** Some flows deliver a fill before the New ack; treat it as an implicit acknowledgement.
   Likewise a cancel sent before the ack can be followed by the ack itself (150=0, OrdStatus 0) and only then by the cancel (B.1.d, B.1.e).
