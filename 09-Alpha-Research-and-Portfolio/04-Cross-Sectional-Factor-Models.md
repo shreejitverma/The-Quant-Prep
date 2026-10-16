@@ -120,7 +120,7 @@ Weaknesses:
 
 - Factors are identified only up to rotation, so they have no names and their loadings drift.
 - Weak factors (small variance relative to idiosyncratic noise) sit inside the noise bulk and are not recovered.
-- Choosing $K$ is hard: the Marchenko-Pastur edge assumes equal idiosyncratic variances, and heteroskedastic noise pushes extra eigenvalues above it; Bai and Ng (2002) information criteria are the standard alternative.
+- Choosing $K$ is hard: the Marchenko-Pastur edge assumes equal idiosyncratic variances and fixed loadings, heteroskedastic noise and drifting loadings push extra eigenvalues above it while weak factors stay below it; Bai and Ng (2002) information criteria are the standard alternative.
 
 Practitioners often run both: a fundamental model for attribution and constraints, and a statistical model as a check for risk the fundamental model misses.
 The eigenvalue noise and its cleaning are developed in [Covariance Estimation and Shrinkage](11-Covariance-Estimation-and-Shrinkage.md).
@@ -150,7 +150,8 @@ Run it on many portfolios (factor-mimicking, random, and especially optimised on
 ## Worked examples
 
 All numbers come from [factor_models.py](code/factor_models.py): 1,000 stocks, 120 months, 10 industries (no intercept, so industries carry the market) and three styles with known true factor returns.
-Style factor volatilities are 1.5%, 1.5% and 2.0% a month, specific volatility is $0.09e^{-0.25\,\text{size}}$, and market cap is $e^{1.2\,\text{size}}$.
+Style exposures drift month to month as an AR(1) with coefficient 0.95, and style factor volatilities are 1.5%, 1.5% and 2.0% a month.
+Each month a stock's specific volatility is $0.09e^{-0.25\,\text{size}_t}$ and its market cap is $e^{1.2\,\text{size}_t}$, both read from that month's size exposure.
 
 ### 1. Recovering factor returns: OLS versus WLS
 
@@ -158,22 +159,24 @@ RMSE of the estimated monthly style factor returns against the truth:
 
 | Factor | OLS | WLS, $1/\sigma_i^2$ | WLS, $\sqrt{\text{cap}}$ |
 | :--- | ---: | ---: | ---: |
-| size | 0.308% | 0.263% | 0.264% |
-| value | 0.281% | 0.253% | 0.255% |
-| momentum | 0.290% | 0.256% | 0.257% |
+| size | 0.335% | 0.260% | 0.264% |
+| value | 0.293% | 0.246% | 0.246% |
+| momentum | 0.281% | 0.263% | 0.267% |
 
-- WLS cuts estimation error relative to OLS by about 14.4% (size), 10.1% (value) and 11.8% (momentum).
+- WLS cuts estimation error relative to OLS by about 22.4% (size), 16.1% (value) and 6.4% (momentum).
 - Here $\sqrt{\text{cap}} = e^{0.6\,\text{size}}$ and $1/\sigma_i^2 \propto e^{0.5\,\text{size}}$, so the Barra proxy is almost the efficient weight by construction; in real data it is a reasonable but imperfect proxy.
-- The theoretical WLS standard error $\sqrt{[(X^\top\Delta^{-1}X)^{-1}]_{kk}}$ for value averages 0.269%, consistent with the simulated 0.253% over 120 months.
-- Correlation of estimated and true value factor returns: about 0.987; for an industry factor about 0.988.
+- The theoretical WLS standard error $\sqrt{[(X^\top\Delta^{-1}X)^{-1}]_{kk}}$ for value averages 0.269%, consistent with the simulated 0.246% over 120 months.
+- Correlation of estimated and true value factor returns: about 0.988; for an industry factor about 0.9883.
 
 ### 2. Fama-MacBeth premia
 
+The slopes are the monthly WLS estimates of section 1 (weights $1/\sigma_i^2$, industry dummies and no intercept), not the regression with an intercept $\gamma_{0t}$ written above; the industry dummies play the intercept's role.
+
 | Factor | Population mean | Realised mean of true $f$ | FM estimate | FM $t$ |
 | :--- | ---: | ---: | ---: | ---: |
-| size | $-0.100\%$ | $-0.163\%$ | $-0.149\%$ | $-1.04$ |
-| value | 0.300% | 0.349% | 0.376% | 2.59 |
-| momentum | 0.500% | 0.684% | 0.677% | 3.56 |
+| size | $-0.100\%$ | $-0.163\%$ | $-0.156\%$ | $-1.09$ |
+| value | 0.300% | 0.349% | 0.375% | 2.59 |
+| momentum | 0.500% | 0.684% | 0.679% | 3.56 |
 
 The FM estimate tracks the realised factor returns of this sample, not the population premium.
 The value premium is real by construction, yet its expected $t$-stat over 120 months is only $0.003/0.015\times\sqrt{120} = 2.19$; this sample happened to be kind, and size (a true premium of $-0.10\%$) is not significant at all.
@@ -183,12 +186,13 @@ The value premium is real by construction, yet its expected $t$-stat over 120 mo
 From the last month's WLS:
 
 - $\max|HX - I| < 10^{-10}$ (machine precision): unit own exposure, zero to every other factor.
-- The value portfolio's return equals the estimated value factor return to machine precision, its net weight is zero inside every industry, and its gross weight is 0.814 (about 41% long and 41% short per unit of value exposure).
+- The value portfolio's return equals the estimated value factor return to machine precision, its net weight is zero inside every industry, and its gross weight is 0.806 (about 40.3% long and 40.3% short per unit of value exposure).
 - The industry-0 portfolio has net weight 1.0000, all of it inside industry 0.
 
 ### 4. Specific risk
 
-Estimated over true specific volatility across the 1,000 names: mean 0.993, cross-sectional standard deviation 0.065, matching $1/\sqrt{2\times120} = 0.065$.
+Estimated over true specific volatility (each name's root-mean-square specific volatility over the sample) across the 1,000 names: mean 0.995, cross-sectional standard deviation 0.072.
+That is above the constant-volatility $1/\sqrt{2\times120} = 0.065$ because each name's specific volatility drifts with its size; the delta-method value allowing for the drift, $\sqrt{\overline{\sigma^4}}/\overline{\sigma^2}\cdot1/\sqrt{2T}$ per name, averages 0.070.
 
 ### 5. What a signal-weighted book is really betting on
 
@@ -196,29 +200,32 @@ Signal $= 0.5\,\text{value} + 0.3\,\text{momentum} + 0.8\cdot\mathbb 1\{\text{in
 
 | Share of variance | Raw book | Value only (neutral to the rest) | Fully neutral |
 | :--- | ---: | ---: | ---: |
-| industries | 0.048 | 0.000 | 0.000 |
+| industries | 0.047 | 0.000 | 0.000 |
 | size | 0.005 | 0.000 | 0.000 |
-| value | 0.455 | 0.836 | 0.000 |
-| momentum | 0.399 | 0.000 | 0.000 |
-| specific | 0.093 | 0.164 | 1.000 |
-| total vol per month | 2.50% | 1.89% | 0.77% |
+| value | 0.454 | 0.835 | 0.000 |
+| momentum | 0.401 | 0.000 | 0.000 |
+| specific | 0.093 | 0.165 | 1.000 |
+| total vol per month | 2.48% | 1.88% | 0.76% |
 
 The raw book's value exposure is 1.036 and its momentum exposure 0.732: 40% of its risk is a momentum bet nobody asked for.
 Residualising on industries, size and momentum keeps a value exposure of 1.088 with every other exposure zero to machine precision (below $10^{-10}$); residualising on everything leaves a pure specific-risk book.
 
 ### 6. A statistical model on the same data
 
-- The Marchenko-Pastur upper edge for the dual matrix is 0.01680 and 16 eigenvalues exceed it, although there are 13 true factors.
-- Control: pure noise with the same heteroskedastic specific volatilities puts about 3.95 eigenvalues above the edge on average, which explains the overcount.
-- The first PC alone explains 17.0% of total variance and spans the market: mean $R^2$ of the industry factors on it is 0.833, while value and momentum get 0.002 and 0.000.
+- The Marchenko-Pastur upper edge for the dual matrix is 0.01670 and 13 eigenvalues exceed it, the number of factors in the model.
+- The match is two errors cancelling, not the edge working.
+  With the same factor returns and noise but exposures frozen at month 0, only 9 eigenvalues exceed the edge: the weak style factors sit inside the noise bulk.
+  Drifting exposures add eigenvalues, because a factor whose loadings change over the sample spans more than one direction of the return panel, so "13 factors" is a fixed-loading count that the time-varying panel does not have.
+- Control: pure noise with the same heteroskedastic specific volatilities puts about 0.55 eigenvalues above the edge on average, a small part of the gap here.
+- The first PC alone explains 16.9% of total variance and spans the market: mean $R^2$ of the industry factors on it is 0.833, while value and momentum get 0.002 and 0.000.
 
 | PCs kept | industries (mean $R^2$) | size | value | momentum |
 | ---: | ---: | ---: | ---: | ---: |
-| 1 | 0.833 | 0.037 | 0.002 | 0.000 |
-| 10 | 0.884 | 0.471 | 0.570 | 0.787 |
-| 13 | 0.893 | 0.523 | 0.605 | 0.841 |
+| 1 | 0.833 | 0.038 | 0.002 | 0.000 |
+| 10 | 0.890 | 0.491 | 0.574 | 0.839 |
+| 13 | 0.905 | 0.565 | 0.634 | 0.856 |
 
-Even with the right number of components the weak style factors are only partly recovered, which is why statistical models complement rather than replace fundamental ones.
+Even with 13 components, as many as the model has factors, the weak style factors are only partly recovered, both because they are weak relative to specific risk and because a fixed set of PCs cannot track loadings that drift; this is why statistical models complement rather than replace fundamental ones.
 
 ### 7. Parameter count
 
@@ -287,11 +294,11 @@ A sample covariance of 1,000 stocks has $1000\times1001/2 = 500{,}500$ free para
 
 > [!question]- alpha-fm-pca-weaknesses | What are the weaknesses of a statistical (PCA) factor model?
 > Rotation ambiguity (unnamed, unstable factors), failure to recover weak factors that sit inside the noise bulk, and a hard choice of the number of factors.
-> In the note's simulation 13 PCs recovered only about 52% to 84% of the style factors' variance.
+> In the note's simulation 13 PCs recovered only about 57% to 86% of the style factors' variance.
 
 > [!question]- alpha-fm-mp-overcount | Why can the Marchenko-Pastur edge overcount factors in stock returns?
-> It assumes equal idiosyncratic variances; heteroskedastic noise spreads the noise bulk past the edge.
-> In the simulation pure heteroskedastic noise put about 4 eigenvalues above the edge, and the data showed 16 for 13 true factors.
+> It assumes equal idiosyncratic variances and fixed loadings; heteroskedastic noise spreads the noise bulk past the edge, and a factor with drifting loadings spans several directions.
+> In the simulation pure heteroskedastic noise put about 0.55 eigenvalues above the edge, frozen exposures gave 9 (weak factors hidden in the bulk) and drifting exposures gave 13, so the count matched the 13 factors only because the errors offset.
 
 > [!question]- alpha-fm-euler-decomposition | How do you decompose a portfolio's variance into factor contributions?
 > With $x = X^\top h$, $\sigma^2 = x^\top Fx + h^\top\Delta h$, and factor $k$ contributes $x_k(Fx)_k$.
@@ -311,7 +318,7 @@ A sample covariance of 1,000 stocks has $1000\times1001/2 = 500{,}500$ free para
 
 > [!question]- alpha-fm-fm-premium-meaning | Does a Fama-MacBeth premium estimate the population risk premium?
 > Only noisily: it is the realised average return of the factor portfolio over the sample.
-> In the simulation the value estimate was 0.376% against a realised 0.349% and a population 0.300%.
+> In the simulation the value estimate was 0.375% against a realised 0.349% and a population 0.300%.
 
 > [!question]- alpha-fm-bias-statistic | How do you test whether a risk model's volatility forecasts are calibrated?
 > With the bias statistic: the standard deviation of $r_t/\hat\sigma_t$ over $T$ periods for each test portfolio, which should be 1 within roughly $1 \pm \sqrt{2/T}$.

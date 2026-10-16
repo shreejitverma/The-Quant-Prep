@@ -125,7 +125,7 @@ The synthetic panel has a constant universe, so the checks pass by construction;
 **3. Signal construction and neutralisation.**
 Each day, regress the cross-section of returns on 10 sector dummies and beta and keep the residual, $e_t = M r_t$ with $M = I - X(X^\top X)^{-1}X^\top$.
 Signal $s_{i,t} = -\sum_{j=0}^{4} e_{i,t-j}$, z-scored across stocks, winsorised at $\pm3$, projected through $M$ again, and scaled to unit gross: $w_t = z_t/\sum_i|z_{i,t}|$.
-Because the final step is a projection, the book's net beta and net sector exposures are zero to machine precision (largest absolute net beta below $10^{-12}$).
+Because the final step is a projection, the book's net beta and net sector exposures are zero to machine precision (largest absolute net sector or beta exposure below $10^{-12}$).
 
 **4. IC analysis.**
 Daily rank IC of the signal against next-day residual returns:
@@ -196,7 +196,7 @@ Next steps: condition on liquidity (the mechanism predicts a stronger effect in 
 **1. Hypothesis.**
 Moskowitz, Ooi and Pedersen (2012) document time-series momentum: an instrument's own past 12-month excess return predicts its next-month return, across equity index, bond, currency and commodity futures.
 Their construction, which the case copies: position sign from the trailing 12-month return, one-month holding, and each position scaled to 40% annualised ex-ante volatility so that a low-volatility bond future and a high-volatility commodity contribute comparable risk (they estimate ex-ante volatility with an exponentially weighted average of squared daily returns).
-The synthetic market has a persistent drift (AR(1) with coefficient 0.95 per month) under noise, annual volatilities from 5% to 40%, and a common factor with correlation 0.2.
+The synthetic market has a persistent drift (AR(1) with coefficient 0.95 per month) under noise; the noise has annual volatilities from 5% to 40% and a common factor that gives it a pairwise correlation of 0.2 (inputs, so realised returns differ slightly).
 
 **2. Point-in-time detail.**
 Ex-ante volatility at month end $j$ uses months $j-23,\dots,j$ only; with daily data you would use an EWMA, never a full-sample volatility.
@@ -313,9 +313,9 @@ State what you would do with another week, which is how interviewers distinguish
 > Liquidity provision: idiosyncratic order-flow shocks push prices away from value and are partly reversed, paying the liquidity provider.
 > It predicts a negative sign on recent residual (not factor) returns, a horizon of days, and a stronger effect in less liquid names.
 
-> [!question]- alpha-case-ic-numbers | Mean daily rank IC 0.019 with standard deviation 0.134 over 5 years. Is it significant, and what Sharpe should a signal-weighted book have?
+> [!question]- alpha-case-ic-numbers | Mean daily rank IC 0.0191 with standard deviation 0.1341 over 5 years. Is it significant, and what Sharpe should a signal-weighted book have?
 > Yes, $t \approx 5.1$, and the book's gross Sharpe should be near the annualised IC information ratio, 2.26.
-> $t = 0.019/0.134\times\sqrt{1259}$; a signal-weighted book's daily return is proportional to that day's IC, and the simulated book earned 2.43.
+> $t = 0.0191/0.1341\times\sqrt{1259}$; a signal-weighted book's daily return is proportional to that day's IC, and the simulated book earned 2.43.
 
 > [!question]- alpha-case-breakeven | A book earns 6.37 bp a day gross with 0.647 two-sided turnover. Break-even cost per unit traded?
 > About 9.8 bp.

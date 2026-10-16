@@ -26,10 +26,11 @@ import numpy as np
 
 
 def check(label: str, value: float, expected: float, tol: float, fmt: str = ".4f") -> None:
-    print(f"{label}: {value:{fmt}}")
+    printed, quoted = (s.removeprefix("-") if float(s) == 0 else s for s in (f"{value:{fmt}}", f"{expected:{fmt}}"))
+    print(f"{label}: {printed}")
     assert abs(value - expected) <= tol, f"{label}: got {value}, expected {expected} +/- {tol}"
-    if expected != 0:  # the printed value must equal the literal the note quotes, at the printed rounding
-        assert f"{value:{fmt}}" == f"{expected:{fmt}}", f"{label}: prints {value:{fmt}}, note quotes {expected:{fmt}}"
+    if expected != 0 or not fmt.endswith("e"):  # zero in scientific format is a bound (tol); all else prints the quoted literal
+        assert printed == quoted, f"{label}: prints {printed}, note quotes {quoted}"
 
 
 # ---------------------------------------------------------------------------

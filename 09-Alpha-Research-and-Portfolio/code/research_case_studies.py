@@ -61,10 +61,11 @@ EULER_GAMMA = 0.5772156649015329
 
 def check(label: str, value: float, expected: float, tol: float, fmt: str = ".4f") -> float:
     """Print a computed value and assert it is within tol of the expected value."""
-    print(f"{label}: {value:{fmt}}")
+    printed, quoted = (s.removeprefix("-") if float(s) == 0 else s for s in (f"{value:{fmt}}", f"{expected:{fmt}}"))
+    print(f"{label}: {printed}")
     assert abs(value - expected) <= tol, f"{label}: got {value}, expected {expected} +- {tol}"
-    if expected != 0:  # the printed value must equal the literal the note quotes, at the printed rounding
-        assert f"{value:{fmt}}" == f"{expected:{fmt}}", f"{label}: prints {value:{fmt}}, note quotes {expected:{fmt}}"
+    if expected != 0 or not fmt.endswith("e"):  # zero in scientific format is a bound (tol); all else prints the quoted literal
+        assert printed == quoted, f"{label}: prints {printed}, note quotes {quoted}"
     return value
 
 
@@ -207,7 +208,7 @@ def case_a() -> None:
     fwd_resid = resid[sl]
     r_ev = r[sl]
     w = book(sig, proj)
-    check("A max |net beta exposure| of book", float(np.abs(w @ panel["beta"]).max()), 0.0, 1e-12, ".2e")
+    check("A max |net sector or beta exposure| of book", float(np.abs(w @ x).max()), 0.0, 1e-12, ".2e")
 
     ic = row_corr(row_ranks(sig[:-1]), row_ranks(fwd_resid[1:]))
     ic_mean, ic_sd = float(ic.mean()), float(ic.std(ddof=1))

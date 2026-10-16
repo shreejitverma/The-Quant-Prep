@@ -213,7 +213,7 @@ Volatilities 20%, 25%, 30%, all correlations 0.3, $\alpha = (3\%, 1\%, -2\%)$, $
 - Cost-aware $w = (0.1345, 0.0486, -0.0442)$, turnover 0.1301.
 - Net utility (alpha minus risk minus cost): staying put 6.87 bp, jumping to $w^*$ 12.26 bp, cost-aware 23.59 bp.
 
-Jumping to the frictionless target captures barely more than doing nothing; the cost-aware book nearly doubles it with about half the turnover.
+Jumping to the frictionless target beats doing nothing, but the cost-aware book nearly doubles its net utility with about half the turnover.
 
 ### 6. Garleanu-Pedersen in numbers
 

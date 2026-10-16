@@ -178,7 +178,7 @@ HRP replaces the inversion by three steps.
 Properties:
 
 - Weights are positive and sum to one, and the splits use covariance sub-blocks but never an inverse: HRP runs when $S$ is singular ($N > T$).
-- Capital is split top-down, so one cluster cannot absorb the book, and weights depend smoothly on variances and only through the ordering on correlations, which makes them more stable than unconstrained optimiser weights.
+- Capital is split top-down, so one cluster cannot absorb the book, and weights depend smoothly on variances and within-cluster covariances, and on correlations also through the ordering, which makes them more stable than unconstrained optimiser weights.
 - Splitting by halves rather than along the dendrogram is a known weakness: a split can cut through a cluster; variants that bisect along the tree exist.
 - Single linkage chains, so one asset correlated with two groups can glue them together.
 
@@ -283,7 +283,7 @@ All values are seeded simulation averages; read them as "about".
 The interview answer:
 
 - With $T = 60$ for 50 assets the plug-in minimum-variance portfolio is wrecked by noise (6.28, worse than every heuristic) and its weights change by 5.62 of gross between windows; with $T = 520$ it is the best by far.
-- HRP lands within about 1% of inverse variance in this market, and at $T = 60$ its weights move less than either optimiser's (L1 change 0.43 against 0.97 long-only and 5.62 unconstrained), though more than inverse variance or ERC.
+- HRP's true variance tracks inverse variance at every $T$ in this market (3.73 against 3.71, 3.71 against 3.69, 3.67 against 3.67), and at $T = 60$ its weights move less than either optimiser's (L1 change 0.43 against 0.97 long-only and 5.62 unconstrained), though more than inverse variance or ERC.
 - HRP does not beat long-only minimum variance, the fair long-only competitor, at any $T$ here; at $T = 520$ long-only minimum variance is also slightly more stable (0.31 against 0.33).
 - With $T = 40 < N = 50$ the sample covariance has rank 39, the minimum-variance portfolio is undefined, and HRP still returns a portfolio with about 3.57 times the optimal variance.
 - Lopez de Prado's (2016) Monte Carlo, with a different data-generating process, finds HRP beating the critical-line minimum-variance portfolio out of sample; the lesson is that the ranking depends on the market and the sample length, so test on your own data with a shrunk covariance as a baseline.

@@ -22,10 +22,11 @@ import numpy as np
 
 
 def check(label: str, value: float, expected: float, tol: float, fmt: str = ".4f") -> float:
-    print(f"{label}: {value:{fmt}}")
+    printed, quoted = (s.removeprefix("-") if float(s) == 0 else s for s in (f"{value:{fmt}}", f"{expected:{fmt}}"))
+    print(f"{label}: {printed}")
     assert abs(value - expected) <= tol, f"{label}: {value} not within {tol} of {expected}"
-    if expected != 0:  # the printed value must equal the literal the note quotes, at the printed rounding
-        assert f"{value:{fmt}}" == f"{expected:{fmt}}", f"{label}: prints {value:{fmt}}, note quotes {expected:{fmt}}"
+    if expected != 0 or not fmt.endswith("e"):  # zero in scientific format is a bound (tol); all else prints the quoted literal
+        assert printed == quoted, f"{label}: prints {printed}, note quotes {quoted}"
     return value
 
 
@@ -163,14 +164,15 @@ def section_tsmom(seed: int = 2) -> None:
     for t in range(1, days):
         var[t] = delta * var[t - 1] + (1 - delta) * r[t - 1] ** 2
     month_ret = r.reshape(months, dpm, n_inst).sum(1)
-    pos, ret = [], []
+    pos, ret, ret_raw = [], [], []
     for mo in range(12, months):
         past = month_ret[mo - 12 : mo].sum(0)
         sig_ann = np.sqrt(var[mo * dpm] * 252)  # estimate available at the start of month mo
         p = np.sign(past) * 0.40 / sig_ann
         pos.append(p)
         ret.append(p * month_ret[mo])
-    pos, ret = np.array(pos), np.array(ret)
+        ret_raw.append(np.sign(past) * month_ret[mo])  # one unit per instrument, no volatility scaling
+    pos, ret, ret_raw = np.array(pos), np.array(ret), np.array(ret_raw)
     realised = ret.std(axis=0, ddof=1) * np.sqrt(12)
     check("mean realised vol per instrument after 40% scaling", realised.mean(), 0.413, 0.0006, ".3f")
     check("min realised vol per instrument", realised.min(), 0.359, 0.0006, ".3f")
@@ -184,6 +186,15 @@ def section_tsmom(seed: int = 2) -> None:
     check("average pairwise correlation of instrument TSMOM returns", rho, -0.000, 0.0006, ".3f")
     check("diversification multiplier sqrt(N/(1+(N-1)rho))", np.sqrt(n_inst / (1 + (n_inst - 1) * rho)), 4.91, 0.006, ".2f")
     check("single-instrument Sharpe times multiplier", single.mean() * np.sqrt(n_inst / (1 + (n_inst - 1) * rho)), 1.18, 0.006, ".2f")
+
+    def commodity_risk_share(x: np.ndarray) -> float:
+        total = x.mean(axis=1)
+        return float(np.cov(x[:, cls == 3].sum(axis=1) / n_inst, total)[0, 1] / total.var(ddof=1))
+
+    port_raw = ret_raw.mean(axis=1)
+    check("commodities' share of portfolio variance, 40% scaling", commodity_risk_share(ret), 0.217, 0.0006, ".3f")
+    check("commodities' share of portfolio variance, no scaling", commodity_risk_share(ret_raw), 0.655, 0.0006, ".3f")
+    check("diversified TSMOM portfolio Sharpe, no scaling", sharpe(port_raw), 1.10, 0.006, ".2f")
 
 
 # ---------------------------------------------------------------------------
@@ -244,6 +255,7 @@ def section_carry_crash(seed: int = 4) -> None:
     check("carry-like stream: Sharpe excluding crash months", sharpe(x[~crash]), 1.22, 0.006, ".2f")
     check("carry-like stream: skewness", skew, -1.71, 0.006, ".2f")
     check("carry-like stream: kurtosis", kurt, 9.44, 0.006, ".2f")
+    check("carry-like stream: excess kurtosis", kurt - 3, 6.44, 0.006, ".2f")
     check("carry-like stream: worst month (%)", 100 * x.min(), -13.4, 0.06, ".1f")
 
 

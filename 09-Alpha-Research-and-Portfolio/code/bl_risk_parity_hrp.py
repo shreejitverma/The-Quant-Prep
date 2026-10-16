@@ -22,10 +22,11 @@ import numpy as np
 
 
 def check(label: str, value: float, expected: float, tol: float, fmt: str = ".4f") -> None:
-    print(f"{label}: {value:{fmt}}")
+    printed, quoted = (s.removeprefix("-") if float(s) == 0 else s for s in (f"{value:{fmt}}", f"{expected:{fmt}}"))
+    print(f"{label}: {printed}")
     assert abs(value - expected) <= tol, f"{label}: got {value}, expected {expected} +/- {tol}"
-    if expected != 0:  # the printed value must equal the literal the note quotes, at the printed rounding
-        assert f"{value:{fmt}}" == f"{expected:{fmt}}", f"{label}: prints {value:{fmt}}, note quotes {expected:{fmt}}"
+    if expected != 0 or not fmt.endswith("e"):  # zero in scientific format is a bound (tol); all else prints the quoted literal
+        assert printed == quoted, f"{label}: prints {printed}, note quotes {quoted}"
 
 
 def vec(label: str, v: np.ndarray, expected: list[float], fmt: str = ".4f") -> None:
@@ -73,15 +74,15 @@ def erc_weights(sigma: np.ndarray, budget: np.ndarray | None = None, tol: float 
     y *= np.sqrt(1.0 / (y @ sigma @ y))
     for _ in range(100):
         grad = sigma @ y - b / y
+        if np.linalg.norm(grad) < tol:
+            return y / y.sum()
         hess = sigma + np.diag(b / y**2)
         step = np.linalg.solve(hess, grad)
         t = 1.0
         while np.any(y - t * step <= 0):  # stay in the positive orthant
             t *= 0.5
         y = y - t * step
-        if np.linalg.norm(grad) < tol:
-            break
-    return y / y.sum()
+    raise RuntimeError("ERC Newton iteration did not converge")
 
 
 def gmv(sigma: np.ndarray) -> np.ndarray:
@@ -295,11 +296,13 @@ def section_black_litterman() -> None:
     check("max |w_BL - w_mkt - tilt along P'|", np.max(np.abs(w_bl - w_mkt - tilt)), 0.0, 1e-12, ".1e")
     check("BL weight change in A", w_bl[0] - w_mkt[0], 0.4164, 1e-4)
     check("BL weight change in C (not in the view)", w_bl[2] - w_mkt[2], 0.0, 1e-12)
+    check("BL weight change in D (not in the view)", w_bl[3] - w_mkt[3], 0.0, 1e-12)
 
     # He-Litterman with predictive covariance Sigma + M: (1+tau) w - w_mkt lies along P'
     w_hl = np.linalg.solve(delta * (sigma + m_post), mu_b)
     resid = (1 + tau) * w_hl - w_mkt
     check("(1+tau) w_HL - w_mkt in asset C", resid[2], 0.0, 1e-12)
+    check("(1+tau) w_HL - w_mkt in asset D", resid[3], 0.0, 1e-12)
     check("(1+tau) w_HL - w_mkt: A plus B", resid[0] + resid[1], 0.0, 1e-12)
     check("sum of He-Litterman weights", w_hl.sum(), 0.9524, 1e-4)
 

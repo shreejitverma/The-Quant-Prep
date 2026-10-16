@@ -34,7 +34,7 @@ Over 1965 to 1989 the 6-month formation strategies earned about 1% a month whate
 Construction details that matter:
 
 - **Formation and skip.** The standard academic signal (Carhart 1997, the UMD factor) is the return from month $t-12$ to $t-2$, the "12-1" signal; month $t-1$ is skipped because the most recent month's return reverses.
-- **Overlapping cohorts.** With $K > 1$, each month you hold the average of the portfolios formed in the last $K$ months, so only $1/K$ of the book is re-formed each month; this cuts turnover roughly in proportion and smooths the return.
+- **Overlapping cohorts.** With $K > 1$, each month you hold the average of the portfolios formed in the last $K$ months, so only $1/K$ of the book is re-formed each month; this cuts turnover and smooths the return, but by less than a factor of $K$, because cohorts formed months apart overlap less than consecutive ones (in the simulation below traded over gross falls from 0.604 to 0.231 at $K = 6$).
 - **Weighting and universe.** Equal-weighted deciles are dominated by small, illiquid names; value weighting, excluding microcaps, and industry or factor neutralisation change the numbers materially.
 - **Risk scaling.** Barroso and Santa-Clara (2015) scale the momentum portfolio by the inverse of its recent realised volatility and report a large reduction in crash risk.
 
@@ -156,7 +156,8 @@ The fix is to hedge the conditional beta, scale down after high-volatility bear 
 - Average single-instrument Sharpe: about 0.24; the equal-weight portfolio: about 1.18 with volatility about 8.4% a year.
 - The instrument strategies are nearly uncorrelated (average pairwise correlation about 0.000), so the diversification multiplier $\sqrt{N/(1 + (N-1)\rho)}$ is 4.91, and $0.24\times4.91 \approx 1.18$.
 
-Without volatility scaling the high-volatility commodities would dominate the risk and the diversification would mostly disappear.
+Without volatility scaling (one unit of each instrument) the commodities, six of the 24 instruments, carry about 65.5% of the portfolio's variance against about 21.7% with scaling.
+The portfolio Sharpe falls only from about 1.18 to about 1.10, because the instrument strategies stay nearly uncorrelated, but the unscaled book is mostly a commodity trend bet rather than a balanced one.
 
 ### 5. Carry in four asset classes
 
@@ -167,10 +168,10 @@ Without volatility scaling the high-volatility commodities would dominate the ri
 
 ### 6. What crash risk does to a Sharpe ratio
 
-A carry-like monthly stream: 0.7% mean and 2% volatility in normal months, a $-10\%$ crash with probability 2% a month, 600 months.
+A carry-like monthly stream: 0.7% mean and 2% volatility in normal months, a crash month with probability 2% whose return is drawn from a normal with mean $-10\%$ and volatility 3%, 600 months.
 
 - 15 crash months; the annualised Sharpe is about 0.57, versus about 1.22 excluding the crash months.
-- Skewness about $-1.71$, kurtosis about 9.44, worst month about $-13.4\%$.
+- Skewness about $-1.71$, kurtosis about 9.44 (raw, so excess kurtosis about 6.44), worst month about $-13.4\%$.
 
 A 10-year sample with no crash in it would report roughly the second Sharpe; the probabilistic Sharpe ratio penalises exactly this skew and kurtosis ([Overfitting and Deflated Sharpe](08-Overfitting-and-Deflated-Sharpe.md)).
 
@@ -196,7 +197,7 @@ A 10-year sample with no crash in it would report roughly the second Sharpe; the
 > In the note's simulation the 12-0 signal earned 0.15% a month against 0.38% for 12-1.
 
 > [!question]- alpha-mom-overlapping | What do overlapping holding cohorts buy you?
-> Lower turnover at the same signal: only $1/K$ of the book changes each month.
+> Lower turnover at the same signal: only $1/K$ of the book is re-formed each month, though turnover falls by less than a factor of $K$ because cohorts formed months apart overlap less than consecutive ones.
 > With $K = 6$ the simulated traded/gross fell from 0.604 to 0.231 and the break-even cost rose from 31.4 bp to 83.2 bp.
 
 > [!question]- alpha-mom-crash-mechanism | Why does momentum crash in market rebounds after bear markets?
