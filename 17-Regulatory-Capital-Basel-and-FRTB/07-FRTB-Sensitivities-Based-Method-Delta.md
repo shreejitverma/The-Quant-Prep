@@ -2,331 +2,477 @@
 type: concept
 track: [quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [frtb-trading-and-banking-book-boundary]
-est_hours: 4
-sources: [Basel Committee on Banking Supervision - Minimum capital requirements for market risk (BCBS d457 2019), International Swaps and Derivatives Association - ISDA SIMM Methodology and FRTB Comparison (2022), European Banking Authority - Regulatory Technical Standards on the Sensitivities-Based Method (2021)]
+est_hours: 6
+sources: [Basel Framework MAR20 Standardised approach general provisions and structure (version effective 1 January 2023), Basel Framework MAR21 Standardised approach sensitivities-based method (version effective 1 January 2023 incorporating FAQs of 5 July 2024 and 23 March 2026), BCBS (2019) Minimum capital requirements for market risk (d457), BCBS (2019) Explanatory note on the minimum capital requirements for market risk, BIS press release of 14 January 2019 on the revised market risk framework]
 ---
 
 # FRTB: Sensitivities-Based Method - Delta
 
 ## TL;DR
 
-The Sensitivities-Based Method (SbM, Basel MAR21) is the core quantitative engine of the FRTB Standardised Approach for market risk.
-SbM transforms a bank's trading book positions into standardized risk factor sensitivities and aggregates them into capital charges using prescribed supervisory risk weights and correlation matrices.
-The framework covers seven distinct risk classes: General Interest Rate Risk (GIRR), Credit Spread Risk non-securitisation (CSR NS), Credit Spread Risk securitisation non-CTP, Credit Spread Risk securitisation CTP, Equity, Commodity, and Foreign Exchange (FX).
-For each risk class, capital is computed across three risk measures: Delta, Vega, and Curvature.
-Delta risk captures the linear price sensitivity of trading book assets to first-order market moves.
-Net sensitivities within each bucket are multiplied by supervisory risk weights and aggregated via an intra-bucket correlation matrix $\rho_{kl}$ to produce bucket capital $K_b$.
-Bucket-level capital charges are then aggregated across buckets using an inter-bucket correlation matrix $\gamma_{bc}$ equipped with an analytical negative-sum fallback.
-To ensure capital robustness against correlation breakdowns during crises, the entire aggregation algorithm is evaluated under three mandatory supervisory correlation scenarios (Medium, High, and Low), with the final capital charge set to the maximum of the three outcomes:
-$$\text{Capital}_{\Delta} = \max\left(K_{\text{medium}}, K_{\text{high}}, K_{\text{low}}\right)$$
+- The FRTB standardised approach (SA) is the simple sum of the sensitivities-based method (SbM), the default risk capital requirement (DRC) and the residual risk add-on (RRAO); RWA is 12.5 times that capital (MAR20.1, MAR20.4).
+- Delta capital: net each sensitivity across instruments, multiply by a prescribed risk weight to get a weighted sensitivity $WS_k$, aggregate within a bucket with $\rho_{kl}$, then across buckets with $\gamma_{bc}$ (MAR21.4).
+- $WS_k$ is a first-order stressed loss: for GIRR, $WS_k = \text{PV01}_k \times RW_k$ expressed in basis points, so a 2y PV01 of -100,000 per bp at a 1.3% risk weight is a -13m stressed loss.
+- Everything is computed three times, with medium, high ($\min(1.25\rho, 1)$) and low ($\max(2\rho - 1, 0.75\rho)$) correlations; the scenario totals are summed across all risk classes and delta, vega and curvature, and the largest total is the SbM charge (MAR21.6, MAR21.7).
+- Hedged books are punished by the low scenario and directional books by the high scenario; for any $\rho \ge 0.8$ the high scenario treats two factors as a perfect hedge.
+- The across-bucket formula has an "alternative specification" for a negative radicand, but the prescribed CSR and equity $\gamma$ matrices are not always positive semidefinite, so production engines must still guard the square root.
 
 ## Learning objectives
 
-- Map the seven FRTB risk classes and their regulatory sensitivity definitions.
-- Derive the mathematical definitions of net delta sensitivities across yield curves, credit spreads, equities, and FX.
-- Execute the intra-bucket quadratic aggregation formula and evaluate the impact of offsetting long and short sensitivities.
-- Master the inter-bucket aggregation equation and the supervisory negative-sum fallback mechanism for negative radicands.
-- Formulate the three correlation scenarios (Medium, High, Low) and understand why low correlation is often the binding scenario for hedged relative-value books.
-- Calculate GIRR tenor-to-tenor supervisory correlations $\rho_{kl} = \max(0.40, e^{-\theta \frac{|T_k - T_l|}{\min(T_k, T_l)}})$.
-- Connect SbM design to ISDA SIMM used for non-cleared derivative initial margin.
+- Map the seven risk classes and every delta risk factor, bucket, risk weight and correlation to the paragraph of MAR21 that defines it.
+- Compute GIRR, CSR, equity, commodity and FX delta sensitivities with the regulatory units and turn them into weighted sensitivities.
+- Execute intra-bucket and inter-bucket aggregation by hand, including the MAR21.4(5)(b) alternative specification.
+- Predict which correlation scenario binds for a given book and prove it.
+- Design the data model and the aggregation algorithm of a production SbM engine, including its numerical failure modes.
 
 ## Core concepts
 
-### The seven FRTB risk classes
+### Where the SbM sits
 
-Under Basel MAR21, all trading book instruments are decomposed into risk factor sensitivities belonging to seven mutually exclusive risk classes:
-1. **General Interest Rate Risk (GIRR)**: Risk factors are risk-free yield curves (SOFR, EURSTR, SONIA) across 10 standardized tenors, inflation curves, and cross-currency basis spreads.
-2. **Credit Spread Risk (CSR) non-securitisations**: Sensitivities to credit spreads of corporate, sovereign, and municipal issuers.
-3. **Credit Spread Risk (CSR) securitisations (non-CTP)**: Non-correlation trading portfolio securitization tranches.
-4. **Credit Spread Risk (CSR) securitisations (CTP)**: Correlation trading portfolio securitizations (re-securitizations, index tranches).
-5. **Equity**: Spot equity prices and equity repo rates across large-cap, small-cap, emerging, and developed markets.
-6. **Commodity**: Energy, precious metals, industrial metals, agricultural products, and freight.
-7. **Foreign Exchange (FX)**: Spot exchange rates between the bank's reporting currency and all foreign currencies.
+The standardised approach capital requirement is the simple sum of three components: the SbM, the DRC and the RRAO (MAR20.4).
+Risk-weighted assets for market risk under the SA are that capital multiplied by 12.5 (MAR20.1).
+The SA must be calculated and reported monthly, and on demand of the supervisor (MAR20.2, MAR20.3).
+Banks approved for the internal models approach still compute it, because desks that are out of scope or fail the IMA tests fall back to it (MAR33.40) and because the aggregate output floor of RBC20 is computed with the standardised approaches.
 
-### Mathematical sensitivity definitions
+The SbM itself aggregates three risk measures (MAR20.4(1)):
 
-For regulatory capital calculations, sensitivities must be computed using standardized supervisory definitions rather than arbitrary front-office conventions.
+- delta: sensitivities to regulatory delta risk factors;
+- vega: sensitivities to implied volatilities;
+- curvature: the incremental loss of an option beyond delta under an upward and a downward shock.
 
-#### General Interest Rate Risk (GIRR)
-GIRR delta sensitivity is defined as the absolute change in portfolio value resulting from a 1 basis point (0.0001) parallel shift in the zero-coupon risk-free rate at tenor $t$:
-$$s_k = \frac{V(r_k + 0.0001) - V(r_k)}{0.0001} = \text{PV01}_k$$
-Standardized tenors: $0.25\text{y}, 0.5\text{y}, 1\text{y}, 2\text{y}, 3\text{y}, 5\text{y}, 10\text{y}, 15\text{y}, 20\text{y}, 30\text{y}$.
+This note covers delta and the machinery shared by all three; [vega and curvature](08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md) and [DRC and RRAO](09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md) build on it.
 
-#### Credit Spread Risk (CSR)
-CSR delta sensitivity is the absolute change in portfolio value resulting from a 1 basis point (0.0001) shift in the credit spread of reference entity $k$ at tenor $t$:
-$$s_k = \frac{V(\text{cs}_k + 0.0001) - V(\text{cs}_k)}{0.0001} = \text{CS01}_k$$
+### Vocabulary (MAR21.1)
 
-#### Equity, Commodity, and Foreign Exchange
-For equity spot price $EQ_k$, commodity spot price $CM_k$, and exchange rate $FX_k$, delta sensitivity is defined as the relative price sensitivity scaled by the spot value:
-$$s_k = x_k \cdot \frac{\partial V}{\partial x_k}$$
-This is equivalent to evaluating a 1% relative price shock and dividing by 0.01.
+- Risk class: one of seven - general interest rate risk (GIRR), credit spread risk (CSR) non-securitisation, CSR securitisation non-CTP, CSR securitisation correlation trading portfolio (CTP), equity, commodity and FX.
+- Risk factor: a variable such as one tenor of one yield curve, or one equity spot price.
+- Bucket: a set of risk factors with common characteristics, for example all tenors of all curves in one currency.
+- Risk position: for delta and vega a sensitivity; for curvature the loss from two stress scenarios.
+- Risk capital requirement: the aggregation of risk positions first within buckets and then across buckets of a risk class.
 
-### Weighted sensitivities and risk weights
+Every instrument in a trading desk that is subject to the SbM gets a delta charge; only instruments with optionality (including embedded prepayment options, and any payoff that is not linear in the underlying notional) also get vega and curvature (MAR21.2).
+A bank may elect to compute curvature for all instruments, consistently through time (MAR21.2(4)).
 
-Each net sensitivity $s_k$ is scaled by its prescribed supervisory risk weight $RW_k$ to produce the weighted sensitivity:
-$$WS_k = RW_k \cdot s_k$$
-Supervisory risk weights represent stressed percentage or absolute shocks calibrated to historical crisis windows.
-Representative risk weights under Basel MAR21:
-- GIRR (USD / EUR): $1.70\%$ at 0.25y, decaying to $1.20\%$ at 30y.
-- Equity (Large Cap Developed): $20.0\%$.
-- Equity (Small Cap / Emerging): $30.0\% \text{ to } 35.0\%$.
-- FX (Major currency pairs): $15.0\%$.
-- CSR Corporate (Investment Grade): $1.0\% \text{ to } 3.0\%$.
-- CSR Corporate (High Yield): $6.0\% \text{ to } 10.0\%$.
-
-### Intra-bucket aggregation
-
-Within each bucket $b$, weighted sensitivities are aggregated using an intra-bucket correlation matrix $\rho_{kl}$:
-$$K_b = \sqrt{\max\left(0, \sum_k WS_k^2 + \sum_k \sum_{l \ne k} \rho_{kl} WS_k WS_l\right)}$$
-Properties of intra-bucket aggregation:
-1. If all sensitivities have the same sign (e.g., all long), positive correlations increase the capital charge.
-2. If sensitivities have opposite signs (e.g., long 2y vs short 10y), positive correlations act as hedges, reducing $K_b$.
-3. Perfect offsetting is permitted only if $\rho_{kl} = 1.0$; because supervisory correlations are strictly less than 1.0, basis risk and curve twists are penalized.
-
-#### GIRR tenor correlation formula
-For interest rates within the same currency, the supervisory correlation between tenor $T_k$ and tenor $T_l$ is governed by an exponential decay function:
-$$\rho_{kl} = \max\left(0.40, \exp\left(-\theta \cdot \frac{|T_k - T_l|}{\min(T_k, T_l)}\right)\right)$$
-where $\theta = 0.03$.
-Adjacent tenors exhibit correlations near $0.90\text{ to } 0.98$, whereas distant tenors (e.g., 3 months vs 30 years) decay to the supervisory floor of $0.40$.
-
-### Inter-bucket aggregation and the negative-sum fallback
-
-Once bucket-level capital $K_b$ is computed for all buckets, the portfolio capital charge across buckets is aggregated using inter-bucket correlations $\gamma_{bc}$:
-$$K = \sqrt{\max\left(0, \sum_b K_b^2 + \sum_b \sum_{c \ne b} \gamma_{bc} S_b S_c\right)}$$
-where $S_b = \sum_{k \in b} WS_k$ is the net sum of weighted sensitivities in bucket $b$.
-
-#### The negative-sum fallback
-In portfolios with complex cross-bucket hedges (e.g., long USD interest rates and short EUR interest rates), the cross-term $\sum_b \sum_{c \ne b} \gamma_{bc} S_b S_c$ can be heavily negative.
-If the negative cross-term exceeds the sum of squared bucket capital $\sum_b K_b^2$, the radicand becomes negative, producing an imaginary square root.
-To prevent computational failure, Basel MAR21.4 mandates an analytical fallback:
-1. The net bucket sensitivity $S_b$ is clamped to the interval $[-K_b, K_b]$:
-   $$\bar{S}_b = \max\left(-K_b, \min(K_b, S_b)\right)$$
-2. If the radicand $\sum_b K_b^2 + \sum_{b \ne c} \gamma_{bc} \bar{S}_b \bar{S}_c$ remains negative, the capital charge is floored at:
-   $$K = \sqrt{\sum_b K_b^2}$$
-This guarantees that capital cannot fall below the uncorrelated sum of bucket risks.
-
-### The three correlation scenarios
-
-Because correlations often break down, spike to unity, or decouple during market panics, banks must evaluate the aggregation formulas under three prescribed scenarios (MAR21.4):
-1. **Medium Scenario**: Baseline supervisory correlations $\rho_{kl}$ and $\gamma_{bc}$.
-2. **High Scenario**: Correlations are scaled up:
-   $$\rho_{kl}^{\text{high}} = \min(1.25 \cdot \rho_{kl}, 1.0), \quad \gamma_{bc}^{\text{high}} = \min(1.25 \cdot \gamma_{bc}, 1.0)$$
-3. **Low Scenario**: Correlations are scaled down:
-   $$\rho_{kl}^{\text{low}} = \max(2 \cdot \rho_{kl} - 1.0, 0.75 \cdot \rho_{kl}), \quad \gamma_{bc}^{\text{low}} = \max(2 \cdot \gamma_{bc} - 1.0, 0.75 \cdot \gamma_{bc})$$
-
-#### Scenario conservatism dynamics
-- For unhedged directional portfolios (all long), the **High Scenario** produces the highest capital charge because correlations magnify aggregate volatility.
-- For hedged relative-value books (e.g., long 2y swap vs short 10y swap, or curve spread trades), the **Low Scenario** produces the highest capital charge because lower correlation degrades the hedging benefit, exposing the bank to unhedged basis risk.
-The final regulatory delta capital charge is:
-$$\text{Capital}_{\Delta} = \max\left(K_{\text{medium}}, K_{\text{high}}, K_{\text{low}}\right)$$
-
-### Regulatory text map
-
-- **MAR20**: Standardised approach - Overview, scope, and mapping of positions to risk classes.
-- **MAR21.1 - MAR21.6**: General aggregation rules, scenario formulas, and negative-sum fallback.
-- **MAR21.7 - MAR21.23**: General Interest Rate Risk (GIRR) - Tenor definitions, risk weights, inflation, and cross-currency basis.
-- **MAR21.24 - MAR21.50**: Credit Spread Risk (CSR), Equity, Commodity, and FX sensitivity definitions and risk weights.
-
-### How it is implemented
-
-The reference module `code/frtb_sbm.py` provides generic weighted-sensitivity bucket aggregation, three correlation scenarios, inter-bucket aggregation, and the negative-radicand fallback.
-`SensitivityRecord` carries a factor ID, bucket ID, risk class label, net sensitivity, and risk weight; callers supply intra-bucket correlations and invoke the bucket and aggregation functions.
-`compute_girr_tenor_correlation` provides the GIRR tenor correlation formula.
-The module does not select risk-class-specific supervisory weights or correlations, group sensitivities into regulatory buckets, or select the maximum scenario for a complete risk class; those remain inputs and orchestration responsibilities.
-
-The following diagram summarizes the regulatory process; it is conceptual and is not fully implemented by the reference module.
+### The pipeline
 
 ```mermaid
 flowchart TD
-    A["Portfolio Sensitivities s_k"] --> B["Multiply by Supervisory Risk Weights RW_k"]
-    B --> C["Weighted Sensitivities WS_k = RW_k * s_k"]
-    
-    C --> D{"Scenario Loop"}
-    D --> E["Medium Scenario (rho, gamma)"]
-    D --> F["High Scenario (1.25x rho, 1.25x gamma)"]
-    D --> G["Low Scenario (0.75x rho, 0.75x gamma)"]
-    
-    E & F & G --> H["Intra-Bucket Aggregation: K_b = sqrt(Sum WS^2 + Sum Sum rho WS_k WS_l)"]
-    H --> I["Clamp Bucket Net Sensitivity: S_b in [-K_b, K_b]"]
-    I --> J["Inter-Bucket Aggregation: K = sqrt(Sum K_b^2 + Sum Sum gamma S_b S_c)"]
-    J --> K["Apply Negative-Sum Fallback if Radicand < 0"]
-    
-    K --> L["Extract Capital across Scenarios: K_med, K_high, K_low"]
-    L --> M["Final Delta Capital = max(K_med, K_high, K_low)"]
+    A["Instrument prices from the risk control unit's models (MAR21.17)"] --> B["Bump each regulatory risk factor and compute s_ik (MAR21.19 to MAR21.24)"]
+    B --> C["Net across instruments: s_k = sum_i s_ik (MAR21.4(2))"]
+    C --> D["Weight: WS_k = RW_k * s_k (MAR21.4(3))"]
+    D --> E["Within bucket: K_b with rho_kl, floored at zero (MAR21.4(4))"]
+    E --> F["Across buckets: sqrt(sum K_b^2 + sum gamma_bc S_b S_c) (MAR21.4(5)(a))"]
+    F -->|"radicand < 0"| G["Alternative specification: clamp S_b to [-K_b, K_b] (MAR21.4(5)(b))"]
+    F --> H["Risk class delta charge"]
+    G --> H
+    H --> I["Repeat for medium, high and low correlations (MAR21.6)"]
+    I --> J["Per scenario: sum delta, vega and curvature over all risk classes (MAR21.7(1))"]
+    J --> K["SbM = max over the three scenario totals (MAR21.7(2))"]
 ```
+
+The scenario maximum is taken once, after summing every risk class and every risk measure; it is not taken class by class (MAR21.7).
+For the standalone desk-level SA calculation that IMA desks must report, the three scenarios are compared at desk level (MAR21.7(2)(b)).
+
+### Sensitivity definitions and units
+
+All sensitivities are expressed in the bank's reporting currency (MAR21.15) and computed with the prices or models that the independent risk control unit uses to report risk and P&L to senior management (MAR21.17).
+Zero-rate or market-rate sensitivities may be used for GIRR, consistently with those models (FAQ to MAR21.17).
+
+| Risk class | Sensitivity | Shift | Paragraph |
+| :--- | :--- | :--- | :--- |
+| GIRR | $s_{k,r_t} = \frac{V_i(r_t + 0.0001, cs_t) - V_i(r_t, cs_t)}{0.0001}$ | +1bp absolute on one tenor of one curve | MAR21.19 |
+| CSR (all three classes) | $s_{k,cs_t} = \frac{V_i(r_t, cs_t + 0.0001) - V_i(r_t, cs_t)}{0.0001}$ | +1bp absolute on one tenor of one spread curve | MAR21.20 |
+| Equity spot | $s_k = \frac{V_i(1.01\,EQ_k) - V_i(EQ_k)}{0.01}$ | +1% relative | MAR21.21 |
+| Equity repo | $s_k = \frac{V_i(r + 0.0001) - V_i(r)}{0.0001}$ | +1bp parallel on the repo term structure | MAR21.22 |
+| Commodity | $s_k = \frac{V_i(1.01\,CTY_k) - V_i(CTY_k)}{0.01}$ | +1% relative | MAR21.23 |
+| FX | $s_k = \frac{V_i(1.01\,FX_k) - V_i(FX_k)}{0.01}$ | +1% relative | MAR21.24 |
+
+The division by 0.0001 or 0.01 rescales the sensitivity to "value change per unit move of the risk factor".
+That is what makes the weighted sensitivity a stressed loss:
+
+$$WS_k = RW_k \cdot s_k \approx V(x_k + RW_k) - V(x_k)$$
+
+For GIRR, $s_k = \text{PV01}_k / 0.0001$ and $RW_k$ is an absolute rate shift, so $WS_k = \text{PV01}_k \times (RW_k / 0.0001)$: a 1.3% risk weight is a 130bp shock.
+For equity, $s_k = \Delta_k \cdot EQ_k$ (the cash delta) and $RW_k$ is a relative shock, so a 30% risk weight is a 30% fall in the price.
+Getting this rescaling wrong is the most common SbM implementation bug: a PV01 fed in "per bp" understates GIRR capital by a factor of 10,000.
+
+### Risk factors by class
+
+GIRR (MAR21.8):
+
+- One risk-free curve per currency at tenors 0.25, 0.5, 1, 2, 3, 5, 10, 15, 20 and 30 years; OIS curves (or other money-market curves with the lowest credit risk) or the swap curves used for marking positions.
+- An OIS curve and a BOR swap curve are two different curves; two BOR tenors (3m and 6m Euribor) are two different curves; onshore and offshore curves of a currency are two different curves (MAR21.8(1)(c)).
+- A flat inflation curve per currency, whose sensitivities are summed into one number (MAR21.8(2)).
+- One flat cross-currency basis factor per currency, quoted either over USD or over EUR but not both (MAR21.8(3)); term-structure sensitivities may be simply summed (FAQ to MAR21.8).
+- If a bank derives its risk-free curve from sovereign bonds because swap data are insufficient, the bond sensitivities still also attract CSR (MAR21.8(1)(b)).
+- Repo curves of fixed income funding instruments are GIRR curves (FAQ to MAR21.8).
+- Sensitivities computed at internal tenors must be mapped to the prescribed tenors by linear interpolation or a method consistent with the pricing functions; capital may not be computed on internal tenors (MAR21.8 footnote 274 and FAQ).
+
+CSR non-securitisation (MAR21.9): issuer spread curves at 0.5, 1, 3, 5 and 10 years, with bond and CDS curves as distinct risk factors.
+CSR securitisation non-CTP (MAR21.10): sensitivities to the tranche spread, not the underlying, at the same five tenors.
+CSR CTP (MAR21.11): sensitivities to the names underlying the securitisation or nth-to-default product.
+Equity (MAR21.12): every spot price and every equity repo rate.
+Commodity (MAR21.13): spot prices by delivery location at tenors 0, 0.25, 0.5, 1, 2, 3, 5, 10, 15, 20 and 30 years; spot positions go in the 0-year tenor.
+FX (MAR21.14): every exchange rate between an instrument's currency and the reporting currency; a USD/JPY forward in a CAD-reporting bank gives USD/CAD and JPY/CAD factors (footnote 278); a single base currency may be used with supervisory approval if translation risk is also captured.
+
+Index instruments are looked through to constituents unless the index is listed and widely recognised, has at least 20 constituents, no constituent above 25%, the largest 10% of constituents below 60% of the index, and total market capitalisation of at least USD 40 billion (MAR21.31).
+A non-looked-through index goes to a sector bucket if more than 75% of its weight maps there, otherwise to an index bucket (MAR21.33).
+
+### Buckets, risk weights and correlations
+
+#### GIRR (MAR21.41 to MAR21.50)
+
+Each currency is a bucket (MAR21.41).
+
+| Tenor | 0.25y | 0.5y | 1y | 2y | 3y | 5y | 10y | 15y | 20y | 30y |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Risk weight (MAR21.42) | 1.7% | 1.7% | 1.6% | 1.3% | 1.2% | 1.1% | 1.1% | 1.1% | 1.1% | 1.1% |
+
+- Inflation and cross-currency basis factors: 1.6% (MAR21.43).
+- For EUR, USD, GBP, AUD, JPY, SEK, CAD and the bank's domestic currency, the bank may divide these risk weights by $\sqrt{2}$ (MAR21.44).
+- Same curve, different tenors: $\rho_{kl} = \max\left(e^{-\theta \frac{|T_k - T_l|}{\min(T_k, T_l)}}, 40\%\right)$ with $\theta = 3\%$ (MAR21.46 and footnote 284); Table 2 of MAR21.46 lists these values rounded to 0.1%.
+- Different curves, same tenor: 99.90% (MAR21.45); different curves and tenors: the tenor correlation times 99.90% (MAR21.47); two inflation curves in one currency: 99.90% (FAQ to MAR21.47).
+- Inflation against any rate tenor: 40% (MAR21.48); cross-currency basis against anything else: 0% (MAR21.49).
+- Across currencies: $\gamma_{bc} = 50\%$ (MAR21.50).
+
+The scaling by $\min(T_k, T_l)$ makes the decay relative: 0.25y against 1y is $e^{-0.03 \times 3} = 91.4\%$, while 10y against 20y is $e^{-0.03 \times 1} = 97.0\%$, although both gaps span "one regulatory tenor or two".
+
+#### CSR non-securitisation (MAR21.51 to MAR21.57)
+
+Buckets combine credit quality and sector: 1 to 8 are investment grade (sovereigns, local government, financials, basic materials and industrials, consumer, technology and telecoms, health care and utilities, covered bonds), 9 to 15 repeat sectors 1 to 7 for high yield and non-rated, 16 is other sector, 17 is IG indices and 18 is HY indices (MAR21.51).
+
+| Bucket | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| RW (MAR21.53) | 0.5% | 1.0% | 5.0% | 3.0% | 3.0% | 2.0% | 1.5% | 2.5% | 2.0% | 4.0% | 12.0% | 7.0% | 8.5% | 5.5% | 5.0% | 12.0% | 1.5% | 5.0% |
+
+Covered bonds rated AA- or better may use 1.5% (footnote 288).
+Within buckets 1 to 15, $\rho_{kl} = \rho^{name}_{kl} \cdot \rho^{tenor}_{kl} \cdot \rho^{basis}_{kl}$ with 35% for different names, 65% for different tenors and 99.90% for bond against CDS curves (MAR21.54); index buckets 17 and 18 use 80% for different names (MAR21.55).
+Bucket 16 has no correlation: its capital is the simple sum of absolute weighted sensitivities (MAR21.56).
+Across buckets, $\gamma_{bc} = \gamma^{rating}_{bc} \cdot \gamma^{sector}_{bc}$, where $\gamma^{rating} = 50\%$ between an IG and an HY bucket within 1 to 15, and $\gamma^{sector}$ comes from Table 5 of MAR21.57 (for example 75% sovereigns against local government, 0% for anything against bucket 16, 45% for any sector against an index bucket, 75% between the two index buckets).
+
+CTP (MAR21.58 to MAR21.61) reuses this structure without buckets 17 and 18, with higher risk weights (4% for buckets 1 and 2 up to 16% for bucket 11) and a 99.00% basis correlation.
+Securitisation non-CTP (MAR21.62 to MAR21.71) uses 25 buckets by seniority, rating and asset class: senior IG risk weights from 0.8% (student loan ABS) to 2.0% (sub-prime RMBS and CMBS), non-senior IG at 1.25 times and HY or non-rated at 1.75 times, other sector at 3.5%; correlations are 40% across tranches, 80% across tenors and 99.90% across bases; $\gamma = 0\%$ across buckets 1 to 24, and bucket 25 is added without any diversification.
+
+#### Equity (MAR21.72 to MAR21.80)
+
+Buckets cross market capitalisation (large at USD 2 billion or more, MAR21.74), economy (advanced economies listed in MAR21.75) and sector, plus other sector (11) and two index buckets (12 large-cap advanced-economy indices, 13 other indices).
+
+| Bucket | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Spot RW (MAR21.77) | 55% | 60% | 45% | 55% | 30% | 35% | 40% | 50% | 70% | 50% | 70% | 15% | 25% |
+
+Repo risk weights are one hundredth of the spot weights (0.15% to 0.70%).
+Within a bucket: 15% (large EM), 25% (large AE), 7.5% (small EM), 12.5% (small AE), 80% (index buckets) between different issuers; 99.90% between spot and repo of the same issuer; the issuer correlation times 99.90% between spot of one issuer and repo of another (MAR21.78).
+Across buckets: 15% within 1 to 10, 0% with bucket 11, 75% between 12 and 13, 45% otherwise (MAR21.80).
+
+#### Commodity and FX
+
+Commodity risk weights run from 20% (precious metals) and 25% (livestock and dairy) through 30% to 45% for the other energy, metals and agricultural buckets, 50% for other commodities and 60% for electricity and carbon, to 80% for freight (MAR21.82).
+Within a bucket $\rho = \rho^{cty} \cdot \rho^{tenor} \cdot \rho^{basis}$, with $\rho^{cty}$ from 15% (livestock, other) to 95% (liquid energy), 99% across tenors and 99.90% across delivery locations (MAR21.83); across buckets 20%, or 0% against bucket 11 (MAR21.85).
+FX uses one bucket per currency against the reporting currency, a 15% risk weight (MAR21.87), divisible by $\sqrt{2}$ for the 19 specified USD pairs and their first-order crosses (MAR21.88), and $\gamma = 60\%$ (MAR21.89).
+
+### Aggregation mathematics
+
+Within bucket $b$ (MAR21.4(4)):
+
+$$K_b = \sqrt{\max\left(0,\; \sum_k WS_k^2 + \sum_k \sum_{l \ne k} \rho_{kl}\, WS_k\, WS_l\right)}$$
+
+Across buckets of one risk class (MAR21.4(5)(a)), with $S_b = \sum_{k \in b} WS_k$:
+
+$$\Delta = \sqrt{\sum_b K_b^2 + \sum_b \sum_{c \ne b} \gamma_{bc}\, S_b\, S_c}$$
+
+If the quantity under the root is negative, the bank recomputes it with $S_b = \max\left(\min\left(\sum_{k \in b} WS_k,\; K_b\right),\; -K_b\right)$ (MAR21.4(5)(b)).
+The text prescribes nothing further.
+
+Why $K_b^2$ and not $S_b^2$ on the diagonal: $K_b$ already contains the within-bucket diversification, while $S_b$ is the undiversified directional exposure; using $S_b$ in the cross terms means only the net direction of a bucket hedges or compounds another bucket.
+Because $K_b < |S_b|$ whenever a bucket is one-directional and $\rho < 1$, a large net long bucket against a large net short bucket can make the cross term exceed $\sum K_b^2$.
+
+When can the alternative specification still fail?
+With $|\bar S_b| \le K_b$:
+
+$$\sum_b K_b^2 + \sum_{b \ne c} \gamma_{bc} \bar S_b \bar S_c \;\ge\; \sum_b \bar S_b^2 + \sum_{b \ne c} \gamma_{bc} \bar S_b \bar S_c = \bar S^\top \Gamma \bar S$$
+
+where $\Gamma$ is the scenario-adjusted inter-bucket correlation matrix with unit diagonal; this is non-negative only if $\Gamma$ is positive semidefinite.
+The prescribed matrices are not always PSD (worked example 4), so a robust engine floors the result at zero and raises an exception for review.
+
+### The three correlation scenarios
+
+MAR21.6 scales every $\rho_{kl}$ and $\gamma_{bc}$:
+
+$$\rho^{high} = \min(1.25\rho, 1), \qquad \rho^{low} = \max(2\rho - 1,\; 0.75\rho)$$
+
+The two branches of the low scenario cross where $2\rho - 1 = 0.75\rho$, that is at $\rho = 0.8$.
+Above 0.8 the low scenario doubles the decorrelation, $1 - \rho^{low} = 2(1 - \rho)$; below 0.8 it cuts the correlation by a quarter.
+Symmetrically, the high scenario maps every correlation of 0.8 or more to 1, a perfect hedge.
+
+Which scenario binds follows from the sign of the cross terms.
+For two weighted sensitivities $a$ and $b$, $K^2 = a^2 + b^2 + 2\rho ab$, so $\partial K^2 / \partial \rho = 2ab$.
+If $ab > 0$ (same direction) capital rises with $\rho$ and the high scenario binds; if $ab < 0$ (a hedge) capital falls with $\rho$ and the low scenario binds.
+A real book mixes both, and the scenario totals are summed across every risk class before the maximum is taken, so the binding scenario is a property of the whole portfolio.
+
+### Regulatory text map
+
+| Rule | Paragraph |
+| :--- | :--- |
+| SA = SbM + DRC + RRAO; RWA = 12.5 x capital; monthly calculation | MAR20.1, MAR20.2, MAR20.4 |
+| Definition of the CTP | MAR20.5 |
+| Risk classes, risk factors, buckets, risk positions | MAR21.1 |
+| Instruments subject to delta, vega and curvature | MAR21.2 |
+| Delta and vega aggregation, alternative specification | MAR21.4 |
+| Correlation scenarios and scenario maximum | MAR21.6, MAR21.7 |
+| Risk factor definitions per class | MAR21.8 to MAR21.14 |
+| Reporting currency, pricing model requirement, prudent valuation | MAR21.15 to MAR21.18 |
+| Delta sensitivity definitions | MAR21.19 to MAR21.24 |
+| Index look-through and funds | MAR21.31 to MAR21.37 |
+| GIRR buckets, weights, correlations | MAR21.41 to MAR21.50 |
+| CSR non-securitisation | MAR21.51 to MAR21.57 |
+| CSR CTP | MAR21.58 to MAR21.61 |
+| CSR securitisation non-CTP | MAR21.62 to MAR21.71 |
+| Equity | MAR21.72 to MAR21.80 |
+| Commodity | MAR21.81 to MAR21.85 |
+| FX | MAR21.86 to MAR21.89 |
+
+### How it is implemented
+
+Data model: one row per (desk, instrument, regulatory risk factor) with risk class, bucket, a risk-factor key (curve and tenor for GIRR; issuer, tenor and bond/CDS curve for CSR; issuer and spot/repo for equity; commodity, tenor and location; currency pair), the sensitivity in reporting currency, and lineage back to the pricing run and market data snapshot.
+The engine then nets by risk factor (desk level for the standalone desk view, bank level for the capital number), weights, and aggregates.
+
+```mermaid
+flowchart LR
+    T["Trade store"] --> P["Pricing grid: bumps or AAD"]
+    M["Market data snapshot"] --> P
+    P --> MAP["Tenor and bucket mapping: interpolation, issuer sector and rating, index look-through"]
+    REF["Reference data: ratings, sectors, market caps, currency lists"] --> MAP
+    MAP --> NET["Netting by risk factor (bank and desk views)"]
+    NET --> AGG["Aggregator: 3 scenarios x risk classes x delta, vega, curvature"]
+    AGG --> REP["Capital report and attribution"]
+```
+
+Complexity: a naive within-bucket double sum is $O(n_b^2)$, harmless for GIRR (tens of factors per currency) but heavy for a CSR bucket with thousands of issuers times five tenors times two curves.
+The correlation is a product of factors that each take two values, so pairs fall into at most eight classes (same or different name, tenor, curve); the double sum per class can be computed from per-name and per-(tenor, curve) totals by inclusion-exclusion in $O(n_b)$, and the scenario transform, which is not multiplicative, is applied to each class's correlation value afterwards.
+Attribution (Euler allocation of the capital to desks or trades) needs $\partial \Delta / \partial WS_k$, and $WS_k$ enters $\Delta$ through both $K_b$ and $S_b$: $\frac{\partial \Delta}{\partial WS_k} = \frac{K_b \, \partial K_b / \partial WS_k + \sum_{c \ne b} \gamma_{bc} S_c}{\Delta}$ with $\frac{\partial K_b}{\partial WS_k} = \frac{WS_k + \sum_{l \ne k} \rho_{kl} WS_l}{K_b}$; it is not defined where $K_b = 0$ or where the alternative specification switches on, so attribution code must handle those kinks explicitly.
+
+The reference engine [code/frtb_sbm.py](code/frtb_sbm.py) implements every delta risk class (weights and correlations transcribed from MAR21 with paragraph references), the scenario transform, the alternative specification with a floored-and-flagged fallback, vega, curvature, DRC and RRAO; the worked examples below are its printed output.
+The production view of the same computation is in [FRTB Engine](../18-Pricing-and-Risk-Systems/10-FRTB-Engine.md) and [Risk Engine](../18-Pricing-and-Risk-Systems/07-Risk-Engine.md).
 
 ## Worked examples
 
-### Example 1: Multi-tenor USD GIRR curve-hedged portfolio
+All numbers below are printed by `python 17-Regulatory-Capital-Basel-and-FRTB/code/frtb_sbm.py`, which asserts the hand calculations.
 
-Consider a trading desk holding a USD curve flattener position (verified in `code/frtb_sbm.py`):
-- Long 2-Year Tenor: $\text{PV01} = +\$100,000 / \text{bp} \implies s_1 = \$1,000,000$ (scaled to per-100% rate unit).
-- Short 10-Year Tenor: $\text{PV01} = -\$80,000 / \text{bp} \implies s_2 = -\$800,000$.
-- Supervisory risk weights: $RW_{\text{USD}, 2y} = 1.30\% = 0.0130$, $RW_{\text{USD}, 10y} = 1.20\% = 0.0120$.
+### Example 1: a USD 2y/10y curve trade
 
-**Step 1: Weighted sensitivities**
-$$WS_1 = \$1,000,000 \cdot 0.0130 = \$13,000.00$$
-$$WS_2 = -\$800,000 \cdot 0.0120 = -\$9,600.00$$
-Sum of squared sensitivities:
-$$WS_1^2 + WS_2^2 = (\$13,000)^2 + (-\$9,600)^2 = 169,000,000 + 92,160,000 = 261,160,000$$
-Cross-product term:
-$$2 \cdot WS_1 \cdot WS_2 = 2 \cdot \$13,000 \cdot (-\$9,600) = -\$249,600,000$$
+A desk receives fixed in 2y (PV01 of -100,000 per bp: the position loses when rates rise) and pays fixed in 10y (PV01 of +80,000 per bp), both on SOFR.
 
-**Step 2: Supervisory tenor correlation**
-Using the GIRR correlation formula with $\theta = 0.03$, $T_1 = 2.0$, $T_2 = 10.0$:
-$$\text{Ratio} = \frac{|10.0 - 2.0|}{\min(2.0, 10.0)} = \frac{8.0}{2.0} = 4.0$$
-$$\rho_{2y, 10y} = \exp(-0.03 \cdot 4.0) = \exp(-0.12) = 0.886920$$
-Because $0.886920 > 0.40$, base correlation is $\rho = 0.886920$.
+1. Sensitivities: $s_{2y} = -100{,}000 / 0.0001 = -1{,}000{,}000{,}000$ and $s_{10y} = 80{,}000 / 0.0001 = 800{,}000{,}000$.
+2. Weighted sensitivities: $WS_{2y} = 1.3\% \times s_{2y} = -13{,}000{,}000$ (a 130bp rise) and $WS_{10y} = 1.1\% \times s_{10y} = 8{,}800{,}000$ (a 110bp rise).
+3. Correlation: $\rho = e^{-0.03 \times 8 / 2} = e^{-0.12} = 0.886920$.
+4. Medium: $K = \sqrt{13.0^2 + 8.8^2 - 2 \times 0.886920 \times 13.0 \times 8.8}$ million $= 6{,}596{,}408$.
+5. High: $\rho^{high} = \min(1.25 \times 0.886920, 1) = 1$, so $K = |{-13.0} + 8.8|$ million $= 4{,}200{,}000$, the pure net.
+6. Low: $\rho^{low} = \max(2 \times 0.886920 - 1, 0.75 \times 0.886920) = 0.773841$, so $K = 8{,}329{,}778$.
 
-**Step 3: Evaluation under the three scenarios**
+The low scenario binds at 8,329,778, almost double the high scenario: the capital is driven by the risk that the 2y and 10y decouple, which is exactly what a curve trade is exposed to.
+If the bank uses the MAR21.44 discretion for USD, every risk weight is divided by $\sqrt{2}$ and the charge falls to 5,890,043 (the same number divided by $\sqrt{2}$, because the formula is homogeneous of degree one in the weights).
 
-*Medium Scenario ($\rho = 0.886920$):*
-$$\text{Radicand} = 261,160,000 + 0.886920 \cdot (-\$249,600,000) = 261,160,000 - 221,375,340 = 39,784,660$$
-$$K_{\text{medium}} = \sqrt{39,784,660} = \$6,307.51$$
+### Example 2: two currencies, two EUR curves, inflation and cross-currency basis
 
-*High Scenario ($\rho^{\text{high}} = \min(1.25 \cdot 0.886920, 1.0) = 1.000000$):*
-$$\text{Radicand} = 261,160,000 + 1.000000 \cdot (-\$249,600,000) = 261,160,000 - 249,600,000 = 11,560,000$$
-$$K_{\text{high}} = \sqrt{11,560,000} = \$3,400.00$$
+Add a EUR book: ESTR 5y PV01 +60,000, 6m-Euribor 5y PV01 -55,000, 6m-Euribor 10y PV01 +30,000, a HICPx inflation PV01 of +20,000 and a EUR/USD basis PV01 of -25,000.
 
-*Low Scenario ($\rho^{\text{low}} = \max(2 \cdot 0.886920 - 1.0, 0.75 \cdot 0.886920) = \max(0.773841, 0.665190) = 0.773841$):*
-$$\text{Radicand} = 261,160,000 + 0.773841 \cdot (-\$249,600,000) = 261,160,000 - 193,150,830 = 68,009,170$$
-$$K_{\text{low}} = \sqrt{68,009,170} = \$8,246.78$$
+| Factor | PV01 | RW | WS |
+| :--- | ---: | ---: | ---: |
+| EUR ESTR 5y | 60,000 | 1.10% | 6,600,000 |
+| EUR 6m Euribor 5y | -55,000 | 1.10% | -6,050,000 |
+| EUR 6m Euribor 10y | 30,000 | 1.10% | 3,300,000 |
+| EUR inflation | 20,000 | 1.60% | 3,200,000 |
+| EUR/USD basis | -25,000 | 1.60% | -4,000,000 |
 
-**Step 4: Final capital selection**
-$$\text{Capital} = \max(\$6,307.51, \$3,400.00, \$8,246.78) = \$8,246.78$$
-The **Low Scenario** binds, producing more than double the capital of the High Scenario because lower correlation degrades the hedging effectiveness of the 10-year short against the 2-year long.
+ESTR and Euribor are different curves, so the two 5y factors correlate at 99.90% rather than 100%: the OIS-Euribor basis is not hedged for free.
+The inflation factor correlates at 40% with every rate tenor and the basis factor at 0% with everything, so the basis exposure adds its full 4.0m in quadrature.
 
-### Example 2: Multi-bucket GIRR aggregation (USD and EUR)
+| Scenario | $K_{USD}$ | $S_{USD}$ | $K_{EUR}$ | $S_{EUR}$ | GIRR delta |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+| medium | 6,596,408 | -4,200,000 | 7,130,835 | 3,050,000 | 9,030,582 |
+| high | 4,200,000 | -4,200,000 | 7,306,333 | 3,050,000 | 7,416,873 |
+| low | 8,329,778 | -4,200,000 | 6,950,907 | 3,050,000 | 10,396,770 |
 
-Extending Example 1, suppose the desk also holds a 5-Year EUR interest rate position:
-- EUR 5-Year Tenor: $\text{PV01} = +\$50,000 / \text{bp} \implies s_3 = \$500,000$.
-- Supervisory risk weight: $RW_{\text{EUR}, 5y} = 1.20\% \implies WS_3 = \$500,000 \cdot 0.0120 = \$6,000.00$.
-- Because EUR has only one tenor, EUR bucket capital is $K_{\text{EUR}} = |WS_3| = \$6,000.00$, and $S_{\text{EUR}} = \$6,000.00$.
-- From Example 1, under the Medium scenario:
-  $$K_{\text{USD}} = \$6,307.51, \quad S_{\text{USD}} = WS_1 + WS_2 = \$13,000 - \$9,600 = \$3,400.00$$
-- Supervisory inter-bucket correlation between USD and EUR is $\gamma_{\text{USD}, \text{EUR}} = 0.50$.
+Check of the medium row: $\sqrt{6.596^2 + 7.131^2 + 2 \times 0.5 \times (-4.2) \times 3.05}$ million $= \sqrt{43.51 + 50.85 - 12.81}$ million $= 9.031$ million.
+The opposite net directions of USD and EUR give a negative cross term, a genuine cross-currency diversification benefit of the 50% $\gamma$.
 
-**Inter-bucket aggregation:**
-$$\sum_b K_b^2 = K_{\text{USD}}^2 + K_{\text{EUR}}^2 = (\$6,307.51)^2 + (\$6,000.00)^2 = 39,784,660 + 36,000,000 = 75,784,660$$
-$$\text{Cross-term} = 2 \cdot \gamma \cdot S_{\text{USD}} \cdot S_{\text{EUR}} = 2 \cdot 0.50 \cdot \$3,400.00 \cdot \$6,000.00 = 1.0 \cdot \$20,400,000 = \$20,400,000$$
-$$\text{Radicand} = 75,784,660 + 20,400,000 = 96,184,660$$
-$$K_{\text{aggregated}} = \sqrt{96,184,660} = \$9,807.38$$
-Because the net sensitivities in both currencies are positive ($+\$3,400$ and $+\$6,000$), positive cross-currency correlation increases aggregated capital from $\sqrt{75.78\text{M}} = \$8,705.44$ to $\$9,807.38$.
+### Example 3: long IG financials against short HY financials (the alternative specification)
 
-### Example 3: The March 2020 Treasury market liquidity freeze
+A credit desk sells 5y CDS protection on ten IG banks (bucket 3, risk weight 5%, CS01 -6,000 per bp per name) and buys protection on ten HY banks (bucket 11, risk weight 12%, CS01 +2,500 per bp per name).
+Each weighted sensitivity is 3,000,000 in absolute value: $5\% \times 6{,}000 / 0.0001 = 12\% \times 2{,}500 / 0.0001$.
+Within each bucket the names correlate at 35%, so $K_b = 3{,}000{,}000 \times \sqrt{10 + 90 \times 0.35} = 19{,}326{,}148$, while $|S_b| = 30{,}000{,}000$.
+The buckets share a sector and differ in rating, so $\gamma = 50\% \times 1 = 0.5$.
+The first radicand is $2 \times 19.33^2 - 2 \times 0.5 \times 30^2$ (in millions squared) $= 747.0 - 900.0 < 0$, so MAR21.4(5)(b) applies: $S_3$ is clamped to $-19{,}326{,}148$ and $S_{11}$ to $+19{,}326{,}148$, and the charge becomes $\sqrt{2K^2 - K^2} = K = 19{,}326{,}148$.
 
-In March 2020, as the COVID-19 pandemic triggered global market liquidations, the US Treasury cash-futures basis trade broke down.
-Hedge funds and bank relative-value desks were heavily long off-the-run Treasury cash bonds and short Treasury futures contracts.
-Under standard market conditions, Treasury bonds and futures exhibit correlations exceeding 0.995, leading risk models to report near-zero delta capital.
-During the second week of March 2020:
-- Foreign central banks and institutional asset managers aggressively sold cash Treasuries to raise US dollars, overwhelming primary dealer balance sheets.
-- Cash Treasury yields spiked even as equity markets crashed, while Treasury futures prices held up due to deep electronic liquidity.
-- Tenor correlations and cash-futures basis correlations collapsed dramatically.
-Under FRTB SbM rules, desks holding these curve and basis trades saw their capital requirements immediately spike to the **Low Correlation Scenario**.
-Because the Low Scenario scales down supervisory correlations to $\max(2\rho - 1, 0.75\rho)$, the regulatory offset between long cash bonds and short futures was forcibly curtailed, driving massive unexpected capital charges and forcing desks to unwind positions into an illiquid market.
+| Scenario | $K_3$ | Capital | Alternative specification |
+| :--- | ---: | ---: | :--- |
+| medium | 19,326,148 | 19,326,148 | used |
+| high | 21,080,204 | 18,255,992 | used |
+| low | 17,396,120 | 19,449,454 | used |
+
+The desk's intent (an IG/HY compression trade) is recognised as a partial hedge, but the clamp caps the recognised offset at the diversified bucket risk, not at the gross notional.
+
+### Example 4: are the correlation matrices valid?
+
+The engine computes the smallest eigenvalue of every scenario-adjusted inter-bucket matrix with unit diagonal:
+
+| Matrix | Medium | High | Low |
+| :--- | ---: | ---: | ---: |
+| GIRR (three currencies, $\gamma = 50\%$) | +0.50000 | +0.37500 | +0.62500 |
+| CSR non-securitisation (18 buckets, Table 5 times rating factor) | -0.22029 | -0.52536 | +0.08478 |
+| Equity (13 buckets) | +0.01530 | -0.23087 | +0.26148 |
+
+The CSR matrix is not PSD even with the prescribed medium correlations, and the high scenario's cap at 100% breaks PSD for equity.
+The consequence is practical: a Cholesky factorisation of $\Gamma$ (used by some engines to vectorise the across-bucket step) fails, and the alternative specification does not by itself guarantee a real square root.
+
+### Example 5: what the 2019 recalibration was worth
+
+When the Basel Committee finalised the revised framework in January 2019, it estimated a weighted average increase of about 22% in total market risk capital requirements relative to Basel 2.5, against about 40% for the framework issued in 2016, with market risk at around 5% of total RWA (BIS press release, 14 January 2019).
+The press release lists, among the revisions, revised standardised approach risk weights for general interest rate risk, FX risk and selected credit spread risk exposures.
+The implementation date then moved from 1 January 2022 to 1 January 2023, which is the effective date of the consolidated MAR20 and MAR21 text; national implementation dates differ (see [Implementation Status by Jurisdiction](19-Implementation-Status-by-Jurisdiction.md)).
 
 ## Pitfalls
 
-- **Confusing PV01 scaling**: Providing PV01 in dollars per basis point ($10^{-4}$) directly into SbM without scaling by $10,000$ (or scaling risk weights) creates an error of four orders of magnitude ($10,000\times$).
-- **Assuming the High Correlation Scenario is always conservative**: In relative-value and curve-hedged portfolios, the Low Correlation Scenario is almost always the binding constraint; ignoring it severely understates regulatory capital.
-- **Ignoring the negative-sum fallback**: Evaluating inter-bucket square roots without checking for negative radicands causes software crash exceptions when large hedging positions produce negative cross-terms.
-- **Mismatched sensitivity tenors**: Mapping a 7-year swap to an unapproved custom tenor rather than interpolating between the standardized 5-year and 10-year regulatory buckets invalidates compliance reporting.
-- **Treating cross-currency basis as zero risk**: Forgetting that cross-currency basis spreads (e.g., EUR/USD basis) constitute a mandatory separate GIRR sub-curve under MAR21 results in regulatory capital audit penalties.
+- Feeding PV01 or CS01 per basis point without dividing by 0.0001: capital comes out 10,000 times too small.
+- Mixing sign conventions between systems: MAR21 sensitivities are value changes for an increase in the risk factor, so a receiver swap has negative GIRR delta and a protection seller has negative CSR delta.
+- Taking the maximum over scenarios per risk class instead of after summing all classes and measures (MAR21.7); it overstates capital and is not compliant.
+- Computing capital on internal tenors instead of mapping to the prescribed ones (FAQ to MAR21.8).
+- Treating OIS and Euribor (or onshore and offshore curves) as one curve, which silently hedges a basis the rules say is distinct.
+- Forgetting that cross-currency basis correlates at 0% with everything: it never diversifies.
+- Applying the scenario transform factor by factor to a product correlation such as $\rho^{name}\rho^{tenor}\rho^{basis}$; the transform applies to the product.
+- Assuming the across-bucket radicand is always real after the alternative specification; it is not when $\Gamma$ is not PSD.
+- Netting sensitivities across desks for the desk-level standalone view, or failing to net them for the bank-level view.
+- Mapping an index to an index bucket without checking the MAR21.31 criteria and the 75% sector test of MAR21.33.
+- Using a front-office model for sensitivities that differs from the one the independent risk control unit uses (MAR21.17); this also feeds the IMA P&L attribution problems.
 
 ## Interview questions
 
 > [!question]- reg-frtb-sbm-three-scenarios-rationale | Why does the FRTB Sensitivities-Based Method mandate calculating capital across three correlation scenarios (Medium, High, Low)?
-> Financial asset correlations are notoriously unstable and regime-dependent.
-> During market crises, correlations can either spike towards 1.0 (systemic panic across all assets) or breakdown completely towards zero (liquidity dry-ups, basis dislocations, and market fragmentation).
-> If a regulatory framework relied on a single fixed correlation matrix:
-> - High correlation assumptions would fail to capture basis risk in hedged books when correlations decouple.
-> - Low correlation assumptions would fail to capture systemic contagion in unhedged directional books.
-> By requiring banks to compute capital under Medium ($\rho$), High ($\min(1.25\rho, 1.0)$), and Low ($\max(2\rho - 1, 0.75\rho)$) scenarios and take the maximum:
-> $$\text{Capital} = \max\left(K_{\text{medium}}, K_{\text{high}}, K_{\text{low}}\right)$$
-> the regulator guarantees that the capital charge is robust against both correlation spikes and correlation breakdowns.
+> Because correlations can rise or fall in stress, and a single matrix would understate one kind of book (MAR20.4(1)(d), MAR21.6).
+> Capital for same-direction exposures increases with correlation, while capital for hedged exposures decreases with it: $\partial K^2 / \partial \rho = 2 WS_k WS_l$.
+> The high scenario ($\min(1.25\rho, 1)$) stresses directional books and the low scenario ($\max(2\rho - 1, 0.75\rho)$) stresses hedges.
+> The bank sums delta, vega and curvature over all risk classes in each scenario and takes the largest total (MAR21.7), so the stress is applied consistently to the whole portfolio.
 
 > [!question]- reg-girr-tenor-correlation-formula-derivation | Explain the economic intuition behind the GIRR tenor correlation formula $\rho_{kl} = \max\left(0.40, \exp\left(-\theta \cdot \frac{|T_k - T_l|}{\min(T_k, T_l)}\right)\right)$.
-> The formula reflects three core yield curve dynamics:
-> 1. **Exponential distance decay**: The correlation between two interest rate tenors decays exponentially as the distance between them $|T_k - T_l|$ increases.
-> 2. **Relative tenor scaling**: The distance is scaled by $\min(T_k, T_l)$. A 1-year gap between a 3-month and 1.25-year rate represents a vast structural difference in monetary policy and liquidity, whereas a 1-year gap between a 29-year and 30-year bond is negligible. Scaling by the shorter tenor correctly reflects that curve volatility is proportional to relative tenor maturity.
-> 3. **The 40% correlation floor**: Empirically, even the shortest and longest government bond yields share a common monetary policy and macroeconomic inflation drift. The 0.40 floor ensures that global curve moves maintain a minimum baseline co-movement.
+> It is an exponential decay in relative tenor distance with $\theta = 3\%$ and a 40% floor (MAR21.46 footnote 284).
+> Dividing by the shorter tenor makes the distance relative: 0.25y against 1y gives $e^{-0.09} = 91.4\%$, while 10y against 20y gives $e^{-0.03} = 97.0\%$, matching the observation that the short end moves more independently than the long end.
+> The 40% floor reflects that every point of one currency's curve shares a common level factor; 0.25y against 10y and beyond hits the floor.
+> The same formula appears as Table 2 of MAR21.46, rounded to 0.1%.
 
 > [!question]- reg-sbm-negative-sum-fallback-algorithm | What causes a negative radicand in the FRTB inter-bucket aggregation formula, and how does the negative-sum fallback resolve it?
-> Inter-bucket capital is defined as:
-> $$K = \sqrt{\max\left(0, \sum_b K_b^2 + \sum_b \sum_{c \ne b} \gamma_{bc} S_b S_c\right)}$$
-> When a trading book holds large directional hedges across buckets (for example, long USD interest rates in Bucket 1 with $S_1 > 0$ and short EUR interest rates in Bucket 2 with $S_2 < 0$), the cross-term $\gamma_{12} S_1 S_2$ is negative.
-> If the hedge is large and intra-bucket diversification made $K_b$ small, the magnitude of the negative cross-term can exceed $\sum K_b^2$, making the term inside the square root negative.
-> To prevent imaginary capital charges:
-> 1. Basel mandates clamping bucket net sensitivity to $[-K_b, K_b]$: $\bar{S}_b = \max(-K_b, \min(K_b, S_b))$.
-> 2. If the radicand remains negative after clamping, the formula floors the radicand at $\sum_b K_b^2$, setting $K = \sqrt{\sum_b K_b^2}$.
+> A large net long bucket hedged by a large net short bucket: the cross term $\gamma_{bc} S_b S_c$ uses the undiversified net $S_b$, which exceeds the diversified $K_b$ when a bucket is one-directional.
+> MAR21.4(5)(b) then recomputes the sum with $S_b$ clamped to $[-K_b, K_b]$.
+> There is no further floor in the text; the clamped radicand is at least $\bar S^\top \Gamma \bar S$, which is non-negative only if the inter-bucket matrix is PSD.
+> The CSR non-securitisation and (in the high scenario) equity matrices are not PSD, so an engine still needs a guard, ideally floor-and-escalate.
 
 > [!question]- reg-delta-sensitivity-pv01-convention | Why is GIRR delta defined as PV01 divided by 0.0001, and how does it relate to relative delta?
-> GIRR delta is defined as:
-> $$s_k = \frac{V(r_k + 0.0001) - V(r_k)}{0.0001}$$
-> In financial markets, PV01 is the dollar value change for a 1 basis point ($0.0001$) shift.
-> Dividing by $0.0001$ converts the sensitivity into the dollar price change per 100% (1.0) change in interest rates.
-> This scaling makes the sensitivity $s_k$ dimensionally consistent with supervisory risk weights $RW_k$ expressed as percentages (e.g., $1.20\% = 0.012$).
-> When multiplied, $WS_k = RW_k \times s_k = 0.012 \times \frac{\text{PV01}}{0.0001} = 120 \times \text{PV01}$, exactly reproducing the dollar loss resulting from a 120 basis point stressed rate shock.
+> Dividing by 0.0001 expresses the sensitivity per unit (100%) change in the rate, so that multiplying by a risk weight quoted as a rate shift gives a loss: $WS_k = RW_k \cdot \text{PV01}_k / 0.0001$ (MAR21.19).
+> A 2y PV01 of -100,000 per bp at the 1.3% risk weight gives $WS = -100{,}000 \times 130 = -13{,}000{,}000$, the first-order loss from a 130bp rise.
+> Equity, commodity and FX use a 1% relative bump divided by 0.01, which is the cash delta $x \cdot \partial V / \partial x$, so their percentage risk weights are relative price shocks.
+> Both conventions make $WS_k$ a stressed first-order P&L in currency units.
 
 > [!question]- reg-equity-relative-delta-definition | How is equity delta sensitivity defined under FRTB, and why does it differ from GIRR delta?
-> Equity delta sensitivity is defined as:
-> $$s_k = EQ_k \cdot \frac{\partial V}{\partial EQ_k}$$
-> where $EQ_k$ is the spot price of the equity.
-> Unlike interest rates (which are expressed in basis points and yields), equity prices are positive real numbers whose volatility scales proportionally with price level (lognormal dynamics).
-> Multiplying the partial derivative (options delta $\frac{\partial V}{\partial EQ}$) by the spot price yields the dollar sensitivity per 100% relative move in the stock.
-> When multiplied by the supervisory risk weight (e.g., $RW = 20\%$ for large-cap developed equities), the weighted sensitivity $WS_k = 0.20 \times EQ_k \frac{\partial V}{\partial EQ_k}$ reflects the dollar P&L impact of a 20% equity market decline.
+> $s_k = (V(1.01\,EQ_k) - V(EQ_k)) / 0.01 \approx EQ_k \, \partial V / \partial EQ_k$, the cash delta per 100% relative move (MAR21.21).
+> Equity risk is proportional to the price level, so the shocks are relative: risk weights run from 15% (large-cap advanced-economy index bucket 12) through 30% to 50% (large-cap advanced-economy sector buckets 5 to 8) to 70% (small-cap emerging and other sector) (MAR21.77).
+> GIRR uses absolute basis-point shifts because rates can be near zero or negative and their volatility is not proportional to their level.
+> Equity repo rates are a separate delta factor with a bp bump and a risk weight one hundredth of the spot weight.
 
 > [!question]- reg-csr-non-sec-vs-sec-split | What is the regulatory rationale for splitting Credit Spread Risk into non-securitisations, securitisations (non-CTP), and securitisations (CTP)?
-> Non-securitisations (corporate bonds and single-name CDS) have transparent underlying assets, observable market prices, and straightforward recovery dynamics.
-> Securitizations (CDOs, CLOs, ABS) possess structural tranching, non-linear subordination, and severe systemic correlation risk (model risk).
-> Securitizations are split into:
-> 1. Non-CTP: Traditional mortgage-backed and asset-backed securities; they face punitive risk weights and cannot be modeled under IMA.
-> 2. CTP (Correlation Trading Portfolio): Liquid index tranches and nth-to-default products; subject to distinct supervisory correlation matrices and mandatory index decomposition rules.
-> Separating them prevents banks from using corporate CDS to offset complex subprime securitization risks.
+> The three have different risk drivers and liquidity: issuer spreads, tranche spreads, and the spreads of names inside correlation products.
+> Non-CTP securitisations are risk-weighted on the tranche spread with buckets by seniority, rating and collateral type and no diversification across buckets ($\gamma = 0$, MAR21.70).
+> CTP products (index tranches, nth-to-default on liquid single names) are decomposed to underlying names with higher risk weights and a 99% basis correlation (MAR21.58 to MAR21.60).
+> No diversification is recognised between the classes, and all securitised products are barred from the internal models approach (MAR31.3(2)), so the SA is their only capital treatment.
 
 > [!question]- reg-frtb-sbm-vs-isda-simm | What is the structural relationship between FRTB SbM and the ISDA Standard Initial Margin Model (SIMM)?
-> ISDA SIMM is the global industry-standard model for calculating non-cleared derivative initial margin under BCBS-IOSCO margin rules.
-> ISDA SIMM was intentionally designed as an analytical derivative of the FRTB Sensitivities-Based Method:
-> - Both frameworks use identical risk classes (GIRR, CSR, Equity, Commodity, FX).
-> - Both decompose portfolios into delta, vega, and curvature sensitivities.
-> - Both employ identical intra-bucket and inter-bucket quadratic aggregation equations.
-> The key difference is calibration: FRTB SbM is calibrated to a 1-year stressed horizon at a 97.5% expected shortfall equivalent for bank insolvency capital, whereas ISDA SIMM is calibrated to a 10-day margin period of risk at a 99% confidence level to cover counterparty close-out risk.
+> SIMM reuses the SbM architecture: sensitivities to prescribed risk factors, risk weights, intra-bucket correlations, inter-bucket correlations and square-root aggregation, with delta, vega and curvature components.
+> The purposes and calibrations differ: SbM is a capital charge with three correlation scenarios and supervisory parameters, while SIMM is an industry model for initial margin on non-centrally cleared derivatives with its own periodically recalibrated parameters and no correlation scenarios.
+> The overlap matters for systems: a bank can share the sensitivity generation and mapping layer between capital and margin, but not the parameters.
+> Quote SIMM parameters only from the current ISDA SIMM methodology document, which is versioned.
 
 > [!question]- reg-sbm-vega-risk-liquidity-horizon | How does FRTB SbM incorporate liquidity horizons into vega capital charges?
-> Under MAR21, vega sensitivity is defined as $s_k^{\text{vega}} = \sigma_k \frac{\partial V}{\partial \sigma_k}$.
-> To reflect that illiquid options take longer to exit or hedge during a panic, supervisory risk weights for vega are scaled by the square root of the regulatory liquidity horizon $LH$:
-> $$RW_{\text{vega}} = \min\left(1.0, RW_{\text{delta}} \cdot \sqrt{\frac{LH}{10}}\right)$$
-> Liquidity horizons range from 10 days for major FX and interest rate options, to 20 days for liquid equities, 60 days for corporate credit options, and 120 days for exotic commodities.
-> Longer liquidity horizons substantially increase vega capital charges for exotic and illiquid derivatives.
+> The vega risk weight is $\min(RW_\sigma \sqrt{LH/10}, 100\%)$ with $RW_\sigma = 55\%$ and a regulatory liquidity horizon per risk class (MAR21.92 Table 13 and footnote 295).
+> Horizons are 60 days for GIRR, 120 for all three CSR classes and commodity, 20 for large-cap and index equity, 60 for small-cap and other-sector equity, and 40 for FX.
+> Only large-cap and index equity escapes the cap: $55\% \times \sqrt{2} = 77.78\%$; every other class hits 100%.
+> So for most classes the weighted vega is simply vega times implied volatility, the first-order P&L of volatility doubling.
 
 > [!question]- reg-cross-currency-basis-curve-treatment | How does FRTB SbM treat cross-currency basis spreads within the GIRR risk class?
-> Under MAR21.10, cross-currency basis spreads (e.g., EUR/USD or JPY/USD basis curves) are treated as an explicit, distinct sub-curve within the GIRR risk class.
-> They are not netted against the risk-free yield curves of either currency.
-> Each cross-currency basis curve is assigned a flat supervisory risk weight of $1.80\%$ (18 bps) across all tenors.
-> This ensures that banks hold capital specifically against basis shocks resulting from global dollar funding shortages.
+> Each currency's GIRR bucket has one flat cross-currency basis factor, quoted over USD or over EUR but not both (MAR21.8(3)).
+> Its risk weight is 1.6% (MAR21.43), divisible by $\sqrt{2}$ for specified currencies, and it correlates at 0% with every rate tenor, the inflation curve and any other basis curve (MAR21.49).
+> Term-structure sensitivities to the basis may simply be summed (FAQ to MAR21.8), there is no curvature charge on it (MAR21.8(5)(b)), and it does enter GIRR vega along the option-maturity dimension only (FAQ to MAR21.8).
+> The 0% correlation means basis exposure never diversifies against rate risk.
 
 > [!question]- reg-low-correlation-scenario-dominance | In what type of trading portfolio does the Low Correlation Scenario dominate, and why?
-> The Low Correlation Scenario dominates in **hedged, relative-value, and basis trading books**.
-> Examples include:
-> - Yield curve flattener/steepener trades (long 2y vs short 10y).
-> - Cash-futures basis trades (long bond vs short bond future).
-> - Equity index arbitrage (long basket of constituent stocks vs short index future).
-> - Sovereign bond basis trades (long Bund vs short OAT).
-> In these portfolios, the trader relies on high positive correlations (e.g., 90% to 98%) to offset risk.
-> When the Low Scenario scales down correlation by 25% or forces $\max(2\rho - 1, 0.75\rho)$, the regulatory offset is eroded, leaving the gross legs partially unhedged and driving capital to its maximum across the three scenarios.
+> Books whose risk is mostly offsetting positions: curve trades, bond-swap and bond-CDS basis, OIS-BOR basis, index against constituents, long IG against short HY.
+> For a hedge pair $WS_k WS_l < 0$, so $K^2 = a^2 + b^2 - 2\rho|ab|$ rises as $\rho$ falls.
+> For $\rho \ge 0.8$ the low scenario doubles the decorrelation ($1 - \rho^{low} = 2(1-\rho)$), which is brutal for the 90% to 99% correlations such trades rely on.
+> In the 2y/10y example the charge is 8.33m in the low scenario against 4.20m in the high scenario.
+
+> [!question]- reg-sbm-ws-as-stressed-loss | A swap book has a 5y USD PV01 of +40,000 per bp. What is its GIRR weighted sensitivity, with and without the specified-currency discretion?
+> $WS = 40{,}000 \times 110 = 4{,}400{,}000$ at the 1.1% 5y risk weight (MAR21.42).
+> With the MAR21.44 discretion for USD the weight is $1.1\% / \sqrt{2} = 0.778\%$, giving $4{,}400{,}000 / \sqrt{2} = 3{,}111{,}270$.
+> It is the first-order P&L of a 110bp (or 77.8bp) rise in the 5y rate.
+
+> [!question]- reg-sbm-high-scenario-perfect-offset | Why does the high correlation scenario treat a 2y/10y GIRR curve trade as a perfect hedge?
+> Because $\rho(2y, 10y) = e^{-0.12} = 0.887$ and the high scenario uses $\min(1.25\rho, 1) = 1$ for any $\rho \ge 0.8$.
+> With $\rho = 1$, $K_b = |\sum WS_k|$, the pure net exposure.
+> This is why the high scenario rarely binds for hedged books and the low scenario does.
+
+> [!question]- reg-sbm-scenario-max-level | At what level is the maximum over the three correlation scenarios taken?
+> After summing delta, vega and curvature capital over all risk classes within each scenario: SbM is the largest of the three portfolio totals (MAR21.7).
+> Taking the maximum per risk class and then adding would overstate capital and is not the rule.
+> For the standalone desk-level SA calculation the comparison is done per desk (MAR21.7(2)(b)).
+
+> [!question]- reg-csr-gamma-rating-sector | Compute the CSR non-securitisation inter-bucket correlation between bucket 1 (IG sovereigns) and bucket 10 (HY local government), and between buckets 3 and 11.
+> $\gamma = \gamma^{rating}\gamma^{sector}$ (MAR21.57).
+> Buckets 1 and 10: different rating (50%) and sovereign against local government (75% in Table 5), so $\gamma = 0.375$.
+> Buckets 3 and 11: different rating (50%) and the same sector (financials, 100%), so $\gamma = 0.5$.
+
+> [!question]- reg-sbm-correlation-matrix-not-psd | Is the FRTB CSR non-securitisation inter-bucket correlation matrix positive semidefinite, and why does it matter?
+> No: its smallest eigenvalue is about -0.220 with medium correlations and -0.525 in the high scenario (computed by `code/frtb_sbm.py`); the equity matrix is also not PSD in the high scenario.
+> It matters because the alternative specification of MAR21.4(5)(b) only guarantees a non-negative radicand for a PSD matrix, and any engine that factorises $\Gamma$ (Cholesky) will fail.
+> A production engine floors and flags the case and escalates it, because the text prescribes nothing further.
+
+> [!question]- reg-sbm-low-scenario-kink | Where do the two branches of the low correlation scenario cross, and what does each branch do?
+> $2\rho - 1 = 0.75\rho$ at $\rho = 0.8$.
+> Above 0.8 the low scenario uses $2\rho - 1$, which doubles $1 - \rho$ (99% becomes 98%, 90% becomes 80%).
+> Below 0.8 it uses $0.75\rho$, a 25% cut (50% becomes 37.5%), and it never goes negative.
+
+> [!question]- reg-index-look-through-criteria | When may a bank compute a single sensitivity to an equity or credit index instead of looking through to its constituents?
+> When the index is listed and widely recognised, with at least 20 constituents, no constituent above 25%, the largest 10% of constituents below 60% of the index, and total market capitalisation of at least USD 40 billion (MAR21.31).
+> The index sensitivity goes to a single sector bucket if more than 75% of its weight maps there, otherwise to an index bucket (MAR21.33).
+> Once a bank looks through an index type it needs supervisory approval to stop (MAR21.34 footnote 281), and CTP indices are never decomposed (MAR21.34(2)).
+
+> [!question]- reg-equity-bucket-definitions | What separates the FRTB equity buckets, and what are the size and economy thresholds?
+> Market capitalisation, economy and sector (MAR21.72): large cap is USD 2 billion or more of total market capitalisation of the listed entity or its listed group parent across all markets (MAR21.73, MAR21.74).
+> Advanced economies are Canada, the US, Mexico, the euro area, the UK, Norway, Sweden, Denmark, Switzerland, Japan, Australia, New Zealand, Singapore and Hong Kong SAR (MAR21.75).
+> Large-cap buckets split sectors into four groups, small-cap has one bucket per economy type, bucket 11 is other sector and 12 and 13 are index buckets.
+
+> [!question]- reg-other-sector-bucket-aggregation | How is capital aggregated in the CSR bucket 16, equity bucket 11 and securitisation non-CTP bucket 25?
+> As the simple sum of absolute net weighted sensitivities, with no offsetting inside the bucket (MAR21.56, MAR21.79, MAR21.69).
+> CSR bucket 16 and equity bucket 11 have 0% correlation with every other bucket, and non-CTP bucket 25 is added outside the square root (MAR21.71).
+> The punitive treatment is deliberate: unclassifiable exposures get neither diversification nor hedge benefit.
+
+> [!question]- reg-girr-curve-identity | Why do an ESTR 5y sensitivity and a 6m-Euribor 5y sensitivity not offset fully in GIRR?
+> OIS and BOR swap curves are different curves (MAR21.8(1)(c)), and two different curves at the same tenor correlate at 99.90% (MAR21.45).
+> With weighted sensitivities of +6.6m and -6.05m, the bucket keeps $\sqrt{6.6^2 + 6.05^2 - 2 \times 0.999 \times 6.6 \times 6.05}$ million, about 0.6m, rather than the 0.55m net, and the low scenario cuts the correlation to 99.80%.
+> The rule makes the OIS-BOR basis a capitalised risk.
 
 ## Further reading
 
-- Basel Committee on Banking Supervision. *Minimum capital requirements for market risk*. BCBS 457, January 2019.
-- Basel Committee on Banking Supervision. *Consolidated Basel Framework: MAR21 - Standardised approach: sensitivities-based method*. Bank for International Settlements, 2020.
-- International Swaps and Derivatives Association (ISDA). *ISDA SIMM Methodology, Version 2.5*. ISDA, 2022.
-- European Banking Authority. *Regulatory Technical Standards on the calculation of own funds requirements for market risk under the alternative standardised approach*. EBA/RTS/2021/07, 2021.
-- Hull, John. *Risk Management and Financial Institutions*. Wiley, 5th edition, 2018.
+- Basel Committee on Banking Supervision, Basel Framework, MAR20 and MAR21 (version effective 1 January 2023), bis.org/basel_framework.
+- Basel Committee on Banking Supervision, *Minimum capital requirements for market risk*, January 2019 (d457).
+- Bank for International Settlements, press release of 14 January 2019 on the revised market risk framework (bis.org/press/p190114.htm), and the BCBS explanatory note to d457.
+- ISDA, *ISDA SIMM Methodology* (current version, isda.org), for the margin-model cousin of the SbM.
+- John C. Hull, *Risk Management and Financial Institutions*, Wiley, chapters on the Fundamental Review of the Trading Book.
 
 ## In this repo and SDE-Interview-Prep
 
-- 06-FRTB-Trading-and-Banking-Book-Boundary.md - Scope, trading desk definitions, and boundary arbitrage.
-- 08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md - Vega sensitivities, liquidity horizons, and full revaluation curvature risk.
-- `code/frtb_sbm.py` - Reference implementation of FRTB SbM delta aggregation and scenario engine.
+- [FRTB: Trading and Banking Book Boundary](06-FRTB-Trading-and-Banking-Book-Boundary.md) - scope and trading desks.
+- [FRTB: Vega and Curvature](08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md) - the other two SbM risk measures.
+- [FRTB: DRC and RRAO](09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md) - the other two SA components.
+- [code/frtb_sbm.py](code/frtb_sbm.py) - reference engine; every example above is its output.
+- [Sensitivities and Revaluation](../11-Risk-and-Trading/12-Sensitivities-and-Revaluation.md) - bump-and-revalue and AAD.
+- [FRTB Engine](../18-Pricing-and-Risk-Systems/10-FRTB-Engine.md) - the production system that computes this.

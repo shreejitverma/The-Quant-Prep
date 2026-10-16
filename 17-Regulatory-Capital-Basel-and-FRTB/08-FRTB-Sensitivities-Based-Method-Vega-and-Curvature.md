@@ -2,329 +2,379 @@
 type: concept
 track: [quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [frtb-sensitivities-based-method-delta]
-est_hours: 4
-sources: [Basel Committee on Banking Supervision - Minimum capital requirements for market risk (BCBS d457 2019), European Banking Authority - Regulatory Technical Standards on Non-Trading Book and Market Risk (2021), International Swaps and Derivatives Association - Sensitivities-Based Method Curvature and Vega Implementation (2022)]
+est_hours: 6
+sources: [Basel Framework MAR21 Standardised approach sensitivities-based method (version effective 1 January 2023 incorporating FAQs of 5 July 2024 and 23 March 2026), Basel Framework MAR23 Standardised approach residual risk add-on (version effective 1 January 2023), BCBS (2019) Minimum capital requirements for market risk (d457), Isserlis (1918) On a formula for the product-moment coefficient of any order of a normal frequency distribution in any number of variables. Biometrika 12, Credit Suisse media release (February 2018) Credit Suisse AG announces event acceleration of its XIV ETNs]
 ---
 
 # FRTB: Sensitivities-Based Method - Vega and Curvature
 
 ## TL;DR
 
-The linear Delta risk charge in FRTB captures only first-order market price sensitivities.
-For trading books containing options, callable bonds, and non-linear derivatives, linear approximations fail catastrophically during market panics because gamma, strike skew, and implied volatility dislocations dominate portfolio losses.
-To capture higher-order and non-linear risks, the FRTB Sensitivities-Based Method (SbM, Basel MAR21) mandates two dedicated capital components: Vega Risk and Curvature Risk.
-Vega risk measures portfolio sensitivity to shifts in implied volatility surfaces.
-Vega sensitivities are weighted by supervisory volatility risk weights scaled by regulatory liquidity horizons ($LH \in [10, 120]\text{ days}$), capturing the reality that illiquid options take longer to re-hedge during market stress.
-Curvature risk captures residual non-linear delta and gamma risk via an explicit full-revaluation framework.
-For every risk factor, the bank executes upward ($+RW$) and downward ($-RW$) full portfolio revaluations, subtracts the first-order linear delta P&L, and isolates the pure non-linear loss.
-Curvature losses are aggregated within and across buckets using squared correlations ($\rho_{kl}^2$), preventing negative gamma in one option from offsetting positive gamma in another unless both suffer simultaneous non-linear losses.
+- Only instruments with optionality get vega and curvature charges; vega captures implied-volatility risk and curvature captures the non-linear price risk beyond delta (MAR21.2, MAR20.4).
+- The vega sensitivity is vega times implied volatility, $s_k = \sigma_k \partial V / \partial \sigma_k$, the P&L of a 100% relative volatility move to first order; it is the same whichever of the normal or lognormal volatility conventions is used (MAR21.25, MAR21.28 footnote 280).
+- The vega risk weight is $\min(55\% \sqrt{LH/10}, 100\%)$: 100% for every risk class except large-cap and index equity at 77.78% (MAR21.92).
+- Curvature applies an upward and a downward shock of the size of the delta risk weight (the largest tenor weight, as a parallel shift, for GIRR, CSR and commodity) and charges the loss beyond the delta prediction: $CVR^{\pm} = -[V(x^{\pm}) - V(x) \mp RW \cdot s]$ (MAR21.5, MAR21.98, MAR21.99).
+- Curvature aggregation floors each factor's own contribution at zero, switches off cross terms between two negative values with $\psi$, uses squared delta correlations, and picks the worse of up and down per bucket and per scenario (MAR21.5, MAR21.100, MAR21.101).
+- Short options are charged; long options are not charged on their own but their negative CVR can offset other factors' positive CVR inside a bucket.
 
 ## Learning objectives
 
-- Formulate the regulatory Vega sensitivity definition $s_k^{\text{vega}} = \sigma_k \frac{\partial V}{\partial \sigma_k}$ and its coordinate mapping across option expiry and underlying tenor.
-- Calculate supervisory vega risk weights with liquidity horizon scaling $\sqrt{LH / 10}$.
-- Derive the upward ($CVR_k^+$) and downward ($CVR_k^-$) full-revaluation curvature risk formulas from Taylor series expansions.
-- Execute intra-bucket and inter-bucket curvature aggregation using squared correlation coefficients ($\rho_{kl}^2$).
-- Analyze the asymmetric treatment of curvature risk: why positive gamma produces zero capital relief while negative gamma creates immediate capital charges.
-- Evaluate the computational complexity and grid compute requirements of executing upward and downward full revaluations across all trading book risk factors.
-- Dissect the February 2018 "Volmageddon" crisis as a benchmark failure mode of linear risk approximations.
+- State which instruments are subject to vega and curvature and how vega risk factors are defined per risk class.
+- Compute vega sensitivities, vega risk weights and vega correlations, and aggregate them.
+- Compute $CVR^+$ and $CVR^-$ from full revaluations, aggregate them within and across buckets under the three correlation scenarios, and explain each design choice.
+- Derive why the curvature correlations are the squares of the delta correlations.
+- Size the computational cost of curvature and vega in a production engine.
 
 ## Core concepts
 
-### Vega risk under FRTB
+### Scope
 
-Vega risk applies to all financial instruments with optionality (plain vanilla options, swaptions, caps/floors, barrier options, convertible bonds).
-Instruments with zero contractual optionality (e.g., standard linear fixed-rate bonds or plain interest rate swaps) have identically zero vega sensitivity.
+Every instrument subject to the SbM has a delta charge; instruments with optionality also have vega and curvature charges (MAR21.2):
 
-#### Regulatory vega sensitivity definition
-Under MAR21.13, vega sensitivity is defined as the product of the implied volatility $\sigma_k$ and the partial derivative of portfolio value with respect to implied volatility:
-$$s_k^{\text{vega}} = \sigma_k \cdot \frac{\partial V}{\partial \sigma_k}$$
-In financial engineering, $\frac{\partial V}{\partial \sigma_k}$ is standard option vega (the dollar P&L change per 1% or 100% volatility shift).
-Multiplying by $\sigma_k$ converts the sensitivity into a relative volatility sensitivity (the dollar P&L change for a 100% relative move in implied volatility).
+- any instrument with optionality (calls, puts, caps, floors, swaptions, barriers, exotics, footnote 272);
+- any instrument with an embedded prepayment option, for GIRR and CSR (MAR21.2(2));
+- any instrument whose cash flows are not a linear function of the underlying notional (MAR21.2(3));
+- optionally every instrument subject to delta, if the bank manages non-linear risk holistically and applies the choice consistently through time (MAR21.2(4)).
 
-#### Option coordinates
-Vega risk factors are mapped across two standardized dimensions:
-1. Option maturity (expiry): $0.5\text{y}, 1\text{y}, 3\text{y}, 5\text{y}, 10\text{y}$.
-2. Underlying maturity / tenor (for interest rate swaptions and commodity options): $0.5\text{y}, 1\text{y}, 3\text{y}, 5\text{y}, 10\text{y}$.
+Callable bonds, options on sovereign bond futures and bond options carry delta, vega and curvature for both GIRR and CSR (FAQ to MAR21.8).
 
-#### Liquidity horizon scaling
-During market crises, implied volatility can spike and liquidity can evaporate.
-Traders cannot re-hedge options on illiquid underlyings within a standard 10-day period.
-FRTB scales supervisory vega risk weights by the regulatory Liquidity Horizon ($LH$) of the asset class:
-$$RW_{\text{vega}} = \min\left(1.0, RW_{\text{delta}} \cdot \sqrt{\frac{LH}{10}}\right)$$
-Supervisory liquidity horizons:
-- Liquid FX pairs, G10 Rates: $LH = 10\text{ business days} \implies \sqrt{10/10} = 1.0$.
-- Major Equity Indices, Large Cap Equities: $LH = 20\text{ business days} \implies \sqrt{20/10} \approx 1.414$.
-- Small Cap Equities, Corporate Credit: $LH = 60\text{ business days} \implies \sqrt{60/10} \approx 2.449$.
-- Exotic Commodities, Securitizations: $LH = 120\text{ business days} \implies \sqrt{120/10} \approx 3.464$.
+### Vega risk factors
 
-#### Vega capital aggregation
-Weighted vega sensitivities $WS_k^{\text{vega}} = RW_{\text{vega}} \cdot s_k^{\text{vega}}$ are aggregated across buckets and scenarios (Medium, High, Low) using the identical quadratic aggregation algorithms as Delta risk:
-$$K_b^{\text{vega}} = \sqrt{\max\left(0, \sum_k (WS_k^{\text{vega}})^2 + \sum_k \sum_{l \ne k} \rho_{kl} WS_k^{\text{vega}} WS_l^{\text{vega}}\right)}$$
+| Risk class | Vega risk factor | Dimensions | Paragraph |
+| :--- | :--- | :--- | :--- |
+| GIRR | implied volatility of options on GIRR underlyings, per currency | option maturity and residual maturity of the underlying, each mapped to 0.5, 1, 3, 5, 10 years | MAR21.8(4) |
+| CSR (all three classes) | implied volatility of options on issuer or tranche spreads | option maturity: 0.5, 1, 3, 5, 10 years | MAR21.9 to MAR21.11 |
+| Equity | implied volatility of options on spot prices (none for repo rates) | option maturity | MAR21.12(2) |
+| Commodity | implied volatility of options on commodity prices, no split by delivery location or underlying maturity | option maturity | MAR21.13(2) |
+| FX | implied volatility of options on currency pairs | option maturity | MAR21.14(2) |
 
-### Curvature risk: The full revaluation framework
+A forward-starting cap is a strip of caplets; each caplet maps on its own expiry and on the residual maturity of its underlying rate (footnote 276).
+Inflation and cross-currency basis enter GIRR vega along the option-maturity dimension only (FAQ to MAR21.8).
+Special cases (MAR21.26): options without a maturity (for example cancellable swaps) go to the longest tenor and also to the RRAO; options without a strike or with several strikes or barriers are mapped with the bank's internal strikes and maturities and also go to the RRAO; CTP tranches without an implied volatility have no vega charge.
 
-Delta and vega are linear first-order approximations.
-For a non-linear instrument, portfolio value change is given by Taylor expansion:
-$$\Delta V \approx \frac{\partial V}{\partial x} \Delta x + \frac{1}{2} \frac{\partial^2 V}{\partial x^2} (\Delta x)^2 + \mathcal{O}((\Delta x)^3)$$
-When market shocks $\Delta x = \pm RW_k$ are large (e.g., $RW = 20\%$ for equities, $RW = 120\text{ bps}$ for interest rates), second-order gamma ($\frac{1}{2} \Gamma (\Delta x)^2$) and higher-order terms dominate.
-Rather than requiring banks to compute analytic second derivatives (gammas and cross-gammas) across thousands of risk factors, FRTB mandates an empirical full revaluation framework.
+### Vega sensitivity
 
-#### Upward and downward curvature definitions
-For each risk factor $k$, the bank shifts the risk factor by its supervisory risk weight $+RW_k$ and $-RW_k$, while holding all other risk factors constant, and re-prices the portfolio:
-$$CVR_k^+ = -\left( V(x_k + RW_k) - V(x_k) - RW_k \cdot s_k^{\text{delta}} \right)$$
-$$CVR_k^- = -\left( V(x_k - RW_k) - V(x_k) + RW_k \cdot s_k^{\text{delta}} \right)$$
-where $s_k^{\text{delta}}$ is the unweighted delta sensitivity from Note 07.
-Subtracting the delta term $RW_k \cdot s_k$ isolates the pure non-linear curvature P&L:
-$$\text{Curvature P&L} = \text{Full Revalued P&L} - \text{Linear Delta P&L}$$
-The leading minus sign converts losses into positive capital requirements:
-- If an option has **negative gamma** (e.g., short call or short put), large price moves create losses exceeding linear delta, yielding $CVR_k > 0$ (positive capital charge).
-- If an option has **positive gamma** (e.g., long call or long put), large price moves create gains exceeding linear delta, yielding $CVR_k < 0$.
+$$s_k = \text{vega} \times \sigma_i = \frac{\partial V_i}{\partial \sigma_i} \sigma_i = \frac{\partial V_i}{\partial \ln \sigma_i}$$
 
-#### Asymmetric treatment of positive gamma
-Under Basel MAR21.35, positive gamma cannot create negative capital:
-$$CVR_k = \max\left(CVR_k^+, CVR_k^-, 0\right)$$
-A bank holding a long option portfolio cannot use its positive curvature to offset delta or vega capital charges.
+with vega and implied volatility from the independent risk control unit's models (MAR21.25).
+Implied volatility is held fixed (sticky strike) or moves with delta (sticky delta) when the delta is computed (MAR21.27), vega ignores CVA (MAR21.30), and equity, commodity and FX vega must use lognormal volatilities while GIRR and CSR may use either convention (MAR21.28), and for GIRR the choice may differ by currency (FAQ to MAR21.28).
 
-#### Intra-bucket curvature aggregation
-Curvature charges within bucket $b$ are aggregated using squared supervisory correlations:
-$$K_b^{\text{curvature}} = \sqrt{\max\left(0, \sum_k CVR_k^2 + \sum_k \sum_{l \ne k} \rho_{kl}^2 CVR_k CVR_l \psi(CVR_k, CVR_l)\right)}$$
-where:
-$$\psi(CVR_k, CVR_l) = \begin{cases} 1 & \text{if } CVR_k > 0 \text{ and } CVR_l > 0 \\ 0 & \text{otherwise} \end{cases}$$
+The convention choice does not matter because $s_k = \partial V / \partial \ln \sigma$ is invariant to any rescaling $\sigma \to c\,\sigma$ of the volatility parameter: if $\sigma_N = c\,\sigma_{LN}$ then $\frac{\partial V}{\partial \sigma_{LN}}\sigma_{LN} = \frac{\partial V}{\partial \sigma_N} c\, \sigma_{LN} = \frac{\partial V}{\partial \sigma_N}\sigma_N$.
+Normal and lognormal volatilities are proportional to first order (at the money, $\sigma_N \approx F \sigma_{LN}$), which is the sense of footnote 280.
+Multiplying by $\sigma$ also makes the risk weight a relative volatility shock: a 100% risk weight is volatility doubling.
 
-#### Why squared correlations ($\rho_{kl}^2$)?
-Because curvature is fundamentally driven by quadratic gamma ($\Gamma (\Delta x)^2$), the sign of the market shock is squared:
-$$(\Delta x_k)^2 \ge 0, \quad (\Delta x_l)^2 \ge 0$$
-Even if two underlying asset prices are negatively correlated ($\rho_{kl} = -0.50$), their squared moves are positively correlated ($(-0.50)^2 = +0.25$).
-Squaring the correlation matrix ($\rho_{kl}^2$) ensures that non-linear gamma losses compound correctly regardless of directional market orientation.
+### Vega risk weights
 
-#### Inter-bucket curvature aggregation
-Bucket curvature charges are aggregated across buckets using squared inter-bucket correlations:
-$$K_{\text{curvature}} = \sqrt{\max\left(0, \sum_b K_b^2 + \sum_b \sum_{c \ne b} \gamma_{bc}^2 S_b S_c\right)}$$
-where $S_b = \sum_{k \in b} CVR_k$.
-Curvature capital is evaluated across the three correlation scenarios (Medium, High, Low) and capped:
-$$\text{Capital}_{\text{curvature}} = \max\left(K_{\text{medium}}, K_{\text{high}}, K_{\text{low}}\right)$$
+The vega risk weight embeds the liquidity horizon of the risk class (MAR21.92 Table 13 and footnote 295):
+
+$$RW_k = \min\left(RW_\sigma \sqrt{\frac{LH_j}{10}},\; 100\%\right), \qquad RW_\sigma = 55\%$$
+
+| Risk class | $LH$ (days) | $55\% \sqrt{LH/10}$ | Vega RW |
+| :--- | ---: | ---: | ---: |
+| GIRR | 60 | 134.72% | 100% |
+| CSR non-securitisation, CTP and non-CTP | 120 | 190.53% | 100% |
+| Equity large cap and indices | 20 | 77.78% | 77.78% |
+| Equity small cap and other sector | 60 | 134.72% | 100% |
+| Commodity | 120 | 190.53% | 100% |
+| FX | 40 | 110.00% | 100% |
+
+The 20-day horizon applies to vega factors that would sit in large-cap buckets 1 to 8 or index buckets 12 and 13; the 60-day horizon to small-cap buckets 9 and 10 and other sector bucket 11 (FAQ to MAR21.92).
+The $\sqrt{LH/10}$ term is square-root-of-time scaling of a 10-day volatility-of-volatility shock to the horizon over which the position could be exited.
+
+### Vega correlations
+
+Buckets are the delta buckets (MAR21.91) and inter-bucket $\gamma$ are the delta values (MAR21.95).
+For GIRR within a bucket (MAR21.93):
+
+$$\rho_{kl} = \min\left(\rho^{opt}_{kl}\,\rho^{und}_{kl},\; 1\right), \qquad \rho^{opt}_{kl} = e^{-\alpha \frac{|T_k - T_l|}{\min(T_k, T_l)}}, \quad \alpha = 1\%$$
+
+with the same form in the underlying residual maturities for $\rho^{und}$.
+For the other classes, $\rho_{kl} = \min(\rho^{delta}_{kl}\,\rho^{opt}_{kl}, 1)$, where $\rho^{delta}$ is the delta correlation between the corresponding underlyings (MAR21.94); for CSR and commodity only the dimensions shared by the vega and delta factors count (name, tranche or commodity, FAQ to MAR21.94).
+Because $\alpha = 1\%$ is small, option-maturity correlations are high: 1y against 5y is $e^{-0.04} = 96.08\%$ and 0.5y against 10y is $e^{-0.19} = 82.70\%$.
+
+### Curvature: the shocks
+
+Curvature risk factors (MAR21.8 to MAR21.14) have no term structure:
+
+- GIRR: one factor per currency; every tenor of every curve of that currency (OIS, 3m and 6m BOR) is shifted in parallel together; no curvature for inflation or cross-currency basis (MAR21.8(5)).
+- CSR: one factor per issuer (or tranche, or CTP underlying), with bond and CDS curves treated as one curve and shifted in parallel (MAR21.9(3) to MAR21.11(4)).
+- Equity: spot prices only, not repo rates (MAR21.12(3)).
+- Commodity: one constructed curve per commodity, shifted in parallel (MAR21.13(3)).
+- FX: the exchange rates against the reporting (or base) currency (MAR21.14(3)).
+
+Shock sizes:
+
+- Equity and FX: a relative shift equal to the delta risk weight (MAR21.98).
+- GIRR, CSR and commodity: a parallel shift of all tenors equal to the largest delta risk weight of the bucket (MAR21.99); for GIRR that is the 0.25y weight, 1.7%, a 170bp parallel shift (1.7% divided by $\sqrt{2}$, about 120bp, where the bank applies the MAR21.44 discretion to a specified currency).
+- Commodity curvature is applied as a relative shock: the gold curve is multiplied by 1.2 up and 0.8 down (FAQ to MAR21.23).
+- CSR curvature may floor a downward-shocked spread at zero, in which case the downward risk weight is capped at the spread level for the $CVR^-$ revaluation but not for the delta term (FAQ to MAR21.99).
+- FX options that do not reference the reporting (or base) currency may have $CVR^{\pm}$ divided by 1.5; with supervisory approval the 1.5 scalar may be applied to all FX instruments if curvature is computed for every currency including shocks to the reporting currency (MAR21.98).
+
+### Curvature: the risk position
+
+For risk factor $k$, summed over instruments $i$ (MAR21.5(2)):
+
+$$CVR_k^{+} = -\sum_i \left\{ V_i\!\left(x_k^{(RW^{curv}+)}\right) - V_i(x_k) - RW_k^{curv} \cdot s_{ik} \right\}$$
+
+$$CVR_k^{-} = -\sum_i \left\{ V_i\!\left(x_k^{(RW^{curv}-)}\right) - V_i(x_k) + RW_k^{curv} \cdot s_{ik} \right\}$$
+
+For equity and FX $s_{ik}$ is the instrument's delta sensitivity; for GIRR, CSR and commodity it is the sum of its delta sensitivities over all tenors of the curve (MAR21.5(2)(f)).
+The delta and the assumptions behind it (sticky strike or sticky delta, normal or lognormal) must be the same as in the delta charge (FAQ to MAR21.5).
+
+$CVR$ is the loss beyond the delta prediction.
+By Taylor's theorem, $V(x + h) - V(x) - h V'(x) = \tfrac{1}{2} h^2 V''(\xi)$, so $CVR^{\pm} \approx -\tfrac{1}{2}\Gamma h^2$: positive (a charge) for short gamma, negative (a benefit) for long gamma.
+Using full revaluation rather than $\tfrac{1}{2}\Gamma h^2$ matters because the shocks are large (a 50% equity move, a 170bp rate move) and exotic payoffs are far from quadratic over that range.
+
+### Curvature: aggregation
+
+Within a bucket, for each direction (MAR21.5(3)):
+
+$$K_b^{\pm} = \sqrt{\max\left(0,\; \sum_k \max\left(CVR_k^{\pm}, 0\right)^2 + \sum_k \sum_{l \ne k} \rho_{kl}\, CVR_k^{\pm}\, CVR_l^{\pm}\, \psi\!\left(CVR_k^{\pm}, CVR_l^{\pm}\right)\right)}$$
+
+$$K_b = \max\left(K_b^{+}, K_b^{-}\right)$$
+
+- $\psi(a, b) = 0$ if both are negative and 1 otherwise.
+- If $K_b^+ = K_b^-$, the upward scenario is selected if $\sum_k CVR_k^+ > \sum_k CVR_k^-$, otherwise the downward one.
+- The up or down choice is made separately in each correlation scenario (MAR21.5(3)(a)).
+- Other-sector buckets use $K_b = \max\left(\sum_k \max(CVR_k^+, 0), \sum_k \max(CVR_k^-, 0)\right)$ (MAR21.56(2), MAR21.79(2)).
+
+Across buckets (MAR21.5(4)):
+
+$$\text{Curvature} = \sqrt{\max\left(0,\; \sum_b K_b^2 + \sum_b \sum_{c \ne b} \gamma_{bc}\, S_b\, S_c\, \psi(S_b, S_c)\right)}$$
+
+with $S_b = \sum_k CVR_k^+$ if the upward scenario was selected for bucket $b$ and $\sum_k CVR_k^-$ otherwise.
+
+Correlations are the squares of the delta parameters (MAR21.100, MAR21.101), and the high and low scenarios are applied to the squared values.
+Where the curvature factor has fewer dimensions than the delta factor, the missing dimensions drop out: for CSR only the name correlation remains, squared (MAR21.100).
+For GIRR across currencies, $\gamma^{curv} = 50\%^2 = 25\%$, which becomes 31.25% in the high and 18.75% in the low scenario.
+
+Why squared correlations: if two risk factor moves $X$ and $Y$ are jointly normal with unit variance and correlation $\rho$, the curvature losses behave like $X^2$ and $Y^2$, and Isserlis' theorem gives $\operatorname{Cov}(X^2, Y^2) = 2\rho^2$ and $\operatorname{Var}(X^2) = 2$, so $\operatorname{Corr}(X^2, Y^2) = \rho^2$.
+
+What the three devices do together:
+
+- $\max(CVR_k, 0)^2$: a factor with a negative CVR (long gamma) contributes nothing on its own.
+- $\psi = 0$ for two negative CVRs: two long-gamma positions do not create a negative cross term that would shrink capital.
+- $\psi = 1$ for mixed signs: a long-gamma factor can offset a short-gamma factor through $\rho_{kl} CVR_k CVR_l < 0$.
 
 ### Regulatory text map
 
-- **MAR21.13 - MAR21.20**: Vega sensitivity definitions, option coordinate grids, and liquidity horizon scalers.
-- **MAR21.30 - MAR21.39**: Curvature risk definitions, upward/downward revaluation formulas, and $\rho^2$ aggregation.
-- **MAR21.40 - MAR21.48**: Exclusion of linear instruments from curvature, treatment of multi-underlying options, and foreign exchange curvature.
+| Rule | Paragraph |
+| :--- | :--- |
+| Instruments subject to vega and curvature | MAR21.2 |
+| Curvature step-by-step | MAR21.5 |
+| Scenarios apply to vega and curvature | MAR21.6 |
+| Vega and curvature risk factors per class | MAR21.8 to MAR21.14 |
+| Vega sensitivity, special cases, sticky strike or delta, conventions, CVA | MAR21.25 to MAR21.30 |
+| Multi-underlying vega | MAR21.38 |
+| Vega buckets, risk weights, liquidity horizons | MAR21.90 to MAR21.92 |
+| Vega correlations | MAR21.93 to MAR21.95 |
+| Curvature buckets and shock sizes | MAR21.96 to MAR21.99 |
+| Curvature correlations | MAR21.100, MAR21.101 |
 
 ### How it is implemented
 
-The reference module `code/frtb_sbm.py` implements only the curvature factor calculation in `calculate_curvature_factor`, which accepts already revalued up, down, and base present values together with the sensitivity and risk weight.
-It does not compute vega sensitivities, apply liquidity horizon scaling, reprice portfolios, or aggregate curvature charges across factors, buckets, or scenarios.
-Those calculations are described by the regulatory framework above but are not implemented in this module.
+Vega is a sensitivity like delta, so it reuses the delta pipeline: compute vega to each volatility pillar (by bumping the surface or by AAD), multiply by the pillar's implied volatility, map to the regulatory option-maturity (and for GIRR underlying-maturity) grid, net, weight and aggregate.
+The mapping is the hard part: banks hold surfaces on strike or delta grids and on internal expiries, and the regulatory factor has no strike dimension, so all strikes of one expiry collapse onto one factor.
 
-The following diagram summarizes the regulatory process; it is conceptual and is not fully implemented by the reference module.
+Curvature is not a sensitivity; it needs two full revaluations per instrument per curvature risk factor it depends on.
 
 ```mermaid
 flowchart TD
-    A["Trading Book Derivative Portfolio"] --> B{"Contains Optionality?"}
-    B -- "No" --> C["Vega = 0, Curvature = 0 (Linear Only)"]
-    B -- "Yes" --> D["Extract Volatility Sensitivities & Option Expiries"]
-    
-    D --> E["Scale Vega by Liquidity Horizon: sqrt(LH / 10)"]
-    E --> F["SbM Vega Aggregation across Scenarios"]
-    
-    B -- "Yes" --> G["Full Revaluation Engine"]
-    G --> H["Reprice Portfolio at x_k + RW_k -> V_up"]
-    G --> I["Reprice Portfolio at x_k - RW_k -> V_down"]
-    
-    H & I --> J["Subtract Linear Delta: CVR_k^+ and CVR_k^-"]
-    J --> K["Net Factor Curvature: CVR_k = max(CVR_k^+, CVR_k^-, 0)"]
-    
-    K --> L["Intra-Bucket Aggregation using Squared Correlations rho^2"]
-    L --> M["Inter-Bucket Aggregation using Squared Correlations gamma^2"]
-    
-    F --> N["Final Vega Capital = max(K_med, K_high, K_low)"]
-    M --> O["Final Curvature Capital = max(K_med, K_high, K_low)"]
+    A["For each curvature factor k (currency, issuer, equity, commodity curve, FX pair)"] --> B["Build up and down shocked market states"]
+    B --> C["Revalue every instrument sensitive to k in both states"]
+    C --> D["CVR+ and CVR- per instrument: subtract RW times the delta s_ik used in the delta charge"]
+    D --> E["Sum over instruments to CVR_k+ and CVR_k-"]
+    E --> F["Per bucket and per scenario: K_b+ and K_b- with rho squared and psi; pick max"]
+    F --> G["Across buckets with gamma squared and psi on S_b"]
 ```
+
+A bank with exposure to 40 currencies, 2,000 credit names, 3,000 equities, 30 FX pairs and 50 commodity curves has 5,120 curvature factors and therefore 10,240 shocked market states; each instrument is revalued only in the states of the factors it depends on, so the job is a sparse instrument-by-factor grid that is usually distributed across the pricing grid.
+AAD makes vega cheap (one adjoint sweep gives every volatility sensitivity) but does nothing for curvature, which needs the large finite shocks.
+Revaluation must use the same models, calibration and smile dynamics as the delta, or the subtraction of $RW \cdot s$ leaves a spurious residual.
+The reference engine [code/frtb_sbm.py](code/frtb_sbm.py) implements `vega_risk_weight`, `girr_vega_rho`, `non_girr_vega_rho`, `cvr`, `curvature_bucket` and `curvature_across`; the system view is [FRTB Engine](../18-Pricing-and-Risk-Systems/10-FRTB-Engine.md) and [Pricing at Scale](../18-Pricing-and-Risk-Systems/06-Pricing-at-Scale.md).
 
 ## Worked examples
 
-### Example 1: European call option curvature calculation
+Numbers are printed by `python 17-Regulatory-Capital-Basel-and-FRTB/code/frtb_sbm.py` (sections [4] and [5] of its output) unless computed inline.
 
-Consider a trading desk holding a short position in a European equity call option on a large-cap stock (verified in `code/frtb_sbm.py`):
-- Current stock price: $S_0 = \$100.00$
-- Strike price: $K = \$100.00$ (at-the-money)
-- Time to maturity: $T = 1.0\text{ year}$
-- Risk-free rate: $r = 5.0\%$
-- Implied volatility: $\sigma = 20.0\%$
-- Contract size: Short 10,000 options (Notional = $\$1,000,000$)
-- Supervisory risk weight for large-cap developed equities: $RW = 20\% = 0.20$
+### Example 1: an equity option book in bucket 8
 
-**Step 1: Baseline Black-Scholes pricing**
-Using Black-Scholes formula:
-$$d_1 = \frac{\ln(100/100) + (0.05 + 0.5 \cdot 0.20^2) \cdot 1.0}{0.20 \cdot \sqrt{1.0}} = \frac{0 + 0.07}{0.20} = 0.3500$$
-$$d_2 = 0.3500 - 0.20 = 0.1500$$
-$$\Phi(d_1) = \Phi(0.35) = 0.636831, \quad \Phi(d_2) = \Phi(0.15) = 0.559618$$
-Call price per share:
-$$C_0 = 100 \cdot 0.636831 - 100 \cdot e^{-0.05} \cdot 0.559618 = 63.6831 - 100 \cdot 0.951229 \cdot 0.559618 = 63.6831 - 53.2325 = \$10.4506$$
-Portfolio value for short 10,000 options:
-$$V(x_0) = -10,000 \cdot \$10.4506 = -\$104,506.00$$
+Bucket 8 is large-cap, advanced-economy financials and technology, with a 50% delta risk weight and a 25% correlation between issuers.
+The book is short 100,000 one-year at-the-money calls on TECHA and long 50,000 six-month 90-strike puts on TECHB; both spots are 100, implied volatility is 25%, rates and dividends are zero (Black-Scholes).
 
-**Step 2: Linear delta sensitivity**
-Delta per share: $\Delta = -\Phi(d_1) = -0.636831$.
-Total dollar delta sensitivity:
-$$s_{\text{delta}} = S_0 \cdot \frac{\partial V}{\partial S} = 100 \cdot (-10,000 \cdot 0.636831) = -\$636,831.00$$
+| | TECHA short call | TECHB long put |
+| :--- | ---: | ---: |
+| Value | -994,764 | 142,058 |
+| Delta sensitivity $s$ (1% bump / 0.01) | -5,576,146 | -1,190,398 |
+| Delta $WS = 50\% \times s$ | -2,788,073 | -595,199 |
+| Vega sensitivity $\text{vega} \times \sigma$ | -989,594 | 278,993 |
+| $CVR^+$ (spot to 150) | 1,284,349 | -453,715 |
+| $CVR^-$ (spot to 50) | 1,794,773 | -1,262,812 |
 
-**Step 3: Upward revaluation ($+RW = +20\% \implies S = \$120.00$)**
-At $S = \$120.00$:
-$$d_1 = \frac{\ln(120/100) + 0.07}{0.20} = \frac{0.182322 + 0.07}{0.20} = \frac{0.252322}{0.20} = 1.26161$$
-$$d_2 = 1.26161 - 0.20 = 1.06161$$
-$$\Phi(1.26161) = 0.896450, \quad \Phi(1.06161) = 0.855792$$
-$$C_{\text{up}} = 120 \cdot 0.896450 - 100 \cdot 0.951229 \cdot 0.855792 = 107.5740 - 81.4057 = \$26.1683$$
-$$V_{\text{up}} = -10,000 \cdot \$26.1683 = -\$261,683.00$$
+TECHA check: one call is worth 9.9476 and the up-shocked call 50.6719, so $CVR^+ = -[(-5{,}067{,}186) - (-994{,}764) - 0.5 \times (-5{,}576{,}146)] = 1{,}284{,}349$: the short call loses 1.28m more than its delta predicts when the stock rises 50%.
 
-Evaluating upward curvature:
-$$\text{Linear Delta P&L} = RW \cdot s_{\text{delta}} = 0.20 \cdot (-\$636,831.00) = -\$127,366.20$$
-$$\text{Revalued P&L} = V_{\text{up}} - V_0 = -\$261,683.00 - (-\$104,506.00) = -\$157,177.00$$
-$$CVR^+ = -\left( -\$157,177.00 - (-\$127,366.20) \right) = -(-29,810.80) = +\$29,810.80$$
-The desk loses $\$29,810.80$ more than linear delta projected due to negative gamma.
+Vega: the risk weight is $55\% \sqrt{20/10} = 77.78\%$, so $WS = -769{,}723$ and $217{,}006$; the correlation is $25\% \times e^{-0.01 \times 0.5 / 0.5} = 0.247512$, and the medium vega charge is $\sqrt{0.7697^2 + 0.2170^2 - 2 \times 0.2475 \times 0.7697 \times 0.2170}$ million $= 746{,}244$.
 
-**Step 4: Downward revaluation ($-RW = -20\% \implies S = \$80.00$)**
-At $S = \$80.00$:
-$$d_1 = \frac{\ln(80/100) + 0.07}{0.20} = \frac{-0.223144 + 0.07}{0.20} = \frac{-0.153144}{0.20} = -0.76572$$
-$$d_2 = -0.76572 - 0.20 = -0.96572$$
-$$\Phi(-0.76572) = 0.221927, \quad \Phi(-0.96572) = 0.167089$$
-$$C_{\text{down}} = 80 \cdot 0.221927 - 100 \cdot 0.951229 \cdot 0.167089 = 17.7542 - 15.8940 = \$1.8602$$
-$$V_{\text{down}} = -10,000 \cdot \$1.8602 = -\$18,602.00$$
+Curvature within the bucket, medium scenario ($\rho^{curv} = 0.25^2 = 0.0625$):
 
-Evaluating downward curvature:
-$$\text{Linear Delta P&L} = -RW \cdot s_{\text{delta}} = -0.20 \cdot (-\$636,831.00) = +\$127,366.20$$
-$$\text{Revalued P&L} = V_{\text{down}} - V_0 = -\$18,602.00 - (-\$104,506.00) = +\$85,904.00$$
-$$CVR^- = -\left( +\$85,904.00 - (+\$127,366.20) \right) = -(-41,462.20) = +\$41,462.20$$
-Due to negative gamma, the gain when the stock drops is $\$41,462.20$ less than linear delta projected.
+- $K^+ = \sqrt{1{,}284{,}349^2 + 2 \times 0.0625 \times 1{,}284{,}349 \times (-453{,}715)} = 1{,}255{,}671$;
+- $K^- = \sqrt{1{,}794{,}773^2 + 2 \times 0.0625 \times 1{,}794{,}773 \times (-1{,}262{,}812)} = 1{,}714{,}031$;
+- the downward scenario is selected and $K_8 = 1{,}714{,}031$.
 
-**Step 5: Factor curvature capital**
-$$CVR = \max(CVR^+, CVR^-, 0) = \max(\$29,810.80, \$41,462.20, 0) = \$41,462.20$$
-The curvature capital requirement is $\$41,462.20$, held entirely in addition to the delta capital charge.
+The long put contributes nothing on its own ($\max(CVR, 0) = 0$) but offsets part of the short call through the mixed-sign cross term.
 
-### Example 2: Vega risk scaling with liquidity horizons
+| Scenario | $\rho^{curv}$ | $K^+$ | $K^-$ | Delta | Vega | Curvature |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| medium | 0.0625 | 1,255,671 | 1,714,031 | 2,992,882 | 746,244 | 1,714,031 |
+| high | 0.078125 | 1,248,399 | 1,693,244 | 3,027,338 | 732,262 | 1,693,244 |
+| low | 0.046875 | 1,262,902 | 1,734,569 | 2,958,025 | 759,968 | 1,734,569 |
 
-A rates desk holds an unhedged portfolio of interest rate swaptions across three distinct currency/asset markets:
-- Position 1: 1y into 5y USD Swaption (G10 Rates $\implies LH = 10\text{ days}$).
-  - Vega sensitivity: $s_1^{\text{vega}} = \$100,000$.
-  - Delta risk weight: $RW = 1.20\%$.
-  - Scaled vega risk weight: $RW_{\text{vega}, 1} = 1.20\% \cdot \sqrt{10/10} = 1.20\% = 0.0120$.
-  - Weighted vega: $WS_1 = \$100,000 \cdot 0.0120 = \$1,200.00$.
+The two delta positions point the same way (both negative), so delta is largest in the high scenario, while vega and curvature contain offsets and are largest in the low scenario; the SbM takes the maximum only after adding everything in each scenario.
 
-- Position 2: 1y into 5y Emerging Market Sovereign Swaption ($LH = 60\text{ days}$).
-  - Vega sensitivity: $s_2^{\text{vega}} = \$100,000$.
-  - Delta risk weight: $RW = 3.00\%$.
-  - Scaled vega risk weight: $RW_{\text{vega}, 2} = 3.00\% \cdot \sqrt{60/10} = 3.00\% \cdot 2.4495 = 7.3485\% = 0.073485$.
-  - Weighted vega: $WS_2 = \$100,000 \cdot 0.073485 = \$7,348.50$.
-Even though both swaptions had identical nominal vega sensitivities, the emerging market swaption requires over six times more vega capital ($WS_2 = \$7,348.50$ vs $WS_1 = \$1,200.00$) because the 60-day liquidity horizon reflects severe market exit illiquidity.
+### Example 2: GIRR curvature of a zero-coupon bond
 
-### Example 3: The February 2018 "Volmageddon" crisis
+A 10-year zero-coupon bond with notional 100m, discounted at a flat 4% continuously compounded rate, is worth 67,032,005; its parallel GIRR delta is $s = -669{,}984{,}998$.
+The curvature shock is the 0.25y risk weight, 1.7%, applied to all tenors.
 
-On February 5, 2018, the S&P 500 index declined by 4.10%.
-In response, the Cboe Volatility Index (VIX) experienced the largest single-day spike in its history, surging from 17.31 to 37.32 (a 115.6% one-day increase).
-Exchange-traded inverse volatility products (such as the VelocityShares Daily Inverse VIX Short-Term ETN, XIV) suffered catastrophic intraday losses:
-- As VIX futures spiked, the non-linear negative gamma and extreme vega convexities embedded in inverse volatility ETNs triggered automated rebalancing loops.
-- ETN issuers were legally forced to purchase hundreds of thousands of VIX futures at the market close to rebalance hedges, further driving volatility higher.
-- XIV's net asset value collapsed by 96% in after-hours trading, resulting in its total liquidation.
-Banks that relied on simple linear delta and vega approximations to monitor inverse volatility and exotic option inventory suffered massive unexpected P&L losses.
-This event validated the FRTB SbM design: by requiring full revaluations under extreme $+RW$ volatility and price shocks, Curvature Risk captures the non-linear acceleration that bankrupted inverse volatility products.
+| Position | $CVR^+$ | $CVR^-$ |
+| :--- | ---: | ---: |
+| Long the bond | -910,284 | -1,031,611 |
+| Short the bond | 910,284 | 1,031,611 |
+
+The long bond is convex in yield, so both CVRs are negative and it attracts no curvature charge; the short position is charged 1,031,611 (the downward shock is selected).
+This is the GIRR analogue of Example 1: convexity is never charged, concavity always is.
+
+### Example 3: vega correlation arithmetic for GIRR
+
+Two swaption vega factors in USD, one on (option 1y, underlying 5y) and one on (option 5y, underlying 5y): $\rho = e^{-0.01 \times 4/1} \times 1 = 0.960789$.
+Factors (1y, 1y) and (5y, 10y): $\rho = e^{-0.04} \times e^{-0.09} = 0.878095$.
+Across currencies, $\gamma = 50\%$ as for delta (MAR21.95).
+
+### Example 4: the February 2018 short-volatility shock, read through the SA
+
+On 5 February 2018 a spike in US equity implied volatility cut the intraday indicative value of Credit Suisse's XIV exchange-traded notes, which gave inverse exposure to short-term VIX futures, to 20% or less of the prior day's closing value, triggering an acceleration event under which the notes were redeemed early (Credit Suisse media release, February 2018).
+Under the SA, an options dealer short equity volatility would see:
+
+- vega: a negative vega sensitivity multiplied by a 77.78% (large-cap and index) or 100% (small-cap) risk weight, the first-order loss from volatility rising by that relative amount;
+- curvature: positive CVR on the short-gamma options, charged in full because $\max(CVR, 0)^2$ keeps it;
+- RRAO: any instrument whose underlying is future realised volatility (variance and volatility swaps) is an exotic underlying with a 1.0% add-on on gross notional (MAR23.3 and its FAQ), and path-dependent options attract 0.1% (MAR23.5).
+
+None of these is calibrated to that event; the point is that the SA charges short volatility through three channels and gives long-volatility hedges only partial credit.
 
 ## Pitfalls
 
-- **Confusing normal versus lognormal vega definitions**: Inputting Black-Scholes dollar vega ($\frac{\partial V}{\partial \sigma}$) directly without multiplying by implied volatility $\sigma$ violates MAR21.13 and distorts vega capital by a factor of 5 to 10.
-- **Sign reversal in curvature formulas**: Omitting the leading negative sign in $CVR_k^{\pm} = -\left(V(\pm) - V_0 \mp RW \cdot s\right)$ inverts the capital charge, erroneously penalizing positive gamma and rewarding negative gamma.
-- **Assuming zero curvature for plain vanilla bonds**: While linear bonds have no contractual optionality, long-dated zero-coupon bonds possess positive convexity; under strict FRTB rules, linear instruments with zero optionality are excluded from curvature to save compute, but structured notes must be included.
-- **Using linear correlation instead of squared correlation**: Aggregating curvature using standard $\rho_{kl}$ instead of squared $\rho_{kl}^2$ allows non-linear losses in opposite directions to cancel each other out, which is strictly prohibited under MAR21.37.
-- **Grid compute timeouts on EOD batch runs**: Evaluating $2 \times K$ full revaluations across thousands of risk factors can overwhelm risk grids; failing to optimize valuation routines with Adjoint Algorithmic Differentiation (AAD) or proxy pricing engines causes severe SLA batch delays.
+- Using vega without multiplying by implied volatility, or multiplying a normal vega by a lognormal volatility.
+- Applying the uncapped $55\% \sqrt{LH/10}$ as the vega risk weight; only large-cap and index equity is below the 100% cap.
+- Mapping all strikes of a smile onto different regulatory factors; the regulatory vega factor has no strike dimension.
+- Computing curvature with a different delta, model or smile assumption than the delta charge (FAQ to MAR21.5); the residual shows up as fake curvature.
+- Shocking each GIRR curve separately for curvature; all curves of a currency move together (MAR21.8(5)).
+- Approximating curvature by $\tfrac{1}{2}\Gamma h^2$ for exotics; the shocks are large.
+- Choosing up or down once for all scenarios; the selection is per bucket and per correlation scenario.
+- Forgetting $\psi$ and letting two long-gamma factors reduce capital.
+- Applying the scenario transform to $\rho$ and then squaring, instead of squaring and then transforming (MAR21.100).
+- Applying the FX 1.5 scalar to options that reference the reporting currency without the approval and the all-currency computation that MAR21.98 requires.
 
 ## Interview questions
 
 > [!question]- reg-vega-sensitivity-relative-scaling | Why does FRTB define vega sensitivity as $\sigma_k \frac{\partial V}{\partial \sigma_k}$ rather than standard Black-Scholes vega $\frac{\partial V}{\partial \sigma_k}$?
-> Standard Black-Scholes vega is the partial derivative with respect to absolute volatility $\frac{\partial V}{\partial \sigma}$, measuring the dollar change per 1% absolute shift in volatility.
-> However, volatility surfaces across financial markets operate on radically different scales: a 5% absolute shift in FX volatility (where base vol is 8%) represents a massive 60% relative shock, whereas a 5% absolute shift in equity volatility (where base vol is 40%) is a modest 12.5% move.
-> By defining regulatory vega sensitivity as relative vega:
-> $$s_k^{\text{vega}} = \sigma_k \cdot \frac{\partial V}{\partial \sigma_k}$$
-> the sensitivity represents the dollar change per 100% relative move in volatility.
-> This allows the Basel Committee to establish consistent, standardized percentage risk weights $RW_{\text{vega}}$ across all asset classes and strikes.
+> Because $\sigma \, \partial V / \partial \sigma = \partial V / \partial \ln \sigma$ is the P&L of a relative volatility move, so a percentage risk weight is a relative volatility shock (MAR21.25).
+> It is also invariant to rescaling the volatility parameter, so normal and lognormal conventions give the same sensitivity to first order (MAR21.28 footnote 280).
+> With the 100% vega risk weight, the weighted sensitivity is the first-order P&L of volatility doubling.
 
-> [!question]- reg-curvature-full-revaluation-rationale | Why did the Basel Committee mandate full revaluation for Curvature Risk rather than relying on Taylor series Gamma ($\frac{1}{2} \Gamma (\Delta x)^2$)?
-> Relying on second-order Taylor series gamma presents severe operational and financial drawbacks:
-> 1. **Analytic unavailability**: Computing analytic gamma ($\frac{\partial^2 V}{\partial x^2}$) and cross-gammas ($\frac{\partial^2 V}{\partial x_i \partial x_j}$) for complex multi-asset derivatives (such as Bermudan swaptions, barrier options, or CDOs) is mathematically intractable or requires noisy finite-difference grids.
-> 2. **Taylor divergence**: For large regulatory stress shocks (e.g., a 20% equity shock or a 120 bp interest rate shock), third-order and higher-order terms (speed, jerk) become massive; Taylor series approximations diverge from true option payoffs near strikes and barriers.
-> 3. **Robustness**: Full revaluation re-runs the bank's production pricing engine at the shocked coordinates, guaranteeing that barrier crossings, exercise boundaries, and cash-flow schedule resets are modeled with 100% precision.
+> [!question]- reg-curvature-full-revaluation-rationale | Why did the Basel Committee mandate full revaluation for Curvature Risk rather than relying on Taylor series Gamma ($\frac{1}{2} \Gamma (\Delta S)^2$)?
+> The shocks are large (for example 50% for bucket 8 equities and a 170bp parallel rate move), where a quadratic approximation is poor, especially for barriers, digitals and other exotics.
+> $CVR = -[V(x \pm h) - V(x) \mp h\,s]$ is the exact loss beyond delta under that shock, which by Taylor equals $-\tfrac12 h^2 V''(\xi)$ at some intermediate point, not at the current spot.
+> Full revaluation also captures cross-effects inside one instrument along all tenors of the shifted curve.
 
 > [!question]- reg-curvature-squared-correlation-derivation | Why does the FRTB curvature aggregation formula use squared correlations ($\rho_{kl}^2$) rather than linear correlations ($\rho_{kl}$)?
-> Curvature risk is mathematically driven by the second-order term $\frac{1}{2} \Gamma (\Delta x)^2$.
-> Because the price shock $\Delta x$ is squared, it is strictly non-negative: $(\Delta x)^2 \ge 0$.
-> In quadratic forms, if two underlying risk factors $X_1$ and $X_2$ have standard Gaussian correlation $\rho$, the correlation between their squared shocks $X_1^2$ and $X_2^2$ is identically $\rho^2$:
-> $$\text{Corr}(X_1^2, X_2^2) = \rho^2$$
-> Using linear correlation $\rho$ would imply that if two stocks are negatively correlated ($\rho = -0.60$), their non-linear gamma losses would offset each other.
-> In reality, if a trader is short straddles on both stocks, a major move in either direction produces catastrophic losses on both positions simultaneously.
-> Using $\rho^2 \ge 0$ ensures that non-linear negative gamma risks compound additively.
+> Curvature losses are quadratic in the risk factor move, and for jointly normal moves $X$ and $Y$ with correlation $\rho$, Isserlis' theorem gives $\operatorname{Corr}(X^2, Y^2) = \rho^2$.
+> MAR21.100 and MAR21.101 therefore square every delta correlation, and the high and low scenarios are applied to the squared values.
+> For GIRR across currencies, $0.5^2 = 0.25$.
 
-> [!question]- reg-asymmetric-positive-gamma-treatment | Why does FRTB curvature risk set $CVR_k = \max(CVR_k^+, CVR_k^-, 0)$, ignoring the benefits of positive gamma?
-> A long option position exhibits positive gamma ($\Gamma > 0$), meaning that large market moves in either direction generate gains exceeding linear delta expectations ($CVR_k < 0$).
-> If regulators allowed $CVR_k < 0$ to offset capital:
-> - A bank holding deep out-of-the-money long options could use hypothetical curvature "gains" to reduce its linear delta capital requirement.
-> - In a systemic crisis, positive gamma gains may not materialize due to market illiquidity, counterparty default on option payouts, or gap-risk jumps across strikes.
-> To enforce regulatory conservatism, Basel strictly caps curvature benefit at zero: positive gamma cannot reduce capital requirements, while negative gamma generates mandatory capital surcharges.
+> [!question]- reg-asymmetric-positive-gamma-treatment | How does FRTB curvature treat a long-gamma position (negative CVR), and why is the treatment asymmetric?
+> A long-gamma factor contributes $\max(CVR_k, 0)^2 = 0$ on its own and $\psi = 0$ removes the cross term between two negative CVRs, so long gamma never reduces capital by itself (MAR21.5(3)).
+> It can offset a short-gamma factor in the same bucket through the cross term $\rho^2 CVR_k CVR_l < 0$, and across buckets through $\psi(S_b, S_c) = 1$ when the signs differ.
+> The asymmetry is deliberate: convexity is a benefit you might not realise in a stress, while concavity is a loss you will.
 
 > [!question]- reg-liquidity-horizon-scaling-vega | How does the Liquidity Horizon ($LH$) scaling factor $\sqrt{LH / 10}$ impact vega risk weights across different option asset classes?
-> Supervisory vega risk weights are defined as $RW_{\text{vega}} = \min(1.0, RW_{\text{delta}} \times \sqrt{LH / 10})$.
-> The baseline liquidity horizon is 10 business days (ratio = 1.0).
-> For asset classes with longer liquidity horizons:
-> - 20-day horizon (Major equities): risk weight scaled by $\sqrt{2} \approx 1.414$ (+41.4% capital).
-> - 60-day horizon (Corporate credit options, small cap equities): scaled by $\sqrt{6} \approx 2.449$ (+144.9% capital).
-> - 120-day horizon (Exotic commodities, securitizations): scaled by $\sqrt{12} \approx 3.464$ (+246.4% capital).
-> This scaling reflects that exiting or re-hedging a large portfolio of illiquid options during a panic requires holding the position through extended periods of extreme volatility.
+> $RW = \min(55\% \sqrt{LH/10}, 100\%)$ (MAR21.92): GIRR (60 days) 134.72% capped to 100%, CSR and commodity (120 days) 190.53% capped to 100%, FX (40 days) 110% capped to 100%, small-cap and other-sector equity (60 days) capped to 100%.
+> Only large-cap and index equity (20 days) stays below the cap at 77.78%.
+> In practice the cap makes most vega weights 100%, so the liquidity horizon only differentiates liquid equity volatility.
 
 > [!question]- reg-curvature-cross-terms-psi-function | In the intra-bucket curvature formula, what is the role of the indicator function $\psi(CVR_k, CVR_l)$?
-> The intra-bucket curvature formula is:
-> $$K_b = \sqrt{\max\left(0, \sum_k CVR_k^2 + \sum_k \sum_{l \ne k} \rho_{kl}^2 CVR_k CVR_l \psi(CVR_k, CVR_l)\right)}$$
-> The function $\psi(CVR_k, CVR_l)$ equals $1$ if both $CVR_k > 0$ and $CVR_l > 0$, and $0$ otherwise.
-> This indicator guarantees that cross-terms are included only when both risk factors generate simultaneous non-linear curvature losses.
-> If one factor has positive gamma ($CVR_l = 0$) and the other has negative gamma ($CVR_k > 0$), the cross-term is zero, preventing any mathematical distortion of the aggregate capital charge.
+> $\psi = 0$ when both CVRs are negative and 1 otherwise (MAR21.5(3)(b)).
+> Without it, two long-gamma factors would generate a positive product $\rho CVR_k CVR_l$ that increases capital, which makes no sense for two benefits.
+> With mixed signs the cross term is negative and recognises the offset between a long-gamma and a short-gamma factor; the same $\psi$ is applied to $S_b S_c$ across buckets.
 
 > [!question]- reg-curvature-computation-burden | What is the total number of full revaluations required to calculate FRTB Curvature Risk for a trading book with $K$ active risk factors?
-> For each active risk factor $k$, the bank must perform:
-> 1. One full portfolio revaluation under an upward shock $+RW_k$.
-> 2. One full portfolio revaluation under a downward shock $-RW_k$.
-> Thus, exactly $2 \times K$ full portfolio revaluations are required.
-> If a bank has $K = 5,000$ active risk factors (across yield curves, credit spreads, equities, and FX) and $1,000,000$ trades, calculating curvature requires $10,000$ full revaluations of 1 million trades ($10\text{ billion}$ individual trade evaluations) every single night during the EOD risk batch.
+> Two shocked states per curvature risk factor, so $2K$ market states, plus the base valuation that delta already uses.
+> Each instrument is revalued only in the states of the factors it depends on, so the work is $2 \sum_i |\text{factors}(i)|$ revaluations; a book exposed to 5,120 curvature factors has 10,240 shocked states.
+> Because GIRR curvature is one factor per currency, a single-currency rates book needs only two revaluations per instrument per currency it depends on; equity and credit books dominate the count.
 
 > [!question]- reg-aad-role-in-vega-computation | How does Adjoint Algorithmic Differentiation (AAD) resolve the computational bottleneck of computing FRTB Vega sensitivities?
-> Under traditional finite-difference bumping (bump-and-revalue), computing vega sensitivities across $M$ volatility surface points requires $M$ separate full portfolio revaluations, leading to $O(M)$ scaling.
-> With Adjoint Algorithmic Differentiation (AAD), the chain rule of calculus is applied backwards from the portfolio valuation function through the execution graph.
-> AAD computes the exact sensitivities of portfolio value with respect to *all* $M$ volatility surface points simultaneously in a single backward sweep.
-> The compute time of AAD is independent of the number of risk factors ($O(1)$ scaling, typically taking $3\times \text{ to } 4\times$ the cost of a single base valuation), reducing vega compute runtimes from hours to seconds.
+> AAD computes all first-order sensitivities of a price, including every volatility pillar, in one adjoint sweep at a small constant multiple of the cost of one pricing, instead of one bump per pillar.
+> Vega for FRTB is then $\partial V / \partial \sigma_{pillar} \times \sigma_{pillar}$, mapped to the regulatory tenors.
+> AAD does not help curvature, which requires large finite shocks (relative shocks of 15% to 80% for equity, commodity and FX, absolute spread shifts of 50bp to 1,600bp for CSR, 170bp for GIRR), so curvature still needs full revaluation on the grid.
 
 > [!question]- reg-multi-underlying-option-curvature | How does FRTB SbM handle curvature risk for multi-underlying options (such as basket options or best-of options)?
-> Under MAR21.36, for options that depend on multiple underlying risk factors (e.g., a basket option on 5 stocks), curvature risk cannot be captured simply by shifting each factor in isolation.
-> However, to keep the standardized approach computationally tractable without requiring $2^N$ combinatorial joint factor shocks, supervisors prescribe that:
-> - Each underlying factor is shocked individually by $+RW_k$ and $-RW_k$ while holding other basket assets fixed, generating factor-level $CVR_k$.
-> - Cross-gamma and basket dependency risks are penalized through the supervisory correlation aggregation matrix ($\rho_{kl}^2$).
-> - If an exotic option contains residual risks that cannot be decomposed into standard factor shocks, it becomes subject to the Residual Risk Add-on (RRAO).
+> Delta and curvature use a look-through to the underlyings unless the instrument references a qualifying index (MAR21.31), with consistent inputs for delta and curvature (MAR21.32).
+> Vega need not be looked through: multi-underlying options are usually priced on their own implied volatility and are bucketed by the 75% sector rule (MAR21.38).
+> Correlation risk in baskets, best-of, spread and quanto options also puts them in the RRAO at 0.1% (MAR23.5(2)), while multi-underlying plain vanilla European or American options and index options are exempt (MAR23.6(3)).
 
-> [!question]- reg-volmageddon-lessons-for-frtb | What structural feature of FRTB Curvature Risk directly addresses the failure mode observed during the 2018 Volmageddon event?
-> During Volmageddon, inverse volatility ETNs and volatility sellers suffered because linear delta and vega models assumed that volatility shocks would be modest and smooth.
-> In reality, the non-linear acceleration of implied volatility and delta decay (vanna and vomma) triggered explosive losses.
-> FRTB addresses this by:
-> 1. Imposing massive supervisory shocks (e.g., $RW_{\text{delta}} = 20\%$ to $35\%$, $RW_{\text{vega}}$ scaled by liquidity horizons).
-> 2. Mandating full revaluations that capture the full non-linear cliff-edge effects of out-of-the-money options jumping into the money.
-> 3. Strictly barring positive gamma from offsetting negative gamma, ensuring that short option books hold massive, non-offsettable capital reserves.
+> [!question]- reg-volmageddon-lessons-for-frtb | Through which components does the FRTB standardised approach charge a short-volatility book of the kind that suffered in February 2018?
+> Vega (negative vega times implied volatility, at a 77.78% or 100% risk weight), curvature (positive CVR on short-gamma options, charged in full), and the RRAO (1.0% of gross notional for instruments on future realised volatility, such as variance swaps, and 0.1% for path-dependent options) (MAR21.92, MAR21.5, MAR23.3, MAR23.5).
+> None of these is calibrated to that specific event.
+> The design point is that short volatility is charged through three channels while long-volatility hedges get only partial offset.
+
+> [!question]- reg-vega-normal-vs-lognormal | May a bank compute GIRR vega with normal volatilities for EUR and lognormal for USD?
+> Yes: GIRR and CSR vega may use either convention (MAR21.28), and for GIRR the FAQ to MAR21.28 explicitly allows a mix of normal and lognormal assumptions across currencies.
+> Equity, commodity and FX vega must use lognormal volatilities.
+> The sensitivity $\sigma \, \partial V / \partial \sigma$ is the same under both conventions to first order because it is invariant to rescaling the volatility.
+
+> [!question]- reg-girr-curvature-shock-size | What shock is used for GIRR curvature, and which curves move?
+> A parallel shift of all tenors equal to the largest delta risk weight of the bucket, the 0.25y weight of 1.7%, so 170bp up and down (MAR21.99), or 1.7% divided by $\sqrt{2}$ where the bank applies the MAR21.44 discretion.
+> All risk-free curves of the currency (OIS, 3m BOR, 6m BOR) move together, because the curvature factor is the whole currency (MAR21.8(5)).
+> Inflation and cross-currency basis have no curvature charge.
+
+> [!question]- reg-curvature-scenario-selection | Is the choice between the upward and downward curvature scenario made once per bucket?
+> No: it is made per bucket and separately in each of the medium, high and low correlation scenarios (MAR21.5(3)(a)).
+> A tie is broken towards the upward scenario if $\sum CVR^+ > \sum CVR^-$.
+> The selection then determines whether $S_b$ is $\sum CVR^+$ or $\sum CVR^-$ in the across-bucket formula.
+
+> [!question]- reg-fx-curvature-scalar | When can FX curvature be divided by 1.5?
+> For FX options that do not reference the bank's reporting currency (or approved base currency) as an underlying, $CVR^{\pm}$ may be divided by 1.5 (MAR21.98).
+> With supervisory approval the scalar may be applied to all FX instruments if curvature is computed for every currency, including shocks to the reporting currency against all others.
+> The text gives no rationale for the 1.5 value, so quote the rule rather than a justification.
+
+> [!question]- reg-vega-correlation-girr | Compute the GIRR vega correlation between a 1y-into-1y and a 5y-into-10y swaption factor.
+> $\rho = \min(e^{-0.01 \times 4/1} \times e^{-0.01 \times 9/1}, 1) = e^{-0.13} = 0.8781$ (MAR21.93).
+> Option-maturity and underlying-maturity correlations multiply, each with $\alpha = 1\%$.
+> The small $\alpha$ makes vega factors far more correlated than delta tenors.
+
+> [!question]- reg-curvature-other-sector | How is curvature aggregated in the CSR other-sector bucket and the equity other-sector bucket?
+> $K_b = \max\left(\sum_k \max(CVR_k^+, 0), \sum_k \max(CVR_k^-, 0)\right)$, a simple sum of positive CVRs with no offset (MAR21.56(2), MAR21.79(2)).
+> These buckets have 0% correlation with every other bucket.
+> Long-gamma names in an other-sector bucket give no benefit at all.
+
+> [!question]- reg-csr-curvature-zero-floor | Can a bank floor a credit spread at zero in the downward CSR curvature shock?
+> Yes: if the downward shock would make the spread negative, the curvature factor may be floored at zero, with the downward risk weight capped at the spread level for the revaluation (FAQ to MAR21.99).
+> The cap must not be applied to the $RW \cdot s$ term that removes delta.
+> Credit spread risk weights are otherwise never floored (FAQs to MAR21.9 to MAR21.11).
 
 ## Further reading
 
-- Basel Committee on Banking Supervision. *Minimum capital requirements for market risk*. BCBS 457, January 2019.
-- Basel Committee on Banking Supervision. *Consolidated Basel Framework: MAR21 - Standardised approach: sensitivities-based method*. Bank for International Settlements, 2020.
-- Savine, Antoine. *Modern Computational Finance: AAD and Parallel Simulations*. Wiley, 2018.
-- International Swaps and Derivatives Association (ISDA). *Treatment of Curvature Risk in the Standardised Approach of FRTB*. ISDA Research Notes, 2019.
-- Glasserman, Paul. *Monte Carlo Methods in Financial Engineering*. Springer, 2004.
+- Basel Committee on Banking Supervision, Basel Framework, MAR21 (version effective 1 January 2023), paragraphs 21.2, 21.5, 21.25 to 21.30 and 21.90 to 21.101.
+- Basel Committee on Banking Supervision, *Minimum capital requirements for market risk*, January 2019 (d457).
+- L. Isserlis, "On a formula for the product-moment coefficient of any order of a normal frequency distribution in any number of variables", *Biometrika* 12 (1918).
+- Antoine Savine, *Modern Computational Finance: AAD and Parallel Simulations*, Wiley, 2018, for adjoint sensitivities in production.
+- Credit Suisse, media release "Credit Suisse AG Announces Event Acceleration of its XIV ETNs", February 2018 (credit-suisse.com).
 
 ## In this repo and SDE-Interview-Prep
 
-- 07-FRTB-Sensitivities-Based-Method-Delta.md - FRTB Standardised Approach delta sensitivities and multi-bucket aggregation.
-- 09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md - Default risk charge and residual risk add-on.
-- `code/frtb_sbm.py` - Reference implementation of FRTB SbM, curvature calculation, and DRC.
+- [FRTB: SbM Delta](07-FRTB-Sensitivities-Based-Method-Delta.md) - buckets, risk weights, aggregation and scenarios.
+- [FRTB: DRC and RRAO](09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md) - jump-to-default and residual risk.
+- [code/frtb_sbm.py](code/frtb_sbm.py) - reference engine; examples 1 and 2 are its output.
+- [The Greeks](../05-Derivatives-and-Volatility/05-The-Greeks.md) and [Rates Volatility and SABR](../06-Fixed-Income-and-Asset-Classes/18-Rates-Volatility-and-SABR.md) - the pricing inputs.
+- [Pricing at Scale](../18-Pricing-and-Risk-Systems/06-Pricing-at-Scale.md) - the revaluation grid curvature needs.
