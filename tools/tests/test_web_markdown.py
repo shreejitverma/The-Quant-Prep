@@ -20,7 +20,11 @@ const ctx = {
   document: { getElementById: () => null },
   addEventListener: () => {},
   marked: {
-    parse: (s) => s.replace(/```mermaid\n([\s\S]*?)```/g, (_, body) => `<pre><code class="language-mermaid">${body.replace(/\n$/, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`),
+    parse: (s) => s.replace(/```mermaid\n([\s\S]*?)```/g, (_, body) => {
+      const escaped = body.replace(/\n$/, "").replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      return `<pre><code class="language-mermaid">${escaped}</code></pre>`;
+    }),
     parseInline: (s) => s,
   },
   DOMPurify: { sanitize: (s) => s },
