@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research, quant-dev]
+track: [quant-research, quant-dev, quant-risk]
 tier: core
 status: seed
 prereqs: [data-structures-and-algorithms-for-quant-interviews]

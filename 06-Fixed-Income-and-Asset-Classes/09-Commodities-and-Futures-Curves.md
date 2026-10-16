@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader]
+track: [quant-trader, quant-risk]
 tier: advanced
 status: seed
 prereqs: [forwards-futures-and-carry]

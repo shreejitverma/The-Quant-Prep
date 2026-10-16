@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research, quant-dev]
+track: [quant-research, quant-dev, quant-risk]
 tier: advanced
 status: seed
 prereqs: [implied-volatility-and-the-smile]

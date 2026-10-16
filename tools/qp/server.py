@@ -23,7 +23,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from . import drills, planner
 from .state import GRADES, MASTERY_LABELS, StateError, Store, today
-from .vault import TRACK_LABELS, TRACKS, Note, Vault, load_vault
+from .vault import TRACK_ABBR, TRACK_LABELS, TRACKS, Note, Vault, load_vault
 
 WEB_DIR = Path(__file__).with_name("web")
 FILE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".py", ".cpp", ".hpp", ".h", ".md", ".txt", ".csv", ".ipynb", ".pdf"}
@@ -157,7 +157,7 @@ class App:
                     "readme": next((n.id for n in sec.notes if n.id == f"moc:{sec.folder}"), None),
                 }
             )
-        return {"sections": out, "mastery_labels": MASTERY_LABELS, "tracks": TRACK_LABELS}
+        return {"sections": out, "mastery_labels": MASTERY_LABELS, "tracks": TRACK_LABELS, "track_abbr": TRACK_ABBR}
 
     def note(self, nid: str) -> dict:
         v, s = self.vault, self.store

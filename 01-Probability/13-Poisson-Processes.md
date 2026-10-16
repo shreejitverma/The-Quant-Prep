@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research]
+track: [quant-trader, quant-research, quant-risk]
 tier: advanced
 status: solid
 prereqs: [random-variables-and-distributions]

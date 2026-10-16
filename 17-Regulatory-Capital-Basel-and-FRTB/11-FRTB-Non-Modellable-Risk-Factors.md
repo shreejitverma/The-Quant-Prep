@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-risk]
 tier: senior
 status: draft
 prereqs: [frtb-internal-model-approach-es]

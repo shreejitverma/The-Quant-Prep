@@ -18,6 +18,8 @@ import threading
 from dataclasses import dataclass
 from pathlib import Path
 
+from .vault import TRACKS
+
 try:  # POSIX advisory locks; on Windows only the in-process lock applies
     import fcntl
 except ImportError:  # pragma: no cover
@@ -27,7 +29,12 @@ SCHEMA_VERSION = 1
 MASTERY_LABELS = ("unseen", "studied", "practiced", "solid", "interview-ready")
 GRADES = ("again", "hard", "good", "easy")
 MIN_EASE = 1.3
-DEFAULT_PROFILE = {"tracks": ["quant-trader", "quant-research", "quant-dev"], "hours_per_week": 10, "new_cards_per_day": 20}
+DEFAULT_PROFILE = {"tracks": list(TRACKS), "hours_per_week": 10, "new_cards_per_day": 20}
+
+
+def default_profile() -> dict:
+    """A fresh copy, so mutating one store's track list never changes the default."""
+    return {**DEFAULT_PROFILE, "tracks": list(DEFAULT_PROFILE["tracks"])}
 
 
 class StateError(RuntimeError):
@@ -52,7 +59,7 @@ def now_iso() -> str:
 
 
 def empty_state() -> dict:
-    return {"version": SCHEMA_VERSION, "profile": dict(DEFAULT_PROFILE), "topics": {}, "cards": {}, "drills": [], "activity": {}}
+    return {"version": SCHEMA_VERSION, "profile": default_profile(), "topics": {}, "cards": {}, "drills": [], "activity": {}}
 
 
 @dataclass
@@ -148,7 +155,7 @@ class Store:
             raise StateError(f"{self.path} has schema version {data.get('version')!r}, expected {SCHEMA_VERSION}")
         base = empty_state()
         base.update(data)
-        base["profile"] = {**DEFAULT_PROFILE, **data.get("profile", {})}
+        base["profile"] = {**default_profile(), **data.get("profile", {})}
         return base
 
     def refresh(self) -> None:

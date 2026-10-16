@@ -25,6 +25,7 @@ cd The-Quant-Prep
 
 Keep SDE-Interview-Prep cloned next to this repo (`../SDE-Interview-Prep`) so cross-repo links can be checked.
 For the runnable examples in each section's `code/` folder, use `environment.yml` (conda) or `uv run --with numpy --with scipy --with pandas --with matplotlib python <file>`.
+`python tools/run_examples.py` runs every example, the way CI does; each one asserts the numbers its notes quote.
 
 ## Where progress is stored
 
@@ -38,6 +39,7 @@ The file is plain JSON and every write is atomic.
 | Command | What it does |
 | :--- | :--- |
 | `./qp` | Readiness per track, today's review queue, next topics, top firms. |
+| `./qp profile [--tracks T ...] [--hours H] [--new-cards N]` | Your target tracks (`quant-trader`, `quant-research`, `quant-dev`, `quant-risk`), weekly hours and daily new cards. |
 | `./qp syllabus [--track T] [--section S] [--tier core]` | Every topic with status, cards and your mastery. |
 | `./qp show <topic> [--full]` | Objectives, prerequisites, what it unlocks, its cards. |
 | `./qp mark <topic> <0-4>` | Record mastery: 1 studied, 2 practiced, 3 solid, 4 interview-ready. |
