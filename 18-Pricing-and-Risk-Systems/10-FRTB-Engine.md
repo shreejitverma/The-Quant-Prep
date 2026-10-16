@@ -249,7 +249,8 @@ The bank-level effect is not this difference: the desk moves from $IMA_{G,A}$ an
 
 > [!question]- sys-10-03 | What is the Risk Factor Eligibility Test (RFET) for FRTB internal models?
 > The test that classifies each risk factor as modellable or non-modellable from real-price observations (MAR31.13).
-> A factor passes with at least 24 observations over the previous 12 months and no 90-day period with fewer than four, or with at least 100 observations over the previous 12 months; at most one observation per day counts, and the test is monitored monthly and performed quarterly.
+> Criterion 1 uses the ES calibration period for its observation rate and the previous 12 months for its 90-day test; criterion 2 uses 100 observations over the previous 12 months, with at most one observation per day.
+> See [Non-Modellable Risk Factors](../17-Regulatory-Capital-Basel-and-FRTB/11-FRTB-Non-Modellable-Risk-Factors.md) for the RFET window rules and footnote 301 alternative.
 > Failing factors are capitalised through SES instead of the ES model.
 
 > [!question]- sys-10-04 | How is capital calculated for Non-Modellable Risk Factors (NMRFs)?
