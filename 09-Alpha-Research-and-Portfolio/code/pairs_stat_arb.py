@@ -287,13 +287,15 @@ def section_avellaneda_lee(seed: int = 5) -> None:
 def section_pinned_residual(seed: int = 6, reps: int = 4000, w: int = 60) -> None:
     print("== 6b. Kappa filter on pure noise ==")
     rng = np.random.default_rng(seed)
-    passed = 0
+    passed = {"pinned": 0, "unpinned": 0}
     for _ in range(reps):
         e = rng.standard_normal(w)
-        cum = np.cumsum(e - e.mean())  # residuals of a regression with intercept sum to zero
-        _, b, _ = ar1(cum)
-        passed += 0 < b < 1 and -np.log(b) * 252 > 252 / 30
-    check("pure-noise residuals passing the kappa > 252/30 filter", passed / reps, 0.990, 0.0006, ".3f")
+        # residuals of a regression with intercept sum to zero, so their cumulative sum is pinned at both ends
+        for kind, cum in (("pinned", np.cumsum(e - e.mean())), ("unpinned", np.cumsum(e))):
+            _, b, _ = ar1(cum)
+            passed[kind] += 0 < b < 1 and -np.log(b) * 252 > 252 / 30
+    check("pure-noise residuals (pinned) passing the kappa > 252/30 filter", passed["pinned"] / reps, 0.990, 0.0006, ".3f")
+    check("same noise as an unpinned random walk passing the filter", passed["unpinned"] / reps, 0.780, 0.0006, ".3f")
 
 
 def main() -> None:

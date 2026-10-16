@@ -177,7 +177,7 @@ With this cheap cost and a well-specified spread, the tightest band earns the mo
 40 stocks sharing a market factor, with 5 planted pairs whose gap is an AR(1); 252-day formation, 126-day trading.
 
 - There are 780 candidate pairs; the 5 smallest sums of squared deviations are exactly the 5 planted pairs.
-- Trading them at 2 formation standard deviations with exit at the crossing earns 0.446 in normalised price units over the trading period.
+- Trading them at 2 formation standard deviations with exit at the crossing earns 0.446 in normalised price units in total across the five pairs over the trading period.
 
 ### 5. Avellaneda-Lee on a simulated market
 
@@ -185,7 +185,9 @@ With this cheap cost and a well-specified spread, the tightest band earns the mo
 
 - About 35.2 positions open on average and about 3.56 new positions a day.
 - Gross Sharpe about 3.12; net of 10 bp per position change about 1.81.
-- The $\kappa$ filter passes about 99.4% of stocks, and a control shows why: cumulative residuals of a regression with an intercept are pinned to zero at both ends of the 60-day window, so even pure noise passes the filter 99.0% of the time.
+- The $\kappa$ filter passes about 99.4% of stocks, and two controls on pure noise show it barely discriminates.
+  An unpinned random walk, which has no mean reversion at all, passes 78.0% of the time: on 60 observations the estimated AR(1) coefficient of a random walk falls below the threshold $e^{-1/30}$ that often.
+  The same noise as cumulative residuals of a regression with an intercept, which are pinned to zero at both ends of the window, passes 99.0% of the time, so pinning makes it worse.
 
 The filter is therefore weak on its own; a longer window, out-of-window validation of $\kappa$ or a minimum $R^2$ for the AR(1) fit is needed to separate real reverters from artefacts.
 
@@ -260,7 +262,7 @@ The filter is therefore weak on its own; a longer window, out-of-window validati
 
 > [!question]- alpha-pairs-al-kappa | What does the Avellaneda-Lee condition $\kappa > 252/30$ mean, and what is its weakness?
 > Mean-reversion time under 30 trading days, half the 60-day estimation window.
-> Cumulative residuals of an intercept regression are pinned to zero at both window ends, so in the note's control 99% of pure-noise series pass it.
+> It barely discriminates on a 60-day window: in the note's controls an unpinned random walk passes 78.0% of the time, and the same noise as pinned cumulative residuals of an intercept regression passes 99.0%.
 
 > [!question]- alpha-pairs-hedge-units | You are long the spread $\log A - 1.3\log B$. What positions do you hold?
 > Long 1 dollar of A and short 1.3 dollars of B per unit of spread.

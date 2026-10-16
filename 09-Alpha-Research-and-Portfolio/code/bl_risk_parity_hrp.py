@@ -289,6 +289,8 @@ def section_black_litterman() -> None:
     check("posterior view P mu_BL", (p @ mu_b)[0], 0.0076, 1e-4)
     check("change in the view portfolio's expected return", (p @ mu_b)[0] - (p @ pi)[0], 0.0124, 1e-4)
     check("halfway between Q and P Pi", (q[0] + (p @ pi)[0]) / 2, 0.0076, 1e-4)
+    moved = ((p @ mu_b)[0] - (p @ pi)[0]) / (q[0] - (p @ pi)[0])
+    check("fraction moved toward the view, Omega = prior view variance", moved, 0.5, 1e-12)
 
     w_bl = np.linalg.solve(delta * sigma, mu_b)
     vec("BL weights (delta Sigma)^-1 mu_BL", w_bl, [0.8164, -0.1164, 0.2000, 0.1000])

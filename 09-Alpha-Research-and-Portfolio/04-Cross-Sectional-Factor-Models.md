@@ -216,9 +216,11 @@ Residualising on industries, size and momentum keeps a value exposure of 1.088 w
 - Controls with exposures frozen at month 0 and the same factor returns and noise:
   - The noise-free signal has four strong eigenvalues, 0.2449, 0.0550, 0.0327 and 0.0233, far above the edge, and its top 4 PCs are the market and the three styles (style $R^2$ 0.995, 0.994 and 0.996; mean industry $R^2$ 0.844, the market's share of an industry factor).
   - Its other nine eigenvalues are the industry-relative spreads (2% a month on about a tenth of the names each), from 0.0074 down to 0.0029, all below the edge on their own.
-  - Adding the noise puts 9 eigenvalues above the edge: the market, the three styles and five of the nine spreads, while the other four spreads stay in the bulk; with fixed loadings the edge undercounts, and what it misses is the weak industry spreads, not the styles.
+  - Adding the noise puts 9 eigenvalues above the edge, an undercount.
+    Projected onto those 9 noisy PCs, the four strong signal directions are captured at 0.996, 0.981, 0.963 and 0.929, while the nine spread directions together are captured at only about 3.36 dimensions, so the five eigenvalues beyond the strong four mix spread signal with noise.
   - With fixed loadings 13 PCs recover the styles almost completely: $R^2$ 0.949 (size), 0.958 (value) and 0.978 (momentum).
-- Drifting exposures do two things: they add eigenvalues above the edge (9 with frozen loadings, 13 with drifting ones), because a factor whose loadings change over the sample spans several directions of the return panel, and they degrade style recovery to 0.565, 0.634 and 0.856 at 13 PCs (table below).
+- Changing only the loadings from frozen to drifting, with the same factor returns and noise, raises the count above the edge from 9 to 13 and cuts style recovery at 13 PCs to 0.565, 0.634 and 0.856 (table below).
+- The same change on the noise-free signal shows why: with frozen loadings the top 13 PCs hold all of the signal's variance (1.000), with drifting loadings only 0.862, and noise-free style $R^2$ at 13 PCs falls to 0.894, 0.929 and 0.962, so drifting loadings spread the factors over more directions than the model has factors.
 - Control: pure noise with the same heteroskedastic specific volatilities puts about 0.55 eigenvalues above the edge on average, a small part of the gap here.
 - The first PC alone explains 16.9% of total variance and spans the market: mean $R^2$ of the industry factors on it is 0.833, while value and momentum get 0.002 and 0.000.
 
@@ -228,7 +230,7 @@ Residualising on industries, size and momentum keeps a value exposure of 1.088 w
 | 10 | 0.890 | 0.491 | 0.574 | 0.839 |
 | 13 | 0.905 | 0.565 | 0.634 | 0.856 |
 
-Even with 13 components, as many as the model has factors, the style factors are only partly recovered, although they are strong enough to be recovered almost completely when loadings are fixed: a fixed set of PCs cannot track loadings that drift, while a fundamental model re-reads the exposures every period, which is why statistical models complement rather than replace fundamental ones.
+Even with 13 components, as many as the model has factors, the style factors are only partly recovered, although they are recovered almost completely when loadings are fixed: a fixed set of PCs cannot track loadings that drift, while a fundamental model re-reads the exposures every period, which is why statistical models complement rather than replace fundamental ones.
 
 ### 7. Parameter count
 
@@ -297,11 +299,11 @@ A sample covariance of 1,000 stocks has $1000\times1001/2 = 500{,}500$ free para
 
 > [!question]- alpha-fm-pca-weaknesses | What are the weaknesses of a statistical (PCA) factor model?
 > Rotation ambiguity (unnamed, unstable factors), failure to recover weak factors that sit inside the noise bulk, and a hard choice of the number of factors.
-> In the note's simulation 13 PCs recovered only about 57% to 86% of the style factors' variance because their loadings drift (about 95% to 98% with loadings frozen); with frozen loadings the weak industry spreads were the factors lost in the bulk.
+> In the note's simulation 13 PCs recovered only about 57% to 86% of the style factors' variance with drifting loadings, against about 95% to 98% with loadings frozen; with frozen loadings it was the weak industry spreads that were only partly recovered (about 3.36 of 9 dimensions).
 
 > [!question]- alpha-fm-mp-overcount | Why can the Marchenko-Pastur edge overcount factors in stock returns?
 > It assumes equal idiosyncratic variances and fixed loadings; heteroskedastic noise spreads the noise bulk past the edge, and a factor with drifting loadings spans several directions.
-> In the simulation pure heteroskedastic noise put about 0.55 eigenvalues above the edge; with loadings frozen 9 exceeded it (the market, three styles and five of nine weak industry spreads, the other four lost in the bulk), and drifting loadings raised the count to 13, so it matched the 13 factors only because the two effects offset.
+> In the simulation pure heteroskedastic noise put about 0.55 eigenvalues above the edge; with loadings frozen 9 exceeded it (the four strong factors plus five that mix weak industry-spread directions with noise), and changing only to drifting loadings raised the count to 13, so it matched the 13 factors only because the two effects offset.
 
 > [!question]- alpha-fm-euler-decomposition | How do you decompose a portfolio's variance into factor contributions?
 > With $x = X^\top h$, $\sigma^2 = x^\top Fx + h^\top\Delta h$, and factor $k$ contributes $x_k(Fx)_k$.

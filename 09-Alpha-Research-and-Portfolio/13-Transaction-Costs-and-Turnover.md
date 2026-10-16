@@ -45,7 +45,7 @@ $$
 c(Q) = \tfrac12 s + f + Y\sigma\sqrt{Q/V},
 $$
 
-with half-spread $\tfrac12 s$, fees $f$ and $Y$ an impact coefficient of order one (square-root law, Almgren et al. 2005; more in [Market Impact Models](../07-Market-Microstructure/06-Market-Impact-Models.md)).
+with half-spread $\tfrac12 s$, fees $f$ and $Y$ an impact coefficient of order one (square-root law; Almgren et al. 2005 estimate a temporary-impact exponent of about 0.6, close to it; more in [Market Impact Models](../07-Market-Microstructure/06-Market-Impact-Models.md)).
 The dollar cost $Q\,c(Q)$ is a linear term plus a term proportional to $|Q|^{3/2}$.
 
 ### Three cost shapes and the rules they produce

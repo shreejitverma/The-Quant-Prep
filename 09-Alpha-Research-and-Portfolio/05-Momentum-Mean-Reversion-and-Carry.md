@@ -12,7 +12,7 @@ sources: [Jegadeesh and Titman (1993) - Returns to Buying Winners and Selling Lo
 
 ## TL;DR
 
-- Cross-sectional momentum buys the past 12-month winners and shorts the losers relative to each other, skipping the most recent month because one-month returns reverse; Jegadeesh and Titman (1993) hold overlapping cohorts for $K$ months to cut turnover.
+- Cross-sectional momentum buys the past 12-month winners and shorts the losers relative to each other, skipping the most recent month because one-month returns reverse; Jegadeesh and Titman (1993) hold overlapping cohorts for $K$ months to increase the power of their tests, and the overlap also cuts turnover.
 - Time-series momentum (Moskowitz, Ooi and Pedersen 2012) goes long or short each instrument on the sign of its own 12-month excess return, with positions scaled to a constant ex-ante volatility, and diversifies across asset classes.
 - Short-term reversal (Jegadeesh 1990, Lehmann 1990) is the mirror image at one month or less: high gross alpha, very high turnover, so it lives or dies on costs.
 - Carry is the return you earn if prices do not move, $C = (S - F)/F$ for a futures position (Koijen, Moskowitz, Pedersen and Vrugt 2018): rate differentials in FX, dividend yield minus rates in equities, roll yield in commodities, yield over funding plus roll-down in bonds.
@@ -33,7 +33,7 @@ Jegadeesh and Titman (1993) sort US stocks on their past $J$-month return, buy t
 Over 1965 to 1989 the 6-month formation strategies earned about 1% a month whatever the holding period (6/6: 0.95% a month), and the strongest, 12-month formation with a 3-month hold, earned 1.31% (1.49% when a week is skipped between formation and holding).
 Construction details that matter:
 
-- **Formation and skip.** The standard academic signal (Carhart 1997, the UMD factor) is the return from month $t-12$ to $t-2$, the "12-1" signal; month $t-1$ is skipped because the most recent month's return reverses.
+- **Formation and skip.** The standard academic signal (Carhart 1997, who called the factor PR1YR; UMD is its name in Kenneth French's data library) is the return from month $t-12$ to $t-2$, the "12-1" signal; month $t-1$ is skipped because the most recent month's return reverses.
 - **Overlapping cohorts.** With $K > 1$, each month you hold the average of the portfolios formed in the last $K$ months, so only $1/K$ of the book is re-formed each month; this cuts turnover and smooths the return, but by less than a factor of $K$, because cohorts formed months apart overlap less than consecutive ones (in the simulation below traded over gross falls from 0.604 to 0.231 at $K = 6$).
 - **Weighting and universe.** Equal-weighted deciles are dominated by small, illiquid names; value weighting, excluding microcaps, and industry or factor neutralisation change the numbers materially.
 - **Risk scaling.** Barroso and Santa-Clara (2015) scale the momentum portfolio by the inverse of its recent realised volatility and report a large reduction in crash risk.

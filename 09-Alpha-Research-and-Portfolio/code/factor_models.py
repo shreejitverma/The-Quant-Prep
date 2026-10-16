@@ -235,10 +235,25 @@ def section_pca(d: dict[str, np.ndarray]) -> None:
     for j, (name, e) in enumerate(zip(STYLES, [0.995, 0.994, 0.996], strict=True)):
         check(f"frozen noise-free signal, top 4 PCs: R^2 of {name}", float(r2_s[N_IND + j]), e, 0.001, ".3f")
     eig0, vec0 = spectrum(signal0 + u)
-    check("frozen exposures plus noise: eigenvalues above the edge", int((eig0 > mp_edge).sum()), 9, 0, "d")
+    n0 = int((eig0 > mp_edge).sum())
+    check("frozen exposures plus noise: eigenvalues above the edge", n0, 9, 0, "d")
+    # Squared projection of each noise-free signal PC onto the span of the noisy PCs above the edge.
+    capture = ((vec0[:, :n0].T @ vec_s[:, :13]) ** 2).sum(axis=0)
+    for i, e in enumerate([0.996, 0.981, 0.963, 0.929], start=1):
+        check(f"frozen: signal PC {i} captured by the noisy PCs above the edge", float(capture[i - 1]), e, 0.001, ".3f")
+    check("frozen: the nine industry-spread PCs captured in total (dimensions)", float(capture[4:].sum()), 3.36, 0.006, ".2f")
     r2_0 = r2_on_pcs(vec0, 13)
     for j, (name, e) in enumerate(zip(STYLES, [0.949, 0.958, 0.978], strict=True)):
         check(f"frozen exposures plus noise, k=13: R^2 of {name}", float(r2_0[N_IND + j]), e, 0.001, ".3f")
+
+    # One change from the frozen signal: the same factor returns with drifting exposures, still noise-free.
+    signal = np.einsum("tnk,tk->tn", X, f)
+    eig_d, vec_d = spectrum(signal)
+    check("frozen noise-free signal: variance share of its top 13 PCs", float(eig_s[:13].sum() / eig_s.sum()), 1.000, 0.0006, ".3f")
+    check("drifting noise-free signal: variance share of its top 13 PCs", float(eig_d[:13].sum() / eig_d.sum()), 0.862, 0.0006, ".3f")
+    r2_d = r2_on_pcs(vec_d, 13)
+    for j, (name, e) in enumerate(zip(STYLES, [0.894, 0.929, 0.962], strict=True)):
+        check(f"drifting noise-free signal, k=13: R^2 of {name}", float(r2_d[N_IND + j]), e, 0.001, ".3f")
 
     rng = np.random.default_rng(9)
     counts = []

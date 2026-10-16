@@ -163,7 +163,10 @@ At 5 bp per unit traded the net Sharpe is 1.19; the cost model is now the most i
 
 Sector and beta neutralisation alone did not change the Sharpe here (2.46 raw versus 2.43, book volatility 6.8% versus 6.6%), because the simulated sector and market returns have no serial correlation, so the raw book's factor tilts are pure noise of small size.
 That is not a reason to skip it: in real data those tilts are unintended bets that can dominate a bad month.
-Neutralising also against five style exposures (the kind a Barra-style risk model provides) raised the mean IC to 0.0220, cut its daily standard deviation to 0.1158 and lifted the gross Sharpe to 3.11: unremoved common factors are what make daily IC noisy, so the risk model you neutralise against matters more than the sector dummies.
+Neutralising also against five style exposures (the kind a Barra-style risk model provides), in the signal, the book and the IC target, gave a mean IC of 0.0220 with daily standard deviation 0.1158 and lifted the gross Sharpe to 3.11.
+One change at a time: a style-neutral signal against the sector-beta target gives mean IC 0.0195 (sd 0.1028), and the original signal against a style-neutral target gives 0.0187 (sd 0.1014), so either change alone cuts the IC's daily noise but leaves its mean near 0.019.
+The Sharpe reaches 3.11 whichever step removes the style exposure from the book: a style-neutral signal in a sector-beta book, or the original signal in a style-neutral book.
+So the risk model you neutralise against matters more than the sector dummies here.
 
 **8. Search and deflation.**
 After the pre-registered test, the lookback was varied from 1 to 10 days, with and without neutralisation: 20 trials, all net of 5 bp.
@@ -334,8 +337,8 @@ State what you would do with another week, which is how interviewers distinguish
 > A look-ahead bug or a latency-dependent effect would collapse with one bar of delay.
 
 > [!question]- alpha-case-style-neutral | Why did neutralising against style factors raise the reversal's Sharpe from 2.43 to 3.11 when sector and beta neutralisation changed nothing?
-> Unremoved common factors were the main source of day-to-day IC noise.
-> The signal's past residuals contained style-factor moves that are unrelated to next-day idiosyncratic returns; removing them raised mean IC from 0.019 to 0.022 and cut its daily standard deviation from 0.134 to 0.116.
+> Style exposure left in the book was noise in its P&L: the gross Sharpe reaches 3.11 whether the style exposure is removed from the signal or by projecting the book, one change at a time.
+> Style-neutralising the signal or the IC target alone cut the IC's daily standard deviation from 0.134 to about 0.10 with the mean near 0.019; doing both gave 0.022 with sd 0.116.
 
 > [!question]- alpha-case-dsr-low-real | Case A's best variant has DSR 0.33 although the reversal is real. Reconcile.
 > DSR tests whether the winner beats the best of $N$ trials, not whether any effect exists.

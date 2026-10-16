@@ -44,7 +44,7 @@ Most alt-data alpha in equities is a nowcast of a fundamental (revenue, same-sto
 
 | Question | Why it matters |
 | :--- | :--- |
-| Coverage: which tickers, what share of the investable universe by count and by capitalisation? | Breadth, and so IR, scales with $\sqrt{\text{coverage}}$. |
+| Coverage: which tickers, what share of the investable universe by count and by capitalisation? | Breadth scales with coverage, so IR scales with $\sqrt{\text{coverage}}$. |
 | History length versus signal horizon | A $t$-stat of $t$ at annual IR needs $(t/\text{IR})^2$ years. |
 | Point-in-time integrity: are as-of snapshots stored, or only the latest revised history? | Restated history leaks the future into the backtest. |
 | Publication lag and delivery time | Defines the knowledge timestamp and the usable horizon. |

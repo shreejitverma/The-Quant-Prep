@@ -55,7 +55,7 @@ $$
 $$
 
 where $\tau$ says the uncertainty about the mean is a small fraction of the uncertainty of one period's return.
-The original paper says only that $\tau$ is close to zero; Idzorek (2005) uses 0.025, $1/T$ (the standard error of a sample mean) is another common choice, and some authors set $\tau = 1$ with a correspondingly rescaled $\Omega$, so there is no single standard value.
+The original paper says only that $\tau$ is close to zero; Idzorek (2005) uses 0.025, $1/T$ (so that $\tau\Sigma$ is the variance of a sample mean, the squared standard error) is another common choice, and some authors set $\tau = 1$ with a correspondingly rescaled $\Omega$, so there is no single standard value.
 
 ### Views and the posterior
 
