@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [limit-order-books-and-order-types]
 est_hours: 3
-sources: [Harris (2003) Trading and Exchanges: Market Microstructure for Practitioners. Oxford University Press - chapters 5 and 6, 17 CFR 242.610 Access to quotations (eCFR text as of 2026-10-01), 17 CFR 242.612 Minimum pricing increment (eCFR text as of 2026-10-01), SEC Release 34-101070 (Sept. 18 2024) Regulation NMS - Minimum Pricing Increments - Access Fees and Transparency of Better Priced Orders, SEC Release 34-104172 (Oct. 31 2025) temporary exemptive relief, SEC Release 34-105656 (June 11 2026) temporary exemptive relief to November 2027, SEC Release 34-105655 (June 2026) proposed rescission of Rules 611 and 610(e), SEC Release 34-85292 (Mar. 12 2019) Nasdaq Rule 4754 Current Reference Price, SEC Investor Bulletin - New Measures to Address Market Volatility (circuit breakers and LULD), Budish Cramton and Shim (2015) The High-Frequency Trading Arms Race. Quarterly Journal of Economics 130(4) 1547-1621]
+sources: [Harris (2003) Trading and Exchanges: Market Microstructure for Practitioners. Oxford University Press - chapters 5 and 6, 17 CFR 242.610 Access to quotations (eCFR text as of 2026-10-01), 17 CFR 242.612 Minimum pricing increment (eCFR text as of 2026-10-01), SEC Release 34-101070 (Sept. 18 2024) Regulation NMS - Minimum Pricing Increments - Access Fees and Transparency of Better Priced Orders, SEC Release 34-104172 (Oct. 31 2025) temporary exemptive relief, SEC Release 34-105656 (June 11 2026) temporary exemptive relief to November 2027, SEC Release 34-105655 (June 2026) proposed rescission of Rules 611 and 610(e), SEC Release 34-85292 (Mar. 12 2019) Nasdaq Rule 4754 Current Reference Price, SEC Investor Bulletin - New Measures to Address Market Volatility (circuit breakers and LULD), Cboe LULD Amendment 18 Update (technical FAQ), Budish Cramton and Shim (2015) The High-Frequency Trading Arms Race. Quarterly Journal of Economics 130(4) 1547-1621]
 ---
 
 # Exchange Mechanics, Auctions and Fees
@@ -138,9 +138,10 @@ Fees interact with ticks: a 30-mil rebate is 30% of a one-cent tick, so in a lar
 
 ### Halts, price bands and circuit breakers
 
-The SEC investor bulletin on the 2012 reforms describes two mechanisms (status as described there; the plans have been amended since, so check the current Limit Up-Limit Down Plan text):
+The SEC investor bulletin on the 2012 reforms describes two mechanisms; the LULD Plan has been amended since, so check the current plan text before relying on details:
 
-- Limit Up-Limit Down (LULD): price bands of 5%, 10% or 20% (or the lesser of $0.15 and 75%) depending on the stock and its price, around a reference price that is the average price over the preceding five minutes, doubled during the opening and closing periods.
+- Limit Up-Limit Down (LULD): price bands of 5% (Tier 1 stocks, such as S&P 500 and Russell 1000 names, above $3.00), 10% (Tier 2 above $3.00), 20% ($0.75 to $3.00) or the lesser of $0.15 and 75% (below $0.75), around a reference price that is the average price over the preceding five minutes.
+  The 2012 plan doubled the bands in the first 15 and last 25 minutes of trading; Amendment 18 to the plan (implemented in 2020) removed the doubling at the open for all stocks and at the close for Tier 2 stocks above $3.00, so today only Tier 1 stocks and Tier 2 stocks at or below $3.00 have doubled bands from 3:35 to 4:00 p.m.
   Trades outside the band are prevented; if the quote does not move back inside within 15 seconds, a five-minute trading pause follows, ended by a reopening auction.
 - Market-wide circuit breakers: declines in the S&P 500 of 7% (Level 1) and 13% (Level 2) from the prior close halt all trading for 15 minutes if they occur before 3:25 p.m.; a 20% decline (Level 3) halts trading for the rest of the day.
 
@@ -219,7 +220,7 @@ At 50%, 40% and 10% the TWAQS is 0.016 and it stays at one cent.
 
 ### Example 6: bands and breakers
 
-A stock with a 5% band and a reference price of 40.00 has a band of 38.00 to 42.00, doubled to 36.00 to 44.00 at the open and close.
+A Tier 1 stock (5% band) with a reference price of 40.00 has a band of 38.00 to 42.00, doubled to 36.00 to 44.00 from 3:35 p.m. (no doubling at the open since Amendment 18).
 With the S&P 500 closing at 5,800 the day before, the Level 1, 2 and 3 thresholds are 5,394, 5,046 and 4,640.
 
 ## Pitfalls
@@ -287,7 +288,8 @@ With the S&P 500 closing at 5,800 the day before, the Level 1, 2 and 3 threshold
 > The $5 stock is large-tick (spread pinned at one tick, long queues, queue competition); the $500 stock is small-tick (price competition).
 
 > [!question]- ms-exch-luld | Describe Limit Up-Limit Down.
-> Bands (5%, 10% or 20%, or the lesser of $0.15 and 75%) around a five-minute average price, doubled at the open and close; if the quote stays at a band for 15 seconds a five-minute pause follows, ended by a reopening auction.
+> Bands (5%, 10% or 20%, or the lesser of $0.15 and 75%) around a five-minute average price; if the quote stays at a band for 15 seconds a five-minute pause follows, ended by a reopening auction.
+> Since Amendment 18 (2020) bands are doubled only in the last 25 minutes and only for Tier 1 stocks and Tier 2 stocks at or below $3.00; the original 2012 plan also doubled them at the open.
 > It replaced the earlier single-stock circuit breakers.
 
 > [!question]- ms-exch-mwcb | What are the market-wide circuit breaker levels?
@@ -314,5 +316,5 @@ With the S&P 500 closing at 5,800 the day before, the Level 1, 2 and 3 threshold
 - 17 CFR 242.610 and 242.612 (eCFR), and SEC Release 34-101070 (2024) with its fact sheet.
 - SEC Releases 34-104172 (2025) and 34-105656 (2026) on the compliance-date exemptions.
 - SEC Release 34-105655 (2026), proposed rescission of Rules 611 and 610(e).
-- SEC Investor Bulletin, New Measures to Address Market Volatility (LULD and market-wide circuit breakers).
+- SEC Investor Bulletin, New Measures to Address Market Volatility (LULD and market-wide circuit breakers), and the Limit Up-Limit Down Plan as amended (Amendment 18 changed the doubling periods).
 - Related notes: [Limit Order Books and Order Types](01-Limit-Order-Books-and-Order-Types.md), [Fragmentation, Reg NMS and Routing](09-Fragmentation-Reg-NMS-and-Routing.md), [Order Book and Matching Engine](../12-Quant-Development/07-Order-Book-and-Matching-Engine.md).

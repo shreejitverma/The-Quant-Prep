@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [market-impact-models]
 est_hours: 3
-sources: [Perold (1988) The Implementation Shortfall - Paper versus Reality. Journal of Portfolio Management 14(3) 4-9, Harris (2003) Trading and Exchanges - Market Microstructure for Practitioners. Oxford University Press, Johnson (2010) Algorithmic Trading and DMA - An Introduction to Direct Access Trading Strategies. 4Myeloma Press, Kissell (2013) The Science of Algorithmic Trading and Portfolio Management. Academic Press, Almgren and Chriss (2000) Optimal Execution of Portfolio Transactions. Journal of Risk 3(2) 5-39, Cartea Jaimungal and Penalva (2015) Algorithmic and High-Frequency Trading. Cambridge University Press]
+sources: [Perold (1988) The Implementation Shortfall - Paper versus Reality. Journal of Portfolio Management 14(3) 4-9, Harris (2003) Trading and Exchanges - Market Microstructure for Practitioners. Oxford University Press, Johnson (2010) Algorithmic Trading and DMA - An Introduction to Direct Access Trading Strategies. 4Myeloma Press, Kissell (2013) The Science of Algorithmic Trading and Portfolio Management. Academic Press, Kissell (2006) The Expanded Implementation Shortfall - Understanding Transaction Cost Components. Journal of Trading 1(3) 6-16, Almgren and Chriss (2000) Optimal Execution of Portfolio Transactions. Journal of Risk 3(2) 5-39, Cartea Jaimungal and Penalva (2015) Algorithmic and High-Frequency Trading. Cambridge University Press]
 ---
 
 # Execution Algorithms and TCA
@@ -15,7 +15,7 @@ sources: [Perold (1988) The Implementation Shortfall - Paper versus Reality. Jou
 - An execution algorithm has two layers: a scheduler that decides how much to trade in each interval (TWAP, VWAP, POV, implementation shortfall, close), and a placement layer that decides how each child order is priced and routed.
 - TWAP slices evenly in time, VWAP follows the expected volume curve, POV trades a fixed fraction of realised volume, and implementation shortfall front-loads according to an urgency parameter (Almgren-Chriss).
 - Transaction cost analysis measures execution against a benchmark: arrival price (implementation shortfall) captures the full cost of the decision, while interval VWAP mostly measures timing within the interval and can be gamed.
-- Perold's implementation shortfall splits the gap between the paper portfolio and the real one into delay, execution (impact and spread), opportunity cost of unfilled shares, and fees.
+- Perold's implementation shortfall is the gap between a costless paper portfolio and the real one; the standard expanded breakdown (Kissell 2006) splits it into delay, execution (impact and spread), opportunity cost of unfilled shares, and fees.
 - Single-order slippage is dominated by volatility (tens of basis points of noise), so TCA conclusions need hundreds to thousands of orders and markouts to tell impact from adverse price moves.
 
 ## Learning objectives
@@ -76,7 +76,8 @@ Signed arrival slippage for side $d$ ($+1$ buy) and average fill price $\bar p$ 
 
 ### Perold's implementation shortfall
 
-Perold (1988) compares the real portfolio with a paper portfolio that trades the full target $Q$ at the decision price $P_d$ with no cost.
+Perold (1988) compares the real portfolio with a paper portfolio that trades the full target $Q$ at the decision price $P_d$ with no cost, and defines the implementation shortfall as the difference in their performance.
+The four-way split below, with a separate delay term, is the practitioners' expanded implementation shortfall (Kissell 2006).
 For a buy with fills $q_i$ at $p_i$, executed total $Q_e = \sum q_i$, arrival price $P_a$, end-of-horizon price $P_{\text{end}}$ and fees $F$:
 
 $$
@@ -145,7 +146,8 @@ Of the 0.45 move from arrival to completion, 0.15 (one third) reverted, which po
 ### Example 6: how many orders before TCA means anything
 
 With 2% daily volatility and a uniform half-day schedule, the standard deviation of arrival slippage from price noise alone is $2\% \times \sqrt{0.5/3} = 81.65$ bp (a 20,000-path simulation, seed 8, gives about 81.85).
-Detecting a 5 bp average cost difference at 1.96 standard errors needs about $(1.96 \times 81.65/5)^2 \approx 1{,}024$ independent orders, and more when orders are correlated through the market.
+Pinning a 5 bp average cost at 1.96 standard errors needs about $(1.96 \times 81.65/5)^2 \approx 1{,}024$ independent orders.
+Comparing two algorithms is harder: a two-sample test at the 5% level with 80% power needs $2\,((1.96 + 0.84) \times 81.65/5)^2 \approx 4{,}186$ orders per algorithm, and more when orders are correlated through the market.
 
 ## Pitfalls
 
@@ -203,7 +205,8 @@ Detecting a 5 bp average cost difference at 1.96 standard errors needs about $(1
 > So a single order says almost nothing about algorithm quality.
 
 > [!question]- ms-tca-sample-size | How many orders to detect a 5 bp cost difference with 82 bp of noise per order?
-> About 1,000: $(1.96 \times 81.65/5)^2 \approx 1{,}024$, more if orders are correlated.
+> About 1,000 to put a single algorithm's 5 bp mean at 1.96 standard errors: $(1.96 \times 81.65/5)^2 \approx 1{,}024$.
+> To compare two algorithms at 5% significance and 80% power, about 4,186 per algorithm: $2\,((1.96 + 0.84) \times 81.65/5)^2$; more if orders are correlated.
 
 > [!question]- ms-tca-is-algo | How does an implementation-shortfall algorithm decide how fast to trade?
 > It front-loads along an Almgren-Chriss style trajectory whose urgency $\kappa = \sqrt{\lambda\sigma^2/\eta}$ rises with risk aversion and volatility and falls with impact.
@@ -232,5 +235,6 @@ Detecting a 5 bp average cost difference at 1.96 standard errors needs about $(1
 - Larry Harris, *Trading and Exchanges: Market Microstructure for Practitioners* (Oxford University Press, 2003).
 - Barry Johnson, *Algorithmic Trading and DMA* (4Myeloma Press, 2010).
 - Robert Kissell, *The Science of Algorithmic Trading and Portfolio Management* (Academic Press, 2013).
+- Robert Kissell (2006), The Expanded Implementation Shortfall: Understanding Transaction Cost Components, *Journal of Trading* 1(3).
 - Cartea, Jaimungal and Penalva, *Algorithmic and High-Frequency Trading* (Cambridge University Press, 2015).
 - Related notes: [Market Impact Models](06-Market-Impact-Models.md), [Optimal Execution: Almgren-Chriss](07-Optimal-Execution-Almgren-Chriss.md), [Transaction Costs and Turnover](../09-Alpha-Research-and-Portfolio/13-Transaction-Costs-and-Turnover.md).

@@ -39,7 +39,7 @@ def bcs_equilibrium() -> None:
     lam_fund, lam_jump, mean_jump, c_speed = 1.0, 0.5, 0.01, 0.0005
     h = bcs_half_spread(lam_fund, lam_jump, mean_jump)
     check("half-spread h ($)", h, 0.0035173, 1e-7)
-    check("spread s = 2h ($)", 2 * h, 0.0070346, 1e-7)
+    check("spread s = 2h ($)", 2 * h, 0.0070347, 1e-7)
     check("h / mean jump (Lambert W(0.5))", h / mean_jump, 0.351734, 1e-6)
     check("revenue from fundamental traders per second", lam_fund * h, sniping_cost_rate(h, lam_jump, mean_jump), 1e-12)
     n_firms = lam_fund * h / c_speed
@@ -50,9 +50,9 @@ def bcs_equilibrium() -> None:
     h3 = bcs_half_spread(2.0, lam_jump, mean_jump)
     check("spread with twice as many fundamental traders", 2 * h3, 0.0040778, 1e-7)
     # Stylised batching: only jumps in the last delta of a batch interval tau can be sniped
-    for ratio, spread in ((0.1, 0.00095345), (0.001, 0.00000999)):
+    for ratio, spread, tol in ((0.1, 0.00095345, 1e-8), (0.001, 0.000009995, 1e-9)):
         h_b = bcs_half_spread(lam_fund, lam_jump, mean_jump, exposure=ratio)
-        check(f"spread when sniping exposure is scaled by delta/tau = {ratio}", 2 * h_b, spread, 1e-8)
+        check(f"spread when sniping exposure is scaled by delta/tau = {ratio}", 2 * h_b, spread, tol)
 
 
 def stale_quote_race() -> None:

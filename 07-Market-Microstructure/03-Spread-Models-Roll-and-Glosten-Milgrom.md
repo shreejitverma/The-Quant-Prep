@@ -97,9 +97,10 @@ Properties worth stating in an interview:
 - The spread is positive whenever $0 < \mu$ and $0 < \pi < 1$, even with zero costs and risk neutrality: it is pure adverse selection.
 - It widens with the share of informed traders $\mu$ and the value uncertainty $V_H - V_L$.
 - The market maker breaks even only on average: it loses to informed traders and gains the same amount from uninformed ones, so uninformed traders pay for the information.
-- Quotes and transaction prices are martingales with respect to public information; after each trade the prior $\pi$ updates and both quotes move toward the trade's side.
+- Transaction prices are martingales with respect to public information: each trade prints at $\mathbb{E}[V \mid \text{history including this trade}]$, so trade-price changes are serially uncorrelated and a Roll estimator applied to Glosten-Milgrom prices sees no bounce at all (pure adverse selection is the $\phi = 0$ case above).
+- After each trade the prior $\pi$ updates and both quotes move toward the trade's side; the quote midpoint is not in general a martingale, because the market maker's expectation sits off-centre between bid and ask whenever $\pi \ne \tfrac12$.
 - With repeated trading the posterior converges to the truth and the spread converges to zero.
-- If $\mu$ is too large relative to uninformed demand, quotes can be so wide that no one but the informed would trade; in richer versions (with elastic uninformed demand) the market can shut down.
+- In the basic model uninformed traders trade whatever the quotes, so the market operates for any $\mu < 1$; with price-elastic uninformed demand (an extension Glosten and Milgrom discuss) a large enough informed share widens the spread until the uninformed withdraw and the market shuts down.
 
 ### Spread decomposition
 
@@ -171,7 +172,7 @@ A market maker facing this flow keeps $\phi$ per trade on average and loses $\th
 ## Pitfalls
 
 - Applying Roll to data with persistent trade signs (split orders) and reading the downward-biased number as the true spread.
-- Reporting a Roll spread of zero when the autocovariance is positive; it is undefined, not zero.
+- Reporting a Roll spread of zero when the autocovariance is positive as if it were a measurement; it is undefined, and any convention (set to zero, Bayesian version) must be stated.
 - Using quote midpoints in Roll; it needs transaction prices, because the bounce is the signal.
 - Saying Glosten-Milgrom spreads come from risk aversion or inventory; the model has neither.
 - Forgetting the asymmetry: with an unequal prior the quotes are not symmetric around the prior mean.
@@ -228,8 +229,8 @@ A market maker facing this flow keeps $\phi$ per trade on average and loses $\th
 > In the simulated example the mean spread falls from 2.406 to about 0.324 after 50 trades.
 
 > [!question]- ms-spread-gm-martingale | Are Glosten-Milgrom transaction prices predictable?
-> No: each trade price is a conditional expectation of $V$, so prices form a martingale with respect to public information.
-> Trade prices still bounce between bid and ask, but the quote midpoint sequence carries no predictable drift.
+> No: each trade prints at the market maker's updated expectation of $V$ given all trades so far, so transaction prices form a martingale and their changes are serially uncorrelated.
+> There is no Roll-style bounce (Roll would estimate a zero spread), even though the quoted spread is positive; the midpoint itself need not be a martingale when the posterior is not one half.
 
 > [!question]- ms-spread-components | Name the three components of the spread and how each shows up after a trade.
 > Order processing and inventory are transitory (prices revert); adverse selection is permanent (the expected value moves).

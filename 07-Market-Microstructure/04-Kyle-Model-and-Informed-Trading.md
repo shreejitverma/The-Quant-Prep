@@ -152,7 +152,7 @@ Simulating the insider against these $\lambda_n$ gives about 0.6205 for $N = 2$ 
 - Treating Kyle's lambda as a model of large-order cost: it is linear and permanent, while empirical metaorder impact is concave and partly transient.
 - Forgetting that the market maker sets price after seeing total flow; there is no bid-ask spread in the model, only a price schedule.
 - Confusing the insider's expected profit with realised profit; on any draw he can lose if noise flow moves the price past $v$.
-- Assuming the multi-period insider front-loads; in equilibrium he trades gradually so that prices stay a martingale.
+- Assuming the multi-period insider front-loads; in equilibrium he trades gradually so as not to give his information away early, and prices remain a martingale because market makers are competitive.
 
 ## Interview questions
 

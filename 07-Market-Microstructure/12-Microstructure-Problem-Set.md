@@ -12,7 +12,7 @@ sources: [Harris (2003) Trading and Exchanges - Market Microstructure for Practi
 
 ## TL;DR
 
-- Most microstructure interview questions reduce to a handful of formulas: Roll's $c = \sqrt{-\text{Cov}}$, Glosten-Milgrom's conditional expectations, Kyle's $\lambda = \sigma_v/(2\sigma_u)$, the square-root law, the Almgren-Chriss sinh trajectory and Perold's shortfall decomposition.
+- Most microstructure interview questions reduce to a handful of formulas: Roll's $c = \sqrt{-\text{Cov}}$, Glosten-Milgrom's conditional expectations, Kyle's $\lambda = \sigma_v/(2\sigma_u)$, the square-root law, the Almgren-Chriss sinh trajectory and the (expanded) implementation shortfall decomposition.
 - Always state the sign convention (buy positive) and the unit (dollars, ticks, basis points) before computing.
 - Separate what is transitory (spread, temporary impact, bounce) from what is permanent (information, permanent impact); most "trick" questions hinge on that split.
 - Fee and rule questions need the net price and the current rule text with its date; numeric questions need the arithmetic said out loud.

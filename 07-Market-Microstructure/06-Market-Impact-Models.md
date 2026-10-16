@@ -48,7 +48,7 @@ Facts to know:
 
 - It is reported across equities, futures, options and other markets, over a wide range of $Q/V_D$, by Toth et al. (2011) and in the survey of Bouchaud, Bonart, Donier and Gould (2018).
 - To first order it does not depend on the execution horizon $T$ or the number of child orders, which a linear-in-rate model would not predict.
-- Concavity means the marginal share costs less than the average share of a smaller order: doubling the order raises cost per share by $\sqrt{2}$ and total cost by $2\sqrt{2}$.
+- Concavity means each additional share moves the price less than the one before: doubling the order raises cost per share by $\sqrt{2}$, not 2, and total cost by $2\sqrt{2}$, not 4.
 - Toth et al. explain it with a latent order book whose liquidity vanishes linearly near the current price: removing $Q$ shares then moves the price by an amount proportional to $\sqrt{Q}$.
 - It is a statement about averages: the prefactor $Y$ varies by market and period and must be calibrated on your own fills.
 
@@ -170,7 +170,7 @@ If peak impact is 30 bp and impact accumulated as $\sqrt{q}$ along the order, th
 ## Pitfalls
 
 - Treating a single order's price move as its impact; volatility swamps it, and only averages over many orders identify impact.
-- Applying a linear model to large orders: linear impact overstates the cost of small orders and understates large ones relative to square-root.
+- Applying a linear model across order sizes: a linear model calibrated at a typical size understates the cost of smaller orders and overstates the cost of larger ones relative to the square-root law, because $\sqrt{Q}$ lies above the line through the origin and the calibration point for smaller sizes and below it for larger ones.
 - Forgetting that impact is measured relative to volatility and volume: the same share count is cheap in a liquid, calm stock and expensive in an illiquid, volatile one.
 - Calibrating impact on your own fills without conditioning on alpha: if you buy before prices rise because your signal works, the rise looks like impact.
 - Assuming impact decays instantly or never; it decays slowly, so back-to-back metaorders in the same direction pay for each other's impact.

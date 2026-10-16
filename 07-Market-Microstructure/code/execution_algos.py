@@ -134,6 +134,10 @@ def tca_noise() -> None:
     check("sd of arrival slippage, uniform half-day schedule (bp)", sd_bp, 81.65, 0.01)
     n = (1.96 * sd_bp / 5.0) ** 2
     check("orders to detect a 5 bp mean at 1.96 standard errors", n, 1_024.4, 0.1)
+    # Comparing two algorithms (two-sample test, 5% two-sided, 80% power): n per arm = 2 ((z_a + z_b) sd / diff)^2
+    z_alpha, z_power = 1.959964, 0.841621
+    n_arm = 2 * ((z_alpha + z_power) * sd_bp / 5.0) ** 2
+    check("orders per algorithm to compare two algorithms at 80% power", n_arm, 4_186.0, 1.0)
     rng = np.random.default_rng(8)
     steps, paths = 1_000, 20_000
     w = np.cumsum(rng.standard_normal((paths, steps)) * math.sqrt(horizon_days / steps), axis=1)

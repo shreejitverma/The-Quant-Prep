@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [fragmentation-reg-nms-and-routing]
 est_hours: 2
-sources: [Budish Cramton and Shim (2015) The High-Frequency Trading Arms Race - Frequent Batch Auctions as a Market Design Response. Quarterly Journal of Economics 130(4) 1547-1621, Budish Cramton and Shim (2013) working paper version of the same title dated September 17 2013 (empirical figures quoted here), SEC Release 34-78101 (June 17 2016) order granting the IEX exchange registration, SEC Release 34-78102 (June 17 2016) interpretation of automated quotations under Rule 611, Foucault Kozhan and Tham (2017) Toxic Arbitrage. Review of Financial Studies 30(4) 1053-1094]
+sources: [Budish Cramton and Shim (2015) The High-Frequency Trading Arms Race - Frequent Batch Auctions as a Market Design Response. Quarterly Journal of Economics 130(4) 1547-1621, Budish Cramton and Shim (2013) working paper version of the same title dated September 17 2013 (empirical figures quoted here), SEC Release 34-78101 (June 17 2016) order granting the IEX exchange registration, SEC Release 34-78102 (June 17 2016) interpretation of automated quotations under Regulation NMS, SEC Division of Trading and Markets Staff Guidance on Automated Quotations under Regulation NMS, Foucault Kozhan and Tham (2017) Toxic Arbitrage. Review of Financial Studies 30(4) 1053-1094]
 ---
 
 # Latency Arbitrage and the Value of Speed
@@ -16,7 +16,7 @@ sources: [Budish Cramton and Shim (2015) The High-Frequency Trading Arms Race - 
 - Budish, Cramton and Shim show that ES and SPY prices, almost perfectly correlated at human time scales, decouple at millisecond horizons, creating frequent arbitrage opportunities whose median duration fell from 97 ms in 2005 to 7 ms in 2011 while the profits stayed (in their 2013 working-paper data).
 - In their model the market maker's zero-profit condition puts the cost of being sniped into the spread: $\lambda_{\text{jump}} \Pr(J > s/2)\, \mathbb{E}[J - s/2 \mid J > s/2] = \lambda_{\text{fund}}\, s/2$, so investors pay for the arms race through wider spreads.
 - Frequent batch auctions replace continuous matching with uniform-price auctions at short discrete intervals: a speed edge $\delta$ only matters for signals that arrive in the last $\delta$ of an interval $\tau$, and competition moves from speed to price.
-- Speed bumps such as IEX's 350-microsecond delay are a narrower fix: they delay incoming orders so that the exchange's own pegged orders can reprice before snipers arrive; the SEC treats delays under a millisecond as potentially de minimis for protected-quote status.
+- Speed bumps such as IEX's 350-microsecond delay are a narrower fix: they delay incoming orders so that the exchange's own pegged orders can reprice before snipers arrive; the SEC allows de minimis intentional delays for protected-quote status, and its staff guidance puts delays under a millisecond in that category.
 
 ## Learning objectives
 
@@ -88,9 +88,10 @@ Costs and objections: orders wait for the next batch, cross-venue and cross-asse
 ### Speed bumps
 
 A speed bump delays messages by a fixed time.
-IEX was approved as a national securities exchange on 2016-06-17 (Release 34-78101) with a point-of-presence and coil delay of 350 microseconds on inbound orders, while inbound market data from other venues to IEX does not pass through the coil.
+IEX was approved as a national securities exchange on 2016-06-17 (Release 34-78101) with a point of presence and a coil of fibre that add about 350 microseconds between members and the matching engine (applied, at approval, to members' messages in both directions), while the market data IEX itself takes in from other venues does not pass through the coil.
 That asymmetry is the point: IEX's own pegged orders reprice from undelayed market data before a sniper's order, delayed by 350 microseconds, reaches the matching engine; IEX also uses a crumbling-quote signal to anticipate when the NBBO is about to move.
-The same day, the SEC interpreted "immediate" for automated quotations under Rule 611 to include de minimis delays, stating its preliminary belief that delays of less than a millisecond "may be at a de minimis level" (Release 34-78102), so a venue with such a bump can still have protected quotes.
+The same day, the SEC interpreted "immediate" in the definition of an automated quotation (which decides whether a quote is protected under Rule 611) to permit intentional delays of a de minimis length, without adopting a numeric threshold (Release 34-78102).
+Division of Trading and Markets staff guidance states that "delays of less than a millisecond are at a de minimis level that would not impair fair and efficient access to a quotation", so a venue with such a bump can still have protected quotes.
 
 Asymmetric bumps that delay only liquidity-taking orders, while letting makers cancel immediately, protect makers directly; symmetric bumps only shift everyone's clock unless the venue itself acts on undelayed information.
 
@@ -107,7 +108,7 @@ Asymmetric bumps that delay only liquidity-taking orders, while letting makers c
 
 Hypothetical parameters per second: fundamental investors arrive at $\lambda_{\text{fund}} = 1$, jumps at $\lambda_{\text{jump}} = 0.5$ with exponential size of mean 1 cent, speed costs $c_{\text{speed}} = 0.0005$ dollars per second.
 For exponential jumps $\Pr(J > h)\,\mathbb{E}[J - h \mid J > h] = \mu_J e^{-h/\mu_J}$, so the condition is $0.5 \times 0.01\,e^{-h/0.01} = h$.
-With $u = h/0.01$, $0.5\,e^{-u} = u$, so $u = W(0.5) = 0.351734$ (Lambert W) and $h = 0.0035173$: a spread of 0.0070346 dollars.
+With $u = h/0.01$, $0.5\,e^{-u} = u$, so $u = W(0.5) = 0.351734$ (Lambert W) and $h = 0.0035173$: a spread of 0.0070347 dollars.
 Entry is $N = \lambda_{\text{fund}}\,h / c_{\text{speed}} \approx 7.03$ firms, whose total speed spending equals the investors' spread payments.
 
 Comparative statics:
@@ -118,7 +119,7 @@ Comparative statics:
 ### Example 2: batching shrinks the sniping term
 
 If only jumps landing in the last $\delta$ of each batch can be sniped, the sniping term scales by $\delta/\tau$ in this stylised version.
-With $\delta/\tau = 0.1$ the spread falls to 0.00095345; with $\delta/\tau = 0.001$ (a 1 ms edge in a 1 s batch) to 0.00000999.
+With $\delta/\tau = 0.1$ the spread falls to 0.00095345; with $\delta/\tau = 0.001$ (a 1 ms edge in a 1 s batch) to 0.000009995.
 The full Budish-Cramton-Shim analysis is richer, but the direction and the $\delta/\tau$ scaling are the core intuition.
 
 ### Example 3: one race
@@ -179,11 +180,11 @@ With a 350-microsecond delay on takers only, the sniper's order arrives at 360 m
 > Orders wait up to one interval, venues and related instruments must coordinate batch times, and participants must redesign order types and tactics.
 
 > [!question]- ms-lat-iex | How does IEX's speed bump work?
-> Inbound orders pass a 350-microsecond point-of-presence and coil delay while IEX's market data from other venues does not, so IEX's pegged orders reprice before a sniper's delayed order arrives.
+> Members' orders pass a point of presence and fibre coil worth about 350 microseconds before reaching the matching engine, while the market data IEX takes in from other venues does not, so IEX's pegged orders reprice before a sniper's delayed order arrives.
 > The SEC approved IEX as an exchange on 2016-06-17.
 
 > [!question]- ms-lat-de-minimis | Can a venue with an intentional delay still display protected quotes?
-> Yes if the delay is de minimis; in 2016 the SEC said delays under a millisecond may be de minimis for "immediate" response under Rule 611 (Release 34-78102).
+> Yes if the delay is de minimis: the SEC's 2016 interpretation (Release 34-78102) allows de minimis intentional delays in an automated quotation without setting a threshold, and staff guidance says delays under a millisecond are de minimis.
 
 > [!question]- ms-lat-asymmetric-bump | Why does an asymmetric speed bump protect makers but a symmetric one may not?
 > Delaying only takers gives cancels a head start; a symmetric bump delays cancels too, so relative arrival order is unchanged unless the venue acts on undelayed data.
@@ -212,5 +213,5 @@ With a 350-microsecond delay on takers only, the sniper's order arrives at 360 m
 
 - Budish, Cramton and Shim (2015), The High-Frequency Trading Arms Race: Frequent Batch Auctions as a Market Design Response, *Quarterly Journal of Economics* 130(4).
 - Foucault, Kozhan and Tham (2017), Toxic Arbitrage, *Review of Financial Studies* 30(4).
-- SEC Release 34-78101 (2016), IEX exchange registration order, and Release 34-78102 (2016), automated quotations interpretation.
+- SEC Release 34-78101 (2016), IEX exchange registration order, Release 34-78102 (2016), automated quotations interpretation, and the Division of Trading and Markets staff guidance on automated quotations.
 - Related notes: [Adverse Selection and Flow Toxicity](05-Adverse-Selection-and-Flow-Toxicity.md), [Fragmentation, Reg NMS and Routing](09-Fragmentation-Reg-NMS-and-Routing.md), [Low-Latency Engineering](../12-Quant-Development/03-Low-Latency-Engineering.md).

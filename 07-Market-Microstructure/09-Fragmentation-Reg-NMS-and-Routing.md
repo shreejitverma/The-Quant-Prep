@@ -39,7 +39,7 @@ Regulation NMS (adopted 2005) answers with four pieces: consolidated market data
 - Protected bid or protected offer (600(b)(81)): "a quotation in an NMS stock that: (i) Is displayed by an automated trading center; (ii) Is disseminated pursuant to an effective national market system plan; and (iii) Is an automated quotation that is the best bid or best offer of a national securities exchange, or the best bid or best offer of a national securities association."
 - Trade-through (600(b)(105)): "the purchase or sale of an NMS stock during regular trading hours, either as principal or agent, at a price that is lower than a protected bid or higher than a protected offer."
 - Intermarket sweep order (600(b)(47)): a limit order marked as an ISO, sent while "one or more additional limit orders, as necessary, are routed to execute against the full displayed size of any protected bid, in the case of a limit order to sell, or the full displayed size of any protected offer, in the case of a limit order to buy, for the NMS stock with a price that is superior to the limit price of the limit order identified as an intermarket sweep order."
-- Round lot (600(b)(93), MDI rules): 100 shares for stocks with an average closing price of $250.00 or less, 40 shares from $250.01 to $1,000.00, 10 shares from $1,000.01 to $10,000.00 and 1 share above that.
+- Round lot (600(b)(93), first defined by the 2020 Market Data Infrastructure rules and revised in 2024, in effect since 2025-11-03): 100 shares for stocks with an average closing price of $250.00 or less, 40 shares from $250.01 to $1,000.00, 10 shares from $1,000.01 to $10,000.00 and 1 share above that.
 
 The NBBO is the highest protected bid and lowest protected offer across venues.
 Only an exchange's top-of-book is protected: depth below the best price and dark liquidity are not.
@@ -64,7 +64,7 @@ The exceptions in 611(b), paraphrased:
 Rule 611 is a rule on trading centers, not on traders: the router or venue must not execute through a better protected quote unless an exception applies, which is why ISOs exist and why every SOR logs the protected-quote state it saw.
 
 Status as of 2026-10: the SEC proposed on 2026-06-11 to rescind Rule 611 and the locked and crossed markets provision Rule 610(e), with comments due 2026-08-17 (Release 34-105655, File No. S7-2026-20).
-The proposal argues that best-execution obligations make 611 unnecessary; it is a proposal, so both rules remain in force until a final rule is adopted and becomes effective.
+The proposal argues that the 2005 rules raised costs and complexity, limited order-handling choice and contributed to fragmentation, and that Rule 611 is not needed as a backstop to best execution; it is a proposal, so both rules remain in force until a final rule is adopted and becomes effective.
 
 ### Rule 610: access, fees and locked markets
 
@@ -80,7 +80,7 @@ The cap bounds the gap between displayed and net prices.
 
 Rule 612 forbids sub-penny quoting at $1.00 and above (and sub-$0.0001 below $1.00); the 2024 amendment's half-penny tick for tightly quoted stocks is exempted until November 2027.
 Rule 603 and the NMS plans create consolidated data distributed by exclusive securities information processors (SIPs): the CTA and CQ plans for NYSE-listed and other non-Nasdaq stocks (Tapes A and B) and the UTP plan for Nasdaq-listed stocks (Tape C).
-The 2020 Market Data Infrastructure rules redefine round lots by price (above) and add odd-lot information; the SEC's June 2026 proposing release notes that the SIPs began disseminating best odd-lot order information on 2026-04-27 while full odd-lot dissemination is delayed to May 2028.
+The 2020 Market Data Infrastructure rules define round lots by price (tiers revised in 2024, above) and add odd-lot information; the SEC's June 2026 proposing release notes that the SIPs began disseminating best odd-lot order information on 2026-04-27 while full odd-lot dissemination is delayed to May 2028.
 
 ### SIP versus direct feeds
 
@@ -252,7 +252,7 @@ With the NBB at 22.40, a short sale at 22.41 is permitted and one at 22.40 is no
 > MiFID II Article 27 obliges firms to take all sufficient steps for the best possible result across price, costs, speed, likelihood and other factors; there is no venue-level trade-through rule.
 > Reg NMS imposes a venue-level price priority for displayed top-of-book quotes, alongside FINRA's best execution duty.
 
-> [!question]- ms-nms-round-lot | What is a round lot for a stock averaging $600 under the MDI rules?
+> [!question]- ms-nms-round-lot | What is a round lot for a stock averaging $600 under Rule 600(b)(93) as in effect since November 2025?
 > 40 shares: 100 for $250.00 or less, 40 for $250.01 to $1,000.00, 10 up to $10,000.00, then 1.
 
 ## In this repo and SDE-Interview-Prep
