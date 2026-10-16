@@ -40,7 +40,21 @@ def equicorrelation_cards() -> None:
     w = np.linalg.solve(c * np.outer(vol, vol), np.ones(4))
     w /= w.sum()
     check("GMV of equal-vol equicorrelated assets: max |w - 1/4|", np.abs(w - 0.25).max(), 0.0, 1e-12)
-    check("n = 4 lower bound -1/(n - 1)", -1 / 3, -0.333333, 1e-6)
+
+    def equicorr(rho: float) -> np.ndarray:
+        return (1 - rho) * np.eye(4) + rho * np.ones((4, 4))
+
+    def min_eig(rho: float) -> float:
+        return float(np.linalg.eigvalsh(equicorr(rho))[0])
+
+    lo, hi = -1.0, 0.0
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (lo, mid) if min_eig(mid) >= 0 else (mid, hi)
+    check("n = 4 lower bound: most negative rho with min eigenvalue >= 0 (bisection)", hi, -0.333333, 1e-6)
+    check("min eigenvalue at rho = -1/3", min_eig(-1 / 3), 0.0, 1e-12)
+    check("min eigenvalue at rho = -1/3 - 0.01 (negative)", min_eig(-1 / 3 - 0.01), -0.03, 1e-12)
+    check("equal-weight variance 1'C1/16 at rho = -1/3", np.ones(4) @ equicorr(-1 / 3) @ np.ones(4) / 16, 0.0, 1e-12)
 
 
 def correlation_cards() -> None:
@@ -105,8 +119,7 @@ def spectral_cards() -> None:
 
 def projection_and_trace_cards() -> None:
     print("\n[la-ps-hat-matrix-trace, la-ps-quadratic-form-expectation]")
-    rng = np.random.default_rng(0)
-    x = rng.standard_normal((100, 5))
+    x = np.random.default_rng(0).standard_normal((100, 5))
     hat = x @ np.linalg.solve(x.T @ x, x.T)
     check("trace of hat matrix, n = 100, p = 5", np.trace(hat), 5.0, 1e-10)
     check("residual degrees of freedom tr(I - P)", np.trace(np.eye(100) - hat), 95.0, 1e-10)
@@ -116,8 +129,8 @@ def projection_and_trace_cards() -> None:
     mu = np.ones(3)
     sigma = np.eye(3)
     check("E[x'Ax] = tr(A Sigma) + mu'A mu", np.trace(a @ sigma) + mu @ a @ mu, 12.0, 1e-12)
-    z = rng.standard_normal((400_000, 3)) + mu
-    check("simulated E[x'Ax] (seed 0)", float(np.mean(np.einsum("ij,jk,ik->i", z, a, z))), 12.0, 0.03)
+    z = np.random.default_rng(0).standard_normal((400_000, 3)) + mu
+    check("simulated E[x'Ax] (fresh seed 0)", float(np.mean(np.einsum("ij,jk,ik->i", z, a, z))), 12.00, 5e-3)
 
 
 def markov_and_recurrence_cards() -> None:
@@ -125,6 +138,7 @@ def markov_and_recurrence_cards() -> None:
     p = np.array([[0.5, 0.5, 0.0], [0.25, 0.5, 0.25], [0.0, 0.5, 0.5]])
     lam, vec = np.linalg.eig(p.T)
     k = int(np.argmin(np.abs(lam - 1)))
+    check("selected eigenvalue of P'", np.real(lam[k]), 1.0, 1e-12)
     pi = np.real(vec[:, k] / vec[:, k].sum())
     for i, want in enumerate((0.25, 0.5, 0.25)):
         check(f"stationary pi_{i + 1}", pi[i], want, 1e-12)
@@ -223,7 +237,17 @@ def numerical_cards() -> None:
     for k, want in enumerate((0.33, 0.3333, 0.33333333)):
         check(f"Newton reciprocal of 3, iterate {k + 1}", recip[k], want, 1e-12)
     check("error after 3 steps 1/3 - x_3", 1 / 3 - recip[2], 3.33e-9, 1e-11)
-    check("max stable gradient step 2/lambda_max for lambda_max = 100", 2 / 100, 0.02, 1e-12)
+    a_gd = np.diag([1.0, 100.0])
+    check("max stable gradient step 2/lambda_max for lambda_max = 100", 2 / np.linalg.eigvalsh(a_gd)[-1], 0.02, 1e-12)
+
+    def gd_norm(eta: float, steps: int = 2000) -> float:
+        x = np.ones(2)
+        for _ in range(steps):
+            x = x - eta * (a_gd @ x)
+        return float(np.linalg.norm(x))
+
+    check("gradient descent on diag(1, 100), eta = 0.019: |x_2000| (converges)", gd_norm(0.019), 0.0, 1e-12)
+    check("eta = 0.021: log10 |x_2000| (diverges, |1 - 2.1| = 1.1 per step)", math.log10(gd_norm(0.021)), 2000 * math.log10(1.1), 1e-9)
     low = np.linalg.cholesky(np.array([[4.0, 2.0], [2.0, 3.0]]))
     check("Cholesky L11", low[0, 0], 2.0, 1e-12)
     check("Cholesky L21", low[1, 0], 1.0, 1e-12)
@@ -243,10 +267,18 @@ def counting_cards() -> None:
 
 def optimization_cards() -> None:
     print("\n[la-ps-lagrange-xy, la-ps-projection-onto-line, la-ps-kkt-halfspace]")
-    c = 10.0
-    check("max xy s.t. x + y = 10", (c / 2) ** 2, 25.0, 1e-12)
-    check("multiplier lambda = c/2", c / 2, 5.0, 1e-12)
-    check("dV/dc = c/2 by finite difference", (((c + 1e-6) / 2) ** 2 - ((c - 1e-6) / 2) ** 2) / 2e-6, 5.0, 1e-6)
+
+    def best_on_line(c: float) -> tuple[float, float]:
+        xs = np.linspace(0.0, c, 100_001)
+        vals = xs * (c - xs)
+        i = int(np.argmax(vals))
+        return float(xs[i]), float(vals[i])
+
+    x_opt, value = best_on_line(10.0)
+    check("grid along x + y = 10: argmax x", x_opt, 5.0, 1e-12)
+    check("max xy s.t. x + y = 10", value, 25.0, 1e-12)
+    check("multiplier from stationarity d(xy)/dx = y = lambda", 10.0 - x_opt, 5.0, 1e-12)
+    check("dV/dc by finite difference of the grid optimum", (best_on_line(10.1)[1] - best_on_line(9.9)[1]) / 0.2, 5.0, 1e-9)
     a = np.array([1.0, 2.0])
     point = 5 * a / (a @ a)
     check("closest point to origin on x + 2y = 5: x", point[0], 1.0, 1e-12)

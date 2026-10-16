@@ -119,7 +119,7 @@ Check the shadow price: the value as a function of the budget $c$ is $c^2/4$, wi
 > Five eigenvalues equal to 1 and 95 equal to 0, so the trace is 5. It is an orthogonal projection onto a 5-dimensional column space.
 
 > [!question]- la-ps-quadratic-form-expectation | $x$ has mean $(1, 1, 1)$ and identity covariance; $A = \text{diag}(1, 2, 3)$. Find $E[x^\top Ax]$.
-> 12: $\text{tr}(A\Sigma) + \mu^\top A\mu = 6 + 6$. A simulation with 400,000 draws (seed 0) gives about 12.01.
+> 12: $\text{tr}(A\Sigma) + \mu^\top A\mu = 6 + 6$. A simulation with 400,000 draws from a fresh `default_rng(0)` gives about 12.00.
 
 > [!question]- la-ps-three-state-markov | Stationary distribution of $P = \begin{pmatrix} 0.5 & 0.5 & 0 \\ 0.25 & 0.5 & 0.25 \\ 0 & 0.5 & 0.5\end{pmatrix}$?
 > $(0.25, 0.5, 0.25)$, the left eigenvector for eigenvalue 1. The other eigenvalues are 0.5 and 0, so convergence halves the error each step.

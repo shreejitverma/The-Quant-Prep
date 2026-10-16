@@ -408,6 +408,8 @@ def rmt_cleaning() -> None:
         check(f"sample eigenvalue {i + 1} (seed 2024)", lam[i], want, 5e-3)
     check("q = N/T", q, 0.4, 1e-12)
     check("plain MP edge (1 + sqrt q)^2", (1 + math.sqrt(q)) ** 2, 2.6649, 1e-4)
+    check("eigenvalues above the plain edge (same count here)", int((lam > (1 + math.sqrt(q)) ** 2).sum()), 4, 0)
+    check("true eigenvalues above the bulk (market mode and three sector contrasts)", int((true_lam > 1.0).sum()), 4, 0)
     cleaned_lam = lam.copy()
     cleaned_lam[n_signal:] = lam[n_signal:].mean()  # trace preserving
     cleaned = (vec * cleaned_lam) @ vec.T
@@ -425,6 +427,8 @@ def rmt_cleaning() -> None:
     assert ratio_clean < ratio_sample
     pc1 = vec[:, 0] * np.sign(vec[:, 0].sum())
     check("PC1 eigenportfolio: share of positive weights", float((pc1 > 0).mean()), 1.0, 0)
+    check("PC1 eigenportfolio: smallest unit-norm weight", pc1.min(), 0.055, 5e-4)
+    check("PC1 eigenportfolio: largest unit-norm weight", pc1.max(), 0.130, 5e-4)
 
 
 def main() -> None:

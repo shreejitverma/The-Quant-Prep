@@ -167,13 +167,15 @@ One simulated sample (seed 5) gives a smallest eigenvalue of about $0.326$ and a
 A market factor plus four 25-stock sectors on 100 stocks, $T = 250$ days ($q = 0.4$).
 True eigenvalues: $27.06$, $3.94$, $3.72$, $3.50$, then a bulk starting at $0.81$.
 Sample eigenvalues (seed 2024): $30.15$, $4.60$, $3.77$, $3.17$, then $1.58$, $1.52$, and so on: the bulk is spread by noise and the top is inflated.
-The plain edge $(1 + \sqrt{0.4})^2 = 2.665$ is too high once the market takes its share; the market-adjusted edge $(1 - 30.15/100)(1 + \sqrt{0.4})^2 = 1.862$ leaves exactly 4 eigenvalues above it, the four true factors.
+True noise variance is what is left once the market takes its share, so the market-adjusted edge $(1 - 30.15/100)(1 + \sqrt{0.4})^2 = 1.862$ replaces the plain $(1 + \sqrt{0.4})^2 = 2.665$.
+Both leave exactly 4 eigenvalues above them here, matching the four true spikes: the market mode and three sector contrasts (four sectors plus a market factor give only four spikes, because the sum of the sector directions nearly lines up with the market).
+The adjustment matters when a weak sector spike lands between the two edges.
 Build minimum-variance portfolios and measure their risk under the true correlation: the sample-based portfolio has $2.07$ times the optimal variance, the cleaned one $1.21$ times.
 "Clipping does not find new information; it stops the optimiser from betting on the noise directions."
 
 ### The market eigenportfolio
 
-In the same sample, all 100 weights of the first eigenvector have the same sign: the top eigenportfolio is a long-only, roughly equal-risk market portfolio, and later ones are long-short sector bets.
+In the same sample, all 100 weights of the first eigenvector have the same sign: the top eigenportfolio is a long-only market portfolio (unit-norm weights between $0.055$ and $0.130$), and later ones are long-short sector bets.
 
 ## Pitfalls
 
@@ -224,7 +226,7 @@ In the same sample, all 100 weights of the first eigenvector have the same sign:
 > The band becomes $[0, 4]$: the smallest sample eigenvalues approach 0 and the matrix is nearly singular even though the truth is the identity. That is why an optimiser on such a matrix is badly behaved.
 
 > [!question]- la-pca-market-mode | How do you adjust the MP edge when a large market eigenvalue is present?
-> The market mode absorbs part of the variance, so the noise variance is about $1 - \lambda_1/N$ and $\lambda_+ \approx (1 - \lambda_1/N)(1 + \sqrt{q})^2$. In this note's example that moves the edge from 2.665 to 1.862 and keeps all four sector factors.
+> The market mode absorbs part of the variance, so the noise variance is about $1 - \lambda_1/N$ and $\lambda_+ \approx (1 - \lambda_1/N)(1 + \sqrt{q})^2$. In this note's example that moves the edge from 2.665 to 1.862; both keep the four spikes (the market mode and three sector contrasts), but only the adjusted edge measures the noise level correctly.
 
 > [!question]- la-pca-clipping-rmt | Describe RMT eigenvalue clipping.
 > Keep eigenvalues above the edge $\lambda_+$, replace all others by their average so the trace is unchanged, rebuild $Q\tilde\Lambda Q^\top$ and reset the diagonal to 1. Eigenvectors are kept; only the noisy spectrum is flattened.

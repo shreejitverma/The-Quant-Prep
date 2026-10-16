@@ -13,7 +13,7 @@ sources: [Strang - Introduction to Linear Algebra 5th ed ch 7, Trefethen and Bau
 ## TL;DR
 
 - Every $A \in \mathbb{R}^{m \times n}$ factors as $A = U\Sigma V^\top = \sum_i\sigma_iu_iv_i^\top$ with orthonormal $U$, $V$ and $\sigma_1 \ge \sigma_2 \ge \dots \ge 0$; $\sigma_i^2$ are the eigenvalues of $A^\top A$ and $AA^\top$.
-- $\lVert A\rVert_2 = \sigma_1$, $\lVert A\rVert_F = \sqrt{\sum\sigma_i^2}$, rank = number of non-zero $\sigma_i$, condition number $\kappa_2 = \sigma_1/\sigma_r$.
+- $\lVert A\rVert_2 = \sigma_1$, $\lVert A\rVert_F = \sqrt{\sum\sigma_i^2}$, rank = number of non-zero $\sigma_i$, condition number $\kappa_2 = \sigma_1/\sigma_{\min(m,n)}$ for full-rank $A$ (infinite when $A$ is rank-deficient).
 - Eckart-Young: the truncated SVD $A_k$ is the best rank-$k$ approximation in both the 2-norm (error $\sigma_{k+1}$) and the Frobenius norm (error $\sqrt{\sum_{i>k}\sigma_i^2}$).
 - The pseudo-inverse $A^+ = V\Sigma^+U^\top$ gives the minimum-norm least-squares solution, the right answer for collinear regressors.
 - Ridge regression shrinks each SVD direction by $\sigma_i^2/(\sigma_i^2 + \lambda)$; principal-component regression keeps or drops directions outright.
@@ -63,7 +63,7 @@ $$
 \lVert A - A_k\rVert_2 = \sigma_{k+1} \le \lVert A - B\rVert_2, \qquad \lVert A - A_k\rVert_F = \Big(\sum_{i>k}\sigma_i^2\Big)^{1/2} \le \lVert A - B\rVert_F.
 $$
 
-Proof idea for the 2-norm: $B$ has a null space of dimension $n - k$, which must intersect the $(k + 1)$-dimensional span of $v_1, \dots, v_{k+1}$; on a unit vector $x$ in that intersection, $\lVert(A - B)x\rVert = \lVert Ax\rVert \ge \sigma_{k+1}$.
+Proof idea for the 2-norm: $B$ has a null space of dimension at least $n - k$, which must intersect the $(k + 1)$-dimensional span of $v_1, \dots, v_{k+1}$; on a unit vector $x$ in that intersection, $\lVert(A - B)x\rVert = \lVert Ax\rVert \ge \sigma_{k+1}$.
 
 Proof for the Frobenius norm, from Weyl's inequality for singular values, $\sigma_{i+j-1}(X + Y) \le \sigma_i(X) + \sigma_j(Y)$.
 Take $X = A - B$, $Y = B$ and $j = k + 1$: since $\text{rank}\,B \le k$, $\sigma_{k+1}(B) = 0$, so $\sigma_{i+k}(A) \le \sigma_i(A - B)$ for every $i$.
@@ -96,7 +96,7 @@ $$
 
 - Ridge shrinks smoothly: strong directions ($\sigma_i^2 \gg \lambda$) are almost untouched, weak ones are crushed.
 - PCR is a hard threshold: keep the first $k$ directions exactly, drop the rest.
-- Effective degrees of freedom of ridge: $\text{df}(\lambda) = \sum_i\sigma_i^2/(\sigma_i^2 + \lambda)$, the trace of the ridge hat matrix, falling from $p$ at $\lambda = 0$ to 0 as $\lambda \to \infty$.
+- Effective degrees of freedom of ridge: $\text{df}(\lambda) = \sum_i\sigma_i^2/(\sigma_i^2 + \lambda)$, the trace of the ridge hat matrix, falling from $\text{rank}\,X$ ($p$ for full column rank) at $\lambda = 0$ to 0 as $\lambda \to \infty$.
 
 The same filter view covers shrinking a covariance before inversion in a portfolio optimiser and the Tikhonov regularisation used in calibrating local-volatility surfaces.
 Statistical side: [Regularization: Ridge and Lasso](../02-Statistics-and-Econometrics/06-Regularization-Ridge-Lasso.md).

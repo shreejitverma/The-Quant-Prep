@@ -275,7 +275,7 @@ def interior_point(
     raise RuntimeError("interior point did not converge")
 
 
-def kkt_budget_box(q: np.ndarray, c: np.ndarray, lo: np.ndarray, hi: np.ndarray, w: np.ndarray) -> dict[str, float]:
+def kkt_budget_box(q: np.ndarray, c: np.ndarray, lo: np.ndarray, hi: np.ndarray, w: np.ndarray) -> dict:
     """KKT residuals for min 1/2 w'Qw + c'w s.t. 1'w = 1, lo <= w <= hi."""
     grad = q @ w + c
     tol = 1e-9
@@ -283,10 +283,15 @@ def kkt_budget_box(q: np.ndarray, c: np.ndarray, lo: np.ndarray, hi: np.ndarray,
     at_hi = w >= hi - tol
     free = ~(at_lo | at_hi)
     nu = grad[free].mean()
+    # bound multipliers in budget_box_ipm's inequality order: lower bounds 0..n-1, then upper bounds n..2n-1
+    multipliers = np.concatenate([np.where(at_lo, grad - nu, np.inf), np.where(at_hi, nu - grad, np.inf)])
+    k = int(np.argmin(multipliers))
     return {
         "stationarity": float(np.abs(grad[free] - nu).max()),
         "primal": float(max(abs(w.sum() - 1), (lo - w).max(), (w - hi).max(), 0.0)),
-        "min bound multiplier": float(min(np.min(grad[at_lo] - nu, initial=np.inf), np.min(nu - grad[at_hi], initial=np.inf))),
+        "min bound multiplier": float(multipliers[k]),
+        "min multiplier bound index": k,
+        "multipliers": multipliers,
         "nu": float(nu),
     }
 
@@ -331,6 +336,7 @@ def solver_comparison() -> None:
     check("P1 KKT stationarity residual", k["stationarity"], 0.0, 1e-12)
     check("P1 KKT primal residual", k["primal"], 0.0, 1e-12)
     check("P1 smallest bound multiplier (>= 0)", k["min bound multiplier"], 0.017517, 1e-6)
+    check("P1 smallest multiplier sits on asset 5's lower bound (index 4)", k["min multiplier bound index"], 4, 0)
     check("P1 budget multiplier nu = 2 x variance", k["nu"], 2 * w_as @ sigma @ w_as, 1e-12)
     check("P1 IPM complementarity max s_i z_i", float((ipm.s * ipm.z).max()), 0.0, 1e-10)
 
@@ -350,6 +356,15 @@ def solver_comparison() -> None:
     k = kkt_budget_box(q, c, lo, hi, w_as)
     check("P2 KKT stationarity residual", k["stationarity"], 0.0, 1e-12)
     check("P2 smallest bound multiplier (>= 0)", k["min bound multiplier"], 0.000370, 1e-6)
+    check("P2 smallest multiplier sits on asset 1's cap (index n)", k["min multiplier bound index"], n, 0)
+    check("P2 asset 5 lower-bound multiplier", k["multipliers"][n - 1], 0.0071, 1e-4)
+    gap = ipm.x - w_as
+    check("P2 asset carrying the largest IPM gap", int(np.argmax(np.abs(gap))) + 1, 1, 0)
+    mu_ipm = float((ipm.s * ipm.z).max())
+    check("P2 IPM complementarity max s_i z_i", mu_ipm, 1e-10, 1e-11)
+    check("P2 IPM: 0.35 - w_1 against mu / z_1 from the active set", hi[0] - ipm.x[0], mu_ipm / k["min bound multiplier"], 1e-9)
+    check("P2 IPM: 0.35 - w_1 (about 3e-7)", hi[0] - ipm.x[0], 3e-7, 5e-8)
+    check("P2 IPM: w_5 (about 1e-8, not visibly positive)", ipm.x[n - 1], 0.0, 5e-8)
     print(f"P2 iterations: PG {it_pg}, active set {it_as}, IPM {ipm.iterations}")
     check("P2 projected-gradient iterations", it_pg, 178, 0)
     check("P2 active-set iterations", it_as, 4, 0)

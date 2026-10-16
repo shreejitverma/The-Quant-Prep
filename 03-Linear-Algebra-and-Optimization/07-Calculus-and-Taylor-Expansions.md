@@ -150,7 +150,7 @@ Call with $S = K = 100$, $T = 0.5$, $r = 3\%$, $\sigma = 20\%$: price $6.3710$, 
 | $+5$ | $3.1822$ | $2.8508$ | $3.1979$ |
 | $+10$ | $6.9479$ | $5.7016$ | $7.0902$ |
 
-"For 1% moves delta-gamma is exact to the fourth decimal; at 10% the error is $0.14$ and comes from speed, $\partial\Gamma/\partial S = -0.000625$, whose term $\text{speed}\cdot\delta S^3/6$ brings the up-move estimate to $6.9860$."
+"For 1% moves delta-gamma is accurate to about $10^{-4}$; at 10% the error is $0.14$ and comes mostly from speed, $\partial\Gamma/\partial S = -0.000625$, whose term $\text{speed}\cdot\delta S^3/6$ brings the up-move estimate to $6.9860$ and removes about $73\%$ of the gap, leaving $0.038$."
 Theta check: one day of decay is $-0.0194$ by full repricing and by $\Theta/365$.
 Breakeven move: $\tfrac12\Gamma\delta S^2 = -\Theta/365$ gives $\lvert\delta S\rvert = 1.1814$, slightly above $\sigma S/\sqrt{365} = 1.0468$ because $\Theta$ also contains the financing terms $rS\Delta - rV$; the PDE residual $\Theta + \tfrac12\sigma^2S^2\Gamma + rS\Delta - rC$ is zero to rounding, with gamma rent $\tfrac12\sigma^2S^2\Gamma = 5.5544$ per year.
 

@@ -98,7 +98,7 @@ flowchart TD
 | Heavy ball (Polyak) / Nesterov | $\nabla f$ | linear, $(\sqrt\kappa - 1)/(\sqrt\kappa + 1)$ for heavy ball on quadratics, about $1 - 1/\sqrt\kappa$ for Nesterov on strongly convex $f$ | same | the basis of momentum in ML |
 | Newton | $\nabla f$, $\nabla^2f$ | quadratic | Hessian plus an $O(n^3)$ solve | affine invariant; modify the Hessian if not PD |
 | BFGS | $\nabla f$ | superlinear | $O(n^2)$ | rank-two update of an inverse-Hessian estimate |
-| L-BFGS | $\nabla f$ | superlinear in practice | $O(mn)$, memory $m$ around 5-20 | default for large smooth problems |
+| L-BFGS | $\nabla f$ | linear | $O(mn)$, memory $m$ around 5-20 | default for large smooth problems |
 | Nonlinear CG | $\nabla f$ | linear (n-step quadratic with restarts) | $O(n)$ | very large problems |
 
 Line searches make these globally convergent: the Armijo condition $f(x + tp) \le f(x) + c_1t\nabla f^\top p$ guarantees sufficient decrease, and the Wolfe curvature condition keeps BFGS updates positive definite ($s^\top y > 0$).
@@ -157,6 +157,7 @@ Bisection on $[0.01, 3]$ needs 35 halvings for $10^{-10}$, and the safeguarded N
 Deep out-of-the-money call: $S = 100$, $K = 150$, $T = 0.25$, $r = 0$, true $\sigma = 30\%$, price $0.019233$.
 Starting plain Newton at $10\%$, where vega is $1.28 \times 10^{-13}$, the first step lands at $\sigma \approx 1.5 \times 10^{11}$, after which vega underflows to zero and the method is dead.
 The safeguarded version (Manaster-Koehler seed, bracket, bisection fallback) converges to $0.30$ in 10 iterations.
+Its starting bracket $[10^{-6}, 5]$ is widened until $C(\sigma_{\text{lo}}) < C_{\text{mkt}} < C(\sigma_{\text{hi}})$, so a root outside it is found rather than replaced by the cap: an at-the-money one-year call on 100 priced at $99.73$ ($r = 0$) returns $\sigma = 6.0$, not $5$.
 Vega at the solution is only $0.631$, so a price error of $10^{-8}$ is a vol error of $1.6 \times 10^{-8}$; for options further out it is far worse, which is why price-space tolerances fail in the wings.
 
 ### A quick ATM estimate

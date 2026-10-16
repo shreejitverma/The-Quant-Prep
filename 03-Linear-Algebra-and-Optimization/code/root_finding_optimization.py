@@ -181,11 +181,11 @@ def bs_vega(s: float, k: float, t: float, r: float, vol: float) -> float:
 
 
 def implied_vol_newton(
-    price: float, s: float, k: float, t: float, r: float, vol0: float, tol: float = 1e-12
+    price: float, s: float, k: float, t: float, r: float, vol0: float, tol: float = 1e-12, max_iter: int = 50
 ) -> tuple[float, int, list[float]]:
     """Plain Newton on C(vol) - price; returns early (unconverged) when vega underflows or vol leaves (0, inf)."""
     vol, path = vol0, [vol0]
-    for it in range(1, 50):
+    for it in range(1, max_iter + 1):
         vega = bs_vega(s, k, t, r, vol)
         if vega == 0.0:
             return vol, it, path  # vega underflowed: Newton cannot continue
@@ -196,15 +196,22 @@ def implied_vol_newton(
             return vol, it, path  # the failure mode a safeguard must catch
         if abs(step) < tol:
             return vol, it, path
-    return vol, 50, path
+    return vol, max_iter, path
 
 
 def implied_vol_safeguarded(price: float, s: float, k: float, t: float, r: float, tol: float = 1e-12) -> tuple[float, int]:
-    """Newton inside a shrinking bracket [lo, hi]; any step that leaves the bracket becomes a bisection step."""
+    """Newton inside a shrinking bracket [lo, hi]; any step that leaves the bracket becomes a bisection step.
+
+    The starting bracket [1e-6, 5] is widened until C(lo) < price < C(hi), so it always contains the root.
+    """
     intrinsic = max(s - k * math.exp(-r * t), 0.0)
     if not intrinsic < price < s:
         raise ValueError("price outside no-arbitrage bounds: no implied volatility exists")
     lo, hi = 1e-6, 5.0
+    while bs_call(s, k, t, r, hi) <= price:
+        hi *= 2.0
+    while bs_call(s, k, t, r, lo) >= price:
+        lo *= 0.5
     vol = math.sqrt(2 * abs(math.log(s / k) + r * t) / t)  # Manaster-Koehler seed
     vol = min(max(vol, lo), hi)
     for it in range(1, 200):
@@ -252,6 +259,10 @@ def implied_vol_examples() -> None:
     vol_s, it_s = implied_vol_safeguarded(price, s, k, t, r)
     check("safeguarded implied vol", vol_s, true_vol, 1e-12)
     check("safeguarded iterations", it_s, 5, 0)
+    big_price = bs_call(100.0, 100.0, 1.0, 0.0, 6.0)
+    check("S = K = 100, T = 1, r = 0, vol 600%: call price", big_price, 99.73, 5e-3)
+    vol_big, _ = implied_vol_safeguarded(big_price, 100.0, 100.0, 1.0, 0.0)
+    check("safeguarded implied vol above the initial cap of 5 (bracket widened)", vol_big, 6.0, 1e-9)
 
     print("\n[10] Newton failure: S = 100, K = 150, T = 0.25, r = 0, true vol 30%, start at 10%")
     s, k, t, r, true_vol = 100.0, 150.0, 0.25, 0.0, 0.30
@@ -321,7 +332,8 @@ def rosenbrock_hess(x: np.ndarray) -> np.ndarray:
 
 def backtrack(x: np.ndarray, p: np.ndarray, g: np.ndarray) -> float:
     t, fx = 1.0, rosenbrock(x)
-    while rosenbrock(x + t * p) > fx + 1e-4 * t * (g @ p):
+    slope = float(g[0] * p[0] + g[1] * p[1])
+    while rosenbrock(x + t * p) > fx + 1e-4 * t * slope:
         t *= 0.5
     return t
 
@@ -362,8 +374,7 @@ def rosenbrock_comparison() -> None:
     for method, want in (("gd", 19_435), ("newton", 21), ("bfgs", 35)):
         x, it = descent(method, x0)
         print(f"{method}: iterations {it}, x = ({x[0]:.10f}, {x[1]:.10f})")
-        tol = 2000 if method == "gd" else 0
-        check(f"{method} iterations", it, want, tol)
+        check(f"{method} iterations", it, want, 0)
         check(f"{method} distance to (1, 1)", np.linalg.norm(x - 1.0), 0.0, 1e-6)
 
 

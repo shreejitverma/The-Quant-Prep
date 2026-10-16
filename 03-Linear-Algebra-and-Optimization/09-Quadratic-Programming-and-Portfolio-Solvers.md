@@ -134,8 +134,8 @@ KKT check: the four free assets share one gradient value $\nu = 2\sigma^2$, the 
 ### Box-constrained mean-variance and a weakly binding bound
 
 With $\gamma = 4$ and $0 \le w_i \le 0.35$: the optimum is $(0.35, 0.3256, 0.1721, 0.1524, 0)$, expected return $5.78\%$, vol $11.91\%$.
-Asset 1 sits at its cap and asset 5 at zero; the smallest bound multiplier is only $0.00037$.
-Projected gradient (178 iterations) and active set (4 iterations) agree to $10^{-9}$, but the interior-point solution, stopped at complementarity $10^{-10}$, agrees only to about $3 \times 10^{-7}$: with $z_5 = 0.00037$, $w_5 \approx \mu/z_5$ is still visibly positive.
+Asset 1 sits at its cap and asset 5 at zero; the smallest bound multiplier, on asset 1's cap, is only $0.00037$, against $0.0071$ on asset 5's lower bound.
+Projected gradient (178 iterations) and active set (4 iterations) agree to $10^{-9}$, but the interior-point solution, stopped at complementarity $10^{-10}$, agrees only to about $3 \times 10^{-7}$: with $z_1 = 0.00037$ on asset 1's cap and $\mu = 10^{-10}$, $w_1$ sits about $\mu/z_1 = 3 \times 10^{-7}$ below $0.35$, while asset 5, with the larger multiplier, is held to about $10^{-8}$.
 "A weakly binding constraint is where interior-point answers are least precise; polish by fixing the identified active set and solving the KKT system exactly."
 
 ### Projecting onto the simplex
@@ -188,7 +188,7 @@ The turnover cap binds exactly (turnover $0.2$) with shadow price $0.0165$ of ut
 > Typically 10 to 50 regardless of size (this note's small examples take 13 to 14); the time goes into factorising the KKT system each iteration, so sparsity of that system decides speed.
 
 > [!question]- la-qp-weak-bound | Why can an interior-point answer be visibly off for a weakly binding bound?
-> Near convergence $w_i \approx \mu/z_i$ for a variable at its bound; if the multiplier $z_i$ is tiny, the variable stays visibly above the bound at the stopping $\mu$ (here about $3 \times 10^{-7}$ off with $z = 0.00037$). Polish by solving the KKT system on the identified active set.
+> Near convergence $w_i \approx \mu/z_i$ for a variable at its bound; if the multiplier $z_i$ is tiny, the variable stays visibly inside the bound at the stopping $\mu$ (here asset 1 sits about $3 \times 10^{-7}$ below its cap with $z = 0.00037$). Polish by solving the KKT system on the identified active set.
 
 > [!question]- la-qp-projected-gradient | When is projected gradient a good QP method, and what step size do you use?
 > When projection onto the feasible set is cheap (simplex, box, budget plus box) and moderate accuracy is fine. Use $\eta = 1/\lambda_{\max}(Q)$; convergence is linear with ratio about $1 - \lambda_{\min}/\lambda_{\max}$, slow when $Q$ is ill-conditioned.

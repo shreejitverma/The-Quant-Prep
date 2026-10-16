@@ -82,7 +82,12 @@ def delta_gamma_table() -> None:
     check("dS = +10: adding speed dS^3/6", dgs, 6.9860, 1e-4)
     dg10 = g["delta"] * 10 + 0.5 * g["gamma"] * 100
     check("dS = +10: delta-gamma error vs full", dg10 - full, 0.1423, 1e-4)
-    check("card: delta term for +5", 0.5702 * 5, 2.851, 1e-12)
+    check("dS = +10: error left after adding speed", dgs - full, 0.038, 5e-4)
+    check("dS = +10: share of the delta-gamma error removed by speed", (dg10 - dgs) / (dg10 - full), 0.73, 5e-3)
+    for ds in (1.0, -1.0):
+        dg1 = g["delta"] * ds + 0.5 * g["gamma"] * ds * ds
+        check(f"dS = {ds:+.0f}: |delta-gamma - full| (about 1e-4)", abs(dg1 - (bs_call(s + ds, k, t, r, vol) - c0)), 1e-4, 1.5e-5)
+    check("card: delta term for +5 (delta rounded to 0.5702)", round(g["delta"], 4) * 5, 2.851, 1e-12)
     check("card: gamma term for +5", 0.5 * g["gamma"] * 25, 0.3472, 1e-4)
     assert abs(full - dgs) < abs(full - (g["delta"] * 10 + 0.5 * g["gamma"] * 100))
     one_day = bs_call(s, k, t - 1 / 365, r, vol) - c0
@@ -175,15 +180,26 @@ def limits_and_series() -> None:
     gamma_em = 0.5772156649015329
     check("ln 100 + gamma", math.log(100) + gamma_em, 5.182386, 1e-6)
     check("ln 100 + gamma + 1/200", math.log(100) + gamma_em + 1 / 200, 5.187386, 1e-6)
-    check("sqrt(1.1)", math.sqrt(1.1), 1.048809, 1e-6)
-    check("1 + x/2 - x^2/8 at x = 0.1", 1 + 0.05 - 0.01 / 8, 1.04875, 1e-9)
-    check("ln(1.1)", math.log(1.1), 0.0953102, 1e-7)
-    check("r - r^2/2 at r = 0.1", 0.1 - 0.005, 0.095, 1e-12)
-    check("r - r^2/2 + r^3/3 at r = 0.1", 0.1 - 0.005 + 0.001 / 3, 0.0953333, 1e-7)
-    check("r^3/3 at r = 0.1", 0.1**3 / 3, 0.000333, 1e-6)
-    check("x^2/8 at x = 0.1", 0.1**2 / 8, 0.00125, 1e-15)
-    check("log return of -50% then +100%", math.log(0.5) + math.log(2.0), 0.0, 1e-12)
-    check("median growth mu - sigma^2/2 (8%, 20%)", 0.08 - 0.5 * 0.2**2, 0.06, 1e-12)
+    x = 0.1
+    sqrt_quadratic = 1 + x / 2 - x**2 / 8
+    log_two, log_three = x - x**2 / 2, x - x**2 / 2 + x**3 / 3
+    check("sqrt(1.1)", math.sqrt(1 + x), 1.048809, 1e-6)
+    check("1 + x/2 - x^2/8 at x = 0.1", sqrt_quadratic, 1.04875, 1e-9)
+    check("x^2/8 at x = 0.1", x**2 / 8, 0.00125, 1e-15)
+    check("sqrt(1.1) - quadratic, close to the next term x^3/16", math.sqrt(1 + x) - sqrt_quadratic, x**3 / 16, 5e-6)
+    check("ln(1.1)", math.log1p(x), 0.0953102, 1e-7)
+    check("r - r^2/2 at r = 0.1", log_two, 0.095, 1e-12)
+    check("r - r^2/2 + r^3/3 at r = 0.1", log_three, 0.0953333, 1e-7)
+    check("r^3/3 at r = 0.1", x**3 / 3, 0.000333, 1e-6)
+    check("ln(1.1) - two terms, close to the next term r^3/3", math.log1p(x) - log_two, x**3 / 3, 3e-5)
+    check("ln(1.1) - three terms, close to the next term -r^4/4", math.log1p(x) - log_three, -(x**4) / 4, 5e-6)
+    prices = np.array([100.0, 50.0, 100.0])
+    check("log returns of -50% then +100% add to", float(np.diff(np.log(prices)).sum()), 0.0, 1e-12)
+    check("simple returns of -50% then +100% add to", float((prices[1:] / prices[:-1] - 1).sum()), 0.5, 1e-12)
+    mu, sig, dt = 0.08, 0.2, 1e-6
+    up, down = mu * dt + sig * math.sqrt(dt), mu * dt - sig * math.sqrt(dt)
+    growth = 0.5 * (math.log1p(up) + math.log1p(down)) / dt
+    check("median growth E[ln(1 + R)]/dt for +-sigma sqrt(dt) steps (8%, 20%)", growth, 0.06, 1e-6)
 
 
 def lagrange_remainder() -> None:

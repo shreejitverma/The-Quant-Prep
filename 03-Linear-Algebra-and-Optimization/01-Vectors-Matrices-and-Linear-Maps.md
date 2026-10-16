@@ -104,7 +104,7 @@ Properties of the projection ("hat") matrix $P$:
 
 - $P^\top = P$ and $P^2 = P$; eigenvalues are 1 on $C(A)$ and 0 on its complement, so $\text{tr}P = \text{rank}A = p$;
 - $I - P$ projects onto $N(A^\top)$ and produces the residuals; in OLS with $n$ observations the residual degrees of freedom are $\text{tr}(I - P) = n - p$;
-- Pythagoras: $\lVert b\rVert^2 = \lVert Pb\rVert^2 + \lVert(I - P)b\rVert^2$, which is the ANOVA identity behind $R^2$.
+- Pythagoras: $\lVert b\rVert^2 = \lVert Pb\rVert^2 + \lVert(I - P)b\rVert^2$; applied to demeaned $b$ with an intercept in $A$, it is the ANOVA identity behind $R^2$.
 
 Frisch-Waugh-Lovell: the coefficient on $X_2$ in a regression on $[X_1, X_2]$ equals the coefficient from regressing the residualised $y$ on the residualised $X_2$, both residualised on $X_1$ with $I - P_1$.
 That is why "beta-neutralise, then regress" gives the same signal loading as a joint regression.
@@ -136,7 +136,7 @@ $$
 E[x_1 \mid x_2] = \mu_1 + \Sigma_{12}\Sigma_{22}^{-1}(x_2 - \mu_2), \qquad \text{Cov}(x_1 \mid x_2) = \Sigma_{11} - \Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21},
 $$
 
-so the conditional covariance is a Schur complement; it is PSD whenever $\Sigma$ is, which gives a second proof that conditioning cannot increase variance.
+so the conditional covariance is a Schur complement; it is PSD whenever $\Sigma$ is, and because $\Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21} \succeq 0$ it satisfies $\text{Cov}(x_1 \mid x_2) \preceq \Sigma_{11}$: conditioning cannot increase variance.
 
 ### Rank-one updates: Sherman-Morrison, Woodbury, determinant lemma
 
