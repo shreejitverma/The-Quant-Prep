@@ -4,7 +4,7 @@ Reference Pricing, Curve Graph, and Real-Time Risk Engine.
 Implements core architectural patterns for Section 18 (Pricing and Risk Systems):
 1. Dependency Graph (DAG) for market data, curves, and calibrated surfaces with dirty-flag invalidation.
 2. Instrument / Model / Engine separation with vectorised and forward-mode sensitivity evaluation.
-3. Real-Time Pre-Trade Limit Check service with sub-millisecond checks (PV01, CS01, Notional, Net Exposure).
+3. Real-Time Pre-Trade Limit Check service for PV01, notional, and gross PV.
 4. PnL Explain Engine (Hypothetical PnL, Risk-Theoretical PnL, Taylor decomposition: Delta, Gamma, Theta, Unexplained).
 """
 
@@ -115,6 +115,7 @@ class VanillaSwap:
     tenor: float
     payment_frequency: float = 0.5  # Semiannual
     is_payer: bool = True  # True = Pay Fixed, Receive Float
+    time_to_next_payment: float | None = None
 
 
 class SwapPricingEngine:
@@ -122,23 +123,36 @@ class SwapPricingEngine:
 
     @staticmethod
     def pv(swap: VanillaSwap, curve: YieldCurve) -> float:
-        n_periods = int(round(swap.tenor / swap.payment_frequency))
         pv_fixed = 0.0
         pv_float = 0.0
 
-        for i in range(1, n_periods + 1):
-            t_end = i * swap.payment_frequency
-            t_start = (i - 1) * swap.payment_frequency
+        if swap.tenor <= 0:
+            return 0.0
+        next_payment = swap.time_to_next_payment or swap.payment_frequency
+        if next_payment <= 0 or swap.payment_frequency <= 0:
+            raise ValueError("Payment times and frequency must be positive")
+        t_end = next_payment
+        t_start = 0.0
+        while t_end <= swap.tenor + 1e-12:
+            accrual = t_end - t_start
             df_end = curve.df(t_end)
 
             # Fixed leg cashflow
-            fixed_cf = swap.notional * swap.fixed_rate * swap.payment_frequency
+            fixed_cf = swap.notional * swap.fixed_rate * accrual
             pv_fixed += fixed_cf * df_end
 
             # Floating leg cashflow: forward rate * dt * df_end = (df_start/df_end - 1) * df_end = df_start - df_end
             df_start = curve.df(t_start)
             float_cf = swap.notional * (df_start - df_end)
             pv_float += float_cf
+            t_start = t_end
+            t_end += swap.payment_frequency
+
+        if t_start < swap.tenor:
+            accrual = swap.tenor - t_start
+            df_end = curve.df(swap.tenor)
+            pv_fixed += swap.notional * swap.fixed_rate * accrual * df_end
+            pv_float += swap.notional * (curve.df(t_start) - df_end)
 
         if swap.is_payer:
             return pv_float - pv_fixed
@@ -189,6 +203,11 @@ class PreTradeRiskGateway:
         if abs(projected_dv01) > desk_lim.max_dv01:
             return False, f"Projected DV01 {projected_dv01:.2f} exceeds limit {desk_lim.max_dv01:.2f}"
 
+        current_gross_pv = sum(abs(SwapPricingEngine.pv(s, curve)) for s in existing_swaps)
+        projected_gross_pv = current_gross_pv + abs(SwapPricingEngine.pv(swap, curve))
+        if projected_gross_pv > desk_lim.max_gross_pv:
+            return False, f"Projected gross PV {projected_gross_pv:.2f} exceeds limit {desk_lim.max_gross_pv:.2f}"
+
         return True, "Trade approved"
 
     def commit_trade(self, swap: VanillaSwap) -> None:
@@ -200,30 +219,52 @@ class PnLExplainEngine:
 
     @staticmethod
     def explain_swap_pnl(swap: VanillaSwap, curve_t0: YieldCurve, curve_t1: YieldCurve, dt_years: float = 1.0 / 252.0) -> dict[str, float]:
+        if curve_t0.pillar_times != curve_t1.pillar_times:
+            raise ValueError("Curves must have matching pillar times")
         pv_t0 = SwapPricingEngine.pv(swap, curve_t0)
         pv_t1 = SwapPricingEngine.pv(swap, curve_t1)
         actual_pnl = pv_t1 - pv_t0
 
-        # Delta explain: sum_i (DV01_i * shift_i)
-        # We test parallel curve shift
-        mean_rate_t0 = sum(curve_t0.zero_rates) / len(curve_t0.zero_rates)
-        mean_rate_t1 = sum(curve_t1.zero_rates) / len(curve_t1.zero_rates)
-        d_rate = mean_rate_t1 - mean_rate_t0
-
-        dv01 = SwapPricingEngine.pv01(swap, curve_t0, bump_bps=1.0)
-        delta_pnl = (dv01 / 1e-4) * d_rate
-
-        # Gamma explain: 0.5 * Gamma * (d_rate)^2
+        shifts = [r1 - r0 for r0, r1 in zip(curve_t0.zero_rates, curve_t1.zero_rates)]
         bump = 1e-4
-        rates_up = [r + bump for r in curve_t0.zero_rates]
-        rates_dn = [r - bump for r in curve_t0.zero_rates]
-        pv_up = SwapPricingEngine.pv(swap, YieldCurve("up", curve_t0.pillar_times, rates_up))
-        pv_dn = SwapPricingEngine.pv(swap, YieldCurve("dn", curve_t0.pillar_times, rates_dn))
-        gamma_rate = (pv_up - 2.0 * pv_t0 + pv_dn) / (bump**2)
-        gamma_pnl = 0.5 * gamma_rate * (d_rate**2)
+        pillar_gradients = []
+        pillar_curvatures = []
+        for i in range(len(shifts)):
+            up_rates = list(curve_t0.zero_rates)
+            dn_rates = list(curve_t0.zero_rates)
+            up_rates[i] += bump
+            dn_rates[i] -= bump
+            pv_up_i = SwapPricingEngine.pv(swap, YieldCurve("up", curve_t0.pillar_times, up_rates))
+            pv_dn_i = SwapPricingEngine.pv(swap, YieldCurve("dn", curve_t0.pillar_times, dn_rates))
+            pillar_gradients.append((pv_up_i - pv_dn_i) / (2.0 * bump))
+            pillar_curvatures.append((pv_up_i - 2.0 * pv_t0 + pv_dn_i) / (bump**2))
+
+        delta_pnl = sum(g * shift for g, shift in zip(pillar_gradients, shifts))
+        gamma_pnl = 0.5 * sum(gamma * shift**2 for gamma, shift in zip(pillar_curvatures, shifts))
+        for i in range(len(shifts)):
+            for j in range(i + 1, len(shifts)):
+                pp = list(curve_t0.zero_rates)
+                pm = list(curve_t0.zero_rates)
+                mp = list(curve_t0.zero_rates)
+                mm = list(curve_t0.zero_rates)
+                pp[i] += bump
+                pp[j] += bump
+                pm[i] += bump
+                pm[j] -= bump
+                mp[i] -= bump
+                mp[j] += bump
+                mm[i] -= bump
+                mm[j] -= bump
+                values = [SwapPricingEngine.pv(swap, YieldCurve("bumped", curve_t0.pillar_times, rates)) for rates in (pp, pm, mp, mm)]
+                cross_gamma = (values[0] - values[1] - values[2] + values[3]) / (4.0 * bump**2)
+                gamma_pnl += cross_gamma * shifts[i] * shifts[j]
 
         # Theta (carry / roll-down)
         # Advance maturity by dt
+        next_payment = swap.time_to_next_payment or swap.payment_frequency
+        rolled_next_payment = next_payment - dt_years
+        if rolled_next_payment <= 0:
+            rolled_next_payment += (math.floor(-rolled_next_payment / swap.payment_frequency) + 1) * swap.payment_frequency
         swap_rolled = VanillaSwap(
             swap.swap_id,
             swap.counterparty_id,
@@ -233,6 +274,7 @@ class PnLExplainEngine:
             max(0.0, swap.tenor - dt_years),
             swap.payment_frequency,
             swap.is_payer,
+            rolled_next_payment,
         )
         pv_rolled = SwapPricingEngine.pv(swap_rolled, curve_t0)
         theta_pnl = pv_rolled - pv_t0
