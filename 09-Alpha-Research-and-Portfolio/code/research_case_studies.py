@@ -63,6 +63,8 @@ def check(label: str, value: float, expected: float, tol: float, fmt: str = ".4f
     """Print a computed value and assert it is within tol of the expected value."""
     print(f"{label}: {value:{fmt}}")
     assert abs(value - expected) <= tol, f"{label}: got {value}, expected {expected} +- {tol}"
+    if expected != 0:  # the printed value must equal the literal the note quotes, at the printed rounding
+        assert f"{value:{fmt}}" == f"{expected:{fmt}}", f"{label}: prints {value:{fmt}}, note quotes {expected:{fmt}}"
     return value
 
 
@@ -271,8 +273,8 @@ def case_a() -> None:
     table = np.round(trial_sr_arr.reshape(10, 2) * math.sqrt(252), 2)
     print("A net Sharpe by lookback 1..10 (neutral):", " ".join(f"{v:.2f}" for v in table[:, 0]))
     print("A net Sharpe by lookback 1..10 (raw):    ", " ".join(f"{v:.2f}" for v in table[:, 1]))
-    assert np.allclose(table[:, 0], A_NEUTRAL_TABLE, atol=0.015), table[:, 0]
-    assert np.allclose(table[:, 1], A_RAW_TABLE, atol=0.015), table[:, 1]
+    assert np.allclose(table[:, 0], A_NEUTRAL_TABLE, rtol=0.0, atol=1e-9), table[:, 0]
+    assert np.allclose(table[:, 1], A_RAW_TABLE, rtol=0.0, atol=1e-9), table[:, 1]
     # Why the short lookbacks differ by design: they trade far more, so costs eat their gross alpha.
     for k, exp_to, exp_share in [(1, 1.418, 2.09), (2, 1.008, 0.94), (5, 0.647, 0.51)]:
         gk, tok = run_book(book(-trailing_sum(resid, k)[sl], proj), r_ev, 0.0)
@@ -347,7 +349,7 @@ def case_b() -> None:
     trial = np.array([sharpe(v) for v in sr_by_l.values()])
     table = np.round(trial * math.sqrt(12), 2)
     print("B Sharpe by lookback 1..24:", " ".join(f"{v:.2f}" for v in table))
-    assert np.allclose(table, B_TABLE, atol=0.015), table
+    assert np.allclose(table, B_TABLE, rtol=0.0, atol=1e-9), table
     best_l = int(np.argmax(trial)) + 1
     print(f"B best lookback over 24 trials: {best_l}")
     assert best_l == 19

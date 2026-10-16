@@ -24,12 +24,15 @@ import numpy as np
 def check(label: str, value: float, expected: float, tol: float, fmt: str = ".4f") -> None:
     print(f"{label}: {value:{fmt}}")
     assert abs(value - expected) <= tol, f"{label}: got {value}, expected {expected} +/- {tol}"
+    if expected != 0:  # the printed value must equal the literal the note quotes, at the printed rounding
+        assert f"{value:{fmt}}" == f"{expected:{fmt}}", f"{label}: prints {value:{fmt}}, note quotes {expected:{fmt}}"
 
 
 def vec(label: str, v: np.ndarray, expected: list[float], fmt: str = ".4f") -> None:
     print(f"{label}: [" + ", ".join(f"{x:{fmt}}" for x in v) + "]")
-    tol = 0.6 * 10 ** -int(fmt[1:-1])
-    assert np.allclose(v, expected, rtol=0.0, atol=tol), f"{label}: {v} differs from {expected}"
+    got = [f"{x:{fmt}}" for x in v]
+    want = [f"{x:{fmt}}" for x in expected]
+    assert got == want, f"{label}: prints {got}, note quotes {want}"
 
 
 # ----------------------------------------------------------------------------
@@ -298,7 +301,7 @@ def section_black_litterman() -> None:
     resid = (1 + tau) * w_hl - w_mkt
     check("(1+tau) w_HL - w_mkt in asset C", resid[2], 0.0, 1e-12)
     check("(1+tau) w_HL - w_mkt: A plus B", resid[0] + resid[1], 0.0, 1e-12)
-    check("sum of He-Litterman weights", w_hl.sum(), 1 / (1 + tau), 1e-12)
+    check("sum of He-Litterman weights", w_hl.sum(), 0.9524, 1e-4)
 
     # with Omega proportional to tau the posterior mean does not depend on tau
     mu_t2 = bl_posterior_update_form(pi, sigma, 0.5, p, q, p @ (0.5 * sigma) @ p.T)
@@ -359,7 +362,10 @@ def section_hrp() -> None:
     sigma, _, vol = four_asset_market()
     corr = sigma / np.outer(vol, vol)
     d = correlation_distance(corr)
-    check("d(A,B) = sqrt(0.5*(1-0.8))", d[0, 1], np.sqrt(0.1), 1e-12)
+    check("d(A,B) = sqrt(0.5*(1-0.8))", d[0, 1], 0.316, 5e-4, ".3f")
+    for rho_x, d_exp in [(1.0, 0.0), (0.0, 0.707), (-1.0, 1.0)]:
+        d_x = correlation_distance(np.array([[1.0, rho_x], [rho_x, 1.0]]))[0, 1]
+        check(f"correlation distance at rho = {rho_x}", d_x, d_exp, 5e-4, ".3f")
     dt = column_distance(d)
     merges = single_linkage(dt)
     for (a, b, h), expected_h in zip(merges, [0.4472, 0.8816, 1.0063], strict=True):
@@ -388,7 +394,7 @@ def section_hrp() -> None:
     v_l = cluster_variance(sigma, order[:2])
     v_r = cluster_variance(sigma, order[2:])
     check("IVP variance of left cluster [C, D]", v_l, 0.003303, 1e-6, ".6f")
-    check("IVP variance of right cluster [A, B]", v_r, 0.025663, 1e-6, ".6f")
+    check("IVP variance of right cluster [A, B]", v_r, 0.025662, 1e-6, ".6f")
     check("first split alpha = 1 - V_left/(V_left+V_right)", 1 - v_l / (v_l + v_r), 0.8860, 1e-4)
     check("split inside [C, D]: share of C", 1 - sigma[2, 2] / (sigma[2, 2] + sigma[3, 3]), 0.9174, 1e-4)
     check("split inside [A, B]: share of A", 1 - sigma[0, 0] / (sigma[0, 0] + sigma[1, 1]), 0.5586, 1e-4)

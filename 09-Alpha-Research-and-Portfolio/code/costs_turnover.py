@@ -28,6 +28,8 @@ import numpy as np
 def check(label: str, value: float, expected: float, tol: float, fmt: str = ".4f") -> None:
     print(f"{label}: {value:{fmt}}")
     assert abs(value - expected) <= tol, f"{label}: got {value}, expected {expected} +/- {tol}"
+    if expected != 0:  # the printed value must equal the literal the note quotes, at the printed rounding
+        assert f"{value:{fmt}}" == f"{expected:{fmt}}", f"{label}: prints {value:{fmt}}, note quotes {expected:{fmt}}"
 
 
 # ---------------------------------------------------------------------------
@@ -57,12 +59,19 @@ def section_cost_model() -> None:
     check("sqrt impact, 8% ADV in one day (bp)", one_day, 42.43, 0.01, ".2f")
     check("sqrt impact, 2% ADV on each of 4 days (bp)", four_day, 21.21, 0.01, ".2f")
     # Total cost relative to trading in one day: linear n*(Q/n) = Q, 3/2 power n*(Q/n)^1.5, quadratic n*(Q/n)^2.
-    n = 4
-    check("linear cost ratio, 4 days vs 1", n * (1 / n) / 1.0, 1.0, 1e-12)
-    check("3/2-power cost ratio, 4 days vs 1", n * (1 / n) ** 1.5, 0.5, 1e-12)
-    check("quadratic cost ratio, 4 days vs 1", n * (1 / n) ** 2, 0.25, 1e-12)
+    per_unit = {
+        "linear": lambda x: (hs + fee) / 1e4,  # spread and fees: cost per unit does not depend on size
+        "3/2-power": lambda x: y_coef * sigma * math.sqrt(x),  # square-root impact
+        "quadratic": lambda x: 0.5 * x,  # linear (Almgren-Chriss temporary) impact, any slope
+    }
+
+    def total_cost(shape: str, pieces: int) -> float:
+        return sum(per_unit[shape](q / pieces) * (q / pieces) for _ in range(pieces))
+
+    for shape, exp in [("linear", 1.0), ("3/2-power", 0.5), ("quadratic", 0.25)]:
+        check(f"{shape} cost ratio, 4 days vs 1", total_cost(shape, 4) / total_cost(shape, 1), exp, 1e-12, ".2f")
     # Amortisation: 4% annual alpha, 40 bp round trip.
-    check("weekly alpha of a 4%/yr signal (%)", 4.0 / 52, 0.0769, 1e-4)
+    check("weekly alpha of a 4%/yr signal (%)", 4.0 / 52, 0.077, 5e-4, ".3f")
     check("round-trip cost as a fraction of alpha, 1-year hold", 0.40 / 4.0, 0.10, 1e-12, ".2f")
     check("round-trip cost as a multiple of alpha, 1-week hold", 0.40 / (4.0 / 52), 5.2, 1e-9, ".2f")
 

@@ -26,6 +26,8 @@ import numpy as np
 def check(label: str, value: float, expected: float, tol: float, fmt: str = ".4f") -> None:
     print(f"{label}: {value:{fmt}}")
     assert abs(value - expected) <= tol, f"{label}: got {value}, expected {expected} +/- {tol}"
+    if expected != 0:  # the printed value must equal the literal the note quotes, at the printed rounding
+        assert f"{value:{fmt}}" == f"{expected:{fmt}}", f"{label}: prints {value:{fmt}}, note quotes {expected:{fmt}}"
 
 
 # ----------------------------------------------------------------------------
@@ -206,12 +208,9 @@ def main() -> None:
     check("effective sample size by summation, lambda 0.94", w.sum() ** 2 / np.sum(w**2), 32.3333, 1e-3)
 
     print("\n== 2. Parameter counts ==")
-    for p, k in [(100, 10), (3000, 60)]:
-        full = p * (p + 1) // 2
-        fac = p * k + k * (k + 1) // 2 + p
-        print(f"p={p}, k={k}: full {full:,}, factor {fac:,}")
-    assert 100 * 101 // 2 == 5050 and 100 * 10 + 55 + 100 == 1155
-    assert 3000 * 3001 // 2 == 4_501_500 and 3000 * 60 + 60 * 61 // 2 + 3000 == 184_830
+    for p, k, exp_full, exp_fac in [(100, 10, 5050, 1155), (3000, 60, 4_501_500, 184_830)]:
+        check(f"p={p}: full covariance parameters p(p+1)/2", p * (p + 1) // 2, exp_full, 0, "d")
+        check(f"p={p}, k={k}: factor-model parameters pk + k(k+1)/2 + p", p * k + k * (k + 1) // 2 + p, exp_fac, 0, "d")
     check("q = 3000 stocks / 504 days", 3000 / 504, 5.95, 0.005, ".2f")
     check("q for a 60-factor covariance on 504 days", 60 / 504, 0.119, 0.0005, ".3f")
     check("distinct correlations among 100 assets", 100 * 99 // 2, 4950, 0, "d")

@@ -25,6 +25,8 @@ import numpy as np
 def check(label: str, value: float, expected: float, tol: float, fmt: str = ".4f") -> None:
     print(f"{label}: {value:{fmt}}")
     assert abs(value - expected) <= tol, f"{label}: got {value}, expected {expected} +/- {tol}"
+    if expected != 0:  # the printed value must equal the literal the note quotes, at the printed rounding
+        assert f"{value:{fmt}}" == f"{expected:{fmt}}", f"{label}: prints {value:{fmt}}, note quotes {expected:{fmt}}"
 
 
 def row_corr(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -205,11 +207,11 @@ def section_panel() -> None:
     check("mean daily rank IC", float(rics.mean()), 0.0342, 0.003)
     check("fraction of days with positive IC", float(np.mean(ics > 0)), 0.87, 0.006, ".2f")
 
-    for k, exp in [(1, 0.0353), (5, 0.0288), (10, 0.0223), (20, 0.0133)]:
+    for k, exp, sim_exp in [(1, 0.0353, 0.036), (5, 0.0288, 0.029), (10, 0.0223, 0.023), (20, 0.0133, 0.014)]:
         analytic = ic1 * rho ** (k - 1)
         check(f"analytic IC at lag {k}", analytic, exp, 1e-4)
         sim = float(row_corr(x[burn : t_len - k + 1], r_next[burn + k - 1 :]).mean())
-        check(f"simulated IC at lag {k}", sim, analytic, 0.003)
+        check(f"simulated IC at lag {k}", sim, sim_exp, 5e-4, ".3f")
     check("IC half-life ln2/ln(1/rho)", math.log(2) / math.log(1 / rho), 13.51, 0.01, ".2f")
 
     ac_raw = rho / (1 + s_x**2)

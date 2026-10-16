@@ -26,6 +26,8 @@ import numpy as np
 def check(label: str, value: float, expected: float, tol: float, fmt: str = ".4f") -> float:
     print(f"{label}: {value:{fmt}}")
     assert abs(value - expected) <= tol, f"{label}: {value} not within {tol} of {expected}"
+    if expected != 0:  # the printed value must equal the literal the note quotes, at the printed rounding
+        assert f"{value:{fmt}}" == f"{expected:{fmt}}", f"{label}: prints {value:{fmt}}, note quotes {expected:{fmt}}"
     return value
 
 
@@ -82,15 +84,8 @@ def section_timezones() -> None:
     for day, expected_hour in [(dt.date(2025, 7, 15), 16), (dt.date(2025, 1, 15), 15)]:
         stamp = dt.datetime(day.year, day.month, day.day, 20, 30, tzinfo=dt.timezone.utc).astimezone(ny)
         check(f"20:30 UTC on {day} in New York (hour)", stamp.hour + stamp.minute / 60, expected_hour + 0.5, 1e-12, ".2f")
-    # Filing deadlines (SEC Form 10-K General Instruction A(2), Form 10-Q General Instruction A.1, as of 2026-10).
-    q_end = dt.date(2025, 3, 31)
-    check("10-Q deadline for a large accelerated filer (days after 31 Mar)", (q_end + dt.timedelta(days=40) - q_end).days, 40, 0, "d")
-    print(f"10-Q due date: {q_end + dt.timedelta(days=40)}")
-    assert q_end + dt.timedelta(days=40) == dt.date(2025, 5, 10)
-    fy_end = dt.date(2024, 12, 31)
-    print(f"10-K due dates (60, 75, 90 days): {[str(fy_end + dt.timedelta(days=d)) for d in (60, 75, 90)]}")
-    assert fy_end + dt.timedelta(days=60) == dt.date(2025, 3, 1)
-    assert fy_end + dt.timedelta(days=90) == dt.date(2025, 3, 31)
+    # Example 1: the Q4 2024 filing (2025-02-20) came 20 days after the 2025-01-31 query ("three weeks").
+    check("days from the 2025-01-31 query to the Q4 filing", (RECORDS[1][1] - dt.date(2025, 1, 31)).days, 20, 0, "d")
 
 
 # ---------------------------------------------------------------------------

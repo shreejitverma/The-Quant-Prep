@@ -31,6 +31,8 @@ STYLE_VOL = np.array([0.015, 0.015, 0.020])
 def check(label: str, value: float, expected: float, tol: float, fmt: str = ".4f") -> float:
     print(f"{label}: {value:{fmt}}")
     assert abs(value - expected) <= tol, f"{label}: {value} not within {tol} of {expected}"
+    if expected != 0:  # the printed value must equal the literal the note quotes, at the printed rounding
+        assert f"{value:{fmt}}" == f"{expected:{fmt}}", f"{label}: prints {value:{fmt}}, note quotes {expected:{fmt}}"
     return value
 
 
