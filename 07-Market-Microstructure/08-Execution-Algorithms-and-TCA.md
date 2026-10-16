@@ -147,7 +147,7 @@ Of the 0.45 move from arrival to completion, 0.15 (one third) reverted, which po
 
 With 2% daily volatility and a uniform half-day schedule, the standard deviation of arrival slippage from price noise alone is $2\% \times \sqrt{0.5/3} = 81.65$ bp (a 20,000-path simulation, seed 8, gives about 81.85).
 Pinning a 5 bp average cost at 1.96 standard errors needs about $(1.96 \times 81.65/5)^2 \approx 1{,}024$ independent orders.
-Comparing two algorithms is harder: a two-sample test at the 5% level with 80% power needs $2\,((1.96 + 0.84) \times 81.65/5)^2 \approx 4{,}186$ orders per algorithm, and more when orders are correlated through the market.
+Comparing two algorithms is harder: a two-sample test at the 5% level with 80% power needs $2\,((1.95996 + 0.84162) \times 81.65/5)^2 \approx 4{,}186$ orders per algorithm, and more when orders are correlated through the market.
 
 ## Pitfalls
 
@@ -206,7 +206,7 @@ Comparing two algorithms is harder: a two-sample test at the 5% level with 80% p
 
 > [!question]- ms-tca-sample-size | How many orders to detect a 5 bp cost difference with 82 bp of noise per order?
 > About 1,000 to put a single algorithm's 5 bp mean at 1.96 standard errors: $(1.96 \times 81.65/5)^2 \approx 1{,}024$.
-> To compare two algorithms at 5% significance and 80% power, about 4,186 per algorithm: $2\,((1.96 + 0.84) \times 81.65/5)^2$; more if orders are correlated.
+> To compare two algorithms at 5% significance and 80% power, about 4,186 per algorithm: $2\,((1.95996 + 0.84162) \times 81.65/5)^2$; more if orders are correlated.
 
 > [!question]- ms-tca-is-algo | How does an implementation-shortfall algorithm decide how fast to trade?
 > It front-loads along an Almgren-Chriss style trajectory whose urgency $\kappa = \sqrt{\lambda\sigma^2/\eta}$ rises with risk aversion and volatility and falls with impact.

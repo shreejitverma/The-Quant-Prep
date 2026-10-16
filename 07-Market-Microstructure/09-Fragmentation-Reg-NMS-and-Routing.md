@@ -127,7 +127,7 @@ Design points interviewers look for:
 - Rule 200: every sale is marked long, short or short exempt.
 - Rule 201(b)(1)(i): trading centers must have policies to "prevent the execution or display of a short sale order of a covered security at a price that is less than or equal to the current national best bid if the price of that covered security decreases by 10% or more from the covered security's closing price as determined by the listing market", for the rest of that day and the following day; a short sale displayed above the national best bid when first displayed may still execute.
 - Rule 203(b)(1): a broker-dealer may not effect a short sale without having borrowed the security, arranged to borrow it, or having "reasonable grounds to believe that the security can be borrowed so that it can be delivered on the date delivery is due", and documenting it; 203(b)(2)(iii) exempts "short sales effected by a market maker in connection with bona-fide market making activities".
-- Rule 204: a fail to deliver must be closed out by the beginning of regular trading hours on the settlement day following the settlement date; fails attributable to bona fide market making get until the third consecutive settlement day following settlement date.
+- Rule 204: a fail to deliver must be closed out by the beginning of regular trading hours on the settlement day following the settlement date; fails from long sales (as shown in the participant's books and records, Rule 204(a)(1)) and fails attributable to bona fide market making (Rule 204(a)(3)) get until the third consecutive settlement day following settlement date.
 
 A market maker therefore needs a per-symbol Rule 201 state machine wired into quoting (once triggered, short offers must be above the NBB), a locate service for anything not covered by the market-making exception, and a fails monitor; see the practical deep dive [Reg NMS and SHO, practical](Regulation/Reg-NMS-SHO-Practical.md).
 
@@ -246,7 +246,7 @@ With the NBB at 22.40, a short sale at 22.41 is permitted and one at 22.40 is no
 > Not for short sales in connection with bona fide market making (Rule 203(b)(2)(iii)); otherwise yes, borrowed, arranged or reasonable grounds to borrow, documented.
 
 > [!question]- ms-nms-close-out | When must a fail to deliver be closed out under Rule 204?
-> By the start of regular trading on the settlement day after settlement date; for fails from bona fide market making, by the third consecutive settlement day after settlement date.
+> By the start of regular trading on the settlement day after settlement date; for fails from long sales shown in the books and records or from bona fide market making, by the third consecutive settlement day after settlement date.
 
 > [!question]- ms-nms-mifid-vs-nms | How does MiFID II best execution differ from Reg NMS order protection?
 > MiFID II Article 27 obliges firms to take all sufficient steps for the best possible result across price, costs, speed, likelihood and other factors; there is no venue-level trade-through rule.
