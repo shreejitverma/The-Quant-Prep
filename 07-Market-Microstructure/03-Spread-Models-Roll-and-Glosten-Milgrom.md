@@ -15,7 +15,7 @@ sources: [Roll (1984) A Simple Implicit Measure of the Effective Bid-Ask Spread 
 - Roll: if trades bounce between bid and ask around a random-walk value, consecutive price changes are negatively correlated with $\text{Cov}(\Delta p_t, \Delta p_{t-1}) = -c^2$, so the half-spread is $c = \sqrt{-\text{Cov}}$.
 - Roll breaks when trade signs are persistent (it then estimates $c(1 - \rho)$), when quotes move with trades (adverse selection), or in short samples where the autocovariance is positive and the estimator is undefined.
 - Glosten-Milgrom: a competitive, risk-neutral market maker facing some informed traders sets ask $= \mathbb{E}[V \mid \text{buy}]$ and bid $= \mathbb{E}[V \mid \text{sell}]$; the spread exists purely because trades carry information.
-- In Glosten-Milgrom the market maker breaks even: losses to informed traders equal gains from uninformed ones, quotes are martingales, and the spread narrows as trades reveal the value.
+- In Glosten-Milgrom the market maker breaks even: losses to informed traders equal gains from uninformed ones, transaction prices are martingales, and the spread narrows as trades reveal the value.
 - Empirically the spread splits into an order-processing (transitory) part and an adverse-selection (permanent) part, which a regression of price changes on current and lagged trade signs separates.
 
 ## Learning objectives
