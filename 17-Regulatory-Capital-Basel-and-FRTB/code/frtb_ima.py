@@ -405,6 +405,11 @@ def binomial_cdf(k: int, n: int, p: float) -> float:
     return sum(math.comb(n, i) * p**i * (1.0 - p) ** (n - i) for i in range(k + 1))
 
 
+def binomial_sf(k: int, n: int, p: float) -> float:
+    """P(X > k), summed over the upper tail directly to avoid the cancellation error of 1 - cdf."""
+    return sum(math.comb(n, i) * p**i * (1.0 - p) ** (n - i) for i in range(k + 1, n + 1))
+
+
 # ============================================================================
 # 7. P&L attribution test (MAR32.34 to MAR32.44)
 # ============================================================================
@@ -741,10 +746,10 @@ def demo_backtesting() -> None:
     print("binomial(250, 1%) cumulative probabilities 0..10:", computed)
     assert computed == table2
     print(f"expected exceptions over 250 days: 99% -> {250 * 0.01:.2f}, 97.5% -> {250 * 0.025:.2f}")
-    p_fail_99 = 1.0 - binomial_cdf(12, 250, 0.01)
-    p_fail_975 = 1.0 - binomial_cdf(30, 250, 0.025)
+    p_fail_99 = binomial_sf(12, 250, 0.01)
+    p_fail_975 = binomial_sf(30, 250, 0.025)
     print(f"accurate desk model fails MAR32.19 by chance: P(>12 at 99%) = {p_fail_99:.3e}, P(>30 at 97.5%) = {p_fail_975:.3e}")
-    p_fail_99_bad = 1.0 - binomial_cdf(12, 250, 0.04)
+    p_fail_99_bad = binomial_sf(12, 250, 0.04)
     print(f"desk model with true 96% coverage at the 99% level: P(>12 exceptions) = {p_fail_99_bad:.6f}")
 
     apl, hpl, var99 = _desk_series(7)
@@ -796,11 +801,15 @@ def demo_pla() -> None:
 
     path = []
     state = "green"
-    for outcome, bt in [("amber", True), ("green", True), ("red", True), ("amber", True), ("green", False), ("green", True)]:
+    # backtest_ok_12m is the trailing 12-month condition of MAR32.43(2)(b): a failure in quarter 5 keeps it False
+    # for the next three quarter-ends as well, because the failure stays inside the 12-month window.
+    outcomes = [("amber", True), ("green", True), ("red", True), ("amber", True), ("green", False)]
+    outcomes += [("green", False), ("green", False), ("green", False), ("green", True)]
+    for outcome, bt in outcomes:
         state = next_desk_state(state, outcome, bt)
         path.append(state)
-    print("quarterly desk states for outcomes amber, green, red, amber, green (backtest failed), green:", path)
-    assert path == ["amber", "green", "red", "red", "red", "green"]
+    print("quarterly desk states over nine quarters (desk backtest fails in quarter 5):", path)
+    assert path == ["amber", "green", "red", "red", "red", "red", "red", "red", "green"]
 
 
 def demo_capital() -> None:

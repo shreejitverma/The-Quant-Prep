@@ -32,7 +32,7 @@ sources: [Basel Framework MAR20 Standardised approach general provisions and str
 ### Why a separate default charge
 
 The SbM credit spread charge shocks spreads by up to 12% (1,200bp) for non-securitisation buckets, but a default is a jump to recovery that no continuous spread shock reproduces.
-Basel 2.5 covered it with the incremental risk charge; the FRTB SA covers it with the DRC, calibrated "based on the credit risk treatment in the banking book in order to reduce the potential discrepancy in capital requirements for similar risk exposures across the bank", with limited hedging recognition (MAR20.4(2)).
+Basel 2.5 covered it through the specific risk charges of the standardised approach and, for internal models, the incremental risk charge; the FRTB SA covers it with the DRC, calibrated "based on the credit risk treatment in the banking book in order to reduce the potential discrepancy in capital requirements for similar risk exposures across the bank", with limited hedging recognition (MAR20.4(2)).
 The DRC is computed separately for non-securitisations, securitisations (non-CTP) and securitisations (CTP), with no diversification between the three (MAR22.2, MAR22.4).
 Terminology (MAR22.1): offsetting nets exposures to the same obligor in full; hedging gives partial credit for shorts in different obligors.
 
@@ -64,8 +64,8 @@ Notional and market value by instrument (MAR22.14 Table 1):
 | Sold put on a bond | option notional | strike amount - abs(option MtM) | (strike amount - abs(option MtM)) - notional |
 | Bought call on a bond | 0 | option MtM | option MtM |
 
-The table describes a long credit position with a mark-to-market loss and says the CDS and option MtM values enter in absolute value; the printed CDS row is only self-consistent if the MtM is read as that loss $\ell \ge 0$, giving market value $N - \ell$ and P&L $-\ell$, so engines should document the sign convention they use.
-A bought call has zero notional because it will not be exercised after a default; its loss is its premium, captured in the P&L term.
+The table describes a long credit position with a mark-to-market loss and says the CDS and option MtM values enter in absolute value; the printed CDS row ("notional + MtM" with P&L "- MtM") is not self-consistent under any single sign reading, so engines must document their convention; the reference engine takes the economic reading for a protection seller with a loss $\ell \ge 0$: market value $N - \ell$ and P&L $-\ell$.
+A bought call has zero notional because it will not be exercised after a default; its loss is its current mark-to-market value, captured through the P&L term (MAR22.14(1)(c)).
 Convertible bonds must include the P&L of their equity option, not be treated as vanilla bonds (FAQ to MAR22.14).
 
 ### Maturity scaling
@@ -115,7 +115,7 @@ The 2016 version of the standard called this quantity the weighted-to-short rati
 The JTD is the market value of the securitisation exposure, with no LGD because the risk weights already contain it (MAR22.27).
 Offsetting is allowed only within one specific securitisation exposure (same pool and same tranche), or where a collection of shorts perfectly replicates a long through decomposition (MAR22.29, MAR22.30); underlying names or a non-tranched index may be decomposed into replicating tranches, in which case they leave the non-securitisation DRC (MAR22.28).
 Buckets are corporates (all regions) plus 11 asset classes times four regions (Asia, Europe, North America, other) (MAR22.31).
-Risk weights come from the banking book securitisation framework (CRE40 to CRE44) with the maturity component set to one year, and a cash position's charge may be capped at its fair value (MAR22.34); HBR applies within buckets, and buckets are added (MAR22.33, MAR22.35).
+Risk weights come from the banking book securitisation framework (CRE40 to CRE44) with the maturity component set to zero (that is, a one-year maturity assumed), and a cash position's charge may be capped at its fair value (MAR22.34); HBR applies within buckets, and buckets are added (MAR22.33, MAR22.35).
 
 ### Securitisation CTP DRC
 
@@ -221,12 +221,13 @@ Netting:
 - GAMMA: net short 6,000,000.
 - SOVX: the 0.1y maturity is floored at three months, so $15{,}000{,}000 \times 0.25 = 3{,}750{,}000$.
 
-Corporates bucket: $\sum L = 2.25 + 5.40 = 7.65$ million, $\sum |S| = 3.75 + 6.00 = 9.75$ million, $HBR = 7.65 / 17.40 = 0.4397$.
-$DRC = (6\% \times 2.25 + 15\% \times 5.40) - 0.4397 \times (15\% \times 3.75 + 3\% \times 6.00)$ million $= 0.9450 - 0.4397 \times 0.7425$ million $= 618{,}556$.
+Corporates bucket: $\sum L = 2.25 + 5.40 = 7.65$ million, $\sum |S| = 3.75 + 6.00 = 9.75$ million, $HBR = 7.65 / 17.40 = 0.43966$.
+$DRC = (6\% \times 2.25 + 15\% \times 5.40) - 0.43966 \times (15\% \times 3.75 + 3\% \times 6.00)$ million $= 0.9450 - 0.43966 \times 0.7425$ million $= 618{,}556$.
 Sovereigns bucket: $2\% \times 3{,}750{,}000 = 75{,}000$, unless the national discretion of MAR22.7 sets a 0% weight.
 Total non-securitisation DRC: 693,556.
 
-Notice what the A-rated CDS hedge buys: 6m of short JTD at 3% removes only $0.4397 \times 180{,}000 = 79{,}146$ of capital, while BETA's same-name short senior bond, blocked by the seniority rule, is treated like a hedge in a different name.
+Notice what the A-rated CDS hedge does: without it the bucket has $HBR = 7.65 / 11.40 = 0.67105$ and a charge of 567,533; adding 6m of short JTD in a different name lowers HBR to 0.43966 for every short in the bucket, so the charge rises by 51,023 to 618,556.
+Because net shorts sit in the HBR denominator (MAR22.23), a cross-name hedge with a low risk weight can increase the DRC; meanwhile BETA's same-name short senior bond, blocked by the seniority rule, is treated like a hedge in a different name.
 
 ### Example 2: a sold put on a bond
 
@@ -260,7 +261,7 @@ Combining the delta, vega and curvature examples of the previous notes with Exam
 | high | 7,416,873 | 18,255,992 | 3,027,338 | 732,262 | 1,693,244 | 31,125,709 |
 | low | 10,396,770 | 19,449,454 | 2,958,025 | 759,968 | 1,734,569 | 35,298,785 |
 
-SbM is the low-scenario total, 35,298,785; SA capital is $35{,}298{,}785 + 693{,}556 + 820{,}000 = 36{,}812{,}341$ and RWA is $12.5 \times 36{,}812{,}341 = 460{,}154{,}265$.
+SbM is the low-scenario total, 35,298,785; SA capital is $35{,}298{,}785 + 693{,}556 + 820{,}000 = 36{,}812{,}341$ and RWA is $12.5 \times 36{,}812{,}341 = 460{,}154{,}265$ (the engine works with unrounded values, so displayed components can differ from the totals by one unit).
 In this book the equity delta alone would pick the high scenario, but the hedged GIRR and CSR books dominate, so the whole portfolio is charged at low correlations.
 
 ### Example 6: agency MBS in the SA (a Basel FAQ case)
@@ -347,6 +348,11 @@ The answer shows how much of the SA lives in FAQs: the main text never mentions 
 > $HBR = 100 / 200 = 0.5$, so $DRC = 6\% \times 100 - 0.5 \times 6\% \times 100 = 3$ (MAR22.23, MAR22.25).
 > Half the long charge survives because the shorts are only hedges.
 > If the shorts were on the same obligors at equal or junior seniority, they would offset first and the DRC would be zero.
+
+> [!question]- reg-drc-hedge-can-increase-charge | Can buying CDS protection on a different obligor increase the non-securitisation DRC? Give the mechanism.
+> Yes: net shorts enter the denominator of $HBR = \sum L / (\sum L + \sum |S|)$, so a new short lowers the credit given to every existing short in the bucket (MAR22.23, MAR22.25).
+> If the new short carries a low risk weight, its own weighted credit is smaller than the credit lost on existing high-weight shorts.
+> In the worked example, adding 6m of A-rated protection (3%) lowers HBR from 0.67105 to 0.43966 and raises the corporates charge from 567,533 to 618,556.
 
 > [!question]- reg-drc-ctp-aggregation | Why can a CTP index-level DRC be negative, and how are index-level charges aggregated?
 > $HBR_{ctp}$ is computed across the whole CTP and the index-level formula has no zero floor, so an index whose shorts dominate gives a negative charge (MAR22.44).

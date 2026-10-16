@@ -16,7 +16,7 @@ sources: [Basel Committee on Banking Supervision - Basel Framework MAR30 Interna
 - Liquidity is priced through five horizons (10, 20, 40, 60, 120 days) assigned per risk-factor category (MAR33.12) and folded in by the cascade $ES=\sqrt{ES_T(P)^2+\sum_{j\ge2}\big(ES_T(P,j)\sqrt{(LH_j-LH_{j-1})/10}\big)^2}$ on nested 10-day partial ES values (MAR33.4).
 - Stress calibration is indirect: $ES = ES_{R,S}\cdot\max(1, ES_{F,C}/ES_{R,C})$, where the reduced set must explain at least 75% of full ES on a 12-week average and the stress window (back to 2007) is the 12 months that maximise IMCC (MAR33.5 to MAR33.7).
 - Cross-class diversification is half recognised: $IMCC = 0.5\,IMCC(C) + 0.5\sum_i IMCC(C_i)$ over five broad risk classes (MAR33.14, MAR33.15).
-- Capital for eligible desks is $C_A=\max(IMCC_{t-1}+SES_{t-1},\ m_c\,IMCC_{avg}+SES_{avg})$ with $m_c = 1.5$ plus a backtesting add-on up to 0.5, plus a 99.9% one-year default risk charge, and the total is capped by the standardised approach through the ACR formula (MAR33.41 to MAR33.45).
+- Capital for eligible desks is $C_A=\max(IMCC_{t-1}+SES_{t-1},\ m_c\,IMCC_{avg}+SES_{avg})$ with $m_c = 1.5$ plus a backtesting add-on up to 0.5, plus a 99.9% one-year default risk charge, and the total is limited relative to the standardised approach by the ACR formula $\min(IMA_{G,A} + \text{surcharge} + C_U,\ SA_{all}) + \max(0,\ IMA_{G,A} - SA_{G,A})$ (MAR33.43), which adds back any excess of IMA over SA on the approved desks (MAR33.41 to MAR33.45).
 - IMA is granted desk by desk and re-earned every quarter through backtesting, the P&L attribution test and the risk factor eligibility test; securitisations can never be modelled (MAR30.4, MAR31.3).
 
 ## Learning objectives
@@ -54,7 +54,7 @@ For a scale mixture $0.95\,N(0,1)+0.05\,N(0,9)$, VaR99 is 2.911864 and ES97.5 is
 The confidence level is fixed by MAR33.3: 97.5th percentile, one-tailed.
 
 ES is not elicitable (Gneiting 2011): there is no scoring function whose expected value is minimised by the true ES, so it cannot be backtested exception by exception the way VaR can.
-This is why MAR32.4 backtests one-day VaR at 99% and 97.5% rather than ES.
+This is why backtesting uses one-day VaR rather than ES: bank-wide at 99% (MAR32.5) and desk-level at both 99% and 97.5% (MAR32.18).
 
 ### Liquidity horizons (MAR33.12)
 
@@ -154,7 +154,7 @@ The MAR33.15 FAQ rewrites the formula as $IMCC = IMCC(C)\,[\rho + (1-\rho)\sum_i
 How many ES runs is that?
 For a set of horizons $H$, the nested sets $Q(j)$ take $|H|$ distinct values.
 From the MAR33.12 table, interest rate has horizons {10, 20, 60}, credit spread {20, 40, 60, 120}, equity {10, 20, 60}, FX {10, 20, 40} and commodity {20, 60, 120}, and the whole book has all five.
-That is $5 + 3 + 4 + 3 + 3 + 3 = 21$ partial ES values for each of $ES_{F,C}$, $ES_{R,C}$ and $ES_{R,S}$, so 63 per day, which is the "up to 63 daily ES calculations" in the MAR33.15 FAQ (computed by `daily_es_runs` in the code).
+That is $5 + 3 + 4 + 3 + 3 + 3 = 21$ partial ES values for each of $ES_{F,C}$, $ES_{R,C}$ and $ES_{R,S}$, so 63 per day, which reproduces the "up to 63 daily ES calculations" of the MAR33.15 FAQ; the FAQ gives no breakdown, so this decomposition is the note's own (computed by `daily_es_runs` in the code).
 
 ### From IMCC to capital (MAR33.41 to MAR33.46)
 
@@ -326,7 +326,7 @@ Capacity planning starts from this number times the scenario count, not from "on
 - Choosing the stress window by maximising ES of the reduced set alone instead of IMCC (MAR33.5 FAQ1), or picking different windows for the class-level terms (MAR33.15(1)).
 - Applying $m_c$ to SES or DRC; it multiplies the 60-day average IMCC only.
 - Thinking the PLA amber zone raises $m_c$: amber triggers the MAR33.45 surcharge, while $m_c$ moves only with bank-wide backtesting and qualitative add-ons.
-- Thinking IMA can make capital arbitrarily small: SA is still computed for every desk, the ACR formula caps at SA, and the output floor applies at bank level (RBC20.4).
+- Thinking IMA can make capital arbitrarily small: SA is still computed for every desk, the ACR formula limits the benefit relative to SA through its min term (while adding back IMA in excess of SA on approved desks), and the output floor applies at bank level (RBC20.4).
 - Modelling securitisation positions or forgetting to route them to SA (MAR31.3(2)).
 - Nesting errors: if a basis risk factor is grouped with the wrong horizon, partial ES values stop being nested and the cascade double counts or drops risk.
 
@@ -371,7 +371,7 @@ Capacity planning starts from this number times the scenario count, not from "on
 > [!question]- reg-es-975-vs-var-99-gaussian-equivalence | Prove why $ES_{97.5\%}$ is close to $\text{VaR}_{99\%}$ for a standard Gaussian distribution.
 > For a standard normal, $ES_\alpha = \varphi(z_\alpha)/(1-\alpha)$.
 > $z_{0.975} = 1.959964$ and $\varphi(1.959964) = 0.058445$, so $ES_{0.975} = 0.058445/0.025 = 2.337803$.
-> $\mathrm{VaR}_{0.99} = z_{0.99} = 2.326348$, so the ratio is 1.004924: within 0.5%, which is why 97.5% was chosen as the ES level.
+> $\mathrm{VaR}_{0.99} = z_{0.99} = 2.326348$, so the ratio is 1.004924: within 0.5%, the usual explanation for pairing 97.5% ES with the old 99% VaR: under normality they give almost the same capital.
 > With fat tails ES moves further: for $0.95N(0,1)+0.05N(0,9)$ the ratio is 1.097442.
 
 > [!question]- reg-constrained-es-asset-class-list | Which five broad risk classes are used for the constrained ES terms in IMCC?
@@ -388,7 +388,7 @@ Capacity planning starts from this number times the scenario count, not from "on
 > The floor applies to total RWA, not desk by desk: RWA used for capital ratios is the higher of the sum of credit, market and operational RWA under the bank's nominated approaches and 72.5% of the same sum computed with standardised approaches only (RBC20.4).
 > It phases in from 50% in 2023 to 72.5% in 2028 (RBC90 Table 1), subject to national implementation.
 > So IMA savings in market risk count only to the extent the bank is above the floor in aggregate; a bank bound by the floor gets no marginal benefit from a cheaper IMA desk.
-> Separately, MAR33.43 already caps market risk capital at SA for all desks when IMA plus surcharge exceeds it.
+> Separately, MAR33.43 limits the total through $\min(IMA_{G,A} + \text{surcharge} + C_U, SA_{all})$, but adds back $\max(0, IMA_{G,A} - SA_{G,A})$, so IMA capital above SA on approved desks is not capped away.
 
 > [!question]- reg-ima-cascade-effective-horizon | A desk's 10-day ES is 14.68 and its liquidity-adjusted ES is 28.74. What single liquidity horizon is that equivalent to, and how would you explain it?
 > About 38.3 days: $10 \times (28.736912/14.683560)^2 = 38.3016$.
@@ -423,7 +423,7 @@ Capacity planning starts from this number times the scenario count, not from "on
 
 > [!question]- reg-ima-es-not-elicitable-backtest-var | Capital is based on 97.5% ES, yet desks are backtested on VaR. Why?
 > ES is not elicitable (Gneiting 2011), so there is no simple day-by-day exception test for it; VaR is a quantile and each day gives a Bernoulli exception with known probability.
-> MAR32.18 therefore backtests one-day VaR at both 99% and 97.5%: the 97.5% quantile probes the region ES averages over, and the 99% quantile probes deeper in the tail.
+> MAR32.18 therefore backtests one-day VaR at desk level at both 99% and 97.5% (bank-wide backtesting is at 99% only, MAR32.5): the 97.5% quantile probes the region ES averages over, and the 99% quantile probes deeper in the tail.
 > Distributional adequacy of the risk engine is tested separately by the PLA test.
 
 ## Further reading

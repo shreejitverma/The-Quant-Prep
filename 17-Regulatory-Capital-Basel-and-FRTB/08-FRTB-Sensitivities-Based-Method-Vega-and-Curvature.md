@@ -59,7 +59,7 @@ Special cases (MAR21.26): options without a maturity (for example cancellable sw
 $$s_k = \text{vega} \times \sigma_i = \frac{\partial V_i}{\partial \sigma_i} \sigma_i = \frac{\partial V_i}{\partial \ln \sigma_i}$$
 
 with vega and implied volatility from the independent risk control unit's models (MAR21.25).
-Implied volatility is held fixed (sticky strike) or moves with delta (sticky delta) when the delta is computed (MAR21.27), vega ignores CVA (MAR21.30), and equity, commodity and FX vega must use lognormal volatilities while GIRR and CSR may use either convention, currency by currency (MAR21.28 and its FAQ).
+Implied volatility is held fixed (sticky strike) or moves with delta (sticky delta) when the delta is computed (MAR21.27), vega ignores CVA (MAR21.30), and equity, commodity and FX vega must use lognormal volatilities while GIRR and CSR may use either convention (MAR21.28), and for GIRR the choice may differ by currency (FAQ to MAR21.28).
 
 The convention choice does not matter because $s_k = \partial V / \partial \ln \sigma$ is invariant to any rescaling $\sigma \to c\,\sigma$ of the volatility parameter: if $\sigma_N = c\,\sigma_{LN}$ then $\frac{\partial V}{\partial \sigma_{LN}}\sigma_{LN} = \frac{\partial V}{\partial \sigma_N} c\, \sigma_{LN} = \frac{\partial V}{\partial \sigma_N}\sigma_N$.
 Normal and lognormal volatilities are proportional to first order (at the money, $\sigma_N \approx F \sigma_{LN}$), which is the sense of footnote 280.
@@ -107,7 +107,7 @@ Curvature risk factors (MAR21.8 to MAR21.14) have no term structure:
 Shock sizes:
 
 - Equity and FX: a relative shift equal to the delta risk weight (MAR21.98).
-- GIRR, CSR and commodity: a parallel shift of all tenors equal to the largest delta risk weight of the bucket (MAR21.99); for GIRR that is the 0.25y weight, 1.7%, a 170bp parallel shift.
+- GIRR, CSR and commodity: a parallel shift of all tenors equal to the largest delta risk weight of the bucket (MAR21.99); for GIRR that is the 0.25y weight, 1.7%, a 170bp parallel shift (1.7% divided by $\sqrt{2}$, about 120bp, where the bank applies the MAR21.44 discretion to a specified currency).
 - Commodity curvature is applied as a relative shock: the gold curve is multiplied by 1.2 up and 0.8 down (FAQ to MAR21.23).
 - CSR curvature may floor a downward-shocked spread at zero, in which case the downward risk weight is capped at the spread level for the $CVR^-$ revaluation but not for the delta term (FAQ to MAR21.99).
 - FX options that do not reference the reporting (or base) currency may have $CVR^{\pm}$ divided by 1.5; with supervisory approval the 1.5 scalar may be applied to all FX instruments if curvature is computed for every currency including shocks to the reporting currency (MAR21.98).
@@ -316,7 +316,7 @@ None of these is calibrated to that event; the point is that the SA charges shor
 > [!question]- reg-aad-role-in-vega-computation | How does Adjoint Algorithmic Differentiation (AAD) resolve the computational bottleneck of computing FRTB Vega sensitivities?
 > AAD computes all first-order sensitivities of a price, including every volatility pillar, in one adjoint sweep at a small constant multiple of the cost of one pricing, instead of one bump per pillar.
 > Vega for FRTB is then $\partial V / \partial \sigma_{pillar} \times \sigma_{pillar}$, mapped to the regulatory tenors.
-> AAD does not help curvature, which requires finite shocks of 15% to 80% or 170bp, so curvature still needs full revaluation on the grid.
+> AAD does not help curvature, which requires large finite shocks (relative shocks of 15% to 80% for equity, commodity and FX, absolute spread shifts of 50bp to 1,600bp for CSR, 170bp for GIRR), so curvature still needs full revaluation on the grid.
 
 > [!question]- reg-multi-underlying-option-curvature | How does FRTB SbM handle curvature risk for multi-underlying options (such as basket options or best-of options)?
 > Delta and curvature use a look-through to the underlyings unless the instrument references a qualifying index (MAR21.31), with consistent inputs for delta and curvature (MAR21.32).
@@ -329,12 +329,12 @@ None of these is calibrated to that event; the point is that the SA charges shor
 > The design point is that short volatility is charged through three channels while long-volatility hedges get only partial offset.
 
 > [!question]- reg-vega-normal-vs-lognormal | May a bank compute GIRR vega with normal volatilities for EUR and lognormal for USD?
-> Yes: GIRR and CSR vega may use either convention, and the choice may differ by currency (MAR21.28 and its FAQ).
+> Yes: GIRR and CSR vega may use either convention (MAR21.28), and for GIRR the FAQ to MAR21.28 explicitly allows a mix of normal and lognormal assumptions across currencies.
 > Equity, commodity and FX vega must use lognormal volatilities.
 > The sensitivity $\sigma \, \partial V / \partial \sigma$ is the same under both conventions to first order because it is invariant to rescaling the volatility.
 
 > [!question]- reg-girr-curvature-shock-size | What shock is used for GIRR curvature, and which curves move?
-> A parallel shift of all tenors equal to the largest delta risk weight of the bucket, the 0.25y weight of 1.7%, so 170bp up and down (MAR21.99).
+> A parallel shift of all tenors equal to the largest delta risk weight of the bucket, the 0.25y weight of 1.7%, so 170bp up and down (MAR21.99), or 1.7% divided by $\sqrt{2}$ where the bank applies the MAR21.44 discretion.
 > All risk-free curves of the currency (OIS, 3m BOR, 6m BOR) move together, because the curvature factor is the whole currency (MAR21.8(5)).
 > Inflation and cross-currency basis have no curvature charge.
 

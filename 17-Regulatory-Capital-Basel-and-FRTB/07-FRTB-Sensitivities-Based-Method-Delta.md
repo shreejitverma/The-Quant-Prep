@@ -163,7 +163,7 @@ Buckets cross market capitalisation (large at USD 2 billion or more, MAR21.74), 
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Spot RW (MAR21.77) | 55% | 60% | 45% | 55% | 30% | 35% | 40% | 50% | 70% | 50% | 70% | 15% | 25% |
 
-Repo risk weights are one hundredth of the spot weights (0.55% to 0.15%).
+Repo risk weights are one hundredth of the spot weights (0.15% to 0.70%).
 Within a bucket: 15% (large EM), 25% (large AE), 7.5% (small EM), 12.5% (small AE), 80% (index buckets) between different issuers; 99.90% between spot and repo of the same issuer; the issuer correlation times 99.90% between spot of one issuer and repo of another (MAR21.78).
 Across buckets: 15% within 1 to 10, 0% with bucket 11, 75% between 12 and 13, 45% otherwise (MAR21.80).
 
@@ -252,7 +252,7 @@ flowchart LR
 
 Complexity: a naive within-bucket double sum is $O(n_b^2)$, harmless for GIRR (tens of factors per currency) but heavy for a CSR bucket with thousands of issuers times five tenors times two curves.
 The correlation is a product of factors that each take two values, so pairs fall into at most eight classes (same or different name, tenor, curve); the double sum per class can be computed from per-name and per-(tenor, curve) totals by inclusion-exclusion in $O(n_b)$, and the scenario transform, which is not multiplicative, is applied to each class's correlation value afterwards.
-Attribution (Euler allocation of the capital to desks or trades) needs $\partial \Delta / \partial WS_k$, which is $\left(WS_k + \sum_{l \ne k} \rho_{kl} WS_l\right) / K_b$ times the across-bucket derivative; it is not defined where $K_b = 0$ or where the alternative specification switches on, so attribution code must handle those kinks explicitly.
+Attribution (Euler allocation of the capital to desks or trades) needs $\partial \Delta / \partial WS_k$, and $WS_k$ enters $\Delta$ through both $K_b$ and $S_b$: $\frac{\partial \Delta}{\partial WS_k} = \frac{K_b \, \partial K_b / \partial WS_k + \sum_{c \ne b} \gamma_{bc} S_c}{\Delta}$ with $\frac{\partial K_b}{\partial WS_k} = \frac{WS_k + \sum_{l \ne k} \rho_{kl} WS_l}{K_b}$; it is not defined where $K_b = 0$ or where the alternative specification switches on, so attribution code must handle those kinks explicitly.
 
 The reference engine [code/frtb_sbm.py](code/frtb_sbm.py) implements every delta risk class (weights and correlations transcribed from MAR21 with paragraph references), the scenario transform, the alternative specification with a floored-and-flagged fallback, vega, curvature, DRC and RRAO; the worked examples below are its printed output.
 The production view of the same computation is in [FRTB Engine](../18-Pricing-and-Risk-Systems/10-FRTB-Engine.md) and [Risk Engine](../18-Pricing-and-Risk-Systems/07-Risk-Engine.md).
@@ -331,7 +331,7 @@ The consequence is practical: a Cholesky factorisation of $\Gamma$ (used by some
 ### Example 5: what the 2019 recalibration was worth
 
 When the Basel Committee finalised the revised framework in January 2019, it estimated a weighted average increase of about 22% in total market risk capital requirements relative to Basel 2.5, against about 40% for the framework issued in 2016, with market risk at around 5% of total RWA (BIS press release, 14 January 2019).
-The Committee's explanatory note to the standard lists, among the revisions, revised SA risk weights for GIRR, FX and certain exposures subject to credit spread risk; the $\sqrt{2}$ discretions of MAR21.44 and MAR21.88 belong to that recalibration.
+The press release lists, among the revisions, revised standardised approach risk weights for general interest rate risk, FX risk and selected credit spread risk exposures.
 The implementation date then moved from 1 January 2022 to 1 January 2023, which is the effective date of the consolidated MAR20 and MAR21 text; national implementation dates differ (see [Implementation Status by Jurisdiction](19-Implementation-Status-by-Jurisdiction.md)).
 
 ## Pitfalls

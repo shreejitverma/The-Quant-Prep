@@ -8,10 +8,12 @@ Paragraph references sit next to each constant so every number can be checked ag
 Scope and simplifications (deliberate, for a teaching engine):
 - Sensitivities are inputs: the engine starts from net sensitivities per regulatory risk factor (MAR21.4(2)),
   except in the worked examples, which build them from small pricing functions.
-- The securitisation DRC risk weights (MAR22.34, MAR22.42) come from the banking book securitisation
-  framework and are taken as inputs.
+- DRC covers non-securitisations in full (MAR22.9 to MAR22.26). For the CTP only the cross-index aggregation
+  of MAR22.45 is implemented (`drc_ctp_total`, from caller-supplied index-level charges); the securitisation
+  non-CTP DRC and the CTP-wide HBR of MAR22.44(1) are not implemented, and their risk weights would come from
+  the banking book securitisation framework (MAR22.34, MAR22.42).
 - Where the text is silent (a radicand that stays negative after the MAR21.4(5)(b) alternative
-  specification), the engine raises rather than guessing; see `across_bucket_capital`.
+  specification), the engine floors it at zero and sets `floored` for escalation; see `across_bucket_capital`.
 
 Run: python 17-Regulatory-Capital-Basel-and-FRTB/code/frtb_sbm.py
 """
@@ -150,7 +152,7 @@ def risk_class_capital(spec: RiskClassSpec, ws: Sequence[WeightedSensitivity], s
     if not correlated:
         return AcrossResult(standalone, False)
     res = across_bucket_capital(correlated, spec.gamma, scenario)
-    return AcrossResult(res.capital + standalone, res.alternative_used)
+    return AcrossResult(res.capital + standalone, res.alternative_used, res.floored)
 
 
 # ---------------------------------------------------------------------------
@@ -431,7 +433,12 @@ def girr_vega_rho(_bucket: str, k: tuple, l_: tuple) -> float:
 
 
 def non_girr_vega_rho(delta_rho: Callable[[str, tuple, tuple], float]) -> Callable[[str, tuple, tuple], float]:
-    """Keys are (option maturity, *delta key): min(rho_delta * rho_option_maturity, 1) (MAR21.94)."""
+    """Keys are (option maturity, *delta key): min(rho_delta * rho_option_maturity, 1) (MAR21.94).
+
+    The delta key must contain only the dimensions that vega and delta factors share (FAQ to MAR21.94): the
+    issuer and spot/repo type for equity, the name for CSR, the tranche for securitisations and the commodity
+    for commodities. Passing a full CSR or commodity delta key would wrongly apply tenor and basis factors.
+    """
 
     def rho(bucket: str, k: tuple, l_: tuple) -> float:
         d = 1.0 if k[1:] == l_[1:] else delta_rho(bucket, k[1:], l_[1:])
@@ -536,7 +543,12 @@ SENIORITY_RANK = {"covered": 0, "senior": 1, "non-senior": 2, "equity": 3}  # hi
 
 @dataclass(frozen=True)
 class DRCPosition:
-    """Notional is signed (+ long credit, - short credit) and P&L = market value - notional (MAR22.11, MAR22.13)."""
+    """Notional is signed (+ long credit, - short credit) and P&L = market value - notional (MAR22.11, MAR22.13).
+
+    Direction is a loss-on-default property (MAR22.10); it defaults to the sign of the notional but must be given
+    explicitly when the notional is zero, for example a bought call on a bond (MAR22.14(1)(c)), whose JTD is its
+    mark-to-market value captured through the P&L term.
+    """
 
     obligor: str
     bucket: str  # corporates | sovereigns | local governments (MAR22.22)
@@ -546,13 +558,24 @@ class DRCPosition:
     market_value: float
     maturity_years: float
     lgd_applies: bool = True  # MAR22.12(4)
+    long_credit: bool | None = None  # MAR22.10; None means sign of notional
+
+    def __post_init__(self) -> None:
+        if self.notional == 0 and self.long_credit is None:
+            raise ValueError("zero-notional position needs an explicit long_credit direction (MAR22.10)")
+        if self.seniority == "equity" and not (self.maturity_years == 0.25 or self.maturity_years > 1.0):
+            raise ValueError("cash equity takes a maturity of three months or more than one year (MAR22.16)")
+
+    @property
+    def is_long(self) -> bool:
+        return self.notional > 0 if self.long_credit is None else self.long_credit
 
     @property
     def gross_jtd(self) -> float:
         """JTD long = max(LGD * notional + P&L, 0); JTD short = min(LGD * notional + P&L, 0) (MAR22.11 to MAR22.14)."""
         lgd = DRC_LGD[self.seniority] if self.lgd_applies else 1.0
         raw = lgd * self.notional + (self.market_value - self.notional)
-        return max(raw, 0.0) if self.notional > 0 else min(raw, 0.0)
+        return max(raw, 0.0) if self.is_long else min(raw, 0.0)
 
     @property
     def maturity_weight(self) -> float:
@@ -571,10 +594,8 @@ def net_jtd(positions: Sequence[DRCPosition]) -> list[tuple[str, str, float, flo
     obligors = {(p.bucket, p.obligor) for p in positions}
     for bucket, obligor in sorted(obligors):
         mine = [p for p in positions if (p.bucket, p.obligor) == (bucket, obligor)]
-        longs = [[p, p.gross_jtd * p.maturity_weight] for p in mine if p.notional > 0]
-        shorts = sorted(
-            ([p, p.gross_jtd * p.maturity_weight] for p in mine if p.notional < 0), key=lambda x: SENIORITY_RANK[x[0].seniority]
-        )
+        longs = [[p, p.gross_jtd * p.maturity_weight] for p in mine if p.is_long]
+        shorts = sorted(([p, p.gross_jtd * p.maturity_weight] for p in mine if not p.is_long), key=lambda x: SENIORITY_RANK[x[0].seniority])
         for short in shorts:
             for long in sorted(longs, key=lambda x: -SENIORITY_RANK[x[0].seniority]):
                 if SENIORITY_RANK[short[0].seniority] >= SENIORITY_RANK[long[0].seniority] and long[1] > 0 and short[1] < 0:
@@ -837,6 +858,16 @@ def example_drc() -> dict[str, float]:
     assert close(by_bucket["corporates"], expected_corp)
     assert close(by_bucket["sovereigns"], 0.02 * 0.75 * 20e6 * 0.25)
     # MAR22.15 FAQ: EUR -10m index future (1M) hedged by +10m stocks, both at three months: 1/4*10 - 1/4*10 = 0.
+    print(f"  corporates HBR = 7.65 / 17.40 = {hbr:.5f}")
+    # The GAMMA CDS is a short in a different name: it adds 6.0m to the HBR denominator, which cuts the credit
+    # given to every short in the bucket (MAR22.23). Removing it shows the hedge raises the charge.
+    without_gamma = drc_non_securitisation([p for p in book if p.obligor != "GAMMA"])["corporates"]
+    print(f"  corporates DRC without the GAMMA CDS hedge = {fmt(without_gamma)} (HBR {7.65 / 11.40:.5f}); with it {fmt(expected_corp)}")
+    assert close(without_gamma, 0.945e6 - (7.65 / 11.40) * 0.15 * 3.75e6) and without_gamma < expected_corp
+    # MAR22.14(1)(c): bought call on a bond has zero notional; JTD is its MtM, through the P&L term.
+    call = DRCPosition("EPSILON", "corporates", "senior", "BBB", 0.0, 400_000.0, 2.0, long_credit=True)
+    print(f"  bought call on a bond, MtM 400,000: gross JTD {fmt(call.gross_jtd)}")
+    assert close(call.gross_jtd, 400_000.0)
     assert drc_ctp_total([100.0, -100.0]) == 50.0  # MAR22.45 example: +100 and -100 give max(100 - 50, 0)
     # MAR22.14 Table 1: sold put on a senior bond, notional 10m, strike 95% (strike amount 9.5m), option MtM 0.3m.
     # Bond-equivalent market value = strike amount - |MtM| = 9.2m, so P&L = -0.8m and JTD = 0.75 * 10m - 0.8m.
@@ -889,8 +920,17 @@ def self_checks() -> None:
     assert close(commodity_rho("2", ("BRENT", 1.0, "LeHavre"), ("WTI", 5.0, "Oklahoma")), 0.95 * 0.99 * 0.999)  # MAR21.83 fn 292
     assert close(CSR_NONCTP_RW[9], 0.009 * 1.25) and close(CSR_NONCTP_RW[17], 0.009 * 1.75)  # MAR21.65, MAR21.66
     assert equity_gamma("12", "13") == 0.75 and equity_gamma("5", "12") == 0.45 and equity_gamma("2", "9") == 0.15
-    # MAR21.98: GIRR curvature shift is the 0.25y risk weight
+    # MAR21.99: GIRR curvature shift is the 0.25y risk weight
     assert max(GIRR_RW.values()) == GIRR_RW[0.25] == 0.017
+    # A radicand that stays negative after MAR21.4(5)(b) is floored and flagged, and the flag survives
+    # risk_class_capital. Three buckets with pairwise gamma -0.9 (not PSD), each holding two uncorrelated factors:
+    # K_b = sqrt(2), S_b = 2; first radicand 6 - 21.6 < 0, clamped radicand 6 - 10.8 < 0.
+    flagged = risk_class_capital(
+        RiskClassSpec("probe", lambda b, k, l_: 0.0, lambda b, c: -0.9),
+        [WeightedSensitivity(b, (f,), 1.0) for b in ("1", "2", "3") for f in ("x", "y")],
+        "medium",
+    )
+    assert flagged.alternative_used and flagged.floored and flagged.capital == 0.0
     # PSD status of the inter-bucket gamma matrices (a property of the Basel tables, see across_bucket_capital)
     eig = gamma_min_eigenvalues()
     assert all(v > 0 for (name, _), v in eig.items() if name == "GIRR")

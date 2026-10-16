@@ -76,7 +76,7 @@ A missing P&L or VaR counts as an outlier (MAR32.5(2)).
 The cumulative column is the binomial CDF with $n = 250$, $p = 0.01$, which the code reproduces exactly to two decimals.
 Amber starts where the cumulative probability first reaches 95% and red where it reaches 99.99%; other sample sizes use the same rule (MAR99.17).
 The expected number of exceptions for an accurate model is $250 \times 0.01 = 2.5$.
-The multiplier steps are sized to restore 99% coverage: five exceptions in 250 suggest about 98% coverage, and for a normal distribution the ratio of the 99th to the 98th percentile is $2.326348/2.053749 = 1.132732$, about the 13% uplift the guidance mentions; the larger steps allow for fat tails (MAR99.21).
+The multiplier steps are sized to restore 99% coverage: five exceptions in 250 suggest about 98% coverage, and for a normal distribution the ratio of the 99th to the 98th percentile is $2.326348/2.053749 = 1.132732$, which matches the approximately 1.13 multiplier increase quoted in MAR99.21 (the guidance quotes the percentile ratio itself as approximately 1.14); the larger steps allow for fat tails.
 In the red zone the multiplier rises automatically to 2.00 and the supervisor may disallow the model (MAR32.15).
 An exception caused by an NMRF whose capital requirement exceeds the loss may be disregarded with documentation and no supervisory objection (MAR32.6).
 The scope is refreshed quarterly from the latest desk backtesting, RFET and PLA results (MAR32.7).
@@ -88,7 +88,7 @@ That is why there are three zones and a graded response rather than a pass or fa
 
 Each desk compares its one-day VaR at the 97.5th and the 99th percentile, calibrated to the most recent 12 months equally weighted, with at least a year of its own APL and HPL (MAR32.18).
 If a desk has more than 12 exceptions at 99% or more than 30 at 97.5% in the most recent 12 months, all its positions move to the standardised approach (MAR32.19; the text reads "more than 12 exceptions at the 99th percentile or 30 exceptions at the 97.5th percentile").
-Expected exceptions for an accurate model are 2.5 at 99% and 6.25 at 97.5%, so the thresholds are loose: an accurate model breaches by chance with probability $1.936 \times 10^{-6}$ at 99% and $3.939 \times 10^{-13}$ at 97.5%.
+Expected exceptions for an accurate model are 2.5 at 99% and 6.25 at 97.5%, so the thresholds are loose: an accurate model breaches by chance with probability $1.936 \times 10^{-6}$ at 99% and $3.887 \times 10^{-13}$ at 97.5%.
 The price is power: a model whose true coverage is only 96% at the nominal 99% level exceeds 12 exceptions only with probability 0.204532.
 Desk backtesting is therefore a gross-error screen; the PLA test is the fine instrument.
 Volatility scaling that effectively shortens the observation window is not allowed; scaling up all observations for selected factors to reflect a recent stress is allowed after notifying the supervisor (MAR32.18 FAQ1).
@@ -143,7 +143,7 @@ $$\text{Capital surcharge} = k\cdot\max\{0, SA_{G,A} - IMA_{G,A}\},\qquad k = 0.
 
 where $SA_i$ is the standalone SA of desk $i$, $A$ the amber desks and $G,A$ the green and amber desks.
 It closes part of the gap between IMA and SA in proportion to how much of the approved business, measured by SA, is amber, and at most half of it.
-The ACR formula then caps the total at SA for all desks (MAR33.43), so the surcharge never makes IMA more expensive than SA.
+The ACR formula then takes the ACR formula $\min(IMA_{G,A} + \text{surcharge} + C_U,\ SA_{all}) + \max(0,\ IMA_{G,A} - SA_{G,A})$ (MAR33.43): the surcharge cannot push the approved-desk total above SA for all desks through the min term, but IMA in excess of SA on the approved desks is added back.
 
 ```mermaid
 stateDiagram-v2
@@ -219,7 +219,7 @@ If one day's HPL were missing it would count as an outlier, raising the HPL coun
 
 ### Example 3: desk backtesting power
 
-An accurate desk model fails MAR32.19 by chance with probability $1.936\times10^{-6}$ (more than 12 at 99%) and $3.939\times10^{-13}$ (more than 30 at 97.5%).
+An accurate desk model fails MAR32.19 by chance with probability $1.936\times10^{-6}$ (more than 12 at 99%) and $3.887\times10^{-13}$ (more than 30 at 97.5%).
 A model with true 96% coverage at its nominal 99% VaR (so 10 expected exceptions instead of 2.5) still passes with probability $1 - 0.204532 = 0.795468$.
 Desk backtesting catches gross failures only.
 
@@ -238,10 +238,11 @@ HPL is 250 standard normal draws (seed 42); RTPL variants:
 
 The scaled cases fail on KS alone and the permuted case on Spearman alone.
 
-### Example 5: a desk over six quarters
+### Example 5: a desk over nine quarters
 
-Quarterly outcomes: amber, green, red, amber, green with a failed desk backtest, green.
-States: amber, green, red, red (an amber result does not readmit a red desk), red (backtesting failed), green.
+Quarterly PLA outcomes: amber, green, red, amber, then green in every later quarter; the desk fails desk-level backtesting in quarter 5.
+States: amber, green, red, red (an amber result does not readmit a red desk), red (backtesting failed), red, red, red, green.
+Readmission needs a green PLA outcome and backtesting satisfied "over the past 12 months" (MAR32.43(2)(b)), so the quarter-5 failure blocks the desk for the three following quarter-ends as well; this reading of the trailing window is the one the engine implements.
 
 ### Example 6: the amber surcharge
 
@@ -301,7 +302,7 @@ If the credit desk returned to green, $k$ and the surcharge would be 0 and capit
 > Surcharge $= k\max\{0, SA_{G,A} - IMA_{G,A}\}$ with $k = 0.5\sum_{i\in A}SA_i/\sum_{i\in G,A}SA_i$ (MAR33.45).
 > It is computed for the bank, not per desk: $k$ is half the share of standalone SA that sits in amber desks.
 > With rates 180 and FX 60 green, credit 140 amber, $SA_{G,A} = 330$ and $IMA_{G,A} = 256.91$: $k = 0.184211$ and the surcharge is 13.4639.
-> The ACR formula caps the total at SA for all desks (MAR33.43).
+> The ACR formula is $\min(IMA_{G,A} + \text{surcharge} + C_U, SA_{all}) + \max(0, IMA_{G,A} - SA_{G,A})$ (MAR33.43), so the min term limits the surcharge's effect but IMA above SA on approved desks is added back.
 
 > [!question]- reg-nmrf-impact-on-pla-failure | How do non-modellable risk factors affect the PLA test?
 > They are included in RTPL when capitalised through SES (MAR32.22(1)), so an NMRF that is represented in the risk model does not by itself create an HPL-RTPL gap.

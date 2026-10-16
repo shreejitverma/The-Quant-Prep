@@ -79,7 +79,7 @@ Regulatory bucketing (MAR31.16(2), Table 1):
 | A | IR, FX, commodity, one maturity dimension | [0, 0.75), [0.75, 1.5), [1.5, 4), [4, 7), [7, 12), [12, 18), [18, 25), [25, 35), [35, inf) years |
 | B | IR, FX, commodity, several maturity dimensions | [0, 0.75), [0.75, 4), [4, 10), [10, 18), [18, 30), [30, inf) years |
 | C | credit spread and equity maturities; volatility expiries | [0, 1.5), [1.5, 3.5), [3.5, 7.5), [7.5, 15), [15, inf) years |
-| D | strike dimension, as option delta | [0, 0.05), [0.05, 0.3), [0.3, 0.7), [0.7, 0.95), [0.95, 1.00] |
+| D | strike dimension, as option delta | [0, 0.05), [0.05, 0.3), [0.3, 0.7), [0.7, 0.95), [0.95, 1.00) |
 
 Implied volatilities use rows C and D, except swaption volatilities which use rows B, C and D.
 Footnote 304 names the trade-off: finer buckets help the PLA test but make each bucket harder to fill with real prices.
@@ -125,7 +125,7 @@ Let each stress loss be $L_k = S_k(\rho Z + \sqrt{1-\rho^2}\,\varepsilon_k)$ wit
 Then $\mathrm{Var}(\sum_k L_k) = \rho^2(\sum_k S_k)^2 + (1-\rho^2)\sum_k S_k^2$, and the $K$ term is its square root.
 So $\rho = 0.6$ is a factor loading, and the implied pairwise correlation between two NMRF losses is $\rho^2 = 0.36$.
 Limits: one factor gives $SES_k$ itself; $\rho = 1$ gives the linear sum; $\rho = 0$ gives the root sum of squares.
-Because all $SES_k$ enter as positive standalone losses, two NMRFs that hedge each other get no offset beyond the 0.36 correlation: hedges are not recognised.
+Because all $SES_k$ enter as positive standalone losses, two NMRFs that hedge each other are never netted: each enters as a positive standalone loss, and the only relief is the partial diversification against a simple sum that the 0.36 implied correlation gives.
 
 ### How NMRFs interact with the rest of IMA
 
@@ -222,7 +222,7 @@ Position A has a 10-day stressed standard deviation of 10 (USD m) and a hedge B 
 If B is modellable, capital is $1.5 \times ES(A+B) = 1.5 \times 2.337803 \times \sqrt{100 + 16 - 40} = 1.5 \times 20.380492 = 30.570738$.
 If B fails the RFET, A stays in ES alone and B gets its own stress scenario at $\max(10, 20) = 20$ days: $1.5 \times 23.378028 + 2.337803 \times 4 \times \sqrt{2} = 35.067042 + 13.224610 = 48.291652$.
 Capital rises by 17.720913, or 57.97%, with no change in positions: the hedge is lost, and the hedge itself is now charged as a stand-alone risk.
-The mirror case also exists: a factor that is a pure diversifier with low standalone risk can cost less as an NMRF because SES escapes $m_c$; the cliff is about losing offsets, not a fixed multiple.
+The cliff is about losing offsets: a diversifier always costs more as an NMRF, and only a factor that adds to the book's risk almost one-for-one (correlation above roughly 0.92 in this example, because $1.5 > \sqrt{2}$) can cost slightly less, since SES escapes $m_c$.
 
 ### Example 5: an NMRF-driven backtesting exception
 
@@ -294,7 +294,7 @@ The exception cannot be disregarded: the standalone desk-level NMRF requirement 
 
 > [!question]- reg-desk-closure-driven-by-nmrf | Why can NMRF charges make the internal model uneconomic for an exotics desk?
 > Exotic books depend on many factors that rarely trade, such as long-dated volatility nodes, correlations and dividends, so many fail the RFET or the data principles.
-> Each NMRF gets a standalone stress charge at a horizon of at least 20 days, hedges between NMRFs are not recognised beyond the 0.36 implied correlation, and the hedge relationship to modellable factors is lost.
+> Each NMRF gets a standalone stress charge at a horizon of at least 20 days, hedges between NMRFs are never netted (each enters as a positive standalone loss, with only the partial diversification of the 0.36 implied correlation), and the hedge relationship to modellable factors is lost.
 > On top, the desk still needs RTPL that tracks HPL for the PLA test and a full SA calculation for the cap.
 > When SES plus running cost exceeds the SA charge, the rational choice is to leave the desk on the standardised approach.
 
@@ -326,7 +326,7 @@ The exception cannot be disregarded: the standalone desk-level NMRF requirement 
 ## Further reading
 
 - Basel Committee on Banking Supervision, Basel Framework, MAR31 (model requirements), MAR32.6 and MAR32.22, MAR33.16 and MAR33.17, MAR99.22, https://www.bis.org/basel_framework/.
-- Basel Committee on Banking Supervision, *Minimum capital requirements for market risk*, BCBS d457, January 2019, which introduced the current RFET and SES design.
+- Basel Committee on Banking Supervision, *Minimum capital requirements for market risk*, BCBS d457, January 2019.
 - McNeil, Frey and Embrechts, *Quantitative Risk Management*, revised edition, Princeton University Press, 2015, for one-factor models and correlation structures.
 
 ## In this repo and SDE-Interview-Prep

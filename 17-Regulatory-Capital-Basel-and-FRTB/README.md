@@ -24,7 +24,7 @@ The rules that govern bank balance sheets, trading desks, counterparty exposures
 | 06 | [FRTB: Trading and Banking Book Boundary](06-FRTB-Trading-and-Banking-Book-Boundary.md) | TRD | advanced | 4 | draft | 10 |
 | 07 | [FRTB: Sensitivities-Based Method - Delta](07-FRTB-Sensitivities-Based-Method-Delta.md) | TRD | advanced | 6 | solid | 20 |
 | 08 | [FRTB: Sensitivities-Based Method - Vega and Curvature](08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md) | TRD | advanced | 6 | solid | 17 |
-| 09 | [FRTB: Default Risk Charge and Residual Risk Add-On](09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md) | TRD | advanced | 5 | solid | 17 |
+| 09 | [FRTB: Default Risk Charge and Residual Risk Add-On](09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md) | TRD | advanced | 5 | solid | 18 |
 | 10 | [FRTB: Internal Model Approach - Expected Shortfall](10-FRTB-Internal-Model-Approach-ES.md) | TRD | senior | 6 | solid | 17 |
 | 11 | [FRTB: Non-Modellable Risk Factors](11-FRTB-Non-Modellable-Risk-Factors.md) | TRD | senior | 5 | solid | 15 |
 | 12 | [FRTB: Backtesting and P&L Attribution Testing](12-FRTB-Backtesting-and-PLA-Testing.md) | TRD | senior | 5 | solid | 15 |
