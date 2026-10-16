@@ -49,7 +49,7 @@ $$r_{\tau}^{\text{filtered}} = r_{\tau} \times \frac{\sigma_{\text{current}}}{\s
 
 - **Expected Maximum Drawdown (Magdon-Ismail & Atiya):**
 
-$$\mathbb{E}[\text{MDD}(T)] \approx \frac{\sigma}{2S} \left[ \ln(2S^2 T) + 2\gamma - 1 \right]$$
+$$\mathbb{E}[\text{MDD}(T)] \approx \frac{\sigma}{2S} \left[ \ln\left( \frac{S^2 T}{2} \right) + 1.9635 \right]$$
 
 - **Derivatives Greek P&L Attribution:**
 

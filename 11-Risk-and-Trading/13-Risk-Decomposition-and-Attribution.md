@@ -125,13 +125,14 @@ Rather than decomposing risk by individual securities, institutional allocators 
 
 $$\mathbf{r} = \mathbf{B} \mathbf{f} + \mathbf{\epsilon}$$
 
-Portfolio variance decomposes into systematic factor variance and idiosyncratic specific variance:
+Portfolio variance decomposes into systematic factor variance and idiosyncratic specific variance.
+The systematic part depends on factor exposures $\mathbf{x} = \mathbf{B}^T \mathbf{w}$, not on the realized factor returns $\mathbf{f}$:
 
-$$\sigma_p^2 = \mathbf{w}^T \mathbf{B} \mathbf{\Sigma}_f \mathbf{B}^T \mathbf{w} + \mathbf{w}^T \mathbf{D}_{\epsilon} \mathbf{w}$$
+$$\sigma_p^2 = \mathbf{x}^T \mathbf{\Sigma}_f \mathbf{x} + \mathbf{w}^T \mathbf{D}_{\epsilon} \mathbf{w}$$
 
-The risk contribution of factor $k$ is obtained via Euler allocation with respect to factor exposure:
+The risk contribution of factor $k$ is the Euler term in that exposure:
 
-$$\text{RC}_{\text{factor } k} = f_k \frac{\partial \sigma_p}{\partial f_k}$$
+$$\text{RC}_{\text{factor } k} = x_k \frac{\partial \sigma_p}{\partial x_k} = x_k \frac{(\mathbf{\Sigma}_f \mathbf{x})_k}{\sigma_p}$$
 
 This decomposition reveals whether a portfolio's risk is genuinely diversified across independent economic drivers or concentrated in a single latent factor (e.g., hidden tech growth momentum).
 

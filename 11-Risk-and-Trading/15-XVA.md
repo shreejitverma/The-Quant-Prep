@@ -232,7 +232,7 @@ Step 3: Total Funding and Margin Charge:
 
 $$\text{Total Funding Cost} = \text{FCA} + \text{MVA} = \$7,328 + \$6,870 = \$14,198.00$$
 
-For a swap notional of $N = \$10,000,000$ and 5-year annuity $A = \sum_{t=1}^5 P(0, t) \approx 4.58$, this upfront fee translates to a running spread of $\frac{\$14,198}{\$10,000,000 \times 4.58} \approx 0.000310$ or $3.10 \text{ bps}$ added to the fixed rate paid by the client.
+For a swap notional of $N = \$10,000,000$ and the midpoint annuity proxy $A = T \times P(0, T/2) = 5.0 \times 0.916 = 4.58$, this upfront fee translates to a running spread of $\frac{\$14,198}{\$10,000,000 \times 4.58} \approx 0.000310$ or $3.10 \text{ bps}$ added to the fixed rate paid by the client.
 
 ## Pitfalls
 
@@ -266,7 +266,7 @@ For a swap notional of $N = \$10,000,000$ and 5-year annuity $A = \sum_{t=1}^5 P
 > CVA market risk Greeks ($\frac{\partial \text{CVA}}{\partial S}$, $\frac{\partial \text{CVA}}{\partial r}$) measure sensitivity to changes in the underlying market variables that drive Expected Exposure; they are hedged using standard vanilla swaps, futures, and options. CVA credit risk Greeks ($\frac{\partial \text{CVA}}{\partial S_{\text{CDS}}}$) measure sensitivity to counterparty hazard rates and credit spreads; they are hedged using single-name CDS and index tranches.
 
 > [!question]- risk-unilateral-vs-bilateral-cva | Contrast unilateral CVA with bilateral CVA.
-> Unilateral CVA assumes the bank is default-free ($\text{PD}_B = 0$), evaluating losses purely from counterparty default. Bilateral CVA incorporates the joint survival of both parties, recognizing that the bank will only experience a CVA loss if the counterparty defaults while the bank is still solvent ($\tau_C < \tau_B$). Bilateral CVA reduces the gross CVA charge and pairs it with DVA.
+> Unilateral CVA assumes the bank is default-free ($\text{PD}_B = 0$) and equals $(1 - R_C) \int_0^T P(0, t) \, \text{EE}^*(t) \, d\text{PD}_C(t)$. The bilateral charge in this note is that unilateral CVA minus DVA, with DVA equal to $(1 - R_B) \int_0^T P(0, t) \, \text{ENE}^*(t) \, d\text{PD}_B(t)$. Neither integral is multiplied by the survival of the other party.
 
 > [!question]- risk-fca-vs-fba-asymmetry | Why do many bank XVA desks charge clients for FCA but refuse to credit clients for FBA?
 > FCA is an actual cash outflow paid to treasury when borrowing cash to post collateral. FBA represents a hypothetical funding benefit when receiving collateral from the street. However, in practice, a bank cannot readily monetize this liquidity unless treasury has an immediate commercial use for it. To prevent speculative dependency on unmonetizable liabilities, desks price FCA conservatively while damping or zeroing FBA.

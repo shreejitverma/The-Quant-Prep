@@ -49,18 +49,19 @@ def simulate_forward_contract(
     num_paths: int = 2000,
     seed: int = 42,
 ) -> ExposureProfile:
-    """Simulate exposure profile for a forward contract (exposure grows with sqrt(t))."""
+    """Simulate exposure of a par forward struck at K = S0 * exp(r * T).
+
+    Mark-to-market is V(t) = N * (S(t) / S0 - exp(r * t)), so E[V(t)] = 0.
+    Exposure grows with sqrt(t).
+    """
     rng = random.Random(seed)
     dt = maturity / num_steps
     grid = [i * dt for i in range(num_steps + 1)]
 
-    # Paths: store simulated values at each time step
-    # V(t) = Notional * (S(t) - K) discounted, where S(0) = K = 100
-    # Under risk-neutral drift: dS = r S dt + sigma S dW
+    # Under the risk-neutral drift: dS = r S dt + sigma S dW, S(0) = 100.
     s0 = 100.0
-    k = s0
 
-    # Matrix of path values: [step][path]
+    # Matrix of path values: [step][path]. V(0) = 0 for a par forward.
     values: list[list[float]] = [[0.0] * num_paths for _ in range(num_steps + 1)]
 
     for p in range(num_paths):
@@ -69,9 +70,8 @@ def simulate_forward_contract(
             t = grid[i]
             z = rng.gauss(0.0, 1.0)
             s = s * math.exp((r - 0.5 * annual_vol**2) * dt + annual_vol * math.sqrt(dt) * z)
-            # Value to buyer: (S(t) - K * exp(-r * (T - t))) * notional / S0
-            discount = math.exp(-r * (maturity - t))
-            v = notional * (s - k * discount) / s0
+            # Par delivery price K = S0*exp(r*T): V(t) = N*(S(t)/S0 - exp(r*t))
+            v = notional * (s / s0 - math.exp(r * t))
             values[i][p] = v
 
     return _calculate_exposure_metrics(grid, values)
@@ -306,6 +306,18 @@ def run_tests() -> None:
     )
     # Forward exposure strictly increases with time: EE(5y) > EE(1y)
     assert fwd_exp.ee[-1] > fwd_exp.ee[10], "Forward EE must increase with time"
+    # Par-forward closed form: E[max(N*(S(t)/S0 - exp(r*t)), 0)]
+    # = N*exp(r*t)*(2*Phi(0.5*sigma*sqrt(t)) - 1)
+    half_01 = 0.5 * 0.20 * math.sqrt(fwd_exp.grid[1])
+    ee_01_closed = 1_000_000.0 * math.exp(0.03 * fwd_exp.grid[1]) * (2.0 * norm_cdf(half_01) - 1.0)
+    assert math.isclose(fwd_exp.ee[1], ee_01_closed, rel_tol=0.10), (
+        f"Simulated forward EE({fwd_exp.grid[1]:.1f}y) {fwd_exp.ee[1]} deviates from closed-form {ee_01_closed}"
+    )
+    half_1 = 0.5 * 0.20 * math.sqrt(fwd_exp.grid[10])
+    ee_1_closed = 1_000_000.0 * math.exp(0.03 * fwd_exp.grid[10]) * (2.0 * norm_cdf(half_1) - 1.0)
+    assert math.isclose(fwd_exp.ee[10], ee_1_closed, rel_tol=0.10), (
+        f"Simulated forward EE(1y) {fwd_exp.ee[10]} deviates from closed-form {ee_1_closed}"
+    )
     # PFE 99% must exceed PFE 95%
     assert fwd_exp.pfe_99[25] > fwd_exp.pfe_95[25], "PFE 99% must exceed PFE 95%"
     print(f"5y Forward EE at maturity: ${fwd_exp.ee[-1]:,.2f}, 95% PFE: ${fwd_exp.pfe_95[-1]:,.2f}")

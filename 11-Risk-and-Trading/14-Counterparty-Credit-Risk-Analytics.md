@@ -160,7 +160,7 @@ Wrong-Way Risk occurs when exposure to a counterparty is positively correlated w
 $$\text{Cov}(\text{Exposure}(t), \text{Hazard Rate}(t)) > 0$$
 
 - **Specific Wrong-Way Risk (SWWR):** Arises from structural, legal, or financial relationships between the counterparty and the underlying reference asset. Example: Purchasing a Credit Default Swap (CDS) protection on Company A from Bank B, where Bank B is the parent company of Company A.
-- **General (Systematic) Wrong-Way Risk (GWWR):** Arises when macro-economic market factors simultaneously drive up portfolio exposure and counterparty credit spreads. Example: A domestic bank holding a large out-of-the-money cross-currency swap receiving foreign currency from a foreign counterparty whose home currency undergoes an acute sovereign balance-of-payments crisis.
+- **General (Systematic) Wrong-Way Risk (GWWR):** Arises when macro-economic market factors simultaneously drive up portfolio exposure and counterparty credit spreads. Example: a domestic bank holding a cross-currency swap that receives USD from a Turkish bank and pays Turkish lira during a severe lira crisis, so the collapsing lira raises the mark-to-market of the USD receipt at the same time as the counterparty's hazard rate rises.
 
 Wrong-way risk amplifies expected losses, requiring explicit exposure add-ons or copula-coupled default simulation.
 
@@ -204,7 +204,7 @@ Using the reference implementation in `code/exposure_xva.py` with `num_paths=100
 The simulation generates the following profile over 50 time steps:
 - Time $t = 0.0$: $EE(0) = \$0.00$
 - Time $t = 1.0$: $EE(1.0) = \$144,101.27$, $PFE_{95}(1.0) = \$608,302.12$
-- Time $t = 2.3$ (Peak Hump): $EE(2.3) = \$159,124.02$, $PFE_{95}(2.3) = \$621,987.27$
+- Time $t = 2.3$ (Peak Hump): $EE(2.3) = \$159,124.02$, $PFE_{95}(2.3) = \$655,890.68$
 - Time $t = 2.5$: $EE(2.5) = \$153,456.89$, $PFE_{95}(2.5) = \$614,332.86$
 - Time $t = 5.0$ (Maturity): $EE(5.0) = \$0.00$, $PFE_{95}(5.0) = \$0.00$
 
