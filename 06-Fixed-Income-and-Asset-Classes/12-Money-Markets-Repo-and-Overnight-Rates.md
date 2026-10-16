@@ -79,7 +79,7 @@ The structural consequence for systems: a legacy trade now needs a schedule of d
 - Complexity: $O(D)$ for $D$ business days per coupon; forecasting is $O(1)$ from the curve.
 - Pitfalls: weekend and holiday day counts, SONIA 365 versus SOFR 360, publication lag, revised or late fixings.
 - Code: [`code/bond_pricing.py`](code/bond_pricing.py) implements `compound_in_arrears`.
-- System context: market and reference data platform (planned section).
+- System context: the [market and reference data platform](../18-Pricing-and-Risk-Systems/03-Market-and-Reference-Data-Platform.md).
 
 ## Worked examples
 

@@ -84,7 +84,7 @@ This recursive algorithm is triangular and solves in $O(m)$ operations without i
 - Algorithm: generate cash flow schedule for both legs, lookup discount factors for payment dates, project forward rates on floating dates, multiply and sum.
 - Complexity: $O(n)$ where $n$ is the number of payment periods in the swap.
 - Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `par_swap_rate_single_curve`, `swap_annuity`, and `bootstrap_single_curve`.
-- System context: the curve and surface service (planned section).
+- System context: [the curve and surface service](../18-Pricing-and-Risk-Systems/04-Curve-and-Surface-Service.md).
 
 ## Worked examples
 

@@ -99,7 +99,7 @@ The critical vulnerability is funding liquidity risk: if overnight repo rates sp
 - Algorithm: compute CF using CME analytical formula; evaluate invoice price for each deliverable; calculate IRR; sort bonds descending by IRR.
 - Complexity: $O(M)$ where $M$ is the number of bonds in the deliverable basket (typically 15 to 30 bonds).
 - Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `cme_conversion_factor` and `treasury_futures_basis`.
-- System context: intraday risk and pre-trade limits (planned section).
+- System context: [pre-trade risk and limit checks](../18-Pricing-and-Risk-Systems/01-Front-to-Back-Architecture.md#front-office-execution-and-pricing).
 
 ## Worked examples
 

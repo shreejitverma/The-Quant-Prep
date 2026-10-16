@@ -88,7 +88,7 @@ Valuing derivatives under a multi-currency CSA requires pricing this collateral 
 - Algorithm: construct OIS curves from overnight instruments; bootstrap tenor curves from vanilla and basis swaps; calibrate cross-currency discount curves to match XCCY quotes.
 - Complexity: $O(K \cdot N)$ where $K$ is the number of curves and $N$ is the number of instruments in the global bootstrap.
 - Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `par_swap_rate_dual_curve`.
-- System context: the curve and surface service (planned section).
+- System context: [the curve and surface service](../18-Pricing-and-Risk-Systems/04-Curve-and-Surface-Service.md).
 
 ## Worked examples
 

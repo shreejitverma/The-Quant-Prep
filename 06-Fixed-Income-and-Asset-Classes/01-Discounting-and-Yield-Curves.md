@@ -77,7 +77,7 @@ Real curve construction (instrument choice, interpolation, multi-curve) is in la
 - Storage: store discount factors or log-discount factors at pillar dates; interpolate log-linearly in $P$ (flat forwards) as a baseline.
 - Complexity: bootstrap is $O(n)$ per instrument with a closed form, $O(n\cdot\text{iter})$ with a root solver; evaluation is $O(\log n)$ by binary search over pillars.
 - Numerical pitfalls: extrapolation beyond the last pillar, negative discount-factor ratios from bad interpolation, mixing year fractions from different conventions.
-- System design: the curve and surface service (planned section).
+- System design: [the curve and surface service](../18-Pricing-and-Risk-Systems/04-Curve-and-Surface-Service.md).
 
 ## Worked examples
 

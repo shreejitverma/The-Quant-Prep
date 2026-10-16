@@ -64,7 +64,7 @@ For a long position convexity is valuable and is paid for in lower yield; a barb
 - Algorithm: sum over flows; yield from price by bisection or Newton, using DV01 as the derivative; $O(n)$ per evaluation.
 - Pitfalls: yield solver bracket must include negative yields; duration for a curve-priced bond is a bump-and-revalue number, not a formula; date arithmetic must match the day-count convention.
 - Reference: [`code/bond_pricing.py`](code/bond_pricing.py).
-- System context: the risk engine (planned section).
+- System context: risk and PnL controls in the [front-to-back architecture](../18-Pricing-and-Risk-Systems/01-Front-to-Back-Architecture.md).
 
 ## Worked examples
 

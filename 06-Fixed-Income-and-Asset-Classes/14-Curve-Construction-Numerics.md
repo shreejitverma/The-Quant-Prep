@@ -106,7 +106,7 @@ Inverting $J_{\mathbf{s}, \mathbf{z}}$ via forward substitution provides $J_{\ma
 - Algorithm: triangular forward substitution for bootstrapping; Newton-Raphson iteration with Jacobian if non-linear; analytical evaluation of $P(t)$ and $f(t)$.
 - Complexity: $O(n)$ for triangular bootstrap; $O(n^2)$ for analytical Jacobian construction and inversion.
 - Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `DiscountCurve`, `swap_jacobian`, and `map_zero_risk_to_par_risk`.
-- System context: the curve and surface service (planned section).
+- System context: [the curve and surface service](../18-Pricing-and-Risk-Systems/04-Curve-and-Surface-Service.md).
 
 ## Worked examples
 
