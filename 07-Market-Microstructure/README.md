@@ -19,17 +19,17 @@ Regulatory deep dives live in [Regulation/](Regulation/).
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
 | 01 | [Limit Order Books and Order Types](01-Limit-Order-Books-and-Order-Types.md) | TRD | core | 4 | solid | 13 |
-| 02 | [Exchange Mechanics, Auctions and Fees](02-Exchange-Mechanics-Auctions-and-Fees.md) | TD | core | 3 | seed | 0 |
-| 03 | [Spread Models: Roll and Glosten-Milgrom](03-Spread-Models-Roll-and-Glosten-Milgrom.md) | TR | core | 4 | seed | 0 |
-| 04 | [Kyle Model and Informed Trading](04-Kyle-Model-and-Informed-Trading.md) | R | advanced | 3 | seed | 0 |
+| 02 | [Exchange Mechanics, Auctions and Fees](02-Exchange-Mechanics-Auctions-and-Fees.md) | TD | core | 3 | solid | 17 |
+| 03 | [Spread Models: Roll and Glosten-Milgrom](03-Spread-Models-Roll-and-Glosten-Milgrom.md) | TR | core | 4 | solid | 17 |
+| 04 | [Kyle Model and Informed Trading](04-Kyle-Model-and-Informed-Trading.md) | R | advanced | 3 | solid | 16 |
 | 05 | [Adverse Selection and Order Flow Toxicity](05-Adverse-Selection-and-Flow-Toxicity.md) | TR | core | 3 | solid | 13 |
-| 06 | [Market Impact Models](06-Market-Impact-Models.md) | TR | core | 4 | seed | 0 |
-| 07 | [Optimal Execution: Almgren-Chriss](07-Optimal-Execution-Almgren-Chriss.md) | TR | advanced | 4 | seed | 0 |
-| 08 | [Execution Algorithms and TCA](08-Execution-Algorithms-and-TCA.md) | TD | core | 3 | seed | 0 |
-| 09 | [Fragmentation, Reg NMS and Smart Order Routing](09-Fragmentation-Reg-NMS-and-Routing.md) | TD | core | 3 | seed | 0 |
-| 10 | [Latency Arbitrage and the Value of Speed](10-Latency-Arbitrage-and-Speed.md) | TD | advanced | 2 | seed | 0 |
+| 06 | [Market Impact Models](06-Market-Impact-Models.md) | TR | core | 4 | solid | 16 |
+| 07 | [Optimal Execution: Almgren-Chriss](07-Optimal-Execution-Almgren-Chriss.md) | TR | advanced | 4 | solid | 16 |
+| 08 | [Execution Algorithms and TCA](08-Execution-Algorithms-and-TCA.md) | TD | core | 3 | solid | 16 |
+| 09 | [Fragmentation, Reg NMS and Smart Order Routing](09-Fragmentation-Reg-NMS-and-Routing.md) | TD | core | 3 | solid | 17 |
+| 10 | [Latency Arbitrage and the Value of Speed](10-Latency-Arbitrage-and-Speed.md) | TD | advanced | 2 | solid | 16 |
 | 11 | [Order Book Imbalance and the Microprice](11-Order-Book-Imbalance-and-Microprice.md) | TR | core | 4 | solid | 12 |
-| 12 | [Microstructure Problem Set](12-Microstructure-Problem-Set.md) | TRD | core | 4 | seed | 0 |
+| 12 | [Microstructure Problem Set](12-Microstructure-Problem-Set.md) | TRD | core | 4 | solid | 31 |
 
 ### Supporting material
 
