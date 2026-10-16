@@ -75,7 +75,7 @@ NMRF_MIN_LH_DAYS = 20  # MAR33.16(1): stress-scenario liquidity horizon is max(L
 RFET_MIN_OBS_PER_YEAR = 24  # MAR31.13(1)
 RFET_MIN_OBS_PER_90_DAYS = 4  # MAR31.13(1): no 90-day period with fewer than four observations
 RFET_ALT_MIN_OBS = 100  # MAR31.13(2): at least 100 observations over the previous 12 months
-RFET_WINDOW_DAYS = 365  # "12 months" / "per year" implemented as 365 calendar days (implementation choice)
+RFET_WINDOW_DAYS = 365  # "12 months" / one year implemented as 365 calendar days (implementation choice)
 RFET_GAP_WINDOW_DAYS = 90
 
 # MAR31.16 Table 1: regulatory bucketing approach, lower bucket edges (upper edge of last bucket is infinity).
@@ -312,28 +312,46 @@ class RfetResult:
         return self.passes_24_rule or self.passes_100_rule
 
 
-def rfet(observations: Iterable[date], assessment: date) -> RfetResult:
+def rfet(
+    observations: Iterable[date],
+    assessment: date,
+    calibration_start: date | None = None,
+    calibration_end: date | None = None,
+) -> RfetResult:
     """Risk factor eligibility test on real price observation dates (MAR31.13).
 
-    Window: the 365 calendar days ending on the assessment date.
+    Criterion 1's 24-per-year count uses the ES calibration window; footnote 301 permits a one-year
+    window ending up to one month before assessment instead. With no window supplied, it defaults to
+    the 365 calendar days ending on the assessment date.
+    The 90-day gap test and criterion 2 use the 365 calendar days ending on the assessment date.
     Only one observation per day counts.
-    Criterion 1: >= 24 observations and no 90-day period inside the window with fewer than 4.
-    Criterion 2: >= 100 observations.
+    Criterion 1: >= 24 observations per year over the calibration window and no trailing 90-day
+    period with fewer than 4.
+    Criterion 2: >= 100 trailing-year observations.
     """
-    start = assessment - timedelta(days=RFET_WINDOW_DAYS - 1)
-    days = sorted({d for d in observations if start <= d <= assessment})
-    min_90 = len(days)
-    first_start = start
+    trailing_start = assessment - timedelta(days=RFET_WINDOW_DAYS - 1)
+    if calibration_start is None:
+        calibration_start = trailing_start
+    if calibration_end is None:
+        calibration_end = assessment
+    if calibration_start > calibration_end:
+        raise ValueError("calibration_start must not be after calibration_end")
+    observation_days = sorted(set(observations))
+    trailing_days = [d for d in observation_days if trailing_start <= d <= assessment]
+    calibration_days = [d for d in observation_days if calibration_start <= d <= calibration_end]
+    calibration_years = ((calibration_end - calibration_start).days + 1) / RFET_WINDOW_DAYS
+    min_90 = RFET_WINDOW_DAYS
+    first_start = trailing_start
     last_start = assessment - timedelta(days=RFET_GAP_WINDOW_DAYS - 1)
     s = first_start
     while s <= last_start:
         e = s + timedelta(days=RFET_GAP_WINDOW_DAYS - 1)
-        count = bisect.bisect_right(days, e) - bisect.bisect_left(days, s)
+        count = bisect.bisect_right(trailing_days, e) - bisect.bisect_left(trailing_days, s)
         min_90 = min(min_90, count)
         s += timedelta(days=1)
-    passes_24 = len(days) >= RFET_MIN_OBS_PER_YEAR and min_90 >= RFET_MIN_OBS_PER_90_DAYS
-    passes_100 = len(days) >= RFET_ALT_MIN_OBS
-    return RfetResult(len(days), min_90, passes_24, passes_100)
+    passes_24 = len(calibration_days) / calibration_years >= RFET_MIN_OBS_PER_YEAR and min_90 >= RFET_MIN_OBS_PER_90_DAYS
+    passes_100 = len(trailing_days) >= RFET_ALT_MIN_OBS
+    return RfetResult(len(trailing_days), min_90, passes_24, passes_100)
 
 
 def regulatory_bucket(row: str, value: float) -> int:
@@ -701,6 +719,12 @@ def demo_rfet_and_ses() -> None:
     assert rb.modellable and rb.observation_days == 25 and rb.min_obs_in_90_days >= 4
     assert not rc.modellable and rc.observation_days == 23 and rc.min_obs_in_90_days >= 4
     assert rd.modellable and not rd.passes_24_rule and rd.passes_100_rule
+    calibration_start = a - timedelta(days=3 * RFET_WINDOW_DAYS - 1)
+    recent_20 = [a - timedelta(days=d) for d in range(0, 360, 18)]
+    earlier_52 = [a - timedelta(days=365 + d) for d in range(0, 728, 14)][:52]
+    long_window = rfet(recent_20 + earlier_52, a, calibration_start, a)
+    assert long_window.observation_days == 20 and long_window.min_obs_in_90_days >= 4
+    assert long_window.passes_24_rule and not long_window.passes_100_rule
     assert regulatory_bucket("C", 5.0) == 3 and regulatory_bucket("A", 30.0) == 8 and regulatory_bucket("D", 0.5) == 3
     print("bucketing: 5y credit spread -> row C bucket 3; 30y rate -> row A bucket 8; 50-delta strike -> row D bucket 3")
 

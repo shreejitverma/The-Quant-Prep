@@ -12,7 +12,7 @@ sources: [Basel Committee on Banking Supervision - Basel Framework MAR31 Interna
 
 ## TL;DR
 
-- A risk factor may enter the IMA expected shortfall model only if it passes the risk factor eligibility test (RFET): at least 24 real price observations per year with no 90-day period holding fewer than 4, or at least 100 observations in 12 months, counting at most one per day (MAR31.13).
+- A risk factor may enter the IMA expected shortfall model only if it passes the risk factor eligibility test (RFET): at least 24 real price observations per year over the ES calibration period and no 90-day period with fewer than 4 observations in the previous 12 months, or at least 100 observations in 12 months, counting at most one per day (MAR31.13).
 - A real price is a trade the bank did, a verifiable arm's-length trade between others, or a committed quote collected through a vendor, platform or exchange; collateral reconciliations and valuations do not count (MAR31.12).
 - Passing RFET is necessary, not sufficient: seven data principles decide whether a factor can really be modelled, and anything that fails becomes a non-modellable risk factor (NMRF) (MAR31.25, MAR31.26).
 - Each NMRF is capitalised by a stress scenario at least as prudent as 97.5% ES over a stress period, with liquidity horizon $\max(LH, 20)$ days and one common stress period per risk class (MAR33.16).
@@ -59,11 +59,12 @@ A single trade counts for every risk factor it is representative of (MAR31.13).
 
 To pass, a risk factor must meet either criterion, assessed quarterly:
 
-1. At least 24 real price observations per year, measured over the period used to calibrate the current ES model, and over the previous 12 months no 90-day period with fewer than four observations; monitored monthly.
+1. At least 24 real price observations per year, measured over the period used to calibrate the current ES model, and over the previous 12 months no 90-day period with fewer than four observations; monitored monthly (MAR31.13(1)).
 2. At least 100 real price observations over the previous 12 months.
 
 In both, no more than one observation per day counts.
-External data that arrives with a lag may use a one-year window ending up to one month before the assessment instead of the ES calibration window, and the gap may not exceed one month whether the data is internal or external (footnote 301 and FAQ1).
+External data that arrives with a lag may use a one-year window ending up to one month before the assessment instead of the ES calibration window (footnote 301).
+The gap may not exceed one month whether the data is internal or external (FAQ1).
 After benchmark reform, a new benchmark may count observations of the old benchmark from before its discontinuation together with its own, until one year after the discontinuation (FAQ2).
 
 The second criterion is not "the first without the gap rule" for convenience: it rescues factors that trade heavily but seasonally, for example 104 observation days concentrated in seven months (Worked example 1, factor D).
@@ -244,7 +245,7 @@ The exception cannot be disregarded: the standalone desk-level NMRF requirement 
 ## Interview questions
 
 > [!question]- reg-rfet-standards-bcbs457 | What are the two alternative quantitative criteria under the FRTB Risk Factor Eligibility Test (RFET) for a risk factor to be declared modellable?
-> Either at least 24 real price observations per year with no 90-day period in the previous 12 months containing fewer than four, or at least 100 real price observations over the previous 12 months (MAR31.13).
+> Either at least 24 real price observations per year over the ES calibration period with no 90-day period in the previous 12 months containing fewer than four, or at least 100 real price observations over the previous 12 months (MAR31.13; footnote 301 permits an eligible one-year substitute window).
 > In both, at most one observation per day counts.
 > The 24-observation count is measured over the ES calibration window (or a one-year window ending up to one month earlier for lagged data, footnote 301), is monitored monthly, and the test is applied quarterly.
 > Failing both makes the factor non-modellable.
