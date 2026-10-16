@@ -19,7 +19,7 @@ How researchers at Two Sigma, Citadel, Squarepoint, Millennium and Balyasny find
 | 01 | [Research Process and Hypothesis Discipline](01-Research-Process-and-Hypothesis-Discipline.md) | R | core | 3 | solid | 12 |
 | 02 | [Point-in-Time Data and Survivorship](02-Point-in-Time-Data-and-Survivorship.md) | RD | core | 3 | solid | 20 |
 | 03 | [Signals, Features and Alpha Decay](03-Signals-Features-and-Alpha-Decay.md) | R | core | 4 | solid | 12 |
-| 04 | [Cross-Sectional Factor Models](04-Cross-Sectional-Factor-Models.md) | R | core | 5 | solid | 19 |
+| 04 | [Cross-Sectional Factor Models](04-Cross-Sectional-Factor-Models.md) | R | core | 5 | solid | 20 |
 | 05 | [Momentum, Mean Reversion and Carry](05-Momentum-Mean-Reversion-and-Carry.md) | RT | core | 4 | solid | 19 |
 | 06 | [Statistical Arbitrage and Pairs Trading](06-Statistical-Arbitrage-and-Pairs-Trading.md) | RT | core | 4 | solid | 18 |
 | 07 | [Backtesting Methodology and Pitfalls](07-Backtesting-Methodology-and-Pitfalls.md) | RD | core | 5 | solid | 12 |
@@ -29,7 +29,7 @@ How researchers at Two Sigma, Citadel, Squarepoint, Millennium and Balyasny find
 | 11 | [Covariance Estimation and Shrinkage](11-Covariance-Estimation-and-Shrinkage.md) | R | advanced | 3 | solid | 19 |
 | 12 | [Black-Litterman, Risk Parity and HRP](12-Black-Litterman-Risk-Parity-and-HRP.md) | R | advanced | 3 | solid | 18 |
 | 13 | [Transaction Costs and Turnover Optimization](13-Transaction-Costs-and-Turnover.md) | R | advanced | 3 | solid | 18 |
-| 14 | [Alternative Data and Feature Engineering](14-Alternative-Data-and-Feature-Engineering.md) | R | advanced | 3 | solid | 18 |
+| 14 | [Alternative Data and Feature Engineering](14-Alternative-Data-and-Feature-Engineering.md) | R | advanced | 3 | solid | 19 |
 | 15 | [Alpha Research Case Studies](15-Alpha-Research-Case-Studies.md) | R | core | 6 | solid | 27 |
 
 <!-- qp:moc:end -->

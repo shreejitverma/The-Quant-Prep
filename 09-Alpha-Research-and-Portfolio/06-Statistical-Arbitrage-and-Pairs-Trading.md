@@ -162,7 +162,7 @@ Even with 1,000 days the half-life is off by 10%; with a year of data expect muc
 
 Out of sample on 25,000 further days, exit at $z = 0$, cost 10 bp per unit of spread traded:
 
-| Entry $z$ | Round trips per year | Gross PnL per round trip ($\sigma_{\text{eq}}$) | Gross per year | Net per year | Days in a position |
+| Entry $z$ | Round trips per year | Gross PnL per round trip ($\sigma_{\text{eq}}$) | Gross per year (log units) | Net per year (log units) | Days in a position |
 | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1.0 | 5.0 | 1.36 | 0.113 | 0.103 | 66.8% |
 | 1.5 | 2.8 | 1.85 | 0.087 | 0.081 | 48.3% |

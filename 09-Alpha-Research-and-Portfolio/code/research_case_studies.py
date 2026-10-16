@@ -273,6 +273,11 @@ def case_a() -> None:
     print("A net Sharpe by lookback 1..10 (raw):    ", " ".join(f"{v:.2f}" for v in table[:, 1]))
     assert np.allclose(table[:, 0], A_NEUTRAL_TABLE, atol=0.015), table[:, 0]
     assert np.allclose(table[:, 1], A_RAW_TABLE, atol=0.015), table[:, 1]
+    # Why the short lookbacks differ by design: they trade far more, so costs eat their gross alpha.
+    for k, exp_to, exp_share in [(1, 1.418, 2.09), (2, 1.008, 0.94), (5, 0.647, 0.51)]:
+        gk, tok = run_book(book(-trailing_sum(resid, k)[sl], proj), r_ev, 0.0)
+        check(f"A lookback {k} neutral: daily two-sided turnover", float(tok.mean()), exp_to, 2e-3, ".3f")
+        check(f"A lookback {k} neutral: 5 bp cost as a share of gross alpha", float(5e-4 * tok.mean() / gk.mean()), exp_share, 0.006, ".2f")
     best_idx = int(np.argmax(trial_sr_arr))
     best_key = list(trial_net)[best_idx]
     best = trial_net[best_key]

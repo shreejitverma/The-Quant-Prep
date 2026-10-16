@@ -275,6 +275,7 @@ def section_black_litterman() -> None:
     q = np.array([0.02])
     omega = p @ (tau * sigma) @ p.T  # He-Litterman: view variance equals prior variance of the view portfolio
     check("prior view P Pi (A minus B)", (p @ pi)[0], -0.00482, 1e-8)
+    check("view surprise Q - P Pi", (q - p @ pi)[0], 0.0248, 1e-4)
     mu_a, m_post = bl_posterior_precision_form(pi, sigma, tau, p, q, omega)
     mu_b = bl_posterior_update_form(pi, sigma, tau, p, q, omega)
     vec("posterior mean mu_BL", mu_b, [0.04843, 0.04084, 0.00345, 0.02645], ".5f")
@@ -383,7 +384,7 @@ def section_hrp() -> None:
     check("HRP weights sum", w.sum(), 1.0, 1e-12)
     vec("HRP risk shares", risk_contributions(w, sigma), [0.0829, 0.0731, 0.7531, 0.0909])
     check("HRP volatility", np.sqrt(w @ sigma @ w), 0.0573, 1e-4)
-    # first bisection by hand: left [A,B], right [C,D] in the quasi-diagonal order
+    # first bisection by hand: left [C, D], right [A, B] in the quasi-diagonal order
     v_l = cluster_variance(sigma, order[:2])
     v_r = cluster_variance(sigma, order[2:])
     check("IVP variance of left cluster [C, D]", v_l, 0.003303, 1e-6, ".6f")

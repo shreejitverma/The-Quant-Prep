@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [signals-features-and-alpha-decay]
 est_hours: 3
-sources: [Lopez de Prado - Advances in Financial Machine Learning (2018) ch 2 and 7, Kolanovic and Krishnamachari (2017) - Big Data and AI Strategies - Machine Learning and Alternative Data Approach to Investing - J.P. Morgan, Denev and Amen - The Book of Alternative Data (Wiley 2020), Grinold (1989) - The Fundamental Law of Active Management - Journal of Portfolio Management 15(3), Grinold and Kahn - Active Portfolio Management 2nd ed (1999), Isichenko - Quantitative Portfolio Management (2021)]
+sources: [Lopez de Prado - Advances in Financial Machine Learning (2018) ch 2 and 7, Kolanovic and Krishnamachari (2017) - Big Data and AI Strategies - Machine Learning and Alternative Data Approach to Investing - J.P. Morgan, Denev and Amen - The Book of Alternative Data (Wiley 2020), Grinold (1989) - The Fundamental Law of Active Management - Journal of Portfolio Management 15(3), Clarke de Silva and Thorley (2002) - Portfolio Constraints and the Fundamental Law of Active Management - Financial Analysts Journal 58(5), Grinold and Kahn - Active Portfolio Management 2nd ed (1999), Isichenko - Quantitative Portfolio Management (2021)]
 ---
 
 # Alternative Data and Feature Engineering
@@ -122,6 +122,7 @@ $$
 $$
 
 so $\text{IR} \approx \text{IC}\sqrt{\text{BR}}$ with breadth BR the number of independent bets per year (assets times independent rebalances).
+Constraints (long-only, position limits, turnover) stop the portfolio from holding the unconstrained weights; Clarke, de Silva and Thorley (2002) add the transfer coefficient TC, the cross-sectional correlation between risk-adjusted forecasts and risk-adjusted active weights, giving $\text{IR} = \text{TC}\cdot\text{IC}\sqrt{\text{BR}}$.
 
 **Realised version.**
 Let standardised residual returns be $r_i/\sigma_i = \text{IC}\,z_i + \sqrt{1 - \text{IC}^2}\,e_i$ with $z_i, e_i$ iid standard normal, and hold $h_i \propto z_i/\sigma_i$.
@@ -305,6 +306,10 @@ Smoothing helps only because the driver is slower than the noise; on a fast driv
 > Panel growth masquerades as company growth.
 > Normalise by panel size or use same-panel (constant cohort) growth, and check that the vendor's panel reweighting is stored point-in-time.
 
+> [!question]- alpha-alt-transfer-coefficient | A long-only manager has the same IC and breadth as a long-short one but a much lower IR. Why?
+> The transfer coefficient: $\text{IR} = \text{TC}\cdot\text{IC}\sqrt{\text{BR}}$ (Clarke, de Silva and Thorley 2002).
+> TC is the correlation between risk-adjusted forecasts and risk-adjusted active weights; the long-only constraint blocks most underweights, so TC falls well below 1 and the forecasts are only partly transferred to the portfolio.
+
 ## In this repo and SDE-Interview-Prep
 
 - Code: [alt_data_signal_eval.py](code/alt_data_signal_eval.py) backs every number in this note.
@@ -316,5 +321,6 @@ Smoothing helps only because the driver is slower than the noise; on a fast driv
 - Kolanovic and Krishnamachari (2017), Big Data and AI Strategies: Machine Learning and Alternative Data Approach to Investing, J.P. Morgan.
 - Denev and Amen, *The Book of Alternative Data* (Wiley 2020).
 - Grinold (1989), The Fundamental Law of Active Management, Journal of Portfolio Management.
+- Clarke, de Silva and Thorley (2002), Portfolio Constraints and the Fundamental Law of Active Management, Financial Analysts Journal.
 - Grinold and Kahn, *Active Portfolio Management*
 - Michael Isichenko, *Quantitative Portfolio Management*

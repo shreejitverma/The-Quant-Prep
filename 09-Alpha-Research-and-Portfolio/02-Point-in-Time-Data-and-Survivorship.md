@@ -142,7 +142,7 @@ A pipeline that hard-codes "UTC hour $\ge$ 20 means after the close" misclassifi
 ### 3. Survivorship in a simulated universe
 
 1,000 names with identical expected returns (0.8% a month, 10% monthly volatility), replaced one for one when they delist over 20 years.
-A name trading below 40% of its listing price delists with probability 6% a month at a $-30\%$ delisting return; any name is taken over with probability 0.25% a month at $+25\%$.
+A name trading below 40% of its listing price delists for performance with probability 6% a month (0.1% a month otherwise) at a $-30\%$ delisting return; any name is taken over with probability 0.25% a month at $+25\%$.
 The run produces 575 performance delistings and 582 takeovers.
 
 | Database | Equal-weight return per year |

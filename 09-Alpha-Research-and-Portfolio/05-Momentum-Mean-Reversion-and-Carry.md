@@ -30,7 +30,7 @@ sources: [Jegadeesh and Titman (1993) - Returns to Buying Winners and Selling Lo
 ### Cross-sectional momentum
 
 Jegadeesh and Titman (1993) sort US stocks on their past $J$-month return, buy the top decile and short the bottom decile, and hold for $K$ months, with $J, K \in \{3, 6, 9, 12\}$.
-Over 1965 to 1989 the strategies earned roughly 1% a month.
+Over 1965 to 1989 the 6-month formation strategies earned about 1% a month whatever the holding period (6/6: 0.95% a month), and the strongest, 12-month formation with a 3-month hold, earned 1.31% (1.49% when a week is skipped between formation and holding).
 Construction details that matter:
 
 - **Formation and skip.** The standard academic signal (Carhart 1997, the UMD factor) is the return from month $t-12$ to $t-2$, the "12-1" signal; month $t-1$ is skipped because the most recent month's return reverses.
@@ -189,7 +189,7 @@ A 10-year sample with no crash in it would report roughly the second Sharpe; the
 
 > [!question]- alpha-mom-jt-construction | Describe the Jegadeesh-Titman momentum strategy.
 > Rank stocks on their past $J$-month return, buy the top decile, short the bottom decile, hold for $K$ months, and hold $K$ overlapping cohorts so only $1/K$ of the book is re-formed each month.
-> Over 1965 to 1989 the strategies earned roughly 1% a month.
+> Over 1965 to 1989 the 6-month formation strategies earned about 1% a month (6/6: 0.95%), and 12-month formation with a 3-month hold earned 1.31%.
 
 > [!question]- alpha-mom-skip-month | Why does the standard momentum signal skip the most recent month?
 > Because one-month returns reverse (short-term reversal), so including month $t-1$ loads the signal on a component that predicts the opposite sign.

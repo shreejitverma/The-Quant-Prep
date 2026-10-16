@@ -86,7 +86,7 @@ Shrinkage is a bias-variance trade: the target is wrong but stable, the sample i
 ### Target 1: scaled identity (Ledoit and Wolf 2004, JMVA)
 
 $F = mI$ with $m = \text{tr}(S)/p$, the average variance.
-With $d^2 = \|S - mI\|_F^2$, $\bar b^2 = \frac{1}{T^2}\sum_t\|y_ty_t^\top - S\|_F^2$ for demeaned $y_t$, and $b^2 = \min(\bar b^2, d^2)$:
+With $d^2 = \|S - mI\|_F^2$, $\bar b^2 = \frac{1}{T^2}\sum_t\|y_ty_t^\top - S\|_F^2$ for demeaned $y_t$ (the paper assumes zero-mean data), and $b^2 = \min(\bar b^2, d^2)$:
 
 $$
 \hat\Sigma = \frac{b^2}{d^2}\, mI + \Big(1 - \frac{b^2}{d^2}\Big)S .
@@ -219,7 +219,7 @@ $p = 100$, $T = 250$, true covariance $I$, so every true eigenvalue is 1 and the
 - One draw: smallest sample eigenvalue about 0.13, largest about 2.66, condition number about 20.3.
 - Over 200 draws the plug-in minimum-variance portfolio has in-sample variance about 0.60 times the optimum ($1-q = 0.6$) and true variance about 1.68 times the optimum ($1/(1-q) = 1.667$).
 
-"So with 250 days of data and 100 stocks, the optimiser promises 40% less risk than is achievable and delivers 68% more."
+"So with 250 days of data and 100 stocks, the optimiser promises 40% less variance than is achievable and delivers 68% more variance."
 
 ### 3. The constant-correlation target by hand
 

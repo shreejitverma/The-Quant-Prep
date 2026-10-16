@@ -54,7 +54,8 @@ $$
 \mu \sim N(\Pi, \tau\Sigma),
 $$
 
-where $\tau$ (small, often 0.025 to 0.05, or $1/T$) says the uncertainty about the mean is a small fraction of the uncertainty of one period's return.
+where $\tau$ says the uncertainty about the mean is a small fraction of the uncertainty of one period's return.
+The original paper says only that $\tau$ is close to zero; Idzorek (2005) uses 0.025, $1/T$ (the standard error of a sample mean) is another common choice, and some authors set $\tau = 1$ with a correspondingly rescaled $\Omega$, so there is no single standard value.
 
 ### Views and the posterior
 
@@ -89,7 +90,7 @@ $$
 
 which reads like a Kalman update: the surprise $Q - P\Pi$ (view minus what equilibrium already implies) times a gain.
 Only the surprise moves anything; a view that agrees with equilibrium changes nothing.
-The script checks the two forms agree to $10^{-17}$.
+The script checks the two forms agree to machine precision.
 
 **Posterior covariance.** $M$ is the covariance of the estimate of the mean; the predictive covariance of next period's return is $\Sigma + M$ (He and Litterman 1999).
 
@@ -220,7 +221,7 @@ B is expected to beat A by 0.48% in equilibrium, because B is riskier and highly
 View: A outperforms B by 2% ($P = (1, -1, 0, 0)$, $Q = 2\%$), with He-Litterman $\Omega = P\tau\Sigma P^\top$.
 
 - Surprise: $Q - P\Pi = 2\% - (-0.48\%) = 2.48\%$.
-- Posterior: $\mu_{BL} = (4.843\%, 4.084\%, 0.345\%, 2.645\%)$; both forms agree to $2.8\times10^{-17}$.
+- Posterior: $\mu_{BL} = (4.843\%, 4.084\%, 0.345\%, 2.645\%)$; both forms agree to machine precision.
 - The view portfolio's posterior return is 0.76%, exactly halfway between $-0.48\%$ and 2%.
 - Weights $(\delta\Sigma)^{-1}\mu_{BL} = (0.8164, -0.1164, 0.2000, 0.1000)$: A gains 0.4164, B loses 0.4164, C and D keep their market weights although their expected returns moved (C from 0.357% to 0.345%, D from 2.770% to 2.645%).
 - Tighter view, $\Omega = s/4$: the view portfolio moves 80% of the way; looser, $\Omega = 4s$: 20%.

@@ -181,7 +181,7 @@ After the pre-registered test, the lookback was varied from 1 to 10 days, with a
 How to read this.
 The DSR of 0.33 does not say the reversal is fake: the truth contains a real reversal and the pre-registered test found it with PSR 0.996.
 It says the step from 1.19 to 1.64 is not distinguishable from what picking the best of 20 would produce.
-And its $SR_0$ is inflated, because $V$ (the cross-trial variance of Sharpes) is dominated by the 1- and 2-day lookbacks, which differ by design (they pay three to five times the costs), not by noise.
+And its $SR_0$ is inflated, because $V$ (the cross-trial variance of Sharpes) is dominated by the 1- and 2-day lookbacks, which differ by design, not by noise: they turn over 1.418 and 1.008 of gross a day against 0.647 at 5 days, so 5 bp of cost eats 2.09 and 0.94 times their gross alpha against 0.51 at 5 days.
 DSR assumes the trials are exchangeable draws; when they are not, it is conservative.
 The defensible report is: "pre-registered 5-day signal, net Sharpe about 1.2 at 5 bp; the 5 to 9 day neighbourhood is a plateau between 1.2 and 1.6, so the result is not a knife-edge; the holdout degraded from 1.83 to 1.32, in line with selection".
 
@@ -339,7 +339,7 @@ State what you would do with another week, which is how interviewers distinguish
 
 > [!question]- alpha-case-dsr-low-real | Case A's best variant has DSR 0.33 although the reversal is real. Reconcile.
 > DSR tests whether the winner beats the best of $N$ trials, not whether any effect exists.
-> Its benchmark uses the cross-trial variance of Sharpes, which here is inflated by 1- and 2-day lookbacks that differ by design (much higher costs), so it is conservative; the pre-registered test (PSR 0.996) is the right evidence for the effect.
+> Its benchmark uses the cross-trial variance of Sharpes, which here is inflated by 1- and 2-day lookbacks that differ by design (costs of 2.09 and 0.94 times their gross alpha against 0.51 at 5 days), so it is conservative; the pre-registered test (PSR 0.996) is the right evidence for the effect.
 
 > [!question]- alpha-case-dsr-exchangeable | What assumption about trials makes DSR's $SR_0$ meaningful?
 > The trials are exchangeable noisy estimates of similar true Sharpes, so their dispersion measures noise.

@@ -76,6 +76,7 @@ These factor-mimicking portfolios are the tradable objects behind every factor r
 **Barra-style details (USE4, Menchero, Orr and Wang 2011).**
 
 - Descriptors (for example several measures of value) are standardised to cap-weighted mean 0 and equal-weighted standard deviation 1, winsorised, and combined into style exposures.
+- The factor set is one country factor, 60 industries and 12 styles: Beta, Momentum, Size, Earnings Yield, Residual Volatility, Growth, Dividend Yield, Book-to-Price, Leverage, Liquidity, Non-linear Size and Non-linear Beta; the estimation universe is the MSCI USA IMI.
 - A country factor (intercept) sits beside the industry dummies; the two are collinear, so the regression adds the constraint that cap-weighted industry factor returns sum to zero, which makes the country factor approximately the cap-weighted market.
 - The factor covariance $F$ is estimated from the factor-return history with exponential weighting, a Newey-West adjustment for serial correlation, an eigenfactor risk adjustment that corrects the underprediction of risk for optimised portfolios, and a volatility regime adjustment.
 - Specific risk comes from the residuals' history, with Bayesian shrinkage toward size-bucket averages and a structural model for names with short histories.
@@ -108,7 +109,7 @@ Cross-sectional correlation of residuals is absorbed into the period-by-period v
 What it does not handle:
 
 - Autocorrelated slopes (persistent characteristics, overlapping returns) understate the standard error; use Newey-West on the $\hat\gamma_{kt}$ series (Petersen 2009 compares the options).
-- Estimated betas in pass 1 create errors-in-variables: slopes are biased toward zero and the standard errors are too small; Shanken (1992) multiplies the variance by $1 + \lambda^\top\Sigma_f^{-1}\lambda$, and the original paper used portfolios to shrink the beta errors.
+- Estimated betas in pass 1 create errors-in-variables: slopes are biased toward zero and the standard errors are too small; Shanken (1992) scales the residual-driven part of the variance by $1 + \lambda^\top\Sigma_f^{-1}\lambda$ (the squared Sharpe ratio of the factors) and adds $\Sigma_f/T$ for the sampling error of the factors themselves, and the original paper used portfolios to shrink the beta errors.
 - The premium measures the realised average return of the factor portfolio over the sample, not the population premium; with 120 months and a factor Sharpe of 0.2 a month the expected $t$ is only $0.2\sqrt{120} = 2.19$.
 
 ### Statistical factor models
@@ -139,6 +140,12 @@ A signal-weighted book usually carries large unintended factor bets; you remove 
 
 Specific variance is estimated from regression residuals.
 For normal residuals the relative standard error of a volatility estimated from $T$ observations is about $1/\sqrt{2T}$, so 120 months give about 6.5% error per name, which is why vendors shrink toward size or industry averages.
+
+### Validating a risk model
+
+The standard test is the bias statistic: for a test portfolio, standardise each period's realised return by its ex-ante forecast volatility, $z_t = r_t/\hat\sigma_t$, and take $b = \text{sd}(z_t)$ over $T$ periods.
+A well-calibrated model gives $b \approx 1$, and for normal returns the sampling band is roughly $1 \pm \sqrt{2/T}$; $b > 1$ means risk is underforecast, which is what the eigenfactor adjustment targets for optimised portfolios.
+Run it on many portfolios (factor-mimicking, random, and especially optimised ones), because a model can be calibrated for the market and badly wrong for the long-short books an optimiser builds.
 
 ## Worked examples
 
@@ -264,7 +271,7 @@ A sample covariance of 1,000 stocks has $1000\times1001/2 = 500{,}500$ free para
 
 > [!question]- alpha-fm-shanken | What problem does the Shanken (1992) correction address?
 > Errors-in-variables when pass-one betas are estimated: premia are biased toward zero and naive standard errors are too small.
-> It scales the variance of the premia by $1 + \lambda^\top\Sigma_f^{-1}\lambda$.
+> It scales the residual-driven part of the variance of the premia by $1 + \lambda^\top\Sigma_f^{-1}\lambda$ and adds $\Sigma_f/T$ for factor sampling error.
 
 > [!question]- alpha-fm-t-stat-numeric | A factor has a true premium of 0.3% a month and volatility 1.5% a month. What $t$-stat do 10 years of Fama-MacBeth deliver on average?
 > About 2.19.
@@ -305,6 +312,10 @@ A sample covariance of 1,000 stocks has $1000\times1001/2 = 500{,}500$ free para
 > [!question]- alpha-fm-fm-premium-meaning | Does a Fama-MacBeth premium estimate the population risk premium?
 > Only noisily: it is the realised average return of the factor portfolio over the sample.
 > In the simulation the value estimate was 0.376% against a realised 0.349% and a population 0.300%.
+
+> [!question]- alpha-fm-bias-statistic | How do you test whether a risk model's volatility forecasts are calibrated?
+> With the bias statistic: the standard deviation of $r_t/\hat\sigma_t$ over $T$ periods for each test portfolio, which should be 1 within roughly $1 \pm \sqrt{2/T}$.
+> Run it on optimised long-short portfolios as well as the market, since sample-based models underforecast the risk of the portfolios an optimiser builds.
 
 ## In this repo and SDE-Interview-Prep
 
