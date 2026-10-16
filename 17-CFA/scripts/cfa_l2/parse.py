@@ -3,6 +3,7 @@
 Output: build/cfa_l2/<topic-slug>/LM<nn>.json
 Anything the heuristics cannot read cleanly is flagged needs_review with a printed page so a human or agent re-reads the PDF.
 """
+
 from __future__ import annotations
 
 import json
@@ -32,7 +33,7 @@ def parse_los(text: str) -> tuple[list[str], bool]:
     """
     items: list[str] = []
     for m in re.finditer(r"The candidate should be able to:[^\n]*\n", text):
-        lines = text[m.end():].split("\n", 80)
+        lines = text[m.end() :].split("\n", 80)
         base_indent = None
         blank_run = 0
         for raw in lines:
@@ -61,7 +62,9 @@ def parse_los(text: str) -> tuple[list[str], bool]:
             if blank_run == 1 and first not in COMMAND_VERBS:
                 break
             blank_run = 0
-            starts_new = first in COMMAND_VERBS and (not prev or not re.search(r"(,|\(|/|\band\b|\bor\b|\bthe\b|\bof\b|\bto\b|\ba\b|\ban\b|-)\s*$", prev))
+            starts_new = first in COMMAND_VERBS and (
+                not prev or not re.search(r"(,|\(|/|\band\b|\bor\b|\bthe\b|\bof\b|\bto\b|\ba\b|\ban\b|-)\s*$", prev)
+            )
             if starts_new or not items:
                 items.append(line)
             else:
@@ -82,7 +85,7 @@ def parse_examples(text: str, module: dict) -> list[dict]:
     for pi, page in enumerate(pages):
         for m in re.finditer(r"^\s*(?:●\s*)?(?:EXAMPLE|Example)\s+(\d+)\b[^\n]*$", page, re.M):
             n = int(m.group(1))
-            body = page[m.end():]
+            body = page[m.end() :]
             nxt = re.search(r"^\s*(?:●\s*)?(?:EXAMPLE|Example)\s+\d+\b", body, re.M)
             if nxt:
                 body = body[: nxt.start()]
@@ -105,7 +108,7 @@ def parse_examples(text: str, module: dict) -> list[dict]:
             )
     for pi, page in enumerate(pages):
         for m in re.finditer(r"^\s*KNOWLEDGE CHECK\s*$", page, re.M):
-            body = page[m.end():]
+            body = page[m.end() :]
             nxt = re.search(r"^\s*(KNOWLEDGE CHECK|PRACTICE PROBLEMS|SUMMARY)\s*$", body, re.M)
             if nxt:
                 body = body[: nxt.start()]
@@ -163,7 +166,11 @@ def after_header(text: str, *patterns: str) -> str:
 def parse_practice(text: str, module: dict) -> dict:
     pages = pages_of(text)
     pp = [i for i, p in enumerate(pages) if re.search(r"^\s*PRACTICE PROBLEMS\s*$", p, re.M)]
-    ss = [i for i, p in enumerate(pages) if re.search(r"^[\s\u200b]*SOLUTIONS[\s\u200b]*$", p, re.M) or re.search(r"^Solutions\s{5,}\d+\s*$", p, re.M)]
+    ss = [
+        i
+        for i, p in enumerate(pages)
+        if re.search(r"^[\s\u200b]*SOLUTIONS[\s\u200b]*$", p, re.M) or re.search(r"^Solutions\s{5,}\d+\s*$", p, re.M)
+    ]
     if not pp:
         return {"problems": [], "solutions": [], "needs_review": True, "reason": "no PRACTICE PROBLEMS header"}
     p0 = pp[0]
@@ -174,7 +181,9 @@ def parse_practice(text: str, module: dict) -> dict:
     sol_text = after_header(sol_text, r"SOLUTIONS", r"^Solutions\s{5,}\d+\s*$") if sol_text else ""
     problems = split_numbered(prob_text)
     solutions = split_numbered(sol_text)
-    vignettes = [m.group(0).strip() for m in re.finditer(r"The following information relates to questions?\s*\n?\s*[\d\-–, and]+", prob_text)]
+    vignettes = [
+        m.group(0).strip() for m in re.finditer(r"The following information relates to questions?\s*\n?\s*[\d\-–, and]+", prob_text)
+    ]
     return {
         "printed_page": printed_page(module, p0),
         "solutions_printed_page": printed_page(module, s0) if s0 is not None else None,
@@ -241,7 +250,19 @@ def main() -> int:
                 "needs_review_count": int(los_flag) + int(practice["needs_review"]) + sum(1 for e in equations if e["needs_review"]),
             }
             (BUILD / topic["slug"] / f"LM{module['lm']:02d}.json").write_text(json.dumps(data, indent=1, ensure_ascii=False))
-            rows.append((topic["code"], module["lm"], module["title"][:48], len(los), len(examples), len(practice["problems"]), len(practice["solutions"]), len(equations), data["needs_review_count"]))
+            rows.append(
+                (
+                    topic["code"],
+                    module["lm"],
+                    module["title"][:48],
+                    len(los),
+                    len(examples),
+                    len(practice["problems"]),
+                    len(practice["solutions"]),
+                    len(equations),
+                    data["needs_review_count"],
+                )
+            )
     print(f"{'T':>2} {'LM':>2} {'title':<48} {'LOS':>3} {'ex':>3} {'pp':>3} {'sol':>3} {'eq':>4} {'rev':>4}")
     for r in rows:
         print(f"{r[0]:>2} {r[1]:>2} {r[2]:<48} {r[3]:>3} {r[4]:>3} {r[5]:>3} {r[6]:>3} {r[7]:>4} {r[8]:>4}")

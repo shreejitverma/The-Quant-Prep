@@ -1,19 +1,49 @@
 """Gate for the LM notes: 11 sections present and substantive, every LOS from extraction present with a block ID,
 formula IDs unique and embedded in the formula sheet, no emoji, em dash or draft leftover anywhere under CFA-L-2.
-A draft leftover is author reasoning left in the finished text, such as `wait:`, a line starting `Correction:`, `scratch that` or `let me recompute`."""
+A draft leftover is author reasoning left in the finished text, such as `wait:`, a line starting `Correction:`,
+`scratch that` or `let me recompute`."""
+
 from __future__ import annotations
 
 import json
 import re
 import sys
 
-from cfa_common import BUILD, EM_DASH, EMOJI_RE, L2, PRACTICE_PRIVATE, lm_note_name, read_frontmatter
+from cfa_common import BUILD, EM_DASH, EMOJI_RE, L2, PRACTICE_PRIVATE, lm_note_name, load_manifest, read_frontmatter
 
 # Draft leftovers: an author reasoning aloud in the finished text, which has produced a wrong keyed answer before.
-DRAFT_RE = re.compile(r"(?:\bwait:|^>?\s*Correction:|\bscratch that\b|\blet me (?:recompute|redo|try)\b|\boops\b|\bactually,? no[,.]|\bno:\s*(?:short|long|the)\b)", re.I | re.M)
+DRAFT_RE = re.compile(
+    r"(?:\bwait:|^>?\s*Correction:|\bscratch that\b|\blet me (?:recompute|redo|try)\b"
+    r"|\boops\b|\bactually,? no[,.]|\bno:\s*(?:short|long|the)\b)",
+    re.I | re.M,
+)
 
-SECTIONS = ["LOS map", "Core intuition", "Formulas and derivations", "Worked examples", "Item-set patterns", "Practice problems", "Cross-links", "Self-test", "Flashcards", "Common mistakes", "Teach-back"]
-MIN_CHARS = {"LOS map": 200, "Core intuition": 1500, "Formulas and derivations": 400, "Worked examples": 800, "Item-set patterns": 800, "Practice problems": 800, "Cross-links": 60, "Self-test": 1500, "Flashcards": 800, "Common mistakes": 300, "Teach-back": 0}
+SECTIONS = [
+    "LOS map",
+    "Core intuition",
+    "Formulas and derivations",
+    "Worked examples",
+    "Item-set patterns",
+    "Practice problems",
+    "Cross-links",
+    "Self-test",
+    "Flashcards",
+    "Common mistakes",
+    "Teach-back",
+]
+MIN_CHARS = {
+    "LOS map": 200,
+    "Core intuition": 1500,
+    "Formulas and derivations": 400,
+    "Worked examples": 800,
+    "Item-set patterns": 800,
+    "Practice problems": 800,
+    "Cross-links": 60,
+    "Self-test": 1500,
+    "Flashcards": 800,
+    "Common mistakes": 300,
+    "Teach-back": 0,
+}
 PRIVATE_POINTER = re.compile(r"^!\[\[([^\]|#]+-Practice-Problems)\]\]\s*$", re.M)
 
 
@@ -59,7 +89,7 @@ def thin_sections(secs: dict[str, str | None]) -> list[str]:
 
 
 def main(topic_filter: str | None = None) -> int:
-    manifest = json.loads((BUILD / "manifest.json").read_text())
+    manifest = load_manifest()
     failures, checked, all_f_ids = [], 0, {}
     for topic in manifest["topics"]:
         if topic_filter and topic["code"] != topic_filter:
@@ -91,7 +121,21 @@ def main(topic_filter: str | None = None) -> int:
                 all_f_ids[f] = tag
             if not f_ids and topic["code"] != "10":
                 failures.append(f"{tag}: no formula block IDs")
-            for k in ("type", "topic", "topic_code", "topic_slug", "volume", "lm", "title", "pages", "weight_band", "difficulty", "status", "mastery", "next_review"):
+            for k in (
+                "type",
+                "topic",
+                "topic_code",
+                "topic_slug",
+                "volume",
+                "lm",
+                "title",
+                "pages",
+                "weight_band",
+                "difficulty",
+                "status",
+                "mastery",
+                "next_review",
+            ):
                 if k not in fm:
                     failures.append(f"{tag}: frontmatter missing {k}")
             if fm.get("type") != "cfa-lm":

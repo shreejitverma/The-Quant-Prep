@@ -4,12 +4,13 @@ Usage: python3 17-CFA/scripts/cfa_l2/notes_todo.py [--json] [--topic 03]
 Prints, per missing module: topic, code, lm, title, note name, output path, module txt/json paths, chars,
 printed page range, page offset, LOS IDs, and the note names of the other modules in the topic for cross-links.
 """
+
 from __future__ import annotations
 
 import json
 import sys
 
-from cfa_common import BUILD, L2, VAULT, TOPICS, lm_note_name, load_manifest, read_frontmatter
+from cfa_common import BUILD, L2, VAULT, lm_note_name, load_manifest, read_frontmatter
 from verify_notes import resolve_private, sections_of, thin_sections
 
 
@@ -36,20 +37,37 @@ def main() -> int:
                 continue
             status = "incomplete" if path.exists() else "missing"
             d = json.loads((BUILD / t["slug"] / f"LM{m['lm']:02d}.json").read_text())
-            todo.append({
-                "topic": t["name"], "code": t["code"], "slug": t["slug"], "volume": t["volume"], "weight": t["weight"],
-                "lm": m["lm"], "title": m["title"], "note": name, "status": status, "output": str(path.relative_to(VAULT)),
-                "txt": f"build/cfa_l2/{t['slug']}/LM{m['lm']:02d}.txt", "json": f"build/cfa_l2/{t['slug']}/LM{m['lm']:02d}.json",
-                "chars": m["chars"], "printed_pages": f"{m['printed_pages'][0]}-{m['printed_pages'][1]-1}", "page_offset": m["page_offset"],
-                "los": [f"los-{t['code']}-{m['lm']:02d}-{chr(97+i)}" for i in range(len(d["los"]))],
-                "counts": {"los": len(d["los"]), "examples": len(d["examples"]), "problems": len(d["practice"]["problems"])},
-                "siblings": [n for lm, n in names.items() if lm != m["lm"]],
-            })
+            todo.append(
+                {
+                    "topic": t["name"],
+                    "code": t["code"],
+                    "slug": t["slug"],
+                    "volume": t["volume"],
+                    "weight": t["weight"],
+                    "lm": m["lm"],
+                    "title": m["title"],
+                    "note": name,
+                    "status": status,
+                    "output": str(path.relative_to(VAULT)),
+                    "txt": f"build/cfa_l2/{t['slug']}/LM{m['lm']:02d}.txt",
+                    "json": f"build/cfa_l2/{t['slug']}/LM{m['lm']:02d}.json",
+                    "chars": m["chars"],
+                    "printed_pages": f"{m['printed_pages'][0]}-{m['printed_pages'][1] - 1}",
+                    "page_offset": m["page_offset"],
+                    "los": [f"los-{t['code']}-{m['lm']:02d}-{chr(97 + i)}" for i in range(len(d["los"]))],
+                    "counts": {"los": len(d["los"]), "examples": len(d["examples"]), "problems": len(d["practice"]["problems"])},
+                    "siblings": [n for lm, n in names.items() if lm != m["lm"]],
+                }
+            )
     if as_json:
         print(json.dumps(todo, indent=1))
     else:
         for x in todo:
-            print(f"{x['code']}-{x['lm']:02d} {x['status']:<10} {x['chars']:>7} chars  LOS {x['counts']['los']:>2}  ex {x['counts']['examples']:>2}  pp {x['counts']['problems']:>2}  pp.{x['printed_pages']:<8} {x['note']}")
+            print(
+                f"{x['code']}-{x['lm']:02d} {x['status']:<10} {x['chars']:>7} chars  LOS {x['counts']['los']:>2} "
+                f" ex {x['counts']['examples']:>2}  pp {x['counts']['problems']:>2}  pp.{x['printed_pages']:<8} "
+                f"{x['note']}"
+            )
         print(f"\n{len(todo)} notes to write")
     return 0
 

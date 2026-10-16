@@ -12,6 +12,7 @@ Only mastery, status, last_reviewed and next_review are rewritten in the frontma
 Kanban (00-Strategy/Study-Board.md) is regenerated from scratch on every run: a module with a written teach-back that is
 not yet mastered goes to Teach-Back Done, every other module goes to the column named after its status.
 """
+
 from __future__ import annotations
 
 import datetime as dt
@@ -22,7 +23,10 @@ import sys
 from cfa_common import L2, TOPICS, read_frontmatter, write_frontmatter
 
 TODAY = dt.date.today()
-BOARD_NOTE = "This board is rewritten by `17-CFA/scripts/cfa_l2/mastery.py` on every run; cards added here by hand are discarded, so keep non-module tasks in [[Study-Plan]] or a daily note."
+BOARD_NOTE = (
+    "This board is rewritten by `17-CFA/scripts/cfa_l2/mastery.py` on every run; cards added here "
+    "by hand are discarded, so keep non-module tasks in [[Study-Plan]] or a daily note."
+)
 
 
 def parse_date(v) -> dt.date | None:
@@ -65,7 +69,7 @@ def collect() -> tuple[dict, dict]:
 def main() -> int:
     attempts, errors = collect()
     rows = []
-    for code, slug, vol, name, weight in TOPICS:
+    for code, slug, _vol, _name, _weight in TOPICS:
         for note in sorted((L2 / slug).glob("LM*.md")):
             fm, body = read_frontmatter(note)
             if fm.get("type") != "cfa-lm":
@@ -111,14 +115,14 @@ def main() -> int:
     if board.exists():
         cols = {"not-started": "Not Started", "learning": "Reading", "practicing": "Practicing", "mastered": "Mastered"}
         cards: dict[str, list[str]] = {c: [] for c in ["Not Started", "Reading", "Practicing", "Teach-Back Done", "Mastered"]}
-        for key, stem, m, status, nr, n, e, teach_done in rows:
+        for _key, stem, m, status, _nr, _n, _e, teach_done in rows:
             col = "Teach-Back Done" if teach_done and status != "mastered" else cols[status]
             cards[col].append(f"- [ ] [[{stem}]] {m}")
         text = board.read_text()
         head = text.split("## Not Started", 1)[0]
         fm_end = head.find("\n---\n", 4) if head.startswith("---\n") else -1
         head = (head[: fm_end + 5] if fm_end >= 0 else "") + "\n" + BOARD_NOTE + "\n\n"
-        settings = text[text.find("%% kanban:settings"):] if "%% kanban:settings" in text else ""
+        settings = text[text.find("%% kanban:settings") :] if "%% kanban:settings" in text else ""
         body = "".join(f"## {c}\n\n" + "\n".join(items) + ("\n" if items else "") + "\n\n" for c, items in cards.items())
         board.write_text(head + body + settings)
     print(f"{'lm':<6} {'note':<52} {'mast':>4} {'status':<12} {'next':<10} {'att':>3} {'err':>3}")

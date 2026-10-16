@@ -2,6 +2,7 @@
 
 Run every script from the repository root: python3 17-CFA/scripts/cfa_l2/<script>.py
 """
+
 from __future__ import annotations
 
 import json
@@ -38,13 +39,38 @@ TOPICS = [
 TOPIC_BY_CODE = {t[0]: t for t in TOPICS}
 TOPIC_BY_VOLUME = {t[2]: t for t in TOPICS}
 
-COMMAND_VERBS = (
-    "analyze analyse apply assess calculate classify compare contrast critique define demonstrate describe "
-    "determine discuss distinguish estimate evaluate explain formulate identify interpret judge justify list "
-    "recommend select show summarize"
-).split()
+COMMAND_VERBS = [
+    "analyze",
+    "analyse",
+    "apply",
+    "assess",
+    "calculate",
+    "classify",
+    "compare",
+    "contrast",
+    "critique",
+    "define",
+    "demonstrate",
+    "describe",
+    "determine",
+    "discuss",
+    "distinguish",
+    "estimate",
+    "evaluate",
+    "explain",
+    "formulate",
+    "identify",
+    "interpret",
+    "judge",
+    "justify",
+    "list",
+    "recommend",
+    "select",
+    "show",
+    "summarize",
+]
 
-EMOJI_RE = re.compile("[\U0001F300-\U0001FAFF☀-➿⬀-⯿\U0001F000-\U0001F2FF]")
+EMOJI_RE = re.compile("[\U0001f300-\U0001faff☀-➿⬀-⯿\U0001f000-\U0001f2ff]")
 EM_DASH = "—"
 F_ID = re.compile(r"\^(f-(\d{2})-(\d{2})-(\d+))\s*$", re.M)
 FM_LINE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):\s*(.*)$")
@@ -60,7 +86,14 @@ def lm_note_name(code: str, lm: int, title: str) -> str:
 
 
 def load_manifest() -> dict:
-    return json.loads((BUILD / "manifest.json").read_text())
+    """The extraction manifest; every script that needs the curriculum extracts starts here."""
+    path = BUILD / "manifest.json"
+    if not path.exists():
+        raise SystemExit(
+            f"curriculum extracts not found at {BUILD}: run extract.py then parse.py from the main checkout, "
+            "or set CFA_BUILD (and CFA_PRIVATE) to the main checkout's build/cfa_l2 and 17-CFA/Private"
+        )
+    return json.loads(path.read_text())
 
 
 def load_module(code: str, lm: int) -> dict:
