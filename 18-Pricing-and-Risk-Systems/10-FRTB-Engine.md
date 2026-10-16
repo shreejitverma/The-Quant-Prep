@@ -40,7 +40,7 @@ flowchart TB
     end
 
     subgraph RFETPipeline["Risk Factor Eligibility Pipeline (RFET)"]
-        RealPriceObs[Real Price Verifier: 24 obs / 90-day gap]
+        RealPriceObs["Real Price Verifier: 24 obs/yr and 4 per 90d, or 100 obs"]
         ModellableSplit{Modellable?}
         MRF["Modellable Factors (IMCC)"]
         NMRF["Non-Modellable Factors (SES)"]
@@ -127,30 +127,26 @@ Under the Internal Models Approach, Expected Shortfall is evaluated across a 5-t
 
 $$\text{ES} = \sqrt{ (\text{ES}_1)^2 + \sum_{j=2}^5 (\text{ES}_j)^2 \frac{LH_j - LH_{j-1}}{10} }$$
 
-Where:
-- $LH_1 = 10\text{ days}$ (All risk factors)
-- $LH_2 = 20\text{ days}$ (Excludes liquid FX and large-cap equities)
-- $LH_3 = 40\text{ days}$ (Excludes interest rate tenors)
-- $LH_4 = 60\text{ days}$ (Credit spreads and small-cap equities)
-- $LH_5 = 120\text{ days}$ (Credit exotics, illiquid commodities, exotic volatility)
+Where $\text{ES}_j$ is the 10-day ES shocking only risk factors whose MAR33.12 horizon is at least $LH_j$, with $LH = 10, 20, 40, 60, 120$ days (MAR33.4).
+Examples of horizons: specified-currency rates, large-cap equity prices and specified FX pairs 10 days; IG sovereign spreads, small-cap equity prices and energy prices 20; IG corporate spreads and FX volatility 40; HY corporate spreads and rates volatility 60; credit spread volatility and other commodity volatility 120.
+The full table and its derivation are in [Internal Model Approach: Expected Shortfall](../17-Regulatory-Capital-Basel-and-FRTB/10-FRTB-Internal-Model-Approach-ES.md).
 
 To incorporate historical stress without running full portfolios across decades, the calibrated ES is scaled via a reduced set ($R$) of liquid risk factors:
 
 $$\text{ES}_{\text{calibrated}} = \text{ES}_{R,S} \times \frac{\text{ES}_{F,C}}{\text{ES}_{R,C}}$$
 
-Where $S$ denotes the 12-month historical stress period, $C$ denotes the current 12-month period, $F$ is the full risk factor set, and $R$ is the reduced set.
+Where $S$ denotes the 12-month historical stress period, $C$ denotes the current 12-month period, $F$ is the full risk factor set, and $R$ is the reduced set; the ratio $\text{ES}_{F,C}/\text{ES}_{R,C}$ is floored at 1 (MAR33.6).
 
 ### 4. Desk Eligibility Traffic Light Matrix (Backtesting & PLA)
 
-```
-+----------------------------------------------------------------------------------------------------+
-| Desk Status Zone    | 1-Day 99% VaR Exceptions   | Spearman Correlation ($r_s$) | KS Statistic ($KS$) | IMA Status & Penalty |
-+----------------------------------------------------------------------------------------------------+
-| Green Zone          | 0 to 4 exceptions          | $r_s \ge 0.80$               | $KS \le 0.09$       | Eligible; No penalty |
-| Amber Zone          | 5 to 9 exceptions          | $0.70 \le r_s < 0.80$        | $0.09 < KS \le 0.12$| Eligible; Capital add-on|
-| Red Zone            | 10+ exceptions             | $r_s < 0.70$                 | $KS > 0.12$         | Disqualified; Must use SA|
-+----------------------------------------------------------------------------------------------------+
-```
+| Test | Green | Amber | Red |
+| :--- | :--- | :--- | :--- |
+| Bank-wide 99% one-day VaR backtest, 250 days (MAR32.9) | 0 to 4 exceptions, $m_c = 1.50$ | 5 to 9, $m_c$ 1.70 to 1.92 | 10 or more, $m_c = 2.00$, model may be disallowed |
+| PLA test per desk (MAR32.42) | $r_S > 0.80$ and $KS < 0.09$ | otherwise | $r_S < 0.70$ or $KS > 0.12$: desk to SA |
+
+Desk-level backtesting is separate: a desk with more than 12 exceptions at 99% or more than 30 at 97.5% in 12 months moves to SA (MAR32.19).
+Amber PLA desks stay on IMA and drive the bank-level surcharge $k\max\{0, SA_{G,A} - IMA_{G,A}\}$ with $k = 0.5\sum_{amber}SA_i/\sum_{green,amber}SA_i$ (MAR33.45); they do not change $m_c$.
+Details are in [Backtesting and PLA Testing](../17-Regulatory-Capital-Basel-and-FRTB/12-FRTB-Backtesting-and-PLA-Testing.md).
 
 ## Worked examples
 
@@ -162,12 +158,13 @@ A global bank designs the hardware and grid capacity for its internal models FRT
 - Number of Non-Modellable Risk Factors (NMRFs): $N_{\text{NMRF}} = 3,500$.
 - Historical Scenario Sample: $S = 250$ business days.
 - Liquidity Horizon Sub-portfolios: 5 liquidity subsets ($LH_1 \dots LH_5$).
-- Reduced Sets: 2 sets (Full set $F$, Reduced set $R$) across Current ($C$) and Stressed ($S$) windows.
+- Calibrations: 3 ($ES_{F,C}$, $ES_{R,C}$, $ES_{R,S}$), each needing its own shocked market states.
 
 Compute Breakdown for Overnight IMA Run:
 1. Expected Shortfall Simulation:
-   - 250 scenario valuations $\times$ 5 liquidity horizon passes $\times$ 2 sets ($F, R$) $= 2,500$ portfolio revaluation passes.
-   - Total Position Valuations: $250,000\text{ positions} \times 2,500\text{ passes} = 625,000,000\text{ valuations}$.
+   - 250 scenario valuations $\times$ 5 liquidity horizon passes $\times$ 3 calibrations $= 3,750$ portfolio revaluation passes.
+   - Total Position Valuations: $250,000\text{ positions} \times 3,750\text{ passes} = 937,500,000\text{ valuations}$.
+   - This counts whole-book nested sets only; the risk-class terms of IMCC (MAR33.14) raise the count to up to 21 distinct nested sets per calibration, the "up to 63" ES calculations of the MAR33.15 FAQ, although each position only needs the sets of its own risk class.
 2. NMRF Stressed Expected Shortfall ($SES$):
    - 3,500 NMRFs evaluated under extreme stress scenarios (250 days):
    - Total NMRF evaluations: $3,500 \times 250 = 875,000\text{ factor-scenario evaluations}$.
@@ -178,16 +175,14 @@ Compute Breakdown for Overnight IMA Run:
 
 Total Daily Compute Budget:
 
-$$\text{Total Daily Evaluations} \approx 625,000,000 + 875,000 + 1,000,000 \approx 626,875,000\text{ evaluations}$$
+$$\text{Total Daily Evaluations} \approx 937,500,000 + 875,000 + 1,000,000 = 939,375,000\text{ evaluations}$$
 
 Grid Sizing:
 - Average valuation latency across mixed portfolio (swaps, bonds, exotics): $0.5\text{ milliseconds}$ per position evaluation.
-- Total Serial CPU Time: $688.5 \times 10^6 \times 0.0005\text{ s} = 344,250\text{ CPU seconds} \approx 95.6\text{ CPU hours}$.
+- Total Serial CPU Time: $939.375 \times 10^6 \times 0.0005\text{ s} = 469,687.5\text{ CPU seconds} \approx 130.5\text{ CPU hours}$.
 - To finish within a $2\text{-hour}$ ($7,200\text{ seconds}$) batch window:
 
-$$N_{\text{cores}} = \frac{344,250}{7,200} \approx 47.8 \implies 64\text{ modern dedicated CPU cores}$$
-
-With GPU acceleration for Monte Carlo contracts, this entire workload executes on a single 8-GPU server chassis in under 15 minutes.
+$$N_{\text{cores}} = \frac{469,687.5}{7,200} \approx 65.2 \implies \text{at least 66 cores, before headroom for reruns and skew}$$
 
 ### Example 2: PLA Test Automation: Spearman and Kolmogorov-Smirnov Calculation
 
@@ -215,10 +210,10 @@ A desk trading exotic equity baskets manages $\$500,000,000$ of positions:
 - While in Green Zone (IMA Model):
   - Calibrated Expected Shortfall ($\text{IMCC}$): $\$18,000,000$.
   - NMRF Stressed Capital ($\text{SES}$): $\$6,000,000$.
-  - Total IMA Capital Charge: $\$18,000,000 + \$6,000,000 = \$24,000,000$.
-  - Associated RWA ($12.5 \times K$): $\$300,000,000$.
+  - Total IMA Capital Charge with $m_c = 1.5$ and averages equal to the latest values: $1.5 \times \$18,000,000 + \$6,000,000 = \$33,000,000$ (MAR33.41; SES is not multiplied).
+  - Associated RWA ($12.5 \times K$): $\$412,500,000$.
 - The desk updates its pricing model without updating the middle-office risk factor engine. Over the next quarter, uncaptured model basis causes $r_s$ to fall to $0.62$ ($< 0.70$) and $KS$ to rise to $0.15$ ($> 0.12$).
-- The supervisor forces immediate demotion to the **Red Zone**:
+- At the next quarterly classification the desk is in the PLA **Red Zone** (MAR32.43):
   - The desk loses IMA eligibility and must calculate capital under the Standardised Approach ($K_{\text{SA}}$).
   - Standalone SbM Delta, Vega, and Curvature: $\$35,000,000$.
   - Default Risk Charge (DRC): $\$8,000,000$.
@@ -226,14 +221,14 @@ A desk trading exotic equity baskets manages $\$500,000,000$ of positions:
   - Total SA Capital Charge: $\$35,000,000 + \$8,000,000 + \$15,000,000 = \$58,000,000$.
   - Associated RWA: $12.5 \times \$58,000,000 = \$725,000,000$.
 - Capital Impact:
-  $$\Delta K = \$58,000,000 - \$24,000,000 = +\$34,000,000\text{ (+141.7\% increase)}$$
+  $$\Delta K = \$58,000,000 - \$33,000,000 = +\$25,000,000\text{ (+75.8\% increase)}$$
   $$\Delta\text{RWA} = \$725,000,000 - \$300,000,000 = +\$425,000,000$$
 The desk's return on equity collapses, forcing the bank to shut down the exotic basket trading strategy.
 
 ## Pitfalls
 
 - **Neglecting the Low Correlation Scenario in SbM Aggregation:** Assuming the Medium correlation scenario is always binding causes massive capital shortfalls; curve-hedged portfolios often bind under the Low correlation regime ($2\rho - 1$) because offsetting hedges decouple.
-- **Treating RFET Real Price Verification as a Point-in-Time Check:** The 24-observation rule requires continuous monitoring; if an asset class suffers a 91-day gap without verifiable trades or committed quotes, it instantly flips to NMRF status, triggering severe SES capital spikes.
+- **Treating RFET Real Price Verification as a Point-in-Time Check:** The 24-observation criterion is monitored monthly and also requires that no 90-day period in the previous 12 months holds fewer than four real price observations (MAR31.13); a quiet quarter can turn a factor into an NMRF at the next quarterly test unless it has 100 observations, triggering SES capital.
 - **Ignoring Model Differences in PLA Testing:** Using different yield curve interpolation methods (e.g., cubic spline in Front Office vs linear discount factors in Risk) introduces artificial basis that causes PLA test failure even when underlying economic pricing matches.
 - **Underestimating Curvature Calculation Overhead:** Curvature requires two full revaluations (up-shock and down-shock) for every single risk factor. Without analytic shortcuts or parallel grids, curvature alone can consume 80% of total SbM runtime.
 - **Failing to Track Desk-Level Carve-Outs:** When a desk fails PLA testing and reverts to SA, the bank cannot cherry-pick: the entire desk must be carved out of the IMA aggregation, and cross-desk diversification benefits between that desk and surviving IMA desks are lost.
@@ -257,18 +252,18 @@ The desk's return on equity collapses, forcing the bank to shut down the exotic 
 
 > [!question]- sys-10-04 | How is capital calculated for Non-Modellable Risk Factors (NMRFs)?
 > Each NMRF is capitalized using a stressed Expected Shortfall measure ($SES$) calibrated to an extreme historical stress period.
-> Individual $SES$ charges are aggregated using a formula that treats idiosyncratic risk as orthogonal (sum of squares) and systematic risk as linearly additive.
+> Individual $SES$ charges are aggregated as $\sqrt{\sum ISES_i^2} + \sqrt{\sum ISES_j^2} + \sqrt{(0.6\sum SES_k)^2 + 0.64\sum SES_k^2}$: zero correlation only for idiosyncratic credit and equity NMRFs shown to be independent, and a one-factor model with loading 0.6 for all others (MAR33.17).
 
 > [!question]- sys-10-05 | What is the difference between the Kolmogorov-Smirnov test and the Spearman correlation test in FRTB PLA testing?
 > The Kolmogorov-Smirnov ($KS$) test evaluates whether the empirical probability distributions of HPL and RTPL match across their entire shape (mean, variance, skewness).
 > The Spearman rank correlation test ($r_s$) evaluates whether the directional daily movements of HPL and RTPL are monotonic and correlated in rank order.
 
 > [!question]- sys-10-06 | What happens when a trading desk falls into the Amber Zone in PLA testing?
-> An Amber Zone desk remains eligible for the Internal Models Approach but incurs a progressive capital surcharge (a multiplier applied to its capital charge).
-> The bank must submit a formal remediation plan to the supervisor explaining the modeling discrepancies.
+> An Amber Zone desk remains eligible for the Internal Models Approach, but while any desk is amber the bank adds the surcharge $k\max\{0, SA_{G,A} - IMA_{G,A}\}$ with $k = 0.5\sum_{amber}SA_i/\sum_{green,amber}SA_i$ (MAR33.45).
+> The desk returns to green only after a green PLA result with backtesting satisfied over the prior 12 months (MAR32.44).
 
 > [!question]- sys-10-07 | What triggers immediate demotion of a trading desk to the Fallback Standardised Approach?
-> A desk is demoted to the Fallback SA if it enters the Red Zone in PLA testing ($KS > 0.12$ or $r_s < 0.70$) or accumulates 10 or more 1-day 99% VaR backtesting exceptions over a 250-day window.
+> A desk moves to the standardised approach if it enters the PLA Red Zone ($KS > 0.12$ or $r_S < 0.70$, MAR32.43) or has more than 12 exceptions of its 99% one-day VaR or more than 30 of its 97.5% one-day VaR in the most recent 12 months (MAR32.19).
 
 > [!question]- sys-10-08 | How does the liquidity horizon cascade operate in FRTB Expected Shortfall?
 > Risk factors are mapped to five liquidity horizons: 10, 20, 40, 60, and 120 days based on asset liquidity.
