@@ -152,7 +152,7 @@ def _calculate_exposure_metrics(grid: list[float], values: list[list[float]]) ->
         area = 0.0
         left_time = grid[0]
         left_value = profile[0]
-        for right_time, right_value in zip(grid[1:], profile[1:]):
+        for right_time, right_value in zip(grid[1:], profile[1:], strict=True):
             if left_time >= horizon:
                 break
             end_time = min(right_time, horizon)
