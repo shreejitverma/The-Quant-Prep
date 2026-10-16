@@ -165,7 +165,7 @@ flowchart TD
     B --> E["Net Annual Cash Flow Profile CF(t)"]
     E --> F["Base Discounting: Compute Base EVE"]
     
-    G["6 Supervisory Shocks: Parallel Up/Down, Steepener, Flattener, Short Up/Down"] --> H["Shocked Yield Curves"]
+    G["Illustrative Scenarios: Parallel Up/Down, Steepener, Flattener, Short Up/Down"] --> H["Shocked Yield Curves"]
     E & H --> I["Shocked Discounting: Compute EVE(s) across 6 Scenarios"]
     
     F & I --> J["Delta EVE(s) = Base EVE - EVE(s)"]
@@ -179,7 +179,7 @@ flowchart TD
 
 ## Worked examples
 
-### Example 1: EVE sensitivity calculation under the 6 Basel shocks
+### Example 1: EVE sensitivity calculation under the parallel-up shock
 
 Consider a bank balance sheet profile modeled in `code/basel_liquidity_irrbb.py` (representing a duration-mismatched regional bank):
 - Assets: $\$100,000,000,000.00$ in 10-year fixed-rate securities paying $1.5\%$ annual coupon (cash flow: $\$1.5\text{B} / \text{year}$ for years 1-9, and $\$101.5\text{B}$ at year 10).
@@ -345,4 +345,4 @@ Examining the official Federal Reserve Report by Vice Chair Michael S. Barr (Apr
 
 - 01-Capital-RWA-and-the-Basel-Framework.md - Foundational capital stack and regulatory ratios.
 - 15-Leverage-Ratio-and-Liquidity-Ratios-LCR-and-NSFR.md - Liquidity coverage ratio and net stable funding ratio.
-- `code/basel_liquidity_irrbb.py` - Reference implementation of IRRBB EVE discounting across 6 supervisory shocks and SVB case study.
+- `code/basel_liquidity_irrbb.py` - Illustrative IRRBB EVE scenarios and SVB case study; its generic shocks are not the standardized currency-specific supervisory curves.

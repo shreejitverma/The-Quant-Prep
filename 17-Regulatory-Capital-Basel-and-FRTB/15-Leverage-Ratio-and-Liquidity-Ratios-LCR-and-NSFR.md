@@ -72,7 +72,7 @@ HQLA must be unencumbered, liquid in private repo markets, and central bank elig
 - **Level 2A Assets (15% Haircut)**:
   - Sovereign and public sector bonds with 20% risk weights.
   - High-grade non-financial corporate bonds and covered bonds rated AA- or higher.
-- **Level 2B Assets (50% Haircut)**:
+- **Level 2B Assets**:
   - Qualifying residential mortgage-backed securities (RMBS) rated AA or higher (25% haircut).
   - Investment-grade corporate bonds rated BBB- to A+ (50% haircut).
   - Qualifying common equity shares included in major developed market indices (50% haircut).
@@ -115,7 +115,8 @@ RSF measures the amount of stable funding required to support assets and off-bal
 - **0% RSF**: Unencumbered central bank reserves, cash, and short-term sovereign claims.
 - **5% RSF**: High-grade unencumbered Level 1 sovereign debt.
 - **15% RSF**: Unencumbered loans to financial institutions with residual maturity $< 6\text{ months}$.
-- **50% RSF**: Residential mortgages with residual maturity $\ge 1\text{ year}$ and corporate loans with maturity $< 1\text{ year}$.
+- **65% RSF**: Performing residential mortgages with residual maturity $\ge 1\text{ year}$.
+- **50% RSF**: Corporate loans with maturity $< 1\text{ year}$.
 - **85% RSF**: Unencumbered corporate loans and retail loans with residual maturity $\ge 1\text{ year}$.
 - **100% RSF**: Non-performing loans, physical real estate, unlisted equities, and derivative net assets.
 
@@ -155,7 +156,7 @@ flowchart TD
     B --> E["Total Leverage Exposure = Assets + SA-CCR + SFT + CCF*Commitments"]
     E --> F["Leverage Ratio = Tier 1 / Exposure >= 3.0% (+ G-SIB Buffer)"]
     
-    C --> G["HQLA: Level 1 (0% haircut) + Level 2A (15%) + Level 2B (50%)"]
+    C --> G["HQLA: Level 1 (0%) + Level 2A (15%) + Level 2B (25% RMBS, 50% other eligible assets)"]
     G --> H["Apply Level 2 Caps: Max 40% Total Level 2, Max 15% Level 2B"]
     C --> I["30-Day Stressed Outflows & Capped Inflows (Max 75% of Outflows)"]
     H & I --> J["LCR = Adjusted HQLA / Net Outflows >= 100%"]
@@ -252,7 +253,7 @@ Had LCR and NSFR been in place, Northern Rock's NSFR would have been under 45% (
 
 ## Pitfalls
 
-- **Confusing Level 2A and Level 2B haircut schedules**: Applying a 15% haircut to equity or BBB corporate bonds in LCR; Level 2B assets face a mandatory 50% haircut and a 15% cap.
+- **Confusing Level 2A and Level 2B haircut schedules**: Applying a 15% haircut to equity or BBB corporate bonds in LCR; qualifying RMBS use 25%, while other eligible Level 2B assets use 50%, with a 15% cap.
 - **Treating non-cash collateral as a derivative deduction in the Leverage Ratio**: In standard accounting, posted securities reduce derivative liabilities; under Basel LEV30, only eligible *cash* variation margin can reduce Replacement Cost.
 - **Overestimating operational deposit stickiness**: Assuming corporate deposits are "operational" (25% run-off) without proving contractual linkages to daily payroll or clearing services; auditors reclassify unproven operational deposits as non-operational, spiking run-off rates to 40% or 100%.
 - **Neglecting SFT netting rules under the Leverage Ratio**: Grossing up reverse repos and repos without strictly enforcing identical legal counterparties and matching settlement dates; invalid SFT netting adds billions of dollars in artificial exposure.

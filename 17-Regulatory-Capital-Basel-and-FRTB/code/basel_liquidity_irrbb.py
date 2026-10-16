@@ -3,7 +3,7 @@
 Pure Python 3.10+ standard library implementation:
 1. Basel IV Standardised Measurement Approach (SMA) for Operational Risk (OPE25).
 2. Liquidity Coverage Ratio (LCR, LCR40) and Net Stable Funding Ratio (NSFR, NSF30).
-3. Interest Rate Risk in the Banking Book (IRRBB, SRP31) with the 6 supervisory shocks and EVE outlier test.
+3. Illustrative IRRBB EVE sensitivity scenarios and outlier test.
 4. SVB 2023 case study unhedged HTM duration simulation.
 """
 
@@ -129,10 +129,11 @@ def calculate_lcr(
     level2b_assets: float,
     gross_cash_outflows: float,
     gross_cash_inflows: float,
+    level2b_rmbs_assets: float = 0.0,
 ) -> LCRResult:
     """Calculate Liquidity Coverage Ratio (LCR) under Basel LCR40.
 
-    HQLA Haircuts: Level 1 = 0%, Level 2A = 15%, Level 2B = 50%.
+    HQLA Haircuts: Level 1 = 0%, Level 2A = 15%, Level 2B corporate/equity = 50%, qualifying RMBS = 25%.
     Caps on Level 2:
     - Total Level 2 assets <= 40% of total HQLA.
     - Level 2B assets <= 15% of total HQLA.
@@ -141,7 +142,7 @@ def calculate_lcr(
     # Uncapped post-haircut values
     h_1 = level1_assets
     h_2a = 0.85 * level2a_assets
-    h_2b = 0.50 * level2b_assets
+    h_2b = 0.50 * level2b_assets + 0.75 * level2b_rmbs_assets
 
     # Cap calculations under Basel LCR Annex 1 formula
     # Level 2 assets capped at 40/60 of Level 1; Level 2B capped at 15/85 of (Level 1 + Level 2A)
@@ -190,9 +191,9 @@ def calculate_irrbb_eve(
     discount_rate: float,  # base flat zero rate (e.g. 0.04 for 4%)
     tier1_capital: float,
 ) -> IRRBBResult:
-    """Calculate IRRBB Economic Value of Equity (EVE) sensitivity under Basel SRP31.
+    """Calculate illustrative IRRBB EVE sensitivity scenarios.
 
-    Evaluates the 6 standardized supervisory shocks for USD/EUR:
+    These generic shocks are illustrative and are not currency-specific standardized supervisory shocks:
     1. Parallel Up: +200 bps
     2. Parallel Down: -200 bps (floored at 0% or negative rates)
     3. Steepener: short -100 bps, long +100 bps
@@ -213,7 +214,7 @@ def calculate_irrbb_eve(
     # Base EVE
     base_eve = pv(lambda t: 0.0)
 
-    # Standardized shocks
+    # Illustrative shocks
     shocks = {
         "Parallel_Up": lambda t: 0.0200,
         "Parallel_Down": lambda t: -0.0200,
@@ -309,6 +310,7 @@ def run_tests() -> None:
     # Liabilities: $90B in Non-Maturity Deposits (NMDs) paying ~0% (duration treated as zero in a run)
     # Net cash flow: -$90B at t=0 (deposits), +$100B principal at t=10 + $1.5B/yr interest
     cf_svb = {
+        0.0: -90_000_000_000.0,
         1.0: 1_500_000_000.0,
         2.0: 1_500_000_000.0,
         3.0: 1_500_000_000.0,
