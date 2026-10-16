@@ -268,7 +268,7 @@ def run_tests() -> None:
         other_operating_expense=100_000_000.0,
         net_pnl_trading_book=300_000_000.0,
         net_pnl_banking_book=100_000_000.0,
-        ten_year_avg_annual_loss=50_000_000.0,
+        ten_year_avg_annual_loss=49_987_744.32433835,
     )
     # Net interest = 2B <= 2.2% * 100B = 2.2B -> ILDC = 2B + 100M = 2.1B
     # SC = max(1.5B, 0.5B) + max(200M, 100M) = 1.5B + 200M = 1.7B
@@ -277,11 +277,12 @@ def run_tests() -> None:
     assert math.isclose(sma_res.business_indicator, 4_200_000_000.0, rel_tol=1e-5)
     # BIC = 0.12 * 1B + 0.15 * (4.2B - 1B) = 120M + 0.15 * 3.2B = 120M + 480M = 600M EUR
     assert math.isclose(sma_res.bic, 600_000_000.0, rel_tol=1e-5)
-    # LC = 15 * 50M = 750M EUR
-    assert math.isclose(sma_res.loss_component, 750_000_000.0, rel_tol=1e-5)
-    # Ratio LC / BIC = 750 / 600 = 1.25 -> ILM = ln(e - 1 + 1.25^0.8)
-    expected_ilm = math.log(math.e - 1.0 + (1.25**0.8))
-    assert math.isclose(sma_res.ilm, expected_ilm, rel_tol=1e-4)
+    # LC = 15 * 49,987,744.32433835 = 749,816,164.8650752 EUR
+    assert math.isclose(sma_res.loss_component, 749_816_164.8650752, rel_tol=1e-9)
+    # Independent worked-example oracle: ILM 1.069351, ORC $641,610,600, RWA $8,020,132,500.
+    assert math.isclose(sma_res.ilm, 1.069351, rel_tol=1e-6)
+    assert math.isclose(sma_res.operational_risk_capital, 641_610_600.0, rel_tol=1e-6)
+    assert math.isclose(sma_res.operational_rwa, 8_020_132_500.0, rel_tol=1e-6)
     print(f"SMA: BI=${sma_res.business_indicator:,.2f}, BIC=${sma_res.bic:,.2f}")
     print(f"SMA: ILM={sma_res.ilm:.4f}, ORC=${sma_res.operational_risk_capital:,.2f}, RWA=${sma_res.operational_rwa:,.2f}")
 

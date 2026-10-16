@@ -205,18 +205,18 @@ $$BIC = 0.12 \cdot \$1,000,000,000.00 + 0.15 \cdot (\$4,200,000,000.00 - \$1,000
 $$BIC = \$120,000,000.00 + 0.15 \cdot \$3,200,000,000.00 = \$120,000,000.00 + \$480,000,000.00 = \$600,000,000.00$$
 
 **Step 3: Loss Component and ILM**
-$$LC = 15 \cdot \$50,000,000.00 = \$750,000,000.00$$
+$$LC = 15 \cdot \$49,987,744.32433835 = \$749,816,164.8650752$$
 The loss-to-BIC ratio is:
-$$\frac{LC}{BIC} = \frac{\$750,000,000.00}{\$600,000,000.00} = 1.250000$$
+$$\frac{LC}{BIC} = \frac{\$749,816,164.8650752}{\$600,000,000.00} \approx 1.249694$$
 Evaluating the Internal Loss Multiplier:
-$$\text{Ratio}^{0.8} = (1.25)^{0.8} = 1.195441$$
-$$ILM = \ln\left( \exp(1) - 1 + 1.195441 \right) = \ln(1.718282 + 1.195441) = \ln(2.913723) = 1.069431 \approx 1.0694$$
+$$\text{Ratio}^{0.8} = (1.249694)^{0.8} \approx 1.195206$$
+$$ILM = \ln\left( \exp(1) - 1 + 1.195206 \right) \approx \ln(2.913488) = 1.069351$$
 Because the bank's loss history exceeded its baseline component ($LC > BIC$), the multiplier imposes a $6.94\%$ capital surcharge.
 
 **Step 4: Operational risk capital and RWA**
-$$ORC = BIC \cdot ILM = \$600,000,000.00 \cdot 1.069431457251 = \$641,658,874.35$$
+$$ORC = BIC \cdot ILM = \$600,000,000.00 \cdot 1.069351 = \$641,610,600.00$$
 Multiplying by 12.5:
-$$\text{RWA}_{\text{OpRisk}} = \$641,658,874.35 \cdot 12.5 = \$8,020,735,929.38$$
+$$\text{RWA}_{\text{OpRisk}} = \$641,610,600.00 \cdot 12.5 = \$8,020,132,500.00$$
 
 ### Example 2: Impact of national discretion ($ILM = 1.0$)
 
@@ -225,8 +225,8 @@ Suppose the bank in Example 1 is domiciled in the European Union under CRR3, whe
   $$ORC_{\text{EU}} = BIC \cdot 1.0 = \$600,000,000.00$$
   $$\text{RWA}_{\text{EU}} = \$600,000,000.00 \cdot 12.5 = \$7,500,000,000.00$$
 - Comparison with standard Basel rule:
-  $$\Delta \text{Capital} = \$641,658,874.35 - \$600,000,000.00 = \$41,658,874.35$$
-  $$\Delta \text{RWA} = \$8,020,735,929.38 - \$7,500,000,000.00 = \$520,735,929.38$$
+  $$\Delta \text{Capital} = \$641,610,600.00 - \$600,000,000.00 = \$41,610,600.00$$
+  $$\Delta \text{RWA} = \$8,020,132,500.00 - \$7,500,000,000.00 = \$520,132,500.00$$
 By exercising national discretion to ignore internal losses, EU regulators save the bank $\$41.66\text{M}$ in Common Equity Tier 1 capital requirements, highlighting significant cross-border regulatory fragmentation.
 
 ### Example 3: The 2012 JPMorgan "London Whale" and operational risk
