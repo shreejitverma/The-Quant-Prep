@@ -96,27 +96,30 @@ $$K_{\text{SA}} = K_{\text{SbM}} + K_{\text{DRC}} + K_{\text{RRAO}}$$
 - Sensitivity weighting: $WS_k = RW_k \times s_k$.
 - Bucket-level aggregation:
 
-$$K_b = \sqrt{ \sum_{k \in b} WS_k^2 + \sum_{k \in b} \sum_{l \neq k, l \in b} \rho_{kl} WS_k WS_l }$$
+$$K_b = \sqrt{ \max\left(0, \sum_{k \in b} WS_k^2 + \sum_{k \in b} \sum_{l \neq k, l \in b} \rho_{kl} WS_k WS_l\right) }$$
 
 - Across-bucket aggregation across all buckets $b$:
 
 $$K_{\text{SbM}} = \sqrt{ \sum_b K_b^2 + \sum_b \sum_{c \neq b} \gamma_{bc} S_b S_c }$$
 
-- Evaluated across three correlation scenarios: Medium ($\rho, \gamma$), High ($1.25\rho, 1.25\gamma$), Low ($2\rho - 1, 2\gamma - 1$).
-  The capital charge is the maximum across the three regimes:
+- If the across-bucket radicand is negative, $S_b$ is clamped to $[-K_b, K_b]$ (MAR21.4(5)(b)); the prescribed CSR and equity $\gamma$ matrices are not always PSD, so the engine must still guard the square root (see [SbM Delta](../17-Regulatory-Capital-Basel-and-FRTB/07-FRTB-Sensitivities-Based-Method-Delta.md)).
+- Evaluated across three correlation scenarios (MAR21.6): medium ($\rho, \gamma$ as specified), high ($\min(1.25\rho, 1)$), low ($\max(2\rho - 1, 0.75\rho)$).
+  Within each scenario, delta, vega and curvature are summed over all risk classes, and the SbM is the largest scenario total (MAR21.7):
 
-$$K = \max\left( K_{\text{Medium}}, K_{\text{High}}, K_{\text{Low}} \right)$$
+$$K_{\text{SbM}} = \max_{s \in \{\text{medium}, \text{high}, \text{low}\}} \sum_{\text{risk classes}} \left(\Delta_s + \mathcal{V}_s + \mathcal{C}_s\right)$$
 
 #### 2. Default Risk Charge ($K_{\text{DRC}}$):
 - Evaluates Jump-to-Default (JTD) across debt and equity positions:
 
-$$\text{JTD}_{\text{long}} = \max\left(LGD \times \text{Notional} + \text{MtM}, 0\right)$$
+$$\text{JTD}_{\text{long}} = \max\left(LGD \times \text{Notional} + P\&L, 0\right), \qquad P\&L = \text{market value} - \text{notional}$$
 
-- Netting across long and short positions within the same obligor and seniority, scaled by the Weighted To Reference ($WTR$) hedging ratio.
+- LGD is 100% for equity and non-senior debt, 75% for senior debt and 25% for covered bonds (MAR22.12); JTDs under one year are scaled by maturity with a three-month floor (MAR22.15, MAR22.18).
+
+- Offsetting within the same obligor where the short is equally or more junior than the long (MAR22.19), then within each bucket net shorts are discounted by the hedge benefit ratio $HBR = \sum L / (\sum L + \sum |S|)$ and the bucket charge is floored at zero (MAR22.23, MAR22.25).
 
 #### 3. Residual Risk Add-On ($K_{\text{RRAO}}$):
-- Applied to complex or path-dependent instruments (e.g., barrier options, multi-underlying basket options, correlation swaps).
-- Capital surcharge: $1.0\%$ of gross notional for exotic instruments, $0.1\%$ for instruments with residual risks in underlying parameters.
+- Applied to instruments with an exotic underlying (longevity, weather, natural disasters, future realised volatility) and to instruments bearing other residual risks (barriers, digitals, Asians, baskets, best-of, Bermudans, multi-callable bonds) (MAR23.3 to MAR23.5).
+- Add-on: $1.0\%$ of gross notional for exotic underlyings and $0.1\%$ for other residual risks, with only exact back-to-back trades excluded (MAR23.7, MAR23.8).
 
 ### 3. IMA Expected Shortfall with Liquidity Horizons
 
@@ -246,7 +249,7 @@ The desk's return on equity collapses, forcing the bank to shut down the exotic 
 > [!question]- sys-10-02 | Why must the SbM capital charge be evaluated across three correlation scenarios (Medium, High, Low)?
 > Correlations between risk factors are unstable during market crises.
 > Offsetting positions that hedge each other under normal correlations can diverge under stress.
-> Evaluating across Medium ($1.0\rho$), High ($1.25\rho$), and Low ($2\rho - 1$) ensures desks hold sufficient capital regardless of whether correlations increase or break down.
+> Evaluating across medium ($\rho$), high ($\min(1.25\rho, 1)$) and low ($\max(2\rho - 1, 0.75\rho)$) correlations, summing all risk classes within each scenario and taking the largest total (MAR21.6, MAR21.7), ensures capital covers both correlation spikes and breakdowns.
 
 > [!question]- sys-10-03 | What is the Risk Factor Eligibility Test (RFET) for FRTB internal models?
 > RFET is a data-driven test determining whether a risk factor is modellable (MRF) or non-modellable (NMRF).
@@ -278,7 +281,7 @@ The desk's return on equity collapses, forcing the bank to shut down the exotic 
 > [!question]- sys-10-10 | Why is Curvature risk in SbM non-linear, and how is it calculated?
 > Curvature captures option Gamma and Vega non-linearities not captured by linear Delta.
 > It is calculated by applying upward and downward supervisory shocks to the risk factor, subtracting the linear Delta move: $CVR_k^+ = -\left[ V(S_k + RW_k) - V(S_k) - RW_k \times s_k \right]$.
-> The net curvature risk is the worst-case loss between the up-shock and down-shock.
+> Within each bucket the engine takes the larger of the aggregated up and down charges, $K_b = \max(K_b^+, K_b^-)$, using squared delta correlations and the $\psi$ indicator that drops cross terms between two negative CVRs (MAR21.5, MAR21.100).
 
 ## Further reading
 
