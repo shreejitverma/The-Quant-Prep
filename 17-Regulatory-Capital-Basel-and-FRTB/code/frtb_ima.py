@@ -133,7 +133,7 @@ def rank_array(arr: Sequence[float]) -> list[float]:
 def compute_spearman_rank_correlation(x: Sequence[float], y: Sequence[float]) -> float:
     """Compute Spearman rank correlation between HPL and RTPL (MAR32.20).
 
-    r_s = 1 - 6 * sum(d_i^2) / (n * (n^2 - 1))
+    r_s is the Pearson correlation of the average-rank arrays.
     """
     if len(x) != len(y) or len(x) < 2:
         raise ValueError("Arrays must have equal length >= 2")
@@ -142,9 +142,16 @@ def compute_spearman_rank_correlation(x: Sequence[float], y: Sequence[float]) ->
     rx = rank_array(x)
     ry = rank_array(y)
 
-    diff_sq = sum((rx[i] - ry[i]) ** 2 for i in range(n))
-    rs = 1.0 - (6.0 * diff_sq) / (n * (n**2 - 1))
-    return rs
+    mean_x = sum(rx) / n
+    mean_y = sum(ry) / n
+    centered_x = [rank - mean_x for rank in rx]
+    centered_y = [rank - mean_y for rank in ry]
+    sum_sq_x = sum(value**2 for value in centered_x)
+    sum_sq_y = sum(value**2 for value in centered_y)
+    if sum_sq_x == 0.0 or sum_sq_y == 0.0:
+        return 0.0
+    covariance = sum(x_rank * y_rank for x_rank, y_rank in zip(centered_x, centered_y))
+    return covariance / math.sqrt(sum_sq_x * sum_sq_y)
 
 
 def compute_kolmogorov_smirnov(x: Sequence[float], y: Sequence[float]) -> float:
@@ -277,6 +284,10 @@ def run_tests() -> None:
     assert pla_red.traffic_light == "RED"
     assert pla_red.is_eligible is False
     print(f"PLA Red Zone: Spearman={pla_red.spearman_corr:.4f}, KS={pla_red.ks_stat:.4f}")
+
+    tied_corr = compute_spearman_rank_correlation([1.0, 1.0, 2.0], [1.0, 2.0, 3.0])
+    assert math.isclose(tied_corr, math.sqrt(3.0) / 2.0, rel_tol=1e-12)
+    assert compute_spearman_rank_correlation([1.0, 1.0], [1.0, 2.0]) == 0.0
 
     print("All FRTB IMA, NMRF, and PLA tests passed successfully!")
 

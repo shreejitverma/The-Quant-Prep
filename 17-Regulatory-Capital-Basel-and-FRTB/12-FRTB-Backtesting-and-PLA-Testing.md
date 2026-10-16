@@ -79,11 +79,11 @@ A risk engine could pass backtesting by using an overly conservative linear shoc
 The PLA test resolves this by directly comparing the time series of **Hypothetical P&L (HPL)** against **Risk-Theoretical P&L (RTPL)** over the preceding 250 business days using two complementary statistical tests:
 
 #### Metric 1: Spearman Rank Correlation ($r_s$)
-The Spearman rank correlation measures the monotonic alignment between HPL and RTPL:
-$$r_s = 1 - \frac{6 \sum_{i=1}^n d_i^2}{n (n^2 - 1)}$$
+The Spearman rank correlation is the Pearson correlation of the average ranks of HPL and RTPL, which handles tied observations:
+$$r_s = \operatorname{Corr}(\operatorname{Rank}(\text{HPL}), \operatorname{Rank}(\text{RTPL}))$$
 where:
 - $n = 250$ is the number of observation days.
-- $d_i = \text{Rank}(\text{HPL}_i) - \text{Rank}(\text{RTPL}_i)$ is the difference between the ranks of HPL and RTPL on day $i$.
+- Tied values receive their average rank.
 If the front-office pricing library and risk engine move in lockstep, $r_s \to +1.0$.
 If the risk engine omits key pricing factors, the rank differences $d_i$ widen, driving $r_s$ downward.
 
@@ -140,7 +140,7 @@ In enterprise banking architecture, PLA test failures are rarely caused by funda
   2. Maintain a sliding FIFO buffer of 250 business days per desk.
   3. Count exceptions: $\mathbb{I}(\text{HPL}_t < -\text{VaR}_t)$ and $\mathbb{I}(\text{APL}_t < -\text{VaR}_t)$.
   4. Compute fractional ranks of HPL and RTPL (handling ties via midpoint averaging).
-  5. Compute Spearman correlation $r_s = 1 - \frac{6 \sum d_i^2}{n(n^2 - 1)}$.
+  5. Compute Pearson correlation over the average-rank arrays to obtain Spearman correlation $r_s$.
   6. Compute empirical CDFs of HPL and RTPL across sorted unique evaluation points; find supremum absolute distance $D = \max |F_{\text{HPL}} - F_{\text{RTPL}}|$.
   7. Map $\{r_s, D\}$ to Green, Amber, Red decision matrix.
   8. If Red: trigger automated operational alert, update desk capital ledger from IMA to SA, and notify national supervisory authorities.
@@ -258,7 +258,8 @@ Because the Standardised Approach does not permit internal netting of basis spre
 > The Pearson correlation coefficient measures linear co-movement and is highly sensitive to extreme outliers: a single massive P&L swing can artificially inflate or depress Pearson correlation.
 > Furthermore, front-office pricing models and risk approximations often have non-linear monotonic relationships (e.g., an option's true non-linear payoff vs a quadratic Taylor expansion).
 > The Spearman rank correlation converts daily P&L values into ordinals (ranks $1$ to $250$), measuring whether HPL and RTPL move in the same **relative direction and order**:
-> $$r_s = 1 - \frac{6 \sum d_i^2}{n(n^2 - 1)}$$
+> $$r_s = \operatorname{Corr}(\operatorname{Rank}(\text{HPL}), \operatorname{Rank}(\text{RTPL}))$$
+> Tied observations receive their average rank before computing Pearson correlation.
 > By testing rank alignment rather than linear magnitude, Spearman correlation robustly detects whether the risk engine identifies the same profitable and loss-making days as the front office, without being distorted by outlier days.
 
 > [!question]- reg-ks-test-role-in-pla | What specific distributional failure does the Kolmogorov-Smirnov (KS) test detect that Spearman correlation misses in the PLA test?

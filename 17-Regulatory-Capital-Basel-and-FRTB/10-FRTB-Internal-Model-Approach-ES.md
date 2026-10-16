@@ -25,7 +25,7 @@ Total IMA capital combines the scaled IMCC, a supervisory backtesting multiplier
 - Analyze the mathematical failure modes of Value-at-Risk that led to its replacement by Expected Shortfall under FRTB.
 - Prove why Expected Shortfall satisfies the subadditivity and coherence axioms of Artzner et al. (1999).
 - Master the multi-tier Liquidity Horizon Cascade formula and calculate effective portfolio holding periods.
-- Derive the Stressed Period Reduced Set scaling equation and evaluate the 75% variance-explained regulatory criterion.
+- Derive the Stressed Period Reduced Set scaling equation and evaluate the 75% expected-shortfall criterion.
 - Formulate the Internally Modelled Capital Charge (IMCC) and evaluate the 50% diversification penalty.
 - Calculate total IMA capital incorporating the supervisory multiplier $m_c$, backtesting add-ons, NMRF capital, and the internal DRC.
 - Compare desk-level IMA capital requirements against the Standardised Approach fallback.
@@ -79,7 +79,7 @@ A bank's internal trading model can encompass tens of thousands of risk factors.
 Simulating full historical price vectors across a 10-year historical observation window (including the 2008 global financial crisis) for all factors every single night is computationally prohibitive.
 To make IMA computationally feasible, Basel MAR31.17 permits a two-tiered calibration:
 1. **Full Set ($F$)**: The comprehensive universe of all modelable risk factors.
-2. **Reduced Set ($R$)**: A smaller subset of primary benchmark risk factors that accounts for at least 75% of the total portfolio variance.
+2. **Reduced Set ($R$)**: A smaller subset of risk factors whose group-level average expected shortfall over the preceding 12 weeks is at least 75% of the full set's average expected shortfall over the same period.
 
 #### The scaling ratio
 The bank identifies a 12-month historical observation period of extreme financial stress for the current portfolio (the "stress period").
@@ -139,13 +139,13 @@ where:
   7. Compute unconstrained ES and constrained ES per asset class; blend via $\rho = 0.50$ to produce IMCC.
   8. Track 60-day rolling average and apply multiplier $m_c$.
 - **Complexity**: $O(P \times S \times N)$ where $P$ is the number of historical scenarios, $S$ is the number of liquidity horizon subsets, and $N$ is portfolio trade count; highly demanding on enterprise Monte Carlo clusters.
-- **Numerical pitfalls**: Using simple historical returns rather than filtered historical simulation during volatility spikes; selecting a reduced set that captures $<75\%$ of variance; miscalculating delta-LH time intervals in the cascade; forgetting to floor $m_c$ at $1.50$.
+- **Numerical pitfalls**: Using simple historical returns rather than filtered historical simulation during volatility spikes; selecting a reduced set whose group-level average expected shortfall over the preceding 12 weeks is less than 75% of the full set's; miscalculating delta-LH time intervals in the cascade; forgetting to floor $m_c$ at $1.50$.
 - **Systems integration**: Directly integrated into the FRTB IMA Risk Engine and Scenario Grid Compute platform documented in 18-Pricing-and-Risk-Systems.
 
 ```mermaid
 flowchart TD
     A["Portfolio Risk Factor Universe"] --> B["Map Factors to Liquidity Horizons (10d, 20d, 40d, 60d, 120d)"]
-    A --> C["Identify 12-Month Stressed Period & Reduced Factor Set (>=75% Variance)"]
+    A --> C["Identify 12-Month Stressed Period & Reduced Factor Set (12-week average ES >=75% of full-set ES)"]
     
     B --> D["Compute 10-Day ES at 97.5% across Horizon Subsets"]
     D --> E["Liquidity Horizon Cascade: ES_cascade = sqrt(ES_1^2 + Sum delta_LH * ES_j^2)"]
@@ -193,7 +193,7 @@ Accounting for liquidity horizons increases required capital by $62.5\%$ compare
 
 A trading desk models its portfolio across 4,000 risk factors under current and historical stress periods (verified in `code/frtb_ima.py`):
 - Full risk factor set ($F$): 4,000 factors.
-- Reduced risk factor set ($R$): 250 benchmark factors accounting for 78.5% of portfolio variance ($> 75\%$ threshold met).
+- Reduced risk factor set ($R$): 250 benchmark factors whose group-level average ES over the preceding 12 weeks is 78.5% of the full set's average ES ($> 75\%$ threshold met).
 - Current period (past 12 months) Expected Shortfall:
   - Full set: $ES_{C, F} = \$1,200,000.00$
   - Reduced set: $ES_{C, R} = \$1,000,000.00$
@@ -220,7 +220,7 @@ This failure was the direct empirical justification cited by the Basel Committee
 
 ## Pitfalls
 
-- **Reduced set variance-explained shortfall**: Selecting a reduced risk factor set that captures less than 75% of total portfolio variance invalidates IMA eligibility under supervisory audit.
+- **Reduced set expected-shortfall shortfall**: Selecting a reduced risk factor set whose group-level average ES over the preceding 12 weeks is less than 75% of the full set's average ES fails the regulatory criterion.
 - **Liquidity horizon interval errors**: In the cascade equation $\sqrt{\frac{LH_j - LH_{j-1}}{10}}$, accidentally dividing by $LH_{j-1}$ rather than $10$ severely distorts multi-horizon risk weights.
 - **Unconstrained diversification overstatement**: Believing that unconstrained internal model diversification will dictate capital; Basel IMCC enforces a 50% penalty via $\rho = 0.50$, forcing banks to hold half their capital based on undiversified asset class sums.
 - **Supervisory multiplier add-on escalation**: Failing to account for the $m_c$ multiplier scaling from 1.50 to 2.00 as backtesting exceptions accumulate, creating unexpected capital spikes during volatile quarters.
@@ -236,7 +236,7 @@ This failure was the direct empirical justification cited by the Basel Committee
 > However, for a portfolio holding both bonds, the probability that *at least one* defaults is $1 - (1 - 0.008)^2 \approx 1.59\%$.
 > Because $1.59\% > 1\%$, the combined portfolio $\text{VaR}_{99\%} > 0$, violating subadditivity ($0 + 0 < \text{Loss}$).
 > Expected Shortfall satisfies subadditivity because it is the average of VaR quantiles over the upper tail $[\alpha, 1]$.
-> As an integral of convex functions, ES is strictly convex and subadditive for all distributions, guaranteeing that diversification always reduces or preserves capital.
+> ES is subadditive, so diversification cannot increase capital; however, perfectly dependent losses can leave ES unchanged.
 
 > [!question]- reg-es-liquidity-cascade-derivation | Explain the mechanics of the FRTB Liquidity Horizon Cascade formula and why risk factors are shocked in nested subsets.
 > The cascade formula is:
@@ -249,8 +249,8 @@ This failure was the direct empirical justification cited by the Basel Committee
 > [!question]- reg-reduced-set-ratio-75-percent | What are the regulatory requirements for the Reduced Risk Factor Set ($R$) under MAR31.17?
 > Under Basel MAR31.17:
 > 1. The reduced risk factor set $R$ must be a subset of the full risk factor set $F$.
-> 2. The reduced set must explain at least **75% of the total variance** of the full risk factor portfolio over the historical observation period:
->    $$\frac{\text{Var}(R)}{\text{Var}(F)} \ge 0.75$$
+> 2. At group level, the reduced set's average ES over the preceding 12 weeks must be at least **75% of the full set's average ES** over the same period:
+>    $$\frac{\text{Average ES}_{12\text{ weeks}}(R)}{\text{Average ES}_{12\text{ weeks}}(F)} \ge 0.75$$
 > 3. The reduced set must contain sufficient liquid benchmark factors across all broad asset classes in which the desk trades.
 > 4. The ratio $ES_{C, F} / ES_{C, R}$ must be monitored continuously; if the ratio exceeds supervisory thresholds (indicating that the reduced set is failing to track current risks), the bank must add factors to the reduced set.
 
