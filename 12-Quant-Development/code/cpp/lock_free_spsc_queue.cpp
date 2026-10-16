@@ -1,87 +1,54 @@
-#include <atomic>
-#include <vector>
-#include <iostream>
+// SPSC ring buffer demo: a "network" thread pushes sequenced market-data updates, a "strategy"
+// thread pops them and checks that nothing was lost, duplicated or reordered.
+// The queue itself lives in lock_free.hpp. Runs clean under ThreadSanitizer.
+// Build: clang++ -std=c++20 -O2 -pthread lock_free_spsc_queue.cpp
+
+#include <cstdint>
+#include <cstdio>
 #include <thread>
-#include <chrono>
 
-/**
- * Lock-Free Single-Producer Single-Consumer (SPSC) Queue.
- * 
- * Concept:
- * - Uses a Ring Buffer (circular array).
- * - 'head' is modified by Producer.
- * - 'tail' is modified by Consumer.
- * - 'std::atomic' with 'memory_order_acquire' / 'memory_order_release' ensures
- *   we don't see stale data without needing a full mutex lock.
- * 
- * Usage in HFT:
- * - Thread A (Network): Pushes market data packets.
- * - Thread B (Strategy): Pops packets and processes.
- */
+#include "lock_free.hpp"
 
-template<typename T, size_t Capacity>
-class LockFreeSPSCQueue {
-private:
-    std::vector<T> buffer;
-    alignas(64) std::atomic<size_t> head; // Producer index
-    alignas(64) std::atomic<size_t> tail; // Consumer index
-    // alignas(64) prevents False Sharing (cache line thrashing)
-
-public:
-    LockFreeSPSCQueue() : buffer(Capacity + 1), head(0), tail(0) {}
-
-    bool push(const T& item) {
-        size_t current_head = head.load(std::memory_order_relaxed);
-        size_t next_head = (current_head + 1) % buffer.size();
-
-        if (next_head == tail.load(std::memory_order_acquire)) {
-            return false; // Full
-        }
-
-        buffer[current_head] = item;
-        head.store(next_head, std::memory_order_release);
-        return true;
-    }
-
-    bool pop(T& item) {
-        size_t current_tail = tail.load(std::memory_order_relaxed);
-
-        if (current_tail == head.load(std::memory_order_acquire)) {
-            return false; // Empty
-        }
-
-        item = buffer[current_tail];
-        tail.store((current_tail + 1) % buffer.size(), std::memory_order_release);
-        return true;
-    }
+struct Update {
+    std::uint64_t seq = 0;
+    std::int64_t price = 0;
 };
 
 int main() {
-    LockFreeSPSCQueue<int, 1024> queue;
+    constexpr std::uint64_t kMessages = 200'000;
+    qpconc::SpscQueue<Update, 1024> queue;
 
-    std::thread producer([&]() {
-        for (int i = 0; i < 100; ++i) {
-            while (!queue.push(i)) {
-                // Busy wait or yield
-                std::this_thread::yield();
-            }
+    std::thread producer([&] {
+        for (std::uint64_t i = 1; i <= kMessages; ++i) {
+            const Update u{i, static_cast<std::int64_t>(1'000'000 + i % 100)};
+            while (!queue.try_push(u)) std::this_thread::yield();  // full: back off (a pinned thread would spin)
         }
     });
 
-    std::thread consumer([&]() {
-        int val;
-        int count = 0;
-        while (count < 100) {
-            if (queue.pop(val)) {
-                // Process val
-                count++;
+    std::uint64_t received = 0;
+    std::uint64_t expected_seq = 1;
+    std::uint64_t gaps = 0;
+    std::int64_t price_sum = 0;
+    std::thread consumer([&] {
+        Update u;
+        while (received < kMessages) {
+            if (!queue.try_pop(u)) {
+                std::this_thread::yield();
+                continue;
             }
+            if (u.seq != expected_seq) ++gaps;
+            expected_seq = u.seq + 1;
+            price_sum += u.price;
+            ++received;
         }
-        std::cout << "Consumer finished processing " << count << " items." << std::endl;
     });
 
     producer.join();
     consumer.join();
 
-    return 0;
+    // sum over i = 1..200000 of (1e6 + i mod 100): 2000 full cycles of 0..99 contribute 2000 * 4950.
+    const std::int64_t want = static_cast<std::int64_t>(kMessages) * 1'000'000 + 2000 * 4950;
+    std::printf("received %llu updates, %llu sequence gaps, price checksum %s\n", static_cast<unsigned long long>(received),
+                static_cast<unsigned long long>(gaps), price_sum == want ? "ok" : "MISMATCH");
+    return (received == kMessages && gaps == 0 && price_sum == want) ? 0 : 1;
 }
