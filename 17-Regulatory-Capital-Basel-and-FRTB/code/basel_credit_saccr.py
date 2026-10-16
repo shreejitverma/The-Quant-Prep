@@ -170,6 +170,7 @@ class SACCRTrade:
     start_time: float  # in years
     end_time: float  # in years
     maturity: float  # residual maturity M_i in years
+    currency_pair: str | None = None
 
 
 @dataclass
@@ -234,8 +235,8 @@ def calculate_saccr(netting_set: SACCRNettingSet) -> SACCRResult:
                 # Margined MF = 1.5 * sqrt(MPOR / 250)
                 mf = 1.5 * math.sqrt(netting_set.mpor_days / 250.0)
             else:
-                # Unmargined MF = sqrt(min(M, 1.0) / 1.0)
-                mf = math.sqrt(min(t.maturity, 1.0))
+                # Unmargined MF floors residual maturity at 10 business days.
+                mf = math.sqrt(min(max(t.maturity, 10.0 / 250.0), 1.0))
 
             eff_notional = adj_notional * t.supervisory_delta * mf
 
@@ -258,16 +259,21 @@ def calculate_saccr(netting_set: SACCRNettingSet) -> SACCRResult:
 
     # Foreign Exchange Hedging Set: SF = 4.0%
     sf_fx = 0.040
-    eff_fx_notional = 0.0
+    eff_fx_notionals: dict[str, float] = {}
     for t in netting_set.trades:
         if t.asset_class == "FX":
+            if not t.currency_pair:
+                raise ValueError("FX trades must specify a currency pair")
             if netting_set.is_margined:
                 mf = 1.5 * math.sqrt(netting_set.mpor_days / 250.0)
             else:
-                mf = math.sqrt(min(t.maturity, 1.0))
-            eff_fx_notional += t.notional * t.supervisory_delta * mf
+                mf = math.sqrt(min(max(t.maturity, 10.0 / 250.0), 1.0))
+            eff_fx_notionals[t.currency_pair] = (
+                eff_fx_notionals.get(t.currency_pair, 0.0)
+                + t.notional * t.supervisory_delta * mf
+            )
 
-    addon_fx = sf_fx * abs(eff_fx_notional)
+    addon_fx = sf_fx * sum(abs(notional) for notional in eff_fx_notionals.values())
 
     addon_aggregate = addon_ir + addon_fx
 
@@ -341,7 +347,9 @@ def calculate_reduced_ba_cva(
     s_cva_list: list[float] = []
 
     for c in counterparties:
-        rw = rw_table.get(c.rating_bucket, 0.0200)
+        if c.rating_bucket not in rw_table:
+            raise ValueError(f"Unsupported rating bucket: {c.rating_bucket}")
+        rw = rw_table[c.rating_bucket]
         # Discount factor DF_c = (1 - exp(-0.05 * M_c)) / (0.05 * M_c)
         m = max(0.1, c.effective_maturity)
         df = (1.0 - math.exp(-0.05 * m)) / (0.05 * m)
@@ -394,6 +402,7 @@ def run_tests() -> None:
     print(f"99.9% Conditional PD={res.conditional_pd:.4f}, Capital K={res.capital_requirement_k:.4%}")
     print(f"Total RWA=${res.rwa:,.2f} ({(res.rwa / 10_000_000.0):.2%} of EAD)")
     assert 0.05 < res.capital_requirement_k < 0.15, "Corporate K must be between 5% and 15%"
+    assert math.isclose(res.capital_requirement_k, 0.07385344097, rel_tol=1e-8)
     assert res.rwa > 0.0
 
     # 2. SA-CCR Netting Set Test
@@ -430,6 +439,15 @@ def run_tests() -> None:
     print(f"SA-CCR Unmargined: RC=${saccr_res.replacement_cost:,.2f}, PFE Multiplier={saccr_res.pfe_multiplier:.4f}")
     print(f"AddOn IR=${saccr_res.addon_ir:,.2f}, Total EAD=${saccr_res.ead:,.2f}")
 
+    short_fx_trades = [
+        SACCRTrade("FX", 10_000_000.0, 1.0, 0.0, 0.0, 5.0 / 250.0, "EUR/USD"),
+        SACCRTrade("FX", 10_000_000.0, -1.0, 0.0, 0.0, 5.0 / 250.0, "USD/JPY"),
+    ]
+    fx_result = calculate_saccr(
+        SACCRNettingSet(short_fx_trades, False, 0.0, 0.0)
+    )
+    assert math.isclose(fx_result.addon_fx, 160_000.0)
+
     # Margined netting set: C = $180k, TH = $50k, MTA = $10k
     netting_set_col = SACCRNettingSet(
         trades=[trade1, trade2],
@@ -462,6 +480,7 @@ def run_tests() -> None:
     )
     k_cva = calculate_reduced_ba_cva([c1, c2], alpha=1.4)
     assert k_cva > 0.0
+    assert math.isclose(k_cva, 85_741.56948, rel_tol=1e-8)
     print(f"Reduced BA-CVA Capital Requirement: ${k_cva:,.2f}")
 
     print("All Basel credit capital, SA-CCR, and BA-CVA tests passed successfully!")
