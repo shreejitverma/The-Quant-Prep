@@ -167,7 +167,7 @@ Compute Breakdown for Overnight IMA Run:
    - Total Position Valuations: $250,000\text{ positions} \times 2,500\text{ passes} = 625,000,000\text{ valuations}$.
 2. NMRF Stressed Expected Shortfall ($SES$):
    - 3,500 NMRFs evaluated under extreme stress scenarios (250 days):
-   - Total NMRF Valuations: $250,000 \times 250 = 62,500,000\text{ valuations}$.
+   - Total NMRF evaluations: $3,500 \times 250 = 875,000\text{ factor-scenario evaluations}$.
 3. Standardised Approach Backup Run (Mandatory benchmark):
    - Delta, Vega, and Curvature across 15,000 risk factors:
    - Using AAD, Greek generation takes $4\times$ base evaluation: $250,000 \times 4 = 1,000,000\text{ valuations}$.
@@ -175,7 +175,7 @@ Compute Breakdown for Overnight IMA Run:
 
 Total Daily Compute Budget:
 
-$$\text{Total Daily Evaluations} \approx 625,000,000 + 62,500,000 + 1,000,000 \approx 688,500,000\text{ evaluations}$$
+$$\text{Total Daily Evaluations} \approx 625,000,000 + 875,000 + 1,000,000 \approx 626,875,000\text{ evaluations}$$
 
 Grid Sizing:
 - Average valuation latency across mixed portfolio (swaps, bonds, exotics): $0.5\text{ milliseconds}$ per position evaluation.

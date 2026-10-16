@@ -170,8 +170,9 @@ $$\Delta V_{\text{actual}} = \$14,028,000 - \$12,500,000 = +\$1,528,000$$
 Investigation of the $-\$175,000$ Residual:
 - The desk investigates the break: S&P 500 experienced an intraday Vanna effect (cross-derivative $\frac{\partial^2 V}{\partial S \partial \sigma} = \frac{\partial \Delta}{\partial \sigma}$).
 - Cross-Greek Vanna is estimated as $-\$8,500\text{ per point per 1\% vol}$.
-  $$\text{Vanna PnL} = -\$8,500 \times 40 \times (-0.50) = +\$170,000 \dots \text{ wait, let's verify sign}$$
-- Product Control determines that the higher-order Volga (vol of vol) and discrete dividend schedule adjustments account for the remaining variance, bringing the true unexplained residual to $-\$12,000$ ($0.78\%$ of PnL), successfully passing sign-off.
+  $$\text{Vanna PnL} = -\$8,500 \times 40 \times (-0.50) = +\$170,000$$
+- Including Vanna, explained PnL is $1,873,000$ and the residual is $1,528,000 - 1,873,000 = -345,000$.
+- Product Control determines that Volga and discrete dividend adjustments reduce explained PnL by $333,000$, leaving a reconciled residual of $1,528,000 - (1,873,000 - 333,000) = -12,000$.
 
 ### Example 2: Clean vs. Dirty vs. Actual PnL Walk
 

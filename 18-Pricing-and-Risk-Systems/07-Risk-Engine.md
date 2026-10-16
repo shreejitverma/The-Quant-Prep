@@ -16,14 +16,14 @@ The enterprise risk engine is the central analytical clearinghouse of an investm
 Valuation methodologies span linear Greek sensitivities (Delta, Gamma, Vega, PV01, CS01) and non-linear full-revaluation scenario grids across historical and hypothetical market shocks.
 The engine calculates Value-at-Risk (VaR), Stressed VaR (SVaR), and Basel Expected Shortfall (ES) across 250 to 1,000 historical market scenarios.
 Results are materialized into multi-dimensional in-memory OLAP risk cubes that allow instant roll-ups and drill-downs across hierarchical dimensions: Legal Entity, Division, Desk, Portfolio, Counterparty, Currency, and Tenor.
-While linear Greeks aggregate through simple scalar addition, non-linear risk measures (VaR, ES, and FRTB Default Risk Charges) are subadditive and non-separable, requiring specialized what-if engines to compute marginal and incremental risk in real time.
+While linear Greeks aggregate through simple scalar addition, Expected Shortfall (ES) and FRTB Default Risk Charges are subadditive and non-separable; Value-at-Risk (VaR) can violate subadditivity for non-normal loss distributions. Specialized what-if engines compute marginal and incremental risk in real time.
 
 ## Learning objectives
 
 - Distinguish sensitivity-based Taylor approximations from non-linear full-revaluation scenario grids.
 - Formulate the computational pipelines for Historical Simulation VaR, Parametric VaR, and tail Expected Shortfall (ES).
 - Design multi-dimensional OLAP risk cube schemas supporting sub-second slice-and-dice queries across corporate hierarchies.
-- Differentiate additive metrics (Delta, PV, PnL) from non-linear subadditive metrics (VaR, ES, DRC, Capital Floors).
+- Differentiate additive metrics (Delta, PV, PnL) from non-linear metrics, noting that ES is subadditive while VaR may not be.
 - Compute Marginal VaR, Component VaR, and Incremental VaR for pre-trade risk budgeting.
 - Map data flows between trade capture engines, pricing grids, and risk aggregation repositories.
 
@@ -179,17 +179,16 @@ The simulated daily PnL distribution is generated:
 #### Step 1: 99% 1-Day Value-at-Risk (VaR)
 At $\alpha = 0.99$, the tail fraction is $1 - 0.99 = 0.01 = 1.0\%$.
 Number of tail scenarios: $500 \times 0.01 = 5\text{ scenarios}$.
-The 99% VaR corresponds to the $5\text{th}$ worst loss ($L_{(496)}$):
+Using the empirical quantile convention $L_{(\lceil 0.99 \times 500 \rceil)}$, the 99% VaR is the 495th order statistic, the boundary before the five worst scenarios:
 
-$$\text{VaR}_{0.99} = \$1,250,000$$
+$$\text{VaR}_{0.99} = L_{(495)} = \$1,120,000$$
 
-Interpretation: There is a $99\%$ probability that 1-day losses will not exceed $\$1,250,000$.
+Interpretation: In this empirical sample, 99% of 1-day losses are at or below $\$1,120,000$.
 
 #### Step 2: 97.5% Expected Shortfall (ES)
 Under Basel III/FRTB, regulators require the $97.5\%$ Expected Shortfall.
 Tail fraction: $1 - 0.975 = 0.025 = 2.5\%$.
-Number of tail scenarios: $k = 500 \times 0.025 = 12.5 \implies 12\text{ worst scenarios}$ ($L_{(489)}$ through $L_{(500)}$).
-Suppose the top 12 worst losses are:
+Tail weight: $k = 500 \times 0.025 = 12.5$ scenarios, so ES averages the 12 worst losses and half the 13th worst loss. Let $L_{(488)} = \$950,000$ and the 12 worst losses, $L_{(489)}$ through $L_{(500)}$, be:
 $[980\text{k}, 1010\text{k}, 1040\text{k}, 1080\text{k}, 1110\text{k}, 1120\text{k}, 1250\text{k}, 1380\text{k}, 1540\text{k}, 1820\text{k}, 2100\text{k}, 2450\text{k}]$.
 
 Sum of tail losses:
@@ -198,9 +197,9 @@ $$\sum_{i=489}^{500} L_{(i)} = 980 + 1010 + 1040 + 1080 + 1110 + 1120 + 1250 + 1
 
 Expected Shortfall:
 
-$$\text{ES}_{0.975} = \frac{\$16,880,000}{12} = \$1,406,666.67 \approx \$1,406,667$$
+$$\text{ES}_{0.975} = \frac{\$16,880,000 + 0.5 \times \$950,000}{12.5} = \$1,388,400$$
 
-Notice that $\text{ES}_{0.975} (\$1.407\text{M}) > \text{VaR}_{0.99} (\$1.250\text{M})$ because it directly incorporates the severe $\$2.45\text{M}$ extreme tail shock, fulfilling supervisory intent.
+Notice that $\text{ES}_{0.975} (\$1.388\text{M}) > \text{VaR}_{0.99} (\$1.120\text{M})$ because it incorporates the severe $\$2.45\text{M}$ extreme tail shock.
 
 ### Example 3: Incremental VaR ($\text{IVaR}$) Pre-Trade Check
 
@@ -228,7 +227,7 @@ $$\text{IVaR} = \$4,780,000 - \$5,000,000 = -\$220,000$$
 
 ## Pitfalls
 
-- **Summing Subadditive Metrics Across Desks:** Adding Desk A VaR and Desk B VaR together ($\text{VaR}_A + \text{VaR}_B$) violates subadditivity and ignores cross-desk diversification benefits. Total VaR must be evaluated from the combined scenario PnL vector.
+- **Summing VaR Across Desks:** VaR can violate subadditivity, so adding desk VaRs may overstate or understate combined risk. Total VaR must be evaluated from the combined scenario PnL vector.
 - **Assuming Normality for Fat-Tailed Asset Classes:** Using a parametric Gaussian VaR for credit derivatives or exotic options severely underestimates tail risk by assuming zero skewness and zero excess kurtosis.
 - **Ignoring Stale Scenario Data in Rolling Historical Windows:** If a market risk factor experiences structural breaks (e.g., negative oil prices or LIBOR cessation), replaying historical percentage shocks directly onto current low absolute levels generates nonsensical scenario spikes.
 - **Neglecting Cross-Greek Gamma Terms in Taylor Approximations:** Relying purely on diagonal Delta and Gamma while ignoring cross-Gamma ($\frac{\partial^2 V}{\partial S_1 \partial S_2}$) creates massive approximation errors in cross-currency and multi-asset options.
@@ -241,7 +240,7 @@ $$\text{IVaR} = \$4,780,000 - \$5,000,000 = -\$220,000$$
 > Expected Shortfall (Conditional VaR) is the expected value of losses conditional on the loss exceeding the VaR threshold, capturing the severity of fat-tail risks.
 
 > [!question]- sys-07-02 | Why did the Basel Committee replace 99% VaR with 97.5% Expected Shortfall under FRTB?
-> 99% VaR failed during the 2008 crisis because it ignores the magnitude of tail losses beyond the 99th percentile and is not mathematically coherent (it violates subadditivity for non-normal distributions).
+> 99% VaR failed during the 2008 crisis because it ignores the magnitude of tail losses beyond the 99th percentile and can violate subadditivity for non-normal distributions.
 > 97.5% ES is a coherent risk measure that penalizes fat-tailed distributions and tail clustering.
 
 > [!question]- sys-07-03 | What is Euler's Allocation Theorem and how does it apply to Component VaR?
@@ -266,7 +265,7 @@ $$\text{IVaR} = \$4,780,000 - \$5,000,000 = -\$220,000$$
 
 > [!question]- sys-07-08 | What is the difference between an additive measure and a subadditive measure in risk roll-ups?
 > An additive measure (like Net Present Value or Delta) satisfies $f(A + B) = f(A) + f(B)$, meaning desk totals can be summed linearly to get the firm-wide total.
-> A subadditive measure (like VaR or Expected Shortfall) satisfies $f(A + B) \le f(A) + f(B)$, meaning firm-wide risk is less than the sum of desk risks due to portfolio diversification.
+> Expected Shortfall is subadditive and satisfies $f(A + B) \le f(A) + f(B)$; VaR can violate this property for non-normal loss distributions. Evaluate portfolio VaR from the combined scenario PnL vector rather than assuming desk VaRs add with diversification benefits.
 
 > [!question]- sys-07-09 | What is a "Ghost Feature" or "Stale Tail" in rolling Historical VaR?
 > A severe historical shock (such as a 1-day market crash) remains in the 250-day rolling window for exactly one year, keeping VaR elevated.

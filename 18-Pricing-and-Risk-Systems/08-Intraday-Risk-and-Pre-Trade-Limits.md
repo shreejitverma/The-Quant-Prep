@@ -94,9 +94,10 @@ In high-concurrency environments processing 100,000 orders/sec across 64 CPU cor
 stateDiagram-v2
     [*] --> Available: Limit Initialized
     Available --> Reserved: Order Inbound (Reserve Notional)
-    Reserved --> Committed: Execution Fill Received (Update Position)
     Reserved --> Released: Order Cancelled / Rejected by Exchange
-    Reserved --> Released: Timeout Expired (Fill Unconfirmed)
+    Reserved --> Reserved: Timeout (Query Status and Cancel; Await Terminal Reconciliation)
+    Reserved --> Committed: Terminal Fill Reconciled (Update Position)
+    Reserved --> Released: Rejection or Cancellation Reconciled
     Committed --> Available: Position Settled / Closed Out
     Released --> Available: Capacity Restored
 ```
@@ -149,8 +150,8 @@ A prime broker manages a $\$50,000,000$ intraday trading limit for a quantitativ
   - Reserved $\$4\text{M}$ is cleared: $\$3\text{M}$ is converted to permanent `Committed Position`, and $\$1\text{M}$ unexecuted capacity is returned to `Available`.
   - Final Available: $\$3,000,000$.
 - Scenario Outcome B (Network Partition / Timeout):
-  If the exchange connection drops and no fill report arrives within $500\text{ ms}$, the reservation timer expires.
-  The engine queries the exchange via order-status request, cancels the dangling order, and releases the $\$4,000,000$ reservation, preventing credit starvation.
+  If the exchange connection drops and no fill report arrives within $500\text{ ms}$, the reservation remains held while the engine queries order status and requests cancellation.
+  It is released only after a definitive terminal status is reconciled; any reported fills are committed before the remaining reservation is returned to available capacity.
 
 ### Example 3: Real-World Catastrophe: The Knight Capital Collapse (August 1, 2012)
 
@@ -205,7 +206,7 @@ A prime broker manages a $\$50,000,000$ intraday trading limit for a quantitativ
 
 > [!question]- sys-08-07 | How does an optimistic credit reservation prevent double-spending in distributed gateways?
 > Before routing an order to an exchange, the gateway reserves the required credit from the counterparty's pool using an atomic operation.
-> If the order is filled, the reservation becomes committed; if rejected or cancelled, the reservation is rolled back; if unconfirmed, a timeout releases the capacity.
+> A fill is committed, and a rejection or cancellation releases the reservation, only after its definitive terminal status is reconciled. A timeout triggers a status query and cancellation request while the reservation remains held.
 
 > [!question]- sys-08-08 | What is Reg SHO Rule 203 (Locate Requirement) in equity pre-trade risk?
 > Reg SHO Rule 203 mandates that a broker-dealer cannot execute a short-sale order in an equity security unless it has borrowed the security or has reasonable grounds to believe the security can be borrowed and delivered by settlement date (a verified "locate").
