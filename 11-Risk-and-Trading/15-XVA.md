@@ -169,7 +169,7 @@ Parameters:
 - Flat risk-free discount rate: $r = 3.50\%$ ($P(0, t) = e^{-0.035 t}$).
 - Counterparty hazard rate: $\lambda_C = 2.50\%$ per annum (par CDS spread $\approx 150$ bps), recovery rate $R_C = 40\%$ ($LGD_C = 0.60$).
 - Bank own hazard rate: $\lambda_B = 1.50\%$ per annum (bank CDS spread $\approx 90$ bps), recovery rate $R_B = 40\%$ ($LGD_B = 0.60$).
-- Swap exposure profile exhibits peak Expected Exposure of $\$153,456.89$ at Year 2.5.
+- Swap exposure profile generated with $1,000$ paths and seed 42 exhibits peak Expected Exposure of $\$159,124.02$ at Year 2.3 (and $\$153,456.89$ at Year 2.5).
 Evaluate CVA, DVA, and Net Bilateral Adjustment.
 
 **Solution:**
@@ -203,7 +203,7 @@ The bank deducts $\$2,878.93$ from the risk-free mark-to-market value of the swa
 
 ### Example 2: Pre-Trade Incremental MVA and FVA Pricing
 
-A corporate client requests a 5-year uncollateralized interest rate swap with an expected positive exposure of $\text{EPE} = \$200,000$.
+A corporate client requests a 5-year uncollateralized interest rate swap with an expected positive exposure of $\text{EPE} = \$200,000$ and notional $N = \$10,000,000$.
 The dealer must hedge the trade in the interdealer market under a collateralized CSA requiring daily variation margin.
 Parameters:
 - Bank unsecured borrowing funding spread: $s_{\text{funding}} = 80 \text{ bps/year} = 0.0080$.
@@ -232,7 +232,7 @@ Step 3: Total Funding and Margin Charge:
 
 $$\text{Total Funding Cost} = \text{FCA} + \text{MVA} = \$7,328 + \$6,870 = \$14,198.00$$
 
-The dealer must widen the par swap quote to charge the client an additional $\$14,198$ upfront (or approximately $0.32$ bps in running swap spread) to cover the lifetime cost of funding collateral and initial margin.
+For a swap notional of $N = \$10,000,000$ and 5-year annuity $A = \sum_{t=1}^5 P(0, t) \approx 4.58$, this upfront fee translates to a running spread of $\frac{\$14,198}{\$10,000,000 \times 4.58} \approx 0.000310$ or $3.10 \text{ bps}$ added to the fixed rate paid by the client.
 
 ## Pitfalls
 
@@ -244,34 +244,34 @@ The dealer must widen the par swap quote to charge the client an additional $\$1
 
 ## Interview questions
 
-> [!question]- xva-master-equation-components | State the master XVA valuation equation and define the economic rationale for each adjustment term.
+> [!question]- risk-xva-master-equation-components | State the master XVA valuation equation and define the economic rationale for each adjustment term.
 > $V_{\text{actual}} = V_{\text{risk-free}} - \text{CVA} + \text{DVA} - \text{FVA} - \text{MVA} - \text{KVA}$. CVA deducts expected losses from counterparty default. DVA adds the benefit from the bank's own default option on negative mark-to-market liabilities. FVA prices the funding spread incurred borrowing collateral for street hedges against uncollateralized clients. MVA prices the cost of funding segregated initial margin (SIMM). KVA charges for the shareholder cost of holding regulatory equity capital over the trade life.
 
-> [!question]- dva-paradox-explanation | What is the DVA paradox, and why can banks not easily hedge DVA?
+> [!question]- risk-dva-paradox-explanation | What is the DVA paradox, and why can banks not easily hedge DVA?
 > The DVA paradox arises because DVA increases when a bank's own credit spread widens. Under fair-value accounting (IFRS 13), this generates paper mark-to-market profits during acute distress. DVA cannot be dynamically hedged in practice because doing so would require the bank to buy CDS protection on its own debt, which is legally prohibited and market-infeasible.
 
-> [!question]- fva-piterbarg-debate | What is the core economic debate surrounding Funding Valuation Adjustment (FVA) initiated by Piterbarg (2010)?
+> [!question]- risk-fva-piterbarg-debate | What is the core economic debate surrounding Funding Valuation Adjustment (FVA) initiated by Piterbarg (2010)?
 > Piterbarg proved that uncollateralized derivatives must be discounted at the dealer's unsecured borrowing rate rather than OIS. Modern finance academics argued that under Modigliani-Miller, individual projects should be discounted based on their asset risk rather than the firm's funding costs. Practitioners demonstrated that in real dealer banks, treasury operates under hard cash constraints: funding costs cannot be diversified away and must be priced to avoid negative cash flow bleeding.
 
-> [!question]- mva-calculation-driver | Why did Margin Valuation Adjustment (MVA) become a major pricing driver following Uncleared Margin Rules (UMR)?
+> [!question]- risk-mva-calculation-driver | Why did Margin Valuation Adjustment (MVA) become a major pricing driver following Uncleared Margin Rules (UMR)?
 > UMR mandated that financial counterparties exchange bilateral, segregated Initial Margin (IM) calculated via ISDA SIMM. Because IM is locked in third-party custodian accounts and cannot be rehypothecated to fund operations, dealers must raise dedicated term debt or pledge unencumbered cash. Over a 10-year trade, funding hundreds of millions in regulatory margin creates a massive cash drag that must be priced upfront via MVA.
 
-> [!question]- kva-cost-of-capital-driver | How is Capital Valuation Adjustment (KVA) formulated, and what is the typical Cost of Capital hurdle rate?
+> [!question]- risk-kva-cost-of-capital-driver | How is Capital Valuation Adjustment (KVA) formulated, and what is the typical Cost of Capital hurdle rate?
 > KVA is formulated as $\text{KVA} = \text{CoC} \int_0^T P(0, t) \mathbb{E}[\text{Capital}(t)] dt$, where $\text{Capital}(t)$ is the regulatory capital required under Basel standards (SA-CCR, CVA capital, and FRTB). The Cost of Capital ($\text{CoC}$) reflects the return on equity demanded by bank shareholders, historically calibrated between $8\%$ and $12\%$ per annum.
 
-> [!question]- incremental-xva-pricing | Why must XVA be priced incrementally at the netting set level rather than on a standalone trade basis?
+> [!question]- risk-incremental-xva-pricing | Why must XVA be priced incrementally at the netting set level rather than on a standalone trade basis?
 > XVA is deeply non-linear due to netting and collateralization. Adding a new trade that opposes existing positions reduces aggregate Expected Exposure, producing negative incremental CVA ($\Delta \text{CVA} < 0$). Pricing on a standalone basis would treat the trade as an additional cost, leading the bank to uncompetitively overprice trades that actually reduce overall firm risk.
 
-> [!question]- cva-greeks-market-vs-credit | Differentiate CVA market risk Greeks from CVA credit risk Greeks.
+> [!question]- risk-cva-greeks-market-vs-credit | Differentiate CVA market risk Greeks from CVA credit risk Greeks.
 > CVA market risk Greeks ($\frac{\partial \text{CVA}}{\partial S}$, $\frac{\partial \text{CVA}}{\partial r}$) measure sensitivity to changes in the underlying market variables that drive Expected Exposure; they are hedged using standard vanilla swaps, futures, and options. CVA credit risk Greeks ($\frac{\partial \text{CVA}}{\partial S_{\text{CDS}}}$) measure sensitivity to counterparty hazard rates and credit spreads; they are hedged using single-name CDS and index tranches.
 
-> [!question]- unilateral-vs-bilateral-cva | Contrast unilateral CVA with bilateral CVA.
+> [!question]- risk-unilateral-vs-bilateral-cva | Contrast unilateral CVA with bilateral CVA.
 > Unilateral CVA assumes the bank is default-free ($\text{PD}_B = 0$), evaluating losses purely from counterparty default. Bilateral CVA incorporates the joint survival of both parties, recognizing that the bank will only experience a CVA loss if the counterparty defaults while the bank is still solvent ($\tau_C < \tau_B$). Bilateral CVA reduces the gross CVA charge and pairs it with DVA.
 
-> [!question]- fca-vs-fba-asymmetry | Why do many bank XVA desks charge clients for FCA but refuse to credit clients for FBA?
+> [!question]- risk-fca-vs-fba-asymmetry | Why do many bank XVA desks charge clients for FCA but refuse to credit clients for FBA?
 > FCA is an actual cash outflow paid to treasury when borrowing cash to post collateral. FBA represents a hypothetical funding benefit when receiving collateral from the street. However, in practice, a bank cannot readily monetize this liquidity unless treasury has an immediate commercial use for it. To prevent speculative dependency on unmonetizable liabilities, desks price FCA conservatively while damping or zeroing FBA.
 
-> [!question]- nested-monte-carlo-mva-challenge | Why does computing MVA pose a massive nested Monte Carlo computational challenge?
+> [!question]- risk-nested-monte-carlo-mva-challenge | Why does computing MVA pose a massive nested Monte Carlo computational challenge?
 > Calculating MVA requires knowing the Expected Initial Margin $\mathbb{E}[\text{IM}(t)]$ at future dates $t$. Under ISDA SIMM, Initial Margin at time $t$ is calculated from portfolio sensitivities (Greeks) at time $t$. Computing future Greeks traditionally requires an inner simulation across the yield surface for every outer scenario path, creating an $O(N_{\text{outer}} \times N_{\text{inner}})$ nested simulation bottleneck that necessitates AAD or machine learning regression.
 
 ## Further reading

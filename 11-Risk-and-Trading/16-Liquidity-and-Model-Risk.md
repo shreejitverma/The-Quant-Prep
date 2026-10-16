@@ -5,7 +5,7 @@ tier: advanced
 status: draft
 prereqs: [stress-testing-and-scenarios]
 est_hours: 4
-sources: [Robert Almgren and Neil Chriss - Optimal Execution of Portfolio Transactions (2000), Albert S. Kyle - Continuous Auctions and Informed Trader (1985), Federal Reserve SR 11-7 and OCC 2011-12 - Supervisory Guidance on Model Risk Management, Markus K. Brunnermeier and Lasse Heje Pedersen - Market Liquidity and Funding Liquidity (2009)]
+sources: [Robert Almgren and Neil Chriss - Optimal Execution of Portfolio Transactions (2000), Albert S. Kyle - Continuous Auctions and Insider Trading (1985), Federal Reserve SR 11-7 and OCC 2011-12 - Supervisory Guidance on Model Risk Management, Markus K. Brunnermeier and Lasse Heje Pedersen - Market Liquidity and Funding Liquidity (2009)]
 ---
 
 # Liquidity and Model Risk
@@ -162,11 +162,11 @@ Major financial failures highlight the primary mechanisms of model risk:
 1. **JPMorgan London Whale (2012, $\$6.2\text{B}$ Loss):**
    - **Root Cause:** Spreadsheet implementation error. The quant team built a revised VaR model in Excel to demonstrate reduced risk on synthetic credit tranches. A spreadsheet formula divided a cell by the *sum* of numbers instead of the *average*, artificially deflating calculated risk by half. The desk doubled down into an illiquid market until the position collapsed.
 2. **Knight Capital (2012, $\$440\text{M}$ Loss in 45 Minutes):**
-   - **Root Cause:** Software deployment and dead code failure. During an exchange routing update, engineers failed to deploy updated code to one of eight production servers. The rogue server ran legacy "Power Peg" test code, rapidly buying at the offer and selling at the bid across 154 stocks, executing 4 million shares and bankrupting the firm before the system could be disconnected.
+   - **Root Cause:** Software deployment and dead code failure. During an exchange routing update, engineers failed to deploy updated code to one of eight production servers. The rogue server ran legacy "Power Peg" test code, rapidly buying at the offer and selling at the bid across 154 stocks, executing over 4 million trades totaling more than 397 million shares, losing $\$440\text{M}$ in 45 minutes and requiring a $\$400\text{M}$ emergency recapitalization by outside investors.
 3. **Negative Oil Prices (April 20, 2020, WTI at $-\$37.63/\text{bbl}$):**
    - **Root Cause:** Conceptual assumption failure. Commodity option pricing libraries across retail and institutional brokers relied strictly on the Black-76 lognormal model. Because lognormal models assume positive prices ($S > 0$), trading platforms displayed zero or crashed entirely when WTI oil futures plummeted into deep negative territory, preventing traders from hedging and triggering catastrophic margin liquidations.
-4. **Long-Term Capital Management (LTCM, 1998, $\$4.6\text{B}$ Bailout):**
-   - **Root Cause:** Fat tails and correlation breakdown. LTCM assumed asset returns were normally distributed and that historical correlations between sovereign bonds would persist. When Russia defaulted, liquidity froze globally, correlations converged to 1, and the fund's $25\times$ leverage wiped out its capital.
+4. **Long-Term Capital Management (LTCM, 1998, $\$4.6\text{B}$ Loss):**
+   - **Root Cause:** Fat tails and correlation breakdown. LTCM assumed asset returns were normally distributed and that historical correlations between sovereign bonds would persist. When Russia defaulted, liquidity froze globally, correlations converged to 1, and the fund's $25\times$ leverage caused a $\$4.6\text{B}$ loss, requiring a $\$3.6\text{B}$ consortium recapitalization organized by the Federal Reserve Bank of New York.
 
 ## Worked examples
 
@@ -220,7 +220,7 @@ Under linear TWAP, the trader sells $200,000$ shares per day at constant velocit
 
 $$\text{TWAP Temporary Cost} = \eta \sum_{k=1}^5 v_k^2 = 1.0 \times 10^{-6} \times 5 \times (200,000)^2 = 5 \times 10^{-6} \times 4.0 \times 10^{10} = \$200,000$$
 
-Under the optimal front-loaded trajectory, temporary impact is higher ($\approx \$365,000$), but variance of shortfall drops by over $70\%$, satisfying the risk-averse objective.
+Under the optimal front-loaded trajectory, temporary impact is higher ($\eta \sum v_k^2 = \$462,652$), but the variance of shortfall drops by $87\%$ ($\sum x_k^2$ drops from $1.20$ to $0.156$), satisfying the risk-averse objective.
 
 ### Example 2: Calculating Liquidity-Adjusted VaR (L-VaR)
 
@@ -229,7 +229,7 @@ A fund holds a $\$50,000,000$ position in a high-yield corporate bond ETF.
 - Average proportional bid-ask spread: $\bar{S} = 0.80\%$ ($0.0080$).
 - Standard deviation of bid-ask spread: $\sigma_S = 0.40\%$ ($0.0040$).
 - Confidence level: 99% ($z_{0.99} = 2.326$).
-- Position size represents $400\%$ of average daily volume; orderly liquidation requires $L = 4$ days.
+- Position size represents $400\%$ of average daily volume; assuming emergency 100% daily volume participation, orderly liquidation requires $L = 4$ days.
 
 Compute the exogenous Liquidity-Adjusted VaR and the liquidation-horizon-adjusted VaR.
 
@@ -267,34 +267,34 @@ Accounting for bid-ask widening and a 4-day liquidation horizon expands true tai
 
 ## Interview questions
 
-> [!question]- exogenous-vs-endogenous-liquidity | What is the distinction between exogenous liquidity risk and endogenous liquidity risk?
+> [!question]- risk-exogenous-vs-endogenous-liquidity | What is the distinction between exogenous liquidity risk and endogenous liquidity risk?
 > Exogenous liquidity risk is determined by market microstructure independent of the individual trader's actions; it is characterized by bid-ask spreads, order book depth, and market-wide turnover. Endogenous liquidity risk is driven by the trader's own position size relative to market capacity; executing a trade that represents a large fraction of daily volume moves prices adversely via market impact.
 
-> [!question]- almgren-chriss-permanent-vs-temporary | Contrast permanent price impact with temporary price impact in the Almgren-Chriss framework.
+> [!question]- risk-almgren-chriss-permanent-vs-temporary | Contrast permanent price impact with temporary price impact in the Almgren-Chriss framework.
 > Permanent impact reflects the informational content of the trade, shifting the fundamental equilibrium mid-price permanently: total permanent cost depends only on the total number of shares liquidated ($X_0$), independent of execution speed. Temporary impact represents transient price concessions paid to cross the spread and consume immediate order book depth: it scales with trading velocity and dissipates once trading ceases.
 
-> [!question]- brunnermeier-pedersen-spiral | Explain the mechanism of the Brunnermeier-Pedersen liquidity spiral.
+> [!question]- risk-brunnermeier-pedersen-spiral | Explain the mechanism of the Brunnermeier-Pedersen liquidity spiral.
 > The spiral connects funding liquidity with market liquidity. When an asset price drops, levered dealers suffer capital losses. Prime brokers increase margin haircuts, reducing dealer funding liquidity. To meet cash margin calls, dealers are forced to sell assets and withdraw market-making quotes, destroying market liquidity. Vanishing liquidity causes bid-ask spreads to blow out and prices to drop further, triggering higher haircuts in a self-reinforcing downward spiral.
 
-> [!question]- sr-11-7-definition-model-risk | How does Federal Reserve SR 11-7 define model risk, and what are its two primary causes?
+> [!question]- risk-sr-11-7-definition-model-risk | How does Federal Reserve SR 11-7 define model risk, and what are its two primary causes?
 > SR 11-7 defines model risk as the potential for adverse consequences resulting from decisions based on incorrect or misused model outputs. Its two primary causes are: (1) fundamental errors in model design, conceptual unsoundness, flawed mathematical assumptions, or software coding bugs; and (2) incorrect or inappropriate model implementation, including using a model outside its validated operational domain.
 
-> [!question]- three-lines-of-defense-model-risk | Describe the Three Lines of Defense in institutional Model Risk Management.
+> [!question]- risk-three-lines-of-defense-model-risk | Describe the Three Lines of Defense in institutional Model Risk Management.
 > The First Line consists of model developers and trading desk quants who build, calibrate, and use models daily. The Second Line is an independent Model Risk Management / Validation unit that provides unbiased "effective challenge", tests boundary conditions, and maintains the model inventory without commercial reporting pressure. The Third Line is Internal Audit, which evaluates whether the entire MRM framework complies with regulatory standards.
 
-> [!question]- london-whale-model-failure | What was the quantitative model failure in the JPMorgan London Whale incident?
+> [!question]- risk-london-whale-model-failure | What was the quantitative model failure in the JPMorgan London Whale incident?
 > The London Whale loss ($>\$6\text{B}$) was exacerbated by an operational spreadsheet error. To reduce calculated risk metrics on synthetic credit tranches, quants built an updated VaR model in Excel. A formula mistakenly divided a cell by the sum of numbers rather than their average, deflating calculated VaR and capital requirements by approximately 50%, blinding senior management to massive credit risk accumulation.
 
-> [!question]- negative-oil-options-failure | Why did commodity options models crash when WTI crude oil futures dropped to -$37.63 on April 20, 2020?
+> [!question]- risk-negative-oil-options-failure | Why did commodity options models crash when WTI crude oil futures dropped to -$37.63 on April 20, 2020?
 > Global commodity exchanges and broker risk engines priced options using the Black-76 lognormal model, which mathematically assumes that asset prices are strictly positive ($S > 0$) because logarithms of negative numbers are undefined. When physical storage exhaustion drove crude futures negative, options pricing engines encountered domain errors, froze trading, and mispriced payoffs until emergency Bachelier normal models were patched.
 
-> [!question]- effective-challenge-definition | What constitutes "effective challenge" under Federal Reserve SR 11-7 model validation standards?
+> [!question]- risk-effective-challenge-definition | What constitutes "effective challenge" under Federal Reserve SR 11-7 model validation standards?
 > Effective challenge is critical, objective, and informed inquiry conducted by independent validators possessing sufficient technical expertise and organizational stature. It requires validators to verify mathematical derivations, independently replicate code, perform boundary and stress testing, challenge underlying behavioral assumptions, and compare results against independent challenger models.
 
-> [!question]- liquidity-adjusted-var-formulation | How does Bangia's exogenous Liquidity-Adjusted VaR (L-VaR) adjust for spread volatility?
+> [!question]- risk-liquidity-adjusted-var-formulation | How does Bangia's exogenous Liquidity-Adjusted VaR (L-VaR) adjust for spread volatility?
 > Bangia's formula adds an explicit cost-to-liquidate term: $\text{L-VaR} = \text{VaR} + \frac{1}{2}(\bar{S} + z_{\alpha} \sigma_S) V$, where $\bar{S}$ is the average relative bid-ask spread, $\sigma_S$ is spread volatility, and $z_{\alpha}$ is the confidence multiplier. This recognizes that in tail market crashes, bid-ask spreads widen significantly, forcing the seller to pay an amplified liquidation concession on top of mark-to-market losses.
 
-> [!question]- twap-vs-almgren-chriss-risk | Under what risk-aversion condition does the Almgren-Chriss optimal execution schedule reduce to linear TWAP?
+> [!question]- risk-twap-vs-almgren-chriss-risk | Under what risk-aversion condition does the Almgren-Chriss optimal execution schedule reduce to linear TWAP?
 > The Almgren-Chriss schedule reduces to linear TWAP (Time-Weighted Average Price) when the trader's risk-aversion parameter is zero ($\lambda_{\text{risk}} = 0$, risk-neutral). In that case, the trader ignores price volatility timing risk and focuses entirely on minimizing temporary market impact, which is mathematically minimized by trading at a constant, uniform rate throughout the execution window.
 
 ## Further reading
@@ -302,7 +302,7 @@ Accounting for bid-ask widening and a 4-day liquidation horizon expands true tai
 - Robert Almgren and Neil Chriss (2000), "Optimal Execution of Portfolio Transactions", *Journal of Risk*.
 - Board of Governors of the Federal Reserve System and OCC (2011), "Supervisory Guidance on Model Risk Management", *SR Letter 11-7 / OCC Bulletin 2011-12*.
 - Markus K. Brunnermeier and Lasse Heje Pedersen (2009), "Market Liquidity and Funding Liquidity", *Review of Financial Studies*.
-- Albert S. Kyle (1985), "Continuous Auctions and Informed Trader", *Econometrica*.
+- Albert S. Kyle (1985), "Continuous Auctions and Insider Trading", *Econometrica*.
 - Darrell Duffie, *Dark Markets: Asset Pricing and Information Transmission in Over-the-Counter Markets*.
 
 ## In this repo and SDE-Interview-Prep

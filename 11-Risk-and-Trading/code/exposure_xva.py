@@ -5,7 +5,8 @@ Pure Python 3.10+ standard library implementation:
 2. Counterparty exposure profile analytics: Expected Exposure (EE),
    Potential Future Exposure (PFE 95% and 99%), and Effective EPE.
 3. ISDA Master Agreement netting and Net-to-Gross Ratio (NGR).
-4. Credit Support Annex (CSA) collateralization with Threshold, MTA, and MPOR.
+4. Credit Support Annex (CSA) collateralization with Threshold and MTA
+   (instantaneous collateral approximation without MPOR lag).
 5. Bilateral Credit Valuation Adjustment (CVA) and Debit Valuation Adjustment (DVA).
 """
 
@@ -322,6 +323,12 @@ def run_tests() -> None:
     # Swap exposure peaks in middle and drops toward maturity: EE(mid) > EE(end)
     mid_idx = 25
     assert swap_exp.ee[mid_idx] > swap_exp.ee[-1], f"Swap EE must exhibit hump shape: {swap_exp.ee[mid_idx]} vs {swap_exp.ee[-1]}"
+    # Verify swap EE at t=1.0 against analytical ABM closed form: N * A(t) * sigma * sqrt(t) * phi(0)
+    # A(1.0) = (1 - exp(-0.04 * 4)) / 0.04 ~= 3.6964074; phi(0) = 1 / sqrt(2*pi) ~= 0.39894228
+    ee_1y_closed_form = 10_000_000.0 * ((1.0 - math.exp(-0.04 * 4.0)) / 0.04) * 0.010 * 1.0 / math.sqrt(2.0 * math.pi)
+    assert math.isclose(swap_exp.ee[10], ee_1y_closed_form, rel_tol=0.05), (
+        f"Simulated EE(1y) {swap_exp.ee[10]} deviates from closed-form {ee_1y_closed_form}"
+    )
     print(f"5y Swap Peak EE (Year 2.5): ${swap_exp.ee[mid_idx]:,.2f}, Terminal EE: ${swap_exp.ee[-1]:,.2f}")
     print(f"5y Swap EPE: ${swap_exp.epe:,.2f}, Effective EPE: ${swap_exp.effective_epe:,.2f}")
 
@@ -330,10 +337,13 @@ def run_tests() -> None:
     t1_paths = [100_000.0, 50_000.0, -20_000.0, 80_000.0]
     t2_paths = [-60_000.0, -40_000.0, 30_000.0, -70_000.0]
     gross_exp, net_exp, ngr = evaluate_netting_set([t1_paths, t2_paths])
-    # Gross = (100 + 50 + 30 + 80) / 4 = 260 / 4 = 65k
-    # Net = (max(0, 40) + max(0, 10) + max(0, 10) + max(0, 10)) / 4 = 70 / 4 = 17.5k
-    assert net_exp < gross_exp, "Netting must reduce exposure"
-    assert 0.0 < ngr < 1.0, f"NGR out of range: {ngr}"
+    # Exact hand-computed oracles:
+    # Gross = (100k + 50k + 30k + 80k) / 4 = 260k / 4 = 65,000.0
+    # Net = (max(0, 40k) + max(0, 10k) + max(0, 10k) + max(0, 10k)) / 4 = 70k / 4 = 17,500.0
+    # NGR = 17,500 / 65,000 = 0.2692307...
+    assert math.isclose(gross_exp, 65_000.0, rel_tol=1e-5), f"Expected gross 65k, got {gross_exp}"
+    assert math.isclose(net_exp, 17_500.0, rel_tol=1e-5), f"Expected net 17.5k, got {net_exp}"
+    assert math.isclose(ngr, 17_500.0 / 65_000.0, rel_tol=1e-5), f"Expected NGR 0.2692, got {ngr}"
     print(f"Netting Set: Gross=${gross_exp:,.2f}, Net=${net_exp:,.2f}, NGR={ngr:.2%}")
 
     # 4. CSA Collateralization
@@ -343,6 +353,8 @@ def run_tests() -> None:
     assert col[0] == 50_000.0
     # For 40k: below threshold 50k -> zero collateral -> net 40k
     assert col[1] == 40_000.0
+    # For 150k: excess 100k > MTA 20k -> collateral 100k -> net 50k
+    assert col[2] == 50_000.0
 
     # 5. Bilateral CVA / DVA
     cva, dva, net_xva = calculate_cva_dva(
@@ -356,6 +368,29 @@ def run_tests() -> None:
     assert cva > 0.0, "CVA must be strictly positive"
     assert dva > 0.0, "DVA must be strictly positive"
     print(f"Bilateral XVA: CVA=${cva:,.2f}, DVA=${dva:,.2f}, Net Adjustment=${net_xva:,.2f}")
+
+    # Analytic CVA check on flat constant exposure profile with zero interest rates:
+    # LGD * EE_const * (1 - exp(-hazard * T))
+    flat_ee = ExposureProfile(
+        grid=[0.0, 1.0, 2.0],
+        ee=[100_000.0, 100_000.0, 100_000.0],
+        ene=[0.0, 0.0, 0.0],
+        pfe_95=[100_000.0] * 3,
+        pfe_99=[100_000.0] * 3,
+        effective_ee=[100_000.0] * 3,
+        epe=100_000.0,
+        effective_epe=100_000.0,
+    )
+    cva_flat, _, _ = calculate_cva_dva(
+        flat_ee,
+        lambda t: 1.0,
+        counterparty_hazard_rate=0.02,
+        counterparty_recovery=0.40,
+        bank_hazard_rate=0.01,
+        bank_recovery=0.40,
+    )
+    expected_cva_flat = 0.60 * 100_000.0 * (1.0 - math.exp(-0.02 * 2.0))
+    assert math.isclose(cva_flat, expected_cva_flat, rel_tol=1e-4), f"Analytic CVA mismatch: {cva_flat} vs {expected_cva_flat}"
 
     print("All counterparty risk, exposure profile, and XVA tests passed!")
 

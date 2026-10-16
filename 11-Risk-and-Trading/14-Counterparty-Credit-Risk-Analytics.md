@@ -200,14 +200,15 @@ $$\text{Netting Factor} = 0.4 + 0.6 \times \text{NGR} = 0.4 + 0.6(0.37037) = 0.4
 
 ### Example 2: Exposure Profile Simulation and Effective EPE
 
-Using the reference implementation in `code/exposure_xva.py`, analyze a 5-year payer interest rate swap with notional $\$10,000,000$, normal rate volatility $100 \text{ bps/year}$, and swap rate $4.00\%$.
+Using the reference implementation in `code/exposure_xva.py` with `num_paths=1000` and `seed=42`, analyze a 5-year payer interest rate swap with notional $\$10,000,000$, normal rate volatility $100 \text{ bps/year}$, and swap rate $4.00\%$.
 The simulation generates the following profile over 50 time steps:
 - Time $t = 0.0$: $EE(0) = \$0.00$
-- Time $t = 1.0$: $EE(1.0) = \$115,240$, $PFE_{95}(1.0) = \$264,800$
-- Time $t = 2.5$ (Peak Hump): $EE(2.5) = \$153,457$, $PFE_{95}(2.5) = \$358,120$
+- Time $t = 1.0$: $EE(1.0) = \$144,101.27$, $PFE_{95}(1.0) = \$608,302.12$
+- Time $t = 2.3$ (Peak Hump): $EE(2.3) = \$159,124.02$, $PFE_{95}(2.3) = \$621,987.27$
+- Time $t = 2.5$: $EE(2.5) = \$153,456.89$, $PFE_{95}(2.5) = \$614,332.86$
 - Time $t = 5.0$ (Maturity): $EE(5.0) = \$0.00$, $PFE_{95}(5.0) = \$0.00$
 
-Compute Expected Positive Exposure (EPE), construct the Effective EE profile at Year 1.0 and Year 2.5, and evaluate the Effective EPE.
+Compute Expected Positive Exposure (EPE), construct the Effective EE profile at Year 1.0 and Year 2.3, and evaluate the Effective EPE.
 
 **Solution:**
 
@@ -219,14 +220,14 @@ $$\text{EPE} = \frac{1}{5.0} \int_0^{5.0} \text{EE}(t) dt \approx \$111,327.61$$
 
 Step 2: Effective Expected Exposure (EEE):
 Under the Basel envelope rule, $\text{EEE}(t) = \max(\text{EEE}(t - \Delta t), \text{EE}(t))$:
-- At $t = 1.0$: Because EE has been rising monotonically from 0, $\text{EEE}(1.0) = \text{EE}(1.0) = \$115,240$.
-- At $t = 2.5$ (Peak): $\text{EEE}(2.5) = \text{EE}(2.5) = \$153,457$.
-- Beyond Year 2.5, as swap annuity amortizes and EE drops toward $\$0$, **Effective EE is pinned at the historical peak**:
+- At $t = 1.0$: Because EE has been rising monotonically from 0, $\text{EEE}(1.0) = \text{EE}(1.0) = \$144,101.27$.
+- At $t = 2.3$ (Peak): $\text{EEE}(2.3) = \text{EE}(2.3) = \$159,124.02$.
+- Beyond Year 2.3, as swap annuity amortizes and EE drops toward $\$0$, **Effective EE is pinned at the historical peak**:
 
-$$\text{EEE}(t) = \$153,457 \quad \forall t \ge 2.5$$
+$$\text{EEE}(t) = \$159,124.02 \quad \forall t \ge 2.3$$
 
 Step 3: Effective EPE (over 1-year capital horizon):
-Evaluating average EEE over the interval $[0, 1.0]$:
+Evaluating average EEE over the interval $[0, 1.0]$ across time steps $i=1 \dots 10$:
 
 $$\text{EEPE} = \frac{1}{1.0} \int_0^{1.0} \text{EEE}(t) dt \approx \$109,591.94$$
 
@@ -244,34 +245,34 @@ $$\text{EAD} = \alpha \times \text{EEPE} = 1.4 \times \$109,591.94 \approx \$153
 
 ## Interview questions
 
-> [!question]- ccr-vs-loan-credit-risk | What are the three fundamental differences between Counterparty Credit Risk (CCR) and traditional loan credit risk?
+> [!question]- risk-ccr-vs-loan-credit-risk | What are the three fundamental differences between Counterparty Credit Risk (CCR) and traditional loan credit risk?
 > First, CCR is bilateral: exposure can alternate between an asset and a liability depending on market movements, whereas loans are strictly unilateral. Second, exposure is stochastic and dynamic, coupled to underlying market variables rather than fixed principal balances. Third, CCR is subject to double-default conditioning: a loss occurs only if the counterparty defaults when portfolio mark-to-market is positive to the bank.
 
-> [!question]- swap-exposure-hump-shape | Why does the Expected Exposure (EE) profile of an interest rate swap exhibit a "hump shape" over time?
+> [!question]- risk-swap-exposure-hump-shape | Why does the Expected Exposure (EE) profile of an interest rate swap exhibit a "hump shape" over time?
 > The hump shape is produced by two competing mathematical forces. Early in the swap's life, rate diffusion dominates, expanding the variance of swap rates proportional to $\sqrt{t}$. Late in the swap's life, the remaining annuity amortization $A(t) = \sum \tau_i P(t, t_i) \to 0$ dominates because fewer coupon cash flows remain. The product of expanding rate variance and contracting annuity produces a mid-life peak.
 
-> [!question]- potential-future-exposure-definition | Define Potential Future Exposure (PFE) and explain how it is used by credit risk officers.
+> [!question]- risk-potential-future-exposure-definition | Define Potential Future Exposure (PFE) and explain how it is used by credit risk officers.
 > PFE is a high-confidence upper quantile (typically 95% or 99%) of the simulated exposure distribution at future date $t$: $\text{PFE}_{\alpha}(t) = \text{Quantile}_{\alpha}(\max(V(t), 0))$. Risk officers use PFE profiles to establish pre-deal credit limits, ensuring that the maximum peak exposure over the transaction's life does not exceed the counterparty's authorized credit capacity.
 
-> [!question]- effective-epe-basel-rationale | Why did the Basel Committee mandate the Effective Expected Exposure (EEE) non-decreasing envelope?
+> [!question]- risk-effective-epe-basel-rationale | Why did the Basel Committee mandate the Effective Expected Exposure (EEE) non-decreasing envelope?
 > Under standard Expected Exposure, short-dated derivative contracts roll off as they mature, causing the aggregate EE curve to decline over time. In reality, banks routinely roll over maturing trades to maintain commercial client hedges. Basel introduced the non-decreasing envelope $\text{EEE}(t_k) = \max(\text{EEE}(t_{k-1}), \text{EE}(t_k))$ to prevent banks from artificially understating regulatory capital via roll-off effects.
 
-> [!question]- close-out-netting-cherry-picking | How does ISDA close-out netting protect a solvent bank against bankruptcy "cherry-picking"?
+> [!question]- risk-close-out-netting-cherry-picking | How does ISDA close-out netting protect a solvent bank against bankruptcy "cherry-picking"?
 > Without an enforceable netting agreement, a bankruptcy administrator could "cherry-pick" contracts: demanding full payment on trades where the solvent bank owes money, while defaulting on trades where the bankrupt entity owes money. Close-out netting terminates all transactions simultaneously into a single net balance, preventing selective enforcement.
 
-> [!question]- margin-period-of-risk-mpor | What is the Margin Period of Risk (MPOR), and what are its standard regulatory horizons?
+> [!question]- risk-margin-period-of-risk-mpor | What is the Margin Period of Risk (MPOR), and what are its standard regulatory horizons?
 > MPOR is the time elapsed between the final unfulfilled collateral call and the date when the defaulting counterparty's portfolio is legally closed out and re-hedged. During this window, market prices move without fresh collateral posting. Standard regulatory horizons under Basel are 10 business days for bilateral OTC derivatives, 20 business days for illiquid netting sets, and 5 business days for cleared repo.
 
-> [!question]- wrong-way-risk-classification | Differentiate Specific Wrong-Way Risk (SWWR) from General Wrong-Way Risk (GWWR) with concrete market examples.
+> [!question]- risk-wrong-way-risk-classification | Differentiate Specific Wrong-Way Risk (SWWR) from General Wrong-Way Risk (GWWR) with concrete market examples.
 > Specific Wrong-Way Risk arises when counterparty default and exposure are linked by a direct legal or structural tie (e.g., selling put options on a bank's own stock, or buying CDS on a corporate from its own parent company). General Wrong-Way Risk arises when macroeconomic factors systematically degrade creditworthiness while expanding exposure (e.g., holding a cross-currency swap receiving USD from a Turkish bank during a severe Turkish lira currency crisis).
 
-> [!question]- net-to-gross-ratio-ngr | What is the Net-to-Gross Ratio (NGR), and what does an NGR of zero indicate?
+> [!question]- risk-net-to-gross-ratio-ngr | What is the Net-to-Gross Ratio (NGR), and what does an NGR of zero indicate?
 > NGR is the ratio of net credit exposure under netting to gross credit exposure: $\text{NGR} = \frac{\max(\sum V_i, 0)}{\sum \max(V_i, 0)}$. An NGR of 1.0 indicates zero netting benefit (all trades are positive). An NGR of 0 indicates perfect netting (portfolio net value is negative or zero, eliminating current credit exposure).
 
-> [!question]- simm-initial-margin-framework | What is ISDA SIMM, and how does it protect counterparties beyond Variation Margin?
+> [!question]- risk-simm-initial-margin-framework | What is ISDA SIMM, and how does it protect counterparties beyond Variation Margin?
 > Variation Margin covers daily mark-to-market changes. ISDA SIMM (Standard Initial Margin Model) is an industry-standard parametric sensitivity-based model that calculates upfront Initial Margin (IM) to cover potential liquidation losses over the 10-day Margin Period of Risk at a 99% confidence level. IM is held in segregated third-party custody, protecting against counterparty default during liquidation.
 
-> [!question]- simulation-measure-pfe-vs-cva | Why is Potential Future Exposure (PFE) simulated under the physical measure $\mathbb{P}$ while CVA is simulated under the risk-neutral measure $\mathbb{Q}$?
+> [!question]- risk-simulation-measure-pfe-vs-cva | Why is Potential Future Exposure (PFE) simulated under the physical measure $\mathbb{P}$ while CVA is simulated under the risk-neutral measure $\mathbb{Q}$?
 > PFE measures actual real-world potential credit risk for capital and limit allocation, requiring historical drift and realistic economic dynamics (the physical measure $\mathbb{P}$). CVA is an accounting valuation adjustment and pricing deduction that must be actively hedged with financial derivatives in market markets, requiring risk-neutral pricing expectations (the pricing measure $\mathbb{Q}$).
 
 ## Further reading

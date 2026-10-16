@@ -112,22 +112,25 @@ $$\sigma_p = f_{\text{half}} \sigma = 2.34375 \times 0.160 = 0.3750 \quad (37.50
 Notice that expected excess growth rate is $g(f) = f \mu - \frac{1}{2} f^2 \sigma^2$:
 - Full Kelly growth rate: $g(f^*) = \frac{S^2}{2} = \frac{0.75^2}{2} = 0.28125$ ($28.13\%$).
 - Half-Kelly growth rate: $g(0.5 f^*) = \frac{3}{4} g(f^*) = 0.75 \times 0.28125 \approx 0.21094$ ($21.09\%$).
-Half-Kelly captures $75\%$ of maximum compound growth while slashing variance and leverage by $50\%$.
+Half-Kelly captures $75\%$ of maximum compound growth while slashing variance by $75\%$ (volatility and leverage by $50\%$, since $\text{Var}(0.5 f^* \cdot r) = 0.25 \text{Var}(f^* \cdot r)$).
 
-Step 3: Probability of a 50% Drawdown Before Doubling Capital:
-For a geometric Brownian motion under continuous Kelly trading, the probability of hitting a drawdown fraction $D$ before achieving a gain factor $G$ satisfies:
+Step 3: Probability of a 50% Drawdown:
+For a geometric Brownian motion under continuous trading at fraction $c = f / f^*$, the scale function exponent is $a = \frac{2}{c} - 1$:
+- For full Kelly ($c = 1.0$), $a = 2(1) - 1 = 1$.
+- For half-Kelly ($c = 0.5$), $a = \frac{2}{0.5} - 1 = 4 - 1 = 3$.
 
-$$P(\text{Drawdown } D \text{ before Gain } G) = \frac{1 - (1 - D)^{\frac{2f^*}{f} - 1}}{\dots}$$
+The probability of ever suffering a $50\%$ drawdown ($D = 0.50$) over an infinite horizon is $(1 - D)^a = (0.50)^a$:
+- Full Kelly ($a = 1$): $(0.50)^1 = 50\%$.
+- Half-Kelly ($a = 3$): $(0.50)^3 = 12.5\%$.
 
-Specifically, for a full Kelly bet ($f = f^*$), the exponent is $\frac{2f^*}{f^*} - 1 = 1$, yielding:
+The probability of suffering a $50\%$ drawdown before doubling capital ($W \to 2 W_0$) satisfies the scale function ratio:
 
-$$P_{\text{full}}(50\% \text{ drawdown before doubling}) = 50\%$$
+$$P(\text{Halving before Doubling}) = \frac{2^{-a} - 1}{2^{-a} - 2^a} = \frac{1}{2^a + 1}$$
 
-For a half-Kelly bet ($f = 0.5 f^*$), the exponent is $\frac{2f^*}{0.5 f^*} - 1 = 4 - 1 = 3$:
+- For full Kelly ($a = 1$): $P = \frac{1}{2^1 + 1} = \frac{1}{3} \approx 33.33\%$.
+- For half-Kelly ($a = 3$): $P = \frac{1}{2^3 + 1} = \frac{1}{8 + 1} = \frac{1}{9} \approx 11.11\%$.
 
-$$P_{\text{half}}(50\% \text{ drawdown before doubling}) \approx (0.50)^3 = 12.5\%$$
-
-Half-Kelly cuts the probability of a 50% drawdown from 50% down to 12.5%.
+Trading half-Kelly slashes the probability of ever suffering a $50\%$ drawdown from $50\%$ down to $12.5\%$, and cuts the probability of halving before doubling from $33.3\%$ down to $11.1\%$.
 
 ---
 
@@ -261,29 +264,29 @@ A quantitative macro hedge fund achieves an annualized Sharpe ratio of $S = 1.20
 **Solution:**
 
 Step 1: Compute 2-Year Expected Maximum Drawdown:
-Using the Magdon-Ismail formula with positive drift:
+Using the Magdon-Ismail and Atiya (2004) asymptotic formula with positive drift:
 
-$$\frac{\sigma}{2S} = \frac{0.120}{2 \times 1.20} = \frac{0.120}{2.40} = 0.050 \quad (5.0\%)$$
+$$\mathbb{E}[\text{MDD}] \approx \frac{\sigma}{2S} \left[ \ln\left( \frac{S^2 T}{2} \right) + 1.9635 \right]$$
 
-$$2 S^2 T = 2 \times 1.20^2 \times 2.0 = 2 \times 1.44 \times 2.0 = 5.76$$
+where $\frac{\sigma}{2S} = \frac{0.120}{2 \times 1.20} = \frac{0.120}{2.40} = 0.050 \quad (5.0\%)$.
+For $T = 2.0$:
 
-$$\ln(5.76) \approx 1.75094$$
+$$\frac{S^2 T}{2} = \frac{1.20^2 \times 2.0}{2} = 1.44 \implies \ln(1.44) \approx 0.36464$$
 
-$$2\gamma - 1 = 2(0.577215) - 1 = 0.15443$$
-
-$$\mathbb{E}[\text{MDD}(2y)] \approx 0.050 \times (1.75094 + 0.15443) = 0.050 \times 1.90537 \approx 0.09527 \quad (9.53\%)$$
+$$\mathbb{E}[\text{MDD}(2y)] \approx 0.050 \times (0.36464 + 1.9635) = 0.050 \times 2.32814 \approx 0.11641 \quad (11.64\%)$$
 
 Step 2: Compute 10-Year Expected Maximum Drawdown:
+For $T = 10.0$:
 
-$$2 S^2 T = 2 \times 1.44 \times 10.0 = 28.80 \implies \ln(28.80) \approx 3.36038$$
+$$\frac{S^2 T}{2} = \frac{1.20^2 \times 10.0}{2} = 7.20 \implies \ln(7.20) \approx 1.97408$$
 
-$$\mathbb{E}[\text{MDD}(10y)] \approx 0.050 \times (3.36038 + 0.15443) = 0.050 \times 3.51481 \approx 0.17574 \quad (17.57\%)$$
+$$\mathbb{E}[\text{MDD}(10y)] \approx 0.050 \times (1.97408 + 1.9635) = 0.050 \times 3.93758 \approx 0.19688 \quad (19.69\%)$$
 
 Step 3: Zero-Drift Regime ($\mu = 0$):
 
 $$\mathbb{E}[\text{MDD}_{\mu=0}(2y)] \approx \sqrt{\frac{\pi}{2}} \cdot \sigma \sqrt{T} \approx 1.2533 \times 0.120 \times \sqrt{2.0} \approx 1.2533 \times 0.120 \times 1.4142 \approx 0.2127 \quad (21.27\%)$$
 
-Without positive drift, expected drawdown jumps from $9.5\%$ to $21.3\%$.
+Without positive drift, expected drawdown jumps from $11.6\%$ to $21.3\%$.
 
 ---
 
@@ -407,7 +410,7 @@ $$\sigma_p = \sqrt{0.021700} \approx 0.147309 \quad (14.73\%)$$
 
 Total portfolio VaR:
 
-$$\text{VaR}_p = \$100,000,000 \times 1.6449 \times 0.147309 \approx \$24,230,866 \quad (24.23\%)$$
+$$\text{VaR}_p = \$100,000,000 \times 1.6449 \times \sqrt{0.021700} \approx \$24,230,890 \quad (24.23\%)$$
 
 Step 2: Covariances and Betas:
 
@@ -415,25 +418,25 @@ $$\text{Cov}(r_1, r_p) = x_1 \sigma_1^2 + x_2 \rho \sigma_1 \sigma_2 = (0.80 \ti
 
 $$\text{Cov}(r_2, r_p) = x_2 \sigma_2^2 + x_1 \rho \sigma_1 \sigma_2 = (0.20 \times 0.0625) + (0.80 \times 0.40 \times 0.15 \times 0.25) = 0.01250 + 0.01200 = 0.02450$$
 
-$$\beta_1 = \frac{0.02100}{0.021700} \approx 0.96774$$
+$$\beta_1 = \frac{0.02100}{0.021700} \approx 0.967742$$
 
-$$\beta_2 = \frac{0.02450}{0.021700} \approx 1.12903$$
+$$\beta_2 = \frac{0.02450}{0.021700} \approx 1.129032$$
 
 Step 3: Marginal VaRs:
 
-$$\text{MVaR}_1 = \beta_1 \text{VaR}_p = 0.96774 \times 24.2309\% \approx 23.4492\%$$
+$$\text{MVaR}_1 = \beta_1 \text{VaR}_p = 0.967742 \times \$24,230,890 \approx \$23,449,248 \quad (23.45\%)$$
 
-$$\text{MVaR}_2 = \beta_2 \text{VaR}_p = 1.12903 \times 24.2309\% \approx 27.3575\%$$
+$$\text{MVaR}_2 = \beta_2 \text{VaR}_p = 1.129032 \times \$24,230,890 \approx \$27,357,457 \quad (27.36\%)$$
 
 Step 4: Component VaRs:
 
-$$\text{CVaR}_1 = w_1 \times \text{MVaR}_1 = \$80,000,000 \times 0.234492 \approx \$18,759,376$$
+$$\text{CVaR}_1 = x_1 \times \text{MVaR}_1 = 0.80 \times \$23,449,248 \approx \$18,759,399$$
 
-$$\text{CVaR}_2 = w_2 \times \text{MVaR}_2 = \$20,000,000 \times 0.273575 \approx \$5,471,490$$
+$$\text{CVaR}_2 = x_2 \times \text{MVaR}_2 = 0.20 \times \$27,357,457 \approx \$5,471,491$$
 
 Step 5: Euler Verification:
 
-$$\text{Sum} = \$18,759,376 + \$5,471,490 = \$24,230,866 = \text{VaR}_p$$
+$$\text{Sum} = \$18,759,399 + \$5,471,491 = \$24,230,890 = \text{VaR}_p$$
 
 The Euler condition holds with exact equality.
 
@@ -685,34 +688,34 @@ The bank must charge $\$227,500$ upfront to provide shareholders with their requ
 
 ## Interview questions
 
-> [!question]- full-vs-half-kelly-drawdown | Why do professional quants recommend trading at half-Kelly rather than full Kelly?
-> Full Kelly maximizes the expected compound growth rate of capital in the infinite horizon, but suffers from extreme volatility, including a 50% probability of experiencing a 50% drawdown before doubling capital. Half-Kelly achieves 75% of maximum compound growth rate while cutting return volatility and leverage by 50%, and slashes the probability of a 50% drawdown down to 12.5%, providing a massive safety buffer against parameter estimation error.
+> [!question]- risk-full-vs-half-kelly-drawdown | Why do professional quants recommend trading at half-Kelly rather than full Kelly?
+> Full Kelly maximizes the expected compound growth rate of capital in the infinite horizon, but suffers from extreme volatility: it has a 50% probability of ever suffering a 50% drawdown and a 33.3% probability of halving before doubling capital. Half-Kelly achieves 75% of maximum compound growth rate while cutting variance by 75% (volatility and leverage by 50%), slashes the probability of ever suffering a 50% drawdown down to 12.5%, and reduces the probability of halving before doubling to 11.1%, providing a massive safety buffer against parameter estimation error.
 
-> [!question]- var-vs-es-coherence | Why is Expected Shortfall (ES) a coherent risk measure while Value at Risk (VaR) is not?
+> [!question]- risk-var-vs-es-coherence | Why is Expected Shortfall (ES) a coherent risk measure while Value at Risk (VaR) is not?
 > Value at Risk fails the subadditivity axiom: the VaR of a combined portfolio can exceed the sum of individual VaRs ($\text{VaR}(X + Y) > \text{VaR}(X) + \text{VaR}(Y)$) for non-normal or skewed distributions, meaning VaR can penalize diversification. Expected Shortfall (CVaR) satisfies subadditivity, translation invariance, positive homogeneity, and monotonicity, making it a mathematically coherent risk measure that accurately captures tail risk.
 
-> [!question]- euler-allocation-homogeneity | State the mathematical condition required for Euler risk allocation to hold, and identify which risk measures qualify.
+> [!question]- risk-euler-allocation-homogeneity | State the mathematical condition required for Euler risk allocation to hold, and identify which risk measures qualify.
 > Euler allocation requires that the risk measure $\rho(\mathbf{w})$ be linearly homogeneous of degree 1: $\rho(c \mathbf{w}) = c \rho(\mathbf{w})$ for any $c > 0$. Portfolio standard deviation, Parametric VaR, and Expected Shortfall are degree-1 homogeneous, guaranteeing that the sum of Component Risks equals total portfolio risk exactly: $\sum w_i \frac{\partial \rho}{\partial w_i} = \rho(\mathbf{w})$.
 
-> [!question]- almgren-chriss-urgency-parameter | In the Almgren-Chriss framework, what does the urgency parameter $\kappa = \sqrt{\lambda_{\text{risk}} \sigma^2 / \eta}$ dictate?
+> [!question]- risk-almgren-chriss-urgency-parameter | In the Almgren-Chriss framework, what does the urgency parameter $\kappa = \sqrt{\lambda_{\text{risk}} \sigma^2 / \eta}$ dictate?
 > The urgency parameter $\kappa$ dictates the rate of trade liquidation. When risk aversion $\lambda_{\text{risk}}$ or asset volatility $\sigma^2$ is high relative to temporary impact cost $\eta$, $\kappa$ is large: the execution schedule aggressively front-loads sales to eliminate price volatility timing risk. When risk aversion is zero, $\kappa \to 0$ and the schedule collapses to a linear TWAP execution.
 
-> [!question]- swap-vs-forward-exposure-geometry | Contrast the Expected Exposure profile of an interest rate swap with that of an FX forward contract.
+> [!question]- risk-swap-vs-forward-exposure-geometry | Contrast the Expected Exposure profile of an interest rate swap with that of an FX forward contract.
 > An FX forward contract exhibits monotonically expanding exposure over time because no interim payments occur and underlying exchange rate variance grows proportional to $\sqrt{t}$. An interest rate swap exhibits a "hump-shaped" exposure profile: rate diffusion expands uncertainty early, but the remaining coupon annuity $A(t)$ amortizes toward zero at maturity, causing exposure to peak mid-life and drop to zero at final maturity.
 
-> [!question]- effective-epe-definition | What is Effective EPE under the Basel framework, and why was it introduced?
+> [!question]- risk-effective-epe-definition | What is Effective EPE under the Basel framework, and why was it introduced?
 > Effective EPE is the time-weighted average of Effective Expected Exposure ($\text{EEE}$) over the first year of a derivative contract, where $\text{EEE}(t) = \max(\text{EEE}(t - \Delta t), \text{EE}(t))$ enforces a non-decreasing envelope. It was introduced to prevent banks from artificially understating regulatory capital as short-dated contracts roll off, reflecting the commercial reality that banks continually replace maturing client hedges.
 
-> [!question]- dva-paradox-accounting | Explain the DVA paradox and why it creates controversial accounting profits.
+> [!question]- risk-dva-paradox-accounting | Explain the DVA paradox and why it creates controversial accounting profits.
 > Debit Valuation Adjustment (DVA) measures the expected profit to a bank if it defaults on its own negative mark-to-market liabilities. When a bank's credit rating is downgraded and its CDS spread widens, its cumulative default probability increases, causing DVA to expand. Under fair-value accounting (IFRS 13), this requires the bank to record mark-to-market accounting profits, artificially inflating earnings precisely when the institution is in severe distress.
 
-> [!question]- fva-mechanics-dealer | Why does an uncollateralized client swap hedged with a collateralized interdealer swap generate FVA?
+> [!question]- risk-fva-mechanics-dealer | Why does an uncollateralized client swap hedged with a collateralized interdealer swap generate FVA?
 > When market rates move against the street hedge, the dealer must post cash variation margin to the clearing broker. Because the uncollateralized corporate client posts no collateral, the dealer must borrow cash from its internal treasury at an unsecured funding spread over OIS ($r_{\text{OIS}} + s_{\text{funding}}$). The dealer posts this cash and earns only OIS, incurring a continuous funding drag equal to $s_{\text{funding}} \times \text{Exposure}$, which is priced as FVA.
 
-> [!question]- mva-regulatory-driver | What regulatory development made Margin Valuation Adjustment (MVA) an essential pricing component?
+> [!question]- risk-mva-regulatory-driver | What regulatory development made Margin Valuation Adjustment (MVA) an essential pricing component?
 > The implementation of the global Uncleared Margin Rules (UMR) by the BCBS-IOSCO framework mandated that financial institutions post bilateral, segregated Initial Margin (IM) on non-cleared derivatives. Because initial margin is locked in third-party custodian accounts and cannot be reused, dealers must raise term funding to maintain these multi-million dollar reserves, creating lifetime financing costs priced as MVA.
 
-> [!question]- sr-11-7-three-lines-of-defense | What are the responsibilities of the Second Line of Defense under Federal Reserve SR 11-7?
+> [!question]- risk-sr-11-7-three-lines-of-defense | What are the responsibilities of the Second Line of Defense under Federal Reserve SR 11-7?
 > Under SR 11-7, the Second Line of Defense is the independent Model Risk Management / Validation group. It is organizationally separate from trading desks and is responsible for providing unbiased "effective challenge" to model designs, independently verifying mathematical derivations, replicating code, benchmarking against challenger models, testing boundary stress conditions, and maintaining the firm's authoritative Model Inventory.
 
 ## Further reading
