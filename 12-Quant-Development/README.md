@@ -26,13 +26,13 @@ See [SDE-Link-Map](../00-Start-Here/SDE-Link-Map.md) for everything that lives i
 | 05 | [Data Structures and Algorithms for Quant Interviews](05-Data-Structures-and-Algorithms-for-Quant-Interviews.md) | RD | core | 20 | solid | 25 |
 | 06 | [System Design for Trading](06-System-Design-for-Trading.md) | D | core | 6 | solid | 18 |
 | 07 | [Order Book and Matching Engine Implementation](07-Order-Book-and-Matching-Engine.md) | D | core | 5 | solid | 18 |
-| 08 | [Market Data Feed Handlers and Protocols](08-Market-Data-Feed-Handlers-and-Protocols.md) | D | core | 4 | seed | 0 |
-| 09 | [Backtester and Exchange Simulator Design](09-Backtester-and-Simulator-Design.md) | D | core | 4 | seed | 0 |
-| 10 | [Pricing Library Design](10-Pricing-Library-Design.md) | D | advanced | 4 | seed | 0 |
-| 11 | [Numerical Python: NumPy, pandas and Numba](11-Numerical-Python-NumPy-and-Numba.md) | RD | core | 3 | seed | 0 |
-| 12 | [Tick Data Storage and Time-Series Databases](12-Tick-Data-Storage-and-Time-Series-Databases.md) | D | advanced | 3 | seed | 0 |
-| 13 | [Risk Checks and Order Management Systems](13-Risk-Checks-and-Order-Management.md) | D | core | 3 | seed | 0 |
-| 14 | [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md) | D | core | 3 | seed | 0 |
-| 15 | [Quant Dev Problem Set](15-Quant-Dev-Problem-Set.md) | D | core | 6 | seed | 0 |
+| 08 | [Market Data Feed Handlers and Protocols](08-Market-Data-Feed-Handlers-and-Protocols.md) | D | core | 4 | solid | 22 |
+| 09 | [Backtester and Exchange Simulator Design](09-Backtester-and-Simulator-Design.md) | D | core | 4 | solid | 20 |
+| 10 | [Pricing Library Design](10-Pricing-Library-Design.md) | D | advanced | 4 | solid | 20 |
+| 11 | [Numerical Python: NumPy, pandas and Numba](11-Numerical-Python-NumPy-and-Numba.md) | RD | core | 3 | solid | 21 |
+| 12 | [Tick Data Storage and Time-Series Databases](12-Tick-Data-Storage-and-Time-Series-Databases.md) | D | advanced | 3 | solid | 20 |
+| 13 | [Risk Checks and Order Management Systems](13-Risk-Checks-and-Order-Management.md) | D | core | 3 | solid | 20 |
+| 14 | [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md) | D | core | 3 | solid | 21 |
+| 15 | [Quant Dev Problem Set](15-Quant-Dev-Problem-Set.md) | D | core | 6 | solid | 43 |
 
 <!-- qp:moc:end -->
