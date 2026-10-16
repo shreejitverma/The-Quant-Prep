@@ -182,7 +182,7 @@ The value premium is real by construction, yet its expected $t$-stat over 120 mo
 
 From the last month's WLS:
 
-- $\max|HX - I| \approx 10^{-15}$: unit own exposure, zero to every other factor.
+- $\max|HX - I| < 10^{-10}$ (machine precision): unit own exposure, zero to every other factor.
 - The value portfolio's return equals the estimated value factor return to machine precision, its net weight is zero inside every industry, and its gross weight is 0.814 (about 41% long and 41% short per unit of value exposure).
 - The industry-0 portfolio has net weight 1.0000, all of it inside industry 0.
 
@@ -204,7 +204,7 @@ Signal $= 0.5\,\text{value} + 0.3\,\text{momentum} + 0.8\cdot\mathbb 1\{\text{in
 | total vol per month | 2.50% | 1.89% | 0.77% |
 
 The raw book's value exposure is 1.036 and its momentum exposure 0.732: 40% of its risk is a momentum bet nobody asked for.
-Residualising on industries, size and momentum keeps a value exposure of 1.088 with every other exposure below $10^{-14}$; residualising on everything leaves a pure specific-risk book.
+Residualising on industries, size and momentum keeps a value exposure of 1.088 with every other exposure zero to machine precision (below $10^{-10}$); residualising on everything leaves a pure specific-risk book.
 
 ### 6. A statistical model on the same data
 

@@ -125,7 +125,7 @@ The synthetic panel has a constant universe, so the checks pass by construction;
 **3. Signal construction and neutralisation.**
 Each day, regress the cross-section of returns on 10 sector dummies and beta and keep the residual, $e_t = M r_t$ with $M = I - X(X^\top X)^{-1}X^\top$.
 Signal $s_{i,t} = -\sum_{j=0}^{4} e_{i,t-j}$, z-scored across stocks, winsorised at $\pm3$, projected through $M$ again, and scaled to unit gross: $w_t = z_t/\sum_i|z_{i,t}|$.
-Because the final step is a projection, the book's net beta and net sector exposures are zero to machine precision (largest absolute net beta $1.42\times10^{-16}$).
+Because the final step is a projection, the book's net beta and net sector exposures are zero to machine precision (largest absolute net beta below $10^{-12}$).
 
 **4. IC analysis.**
 Daily rank IC of the signal against next-day residual returns:
@@ -242,7 +242,7 @@ Answer with the pre-flight checklist from [Backtesting Methodology and Pitfalls]
 Two synthetic panels: C1 has 1,000 stock slots over 21 years monthly (one warm-up year, a 20-year backtest) with performance-related delistings; C2 has 1,000 stocks over 14 years monthly (4 warm-up years, a 10-year backtest) with no cross-sectional alpha at all.
 
 **Flaw 1: survivorship (C1).**
-Stocks whose trailing 12-month log return is below $-0.5$ delist with probability 1% a month (0.1% otherwise) with a final return of $-30\%$; each delisting is replaced by a new listing, so 1,519 stocks are listed over the sample to fill 1,000 slots.
+Stocks whose trailing 12-month log return is below $-0.5$ delist with probability 1.1% a month (0.1% otherwise) with a final return of $-30\%$; each delisting is replaced by a new listing, so 1,519 stocks are listed over the sample to fill 1,000 slots.
 The $-30\%$ echoes Shumway (1997), who argued that missing performance-related delisting returns in CRSP should be filled with a large negative value rather than dropped.
 Strategy: long the 10% worst 12-month performers, short the 10% best, monthly.
 

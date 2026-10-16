@@ -225,7 +225,7 @@ View: A outperforms B by 2% ($P = (1, -1, 0, 0)$, $Q = 2\%$), with He-Litterman 
 - The view portfolio's posterior return is 0.76%, exactly halfway between $-0.48\%$ and 2%.
 - Weights $(\delta\Sigma)^{-1}\mu_{BL} = (0.8164, -0.1164, 0.2000, 0.1000)$: A gains 0.4164, B loses 0.4164, C and D keep their market weights although their expected returns moved (C from 0.357% to 0.345%, D from 2.770% to 2.645%).
 - Tighter view, $\Omega = s/4$: the view portfolio moves 80% of the way; looser, $\Omega = 4s$: 20%.
-- Doubling $\tau$ to 0.5 with $\Omega = P\tau\Sigma P^\top$ leaves $\mu_{BL}$ unchanged (difference exactly 0).
+- Raising $\tau$ tenfold, from 0.05 to 0.5, with $\Omega = P\tau\Sigma P^\top$ leaves $\mu_{BL}$ unchanged (difference below $10^{-12}$, machine precision).
 - With the predictive covariance $\Sigma + M$ the weights sum to $1/(1+\tau) = 0.9524$, and $(1+\tau)w - w_{\text{mkt}}$ is zero in C and D and sums to zero over A and B: a pure tilt along $P^\top$.
 
 Why the tilt is so large: A and B are 0.8 correlated, so the A-minus-B spread has low risk and a 1.24-point posterior change on it buys a lot of position.
@@ -243,7 +243,7 @@ With correlation $-0.5$ the answer is the same $(2/3, 1/3)$: in the two-asset ca
 | :--- | :--- | :--- | ---: |
 | Market | 0.40, 0.30, 0.20, 0.10 | 0.4952, 0.4105, 0.0193, 0.0749 | 12.16% |
 | Inverse volatility | 0.1867, 0.1660, 0.4979, 0.1494 | 0.3056, 0.3056, 0.1667, 0.2222 | |
-| ERC | 0.1494, 0.1328, 0.5681, 0.1496 | 0.25 each (to $10^{-16}$) | 7.28% |
+| ERC | 0.1494, 0.1328, 0.5681, 0.1496 | 0.25 each (to machine precision, below $10^{-10}$) | 7.28% |
 | Minimum variance | 0.0687, $-0.0005$, 0.8683, 0.0634 | equal to weights | 5.65% |
 | $1/N$ | 0.25 each | | 10.97% |
 
@@ -251,7 +251,7 @@ With correlation $-0.5$ the answer is the same $(2/3, 1/3)$: in the two-asset ca
 - Inverse volatility over-allocates risk to the correlated pair (30.6% each), so ERC shifts capital to C and D.
 - Ordering $5.65\% \le 7.28\% \le 10.97\%$ as Maillard, Roncalli and Teiletche prove.
 - Running ERC at a 10% volatility target needs leverage $10/7.28 = 1.37$.
-- A risk budget of one half in C and one sixth elsewhere solves to the stated shares to $10^{-16}$ with the same Newton code.
+- A risk budget of one half in C and one sixth elsewhere solves to the stated shares to machine precision (below $10^{-10}$) with the same Newton code.
 
 ### 5. HRP by hand
 
