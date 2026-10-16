@@ -161,7 +161,7 @@ def aggregate_sbm_delta(
 
     radicand = sum_k_sq + cross_term
     # Negative-sum fallback: if radicand < 0, floor at sum_k_sq
-    return math.sqrt(max(0.0, radicand))
+    return math.sqrt(sum_k_sq if radicand < 0.0 else radicand)
 
 
 # ============================================================================
@@ -201,6 +201,7 @@ class DRCPosition:
     obligor_id: str
     rating: str  # 'AAA', 'AA', 'A', 'BBB', 'BB', 'B', 'CCC', 'Defaulted'
     seniority: str  # 'senior', 'subordinated', 'equity'
+    bucket: str  # 'Corporates', 'Sovereigns', 'Local Governments/Municipalities'
     notional: float  # Face value
     market_value: float  # MtM value
     is_long: bool
@@ -216,8 +217,9 @@ def calculate_jtd(pos: DRCPosition) -> float:
     JTD_short = min(0, -LGD * Notional + PnL)
     """
     lgd = 0.75 if pos.seniority == "subordinated" else (1.0 if pos.seniority == "equity" else 0.40)
-    sign = 1.0 if pos.is_long else -1.0
-    return sign * (lgd * pos.notional + pos.market_value)
+    if pos.is_long:
+        return max(0.0, lgd * pos.notional + pos.market_value)
+    return min(0.0, -lgd * pos.notional + pos.market_value)
 
 
 def calculate_drc_non_sec(positions: Sequence[DRCPosition]) -> float:
@@ -237,36 +239,37 @@ def calculate_drc_non_sec(positions: Sequence[DRCPosition]) -> float:
         "Defaulted": 1.000,
     }
 
-    # Net JTD per obligor
-    obligor_jtd: dict[str, float] = {}
-    obligor_rating: dict[str, str] = {}
+    # Net JTD per bucket, obligor, and seniority
+    net_jtd: dict[tuple[str, str, str], float] = {}
+    ratings: dict[tuple[str, str, str], str] = {}
 
     for p in positions:
         jtd = calculate_jtd(p)
-        obligor_jtd[p.obligor_id] = obligor_jtd.get(p.obligor_id, 0.0) + jtd
-        obligor_rating[p.obligor_id] = p.rating
+        key = (p.bucket, p.obligor_id, p.seniority)
+        net_jtd[key] = net_jtd.get(key, 0.0) + jtd
+        ratings.setdefault(key, p.rating)
 
-    sum_long_weighted = 0.0
-    sum_short_weighted = 0.0
-    sum_long_unweighted = 0.0
-    sum_short_unweighted = 0.0
+    long_obligors = {
+        (bucket, obligor)
+        for (bucket, obligor, _seniority), jtd in net_jtd.items()
+        if jtd > 0.0
+    }
+    bucket_totals: dict[str, list[float]] = {}
+    for (bucket, obligor, seniority), jtd in net_jtd.items():
+        totals = bucket_totals.setdefault(bucket, [0.0, 0.0, 0.0, 0.0])
+        rw = rw_table.get(ratings[(bucket, obligor, seniority)], 0.060)
+        if jtd > 0:
+            totals[0] += rw * jtd
+            totals[2] += jtd
+        elif jtd < 0 and (bucket, obligor) not in long_obligors:
+            totals[1] += rw * abs(jtd)
+            totals[3] += abs(jtd)
 
-    for ob, net_jtd in obligor_jtd.items():
-        rw = rw_table.get(obligor_rating[ob], 0.060)
-        if net_jtd > 0:
-            sum_long_weighted += rw * net_jtd
-            sum_long_unweighted += net_jtd
-        elif net_jtd < 0:
-            sum_short_weighted += rw * abs(net_jtd)
-            sum_short_unweighted += abs(net_jtd)
-
-    # Hedge benefit ratio: WtS = sum_long / (sum_long + sum_short)
-    if (sum_long_unweighted + sum_short_unweighted) > 0:
-        wts = sum_long_unweighted / (sum_long_unweighted + sum_short_unweighted)
-    else:
-        wts = 0.0
-
-    drc = max(0.0, sum_long_weighted - wts * sum_short_weighted)
+    drc = 0.0
+    for long_weighted, short_weighted, long_jtd, short_jtd in bucket_totals.values():
+        gross_jtd = long_jtd + short_jtd
+        wts = long_jtd / gross_jtd if gross_jtd > 0.0 else 0.0
+        drc += max(0.0, long_weighted - wts * short_weighted)
     return drc
 
 
@@ -353,9 +356,9 @@ def run_tests() -> None:
     # Long Senior Bond Obligor X ($10M notional, LGD 40%, rating BBB -> RW 6%)
     # Short Senior Bond Obligor X ($5M notional, LGD 40%, rating BBB -> RW 6%)
     # Long Senior Bond Obligor Y ($8M notional, LGD 40%, rating BB -> RW 15%)
-    p1 = DRCPosition(obligor_id="X", rating="BBB", seniority="senior", notional=10_000_000.0, market_value=0.0, is_long=True)
-    p2 = DRCPosition(obligor_id="X", rating="BBB", seniority="senior", notional=5_000_000.0, market_value=0.0, is_long=False)
-    p3 = DRCPosition(obligor_id="Y", rating="BB", seniority="senior", notional=8_000_000.0, market_value=0.0, is_long=True)
+    p1 = DRCPosition(obligor_id="X", rating="BBB", seniority="senior", bucket="Corporates", notional=10_000_000.0, market_value=0.0, is_long=True)
+    p2 = DRCPosition(obligor_id="X", rating="BBB", seniority="senior", bucket="Corporates", notional=5_000_000.0, market_value=0.0, is_long=False)
+    p3 = DRCPosition(obligor_id="Y", rating="BB", seniority="senior", bucket="Corporates", notional=8_000_000.0, market_value=0.0, is_long=True)
 
     drc_capital = calculate_drc_non_sec([p1, p2, p3])
     # Obligor X net JTD = +4M - 2M = +2M, RW = 6% -> 120,000
