@@ -147,21 +147,11 @@ Because RRAO cannot be hedged away, it imposes a massive economic drag on comple
 
 ### How it is implemented
 
-- **Inputs**: Trade position records, obligor legal entity identifier, credit rating, seniority tier, contractual notional, market value, exotic payoff flags (barrier, digital, variance swap, exotic underlying).
-- **Outputs**: Factor-level $\text{JTD}_{\text{long}}$ and $\text{JTD}_{\text{short}}$, net obligor JTD, bucket-level DRC capital, RRAO gross notionals, total non-SbM capital.
-- **Data model**: Trade $\to$ Obligor Seniority Node $\to$ Credit Rating $\to$ DRC Bucket $\to$ RRAO Tag.
-- **Algorithm**:
-  1. For DRC: evaluate $\text{JTD} = \pm (LGD \cdot \text{Notional} + \text{MtM})$ for each position using supervisory LGD ($40\%$ senior, $75\%$ subordinated, $100\%$ equity).
-  2. Net JTDs referencing the identical obligor within the same seniority tier.
-  3. Map net obligor JTDs to rating risk weights $RW_i$.
-  4. Separate into positive (Long) and negative (Short) net JTDs.
-  5. Compute $WtS = \frac{\sum \text{Long}}{\sum \text{Long} + \sum |\text{Short}|}$.
-  6. Aggregate DRC: $\max(0, \sum_{\text{Long}} RW_i \text{JTD}_i - WtS \sum_{\text{Short}} RW_j |\text{JTD}_j|)$.
-  7. For RRAO: scan trade taxonomy; flag exotic payoffs and underlyings; sum gross absolute notionals; multiply 1.0% and 0.1% scalars.
-  8. Sum DRC and RRAO to produce total non-SbM Standardised Approach capital.
-- **Complexity**: $O(N)$ across trading book positions; very lightweight linear scan.
-- **Numerical pitfalls**: Inadvertently netting JTD across different subsidiaries of the same parent company; netting equity shorts against senior bond longs; confusing net notional with gross notional in RRAO.
-- **Systems integration**: Directly integrated into the trade taxonomy, credit limits, and capital calculation pipelines in 18-Pricing-and-Risk-Systems.
+The reference module `code/frtb_sbm.py` implements non-securitisation DRC using `DRCPosition`, `calculate_jtd`, and `calculate_drc_non_sec`.
+The position record supplies obligor, rating, seniority, bucket, notional, market value, and long/short direction; the calculation applies the built-in LGD and rating weight tables, nets by bucket, obligor, and seniority, then computes bucket-level weighted-to-short capital.
+This module does not implement maturity scaling, securitisation DRC, RRAO, or trade-taxonomy integration.
+
+The following diagram summarizes the regulatory process; it is conceptual and is not fully implemented by the reference module.
 
 ```mermaid
 flowchart TD

@@ -131,18 +131,12 @@ $$\text{Capital}_{\Delta} = \max\left(K_{\text{medium}}, K_{\text{high}}, K_{\te
 
 ### How it is implemented
 
-- **Inputs**: Net delta sensitivities $s_k$ per risk factor ID, risk class identifier, bucket ID, currency, tenor.
-- **Outputs**: Weighted sensitivities $WS_k$, bucket capital charges $K_b$ under 3 scenarios, inter-bucket aggregated capital under 3 scenarios, final maximum delta capital.
-- **Data model**: Trade $\to$ Risk Factor Sensitivity $\to$ Bucket $\to$ Risk Class.
-- **Algorithm**:
-  1. Multiply each sensitivity by supervisory risk weight $RW_k$ to obtain $WS_k$.
-  2. For each bucket and each scenario (Medium, High, Low): scale intra-bucket correlations; evaluate double summation $\sum WS_k^2 + \sum \sum \rho_{kl} WS_k WS_l$; compute $K_b = \sqrt{\max(0, \text{radicand})}$.
-  3. Compute net bucket sensitivity $S_b = \sum WS_k$ and clamp to $[-K_b, K_b]$.
-  4. Aggregate across buckets using scaled $\gamma_{bc}$ with negative-sum fallback.
-  5. Select $\max(K_{\text{medium}}, K_{\text{high}}, K_{\text{low}})$ as final delta capital.
-- **Complexity**: $O(K^2)$ intra-bucket quadratic matrix multiplication where $K$ is the number of factors per bucket; $O(B^2)$ inter-bucket aggregation across $B$ buckets.
-- **Numerical pitfalls**: Using floating point equality rather than epsilon tolerance when clamping $S_b$; failing to apply the floor $\max(0, \text{radicand})$ before square root; misidentifying curve-hedged books and failing to report the binding Low correlation scenario.
-- **Systems integration**: Feeds the FRTB Standardised Approach aggregation cube and regulatory capital reporting engine in 18-Pricing-and-Risk-Systems.
+The reference module `code/frtb_sbm.py` provides generic weighted-sensitivity bucket aggregation, three correlation scenarios, inter-bucket aggregation, and the negative-radicand fallback.
+`SensitivityRecord` carries a factor ID, bucket ID, risk class label, net sensitivity, and risk weight; callers supply intra-bucket correlations and invoke the bucket and aggregation functions.
+`compute_girr_tenor_correlation` provides the GIRR tenor correlation formula.
+The module does not select risk-class-specific supervisory weights or correlations, group sensitivities into regulatory buckets, or select the maximum scenario for a complete risk class; those remain inputs and orchestration responsibilities.
+
+The following diagram summarizes the regulatory process; it is conceptual and is not fully implemented by the reference module.
 
 ```mermaid
 flowchart TD

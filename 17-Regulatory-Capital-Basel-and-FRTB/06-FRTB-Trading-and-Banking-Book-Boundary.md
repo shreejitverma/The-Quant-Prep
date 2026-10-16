@@ -115,18 +115,10 @@ If a desk fails the P&L Attribution (PLA) test or backtesting requirements, that
 
 ### How it is implemented
 
-- **Inputs**: Trade booking schema, legal entity, product taxonomy code, intended holding horizon, client trade vs prop indicator, accounting designation (fair value through P&L vs amortized cost), hedging documentation flags, assigned Trading Desk ID.
-- **Outputs**: Regulatory boundary allocation (Trading Book vs Banking Book), Internal Risk Transfer matching flag, trading desk capital eligibility status.
-- **Data model**: Trade $\to$ Trading Desk $\to$ Business Unit $\to$ Legal Entity.
-- **Algorithm**:
-  1. Inspect product taxonomy and contract terms upon booking.
-  2. Evaluate RBC25 allocation presumption rules (e.g., if derivative, verify whether designated as eligible banking book accounting hedge).
-  3. Validate that trade is mapped to a registered, approved Trading Desk ID.
-  4. For Internal Risk Transfers: match internal leg against corresponding external market hedge ID; verify notional, currency, and tenor equality.
-  5. If reclassification is requested: log audit record, calculate both Trading Book and Banking Book capital requirements, and flag CET1 deduction if capital decreases.
-- **Complexity**: $O(1)$ per trade validation at booking; $O(M)$ for matching $M$ internal risk transfer transactions.
-- **Numerical pitfalls**: Incomplete matching of internal risk transfers where currency basis or day-count convention differs between internal and external legs; treating macro curve proxies as single-name credit hedges.
-- **Systems integration**: Directly integrated into the trade capture and booking model platform documented in 18-Pricing-and-Risk-Systems.
+This chapter describes the regulatory boundary; the repository does not currently implement book allocation, trading desk eligibility, internal risk transfer matching, or reclassification controls in executable code.
+The `code/frtb_sbm.py` module implements selected SbM, curvature-factor, and non-securitisation DRC calculations described in the related chapters.
+
+The following diagram summarizes the regulatory process; it is conceptual and is not fully implemented by the reference module.
 
 ```mermaid
 flowchart TD

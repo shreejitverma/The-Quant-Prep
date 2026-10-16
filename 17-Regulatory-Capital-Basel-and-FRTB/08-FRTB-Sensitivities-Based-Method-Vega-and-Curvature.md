@@ -115,20 +115,11 @@ $$\text{Capital}_{\text{curvature}} = \max\left(K_{\text{medium}}, K_{\text{high
 
 ### How it is implemented
 
-- **Inputs**: Pricing models, risk factor base values $x_k$, supervisory risk weights $RW_k$, delta sensitivities $s_k$, option trade schemas, volatility surfaces.
-- **Outputs**: Vega sensitivities $s_k^{\text{vega}}$, vega capital $K_{\text{vega}}$, upward/downward revalued portfolio values $V(x_k \pm RW_k)$, curvature charges $CVR_k$, curvature capital $K_{\text{curvature}}$.
-- **Data model**: Trade $\to$ Non-linear Flag $\to$ Volatility Grid Coordinates $\to$ Full Revaluation Shock Engine.
-- **Algorithm**:
-  1. Identify all non-linear instruments in the trading book.
-  2. Compute vega sensitivity $s_k^{\text{vega}} = \sigma_k \frac{\partial V}{\partial \sigma_k}$; apply liquidity horizon multiplier $\sqrt{LH/10}$; aggregate via SbM delta algorithm.
-  3. For Curvature: for each active risk factor $k$, bump underlying by $+RW_k$, fully reprice portfolio to obtain $V(x_k + RW_k)$; bump by $-RW_k$, fully reprice to obtain $V(x_k - RW_k)$.
-  4. Compute $CVR_k^+$ and $CVR_k^-$; take $\max(CVR_k^+, CVR_k^-, 0)$.
-  5. Apply intra-bucket aggregation with squared correlations $\rho_{kl}^2$.
-  6. Apply inter-bucket aggregation with squared correlations $\gamma_{bc}^2$.
-  7. Evaluate across Medium, High, and Low scenarios; select maximum.
-- **Complexity**: $2 \times K$ full portfolio revaluations where $K$ is the number of risk factors; requires massive grid compute infrastructure.
-- **Numerical pitfalls**: Mixing normal volatility (bps/year) with Black-Scholes lognormal volatility when computing vega; pricing model convergence failure under extreme $+RW$ stress shocks (e.g., negative interest rates or volatility surface extrapolation errors); sign inversion in $CVR_k^{\pm}$.
-- **Systems integration**: Feeds the FRTB pricing library and EOD scenario grid compute engines detailed in 18-Pricing-and-Risk-Systems.
+The reference module `code/frtb_sbm.py` implements only the curvature factor calculation in `calculate_curvature_factor`, which accepts already revalued up, down, and base present values together with the sensitivity and risk weight.
+It does not compute vega sensitivities, apply liquidity horizon scaling, reprice portfolios, or aggregate curvature charges across factors, buckets, or scenarios.
+Those calculations are described by the regulatory framework above but are not implemented in this module.
+
+The following diagram summarizes the regulatory process; it is conceptual and is not fully implemented by the reference module.
 
 ```mermaid
 flowchart TD
