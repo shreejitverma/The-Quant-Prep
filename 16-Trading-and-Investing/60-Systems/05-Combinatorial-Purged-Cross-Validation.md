@@ -176,100 +176,100 @@ The in-sample winner actually performs worse than a random choice out of sample 
 
 ## Interview questions
 
-> [!question] mkt-sys-129 | Why does standard k-fold cross-validation fail when applied to financial time series?
+> [!question]- mkt-sys-129 | Why does standard k-fold cross-validation fail when applied to financial time series?
 > Because financial observations violate iid assumptions; serial autocorrelation and overlapping forward return labels leak future information from test sets into training folds.
 
-> [!question] mkt-sys-130 | What is purging in financial cross-validation (Lopez de Prado 2018)?
+> [!question]- mkt-sys-130 | What is purging in financial cross-validation (Lopez de Prado 2018)?
 > Purging removes training observations whose forward outcome labels overlap in time with the testing evaluation period, preventing lookahead information leakage.
 
-> [!question] mkt-sys-131 | What is embargoing in financial cross-validation?
+> [!question]- mkt-sys-131 | What is embargoing in financial cross-validation?
 > Embargoing removes a buffer of training observations immediately following the test period to eliminate residual autoregressive memory and post-event spillover.
 
-> [!question] mkt-sys-132 | What is Combinatorial Purged Cross-Validation (CPCV)?
+> [!question]- mkt-sys-132 | What is Combinatorial Purged Cross-Validation (CPCV)?
 > CPCV splits data into N groups and tests on all subsets of k groups with purging and embargoing, generating a combinatorial distribution of out-of-sample backtest paths.
 
-> [!question] mkt-sys-133 | How many total splits are generated in CPCV with N groups and k test groups?
+> [!question]- mkt-sys-133 | How many total splits are generated in CPCV with N groups and k test groups?
 > The number of splits equals the binomial coefficient N choose k: C = N! / (k! * (N - k)!).
 
-> [!question] mkt-sys-134 | How many complete out-of-sample backtest paths does CPCV generate?
+> [!question]- mkt-sys-134 | How many complete out-of-sample backtest paths does CPCV generate?
 > CPCV generates phi[N, k] = (k / N) * binom(N, k) = binom(N - 1, k - 1) complete, distinct historical backtest paths.
 
-> [!question] mkt-sys-135 | What is the primary advantage of CPCV over traditional walk-forward backtesting?
+> [!question]- mkt-sys-135 | What is the primary advantage of CPCV over traditional walk-forward backtesting?
 > Walk-forward produces only a single historical path and point-estimate Sharpe; CPCV generates a full distribution of paths, revealing path dependency and robustness.
 
-> [!question] mkt-sys-136 | Define Combinatorially Symmetric Cross-Validation (CSCV).
+> [!question]- mkt-sys-136 | Define Combinatorially Symmetric Cross-Validation (CSCV).
 > CSCV divides data into S blocks and evaluates all (S choose S/2) splits to measure how in-sample strategy rankings generalize to out-of-sample testing sets.
 
-> [!question] mkt-sys-137 | Define the Probability of Backtest Overfitting (PBO) mathematically.
+> [!question]- mkt-sys-137 | Define the Probability of Backtest Overfitting (PBO) mathematically.
 > PBO is the fraction of CSCV partitions in which the in-sample winning strategy achieves an out-of-sample rank at or below the median: PBO = (1/C) * sum 1(omega_bar <= 0.50).
 
-> [!question] mkt-sys-138 | What does a PBO value of approximately 0.50 signify?
+> [!question]- mkt-sys-138 | What does a PBO value of approximately 0.50 signify?
 > A PBO of 0.50 signifies that in-sample optimization has zero predictive power; the selected strategy performs like an arbitrary random draw out of sample.
 
-> [!question] mkt-sys-139 | What does a PBO value greater than 0.50 signify?
+> [!question]- mkt-sys-139 | What does a PBO value greater than 0.50 signify?
 > A PBO > 0.50 indicates structural overfitting where in-sample optimization actively selects strategies that underperform the out-of-sample median due to noise chasing.
 
-> [!question] mkt-sys-140 | What is the logit transformation in CSCV?
+> [!question]- mkt-sys-140 | What is the logit transformation in CSCV?
 > lambda = ln(omega_bar / (1 - omega_bar)), where omega_bar is the relative out-of-sample rank; lambda <= 0 corresponds strictly to omega_bar <= 0.50.
 
-> [!question] mkt-sys-141 | Why must the number of blocks S in CSCV be an even integer?
+> [!question]- mkt-sys-141 | Why must the number of blocks S in CSCV be an even integer?
 > S must be even so the dataset can be split into equal halves of S/2 blocks for training and S/2 blocks for testing, maintaining symmetric cross-validation.
 
-> [!question] mkt-sys-142 | How does label horizon length determine the required purge window?
+> [!question]- mkt-sys-142 | How does label horizon length determine the required purge window?
 > The purge window must equal or exceed the maximum forward holding period Delta t of the prediction labels to guarantee zero temporal overlap.
 
-> [!question] mkt-sys-143 | What is performance degradation in CSCV?
+> [!question]- mkt-sys-143 | What is performance degradation in CSCV?
 > The slope of the linear regression of out-of-sample performance on in-sample performance; a negative or near-zero slope indicates severe overfitting.
 
-> [!question] mkt-sys-144 | What is the probability of loss in CSCV?
+> [!question]- mkt-sys-144 | What is the probability of loss in CSCV?
 > The fraction of CSCV partitions in which the best in-sample strategy produces a negative out-of-sample return or Sharpe ratio: Pr(OOS_winner < 0).
 
-> [!question] mkt-sys-145 | How does walk-forward backtesting introduce recency bias?
+> [!question]- mkt-sys-145 | How does walk-forward backtesting introduce recency bias?
 > Walk-forward tests progressively across history, meaning the final model parameters are conditioned heavily on recent market regimes that may not persist.
 
-> [!question] mkt-sys-146 | Why does cross-validation without shuffling maintain chronological blocks?
+> [!question]- mkt-sys-146 | Why does cross-validation without shuffling maintain chronological blocks?
 > Contiguous chronological blocks preserve intra-block market dynamics, volatility clustering, and microstructure regime persistence within each fold.
 
-> [!question] mkt-sys-147 | What is the difference between expanding-window and rolling-window walk-forward?
+> [!question]- mkt-sys-147 | What is the difference between expanding-window and rolling-window walk-forward?
 > Expanding window retains all past data from inception, whereas rolling window uses a fixed-length historical lookback and discards older observations.
 
-> [!question] mkt-sys-148 | How does CPCV prevent testing on future data when training on past data?
+> [!question]- mkt-sys-148 | How does CPCV prevent testing on future data when training on past data?
 > CPCV tests on all combinations of blocks, meaning some training sets occur after test sets; this is statistically valid because purging and embargoing eliminate leakage.
 
-> [!question] mkt-sys-149 | Why is training on future data to test on past data valid in cross-validation?
+> [!question]- mkt-sys-149 | Why is training on future data to test on past data valid in cross-validation?
 > Because if market regimes are stationary and leakage is eliminated via purging, testing model generalizability across historical blocks does not require chronological ordering.
 
-> [!question] mkt-sys-150 | What is an anchored walk-forward test?
+> [!question]- mkt-sys-150 | What is an anchored walk-forward test?
 > An anchored walk-forward test fixes the starting date of the training window at inception while extending the training end-point forward at each rebalance step.
 
-> [!question] mkt-sys-151 | How does increasing the number of CSCV blocks S affect PBO precision?
+> [!question]- mkt-sys-151 | How does increasing the number of CSCV blocks S affect PBO precision?
 > Increasing S increases the combinatorial partition count C = binom(S, S/2), providing a denser empirical distribution of relative out-of-sample ranks.
 
-> [!question] mkt-sys-152 | What is the relationship between PBO and Deflated Sharpe Ratio (DSR)?
+> [!question]- mkt-sys-152 | What is the relationship between PBO and Deflated Sharpe Ratio (DSR)?
 > Both quantify overfitting: DSR penalizes the headline Sharpe ratio for trial count and non-normality, while PBO measures the empirical ranking failure rate across cross-validation splits.
 
-> [!question] mkt-sys-153 | Can a strategy have a low PBO but still fail in live trading?
+> [!question]- mkt-sys-153 | Can a strategy have a low PBO but still fail in live trading?
 > Yes; if the entire strategy universe suffers from unmodeled execution costs, regime shifts, or data errors, the winner will beat peers OOS while still losing money.
 
-> [!question] mkt-sys-154 | What is the optimal value of k in CPCV with N groups?
+> [!question]- mkt-sys-154 | What is the optimal value of k in CPCV with N groups?
 > Typically k = 2 or k = N / 2, balancing the number of distinct out-of-sample paths generated with adequate training sample size.
 
-> [!question] mkt-sys-155 | How does serial correlation in returns affect embargo window sizing?
+> [!question]- mkt-sys-155 | How does serial correlation in returns affect embargo window sizing?
 > Stronger return or volatility autocorrelation requires a wider embargo buffer (e.g. several times the autocorrelation decay half-life) to prevent leakage.
 
-> [!question] mkt-sys-156 | What is the difference between in-sample overfitting and cross-validation overfitting?
+> [!question]- mkt-sys-156 | What is the difference between in-sample overfitting and cross-validation overfitting?
 > In-sample overfitting fits a model to training data; cross-validation overfitting repeatedly evaluates models on the same validation fold until the validation score is overfitted.
 
-> [!question] mkt-sys-157 | Why does cross-validation in machine learning finance require event-based sampling?
+> [!question]- mkt-sys-157 | Why does cross-validation in machine learning finance require event-based sampling?
 > Event-based sampling (e.g. volatility spikes, structural breaks) aligns observations with informational events rather than arbitrary clock-time intervals.
 
-> [!question] mkt-sys-158 | What is the primary computational bottleneck of CPCV?
+> [!question]- mkt-sys-158 | What is the primary computational bottleneck of CPCV?
 > Fitting model training algorithms binom(N, k) times; for complex neural networks or large parameter grids, combinatorial re-training requires distributed compute clusters.
 
-> [!question] mkt-sys-159 | How does CPCV path dispersion inform position sizing?
+> [!question]- mkt-sys-159 | How does CPCV path dispersion inform position sizing?
 > A strategy with wide dispersion across CPCV paths indicates high path uncertainty, requiring conservative fractional Kelly or lower volatility target sizing.
 
-> [!question] mkt-sys-160 | What is the minimum acceptable PBO for institutional strategy approval?
+> [!question]- mkt-sys-160 | What is the minimum acceptable PBO for institutional strategy approval?
 > Institutional allocators typically require PBO <= 0.20 to 0.25 (less than 25% probability of out-of-sample sub-median performance) before committing capital.
 
 ---

@@ -229,131 +229,131 @@ A quantitative analyst evaluates $1,000$ machine learning breakout forecasts acr
 
 ## Interview questions
 
-> [!question] mkt-ta-225 | What is Karl Popper's criterion of falsifiability and how does it apply to technical trading?
+> [!question]- mkt-ta-225 | What is Karl Popper's criterion of falsifiability and how does it apply to technical trading?
 > A theory is scientific only if it makes assertions that can be empirically disproven by observable tests.
 > Subjective chart analysis is unscientific if patterns can be arbitrarily adjusted after the fact to excuse failed trades.
 
-> [!question] mkt-ta-226 | What is a mathematically proper scoring rule?
+> [!question]- mkt-ta-226 | What is a mathematically proper scoring rule?
 > A loss function for evaluating probability forecasts where the expected penalty is strictly minimized if and only if the forecaster reports their true internal subjective probability.
 > Examples include the Brier score and logarithmic score.
 
-> [!question] mkt-ta-227 | State the formula for the Brier score.
+> [!question]- mkt-ta-227 | State the formula for the Brier score.
 > Brier = (1 / N) * sum_{i=1}^N (f_i - o_i)^2, where f_i in [0, 1] is the forecasted probability and o_i in {0, 1} is the binary realization.
 > It penalizes deviations between predicted probabilities and actual binary outcomes.
 
-> [!question] mkt-ta-228 | State Murphy's (1973) Brier score decomposition.
+> [!question]- mkt-ta-228 | State Murphy's (1973) Brier score decomposition.
 > Brier = Reliability - Resolution + Uncertainty.
 > Reliability measures calibration error, Resolution measures discriminative sorting power, and Uncertainty measures the inherent entropy of the event base rate.
 
-> [!question] mkt-ta-229 | What is Reliability in Murphy's Brier decomposition?
+> [!question]- mkt-ta-229 | What is Reliability in Murphy's Brier decomposition?
 > The weighted sum of squared differences between average forecasted probabilities and observed frequencies across calibration bins.
 > A perfectly calibrated forecaster has a Reliability score of zero.
 
-> [!question] mkt-ta-230 | What is Resolution in Murphy's Brier decomposition?
+> [!question]- mkt-ta-230 | What is Resolution in Murphy's Brier decomposition?
 > The weighted sum of squared differences between conditional bin frequencies and the unconditional base rate.
 > Higher resolution indicates a superior ability to identify distinctly high-probability or low-probability opportunities.
 
-> [!question] mkt-ta-231 | What is the logarithmic score (cross-entropy) in probabilistic evaluation?
+> [!question]- mkt-ta-231 | What is the logarithmic score (cross-entropy) in probabilistic evaluation?
 > Log Loss = -sum [ o_i * ln(f_i) + (1 - o_i) * ln(1 - f_i) ] / N.
 > It imposes an infinite penalty on extreme overconfidence that turns out to be wrong (e.g. predicting 100% on an event that fails).
 
-> [!question] mkt-ta-232 | What is a probability calibration curve?
+> [!question]- mkt-ta-232 | What is a probability calibration curve?
 > A scatter plot dividing forecasts into probability deciles (x-axis) and plotting them against the actual observed frequency of success (y-axis).
 > An ideal forecaster follows the 45-degree diagonal line: events predicted with 70% probability occur exactly 70% of the time.
 
-> [!question] mkt-ta-233 | What is Expected Calibration Error (ECE)?
+> [!question]- mkt-ta-233 | What is Expected Calibration Error (ECE)?
 > The weighted average of the absolute differences between forecasted probabilities and observed frequencies across all bins: ECE = sum (n_k / N) * |f_k - o_k|.
 > It quantifies the expected percentage miscalibration in a model's confidence scores.
 
-> [!question] mkt-ta-234 | What is Platt scaling in probability calibration?
+> [!question]- mkt-ta-234 | What is Platt scaling in probability calibration?
 > Fitting a logistic regression model on raw model outputs: P(y=1|s) = 1 / (1 + exp(A * s + B)).
 > It transforms uncalibrated raw scores into well-calibrated probabilities.
 
-> [!question] mkt-ta-235 | What is walk-forward validation?
+> [!question]- mkt-ta-235 | What is walk-forward validation?
 > An out-of-sample backtesting procedure where an algorithm optimizes parameters on historical window [t - M, t], tests on future window [t, t + K], and rolls forward sequentially.
 > It simulates real-time deployment without look-ahead bias.
 
-> [!question] mkt-ta-236 | What is the Degradation Ratio in quantitative backtesting?
+> [!question]- mkt-ta-236 | What is the Degradation Ratio in quantitative backtesting?
 > The ratio of out-of-sample Sharpe ratio to in-sample Sharpe ratio: Degradation = Sharpe_OOS / Sharpe_IS.
 > A ratio below 0.50 signals significant strategy overfitting.
 
-> [!question] mkt-ta-237 | What is Combinatorially Symmetric Cross-Validation (CSCV)?
+> [!question]- mkt-ta-237 | What is Combinatorially Symmetric Cross-Validation (CSCV)?
 > A cross-validation technique developed by Bailey et al. (2016) that splits a dataset into N blocks and evaluates all combinations of training and testing subsets.
 > It preserves historical time structure while creating a distribution of out-of-sample rankings.
 
-> [!question] mkt-ta-238 | What is the Probability of Backtest Overfitting (PBO)?
+> [!question]- mkt-ta-238 | What is the Probability of Backtest Overfitting (PBO)?
 > The probability that the trading strategy selected as best in-sample ranks below the median performance out-of-sample across CSCV combinations.
 > PBO > 0.50 indicates that optimization is purely fitting historical noise.
 
-> [!question] mkt-ta-239 | What is the Deflated Sharpe Ratio (DSR)?
+> [!question]- mkt-ta-239 | What is the Deflated Sharpe Ratio (DSR)?
 > An analytical adjustment developed by Bailey and Lopez de Prado (2014) that discounts an observed Sharpe ratio based on the number of trials tested, sample length, skewness, and kurtosis.
 > It calculates the probability that an observed Sharpe exceeds the expected maximum of random trials.
 
-> [!question] mkt-ta-240 | What is the minimum backtest length required to achieve statistical confidence in a Sharpe ratio of 1.0?
+> [!question]- mkt-ta-240 | What is the minimum backtest length required to achieve statistical confidence in a Sharpe ratio of 1.0?
 > For a strategy with annualized Sharpe = 1.0 on daily data with normal returns, approximately 2 to 3 years of data are required to achieve t > 2.0.
 > If returns exhibit negative skewness, the required sample length doubles or triples.
 
-> [!question] mkt-ta-241 | What is trade expectancy in R-multiples?
+> [!question]- mkt-ta-241 | What is trade expectancy in R-multiples?
 > Expectancy = (Win Rate * Average Win in R) - (Loss Rate * Average Loss in R).
 > It quantifies the average expected dollar return per dollar risked on every execution.
 
-> [!question] mkt-ta-242 | Why is the Profit Factor a useful non-parametric performance metric?
+> [!question]- mkt-ta-242 | Why is the Profit Factor a useful non-parametric performance metric?
 > Profit Factor = Gross Profits / Gross Losses.
 > Unlike Sharpe ratio, it does not require assumptions of normally distributed returns and directly measures capital efficiency.
 
-> [!question] mkt-ta-243 | What is Maximum Favorable Excursion (MFE)?
+> [!question]- mkt-ta-243 | What is Maximum Favorable Excursion (MFE)?
 > The maximum unrealized profit reached by a trade between entry and exit.
 > Comparing MFE to actual realized gain reveals whether a trader is leaving substantial profit on the table or setting unrealistic profit targets.
 
-> [!question] mkt-ta-244 | What is Maximum Adverse Excursion (MAE)?
+> [!question]- mkt-ta-244 | What is Maximum Adverse Excursion (MAE)?
 > The maximum unrealized loss experienced by a trade between entry and exit.
 > Analyzing MAE across winning trades allows quantitative desks to optimize stop-loss placement just beyond normal trade noise.
 
-> [!question] mkt-ta-245 | What is execution slippage and how must it be modeled in backtests?
+> [!question]- mkt-ta-245 | What is execution slippage and how must it be modeled in backtests?
 > The difference between the signal price and actual fill price caused by market impact and latency.
 > Realistic backtests must deduct at least half the bid-ask spread plus volatility-scaled impact from every simulated fill.
 
-> [!question] mkt-ta-246 | What is the look-ahead bias trap in daily bar data?
+> [!question]- mkt-ta-246 | What is the look-ahead bias trap in daily bar data?
 > Triggering an entry at day t using closing price P_t, but recording execution at P_t itself without allowing for after-hours market movement.
 > Orders can execute only at the next day's open or during the official closing cross.
 
-> [!question] mkt-ta-247 | What is the Bonferroni correction for multiple testing?
+> [!question]- mkt-ta-247 | What is the Bonferroni correction for multiple testing?
 > A conservative adjustment that divides the desired significance level alpha by the total number of tested hypotheses: alpha_adjusted = alpha / M.
 > It ensures that the overall family-wise error rate across M tests remains below alpha.
 
-> [!question] mkt-ta-248 | Why is the Bonferroni correction often overly conservative in financial backtesting?
+> [!question]- mkt-ta-248 | Why is the Bonferroni correction often overly conservative in financial backtesting?
 > Because financial trading rules are highly correlated (e.g. 14-day RSI and 15-day RSI have correlation > 0.98), violating the independence assumption.
 > Frameworks like White's Reality Check or FDR provide more accurate correlation-adjusted thresholds.
 
-> [!question] mkt-ta-249 | What is survivorship bias in technical stock scanning?
+> [!question]- mkt-ta-249 | What is survivorship bias in technical stock scanning?
 > Backtesting technical rules on the current constituents of an index (e.g. current S&P 500) over past decades, ignoring all companies that were delisted.
 > It artificially inflates returns by eliminating every catastrophic corporate failure from the test universe.
 
-> [!question] mkt-ta-250 | What is point-in-time data?
+> [!question]- mkt-ta-250 | What is point-in-time data?
 > Historical data that reflects exactly what information was publicly known at each historical timestamp, without subsequent revisions or post-event adjustments.
 > Backtesting requires point-in-time financial and corporate action records to prevent look-ahead bias.
 
-> [!question] mkt-ta-251 | What is an anchor point in backtesting and why does changing it test robustness?
+> [!question]- mkt-ta-251 | What is an anchor point in backtesting and why does changing it test robustness?
 > The calendar start date of a simulation.
 > If shifting the start date by one month causes a profitable strategy to turn into a losing one, the model is fragile and overfitted.
 
-> [!question] mkt-ta-252 | What is Monte Carlo trade sequence resampling?
+> [!question]- mkt-ta-252 | What is Monte Carlo trade sequence resampling?
 > Randomly shuffling the sequential order of realized trade returns thousands of times to generate a distribution of simulated equity curves.
 > It reveals the true range of potential drawdowns that could occur under different sequencing of wins and losses.
 
-> [!question] mkt-ta-253 | What is a trading rule parameter plateau?
+> [!question]- mkt-ta-253 | What is a trading rule parameter plateau?
 > A wide, continuous range of adjacent parameter values that all produce stable, profitable performance.
 > True structural market edges manifest as parameter plateaus, whereas overfitted noise manifests as sharp, isolated parameter spikes.
 
-> [!question] mkt-ta-254 | How does the Brier Skill Score (BSS) evaluate a forecaster against a benchmark?
+> [!question]- mkt-ta-254 | How does the Brier Skill Score (BSS) evaluate a forecaster against a benchmark?
 > BSS = 1 - (Brier_forecaster / Brier_reference).
 > A BSS > 0 indicates predictive skill superior to a naive baseline; BSS = 1 represents perfect forecasting.
 
-> [!question] mkt-ta-255 | What is overconfidence bias in probability forecasting?
+> [!question]- mkt-ta-255 | What is overconfidence bias in probability forecasting?
 > The empirical tendency of humans to assign extreme probabilities (e.g. 90% or 95%) to uncertain future events that actually occur far less frequently.
 > Calibration feedback trains traders to compress confidence toward realistic base rates.
 
-> [!question] mkt-ta-256 | Why must a quantitative trader never deploy a strategy to live capital without passing the Capital Gate?
+> [!question]- mkt-ta-256 | Why must a quantitative trader never deploy a strategy to live capital without passing the Capital Gate?
 > A backtest is a hypothesis, not a guarantee.
 > The Capital Gate enforces pre-registered rules, minimum live paper sample validation, fixed stop limits, and strict risk budgeting before real capital is placed at risk.
 

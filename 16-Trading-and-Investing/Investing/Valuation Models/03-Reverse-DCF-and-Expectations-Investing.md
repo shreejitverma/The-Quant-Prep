@@ -185,100 +185,100 @@ The current $120 stock price demands that CyberShield grow revenue at **23.4% an
 
 ## Practice questions
 
-> [!question] mkt-val-065 | What is the fundamental premise of Expectations Investing?
+> [!question]- mkt-val-065 | What is the fundamental premise of Expectations Investing?
 > Rather than forecasting the future, start with the current stock price and solve for the operational expectations (growth, margins, CAP) embedded by the market.
 
-> [!question] mkt-val-066 | Who authored the foundational text 'Expectations Investing'?
+> [!question]- mkt-val-066 | Who authored the foundational text 'Expectations Investing'?
 > Alfred Rappaport and Michael J. Mauboussin.
 
-> [!question] mkt-val-067 | What is a Variant Perception in financial analysis?
+> [!question]- mkt-val-067 | What is a Variant Perception in financial analysis?
 > A well-reasoned, evidence-backed view that differs significantly from the consensus expectations embedded in current asset prices.
 
-> [!question] mkt-val-068 | How does a Reverse DCF differ mathematically from a standard DCF?
+> [!question]- mkt-val-068 | How does a Reverse DCF differ mathematically from a standard DCF?
 > Standard DCF inputs growth to output intrinsic value; Reverse DCF inputs market price and solves for the implied growth rate equating DCF value to market price.
 
-> [!question] mkt-val-069 | Why is an Expectations Grid useful in equity valuation?
+> [!question]- mkt-val-069 | Why is an Expectations Grid useful in equity valuation?
 > It maps various combinations of implied revenue growth rates and operating margins that satisfy the current stock price, revealing trade-offs.
 
-> [!question] mkt-val-070 | What is the TAM Collision failure mode?
+> [!question]- mkt-val-070 | What is the TAM Collision failure mode?
 > When a company's market-implied revenue growth requires it to capture an impossible percentage (e.g. >100%) of its Total Addressable Market.
 
-> [!question] mkt-val-071 | What numerical algorithm is commonly used to solve for implied growth in a Reverse DCF?
+> [!question]- mkt-val-071 | What numerical algorithm is commonly used to solve for implied growth in a Reverse DCF?
 > The Bisection Method or Newton-Raphson root-finding algorithm.
 
-> [!question] mkt-val-072 | Why does a stock price frequently drop after a company reports record revenue and profit?
+> [!question]- mkt-val-072 | Why does a stock price frequently drop after a company reports record revenue and profit?
 > Because reported results, while historically strong, fell short of the higher growth expectations already priced into the stock.
 
-> [!question] mkt-val-073 | What are the three primary operating value drivers in Expectations Investing?
+> [!question]- mkt-val-073 | What are the three primary operating value drivers in Expectations Investing?
 > Sales growth, operating profit margin, and incremental capital investment rate (working capital and capex).
 
-> [!question] mkt-val-074 | How does Competitive Advantage Period (CAP) function in Reverse DCF?
+> [!question]- mkt-val-074 | How does Competitive Advantage Period (CAP) function in Reverse DCF?
 > It represents the number of years the market expects the company to earn returns on incremental capital exceeding its WACC.
 
-> [!question] mkt-val-075 | What happens to implied growth if an analyst increases the WACC assumption in a Reverse DCF?
+> [!question]- mkt-val-075 | What happens to implied growth if an analyst increases the WACC assumption in a Reverse DCF?
 > Implied growth must increase; a higher discount rate depresses present value, requiring higher cash flows to match the observed market price.
 
-> [!question] mkt-val-076 | What happens to implied growth if an analyst increases the operating margin assumption?
+> [!question]- mkt-val-076 | What happens to implied growth if an analyst increases the operating margin assumption?
 > Implied growth decreases; higher profitability per dollar of sales produces more cash flow, requiring less revenue growth to justify the market price.
 
-> [!question] mkt-val-077 | What is an expectation trigger?
+> [!question]- mkt-val-077 | What is an expectation trigger?
 > An operational or strategic event (e.g. capacity expansion, regulatory approval, competitor exit) that causes market participants to revise embedded forecasts.
 
-> [!question] mkt-val-078 | Why is shorting a high-P/E stock solely because it is 'expensive' dangerous?
+> [!question]- mkt-val-078 | Why is shorting a high-P/E stock solely because it is 'expensive' dangerous?
 > High multiples often accurately reflect sustained high incremental returns and large runway; shorting requires an expectation catalyst showing embedded growth will disappoint.
 
-> [!question] mkt-val-079 | What is the 'expectations trap' for mature corporate management teams?
+> [!question]- mkt-val-079 | What is the 'expectations trap' for mature corporate management teams?
 > High stock prices create escalating market growth expectations, tempting management into destructive, overpriced acquisitions to manufacture revenue growth.
 
-> [!question] mkt-val-080 | How does Expectations Investing incorporate share repurchases?
+> [!question]- mkt-val-080 | How does Expectations Investing incorporate share repurchases?
 > Repurchases create value only when shares are repurchased at a price below intrinsic value; buying overvalued shares destroys ongoing shareholder wealth.
 
-> [!question] mkt-val-081 | How does unit economics analysis support Expectations Investing?
+> [!question]- mkt-val-081 | How does unit economics analysis support Expectations Investing?
 > Breaking sales into volume, price, customer acquisition cost, and churn allows an analyst to evaluate whether market-implied growth is operationally feasible.
 
-> [!question] mkt-val-082 | What is a 'beat-and-raise' quarter?
+> [!question]- mkt-val-082 | What is a 'beat-and-raise' quarter?
 > When a company exceeds current-quarter consensus expectations and simultaneously raises forward guidance, forcing an upward revision in embedded expectations.
 
-> [!question] mkt-val-083 | Why do cyclical companies trade at low P/E multiples at the peak of the cycle?
+> [!question]- mkt-val-083 | Why do cyclical companies trade at low P/E multiples at the peak of the cycle?
 > Because the market prices in mean-reverting negative earnings expectations, understanding that peak cash flows are temporary.
 
-> [!question] mkt-val-084 | Why do cyclical companies trade at high or negative P/E multiples at the trough of the cycle?
+> [!question]- mkt-val-084 | Why do cyclical companies trade at high or negative P/E multiples at the trough of the cycle?
 > Because the market anticipates a cyclical demand recovery, pricing in future earnings expansion well before reported net income recovers.
 
-> [!question] mkt-val-085 | What is cognitive anchoring in traditional DCF analysis?
+> [!question]- mkt-val-085 | What is cognitive anchoring in traditional DCF analysis?
 > Analysts subconsciously anchor on the current market price and adjust growth and discount rate inputs until the model output matches prevailing market quotes.
 
-> [!question] mkt-val-086 | How does a Reverse DCF protect an investor against cognitive anchoring?
+> [!question]- mkt-val-086 | How does a Reverse DCF protect an investor against cognitive anchoring?
 > By making the market's implied assumptions explicit, forcing the investor to debate the feasibility of the assumptions rather than defending an arbitrary price target.
 
-> [!question] mkt-val-087 | What is the relationship between consensus sell-side estimates and embedded market expectations?
+> [!question]- mkt-val-087 | What is the relationship between consensus sell-side estimates and embedded market expectations?
 > Consensus sell-side estimates provide a useful sentiment proxy, but stock prices often price in expectations substantially higher or lower than published sell-side models.
 
-> [!question] mkt-val-088 | If a company's market-implied growth rate is 0%, what does that tell an investor?
+> [!question]- mkt-val-088 | If a company's market-implied growth rate is 0%, what does that tell an investor?
 > The market is pricing the company as a no-growth perpetuity, offering high upside asymmetry if the firm achieves even modest positive organic growth.
 
-> [!question] mkt-val-089 | If a company's market-implied growth rate is negative, what is the market pricing in?
+> [!question]- mkt-val-089 | If a company's market-implied growth rate is negative, what is the market pricing in?
 > The market is pricing in terminal operational decline, revenue contraction, or structural competitive displacement.
 
-> [!question] mkt-val-090 | What role do management incentives (proxy statements) play in reading expectations?
+> [!question]- mkt-val-090 | What role do management incentives (proxy statements) play in reading expectations?
 > If management incentive bonuses are triggered by unrealistic growth hurdles, executives are heavily incentivized to pursue aggressive, high-risk growth strategies.
 
-> [!question] mkt-val-091 | How should an analyst handle stock-based compensation (SBC) in a Reverse DCF?
+> [!question]- mkt-val-091 | How should an analyst handle stock-based compensation (SBC) in a Reverse DCF?
 > Treat SBC as a real cash-equivalent operating expense or incorporate future share dilution into the share count, avoiding artificially inflated implied cash flows.
 
-> [!question] mkt-val-092 | What is the 'margin of safety' in an Expectations Investing framework?
+> [!question]- mkt-val-092 | What is the 'margin of safety' in an Expectations Investing framework?
 > The discount of the current stock price relative to intrinsic value calculated under conservative, highly probable operational scenarios.
 
-> [!question] mkt-val-093 | Why is an inverted DCF particularly effective for turnaround situations?
+> [!question]- mkt-val-093 | Why is an inverted DCF particularly effective for turnaround situations?
 > It shows precisely how much operational improvement (e.g. margin recovery from 2% to 6%) is required to justify the price, separating feasible turnarounds from pipe dreams.
 
-> [!question] mkt-val-094 | What does a flat stock price following an earnings beat indicate?
+> [!question]- mkt-val-094 | What does a flat stock price following an earnings beat indicate?
 > The positive surprise was already priced in by sophisticated market participants through whisper numbers, leaving no residual expectation gap.
 
-> [!question] mkt-val-095 | How does the script `quant_reverse_dcf.py` calculate implied growth?
+> [!question]- mkt-val-095 | How does the script `quant_reverse_dcf.py` calculate implied growth?
 > It takes historical free cash flows, current net debt, and market cap, and numerically iterates to find the growth rate equating discounted cash flows to enterprise value.
 
-> [!question] mkt-val-096 | What is the ultimate goal of an Expectations Investor?
+> [!question]- mkt-val-096 | What is the ultimate goal of an Expectations Investor?
 > To identify large, unpriced expectation revisions where the market's implied probability distribution deviates significantly from objective operational reality.
 
 ---

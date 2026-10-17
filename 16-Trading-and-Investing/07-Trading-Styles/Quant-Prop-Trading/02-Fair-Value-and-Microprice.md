@@ -157,131 +157,131 @@ Track three consecutive market updates for a security:
 
 ## Interview questions
 
-> [!question] mkt-pqt-033 | Why is the arithmetic mid-price an inadequate estimator of instantaneous fair value?
+> [!question]- mkt-pqt-033 | Why is the arithmetic mid-price an inadequate estimator of instantaneous fair value?
 > It weights the best bid and ask equally regardless of the volume of resting liquidity at each level.
 > When order queues are heavily asymmetric, the probability of an immediate tick in the direction of the thinner side is significantly higher.
 
-> [!question] mkt-pqt-034 | State the formula for the classical volume-weighted microprice.
+> [!question]- mkt-pqt-034 | State the formula for the classical volume-weighted microprice.
 > P_micro = (Q_b * P_a + Q_a * P_b) / (Q_b + Q_a), which equals Mid + ((Q_b - Q_a) / (Q_b + Q_a)) * (Spread / 2).
 > It interpolates linearly between bid and ask based on the Level 1 queue imbalance ratio.
 
-> [!question] mkt-pqt-035 | In Sasha Stoikov's 2018 model, how is the microprice formally defined?
+> [!question]- mkt-pqt-035 | In Sasha Stoikov's 2018 model, how is the microprice formally defined?
 > As the conditional expectation of the mid-price at the first future stopping time tau when the mid-price changes: P_micro = E[S_tau | S_0, I_0, w_0].
 > This martingale formulation accounts for transition rates across spread and imbalance states.
 
-> [!question] mkt-pqt-036 | What is Order Flow Imbalance (OFI) as defined by Cont, Kukanov, and Stoikov (2014)?
+> [!question]- mkt-pqt-036 | What is Order Flow Imbalance (OFI) as defined by Cont, Kukanov, and Stoikov (2014)?
 > OFI measures the net change in shares available at the best bid and offer across discrete market updates.
 > It quantifies the net balance between newly placed limit orders, market order fills, and order cancellations.
 
-> [!question] mkt-pqt-037 | What is the mathematical relationship between contemporaneous price change and OFI?
+> [!question]- mkt-pqt-037 | What is the mathematical relationship between contemporaneous price change and OFI?
 > Delta S_t = beta * OFI_t + epsilon_t.
 > Contemporaneous price changes exhibit an exceptionally tight linear relationship with net order flow imbalance.
 
-> [!question] mkt-pqt-038 | What does the regression slope beta represent in the OFI price impact equation?
+> [!question]- mkt-pqt-038 | What does the regression slope beta represent in the OFI price impact equation?
 > Beta represents the inverse of market depth, measuring the dollar price impact per share of net order flow imbalance.
 > Higher beta indicates lower market liquidity and greater vulnerability to market sweeps.
 
-> [!question] mkt-pqt-039 | Why does the E-mini S&P 500 futures contract lead the SPY ETF in price discovery?
+> [!question]- mkt-pqt-039 | Why does the E-mini S&P 500 futures contract lead the SPY ETF in price discovery?
 > The futures market has higher leverage, lower transaction fees, centralized 24-hour trading, and higher institutional volume.
 > Information reflects in the futures order book microseconds before arbitrageurs propagate it to the fragmented cash equity market.
 
-> [!question] mkt-pqt-040 | How do quantitative desks exploit lead-lag relationships in ETF market making?
+> [!question]- mkt-pqt-040 | How do quantitative desks exploit lead-lag relationships in ETF market making?
 > They calculate a synthetic fair value for the ETF by multiplying the real-time index futures price by the hedge ratio.
 > When the ETF quoted mid deviates from synthetic fair value, they quote aggressively to capture the expected convergence.
 
-> [!question] mkt-pqt-041 | What is a "thick book" versus a "thin book" stock in market microstructure?
+> [!question]- mkt-pqt-041 | What is a "thick book" versus a "thin book" stock in market microstructure?
 > A thick book has a bid-ask spread constrained to the minimum tick size ($0.01) with deep queues (thousands of shares) at the best quotes.
 > A thin book has a wide spread (multiple ticks) with sparse queues that frequently gap across price levels.
 
-> [!question] mkt-pqt-042 | Why is the Level 1 microprice more predictive in thick books than in thin books?
+> [!question]- mkt-pqt-042 | Why is the Level 1 microprice more predictive in thick books than in thin books?
 > In thick books, price cannot adjust continuously through the spread, so queue size exhaustion is the sole mechanism preceding a price move.
 > In thin books, quote cancellations and wider spreads introduce multi-level dynamics that Level 1 imbalance fails to capture.
 
-> [!question] mkt-pqt-043 | How do iceberg orders undermine the predictive power of the volume-weighted microprice?
+> [!question]- mkt-pqt-043 | How do iceberg orders undermine the predictive power of the volume-weighted microprice?
 > Iceberg orders conceal substantial non-displayed size, making a queue appear artificially thin.
 > The microprice predicts a price break toward the thin side, only for aggressive orders to be repeatedly absorbed by the hidden tranche.
 
-> [!question] mkt-pqt-044 | What is the Cancel-to-Trade Ratio (CTR) and what does a high ratio signify?
+> [!question]- mkt-pqt-044 | What is the Cancel-to-Trade Ratio (CTR) and what does a high ratio signify?
 > CTR is the number of order cancellations divided by the number of executed trades, often exceeding 20:1 in modern electronic markets.
 > A high CTR signifies intense latency competition and rapid quote shading rather than durable liquidity provision.
 
-> [!question] mkt-pqt-045 | Explain how queue cancellation can generate a negative OFI contribution at the bid.
+> [!question]- mkt-pqt-045 | Explain how queue cancellation can generate a negative OFI contribution at the bid.
 > If the bid price remains unchanged (P_b,t = P_b,t-1) but resting volume drops (Q_b,t < Q_b,t-1) without an execution, e_b,t is negative.
 > Liquidity withdrawal reduces buying support, shifting net order flow imbalance in the bearish direction.
 
-> [!question] mkt-pqt-046 | What is the difference between static order book imbalance and Order Flow Imbalance?
+> [!question]- mkt-pqt-046 | What is the difference between static order book imbalance and Order Flow Imbalance?
 > Static imbalance measures resting queue depth at a single instant: (Q_b - Q_a) / (Q_b + Q_a).
 > OFI measures the dynamic flux of volume entering and exiting the order book over a discrete time window.
 
-> [!question] mkt-pqt-047 | How is Kyle's lambda related to the market depth parameter beta in OFI models?
+> [!question]- mkt-pqt-047 | How is Kyle's lambda related to the market depth parameter beta in OFI models?
 > Kyle's lambda measures price change as a function of total signed order volume: Delta P = lambda * Q.
 > The OFI beta is an empirical analog that conditions on changes in the limit order book rather than aggregate traded volume.
 
-> [!question] mkt-pqt-048 | What is VPIN (Volume-Synchronized Probability of Toxicity)?
+> [!question]- mkt-pqt-048 | What is VPIN (Volume-Synchronized Probability of Toxicity)?
 > VPIN measures the historical imbalance between buyer-initiated and seller-initiated volume across equal-volume clock bars.
 > Developed by Easley, Lopez de Prado, and O'Hara (2012), it serves as a real-time toxicity gauge for market makers.
 
-> [!question] mkt-pqt-049 | Why do volume clock bars improve toxicity estimation compared to chronological time bars?
+> [!question]- mkt-pqt-049 | Why do volume clock bars improve toxicity estimation compared to chronological time bars?
 > Trade arrivals are clustered and non-stationary; chronological time bins over-sample quiet periods and under-sample volatile panics.
 > Volume clocks sample the market at a rate proportional to trading intensity, normalizing the information arrival rate.
 
-> [!question] mkt-pqt-050 | How does a quantitative desk use the microprice to shade its quoting spreads?
+> [!question]- mkt-pqt-050 | How does a quantitative desk use the microprice to shade its quoting spreads?
 > When the microprice is above mid, the desk skews its quotes upward by raising both its bid and ask.
 > This deters toxic buys of their ask while increasing the probability of filling passive limit buys at their higher bid.
 
-> [!question] mkt-pqt-051 | What is the effect of sub-penny pricing on US lit exchanges?
+> [!question]- mkt-pqt-051 | What is the effect of sub-penny pricing on US lit exchanges?
 > Rule 612 of SEC Regulation NMS prohibits sub-penny quotes for stocks priced above $1.00, enforcing a strict 1-cent minimum tick size.
 > This constraint artificially widens spreads on low-priced liquid stocks, creating massive queue backlogs and high adverse selection.
 
-> [!question] mkt-pqt-052 | How does dark pool midpoint crossing interact with the lit exchange microprice?
+> [!question]- mkt-pqt-052 | How does dark pool midpoint crossing interact with the lit exchange microprice?
 > Dark pools execute trades at the lit NBBO midpoint, providing price improvement over lit quotes.
 > However, if the lit microprice is skewed, executing at the simple midpoint transfers economic edge to the informed counterparty.
 
-> [!question] mkt-pqt-053 | What is quote stuffing in high-frequency market microstructure?
+> [!question]- mkt-pqt-053 | What is quote stuffing in high-frequency market microstructure?
 > Flooding an exchange with massive volumes of rapid limit orders and immediate cancellations to congest competitor order processing engines.
 > The resulting latency delay allows the offending firm to trade on price changes before competitors process the book update.
 
-> [!question] mkt-pqt-054 | Explain the concept of book skewness across multiple price levels (Level 2/3).
+> [!question]- mkt-pqt-054 | Explain the concept of book skewness across multiple price levels (Level 2/3).
 > Book skewness evaluates the volume profile slope across levels 1 through 5 on both sides of the book.
 > If the cumulative depth on the bid decays slower than the ask, institutional demand extends deeper into the book.
 
-> [!question] mkt-pqt-055 | What is a phantom liquidity trap?
+> [!question]- mkt-pqt-055 | What is a phantom liquidity trap?
 > Liquidity displayed by latency arbitrageurs across multiple venues that is cancelled the microsecond a market order hits the first venue.
 > An execution algorithm attempting to sweep the displayed size receives fills on only a fraction of the quoted depth.
 
-> [!question] mkt-pqt-056 | How does a market maker measure the information content of a trade fill?
+> [!question]- mkt-pqt-056 | How does a market maker measure the information content of a trade fill?
 > By computing the correlation between the fill direction and subsequent price movements at multiple horizons (10ms, 100ms, 1s, 5s).
 > Fills with persistently positive post-trade drift indicate high information content (toxic flow).
 
-> [!question] mkt-pqt-057 | Why does cross-venue consolidation introduce latency jitter into fair value calculations?
+> [!question]- mkt-pqt-057 | Why does cross-venue consolidation introduce latency jitter into fair value calculations?
 > Market data feeds from NASDAQ, NYSE, and Cboe arrive asynchronously over microwave and fiber links.
 > A consolidated quote engine must resolve race conditions where one venue's tick arrives milliseconds out of chronological sequence.
 
-> [!question] mkt-pqt-058 | What is the role of a Securities Information Processor (SIP) versus direct market feeds?
+> [!question]- mkt-pqt-058 | What is the role of a Securities Information Processor (SIP) versus direct market feeds?
 > The SIP consolidates and publishes the official NBBO across all exchanges, but incurs 10 to 50 microseconds of aggregation latency.
 > HFT prop desks bypass the SIP and construct their own proprietary consolidated tape from direct multicast exchange feeds.
 
-> [!question] mkt-pqt-059 | What is the Trade-Through Rule (Rule 611 of Regulation NMS)?
+> [!question]- mkt-pqt-059 | What is the Trade-Through Rule (Rule 611 of Regulation NMS)?
 > Rule 611 requires trading venues to establish policies preventing the execution of orders at price levels inferior to protected quotes on other exchanges.
 > It enforces national price priority across lit US trading centers.
 
-> [!question] mkt-pqt-060 | How does an inverted exchange exploit queue priority?
+> [!question]- mkt-pqt-060 | How does an inverted exchange exploit queue priority?
 > Traders who are unwilling to wait at the back of a 50,000-share queue on a maker-taker exchange route to an inverted venue where queues are short.
 > They pay a taker fee or accept a lower maker rebate to achieve immediate queue execution.
 
-> [!question] mkt-pqt-061 | In statistical arbitrage, how is the cointegration spread used as a fair value anchor?
+> [!question]- mkt-pqt-061 | In statistical arbitrage, how is the cointegration spread used as a fair value anchor?
 > For two cointegrated assets X and Y, their long-term spread S = Y - beta * X is stationary with a constant mean.
 > When S deviates significantly from its historical mean, the desk prices fair value expecting mean reversion.
 
-> [!question] mkt-pqt-062 | What happens to the microprice during an institutional market order sweep?
+> [!question]- mkt-pqt-062 | What happens to the microprice during an institutional market order sweep?
 > The microprice violently jumps through the opposite quote as resting depth on the target side is completely annihilated in zero microseconds.
 > Algorithms monitoring microprice velocity trigger defensive quote cancellations before their resting orders are filled.
 
-> [!question] mkt-pqt-063 | What is a markout ratio and how does it diagnose quote shading efficiency?
+> [!question]- mkt-pqt-063 | What is a markout ratio and how does it diagnose quote shading efficiency?
 > The markout ratio compares the net PnL captured at 1 second to the theoretical half-spread quoted at trade time.
 > A markout ratio above 0.50 indicates that quote shading successfully absorbed flow without conceding excessive adverse selection.
 
-> [!question] mkt-pqt-064 | Why does the predictive power of OFI decay rapidly beyond a 5-second horizon?
+> [!question]- mkt-pqt-064 | Why does the predictive power of OFI decay rapidly beyond a 5-second horizon?
 > Order flow imbalance at the top of the book is a high-frequency, localized phenomenon.
 > Beyond several seconds, macroeconomic releases, institutional algorithmic scheduling, and broader liquidity replenishment dominate price discovery.
 

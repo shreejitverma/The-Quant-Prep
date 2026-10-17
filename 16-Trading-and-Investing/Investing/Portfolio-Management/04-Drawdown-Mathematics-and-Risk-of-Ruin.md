@@ -216,100 +216,100 @@ If cushion $C(t) \to 0$, the portfolio shifts 100% to risk-free cash/bonds, trig
 
 ## Flashcard drill bank
 
-> [!question] mkt-pf-097 | What is the formula for the recovery return required to offset a drawdown D?
+> [!question]- mkt-pf-097 | What is the formula for the recovery return required to offset a drawdown D?
 > R_rec = D / (1 - D).
 
-> [!question] mkt-pf-098 | Why is a 50% drawdown fundamentally more dangerous than two consecutive 25% drawdowns?
+> [!question]- mkt-pf-098 | Why is a 50% drawdown fundamentally more dangerous than two consecutive 25% drawdowns?
 > Two 25% drawdowns compound to a 43.75% cumulative loss (1 - 0.75 * 0.75), which requires a 77.8% recovery, whereas a single 50% loss requires a 100% recovery.
 
-> [!question] mkt-pf-099 | What is a high-water mark (HWM) in portfolio management?
+> [!question]- mkt-pf-099 | What is a high-water mark (HWM) in portfolio management?
 > The highest historical peak value achieved by a portfolio or fund, used as the baseline for calculating drawdowns and incentive fees.
 
-> [!question] mkt-pf-100 | What is the definition of Maximum Drawdown (MDD)?
+> [!question]- mkt-pf-100 | What is the definition of Maximum Drawdown (MDD)?
 > The maximum observed peak-to-trough percentage decline in portfolio equity over a specified historical horizon.
 
-> [!question] mkt-pf-101 | How is the Calmar ratio calculated?
+> [!question]- mkt-pf-101 | How is the Calmar ratio calculated?
 > Annualized Compound Growth Rate (CAGR) divided by Maximum Drawdown (MDD) over a specified period.
 
-> [!question] mkt-pf-102 | What is the Ulcer Index?
+> [!question]- mkt-pf-102 | What is the Ulcer Index?
 > A path-dependent volatility metric that computes the quadratic mean (RMS) of percentage drawdowns from the high-water mark across all time steps.
 
-> [!question] mkt-pf-103 | What is underwater duration?
+> [!question]- mkt-pf-103 | What is underwater duration?
 > The total length of time a portfolio spends below its previous peak before establishing a new high-water mark.
 
-> [!question] mkt-pf-104 | What is the Sterling ratio?
+> [!question]- mkt-pf-104 | What is the Sterling ratio?
 > CAGR divided by the average annual drawdown minus an arbitrary threshold (conventionally 10%).
 
-> [!question] mkt-pf-105 | What is the Burke ratio?
+> [!question]- mkt-pf-105 | What is the Burke ratio?
 > Excess portfolio return divided by the square root of the sum of squared drawdowns.
 
-> [!question] mkt-pf-106 | In classical gambler's ruin with win probability p = 0.50 and unlimited target, what is the ruin probability?
+> [!question]- mkt-pf-106 | In classical gambler's ruin with win probability p = 0.50 and unlimited target, what is the ruin probability?
 > Exactly 1.0 (certainty of ruin), because a fair random walk is recurrent and hits zero with probability one.
 
-> [!question] mkt-pf-107 | What is the gambler's ruin formula for p > 0.5 with initial units C and no upper ceiling?
+> [!question]- mkt-pf-107 | What is the gambler's ruin formula for p > 0.5 with initial units C and no upper ceiling?
 > P(Ruin) = (q / p)^C, where q = 1 - p.
 
-> [!question] mkt-pf-108 | In continuous geometric Brownian motion, how does expected MDD scale with time T when drift is zero?
+> [!question]- mkt-pf-108 | In continuous geometric Brownian motion, how does expected MDD scale with time T when drift is zero?
 > It scales proportionally to sigma * sqrt(T).
 
-> [!question] mkt-pf-109 | How does expected MDD scale with time T when geometric drift is positive (alpha > 0)?
+> [!question]- mkt-pf-109 | How does expected MDD scale with time T when geometric drift is positive (alpha > 0)?
 > It scales logarithmically with time: proportional to (sigma^2 / (2 * alpha)) * ln(T).
 
-> [!question] mkt-pf-110 | What is Sequence of Returns Risk (SRR)?
+> [!question]- mkt-pf-110 | What is Sequence of Returns Risk (SRR)?
 > The risk that the chronological ordering of investment returns negatively impacts terminal wealth when capital withdrawals or additions occur.
 
-> [!question] mkt-pf-111 | Why does SRR not matter if there are zero cash inflows or outflows?
+> [!question]- mkt-pf-111 | Why does SRR not matter if there are zero cash inflows or outflows?
 > Because portfolio compounding without cash flows is commutative: multiplication of returns yields the identical final wealth regardless of order.
 
-> [!question] mkt-pf-112 | What is variance decay or volatility drag in levered instruments?
+> [!question]- mkt-pf-112 | What is variance decay or volatility drag in levered instruments?
 > The mathematical reduction in compound growth caused by volatility: geometric growth rate equals arithmetic mean minus one-half variance (mu - 0.5 * sigma^2).
 
-> [!question] mkt-pf-113 | In Constant Proportion Portfolio Insurance (CPPI), what is the cushion C(t)?
+> [!question]- mkt-pf-113 | In Constant Proportion Portfolio Insurance (CPPI), what is the cushion C(t)?
 > Total portfolio wealth minus the predetermined guaranteed capital floor: C(t) = max(0, W(t) - F(t)).
 
-> [!question] mkt-pf-114 | What is the CPPI multiplier m?
+> [!question]- mkt-pf-114 | What is the CPPI multiplier m?
 > A constant scaling factor applied to the cushion to determine the dollar equity allocation: E(t) = m * C(t).
 
-> [!question] mkt-pf-115 | What is the maximum market gap drop a CPPI portfolio can tolerate before breaching its floor?
+> [!question]- mkt-pf-115 | What is the maximum market gap drop a CPPI portfolio can tolerate before breaching its floor?
 > Delta S / S <= 1 / m.
 
-> [!question] mkt-pf-116 | What is the 'cash lock' problem in CPPI structures?
+> [!question]- mkt-pf-116 | What is the 'cash lock' problem in CPPI structures?
 > If asset prices drop so severely that the cushion hits zero, the algorithm shifts 100% into cash and bonds, preventing participation in subsequent market recoveries.
 
-> [!question] mkt-pf-117 | How does volatility targeting reduce extreme portfolio drawdowns?
+> [!question]- mkt-pf-117 | How does volatility targeting reduce extreme portfolio drawdowns?
 > By dynamically scaling position leverage inversely to forecasted volatility, reducing risk exposure when market volatility spikes.
 
-> [!question] mkt-pf-118 | Why does a fixed-fraction position sizing model prevent absolute mathematical ruin in discrete terms?
+> [!question]- mkt-pf-118 | Why does a fixed-fraction position sizing model prevent absolute mathematical ruin in discrete terms?
 > Because risking a fixed fraction f of equity mathematically never reaches zero in continuous theory (W_n = W_0 * (1 - f)^n > 0 for all finite n).
 
-> [!question] mkt-pf-119 | What is 'effective ruin' in commercial quantitative management?
+> [!question]- mkt-pf-119 | What is 'effective ruin' in commercial quantitative management?
 > Reaching a drawdown threshold (e.g., -25% or -30%) where investors redeem capital and the fund is involuntarily liquidated, regardless of theoretical asymptotic survival.
 
-> [!question] mkt-pf-120 | What is the difference between a trailing stop-loss and a hard price stop?
+> [!question]- mkt-pf-120 | What is the difference between a trailing stop-loss and a hard price stop?
 > A hard stop executes at a fixed nominal price, while a trailing stop moves upward with the high-water mark, locking in gains and capping peak-to-trough drawdowns.
 
-> [!question] mkt-pf-121 | What is an absorbing barrier in stochastic calculus?
+> [!question]- mkt-pf-121 | What is an absorbing barrier in stochastic calculus?
 > A state boundary that, once reached by a stochastic process, terminates the process with zero probability of exit.
 
-> [!question] mkt-pf-122 | How does fat-tailed (leptokurtic) return distribution affect empirical ruin probabilities?
+> [!question]- mkt-pf-122 | How does fat-tailed (leptokurtic) return distribution affect empirical ruin probabilities?
 > Extreme negative jump events vastly increase ruin probabilities compared to Gaussian normal models.
 
-> [!question] mkt-pf-123 | What is the Pain Index in portfolio performance measurement?
+> [!question]- mkt-pf-123 | What is the Pain Index in portfolio performance measurement?
 > The mean depth of drawdowns over a specified period, calculated as the integral of the drawdown curve divided by total time.
 
-> [!question] mkt-pf-124 | What is the primary operational cause of sudden hedge fund blowups?
+> [!question]- mkt-pf-124 | What is the primary operational cause of sudden hedge fund blowups?
 > Excessive leverage combined with illiquid collateral during margin calls, forcing asset sales at liquidation prices.
 
-> [!question] mkt-pf-125 | What is the Martingale betting system, and why does it lead to ruin?
+> [!question]- mkt-pf-125 | What is the Martingale betting system, and why does it lead to ruin?
 > Doubling the bet size after every loss; with finite bankrolls or table limits, an inevitable string of consecutive losses causes total ruin.
 
-> [!question] mkt-pf-126 | What is the Anti-Martingale betting strategy?
+> [!question]- mkt-pf-126 | What is the Anti-Martingale betting strategy?
 > Increasing position size as equity grows and decreasing position size during drawdowns, preserving capital during losing streaks.
 
-> [!question] mkt-pf-127 | How does cross-sectional diversification protect against portfolio drawdowns?
+> [!question]- mkt-pf-127 | How does cross-sectional diversification protect against portfolio drawdowns?
 > Uncorrelated asset returns allow gains in unaffected assets to offset losses in declining assets, dampening the portfolio-level high-water mark drawdown.
 
-> [!question] mkt-pf-128 | What is the primary golden rule of drawdown risk management?
+> [!question]- mkt-pf-128 | What is the primary golden rule of drawdown risk management?
 > Capital preservation comes first: avoid catastrophic losses that move the portfolio into the steep right-tail of the non-linear recovery curve.
 
 ---

@@ -244,6 +244,8 @@ PERSONA_CONFIGS = {
     },
 }
 
+PERSONA_CHOICES: list[str] = ["holistic", *list(PERSONA_CONFIGS.keys())]
+
 
 def get_card_count_for_prefix(cards: dict[str, Any], prefix: str) -> int:
     """Count how many cards matching the prefix exist in the vault."""

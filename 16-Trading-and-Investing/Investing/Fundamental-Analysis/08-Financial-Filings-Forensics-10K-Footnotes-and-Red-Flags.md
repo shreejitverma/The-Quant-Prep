@@ -203,100 +203,100 @@ Headline revenue and net income appear solid, but underlying fundamentals are se
 
 ## Practice questions
 
-> [!question] mkt-fa-225 | What is the statutory filing deadline for a Form 10-K for a Large Accelerated Filer?
+> [!question]- mkt-fa-225 | What is the statutory filing deadline for a Form 10-K for a Large Accelerated Filer?
 > 60 days after the end of the fiscal year.
 
-> [!question] mkt-fa-226 | What is the difference between a Form 10-K and a Form 10-Q regarding audit verification?
+> [!question]- mkt-fa-226 | What is the difference between a Form 10-K and a Form 10-Q regarding audit verification?
 > Form 10-K must be fully audited by an independent registered public accounting firm; Form 10-Q is reviewed but unaudited.
 
-> [!question] mkt-fa-227 | What is the deadline to file a Form 8-K following a triggering material corporate event?
+> [!question]- mkt-fa-227 | What is the deadline to file a Form 8-K following a triggering material corporate event?
 > Four business days after the occurrence of the material event.
 
-> [!question] mkt-fa-228 | What does an 8-K Item 4.02 filing declare to the market?
+> [!question]- mkt-fa-228 | What does an 8-K Item 4.02 filing declare to the market?
 > Non-Reliance on Previously Issued Financial Statements, indicating that prior published accounting figures were materially flawed and must be restated.
 
-> [!question] mkt-fa-229 | What does an 8-K Item 4.01 filing indicate?
+> [!question]- mkt-fa-229 | What does an 8-K Item 4.01 filing indicate?
 > A change in the company's certifying public accountant (dismissal or resignation of the external independent auditor).
 
-> [!question] mkt-fa-230 | Which section of the 10-K contains Management's Discussion and Analysis?
+> [!question]- mkt-fa-230 | Which section of the 10-K contains Management's Discussion and Analysis?
 > Item 7 of Part II.
 
-> [!question] mkt-fa-231 | Why is tracking year-over-year textual modifications in Item 1A (Risk Factors) valuable?
+> [!question]- mkt-fa-231 | Why is tracking year-over-year textual modifications in Item 1A (Risk Factors) valuable?
 > Textual additions reveal emerging legal liabilities, customer loss risks, or operational threats that management is legally obliged to disclose.
 
-> [!question] mkt-fa-232 | What is a Contract Asset under ASC 606 revenue recognition?
+> [!question]- mkt-fa-232 | What is a Contract Asset under ASC 606 revenue recognition?
 > Revenue recognized for goods or services delivered when the right to receive payment is conditional on factors other than the passage of time (unbilled receivables).
 
-> [!question] mkt-fa-233 | How does a sudden surge in Contract Assets indicate revenue recognition risk?
+> [!question]- mkt-fa-233 | How does a sudden surge in Contract Assets indicate revenue recognition risk?
 > It reveals that management is booking revenue based on internal estimates of performance obligations before achieving the legal right to send an invoice.
 
-> [!question] mkt-fa-234 | What does a sequential decline in Deferred Revenue signal for a subscription software company?
+> [!question]- mkt-fa-234 | What does a sequential decline in Deferred Revenue signal for a subscription software company?
 > It signals that customer renewals and new bookings are contracting, which will cause future reported revenue growth to stall.
 
-> [!question] mkt-fa-235 | What is Remaining Performance Obligations (RPO)?
+> [!question]- mkt-fa-235 | What is Remaining Performance Obligations (RPO)?
 > The aggregate dollar amount of contractually committed customer fees that have not yet been recognized as revenue (contract backlog).
 
-> [!question] mkt-fa-236 | How can a company use the tax valuation allowance to manipulate reported net income?
+> [!question]- mkt-fa-236 | How can a company use the tax valuation allowance to manipulate reported net income?
 > By reversing a previously established allowance on Deferred Tax Assets, creating a non-cash negative tax expense that inflates Net Income.
 
-> [!question] mkt-fa-237 | What is the purpose of the Effective Tax Rate reconciliation schedule in the tax footnote?
+> [!question]- mkt-fa-237 | What is the purpose of the Effective Tax Rate reconciliation schedule in the tax footnote?
 > To explain the exact mathematical differences between the statutory corporate tax rate and the effective tax rate reported on the income statement.
 
-> [!question] mkt-fa-238 | What is a debt maintenance covenant?
+> [!question]- mkt-fa-238 | What is a debt maintenance covenant?
 > A contractual clause in a credit agreement requiring the borrower to maintain financial ratios (e.g. Debt/EBITDA, Interest Coverage) above defined minimum levels.
 
-> [!question] mkt-fa-239 | What happens when a company breaches a debt covenant?
+> [!question]- mkt-fa-239 | What happens when a company breaches a debt covenant?
 > The breach constitutes a technical default, giving lenders the right to demand immediate repayment, increase interest rates, or seize pledged collateral.
 
-> [!question] mkt-fa-240 | Why is the debt maturity schedule in the footnotes critical for solvency analysis?
+> [!question]- mkt-fa-240 | Why is the debt maturity schedule in the footnotes critical for solvency analysis?
 > It highlights upcoming debt refinancing cliffs, exposing liquidity crunches if large tranches mature during tight credit market conditions.
 
-> [!question] mkt-fa-241 | How do companies game defined benefit pension footnotes?
+> [!question]- mkt-fa-241 | How do companies game defined benefit pension footnotes?
 > By raising the expected rate of return on plan assets or increasing the discount rate, which artificially reduces pension liabilities and annual pension expense.
 
-> [!question] mkt-fa-242 | What does an underfunded pension plan represent economically?
+> [!question]- mkt-fa-242 | What does an underfunded pension plan represent economically?
 > Senior debt-like liability requiring future corporate cash contributions to meet statutory employee retirement obligations.
 
-> [!question] mkt-fa-243 | Why are related-party transactions a major corporate governance red flag?
+> [!question]- mkt-fa-243 | Why are related-party transactions a major corporate governance red flag?
 > They indicate self-dealing, transfer of corporate resources to executives or insiders, and ineffective oversight by the Board of Directors.
 
-> [!question] mkt-fa-244 | What is the DEF 14A filing?
+> [!question]- mkt-fa-244 | What is the DEF 14A filing?
 > The definitive proxy statement filed prior to the annual shareholder meeting, detailing executive compensation, board elections, and voting matters.
 
-> [!question] mkt-fa-245 | Why is executive compensation tied strictly to "Adjusted EBITDA" problematic?
+> [!question]- mkt-fa-245 | Why is executive compensation tied strictly to "Adjusted EBITDA" problematic?
 > It incentivizes executives to execute dilutive acquisitions and ignore real cash costs (SBC, restructuring) excluded from Adjusted EBITDA definitions.
 
-> [!question] mkt-fa-246 | What is the golden parachute provision in executive contracts?
+> [!question]- mkt-fa-246 | What is the golden parachute provision in executive contracts?
 > Substantial guaranteed payouts, accelerated stock vesting, and bonuses awarded to top executives if the company is acquired.
 
-> [!question] mkt-fa-247 | What is the risk of an executive pledging common shares against personal margin loans?
+> [!question]- mkt-fa-247 | What is the risk of an executive pledging common shares against personal margin loans?
 > If the stock price declines, lenders issue margin calls, triggering forced open-market sales that precipitate cascading share price collapses.
 
-> [!question] mkt-fa-248 | What is a Form 4 SEC filing?
+> [!question]- mkt-fa-248 | What is a Form 4 SEC filing?
 > A filing reporting changes in ownership by corporate insiders (directors, officers, and >10% beneficial owners) within two business days of a transaction.
 
-> [!question] mkt-fa-249 | What does a cluster of insider open-market sales by both the CEO and CFO typically signal?
+> [!question]- mkt-fa-249 | What does a cluster of insider open-market sales by both the CEO and CFO typically signal?
 > Deteriorating internal operational visibility and impending earnings disappointments, as insiders reduce personal economic exposure.
 
-> [!question] mkt-fa-250 | How does a company disguise recurring operating expenses as restructuring charges?
+> [!question]- mkt-fa-250 | How does a company disguise recurring operating expenses as restructuring charges?
 > By continuously taking "one-time" restructuring charges year after year, encouraging Wall Street analysts to ignore real operating cash drains.
 
-> [!question] mkt-fa-251 | What is a LIFO liquidation gain?
+> [!question]- mkt-fa-251 | What is a LIFO liquidation gain?
 > When a LIFO firm liquidates older, lower-cost inventory layers during inflation, artificially boosting gross margin with historical inventory costs.
 
-> [!question] mkt-fa-252 | Where in the 10-K can an analyst find details of ongoing litigation and potential fines?
+> [!question]- mkt-fa-252 | Where in the 10-K can an analyst find details of ongoing litigation and potential fines?
 > In the Commitments and Contingencies footnote in Item 8.
 
-> [!question] mkt-fa-253 | What is an Audit Committee Chair resignation red flag?
+> [!question]- mkt-fa-253 | What is an Audit Committee Chair resignation red flag?
 > A sudden resignation of the Audit Committee Chair, especially if followed by auditor change, signals unresolvable disagreements over financial reporting integrity.
 
-> [!question] mkt-fa-254 | What footnote reveals true dilution potential from executive stock options?
+> [!question]- mkt-fa-254 | What footnote reveals true dilution potential from executive stock options?
 > The Stock-Based Compensation footnote, detailing outstanding options, strike prices, restricted stock units, and vesting timelines.
 
-> [!question] mkt-fa-255 | Why is an unexpected increase in "Principal Accounting Fees and Services" noteworthy?
+> [!question]- mkt-fa-255 | Why is an unexpected increase in "Principal Accounting Fees and Services" noteworthy?
 > A surge in non-audit fees or specialized accounting advisory fees often indicates complex financial engineering or defense against forensic regulatory inquiries.
 
-> [!question] mkt-fa-256 | What is the ultimate objective of 10-K footnote forensics?
+> [!question]- mkt-fa-256 | What is the ultimate objective of 10-K footnote forensics?
 > To dismantle management's public narrative, quantify hidden liabilities, normalize true earnings power, and uncover risks before they manifest in market prices.
 
 ---

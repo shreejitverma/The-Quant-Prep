@@ -182,100 +182,100 @@ Portfolio constraints reduce realized performance by more than $57\%$ despite id
 
 ## Interview questions
 
-> [!question] mkt-sys-033 | What is the fundamental difference between cross-sectional and time-series momentum?
+> [!question]- mkt-sys-033 | What is the fundamental difference between cross-sectional and time-series momentum?
 > Cross-sectional momentum evaluates relative rank across a peer universe at a single timestamp, whereas time-series momentum evaluates an asset's absolute directional trajectory over its own history.
 
-> [!question] mkt-sys-034 | State Grinold's Fundamental Law of Active Management.
+> [!question]- mkt-sys-034 | State Grinold's Fundamental Law of Active Management.
 > The Fundamental Law states that Information Ratio is approximately equal to Information Coefficient times the square root of Breadth: IR = IC * sqrt(BR).
 
-> [!question] mkt-sys-035 | What is the Transfer Coefficient (TC) in active portfolio management?
+> [!question]- mkt-sys-035 | What is the Transfer Coefficient (TC) in active portfolio management?
 > TC measures the cross-sectional correlation between risk-adjusted alpha forecasts and actual active portfolio weights, quantifying performance loss from portfolio constraints.
 
-> [!question] mkt-sys-036 | Define the Information Coefficient (IC) in quantitative research.
+> [!question]- mkt-sys-036 | Define the Information Coefficient (IC) in quantitative research.
 > The IC is the correlation between an alpha signal's cross-sectional predictions at time t and the forward realized asset returns over the holding period t to t + Delta t.
 
-> [!question] mkt-sys-037 | Why is Spearman Rank IC generally preferred over Pearson IC for equity signals?
+> [!question]- mkt-sys-037 | Why is Spearman Rank IC generally preferred over Pearson IC for equity signals?
 > Spearman Rank IC evaluates rank order correlation, making it robust to extreme single-stock return outliers and invariant to monotonic non-linear feature scalings.
 
-> [!question] mkt-sys-038 | Define IC Information Ratio (ICIR).
+> [!question]- mkt-sys-038 | Define IC Information Ratio (ICIR).
 > ICIR is the ratio of the mean IC across rebalance periods to the standard deviation of IC: ICIR = Mean(IC) / StdDev(IC), measuring signal consistency over time.
 
-> [!question] mkt-sys-039 | What is Winsorization and why is it mandatory for raw financial features?
+> [!question]- mkt-sys-039 | What is Winsorization and why is it mandatory for raw financial features?
 > Winsorization caps extreme feature values at specified percentiles or MAD limits, preventing severe outliers from dominating cross-sectional z-scores and optimizer weights.
 
-> [!question] mkt-sys-040 | How is Median Absolute Deviation (MAD) defined and why is it superior to sample variance?
+> [!question]- mkt-sys-040 | How is Median Absolute Deviation (MAD) defined and why is it superior to sample variance?
 > MAD = Median(|x_i - Median(x)|); it is a non-parametric dispersion measure that is insensitive to extreme outliers, unlike sample variance which squares extreme values.
 
-> [!question] mkt-sys-041 | What is uniform rank standardization of an alpha signal?
+> [!question]- mkt-sys-041 | What is uniform rank standardization of an alpha signal?
 > Uniform rank standardization maps asset values to evenly spaced scores across [-0.5, +0.5] by sorting, eliminating distribution skewness and kurtosis.
 
-> [!question] mkt-sys-042 | What is signal half-life and how does it relate to exponential decay?
+> [!question]- mkt-sys-042 | What is signal half-life and how does it relate to exponential decay?
 > Signal half-life is the time horizon over which signal predictive correlation decays by 50%, derived as t_{1/2} = ln(2) / lambda from exponential decay exp(-lambda * t).
 
-> [!question] mkt-sys-043 | How does rebalancing frequency relate to signal half-life?
+> [!question]- mkt-sys-043 | How does rebalancing frequency relate to signal half-life?
 > Rebalancing should be aligned with signal half-life; rebalancing too frequently incurs unnecessary transaction costs, while rebalancing too slowly allows alpha to decay uncaptured.
 
-> [!question] mkt-sys-044 | Why does a long-only constraint significantly reduce the Transfer Coefficient?
+> [!question]- mkt-sys-044 | Why does a long-only constraint significantly reduce the Transfer Coefficient?
 > Because an unconstrained optimizer wants to take large short positions in low-alpha names; a long-only constraint truncates underweighting to at most the benchmark weight.
 
-> [!question] mkt-sys-045 | What is the cross-sectional z-score formula?
+> [!question]- mkt-sys-045 | What is the cross-sectional z-score formula?
 > z_{i, t} = (x_{i, t} - mu_{x, t}) / sigma_{x, t}, standardizing features to zero cross-sectional mean and unit variance across the universe at timestamp t.
 
-> [!question] mkt-sys-046 | Why does cross-sectional momentum have zero market beta by design?
+> [!question]- mkt-sys-046 | Why does cross-sectional momentum have zero market beta by design?
 > Because it enters long positions in top-ranked stocks and equally weighted short positions in bottom-ranked stocks, neutralizing broad market exposure if betas are symmetric.
 
-> [!question] mkt-sys-047 | What is the 12-minus-1 month momentum rule (Jegadeesh-Titman)?
+> [!question]- mkt-sys-047 | What is the 12-minus-1 month momentum rule (Jegadeesh-Titman)?
 > It measures price return from 12 months ago to 1 month ago, skipping the most recent month to avoid short-term liquidity-driven microstructure reversal.
 
-> [!question] mkt-sys-048 | Why do high-frequency signals have much higher breadth BR than fundamental signals?
+> [!question]- mkt-sys-048 | Why do high-frequency signals have much higher breadth BR than fundamental signals?
 > High-frequency signals generate trading decisions thousands of times per day across many assets, whereas quarterly fundamental signals update only a few times per year.
 
-> [!question] mkt-sys-049 | What is signal orthogonalization and why is it performed?
+> [!question]- mkt-sys-049 | What is signal orthogonalization and why is it performed?
 > Orthogonalization strips overlapping linear factor exposures (e.g. market, size, industry) from an alpha signal via regression, isolating pure idiosyncratic forecasting power.
 
-> [!question] mkt-sys-050 | How does cross-sectional correlation among assets reduce effective breadth BR?
+> [!question]- mkt-sys-050 | How does cross-sectional correlation among assets reduce effective breadth BR?
 > If 500 stocks move together with an average correlation of 0.50, they do not represent 500 independent bets; effective breadth is much lower: N / (1 + (N - 1) * rho).
 
-> [!question] mkt-sys-051 | What is sign transformation in trend following?
+> [!question]- mkt-sys-051 | What is sign transformation in trend following?
 > Mapping raw momentum or return values to a ternary signal {-1, 0, +1} or sign(R), focusing solely on trend direction rather than trend magnitude.
 
-> [!question] mkt-sys-052 | How does lookahead bias occur in signal calculation?
+> [!question]- mkt-sys-052 | How does lookahead bias occur in signal calculation?
 > It occurs when features incorporate data published after the trade decision timestamp, such as using un-lagged financial statement releases or end-of-day prices for open orders.
 
-> [!question] mkt-sys-053 | What is the information coefficient of an efficient market under the EMH?
+> [!question]- mkt-sys-053 | What is the information coefficient of an efficient market under the EMH?
 > Under the semi-strong efficient market hypothesis, public information has zero predictive power for future returns, implying expected IC = 0.0.
 
-> [!question] mkt-sys-054 | What is a rolling z-score in time-series momentum?
+> [!question]- mkt-sys-054 | What is a rolling z-score in time-series momentum?
 > Standardizing an asset's current return or price against its own historical mean and standard deviation over lookback window L: z_{i, t} = (x_{i, t} - mu_{i, L}) / sigma_{i, L}.
 
-> [!question] mkt-sys-055 | Why is IC alone insufficient to determine commercial viability?
+> [!question]- mkt-sys-055 | Why is IC alone insufficient to determine commercial viability?
 > A signal with high IC but rapid decay and high turnover may consume all gross profits in transaction fees, market impact, and borrow costs.
 
-> [!question] mkt-sys-056 | How does PCA orthogonalization combine correlated signals?
+> [!question]- mkt-sys-056 | How does PCA orthogonalization combine correlated signals?
 > PCA transforms correlated signals into principal components; researchers retain non-market components or weight components by explained variance to prevent collinearity.
 
-> [!question] mkt-sys-057 | What is quantile spread analysis (monotonicity test)?
+> [!question]- mkt-sys-057 | What is quantile spread analysis (monotonicity test)?
 > Sorting the universe into quintiles or deciles based on signal scores and verifying that forward returns strictly increase monotonically from decile 1 to decile 10.
 
-> [!question] mkt-sys-058 | What causes a signal to experience structural alpha decay over calendar years?
+> [!question]- mkt-sys-058 | What causes a signal to experience structural alpha decay over calendar years?
 > Crowding by competing quantitative funds, increased algorithmic arbitrage, hedge fund deleveraging, and changing regulatory market structures.
 
-> [!question] mkt-sys-059 | What is the difference between equal-weighted and market-cap-weighted IC?
+> [!question]- mkt-sys-059 | What is the difference between equal-weighted and market-cap-weighted IC?
 > Equal-weighted IC correlates signals and returns across all names equally, while market-cap-weighted IC weights large liquid names more heavily to reflect institutional implementability.
 
-> [!question] mkt-sys-060 | What is the role of neutralizating a signal against industry sectors?
+> [!question]- mkt-sys-060 | What is the role of neutralizating a signal against industry sectors?
 > Industry neutralization ensures the signal bets strictly on intra-industry stock selection rather than unintended, uncompensated macro sector bets.
 
-> [!question] mkt-sys-061 | How does survivorship bias distort signal IC estimation?
+> [!question]- mkt-sys-061 | How does survivorship bias distort signal IC estimation?
 > If bankrupt losers are dropped from historical data, the negative returns that would validate a low-ranked signal are removed, artificially deflating or warping IC.
 
-> [!question] mkt-sys-062 | What is Grinold's rule of thumb for Information Ratio quality?
+> [!question]- mkt-sys-062 | What is Grinold's rule of thumb for Information Ratio quality?
 > IR = 0.50 is good, IR = 0.75 is very good, and IR = 1.00 is exceptional for institutional quantitative investment strategies.
 
-> [!question] mkt-sys-063 | How does asset universe volatility dispersion affect cross-sectional signal PnL?
+> [!question]- mkt-sys-063 | How does asset universe volatility dispersion affect cross-sectional signal PnL?
 > Cross-sectional long-short spread PnL expands when cross-sectional return dispersion is high and compresses when market correlation spikes towards 1.0.
 
-> [!question] mkt-sys-064 | What is the transfer coefficient of an unconstrained long-short portfolio?
+> [!question]- mkt-sys-064 | What is the transfer coefficient of an unconstrained long-short portfolio?
 > In an idealized unconstrained frictionless portfolio with no borrowing or leverage limits, the Transfer Coefficient TC equals 1.0.
 
 ---

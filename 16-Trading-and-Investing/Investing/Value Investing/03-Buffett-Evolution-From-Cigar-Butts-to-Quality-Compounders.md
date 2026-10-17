@@ -202,100 +202,100 @@ Management passes the One-Dollar Test with flying colors, creating $1.78 in ente
 
 ## Practice questions
 
-> [!question] mkt-vi-065 | What are the three primary eras of Warren Buffett's investment career?
+> [!question]- mkt-vi-065 | What are the three primary eras of Warren Buffett's investment career?
 > 1. Grahamite net-net cigar butts (1950s-1960s); 2. High-ROIC franchise moats (1970s-1990s); 3. Large-scale capital deployment in infrastructure and tech platforms (2000s-present).
 
-> [!question] mkt-vi-066 | What transaction served as the turning point from cigar butts to quality compounders?
+> [!question]- mkt-vi-066 | What transaction served as the turning point from cigar butts to quality compounders?
 > The acquisition of See's Candies in 1972 for $25 million ($3.1x tangible book value), orchestrated with Charlie Munger.
 
-> [!question] mkt-vi-067 | What is Warren Buffett's definition of Owner Earnings?
+> [!question]- mkt-vi-067 | What is Warren Buffett's definition of Owner Earnings?
 > Net Income + Non-Cash Charges (D&A) - Maintenance Capital Expenditures - Incremental Working Capital required to preserve unit volume.
 
-> [!question] mkt-vi-068 | Why does naive Free Cash Flow (CFO minus Total Capex) understate true owner earnings?
+> [!question]- mkt-vi-068 | Why does naive Free Cash Flow (CFO minus Total Capex) understate true owner earnings?
 > Because it penalizes the business for discretionary growth capex that expands future earning power rather than merely preserving current operations.
 
-> [!question] mkt-vi-069 | Why does reported GAAP Net Income overstate true economic earnings during high inflation?
+> [!question]- mkt-vi-069 | Why does reported GAAP Net Income overstate true economic earnings during high inflation?
 > Historical depreciation understates the actual cash outlay required to replace physical equipment at today's inflated prices.
 
-> [!question] mkt-vi-070 | What is an Economic Moat?
+> [!question]- mkt-vi-070 | What is an Economic Moat?
 > A sustainable, structural competitive advantage that protects an enterprise's high return on invested capital from competitive erosion.
 
-> [!question] mkt-vi-071 | What are the four primary structural sources of an Economic Moat?
+> [!question]- mkt-vi-071 | What are the four primary structural sources of an Economic Moat?
 > 1. Inelastic pricing power / brand; 2. Low-cost production advantage; 3. High customer switching costs; 4. Network effects.
 
-> [!question] mkt-vi-072 | What is Warren Buffett's 'toll bridge' metaphor?
+> [!question]- mkt-vi-072 | What is Warren Buffett's 'toll bridge' metaphor?
 > A business that commands an indispensable service or product in its market, allowing it to charge an economic toll on commerce with minimal capital reinvestment.
 
-> [!question] mkt-vi-073 | What is insurance float?
+> [!question]- mkt-vi-073 | What is insurance float?
 > Capital collected upfront from policyholders that is held on the balance sheet to pay future claims, available to be invested for the benefit of shareholders.
 
-> [!question] mkt-vi-074 | How can insurance float have a negative cost of capital?
+> [!question]- mkt-vi-074 | How can insurance float have a negative cost of capital?
 > When the insurance underwriting operation generates an underwriting profit (Combined Ratio < 100%), policyholders effectively pay the insurer to hold their money.
 
-> [!question] mkt-vi-075 | Why is insurance float superior to traditional bank debt as an investment funding engine?
+> [!question]- mkt-vi-075 | Why is insurance float superior to traditional bank debt as an investment funding engine?
 > Float does not mature on a fixed calendar date and carries zero covenants or margin call vulnerability during market crashes.
 
-> [!question] mkt-vi-076 | What are Look-Through Earnings?
+> [!question]- mkt-vi-076 | What are Look-Through Earnings?
 > Operating earnings of fully owned subsidiaries plus Berkshire's proportional share of undistributed net earnings retained by minority-held public companies.
 
-> [!question] mkt-vi-077 | Why does GAAP accounting fail to reflect look-through earnings?
+> [!question]- mkt-vi-077 | Why does GAAP accounting fail to reflect look-through earnings?
 > GAAP only recognizes cash dividends received from minority investments, completely omitting undistributed earnings that compound inside high-ROIC investees.
 
-> [!question] mkt-vi-078 | What is the One-Dollar Test of Capital Allocation?
+> [!question]- mkt-vi-078 | What is the One-Dollar Test of Capital Allocation?
 > For every dollar of profits retained by corporate management, the company must create at least one dollar of incremental market value over a 5-to-10-year period.
 
-> [!question] mkt-vi-079 | What should management do if it fails the One-Dollar Test?
+> [!question]- mkt-vi-079 | What should management do if it fails the One-Dollar Test?
 > Cease corporate reinvestment and return 100% of excess earnings to shareholders through dividends or share repurchases.
 
-> [!question] mkt-vi-080 | What is Buffett's definition of Circle of Competence?
+> [!question]- mkt-vi-080 | What is Buffett's definition of Circle of Competence?
 > Knowing precisely the boundaries of what you understand and refusing to invest outside those boundaries, regardless of how attractive external opportunities appear.
 
-> [!question] mkt-vi-081 | Does the size of the Circle of Competence matter according to Buffett and Munger?
+> [!question]- mkt-vi-081 | Does the size of the Circle of Competence matter according to Buffett and Munger?
 > No; what matters is knowing the perimeter of your circle and remaining strictly within it.
 
-> [!question] mkt-vi-082 | What are the five capital allocation choices available to a CEO?
+> [!question]- mkt-vi-082 | What are the five capital allocation choices available to a CEO?
 > 1. Reinvest in existing operations; 2. Acquire other businesses; 3. Pay down debt; 4. Repurchase company shares; 5. Pay cash dividends.
 
-> [!question] mkt-vi-083 | When does a share repurchase create value for continuing shareholders?
+> [!question]- mkt-vi-083 | When does a share repurchase create value for continuing shareholders?
 > Only when company stock is repurchased at a price below its conservatively appraised intrinsic business value.
 
-> [!question] mkt-vi-084 | When does a share repurchase destroy value for continuing shareholders?
+> [!question]- mkt-vi-084 | When does a share repurchase destroy value for continuing shareholders?
 > When management repurchases shares at prices above intrinsic value to artificially inflate EPS or offset executive stock option dilution.
 
-> [!question] mkt-vi-085 | What is the 'institutional imperative' described by Warren Buffett?
+> [!question]- mkt-vi-085 | What is the 'institutional imperative' described by Warren Buffett?
 > The irrational tendency of corporate managers to mindlessly imitate the strategic behavior, M&A sprees, and compensation of peer companies.
 
-> [!question] mkt-vi-086 | Why did Buffett describe airlines as a historical death trap for capital?
+> [!question]- mkt-vi-086 | Why did Buffett describe airlines as a historical death trap for capital?
 > Because airlines operate with massive fixed costs, high debt, commodity pricing, militant unions, and destructive cyclical overcapacity.
 
-> [!question] mkt-vi-087 | What is the 'pricing power test' for determining the presence of an economic moat?
+> [!question]- mkt-vi-087 | What is the 'pricing power test' for determining the presence of an economic moat?
 > If a business can raise prices by 10% without losing customers or market share to competitors, it possesses an unassailable moat.
 
-> [!question] mkt-vi-088 | Why does Buffett avoid using EBITDA in investment analysis?
+> [!question]- mkt-vi-088 | Why does Buffett avoid using EBITDA in investment analysis?
 > Because it ignores capital expenditures, treating the physical wear and tear of corporate assets as a free non-cost.
 
-> [!question] mkt-vi-089 | How does Berkshire Hathaway structure compensation for its operating subsidiary CEOs?
+> [!question]- mkt-vi-089 | How does Berkshire Hathaway structure compensation for its operating subsidiary CEOs?
 > Simple cash bonuses tied directly to operating return on capital and cash generation above capital hurdle rates, with zero equity dilution.
 
-> [!question] mkt-vi-090 | What was the importance of the National Indemnity acquisition in 1967?
+> [!question]- mkt-vi-090 | What was the importance of the National Indemnity acquisition in 1967?
 > It marked Berkshire Hathaway's initial entry into insurance, providing the first pool of permanent float capital that fueled subsequent corporate expansion.
 
-> [!question] mkt-vi-091 | What is the 'newspaper monopoly' moat that Buffett exploited with the Buffalo News?
+> [!question]- mkt-vi-091 | What is the 'newspaper monopoly' moat that Buffett exploited with the Buffalo News?
 > In the 20th century, a dominant single-newspaper town possessed an absolute advertising tollgate on local businesses, with pricing power and zero substitutes.
 
-> [!question] mkt-vi-092 | Why did Buffett purchase Apple starting in 2016 despite historically avoiding technology?
+> [!question]- mkt-vi-092 | Why did Buffett purchase Apple starting in 2016 despite historically avoiding technology?
 > He recognized that the iPhone ecosystem is an indispensable consumer sticky utility with immense switching costs, acting as a consumer luxury tollgate.
 
-> [!question] mkt-vi-093 | What is the 'superinvestors of Graham-and-Doddsville'?
+> [!question]- mkt-vi-093 | What is the 'superinvestors of Graham-and-Doddsville'?
 > A famous 1984 paper by Buffett proving that disparate value investors who shared Graham's intellectual framework generated statistically impossible excess returns.
 
-> [!question] mkt-vi-094 | How does Buffett view cash holdings during bull markets?
+> [!question]- mkt-vi-094 | How does Buffett view cash holdings during bull markets?
 > As an expensive call option on liquidity, preserving dry powder to execute asymmetric acquisitions during systemic panic and liquidity contractions.
 
-> [!question] mkt-vi-095 | What is the 'tapeworm' of corporate America according to Warren Buffett?
+> [!question]- mkt-vi-095 | What is the 'tapeworm' of corporate America according to Warren Buffett?
 > Runaway healthcare costs and excessive financial overhead that erode the competitive productivity of American manufacturing.
 
-> [!question] mkt-vi-096 | What is Warren Buffett's ultimate secret of compounding?
+> [!question]- mkt-vi-096 | What is Warren Buffett's ultimate secret of compounding?
 > Avoiding catastrophic mistakes, compounding capital inside high-ROIC businesses at zero or negative cost of float, and letting time do the heavy lifting.
 
 ---

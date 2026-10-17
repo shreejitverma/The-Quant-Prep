@@ -225,100 +225,100 @@ The trade successfully generated $750,000 of profit by capturing 15 bps of flatt
 
 ## Interview questions
 
-> [!question] mkt-mac-001 | What is a zero-coupon spot yield?
+> [!question]- mkt-mac-001 | What is a zero-coupon spot yield?
 > The internal rate of return on a pure discount bond that makes a single payment at maturity with no periodic coupons.
 
-> [!question] mkt-mac-002 | What is a par yield?
+> [!question]- mkt-mac-002 | What is a par yield?
 > The coupon rate that causes a newly issued bond to trade at exactly its face value (100 par).
 
-> [!question] mkt-mac-003 | What is an instantaneous forward rate?
+> [!question]- mkt-mac-003 | What is an instantaneous forward rate?
 > The marginal interest rate agreed upon today for borrowing over an infinitesimal time interval in the future.
 
-> [!question] mkt-mac-004 | What is bootstrapping in fixed income analytics?
+> [!question]- mkt-mac-004 | What is bootstrapping in fixed income analytics?
 > The recursive procedure used to extract zero-coupon spot rates from a sequence of coupon-bearing par bonds.
 
-> [!question] mkt-mac-005 | In an upward-sloping yield curve, what is the geometric relationship between forward rates and spot rates?
+> [!question]- mkt-mac-005 | In an upward-sloping yield curve, what is the geometric relationship between forward rates and spot rates?
 > Forward rates sit strictly above spot rates: f(T) > y(T).
 
-> [!question] mkt-mac-006 | What did Litterman and Scheinkman (1991) prove regarding yield curve dynamics?
+> [!question]- mkt-mac-006 | What did Litterman and Scheinkman (1991) prove regarding yield curve dynamics?
 > That three principal component factors (Level, Slope, and Curvature) account for over 98% of total yield curve variance.
 
-> [!question] mkt-mac-007 | What proportion of yield curve variance is typically explained by the Level factor (PC1)?
+> [!question]- mkt-mac-007 | What proportion of yield curve variance is typically explained by the Level factor (PC1)?
 > Approximately 85% to 90% of total variance.
 
-> [!question] mkt-mac-008 | What is the geometric movement of the yield curve represented by the Slope factor (PC2)?
+> [!question]- mkt-mac-008 | What is the geometric movement of the yield curve represented by the Slope factor (PC2)?
 > A rotation where short-term yields and long-term yields move in opposite directions (steepening or flattening).
 
-> [!question] mkt-mac-009 | What is the geometric movement of the yield curve represented by the Curvature factor (PC3)?
+> [!question]- mkt-mac-009 | What is the geometric movement of the yield curve represented by the Curvature factor (PC3)?
 > A movement in intermediate (belly) yields relative to anchored short and long maturities, altering the hump of the curve.
 
-> [!question] mkt-mac-010 | What is DV01 (Dollar Value of a Basis Point)?
+> [!question]- mkt-mac-010 | What is DV01 (Dollar Value of a Basis Point)?
 > The monetary change in the value of a fixed income instrument resulting from a one basis point (0.01%) change in yield.
 
-> [!question] mkt-mac-011 | What is the mathematical definition of DV01 in terms of Modified Duration?
+> [!question]- mkt-mac-011 | What is the mathematical definition of DV01 in terms of Modified Duration?
 > DV01 = Price * Modified Duration * 0.0001.
 
-> [!question] mkt-mac-012 | What defines a DV01-neutral curve trade?
+> [!question]- mkt-mac-012 | What defines a DV01-neutral curve trade?
 > Sizing position notionals such that the net DV01 of long and short legs equals zero, neutralizing parallel level shifts.
 
-> [!question] mkt-mac-013 | What is a Bull Steepener in the yield curve?
+> [!question]- mkt-mac-013 | What is a Bull Steepener in the yield curve?
 > Short-term rates fall faster than long-term rates, steepening the curve as central banks rapidly cut rates.
 
-> [!question] mkt-mac-014 | What is a Bear Steepener in the yield curve?
+> [!question]- mkt-mac-014 | What is a Bear Steepener in the yield curve?
 > Long-term rates rise faster than short-term rates, steepening the curve driven by rising inflation expectations or bond supply.
 
-> [!question] mkt-mac-015 | What is a Bull Flattener in the yield curve?
+> [!question]- mkt-mac-015 | What is a Bull Flattener in the yield curve?
 > Long-term rates fall faster than short-term rates, flattening the curve as growth expectations cool and disinflation sets in.
 
-> [!question] mkt-mac-016 | What is a Bear Flattener in the yield curve?
+> [!question]- mkt-mac-016 | What is a Bear Flattener in the yield curve?
 > Short-term rates rise faster than long-term rates, flattening the curve during active central bank monetary tightening campaigns.
 
-> [!question] mkt-mac-017 | In a 2s10s DV01-neutral steepener, why is the notional size of the 2-year note much larger than the 10-year note?
+> [!question]- mkt-mac-017 | In a 2s10s DV01-neutral steepener, why is the notional size of the 2-year note much larger than the 10-year note?
 > Because 2-year notes have much lower duration; higher notional is required to match the dollar risk of the 10-year leg.
 
-> [!question] mkt-mac-018 | What is a yield curve butterfly trade structure?
+> [!question]- mkt-mac-018 | What is a yield curve butterfly trade structure?
 > Long two wings (short and long maturities) and short the body (intermediate maturity), or vice versa.
 
-> [!question] mkt-mac-019 | What yield curve factor does a DV01-neutral, slope-neutral butterfly trade isolate?
+> [!question]- mkt-mac-019 | What yield curve factor does a DV01-neutral, slope-neutral butterfly trade isolate?
 > Curvature (PC3).
 
-> [!question] mkt-mac-020 | What is Covered Interest Parity (CIP)?
+> [!question]- mkt-mac-020 | What is Covered Interest Parity (CIP)?
 > The arbitrage relationship stating that the forward FX rate must equal the spot rate adjusted for the interest rate differential between two currencies.
 
-> [!question] mkt-mac-021 | What is the mathematical formula for Covered Interest Parity with continuous compounding?
+> [!question]- mkt-mac-021 | What is the mathematical formula for Covered Interest Parity with continuous compounding?
 > F = S * exp((r_d - r_f) * T).
 
-> [!question] mkt-mac-022 | What is the Cross-Currency Basis Spread?
+> [!question]- mkt-mac-022 | What is the Cross-Currency Basis Spread?
 > The empirical premium or discount added to foreign currency rates in the FX swap market, reflecting deviations from pure CIP.
 
-> [!question] mkt-mac-023 | Why has the cross-currency basis spread persisted since the 2008 financial crisis?
+> [!question]- mkt-mac-023 | Why has the cross-currency basis spread persisted since the 2008 financial crisis?
 > Post-crisis banking regulations (such as the Supplementary Leverage Ratio) penalize bank balance sheet expansion, restricting arbitrage capital.
 
-> [!question] mkt-mac-024 | What does a negative cross-currency basis for EUR/USD signify?
+> [!question]- mkt-mac-024 | What does a negative cross-currency basis for EUR/USD signify?
 > Non-US institutions are paying a premium above normal CIP rates to borrow US dollars through the foreign exchange swap market.
 
-> [!question] mkt-mac-025 | What is the Uncovered Interest Parity (UIP) condition?
+> [!question]- mkt-mac-025 | What is the Uncovered Interest Parity (UIP) condition?
 > The economic hypothesis that high-yielding currencies will depreciate by an amount equal to their interest rate differential.
 
-> [!question] mkt-mac-026 | What is the FX Carry Trade?
+> [!question]- mkt-mac-026 | What is the FX Carry Trade?
 > An investment strategy that borrows in low-interest-rate funding currencies and invests in high-interest-rate target currencies.
 
-> [!question] mkt-mac-027 | Why does the FX Carry Trade succeed over long periods despite UIP theory?
+> [!question]- mkt-mac-027 | Why does the FX Carry Trade succeed over long periods despite UIP theory?
 > Because the empirical UIP puzzle shows that high-yielding currencies often fail to depreciate or even appreciate over medium horizons.
 
-> [!question] mkt-mac-028 | What is the primary structural tail risk of an FX carry strategy?
+> [!question]- mkt-mac-028 | What is the primary structural tail risk of an FX carry strategy?
 > Severe crash risk: sudden global market panics trigger rapid unwinding of short funding positions, causing steep liquidation drawdowns.
 
-> [!question] mkt-mac-029 | What are the classic funding currencies historically used in global carry trades?
+> [!question]- mkt-mac-029 | What are the classic funding currencies historically used in global carry trades?
 > The Japanese Yen (JPY) and Swiss Franc (CHF), due to their multi-decade near-zero or negative interest rate policies.
 
-> [!question] mkt-mac-030 | How do quantitative carry managers protect against sudden carry crashes?
+> [!question]- mkt-mac-030 | How do quantitative carry managers protect against sudden carry crashes?
 > By dynamically reducing leverage when market volatility (e.g. VIX, FX implied volatility) spikes.
 
-> [!question] mkt-mac-031 | What is an FX swap?
+> [!question]- mkt-mac-031 | What is an FX swap?
 > A transaction where two counterparties exchange currencies at the spot rate today and simultaneously agree to reverse the exchange at a forward rate on a future date.
 
-> [!question] mkt-mac-032 | What is the primary golden rule of rates and macro trading?
+> [!question]- mkt-mac-032 | What is the primary golden rule of rates and macro trading?
 > Always isolate the exact factor exposure (Level, Slope, or Curvature) using DV01 weighting before deploying capital.
 
 ---

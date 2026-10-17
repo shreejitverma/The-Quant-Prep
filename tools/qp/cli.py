@@ -13,7 +13,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import bank, drills, moc, planner
+from . import bank, drills, markets, moc, planner
 from .check import check_vault
 from .state import GRADES, MASTERY_LABELS, StateError, Store
 from .vault import REPO_ROOT, TRACK_LABELS, TRACKS, Note, Vault, load_vault
@@ -574,7 +574,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--no-senior", action="store_true", help="core and advanced topics")
     sp.add_argument(
         "--persona",
-        choices=("holistic", "quant_trader", "quant_researcher", "macro_derivatives_trader", "retail_algorithmic_trader"),
+        choices=markets.PERSONA_CHOICES,
         help="persona archetype for targeted weekly study plan and lab drills",
     )
     sp = add("due", cmd_due, "list today's review queue (non-interactive)")

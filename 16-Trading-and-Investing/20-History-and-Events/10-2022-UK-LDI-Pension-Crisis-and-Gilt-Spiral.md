@@ -144,14 +144,14 @@ The 2022 Gilt crisis spurred comprehensive reforms in pension regulation and sha
 
 ## Case Study Drills and Review Questions
 
-> [!question] mkt-his-037 | What policy announcement triggered the catastrophic UK Gilt market sell-off in September 2022?
+> [!question]- mkt-his-037 | What policy announcement triggered the catastrophic UK Gilt market sell-off in September 2022?
 > The UK Government's mini-budget announcing £45 billion in unfunded tax cuts without independent fiscal evaluation from the OBR.
 
-> [!question] mkt-his-038 | What was the primary purpose of Liability-Driven Investment (LDI) strategies for UK defined benefit pension schemes?
+> [!question]- mkt-his-038 | What was the primary purpose of Liability-Driven Investment (LDI) strategies for UK defined benefit pension schemes?
 > To synthetically match the long interest rate duration of pension liabilities using leveraged swaps and repos, freeing capital for growth assets.
 
-> [!question] mkt-his-039 | Why did rising Gilt yields trigger a liquidity crisis for pension schemes whose long-term solvency had actually improved?
+> [!question]- mkt-his-039 | Why did rising Gilt yields trigger a liquidity crisis for pension schemes whose long-term solvency had actually improved?
 > Because rising yields caused immediate mark-to-market losses on derivative swap hedges, triggering billions in short-term cash collateral margin calls.
 
-> [!question] mkt-his-040 | What emergency action did the Bank of England take on September 28, 2022, to halt the LDI death spiral?
+> [!question]- mkt-his-040 | What emergency action did the Bank of England take on September 28, 2022, to halt the LDI death spiral?
 > It suspended quantitative tightening and pledged to purchase up to £65 billion of long-dated conventional Gilts as a temporary market backstop.

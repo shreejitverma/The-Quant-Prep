@@ -172,100 +172,100 @@ A national retail chain enters into a 5-year operating lease for store locations
 
 ## Interview questions
 
-> [!question] mkt-fa-065 | What is the fundamental difference between Maintenance Capex and Growth Capex?
+> [!question]- mkt-fa-065 | What is the fundamental difference between Maintenance Capex and Growth Capex?
 > Maintenance capex is non-discretionary capital required to replace aging assets and maintain existing output; growth capex is discretionary capital invested to expand capacity and revenue.
 
-> [!question] mkt-fa-066 | Define Warren Buffett's Owner Earnings (1986).
+> [!question]- mkt-fa-066 | Define Warren Buffett's Owner Earnings (1986).
 > Owner Earnings = Reported Net Income + D&A + Non-Cash Charges - Average Maintenance Capex +/- Delta Working Capital; representing true distributable cash flow.
 
-> [!question] mkt-fa-067 | Why did Warren Buffett criticize EBITDA as an investment metric?
+> [!question]- mkt-fa-067 | Why did Warren Buffett criticize EBITDA as an investment metric?
 > Because EBITDA ignores capital expenditures; treating cash required to replace worn assets as if it were free cash available for distribution to owners is a dangerous delusion.
 
-> [!question] mkt-fa-068 | How does inflation create phantom profits under historical cost depreciation accounting?
+> [!question]- mkt-fa-068 | How does inflation create phantom profits under historical cost depreciation accounting?
 > Historical depreciation is based on outdated original purchase prices; when replacing assets costs significantly more due to inflation, real economic capital is consumed despite positive accounting profits.
 
-> [!question] mkt-fa-069 | What does a Capex-to-D&A ratio significantly greater than 1.0 indicate?
+> [!question]- mkt-fa-069 | What does a Capex-to-D&A ratio significantly greater than 1.0 indicate?
 > It indicates aggressive balance sheet expansion and capacity investment (growth capex), common in fast-growing capital-intensive companies.
 
-> [!question] mkt-fa-070 | What does a Capex-to-D&A ratio significantly less than 1.0 indicate?
+> [!question]- mkt-fa-070 | What does a Capex-to-D&A ratio significantly less than 1.0 indicate?
 > It indicates capital underinvestment, where a company is deferring maintenance and allowing its physical asset base to depreciate without adequate replacement.
 
-> [!question] mkt-fa-071 | How does Bruce Greenwald's method estimate growth capex?
+> [!question]- mkt-fa-071 | How does Bruce Greenwald's method estimate growth capex?
 > By multiplying incremental revenue growth by the historical capital-to-sales ratio (Gross PP&E / Revenue), then subtracting that growth capex from total capex to yield maintenance capex.
 
-> [!question] mkt-fa-072 | How are operating leases accounted for on the balance sheet under ASC 842 / IFRS 16?
+> [!question]- mkt-fa-072 | How are operating leases accounted for on the balance sheet under ASC 842 / IFRS 16?
 > Leases are recognized on the balance sheet as Right-of-Use (ROU) assets offset by matching lease liabilities equal to the present value of future lease payments.
 
-> [!question] mkt-fa-073 | What is the impact of IFRS 16 lease capitalization on reported EBITDA?
+> [!question]- mkt-fa-073 | What is the impact of IFRS 16 lease capitalization on reported EBITDA?
 > EBITDA increases significantly because operating rent expense is eliminated from operating costs, replaced by depreciation of the ROU asset and financing interest expense.
 
-> [!question] mkt-fa-074 | When evaluating EV/EBITDA under ASC 842 / IFRS 16, why must lease liabilities be included in Enterprise Value?
+> [!question]- mkt-fa-074 | When evaluating EV/EBITDA under ASC 842 / IFRS 16, why must lease liabilities be included in Enterprise Value?
 > Because EBITDA now excludes rent expense; to maintain mathematical consistency, the capitalized lease liabilities must be treated as debt in Enterprise Value.
 
-> [!question] mkt-fa-075 | What is the Reinvestment Rate formula in corporate finance?
+> [!question]- mkt-fa-075 | What is the Reinvestment Rate formula in corporate finance?
 > Reinvestment Rate = (Net Capex + Delta Non-Cash Working Capital) / NOPAT; measuring the fraction of after-tax operating profits reinvested into the business.
 
-> [!question] mkt-fa-076 | What is the relationship between Reinvestment Rate, ROIC, and fundamental earnings growth?
+> [!question]- mkt-fa-076 | What is the relationship between Reinvestment Rate, ROIC, and fundamental earnings growth?
 > Fundamental Growth Rate = ROIC * Reinvestment Rate; long-term sustainable growth equals the return on invested capital multiplied by the percentage of profits reinvested.
 
-> [!question] mkt-fa-077 | What is software capitalization and how does it distort operating cash flow?
+> [!question]- mkt-fa-077 | What is software capitalization and how does it distort operating cash flow?
 > Capitalizing internal software developer payroll as an intangible asset shifts operating cash outflows into CFI capex, artificially inflating reported Operating Cash Flow (CFO).
 
-> [!question] mkt-fa-078 | What is the difference between tangible asset depreciation and intangible asset amortization?
+> [!question]- mkt-fa-078 | What is the difference between tangible asset depreciation and intangible asset amortization?
 > Depreciation applies to physical assets (buildings, machinery, servers); amortization applies to acquired intangible assets (patents, customer lists, software licenses).
 
-> [!question] mkt-fa-079 | Why is goodwill not amortized under US GAAP and IFRS?
+> [!question]- mkt-fa-079 | Why is goodwill not amortized under US GAAP and IFRS?
 > Goodwill has an indefinite useful life and is not systematically amortized; instead, it is tested annually for impairment and written down only if fair value falls below book value.
 
-> [!question] mkt-fa-080 | What is capital intensity and which sectors have the highest capital intensity?
+> [!question]- mkt-fa-080 | What is capital intensity and which sectors have the highest capital intensity?
 > Capital intensity is the ratio of capital investment to revenue (Capex / Sales); utilities, telecommunications, energy pipelines, and semiconductor fabrication have the highest.
 
-> [!question] mkt-fa-081 | Why do asset-light businesses often command higher valuation multiples than asset-heavy businesses?
+> [!question]- mkt-fa-081 | Why do asset-light businesses often command higher valuation multiples than asset-heavy businesses?
 > Asset-light businesses require minimal maintenance capex to grow, allowing a larger percentage of operating income to convert directly into distributable free cash flow.
 
-> [!question] mkt-fa-082 | What is dry capex vs maintenance capex in shipping and drilling?
+> [!question]- mkt-fa-082 | What is dry capex vs maintenance capex in shipping and drilling?
 > Dry capex represents periodic dry-docking and mandatory regulatory inspection costs required to keep maritime vessels legally certified to operate in global waters.
 
-> [!question] mkt-fa-083 | How does deferred maintenance manifest as an invisible corporate liability?
+> [!question]- mkt-fa-083 | How does deferred maintenance manifest as an invisible corporate liability?
 > Cutting maintenance capex temporarily boosts reported cash flow, but assets deteriorate, eventually causing operational bottlenecks, safety failures, and massive emergency capex outlays.
 
-> [!question] mkt-fa-084 | What is the salvage value of an asset?
+> [!question]- mkt-fa-084 | What is the salvage value of an asset?
 > The estimated residual resale value of a tangible asset at the end of its useful economic life, used to determine total depreciable base (Cost - Salvage Value).
 
-> [!question] mkt-fa-085 | What is accelerated tax depreciation (e.g. MACRS / Section 179)?
+> [!question]- mkt-fa-085 | What is accelerated tax depreciation (e.g. MACRS / Section 179)?
 > Tax rules allowing companies to deduct a larger portion of asset cost in the early years of asset life, deferring cash tax payments and creating Deferred Tax Liabilities.
 
-> [!question] mkt-fa-086 | How does capitalized interest affect financial statements during construction?
+> [!question]- mkt-fa-086 | How does capitalized interest affect financial statements during construction?
 > Interest incurred to finance construction of major PP&E is added to asset cost on the balance sheet rather than expensed, temporarily boosting Net Income during construction.
 
-> [!question] mkt-fa-087 | What is the difference between straight-line depreciation and units-of-production depreciation?
+> [!question]- mkt-fa-087 | What is the difference between straight-line depreciation and units-of-production depreciation?
 > Straight-line deducts equal expense per time period; units-of-production deducts expense proportional to actual asset utilization (e.g. flight hours or tons extracted).
 
-> [!question] mkt-fa-088 | Why does standard Free Cash Flow (CFO - Capex) penalize compounders?
+> [!question]- mkt-fa-088 | Why does standard Free Cash Flow (CFO - Capex) penalize compounders?
 > Because it treats voluntary, high-ROIC growth capex that expands future earnings identically to defensive maintenance capex that merely preserves current operations.
 
-> [!question] mkt-fa-089 | What is asset impairment and under what condition is it triggered?
+> [!question]- mkt-fa-089 | What is asset impairment and under what condition is it triggered?
 > An impairment charge is recognized when an asset's carrying book value exceeds its undiscounted expected future cash flows (GAAP) or recoverable amount (IFRS).
 
-> [!question] mkt-fa-090 | How does asset aging affect the maintenance capex required to preserve operations?
+> [!question]- mkt-fa-090 | How does asset aging affect the maintenance capex required to preserve operations?
 > As physical assets exceed their median design life, maintenance repair expenses and maintenance capex escalate non-linearly to prevent operational downtime.
 
-> [!question] mkt-fa-091 | What is the replacement cost approach to business valuation?
+> [!question]- mkt-fa-091 | What is the replacement cost approach to business valuation?
 > Valuing a company based on the total capital expenditure required today to replicate its physical asset footprint, distribution network, and productive capacity from scratch.
 
-> [!question] mkt-fa-092 | What is sale-and-leaseback transaction?
+> [!question]- mkt-fa-092 | What is sale-and-leaseback transaction?
 > A company sells a physical asset (e.g. corporate real estate) to an investor for immediate cash and simultaneously leases it back, monetizing balance sheet equity.
 
-> [!question] mkt-fa-093 | Why does a negative Net Capex (Capex < D&A) raise red flags for cyclical manufacturing firms?
+> [!question]- mkt-fa-093 | Why does a negative Net Capex (Capex < D&A) raise red flags for cyclical manufacturing firms?
 > It indicates the firm is liquidating its productive physical asset base through underinvestment, signaling deteriorating competitive positioning.
 
-> [!question] mkt-fa-094 | How does capital expenditure forecasting integrate into DCF modeling?
+> [!question]- mkt-fa-094 | How does capital expenditure forecasting integrate into DCF modeling?
 > Future capex is modeled as a percentage of revenue or driven by capacity expansion targets, balancing asset turnover and return on invested capital assumptions.
 
-> [!question] mkt-fa-095 | What is capital allocation in the context of growth capex?
+> [!question]- mkt-fa-095 | What is capital allocation in the context of growth capex?
 > The management discipline of deploying retained corporate earnings across competing uses (growth capex, R&D, M&A, share repurchases, debt retirement, dividends) to maximize per-share value.
 
-> [!question] mkt-fa-096 | What is the ultimate test of whether growth capex was well-spent?
+> [!question]- mkt-fa-096 | What is the ultimate test of whether growth capex was well-spent?
 > Whether the incremental capital deployed generated a Return on Incremental Invested Capital (ROIIC) comfortably exceeding the company's Weighted Average Cost of Capital (WACC).
 
 ---

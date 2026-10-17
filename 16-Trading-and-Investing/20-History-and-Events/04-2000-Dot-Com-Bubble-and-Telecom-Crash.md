@@ -129,14 +129,14 @@ The wreckage of the dot-com crash led directly to major structural transformatio
 
 ## Case Study Drills and Review Questions
 
-> [!question] mkt-his-013 | What was the total percentage decline in the NASDAQ Composite Index from its March 2000 peak to its October 2002 trough?
+> [!question]- mkt-his-013 | What was the total percentage decline in the NASDAQ Composite Index from its March 2000 peak to its October 2002 trough?
 > A 77.93% decline (dropping from 5,048.62 to 1,114.11).
 
-> [!question] mkt-his-014 | What role did 180-day IPO lockup expirations play in the dot-com crash?
+> [!question]- mkt-his-014 | What role did 180-day IPO lockup expirations play in the dot-com crash?
 > They released an avalanche of insider and venture capital shares into low-float secondary markets, overwhelming remaining buyer liquidity.
 
-> [!question] mkt-his-015 | What was vendor financing in the late-1990s telecommunications equipment sector?
+> [!question]- mkt-his-015 | What was vendor financing in the late-1990s telecommunications equipment sector?
 > Equipment manufacturers lent billions directly to speculative startup telecom operators to fund purchases of their own equipment, manufacturing artificial revenue.
 
-> [!question] mkt-his-016 | How did the 2003 Global Research Analyst Settlement alter Wall Street operations?
+> [!question]- mkt-his-016 | How did the 2003 Global Research Analyst Settlement alter Wall Street operations?
 > It legally separated equity research analysts from investment banking divisions and banned linking analyst compensation to investment banking deal flow.

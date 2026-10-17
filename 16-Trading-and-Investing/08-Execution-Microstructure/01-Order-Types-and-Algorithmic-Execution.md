@@ -161,100 +161,100 @@ Relative to the $1,000,000 paper notional, the total implementation friction is 
 
 ## Interview questions
 
-> [!question] mkt-exe-001 | What is Implementation Shortfall as defined by Andre Perold (1988)?
+> [!question]- mkt-exe-001 | What is Implementation Shortfall as defined by Andre Perold (1988)?
 > The difference in return between a theoretical paper portfolio and the actual realized portfolio after accounting for all execution friction.
 
-> [!question] mkt-exe-002 | What are the four components of Implementation Shortfall?
+> [!question]- mkt-exe-002 | What are the four components of Implementation Shortfall?
 > Delay cost (execution lag), realized price impact (slippage), opportunity cost (unfilled shares), and explicit fees (commissions/taxes).
 
-> [!question] mkt-exe-003 | What is a Post-Only order qualifier and why is it used?
+> [!question]- mkt-exe-003 | What is a Post-Only order qualifier and why is it used?
 > An order instruction guaranteeing that the order will enter the book as a maker quote; if it would cross the spread, it cancels to prevent taker fees.
 
-> [!question] mkt-exe-004 | What is the difference between an Immediate-or-Cancel (IOC) and a Fill-or-Kill (FOK) order?
+> [!question]- mkt-exe-004 | What is the difference between an Immediate-or-Cancel (IOC) and a Fill-or-Kill (FOK) order?
 > IOC allows partial fills and cancels any unfilled remainder; FOK must be filled completely immediately or cancelled entirely.
 
-> [!question] mkt-exe-005 | What is an Iceberg order?
+> [!question]- mkt-exe-005 | What is an Iceberg order?
 > An order that displays only a small fraction of its total size in the public order book, automatically replenishing from hidden reserves.
 
-> [!question] mkt-exe-006 | What is adverse selection in limit order execution?
+> [!question]- mkt-exe-006 | What is adverse selection in limit order execution?
 > The risk that a resting limit order is filled primarily when incoming informed aggressive flow moves the market against the maker.
 
-> [!question] mkt-exe-007 | What is the standard shape of intraday equity trading volume?
+> [!question]- mkt-exe-007 | What is the standard shape of intraday equity trading volume?
 > A U-shaped distribution, characterized by heavy volume at the open and close, and a volume lull during midday.
 
-> [!question] mkt-exe-008 | How does a TWAP algorithm distribute child orders?
+> [!question]- mkt-exe-008 | How does a TWAP algorithm distribute child orders?
 > Uniformly across equal time increments over the designated execution horizon.
 
-> [!question] mkt-exe-009 | How does a VWAP algorithm distribute child orders?
+> [!question]- mkt-exe-009 | How does a VWAP algorithm distribute child orders?
 > Proportional to the historical volume expected in each intraday time slice.
 
-> [!question] mkt-exe-010 | What is a Percentage of Volume (POV) algorithmic execution strategy?
+> [!question]- mkt-exe-010 | What is a Percentage of Volume (POV) algorithmic execution strategy?
 > Sizing child orders as a continuous constant percentage of prevailing realized market volume.
 
-> [!question] mkt-exe-011 | What is the objective function of the Almgren-Chriss (2000) optimal execution model?
+> [!question]- mkt-exe-011 | What is the objective function of the Almgren-Chriss (2000) optimal execution model?
 > Minimizing the sum of expected transaction costs (temporary and permanent impact) plus a risk aversion penalty on portfolio variance: E[x] + lambda * V[x].
 
-> [!question] mkt-exe-012 | What is the optimal liquidation trajectory under Almgren-Chriss when risk aversion lambda = 0?
+> [!question]- mkt-exe-012 | What is the optimal liquidation trajectory under Almgren-Chriss when risk aversion lambda = 0?
 > A linear liquidation schedule across time (equivalent to pure TWAP).
 
-> [!question] mkt-exe-013 | Why does a risk-averse trader (lambda > 0) front-load execution in the Almgren-Chriss model?
+> [!question]- mkt-exe-013 | Why does a risk-averse trader (lambda > 0) front-load execution in the Almgren-Chriss model?
 > To rapidly reduce inventory risk and eliminate variance uncertainty of holding unhedged shares across time.
 
-> [!question] mkt-exe-014 | What is the mathematical formulation of the empirical Square-Root Law of market impact?
+> [!question]- mkt-exe-014 | What is the mathematical formulation of the empirical Square-Root Law of market impact?
 > Permanent impact I approx Y * sigma * sqrt(Q / V), where sigma is volatility, Q is order size, V is daily volume, and Y is a constant.
 
-> [!question] mkt-exe-015 | Why is the Square-Root Law described as sub-linear?
+> [!question]- mkt-exe-015 | Why is the Square-Root Law described as sub-linear?
 > Because impact scales with the square root of volume; quadrupling order size only doubles total price impact.
 
-> [!question] mkt-exe-016 | What is permanent market impact?
+> [!question]- mkt-exe-016 | What is permanent market impact?
 > The lasting shift in equilibrium asset price caused by the information content of an institutional trade.
 
-> [!question] mkt-exe-017 | What is temporary market impact?
+> [!question]- mkt-exe-017 | What is temporary market impact?
 > The transitory price concession required to incentivize liquidity providers to absorb immediate order imbalances, which mean-reverts post-trade.
 
-> [!question] mkt-exe-018 | What is a maker-taker fee schedule?
+> [!question]- mkt-exe-018 | What is a maker-taker fee schedule?
 > An exchange fee structure that pays rebates to passive limit orders (makers) and charges fees to aggressive crossing orders (takers).
 
-> [!question] mkt-exe-019 | What is an inverted fee schedule (taker-maker)?
+> [!question]- mkt-exe-019 | What is an inverted fee schedule (taker-maker)?
 > An exchange fee structure that pays rebates to aggressive crossing orders and charges fees to passive resting limit orders.
 
-> [!question] mkt-exe-020 | What is a Smart Order Router (SOR)?
+> [!question]- mkt-exe-020 | What is a Smart Order Router (SOR)?
 > An automated algorithm that scans prices and depth across multiple fragmented lit and dark execution venues to achieve best execution.
 
-> [!question] mkt-exe-021 | What is trade-through under US Regulation NMS Rule 611?
+> [!question]- mkt-exe-021 | What is trade-through under US Regulation NMS Rule 611?
 > Executing an order at a price inferior to the National Best Bid and Offer (NBBO) currently displayed on another protected exchange.
 
-> [!question] mkt-exe-022 | What is a dark pool?
+> [!question]- mkt-exe-022 | What is a dark pool?
 > An Alternative Trading System (ATS) that matches buy and sell orders without displaying pre-trade quotation prices to the public.
 
-> [!question] mkt-exe-023 | What is informational leakage in institutional trading?
+> [!question]- mkt-exe-023 | What is informational leakage in institutional trading?
 > Unintended disclosure of an institutional parent order's presence through poorly masked child order execution patterns.
 
-> [!question] mkt-exe-024 | What is pinging in dark pool trading?
+> [!question]- mkt-exe-024 | What is pinging in dark pool trading?
 > High-frequency algorithms submitting tiny limit orders to detect resting institutional blocks inside non-displayed venues.
 
-> [!question] mkt-exe-025 | What is post-trade markout analysis in Transaction Cost Analysis (TCA)?
+> [!question]- mkt-exe-025 | What is post-trade markout analysis in Transaction Cost Analysis (TCA)?
 > Measuring price movement 10ms, 100ms, 1s, and 10s after order execution to evaluate execution quality and adverse selection.
 
-> [!question] mkt-exe-026 | What is the closing auction cross (such as the NASDAQ Closing Cross)?
+> [!question]- mkt-exe-026 | What is the closing auction cross (such as the NASDAQ Closing Cross)?
 > An automated electronic auction at 04:00 PM EST matching market-on-close (MOC) and limit-on-close (LOC) orders to set the official closing price.
 
-> [!question] mkt-exe-027 | What is an imbalance message in exchange opening and closing auctions?
+> [!question]- mkt-exe-027 | What is an imbalance message in exchange opening and closing auctions?
 > A public message broadcast prior to the cross showing the net surplus shares on the buy or sell side and indicative clearing prices.
 
-> [!question] mkt-exe-028 | What is slippage in market order execution?
+> [!question]- mkt-exe-028 | What is slippage in market order execution?
 > The difference between the expected transaction price at order submission and the actual realized execution price.
 
-> [!question] mkt-exe-029 | What is tick-constrained equity trading?
+> [!question]- mkt-exe-029 | What is tick-constrained equity trading?
 > A stock whose bid-ask spread is consistently pinned at the minimum allowable tick size ($0.01), creating long queue priority delays.
 
-> [!question] mkt-exe-030 | How does queue position affect execution probability in tick-constrained stocks?
+> [!question]- mkt-exe-030 | How does queue position affect execution probability in tick-constrained stocks?
 > Orders at the front of the queue fill with high probability, while orders at the back of the queue suffer extreme non-fill risk and adverse selection.
 
-> [!question] mkt-exe-031 | What is opportunity cost in the Implementation Shortfall framework?
+> [!question]- mkt-exe-031 | What is opportunity cost in the Implementation Shortfall framework?
 > The unrealized profit forfeited when an algorithmic order fails to fill all target shares and the price moves away.
 
-> [!question] mkt-exe-032 | What is the primary golden rule of algorithmic execution?
+> [!question]- mkt-exe-032 | What is the primary golden rule of algorithmic execution?
 > Never let execution costs exceed the expected alpha of the underlying quantitative investment signal.
 
 ---

@@ -208,100 +208,100 @@ The stock is severely overvalued by 48% at the peak of the commodity cycle.
 
 ## Practice questions
 
-> [!question] mkt-val-193 | Why does the Enterprise Value concept fail when applied to commercial banks?
+> [!question]- mkt-val-193 | Why does the Enterprise Value concept fail when applied to commercial banks?
 > Because bank debt (customer deposits) is an operational raw material rather than a financing choice, and interest expense is a core operating cost.
 
-> [!question] mkt-val-194 | What is the primary valuation multiple used to value commercial banks?
+> [!question]- mkt-val-194 | What is the primary valuation multiple used to value commercial banks?
 > Price-to-Tangible Book Value (P/TBV), benchmarked directly against Return on Tangible Common Equity (ROTCE).
 
-> [!question] mkt-val-195 | What is the mathematical relationship between a bank's P/TBV and ROTCE?
+> [!question]- mkt-val-195 | What is the mathematical relationship between a bank's P/TBV and ROTCE?
 > P/TBV = (ROTCE - g) / (Ke - g); a bank justifies trading above tangible book value if and only if ROTCE exceeds its cost of equity.
 
-> [!question] mkt-val-196 | How do regulatory capital ratios (such as CET1) constrain bank dividend payments in a DDM?
+> [!question]- mkt-val-196 | How do regulatory capital ratios (such as CET1) constrain bank dividend payments in a DDM?
 > Allowable dividends equal Net Income minus the capital required to fund Risk-Weighted Asset growth at the target CET1 ratio.
 
-> [!question] mkt-val-197 | What is Net Interest Margin (NIM) for a commercial bank?
+> [!question]- mkt-val-197 | What is Net Interest Margin (NIM) for a commercial bank?
 > NIM = (Interest Income - Interest Expense) / Total Average Earning Assets.
 
-> [!question] mkt-val-198 | What is an insurance company's combined ratio?
+> [!question]- mkt-val-198 | What is an insurance company's combined ratio?
 > Combined Ratio = (Incurred Losses + Operating Expenses) / Earned Premiums; a ratio below 100% indicates an underwriting profit.
 
-> [!question] mkt-val-199 | What is insurance float according to Warren Buffett?
+> [!question]- mkt-val-199 | What is insurance float according to Warren Buffett?
 > Premiums collected upfront that have not yet been paid out in claims, which can be invested for the benefit of shareholders at zero or negative cost of capital.
 
-> [!question] mkt-val-200 | Why do cyclical companies trade at deceptively low P/E multiples at the top of an economic cycle?
+> [!question]- mkt-val-200 | Why do cyclical companies trade at deceptively low P/E multiples at the top of an economic cycle?
 > Peak earnings are unsustainably elevated; the market anticipates earnings collapse and prices the stock downward before reported profits drop.
 
-> [!question] mkt-val-201 | What is the golden rule for investing in commodity and cyclical producers based on P/E multiples?
+> [!question]- mkt-val-201 | What is the golden rule for investing in commodity and cyclical producers based on P/E multiples?
 > Buy at high or negative P/E multiples at the trough of the cycle; sell at low P/E multiples at the peak of the cycle.
 
-> [!question] mkt-val-202 | What is mid-cycle earnings normalization?
+> [!question]- mkt-val-202 | What is mid-cycle earnings normalization?
 > Replacing peak or trough financial metrics with 10-year historical average commodity prices and operating margins to derive sustainable earning power.
 
-> [!question] mkt-val-203 | What is SEC PV-10 in the oil and gas sector?
+> [!question]- mkt-val-203 | What is SEC PV-10 in the oil and gas sector?
 > The standardized measure of discounted future net cash flows from proved reserves, calculated using a 10% annual discount rate and trailing 12-month average prices.
 
-> [!question] mkt-val-204 | What is Customer Lifetime Value (LTV) in software unit economics?
+> [!question]- mkt-val-204 | What is Customer Lifetime Value (LTV) in software unit economics?
 > LTV = (Average Revenue Per User * Gross Margin %) / Annual Churn Rate.
 
-> [!question] mkt-val-205 | What is Customer Acquisition Cost (CAC)?
+> [!question]- mkt-val-205 | What is Customer Acquisition Cost (CAC)?
 > Total sales and marketing expenditures divided by the number of new customers acquired during the period.
 
-> [!question] mkt-val-206 | What is the target LTV/CAC ratio for a healthy software enterprise?
+> [!question]- mkt-val-206 | What is the target LTV/CAC ratio for a healthy software enterprise?
 > Between 3.0x and 5.0x; below 3.0x indicates poor marketing efficiency, while above 6.0x indicates under-investment in growth.
 
-> [!question] mkt-val-207 | What is the CAC Payback Period?
+> [!question]- mkt-val-207 | What is the CAC Payback Period?
 > The number of months required for a customer's gross profit contribution to equal the cost incurred to acquire that customer.
 
-> [!question] mkt-val-208 | What is Net Revenue Retention (NRR) and why is it critical for SaaS valuation?
+> [!question]- mkt-val-208 | What is Net Revenue Retention (NRR) and why is it critical for SaaS valuation?
 > The percentage of recurring revenue retained from existing customers over one year, including expansions and subtracting churn; NRR > 100% indicates compounding organic cohorts.
 
-> [!question] mkt-val-209 | What is the Rule of 40 in high-growth software valuation?
+> [!question]- mkt-val-209 | What is the Rule of 40 in high-growth software valuation?
 > Annual Revenue Growth Rate (%) + Free Cash Flow Margin (%) must equal or exceed 40% for the company to command a premium multiple.
 
-> [!question] mkt-val-210 | What is risk-adjusted Net Present Value (rNPV) in biotechnology valuation?
+> [!question]- mkt-val-210 | What is risk-adjusted Net Present Value (rNPV) in biotechnology valuation?
 > Discounted cash flow valuation where future commercial revenues are weighted by the cumulative statistical probability of passing clinical trial phases.
 
-> [!question] mkt-val-211 | What is the historical average probability of a drug candidate passing from Phase I trials to FDA approval?
+> [!question]- mkt-val-211 | What is the historical average probability of a drug candidate passing from Phase I trials to FDA approval?
 > Approximately 10% to 15% across all therapeutic indications.
 
-> [!question] mkt-val-212 | What is the historical probability of a drug candidate passing from Phase III to FDA approval?
+> [!question]- mkt-val-212 | What is the historical probability of a drug candidate passing from Phase III to FDA approval?
 > Approximately 50% to 65%.
 
-> [!question] mkt-val-213 | How does a binary Phase III trial outcome affect a single-drug biotech firm's valuation?
+> [!question]- mkt-val-213 | How does a binary Phase III trial outcome affect a single-drug biotech firm's valuation?
 > Trial success triggers an immediate multi-fold re-rating as probability shifts from ~60% to 90%+; trial failure frequently causes an 80% to 90% collapse.
 
-> [!question] mkt-val-214 | What is the difference between proved reserves (1P) and probable reserves (2P) in mining?
+> [!question]- mkt-val-214 | What is the difference between proved reserves (1P) and probable reserves (2P) in mining?
 > Proved reserves have at least 90% geological certainty of economic recovery; probable reserves have at least 50% certainty.
 
-> [!question] mkt-val-215 | Why does the EV/Sales multiple fail to capture unit economics efficiency in tech?
+> [!question]- mkt-val-215 | Why does the EV/Sales multiple fail to capture unit economics efficiency in tech?
 > Two companies trading at 10x sales can have drastically different margins, churn rates, and capital requirements, obscuring true cash generation.
 
-> [!question] mkt-val-216 | What is the efficiency ratio in banking?
+> [!question]- mkt-val-216 | What is the efficiency ratio in banking?
 > Non-Interest Operating Expenses divided by Total Net Revenue; lower efficiency ratios (e.g. 50% to 55%) indicate superior operational cost discipline.
 
-> [!question] mkt-val-217 | How does an inverted yield curve affect commercial bank profitability?
+> [!question]- mkt-val-217 | How does an inverted yield curve affect commercial bank profitability?
 > It compresses Net Interest Margin because banks borrow on short-term rates (paying higher deposit costs) while lending on long-term rates.
 
-> [!question] mkt-val-218 | What is embedded value (EV) in life insurance valuation?
+> [!question]- mkt-val-218 | What is embedded value (EV) in life insurance valuation?
 > The present value of future profits from existing in-force policies plus adjusted net asset value, omitting speculative future new business.
 
-> [!question] mkt-val-219 | What is all-in sustaining cost (AISC) in precious metals mining?
+> [!question]- mkt-val-219 | What is all-in sustaining cost (AISC) in precious metals mining?
 > A comprehensive metric including operating cash costs, sustaining capital expenditures, exploration, and corporate overhead required to maintain production.
 
-> [!question] mkt-val-220 | How should pre-revenue clinical trial costs be treated in a biotech valuation?
+> [!question]- mkt-val-220 | How should pre-revenue clinical trial costs be treated in a biotech valuation?
 > Discounted as negative cash outflows in the explicit forecast period, unweighted by clinical risk since costs are incurred with certainty.
 
-> [!question] mkt-val-221 | Why is tangible common equity more relevant than total book value for banks?
+> [!question]- mkt-val-221 | Why is tangible common equity more relevant than total book value for banks?
 > Regulators deduct goodwill and intangibles when calculating regulatory capital (CET1), making tangible common equity the true constraint on balance sheet leverage.
 
-> [!question] mkt-val-222 | What is magic formula earnings yield as defined by Joel Greenblatt?
+> [!question]- mkt-val-222 | What is magic formula earnings yield as defined by Joel Greenblatt?
 > EBIT divided by Enterprise Value (EBIT / EV), allowing direct operating yield comparisons independent of debt leverage.
 
-> [!question] mkt-val-223 | How does operating leverage amplify earnings volatility in cyclical companies?
+> [!question]- mkt-val-223 | How does operating leverage amplify earnings volatility in cyclical companies?
 > High fixed manufacturing costs mean small percentage changes in sales volume produce massive percentage swings in operating income.
 
-> [!question] mkt-val-224 | What is the ultimate principle for selecting a valuation methodology?
+> [!question]- mkt-val-224 | What is the ultimate principle for selecting a valuation methodology?
 > Match the valuation tool to the economic reality of the business model: asset-based for distress, multiples for relative pricing, and DCF/rNPV for cash flow generation.
 
 ---

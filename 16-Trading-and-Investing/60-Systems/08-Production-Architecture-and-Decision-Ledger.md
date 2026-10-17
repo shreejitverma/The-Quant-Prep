@@ -217,100 +217,100 @@ The portfolio generated $1.60\%$ from sector allocation and $0.50\%$ from stock 
 
 ## Interview questions
 
-> [!question] mkt-sys-225 | What is SEC Rule 15c3-5 (The Market Access Rule)?
+> [!question]- mkt-sys-225 | What is SEC Rule 15c3-5 (The Market Access Rule)?
 > An SEC rule requiring broker-dealers with market access to implement automated, programmatic pre-trade risk controls and supervisory procedures to prevent erroneous or runaway orders.
 
-> [!question] mkt-sys-226 | State the key mandatory pre-trade risk controls under SEC Rule 15c3-5.
+> [!question]- mkt-sys-226 | State the key mandatory pre-trade risk controls under SEC Rule 15c3-5.
 > Controls include maximum single-order size and dollar notional, price collar bands relative to NBBO, gross credit and capital limits, order rate message throttles, and locate verification.
 
-> [!question] mkt-sys-227 | What is a price collar band in order routing?
+> [!question]- mkt-sys-227 | What is a price collar band in order routing?
 > A rule rejecting any order priced outside a defined percentage band (e.g. +/- 3% or 5%) from the prevailing National Best Bid and Offer (NBBO) to prevent fat-finger errors.
 
-> [!question] mkt-sys-228 | What is the purpose of an immutable Decision Ledger in systematic trading?
+> [!question]- mkt-sys-228 | What is the purpose of an immutable Decision Ledger in systematic trading?
 > It provides a tamper-evident audit trail recording every state, raw alpha signal, target allocation, and execution telemetry to guarantee deterministic reproducibility and compliance auditability.
 
-> [!question] mkt-sys-229 | What is a heartbeat (dead-man switch) mechanism in trading infrastructure?
+> [!question]- mkt-sys-229 | What is a heartbeat (dead-man switch) mechanism in trading infrastructure?
 > A periodic signal sent between the strategy daemon and the execution gateway; if a heartbeat is missed within a strict timeout, working orders are canceled automatically.
 
-> [!question] mkt-sys-230 | Describe the three operational tiers of a systematic kill switch.
+> [!question]- mkt-sys-230 | Describe the three operational tiers of a systematic kill switch.
 > Tier 1 pauses new order submission and cancels working orders; Tier 2 passively unwinds exposure over time; Tier 3 executes aggressive market orders to flatten all positions to cash immediately.
 
-> [!question] mkt-sys-231 | What is the FIX Protocol (Financial Information eXchange)?
+> [!question]- mkt-sys-231 | What is the FIX Protocol (Financial Information eXchange)?
 > A standardized messaging specification used worldwide for electronic trading, order routing, trade allocation, and execution confirmation between institutions and brokers.
 
-> [!question] mkt-sys-232 | What is Smart Order Routing (SOR)?
+> [!question]- mkt-sys-232 | What is Smart Order Routing (SOR)?
 > An automated algorithm that analyzes real-time liquidity, maker-taker fee structures, and order book depths across fragmented exchanges to route child orders for best execution.
 
-> [!question] mkt-sys-233 | What is Transaction Cost Analysis (TCA)?
+> [!question]- mkt-sys-233 | What is Transaction Cost Analysis (TCA)?
 > The post-trade evaluation of executed orders against benchmark prices (Arrival, VWAP, Close) to measure slippage, market impact, and broker execution quality.
 
-> [!question] mkt-sys-234 | State the three components of Brinson-Fachler performance attribution.
+> [!question]- mkt-sys-234 | State the three components of Brinson-Fachler performance attribution.
 > Allocation effect (weighting outperforming sectors), Selection effect (picking outperforming stocks within sectors), and Interaction effect (joint impact of weight and return differences).
 
-> [!question] mkt-sys-235 | What is the difference between Brinson-Hood-Beebower and Brinson-Fachler attribution?
+> [!question]- mkt-sys-235 | What is the difference between Brinson-Hood-Beebower and Brinson-Fachler attribution?
 > Brinson-Hood-Beebower uses raw benchmark sector returns (w_p - w_b) * R_b, while Brinson-Fachler measures allocation relative to total benchmark return (w_p - w_b) * (R_b,j - R_b).
 
-> [!question] mkt-sys-236 | What is multi-factor risk attribution (Barra-style)?
+> [!question]- mkt-sys-236 | What is multi-factor risk attribution (Barra-style)?
 > Decomposing strategy PnL into returns driven by systematic style factors (Value, Momentum, Size, Volatility) and residual idiosyncratic alpha returns.
 
-> [!question] mkt-sys-237 | What is an Order Management System (OMS)?
+> [!question]- mkt-sys-237 | What is an Order Management System (OMS)?
 > A software platform that manages portfolio orders, tracks open orders across trading desks, enforces compliance rules, and routes parent orders to execution systems.
 
-> [!question] mkt-sys-238 | What is an Execution Management System (EMS)?
+> [!question]- mkt-sys-238 | What is an Execution Management System (EMS)?
 > A real-time, low-latency execution platform used to slice parent orders into algorithmic child orders, route across venues, and monitor order fills and market depth.
 
-> [!question] mkt-sys-239 | Why should pre-trade risk checks be executed in an independent process from strategy models?
+> [!question]- mkt-sys-239 | Why should pre-trade risk checks be executed in an independent process from strategy models?
 > To ensure that if the strategy process deadlocks, crashes, or produces pathological outputs, the independent risk gateway blocks invalid orders from reaching exchanges.
 
-> [!question] mkt-sys-240 | What is order book state reconstruction?
+> [!question]- mkt-sys-240 | What is order book state reconstruction?
 > Processing real-time market data feeds (e.g. NASDAQ ITCH) to maintain an accurate internal mirror of full exchange limit order book depth (L2/L3).
 
-> [!question] mkt-sys-241 | What is tick-to-trade latency?
+> [!question]- mkt-sys-241 | What is tick-to-trade latency?
 > The elapsed time between receiving a market data packet at the network interface card (NIC) and dispatching an outgoing order execution packet.
 
-> [!question] mkt-sys-242 | What is point-in-time state synchronization?
+> [!question]- mkt-sys-242 | What is point-in-time state synchronization?
 > Ensuring that every piece of market data, fundamental factor, and borrow list used in decision making carries timestamps prior to the exact decision time.
 
-> [!question] mkt-sys-243 | How does cryptographic hashing enhance Decision Ledger integrity?
+> [!question]- mkt-sys-243 | How does cryptographic hashing enhance Decision Ledger integrity?
 > Generating SHA-256 hashes of input state vectors and chaining ledger blocks guarantees that logs cannot be altered, forged, or back-dated after execution.
 
-> [!question] mkt-sys-244 | What is trade break reconciliation?
+> [!question]- mkt-sys-244 | What is trade break reconciliation?
 > The post-trade process of comparing internal fill records against clearing broker and exchange clearinghouse records to identify mismatches in quantity, price, or ticker.
 
-> [!question] mkt-sys-245 | What is an idempotent order router?
+> [!question]- mkt-sys-245 | What is an idempotent order router?
 > A router designed such that submitting the same order multiple times due to network retries results in exactly one single execution, preventing duplicate orders.
 
-> [!question] mkt-sys-246 | What is the role of a message queue (e.g. Kafka, ZeroMQ) in trading architecture?
+> [!question]- mkt-sys-246 | What is the role of a message queue (e.g. Kafka, ZeroMQ) in trading architecture?
 > Providing asynchronous, decoupled communication between market data processors, strategy engines, and execution gateways with persistent message replay.
 
-> [!question] mkt-sys-247 | What is runaway algorithm detection?
+> [!question]- mkt-sys-247 | What is runaway algorithm detection?
 > Real-time surveillance tracking order submission velocity, reject rates, and PnL drawdown; exceeding safe limits triggers automatic algorithm deactivation.
 
-> [!question] mkt-sys-248 | Why must borrow locate IDs be logged in the Decision Ledger?
+> [!question]- mkt-sys-248 | Why must borrow locate IDs be logged in the Decision Ledger?
 > To provide verifiable regulatory evidence that short sale orders satisfied Regulation SHO prior to market transmission.
 
-> [!question] mkt-sys-249 | What is drop-copy in exchange communications?
+> [!question]- mkt-sys-249 | What is drop-copy in exchange communications?
 > A real-time secondary FIX message feed providing execution confirmations to middle-office risk surveillance and clearing systems without execution capabilities.
 
-> [!question] mkt-sys-250 | How does post-trade TCA differentiate between broker execution skill and alpha timing?
+> [!question]- mkt-sys-250 | How does post-trade TCA differentiate between broker execution skill and alpha timing?
 > By comparing fills against Arrival Price (measures broker execution slippage) versus Decision Price (measures internal alpha dispatch delay).
 
-> [!question] mkt-sys-251 | What is fat-finger protection?
+> [!question]- mkt-sys-251 | What is fat-finger protection?
 > Pre-trade filters that intercept orders with unrealistically large quantities, erroneous decimal points, or upside-down limit prices before they reach the market.
 
-> [!question] mkt-sys-252 | What is clock synchronization and why is PTP (Precision Time Protocol) used?
+> [!question]- mkt-sys-252 | What is clock synchronization and why is PTP (Precision Time Protocol) used?
 > PTP synchronizes server clocks to sub-microsecond precision across trading clusters, required by regulators (e.g. FINRA, MiFID II) for chronological audit trails.
 
-> [!question] mkt-sys-253 | What is cold-start recovery in trading systems?
+> [!question]- mkt-sys-253 | What is cold-start recovery in trading systems?
 > The protocol for recovering strategy state, cash positions, and open orders after an unexpected hardware crash, restoring clean operational state without re-trading.
 
-> [!question] mkt-sys-254 | How does sector neutralization isolate stock selection alpha?
+> [!question]- mkt-sys-254 | How does sector neutralization isolate stock selection alpha?
 > Constraining portfolio sector weights to match benchmark sector weights ensures that active returns stem entirely from intra-sector stock selection rather than macro sector bets.
 
-> [!question] mkt-sys-255 | What is an end-of-day trading post-mortem?
+> [!question]- mkt-sys-255 | What is an end-of-day trading post-mortem?
 > A systematic review comparing realized live performance against model expectations, tracking slippage, factor tilts, trade rule adherence, and unexpected residual variance.
 
-> [!question] mkt-sys-256 | What defines institutional-grade production readiness?
+> [!question]- mkt-sys-256 | What defines institutional-grade production readiness?
 > Complete modular decoupling, automated pre-trade risk compliance, sub-microsecond fail-safes, immutable decision auditability, and deterministic reproducibility.
 
 ---

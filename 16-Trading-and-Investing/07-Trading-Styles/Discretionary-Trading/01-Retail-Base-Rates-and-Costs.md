@@ -183,35 +183,35 @@ Round-trip execution friction is $\$35$ ($c_R = \frac{\$35}{\$500} = 0.07R$).
 
 ## Interview questions
 
-> [!question] mkt-trd-001 | What was the central finding of Barber and Odean's 2000 empirical study on individual investors?
+> [!question]- mkt-trd-001 | What was the central finding of Barber and Odean's 2000 empirical study on individual investors?
 > High portfolio turnover is strongly correlated with severe wealth destruction.
 > The most active trading quartile turned over 250% of their capital annually and underperformed the market by 6.5% per year net of transaction costs.
 
-> [!question] mkt-trd-002 | What did the 2020 Chague et al. study discover regarding individuals day-trading Brazilian equity futures?
+> [!question]- mkt-trd-002 | What did the 2020 Chague et al. study discover regarding individuals day-trading Brazilian equity futures?
 > 97% of all individuals who day-traded for more than 300 days lost money.
 > Only 1.1% earned more than the national minimum wage, and virtually none demonstrated statistically persistent institutional-scale alpha.
 
-> [!question] mkt-trd-003 | What percentage of retail traders lost money in Indian equity F&O according to the 2023 SEBI study?
+> [!question]- mkt-trd-003 | What percentage of retail traders lost money in Indian equity F&O according to the 2023 SEBI study?
 > 89% of all individual retail traders incurred net trading losses during FY 2022.
 > Losing traders spent an additional 15% to 50% of their total trading losses on brokerage, taxes, and exchange turnover charges.
 
-> [!question] mkt-trd-004 | State the mathematical expectancy equation for a trading strategy.
+> [!question]- mkt-trd-004 | State the mathematical expectancy equation for a trading strategy.
 > Expectancy = (P_win * Average_Win) - (P_loss * Average_Loss) - Cost_friction.
 > Expectancy quantifies the expected average net dollar gain or loss per trade across a large sample.
 
-> [!question] mkt-trd-005 | What is an R-multiple in professional trade management?
+> [!question]- mkt-trd-005 | What is an R-multiple in professional trade management?
 > An R-multiple expresses a trade's realized profit or loss as a ratio of the initial dollar risk defined by the stop-loss: R = Dollar_PnL / Dollar_Risk.
 > A 2R gain represents a profit equal to twice the initial amount risked.
 
-> [!question] mkt-trd-006 | What is the break-even win rate formula for a strategy targeting an average reward-to-risk ratio W_R?
+> [!question]- mkt-trd-006 | What is the break-even win rate formula for a strategy targeting an average reward-to-risk ratio W_R?
 > P_breakeven = (1.0 + c_R) / (1.0 + W_R), where c_R is the round-trip transaction friction expressed as a fraction of initial risk R.
 > With zero friction and a 2:1 reward-to-risk ratio, the break-even win rate is exactly 33.33%.
 
-> [!question] mkt-trd-007 | Why does high turnover convert a statistically neutral strategy into a catastrophic loser?
+> [!question]- mkt-trd-007 | Why does high turnover convert a statistically neutral strategy into a catastrophic loser?
 > Every transaction subtracts fixed spread, market impact, clearing fees, and taxes from account equity.
 > With high turnover, accumulated friction scales linearly with volume, eroding account equity even if gross trading returns are zero.
 
-> [!question] mkt-trd-008 | What are the six components of the all-in trading friction waterfall?
+> [!question]- mkt-trd-008 | What are the six components of the all-in trading friction waterfall?
 > 1. Broker commissions.
 > 2. Quoted bid-ask spread crossing.
 > 3. Market impact and execution slippage.
@@ -219,99 +219,99 @@ Round-trip execution friction is $\$35$ ($c_R = \frac{\$35}{\$500} = 0.07R$).
 > 5. Statutory stamp duty, STT, and transaction taxes.
 > 6. Margin financing and short borrow borrow costs.
 
-> [!question] mkt-trd-009 | How does Payment for Order Flow (PFOF) create a hidden cost for retail traders?
+> [!question]- mkt-trd-009 | How does Payment for Order Flow (PFOF) create a hidden cost for retail traders?
 > Retail brokers route unexecuted market orders to wholesale internalizers in exchange for cash rebates.
 > Internalizers execute orders at inferior sub-penny prices compared to lit midpoint availability, resulting in hidden slippage costs.
 
-> [!question] mkt-trd-010 | What is the disposition effect documented by Terrance Odean (1998)?
+> [!question]- mkt-trd-010 | What is the disposition effect documented by Terrance Odean (1998)?
 > The behavioral tendency of retail traders to sell winning positions too early to lock in gains while holding losing positions too long in hopes of breaking even.
 > It produces an asymmetric distribution of small wins and catastrophic tail losses.
 
-> [!question] mkt-trd-011 | Why is a high win rate (e.g. 80%) not a guarantee of profitability?
+> [!question]- mkt-trd-011 | Why is a high win rate (e.g. 80%) not a guarantee of profitability?
 > An 80% win rate strategy that wins $100 on 8 trades (+ $800) but loses $500 on 2 trades (- $1,000) has negative net expectancy (- $200).
 > Expectancy depends equally on the magnitude of wins versus losses (the payoff ratio).
 
-> [!question] mkt-trd-012 | What is the Pattern Day Trader (PDT) rule under US FINRA regulations?
+> [!question]- mkt-trd-012 | What is the Pattern Day Trader (PDT) rule under US FINRA regulations?
 > Any margin account executing four or more day trades within five rolling business days is designated a Pattern Day Trader.
 > PDT accounts must maintain a minimum of $25,000 in equity; dropping below $25,000 restricts the account to closing orders only.
 
-> [!question] mkt-trd-013 | What is Securities Transaction Tax (STT) and how does it distort high-frequency equity trading in India?
+> [!question]- mkt-trd-013 | What is Securities Transaction Tax (STT) and how does it distort high-frequency equity trading in India?
 > STT is a statutory tax levied by the Government of India on the turnover value of equity and derivatives transactions.
 > On delivery trades (0.1% each side), STT imposes a 20-basis-point round-trip hurdle cost that makes short-term trading mathematically punitive.
 
-> [!question] mkt-trd-014 | What is the wash-sale rule under US IRS Section 1091?
+> [!question]- mkt-trd-014 | What is the wash-sale rule under US IRS Section 1091?
 > If an investor sells a security at a loss and repurchases the same or substantially identical security within 30 days before or after the sale, the loss cannot be deducted.
 > The disallowed loss is added to the cost basis of the newly purchased security, delaying tax loss harvesting.
 
-> [!question] mkt-trd-015 | How does sample size N impact confidence in an observed win rate?
+> [!question]- mkt-trd-015 | How does sample size N impact confidence in an observed win rate?
 > The standard error of an observed proportion p across N trades is sqrt(p * (1 - p) / N).
 > For N = 50 and p = 50%, the 95% confidence interval spans 36% to 64%, rendering short-term performance indistinguishable from random luck.
 
-> [!question] mkt-trd-016 | What is the difference between geometric mean return and arithmetic mean return?
+> [!question]- mkt-trd-016 | What is the difference between geometric mean return and arithmetic mean return?
 > Arithmetic mean is the simple average of periodic returns; geometric mean is the true compounding rate of capital growth: (1 + R_geo)^T = Product(1 + R_t).
 > Geometric return is always strictly lower than arithmetic return due to variance drag: R_geo ~ R_arith - 0.5 * sigma^2.
 
-> [!question] mkt-trd-017 | What is variance drag and how does volatility destroy compounding capital?
+> [!question]- mkt-trd-017 | What is variance drag and how does volatility destroy compounding capital?
 > Volatility reduces compound geometric growth relative to simple average returns.
 > A 50% loss requires a 100% subsequent gain to break even, illustrating the asymmetric mathematical penalty of downward volatility.
 
-> [!question] mkt-trd-018 | What is the overconfidence bias among retail traders as documented by Barber and Odean (2001)?
+> [!question]- mkt-trd-018 | What is the overconfidence bias among retail traders as documented by Barber and Odean (2001)?
 > Men trade 45% more actively than women due to psychological overconfidence in their private information.
 > This excessive turnover reduced men's net annual returns by 2.65% compared to 1.72% for women.
 
-> [!question] mkt-trd-019 | Why do market orders suffer adverse selection compared to passive limit orders?
+> [!question]- mkt-trd-019 | Why do market orders suffer adverse selection compared to passive limit orders?
 > Market orders immediately cross the bid-ask spread, paying the half-spread and crossing into resting book depth.
 > Passive limit orders capture the spread and earn rebates, though they bear the risk of non-execution and adverse fills.
 
-> [!question] mkt-trd-020 | What is survivorship bias in retail trading education and marketing?
+> [!question]- mkt-trd-020 | What is survivorship bias in retail trading education and marketing?
 > The selective presentation of the rare 1% profitable outliers while completely ignoring the 89-97% of participants who blew up and quit.
 > It creates the false perception that retail day trading is a repeatable, low-risk career path.
 
-> [!question] mkt-trd-021 | How does hard-to-borrow (HTB) fee rate erode the edge of short-selling momentum breakdowns?
+> [!question]- mkt-trd-021 | How does hard-to-borrow (HTB) fee rate erode the edge of short-selling momentum breakdowns?
 > Heavily shorted stocks with high retail breakdown momentum often carry annualized borrow fees exceeding 30% to 100%.
 > Daily borrow interest rapidly drains capital, turning a directionally correct trade into a net loss if the decline takes time to materialize.
 
-> [!question] mkt-trd-022 | What is implementation shortfall in discretionary trade execution?
+> [!question]- mkt-trd-022 | What is implementation shortfall in discretionary trade execution?
 > The dollar difference between the price of the asset when the discretionary trader made the decision to enter and the final average fill price.
 > It aggregates decision delay, market movement during entry, spread costs, and broker commissions.
 
-> [!question] mkt-trd-023 | What is a profit factor and how is it calculated?
+> [!question]- mkt-trd-023 | What is a profit factor and how is it calculated?
 > Profit Factor = Gross Total Profits / Gross Total Losses.
 > A robust profitable system exhibits a Profit Factor >= 1.50 across a statistically significant sample of trades.
 
-> [!question] mkt-trd-024 | Why is a Profit Factor of 1.10 dangerously fragile in live market execution?
+> [!question]- mkt-trd-024 | Why is a Profit Factor of 1.10 dangerously fragile in live market execution?
 > A Profit Factor near 1.10 has virtually zero buffer against slight increases in execution slippage, wider spreads, or normal regime volatility.
 > A minor shift in market conditions will immediately push the system below the 1.00 breakeven threshold.
 
-> [!question] mkt-trd-025 | How does leverage amplify trading friction relative to equity capital?
+> [!question]- mkt-trd-025 | How does leverage amplify trading friction relative to equity capital?
 > If an investor uses 4x margin to trade $100,000 GMV on $25,000 equity, a 10-basis-point round-trip fee ($100) represents 0.40% of their actual equity.
 > High turnover under leverage exponentially accelerates equity depletion.
 
-> [!question] mkt-trd-026 | What is the gambler's fallacy in discretionary trading?
+> [!question]- mkt-trd-026 | What is the gambler's fallacy in discretionary trading?
 > The irrational belief that after a series of consecutive losing trades, the probability of the next trade being a winner is increased.
 > In independent market trials, the probability distribution of each setup remains unchanged regardless of past streaks.
 
-> [!question] mkt-trd-027 | How does mental accounting distort retail risk management?
+> [!question]- mkt-trd-027 | How does mental accounting distort retail risk management?
 > Traders treat "house money" (accumulated profits) with greater recklessness than their initial principal capital.
 > They widen stop losses and increase position sizes on winning streaks, guaranteeing that the eventual reversal wipes out accumulated profits.
 
-> [!question] mkt-trd-028 | What is the impact of asymmetric capital gains tax treatment on net Sharpe ratio?
+> [!question]- mkt-trd-028 | What is the impact of asymmetric capital gains tax treatment on net Sharpe ratio?
 > Taxes subtract a significant percentage of winning trades while offering limited, delayed write-offs for net losses.
 > Tax friction truncates the right tail of the return distribution while leaving the left tail intact, sharply lowering after-tax Sharpe.
 
-> [!question] mkt-trd-029 | What is the risk-free rate hurdle in evaluating trading performance?
+> [!question]- mkt-trd-029 | What is the risk-free rate hurdle in evaluating trading performance?
 > Capital allocated to trading must beat the risk-free yield (e.g. 4.5% US Treasury bills) net of all costs and taxes.
 > A trader earning 6% gross returns who pays 3% in fees and taxes earns 3% net, severely underperforming passive, riskless cash.
 
-> [!question] mkt-trd-030 | Why does retail order flow clustering around round numbers (e.g. $100, $50) create adverse execution?
+> [!question]- mkt-trd-030 | Why does retail order flow clustering around round numbers (e.g. $100, $50) create adverse execution?
 > Retail stop-loss and limit orders heavily cluster at psychological round numbers.
 > Institutional algorithms deliberately target these concentrated liquidity pools to trigger stop cascades and fill parent orders at discounted prices.
 
-> [!question] mkt-trd-031 | What is revenge trading and what physiological mechanism triggers it?
+> [!question]- mkt-trd-031 | What is revenge trading and what physiological mechanism triggers it?
 > Impulsive, uncalculated trades executed immediately after a painful loss to recover capital rapidly.
 > It is triggered by amygdala activation and acute cortisol release, which impairs executive prefrontal cortex decision making and risk discipline.
 
-> [!question] mkt-trd-032 | Why must every trade plan specify the exact invalidation price before order placement?
+> [!question]- mkt-trd-032 | Why must every trade plan specify the exact invalidation price before order placement?
 > Pre-defining the invalidation price establishes the objective boundary where the market thesis is proven wrong.
 > It eliminates cognitive dissonance and emotional hesitation during adverse price movement, bounding risk to exactly 1R.
 

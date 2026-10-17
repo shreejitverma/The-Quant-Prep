@@ -175,100 +175,100 @@ Because return estimation error is typically an order of magnitude larger than c
 
 ## Flashcard drill bank
 
-> [!question] mkt-pf-129 | Who authored the original 1956 paper establishing the Kelly Criterion?
+> [!question]- mkt-pf-129 | Who authored the original 1956 paper establishing the Kelly Criterion?
 > John L. Kelly Jr., a physicist and information theorist at Bell Telephone Laboratories.
 
-> [!question] mkt-pf-130 | What objective function does the Kelly Criterion maximize?
+> [!question]- mkt-pf-130 | What objective function does the Kelly Criterion maximize?
 > The expected value of the logarithm of wealth, E[ln(W_T)], which maximizes asymptotic compound growth.
 
-> [!question] mkt-pf-131 | What is the single-period Bernoulli Kelly formula with odds b, win probability p, and loss probability q?
+> [!question]- mkt-pf-131 | What is the single-period Bernoulli Kelly formula with odds b, win probability p, and loss probability q?
 > f* = (b * p - q) / b.
 
-> [!question] mkt-pf-132 | In an even-money bet (b = 1), what is the Kelly fraction?
+> [!question]- mkt-pf-132 | In an even-money bet (b = 1), what is the Kelly fraction?
 > f* = p - q = 2p - 1.
 
-> [!question] mkt-pf-133 | What is the continuous Gaussian Kelly fraction for an asset with drift mu, risk-free rate r, and volatility sigma?
+> [!question]- mkt-pf-133 | What is the continuous Gaussian Kelly fraction for an asset with drift mu, risk-free rate r, and volatility sigma?
 > f* = (mu - r) / sigma^2.
 
-> [!question] mkt-pf-134 | How is the continuous Kelly growth rate expressed in terms of the Sharpe ratio (SR)?
+> [!question]- mkt-pf-134 | How is the continuous Kelly growth rate expressed in terms of the Sharpe ratio (SR)?
 > g(f*) = r + 0.5 * SR^2.
 
-> [!question] mkt-pf-135 | What happens to the compound growth rate if an investor sizes positions at Double Kelly (2 * f*)?
+> [!question]- mkt-pf-135 | What happens to the compound growth rate if an investor sizes positions at Double Kelly (2 * f*)?
 > The expected compound growth rate drops to zero (equal to the risk-free rate), providing zero reward for massive risk.
 
-> [!question] mkt-pf-136 | What occurs when position sizing exceeds Double Kelly (f > 2 * f*)?
+> [!question]- mkt-pf-136 | What occurs when position sizing exceeds Double Kelly (f > 2 * f*)?
 > The compound growth rate becomes negative due to variance decay, guaranteeing long-term mathematical ruin.
 
-> [!question] mkt-pf-137 | Why do professional hedge funds use Fractional Kelly rather than Full Kelly?
+> [!question]- mkt-pf-137 | Why do professional hedge funds use Fractional Kelly rather than Full Kelly?
 > To protect against parameter estimation error, model misspecification, and extreme drawdowns.
 
-> [!question] mkt-pf-138 | What proportion of maximum growth does Half Kelly (0.5 * f*) achieve?
+> [!question]- mkt-pf-138 | What proportion of maximum growth does Half Kelly (0.5 * f*) achieve?
 > Exactly 75% of the maximum theoretical growth rate.
 
-> [!question] mkt-pf-139 | How does the volatility of Half Kelly compare to Full Kelly?
+> [!question]- mkt-pf-139 | How does the volatility of Half Kelly compare to Full Kelly?
 > Half Kelly has exactly 50% of the volatility of Full Kelly.
 
-> [!question] mkt-pf-140 | What is the multi-asset Kelly allocation vector formula?
+> [!question]- mkt-pf-140 | What is the multi-asset Kelly allocation vector formula?
 > f* = Sigma^(-1) * (mu - r * 1), where Sigma is the covariance matrix.
 
-> [!question] mkt-pf-141 | What is the probability of a 50% drawdown under a Full Kelly sizing strategy?
+> [!question]- mkt-pf-141 | What is the probability of a 50% drawdown under a Full Kelly sizing strategy?
 > Exactly 33.3% (one-third).
 
-> [!question] mkt-pf-142 | What is the utility function implicitly maximized by the Kelly Criterion?
+> [!question]- mkt-pf-142 | What is the utility function implicitly maximized by the Kelly Criterion?
 > Logarithmic utility: U(W) = ln(W).
 
-> [!question] mkt-pf-143 | What is the Arrow-Pratt constant relative risk aversion (CRRA) coefficient for logarithmic utility?
+> [!question]- mkt-pf-143 | What is the Arrow-Pratt constant relative risk aversion (CRRA) coefficient for logarithmic utility?
 > Gamma = 1.
 
-> [!question] mkt-pf-144 | How does Ed Thorp's application of Kelly at Princeton Newport Partners illustrate practical sizing?
+> [!question]- mkt-pf-144 | How does Ed Thorp's application of Kelly at Princeton Newport Partners illustrate practical sizing?
 > Thorp deployed fractional Kelly (typically 0.25 to 0.5) to account for correlation spikes and liquidity constraints.
 
-> [!question] mkt-pf-145 | Why does the arithmetic mean return mislead investors compared to the geometric mean return?
+> [!question]- mkt-pf-145 | Why does the arithmetic mean return mislead investors compared to the geometric mean return?
 > Arithmetic mean ignores the compounding penalty of volatility; geometric mean measures the actual path-dependent wealth accumulation.
 
-> [!question] mkt-pf-146 | In the Kelly framework, what is the asymptotic relationship between time to reach a target wealth and bet size?
+> [!question]- mkt-pf-146 | In the Kelly framework, what is the asymptotic relationship between time to reach a target wealth and bet size?
 > Full Kelly minimizes the expected time required to reach any predetermined high wealth threshold.
 
-> [!question] mkt-pf-147 | What is the Breiman (1961) theorem regarding the Kelly criterion?
+> [!question]- mkt-pf-147 | What is the Breiman (1961) theorem regarding the Kelly criterion?
 > Kelly betting asymptotically outperforms any essentially different strategy with probability 1 as the number of trials approaches infinity.
 
-> [!question] mkt-pf-148 | If a quantitative trader estimates Sharpe ratio as 1.0 but true Sharpe is 0.4, what happens under Full Kelly?
+> [!question]- mkt-pf-148 | If a quantitative trader estimates Sharpe ratio as 1.0 but true Sharpe is 0.4, what happens under Full Kelly?
 > Sizing at estimated Kelly puts the trader at 2.5 times the true optimal fraction (over Double Kelly), causing negative compound growth.
 
-> [!question] mkt-pf-149 | What is 'optimal f' as defined by Ralph Vince?
+> [!question]- mkt-pf-149 | What is 'optimal f' as defined by Ralph Vince?
 > The fixed fraction of account equity to risk on a trade that maximizes the terminal wealth relative (TWR) for empirical trade distributions.
 
-> [!question] mkt-pf-150 | Why is the empirical distribution of financial returns more hazardous for Kelly than Gaussian distributions?
+> [!question]- mkt-pf-150 | Why is the empirical distribution of financial returns more hazardous for Kelly than Gaussian distributions?
 > Financial returns exhibit fat tails (leptokurtosis) and negative skewness; occasional extreme drops cause immediate ruin under naive Gaussian Kelly.
 
-> [!question] mkt-pf-151 | How can downside jump risk be incorporated into Kelly sizing?
+> [!question]- mkt-pf-151 | How can downside jump risk be incorporated into Kelly sizing?
 > By adding a jump-diffusion Poisson process to the stochastic differential equation, reducing the optimal leverage fraction.
 
-> [!question] mkt-pf-152 | What is the effect of portfolio borrowing costs on the optimal Kelly leverage fraction?
+> [!question]- mkt-pf-152 | What is the effect of portfolio borrowing costs on the optimal Kelly leverage fraction?
 > Borrowing costs increase the hurdle rate and introduce non-linear financing spreads, lowering the optimal leverage fraction.
 
-> [!question] mkt-pf-153 | What is the relationship between the Kelly Criterion and the Markowitz efficient frontier?
+> [!question]- mkt-pf-153 | What is the relationship between the Kelly Criterion and the Markowitz efficient frontier?
 > The Kelly portfolio is the single point on the capital allocation line (tangency portfolio) corresponding to a risk tolerance coefficient of gamma = 1.
 
-> [!question] mkt-pf-154 | What happens to Kelly leverage when asset volatility doubles while drift remains constant?
+> [!question]- mkt-pf-154 | What happens to Kelly leverage when asset volatility doubles while drift remains constant?
 > The optimal Kelly fraction is cut by a factor of 4 (inversely proportional to variance, sigma^2).
 
-> [!question] mkt-pf-155 | What is epistemic uncertainty in the context of capital growth theory?
+> [!question]- mkt-pf-155 | What is epistemic uncertainty in the context of capital growth theory?
 > The fundamental uncertainty about the parameters (probabilities, payoffs, drift, covariance) of the underlying stochastic process.
 
-> [!question] mkt-pf-156 | Why does Kelly sizing never recommend borrowing infinite leverage even if win probability is 99%?
+> [!question]- mkt-pf-156 | Why does Kelly sizing never recommend borrowing infinite leverage even if win probability is 99%?
 > Because if loss probability q > 0 and a total loss is possible, ln(1 - f) approaches negative infinity as f approaches 1.0.
 
-> [!question] mkt-pf-157 | What is the 'Gambler's Fallacy' and how does Kelly theory avoid it?
+> [!question]- mkt-pf-157 | What is the 'Gambler's Fallacy' and how does Kelly theory avoid it?
 > The mistaken belief that past independent losses increase future win probability; Kelly treats trials as conditionally independent based on true edge.
 
-> [!question] mkt-pf-158 | What is the primary operational rule for updating Kelly fractions in a live trading fund?
+> [!question]- mkt-pf-158 | What is the primary operational rule for updating Kelly fractions in a live trading fund?
 > Dynamically rescale capital fractions as realized volatility and trailing account equity fluctuate.
 
-> [!question] mkt-pf-159 | How does transaction cost friction alter the multi-asset Kelly allocation?
+> [!question]- mkt-pf-159 | How does transaction cost friction alter the multi-asset Kelly allocation?
 > Rebalancing to continuous Kelly creates turnover drag; managers use no-trade buffer bands around optimal weights to preserve capital.
 
-> [!question] mkt-pf-160 | What is the ultimate takeaway of Capital Growth Theory?
+> [!question]- mkt-pf-160 | What is the ultimate takeaway of Capital Growth Theory?
 > Growth rate is a quadratic function of leverage: underbetting sacrifices growth, but overbetting leads to irreversible ruin.
 
 ---

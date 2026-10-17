@@ -575,6 +575,9 @@ class Api(TempRepo):
         with urllib.request.urlopen(self.base + "/lab/") as r:
             self.assertEqual(r.status, 200)
             self.assertIn("Trading Lab", r.read().decode())
+        with urllib.request.urlopen(self.base + "/lab") as r:
+            self.assertEqual(r.status, 200)
+            self.assertEqual(r.geturl(), self.base + "/lab/")
 
     def test_sees_updates_from_another_process(self):
         self.store().set_mastery("top", 4)  # a terminal session writes while the server runs

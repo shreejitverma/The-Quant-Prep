@@ -182,25 +182,16 @@ PERSONA_MARKET_TRACKS = {
     "retail_algorithmic_trader": ["quant-trader"],
 }
 
-PERSONA_LAB_ROUTING = {
-    "quant_trader": ["lob_sim", "mm_quote", "games", "opt_desk"],
-    "quant_researcher": ["overfit_trap", "port_alloc", "opt_desk", "event_study"],
-    "macro_derivatives_trader": ["fut_desk", "opt_desk", "port_alloc", "event_study"],
-    "retail_algorithmic_trader": ["pos_sizing", "replay_chart", "journal_stats", "lob_sim"],
-    "holistic": [
-        "pos_sizing",
-        "lob_sim",
-        "mm_quote",
-        "games",
-        "opt_desk",
-        "replay_chart",
-        "overfit_trap",
-        "journal_stats",
-        "fut_desk",
-        "port_alloc",
-        "event_study",
-    ],
-}
+
+def _build_persona_lab_routing() -> dict[str, list[str]]:
+    from .markets import LAB_ENGINES, PERSONA_CONFIGS
+
+    routing = {p_id: list(cfg["required_engines"]) for p_id, cfg in PERSONA_CONFIGS.items()}
+    routing["holistic"] = list(LAB_ENGINES.keys())
+    return routing
+
+
+PERSONA_LAB_ROUTING: dict[str, list[str]] = _build_persona_lab_routing()
 
 
 def persona_weekly_plan(

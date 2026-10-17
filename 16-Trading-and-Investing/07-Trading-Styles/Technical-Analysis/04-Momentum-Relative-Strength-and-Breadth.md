@@ -223,130 +223,130 @@ A chief investment officer assesses market internals during a quarterly S&P 500 
 
 ## Interview questions
 
-> [!question] mkt-ta-097 | What is cross-sectional momentum in quantitative asset pricing?
+> [!question]- mkt-ta-097 | What is cross-sectional momentum in quantitative asset pricing?
 > The empirical anomaly where assets that performed best relative to peers over the past 3 to 12 months continue to outperform over the subsequent 3 to 12 months.
 > First documented by Jegadeesh and Titman (1993), it forms the basis of the academic UMD factor.
 
-> [!question] mkt-ta-098 | Why do quantitative researchers skip the most recent month (t-1) when constructing 12-month momentum portfolios?
+> [!question]- mkt-ta-098 | Why do quantitative researchers skip the most recent month (t-1) when constructing 12-month momentum portfolios?
 > To avoid contamination from the 1-month short-term reversal anomaly.
 > The 1-month reversal is driven by market microstructure friction, bid-ask bounce, and temporary liquidity shocks rather than true fundamental momentum.
 
-> [!question] mkt-ta-099 | What was the key finding of Asness, Moskowitz, and Pedersen (2013) in "Value and Momentum Everywhere"?
+> [!question]- mkt-ta-099 | What was the key finding of Asness, Moskowitz, and Pedersen (2013) in "Value and Momentum Everywhere"?
 > Momentum is a universal empirical phenomenon present across 8 diverse asset classes and global geographies.
 > Because value and momentum are negatively correlated, combining them creates massive Sharpe ratio diversification benefits.
 
-> [!question] mkt-ta-100 | What is a momentum crash and under what market conditions does it occur?
+> [!question]- mkt-ta-100 | What is a momentum crash and under what market conditions does it occur?
 > A violent, multi-month drawdown in a long-short momentum portfolio where shorted "losers" rally explosively while long "winners" lag.
 > Documented by Daniel and Moskowitz (2016), momentum crashes occur at the transition from panic bear market lows into sharp relief recoveries.
 
-> [!question] mkt-ta-101 | How did Barroso and Santa-Clara (2015) eliminate momentum crash risk?
+> [!question]- mkt-ta-101 | How did Barroso and Santa-Clara (2015) eliminate momentum crash risk?
 > By dynamically scaling portfolio exposure inversely to rolling realized momentum volatility (volatility targeting).
 > Volatility-scaled momentum nearly doubled the annualized Sharpe ratio and removed left-tail crash drawdowns.
 
-> [!question] mkt-ta-102 | What is a Relative Strength (RS) ratio line?
+> [!question]- mkt-ta-102 | What is a Relative Strength (RS) ratio line?
 > A plot of the ratio of an individual stock's price divided by a benchmark index price: RS = P_stock / P_benchmark.
 > A rising slope indicates outperformance; a falling slope indicates underperformance.
 
-> [!question] mkt-ta-103 | What is Mansfield Relative Strength (RSM)?
+> [!question]- mkt-ta-103 | What is Mansfield Relative Strength (RSM)?
 > A normalized relative strength indicator developed by Stan Weinstein that calculates the percentage deviation of the RS ratio from its 30-week moving average.
 > A transition above zero confirms a Stage 2 breakout.
 
-> [!question] mkt-ta-104 | In Weinstein Stage Analysis, what are the four stages of a market cycle?
+> [!question]- mkt-ta-104 | In Weinstein Stage Analysis, what are the four stages of a market cycle?
 > Stage 1: Basing (Accumulation), Stage 2: Advancing (Uptrend/Markup), Stage 3: Top Area (Distribution), Stage 4: Declining (Downtrend/Markdown).
 > Institutional traders restrict long entries exclusively to early Stage 2 breakouts.
 
-> [!question] mkt-ta-105 | What is William O'Neil's IBD Relative Strength rating?
+> [!question]- mkt-ta-105 | What is William O'Neil's IBD Relative Strength rating?
 > A percentile score from 1 to 99 ranking a stock's 12-month performance against all other stocks, weighting the most recent quarter by 40%.
 > Leading growth stocks entering sustained advances typically display an RS rating of 80 or higher.
 
-> [!question] mkt-ta-106 | What is the Cumulative Advance-Decline (A/D) Line?
+> [!question]- mkt-ta-106 | What is the Cumulative Advance-Decline (A/D) Line?
 > A running cumulative sum of daily advancing stocks minus daily declining stocks on an exchange: AD_t = AD_{t-1} + (Advancing - Declining).
 > It measures broad market participation independent of capitalization weighting.
 
-> [!question] mkt-ta-107 | What is a bearish market breadth divergence?
+> [!question]- mkt-ta-107 | What is a bearish market breadth divergence?
 > A condition where major capitalization-weighted indexes (e.g. S&P 500) reach new record highs while breadth indicators (A/D line, Net New Highs) decline.
 > It reveals that the rally is being driven by a narrowing band of mega-caps while the majority of equities are deteriorating.
 
-> [!question] mkt-ta-108 | What is the McClellan Oscillator?
+> [!question]- mkt-ta-108 | What is the McClellan Oscillator?
 > The difference between the 19-day EMA and the 39-day EMA of net advancing issues on an exchange.
 > It quantifies short-term to intermediate-term momentum in market breadth.
 
-> [!question] mkt-ta-109 | What is a Zweig Breadth Thrust?
+> [!question]- mkt-ta-109 | What is a Zweig Breadth Thrust?
 > A rare, powerful market breadth signal where the 10-day moving average of advancing stocks divided by total issues surges from below 40% to above 61.5% within 10 trading sessions.
 > Developed by Marty Zweig, it reliably signals the launch of major secular bull markets.
 
-> [!question] mkt-ta-110 | What is the New Highs - New Lows (NH-NL) Index?
+> [!question]- mkt-ta-110 | What is the New Highs - New Lows (NH-NL) Index?
 > The daily count of stocks reaching new 52-week highs minus those reaching new 52-week lows.
 > Expanding new highs confirms broad market strength; expanding new lows in a rising market warns of impending distribution.
 
-> [!question] mkt-ta-111 | Why does an equal-weighted index (e.g. RSP) outperforming a cap-weighted index (e.g. SPY) signal healthy breadth?
+> [!question]- mkt-ta-111 | Why does an equal-weighted index (e.g. RSP) outperforming a cap-weighted index (e.g. SPY) signal healthy breadth?
 > An equal-weighted index weights every constituent equally (0.2%), meaning its advance reflects broad-based buying across mid and small constituents rather than mega-cap distortion.
 
-> [!question] mkt-ta-112 | What is the percentage of stocks trading above their 200-day moving average indicator?
+> [!question]- mkt-ta-112 | What is the percentage of stocks trading above their 200-day moving average indicator?
 > A structural breadth gauge measuring what percentage of an index's components are in secular uptrends.
 > Extreme readings below 15% signal washed-out capitulation, while divergences below 50% during index highs indicate severe internal decay.
 
-> [!question] mkt-ta-113 | What is behavioral under-reaction and how does it explain the momentum anomaly?
+> [!question]- mkt-ta-113 | What is behavioral under-reaction and how does it explain the momentum anomaly?
 > Investors and equity analysts systematically under-react to new fundamental information (e.g. earnings surprises) due to conservatism and anchoring bias.
 > Prices adjust gradually to fair value over several months, creating trending momentum.
 
-> [!question] mkt-ta-114 | What is the disposition effect and how does it sustain price momentum?
+> [!question]- mkt-ta-114 | What is the disposition effect and how does it sustain price momentum?
 > The behavioral tendency of investors to sell winning stocks prematurely to lock in gains and hold losing stocks to avoid admitting losses.
 > Excess selling on winners creates temporary resistance, slowing the advance and prolonging subsequent momentum continuation.
 
-> [!question] mkt-ta-115 | How does factor crowding impact quantitative momentum funds?
+> [!question]- mkt-ta-115 | How does factor crowding impact quantitative momentum funds?
 > When many funds simultaneously pile into identical top-momentum names, positions become illiquid.
 > An unexpected shock forces simultaneous liquidations, triggering sudden cascading momentum drawdowns.
 
-> [!question] mkt-ta-116 | What is residual momentum?
+> [!question]- mkt-ta-116 | What is residual momentum?
 > Momentum computed from idiosyncratic returns after regressing stock returns against the Fama-French 3-factor or 5-factor model.
 > Residual momentum eliminates industry and factor bias, producing higher Sharpe ratios and lower crash risk than raw momentum.
 
-> [!question] mkt-ta-117 | How does the Arms Index (TRIN) measure market internals?
+> [!question]- mkt-ta-117 | How does the Arms Index (TRIN) measure market internals?
 > TRIN = (Advancing Issues / Declining Issues) / (Advancing Volume / Declining Volume).
 > A TRIN below 1.0 indicates strong buying pressure (volume disproportionately in advancing stocks); TRIN above 1.0 indicates selling pressure.
 
-> [!question] mkt-ta-118 | What is a TRIN capitulation signal?
+> [!question]- mkt-ta-118 | What is a TRIN capitulation signal?
 > An extreme spike in the intraday Arms Index (e.g. TRIN > 3.0 or 4.0) accompanied by heavy downside volume.
 > It indicates indiscriminate panic selling and often marks short-term exhaustion bottoms.
 
-> [!question] mkt-ta-119 | What is sector rotation in equity markets?
+> [!question]- mkt-ta-119 | What is sector rotation in equity markets?
 > The systematic movement of institutional capital from one industry sector to another according to the stages of the macroeconomic business cycle.
 > Relative strength analysis tracks the migration from early-cycle cyclical tech/consumer names to late-cycle defensive utilities/staples.
 
-> [!question] mkt-ta-120 | What is the High-Low Logic Index?
+> [!question]- mkt-ta-120 | What is the High-Low Logic Index?
 > The lesser of the percentage of new 52-week highs and new 52-week lows on a given day.
 > A high reading indicates market divergence and confusion where both new highs and new lows are elevated simultaneously.
 
-> [!question] mkt-ta-121 | Why is Relative Strength a leading indicator at market cycle bottoms?
+> [!question]- mkt-ta-121 | Why is Relative Strength a leading indicator at market cycle bottoms?
 > Institutional accumulation begins in market leaders while the broad index is still printing final panic lows.
 > Stocks that refuse to break support during the final index selloff become the primary leaders of the subsequent bull market.
 
-> [!question] mkt-ta-122 | What is intermediate-term momentum reversal (mean reversion)?
+> [!question]- mkt-ta-122 | What is intermediate-term momentum reversal (mean reversion)?
 > The tendency for momentum to reverse after 3 to 5 years, where past long-term winners become overvalued and underperform, reverting toward historical fundamental means.
 > Documented by De Bondt and Thaler (1985).
 
-> [!question] mkt-ta-123 | What is post-earnings announcement drift (PEAD) and how does it relate to momentum?
+> [!question]- mkt-ta-123 | What is post-earnings announcement drift (PEAD) and how does it relate to momentum?
 > The empirical finding that stocks announcing positive earnings surprises continue to drift higher for up to 60 days following the announcement.
 > PEAD serves as one of the primary micro-drivers underlying medium-term price momentum.
 
-> [!question] mkt-ta-124 | How does liquidity affect momentum strategy profitability?
+> [!question]- mkt-ta-124 | How does liquidity affect momentum strategy profitability?
 > Momentum is strongest among small-cap and illiquid stocks, but high bid-ask spreads and market impact can consume the theoretical alpha.
 > Institutional momentum strategies enforce market capitalization and daily volume filters.
 
-> [!question] mkt-ta-125 | What is cross-sectional vs time-series momentum?
+> [!question]- mkt-ta-125 | What is cross-sectional vs time-series momentum?
 > Cross-sectional momentum ranks assets against each other (relative winners vs losers, zero-net-investment).
 > Time-series momentum evaluates an asset's return against its own past return (absolute trend: long positive trend, short negative trend).
 
-> [!question] mkt-ta-126 | What is the Up/Down Volume Ratio?
+> [!question]- mkt-ta-126 | What is the Up/Down Volume Ratio?
 > The ratio of volume traded in advancing stocks divided by volume traded in declining stocks over a specified period (e.g. 50 days).
 > An Up/Down volume ratio above 1.2 to 1.5 indicates institutional accumulation.
 
-> [!question] mkt-ta-127 | What is a "breadth thrust" exhaustion signal?
+> [!question]- mkt-ta-127 | What is a "breadth thrust" exhaustion signal?
 > When market breadth indicators reach extreme overbought levels (> 90% stocks above 50 DMA) and then abruptly roll over.
 > It indicates that buying power has been fully exhausted across the entire universe.
 
-> [!question] mkt-ta-128 | Why do quantitative asset allocators combine Value and Momentum factors?
+> [!question]- mkt-ta-128 | Why do quantitative asset allocators combine Value and Momentum factors?
 > Value buys cheap, beaten-down assets with negative momentum, while Momentum buys expensive, high-performing assets with positive trend.
 > Because their return streams have an empirical correlation of -0.4 to -0.6, blending them significantly smooths equity curves.
 

@@ -211,100 +211,100 @@ BTC would need to appreciate by nearly 100% before the short leg reaches liquida
 
 ## Interview questions
 
-> [!question] mkt-cry-001 | Who invented the Perpetual Futures contract and in what year?
+> [!question]- mkt-cry-001 | Who invented the Perpetual Futures contract and in what year?
 > Arthur Hayes and the founding team at BitMEX in 2016.
 
-> [!question] mkt-cry-002 | How does a Perpetual Futures contract maintain its peg to spot price without an expiration date?
+> [!question]- mkt-cry-002 | How does a Perpetual Futures contract maintain its peg to spot price without an expiration date?
 > Through periodic funding rate cash transfers exchanged directly between long and short contract holders.
 
-> [!question] mkt-cry-003 | How frequently are funding rate payments typically exchanged on major crypto exchanges?
+> [!question]- mkt-cry-003 | How frequently are funding rate payments typically exchanged on major crypto exchanges?
 > Every 8 hours (at 00:00, 08:00, and 16:00 UTC).
 
-> [!question] mkt-cry-004 | What occurs when the crypto perpetual funding rate is positive?
+> [!question]- mkt-cry-004 | What occurs when the crypto perpetual funding rate is positive?
 > Long position holders pay funding to short position holders, incentivizing traders to sell the perpetual down toward spot.
 
-> [!question] mkt-cry-005 | What occurs when the crypto perpetual funding rate is negative?
+> [!question]- mkt-cry-005 | What occurs when the crypto perpetual funding rate is negative?
 > Short position holders pay funding to long position holders, incentivizing traders to buy the perpetual up toward spot.
 
-> [!question] mkt-cry-006 | What is the Premium Index in crypto perpetual contracts?
+> [!question]- mkt-cry-006 | What is the Premium Index in crypto perpetual contracts?
 > The percentage difference between the perpetual contract's price (Impact Mid) and the spot Index Price.
 
-> [!question] mkt-cry-007 | What is the Index Price on a centralized crypto derivatives exchange?
+> [!question]- mkt-cry-007 | What is the Index Price on a centralized crypto derivatives exchange?
 > A volume-weighted composite spot price calculated across major external spot exchanges to represent true fair value.
 
-> [!question] mkt-cry-008 | What is the Mark Price and why is it used for margin liquidation calculations?
+> [!question]- mkt-cry-008 | What is the Mark Price and why is it used for margin liquidation calculations?
 > A composite price calculated as Index Price plus an exponential moving average of basis, preventing stop-hunting manipulation.
 
-> [!question] mkt-cry-009 | What is Last Traded Price in crypto trading?
+> [!question]- mkt-cry-009 | What is Last Traded Price in crypto trading?
 > The most recent price at which an order matched inside the specific exchange's order book.
 
-> [!question] mkt-cry-010 | What is Cash-and-Carry Funding Arbitrage in crypto markets?
+> [!question]- mkt-cry-010 | What is Cash-and-Carry Funding Arbitrage in crypto markets?
 > Buying spot cryptocurrency and simultaneously shorting an equivalent nominal value of perpetual futures to harvest funding payments.
 
-> [!question] mkt-cry-011 | What is the net directional market delta of a cash-and-carry funding arbitrage position?
+> [!question]- mkt-cry-011 | What is the net directional market delta of a cash-and-carry funding arbitrage position?
 > Exactly zero (delta-neutral).
 
-> [!question] mkt-cry-012 | If an 8-hour funding rate is 0.02%, what is the annualized simple return?
+> [!question]- mkt-cry-012 | If an 8-hour funding rate is 0.02%, what is the annualized simple return?
 > 0.02% * 3 * 365 = 21.90% annualized.
 
-> [!question] mkt-cry-013 | What is the primary market liquidation risk in a delta-neutral cash-and-carry basis trade?
+> [!question]- mkt-cry-013 | What is the primary market liquidation risk in a delta-neutral cash-and-carry basis trade?
 > If the asset price surges parabolically, the short perpetual leg may face liquidation before spot gains can be pledged as margin.
 
-> [!question] mkt-cry-014 | What is an exchange Insurance Fund in cryptocurrency derivatives?
+> [!question]- mkt-cry-014 | What is an exchange Insurance Fund in cryptocurrency derivatives?
 > A capital reserve maintained by the exchange to absorb losses when bankrupt accounts are liquidated at prices worse than bankruptcy price.
 
-> [!question] mkt-cry-015 | What is Auto-Deleveraging (ADL)?
+> [!question]- mkt-cry-015 | What is Auto-Deleveraging (ADL)?
 > An automated emergency mechanism that involuntarily closes opposing profitable positions when an exchange's insurance fund is exhausted.
 
-> [!question] mkt-cry-016 | How are traders ranked in the Auto-Deleveraging (ADL) priority queue?
+> [!question]- mkt-cry-016 | How are traders ranked in the Auto-Deleveraging (ADL) priority queue?
 > Ranked in descending order by profit percentage and effective leverage (highest leverage and highest profit liquidated first).
 
-> [!question] mkt-cry-017 | What is a liquidation cascade in crypto markets?
+> [!question]- mkt-cry-017 | What is a liquidation cascade in crypto markets?
 > A self-reinforcing chain reaction where forced market liquidations push prices down, breaching lower margin thresholds and triggering further liquidations.
 
-> [!question] mkt-cry-018 | What is the Constant Product formula used by Uniswap v2 Automated Market Makers?
+> [!question]- mkt-cry-018 | What is the Constant Product formula used by Uniswap v2 Automated Market Makers?
 > x * y = k, where x and y are the token reserve quantities and k is a constant.
 
-> [!question] mkt-cry-019 | What is Impermanent Loss (IL) in decentralized liquidity pools?
+> [!question]- mkt-cry-019 | What is Impermanent Loss (IL) in decentralized liquidity pools?
 > The difference in portfolio value between providing liquidity to an AMM pool versus simply holding the underlying tokens in a wallet.
 
-> [!question] mkt-cry-020 | What is the formula for Impermanent Loss as a function of the price ratio k = P_1 / P_0?
+> [!question]- mkt-cry-020 | What is the formula for Impermanent Loss as a function of the price ratio k = P_1 / P_0?
 > IL(k) = (2 * sqrt(k)) / (1 + k) - 1.
 
-> [!question] mkt-cry-021 | If the price of an asset doubles (2x, k = 2), what is the resulting Impermanent Loss?
+> [!question]- mkt-cry-021 | If the price of an asset doubles (2x, k = 2), what is the resulting Impermanent Loss?
 > Exactly -5.72%.
 
-> [!question] mkt-cry-022 | What is Concentrated Liquidity as introduced in Uniswap v3?
+> [!question]- mkt-cry-022 | What is Concentrated Liquidity as introduced in Uniswap v3?
 > Allowing liquidity providers to allocate capital within customized, bounded price ranges [p_a, p_b] rather than across 0 to infinity.
 
-> [!question] mkt-cry-023 | What is the trade-off of providing Concentrated Liquidity in Uniswap v3?
+> [!question]- mkt-cry-023 | What is the trade-off of providing Concentrated Liquidity in Uniswap v3?
 > Massive capital efficiency gains within the chosen range, accompanied by amplified impermanent loss if the price exits the range.
 
-> [!question] mkt-cry-024 | What is Maximal Extractable Value (MEV)?
+> [!question]- mkt-cry-024 | What is Maximal Extractable Value (MEV)?
 > The maximum value that blockchain block producers or searchers can extract by reordering, inserting, or censoring transactions in a block.
 
-> [!question] mkt-cry-025 | What is a 'sandwich attack' in decentralized trading?
+> [!question]- mkt-cry-025 | What is a 'sandwich attack' in decentralized trading?
 > An MEV bot detects a victim's pending swap, buys before it (front-runs) to push the price up, and immediately sells after it (back-runs) for profit.
 
-> [!question] mkt-cry-026 | What is Flashbots in the Ethereum ecosystem?
+> [!question]- mkt-cry-026 | What is Flashbots in the Ethereum ecosystem?
 > A private communication channel and block builder auction designed to democratize MEV and eliminate public mempool gas auctions.
 
-> [!question] mkt-cry-027 | What is the difference between coin-margined (inverse) and USDT-margined (linear) perpetual contracts?
+> [!question]- mkt-cry-027 | What is the difference between coin-margined (inverse) and USDT-margined (linear) perpetual contracts?
 > Linear contracts use stablecoins (USDT/USDC) as collateral and quote PnL in dollars; inverse contracts use the underlying cryptocurrency as collateral.
 
-> [!question] mkt-cry-028 | Why do coin-margined (inverse) contracts have non-linear PnL profiles?
+> [!question]- mkt-cry-028 | Why do coin-margined (inverse) contracts have non-linear PnL profiles?
 > Because the collateral itself fluctuates in value against the US dollar, compounding profits on the downside and muting profits on the upside.
 
-> [!question] mkt-cry-029 | What is 'slippage' in an Automated Market Maker trade?
+> [!question]- mkt-cry-029 | What is 'slippage' in an Automated Market Maker trade?
 > The difference between the expected execution price based on current reserves and the realized execution price after large order execution.
 
-> [!question] mkt-cry-030 | What is maintenance margin in crypto derivatives?
+> [!question]- mkt-cry-030 | What is maintenance margin in crypto derivatives?
 > The minimum account equity required to keep a leveraged position open without triggering automatic liquidation.
 
-> [!question] mkt-cry-031 | What is the 'kimchi premium'?
+> [!question]- mkt-cry-031 | What is the 'kimchi premium'?
 > The persistent price spread where Bitcoin and cryptocurrencies trade higher on South Korean exchanges due to strict capital controls.
 
-> [!question] mkt-cry-032 | What is the primary golden rule of cryptocurrency basis trading?
+> [!question]- mkt-cry-032 | What is the primary golden rule of cryptocurrency basis trading?
 > Always maintain dynamic margin rebalancing buffers to survive parabolic squeeze spikes without triggering premature liquidation.
 
 ---

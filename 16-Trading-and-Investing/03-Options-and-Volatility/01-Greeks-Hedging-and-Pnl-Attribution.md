@@ -185,131 +185,131 @@ A trader sells 100 call contracts ($10,000$ shares equivalent) with the paramete
 
 ## Interview questions
 
-> [!question] mkt-opt-001 | State the Black-Scholes formula for European Call Delta.
+> [!question]- mkt-opt-001 | State the Black-Scholes formula for European Call Delta.
 > Delta_call = exp(-q * T) * N(d1).
 > For a non-dividend paying stock (q = 0), Call Delta equals N(d1), bounded strictly between 0.0 and 1.0.
 
-> [!question] mkt-opt-002 | How are Call Delta and Put Delta related under European Put-Call Parity?
+> [!question]- mkt-opt-002 | How are Call Delta and Put Delta related under European Put-Call Parity?
 > Delta_call - Delta_put = exp(-q * T).
 > For a non-dividend asset, Delta_call - Delta_put = 1.0; a 0.60 Delta call corresponds to an identical-strike -0.40 Delta put.
 
-> [!question] mkt-opt-003 | Why is Gamma identical for European Call and Put options with identical strikes and maturities?
+> [!question]- mkt-opt-003 | Why is Gamma identical for European Call and Put options with identical strikes and maturities?
 > Put-Call parity states that C - P = S * exp(-q * T) - K * exp(-r * T).
 > Taking the second derivative with respect to S yields d^2C/dS^2 - d^2P/dS^2 = 0, proving Gamma_call = Gamma_put.
 
-> [!question] mkt-opt-004 | What happens to Gamma as an at-the-money option approaches expiration (T -> 0)?
+> [!question]- mkt-opt-004 | What happens to Gamma as an at-the-money option approaches expiration (T -> 0)?
 > Gamma concentrates heavily at the strike and approaches infinity: lim_{T -> 0} Gamma_ATM = infinity.
 > A minute move in spot price flips Delta discontinuously between 0.0 and 1.0.
 
-> [!question] mkt-opt-005 | State the Taylor series PnL attribution equation for an options book.
+> [!question]- mkt-opt-005 | State the Taylor series PnL attribution equation for an options book.
 > Delta_PnL ~ Delta * Delta_S + 0.5 * Gamma * (Delta_S)^2 + Vega * Delta_sigma + Theta * Delta_t.
 > Second-order cross terms include Vanna * Delta_S * Delta_sigma and 0.5 * Volga * (Delta_sigma)^2.
 
-> [!question] mkt-opt-006 | What is the fundamental Gamma-Theta trade-off in a delta-neutral book?
+> [!question]- mkt-opt-006 | What is the fundamental Gamma-Theta trade-off in a delta-neutral book?
 > A delta-neutral long options position possesses positive Gamma but negative Theta.
 > The position pays daily theta decay in exchange for convex gamma profits when realized spot moves exceed implied volatility.
 
-> [!question] mkt-opt-007 | Define Vanna and explain its economic significance.
+> [!question]- mkt-opt-007 | Define Vanna and explain its economic significance.
 > Vanna is the cross derivative dDelta / dsigma = dVega / dS = -exp(-q*T) * phi(d1) * (d2 / sigma).
 > It measures how an option's hedge ratio shifts when implied volatility changes, driving dealer hedging flows during market selloffs.
 
-> [!question] mkt-opt-008 | Define Volga (Vomma) and explain why out-of-the-money tail options have high Volga.
+> [!question]- mkt-opt-008 | Define Volga (Vomma) and explain why out-of-the-money tail options have high Volga.
 > Volga is the second derivative of option price with respect to volatility: dVega / dsigma = Vega * (d1 * d2 / sigma).
 > Far OTM options have low initial Vega but high Volga, causing their prices to explode non-linearly during sudden volatility spikes.
 
-> [!question] mkt-opt-009 | What is Charm and how does it influence market-on-close dealer rebalancing?
+> [!question]- mkt-opt-009 | What is Charm and how does it influence market-on-close dealer rebalancing?
 > Charm is the rate of Delta decay over time: -dDelta / dT.
 > As expiration approaches, OTM options bleed Delta toward zero, forcing options dealers to unwind underlying stock hedges before the close.
 
-> [!question] mkt-opt-010 | What is Vega and at what moneyness strike is it maximized?
+> [!question]- mkt-opt-010 | What is Vega and at what moneyness strike is it maximized?
 > Vega measures the change in option price per 1% change in implied volatility: Vega = S * exp(-q*T) * phi(d1) * sqrt(T).
 > Vega is strictly maximized for at-the-money (ATM) options where d1 is close to zero.
 
-> [!question] mkt-opt-011 | Why does Vega increase with time to maturity while Gamma decreases?
+> [!question]- mkt-opt-011 | Why does Vega increase with time to maturity while Gamma decreases?
 > Vega scales with sqrt(T), meaning long-dated options have greater cumulative sensitivity to volatility uncertainty.
 > Gamma scales with 1 / (S * sigma * sqrt(T)), meaning near-dated options have far higher localized price curvature.
 
-> [!question] mkt-opt-012 | What is Speed in higher-order Greeks?
+> [!question]- mkt-opt-012 | What is Speed in higher-order Greeks?
 > Speed is the third derivative of option price with respect to spot: dGamma / dS = d^3V / dS^3.
 > It quantifies how rapidly Gamma itself changes during large directional market moves.
 
-> [!question] mkt-opt-013 | What is Zomma in higher-order Greeks?
+> [!question]- mkt-opt-013 | What is Zomma in higher-order Greeks?
 > Zomma is the cross derivative dGamma / dsigma = dVega / dS^2.
 > It measures the sensitivity of Gamma to changes in implied volatility.
 
-> [!question] mkt-opt-014 | What is color (Charm derivative) in higher-order Greeks?
+> [!question]- mkt-opt-014 | What is color (Charm derivative) in higher-order Greeks?
 > Color is the rate of change of Gamma over time: dGamma / dt.
 > It models how dynamic hedging risk accelerates as maturity approaches.
 
-> [!question] mkt-opt-015 | How does discrete rebalancing introduce gamma leak in delta-hedging?
+> [!question]- mkt-opt-015 | How does discrete rebalancing introduce gamma leak in delta-hedging?
 > Because delta is rebalanced at discrete time steps delta_t rather than continuously, the desk is temporarily unhedged between intervals.
 > The variance of hedging error scales with 0.5 * Gamma^2 * S^2 * sigma^4 * delta_t.
 
-> [!question] mkt-opt-016 | What is the Black-Scholes partial differential equation (PDE)?
+> [!question]- mkt-opt-016 | What is the Black-Scholes partial differential equation (PDE)?
 > dV/dt + 0.5 * sigma^2 * S^2 * d^2V/dS^2 + r * S * dV/dS - r * V = 0.
 > It equates the risk-free return on a delta-hedged portfolio to the balance between theta decay and gamma convexity.
 
-> [!question] mkt-opt-017 | Why is Rho positive for European calls and negative for European puts?
+> [!question]- mkt-opt-017 | Why is Rho positive for European calls and negative for European puts?
 > Buying a call allows the investor to defer paying the strike price until maturity, earning interest on the cash (positive Rho).
 > Buying a put delays receiving the strike cash, incurring an opportunity cost of forgone interest (negative Rho).
 
-> [!question] mkt-opt-018 | How do dividends impact Call Delta and Put Delta?
+> [!question]- mkt-opt-018 | How do dividends impact Call Delta and Put Delta?
 > Dividends reduce the forward price of the underlying asset by exp(-q * T).
 > Dividend yield q decreases Call Delta and increases Put Delta (makes put delta more negative).
 
-> [!question] mkt-opt-019 | What is the Carr-Madan formula for the variance of hedging error?
+> [!question]- mkt-opt-019 | What is the Carr-Madan formula for the variance of hedging error?
 > It shows that the cumulative PnL of a delta-hedged option equals the integrated path: Integral_0^T exp(-r*t) * 0.5 * Gamma_t * S_t^2 * (sigma_realized^2 - sigma_implied^2) dt.
 > Delta-hedged options PnL is purely a bet on realized volatility versus implied volatility.
 
-> [!question] mkt-opt-020 | What is pin risk in options market making?
+> [!question]- mkt-opt-020 | What is pin risk in options market making?
 > The risk that the underlying asset closes exactly at the strike price on expiration Friday.
 > The market maker cannot know with certainty whether counterparty options will be exercised, leaving their delta hedge exposed to overnight gap risk.
 
-> [!question] mkt-opt-021 | What is implied dividend yield and how can it be extracted from option chains?
+> [!question]- mkt-opt-021 | What is implied dividend yield and how can it be extracted from option chains?
 > The dividend yield priced into option contracts derived from European Put-Call parity: C - P = S * exp(-q*T) - K * exp(-r*T).
 > If options trade at a discount to theoretical forward parity, the market is pricing in an imminent dividend hike.
 
-> [!question] mkt-opt-022 | What is a shadow Greek?
+> [!question]- mkt-opt-022 | What is a shadow Greek?
 > Sensitivity of an option model's output to parameters that are not directly observable in market quotes, such as jump intensity or correlation.
 > Desks manage shadow Greeks to prevent model misspecification during regime shifts.
 
-> [!question] mkt-opt-023 | Why does a short gamma position experience negative convexity?
+> [!question]- mkt-opt-023 | Why does a short gamma position experience negative convexity?
 > As the underlying price falls, short gamma forces the desk's delta to become increasingly long, compounding losses.
 > As the price rises, delta becomes increasingly short, guaranteeing that the desk sells at the bottom and buys at the top.
 
-> [!question] mkt-opt-024 | What is the Bleed of an options book?
+> [!question]- mkt-opt-024 | What is the Bleed of an options book?
 > The total daily carrying cost combining theta time decay, cash financing margin, and stock borrow fees.
 > A long options book must generate sufficient realized gamma scalping gains to exceed its daily bleed rate.
 
-> [!question] mkt-opt-025 | What is smile curvature and how is it related to Volga?
+> [!question]- mkt-opt-025 | What is smile curvature and how is it related to Volga?
 > Smile curvature is the second derivative of implied volatility with respect to strike: d^2 sigma_IV / dK^2.
 > High Volga in OTM options directly drives the steepness of the volatility smile curvature.
 
-> [!question] mkt-opt-026 | How does a finite difference grid verify an analytical Greek implementation?
+> [!question]- mkt-opt-026 | How does a finite difference grid verify an analytical Greek implementation?
 > By computing two-sided central differences: Delta_FD = (V(S + eps) - V(S - eps)) / (2 * eps).
 > If analytical Greek code differs from finite difference estimates by more than machine epsilon tolerances, a derivation bug exists.
 
-> [!question] mkt-opt-027 | Why do deep in-the-money (ITM) puts carry negative Theta under high interest rates?
+> [!question]- mkt-opt-027 | Why do deep in-the-money (ITM) puts carry negative Theta under high interest rates?
 > A deep ITM put has virtually zero time premium and is worth K * exp(-r*T) - S.
 > As time passes, the present value of the cash to be received grows, creating positive daily theta for the put owner.
 
-> [!question] mkt-opt-028 | What is dollar gamma (cash gamma) and how is it calculated?
+> [!question]- mkt-opt-028 | What is dollar gamma (cash gamma) and how is it calculated?
 > Dollar Gamma = 0.5 * Gamma * S^2 / 100.
 > It quantifies the dollar change in position delta for a 1% move in the underlying asset, enabling direct comparison across multi-price assets.
 
-> [!question] mkt-opt-029 | What is Vega weighted by time to maturity (Weighted Vega)?
+> [!question]- mkt-opt-029 | What is Vega weighted by time to maturity (Weighted Vega)?
 > Weighting Vega by 1 / sqrt(T) to normalize volatility exposure across contracts with differing maturities.
 > It prevents long-dated LEAPS from dominating risk reports when near-dated contracts carry far higher immediate realized volatility risk.
 
-> [!question] mkt-opt-030 | Explain the term "Delta bleed" in a trending market.
+> [!question]- mkt-opt-030 | Explain the term "Delta bleed" in a trending market.
 > The continuous shift in a portfolio's net delta caused by the underlying price moving across the gamma curvature.
 > In a sharp market rally, short call delta becomes more negative, requiring continuous stock purchases to restore neutrality.
 
-> [!question] mkt-opt-031 | What is an American option early exercise boundary?
+> [!question]- mkt-opt-031 | What is an American option early exercise boundary?
 > The critical underlying asset price at which the immediate intrinsic payoff from exercising exceeds the continuation value of holding the option.
 > American puts on non-dividend stocks and American calls on high-dividend stocks are vulnerable to early exercise.
 
-> [!question] mkt-opt-032 | Why must options market makers dynamically hedge Gamma using options rather than underlying stock?
+> [!question]- mkt-opt-032 | Why must options market makers dynamically hedge Gamma using options rather than underlying stock?
 > Stock has zero Gamma (linear delta of 1.0), meaning stock trades can only neutralize Delta, leaving Gamma exposure unchanged.
 > To neutralize Gamma, the desk must trade other options contracts with offsetting second-order curvature.
 

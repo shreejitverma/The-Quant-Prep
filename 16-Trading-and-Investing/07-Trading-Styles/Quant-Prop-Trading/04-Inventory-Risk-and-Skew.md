@@ -207,131 +207,131 @@ Correlation $\rho = 0.90$.
 
 ## Interview questions
 
-> [!question] mkt-pqt-097 | What is the Avellaneda-Stoikov (2008) reservation price equation?
+> [!question]- mkt-pqt-097 | What is the Avellaneda-Stoikov (2008) reservation price equation?
 > r(s, q, t) = s - q * gamma * sigma^2 * (T - t).
 > It represents the indifference price at which a market maker is neutral to adding or subtracting a unit of inventory.
 
-> [!question] mkt-pqt-098 | What happens to the reservation price when a market maker accumulates a long inventory position?
+> [!question]- mkt-pqt-098 | What happens to the reservation price when a market maker accumulates a long inventory position?
 > The reservation price falls strictly below the prevailing market mid-price: r < s.
 > This downward shift causes the desk to shade both its bid and ask lower, discouraging sellers and attracting buyers.
 
-> [!question] mkt-pqt-099 | In the Avellaneda-Stoikov model, how do optimal quotes relate to the reservation price?
+> [!question]- mkt-pqt-099 | In the Avellaneda-Stoikov model, how do optimal quotes relate to the reservation price?
 > Optimal quotes are placed symmetrically around the reservation price r rather than the market mid s: P_a = r + s*/2 and P_b = r - s*/2.
 > The quoted spread width s* is determined by risk aversion, price variance, and market liquidity depth.
 
-> [!question] mkt-pqt-100 | What role does the parameter gamma play in the Avellaneda-Stoikov framework?
+> [!question]- mkt-pqt-100 | What role does the parameter gamma play in the Avellaneda-Stoikov framework?
 > Gamma represents the market maker's constant absolute risk aversion (CARA) parameter.
 > Higher gamma increases the inventory penalty, forcing faster quote skewing and wider defensive spreads.
 
-> [!question] mkt-pqt-101 | What role does kappa play in the Avellaneda-Stoikov model?
+> [!question]- mkt-pqt-101 | What role does kappa play in the Avellaneda-Stoikov model?
 > Kappa measures the price sensitivity of order arrivals: lambda(delta) = A * exp(-kappa * delta).
 > Higher kappa signifies a thick, highly competitive market where order fill probability drops off sharply as quotes move away from mid.
 
-> [!question] mkt-pqt-102 | What is the terminal horizon T in intraday market making models?
+> [!question]- mkt-pqt-102 | What is the terminal horizon T in intraday market making models?
 > T represents the end of the trading session or mandatory inventory liquidation time.
 > As t approaches T, (T - t) approaches zero, causing the inventory penalty to vanish as the desk faces hard liquidation.
 
-> [!question] mkt-pqt-103 | What is inventory half-life and why is it monitored by risk managers?
+> [!question]- mkt-pqt-103 | What is inventory half-life and why is it monitored by risk managers?
 > Inventory half-life is the expected time required for an accumulated inventory position to decay by 50% through passive quoting.
 > If half-life exceeds risk limits, the desk cannot rely on passive rebalancing and must actively cross the spread to hedge.
 
-> [!question] mkt-pqt-104 | How does an Ornstein-Uhlenbeck process model inventory mean reversion?
+> [!question]- mkt-pqt-104 | How does an Ornstein-Uhlenbeck process model inventory mean reversion?
 > dq_t = -kappa_inv * q_t * dt + sigma_q * dW_t.
 > The negative drift ensures that positive inventory creates downward pressure and negative inventory creates upward pressure toward zero.
 
-> [!question] mkt-pqt-105 | What is cross-asset proxy hedging?
+> [!question]- mkt-pqt-105 | What is cross-asset proxy hedging?
 > Offsetting directional inventory exposure in an illiquid primary asset by taking an offsetting position in a highly correlated liquid instrument.
 > For example, hedging single-stock long inventory by shorting an index future or sector ETF.
 
-> [!question] mkt-pqt-106 | State the beta-adjusted proxy hedge ratio formula.
+> [!question]- mkt-pqt-106 | State the beta-adjusted proxy hedge ratio formula.
 > Hedge Qty = -beta * (Primary Qty * Price_primary) / Price_hedge.
 > It equates the dollar systematic delta of the hedge instrument to the systematic risk of the primary position.
 
-> [!question] mkt-pqt-107 | What is basis risk in a proxy-hedged market-making book?
+> [!question]- mkt-pqt-107 | What is basis risk in a proxy-hedged market-making book?
 > The risk that the spread between the primary asset and the proxy hedge widens due to idiosyncratic shocks.
 > While market risk is eliminated, residual basis variance remains: Var(residual) = sigma_primary^2 * (1 - rho^2).
 
-> [!question] mkt-pqt-108 | Why does correlation breakdown during market crashes impair proxy hedging?
+> [!question]- mkt-pqt-108 | Why does correlation breakdown during market crashes impair proxy hedging?
 > During liquidity crises, idiosyncratic liquidations cause historical correlations rho to decouple toward zero or flip sign.
 > The market maker's long inventory drops while the short hedge rises, compounding losses across both legs.
 
-> [!question] mkt-pqt-109 | What is inventory runaway and what causes it?
+> [!question]- mkt-pqt-109 | What is inventory runaway and what causes it?
 > The continuous accumulation of inventory in one direction as an asset trends persistently through quoted price levels.
 > It occurs when quote shading is insufficiently aggressive relative to the strength of informed market order flow.
 
-> [!question] mkt-pqt-110 | How do hard inventory boundaries (position limits) modify the Avellaneda-Stoikov problem?
+> [!question]- mkt-pqt-110 | How do hard inventory boundaries (position limits) modify the Avellaneda-Stoikov problem?
 > When inventory reaches the maximum limit +Q_max, the market maker completely withdraws its bid quote (setting P_b = -infinity).
 > The desk only quotes an ask, eliminating the risk of accumulating further inventory.
 
-> [!question] mkt-pqt-111 | Explain the concept of asymmetric spread quoting.
+> [!question]- mkt-pqt-111 | Explain the concept of asymmetric spread quoting.
 > Setting the bid distance delta_b and ask distance delta_a unequally relative to mid: delta_b != delta_a.
 > Asymmetry is driven directly by inventory skew: delta_a - delta_b = 2 * (r - s) = -2 * q * gamma * sigma^2 * (T - t).
 
-> [!question] mkt-pqt-112 | What is an internalizer's inventory netting benefit across multiple market makers?
+> [!question]- mkt-pqt-112 | What is an internalizer's inventory netting benefit across multiple market makers?
 > An internalizer matching flow across multiple internal prop desks nets offsetting inventories before routing residual risk to the street.
 > Netting dramatically reduces external exchange execution fees and gross collateral requirements.
 
-> [!question] mkt-pqt-113 | Why does the Avellaneda-Stoikov spread widen when volatility sigma increases?
+> [!question]- mkt-pqt-113 | Why does the Avellaneda-Stoikov spread widen when volatility sigma increases?
 > Spread s* contains the term gamma * sigma^2 * (T - t).
 > Higher volatility expands the variance of terminal inventory value, forcing the desk to demand a wider compensation spread.
 
-> [!question] mkt-pqt-114 | What is the Guéant-Tapia-Manziadi (2012) extension to Avellaneda-Stoikov?
+> [!question]- mkt-pqt-114 | What is the Guéant-Tapia-Manziadi (2012) extension to Avellaneda-Stoikov?
 > It solves the optimal quoting problem under general utility functions and multi-asset books without requiring CARA approximations.
 > It yields exact Hamilton-Jacobi-Bellman (HJB) viscosity solutions for execution and market making.
 
-> [!question] mkt-pqt-115 | How does overnight inventory financing impact market-making economics?
+> [!question]- mkt-pqt-115 | How does overnight inventory financing impact market-making economics?
 > Carrying long inventory requires financing at SOFR plus a prime broker spread; carrying short inventory incurs stock borrow fees.
 > Financing drag creates a daily hurdle rate that penalizes slow-moving or low-turnover inventory.
 
-> [!question] mkt-pqt-116 | What is the difference between active inventory shedding and passive quote shading?
+> [!question]- mkt-pqt-116 | What is the difference between active inventory shedding and passive quote shading?
 > Passive shading adjusts limit quotes to entice incoming retail orders to trade at favorable prices over time.
 > Active shedding aggressively crosses the spread with market orders, paying taker fees to eliminate risk instantly.
 
-> [!question] mkt-pqt-117 | When should a market maker transition from passive shading to active aggressive liquidation?
+> [!question]- mkt-pqt-117 | When should a market maker transition from passive shading to active aggressive liquidation?
 > When inventory breaches critical stop limits, when inventory half-life exceeds time to close, or when market volatility spikes abruptly.
 > Active liquidation pays guaranteed spread costs to prevent catastrophic ruin from overnight gap risk.
 
-> [!question] mkt-pqt-118 | What is the impact of dividend ex-dates on equity market maker inventory?
+> [!question]- mkt-pqt-118 | What is the impact of dividend ex-dates on equity market maker inventory?
 > Holding short equity inventory overnight on an ex-dividend date obligates the desk to pay the cash dividend to the share lender.
 > Market makers aggressively bid to close short inventory before the ex-date to avoid dividend liability.
 
-> [!question] mkt-pqt-119 | In options market making, how does delta inventory relate to underlying stock quoting?
+> [!question]- mkt-pqt-119 | In options market making, how does delta inventory relate to underlying stock quoting?
 > An options desk with net positive delta inventory shades its underlying stock quotes lower to sell stock and restore delta neutrality.
 > Alternatively, the desk shades its options quotes by bidding higher for puts and asking lower for calls.
 
-> [!question] mkt-pqt-120 | What is gamma scalping in the context of options inventory management?
+> [!question]- mkt-pqt-120 | What is gamma scalping in the context of options inventory management?
 > Dynamically buying underlying stock when it falls and selling when it rises to maintain delta neutrality on a long gamma options position.
 > Realized gamma scalping gains offset the continuous theta time decay of the options inventory.
 
-> [!question] mkt-pqt-121 | Why is inventory risk non-linear in total position size?
+> [!question]- mkt-pqt-121 | Why is inventory risk non-linear in total position size?
 > The variance of inventory holding cost scales with q^2: Cost ~ 0.5 * gamma * q^2 * sigma^2.
 > Doubling inventory quadruples the total dollar risk penalty, requiring exponentially aggressive quote shading.
 
-> [!question] mkt-pqt-122 | What is the effect of order arrival intensity A on quoting spreads?
+> [!question]- mkt-pqt-122 | What is the effect of order arrival intensity A on quoting spreads?
 > Higher baseline arrival intensity A means more frequent trades, allowing the market maker to quote tighter spreads.
 > Frequent trading increases turnover, enabling rapid inventory turnover and lower required margin per trade.
 
-> [!question] mkt-pqt-123 | How does tick size discretisation constrain the theoretical Avellaneda-Stoikov quotes?
+> [!question]- mkt-pqt-123 | How does tick size discretisation constrain the theoretical Avellaneda-Stoikov quotes?
 > Theoretical continuous quotes P_a* and P_b* must be rounded to discrete exchange tick grids (e.g. $0.01 increments).
 > Rounding errors can prevent subtle quote shading on low-priced stocks, forcing binary queue position choices.
 
-> [!question] mkt-pqt-124 | What is queue priority jumping via quote improvement?
+> [!question]- mkt-pqt-124 | What is queue priority jumping via quote improvement?
 > Bidding one tick above the existing NBBO bid to establish a new price priority tier and jump ahead of a long queue.
 > The market maker sacrifices one tick of spread to guarantee immediate execution on incoming seller flow.
 
-> [!question] mkt-pqt-125 | How does high book depth at the NBBO influence optimal reservation price skew?
+> [!question]- mkt-pqt-125 | How does high book depth at the NBBO influence optimal reservation price skew?
 > In deep books, incoming orders rarely sweep past the best quote, making it harder to attract rebalancing flow by shading.
 > The market maker must either join the front of the queue early or shade quotes across multiple ticks into Level 2 depth.
 
-> [!question] mkt-pqt-126 | What is liquidity black hole risk in inventory management?
+> [!question]- mkt-pqt-126 | What is liquidity black hole risk in inventory management?
 > A catastrophic feedback loop where falling prices force multiple market makers to shed long inventory simultaneously.
 > Mutual aggressive selling exhausts all available bids, causing prices to collapse vertically without liquidity.
 
-> [!question] mkt-pqt-127 | Explain the difference between portfolio-level VAR and asset-level inventory limits.
+> [!question]- mkt-pqt-127 | Explain the difference between portfolio-level VAR and asset-level inventory limits.
 > Asset-level limits cap the maximum position in each individual stock to protect against idiosyncratic firm-specific news.
 > Portfolio VAR caps aggregate systematic exposure across all assets, accounting for cross-asset correlations.
 
-> [!question] mkt-pqt-128 | Why do quantitative prop firms mandate that traders flatten all intraday inventory before market close?
+> [!question]- mkt-pqt-128 | Why do quantitative prop firms mandate that traders flatten all intraday inventory before market close?
 > Overnight trading pauses eliminate liquidity and prevent dynamic hedging while exposing capital to unhedgeable earnings gaps and macro shocks.
 > Complete flattening resets inventory to zero, ensuring that daily PnL reflects pure intraday statistical edge.
 

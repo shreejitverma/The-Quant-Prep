@@ -201,100 +201,100 @@ To neutralize hard-wired human cognitive biases, institutional investment firms 
 
 ## Flashcard drill bank
 
-> [!question] mkt-pf-225 | Who developed Prospect Theory, and in what year was it published?
+> [!question]- mkt-pf-225 | Who developed Prospect Theory, and in what year was it published?
 > Daniel Kahneman and Amos Tversky, published in 1979 in Econometrica.
 
-> [!question] mkt-pf-226 | What is the primary difference between Expected Utility Theory and Prospect Theory?
+> [!question]- mkt-pf-226 | What is the primary difference between Expected Utility Theory and Prospect Theory?
 > Expected utility evaluates absolute wealth; Prospect theory evaluates gains and losses relative to an arbitrary reference point.
 
-> [!question] mkt-pf-227 | What is the empirical value of the loss aversion coefficient lambda?
+> [!question]- mkt-pf-227 | What is the empirical value of the loss aversion coefficient lambda?
 > Approximately 2.25, meaning a loss feels about 2.25 times more painful than an equivalent gain feels pleasurable.
 
-> [!question] mkt-pf-228 | Why is the Prospect Theory value function S-shaped?
+> [!question]- mkt-pf-228 | Why is the Prospect Theory value function S-shaped?
 > It is concave in the gain domain (risk-averse for gains) and convex in the loss domain (risk-seeking for losses).
 
-> [!question] mkt-pf-229 | What is the 'Disposition Effect'?
+> [!question]- mkt-pf-229 | What is the 'Disposition Effect'?
 > The behavioral tendency of investors to sell winning positions too early and hold losing positions too long.
 
-> [!question] mkt-pf-230 | Who coined the term 'Disposition Effect'?
+> [!question]- mkt-pf-230 | Who coined the term 'Disposition Effect'?
 > Hersh Shefrin and Meir Statman in their 1985 paper.
 
-> [!question] mkt-pf-231 | How does Terrance Odean's research quantify the disposition effect?
+> [!question]- mkt-pf-231 | How does Terrance Odean's research quantify the disposition effect?
 > By showing that the Proportion of Realized Gains (PGR) significantly exceeds the Proportion of Realized Losses (PLR).
 
-> [!question] mkt-pf-232 | Why does the disposition effect harm tax efficiency?
+> [!question]- mkt-pf-232 | Why does the disposition effect harm tax efficiency?
 > Investors realize taxable capital gains immediately while delaying realization of deductible capital losses.
 
-> [!question] mkt-pf-233 | What is Mental Accounting as defined by Richard Thaler?
+> [!question]- mkt-pf-233 | What is Mental Accounting as defined by Richard Thaler?
 > The cognitive tendency to treat money differently based on its source, intended purpose, or account category, violating fungibility.
 
-> [!question] mkt-pf-234 | How does the 'House Money Effect' alter risk behavior?
+> [!question]- mkt-pf-234 | How does the 'House Money Effect' alter risk behavior?
 > Investors who have experienced recent profits become reckless and take excessive risk, treating paper gains as casino money rather than their own capital.
 
-> [!question] mkt-pf-235 | What is 'resulting' or outcome bias in investing?
+> [!question]- mkt-pf-235 | What is 'resulting' or outcome bias in investing?
 > Judging the quality of an investment decision solely by its outcome rather than the probabilistic rigor of the process.
 
-> [!question] mkt-pf-236 | What did John Maynard Keynes write about conventional versus unconventional failure?
+> [!question]- mkt-pf-236 | What did John Maynard Keynes write about conventional versus unconventional failure?
 > 'Worldly wisdom teaches that it is better for reputation to fail conventionally than to succeed unconventionally.'
 
-> [!question] mkt-pf-237 | What is 'career risk' for an institutional portfolio manager?
+> [!question]- mkt-pf-237 | What is 'career risk' for an institutional portfolio manager?
 > The personal financial danger of being terminated for underperforming a benchmark or peer group over short-term evaluation horizons.
 
-> [!question] mkt-pf-238 | What is 'closet indexing'?
+> [!question]- mkt-pf-238 | What is 'closet indexing'?
 > An active mutual fund secretly hugging its benchmark index with minimal active share to minimize tracking error and career risk while charging active fees.
 
-> [!question] mkt-pf-239 | What is 'window dressing' by institutional asset managers?
+> [!question]- mkt-pf-239 | What is 'window dressing' by institutional asset managers?
 > Selling embarrassingly losing stocks and purchasing popular recent winning stocks right before reporting dates to display attractive holdings to clients.
 
-> [!question] mkt-pf-240 | What is overconfidence bias in quantitative trading?
+> [!question]- mkt-pf-240 | What is overconfidence bias in quantitative trading?
 > Overestimating the precision of one's forecasts, the accuracy of private information, and one's personal ability to control market outcomes.
 
-> [!question] mkt-pf-241 | What is the 'illusion of control'?
+> [!question]- mkt-pf-241 | What is the 'illusion of control'?
 > The false belief that an investor can influence or predict the outcome of an inherently stochastic or uncontrollable market process.
 
-> [!question] mkt-pf-242 | What is hindsight bias?
+> [!question]- mkt-pf-242 | What is hindsight bias?
 > The inclination after an event has occurred to view it as having been predictable ('I knew it all along').
 
-> [!question] mkt-pf-243 | What is recency bias?
+> [!question]- mkt-pf-243 | What is recency bias?
 > The tendency to overweight recent market performance and extrapolate current trends indefinitely into the future.
 
-> [!question] mkt-pf-244 | What is the Gary Klein 'Pre-Mortem' protocol?
+> [!question]- mkt-pf-244 | What is the Gary Klein 'Pre-Mortem' protocol?
 > A project review exercise where the team assumes an investment has completely failed in the future and works backward to identify the causes.
 
-> [!question] mkt-pf-245 | What is a 'Red Team' in an investment committee?
+> [!question]- mkt-pf-245 | What is a 'Red Team' in an investment committee?
 > A designated group of analysts whose explicit assignment is to construct the strongest possible bear case and disprove the proposed thesis.
 
-> [!question] mkt-pf-246 | Why does blinded evaluation improve stock research quality?
+> [!question]- mkt-pf-246 | Why does blinded evaluation improve stock research quality?
 > Removing company names and ticker symbols strips away brand loyalty, media narratives, and executive charisma from fundamental valuation.
 
-> [!question] mkt-pf-247 | What is an Investment Policy Statement (IPS) pre-commitment rule?
+> [!question]- mkt-pf-247 | What is an Investment Policy Statement (IPS) pre-commitment rule?
 > A binding governance rule established in advance that dictates exact rebalancing thresholds and risk limits, bypassing emotional discretion.
 
-> [!question] mkt-pf-248 | What is the 'endowment effect' in portfolio management?
+> [!question]- mkt-pf-248 | What is the 'endowment effect' in portfolio management?
 > Valuing an asset higher simply because one owns it, leading to reluctance to liquidate underperforming positions.
 
-> [!question] mkt-pf-249 | What is the 'sunk cost fallacy' in losing trades?
+> [!question]- mkt-pf-249 | What is the 'sunk cost fallacy' in losing trades?
 > Continuing to allocate capital or attention to a losing investment based on cumulative past expenditures rather than forward-looking prospective return.
 
-> [!question] mkt-pf-250 | How does probability weighting in Cumulative Prospect Theory explain lottery-ticket trading?
+> [!question]- mkt-pf-250 | How does probability weighting in Cumulative Prospect Theory explain lottery-ticket trading?
 > People overweight small probabilities (w(p) > p for small p), driving them to overpay for deep out-of-the-money options and speculative penny stocks.
 
-> [!question] mkt-pf-251 | What is 'confirmation bias' during an investment holding period?
+> [!question]- mkt-pf-251 | What is 'confirmation bias' during an investment holding period?
 > Actively seeking information that supports an existing thesis while ignoring or rationalizing contradictory data.
 
-> [!question] mkt-pf-252 | What is the role of an investment journal in systematic trading?
+> [!question]- mkt-pf-252 | What is the role of an investment journal in systematic trading?
 > Documenting the thesis, expected catalysts, planned exit rules, and emotional state at trade inception to enable objective post-hoc review.
 
-> [!question] mkt-pf-253 | Why are automated rebalancing algorithms superior to discretionary human rebalancing?
+> [!question]- mkt-pf-253 | Why are automated rebalancing algorithms superior to discretionary human rebalancing?
 > Algorithms execute contrarian trades (selling winners and buying losers) unemotionally according to predetermined mathematical thresholds.
 
-> [!question] mkt-pf-254 | What is the 'narrative fallacy' coined by Nassim Nicholas Taleb?
+> [!question]- mkt-pf-254 | What is the 'narrative fallacy' coined by Nassim Nicholas Taleb?
 > The human compulsion to weave disjointed historical facts into simplistic causal stories, overestimating our understanding of past market moves.
 
-> [!question] mkt-pf-255 | How does peer comparison lead to institutional herd behavior?
+> [!question]- mkt-pf-255 | How does peer comparison lead to institutional herd behavior?
 > Managers are benchmarked against peers; deviating from consensus carries asymmetric career penalty with limited personal upside.
 
-> [!question] mkt-pf-256 | What is the primary golden rule of behavioral portfolio management?
+> [!question]- mkt-pf-256 | What is the primary golden rule of behavioral portfolio management?
 > Design systematic rules and governance structures that protect the investment process from human cognitive and emotional vulnerabilities.
 
 ---

@@ -136,14 +136,14 @@ The negative oil event forced lasting structural modifications in commodity deri
 
 ## Case Study Drills and Review Questions
 
-> [!question] mkt-his-029 | What was the official daily settlement price of the May 2020 WTI crude oil futures contract on April 20, 2020?
+> [!question]- mkt-his-029 | What was the official daily settlement price of the May 2020 WTI crude oil futures contract on April 20, 2020?
 > -$37.63 per barrel (an unprecedented single-day decline of $55.90, or -306%).
 
-> [!question] mkt-his-030 | Why could financial traders not simply hold their expiring May 2020 WTI crude oil contracts to maturity?
+> [!question]- mkt-his-030 | Why could financial traders not simply hold their expiring May 2020 WTI crude oil contracts to maturity?
 > Because NYMEX WTI is a physically deliverable contract requiring FOB delivery at Cushing, Oklahoma, and all commercial storage capacity was 100% booked.
 
-> [!question] mkt-his-031 | What pricing model did derivatives exchanges adopt following the negative oil event to handle zero and negative prices?
+> [!question]- mkt-his-031 | What pricing model did derivatives exchanges adopt following the negative oil event to handle zero and negative prices?
 > The Bachelier normal model, which allows asset prices and strike prices to assume negative values.
 
-> [!question] mkt-his-032 | Why did Interactive Brokers absorb a $104 million customer loss following the April 20, 2020 oil crash?
+> [!question]- mkt-his-032 | Why did Interactive Brokers absorb a $104 million customer loss following the April 20, 2020 oil crash?
 > Its trading software was hardcoded to assume asset prices could not go below zero, preventing customers from viewing negative quotes or closing positions.

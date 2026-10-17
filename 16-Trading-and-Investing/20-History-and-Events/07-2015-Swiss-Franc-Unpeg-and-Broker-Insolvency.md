@@ -143,14 +143,14 @@ The 2015 Swiss Franc crisis forced global regulators to crack down on retail der
 
 ## Case Study Drills and Review Questions
 
-> [!question] mkt-his-025 | What minimum exchange rate floor did the Swiss National Bank maintain from September 2011 to January 2015?
+> [!question]- mkt-his-025 | What minimum exchange rate floor did the Swiss National Bank maintain from September 2011 to January 2015?
 > A floor of 1.20 Swiss Francs per Euro (EUR/CHF).
 
-> [!question] mkt-his-026 | Why did retail FX brokers like Alpari UK collapse following the SNB unpeg event?
+> [!question]- mkt-his-026 | Why did retail FX brokers like Alpari UK collapse following the SNB unpeg event?
 > Extreme gap slippage caused client stop-loss orders to execute at massive losses, creating millions in uncollectible negative client balances that wiped out broker capital.
 
-> [!question] mkt-his-027 | How much did the Swiss Franc appreciate intraday against the Euro on January 15, 2015?
+> [!question]- mkt-his-027 | How much did the Swiss Franc appreciate intraday against the Euro on January 15, 2015?
 > Over 30% within thirteen minutes, briefly spiking more than 40% to an extreme low of 0.85 EUR/CHF.
 
-> [!question] mkt-his-028 | What major retail regulatory reform did ESMA implement in 2018 as a direct consequence of the 2015 Swiss Franc shock?
+> [!question]- mkt-his-028 | What major retail regulatory reform did ESMA implement in 2018 as a direct consequence of the 2015 Swiss Franc shock?
 > Capping retail foreign exchange leverage at 30:1 and mandating negative balance protection for all retail client accounts.

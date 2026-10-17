@@ -218,100 +218,100 @@ $$\text{Fund Excess Return}: \quad R_t - R_f = \alpha + \beta_{\text{mkt}} (R_{m
 
 ## Practice questions
 
-> [!question] mkt-pf-033 | What is an asset pricing factor?
+> [!question]- mkt-pf-033 | What is an asset pricing factor?
 > A systematic, persistent driver of risk and return across a broad universe of securities that explains cross-sectional return variations.
 
-> [!question] mkt-pf-034 | What are the three factors in the original Fama-French 1993 model?
+> [!question]- mkt-pf-034 | What are the three factors in the original Fama-French 1993 model?
 > Market Excess Return (MKT), Size (SMB - Small Minus Big), and Value (HML - High Minus Low).
 
-> [!question] mkt-pf-035 | What two factors were added to create the Fama-French 5-Factor model in 2015?
+> [!question]- mkt-pf-035 | What two factors were added to create the Fama-French 5-Factor model in 2015?
 > Profitability (RMW - Robust Minus Weak operating profitability) and Investment (CMA - Conservative Minus Aggressive capital expenditures).
 
-> [!question] mkt-pf-036 | What is the Carhart 4-Factor model?
+> [!question]- mkt-pf-036 | What is the Carhart 4-Factor model?
 > The Fama-French 3-factor model plus the Momentum factor (WML / UMD - Winners Minus Losers).
 
-> [!question] mkt-pf-037 | What is the Low Volatility / Betting Against Beta (BAB) anomaly?
+> [!question]- mkt-pf-037 | What is the Low Volatility / Betting Against Beta (BAB) anomaly?
 > The empirical finding that low-volatility and low-beta equities generate higher risk-adjusted returns (higher Sharpe ratios) than high-beta equities.
 
-> [!question] mkt-pf-038 | Why does the Low Volatility anomaly exist according to leverage constraint theory?
+> [!question]- mkt-pf-038 | Why does the Low Volatility anomaly exist according to leverage constraint theory?
 > Many institutional investors are prohibited from using leverage, compelling them to overpay for high-beta stocks to boost absolute returns.
 
-> [!question] mkt-pf-039 | What is the 'Factor Zoo' described by Campbell Harvey, Yan Liu, and Caroline Zhu?
+> [!question]- mkt-pf-039 | What is the 'Factor Zoo' described by Campbell Harvey, Yan Liu, and Caroline Zhu?
 > The proliferation of over 400 claimed academic return anomalies, most of which are false discoveries resulting from data mining and p-hacking.
 
-> [!question] mkt-pf-040 | What statistical significance hurdle did Harvey, Liu, and Zhu recommend for new factor discovery?
+> [!question]- mkt-pf-040 | What statistical significance hurdle did Harvey, Liu, and Zhu recommend for new factor discovery?
 > A t-statistic hurdle of t > 3.0 (p < 0.0027), replacing the traditional t > 2.0 cutoff to account for multiple testing snooping.
 
-> [!question] mkt-pf-041 | What is the empirical post-publication decay rate of factors documented by McLean and Pontiff?
+> [!question]- mkt-pf-041 | What is the empirical post-publication decay rate of factors documented by McLean and Pontiff?
 > Factor return premiums decay by approximately 58% on average following academic publication due to arbitrage inflows and crowding.
 
-> [!question] mkt-pf-042 | What is the structural correlation between the Value factor (HML) and the Momentum factor (WML)?
+> [!question]- mkt-pf-042 | What is the structural correlation between the Value factor (HML) and the Momentum factor (WML)?
 > Strong negative correlation, typically between -0.40 and -0.60.
 
-> [!question] mkt-pf-043 | Why does blending Value and Momentum in a multi-factor portfolio increase the Sharpe ratio?
+> [!question]- mkt-pf-043 | Why does blending Value and Momentum in a multi-factor portfolio increase the Sharpe ratio?
 > Because their negative return covariance cancels out individual factor drawdowns, smoothing total portfolio volatility while capturing two positive premiums.
 
-> [!question] mkt-pf-044 | What is the Quality Minus Junk (QMJ) factor formulated by Asness, Frazzini, and Pedersen?
+> [!question]- mkt-pf-044 | What is the Quality Minus Junk (QMJ) factor formulated by Asness, Frazzini, and Pedersen?
 > Going long high-quality stocks (high ROIC, low debt, high earnings stability, low accruals) and short junk stocks.
 
-> [!question] mkt-pf-045 | Why did the classic Fama-French Size factor (SMB) weaken post-1980?
+> [!question]- mkt-pf-045 | Why did the classic Fama-French Size factor (SMB) weaken post-1980?
 > Banz's initial 1981 discovery was heavily concentrated in micro-caps with severe illiquidity; once adjusted for quality and trading friction, pure size alpha diminished.
 
-> [!question] mkt-pf-046 | What is factor crowding?
+> [!question]- mkt-pf-046 | What is factor crowding?
 > When large quantities of quantitative capital hold identical long/short factor positions, creating liquidity risk and sharp unwinding cascades during redemptions.
 
-> [!question] mkt-pf-047 | What was the August 2007 Quant Meltdown?
+> [!question]- mkt-pf-047 | What was the August 2007 Quant Meltdown?
 > A rapid multi-standard-deviation drawdown in quantitative long/short equity factor portfolios caused by a sudden, coordinated deleveraging of crowded factor models.
 
-> [!question] mkt-pf-048 | What is the difference between top-down factor combination and bottom-up factor integration?
+> [!question]- mkt-pf-048 | What is the difference between top-down factor combination and bottom-up factor integration?
 > Combination blends separate single-factor portfolios (causing redundant cross-trading); integration calculates a unified multi-factor score per stock before weighting.
 
-> [!question] mkt-pf-049 | What is the Capital Investment Anomaly (CMA)?
+> [!question]- mkt-pf-049 | What is the Capital Investment Anomaly (CMA)?
 > Companies with high, aggressive capital expenditure growth systematically underperform companies with disciplined, conservative capital reinvestment.
 
-> [!question] mkt-pf-050 | What is the Gross Profitability premium documented by Robert Novy-Marx?
+> [!question]- mkt-pf-050 | What is the Gross Profitability premium documented by Robert Novy-Marx?
 > Gross Profit divided by Total Assets is a powerful predictor of future cross-sectional stock returns, operating as a clean quality factor that complements value.
 
-> [!question] mkt-pf-051 | Why does the traditional Book-to-Market value metric struggle in technology sectors?
+> [!question]- mkt-pf-051 | Why does the traditional Book-to-Market value metric struggle in technology sectors?
 > Because software and knowledge companies invest via expensed R&D rather than capitalized plant assets, causing book value to severely understate economic capital.
 
-> [!question] mkt-pf-052 | How should an analyst measure true Value in modern markets?
+> [!question]- mkt-pf-052 | How should an analyst measure true Value in modern markets?
 > By combining multiple value metrics: EV/EBITDA, Free Cash Flow Yield, and Intangible-Adjusted Book Value.
 
-> [!question] mkt-pf-053 | What is time-series momentum (trend following) versus cross-sectional momentum?
+> [!question]- mkt-pf-053 | What is time-series momentum (trend following) versus cross-sectional momentum?
 > Cross-sectional momentum ranks assets against each other (relative winners); time-series momentum evaluates an asset's absolute return against its own past history.
 
-> [!question] mkt-pf-054 | What is the Momentum Crash phenomenon documented by Daniel and Moskowitz?
+> [!question]- mkt-pf-054 | What is the Momentum Crash phenomenon documented by Daniel and Moskowitz?
 > Momentum strategies occasionally suffer violent, rapid crashes (often losing 50%+ in weeks) during sudden market turnarounds when beaten-down losers rebound.
 
-> [!question] mkt-pf-055 | What is the optimal lookback window for cross-sectional price momentum?
+> [!question]- mkt-pf-055 | What is the optimal lookback window for cross-sectional price momentum?
 > 12-month return skipping the most recent 1 month (12-2m momentum) to avoid short-term microstructure bid-ask bounce reversals.
 
-> [!question] mkt-pf-056 | What is a 'smart beta' ETF?
+> [!question]- mkt-pf-056 | What is a 'smart beta' ETF?
 > A rules-based, non-market-cap-weighted exchange-traded fund designed to provide systematic exposure to specific factors (such as Value, Quality, or Low Volatility).
 
-> [!question] mkt-pf-057 | What is the primary execution friction in small-cap factor strategies?
+> [!question]- mkt-pf-057 | What is the primary execution friction in small-cap factor strategies?
 > Bid-ask spread costs, market impact on rebalancing, and high stock loan borrow fees for the short leg of the portfolio.
 
-> [!question] mkt-pf-058 | What is the Bonferroni correction in multiple-testing adjustments?
+> [!question]- mkt-pf-058 | What is the Bonferroni correction in multiple-testing adjustments?
 > Adjusting the statistical significance threshold alpha to alpha / N, where N is the total number of tested hypotheses.
 
-> [!question] mkt-pf-059 | Why do factor premiums vary across economic regimes?
+> [!question]- mkt-pf-059 | Why do factor premiums vary across economic regimes?
 > Factors reflect distinct macro sensitivities: Value outperforms in early economic recoveries; Quality outperforms in recessions; Momentum thrives in sustained trends.
 
-> [!question] mkt-pf-060 | What is factor timing and why is it notoriously difficult?
+> [!question]- mkt-pf-060 | What is factor timing and why is it notoriously difficult?
 > Attempting to dynamically rotate between factors based on valuation or macro indicators; timing often generates high turnover without consistent predictive alpha.
 
-> [!question] mkt-pf-061 | What is the difference between raw factor returns and style-neutral factor returns?
+> [!question]- mkt-pf-061 | What is the difference between raw factor returns and style-neutral factor returns?
 > Raw returns may contain unhedged industry or sector biases; style-neutral returns neutralize sector weights to isolate pure idiosyncratic factor exposure.
 
-> [!question] mkt-pf-062 | How does shorting friction limit the arbitrage of anomalies?
+> [!question]- mkt-pf-062 | How does shorting friction limit the arbitrage of anomalies?
 > Hard-to-borrow fees, borrow recall risk, and margin requirements prevent quantitative hedge funds from fully arbitraging away overpriced junk securities.
 
-> [!question] mkt-pf-063 | What is idiosyncratic volatility and is it priced in equity markets?
+> [!question]- mkt-pf-063 | What is idiosyncratic volatility and is it priced in equity markets?
 > Firm-specific risk unrelated to systematic factors; standard finance models show it is unrewarded, while empirical studies find high idiosyncratic volatility stocks underperform.
 
-> [!question] mkt-pf-064 | What is the ultimate takeaway for quantitative factor investors?
+> [!question]- mkt-pf-064 | What is the ultimate takeaway for quantitative factor investors?
 > Rely only on factors with robust empirical evidence (t > 3.0), maintain multi-factor diversification across Value and Momentum, and account for real-world transaction costs.
 
 ---

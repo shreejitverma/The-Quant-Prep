@@ -224,100 +224,100 @@ At $3.50, the stock is an avoid or short candidate.
 
 ## Practice questions
 
-> [!question] mkt-val-161 | What is Benjamin Graham's Net Current Asset Value (NCAV)?
+> [!question]- mkt-val-161 | What is Benjamin Graham's Net Current Asset Value (NCAV)?
 > NCAV = Total Current Assets - Total Liabilities - Preferred Stock, assigning zero value to all fixed and intangible assets.
 
-> [!question] mkt-val-162 | What was Benjamin Graham's operational threshold for purchasing net-net stocks?
+> [!question]- mkt-val-162 | What was Benjamin Graham's operational threshold for purchasing net-net stocks?
 > Purchasing at or below two-thirds (66.7%) of NCAV per share, providing an explicit 33% margin of safety.
 
-> [!question] mkt-val-163 | How does Net-Net Working Capital (NNWC) differ from NCAV?
+> [!question]- mkt-val-163 | How does Net-Net Working Capital (NNWC) differ from NCAV?
 > NNWC applies conservative liquidation haircuts to working capital line items (e.g. 75% on receivables, 50% on inventory) rather than full face value.
 
-> [!question] mkt-val-164 | What weight does Graham assign to Property, Plant, and Equipment (PP&E) in a net-net calculation?
+> [!question]- mkt-val-164 | What weight does Graham assign to Property, Plant, and Equipment (PP&E) in a net-net calculation?
 > Zero weight (0%), treating all physical plant, machinery, and land as a free call option.
 
-> [!question] mkt-val-165 | What is the 'Melting Ice Cube' trap in net-net investing?
+> [!question]- mkt-val-165 | What is the 'Melting Ice Cube' trap in net-net investing?
 > When a company trading below liquidation value burns operational cash so rapidly that the asset buffer is exhausted before value can be realized.
 
-> [!question] mkt-val-166 | What is the formula for calculating operational cash runway for a loss-making net-net?
+> [!question]- mkt-val-166 | What is the formula for calculating operational cash runway for a loss-making net-net?
 > Runway in Months = Net Liquid Cash / Monthly Operating Cash Burn Rate.
 
-> [!question] mkt-val-167 | What is the difference between Orderly Liquidation Value (OLV) and Forced Liquidation Value (FLV)?
+> [!question]- mkt-val-167 | What is the difference between Orderly Liquidation Value (OLV) and Forced Liquidation Value (FLV)?
 > OLV assumes a structured asset disposition over 6-12 months; FLV assumes an immediate fire sale at auction under distress (30-60 days).
 
-> [!question] mkt-val-168 | What typical haircut is applied to Work-in-Process (WIP) inventory in forced liquidation?
+> [!question]- mkt-val-168 | What typical haircut is applied to Work-in-Process (WIP) inventory in forced liquidation?
 > 75% to 90% haircut (retaining only 10% to 25% of book value), because unfinished goods are costly to complete and have minimal scrap value.
 
-> [!question] mkt-val-169 | What off-balance-sheet liabilities must be incorporated into a liquidation valuation?
+> [!question]- mkt-val-169 | What off-balance-sheet liabilities must be incorporated into a liquidation valuation?
 > Employee severance liabilities, lease cancellation penalties, pension deficits, and contract termination fees.
 
-> [!question] mkt-val-170 | What is the statutory limitation on landlord lease rejection claims under US Bankruptcy Code Section 502(b)(6)?
+> [!question]- mkt-val-170 | What is the statutory limitation on landlord lease rejection claims under US Bankruptcy Code Section 502(b)(6)?
 > The rent reserved by the lease for the greater of one year or 15% (not to exceed three years) of the remaining lease term.
 
-> [!question] mkt-val-171 | What is Bruce Greenwald's Asset Reproduction Cost?
+> [!question]- mkt-val-171 | What is Bruce Greenwald's Asset Reproduction Cost?
 > The estimated capital outlay required today to duplicate all operating assets, customer relationships, and organizational systems of a firm from scratch.
 
-> [!question] mkt-val-172 | What is Greenwald's Earnings Power Value (EPV)?
+> [!question]- mkt-val-172 | What is Greenwald's Earnings Power Value (EPV)?
 > The present value of current normalized operating earnings assuming zero future growth, capitalized at the cost of capital: EPV = Normalized NOPAT / WACC.
 
-> [!question] mkt-val-173 | How does comparing EPV to Reproduction Cost detect an economic moat?
+> [!question]- mkt-val-173 | How does comparing EPV to Reproduction Cost detect an economic moat?
 > If EPV substantially exceeds Asset Reproduction Cost, the company possesses a sustainable competitive advantage that competitors cannot duplicate by buying assets.
 
-> [!question] mkt-val-174 | What does it signify if a company's EPV is significantly less than its Asset Reproduction Cost?
+> [!question]- mkt-val-174 | What does it signify if a company's EPV is significantly less than its Asset Reproduction Cost?
 > The industry suffers from overcapacity and destructive competition, earning returns below the cost of capital and destroying shareholder wealth.
 
-> [!question] mkt-val-175 | What is the Graham Number formula?
+> [!question]- mkt-val-175 | What is the Graham Number formula?
 > Square Root of (22.5 * EPS * Book Value Per Share), derived from multiplying a maximum P/E of 15 by a maximum P/B of 1.5.
 
-> [!question] mkt-val-176 | In which global market have classic net-net stocks remained most prevalent over the past two decades?
+> [!question]- mkt-val-176 | In which global market have classic net-net stocks remained most prevalent over the past two decades?
 > Japan, where hundreds of cash-rich small-cap companies trade below net current assets due to conservative balance sheets and cross-shareholdings.
 
-> [!question] mkt-val-177 | What role do activist investors play in net-net investing?
+> [!question]- mkt-val-177 | What role do activist investors play in net-net investing?
 > Activists act as catalysts by acquiring stakes and forcing management to liquidate unprofitable operations, sell real estate, or return excess cash to shareholders.
 
-> [!question] mkt-val-178 | What is the risk of an entrenched founder or controlling family in a net-net company?
+> [!question]- mkt-val-178 | What is the risk of an entrenched founder or controlling family in a net-net company?
 > Insiders may pay themselves excessive salaries, perpetually consuming cash and refusing to liquidate, trapping minority shareholders in an illiquid discount.
 
-> [!question] mkt-val-179 | Why did Graham advocate holding a diversified basket of net-nets rather than concentrating in 2 or 3?
+> [!question]- mkt-val-179 | Why did Graham advocate holding a diversified basket of net-nets rather than concentrating in 2 or 3?
 > Because individual net-nets face idiosyncratic bankruptcy risk; statistical diversification (e.g. 20-30 stocks) captures positive aggregate basket re-ratings.
 
-> [!question] mkt-val-180 | What is tangible book value per share (TBVPS)?
+> [!question]- mkt-val-180 | What is tangible book value per share (TBVPS)?
 > (Total Shareholders' Equity - Goodwill - Identifiable Intangible Assets) / Diluted Shares Outstanding.
 
-> [!question] mkt-val-181 | Why is tangible book value more reliable than standard book value for distressed asset analysis?
+> [!question]- mkt-val-181 | Why is tangible book value more reliable than standard book value for distressed asset analysis?
 > Because goodwill and capitalized intangibles have zero liquidation value in bankruptcy and are completely written off.
 
-> [!question] mkt-val-182 | How should marketable securities be valued in a liquidation schedule?
+> [!question]- mkt-val-182 | How should marketable securities be valued in a liquidation schedule?
 > Mark to market at current exchange prices, minus a 5% to 10% discount for liquidation transaction fees and price volatility.
 
-> [!question] mkt-val-183 | What is a 'cigar butt' stock according to Warren Buffett?
+> [!question]- mkt-val-183 | What is a 'cigar butt' stock according to Warren Buffett?
 > A low-quality, decaying business purchased at such a deep discount to liquidation value that it provides 'one last free puff' of profit before expiring.
 
-> [!question] mkt-val-184 | Why did Warren Buffett abandon pure net-net investing in favor of quality businesses?
+> [!question]- mkt-val-184 | Why did Warren Buffett abandon pure net-net investing in favor of quality businesses?
 > Because as Berkshire Hathaway's capital scaled, small-cap net-nets became capacity-constrained, and compounding high-ROIC businesses proved far superior over time.
 
-> [!question] mkt-val-185 | How does inflation impact the gap between historical book value and Asset Reproduction Cost?
+> [!question]- mkt-val-185 | How does inflation impact the gap between historical book value and Asset Reproduction Cost?
 > Inflation causes replacement cost of plant and real estate to substantially exceed historical depreciated book value.
 
-> [!question] mkt-val-186 | What is the 'clean surplus' relation in accounting-based valuation?
+> [!question]- mkt-val-186 | What is the 'clean surplus' relation in accounting-based valuation?
 > Ending Book Value = Beginning Book Value + Net Income - Net Dividends, linking income statement earnings directly to balance sheet asset evolution.
 
-> [!question] mkt-val-187 | Why are customer acquisition costs (CAC) included in Asset Reproduction Cost?
+> [!question]- mkt-val-187 | Why are customer acquisition costs (CAC) included in Asset Reproduction Cost?
 > An entrant attempting to duplicate the incumbent's revenue must spend capital on marketing and sales to acquire an equivalent customer base.
 
-> [!question] mkt-val-188 | What is the liquidation haircut for finished goods inventory in a fashion retail bankruptcy?
+> [!question]- mkt-val-188 | What is the liquidation haircut for finished goods inventory in a fashion retail bankruptcy?
 > Severe, often 60% to 80% (realizing only 20% to 40% of cost), because seasonal apparel rapidly becomes obsolete and unmarketable.
 
-> [!question] mkt-val-189 | What is debtor-in-possession (DIP) financing in corporate bankruptcy?
+> [!question]- mkt-val-189 | What is debtor-in-possession (DIP) financing in corporate bankruptcy?
 > Senior financing provided to a bankrupt company during Chapter 11 reorganization that takes first-priority claim ahead of all pre-existing debt and equity.
 
-> [!question] mkt-val-190 | Why do equity holders frequently receive zero in a Chapter 7 liquidation?
+> [!question]- mkt-val-190 | Why do equity holders frequently receive zero in a Chapter 7 liquidation?
 > Because the absolute priority rule mandates that administrative claims, tax claims, and secured/unsecured creditors be paid 100 cents on the dollar before equity receives a cent.
 
-> [!question] mkt-val-191 | What is a rights offering and how is it used by distressed asset-rich companies?
+> [!question]- mkt-val-191 | What is a rights offering and how is it used by distressed asset-rich companies?
 > Offering existing shareholders the right to buy new shares at a discount to raise emergency equity cash and avoid formal bankruptcy.
 
-> [!question] mkt-val-192 | What is the ultimate lesson of asset-based valuation?
+> [!question]- mkt-val-192 | What is the ultimate lesson of asset-based valuation?
 > Assets protect the downside only if they can be liquidated or monetized before operating losses consume them.
 
 ---

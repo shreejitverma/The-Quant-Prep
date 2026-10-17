@@ -141,14 +141,14 @@ The collapse of LTCM prompted lasting changes across risk management and counter
 
 ## Case Study Drills and Review Questions
 
-> [!question] mkt-his-009 | What was the core investment strategy of Long-Term Capital Management?
+> [!question]- mkt-his-009 | What was the core investment strategy of Long-Term Capital Management?
 > Relative-value fixed income and equity arbitrage, exploiting microscopic spread mispricings with high leverage under the expectation of mean-reversion.
 
-> [!question] mkt-his-010 | What external geopolitical catalyst triggered the LTCM liquidity death spiral in August 1998?
+> [!question]- mkt-his-010 | What external geopolitical catalyst triggered the LTCM liquidity death spiral in August 1998?
 > The Russian sovereign debt default (GKOs) and ruble devaluation on August 17, 1998, which sparked an unprecedented global flight to liquidity.
 
-> [!question] mkt-his-011 | Why did LTCM's Value at Risk (VaR) models catastrophically underestimate its true portfolio risk?
+> [!question]- mkt-his-011 | Why did LTCM's Value at Risk (VaR) models catastrophically underestimate its true portfolio risk?
 > The models assumed Gaussian normal distributions with thin tails and historical independence across assets, whereas in the crisis, correlations across all non-benchmark assets converged to +1.0.
 
-> [!question] mkt-his-012 | Why did the Federal Reserve Bank of New York intervene to coordinate a private bank consortium bailout of LTCM?
+> [!question]- mkt-his-012 | Why did the Federal Reserve Bank of New York intervene to coordinate a private bank consortium bailout of LTCM?
 > Because an uncontrolled liquidation of LTCM's $125 billion balance sheet and $1.25 trillion in derivatives would have triggered systemic counterparty insolvencies across major Wall Street banks.

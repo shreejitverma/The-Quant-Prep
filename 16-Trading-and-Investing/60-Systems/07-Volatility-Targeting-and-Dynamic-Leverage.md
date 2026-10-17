@@ -190,100 +190,100 @@ Garman-Klass accurately captures the elevated intraday range ($H/L = 6.1\%$) eve
 
 ## Interview questions
 
-> [!question] mkt-sys-193 | What is volatility targeting in systematic portfolio management?
+> [!question]- mkt-sys-193 | What is volatility targeting in systematic portfolio management?
 > Volatility targeting dynamically scales portfolio gross exposure inversely to rolling realized volatility to maintain constant annualized risk over time: k_t = min(L_max, sigma_target / sigma_hat_t).
 
-> [!question] mkt-sys-194 | What econometric property provides the foundation for volatility targeting?
+> [!question]- mkt-sys-194 | What econometric property provides the foundation for volatility targeting?
 > Volatility clustering (Engle 1982), where high-volatility periods persist, allowing models to forecast upcoming risk and proactively de-risk before drawdowns compound.
 
-> [!question] mkt-sys-195 | Why does volatility targeting improve Sharpe ratio and compress tail risk (Moreira & Muir 2017)?
+> [!question]- mkt-sys-195 | Why does volatility targeting improve Sharpe ratio and compress tail risk (Moreira & Muir 2017)?
 > Because realized volatility spikes do not carry proportionally higher expected returns; scaling down exposure during high-volatility regimes avoids crash tails without sacrificing return.
 
-> [!question] mkt-sys-196 | Why is a maximum leverage cap L_max essential in volatility targeting?
+> [!question]- mkt-sys-196 | Why is a maximum leverage cap L_max essential in volatility targeting?
 > To prevent excessive over-leveraging during extreme market lulls (volatility deserts) that would leave the portfolio vulnerable to flash crashes or sudden volatility spikes.
 
-> [!question] mkt-sys-197 | What is the relative statistical efficiency of the Parkinson (1980) volatility estimator?
+> [!question]- mkt-sys-197 | What is the relative statistical efficiency of the Parkinson (1980) volatility estimator?
 > Parkinson high-low volatility is approximately 5.0 times more statistically efficient than standard close-to-close variance because it utilizes intra-day price extremes.
 
-> [!question] mkt-sys-198 | What is the relative efficiency of the Garman-Klass (1980) volatility estimator?
+> [!question]- mkt-sys-198 | What is the relative efficiency of the Garman-Klass (1980) volatility estimator?
 > Garman-Klass volatility is approximately 7.4 times more efficient than close-to-close variance because it incorporates opening jumps, intraday ranges, and closing prices.
 
-> [!question] mkt-sys-199 | How does the RiskMetrics EWMA volatility model calculate rolling variance?
+> [!question]- mkt-sys-199 | How does the RiskMetrics EWMA volatility model calculate rolling variance?
 > Using exponential decay: sigma_t^2 = lambda * sigma_{t-1}^2 + (1 - lambda) * r_{t-1}^2, typically with decay factor lambda = 0.94 for daily returns.
 
-> [!question] mkt-sys-200 | What is a systematic drawdown governor?
+> [!question]- mkt-sys-200 | What is a systematic drawdown governor?
 > A rule-based risk control system that automatically reduces target volatility or cuts gross exposure by predefined percentages when peak-to-trough drawdowns breach specific tiers.
 
-> [!question] mkt-sys-201 | What is the risk of whipsaw de-risking in volatility-targeted systems?
+> [!question]- mkt-sys-201 | What is the risk of whipsaw de-risking in volatility-targeted systems?
 > Selling assets into liquidity vacuums as volatility spikes at the bottom of a panic, then lagging to re-enter, missing the high-return initial recovery phase.
 
-> [!question] mkt-sys-202 | How do rising financing benchmark rates affect leveraged volatility-targeted portfolios?
+> [!question]- mkt-sys-202 | How do rising financing benchmark rates affect leveraged volatility-targeted portfolios?
 > Leverage requires borrowing cash; higher financing rates directly widen borrowing drag: Cost = max(0, Exposure - 1) * (r_f + spread), eating into net excess returns.
 
-> [!question] mkt-sys-203 | What is an unencumbered cash buffer and why is it maintained?
+> [!question]- mkt-sys-203 | What is an unencumbered cash buffer and why is it maintained?
 > Liquid cash capital held uncommitted to margin to satisfy prime broker variation margin calls during market moves without forcing emergency asset liquidations.
 
-> [!question] mkt-sys-204 | What is the leverage effect (Black 1976) in equity markets?
+> [!question]- mkt-sys-204 | What is the leverage effect (Black 1976) in equity markets?
 > The negative correlation between asset returns and volatility: when stock prices fall, corporate debt-to-equity leverage rises, increasing equity volatility.
 
-> [!question] mkt-sys-205 | How does volatility targeting affect portfolio return kurtosis?
+> [!question]- mkt-sys-205 | How does volatility targeting affect portfolio return kurtosis?
 > Volatility targeting significantly reduces return kurtosis (fat tails) by dampening extreme volatility outliers, bringing the return distribution closer to a Gaussian profile.
 
-> [!question] mkt-sys-206 | What is the Rogers-Satchell volatility estimator?
+> [!question]- mkt-sys-206 | What is the Rogers-Satchell volatility estimator?
 > A high-low-open-close volatility estimator that allows for non-zero price drift, making it robust during strong trending market regimes.
 
-> [!question] mkt-sys-207 | Why does cross-asset trend following (CTA) rely heavily on volatility targeting?
+> [!question]- mkt-sys-207 | Why does cross-asset trend following (CTA) rely heavily on volatility targeting?
 > Because commodities, FX, rates, and equities have vastly different inherent volatilities; scaling inversely to realized vol equalizes risk contributions across all contracts.
 
-> [!question] mkt-sys-208 | What is margin call contagion in multi-strategy funds?
+> [!question]- mkt-sys-208 | What is margin call contagion in multi-strategy funds?
 > When a spike in volatility on one asset forces margin calls that require liquidating completely unrelated, profitable positions to raise required cash.
 
-> [!question] mkt-sys-209 | What is the difference between slow vol lookbacks and fast vol lookbacks?
+> [!question]- mkt-sys-209 | What is the difference between slow vol lookbacks and fast vol lookbacks?
 > Fast lookbacks (e.g. 10-day EWMA) react immediately to emerging crises but induce high turnover and whipsaw; slow lookbacks (e.g. 60-day) are stable but lag market shocks.
 
-> [!question] mkt-sys-210 | How can a hybrid volatility estimator combine fast and slow lookbacks?
+> [!question]- mkt-sys-210 | How can a hybrid volatility estimator combine fast and slow lookbacks?
 > By defining estimated volatility as the maximum of a fast-reacting short-term estimate and a stable long-term estimate: sigma_hat = max(sigma_{fast}, sigma_{slow}).
 
-> [!question] mkt-sys-211 | What is the effect of volatility targeting on momentum crashes (Barroso & Santa-Clara 2015)?
+> [!question]- mkt-sys-211 | What is the effect of volatility targeting on momentum crashes (Barroso & Santa-Clara 2015)?
 > Momentum strategies suffer severe crashes during panic reversals; scaling by realized momentum volatility virtually eliminates momentum crashes and doubles Sharpe.
 
-> [!question] mkt-sys-212 | What is a terminal stop-out circuit breaker in a systematic fund?
+> [!question]- mkt-sys-212 | What is a terminal stop-out circuit breaker in a systematic fund?
 > An immutable rule (e.g. at 10% or 15% drawdown) that liquidates all positions to cash and completely deactivates trading engines until an independent audit is conducted.
 
-> [!question] mkt-sys-213 | How does correlation breakdown during crises affect portfolio volatility estimation?
+> [!question]- mkt-sys-213 | How does correlation breakdown during crises affect portfolio volatility estimation?
 > In crises, asset correlations often surge toward 1.0; a volatility model assuming calm-period correlations will severely underestimate portfolio risk.
 
-> [!question] mkt-sys-214 | What is the GARCH(1,1) volatility model?
+> [!question]- mkt-sys-214 | What is the GARCH(1,1) volatility model?
 > An autoregressive conditional heteroskedasticity model: sigma_t^2 = omega + alpha * epsilon_{t-1}^2 + beta * sigma_{t-1}^2, modeling volatility clustering and mean-reversion.
 
-> [!question] mkt-sys-215 | Why should volatility scaling multipliers be updated incrementally rather than instantaneously?
+> [!question]- mkt-sys-215 | Why should volatility scaling multipliers be updated incrementally rather than instantaneously?
 > Applying a smoothing filter on k_t prevents erratic day-to-day position rebalancing and dampens execution turnover costs.
 
-> [!question] mkt-sys-216 | What is liquidity-adjusted volatility targeting?
+> [!question]- mkt-sys-216 | What is liquidity-adjusted volatility targeting?
 > Scaling exposure inversely to volatility while simultaneously constraining maximum order size to a safe percentage of daily volume (e.g. <= 5% ADV).
 
-> [!question] mkt-sys-217 | How does short gamma exposure distort volatility targeting?
+> [!question]- mkt-sys-217 | How does short gamma exposure distort volatility targeting?
 > Strategies with negative gamma (e.g. option selling) experience accelerating losses as volatility surges; volatility targeting must account for non-linear delta changes.
 
-> [!question] mkt-sys-218 | What is variation margin in futures execution?
+> [!question]- mkt-sys-218 | What is variation margin in futures execution?
 > Daily cash settlement of unrealized gains and losses paid between clearinghouse members to reflect daily mark-to-market price changes.
 
-> [!question] mkt-sys-219 | Why does volatility targeting fail during instantaneous gap openings?
+> [!question]- mkt-sys-219 | Why does volatility targeting fail during instantaneous gap openings?
 > Because gap moves (e.g. 9/11 attacks or overnight devaluations) occur before the market opens, preventing the algorithm from executing de-risking trades.
 
-> [!question] mkt-sys-220 | What is the Yang-Zhang (2000) volatility estimator?
+> [!question]- mkt-sys-220 | What is the Yang-Zhang (2000) volatility estimator?
 > An extension of Garman-Klass that is independent of both drift and opening price jumps, providing minimum variance among historical OHLC estimators.
 
-> [!question] mkt-sys-221 | How does portfolio volatility targeting interact with asset-level stop losses?
+> [!question]- mkt-sys-221 | How does portfolio volatility targeting interact with asset-level stop losses?
 > Portfolio volatility targeting manages aggregate macro exposure top-down, while asset-level stop losses protect against idiosyncratic single-name company collapses.
 
-> [!question] mkt-sys-222 | What is the difference between gross leverage and net leverage?
+> [!question]- mkt-sys-222 | What is the difference between gross leverage and net leverage?
 > Gross leverage is the sum of absolute long and short exposures (|Long| + |Short|) / NAV; net leverage is the directional difference (Long - Short) / NAV.
 
-> [!question] mkt-sys-223 | Why should reset rules for drawdown governors require a cooling-off period?
+> [!question]- mkt-sys-223 | Why should reset rules for drawdown governors require a cooling-off period?
 > To prevent re-leveraging into the middle of a choppy, volatile bear market rally that could immediately reverse and trigger a secondary drawdown.
 
-> [!question] mkt-sys-224 | What is the ultimate objective of volatility targeting?
+> [!question]- mkt-sys-224 | What is the ultimate objective of volatility targeting?
 > To deliver a stable, predictable return-to-risk profile across decades of varying macroeconomic, monetary, and geopolitical market environments.
 
 ---

@@ -181,100 +181,100 @@ The endowment cannot meet its 7.0% mandate without either:
 
 ## Practice questions
 
-> [!question] mkt-pf-001 | What percentage of the long-term variability in portfolio returns is explained by Strategic Asset Allocation (SAA)?
+> [!question]- mkt-pf-001 | What percentage of the long-term variability in portfolio returns is explained by Strategic Asset Allocation (SAA)?
 > Over 90% (91.5% in the landmark Brinson, Hood, and Beebower study).
 
-> [!question] mkt-pf-002 | What is William Sharpe's 'Arithmetic of Active Management'?
+> [!question]- mkt-pf-002 | What is William Sharpe's 'Arithmetic of Active Management'?
 > Before expenses, the return on the average actively managed dollar equals the market return; after expenses and fees, active management is mathematically a negative-sum game.
 
-> [!question] mkt-pf-003 | Why does a 1.5% annual management fee reduce 30-year terminal wealth by far more than 1.5%?
+> [!question]- mkt-pf-003 | Why does a 1.5% annual management fee reduce 30-year terminal wealth by far more than 1.5%?
 > Fees compound negatively over time; a 1.5% fee typically destroys 35% to 45% of total cumulative terminal wealth over three decades.
 
-> [!question] mkt-pf-004 | What is the Cost Matters Hypothesis (CMH) formulated by John Bogle?
+> [!question]- mkt-pf-004 | What is the Cost Matters Hypothesis (CMH) formulated by John Bogle?
 > In financial markets, gross return minus intermediation costs equals net investor return; minimizing fees is the most reliable predictor of superior performance.
 
-> [!question] mkt-pf-005 | What is Strategic Asset Allocation (SAA)?
+> [!question]- mkt-pf-005 | What is Strategic Asset Allocation (SAA)?
 > Establishing target portfolio weights across asset classes designed to achieve long-term financial goals anchored in risk tolerance and liability matching.
 
-> [!question] mkt-pf-006 | What is Tactical Asset Allocation (TAA)?
+> [!question]- mkt-pf-006 | What is Tactical Asset Allocation (TAA)?
 > Making temporary, bounded tilts around strategic policy weights to exploit short-term valuation mispricings or macroeconomic risk skews.
 
-> [!question] mkt-pf-007 | What are the four core building blocks of Antti Ilmanen's expected return framework?
+> [!question]- mkt-pf-007 | What are the four core building blocks of Antti Ilmanen's expected return framework?
 > Cash yield, real economic growth/carry, inflation expectations, and valuation multiple expansion or contraction.
 
-> [!question] mkt-pf-008 | What is the equity building-block expected return equation?
+> [!question]- mkt-pf-008 | What is the equity building-block expected return equation?
 > E[R] = Dividend Yield + Real Earnings Growth + Inflation +/- Multiple Mean Reversion.
 
-> [!question] mkt-pf-009 | What is the primary determinant of long-term government bond expected returns?
+> [!question]- mkt-pf-009 | What is the primary determinant of long-term government bond expected returns?
 > The initial starting Yield to Maturity (YTM) at the time of purchase.
 
-> [!question] mkt-pf-010 | What is the Shiller CAPE ratio and how does it affect 10-year equity expected returns?
+> [!question]- mkt-pf-010 | What is the Shiller CAPE ratio and how does it affect 10-year equity expected returns?
 > The cyclically adjusted P/E ratio; an elevated CAPE indicates that future 10-year returns will be suppressed by multiple contraction.
 
-> [!question] mkt-pf-011 | What is the classic 60/40 portfolio?
+> [!question]- mkt-pf-011 | What is the classic 60/40 portfolio?
 > A balanced portfolio allocating 60% to diversified equities (growth engine) and 40% to investment-grade government bonds (deflation hedge and income).
 
-> [!question] mkt-pf-012 | Why does the 60/40 portfolio carry unbalanced risk?
+> [!question]- mkt-pf-012 | Why does the 60/40 portfolio carry unbalanced risk?
 > Because equities have 3x to 4x the volatility of bonds; equities contribute approximately 90% of total portfolio variance in a 60/40 allocation.
 
-> [!question] mkt-pf-013 | What are Treasury Inflation-Protected Securities (TIPS)?
+> [!question]- mkt-pf-013 | What are Treasury Inflation-Protected Securities (TIPS)?
 > Government bonds whose principal value adjusts upward with the Consumer Price Index (CPI), guaranteeing a fixed real return above inflation.
 
-> [!question] mkt-pf-014 | What is the 'equity risk premium puzzle' (Mehra and Prescott 1985)?
+> [!question]- mkt-pf-014 | What is the 'equity risk premium puzzle' (Mehra and Prescott 1985)?
 > Historical equity returns were so high relative to bonds that standard neoclassical economic models cannot explain them without assuming implausibly high risk aversion.
 
-> [!question] mkt-pf-015 | What is the difference between home country bias and global asset allocation?
+> [!question]- mkt-pf-015 | What is the difference between home country bias and global asset allocation?
 > Home country bias is disproportionately overweighting domestic equities; global allocation diversifies across worldwide market-capitalization weights.
 
-> [!question] mkt-pf-016 | What is tracking error in portfolio management?
+> [!question]- mkt-pf-016 | What is tracking error in portfolio management?
 > The standard deviation of the difference between portfolio returns and benchmark returns, measuring the volatility of active bets.
 
-> [!question] mkt-pf-017 | Why do active fund managers suffer from 'closet indexing'?
+> [!question]- mkt-pf-017 | Why do active fund managers suffer from 'closet indexing'?
 > To minimize tracking error and avoid career risk, managers hold portfolios that mimic the benchmark while charging high active management fees.
 
-> [!question] mkt-pf-018 | What is the 'rebalancing bonus' in an uncorrelated asset allocation?
+> [!question]- mkt-pf-018 | What is the 'rebalancing bonus' in an uncorrelated asset allocation?
 > The incremental return earned by systematically selling appreciated assets and buying depressed assets to restore policy weights.
 
-> [!question] mkt-pf-019 | How does asset allocation differ for defined benefit pensions versus individual retirees?
+> [!question]- mkt-pf-019 | How does asset allocation differ for defined benefit pensions versus individual retirees?
 > Pensions focus on liability-driven investing (matching asset duration to pensioner payouts); individuals manage sequence of returns risk and personal lifespan.
 
-> [!question] mkt-pf-020 | What is the 'endowment model' pioneered by David Swensen at Yale?
+> [!question]- mkt-pf-020 | What is the 'endowment model' pioneered by David Swensen at Yale?
 > Shifting away from public equities and fixed income into illiquid, alternative assets: private equity, venture capital, real estate, and timberland.
 
-> [!question] mkt-pf-021 | What is the primary liquidity risk of the Yale Endowment model?
+> [!question]- mkt-pf-021 | What is the primary liquidity risk of the Yale Endowment model?
 > Private assets are illiquid with multi-year capital calls; during market crises, endowments face cash crunches and cannot sell private stakes at par.
 
-> [!question] mkt-pf-022 | What is cash drag in a rising bull market?
+> [!question]- mkt-pf-022 | What is cash drag in a rising bull market?
 > The performance underperformance caused by holding uninvested cash when risky assets appreciate at high rates.
 
-> [!question] mkt-pf-023 | What is a glide path in target-date retirement funds?
+> [!question]- mkt-pf-023 | What is a glide path in target-date retirement funds?
 > The predetermined asset allocation schedule that automatically shifts from high equity allocations in youth to conservative bond allocations near retirement.
 
-> [!question] mkt-pf-024 | What is duration in fixed income asset allocation?
+> [!question]- mkt-pf-024 | What is duration in fixed income asset allocation?
 > A measure of the sensitivity of bond prices to changes in interest rates, representing the weighted average time until cash flows are received.
 
-> [!question] mkt-pf-025 | Why do commodities provide diversification benefits in an equity portfolio?
+> [!question]- mkt-pf-025 | Why do commodities provide diversification benefits in an equity portfolio?
 > Commodities perform best during unanticipated inflation surges and supply shocks when both equities and traditional bonds suffer drawdowns.
 
-> [!question] mkt-pf-026 | What is the difference between real returns and nominal returns?
+> [!question]- mkt-pf-026 | What is the difference between real returns and nominal returns?
 > Real returns are adjusted for inflation, representing the actual expansion of economic purchasing power; nominal returns ignore inflation.
 
-> [!question] mkt-pf-027 | What was the performance failure rate of active equity managers over 20-year horizons?
+> [!question]- mkt-pf-027 | What was the performance failure rate of active equity managers over 20-year horizons?
 > More than 90% of actively managed funds underperform their respective index benchmarks after fees.
 
-> [!question] mkt-pf-028 | How should an analyst establish a benchmark for an unconstrained multi-strategy fund?
+> [!question]- mkt-pf-028 | How should an analyst establish a benchmark for an unconstrained multi-strategy fund?
 > Use a blended benchmark of global equities, bonds, and cash matching the fund's historical average beta and factor exposures.
 
-> [!question] mkt-pf-029 | What is the role of currency risk in international equity asset allocation?
+> [!question]- mkt-pf-029 | What is the role of currency risk in international equity asset allocation?
 > Currency fluctuations can amplify or mute foreign equity returns; unhedged currency exposure adds volatility but can provide macro diversification.
 
-> [!question] mkt-pf-030 | What is survivor bias in mutual fund performance databases?
+> [!question]- mkt-pf-030 | What is survivor bias in mutual fund performance databases?
 > Poorly performing active funds are liquidated or merged into sister funds, leaving only successful funds in historical databases and overstating average active returns.
 
-> [!question] mkt-pf-031 | What is an Investment Policy Statement (IPS)?
+> [!question]- mkt-pf-031 | What is an Investment Policy Statement (IPS)?
 > The foundational governance document outlining an investor's return objectives, risk tolerance, liquidity constraints, tax status, and permissible asset allocations.
 
-> [!question] mkt-pf-032 | What is the ultimate takeaway of modern asset allocation theory?
+> [!question]- mkt-pf-032 | What is the ultimate takeaway of modern asset allocation theory?
 > Get the top-level asset allocation right, minimize investment fees and taxes, and enforce disciplined rebalancing before pursuing active alpha.
 
 ---

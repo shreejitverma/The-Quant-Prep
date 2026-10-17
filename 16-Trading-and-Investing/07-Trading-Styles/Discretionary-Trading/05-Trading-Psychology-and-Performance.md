@@ -140,100 +140,100 @@ The trader transitions from a highly profitable $+50R$ annual earner to a catast
 
 ## Interview questions
 
-> [!question] mkt-psy-001 | What is the central premise of Prospect Theory formulated by Kahneman and Tversky (1979)?
+> [!question]- mkt-psy-001 | What is the central premise of Prospect Theory formulated by Kahneman and Tversky (1979)?
 > Individuals evaluate financial outcomes as gains and losses relative to a psychological reference point, exhibiting asymmetric loss aversion.
 
-> [!question] mkt-psy-002 | What is the quantitative ratio of loss aversion in empirical behavioral finance?
+> [!question]- mkt-psy-002 | What is the quantitative ratio of loss aversion in empirical behavioral finance?
 > Losses feel approximately 2.0 to 2.5 times more painful than equivalent gains feel pleasurable.
 
-> [!question] mkt-psy-003 | What is the Disposition Effect as documented by Terrance Odean (1998)?
+> [!question]- mkt-psy-003 | What is the Disposition Effect as documented by Terrance Odean (1998)?
 > The empirical tendency of investors to sell winning investments too quickly while holding losing investments too long.
 
-> [!question] mkt-psy-004 | What is emotional tilt in professional trading?
+> [!question]- mkt-psy-004 | What is emotional tilt in professional trading?
 > A state of emotional frustration and cognitive impairment where a trader abandons discipline and engages in aggressive, undisciplined gambling.
 
-> [!question] mkt-psy-005 | What is the Sunk Cost Fallacy in trading?
+> [!question]- mkt-psy-005 | What is the Sunk Cost Fallacy in trading?
 > Continuing to hold or add to a losing position because of the time, capital, and emotional energy already committed to it.
 
-> [!question] mkt-psy-006 | What is Outcome Bias?
+> [!question]- mkt-psy-006 | What is Outcome Bias?
 > Evaluating the quality of a decision based on its eventual result rather than the validity of the process when the decision was made.
 
-> [!question] mkt-psy-007 | What is the Hot-Hand Fallacy in financial markets?
+> [!question]- mkt-psy-007 | What is the Hot-Hand Fallacy in financial markets?
 > The irrational belief that a string of successful trades implies an increased probability of success on subsequent trades.
 
-> [!question] mkt-psy-008 | What is equity curve trading?
+> [!question]- mkt-psy-008 | What is equity curve trading?
 > Scaling position sizing up or down based on whether the trader's aggregate capital equity curve is trading above or below a moving average.
 
-> [!question] mkt-psy-009 | What is a daily loss limit (circuit breaker) on a prop trading desk?
+> [!question]- mkt-psy-009 | What is a daily loss limit (circuit breaker) on a prop trading desk?
 > A hard monetary cutoff that automatically closes positions and halts a trader from submitting further orders if daily drawdown exceeds a set threshold.
 
-> [!question] mkt-psy-010 | What is the psychological difference between a paper loss and a realized loss?
+> [!question]- mkt-psy-010 | What is the psychological difference between a paper loss and a realized loss?
 > A paper loss maintains the cognitive illusion that the trader has not yet failed; realizing the loss forces acceptance of mistake and permanent capital reduction.
 
-> [!question] mkt-psy-011 | Why do traders experience acute anxiety when holding large winning positions?
+> [!question]- mkt-psy-011 | Why do traders experience acute anxiety when holding large winning positions?
 > Because loss aversion shifts focus to the fear of giving back accumulated unrealized paper gains.
 
-> [!question] mkt-psy-012 | What is revenge trading?
+> [!question]- mkt-psy-012 | What is revenge trading?
 > Entering impulsive, oversized positions immediately following a loss in an emotionally driven attempt to get even with the market.
 
-> [!question] mkt-psy-013 | How does Mark Douglas in *Trading in the Zone* define trading edge?
+> [!question]- mkt-psy-013 | How does Mark Douglas in *Trading in the Zone* define trading edge?
 > A higher statistical probability of one outcome occurring over another over a large sample of independent events.
 
-> [!question] mkt-psy-014 | What are the five fundamental truths about trading according to Mark Douglas?
+> [!question]- mkt-psy-014 | What are the five fundamental truths about trading according to Mark Douglas?
 > Anything can happen; you don't need to know what will happen next to make money; edge is a higher probability; every moment is unique; outcomes are distributed randomly.
 
-> [!question] mkt-psy-015 | What is overconfidence bias in trading?
+> [!question]- mkt-psy-015 | What is overconfidence bias in trading?
 > An ungrounded inflation of subjective confidence in one's forecasting ability, frequently leading to excessive leverage and inadequate risk control.
 
-> [!question] mkt-psy-016 | How does physiological stress affect prefrontal cortex cognitive performance?
+> [!question]- mkt-psy-016 | How does physiological stress affect prefrontal cortex cognitive performance?
 > High cortisol and adrenaline shift control from rational executive calculation to the amygdala's reflexive fight-or-flight survival responses.
 
-> [!question] mkt-psy-017 | What is FOMO in market participation?
+> [!question]- mkt-psy-017 | What is FOMO in market participation?
 > Fear Of Missing Out, which drives traders to chase extended price moves at poor risk-reward locations out of anxiety that others are profiting.
 
-> [!question] mkt-psy-018 | What is the gambler's fallacy in trading?
+> [!question]- mkt-psy-018 | What is the gambler's fallacy in trading?
 > The false belief that after a series of losing trades, a winning trade is statistically "due" to occur.
 
-> [!question] mkt-psy-019 | Why should a trader track their Maximum Adverse Excursion (MAE)?
+> [!question]- mkt-psy-019 | Why should a trader track their Maximum Adverse Excursion (MAE)?
 > To evaluate whether stop-loss levels are set too tight or too wide relative to normal trade path noise.
 
-> [!question] mkt-psy-020 | What is trade journaling with emotional state tagging?
+> [!question]- mkt-psy-020 | What is trade journaling with emotional state tagging?
 > Recording subjective psychological states alongside trade metrics to isolate which emotional conditions correlate with trading rule violations.
 
-> [!question] mkt-psy-021 | What is the primary cause of sudden account blowups following an extended winning streak?
+> [!question]- mkt-psy-021 | What is the primary cause of sudden account blowups following an extended winning streak?
 > Expanding position sizing and abandoning risk limits due to overconfidence and perceived invulnerability.
 
-> [!question] mkt-psy-022 | What is confirmation bias in discretionary market analysis?
+> [!question]- mkt-psy-022 | What is confirmation bias in discretionary market analysis?
 > Selectively searching for, interpreting, and weighting information that confirms an existing market thesis while ignoring contradicting market data.
 
-> [!question] mkt-psy-023 | What is anchoring bias in trade management?
+> [!question]- mkt-psy-023 | What is anchoring bias in trade management?
 > Fixating on an arbitrary price (such as the trade entry price or breakeven) rather than evaluating current risk-reward conditions.
 
-> [!question] mkt-psy-024 | How does Brett Steenbarger recommend developing trading resilience?
+> [!question]- mkt-psy-024 | How does Brett Steenbarger recommend developing trading resilience?
 > By structuring deliberate practice drills that simulate stressful trading conditions and reviewing recorded video or audio of execution.
 
-> [!question] mkt-psy-025 | What is a good losing trade versus a bad winning trade?
+> [!question]- mkt-psy-025 | What is a good losing trade versus a bad winning trade?
 > A good losing trade follows all playbook rules and accepts risk; a bad winning trade violates risk rules but gets bailed out by luck.
 
-> [!question] mkt-psy-026 | What is the danger of adding to a losing position (averaging down)?
+> [!question]- mkt-psy-026 | What is the danger of adding to a losing position (averaging down)?
 > It concentrates portfolio risk in a deteriorating trade, turning normal losses into catastrophic capital liquidations.
 
-> [!question] mkt-psy-027 | How should a trader respond to a severe personal life stress event?
+> [!question]- mkt-psy-027 | How should a trader respond to a severe personal life stress event?
 > Reduce position sizing by 50% to 100% or temporarily stop trading until cognitive baseline is restored.
 
-> [!question] mkt-psy-028 | What is the endowment effect in position holding?
+> [!question]- mkt-psy-028 | What is the endowment effect in position holding?
 > Valuing an open position more highly simply because one owns it, distorting objective re-evaluation of its current merit.
 
-> [!question] mkt-psy-029 | What is status quo bias in portfolio management?
+> [!question]- mkt-psy-029 | What is status quo bias in portfolio management?
 > The irrational preference for leaving open asset allocations untouched rather than actively reallocating to superior risk-reward opportunities.
 
-> [!question] mkt-psy-030 | How does position sizing impact emotional stability during trade execution?
+> [!question]- mkt-psy-030 | How does position sizing impact emotional stability during trade execution?
 > Sizing below the threshold of emotional arousal preserves prefrontal cortex functioning and eliminates panic decision-making.
 
-> [!question] mkt-psy-031 | What is the purpose of a post-trade review ritual?
+> [!question]- mkt-psy-031 | What is the purpose of a post-trade review ritual?
 > To objectively analyze whether trade execution adhered to documented playbook rules regardless of PnL outcome.
 
-> [!question] mkt-psy-032 | What is the ultimate psychological mark of an elite institutional trader?
+> [!question]- mkt-psy-032 | What is the ultimate psychological mark of an elite institutional trader?
 > Complete emotional detachment from individual trade outcomes, combined with rigorous adherence to positive-expectancy execution rules.
 
 ---

@@ -193,100 +193,100 @@ The cash settlement credit is $24,510.50 - 24,500 = ₹10.50$ per unit (₹262.5
 
 ## Interview questions
 
-> [!question] mkt-ind-001 | What does NEAT stand for in the context of the National Stock Exchange of India?
+> [!question]- mkt-ind-001 | What does NEAT stand for in the context of the National Stock Exchange of India?
 > National Exchange for Automated Trading, the electronic limit order matching system of the NSE.
 
-> [!question] mkt-ind-002 | What are the trading hours for the regular continuous session on NSE and BSE?
+> [!question]- mkt-ind-002 | What are the trading hours for the regular continuous session on NSE and BSE?
 > 09:15 to 15:30 Indian Standard Time (IST).
 
-> [!question] mkt-ind-003 | What is the purpose of the 09:00 to 09:15 IST pre-open session on Indian exchanges?
+> [!question]- mkt-ind-003 | What is the purpose of the 09:00 to 09:15 IST pre-open session on Indian exchanges?
 > To discover an orderly equilibrium price that maximizes traded volume and absorbs overnight market news.
 
-> [!question] mkt-ind-004 | What is the minimum tick size for cash equities and index derivatives on the NSE?
+> [!question]- mkt-ind-004 | What is the minimum tick size for cash equities and index derivatives on the NSE?
 > ₹0.05 (five paise).
 
-> [!question] mkt-ind-005 | How is the official daily closing price of an NSE equity or index computed?
+> [!question]- mkt-ind-005 | How is the official daily closing price of an NSE equity or index computed?
 > As the Volume-Weighted Average Price (VWAP) of all trades executed during the final 30 minutes from 15:00 to 15:30 IST.
 
-> [!question] mkt-ind-006 | What are the three market-wide index circuit breaker percentage thresholds in India?
+> [!question]- mkt-ind-006 | What are the three market-wide index circuit breaker percentage thresholds in India?
 > 10%, 15%, and 20% movements in the benchmark NIFTY 50 or S&P BSE SENSEX.
 
-> [!question] mkt-ind-007 | What occurs if the market breaches the 20% circuit breaker threshold at any time?
+> [!question]- mkt-ind-007 | What occurs if the market breaches the 20% circuit breaker threshold at any time?
 > Trading in all cash equity and equity derivatives markets is halted for the remainder of the trading day.
 
-> [!question] mkt-ind-008 | Do individual stocks with active futures and options (F&O) contracts have fixed daily price circuit limits?
+> [!question]- mkt-ind-008 | Do individual stocks with active futures and options (F&O) contracts have fixed daily price circuit limits?
 > No, they have dynamic operating bands of 10% that automatically flex throughout the day upon being tested.
 
-> [!question] mkt-ind-009 | What is the standard settlement cycle for Indian cash equities?
+> [!question]- mkt-ind-009 | What is the standard settlement cycle for Indian cash equities?
 > T+1 rolling settlement, with optional T+0 same-day settlement available for select top liquid securities.
 
-> [!question] mkt-ind-010 | What is the exercise style of all index and stock options traded on the NSE?
+> [!question]- mkt-ind-010 | What is the exercise style of all index and stock options traded on the NSE?
 > European style (can only be exercised at contract expiration).
 
-> [!question] mkt-ind-011 | What are the symbols used on Indian exchanges to denote European Call and Put options?
+> [!question]- mkt-ind-011 | What are the symbols used on Indian exchanges to denote European Call and Put options?
 > CE denotes Call European and PE denotes Put European.
 
-> [!question] mkt-ind-012 | What is the settlement mechanism for Indian index options versus single-stock options?
+> [!question]- mkt-ind-012 | What is the settlement mechanism for Indian index options versus single-stock options?
 > Index options are cash settled; single-stock options and futures require mandatory physical delivery of underlying shares.
 
-> [!question] mkt-ind-013 | What is a 'lot size' in Indian derivatives trading?
+> [!question]- mkt-ind-013 | What is a 'lot size' in Indian derivatives trading?
 > The minimum standardized number of underlying shares or index units that can be traded in a single contract.
 
-> [!question] mkt-ind-014 | In Open Interest (OI) analysis, what does a rising price accompanied by rising OI indicate?
+> [!question]- mkt-ind-014 | In Open Interest (OI) analysis, what does a rising price accompanied by rising OI indicate?
 > Long Buildup: aggressive buyers are entering new long positions with institutional conviction.
 
-> [!question] mkt-ind-015 | What does a rising price accompanied by falling Open Interest indicate?
+> [!question]- mkt-ind-015 | What does a rising price accompanied by falling Open Interest indicate?
 > Short Covering: existing short sellers are buying back contracts to close out losing positions.
 
-> [!question] mkt-ind-016 | What does a falling price accompanied by rising Open Interest indicate?
+> [!question]- mkt-ind-016 | What does a falling price accompanied by rising Open Interest indicate?
 > Short Buildup: aggressive short sellers are establishing fresh bearish positions.
 
-> [!question] mkt-ind-017 | What does a falling price accompanied by falling Open Interest indicate?
+> [!question]- mkt-ind-017 | What does a falling price accompanied by falling Open Interest indicate?
 > Long Unwinding: existing long investors are liquidating or stopping out of long positions.
 
-> [!question] mkt-ind-018 | What is the Put-Call Ratio (PCR) formula based on Open Interest?
+> [!question]- mkt-ind-018 | What is the Put-Call Ratio (PCR) formula based on Open Interest?
 > Total Put Open Interest divided by Total Call Open Interest.
 
-> [!question] mkt-ind-019 | Why is an extremely high PCR (e.g., > 1.40) interpreted as a bullish contrarian signal?
+> [!question]- mkt-ind-019 | Why is an extremely high PCR (e.g., > 1.40) interpreted as a bullish contrarian signal?
 > Because it reflects heavy institutional put writing, providing a strong delta-hedged structural floor.
 
-> [!question] mkt-ind-020 | What is the 'Max Pain' strike in option analytics?
+> [!question]- mkt-ind-020 | What is the 'Max Pain' strike in option analytics?
 > The strike price at which option buyers collectively lose the maximum amount and option writers incur the minimum payout.
 
-> [!question] mkt-ind-021 | What is 'rollover' in the Indian derivatives market?
+> [!question]- mkt-ind-021 | What is 'rollover' in the Indian derivatives market?
 > Carrying forward an open futures or options position from the expiring near-month contract to the next-month contract.
 
-> [!question] mkt-ind-022 | What is Securities Transaction Tax (STT)?
+> [!question]- mkt-ind-022 | What is Securities Transaction Tax (STT)?
 > A direct turnover tax levied by the Government of India on transactions executed on domestic stock exchanges.
 
-> [!question] mkt-ind-023 | What rate of Goods and Services Tax (GST) applies to brokerage and exchange transaction fees in India?
+> [!question]- mkt-ind-023 | What rate of Goods and Services Tax (GST) applies to brokerage and exchange transaction fees in India?
 > 18% GST.
 
-> [!question] mkt-ind-024 | What is SPAN margin in the SEBI margin framework?
+> [!question]- mkt-ind-024 | What is SPAN margin in the SEBI margin framework?
 > Standard Portfolio Analysis of Risk, an algorithm computing the largest potential portfolio loss across 16 volatility and price scenarios.
 
-> [!question] mkt-ind-025 | What is Extreme Loss Margin (ELM)?
+> [!question]- mkt-ind-025 | What is Extreme Loss Margin (ELM)?
 > A mandatory regulatory add-on margin designed to cover portfolio tail losses beyond the 99% SPAN confidence interval.
 
-> [!question] mkt-ind-026 | What are SEBI's 'Peak Margin' snapshot rules?
+> [!question]- mkt-ind-026 | What are SEBI's 'Peak Margin' snapshot rules?
 > Exchanges capture four random intraday snapshots of client margin utilization; brokers must maintain 100% upfront margin against the peak.
 
-> [!question] mkt-ind-027 | What are Graded Surveillance Measures (GSM) and Additional Surveillance Measures (ASM)?
+> [!question]- mkt-ind-027 | What are Graded Surveillance Measures (GSM) and Additional Surveillance Measures (ASM)?
 > Regulatory monitoring frameworks that impose trading curbs, 100% margins, and price bands on highly volatile or manipulated small-cap stocks.
 
-> [!question] mkt-ind-028 | Where is the primary co-location facility for the National Stock Exchange located?
+> [!question]- mkt-ind-028 | Where is the primary co-location facility for the National Stock Exchange located?
 > Bandra Kurla Complex (BKC) in Mumbai.
 
-> [!question] mkt-ind-029 | What is the tick-by-tick (TBT) market data feed on NSE?
+> [!question]- mkt-ind-029 | What is the tick-by-tick (TBT) market data feed on NSE?
 > A multicast broadcast feed transmitting every individual order placement, cancellation, modification, and trade execution.
 
-> [!question] mkt-ind-030 | What risk does physical settlement pose to an option seller holding an expiring deep in-the-money put?
+> [!question]- mkt-ind-030 | What risk does physical settlement pose to an option seller holding an expiring deep in-the-money put?
 > The obligation to buy the full notional value of physical shares, requiring 100% cash funding or triggering broker auction liquidation.
 
-> [!question] mkt-ind-031 | What is the Bank Nifty index composition?
+> [!question]- mkt-ind-031 | What is the Bank Nifty index composition?
 > A market-capitalization-weighted index comprising the 12 most liquid banking stocks listed on the NSE.
 
-> [!question] mkt-ind-032 | What is the primary golden rule of quantitative execution on Indian exchanges?
+> [!question]- mkt-ind-032 | What is the primary golden rule of quantitative execution on Indian exchanges?
 > Model the full statutory friction schedule (STT, GST, stamp duty) and peak margin limits before evaluating gross backtest alpha.
 
 ---

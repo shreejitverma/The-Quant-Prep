@@ -169,6 +169,48 @@ class TestJournalStats(unittest.TestCase):
         gate_full = evaluate_gate("track_6_trd", "capital_gate", store_state={"journal_trades": dict_trades})
         self.assertTrue(gate_full.passed)
 
+    def test_server_journal_stats_empty_and_logging(self):
+        import tempfile
+        from pathlib import Path
+
+        from tools.qp.server import App
+        from tools.qp.state import Store
+
+        with tempfile.TemporaryDirectory() as td:
+            store = Store(Path(td) / "home")
+            app = App(store)
+
+            # Empty stats should return explicit 0-state with NO_TRADES_LOGGED
+            empty_stats = app.journal_stats()
+            self.assertEqual(empty_stats["total_trades"], 0)
+            self.assertEqual(empty_stats["capital_gate"]["overall_status"], "NO_TRADES_LOGGED")
+
+            # Logging a trade via journal_log
+            res = app.journal_log(
+                {
+                    "setup": "breakout_vcp",
+                    "entry_price": 100.0,
+                    "exit_price": 105.0,
+                    "stop_loss": 98.0,
+                    "take_profit": 106.0,
+                    "shares": 100,
+                    "r_multiple": 2.5,
+                    "pnl": 500.0,
+                    "adherence": "true",
+                    "is_revenge": "false",
+                }
+            )
+            self.assertEqual(res["status"], "LOGGED")
+            self.assertEqual(res["total_logged"], 1)
+            self.assertTrue(res["trade"]["adherence"])
+            self.assertFalse(res["trade"]["is_revenge"])
+            self.assertEqual(res["trade"]["trade_id"], "TRD-0001")
+
+            # Now journal_stats should analyze the single trade
+            active_stats = app.journal_stats()
+            self.assertEqual(active_stats["total_trades"], 1)
+            self.assertEqual(active_stats["win_count"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

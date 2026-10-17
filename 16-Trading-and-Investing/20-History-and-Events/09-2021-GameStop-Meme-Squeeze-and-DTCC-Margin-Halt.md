@@ -148,14 +148,14 @@ The GameStop squeeze transformed retail market structure and clearing protocols:
 
 ## Case Study Drills and Review Questions
 
-> [!question] mkt-his-033 | What was the reported short interest of GameStop Corp. as a percentage of float prior to the January 2021 squeeze?
+> [!question]- mkt-his-033 | What was the reported short interest of GameStop Corp. as a percentage of float prior to the January 2021 squeeze?
 > Over 140% of available public float.
 
-> [!question] mkt-his-034 | What is a gamma squeeze in options market microstructure?
+> [!question]- mkt-his-034 | What is a gamma squeeze in options market microstructure?
 > Aggressive buying of short-dated call options forces option dealers to dynamically purchase underlying shares to hedge short delta, driving the stock price higher and forcing further buying.
 
-> [!question] mkt-his-035 | Why did retail brokerages like Robinhood restrict customer purchasing of GameStop on January 28, 2021?
+> [!question]- mkt-his-035 | Why did retail brokerages like Robinhood restrict customer purchasing of GameStop on January 28, 2021?
 > Because the NSCC clearinghouse issued an overnight $3.0 billion collateral margin call driven by extreme settlement volatility that exceeded the broker's cash reserves.
 
-> [!question] mkt-his-036 | What major settlement reform did the SEC implement in May 2024 as a direct response to the GameStop clearinghouse crisis?
+> [!question]- mkt-his-036 | What major settlement reform did the SEC implement in May 2024 as a direct response to the GameStop clearinghouse crisis?
 > Shortening the US cash equity settlement cycle from two business days (T+2) to one business day (T+1).

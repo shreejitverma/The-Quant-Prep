@@ -242,100 +242,100 @@ Recommendation: Immediate avoid or short candidate.
 
 ## Practice questions
 
-> [!question] mkt-vi-225 | What is the central premise of Edward Chancellor's Capital Cycle theory?
+> [!question]- mkt-vi-225 | What is the central premise of Edward Chancellor's Capital Cycle theory?
 > Supply-side capital expenditures drive industry profitability: high returns attract excess capital that creates destructive gluts, while capital starvation sets up massive cyclical recoveries.
 
-> [!question] mkt-vi-226 | Why is supply-side analysis more reliable than demand-side forecasting in cyclical industries?
+> [!question]- mkt-vi-226 | Why is supply-side analysis more reliable than demand-side forecasting in cyclical industries?
 > Demand is volatile and subject to psychological macro shocks; supply is bound by lead times, capital expenditure commitments, and physical construction cycles.
 
-> [!question] mkt-vi-227 | What is Nick Sleep's 'Scale Economies Shared' business model?
+> [!question]- mkt-vi-227 | What is Nick Sleep's 'Scale Economies Shared' business model?
 > Sharing operational scale cost savings directly with customers through permanently lower prices, creating a widening competitive moat that compounds market share.
 
-> [!question] mkt-vi-228 | Which famous corporate compounders exemplify Scale Economies Shared?
+> [!question]- mkt-vi-228 | Which famous corporate compounders exemplify Scale Economies Shared?
 > Costco, Amazon, GEICO, and Southwest Airlines.
 
-> [!question] mkt-vi-229 | What was the documented performance of Nick Sleep's Nomad Investment Partnership?
+> [!question]- mkt-vi-229 | What was the documented performance of Nick Sleep's Nomad Investment Partnership?
 > 921% cumulative return from 2001 to 2014, compared to 117% for the MSCI World Index.
 
-> [!question] mkt-vi-230 | What is Mohnish Pabrai's Dhandho investment philosophy?
+> [!question]- mkt-vi-230 | What is Mohnish Pabrai's Dhandho investment philosophy?
 > 'Heads I win, tails I don't lose much': asymmetric, low-risk, high-uncertainty investments bought at deep discounts to replacement value.
 
-> [!question] mkt-vi-231 | What is the critical difference between High Risk and High Uncertainty in Pabrai's framework?
+> [!question]- mkt-vi-231 | What is the critical difference between High Risk and High Uncertainty in Pabrai's framework?
 > Risk is the probability of permanent capital loss; uncertainty is a wide dispersion of future outcomes where even the pessimistic path preserves capital.
 
-> [!question] mkt-vi-232 | What is 'cloning' in value investing?
+> [!question]- mkt-vi-232 | What is 'cloning' in value investing?
 > Systematically analyzing and replicating the highest-conviction holdings of verified super-investors disclosed in quarterly SEC Form 13F filings.
 
-> [!question] mkt-vi-233 | What are Peter Lynch's six categories of stocks?
+> [!question]- mkt-vi-233 | What are Peter Lynch's six categories of stocks?
 > Slow Growers, Stalwarts, Fast Growers, Cyclicals, Turnarounds, and Asset Plays.
 
-> [!question] mkt-vi-234 | What is a 'Stalwart' stock in Peter Lynch's taxonomy?
+> [!question]- mkt-vi-234 | What is a 'Stalwart' stock in Peter Lynch's taxonomy?
 > A large, well-established multi-billion dollar company (e.g. Procter & Gamble) growing earnings at 8% to 12%, offering recession-resistant defense.
 
-> [!question] mkt-vi-235 | What is a 'Fast Grower' in Lynch's terminology?
+> [!question]- mkt-vi-235 | What is a 'Fast Grower' in Lynch's terminology?
 > A small, aggressive growth company expanding earnings at 20% to 30%+ annually, representing the primary source of 10-bagger to 50-bagger investment returns.
 
-> [!question] mkt-vi-236 | What is 'diworsification' according to Peter Lynch?
+> [!question]- mkt-vi-236 | What is 'diworsification' according to Peter Lynch?
 > When a successful business squanders high-return cash flow by acquiring unrelated, low-return businesses outside its core competence.
 
-> [!question] mkt-vi-237 | What is a Value Trap?
+> [!question]- mkt-vi-237 | What is a Value Trap?
 > A stock that appears statistically cheap on historical multiples (low P/E, low P/B), but whose underlying economic moat and cash flows are suffering irreversible structural decay.
 
-> [!question] mkt-vi-238 | What is the primary accounting reason traditional Book-to-Price value factors struggled post-2007?
+> [!question]- mkt-vi-238 | What is the primary accounting reason traditional Book-to-Price value factors struggled post-2007?
 > GAAP requires expensing intangible investments (R&D, software, brand building) immediately, severely understating the true book value of modern high-ROIC firms.
 
-> [!question] mkt-vi-239 | How did Zero Interest Rate Policy (ZIRP) disadvantage value stocks relative to growth?
+> [!question]- mkt-vi-239 | How did Zero Interest Rate Policy (ZIRP) disadvantage value stocks relative to growth?
 > Ultra-low discount rates mathematically expanded the present value of distant, speculative long-duration cash flows while discounting near-term value cash flows.
 
-> [!question] mkt-vi-240 | What is the difference between cyclical earnings compression and structural business impairment?
+> [!question]- mkt-vi-240 | What is the difference between cyclical earnings compression and structural business impairment?
 > Cyclical compression rebounds as industry supply normalizes; structural impairment represents permanent demand erosion due to technological substitution.
 
-> [!question] mkt-vi-241 | What does Terry Smith's investment philosophy advocate?
+> [!question]- mkt-vi-241 | What does Terry Smith's investment philosophy advocate?
 > 'Buy good companies, don't overpay, do nothing': concentrating strictly in high-ROCE, capital-light compounders and holding without trading.
 
-> [!question] mkt-vi-242 | Why does Terry Smith avoid investing in cyclical, capital-intensive businesses?
+> [!question]- mkt-vi-242 | Why does Terry Smith avoid investing in cyclical, capital-intensive businesses?
 > Because capital-intensive firms regularly destroy economic value over full business cycles by reinvesting large capex at returns below their cost of capital.
 
-> [!question] mkt-vi-243 | What is the role of Net Revenue Retention (NRR) in detecting software value traps?
+> [!question]- mkt-vi-243 | What is the role of Net Revenue Retention (NRR) in detecting software value traps?
 > An NRR falling below 100% proves that existing customers are spending less or churning, revealing that low multiples reflect terminal customer defection.
 
-> [!question] mkt-vi-244 | What is Li Lu's background and contribution to value investing?
+> [!question]- mkt-vi-244 | What is Li Lu's background and contribution to value investing?
 > Founder of Himalaya Capital, who successfully applied Graham-and-Munger principles to emerging Asian markets and introduced Charlie Munger to BYD.
 
-> [!question] mkt-vi-245 | What is the 'insider ownership' test in value trap diagnostics?
+> [!question]- mkt-vi-245 | What is the 'insider ownership' test in value trap diagnostics?
 > If management owns negligible equity and sells shares into buybacks, they have zero skin in the game and will not defend shareholder interests.
 
-> [!question] mkt-vi-246 | Why is a high dividend yield often a warning sign of a value trap?
+> [!question]- mkt-vi-246 | Why is a high dividend yield often a warning sign of a value trap?
 > A soaring dividend yield usually signals that the market expects an imminent dividend cut due to collapsing operating cash flow.
 
-> [!question] mkt-vi-247 | What is the 'capital-heavy treadmill' trap?
+> [!question]- mkt-vi-247 | What is the 'capital-heavy treadmill' trap?
 > A business that must continuously spend 100% of its operating cash flow on new equipment merely to stay competitive, leaving zero true cash for owners.
 
-> [!question] mkt-vi-248 | How does industry consolidation alter the Capital Cycle in Stage 3?
+> [!question]- mkt-vi-248 | How does industry consolidation alter the Capital Cycle in Stage 3?
 > Bankruptcies and mergers reduce the number of competitors, allowing surviving disciplined operators to halt price wars and restore margins.
 
-> [!question] mkt-vi-249 | What is the 'melting ice cube' problem in asset-based value traps?
+> [!question]- mkt-vi-249 | What is the 'melting ice cube' problem in asset-based value traps?
 > When a company trading below book value burns through cash and liquid assets to cover ongoing operating losses, wiping out equity before catalysts hit.
 
-> [!question] mkt-vi-250 | Why did traditional value managers underperform by shorting high-multiple tech giants in the 2010s?
+> [!question]- mkt-vi-250 | Why did traditional value managers underperform by shorting high-multiple tech giants in the 2010s?
 > They failed to recognize that platform scale and network effects allowed tech leaders to compound incremental capital at 40%+ ROIC for decades.
 
-> [!question] mkt-vi-251 | What is the primary characteristic of a 'Turnaround' stock according to Peter Lynch?
+> [!question]- mkt-vi-251 | What is the primary characteristic of a 'Turnaround' stock according to Peter Lynch?
 > A company whose survival hinges on resolving a specific liquidity crisis or operational failure, offering massive upside if bankruptcy is averted.
 
-> [!question] mkt-vi-252 | What is the danger of relying on trailing twelve month (TTM) earnings during cyclical peaks?
+> [!question]- mkt-vi-252 | What is the danger of relying on trailing twelve month (TTM) earnings during cyclical peaks?
 > Peak TTM earnings represent temporary abnormal margins that will rapidly mean-revert downward, turning a seemingly low 6x P/E into an expensive multiple.
 
-> [!question] mkt-vi-253 | How does customer concentration elevate value trap risk?
+> [!question]- mkt-vi-253 | How does customer concentration elevate value trap risk?
 > If a cheap company relies on one or two dominant clients, the loss of a single contract instantly converts paper operating profits into catastrophic losses.
 
-> [!question] mkt-vi-254 | What is Walter Schloss's historical record and style?
+> [!question]- mkt-vi-254 | What is Walter Schloss's historical record and style?
 > A legendary Graham disciple who compounded capital at 21% annualized over 47 years by holding a widely diversified basket of 100+ low-P/B asset bargains.
 
-> [!question] mkt-vi-255 | Why is intellectual flexibility essential for modern value investors?
+> [!question]- mkt-vi-255 | Why is intellectual flexibility essential for modern value investors?
 > Rigidity around historical book value leads to value traps; investors must evaluate intangible moats, software economics, and capital cycle realities.
 
-> [!question] mkt-vi-256 | What is the ultimate definition of modern value investing?
+> [!question]- mkt-vi-256 | What is the ultimate definition of modern value investing?
 > Purchasing any asset, regardless of sector or growth rate, at a price meaningfully below the discounted present value of its future economic cash flows.
 
 ---

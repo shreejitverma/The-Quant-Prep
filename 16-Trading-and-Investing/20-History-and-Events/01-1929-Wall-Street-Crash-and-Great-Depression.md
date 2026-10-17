@@ -118,14 +118,14 @@ The 1929 crash fundamentally reshaped global financial architecture:
 
 ## Case Study Drills and Review Questions
 
-> [!question] mkt-his-001 | What was the standard retail margin requirement in the US equity markets leading up to the 1929 crash?
+> [!question]- mkt-his-001 | What was the standard retail margin requirement in the US equity markets leading up to the 1929 crash?
 > Roughly 10% upfront equity collateral, allowing 10x effective leverage.
 
-> [!question] mkt-his-002 | How did the electromechanical ticker tape lag amplify the panic during Black Thursday and Black Tuesday?
+> [!question]- mkt-his-002 | How did the electromechanical ticker tape lag amplify the panic during Black Thursday and Black Tuesday?
 > The ticker ran up to 150 minutes late, preventing traders outside the floor from knowing real-time prices and triggering blind panic liquidation.
 
-> [!question] mkt-his-003 | What regulatory authority did the Federal Reserve receive under Regulation T of 1934?
+> [!question]- mkt-his-003 | What regulatory authority did the Federal Reserve receive under Regulation T of 1934?
 > The authority to set and enforce mandatory minimum initial margin requirements for securities purchases.
 
-> [!question] mkt-his-004 | What happened to the Dow Jones Industrial Average between its September 1929 peak and July 1932 trough?
+> [!question]- mkt-his-004 | What happened to the Dow Jones Industrial Average between its September 1929 peak and July 1932 trough?
 > It dropped from 381.17 to 41.22, representing an 89.2% cumulative decline.

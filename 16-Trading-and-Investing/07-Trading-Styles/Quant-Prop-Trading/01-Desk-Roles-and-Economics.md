@@ -176,131 +176,131 @@ Over 252 trading days, the desk generates:
 
 ## Interview questions
 
-> [!question] mkt-pqt-001 | What are the primary revenue drivers of an automated market making desk?
+> [!question]- mkt-pqt-001 | What are the primary revenue drivers of an automated market making desk?
 > Market makers earn the bid-ask half-spread on paired transactions and collect exchange maker rebates.
 > They maximize order turnover while minimizing inventory holding duration and adverse selection from informed trades.
 
-> [!question] mkt-pqt-002 | State the fundamental quantitative PnL attribution identity.
+> [!question]- mkt-pqt-002 | State the fundamental quantitative PnL attribution identity.
 > Total PnL = Spread Capture + Inventory PnL - Adverse Selection - Exchange Fees - Financing Costs.
 > Every basis point of performance must be decomposed into these five components.
 
-> [!question] mkt-pqt-003 | Define adverse selection in the context of limit order execution.
+> [!question]- mkt-pqt-003 | Define adverse selection in the context of limit order execution.
 > Adverse selection occurs when a passive limit order is filled by a counterparty possessing superior near-term information.
 > Immediately following the execution, the mid-price moves against the market maker's newly acquired inventory.
 
-> [!question] mkt-pqt-004 | What is a post-trade markout curve and how is it calculated?
+> [!question]- mkt-pqt-004 | What is a post-trade markout curve and how is it calculated?
 > A markout curve plots the signed difference between the mid-price at horizon t0 + tau and the execution price: Markout(tau) = Side * (Mid(t0 + tau) - FillPrice).
 > It reveals whether fills capture positive spread or decay into toxic adverse losses over time.
 
-> [!question] mkt-pqt-005 | How does maker-taker pricing differ from taker-maker (inverted) pricing?
+> [!question]- mkt-pqt-005 | How does maker-taker pricing differ from taker-maker (inverted) pricing?
 > In maker-taker venues, liquidity providers receive a rebate for resting orders while liquidity takers pay a fee.
 > In inverted venues, liquidity providers pay a fee to rest orders, while liquidity takers receive a rebate, attracting aggressive retail flow.
 
-> [!question] mkt-pqt-006 | What is the economic rationale for quoting on inverted exchanges despite paying maker fees?
+> [!question]- mkt-pqt-006 | What is the economic rationale for quoting on inverted exchanges despite paying maker fees?
 > Inverted exchanges attract uninformed, fee-sensitive retail order flow seeking taker rebates.
 > The lower adverse selection on inverted venues often exceeds the maker fee paid, resulting in higher net PnL.
 
-> [!question] mkt-pqt-007 | How is the annualized Sharpe ratio calculated from daily return statistics?
+> [!question]- mkt-pqt-007 | How is the annualized Sharpe ratio calculated from daily return statistics?
 > Sharpe = (Annualized Mean Return - Risk Free Rate) / Annualized Volatility.
 > In daily terms: Sharpe = ((Daily Mean - Rf_daily) / Daily Stdev) * sqrt(252).
 
-> [!question] mkt-pqt-008 | Why is Sortino ratio preferred over Sharpe ratio for high-frequency market-making strategies?
+> [!question]- mkt-pqt-008 | Why is Sortino ratio preferred over Sharpe ratio for high-frequency market-making strategies?
 > Market-making returns are positively skewed with frequent small gains and occasional large tail losses.
 > Sortino penalizes only downside volatility below the minimum acceptable return, ignoring harmless upside variance.
 
-> [!question] mkt-pqt-009 | What is the Calmar ratio and how is it related to Return on Max Drawdown (RoMaD)?
+> [!question]- mkt-pqt-009 | What is the Calmar ratio and how is it related to Return on Max Drawdown (RoMaD)?
 > Calmar ratio is the annualized rate of return divided by the absolute value of the maximum peak-to-trough drawdown over a specified period.
 > It quantifies the return earned per unit of catastrophic capital risk.
 
-> [!question] mkt-pqt-010 | What is the role of an Execution Desk compared to a Proprietary Trading Desk?
+> [!question]- mkt-pqt-010 | What is the role of an Execution Desk compared to a Proprietary Trading Desk?
 > An Execution Desk acts as an agent to execute client parent orders with minimal Implementation Shortfall against a benchmark.
 > A Prop Desk risks firm principal capital to generate absolute alpha and assumes directional or inventory risk.
 
-> [!question] mkt-pqt-011 | Why does high inventory turnover reduce risk for a market maker?
+> [!question]- mkt-pqt-011 | Why does high inventory turnover reduce risk for a market maker?
 > Fast turnover minimizes the time window during which the desk is exposed to adverse directional market drift.
 > The variance of price drift scales linearly with holding time t: Var(delta S) = sigma^2 * t.
 
-> [!question] mkt-pqt-012 | What is queue priority and why do high-frequency desks invest heavily in low-latency hardware?
+> [!question]- mkt-pqt-012 | What is queue priority and why do high-frequency desks invest heavily in low-latency hardware?
 > In price-time priority books, orders at the same price level fill in the sequence they arrived.
 > Desks with lower latency secure front-of-queue positions, increasing fill rates on favorable prices and canceling before adverse fills occur.
 
-> [!question] mkt-pqt-013 | What is a toxic order flow sweep?
+> [!question]- mkt-pqt-013 | What is a toxic order flow sweep?
 > A large aggressive order that crosses the spread and sweeps multiple price levels simultaneously across fragmented venues.
 > Resting limit orders filled during a sweep suffer immediate, severe adverse selection as the price punches through them.
 
-> [!question] mkt-pqt-014 | What are exchange access fee caps under US SEC Regulation NMS Rule 610?
+> [!question]- mkt-pqt-014 | What are exchange access fee caps under US SEC Regulation NMS Rule 610?
 > Rule 610 caps taker access fees on protected quotes at 30 mils ($0.0030) per share for securities priced at $1.00 or more.
 > This constraint establishes an upper bound on exchange maker rebates.
 
-> [!question] mkt-pqt-015 | How does a desk hedge residual inventory when the primary asset lacks immediate liquidity?
+> [!question]- mkt-pqt-015 | How does a desk hedge residual inventory when the primary asset lacks immediate liquidity?
 > The desk shorts or buys a highly correlated proxy instrument, such as an index ETF or front-month futures contract.
 > The hedge ratio is determined by beta: Hedge Qty = -beta * Primary Qty * (Price_primary / Price_hedge).
 
-> [!question] mkt-pqt-016 | What is basis risk in cross-asset proxy hedging?
+> [!question]- mkt-pqt-016 | What is basis risk in cross-asset proxy hedging?
 > Basis risk is the variance of the spread between the primary asset and the hedging proxy.
 > During market stress, historical correlations decouple, causing both legs of the hedged trade to lose money simultaneously.
 
-> [!question] mkt-pqt-017 | Explain the concept of internal crossing on a multi-strategy desk.
+> [!question]- mkt-pqt-017 | Explain the concept of internal crossing on a multi-strategy desk.
 > Matching offsetting buy and sell orders from different internal strategies without routing to an external exchange.
 > Internal crossing captures the full bid-ask spread and saves exchange fees on both legs.
 
-> [!question] mkt-pqt-018 | What is Payment for Order Flow (PFOF) and why do internalizers pay for retail orders?
+> [!question]- mkt-pqt-018 | What is Payment for Order Flow (PFOF) and why do internalizers pay for retail orders?
 > Wholesale market makers pay retail brokers cash rebates to route unexecuted retail client orders directly to them.
 > Retail orders are small and non-directional, carrying virtually zero adverse selection risk and ensuring high spread capture.
 
-> [!question] mkt-pqt-019 | What is latency floor / speed bump implementation and how does it affect market makers?
+> [!question]- mkt-pqt-019 | What is latency floor / speed bump implementation and how does it affect market makers?
 > An intentional delay (e.g. IEX 350-microsecond coil) applied to all incoming market orders.
 > It allows resting market maker quotes pegged to external reference prices to update before stale quotes can be picked off by latency arbitrageurs.
 
-> [!question] mkt-pqt-020 | How does a hard-to-borrow (HTB) fee impact short directional prop trading?
+> [!question]- mkt-pqt-020 | How does a hard-to-borrow (HTB) fee impact short directional prop trading?
 > Prime brokers charge an annualized borrow fee on short equity positions that are in short supply.
 > A 25% HTB borrow rate creates an overnight hurdle cost that severely reduces net statistical arbitrage profits.
 
-> [!question] mkt-pqt-021 | What is the difference between Gross Market Value (GMV) and Net Market Value (NMV)?
+> [!question]- mkt-pqt-021 | What is the difference between Gross Market Value (GMV) and Net Market Value (NMV)?
 > GMV is the sum of the absolute value of all long and short positions: GMV = |Long| + |Short|.
 > NMV is the directional net exposure: NMV = Long - Short.
 
-> [!question] mkt-pqt-022 | Why do risk managers enforce GMV limits alongside NMV limits?
+> [!question]- mkt-pqt-022 | Why do risk managers enforce GMV limits alongside NMV limits?
 > Even with zero NMV (dollar neutrality), high GMV exposes the desk to liquidity crises, borrow recalls, and asymmetric margin shocks.
 > Liquidity liquidation costs scale quadratically with gross book size.
 
-> [!question] mkt-pqt-023 | What is a mark-to-market (MTM) margin call?
+> [!question]- mkt-pqt-023 | What is a mark-to-market (MTM) margin call?
 > A demand by a clearing broker or exchange for additional collateral when adverse price movements reduce account equity below maintenance margin requirements.
 > Failure to satisfy an MTM call results in forced liquidation of desk positions at fire-sale prices.
 
-> [!question] mkt-pqt-024 | What is capacity of a quantitative strategy?
+> [!question]- mkt-pqt-024 | What is capacity of a quantitative strategy?
 > The maximum capital a strategy can deploy before market impact and slippage erode alpha below the cost of capital.
 > High-frequency market-making strategies have high Sharpe ratios but strictly limited dollar capacity.
 
-> [!question] mkt-pqt-025 | Explain the difference between primary and secondary market liquidity in ETFs.
+> [!question]- mkt-pqt-025 | Explain the difference between primary and secondary market liquidity in ETFs.
 > Primary liquidity occurs through Authorized Participants creating or redeeming ETF creation units directly with the issuer at NAV.
 > Secondary liquidity is the continuous intraday trading of ETF shares on lit exchanges among market participants.
 
-> [!question] mkt-pqt-026 | How do Authorized Participants (APs) keep ETF market prices aligned with NAV?
+> [!question]- mkt-pqt-026 | How do Authorized Participants (APs) keep ETF market prices aligned with NAV?
 > If the ETF trades at a premium to NAV, APs buy underlying component stocks, create ETF shares, and sell them in the market.
 > If the ETF trades at a discount, APs buy cheap ETF shares, redeem them for component stocks, and sell the components.
 
-> [!question] mkt-pqt-027 | What is an iceberg order and how do market makers detect its presence?
+> [!question]- mkt-pqt-027 | What is an iceberg order and how do market makers detect its presence?
 > An order that displays only a small visible tranche while hiding the bulk of its volume in the exchange matching engine.
 > Market makers detect icebergs when consecutive market orders exhaust the displayed bid/ask but the depth instantly replenishes at the identical price.
 
-> [!question] mkt-pqt-028 | What is the bid-ask bounce effect and how does it distort return autocorrelation?
+> [!question]- mkt-pqt-028 | What is the bid-ask bounce effect and how does it distort return autocorrelation?
 > Successive transactions bouncing between bid and ask prices create negative first-order serial correlation in observed price returns.
 > Quantitative researchers must filter out bounce noise using mid-prices rather than transaction prices.
 
-> [!question] mkt-pqt-029 | What is Transaction Cost Analysis (TCA) Implementation Shortfall?
+> [!question]- mkt-pqt-029 | What is Transaction Cost Analysis (TCA) Implementation Shortfall?
 > The difference between the paper return of a portfolio decided at time t0 and the actual realized return after all execution costs and delays.
 > Implementation Shortfall = (Execution Cost + Delay Cost + Opportunity Cost + Fees).
 
-> [!question] mkt-pqt-030 | What is a desk kill switch and what triggers it?
+> [!question]- mkt-pqt-030 | What is a desk kill switch and what triggers it?
 > An automated hardware or software breaker that immediately cancels all open resting orders and blocks new outbound order routing.
 > It triggers when hard limits on loss thresholds, max position size, consecutive stale quotes, or exchange socket disconnects are breached.
 
-> [!question] mkt-pqt-031 | Why does market maker profitability decline during volatility spikes despite wider spreads?
+> [!question]- mkt-pqt-031 | Why does market maker profitability decline during volatility spikes despite wider spreads?
 > Wider spreads are overwhelmed by severe adverse selection, violent inventory revaluation losses, and rapid correlation breakdown in hedging instruments.
 > Volume sweeps easily breach inventory limits, forcing market makers to liquidate at the worst prices.
 
-> [!question] mkt-pqt-032 | What is return on max drawdown (RoMaD) and why is it crucial for prop firms?
+> [!question]- mkt-pqt-032 | What is return on max drawdown (RoMaD) and why is it crucial for prop firms?
 > RoMaD = Net Cumulative Return / Maximum Peak-to-Trough Drawdown.
 > It measures capital efficiency relative to the survival boundary, ensuring traders do not blow past their mandatory capital stop.
 

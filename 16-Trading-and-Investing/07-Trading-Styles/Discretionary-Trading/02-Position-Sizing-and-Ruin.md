@@ -186,131 +186,131 @@ The trader enters stock XYZ at $\$150.00$.
 
 ## Interview questions
 
-> [!question] mkt-trd-033 | What is the fundamental objective of the Kelly Criterion?
+> [!question]- mkt-trd-033 | What is the fundamental objective of the Kelly Criterion?
 > To determine the optimal fraction of wealth to wager on an edge-positive bet in order to maximize the long-term expected geometric compounding rate of capital.
 > It maximizes E[ln(W_T)] over an infinite horizon.
 
-> [!question] mkt-trd-034 | State the formula for the single-asset discrete Kelly fraction f*.
+> [!question]- mkt-trd-034 | State the formula for the single-asset discrete Kelly fraction f*.
 > f* = (p * (b + 1) - 1) / b, which can also be written as p - (q / b).
 > Here p is win probability, q = 1 - p is loss probability, and b is the average win/loss payoff ratio.
 
-> [!question] mkt-trd-035 | What happens to expected geometric compounding growth if a trader bets more than 2 * f*?
+> [!question]- mkt-trd-035 | What happens to expected geometric compounding growth if a trader bets more than 2 * f*?
 > Expected geometric compounding growth becomes negative: g(f) < 0.
 > Despite having a positive mathematical edge, the trader is mathematically guaranteed to experience total bankruptcy over time due to variance drag.
 
-> [!question] mkt-trd-036 | Why do quantitative prop desks deploy Fractional Kelly (e.g. Half-Kelly or Quarter-Kelly)?
+> [!question]- mkt-trd-036 | Why do quantitative prop desks deploy Fractional Kelly (e.g. Half-Kelly or Quarter-Kelly)?
 > Real-world win rates and payoff ratios are estimated with statistical uncertainty, and market returns exhibit fat-tailed jump risks.
 > Half-Kelly captures 75% of maximum growth while cutting return volatility by 50% and dramatically reducing catastrophic drawdown risk.
 
-> [!question] mkt-trd-037 | State the classical risk of ruin equation for an account risking a constant fraction across independent bets.
+> [!question]- mkt-trd-037 | State the classical risk of ruin equation for an account risking a constant fraction across independent bets.
 > Ruin Probability R = ((1 - A) / (1 + A))^C, where A = p - q is the trader's net directional edge and C is the total number of risk units in the account.
 > Ruin decays exponentially as the number of risk units C increases.
 
-> [!question] mkt-trd-038 | Why is the percentage recovery required after a drawdown asymmetric?
+> [!question]- mkt-trd-038 | Why is the percentage recovery required after a drawdown asymmetric?
 > Capital losses reduce the remaining equity base from which subsequent returns are compounded.
 > A drawdown of D requires a recovery gain of G = D / (1 - D); thus a 50% loss requires a 100% gain, and an 80% loss requires a 400% gain.
 
-> [!question] mkt-trd-039 | What is Time Under Water (TUW) in quantitative risk analytics?
+> [!question]- mkt-trd-039 | What is Time Under Water (TUW) in quantitative risk analytics?
 > The total duration of time an investment or portfolio spends below its previous high-water mark equity peak.
 > TUW measures the psychological and operational drag of enduring extended, non-productive recovery periods.
 
-> [!question] mkt-trd-040 | Explain fixed fractional position sizing.
+> [!question]- mkt-trd-040 | Explain fixed fractional position sizing.
 > Sizing every position such that the maximum loss upon hitting the stop-loss equals a fixed percentage f of total account equity (e.g. 1%): Q = (Equity * f) / |Entry - Stop|.
 > Position size contracts automatically after losses and expands after gains, protecting capital during drawdowns.
 
-> [!question] mkt-trd-041 | How does volatility targeting normalize risk across diverse instruments?
+> [!question]- mkt-trd-041 | How does volatility targeting normalize risk across diverse instruments?
 > It calculates position size inversely to an asset's rolling volatility (e.g. 14-day ATR): Q = Target_Dollar_Risk / (ATR * Multiplier).
 > A high-volatility instrument receives a small share size, while a low-volatility instrument receives a larger size, equalizing their dollar risk contributions.
 
-> [!question] mkt-trd-042 | What is portfolio heat?
+> [!question]- mkt-trd-042 | What is portfolio heat?
 > The total aggregate dollar risk committed across all open positions in an account: Total Heat = Sum(Risk_i) / Equity.
 > Professional desks strictly cap total portfolio heat (typically between 5% and 8% of equity) to prevent multi-asset correlated liquidations.
 
-> [!question] mkt-trd-043 | Why is variance drag higher for volatile assets than for stable assets?
+> [!question]- mkt-trd-043 | Why is variance drag higher for volatile assets than for stable assets?
 > Geometric growth approximates arithmetic mean minus half the variance: R_geo ~ mu - 0.5 * sigma^2.
 > As volatility sigma rises, the variance drag penalty scales quadratically, severely suppressing net compounding returns.
 
-> [!question] mkt-trd-044 | How does an unhedged overnight gap violate standard intraday position sizing models?
+> [!question]- mkt-trd-044 | How does an unhedged overnight gap violate standard intraday position sizing models?
 > Standard position sizing assumes continuous price action where orders can exit at the predetermined stop price.
 > An overnight gap bypasses the stop order completely, executing at the market open and incurring a loss significantly larger than 1R.
 
-> [!question] mkt-trd-045 | What is Martingale betting and why is it fatal in financial markets?
+> [!question]- mkt-trd-045 | What is Martingale betting and why is it fatal in financial markets?
 > Doubling the position size after every losing trade in an attempt to recover past losses on the first subsequent win.
 > Because market drawdowns exhibit serial clustering, Martingale betting rapidly reaches capital limits, resulting in instantaneous account blowup.
 
-> [!question] mkt-trd-046 | What is Anti-Martingale sizing?
+> [!question]- mkt-trd-046 | What is Anti-Martingale sizing?
 > Increasing position size as capital grows and decreasing size as capital shrinks (the foundational principle of fixed fractional and Kelly sizing).
 > It maximizes capital compounding during favorable regimes while insulating the account during adverse streaks.
 
-> [!question] mkt-trd-047 | What is the Maximum Adverse Excursion (MAE)?
+> [!question]- mkt-trd-047 | What is the Maximum Adverse Excursion (MAE)?
 > The maximum unrealized peak-to-trough paper loss experienced by a trade from its entry point to its eventual exit.
 > Analyzing MAE distributions helps traders set optimal stop-loss distances that avoid premature stop-outs on profitable setups.
 
-> [!question] mkt-trd-048 | What is the Maximum Favorable Excursion (MFE)?
+> [!question]- mkt-trd-048 | What is the Maximum Favorable Excursion (MFE)?
 > The maximum unrealized paper profit reached by a trade during its holding period before exit.
 > Comparing MFE to realized profit reveals whether a trader is leaving excessive gains on the table through delayed profit-taking.
 
-> [!question] mkt-trd-049 | In continuous-time portfolio theory, what is the Merton optimal fraction of wealth invested in a risky asset?
+> [!question]- mkt-trd-049 | In continuous-time portfolio theory, what is the Merton optimal fraction of wealth invested in a risky asset?
 > f* = (mu - r) / (gamma * sigma^2), where mu is expected asset return, r is risk-free rate, gamma is risk aversion, and sigma^2 is return variance.
 > It represents the continuous-time generalization of the Kelly Criterion for risk-averse investors.
 
-> [!question] mkt-trd-050 | Why does the Kelly Criterion assume logarithmic utility U(W) = ln(W)?
+> [!question]- mkt-trd-050 | Why does the Kelly Criterion assume logarithmic utility U(W) = ln(W)?
 > Logarithmic utility is the unique utility function that makes the optimal decision in a multi-period game independent of future opportunities.
 > It naturally penalizes zero wealth with negative infinite utility, mathematically preventing voluntary bankruptcy.
 
-> [!question] mkt-trd-051 | How does fat-tailed (Student-t) kurtosis affect the optimal Kelly fraction?
+> [!question]- mkt-trd-051 | How does fat-tailed (Student-t) kurtosis affect the optimal Kelly fraction?
 > High kurtosis and negative skewness increase the frequency of extreme left-tail losses.
 > To account for fat tails, the optimal fraction must be scaled down substantially below the Gaussian Kelly formula to avoid ruin.
 
-> [!question] mkt-trd-052 | What is a Chande Kroll stop and how does it incorporate volatility?
+> [!question]- mkt-trd-052 | What is a Chande Kroll stop and how does it incorporate volatility?
 > An adaptive trailing stop that calculates the high/low over an N-period window and offsets stops by a multiple of the Average True Range.
 > It trails price closely during quiet periods while automatically widening during high-volatility expansions to prevent shakeouts.
 
-> [!question] mkt-trd-053 | Explain the concept of asymmetric risk-to-reward calibration.
+> [!question]- mkt-trd-053 | Explain the concept of asymmetric risk-to-reward calibration.
 > Ensuring that the expected reward on winning trades is a multiple of the initial risk (e.g. 2R or 3R).
 > Asymmetric payoffs allow a trader to maintain robust profitability even with a modest win rate of 35% to 45%.
 
-> [!question] mkt-trd-054 | What is a trailing stop and what is its operational trade-off?
+> [!question]- mkt-trd-054 | What is a trailing stop and what is its operational trade-off?
 > A dynamic stop-loss that ratchets in the direction of a winning trade as price advances, locking in unrealized gains.
 > The trade-off: Trailing stops protect capital, but tight trailing parameters frequently stop out positions prematurely before major trend runs.
 
-> [!question] mkt-trd-055 | What is time-based invalidation (a time stop)?
+> [!question]- mkt-trd-055 | What is time-based invalidation (a time stop)?
 > Exiting a trade if price fails to move in the expected direction within a predetermined number of bars or hours.
 > It frees up capital and eliminates ongoing exposure when market momentum fails to confirm the entry thesis.
 
-> [!question] mkt-trd-056 | What is scaling in (pyramiding) and how should risk be managed during additions?
+> [!question]- mkt-trd-056 | What is scaling in (pyramiding) and how should risk be managed during additions?
 > Adding size to an existing position only after it has moved favorably and the stop-loss has been trailed to break-even.
 > Pyramiding expands position size without ever increasing total open account risk beyond the initial 1R allocation.
 
-> [!question] mkt-trd-057 | Why does scaling into a losing position (averaging down) violate institutional risk rules?
+> [!question]- mkt-trd-057 | Why does scaling into a losing position (averaging down) violate institutional risk rules?
 > Averaging down increases dollar exposure precisely when the market has disproven the entry thesis.
 > It exponentially increases the probability of an absorbing catastrophic drawdown on a single trade.
 
-> [!question] mkt-trd-058 | What is the difference between accounting stop and structural stop?
+> [!question]- mkt-trd-058 | What is the difference between accounting stop and structural stop?
 > An accounting stop is an arbitrary dollar or percentage loss (e.g. "I will risk $500" or "2%").
 > A structural stop is placed at a technical market invalidation level (e.g. below a swing low or support shelf); position size is derived from this distance.
 
-> [!question] mkt-trd-059 | What is a circuit breaker in exchange trading?
+> [!question]- mkt-trd-059 | What is a circuit breaker in exchange trading?
 > A regulatory mechanism that temporarily halts all trading across a market or individual stock following an extreme price drop (e.g. S&P 500 Level 1 halt at 7% decline).
 > It prevents systemic panic cascade liquidations and provides a cooling-off period for order books to replenish.
 
-> [!question] mkt-trd-060 | What is the relationship between the Sharpe Ratio and the optimal Kelly fraction?
+> [!question]- mkt-trd-060 | What is the relationship between the Sharpe Ratio and the optimal Kelly fraction?
 > In continuous time, the optimal Kelly fraction equals the Sharpe ratio divided by volatility: f* = Sharpe / sigma = (mu - r) / sigma^2.
 > Higher Sharpe strategies allow greater capital commitment per unit of risk.
 
-> [!question] mkt-trd-061 | Why does liquidity constrain position sizing in small-cap equities?
+> [!question]- mkt-trd-061 | Why does liquidity constrain position sizing in small-cap equities?
 > Position size must not exceed a small fraction (e.g. 1% to 2%) of Average Daily Volume (ADV).
 > Exceeding volume limits causes severe market impact on entry and makes emergency liquidation during a panic impossible without devastating slippage.
 
-> [!question] mkt-trd-062 | What is a hard stop versus a mental stop?
+> [!question]- mkt-trd-062 | What is a hard stop versus a mental stop?
 > A hard stop is a resting stop-loss order placed in the exchange matching engine or broker server.
 > A mental stop is an internal intention to exit manually when price reaches a level; mental stops routinely fail due to psychological hesitation during sudden drops.
 
-> [!question] mkt-trd-063 | What is cross-position diversification benefit in multi-asset sizing?
+> [!question]- mkt-trd-063 | What is cross-position diversification benefit in multi-asset sizing?
 > If two uncorrelated assets each have daily volatility sigma, an equal-weight portfolio has volatility sigma / sqrt(2) = 0.707 * sigma.
 > Diversification reduces portfolio variance without reducing expected return, allowing larger aggregate position sizing under a given risk budget.
 
-> [!question] mkt-trd-064 | What is the maximum acceptable drawdown threshold for an institutional discretionary trader?
+> [!question]- mkt-trd-064 | What is the maximum acceptable drawdown threshold for an institutional discretionary trader?
 > Most institutional prop desks enforce a hard drawdown stop between 5% and 10% of allocated capital.
 > Breaching the 10% threshold triggers mandatory position de-risking, desk review, or temporary trading suspension.
 

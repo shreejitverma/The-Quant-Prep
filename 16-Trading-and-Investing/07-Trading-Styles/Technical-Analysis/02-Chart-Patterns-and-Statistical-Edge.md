@@ -223,131 +223,131 @@ A quantitative research engine analyzes five local price extrema identified by G
 
 ## Interview questions
 
-> [!question] mkt-ta-033 | What is a Head and Shoulders top pattern and what does it signify?
+> [!question]- mkt-ta-033 | What is a Head and Shoulders top pattern and what does it signify?
 > A three-peak reversal formation where the central peak (Head) is highest, flanked by two lower peaks (Shoulders).
 > It signals the transition from an uptrend (higher highs) to a downtrend (failure to make a higher high, followed by a neckline break).
 
-> [!question] mkt-ta-034 | What is the Neckline in a Head and Shoulders formation?
+> [!question]- mkt-ta-034 | What is the Neckline in a Head and Shoulders formation?
 > The support trendline drawn through the two intervening reaction troughs between the left shoulder, head, and right shoulder.
 > A decisive close below the neckline confirms the pattern.
 
-> [!question] mkt-ta-035 | How is the measured move price target calculated for a Head and Shoulders pattern?
+> [!question]- mkt-ta-035 | How is the measured move price target calculated for a Head and Shoulders pattern?
 > The vertical distance from the peak of the Head to the Neckline, subtracted from the Neckline breakout point: Target = Neckline - (Head - Neckline).
 > It provides an objective minimum expectation for the subsequent move.
 
-> [!question] mkt-ta-036 | What is an Inverse Head and Shoulders pattern?
+> [!question]- mkt-ta-036 | What is an Inverse Head and Shoulders pattern?
 > A bullish reversal pattern featuring three troughs where the central trough is lowest, flanked by two higher troughs.
 > It indicates exhaustion of selling pressure and signals an impending primary uptrend.
 
-> [!question] mkt-ta-037 | What did Lo, Mamaysky, and Wang (2000) discover regarding algorithmic pattern recognition?
+> [!question]- mkt-ta-037 | What did Lo, Mamaysky, and Wang (2000) discover regarding algorithmic pattern recognition?
 > By smoothing prices with kernel regression and detecting extrema, they showed pattern-conditional return distributions were statistically distinct from unconditional distributions.
 > They provided the first rigorous proof that technical patterns contain incremental empirical information.
 
-> [!question] mkt-ta-038 | What did David Aronson (2006) demonstrate in Evidence-Based Technical Analysis?
+> [!question]- mkt-ta-038 | What did David Aronson (2006) demonstrate in Evidence-Based Technical Analysis?
 > Testing over 6,400 technical rules on S&P 500 data revealed that zero rules maintained statistical significance after White's Reality Check.
 > Chartist pattern profitability is overwhelmingly attributable to data snooping bias.
 
-> [!question] mkt-ta-039 | What is a Double Top ("M" pattern) and when is it confirmed?
+> [!question]- mkt-ta-039 | What is a Double Top ("M" pattern) and when is it confirmed?
 > A reversal formation featuring two price peaks testing the same general resistance level separated by a trough.
 > It is confirmed only when price closes below the central intervening trough (neckline).
 
-> [!question] mkt-ta-040 | Why do unconfirmed double tops carry high failure rates?
+> [!question]- mkt-ta-040 | Why do unconfirmed double tops carry high failure rates?
 > Until the neckline is broken, the price is simply oscillating in a trading range or healthy consolidation.
 > Entering short before the neckline break results in frequent short squeeze losses when the range resolves upward.
 
-> [!question] mkt-ta-041 | What is an Ascending Triangle and what is its typical directional bias?
+> [!question]- mkt-ta-041 | What is an Ascending Triangle and what is its typical directional bias?
 > A consolidation pattern formed by horizontal upper resistance and rising lower swing lows.
 > It indicates aggressive buyers absorbing supply at higher levels, carrying a strong upward breakout bias.
 
-> [!question] mkt-ta-042 | What is a Descending Triangle and what is its typical directional bias?
+> [!question]- mkt-ta-042 | What is a Descending Triangle and what is its typical directional bias?
 > A consolidation pattern formed by horizontal lower support and falling upper swing highs.
 > It reflects persistent institutional distribution at lower prices, carrying a strong downward breakdown bias.
 
-> [!question] mkt-ta-043 | What is a Bull Flag and how should volume behave within it?
+> [!question]- mkt-ta-043 | What is a Bull Flag and how should volume behave within it?
 > A short-term continuation pattern where price consolidates in a compact downward-sloping channel following a sharp advance.
 > Volume must dry up significantly during the flag, followed by a volume surge on the breakout.
 
-> [!question] mkt-ta-044 | What is a Pennant pattern?
+> [!question]- mkt-ta-044 | What is a Pennant pattern?
 > A small symmetrical triangle continuation pattern lasting 1 to 3 weeks that forms after a vertical price advance.
 > It reflects brief volatility compression before trend resumption.
 
-> [!question] mkt-ta-045 | What is a Volatility Contraction Pattern (VCP)?
+> [!question]- mkt-ta-045 | What is a Volatility Contraction Pattern (VCP)?
 > A sequence of successive consolidation swings where price volatility and volume contract consecutively (e.g. 20% pullback, then 10%, then 4%).
 > It signals that floating supply has been fully absorbed, setting up an explosive breakout.
 
-> [!question] mkt-ta-046 | Why does trading breakouts from wide, loose patterns typically fail?
+> [!question]- mkt-ta-046 | Why does trading breakouts from wide, loose patterns typically fail?
 > Wide price swings indicate that institutional holders have not absorbed overhead supply and market indecision remains high.
 > Breakouts from loose bases are vulnerable to immediate, deep shakeouts.
 
-> [!question] mkt-ta-047 | What is a liquidity sweep in modern market microstructure?
+> [!question]- mkt-ta-047 | What is a liquidity sweep in modern market microstructure?
 > An intentional price push beyond obvious technical support or resistance designed to trigger resting stop-loss orders.
 > Institutional algorithms use the triggered stop volume to fill large orders without driving prices away.
 
-> [!question] mkt-ta-048 | Explain the mechanics of a "bear trap" false breakdown.
+> [!question]- mkt-ta-048 | Explain the mechanics of a "bear trap" false breakdown.
 > Price breaks below major support, triggering retail sell stops and drawing in breakout shorts.
 > Institutional buyers absorb the selling volume and reverse the market higher, trapping the breakout shorts into a forced short squeeze.
 
-> [!question] mkt-ta-049 | What is a Cup and Handle pattern?
+> [!question]- mkt-ta-049 | What is a Cup and Handle pattern?
 > A bullish continuation pattern popularized by William O'Neil consisting of a rounded U-shaped base (Cup) followed by a shallow downward drift (Handle).
 > The handle represents a final shakeout of weak holders on low volume prior to breakout.
 
-> [!question] mkt-ta-050 | Why is the U-shaped cup preferred over a V-shaped recovery in Cup and Handle patterns?
+> [!question]- mkt-ta-050 | Why is the U-shaped cup preferred over a V-shaped recovery in Cup and Handle patterns?
 > A rounded U-shape demonstrates that price spent sufficient time at the bottom to thoroughly wash out committed sellers and consolidate ownership.
 > V-shaped recoveries lack base building and face immediate overhead supply.
 
-> [!question] mkt-ta-051 | What is a Rising Wedge pattern and what is its typical resolution?
+> [!question]- mkt-ta-051 | What is a Rising Wedge pattern and what is its typical resolution?
 > A formation where both support and resistance lines slope upward, but the support line is steeper (converging upward).
 > It reflects diminishing momentum within an uptrend and typically resolves in a sharp downward breakdown.
 
-> [!question] mkt-ta-052 | What is a Falling Wedge pattern and what is its typical resolution?
+> [!question]- mkt-ta-052 | What is a Falling Wedge pattern and what is its typical resolution?
 > A formation where both trendlines slope downward, but the upper resistance line descends faster (converging downward).
 > It reflects selling exhaustion and typically resolves in an explosive upward breakout.
 
-> [!question] mkt-ta-053 | How does kernel bandwidth h influence algorithmic pattern detection?
+> [!question]- mkt-ta-053 | How does kernel bandwidth h influence algorithmic pattern detection?
 > A small bandwidth h creates an under-smoothed line that captures high-frequency microstructure noise as false extrema.
 > A large bandwidth h over-smooths the price, erasing legitimate intermediate chart patterns.
 
-> [!question] mkt-ta-054 | What is pareidolia in technical analysis?
+> [!question]- mkt-ta-054 | What is pareidolia in technical analysis?
 > The psychological tendency of the human brain to perceive familiar geometric patterns or faces in completely random data.
 > Human traders routinely identify Head and Shoulders or flags on synthetic random walk charts.
 
-> [!question] mkt-ta-055 | What is an apex breakout in a symmetrical triangle and why is it undesirable?
+> [!question]- mkt-ta-055 | What is an apex breakout in a symmetrical triangle and why is it undesirable?
 > A breakout that occurs near the very point where the converging trendlines meet (the apex).
 > Apex breakouts typically lack momentum and result in dull, choppy sideways drift rather than explosive trends.
 
-> [!question] mkt-ta-056 | What is a Rectangle (Trading Range) pattern?
+> [!question]- mkt-ta-056 | What is a Rectangle (Trading Range) pattern?
 > A consolidation formation where price bounces between parallel horizontal support and resistance boundaries.
 > It represents an equilibrium auction where buyers and sellers agree on fair value.
 
-> [!question] mkt-ta-057 | How does Bulkowski (2005) calculate the pullback rate for chart patterns?
+> [!question]- mkt-ta-057 | How does Bulkowski (2005) calculate the pullback rate for chart patterns?
 > By tracking the percentage of confirmed breakouts that retrace back to test the breakout level before continuing toward the measured target.
 > For many patterns, pullback rates exceed 50%, providing secondary retest entry opportunities.
 
-> [!question] mkt-ta-058 | What is a shakeout in price action?
+> [!question]- mkt-ta-058 | What is a shakeout in price action?
 > A sharp, intraday plunge designed to trigger stop losses immediately prior to a sustained advance.
 > It purges leveraged weak holders and transfers shares to institutional accumulation accounts.
 
-> [!question] mkt-ta-059 | What is the measured move projection for a Bull Flag?
+> [!question]- mkt-ta-059 | What is the measured move projection for a Bull Flag?
 > The vertical height of the initial flagpole added to the lowest point of the flag consolidation.
 > Target = Flag_Low + (Flagpole_Top - Flagpole_Base).
 
-> [!question] mkt-ta-060 | Why is a volume breakout filter critical for trading geometric patterns?
+> [!question]- mkt-ta-060 | Why is a volume breakout filter critical for trading geometric patterns?
 > Breakouts on low or average volume frequently represent speculative retail drift that collapses upon encountering institutional liquidity.
 > An authentic breakout requires volume at least 50% to 100% above the 50-day moving average volume.
 
-> [!question] mkt-ta-061 | What is a broadening formation (megaphone pattern)?
+> [!question]- mkt-ta-061 | What is a broadening formation (megaphone pattern)?
 > A pattern featuring diverging trendlines with higher highs and lower lows.
 > It indicates escalating emotional volatility, lack of institutional control, and typically precedes sharp market reversals.
 
-> [!question] mkt-ta-062 | How can a trader quantify invalidation on a flag breakout?
+> [!question]- mkt-ta-062 | How can a trader quantify invalidation on a flag breakout?
 > Invalidation occurs if price closes back below the low of the flag consolidation channel.
 > If the asset breaks below the flag low, the thesis of immediate momentum continuation is disproven.
 
-> [!question] mkt-ta-063 | What is a multi-timeframe pattern confirmation?
+> [!question]- mkt-ta-063 | What is a multi-timeframe pattern confirmation?
 > Requiring that an intraday pattern (e.g. 15-minute bull flag) align with a larger structural pattern on the daily chart (e.g. breakout from a daily cup-and-handle).
 > It ensures that higher-timeframe institutional capital flows support the trade.
 
-> [!question] mkt-ta-064 | What is White's Reality Check and why is it applied to technical trading rules?
+> [!question]- mkt-ta-064 | What is White's Reality Check and why is it applied to technical trading rules?
 > A bootstrap methodology developed by Halbert White (2000) that evaluates whether the best-performing trading rule in a search space is genuinely superior or merely the luckiest outcome among thousands tested.
 > It controls for data-snooping bias in automated technical analysis.
 

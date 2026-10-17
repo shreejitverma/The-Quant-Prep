@@ -246,131 +246,131 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 
 ## Interview questions
 
-> [!question] mkt-ta-161 | What is the fundamental difference between a passive limit order and an aggressive market order?
+> [!question]- mkt-ta-161 | What is the fundamental difference between a passive limit order and an aggressive market order?
 > A passive limit order provides liquidity, resting in the book at a specified price and waiting to be matched.
 > An aggressive market order takes liquidity, demanding immediate execution at the current best available price and driving price movement.
 
-> [!question] mkt-ta-162 | Why does price move in continuous double auction markets?
+> [!question]- mkt-ta-162 | Why does price move in continuous double auction markets?
 > Price moves when aggressive market orders fully consume all resting limit order depth at the best bid or ask level.
 > The subsequent market order must cross the spread to execute at the next available tick tier.
 
-> [!question] mkt-ta-163 | State the Lee-Ready (1991) trade classification algorithm.
+> [!question]- mkt-ta-163 | State the Lee-Ready (1991) trade classification algorithm.
 > If trade price is above the NBBO midpoint, it is classified as buyer-initiated; if below, seller-initiated.
 > If executed at the midpoint, the tick rule applies: an uptick is buyer-initiated, a downtick is seller-initiated, and a zero-tick inherits the prior direction.
 
-> [!question] mkt-ta-164 | What is a Footprint (Cluster) chart?
+> [!question]- mkt-ta-164 | What is a Footprint (Cluster) chart?
 > A candlestick chart that displays the internal executed volume at each price tick within the bar.
 > It breaks down trading into bid volume (selling aggression) and ask volume (buying aggression).
 
-> [!question] mkt-ta-165 | How are trades matched diagonally in a bid-ask footprint chart?
+> [!question]- mkt-ta-165 | How are trades matched diagonally in a bid-ask footprint chart?
 > Buyers paying the ask at price P are matched diagonally against sellers hitting the bid at price P - 1 tick.
 > This reflects the two-sided nature of market orders crossing the spread against opposing resting quotes.
 
-> [!question] mkt-ta-166 | What is an order flow imbalance in footprint charting?
+> [!question]- mkt-ta-166 | What is an order flow imbalance in footprint charting?
 > A condition where traded volume on one side exceeds the opposing diagonal volume by a predetermined ratio (typically 3:1 or 4:1).
 > It highlights aggressive initiative buying or selling at specific price tiers.
 
-> [!question] mkt-ta-167 | What is Cumulative Volume Delta (CVD)?
+> [!question]- mkt-ta-167 | What is Cumulative Volume Delta (CVD)?
 > The running cumulative sum of aggressive market buying volume minus aggressive market selling volume across a session: CVD_t = sum(V_buy - V_sell).
 > It quantifies net directional aggression in the market.
 
-> [!question] mkt-ta-168 | What is a CVD absorption divergence?
+> [!question]- mkt-ta-168 | What is a CVD absorption divergence?
 > When price makes a higher high but CVD fails to make a higher high (or vice versa).
 > It indicates that aggressive buying is waning while passive limit orders are absorbing incoming volume, signaling an impending trend exhaustion.
 
-> [!question] mkt-ta-169 | What is institutional absorption in order flow analysis?
+> [!question]- mkt-ta-169 | What is institutional absorption in order flow analysis?
 > When a large participant places large resting limit orders (often as an iceberg) that absorb aggressive market orders without allowing price to move through the level.
 > High volume prints at the level without price advancement.
 
-> [!question] mkt-ta-170 | What are trapped buyers in market microstructure?
+> [!question]- mkt-ta-170 | What are trapped buyers in market microstructure?
 > Aggressive market participants who bought at the extreme top of a move right into passive institutional limit sell orders.
 > When price reverses downward, their stop-loss selling accelerates the subsequent drop.
 
-> [!question] mkt-ta-171 | What is an iceberg order?
+> [!question]- mkt-ta-171 | What is an iceberg order?
 > A large limit order that displays only a small fraction of its total quantity in the public order book (e.g. displaying 100 shares out of a 50,000 share order).
 > As each visible slice is filled, the exchange automatically refreshes the displayed quantity until the full parent order is complete.
 
-> [!question] mkt-ta-172 | What is spoofing in financial markets and is it legal?
+> [!question]- mkt-ta-172 | What is spoofing in financial markets and is it legal?
 > The illegal practice of submitting large non-bona fide resting limit orders with the intention of canceling them before execution.
 > Designed to create a false impression of market depth to manipulate prices, spoofing was outlawed by the Dodd-Frank Act of 2010.
 
-> [!question] mkt-ta-173 | What is layering in order book manipulation?
+> [!question]- mkt-ta-173 | What is layering in order book manipulation?
 > Submitting multiple fake limit orders at progressive price increments on one side of the book to simulate heavy supply or demand, while executing a real order on the opposite side.
 > Once filled, the layered orders are instantly cancelled.
 
-> [!question] mkt-ta-174 | What did Hasbrouck (1991) demonstrate regarding order flow impact using Vector Autoregressions (VAR)?
+> [!question]- mkt-ta-174 | What did Hasbrouck (1991) demonstrate regarding order flow impact using Vector Autoregressions (VAR)?
 > That unexpected order flow shocks have a permanent price impact on asset prices.
 > The permanent impact represents the market's assessment of private information carried by aggressive orders.
 
-> [!question] mkt-ta-175 | What is Order Flow Imbalance (OFI) as defined by Cont, Stoikov, and Talreja (2010)?
+> [!question]- mkt-ta-175 | What is Order Flow Imbalance (OFI) as defined by Cont, Stoikov, and Talreja (2010)?
 > A quantitative metric measuring the net change in order book depth: changes in limit order arrivals, cancellations, and market order executions across the best bid and ask.
 > OFI exhibits a strong, linear contemporaneous relationship with price changes.
 
-> [!question] mkt-ta-176 | What is Delta Finish (Delta at the extremes) in a footprint bar?
+> [!question]- mkt-ta-176 | What is Delta Finish (Delta at the extremes) in a footprint bar?
 > The volume delta recorded at the very highest tick (for a down bar) or lowest tick (for an up bar).
 > An extreme negative delta at a bar low that closes higher indicates trapped sellers and aggressive absorption.
 
-> [!question] mkt-ta-177 | What is the Bar Point of Control (Bar POC)?
+> [!question]- mkt-ta-177 | What is the Bar Point of Control (Bar POC)?
 > The specific price tick within an individual footprint bar where the highest total volume was transacted.
 > It serves as micro-support or resistance on subsequent intraday rotations.
 
-> [!question] mkt-ta-178 | What is stacked imbalance in footprint analysis?
+> [!question]- mkt-ta-178 | What is stacked imbalance in footprint analysis?
 > Three or more consecutive vertical price levels that all display aggressive buying or selling imbalances.
 > Stacked imbalances reflect sustained institutional momentum and define strong support/resistance zones on pullbacks.
 
-> [!question] mkt-ta-179 | What is exhaustion volume in tape reading?
+> [!question]- mkt-ta-179 | What is exhaustion volume in tape reading?
 > A massive, parabolic surge in aggressive market order volume occurring at the end of an extended trend.
 > It represents retail FOMO buying into institutional distribution, frequently marking the exact termination of the move.
 
-> [!question] mkt-ta-180 | What is market depth (Level 2) and what is its primary limitation for retail traders?
+> [!question]- mkt-ta-180 | What is market depth (Level 2) and what is its primary limitation for retail traders?
 > Level 2 displays the aggregate resting limit order quantity at each price tier across participating exchanges.
 > Its primary limitation is that it only shows visible liquidity, hiding dark pools, iceberg orders, and ephemeral HFT quotes.
 
-> [!question] mkt-ta-181 | What is a sweep order (intermarket sweep order, ISO)?
+> [!question]- mkt-ta-181 | What is a sweep order (intermarket sweep order, ISO)?
 > An aggressive market order split across multiple exchanges that sweeps through all available limit orders across multiple price tiers simultaneously.
 > ISOs indicate urgent institutional demand that ignores execution price slippage.
 
-> [!question] mkt-ta-182 | How does dark pool trading affect order flow signals on lit exchanges?
+> [!question]- mkt-ta-182 | How does dark pool trading affect order flow signals on lit exchanges?
 > Up to 40% of equity volume executes off-exchange without pre-trade transparency.
 > Because dark trades print to the tape with delayed reporting, lit order flow delta provides an incomplete picture of institutional volume.
 
-> [!question] mkt-ta-183 | What is queue priority in limit order book matching?
+> [!question]- mkt-ta-183 | What is queue priority in limit order book matching?
 > The order execution sequence governed by price-time priority: orders at the best price execute first, and among equal prices, the earliest submitted order fills first.
 > Quantitative market makers optimize queue position to capture spread rebates while avoiding adverse selection.
 
-> [!question] mkt-ta-184 | What is adverse selection risk for a passive limit order trader?
+> [!question]- mkt-ta-184 | What is adverse selection risk for a passive limit order trader?
 > The risk that a limit order is filled primarily when an informed counterparty possesses superior information, causing the price to move through the order immediately after execution.
 > Passive market makers suffer losses when filled by toxic, informed flow.
 
-> [!question] mkt-ta-185 | What is toxic order flow?
+> [!question]- mkt-ta-185 | What is toxic order flow?
 > Aggressive market flow originating from informed traders who possess predictive directional alpha.
 > Toxic flow generates heavy adverse selection for market makers, forcing them to widen bid-ask spreads.
 
-> [!question] mkt-ta-186 | What is the VPIN metric (Volume-Synchronized Probability of Toxicity)?
+> [!question]- mkt-ta-186 | What is the VPIN metric (Volume-Synchronized Probability of Toxicity)?
 > A market microstructure metric developed by Easley, López de Prado, and O'Hara (2012) that measures order toxicity based on volume imbalances in equal-volume buckets.
 > VPIN serves as an early warning indicator for flash crashes and liquidity evaporation.
 
-> [!question] mkt-ta-187 | How does tape reading detect an institutional iceberg order?
+> [!question]- mkt-ta-187 | How does tape reading detect an institutional iceberg order?
 > By observing continuous large volume transactions printing at the ask (or bid) on the Time and Sales feed while the displayed order size on Level 2 never decreases.
 > The constant replenishment of displayed size reveals a hidden iceberg order.
 
-> [!question] mkt-ta-188 | What is an unfinished business (unmatched auction) in footprint charts?
+> [!question]- mkt-ta-188 | What is an unfinished business (unmatched auction) in footprint charts?
 > When a candle high has volume executed at both the bid and the ask, rather than zero volume on the bid (an untruncated auction).
 > It indicates that the auction was interrupted rather than exhausted, with a high statistical probability of price returning to test the level.
 
-> [!question] mkt-ta-189 | What is liquidity replenishment in order book dynamics?
+> [!question]- mkt-ta-189 | What is liquidity replenishment in order book dynamics?
 > The speed at which market makers post fresh limit orders after an aggressive trade sweeps a price tier.
 > Fast replenishment indicates robust market depth; slow replenishment indicates thin liquidity and high fragility.
 
-> [!question] mkt-ta-190 | What is slippage in order flow execution?
+> [!question]- mkt-ta-190 | What is slippage in order flow execution?
 > The difference between the expected transaction price when a market order is submitted and the actual price at which the trade executes.
 > Slippage increases non-linearly with order size relative to available top-of-book depth.
 
-> [!question] mkt-ta-191 | What is market on close (MOC) imbalance and how does it relate to tape reading?
+> [!question]- mkt-ta-191 | What is market on close (MOC) imbalance and how does it relate to tape reading?
 > Regulatory disclosure published in the final minutes of trading showing net buy or sell shares required to execute at the official closing cross.
 > Massive MOC imbalances drive violent directional tape acceleration into the closing bell.
 
-> [!question] mkt-ta-192 | Why is order flow analysis more effective on centralized futures exchanges (CME) than fragmented equity markets?
+> [!question]- mkt-ta-192 | Why is order flow analysis more effective on centralized futures exchanges (CME) than fragmented equity markets?
 > Regulated futures contracts execute on a single centralized matching engine without dark pools or off-exchange internalizers.
 > Every tick, trade, and cancellation is visible to all participants on a unified order book.
 

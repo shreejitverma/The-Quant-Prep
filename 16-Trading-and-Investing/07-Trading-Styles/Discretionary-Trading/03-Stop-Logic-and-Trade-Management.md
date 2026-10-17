@@ -172,131 +172,131 @@ Historical setup distribution:
 
 ## Interview questions
 
-> [!question] mkt-trd-065 | What is the primary difference between a structural stop and an arbitrary percentage stop?
+> [!question]- mkt-trd-065 | What is the primary difference between a structural stop and an arbitrary percentage stop?
 > A structural stop is placed at an objective technical inflection point where the market thesis is disproven.
 > An arbitrary stop is based on personal account size or arbitrary percentages, ignoring actual market volatility and liquidity structure.
 
-> [!question] mkt-trd-066 | How is True Range (TR) defined in Wilder's (1978) formulation?
+> [!question]- mkt-trd-066 | How is True Range (TR) defined in Wilder's (1978) formulation?
 > TR = max(High - Low, |High - Previous_Close|, |Low - Previous_Close|).
 > It incorporates overnight price gaps, ensuring that volatility is not understated after gap openings.
 
-> [!question] mkt-trd-067 | Why is the Average True Range (ATR) superior to percentage price distance for stop placement?
+> [!question]- mkt-trd-067 | Why is the Average True Range (ATR) superior to percentage price distance for stop placement?
 > Percentage stops treat low-volatility and high-volatility assets identically.
 > ATR dynamically scales stop distance to the prevailing statistical volatility of the asset, preventing premature noise stop-outs.
 
-> [!question] mkt-trd-068 | What is the cardinal sin of risk management in discretionary trading?
+> [!question]- mkt-trd-068 | What is the cardinal sin of risk management in discretionary trading?
 > Moving a stop-loss further away from entry after the trade has been opened.
 > Widening stops converts bounded 1R losses into open-ended catastrophic drawdowns, exponentially escalating the probability of ruin.
 
-> [!question] mkt-trd-069 | Explain the Turtle Trader pyramiding algorithm.
+> [!question]- mkt-trd-069 | Explain the Turtle Trader pyramiding algorithm.
 > Adding incremental position tranches (up to 4 units) every time price advances by 0.5 * ATR (N).
 > The stop-loss on all previously accumulated tranches is ratcheted up simultaneously, ensuring total account risk never exceeds the initial budget.
 
-> [!question] mkt-trd-070 | What is a time stop and under what market conditions is it deployed?
+> [!question]- mkt-trd-070 | What is a time stop and under what market conditions is it deployed?
 > An exit rule that liquidates a position if price fails to advance within a specified number of bars or time intervals.
 > It is deployed in breakout and momentum strategies to free up capital when follow-through buying fails to confirm the entry thesis.
 
-> [!question] mkt-trd-071 | What is the mathematical trade-off of taking partial profits (scaling out)?
+> [!question]- mkt-trd-071 | What is the mathematical trade-off of taking partial profits (scaling out)?
 > Scaling out at 1R locks in gains and reduces equity curve volatility during choppy market regimes.
 > However, it cuts the position size in half on massive multi-R runners, reducing total expectancy during sustained secular trends.
 
-> [!question] mkt-trd-072 | What is a stop-market order versus a stop-limit order?
+> [!question]- mkt-trd-072 | What is a stop-market order versus a stop-limit order?
 > A stop-market order triggers a market order when the stop price is touched, guaranteeing execution but leaving fill price vulnerable to slippage.
 > A stop-limit order triggers a limit order, guaranteeing price boundary but risking non-execution if the market gaps past the limit.
 
-> [!question] mkt-trd-073 | Why is a stop-market order mandatory for catastrophe protection rather than a stop-limit?
+> [!question]- mkt-trd-073 | Why is a stop-market order mandatory for catastrophe protection rather than a stop-limit?
 > During rapid market panics or gap openings, price jumps completely past the limit threshold.
 > A stop-limit order remains unfilled, leaving the trader with an uncontrolled, escalating loss as the market collapses.
 
-> [!question] mkt-trd-074 | What is a liquidity sweep (stop run) and how do institutional algorithms execute it?
+> [!question]- mkt-trd-074 | What is a liquidity sweep (stop run) and how do institutional algorithms execute it?
 > Aggressively pushing price momentarily beyond prominent swing highs or swing lows to trigger concentrated retail stop-loss orders.
 > The resulting flood of market stop orders provides the exact liquidity required for the institution to enter large counter-trend positions.
 
-> [!question] mkt-trd-075 | How does an ATR buffer protect stops from institutional stop runs?
+> [!question]- mkt-trd-075 | How does an ATR buffer protect stops from institutional stop runs?
 > By placing the stop structural level minus a buffer equal to 0.5 to 1.0 * ATR.
 > The buffer positions the stop beyond the immediate sweep zone, surviving transient false breakouts and retests.
 
-> [!question] mkt-trd-076 | What is Maximum Adverse Excursion (MAE) and how is it used to optimize stop distance?
+> [!question]- mkt-trd-076 | What is Maximum Adverse Excursion (MAE) and how is it used to optimize stop distance?
 > MAE measures the maximum paper drawdown experienced by a trade before it concludes.
 > If 90% of all winning trades never retrace more than 1.5 * ATR, setting a stop at 1.8 * ATR maximizes capital protection without cutting winners.
 
-> [!question] mkt-trd-077 | What is Maximum Favorable Excursion (MFE) and how does it inform profit target placement?
+> [!question]- mkt-trd-077 | What is Maximum Favorable Excursion (MFE) and how does it inform profit target placement?
 > MFE measures the peak unrealized paper profit achieved by a trade during its lifespan.
 > If MFE distributions show that most trades stall after reaching 2.5R, setting systematic limit orders at 2.3R captures edge before mean-reversion.
 
-> [!question] mkt-trd-078 | What is a Chande Kroll stop?
+> [!question]- mkt-trd-078 | What is a Chande Kroll stop?
 > An indicator that identifies the highest high or lowest low over an N-period window and offsets stops by a multiple of the Average True Range.
 > It provides an objective trailing band that adapts automatically to expanding and contracting market volatility.
 
-> [!question] mkt-trd-079 | Why does moving a stop to break-even too early reduce mathematical expectancy?
+> [!question]- mkt-trd-079 | Why does moving a stop to break-even too early reduce mathematical expectancy?
 > Market prices naturally retest breakout levels and swing points before commencing major directional trends.
 > Prematurely moving stops to break-even causes frequent zero-PnL exits on trades that would have achieved full multi-R targets.
 
-> [!question] mkt-trd-080 | What is a trailing chandelier stop?
+> [!question]- mkt-trd-080 | What is a trailing chandelier stop?
 > A trailing stop anchored to the highest high achieved during the trade minus a multiple of ATR: Chandelier Stop = Highest_High - (k * ATR).
 > It ratchets upward continuously as price prints new highs, letting winners run while locking in profits on trend exhaustion.
 
-> [!question] mkt-trd-081 | What is the disposition effect and how does it manifest in trade management?
+> [!question]- mkt-trd-081 | What is the disposition effect and how does it manifest in trade management?
 > The psychological tendency to realize small gains immediately to feel successful while holding losing trades indefinitely to avoid pain.
 > It produces an inverted risk profile characterized by small positive R-multiples and catastrophic negative R-multiples.
 
-> [!question] mkt-trd-082 | What is cognitive dissonance in discretionary trade management?
+> [!question]- mkt-trd-082 | What is cognitive dissonance in discretionary trade management?
 > Mental discomfort experienced when market price action contradicts the trader's bullish or bearish analysis.
 > Traders resolve this tension irrationally by ignoring stop levels, seeking confirming opinions on social media, or widening stops.
 
-> [!question] mkt-trd-083 | How does scaling in to losing positions (averaging down) affect risk of ruin?
+> [!question]- mkt-trd-083 | How does scaling in to losing positions (averaging down) affect risk of ruin?
 > It increases position size at lower prices, concentrating capital precisely when the market is trending against the trader.
 > A single persistent trend will completely overwhelm account equity, leading to margin liquidation.
 
-> [!question] mkt-trd-084 | What is a bracket order (OCO - One Cancels Other)?
+> [!question]- mkt-trd-084 | What is a bracket order (OCO - One Cancels Other)?
 > An order pair linking a profit target limit order and a stop-loss order to an existing position.
 > If the profit target fills, the stop-loss is automatically cancelled; if the stop-loss fills, the profit target is cancelled.
 
-> [!question] mkt-trd-085 | Why should stops be executed via automated server-side orders rather than manual discretionary clicks?
+> [!question]- mkt-trd-085 | Why should stops be executed via automated server-side orders rather than manual discretionary clicks?
 > Server-side stops execute deterministically inside the exchange matching engine without relying on local internet connectivity.
 > They eliminate psychological hesitation, freeze responses, and manual execution latency during sudden crashes.
 
-> [!question] mkt-trd-086 | How does position sizing interact with stop-loss distance?
+> [!question]- mkt-trd-086 | How does position sizing interact with stop-loss distance?
 > Position size is inversely proportional to stop distance: Quantity = Dollar_Risk / |Entry - Stop|.
 > A wide stop necessitates a smaller share quantity; a tight stop allows a larger share quantity, keeping dollar risk identical.
 
-> [!question] mkt-trd-087 | What is a volatility expansion shakeout?
+> [!question]- mkt-trd-087 | What is a volatility expansion shakeout?
 > A sudden surge in market volatility (ATR expansion) that triggers stops across both long and short market participants without changing trend direction.
 > Adapting stops to rolling ATR prevents positions from being terminated during routine volatility expansions.
 
-> [!question] mkt-trd-088 | What is the role of an Initial Target (T1) in multi-stage trade management?
+> [!question]- mkt-trd-088 | What is the role of an Initial Target (T1) in multi-stage trade management?
 > T1 provides an objective milestone to de-risk the trade by recovering the initial dollar risk budget.
 > Closing a portion of the position at T1 funds the trade, ensuring the net result cannot be a loss if the remainder reverses.
 
-> [!question] mkt-trd-089 | What is a runner in discretionary trend following?
+> [!question]- mkt-trd-089 | What is a runner in discretionary trend following?
 > The residual portion of a position (e.g. 25% to 33%) held after initial profit targets have been taken.
 > Runners are managed with loose trailing stops to capture rare, massive multi-week or multi-month secular trend expansions.
 
-> [!question] mkt-trd-090 | Explain how order book depth at support levels informs stop placement.
+> [!question]- mkt-trd-090 | Explain how order book depth at support levels informs stop placement.
 > Placing a stop directly above or inside a massive bid wall guarantees execution during a wall breakdown.
 > Stops should be placed several ticks below the exhaustion zone of the depth wall, where selling momentum finally dissipates.
 
-> [!question] mkt-trd-091 | What is slippage variance on stop orders during earnings announcements?
+> [!question]- mkt-trd-091 | What is slippage variance on stop orders during earnings announcements?
 > Stop orders are completely ineffective at protecting against earnings gap openings.
 > A stock closing at $100 with a $95 stop can gap open at $80; the stop market order triggers and fills at $80, incurring a 4x intended loss.
 
-> [!question] mkt-trd-092 | Why must options traders manage risk using underlying stock levels rather than option premium stops?
+> [!question]- mkt-trd-092 | Why must options traders manage risk using underlying stock levels rather than option premium stops?
 > Option premiums are distorted by implied volatility crush, bid-ask spread widening, and theta decay.
 > Setting stops based on the underlying asset's structural support ensures that exits reflect true technical invalidation.
 
-> [!question] mkt-trd-093 | What is a trailing percentage stop and why is it inferior to ATR trailing stops?
+> [!question]- mkt-trd-093 | What is a trailing percentage stop and why is it inferior to ATR trailing stops?
 > Trailing by a fixed percentage (e.g. 5%) ignores the asset's normal volatility regime.
 > In a 1% daily volatility stock, a 5% stop is unnecessarily loose; in a 10% daily volatility crypto asset, it is constantly whipped out.
 
-> [!question] mkt-trd-094 | How does trade journaling improve stop-loss discipline?
+> [!question]- mkt-trd-094 | How does trade journaling improve stop-loss discipline?
 > Logging MAE and rule adherence for every execution provides empirical proof of whether moved stops ever produce positive net edge.
 > Reviewing the catastrophic cumulative losses of moved stops reinforces psychological discipline to honor stops.
 
-> [!question] mkt-trd-095 | What is a hard daily loss limit on a prop desk?
+> [!question]- mkt-trd-095 | What is a hard daily loss limit on a prop desk?
 > A risk management rule that mandates immediate liquidation of all positions and halts trading for the remainder of the session if daily loss hits a limit (e.g. 3R).
 > It cuts off negative emotional feedback loops, tilt spirals, and revenge trading.
 
-> [!question] mkt-trd-096 | Why is the decision to exit a trade mathematically independent of the entry price?
+> [!question]- mkt-trd-096 | Why is the decision to exit a trade mathematically independent of the entry price?
 > Once entered, the entry price is a sunk historical datum that has zero influence on the asset's future probability distribution.
 > Exits must be evaluated strictly based on whether the expected future risk-adjusted return from the current price justifies holding.
 

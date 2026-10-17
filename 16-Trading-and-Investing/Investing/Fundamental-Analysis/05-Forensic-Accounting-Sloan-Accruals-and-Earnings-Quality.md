@@ -209,100 +209,100 @@ With an accrual ratio exceeding 14%, earnings are unsustainable and mean reversi
 
 ## Practice questions
 
-> [!question] mkt-fa-129 | What is the fundamental insight of Richard Sloan's 1996 Accrual Anomaly?
+> [!question]- mkt-fa-129 | What is the fundamental insight of Richard Sloan's 1996 Accrual Anomaly?
 > The cash flow component of earnings is significantly more persistent than the accrual component, yet stock markets systematically misprice high-accrual firms by fixating on headline net income.
 
-> [!question] mkt-fa-130 | How is the Cash Flow Statement Accrual calculated?
+> [!question]- mkt-fa-130 | How is the Cash Flow Statement Accrual calculated?
 > Accruals = Net Income - Operating Cash Flow (CFO), scaled by average total assets.
 
-> [!question] mkt-fa-131 | What does a high positive accrual ratio (>10%) indicate about corporate earnings?
+> [!question]- mkt-fa-131 | What does a high positive accrual ratio (>10%) indicate about corporate earnings?
 > It indicates poor earnings quality, where reported profits are driven by non-cash working capital expansion rather than cash collections, forecasting earnings mean reversion.
 
-> [!question] mkt-fa-132 | What does a negative accrual ratio indicate about corporate earnings?
+> [!question]- mkt-fa-132 | What does a negative accrual ratio indicate about corporate earnings?
 > It indicates superior earnings quality, where actual operating cash collections exceed reported accounting net income.
 
-> [!question] mkt-fa-133 | Why is the Cash Flow Statement method of measuring accruals preferred over the Balance Sheet method?
+> [!question]- mkt-fa-133 | Why is the Cash Flow Statement method of measuring accruals preferred over the Balance Sheet method?
 > The Cash Flow method is immune to balance sheet distortions caused by corporate acquisitions, divestitures, and foreign currency translation adjustments.
 
-> [!question] mkt-fa-134 | What is the core objective of the Modified Jones Model?
+> [!question]- mkt-fa-134 | What is the core objective of the Modified Jones Model?
 > To decompose total accruals into normal non-discretionary accruals driven by business scale and abnormal discretionary accruals driven by managerial manipulation.
 
-> [!question] mkt-fa-135 | Why does the Modified Jones Model subtract the change in Accounts Receivable from the change in Revenue?
+> [!question]- mkt-fa-135 | Why does the Modified Jones Model subtract the change in Accounts Receivable from the change in Revenue?
 > It assumes that credit sales growth that remains uncollected at fiscal year-end represents managerial discretion and potential revenue manipulation.
 
-> [!question] mkt-fa-136 | What is channel stuffing?
+> [!question]- mkt-fa-136 | What is channel stuffing?
 > The practice of shipping excessive, unneeded product inventory to distributors at quarter-end under aggressive terms to prematurely recognize revenue.
 
-> [!question] mkt-fa-137 | What is the primary diagnostic metric used to detect channel stuffing?
+> [!question]- mkt-fa-137 | What is the primary diagnostic metric used to detect channel stuffing?
 > A rapid expansion in Days Sales Outstanding (DSO) that significantly outpaces historical trends and competitor benchmarks.
 
-> [!question] mkt-fa-138 | What is bill-and-hold accounting?
+> [!question]- mkt-fa-138 | What is bill-and-hold accounting?
 > Recognizing revenue on merchandise that has been billed to a customer but remains physically stored in the seller's warehouse prior to shipment.
 
-> [!question] mkt-fa-139 | When is bill-and-hold revenue recognition permitted under GAAP?
+> [!question]- mkt-fa-139 | When is bill-and-hold revenue recognition permitted under GAAP?
 > Only under strict criteria where the buyer explicitly requests the arrangement, has a legitimate business purpose, the goods are segregated, and payment is non-contingent.
 
-> [!question] mkt-fa-140 | How can a company use inventory valuation to artificially inflate current gross margins?
+> [!question]- mkt-fa-140 | How can a company use inventory valuation to artificially inflate current gross margins?
 > By allocating excessive fixed manufacturing overhead into ending inventory on the balance sheet, reducing the Cost of Goods Sold expensed on the income statement.
 
-> [!question] mkt-fa-141 | What red flag indicates that inventory is being used to manipulate gross margins?
+> [!question]- mkt-fa-141 | What red flag indicates that inventory is being used to manipulate gross margins?
 > Gross margins unexpectedly expand while Days Inventory Outstanding (DIO) surges and finished goods inventory piles up.
 
-> [!question] mkt-fa-142 | What is cookie-jar reserve accounting?
+> [!question]- mkt-fa-142 | What is cookie-jar reserve accounting?
 > Overstating expense reserves in highly profitable years and subsequent releasing those reserves into income in down years to artificially smooth earnings.
 
-> [!question] mkt-fa-143 | How does reducing the warranty provision percentage boost operating earnings?
+> [!question]- mkt-fa-143 | How does reducing the warranty provision percentage boost operating earnings?
 > Reducing the percentage of sales accrued for future warranty repairs lowers operating expenses, increasing operating income without generating cash.
 
-> [!question] mkt-fa-144 | What is the forensic signal of unbilled receivables manipulation?
+> [!question]- mkt-fa-144 | What is the forensic signal of unbilled receivables manipulation?
 > A rising ratio of unbilled receivables to total accounts receivable, indicating revenue recognition based on internal milestone estimates rather than client billing.
 
-> [!question] mkt-fa-145 | How does capitalizing operating software costs inflate Operating Cash Flow?
+> [!question]- mkt-fa-145 | How does capitalizing operating software costs inflate Operating Cash Flow?
 > It shifts cash outflows from operating expenses (which reduce CFO) into capital expenditures under Cash Flow from Investing (CFI).
 
-> [!question] mkt-fa-146 | What is a "big bath" accounting restructuring?
+> [!question]- mkt-fa-146 | What is a "big bath" accounting restructuring?
 > Taking massive discretionary write-offs and restructuring charges in a single period (often following a CEO change) to clear the balance sheet and artificially boost future return metrics.
 
-> [!question] mkt-fa-147 | Why do companies capitalize customer acquisition costs (CAC) instead of expensing them?
+> [!question]- mkt-fa-147 | Why do companies capitalize customer acquisition costs (CAC) instead of expensing them?
 > Capitalizing CAC defers marketing expenses to future balance sheet amortization, temporarily boosting current-period operating margins and EBITDA.
 
-> [!question] mkt-fa-148 | How does extending the depreciable useful life of plant assets inflate earnings?
+> [!question]- mkt-fa-148 | How does extending the depreciable useful life of plant assets inflate earnings?
 > Extending useful lives reduces annual depreciation expense on the income statement, directly inflating reported operating income and pre-tax profit.
 
-> [!question] mkt-fa-149 | What is round-tripping or barter transaction revenue?
+> [!question]- mkt-fa-149 | What is round-tripping or barter transaction revenue?
 > Selling an asset to a counterparty while simultaneously buying back an equivalent asset from the same counterparty at an inflated price to book synthetic revenue.
 
-> [!question] mkt-fa-150 | What forensic ratio compares revenue growth to cash collections growth?
+> [!question]- mkt-fa-150 | What forensic ratio compares revenue growth to cash collections growth?
 > The ratio of Revenue Growth Rate to Operating Cash Flow Growth Rate; a persistent ratio > 1.0 indicates deteriorating earnings quality.
 
-> [!question] mkt-fa-151 | What is the impact of an asset impairment write-down on subsequent year ROE and ROA?
+> [!question]- mkt-fa-151 | What is the impact of an asset impairment write-down on subsequent year ROE and ROA?
 > An impairment reduces equity and total assets immediately; in subsequent years, lower asset values and reduced depreciation inflate calculated ROE and ROA.
 
-> [!question] mkt-fa-152 | How does factoring receivables without recourse distort Operating Cash Flow?
+> [!question]- mkt-fa-152 | How does factoring receivables without recourse distort Operating Cash Flow?
 > It sells uncollected receivables to a bank before quarter-end, accelerating cash into current CFO while hiding underlying customer payment delays.
 
-> [!question] mkt-fa-153 | What footnote disclosure reveals whether receivables have been factored to boost cash flow?
+> [!question]- mkt-fa-153 | What footnote disclosure reveals whether receivables have been factored to boost cash flow?
 > The off-balance-sheet financing, transfer of financial assets, and credit facility footnote disclosures in the annual 10-K report.
 
-> [!question] mkt-fa-154 | What is consignment selling and how is it abused in revenue recognition?
+> [!question]- mkt-fa-154 | What is consignment selling and how is it abused in revenue recognition?
 > Shipping goods to dealers who only pay once sold to end users; abusing it involves booking revenue upon initial shipment rather than final retail sale.
 
-> [!question] mkt-fa-155 | What happens to working capital when a company delays payments to suppliers at quarter-end?
+> [!question]- mkt-fa-155 | What happens to working capital when a company delays payments to suppliers at quarter-end?
 > Accounts payable temporarily surges, artificially inflating Operating Cash Flow for that quarter, which sharply reverses as bills are settled early next period.
 
-> [!question] mkt-fa-156 | How does a sudden change in revenue recognition accounting policies signal risk?
+> [!question]- mkt-fa-156 | How does a sudden change in revenue recognition accounting policies signal risk?
 > It often indicates that organic business growth is slowing and management requires accounting changes to meet consensus market revenue estimates.
 
-> [!question] mkt-fa-157 | Why is an unexpected increase in Other Current Assets a forensic red flag?
+> [!question]- mkt-fa-157 | Why is an unexpected increase in Other Current Assets a forensic red flag?
 > Companies often hide uncollectible operating costs, disputed payments, or deferred charges in miscellaneous asset buckets to avoid income statement expensing.
 
-> [!question] mkt-fa-158 | What is the role of auditor tenure in earnings quality?
+> [!question]- mkt-fa-158 | What is the role of auditor tenure in earnings quality?
 > Abnormally long auditor tenure can foster complacency, while abrupt, unexplained auditor resignations are one of the strongest statistical indicators of accounting fraud.
 
-> [!question] mkt-fa-159 | How does stock-based compensation (SBC) interact with the Sloan accrual calculation?
+> [!question]- mkt-fa-159 | How does stock-based compensation (SBC) interact with the Sloan accrual calculation?
 > SBC is added back to CFO under GAAP; failing to adjust for SBC makes CFO appear artificially robust, understating the true economic accrual burden.
 
-> [!question] mkt-fa-160 | What is the ultimate market outcome for companies in the highest decile of accruals?
+> [!question]- mkt-fa-160 | What is the ultimate market outcome for companies in the highest decile of accruals?
 > Statistically significant negative alpha and risk-adjusted underperformance over the subsequent 1 to 3 years as accruals reverse into earnings disappointments.
 
 ---

@@ -160,6 +160,14 @@ class TestMarketsGates(unittest.TestCase):
             self.assertEqual(len(store.data.get("lab_history", [])), 1)
             self.assertEqual(store.data["lab_history"][0]["engine"], "opt_desk")
 
+            from tools.qp.server import App
+
+            app = App(store)
+            res = app.lab_run("mm_quote", {})
+            self.assertIn("metrics", res)
+            self.assertEqual(len(store.data.get("lab_history", [])), 2)
+            self.assertEqual(store.data["lab_history"][1]["engine"], "mm_quote")
+
             fake_opt_vault = {f"mkt-opt-{i:03d}": {} for i in range(1, 129)}
             store.data["cards"] = {f"mkt-opt-{i:03d}": {"reps": 1} for i in range(65, 129)}
             gate = evaluate_gate("track_opt", "core", fake_opt_vault, store.data)

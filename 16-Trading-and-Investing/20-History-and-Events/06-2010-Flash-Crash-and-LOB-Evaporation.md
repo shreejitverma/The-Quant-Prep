@@ -137,14 +137,14 @@ The 2010 Flash Crash revolutionized electronic trading oversight and market micr
 
 ## Case Study Drills and Review Questions
 
-> [!question] mkt-his-021 | What specific algorithmic order triggered the initial liquidity collapse during the May 6, 2010 Flash Crash?
+> [!question]- mkt-his-021 | What specific algorithmic order triggered the initial liquidity collapse during the May 6, 2010 Flash Crash?
 > A mutual fund (Waddell & Reed) sell program executing 75,000 E-mini S&P 500 contracts via a 9% percentage-of-volume (POV) algorithm without price limits.
 
-> [!question] mkt-his-022 | What was a 'stub quote' in the pre-2010 US equity market?
+> [!question]- mkt-his-022 | What was a 'stub quote' in the pre-2010 US equity market?
 > An artificial placeholder quote (such as $0.01 bid or $100,000 ask) posted by market makers solely to satisfy nominal regulatory quoting obligations.
 
-> [!question] mkt-his-023 | What regulatory mechanism was implemented in 2012 to prevent single-stock flash crashes like Accenture trading at $0.01?
+> [!question]- mkt-his-023 | What regulatory mechanism was implemented in 2012 to prevent single-stock flash crashes like Accenture trading at $0.01?
 > The Limit-Up / Limit-Down (LULD) mechanism, which halts trading if prices breach dynamic percentage bands.
 
-> [!question] mkt-his-024 | What was the key finding of the CFTC-SEC joint report regarding High-Frequency Traders during the Flash Crash?
+> [!question]- mkt-his-024 | What was the key finding of the CFTC-SEC joint report regarding High-Frequency Traders during the Flash Crash?
 > HFTs rapidly hit internal inventory limits and began aggressively dumping contracts back into the book, recycling inventory and withdrawing passive liquidity.

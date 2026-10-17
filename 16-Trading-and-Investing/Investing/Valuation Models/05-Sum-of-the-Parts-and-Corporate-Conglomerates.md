@@ -191,100 +191,100 @@ Titan Holdings is trading at a **23.1% premium** to its clean SOTP value, making
 
 ## Practice questions
 
-> [!question] mkt-val-129 | What is Sum-of-the-Parts (SOTP) valuation?
+> [!question]- mkt-val-129 | What is Sum-of-the-Parts (SOTP) valuation?
 > A valuation framework that values each distinct business unit of a multi-segment company as a standalone entity using sector-specific peer multiples or DCF models.
 
-> [!question] mkt-val-130 | Why is consolidated multiple valuation inappropriate for diversified conglomerates?
+> [!question]- mkt-val-130 | Why is consolidated multiple valuation inappropriate for diversified conglomerates?
 > Because applying a single multiple averages high-margin growth divisions with capital-intensive cyclical units, obscuring the true economic value of each asset.
 
-> [!question] mkt-val-131 | What is the most common error in amateur SOTP models?
+> [!question]- mkt-val-131 | What is the most common error in amateur SOTP models?
 > Failing to capitalize and deduct unallocated corporate headquarters expenses (corporate overhead drag).
 
-> [!question] mkt-val-132 | How should unallocated corporate overhead be capitalized in an SOTP valuation?
+> [!question]- mkt-val-132 | How should unallocated corporate overhead be capitalized in an SOTP valuation?
 > By multiplying annual corporate headquarters SG&A by the company's weighted average valuation multiple or capitalizing it as a perpetuity at WACC.
 
-> [!question] mkt-val-133 | What is the Conglomerate Discount and what is its typical empirical magnitude?
+> [!question]- mkt-val-133 | What is the Conglomerate Discount and what is its typical empirical magnitude?
 > The tendency of diversified conglomerates to trade at a 10% to 15% discount to the aggregate standalone value of their business units.
 
-> [!question] mkt-val-134 | What are the primary structural drivers of the Conglomerate Discount?
+> [!question]- mkt-val-134 | What are the primary structural drivers of the Conglomerate Discount?
 > Inefficient internal capital allocation, cross-subsidization of losing businesses, executive empire-building, and lack of specialized analyst coverage.
 
-> [!question] mkt-val-135 | What accounting standard governs segment reporting under US GAAP?
+> [!question]- mkt-val-135 | What accounting standard governs segment reporting under US GAAP?
 > ASC 280 (Segment Reporting), which mandates disclosure of financial data reviewed by the Chief Operating Decision Maker (CODM).
 
-> [!question] mkt-val-136 | Why must intersegment revenues be eliminated when conducting an SOTP analysis?
+> [!question]- mkt-val-136 | Why must intersegment revenues be eliminated when conducting an SOTP analysis?
 > Intersegment transactions represent internal transfers between divisions; failing to eliminate them double-counts consolidated revenue and operating profit.
 
-> [!question] mkt-val-137 | What is a tax-free corporate spinoff under IRC Section 355?
+> [!question]- mkt-val-137 | What is a tax-free corporate spinoff under IRC Section 355?
 > A transaction where a parent company distributes 100% of subsidiary shares to existing shareholders on a pro-rata basis without triggering corporate or individual tax liabilities.
 
-> [!question] mkt-val-138 | What is an equity carve-out?
+> [!question]- mkt-val-138 | What is an equity carve-out?
 > An initial public offering (IPO) where the parent sells a minority stake (typically 15-20%) in a subsidiary, creating a publicly traded equity benchmark and raising cash.
 
-> [!question] mkt-val-139 | What is a corporate split-off?
+> [!question]- mkt-val-139 | What is a corporate split-off?
 > An exchange offer where shareholders tender parent stock in exchange for subsidiary stock, simultaneously divesting the unit and shrinking parent share count.
 
-> [!question] mkt-val-140 | What is tracking stock and why is it rarely used today?
+> [!question]- mkt-val-140 | What is tracking stock and why is it rarely used today?
 > A separate class of parent stock linked to a specific division's performance; unpopular because tracking shareholders lack direct voting claims on underlying assets.
 
-> [!question] mkt-val-141 | What is a Holding Company (HoldCo) discount?
+> [!question]- mkt-val-141 | What is a Holding Company (HoldCo) discount?
 > The structural discount (often 15% to 40%) at which a holding company trades relative to the Net Asset Value (NAV) of its public and private portfolio holdings.
 
-> [!question] mkt-val-142 | Why does tax friction contribute to holding company discounts?
+> [!question]- mkt-val-142 | Why does tax friction contribute to holding company discounts?
 > Because dividend distributions upstreamed to the holding company and realized capital gains upon selling holdings incur corporate income tax liabilities.
 
-> [!question] mkt-val-143 | How do activist investors exploit SOTP valuation discrepancies?
+> [!question]- mkt-val-143 | How do activist investors exploit SOTP valuation discrepancies?
 > By acquiring equity stakes in undervalued conglomerates and launching proxy battles to force spinoffs, asset sales, or management overhead cuts.
 
-> [!question] mkt-val-144 | How should parent-level debt be allocated in an SOTP valuation?
+> [!question]- mkt-val-144 | How should parent-level debt be allocated in an SOTP valuation?
 > Either deducted in full from gross enterprise value at the corporate bridge level, or allocated to individual divisions based on their standalone borrowing capacity.
 
-> [!question] mkt-val-145 | How should defined benefit pension deficits be handled in an SOTP model?
+> [!question]- mkt-val-145 | How should defined benefit pension deficits be handled in an SOTP model?
 > Deducted as a debt-like liability at the consolidated equity bridge level.
 
-> [!question] mkt-val-146 | What is pure-play benchmarking in SOTP?
+> [!question]- mkt-val-146 | What is pure-play benchmarking in SOTP?
 > Selecting comparable companies that operate exclusively in the same industry and sub-sector as the specific division being valued.
 
-> [!question] mkt-val-147 | Why can a conglomerate spinoff create positive operational alpha?
+> [!question]- mkt-val-147 | Why can a conglomerate spinoff create positive operational alpha?
 > Standalone management teams gain direct equity compensation incentives, eliminate corporate bureaucracy, and can allocate capital solely to their core market.
 
-> [!question] mkt-val-148 | What is the 'spin-off effect' documented by Joel Greenblatt?
+> [!question]- mkt-val-148 | What is the 'spin-off effect' documented by Joel Greenblatt?
 > Spun-off subsidiaries frequently outperform the broader market in their initial 1 to 3 years due to heavy initial institutional selling followed by operational focus.
 
-> [!question] mkt-val-149 | Why do institutional index funds often sell shares of newly spun-off companies immediately?
+> [!question]- mkt-val-149 | Why do institutional index funds often sell shares of newly spun-off companies immediately?
 > Because the spun-off subsidiary is too small to meet fund capitalization minimums or does not belong to the parent's benchmark index.
 
-> [!question] mkt-val-150 | What is a Reverse Morris Trust transaction?
+> [!question]- mkt-val-150 | What is a Reverse Morris Trust transaction?
 > A tax-efficient structure allowing a parent company to spin off a division and merge it with another company tax-free, provided parent owners retain >50% control.
 
-> [!question] mkt-val-151 | How do multi-class share structures affect holding company governance?
+> [!question]- mkt-val-151 | How do multi-class share structures affect holding company governance?
 > Dual-class shares insulate controlling families from activist intervention, entrenching management and exacerbating the HoldCo discount.
 
-> [!question] mkt-val-152 | What is a stub trade in merger arbitrage and relative value?
+> [!question]- mkt-val-152 | What is a stub trade in merger arbitrage and relative value?
 > Long the parent company while simultaneously shorting its publicly traded subsidiaries to isolate and profit from an abnormally wide holding company discount.
 
-> [!question] mkt-val-153 | What is negative stub value?
+> [!question]- mkt-val-153 | What is negative stub value?
 > A market anomaly where the market cap of the parent company is less than the value of its stake in a publicly traded subsidiary, implying the remaining parent core has negative value.
 
-> [!question] mkt-val-154 | What famous historical trade exemplified negative stub value?
+> [!question]- mkt-val-154 | What famous historical trade exemplified negative stub value?
 > 3Com and Palm in March 2000, where 3Com's market cap was billions below the value of its 95% retained stake in Palm during the dot-com bubble.
 
-> [!question] mkt-val-155 | How does conglomerate restructuring affect customer and supplier relationships?
+> [!question]- mkt-val-155 | How does conglomerate restructuring affect customer and supplier relationships?
 > Separation can eliminate internal conflicts of interest where a division was previously prevented from selling to parent competitors.
 
-> [!question] mkt-val-156 | What is the difference between an asset sale and a stock sale from a corporate tax perspective?
+> [!question]- mkt-val-156 | What is the difference between an asset sale and a stock sale from a corporate tax perspective?
 > Asset sales trigger corporate-level capital gains taxes for the seller; stock sales transfer the legal entity, deferring asset-level tax step-ups.
 
-> [!question] mkt-val-157 | Why can cross-subsidization inside a conglomerate destroy shareholder value?
+> [!question]- mkt-val-157 | Why can cross-subsidization inside a conglomerate destroy shareholder value?
 > It starves high-ROIC divisions of capital while throwing good money after bad into structural losers that should be liquidated or restructured.
 
-> [!question] mkt-val-158 | How does SOTP valuation apply to diversified financial institutions?
+> [!question]- mkt-val-158 | How does SOTP valuation apply to diversified financial institutions?
 > By valuing commercial banking, investment banking, asset management, and consumer finance using specialized metrics (P/E, P/TBV, % AUM).
 
-> [!question] mkt-val-159 | What is Net Asset Value (NAV) per share in holding company analysis?
+> [!question]- mkt-val-159 | What is Net Asset Value (NAV) per share in holding company analysis?
 > (Total Market Value of Listed Stakes + Estimated Fair Value of Unlisted Holdings + Cash - Debt) / Diluted Shares Outstanding.
 
-> [!question] mkt-val-160 | What is the ultimate test of whether an SOTP discount will close?
+> [!question]- mkt-val-160 | What is the ultimate test of whether an SOTP discount will close?
 > The presence of an active, credible catalyst: board willingness to execute spin-offs, activist pressure, or aggressive share repurchases.
 
 ---

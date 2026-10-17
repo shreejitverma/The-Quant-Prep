@@ -189,100 +189,100 @@ By leasing storage capacity and shorting forward futures, the trader locks in a 
 
 ## Interview questions
 
-> [!question] mkt-cmd-001 | What is the fundamental difference between a commodity futures contract and an equity forward?
+> [!question]- mkt-cmd-001 | What is the fundamental difference between a commodity futures contract and an equity forward?
 > Commodities are physical consumption assets subject to storage costs, transportation constraints, and convenience yields.
 
-> [!question] mkt-cmd-002 | What is the cost-of-carry formula for a storable commodity forward price?
+> [!question]- mkt-cmd-002 | What is the cost-of-carry formula for a storable commodity forward price?
 > F(t, T) = S(t) * exp((r + u - y) * (T - t)).
 
-> [!question] mkt-cmd-003 | What is Convenience Yield in the Theory of Storage?
+> [!question]- mkt-cmd-003 | What is Convenience Yield in the Theory of Storage?
 > The operational and business benefit associated with holding physical inventory rather than a paper futures contract.
 
-> [!question] mkt-cmd-004 | What is Contango in a commodity forward curve?
+> [!question]- mkt-cmd-004 | What is Contango in a commodity forward curve?
 > A market structure where futures prices exceed current spot prices (F > S), resulting in an upward-sloping forward curve.
 
-> [!question] mkt-cmd-005 | What is Backwardation in a commodity forward curve?
+> [!question]- mkt-cmd-005 | What is Backwardation in a commodity forward curve?
 > A market structure where current spot prices exceed futures prices (S > F), resulting in a downward-sloping forward curve.
 
-> [!question] mkt-cmd-006 | What economic condition causes a commodity to enter deep backwardation?
+> [!question]- mkt-cmd-006 | What economic condition causes a commodity to enter deep backwardation?
 > Immediate physical supply scarcity and inventory depletion, driving the convenience yield above financing and storage costs (y > r + u).
 
-> [!question] mkt-cmd-007 | What are the three components of total return for an unlevered long commodity futures position?
+> [!question]- mkt-cmd-007 | What are the three components of total return for an unlevered long commodity futures position?
 > Spot Return, Roll Yield, and Collateral Yield.
 
-> [!question] mkt-cmd-008 | What is Roll Yield (Roll Return)?
+> [!question]- mkt-cmd-008 | What is Roll Yield (Roll Return)?
 > The price change experienced as a futures contract converges toward spot price over time along the term structure curve.
 
-> [!question] mkt-cmd-009 | Why does continuous rolling in a contango market create negative roll yield for long investors?
+> [!question]- mkt-cmd-009 | Why does continuous rolling in a contango market create negative roll yield for long investors?
 > The fund must sell expiring near-month contracts at lower prices and buy next-month contracts at higher prices (selling low, buying high).
 
-> [!question] mkt-cmd-010 | Why is the backwardation arbitrage bound asymmetric compared to contango?
+> [!question]- mkt-cmd-010 | Why is the backwardation arbitrage bound asymmetric compared to contango?
 > In backwardation, traders cannot borrow physical commodities from future periods to sell short if existing inventories are depleted.
 
-> [!question] mkt-cmd-011 | What delivery hub serves as the official physical settlement point for NYMEX WTI Crude Oil?
+> [!question]- mkt-cmd-011 | What delivery hub serves as the official physical settlement point for NYMEX WTI Crude Oil?
 > Cushing, Oklahoma.
 
-> [!question] mkt-cmd-012 | Why did WTI Crude Oil futures trade at negative $37.63 per barrel on April 20, 2020?
+> [!question]- mkt-cmd-012 | Why did WTI Crude Oil futures trade at negative $37.63 per barrel on April 20, 2020?
 > Physical storage capacity at Cushing was completely full, forcing financial longs facing physical delivery to pay to unload contracts.
 
-> [!question] mkt-cmd-013 | What is a Crack Spread?
+> [!question]- mkt-cmd-013 | What is a Crack Spread?
 > The pricing spread simulating the gross refining margin earned by converting raw crude oil into refined petroleum products.
 
-> [!question] mkt-cmd-014 | What are the volumetric proportions in a standard 3:2:1 refinery crack spread?
+> [!question]- mkt-cmd-014 | What are the volumetric proportions in a standard 3:2:1 refinery crack spread?
 > Three barrels of crude oil yield two barrels of gasoline and one barrel of distillate (diesel/heating oil).
 
-> [!question] mkt-cmd-015 | How many US gallons are in one standardized barrel of crude oil?
+> [!question]- mkt-cmd-015 | How many US gallons are in one standardized barrel of crude oil?
 > Exactly 42 gallons.
 
-> [!question] mkt-cmd-016 | How is gasoline quoted on futures exchanges versus crude oil?
+> [!question]- mkt-cmd-016 | How is gasoline quoted on futures exchanges versus crude oil?
 > Gasoline is quoted in dollars per gallon; crude oil is quoted in dollars per barrel.
 
-> [!question] mkt-cmd-017 | What is the formula for calculating the 3:2:1 Crack Margin in dollars per barrel?
+> [!question]- mkt-cmd-017 | What is the formula for calculating the 3:2:1 Crack Margin in dollars per barrel?
 > [2 * (Gasoline Price * 42) + 1 * (Heating Oil Price * 42) - 3 * Crude Price] / 3.
 
-> [!question] mkt-cmd-018 | What is the primary benchmark for European and international waterborne crude oil?
+> [!question]- mkt-cmd-018 | What is the primary benchmark for European and international waterborne crude oil?
 > Brent Crude, sourced from the North Sea.
 
-> [!question] mkt-cmd-019 | Why does Gold typically trade in a permanent contango market structure?
+> [!question]- mkt-cmd-019 | Why does Gold typically trade in a permanent contango market structure?
 > Gold is a monetary store of value with virtually zero industrial consumption, low storage costs, and zero convenience yield.
 
-> [!question] mkt-cmd-020 | What macro factor exhibits the strongest negative correlation with the price of Gold?
+> [!question]- mkt-cmd-020 | What macro factor exhibits the strongest negative correlation with the price of Gold?
 > Real interest rates (TIPS yields).
 
-> [!question] mkt-cmd-021 | What is the Gold-to-Silver Ratio?
+> [!question]- mkt-cmd-021 | What is the Gold-to-Silver Ratio?
 > The price of an ounce of gold divided by the price of an ounce of silver, tracking monetary hedge demand versus industrial demand.
 
-> [!question] mkt-cmd-022 | What commodity is known as 'Doctor Copper' and why?
+> [!question]- mkt-cmd-022 | What commodity is known as 'Doctor Copper' and why?
 > Copper, because its widespread industrial use makes its price a reliable diagnostic of global manufacturing and GDP health.
 
-> [!question] mkt-cmd-023 | What is Henry Hub?
+> [!question]- mkt-cmd-023 | What is Henry Hub?
 > The pipeline distribution hub in Erath, Louisiana, that serves as the official delivery point for NYMEX Natural Gas futures.
 
-> [!question] mkt-cmd-024 | What is the injection season versus withdrawal season for US Natural Gas storage?
+> [!question]- mkt-cmd-024 | What is the injection season versus withdrawal season for US Natural Gas storage?
 > Injection occurs during mild weather from April to October; withdrawal occurs during winter heating demand from November to March.
 
-> [!question] mkt-cmd-025 | What are Heating Degree Days (HDD) and Cooling Degree Days (CDD)?
+> [!question]- mkt-cmd-025 | What are Heating Degree Days (HDD) and Cooling Degree Days (CDD)?
 > Weather metrics measuring the extent to which daily temperatures deviate from 65 degrees Fahrenheit, driving natural gas and electricity demand.
 
-> [!question] mkt-cmd-026 | What is the USDA WASDE report?
+> [!question]- mkt-cmd-026 | What is the USDA WASDE report?
 > The World Agricultural Supply and Demand Estimates, a monthly report detailing global crop production, consumption, and ending stocks.
 
-> [!question] mkt-cmd-027 | What is the 'stocks-to-use ratio' in agricultural commodity analysis?
+> [!question]- mkt-cmd-027 | What is the 'stocks-to-use ratio' in agricultural commodity analysis?
 > Carryover ending inventory divided by total annual consumption, measuring the cushion against harvest failure.
 
-> [!question] mkt-cmd-028 | What is cash-and-carry storage arbitrage in commodities?
+> [!question]- mkt-cmd-028 | What is cash-and-carry storage arbitrage in commodities?
 > Buying spot physical commodity, financing the purchase, storing it in a warehouse, and selling forward futures to capture the carry spread.
 
-> [!question] mkt-cmd-029 | What is 'local basis' in agricultural grain trading?
+> [!question]- mkt-cmd-029 | What is 'local basis' in agricultural grain trading?
 > The difference between the local grain elevator cash price and the Chicago Board of Trade (CBOT) futures price.
 
-> [!question] mkt-cmd-030 | What is the Spark Spread in energy trading?
+> [!question]- mkt-cmd-030 | What is the Spark Spread in energy trading?
 > The theoretical gross margin of a gas-fired power plant from selling wholesale electricity and purchasing natural gas fuel.
 
-> [!question] mkt-cmd-031 | What is Keynes's Theory of Normal Backwardation?
+> [!question]- mkt-cmd-031 | What is Keynes's Theory of Normal Backwardation?
 > The proposition that commodity producers sell forward futures at a discount to induce risk-bearing speculators to provide insurance.
 
-> [!question] mkt-cmd-032 | What is the primary operational lesson for commodity portfolio allocation?
+> [!question]- mkt-cmd-032 | What is the primary operational lesson for commodity portfolio allocation?
 > Never hold passive long commodity futures without factoring in the drag of term structure contango and roll yield.
 
 ---

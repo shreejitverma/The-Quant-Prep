@@ -194,100 +194,100 @@ The naive model overstates terminal value by $\$3,568.7\text{M} - \$2,405.2\text
 
 ## Practice questions
 
-> [!question] mkt-val-033 | What is the mathematical definition of Weighted Average Cost of Capital (WACC)?
+> [!question]- mkt-val-033 | What is the mathematical definition of Weighted Average Cost of Capital (WACC)?
 > WACC = (E/V) * Ke + (D/V) * Kd * (1 - t) + (P/V) * Kp, using market value weights.
 
-> [!question] mkt-val-034 | Why must market values be used instead of book values when calculating capital structure weights in WACC?
+> [!question]- mkt-val-034 | Why must market values be used instead of book values when calculating capital structure weights in WACC?
 > Because the cost of capital represents the current market rate demanded by investors to buy corporate claims at prevailing market prices.
 
-> [!question] mkt-val-035 | What is Hamada's equation?
+> [!question]- mkt-val-035 | What is Hamada's equation?
 > Beta_L = Beta_U * [1 + (1 - t) * (D/E)], quantifying how financial leverage increases equity beta above operating asset beta.
 
-> [!question] mkt-val-036 | Why are bottom-up industry betas superior to single-stock regression betas?
+> [!question]- mkt-val-036 | Why are bottom-up industry betas superior to single-stock regression betas?
 > Bottom-up betas average hundreds of peer observations, eliminating idiosyncratic noise, standard estimation errors, and lookback distortions.
 
-> [!question] mkt-val-037 | What is the Equity Risk Premium (ERP)?
+> [!question]- mkt-val-037 | What is the Equity Risk Premium (ERP)?
 > The incremental expected return demanded by investors above the risk-free rate for holding a diversified portfolio of equities (typically 4.5% to 5.5%).
 
-> [!question] mkt-val-038 | What is the difference between historical ERP and implied forward-looking ERP?
+> [!question]- mkt-val-038 | What is the difference between historical ERP and implied forward-looking ERP?
 > Historical ERP calculates realized equity returns over bonds over past decades; implied ERP solves for the internal rate of return equating market prices to future expected cash flows.
 
-> [!question] mkt-val-039 | What is the synthetic credit rating approach for estimating cost of debt?
+> [!question]- mkt-val-039 | What is the synthetic credit rating approach for estimating cost of debt?
 > Calculating the interest coverage ratio (EBIT / Interest) to estimate an equivalent credit rating, and adding that rating's default spread to the risk-free rate.
 
-> [!question] mkt-val-040 | Why is historical interest expense divided by total debt an incorrect measure of Kd?
+> [!question]- mkt-val-040 | Why is historical interest expense divided by total debt an incorrect measure of Kd?
 > It reflects legacy coupon rates on historical debt rather than the marginal market borrowing rate required to issue debt today.
 
-> [!question] mkt-val-041 | What is the Zero-Reinvestment Fallacy in terminal value modeling?
+> [!question]- mkt-val-041 | What is the Zero-Reinvestment Fallacy in terminal value modeling?
 > Assuming a positive perpetual growth rate while projecting zero working capital investment and setting capex equal to depreciation.
 
-> [!question] mkt-val-042 | What is the formula for the required reinvestment rate to sustain growth (g) in terminal value?
+> [!question]- mkt-val-042 | What is the formula for the required reinvestment rate to sustain growth (g) in terminal value?
 > Reinvestment Rate = g / RONIC, where RONIC is the Return on New Invested Capital.
 
-> [!question] mkt-val-043 | What happens to terminal value if a company's terminal RONIC exactly equals its WACC?
+> [!question]- mkt-val-043 | What happens to terminal value if a company's terminal RONIC exactly equals its WACC?
 > Terminal value becomes completely independent of growth, simplifying exactly to NOPAT / WACC.
 
-> [!question] mkt-val-044 | What happens to terminal value if terminal RONIC is less than WACC and growth increases?
+> [!question]- mkt-val-044 | What happens to terminal value if terminal RONIC is less than WACC and growth increases?
 > Terminal value decreases; each incremental dollar invested destroys economic wealth because it earns less than the cost of funding.
 
-> [!question] mkt-val-045 | What is the economic ceiling for the perpetual growth rate (g) in a DCF model?
+> [!question]- mkt-val-045 | What is the economic ceiling for the perpetual growth rate (g) in a DCF model?
 > The nominal GDP growth rate of the currency and economy in which cash flows are projected (typically 2.0% to 3.0%).
 
-> [!question] mkt-val-046 | Why does a small change in (WACC - g) cause violent swings in terminal valuation?
+> [!question]- mkt-val-046 | Why does a small change in (WACC - g) cause violent swings in terminal valuation?
 > Because terminal value is inversely proportional to the spread; when WACC is 7% and g is 2.5%, a 100 bps shift alters value by 20% to 35%.
 
-> [!question] mkt-val-047 | What is the Country Risk Premium (CRP) and when should it be added to the Cost of Equity?
+> [!question]- mkt-val-047 | What is the Country Risk Premium (CRP) and when should it be added to the Cost of Equity?
 > An additional risk premium added to Ke when operating assets or revenues reside in emerging or sovereign-risk jurisdictions.
 
-> [!question] mkt-val-048 | How does Roll's critique challenge the Capital Asset Pricing Model (CAPM)?
+> [!question]- mkt-val-048 | How does Roll's critique challenge the Capital Asset Pricing Model (CAPM)?
 > Roll showed that the true "market portfolio" includes all investable assets (real estate, human capital, art), making the true market unobservable and CAPM un-testable.
 
-> [!question] mkt-val-049 | What is the Fama-French 3-factor model extension of CAPM?
+> [!question]- mkt-val-049 | What is the Fama-French 3-factor model extension of CAPM?
 > It adds Size (SMB - Small Minus Big) and Value (HML - High Minus Low book-to-market) factors to explain returns beyond market beta alone.
 
-> [!question] mkt-val-050 | Why should the discount rate reflect the risk of the cash flow rather than the company's historical financing?
+> [!question]- mkt-val-050 | Why should the discount rate reflect the risk of the cash flow rather than the company's historical financing?
 > Because an all-equity-funded company acquiring a speculative biotech asset must discount that asset at the biotech hurdle rate, not its corporate WACC.
 
-> [!question] mkt-val-051 | How should debt covenants impact WACC modeling?
+> [!question]- mkt-val-051 | How should debt covenants impact WACC modeling?
 > Tight debt covenants limit borrowing capacity, preventing the firm from achieving an optimal low-cost debt-to-equity weighting.
 
-> [!question] mkt-val-052 | What is the danger of applying Gordon Growth to high-growth unprofitable companies at Year 5?
+> [!question]- mkt-val-052 | What is the danger of applying Gordon Growth to high-growth unprofitable companies at Year 5?
 > If the firm has not yet reached positive normalized operating cash flow, Gordon Growth yields an absurd negative or mathematically impossible terminal value.
 
-> [!question] mkt-val-053 | What is the solution when a company is still burning cash in Year 5 of an explicit forecast?
+> [!question]- mkt-val-053 | What is the solution when a company is still burning cash in Year 5 of an explicit forecast?
 > Extend the explicit forecast period to 10 or 15 years until cash flows stabilize into sustainable positive normalized earnings before applying terminal value.
 
-> [!question] mkt-val-054 | How does the interest tax shield affect WACC as leverage increases?
+> [!question]- mkt-val-054 | How does the interest tax shield affect WACC as leverage increases?
 > The tax shield lowers WACC initially, but excessive debt escalates expected financial distress costs, eventually driving WACC upward.
 
-> [!question] mkt-val-055 | What is the Modigliani-Miller Theorem with corporate taxes?
+> [!question]- mkt-val-055 | What is the Modigliani-Miller Theorem with corporate taxes?
 > In the presence of corporate taxes and zero bankruptcy costs, firm value increases linearly with leverage due to the present value of the debt tax shield.
 
-> [!question] mkt-val-056 | What is the Trade-Off Theory of capital structure?
+> [!question]- mkt-val-056 | What is the Trade-Off Theory of capital structure?
 > Optimal capital structure is achieved where the marginal tax benefit of additional debt equals the marginal present value of financial distress costs.
 
-> [!question] mkt-val-057 | Why does an analyst using a 10-year Treasury rate for Rf need to ensure cash flows are projected in nominal terms?
+> [!question]- mkt-val-057 | Why does an analyst using a 10-year Treasury rate for Rf need to ensure cash flows are projected in nominal terms?
 > Because the 10-year Treasury yield includes embedded inflation expectations; matching nominal rates requires nominal cash flows to prevent mismatch.
 
-> [!question] mkt-val-058 | If an analyst projects real (inflation-adjusted) cash flows, what risk-free rate must be used?
+> [!question]- mkt-val-058 | If an analyst projects real (inflation-adjusted) cash flows, what risk-free rate must be used?
 > The real risk-free rate, derived from Treasury Inflation-Protected Securities (TIPS) yields.
 
-> [!question] mkt-val-059 | What is the relationship between the terminal exit multiple and the terminal perpetuity growth rate?
+> [!question]- mkt-val-059 | What is the relationship between the terminal exit multiple and the terminal perpetuity growth rate?
 > Exit Multiple = (1 - Reinvestment Rate) / (WACC - g); every exit multiple mathematically implies a specific underlying perpetual growth rate.
 
-> [!question] mkt-val-060 | What is the risk of assuming terminal ROIC exceeds WACC into infinite perpetuity?
+> [!question]- mkt-val-060 | What is the risk of assuming terminal ROIC exceeds WACC into infinite perpetuity?
 > It assumes the company maintains permanent, impenetrable competitive moats that completely resist capitalist economic arbitrage across centuries.
 
-> [!question] mkt-val-061 | How should short-term debt be treated in the WACC calculation?
+> [!question]- mkt-val-061 | How should short-term debt be treated in the WACC calculation?
 > If short-term debt is rolled over continuously to fund ongoing operations, it must be included in Total Debt at market value.
 
-> [!question] mkt-val-062 | How do convertible bonds impact the WACC capital structure weights?
+> [!question]- mkt-val-062 | How do convertible bonds impact the WACC capital structure weights?
 > If in-the-money, convertible bonds are treated as common equity; if out-of-the-money, they are bifurcated into straight debt and an equity call option.
 
-> [!question] mkt-val-063 | What is a hurdle rate and how does it relate to WACC?
+> [!question]- mkt-val-063 | What is a hurdle rate and how does it relate to WACC?
 > A hurdle rate is a managerial cutoff rate for capital allocation, often set conservatively higher than WACC to build in a margin of safety.
 
-> [!question] mkt-val-064 | What is the ultimate test of terminal value sanity in a discounted cash flow model?
+> [!question]- mkt-val-064 | What is the ultimate test of terminal value sanity in a discounted cash flow model?
 > Ensuring perpetual growth is below nominal GDP, required reinvestment is deducted, and implied terminal ROIC reflects realistic competitive convergence.
 
 ---

@@ -191,7 +191,7 @@ def build_study_board_markdown(
             "- **Trading Styles**: [[16-Trading-and-Investing/07-Trading-Styles/_Index_Trading_Styles|Trading Styles Guide]]",
             "- **Execution Microstructure**: [[16-Trading-and-Investing/08-Execution-Microstructure/_Index_Execution|Execution]]",
             "- **Crisis Case Studies**: [[16-Trading-and-Investing/20-History-and-Events/_Index_History_Events|Historical Crises]]",
-            "- **Interactive Web Lab**: Run `./qp serve` and open `tools/qp/lab/web/index.html`",
+            "- **Interactive Web Lab**: Run `./qp serve` and navigate to `http://localhost:8000/lab/`",
             "",
         ]
     )
@@ -199,20 +199,28 @@ def build_study_board_markdown(
     return "\n".join(lines)
 
 
-def write_study_board(output_path: Path | None = None) -> Path:
+def write_study_board(output_path: Path | None = None, store: Store | None = None) -> Path:
     vault = load_vault(REPO_ROOT)
-    store = Store()
+    target = output_path or (REPO_ROOT / "16-Trading-and-Investing" / "STUDY_BOARD.md")
 
-    all_gates = evaluate_all_markets_gates(vault.cards, store.data)
+    # If writing to the tracked repo file and no store is explicitly provided,
+    # use a clean empty baseline so private learner state is never published into git.
+    if store is None and target == (REPO_ROOT / "16-Trading-and-Investing" / "STUDY_BOARD.md"):
+        store_data = {}
+    elif store is not None:
+        store_data = store.data
+    else:
+        store_data = Store().data
+
+    all_gates = evaluate_all_markets_gates(vault.cards, store_data)
 
     personas = {}
     for p_id in PERSONA_CONFIGS:
-        personas[p_id] = calculate_markets_mastery(vault.cards, store.data, p_id)
+        personas[p_id] = calculate_markets_mastery(vault.cards, store_data, p_id)
 
     holistic = personas["holistic"]
 
     study_board_md = build_study_board_markdown(holistic, personas, all_gates)
-    target = output_path or (REPO_ROOT / "16-Trading-and-Investing" / "STUDY_BOARD.md")
     target.write_text(study_board_md, encoding="utf-8")
     return target
 

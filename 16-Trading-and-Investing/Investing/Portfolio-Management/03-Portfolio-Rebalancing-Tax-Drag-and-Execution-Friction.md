@@ -221,100 +221,100 @@ Under the relative tolerance band, the investor executes zero trades in gold, ex
 
 ## Practice questions
 
-> [!question] mkt-pf-065 | What is the primary purpose of portfolio rebalancing?
+> [!question]- mkt-pf-065 | What is the primary purpose of portfolio rebalancing?
 > Risk control: preventing asset drift from increasing the portfolio's risk profile beyond the investor's strategic tolerance.
 
-> [!question] mkt-pf-066 | What is the Rebalancing Bonus (volatility harvesting)?
+> [!question]- mkt-pf-066 | What is the Rebalancing Bonus (volatility harvesting)?
 > The mathematical return earned by systematically rebalancing between volatile, uncorrelated, mean-reverting assets above their buy-and-hold average.
 
-> [!question] mkt-pf-067 | In what market environment does rebalancing create a return drag?
+> [!question]- mkt-pf-067 | In what market environment does rebalancing create a return drag?
 > During sustained, multi-year momentum trends, where rebalancing prematurely trims winning momentum assets to buy lagging assets.
 
-> [!question] mkt-pf-068 | What is the difference between calendar rebalancing and tolerance-band (corridor) rebalancing?
+> [!question]- mkt-pf-068 | What is the difference between calendar rebalancing and tolerance-band (corridor) rebalancing?
 > Calendar rebalancing trades at fixed time intervals (e.g. quarterly); tolerance-band rebalancing trades only when asset weights deviate beyond defined percentage bands.
 
-> [!question] mkt-pf-069 | What is a relative tolerance band corridor?
+> [!question]- mkt-pf-069 | What is a relative tolerance band corridor?
 > Setting rebalancing triggers as a percentage of the asset's target weight (e.g. target +/- 20%), scaling bands proportionally across both large and small allocations.
 
-> [!question] mkt-pf-070 | Why does tolerance-band rebalancing reduce transaction costs compared to monthly calendar rebalancing?
+> [!question]- mkt-pf-070 | Why does tolerance-band rebalancing reduce transaction costs compared to monthly calendar rebalancing?
 > It eliminates unnecessary micro-trades when asset prices fluctuate within normal bands, trading only when meaningful risk divergence occurs.
 
-> [!question] mkt-pf-071 | What are the four components of total transaction execution cost?
+> [!question]- mkt-pf-071 | What are the four components of total transaction execution cost?
 > Brokerage commissions, exchange/regulatory fees, bid-ask half-spread, and market impact (slippage).
 
-> [!question] mkt-pf-072 | What is the Almgren-Chriss square-root law of market impact?
+> [!question]- mkt-pf-072 | What is the Almgren-Chriss square-root law of market impact?
 > Market impact price concession scales proportionally with volatility and the square root of order size divided by average daily volume.
 
-> [!question] mkt-pf-073 | What is tax drag in a taxable investment portfolio?
+> [!question]- mkt-pf-073 | What is tax drag in a taxable investment portfolio?
 > The reduction in compound portfolio growth caused by paying annual taxes on interest, non-qualified dividends, and realized capital gains.
 
-> [!question] mkt-pf-074 | What is the difference between short-term and long-term capital gains tax rates in the United States?
+> [!question]- mkt-pf-074 | What is the difference between short-term and long-term capital gains tax rates in the United States?
 > Short-term gains (held <= 1 year) are taxed at ordinary income rates (up to 37%); long-term gains (held > 1 year) receive preferential rates (typically 15% or 20%).
 
-> [!question] mkt-pf-075 | What is the IRS Wash Sale Rule (IRC Section 1091)?
+> [!question]- mkt-pf-075 | What is the IRS Wash Sale Rule (IRC Section 1091)?
 > A tax rule that disallows a capital loss deduction if a substantially identical security is purchased within 30 days before or after the sale date.
 
-> [!question] mkt-pf-076 | How do quantitative investors harvest tax losses without violating the Wash Sale Rule?
+> [!question]- mkt-pf-076 | How do quantitative investors harvest tax losses without violating the Wash Sale Rule?
 > By selling the loss-making security and immediately purchasing a highly correlated substitute ETF from a different index family (e.g. S&P 500 vs Russell 1000).
 
-> [!question] mkt-pf-077 | What is Strategic Asset Location?
+> [!question]- mkt-pf-077 | What is Strategic Asset Location?
 > Distributing asset classes across Taxable, Tax-Deferred (Traditional IRA/401k), and Tax-Exempt (Roth) accounts to maximize overall after-tax compound wealth.
 
-> [!question] mkt-pf-078 | Why should Real Estate Investment Trusts (REITs) and high-yield bonds be placed in tax-deferred accounts?
+> [!question]- mkt-pf-078 | Why should Real Estate Investment Trusts (REITs) and high-yield bonds be placed in tax-deferred accounts?
 > Because their returns consist primarily of ordinary income dividends that are taxed at high ordinary income rates rather than preferential capital gains rates.
 
-> [!question] mkt-pf-079 | Why are broad-market equity index ETFs highly tax-efficient in taxable accounts?
+> [!question]- mkt-pf-079 | Why are broad-market equity index ETFs highly tax-efficient in taxable accounts?
 > They distribute minimal capital gains due to low turnover and the ETF in-kind creation/redemption mechanism that washes out embedded capital gains.
 
-> [!question] mkt-pf-080 | What assets belong in a Tax-Exempt (Roth) account according to asset location principles?
+> [!question]- mkt-pf-080 | What assets belong in a Tax-Exempt (Roth) account according to asset location principles?
 > Assets with the highest expected long-term compound return (such as small-cap value or emerging equities), maximizing total tax-free capital accumulation.
 
-> [!question] mkt-pf-081 | What is cash-flow rebalancing?
+> [!question]- mkt-pf-081 | What is cash-flow rebalancing?
 > Directing new regular savings or incoming dividend distributions to purchase underweighted assets, restoring policy weights with zero asset sales or taxes.
 
-> [!question] mkt-pf-082 | How does turnover affect taxable portfolio returns?
+> [!question]- mkt-pf-082 | How does turnover affect taxable portfolio returns?
 > Higher turnover accelerates capital gains realization, transforming deferred tax liabilities into immediate tax cash outflows and destroying compounding.
 
-> [!question] mkt-pf-083 | What is a Required Minimum Distribution (RMD)?
+> [!question]- mkt-pf-083 | What is a Required Minimum Distribution (RMD)?
 > Mandatory statutory annual withdrawals that retirees must take from traditional tax-deferred accounts starting at age 73, taxed as ordinary income.
 
-> [!question] mkt-pf-084 | Why are municipal bonds uniquely suited for taxable accounts of high-earning investors?
+> [!question]- mkt-pf-084 | Why are municipal bonds uniquely suited for taxable accounts of high-earning investors?
 > Municipal bond interest is 100% exempt from federal income taxes (and often state taxes), providing attractive tax-equivalent yields.
 
-> [!question] mkt-pf-085 | What is the tax-equivalent yield formula for a tax-exempt municipal bond?
+> [!question]- mkt-pf-085 | What is the tax-equivalent yield formula for a tax-exempt municipal bond?
 > Tax-Equivalent Yield = Municipal Yield / (1 - Marginal Tax Rate).
 
-> [!question] mkt-pf-086 | How does a step-up in cost basis at death eliminate capital gains taxes?
+> [!question]- mkt-pf-086 | How does a step-up in cost basis at death eliminate capital gains taxes?
 > Under US tax law, the cost basis of inherited assets is stepped up to the fair market value on the date of death, erasing all accumulated lifetime capital gains.
 
-> [!question] mkt-pf-087 | What is an 'in-kind' transfer in ETF mechanics?
+> [!question]- mkt-pf-087 | What is an 'in-kind' transfer in ETF mechanics?
 > Authorized Participants swap baskets of underlying stocks for ETF shares, allowing the ETF issuer to eliminate low-cost-basis shares without realizing capital gains.
 
-> [!question] mkt-pf-088 | Why does rebalancing during market panics require psychological discipline?
+> [!question]- mkt-pf-088 | Why does rebalancing during market panics require psychological discipline?
 > It forces the investor to sell safe, comforting assets (bonds or cash) to buy plummeting risky assets (equities) amidst apocalyptic media headlines.
 
-> [!question] mkt-pf-089 | What is the danger of setting rebalancing tolerance bands too narrow (e.g. +/- 1%)?
+> [!question]- mkt-pf-089 | What is the danger of setting rebalancing tolerance bands too narrow (e.g. +/- 1%)?
 > It generates excessive turnover, whipsaws, brokerage fees, and tax realizations with negligible risk-reduction benefits.
 
-> [!question] mkt-pf-090 | What is the danger of setting rebalancing tolerance bands too wide (e.g. +/- 50%)?
+> [!question]- mkt-pf-090 | What is the danger of setting rebalancing tolerance bands too wide (e.g. +/- 50%)?
 > It allows asset drift to severely alter the portfolio's risk profile, exposing the investor to devastating drawdowns during equity bear markets.
 
-> [!question] mkt-pf-091 | How does rebalancing frequency impact portfolio tracking error?
+> [!question]- mkt-pf-091 | How does rebalancing frequency impact portfolio tracking error?
 > More frequent rebalancing keeps weights closer to target, minimizing tracking error relative to the strategic benchmark.
 
-> [!question] mkt-pf-092 | What is tax-gain harvesting and when is it beneficial?
+> [!question]- mkt-pf-092 | What is tax-gain harvesting and when is it beneficial?
 > Realizing capital gains intentionally during low-income years (e.g. career transitions) when the investor's taxable income qualifies for the 0% long-term capital gains bracket.
 
-> [!question] mkt-pf-093 | Why does portfolio size impact rebalancing execution strategy?
+> [!question]- mkt-pf-093 | Why does portfolio size impact rebalancing execution strategy?
 > Large institutional portfolios cannot rebalance instantaneously without moving market prices, requiring algorithmic execution (TWAP/VWAP) over multiple trading sessions.
 
-> [!question] mkt-pf-094 | What is the Net Investment Income Tax (NIIT)?
+> [!question]- mkt-pf-094 | What is the Net Investment Income Tax (NIIT)?
 > A 3.8% surtax in the United States applied to net investment income (dividends, capital gains, interest) for high-income taxpayers.
 
-> [!question] mkt-pf-095 | How does an investor handle illiquid assets (like private equity or real estate) in a rebalancing program?
+> [!question]- mkt-pf-095 | How does an investor handle illiquid assets (like private equity or real estate) in a rebalancing program?
 > Rebalance around the illiquid allocation using public liquid asset classes (equities, bonds) as the dynamic adjustment buffer.
 
-> [!question] mkt-pf-096 | What is the ultimate golden rule of portfolio implementation?
+> [!question]- mkt-pf-096 | What is the ultimate golden rule of portfolio implementation?
 > Control risk through rebalancing, optimize after-tax returns through asset location, and minimize transaction friction to preserve compounding.
 
 ---

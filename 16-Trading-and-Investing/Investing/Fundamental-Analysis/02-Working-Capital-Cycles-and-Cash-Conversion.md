@@ -167,100 +167,100 @@ This zero-cost vendor float sits in yield-bearing cash equivalents or funds ware
 
 ## Interview questions
 
-> [!question] mkt-fa-033 | Define the Cash Conversion Cycle (CCC).
+> [!question]- mkt-fa-033 | Define the Cash Conversion Cycle (CCC).
 > The Cash Conversion Cycle measures the net time elapsed between paying cash for inventory purchases and collecting cash from customer sales: CCC = DSO + DIO - DPO.
 
-> [!question] mkt-fa-034 | State the formula for Days Sales Outstanding (DSO).
+> [!question]- mkt-fa-034 | State the formula for Days Sales Outstanding (DSO).
 > DSO = (Average Accounts Receivable / Total Credit Sales) * 365, indicating the average days required to collect customer receivables.
 
-> [!question] mkt-fa-035 | State the formula for Days Inventory Outstanding (DIO).
+> [!question]- mkt-fa-035 | State the formula for Days Inventory Outstanding (DIO).
 > DIO = (Average Inventory / Cost of Goods Sold) * 365, indicating how many days inventory sits before being sold.
 
-> [!question] mkt-fa-036 | State the formula for Days Payable Outstanding (DPO).
+> [!question]- mkt-fa-036 | State the formula for Days Payable Outstanding (DPO).
 > DPO = (Average Accounts Payable / Cost of Goods Sold) * 365, indicating how many days a company takes to pay its commercial suppliers.
 
-> [!question] mkt-fa-037 | What is a negative Cash Conversion Cycle?
+> [!question]- mkt-fa-037 | What is a negative Cash Conversion Cycle?
 > A negative CCC occurs when DPO exceeds DSO + DIO, meaning the company collects cash from sales before paying suppliers, generating interest-free operational float.
 
-> [!question] mkt-fa-038 | Name two iconic companies that built dominant business models around negative working capital float.
+> [!question]- mkt-fa-038 | Name two iconic companies that built dominant business models around negative working capital float.
 > Dell (direct-to-consumer custom PC assembly with rapid customer payment) and Amazon (instant consumer credit card checkout with 60-90 day supplier terms).
 
-> [!question] mkt-fa-039 | Why does a sudden increase in DSO signal potential channel stuffing?
+> [!question]- mkt-fa-039 | Why does a sudden increase in DSO signal potential channel stuffing?
 > Channel stuffing pushes excess inventory onto distributors with lenient terms; sales spike immediately on the income statement while unpaid receivables surge, expanding DSO.
 
-> [!question] mkt-fa-040 | Why is Cost of Goods Sold (COGS) used in the denominator of DIO and DPO rather than Revenue?
+> [!question]- mkt-fa-040 | Why is Cost of Goods Sold (COGS) used in the denominator of DIO and DPO rather than Revenue?
 > Because inventory and accounts payable are recorded at production cost on the balance sheet; using revenue would mismatch retail selling prices with cost-based balance sheet items.
 
-> [!question] mkt-fa-041 | What is the operational risk of a company with negative working capital experiencing a sudden revenue contraction?
+> [!question]- mkt-fa-041 | What is the operational risk of a company with negative working capital experiencing a sudden revenue contraction?
 > As revenue falls, current cash collections contract while past large payables to suppliers come due, causing negative working capital to rapidly drain cash and induce insolvency.
 
-> [!question] mkt-fa-042 | What is receivables factoring?
+> [!question]- mkt-fa-042 | What is receivables factoring?
 > Selling accounts receivable at a discount to a financial institution (factor) to receive immediate cash, often used to conceal rising DSO and accelerate reported CFO.
 
-> [!question] mkt-fa-043 | What is factoring with recourse vs without recourse?
+> [!question]- mkt-fa-043 | What is factoring with recourse vs without recourse?
 > With recourse means the seller remains liable if the customer defaults; without recourse transfers the credit default risk entirely to the purchasing factor.
 
-> [!question] mkt-fa-044 | How does manufacturing overproduction artificially boost reported gross profit?
+> [!question]- mkt-fa-044 | How does manufacturing overproduction artificially boost reported gross profit?
 > Overproducing inventory capitalizes fixed manufacturing overhead costs onto the balance sheet as inventory, reducing COGS recognized in the current period and inflating gross margin.
 
-> [!question] mkt-fa-045 | What is bill-and-hold accounting fraud?
+> [!question]- mkt-fa-045 | What is bill-and-hold accounting fraud?
 > Billing a customer for a sale while retaining the goods in the seller's warehouse; recognizing revenue before delivery violates transfer of control under ASC 606.
 
-> [!question] mkt-fa-046 | Why does stretching DPO create supply chain fragility?
+> [!question]- mkt-fa-046 | Why does stretching DPO create supply chain fragility?
 > Forcing suppliers to wait 120+ days strains vendor solvency, prompting suppliers to prioritize competitors, reduce quality, demand cash-on-delivery (COD), or cut off supplies.
 
-> [!question] mkt-fa-047 | What is the difference between Net Working Capital (NWC) and Operating Working Capital?
+> [!question]- mkt-fa-047 | What is the difference between Net Working Capital (NWC) and Operating Working Capital?
 > NWC is Current Assets minus Current Liabilities; Operating Working Capital excludes non-operating cash, marketable securities, and short-term debt, isolating operating accounts.
 
-> [!question] mkt-fa-048 | How does inventory write-down affect the three financial statements?
+> [!question]- mkt-fa-048 | How does inventory write-down affect the three financial statements?
 > Inventory decreases on the Balance Sheet; a non-cash write-down charge reduces operating income on the Income Statement; the charge is added back in CFO, net cash is unchanged.
 
-> [!question] mkt-fa-049 | What is the inventory turnover ratio?
+> [!question]- mkt-fa-049 | What is the inventory turnover ratio?
 > Inventory Turnover = COGS / Average Inventory = 365 / DIO; it measures how many times total inventory is sold and replaced over a year.
 
-> [!question] mkt-fa-050 | Why do luxury goods companies typically have very high DIO?
+> [!question]- mkt-fa-050 | Why do luxury goods companies typically have very high DIO?
 > Luxury manufacturers intentionally maintain low inventory turnover (high DIO) to preserve exclusivity, accommodate complex craftsmanship, and avoid discounted clearance.
 
-> [!question] mkt-fa-051 | What is a LIFO liquidation?
+> [!question]- mkt-fa-051 | What is a LIFO liquidation?
 > When a company using Last-In, First-Out inventory accounting sells more units than it produces, liquidating older, lower-cost inventory layers that artificially inflate gross profit.
 
-> [!question] mkt-fa-052 | Why does IFRS prohibit the LIFO inventory accounting method?
+> [!question]- mkt-fa-052 | Why does IFRS prohibit the LIFO inventory accounting method?
 > Because LIFO allows management to manipulate reported earnings through inventory timing and results in outdated, artificially low inventory values on the balance sheet.
 
-> [!question] mkt-fa-053 | What is vendor financing (supply chain finance / reverse factoring)?
+> [!question]- mkt-fa-053 | What is vendor financing (supply chain finance / reverse factoring)?
 > A financial intermediary pays suppliers early at a small discount on behalf of the buyer, while the buyer repays the bank later; often masked as operating payables rather than bank debt.
 
-> [!question] mkt-fa-054 | How did Greensill Capital collapse relate to supply chain finance?
+> [!question]- mkt-fa-054 | How did Greensill Capital collapse relate to supply chain finance?
 > Greensill securitized and sold future, uncommitted receivables (prospective inventory purchases that had not occurred), concealing massive unbacked loans to distressed firms.
 
-> [!question] mkt-fa-055 | What is the allowance for doubtful accounts?
+> [!question]- mkt-fa-055 | What is the allowance for doubtful accounts?
 > A contra-asset account offsetting Accounts Receivable on the balance sheet, representing management's estimate of credit sales that will ultimately prove uncollectible.
 
-> [!question] mkt-fa-056 | How does aging of accounts receivable detect credit quality decay?
+> [!question]- mkt-fa-056 | How does aging of accounts receivable detect credit quality decay?
 > Classifying receivables into time buckets (0-30 days, 31-60 days, 90+ days); an expanding proportion in the 90+ days bucket indicates rising bad debts before formal write-offs.
 
-> [!question] mkt-fa-057 | Why does seasonal working capital expansion create intra-year cash flow deficits?
+> [!question]- mkt-fa-057 | Why does seasonal working capital expansion create intra-year cash flow deficits?
 > Retailers must spend massive cash building inventory during Q3 ahead of holiday sales; operating cash flow is deeply negative in Q3 and surges positively in Q4 upon cash collection.
 
-> [!question] mkt-fa-058 | What is the working capital intensity ratio?
+> [!question]- mkt-fa-058 | What is the working capital intensity ratio?
 > Operating Working Capital as a percentage of Annual Revenue: NWC / Revenue; lower ratios indicate superior asset efficiency and less capital required to scale.
 
-> [!question] mkt-fa-059 | What is Just-In-Time (JIT) inventory management?
+> [!question]- mkt-fa-059 | What is Just-In-Time (JIT) inventory management?
 > Aligning raw material orders directly with production schedules to minimize inventory on hand, driving DIO toward single digits but introducing supply shock vulnerability.
 
-> [!question] mkt-fa-060 | What happens to working capital when a company writes off bad debt?
+> [!question]- mkt-fa-060 | What happens to working capital when a company writes off bad debt?
 > Gross Accounts Receivable decreases and the Allowance for Doubtful Accounts decreases by an equal amount; Net Accounts Receivable and total assets remain completely unchanged.
 
-> [!question] mkt-fa-061 | Why is deferred revenue considered a negative working capital item?
+> [!question]- mkt-fa-061 | Why is deferred revenue considered a negative working capital item?
 > Because it is cash collected from customers without an immediate cash outflow, appearing as an operating current liability that funds operations prior to fulfillment.
 
-> [!question] mkt-fa-062 | How does inflation distort working capital requirements?
+> [!question]- mkt-fa-062 | How does inflation distort working capital requirements?
 > In inflation, replacing sold inventory costs significantly more cash than historical inventory, requiring expanding working capital investment simply to maintain unit volume.
 
-> [!question] mkt-fa-063 | What is customer concentration risk in Accounts Receivable?
+> [!question]- mkt-fa-063 | What is customer concentration risk in Accounts Receivable?
 > When a large percentage of receivables (e.g. > 20%) is owed by a single customer; customer insolvency can trigger an existential liquidity crisis.
 
-> [!question] mkt-fa-064 | What is the trade-off between maximizing DPO and maintaining supplier relationships?
+> [!question]- mkt-fa-064 | What is the trade-off between maximizing DPO and maintaining supplier relationships?
 > Maximizing DPO frees up cash flow but strains supplier goodwill, leading vendors to raise prices, withdraw volume discounts, or withhold scarce inventory during shortages.
 
 ---

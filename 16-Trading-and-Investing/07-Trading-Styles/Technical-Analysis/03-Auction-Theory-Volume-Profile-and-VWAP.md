@@ -244,130 +244,130 @@ An algorithmic trader anchors VWAP to an earnings breakout bar that opened with 
 
 ## Interview questions
 
-> [!question] mkt-ta-065 | What is Auction Market Theory (AMT)?
+> [!question]- mkt-ta-065 | What is Auction Market Theory (AMT)?
 > A conceptual framework developed by J. Peter Steidlmayer that models financial markets as continuous two-way double auctions whose primary purpose is to facilitate trade.
 > Price advertises opportunity, time regulates opportunity, and volume measures market acceptance or rejection.
 
-> [!question] mkt-ta-066 | What is a Time Price Opportunity (TPO)?
+> [!question]- mkt-ta-066 | What is a Time Price Opportunity (TPO)?
 > The basic unit of Market Profile, represented by a letter corresponding to a 30-minute time bracket.
 > A TPO is plotted at every price increment where the market traded during that specific 30-minute window.
 
-> [!question] mkt-ta-067 | Define the Initial Balance (IB) in Market Profile.
+> [!question]- mkt-ta-067 | Define the Initial Balance (IB) in Market Profile.
 > The price range established during the first hour of regular trading (typically the first two 30-minute brackets, A and B).
 > It serves as the baseline benchmark against which subsequent initiative or responsive auction activity is evaluated.
 
-> [!question] mkt-ta-068 | What is the Point of Control (POC)?
+> [!question]- mkt-ta-068 | What is the Point of Control (POC)?
 > The single price level where the greatest amount of time (TPO POC) or volume (Volume POC) was transacted during the session.
 > It represents the consensus price of maximum fair-value agreement between buyers and sellers.
 
-> [!question] mkt-ta-069 | What is the Value Area in Market Profile?
+> [!question]- mkt-ta-069 | What is the Value Area in Market Profile?
 > The price range surrounding the POC that encompasses approximately 70% (one standard deviation) of total trading activity.
 > It is bounded by the Value Area High (VAH) and Value Area Low (VAL).
 
-> [!question] mkt-ta-070 | Explain the Market Profile "80% Rule".
+> [!question]- mkt-ta-070 | Explain the Market Profile "80% Rule".
 > If the market opens or penetrates outside the prior session's Value Area and then accepts back inside for two consecutive 30-minute brackets, there is an 80% statistical probability of rotating completely to the opposite Value Area boundary.
 
-> [!question] mkt-ta-071 | Contrast responsive trading with initiative trading.
+> [!question]- mkt-ta-071 | Contrast responsive trading with initiative trading.
 > Responsive trading acts counter to price extremes, buying below fair value or selling above it to return price to the value area.
 > Initiative trading aggressively buys at or above fair value (or sells below), pushing price to establish an entirely new value area.
 
-> [!question] mkt-ta-072 | What is a High Volume Node (HVN) in Volume Profile?
+> [!question]- mkt-ta-072 | What is a High Volume Node (HVN) in Volume Profile?
 > A price zone exhibiting a prominent peak in traded volume, indicating extensive fair-value agreement and two-way trade facilitation.
 > Price moves slowly through an HVN, acting as high-friction support or resistance on retests.
 
-> [!question] mkt-ta-073 | What is a Low Volume Node (LVN) in Volume Profile?
+> [!question]- mkt-ta-073 | What is a Low Volume Node (LVN) in Volume Profile?
 > A price zone exhibiting a sharp valley in traded volume, representing rapid price rejection and liquidity voids.
 > When price re-enters an LVN, it traverses the zone rapidly due to minimal resting order book resistance.
 
-> [!question] mkt-ta-074 | State the formula for Volume-Weighted Average Price (VWAP).
+> [!question]- mkt-ta-074 | State the formula for Volume-Weighted Average Price (VWAP).
 > VWAP = sum(Price_i * Volume_i) / sum(Volume_i).
 > It computes the true volume-weighted average price of all transactions executed from the anchor point to time t.
 
-> [!question] mkt-ta-075 | What is Anchored VWAP (AVWAP) and who popularized it?
+> [!question]- mkt-ta-075 | What is Anchored VWAP (AVWAP) and who popularized it?
 > A methodology popularized by Brian Shannon that calculates VWAP starting from a specific, user-defined historical event rather than the daily open.
 > Common anchors include major swing lows, swing highs, earnings announcement gaps, and year-to-date opens.
 
-> [!question] mkt-ta-076 | Why does an Anchored VWAP from an earnings release act as strong support on pullbacks?
+> [!question]- mkt-ta-076 | Why does an Anchored VWAP from an earnings release act as strong support on pullbacks?
 > It represents the exact breakeven price for all institutional participants who bought or sold stock since the fundamental catalyst.
 > Institutional buyers defend their average cost basis by placing supporting limit orders at the AVWAP.
 
-> [!question] mkt-ta-077 | What are VWAP standard deviation bands?
+> [!question]- mkt-ta-077 | What are VWAP standard deviation bands?
 > Symmetrical envelopes plotted at 1, 2, and 3 volume-weighted standard deviations above and below the VWAP line: Upper_k = VWAP + k * sigma.
 > They identify statistical overextension in range-bound markets and dynamic trend channels in momentum markets.
 
-> [!question] mkt-ta-078 | What is a Trend Day in Market Profile classification?
+> [!question]- mkt-ta-078 | What is a Trend Day in Market Profile classification?
 > A session characterized by strong directional conviction where price opens near one extreme, expands continuously in one direction, and closes at the opposite extreme.
 > The Value Area is wide and vertically displaced, with volume distributed evenly along the trend.
 
-> [!question] mkt-ta-079 | What is a Normal Day in Market Profile classification?
+> [!question]- mkt-ta-079 | What is a Normal Day in Market Profile classification?
 > A session with a wide Initial Balance established in the first hour that contains the vast majority of the day's total range.
 > Subsequent trading consists of responsive rotational auctions within the established extremes.
 
-> [!question] mkt-ta-080 | What is a Normal Variation Day?
+> [!question]- mkt-ta-080 | What is a Normal Variation Day?
 > A session where early trading establishes an Initial Balance, followed by a moderate initiative range extension (typically about 0.5x to 1.0x the IB width) during later brackets.
 > Activity then settles into rotational balance around the new price level.
 
-> [!question] mkt-ta-081 | What is a Neutral Day?
+> [!question]- mkt-ta-081 | What is a Neutral Day?
 > A session where initiative activity expands price beyond both the top and bottom of the Initial Balance, but closes near the center.
 > It indicates an aggressive battle between buyers and sellers with no definitive winner, signaling balanced two-way trade.
 
-> [!question] mkt-ta-082 | What is a Non-Trend Day?
+> [!question]- mkt-ta-082 | What is a Non-Trend Day?
 > A session with a tiny Initial Balance and virtually zero subsequent range expansion, forming a narrow, compressed profile on low volume.
 > It reflects extreme market indecision, typically preceding major macro announcements or holidays.
 
-> [!question] mkt-ta-083 | What is an Open-Drive in Market Profile opening types?
+> [!question]- mkt-ta-083 | What is an Open-Drive in Market Profile opening types?
 > Price opens, aggressively prints in one direction without retracing, and violently drives away from the prior session's value area.
 > It reflects massive institutional initiative conviction and signals a high probability of a Trend Day.
 
-> [!question] mkt-ta-084 | What is an Open-Test-Drive?
+> [!question]- mkt-ta-084 | What is an Open-Test-Drive?
 > Price opens, briefly tests in one direction to probe for responsive liquidity, finds strong rejection, and then drives aggressively in the opposite direction.
 > The initial test confirms lack of counterparty participation, unleashing directional conviction.
 
-> [!question] mkt-ta-085 | What is an Open-Rejection-Reverse?
+> [!question]- mkt-ta-085 | What is an Open-Rejection-Reverse?
 > Price opens, probes beyond the prior session's range, encounters fierce responsive counter-orders, and violently reverses back through the open and into the prior value area.
 > It represents a classic failed auction and false breakout setup.
 
-> [!question] mkt-ta-086 | What is an Open-Auction?
+> [!question]- mkt-ta-086 | What is an Open-Auction?
 > Price opens inside the prior session's value area and oscillates aimlessly with no directional initiative.
 > It signals low conviction and favors responsive, mean-reverting scalp strategies.
 
-> [!question] mkt-ta-087 | What is a single print in Market Profile?
+> [!question]- mkt-ta-087 | What is a single print in Market Profile?
 > A price level occupied by only one 30-minute letter bracket during the entire trading session.
 > Single prints indicate rapid price rejection and directional velocity, functioning as LVNs that price quickly traverses on retests.
 
-> [!question] mkt-ta-088 | What is a buying tail or selling tail in Market Profile?
+> [!question]- mkt-ta-088 | What is a buying tail or selling tail in Market Profile?
 > A vertical sequence of at least two consecutive single prints at the extreme low (buying tail) or extreme high (selling tail) of a session profile.
 > It confirms aggressive responsive participation and marks strong institutional support or resistance.
 
-> [!question] mkt-ta-089 | What is poor high or poor low in Market Profile?
+> [!question]- mkt-ta-089 | What is poor high or poor low in Market Profile?
 > An extreme price level lacking single prints, ending abruptly with two or more adjacent TPOs at the high or low.
 > It indicates that the auction was halted mechanically rather than through natural buyer/seller exhaustion, leaving unfinished business to be repaired.
 
-> [!question] mkt-ta-090 | What is a naked POC (virgin POC)?
+> [!question]- mkt-ta-090 | What is a naked POC (virgin POC)?
 > A Point of Control from a prior session that has not been tested or touched by price in any subsequent trading session.
 > Naked POCs represent unvisited fair-value nodes that act as strong magnet targets during future market rotations.
 
-> [!question] mkt-ta-091 | Why do institutional execution desks target VWAP as a transaction benchmark?
+> [!question]- mkt-ta-091 | Why do institutional execution desks target VWAP as a transaction benchmark?
 > Executing large parent orders in proportion to historical intraday volume profiles minimizes market impact and prevents adverse selection.
 > Portfolio managers evaluate broker performance by comparing execution prices to the full-day VWAP.
 
-> [!question] mkt-ta-092 | What is the U-shaped intraday volume smile?
+> [!question]- mkt-ta-092 | What is the U-shaped intraday volume smile?
 > The empirical tendency for equity and futures trading volume to concentrate heavily in the first hour of trading and the final hour of trading, with lower volume during midday.
 > VWAP execution algorithms allocate higher order slices to the market open and close.
 
-> [!question] mkt-ta-093 | How does Anchored VWAP help identify trapped short sellers after an earnings gap?
+> [!question]- mkt-ta-093 | How does Anchored VWAP help identify trapped short sellers after an earnings gap?
 > If price gaps up on earnings and continues to hold above the AVWAP anchored to the gap, every short seller who initiated positions after earnings is underwater.
 > Any subsequent test of the AVWAP triggers short-covering and dip-buying.
 
-> [!question] mkt-ta-094 | What is composite Volume Profile?
+> [!question]- mkt-ta-094 | What is composite Volume Profile?
 > An aggregated Volume Profile constructed by combining multiple weeks, months, or years of price and volume data into a single master histogram.
 > It reveals multi-year structural support, resistance, and secular fair-value nodes.
 
-> [!question] mkt-ta-095 | What is developing POC (d-POC)?
+> [!question]- mkt-ta-095 | What is developing POC (d-POC)?
 > The continuous real-time calculation of the Point of Control as volume accumulates throughout an active trading session.
 > Shifts in the d-POC indicate intraday price acceptance migrating higher or lower.
 
-> [!question] mkt-ta-096 | Why is trading Volume Profile superior to traditional horizontal support and resistance lines?
+> [!question]- mkt-ta-096 | Why is trading Volume Profile superior to traditional horizontal support and resistance lines?
 > Traditional support lines rely on subjective visual peaks and ignore transaction size.
 > Volume Profile maps exactly where billions of dollars in real institutional capital transacted, removing chartist subjectivity.
 

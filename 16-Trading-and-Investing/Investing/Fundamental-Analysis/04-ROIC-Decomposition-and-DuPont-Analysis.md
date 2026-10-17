@@ -235,100 +235,100 @@ The company's strong ROE of 21.67% is primarily driven by solid underlying opera
 
 ## Practice questions
 
-> [!question] mkt-fa-097 | What is the mathematical definition of Return on Invested Capital (ROIC)?
+> [!question]- mkt-fa-097 | What is the mathematical definition of Return on Invested Capital (ROIC)?
 > ROIC = NOPAT / Invested Capital, measuring the after-tax operational profit generated per unit of operational capital invested.
 
-> [!question] mkt-fa-098 | How is Net Operating Profit After Tax (NOPAT) calculated?
+> [!question]- mkt-fa-098 | How is Net Operating Profit After Tax (NOPAT) calculated?
 > NOPAT = Operating Income (EBIT) * (1 - Marginal Tax Rate), isolating operating earnings from financial leverage and capital structure.
 
-> [!question] mkt-fa-099 | What are the two core components of ROIC decomposition?
+> [!question]- mkt-fa-099 | What are the two core components of ROIC decomposition?
 > Operating Margin (NOPAT / Revenue) representing pricing power, and Capital Turnover (Revenue / Invested Capital) representing asset efficiency.
 
-> [!question] mkt-fa-100 | What is the Operating Approach formula for Invested Capital?
+> [!question]- mkt-fa-100 | What is the Operating Approach formula for Invested Capital?
 > Invested Capital = Operating Net Working Capital + Net PP&E + Capitalized Intangibles + Other Operating Assets.
 
-> [!question] mkt-fa-101 | What is the Financing Approach formula for Invested Capital?
+> [!question]- mkt-fa-101 | What is the Financing Approach formula for Invested Capital?
 > Invested Capital = Total Interest-Bearing Debt + Total Shareholders' Equity - Excess Cash and Non-Operating Assets.
 
-> [!question] mkt-fa-102 | What is Non-Interest-Bearing Current Liabilities (NIBCL)?
+> [!question]- mkt-fa-102 | What is Non-Interest-Bearing Current Liabilities (NIBCL)?
 > Current operational liabilities that carry no explicit interest rate, such as accounts payable and accrued expenses, deducted to determine operating working capital.
 
-> [!question] mkt-fa-103 | Why must excess cash be deducted from Invested Capital?
+> [!question]- mkt-fa-103 | Why must excess cash be deducted from Invested Capital?
 > Excess cash is a non-operating surplus asset earning treasury yields; including it dilutes operating capital efficiency and depresses true operational ROIC.
 
-> [!question] mkt-fa-104 | What is the 3-stage DuPont equation for Return on Equity (ROE)?
+> [!question]- mkt-fa-104 | What is the 3-stage DuPont equation for Return on Equity (ROE)?
 > ROE = Net Profit Margin * Asset Turnover * Financial Leverage (Assets / Equity).
 
-> [!question] mkt-fa-105 | What does the Interest Burden ratio (EBT / EBIT) measure in 5-stage DuPont analysis?
+> [!question]- mkt-fa-105 | What does the Interest Burden ratio (EBT / EBIT) measure in 5-stage DuPont analysis?
 > It measures the percentage of operating profit retained after paying interest expense, where 1.0 represents zero debt and lower numbers show higher interest drag.
 
-> [!question] mkt-fa-106 | What does the Tax Burden ratio (Net Income / EBT) measure in DuPont analysis?
+> [!question]- mkt-fa-106 | What does the Tax Burden ratio (Net Income / EBT) measure in DuPont analysis?
 > It measures the percentage of pre-tax income retained after corporate income taxes, equal to 1 minus the effective tax rate.
 
-> [!question] mkt-fa-107 | How can a declining business artificially maintain a high Return on Equity?
+> [!question]- mkt-fa-107 | How can a declining business artificially maintain a high Return on Equity?
 > By borrowing debt to repurchase shares or pay dividends, increasing the equity multiplier (financial leverage) while asset turnover and margins decay.
 
-> [!question] mkt-fa-108 | What is Economic Value Added (EVA)?
+> [!question]- mkt-fa-108 | What is Economic Value Added (EVA)?
 > EVA = (ROIC - WACC) * Invested Capital, quantifying the net dollar economic profit created above the company's cost of capital.
 
-> [!question] mkt-fa-109 | What happens to economic value when a company with ROIC < WACC expands revenue?
+> [!question]- mkt-fa-109 | What happens to economic value when a company with ROIC < WACC expands revenue?
 > It accelerates economic value destruction, because each dollar of incremental capital deployed earns less than its required financing return.
 
-> [!question] mkt-fa-110 | What is the Value Spread?
+> [!question]- mkt-fa-110 | What is the Value Spread?
 > The difference between Return on Invested Capital and Weighted Average Cost of Capital (ROIC - WACC).
 
-> [!question] mkt-fa-111 | What is Return on Incremental Invested Capital (ROIIC)?
+> [!question]- mkt-fa-111 | What is Return on Incremental Invested Capital (ROIIC)?
 > ROIIC = Change in NOPAT / Change in Invested Capital, measuring the operational return generated specifically on newly deployed capital.
 
-> [!question] mkt-fa-112 | What is the formula for organic operating profit growth (g) driven by reinvestment?
+> [!question]- mkt-fa-112 | What is the formula for organic operating profit growth (g) driven by reinvestment?
 > g = Reinvestment Rate * ROIIC, where Reinvestment Rate = (Net Capex + Delta Working Capital) / NOPAT.
 
-> [!question] mkt-fa-113 | If a company has a 30% ROIIC and reinvests 50% of NOPAT, what is its intrinsic growth rate?
+> [!question]- mkt-fa-113 | If a company has a 30% ROIIC and reinvests 50% of NOPAT, what is its intrinsic growth rate?
 > Intrinsic growth rate g = 50% * 30% = 15.0% per annum.
 
-> [!question] mkt-fa-114 | Why does expensing R&D under GAAP distort ROIC for knowledge-based companies?
+> [!question]- mkt-fa-114 | Why does expensing R&D under GAAP distort ROIC for knowledge-based companies?
 > Expensing R&D understates current operating earnings while omitting valuable intangible assets from Invested Capital, causing ROIC to appear artificially volatile.
 
-> [!question] mkt-fa-115 | How is R&D capitalized for forensic ROIC calculation?
+> [!question]- mkt-fa-115 | How is R&D capitalized for forensic ROIC calculation?
 > Historical R&D expenditures are capitalized as an intangible asset and amortized over their economic useful life, adding unamortized balances to Invested Capital.
 
-> [!question] mkt-fa-116 | How does capitalizing R&D affect NOPAT?
+> [!question]- mkt-fa-116 | How does capitalizing R&D affect NOPAT?
 > Current-year R&D expense is added back to operating income and current-year amortization of prior R&D is deducted, reflecting normalized economic depreciation.
 
-> [!question] mkt-fa-117 | How did operating leases historically distort Return on Capital before ASC 842 / IFRS 16?
+> [!question]- mkt-fa-117 | How did operating leases historically distort Return on Capital before ASC 842 / IFRS 16?
 > Operating leases were kept off-balance-sheet, understating Invested Capital and hiding debt obligations while rent expense depressed operating margins.
 
-> [!question] mkt-fa-118 | What is the difference between Return on Assets (ROA) and ROIC?
+> [!question]- mkt-fa-118 | What is the difference between Return on Assets (ROA) and ROIC?
 > ROA uses total assets and net income, penalizing firms with cash holdings and mixing operating results with capital structure; ROIC isolates operational capital and after-tax operating profit.
 
-> [!question] mkt-fa-119 | What is Return on Capital Employed (ROCE)?
+> [!question]- mkt-fa-119 | What is Return on Capital Employed (ROCE)?
 > ROCE = EBIT / Capital Employed (Total Assets - Current Liabilities), commonly used in European markets as a pre-tax proxy for operating capital productivity.
 
-> [!question] mkt-fa-120 | Why is pre-tax ROCE less comprehensive than after-tax ROIC across multinational companies?
+> [!question]- mkt-fa-120 | Why is pre-tax ROCE less comprehensive than after-tax ROIC across multinational companies?
 > ROCE ignores corporate tax variations and tax shielding strategies, failing to account for true after-tax cash returns available to investors.
 
-> [!question] mkt-fa-121 | If a company doubles its capital turnover while operating margin is halved, what happens to ROIC?
+> [!question]- mkt-fa-121 | If a company doubles its capital turnover while operating margin is halved, what happens to ROIC?
 > ROIC remains exactly unchanged, as ROIC is the mathematical product of operating margin and capital turnover.
 
-> [!question] mkt-fa-122 | What is the "moat" implication of high operating margin versus high capital turnover?
+> [!question]- mkt-fa-122 | What is the "moat" implication of high operating margin versus high capital turnover?
 > High margin typically signals pricing power and brand differentiation, while high turnover signals cost leadership, supply chain dominance, and asset velocity.
 
-> [!question] mkt-fa-123 | How does goodwill from an expensive acquisition affect subsequent ROIC?
+> [!question]- mkt-fa-123 | How does goodwill from an expensive acquisition affect subsequent ROIC?
 > Goodwill inflates Invested Capital without a commensurate increase in NOPAT, systematically depressing post-acquisition ROIC unless massive synergies materialize.
 
-> [!question] mkt-fa-124 | What is the difference between ROIC including goodwill and ROIC excluding goodwill?
+> [!question]- mkt-fa-124 | What is the difference between ROIC including goodwill and ROIC excluding goodwill?
 > ROIC including goodwill measures managerial capital allocation skill on acquired assets; ROIC excluding goodwill measures pure underlying operating asset profitability.
 
-> [!question] mkt-fa-125 | Why can a negative working capital business exhibit an infinite or undefined ROIC?
+> [!question]- mkt-fa-125 | Why can a negative working capital business exhibit an infinite or undefined ROIC?
 > If customer float and supplier payables exceed operating assets, invested capital becomes zero or negative, meaning operations are funded entirely by trade counterparties.
 
-> [!question] mkt-fa-126 | What is the danger of relying on high historical ROIC without evaluating incremental ROIIC?
+> [!question]- mkt-fa-126 | What is the danger of relying on high historical ROIC without evaluating incremental ROIIC?
 > Mature companies often exhaust high-return reinvestment opportunities; historical ROIC may remain high on depreciated assets while incremental capital earns sub-WACC returns.
 
-> [!question] mkt-fa-127 | How does asset age distort accounting ROIC?
+> [!question]- mkt-fa-127 | How does asset age distort accounting ROIC?
 > Older, highly depreciated plant assets reduce the denominator (Net PP&E), making historical accounting ROIC appear artificially high compared to replacement cost economics.
 
-> [!question] mkt-fa-128 | What is the ultimate test of sustainable competitive advantage according to Michael Porter and Warren Buffett?
+> [!question]- mkt-fa-128 | What is the ultimate test of sustainable competitive advantage according to Michael Porter and Warren Buffett?
 > The persistent ability to earn an ROIC substantially higher than the cost of capital over multi-decade economic cycles without reversion to the mean.
 
 ---

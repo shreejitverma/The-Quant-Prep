@@ -293,6 +293,41 @@ class Store:
             data.setdefault("lab_history", []).append(row)
         return row
 
+    def record_journal_trade(self, trade_data: dict) -> dict:
+        def _parse_bool(val: object, default: bool = False) -> bool:
+            if isinstance(val, bool):
+                return val
+            if isinstance(val, str):
+                return val.strip().lower() in ("true", "1", "yes")
+            if isinstance(val, (int, float)):
+                return bool(val)
+            return default
+
+        with self._transaction() as data:
+            trades = data.setdefault("journal_trades", [])
+            trade_id = f"TRD-{len(trades) + 1:04d}"
+            entry = {
+                "trade_id": trade_id,
+                "setup": str(trade_data.get("setup", "general")),
+                "entry_price": float(trade_data.get("entry_price", 0.0)),
+                "exit_price": float(trade_data.get("exit_price", 0.0)),
+                "stop_loss": float(trade_data.get("stop_loss", 0.0)),
+                "take_profit": float(trade_data.get("take_profit", 0.0)),
+                "shares": int(trade_data.get("shares", 1)),
+                "r_multiple": float(trade_data.get("r_multiple", 0.0)),
+                "pnl": float(trade_data.get("pnl", 0.0)),
+                "mae_r": float(trade_data.get("mae_r", 0.0)),
+                "mfe_r": float(trade_data.get("mfe_r", 0.0)),
+                "adherence": _parse_bool(trade_data.get("adherence", trade_data.get("adhered_to_rules", True)), True),
+                "is_revenge": _parse_bool(trade_data.get("is_revenge", False), False),
+                "moved_stop": _parse_bool(trade_data.get("moved_stop", False), False),
+                "duration_minutes": int(trade_data.get("duration_minutes", 0)),
+                "at": now_iso(),
+            }
+            trades.append(entry)
+            self._bump("journal_trades")
+        return entry
+
     # activity ------------------------------------------------------------
     def _bump(self, kind: str) -> None:
         day = self.data["activity"].setdefault(today().isoformat(), {})

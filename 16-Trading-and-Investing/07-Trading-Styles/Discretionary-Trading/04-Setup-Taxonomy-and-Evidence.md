@@ -174,136 +174,136 @@ A quantitative discretionary desk audits four proposed trading setups:
 
 ## Interview questions
 
-> [!question] mkt-trd-097 | What are the four foundational structural archetypes of trade setups?
+> [!question]- mkt-trd-097 | What are the four foundational structural archetypes of trade setups?
 > 1. Trend Following / Momentum Breakouts.
 > 2. Trend Pullbacks / Continuation.
 > 3. Mean Reversion / Range Trading.
 > 4. Event-Driven Catalysts / Structural Arbitrage.
 
-> [!question] mkt-trd-098 | What are the five tiers of the Markets Mastery OS Evidence Grading Framework?
+> [!question]- mkt-trd-098 | What are the five tiers of the Markets Mastery OS Evidence Grading Framework?
 > STRONG (replicated across markets and decades, t > 3.0 net of costs).
 > MIXED (statistically significant gross return, but marginal after costs or regime-sensitive).
 > WEAK (lacks statistical significance out-of-sample).
 > REFUTED (disproven; systematically loses money net of costs).
 > UNTESTED (discretionary folklore lacking quantitative verification).
 
-> [!question] mkt-trd-099 | What was the central empirical discovery of Moskowitz, Ooi, and Pedersen (2012) regarding Time Series Momentum?
+> [!question]- mkt-trd-099 | What was the central empirical discovery of Moskowitz, Ooi, and Pedersen (2012) regarding Time Series Momentum?
 > Past 12-month excess returns positively predict future returns over the subsequent 1 to 12 months across 58 liquid futures contracts with t-statistics exceeding 4.5.
 > Time series momentum exhibits exceptional persistence and functions as a powerful crisis hedge during severe market panics.
 
-> [!question] mkt-trd-100 | What did Jegadeesh and Titman (1993) prove regarding cross-sectional momentum in equities?
+> [!question]- mkt-trd-100 | What did Jegadeesh and Titman (1993) prove regarding cross-sectional momentum in equities?
 > Portfolios buying the top decile of 3-to-12 month past stock winners and shorting the bottom decile of past losers generated approximately 12% annualized excess return.
 > The momentum premium is one of the most robust, globally replicated factor anomalies in financial economics.
 
-> [!question] mkt-trd-101 | What were the findings of Brock, Lakonishok, and LeBaron (1992) regarding technical trading rules on the Dow Jones?
+> [!question]- mkt-trd-101 | What were the findings of Brock, Lakonishok, and LeBaron (1992) regarding technical trading rules on the Dow Jones?
 > Simple moving average crossover and trading range breakout rules generated statistically significant gross excess returns over a 90-year test period (1897-1986).
 > Buy signals consistently produced higher returns and lower volatility than sell signals.
 
-> [!question] mkt-trd-102 | Why did Sullivan, Timmermann, and White (1999) question the real-world tradability of Brock et al.'s findings?
+> [!question]- mkt-trd-102 | Why did Sullivan, Timmermann, and White (1999) question the real-world tradability of Brock et al.'s findings?
 > Once historical transaction costs and data-snooping corrections (White's Reality Check) were applied, net out-of-sample excess returns largely vanished.
 > The apparent edge was heavily eroded by bid-ask spread crossing and execution fees.
 
-> [!question] mkt-trd-103 | How did Lo, Mamaysky, and Wang (2000) formalize technical chart pattern analysis?
+> [!question]- mkt-trd-103 | How did Lo, Mamaysky, and Wang (2000) formalize technical chart pattern analysis?
 > They used non-parametric kernel regression to construct mathematical definitions of classical patterns (Head and Shoulders, Double Bottoms).
 > They demonstrated that pattern conditioning shifted empirical return distributions, proving technical patterns contain incremental statistical information.
 
-> [!question] mkt-trd-104 | What is data snooping bias (p-hacking) as documented by David Aronson (2006)?
+> [!question]- mkt-trd-104 | What is data snooping bias (p-hacking) as documented by David Aronson (2006)?
 > Testing thousands of rule variants on the same historical dataset until one appears statistically profitable purely by random chance.
 > Without applying multiple testing adjustments (e.g. White's Reality Check or Hansen's SPA), historical backtests are completely spurious.
 
-> [!question] mkt-trd-105 | What is the t-statistic threshold established by Harvey, Liu, and Zhu (2016) for modern factor discovery?
+> [!question]- mkt-trd-105 | What is the t-statistic threshold established by Harvey, Liu, and Zhu (2016) for modern factor discovery?
 > t >= 3.0 (corresponding to p < 0.0027), raised from the conventional t >= 2.0 threshold.
 > The higher hurdle accounts for the hundreds of candidate factors mined and tested across the financial literature over recent decades.
 
-> [!question] mkt-trd-106 | What is Mark Minervini's Volatility Contraction Pattern (VCP)?
+> [!question]- mkt-trd-106 | What is Mark Minervini's Volatility Contraction Pattern (VCP)?
 > A pattern characterized by progressive contractions in price volatility (e.g. 25% drop, then 10%, then 3%) accompanied by drying volume before a breakout.
 > It reflects institutional absorption of circulating supply, leaving the stock poised for an explosive expansion upon buying pressure.
 
-> [!question] mkt-trd-107 | What is the behavioral explanation for the persistence of momentum in financial markets?
+> [!question]- mkt-trd-107 | What is the behavioral explanation for the persistence of momentum in financial markets?
 > Investor under-reaction to fundamental news due to cognitive conservatism and anchoring, followed by delayed over-reaction driven by herding and FOMO.
 > Institutional capital moves slowly over weeks and months, generating persistent directional price drift.
 
-> [!question] mkt-trd-108 | Why do breakout setups have low win rates (30% to 40%) but high profitability?
+> [!question]- mkt-trd-108 | Why do breakout setups have low win rates (30% to 40%) but high profitability?
 > False breakouts and whip-saws are frequent in efficient markets, generating frequent small 1R losses.
 > However, genuine breakouts transition into massive multi-month secular trends producing 5R to 15R gains, yielding high net expectancy.
 
-> [!question] mkt-trd-109 | What is Post-Earnings Announcement Drift (PEAD) discovered by Ball and Brown (1968)?
+> [!question]- mkt-trd-109 | What is Post-Earnings Announcement Drift (PEAD) discovered by Ball and Brown (1968)?
 > The tendency of a stock's cumulative abnormal returns to drift in the direction of an earnings surprise for weeks or months following the announcement date.
 > PEAD is a prime example of an event-driven catalyst driven by institutional earnings forecast revisions.
 
-> [!question] mkt-trd-110 | What is a Stage 2 breakout in Stan Weinstein's market stage framework?
+> [!question]- mkt-trd-110 | What is a Stage 2 breakout in Stan Weinstein's market stage framework?
 > The transition of a stock from a prolonged sideways consolidation base (Stage 1) into an advancing uptrend (Stage 2) above a rising 30-week moving average.
 > Stage 2 breakouts represent the optimal entry window for discretionary trend followers.
 
-> [!question] mkt-trd-111 | Explain the concept of Anchored VWAP (AVWAP) and why it acts as dynamic support/resistance.
+> [!question]- mkt-trd-111 | Explain the concept of Anchored VWAP (AVWAP) and why it acts as dynamic support/resistance.
 > AVWAP calculates the Volume Weighted Average Price starting from a specific significant historical anchor point (e.g. earnings release, market crash low, 52-week high).
 > It represents the exact average dollar-weighted cost basis of all market participants who entered since that critical event.
 
-> [!question] mkt-trd-112 | What is a bull flag and what are its quantitative criteria?
+> [!question]- mkt-trd-112 | What is a bull flag and what are its quantitative criteria?
 > A sharp, high-volume upward price thrust (the flagpole) followed by a tight, downward-sloping consolidation on declining volume.
 > Quantitative criteria require the pullback to retrace no more than 38.2% to 50% of the flagpole with volume drying up below the 20-day average.
 
-> [!question] mkt-trd-113 | What is pareidolia in manual discretionary chart analysis?
+> [!question]- mkt-trd-113 | What is pareidolia in manual discretionary chart analysis?
 > The human psychological tendency to perceive meaningful patterns or order in random visual noise.
 > Unquantified traders visually identify apparent head-and-shoulders or flag patterns in pure synthetic Geometric Brownian Motion price paths.
 
-> [!question] mkt-trd-114 | What is the typical payoff profile of a mean-reversion trading strategy?
+> [!question]- mkt-trd-114 | What is the typical payoff profile of a mean-reversion trading strategy?
 > High win rate (65% to 75%), small average gains (0.5R to 1.5R), but extreme vulnerability to large left-tail drawdowns.
 > When a trend breakout occurs, mean-reversion systems experience persistent, escalating losses without timely exits.
 
-> [!question] mkt-trd-115 | What is Donchian Channel breakout trading?
+> [!question]- mkt-trd-115 | What is Donchian Channel breakout trading?
 > A systematic trend-following rule that buys when price breaks above the highest high of the past N days (e.g. 20 or 55 days) and sells when price breaks the lowest low.
 > It forms the core entry engine of the Turtle Trading system, capturing major trend runs with zero discretionary forecasting.
 
-> [!question] mkt-trd-116 | How does market regime (trending vs range-bound) impact the performance of breakout setups?
+> [!question]- mkt-trd-116 | How does market regime (trending vs range-bound) impact the performance of breakout setups?
 > Breakout setups thrive in high-dispersion, strong macro-trending regimes.
 > In choppy, range-bound regimes, breakouts suffer severe whipsaws as prices consistently mean-revert from channel boundaries.
 
-> [!question] mkt-trd-117 | What is the Russell 2000 annual rebalancing anomaly?
+> [!question]- mkt-trd-117 | What is the Russell 2000 annual rebalancing anomaly?
 > In June, the Russell indices reconstitute their member stocks based on updated market capitalizations.
 > Predictable buying of incoming stocks and selling of deletions by passive index tracking funds creates multi-week price distortions exploited by arbitrageurs.
 
-> [!question] mkt-trd-118 | Why is volume expansion mandatory to confirm a genuine technical breakout?
+> [!question]- mkt-trd-118 | Why is volume expansion mandatory to confirm a genuine technical breakout?
 > Low-volume breakouts represent transient liquidity vacuums easily driven by minor retail orders that quickly reverse.
 > Heavy volume expansion proves institutional participation, indicating that large capital is absorbing resting supply at new price levels.
 
-> [!question] mkt-trd-119 | What is relative strength (RS) in equity momentum trading?
+> [!question]- mkt-trd-119 | What is relative strength (RS) in equity momentum trading?
 > A measure of an individual stock's price performance compared to a broad benchmark index (e.g. S&P 500) over a 3-to-12 month window.
 > Stocks printing new 52-week highs while the broad market is consolidating or declining exhibit leading institutional accumulation.
 
-> [!question] mkt-trd-120 | What is a false breakout (bull trap) and how does it trap buyers?
+> [!question]- mkt-trd-120 | What is a false breakout (bull trap) and how does it trap buyers?
 > Price punches above a prominent resistance level, triggering retail breakout buy orders and short stop-losses, but immediately fails and closes back inside the range.
 > Trapped breakout buyers are forced to liquidate, accelerating a rapid downward reversal.
 
-> [!question] mkt-trd-121 | In statistical arbitrage, what is the cointegration test used to identify mean-reverting pairs?
+> [!question]- mkt-trd-121 | In statistical arbitrage, what is the cointegration test used to identify mean-reverting pairs?
 > The Engle-Granger two-step method or Johansen test evaluating whether a linear combination of two non-stationary time series is stationary (I(0)).
 > Cointegration guarantees that the spread between the two assets has a constant mean and finite variance over time.
 
-> [!question] mkt-trd-122 | What is a Darvas Box?
+> [!question]- mkt-trd-122 | What is a Darvas Box?
 > A price consolidation rectangle formed by a new all-time high followed by three consecutive days that fail to breach that high, establishing a ceiling and floor.
 > Developed by Nicolas Darvas (1960), buying occurs upon a clean breakout above the box ceiling with a stop set at the box floor.
 
-> [!question] mkt-trd-123 | What is a moving average crossover whipsaw?
+> [!question]- mkt-trd-123 | What is a moving average crossover whipsaw?
 > Successive false trend signals generated when an asset oscillates sideways across the moving average lines.
 > Each crossover triggers an entry that is promptly reversed at a loss, causing rapid capital attrition during consolidating regimes.
 
-> [!question] mkt-trd-124 | What is the economic rationale for the value factor anomaly (Fama and French, 1993)?
+> [!question]- mkt-trd-124 | What is the economic rationale for the value factor anomaly (Fama and French, 1993)?
 > Cheap stocks (low P/E or low P/B) trade at a discount because they face higher financial distress risk, or because investors over-react to past bad news.
 > Buying undervalued assets earns a structural risk premium as fundamentals stabilize or mean-revert over multi-year horizons.
 
-> [!question] mkt-trd-125 | What is an opening range breakout (ORB)?
+> [!question]- mkt-trd-125 | What is an opening range breakout (ORB)?
 > Taking a directional position when price breaks above the high or below the low established during the first 15 or 30 minutes of the trading session.
 > The initial balance represents early institutional price discovery; a clean break indicates strong initiative order flow for the session.
 
-> [!question] mkt-trd-126 | Why do candlestick reversal patterns (e.g. hammer, shooting star) have WEAK standalone evidence?
+> [!question]- mkt-trd-126 | Why do candlestick reversal patterns (e.g. hammer, shooting star) have WEAK standalone evidence?
 > Standalone 1-bar or 2-bar candlestick formations lack statistical significance over large multi-decade samples when tested without broader trend context.
 > After transaction costs, trading raw candlestick signals produces negative net expectancy.
 
-> [!question] mkt-trd-127 | What is the high-tight flag setup and what is its historical track record?
+> [!question]- mkt-trd-127 | What is the high-tight flag setup and what is its historical track record?
 > An explosive advance of 100% to 120% within 4 to 8 weeks, followed by a tight consolidation of no more than 20% to 25% lasting 3 to 5 weeks.
 > Historically documented by Thomas Bulkowski as one of the highest-performing momentum setups, though it occurs rarely.
 
-> [!question] mkt-trd-128 | Why must every quantitative or discretionary playbook document objective invalidation rules for each setup?
+> [!question]- mkt-trd-128 | Why must every quantitative or discretionary playbook document objective invalidation rules for each setup?
 > Without unambiguous invalidation criteria, traders fall prey to narrative rationalization and holding losing trades indefinitely.
 > Pre-registered rules ensure disciplined 1R risk containment, preserving capital to capture the next edge-positive trial.
 

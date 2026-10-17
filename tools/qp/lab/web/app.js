@@ -17,8 +17,8 @@ const ENGINE_CONFIGS = {
       { id: "p-win-rate", label: "Win Rate (0.01 - 0.99)", type: "number", value: 0.55, step: 0.01, min: 0.01, max: 0.99 },
       { id: "p-win-loss-ratio", label: "Win/Loss Ratio (b)", type: "number", value: 1.50, step: 0.05, min: 0.1, max: 20.0 },
       { id: "p-risk-per-trade-pct", label: "Risk per Trade (Fraction)", type: "number", value: 0.02, step: 0.005, min: 0.001, max: 0.50 },
-      { id: "p-num-trades", label: "Number of Trades", type: "number", value: 100, step: 10, min: 10, max: 2000 },
-      { id: "p-num-simulations", label: "Monte Carlo Paths", type: "number", value: 250, step: 50, min: 10, max: 2000 },
+      { id: "p-num-trades", label: "Number of Trades", type: "number", value: 100, step: 10, min: 10, max: 1000 },
+      { id: "p-num-simulations", label: "Monte Carlo Paths", type: "number", value: 250, step: 50, min: 10, max: 1000 },
     ],
     runner: runPositionSizing,
   },
@@ -30,7 +30,7 @@ const ENGINE_CONFIGS = {
     params: [
       { id: "p-observed-sharpe", label: "Observed Sharpe Ratio", type: "number", value: 1.5, step: 0.1, min: 0.1, max: 5.0 },
       { id: "p-num-trials", label: "Strategy Trials Tested (N)", type: "number", value: 100, step: 10, min: 1, max: 10000 },
-      { id: "p-sample-length-days", label: "Sample Length (Trading Days)", type: "number", value: 1260, step: 126, min: 60, max: 10000 },
+      { id: "p-sample-length-days", label: "Sample Length (Trading Days)", type: "number", value: 1260, step: 126, min: 100, max: 10000 },
       { id: "p-skewness", label: "Return Skewness", type: "number", value: -0.5, step: 0.1, min: -5.0, max: 5.0 },
       { id: "p-kurtosis", label: "Return Kurtosis", type: "number", value: 4.5, step: 0.2, min: 1.5, max: 30.0 },
     ],
@@ -150,8 +150,8 @@ const ENGINE_CONFIGS = {
     params: [
       { id: "p-level", label: "Difficulty Level (1-4)", type: "number", value: 1, step: 1, min: 1, max: 4 },
       { id: "p-bars-visible", label: "Visible Historical Bars", type: "number", value: 50, step: 5, min: 20, max: 200 },
-      { id: "p-forecast-horizon", label: "Forecast Horizon (Bars)", type: "number", value: 5, step: 1, min: 1, max: 30 },
-      { id: "p-num-trials", label: "Replay Trials", type: "number", value: 10, step: 5, min: 5, max: 100 },
+      { id: "p-forecast-horizon", label: "Forecast Horizon (Bars)", type: "number", value: 5, step: 1, min: 1, max: 20 },
+      { id: "p-num-trials", label: "Replay Trials", type: "number", value: 10, step: 5, min: 1, max: 50 },
     ],
     runner: runReplayChart,
   },
@@ -224,6 +224,11 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           return;
         }
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.error || `Server returned ${res.status}: ${res.statusText}`;
+        document.getElementById("summary-text").textContent = `[Simulation Error] ${errMsg}`;
+        return;
       }
     } catch (_e) {
       // Offline fallback: client-side simulation engine

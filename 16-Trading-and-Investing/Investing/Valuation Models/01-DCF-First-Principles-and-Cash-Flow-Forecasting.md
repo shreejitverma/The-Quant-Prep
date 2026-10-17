@@ -216,100 +216,100 @@ $$\text{Value Per Share} = \frac{\$3,930.5\text{M}}{100\text{M shares}} = \$39.3
 
 ## Practice questions
 
-> [!question] mkt-val-001 | What is the fundamental principle of intrinsic valuation?
+> [!question]- mkt-val-001 | What is the fundamental principle of intrinsic valuation?
 > The value of any financial asset is the present value of all its expected future cash flows discounted at a rate reflecting their risk.
 
-> [!question] mkt-val-002 | What is the formula for Free Cash Flow to Firm (FCFF) starting from EBIT?
+> [!question]- mkt-val-002 | What is the formula for Free Cash Flow to Firm (FCFF) starting from EBIT?
 > FCFF = EBIT * (1 - t) + D&A - Capex - Delta Operating Net Working Capital.
 
-> [!question] mkt-val-003 | What discount rate must be matched with Free Cash Flow to Firm?
+> [!question]- mkt-val-003 | What discount rate must be matched with Free Cash Flow to Firm?
 > The Weighted Average Cost of Capital (WACC), because FCFF represents cash available to all debt and equity capital providers.
 
-> [!question] mkt-val-004 | What discount rate must be matched with Free Cash Flow to Equity (FCFE)?
+> [!question]- mkt-val-004 | What discount rate must be matched with Free Cash Flow to Equity (FCFE)?
 > The Cost of Equity (Ke), because FCFE represents cash flow available strictly to common shareholders after debt service.
 
-> [!question] mkt-val-005 | What is the formula for FCFE starting from Net Income?
+> [!question]- mkt-val-005 | What is the formula for FCFE starting from Net Income?
 > FCFE = Net Income + D&A - Capex - Delta Working Capital + Net Borrowing (Debt Issued - Debt Repaid).
 
-> [!question] mkt-val-006 | What is the Equity Bridge formula converting Enterprise Value to Equity Value?
+> [!question]- mkt-val-006 | What is the Equity Bridge formula converting Enterprise Value to Equity Value?
 > Equity Value = Enterprise Value - Total Debt - Preferred Stock - Minority Interest + Cash and Liquid Non-Operating Assets.
 
-> [!question] mkt-val-007 | Why does the mid-year discounting convention increase present value compared to end-of-year discounting?
+> [!question]- mkt-val-007 | Why does the mid-year discounting convention increase present value compared to end-of-year discounting?
 > Because cash flows occur continuously throughout the year; discounting from mid-year points (t - 0.5) reflects earlier cash receipt than assuming year-end lumps.
 
-> [!question] mkt-val-008 | What is the formula for Terminal Value under the Gordon Growth Model?
+> [!question]- mkt-val-008 | What is the formula for Terminal Value under the Gordon Growth Model?
 > TV_N = [FCFF_N * (1 + g)] / (WACC - g), where g is the perpetual organic growth rate.
 
-> [!question] mkt-val-009 | What is the absolute economic ceiling on the perpetuity growth rate (g)?
+> [!question]- mkt-val-009 | What is the absolute economic ceiling on the perpetuity growth rate (g)?
 > The sustainable nominal GDP growth rate of the economy in which the company operates (typically 2% to 3%).
 
-> [!question] mkt-val-010 | What typical percentage of Enterprise Value is represented by Terminal Value in a 5-year DCF?
+> [!question]- mkt-val-010 | What typical percentage of Enterprise Value is represented by Terminal Value in a 5-year DCF?
 > Between 60% and 80%, highlighting the critical importance of terminal growth and discount rate assumptions.
 
-> [!question] mkt-val-011 | What is operating leverage in cash flow forecasting?
+> [!question]- mkt-val-011 | What is operating leverage in cash flow forecasting?
 > The degree to which revenue growth translates into operating income growth, determined by the ratio of fixed costs to variable costs.
 
-> [!question] mkt-val-012 | Why must stock-based compensation (SBC) be treated with caution in DCF projections?
+> [!question]- mkt-val-012 | Why must stock-based compensation (SBC) be treated with caution in DCF projections?
 > While non-cash on the cash flow statement, SBC dilutes future share count; omitting SBC expense without increasing future share dilution overstates value.
 
-> [!question] mkt-val-013 | What is the Treasury Stock Method for diluted shares?
+> [!question]- mkt-val-013 | What is the Treasury Stock Method for diluted shares?
 > It assumes proceeds received from exercising in-the-money options are used to repurchase shares in the open market at the prevailing stock price.
 
-> [!question] mkt-val-014 | Why should non-operating assets (such as an art collection or idle land) be added to DCF value?
+> [!question]- mkt-val-014 | Why should non-operating assets (such as an art collection or idle land) be added to DCF value?
 > Because DCF projects cash flows only from operating assets; surplus non-operating assets have realizable liquidation value that belongs to equity holders.
 
-> [!question] mkt-val-015 | How do minority interests (non-controlling interests) affect the Equity Bridge?
+> [!question]- mkt-val-015 | How do minority interests (non-controlling interests) affect the Equity Bridge?
 > Minority interests represent third-party equity claims on consolidated subsidiaries, and must be subtracted from Enterprise Value to isolate parent equity.
 
-> [!question] mkt-val-016 | What is the Exit Multiple method for calculating Terminal Value?
+> [!question]- mkt-val-016 | What is the Exit Multiple method for calculating Terminal Value?
 > Multiplying the final forecast year's normalized EBITDA by an industry-appropriate enterprise multiple (EV/EBITDA).
 
-> [!question] mkt-val-017 | How do you calculate the implied perpetuity growth rate from an exit EBITDA multiple?
+> [!question]- mkt-val-017 | How do you calculate the implied perpetuity growth rate from an exit EBITDA multiple?
 > Solve for g in the perpetuity equation equating TV to EBITDA * Multiple, checking whether the resulting g is economically realistic.
 
-> [!question] mkt-val-018 | What is the difference between top-down and bottom-up revenue forecasting?
+> [!question]- mkt-val-018 | What is the difference between top-down and bottom-up revenue forecasting?
 > Top-down forecasts market share of an expanding TAM; bottom-up forecasts capacity, store counts, sales reps, unit volumes, and pricing tiers.
 
-> [!question] mkt-val-019 | Why does inflation distort historical-cost depreciation in DCF models?
+> [!question]- mkt-val-019 | Why does inflation distort historical-cost depreciation in DCF models?
 > Historical depreciation understates the true replacement cost of aging physical assets, creating a persistent cash drain where capex exceeds D&A.
 
-> [!question] mkt-val-020 | What is the Competitive Advantage Period (CAP) and how does it determine explicit DCF forecast length?
+> [!question]- mkt-val-020 | What is the Competitive Advantage Period (CAP) and how does it determine explicit DCF forecast length?
 > CAP is the duration over which a firm can earn returns above its cost of capital; the explicit forecast period should match the estimated CAP.
 
-> [!question] mkt-val-021 | What is a multi-stage DCF model?
+> [!question]- mkt-val-021 | What is a multi-stage DCF model?
 > A model featuring an initial high-growth stage, a transition stage where growth and margins fade toward industry averages, and a terminal steady state.
 
-> [!question] mkt-val-022 | How does an increase in Accounts Receivable affect forecasted FCFF?
+> [!question]- mkt-val-022 | How does an increase in Accounts Receivable affect forecasted FCFF?
 > An increase in AR represents uncollected credit revenue, resulting in a cash deduction (-Delta AR) under working capital reinvestment.
 
-> [!question] mkt-val-023 | What happens to working capital cash flow when revenue growth decelerates?
+> [!question]- mkt-val-023 | What happens to working capital cash flow when revenue growth decelerates?
 > Working capital expansion slows, releasing cash flow and temporarily causing FCFF to appear high even as business momentum cools.
 
-> [!question] mkt-val-024 | Why is an unadjusted trailing twelve months (TTM) cash flow an unreliable base for DCF projections?
+> [!question]- mkt-val-024 | Why is an unadjusted trailing twelve months (TTM) cash flow an unreliable base for DCF projections?
 > TTM numbers often contain one-off working capital swings, non-recurring legal charges, or cyclical peak earnings that must be normalized.
 
-> [!question] mkt-val-025 | What is capital intensity in long-range DCF modeling?
+> [!question]- mkt-val-025 | What is capital intensity in long-range DCF modeling?
 > The amount of capital expenditure and working capital required to generate each incremental dollar of revenue ($Delta Capital / Delta Revenue).
 
-> [!question] mkt-val-026 | If a company has zero debt, what is the mathematical relationship between FCFF and FCFE?
+> [!question]- mkt-val-026 | If a company has zero debt, what is the mathematical relationship between FCFF and FCFE?
 > FCFF equals FCFE exactly, and WACC equals the Cost of Equity.
 
-> [!question] mkt-val-027 | Why does debt financing create a tax shield in FCFF valuation?
+> [!question]- mkt-val-027 | Why does debt financing create a tax shield in FCFF valuation?
 > Interest expense is tax-deductible, reducing corporate income tax liability, which is incorporated directly into the lower after-tax cost of debt in WACC.
 
-> [!question] mkt-val-028 | How should operating leases be incorporated into Enterprise Value?
+> [!question]- mkt-val-028 | How should operating leases be incorporated into Enterprise Value?
 > Under ASC 842, present value of operating leases is recognized on the balance sheet as lease liabilities and must be included as debt in the equity bridge.
 
-> [!question] mkt-val-029 | What is scenario analysis in DCF modeling?
+> [!question]- mkt-val-029 | What is scenario analysis in DCF modeling?
 > Evaluating valuation outcomes under discrete macro and operational narratives (e.g. Bull, Base, Bear) with correlated assumptions.
 
-> [!question] mkt-val-030 | What is Monte Carlo simulation in a DCF context?
+> [!question]- mkt-val-030 | What is Monte Carlo simulation in a DCF context?
 > Assigning probability distributions to key drivers (growth, margins, WACC) and running thousands of iterations to generate a distribution of intrinsic values.
 
-> [!question] mkt-val-031 | What is the danger of circularity when modeling interest expense based on debt balances?
+> [!question]- mkt-val-031 | What is the danger of circularity when modeling interest expense based on debt balances?
 > Interest expense depends on debt, which depends on cash flow, which depends on net income, which depends on interest; resolved by iterative solver or average balances.
 
-> [!question] mkt-val-032 | What is the ultimate limitation of a standalone DCF valuation?
+> [!question]- mkt-val-032 | What is the ultimate limitation of a standalone DCF valuation?
 > It is extremely sensitive to long-term terminal value assumptions, requiring triangulation with reverse DCF and market expectations.
 
 ---

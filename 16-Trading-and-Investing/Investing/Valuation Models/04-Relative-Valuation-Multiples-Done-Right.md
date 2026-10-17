@@ -224,100 +224,100 @@ Compare two competitors in the industrial equipment sector:
 
 ## Practice questions
 
-> [!question] mkt-val-097 | What is the fundamental relationship between valuation multiples and DCF models?
+> [!question]- mkt-val-097 | What is the fundamental relationship between valuation multiples and DCF models?
 > Every valuation multiple is an algebraic simplification of a discounted cash flow model reflecting specific growth, payout, and cost of capital drivers.
 
-> [!question] mkt-val-098 | What is the Cardinal Sin of relative valuation?
+> [!question]- mkt-val-098 | What is the Cardinal Sin of relative valuation?
 > Mismatching enterprise-level metrics with equity-level metrics (e.g. EV / Net Income or Market Cap / EBITDA).
 
-> [!question] mkt-val-099 | Why are enterprise multiples (EV/EBIT) structurally superior to equity multiples (P/E)?
+> [!question]- mkt-val-099 | Why are enterprise multiples (EV/EBIT) structurally superior to equity multiples (P/E)?
 > They evaluate the operating business independent of capital structure, preventing leverage and interest rate differences from distorting comparisons.
 
-> [!question] mkt-val-100 | What is the formula for Enterprise Value (EV)?
+> [!question]- mkt-val-100 | What is the formula for Enterprise Value (EV)?
 > EV = Market Cap + Total Debt + Leases + Preferred Stock + Minority Interest - Cash and Marketable Securities - Non-Consolidated Affiliates.
 
-> [!question] mkt-val-101 | Why must investments in non-consolidated associates be subtracted from Enterprise Value?
+> [!question]- mkt-val-101 | Why must investments in non-consolidated associates be subtracted from Enterprise Value?
 > Because the operating earnings (EBIT/EBITDA) of associates are not included in consolidated operating profit, requiring their asset value to be removed for consistency.
 
-> [!question] mkt-val-102 | Why is EBITDA an imperfect proxy for operating cash flow?
+> [!question]- mkt-val-102 | Why is EBITDA an imperfect proxy for operating cash flow?
 > Because it ignores the physical cash required to replace aging fixed assets (capex) as well as investments in operating working capital and cash taxes.
 
-> [!question] mkt-val-103 | What is the difference between EV/EBITDA and EV/EBIT?
+> [!question]- mkt-val-103 | What is the difference between EV/EBITDA and EV/EBIT?
 > EV/EBIT accounts for depreciation, reflecting the ongoing capital consumption required to maintain the enterprise's asset base.
 
-> [!question] mkt-val-104 | What is the mathematical relationship between the Price-to-Book (P/B) ratio and Return on Equity (ROE)?
+> [!question]- mkt-val-104 | What is the mathematical relationship between the Price-to-Book (P/B) ratio and Return on Equity (ROE)?
 > P/B = (ROE - g) / (Ke - g); justified P/B exceeds 1.0 if and only if ROE exceeds the cost of equity.
 
-> [!question] mkt-val-105 | What is a 'value trap' in the context of Price-to-Book multiples?
+> [!question]- mkt-val-105 | What is a 'value trap' in the context of Price-to-Book multiples?
 > A stock trading at a low P/B multiple that appears cheap, but earns an ROE well below its cost of capital, perpetually destroying economic value.
 
-> [!question] mkt-val-106 | What is the forward P/E ratio formula derived from the Gordon Growth model?
+> [!question]- mkt-val-106 | What is the forward P/E ratio formula derived from the Gordon Growth model?
 > Forward P/E = Payout Ratio / (Ke - g) = (1 - Reinvestment Rate) / (Ke - g).
 
-> [!question] mkt-val-107 | How does an increase in interest rates affect P/E multiples across the market?
+> [!question]- mkt-val-107 | How does an increase in interest rates affect P/E multiples across the market?
 > Higher interest rates increase the Cost of Equity (Ke), widening the denominator (Ke - g) and compressing P/E multiples.
 
-> [!question] mkt-val-108 | What is the PEG ratio and how is it calculated?
+> [!question]- mkt-val-108 | What is the PEG ratio and how is it calculated?
 > PEG = (P/E Ratio) / (Annual EPS Growth Rate * 100), used as a rule-of-thumb metric for growth-adjusted valuation.
 
-> [!question] mkt-val-109 | What is a major mathematical flaw of the PEG ratio?
+> [!question]- mkt-val-109 | What is a major mathematical flaw of the PEG ratio?
 > It assumes linear risk and ignores return on invested capital; two companies growing at 20% can have identical PEG ratios even if one requires 5x more capital.
 
-> [!question] mkt-val-110 | Why do cyclical companies trade at deceptively low P/E multiples at the top of an economic cycle?
+> [!question]- mkt-val-110 | Why do cyclical companies trade at deceptively low P/E multiples at the top of an economic cycle?
 > Because peak earnings are unsustainably elevated; the market anticipates earnings mean reversion and prices the stock for future profit contraction.
 
-> [!question] mkt-val-111 | Why do cyclical companies trade at deceptively high P/E multiples at the trough of an economic cycle?
+> [!question]- mkt-val-111 | Why do cyclical companies trade at deceptively high P/E multiples at the trough of an economic cycle?
 > Because trough earnings are depressed; the market anticipates future economic recovery and prices in the upcoming rebound in operating cash flows.
 
-> [!question] mkt-val-112 | What is the Shiller CAPE ratio?
+> [!question]- mkt-val-112 | What is the Shiller CAPE ratio?
 > The Cyclically Adjusted Price-to-Earnings ratio, which divides current price by the 10-year rolling average of inflation-adjusted earnings to smooth cycles.
 
-> [!question] mkt-val-113 | How does financial leverage artificially inflate Return on Equity (ROE)?
+> [!question]- mkt-val-113 | How does financial leverage artificially inflate Return on Equity (ROE)?
 > By funding assets with low-cost debt, shrinking the equity denominator; however, it elevates financial risk and the required cost of equity (Ke).
 
-> [!question] mkt-val-114 | What is the EV/Sales multiple and when is it appropriately utilized?
+> [!question]- mkt-val-114 | What is the EV/Sales multiple and when is it appropriately utilized?
 > Comparing enterprise value to revenue; used primarily for early-stage companies or unprofitable software firms where margins are negative.
 
-> [!question] mkt-val-115 | What is the danger of using EV/Sales without adjusting for gross margins?
+> [!question]- mkt-val-115 | What is the danger of using EV/Sales without adjusting for gross margins?
 > A company with a 20% gross margin trading at 2x sales is far more expensive than a company with an 80% gross margin trading at 2x sales.
 
-> [!question] mkt-val-116 | What is EV/Invested Capital and what does it measure?
+> [!question]- mkt-val-116 | What is EV/Invested Capital and what does it measure?
 > It compares the market enterprise value to the historical capital invested in operating assets; under clean accounting, EV/IC is analogous to Tobin's Q.
 
-> [!question] mkt-val-117 | How does a company's ROIC dictate its justified EV/Invested Capital multiple?
+> [!question]- mkt-val-117 | How does a company's ROIC dictate its justified EV/Invested Capital multiple?
 > EV/IC = (ROIC - g) / (WACC - g); when ROIC exceeds WACC, justified EV/IC is greater than 1.0.
 
-> [!question] mkt-val-118 | What is the EV/EBITA multiple and why do private equity analysts prefer it?
+> [!question]- mkt-val-118 | What is the EV/EBITA multiple and why do private equity analysts prefer it?
 > It adds back non-cash amortization of acquired intangibles from past M&A, but retains real physical depreciation, avoiding distortions from purchase accounting.
 
-> [!question] mkt-val-119 | What are non-controlling (minority) interests on the balance sheet?
+> [!question]- mkt-val-119 | What are non-controlling (minority) interests on the balance sheet?
 > The portion of consolidated equity in a subsidiary owned by external third parties, included in Enterprise Value because 100% of the subsidiary's cash flow is in EBITDA.
 
-> [!question] mkt-val-120 | Why must operating lease liabilities be added to debt in Enterprise Value under ASC 842?
+> [!question]- mkt-val-120 | Why must operating lease liabilities be added to debt in Enterprise Value under ASC 842?
 > Because lease obligations represent debt-like contractual financing commitments, and rental costs are split into interest and amortization.
 
-> [!question] mkt-val-121 | What is a 'pure play' comparable company?
+> [!question]- mkt-val-121 | What is a 'pure play' comparable company?
 > A peer company operating exclusively in the same industry segment, without distortion from unrelated business units or conglomerate divisions.
 
-> [!question] mkt-val-122 | How do share buybacks impact historical P/E comparisons?
+> [!question]- mkt-val-122 | How do share buybacks impact historical P/E comparisons?
 > Buybacks reduce share count and artificially boost EPS growth, making EPS outpace net income growth and distorting multi-year multiple trends.
 
-> [!question] mkt-val-123 | What is multiple expansion vs multiple contraction?
+> [!question]- mkt-val-123 | What is multiple expansion vs multiple contraction?
 > Multiple expansion occurs when market valuation multiples increase (e.g. P/E from 15x to 22x); contraction occurs when multiples shrink, reducing returns.
 
-> [!question] mkt-val-124 | What proportion of long-term equity returns is driven by multiple expansion versus fundamental earnings growth?
+> [!question]- mkt-val-124 | What proportion of long-term equity returns is driven by multiple expansion versus fundamental earnings growth?
 > Over 10-to-20-year horizons, fundamental earnings growth and dividends drive >85% of returns, while multiple expansion mean-reverts toward historical averages.
 
-> [!question] mkt-val-125 | How does working capital intensity affect the justified EV/EBIT multiple?
+> [!question]- mkt-val-125 | How does working capital intensity affect the justified EV/EBIT multiple?
 > High working capital intensity requires more cash reinvestment per dollar of EBIT, depressing free cash flow conversion and reducing justified multiples.
 
-> [!question] mkt-val-126 | Why should non-operating or excess cash be deducted when calculating Enterprise Value?
+> [!question]- mkt-val-126 | Why should non-operating or excess cash be deducted when calculating Enterprise Value?
 > Because excess cash is not required to generate operating earnings (EBIT/EBITDA); netting it isolates the net cost to acquire the operating core.
 
-> [!question] mkt-val-127 | What is the difference between trailing P/E and forward P/E?
+> [!question]- mkt-val-127 | What is the difference between trailing P/E and forward P/E?
 > Trailing P/E uses historical EPS over the past 12 months; forward P/E uses consensus forecast EPS over the next 12 months.
 
-> [!question] mkt-val-128 | What is the ultimate rule for conducting peer multiple benchmarking?
+> [!question]- mkt-val-128 | What is the ultimate rule for conducting peer multiple benchmarking?
 > Benchmark only against peers with comparable return on capital, margin structure, capital intensity, and structural competitive advantages.
 
 ---

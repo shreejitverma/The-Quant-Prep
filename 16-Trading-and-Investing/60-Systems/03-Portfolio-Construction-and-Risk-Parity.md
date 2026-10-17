@@ -162,100 +162,100 @@ Each asset now contributes exactly $50.0\%$ to total portfolio volatility.
 
 ## Interview questions
 
-> [!question] mkt-sys-065 | Why did Richard Michaud term Markowitz mean-variance optimization an "error maximizer"?
+> [!question]- mkt-sys-065 | Why did Richard Michaud term Markowitz mean-variance optimization an "error maximizer"?
 > Because MVO treats sample estimates as exact truths without error, systematically assigning the largest weights to securities whose expected returns are most overestimated and whose risks are most underestimated.
 
-> [!question] mkt-sys-066 | What is the condition number of a covariance matrix and what does a high value indicate?
+> [!question]- mkt-sys-066 | What is the condition number of a covariance matrix and what does a high value indicate?
 > The condition number is the ratio of the largest eigenvalue to the smallest eigenvalue: kappa = lambda_max / lambda_min; a high value indicates ill-conditioning where small input errors produce massive swings in optimal weights.
 
-> [!question] mkt-sys-067 | What is Ledoit-Wolf shrinkage and what problem does it solve?
+> [!question]- mkt-sys-067 | What is Ledoit-Wolf shrinkage and what problem does it solve?
 > Ledoit-Wolf shrinkage linearly combines the noisy sample covariance matrix with a structured target matrix to produce a well-conditioned, strictly invertible covariance matrix with reduced estimation error.
 
-> [!question] mkt-sys-068 | Define Marginal Risk Contribution (MRC) mathematically.
+> [!question]- mkt-sys-068 | Define Marginal Risk Contribution (MRC) mathematically.
 > MRC is the first partial derivative of portfolio volatility with respect to asset weight: MRC_i = d sigma_p / d w_i = (Sigma * w)_i / sigma_p.
 
-> [!question] mkt-sys-069 | State Euler's risk decomposition theorem for portfolio volatility.
+> [!question]- mkt-sys-069 | State Euler's risk decomposition theorem for portfolio volatility.
 > Because portfolio volatility sigma_p is a linearly homogeneous function of weights w, total risk decomposes exactly into sigma_p = sum_{i=1}^N w_i * (d sigma_p / d w_i) = sum_{i=1}^N TRC_i.
 
-> [!question] mkt-sys-070 | What is the Equal Risk Contribution (ERC) condition?
+> [!question]- mkt-sys-070 | What is the Equal Risk Contribution (ERC) condition?
 > ERC requires that every constituent asset contributes an identical amount of volatility to the portfolio: w_i * (Sigma * w)_i = w_j * (Sigma * w)_j for all i, j.
 
-> [!question] mkt-sys-071 | Why does a traditional 60/40 equity-bond portfolio have equity-dominated risk?
+> [!question]- mkt-sys-071 | Why does a traditional 60/40 equity-bond portfolio have equity-dominated risk?
 > Because equity volatility (~16%) is over three times bond volatility (~5%); when squared in portfolio variance, equities account for approximately 90% to 95% of total portfolio risk.
 
-> [!question] mkt-sys-072 | How does Risk Parity achieve competitive equity-like returns if heavily weighted in bonds?
+> [!question]- mkt-sys-072 | How does Risk Parity achieve competitive equity-like returns if heavily weighted in bonds?
 > Risk Parity applies structural portfolio leverage to borrow cash at low financing rates, scaling up the low-risk diversified portfolio to meet target return levels.
 
-> [!question] mkt-sys-073 | What is Hierarchical Risk Parity (HRP) and who invented it?
+> [!question]- mkt-sys-073 | What is Hierarchical Risk Parity (HRP) and who invented it?
 > Invented by Marcos Lopez de Prado (2016), HRP uses machine learning tree clustering to allocate capital across hierarchical asset clusters without requiring covariance matrix inversion.
 
-> [!question] mkt-sys-074 | State the three stages of the Hierarchical Risk Parity algorithm.
+> [!question]- mkt-sys-074 | State the three stages of the Hierarchical Risk Parity algorithm.
 > The three stages are Tree Clustering (hierarchical grouping via correlation distance), Quasi-Diagonalization (reordering covariance matrix along the diagonal), and Recursive Bisection (allocating inverse variance weights).
 
-> [!question] mkt-sys-075 | Why is HRP immune to the singularity problems of Markowitz MVO?
+> [!question]- mkt-sys-075 | Why is HRP immune to the singularity problems of Markowitz MVO?
 > Because HRP does not invert the covariance matrix (no Sigma^{-1}); it allocates weights top-down using recursive bisection based only on sub-cluster variances.
 
-> [!question] mkt-sys-076 | What is correlation distance in hierarchical clustering?
+> [!question]- mkt-sys-076 | What is correlation distance in hierarchical clustering?
 > Correlation distance is defined as d_{i, j} = sqrt(0.5 * (1 - rho_{i, j})), which forms a true metric space satisfying non-negativity, symmetry, and triangle inequality.
 
-> [!question] mkt-sys-077 | What is the inverse volatility portfolio?
+> [!question]- mkt-sys-077 | What is the inverse volatility portfolio?
 > An allocation where each asset's weight is inversely proportional to its individual volatility: w_i = (1 / sigma_i) / sum_j (1 / sigma_j); it matches ERC only when pairwise correlations are identical.
 
-> [!question] mkt-sys-078 | What happens to sample covariance rank when universe size N exceeds sample days T?
+> [!question]- mkt-sys-078 | What happens to sample covariance rank when universe size N exceeds sample days T?
 > When N > T, the sample covariance matrix has rank at most T - 1, creating zero eigenvalues and rendering the matrix singular and non-invertible.
 
-> [!question] mkt-sys-079 | What is the single-index shrinkage target in Ledoit-Wolf estimation?
+> [!question]- mkt-sys-079 | What is the single-index shrinkage target in Ledoit-Wolf estimation?
 > A structured target matrix where asset variances match sample variances, but all pairwise covariances are modeled via a single market factor: Cov(i, j) = beta_i * beta_j * sigma_m^2.
 
-> [!question] mkt-sys-080 | How does Black-Litterman improve on standard Markowitz optimization?
+> [!question]- mkt-sys-080 | How does Black-Litterman improve on standard Markowitz optimization?
 > Black-Litterman uses reverse optimization to infer the market's implied equilibrium returns, then blends them with investor subjective views using Bayesian probability to produce stable, intuitive weights.
 
-> [!question] mkt-sys-081 | What is a turnover penalty in quadratic programming portfolio optimization?
+> [!question]- mkt-sys-081 | What is a turnover penalty in quadratic programming portfolio optimization?
 > A penalty term lambda_turn * sum_i |w_{i, t} - w_{i, t-1}| added to the objective function that penalizes trades, preventing the optimizer from churning capital for tiny alpha gains.
 
-> [!question] mkt-sys-082 | What is the de-leveraging spiral in leveraged risk parity funds?
+> [!question]- mkt-sys-082 | What is the de-leveraging spiral in leveraged risk parity funds?
 > During market crises when asset correlations spike and volatilities rise, leveraged risk parity funds are forced to liquidate positions to maintain target volatility, exacerbating market selloffs.
 
-> [!question] mkt-sys-083 | What are box constraints in portfolio optimization?
+> [!question]- mkt-sys-083 | What are box constraints in portfolio optimization?
 > Lower and upper bounds on individual asset weights: w_{min} <= w_i <= w_{max}, preventing extreme concentration in single names.
 
-> [!question] mkt-sys-084 | What is factor neutrality in equity portfolio construction?
+> [!question]- mkt-sys-084 | What is factor neutrality in equity portfolio construction?
 > Enforcing linear constraints such that portfolio exposure to common risk factors (e.g. beta, size, value, momentum) is strictly zero: B^T * w = 0.
 
-> [!question] mkt-sys-085 | What is the minimum variance portfolio (MVP)?
+> [!question]- mkt-sys-085 | What is the minimum variance portfolio (MVP)?
 > The portfolio on the efficient frontier that achieves the absolute lowest variance regardless of expected return: w_{MVP} = Sigma^{-1} * 1 / (1^T * Sigma^{-1} * 1).
 
-> [!question] mkt-sys-086 | Why does equal-weighting (1/N) often beat sample MVO out of sample (DeMiguel et al. 2009)?
+> [!question]- mkt-sys-086 | Why does equal-weighting (1/N) often beat sample MVO out of sample (DeMiguel et al. 2009)?
 > Because 1/N has zero estimation error; sample MVO's severe parameter estimation errors frequently outweigh its theoretical efficiency advantages.
 
-> [!question] mkt-sys-087 | How does the Frobenius norm evaluate shrinkage intensity?
+> [!question]- mkt-sys-087 | How does the Frobenius norm evaluate shrinkage intensity?
 > The Frobenius norm measures matrix distance: ||Sigma - Target||_F^2 = sum_{i, j} (Sigma_{i, j} - Target_{i, j})^2; optimal shrinkage minimizes the expected Frobenius loss.
 
-> [!question] mkt-sys-088 | What is the difference between single linkage and average linkage in HRP?
+> [!question]- mkt-sys-088 | What is the difference between single linkage and average linkage in HRP?
 > Single linkage defines distance between clusters as the minimum pairwise distance, while average linkage takes the average of all pairwise distances, creating more balanced clusters.
 
-> [!question] mkt-sys-089 | What is quasi-diagonalization in HRP?
+> [!question]- mkt-sys-089 | What is quasi-diagonalization in HRP?
 > Reordering rows and columns of the covariance matrix according to dendrogram leaf order so that correlated assets cluster together along the diagonal, revealing tree hierarchy.
 
-> [!question] mkt-sys-090 | What is recursive bisection in HRP?
+> [!question]- mkt-sys-090 | What is recursive bisection in HRP?
 > Dividing an asset cluster into two sub-clusters, assigning capital between them based on inverse cluster variance, and repeating recursively until all individual asset weights are set.
 
-> [!question] mkt-sys-091 | How does portfolio volatility behave when all asset correlations equal 1.0?
+> [!question]- mkt-sys-091 | How does portfolio volatility behave when all asset correlations equal 1.0?
 > Portfolio volatility equals the weighted sum of individual asset volatilities: sigma_p = sum_i w_i * sigma_i; all diversification benefits completely vanish.
 
-> [!question] mkt-sys-092 | What is the diversification ratio of a portfolio (Choueifaty and Coignard 2008)?
+> [!question]- mkt-sys-092 | What is the diversification ratio of a portfolio (Choueifaty and Coignard 2008)?
 > The ratio of the weighted average asset volatility to total portfolio volatility: DR(w) = (w^T * sigma) / sqrt(w^T * Sigma * w); higher DR indicates superior diversification.
 
-> [!question] mkt-sys-093 | How do borrowing rate spreads penalize leveraged risk parity portfolios?
+> [!question]- mkt-sys-093 | How do borrowing rate spreads penalize leveraged risk parity portfolios?
 > Investors borrow at rates above the risk-free rate (e.g. SOFR + spread); if the spread exceeds the risk-adjusted excess return of the levered assets, net returns turn negative.
 
-> [!question] mkt-sys-094 | What is the maximum Sharpe ratio (tangency) portfolio?
+> [!question]- mkt-sys-094 | What is the maximum Sharpe ratio (tangency) portfolio?
 > The portfolio on the efficient frontier that maximizes (mu_p - r_f) / sigma_p, formed as w_{tangency} = Sigma^{-1} * (mu - r_f * 1) / (1^T * Sigma^{-1} * (mu - r_f * 1)).
 
-> [!question] mkt-sys-095 | What is semi-variance optimization and why is it used?
+> [!question]- mkt-sys-095 | What is semi-variance optimization and why is it used?
 > Measuring risk using only downside deviations below a benchmark or zero, avoiding penalizing upside volatility that benefits investors.
 
-> [!question] mkt-sys-096 | Why is quadratic programming used to solve constrained portfolio optimization?
+> [!question]- mkt-sys-096 | Why is quadratic programming used to solve constrained portfolio optimization?
 > Because portfolio variance is a quadratic function of weights (w^T * Sigma * w) while common real-world constraints (budget, sector bounds, leverage) are linear, fitting quadratic programming algorithms.
 
 ---

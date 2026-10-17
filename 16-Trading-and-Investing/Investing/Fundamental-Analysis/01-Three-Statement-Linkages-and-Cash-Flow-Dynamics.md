@@ -191,100 +191,100 @@ A fast-growing enterprise software company reports the following financial figur
 
 ## Interview questions
 
-> [!question] mkt-fa-001 | State the primary equation that links Net Income to the Balance Sheet.
+> [!question]- mkt-fa-001 | State the primary equation that links Net Income to the Balance Sheet.
 > Ending Retained Earnings = Beginning Retained Earnings + Net Income - Dividends Declared.
 
-> [!question] mkt-fa-002 | What is the difference between accrual accounting and cash accounting?
+> [!question]- mkt-fa-002 | What is the difference between accrual accounting and cash accounting?
 > Accrual accounting recognizes revenue when earned and expenses when incurred regardless of cash transfer, whereas cash accounting recognizes transactions only when physical cash moves.
 
-> [!question] mkt-fa-003 | Why is Operating Cash Flow (CFO) generally considered superior to Net Income for assessing earnings quality?
+> [!question]- mkt-fa-003 | Why is Operating Cash Flow (CFO) generally considered superior to Net Income for assessing earnings quality?
 > Because Net Income incorporates subjective non-cash accruals and estimates, while CFO reflects physical cash generated, making it harder to manipulate through accounting discretion.
 
-> [!question] mkt-fa-004 | How does an increase in Accounts Receivable affect the Cash Flow Statement?
+> [!question]- mkt-fa-004 | How does an increase in Accounts Receivable affect the Cash Flow Statement?
 > It represents revenue recognized on the Income Statement that has not yet been collected in physical cash, appearing as a cash outflow (deduction) under CFO.
 
-> [!question] mkt-fa-005 | How does an increase in Accounts Payable affect the Cash Flow Statement?
+> [!question]- mkt-fa-005 | How does an increase in Accounts Payable affect the Cash Flow Statement?
 > It represents expenses incurred on the Income Statement that have not yet been paid in physical cash, appearing as a cash inflow (addition) under CFO.
 
-> [!question] mkt-fa-006 | What is the mathematical definition of Free Cash Flow to Firm (FCFF)?
+> [!question]- mkt-fa-006 | What is the mathematical definition of Free Cash Flow to Firm (FCFF)?
 > FCFF = EBIT * (1 - t) + D&A - Capex - Delta Non-Cash Working Capital, representing cash available to all debt and equity capital providers.
 
-> [!question] mkt-fa-007 | What is the mathematical definition of Free Cash Flow to Equity (FCFE)?
+> [!question]- mkt-fa-007 | What is the mathematical definition of Free Cash Flow to Equity (FCFE)?
 > FCFE = CFO - Capex + Net Borrowing (Debt Issued - Debt Repaid), representing cash available strictly to common shareholders after debt obligations.
 
-> [!question] mkt-fa-008 | Why is Stock-Based Compensation (SBC) added back to Net Income in CFO?
+> [!question]- mkt-fa-008 | Why is Stock-Based Compensation (SBC) added back to Net Income in CFO?
 > Because SBC is an accounting operating expense that does not consume physical cash in the current period, so it is added back under standard indirect cash flow accounting.
 
-> [!question] mkt-fa-009 | Why do forensic analysts subtract SBC when calculating True Economic Free Cash Flow?
+> [!question]- mkt-fa-009 | Why do forensic analysts subtract SBC when calculating True Economic Free Cash Flow?
 > Because SBC represents real employee compensation that dilutes shareholders; treating it as a free non-cash item masks true labor costs and overstates owner earnings.
 
-> [!question] mkt-fa-010 | What is a Deferred Tax Liability (DTL) and how does it arise?
+> [!question]- mkt-fa-010 | What is a Deferred Tax Liability (DTL) and how does it arise?
 > A DTL arises when GAAP accounting income exceeds taxable income (e.g. through accelerated tax depreciation), meaning lower cash taxes are paid today and higher taxes are owed later.
 
-> [!question] mkt-fa-011 | What is a Deferred Tax Asset (DTA) and when must a valuation allowance be created?
+> [!question]- mkt-fa-011 | What is a Deferred Tax Asset (DTA) and when must a valuation allowance be created?
 > A DTA arises when taxable income exceeds GAAP income (or from operating loss carryforwards); a valuation allowance must be created if it is more likely than not that future profits will not materialize.
 
-> [!question] mkt-fa-012 | If a company writes down $50M of goodwill, what is the impact on cash flow?
+> [!question]- mkt-fa-012 | If a company writes down $50M of goodwill, what is the impact on cash flow?
 > Zero impact on cash flow; goodwill write-down is a non-cash accounting charge that reduces pre-tax income on the Income Statement and is added back in full under CFO.
 
-> [!question] mkt-fa-013 | Why is EBITDA an unreliable proxy for free cash flow in capital-intensive businesses?
+> [!question]- mkt-fa-013 | Why is EBITDA an unreliable proxy for free cash flow in capital-intensive businesses?
 > Because EBITDA ignores capital expenditures required to maintain operating assets, working capital swings, cash interest payments, and physical cash taxes.
 
-> [!question] mkt-fa-014 | What is Deferred Revenue and on which balance sheet line item does it reside?
+> [!question]- mkt-fa-014 | What is Deferred Revenue and on which balance sheet line item does it reside?
 > Deferred revenue is cash collected from customers before goods or services are delivered; it resides under Current Liabilities (or Non-Current Liabilities) as an obligation to deliver.
 
-> [!question] mkt-fa-015 | How does an increase in Deferred Revenue impact Operating Cash Flow?
+> [!question]- mkt-fa-015 | How does an increase in Deferred Revenue impact Operating Cash Flow?
 > It represents physical cash collected in advance of revenue recognition, appearing as a positive operating cash inflow (+Delta Deferred Revenue) under CFO.
 
-> [!question] mkt-fa-016 | Trace the impact of purchasing a $100 machine funded with 50% debt and 50% cash.
+> [!question]- mkt-fa-016 | Trace the impact of purchasing a $100 machine funded with 50% debt and 50% cash.
 > Cash decreases by $50 and PP&E increases by $100 on the Balance Sheet; CFI shows -$100 Capex, CFF shows +$50 debt issuance, net cash change is -$50.
 
-> [!question] mkt-fa-017 | What is the cash conversion cycle (CCC)?
+> [!question]- mkt-fa-017 | What is the cash conversion cycle (CCC)?
 > CCC measures the days required to convert inventory investments into cash: CCC = Days Sales Outstanding (DSO) + Days Inventory Outstanding (DIO) - Days Payable Outstanding (DPO).
 
-> [!question] mkt-fa-018 | What does a negative Cash Conversion Cycle indicate about a business model?
+> [!question]- mkt-fa-018 | What does a negative Cash Conversion Cycle indicate about a business model?
 > A negative CCC indicates the company collects cash from customers before paying suppliers, generating negative working capital that acts as interest-free float to fund growth.
 
-> [!question] mkt-fa-019 | Why does capitalizing R&D instead of expensing it inflate Operating Cash Flow?
+> [!question]- mkt-fa-019 | Why does capitalizing R&D instead of expensing it inflate Operating Cash Flow?
 > Expensed R&D reduces Net Income and CFO; capitalizing R&D shifts the cash outflow into Investing Cash Flow (CFI) as an intangible asset purchase, artificially boosting CFO.
 
-> [!question] mkt-fa-020 | What is maintenance capex vs growth capex?
+> [!question]- mkt-fa-020 | What is maintenance capex vs growth capex?
 > Maintenance capex is capital required to replace aging assets and preserve current earning power; growth capex is discretionary investment deployed to expand capacity.
 
-> [!question] mkt-fa-021 | What is the difference between IFRS and US GAAP regarding the classification of interest paid in CFO?
+> [!question]- mkt-fa-021 | What is the difference between IFRS and US GAAP regarding the classification of interest paid in CFO?
 > US GAAP strictly mandates interest paid in CFO; IFRS permits classifying interest paid under either Operating Cash Flow (CFO) or Financing Cash Flow (CFF).
 
-> [!question] mkt-fa-022 | What is a non-cash restructuring charge and how does it affect the statements?
+> [!question]- mkt-fa-022 | What is a non-cash restructuring charge and how does it affect the statements?
 > It reduces operating income on the Income Statement; because it is non-cash in the current period, it is added back in CFO, reducing balance sheet asset book values without moving cash.
 
-> [!question] mkt-fa-023 | If a company issues $100M in common equity, how does it flow through the three statements?
+> [!question]- mkt-fa-023 | If a company issues $100M in common equity, how does it flow through the three statements?
 > Balance Sheet cash increases by $100M and Common Stock / APIC increases by $100M; Cash Flow from Financing (CFF) records a +$100M cash inflow; Income Statement is unaffected.
 
-> [!question] mkt-fa-024 | What happens to the balance sheet when inventory is sold at cost for cash?
+> [!question]- mkt-fa-024 | What happens to the balance sheet when inventory is sold at cost for cash?
 > Cash increases by the sale amount and Inventory decreases by the identical cost amount; Total Assets, Liabilities, and Equity remain completely unchanged.
 
-> [!question] mkt-fa-025 | Why does a divergence between rising Net Income and falling CFO signal accounting risk?
+> [!question]- mkt-fa-025 | Why does a divergence between rising Net Income and falling CFO signal accounting risk?
 > It indicates that reported profits are driven by non-cash accruals (such as uncollected sales or capitalized costs) rather than actual cash collections, signaling potential earnings manipulation.
 
-> [!question] mkt-fa-026 | How does a stock split affect the three financial statements?
+> [!question]- mkt-fa-026 | How does a stock split affect the three financial statements?
 > A stock split has zero impact on assets, liabilities, cash flows, or total equity; it merely increases the number of outstanding shares and reduces par value per share proportionally.
 
-> [!question] mkt-fa-027 | What is the impact of paying a $10M cash dividend on the three statements?
+> [!question]- mkt-fa-027 | What is the impact of paying a $10M cash dividend on the three statements?
 > Retained Earnings on the Balance Sheet decreases by $10M, cash decreases by $10M; CFF records a -$10M financing cash outflow; Income Statement is unaffected.
 
-> [!question] mkt-fa-028 | How do operating leases appear on the balance sheet under ASC 842 / IFRS 16?
+> [!question]- mkt-fa-028 | How do operating leases appear on the balance sheet under ASC 842 / IFRS 16?
 > Operating leases appear on the balance sheet as Right-of-Use (ROU) assets offset by matching current and non-current Lease Liabilities, eliminating off-balance-sheet operating debt.
 
-> [!question] mkt-fa-029 | What is channel stuffing and where does it appear on the three statements?
+> [!question]- mkt-fa-029 | What is channel stuffing and where does it appear on the three statements?
 > Shipping unneeded inventory to distributors at quarter-end to recognize premature revenue; manifests as a surge in revenue and a matching spike in Accounts Receivable with zero CFO.
 
-> [!question] mkt-fa-030 | How does selling an asset for a gain affect Operating Cash Flow?
+> [!question]- mkt-fa-030 | How does selling an asset for a gain affect Operating Cash Flow?
 > The entire sale proceeds are recorded in CFI; the accounting gain is included in Net Income, so it must be subtracted from CFO to avoid double-counting.
 
-> [!question] mkt-fa-031 | What is unearned revenue vs accrued revenue?
+> [!question]- mkt-fa-031 | What is unearned revenue vs accrued revenue?
 > Unearned revenue is cash received before services are performed (a liability); accrued revenue is revenue earned before cash is received or invoiced (an asset).
 
-> [!question] mkt-fa-032 | What is the golden rule of balance sheet reconciliation?
+> [!question]- mkt-fa-032 | What is the golden rule of balance sheet reconciliation?
 > Assets must strictly equal Liabilities plus Shareholders' Equity at all times, governed by the equality: Change in Cash = Cash Flow from Operations + Investing + Financing.
 
 ---

@@ -42,9 +42,6 @@ FILE_EXTS = {
     ".csv",
     ".ipynb",
     ".pdf",
-    ".html",
-    ".js",
-    ".css",
 }
 TEXT_EXTS = {".py", ".cpp", ".hpp", ".h", ".md", ".txt", ".csv", ".ipynb"}
 VAULT_TTL = 2.0  # seconds; notes are re-read at most this often so edits show up live
@@ -292,45 +289,48 @@ class App:
             raise ApiError(HTTPStatus.BAD_REQUEST, str(exc)) from exc
 
     def journal_stats(self) -> dict:
-        from tools.qp.lab.journal_stats import (
-            analyze_trade_journal,
-            generate_synthetic_trade_log,
-        )
+        from tools.qp.lab.journal_stats import analyze_trade_journal
 
         trades = self.store.data.get("journal_trades", [])
         if not trades:
-            trades = generate_synthetic_trade_log(
-                count=100,
-                win_rate=0.45,
-                risk_reward=2.2,
-                adherence_rate=0.96,
-                seed=42,
-            )
+            return {
+                "total_trades": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "breakeven_count": 0,
+                "win_rate_pct": 0.0,
+                "profit_factor": 0.0,
+                "payoff_ratio": 0.0,
+                "expectancy_r": 0.0,
+                "total_r_accumulated": 0.0,
+                "net_pnl_dollars": 0.0,
+                "max_drawdown_pct": 0.0,
+                "max_drawdown_dollars": 0.0,
+                "max_drawdown_r": 0.0,
+                "adherence_score_pct": 0.0,
+                "revenge_trade_count": 0,
+                "moved_stop_count": 0,
+                "mae_win_under_50_pct": 0.0,
+                "avg_mfe_left_on_table_r": 0.0,
+                "round_tripped_loss_count": 0,
+                "setup_attribution": {},
+                "capital_gate": {
+                    "overall_status": "NO_TRADES_LOGGED",
+                    "req_100_sample": "FAIL",
+                    "req_profit_factor_1_5": "FAIL",
+                    "req_drawdown_under_10": "FAIL",
+                    "req_adherence_95": "FAIL",
+                    "req_mae_mfe_calibrated": "FAIL",
+                },
+            }
         return analyze_trade_journal(trades)
 
     def journal_log(self, trade_data: dict) -> dict:
-        trades = self.store.data.setdefault("journal_trades", [])
-        trade_id = f"TRD-{len(trades) + 1:04d}"
-        entry = {
-            "trade_id": trade_id,
-            "setup": str(trade_data.get("setup", "general")),
-            "entry_price": float(trade_data.get("entry_price", 0.0)),
-            "exit_price": float(trade_data.get("exit_price", 0.0)),
-            "stop_loss": float(trade_data.get("stop_loss", 0.0)),
-            "take_profit": float(trade_data.get("take_profit", 0.0)),
-            "shares": int(trade_data.get("shares", 1)),
-            "r_multiple": float(trade_data.get("r_multiple", 0.0)),
-            "pnl": float(trade_data.get("pnl", 0.0)),
-            "mae_r": float(trade_data.get("mae_r", 0.0)),
-            "mfe_r": float(trade_data.get("mfe_r", 0.0)),
-            "adherence": bool(trade_data.get("adherence", True)),
-            "is_revenge": bool(trade_data.get("is_revenge", False)),
-            "moved_stop": bool(trade_data.get("moved_stop", False)),
-            "duration_minutes": int(trade_data.get("duration_minutes", 0)),
-        }
-        trades.append(entry)
-        self.store.save()
-        return {"status": "LOGGED", "trade": entry, "total_logged": len(trades)}
+        if not isinstance(trade_data, dict):
+            raise ApiError(HTTPStatus.BAD_REQUEST, "trade data must be a JSON object")
+        entry = self.store.record_journal_trade(trade_data)
+        total = len(self.store.data.get("journal_trades", []))
+        return {"status": "LOGGED", "trade": entry, "total_logged": total}
 
 
 def make_handler(app: App, allowed_origins: set[str]):
@@ -460,8 +460,13 @@ def make_handler(app: App, allowed_origins: set[str]):
                 raise ApiError(HTTPStatus.NOT_FOUND, f"no route {path}")
             if path.startswith("/files/"):
                 return self.serve_repo_file(unquote(path[len("/files/") :]))
-            if path.startswith("/lab/") or path == "/lab":
-                rel = path[len("/lab/") :] if path.startswith("/lab/") else "index.html"
+            if path == "/lab":
+                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
+                self.send_header("Location", "/lab/")
+                self.end_headers()
+                return
+            if path.startswith("/lab/"):
+                rel = path[len("/lab/") :]
                 if not rel:
                     rel = "index.html"
                 target = (LAB_WEB_DIR / rel).resolve()

@@ -204,100 +204,100 @@ In a systematic universe ranking, Apex would rank near the very top of the Magic
 
 ## Practice questions
 
-> [!question] mkt-vi-193 | What was the documented annualized performance of Joel Greenblatt's Gotham Capital from 1985 to 1994?
+> [!question]- mkt-vi-193 | What was the documented annualized performance of Joel Greenblatt's Gotham Capital from 1985 to 1994?
 > 50.0% annualized gross returns (40.0% net to limited partners).
 
-> [!question] mkt-vi-194 | What is a corporate spinoff under US tax law?
+> [!question]- mkt-vi-194 | What is a corporate spinoff under US tax law?
 > A transaction where a parent company separates a division by distributing 100% of subsidiary shares to parent shareholders, typically tax-free under IRC Section 355.
 
-> [!question] mkt-vi-195 | Why do newly spun-off companies frequently suffer massive initial price declines?
+> [!question]- mkt-vi-195 | Why do newly spun-off companies frequently suffer massive initial price declines?
 > Institutional shareholders and index funds that receive the shares are often legally forced or mandated to sell them immediately due to market-cap or benchmark restrictions.
 
-> [!question] mkt-vi-196 | What SEC filing provides the definitive financial and strategic blueprint for a corporate spinoff?
+> [!question]- mkt-vi-196 | What SEC filing provides the definitive financial and strategic blueprint for a corporate spinoff?
 > SEC Form 10 (Registration Statement).
 
-> [!question] mkt-vi-197 | What is the executive compensation clue in Form 10 filings that signals high insider alignment?
+> [!question]- mkt-vi-197 | What is the executive compensation clue in Form 10 filings that signals high insider alignment?
 > When top parent executives resign to run the spinoff, receiving large equity options struck at initial post-spin market prices.
 
-> [!question] mkt-vi-198 | What is the formula for calculating the annualized return of a cash merger arbitrage deal?
+> [!question]- mkt-vi-198 | What is the formula for calculating the annualized return of a cash merger arbitrage deal?
 > Annualized Return = [(Offer Price - Current Price) / Current Price] * (365 / Expected Days to Close).
 
-> [!question] mkt-vi-199 | What is the primary asymmetric risk in risk arbitrage?
+> [!question]- mkt-vi-199 | What is the primary asymmetric risk in risk arbitrage?
 > Downside loss if the deal collapses is typically 5x to 10x larger than the remaining spread upside, requiring high closing probability.
 
-> [!question] mkt-vi-200 | What is a stub equity?
+> [!question]- mkt-vi-200 | What is a stub equity?
 > The remaining, highly leveraged common stock of a company that has paid a massive debt-funded cash dividend or completed a partial carve-out.
 
-> [!question] mkt-vi-201 | What are LEAPs and how did Greenblatt use them in special situations?
+> [!question]- mkt-vi-201 | What are LEAPs and how did Greenblatt use them in special situations?
 > Long-Term Equity Anticipation Securities (call options with maturities of 1-3 years), used to gain defined-downside, leveraged exposure to high-conviction catalysts.
 
-> [!question] mkt-vi-202 | What two quantitative factors comprise Joel Greenblatt's Magic Formula?
+> [!question]- mkt-vi-202 | What two quantitative factors comprise Joel Greenblatt's Magic Formula?
 > Earnings Yield (EBIT / Enterprise Value) and Return on Capital (EBIT / Tangible Capital Employed).
 
-> [!question] mkt-vi-203 | Why does the Magic Formula use EBIT / EV instead of traditional Price-to-Earnings (P/E)?
+> [!question]- mkt-vi-203 | Why does the Magic Formula use EBIT / EV instead of traditional Price-to-Earnings (P/E)?
 > It measures operating profitability relative to total enterprise purchase price independent of capital structure and tax rates.
 
-> [!question] mkt-vi-204 | How does Greenblatt calculate Tangible Capital Employed in Return on Capital?
+> [!question]- mkt-vi-204 | How does Greenblatt calculate Tangible Capital Employed in Return on Capital?
 > Net Working Capital + Net PP&E, explicitly excluding goodwill, intangibles, and cash.
 
-> [!question] mkt-vi-205 | Why is Goodwill excluded from Tangible Capital in the Magic Formula?
+> [!question]- mkt-vi-205 | Why is Goodwill excluded from Tangible Capital in the Magic Formula?
 > Because goodwill represents historical accounting premiums paid for past acquisitions, which obscures the current operational productivity of physical plant and working capital.
 
-> [!question] mkt-vi-206 | What was the historical return of the Magic Formula tested from 1988 to 2004?
+> [!question]- mkt-vi-206 | What was the historical return of the Magic Formula tested from 1988 to 2004?
 > 30.8% annualized, compared to 12.4% for the S&P 500 index.
 
-> [!question] mkt-vi-207 | Why do most institutional investors fail to stick with the Magic Formula?
+> [!question]- mkt-vi-207 | Why do most institutional investors fail to stick with the Magic Formula?
 > Because it regularly underperforms the broader market for two to three consecutive years, triggering client redemptions and career risk.
 
-> [!question] mkt-vi-208 | What is the standard rebalancing rule in Greenblatt's systematic Magic Formula strategy?
+> [!question]- mkt-vi-208 | What is the standard rebalancing rule in Greenblatt's systematic Magic Formula strategy?
 > Hold a portfolio of 20 to 30 top-ranked stocks, rebalancing each position after holding it for exactly one year.
 
-> [!question] mkt-vi-209 | What is the tax optimization rule for selling winners and losers in taxable accounts?
+> [!question]- mkt-vi-209 | What is the tax optimization rule for selling winners and losers in taxable accounts?
 > Sell losers slightly before the one-year mark (short-term capital loss deduction) and sell winners slightly after the one-year mark (long-term capital gains rate).
 
-> [!question] mkt-vi-210 | What sectors are typically excluded from Magic Formula screening?
+> [!question]- mkt-vi-210 | What sectors are typically excluded from Magic Formula screening?
 > Financial institutions (banks/insurers) and regulated public utilities, because their balance sheet structures and capital requirements distort EBIT and capital employed.
 
-> [!question] mkt-vi-211 | What is a rights offering?
+> [!question]- mkt-vi-211 | What is a rights offering?
 > An issuance of rights to existing shareholders allowing them to purchase additional new shares at a substantial discount to current market price.
 
-> [!question] mkt-vi-212 | Why do rights offerings create mispriced special situations?
+> [!question]- mkt-vi-212 | Why do rights offerings create mispriced special situations?
 > Retail shareholders frequently ignore or fail to exercise the rights, allowing backstop investors to acquire shares at deep discounts.
 
-> [!question] mkt-vi-213 | What is a 'corporate landfill' spinoff?
+> [!question]- mkt-vi-213 | What is a 'corporate landfill' spinoff?
 > When a parent company loads an uncompetitive subsidiary with excess debt and legal liabilities before spinning it off to insulate parent balance sheets.
 
-> [!question] mkt-vi-214 | What is an equity carve-out followed by a spinoff?
+> [!question]- mkt-vi-214 | What is an equity carve-out followed by a spinoff?
 > Selling a 20% stake in a subsidiary via IPO to establish a transparent market price, followed months later by a tax-free distribution of the remaining 80% to parent owners.
 
-> [!question] mkt-vi-215 | Why are micro-cap and small-cap spinoffs particularly attractive?
+> [!question]- mkt-vi-215 | Why are micro-cap and small-cap spinoffs particularly attractive?
 > Because the institutional selling pressure is disproportionately violent relative to the small liquidity float of the spun-off company.
 
-> [!question] mkt-vi-216 | What is a 'material adverse change' (MAC) clause in a merger agreement?
+> [!question]- mkt-vi-216 | What is a 'material adverse change' (MAC) clause in a merger agreement?
 > A contractual clause allowing an acquirer to walk away from a deal if catastrophic, unforeseen operational events impair the target business.
 
-> [!question] mkt-vi-217 | How does Greenblatt suggest retail investors evaluate risk?
+> [!question]- mkt-vi-217 | How does Greenblatt suggest retail investors evaluate risk?
 > In terms of permanent capital loss over a multi-year horizon, completely ignoring short-term price volatility and tracking error.
 
-> [!question] mkt-vi-218 | What is a recapitalization in special situations?
+> [!question]- mkt-vi-218 | What is a recapitalization in special situations?
 > Restructuring corporate capital by issuing massive debt to repurchase shares or pay a special dividend, radically increasing equity leverage.
 
-> [!question] mkt-vi-219 | Why does the Magic Formula purchase high-ROIC companies at cheap valuations?
+> [!question]- mkt-vi-219 | Why does the Magic Formula purchase high-ROIC companies at cheap valuations?
 > Because combining high return on capital (buffett-style quality) with high earnings yield (graham-style value) systematically buys great businesses on sale.
 
-> [!question] mkt-vi-220 | What is the minimum market capitalization Greenblatt recommended for practical Magic Formula execution?
+> [!question]- mkt-vi-220 | What is the minimum market capitalization Greenblatt recommended for practical Magic Formula execution?
 > Typically $50 million, to filter out completely illiquid micro-caps with wide bid-ask execution spreads.
 
-> [!question] mkt-vi-221 | Why is a spinoff often motivated by removing conglomerate discount?
+> [!question]- mkt-vi-221 | Why is a spinoff often motivated by removing conglomerate discount?
 > Pure-play divisions receive higher specialized valuation multiples from dedicated industry analysts than when buried in a conglomerate.
 
-> [!question] mkt-vi-222 | What is a hostile tender offer in risk arbitrage?
+> [!question]- mkt-vi-222 | What is a hostile tender offer in risk arbitrage?
 > An offer made directly to target shareholders without the approval of the target company's board of directors, carrying high legal and poison pill risks.
 
-> [!question] mkt-vi-223 | How does Joel Greenblatt define an 'unforced error' in special situations?
+> [!question]- mkt-vi-223 | How does Joel Greenblatt define an 'unforced error' in special situations?
 > Investing in complex restructurings where management incentives are misaligned and balance sheet debt leaves zero margin of safety.
 
-> [!question] mkt-vi-224 | What is the ultimate lesson of Joel Greenblatt's career?
+> [!question]- mkt-vi-224 | What is the ultimate lesson of Joel Greenblatt's career?
 > Individual investors can achieve world-class returns by exploiting structural institutional blind spots, catalyst-driven spinoffs, and systematic value disciplines.
 
 ---

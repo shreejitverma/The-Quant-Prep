@@ -158,100 +158,100 @@ The trader eventually realizes the tax benefit of the original $800 loss by redu
 
 ## Interview questions
 
-> [!question] mkt-reg-001 | What defines a Pattern Day Trader (PDT) under FINRA Rule 4210?
+> [!question]- mkt-reg-001 | What defines a Pattern Day Trader (PDT) under FINRA Rule 4210?
 > A margin account customer who executes four or more day trades within five business days, provided day trades exceed 6% of total trades.
 
-> [!question] mkt-reg-002 | What is the minimum equity requirement for a Pattern Day Trader under FINRA rules?
+> [!question]- mkt-reg-002 | What is the minimum equity requirement for a Pattern Day Trader under FINRA rules?
 > A minimum of $25,000 in account equity prior to engaging in day trading.
 
-> [!question] mkt-reg-003 | What happens if a PDT account falls below $25,000 in equity?
+> [!question]- mkt-reg-003 | What happens if a PDT account falls below $25,000 in equity?
 > The account is restricted from executing further day trades until equity is brought back to $25,000, or limited to closing orders only.
 
-> [!question] mkt-reg-004 | What is Day Trading Buying Power (DTBP) under FINRA rules?
+> [!question]- mkt-reg-004 | What is Day Trading Buying Power (DTBP) under FINRA rules?
 > Up to four times the account's maintenance margin excess calculated at the beginning of the trading day.
 
-> [!question] mkt-reg-005 | What is the 61-day window under the IRS Wash-Sale Rule (IRC Section 1091)?
+> [!question]- mkt-reg-005 | What is the 61-day window under the IRS Wash-Sale Rule (IRC Section 1091)?
 > The 30 calendar days before the sale date, the day of the sale, and the 30 calendar days after the sale date.
 
-> [!question] mkt-reg-006 | What happens to a disallowed loss under the IRS Wash-Sale Rule?
+> [!question]- mkt-reg-006 | What happens to a disallowed loss under the IRS Wash-Sale Rule?
 > The disallowed loss is added to the cost basis of the newly acquired replacement security.
 
-> [!question] mkt-reg-007 | Does the Wash-Sale Rule apply across multiple accounts owned by the same individual (including IRAs)?
+> [!question]- mkt-reg-007 | Does the Wash-Sale Rule apply across multiple accounts owned by the same individual (including IRAs)?
 > Yes, the IRS explicitly aggregates transactions across all accounts, including taxable brokerage accounts and tax-advantaged IRAs.
 
-> [!question] mkt-reg-008 | What is the tax penalty if a wash sale occurs between a taxable account and an IRA?
+> [!question]- mkt-reg-008 | What is the tax penalty if a wash sale occurs between a taxable account and an IRA?
 > The loss is permanently disallowed; it cannot be added to the IRA cost basis and is completely lost for tax purposes.
 
-> [!question] mkt-reg-009 | What is a Section 1256 Contract under the US Internal Revenue Code?
+> [!question]- mkt-reg-009 | What is a Section 1256 Contract under the US Internal Revenue Code?
 > A regulated futures contract, foreign currency contract, or broad-based non-equity index option.
 
-> [!question] mkt-reg-010 | What is the 60/40 tax rule for Section 1256 contracts?
+> [!question]- mkt-reg-010 | What is the 60/40 tax rule for Section 1256 contracts?
 > Net capital gains are automatically taxed as 60% long-term capital gains and 40% short-term capital gains, regardless of holding time.
 
-> [!question] mkt-reg-011 | Does the Wash-Sale Rule apply to Section 1256 futures contracts?
+> [!question]- mkt-reg-011 | Does the Wash-Sale Rule apply to Section 1256 futures contracts?
 > No, Section 1256 contracts are marked to market on December 31 and are legally exempt from the Wash-Sale Rule.
 
-> [!question] mkt-reg-012 | What is the primary tax benefit of an IRC Section 475(f) Mark-to-Market election for active traders?
+> [!question]- mkt-reg-012 | What is the primary tax benefit of an IRC Section 475(f) Mark-to-Market election for active traders?
 > Net trading losses are treated as ordinary losses (exempt from the $3,000 annual net capital loss limit) and wash sales are eliminated.
 
-> [!question] mkt-reg-013 | When must an existing taxpayer file an IRC Section 475(f) election with the IRS?
+> [!question]- mkt-reg-013 | When must an existing taxpayer file an IRC Section 475(f) election with the IRS?
 > By the due date (without extensions) of the tax return for the tax year prior to the year the election takes effect (typically April 15).
 
-> [!question] mkt-reg-014 | What is the Locate Requirement under SEC Regulation SHO Rule 203(b)?
+> [!question]- mkt-reg-014 | What is the Locate Requirement under SEC Regulation SHO Rule 203(b)?
 > Brokers must locate and document available borrowable shares before executing any customer short sale order.
 
-> [!question] mkt-reg-015 | What is a Hard-to-Borrow (HTB) stock?
+> [!question]- mkt-reg-015 | What is a Hard-to-Borrow (HTB) stock?
 > A security where available lending supply is scarce, requiring short sellers to pay a negative borrow fee (rebate) to share lenders.
 
-> [!question] mkt-reg-016 | What is an SEC Regulation SHO Rule 204 mandatory close-out?
+> [!question]- mkt-reg-016 | What is an SEC Regulation SHO Rule 204 mandatory close-out?
 > A requirement that clearing firms buy in or borrow shares to resolve a fail-to-deliver (FTD) within specified settlement deadlines.
 
-> [!question] mkt-reg-017 | What is a threshold security under SEC Regulation SHO?
+> [!question]- mkt-reg-017 | What is a threshold security under SEC Regulation SHO?
 > An equity security with aggregate fails to deliver for five consecutive settlement days of 10,000 shares or more, representing at least 0.5% of float.
 
-> [!question] mkt-reg-018 | What is the Customer Protection Rule (SEC Rule 15c3-3)?
+> [!question]- mkt-reg-018 | What is the Customer Protection Rule (SEC Rule 15c3-3)?
 > A rule requiring broker-dealers to maintain customer fully paid and excess margin securities in a segregated, protected reserve account.
 
-> [!question] mkt-reg-019 | What is the maximum insurance protection provided by the Securities Investor Protection Corporation (SIPC)?
+> [!question]- mkt-reg-019 | What is the maximum insurance protection provided by the Securities Investor Protection Corporation (SIPC)?
 > Up to $500,000 per customer, including a maximum limit of $250,000 for uninvested cash claims.
 
-> [!question] mkt-reg-020 | Does SIPC insurance protect investors against market losses on open positions?
+> [!question]- mkt-reg-020 | Does SIPC insurance protect investors against market losses on open positions?
 > No, SIPC protects exclusively against the theft or insolvency of the registered broker-dealer custodian.
 
-> [!question] mkt-reg-021 | What is Securities Transaction Tax (STT) in Indian equity markets?
+> [!question]- mkt-reg-021 | What is Securities Transaction Tax (STT) in Indian equity markets?
 > A regulatory turnover tax levied directly on the value of taxable securities transactions executed on recognized Indian stock exchanges.
 
-> [!question] mkt-reg-022 | Under Section 43(5) of the Indian Income Tax Act, how are equity F&O derivatives classified?
+> [!question]- mkt-reg-022 | Under Section 43(5) of the Indian Income Tax Act, how are equity F&O derivatives classified?
 > As Non-Speculative Business Income.
 
-> [!question] mkt-reg-023 | How is intraday equity cash trading classified for tax purposes in India?
+> [!question]- mkt-reg-023 | How is intraday equity cash trading classified for tax purposes in India?
 > As Speculative Business Income (cannot be offset against non-speculative business income).
 
-> [!question] mkt-reg-024 | How is absolute turnover calculated for futures trading under Indian Section 44AB?
+> [!question]- mkt-reg-024 | How is absolute turnover calculated for futures trading under Indian Section 44AB?
 > The sum of all positive and negative profit and loss amounts across all executed trades.
 
-> [!question] mkt-reg-025 | What is the purpose of the mandatory Chartered Accountant tax audit under Indian Section 44AB?
+> [!question]- mkt-reg-025 | What is the purpose of the mandatory Chartered Accountant tax audit under Indian Section 44AB?
 > To independently audit business books of accounts when trading turnover exceeds specified statutory limits (e.g. ₹10 Crore with digital transactions).
 
-> [!question] mkt-reg-026 | Can Indian traders carry forward non-speculative business losses from F&O trading?
+> [!question]- mkt-reg-026 | Can Indian traders carry forward non-speculative business losses from F&O trading?
 > Yes, non-speculative business losses can be carried forward for up to 8 consecutive assessment years to offset future business income.
 
-> [!question] mkt-reg-027 | What is Federal Reserve Regulation T initial margin on US equity cash shares?
+> [!question]- mkt-reg-027 | What is Federal Reserve Regulation T initial margin on US equity cash shares?
 > 50% initial margin, allowing a maximum of 2-to-1 overnight leverage for long equity purchases.
 
-> [!question] mkt-reg-028 | What is portfolio margin compared to traditional Regulation T margin?
+> [!question]- mkt-reg-028 | What is portfolio margin compared to traditional Regulation T margin?
 > A risk-based margin framework (using TIMS) calculating margin requirements based on net portfolio risk across modeled stress scenarios.
 
-> [!question] mkt-reg-029 | What is the minimum account equity typically required by US brokers to qualify for Portfolio Margin?
+> [!question]- mkt-reg-029 | What is the minimum account equity typically required by US brokers to qualify for Portfolio Margin?
 > A minimum of $100,000 to $125,000 in unencumbered account equity.
 
-> [!question] mkt-reg-030 | What is CFTC Rule 1.20 regarding futures customer funds?
+> [!question]- mkt-reg-030 | What is CFTC Rule 1.20 regarding futures customer funds?
 > Mandating that futures commission merchants (FCMs) strictly segregate customer commodity funds from firm proprietary capital.
 
-> [!question] mkt-reg-031 | What is a short squeeze forced buy-in under clearinghouse operations?
+> [!question]- mkt-reg-031 | What is a short squeeze forced buy-in under clearinghouse operations?
 > When a clearing broker involuntarily purchases shares in the open market to cover a client's short position because borrowed shares were recalled.
 
-> [!question] mkt-reg-032 | What is the primary golden rule of trading operations and compliance?
+> [!question]- mkt-reg-032 | What is the primary golden rule of trading operations and compliance?
 > Never let operational friction, regulatory penalties, or unhedged tax liabilities erode trading edge.
 
 ---

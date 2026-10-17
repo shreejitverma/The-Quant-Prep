@@ -212,131 +212,131 @@ A market making desk is short $100,000$ contracts of 4800 strike OTM puts.
 
 ## Interview questions
 
-> [!question] mkt-opt-065 | What is Gamma Exposure (GEX)?
+> [!question]- mkt-opt-065 | What is Gamma Exposure (GEX)?
 > An aggregate metric estimating the dollar value of underlying stock options dealers must buy or sell per 1% move in spot price to maintain delta neutrality.
 > It quantifies the structural feedback loop between derivatives hedging and underlying market liquidity.
 
-> [!question] mkt-opt-066 | What structural assumption is made regarding institutional options positioning when calculating GEX?
+> [!question]- mkt-opt-066 | What structural assumption is made regarding institutional options positioning when calculating GEX?
 > That market participants are net buyers of protective puts (dealers are short puts) and net sellers of covered calls (dealers are long calls).
 > This maps positive gamma to calls and negative gamma to puts in aggregate formulas.
 
-> [!question] mkt-opt-067 | How do dealers behave in a positive gamma regime when the underlying price drops?
+> [!question]- mkt-opt-067 | How do dealers behave in a positive gamma regime when the underlying price drops?
 > Dealers buy underlying shares as price falls to neutralize expanding long call and put deltas.
 > This programmatic buying provides liquidity and dampens downside price momentum.
 
-> [!question] mkt-opt-068 | How do dealers behave in a negative gamma regime when the underlying price drops?
+> [!question]- mkt-opt-068 | How do dealers behave in a negative gamma regime when the underlying price drops?
 > Dealers sell underlying shares into the decline to hedge rapidly expanding short put deltas.
 > This programmatic selling drains liquidity and accelerates market declines.
 
-> [!question] mkt-opt-069 | Define the zero-gamma flip point.
+> [!question]- mkt-opt-069 | Define the zero-gamma flip point.
 > The critical underlying spot price where aggregate dealer gamma across all strikes equals zero: sum GEX = 0.
 > It marks the boundary separating volatility suppression regimes from volatility acceleration regimes.
 
-> [!question] mkt-opt-070 | Why does realized volatility tend to fall below implied volatility when spot trades far above the zero gamma level?
+> [!question]- mkt-opt-070 | Why does realized volatility tend to fall below implied volatility when spot trades far above the zero gamma level?
 > In deep positive gamma territory, continuous dealer rebalancing (buying dips and selling rips) suppresses realized intraday price dispersion.
 > Options implied volatility decays as actual market moves remain tightly constrained.
 
-> [!question] mkt-opt-071 | What is Vanna in the context of dealer flow modeling?
+> [!question]- mkt-opt-071 | What is Vanna in the context of dealer flow modeling?
 > The cross derivative dDelta / dsigma measuring how option delta responds to changes in implied volatility.
 > It dictates how much underlying stock dealers must rebalance when volatility expands or collapses.
 
-> [!question] mkt-opt-072 | Explain the mechanics of a Vanna rally.
+> [!question]- mkt-opt-072 | Explain the mechanics of a Vanna rally.
 > When the market stabilizes and implied volatility drops, short put delta shrinks toward zero.
 > Options dealers who were short stock as a hedge must buy back massive volumes of shares, fueling a mechanical market rally.
 
-> [!question] mkt-opt-073 | What is Charm in the context of dealer flow modeling?
+> [!question]- mkt-opt-073 | What is Charm in the context of dealer flow modeling?
 > The rate of change of option delta with respect to the passage of time: -dDelta / dT.
 > It quantifies the natural delta decay of options as expiration approaches.
 
-> [!question] mkt-opt-074 | How do Charm flows influence market-on-close (MOC) trading into expiration Friday?
+> [!question]- mkt-opt-074 | How do Charm flows influence market-on-close (MOC) trading into expiration Friday?
 > As out-of-the-money options bleed delta toward zero into expiration, dealers systematically unwind their cash hedges.
 > If dealers are short OTM puts, Charm forces mechanical buying of underlying stock into Friday afternoon.
 
-> [!question] mkt-opt-075 | What is strike pinning on options expiration day?
+> [!question]- mkt-opt-075 | What is strike pinning on options expiration day?
 > The empirical tendency for an underlying asset price to close exactly at a strike with massive open interest.
 > Dynamic dealer hedging creates a localized gamma feedback trap that pulls spot price back toward the strike whenever it drifts away.
 
-> [!question] mkt-opt-076 | What is the Call Wall in market maker positioning?
+> [!question]- mkt-opt-076 | What is the Call Wall in market maker positioning?
 > The specific strike price with the single highest concentration of net positive call gamma exposure.
 > It acts as a formidable structural resistance level because dealer selling intensifies as spot approaches the strike.
 
-> [!question] mkt-opt-077 | What is the Put Wall in market maker positioning?
+> [!question]- mkt-opt-077 | What is the Put Wall in market maker positioning?
 > The specific strike price with the single highest concentration of net put open interest and negative gamma exposure.
 > It serves as a major structural support level or, if breached, the trigger for violent liquidity cascades.
 
-> [!question] mkt-opt-078 | Why does a breach of the Put Wall often lead to a rapid market selloff?
+> [!question]- mkt-opt-078 | Why does a breach of the Put Wall often lead to a rapid market selloff?
 > Below the Put Wall, deep OTM puts flip to at-the-money, causing dealer negative gamma to peak.
 > Dealers must dump enormous quantities of underlying stock into thin market depth to maintain delta neutrality.
 
-> [!question] mkt-opt-079 | What is the Volatility Trigger in GEX terminology?
+> [!question]- mkt-opt-079 | What is the Volatility Trigger in GEX terminology?
 > An alternative term for the zero-gamma flip point.
 > It indicates the inflection price below which market volatility is expected to trigger an expansion.
 
-> [!question] mkt-opt-080 | How does high short interest interact with short dealer gamma?
+> [!question]- mkt-opt-080 | How does high short interest interact with short dealer gamma?
 > If a heavily shorted stock triggers a short squeeze while dealers are short call gamma, dealers must aggressively buy shares alongside short sellers.
 > This dual buying force creates parabolic "gamma squeeze" upside explosions.
 
-> [!question] mkt-opt-081 | Why did retail options buying in 2021 invalidate standard institutional GEX assumptions?
+> [!question]- mkt-opt-081 | Why did retail options buying in 2021 invalidate standard institutional GEX assumptions?
 > Retail traders aggressively purchased out-of-the-money call options, forcing market makers into massive short call gamma positions.
 > Instead of dampening rallies, dealer hedging amplified upside moves into extreme parabolic spikes.
 
-> [!question] mkt-opt-082 | What happens to aggregate GEX immediately following a monthly options expiration (OpEx)?
+> [!question]- mkt-opt-082 | What happens to aggregate GEX immediately following a monthly options expiration (OpEx)?
 > Expiring options contracts are extinguished, removing their associated gamma from the market.
 > Aggregate GEX drops sharply, "un-pinning" the underlying asset and frequently initiating large directional trend moves.
 
-> [!question] mkt-opt-083 | What is OpEx week seasonality and why does it occur?
+> [!question]- mkt-opt-083 | What is OpEx week seasonality and why does it occur?
 > The tendency for equity markets to exhibit compressed volatility during the days leading up to monthly OpEx.
 > Large concentrations of near-dated gamma force market makers into active volatility-dampening hedging.
 
-> [!question] mkt-opt-084 | What is the difference between spot GEX and dollar GEX?
+> [!question]- mkt-opt-084 | What is the difference between spot GEX and dollar GEX?
 > Spot GEX measures shares to buy/sell per 1-point move in the underlying asset: sum OI * M * Gamma * S.
 > Dollar GEX measures the total dollar value of stock to trade per 1% move: Spot GEX * S / 100.
 
-> [!question] mkt-opt-085 | How does high interest rate environment impact dealer Rho and forward hedging?
+> [!question]- mkt-opt-085 | How does high interest rate environment impact dealer Rho and forward hedging?
 > Higher interest rates increase forward prices (F = S * exp((r - q)*T)), shifting ATM strikes higher.
 > Dealers must adjust forward cash financing costs and early exercise boundaries on dividend-paying stocks.
 
-> [!question] mkt-opt-086 | How does zero-days-to-expiration (0DTE) option volume alter dealer intraday GEX?
+> [!question]- mkt-opt-086 | How does zero-days-to-expiration (0DTE) option volume alter dealer intraday GEX?
 > 0DTE options possess astronomical Gamma that appears and vanishes within a single trading day.
 > Dealers face hyper-concentrated intraday hedging requirements that can trigger sharp intra-day mean reversions or sudden momentum runs.
 
-> [!question] mkt-opt-087 | Why are 0DTE options effective instruments for manufactured intraday gamma squeezes?
+> [!question]- mkt-opt-087 | Why are 0DTE options effective instruments for manufactured intraday gamma squeezes?
 > Because near-expiry options have tiny premiums, retail or algorithmic traders can purchase enormous contract quantities with minimal capital.
 > The astronomical gamma forces dealers to buy massive share volumes immediately upon slight price increases.
 
-> [!question] mkt-opt-088 | What is the primary data limitation when estimating dealer positioning from FINRA/CBOE open interest?
+> [!question]- mkt-opt-088 | What is the primary data limitation when estimating dealer positioning from FINRA/CBOE open interest?
 > Open interest is published only once per day (overnight) and reflects settled trades from the prior session.
 > It cannot capture massive intraday positioning shifts, opening versus closing trades, or OTC cross-hedges.
 
-> [!question] mkt-opt-089 | Explain the term "volatility suppression" under large positive GEX.
+> [!question]- mkt-opt-089 | Explain the term "volatility suppression" under large positive GEX.
 > The structural dampening of market swings caused by dealers selling into strength and buying into weakness.
 > Price distribution becomes leptokurtic with truncated standard deviations.
 
-> [!question] mkt-opt-090 | What is speed risk for a dealer hedging a book with high gamma concentration?
+> [!question]- mkt-opt-090 | What is speed risk for a dealer hedging a book with high gamma concentration?
 > Speed is the third derivative dGamma / dS.
 > High speed means dealer gamma shifts violently during a market gap, causing delta hedges to rapidly become outdated.
 
-> [!question] mkt-opt-091 | How does an inverted VIX term structure affect dealer risk appetite?
+> [!question]- mkt-opt-091 | How does an inverted VIX term structure affect dealer risk appetite?
 > Backwardation signals severe immediate market stress and elevated gap risk.
 > Dealers widen bid-ask spreads, reduce quoted size, and aggressively derisk inventory, further thinning market liquidity.
 
-> [!question] mkt-opt-092 | What is shadow gamma in exotic options books?
+> [!question]- mkt-opt-092 | What is shadow gamma in exotic options books?
 > Gamma exposure originating from barrier options, autocallables, and structured notes that is not visible in listed exchange open interest.
 > When spot crosses an autocall barrier, dealer gamma can vanish instantaneously, causing abrupt market air pockets.
 
-> [!question] mkt-opt-093 | How do dealers hedge when trading index options against single-stock constituents?
+> [!question]- mkt-opt-093 | How do dealers hedge when trading index options against single-stock constituents?
 > Dealers trade index options (e.g., SPX) and hedge by buying or selling the 500 underlying component stocks according to their index weights.
 > This links single-stock intraday liquidity directly to index options dealer positioning.
 
-> [!question] mkt-opt-094 | What is the role of market-on-close (MOC) imbalance orders in dealer delta reconciliation?
+> [!question]- mkt-opt-094 | What is the role of market-on-close (MOC) imbalance orders in dealer delta reconciliation?
 > Market makers face overnight jump risk and frequently use MOC orders to flatten delta imbalances at guaranteed official closing prices.
 > Massive MOC imbalances often reflect late-day Greek unwinds.
 
-> [!question] mkt-opt-095 | Why does low market depth exacerbate negative gamma cascades?
+> [!question]- mkt-opt-095 | Why does low market depth exacerbate negative gamma cascades?
 > In a thin limit order book, dealer market orders consume multiple price levels, causing large market impact.
 > The resulting price drop triggers additional short put gamma, creating an endogenous feedback loop.
 
-> [!question] mkt-opt-096 | How should a quantitative trader adapt trading style when transitioning from positive to negative GEX?
+> [!question]- mkt-opt-096 | How should a quantitative trader adapt trading style when transitioning from positive to negative GEX?
 > In positive GEX, favor mean-reversion, range-bound strategies, tight profit targets, and selling premium.
 > In negative GEX, favor momentum, breakout strategies, wider stop losses, and purchasing volatility protection.
 

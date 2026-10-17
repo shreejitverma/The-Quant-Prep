@@ -184,100 +184,100 @@ Conduct a Fisher Scuttlebutt and Fifteen-Point Audit on MedTech Diagnostics:
 
 ## Practice questions
 
-> [!question] mkt-vi-033 | What was Philip Fisher's primary contribution to modern value investing?
+> [!question]- mkt-vi-033 | What was Philip Fisher's primary contribution to modern value investing?
 > Qualitative growth investing: identifying exceptional businesses with structural competitive moats and holding them for multi-decade compounding.
 
-> [!question] mkt-vi-034 | What is the Scuttlebutt Method?
+> [!question]- mkt-vi-034 | What is the Scuttlebutt Method?
 > An investigative research methodology that gathers operational intelligence on a business by interviewing its competitors, suppliers, customers, and former employees.
 
-> [!question] mkt-vi-035 | Why are competitor interviews particularly revealing in Scuttlebutt research?
+> [!question]- mkt-vi-035 | Why are competitor interviews particularly revealing in Scuttlebutt research?
 > Because competitors possess intimate industry knowledge and will candidly describe which rival's technology, pricing, or sales force they find hardest to compete against.
 
-> [!question] mkt-vi-036 | How many points comprise Philip Fisher's qualitative investment checklist?
+> [!question]- mkt-vi-036 | How many points comprise Philip Fisher's qualitative investment checklist?
 > Fifteen distinct diagnostic points.
 
-> [!question] mkt-vi-037 | What is Fisher's first point regarding a company's market potential?
+> [!question]- mkt-vi-037 | What is Fisher's first point regarding a company's market potential?
 > Products or services must have sufficient market runway to enable substantial sales expansion for at least several years.
 
-> [!question] mkt-vi-038 | How did Fisher evaluate a company's research and development (R&D) efforts?
+> [!question]- mkt-vi-038 | How did Fisher evaluate a company's research and development (R&D) efforts?
 > By measuring commercial productivity: how effectively R&D expenditures translate into profitable, market-leading products, rather than total dollars spent.
 
-> [!question] mkt-vi-039 | What was Fisher's view on corporate sales and marketing organizations?
+> [!question]- mkt-vi-039 | What was Fisher's view on corporate sales and marketing organizations?
 > Even the greatest product will fail without an aggressive, highly competent sales and distribution network to educate customers and capture market share.
 
-> [!question] mkt-vi-040 | Why did Fisher insist that an outstanding company must maintain high profit margins?
+> [!question]- mkt-vi-040 | Why did Fisher insist that an outstanding company must maintain high profit margins?
 > High profit margins reflect pricing power and cost leadership, providing a financial cushion during industry recessions to self-fund R&D.
 
-> [!question] mkt-vi-041 | How does Fisher's Point 7 evaluate labor and personnel relations?
+> [!question]- mkt-vi-041 | How does Fisher's Point 7 evaluate labor and personnel relations?
 > Outstanding labor relations mean low employee turnover, high shop-floor morale, and zero strike disruptions, lowering overall unit production costs.
 
-> [!question] mkt-vi-042 | Why is management transparency in bad times (Point 14) critical for an investor?
+> [!question]- mkt-vi-042 | Why is management transparency in bad times (Point 14) critical for an investor?
 > Executives who communicate candidly when unexpected operational problems occur are far less likely to manipulate accounting or conceal permanent deterioration.
 
-> [!question] mkt-vi-043 | What was Philip Fisher's famous rule regarding when to sell an outstanding stock?
+> [!question]- mkt-vi-043 | What was Philip Fisher's famous rule regarding when to sell an outstanding stock?
 > If the job has been correctly done when a common stock is purchased, the time to sell it is almost never.
 
-> [!question] mkt-vi-044 | What are the only three valid reasons to sell a common stock under Fisher's framework?
+> [!question]- mkt-vi-044 | What are the only three valid reasons to sell a common stock under Fisher's framework?
 > 1. An error was made in the original evaluation; 2. The company ceases to qualify under the 15 points; 3. A vastly superior investment opportunity emerges.
 
-> [!question] mkt-vi-045 | Why did Fisher strongly advise against selling an outstanding compounder because it appears temporarily overvalued?
+> [!question]- mkt-vi-045 | Why did Fisher strongly advise against selling an outstanding compounder because it appears temporarily overvalued?
 > Because superior companies regularly outgrow temporary valuation multiples, and selling incurs capital gains taxes and replaces high quality with mediocre ideas.
 
-> [!question] mkt-vi-046 | What did Warren Buffett mean when he stated 'I am 85% Graham and 15% Fisher'?
+> [!question]- mkt-vi-046 | What did Warren Buffett mean when he stated 'I am 85% Graham and 15% Fisher'?
 > His baseline margin of safety and emotional discipline come from Graham, while his focus on business quality, moats, and holding compounders comes from Fisher.
 
-> [!question] mkt-vi-047 | How did Fisher view portfolio diversification?
+> [!question]- mkt-vi-047 | How did Fisher view portfolio diversification?
 > Fisher favored extreme concentration (holding between 3 and 10 exceptional companies), arguing that over-diversification is a hedge against ignorance.
 
-> [!question] mkt-vi-048 | What is the danger of dilutive equity financing in growth investing (Fisher's Point 13)?
+> [!question]- mkt-vi-048 | What is the danger of dilutive equity financing in growth investing (Fisher's Point 13)?
 > If rapid growth requires continuous common stock issuances, incremental earnings are diluted across a swelling share base, producing zero per-share wealth creation.
 
-> [!question] mkt-vi-049 | How did Fisher distinguish between accounting profit and economic profit?
+> [!question]- mkt-vi-049 | How did Fisher distinguish between accounting profit and economic profit?
 > Accounting profits can be inflated by cutting maintenance or skimping on R&D; economic profits require sustainable investment to preserve future margins.
 
-> [!question] mkt-vi-050 | What is management depth in Fisher's Point 9?
+> [!question]- mkt-vi-050 | What is management depth in Fisher's Point 9?
 > Having a capable, empowered second tier of rising operational executives so the company's future does not hinge entirely on a single aging founder.
 
-> [!question] mkt-vi-051 | Why did Fisher warn against investing in companies with high executive turnover?
+> [!question]- mkt-vi-051 | Why did Fisher warn against investing in companies with high executive turnover?
 > Frequent departures of senior managers signal toxic boardroom politics, micromanagement, or hidden internal operational failures.
 
-> [!question] mkt-vi-052 | What was Fisher's famous book on conservative investing published in 1975?
+> [!question]- mkt-vi-052 | What was Fisher's famous book on conservative investing published in 1975?
 > *Conservative Investors Sleep Well*.
 
-> [!question] mkt-vi-053 | What role did See's Candies play in demonstrating Fisher's principles to Berkshire Hathaway?
+> [!question]- mkt-vi-053 | What role did See's Candies play in demonstrating Fisher's principles to Berkshire Hathaway?
 > It proved that a business with low tangible assets but immense customer brand loyalty and pricing power generates vastly more wealth than capital-intensive net-nets.
 
-> [!question] mkt-vi-054 | How should an analyst approach former employees during Scuttlebutt research?
+> [!question]- mkt-vi-054 | How should an analyst approach former employees during Scuttlebutt research?
 > Ask why they left, what corporate priorities were neglected, and whether they would still enthusiastically buy the company's products today.
 
-> [!question] mkt-vi-055 | What is Fisher's definition of an outstanding sales organization?
+> [!question]- mkt-vi-055 | What is Fisher's definition of an outstanding sales organization?
 > One that deeply understands customer economics, educates buyers on total cost of ownership, and builds long-term institutional relationships.
 
-> [!question] mkt-vi-056 | Why is cost accounting sophistication (Point 10) critical in competitive industries?
+> [!question]- mkt-vi-056 | Why is cost accounting sophistication (Point 10) critical in competitive industries?
 > Companies that do not accurately understand per-unit and per-customer profitability inevitably underprice contracts and lose money on unprofitable volume.
 
-> [!question] mkt-vi-057 | How does Fisher's approach handle macroeconomic and market cycle predictions?
+> [!question]- mkt-vi-057 | How does Fisher's approach handle macroeconomic and market cycle predictions?
 > Fisher ignored short-term macro forecasts, arguing that true growth compounders will thrive across multiple economic cycles regardless of GDP swings.
 
-> [!question] mkt-vi-058 | What is the 'whisper test' in Scuttlebutt channel checks?
+> [!question]- mkt-vi-058 | What is the 'whisper test' in Scuttlebutt channel checks?
 > Asking industry professionals: 'If you had to invest your family's life savings in one of your competitors for 10 years, which one would you choose?'
 
-> [!question] mkt-vi-059 | What is the primary difference in risk definition between Graham and Fisher?
+> [!question]- mkt-vi-059 | What is the primary difference in risk definition between Graham and Fisher?
 > Graham defined risk as paying more than balance sheet liquidation value; Fisher defined risk as investing in companies with weak management, low moats, and stagnant growth.
 
-> [!question] mkt-vi-060 | Why did Fisher avoid investing in promotion-heavy startup businesses?
+> [!question]- mkt-vi-060 | Why did Fisher avoid investing in promotion-heavy startup businesses?
 > Early startups lack proven commercial unit economics, established customer loyalty, and seasoned management teams, making them pure speculations.
 
-> [!question] mkt-vi-061 | How does Fisher evaluate executive compensation in Point 15?
+> [!question]- mkt-vi-061 | How does Fisher evaluate executive compensation in Point 15?
 > Salaries and bonuses should be commensurate with performance; excessive executive perks and self-enriching transactions reveal compromised integrity.
 
-> [!question] mkt-vi-062 | Why is long-range profit orientation (Point 12) vital for sustainable competitive advantage?
+> [!question]- mkt-vi-062 | Why is long-range profit orientation (Point 12) vital for sustainable competitive advantage?
 > Companies willing to sacrifice current-quarter profits to invest in superior customer service and long-term R&D build unassailable multi-decade moats.
 
-> [!question] mkt-vi-063 | What famous semiconductor investment did Fisher hold for several decades?
+> [!question]- mkt-vi-063 | What famous semiconductor investment did Fisher hold for several decades?
 > Motorola, which he purchased in 1955 and held until his death in 2004, generating staggering multi-thousand percent returns.
 
-> [!question] mkt-vi-064 | What is Philip Fisher's ultimate takeaway for fundamental investors?
+> [!question]- mkt-vi-064 | What is Philip Fisher's ultimate takeaway for fundamental investors?
 > Outstanding businesses run by brilliant, high-integrity leaders with large reinvestment runways are exceedingly rare; when you find one, hold on for the ride.
 
 ---

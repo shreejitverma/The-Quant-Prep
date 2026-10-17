@@ -242,100 +242,100 @@ The stock is an avoid or short candidate with severe structural downside.
 
 ## Practice questions
 
-> [!question] mkt-val-225 | What is the central thesis of Aswath Damodaran's 'Narrative and Numbers'?
+> [!question]- mkt-val-225 | What is the central thesis of Aswath Damodaran's 'Narrative and Numbers'?
 > Valuation must bridge qualitative storytelling with quantitative financial discipline; stories provide the soul, while numbers provide the tether to reality.
 
-> [!question] mkt-val-226 | What are the Three P's of narrative validation?
+> [!question]- mkt-val-226 | What are the Three P's of narrative validation?
 > Possible (does not violate physical or legal reality), Plausible (has historical precedent), and Probable (has a realistic likelihood of unfolding).
 
-> [!question] mkt-val-227 | What is the danger of relying on pure quantitative financial modeling without a qualitative narrative?
+> [!question]- mkt-val-227 | What is the danger of relying on pure quantitative financial modeling without a qualitative narrative?
 > Models become sterile spreadsheet exercises with arbitrary mechanical formulas disconnected from competitive dynamics and operational reality.
 
-> [!question] mkt-val-228 | What is the danger of relying on pure qualitative business storytelling without numbers?
+> [!question]- mkt-val-228 | What is the danger of relying on pure qualitative business storytelling without numbers?
 > Stories become unconstrained promotional fantasies that ignore capital requirements, cost of capital, and economic limits.
 
-> [!question] mkt-val-229 | How does a business narrative translate into the revenue growth input of a DCF?
+> [!question]- mkt-val-229 | How does a business narrative translate into the revenue growth input of a DCF?
 > The narrative defines the problem solved, target customer segments, and competitive superiority, which dictate TAM size and market share velocity.
 
-> [!question] mkt-val-230 | How does a business narrative translate into operating profit margins?
+> [!question]- mkt-val-230 | How does a business narrative translate into operating profit margins?
 > The narrative of pricing power, moat strength, and cost structure determines gross margins, operating leverage, and terminal operating profitability.
 
-> [!question] mkt-val-231 | How does a business narrative translate into reinvestment needs?
+> [!question]- mkt-val-231 | How does a business narrative translate into reinvestment needs?
 > The narrative of capital intensity (software vs physical logistics) dictates the sales-to-capital ratio, working capital demands, and capex requirements.
 
-> [!question] mkt-val-232 | What is a Narrative Break?
+> [!question]- mkt-val-232 | What is a Narrative Break?
 > When reported operational results or competitive shifts decisively prove that the core qualitative story supporting an asset's valuation is false.
 
-> [!question] mkt-val-233 | What is the Gary Klein Pre-Mortem in valuation?
+> [!question]- mkt-val-233 | What is the Gary Klein Pre-Mortem in valuation?
 > A decision-making tool where analysts assume the investment failed catastrophically years in the future, working backward to identify hidden flaws.
 
-> [!question] mkt-val-234 | Why is a Pre-Mortem superior to a traditional Post-Mortem?
+> [!question]- mkt-val-234 | Why is a Pre-Mortem superior to a traditional Post-Mortem?
 > A Post-Mortem occurs after capital is lost; a Pre-Mortem identifies fatal risks and cognitive blind spots before capital is deployed.
 
-> [!question] mkt-val-235 | What are Pre-Registered Kill Criteria?
+> [!question]- mkt-val-235 | What are Pre-Registered Kill Criteria?
 > Precise, objective operational metrics defined in advance that trigger immediate position liquidation if breached, preventing emotional rationalization.
 
-> [!question] mkt-val-236 | What is the 'inside view' versus the 'outside view' described by Daniel Kahneman?
+> [!question]- mkt-val-236 | What is the 'inside view' versus the 'outside view' described by Daniel Kahneman?
 > The inside view focuses on the unique details of the specific company; the outside view benchmarks the company against broad historical base-rate distributions.
 
-> [!question] mkt-val-237 | How does base-rate neglect distort growth forecasts?
+> [!question]- mkt-val-237 | How does base-rate neglect distort growth forecasts?
 > Analysts assume a company will grow at 30% for a decade, ignoring base rates showing less than 1% of firms maintain 30% growth at scale.
 
-> [!question] mkt-val-238 | What is corporate lifecycle transition modeling?
+> [!question]- mkt-val-238 | What is corporate lifecycle transition modeling?
 > Adjusting valuation drivers as a firm moves from startup (high risk, negative cash) to growth (scaling), maturity (cash cows), and decline (fade).
 
-> [!question] mkt-val-239 | Why does the cost of capital change across a company's lifecycle?
+> [!question]- mkt-val-239 | Why does the cost of capital change across a company's lifecycle?
 > Startups carry high beta and distress risk; as businesses mature with diversified cash flows and debt capacity, cost of capital declines toward market averages.
 
-> [!question] mkt-val-240 | What is the 'halo effect' in corporate narrative evaluation?
+> [!question]- mkt-val-240 | What is the 'halo effect' in corporate narrative evaluation?
 > The cognitive bias where an investor views all aspects of a company positively because its recent stock price performance has been strong.
 
-> [!question] mkt-val-241 | How should an analyst respond when a company changes its narrative to justify poor numbers?
+> [!question]- mkt-val-241 | How should an analyst respond when a company changes its narrative to justify poor numbers?
 > Recognize the pivot as a severe red flag, indicating management has lost control of the original core thesis.
 
-> [!question] mkt-val-242 | What is the difference between an organic narrative shift and a defensive pivot?
+> [!question]- mkt-val-242 | What is the difference between an organic narrative shift and a defensive pivot?
 > Organic shifts expand into adjacent markets from core strength; defensive pivots abandon the core business because original unit economics failed.
 
-> [!question] mkt-val-243 | How does customer concentration affect narrative risk?
+> [!question]- mkt-val-243 | How does customer concentration affect narrative risk?
 > If a high percentage of revenue depends on 2 or 3 customers, any narrative of pricing power or moat stability is fragile.
 
-> [!question] mkt-val-244 | What is the role of regulatory risk in the 'Plausible' filter?
+> [!question]- mkt-val-244 | What is the role of regulatory risk in the 'Plausible' filter?
 > A business narrative assuming unregulated monopolies in sensitive sectors (fintech, Big Tech, healthcare) is implausible over long horizons.
 
-> [!question] mkt-val-245 | How does technological obsolescence break high-growth hardware narratives?
+> [!question]- mkt-val-245 | How does technological obsolescence break high-growth hardware narratives?
 > Hardware products face rapid commoditization and short product replacement cycles, compressing margins far faster than software platforms.
 
-> [!question] mkt-val-246 | Why must terminal margins reflect competitive mean reversion?
+> [!question]- mkt-val-246 | Why must terminal margins reflect competitive mean reversion?
 > Because abnormally high margins attract capital, substitutes, and price competition that erode margins toward industry economic equilibrium.
 
-> [!question] mkt-val-247 | What is confirmation bias in ongoing position management?
+> [!question]- mkt-val-247 | What is confirmation bias in ongoing position management?
 > Seeking out news and commentary that confirm the original investment narrative while actively dismissing contradictory forensic evidence.
 
-> [!question] mkt-val-248 | How do pre-registered kill criteria protect against confirmation bias?
+> [!question]- mkt-val-248 | How do pre-registered kill criteria protect against confirmation bias?
 > By establishing binding, non-negotiable exit rules before emotional attachment to the position develops.
 
-> [!question] mkt-val-249 | What is the role of unit economics in verifying narrative feasibility?
+> [!question]- mkt-val-249 | What is the role of unit economics in verifying narrative feasibility?
 > Unit economics prove whether individual customer transactions are fundamentally profitable before factoring in corporate overhead scale.
 
-> [!question] mkt-val-250 | How did Uber's valuation narrative evolve from 2014 to 2024?
+> [!question]- mkt-val-250 | How did Uber's valuation narrative evolve from 2014 to 2024?
 > From a speculative narrative of swallowing global ground logistics and food delivery to a disciplined duopoly ride-hailing business focused on cash flow.
 
-> [!question] mkt-val-251 | What is the 'curse of capital' for visionary narrative companies?
+> [!question]- mkt-val-251 | What is the 'curse of capital' for visionary narrative companies?
 > Abundant cheap capital allows unprofitable companies to avoid operational discipline, masking fatal unit economic flaws until funding freezes.
 
-> [!question] mkt-val-252 | How should management stock sales be interpreted in the context of narrative integrity?
+> [!question]- mkt-val-252 | How should management stock sales be interpreted in the context of narrative integrity?
 > Heavy insider selling while management publicly promotes an accelerating growth narrative is a classic signal of narrative dishonesty.
 
-> [!question] mkt-val-253 | Why should an analyst model both a narrative bull case and a narrative bear case?
+> [!question]- mkt-val-253 | Why should an analyst model both a narrative bull case and a narrative bear case?
 > To establish the full probability distribution of value and ensure the investment offers asymmetric upside relative to downside risk.
 
-> [!question] mkt-val-254 | What is the relationship between variant perception and the narrative-to-numbers process?
+> [!question]- mkt-val-254 | What is the relationship between variant perception and the narrative-to-numbers process?
 > Variant perception is the exact point where the analyst's disciplined, evidence-based narrative diverges from the market's consensus pricing.
 
-> [!question] mkt-val-255 | What is the ultimate deliverable of a complete valuation synthesis?
+> [!question]- mkt-val-255 | What is the ultimate deliverable of a complete valuation synthesis?
 > An investment thesis articulating the business narrative, translated into bound financial drivers, verified by base rates, and protected by pre-mortems.
 
-> [!question] mkt-val-256 | What is the final golden rule of valuation synthesis?
+> [!question]- mkt-val-256 | What is the final golden rule of valuation synthesis?
 > Never fall in love with a story; let the numbers challenge the story, and let the story explain the numbers.
 
 ---

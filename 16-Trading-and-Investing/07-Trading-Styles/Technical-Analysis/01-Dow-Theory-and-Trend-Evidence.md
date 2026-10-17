@@ -219,130 +219,130 @@ A macro strategist assesses market health using closing prices across two consec
 
 ## Interview questions
 
-> [!question] mkt-ta-001 | Who originated Dow Theory and what was its original purpose?
+> [!question]- mkt-ta-001 | Who originated Dow Theory and what was its original purpose?
 > Charles H. Dow in Wall Street Journal editorials from 1899 to 1902.
 > It was designed not as a speculative day-trading system, but as an economic barometer to gauge business cycle health.
 
-> [!question] mkt-ta-002 | What are the three orders of market trends identified by Dow Theory?
+> [!question]- mkt-ta-002 | What are the three orders of market trends identified by Dow Theory?
 > Primary trend (months to years), secondary reaction (weeks to months), and minor fluctuations (hours to days).
 > Dow considered minor fluctuations essentially unforecastable noise.
 
-> [!question] mkt-ta-003 | Explain the three phases of a Dow Theory primary bull market.
+> [!question]- mkt-ta-003 | Explain the three phases of a Dow Theory primary bull market.
 > Accumulation (informed money buys from distressed sellers), public participation (rising earnings attract broad participation), and distribution (informed money unloads into speculative euphoria).
 
-> [!question] mkt-ta-004 | What is the principle of confirmation in Dow Theory?
+> [!question]- mkt-ta-004 | What is the principle of confirmation in Dow Theory?
 > A primary trend signal in one market average must be confirmed by a corresponding move in a complementary average (e.g. Industrials and Transports).
 > Divergence between the averages warns of structural trend exhaustion.
 
-> [!question] mkt-ta-005 | How did Dow Theory explain the economic link between Industrials and Transports?
+> [!question]- mkt-ta-005 | How did Dow Theory explain the economic link between Industrials and Transports?
 > Industrial companies produce goods, and transportation companies deliver them to market.
 > If goods are being manufactured but freight shipments are falling, goods are accumulating in inventory, signaling economic contraction.
 
-> [!question] mkt-ta-006 | What is the role of trading volume in Dow Theory?
+> [!question]- mkt-ta-006 | What is the role of trading volume in Dow Theory?
 > Volume must expand in the direction of the primary trend and contract on secondary pullbacks.
 > Diminishing volume on new price highs signals waning institutional participation.
 
-> [!question] mkt-ta-007 | What is the mathematical definition of an uptrend in price action?
+> [!question]- mkt-ta-007 | What is the mathematical definition of an uptrend in price action?
 > A sequential series of Higher Highs (HH) and Higher Lows (HL) in price structure.
 > An uptrend remains valid until price breaks below the most recent structural higher low.
 
-> [!question] mkt-ta-008 | What is the 200-day Simple Moving Average (SMA) rule?
+> [!question]- mkt-ta-008 | What is the 200-day Simple Moving Average (SMA) rule?
 > A binary trend filter that allocates to the asset when price closes above its 200-day SMA and moves to cash/defense when price closes below.
 > It serves as the institutional baseline for secular trend following.
 
-> [!question] mkt-ta-009 | What did Brock, Lakonishok, and LeBaron (1992) find regarding moving average rules?
+> [!question]- mkt-ta-009 | What did Brock, Lakonishok, and LeBaron (1992) find regarding moving average rules?
 > Across 90 years of DJIA data, moving average buy signals produced positive returns while sell signals produced negative returns.
 > The results statistically rejected random walk and AR(1) models at high significance.
 
-> [!question] mkt-ta-010 | What was the primary finding of Siegel (2002) regarding the 200-day SMA on the DJIA?
+> [!question]- mkt-ta-010 | What was the primary finding of Siegel (2002) regarding the 200-day SMA on the DJIA?
 > The 200-day SMA achieved returns comparable to buy-and-hold (11.4% vs 11.2%) while reducing standard deviation from 18.5% to 13.8%.
 > It sidestepped every major catastrophic crash, including 1929, 1973, and 1987.
 
-> [!question] mkt-ta-011 | What did Alfred Cowles (1933) discover when analyzing William Peter Hamilton's Dow Theory editorials?
+> [!question]- mkt-ta-011 | What did Alfred Cowles (1933) discover when analyzing William Peter Hamilton's Dow Theory editorials?
 > Hamilton's actual recommendations underperformed passive buy-and-hold by approximately 3% annually from 1903 to 1929.
 > Frequent trading friction and delayed trend-change recognition degraded net performance.
 
-> [!question] mkt-ta-012 | What is a whipsaw in trend following?
+> [!question]- mkt-ta-012 | What is a whipsaw in trend following?
 > A false breakout or rapid oscillation around a moving average where a trader buys high and sells low in rapid succession.
 > Consecutive whipsaw losses create severe equity drawdowns in non-trending regimes.
 
-> [!question] mkt-ta-013 | What is a Golden Cross and Death Cross?
+> [!question]- mkt-ta-013 | What is a Golden Cross and Death Cross?
 > A Golden Cross occurs when a fast moving average (e.g. 50-day) crosses above a slow moving average (e.g. 200-day).
 > A Death Cross occurs when the fast moving average crosses below the slow moving average.
 
-> [!question] mkt-ta-014 | Why is support and resistance explained by behavioral anchoring?
+> [!question]- mkt-ta-014 | Why is support and resistance explained by behavioral anchoring?
 > Market participants anchor on past trade prices; traders who suffered drawdowns seek to sell at breakeven, creating resistance.
 > Traders who missed an initial advance place limit orders at former breakout levels, creating support.
 
-> [!question] mkt-ta-015 | What is polarity change in technical analysis?
+> [!question]- mkt-ta-015 | What is polarity change in technical analysis?
 > The empirical principle that once broken, a major support level converts into future resistance, and broken resistance converts into support.
 > It reflects the structural shift in supply and demand at former order concentration nodes.
 
-> [!question] mkt-ta-016 | What is order clustering at psychological round numbers?
+> [!question]- mkt-ta-016 | What is order clustering at psychological round numbers?
 > The tendency for retail and institutional limit orders to concentrate heavily at round decimal increments (e.g. $50, $100, $5,000).
 > It creates observable depth peaks in limit order books that temporarily absorb liquidity.
 
-> [!question] mkt-ta-017 | Why do classical trend-following strategies exhibit positive skewness (right-tail asymmetry)?
+> [!question]- mkt-ta-017 | Why do classical trend-following strategies exhibit positive skewness (right-tail asymmetry)?
 > By cutting losses quickly on false breakouts and letting profitable trends run, trend followers capture rare multi-sigma gains while bounding individual losses.
 > This return profile is structurally identical to holding long lookback straddles.
 
-> [!question] mkt-ta-018 | What is the main structural weakness of using Dow's Transportation Average today?
+> [!question]- mkt-ta-018 | What is the main structural weakness of using Dow's Transportation Average today?
 > Transportation accounts for a much smaller share of modern GDP, which is dominated by digital services, technology, and healthcare.
 > Modern quantitative frameworks use credit spreads and semiconductor indexes as leading confirmation indicators.
 
-> [!question] mkt-ta-019 | What is a trailing stop in trend trading?
+> [!question]- mkt-ta-019 | What is a trailing stop in trend trading?
 > A dynamic stop-loss order that ratchets higher as the asset advances, maintaining a fixed dollar, percentage, or volatility distance below current market price.
 > It protects accumulated profits while allowing the trend to continue unconstrained.
 
-> [!question] mkt-ta-020 | What is Average True Range (ATR) and how is it used in trend following?
+> [!question]- mkt-ta-020 | What is Average True Range (ATR) and how is it used in trend following?
 > A measure of market volatility developed by J. Welles Wilder that incorporates overnight gaps: max(H - L, |H - C_prev|, |L - C_prev|).
 > Trend desks set stop-loss distances and position sizing as multiples of ATR (e.g. 2x ATR).
 
-> [!question] mkt-ta-021 | What did Sullivan, Timmermann, and White (1999) conclude regarding technical trading rules?
+> [!question]- mkt-ta-021 | What did Sullivan, Timmermann, and White (1999) conclude regarding technical trading rules?
 > After adjusting for data-snooping bias across 7,835 technical rules using White's Reality Check, technical rules generated no statistically significant outperformance post-1986.
 > Outperformance in earlier samples vanished once data-mining penalties were applied.
 
-> [!question] mkt-ta-022 | What is a trendline and what constitutes a valid algorithmic trendline?
+> [!question]- mkt-ta-022 | What is a trendline and what constitutes a valid algorithmic trendline?
 > A line connecting sequential swing lows in an uptrend or swing highs in a downtrend.
 > To be algorithmically valid, it must touch at least three non-collinear pivot extremes without being violated by intervening bars.
 
-> [!question] mkt-ta-023 | What is a false breakout (bear trap / bull trap)?
+> [!question]- mkt-ta-023 | What is a false breakout (bear trap / bull trap)?
 > A brief price thrust beyond a well-defined support or resistance boundary that fails to attract sustained volume and violently reverses.
 > It frequently represents institutional liquidity harvesting targeting retail stop-loss clusters.
 
-> [!question] mkt-ta-024 | Explain the difference between an exponential moving average (EMA) and a simple moving average (SMA).
+> [!question]- mkt-ta-024 | Explain the difference between an exponential moving average (EMA) and a simple moving average (SMA).
 > An SMA assigns equal mathematical weight (1/N) to all observations in the lookback window.
 > An EMA assigns exponentially decaying weights, reacting more rapidly to recent price changes: EMA_t = alpha * P_t + (1 - alpha) * EMA_{t-1}.
 
-> [!question] mkt-ta-025 | Why does a simple moving average suffer from the "drop-off effect"?
+> [!question]- mkt-ta-025 | Why does a simple moving average suffer from the "drop-off effect"?
 > When a large price spike exits the lookback window N days later, the SMA jumps or drops even if current price is completely stationary.
 > EMAs avoid the drop-off effect by smoothly decaying past historical prices.
 
-> [!question] mkt-ta-026 | What is the lag of a simple moving average?
+> [!question]- mkt-ta-026 | What is the lag of a simple moving average?
 > The average time delay of an N-period SMA is (N - 1) / 2 periods.
 > A 200-day moving average lags current price action by approximately 99.5 trading days.
 
-> [!question] mkt-ta-027 | How does Lo, Mamaysky, and Wang (2000) evaluate technical patterns quantitatively?
+> [!question]- mkt-ta-027 | How does Lo, Mamaysky, and Wang (2000) evaluate technical patterns quantitatively?
 > By applying kernel regression smoothing to normalize price paths and comparing the empirical frequency of technical patterns against random simulated paths.
 > They demonstrated that certain patterns occur with statistical properties distinct from pure random walks.
 
-> [!question] mkt-ta-028 | What is time-frame alignment in multi-timeframe trend analysis?
+> [!question]- mkt-ta-028 | What is time-frame alignment in multi-timeframe trend analysis?
 > Requiring that the primary trend (e.g. weekly chart), intermediate trend (daily chart), and execution timeframe (hourly chart) agree in direction before taking a trade.
 > It filters out low-probability counter-trend trades.
 
-> [!question] mkt-ta-029 | What is a secular bull market versus a cyclical bull market?
+> [!question]- mkt-ta-029 | What is a secular bull market versus a cyclical bull market?
 > A secular bull market is a long-term economic expansion lasting 10 to 20 years driven by demographic and productivity growth.
 > A cyclical bull market is a shorter 2 to 5 year expansion within the secular backdrop, often interrupted by secondary corrections.
 
-> [!question] mkt-ta-030 | Why does a moving average rule underperform during low-volatility grinding bull markets?
+> [!question]- mkt-ta-030 | Why does a moving average rule underperform during low-volatility grinding bull markets?
 > Because the asset remains continuously above its moving average, the timing rule simply matches buy-and-hold while occasionally incurring false exit whipsaws on brief dips.
 > Moving average rules deliver value primarily by avoiding catastrophic bear market drawdowns.
 
-> [!question] mkt-ta-031 | What is a Donchian Channel?
+> [!question]- mkt-ta-031 | What is a Donchian Channel?
 > A band plotted using the highest high and lowest low over an N-period lookback window: Upper = max(H, N), Lower = min(L, N).
 > It forms the core breakout trigger used by the original Turtle Traders.
 
-> [!question] mkt-ta-032 | What is the risk-adjusted benefit of a trend-following overlay on equity portfolios?
+> [!question]- mkt-ta-032 | What is the risk-adjusted benefit of a trend-following overlay on equity portfolios?
 > It trims left-tail crash risk, truncating catastrophic drawdowns from -50% to manageable levels (-15% to -20%).
 > This preserves compounding capital and allows investors to deploy aggressive leverage during verified primary trends.
 

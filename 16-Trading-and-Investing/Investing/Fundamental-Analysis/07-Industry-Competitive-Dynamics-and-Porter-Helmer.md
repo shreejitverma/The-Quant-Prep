@@ -217,100 +217,100 @@ Evaluate two enterprise software competitors:
 
 ## Practice questions
 
-> [!question] mkt-fa-193 | What proportion of cross-sectional corporate profitability is explained by structural industry characteristics?
+> [!question]- mkt-fa-193 | What proportion of cross-sectional corporate profitability is explained by structural industry characteristics?
 > Approximately 20%, demonstrating that structural industry forces heavily constrain company-level returns.
 
-> [!question] mkt-fa-194 | What are Michael Porter's Five Forces?
+> [!question]- mkt-fa-194 | What are Michael Porter's Five Forces?
 > Threat of New Entrants, Bargaining Power of Buyers, Bargaining Power of Suppliers, Threat of Substitutes, and Competitive Rivalry.
 
-> [!question] mkt-fa-195 | How do high fixed costs exacerbate competitive rivalry in an industry?
+> [!question]- mkt-fa-195 | How do high fixed costs exacerbate competitive rivalry in an industry?
 > High fixed costs incentivize competitors to slash prices during demand downturns to produce marginal volume that covers fixed overhead, destroying industry pricing.
 
-> [!question] mkt-fa-196 | What are the conditions that create high bargaining power for suppliers?
+> [!question]- mkt-fa-196 | What are the conditions that create high bargaining power for suppliers?
 > Supplier concentration, high switching costs to alternate inputs, unique intellectual property, and viable threats of forward integration into the industry.
 
-> [!question] mkt-fa-197 | What is the difference between operational effectiveness and strategic power?
+> [!question]- mkt-fa-197 | What is the difference between operational effectiveness and strategic power?
 > Operational effectiveness is performing activities better than rivals (table stakes easily copied); strategic power is creating enduring structural asymmetries that competitors cannot copy.
 
-> [!question] mkt-fa-198 | What are Hamilton Helmer's 7 Powers?
+> [!question]- mkt-fa-198 | What are Hamilton Helmer's 7 Powers?
 > Scale Economies, Network Effects, Counter-Positioning, Switching Costs, Branding, Cornered Resource, and Process Power.
 
-> [!question] mkt-fa-199 | What is Counter-Positioning in Helmer's framework?
+> [!question]- mkt-fa-199 | What is Counter-Positioning in Helmer's framework?
 > A newcomer adopting an attractive business model that the incumbent cannot replicate because doing so would cannibalize its existing core profit streams.
 
-> [!question] mkt-fa-200 | What is a classic real-world example of Counter-Positioning?
+> [!question]- mkt-fa-200 | What is a classic real-world example of Counter-Positioning?
 > Vanguard offering at-cost mutual funds and ETFs, which traditional active managers charging 1.5% management fees could not match without destroying their business.
 
-> [!question] mkt-fa-201 | What is the barrier to entry in Scale Economies?
+> [!question]- mkt-fa-201 | What is the barrier to entry in Scale Economies?
 > A competitor must capture equivalent unit volume to match production costs; attempting to do so requires massive, loss-making capital deployment.
 
-> [!question] mkt-fa-202 | What is Metcalfe's Law in the context of Network Effects?
+> [!question]- mkt-fa-202 | What is Metcalfe's Law in the context of Network Effects?
 > The value of a network is proportional to the square of the number of connected users (V proportional to N^2).
 
-> [!question] mkt-fa-203 | What are the three primary types of Switching Costs?
+> [!question]- mkt-fa-203 | What are the three primary types of Switching Costs?
 > Procedural switching costs (retraining and process disruption), financial switching costs (contract fees and write-downs), and relational switching costs (loss of trusted ties).
 
-> [!question] mkt-fa-204 | Why do enterprise ERP systems like SAP and Oracle enjoy exceptionally high switching costs?
+> [!question]- mkt-fa-204 | Why do enterprise ERP systems like SAP and Oracle enjoy exceptionally high switching costs?
 > Replacing an operational ERP requires years of organizational retraining, huge consulting outlays, and risks operational paralysis across mission-critical billing and logistics.
 
-> [!question] mkt-fa-205 | What is the economic definition of a Brand as a Power?
+> [!question]- mkt-fa-205 | What is the economic definition of a Brand as a Power?
 > A brand conveys power only if it commands an objective price premium or acts as an uncertainty-reduction cognitive shortcut that competitors cannot duplicate.
 
-> [!question] mkt-fa-206 | What is a Cornered Resource?
+> [!question]- mkt-fa-206 | What is a Cornered Resource?
 > Preferential access to an idiosyncratic, non-transferable asset that produces superior economic returns, such as a prime regulatory spectrum license or key patent.
 
-> [!question] mkt-fa-207 | What is Process Power?
+> [!question]- mkt-fa-207 | What is Process Power?
 > Embedded, organization-wide proprietary routines and cultural tacit knowledge that yield lower costs or superior quality and cannot be reverse-engineered by outsiders.
 
-> [!question] mkt-fa-208 | What company historically exemplified Process Power in automotive manufacturing?
+> [!question]- mkt-fa-208 | What company historically exemplified Process Power in automotive manufacturing?
 > Toyota, through the multi-decade evolution of the Toyota Production System (TPS) and kanban inventory control.
 
-> [!question] mkt-fa-209 | What is the Competitive Advantage Period (CAP)?
+> [!question]- mkt-fa-209 | What is the Competitive Advantage Period (CAP)?
 > The estimated span of time during which a company is expected to sustain an ROIC exceeding its Weighted Average Cost of Capital (WACC).
 
-> [!question] mkt-fa-210 | What is the economic fade rate?
+> [!question]- mkt-fa-210 | What is the economic fade rate?
 > The rate at which abnormal returns on capital regress toward the market cost of capital due to competitive entry and technological obsolescence.
 
-> [!question] mkt-fa-211 | Why is assuming a constant high ROIC in terminal value a fatal valuation mistake?
+> [!question]- mkt-fa-211 | Why is assuming a constant high ROIC in terminal value a fatal valuation mistake?
 > Because capitalistic competition inevitably erodes economic spreads unless the company continuously commands growing structural powers.
 
-> [!question] mkt-fa-212 | What is a Winner-Take-Most market dynamic?
+> [!question]- mkt-fa-212 | What is a Winner-Take-Most market dynamic?
 > An industry where positive feedback loops from strong network effects or scale economies cause a single dominant player to capture the vast majority of industry profits.
 
-> [!question] mkt-fa-213 | How does Net Revenue Retention (NRR) serve as a proxy for switching costs in software?
+> [!question]- mkt-fa-213 | How does Net Revenue Retention (NRR) serve as a proxy for switching costs in software?
 > An NRR significantly above 100% demonstrates that existing customers not only stay (low churn) but steadily increase spend, indicating high utility and integration friction.
 
-> [!question] mkt-fa-214 | What is the difference between direct and indirect (2-sided) network effects?
+> [!question]- mkt-fa-214 | What is the difference between direct and indirect (2-sided) network effects?
 > Direct effects increase value as more users of the same type join (telephones); indirect effects occur when more users on one side attract more users on another (credit card holders and merchants).
 
-> [!question] mkt-fa-215 | Why does high industry concentration not always guarantee high profitability?
+> [!question]- mkt-fa-215 | Why does high industry concentration not always guarantee high profitability?
 > If products are commoditized, fixed costs are high, and exit barriers are elevated, even a duopoly can engage in mutually destructive price wars (e.g. memory chips).
 
-> [!question] mkt-fa-216 | What are exit barriers and how do they impact industry health?
+> [!question]- mkt-fa-216 | What are exit barriers and how do they impact industry health?
 > Specialized assets, labor agreements, and regulatory closure costs that prevent failing capacity from leaving the market, prolonging industry price depression.
 
-> [!question] mkt-fa-217 | What is the relationship between the Threat of Substitutes and cross-price elasticity of demand?
+> [!question]- mkt-fa-217 | What is the relationship between the Threat of Substitutes and cross-price elasticity of demand?
 > A high threat of substitutes implies high cross-price elasticity: a small price increase causes immediate demand migration to alternative functional solutions.
 
-> [!question] mkt-fa-218 | How does product customization impact buyer bargaining power?
+> [!question]- mkt-fa-218 | How does product customization impact buyer bargaining power?
 > Customization increases customer switching costs and reduces product comparability, directly suppressing buyer bargaining power.
 
-> [!question] mkt-fa-219 | What is the capital cycle theory in cyclical industries (Edward Chancellor)?
+> [!question]- mkt-fa-219 | What is the capital cycle theory in cyclical industries (Edward Chancellor)?
 > High industry profits attract excessive capital investment, creating future overcapacity that collapses prices and profits, which eventually forces bankruptcies and sets up the next upcycle.
 
-> [!question] mkt-fa-220 | What is the difference between static scale economies and dynamic scale (learning curve)?
+> [!question]- mkt-fa-220 | What is the difference between static scale economies and dynamic scale (learning curve)?
 > Static scale reduces per-unit costs with higher current production volume; dynamic scale reduces per-unit costs as cumulative historical volume increases over time.
 
-> [!question] mkt-fa-221 | Can a company possess multiple Helmer Powers simultaneously?
+> [!question]- mkt-fa-221 | Can a company possess multiple Helmer Powers simultaneously?
 > Yes; the most powerful compounders (e.g. Apple, Amazon, Microsoft) combine multiple powers, such as Scale Economies, Network Effects, and high Switching Costs.
 
-> [!question] mkt-fa-222 | What is the "curse of the core" in competitive strategy?
+> [!question]- mkt-fa-222 | What is the "curse of the core" in competitive strategy?
 > Incumbents overinvest in defending mature, low-power legacy products against counter-positioning challengers instead of reallocating capital to new growth vectors.
 
-> [!question] mkt-fa-223 | How does technological disruption alter the Competitive Advantage Period?
+> [!question]- mkt-fa-223 | How does technological disruption alter the Competitive Advantage Period?
 > It sharply compresses the CAP by rendering historical switching costs, scale advantages, and physical cornered resources obsolete.
 
-> [!question] mkt-fa-224 | What is the single best empirical test that a company possesses an economic moat?
+> [!question]- mkt-fa-224 | What is the single best empirical test that a company possesses an economic moat?
 > The persistence of a high ROIC over multiple complete business cycles despite aggressive competitive entry and technological evolution.
 
 ---

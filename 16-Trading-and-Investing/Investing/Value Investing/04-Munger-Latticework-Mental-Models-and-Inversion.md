@@ -192,100 +192,100 @@ Under Munger's rules, this transaction is rejected:
 
 ## Practice questions
 
-> [!question] mkt-vi-097 | What is Charlie Munger's Latticework of Mental Models?
+> [!question]- mkt-vi-097 | What is Charlie Munger's Latticework of Mental Models?
 > A multidisciplinary decision-making framework that analyzes problems by synthesizing core principles from physics, biology, mathematics, psychology, and engineering.
 
-> [!question] mkt-vi-098 | What is the 'man with a hammer' syndrome?
+> [!question]- mkt-vi-098 | What is the 'man with a hammer' syndrome?
 > The cognitive flaw where a specialist with knowledge in only one academic discipline treats every complex real-world problem as a nail for their single hammer.
 
-> [!question] mkt-vi-099 | What is the core principle of Inversion?
+> [!question]- mkt-vi-099 | What is the core principle of Inversion?
 > Inverting complex problems: rather than trying to determine how to succeed, determine how to fail, and systematically eliminate those failure modes.
 
-> [!question] mkt-vi-100 | What famous German mathematician inspired Munger's inversion maxim?
+> [!question]- mkt-vi-100 | What famous German mathematician inspired Munger's inversion maxim?
 > Carl Gustav Jacob Jacobi, known for his phrase 'Man muss immer umkehren' (Invert, always invert).
 
-> [!question] mkt-vi-101 | What is a Lollapalooza Effect?
+> [!question]- mkt-vi-101 | What is a Lollapalooza Effect?
 > A non-linear, extreme outcome produced when multiple psychological biases and economic feedback loops act concurrently in the same direction.
 
-> [!question] mkt-vi-102 | What is Munger's famous maxim on incentives?
+> [!question]- mkt-vi-102 | What is Munger's famous maxim on incentives?
 > 'Show me the incentive and I will show you the outcome.'
 
-> [!question] mkt-vi-103 | What is Incentive-Caused Bias?
+> [!question]- mkt-vi-103 | What is Incentive-Caused Bias?
 > The subconscious tendency for human decision-makers to rationalize self-serving actions that maximize their personal financial or social rewards.
 
-> [!question] mkt-vi-104 | Why did Munger criticize accounting firms offering consulting services to audit clients?
+> [!question]- mkt-vi-104 | Why did Munger criticize accounting firms offering consulting services to audit clients?
 > Because the lucrative consulting fees created an irresistible incentive-caused bias to overlook accounting shenanigans to protect client relationships.
 
-> [!question] mkt-vi-105 | What is Social-Proof Tendency?
+> [!question]- mkt-vi-105 | What is Social-Proof Tendency?
 > The evolutionary herd instinct to copy the behavior, beliefs, and actions of peers, particularly under conditions of uncertainty and stress.
 
-> [!question] mkt-vi-106 | What is Inconsistency-Avoidance Tendency?
+> [!question]- mkt-vi-106 | What is Inconsistency-Avoidance Tendency?
 > The human psychological reluctance to change existing beliefs or admit past errors, leading directly to confirmation bias and dogmatism.
 
-> [!question] mkt-vi-107 | What is Deprival-Superreaction Tendency?
+> [!question]- mkt-vi-107 | What is Deprival-Superreaction Tendency?
 > The disproportionate psychological pain experienced when losing an asset or missing an opportunity compared to the pleasure of gaining it (loss aversion).
 
-> [!question] mkt-vi-108 | How does open-outcry auction fever demonstrate a Lollapalooza effect?
+> [!question]- mkt-vi-108 | How does open-outcry auction fever demonstrate a Lollapalooza effect?
 > Social proof (others bidding), commitment bias (publicly raised paddle), and deprival reaction (fear of losing) combine to drive bids far above intrinsic value.
 
-> [!question] mkt-vi-109 | What is Munger's rule for holding an intellectual opinion?
+> [!question]- mkt-vi-109 | What is Munger's rule for holding an intellectual opinion?
 > Never allow yourself to hold an opinion on an issue unless you can state the counter-arguments better than the smartest people on the other side.
 
-> [!question] mkt-vi-110 | What is the engineering concept of Redundancy and how does it apply to investing?
+> [!question]- mkt-vi-110 | What is the engineering concept of Redundancy and how does it apply to investing?
 > Building backup capacity and safety margins (e.g. excess cash, low debt) so an enterprise survives unforeseen component failures or liquidity shocks.
 
-> [!question] mkt-vi-111 | How does Darwinian natural selection apply to business strategy in Munger's framework?
+> [!question]- mkt-vi-111 | How does Darwinian natural selection apply to business strategy in Munger's framework?
 > Businesses occupy specialized ecological niches; companies that fail to adapt their cost structures and technology to environmental shifts are culled.
 
-> [!question] mkt-vi-112 | What is Contrast-Misreaction Tendency?
+> [!question]- mkt-vi-112 | What is Contrast-Misreaction Tendency?
 > The cognitive failure to perceive gradual, incremental changes, like a frog slowly boiled in water, leading to complacency as business moats decay.
 
-> [!question] mkt-vi-113 | What is Simple, Pain-Avoiding Psychological Denial?
+> [!question]- mkt-vi-113 | What is Simple, Pain-Avoiding Psychological Denial?
 > Distorting or denying objective factual reality because the truth is too emotionally painful to accept, common among executives of failing companies.
 
-> [!question] mkt-vi-114 | What is Authority-Misinfluence Tendency?
+> [!question]- mkt-vi-114 | What is Authority-Misinfluence Tendency?
 > The tendency for subordinates to blindly obey and follow the flawed directives of perceived leaders or authority figures (e.g. Milgram experiments).
 
-> [!question] mkt-vi-115 | What is the 'Two-Track Analysis' Munger uses to solve complex problems?
+> [!question]- mkt-vi-115 | What is the 'Two-Track Analysis' Munger uses to solve complex problems?
 > Track 1: Analyze objective fundamental reality and probabilities; Track 2: Audit the psychological biases and subconscious incentives distorting perception.
 
-> [!question] mkt-vi-116 | What is the primary operational cause of large corporate M&A failures according to Munger?
+> [!question]- mkt-vi-116 | What is the primary operational cause of large corporate M&A failures according to Munger?
 > CEO hubris combined with investment bankers whose contingent advisory fees reward deal volume regardless of subsequent shareholder destruction.
 
-> [!question] mkt-vi-117 | What is a 'feckless' capital allocation decision in Munger's vocabulary?
+> [!question]- mkt-vi-117 | What is a 'feckless' capital allocation decision in Munger's vocabulary?
 > Wasting retained shareholder capital on overpriced acquisitions or vanity projects instead of returning it or waiting patiently for high-conviction pitches.
 
-> [!question] mkt-vi-118 | Why did Munger describe EBITDA as 'bullshit earnings'?
+> [!question]- mkt-vi-118 | Why did Munger describe EBITDA as 'bullshit earnings'?
 > Because it deliberately excludes depreciation, which represents real, inevitable capital expenditures required to replace physical assets.
 
-> [!question] mkt-vi-119 | What is the difference between real knowledge and 'chauffeur knowledge' according to Munger?
+> [!question]- mkt-vi-119 | What is the difference between real knowledge and 'chauffeur knowledge' according to Munger?
 > Real knowledge comes from deep analytical study and sweat; chauffeur knowledge is superficial memorization of terminology without fundamental understanding.
 
-> [!question] mkt-vi-120 | What is the 'batting average' analogy from Ted Williams that Munger applied to investing?
+> [!question]- mkt-vi-120 | What is the 'batting average' analogy from Ted Williams that Munger applied to investing?
 > Wait patiently for the 'fat pitch' squarely in your sweet zone; swinging at marginal opportunities outside your circle of competence destroys returns.
 
-> [!question] mkt-vi-121 | Why did Munger emphasize that patience and inactivity are vital for compounding?
+> [!question]- mkt-vi-121 | Why did Munger emphasize that patience and inactivity are vital for compounding?
 > Great investment opportunities are rare; the discipline to sit on cash and do nothing for years until a mispriced bet appears generates superior results.
 
-> [!question] mkt-vi-122 | How does Munger view modern institutional portfolio diversification?
+> [!question]- mkt-vi-122 | How does Munger view modern institutional portfolio diversification?
 > Extreme diversification across hundreds of stocks guarantees mediocre index-like performance, diluting high-conviction ideas with lower-quality bets.
 
-> [!question] mkt-vi-123 | What is Pavlovian conditioning in marketing and branding?
+> [!question]- mkt-vi-123 | What is Pavlovian conditioning in marketing and branding?
 > Associating a product with positive sensory cues (glamour, youth, status) through repetitive advertising to trigger subconscious purchasing reflex.
 
-> [!question] mkt-vi-124 | What is the 'circle of competence' discipline Munger practiced?
+> [!question]- mkt-vi-124 | What is the 'circle of competence' discipline Munger practiced?
 > Categorizing opportunities into three boxes: 'In', 'Out', and 'Too Hard'; immediately discarding anything in the 'Too Hard' box without wasted time.
 
-> [!question] mkt-vi-125 | How did Munger explain the survival of Berkshire Hathaway during multiple 50% market drawdowns?
+> [!question]- mkt-vi-125 | How did Munger explain the survival of Berkshire Hathaway during multiple 50% market drawdowns?
 > By maintaining zero reliance on short-term debt, preserving massive excess cash, and maintaining emotional autonomy from market fluctuations.
 
-> [!question] mkt-vi-126 | What is the Danger of Self-Regard Tendency in management?
+> [!question]- mkt-vi-126 | What is the Danger of Self-Regard Tendency in management?
 > Executives overestimating their operational prowess, leading to disastrous expansions into competitive industries where they lack competence.
 
-> [!question] mkt-vi-127 | What is the 'iron prescription' Munger advocated for learning multidisciplinary models?
+> [!question]- mkt-vi-127 | What is the 'iron prescription' Munger advocated for learning multidisciplinary models?
 > Learn the fundamental concepts of every major discipline, integrate them into an active mental checklist, and practice using them continually.
 
-> [!question] mkt-vi-128 | What is Charlie Munger's ultimate life prescription for compounding?
+> [!question]- mkt-vi-128 | What is Charlie Munger's ultimate life prescription for compounding?
 > 'Spend each day trying to be a little wiser than you were when you woke up; discharge your duties faithfully and well; and step by step you get ahead.'
 
 ---

@@ -186,100 +186,100 @@ While levered risk parity delivered superior Sharpe ratios for decades during th
 
 ## Flashcard drill bank
 
-> [!question] mkt-pf-161 | What is the primary conceptual flaw of a traditional 60/40 capital allocation?
+> [!question]- mkt-pf-161 | What is the primary conceptual flaw of a traditional 60/40 capital allocation?
 > Equity volatility dominates bond volatility, causing equities to generate over 90% of the portfolio's total variance and drawdown risk.
 
-> [!question] mkt-pf-162 | What is the core objective of a Risk Parity strategy?
+> [!question]- mkt-pf-162 | What is the core objective of a Risk Parity strategy?
 > To allocate capital such that every asset class contributes an equal amount to total portfolio risk.
 
-> [!question] mkt-pf-163 | What mathematical theorem allows portfolio standard deviation to be decomposed into additive risk contributions?
+> [!question]- mkt-pf-163 | What mathematical theorem allows portfolio standard deviation to be decomposed into additive risk contributions?
 > Euler's homogeneous function theorem, because standard deviation is linearly homogeneous of degree 1 with respect to asset weights.
 
-> [!question] mkt-pf-164 | What is the formula for the Marginal Contribution to Risk (MCR_i) of asset i?
+> [!question]- mkt-pf-164 | What is the formula for the Marginal Contribution to Risk (MCR_i) of asset i?
 > MCR_i = (Sigma * w)_i / sigma_p = Cov(R_i, R_p) / sigma_p.
 
-> [!question] mkt-pf-165 | What is the formula for the Total Risk Contribution (TRC_i) of asset i?
+> [!question]- mkt-pf-165 | What is the formula for the Total Risk Contribution (TRC_i) of asset i?
 > TRC_i = w_i * MCR_i = w_i * (Sigma * w)_i / sigma_p.
 
-> [!question] mkt-pf-166 | What is the mathematical condition for an Equal Risk Contribution (ERC) portfolio?
+> [!question]- mkt-pf-166 | What is the mathematical condition for an Equal Risk Contribution (ERC) portfolio?
 > TRC_i = TRC_j = sigma_p / N for all assets i and j.
 
-> [!question] mkt-pf-167 | If all assets in a portfolio have zero mutual correlation, how are risk parity weights determined?
+> [!question]- mkt-pf-167 | If all assets in a portfolio have zero mutual correlation, how are risk parity weights determined?
 > Weights are inversely proportional to individual asset volatilities: w_i proportional to 1 / sigma_i.
 
-> [!question] mkt-pf-168 | What convex optimization problem solves for Equal Risk Contribution weights?
+> [!question]- mkt-pf-168 | What convex optimization problem solves for Equal Risk Contribution weights?
 > Minimize 0.5 * x^T * Sigma * x - c * sum(ln(x_i)), followed by normalizing weights w_i = x_i / sum(x_j).
 
-> [!question] mkt-pf-169 | Who pioneered the All Weather investment strategy?
+> [!question]- mkt-pf-169 | Who pioneered the All Weather investment strategy?
 > Ray Dalio and Bob Prince at Bridgewater Associates.
 
-> [!question] mkt-pf-170 | What are the two primary macroeconomic drivers in the All Weather framework?
+> [!question]- mkt-pf-170 | What are the two primary macroeconomic drivers in the All Weather framework?
 > Economic growth and inflation, specifically whether they come in higher or lower than market expectations.
 
-> [!question] mkt-pf-171 | Which assets perform best in a rising growth and falling inflation regime?
+> [!question]- mkt-pf-171 | Which assets perform best in a rising growth and falling inflation regime?
 > Public equities and corporate credit.
 
-> [!question] mkt-pf-172 | Which assets perform best in a falling growth and falling inflation regime?
+> [!question]- mkt-pf-172 | Which assets perform best in a falling growth and falling inflation regime?
 > Nominal government bonds (Treasuries) and cash.
 
-> [!question] mkt-pf-173 | Which assets perform best in a rising inflation and rising growth regime?
+> [!question]- mkt-pf-173 | Which assets perform best in a rising inflation and rising growth regime?
 > Commodities, materials equities, and emerging market equities.
 
-> [!question] mkt-pf-174 | Which assets perform best in a stagflation regime (rising inflation and falling growth)?
+> [!question]- mkt-pf-174 | Which assets perform best in a stagflation regime (rising inflation and falling growth)?
 > Inflation-linked government bonds (TIPS), gold, and energy commodities.
 
-> [!question] mkt-pf-175 | Why does an unlevered Risk Parity portfolio require high capital allocation to government bonds?
+> [!question]- mkt-pf-175 | Why does an unlevered Risk Parity portfolio require high capital allocation to government bonds?
 > Because government bonds have low volatility (~5%), so substantial capital is required to match the risk contribution of equities (~16%).
 
-> [!question] mkt-pf-176 | Why do institutional Risk Parity funds apply leverage?
+> [!question]- mkt-pf-176 | Why do institutional Risk Parity funds apply leverage?
 > To amplify the return of low-risk, high-Sharpe-ratio assets to achieve equity-like target returns (e.g., 8-10% CAGR).
 
-> [!question] mkt-pf-177 | What typical leverage range is utilized by institutional Risk Parity funds?
+> [!question]- mkt-pf-177 | What typical leverage range is utilized by institutional Risk Parity funds?
 > Typically 1.5x to 2.5x total assets under management.
 
-> [!question] mkt-pf-178 | How is leverage typically implemented in risk parity portfolios?
+> [!question]- mkt-pf-178 | How is leverage typically implemented in risk parity portfolios?
 > Through exchange-traded futures contracts (e.g., Treasury futures) and cash repo borrowing.
 
-> [!question] mkt-pf-179 | What happened to Risk Parity portfolios during the 2022 market downturn?
+> [!question]- mkt-pf-179 | What happened to Risk Parity portfolios during the 2022 market downturn?
 > They suffered severe drawdowns because surging inflation caused equities and nominal bonds to drop simultaneously (positive stock-bond correlation).
 
-> [!question] mkt-pf-180 | What is the correlation sign between stocks and nominal bonds during demand-driven recessions?
+> [!question]- mkt-pf-180 | What is the correlation sign between stocks and nominal bonds during demand-driven recessions?
 > Negative correlation (flight to safety), allowing bonds to hedge equities effectively.
 
-> [!question] mkt-pf-181 | What is the correlation sign between stocks and nominal bonds during supply-driven inflation shocks?
+> [!question]- mkt-pf-181 | What is the correlation sign between stocks and nominal bonds during supply-driven inflation shocks?
 > Positive correlation, meaning bonds fail to hedge equities and both suffer losses.
 
-> [!question] mkt-pf-182 | How does a rise in short-term interest rates impact a levered Risk Parity fund?
+> [!question]- mkt-pf-182 | How does a rise in short-term interest rates impact a levered Risk Parity fund?
 > It increases borrowing costs (repo financing spread) and creates a cash drag that reduces net carry.
 
-> [!question] mkt-pf-183 | What is a 'volatility-targeted' Risk Parity strategy?
+> [!question]- mkt-pf-183 | What is a 'volatility-targeted' Risk Parity strategy?
 > A strategy that rescales overall portfolio leverage inversely to realized portfolio volatility to maintain a constant volatility target (e.g., 10% or 12%).
 
-> [!question] mkt-pf-184 | What is the risk of volatility targeting during a sudden liquidity crisis?
+> [!question]- mkt-pf-184 | What is the risk of volatility targeting during a sudden liquidity crisis?
 > Deleveraging feedback loops: rising volatility forces the fund to liquidate assets at market bottoms.
 
-> [!question] mkt-pf-185 | How does Risk Parity differ from Mean-Variance Optimization (Markowitz)?
+> [!question]- mkt-pf-185 | How does Risk Parity differ from Mean-Variance Optimization (Markowitz)?
 > Risk Parity ignores expected return estimates (mu) entirely, avoiding the massive parameter estimation error inherent in return forecasting.
 
-> [!question] mkt-pf-186 | What is the 'Betting Against Beta' (BAB) anomaly documented by Frazzini and Pedersen (2014)?
+> [!question]- mkt-pf-186 | What is the 'Betting Against Beta' (BAB) anomaly documented by Frazzini and Pedersen (2014)?
 > High-beta assets deliver low risk-adjusted returns while low-beta assets deliver high risk-adjusted returns, because constrained investors bid up high-beta assets to achieve leverage.
 
-> [!question] mkt-pf-187 | How does the Betting Against Beta anomaly justify levering low-volatility bonds in Risk Parity?
+> [!question]- mkt-pf-187 | How does the Betting Against Beta anomaly justify levering low-volatility bonds in Risk Parity?
 > Levered low-beta assets historically generate superior Sharpe ratios compared to unlevered high-beta equities.
 
-> [!question] mkt-pf-188 | What is an 'All Weather' portfolio risk budget allocation?
+> [!question]- mkt-pf-188 | What is an 'All Weather' portfolio risk budget allocation?
 > 25% of total portfolio risk allocated to each of the four macro quadrants: rising growth, falling growth, rising inflation, falling inflation.
 
-> [!question] mkt-pf-189 | What is the role of gold in an All Weather risk-balanced portfolio?
+> [!question]- mkt-pf-189 | What is the role of gold in an All Weather risk-balanced portfolio?
 > Gold acts as a monetary hedge against extreme inflation, systemic currency debasement, and geopolitical crises.
 
-> [!question] mkt-pf-190 | How does asset illiquidity impact risk parity rebalancing?
+> [!question]- mkt-pf-190 | How does asset illiquidity impact risk parity rebalancing?
 > Illiquid assets cannot be dynamically rebalanced without prohibitive transaction costs and market impact, distorting targeted risk parity weights.
 
-> [!question] mkt-pf-191 | What is cyclical coordinate descent in risk parity optimization?
+> [!question]- mkt-pf-191 | What is cyclical coordinate descent in risk parity optimization?
 > An iterative numerical optimization algorithm that updates each asset weight sequentially while holding other weights fixed to satisfy the ERC condition.
 
-> [!question] mkt-pf-192 | What is the primary operational lesson from Risk Parity theory?
+> [!question]- mkt-pf-192 | What is the primary operational lesson from Risk Parity theory?
 > Diversify by true economic risk contribution across distinct macro environments rather than nominal dollar allocations.
 
 ---

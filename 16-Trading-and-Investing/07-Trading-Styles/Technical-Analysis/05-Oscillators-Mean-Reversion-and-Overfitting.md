@@ -200,133 +200,133 @@ A quantitative trader backtests $N = 500$ parameter variations of an RSI and Bol
 
 ## Interview questions
 
-> [!question] mkt-ta-129 | What is the mathematical formulation of Wilder's Relative Strength Index (RSI)?
+> [!question]- mkt-ta-129 | What is the mathematical formulation of Wilder's Relative Strength Index (RSI)?
 > RSI = 100 - (100 / (1 + RS)), where RS = Average_Gain / Average_Loss smoothed using Wilder's EMA: alpha = 1 / N.
 > It bounds momentum on a 0 to 100 scale, measuring relative internal price change velocity.
 
-> [!question] mkt-ta-130 | Why do static overbought (> 70) and oversold (< 30) RSI rules fail in trending markets?
+> [!question]- mkt-ta-130 | Why do static overbought (> 70) and oversold (< 30) RSI rules fail in trending markets?
 > In a strong trend, persistent buying or selling pressure keeps closing prices near the extremes of daily bars.
 > RSI remains pinned above 70 or below 30 for extended periods while price advances or collapses by multi-sigma moves.
 
-> [!question] mkt-ta-131 | What is the RSI Range Shift concept developed by Andrew Cardwell?
+> [!question]- mkt-ta-131 | What is the RSI Range Shift concept developed by Andrew Cardwell?
 > In a bull market, RSI shifts into an elevated regime, oscillating primarily between 40 and 80 (40 acts as support).
 > In a bear market, RSI shifts into a depressed regime, oscillating between 20 and 60 (60 acts as resistance).
 
-> [!question] mkt-ta-132 | How is the Moving Average Convergence Divergence (MACD) constructed?
+> [!question]- mkt-ta-132 | How is the Moving Average Convergence Divergence (MACD) constructed?
 > MACD Line = EMA_12 - EMA_26.
 > Signal Line = EMA_9(MACD Line).
 > MACD Histogram = MACD Line - Signal Line.
 
-> [!question] mkt-ta-133 | What is a MACD zero-line crossover and what does it indicate?
+> [!question]- mkt-ta-133 | What is a MACD zero-line crossover and what does it indicate?
 > When the MACD line crosses above zero, it indicates that the 12-day EMA has crossed above the 26-day EMA (equivalent to a fast moving average golden cross).
 > A cross below zero signals that short-term moving average momentum is negative.
 
-> [!question] mkt-ta-134 | How are Bollinger Bands calculated?
+> [!question]- mkt-ta-134 | How are Bollinger Bands calculated?
 > Middle Band = 20-day SMA.
 > Upper Band = Middle Band + 2 * sigma_20.
 > Lower Band = Middle Band - 2 * sigma_20, where sigma_20 is the 20-day sample standard deviation.
 
-> [!question] mkt-ta-135 | What is a Bollinger Band Squeeze?
+> [!question]- mkt-ta-135 | What is a Bollinger Band Squeeze?
 > An extreme compression in BandWidth: (Upper - Lower) / Middle.
 > It reflects low historical volatility and precedes violent directional volatility expansion.
 
-> [!question] mkt-ta-136 | What is "walking the bands" in Bollinger Band analysis?
+> [!question]- mkt-ta-136 | What is "walking the bands" in Bollinger Band analysis?
 > A strong trending condition where price tags and continuously hugs the outer Bollinger Band without reverting to the middle band.
 > Attempting to fade a band-walking market results in severe trend-continuation losses.
 
-> [!question] mkt-ta-137 | What is %B in Bollinger Band indicators?
+> [!question]- mkt-ta-137 | What is %B in Bollinger Band indicators?
 > %B = (Price - Lower_Band) / (Upper_Band - Lower_Band).
 > It quantifies the exact location of price relative to the bands; %B > 1.0 indicates price is above the upper band.
 
-> [!question] mkt-ta-138 | How does the Stochastic Oscillator measure momentum?
+> [!question]- mkt-ta-138 | How does the Stochastic Oscillator measure momentum?
 > %K = (Price - Lowest_Low_N) / (Highest_High_N - Lowest_Low_N) * 100.
 > It evaluates where the closing price resides relative to the high-low range over the past N periods.
 
-> [!question] mkt-ta-139 | What is a momentum divergence?
+> [!question]- mkt-ta-139 | What is a momentum divergence?
 > A disagreement between price and an oscillator: price makes a higher high while the oscillator makes a lower high (bearish divergence), or price makes a lower low while the oscillator makes a higher low (bullish divergence).
 > It indicates internal momentum deceleration.
 
-> [!question] mkt-ta-140 | What is hidden divergence?
+> [!question]- mkt-ta-140 | What is hidden divergence?
 > Trend-continuation divergence: price makes a higher low while the oscillator makes a lower low (bullish hidden divergence).
 > It signals that pullbacks are experiencing rapid oscillator resets without structural price damage.
 
-> [!question] mkt-ta-141 | What is data-snooping bias in quantitative technical analysis?
+> [!question]- mkt-ta-141 | What is data-snooping bias in quantitative technical analysis?
 > The statistical artifact where testing many trading rules on the same dataset inevitably identifies rules that performed well purely by random luck.
 > In-sample performance reflects sample-specific noise rather than genuine predictive alpha.
 
-> [!question] mkt-ta-142 | What is White's Reality Check (White 2000)?
+> [!question]- mkt-ta-142 | What is White's Reality Check (White 2000)?
 > A bootstrap procedure that constructs the empirical distribution of the maximum performance metric under the null hypothesis that no rule has true edge.
 > It yields p-values that explicitly penalize for the size of the search universe.
 
-> [!question] mkt-ta-143 | What is Hansen's Superior Predictive Ability (SPA) test?
+> [!question]- mkt-ta-143 | What is Hansen's Superior Predictive Ability (SPA) test?
 > An improvement over White's Reality Check developed by Peter Hansen (2005) that uses a studentized test statistic and centers the distribution.
 > It reduces sensitivity to poor, irrelevant benchmark rules in the test universe.
 
-> [!question] mkt-ta-144 | Why did Harvey, Liu, and Zhu (2016) recommend raising the t-statistic threshold to t > 3.0?
+> [!question]- mkt-ta-144 | Why did Harvey, Liu, and Zhu (2016) recommend raising the t-statistic threshold to t > 3.0?
 > Due to the discovery of hundreds of false factors resulting from uncorrected multiple testing across academia.
 > A threshold of t > 3.0 corresponds to a p-value < 0.0027, substantially reducing false discovery rates.
 
-> [!question] mkt-ta-145 | What is the Deflated Sharpe Ratio (DSR)?
+> [!question]- mkt-ta-145 | What is the Deflated Sharpe Ratio (DSR)?
 > A metric developed by Bailey and Lopez de Prado (2014) that discounts an observed Sharpe ratio based on the number of trials tested, sample length, skewness, and kurtosis.
 > It computes the probability that the observed Sharpe ratio exceeds the expected maximum of random trials.
 
-> [!question] mkt-ta-146 | How does the Hurst Exponent (H) distinguish trending from mean-reverting regimes?
+> [!question]- mkt-ta-146 | How does the Hurst Exponent (H) distinguish trending from mean-reverting regimes?
 > H = 0.5 indicates random walk; H > 0.5 indicates persistent trending memory; H < 0.5 indicates anti-persistent mean reversion.
 > Mean-reversion oscillator models should be executed strictly when H < 0.5.
 
-> [!question] mkt-ta-147 | What is the Average Directional Index (ADX) and how is it used as a regime filter?
+> [!question]- mkt-ta-147 | What is the Average Directional Index (ADX) and how is it used as a regime filter?
 > A non-directional trend strength indicator developed by Wilder that measures the magnitude of directional price movement.
 > Oscillators are disabled for mean-reversion trades when ADX > 25 (strong trend).
 
-> [!question] mkt-ta-148 | What is the Commodity Channel Index (CCI, Lambert 1980)?
+> [!question]- mkt-ta-148 | What is the Commodity Channel Index (CCI, Lambert 1980)?
 > CCI = (Typical_Price - SMA_20) / (0.015 * Mean_Deviation).
 > It measures price deviation from its statistical mean, scaled to ensure roughly 70% to 80% of values fall within [-100, +100].
 
-> [!question] mkt-ta-149 | What is the Williams %R indicator?
+> [!question]- mkt-ta-149 | What is the Williams %R indicator?
 > Williams %R = (Highest_High_N - Price) / (Highest_High_N - Lowest_Low_N) * -100.
 > It is mathematically identical to the inverse of the Fast Stochastic Oscillator, bounded between -100 and 0.
 
-> [!question] mkt-ta-150 | What is the False Discovery Rate (FDR) and the Benjamini-Hochberg procedure?
+> [!question]- mkt-ta-150 | What is the False Discovery Rate (FDR) and the Benjamini-Hochberg procedure?
 > A statistical framework that controls the expected proportion of false positive discoveries among all rejected null hypotheses.
 > It provides an adaptive significance threshold for ranking large factor libraries.
 
-> [!question] mkt-ta-151 | What is look-ahead bias in oscillator backtesting?
+> [!question]- mkt-ta-151 | What is look-ahead bias in oscillator backtesting?
 > Using information from time t or t+1 (such as using the day's close before the bar has completed) to execute orders at time t.
 > It produces artificially inflated backtest profits that are impossible to execute live.
 
-> [!question] mkt-ta-152 | What is survivorship bias and how does it distort technical backtests?
+> [!question]- mkt-ta-152 | What is survivorship bias and how does it distort technical backtests?
 > Testing technical rules only on stocks that currently exist in an index, ignoring companies that went bankrupt or were delisted.
 > It creates a massive positive performance bias by omitting catastrophic failure cases.
 
-> [!question] mkt-ta-153 | What is a parameter cliff in technical strategy optimization?
+> [!question]- mkt-ta-153 | What is a parameter cliff in technical strategy optimization?
 > When a slight change in an indicator parameter (e.g. changing lookback from 14 to 15) causes backtest performance to collapse.
 > Parameter cliffs indicate extreme overfitting to historical noise rather than robust edge.
 
-> [!question] mkt-ta-154 | What is a parameter plateau?
+> [!question]- mkt-ta-154 | What is a parameter plateau?
 > A broad region of neighboring parameter values (e.g. lookbacks from 12 to 18) that all yield consistent, stable profitability.
 > Plateaus signal a robust structural phenomenon rather than an overfitted artifact.
 
-> [!question] mkt-ta-155 | How does bid-ask spread friction impact mean-reversion strategies?
+> [!question]- mkt-ta-155 | How does bid-ask spread friction impact mean-reversion strategies?
 > Mean-reversion oscillators trigger high trading frequency with small average profits per trade.
 > Paying the bid-ask spread on every entry and exit rapidly consumes all theoretical gross alpha.
 
-> [!question] mkt-ta-156 | What is the Connors RSI (CRSI)?
+> [!question]- mkt-ta-156 | What is the Connors RSI (CRSI)?
 > A composite momentum oscillator combining standard 3-period RSI, the length of the current up/down price streak, and the percent rank of the 1-day return over 100 days.
 > It is designed specifically for short-term equities mean-reversion trading.
 
-> [!question] mkt-ta-157 | What is an Ornstein-Uhlenbeck (OU) process in mean-reversion modeling?
+> [!question]- mkt-ta-157 | What is an Ornstein-Uhlenbeck (OU) process in mean-reversion modeling?
 > A continuous-time stochastic process: dX_t = theta * (mu - X_t) dt + sigma * dW_t.
 > It models mean reversion where price drifts back toward mean mu at rate theta.
 
-> [!question] mkt-ta-158 | What is the half-life of mean reversion?
+> [!question]- mkt-ta-158 | What is the half-life of mean reversion?
 > The expected time required for a mean-reverting process to decay halfway back to its long-term equilibrium: t_{1/2} = ln(2) / theta.
 > Desks use half-life to set maximum holding periods and time-based stops.
 
-> [!question] mkt-ta-159 | What is probability of backtest overfitting (PBO)?
+> [!question]- mkt-ta-159 | What is probability of backtest overfitting (PBO)?
 > A statistical measure developed by Bailey et al. (2016) using Combinatorially Symmetric Cross-Validation (CSCV).
 > It quantifies the probability that the best in-sample strategy will underperform the median strategy out-of-sample.
 
-> [!question] mkt-ta-160 | Why should quantitative traders use walk-forward validation instead of standard cross-validation?
+> [!question]- mkt-ta-160 | Why should quantitative traders use walk-forward validation instead of standard cross-validation?
 > Standard cross-validation randomly partitions data, leaking future information into the past and violating time-series causality.
 > Walk-forward validation trains strictly on historical data and tests on forward out-of-sample data.
 

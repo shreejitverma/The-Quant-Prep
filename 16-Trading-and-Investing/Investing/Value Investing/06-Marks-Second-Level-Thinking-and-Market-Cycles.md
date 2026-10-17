@@ -192,100 +192,100 @@ Global credit markets enter an inflection point:
 
 ## Practice questions
 
-> [!question] mkt-vi-161 | What is the fundamental difference between first-level thinking and second-level thinking?
+> [!question]- mkt-vi-161 | What is the fundamental difference between first-level thinking and second-level thinking?
 > First-level thinking is simplistic and consensus-driven; second-level thinking is deep, probabilistic, and evaluates how consensus expectations are priced into the asset.
 
-> [!question] mkt-vi-162 | Why is being contrarian alone insufficient to generate superior investment returns?
+> [!question]- mkt-vi-162 | Why is being contrarian alone insufficient to generate superior investment returns?
 > Being different is not enough; your variant perception must be different AND analytically superior to consensus reality.
 
-> [!question] mkt-vi-163 | What are the two psychological extremes between which the market pendulum swings?
+> [!question]- mkt-vi-163 | What are the two psychological extremes between which the market pendulum swings?
 > Between euphoria and depression, greed and fear, credulity and skepticism, and risk tolerance and risk aversion.
 
-> [!question] mkt-vi-164 | What are the three stages of a bull market identified by Howard Marks?
+> [!question]- mkt-vi-164 | What are the three stages of a bull market identified by Howard Marks?
 > 1. When a few forward-looking people realize things will improve; 2. When most see improvement occurring; 3. When everyone concludes things will get better forever.
 
-> [!question] mkt-vi-165 | What are the three stages of a bear market?
+> [!question]- mkt-vi-165 | What are the three stages of a bear market?
 > 1. When prudent investors recognize perfection cannot last; 2. When most recognize deterioration is underway; 3. When everyone believes things can only get worse.
 
-> [!question] mkt-vi-166 | Why is the Credit Cycle more volatile and impactful than the underlying economic GDP cycle?
+> [!question]- mkt-vi-166 | Why is the Credit Cycle more volatile and impactful than the underlying economic GDP cycle?
 > Because lender emotions amplify economic swings: easy credit fuels over-investment during booms, and sudden lender panic cuts off liquidity during downturns.
 
-> [!question] mkt-vi-167 | What did Howard Marks mean by 'the worst loans are made at the best of times'?
+> [!question]- mkt-vi-167 | What did Howard Marks mean by 'the worst loans are made at the best of times'?
 > During peak economic euphoria, abundant capital forces lenders to lower underwriting standards, drop protective covenants, and finance fragile borrowers.
 
-> [!question] mkt-vi-168 | What is a 'covenant-lite' loan?
+> [!question]- mkt-vi-168 | What is a 'covenant-lite' loan?
 > A debt agreement that lacks traditional financial maintenance covenants (such as debt-to-EBITDA limits), signaling reckless lender complacency.
 
-> [!question] mkt-vi-169 | How does Howard Marks define true financial risk?
+> [!question]- mkt-vi-169 | How does Howard Marks define true financial risk?
 > The probability of permanent capital loss, rejecting academic definitions based on price volatility or standard deviation.
 
-> [!question] mkt-vi-170 | What is the Paradox of Risk?
+> [!question]- mkt-vi-170 | What is the Paradox of Risk?
 > Risk is highest when everyone believes there is no risk (prices are high, buffers vanish); risk is lowest when everyone perceives extreme risk (prices collapse).
 
-> [!question] mkt-vi-171 | What does it mean to 'take the temperature of the market'?
+> [!question]- mkt-vi-171 | What does it mean to 'take the temperature of the market'?
 > Measuring investor sentiment, credit spreads, new issue quality, and valuation multiples to determine whether to adopt a defensive or aggressive posture.
 
-> [!question] mkt-vi-172 | What is the concept of 'winning by not losing'?
+> [!question]- mkt-vi-172 | What is the concept of 'winning by not losing'?
 > Focusing on risk control, avoiding unforced errors, eliminating low-quality debt, and avoiding overpriced fads so the portfolio compounds safely over decades.
 
-> [!question] mkt-vi-173 | What is Oaktree Capital's primary investment philosophy motto?
+> [!question]- mkt-vi-173 | What is Oaktree Capital's primary investment philosophy motto?
 > 'If we avoid the losers, the winners will take care of themselves.'
 
-> [!question] mkt-vi-174 | How does an investor create positive asymmetry in a portfolio?
+> [!question]- mkt-vi-174 | How does an investor create positive asymmetry in a portfolio?
 > Generating performance that captures significant upside in bull markets while suffering far less downside in bear markets.
 
-> [!question] mkt-vi-175 | Why does Howard Marks argue that macro forecasting is largely useless?
+> [!question]- mkt-vi-175 | Why does Howard Marks argue that macro forecasting is largely useless?
 > Because accurate consensus forecasts are already priced in, and non-consensus forecasts are rarely correct enough to generate reliable edge.
 
-> [!question] mkt-vi-176 | What should an investor do when high-yield credit spreads compress below 300 bps?
+> [!question]- mkt-vi-176 | What should an investor do when high-yield credit spreads compress below 300 bps?
 > Reduce credit risk, eliminate low-grade debt, accumulate cash, and adopt a strictly defensive portfolio posture.
 
-> [!question] mkt-vi-177 | What should an investor do when high-yield credit spreads widen past 1,000 bps during a panic?
+> [!question]- mkt-vi-177 | What should an investor do when high-yield credit spreads widen past 1,000 bps during a panic?
 > Aggressively deploy dry powder into senior secured and fulcrum distressed debt, capturing equity-like returns with structural debt protections.
 
-> [!question] mkt-vi-178 | What is the relationship between price paid and the risk of an investment?
+> [!question]- mkt-vi-178 | What is the relationship between price paid and the risk of an investment?
 > High-quality assets bought at high prices carry immense risk; low-quality assets bought at deep discounts carry minimal risk and high prospective return.
 
-> [!question] mkt-vi-179 | What is 'skepticism' in second-level thinking?
+> [!question]- mkt-vi-179 | What is 'skepticism' in second-level thinking?
 > Demanding evidence when Wall Street claims 'this time is different' during a boom, and demanding evidence when Wall Street claims 'the world is ending' in a crash.
 
-> [!question] mkt-vi-180 | Why is the fear of missing out (FOMO) so destructive to investment discipline?
+> [!question]- mkt-vi-180 | Why is the fear of missing out (FOMO) so destructive to investment discipline?
 > It compels investors to abandon risk control and buy overvalued securities at cyclical tops simply because they see peers getting rich.
 
-> [!question] mkt-vi-181 | What is the difference between risk control and risk avoidance?
+> [!question]- mkt-vi-181 | What is the difference between risk control and risk avoidance?
 > Risk avoidance means holding only Treasury bills, achieving zero real return; risk control means consciously taking mispriced risks where you are compensated.
 
-> [!question] mkt-vi-182 | How does Howard Marks view diversification across asset classes?
+> [!question]- mkt-vi-182 | How does Howard Marks view diversification across asset classes?
 > Diversification protects against ignorance, but true risk control comes from knowing individual securities deeply and refusing to overpay.
 
-> [!question] mkt-vi-183 | What role does luck play in short-term investment performance?
+> [!question]- mkt-vi-183 | What role does luck play in short-term investment performance?
 > A massive role; a reckless strategy can appear brilliant for years during a bull market until an unexpected regime shift exposes its fatal flaws.
 
-> [!question] mkt-vi-184 | What is 'confusing brains with a bull market'?
+> [!question]- mkt-vi-184 | What is 'confusing brains with a bull market'?
 > Attributing portfolio gains to managerial genius when returns were simply the mathematical result of taking excessive leverage in a rising tide.
 
-> [!question] mkt-vi-185 | Why does the market pendulum spend so little time at the rational midpoint?
+> [!question]- mkt-vi-185 | Why does the market pendulum spend so little time at the rational midpoint?
 > Because human emotions are self-reinforcing, driving momentum past equilibrium until economic friction forces a violent reversal.
 
-> [!question] mkt-vi-186 | What is the significance of the phrase 'being too far ahead of your time is indistinguishable from being wrong'?
+> [!question]- mkt-vi-186 | What is the significance of the phrase 'being too far ahead of your time is indistinguishable from being wrong'?
 > A value investor can correctly identify a bubble, but if market euphoria persists for three more years, the investor faces career risk from impatient clients.
 
-> [!question] mkt-vi-187 | How did Oaktree Capital navigate the 2008 Global Financial Crisis?
+> [!question]- mkt-vi-187 | How did Oaktree Capital navigate the 2008 Global Financial Crisis?
 > Having built massive cash reserves by avoiding subprime debt, Oaktree deployed $500 million per week into distressed debt during the panic, reaping huge gains.
 
-> [!question] mkt-vi-188 | What is the 'cost of being wrong' in second-level analysis?
+> [!question]- mkt-vi-188 | What is the 'cost of being wrong' in second-level analysis?
 > Evaluating the catastrophic downside if your non-consensus thesis fails, ensuring that survival is guaranteed regardless of outcome.
 
-> [!question] mkt-vi-189 | Why do credit cycles reset more cleanly than equity cycles?
+> [!question]- mkt-vi-189 | Why do credit cycles reset more cleanly than equity cycles?
 > Because debt has contractual maturity dates; defaults and Chapter 11 restructurings legally extinguish excess debt and transfer ownership to creditors.
 
-> [!question] mkt-vi-190 | What is the primary characteristic of an investor who has mastered market cycles?
+> [!question]- mkt-vi-190 | What is the primary characteristic of an investor who has mastered market cycles?
 > The emotional independence to be cautious when others are greedily complacent, and aggressive when others are terrified.
 
-> [!question] mkt-vi-191 | What is an 'unforced error' in portfolio management?
+> [!question]- mkt-vi-191 | What is an 'unforced error' in portfolio management?
 > Buying an asset without understanding its debt covenants, chasing momentum at peak multiples, or using margin debt that forces liquidation.
 
-> [!question] mkt-vi-192 | What is Howard Marks' ultimate takeaway on achieving superior investment results?
+> [!question]- mkt-vi-192 | What is Howard Marks' ultimate takeaway on achieving superior investment results?
 > You cannot do what everybody else is doing and expect to outperform; you must think differently, manage risk obsessively, and exploit cycles.
 
 ---

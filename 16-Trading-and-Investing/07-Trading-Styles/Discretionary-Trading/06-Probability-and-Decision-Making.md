@@ -162,100 +162,100 @@ Because the observed frequency (80%) is very close to the forecasted probability
 
 ## Interview questions
 
-> [!question] mkt-dec-001 | What is the mathematical definition of Expected Value (EV) in trading?
+> [!question]- mkt-dec-001 | What is the mathematical definition of Expected Value (EV) in trading?
 > The probability-weighted sum of all potential financial outcomes from an investment decision.
 
-> [!question] mkt-dec-002 | What is an R-multiple in trade risk management?
+> [!question]- mkt-dec-002 | What is an R-multiple in trade risk management?
 > The ratio of realized profit or loss on a trade relative to the initial dollar capital risked at entry.
 
-> [!question] mkt-dec-003 | If a strategy has a 40% win rate and an average win of 3R with a 1R loss, what is its expected value per trade?
+> [!question]- mkt-dec-003 | If a strategy has a 40% win rate and an average win of 3R with a 1R loss, what is its expected value per trade?
 > EV = (0.40 * 3.0R) - (0.60 * 1.0R) = 1.2R - 0.6R = +0.60R per trade.
 
-> [!question] mkt-dec-004 | What is variance drag in portfolio theory?
+> [!question]- mkt-dec-004 | What is variance drag in portfolio theory?
 > The mathematical reduction in long-term geometric compound return caused by portfolio volatility: R_geo approx mu - 0.5 * sigma^2.
 
-> [!question] mkt-dec-005 | Why is a 50% loss not offset by an equal 50% subsequent gain?
+> [!question]- mkt-dec-005 | Why is a 50% loss not offset by an equal 50% subsequent gain?
 > Because a 50% drop cuts capital in half ($100 to $50), requiring a 100% gain ($50 to $100) to return to original capital.
 
-> [!question] mkt-dec-006 | What is the Brier Score used for in probabilistic forecasting?
+> [!question]- mkt-dec-006 | What is the Brier Score used for in probabilistic forecasting?
 > To measure the accuracy of probabilistic predictions against realized binary outcomes, calculated as the mean squared error.
 
-> [!question] mkt-dec-007 | What is the range of possible values for a standard Brier Score?
+> [!question]- mkt-dec-007 | What is the range of possible values for a standard Brier Score?
 > From 0.0 (perfect foresight and calibration) to 1.0 (completely incorrect forecasts).
 
-> [!question] mkt-dec-008 | What are the three components of the Murphy decomposition of the Brier Score?
+> [!question]- mkt-dec-008 | What are the three components of the Murphy decomposition of the Brier Score?
 > Uncertainty, Resolution, and Reliability (calibration error).
 
-> [!question] mkt-dec-009 | What is probability calibration?
+> [!question]- mkt-dec-009 | What is probability calibration?
 > The degree of agreement between estimated forecast probabilities and the actual long-run observed frequencies of the event.
 
-> [!question] mkt-dec-010 | What is the Kelly Criterion formula for an even-money (1-to-1) bet with win probability p?
+> [!question]- mkt-dec-010 | What is the Kelly Criterion formula for an even-money (1-to-1) bet with win probability p?
 > f* = p - q = 2p - 1, where q = 1 - p.
 
-> [!question] mkt-dec-011 | What happens mathematically if an investor consistently sizes positions at twice the Kelly optimal fraction (2 * f*)?
+> [!question]- mkt-dec-011 | What happens mathematically if an investor consistently sizes positions at twice the Kelly optimal fraction (2 * f*)?
 > Terminal portfolio wealth approaches zero with probability 1.0 (guaranteed mathematical ruin).
 
-> [!question] mkt-dec-012 | Why do quantitative funds deploy Fractional Kelly (such as Half-Kelly) rather than Full Kelly?
+> [!question]- mkt-dec-012 | Why do quantitative funds deploy Fractional Kelly (such as Half-Kelly) rather than Full Kelly?
 > To buffer against parameter estimation errors, market regime shifts, and non-Gaussian fat-tailed drawdowns.
 
-> [!question] mkt-dec-013 | What is Base Rate Neglect in probabilistic reasoning?
+> [!question]- mkt-dec-013 | What is Base Rate Neglect in probabilistic reasoning?
 > The cognitive tendency to overweight specific case evidence while ignoring the general prior probability of the underlying event.
 
-> [!question] mkt-dec-014 | What is a decision tree under uncertainty?
+> [!question]- mkt-dec-014 | What is a decision tree under uncertainty?
 > A graphical model branching decision paths with associated conditional probabilities, costs, and terminal payoff values.
 
-> [!question] mkt-dec-015 | How does asymmetric payoff alter the required win rate for profitability?
+> [!question]- mkt-dec-015 | How does asymmetric payoff alter the required win rate for profitability?
 > Larger average wins (e.g. 5R) allow a strategy to be highly profitable with win rates as low as 20% to 30%.
 
-> [!question] mkt-dec-016 | What is the Profit Factor of a trading track record?
+> [!question]- mkt-dec-016 | What is the Profit Factor of a trading track record?
 > The ratio of gross trading profits divided by gross trading losses over a given period.
 
-> [!question] mkt-dec-017 | What is the minimum acceptable Profit Factor for an institutional trading strategy?
+> [!question]- mkt-dec-017 | What is the minimum acceptable Profit Factor for an institutional trading strategy?
 > Typically 1.50 or higher across an out-of-sample sample of at least 100 trades.
 
-> [!question] mkt-dec-018 | What is the difference between risk and uncertainty according to Frank Knight (1921)?
+> [!question]- mkt-dec-018 | What is the difference between risk and uncertainty according to Frank Knight (1921)?
 > Risk has known outcome distributions with calculable probabilities; uncertainty involves outcomes where probabilities cannot be known.
 
-> [!question] mkt-dec-019 | What is the Gambler's Fallacy in probability?
+> [!question]- mkt-dec-019 | What is the Gambler's Fallacy in probability?
 > Believing that independent random events will compensate for past imbalances (e.g. thinking a coin must land heads after five tails).
 
-> [!question] mkt-dec-020 | What is the Hot-Hand Fallacy?
+> [!question]- mkt-dec-020 | What is the Hot-Hand Fallacy?
 > Falsely assuming that a streak of successful random outcomes indicates a higher future probability of success.
 
-> [!question] mkt-dec-021 | What is the Law of Large Numbers in quantitative trading?
+> [!question]- mkt-dec-021 | What is the Law of Large Numbers in quantitative trading?
 > As the number of independent trades approaches infinity, the realized average return converges to the true theoretical expected value.
 
-> [!question] mkt-dec-022 | What is a negative skew payoff distribution?
+> [!question]- mkt-dec-022 | What is a negative skew payoff distribution?
 > A distribution characterized by frequent small gains punctuated by occasional catastrophic, unhedged losses.
 
-> [!question] mkt-dec-023 | What is a positive skew payoff distribution?
+> [!question]- mkt-dec-023 | What is a positive skew payoff distribution?
 > A distribution characterized by frequent small, managed losses offset by infrequent, massive outlier profits (e.g. trend following).
 
-> [!question] mkt-dec-024 | How does volatility drag affect leveraged ETFs (such as 3x bull funds)?
+> [!question]- mkt-dec-024 | How does volatility drag affect leveraged ETFs (such as 3x bull funds)?
 > Daily geometric rebalancing in choppy, volatile markets systematically destroys fund NAV through compounding volatility drag.
 
-> [!question] mkt-dec-025 | What is Monte Carlo simulation used for in portfolio risk assessment?
+> [!question]- mkt-dec-025 | What is Monte Carlo simulation used for in portfolio risk assessment?
 > Running thousands of randomized permutations of historical returns to estimate maximum expected drawdown and risk of ruin.
 
-> [!question] mkt-dec-026 | What is the Risk of Ruin in gambling and trading mathematics?
+> [!question]- mkt-dec-026 | What is the Risk of Ruin in gambling and trading mathematics?
 > The statistical probability that an account equity will drop to a level where trading can no longer continue.
 
-> [!question] mkt-dec-027 | How does increasing position size affect the Risk of Ruin?
+> [!question]- mkt-dec-027 | How does increasing position size affect the Risk of Ruin?
 > Risk of ruin increases exponentially as position sizing approaches and exceeds the Kelly optimal threshold.
 
-> [!question] mkt-dec-028 | What is a calibration curve in probabilistic forecasting?
+> [!question]- mkt-dec-028 | What is a calibration curve in probabilistic forecasting?
 > A plot of predicted probabilities on the x-axis against observed empirical frequencies on the y-axis; a perfect model traces a 45-degree line.
 
-> [!question] mkt-dec-029 | What is the Ergodicity Problem in economics and finance (Peters 2019)?
+> [!question]- mkt-dec-029 | What is the Ergodicity Problem in economics and finance (Peters 2019)?
 > The time average of an individual wealth path does not equal the ensemble average across an entire population under non-ergodic multiplicative compounding.
 
-> [!question] mkt-dec-030 | Why is survivorship bias dangerous in historical strategy analysis?
+> [!question]- mkt-dec-030 | Why is survivorship bias dangerous in historical strategy analysis?
 > Because observing only surviving funds or stocks dramatically overestimates the historical expected return of the strategy.
 
-> [!question] mkt-dec-031 | What is maximum favorable excursion (MFE)?
+> [!question]- mkt-dec-031 | What is maximum favorable excursion (MFE)?
 > The maximum unrealized profit achieved by a trade prior to position exit, used to optimize profit targets.
 
-> [!question] mkt-dec-032 | What is the golden rule of probabilistic capital allocation?
+> [!question]- mkt-dec-032 | What is the golden rule of probabilistic capital allocation?
 > Never risk a non-zero probability of total ruin for an outcome of bounded incremental gain.
 
 ---

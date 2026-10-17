@@ -215,100 +215,100 @@ Trading $5\%$ of daily volume incurs an expected price penalty of $25.4$ basis p
 
 ## Interview questions
 
-> [!question] mkt-sys-161 | Define Implementation Shortfall (Perold 1988).
+> [!question]- mkt-sys-161 | Define Implementation Shortfall (Perold 1988).
 > Implementation Shortfall is the difference in return between a theoretical paper portfolio executing instantly at decision prices and the actual realized portfolio executing in live markets.
 
-> [!question] mkt-sys-162 | State the primary components of Implementation Shortfall.
+> [!question]- mkt-sys-162 | State the primary components of Implementation Shortfall.
 > The components are explicit fees (commissions, taxes), delay cost (price movement from decision to arrival), market impact and spread, and opportunity cost of unfilled shares.
 
-> [!question] mkt-sys-163 | What is the difference between temporary and permanent market impact?
+> [!question]- mkt-sys-163 | What is the difference between temporary and permanent market impact?
 > Temporary impact is a transitory price concession caused by immediate liquidity demand that decays as the book refills; permanent impact is the persistent price shift reflecting information content.
 
-> [!question] mkt-sys-164 | State the universal square-root law of market impact.
+> [!question]- mkt-sys-164 | State the universal square-root law of market impact.
 > Market impact scales proportionally with daily volatility and the square root of order size relative to daily volume: I = Y * sigma_{daily} * sqrt(Q / V_{ADV}), with Y ~ 0.5 to 0.7.
 
-> [!question] mkt-sys-165 | Why does market impact exhibit square-root rather than linear scaling with order size?
+> [!question]- mkt-sys-165 | Why does market impact exhibit square-root rather than linear scaling with order size?
 > Because liquidity providers adjust quotes concavely and hidden order depth replenishes dynamically, dampening price displacement relative to a naive linear order book model.
 
-> [!question] mkt-sys-166 | What is opportunity cost in trade execution?
+> [!question]- mkt-sys-166 | What is opportunity cost in trade execution?
 > The unrealized profit or avoided loss on shares that were never executed because limit prices were not reached before the market moved away or the order expired.
 
-> [!question] mkt-sys-167 | What is the trade-off in the Almgren-Chriss optimal execution model?
+> [!question]- mkt-sys-167 | What is the trade-off in the Almgren-Chriss optimal execution model?
 > The trade-off between market impact (trading fast causes high temporary impact) and market risk (trading slow leaves the position exposed to adverse market volatility).
 
-> [!question] mkt-sys-168 | What is TWAP and when is it suitable?
+> [!question]- mkt-sys-168 | What is TWAP and when is it suitable?
 > Time-Weighted Average Price divides orders into equal slices at uniform time intervals; suitable for liquid assets with stable volume or low-impact passive rebalancing.
 
-> [!question] mkt-sys-169 | What is VWAP and how does it account for intra-day liquidity?
+> [!question]- mkt-sys-169 | What is VWAP and how does it account for intra-day liquidity?
 > Volume-Weighted Average Price slices orders proportionally to historical intra-day volume curves (higher at open and close, lower midday), minimizing market impact.
 
-> [!question] mkt-sys-170 | What is Percentage of Volume (POV) algorithmic execution?
+> [!question]- mkt-sys-170 | What is Percentage of Volume (POV) algorithmic execution?
 > An execution strategy that dynamically trades a fixed percentage (e.g. 5-10%) of actual real-time tape volume, adjusting speed automatically to live market liquidity.
 
-> [!question] mkt-sys-171 | What is the U-shaped intra-day volume profile in equity markets?
+> [!question]- mkt-sys-171 | What is the U-shaped intra-day volume profile in equity markets?
 > Trading volume is heavily concentrated in the first 30 minutes after market open and the final 30 minutes before market close, with muted volume during the midday session.
 
-> [!question] mkt-sys-172 | How does strategy turnover affect transaction cost drag?
+> [!question]- mkt-sys-172 | How does strategy turnover affect transaction cost drag?
 > Higher portfolio turnover trades a multiple of portfolio AUM each year, multiplying cumulative market impact and explicit costs and rapidly consuming gross alpha.
 
-> [!question] mkt-sys-173 | Why does net strategy Sharpe ratio decay as AUM increases?
+> [!question]- mkt-sys-173 | Why does net strategy Sharpe ratio decay as AUM increases?
 > Because market impact costs scale super-linearly with AUM (~ AUM^{1.5}) while gross alpha scales linearly (~ AUM), compressing net percentage returns.
 
-> [!question] mkt-sys-174 | Define strategy capacity.
+> [!question]- mkt-sys-174 | Define strategy capacity.
 > Strategy capacity is the maximum capital a quantitative strategy can deploy before market impact and execution costs reduce net return below an investor's hurdle rate.
 
-> [!question] mkt-sys-175 | What is arrival price in execution benchmarking?
+> [!question]- mkt-sys-175 | What is arrival price in execution benchmarking?
 > The midpoint of the bid-ask spread at the exact timestamp when an order is released to the broker or execution algorithm for trading.
 
-> [!question] mkt-sys-176 | What is slippage in algorithmic execution?
+> [!question]- mkt-sys-176 | What is slippage in algorithmic execution?
 > The difference between the expected execution price (decision or arrival price) and the actual average filled price across all executed child orders.
 
-> [!question] mkt-sys-177 | What is delay cost (slippage due to latency)?
+> [!question]- mkt-sys-177 | What is delay cost (slippage due to latency)?
 > The price change that occurs between the portfolio optimization decision timestamp and the physical receipt of the order at the exchange matching engine.
 
-> [!question] mkt-sys-178 | What is an iceberg order and why is it used?
+> [!question]- mkt-sys-178 | What is an iceberg order and why is it used?
 > A limit order that publicly displays only a small fraction of its total size in the order book, hiding the remaining volume to avoid alerting predatory market participants.
 
-> [!question] mkt-sys-179 | How do maker-taker fee models influence smart order routing (SOR)?
+> [!question]- mkt-sys-179 | How do maker-taker fee models influence smart order routing (SOR)?
 > SOR engines route limit orders to maker-rebate venues to earn liquidity credits and route aggressive market orders to taker-fee venues with the cheapest access charges.
 
-> [!question] mkt-sys-180 | What is adverse selection in passive limit order execution?
+> [!question]- mkt-sys-180 | What is adverse selection in passive limit order execution?
 > Getting filled on passive limit orders primarily when prices are moving violently against the position, leaving the trader with an immediate mark-to-market loss.
 
-> [!question] mkt-sys-181 | What is predatory trading (order flow front-running)?
+> [!question]- mkt-sys-181 | What is predatory trading (order flow front-running)?
 > Algorithmic traders detecting institutional order slicing (e.g. via tape footprints or exchange leaks) and trading ahead in the same direction, expanding market impact.
 
-> [!question] mkt-sys-182 | Why does short selling incur higher execution friction than buying?
+> [!question]- mkt-sys-182 | Why does short selling incur higher execution friction than buying?
 > Short selling requires locating shares, paying prime broker borrow fees, and navigating uptick rules (Regulation SHO Rule 201) during market declines.
 
-> [!question] mkt-sys-183 | What is SEC Section 31 transaction fee?
+> [!question]- mkt-sys-183 | What is SEC Section 31 transaction fee?
 > A regulatory fee assessed by the SEC on all equity and options sales transactions on US exchanges to fund regulatory oversight, passed through by brokers.
 
-> [!question] mkt-sys-184 | What is the half-spread cost formula?
+> [!question]- mkt-sys-184 | What is the half-spread cost formula?
 > Half-spread cost = 0.5 * (Ask - Bid) per share, representing the immediate cost of crossing the spread to obtain liquidity.
 
-> [!question] mkt-sys-185 | How does daily volatility sigma_{daily} modulate market impact in the square-root law?
+> [!question]- mkt-sys-185 | How does daily volatility sigma_{daily} modulate market impact in the square-root law?
 > Higher volatility wide-spreads bid-ask quotations and induces greater market maker risk aversion, scaling market impact proportionally with sigma_{daily}.
 
-> [!question] mkt-sys-186 | What is liquidity consumption vs liquidity provision in portfolio execution?
+> [!question]- mkt-sys-186 | What is liquidity consumption vs liquidity provision in portfolio execution?
 > Consuming liquidity uses aggressive market orders that cross the spread, paying impact for certainty; providing liquidity posts passive limit orders, risking non-execution.
 
-> [!question] mkt-sys-187 | How does the bid-ask spread behave during market stress or earnings announcements?
+> [!question]- mkt-sys-187 | How does the bid-ask spread behave during market stress or earnings announcements?
 > Spreads widen dramatically as market makers price in heightened adverse selection risk, multiplying execution costs for strategies attempting to trade during announcements.
 
-> [!question] mkt-sys-188 | What is Kyle's lambda (lambda_K)?
+> [!question]- mkt-sys-188 | What is Kyle's lambda (lambda_K)?
 > Kyle's lambda measures price impact per unit of order flow: dP = lambda_K * Q; it reflects the degree of asymmetric information in the market.
 
-> [!question] mkt-sys-189 | Why does cross-sectional rebalancing at the market close minimize tracking error?
+> [!question]- mkt-sys-189 | Why does cross-sectional rebalancing at the market close minimize tracking error?
 > Because official mutual fund and index NAVs are benchmarked against official exchange closing prices; trading into the closing auction eliminates intra-day price tracking error.
 
-> [!question] mkt-sys-190 | What is the closing cross (auction) and how does it reduce market impact?
+> [!question]- mkt-sys-190 | What is the closing cross (auction) and how does it reduce market impact?
 > The closing cross matches buy and sell interest multilaterally at a single clearing price without bid-ask spreads, allowing large blocks to cross with minimal impact.
 
-> [!question] mkt-sys-191 | What is the participation rate rule of thumb to avoid signaling market presence?
+> [!question]- mkt-sys-191 | What is the participation rate rule of thumb to avoid signaling market presence?
 > Slicing parent orders to remain strictly below 5% to 10% of continuous tape volume to minimize adverse selection and algorithmic footprint detection.
 
-> [!question] mkt-sys-192 | How does turnover constraint in portfolio optimization prevent transaction cost ruin?
+> [!question]- mkt-sys-192 | How does turnover constraint in portfolio optimization prevent transaction cost ruin?
 > Enforcing a maximum periodic turnover constraint or quadratic cost penalty restricts rebalancing to high-conviction alpha trades that comfortably exceed execution hurdles.
 
 ---

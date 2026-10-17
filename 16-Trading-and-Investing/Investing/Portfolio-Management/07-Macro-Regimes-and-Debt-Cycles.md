@@ -209,100 +209,100 @@ Inversion signals that tight monetary policy has pushed short-term borrowing cos
 
 ## Flashcard drill bank
 
-> [!question] mkt-pf-193 | What are the three primary economic forces in Ray Dalio's macroeconomic template?
+> [!question]- mkt-pf-193 | What are the three primary economic forces in Ray Dalio's macroeconomic template?
 > Long-term productivity growth, the short-term debt cycle (business cycle), and the long-term debt super-cycle.
 
-> [!question] mkt-pf-194 | How long does a typical short-term debt cycle last?
+> [!question]- mkt-pf-194 | How long does a typical short-term debt cycle last?
 > Approximately 5 to 8 years, driven by central bank interest rate policy.
 
-> [!question] mkt-pf-195 | How long does a typical long-term debt super-cycle last?
+> [!question]- mkt-pf-195 | How long does a typical long-term debt super-cycle last?
 > Approximately 50 to 75 years, culminating when debt burdens become unsustainable and interest rates hit zero.
 
-> [!question] mkt-pf-196 | What is Hyman Minsky's core axiom regarding financial stability?
+> [!question]- mkt-pf-196 | What is Hyman Minsky's core axiom regarding financial stability?
 > Stability breeds instability: prolonged economic calm encourages complacency, excessive leverage, and eventual crisis.
 
-> [!question] mkt-pf-197 | What defines Minsky's Hedge Finance stage?
+> [!question]- mkt-pf-197 | What defines Minsky's Hedge Finance stage?
 > Operating cash flows are sufficient to meet both principal and interest obligations on debt.
 
-> [!question] mkt-pf-198 | What defines Minsky's Speculative Finance stage?
+> [!question]- mkt-pf-198 | What defines Minsky's Speculative Finance stage?
 > Operating cash flows cover interest obligations but cannot repay principal, requiring the borrower to roll over debt.
 
-> [!question] mkt-pf-199 | What defines Minsky's Ponzi Finance stage?
+> [!question]- mkt-pf-199 | What defines Minsky's Ponzi Finance stage?
 > Operating cash flows cover neither interest nor principal; the borrower depends entirely on rising asset prices to refinance.
 
-> [!question] mkt-pf-200 | What is a 'Minsky Moment'?
+> [!question]- mkt-pf-200 | What is a 'Minsky Moment'?
 > The tipping point where over-leveraged borrowers must sell assets to service debt, triggering a self-reinforcing market crash.
 
-> [!question] mkt-pf-201 | What is the mathematical condition for sovereign debt sustainability?
+> [!question]- mkt-pf-201 | What is the mathematical condition for sovereign debt sustainability?
 > The nominal economic growth rate g must exceed the nominal interest rate on debt i (g > i).
 
-> [!question] mkt-pf-202 | What are the four primary policy levers used to manage a systemic deleveraging?
+> [!question]- mkt-pf-202 | What are the four primary policy levers used to manage a systemic deleveraging?
 > Austerity, debt restructuring/defaults, wealth transfers/taxes, and central bank debt monetization (money printing).
 
-> [!question] mkt-pf-203 | Why is austerity alone insufficient to resolve a debt crisis?
+> [!question]- mkt-pf-203 | Why is austerity alone insufficient to resolve a debt crisis?
 > Cutting spending reduces economic activity, causing GDP to contract faster than debt is repaid and worsening the debt-to-GDP ratio.
 
-> [!question] mkt-pf-204 | What is a 'Beautiful Deleveraging'?
+> [!question]- mkt-pf-204 | What is a 'Beautiful Deleveraging'?
 > A balance where central banks print enough money to offset deflationary write-downs, ensuring nominal growth exceeds nominal interest rates (g > i).
 
-> [!question] mkt-pf-205 | What is Monetary Policy 1 (MP1)?
+> [!question]- mkt-pf-205 | What is Monetary Policy 1 (MP1)?
 > Traditional short-term interest rate adjustments by the central bank to manage commercial bank credit creation.
 
-> [!question] mkt-pf-206 | What is the Zero Lower Bound (ZLB)?
+> [!question]- mkt-pf-206 | What is the Zero Lower Bound (ZLB)?
 > The constraint where nominal policy interest rates reach zero percent, rendering traditional MP1 rate cuts ineffective.
 
-> [!question] mkt-pf-207 | What is Monetary Policy 2 (MP2)?
+> [!question]- mkt-pf-207 | What is Monetary Policy 2 (MP2)?
 > Quantitative Easing (QE): central banks purchase long-term bonds and assets to lower long yields and boost financial asset prices.
 
-> [!question] mkt-pf-208 | What is the primary social drawback of Monetary Policy 2 (QE)?
+> [!question]- mkt-pf-208 | What is the primary social drawback of Monetary Policy 2 (QE)?
 > It drives up the prices of financial assets owned by wealthy households, widening income and wealth inequality.
 
-> [!question] mkt-pf-209 | What is Monetary Policy 3 (MP3)?
+> [!question]- mkt-pf-209 | What is Monetary Policy 3 (MP3)?
 > Direct fiscal-monetary coordination ('helicopter money') where central bank money creation directly funds government spending and cash transfers.
 
-> [!question] mkt-pf-210 | What is the primary inflation risk of Monetary Policy 3?
+> [!question]- mkt-pf-210 | What is the primary inflation risk of Monetary Policy 3?
 > Putting newly created purchasing power directly into consumer bank accounts can trigger severe consumer price inflation and currency debasement.
 
-> [!question] mkt-pf-211 | What does an inverted yield curve historically indicate?
+> [!question]- mkt-pf-211 | What does an inverted yield curve historically indicate?
 > That monetary policy is excessively tight, and a recession is likely to occur within 6 to 18 months.
 
-> [!question] mkt-pf-212 | What is a Bull Steepener in the yield curve?
+> [!question]- mkt-pf-212 | What is a Bull Steepener in the yield curve?
 > Short-term rates fall faster than long-term rates, typically occurring when central banks rapidly ease monetary policy in a recession.
 
-> [!question] mkt-pf-213 | What is a Bear Steepener in the yield curve?
+> [!question]- mkt-pf-213 | What is a Bear Steepener in the yield curve?
 > Long-term rates rise faster than short-term rates, driven by surging inflation expectations or fiscal debt issuance concerns.
 
-> [!question] mkt-pf-214 | What is a Bull Flattener in the yield curve?
+> [!question]- mkt-pf-214 | What is a Bull Flattener in the yield curve?
 > Long-term rates fall faster than short-term rates, reflecting slowing economic growth and disinflationary expectations.
 
-> [!question] mkt-pf-215 | What is a Bear Flattener in the yield curve?
+> [!question]- mkt-pf-215 | What is a Bear Flattener in the yield curve?
 > Short-term rates rise faster than long-term rates, typically occurring during late-cycle central bank rate hiking campaigns.
 
-> [!question] mkt-pf-216 | What is the Debt-Deflation theory published by Irving Fisher in 1933?
+> [!question]- mkt-pf-216 | What is the Debt-Deflation theory published by Irving Fisher in 1933?
 > Falling prices increase the real purchasing power value of debt, making debts more burdensome even as nominal loan balances stay fixed.
 
-> [!question] mkt-pf-217 | What is the 'Liquidity Trap' described by John Maynard Keynes?
+> [!question]- mkt-pf-217 | What is the 'Liquidity Trap' described by John Maynard Keynes?
 > A situation where interest rates are near zero and injections of cash by the central bank fail to stimulate borrowing or spending.
 
-> [!question] mkt-pf-218 | How does credit creation expand aggregate purchasing power?
+> [!question]- mkt-pf-218 | How does credit creation expand aggregate purchasing power?
 > Credit allows a borrower to spend money they do not possess, raising current spending at the expense of requiring lower future spending to repay debt.
 
-> [!question] mkt-pf-219 | What is a 'primary budget deficit'?
+> [!question]- mkt-pf-219 | What is a 'primary budget deficit'?
 > The government deficit excluding interest payments on existing public debt.
 
-> [!question] mkt-pf-220 | How does currency depreciation affect an economy undergoing deleveraging with foreign-currency debt?
+> [!question]- mkt-pf-220 | How does currency depreciation affect an economy undergoing deleveraging with foreign-currency debt?
 > It triggers severe insolvency because the local currency cost of servicing foreign-denominated debt explodes.
 
-> [!question] mkt-pf-221 | What is financial repression?
+> [!question]- mkt-pf-221 | What is financial repression?
 > Government policies (caps on interest rates, capital controls, captive regulatory bond holdings) keeping nominal rates below inflation to erode real debt.
 
-> [!question] mkt-pf-222 | What is the historical debt-to-GDP threshold identified by Reinhart and Rogoff where economic growth slows?
+> [!question]- mkt-pf-222 | What is the historical debt-to-GDP threshold identified by Reinhart and Rogoff where economic growth slows?
 > Approximately 90% debt-to-GDP, though the precise threshold varies based on currency sovereignty and growth potential.
 
-> [!question] mkt-pf-223 | What is the difference between a cyclical bear market and a structural debt deleveraging?
+> [!question]- mkt-pf-223 | What is the difference between a cyclical bear market and a structural debt deleveraging?
 > A cyclical bear market is resolved by routine central bank rate cuts; a structural deleveraging requires restructuring and currency monetization.
 
-> [!question] mkt-pf-224 | What is the ultimate mandate of macro regime portfolio management?
+> [!question]- mkt-pf-224 | What is the ultimate mandate of macro regime portfolio management?
 > Identify the prevailing debt cycle stage and position across asset classes that thrive in the current growth, inflation, and liquidity regime.
 
 ---

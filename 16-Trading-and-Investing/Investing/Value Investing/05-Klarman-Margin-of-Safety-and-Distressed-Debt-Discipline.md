@@ -178,100 +178,100 @@ The investor acquires a dominant telecom infrastructure business at an unassaila
 
 ## Practice questions
 
-> [!question] mkt-vi-129 | What was the central thesis of Seth Klarman's book 'Margin of Safety'?
+> [!question]- mkt-vi-129 | What was the central thesis of Seth Klarman's book 'Margin of Safety'?
 > Successful investing requires an absolute-return risk aversion that prioritizes capital preservation, holds cash patiently, and exploits institutional forced-selling inefficiencies.
 
-> [!question] mkt-vi-130 | What is the 'relative performance derby' according to Klarman?
+> [!question]- mkt-vi-130 | What is the 'relative performance derby' according to Klarman?
 > The institutional obsession with beating short-term benchmark indices, which forces managers to remain fully invested in overvalued assets to avoid tracking error.
 
-> [!question] mkt-vi-131 | How does an absolute-return investor define risk differently from an institutional relative-return manager?
+> [!question]- mkt-vi-131 | How does an absolute-return investor define risk differently from an institutional relative-return manager?
 > Absolute-return investors define risk as the probability of permanent capital loss; relative-return managers define risk as underperforming a benchmark.
 
-> [!question] mkt-vi-132 | Why does Seth Klarman describe uninvested cash as an unpriced call option?
+> [!question]- mkt-vi-132 | Why does Seth Klarman describe uninvested cash as an unpriced call option?
 > Cash gives the investor the perpetual, non-expiring right to purchase mispriced assets from forced sellers during sudden market panics.
 
-> [!question] mkt-vi-133 | What is a catalyst-driven special situation?
+> [!question]- mkt-vi-133 | What is a catalyst-driven special situation?
 > An investment where a specific corporate event (spinoff, restructuring, tender offer, liquidation) will unlock intrinsic value independent of overall market direction.
 
-> [!question] mkt-vi-134 | What is the Absolute Priority Rule in corporate bankruptcy?
+> [!question]- mkt-vi-134 | What is the Absolute Priority Rule in corporate bankruptcy?
 > Senior claims must be paid in full (100 cents on the dollar) before any junior debt or equity tranche receives any value.
 
-> [!question] mkt-vi-135 | What is the Fulcrum Security in a distressed debt restructuring?
+> [!question]- mkt-vi-135 | What is the Fulcrum Security in a distressed debt restructuring?
 > The specific debt tranche in the capital structure that is only partially covered by reorganized enterprise value, which converts into the new controlling equity.
 
-> [!question] mkt-vi-136 | What happens to pre-petition common equity holders when enterprise value is exhausted by debt claims?
+> [!question]- mkt-vi-136 | What happens to pre-petition common equity holders when enterprise value is exhausted by debt claims?
 > Pre-bankruptcy common shares are legally cancelled and wiped out, receiving zero recovery under Chapter 11 reorganization.
 
-> [!question] mkt-vi-137 | Why do corporate spinoffs frequently trade at deep initial discounts?
+> [!question]- mkt-vi-137 | Why do corporate spinoffs frequently trade at deep initial discounts?
 > Institutional shareholders and index funds who receive the spun-off shares are often legally forced or mandated to sell them immediately due to size or benchmark criteria.
 
-> [!question] mkt-vi-138 | What are Post-Reorganization (Orphan) Equities?
+> [!question]- mkt-vi-138 | What are Post-Reorganization (Orphan) Equities?
 > Common stocks of companies that have emerged from Chapter 11 bankruptcy, which are initially owned by former debt holders (banks/funds) who sell them off indiscriminately.
 
-> [!question] mkt-vi-139 | What is a Thrift or Mutual Conversion?
+> [!question]- mkt-vi-139 | What is a Thrift or Mutual Conversion?
 > When a depositor-owned mutual savings bank converts into a publicly traded corporation, often pricing initial shares at a 30% to 50% discount to tangible book value.
 
-> [!question] mkt-vi-140 | What is a Contingent Value Right (CVR)?
+> [!question]- mkt-vi-140 | What is a Contingent Value Right (CVR)?
 > A contractual security issued in M&A that pays cash to holders if specific milestones (e.g. FDA drug approval or legal settlements) are achieved by a defined date.
 
-> [!question] mkt-vi-141 | Why are CVRs frequently mispriced by the broader market?
+> [!question]- mkt-vi-141 | Why are CVRs frequently mispriced by the broader market?
 > Most institutional mutual funds are legally barred from holding unlisted or non-standard derivative securities, forcing indiscriminate liquidation.
 
-> [!question] mkt-vi-142 | What is debtor-in-possession (DIP) financing in Chapter 11?
+> [!question]- mkt-vi-142 | What is debtor-in-possession (DIP) financing in Chapter 11?
 > Specialized super-senior financing provided to a company in bankruptcy that ranks ahead of all pre-existing debt, earning high yields with minimal credit risk.
 
-> [!question] mkt-vi-143 | What is the danger of lowering your hurdle rate when cash balances build up?
+> [!question]- mkt-vi-143 | What is the danger of lowering your hurdle rate when cash balances build up?
 > It forces you to allocate capital into mediocre, high-risk assets, eliminating your liquidity cushion precisely before market crises occur.
 
-> [!question] mkt-vi-144 | How does Klarman view Wall Street sell-side research?
+> [!question]- mkt-vi-144 | How does Klarman view Wall Street sell-side research?
 > As conflicted, marketing-driven promotion designed to generate trading commissions and investment banking fees rather than objective truth.
 
-> [!question] mkt-vi-145 | What is a 'credit rating cliff' forced-selling event?
+> [!question]- mkt-vi-145 | What is a 'credit rating cliff' forced-selling event?
 > When a bond is downgraded from BBB- (investment grade) to BB+ (high yield / junk), triggering mandatory liquidation by conservative institutional bond funds.
 
-> [!question] mkt-vi-146 | Why does distressed debt often offer superior risk-adjusted returns compared to common equity?
+> [!question]- mkt-vi-146 | Why does distressed debt often offer superior risk-adjusted returns compared to common equity?
 > Senior debt provides structural asset backing, legal priority, contractual cash flow claims, and the ability to seize ownership of the operating assets in default.
 
-> [!question] mkt-vi-147 | What is a rights offering backstop?
+> [!question]- mkt-vi-147 | What is a rights offering backstop?
 > An agreement by a value investor to purchase all unsold shares in a corporate capital raise, earning an upfront fee and acquiring shares at a deep discount.
 
-> [!question] mkt-vi-148 | How does Klarman evaluate management in distressed situations?
+> [!question]- mkt-vi-148 | How does Klarman evaluate management in distressed situations?
 > Skeptically; management that destroyed value to enter bankruptcy is often self-serving, requiring active creditor oversight or immediate replacement.
 
-> [!question] mkt-vi-149 | What is a plan of reorganization (POR) in bankruptcy court?
+> [!question]- mkt-vi-149 | What is a plan of reorganization (POR) in bankruptcy court?
 > The formal legal document approved by creditors and the bankruptcy judge that establishes asset distribution, debt restructuring, and new equity ownership.
 
-> [!question] mkt-vi-150 | What is a 'blocking position' in distressed debt?
+> [!question]- mkt-vi-150 | What is a 'blocking position' in distressed debt?
 > Owning more than 33.3% of a debt class in Chapter 11, giving the holder veto power over any proposed plan of reorganization.
 
-> [!question] mkt-vi-151 | Why did Klarman advocate that value investors should not attempt to be heroes?
+> [!question]- mkt-vi-151 | Why did Klarman advocate that value investors should not attempt to be heroes?
 > Complex, levered turnarounds with unproven management and secular industry headwinds should be avoided in favor of simple, asset-backed bargains.
 
-> [!question] mkt-vi-152 | How does inflation impact fixed-income distressed debt investing?
+> [!question]- mkt-vi-152 | How does inflation impact fixed-income distressed debt investing?
 > Inflation erodes the purchasing power of fixed nominal debt payments, but increases the reproduction cost and liquidation value of tangible underlying assets.
 
-> [!question] mkt-vi-153 | What is the 'winner's curse' in open corporate auctions?
+> [!question]- mkt-vi-153 | What is the 'winner's curse' in open corporate auctions?
 > The bidder who wins an asset is the one who made the most optimistic assumptions, often overpaying and destroying capital.
 
-> [!question] mkt-vi-154 | Why should an investor focus on process over outcome?
+> [!question]- mkt-vi-154 | Why should an investor focus on process over outcome?
 > In probabilistic markets, a sound process can occasionally produce a bad outcome due to bad luck; maintaining a disciplined process guarantees long-term survival.
 
-> [!question] mkt-vi-155 | What is the primary psychological hurdle to investing in distressed assets?
+> [!question]- mkt-vi-155 | What is the primary psychological hurdle to investing in distressed assets?
 > Having the emotional fortitude to purchase securities of bankrupt, despised companies in the headlines while everyone else is panicking.
 
-> [!question] mkt-vi-156 | How does Baupost ensure its clients allow it to hold cash and execute long-term strategies?
+> [!question]- mkt-vi-156 | How does Baupost ensure its clients allow it to hold cash and execute long-term strategies?
 > By selecting high-net-worth families and institutions aligned with an absolute-return philosophy, with multi-year capital lockup terms.
 
-> [!question] mkt-vi-157 | What is the relationship between market liquidity and true investment safety?
+> [!question]- mkt-vi-157 | What is the relationship between market liquidity and true investment safety?
 > Quoted liquidity creates the illusion of safety; true safety comes exclusively from the gap between purchase price and conservatively appraised intrinsic value.
 
-> [!question] mkt-vi-158 | What is a pre-packaged bankruptcy (pre-pack)?
+> [!question]- mkt-vi-158 | What is a pre-packaged bankruptcy (pre-pack)?
 > A restructuring where the company negotiates and secures creditor agreement on a plan of reorganization before formally filing for Chapter 11, minimizing court time.
 
-> [!question] mkt-vi-159 | Why are micro-cap special situations attractive for small funds?
+> [!question]- mkt-vi-159 | Why are micro-cap special situations attractive for small funds?
 > They are too small for multi-billion dollar hedge funds to analyze, creating severe informational inefficiencies and mispriced opportunities.
 
-> [!question] mkt-vi-160 | What is Seth Klarman's ultimate advice for survival in financial markets?
+> [!question]- mkt-vi-160 | What is Seth Klarman's ultimate advice for survival in financial markets?
 > Never lose sight of the downside; if you protect against permanent capital impairment, the upside will take care of itself.
 
 ---

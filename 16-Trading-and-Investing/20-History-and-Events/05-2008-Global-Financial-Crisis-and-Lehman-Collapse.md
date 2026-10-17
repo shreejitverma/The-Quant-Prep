@@ -153,14 +153,14 @@ The 2008 financial crisis generated the most extensive regulatory overhaul since
 
 ## Case Study Drills and Review Questions
 
-> [!question] mkt-his-017 | What was the balance sheet leverage ratio of Lehman Brothers immediately prior to its September 2008 bankruptcy?
+> [!question]- mkt-his-017 | What was the balance sheet leverage ratio of Lehman Brothers immediately prior to its September 2008 bankruptcy?
 > Approximately 31.4-to-1 ($691 billion in assets against roughly $22 billion in equity).
 
-> [!question] mkt-his-018 | What occurred when the Reserve Primary Fund 'broke the buck' on September 16, 2008?
+> [!question]- mkt-his-018 | What occurred when the Reserve Primary Fund 'broke the buck' on September 16, 2008?
 > Its NAV fell to $0.97 per share due to losses on Lehman commercial paper, sparking a massive $300 billion run across institutional prime money market funds.
 
-> [!question] mkt-his-019 | What was the fundamental flaw in David X. Li's Gaussian Copula model for rating CDO tranches?
+> [!question]- mkt-his-019 | What was the fundamental flaw in David X. Li's Gaussian Copula model for rating CDO tranches?
 > It assumed low and stable default correlation across regional real estate markets, ignoring the systemic risk of nationwide home price deflation.
 
-> [!question] mkt-his-020 | What is the Liquidity Coverage Ratio (LCR) introduced under Basel III following the 2008 crisis?
+> [!question]- mkt-his-020 | What is the Liquidity Coverage Ratio (LCR) introduced under Basel III following the 2008 crisis?
 > A requirement that banks hold sufficient unencumbered High-Quality Liquid Assets (HQLA) to withstand a 30-day severe liquidity stress scenario.

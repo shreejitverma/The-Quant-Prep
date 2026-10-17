@@ -189,100 +189,100 @@ It trades at a 33% discount to its Graham Number ($12.00 vs $17.94), carries a 4
 
 ## Practice questions
 
-> [!question] mkt-vi-001 | What is Benjamin Graham's formal definition of an investment operation?
+> [!question]- mkt-vi-001 | What is Benjamin Graham's formal definition of an investment operation?
 > An operation which, upon thorough analysis, promises safety of principal and an adequate return; operations not meeting these requirements are speculative.
 
-> [!question] mkt-vi-002 | What is the Margin of Safety in Graham's philosophy?
+> [!question]- mkt-vi-002 | What is the Margin of Safety in Graham's philosophy?
 > Purchasing a security at a substantial discount to intrinsic value to absorb errors in forecasting, management missteps, and adverse economic conditions.
 
-> [!question] mkt-vi-003 | Who is Mr. Market in Graham's famous parable?
+> [!question]- mkt-vi-003 | Who is Mr. Market in Graham's famous parable?
 > An obliging business partner who offers daily buying and selling quotes driven by mood swings, existing to serve the investor rather than instruct them.
 
-> [!question] mkt-vi-004 | What is the fundamental difference between how an investor and a speculator view market fluctuations?
+> [!question]- mkt-vi-004 | What is the fundamental difference between how an investor and a speculator view market fluctuations?
 > An investor views price declines as opportunities to buy assets cheaply; a speculator relies on price momentum and fears mark-to-market declines.
 
-> [!question] mkt-vi-005 | What did Graham mean by the 'voting machine' versus 'weighing machine' analogy?
+> [!question]- mkt-vi-005 | What did Graham mean by the 'voting machine' versus 'weighing machine' analogy?
 > In the short run, the market is a voting machine driven by sentiment and popularity; in the long run, it is a weighing machine measuring fundamental earnings and assets.
 
-> [!question] mkt-vi-006 | What is Benjamin Graham's Net Current Asset Value (NCAV) formula?
+> [!question]- mkt-vi-006 | What is Benjamin Graham's Net Current Asset Value (NCAV) formula?
 > NCAV = Current Assets - Total Liabilities - Preferred Stock.
 
-> [!question] mkt-vi-007 | What was Graham's buying threshold for Net-Net securities?
+> [!question]- mkt-vi-007 | What was Graham's buying threshold for Net-Net securities?
 > Purchasing at or below two-thirds (66.7%) of NCAV per share.
 
-> [!question] mkt-vi-008 | What is the Graham Number formula?
+> [!question]- mkt-vi-008 | What is the Graham Number formula?
 > Square Root of (22.5 * EPS * Book Value Per Share), combining a maximum P/E of 15 with a maximum P/B of 1.5.
 
-> [!question] mkt-vi-009 | What current ratio minimum did Graham mandate for defensive industrial companies?
+> [!question]- mkt-vi-009 | What current ratio minimum did Graham mandate for defensive industrial companies?
 > A Current Ratio of at least 2.0x (Current Assets at least twice Current Liabilities).
 
-> [!question] mkt-vi-010 | What working capital constraint did Graham place on long-term debt for defensive investors?
+> [!question]- mkt-vi-010 | What working capital constraint did Graham place on long-term debt for defensive investors?
 > Long-term debt should not exceed Net Working Capital (Current Assets minus Current Liabilities).
 
-> [!question] mkt-vi-011 | What earnings stability requirement did Graham establish for defensive investors?
+> [!question]- mkt-vi-011 | What earnings stability requirement did Graham establish for defensive investors?
 > Positive net income in each of the past 10 consecutive years.
 
-> [!question] mkt-vi-012 | What dividend history did Graham require for defensive stock selection?
+> [!question]- mkt-vi-012 | What dividend history did Graham require for defensive stock selection?
 > At least 20 consecutive years of uninterrupted dividend payments.
 
-> [!question] mkt-vi-013 | Why did Graham insist that investors hold a diversified basket of net-nets?
+> [!question]- mkt-vi-013 | Why did Graham insist that investors hold a diversified basket of net-nets?
 > Because individual net-nets carry high idiosyncratic bankruptcy risk; holding 20 to 30 issues captures positive basket re-ratings while mitigating total loss.
 
-> [!question] mkt-vi-014 | What time limit did Graham recommend for holding an unresponsive net-net?
+> [!question]- mkt-vi-014 | What time limit did Graham recommend for holding an unresponsive net-net?
 > Two to three years; if the stock fails to re-rate to intrinsic value within that timeframe, liquidate the position to redeploy capital.
 
-> [!question] mkt-vi-015 | Why did Graham exclude intangible assets, patents, and goodwill from intrinsic asset calculations?
+> [!question]- mkt-vi-015 | Why did Graham exclude intangible assets, patents, and goodwill from intrinsic asset calculations?
 > Because intangibles have zero liquidation value in bankruptcy and are subjective constructs easily manipulated by corporate management.
 
-> [!question] mkt-vi-016 | How does Graham's approach treat corporate management?
+> [!question]- mkt-vi-016 | How does Graham's approach treat corporate management?
 > Graham assumed average managerial competence, relying on balance sheet asset protection rather than trusting executive promises or strategic visions.
 
-> [!question] mkt-vi-017 | What did Graham consider the primary danger of growth stock investing?
+> [!question]- mkt-vi-017 | What did Graham consider the primary danger of growth stock investing?
 > Growth stocks trade at high multiples discounting decades of future perfection; minor growth decelerations cause severe, permanent capital impairment.
 
-> [!question] mkt-vi-018 | What is the difference between price risk and business risk in Graham's framework?
+> [!question]- mkt-vi-018 | What is the difference between price risk and business risk in Graham's framework?
 > Price risk is temporary quoted volatility; business risk is permanent capital destruction caused by insolvency or structural economic collapse.
 
-> [!question] mkt-vi-019 | What was Graham's rule regarding public utility debt levels?
+> [!question]- mkt-vi-019 | What was Graham's rule regarding public utility debt levels?
 > Debt should not exceed twice the equity capital at book value (Debt / Equity <= 2.0x).
 
-> [!question] mkt-vi-020 | What is the 'enterprising investor' in Graham's terminology?
+> [!question]- mkt-vi-020 | What is the 'enterprising investor' in Graham's terminology?
 > An investor willing to devote significant time, research, and analytical effort to select undervalued securities and special situations.
 
-> [!question] mkt-vi-021 | Why did Graham criticize the Wall Street obsession with quarterly EPS forecasts?
+> [!question]- mkt-vi-021 | Why did Graham criticize the Wall Street obsession with quarterly EPS forecasts?
 > Because short-term forecasting encourages accounting gimmicks and focuses on speculative noise rather than long-term asset security.
 
-> [!question] mkt-vi-022 | What is the role of dividends in Graham's margin of safety?
+> [!question]- mkt-vi-022 | What is the role of dividends in Graham's margin of safety?
 > Reliable cash dividends provide an objective cash return that substantiates reported accounting earnings and pays the investor while waiting for re-rating.
 
-> [!question] mkt-vi-023 | How did Graham define the relationship between risk and return?
+> [!question]- mkt-vi-023 | How did Graham define the relationship between risk and return?
 > Return is determined by the amount of intelligent effort and analytical discipline applied, not by the amount of financial risk assumed.
 
-> [!question] mkt-vi-024 | What was the impact of the 1929 market crash on Benjamin Graham's philosophy?
+> [!question]- mkt-vi-024 | What was the impact of the 1929 market crash on Benjamin Graham's philosophy?
 > It instilled an indelible obsession with financial survival, debt avoidance, and tangible balance sheet liquidation value.
 
-> [!question] mkt-vi-025 | What did Graham consider the primary psychological flaw of common stock investors?
+> [!question]- mkt-vi-025 | What did Graham consider the primary psychological flaw of common stock investors?
 > The instinct to buy enthusiastically as prices rise and sell in despair as prices fall, mimicking the mood swings of Mr. Market.
 
-> [!question] mkt-vi-026 | What is the 'earnings yield' comparison Graham recommended against bond yields?
+> [!question]- mkt-vi-026 | What is the 'earnings yield' comparison Graham recommended against bond yields?
 > Earnings yield (EPS / Price) should equal at least the yield on high-grade corporate bonds to justify equity risk.
 
-> [!question] mkt-vi-027 | Why did Graham advocate using 3-year or 10-year average earnings rather than single-year earnings?
+> [!question]- mkt-vi-027 | Why did Graham advocate using 3-year or 10-year average earnings rather than single-year earnings?
 > To smooth out cyclical economic fluctuations and eliminate one-time non-operating accounting distortions.
 
-> [!question] mkt-vi-028 | What is secondary issue investing in Graham's playbook?
+> [!question]- mkt-vi-028 | What is secondary issue investing in Graham's playbook?
 > Investing in neglected, unloved small and mid-cap companies where institutional neglect creates severe undervaluation relative to large-cap favorites.
 
-> [!question] mkt-vi-029 | What was Graham's view on market timing and macro forecasting?
+> [!question]- mkt-vi-029 | What was Graham's view on market timing and macro forecasting?
 > Graham considered macroeconomic forecasting futile, advising investors to focus strictly on microeconomic security analysis and price-to-value discounts.
 
-> [!question] mkt-vi-030 | How does Graham's margin of safety apply to fixed income investing?
+> [!question]- mkt-vi-030 | How does Graham's margin of safety apply to fixed income investing?
 > In bonds, margin of safety is measured by the ability of corporate earnings to cover total interest charges multiple times over consecutive recessions.
 
-> [!question] mkt-vi-031 | What is a 'cigar butt' stock?
+> [!question]- mkt-vi-031 | What is a 'cigar butt' stock?
 > A metaphor coined by Warren Buffett to describe Graham's net-nets: a soggy, discarded cigar found on the street that offers one last free puff of profit.
 
-> [!question] mkt-vi-032 | What is Benjamin Graham's ultimate legacy to modern financial analysis?
+> [!question]- mkt-vi-032 | What is Benjamin Graham's ultimate legacy to modern financial analysis?
 > Establishing that securities represent fractional ownership of real businesses, and that true investment requires an independent appraisal of intrinsic value backed by a margin of safety.
 
 ---

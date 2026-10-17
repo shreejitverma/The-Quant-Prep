@@ -206,131 +206,131 @@ A market maker is hedging a 25-delta OTM European put on an index:
 
 ## Interview questions
 
-> [!question] mkt-opt-033 | What is the implied volatility surface?
+> [!question]- mkt-opt-033 | What is the implied volatility surface?
 > A two-dimensional mapping sigma_IV(K, T) that assigns an implied volatility to every strike price K and time to maturity T.
 > It inverts the Black-Scholes formula against observable market option prices.
 
-> [!question] mkt-opt-034 | What is the implied volatility smile or smirk?
+> [!question]- mkt-opt-034 | What is the implied volatility smile or smirk?
 > The non-flat relationship between implied volatility and strike price for a fixed expiration date.
 > Equities display a downward-sloping smirk (skew), while FX markets typically display a symmetric smile.
 
-> [!question] mkt-opt-035 | Why did the equity index volatility skew emerge after October 1987?
+> [!question]- mkt-opt-035 | Why did the equity index volatility skew emerge after October 1987?
 > Before the 1987 crash, options traded at relatively flat implied volatilities across strikes.
 > Post-1987, intense institutional demand for downside portfolio insurance (crash-phobia) permanently bid up out-of-the-money put implied volatility.
 
-> [!question] mkt-opt-036 | What is the leverage hypothesis explaining equity volatility skew?
+> [!question]- mkt-opt-036 | What is the leverage hypothesis explaining equity volatility skew?
 > When a company's stock price falls, its debt-to-equity ratio increases, making the equity riskier.
 > This structural increase in financial leverage naturally drives higher expected equity volatility as stock price declines.
 
-> [!question] mkt-opt-037 | Define term structure of implied volatility.
+> [!question]- mkt-opt-037 | Define term structure of implied volatility.
 > The curve plotting implied volatility against time to maturity T for at-the-money options.
 > It reveals the market's forward expectations of annualized volatility over varying time horizons.
 
-> [!question] mkt-opt-038 | Contrast contango and backwardation in volatility term structures.
+> [!question]- mkt-opt-038 | Contrast contango and backwardation in volatility term structures.
 > Contango is an upward-sloping term structure (short-term IV < long-term IV) typical of calm bull regimes.
 > Backwardation is an inverted downward-sloping term structure (short-term IV > long-term IV) observed during market panics or before major catalyst events.
 
-> [!question] mkt-opt-039 | State the formula for forward implied volatility between maturities T1 and T2.
+> [!question]- mkt-opt-039 | State the formula for forward implied volatility between maturities T1 and T2.
 > sigma(T1, T2) = sqrt((T2 * sigma(T2)^2 - T1 * sigma(T1)^2) / (T2 - T1)).
 > It reflects the implied volatility priced by the market across the forward interval [T1, T2].
 
-> [!question] mkt-opt-040 | What condition on total implied variance w(T) prevents calendar spread arbitrage?
+> [!question]- mkt-opt-040 | What condition on total implied variance w(T) prevents calendar spread arbitrage?
 > Total implied variance w(T) = sigma^2(T) * T must be monotonically non-decreasing in maturity: dw/dT >= 0.
 > If total variance decreases with maturity, forward variance becomes negative, creating calendar arbitrage.
 
-> [!question] mkt-opt-041 | What is the Breeden-Litzenberger theorem?
+> [!question]- mkt-opt-041 | What is the Breeden-Litzenberger theorem?
 > The risk-neutral probability density function of the underlying asset at maturity T equals: q(K) = exp(r*T) * (d^2 C / dK^2).
 > The second derivative of call price with respect to strike recovers the state-price density.
 
-> [!question] mkt-opt-042 | What is butterfly arbitrage in the strike dimension?
+> [!question]- mkt-opt-042 | What is butterfly arbitrage in the strike dimension?
 > An arbitrage opportunity arising when the second derivative d^2 C / dK^2 is negative.
 > A trader buys strike K1, sells two K2, and buys K3 for a net credit while facing non-negative terminal payoff.
 
-> [!question] mkt-opt-043 | Explain the sticky strike hypothesis.
+> [!question]- mkt-opt-043 | Explain the sticky strike hypothesis.
 > The assumption that implied volatility at a fixed absolute strike K remains unchanged as spot price moves: d sigma_IV / dS = 0.
 > Under sticky strike, the trader's dynamic delta hedge matches the standard Black-Scholes delta.
 
-> [!question] mkt-opt-044 | Explain the sticky delta (sticky moneyness) hypothesis.
+> [!question]- mkt-opt-044 | Explain the sticky delta (sticky moneyness) hypothesis.
 > The assumption that implied volatility is a function of moneyness K/S or delta, moving horizontally with spot price.
 > As spot price changes, implied volatility at a fixed strike K shifts by: d sigma_IV / dS = -(K / S^2) * g'(K / S).
 
-> [!question] mkt-opt-045 | State the skew-adjusted delta formula under sticky delta dynamics.
+> [!question]- mkt-opt-045 | State the skew-adjusted delta formula under sticky delta dynamics.
 > Delta_effective = Delta_BSM + Vega * (d sigma_IV / dS).
 > Because equity skew is downward-sloping, this adjustment increases put delta and reduces call delta during selloffs.
 
-> [!question] mkt-opt-046 | What is risk reversal (RR) in volatility quotes?
+> [!question]- mkt-opt-046 | What is risk reversal (RR) in volatility quotes?
 > The implied volatility difference between an out-of-the-money call and an out-of-the-money put of equal delta: RR_25d = sigma(25d Call) - sigma(25d Put).
 > It directly measures the slope or directional skew of the volatility surface.
 
-> [!question] mkt-opt-047 | What is a butterfly (BF / Strangle) in volatility quotes?
+> [!question]- mkt-opt-047 | What is a butterfly (BF / Strangle) in volatility quotes?
 > The average implied volatility of OTM calls and puts relative to ATM volatility: BF_25d = 0.5 * (sigma(25d Call) + sigma(25d Put)) - sigma(ATM).
 > It quantifies the smile curvature and market pricing of tail risk (kurtosis).
 
-> [!question] mkt-opt-048 | State Gatheral's SVI equation for total implied variance.
+> [!question]- mkt-opt-048 | State Gatheral's SVI equation for total implied variance.
 > w(k) = a + b * (rho * (k - m) + sqrt((k - m)^2 + sigma^2)).
 > It expresses total variance w as a hyperbolic function of log-moneyness k = ln(K / F).
 
-> [!question] mkt-opt-049 | In Gatheral's SVI model, what is the role of parameter rho?
+> [!question]- mkt-opt-049 | In Gatheral's SVI model, what is the role of parameter rho?
 > rho controls the skewness and orientation of the smile wings.
 > For equity index markets, rho is strongly negative (-0.7 to -0.9), producing a steep downside put wing.
 
-> [!question] mkt-opt-050 | In Gatheral's SVI model, what does parameter b control?
+> [!question]- mkt-opt-050 | In Gatheral's SVI model, what does parameter b control?
 > b controls the angle and steepness of the asymptotic wings as log-moneyness approaches +/- infinity.
 > Higher b increases the smile curvature in extreme tails.
 
-> [!question] mkt-opt-051 | What is Roger Lee's Moment Formula?
+> [!question]- mkt-opt-051 | What is Roger Lee's Moment Formula?
 > A theorem establishing that total implied variance grows asymptotically at most linearly in log-moneyness: lim_{|k| -> infinity} w(k) / |k| <= 2.
 > It links the slope of extreme volatility wings to the highest finite moment of the underlying asset price.
 
-> [!question] mkt-opt-052 | What is Dupire's local volatility formula?
+> [!question]- mkt-opt-052 | What is Dupire's local volatility formula?
 > A mathematical equation recovering instantaneous local volatility sigma_loc(S, t) from market option prices: sigma_loc^2(K, T) = (dC/dT + (r - q)K dC/dK + qC) / (0.5 * K^2 * d^2C/dK^2).
 > It generates a state-dependent diffusion process that perfectly reprices the entire market surface.
 
-> [!question] mkt-opt-053 | What is a major limitation of Dupire's local volatility model?
+> [!question]- mkt-opt-053 | What is a major limitation of Dupire's local volatility model?
 > Local volatility predicts that the implied volatility surface flattens as the underlying moves, contradicting empirical sticky delta behavior.
 > It systematically underestimates forward volatility smile dynamics.
 
-> [!question] mkt-opt-054 | What are the core parameters of Hagan's SABR model?
+> [!question]- mkt-opt-054 | What are the core parameters of Hagan's SABR model?
 > Alpha (initial volatility), Beta (CEV exponent linking spot to volatility), Rho (spot-vol correlation), and Nu (volatility of volatility).
 > SABR is widely used to calibrate interest rate swaptions and FX options smiles.
 
-> [!question] mkt-opt-055 | Why do commodity markets often exhibit positive volatility skew?
+> [!question]- mkt-opt-055 | Why do commodity markets often exhibit positive volatility skew?
 > Supply constraints cannot be solved instantaneously; physical inventory shortages create explosive upside price spikes.
 > OTM calls trade at a premium to OTM puts in energy, metals, and agricultural options.
 
-> [!question] mkt-opt-056 | What is the variance risk premium (VRP)?
+> [!question]- mkt-opt-056 | What is the variance risk premium (VRP)?
 > The persistent structural spread between implied volatility and subsequent realized volatility: VRP = sigma_implied - sigma_realized.
 > In equity indices, implied volatility trades on average 2-4 points above realized volatility, compensating options sellers for crash risk.
 
-> [!question] mkt-opt-057 | What is the ATM 30-day implied volatility index (VIX)?
+> [!question]- mkt-opt-057 | What is the ATM 30-day implied volatility index (VIX)?
 > A model-free calculation developed by the CBOE that aggregates a continuous strip of OTM SPX calls and puts to estimate 30-day expected variance.
 > It computes: sigma_VIX^2 = (2 / T) * sum_i (Delta K_i / K_i^2) * exp(r*T) * Q(K_i) - (1 / T) * (F / K_0 - 1)^2.
 
-> [!question] mkt-opt-058 | How does earnings announcement uncertainty distort the short-dated volatility surface?
+> [!question]- mkt-opt-058 | How does earnings announcement uncertainty distort the short-dated volatility surface?
 > Implied volatility for the contract expiring immediately after earnings surges to account for the discrete event jump.
 > Term structure heavily inverts (backwardation) and ATM strike volatility elevates relative to farther expiries.
 
-> [!question] mkt-opt-059 | What is the implied move derived from an ATM straddle prior to earnings?
+> [!question]- mkt-opt-059 | What is the implied move derived from an ATM straddle prior to earnings?
 > Implied Move ~ 0.8 * Straddle_Price / Spot_Price.
 > It approximates the one-standard-deviation price move expected by options market makers over the announcement.
 
-> [!question] mkt-opt-060 | What happens to implied volatility immediately following an earnings release?
+> [!question]- mkt-opt-060 | What happens to implied volatility immediately following an earnings release?
 > Implied volatility collapses violently across strikes, a phenomenon known as volatility crush.
 > The event variance drops to zero once the earnings report is public knowledge.
 
-> [!question] mkt-opt-061 | What is skew risk in market making books?
+> [!question]- mkt-opt-061 | What is skew risk in market making books?
 > The risk that the slope of the volatility smile changes independently of ATM volatility.
 > A delta-neutral desk short OTM puts loses heavily if the downside put skew steepens during a market decline.
 
-> [!question] mkt-opt-062 | How can a trader isolate and trade skew directly?
+> [!question]- mkt-opt-062 | How can a trader isolate and trade skew directly?
 > By trading a risk reversal: buy OTM calls and sell OTM puts (or vice versa) while delta-hedging the net underlying exposure.
 > The position gains if the call-put volatility spread widens regardless of spot direction.
 
-> [!question] mkt-opt-063 | What is smile curvature risk and how is it traded?
+> [!question]- mkt-opt-063 | What is smile curvature risk and how is it traded?
 > Trading changes in the convexity of the volatility smile by buying or selling delta-hedged strangles against ATM straddles.
 > It isolates exposure to Volga (d Vega / d sigma) and fat-tailed kurtosis moves.
 
-> [!question] mkt-opt-064 | What is the consequence of calibrating an option model to market quotes with calendar arbitrage?
+> [!question]- mkt-opt-064 | What is the consequence of calibrating an option model to market quotes with calendar arbitrage?
 > Numerical PDE and Monte Carlo engines generate negative probabilities or infinite discounting, causing simulation blowups.
 > Surfaces must be smoothed and arbitrage-free before running pricing algorithms.
 

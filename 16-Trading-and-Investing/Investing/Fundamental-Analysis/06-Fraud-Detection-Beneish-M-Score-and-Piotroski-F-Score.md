@@ -247,100 +247,100 @@ Apex Logistics scores a dismal 2 out of 9, placing it squarely in the distress /
 
 ## Practice questions
 
-> [!question] mkt-fa-161 | What is the primary purpose of the Beneish M-Score?
+> [!question]- mkt-fa-161 | What is the primary purpose of the Beneish M-Score?
 > To calculate the empirical statistical probability that a company is manipulating its reported accounting earnings.
 
-> [!question] mkt-fa-162 | What is the critical threshold for the Beneish M-Score indicating manipulation?
+> [!question]- mkt-fa-162 | What is the critical threshold for the Beneish M-Score indicating manipulation?
 > An M-Score greater than -1.78 indicates a statistically significant probability of earnings manipulation.
 
-> [!question] mkt-fa-163 | What famous corporate collapse did the Beneish M-Score identify prior to public revelation?
+> [!question]- mkt-fa-163 | What famous corporate collapse did the Beneish M-Score identify prior to public revelation?
 > Enron Corporation, which had a glaringly flagged M-Score of -0.24 in 1999 and 2000.
 
-> [!question] mkt-fa-164 | What does a Days Sales in Receivables Index (DSRI) > 1.0 indicate in the M-Score?
+> [!question]- mkt-fa-164 | What does a Days Sales in Receivables Index (DSRI) > 1.0 indicate in the M-Score?
 > Receivables grew faster than sales, indicating accelerating credit terms, uncollected billings, or premature revenue recognition.
 
-> [!question] mkt-fa-165 | Why does a Gross Margin Index (GMI) > 1.0 increase the probability of manipulation?
+> [!question]- mkt-fa-165 | Why does a Gross Margin Index (GMI) > 1.0 increase the probability of manipulation?
 > Deteriorating gross margins create severe pressure on corporate management to engage in aggressive accounting to meet earnings targets.
 
-> [!question] mkt-fa-166 | What does the Asset Quality Index (AQI) measure in the Beneish model?
+> [!question]- mkt-fa-166 | What does the Asset Quality Index (AQI) measure in the Beneish model?
 > The proportion of total assets composed of non-current intangible assets and deferred costs relative to tangible property, plant, and equipment.
 
-> [!question] mkt-fa-167 | How does a Depreciation Index (DEPI) > 1.0 signal potential accounting abuse?
+> [!question]- mkt-fa-167 | How does a Depreciation Index (DEPI) > 1.0 signal potential accounting abuse?
 > It shows that the current effective depreciation rate has declined, suggesting management lengthened asset lives to reduce operating expenses.
 
-> [!question] mkt-fa-168 | What does the Total Accruals to Total Assets (TATA) variable capture in the M-Score?
+> [!question]- mkt-fa-168 | What does the Total Accruals to Total Assets (TATA) variable capture in the M-Score?
 > The degree to which reported accounting net income is supported by non-cash accruals rather than physical operating cash flow.
 
-> [!question] mkt-fa-169 | What is the 5-variable version of the Beneish M-Score?
+> [!question]- mkt-fa-169 | What is the 5-variable version of the Beneish M-Score?
 > A truncated specification omitting SGI, DEPI, and SGAI, used when detailed footnote data or multi-year historical series are unavailable.
 
-> [!question] mkt-fa-170 | What is the primary design goal of the Piotroski F-Score?
+> [!question]- mkt-fa-170 | What is the primary design goal of the Piotroski F-Score?
 > To separate winning high-quality value stocks from value traps among companies trading at high book-to-market valuations.
 
-> [!question] mkt-fa-171 | How many total binary criteria comprise the Piotroski F-Score?
+> [!question]- mkt-fa-171 | How many total binary criteria comprise the Piotroski F-Score?
 > Nine discrete binary tests, producing an aggregate score between 0 and 9.
 
-> [!question] mkt-fa-172 | What are the three core categories evaluated by the Piotroski F-Score?
+> [!question]- mkt-fa-172 | What are the three core categories evaluated by the Piotroski F-Score?
 > Profitability signals (4 points), Leverage/Liquidity/Dilution signals (3 points), and Operating Efficiency signals (2 points).
 
-> [!question] mkt-fa-173 | How does Piotroski score the accrual relationship in test F_ACCRUAL?
+> [!question]- mkt-fa-173 | How does Piotroski score the accrual relationship in test F_ACCRUAL?
 > 1 point if Operating Cash Flow exceeds Return on Assets (CFO > ROA); 0 points if net income exceeds cash flow.
 
-> [!question] mkt-fa-174 | How is equity dilution tested in the Piotroski F-Score?
+> [!question]- mkt-fa-174 | How is equity dilution tested in the Piotroski F-Score?
 > 1 point if common shares outstanding in the current year are less than or equal to the prior year (no dilutive equity issued).
 
-> [!question] mkt-fa-175 | What is considered a high (strong) Piotroski F-Score?
+> [!question]- mkt-fa-175 | What is considered a high (strong) Piotroski F-Score?
 > An F-Score of 8 or 9, signifying exceptional financial health and operating momentum.
 
-> [!question] mkt-fa-176 | What is considered a low (distressed) Piotroski F-Score?
+> [!question]- mkt-fa-176 | What is considered a low (distressed) Piotroski F-Score?
 > An F-Score of 0, 1, or 2, identifying financially deteriorating companies and prime short candidates.
 
-> [!question] mkt-fa-177 | What historical annualized excess return did Piotroski find by buying high F-Score value stocks and shorting low F-Score value stocks?
+> [!question]- mkt-fa-177 | What historical annualized excess return did Piotroski find by buying high F-Score value stocks and shorting low F-Score value stocks?
 > Approximately 23% annualized spread between 1972 and 1996.
 
-> [!question] mkt-fa-178 | What is the primary difference between Altman Z-Score and Beneish M-Score?
+> [!question]- mkt-fa-178 | What is the primary difference between Altman Z-Score and Beneish M-Score?
 > Altman Z-Score evaluates bankruptcy and default probability, while Beneish M-Score specifically evaluates fraud and accounting manipulation.
 
-> [!question] mkt-fa-179 | What is the distress threshold for the Altman Z-Score for public manufacturing firms?
+> [!question]- mkt-fa-179 | What is the distress threshold for the Altman Z-Score for public manufacturing firms?
 > A Z-Score below 1.81 places the company in the bankruptcy Distress Zone.
 
-> [!question] mkt-fa-180 | What is the safe zone threshold for the Altman Z-Score?
+> [!question]- mkt-fa-180 | What is the safe zone threshold for the Altman Z-Score?
 > A Z-Score above 2.99 indicates negligible insolvency probability.
 
-> [!question] mkt-fa-181 | Why can a fraudulent company have an apparently safe Altman Z-Score?
+> [!question]- mkt-fa-181 | Why can a fraudulent company have an apparently safe Altman Z-Score?
 > Because fabricated earnings and overstated assets artificially boost working capital, EBIT, and equity book values in the Z-Score equation.
 
-> [!question] mkt-fa-182 | Can a financially distressed company have a clean Beneish M-Score?
+> [!question]- mkt-fa-182 | Can a financially distressed company have a clean Beneish M-Score?
 > Yes; a distressed firm with honest, deteriorating accounting will show an unmanipulated M-Score despite collapsing fundamentals.
 
-> [!question] mkt-fa-183 | What does the Leverage Index (LVGI) > 1.0 capture in the Beneish model?
+> [!question]- mkt-fa-183 | What does the Leverage Index (LVGI) > 1.0 capture in the Beneish model?
 > Increasing total financial debt relative to assets, which escalates default risk and creates incentives to inflate earnings.
 
-> [!question] mkt-fa-184 | What does a negative coefficient on SGAI in the Beneish model signify?
+> [!question]- mkt-fa-184 | What does a negative coefficient on SGAI in the Beneish model signify?
 > Abnormally aggressive cuts to SG&A relative to sales can signal desperation to manufacture operating margins.
 
-> [!question] mkt-fa-185 | How does the Piotroski F-Score define improvement in liquidity?
+> [!question]- mkt-fa-185 | How does the Piotroski F-Score define improvement in liquidity?
 > Current Ratio in the current fiscal year exceeding the Current Ratio in the preceding fiscal year.
 
-> [!question] mkt-fa-186 | How does the Piotroski F-Score define improvement in asset efficiency?
+> [!question]- mkt-fa-186 | How does the Piotroski F-Score define improvement in asset efficiency?
 > Asset Turnover (Revenue / Total Assets) in the current year exceeding Asset Turnover in the preceding year.
 
-> [!question] mkt-fa-187 | Why is the Piotroski F-Score particularly effective on small-cap equities?
+> [!question]- mkt-fa-187 | Why is the Piotroski F-Score particularly effective on small-cap equities?
 > Small caps receive less analyst coverage and institutional scrutiny, allowing fundamental mispricings to persist longer.
 
-> [!question] mkt-fa-188 | How does the Beneish M-Score perform on financial institutions and banks?
+> [!question]- mkt-fa-188 | How does the Beneish M-Score perform on financial institutions and banks?
 > Poorly; bank balance sheets do not distinguish operating from financing working capital, requiring specialized credit models.
 
-> [!question] mkt-fa-189 | What is the false positive rate of the Beneish M-Score at the -1.78 threshold?
+> [!question]- mkt-fa-189 | What is the false positive rate of the Beneish M-Score at the -1.78 threshold?
 > Approximately 8.8% in Beneish's original sample, while correctly identifying 76% of known accounting manipulators.
 
-> [!question] mkt-fa-190 | How does high Sales Growth Index (SGI) elevate manipulation risk?
+> [!question]- mkt-fa-190 | How does high Sales Growth Index (SGI) elevate manipulation risk?
 > When growth decelerates, growth-oriented managers face intense valuation penalties, driving aggressive revenue recognition to preserve multiples.
 
-> [!question] mkt-fa-191 | What is the effect of combining low valuation (high BM) with a high F-Score?
+> [!question]- mkt-fa-191 | What is the effect of combining low valuation (high BM) with a high F-Score?
 > It filters out value traps that are cheap for structural solvency reasons, retaining only underpriced companies with operational tailwinds.
 
-> [!question] mkt-fa-192 | What is the optimal quantitative workflow combining Beneish, Piotroski, and Altman?
+> [!question]- mkt-fa-192 | What is the optimal quantitative workflow combining Beneish, Piotroski, and Altman?
 > Screen for value or growth, filter out bankruptcy risk (Z < 1.81), eliminate manipulation risk (M > -1.78), and rank longs by fundamental momentum (F >= 8).
 
 ---
