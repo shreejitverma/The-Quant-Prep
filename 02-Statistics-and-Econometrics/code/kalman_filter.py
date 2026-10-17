@@ -3,7 +3,7 @@
 Backs every number in ``11-State-Space-Models-and-Kalman-Filter.md``.
 Run ``uv run --no-project --with numpy python 02-Statistics-and-Econometrics/code/kalman_filter.py``;
 each printed number is asserted, so drift in the note fails CI.
-Simulations use fixed seeds; their results are quoted in the note as "about".
+Simulations use fixed seeds; prose quotes their results as "about" and their tables carry a caption naming the seed.
 
 Model (time-invariant matrices):
     state        a_t = T a_{t-1} + eta_t,   eta_t ~ N(0, Q)

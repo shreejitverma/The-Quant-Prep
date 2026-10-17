@@ -3,7 +3,7 @@
 Backs every number in ``13-Heavy-Tails-and-Extreme-Value-Theory.md``.
 Run ``uv run --no-project --with numpy python 02-Statistics-and-Econometrics/code/extreme_value.py``;
 each printed number is asserted, so drift in the note fails CI.
-Simulations use fixed seeds; their results are quoted in the note as "about".
+Simulations use fixed seeds; prose quotes their results as "about" and their tables carry a caption naming the seed.
 
 Student-t with nu = 4 has tail index alpha = 4, so its GPD/GEV shape is xi = 1/4.
 Its CDF has the closed form F(t) = 1/2 + (3/4) s (1 - s^2/3) with s = t / sqrt(4 + t^2).

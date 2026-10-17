@@ -3,7 +3,7 @@
 Backs every number in ``10-Cointegration-and-VAR.md``.
 Run ``uv run --no-project --with numpy python 02-Statistics-and-Econometrics/code/cointegration_var.py``;
 each printed number is asserted, so drift in the note fails CI.
-Simulations use fixed seeds; their results are quoted in the note as "about".
+Simulations use fixed seeds; prose quotes their results as "about" and their tables carry a caption naming the seed.
 
 Critical values are not recalled: the Engle-Granger ones come from MacKinnon (2010), "Critical Values for
 Cointegration Tests", Queen's Economics Department Working Paper 1227, Table 2 (tau_c rows, response surface

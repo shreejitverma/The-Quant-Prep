@@ -3,7 +3,7 @@
 Backs every number in ``07-Bayesian-Inference.md``.
 Run ``uv run --no-project --with numpy python 02-Statistics-and-Econometrics/code/bayesian_inference.py``;
 each printed number is asserted, so drift in the note fails CI.
-Simulations and MCMC runs use fixed seeds; their results are quoted in the note as "about".
+Simulations and MCMC runs use fixed seeds; prose quotes their results as "about" and their tables carry a caption naming the seed.
 """
 
 from __future__ import annotations
