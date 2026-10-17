@@ -49,6 +49,11 @@ This bank contains timed drills, interactive exercises, hidden-answer recall dec
 - Spotting absorption versus exhaustion on footprint and Level 2 depth charts.
 - Formulating trade setups with pre-defined invalidation levels before revealing subsequent price action.
 
+### 5. Fundamental Forensics and Valuation Drills
+- [[16-Trading-and-Investing/30-Drills/Statement-Forensics-Drills|Statement Forensics Drills]]: Sloan accruals, DSO channel stuffing, capex capitalization, Beneish M-Score, and inventory overhead absorption.
+- [[16-Trading-and-Investing/30-Drills/Valuation-Rebuild-Drills|Valuation Rebuild Drills]]: FCFF bridge, Hamada WACC, reverse DCF growth inversion, SOTP, and Net-Net liquidation haircuts.
+- [[16-Trading-and-Investing/30-Drills/Blind-Company-Memos|Blind Company Investment Memos]]: Anonymized real-world investment cases (Enron, Amazon 2001, Valeant, Costco, Hertz, Apple 2003) evaluating capital allocation, unit economics, and solvency.
+
 ---
 
 ## Practice Workflows

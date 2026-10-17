@@ -60,6 +60,30 @@ TRACK_METADATA = {
         "description": "Base rates, transaction costs, sizing, stops, setup taxonomy, and execution.",
         "card_prefix": "mkt-trd-",
     },
+    "track_fa": {
+        "id": "track_fa",
+        "name": "Fundamental Analysis & Forensics",
+        "description": "Three statements, ROIC, Sloan accruals, Beneish M-Score, and 10-K forensic audit.",
+        "card_prefix": "mkt-fa-",
+    },
+    "track_val": {
+        "id": "track_val",
+        "name": "Valuation & Financial Modeling",
+        "description": "DCF first principles, WACC mechanics, reverse DCF, multiples, and net-net liquidation.",
+        "card_prefix": "mkt-val-",
+    },
+    "track_vi": {
+        "id": "track_vi",
+        "name": "Value Investing & Security Analysis",
+        "description": "Margin of safety, owner earnings, capital cycle theory, second-level thinking, and special situations.",
+        "card_prefix": "mkt-vi-",
+    },
+    "track_pf": {
+        "id": "track_pf",
+        "name": "Portfolio Management & Risk Allocation",
+        "description": "Asset allocation benchmark, factor replication, drawdown mathematics, Kelly sizing, and Risk Parity.",
+        "card_prefix": "mkt-pf-",
+    },
 }
 
 
@@ -281,6 +305,258 @@ def evaluate_gate(
                 ),
             ]
             return StageGate(track_id, stage, "Trading Capital Gate (Live Capital Eligibility)", reqs)
+
+    elif track_id == "track_fa":
+        prefix = "mkt-fa-"
+        if stage == "foundations":
+            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            target_count = max(128, total_cards) if total_cards > 0 else 128
+            passed_cards = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and int(cid.split("-")[-1]) <= 128
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name="Track FA Foundations Cards Mastered",
+                    target=f"{target_count} cards",
+                    actual=f"{passed_cards} cards reviewed",
+                    passed=passed_cards >= target_count if total_cards > 0 else False,
+                ),
+                GateRequirement(
+                    name="Three-Statement & ROIC Analysis Fluency",
+                    target=">= 64 cards reviewed with reps > 0",
+                    actual=f"{passed_cards} cards completed",
+                    passed=passed_cards >= 64,
+                ),
+            ]
+            return StageGate(track_id, stage, "Fundamental Analysis Foundations Gate", reqs)
+
+        if stage == "core":
+            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            target_core = max(128, total_core) if total_core > 0 else 128
+            passed_core = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and 128 < int(cid.split("-")[-1]) <= 256
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            total_fa_reviewed = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name="Track FA Core Forensics Cards Mastered",
+                    target=f"{target_core} cards",
+                    actual=f"{passed_core} cards reviewed",
+                    passed=passed_core >= target_core if total_core > 0 else False,
+                ),
+                GateRequirement(
+                    name="Sloan Accruals & Beneish M-Score Screening",
+                    target=">= 120 total FA cards reviewed",
+                    actual=f"{total_fa_reviewed} total FA cards reviewed",
+                    passed=total_fa_reviewed >= 120,
+                ),
+            ]
+            return StageGate(track_id, stage, "Fundamental Analysis Core Gate", reqs)
+
+    elif track_id == "track_val":
+        prefix = "mkt-val-"
+        if stage == "foundations":
+            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            target_count = max(128, total_cards) if total_cards > 0 else 128
+            passed_cards = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and int(cid.split("-")[-1]) <= 128
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name="Track Valuation Foundations Cards Mastered",
+                    target=f"{target_count} cards",
+                    actual=f"{passed_cards} cards reviewed",
+                    passed=passed_cards >= target_count if total_cards > 0 else False,
+                ),
+                GateRequirement(
+                    name="DCF & WACC Hurdle Rate Rigor",
+                    target=">= 64 cards reviewed with reps > 0",
+                    actual=f"{passed_cards} cards completed",
+                    passed=passed_cards >= 64,
+                ),
+            ]
+            return StageGate(track_id, stage, "Valuation Foundations Gate", reqs)
+
+        if stage == "core":
+            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            target_core = max(128, total_core) if total_core > 0 else 128
+            passed_core = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and 128 < int(cid.split("-")[-1]) <= 256
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            total_val_reviewed = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name="Track Valuation Core Cards Mastered",
+                    target=f"{target_core} cards",
+                    actual=f"{passed_core} cards reviewed",
+                    passed=passed_core >= target_core if total_core > 0 else False,
+                ),
+                GateRequirement(
+                    name="Reverse DCF & SOTP Conglomerate Rebuild",
+                    target=">= 120 total Valuation cards reviewed",
+                    actual=f"{total_val_reviewed} total Valuation cards reviewed",
+                    passed=total_val_reviewed >= 120,
+                ),
+            ]
+            return StageGate(track_id, stage, "Valuation Core Gate", reqs)
+
+    elif track_id == "track_vi":
+        prefix = "mkt-vi-"
+        if stage == "foundations":
+            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            target_count = max(128, total_cards) if total_cards > 0 else 128
+            passed_cards = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and int(cid.split("-")[-1]) <= 128
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name="Track Value Foundations Cards Mastered",
+                    target=f"{target_count} cards",
+                    actual=f"{passed_cards} cards reviewed",
+                    passed=passed_cards >= target_count if total_cards > 0 else False,
+                ),
+                GateRequirement(
+                    name="Graham-Buffett Margin of Safety Discipline",
+                    target=">= 64 cards reviewed with reps > 0",
+                    actual=f"{passed_cards} cards completed",
+                    passed=passed_cards >= 64,
+                ),
+            ]
+            return StageGate(track_id, stage, "Value Investing Foundations Gate", reqs)
+
+        if stage == "core":
+            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            target_core = max(128, total_core) if total_core > 0 else 128
+            passed_core = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and 128 < int(cid.split("-")[-1]) <= 256
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            total_vi_reviewed = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name="Track Value Core Cards Mastered",
+                    target=f"{target_core} cards",
+                    actual=f"{passed_core} cards reviewed",
+                    passed=passed_core >= target_core if total_core > 0 else False,
+                ),
+                GateRequirement(
+                    name="Special Situations & Capital Cycle Traps",
+                    target=">= 120 total Value cards reviewed",
+                    actual=f"{total_vi_reviewed} total Value cards reviewed",
+                    passed=total_vi_reviewed >= 120,
+                ),
+            ]
+            return StageGate(track_id, stage, "Value Investing Core Gate", reqs)
+
+    elif track_id == "track_pf":
+        prefix = "mkt-pf-"
+        if stage == "foundations":
+            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            target_count = max(128, total_cards) if total_cards > 0 else 128
+            passed_cards = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and int(cid.split("-")[-1]) <= 128
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name="Track Portfolio Foundations Cards Mastered",
+                    target=f"{target_count} cards",
+                    actual=f"{passed_cards} cards reviewed",
+                    passed=passed_cards >= target_count if total_cards > 0 else False,
+                ),
+                GateRequirement(
+                    name="Drawdown Risk & Sequence of Returns Safety",
+                    target=">= 64 cards reviewed with reps > 0",
+                    actual=f"{passed_cards} cards completed",
+                    passed=passed_cards >= 64,
+                ),
+            ]
+            return StageGate(track_id, stage, "Portfolio Management Foundations Gate", reqs)
+
+        if stage == "core":
+            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            target_core = max(128, total_core) if total_core > 0 else 128
+            passed_core = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and 128 < int(cid.split("-")[-1]) <= 256
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            total_pf_reviewed = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name="Track Portfolio Core Cards Mastered",
+                    target=f"{target_core} cards",
+                    actual=f"{passed_core} cards reviewed",
+                    passed=passed_core >= target_core if total_core > 0 else False,
+                ),
+                GateRequirement(
+                    name="Kelly Sizing & All Weather Risk Parity",
+                    target=">= 120 total Portfolio cards reviewed",
+                    actual=f"{total_pf_reviewed} total Portfolio cards reviewed",
+                    passed=total_pf_reviewed >= 120,
+                ),
+            ]
+            return StageGate(track_id, stage, "Portfolio Management Core Gate", reqs)
 
     # Fallback generic stage gate
     reqs = [

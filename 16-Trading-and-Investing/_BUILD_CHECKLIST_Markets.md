@@ -167,10 +167,10 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Add automated unit tests for journal analytics and Capital Gate verification in `tools/tests/test_journal_stats.py`.
 
 ### Phase 11: Fundamental Analysis, Valuation, & Value Investing
-- [ ] Author Track 1 (Fundamental Analysis), Track 2 (Valuation), Track 3 (Value Investing), and Track 4 (Portfolio) notes.
-- [ ] Build hidden-answer drill banks in `30 Drills/` (statement forensics, valuation rebuilds, blind company memos).
-- [ ] Author 1000+ cards across `mkt-fa-`, `mkt-val-`, `mkt-vi-`, and `mkt-pf-`.
-- [ ] Implement stage gates for fundamental analysis and valuation.
+- [x] Author Track 1 (Fundamental Analysis), Track 2 (Valuation), Track 3 (Value Investing), and Track 4 (Portfolio) notes.
+- [x] Build hidden-answer drill banks in `30 Drills/` (statement forensics, valuation rebuilds, blind company memos).
+- [x] Author 1000+ cards across `mkt-fa-`, `mkt-val-`, `mkt-vi-`, and `mkt-pf-`.
+- [x] Implement stage gates for fundamental analysis and valuation.
 
 ### Phase 12: Multi-Asset Class Modules & Portfolio Manager Lab
 - [ ] Implement synthetic multi-asset portfolio simulator `tools/qp/lab/portfolio.py`.
