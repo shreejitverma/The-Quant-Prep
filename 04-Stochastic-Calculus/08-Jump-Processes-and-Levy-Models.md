@@ -87,8 +87,8 @@ $$
 The triplet is drift $\gamma$, Brownian variance $\sigma^2$ and Levy measure $\nu$, where $\nu(A)$ is the expected number of jumps per unit time with size in $A$.
 
 - Finite activity, $\nu(\mathbb{R}) < \infty$: finitely many jumps on any interval; the jump part is compound Poisson (Merton, Kou).
-- Infinite activity, finite variation, $\int\min(1, \lvert x\rvert)\,\nu(dx) < \infty$: infinitely many small jumps but paths of bounded variation (variance gamma, CGMY with $Y < 1$).
-- Infinite variation: small jumps so dense that they behave like a diffusion (NIG, CGMY with $1 < Y < 2$).
+- Infinite activity, finite variation, $\int\min(1, \lvert x\rvert)\,\nu(dx) < \infty$: infinitely many small jumps but paths of bounded variation (variance gamma, CGMY with $0 \le Y < 1$).
+- Infinite variation: small jumps so dense that they behave like a diffusion (NIG, CGMY with $1 \le Y < 2$).
 
 For $S_t = S_0e^{(r - q)t + X_t}$ to have $e^{-(r - q)t}S_t$ a martingale you need $E[e^{X_t}] = 1$, that is $\psi(-i) = 0$; equivalently, with an uncorrected exponent $\psi_0$, the drift must be shifted by $\omega = -\psi_0(-i)$.
 That one condition is the whole of "risk-neutral" for these models.
@@ -98,7 +98,7 @@ That one condition is the whole of "risk-neutral" for these models.
 | Merton | $\lambda\,\varphi_{m,\delta}(x)\,dx$ | $-\tfrac12\sigma^2u^2 + \lambda(e^{ium - \delta^2u^2/2} - 1)$ | finite |
 | Kou | $\lambda\big(p\eta_1e^{-\eta_1x}\mathbf{1}_{x > 0} + (1 - p)\eta_2e^{\eta_2x}\mathbf{1}_{x < 0}\big)dx$ | $-\tfrac12\sigma^2u^2 + \lambda\big(\tfrac{p\eta_1}{\eta_1 - iu} + \tfrac{(1 - p)\eta_2}{\eta_2 + iu} - 1\big)$ | finite |
 | Variance gamma | $\frac{C}{\lvert x\rvert}\big(e^{Gx}\mathbf{1}_{x < 0} + e^{-Mx}\mathbf{1}_{x > 0}\big)dx$ | $-\frac1\nu\ln\big(1 - iu\theta\nu + \tfrac12\sigma^2\nu u^2\big)$ | infinite, finite variation |
-| CGMY | $\frac{C}{\lvert x\rvert^{1 + Y}}\big(e^{Gx}\mathbf{1}_{x < 0} + e^{-Mx}\mathbf{1}_{x > 0}\big)dx$ | $C\Gamma(-Y)\big((M - iu)^Y - M^Y + (G + iu)^Y - G^Y\big)$ | infinite; finite variation iff $Y < 1$ |
+| CGMY | $\frac{C}{\lvert x\rvert^{1 + Y}}\big(e^{Gx}\mathbf{1}_{x < 0} + e^{-Mx}\mathbf{1}_{x > 0}\big)dx$ | $C\Gamma(-Y)\big((M - iu)^Y - M^Y + (G + iu)^Y - G^Y\big)$ | finite iff $Y < 0$; finite variation iff $Y < 1$ |
 
 ```mermaid
 flowchart TD
@@ -107,8 +107,8 @@ flowchart TD
     B -->|no| D{Jump activity}
     C -->|finite: compound Poisson| E[Merton normal jumps or Kou double exponential]
     C -->|infinite| F[Jump-diffusion with CGMY or NIG jumps]
-    D -->|infinite, finite variation| G[Variance gamma or CGMY with Y below 1]
-    D -->|infinite variation| H[NIG or CGMY with Y between 1 and 2]
+    D -->|infinite, finite variation| G[Variance gamma or CGMY with Y from 0 up to 1]
+    D -->|infinite variation| H[NIG or CGMY with Y from 1 up to 2]
     E --> I[Martingale condition psi of -i = 0 fixes the drift]
     F --> I
     G --> I
@@ -166,7 +166,7 @@ The series (16 terms to reach a Poisson weight below $10^{-12}$) and Fourier inv
 
 | Strike | 80 | 90 | 100 | 110 | 120 |
 | :--- | ---: | ---: | ---: | ---: | ---: |
-| Merton call | 25.9555 | 18.6983 | 12.7613 | 8.2584 | 5.0906 |
+| Merton call | 25.9555 | 18.6983 | 12.7613 | 8.2583 | 5.0906 |
 | Implied vol | 27.70% | 26.82% | 26.12% | 25.58% | 25.18% |
 
 Exact simulation ($2 \times 10^6$ paths: Poisson count, then a normal sum of jumps) gives about $12.741$ (standard error $0.013$) at the money, and $E[S_T]/(S_0e^{rT}) \approx 0.9997$ confirms the compensator.
@@ -190,7 +190,7 @@ An index skew that decays closer to $T^{-1/2}$ cannot be matched at both ends by
 Kou with $\sigma = 16\%$, $\lambda = 1$, $p = 0.4$, $\eta_1 = 10$, $\eta_2 = 5$ (mean up-jump 10%, mean down-jump 20%): $E[e^J] - 1 = -0.05556$, ATM call $12.4325$ by Fourier and about $12.431$ (standard error $0.012$) by simulating exponential jumps; implied vols $29.20\%$ at 80 and $23.61\%$ at 120.
 Variance gamma with $\sigma = 12\%$, $\nu = 0.2$, $\theta = -0.14$: martingale correction $\omega = \frac1\nu\ln(1 - \theta\nu - \tfrac12\sigma^2\nu) = 0.13107$, ATM call $8.0441$ by Fourier and about $8.045$ (standard error $0.0064$) by simulating Brownian motion in gamma time; implied vols $15.68\%$, $13.50\%$, $11.95\%$ at 80, 100, 120.
 Its CGMY form has $G = 18.37$ and $M = 37.81$: the left tail decays at 0.49 times the rate of the right, and the two characteristic functions agree to within $10^{-15}$.
-For all three models $\phi_1(-i) = e^{r}$ to machine precision (the martingale condition) and $\phi_2(u) = \phi_1(u)^2$ (stationary independent increments).
+For all three models $\phi_1(-i) = e^{r}$ to machine precision (the martingale condition) and $\phi_2(u) = \phi_1(u)^2$, a consistency check that each characteristic function scales its exponent linearly in $T$ (it holds by construction once $\phi_T = e^{T\psi}$ is coded, so it does not test stationary independent increments).
 
 ### The gap a delta hedge cannot cover
 
@@ -269,7 +269,7 @@ No rebalancing frequency helps: the move happens between two hedge times, which 
 > $\theta$ sets skew, $\nu$ sets kurtosis, $\sigma$ sets the scale.
 
 > [!question]- sc-levy-infinite-activity | What does infinite activity mean, and why can a pure-jump model fit a smile without a diffusion?
-> $\nu(\mathbb{R}) = \infty$: infinitely many small jumps in any interval, as in variance gamma, NIG and CGMY.
+> $\nu(\mathbb{R}) = \infty$: infinitely many small jumps in any interval, as in variance gamma, NIG and CGMY with $0 \le Y < 2$.
 > The small jumps provide diffusion-like variability and the large ones the tails, so no Brownian part is needed.
 
 > [!question]- sc-levy-kou | What is special about Kou's double exponential jumps?

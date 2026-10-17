@@ -8,7 +8,8 @@ Backs every number in 04-Stochastic-Calculus/08-Jump-Processes-and-Levy-Models.m
 2. Kou (2002) double exponential jumps: Fourier price against simulation.
 3. Variance gamma (Madan, Carr and Chang 1998): Fourier price against simulation of Brownian motion in gamma time,
    and the equivalence of the time-change and Levy-measure (CGMY with Y = 0) forms of its characteristic function.
-4. Levy-Khintchine sanity checks: phi_T(-i) = exp((r - q) T) (martingale condition) and phi_{2T} = phi_T^2.
+4. Levy-Khintchine sanity checks: phi_T(-i) = exp((r - q) T) (martingale condition) and phi_{2T} = phi_T^2
+   (a consistency check of the T-scaling of the coded exponent, true by construction).
 5. Gap risk: the loss of a delta-hedged short option on a jump.
 
 Run from the repo root: uv run --no-project --with numpy python 04-Stochastic-Calculus/code/jump_levy_models.py
@@ -125,9 +126,9 @@ def merton(rng: np.random.Generator) -> None:
     check("compensated drift r - lambda kbar", R - LAM_M * kbar, 0.13493, 5e-6)
     series, nterms = merton_series(STRIKES, T)
     fourier = lewis_call(lambda u: merton_cf(u, T), S0, STRIKES, T, R)
-    for K, s_, f_ in zip(STRIKES, series, fourier, strict=True):
-        check(f"  K={K:.0f} series", float(s_), float(f_), 1e-8)
-    check("  K=100 Merton call", float(series[2]), 12.7613, 5e-5)
+    for K, s_, f_, quoted in zip(STRIKES, series, fourier, (25.9555, 18.6983, 12.7613, 8.2583, 5.0906), strict=True):
+        check(f"  K={K:.0f} series minus Fourier", float(s_), float(f_), 1e-8)
+        check(f"  K={K:.0f} Merton call", float(s_), quoted, 5e-5)
     check("  terms in the series to reach weight 1e-12", float(nterms), 16.0, 0.0)
     # Exact simulation: N ~ Poisson(lambda T), sum of N normal log-jumps
     n = 2_000_000
@@ -271,7 +272,7 @@ def variance_gamma(rng: np.random.Generator) -> None:
 
 def levy_khintchine() -> None:
     """Backs 'Core concepts > Levy processes and the Levy-Khintchine formula'; card sc-levy-martingale-condition."""
-    print("\n4. Levy-Khintchine: martingale condition and infinite divisibility")
+    print("\n4. Levy-Khintchine: martingale condition and T-scaling of the exponent")
     for name, cf in (("Merton", merton_cf), ("Kou", kou_cf), ("VG", vg_cf)):
         mart = complex(cf(np.array([-1j]), 1.0)[0])
         check(f"{name}: phi_1(-i) / e^r", abs(mart / math.exp(R)), 1.0, 1e-12)

@@ -187,7 +187,7 @@ Every number below is printed and asserted by [fd_fourier_pricing.py](code/fd_fo
 
 "Your explicit solver returns garbage when you refine the space grid. Why?"
 Take 200 cells over $\pm 5$ standard deviations, so $\Delta x = 2/200 = 0.01$.
-The stability limit is $\Delta t \le \Delta x^2/(\sigma^2 + r\Delta x^2) = 0.0025$, i.e. at least 400 time steps for one year.
+The stability limit is $\Delta t \le \Delta x^2/(\sigma^2 + r\Delta x^2) = 0.0025$ (0.0024997 before rounding), i.e. at least 401 time steps for one year; the diffusion-only bound $\Delta x^2/\sigma^2 = 0.0025$ would allow exactly 400.
 With 500 steps the price is 10.4504.
 With 380 steps $\Delta t$ exceeds the limit by 5.3%, the sawtooth mode grows by a factor $\lvert 1 - 2\mu\rvert > 1$ every step, and after a year the largest node value is about $10^{14.26}$; the "price" at spot is $-1.79 \times 10^{14}$.
 Halving $\Delta x$ would demand four times as many steps, which is why production code uses implicit or Crank-Nicolson.

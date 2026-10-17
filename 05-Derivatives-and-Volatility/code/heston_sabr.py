@@ -299,14 +299,14 @@ def main() -> None:
     print("   start", start)
     for kname in ("kappa", "theta", "xi", "rho", "v0"):
         show(f"   recovered {kname}", fit[kname], p[kname], 5e-5)
-    show("   RMSE (vol points)", 100 * rmse, 0.0, 1e-7, ".1e")
+    show("   RMSE (vol points, below 1e-8)", 100 * rmse, 0.0, 1e-8, ".1e")
     show("   iterations", it, 11, 0, "d")
-    show("   Jacobian condition number (largest / smallest singular value)", float(sv[0] / sv[-1]), 16.0, 1.0, ".0f")
+    show("   Jacobian condition number (largest / smallest singular value)", float(sv[0] / sv[-1]), 16.0, 0.5, ".0f")
     fit1, rmse1, _, sv1 = calibrate({1.0: quotes[1.0]}, start)
     for kname, e in (("kappa", 1.5937), ("theta", 0.0318), ("xi", 0.5916), ("rho", -0.6967), ("v0", 0.0480)):
         show(f"   one maturity only: {kname}", fit1[kname], e, 5e-5)
-    show("   one-maturity RMSE (vol points)", 100 * rmse1, 6.3e-4, 5e-5, ".1e")
-    show("   one-maturity condition number", float(sv1[0] / sv1[-1]), 3749.0, 2.0, ".0f")
+    show("   one-maturity RMSE (vol points)", 100 * rmse1, 6.3e-4, 5e-6, ".1e")
+    show("   one-maturity condition number", float(sv1[0] / sv1[-1]), 3749.0, 0.5, ".0f")
 
     # 5. SABR alpha, beta / rho table and backbone: Example 6, cards deriv-sabr-atm-alpha, deriv-sabr-backbone, deriv-sabr-beta-rho
     F, Ts, beta, rho, nu = 0.03, 1.0, 0.5, -0.3, 0.4
@@ -315,10 +315,10 @@ def main() -> None:
     show("   alpha", alpha, 0.03433, 5e-6, ".5f")
     show("   leading-order alpha / F^(1 - beta) (%)", 100 * alpha / F ** (1 - beta), 19.82, 0.005, ".2f")
     show(
-        "   |general formula at K = F - ATM formula|",
-        float(abs(hagan_vol(F, np.array([F]), Ts, alpha, beta, rho, nu)[0] - 0.20)),
+        "   |general formula at K = F - ATM formula| (below 1e-15)",
+        float(abs(hagan_vol(F, np.array([F]), Ts, alpha, beta, rho, nu)[0] - hagan_atm(F, Ts, alpha, beta, rho, nu))),
         0.0,
-        1e-12,
+        1e-15,
         ".1e",
     )
     Ksabr = np.array([0.02, 0.025, 0.03, 0.035, 0.04])

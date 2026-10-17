@@ -75,7 +75,7 @@ which for $r = q$ ($\mu = -\tfrac12$) is the classic $C_{BS}(S, K) - \tfrac{S}{H
 Simulation.
 On a grid of step $\Delta t$ a path can cross between dates.
 Conditional on log-prices $x_i, x_{i+1}$ above $h = \ln H$, the Brownian bridge crosses with probability $\exp\big(-2(x_i - h)(x_{i+1} - h)/(\sigma^2\Delta t)\big)$; multiplying the payoff by the product of the survival probabilities gives an unbiased continuous-monitoring estimator even on a coarse grid.
-If the contract is monitored discretely (daily closes), the naive grid simulation is the right model, and Broadie-Glasserman-Kou show the discrete price is approximately the continuous formula at a barrier shifted away from spot by $e^{\pm\beta\sigma\sqrt{\Delta t}}$ (the error vanishes faster than $1/\sqrt{m}$ for $m$ monitoring dates), $\beta = 0.5826$; [Monte Carlo Pricing](10-Monte-Carlo-Pricing-and-Variance-Reduction.md) derives this.
+If the contract is monitored discretely (daily closes), the naive grid simulation is the right model, and Broadie-Glasserman-Kou show the discrete price is approximately the continuous formula at a barrier shifted away from spot by $e^{\pm\beta\sigma\sqrt{\Delta t}}$ (the error vanishes faster than $1/\sqrt{m}$ for $m$ monitoring dates), $\beta = 0.5826$; [Monte Carlo Pricing](10-Monte-Carlo-Pricing-and-Variance-Reduction.md) gives $\beta = -\zeta(1/2)/\sqrt{2\pi}$ and works a daily example.
 
 Greeks and model risk.
 A reverse knock-out (up-and-out call, down-and-out put) has a payoff that jumps from its maximum to zero at the barrier.
@@ -197,7 +197,7 @@ Barriers at 90 (down) and 120 (up), strike 100:
 | Up-and-out put | 5.3601 | Up-and-in put | 0.2134 |
 
 Each in-out pair adds to the vanilla call or put to $10^{-10}$.
-Simulation with 200,000 paths (vanilla payoff as control variate for the down-and-out):
+Simulation with 200,000 paths (vanilla payoff as control variate in every row):
 
 | Contract and method | Price (s.e.) |
 | :--- | :--- |

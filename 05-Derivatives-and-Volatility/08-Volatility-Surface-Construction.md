@@ -116,7 +116,7 @@ $$
 - No calendar arbitrage if $\partial_t\theta_t \ge 0$ and $0 \le \partial_\theta(\theta\varphi(\theta)) \le \frac{1}{\rho^2}\big(1 + \sqrt{1 - \rho^2}\big)\varphi(\theta)$.
 - No butterfly arbitrage if $\theta\varphi(\theta)(1 + \lvert\rho\rvert) < 4$ and $\theta\varphi(\theta)^2(1 + \lvert\rho\rvert) \le 4$.
 
-A popular choice is the power law $\varphi(\theta) = \eta\,\theta^{-\gamma}(1 + \theta)^{\gamma - 1}$ (Gatheral and Jacquier 2014, equation 4.5), which they show is free of static arbitrage provided $\eta(1 + \lvert\rho\rvert) \le 2$: the ATM skew $\partial_k\sigma$ then scales like $\theta^{1/2 - \gamma}/\sqrt{t}$, about $t^{-\gamma}$ for short maturities, which matches the empirical decay of equity skew for $\gamma$ near $1/2$.
+A popular choice is the power law $\varphi(\theta) = \eta\,\theta^{-\gamma}(1 + \theta)^{\gamma - 1}$ (Gatheral and Jacquier 2014, equation 4.5), which they show is free of static arbitrage provided $0 < \gamma \le 1/2$ and $\eta(1 + \lvert\rho\rvert) \le 2$ (for $\gamma > 1/2$ the butterfly term $\theta\varphi(\theta)^2(1 + \lvert\rho\rvert)$ grows like $\theta^{1 - 2\gamma}$ as $\theta \to 0$; with $\eta = 1$, $\rho = -0.7$ and $\gamma = 0.7$ it is 67.7 at $\theta = 10^{-4}$, far above 4): the ATM skew $\partial_k\sigma$ then scales like $\theta^{1/2 - \gamma}/\sqrt{t}$, about $t^{-\gamma}$ for short maturities, which matches the empirical decay of equity skew for $\gamma$ near $1/2$.
 Desks typically fit SSVI first (three surface parameters plus the ATM term structure), then refine slice by slice with raw SVI under arbitrage constraints.
 
 ### Dupire local volatility

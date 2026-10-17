@@ -272,6 +272,14 @@ def main() -> None:
     th = theta_t(ts)
     show("max theta phi (1 + |rho|) on t in [0.02, 3] (< 4)", float(np.max(th * phi_of(th) * (1 + abs(SSVI_RHO)))), 0.47, 0.005, ".2f")
     show("max theta phi^2 (1 + |rho|) (<= 4)", float(np.max(th * phi_of(th) ** 2 * (1 + abs(SSVI_RHO)))), 0.98, 0.005, ".2f")
+    th_small = np.array(1e-4)
+    show(
+        "gamma = 0.7 (above 1/2): theta phi^2 (1 + |rho|) at theta = 1e-4",
+        float(th_small * phi_of(th_small, 0.7) ** 2 * (1 + abs(SSVI_RHO))),
+        67.7,
+        0.05,
+        ".1f",
+    )
     kg = np.linspace(-1.5, 1.0, 501)
     K2, T2 = np.meshgrid(kg, ts)
     w2, wk2, wkk2, wt2 = ssvi_w(K2, T2)

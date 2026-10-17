@@ -331,13 +331,17 @@ def cos_call(
     return np.array(out)
 
 
-def check_sci(label: str, value: float, expected: float) -> float:
-    """Check a value the note quotes to two significant figures; tiny round-off values only need to stay tiny."""
-    print(f"{label}: {value:.2e}")
-    if abs(expected) < 1e-12:
+def check_sci(label: str, value: float, quoted: str) -> float:
+    """Check a value against the note's figure, written as quoted ("-5.76e-2"), to half a unit in its last digit;
+    "0" stands for "below 1e-12", the round-off values the note does not quote."""
+    print(f"{label}: {value:.3e}")
+    expected = float(quoted)
+    if expected == 0.0:
         assert abs(value) < 1e-12, f"{label}: got {value}, expected below 1e-12"
-    else:
-        assert abs(value - expected) <= 0.051 * abs(expected), f"{label}: got {value}, expected {expected:.2e}"
+        return value
+    mantissa, _, exponent = quoted.lower().partition("e")
+    tol = 0.5 * 10.0 ** (int(exponent or 0) - len(mantissa.partition(".")[2]))
+    assert abs(value - expected) <= tol * (1 + 1e-9), f"{label}: got {value}, expected {quoted} +/- {tol:.1e}"
     return value
 
 
@@ -353,22 +357,24 @@ def main() -> None:
     _, dx = log_grid(n_space)
     dt_max = dx**2 / (SIG**2 + R * dx**2)  # all explicit weights non-negative: 1 - dt (sigma^2 / dx^2 + r) >= 0
     check("dx (200 cells over +/- 5 sd)", dx, 0.01, 1e-12)
-    check("explicit dt limit dx^2 / (sigma^2 + r dx^2)", dt_max, 0.0025, 1e-6)
+    check("explicit dt limit dx^2 / (sigma^2 + r dx^2)", dt_max, 0.0024997, 5e-8)
+    check("explicit minimum steps for one year, ceil(T / dt limit)", math.ceil(T / dt_max), 401, 0)
+    check("diffusion-only dt limit dx^2 / sigma^2", dx**2 / SIG**2, 0.0025, 1e-12)
     check("explicit 500 steps price", fd_call(n_space, 500, 0.0)[0], 10.4504, 5e-5)
     p_bad, _, v_bad = fd_call(n_space, 380, 0.0)
     check("380 steps: percent by which dt exceeds the limit", 100 * ((T / 380) / dt_max - 1), 5.3, 0.05)
-    check("explicit 380 steps (dt 5% over the limit): log10 max |V|", math.log10(np.max(np.abs(v_bad))), 14.26, 0.01)
-    check_sci("explicit 380 steps price at S0", p_bad, -1.79e14)
+    check("explicit 380 steps (dt 5% over the limit): log10 max |V|", math.log10(np.max(np.abs(v_bad))), 14.26, 5e-3)
+    check_sci("explicit 380 steps price at S0", p_bad, "-1.79e14")
     print()
 
     # 3. Convergence and boundaries. Backs "Boundary conditions and the domain", Example 2 and cards
     #    deriv-fd-theta-scheme, deriv-fd-orders, deriv-fd-boundaries.
     expected = {
-        50: (-5.76e-02, -3.63e-02),
-        100: (-1.96e-02, -9.01e-03),
-        200: (-7.50e-03, -2.25e-03),
-        400: (-3.19e-03, -5.62e-04),
-        800: (-1.45e-03, -1.40e-04),
+        50: ("-5.76e-2", "-3.63e-2"),
+        100: ("-1.96e-2", "-9.01e-3"),
+        200: ("-7.50e-3", "-2.25e-3"),
+        400: ("-3.19e-3", "-5.62e-4"),
+        800: ("-1.45e-3", "-1.40e-4"),
     }
     got = {n: (fd_call(n, n, 1.0)[0] - bs, fd_call(n, n, 0.5)[0] - bs) for n in expected}
     for n, (e_imp, e_cn) in expected.items():
@@ -377,7 +383,7 @@ def main() -> None:
     check("implicit error ratio n 400 -> 800", got[400][0] / got[800][0], 2.2, 0.05)
     check("CN error ratio n 400 -> 800", got[400][1] / got[800][1], 4.0, 0.05)
     check("implicit / CN error at n = 800 (equal cost)", got[800][0] / got[800][1], 10.3, 0.05)
-    expected_bc = {3.0: (-2.01e-04, -3.32e-01), 5.0: (-5.62e-04, -7.60e-04), 8.0: (-1.44e-03, -1.44e-03)}
+    expected_bc = {3.0: ("-2.01e-4", "-3.32e-1"), 5.0: ("-5.62e-4", "-7.60e-4"), 8.0: ("-1.44e-3", "-1.44e-3")}
     for hw_sd, (e_d, e_z) in expected_bc.items():
         check_sci(f"+/- {hw_sd:.0f} sd, Dirichlet top", fd_call(400, 400, 0.5, half_width=hw_sd * SIG)[0] - bs, e_d)
         check_sci(f"+/- {hw_sd:.0f} sd, V=0 top", fd_call(400, 400, 0.5, half_width=hw_sd * SIG, upper="zero")[0] - bs, e_z)
@@ -404,10 +410,10 @@ def main() -> None:
     check("digital implicit at S0", v_imp[n_space // 2], 0.5320, 5e-5)
     win = (s[1:-1] > 90) & (s[1:-1] < 110)
     g_exact = digital_gamma_exact(s[1:-1][win])
-    check_sci("digital max |gamma| exact on 90-110", np.max(np.abs(g_exact)), 5.32e-4)
-    err_cn = check_sci("digital max gamma error CN", np.max(np.abs(grid_gamma(s, v_cn)[win] - g_exact)), 0.414)
-    err_ran = check_sci("digital max gamma error Rannacher", np.max(np.abs(grid_gamma(s, v_ran)[win] - g_exact)), 6.9e-7)
-    err_imp = check_sci("digital max gamma error implicit", np.max(np.abs(grid_gamma(s, v_imp)[win] - g_exact)), 3.6e-5)
+    check_sci("digital max |gamma| exact on 90-110", np.max(np.abs(g_exact)), "5.32e-4")
+    err_cn = check_sci("digital max gamma error CN", np.max(np.abs(grid_gamma(s, v_cn)[win] - g_exact)), "0.414")
+    err_ran = check_sci("digital max gamma error Rannacher", np.max(np.abs(grid_gamma(s, v_ran)[win] - g_exact)), "6.9e-7")
+    err_imp = check_sci("digital max gamma error implicit", np.max(np.abs(grid_gamma(s, v_imp)[win] - g_exact)), "3.6e-5")
     check("CN gamma error / true max gamma", err_cn / np.max(np.abs(g_exact)), 778, 2)
     check("implicit / Rannacher gamma error", err_imp / err_ran, 52, 1)
     print()
@@ -435,12 +441,12 @@ def main() -> None:
     #    deriv-fourier-grid-tradeoff, deriv-fourier-aliasing.
     strikes = np.array([80.0, 90.0, 100.0, 110.0, 120.0])
     bs_k = np.asarray(bs_price(S0, strikes, T, R, SIG, Q))
-    check("FFT strike spacing 2 pi / (N eta), N 4096 eta 0.25", 2 * math.pi / (4096 * 0.25), 0.006136, 1e-6)
-    for alpha, (e_max, e_atm) in {0.1: (1.5, 1.5), 0.5: (6.2e-2, 6.2e-2), 1.5: (7.4e-4, 2.2e-7), 5.0: (7.4e-4, 0.0)}.items():
+    check("FFT strike spacing 2 pi / (N eta), N 4096 eta 0.25", 2 * math.pi / (4096 * 0.25), 0.006136, 5e-7)
+    for alpha, (e_max, e_atm) in {0.1: ("1.5", "1.5"), 0.5: ("6.2e-2", "6.2e-2"), 1.5: ("7.4e-4", "2.2e-7"), 5.0: ("7.4e-4", "0")}.items():
         c = carr_madan(bs_cf_logret(R, Q, SIG, T), S0, strikes, R, T, alpha=alpha)
         check_sci(f"FFT alpha {alpha}: max error 80-120", np.max(np.abs(c - bs_k)), e_max)
         check_sci(f"FFT alpha {alpha}: error at K=100 (grid node)", abs(c[2] - bs_k[2]), e_atm)
-    for eta, (e_max, e_atm) in {0.05: (8.2e-3, 0.0), 0.25: (7.4e-4, 2.2e-7), 1.0: (2.8e-1, 2.8e-1)}.items():
+    for eta, (e_max, e_atm) in {0.05: ("8.2e-3", "0"), 0.25: ("7.4e-4", "2.2e-7"), 1.0: ("2.8e-1", "2.8e-1")}.items():
         c = carr_madan(bs_cf_logret(R, Q, SIG, T), S0, strikes, R, T, eta=eta)
         lam_expected = {0.05: 0.0307, 0.25: 0.0061, 1.0: 0.0015}[eta]
         check(f"FFT eta {eta}: log-strike spacing 2 pi / (N eta)", 2 * math.pi / (4096 * eta), lam_expected, 5e-5)
@@ -448,11 +454,10 @@ def main() -> None:
         check_sci(f"FFT eta {eta}: error at K=100", abs(c[2] - bs_k[2]), e_atm)
     # The discrete Fourier sum is periodic in log strike; Simpson's alternating weights make the period pi / eta,
     # and the deep in-the-money image (call value close to S0) leaks back as about S0 exp(-alpha pi / eta) / 3.
-    for alpha, eta in ((1.0, 0.25), (1.5, 0.25), (2.0, 0.25), (1.0, 0.125)):
+    for alpha, eta, quoted in ((1.0, 0.25, "-1.16e-4"), (1.5, 0.25, "-2.17e-7"), (2.0, 0.25, "-4.05e-10"), (1.0, 0.125, "-4.05e-10")):
         node_err = carr_madan(bs_cf_logret(R, Q, SIG, T), S0, strikes[2:3], R, T, alpha=alpha, eta=eta)[0] - bs_k[2]
-        alias = -S0 * math.exp(-alpha * math.pi / eta) / 3.0
-        check_sci(f"FFT ATM error alpha {alpha} eta {eta}", node_err, alias)
-        print(f"  alias estimate -S0 exp(-alpha pi / eta) / 3 = {alias:.2e}")
+        check_sci(f"FFT ATM error alpha {alpha} eta {eta}", node_err, quoted)
+        check_sci("  alias estimate -S0 exp(-alpha pi / eta) / 3", -S0 * math.exp(-alpha * math.pi / eta) / 3.0, quoted)
     # eta = 1: the alias period pi / eta = pi brings the image strike K e^{-pi} = 4.32 close enough that the image call is
     # worth only 95.9, not S0; the estimate with that value accounts for most of the error at K = 100.
     node_err = carr_madan(bs_cf_logret(R, Q, SIG, T), S0, strikes[2:3], R, T, eta=1.0)[0] - bs_k[2]
@@ -465,21 +470,21 @@ def main() -> None:
     for k_, p_, ex in zip(strikes, hes, (25.2368, 17.1401, 10.1546, 4.8662, 1.7382), strict=True):
         check(f"Heston call K={k_:.0f} (Lewis)", p_, ex, 5e-5)
     cm_h = carr_madan(heston_cf_logret(R, Q, T), S0, strikes, R, T)
-    check_sci("FFT vs Lewis Heston, max error 80-120", np.max(np.abs(cm_h - hes)), 1.0e-3)
-    check_sci("FFT vs Lewis Heston, error at K=100", abs(cm_h[2] - hes[2]), 2.2e-7)
+    check_sci("FFT vs Lewis Heston, max error 80-120", np.max(np.abs(cm_h - hes)), "1.05e-3")
+    check_sci("FFT vs Lewis Heston, error at K=100", abs(cm_h[2] - hes[2]), "2.2e-7")
     print()
 
     # 7. COS. Backs "Fourier pricing", Example 6 and cards deriv-fourier-cos, deriv-fourier-validate-cf.
     c1, c2 = (R - Q - 0.5 * SIG**2) * T, SIG**2 * T
-    for n, e in {8: 2.9, 16: 8.6e-2, 32: 1.8e-6, 64: 0.0}.items():
+    for n, e in {8: "2.95", 16: "8.6e-2", 32: "1.8e-6", 64: "0"}.items():
         check_sci(
             f"COS N={n} vs BS max error", np.max(np.abs(cos_call(bs_cf_logret(R, Q, SIG, T), S0, strikes, R, T, c1, c2, n=n) - bs_k)), e
         )
-    for L, e in {4.0: 6.25e-4, 3.0: 2.74e-2, 2.0: 0.498}.items():
+    for L, e in {4.0: "6.25e-4", 3.0: "2.74e-2", 2.0: "0.498"}.items():
         err = np.max(np.abs(cos_call(bs_cf_logret(R, Q, SIG, T), S0, strikes, R, T, c1, c2, n=128, L=L) - bs_k))
         check_sci(f"COS L={L} N=128 vs BS max error (truncation)", err, e)
     hc1, hc2 = (R - Q - 0.5 * HESTON["theta"]) * T, HESTON["theta"] * T
-    for n, e in {32: 3.5e-2, 64: 4.3e-4, 128: 9.2e-8, 256: 2.8e-10}.items():
+    for n, e in {32: "3.5e-2", 64: "4.3e-4", 128: "9.2e-8", 256: "2.8e-10"}.items():
         c = cos_call(heston_cf_logret(R, Q, T), S0, strikes, R, T, hc1, hc2, n=n, L=12.0)
         check_sci(f"COS N={n} vs Lewis Heston max error", np.max(np.abs(c - hes)), e)
 

@@ -112,7 +112,7 @@ def affine_bonds(rng: np.random.Generator) -> None:
     m_i = th * tau + (r0 - th) * (1 - e1) / k
     v_i = s * s / (k * k) * (tau - 2 * (1 - e1) / k + (1 - e2) / (2 * k))
     disc = np.exp(-(m_i + math.sqrt(v_i) * rng.standard_normal(1_000_000)))
-    check_mc("Vasicek P(0,5) Monte Carlo", float(disc.mean()), float(disc.std() / 1e3), 0.82082, closed, 5e-6, 3.2e-5, 5e-7)
+    check_mc("Vasicek P(0,5) Monte Carlo", float(disc.mean()), float(disc.std() / 1e3), 0.820819, closed, 5e-7, 3.2e-5, 5e-7)
 
     # CIR: dr = kappa (theta - r) dt + sigma sqrt(r) dW
     k, th, s, r0 = 1.5, 0.04, 0.2, 0.02
@@ -142,9 +142,9 @@ def affine_bonds(rng: np.random.Generator) -> None:
         "CIR P(0,5) Monte Carlo (Euler, 1000 steps)",
         float(disc.mean()),
         float(disc.std() / math.sqrt(n)),
-        0.83072,
+        0.830722,
         closed,
-        5e-6,
+        5e-7,
         9.3e-5,
         5e-7,
     )
@@ -259,7 +259,7 @@ def one_touch(rng: np.random.Generator) -> None:
     # Roots of 0.5 sig^2 p (p - 1) + (r - q) p - r = 0
     a, b, c = 0.5 * sig**2, r - q - 0.5 * sig**2, -r
     p_plus = (-b + math.sqrt(b * b - 4 * a * c)) / (2 * a)
-    check("positive root p+ (q = 2%)", p_plus, 1.2851, 5e-5)
+    check("positive root p+ (q = 2%)", p_plus, 1.28507, 5e-6)
     closed = (S0 / H) ** p_plus
     check("one-touch value (S0/H)^p+", closed, 0.7911, 5e-5)
     check("one-touch value with q = 0: S0/H", S0 / H, 0.8333, 5e-5)
@@ -287,7 +287,7 @@ def one_touch(rng: np.random.Generator) -> None:
     # Paths not hit by 40y contribute at most e^{-2} each; add the exact conditional value at the horizon
     left = ~np.isfinite(hit_time)
     pay[left] = math.exp(-r * horizon) * (np.exp(x[left]) / (H / S0)) ** p_plus
-    check_mc("one-touch Monte Carlo E[exp(-r tau)]", float(pay.mean()), float(pay.std() / math.sqrt(n)), 0.7907, closed, 5e-4, 0.0010, 5e-5)
+    check_mc("one-touch Monte Carlo E[exp(-r tau)]", float(pay.mean()), float(pay.std() / math.sqrt(n)), 0.7907, closed, 5e-5, 0.0010, 5e-5)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -311,7 +311,7 @@ def range_accrual(rng: np.random.Generator) -> None:
     logS = math.log(S0) + np.cumsum((r - 0.5 * sig**2) / days + sig / math.sqrt(days) * z, axis=1)
     inside = (logS > math.log(L)) & (logS < math.log(U))
     pay = (inside * np.exp(-r * t)).sum(axis=1) / days
-    check_mc("Monte Carlo with daily fixings", float(pay.mean()), float(pay.std() / math.sqrt(n)), 0.5637, value, 5e-4, 0.0008, 5e-5)
+    check_mc("Monte Carlo with daily fixings", float(pay.mean()), float(pay.std() / math.sqrt(n)), 0.5637, value, 5e-5, 0.0008, 5e-5)
 
 
 def main() -> None:

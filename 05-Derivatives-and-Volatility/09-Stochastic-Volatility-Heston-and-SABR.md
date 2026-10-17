@@ -228,14 +228,14 @@ A market whose one-week skew is much steeper than its one-month skew (as under a
 ### Example 5: calibration and identifiability
 
 Generate implied vols from the base parameters at expiries 0.25, 0.5, 1, 2 and strikes 80 to 120, then calibrate by Levenberg-Marquardt from $(\kappa, \theta, \xi, \rho, v_0) = (3, 0.06, 0.3, -0.3, 0.06)$.
-It recovers $(1.5000, 0.0400, 0.6000, -0.7000, 0.0400)$ in 11 iterations with RMSE $3.9 \times 10^{-9}$ vol points, and the Jacobian condition number is 16.
+It recovers $(1.5000, 0.0400, 0.6000, -0.7000, 0.0400)$ in 11 iterations with RMSE below $10^{-8}$ vol points, and the Jacobian condition number is 16.
 Calibrate to the one-year slice alone and it stops at $(1.5937, 0.0318, 0.5916, -0.6967, 0.0480)$ with RMSE $6.3 \times 10^{-4}$ vol points, a perfect fit with the wrong $\theta$ and $v_0$: the condition number is 3749.
 One slice cannot separate the short-term level, the long-term level and the speed between them; add expiries, or fix $\kappa$.
 
 ### Example 6: SABR alpha, beta, rho and the backbone
 
 Forward 3%, $T = 1$, $\beta = 0.5$, $\rho = -0.3$, $\nu = 0.4$, ATM vol 20%.
-Solving the ATM cubic gives $\alpha = 0.03433$; the leading term $\alpha/F^{1 - \beta}$ alone is 19.82%, the $T$-correction supplies the rest, and the general formula at $K = F$ agrees with the ATM formula to $2.8 \times 10^{-17}$.
+Solving the ATM cubic gives $\alpha = 0.03433$; the leading term $\alpha/F^{1 - \beta}$ alone is 19.82%, the $T$-correction supplies the rest, and the general formula at $K = F$ reproduces the ATM formula to below $10^{-15}$.
 
 Vols (%) at strikes 2%, 2.5%, 3%, 3.5%, 4% with $\alpha$ re-solved each time for 20% ATM:
 
