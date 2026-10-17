@@ -27,7 +27,7 @@ except ImportError:  # pragma: no cover
 
 SCHEMA_VERSION = 2
 V1_DEFAULT_TRACKS = {"quant-trader", "quant-research", "quant-dev"}
-MASTERY_LABELS = ("unseen", "studied", "practiced", "solid", "interview-ready")
+MASTERY_LABELS = ("unseen", "studied", "practiced", "mastered", "interview-ready")
 GRADES = ("again", "hard", "good", "easy")
 MIN_EASE = 1.3
 DEFAULT_PROFILE = {"tracks": list(TRACKS), "hours_per_week": 10, "new_cards_per_day": 20}

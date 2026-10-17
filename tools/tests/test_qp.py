@@ -17,7 +17,7 @@ from http.server import ThreadingHTTPServer
 from pathlib import Path
 from unittest import mock
 
-from tools.qp import bank, check, drills, moc, planner, server
+from tools.qp import bank, check, cli, drills, moc, planner, server
 from tools.qp.state import CardSchedule, StateError, Store, schedule
 from tools.qp.vault import load_vault, note_id_for, parse_cards, parse_scalar, split_frontmatter
 
@@ -223,6 +223,13 @@ class StoreBehaviour(TempRepo):
         self.assertEqual((final.mastery("base"), final.mastery("middle")), (2, 1))
         server_side.refresh()
         self.assertEqual(server_side.mastery("middle"), 1)
+
+    def test_mark_accepts_mastered_and_legacy_solid_as_level_three(self):
+        with mock.patch.object(cli, "load_vault", lambda _root: self.vault()), mock.patch.dict(os.environ, {"QP_HOME": str(self.home)}):
+            for topic, word in (("base", "mastered"), ("middle", "solid")):
+                with mock.patch("sys.stdout"):
+                    self.assertEqual(cli.main(["mark", topic, word]), 0)
+        self.assertEqual((self.store().mastery("base"), self.store().mastery("middle")), (3, 3))
 
     def test_profile_validation(self):
         s = self.store()

@@ -75,6 +75,8 @@ def parse_mastery(raw: str) -> int:
         return int(raw)
     if raw in MASTERY_LABELS:
         return MASTERY_LABELS.index(raw)
+    if raw == "solid":
+        return MASTERY_LABELS.index("mastered")
     raise CliError(f"mastery must be 0-4 or one of {', '.join(MASTERY_LABELS)}")
 
 
@@ -95,7 +97,7 @@ def cmd_status(vault: Vault, store: Store, args) -> int:
         f"qp: Quant Prep progress for {', '.join(tracks)}",
         f"streak: {store.streak()} day(s)",
         f"state: {store.path}",
-        table("tracks", ["track", "readiness", "solid", "hours_left"], rows),
+        table("tracks", ["track", "readiness", "mastered", "hours_left"], rows),
         f"cards: {c['cards_due']} due, {len(due)} in today's queue, {c['cards_seen']}/{c['cards']} seen, {c['cards_mature']} mature",
         table("next", ["id", "title", "tier", "hours", "blocked_by"], [[n.id, n.title, n.tier, n.est_hours, " ".join(b)] for n, b in nxt]),
         table("firms_top", ["firm", "readiness"], [[f.title, pct(r)] for f, r in firms[:5]]),
@@ -463,7 +465,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--full", action="store_true")
     sp = add("mark", cmd_mark, "record mastery 0-4 for a topic")
     sp.add_argument("topic")
-    sp.add_argument("level", help="0 unseen, 1 studied, 2 practiced, 3 solid, 4 interview-ready")
+    sp.add_argument("level", help="0 unseen, 1 studied, 2 practiced, 3 mastered, 4 interview-ready")
     sp = add("next", cmd_next, "suggest the next topics to study")
     tracks_opt(sp)
     sp.add_argument("--limit", type=int, default=8)

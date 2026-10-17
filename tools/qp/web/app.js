@@ -5,7 +5,7 @@ const $app = document.getElementById("app");
 // Track labels and abbreviations come from the server (tools/qp/vault.py) at startup.
 let TRACKS = {};
 let TRACK_ABBR = {};
-const MASTERY = ["unseen", "studied", "practiced", "solid", "interview-ready"];
+const MASTERY = ["unseen", "studied", "practiced", "mastered", "interview-ready"];
 let drillCleanup = null;
 
 // ---------- helpers ----------
@@ -206,7 +206,7 @@ async function viewDashboard() {
           h("a", { class: "title", href: `#/note/${encodeURIComponent(n.id)}` }, n.title),
           h("div", { class: "sub" }, n.blocked_by.length ? `Blocked by ${n.blocked_by.join(", ")}` : `${n.hours} h, ${n.status === "seed" ? "not written yet" : n.status}`)),
         tierChip(n.tier),
-        masteryControl(n, () => {})))) : h("p", { class: "muted" }, "Every targeted topic is at solid mastery."));
+        masteryControl(n, () => {})))) : h("p", { class: "muted" }, "Every targeted topic is mastered."));
   const firms = h("div", { class: "panel" },
     h("div", { class: "panel-head" }, h("h2", {}, "Firm readiness"), h("a", { href: "#/firms", class: "sub" }, "All firms")),
     s.firms.slice(0, 8).map((f) => h("div", { class: "bar-row" },
@@ -307,7 +307,7 @@ async function viewSyllabus(params) {
     if (!body.children.length || [...body.children].every((c) => !c)) body.replaceChildren(h("div", { class: "empty" }, h("h2", {}, "No topics match"), "Clear a filter to see more."));
   }
   draw();
-  $app.replaceChildren(page("Syllabus", "Every topic a senior quant is expected to know. Set mastery as you study: 1 studied, 2 practiced, 3 solid, 4 interview-ready."),
+  $app.replaceChildren(page("Syllabus", "Every topic a senior quant is expected to know. Set mastery as you study: 1 studied, 2 practiced, 3 mastered, 4 interview-ready."),
     h("div", { class: "row", style: { marginBottom: "18px" } }, search, tier, trackToggles, written), body);
   if (state.open) document.getElementById(state.open)?.scrollIntoView();
 }
@@ -558,7 +558,7 @@ async function viewPlan(params) {
   const weeks = plan.weeks.length ? plan.weeks.map((w) => h("div", { class: "week" },
     h("div", { class: "when" }, h("b", {}, `Week ${w.week}`), h("span", {}, `${w.starts}, ${w.hours} h`)),
     h("div", { class: "topics" }, w.topics.map((t) => h("a", { href: `#/note/${encodeURIComponent(t.id)}`, title: `${t.tier}, ${t.hours} h` }, t.title)))))
-    : [h("div", { class: "empty" }, h("h2", {}, "Nothing left to plan"), "Every topic in your tracks is at solid mastery.")];
+    : [h("div", { class: "empty" }, h("h2", {}, "Nothing left to plan"), "Every topic in your tracks is mastered.")];
   $app.replaceChildren(
     page("Study plan", `${plan.weeks.length} weeks, about ${Math.round(plan.total_hours)} hours at ${plan.hours_per_week} h per week, in prerequisite order. Mastered topics drop out automatically.`),
     h("div", { class: "panel", style: { marginBottom: "16px" } }, h("div", { class: "row" },

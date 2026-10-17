@@ -32,7 +32,7 @@ track: [quant-trader, quant-research, quant-dev, quant-risk]   # who needs it
 tier: core             # core | advanced | senior
 status: seed           # seed | draft | solid | canonical
 prereqs: [conditional-probability-and-bayes]       # topic ids
-est_hours: 4           # focused study time to reach "solid" mastery
+est_hours: 4           # focused study time to reach "mastered"
 sources: []            # URLs or citations used while writing
 ---
 ```

@@ -23,7 +23,7 @@ Every week, whatever the phase:
 | New topics | the rest of your weekly hours | `./qp next`, `./qp plan` |
 | Mastery update | after each study session | `./qp mark <topic> <0-4>` |
 
-Mastery levels mean: 1 studied (read it once), 2 practiced (solved the worked examples yourself), 3 solid (can answer the cards cold), 4 interview-ready (can teach it and handle follow-ups under time pressure).
+Mastery levels mean: 1 studied (read it once), 2 practiced (solved the worked examples yourself), 3 mastered (can answer the cards cold), 4 interview-ready (can teach it and handle follow-ups under time pressure).
 Mark honestly; readiness scores are only as good as these marks.
 
 ## Phases

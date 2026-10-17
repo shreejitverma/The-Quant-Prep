@@ -44,7 +44,7 @@ The file is written as version 2 on the next save.
 | `./qp profile [--tracks T ...] [--hours H] [--new-cards N]` | Your target tracks (`quant-trader`, `quant-research`, `quant-dev`, `quant-risk`), weekly hours and daily new cards. |
 | `./qp syllabus [--track T] [--section S] [--tier core]` | Every topic with status, cards and your mastery. |
 | `./qp show <topic> [--full]` | Objectives, prerequisites, what it unlocks, its cards. |
-| `./qp mark <topic> <0-4>` | Record mastery: 1 studied, 2 practiced, 3 solid, 4 interview-ready. |
+| `./qp mark <topic> <0-4>` | Record mastery: 1 studied, 2 practiced, 3 mastered, 4 interview-ready. |
 | `./qp next` | Unblocked topics to study next. |
 | `./qp plan [--hours H] [--core] [--weeks N]` | A dated weekly plan in prerequisite order. |
 | `./qp review` | Interactive spaced-repetition review of due cards. |
