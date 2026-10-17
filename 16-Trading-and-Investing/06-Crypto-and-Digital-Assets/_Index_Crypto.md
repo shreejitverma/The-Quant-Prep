@@ -51,8 +51,15 @@ It analyzes centralized exchanges (CEXs), decentralized automated market makers 
 
 ---
 
+## Concept Notes
+
+- [[16-Trading-and-Investing/06-Crypto-and-Digital-Assets/01-Perpetual-Futures-and-Funding-Rate-Arbitrage|01 Perpetual Futures and Funding Rate Arbitrage]] (32 flashcards)
+
+---
+
 ## Trading Lab Engines
 
+- `fut_desk`: Perpetual futures funding rate tracker, cash-and-carry basis arbitrage yield, and liquidation distance estimator.
 - `crypto_basis`: Real-time crypto perpetual funding rate tracker, annualized yield calculator, and liquidation distance estimator.
 - `lob_sim`: High-frequency order book simulator handling cross-exchange price updates and latency arbitrage.
 

@@ -49,10 +49,17 @@ Unlike financial assets, commodities are consumption assets defined by physical 
 
 ---
 
+## Concept Notes
+
+- [[16-Trading-and-Investing/05-Commodities/01-Commodity-Term-Structures-and-Storage-Arbitrage|01 Commodity Term Structures and Storage Arbitrage]] (32 flashcards)
+
+---
+
 ## Trading Lab Engines
 
 - `fut_desk`: Commodity futures calendar spread analyzer, term structure shape classifier, and historical roll return calculator.
 - `pos_sizing`: Dynamic position sizing engine calibrated to commodity futures margin requirements and high tail risk.
+- `port_alloc`: Multi-asset portfolio allocator evaluating commodity risk parity weights and inflation hedging.
 
 ---
 

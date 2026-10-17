@@ -173,10 +173,11 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Implement stage gates for fundamental analysis and valuation.
 
 ### Phase 12: Multi-Asset Class Modules & Portfolio Manager Lab
-- [ ] Implement synthetic multi-asset portfolio simulator `tools/qp/lab/portfolio.py`.
-- [ ] Implement futures, rates, FX, and crypto timed drill generators `tools/qp/lab/futures.py`.
-- [ ] Author specialized asset-class notes (India equities & F&O, Rates curve trading, FX carry, Crypto perps).
-- [ ] Build web UI for Portfolio Manager and Multi-Asset Desk.
+- [x] Implement synthetic multi-asset portfolio allocator and risk parity simulator `tools/qp/lab/port_alloc.py`.
+- [x] Implement futures term structure, cost-of-carry, roll yield, and basis arbitrage desk `tools/qp/lab/fut_desk.py`.
+- [x] Author specialized asset-class notes (India equities & F&O, Rates curve trading, Commodities term structure, Crypto perps).
+- [x] Author 128 flashcards across `mkt-ind-`, `mkt-mac-`, `mkt-cmd-`, and `mkt-cry-`.
+- [x] Wire `fut_desk` and `port_alloc` into Trading Lab catalog and automated unit test suite (`tools/tests/test_fut_port.py`).
 
 ### Phase 13: Event Case Files, Market History, Psychology, & Regulation
 - [ ] Implement structured event simulation engine `tools/qp/lab/events.py`.

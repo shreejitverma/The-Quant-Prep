@@ -54,6 +54,12 @@ It provides the macroeconomic anchor for cross-asset valuation, liquidity transm
 
 ---
 
+## Concept Notes
+
+- [[16-Trading-and-Investing/04-Macro-Rates-FX/01-Yield-Curve-Dynamics-and-Rates-Trading|01 Yield Curve Dynamics and Rates Trading]] (32 flashcards)
+
+---
+
 ## Trading Lab Engines
 
 - `fut_desk`: Futures calendar spreads, cash-and-carry basis, and interest rate term structure modeling.

@@ -52,10 +52,17 @@ It combines cash equity execution with high-volume index and stock derivatives, 
 
 ---
 
+## Concept Notes
+
+- [[16-Trading-and-Investing/02-Indian-Markets/01-NSE-BSE-Microstructure-and-Derivatives-Architecture|01 NSE BSE Microstructure and Derivatives Architecture]] (32 flashcards)
+
+---
+
 ## Trading Lab Engines
 
 - `opt_desk`: Real-time Greeks and PnL attribution calibrated to NSE lot sizes and strike intervals.
 - `pos_sizing`: Dynamic position sizing engine accounting for SEBI peak margin rules and asymmetric option buying vs writing risk.
+- `fut_desk`: Futures calendar spreads, cost-of-carry, and cash-and-carry basis arbitrage engine.
 
 ---
 
