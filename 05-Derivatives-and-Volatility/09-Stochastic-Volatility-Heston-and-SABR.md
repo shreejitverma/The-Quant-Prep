@@ -229,8 +229,10 @@ A market whose one-week skew is much steeper than its one-month skew (as under a
 
 Generate implied vols from the base parameters at expiries 0.25, 0.5, 1, 2 and strikes 80 to 120, then calibrate by Levenberg-Marquardt from $(\kappa, \theta, \xi, \rho, v_0) = (3, 0.06, 0.3, -0.3, 0.06)$.
 It recovers $(1.5000, 0.0400, 0.6000, -0.7000, 0.0400)$ in 11 iterations with RMSE below $10^{-8}$ vol points, and the Jacobian condition number is 16.
-Calibrate to the one-year slice alone and it stops at $(1.5937, 0.0318, 0.5916, -0.6967, 0.0480)$ with RMSE $6.3 \times 10^{-4}$ vol points, an essentially exact fit with the wrong $\theta$ and $v_0$: the condition number is 3749.
-One slice cannot separate the short-term level, the long-term level and the speed between them; add expiries, or fix $\kappa$.
+On the one-year slice alone the same Jacobian, taken at the generating parameters, has condition number about 3600.
+One slice cannot separate the short-term level, the long-term level and the speed between them.
+The parameters $(1.5937, 0.0318, 0.5916, -0.6967, 0.0480)$, with the wrong $\theta$ and $v_0$, reprice the one-year slice to RMSE 0.0097 vol points but miss the three-month slice by RMSE 1.11 vol points.
+Add expiries, or fix $\kappa$: with $\kappa$ held at 1.5 the four-parameter fit to the one-year slice from the same start recovers $(0.0400, 0.6000, -0.7000, 0.0400)$ with RMSE below $10^{-8}$ vol points and condition number about 700.
 
 ### Example 6: SABR alpha, beta, rho and the backbone
 
@@ -333,8 +335,8 @@ Shifted vols are quotes in a different unit: they are not comparable with unshif
 > Heston cannot fit short and long expiries together; add jumps (Bates), time-dependent parameters or rough volatility.
 
 > [!question]- deriv-heston-identifiability | You calibrate Heston to one expiry and get a perfect fit. Are the parameters right?
-> Not necessarily: from the base model's one-year slice alone the calibrator found $\theta = 0.0318$, $v_0 = 0.0480$ (true 0.04, 0.04) with RMSE $6.3 \times 10^{-4}$ vol points and condition number 3749.
-> With four expiries it recovers the true parameters (condition number 16); fix $\kappa$ or regularise when data are thin.
+> Not necessarily: on the base model's one-year slice the Jacobian condition number is about 3600, and $\theta = 0.0318$, $v_0 = 0.0480$ (true 0.04, 0.04) reprice that slice to RMSE 0.0097 vol points yet miss the three-month slice by 1.11.
+> With four expiries the calibration recovers the true parameters (condition number 16); with $\kappa$ held at its true value one expiry suffices (condition number about 700); fix $\kappa$ or regularise when data are thin.
 
 > [!question]- deriv-heston-xi-zero-limit | What does Heston reduce to when $\xi \to 0$?
 > Black-Scholes with deterministic variance, priced at the average expected variance $\theta + (v_0 - \theta)(1 - e^{-\kappa T})/(\kappa T)$.

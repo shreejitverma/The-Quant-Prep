@@ -494,7 +494,7 @@ def main() -> None:
     z = rng.standard_normal((400_000, n_obs))
     principal, coupons, k_call, st = autocall_legs(AC["sigma"], AC["q"], z)
     fair_c = (100.0 - principal.mean()) / coupons.mean()
-    check("fair quarterly coupon (% of notional 100)", fair_c, 3.8805, 5e-4)
+    check("fair quarterly coupon (% of notional 100)", fair_c, 3.8805, 5e-5)
     check("fair coupon per annum (%)", 4 * fair_c, 15.52, 5e-3)
     check("fair coupon per annum (%), one decimal", 4 * fair_c, 15.5, 0.05)
     check("P(called at first observation)", float(np.mean(k_call == 1)), 0.4827, 5e-5)

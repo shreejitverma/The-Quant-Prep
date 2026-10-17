@@ -108,24 +108,50 @@ def from_params(p: dict[str, float]) -> np.ndarray:
     return np.array([math.log(p["kappa"]), math.log(p["theta"]), math.log(p["xi"]), math.atanh(p["rho"]), math.log(p["v0"])])
 
 
-def calibrate(quotes: dict[float, np.ndarray], start: dict[str, float], iters: int = 50) -> tuple[dict[str, float], float, int, np.ndarray]:
-    """Levenberg-Marquardt on implied-vol residuals with a forward-difference Jacobian."""
+def jacobian(resid, z: np.ndarray, r: np.ndarray) -> np.ndarray:
+    """Forward-difference Jacobian of resid at z, where r = resid(z)."""
+    J = np.empty((r.size, z.size))
+    for j in range(z.size):
+        dz = np.zeros_like(z)
+        dz[j] = 1e-6
+        J[:, j] = (resid(z + dz) - r) / 1e-6
+    return J
 
-    def resid(z: np.ndarray) -> np.ndarray:
-        p = to_params(z)
+
+def vol_resid(quotes: dict[float, np.ndarray], base: dict[str, float], free: slice):
+    """Implied-vol residuals as a function of the free unconstrained coordinates; the rest stay at base."""
+    z_base = from_params(base)
+
+    def params(zf: np.ndarray) -> dict[str, float]:
+        z = z_base.copy()
+        z[free] = zf
+        return to_params(z)
+
+    def resid(zf: np.ndarray) -> np.ndarray:
+        p = params(zf)
         return np.concatenate([h_vols(STRIKES, T, p) - q for T, q in quotes.items()])
 
-    z = from_params(start)
+    return resid, params, z_base[free]
+
+
+def condition_number(quotes: dict[float, np.ndarray], p: dict[str, float]) -> float:
+    """Largest / smallest singular value of the five-parameter Jacobian at p."""
+    resid, _, z = vol_resid(quotes, p, slice(0, 5))
+    sv = np.linalg.svd(jacobian(resid, z, resid(z)), compute_uv=False)
+    return float(sv[0] / sv[-1])
+
+
+def calibrate(
+    quotes: dict[float, np.ndarray], start: dict[str, float], hold_kappa: bool = False, iters: int = 50
+) -> tuple[dict[str, float], float, int, np.ndarray]:
+    """Levenberg-Marquardt on implied-vol residuals; with hold_kappa, kappa stays at its start value."""
+    resid, params, z = vol_resid(quotes, start, slice(1 if hold_kappa else 0, 5))
     r = resid(z)
     lam = 1e-2
     it = 0
     for _it in range(1, iters + 1):
         it = _it
-        J = np.empty((r.size, z.size))
-        for j in range(z.size):
-            dz = np.zeros_like(z)
-            dz[j] = 1e-6
-            J[:, j] = (resid(z + dz) - r) / 1e-6
+        J = jacobian(resid, z, r)
         A = J.T @ J
         g = J.T @ r
         while True:
@@ -141,7 +167,7 @@ def calibrate(quotes: dict[float, np.ndarray], start: dict[str, float], iters: i
         if math.sqrt(np.mean(r * r)) < 1e-9 or lam > 1e8:
             break
     sv = np.linalg.svd(J, compute_uv=False)
-    return to_params(z), math.sqrt(np.mean(r * r)), it, sv
+    return params(z), math.sqrt(np.mean(r * r)), it, sv
 
 
 # ---------------------------------------------------------------------------
@@ -303,11 +329,17 @@ def main() -> None:
     show("   RMSE (vol points, below 1e-8)", 100 * rmse, 0.0, 1e-8, ".1e")
     show("   iterations", it, 11, 0, "d")
     show("   Jacobian condition number (largest / smallest singular value)", float(sv[0] / sv[-1]), 16.0, 0.5, ".0f")
-    fit1, rmse1, _, sv1 = calibrate({1.0: quotes[1.0]}, start)
-    for kname, e in (("kappa", 1.5937), ("theta", 0.0318), ("xi", 0.5916), ("rho", -0.6967), ("v0", 0.0480)):
-        show(f"   one maturity only: {kname}", fit1[kname], e, 5e-5)
-    show("   one-maturity RMSE (vol points)", 100 * rmse1, 6.3e-4, 5e-6, ".1e")
-    show("   one-maturity condition number", float(sv1[0] / sv1[-1]), 3749.0, 0.5, ".0f")
+    show("   one maturity: condition number at the generating parameters", condition_number({1.0: quotes[1.0]}, p), 3600.0, 50.0, ".0f")
+    alt = {"kappa": 1.5937, "theta": 0.0318, "xi": 0.5916, "rho": -0.6967, "v0": 0.0480}
+    print("   alternative parameters", alt)
+    for t, e, tol, fmt in ((1.0, 0.0097, 5e-5, ".4f"), (0.25, 1.11, 0.005, ".2f")):
+        d = 100 * (h_vols(STRIKES, t, alt) - quotes[t])
+        show(f"   alternative parameters: T = {t} RMSE (vol points)", math.sqrt(np.mean(d * d)), e, tol, fmt)
+    fit1, rmse1, _, sv1 = calibrate({1.0: quotes[1.0]}, dict(start, kappa=p["kappa"]), hold_kappa=True)
+    for kname in ("theta", "xi", "rho", "v0"):
+        show(f"   one maturity, kappa held at 1.5: recovered {kname}", fit1[kname], p[kname], 5e-5)
+    show("   one maturity, kappa held: RMSE (vol points, below 1e-8)", 100 * rmse1, 0.0, 1e-8, ".1e")
+    show("   one maturity, kappa held: condition number", float(sv1[0] / sv1[-1]), 700.0, 50.0, ".0f")
 
     # 5. SABR alpha, beta / rho table and backbone: Example 6, cards deriv-sabr-atm-alpha, deriv-sabr-backbone, deriv-sabr-beta-rho
     F, Ts, beta, rho, nu = 0.03, 1.0, 0.5, -0.3, 0.4
