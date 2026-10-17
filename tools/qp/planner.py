@@ -183,17 +183,16 @@ PERSONA_MARKET_TRACKS = {
 }
 
 PERSONA_LAB_ROUTING = {
-    "quant_trader": ["lob_sim", "mm_quote", "games", "options_lab", "tca_engine"],
-    "quant_researcher": ["overfit_trap", "port_alloc", "options_lab", "event_study"],
-    "macro_derivatives_trader": ["fut_desk", "options_lab", "port_alloc", "event_study"],
-    "retail_algorithmic_trader": ["pos_sizing", "replay_chart", "journal_stats", "tca_engine"],
+    "quant_trader": ["lob_sim", "mm_quote", "games", "opt_desk"],
+    "quant_researcher": ["overfit_trap", "port_alloc", "opt_desk", "event_study"],
+    "macro_derivatives_trader": ["fut_desk", "opt_desk", "port_alloc", "event_study"],
+    "retail_algorithmic_trader": ["pos_sizing", "replay_chart", "journal_stats", "lob_sim"],
     "holistic": [
         "pos_sizing",
         "lob_sim",
         "mm_quote",
         "games",
-        "options_lab",
-        "tca_engine",
+        "opt_desk",
         "replay_chart",
         "overfit_trap",
         "journal_stats",

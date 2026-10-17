@@ -283,6 +283,16 @@ class Store:
             self._bump("drills")
         return row
 
+    def record_lab_run(self, engine_id: str, metrics: dict) -> dict:
+        row = {
+            "engine": engine_id,
+            "metrics": dict(metrics),
+            "at": now_iso(),
+        }
+        with self._transaction() as data:
+            data.setdefault("lab_history", []).append(row)
+        return row
+
     # activity ------------------------------------------------------------
     def _bump(self, kind: str) -> None:
         day = self.data["activity"].setdefault(today().isoformat(), {})

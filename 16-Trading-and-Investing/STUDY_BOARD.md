@@ -10,7 +10,7 @@ tags: [study-board, mastery-dashboard, capital-gate, progress, analytics]
 # Markets Mastery OS - Live Study Board & Progression Dashboard
 
 Markets Mastery OS integrates quantitative finance, market microstructure, and systematic strategy research.
-This study board tracks real-time progress across 19 curriculum pillars, 12 simulation engines, and 39 automated stage gates (last updated: 2026-10-17 02:44 UTC).
+This study board tracks real-time progress across 19 curriculum pillars, 11 simulation engines, and 39 automated stage gates (last updated: 2026-10-17 02:44 UTC).
 
 ---
 
@@ -18,7 +18,7 @@ This study board tracks real-time progress across 19 curriculum pillars, 12 simu
 
 The Markets Mastery OS study board quantifies learner readiness through transparent mathematical formulas.
 Mastery integrates spaced-repetition retention, interactive lab simulation sessions, and disciplined stage gate progression.
-Overall curriculum scope encompasses 2248 cards, 12 pure-Python simulation engines, and a verifiable 100-trade capital gate.
+Overall curriculum scope encompasses 2248 cards, 11 pure-Python simulation engines, and a verifiable 100-trade capital gate.
 
 ---
 
@@ -28,7 +28,7 @@ Overall curriculum scope encompasses 2248 cards, 12 pure-Python simulation engin
 | :--- | :--- | :--- | :--- |
 | **Overall Composite Score** | >= 80.0% | 0.0% | Novice / Foundations |
 | **Card Retention & Mastery** | >= 80.0% | 0.0% (0/2248 cards, 0 mature) | In Progress |
-| **Simulation Engine Execution** | 12/12 Engines | 0/12 engines executed | In Progress |
+| **Simulation Engine Execution** | 11/11 Engines | 0/11 engines executed | In Progress |
 | **Automated Stage Gates** | 39 Gates | 0/39 gates passed | In Progress |
 | **Capital Gate Eligibility** | 100 trades, PF >= 1.50, DD <= 10% | Pending Paper Sample | PENDING |
 
@@ -40,7 +40,7 @@ Learners can orient their progression toward one of four distinct market archety
 
 | Persona Archetype | Focal Mandate | Overall Score | Readiness Level | Lab Coverage |
 | :--- | :--- | :--- | :--- | :--- |
-| **Quantitative Trader (QT / Market Maker)** | High-frequency quoting, adverse selection, order book mechanics, options Greeks, and market making games. | 0.0% | Novice / Foundations | 0/5 Required |
+| **Quantitative Trader (QT / Market Maker)** | High-frequency quoting, adverse selection, order book mechanics, options Greeks, and market making games. | 0.0% | Novice / Foundations | 0/4 Required |
 | **Quantitative Researcher (QR / Alpha Modeler)** | Statistical signal discovery, backtest deflated Sharpe ratio, portfolio construction, and factor modeling. | 0.0% | Novice / Foundations | 0/4 Required |
 | **Macro & Derivatives Trader** | Yield curves, rates trading, commodities term structure, options skew, and risk parity. | 0.0% | Novice / Foundations | 0/4 Required |
 | **Discretionary & Systematic Algorithmic Trader** | Expectancy, trade journal adherence, position sizing, setup taxonomy, tape reading, and discipline. | 0.0% | Novice / Foundations | 0/4 Required |
@@ -75,16 +75,15 @@ Learners can orient their progression toward one of four distinct market archety
 
 ## 4. Trading Lab Simulation Engines
 
-The Trading Lab contains 12 pure-Python standard-library simulation engines located in `tools/qp/lab/`.
+The Trading Lab contains 11 pure-Python standard-library simulation engines located in `tools/qp/lab/`.
 
 | Engine ID | Name | Sessions Run | Status | Quick CLI Command |
 | :--- | :--- | :--- | :--- | :--- |
 | `games` | Mental Math & Market Making Games | 0 | Unrun | `./qp lab run games` |
-| `lob_sim` | Limit Order Book Matching Simulator | 0 | Unrun | `./qp lab run lob_sim` |
+| `lob_sim` | Limit Order Book & Execution (TCA) Simulator | 0 | Unrun | `./qp lab run lob_sim` |
 | `mm_quote` | Avellaneda-Stoikov Market Maker Quoting | 0 | Unrun | `./qp lab run mm_quote` |
 | `pos_sizing` | Position Sizing, Kelly & Ruin Simulator | 0 | Unrun | `./qp lab run pos_sizing` |
-| `options_lab` | Options Volatility & Greeks Hedging | 0 | Unrun | `./qp lab run options_lab` |
-| `tca_engine` | Transaction Cost Analysis & Optimal Execution | 0 | Unrun | `./qp lab run tca_engine` |
+| `opt_desk` | Options Volatility & Greeks Hedging | 0 | Unrun | `./qp lab run opt_desk` |
 | `replay_chart` | Interactive Blind Chart Replay & Brier Calibration | 0 | Unrun | `./qp lab run replay_chart` |
 | `overfit_trap` | Backtest Overfitting Trap & Deflated Sharpe | 0 | Unrun | `./qp lab run overfit_trap` |
 | `journal_stats` | Trade Journal Analytics & Expectancy | 0 | Unrun | `./qp lab run journal_stats` |

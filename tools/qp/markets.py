@@ -166,11 +166,10 @@ TRACK_METADATA = {
 
 LAB_ENGINES = {
     "games": "Mental Math & Market Making Games",
-    "lob_sim": "Limit Order Book Matching Simulator",
+    "lob_sim": "Limit Order Book & Execution (TCA) Simulator",
     "mm_quote": "Avellaneda-Stoikov Market Maker Quoting",
     "pos_sizing": "Position Sizing, Kelly & Ruin Simulator",
-    "options_lab": "Options Volatility & Greeks Hedging",
-    "tca_engine": "Transaction Cost Analysis & Optimal Execution",
+    "opt_desk": "Options Volatility & Greeks Hedging",
     "replay_chart": "Interactive Blind Chart Replay & Brier Calibration",
     "overfit_trap": "Backtest Overfitting Trap & Deflated Sharpe",
     "journal_stats": "Trade Journal Analytics & Expectancy",
@@ -199,7 +198,7 @@ PERSONA_CONFIGS = {
             "track_cry": 1.0,
             "track_sys": 1.0,
         },
-        "required_engines": ["lob_sim", "mm_quote", "games", "options_lab", "tca_engine"],
+        "required_engines": ["lob_sim", "mm_quote", "games", "opt_desk"],
     },
     "quant_researcher": {
         "name": "Quantitative Researcher (QR / Alpha Modeler)",
@@ -213,7 +212,7 @@ PERSONA_CONFIGS = {
             "track_car": 1.0,
             "track_cmd": 0.5,
         },
-        "required_engines": ["overfit_trap", "port_alloc", "options_lab", "event_study"],
+        "required_engines": ["overfit_trap", "port_alloc", "opt_desk", "event_study"],
     },
     "macro_derivatives_trader": {
         "name": "Macro & Derivatives Trader",
@@ -227,7 +226,7 @@ PERSONA_CONFIGS = {
             "track_ind": 1.0,
             "track_cry": 1.0,
         },
-        "required_engines": ["fut_desk", "options_lab", "port_alloc", "event_study"],
+        "required_engines": ["fut_desk", "opt_desk", "port_alloc", "event_study"],
     },
     "retail_algorithmic_trader": {
         "name": "Discretionary & Systematic Algorithmic Trader",
@@ -241,7 +240,7 @@ PERSONA_CONFIGS = {
             "track_fa": 1.0,
             "track_val": 1.0,
         },
-        "required_engines": ["pos_sizing", "replay_chart", "journal_stats", "tca_engine"],
+        "required_engines": ["pos_sizing", "replay_chart", "journal_stats", "lob_sim"],
     },
 }
 
@@ -408,20 +407,9 @@ def evaluate_gate(
             journal_trades = store_state.get("journal_trades", [])
             logged_count = len(journal_trades)
 
-            from tools.qp.lab.journal_stats import analyze_trade_journal, generate_synthetic_trade_log
+            from tools.qp.lab.journal_stats import analyze_trade_journal
 
-            if logged_count >= 100:
-                analysis = analyze_trade_journal(journal_trades)
-            else:
-                sim_log = generate_synthetic_trade_log(
-                    count=100,
-                    win_rate=0.45,
-                    risk_reward=2.2,
-                    adherence_rate=0.96,
-                    simulate_tilt=False,
-                    seed=42,
-                )
-                analysis = analyze_trade_journal(sim_log)
+            analysis = analyze_trade_journal(journal_trades) if logged_count > 0 else {}
 
             pf = analysis.get("profit_factor", 0.0)
             max_dd = analysis.get("max_drawdown_pct", 0.0)
@@ -429,7 +417,7 @@ def evaluate_gate(
             revenge = analysis.get("revenge_trade_count", 0)
             moved_stops = analysis.get("moved_stop_count", 0)
             mae_tight = analysis.get("mae_win_under_50_pct", 0.0)
-            trades_evaluated = max(logged_count, analysis.get("total_trades", 0))
+            trades_evaluated = logged_count
 
             reqs = [
                 GateRequirement(
@@ -442,25 +430,25 @@ def evaluate_gate(
                     name="Profit Factor Verification",
                     target="Profit Factor >= 1.50",
                     actual=f"{pf:.2f} PF",
-                    passed=pf >= 1.50,
+                    passed=logged_count > 0 and pf >= 1.50,
                 ),
                 GateRequirement(
                     name="Drawdown Constraint",
                     target="Max Drawdown <= 10.0%",
                     actual=f"{max_dd:.1f}% peak-to-trough",
-                    passed=max_dd <= 10.0,
+                    passed=logged_count > 0 and max_dd <= 10.0,
                 ),
                 GateRequirement(
                     name="Rule Adherence & Zero Tilt",
                     target="Adherence >= 95.0% and 0 revenge trades",
                     actual=f"{adherence:.1f}% adherence ({revenge} revenge, {moved_stops} moved stops)",
-                    passed=adherence >= 95.0 and revenge == 0 and moved_stops == 0,
+                    passed=logged_count > 0 and adherence >= 95.0 and revenge == 0 and moved_stops == 0,
                 ),
                 GateRequirement(
                     name="MAE/MFE Calibration Audit",
                     target=">= 70.0% winners with MAE <= 0.5R",
                     actual=f"{mae_tight:.1f}% tight winners",
-                    passed=mae_tight >= 70.0,
+                    passed=logged_count > 0 and mae_tight >= 70.0,
                 ),
             ]
             return StageGate(track_id, stage, "Trading Capital Gate (Live Capital Eligibility)", reqs)
@@ -735,7 +723,7 @@ def evaluate_gate(
                 and 64 < int(cid.split("-")[-1]) <= 128
                 and reviewed_cards[cid].get("reps", 0) > 0
             )
-            opt_runs = sum(1 for s in lab_history if s.get("engine") == "options_lab")
+            opt_runs = sum(1 for s in lab_history if s.get("engine") == "opt_desk")
             reqs = [
                 GateRequirement(
                     name="Options Volatility Core Cards Mastered",
@@ -745,7 +733,7 @@ def evaluate_gate(
                 ),
                 GateRequirement(
                     name="Options Volatility Desk Simulation",
-                    target=">= 1 options_lab sessions completed",
+                    target=">= 1 opt_desk sessions completed",
                     actual=f"{opt_runs} sessions",
                     passed=opt_runs >= 1,
                 ),

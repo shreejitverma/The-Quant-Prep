@@ -85,6 +85,24 @@ class TestVerifyMarkets(unittest.TestCase):
             findings = verify_markets_vault(Path(td))
             self.assertIsInstance(findings, list)
 
+    def test_known_lab_engines_and_detection(self):
+        from tools.qp.lab import list_engines
+        from tools.qp.verify_markets import KNOWN_LAB_ENGINES
+
+        self.assertEqual(KNOWN_LAB_ENGINES, {e["id"] for e in list_engines()})
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "test.md"
+            content = (
+                "## Trading Lab Engines\n\n"
+                "- `opt_desk`: Valid engine.\n"
+                "- `crypto_basis`: Unknown engine.\n\n"
+                "Run `./qp lab run options_lab`.\n"
+            )
+            p.write_text(content, encoding="utf-8")
+            findings = check_links_and_engines(p, content)
+            engine_findings = [f for f in findings if f.rule == "lab-engine"]
+            self.assertEqual(len(engine_findings), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

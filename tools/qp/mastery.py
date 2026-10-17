@@ -1,6 +1,6 @@
 """Study Board generator and mastery reporting engine for Markets Mastery OS.
 
-Inspects learner state across all 19 market tracks, 12 simulation engines,
+Inspects learner state across all 19 market tracks, 11 simulation engines,
 and 39 stage gates, generating an updated STUDY_BOARD.md dashboard.
 """
 
@@ -34,7 +34,7 @@ def build_study_board_markdown(
 
     l_comp = holistic["lab_stats"]["completed_engines"]
     l_tot = holistic["lab_stats"]["total_engines"]
-    l_status = "Satisfied" if l_comp == 12 else "In Progress"
+    l_status = "Satisfied" if l_comp == l_tot else "In Progress"
 
     g_pass = holistic["gates_stats"]["passed_gates"]
     g_tot = holistic["gates_stats"]["total_gates"]
@@ -59,7 +59,7 @@ def build_study_board_markdown(
         "Markets Mastery OS integrates quantitative finance, market microstructure, and systematic strategy research.",
         (
             f"This study board tracks real-time progress across 19 curriculum pillars, "
-            f"12 simulation engines, and 39 automated stage gates (last updated: {now_utc})."
+            f"{l_tot} simulation engines, and 39 automated stage gates (last updated: {now_utc})."
         ),
         "",
         "---",
@@ -70,7 +70,7 @@ def build_study_board_markdown(
         "Mastery integrates spaced-repetition retention, interactive lab simulation sessions, and disciplined stage gate progression.",
         (
             f"Overall curriculum scope encompasses {c_tot} cards, "
-            f"12 pure-Python simulation engines, and a verifiable 100-trade capital gate."
+            f"{l_tot} pure-Python simulation engines, and a verifiable 100-trade capital gate."
         ),
         "",
         "---",
@@ -81,7 +81,7 @@ def build_study_board_markdown(
         "| :--- | :--- | :--- | :--- |",
         f"| **Overall Composite Score** | >= 80.0% | {holistic['overall_score']:.1f}% | {holistic['readiness_level']} |",
         f"| **Card Retention & Mastery** | >= 80.0% | {c_score:.1f}% ({c_rev}/{c_tot} cards, {c_mat} mature) | {c_status} |",
-        f"| **Simulation Engine Execution** | 12/12 Engines | {l_comp}/{l_tot} engines executed | {l_status} |",
+        f"| **Simulation Engine Execution** | {l_tot}/{l_tot} Engines | {l_comp}/{l_tot} engines executed | {l_status} |",
         f"| **Automated Stage Gates** | 39 Gates | {g_pass}/{g_tot} gates passed | {g_status} |",
         f"| **Capital Gate Eligibility** | 100 trades, PF >= 1.50, DD <= 10% | {cap_actual} | {cap_status} |",
         "",
@@ -138,7 +138,7 @@ def build_study_board_markdown(
             "",
             "## 4. Trading Lab Simulation Engines",
             "",
-            "The Trading Lab contains 12 pure-Python standard-library simulation engines located in `tools/qp/lab/`.",
+            f"The Trading Lab contains {l_tot} pure-Python standard-library simulation engines located in `tools/qp/lab/`.",
             "",
             "| Engine ID | Name | Sessions Run | Status | Quick CLI Command |",
             "| :--- | :--- | :--- | :--- | :--- |",

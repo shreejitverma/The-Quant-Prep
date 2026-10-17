@@ -124,8 +124,31 @@ def generate_synthetic_trade_log(
     return trades
 
 
-def analyze_trade_journal(trades: list[TradeRecord], initial_capital: float = 50000.0) -> dict[str, Any]:
+def _coerce_trade_record(item: TradeRecord | dict[str, Any]) -> TradeRecord:
+    if isinstance(item, TradeRecord):
+        return item
+    return TradeRecord(
+        trade_id=str(item.get("trade_id", "")),
+        setup=str(item.get("setup", "general")),
+        entry_price=float(item.get("entry_price", 0.0)),
+        exit_price=float(item.get("exit_price", 0.0)),
+        stop_loss=float(item.get("stop_loss", 0.0)),
+        take_profit=float(item.get("take_profit", 0.0)),
+        shares=int(item.get("shares", 1)),
+        r_multiple=float(item.get("r_multiple", 0.0)),
+        pnl=float(item.get("pnl", 0.0)),
+        mae_r=float(item.get("mae_r", 0.0)),
+        mfe_r=float(item.get("mfe_r", 0.0)),
+        adherence=bool(item.get("adherence", item.get("adhered_to_rules", True))),
+        is_revenge=bool(item.get("is_revenge", False)),
+        moved_stop=bool(item.get("moved_stop", False)),
+        duration_minutes=int(item.get("duration_minutes", 0)),
+    )
+
+
+def analyze_trade_journal(trades: list[TradeRecord | dict[str, Any]], initial_capital: float = 50000.0) -> dict[str, Any]:
     """Calculate comprehensive expectancy, MAE/MFE statistics, tilt metrics, and Capital Gate status."""
+    trades = [_coerce_trade_record(t) for t in trades]
     total_trades = len(trades)
     if total_trades == 0:
         return {}

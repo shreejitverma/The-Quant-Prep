@@ -1,6 +1,6 @@
 /**
  * Markets Mastery OS - Trading Lab Web Runner
- * Pure Vanilla JavaScript simulations and Canvas rendering across 12 engines.
+ * Pure Vanilla JavaScript simulations and Canvas rendering across 11 engines.
  */
 
 // Global state
@@ -13,12 +13,12 @@ const ENGINE_CONFIGS = {
     chartTitle: "Sample Monte Carlo Equity Trajectories",
     chartLegend: "Sample Paths (1 to 5)",
     params: [
-      { id: "p-capital", label: "Starting Capital ($)", type: "number", value: 100000, step: 1000 },
-      { id: "p-winrate", label: "Win Rate (0.01 - 0.99)", type: "number", value: 0.55, step: 0.01, min: 0.01, max: 0.99 },
-      { id: "p-winloss", label: "Win/Loss Ratio (b)", type: "number", value: 1.50, step: 0.05, min: 0.1 },
-      { id: "p-risk", label: "Risk per Trade (%)", type: "number", value: 2.0, step: 0.1, min: 0.1, max: 50 },
-      { id: "p-trades", label: "Number of Trades", type: "number", value: 100, step: 10, min: 10, max: 500 },
-      { id: "p-sims", label: "Monte Carlo Paths", type: "number", value: 250, step: 50, min: 50, max: 1000 },
+      { id: "p-account-capital", label: "Starting Capital ($)", type: "number", value: 100000, step: 1000, min: 1000, max: 10000000 },
+      { id: "p-win-rate", label: "Win Rate (0.01 - 0.99)", type: "number", value: 0.55, step: 0.01, min: 0.01, max: 0.99 },
+      { id: "p-win-loss-ratio", label: "Win/Loss Ratio (b)", type: "number", value: 1.50, step: 0.05, min: 0.1, max: 20.0 },
+      { id: "p-risk-per-trade-pct", label: "Risk per Trade (Fraction)", type: "number", value: 0.02, step: 0.005, min: 0.001, max: 0.50 },
+      { id: "p-num-trades", label: "Number of Trades", type: "number", value: 100, step: 10, min: 10, max: 2000 },
+      { id: "p-num-simulations", label: "Monte Carlo Paths", type: "number", value: 250, step: 50, min: 10, max: 2000 },
     ],
     runner: runPositionSizing,
   },
@@ -28,25 +28,27 @@ const ENGINE_CONFIGS = {
     chartTitle: "Expected Maximum Sharpe Ratio vs Number of Independent Strategy Trials",
     chartLegend: "Observed Sharpe vs Haircut Threshold",
     params: [
-      { id: "p-sharpe", label: "Observed Sharpe Ratio", type: "number", value: 2.0, step: 0.1 },
-      { id: "p-trials", label: "Strategy Trials Tested (N)", type: "number", value: 100, step: 10, min: 1, max: 5000 },
-      { id: "p-years", label: "Backtest Track Length (Yrs)", type: "number", value: 5.0, step: 0.5, min: 0.5 },
-      { id: "p-skew", label: "Return Skewness", type: "number", value: -0.5, step: 0.1 },
-      { id: "p-kurt", label: "Return Kurtosis", type: "number", value: 4.5, step: 0.2 },
+      { id: "p-observed-sharpe", label: "Observed Sharpe Ratio", type: "number", value: 1.5, step: 0.1, min: 0.1, max: 5.0 },
+      { id: "p-num-trials", label: "Strategy Trials Tested (N)", type: "number", value: 100, step: 10, min: 1, max: 10000 },
+      { id: "p-sample-length-days", label: "Sample Length (Trading Days)", type: "number", value: 1260, step: 126, min: 60, max: 10000 },
+      { id: "p-skewness", label: "Return Skewness", type: "number", value: -0.5, step: 0.1, min: -5.0, max: 5.0 },
+      { id: "p-kurtosis", label: "Return Kurtosis", type: "number", value: 4.5, step: 0.2, min: 1.5, max: 30.0 },
     ],
     runner: runOverfitTrap,
   },
-  options_lab: {
+  opt_desk: {
     title: "Options Volatility & Dynamic Delta Hedging Desk",
     desc: "Computes Black-Scholes Greeks, implied volatility smile, and dynamic delta-hedged tracking errors.",
     chartTitle: "Dynamic Delta Hedging Path vs Underlying Spot Asset",
     chartLegend: "Spot Price vs Portfolio Delta",
     params: [
-      { id: "p-spot", label: "Underlying Spot Price ($)", type: "number", value: 100.0, step: 1.0 },
-      { id: "p-strike", label: "Option Strike ($)", type: "number", value: 100.0, step: 1.0 },
-      { id: "p-vol", label: "Implied Volatility (%)", type: "number", value: 25.0, step: 1.0, min: 1.0 },
-      { id: "p-rate", label: "Risk-Free Rate (%)", type: "number", value: 5.0, step: 0.25 },
-      { id: "p-days", label: "Days to Expiration", type: "number", value: 30, step: 1, min: 1 },
+      { id: "p-scenario", label: "Desk Scenario", type: "select", value: "gamma_scalp", options: ["gamma_scalp", "earnings_crush", "skew_shift", "dispersion"] },
+      { id: "p-spot", label: "Underlying Spot Price ($)", type: "number", value: 100.0, step: 1.0, min: 10.0, max: 5000.0 },
+      { id: "p-strike", label: "Option Strike ($)", type: "number", value: 100.0, step: 1.0, min: 10.0, max: 5000.0 },
+      { id: "p-implied-vol", label: "Implied Volatility (Fraction)", type: "number", value: 0.25, step: 0.01, min: 0.05, max: 2.0 },
+      { id: "p-realized-vol", label: "Realized Volatility (Fraction)", type: "number", value: 0.32, step: 0.01, min: 0.05, max: 2.0 },
+      { id: "p-days-to-expiry", label: "Days to Expiration", type: "number", value: 30, step: 1, min: 1, max: 365 },
+      { id: "p-risk-free-rate", label: "Risk-Free Rate (Fraction)", type: "number", value: 0.04, step: 0.005, min: 0.0, max: 0.20 },
     ],
     runner: runOptionsLab,
   },
@@ -56,10 +58,11 @@ const ENGINE_CONFIGS = {
     chartTitle: "Futures Curve Term Structure vs Theoretical Cost-of-Carry",
     chartLegend: "Theoretical vs Market Curve",
     params: [
-      { id: "p-fut-spot", label: "Spot Commodity/Index Price ($)", type: "number", value: 5000.0, step: 10.0 },
-      { id: "p-rate-fut", label: "Financing Rate (%)", type: "number", value: 5.5, step: 0.25 },
-      { id: "p-div-fut", label: "Dividend / Convenience Yield (%)", type: "number", value: 2.0, step: 0.25 },
-      { id: "p-storage", label: "Physical Storage Cost (%)", type: "number", value: 1.0, step: 0.25 },
+      { id: "p-spot-price", label: "Spot Commodity/Index Price ($)", type: "number", value: 100.0, step: 5.0, min: 10.0, max: 10000.0 },
+      { id: "p-risk-free-rate", label: "Financing Rate (Fraction)", type: "number", value: 0.045, step: 0.005, min: 0.0, max: 0.25 },
+      { id: "p-dividend-yield", label: "Dividend / Yield (Fraction)", type: "number", value: 0.015, step: 0.005, min: 0.0, max: 0.20 },
+      { id: "p-storage-cost", label: "Physical Storage Cost (Fraction)", type: "number", value: 0.01, step: 0.005, min: 0.0, max: 0.20 },
+      { id: "p-sim-regime", label: "Simulation Regime", type: "select", value: "contango", options: ["contango", "backwardation", "equity_index", "crypto_funding"] },
     ],
     runner: runFuturesDesk,
   },
@@ -69,9 +72,10 @@ const ENGINE_CONFIGS = {
     chartTitle: "Asset Allocation Weights & Risk Contributions (%)",
     chartLegend: "Weights vs Risk Contributions",
     params: [
-      { id: "p-port-vol", label: "Target Portfolio Vol (%)", type: "number", value: 10.0, step: 0.5 },
-      { id: "p-rebal", label: "Rebalancing Frequency", type: "select", value: "Monthly", options: ["Monthly", "Quarterly", "Annual"] },
-      { id: "p-stress", label: "Macro Scenario", type: "select", value: "Normal", options: ["Normal", "1970s Stagflation", "2008 Liquidity Shock", "2022 Rates Surge"] },
+      { id: "p-strategy", label: "Allocation Strategy", type: "select", value: "risk_parity", options: ["risk_parity", "60_40", "equal_weight", "all_weather", "min_variance"] },
+      { id: "p-vol-target", label: "Target Portfolio Vol (Fraction)", type: "number", value: 0.10, step: 0.01, min: 0.04, max: 0.25 },
+      { id: "p-rebalance-freq", label: "Rebalancing Frequency", type: "select", value: "quarterly", options: ["monthly", "quarterly", "annual"] },
+      { id: "p-macro-scenario", label: "Macro Scenario", type: "select", value: "baseline", options: ["baseline", "growth_boom", "stagflation", "liquidity_crisis", "recession"] },
     ],
     runner: runPortfolioAllocator,
   },
@@ -82,36 +86,44 @@ const ENGINE_CONFIGS = {
     chartLegend: "CAR (%) across Event Timeline",
     params: [
       {
-        id: "p-crisis",
+        id: "p-event-id",
         label: "Historical Market Crisis",
         type: "select",
-        value: "2008 Lehman GFC",
+        value: "2008_lehman",
         options: [
-          "1929 Wall Street Crash",
-          "1987 Black Monday",
-          "1998 LTCM Collapse",
-          "2000 Dot-Com Crash",
-          "2008 Lehman GFC",
-          "2010 Flash Crash",
-          "2015 Swiss Franc Unpeg",
-          "2020 COVID Crash",
-          "2021 GameStop Squeeze",
-          "2022 UK LDI Gilt Spiral",
+          "1929_great_crash",
+          "1987_black_monday",
+          "1998_ltcm",
+          "2000_dotcom",
+          "2008_lehman",
+          "2010_flash_crash",
+          "2015_chf_unpeg",
+          "2020_covid_oil",
+          "2021_gamestop",
+          "2022_uk_gilt_ldi",
         ],
       },
-      { id: "p-haircut", label: "Liquidity Haircut Scale (%)", type: "number", value: 25.0, step: 5.0 },
+      {
+        id: "p-strategy",
+        label: "Defense Strategy",
+        type: "select",
+        value: "unhedged_long",
+        options: ["unhedged_long", "stop_loss_5pct", "tail_hedged_put", "cash_buffer_50pct", "trend_follower", "short_volatility"],
+      },
     ],
     runner: runEventStudy,
   },
   lob_sim: {
-    title: "Limit Order Book Matching Simulator",
-    desc: "Models price-time priority, FIFO queue execution, cancel-to-trade ratios, and adverse selection.",
+    title: "Limit Order Book & Execution (TCA) Simulator",
+    desc: "Models price-time priority, FIFO queue execution, TWAP/Almgren-Chriss execution, and implementation shortfall.",
     chartTitle: "Limit Order Book Depth Chart (Bids vs Asks)",
     chartLegend: "Cumulative Depth (Shares)",
     params: [
-      { id: "p-mid", label: "Mid Price ($)", type: "number", value: 150.0, step: 1.0 },
-      { id: "p-spread", label: "Spread ($)", type: "number", value: 0.02, step: 0.01 },
-      { id: "p-depth", label: "Book Depth Levels", type: "number", value: 10, step: 1 },
+      { id: "p-initial-price", label: "Initial Mid Price ($)", type: "number", value: 100.0, step: 1.0, min: 10.0, max: 10000.0 },
+      { id: "p-parent-size", label: "Parent Order Size (Shares)", type: "number", value: 5000, step: 500, min: 100, max: 100000 },
+      { id: "p-parent-side", label: "Parent Order Side", type: "select", value: "buy", options: ["buy", "sell"] },
+      { id: "p-strategy", label: "Execution Strategy", type: "select", value: "twap", options: ["twap", "aggressive", "almgren_chriss"] },
+      { id: "p-n-steps", label: "Simulation Steps", type: "number", value: 100, step: 10, min: 10, max: 1000 },
     ],
     runner: runLOBSim,
   },
@@ -121,23 +133,14 @@ const ENGINE_CONFIGS = {
     chartTitle: "Reservation Price Skew vs Current Inventory",
     chartLegend: "Reservation vs Mid Price",
     params: [
-      { id: "p-inv", label: "Current Inventory (Units)", type: "number", value: 5, step: 1 },
-      { id: "p-gamma", label: "Risk Aversion (Gamma)", type: "number", value: 0.1, step: 0.05 },
-      { id: "p-sigma", label: "Asset Volatility (Sigma)", type: "number", value: 0.30, step: 0.05 },
+      { id: "p-initial-price", label: "Initial Mid Price ($)", type: "number", value: 100.0, step: 1.0, min: 10.0, max: 1000.0 },
+      { id: "p-gamma", label: "Risk Aversion (Gamma)", type: "number", value: 0.1, step: 0.05, min: 0.001, max: 2.0 },
+      { id: "p-sigma", label: "Asset Volatility (Sigma)", type: "number", value: 0.20, step: 0.05, min: 0.01, max: 2.0 },
+      { id: "p-kappa", label: "Order Book Liquidity (Kappa)", type: "number", value: 1.5, step: 0.1, min: 0.1, max: 10.0 },
+      { id: "p-informed-fraction", label: "Toxic Flow Fraction", type: "number", value: 0.20, step: 0.05, min: 0.0, max: 0.90 },
+      { id: "p-strategy", label: "Quoting Strategy", type: "select", value: "avellaneda_stoikov", options: ["avellaneda_stoikov", "naive_symmetric"] },
     ],
     runner: runMMQuote,
-  },
-  tca_engine: {
-    title: "Transaction Cost Analysis & Optimal Execution",
-    desc: "Evaluates Implementation Shortfall, Almgren-Chriss risk-aversion trajectories, and temporary vs permanent market impact.",
-    chartTitle: "Optimal Almgren-Chriss Execution Trajectory",
-    chartLegend: "Remaining Shares vs Time Step",
-    params: [
-      { id: "p-order-size", label: "Parent Order Size (Shares)", type: "number", value: 50000, step: 5000 },
-      { id: "p-adv", label: "Average Daily Volume", type: "number", value: 1000000, step: 50000 },
-      { id: "p-risk-aversion", label: "Trader Risk Aversion (Lambda)", type: "number", value: 0.001, step: 0.0005 },
-    ],
-    runner: runTCAEngine,
   },
   replay_chart: {
     title: "Interactive Blind Chart Replay & Calibration",
@@ -145,8 +148,10 @@ const ENGINE_CONFIGS = {
     chartTitle: "Simulated Price Action vs Forecast Probability",
     chartLegend: "Price vs Brier Probability",
     params: [
-      { id: "p-bars", label: "Historical Bars", type: "number", value: 50, step: 5 },
-      { id: "p-drift", label: "Regime Drift (%)", type: "number", value: 8.0, step: 1.0 },
+      { id: "p-level", label: "Difficulty Level (1-4)", type: "number", value: 1, step: 1, min: 1, max: 4 },
+      { id: "p-bars-visible", label: "Visible Historical Bars", type: "number", value: 50, step: 5, min: 20, max: 200 },
+      { id: "p-forecast-horizon", label: "Forecast Horizon (Bars)", type: "number", value: 5, step: 1, min: 1, max: 30 },
+      { id: "p-num-trials", label: "Replay Trials", type: "number", value: 10, step: 5, min: 5, max: 100 },
     ],
     runner: runReplayChart,
   },
@@ -156,8 +161,10 @@ const ENGINE_CONFIGS = {
     chartTitle: "R-Multiple Distribution and Cumulative R Trajectory",
     chartLegend: "Realized R-Multiples",
     params: [
-      { id: "p-logged-trades", label: "Sample Trades", type: "number", value: 100, step: 10 },
-      { id: "p-adhere", label: "Plan Adherence (%)", type: "number", value: 96.0, step: 1.0 },
+      { id: "p-sample-trades", label: "Sample Trades", type: "number", value: 100, step: 10, min: 20, max: 500 },
+      { id: "p-win-rate", label: "Win Rate (Fraction)", type: "number", value: 0.45, step: 0.01, min: 0.20, max: 0.80 },
+      { id: "p-risk-reward-ratio", label: "Risk/Reward Ratio", type: "number", value: 2.2, step: 0.1, min: 0.5, max: 5.0 },
+      { id: "p-adherence-rate", label: "Plan Adherence (Fraction)", type: "number", value: 0.96, step: 0.01, min: 0.50, max: 1.0 },
     ],
     runner: runJournalStats,
   },
@@ -167,8 +174,9 @@ const ENGINE_CONFIGS = {
     chartTitle: "Candidate PnL Performance across Interview Rounds",
     chartLegend: "Market Making PnL ($)",
     params: [
-      { id: "p-rounds", label: "Game Rounds", type: "number", value: 10, step: 1 },
-      { id: "p-spread-width", label: "Quoting Spread Width (%)", type: "number", value: 3.0, step: 0.5 },
+      { id: "p-game-type", label: "Game Type", type: "select", value: "dice_sum", options: ["dice_sum", "card_sum"] },
+      { id: "p-num-rounds", label: "Game Rounds", type: "number", value: 20, step: 5, min: 5, max: 100 },
+      { id: "p-quoting-style", label: "Quoting Style", type: "select", value: "optimal", options: ["optimal", "wide_conservative"] },
     ],
     runner: runTradingGames,
   },
@@ -320,12 +328,12 @@ function renderMetrics(cards) {
 // Engine 1: Position Sizing & Ruin
 // -------------------------------------------------------------
 function runPositionSizing() {
-  const capital = parseFloat(document.getElementById("p-capital")?.value) || 100000;
-  const pWin = parseFloat(document.getElementById("p-winrate")?.value) || 0.55;
-  const b = parseFloat(document.getElementById("p-winloss")?.value) || 1.5;
-  const riskPct = (parseFloat(document.getElementById("p-risk")?.value) || 2.0) / 100.0;
-  const nTrades = parseInt(document.getElementById("p-trades")?.value) || 100;
-  const nSims = parseInt(document.getElementById("p-sims")?.value) || 250;
+  const capital = parseFloat(document.getElementById("p-account-capital")?.value) || 100000;
+  const pWin = parseFloat(document.getElementById("p-win-rate")?.value) || 0.55;
+  const b = parseFloat(document.getElementById("p-win-loss-ratio")?.value) || 1.5;
+  const riskPct = parseFloat(document.getElementById("p-risk-per-trade-pct")?.value) || 0.02;
+  const nTrades = parseInt(document.getElementById("p-num-trades")?.value) || 100;
+  const nSims = parseInt(document.getElementById("p-num-simulations")?.value) || 250;
   const ruinThresh = 0.50;
 
   const fKelly = pWin - (1.0 - pWin) / b;
@@ -395,13 +403,13 @@ function runPositionSizing() {
 // Engine 2: Backtest Overfit Trap
 // -------------------------------------------------------------
 function runOverfitTrap() {
-  const sr = parseFloat(document.getElementById("p-sharpe")?.value) || 2.0;
-  const nTrials = parseInt(document.getElementById("p-trials")?.value) || 100;
-  const years = parseFloat(document.getElementById("p-years")?.value) || 5.0;
-  const skew = parseFloat(document.getElementById("p-skew")?.value) || -0.5;
-  const kurt = parseFloat(document.getElementById("p-kurt")?.value) || 4.5;
+  const sr = parseFloat(document.getElementById("p-observed-sharpe")?.value) || 1.5;
+  const nTrials = parseInt(document.getElementById("p-num-trials")?.value) || 100;
+  const T = parseFloat(document.getElementById("p-sample-length-days")?.value) || 1260.0;
+  const years = T / 252.0;
+  const skew = parseFloat(document.getElementById("p-skewness")?.value) || -0.5;
+  const kurt = parseFloat(document.getElementById("p-kurtosis")?.value) || 4.5;
 
-  const T = years * 252.0;
   const srDaily = sr / Math.sqrt(252.0);
   const varSR = Math.max(0.0001, (1.0 - skew * srDaily + ((kurt - 1.0) / 4.0) * srDaily * srDaily) / T);
   const seAnnualSR = Math.sqrt(varSR * 252.0);
@@ -415,14 +423,14 @@ function runOverfitTrap() {
   const pbo = Math.min(1.0, Math.max(0.0, 1.0 - dsrProb));
 
   renderMetrics([
-    { label: "Observed Sharpe Ratio", value: sr.toFixed(2), sub: `Annualized over ${years} yrs` },
+    { label: "Observed Sharpe Ratio", value: sr.toFixed(2), sub: `Annualized over ${years.toFixed(1)} yrs` },
     { label: "Expected Max SR under Luck", value: eMaxSR.toFixed(2), sub: `Noise threshold for ${nTrials} trials` },
     { label: "Harvey-Liu Haircut", value: hairCutPct.toFixed(1) + "%", color: hairCutPct > 50 ? "var(--accent-red)" : "var(--accent-green)" },
     { label: "Deflated Sharpe Ratio (DSR)", value: deflatedSR.toFixed(2), sub: `DSR Stat: ${zScore.toFixed(2)} | PBO: ${(pbo * 100).toFixed(0)}%`, highlight: true },
   ]);
 
   document.getElementById("summary-text").textContent =
-    `Testing ${nTrials} strategy variations over ${years} years with skewness ${skew.toFixed(2)} and kurtosis ${kurt.toFixed(2)} ` +
+    `Testing ${nTrials} strategy variations over ${years.toFixed(1)} years with skewness ${skew.toFixed(2)} and kurtosis ${kurt.toFixed(2)} ` +
     `yields an expected noise threshold of ${eMaxSR.toFixed(2)}. Observed Sharpe of ${sr.toFixed(2)} suffers a ${hairCutPct.toFixed(1)}% ` +
     `haircut, leaving a Deflated Sharpe Ratio of ${deflatedSR.toFixed(2)} with ${(dsrProb * 100).toFixed(1)}% statistical significance.`;
 
@@ -442,9 +450,9 @@ function runOverfitTrap() {
 function runOptionsLab() {
   const S = parseFloat(document.getElementById("p-spot")?.value) || 100.0;
   const K = parseFloat(document.getElementById("p-strike")?.value) || 100.0;
-  const vol = (parseFloat(document.getElementById("p-vol")?.value) || 25.0) / 100.0;
-  const r = (parseFloat(document.getElementById("p-rate")?.value) || 5.0) / 100.0;
-  const dte = parseInt(document.getElementById("p-days")?.value) || 30;
+  const vol = parseFloat(document.getElementById("p-implied-vol")?.value) || 0.25;
+  const r = parseFloat(document.getElementById("p-risk-free-rate")?.value) || 0.04;
+  const dte = parseInt(document.getElementById("p-days-to-expiry")?.value) || 30;
   const T = dte / 365.0;
 
   const d1 = (Math.log(S / K) + (r + 0.5 * vol * vol) * T) / (vol * Math.sqrt(T));
@@ -481,10 +489,10 @@ function runOptionsLab() {
 // Engine 4: Futures & Basis Desk
 // -------------------------------------------------------------
 function runFuturesDesk() {
-  const S = parseFloat(document.getElementById("p-fut-spot")?.value) || 5000.0;
-  const r = (parseFloat(document.getElementById("p-rate-fut")?.value) || 5.5) / 100.0;
-  const q = (parseFloat(document.getElementById("p-div-fut")?.value) || 2.0) / 100.0;
-  const c = (parseFloat(document.getElementById("p-storage")?.value) || 1.0) / 100.0;
+  const S = parseFloat(document.getElementById("p-spot-price")?.value) || 100.0;
+  const r = parseFloat(document.getElementById("p-risk-free-rate")?.value) || 0.045;
+  const q = parseFloat(document.getElementById("p-dividend-yield")?.value) || 0.015;
+  const c = parseFloat(document.getElementById("p-storage-cost")?.value) || 0.01;
 
   const netCarry = r - q + c;
   const f1m = S * Math.exp(netCarry * (30 / 365.0));
@@ -521,16 +529,16 @@ function runFuturesDesk() {
 // Engine 5: Portfolio Allocator
 // -------------------------------------------------------------
 function runPortfolioAllocator() {
-  const targetVol = parseFloat(document.getElementById("p-port-vol")?.value) || 10.0;
-  const scenario = document.getElementById("p-stress")?.value || "Normal";
+  const targetVol = (parseFloat(document.getElementById("p-vol-target")?.value) || 0.10) * 100.0;
+  const scenario = document.getElementById("p-macro-scenario")?.value || "baseline";
 
   let weights = { Equities: 25, Treasuries: 40, Commodities: 20, Gold: 15 };
   let sharpe = 1.25;
 
-  if (scenario === "1970s Stagflation") {
+  if (scenario === "stagflation") {
     weights = { Equities: 15, Treasuries: 20, Commodities: 40, Gold: 25 };
     sharpe = 0.65;
-  } else if (scenario === "2008 Liquidity Shock") {
+  } else if (scenario === "liquidity_crisis" || scenario === "recession") {
     weights = { Equities: 20, Treasuries: 55, Commodities: 10, Gold: 15 };
     sharpe = 0.40;
   }
@@ -544,7 +552,7 @@ function runPortfolioAllocator() {
 
   document.getElementById("summary-text").textContent =
     `Under the ${scenario} scenario, Risk Parity allocates ${weights.Treasuries}% to Treasuries, ${weights.Equities}% to Equities, ` +
-    `and ${weights.Commodities}% to Commodities to equalize marginal risk contribution at a ${targetVol}% volatility target.`;
+    `and ${weights.Commodities}% to Commodities to equalize marginal risk contribution at a ${targetVol.toFixed(1)}% volatility target.`;
 
   drawBarChart([
     { label: "Equities", val: weights.Equities },
@@ -558,52 +566,40 @@ function runPortfolioAllocator() {
 // Engine 6: Historical Event Study
 // -------------------------------------------------------------
 function runEventStudy() {
-  const crisis = document.getElementById("p-crisis")?.value || "2008 Lehman GFC";
-  const haircut = parseFloat(document.getElementById("p-haircut")?.value) || 25.0;
+  const crisis = document.getElementById("p-event-id")?.value || "2008_lehman";
+  const strategy = document.getElementById("p-strategy")?.value || "unhedged_long";
 
   const crisisProfiles = {
-    "1929 Wall Street Crash": { car: -44.6, dd: -89.2, z: -16.4, failure: "Margin Call Liquidation Spiral" },
-    "1987 Black Monday": { car: -28.5, dd: -32.1, z: -12.3, failure: "Portfolio Insurance Feedback Loop" },
-    "1998 LTCM Collapse": { car: -38.2, dd: -45.0, z: -10.5, failure: "Relative-Value Leverage Collapse" },
-    "2000 Dot-Com Crash": { car: -35.0, dd: -78.0, z: -8.9, failure: "Speculative Valuation Implosion" },
-    "2008 Lehman GFC": { car: -35.2, dd: -48.5, z: -8.45, failure: "Interbank Liquidity & Counterparty Run" },
-    "2010 Flash Crash": { car: -9.2, dd: -9.9, z: -14.2, failure: "Stub Quote & Matching Dislocation" },
-    "2015 Swiss Franc Unpeg": { car: -21.4, dd: -28.0, z: -15.1, failure: "FX Gap Risk & Clearing Default" },
-    "2020 COVID Crash": { car: -30.4, dd: -34.0, z: -9.8, failure: "Exogenous Volatility Spike" },
-    "2021 GameStop Squeeze": { car: -42.0, dd: -52.0, z: -11.2, failure: "Short Squeeze & DTCC Margin Call" },
-    "2022 UK LDI Gilt Spiral": { car: -26.5, dd: -38.0, z: -13.0, failure: "Pension LDI Leverage & Collateral Calls" },
+    "1929_great_crash": { car: -44.6, dd: -89.2, z: -16.4, failure: "Margin Call Liquidation Spiral" },
+    "1987_black_monday": { car: -28.5, dd: -32.1, z: -12.3, failure: "Portfolio Insurance Feedback Loop" },
+    "1998_ltcm": { car: -38.2, dd: -45.0, z: -10.5, failure: "Relative-Value Leverage Collapse" },
+    "2000_dotcom": { car: -35.0, dd: -78.0, z: -8.9, failure: "Speculative Valuation Implosion" },
+    "2008_lehman": { car: -35.2, dd: -48.5, z: -8.45, failure: "Interbank Liquidity & Counterparty Run" },
+    "2010_flash_crash": { car: -9.2, dd: -9.9, z: -14.2, failure: "Stub Quote & Matching Dislocation" },
+    "2015_chf_unpeg": { car: -21.4, dd: -28.0, z: -15.1, failure: "FX Gap Risk & Clearing Default" },
+    "2020_covid_oil": { car: -30.4, dd: -34.0, z: -9.8, failure: "Exogenous Volatility Spike" },
+    "2021_gamestop": { car: -42.0, dd: -52.0, z: -11.2, failure: "Short Squeeze & DTCC Margin Call" },
+    "2022_uk_gilt_ldi": { car: -26.5, dd: -38.0, z: -13.0, failure: "Pension LDI Leverage & Collateral Calls" },
   };
 
-  let prof = crisisProfiles[crisis];
-  if (!prof) {
-    for (const [k, p] of Object.entries(crisisProfiles)) {
-      if (crisis.includes(k.split(" ")[0])) {
-        prof = p;
-        break;
-      }
-    }
-  }
-  if (!prof) {
-    prof = crisisProfiles["2008 Lehman GFC"];
-  }
-
-  const hairScale = 1.0 + (haircut / 100.0) * 0.3;
-  const carFinal = prof.car * (1.0 + (haircut / 100.0) * 0.15);
-  const peakDD = Math.min(-10.0, prof.dd * hairScale);
+  const prof = crisisProfiles[crisis] || crisisProfiles["2008_lehman"];
+  const stratMult = strategy === "tail_hedged_put" ? 0.35 : strategy === "cash_buffer_50pct" ? 0.50 : 1.0;
+  const carFinal = prof.car;
+  const peakDD = prof.dd * stratMult;
   const patellZ = prof.z;
   const failureMode = prof.failure;
 
   renderMetrics([
     { label: "Cumulative Abnormal Return", value: carFinal.toFixed(1) + "%", color: "var(--accent-red)", sub: "T-10 to T+20 Event Window" },
-    { label: "Max Peak-to-Trough Drawdown", value: peakDD.toFixed(1) + "%", sub: "Liquidity Haircut: " + haircut.toFixed(0) + "%" },
+    { label: "Max Peak-to-Trough Drawdown", value: peakDD.toFixed(1) + "%", sub: "Strategy: " + strategy },
     { label: "Patell Z-Test Statistic", value: patellZ.toFixed(2), sub: "Statistical significance p < 0.001" },
     { label: "Pre-Mortem Failure Mode", value: failureMode, sub: "Primary tail-risk channel", highlight: true },
   ]);
 
   document.getElementById("summary-text").textContent =
     `Simulating ${crisis} reveals a Cumulative Abnormal Return of ${carFinal.toFixed(1)}% ` +
-    `with Patell Z-score of ${patellZ.toFixed(2)}. Unhedged portfolios suffered a ${peakDD.toFixed(1)}% peak drawdown ` +
-    `governed by ${failureMode.toLowerCase()} with a ${haircut.toFixed(0)}% liquidity haircut.`;
+    `with Patell Z-score of ${patellZ.toFixed(2)}. Strategy ${strategy} experienced a ${peakDD.toFixed(1)}% peak drawdown ` +
+    `governed by ${failureMode.toLowerCase()}.`;
 
   // Generate event timeline
   const path = [0];
@@ -617,25 +613,27 @@ function runEventStudy() {
 }
 
 // -------------------------------------------------------------
-// Generic Runners for Engines 7 through 12
+// Generic Runners for Engines 7 through 11
 // -------------------------------------------------------------
 function runLOBSim() {
-  const mid = parseFloat(document.getElementById("p-mid")?.value) || 150.0;
-  const spread = parseFloat(document.getElementById("p-spread")?.value) || 0.02;
-  const depth = parseInt(document.getElementById("p-depth")?.value) || 10;
+  const mid = parseFloat(document.getElementById("p-initial-price")?.value) || 100.0;
+  const parentSize = parseInt(document.getElementById("p-parent-size")?.value) || 5000;
+  const strategy = document.getElementById("p-strategy")?.value || "twap";
+  const spread = 0.02;
+  const depth = 5;
 
   const halfSpread = spread / 2.0;
   const microprice = mid + (Math.random() - 0.5) * spread * 0.2;
   const bps = (spread * 10000) / mid;
 
   renderMetrics([
-    { label: "Best Bid", value: "$" + (mid - halfSpread).toFixed(2), sub: `Depth: ${depth} book levels` },
-    { label: "Best Ask", value: "$" + (mid + halfSpread).toFixed(2), sub: `Queue Depth: ${depth * 500} shares` },
+    { label: "Best Bid", value: "$" + (mid - halfSpread).toFixed(2), sub: `Strategy: ${strategy}` },
+    { label: "Best Ask", value: "$" + (mid + halfSpread).toFixed(2), sub: `Parent Order: ${parentSize} shares` },
     { label: "Bid-Ask Spread", value: "$" + spread.toFixed(2), sub: bps.toFixed(1) + " bps" },
     { label: "Market Microprice", value: "$" + microprice.toFixed(3), sub: "Order Flow Imbalance: -0.15", highlight: true },
   ]);
   document.getElementById("summary-text").textContent =
-    `Limit Order Book simulator configured with ${depth} depth levels. Microprice is $${microprice.toFixed(3)} with a ${bps.toFixed(1)} bps spread.`;
+    `Limit Order Book & TCA simulator executing ${parentSize} shares via ${strategy}. Microprice is $${microprice.toFixed(3)} with a ${bps.toFixed(1)} bps spread.`;
 
   const barData = [];
   for (let l = Math.min(depth, 3); l >= 1; l--) {
@@ -648,10 +646,10 @@ function runLOBSim() {
 }
 
 function runMMQuote() {
-  const inv = parseInt(document.getElementById("p-inv")?.value) || 5;
+  const mid = parseFloat(document.getElementById("p-initial-price")?.value) || 100.0;
   const gamma = parseFloat(document.getElementById("p-gamma")?.value) || 0.1;
-  const sigma = parseFloat(document.getElementById("p-sigma")?.value) || 0.30;
-  const mid = 100.0;
+  const sigma = parseFloat(document.getElementById("p-sigma")?.value) || 0.20;
+  const inv = 5;
   const reservation = mid - inv * gamma * (sigma * sigma);
   const halfSpread = 0.5 * gamma * (sigma * sigma) + 0.02;
 
@@ -672,38 +670,10 @@ function runMMQuote() {
   ]);
 }
 
-function runTCAEngine() {
-  const shares = parseInt(document.getElementById("p-order-size")?.value) || 50000;
-  const adv = parseInt(document.getElementById("p-adv")?.value) || 1000000;
-  const lambda = parseFloat(document.getElementById("p-risk-aversion")?.value) || 0.001;
-
-  const partRate = (shares / adv) * 100.0;
-  const permImpactBps = 0.1 * Math.sqrt(shares / adv) * 10000;
-  const tempSlipBps = (0.05 * (shares / (adv * 0.05)) + lambda * 500) * 5;
-  const totalISBps = permImpactBps * 0.5 + tempSlipBps;
-  const dollarSlippage = (totalISBps / 10000) * shares * 100.0;
-
-  renderMetrics([
-    { label: "Order Size", value: shares.toLocaleString() + " Shares", sub: `Participation: ${partRate.toFixed(2)}% of ADV` },
-    { label: "Implementation Shortfall", value: totalISBps.toFixed(1) + " bps", sub: `$${Math.round(dollarSlippage).toLocaleString()} dollar slippage` },
-    { label: "Permanent Market Impact", value: permImpactBps.toFixed(1) + " bps", sub: "Square-root model" },
-    { label: "Temporary Slippage", value: tempSlipBps.toFixed(1) + " bps", sub: "Almgren-Chriss optimal trajectory", highlight: true },
-  ]);
-  document.getElementById("summary-text").textContent =
-    `Almgren-Chriss optimal execution schedule executes ${shares.toLocaleString()} shares (${partRate.toFixed(1)}% of ADV) ` +
-    `with risk aversion lambda ${lambda}, yielding an expected implementation shortfall of ${totalISBps.toFixed(1)} bps.`;
-  const traj = [];
-  let rem = shares;
-  for (let i = 0; i <= 10; i++) {
-    traj.push(rem);
-    rem *= 0.65;
-  }
-  drawMultiLineChart([traj], shares, "shs", (v) => Math.round(v / 1000) + "k");
-}
-
 function runReplayChart() {
-  const nBars = parseInt(document.getElementById("p-bars")?.value) || 50;
-  const drift = parseFloat(document.getElementById("p-drift")?.value) || 8.0;
+  const nBars = parseInt(document.getElementById("p-bars-visible")?.value) || 50;
+  const level = parseInt(document.getElementById("p-level")?.value) || 1;
+  const drift = 10.0 - level * 1.5;
 
   const brierScore = Math.max(0.08, 0.16 - (drift / 100.0) * 0.2 + (Math.random() - 0.5) * 0.02);
   const accuracy = Math.min(85.0, Math.max(52.0, 50.0 + drift * 1.5 + (Math.random() - 0.5) * 4.0));
@@ -717,7 +687,7 @@ function runReplayChart() {
     { label: "Resolution Skill", value: resolution.toFixed(3), sub: "Information discrimination skill", highlight: true },
   ]);
   document.getElementById("summary-text").textContent =
-    `Replaying ${nBars} bars under a ${drift.toFixed(1)}% annualized drift regime achieves a Brier Score of ${brierScore.toFixed(3)} ` +
+    `Replaying ${nBars} bars at level ${level} achieves a Brier Score of ${brierScore.toFixed(3)} ` +
     `with ${accuracy.toFixed(1)}% directional hit rate and ${relError.toFixed(3)} reliability error.`;
 
   const prices = [100.0];
@@ -732,15 +702,14 @@ function runReplayChart() {
 }
 
 function runJournalStats() {
-  const nTrades = parseInt(document.getElementById("p-logged-trades")?.value) || 100;
-  const adherence = parseFloat(document.getElementById("p-adhere")?.value) || 96.0;
-
-  const winRate = Math.min(0.70, Math.max(0.35, 0.42 + (adherence / 100.0) * 0.10));
-  const avgWin = 2.1;
+  const nTrades = parseInt(document.getElementById("p-sample-trades")?.value) || 100;
+  const adherence = (parseFloat(document.getElementById("p-adherence-rate")?.value) || 0.96) * 100.0;
+  const winRate = parseFloat(document.getElementById("p-win-rate")?.value) || 0.45;
+  const avgWin = parseFloat(document.getElementById("p-risk-reward-ratio")?.value) || 2.2;
   const avgLoss = 1.0;
   const profitFactor = (winRate * avgWin) / ((1.0 - winRate) * avgLoss);
   const expectancyR = winRate * avgWin - (1.0 - winRate) * avgLoss;
-  const isEligible = nTrades >= 50 && adherence >= 90.0 && profitFactor >= 1.3;
+  const isEligible = nTrades >= 100 && adherence >= 95.0 && profitFactor >= 1.5;
 
   renderMetrics([
     { label: "Profit Factor", value: profitFactor.toFixed(2), sub: "Target >= 1.50" },
@@ -763,23 +732,24 @@ function runJournalStats() {
 }
 
 function runTradingGames() {
-  const rounds = parseInt(document.getElementById("p-rounds")?.value) || 10;
-  const spreadWidth = parseFloat(document.getElementById("p-spread-width")?.value) || 3.0;
+  const rounds = parseInt(document.getElementById("p-num-rounds")?.value) || 20;
+  const quotingStyle = document.getElementById("p-quoting-style")?.value || "optimal";
+  const spreadWidth = quotingStyle === "optimal" ? 3.0 : 5.0;
 
-  const mathScore = Math.min(60, Math.round(rounds * 5.4));
-  const pnlPerRound = 140.0 * (spreadWidth / 3.0);
+  const mathScore = Math.min(60, Math.round(rounds * 2.7));
+  const pnlPerRound = 140.0 * (3.0 / spreadWidth);
   const totalPnL = Math.round(rounds * pnlPerRound);
   const bayesAccuracy = Math.min(99.0, Math.max(80.0, 92.0 + (rounds > 5 ? 3.0 : 0.0)));
   const rating = mathScore >= 50 && totalPnL > 1000 ? "OFFER READY" : "STRONG CANDIDATE";
 
   renderMetrics([
     { label: "Mental Math Score", value: `${mathScore} / 60`, sub: `Speed test across ${rounds} rounds` },
-    { label: "Market Making Edge Captured", value: `+$${totalPnL.toLocaleString()}`, sub: `${spreadWidth.toFixed(1)}% quote width` },
+    { label: "Market Making Edge Captured", value: `+$${totalPnL.toLocaleString()}`, sub: `Style: ${quotingStyle}` },
     { label: "Bayesian Update Accuracy", value: `${bayesAccuracy.toFixed(1)}%`, sub: "Posterior probability precision" },
     { label: "Desk Interview Rating", value: rating, color: "var(--accent-green)", sub: "Trading desk interview drill", highlight: true },
   ]);
   document.getElementById("summary-text").textContent =
-    `Trading interview simulation across ${rounds} rounds with ${spreadWidth.toFixed(1)}% spread captured ` +
+    `Trading interview simulation across ${rounds} rounds with ${quotingStyle} quoting captured ` +
     `+$${totalPnL.toLocaleString()} in simulated edge with a ${mathScore}/60 mental math benchmark.`;
 
   const pnl = [0];

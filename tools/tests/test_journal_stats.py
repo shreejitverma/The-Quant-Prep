@@ -126,10 +126,48 @@ class TestJournalStats(unittest.TestCase):
         self.assertIn("capital_gate_verdict", result.metrics)
         self.assertIn("setup_attribution", result.data)
 
-        # Markets stage gate integration
+        # Markets stage gate integration: empty state must fail all requirements
         gate = evaluate_gate("track_6_trd", "capital_gate", store_state={})
         self.assertEqual(gate.stage, "capital_gate")
         self.assertEqual(len(gate.requirements), 5)
+        self.assertFalse(gate.passed)
+        self.assertTrue(all(not r.passed for r in gate.requirements))
+
+        # Dict trade records (as stored in store.data["journal_trades"]) must be accepted without AttributeError
+        log = generate_synthetic_trade_log(
+            count=100,
+            win_rate=0.55,
+            risk_reward=2.5,
+            adherence_rate=1.0,
+            simulate_tilt=False,
+            seed=101,
+        )
+        dict_trades = [
+            {
+                "trade_id": t.trade_id,
+                "setup": t.setup,
+                "entry_price": t.entry_price,
+                "exit_price": t.exit_price,
+                "stop_loss": t.stop_loss,
+                "take_profit": t.take_profit,
+                "shares": t.shares,
+                "r_multiple": t.r_multiple,
+                "pnl": t.pnl,
+                "mae_r": 0.35 if t.r_multiple > 0 else t.mae_r,
+                "mfe_r": t.mfe_r,
+                "adherence": t.adherence,
+                "is_revenge": t.is_revenge,
+                "moved_stop": t.moved_stop,
+                "duration_minutes": t.duration_minutes,
+            }
+            for t in log
+        ]
+        gate_partial = evaluate_gate("track_6_trd", "capital_gate", store_state={"journal_trades": dict_trades[:50]})
+        self.assertFalse(gate_partial.passed)
+        self.assertFalse(gate_partial.requirements[0].passed)
+
+        gate_full = evaluate_gate("track_6_trd", "capital_gate", store_state={"journal_trades": dict_trades})
+        self.assertTrue(gate_full.passed)
 
 
 if __name__ == "__main__":

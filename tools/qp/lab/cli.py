@@ -72,6 +72,12 @@ def cmd_lab_run(args: argparse.Namespace) -> int:
     try:
         valid_kwargs = engine.validate_params(kwargs)
         result = engine.run(**valid_kwargs)
+        store = getattr(args, "store", None)
+        if store is None:
+            from ..state import Store
+
+            store = Store()
+        store.record_lab_run(engine.engine_id, result.metrics)
         print(result.to_toon())
         return 0
     except Exception as exc:
@@ -98,12 +104,13 @@ def build_lab_parser() -> argparse.ArgumentParser:
     return p
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, store: Any = None) -> int:
     parser = build_lab_parser()
     args = parser.parse_args(argv)
     if not getattr(args, "fn", None):
         parser.print_help()
         return 0
+    args.store = store
     return args.fn(args)
 
 

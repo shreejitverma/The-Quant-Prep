@@ -24,10 +24,12 @@ MD_LINK_RE = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 FENCE_RE = re.compile(r"^(```|~~~).*?^\1", re.MULTILINE | re.DOTALL)
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 
+LAB_CLI_RE = re.compile(r"\./qp\s+lab\s+(?:run|info)\s+([a-z0-9_]+)")
+LAB_BULLET_RE = re.compile(r"^-\s+`([a-z0-9_]+)`:")
+
 KNOWN_LAB_ENGINES = {
     "lob_sim",
     "opt_desk",
-    "gen_market",
     "pos_sizing",
     "replay_chart",
     "overfit_trap",
@@ -36,7 +38,7 @@ KNOWN_LAB_ENGINES = {
     "journal_stats",
     "mm_quote",
     "event_study",
-    "crypto_basis",
+    "games",
 }
 
 
@@ -196,6 +198,23 @@ def check_links_and_engines(path: Path, text: str) -> list[MarketFinding]:
     math_count = text.count("$$")
     if math_count % 2 != 0:
         findings.append(MarketFinding(rel, 1, "math-block", f"unbalanced math block delimiters '$$' (count={math_count})"))
+
+    # Check Trading Lab engine references
+    for m in LAB_CLI_RE.finditer(text):
+        eng = m.group(1)
+        if eng not in KNOWN_LAB_ENGINES:
+            findings.append(MarketFinding(rel, line_at(text, m.start()), "lab-engine", f"unknown lab engine: {eng}"))
+
+    in_lab_section = False
+    for idx, raw_line in enumerate(text.splitlines(), 1):
+        stripped = raw_line.strip()
+        if stripped.startswith("## "):
+            in_lab_section = "Trading Lab Engines" in stripped
+            continue
+        if in_lab_section:
+            bm = LAB_BULLET_RE.match(stripped)
+            if bm and bm.group(1) not in KNOWN_LAB_ENGINES:
+                findings.append(MarketFinding(rel, idx, "lab-engine", f"unknown lab engine: {bm.group(1)}"))
 
     return findings
 

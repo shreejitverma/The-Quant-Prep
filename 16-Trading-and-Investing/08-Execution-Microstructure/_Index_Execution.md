@@ -65,9 +65,8 @@ It examines order types, algorithmic execution schedules, transaction cost analy
 
 ## Trading Lab Engines
 
-- `lob_sim`: High-fidelity Limit Order Book simulation engine evaluating order queue position, priority matching, and slippage.
+- `lob_sim`: High-fidelity Limit Order Book and Transaction Cost Analysis (TCA) simulation engine evaluating order queue position, priority matching, Almgren-Chriss execution trajectories, and implementation shortfall slippage.
 - `mm_quote`: Automated quoting and inventory rebalancing engine modeling adverse selection.
-- `tca_engine`: Transaction Cost Analysis engine calculating Implementation Shortfall, VWAP/TWAP benchmark slippage, and permanent vs temporary market impact.
 
 ---
 

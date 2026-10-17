@@ -81,17 +81,16 @@ Markets Mastery OS develops four distinct trading personas:
 
 ## Interactive Trading Lab
 
-The Trading Lab provides twelve pure-Python standard-library simulation and analytics engines.
+The Trading Lab provides eleven pure-Python standard-library simulation and analytics engines.
 Each engine runs locally via the `./qp lab <engine>` CLI or via the standalone browser dashboard at `tools/qp/lab/web/index.html`.
 
 | Engine ID | Name | Core Focus | Command |
 |---|---|---|---|
 | `games` | Interview Trading Games | Mental arithmetic, market making game, Bayesian probability updates | `./qp lab run games` |
-| `lob_sim` | Limit Order Book Simulator | Price-time priority matching, queue position, slippage | `./qp lab run lob_sim` |
+| `lob_sim` | Limit Order Book & Execution (TCA) Simulator | Price-time priority matching, queue position, Almgren-Chriss execution, slippage | `./qp lab run lob_sim` |
 | `mm_quote` | Two-Sided Market Maker | Avellaneda-Stoikov inventory control, reservation price, skew | `./qp lab run mm_quote` |
 | `pos_sizing` | Position Sizing and Ruin | Kelly criterion, optimal f, Monte Carlo drawdown risk | `./qp lab run pos_sizing` |
-| `options_lab` | Options Volatility Desk | Black-Scholes, Greeks calculation, PnL attribution, dynamic delta hedging | `./qp lab run options_lab` |
-| `tca_engine` | Transaction Cost Analysis | Implementation shortfall, Almgren-Chriss optimal trajectories, market impact | `./qp lab run tca_engine` |
+| `opt_desk` | Options Volatility Desk | Black-Scholes, Greeks calculation, PnL attribution, dynamic delta hedging | `./qp lab run opt_desk` |
 | `replay_chart` | Interactive Chart Replay | Bar-by-bar tape reading, order entry, Murphy Brier score calibration | `./qp lab run replay_chart` |
 | `overfit_trap` | Backtest Overfitting Trap | Multiple testing penalty, deflated Sharpe ratio, CSCV PBO | `./qp lab run overfit_trap` |
 | `journal_stats` | Trade Journal Analytics | R-multiple expectancy, MAE/MFE, behavioral tilt detection | `./qp lab run journal_stats` |

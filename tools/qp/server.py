@@ -286,6 +286,7 @@ class App:
             raise ApiError(HTTPStatus.NOT_FOUND, f"unknown engine {engine_id!r}")
         try:
             res = engine.run(**kwargs)
+            self.store.record_lab_run(engine.engine_id, res.metrics)
             return res.to_dict()
         except Exception as exc:
             raise ApiError(HTTPStatus.BAD_REQUEST, str(exc)) from exc

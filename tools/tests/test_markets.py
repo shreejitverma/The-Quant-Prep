@@ -91,19 +91,25 @@ class TestMarketsGates(unittest.TestCase):
         self.assertEqual(len(prefixes), 19)
 
     def test_lab_engines_and_personas(self):
+        from tools.qp.lab import get_engine, list_engines
         from tools.qp.markets import LAB_ENGINES, PERSONA_CONFIGS
+        from tools.qp.planner import PERSONA_LAB_ROUTING
 
-        self.assertEqual(len(LAB_ENGINES), 12)
+        registered_ids = {e["id"] for e in list_engines()}
+        self.assertEqual(len(LAB_ENGINES), 11)
+        self.assertEqual(set(LAB_ENGINES.keys()), registered_ids)
         self.assertIn("games", LAB_ENGINES)
+        self.assertIn("opt_desk", LAB_ENGINES)
         self.assertIn("event_study", LAB_ENGINES)
         self.assertIn("overfit_trap", LAB_ENGINES)
 
         self.assertEqual(len(PERSONA_CONFIGS), 5)
-        self.assertIn("holistic", PERSONA_CONFIGS)
-        self.assertIn("quant_trader", PERSONA_CONFIGS)
-        self.assertIn("quant_researcher", PERSONA_CONFIGS)
-        self.assertIn("macro_derivatives_trader", PERSONA_CONFIGS)
-        self.assertIn("retail_algorithmic_trader", PERSONA_CONFIGS)
+        for persona, cfg in PERSONA_CONFIGS.items():
+            for eng_id in cfg["required_engines"]:
+                self.assertIsNotNone(get_engine(eng_id), f"{persona} references unregistered engine {eng_id}")
+        for persona, routing in PERSONA_LAB_ROUTING.items():
+            for eng_id in routing:
+                self.assertIsNotNone(get_engine(eng_id), f"planner {persona} references unregistered engine {eng_id}")
 
     def test_calculate_markets_mastery_empty(self):
         from tools.qp.markets import calculate_markets_mastery
@@ -126,15 +132,38 @@ class TestMarketsGates(unittest.TestCase):
                 {"engine": "lob_sim"},
                 {"engine": "mm_quote"},
                 {"engine": "games"},
-                {"engine": "options_lab"},
-                {"engine": "tca_engine"},
+                {"engine": "opt_desk"},
             ],
         }
 
         qt_res = calculate_markets_mastery(fake_vault, fake_store, "quant_trader")
         self.assertGreater(qt_res["overall_score"], 20.0)
+        self.assertEqual(qt_res["lab_stats"]["required_completed_count"], 4)
         self.assertGreater(qt_res["lab_score"], 70.0)
         self.assertEqual(qt_res["persona"], "quant_trader")
+
+    def test_lab_run_records_history_in_cli_and_server(self):
+        import io
+        import tempfile
+        from contextlib import redirect_stdout
+        from pathlib import Path
+
+        from tools.qp.lab.cli import main as lab_main
+        from tools.qp.state import Store
+
+        with tempfile.TemporaryDirectory() as td:
+            store = Store(Path(td) / "home")
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                rc = lab_main(["run", "opt_desk"], store=store)
+            self.assertEqual(rc, 0)
+            self.assertEqual(len(store.data.get("lab_history", [])), 1)
+            self.assertEqual(store.data["lab_history"][0]["engine"], "opt_desk")
+
+            fake_opt_vault = {f"mkt-opt-{i:03d}": {} for i in range(1, 129)}
+            store.data["cards"] = {f"mkt-opt-{i:03d}": {"reps": 1} for i in range(65, 129)}
+            gate = evaluate_gate("track_opt", "core", fake_opt_vault, store.data)
+            self.assertTrue(gate.passed)
 
 
 if __name__ == "__main__":

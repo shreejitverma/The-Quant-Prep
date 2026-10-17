@@ -81,7 +81,7 @@ Status key:
 | **Cross-Cutting: Quant & Trading Careers** | `13-Interview-Playbook` (01, 10-12), `14-Firms` | COMPLETE | Cross-link firm profiles and interview expectations (Phase 13) |
 | **Masters Codex** | None | MISSING | Build 30+ verified master profiles with primary sources and failure modes (Phase 2) |
 | **Markets Canon** | None | MISSING | Build 60+ tiered literature syllabus with verified references (Phase 2) |
-| **Interactive Simulators** | `MarketMakingGame` in `tools/qp/drills.py` | PARTIAL | Build `tools/qp/lab/` suite across 12 distinct engines (Phases 3, 4, 5, 7, 8, 9, 10, 12, 14) |
+| **Interactive Simulators** | `MarketMakingGame` in `tools/qp/drills.py` | PARTIAL | Build `tools/qp/lab/` suite across 11 distinct engines (Phases 3, 4, 5, 7, 8, 9, 10, 12, 14) |
 | **Trade Journal & Ledger** | None | MISSING | Build schema v2 journal, trade log, decision ledger, and analytics (Phase 1, 10) |
 
 ---

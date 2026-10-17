@@ -456,7 +456,7 @@ def cmd_serve(vault: Vault, store: Store, args) -> int:
 def cmd_lab(vault: Vault, store: Store | None, args) -> int:
     from .lab.cli import main as lab_main
 
-    return lab_main(args.lab_args)
+    return lab_main(args.lab_args, store=store)
 
 
 def cmd_markets(vault: Vault, store: Store | None, args) -> int:
@@ -625,7 +625,7 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-NO_STATE = {cmd_check, cmd_index, cmd_bank, cmd_lab}
+NO_STATE = {cmd_check, cmd_index, cmd_bank}
 
 
 def main(argv: list[str] | None = None) -> int:
