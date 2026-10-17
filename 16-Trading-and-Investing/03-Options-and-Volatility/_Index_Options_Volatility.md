@@ -53,6 +53,13 @@ It approaches options not as directional lotteries, but as precise instruments f
 - **Dispersion Trading**: Trading the spread between index implied volatility and the weighted average implied volatility of individual component stocks.
 - **Variance Swaps and Volatility Carry**: Replicating log-contracts through continuous strips of OTM calls and puts; capturing the variance risk premium (VRP).
 
+## Concept Notes in This Pillar
+
+1. [[16-Trading-and-Investing/03-Options-and-Volatility/01-Greeks-Hedging-and-Pnl-Attribution|01 - Options Greeks, Dynamic Hedging, and PnL Attribution]]
+2. [[16-Trading-and-Investing/03-Options-and-Volatility/02-Volatility-Surfaces-and-Skew|02 - Volatility Surfaces, Skew, and Term Structure]]
+3. [[16-Trading-and-Investing/03-Options-and-Volatility/03-Dealer-Positioning-and-GEX|03 - Dealer Positioning, Gamma Exposure (GEX), and Flow Dynamics]]
+4. [[16-Trading-and-Investing/03-Options-and-Volatility/04-Volatility-Trading-Strategies|04 - Volatility Trading Strategies: Gamma Scalping, VRP, and Dispersion]]
+
 ---
 
 ## Trading Lab Engines

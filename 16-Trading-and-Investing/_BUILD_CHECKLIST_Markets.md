@@ -141,11 +141,11 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Define and implement automated stage gates for Track 0 and Track 6 in `tools/qp/markets.py` and `./qp markets gates`.
 
 ### Phase 7: Options Volatility Desk Simulator & Options Track
-- [ ] Implement options pricing, Greeks, and surface model `tools/qp/lab/options.py`.
-- [ ] Build multi-scenario volatility desk simulator (gamma scalping, earnings crush, skew shift, dispersion).
-- [ ] Add unit tests validating Greeks against finite differences and attribution consistency.
-- [ ] Author advanced options volatility notes cross-linking `05-Derivatives-and-Volatility`.
-- [ ] Build web UI for Options Desk with interactive smile, risk ladder, and Greek attribution bars.
+- [x] Implement options pricing, analytical Greeks, and surface model in `tools/qp/lab/opt_desk.py`.
+- [x] Build multi-scenario volatility desk simulator (gamma scalping, earnings crush, skew steepening, dispersion).
+- [x] Add unit tests validating Greeks against finite differences and attribution consistency in `tools/tests/test_opt_desk.py`.
+- [x] Author 4 advanced options volatility concept notes with 128 cards (`mkt-opt-001` through `128`) cross-linking `05-Derivatives-and-Volatility`.
+- [x] Expose Options Desk in Trading Lab catalog and engine registry.
 
 ### Phase 8: Chart Replay, Calibration Lab, & Technical Analysis
 - [ ] Implement blind chart replay engine `tools/qp/lab/replay.py` with Brier score calibration decomposition.
