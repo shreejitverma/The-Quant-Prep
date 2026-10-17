@@ -73,13 +73,18 @@ def feed_bandwidth(msgs_per_sec: float) -> dict[str, float]:
 
 @dataclass
 class GapTracker:
-    """MoldUDP64-style sequencing: apply in order, buffer ahead, drop duplicates."""
+    """MoldUDP64-style sequencing: apply in order, buffer ahead, drop duplicates.
+
+    After draining, the gap before the first buffered message is requested once:
+    requested_end marks the end of what has already been asked for.
+    """
 
     expected: int
     pending: dict[int, str]
     applied: list[int]
     requests: list[tuple[int, int]]
     duplicates: int = 0
+    requested_end: int = 0
 
     def on_packet(self, seq: int, count: int) -> None:
         for s in range(seq, seq + count):
@@ -87,13 +92,16 @@ class GapTracker:
                 self.duplicates += 1
             else:
                 self.pending[s] = "msg"
-        if self.pending and min(self.pending) > self.expected:
-            gap_end = min(self.pending)
-            self.requests.append((self.expected, gap_end - self.expected))
         while self.expected in self.pending:
             del self.pending[self.expected]
             self.applied.append(self.expected)
             self.expected += 1
+        if self.pending:
+            start = max(self.expected, self.requested_end)
+            gap_end = min(self.pending)
+            if start < gap_end:
+                self.requests.append((start, gap_end - start))
+                self.requested_end = gap_end
 
 
 def gap_example() -> GapTracker:
@@ -102,6 +110,14 @@ def gap_example() -> GapTracker:
     t.on_packet(1007, 2)
     t.on_packet(1004, 3)  # retransmission
     t.on_packet(1005, 2)  # late duplicate from the other line
+    return t
+
+
+def gap_after_drain_example() -> GapTracker:
+    """A gap that only appears once a retransmission is drained, and a gap seen twice."""
+    t = GapTracker(expected=1001, pending={}, applied=[], requests=[])
+    for seq in (1001, 1003, 1005, 1002):
+        t.on_packet(seq, 1)
     return t
 
 
@@ -493,6 +509,10 @@ def main() -> None:
     show("duplicates dropped", g.duplicates)
     assert g.requests == [(1004, 3)]
     assert g.applied == list(range(1001, 1009)) and g.expected == 1009 and g.duplicates == 2
+    g2 = gap_after_drain_example()
+    show("gap requests after a drain (seq, count)", g2.requests)
+    assert g2.requests == [(1002, 1), (1004, 1)]  # 1002 asked once, 1004 asked as soon as 1003 drains
+    assert g2.expected == 1004 and sorted(g2.pending) == [1005]
 
     per_line, hidden, both, days = ab_double_loss(20e6, 1e-5)
     check("expected losses per line per day", per_line, "200", ".0f")

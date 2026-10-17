@@ -275,6 +275,24 @@ void test_responses_must_match_request_in_flight() {
     EXPECT(gw7.onExecutionReport({"e1", "X", "", ExecType::Rejected, OrdStatus::Rejected, 0, 0, 0, 0}) == ApplyResult::Applied);
     EXPECT(gw7.onCancelReject("C") == ApplyResult::Applied);
     EXPECT(gw7.order("X")->status == OrdStatus::Rejected && !gw7.killed());
+    // The venue ends the order on its own (end of day) while our cancel, or our replace, is on the
+    // wire; the venue then answers that request with a too-late cancel reject, a routine race.
+    RiskGateway gw8 = gateway();
+    EXPECT(gw8.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw8, "X", "e1", 100);
+    EXPECT(gw8.requestCancel("X", "C1") == RejectReason::None);
+    EXPECT(gw8.onExecutionReport({"e2", "X", "", ExecType::Expired, OrdStatus::Expired, 0, 0, 0, 0}) == ApplyResult::Applied);
+    EXPECT(gw8.onCancelReject("C1") == ApplyResult::Applied);
+    EXPECT(gw8.order("X")->status == OrdStatus::Expired && !gw8.killed());
+    RiskGateway gw9 = gateway();
+    EXPECT(gw9.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw9, "X", "e1", 100);
+    EXPECT(gw9.requestReplace("X", "R1", 200, 5'000, 20 * kMs) == RejectReason::None);
+    EXPECT(gw9.onExecutionReport({"e2", "X", "", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 0}) == ApplyResult::Applied);
+    EXPECT(gw9.onCancelReject("R1") == ApplyResult::Applied);
+    EXPECT(gw9.order("X")->status == OrdStatus::Canceled && !gw9.killed());
+    // A reject naming the ended order itself, not a request sent for it, is still a reconciliation failure.
+    EXPECT(gw9.onCancelReject("X") == ApplyResult::IllegalTransition && gw9.killed());
 }
 
 // After a replace the venue knows the order by its new ClOrdID, so the kill switch cancels that one.

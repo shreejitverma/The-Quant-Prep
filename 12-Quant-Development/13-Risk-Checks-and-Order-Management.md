@@ -194,6 +194,7 @@ The transitions that bite in production:
   Reconciliation must accept either while your request is in flight; demanding 6 trips the kill switch on a normal race.
 - **Cancel reject.** 35=9 returns the order to its pre-pending state, updated by any fills that arrived meanwhile.
   It must name the request still in flight: a reject, Pending Cancel, Canceled or Replaced report carrying any other ClOrdID (say a resent reject for an earlier cancel) is a reconciliation failure, not a state change.
+  The exception is the too-late reject: when the venue ends the order on its own (end-of-day expiry, a venue risk cancel) while our cancel or replace is on the wire, it answers that request with a cancel reject, which changes nothing and must not trip the kill switch.
 - **Replace in flight.** Until 150=5 arrives, either the old or the new terms can execute, so exposure is max(old leaves, new leaves) at the worse price.
   A replace cannot leave an order below CumQty: if fills crossing the request reach or pass the new quantity, the venue amends the order quantity to CumQty and reports 150=5 with OrdStatus Filled (C.3.b, C.3.c).
 - **Cancel over a pending replace.** A cancel may be sent while a replace is still in flight, with OrigClOrdID set to the last accepted ClOrdID; the order is then Pending Cancel, either set of terms can still execute, and the venue answers the replace and the cancel separately.

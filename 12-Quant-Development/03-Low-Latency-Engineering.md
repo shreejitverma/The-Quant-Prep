@@ -225,7 +225,7 @@ Fix with `alignas(128)` per counter or per-thread structs, and keep read-mostly 
 ### The mean that lied
 
 The jitter test times a fixed 1000-step dependent arithmetic chain 200,000 times on the test machine (same run as above): p50 792 ns, p90 834 ns, p99 1,000 ns, p99.9 1,125 ns, max 7,542 ns, mean 818.0 ns.
-The values move in steps of about 42 ns because that is the clock's resolution, which is why the mean can even fall below the median.
+The values move in steps of about 42 ns because that is the clock's resolution, so every percentile lands on a multiple of that step while the mean, an average, does not.
 The mean says "about 820 ns"; the worst call took 9.5 times the median, and across five runs the max ranged from 7,542 to 12,833 ns while p99.9 stayed at 1,125 ns.
 An earlier run, taken while other heavy processes shared the machine, recorded p99.9 9,375 ns and max 219,833 ns for the same code: interrupts, preemption and frequency changes on an untuned, shared desktop OS set the tail, not the code.
 Those tails are what core isolation, pinning and interrupt steering remove.

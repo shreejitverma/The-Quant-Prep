@@ -326,16 +326,27 @@ public:
 
     // ---- inbound: order cancel reject (35=9) restores the pre-pending state ----------------------
     // Only the request in flight can be rejected; with a cancel on top of a pending replace, only
-    // the rejected request is undone. A reject for any other id trips the kill switch.
+    // the rejected request is undone. Once the venue has ended the order (rejected, filled, canceled
+    // or expired), a reject for a cancel or replace sent for it is the too-late answer and changes
+    // nothing. A reject for any other id trips the kill switch.
     ApplyResult onCancelReject(const std::string& requestClOrdId) {
         Order* o = find(requestClOrdId);
         if (o == nullptr) {
             engageKillSwitch("cancel reject for an unknown order");
             return ApplyResult::UnknownOrder;
         }
+        if (isTerminal(o->status)) {
+            if (requestClOrdId == o->key || requestClOrdId == o->currentClOrdId) {
+                engageKillSwitch("cancel reject does not match a request in flight");
+                return ApplyResult::IllegalTransition;
+            }
+            o->pendingCancelClOrdId.clear();
+            o->clearReplace();
+            return ApplyResult::Applied;
+        }
         if (o->cancelPending() && requestClOrdId == o->pendingCancelClOrdId) {
             o->pendingCancelClOrdId.clear();
-            if (!isTerminal(o->status)) o->status = o->replacePending() ? OrdStatus::PendingReplace : restoredStatus(*o);
+            o->status = o->replacePending() ? OrdStatus::PendingReplace : restoredStatus(*o);
         } else if (o->replacePending() && requestClOrdId == o->pendingReplaceClOrdId) {
             o->clearReplace();
             if (!o->cancelPending()) o->status = restoredStatus(*o);

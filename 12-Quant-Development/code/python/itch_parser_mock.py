@@ -28,12 +28,17 @@ class ItchParserMock:
         return struct.pack(self.MESSAGE_FORMAT, msg_type, timestamp, order_id, price_int, qty, side.encode("ascii"))
 
     def parse_stream(self, stream):
-        """Reads from a binary stream and yields parsed messages."""
+        """Reads from a binary stream and yields parsed messages.
+
+        A partial message at the end of the stream raises ValueError instead of being dropped.
+        """
         while True:
             # Read exact number of bytes for one message
             data = stream.read(self.MESSAGE_SIZE)
-            if not data or len(data) < self.MESSAGE_SIZE:
+            if not data:
                 break
+            if len(data) < self.MESSAGE_SIZE:
+                raise ValueError(f"truncated message: {len(data)} of {self.MESSAGE_SIZE} bytes")
 
             # Unpack
             unpacked = struct.unpack(self.MESSAGE_FORMAT, data)
@@ -82,3 +87,16 @@ if __name__ == "__main__":
     assert truncated == 5228 and rounded == 0
     print(f"0.57 * 10000 = {0.57 * 10000!r}, int() gives {int(0.57 * 10000)}")
     assert repr(0.57 * 10000) == "5699.999999999999" and int(0.57 * 10000) == 5699
+
+    # A stream that ends inside a message reports the truncation after the complete messages.
+    cut = io.BytesIO(parser.create_mock_packet(1, 1600000010, 103, 150.20, 10, "B") + b"\x01\x02\x03\x04")
+    got = []
+    try:
+        for msg in parser.parse_stream(cut):
+            got.append(msg["order_id"])
+    except ValueError as exc:
+        print(f"truncated tail reported: {exc}")
+        truncation_reported = True
+    else:
+        truncation_reported = False
+    assert got == [103] and truncation_reported
