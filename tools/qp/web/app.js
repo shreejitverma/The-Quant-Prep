@@ -197,7 +197,7 @@ async function viewDashboard() {
       h("div", { class: "row" }, h("h3", {}, t.label), h("span", { class: "spacer" }), t.active ? null : h("span", { class: "chip" }, "not targeted")),
       h("div", { class: "pct" }, pct(t.readiness)),
       bar(t.readiness, t.readiness >= 0.75 ? "good" : ""),
-      h("div", { class: "meta" }, h("span", {}, `${t.solid}/${t.topics} topics solid`), h("span", {}, `${fmtHours(t.hours_left)} left`)))));
+      h("div", { class: "meta" }, h("span", {}, `${t.solid}/${t.topics} topics mastered`), h("span", {}, `${fmtHours(t.hours_left)} left`)))));
   const next = h("div", { class: "panel" },
     h("div", { class: "panel-head" }, h("h2", {}, "Next up"), h("a", { href: "#/plan", class: "sub" }, "Full plan")),
     s.next.length ? h("div", { class: "list" }, s.next.map((n) =>
@@ -287,7 +287,7 @@ async function viewSyllabus(params) {
       const filtering = state.q || state.tier || state.written || state.tracks.size;
       return h("details", { class: "section-group", open: filtering || state.open === sec.folder || !state.open ? true : null, id: sec.folder },
         h("summary", {}, h("span", { class: "caret" }, "▸"), h("h2", {}, sec.title), sec.private ? h("span", { class: "chip", title: "Loaded from your private overlay; never committed" }, "private") : null,
-          rows.length ? h("span", { class: "faint num" }, `${done}/${rows.length} solid`) : null,
+          rows.length ? h("span", { class: "faint num" }, `${done}/${rows.length} mastered`) : null,
           sec.readme ? h("a", { href: `#/note/${encodeURIComponent(sec.readme)}`, class: "btn small", onclick: (e) => e.stopPropagation() }, "Overview") : null),
         h("div", { class: "panel" }, rows.length ? h("table", { class: "t" },
           h("thead", {}, h("tr", {}, h("th", {}, "#"), h("th", {}, "Topic"), h("th", { class: "hide-sm" }, "Tracks"), h("th", {}, "Tier"),

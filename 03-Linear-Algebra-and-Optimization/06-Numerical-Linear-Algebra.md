@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-research, quant-dev]
+track: [quant-research, quant-dev, quant-risk]
 tier: core
 status: solid
 prereqs: [svd-and-low-rank-approximation]
