@@ -279,8 +279,16 @@ def load_vault(root: Path = REPO_ROOT) -> Vault:
             paths = sorted(
                 p
                 for p in (root / folder).rglob("*.md")
-                if not any(
-                    part in ("Investing", "Finance", "Private", "scripts", "Templates") for part in p.relative_to(root / folder).parts
+                if not any(part in ("Finance", "Private", "scripts", "Templates") for part in p.relative_to(root / folder).parts)
+                and (
+                    "Investing" not in p.relative_to(root / folder).parts
+                    or (
+                        len(p.relative_to(root / folder).parts) > 2
+                        and p.relative_to(root / folder).parts[1]
+                        in ("Fundamental-Analysis", "Valuation Models", "Value Investing", "Portfolio-Management")
+                        and not p.name.startswith("_")
+                        and p.name != "Reverse DCF.md"
+                    )
                 )
             )
         elif library:

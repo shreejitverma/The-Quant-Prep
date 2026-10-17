@@ -38,7 +38,7 @@ All three known defects identified in the Markets Mastery build specification ha
   Market data blocks now strip None and zero placeholders and record `data_quality: missing` with an explicit list of missing fields.
 - **Verification**: Zero notes carry `price: None` (dropped from 38 to 0).
   Zero notes carry `implied_growth_rate: 0%` (dropped from 34 to 0).
-  83 notes have verified, mathematically solved implied growth rates; 15 notes have documented `non_positive_fcf` status.
+  80 notes have verified, mathematically solved implied growth rates; 12 notes have documented `non_positive_fcf` status; 4 notes have documented `currency_mismatch` status; 2 notes have documented `missing_fcf` status.
 
 ### Defect 3: Boilerplate Company Notes Marked Complete
 - **Root cause**: Generator scripts created initial company notes with boilerplate one-line theses while hardcoding `status: complete` in frontmatter.
@@ -100,32 +100,32 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Compile comprehensive coverage matrix and write `16-Trading-and-Investing/_BUILD_CHECKLIST_Markets.md`.
 
 ### Phase 1: Hub, Templates, Verifier, and Platform Shell
-- [ ] Create `16-Trading-and-Investing/MARKETS_HUB.md` with links to tracks, labs, disclaimers, and dashboard.
-- [ ] Create folder index maps for all `Finance/` and `Investing/` subdirectories.
-- [ ] Author standard YAML templates in `Templates/` (`Markets-Investment-Memo.md`, `Markets-Trade-Plan.md`, `Markets-Trade-Log.md`, `Markets-Decision-Journal.md`, `Markets-Post-Mortem.md`, `Markets-Weekly-Review.md`, `Markets-Monthly-Review.md`, `Markets-Drill-Attempt.md`).
-- [ ] Build content verifier `16-Trading-and-Investing/scripts/verify_markets.py`.
-- [ ] Register `mkt-` card prefix in `00-Start-Here/Note-Conventions.md` and `tools/qp/check.py`.
-- [ ] Implement State Schema v2 with atomic migration in `tools/qp/state.py`.
-- [ ] Scaffold `tools/qp/lab/` package, `/api/lab/catalog` route in `server.py`, and Trading Lab navigation in web app.
+- [x] Create `16-Trading-and-Investing/MARKETS_HUB.md` with links to tracks, labs, disclaimers, and dashboard.
+- [x] Create folder index maps for all `Finance/` and `Investing/` subdirectories.
+- [x] Author standard YAML templates in `Templates/` (`Markets-Investment-Memo.md`, `Markets-Trade-Plan.md`, `Markets-Trade-Log.md`, `Markets-Decision-Journal.md`, `Markets-Post-Mortem.md`, `Markets-Weekly-Review.md`, `Markets-Monthly-Review.md`, `Markets-Drill-Attempt.md`).
+- [x] Build content verifier `16-Trading-and-Investing/scripts/verify_markets.py`.
+- [x] Register `mkt-` card prefix in `00-Start-Here/Note-Conventions.md` and `tools/qp/check.py`.
+- [x] Implement State Schema v2 with atomic migration in `tools/qp/state.py`.
+- [x] Scaffold `tools/qp/lab/` package, `/api/lab/catalog` route in `server.py`, and Trading Lab navigation in web app.
 
 ### Phase 2: Curriculum Structure, Markets Canon, and Masters Codex
-- [ ] Author `16-Trading-and-Investing/00 Curriculum/Learning Path.md` with Mermaid progression graph.
-- [ ] Author `16-Trading-and-Investing/00 Curriculum/Markets Canon.md` with 60+ verified publications across Gateway, Core, and Capstone tiers.
-- [ ] Author `16-Trading-and-Investing/00 Curriculum/Masters Codex.md` and initial 10 verified master profiles.
-- [ ] Wire curriculum navigation into `MARKETS_HUB.md` and repo `README.md`.
+- [x] Author `16-Trading-and-Investing/00 Curriculum/Learning Path.md` with Mermaid progression graph.
+- [x] Author `16-Trading-and-Investing/00 Curriculum/Markets Canon.md` with 60+ verified publications across Gateway, Core, and Capstone tiers.
+- [x] Author `16-Trading-and-Investing/00 Curriculum/Masters Codex.md` and initial 10 verified master profiles.
+- [x] Wire curriculum navigation into `MARKETS_HUB.md` and repo `README.md`.
 
 ### Phase 3: Synthetic Market Engine & Sizing / Ruin Lab
-- [ ] Implement synthetic price-path generator `tools/qp/lab/market.py` with analytical and Monte Carlo oracle.
-- [ ] Implement Sizing and Risk of Ruin simulator `tools/qp/lab/sizing.py`.
-- [ ] Add unit tests for generator statistical moments, regime transitions, and Kelly growth peaks.
-- [ ] Build web UI for Sizing Lab with Monte Carlo equity fan charts.
+- [x] Implement synthetic price-path generator `tools/qp/lab/market.py` with analytical and Monte Carlo oracle.
+- [x] Implement Sizing and Risk of Ruin simulator `tools/qp/lab/sizing.py`.
+- [x] Add unit tests for generator statistical moments, regime transitions, and Kelly growth peaks.
+- [x] Build web UI for Sizing Lab with Monte Carlo equity fan charts.
 
 ### Phase 4: Limit Order Book & Execution Lab
-- [ ] Implement price-time priority matching engine `tools/qp/lab/book.py`.
-- [ ] Implement execution simulator `tools/qp/lab/execution.py` with zero-intelligence and informed Poisson arrivals.
-- [ ] Implement Almgren-Chriss, TWAP, and VWAP benchmarks with implementation shortfall scoring.
-- [ ] Add unit tests verifying order conservation, price priority, and no crossed books.
-- [ ] Build web UI with interactive depth ladder, time and sales tape, and execution report.
+- [x] Implement price-time priority matching engine `tools/qp/lab/book.py`.
+- [x] Implement execution simulator `tools/qp/lab/execution.py` with zero-intelligence and informed Poisson arrivals.
+- [x] Implement Almgren-Chriss, TWAP, and VWAP benchmarks with implementation shortfall scoring.
+- [x] Add unit tests verifying order conservation, price priority, and no crossed books.
+- [x] Build web UI with interactive depth ladder, time and sales tape, and execution report.
 
 ### Phase 5: Market Making Upgrade & Interview Games Lab
 - [x] Refactor and upgrade market-making engine into `tools/qp/lab/mm_quote.py` with multi-level progression.

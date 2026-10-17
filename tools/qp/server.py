@@ -26,7 +26,26 @@ from .state import GRADES, MASTERY_LABELS, StateError, Store, today
 from .vault import TRACK_ABBR, TRACK_LABELS, TRACKS, Note, Vault, load_vault
 
 WEB_DIR = Path(__file__).with_name("web")
-FILE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".py", ".cpp", ".hpp", ".h", ".md", ".txt", ".csv", ".ipynb", ".pdf"}
+LAB_WEB_DIR = Path(__file__).parent / "lab" / "web"
+FILE_EXTS = {
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".webp",
+    ".py",
+    ".cpp",
+    ".hpp",
+    ".h",
+    ".md",
+    ".txt",
+    ".csv",
+    ".ipynb",
+    ".pdf",
+    ".html",
+    ".js",
+    ".css",
+}
 TEXT_EXTS = {".py", ".cpp", ".hpp", ".h", ".md", ".txt", ".csv", ".ipynb"}
 VAULT_TTL = 2.0  # seconds; notes are re-read at most this often so edits show up live
 MAX_BODY = 64 * 1024
@@ -440,6 +459,23 @@ def make_handler(app: App, allowed_origins: set[str]):
                 raise ApiError(HTTPStatus.NOT_FOUND, f"no route {path}")
             if path.startswith("/files/"):
                 return self.serve_repo_file(unquote(path[len("/files/") :]))
+            if path.startswith("/lab/") or path == "/lab":
+                rel = path[len("/lab/") :] if path.startswith("/lab/") else "index.html"
+                if not rel:
+                    rel = "index.html"
+                target = (LAB_WEB_DIR / rel).resolve()
+                if LAB_WEB_DIR.resolve() not in (target, *target.parents) or not target.is_file():
+                    raise ApiError(HTTPStatus.NOT_FOUND, "not found")
+                ctype = (
+                    "text/html; charset=utf-8"
+                    if target.suffix == ".html"
+                    else (
+                        "application/javascript; charset=utf-8"
+                        if target.suffix == ".js"
+                        else ("text/css; charset=utf-8" if target.suffix == ".css" else None)
+                    )
+                )
+                return self.send_file(target, ctype)
             name = "index.html" if path in ("/", "/index.html") else path.lstrip("/")
             target = (WEB_DIR / name).resolve()
             if target.parent != WEB_DIR.resolve() or not target.is_file():

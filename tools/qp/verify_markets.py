@@ -207,8 +207,8 @@ def verify_markets_vault(root: Path = MARKETS_ROOT, include_legacy: bool = False
     skip_top_dirs = {"Private"} if include_legacy else {"Private", "Investing", "Finance", "scripts"}
 
     for md_path in sorted(root.rglob("*.md")):
-        rel = md_path.relative_to(REPO_ROOT)
-        if any(part in skip_top_dirs for part in rel.parts[1:2]):
+        rel = md_path.relative_to(root)
+        if any(part in skip_top_dirs for part in rel.parts[:1]):
             continue
         text = md_path.read_text(encoding="utf-8")
         _, _, fm_findings = check_frontmatter(md_path, text)

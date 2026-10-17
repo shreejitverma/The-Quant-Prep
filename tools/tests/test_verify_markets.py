@@ -9,6 +9,7 @@ from tools.qp.verify_markets import (
     check_links_and_engines,
     check_style_invariants,
     strip_code_blocks,
+    verify_markets_vault,
 )
 
 
@@ -70,6 +71,19 @@ class TestVerifyMarkets(unittest.TestCase):
             p.write_text(content, encoding="utf-8")
             findings = check_links_and_engines(p, content)
             self.assertTrue(any(f.rule == "math-block" for f in findings))
+
+    def test_verify_markets_vault_relative_path(self):
+        with tempfile.TemporaryDirectory() as td:
+            sub = Path(td) / "01-Test"
+            sub.mkdir()
+            note = sub / "01-Note.md"
+            note.write_text(
+                "---\ntype: concept\ntrack: [quant-trader]\ntier: core\nstatus: draft\nprereqs: []\nest_hours: 1\n---\n# Note\n",
+                encoding="utf-8",
+            )
+            # Must not crash with ValueError when passed temporary directory outside REPO_ROOT
+            findings = verify_markets_vault(Path(td))
+            self.assertIsInstance(findings, list)
 
 
 if __name__ == "__main__":

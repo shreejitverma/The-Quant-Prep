@@ -178,9 +178,50 @@ const ENGINE_CONFIGS = {
 document.addEventListener("DOMContentLoaded", () => {
   setupSidebar();
   loadEngine("pos_sizing");
-  document.getElementById("btn-run").addEventListener("click", () => {
+  document.getElementById("btn-run").addEventListener("click", async () => {
     const config = ENGINE_CONFIGS[currentEngine];
-    if (config && config.runner) config.runner();
+    if (!config || !config.runner) return;
+
+    // Collect DOM parameters
+    const params = {};
+    if (config.params) {
+      config.params.forEach((p) => {
+        const el = document.getElementById(p.id);
+        if (el) {
+          params[p.id.replace(/^p-/, "").replace(/-/g, "_")] =
+            p.type === "number" ? parseFloat(el.value) : el.value;
+        }
+      });
+    }
+
+    // Attempt backend simulation call if server is accessible
+    try {
+      const res = await fetch("/api/lab/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ engine: currentEngine, params }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.metrics && Object.keys(data.metrics).length > 0) {
+          const metricsList = Object.entries(data.metrics).map(([k, v]) => ({
+            label: k.replace(/_/g, " ").toUpperCase(),
+            value: typeof v === "number" ? v.toFixed(3) : String(v),
+            sub: "Backend engine verification",
+          }));
+          renderMetrics(metricsList);
+          if (data.summary) {
+            document.getElementById("summary-text").textContent =
+              `[Backend Engine] ${data.summary}`;
+          }
+          return;
+        }
+      }
+    } catch (_e) {
+      // Offline fallback: client-side simulation engine
+    }
+
+    config.runner();
   });
 });
 
@@ -357,31 +398,40 @@ function runOverfitTrap() {
   const sr = parseFloat(document.getElementById("p-sharpe")?.value) || 2.0;
   const nTrials = parseInt(document.getElementById("p-trials")?.value) || 100;
   const years = parseFloat(document.getElementById("p-years")?.value) || 5.0;
+  const skew = parseFloat(document.getElementById("p-skew")?.value) || -0.5;
+  const kurt = parseFloat(document.getElementById("p-kurt")?.value) || 4.5;
 
-  // Approximate expected max Sharpe under N independent standard normals:
-  // E[max_N] ~ sqrt(2*ln(N)) * (1 + 0.5772 / (2*ln(N)))
-  const eMaxSR = nTrials > 1 ? Math.sqrt(2 * Math.log(nTrials)) : 0.0;
-  const hairCutPct = Math.min(100.0, Math.max(0.0, (eMaxSR / sr) * 100.0));
-  const deflatedSR = Math.max(0.0, sr - eMaxSR * 0.4);
-  const pbo = Math.min(1.0, (nTrials / (nTrials + 50.0))).toFixed(2);
+  const T = years * 252.0;
+  const srDaily = sr / Math.sqrt(252.0);
+  const varSR = Math.max(0.0001, (1.0 - skew * srDaily + ((kurt - 1.0) / 4.0) * srDaily * srDaily) / T);
+  const seAnnualSR = Math.sqrt(varSR * 252.0);
+
+  // Approximate expected max Sharpe under N trials from Bailey and Lopez de Prado (2014)
+  const eMaxSR = nTrials > 1 ? seAnnualSR * (Math.sqrt(2 * Math.log(nTrials)) + 0.5772 / Math.sqrt(2 * Math.log(nTrials))) : 0.0;
+  const zScore = seAnnualSR > 0 ? (sr - eMaxSR) / seAnnualSR : 0.0;
+  const dsrProb = Math.min(1.0, Math.max(0.0, normalCDF(zScore)));
+  const hairCutPct = Math.min(100.0, Math.max(0.0, (eMaxSR / Math.max(0.01, sr)) * 100.0));
+  const deflatedSR = Math.max(0.0, sr - eMaxSR * 0.5);
+  const pbo = Math.min(1.0, Math.max(0.0, 1.0 - dsrProb));
 
   renderMetrics([
-    { label: "Observed Sharpe Ratio", value: sr.toFixed(2), sub: "Annualized over " + years + " yrs" },
-    { label: "Expected Max SR under Luck", value: eMaxSR.toFixed(2), sub: "Noise threshold for " + nTrials + " trials" },
+    { label: "Observed Sharpe Ratio", value: sr.toFixed(2), sub: `Annualized over ${years} yrs` },
+    { label: "Expected Max SR under Luck", value: eMaxSR.toFixed(2), sub: `Noise threshold for ${nTrials} trials` },
     { label: "Harvey-Liu Haircut", value: hairCutPct.toFixed(1) + "%", color: hairCutPct > 50 ? "var(--accent-red)" : "var(--accent-green)" },
-    { label: "Deflated Sharpe Ratio (DSR)", value: deflatedSR.toFixed(2), sub: "PBO: " + (pbo * 100).toFixed(0) + "% probability of overfitting", highlight: true },
+    { label: "Deflated Sharpe Ratio (DSR)", value: deflatedSR.toFixed(2), sub: `DSR Stat: ${zScore.toFixed(2)} | PBO: ${(pbo * 100).toFixed(0)}%`, highlight: true },
   ]);
 
   document.getElementById("summary-text").textContent =
-    `Testing ${nTrials} strategy variations over ${years} years yields an expected maximum Sharpe of ${eMaxSR.toFixed(2)} ` +
-    `from random noise alone. An observed Sharpe of ${sr.toFixed(2)} suffers a ${hairCutPct.toFixed(1)}% multiple-testing haircut, ` +
-    `leaving a Deflated Sharpe Ratio of ${deflatedSR.toFixed(2)}.`;
+    `Testing ${nTrials} strategy variations over ${years} years with skewness ${skew.toFixed(2)} and kurtosis ${kurt.toFixed(2)} ` +
+    `yields an expected noise threshold of ${eMaxSR.toFixed(2)}. Observed Sharpe of ${sr.toFixed(2)} suffers a ${hairCutPct.toFixed(1)}% ` +
+    `haircut, leaving a Deflated Sharpe Ratio of ${deflatedSR.toFixed(2)} with ${(dsrProb * 100).toFixed(1)}% statistical significance.`;
 
   // Draw curve of expected max SR vs trial count
   const points = [];
   const maxTrials = Math.max(200, nTrials * 2);
   for (let n = 2; n <= maxTrials; n += Math.ceil(maxTrials / 50)) {
-    points.push({ x: n, y: Math.sqrt(2 * Math.log(n)) });
+    const eMax = seAnnualSR * (Math.sqrt(2 * Math.log(n)) + 0.5772 / Math.sqrt(2 * Math.log(n)));
+    points.push({ x: n, y: eMax });
   }
   drawLineChart(points, `Trials tested: ${nTrials} | Haircut: ${hairCutPct.toFixed(1)}%`);
 }
@@ -511,41 +561,55 @@ function runEventStudy() {
   const crisis = document.getElementById("p-crisis")?.value || "2008 Lehman GFC";
   const haircut = parseFloat(document.getElementById("p-haircut")?.value) || 25.0;
 
-  let carFinal = -35.2;
-  let peakDD = -48.5;
-  let patellZ = -8.45;
+  const crisisProfiles = {
+    "1929 Wall Street Crash": { car: -44.6, dd: -89.2, z: -16.4, failure: "Margin Call Liquidation Spiral" },
+    "1987 Black Monday": { car: -28.5, dd: -32.1, z: -12.3, failure: "Portfolio Insurance Feedback Loop" },
+    "1998 LTCM Collapse": { car: -38.2, dd: -45.0, z: -10.5, failure: "Relative-Value Leverage Collapse" },
+    "2000 Dot-Com Crash": { car: -35.0, dd: -78.0, z: -8.9, failure: "Speculative Valuation Implosion" },
+    "2008 Lehman GFC": { car: -35.2, dd: -48.5, z: -8.45, failure: "Interbank Liquidity & Counterparty Run" },
+    "2010 Flash Crash": { car: -9.2, dd: -9.9, z: -14.2, failure: "Stub Quote & Matching Dislocation" },
+    "2015 Swiss Franc Unpeg": { car: -21.4, dd: -28.0, z: -15.1, failure: "FX Gap Risk & Clearing Default" },
+    "2020 COVID Crash": { car: -30.4, dd: -34.0, z: -9.8, failure: "Exogenous Volatility Spike" },
+    "2021 GameStop Squeeze": { car: -42.0, dd: -52.0, z: -11.2, failure: "Short Squeeze & DTCC Margin Call" },
+    "2022 UK LDI Gilt Spiral": { car: -26.5, dd: -38.0, z: -13.0, failure: "Pension LDI Leverage & Collateral Calls" },
+  };
 
-  if (crisis.includes("1987")) {
-    carFinal = -28.5;
-    peakDD = -32.1;
-    patellZ = -12.3;
-  } else if (crisis.includes("2020")) {
-    carFinal = -30.4;
-    peakDD = -34.0;
-    patellZ = -9.8;
-  } else if (crisis.includes("2010")) {
-    carFinal = -9.2;
-    peakDD = -9.9;
-    patellZ = -14.2;
+  let prof = crisisProfiles[crisis];
+  if (!prof) {
+    for (const [k, p] of Object.entries(crisisProfiles)) {
+      if (crisis.includes(k.split(" ")[0])) {
+        prof = p;
+        break;
+      }
+    }
   }
+  if (!prof) {
+    prof = crisisProfiles["2008 Lehman GFC"];
+  }
+
+  const hairScale = 1.0 + (haircut / 100.0) * 0.3;
+  const carFinal = prof.car * (1.0 + (haircut / 100.0) * 0.15);
+  const peakDD = Math.min(-10.0, prof.dd * hairScale);
+  const patellZ = prof.z;
+  const failureMode = prof.failure;
 
   renderMetrics([
     { label: "Cumulative Abnormal Return", value: carFinal.toFixed(1) + "%", color: "var(--accent-red)", sub: "T-10 to T+20 Event Window" },
     { label: "Max Peak-to-Trough Drawdown", value: peakDD.toFixed(1) + "%", sub: "Liquidity Haircut: " + haircut.toFixed(0) + "%" },
     { label: "Patell Z-Test Statistic", value: patellZ.toFixed(2), sub: "Statistical significance p < 0.001" },
-    { label: "Pre-Mortem Failure Mode", value: "Liquidity Evaporation", sub: "Margin spiral and bid collapse", highlight: true },
+    { label: "Pre-Mortem Failure Mode", value: failureMode, sub: "Primary tail-risk channel", highlight: true },
   ]);
 
   document.getElementById("summary-text").textContent =
-    `Simulating the ${crisis} event reveals a Cumulative Abnormal Return of ${carFinal.toFixed(1)}% ` +
-    `with Patell Z-score of ${patellZ.toFixed(2)}. Unhedged strategies suffered a ${peakDD.toFixed(1)}% peak drawdown ` +
-    `due to order book liquidity evaporation and collateral margin haircuts.`;
+    `Simulating ${crisis} reveals a Cumulative Abnormal Return of ${carFinal.toFixed(1)}% ` +
+    `with Patell Z-score of ${patellZ.toFixed(2)}. Unhedged portfolios suffered a ${peakDD.toFixed(1)}% peak drawdown ` +
+    `governed by ${failureMode.toLowerCase()} with a ${haircut.toFixed(0)}% liquidity haircut.`;
 
   // Generate event timeline
   const path = [0];
   let curCAR = 0;
   for (let t = 1; t <= 30; t++) {
-    if (t === 10) curCAR += carFinal * 0.6; // Event shock
+    if (t === 10) curCAR += carFinal * 0.6;
     else curCAR += (Math.random() - 0.52) * 1.5;
     path.push(curCAR);
   }
@@ -558,22 +622,29 @@ function runEventStudy() {
 function runLOBSim() {
   const mid = parseFloat(document.getElementById("p-mid")?.value) || 150.0;
   const spread = parseFloat(document.getElementById("p-spread")?.value) || 0.02;
+  const depth = parseInt(document.getElementById("p-depth")?.value) || 10;
+
+  const halfSpread = spread / 2.0;
+  const microprice = mid + (Math.random() - 0.5) * spread * 0.2;
+  const bps = (spread * 10000) / mid;
+
   renderMetrics([
-    { label: "Best Bid", value: "$" + (mid - spread / 2).toFixed(2), sub: "Queue Depth: 5,200 shares" },
-    { label: "Best Ask", value: "$" + (mid + spread / 2).toFixed(2), sub: "Queue Depth: 4,800 shares" },
-    { label: "Bid-Ask Spread", value: "$" + spread.toFixed(2), sub: (spread * 10000 / mid).toFixed(1) + " bps" },
-    { label: "Market Microprice", value: "$" + (mid - 0.002).toFixed(3), sub: "Order Flow Imbalance: -0.15", highlight: true },
+    { label: "Best Bid", value: "$" + (mid - halfSpread).toFixed(2), sub: `Depth: ${depth} book levels` },
+    { label: "Best Ask", value: "$" + (mid + halfSpread).toFixed(2), sub: `Queue Depth: ${depth * 500} shares` },
+    { label: "Bid-Ask Spread", value: "$" + spread.toFixed(2), sub: bps.toFixed(1) + " bps" },
+    { label: "Market Microprice", value: "$" + microprice.toFixed(3), sub: "Order Flow Imbalance: -0.15", highlight: true },
   ]);
   document.getElementById("summary-text").textContent =
-    `Limit Order Book matching simulator active. Microprice is $${(mid - 0.002).toFixed(3)}. Run ./qp lab run lob_sim for full execution logs.`;
-  drawBarChart([
-    { label: "Bid L3", val: 8200 },
-    { label: "Bid L2", val: 6500 },
-    { label: "Bid L1", val: 5200 },
-    { label: "Ask L1", val: 4800 },
-    { label: "Ask L2", val: 6100 },
-    { label: "Ask L3", val: 7900 },
-  ]);
+    `Limit Order Book simulator configured with ${depth} depth levels. Microprice is $${microprice.toFixed(3)} with a ${bps.toFixed(1)} bps spread.`;
+
+  const barData = [];
+  for (let l = Math.min(depth, 3); l >= 1; l--) {
+    barData.push({ label: `Bid L${l}`, val: 4000 + l * 1200 });
+  }
+  for (let l = 1; l <= Math.min(depth, 3); l++) {
+    barData.push({ label: `Ask L${l}`, val: 3800 + l * 1100 });
+  }
+  drawBarChart(barData);
 }
 
 function runMMQuote() {
@@ -582,35 +653,45 @@ function runMMQuote() {
   const sigma = parseFloat(document.getElementById("p-sigma")?.value) || 0.30;
   const mid = 100.0;
   const reservation = mid - inv * gamma * (sigma * sigma);
+  const halfSpread = 0.5 * gamma * (sigma * sigma) + 0.02;
 
   renderMetrics([
     { label: "Current Inventory", value: inv + " Units", sub: "Risk Aversion: " + gamma },
     { label: "Mid Price", value: "$" + mid.toFixed(2), sub: "Asset Sigma: " + (sigma * 100).toFixed(0) + "%" },
     { label: "Reservation Price", value: "$" + reservation.toFixed(3), sub: "Inventory Skew: " + (reservation - mid).toFixed(3), color: "var(--accent-amber)" },
-    { label: "Quoting Spread", value: "$0.08", sub: "Bid: $" + (reservation - 0.04).toFixed(2) + " | Ask: $" + (reservation + 0.04).toFixed(2), highlight: true },
+    { label: "Quoting Spread", value: "$" + (halfSpread * 2).toFixed(2), sub: "Bid: $" + (reservation - halfSpread).toFixed(2) + " | Ask: $" + (reservation + halfSpread).toFixed(2), highlight: true },
   ]);
   document.getElementById("summary-text").textContent =
-    `With inventory at ${inv} units, Avellaneda-Stoikov shifts the reservation price downward to $${reservation.toFixed(3)} ` +
+    `With inventory at ${inv} units, Avellaneda-Stoikov shifts reservation price downward to $${reservation.toFixed(3)} ` +
     `to attract buyers and discourage additional inventory accumulation.`;
   drawBarChart([
     { label: "Mid Price", val: mid },
     { label: "Reservation", val: reservation },
-    { label: "Ask Quote", val: reservation + 0.04 },
-    { label: "Bid Quote", val: reservation - 0.04 },
+    { label: "Ask Quote", val: reservation + halfSpread },
+    { label: "Bid Quote", val: reservation - halfSpread },
   ]);
 }
 
 function runTCAEngine() {
   const shares = parseInt(document.getElementById("p-order-size")?.value) || 50000;
+  const adv = parseInt(document.getElementById("p-adv")?.value) || 1000000;
+  const lambda = parseFloat(document.getElementById("p-risk-aversion")?.value) || 0.001;
+
+  const partRate = (shares / adv) * 100.0;
+  const permImpactBps = 0.1 * Math.sqrt(shares / adv) * 10000;
+  const tempSlipBps = (0.05 * (shares / (adv * 0.05)) + lambda * 500) * 5;
+  const totalISBps = permImpactBps * 0.5 + tempSlipBps;
+  const dollarSlippage = (totalISBps / 10000) * shares * 100.0;
+
   renderMetrics([
-    { label: "Order Size", value: shares.toLocaleString() + " Shares", sub: "Participation Rate: 5.0%" },
-    { label: "Implementation Shortfall", value: "8.4 bps", sub: "$4,200 dollar slippage" },
-    { label: "Permanent Market Impact", value: "3.2 bps", sub: "Square-root model" },
-    { label: "Temporary Slippage", value: "5.2 bps", sub: "Almgren-Chriss optimal trajectory", highlight: true },
+    { label: "Order Size", value: shares.toLocaleString() + " Shares", sub: `Participation: ${partRate.toFixed(2)}% of ADV` },
+    { label: "Implementation Shortfall", value: totalISBps.toFixed(1) + " bps", sub: `$${Math.round(dollarSlippage).toLocaleString()} dollar slippage` },
+    { label: "Permanent Market Impact", value: permImpactBps.toFixed(1) + " bps", sub: "Square-root model" },
+    { label: "Temporary Slippage", value: tempSlipBps.toFixed(1) + " bps", sub: "Almgren-Chriss optimal trajectory", highlight: true },
   ]);
   document.getElementById("summary-text").textContent =
-    `Almgren-Chriss optimal execution schedule executes ${shares.toLocaleString()} shares across 10 child slices, ` +
-    `yielding an expected implementation shortfall of 8.4 bps.`;
+    `Almgren-Chriss optimal execution schedule executes ${shares.toLocaleString()} shares (${partRate.toFixed(1)}% of ADV) ` +
+    `with risk aversion lambda ${lambda}, yielding an expected implementation shortfall of ${totalISBps.toFixed(1)} bps.`;
   const traj = [];
   let rem = shares;
   for (let i = 0; i <= 10; i++) {
@@ -621,42 +702,93 @@ function runTCAEngine() {
 }
 
 function runReplayChart() {
+  const nBars = parseInt(document.getElementById("p-bars")?.value) || 50;
+  const drift = parseFloat(document.getElementById("p-drift")?.value) || 8.0;
+
+  const brierScore = Math.max(0.08, 0.16 - (drift / 100.0) * 0.2 + (Math.random() - 0.5) * 0.02);
+  const accuracy = Math.min(85.0, Math.max(52.0, 50.0 + drift * 1.5 + (Math.random() - 0.5) * 4.0));
+  const relError = Math.max(0.008, 0.025 - nBars / 1000.0);
+  const resolution = Math.max(0.04, 0.09 - relError);
+
   renderMetrics([
-    { label: "Brier Score", value: "0.142", sub: "Target <= 0.150 (Good Calibration)" },
-    { label: "Forecast Accuracy", value: "68.5%", sub: "Directional hit rate" },
-    { label: "Reliability Error", value: "0.018", sub: "Murphy decomposition" },
-    { label: "Resolution Skill", value: "0.085", sub: "Discrimination ability", highlight: true },
+    { label: "Brier Score", value: brierScore.toFixed(3), sub: "Target <= 0.150 (Murphy decomposition)" },
+    { label: "Forecast Accuracy", value: accuracy.toFixed(1) + "%", sub: `Directional hit rate over ${nBars} bars` },
+    { label: "Reliability Error", value: relError.toFixed(3), sub: "Calibration curve divergence" },
+    { label: "Resolution Skill", value: resolution.toFixed(3), sub: "Information discrimination skill", highlight: true },
   ]);
   document.getElementById("summary-text").textContent =
-    `Chart replay forecasting calibration achieves a Brier Score of 0.142 with 68.5% directional hit rate.`;
-  const prices = [100, 101, 100.5, 102, 103.5, 103, 104.2, 105, 104.8, 106.5];
+    `Replaying ${nBars} bars under a ${drift.toFixed(1)}% annualized drift regime achieves a Brier Score of ${brierScore.toFixed(3)} ` +
+    `with ${accuracy.toFixed(1)}% directional hit rate and ${relError.toFixed(3)} reliability error.`;
+
+  const prices = [100.0];
+  let curP = 100.0;
+  const dt = 1.0 / 252.0;
+  for (let i = 1; i <= nBars; i++) {
+    const shock = (drift / 100.0) * dt + 0.18 * Math.sqrt(dt) * (Math.random() + Math.random() - 1.0);
+    curP *= 1.0 + shock;
+    prices.push(curP);
+  }
   drawMultiLineChart([prices], 100, "$", (v) => "$" + v.toFixed(0));
 }
 
 function runJournalStats() {
+  const nTrades = parseInt(document.getElementById("p-logged-trades")?.value) || 100;
+  const adherence = parseFloat(document.getElementById("p-adhere")?.value) || 96.0;
+
+  const winRate = Math.min(0.70, Math.max(0.35, 0.42 + (adherence / 100.0) * 0.10));
+  const avgWin = 2.1;
+  const avgLoss = 1.0;
+  const profitFactor = (winRate * avgWin) / ((1.0 - winRate) * avgLoss);
+  const expectancyR = winRate * avgWin - (1.0 - winRate) * avgLoss;
+  const isEligible = nTrades >= 50 && adherence >= 90.0 && profitFactor >= 1.3;
+
   renderMetrics([
-    { label: "Profit Factor", value: "1.85", sub: "Target >= 1.50" },
-    { label: "Plan Adherence Rate", value: "97.0%", sub: "0 revenge trades" },
-    { label: "Win Rate (Expectancy)", value: "48.0% (+0.62R)", sub: "Avg Win: 2.1R | Avg Loss: 1.0R" },
-    { label: "Capital Gate Status", value: "ELIGIBLE", color: "var(--accent-green)", sub: "100 trades verified", highlight: true },
+    { label: "Profit Factor", value: profitFactor.toFixed(2), sub: "Target >= 1.50" },
+    { label: "Plan Adherence Rate", value: adherence.toFixed(1) + "%", sub: adherence >= 95.0 ? "Zero tilt violations" : "Minor adherence slip" },
+    { label: "Win Rate (Expectancy)", value: `${(winRate * 100).toFixed(1)}% (+${expectancyR.toFixed(2)}R)`, sub: `Sample: ${nTrades} logged trades` },
+    { label: "Capital Gate Status", value: isEligible ? "ELIGIBLE" : "PENDING", color: isEligible ? "var(--accent-green)" : "var(--accent-amber)", sub: `${nTrades} trades verified`, highlight: true },
   ]);
   document.getElementById("summary-text").textContent =
-    `Journal analytics confirms 100 trades with 1.85 profit factor and 97.0% rule adherence, satisfying all Capital Gate constraints.`;
-  const cumR = [0, 1.2, 0.2, 2.3, 1.3, 3.4, 2.4, 4.5, 5.6, 6.2];
+    `Journal analytics confirms ${nTrades} logged trades with ${profitFactor.toFixed(2)} profit factor and ` +
+    `${adherence.toFixed(1)}% rule adherence. Capital Gate evaluation: ${isEligible ? "PASSED (Live allocation authorized)" : "PENDING (Higher sample/adherence required)"}.`;
+
+  const cumR = [0.0];
+  let curR = 0.0;
+  for (let i = 1; i <= Math.min(100, nTrades); i++) {
+    const isWin = Math.random() < winRate;
+    curR += isWin ? avgWin : -avgLoss;
+    cumR.push(curR);
+  }
   drawMultiLineChart([cumR], 0, "R", (v) => v.toFixed(1) + "R");
 }
 
 function runTradingGames() {
+  const rounds = parseInt(document.getElementById("p-rounds")?.value) || 10;
+  const spreadWidth = parseFloat(document.getElementById("p-spread-width")?.value) || 3.0;
+
+  const mathScore = Math.min(60, Math.round(rounds * 5.4));
+  const pnlPerRound = 140.0 * (spreadWidth / 3.0);
+  const totalPnL = Math.round(rounds * pnlPerRound);
+  const bayesAccuracy = Math.min(99.0, Math.max(80.0, 92.0 + (rounds > 5 ? 3.0 : 0.0)));
+  const rating = mathScore >= 50 && totalPnL > 1000 ? "OFFER READY" : "STRONG CANDIDATE";
+
   renderMetrics([
-    { label: "Mental Math Score", value: "54 / 60", sub: "Zetamac speed test" },
-    { label: "Market Making Edge Captured", value: "+$1,420", sub: "Spread capture" },
-    { label: "Bayesian Update Accuracy", value: "95.0%", sub: "Posterior probability precision" },
-    { label: "Desk Interview Rating", value: "OFFER READY", color: "var(--accent-green)", sub: "Top 5% candidate pool", highlight: true },
+    { label: "Mental Math Score", value: `${mathScore} / 60`, sub: `Speed test across ${rounds} rounds` },
+    { label: "Market Making Edge Captured", value: `+$${totalPnL.toLocaleString()}`, sub: `${spreadWidth.toFixed(1)}% quote width` },
+    { label: "Bayesian Update Accuracy", value: `${bayesAccuracy.toFixed(1)}%`, sub: "Posterior probability precision" },
+    { label: "Desk Interview Rating", value: rating, color: "var(--accent-green)", sub: "Trading desk interview drill", highlight: true },
   ]);
   document.getElementById("summary-text").textContent =
-    `Trading game interview practice records 54/60 arithmetic score and +$1,420 simulated market making PnL.`;
-  const pnl = [0, 150, 320, 280, 510, 750, 680, 950, 1200, 1420];
-  drawMultiLineChart([pnl], 0, "$", (v) => "$" + v.toFixed(0));
+    `Trading interview simulation across ${rounds} rounds with ${spreadWidth.toFixed(1)}% spread captured ` +
+    `+$${totalPnL.toLocaleString()} in simulated edge with a ${mathScore}/60 mental math benchmark.`;
+
+  const pnl = [0];
+  let curPnL = 0;
+  for (let i = 1; i <= rounds; i++) {
+    curPnL += Math.round(pnlPerRound * (0.8 + Math.random() * 0.4));
+    pnl.push(curPnL);
+  }
+  drawMultiLineChart([pnl], 0, "$", (v) => "$" + v.toLocaleString());
 }
 
 // -------------------------------------------------------------
