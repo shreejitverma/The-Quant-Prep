@@ -275,10 +275,21 @@ def load_vault(root: Path = REPO_ROOT) -> Vault:
     for folder in sorted(p.name for p in root.iterdir() if p.is_dir() and SECTION_RE.match(p.name)):
         title, library = section_info(root, folder)
         section = Section(folder, int(folder[:2]), title, library=library)
-        paths = [root / folder / "README.md"] if library else sorted((root / folder).rglob("*.md"))
+        if folder.startswith("16-"):
+            paths = sorted(
+                p
+                for p in (root / folder).rglob("*.md")
+                if not any(
+                    part in ("Investing", "Finance", "Private", "scripts", "Templates") for part in p.relative_to(root / folder).parts
+                )
+            )
+        elif library:
+            paths = [root / folder / "README.md"]
+        else:
+            paths = sorted((root / folder).rglob("*.md"))
         for path in paths:
             rel = path.relative_to(root)
-            if any(part in SKIP_DIRS or part.startswith(".") for part in rel.parts[1:-1]):
+            if path.name.startswith("_") or any(part in SKIP_DIRS or part.startswith(".") for part in rel.parts[1:-1]):
                 continue
             try:
                 add(load_note(root, rel, folder), section)

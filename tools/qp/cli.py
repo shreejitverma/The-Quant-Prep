@@ -446,6 +446,34 @@ def cmd_lab(vault: Vault, store: Store | None, args) -> int:
     return lab_main(args.lab_args)
 
 
+def cmd_markets(vault: Vault, store: Store | None, args) -> int:
+    from . import markets
+
+    sub = args.markets_subcommand or "status"
+    state = store.data if store else {}
+    all_gates = markets.evaluate_all_markets_gates(vault.cards, state)
+
+    if sub == "gates":
+        rows = []
+        for tid, gates in all_gates.items():
+            tname = markets.TRACK_METADATA.get(tid, {}).get("name", tid)
+            for stage, g in gates.items():
+                status = "PASSED" if g.passed else "PENDING"
+                req_summary = "; ".join(f"{r.name} ({r.actual}/{r.target})" for r in g.requirements)
+                rows.append([tname, stage, status, req_summary])
+        emit(table("gates", ["track", "stage", "status", "requirements"], rows))
+        return EXIT_OK
+
+    rows = []
+    for tid, meta in markets.TRACK_METADATA.items():
+        gates = all_gates.get(tid, {})
+        f_passed = "PASSED" if gates.get("foundations") and gates["foundations"].passed else "PENDING"
+        c_passed = "PASSED" if gates.get("core") and gates["core"].passed else "PENDING"
+        rows.append([meta["name"], f_passed, c_passed, meta["description"]])
+    emit(table("markets_tracks", ["track", "foundations", "core", "description"], rows))
+    return EXIT_OK
+
+
 # --- parser --------------------------------------------------------------------
 
 
@@ -518,6 +546,8 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--open", action="store_true", help="open a browser")
     sp = add("lab", cmd_lab, "run interactive trading lab simulation engines")
     sp.add_argument("lab_args", nargs="*", help="arguments for lab (list, info <id>, run <id>)")
+    sp = add("markets", cmd_markets, "inspect markets tracks and evaluate stage gates")
+    sp.add_argument("markets_subcommand", nargs="?", choices=("status", "gates"), default="status")
     return p
 
 

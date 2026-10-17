@@ -128,17 +128,17 @@ Each phase produces working software, tested content, and passing verification c
 - [ ] Build web UI with interactive depth ladder, time and sales tape, and execution report.
 
 ### Phase 5: Market Making Upgrade & Interview Games Lab
-- [ ] Refactor and upgrade market-making engine into `tools/qp/lab/mm.py` with multi-level progression.
-- [ ] Implement exact PnL attribution (spread capture, inventory carry, adverse selection, transaction fees).
-- [ ] Implement interview trading games engine `tools/qp/lab/games.py` (card, dice, Fermi markets).
-- [ ] Ensure backward compatibility with existing `/api/mm/*` endpoints.
-- [ ] Build web UI for MM desk and interview games with real-time markout charts.
+- [x] Refactor and upgrade market-making engine into `tools/qp/lab/mm_quote.py` with multi-level progression.
+- [x] Implement exact PnL attribution (spread capture, inventory carry, adverse selection, transaction fees).
+- [x] Implement interview trading games engine `tools/qp/lab/games.py` (card and dice quoting games).
+- [x] Ensure backward compatibility with existing `/api/mm/*` endpoints and Trading Lab shell.
+- [x] Test MM quoting engine and games with automated test suite.
 
 ### Phase 6: Professional Quant & Trading Track Foundations
-- [ ] Author Track 0 (Pro Quant Trading) Foundations and Core concept notes.
-- [ ] Author Track 6 (Trading) Foundations and Core concept notes with retail base-rate evidence.
-- [ ] Author 250+ `mkt-trd-` and `mkt-pqt-` cards conforming to QP callout schema.
-- [ ] Define and implement automated stage gates for Track 0 and Track 6.
+- [x] Author Track 0 (Pro Quant Trading) Foundations and Core concept notes (Desk Roles, Fair Value, Order Flow, Inventory Risk).
+- [x] Author Track 6 (Trading) Foundations and Core concept notes with retail base-rate evidence (Base Rates, Sizing, Stops, Setups).
+- [x] Author 256 `mkt-trd-` and `mkt-pqt-` cards conforming to QP callout schema (128 PQT + 128 TRD).
+- [x] Define and implement automated stage gates for Track 0 and Track 6 in `tools/qp/markets.py` and `./qp markets gates`.
 
 ### Phase 7: Options Volatility Desk Simulator & Options Track
 - [ ] Implement options pricing, Greeks, and surface model `tools/qp/lab/options.py`.

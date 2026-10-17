@@ -129,6 +129,7 @@ def check_style_invariants(path: Path, text: str) -> list[MarketFinding]:
             and not stripped.startswith("* ")
             and not stripped.startswith(">")
             and not stripped.startswith("|")
+            and not re.match(r"^\d+\.\s", stripped)
             and len(stripped) > 40
         ):
             # Check if there are multiple sentences on a single line
@@ -136,7 +137,10 @@ def check_style_invariants(path: Path, text: str) -> list[MarketFinding]:
             if m:
                 # Exclude common abbreviations like e.g., i.e., vs., Fig., etc.
                 snippet = stripped[max(0, m.start() - 4) : m.start() + 1]
-                if not any(snippet.lower().endswith(abbr) for abbr in ("e.g.", "i.e.", "vs.", "etc.", "fig.", "al.")):
+                if not any(
+                    snippet.lower().endswith(abbr)
+                    for abbr in ("e.g.", "i.e.", "vs.", "etc.", "fig.", "al.", "jr.", "sr.", "dr.", "mr.", "ms.")
+                ) and not re.search(r"(?:^|\s)[A-Za-z]\.$", snippet):
                     findings.append(
                         MarketFinding(
                             rel,
@@ -196,12 +200,15 @@ def check_links_and_engines(path: Path, text: str) -> list[MarketFinding]:
     return findings
 
 
-def verify_markets_vault(root: Path = MARKETS_ROOT) -> list[MarketFinding]:
+def verify_markets_vault(root: Path = MARKETS_ROOT, include_legacy: bool = False) -> list[MarketFinding]:
     findings: list[MarketFinding] = []
+    # By default, verify the structured Markets Mastery OS curriculum, styles, and labs.
+    # Legacy unmigrated Obsidian notes in Investing/ and Finance/ are skipped unless include_legacy=True.
+    skip_top_dirs = {"Private"} if include_legacy else {"Private", "Investing", "Finance", "scripts"}
+
     for md_path in sorted(root.rglob("*.md")):
         rel = md_path.relative_to(REPO_ROOT)
-        # Skip gitignored Private personal logs if present
-        if "Private" in rel.parts:
+        if any(part in skip_top_dirs for part in rel.parts[1:2]):
             continue
         text = md_path.read_text(encoding="utf-8")
         _, _, fm_findings = check_frontmatter(md_path, text)
@@ -215,6 +222,7 @@ def verify_markets_vault(root: Path = MARKETS_ROOT) -> list[MarketFinding]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Verify 16-Trading-and-Investing integrity.")
     parser.add_argument("--strict", action="store_true", help="Fail on warning findings")
+    parser.add_argument("--all-legacy", action="store_true", help="Include legacy unmigrated notes in Investing/ and Finance/")
     parser.add_argument("paths", nargs="*", help="Optional specific markdown paths to check")
     args = parser.parse_args()
 
@@ -229,7 +237,7 @@ def main() -> int:
                 findings.extend(check_style_invariants(path, text))
                 findings.extend(check_links_and_engines(path, text))
     else:
-        findings = verify_markets_vault()
+        findings = verify_markets_vault(include_legacy=args.all_legacy)
 
     if not findings:
         print(f"verify_markets: ok; 0 findings across {MARKETS_ROOT.name}")

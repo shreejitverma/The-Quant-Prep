@@ -50,6 +50,11 @@ Rather than treating these schools as mutually exclusive, Markets Mastery OS tea
 - **Core Edge**: Statistical anomalies, co-integration in pairs trading, cross-venue latency arbitrage, and market making spread capture.
 - **Microstructure Mechanics**: Order queue dynamics, adverse selection risk (trading against informed order flow), inventory risk management, and the Avellaneda-Stoikov market maker framework.
 - **Execution**: Algorithmic execution, smart order routing (SOR), fee rebate optimization, and tick-level backtesting.
+- **Foundations & Core Curriculum**:
+  - [[16-Trading-and-Investing/07-Trading-Styles/Quant-Prop-Trading/01-Desk-Roles-and-Economics|01. Desk Roles, Economics, and PnL Decomposition]]
+  - [[16-Trading-and-Investing/07-Trading-Styles/Quant-Prop-Trading/02-Fair-Value-and-Microprice|02. Fair Value, Microprice, and Order Flow Imbalance]]
+  - [[16-Trading-and-Investing/07-Trading-Styles/Quant-Prop-Trading/03-Order-Flow-and-Adverse-Selection|03. Order Flow Dynamics, Glosten-Milgrom, and Adverse Selection]]
+  - [[16-Trading-and-Investing/07-Trading-Styles/Quant-Prop-Trading/04-Inventory-Risk-and-Skew|04. Inventory Risk, Avellaneda-Stoikov, and Skew Optimization]]
 - **Lab Engine**: `lob_sim` (Limit Order Book matching) and `mm_quote` (Avellaneda-Stoikov market maker).
 
 ---
@@ -59,6 +64,11 @@ Rather than treating these schools as mutually exclusive, Markets Mastery OS tea
 - **Auction Market Theory**: Market Profile structures, Value Area High (VAH), Value Area Low (VAL), Point of Control (POC), Initial Balance (IB) extensions, and responsive versus initiative auction activity.
 - **Volume Profile and VWAP**: Anchored Volume Weighted Average Price (AVWAP), standard deviation bands, volume nodes (High Volume Nodes vs Low Volume Nodes), and liquidity void fills.
 - **Tape Reading**: Level 2 order book depth, Time and Sales tape speed, iceberg order detection, and spoofing/layering identification.
+- **Foundations & Core Curriculum**:
+  - [[16-Trading-and-Investing/07-Trading-Styles/Discretionary-Trading/01-Retail-Base-Rates-and-Costs|01. Retail Base Rates, Transaction Friction, and Expectancy]]
+  - [[16-Trading-and-Investing/07-Trading-Styles/Discretionary-Trading/02-Position-Sizing-and-Ruin|02. Position Sizing, Volatility Targeting, and Risk of Ruin]]
+  - [[16-Trading-and-Investing/07-Trading-Styles/Discretionary-Trading/03-Stop-Logic-and-Trade-Management|03. Stop Logic, Trade Management, and Dynamic Invalidation]]
+  - [[16-Trading-and-Investing/07-Trading-Styles/Discretionary-Trading/04-Setup-Taxonomy-and-Evidence|04. Trade Setup Taxonomy, Evidence Grading, and Academic Verification]]
 - **Lab Engine**: `replay_chart` (Bar-by-bar tape reading and order execution) and `journal_stats` (Trade performance and tilt analytics).
 
 ---
