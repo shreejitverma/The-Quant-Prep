@@ -176,14 +176,16 @@ With $Q/H = 0.01$ the gain falls to 0.0951.
 ### 3. Estimating Q and H by maximum likelihood
 
 Simulate 500 observations of a local level model with $Q = 0.1$, $H = 1$ (seed 500) and evaluate the prediction-error likelihood on a 161 by 161 grid.
-The maximum is at $\hat Q = 0.126$, $\hat H = 0.976$ with log-likelihood $-792.15$, against $-792.59$ at the truth: a likelihood-ratio statistic of 0.89, well inside the $\chi^2_2$ 5% value 5.991, so the data cannot distinguish the estimate from the truth.
+The maximum is at about $\hat Q = 0.126$, $\hat H = 0.976$ with log-likelihood about $-792.15$, against about $-792.59$ at the truth: a likelihood-ratio statistic of about 0.89, well inside the $\chi^2_2$ 5% value 5.991, so the data cannot distinguish the estimate from the truth.
 The generic filter and the vectorised grid give the same log-likelihood at the truth, a useful unit test.
-RMSE of the level: filtered 0.549 (theory for the steady-state filtered sd: $\sqrt{\bar P/(\bar P+1)} = 0.520$), smoothed 0.402.
+RMSE of the level: filtered about 0.549 (theory for the steady-state filtered sd: $\sqrt{\bar P/(\bar P+1)} = 0.520$), smoothed about 0.402.
 
 ### 4. A time-varying hedge ratio with a known path
 
-Simulate 1000 days: $x_t$ a geometric random walk from 50 with 1% daily volatility (it ranges from 42.0 to 78.7), $\beta_t$ a random walk from 1 with step variance $10^{-4}$ (it ranges from 0.896 to 1.271), and $y_t = \beta_tx_t+\varepsilon_t$ with $H = 1$ (seed 2013).
+Simulate 1000 days: $x_t$ a geometric random walk from 50 with 1% daily volatility (it ranges from about 42.0 to 78.7), $\beta_t$ a random walk from 1 with step variance $10^{-4}$ (it ranges from about 0.896 to 1.271), and $y_t = \beta_tx_t+\varepsilon_t$ with $H = 1$ (seed 2013).
 Run the filter with the true $Q$ and $H$ and a diffuse start, and score days 100 to 999:
+
+*Seeded simulation output (seed 2013); the values change with the seed.*
 
 | Estimator of $\beta_t$ | RMSE |
 | :--- | ---: |
@@ -194,12 +196,12 @@ Run the filter with the true $Q$ and $H$ and a diffuse start, and score days 100
 
 Calibration checks that a desk would run on live data:
 
-- the true $\beta_t$ lies inside the filter's $\pm1.96\sqrt{P_{t|t}}$ band on 97.0% of days (smoother 96.2%);
-- the standardised innovations have mean 0.01, variance 0.92 and lag-1 autocorrelation $-0.01$;
-- the filtered standard deviation of $\beta$ settles near 0.0096.
+- the true $\beta_t$ lies inside the filter's $\pm1.96\sqrt{P_{t|t}}$ band on about 97.0% of days (smoother about 96.2%);
+- the standardised innovations have mean about 0.01, variance about 0.92 and lag-1 autocorrelation about $-0.01$;
+- the filtered standard deviation of $\beta$ settles at about 0.0096.
 
-Maximum likelihood on an 81 by 81 grid recovers $\hat q = 0.79\times10^{-4}$ and $\hat H = 0.97$.
-Adding an intercept state to the same data and changing nothing else raises the filtered $\beta$ RMSE to 0.133, and the posterior correlation of intercept and slope at the end is $-0.98$: the near-collinearity described in Core concepts.
+Maximum likelihood on an 81 by 81 grid recovers $\hat q$ of about $0.79\times10^{-4}$ and $\hat H$ of about 0.97.
+Adding an intercept state to the same data and changing nothing else raises the filtered $\beta$ RMSE to about 0.133, and the posterior correlation of intercept and slope at the end is about $-0.98$: the near-collinearity described in Core concepts.
 Setting $Q = 0$ turns the filter into recursive least squares, and its final state matches full-sample OLS to within $10^{-4}$.
 
 ## Pitfalls
@@ -239,11 +241,11 @@ Setting $Q = 0$ turns the filter into recursive least squares, and its final sta
 
 > [!question]- stat-kf-likelihood | How do you estimate the noise variances of a state-space model?
 > Maximise the prediction error decomposition $\ln L = -\frac12\sum_t(\ln2\pi F_t + v_t^2/F_t)$, evaluated by one filter pass per parameter value.
-> On 500 simulated local-level observations with $Q = 0.1$, $H = 1$ the MLE was $(0.126, 0.976)$, LR 0.89 against the truth.
+> On 500 simulated local-level observations with $Q = 0.1$, $H = 1$ the MLE was about $(0.126, 0.976)$, LR about 0.89 against the truth.
 
 > [!question]- stat-kf-innovations-check | How do you check that a fitted Kalman filter is well specified?
 > Standardised innovations $v_t/\sqrt{F_t}$ should be white noise with mean 0 and variance 1, and states should fall inside their bands at the nominal rate.
-> In the hedge-ratio example: innovation variance 0.92, lag-1 autocorrelation $-0.01$, 97% band coverage.
+> In the hedge-ratio example: innovation variance about 0.92, lag-1 autocorrelation about $-0.01$, about 97% band coverage.
 
 > [!question]- stat-kf-steady-state-ewma | Show that the steady-state local level filter is an EWMA.
 > With constant gain $K$, $\hat\mu_t = \hat\mu_{t-1}+K(y_t-\hat\mu_{t-1}) = Ky_t+(1-K)\hat\mu_{t-1}$, an EWMA with weight $1-K$ on the past.
@@ -259,7 +261,7 @@ Setting $Q = 0$ turns the filter into recursive least squares, and its final sta
 
 > [!question]- stat-kf-rts-smoother | What does the RTS smoother compute, and when must you not use it?
 > $E[a_t\mid y_{1:n}]$ via a backward pass $a_{t|n} = a_{t|t}+C_t(a_{t+1|n}-a_{t+1|t})$, $C_t = P_{t|t}T^\top P_{t+1|t}^{-1}$.
-> Never in a live or backtest signal: it uses future data (smoothed hedge-ratio RMSE 0.0088 versus 0.0108 filtered is look-ahead accuracy).
+> Never in a live or backtest signal: it uses future data (smoothed hedge-ratio RMSE about 0.0088 versus about 0.0108 filtered is look-ahead accuracy).
 
 > [!question]- stat-kf-hedge-ratio-model | How do you set up a Kalman filter for a pairs hedge ratio?
 > State $\beta_t$ (optionally $\alpha_t$) as a random walk, $T = I$; observation $y_t = \alpha_t+\beta_tx_t+\varepsilon_t$ so $Z_t = (1,x_t)$.
@@ -267,7 +269,7 @@ Setting $Q = 0$ turns the filter into recursive least squares, and its final sta
 
 > [!question]- stat-kf-vs-rolling-ols | Why does a Kalman hedge ratio beat a rolling regression?
 > It weights observations optimally given $Q/H$ instead of equally within an arbitrary window, has no window-edge jumps, gives an uncertainty band and handles missing data.
-> On a simulated known path: RMSE 0.0108 versus 0.0375 for a 60-day rolling OLS.
+> On a simulated known path: RMSE about 0.0108 versus about 0.0375 for a 60-day rolling OLS.
 
 > [!question]- stat-kf-q-tuning | How should you choose Q for a hedge-ratio filter, and what goes wrong if it is too large?
 > By maximum likelihood (and innovation diagnostics), not by backtest P&L.
@@ -279,7 +281,7 @@ Setting $Q = 0$ turns the filter into recursive least squares, and its final sta
 
 > [!question]- stat-kf-intercept-collinearity | Why can adding an intercept state ruin a price-level hedge-ratio filter?
 > When $x_t$ varies little relative to its level, $\alpha$ and $\beta$ are nearly collinear and the filter trades one for the other.
-> In the example the posterior correlation reached $-0.98$ and the $\beta$ RMSE rose from 0.0108 to 0.133; use log prices, demean $x$ or drop $\alpha$.
+> In the example the posterior correlation reached about $-0.98$ and the $\beta$ RMSE rose from about 0.0108 to about 0.133; use log prices, demean $x$ or drop $\alpha$.
 
 > [!question]- stat-kf-missing-data | How does a Kalman filter handle a missing observation?
 > Run the predict step and skip the update: the state mean carries forward and its variance grows by $Q$.

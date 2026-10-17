@@ -13,8 +13,8 @@ sources: [Engle and Granger (1987) - Co-integration and Error Correction - Repre
 ## TL;DR
 
 - Two I(1) series are cointegrated if some combination $y_t-\beta x_t$ is stationary; that spread is what a pairs trade, a basis trade or an index arbitrage actually trades.
-- Regressing one random walk on an independent one gives "significant" $t$-stats most of the time (84% at $T = 250$ in simulation) and $t$ grows like $\sqrt T$: never trust a levels regression without a cointegration test.
-- Engle-Granger: OLS in levels, then a unit-root test on the residuals with Engle-Granger critical values (5%: $-3.34$ for two variables with a constant, MacKinnon 2010), not Dickey-Fuller's $-2.86$, which rejects a true null 15% of the time.
+- Regressing one random walk on an independent one gives "significant" $t$-stats most of the time (about 84% at $T = 250$ in simulation) and $t$ grows like $\sqrt T$: never trust a levels regression without a cointegration test.
+- Engle-Granger: OLS in levels, then a unit-root test on the residuals with Engle-Granger critical values (5%: $-3.34$ for two variables with a constant, MacKinnon 2010), not Dickey-Fuller's $-2.86$, which rejects a true null about 15% of the time.
 - Cointegration implies an error-correction model $\Delta y_t = \alpha(y_{t-1}-\beta x_{t-1}) + \dots$ (Granger representation theorem); $\alpha < 0$ is the speed of reversion and gives the half-life.
 - Johansen tests the rank of $\Pi$ in the VECM with trace and max-eigenvalue statistics from a reduced-rank regression; critical values depend on $n-r$ and on the deterministic terms, and using the wrong case gives wrong ranks.
 - A VAR is estimated by OLS equation by equation; Granger causality is a Wald test on lag blocks (predictive, not causal); orthogonalised impulse responses depend on the Cholesky ordering.
@@ -149,13 +149,15 @@ flowchart TD
 
 Regress one simulated random walk on another, independent one (4000 pairs per sample size, seed 1974):
 
+*Seeded simulation output (seed 1974); the values change with the seed.*
+
 | $T$ | Share with $\lvert t\rvert > 1.96$, levels | Mean $R^2$, levels | Share with $\lvert t\rvert>1.96$, differences |
 | ---: | ---: | ---: | ---: |
 | 100 | 75.2% | 0.238 | 6.1% |
 | 250 | 83.8% | 0.237 | 5.5% |
 | 1000 | 92.7% | 0.234 | 4.8% |
 
-At $T = 250$ the median $\lvert t\rvert$ is 6.8.
+At $T = 250$ the median $\lvert t\rvert$ is about 6.8.
 More data makes the false conclusion more confident: the rejection rate rises with $T$ while $R^2$ stays put, the signature of $t = O_p(\sqrt T)$.
 
 ### 2. Why the Engle-Granger table, not Dickey-Fuller
@@ -163,23 +165,25 @@ More data makes the false conclusion more confident: the rejection rate rises wi
 "You regress one price on another, test the residual with ADF and get $t = -3.1$. Cointegrated at 5%?"
 
 Not with two variables: the 5% Engle-Granger value is $-3.34$ asymptotically ($-3.348$ at $T = 499$), and $-3.1$ does not clear it.
-To check the table, simulate 40,000 independent random-walk pairs of length 500 (seed 1987) and compute the residual Dickey-Fuller statistic: its 5% and 1% quantiles are $-3.36$ and $-3.93$, against MacKinnon's $-3.348$ and $-3.918$.
-Using Dickey-Fuller's $-2.86$ would declare 15.1% of these unrelated pairs cointegrated, three times the nominal rate.
+To check the table, simulate 40,000 independent random-walk pairs of length 500 (seed 1987) and compute the residual Dickey-Fuller statistic: its 5% and 1% quantiles are about $-3.36$ and $-3.93$, against MacKinnon's $-3.348$ and $-3.918$.
+Using Dickey-Fuller's $-2.86$ would declare about 15.1% of these unrelated pairs cointegrated, three times the nominal rate.
 
 ### 3. Engle-Granger and an error-correction model on a simulated pair
 
 $x$ is a random walk, $y_t = 2 + 1.5x_t + u_t$, $u_t = 0.9u_{t-1}+\varepsilon_t$, $T = 1000$ (seed 7).
 
-- Step 1: intercept 1.497, hedge ratio 1.492; the reverse regression gives $1/\hat\beta_{x\mid y} = 1.498$, the closeness superconsistency predicts (in a stationary regression the product of the two slopes is $R^2$, so they would not be reciprocals).
-- Step 2: residual Dickey-Fuller $t = -6.88$, far below the 5% value $-3.342$ at $T = 999$: cointegrated.
-- ECM: $\Delta y_t$ on $\hat u_{t-1}$ and $\Delta x_t$ gives $\hat\alpha = -0.091$ ($t = -6.88$) and short-run coefficient 1.516.
-- Implied half-life $\ln0.5/\ln(1+\hat\alpha) = 7.29$ days with the unrounded $\hat\alpha = -0.0908$, against the true $\ln0.5/\ln0.9 = 6.58$.
+- Step 1: intercept about 1.497, hedge ratio about 1.492; the reverse regression gives $1/\hat\beta_{x\mid y}$ of about 1.498, the closeness superconsistency predicts (in a stationary regression the product of the two slopes is $R^2$, so they would not be reciprocals).
+- Step 2: residual Dickey-Fuller $t$ of about $-6.88$, far below the 5% value $-3.342$ at $T = 999$: cointegrated.
+- ECM: $\Delta y_t$ on $\hat u_{t-1}$ and $\Delta x_t$ gives $\hat\alpha$ of about $-0.091$ ($t$ about $-6.88$) and a short-run coefficient of about 1.516.
+- Implied half-life $\ln0.5/\ln(1+\hat\alpha)$ of about 7.29 days from the unrounded $\hat\alpha$ ($-0.0908$ to four decimals), against the true $\ln0.5/\ln0.9 = 6.58$.
 
 A trader would size entries in units of the spread's standard deviation and expect a round trip over a few half-lives ([Statistical Arbitrage and Pairs Trading](../09-Alpha-Research-and-Portfolio/06-Statistical-Arbitrage-and-Pairs-Trading.md)).
 
 ### 4. Power on one year of data
 
 Rejection rate of the 5% Engle-Granger test with $T = 250$ (2000 cointegrated pairs per row):
+
+*Seeded simulation output (seed 8); the values change with the seed.*
 
 | Spread AR(1) coefficient | Half-life (days) | Power |
 | ---: | ---: | ---: |
@@ -194,20 +198,22 @@ A pair with a 34-day (about seven-week) half-life is detected one time in ten wi
 
 Same design, but $x$ drifts by 0.1 per step so the unrestricted-constant case applies ($T = 1000$, $k = 1$):
 
+*Seeded simulation output (seed 7), except the cited 95% critical values; the values change with the seed.*
+
 | $H_0$ | Eigenvalue | Trace | 95% cv | Max-eig | 95% cv |
 | :--- | ---: | ---: | ---: | ---: | ---: |
 | $r = 0$ | 0.0456 | 46.66 | 15.49 | 46.59 | 14.26 |
 | $r\le1$ | 0.0001 | 0.07 | 3.84 | 0.07 | 3.84 |
 
 Reject $r = 0$, do not reject $r\le1$: one cointegrating relation.
-The normalised vector is $(1, -1.495)$, the adjustment coefficients are $\alpha_y = -0.076$ ($t = -3.37$) and $\alpha_x = 0.009$ ($t = 0.77$), so $x$ is weakly exogenous and $y$ does the correcting, as in the data-generating process.
-A simulation of the null (3000 runs, $T = 500$) gives 95% quantiles of 15.76 for the trace and 14.39 for max-eigenvalue with $n-r = 2$, slightly above the asymptotic 15.49 and 14.26, as expected in finite samples.
+The normalised vector is about $(1, -1.495)$, the adjustment coefficients are about $\alpha_y = -0.076$ ($t = -3.37$) and $\alpha_x = 0.009$ ($t = 0.77$), so $x$ is weakly exogenous and $y$ does the correcting, as in the data-generating process.
+A simulation of the null (3000 runs, $T = 500$) gives 95% quantiles of about 15.76 for the trace and about 14.39 for max-eigenvalue with $n-r = 2$, slightly above the asymptotic 15.49 and 14.26, as expected in finite samples.
 
 ### 6. The wrong deterministic case
 
 Simulate a truly cointegrated pair ($r = 1$) and test $H_0$: $r\le1$ with the unrestricted-constant critical value 3.84 (3000 runs, $T = 500$).
-When the common trend drifts, the 95% quantile of the trace statistic is 4.35 and the true null is rejected 6.7% of the time.
-When the prices do not drift, the 95% quantile is 8.26 and the true null is rejected 29.8% of the time: you would conclude that both prices are stationary.
+When the common trend drifts, the 95% quantile of the trace statistic is about 4.35 and the true null is rejected about 6.7% of the time.
+When the prices do not drift, the 95% quantile is about 8.26 and the true null is rejected about 29.8% of the time: you would conclude that both prices are stationary.
 For driftless data, use the restricted-constant case, whose critical values are larger.
 
 ### 7. Impulse responses by hand, and the ordering problem
@@ -224,9 +230,9 @@ Same data, same VAR, very different story: say which ordering you used and why (
 
 ### 8. Estimating the VAR and testing Granger causality
 
-Simulate 1000 observations from the VAR above (seed 11) and run OLS equation by equation: $\hat A = \begin{pmatrix}0.468&0.216\\-0.007&0.600\end{pmatrix}$ and residual correlation 0.504.
-Wald test that $y_2$ does not Granger-cause $y_1$: 43.75, far above the $\chi^2_1$ 5% value 3.841.
-Wald test that $y_1$ does not Granger-cause $y_2$: 0.05.
+Simulate 1000 observations from the VAR above (seed 11) and run OLS equation by equation: $\hat A$ is about $\begin{pmatrix}0.468&0.216\\-0.007&0.600\end{pmatrix}$ and the residual correlation about 0.504.
+Wald test that $y_2$ does not Granger-cause $y_1$: about 43.75, far above the $\chi^2_1$ 5% value 3.841.
+Wald test that $y_1$ does not Granger-cause $y_2$: about 0.05.
 So $y_2$ leads $y_1$ in the predictive sense, which matches the true $A$; whether $y_2$ causes $y_1$ is a separate, economic question.
 
 ## Pitfalls
@@ -253,10 +259,10 @@ So $y_2$ leads $y_1$ in the predictive sense, which matches the true $A$; whethe
 
 > [!question]- stat-coint-spurious-symptoms | You regress one random walk on an independent one. What do you see?
 > Large $|t|$ most of the time, a sizeable $R^2$ and I(1) residuals (Durbin-Watson near 0).
-> In simulation 83.8% of pairs had $|t| > 1.96$ at $T = 250$, with mean $R^2$ 0.24.
+> In simulation about 83.8% of pairs had $|t| > 1.96$ at $T = 250$, with mean $R^2$ about 0.24.
 
 > [!question]- stat-coint-spurious-t-growth | In a spurious regression, what happens to the t-stat as the sample grows?
-> It diverges at rate $\sqrt T$, so rejection rates rise toward 1 (75% at $T = 100$, 93% at $T = 1000$ in simulation).
+> It diverges at rate $\sqrt T$, so rejection rates rise toward 1 (about 75% at $T = 100$, about 93% at $T = 1000$ in simulation).
 > The slope converges to a random variable, not to 0 (Phillips 1986).
 
 > [!question]- stat-coint-eg-steps | Describe the Engle-Granger procedure.
@@ -269,7 +275,7 @@ So $y_2$ leads $y_1$ in the predictive sense, which matches the true $A$; whethe
 
 > [!question]- stat-coint-eg-wrong-cv | What happens if you use the Dickey-Fuller -2.86 for Engle-Granger residuals?
 > You reject a true "no cointegration" null about 15% of the time instead of 5%.
-> A 40,000-pair simulation of independent random walks ($T = 500$) gave 15.1%.
+> A 40,000-pair simulation of independent random walks ($T = 500$) gave about 15.1%.
 
 > [!question]- stat-coint-superconsistency | What is superconsistency of the cointegrating regression, and what does it not give you?
 > $\hat\beta$ converges at rate $T$ rather than $\sqrt T$, so the hedge ratio is precise even with endogenous regressors.
@@ -297,11 +303,11 @@ So $y_2$ leads $y_1$ in the predictive sense, which matches the true $A$; whethe
 
 > [!question]- stat-coint-deterministic-case | Why does the Johansen deterministic specification matter?
 > Critical values change with it: the unrestricted-constant 3.84 for $n-r = 1$ assumes trending data.
-> In simulation with driftless prices it rejected a true rank of 1 in 29.8% of samples (95% quantile 8.26), wrongly suggesting both prices are stationary.
+> In simulation with driftless prices it rejected a true rank of 1 in about 29.8% of samples (95% quantile about 8.26), wrongly suggesting both prices are stationary.
 
 > [!question]- stat-coint-power-short-sample | A spread has AR(1) coefficient 0.98 (half-life about 34 trading days). How often does a 5% Engle-Granger test detect cointegration with one year of daily data?
 > About 9% of the time (simulation, $T = 250$).
-> At 0.95 it is 30% and at 0.90 86%: short samples cannot distinguish slow mean reversion from a random walk.
+> At 0.95 it is about 30% and at 0.90 about 86%: short samples cannot distinguish slow mean reversion from a random walk.
 
 > [!question]- stat-coint-weak-exogeneity | What does a zero adjustment coefficient on one leg of a cointegrated pair mean?
 > That leg is weakly exogenous: it does not respond to the spread, so the other leg does all the correcting and the zero-alpha leg leads price discovery.

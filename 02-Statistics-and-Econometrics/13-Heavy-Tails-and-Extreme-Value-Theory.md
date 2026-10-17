@@ -12,7 +12,7 @@ sources: [McNeil Frey and Embrechts - Quantitative Risk Management revised ed (P
 
 ## TL;DR
 
-- A heavy (power-law) tail has $P(X>x)\approx L(x)\,x^{-\alpha}$; moments of order $\alpha$ and above are infinite, so a Student-$t_4$ has finite variance but infinite kurtosis, and sample kurtosis never settles (7.4 to 216 across ten blocks of 10,000 draws).
+- A heavy (power-law) tail has $P(X>x)\approx L(x)\,x^{-\alpha}$; moments of order $\alpha$ and above are infinite, so a Student-$t_4$ has finite variance but infinite kurtosis, and sample kurtosis never settles (about 7.4 to 216 across ten blocks of 10,000 draws).
 - Fisher-Tippett-Gnedenko: normalised maxima can only converge to a GEV law (Frechet $\xi>0$, Gumbel $\xi = 0$, Weibull $\xi<0$); Pickands-Balkema-de Haan: excesses over a high threshold converge to a generalised Pareto law with the same $\xi$ ($\xi = 1/\alpha$ for a power tail of index $\alpha$).
 - Peaks over threshold: fit a GPD to excesses over $u$ by maximum likelihood, then $\text{VaR}_q = u + \frac{\beta}{\xi}\big[\big(\frac{n}{N_u}(1-q)\big)^{-\xi}-1\big]$ and $\text{ES}_q = \frac{\text{VaR}_q}{1-\xi} + \frac{\beta-\xi u}{1-\xi}$ (McNeil and Frey 2000).
 - At equal variance a fat tail is not "riskier everywhere": a unit-variance $t_4$ has a smaller 95% VaR than the normal (1.507 vs 1.645), about the same at 97.5%, and a much larger 99.9% VaR (5.07 vs 3.09); a 5-sd loss is a 1-in-948-day event instead of 1 in 3.5 million.
@@ -172,6 +172,8 @@ A loss of 5 standard deviations has probability $1.0553\times10^{-3}$ under $t_4
 
 100,000 draws of $t_4$ (seed 13), so the true tail index is 4.
 
+*Seeded simulation output (seed 13); the values change with the seed.*
+
 | $k$ | Hill $\hat\alpha$ |
 | ---: | ---: |
 | 200 | 3.58 |
@@ -181,28 +183,30 @@ A loss of 5 standard deviations has probability $1.0553\times10^{-3}$ under $t_4
 | 5000 | 2.83 |
 
 With $k = 200$ the standard error is about $4/\sqrt{200} = 0.28$; every estimate is below 4 and the shortfall grows with $k$, consistent with the second-order (non-Pareto) bias of Hill for Student-$t$ tails described above.
-Sample kurtosis over ten consecutive blocks of 10,000 draws ranges from 7.4 to 216.3: with an infinite fourth moment, one large draw dominates each block.
+Sample kurtosis over ten consecutive blocks of 10,000 draws ranges from about 7.4 to 216.3: with an infinite fourth moment, one large draw dominates each block.
 
 ### 3. Peaks over threshold on the same data
 
-Threshold $u$ = empirical 98% quantile of the losses, 3.019 (the true $t_4$ 98% quantile is 2.9985), leaving $N_u = 2000$ excesses.
-GPD maximum likelihood gives $\hat\xi = 0.244$ (true $1/\nu = 0.25$, standard error 0.028) and $\hat\beta = 0.991$ ($\hat\beta/u = 0.328$).
-The mean excess above $u$ is 1.321 in the data and $\hat\beta/(1-\hat\xi) = 1.312$ from the fit.
+Threshold $u$ = empirical 98% quantile of the losses, about 3.019 (the true $t_4$ 98% quantile is 2.9985), leaving $N_u = 2000$ excesses.
+GPD maximum likelihood gives $\hat\xi$ of about 0.244 (true $1/\nu = 0.25$, standard error about 0.028) and $\hat\beta$ of about 0.991 ($\hat\beta/u$ about 0.328).
+The mean excess above $u$ is about 1.321 in the data and $\hat\beta/(1-\hat\xi)$ is about 1.312 from the fit.
+
+*POT and empirical columns: seeded simulation output (seed 13); their values change with the seed.*
 
 | Level $q$ | POT VaR | True VaR | Empirical quantile | POT ES | True ES |
 | ---: | ---: | ---: | ---: | ---: | ---: |
 | 99.9% | 7.40 | 7.17 | 7.46 | 10.12 | 9.69 |
 | 99.99% | 13.77 | 13.03 | 12.87 | 18.56 | 17.45 |
 
-The sample standard deviation is 1.446, so a normal model would put the 99.99% VaR at 5.38, less than half the truth.
+The sample standard deviation is about 1.446, so a normal model would put the 99.99% VaR at about 5.38, less than half the truth.
 In this sample the POT estimates are above the truth, and so is the empirical 99.9% quantile; the 99.99% empirical quantile rests on the 10 largest of 100,000 points, while the GPD uses 2000.
 
 ### 4. Block maxima and a return level
 
 2000 blocks of 250 $t_4$ draws (seed 21), one maximum loss per "year".
-GEV maximum likelihood gives $\hat\xi = 0.244$, $\hat\mu = 4.876$, $\hat\sigma = 1.378$.
-The 1-in-10-year return level is $\hat z_{0.1} = 9.006$, against the exact $F^{-1}(0.9^{1/250}) = 9.003$.
-The same fit on normal block maxima gives $\hat\xi = -0.10$, not 0, consistent with the well-known slow convergence of normal maxima to the Gumbel limit; let $\xi$ be estimated rather than imposed.
+GEV maximum likelihood gives $\hat\xi$ of about 0.244, $\hat\mu$ of about 4.876 and $\hat\sigma$ of about 1.378.
+The 1-in-10-year return level $\hat z_{0.1}$ is about 9.006, against the exact $F^{-1}(0.9^{1/250}) = 9.003$.
+The same fit on normal block maxima gives $\hat\xi$ of about $-0.10$, not 0, consistent with the well-known slow convergence of normal maxima to the Gumbel limit; let $\xi$ be estimated rather than imposed.
 
 ### 5. Does fat-tailedness change the Sharpe ratio's standard error?
 
@@ -238,7 +242,7 @@ Kurtosis alone adds under 10% to the monthly standard error; a short-volatility 
 
 > [!question]- stat-evt-t4-kurtosis | Why does sample kurtosis of Student-t(4) data jump around so much?
 > The population kurtosis is infinite, so the sample estimate never converges and is dominated by the largest draw.
-> Ten blocks of 10,000 $t_4$ draws gave sample kurtoses from 7.4 to 216.3.
+> Ten blocks of 10,000 $t_4$ draws gave sample kurtoses from about 7.4 to 216.3.
 
 > [!question]- stat-evt-hill-formula | Write the Hill estimator of the tail index.
 > $1/\hat\alpha = \frac1k\sum_{i=1}^k\ln X_{(i)} - \ln X_{(k+1)}$ on the $k$ largest losses.
@@ -246,7 +250,7 @@ Kurtosis alone adds under 10% to the monthly standard error; a short-volatility 
 
 > [!question]- stat-evt-hill-k-tradeoff | How do you choose k in the Hill estimator, and what goes wrong for Student-t data?
 > Bias-variance: small $k$ is noisy, large $k$ includes the non-Pareto body; look for a stable region in a Hill plot.
-> For $t_4$ with $n = 100{,}000$ the estimate fell from 3.58 at $k = 200$ to 2.83 at $k = 5000$, against a true 4, the downward bias expected when the tail is not exactly Pareto.
+> For $t_4$ with $n = 100{,}000$ the estimate fell from about 3.58 at $k = 200$ to about 2.83 at $k = 5000$, against a true 4, the downward bias expected when the tail is not exactly Pareto.
 
 > [!question]- stat-evt-fisher-tippett | State the Fisher-Tippett-Gnedenko theorem.
 > If normalised maxima $(M_n-d_n)/c_n$ converge to a non-degenerate law, that law is GEV: $\exp(-(1+\xi x)^{-1/\xi})$, Gumbel when $\xi = 0$.
@@ -258,7 +262,7 @@ Kurtosis alone adds under 10% to the monthly standard error; a short-volatility 
 
 > [!question]- stat-evt-gpd-xi-student-t | What GPD shape parameter should excesses of Student-t(nu) losses have?
 > $\xi = 1/\nu$; for $t_4$, 0.25.
-> A POT fit on 100,000 simulated $t_4$ draws with 2000 excesses gave 0.244 with standard error 0.028.
+> A POT fit on 100,000 simulated $t_4$ draws with 2000 excesses gave about 0.244 with standard error about 0.028.
 
 > [!question]- stat-evt-pot-var-formula | Give the peaks-over-threshold VaR formula.
 > $\text{VaR}_q = u + \frac{\beta}{\xi}\big[\big(\frac{n}{N_u}(1-q)\big)^{-\xi}-1\big]$, from inverting $\bar F(x)\approx\frac{N_u}{n}(1+\xi\frac{x-u}{\beta})^{-1/\xi}$.
@@ -278,7 +282,7 @@ Kurtosis alone adds under 10% to the monthly standard error; a short-volatility 
 
 > [!question]- stat-evt-return-level | How do you compute a 1-in-10-year loss from a fitted GEV on annual maxima?
 > $z_{0.1} = \mu+\frac\sigma\xi[(-\ln0.9)^{-\xi}-1]$, the level an annual maximum exceeds with probability 10%.
-> On 2000 simulated $t_4$ "years" the GEV gave 9.006 against the exact 9.003.
+> On 2000 simulated $t_4$ "years" the GEV gave about 9.006 against the exact 9.003.
 
 > [!question]- stat-evt-normal-vs-t-var | At equal variance, is a Student-t(4) VaR always larger than the normal VaR?
 > No: at 95% it is smaller (1.507 vs 1.645), at 97.5% about equal (1.963 vs 1.960), at 99.9% much larger (5.07 vs 3.09).
@@ -297,7 +301,7 @@ Kurtosis alone adds under 10% to the monthly standard error; a short-volatility 
 > Too low biases the shape toward the body of the distribution; too high leaves few excesses and a noisy fit.
 
 > [!question]- stat-evt-normal-maxima-slow | You fit a GEV to annual maxima of normal data. Do you get xi = 0?
-> Not in practice: 2000 blocks of 250 normal draws gave $\hat\xi = -0.10$.
+> Not in practice: 2000 blocks of 250 normal draws gave $\hat\xi$ of about $-0.10$.
 > Convergence of normal maxima to the Gumbel limit is very slow, so let $\xi$ be estimated and do not over-read its sign near zero.
 
 > [!question]- stat-evt-empirical-quantile-limits | Why not just use the empirical 99.99% quantile of 100,000 returns?

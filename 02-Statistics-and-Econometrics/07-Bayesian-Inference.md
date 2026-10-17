@@ -210,6 +210,8 @@ The frequentist one-sided $p$-value against $SR = 0$ is $1-\Phi(1.5\sqrt2) = 0.0
 
 Simulate 200 managers with true alphas $N(0,2^2)$ observed with noise sd $4.62$ (500 repetitions, seed 42).
 
+*Seeded simulation output (seed 42), except the theory value; the values change with the seed.*
+
 | Estimator | Mean squared error |
 | :--- | ---: |
 | Raw alphas (theory 21.33) | 21.42 |
@@ -217,17 +219,19 @@ Simulate 200 managers with true alphas $N(0,2^2)$ observed with noise sd $4.62$ 
 | James-Stein, positive part | 3.63 |
 | Oracle Bayes (known $\tau$) | 3.37 |
 
-The mean estimated $\tau$ is 1.92 against the true 2.
-The 20 managers with the best raw alpha average 8.79% raw, but their true alphas average only 1.39%; the empirical Bayes estimates for them average 1.39%, so shrinkage removes the winner's curse almost exactly.
+The mean estimated $\tau$ is about 1.92 against the true 2.
+The 20 managers with the best raw alpha average about 8.79% raw, but their true alphas average only about 1.39%; the empirical Bayes estimates for them also average about 1.39%, so shrinkage removes the winner's curse almost exactly.
 
 ### 6. Ridge is a posterior mean
 
 With $n = 60$, five regressors, $\sigma = 1$ and prior sd $\tau = 0.5$ (seed 7): $\lambda = \sigma^2/\tau^2 = 4$.
-The posterior mean from the precision form $\big(X^\top X/\sigma^2 + I/\tau^2\big)^{-1}X^\top y/\sigma^2$ and the ridge solution computed by data augmentation (append $\sqrt\lambda I$ rows with zero targets) agree to $10^{-10}$, and ridge shrinks the coefficient vector to 0.933 of the OLS length.
+The posterior mean from the precision form $\big(X^\top X/\sigma^2 + I/\tau^2\big)^{-1}X^\top y/\sigma^2$ and the ridge solution computed by data augmentation (append $\sqrt\lambda I$ rows with zero targets) agree to $10^{-10}$, and ridge shrinks the coefficient vector to about 0.933 of the OLS length.
 
 ### 7. Validating a Metropolis sampler on conjugate targets
 
 Target 1, the hit-rate posterior Beta(61,41) through its unnormalised log density $60\log p + 40\log(1-p)$; step $2.4\times0.0483$; 60,000 iterations, 2000 burn-in (seed 2026):
+
+*MCMC column: seeded simulation output (seed 2026); its values change with the seed.*
 
 | Quantity | MCMC | Exact |
 | :--- | ---: | ---: |
@@ -236,10 +240,10 @@ Target 1, the hit-rate posterior Beta(61,41) through its unnormalised log densit
 | sd | 0.0482 | 0.0483 |
 | $P(p\le0.5)$ | 0.0220 | 0.0230 |
 
-The effective sample size is about 12,168 out of 58,000 draws, so the Monte Carlo error of the mean is about $0.0483/\sqrt{12168}\approx0.0004$, consistent with the observed gap of 0.0004 between the MCMC and exact means.
+The effective sample size is about 12,168 out of 58,000 draws, so the Monte Carlo error of the mean is about $0.0483/\sqrt{12168}\approx0.0004$, consistent with the observed gap of about 0.0004 between the MCMC and exact means.
 
-Target 2, normal data with unknown mean and variance ($n = 30$, $\bar x = 0.1156$, $s^2 = 0.9094$) under the prior flat in $(\mu,\log\sigma)$, whose exact marginal for $\mu$ is Student-$t_{29}$ centred at $\bar x$ with sd $\sqrt{s^2/n\cdot(n-1)/(n-3)} = 0.1804$, and $E[\sigma^2\mid D] = (n-1)s^2/(n-3) = 0.9768$.
-A two-dimensional Metropolis run (acceptance 0.305) gives a posterior mean of $\mu$ of 0.1174, sd 0.1813 and $E[\sigma^2]$ 0.9748.
+Target 2, normal data with unknown mean and variance (simulated with the same seed: $n = 30$, $\bar x$ about 0.1156, $s^2$ about 0.9094) under the prior flat in $(\mu,\log\sigma)$, whose exact marginal for $\mu$ is Student-$t_{29}$ centred at $\bar x$ with sd $\sqrt{s^2/n\cdot(n-1)/(n-3)} = 0.1804$, and $E[\sigma^2\mid D] = (n-1)s^2/(n-3) = 0.9768$.
+A two-dimensional Metropolis run (acceptance about 0.305) gives a posterior mean of $\mu$ of about 0.1174, sd about 0.1813 and $E[\sigma^2]$ about 0.9748.
 Only after both checks pass would you point the same code at a posterior with no closed form, such as a Student-$t$ return model.
 
 ### 8. Zero losses in twelve months
@@ -316,8 +320,8 @@ The answer depends on the prior because 12 observations carry little information
 > Then shrink each unit by $\hat B = \sigma^2/(\sigma^2+\hat\tau^2)$ toward the cross-sectional mean.
 
 > [!question]- stat-bayes-winners-curse | You pick the top 20 of 200 managers by raw alpha. Why will they disappoint, and what fixes it?
-> Selection on noisy estimates picks positive noise: in simulation their raw alpha averaged 8.79% but their true alpha 1.39%.
-> Empirical Bayes shrinkage estimated 1.39%, removing the bias; rank on shrunk estimates and size on them.
+> Selection on noisy estimates picks positive noise: in simulation their raw alpha averaged about 8.79% but their true alpha about 1.39%.
+> Empirical Bayes shrinkage estimated about 1.39%, removing the bias; rank on shrunk estimates and size on them.
 
 > [!question]- stat-bayes-metropolis-acceptance | Write the Metropolis acceptance probability and explain why the normalising constant is not needed.
 > $\min\big(1,\pi(\theta')/\pi(\theta)\big)$ for a symmetric proposal; Hastings multiplies by $q(\theta\mid\theta')/q(\theta'\mid\theta)$.
@@ -325,11 +329,11 @@ The answer depends on the prior because 12 observations carry little information
 
 > [!question]- stat-bayes-metropolis-tuning | What acceptance rate should you target for random-walk Metropolis?
 > About 0.44 in one dimension (Gelman, Roberts and Gilks 1996) and 0.234 in high dimension (Roberts, Gelman and Gilks 1997), with step about $2.38/\sqrt d$ posterior sds.
-> A step of 2.4 posterior sds on a one-dimensional beta posterior gave acceptance 0.446.
+> A step of 2.4 posterior sds on a one-dimensional beta posterior gave acceptance about 0.446.
 
 > [!question]- stat-bayes-mcmc-validation | How do you convince yourself an MCMC sampler is correct before using it on a real model?
 > Run it on a target with a known answer (a conjugate posterior) and compare mean, sd and tail probabilities within Monte Carlo error based on the effective sample size; then run several chains from dispersed starts.
-> A Beta(61,41) check gave mean 0.5985 versus 0.5980 with ESS about 12,000 of 58,000 draws.
+> A Beta(61,41) check gave mean about 0.5985 versus 0.5980 with ESS about 12,000 of 58,000 draws.
 
 > [!question]- stat-bayes-ess | What is the effective sample size of an MCMC chain?
 > $N/(1+2\sum_{k\ge1}\rho_k)$, the number of independent draws with the same Monte Carlo variance of the mean.

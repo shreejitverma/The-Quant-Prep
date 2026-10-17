@@ -89,10 +89,10 @@ def ols(X: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarra
     return beta, e, cov
 
 
-def johansen(levels: np.ndarray, k: int = 1) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def johansen(levels: np.ndarray, k: int = 1) -> tuple[np.ndarray, np.ndarray, int]:
     """Johansen reduced-rank regression with an unrestricted constant and k-1 lagged differences.
 
-    Returns eigenvalues (descending), eigenvectors (columns, beta candidates) and the S matrices' T.
+    Returns eigenvalues (descending), eigenvectors (columns, beta candidates) and the effective sample size.
     """
     dy = np.diff(levels, axis=0)
     t_eff = dy.shape[0] - (k - 1)
@@ -100,9 +100,9 @@ def johansen(levels: np.ndarray, k: int = 1) -> tuple[np.ndarray, np.ndarray, np
     z1 = levels[k - 1 : -1]
     regs = [np.ones((t_eff, 1))] + [dy[k - 1 - j : -j] for j in range(1, k)]
     Z = np.hstack(regs)
-    proj = Z @ np.linalg.pinv(Z)
-    r0 = z0 - proj @ z0
-    r1 = z1 - proj @ z1
+    zz = np.hstack([z0, z1])
+    coef, *_ = np.linalg.lstsq(Z, zz, rcond=None)
+    r0, r1 = np.hsplit(zz - Z @ coef, [z0.shape[1]])
     s00, s01, s11 = r0.T @ r0 / t_eff, r0.T @ r1 / t_eff, r1.T @ r1 / t_eff
     # solve |lambda S11 - S10 S00^-1 S01| = 0 via the symmetric form with L = chol(S11)
     c = np.linalg.cholesky(s11)
@@ -112,7 +112,7 @@ def johansen(levels: np.ndarray, k: int = 1) -> tuple[np.ndarray, np.ndarray, np
     order = np.argsort(lam)[::-1]
     lam, v = lam[order], v[:, order]
     beta = ci.T @ v
-    return lam, beta, np.array([t_eff, 0.0])
+    return lam, beta, t_eff
 
 
 def johansen_stats(lam: np.ndarray, t_eff: int) -> tuple[list[float], list[float]]:
@@ -130,7 +130,7 @@ def spurious_regression() -> None:
     print("#    backs: Worked example 1; cards stat-coint-spurious-symptoms, stat-coint-spurious-t-growth")
     rng = np.random.default_rng(1974)
     reps = 4000
-    expected = {100: (0.752, 0.238), 250: (0.838, 0.237), 1000: (0.927, 0.234)}
+    expected = {100: (0.752, 0.238, 0.061), 250: (0.838, 0.237, 0.055), 1000: (0.927, 0.234, 0.048)}
     for t in (100, 250, 1000):
         x = np.cumsum(rng.standard_normal((reps, t)), axis=1)
         y = np.cumsum(rng.standard_normal((reps, t)), axis=1)
@@ -138,7 +138,7 @@ def spurious_regression() -> None:
         _, td, _ = batch_slope_t(np.diff(x, axis=1), np.diff(y, axis=1))
         check(f"T={t}: share |t| > 1.96, levels", float(np.mean(np.abs(tl) > 1.96)), expected[t][0], 0.002)
         check(f"T={t}: mean R^2, levels", float(np.mean(r2)), expected[t][1], 0.002)
-        check(f"T={t}: share |t| > 1.96, differences", float(np.mean(np.abs(td) > 1.96)), 0.05, 0.011)
+        check(f"T={t}: share |t| > 1.96, differences", float(np.mean(np.abs(td) > 1.96)), expected[t][2], 0.002)
         if t == 250:
             check("T=250: median |t|, levels", float(np.median(np.abs(tl))), 6.8, 0.005)
 
@@ -227,8 +227,7 @@ def johansen_section() -> None:
     print("#    backs: Worked examples 5, 6; cards stat-coint-deterministic-case, stat-coint-weak-exogeneity")
     x, y = simulate_pair(drift=0.1)
     t = x.size
-    lam, beta, meta = johansen(np.column_stack([y, x]), k=1)
-    t_eff = int(meta[0])
+    lam, beta, t_eff = johansen(np.column_stack([y, x]), k=1)
     trace, maxeig = johansen_stats(lam, t_eff)
     check("eigenvalue 1", lam[0], 0.0456, 1e-4)
     check("eigenvalue 2", lam[1], 0.0001, 1e-4)
@@ -259,8 +258,8 @@ def johansen_section() -> None:
     for _ in range(3000):
         # r = 0: two independent random walks with drift
         levels = np.cumsum(0.2 + rng2.standard_normal((500, 2)), axis=0)
-        lam0, _, m0 = johansen(levels, k=1)
-        tr, mx = johansen_stats(lam0, int(m0[0]))
+        lam0, _, t0 = johansen(levels, k=1)
+        tr, mx = johansen_stats(lam0, t0)
         tr0.append(tr[0])
         mx0.append(mx[0])
         # r = 1: a cointegrated pair, with and without drift in the common trend
@@ -271,8 +270,8 @@ def johansen_section() -> None:
             s[0] = e[0]
             for i in range(1, 500):
                 s[i] = 0.5 * s[i - 1] + e[i]
-            lam1, _, m1 = johansen(np.column_stack([w + s, w]), k=1)
-            store.append(johansen_stats(lam1, int(m1[0]))[0][1])
+            lam1, _, t1 = johansen(np.column_stack([w + s, w]), k=1)
+            store.append(johansen_stats(lam1, t1)[0][1])
     check("  trace, n-r=2, r=0 true (MHM asymptotic 15.49)", float(np.quantile(tr0, 0.95)), 15.76, 0.005)
     check("  max-eig, n-r=2, r=0 true (MHM asymptotic 14.26)", float(np.quantile(mx0, 0.95)), 14.39, 0.005)
     check("  trace, n-r=1, r=1 true, data drift (MHM 3.84)", float(np.quantile(tr1_drift, 0.95)), 4.35, 0.005)

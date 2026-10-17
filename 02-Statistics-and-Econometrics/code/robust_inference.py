@@ -313,7 +313,7 @@ def collinearity() -> None:
     check("theory sd of b1 sqrt(VIF/n)", math.sqrt(1 / (1 - rho**2) / n), 0.2025, 1e-4)
     check("MC sd of b1+b2", float(np.std(bsum)), 0.0646, 0.0005)
     check("theory sd of b1+b2 sqrt(2/((1+rho) n))", math.sqrt(2 / (1.95 * n)), 0.0641, 1e-4)
-    check("share of samples with b1 < 0 (true b1 = 0.5)", neg / reps, 0.0045, 0.002)
+    check("share of samples with b1 < 0 (true b1 = 0.5)", neg / reps, 0.0045, 0.0005)
     check("theory P(b1 < 0) = Phi(-0.5/0.2025)", PHI.cdf(-0.5 / math.sqrt(1 / (1 - rho**2) / n)), 0.0068, 1e-4)
     check("mean sample VIF", float(np.mean(vifs)), 10.33, 0.01)
 

@@ -210,6 +210,8 @@ The true slope is 0, so every rejection is false.
 Theory says the naive standard error is too small by $\sqrt3 = 1.732$, and the test rejects 25.8% of the time.
 A simulation with 4000 samples (seed 11) agrees:
 
+*Seeded simulation output (seed 11); the values change with the seed.*
+
 | Quantity, scaled by $\sqrt n$ | Value |
 | :--- | ---: |
 | Actual sd of $\hat\beta_1$ | 1.736 |
@@ -217,15 +219,17 @@ A simulation with 4000 samples (seed 11) agrees:
 | Mean White HC0 SE | 1.705 |
 | Mean HC3 SE | 1.725 |
 
-Rejection rates at nominal 5%: classical 26.2%, HC0 5.7%, HC3 5.4%.
-On one such sample the Koenker LM statistic ($nR^2$ of $e^2$ on $x^2$) is 129.4 against a $\chi^2_1$ 5% critical value of 3.841.
+Rejection rates at nominal 5%: classical about 26.2%, HC0 about 5.7%, HC3 about 5.4%.
+On one such sample the Koenker LM statistic ($nR^2$ of $e^2$ on $x^2$) is about 129.4 against a $\chi^2_1$ 5% critical value of 3.841.
 
 ### 2. Overlapping 20-day returns on a persistent signal
 
 "You regress 20-day forward returns on a daily signal with AR(1) coefficient 0.95 over 2500 days and get $t = 4$. Should you believe it?"
 
 The score variance inflation is 14.62, so under the null the OLS $t$-stat has standard deviation about 3.82; $t = 4$ is barely one null standard deviation.
-A simulation of 1000 null samples (seed 2024, no predictability at all) gives an OLS $t$ standard deviation of 3.84 and:
+A simulation of 1000 null samples (seed 2024, no predictability at all) gives an OLS $t$ standard deviation of about 3.84 and:
+
+*Seeded simulation output (seed 2024); the values change with the seed.*
 
 | Standard error | Rejection rate at 5% | 95th percentile of $\lvert t\rvert$ |
 | :--- | ---: | ---: |
@@ -255,7 +259,7 @@ Deleting it moves the slope from 0.4 back to 1.0, so $\hat\beta-\hat\beta_{(5)} 
 "Two signals have correlation 0.95. You regress returns on both with $n = 250$ and unit noise. How precise is each coefficient and their sum?"
 
 $\text{VIF} = 1/(1-0.95^2) = 10.26$, so each slope has standard deviation $\sqrt{10.26/250} = 0.2025$, while the sum has $\sqrt{2/(1.95\times250)} = 0.0641$.
-A simulation (2000 samples, true slopes 0.5 and 0.5, seed 5) gives 0.203 and 0.0646, a mean sample VIF of 10.33, and a negative estimate for a slope whose true value is 0.5 in 0.45% of samples (normal theory 0.68%).
+A simulation (2000 samples, true slopes 0.5 and 0.5, seed 5) gives about 0.203 and 0.0646, a mean sample VIF of about 10.33, and a negative estimate for a slope whose true value is 0.5 in about 0.45% of samples (normal theory 0.68%).
 Report the combined exposure, or orthogonalise one signal on the other and state which one owns the shared part.
 
 ### 5. Clustered errors in a stock panel
@@ -263,22 +267,24 @@ Report the combined exposure, or orthogonalise one signal on the other and state
 "Panel of 100 dates by 50 stocks; the regressor and residual each have a common date component with within-date correlations 0.5 and 0.25. How wrong are OLS errors?"
 
 Moulton: $1 + 49\times0.5\times0.25 = 7.125$, so the standard error is too small by $\sqrt{7.125} = 2.67$.
-A simulation (1000 panels, true slope 0, seed 99) gives an actual-to-OLS ratio of 2.57 and a mean cluster-to-OLS ratio of 2.61.
-Rejection rates at 5%: OLS 44.8%, White 44.9% (no better than OLS: the simulated errors are homoskedastic and dependent within dates), clustered by date 5.2%, Fama-MacBeth 5.8%.
+A simulation (1000 panels, true slope 0, seed 99) gives an actual-to-OLS ratio of about 2.57 and a mean cluster-to-OLS ratio of about 2.61.
+Rejection rates at 5%: OLS about 44.8%, White about 44.9% (no better than OLS: the simulated errors are homoskedastic and dependent within dates), clustered by date about 5.2%, Fama-MacBeth about 5.8%.
 
 ### 6. Huber versus OLS, and its limit
 
-Data: $y = 1 + 2x + \varepsilon$, $n = 200$, seed 3; clean OLS slope 2.03.
+Data: $y = 1 + 2x + \varepsilon$, $n = 200$, seed 3; clean OLS slope about 2.03.
+
+*Seeded simulation output (seed 3); the values change with the seed.*
 
 | Contamination | OLS slope | Huber slope |
 | :--- | ---: | ---: |
 | 10 largest-$x$ points have $y$ shifted by +20 (vertical outliers) | 4.07 | 2.26 |
 | 10 points moved to $x = 5$, $y = -10$ (bad leverage) | -0.38 | 1.47 |
 
-With vertical outliers the OLS intercept moves to 1.92, Huber's to 1.13.
+With vertical outliers the OLS intercept moves to about 1.92, Huber's to about 1.13.
 Huber repairs most of the vertical damage but only part of the leverage damage.
 That matches the theory above: Huber weights depend only on residuals, and a high-leverage point pulls the fit toward itself, as in Example 3.
-Winsorising $y$ at the 5% and 95% quantiles gives a slope of 1.97 here, with the clip level equal to the 5% contamination rate; one favourable case is not evidence that clipping the target is safe, and the right defence is to look at the points.
+Winsorising $y$ at the 5% and 95% quantiles gives a slope of about 1.97 here, with the clip level equal to the 5% contamination rate; one favourable case is not evidence that clipping the target is safe, and the right defence is to look at the points.
 
 ### 7. Newey-West by hand
 
@@ -311,7 +317,7 @@ The truth is $(1+0.5)/(1-0.5) = 3$, so the standard error is understated by a fa
 > HC2 divides by $1-h_{ii}$, HC3 by $(1-h_{ii})^2$ (close to the jackknife); HC3 is the usual small-sample choice.
 
 > [!question]- stat-diag-hetero-size-distortion | Errors have variance x squared with x standard normal. How often does a nominal 5% OLS t-test of a true zero slope reject?
-> About 26% (25.8% asymptotically; 26.2% in a 4000-sample simulation with $n = 500$).
+> About 26% (25.8% asymptotically; about 26.2% in a 4000-sample simulation with $n = 500$).
 > The true SE is $\sqrt{E[x^4]}/E[x^2] = \sqrt3$ times the naive one, so the test rejects when $|Z| > 1.96/\sqrt3$.
 
 > [!question]- stat-diag-breusch-pagan | How does the Koenker form of the Breusch-Pagan test work?
@@ -336,7 +342,7 @@ The truth is $(1+0.5)/(1-0.5) = 3$, so the standard error is understated by a fa
 
 > [!question]- stat-diag-overlapping-lags | You regress 20-day forward returns on a persistent daily signal. Which HAC lag length do you need, and why?
 > At least 19, better around 40 with Bartlett weights, or Hansen-Hodrick with 19.
-> Overlap makes the residual MA(19); with a persistent signal the score inherits it, inflating the OLS $t$ by up to $\sqrt{20}$; in simulation the rule-of-thumb $L = 8$ still rejected 20% of true nulls.
+> Overlap makes the residual MA(19); with a persistent signal the score inherits it, inflating the OLS $t$ by up to $\sqrt{20}$; in simulation the rule-of-thumb $L = 8$ still rejected about 20% of true nulls.
 
 > [!question]- stat-diag-hansen-hodrick | What is the Hansen-Hodrick estimator and its drawback?
 > HAC with uniform weights on lags 1 to $h-1$, matching the exact MA($h-1$) structure of overlapping $h$-period residuals.
@@ -368,7 +374,7 @@ The truth is $(1+0.5)/(1-0.5) = 3$, so the standard error is understated by a fa
 
 > [!question]- stat-diag-moulton | 50 stocks per date, within-date correlation 0.5 in the regressor and 0.25 in the residual. By how much are OLS standard errors understated?
 > By about 2.67 times.
-> Moulton factor $1+(m-1)\rho_x\rho_u = 1 + 49\times0.125 = 7.125$ for the variance; a simulation gave 2.57 and clustered SEs 2.61.
+> Moulton factor $1+(m-1)\rho_x\rho_u = 1 + 49\times0.125 = 7.125$ for the variance; a simulation gave about 2.57 and clustered SEs about 2.61.
 
 > [!question]- stat-diag-fama-macbeth-vs-cluster | When are Fama-MacBeth standard errors right, and when do you need firm clustering?
 > Fama-MacBeth handles cross-sectional correlation from common date shocks; it fails with persistent firm effects, which make the yearly slopes correlated.
@@ -376,7 +382,7 @@ The truth is $(1+0.5)/(1-0.5) = 3$, so the standard error is understated by a fa
 
 > [!question]- stat-diag-white-in-panel | Why do White standard errors not help when all stocks share a daily shock?
 > White allows unequal variances but still treats rows as independent; the problem is positive covariance between rows on the same date.
-> In simulation White rejected a true null 44.9% of the time, OLS 44.8%, date-clustered 5.2%.
+> In simulation White rejected a true null about 44.9% of the time, OLS about 44.8%, date-clustered about 5.2%.
 
 > [!question]- stat-diag-huber-efficiency | What is the Huber tuning constant 1.345 chosen for?
 > 95% asymptotic efficiency relative to OLS when errors are normal.
@@ -384,7 +390,7 @@ The truth is $(1+0.5)/(1-0.5) = 3$, so the standard error is understated by a fa
 
 > [!question]- stat-diag-m-estimator-leverage | Does Huber regression protect you from a bad data point with an extreme regressor value?
 > No: M-estimators downweight large residuals, and a high-leverage point makes its own residual small.
-> In the worked example Huber moved a corrupted slope from -0.38 only to 1.47 (truth 2); use high-breakdown estimators or fix the data.
+> In the worked example Huber moved a corrupted slope from about -0.38 only to about 1.47 (truth 2); use high-breakdown estimators or fix the data.
 
 > [!question]- stat-diag-winsorize-target | What is the risk of winsorising the dependent variable in a return-predictability regression?
 > You change the estimand: the slope now describes clipped returns and can be biased, and the tails you removed may be the economically important part.
