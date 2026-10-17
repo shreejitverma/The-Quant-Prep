@@ -201,7 +201,7 @@ def engle_granger_example() -> None:
     # error-correction model: dy_t = c + alpha u_{t-1} + gamma dx_t + e_t
     dy, dx = np.diff(y), np.diff(x)
     ecm, _, ecm_cov = ols(np.column_stack([np.ones(t - 1), uh[:-1], dx]), dy)
-    check("ECM: adjustment alpha (true -0.1)", ecm[1], -0.091, 0.0005)
+    check("ECM: adjustment alpha (true -0.1)", ecm[1], -0.0908, 0.00005)
     check("ECM: t-stat of alpha", ecm[1] / math.sqrt(ecm_cov[1, 1]), -6.88, 0.005)
     check("ECM: short-run gamma (true 1.5)", ecm[2], 1.516, 0.0005)
     check("implied half-life ln 0.5 / ln(1 + alpha) (true 6.58)", math.log(0.5) / math.log(1 + ecm[1]), 7.29, 0.005)

@@ -147,8 +147,12 @@ def heteroskedasticity() -> None:
         rej_0 += abs(b[1] / s0) > 1.96
         rej_3 += abs(b[1] / s3) > 1.96
     true_sd = float(np.std(slopes))
-    check("asymptotic SE ratio sqrt(E[x^4]/E[x^2]^2) = sqrt(3)", math.sqrt(3.0), 1.7321, 1e-4)
-    check("theoretical classical-t rejection 2(1-Phi(1.96/sqrt3))", 2 * (1 - PHI.cdf(1.96 / math.sqrt(3))), 0.2578, 1e-4)
+    # E[x^2] and E[x^4] of N(0,1) by quadrature, not recalled
+    grid = np.linspace(-12.0, 12.0, 240_001)
+    dens = np.exp(-0.5 * grid**2) / math.sqrt(2 * math.pi)
+    m2, m4 = float(np.trapezoid(grid**2 * dens, grid)), float(np.trapezoid(grid**4 * dens, grid))
+    ratio = check("asymptotic SE ratio sqrt(E[x^4]/E[x^2]^2) (quadrature)", math.sqrt(m4 / m2**2), 1.7321, 1e-4)
+    check("theoretical classical-t rejection 2(1-Phi(1.96/ratio))", 2 * (1 - PHI.cdf(1.96 / ratio)), 0.2578, 1e-4)
     check("MC sd of slope x sqrt(n)", true_sd * math.sqrt(n), 1.736, 0.002)
     check("mean classical SE x sqrt(n)", float(np.mean(se_c)) * math.sqrt(n), 0.998, 0.002)
     check("mean White HC0 SE x sqrt(n)", float(np.mean(se_0)) * math.sqrt(n), 1.705, 0.002)
@@ -165,7 +169,8 @@ def heteroskedasticity() -> None:
     Z = np.column_stack([np.ones(n), x**2])
     _, u, _ = ols(Z, e**2)
     r2 = 1.0 - (u @ u) / np.sum((e**2 - np.mean(e**2)) ** 2)
-    check("Koenker-BP LM = n R^2 (one sample), chi2_1 5% cv 3.841", n * r2, 129.4, 0.1)
+    check("Koenker-BP LM = n R^2 (one sample)", n * r2, 129.4, 0.1)
+    check("chi2_1 5% critical value = z_0.975^2", PHI.inv_cdf(0.975) ** 2, 3.841, 0.0005)
 
 
 def newey_west_kernel() -> None:
@@ -192,7 +197,9 @@ def overlapping_returns() -> None:
     inflation = 1.0 + 2.0 * sum(phi**k * (1.0 - k / h) for k in range(1, h))
     check("theoretical score variance inflation 1+2 sum phi^k (1-k/h)", inflation, 14.6225, 1e-4)
     check("implied sd of the OLS t-stat, sqrt(inflation)", math.sqrt(inflation), 3.8239, 1e-4)
-    check("limit phi -> 1: inflation h, t-stat sd sqrt(20)", math.sqrt(h), 4.4721, 1e-4)
+    limit = 1.0 + 2.0 * sum(1.0 - k / h for k in range(1, h))  # the inflation sum at phi = 1
+    check("limit phi -> 1: inflation sum equals h", limit, 20.0, 1e-9)
+    check("limit phi -> 1: t-stat sd sqrt(inflation)", math.sqrt(limit), 4.4721, 1e-4)
     l_rule = nw_rule_of_thumb(t_obs)
     names = ["OLS", f"NW L={l_rule}", "NW L=20", "NW L=40", "HH L=19", "non-overlap OLS"]
     rejections = dict.fromkeys(names, 0)
@@ -279,11 +286,14 @@ def leverage_and_influence() -> None:
 def collinearity() -> None:
     print("\n# 5. Multicollinearity and VIF")
     print("#    backs: Core concepts (VIF), Worked example 4; cards stat-diag-vif, stat-diag-collinear-sum-diff")
+    # VIF and contrast variances from the inverse of the regressor correlation matrix (not the closed forms)
     for rho, vif in [(0.9, 5.2632), (0.95, 10.2564), (0.99, 50.2513)]:
-        check(f"VIF = 1/(1-rho^2), rho={rho}", 1 / (1 - rho**2), vif, 1e-4)
-    check("SE inflation sqrt(VIF), rho=0.9", math.sqrt(1 / (1 - 0.81)), 2.2942, 1e-4)
-    check("var factor of b1+b2, 2/(1+rho), rho=0.9", 2 / 1.9, 1.0526, 1e-4)
-    check("var factor of b1-b2, 2/(1-rho), rho=0.9", 2 / 0.1, 20.0, 1e-9)
+        check(f"VIF = [R^-1]_11, rho={rho}", float(np.linalg.inv(np.array([[1.0, rho], [rho, 1.0]]))[0, 0]), vif, 1e-4)
+    r_inv = np.linalg.inv(np.array([[1.0, 0.9], [0.9, 1.0]]))
+    check("SE inflation sqrt(VIF), rho=0.9", math.sqrt(r_inv[0, 0]), 2.2942, 1e-4)
+    ones, diff = np.array([1.0, 1.0]), np.array([1.0, -1.0])
+    check("var factor of b1+b2, c' R^-1 c, rho=0.9 (closed form 2/(1+rho))", float(ones @ r_inv @ ones), 1.0526, 1e-4)
+    check("var factor of b1-b2, c' R^-1 c, rho=0.9 (closed form 2/(1-rho))", float(diff @ r_inv @ diff), 20.0, 1e-9)
     rng = np.random.default_rng(5)
     n, reps, rho = 250, 2000, 0.95
     b1, bsum, neg = [], [], 0

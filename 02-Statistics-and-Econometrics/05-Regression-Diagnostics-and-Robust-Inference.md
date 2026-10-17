@@ -64,7 +64,7 @@ In small samples residuals are too small at high-leverage points (since $\text{V
 | HC2 | $1/(1-h_{ii})$ |
 | HC3 | $1/(1-h_{ii})^2$ (close to the jackknife) |
 
-Long and Ervin (2000) recommend HC3 for small samples.
+Long and Ervin (2000) recommend HC3 when $n\le250$, without pretesting for heteroskedasticity.
 Why it matters: if the error variance rises with $|x|$, the naive formula averages $\sigma^2$ over all points, but the slope is identified mostly by the large-$|x|$ points where the noise is largest.
 With $x\sim N(0,1)$ and $\text{Var}(\varepsilon\mid x) = x^2$ the asymptotic ratio of the true to the naive standard error is $\sqrt{E[x^4]/E[x^2]^2} = \sqrt3 = 1.732$, so a nominal 5% test rejects a true null $2(1-\Phi(1.96/\sqrt3)) = 25.8\%$ of the time.
 
@@ -93,11 +93,12 @@ Consistency needs $L\to\infty$ with $L/T\to0$.
 
 Bandwidth rules in common use:
 
-- the Newey and West (1994) pilot lag $L = \lfloor 4(T/100)^{2/9}\rfloor$, which gives 5 at $T = 500$ and 8 at $T = 2500$;
+- $L = \lfloor 4(T/100)^{2/9}\rfloor$, the lag-selection parameter (the number of autocovariances in the pilot estimate) of the Newey and West (1994) automatic procedure for the Bartlett kernel, which many packages use as a fixed default bandwidth; it gives 5 at $T = 500$ and 8 at $T = 2500$;
 - the textbook rule $0.75\,T^{1/3}$ (Stock and Watson, *Introduction to Econometrics*), 10.2 at $T = 2500$;
 - Andrews (1991) plug-in for the Bartlett kernel, $S_T = 1.1447\,(\hat\alpha(1)T)^{1/3}$ with $\hat\alpha(1) = 4\hat\rho^2/\big((1-\hat\rho)^2(1+\hat\rho)^2\big)$ from an AR(1) fitted to the score, which gives 11.0 for $\rho = 0.5$, $T = 500$.
 
 Rules of thumb are calibrated for mildly persistent scores; they are far too short for overlapping returns.
+To test for residual autocorrelation itself, use Breusch-Godfrey (regress $e_t$ on $x_t$ and $e_{t-1},\dots,e_{t-q}$, $LM = nR^2\sim\chi^2_q$) or Ljung-Box; Durbin-Watson only detects first-order autocorrelation and is invalid with lagged dependent variables.
 
 ### Overlapping returns and Hansen-Hodrick
 
@@ -120,7 +121,7 @@ Fixes:
 
 ### Leverage, influence and outliers
 
-The hat matrix $H = X(X^\top X)^{-1}X^\top$ has diagonal $h_{ii}\in[1/n, 1]$ with $\sum_i h_{ii} = p$, so the average leverage is $p/n$; a common flag is $h_{ii} > 2p/n$.
+The hat matrix $H = X(X^\top X)^{-1}X^\top$ has diagonal $h_{ii}\le 1$ (and $h_{ii}\ge1/n$ when the model has an intercept) with $\sum_i h_{ii} = p$, so the average leverage is $p/n$; a common flag is $h_{ii} > 2p/n$.
 In simple regression $h_{ii} = 1/n + (x_i-\bar x)^2/S_{xx}$.
 Three facts make the leave-one-out (LOO) analysis cheap:
 
@@ -147,7 +148,7 @@ $$
 
 so at $\rho = 0.9$ the sum is estimated with variance factor 1.05 and the difference with 20.
 The data say "the total exposure to these two similar signals is about this", not how to split it.
-Belsley, Kuh and Welsch use condition indices of the scaled $X$; values above 30 signal harmful dependence.
+Belsley, Kuh and Welsch use condition indices of the column-scaled $X$ (ratios of its largest singular value to each smaller one); indices around 30 or more, with two or more coefficients loading heavily on that dimension, are their usual sign of moderate to strong dependence.
 Remedies: combine the signals, orthogonalise one against the other (Frisch-Waugh-Lovell), shrink ([Regularization](06-Regularization-Ridge-Lasso.md)), or accept wide individual errors when only predictions matter.
 Dropping a correlated control to "fix" collinearity reintroduces omitted variable bias ([Linear Regression and OLS](04-Linear-Regression-OLS.md)).
 
@@ -167,7 +168,7 @@ Petersen (2009) is the finance reference:
 - time effects (a common shock per date) are handled by clustering on date or by Fama-MacBeth: run one cross-sectional regression per date and use the time series of slopes, with standard error $\text{sd}(\hat\beta_t)/\sqrt{T}$;
 - firm effects (persistent per-firm residuals) bias both OLS and Fama-MacBeth errors; cluster on firm;
 - both at once: two-way clustering (Cameron, Gelbach and Miller 2011, Journal of Business and Economic Statistics; Thompson 2011, Journal of Financial Economics);
-- Fama-MacBeth slopes that are autocorrelated (persistent characteristics) need a Newey-West correction on the slope series.
+- Fama-MacBeth slopes that are autocorrelated (persistent characteristics) are often given a Newey-West correction on the slope series, but Petersen finds that such an autocorrelation adjustment does not remove the bias from a fixed firm effect; cluster on firm instead.
 
 ### Robust regression and winsorisation
 
@@ -247,7 +248,7 @@ Residuals are $(-0.8,-0.2,0.4,1.0,-0.4)$: the last point has one of the smallest
 Its leverage is $1/5 + 36/50 = 0.92$, above $2p/n = 0.8$.
 Its LOO prediction error is $-0.4/(1-0.92) = -5.0$: the other four points lie exactly on $y = x$, which predicts 10 at $x = 10$, and the actual is 5.
 $\text{RSS} = 2$, so $s^2 = 2/3$, and Cook's distance is $\frac{0.16}{2\cdot(2/3)}\cdot\frac{0.92}{0.08^2} = 17.25$, against 0.234 for the point with the largest residual ($x = 4$).
-Deleting it moves the slope by $-0.6$ (from 1.0 to 0.4 when it is added), exactly the LOO formula, while its internally studentised residual is only $-1.73$.
+Deleting it moves the slope from 0.4 back to 1.0, so $\hat\beta-\hat\beta_{(5)} = -0.6$ for the slope, exactly the LOO formula, while its internally studentised residual is only $-1.73$.
 
 ### 4. Collinear signals
 
@@ -306,7 +307,7 @@ The truth is $(1+0.5)/(1-0.5) = 3$, so the standard error is understated by a fa
 > It is the sandwich $(X^\top X)^{-1}X^\top\Omega X(X^\top X)^{-1}$ with $\Omega$ replaced by $\text{diag}(e_t^2)$; consistent without a model for the variance.
 
 > [!question]- stat-diag-hc3 | Why do HC2 and HC3 divide squared residuals by powers of 1 minus the leverage?
-> Because $\text{Var}(e_i) = \sigma_i^2(1-h_{ii})$: OLS residuals are shrunk at high-leverage points, so HC0 is biased down in small samples.
+> OLS residuals are shrunk at high-leverage points (under homoskedasticity $\text{Var}(e_i) = \sigma^2(1-h_{ii})$), so HC0 is biased down in small samples.
 > HC2 divides by $1-h_{ii}$, HC3 by $(1-h_{ii})^2$ (close to the jackknife); HC3 is the usual small-sample choice.
 
 > [!question]- stat-diag-hetero-size-distortion | Errors have variance x squared with x standard normal. How often does a nominal 5% OLS t-test of a true zero slope reject?
@@ -330,7 +331,7 @@ The truth is $(1+0.5)/(1-0.5) = 3$, so the standard error is understated by a fa
 > Bartlett weights $2/3$ and $1/3$ on $\rho_1 = 0.5$, $\rho_2 = 0.25$; the true LRV is $(1+\phi)/(1-\phi)$; even $L = 20$ gives only 2.81.
 
 > [!question]- stat-diag-nw-bandwidth-rule | What is the common rule-of-thumb Newey-West lag, and what does it give for T = 2500?
-> $\lfloor 4(T/100)^{2/9}\rfloor$, the Newey-West (1994) pilot lag: 8 at $T = 2500$ (5 at $T = 500$).
+> $\lfloor 4(T/100)^{2/9}\rfloor$, the lag-selection parameter of the Newey-West (1994) automatic procedure that many packages use as a fixed bandwidth: 8 at $T = 2500$ (5 at $T = 500$).
 > Andrews (1991) gives a data-driven plug-in, $1.1447(\hat\alpha(1)T)^{1/3}$ for Bartlett; neither knows about overlapping horizons.
 
 > [!question]- stat-diag-overlapping-lags | You regress 20-day forward returns on a persistent daily signal. Which HAC lag length do you need, and why?
@@ -371,7 +372,7 @@ The truth is $(1+0.5)/(1-0.5) = 3$, so the standard error is understated by a fa
 
 > [!question]- stat-diag-fama-macbeth-vs-cluster | When are Fama-MacBeth standard errors right, and when do you need firm clustering?
 > Fama-MacBeth handles cross-sectional correlation from common date shocks; it fails with persistent firm effects, which make the yearly slopes correlated.
-> Petersen (2009): cluster on the dimension of the dependence, two-way when both, and Newey-West the Fama-MacBeth slope series if it is autocorrelated.
+> Petersen (2009): cluster on the dimension of the dependence, two-way when both; an autocorrelation (Newey-West style) adjustment of the Fama-MacBeth slope series does not fix a fixed firm effect.
 
 > [!question]- stat-diag-white-in-panel | Why do White standard errors not help when all stocks share a daily shock?
 > White allows unequal variances but still treats rows as independent; the problem is positive covariance between rows on the same date.

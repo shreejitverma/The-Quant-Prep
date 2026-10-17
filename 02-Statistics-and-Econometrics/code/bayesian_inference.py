@@ -161,7 +161,11 @@ def beta_binomial() -> None:
         dens = np.exp(beta_logpdf(grid, a0, b0 + 12))
         check(f"P(loss next month) after 0 of 12, {name} prior", float(np.sum(grid * dens) / np.sum(dens)), exp, 1e-4)
     # MAP depends on parametrisation: mode of logit(p) is a/(a+b)
-    check("MAP of logit(p), mapped back: a/(a+b)", a / (a + b), 0.5980, 1e-4)
+    # density of eta = logit(p) is Beta density x Jacobian p(1-p); locate its mode on a fine grid and map back
+    eta = np.linspace(-3.0, 3.0, 600_001)
+    p_eta = 1.0 / (1.0 + np.exp(-eta))
+    log_dens_eta = beta_logpdf(p_eta, a, b) + np.log(p_eta) + np.log1p(-p_eta)
+    check("MAP of logit(p), mapped back (closed form a/(a+b))", float(p_eta[np.argmax(log_dens_eta)]), 0.5980, 1e-4)
 
 
 def normal_normal() -> None:

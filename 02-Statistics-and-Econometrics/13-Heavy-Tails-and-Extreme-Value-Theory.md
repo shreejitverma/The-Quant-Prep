@@ -13,7 +13,7 @@ sources: [McNeil Frey and Embrechts - Quantitative Risk Management revised ed (P
 ## TL;DR
 
 - A heavy (power-law) tail has $P(X>x)\approx L(x)\,x^{-\alpha}$; moments of order $\alpha$ and above are infinite, so a Student-$t_4$ has finite variance but infinite kurtosis, and sample kurtosis never settles (7.4 to 216 across ten blocks of 10,000 draws).
-- Fisher-Tippett-Gnedenko: normalised maxima can only converge to a GEV law (Frechet $\xi>0$, Gumbel $\xi = 0$, Weibull $\xi<0$); Pickands-Balkema-de Haan: excesses over a high threshold converge to a generalised Pareto law with the same $\xi = 1/\alpha$.
+- Fisher-Tippett-Gnedenko: normalised maxima can only converge to a GEV law (Frechet $\xi>0$, Gumbel $\xi = 0$, Weibull $\xi<0$); Pickands-Balkema-de Haan: excesses over a high threshold converge to a generalised Pareto law with the same $\xi$ ($\xi = 1/\alpha$ for a power tail of index $\alpha$).
 - Peaks over threshold: fit a GPD to excesses over $u$ by maximum likelihood, then $\text{VaR}_q = u + \frac{\beta}{\xi}\big[\big(\frac{n}{N_u}(1-q)\big)^{-\xi}-1\big]$ and $\text{ES}_q = \frac{\text{VaR}_q}{1-\xi} + \frac{\beta-\xi u}{1-\xi}$ (McNeil and Frey 2000).
 - At equal variance a fat tail is not "riskier everywhere": a unit-variance $t_4$ has a smaller 95% VaR than the normal (1.507 vs 1.645), about the same at 97.5%, and a much larger 99.9% VaR (5.07 vs 3.09); a 5-sd loss is a 1-in-948-day event instead of 1 in 3.5 million.
 - The Hill estimator is simple but biased for Student-$t$ data and sensitive to $k$; GPD maximum likelihood with a stability check over thresholds is the working tool, applied to GARCH-standardised residuals for conditional risk.
@@ -118,7 +118,7 @@ Threshold choice is the bias-variance trade-off again: pick the lowest $u$ above
 
 EVT assumes iid data, but returns cluster in volatility.
 McNeil and Frey (2000) proposed a two-step method: fit a GARCH-type model, apply POT to the standardised residuals $z_t = r_t/\hat\sigma_t$ (closer to iid), and scale back: $\text{VaR}_{t+1} = \hat\mu_{t+1} + \hat\sigma_{t+1}\,\widehat{\text{VaR}}_q(Z)$.
-This gives risk numbers that react to the current volatility while keeping a fitted tail shape, and it backtests better than either unconditional EVT or GARCH with normal innovations.
+This gives risk numbers that react to the current volatility while keeping a fitted tail shape; in McNeil and Frey's own backtests it did better than unconditional EVT and than GARCH with normal innovations.
 
 ```mermaid
 flowchart TD

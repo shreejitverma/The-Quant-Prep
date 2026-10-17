@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [estimation-mle-and-method-of-moments]
 est_hours: 4
-sources: [Gelman Carlin Stern Dunson Vehtari and Rubin - Bayesian Data Analysis 3rd ed (CRC 2013) ch 2 3 5 11 12, Murphy - Machine Learning - A Probabilistic Perspective (MIT 2012) ch 3 4 7 24, Bishop - Pattern Recognition and Machine Learning (Springer 2006) ch 2 3 11, James and Stein (1961) - Estimation with Quadratic Loss - Proc Fourth Berkeley Symposium 1, Efron and Morris (1975) - Data Analysis Using Stein's Estimator and its Generalizations - JASA 70(350), Metropolis Rosenbluth Rosenbluth Teller and Teller (1953) - Equation of State Calculations by Fast Computing Machines - Journal of Chemical Physics 21(6), Hastings (1970) - Monte Carlo Sampling Methods Using Markov Chains and their Applications - Biometrika 57(1), Gelman Roberts and Gilks (1996) - Efficient Metropolis Jumping Rules - Bayesian Statistics 5, Roberts Gelman and Gilks (1997) - Weak Convergence and Optimal Scaling of Random Walk Metropolis Algorithms - Annals of Applied Probability 7(1), Geyer (1992) - Practical Markov Chain Monte Carlo - Statistical Science 7(4), Vasicek (1973) - A Note on Using Cross-Sectional Information in Bayesian Estimation of Security Betas - Journal of Finance 28(5), Jorion (1986) - Bayes-Stein Estimation for Portfolio Analysis - JFQA 21(3)]
+sources: [Gelman Carlin Stern Dunson Vehtari and Rubin - Bayesian Data Analysis 3rd ed (CRC 2013) ch 2 3 5 11 12, Murphy - Machine Learning - A Probabilistic Perspective (MIT 2012) ch 3 4 7 24, Bishop - Pattern Recognition and Machine Learning (Springer 2006) ch 2 3 11, James and Stein (1961) - Estimation with Quadratic Loss - Proc Fourth Berkeley Symposium 1, Efron and Morris (1975) - Data Analysis Using Stein's Estimator and its Generalizations - JASA 70(350), Lindley (1962) - Discussion of Stein's Confidence Sets for the Mean of a Multivariate Normal Distribution - JRSS B 24(2), Baranchik (1964) - Multiple Regression and Estimation of the Mean of a Multivariate Normal Distribution - Stanford Statistics Technical Report 51, Lo (2002) - The Statistics of Sharpe Ratios - Financial Analysts Journal 58(4), Metropolis Rosenbluth Rosenbluth Teller and Teller (1953) - Equation of State Calculations by Fast Computing Machines - Journal of Chemical Physics 21(6), Hastings (1970) - Monte Carlo Sampling Methods Using Markov Chains and their Applications - Biometrika 57(1), Gelman Roberts and Gilks (1996) - Efficient Metropolis Jumping Rules - Bayesian Statistics 5, Roberts Gelman and Gilks (1997) - Weak Convergence and Optimal Scaling of Random Walk Metropolis Algorithms - Annals of Applied Probability 7(1), Geyer (1992) - Practical Markov Chain Monte Carlo - Statistical Science 7(4), Vasicek (1973) - A Note on Using Cross-Sectional Information in Bayesian Estimation of Security Betas - Journal of Finance 28(5), Jorion (1986) - Bayes-Stein Estimation for Portfolio Analysis - JFQA 21(3)]
 ---
 
 # Bayesian Inference
@@ -99,13 +99,14 @@ Uninformative priors: flat, or Jeffreys $p(\theta)\propto\sqrt{I(\theta)}$, whic
 
 With many units (managers, signals, stocks) each estimated with noise, $x_i\mid\theta_i\sim N(\theta_i,\sigma^2)$, and true values $\theta_i\sim N(\mu,\tau^2)$, the Bayes estimate is $\hat\theta_i = \mu + (1-B)(x_i-\mu)$.
 Empirical Bayes estimates $\mu$ and $\tau^2$ from the cross-section: $\hat\mu = \bar x$ and $\hat\tau^2 = \max(0, s_x^2-\sigma^2)$, since the observed dispersion is true dispersion plus noise.
-James and Stein (1961) proved the positive-part version of
+James and Stein (1961) proved that shrinking toward a fixed point, $\hat\theta^{JS} = \big(1-\frac{(k-2)\sigma^2}{\lVert x\rVert^2}\big)x$, has lower expected total squared error (risk) than the raw $x$ for every configuration of the $\theta_i$ when $k\ge3$, with no distributional assumption on the $\theta_i$.
+The version that shrinks toward the grand mean (suggested by Lindley in 1962 and popularised by Efron and Morris),
 
 $$
-\hat\theta_i^{JS} = \bar x + \Big(1 - \frac{(k-3)\sigma^2}{\sum_j(x_j-\bar x)^2}\Big)(x_i-\bar x)
+\hat\theta_i^{JS} = \bar x + \Big(1 - \frac{(k-3)\sigma^2}{\sum_j(x_j-\bar x)^2}\Big)(x_i-\bar x),
 $$
 
-has lower total squared error than the raw $x_i$ for every configuration of the $\theta_i$ when $k\ge4$ (shrinking toward a fixed point needs $k\ge3$), with no distributional assumption on the $\theta_i$.
+dominates the raw estimates when $k\ge4$, and truncating the shrinkage factor at zero (the positive-part estimator, Baranchik 1964) dominates it again.
 Finance uses this constantly:
 
 - beta shrinkage toward the cross-sectional mean (Vasicek 1973);
@@ -201,7 +202,7 @@ To make $B = 0.5$ you need $\sigma^2/T = \tau^2$, that is $T = 64/4 = 16$ years 
 
 "A strategy shows an annual Sharpe of 1.5 over 2 years. Your prior over strategies like it is $N(0, 0.5^2)$. What Sharpe do you expect?"
 
-The sampling variance of an annual Sharpe estimate is about $1/T = 0.5$ (ignoring the small $SR^2/2T$ term).
+The sampling variance of an annual Sharpe estimate is about $1/T = 0.5$: for iid returns sampled $m$ times a year the variance of the annualised estimate is $(1+SR^2/2m)/T$ (Lo 2002), and with monthly or daily data the $SR^2/2m$ term is negligible.
 $B = 0.5/(0.5+0.25) = 2/3$, posterior mean $1.5/3 = 0.50$, posterior sd $\sqrt{1/(4+2)} = 0.408$, $P(SR>0\mid D) = 0.890$.
 The frequentist one-sided $p$-value against $SR = 0$ is $1-\Phi(1.5\sqrt2) = 0.0169$, which sounds far more convincing; the difference is the prior belief that most backtested Sharpe ratios are noise, which [Overfitting and Deflated Sharpe](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md) makes formal.
 
@@ -307,7 +308,7 @@ The answer depends on the prior because 12 observations carry little information
 > A Laplace prior gives the lasso as the MAP, but its posterior mean is not sparse.
 
 > [!question]- stat-bayes-james-stein | State the James-Stein result and why it is surprising.
-> For $k\ge3$ normal means with known variance, shrinking toward a fixed point (or toward the grand mean for $k\ge4$) has lower total squared error than the raw estimates, for every configuration of the true means.
+> For $k\ge3$ normal means with known variance, shrinking toward a fixed point (or toward the grand mean for $k\ge4$) has lower expected total squared error than the raw estimates, for every configuration of the true means.
 > The raw MLE is inadmissible in three or more dimensions even though the units are unrelated; the gain is largest when true dispersion is small relative to noise.
 
 > [!question]- stat-bayes-empirical-bayes-tau | How do you estimate the prior variance in empirical Bayes from a cross-section of noisy estimates?
@@ -358,6 +359,8 @@ The answer depends on the prior because 12 observations carry little information
 - Christopher Bishop, *Pattern Recognition and Machine Learning*, chapters 2, 3 and 11.
 - W. James and C. Stein, "Estimation with Quadratic Loss", *Proceedings of the Fourth Berkeley Symposium* 1, 1961.
 - Bradley Efron and Carl Morris, "Data Analysis Using Stein's Estimator and its Generalizations", *JASA* 70(350), 1975.
+- Dennis Lindley, discussion of Charles Stein, "Confidence Sets for the Mean of a Multivariate Normal Distribution", *Journal of the Royal Statistical Society B* 24(2), 1962 (the grand-mean version of the estimator).
+- Andrew Lo, "The Statistics of Sharpe Ratios", *Financial Analysts Journal* 58(4), 2002.
 - N. Metropolis, A. Rosenbluth, M. Rosenbluth, A. Teller and E. Teller, "Equation of State Calculations by Fast Computing Machines", *Journal of Chemical Physics* 21(6), 1953; W. K. Hastings, "Monte Carlo Sampling Methods Using Markov Chains and their Applications", *Biometrika* 57(1), 1970.
 - G. Roberts, A. Gelman and W. Gilks, "Weak Convergence and Optimal Scaling of Random Walk Metropolis Algorithms", *Annals of Applied Probability* 7(1), 1997.
 - Oldrich Vasicek, "A Note on Using Cross-Sectional Information in Bayesian Estimation of Security Betas", *Journal of Finance* 28(5), 1973.

@@ -64,7 +64,7 @@ From MacKinnon (2010), Table 2 ($\tau_c$: constant in the cointegrating regressi
 | 2 | $-3.90$ | $-3.34$ | $-3.04$ |
 
 Finite-sample values follow MacKinnon's response surface $C(T) = \beta_\infty + \beta_1/T + \beta_2/T^2 + \beta_3/T^3$, with $T$ the number of observations in the unit-root regression; for $N = 2$ at 5% the coefficients are $(-3.33613, -6.1101, -6.823, 0)$, giving $-3.3484$ at $T = 499$.
-MacKinnon also warns that the constant-only tables assume no drift in the data; for trending series add a time trend to the cointegrating regression and use the $\tau_{ct}$ values ($N = 2$, 5%: $-3.78$).
+MacKinnon also warns that the constant-only tables assume no drift in the data (with drift the statistic has a different distribution); for trending series add a time trend to the cointegrating regression and use the $\tau_{ct}$ values ($N = 2$, 5%: $-3.78$).
 The test is not invariant to which variable is the regressand; when the result is borderline, run it both ways.
 
 ### Error correction and the Granger representation theorem
@@ -173,7 +173,7 @@ $x$ is a random walk, $y_t = 2 + 1.5x_t + u_t$, $u_t = 0.9u_{t-1}+\varepsilon_t$
 - Step 1: intercept 1.497, hedge ratio 1.492; the reverse regression gives $1/\hat\beta_{x\mid y} = 1.498$, the closeness superconsistency predicts (in a stationary regression the product of the two slopes is $R^2$, so they would not be reciprocals).
 - Step 2: residual Dickey-Fuller $t = -6.88$, far below the 5% value $-3.342$ at $T = 999$: cointegrated.
 - ECM: $\Delta y_t$ on $\hat u_{t-1}$ and $\Delta x_t$ gives $\hat\alpha = -0.091$ ($t = -6.88$) and short-run coefficient 1.516.
-- Implied half-life $\ln0.5/\ln(1-0.091) = 7.29$ days against the true $\ln0.5/\ln0.9 = 6.58$.
+- Implied half-life $\ln0.5/\ln(1+\hat\alpha) = 7.29$ days with the unrounded $\hat\alpha = -0.0908$, against the true $\ln0.5/\ln0.9 = 6.58$.
 
 A trader would size entries in units of the spread's standard deviation and expect a round trip over a few half-lives ([Statistical Arbitrage and Pairs Trading](../09-Alpha-Research-and-Portfolio/06-Statistical-Arbitrage-and-Pairs-Trading.md)).
 
@@ -187,7 +187,7 @@ Rejection rate of the 5% Engle-Granger test with $T = 250$ (2000 cointegrated pa
 | 0.95 | 13.5 | 30.0% |
 | 0.98 | 34.3 | 9.4% |
 
-A pair with a five-week half-life is detected one time in ten with one year of data.
+A pair with a 34-day (about seven-week) half-life is detected one time in ten with one year of data.
 "Not cointegrated" from a short sample means "not shown", which is why desks combine the test with economics, longer histories and out-of-sample spread behaviour.
 
 ### 5. Johansen on the same kind of pair, with trending data
@@ -299,7 +299,7 @@ So $y_2$ leads $y_1$ in the predictive sense, which matches the true $A$; whethe
 > Critical values change with it: the unrestricted-constant 3.84 for $n-r = 1$ assumes trending data.
 > In simulation with driftless prices it rejected a true rank of 1 in 29.8% of samples (95% quantile 8.26), wrongly suggesting both prices are stationary.
 
-> [!question]- stat-coint-power-short-sample | A spread has AR(1) coefficient 0.98 (half-life about a month). How often does a 5% Engle-Granger test detect cointegration with one year of daily data?
+> [!question]- stat-coint-power-short-sample | A spread has AR(1) coefficient 0.98 (half-life about 34 trading days). How often does a 5% Engle-Granger test detect cointegration with one year of daily data?
 > About 9% of the time (simulation, $T = 250$).
 > At 0.95 it is 30% and at 0.90 86%: short samples cannot distinguish slow mean reversion from a random walk.
 
