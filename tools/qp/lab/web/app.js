@@ -16,9 +16,9 @@ const ENGINE_CONFIGS = {
       { id: "p-account-capital", label: "Starting Capital ($)", type: "number", value: 100000, step: 1000, min: 1000, max: 10000000 },
       { id: "p-win-rate", label: "Win Rate (0.01 - 0.99)", type: "number", value: 0.55, step: 0.01, min: 0.01, max: 0.99 },
       { id: "p-win-loss-ratio", label: "Win/Loss Ratio (b)", type: "number", value: 1.50, step: 0.05, min: 0.1, max: 20.0 },
-      { id: "p-risk-per-trade-pct", label: "Risk per Trade (Fraction)", type: "number", value: 0.02, step: 0.005, min: 0.001, max: 0.50 },
+      { id: "p-risk-per-trade-pct", label: "Risk per Trade (Fraction)", type: "number", value: 0.02, step: 0.001, min: 0.001, max: 0.50 },
       { id: "p-num-trades", label: "Number of Trades", type: "number", value: 100, step: 10, min: 10, max: 1000 },
-      { id: "p-num-simulations", label: "Monte Carlo Paths", type: "number", value: 250, step: 50, min: 10, max: 1000 },
+      { id: "p-num-simulations", label: "Monte Carlo Paths", type: "number", value: 250, step: 50, min: 50, max: 1000 },
     ],
     runner: runPositionSizing,
   },
@@ -29,8 +29,8 @@ const ENGINE_CONFIGS = {
     chartLegend: "Observed Sharpe vs Haircut Threshold",
     params: [
       { id: "p-observed-sharpe", label: "Observed Sharpe Ratio", type: "number", value: 1.5, step: 0.1, min: 0.1, max: 5.0 },
-      { id: "p-num-trials", label: "Strategy Trials Tested (N)", type: "number", value: 100, step: 10, min: 1, max: 10000 },
-      { id: "p-sample-length-days", label: "Sample Length (Trading Days)", type: "number", value: 1260, step: 126, min: 100, max: 10000 },
+      { id: "p-num-trials", label: "Strategy Trials Tested (N)", type: "number", value: 100, step: 1, min: 1, max: 10000 },
+      { id: "p-sample-length-days", label: "Sample Length (Trading Days)", type: "number", value: 1260, step: 1, min: 100, max: 10000 },
       { id: "p-skewness", label: "Return Skewness", type: "number", value: -0.5, step: 0.1, min: -5.0, max: 5.0 },
       { id: "p-kurtosis", label: "Return Kurtosis", type: "number", value: 4.5, step: 0.2, min: 1.5, max: 30.0 },
     ],
@@ -120,7 +120,7 @@ const ENGINE_CONFIGS = {
     chartLegend: "Cumulative Depth (Shares)",
     params: [
       { id: "p-initial-price", label: "Initial Mid Price ($)", type: "number", value: 100.0, step: 1.0, min: 10.0, max: 10000.0 },
-      { id: "p-parent-size", label: "Parent Order Size (Shares)", type: "number", value: 5000, step: 500, min: 100, max: 100000 },
+      { id: "p-parent-size", label: "Parent Order Size (Shares)", type: "number", value: 5000, step: 100, min: 100, max: 100000 },
       { id: "p-parent-side", label: "Parent Order Side", type: "select", value: "buy", options: ["buy", "sell"] },
       { id: "p-strategy", label: "Execution Strategy", type: "select", value: "twap", options: ["twap", "aggressive", "almgren_chriss"] },
       { id: "p-n-steps", label: "Simulation Steps", type: "number", value: 100, step: 10, min: 10, max: 1000 },
@@ -134,8 +134,8 @@ const ENGINE_CONFIGS = {
     chartLegend: "Reservation vs Mid Price",
     params: [
       { id: "p-initial-price", label: "Initial Mid Price ($)", type: "number", value: 100.0, step: 1.0, min: 10.0, max: 1000.0 },
-      { id: "p-gamma", label: "Risk Aversion (Gamma)", type: "number", value: 0.1, step: 0.05, min: 0.001, max: 2.0 },
-      { id: "p-sigma", label: "Asset Volatility (Sigma)", type: "number", value: 0.20, step: 0.05, min: 0.01, max: 2.0 },
+      { id: "p-gamma", label: "Risk Aversion (Gamma)", type: "number", value: 0.1, step: 0.001, min: 0.001, max: 2.0 },
+      { id: "p-sigma", label: "Asset Volatility (Sigma)", type: "number", value: 0.20, step: 0.01, min: 0.01, max: 2.0 },
       { id: "p-kappa", label: "Order Book Liquidity (Kappa)", type: "number", value: 1.5, step: 0.1, min: 0.1, max: 10.0 },
       { id: "p-informed-fraction", label: "Toxic Flow Fraction", type: "number", value: 0.20, step: 0.05, min: 0.0, max: 0.90 },
       { id: "p-strategy", label: "Quoting Strategy", type: "select", value: "avellaneda_stoikov", options: ["avellaneda_stoikov", "naive_symmetric"] },
@@ -151,7 +151,7 @@ const ENGINE_CONFIGS = {
       { id: "p-level", label: "Difficulty Level (1-4)", type: "number", value: 1, step: 1, min: 1, max: 4 },
       { id: "p-bars-visible", label: "Visible Historical Bars", type: "number", value: 50, step: 5, min: 20, max: 200 },
       { id: "p-forecast-horizon", label: "Forecast Horizon (Bars)", type: "number", value: 5, step: 1, min: 1, max: 20 },
-      { id: "p-num-trials", label: "Replay Trials", type: "number", value: 10, step: 5, min: 1, max: 50 },
+      { id: "p-num-trials", label: "Replay Trials", type: "number", value: 10, step: 1, min: 1, max: 50 },
     ],
     runner: runReplayChart,
   },
@@ -227,6 +227,8 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         const errData = await res.json().catch(() => ({}));
         const errMsg = errData.error || `Server returned ${res.status}: ${res.statusText}`;
+        renderMetrics([]);
+        clearChart();
         document.getElementById("summary-text").textContent = `[Simulation Error] ${errMsg}`;
         return;
       }
@@ -301,12 +303,26 @@ function loadEngine(engId) {
   }
 }
 
+// Backend metrics that the engines return as integer counts. JSON cannot tell 2.0 from 2,
+// so the format is chosen by metric key rather than by value.
+const INTEGER_METRICS = new Set([
+  "executed_shares", "final_inventory", "front_contract_days", "level", "median_time_under_water_bars",
+  "moved_stops", "pre_mortem_score", "revenge_trades", "round_tripped_losses", "rounds_completed",
+  "simulations_run", "total_market_volume", "total_quoting_stages", "total_rebalances", "total_trades",
+  "total_trials", "trade_plans_executed", "trades_executed",
+]);
+
+function formatFixed(value, digits) {
+  return value.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
 // Helper to set metric cards
-// Backend metrics: integer counts stay integers, *_pct values gain a "%" sign.
 function formatMetric(key, value) {
   if (typeof value !== "number") return String(value);
-  const text = Number.isInteger(value) ? String(value) : value.toFixed(3);
-  return key.endsWith("_pct") ? text + "%" : text;
+  if (INTEGER_METRICS.has(key)) return formatFixed(value, 0);
+  if (key.endsWith("_pct")) return formatFixed(value, 2) + "%";
+  if (key.endsWith("_dollars")) return (value < 0 ? "-$" : "$") + formatFixed(Math.abs(value), 2);
+  return formatFixed(value, 3);
 }
 
 function renderMetrics(cards) {
@@ -785,6 +801,15 @@ function normalCDF(x) {
   const d = 0.3989423 * Math.exp((-x * x) / 2);
   const prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
   return x > 0 ? 1.0 - prob : prob;
+}
+
+function clearChart() {
+  const canvas = document.getElementById("equity-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#182230";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 function drawMultiLineChart(paths, baseline, unit, formatY) {
