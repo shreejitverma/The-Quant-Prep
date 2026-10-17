@@ -138,7 +138,7 @@ $$
 $$
 
 The denominator is exactly Durrleman's $g$.
-So calendar arbitrage ($\partial_T w < 0$) and butterfly arbitrage ($g < 0$) are precisely the two ways local variance goes negative, and the price-form Dupire on raw, noisy quotes divides one noisy second difference by another: never compute it from raw prices.
+So calendar arbitrage ($\partial_T w < 0$) and butterfly arbitrage ($g < 0$) are precisely the two ways local variance goes negative, and the price-form Dupire on raw, noisy quotes divides noisy finite differences by a noisy second difference: never compute it from raw prices.
 
 Interpretation (Gyongy 1986): $\sigma_{loc}^2(t, K) = E^Q[\sigma_t^2 \mid S_t = K]$ for any stochastic-volatility model with the same Europeans.
 Local vol is the Markovian projection of the true dynamics: right marginals, wrong transition law.

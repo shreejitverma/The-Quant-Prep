@@ -493,8 +493,20 @@ def main() -> None:
     n_obs = AC["years"] * AC["obs_per_year"]
     z = rng.standard_normal((400_000, n_obs))
     principal, coupons, k_call, st = autocall_legs(AC["sigma"], AC["q"], z)
-    fair_c = (100.0 - principal.mean()) / coupons.mean()
+
+    def fair_coupon(principal: np.ndarray, coupons: np.ndarray) -> tuple[float, float]:
+        """Coupon that prices the note at par, and its delta-method standard error as a ratio of means."""
+        c = float((100.0 - principal.mean()) / coupons.mean())
+        se = float(np.std(100.0 - principal - c * coupons, ddof=1) / (math.sqrt(principal.size) * coupons.mean()))
+        return c, se
+
+    fair_c, se_fair = fair_coupon(principal, coupons)
     check("fair quarterly coupon (% of notional 100)", fair_c, 3.8805, 5e-5)
+    check("fair quarterly coupon standard error", se_fair, 0.0165, 5e-5)
+    principal2, coupons2, _, _ = autocall_legs(AC["sigma"], AC["q"], np.random.default_rng(22).standard_normal((400_000, n_obs)))
+    fair_c2, se_fair2 = fair_coupon(principal2, coupons2)
+    check("fair quarterly coupon, independent seed 22", fair_c2, 3.8950, 5e-5)
+    assert abs(fair_c2 - fair_c) < 4 * math.hypot(se_fair, se_fair2), "seeds 21 and 22 disagree beyond 4 standard errors"
     check("fair coupon per annum (%)", 4 * fair_c, 15.52, 5e-3)
     check("fair coupon per annum (%), one decimal", 4 * fair_c, 15.5, 0.05)
     check("P(called at first observation)", float(np.mean(k_call == 1)), 0.4827, 5e-5)

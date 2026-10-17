@@ -156,7 +156,7 @@ The minimum of two stocks is lower when they are less correlated, so a worst-of 
 An autocallable investor is short a worst-of down-and-in put (the knock-in at maturity), so the issuer is long it; an issuer that sells a worst-of call is short it.
 Either way the issuer's position loses value when correlation rises: its correlation sensitivity is negative.
 Long dispersion has the same sign, so it adds to that risk; the offsetting trade buys correlation, for example short dispersion.
-Market terminology for "long" and "short" correlation is not uniform, so state the sign of $\partial V/\partial\rho$ explicitly; worst-of payoffs are covered in [Exotic Options](12-Exotic-Options.md).
+Market terminology for "long" and "short" correlation is not uniform, so state the sign of $\partial V/\partial\rho$ explicitly; [Exotic Options](12-Exotic-Options.md) mentions worst-of baskets as a correlation risk of autocallables.
 
 ```mermaid
 flowchart TD

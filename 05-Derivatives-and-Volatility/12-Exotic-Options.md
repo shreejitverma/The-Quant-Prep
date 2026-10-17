@@ -247,7 +247,8 @@ Monitoring the minimum only at daily closes (100,000 paths, seed 8) gives about 
 
 Three years, quarterly observations, trigger 100%, memory coupon, European knock-in at 60%, $r = 3\%$, $q = 2\%$, $\sigma = 25\%$, 400,000 paths with seed 21 (every figure below is simulated and changes with the seed).
 
-- Fair coupon (note worth par, ignoring the issuer's funding spread and fees): about 3.8805% per quarter, about 15.52% a year.
+- Fair coupon (note worth par, ignoring the issuer's funding spread and fees): about 3.8805% per quarter (seed 21, standard error 0.0165 by the delta method on the ratio of means), about 15.52% a year.
+  An independent run with seed 22 gives about 3.8950, within 4 standard errors of the difference.
 - Probability of being called at the first observation about 0.4827, by the end of year one about 0.7031; expected life about 1.0328 years.
 - Probability of a capital loss about 0.0836, with an average loss of about 52.62% of notional when it happens.
 - Investor's note value per vol point: about $-0.3982$ per 100 notional; per 1% of dividend yield: about $-0.6843$ (bumps on common random numbers).
