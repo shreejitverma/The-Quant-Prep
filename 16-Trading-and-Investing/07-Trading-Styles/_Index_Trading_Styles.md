@@ -78,6 +78,7 @@ Rather than treating these schools as mutually exclusive, Markets Mastery OS tea
 - **Signal Formulation**: Time-series momentum (absolute momentum), cross-sectional momentum (relative momentum), moving average crossovers, and breakout filters (Donchian channels).
 - **Portfolio Construction**: Equal risk contribution, volatility targeting (scaling position sizes inversely to rolling realized volatility), and correlation diversification.
 - **Statistical Rigor**: Mitigating backtest overfitting, Deflated Sharpe Ratio (Bailey-Lopéz de Prado), and walk-forward out-of-sample testing.
+- **Pillar Curriculum**: [[16-Trading-and-Investing/60-Systems/_Index_Systems|Systematic Trading Systems Pillar (8 Notes, 256 Cards)]]
 - **Lab Engine**: `overfit_trap` (Overfitting and multiple testing penalty calculator) and `port_alloc` (Risk parity allocator).
 
 ---

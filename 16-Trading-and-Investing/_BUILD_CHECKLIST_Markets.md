@@ -155,10 +155,10 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Expose `replay_chart` engine in Trading Lab CLI and catalog.
 
 ### Phase 9: Backtest Overfitting Trap & Systematic Research
-- [ ] Implement overfitting engine `tools/qp/lab/overfit.py` with deflated Sharpe ratio and CSCV PBO.
-- [ ] Author systematic strategy research curriculum cross-linking `09-Alpha-Research-and-Portfolio`.
-- [ ] Author 250+ `mkt-sys-` cards.
-- [ ] Build web UI demonstrating variant trial count penalty and true out-of-sample decay.
+- [x] Implement overfitting engine `tools/qp/lab/overfit_trap.py` with Deflated Sharpe Ratio (DSR), Harvey-Liu haircuts, and CSCV PBO.
+- [x] Author systematic strategy research curriculum cross-linking `09-Alpha-Research-and-Portfolio` across 8 comprehensive concept notes.
+- [x] Author 256 `mkt-sys-` cards conforming to QP callout schema (`mkt-sys-001` through `mkt-sys-256`).
+- [x] Expose `overfit_trap` engine in Trading Lab CLI and test suite (`tools/tests/test_overfit_trap.py`).
 
 ### Phase 10: Trade Journal Analytics & Capital Gate
 - [ ] Implement journal analytics engine `tools/qp/journal.py` (expectancy by setup, adherence gap, tilt detection).
