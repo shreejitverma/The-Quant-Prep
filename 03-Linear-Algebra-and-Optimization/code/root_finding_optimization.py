@@ -429,7 +429,7 @@ def ns_jacobian(p: np.ndarray, h: float = 1e-7) -> np.ndarray:
     return jac
 
 
-def levenberg_marquardt(y: np.ndarray, p0: np.ndarray, lam: float = 1e-3, tol: float = 1e-14) -> tuple[np.ndarray, int, bool]:
+def levenberg_marquardt(y: np.ndarray, p0: np.ndarray, lam: float = 1e-3, tol: float = 1e-8) -> tuple[np.ndarray, int, bool]:
     """Marquardt-scaled LM: (J'J + lam diag(J'J)) step = -J'r. Returns (params, iterations, converged)."""
     p = p0.copy()
     r = nelson_siegel(p) - y
@@ -475,7 +475,7 @@ def nelson_siegel_fit() -> None:
     assert ok
     for name, v, want in zip(("beta0", "beta1", "beta2", "tau"), p, true, strict=True):
         check(f"good start: fitted {name}", v, want, 1e-8)
-    check("good start: LM iterations", it, 12, 0)
+    check("good start: LM iterations", it, 5, 0)
     p, it, ok = levenberg_marquardt(y, np.array([0.03, -0.01, 0.0, 1.0]))
     rmse_bp = math.sqrt(np.mean((nelson_siegel(p) - y) ** 2)) * 1e4
     check("poor start: stalls at tau", p[3], 0.8113, 1e-4)
