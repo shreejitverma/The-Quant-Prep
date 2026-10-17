@@ -56,10 +56,11 @@ Notes marked `seed` are the writing backlog: objectives and references exist, fu
 | Price-time order book and matching engine, lock-free SPSC queue, object pool, multicast receiver, compile-time N(x) table, multithreaded Monte Carlo (C++20) | [12-Quant-Development/code/cpp](12-Quant-Development/code/cpp/) |
 | ITCH parser, Python benchmarking | [12-Quant-Development/code/python](12-Quant-Development/code/python/) |
 | Day counts, schedules, bond pricing and risk, overnight-rate compounding, curve bootstrapping, dual-curve swap pricing, Jacobian par risk, Treasury futures basis, CDS hazard bootstrap, TIPS indexation, mortgage prepayment, Gaussian copula tranche loss | [06-Fixed-Income-and-Asset-Classes/code](06-Fixed-Income-and-Asset-Classes/code/) |
+| Call-auction uncross and fee economics, Roll and Glosten-Milgrom spreads, Kyle equilibrium, square-root and propagator impact, Almgren-Chriss optimal execution, TWAP, VWAP, POV and implementation shortfall, Reg NMS routing, latency-arbitrage races | [07-Market-Microstructure/code](07-Market-Microstructure/code/) |
 | Avellaneda-Stoikov market-making simulator | [08-Market-Making/code](08-Market-Making/code/) |
 | Event-driven backtester (next-bar fills), performance metrics, pairs trading, Black-Litterman | [09-Alpha-Research-and-Portfolio/code](09-Alpha-Research-and-Portfolio/code/) |
 | Finite-difference Greeks bump engine, Taylor revaluation proxies, Cholesky Monte Carlo and filtered historical scenarios, rates stress scenarios, full versus proxy VaR and ES | [11-Risk-and-Trading/code](11-Risk-and-Trading/code/) |
-| Execution algorithms, Euler-Maruyama SDE solver, Greeks visualisation, LSTM baseline | sections [07](07-Market-Microstructure/code/), [04](04-Stochastic-Calculus/code/), [05](05-Derivatives-and-Volatility/code/), [10](10-Machine-Learning-for-Finance/code/) |
+| Euler-Maruyama SDE solver, Greeks visualisation, LSTM baseline | sections [04](04-Stochastic-Calculus/code/), [05](05-Derivatives-and-Volatility/code/), [10](10-Machine-Learning-for-Finance/code/) |
 | Basel credit SA and IRB, SA-CCR, FRTB sensitivities-based method, DRC and RRAO, FRTB IMA (ES, NMRF, backtesting, PLA), liquidity and IRRBB | [17-Regulatory-Capital-Basel-and-FRTB/code](17-Regulatory-Capital-Basel-and-FRTB/code/) |
 | Reference pricing and risk engine | [18-Pricing-and-Risk-Systems/code](18-Pricing-and-Risk-Systems/code/) |
 
