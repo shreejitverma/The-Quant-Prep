@@ -1,11 +1,12 @@
 """Position Sizing and Risk of Ruin Engine (`pos_sizing`).
 
-Calculates Full Kelly, Half Kelly, analytical risk of ruin, and runs Monte Carlo
-path simulations to evaluate peak-to-trough drawdown distributions under fixed fractional sizing.
+Calculates Full Kelly, Half Kelly, growth rate curves, time under water,
+and runs Monte Carlo path simulations over Bernoulli or fat-tailed trade distributions.
 """
 
 from __future__ import annotations
 
+import math
 import random
 from typing import Any
 
@@ -24,7 +25,7 @@ class PositionSizingEngine(TradingLabEngine):
 
     @property
     def description(self) -> str:
-        return "Evaluates Kelly criterion, fractional Kelly, and Monte Carlo drawdown risk."
+        return "Evaluates Kelly criterion, growth curve, fat-tailed ruin, and time-under-water risk."
 
     @property
     def asset_class(self) -> str:
@@ -63,6 +64,13 @@ class PositionSizingEngine(TradingLabEngine):
                 max_val=0.50,
                 description="Fraction of current account equity risked per trade",
             ),
+            "distribution": Param(
+                name="distribution",
+                param_type="str",
+                default="bernoulli",
+                choices=["bernoulli", "fat_tailed"],
+                description="Trade outcome distribution: 'bernoulli' or 'fat_tailed' (occasional slippage jumps)",
+            ),
             "num_trades": Param(
                 name="num_trades",
                 param_type="int",
@@ -95,12 +103,24 @@ class PositionSizingEngine(TradingLabEngine):
             ),
         }
 
+    @staticmethod
+    def calculate_growth_rate(f: float, p: float, b: float) -> float:
+        """Geometric compound growth rate: g(f) = p * ln(1 + b*f) + (1 - p) * ln(1 - f)."""
+        if f <= 0.0:
+            return 0.0
+        if f >= 1.0:
+            return -float("inf")
+        term_win = p * math.log(1.0 + b * f)
+        term_loss = (1.0 - p) * math.log(1.0 - f)
+        return term_win + term_loss
+
     def run(self, **kwargs: Any) -> LabResult:
         p = self.validate_params(kwargs)
         capital = float(p["account_capital"])
         p_win = float(p["win_rate"])
         b = float(p["win_loss_ratio"])
         f_risk = float(p["risk_per_trade_pct"])
+        dist_mode = str(p["distribution"])
         n_trades = int(p["num_trades"])
         n_sims = int(p["num_simulations"])
         ruin_thresh = float(p["ruin_drawdown_pct"])
@@ -110,12 +130,22 @@ class PositionSizingEngine(TradingLabEngine):
         f_kelly = p_win - (1.0 - p_win) / b
         f_half_kelly = 0.5 * f_kelly
 
+        # Calculate Growth Rate Curve points across fractions
+        growth_curve: list[dict[str, float]] = []
+        if f_kelly > 0:
+            max_eval_f = min(0.90, max(0.10, f_kelly * 2.5))
+            steps = 25
+            for i in range(1, steps + 1):
+                f_val = round((max_eval_f / steps) * i, 4)
+                g_val = self.calculate_growth_rate(f_val, p_win, b)
+                growth_curve.append({"f": f_val, "growth_rate": round(g_val, 6)})
+
         # Monte Carlo Simulation
         rng = random.Random(seed)
         final_equities = []
         max_drawdowns = []
+        time_under_water_list = []
         ruin_count = 0
-
         sample_paths = []
 
         for sim_idx in range(n_sims):
@@ -124,12 +154,19 @@ class PositionSizingEngine(TradingLabEngine):
             sim_max_dd = 0.0
             equity_curve = [equity]
 
+            time_under_water = 0
+            current_under_water = 0
+
             for _ in range(n_trades):
                 bet_size = equity * f_risk
                 if rng.random() < p_win:
                     pnl = bet_size * b
                 else:
-                    pnl = -bet_size
+                    if dist_mode == "fat_tailed" and rng.random() < 0.05:
+                        # 5% probability of gap/slippage causing 2.5x standard loss
+                        pnl = -bet_size * 2.5
+                    else:
+                        pnl = -bet_size
 
                 equity += pnl
                 if equity <= 0:
@@ -137,6 +174,12 @@ class PositionSizingEngine(TradingLabEngine):
 
                 if equity > peak:
                     peak = equity
+                    current_under_water = 0
+                else:
+                    current_under_water += 1
+                    if current_under_water > time_under_water:
+                        time_under_water = current_under_water
+
                 dd = (peak - equity) / peak if peak > 0 else 1.0
                 if dd > sim_max_dd:
                     sim_max_dd = dd
@@ -147,19 +190,22 @@ class PositionSizingEngine(TradingLabEngine):
 
             final_equities.append(equity)
             max_drawdowns.append(sim_max_dd)
+            time_under_water_list.append(time_under_water)
             if sim_max_dd >= ruin_thresh:
                 ruin_count += 1
 
-            if sim_idx < 5:  # Store first 5 sample paths for charting
+            if sim_idx < 5:
                 sample_paths.append([round(v, 2) for v in equity_curve])
 
         final_equities.sort()
         max_drawdowns.sort()
+        time_under_water_list.sort()
 
         median_equity = final_equities[len(final_equities) // 2]
         mean_equity = sum(final_equities) / len(final_equities)
         mean_dd = sum(max_drawdowns) / len(max_drawdowns)
         p95_dd = max_drawdowns[int(len(max_drawdowns) * 0.95)]
+        median_tuw = time_under_water_list[len(time_under_water_list) // 2]
         ruin_probability = ruin_count / n_sims
 
         metrics: dict[str, float | int | str] = {
@@ -169,12 +215,13 @@ class PositionSizingEngine(TradingLabEngine):
             "mean_final_equity": round(mean_equity, 2),
             "mean_max_drawdown": round(mean_dd, 4),
             "p95_max_drawdown": round(p95_dd, 4),
+            "median_time_under_water_bars": median_tuw,
             "ruin_probability": round(ruin_probability, 4),
             "simulations_run": n_sims,
         }
 
         summary = (
-            f"Kelly fraction is {f_kelly * 100:.1f}%. At {f_risk * 100:.1f}% risk per trade, "
+            f"Kelly fraction is {f_kelly * 100:.1f}%. At {f_risk * 100:.1f}% risk per trade ({dist_mode}), "
             f"median terminal equity is {median_equity:,.0f} with a {ruin_probability * 100:.1f}% "
             f"probability of suffering a >={ruin_thresh * 100:.0f}% drawdown."
         )
@@ -184,6 +231,7 @@ class PositionSizingEngine(TradingLabEngine):
             metrics=metrics,
             data={
                 "params": p,
+                "growth_curve": growth_curve,
                 "sample_paths": sample_paths,
             },
             summary=summary,
