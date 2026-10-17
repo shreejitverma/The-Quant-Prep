@@ -197,7 +197,7 @@ async function viewDashboard() {
       h("div", { class: "row" }, h("h3", {}, t.label), h("span", { class: "spacer" }), t.active ? null : h("span", { class: "chip" }, "not targeted")),
       h("div", { class: "pct" }, pct(t.readiness)),
       bar(t.readiness, t.readiness >= 0.75 ? "good" : ""),
-      h("div", { class: "meta" }, h("span", {}, `${t.solid}/${t.topics} topics mastered`), h("span", {}, `${fmtHours(t.hours_left)} left`)))));
+      h("div", { class: "meta" }, h("span", {}, `${t.solid}/${t.topics} mastered`), h("span", {}, `${fmtHours(t.hours_left)} left`)))));
   const next = h("div", { class: "panel" },
     h("div", { class: "panel-head" }, h("h2", {}, "Next up"), h("a", { href: "#/plan", class: "sub" }, "Full plan")),
     s.next.length ? h("div", { class: "list" }, s.next.map((n) =>
