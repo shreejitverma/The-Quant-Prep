@@ -252,7 +252,7 @@ The diff points straight at the cause: event ordering, not strategy logic.
 > The standard fixes the engine's output sequence but not the distribution's algorithm, so libstdc++ and libc++ map the same engine output to different integers. Use your own mapping (or your own small generator) when exact values matter.
 
 > [!question]- qd-testing-numpy-streams | What does NumPy guarantee about reproducing random streams across versions?
-> Per NEP 19, bit generators' core streams and the frozen legacy `RandomState` are stable, while `Generator` distribution methods may change in feature releases. Pin the NumPy version, or assert statistical properties rather than exact draws.
+> Per NEP 19, bit generators' core streams and the frozen legacy `RandomState` are stable, while `Generator` distribution methods may change in feature releases. To pin exact values, derive the draws from the raw bit-generator stream with your own mapping (this section's scripts do so through `pcg_stream.py`); otherwise pin the NumPy version, or assert statistical properties rather than exact draws.
 
 > [!question]- qd-testing-parallel-seeds | How do you seed 64 Monte Carlo workers reproducibly and independently?
 > Spawn child seeds from one root: `np.random.SeedSequence(root).spawn(64)`, one per worker, and assign work to workers deterministically. Ad hoc `seed + i` risks correlated streams and ties results to scheduling.

@@ -19,6 +19,11 @@
 //     A cancel may follow a replace that is still in flight (its OrigClOrdID is the last accepted
 //     ClOrdID); the order is then Pending Cancel, either set of replace terms can still execute, and
 //     the venue answers the two requests separately.
+//   * Every response to a cancel or replace must name the request in flight; a response to any
+//     other ClOrdID is a reconciliation failure. A fill before the New ack is an implicit ack, so
+//     the late ack is checked against the pre-fill quantities and applied as a no-op.
+//   * Exposure arithmetic saturates instead of overflowing, so an exposure too large to represent
+//     fails the credit check closed.
 //
 // Prices are integer cents and quantities integer shares, so every check is exact.
 // Single-threaded by design: a real gateway pins this to one core and feeds it from a queue.
@@ -185,8 +190,10 @@ struct Order {
     std::string pendingReplaceClOrdId;
     std::int64_t pendingQty = 0;
     std::int64_t pendingPriceCents = 0;
+    std::string pendingCancelClOrdId;
 
     bool replacePending() const { return !pendingReplaceClOrdId.empty(); }
+    bool cancelPending() const { return !pendingCancelClOrdId.empty(); }
     void clearReplace() {
         pendingReplaceClOrdId.clear();
         pendingQty = 0;
@@ -205,28 +212,48 @@ struct Order {
 // Prices above this are rejected as invalid; it also keeps price * 10000 inside int64.
 inline constexpr std::int64_t kMaxPriceCents = std::int64_t{1} << 40;
 
+// Saturating int64 arithmetic for risk aggregates: a result past either end clamps to that end.
+inline std::int64_t satAdd(std::int64_t a, std::int64_t b) {
+    std::int64_t r;
+    if (!__builtin_add_overflow(a, b, &r)) return r;
+    return b > 0 ? std::numeric_limits<std::int64_t>::max() : std::numeric_limits<std::int64_t>::min();
+}
+inline std::int64_t satSub(std::int64_t a, std::int64_t b) {
+    std::int64_t r;
+    if (!__builtin_sub_overflow(a, b, &r)) return r;
+    return b < 0 ? std::numeric_limits<std::int64_t>::max() : std::numeric_limits<std::int64_t>::min();
+}
+inline std::int64_t satMul(std::int64_t a, std::int64_t b) {
+    std::int64_t r;
+    if (!__builtin_mul_overflow(a, b, &r)) return r;
+    return (a < 0) != (b < 0) ? std::numeric_limits<std::int64_t>::min() : std::numeric_limits<std::int64_t>::max();
+}
+
 class RiskGateway {
 public:
     explicit RiskGateway(RiskLimits limits) : limits_(limits) {}
 
-    // An invalid reference (not in (0, kMaxPriceCents]) is rejected and clears the symbol's last one,
-    // so every check that needs it fails closed until a valid price arrives.
+    // An invalid reference (not in (0, kMaxPriceCents]) is rejected and counted, and the symbol keeps
+    // its last valid one; a symbol that never had a valid reference fails every check closed.
     bool setReferencePrice(const std::string& symbol, std::int64_t cents) {
         if (cents <= 0 || cents > kMaxPriceCents) {
-            referencePx_.erase(symbol);
+            ++invalidReferencePrices_;
             return false;
         }
         referencePx_[symbol] = cents;
         return true;
     }
+    std::uint64_t invalidReferencePrices() const { return invalidReferencePrices_; }
     void restrict(const std::string& symbol) { restricted_.insert(symbol); }
+    // Positions carried in from clearing before the session; they count against every limit.
+    void setStartOfDayPosition(const std::string& symbol, std::int64_t qty) { position_[symbol] = qty; }
 
     // ---- outbound: new order ------------------------------------------------------------------
     RejectReason submit(const NewOrder& o, std::uint64_t nowNs) {
         const RejectReason r = checkNew(o, nowNs);
         seenClOrdIds_.insert(o.clOrdId);  // a rejected id is still burned: never reuse it
         if (r != RejectReason::None) return r;
-        Order ord{o.clOrdId, o.clOrdId, o.symbol, o.side, o.qty, o.priceCents, 0, o.qty, 0, OrdStatus::PendingNew, {}, 0, 0};
+        Order ord{o.clOrdId, o.clOrdId, o.symbol, o.side, o.qty, o.priceCents, 0, o.qty, 0, OrdStatus::PendingNew, {}, 0, 0, {}};
         orders_.emplace(o.clOrdId, ord);
         alias_[o.clOrdId] = o.clOrdId;
         recordMessage(nowNs);
@@ -244,6 +271,7 @@ public:
         alias_[cancelClOrdId] = o->key;
         if (o->status != OrdStatus::PendingReplace) statusBeforePending_[o->key] = o->status;
         o->status = OrdStatus::PendingCancel;
+        o->pendingCancelClOrdId = cancelClOrdId;
         return RejectReason::None;
     }
 
@@ -265,7 +293,7 @@ public:
             // order's exposure becomes max(old leaves, new leaves) at max(old price, new price).
             const std::int64_t newLeaves = newQty - o->cumQty;
             const std::int64_t extraQty = std::max<std::int64_t>(0, newLeaves - o->leavesQty);
-            const std::int64_t worstNotional = std::max(o->leavesQty, newLeaves) * std::max(o->priceCents, newPriceCents);
+            const std::int64_t worstNotional = satMul(std::max(o->leavesQty, newLeaves), std::max(o->priceCents, newPriceCents));
             r = exposureChecks(o->symbol, o->side, extraQty, worstNotional - o->leavesQty * o->priceCents);
         }
         seenClOrdIds_.insert(newClOrdId);
@@ -297,21 +325,24 @@ public:
     }
 
     // ---- inbound: order cancel reject (35=9) restores the pre-pending state ----------------------
-    // With a cancel on top of a pending replace, only the rejected request is undone.
+    // Only the request in flight can be rejected; with a cancel on top of a pending replace, only
+    // the rejected request is undone. A reject for any other id trips the kill switch.
     ApplyResult onCancelReject(const std::string& requestClOrdId) {
         Order* o = find(requestClOrdId);
-        if (o == nullptr) return ApplyResult::UnknownOrder;
-        if (!isPending(o->status)) return ApplyResult::IllegalTransition;
-        if (o->status == OrdStatus::PendingCancel && o->replacePending()) {
-            if (requestClOrdId == o->pendingReplaceClOrdId) {
-                o->clearReplace();
-            } else {
-                o->status = OrdStatus::PendingReplace;
-            }
-            return ApplyResult::Applied;
+        if (o == nullptr) {
+            engageKillSwitch("cancel reject for an unknown order");
+            return ApplyResult::UnknownOrder;
         }
-        o->status = restoredStatus(*o);
-        o->clearReplace();
+        if (o->cancelPending() && requestClOrdId == o->pendingCancelClOrdId) {
+            o->pendingCancelClOrdId.clear();
+            if (!isTerminal(o->status)) o->status = o->replacePending() ? OrdStatus::PendingReplace : restoredStatus(*o);
+        } else if (o->replacePending() && requestClOrdId == o->pendingReplaceClOrdId) {
+            o->clearReplace();
+            if (!o->cancelPending()) o->status = restoredStatus(*o);
+        } else {
+            engageKillSwitch("cancel reject does not match a request in flight");
+            return ApplyResult::IllegalTransition;
+        }
         return ApplyResult::Applied;
     }
 
@@ -321,9 +352,10 @@ public:
             killed_ = true;
             killReason_ = reason;
         }
+        // OrigClOrdID of each cancel is the order's last accepted ClOrdID, not its first.
         std::vector<std::string> toCancel;
         for (const auto& [key, ord] : orders_) {
-            if (!isTerminal(ord.status) && ord.status != OrdStatus::PendingCancel) toCancel.push_back(key);
+            if (!isTerminal(ord.status) && ord.status != OrdStatus::PendingCancel) toCancel.push_back(ord.currentClOrdId);
         }
         return toCancel;
     }
@@ -348,20 +380,21 @@ public:
     std::int64_t openQty(const std::string& symbol, Side side) const {
         std::int64_t q = 0;
         for (const auto& [key, ord] : orders_)
-            if (ord.symbol == symbol && ord.side == side) q += ord.worstCaseLeaves();
+            if (ord.symbol == symbol && ord.side == side) q = satAdd(q, ord.worstCaseLeaves());
         return q;
     }
-    // Gross exposure the credit limit is measured against. A held symbol without a valid reference
-    // cannot be valued, so the exposure is reported as unbounded (fail closed).
+    // Gross exposure the credit limit is measured against. A held symbol that never had a valid
+    // reference cannot be valued, and a sum past int64 cannot be represented: both are reported as
+    // kUnvaluedExposure (fail closed).
     std::int64_t grossExposureCents() const {
         std::int64_t e = 0;
         for (const auto& [sym, pos] : position_) {
             if (pos == 0) continue;
             const auto ref = referencePx_.find(sym);
             if (ref == referencePx_.end()) return kUnvaluedExposure;
-            e += (pos < 0 ? -pos : pos) * ref->second;
+            e = satAdd(e, satMul(pos < 0 ? satSub(0, pos) : pos, ref->second));
         }
-        for (const auto& [key, ord] : orders_) e += ord.worstCaseLeaves() * ord.worstCasePriceCents();
+        for (const auto& [key, ord] : orders_) e = satAdd(e, satMul(ord.worstCaseLeaves(), ord.worstCasePriceCents()));
         return e;
     }
     static constexpr std::int64_t kUnvaluedExposure = std::numeric_limits<std::int64_t>::max();
@@ -397,8 +430,8 @@ private:
         const auto ref = referencePx_.find(o.symbol);
         if (ref == referencePx_.end()) return RejectReason::NoReferencePrice;  // fail closed
         // Integer collar: price * 10000 vs ref * (10000 +- bps); kMaxPriceCents keeps both products in range.
-        if (o.side == Side::Buy && o.priceCents * 10000 > ref->second * (10000 + limits_.priceCollarBps)) return RejectReason::PriceCollar;
-        if (o.side == Side::Sell && o.priceCents * 10000 < ref->second * (10000 - limits_.priceCollarBps)) return RejectReason::PriceCollar;
+        if (o.side == Side::Buy && o.priceCents * 10000 > satMul(ref->second, satAdd(10000, limits_.priceCollarBps))) return RejectReason::PriceCollar;
+        if (o.side == Side::Sell && o.priceCents * 10000 < satMul(ref->second, satSub(10000, limits_.priceCollarBps))) return RejectReason::PriceCollar;
         if (o.priceCents > std::numeric_limits<std::int64_t>::max() / o.qty) return RejectReason::MaxNotional;
         if (o.qty * o.priceCents > limits_.maxOrderNotionalCents) return RejectReason::MaxNotional;
         return RejectReason::None;
@@ -407,8 +440,8 @@ private:
     // Portfolio checks: worst-case position and gross credit, both counting open orders.
     RejectReason exposureChecks(const std::string& symbol, Side side, std::int64_t addQty, std::int64_t addNotionalCents) const {
         const std::int64_t pos = position(symbol);
-        if (side == Side::Buy && pos + openQty(symbol, Side::Buy) + addQty > limits_.maxAbsPosition) return RejectReason::PositionLimit;
-        if (side == Side::Sell && pos - openQty(symbol, Side::Sell) - addQty < -limits_.maxAbsPosition) return RejectReason::PositionLimit;
+        if (side == Side::Buy && satAdd(satAdd(pos, openQty(symbol, Side::Buy)), addQty) > limits_.maxAbsPosition) return RejectReason::PositionLimit;
+        if (side == Side::Sell && satSub(satSub(pos, openQty(symbol, Side::Sell)), addQty) < -limits_.maxAbsPosition) return RejectReason::PositionLimit;
         const std::int64_t gross = grossExposureCents();
         if (gross > limits_.creditLimitCents || addNotionalCents > limits_.creditLimitCents - gross) return RejectReason::CreditLimit;
         return RejectReason::None;
@@ -454,11 +487,11 @@ private:
     ApplyResult apply(Order& o, const ExecReport& er) {
         switch (er.execType) {
             case ExecType::PendingNew:
-                if (underlying(o) != OrdStatus::PendingNew) return ApplyResult::IllegalTransition;
+                if (underlying(o) != OrdStatus::PendingNew) return reconcileLateAck(o, er, OrdStatus::PendingNew);
                 return reconcile(o, er);
             case ExecType::New:
                 // The ack may arrive after we already sent a cancel or replace (Appendix D, B.1.d).
-                if (underlying(o) != OrdStatus::PendingNew) return ApplyResult::IllegalTransition;
+                if (underlying(o) != OrdStatus::PendingNew) return reconcileLateAck(o, er, OrdStatus::New);
                 setUnderlying(o, OrdStatus::New);
                 return reconcile(o, er);
             case ExecType::Rejected:
@@ -472,31 +505,42 @@ private:
                 if (isTerminal(o.status)) return ApplyResult::IllegalTransition;
                 if (er.lastQty <= 0 || er.lastQty > o.leavesQty) return ApplyResult::Inconsistent;  // overfill
                 if (er.lastPxCents <= 0 || er.lastPxCents > kMaxPriceCents) return ApplyResult::Inconsistent;
+                std::int64_t fillNotional = 0;
+                std::int64_t totalNotional = 0;
+                std::int64_t newPosition = 0;
+                if (__builtin_mul_overflow(er.lastQty, er.lastPxCents, &fillNotional) ||
+                    __builtin_add_overflow(o.fillNotionalCents, fillNotional, &totalNotional) ||
+                    __builtin_add_overflow(position(o.symbol), o.side == Side::Buy ? er.lastQty : -er.lastQty, &newPosition))
+                    return ApplyResult::Inconsistent;
                 o.cumQty += er.lastQty;
                 o.leavesQty -= er.lastQty;
-                o.fillNotionalCents += er.lastQty * er.lastPxCents;
-                position_[o.symbol] += o.side == Side::Buy ? er.lastQty : -er.lastQty;
+                o.fillNotionalCents = totalNotional;
+                position_[o.symbol] = newPosition;
                 // While a cancel is pending, even a completing fill leaves OrdStatus at Pending Cancel
                 // (Appendix D, B.1.c); the venue's cancel reject then reports Filled.
                 setUnderlying(o, o.leavesQty == 0 ? OrdStatus::Filled : OrdStatus::PartiallyFilled);
                 return reconcile(o, er);
             }
             case ExecType::PendingCancel:
-                if (o.status != OrdStatus::PendingCancel) return ApplyResult::IllegalTransition;
+                if (!o.cancelPending() || er.clOrdId != o.pendingCancelClOrdId) return ApplyResult::IllegalTransition;
                 return reconcile(o, er);
             case ExecType::PendingReplace:
-                if (!o.replacePending()) return ApplyResult::IllegalTransition;
+                if (!o.replacePending() || er.clOrdId != o.pendingReplaceClOrdId) return ApplyResult::IllegalTransition;
                 return reconcile(o, er);
             case ExecType::Canceled:
             case ExecType::Expired:
-                // Solicited (after our cancel) or unsolicited (IOC remainder, end of day) cancel.
+                // Solicited (on our pending cancel's ClOrdID) or unsolicited (IOC remainder, end of
+                // day, on the order's current ClOrdID) cancel.
                 if (isTerminal(o.status) || o.status == OrdStatus::PendingNew) return ApplyResult::IllegalTransition;
+                if (er.clOrdId != o.currentClOrdId && !(o.cancelPending() && er.clOrdId == o.pendingCancelClOrdId))
+                    return ApplyResult::IllegalTransition;
                 o.status = er.execType == ExecType::Canceled ? OrdStatus::Canceled : OrdStatus::Expired;
                 o.leavesQty = 0;
                 o.clearReplace();
+                o.pendingCancelClOrdId.clear();
                 return reconcile(o, er);
             case ExecType::Replaced: {
-                if (!o.replacePending()) return ApplyResult::IllegalTransition;
+                if (!o.replacePending() || er.clOrdId != o.pendingReplaceClOrdId) return ApplyResult::IllegalTransition;
                 // Fills that crossed the replace may have used up the new quantity: the venue then
                 // amends the order quantity to CumQty and reports Filled (Appendix D, C.3.b and C.3.c).
                 o.orderQty = std::max(o.pendingQty, o.cumQty);
@@ -517,6 +561,16 @@ private:
         return ApplyResult::IllegalTransition;
     }
 
+    // A New or Pending New ack overtaken by fills (an implicit acknowledgement) describes the order
+    // before those fills: it must show no more than our CumQty and add up to the order quantity,
+    // and it changes nothing.
+    ApplyResult reconcileLateAck(const Order& o, const ExecReport& er, OrdStatus acked) const {
+        if (o.cumQty == 0) return ApplyResult::IllegalTransition;
+        if (er.ordStatus != acked || er.lastQty != 0 || er.cumQty < 0 || er.cumQty > o.cumQty || satAdd(er.cumQty, er.leavesQty) != o.orderQty)
+            return ApplyResult::Inconsistent;
+        return ApplyResult::Applied;
+    }
+
     // Our book must agree with the venue's CumQty, LeavesQty and OrdStatus on every report.
     // While a cancel or replace is pending the venue may report either the pending status (it has
     // seen the request) or the underlying one (the report crossed our request on the wire).
@@ -530,6 +584,7 @@ private:
     }
 
     RiskLimits limits_;
+    std::uint64_t invalidReferencePrices_ = 0;
     bool killed_ = false;
     std::string killReason_;
     std::unordered_map<std::string, std::int64_t> referencePx_;

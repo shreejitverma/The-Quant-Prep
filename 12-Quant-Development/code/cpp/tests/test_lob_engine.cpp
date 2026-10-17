@@ -50,6 +50,24 @@ void test_validation() {
     EXPECT(ev.back().type == EventType::Accepted);  // slot recycled
 }
 
+// Quantities above one billion are rejected on entry and on replace, so level totals cannot overflow.
+void test_quantity_upper_bound() {
+    OrderBook b(4);
+    std::vector<Event> ev;
+    constexpr Qty kHuge = INT64_MAX;
+    b.submit(limit(1, Side::Buy, 100, kHuge), ev);
+    EXPECT(ev.back().type == EventType::Rejected && ev.back().reason == Reason::BadQuantity);
+    b.submit(limit(2, Side::Buy, 100, 1'000'000'001), ev);
+    EXPECT(ev.back().type == EventType::Rejected && ev.back().reason == Reason::BadQuantity);
+    b.submit(limit(3, Side::Buy, 100, 1'000'000'000), ev);
+    b.submit(limit(4, Side::Buy, 100, 1'000'000'000), ev);
+    EXPECT(ev.back().type == EventType::Accepted);
+    EXPECT(b.depth_at(Side::Buy, 100) == 2'000'000'000);
+    b.replace(3, 5, 101, kHuge, ev);
+    EXPECT(ev.back().type == EventType::Rejected && ev.back().reason == Reason::BadQuantity);
+    EXPECT(b.open_qty(3) == 1'000'000'000 && b.depth_at(Side::Buy, 100) == 2'000'000'000);
+}
+
 void test_market_order_and_empty_book() {
     OrderBook b(16);
     std::vector<Event> ev;
@@ -346,10 +364,38 @@ void test_itch_errors() {
     EXPECT(bb.bid_shares(500) == 0 && bb.live_orders() == 0);  // fully executed order leaves the book
 }
 
+// A rejected message or buffer must leave the book exactly as it was (note 07: reported, not applied).
+void test_itch_rejects_do_not_mutate() {
+    namespace it = lob::itch;
+    const char stock[9] = "TEST    ";
+    it::BookBuilder bb(1);
+    auto a1 = it::encode_add(1, 0, 1, 'B', 100, stock, 500);
+    auto a2 = it::encode_add(1, 0, 2, 'S', 70, stock, 600);
+    EXPECT(bb.apply(a1.data(), a1.size()) == it::Status::Ok && bb.apply(a2.data(), a2.size()) == it::Status::Ok);
+    auto clash = it::encode_replace(1, 0, 1, 2, 30, 510);  // new reference 2 is already live
+    EXPECT(bb.apply(clash.data(), clash.size()) == it::Status::DuplicateOrder);
+    EXPECT(bb.bid_shares(500) == 100 && bb.bid_shares(510) == 0 && bb.ask_shares(600) == 70 && bb.live_orders() == 2);
+
+    std::vector<std::uint8_t> stream;  // 70 sell: cancel 20, then a cut-off execution of 10
+    it::frame(stream, it::encode_cancel(1, 0, 2, 20));
+    it::frame(stream, it::encode_executed(1, 0, 2, 10, 7));
+    std::vector<std::uint8_t> cut(stream.begin(), stream.end() - 1);
+    EXPECT(bb.apply_stream(cut.data(), cut.size()) == it::Status::Truncated);
+    EXPECT(bb.ask_shares(600) == 70 && bb.applied == 2);
+    EXPECT(bb.apply_stream(stream.data(), stream.size()) == it::Status::Ok);
+    EXPECT(bb.ask_shares(600) == 40 && bb.errors == 1);  // 70 - 20 - 10; the one error is the clash above
+
+    it::BookBuilder fresh(1);
+    auto zero = it::encode_add(1, 0, 3, 'B', 0, stock, 505);  // zero display shares: dead on arrival
+    EXPECT(fresh.apply(zero.data(), zero.size()) == it::Status::Ok);
+    EXPECT(fresh.live_orders() == 0 && fresh.bid_shares(505) == 0);
+}
+
 }  // namespace
 
 int main() {
     test_validation();
+    test_quantity_upper_bound();
     test_market_order_and_empty_book();
     test_cancel_middle_of_queue_and_level_cleanup();
     test_replace_variants();
@@ -358,6 +404,7 @@ int main() {
     test_auction_phase_rules();
     test_differential_against_reference();
     test_itch_errors();
+    test_itch_rejects_do_not_mutate();
     std::cout << (g_total - g_failures) << "/" << g_total << " assertions passed" << std::endl;
     return g_failures == 0 ? 0 : 1;
 }

@@ -625,6 +625,7 @@ void test_fuzz_decode_random_bytes() {
     const char known[] = {'S', 'R', 'H', 'A', 'F', 'E', 'C', 'X', 'D', 'U', 'P', 'Q', 'B'};
     int ok = 0;
     int round_trips = 0;
+    bool status_as_specified = true;
     for (int i = 0; i < 20000; ++i) {
         const std::size_t n = static_cast<std::size_t>(rng.below(48));
         std::vector<std::uint8_t> buf(n);
@@ -633,6 +634,14 @@ void test_fuzz_decode_random_bytes() {
         DecodedMessage m;
         // Decode from an exact-size heap buffer so ASan catches any overread.
         const DecodeStatus st = decode(n ? buf.data() : nullptr, n, m);
+        // Expected status from the spec lengths (pinned to the spec in test_message_lengths_match_spec): a buffer
+        // decodes exactly when its type is known and it holds at least that many bytes.
+        const std::size_t spec_len = n == 0 ? 0 : message_length(static_cast<char>(buf[0]));
+        const DecodeStatus expected = n == 0           ? DecodeStatus::Empty
+                                      : spec_len == 0  ? DecodeStatus::UnknownType
+                                      : n < spec_len   ? DecodeStatus::Truncated
+                                                       : DecodeStatus::Ok;
+        status_as_specified = status_as_specified && st == expected;
         if (st == DecodeStatus::Ok) {
             ++ok;
             const std::size_t len = message_length(m.type);
@@ -646,7 +655,8 @@ void test_fuzz_decode_random_bytes() {
         }
     }
     std::cout << "  20000 random buffers: " << ok << " decoded, " << round_trips << " re-encoded byte for byte\n";
-    EXPECT(ok == 3878 && round_trips == 2666);  // fixed by the seed: SplitMix64 is the same on every platform
+    EXPECT(status_as_specified);
+    EXPECT(ok > 1000 && round_trips > 1000);  // the property was exercised, not vacuously true
 }
 
 void test_fuzz_packets_into_arbitrator_and_book() {

@@ -111,7 +111,8 @@ The data must be atomics (relaxed or stronger), not plain memory: a reader that 
 Ordering is the subtle part (Boehm, 2012): the reader's re-read of the sequence must not move before its data loads, and a reader that sees any new data must also see the odd sequence that preceded it.
 The repo version makes the data stores release and the data loads acquire, which gives both properties without fences (free on x86, `STLR` and `LDAPR` per word on ARM); Boehm's fence-based variant is cheaper on ARM.
 Writers are wait-free, readers can retry indefinitely under a continuous stream of writes, so seqlocks suit small, frequently read, less frequently written data.
-In [tests/test_lock_free.cpp](code/cpp/tests/test_lock_free.cpp) three readers check an invariant across four words of every snapshot while the writer publishes 100,000 versions; removing the reader's second sequence check made that test report torn snapshots in each of three runs on the test machine.
+In [tests/test_lock_free.cpp](code/cpp/tests/test_lock_free.cpp) three readers check an invariant across four words of every snapshot while the writer publishes 100,000 versions; removing the reader's second sequence check made that test report torn snapshots in each of three runs.
+That is a single-session observation on the Apple M3 Pro, not something CI asserts; reproduce it from `code/cpp` by deleting the second sequence check in `Seqlock::read` in `lock_free.hpp` and running `clang++ -std=c++20 -O2 -pthread -I . tests/test_lock_free.cpp -o /tmp/tlf && /tmp/tlf` a few times.
 
 ### Memory reclamation and ABA
 
@@ -155,7 +156,8 @@ A pool is single-threaded by design; share one across threads only through a loc
 | `ObjectPool` create plus destroy | 2.04 ns per pair |
 | `Arena` allocate plus reset | 1.29 ns per allocation |
 
-Across five runs in one session the SPSC transfer ranged from 3.35 to 11.73 ns per item, the MPMC from 6.32 to 6.68 ns and the mutex queue from 23.51 to 26.06 ns, so the mutex queue was 2.1 to 7.6 times slower than the SPSC ring and 3.7 to 3.9 times slower than the MPMC queue.
+Across five runs in one session on the same Apple M3 Pro (a single-session observation, not asserted by CI) the SPSC transfer ranged from 3.35 to 11.73 ns per item, the MPMC from 6.32 to 6.68 ns and the mutex queue from 23.51 to 26.06 ns, so the mutex queue was 2.1 to 7.6 times slower than the SPSC ring and 3.7 to 3.9 times slower than the MPMC queue.
+Reproduce from `code/cpp` with `clang++ -std=c++20 -O2 -pthread concurrency_bench.cpp -o /tmp/cb && for i in 1 2 3 4 5; do /tmp/cb; done`; the bench itself asserts only loose orderings.
 In a pure throughput test the two lock-free queues are within run-to-run noise of each other: when the consumer keeps up, the ring runs nearly empty and both sides touch the same slot lines, so thread placement dominates.
 The ping-pong median ranged from 81.2 to 89.2 ns; on a tuned Linux host you pin both threads to isolated performance cores on the same socket and most of the variation disappears.
 
@@ -172,8 +174,9 @@ Every pair of conflicting accesses is ordered by happens-before: no data race.
 ### A test that passes on broken code
 
 Change the consumer's `head.load(acquire)` to `relaxed` and run the demo [lock_free_spsc_queue.cpp](code/cpp/lock_free_spsc_queue.cpp), which transfers 200,000 updates and checks sequence numbers and a price checksum.
-On the test machine (ARM, so weakly ordered) the `-O2` build passed in 10 of 20 runs ("received 200000 updates, 0 sequence gaps, price checksum ok") and failed in the other 10 with 2 to 16 sequence gaps: the consumer really did read slots before the producer's writes were visible.
-The ThreadSanitizer build reported `data race` in `SpscQueue::try_pop` on every one of 5 runs.
+In one session on the Apple M3 Pro (ARM, so weakly ordered) the `-O2` build passed in 10 of 20 runs ("received 200000 updates, 0 sequence gaps, price checksum ok") and failed in the other 10 with 2 to 16 sequence gaps: the consumer really did read slots before the producer's writes were visible.
+In the same session the ThreadSanitizer build reported `data race` in `SpscQueue::try_pop` on every one of 5 runs.
+These counts are single-session observations, not asserted by CI (which runs the unmodified queue); reproduce them from `code/cpp` after the one-word edit in `lock_free.hpp` with `clang++ -std=c++20 -O2 -pthread lock_free_spsc_queue.cpp -o /tmp/spsc && for i in $(seq 20); do /tmp/spsc; done`, and with `-O1 -g -fsanitize=thread` in place of `-O2` for the ThreadSanitizer runs.
 A single passing stress run proves nothing, and on x86, where the hardware never reorders loads with loads, the stress test can pass every time while the program still has undefined behaviour; only a happens-before checker finds the bug reliably.
 
 ### ABA, step by step

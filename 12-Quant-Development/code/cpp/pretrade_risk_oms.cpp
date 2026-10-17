@@ -166,9 +166,9 @@ int main() {
     for (const auto& k : cancels) std::printf(" %s", k.c_str());
     std::printf("\n");
     check(gw.killReason() == "execution report does not reconcile with the order book", "first kill reason kept");
-    check(cancels.size() == 2 && cancels[0] == "O10b" && cancels[1] == "O3b", "two live orders to cancel");
+    check(cancels.size() == 2 && cancels[0] == "O10b" && cancels[1] == "R3", "two live orders to cancel, O3b under its current ClOrdID R3");
     check(send(gw, "O11", "XYZ", Side::Sell, 10, 10'000, 2000) == RejectReason::KillSwitch, "new orders blocked");
-    check(gw.requestCancel("O3b", "C3") == RejectReason::None, "cancels still allowed under the kill switch");
+    check(gw.requestCancel(cancels[1], "C3") == RejectReason::None, "cancels still allowed under the kill switch");
 
     std::printf("[4] why limit checks use integer cents\n");
     // A 15% collar on 100.00 should accept a buy at exactly 115.00.

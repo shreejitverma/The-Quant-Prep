@@ -107,7 +107,7 @@ The EU analogue for firms engaged in algorithmic trading is Commission Delegated
 
 The SEC's order against Knight Capital (Release No. 34-70694, October 16, 2013) found violations of Rule 15c3-5 after an August 1, 2012 router malfunction in which, per the order, 212 parent orders produced more than 4 million executions in 154 stocks in about 45 minutes; what the order says about controls, deployment and testing is summarised in [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md).
 Two findings map straight onto the design principles below: Knight's position limits "did not account for the firm's exposure from outstanding orders", and its 9.5% price cap on parent orders did not apply to orders received before the open for the opening auction, which is where the 212 parent orders came from.
-The order also found violations of paragraphs (b) (an inadequate written description of the controls), (e) (inadequate reviews) and (e)(2) (the CEO certified that "processes" existed rather than that the controls complied), and of Regulation SHO Rules 200(g) and 203(b).
+The order also found violations of paragraphs (b) (an inadequate written description of the controls), (e)(1) (inadequate reviews) and (e)(2) (the CEO certified that "processes" existed rather than that the controls complied), and of Regulation SHO Rules 200(g) and 203(b).
 
 ### The check catalogue
 
@@ -131,6 +131,7 @@ Design principles that interviews probe:
   Netting open buys against open sells understates risk because both sides can fill.
 - **Gross, not net, for credit.** A buy and a sell in different names do not offset each other's capital usage in this check.
 - **Fail closed.** No reference price, a reference older than its staleness bound, or a missing limit means reject.
+  An invalid tick (zero, negative or absurd) is rejected and counted, and the last valid reference stays in force; a position in a symbol that has never had a valid reference cannot be valued, so the credit check rejects every new order until one arrives.
 - **Reducing risk is always allowed.** Cancels bypass throttles and the kill switch; blocking a cancel during an incident is how losses compound.
 - **One owner of risk state.** The gateway's view of open orders and positions is updated by the same thread, in the same order, as the messages that change it, so a check never sees a half-applied fill.
 
@@ -192,12 +193,14 @@ The transitions that bite in production:
   The fill's own OrdStatus depends on timing: a fill the venue sent before it saw your cancel says 1 Partially filled (B.1.b), and one sent after the venue acknowledged it with 150=6 says 6 Pending Cancel, even when it fills the order completely (B.1.c).
   Reconciliation must accept either while your request is in flight; demanding 6 trips the kill switch on a normal race.
 - **Cancel reject.** 35=9 returns the order to its pre-pending state, updated by any fills that arrived meanwhile.
+  It must name the request still in flight: a reject, Pending Cancel, Canceled or Replaced report carrying any other ClOrdID (say a resent reject for an earlier cancel) is a reconciliation failure, not a state change.
 - **Replace in flight.** Until 150=5 arrives, either the old or the new terms can execute, so exposure is max(old leaves, new leaves) at the worse price.
   A replace cannot leave an order below CumQty: if fills crossing the request reach or pass the new quantity, the venue amends the order quantity to CumQty and reports 150=5 with OrdStatus Filled (C.3.b, C.3.c).
 - **Cancel over a pending replace.** A cancel may be sent while a replace is still in flight, with OrigClOrdID set to the last accepted ClOrdID; the order is then Pending Cancel, either set of terms can still execute, and the venue answers the replace and the cancel separately.
   Refusing that cancel would leave the order live under the kill switch until the replace resolves.
 - **Unsolicited cancels and expiries.** IOC remainders, end of day, venue-side risk or cancel-on-disconnect produce 150=4 or 150=C with no request from you.
 - **Fill before acknowledgement.** Some flows deliver a fill before the New ack; treat it as an implicit acknowledgement.
+  The late ack still shows the pre-fill quantities (CumQty 0, LeavesQty the order quantity), so check that it adds up to the order and then apply it as a no-op rather than an illegal transition.
   Likewise a cancel sent before the ack can be followed by the ack itself (150=0, OrdStatus 0) and only then by the cancel (B.1.d, B.1.e).
 - **Terminal means terminal.** A report that moves a Filled, Canceled, Rejected or Expired order is not a state change you apply; it is evidence that your book and the venue's disagree.
 
@@ -268,7 +271,8 @@ The confirmation (150=5, ClOrdID R3, OrigClOrdID O3b) applies the new terms: qua
 
 A report arrives saying the already Filled O1 was Canceled.
 The state machine rejects the transition as illegal and latches the kill switch with the reason "execution report does not reconcile with the order book".
-The gateway returns cancels for the 2 live orders (O10b and O3b), rejects the new order O11 with "kill switch", and still accepts the cancel request for O3b.
+The gateway returns cancels for the 2 live orders, O10b and O3b, each under its current ClOrdID, which for O3b is R3 after the replace (a cancel with OrigClOrdID O3b would be rejected by the venue).
+It rejects the new order O11 with "kill switch" and still accepts the cancel request for R3.
 Re-arming is a separate, deliberate human action.
 
 ## Pitfalls
@@ -286,7 +290,7 @@ Re-arming is a separate, deliberate human action.
 - Treating an overfill or CumQty mismatch as a warning instead of a stop.
 - Floating-point prices in limit checks: in IEEE double, $100.0 \times (1 + 0.15)$ evaluates to 114.99999999999999, so a 15% collar wrongly rejects a buy at exactly 115.00, while the integer-cent comparison accepts it.
   Use integer ticks or cents.
-- Unchecked integer overflow in qty $\times$ price for absurd inputs: validate ranges first.
+- Unchecked integer overflow in qty $\times$ price for absurd inputs: validate ranges first, and saturate aggregates such as gross exposure, which can pass int64 even when every input is in range, so an unrepresentable total fails the check closed instead of wrapping negative.
 - A kill switch that only stops the strategy but leaves resting orders live, or that unlatches automatically.
 - Post-trade monitoring that depends on a human watching a screen; the control has to stop order entry automatically.
 
@@ -314,7 +318,7 @@ Re-arming is a separate, deliberate human action.
 > After the content checks, so only orders that would actually go out consume rate; a burst of rejected orders should not block valid ones. Cancels must never be throttled or blocked, because they reduce risk; replaces count because they can add risk.
 
 > [!question]- qd-oms-kill-switch | Describe a kill switch that fails safe.
-> Latched on manual action or automatically on reconciliation failures, limit breaches or loss of drop copy; when on it rejects all new orders and replaces, sends cancels for every live order (or relies on venue mass cancel and cancel-on-disconnect), still allows cancels, keeps the first reason, and is re-armed only by a human after review.
+> Latched on manual action or automatically on reconciliation failures, limit breaches or loss of drop copy; when on it rejects all new orders and replaces, sends cancels for every live order under its current ClOrdID (or relies on venue mass cancel and cancel-on-disconnect), still allows cancels, keeps the first reason, and is re-armed only by a human after review.
 
 > [!question]- qd-oms-cum-leaves | State the quantity invariant of an execution report and what to do if it fails.
 > For a live order CumQty (14) + LeavesQty (151) = OrderQty (38), and CumQty increases by LastQty (32) on each fill. If a report breaks it, or LastQty exceeds LeavesQty (overfill), your book and the venue's disagree: stop sending new risk, cancel, and reconcile by hand.
@@ -347,7 +351,7 @@ Re-arming is a separate, deliberate human action.
 > No fresh reference price for a collar; an execution report for an unknown order, an overfill, an illegal transition or a CumQty mismatch; loss of the risk state or drop copy. In each case block new risk and cancel live orders rather than continue with unknown exposure.
 
 > [!question]- qd-oms-knight-lesson | Per the SEC's order in Release No. 34-70694, which Rule 15c3-5 controls did Knight lack?
-> The order finds Knight lacked controls reasonably designed to prevent erroneous orders immediately before orders reached the market from its router ((c)(1)(ii)), and lacked pre-set firm-wide capital thresholds linked to automated controls that would prevent order entry ((c)(1)(i)); its position limits ignored outstanding orders, and its post-execution position monitor relied entirely on human monitoring and did not stop order entry. It also found violations of (b), (e) and (e)(2).
+> The order finds Knight lacked controls reasonably designed to prevent erroneous orders immediately before orders reached the market from its router ((c)(1)(ii)), and lacked pre-set firm-wide capital thresholds linked to automated controls that would prevent order entry ((c)(1)(i)); its position limits ignored outstanding orders, and its post-execution position monitor relied entirely on human monitoring and did not stop order entry. It also found violations of (b), (e)(1) and (e)(2).
 
 > [!question]- qd-oms-pending-precedence | Your order has a cancel pending and a fill arrives for all remaining shares. What OrdStatus does the fill carry under FIX 4.4, and what comes next?
 > OrdStatus 6 (Pending Cancel) if the venue had already acknowledged the cancel, because pending states outrank Filled; LeavesQty is 0. The venue then rejects the cancel with 35=9 carrying OrdStatus 2 (Filled), and only then is the order terminal in your book (FIX 4.4 Appendix D, B.1.c).
@@ -357,7 +361,7 @@ Re-arming is a separate, deliberate human action.
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [pretrade_risk_oms.hpp](code/cpp/pretrade_risk_oms.hpp) (gateway, checks, state machine, idempotent reports, kill switch), [pretrade_risk_oms.cpp](code/cpp/pretrade_risk_oms.cpp) (every number above, printed and asserted), [tests/test_pretrade_risk_oms.cpp](code/cpp/tests/test_pretrade_risk_oms.cpp) (each check at its boundary, illegal transitions, duplicates, overfills, fill and cancel races, replace exposure, kill switch).
+- Code: [pretrade_risk_oms.hpp](code/cpp/pretrade_risk_oms.hpp) (gateway, checks, state machine, idempotent reports, kill switch), [pretrade_risk_oms.cpp](code/cpp/pretrade_risk_oms.cpp) (every number above, printed and asserted), [tests/test_pretrade_risk_oms.cpp](code/cpp/tests/test_pretrade_risk_oms.cpp) (each check at its boundary, illegal transitions, duplicates, overfills, fill and cancel races, late acks, responses matched to the request in flight, replace exposure, bad references, exposure overflow, kill switch).
 - Intraday risk and pre-trade limits: [Intraday Risk and Pre-Trade Limits](../18-Pricing-and-Risk-Systems/08-Intraday-Risk-and-Pre-Trade-Limits.md).
 - Enterprise risk engine architecture: [Risk Engine Architecture](../18-Pricing-and-Risk-Systems/07-Risk-Engine.md).
 - Order types and venue mechanics: [Limit Order Books and Order Types](../07-Market-Microstructure/01-Limit-Order-Books-and-Order-Types.md).

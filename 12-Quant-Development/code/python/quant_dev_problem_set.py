@@ -105,11 +105,12 @@ def gap_example() -> GapTracker:
     return t
 
 
-def ab_double_loss(packets_per_day: float, p_loss: float) -> tuple[float, float, float]:
-    single = packets_per_day * p_loss
+def ab_double_loss(packets_per_day: float, p_loss: float) -> tuple[float, float, float, float]:
+    per_line = packets_per_day * p_loss
+    hidden = packets_per_day * 2 * p_loss * (1 - p_loss)  # lost on exactly one line: the other line fills it
     both = packets_per_day * p_loss * p_loss
     days_between = 1.0 / both
-    return single, both, days_between
+    return per_line, hidden, both, days_between
 
 
 def itch_field_ranges() -> dict[str, float]:
@@ -284,14 +285,19 @@ def fd_delta_errors() -> dict[str, float]:
 
 
 def bump_pricings(n_inputs: int, central: bool) -> int:
-    """Count pricer calls for bump-and-reprice sensitivities to every input."""
+    """Count pricer calls for bump-and-reprice sensitivities to every input.
+
+    One-sided differences need the base price plus one bump per input (n + 1); central differences
+    need an up and a down bump per input and never use the base price (2n), as in note 10.
+    """
     calls = 0
 
     def price(bump: tuple[int, int] | None) -> None:
         nonlocal calls
         calls += 1
 
-    price(None)  # base price
+    if not central:
+        price(None)  # base price
     for i in range(n_inputs):
         price((i, +1))
         if central:
@@ -328,14 +334,15 @@ def numpy_facts() -> dict[str, object]:
     return out
 
 
-def naive_vs_welford() -> tuple[float, float, float, float]:
+def naive_vs_welford() -> tuple[float, float, float, float, float]:
     x = 1e9 + np.array([4.0, 7.0, 13.0, 16.0])
     n = len(x)
     s1 = s2 = 0.0
     for v in x.tolist():  # plain left-to-right sums: deterministic IEEE arithmetic on every platform
         s1 += v
         s2 += v * v
-    naive = (s2 - s1 * s1 / n) / (n - 1)
+    numerator = s2 - s1 * s1 / n
+    naive = numerator / (n - 1)
     # Exactly rounded sums do not rescue the formula: the squares are already rounded.
     naive_exact_sums = (math.fsum(v * v for v in x.tolist()) - math.fsum(x.tolist()) ** 2 / n) / (n - 1)
     mean = 0.0
@@ -346,7 +353,7 @@ def naive_vs_welford() -> tuple[float, float, float, float]:
         m2 += d * (v - mean)
     welford = m2 / (n - 1)
     two_pass = float(np.var(x, ddof=1))
-    return naive, naive_exact_sums, welford, two_pass
+    return numerator, naive, naive_exact_sums, welford, two_pass
 
 
 def column_cache_lines(a: np.ndarray, col: int, line: int = 64) -> int:
@@ -487,8 +494,9 @@ def main() -> None:
     assert g.requests == [(1004, 3)]
     assert g.applied == list(range(1001, 1009)) and g.expected == 1009 and g.duplicates == 2
 
-    single, both, days = ab_double_loss(20e6, 1e-5)
-    check("expected single-line losses per day", single, "200", ".0f")
+    per_line, hidden, both, days = ab_double_loss(20e6, 1e-5)
+    check("expected losses per line per day", per_line, "200", ".0f")
+    check("expected single-line losses per day across both lines, hidden by arbitration", hidden, "400", ".0f")
     check("expected double losses per day", both, "0.002", ".3f")
     check("days between double losses", days, "500", ".0f")
 
@@ -570,7 +578,7 @@ def main() -> None:
     check("delta error from the step alone", fd["step_error_tiny"], "3.3e-03", ".1e")
 
     check("bump pricings one-sided", bump_pricings(50 + 200, central=False), "251")
-    check("bump pricings central", bump_pricings(50 + 200, central=True), "501")
+    check("bump pricings central", bump_pricings(50 + 200, central=True), "500")
 
     print("== 11 numerical python ==")
     nf = numpy_facts()
@@ -591,11 +599,28 @@ def main() -> None:
     check("bytes moved for a column sum", lines * 64, "640,000", ",")
     check("useful bytes", a.shape[0] * a.itemsize, "80,000", ",")
     check("amplification", lines * 64 / (a.shape[0] * a.itemsize), "8", ".0f")
+    lines_128 = column_cache_lines(a, 0, line=128)  # Apple silicon reports 128-byte lines (note 03)
+    check("bytes moved for a column sum, 128-byte lines", lines_128 * 128, "1,280,000", ",")
+    check("amplification, 128-byte lines", lines_128 * 128 / (a.shape[0] * a.itemsize), "16", ".0f")
 
-    naive, naive_exact_sums, welford, two_pass = naive_vs_welford()
+    numerator, naive, naive_exact_sums, welford, two_pass = naive_vs_welford()
     check("naive one-pass variance, left-to-right sums", naive, "-170.67", ".2f")
+    check("naive numerator sum(x^2) - sum(x)^2 / n", numerator, "-512", ".0f")
+    # Oracle: the same left-to-right float64 evaluation redone in exact integers, rounding to the nearest
+    # double (int -> float is correctly rounded) after every operation; the true numerator is 90.
+
+    def rnd(i: int) -> int:
+        return int(float(i))
+
+    xs = [10**9 + d for d in (4, 7, 13, 16)]
+    s1_i = s2_i = 0
+    for v in xs:
+        s1_i = rnd(s1_i + v)
+        s2_i = rnd(s2_i + rnd(v * v))
+    check("numerator redone in integers with explicit rounding", rnd(s2_i - rnd(s1_i * s1_i) // 4), "-512")
+    check("exact numerator", sum(v * v for v in xs) - sum(xs) ** 2 // 4, "90")
     # The DSA note's -128.0 is the same numerator divided by n = 4 instead of n - 1 = 3.
-    check("naive numerator sum(x^2) - sum(x)^2 / n", naive * 3, "-512", ".0f")
+    check("naive one-pass population variance", numerator / 4, "-128.0", ".1f")
     check("naive one-pass variance, exactly rounded sums", naive_exact_sums, "0.0", ".1f")
     sq_devs = [(v - 10.0) ** 2 for v in (4.0, 7.0, 13.0, 16.0)]
     check("squared deviations", [int(d) for d in sq_devs], "[36, 9, 9, 36]")

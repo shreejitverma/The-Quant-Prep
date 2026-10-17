@@ -84,6 +84,9 @@ inline constexpr std::size_t message_length(char type) {
     }
 }
 
+inline constexpr std::size_t kMaxMessageLength = 44;  // 'P', the longest message above
+static_assert(message_length('P') == kMaxMessageLength);
+
 // Flat decoded form; fields not used by a type stay zero.
 struct DecodedMessage {
     char type = 0;
@@ -246,9 +249,9 @@ inline std::size_t encode(const DecodedMessage& m, std::uint8_t* out, std::size_
 }
 
 inline std::vector<std::uint8_t> encode(const DecodedMessage& m) {
-    std::vector<std::uint8_t> v(message_length(m.type));
-    if (!v.empty()) encode(m, v.data(), v.size());
-    return v;
+    std::array<std::uint8_t, kMaxMessageLength> buf{};
+    const std::size_t len = encode(m, buf.data(), buf.size());
+    return std::vector<std::uint8_t>(buf.begin(), buf.begin() + static_cast<std::ptrdiff_t>(len));
 }
 
 // ---------------------------------------------------------------------------

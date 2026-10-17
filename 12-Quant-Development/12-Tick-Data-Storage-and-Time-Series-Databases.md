@@ -158,7 +158,8 @@ Quotes for AAA at times 100, 200, 300 and for BBB at 150, 250; trades AAA at 50,
 | AAA 400 | 300 | none | none (quote is 100 old) |
 | BBB 260 | 250 | none | 250 |
 
-The script also checks the `searchsorted` join against a brute-force scan on 3,000 quotes and 600 trades over five symbols (one with no quotes): 600 of 600 agree in both directions.
+The script also checks the `searchsorted` join against a brute-force scan on 3,000 quotes and 600 trades over five symbols (one with no quotes): 600 of 600 matched quote indices agree in both directions, and 13 quotes share a symbol and time with the quote before them, so the check exercises ties.
+Among quotes stamped at the same time the backward join takes the last in feed order, as q's `aj` and pandas' `merge_asof` do, and the forward join the first; the script asserts both on a hand-built tie.
 
 ### 2. How a forward join biases an effective-spread study
 
@@ -174,7 +175,7 @@ A naive join that keeps the latest version gives 0.80 on all three days, so a ba
 
 ### 4. Row-group pruning
 
-Two million rows with 500 symbols in 20 row groups of 100,000; one symbol has 4,009 rows.
+Two million rows with 500 symbols in 20 row groups of 100,000; one symbol has 3,924 rows.
 In arrival order every row group's [min, max] symbol range covers the target, so a query for that symbol reads all 20 row groups.
 Sorted by symbol, it reads 1.
 Sorting within a partition is what turns statistics into an index.
@@ -182,7 +183,7 @@ Sorting within a partition is what turns statistics into an index.
 ### 5. Compression of three layouts (zlib-version dependent)
 
 200,000 synthetic ticks (int64 nanosecond time with exponential gaps, int64 Price(4) moving in one-cent steps, int32 size, one side byte) are 4,200,000 bytes at 21 bytes per row.
-With zlib level 6 (zlib 1.2.12 on the author's machine): row-oriented records compress 3.27x, the same data stored column by column 4.02x, and columns delta-encoded first (time gaps as int32, price changes as int8) 4.89x.
+With zlib level 6 (zlib 1.2.12 on the author's machine): row-oriented records compress 3.27x, the same data stored column by column 4.02x, and columns delta-encoded first (time gaps as int32, price changes as int8) 4.88x.
 Columns put similar values together, which is what general-purpose codecs on column files exploit (Parquet's codecs and kdb+'s file compression with gzip, snappy, lz4hc or zstd), and deltas turn slowly varying series into small repeated integers, which is what Parquet's DELTA_BINARY_PACKED encoding adds; the script asserts the three ratios exactly only under zlib 1.2.12 and otherwise only the ordering and that the delta layout beats 3x, because the exact sizes depend on the zlib version.
 
 ### 6. Capacity estimate
@@ -194,7 +195,7 @@ Assumptions (illustrative, not facts about any feed): 500 million normalised eve
 | Raw per day | 18.0 GB |
 | Raw per year | 4.54 TB |
 | Raw for 10 years | 45.4 TB |
-| Compressed for 10 years at an assumed 5x (in line with the measured 4.89x) | 9.07 TB |
+| Compressed for 10 years at an assumed 5x (in line with the measured 4.88x) | 9.07 TB |
 | Average rate | 21,368 events per second |
 | Peak rate | 427,350 events per second, 15.4 MB/s |
 
@@ -265,7 +266,7 @@ An 18 GB day fits in the memory of one large RDB host, the peak rate sets the in
 > By date (and a coarse second key such as venue if a day is too large), sorted by symbol and time within files. Partitioning by symbol creates millions of small files for a date-range workload, where per-file open and footer costs dominate.
 
 > [!question]- qd-tick-delta-encoding | Why do delta encodings compress timestamps and prices so well?
-> Consecutive timestamps and prices differ by small, repetitive amounts, so deltas fit in a few bits and repeat often. In the repo's example zlib compressed row records 3.27x, plain columns 4.02x and delta-encoded columns 4.89x (zlib-version dependent).
+> Consecutive timestamps and prices differ by small, repetitive amounts, so deltas fit in a few bits and repeat often. In the repo's example zlib compressed row records 3.27x, plain columns 4.02x and delta-encoded columns 4.88x (zlib-version dependent).
 
 > [!question]- qd-tick-capacity-estimate | Assume 500 million events per day at 36 bytes, 252 days and 10 years. What raw storage do you need, and what is the peak rate if the busiest second is 20 times the 6.5-hour average?
 > 18.0 GB per day, 4.54 TB per year, 45.4 TB over 10 years (9.07 TB at 5x compression). Average $5 \times 10^8/23{,}400 = 21{,}368$ events per second, peak 427,350 per second, about 15.4 MB/s.

@@ -19,6 +19,7 @@ from __future__ import annotations
 import zlib
 
 import numpy as np
+from pcg_stream import PcgStream
 
 NO_MATCH = -1
 
@@ -100,7 +101,7 @@ def hand_example() -> None:
 
 def random_check() -> None:
     print("== Random check against brute force")
-    rng = np.random.default_rng(5)
+    rng = PcgStream(5)
     nq, nt = 3000, 600
     q_sym = rng.integers(0, 4, nq)
     q_time = rng.integers(0, 100_000, nq)
@@ -111,15 +112,36 @@ def random_check() -> None:
     for d in ("backward", "forward"):
         fast = asof_join(q_sym, q_time, t_sym, t_time, d)
         slow = asof_brute(q_sym, q_time, t_sym, t_time, d)
-        # Ties in quote time: both pick a quote with the same time; compare times, not indices.
-        same = np.where(fast >= 0, q_time[np.maximum(fast, 0)], -1) == np.where(slow >= 0, q_time[np.maximum(slow, 0)], -1)
+        same = fast == slow  # indices, so a join that picks the wrong one of two tied quotes fails
         print(f"{d}: {nq:,} quotes, {nt} trades: {int(same.sum())}/{nt} agree, unmatched {int((fast < 0).sum())}")
         assert same.all()
+    # Tied quote times must occur, or the index comparison above would not exercise the tie rule.
+    tied = int(np.sum((np.diff(q_sym) == 0) & (np.diff(q_time) == 0)))
+    print(f"quotes sharing a symbol and time with the previous quote: {tied}")
+    assert tied == 13  # note 12 example 1
+
+
+def tied_quotes() -> None:
+    print("== Tied quote times")
+    # Two AAA quotes stamped 200 arrive in feed order: index 1, then index 2.
+    q_sym = np.array([0, 0, 0, 0])
+    q_time = np.array([100, 200, 200, 300])
+    t_sym = np.array([0, 0, 0])
+    t_time = np.array([150, 200, 250])
+    back = asof_join(q_sym, q_time, t_sym, t_time)
+    fwd = asof_join(q_sym, q_time, t_sym, t_time, "forward")
+    print("quotes at", q_time.tolist(), "; trades at", t_time.tolist())
+    print("backward indices:", back.tolist(), " forward indices:", fwd.tolist())
+    # Note 12 card qd-tick-asof-exact-time: a backward join uses a quote stamped at the trade's own time, and
+    # among tied quotes the last one in feed order (kdb+ aj, pandas merge_asof); a forward join takes the first.
+    assert back.tolist() == [0, 2, 2] and fwd.tolist() == [1, 1, 3]
+    assert asof_brute(q_sym, q_time, t_sym, t_time).tolist() == [0, 2, 2]
+    assert asof_brute(q_sym, q_time, t_sym, t_time, "forward").tolist() == [1, 1, 3]
 
 
 def effective_spread_bias(seed: int = 6) -> tuple[float, float]:
     """Trades hit the prevailing quote; the next quote reflects impact. Measure the effective half-spread."""
-    rng = np.random.default_rng(seed)
+    rng = PcgStream(seed)
     n = 50_000
     half, impact = 0.05, 0.02
     t = np.cumsum(rng.integers(1, 1000, n)) * 2  # even times for quotes
@@ -195,7 +217,7 @@ def capacity(ratio: float = 5.0) -> None:
 
 def pruning() -> None:
     print("== Row-group pruning with min/max statistics")
-    rng = np.random.default_rng(8)
+    rng = PcgStream(8)
     n, nsym, group = 2_000_000, 500, 100_000
     sym = rng.integers(0, nsym, n)
     target = 123
@@ -207,11 +229,11 @@ def pruning() -> None:
     rows = int(np.sum(sym == target))
     print(f"{n:,} rows, {nsym} symbols, row groups of {group:,}: {n_groups} row groups; symbol {target} has {rows:,} rows")
     print(f"groups read: unsorted {hit_unsorted}, sorted by symbol {hit_sorted}")
-    assert hit_unsorted == n_groups == 20 and hit_sorted == 1 and rows == 4009
+    assert hit_unsorted == n_groups == 20 and hit_sorted == 1 and rows == 3924
 
 
 def synthetic_ticks(seed: int, n: int) -> dict[str, np.ndarray]:
-    rng = np.random.default_rng(seed)
+    rng = PcgStream(seed)
     gaps = np.maximum(1, rng.exponential(5e6, n)).astype(np.int64)  # mean 5 ms in nanoseconds
     ts = 34_200_000_000_000 + np.cumsum(gaps)  # from 09:30:00 in nanoseconds since midnight
     steps = rng.choice([-1, 0, 0, 0, 1], n)
@@ -249,12 +271,13 @@ def compression(seed: int = 9, n: int = 200_000) -> float:
     assert 1.2 < r_row < r_col < r_del
     assert r_del > 3.0
     if zlib.ZLIB_RUNTIME_VERSION == "1.2.12":  # the version the note's quoted ratios were produced with
-        assert (round(r_row, 2), round(r_col, 2), round(r_del, 2)) == (3.27, 4.02, 4.89)
+        assert (round(r_row, 2), round(r_col, 2), round(r_del, 2)) == (3.27, 4.02, 4.88)
     return r_del
 
 
 def main() -> None:
     hand_example()
+    tied_quotes()
     random_check()
     eb, ef = effective_spread_bias()
     print(f"== Effective half-spread: backward join {eb:.4f}, forward join {ef:.4f} (true 0.05, impact 0.02)")

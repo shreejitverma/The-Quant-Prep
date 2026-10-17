@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [order-book-and-matching-engine]
 est_hours: 4
-sources: [Nasdaq - TotalView-ITCH 5.0 Interface Specification version 5.0 (03/06/2015) in protocol-specs, Nasdaq - MoldUDP64 Protocol Specification V1.00, Nasdaq - SoupBinTCP Specification Version 3.00, Nasdaq - OUCH Version 4.2 (updated October 2025), FIX Trading Community - Simple Binary Encoding Technical Specification v1.0, FIX Trading Community - FIX 4.4 specification, CME Group Client Systems Wiki - MDP 3.0 SBE Technical Headers and SBE Decoding Example, Linux kernel documentation - ip-sysctl (rp_filter), Stevens Fenner and Rudoff - UNIX Network Programming Vol 1 3rd ed ch 21 (multicasting)]
+sources: [Nasdaq - TotalView-ITCH 5.0 Interface Specification version 5.0 (03/06/2015) - protocol-specs/NASDAQ-TotalView-ITCH-5.pdf, Nasdaq - MoldUDP64 Protocol Specification V1.00, Nasdaq - SoupBinTCP Specification Version 3.00, Nasdaq - OUCH Version 4.2 (updated October 2025), FIX Trading Community - Simple Binary Encoding Technical Specification v1.0, FIX Trading Community - FIX 4.4 specification, CME Group Client Systems Wiki - MDP 3.0 SBE Technical Headers and SBE Decoding Example, Linux kernel documentation - ip-sysctl (rp_filter), Stevens Fenner and Rudoff - UNIX Network Programming Vol 1 3rd ed ch 21 (multicasting)]
 ---
 
 # Market Data Feed Handlers and Protocols
@@ -279,7 +279,7 @@ In C++ read each field with `memcpy` into a local plus a byte swap (at `-O2` tha
 
 ### 2. Two lines, three losses, one retransmission
 
-Sixteen messages (sequence 1 to 16: a start-of-messages event, adds, an attributed add, executions, a cancel, a replace, a non-displayed trade, a delete) go out in six MoldUDP64 packets of at most three messages: 1..3, 4..5, 6..8, 9..10, 11..13, 14..16.
+Sixteen messages (sequence 1 to 16: a start-of-messages event, adds, an attributed add, executions, two partial cancels, a replace, a non-displayed trade, a delete) go out in six MoldUDP64 packets of at most three messages: 1..3, 4..5, 6..8, 9..10, 11..13, 14..16.
 Line A loses 4..5, line B loses 6..8, and both lose 11..13; B trails A.
 
 | Arrival | Packet | Action | Delivered | Next expected after |

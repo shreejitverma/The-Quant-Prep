@@ -5,12 +5,14 @@
 // Covers: each check at its boundary, illegal transitions, duplicate execution reports,
 // overfills and reconciliation failures tripping the kill switch, fills racing a cancel,
 // replace exposure, cancel rejects, kill-switch behaviour, the FIX 4.4 Appendix D cancel
-// scenarios B.1.b to B.1.d, and fail-closed handling of clock steps. Framework-free.
+// scenarios B.1.b to B.1.d, late acks after fills, responses matched to the request in flight,
+// and fail-closed handling of clock steps, bad references and exposure overflow. Framework-free.
 
 #include "pretrade_risk_oms.hpp"
 
 #include <cstdint>
 #include <iostream>
+#include <limits>
 #include <string>
 
 namespace {
@@ -104,8 +106,8 @@ void test_reference_and_restricted_fail_closed() {
     EXPECT(gw.submit({"r3", "ZERO", Side::Buy, 1, 1'000}, 0) == RejectReason::NoReferencePrice);
 }
 
-// A corrupt reference for a held symbol must not shrink the credit aggregate.
-void test_bad_reference_for_held_symbol_fails_closed() {
+// A bad tick is rejected and counted, and the last valid reference keeps valuing the position.
+void test_invalid_reference_keeps_last_valid() {
     RiskLimits l = limits();
     l.creditLimitCents = 10'500'000;  // $105,000
     RiskGateway gw(l);
@@ -119,11 +121,171 @@ void test_bad_reference_for_held_symbol_fails_closed() {
     EXPECT(gw.submit({"a1", "ABC", Side::Buy, 200, 5'000}, 20 * kMs) == RejectReason::CreditLimit);
     EXPECT(!gw.setReferencePrice("XYZ", 0));
     EXPECT(!gw.setReferencePrice("XYZ", -1));
+    EXPECT(!gw.setReferencePrice("XYZ", kMaxPriceCents + 1));
+    EXPECT(gw.invalidReferencePrices() == 3);
+    EXPECT(gw.grossExposureCents() == 10'000'000);  // still valued at $100.00
     EXPECT(gw.submit({"a2", "ABC", Side::Buy, 200, 5'000}, 40 * kMs) == RejectReason::CreditLimit);
-    EXPECT(gw.submit({"a3", "ABC", Side::Buy, 1, 5'000}, 60 * kMs) == RejectReason::CreditLimit);
-    EXPECT(gw.submit({"x2", "XYZ", Side::Sell, 1, 10'000}, 80 * kMs) == RejectReason::NoReferencePrice);
+    // The 10% collar is still measured against $100.00: 89.99 is below 90.00, 90.00 is not.
+    EXPECT(gw.submit({"x2", "XYZ", Side::Sell, 1, 8'999}, 60 * kMs) == RejectReason::PriceCollar);
+    EXPECT(gw.submit({"x3", "XYZ", Side::Sell, 1, 9'000}, 80 * kMs) == RejectReason::None);
+    // $100,000 + $90 + 98 x $50.00 = $104,990, within $105,000.
+    EXPECT(gw.submit({"a3", "ABC", Side::Buy, 98, 5'000}, 100 * kMs) == RejectReason::None);
+    EXPECT(gw.grossExposureCents() == 10'499'000);
+}
+
+// A position held in a symbol that never had a valid reference cannot be valued: fail closed.
+void test_held_symbol_without_any_reference_fails_closed() {
+    RiskGateway gw = gateway();
+    gw.setStartOfDayPosition("XYZ", -100);
+    EXPECT(gw.grossExposureCents() == RiskGateway::kUnvaluedExposure);
+    EXPECT(gw.submit({"a1", "ABC", Side::Buy, 1, 5'000}, 0) == RejectReason::CreditLimit);
+    EXPECT(!gw.setReferencePrice("XYZ", 0));
+    EXPECT(gw.submit({"a2", "ABC", Side::Buy, 2, 5'000}, 20 * kMs) == RejectReason::CreditLimit);
     EXPECT(gw.setReferencePrice("XYZ", 10'000));
-    EXPECT(gw.submit({"a4", "ABC", Side::Buy, 100, 5'000}, 100 * kMs) == RejectReason::None);  // $105,000 exactly
+    EXPECT(gw.grossExposureCents() == 1'000'000);  // |-100| x $100.00
+    EXPECT(gw.submit({"a3", "ABC", Side::Buy, 3, 5'000}, 40 * kMs) == RejectReason::None);
+    // A flat carried-in position needs no reference.
+    RiskGateway flat = gateway();
+    flat.setStartOfDayPosition("XYZ", 0);
+    EXPECT(flat.submit({"b1", "ABC", Side::Buy, 1, 5'000}, 0) == RejectReason::None);
+}
+
+// Exposures past int64 must fail the credit check closed, not wrap negative and pass it.
+void test_exposure_overflow_fails_closed() {
+    RiskLimits l;
+    l.maxOrderQty = 10'000'000;
+    l.maxOrderNotionalCents = std::numeric_limits<std::int64_t>::max();
+    l.priceCollarBps = 1000;
+    l.maxAbsPosition = 10'000'000;
+    l.creditLimitCents = std::numeric_limits<std::int64_t>::max() - 1;
+    l.maxMessagesPerWindow = 100;
+    l.throttleWindowNs = 1000 * kMs;
+    l.repeatWindowNs = 10 * kMs;
+    RiskGateway gw(l);
+    gw.setReferencePrice("XYZ", 1'000);
+    gw.setReferencePrice("ABC", 5'000);
+    EXPECT(gw.submit({"x", "XYZ", Side::Buy, 9'000'000, 1'000}, 0) == RejectReason::None);
+    ack(gw, "x", "e1", 9'000'000);
+    EXPECT(gw.onExecutionReport({"e2", "x", "", ExecType::Trade, OrdStatus::Filled, 9'000'000, 1'000, 0, 9'000'000}) == ApplyResult::Applied);
+    // 9e6 x 2^40 cents is about 9.9e18, above INT64_MAX (about 9.2e18).
+    EXPECT(gw.setReferencePrice("XYZ", kMaxPriceCents));
+    EXPECT(gw.grossExposureCents() == RiskGateway::kUnvaluedExposure);
+    EXPECT(gw.submit({"a", "ABC", Side::Buy, 1, 5'000}, 20 * kMs) == RejectReason::CreditLimit);
+
+    // A replace whose worst case pairs the old quantity with the new price overflows the same way.
+    RiskLimits big = l;
+    big.maxOrderQty = std::int64_t{1} << 30;
+    big.maxAbsPosition = std::int64_t{1} << 30;
+    big.priceCollarBps = 0;
+    RiskGateway gw2(big);
+    gw2.setReferencePrice("XYZ", kMaxPriceCents);
+    EXPECT(gw2.submit({"o", "XYZ", Side::Buy, std::int64_t{1} << 30, 1}, 0) == RejectReason::None);
+    EXPECT(gw2.requestReplace("o", "r", 1, kMaxPriceCents, 20 * kMs) == RejectReason::CreditLimit);  // 2^30 x 2^40
+
+    // A fill whose notional cannot be represented does not reconcile.
+    RiskGateway gw3(l);
+    gw3.setReferencePrice("XYZ", 1'000);
+    EXPECT(gw3.submit({"y", "XYZ", Side::Buy, 9'000'000, 1'000}, 0) == RejectReason::None);
+    ack(gw3, "y", "f1", 9'000'000);
+    EXPECT(gw3.onExecutionReport({"f2", "y", "", ExecType::Trade, OrdStatus::Filled, 9'000'000, kMaxPriceCents, 0, 9'000'000}) ==
+           ApplyResult::Inconsistent);
+    EXPECT(gw3.killed() && gw3.position("XYZ") == 0 && gw3.order("y")->cumQty == 0);
+}
+
+// A fill before the New ack is an implicit acknowledgement; the late ack is a no-op, not a kill.
+void test_late_ack_after_fill_is_reconciled() {
+    RiskGateway gw = gateway();
+    EXPECT(gw.submit({"o", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    EXPECT(gw.onExecutionReport({"e1", "o", "", ExecType::Trade, OrdStatus::PartiallyFilled, 10, 5'000, 90, 10}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"e2", "o", "", ExecType::PendingNew, OrdStatus::PendingNew, 0, 0, 100, 0}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"e3", "o", "", ExecType::New, OrdStatus::New, 0, 0, 100, 0}) == ApplyResult::Applied);
+    EXPECT(gw.order("o")->status == OrdStatus::PartiallyFilled && gw.order("o")->cumQty == 10 && gw.order("o")->leavesQty == 90);
+    EXPECT(!gw.killed());
+    // A cancel sent before the ack, then a fill, then the ack (B.1.d with a fill in between).
+    EXPECT(gw.submit({"p", "ABC", Side::Buy, 50, 5'000}, 20 * kMs) == RejectReason::None);
+    EXPECT(gw.requestCancel("p", "cp") == RejectReason::None);
+    EXPECT(gw.onExecutionReport({"f1", "p", "", ExecType::Trade, OrdStatus::PartiallyFilled, 20, 5'000, 30, 20}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"f2", "p", "", ExecType::New, OrdStatus::New, 0, 0, 50, 0}) == ApplyResult::Applied);
+    EXPECT(gw.order("p")->status == OrdStatus::PendingCancel && !gw.killed());
+    EXPECT(gw.onExecutionReport({"f3", "cp", "p", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 20}) == ApplyResult::Applied);
+    EXPECT(gw.position("ABC") == 30 && !gw.killed());
+    // A late ack that does not add up to the order is still a reconciliation failure.
+    EXPECT(gw.submit({"q", "ABC", Side::Buy, 70, 5'000}, 40 * kMs) == RejectReason::None);
+    EXPECT(gw.onExecutionReport({"g1", "q", "", ExecType::Trade, OrdStatus::PartiallyFilled, 5, 5'000, 65, 5}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"g2", "q", "", ExecType::New, OrdStatus::New, 0, 0, 50, 0}) == ApplyResult::Inconsistent);
+    EXPECT(gw.killed());
+    // Without a fill, a second ack is still illegal.
+    RiskGateway gw2 = gateway();
+    EXPECT(gw2.submit({"o", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw2, "o", "e1", 100);
+    EXPECT(gw2.onExecutionReport({"e2", "o", "", ExecType::New, OrdStatus::New, 0, 0, 100, 0}) == ApplyResult::IllegalTransition);
+    EXPECT(gw2.killed());
+}
+
+// Responses to a cancel or replace must name the request in flight.
+void test_responses_must_match_request_in_flight() {
+    // A stale reject for an earlier cancel must not undo the cancel now in flight.
+    RiskGateway gw = gateway();
+    EXPECT(gw.submit({"o", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw, "o", "e1", 100);
+    EXPECT(gw.requestCancel("o", "c1") == RejectReason::None);
+    EXPECT(gw.onCancelReject("c1") == ApplyResult::Applied);
+    EXPECT(gw.requestCancel("o", "c2") == RejectReason::None);
+    EXPECT(gw.onCancelReject("c1") == ApplyResult::IllegalTransition);
+    EXPECT(gw.killed() && gw.order("o")->status == OrdStatus::PendingCancel);
+    // An unknown id trips the kill switch.
+    RiskGateway gw2 = gateway();
+    EXPECT(gw2.onCancelReject("nobody") == ApplyResult::UnknownOrder);
+    EXPECT(gw2.killed());
+    // With a cancel over a pending replace, the original id is neither request in flight.
+    RiskGateway gw3 = gateway();
+    EXPECT(gw3.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw3, "X", "e1", 100);
+    EXPECT(gw3.requestReplace("X", "R", 300, 4'900, 20 * kMs) == RejectReason::None);
+    EXPECT(gw3.requestCancel("X", "C") == RejectReason::None);
+    EXPECT(gw3.onCancelReject("X") == ApplyResult::IllegalTransition);
+    EXPECT(gw3.killed() && gw3.order("X")->status == OrdStatus::PendingCancel && gw3.order("X")->replacePending());
+    // Replaced must carry the pending replace's ClOrdID, Canceled the pending cancel's or the current one.
+    RiskGateway gw4 = gateway();
+    EXPECT(gw4.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw4, "X", "e1", 100);
+    EXPECT(gw4.requestReplace("X", "R1", 200, 5'000, 20 * kMs) == RejectReason::None);
+    EXPECT(gw4.onCancelReject("R1") == ApplyResult::Applied);
+    EXPECT(gw4.requestReplace("X", "R2", 300, 5'000, 40 * kMs) == RejectReason::None);
+    EXPECT(gw4.onExecutionReport({"e2", "R1", "X", ExecType::Replaced, OrdStatus::New, 0, 0, 200, 0}) == ApplyResult::IllegalTransition);
+    EXPECT(gw4.killed() && gw4.order("X")->orderQty == 100);
+    RiskGateway gw5 = gateway();
+    EXPECT(gw5.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw5, "X", "e1", 100);
+    EXPECT(gw5.requestCancel("X", "C1") == RejectReason::None);
+    EXPECT(gw5.onCancelReject("C1") == ApplyResult::Applied);
+    EXPECT(gw5.requestCancel("X", "C2") == RejectReason::None);
+    EXPECT(gw5.onExecutionReport({"e2", "C1", "X", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 0}) == ApplyResult::IllegalTransition);
+    EXPECT(gw5.killed() && gw5.order("X")->status == OrdStatus::PendingCancel);
+    // An unsolicited cancel on the current ClOrdID is accepted.
+    RiskGateway gw6 = gateway();
+    EXPECT(gw6.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw6, "X", "e1", 100);
+    EXPECT(gw6.onExecutionReport({"e2", "X", "", ExecType::Expired, OrdStatus::Expired, 0, 0, 0, 0}) == ApplyResult::Applied);
+    EXPECT(!gw6.killed());
+    // A cancel reject after the venue rejected the order itself changes nothing.
+    RiskGateway gw7 = gateway();
+    EXPECT(gw7.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    EXPECT(gw7.requestCancel("X", "C") == RejectReason::None);
+    EXPECT(gw7.onExecutionReport({"e1", "X", "", ExecType::Rejected, OrdStatus::Rejected, 0, 0, 0, 0}) == ApplyResult::Applied);
+    EXPECT(gw7.onCancelReject("C") == ApplyResult::Applied);
+    EXPECT(gw7.order("X")->status == OrdStatus::Rejected && !gw7.killed());
+}
+
+// After a replace the venue knows the order by its new ClOrdID, so the kill switch cancels that one.
+void test_kill_switch_uses_current_clordid() {
+    RiskGateway gw = gateway();
+    EXPECT(gw.submit({"O", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(gw, "O", "e1", 100);
+    EXPECT(gw.requestReplace("O", "R", 200, 5'000, 20 * kMs) == RejectReason::None);
+    EXPECT(gw.onExecutionReport({"e2", "R", "O", ExecType::Replaced, OrdStatus::New, 0, 0, 200, 0}) == ApplyResult::Applied);
+    const auto cancels = gw.engageKillSwitch("manual");
+    EXPECT(cancels.size() == 1 && cancels[0] == "R");
 }
 
 void test_duplicate_ids_are_burned_even_when_rejected() {
@@ -428,7 +590,9 @@ int main() {
     RUN_TEST(test_collar_boundary_both_sides);
     RUN_TEST(test_notional_boundary_and_overflow_guard);
     RUN_TEST(test_reference_and_restricted_fail_closed);
-    RUN_TEST(test_bad_reference_for_held_symbol_fails_closed);
+    RUN_TEST(test_invalid_reference_keeps_last_valid);
+    RUN_TEST(test_held_symbol_without_any_reference_fails_closed);
+    RUN_TEST(test_exposure_overflow_fails_closed);
     RUN_TEST(test_duplicate_ids_are_burned_even_when_rejected);
     RUN_TEST(test_repeat_window_boundary);
     RUN_TEST(test_throttle_rolling_window);
@@ -447,6 +611,9 @@ int main() {
     RUN_TEST(test_fix44_b1d_cancel_before_ack);
     RUN_TEST(test_replace_overtaken_by_fills);
     RUN_TEST(test_clock_step_back_and_reference_bound);
+    RUN_TEST(test_late_ack_after_fill_is_reconciled);
+    RUN_TEST(test_responses_must_match_request_in_flight);
+    RUN_TEST(test_kill_switch_uses_current_clordid);
     std::cout << "\n" << (g_total - g_failures) << "/" << g_total << " assertions passed" << std::endl;
     return g_failures == 0 ? 0 : 1;
 }

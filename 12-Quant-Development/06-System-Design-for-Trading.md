@@ -120,10 +120,11 @@ Determinism rules for trading code:
 - Random numbers come from seeded generators whose seeds are part of the input.
 - Floating-point results depend on evaluation order and compiler flags; prices and quantities are integers.
 
-[qd_system_design.py](code/python/qd_system_design.py) demonstrates the consequences with a small price-time matcher fed by two gateways (8000 events, 4182 fills, seeded):
+[qd_system_design.py](code/python/qd_system_design.py) demonstrates the consequences with a small price-time matcher fed by two gateways (8000 events, 4172 fills, seeded):
 
-- Two replicas applying the sequencer's journal produce identical state digests.
-- A replica restored from a snapshot at sequence 5000 (76,988 bytes of serialized state) and replaying the remaining 3000 events reaches the same digest.
+- A replica that receives the sequencer's journal serialized, as a second host would, reaches the primary's state digest.
+- An independently written reference matcher (one flat list of resting orders, searched linearly) replays the same journal and produces the same 4172 fills and the same resting orders, so the digest is checked against more than the code that produced it.
+- A replica restored from a snapshot at sequence 5000 (76,492 bytes of serialized state) and replaying the remaining 3000 events reaches the same digest.
 - A consumer that lost sequence numbers 1234, 1235 and 6000 detects the two gaps, retransmits the 3 missing events from the journal, and reaches the same digest.
 - Without a sequencer, two replicas that receive the same three orders in different arrival orders disagree about who bought the last 100 shares: replica 1 filled order 2, replica 2 filled order 3.
 

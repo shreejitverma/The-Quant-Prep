@@ -25,6 +25,7 @@
 #include <numbers>
 #include <random>
 #include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -166,6 +167,13 @@ private:
 // Normal distribution helpers (double versions; AD versions are below)
 // ---------------------------------------------------------------------------------------------
 
+// Every engine's input check: finite inputs with S, K, t, sigma > 0 (a NaN fails every comparison).
+inline void requireEngineInputs(const char* what, double s, double k, double t, double sigma, double r, double q) {
+    if (!(s > 0.0) || !(k > 0.0) || !(t > 0.0) || !(sigma > 0.0) || !std::isfinite(s) || !std::isfinite(k) || !std::isfinite(t) ||
+        !std::isfinite(sigma) || !std::isfinite(r) || !std::isfinite(q))
+        throw std::domain_error(std::string(what) + " needs finite inputs with t, sigma, S, K > 0");
+}
+
 inline double normPdf(double x) { return std::exp(-0.5 * x * x) / std::sqrt(2.0 * std::numbers::pi); }
 inline double normCdf(double x) { return 0.5 * std::erfc(-x / std::numbers::sqrt2); }
 
@@ -214,7 +222,7 @@ public:
         const double t = a.expiry;
         const double k = a.strike;
         const double sigma = process_.vol(t, k);
-        if (t <= 0.0 || sigma <= 0.0 || s <= 0.0 || k <= 0.0) throw std::domain_error("analytic engine needs t, sigma, S, K > 0");
+        requireEngineInputs("analytic engine", s, k, t, sigma, r, q);
         const double sqrtT = std::sqrt(t);
         const double d1 = (std::log(s / k) + (r - q + 0.5 * sigma * sigma) * t) / (sigma * sqrtT);
         const double d2 = d1 - sigma * sqrtT;
@@ -251,7 +259,7 @@ public:
         const double s = process_.spot();
         const double t = a.expiry;
         const double sigma = process_.vol(t, a.strike);
-        if (t <= 0.0 || sigma <= 0.0 || s <= 0.0) throw std::domain_error("CRR engine needs t, sigma, S > 0");
+        requireEngineInputs("CRR engine", s, a.strike, t, sigma, process_.rate(), process_.dividendYield());
         const double dt = t / steps_;
         const double u = std::exp(sigma * std::sqrt(dt));
         const double d = 1.0 / u;
@@ -309,6 +317,7 @@ public:
         const double s = process_.spot();
         const double t = a.expiry;
         const double sigma = process_.vol(t, a.strike);
+        requireEngineInputs("Monte Carlo engine", s, a.strike, t, sigma, process_.rate(), process_.dividendYield());
         const double drift = (process_.rate() - process_.dividendYield() - 0.5 * sigma * sigma) * t;
         const double diffusion = sigma * std::sqrt(t);
         const double df = process_.discount(t);
@@ -325,7 +334,7 @@ public:
         }
         const double m = static_cast<double>(pairs_);
         const double mean = sum / m;
-        const double var = (sumSq - m * mean * mean) / (m - 1.0);
+        const double var = std::max(0.0, (sumSq - m * mean * mean) / (m - 1.0));
         OptionResults out;
         out.value = df * mean;
         out.errorEstimate = df * std::sqrt(var / m);
@@ -389,7 +398,8 @@ private:
 class EuropeanOption final : public LazyObject {
 public:
     EuropeanOption(OptionType type, double strike, double expiry) : args_{type, strike, expiry} {
-        if (strike <= 0.0 || expiry <= 0.0) throw std::invalid_argument("strike and expiry must be positive");
+        if (!(strike > 0.0) || !(expiry > 0.0) || !std::isfinite(strike) || !std::isfinite(expiry))
+            throw std::invalid_argument("strike and expiry must be finite and positive");
     }
 
     void setPricingEngine(std::shared_ptr<PricingEngine> engine) {
@@ -427,23 +437,36 @@ private:
 
 enum class Difference { Forward, Central };
 
+// Puts a quote back to the value it had at construction when the scope ends, including when a
+// reprice throws, unless commit() keeps the new value.
+class QuoteRestorer {
+public:
+    explicit QuoteRestorer(SimpleQuote& quote) : quote_(quote), original_(quote.value()) {}
+    ~QuoteRestorer() {
+        if (!committed_) quote_.setValue(original_);
+    }
+    QuoteRestorer(const QuoteRestorer&) = delete;
+    QuoteRestorer& operator=(const QuoteRestorer&) = delete;
+    double original() const { return original_; }
+    void commit() { committed_ = true; }
+
+private:
+    SimpleQuote& quote_;
+    double original_;
+    bool committed_ = false;
+};
+
 // Bumps the quote, reprices (the instrument is invalidated by notification), restores the quote.
 // Mutating shared market data is why bump-and-reprice must not run concurrently on one graph.
 inline double bumpGreek(const EuropeanOption& option, SimpleQuote& quote, double h, Difference scheme) {
-    const double original = quote.value();
+    const QuoteRestorer restore(quote);
     const double base = option.NPV();
-    quote.setValue(original + h);
+    quote.setValue(restore.original() + h);
     const double up = option.NPV();
-    double result = 0.0;
-    if (scheme == Difference::Forward) {
-        result = (up - base) / h;
-    } else {
-        quote.setValue(original - h);
-        const double down = option.NPV();
-        result = (up - down) / (2.0 * h);
-    }
-    quote.setValue(original);
-    return result;
+    if (scheme == Difference::Forward) return (up - base) / h;
+    quote.setValue(restore.original() - h);
+    const double down = option.NPV();
+    return (up - down) / (2.0 * h);
 }
 
 // Newton solve on the vol quote so the instrument reprices to a market price (a one-parameter
@@ -455,10 +478,14 @@ struct CalibrationResult {
 
 inline CalibrationResult calibrateVolatility(const EuropeanOption& option, SimpleQuote& volQuote, double targetPrice,
                                              double tolerance = 1e-12, int maxIterations = 50) {
+    QuoteRestorer restore(volQuote);
     for (int i = 1; i <= maxIterations; ++i) {
         const OptionResults& r = option.results();
         const double diff = r.value - targetPrice;
-        if (std::fabs(diff) < tolerance) return {volQuote.value(), i - 1};
+        if (std::fabs(diff) < tolerance) {
+            restore.commit();
+            return {volQuote.value(), i - 1};
+        }
         if (!(r.vega > 1e-12)) throw std::runtime_error("calibration needs an engine with positive vega");
         volQuote.setValue(std::max(volQuote.value() - diff / r.vega, 1e-6));
     }

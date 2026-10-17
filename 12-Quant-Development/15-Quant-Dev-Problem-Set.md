@@ -177,7 +177,7 @@ With payoff standard deviation 15 and 100,000 paths the standard error is 0.0474
 > Heartbeat packets (message count 0) carry the next expected sequence number, typically about once per second; if it is ahead of yours, you have a gap. Count 0xFFFF signals end of session.
 
 > [!question]- qd-ps-ab-double-loss | Each line independently loses a packet with probability $10^{-5}$; 20 million packets per day. How often is a packet lost on both lines?
-> Expected 0.002 per day, about once per 500 trading days, versus 200 single-line losses per day that arbitration hides. In practice losses are correlated (shared infrastructure, microbursts), so plan for retransmission anyway.
+> Expected 0.002 per day, about once per 500 trading days, versus about 400 single-line losses per day (200 on each line) that arbitration hides. In practice losses are correlated (shared infrastructure, microbursts), so plan for retransmission anyway.
 
 > [!question]- qd-ps-itch-price-range | Does an ITCH Price(4) field fit in a signed 32-bit integer?
 > Yes. The maximum is 200,000.0000, raw 2,000,000,000 (0x77359400), below $2^{31} - 1 = 2{,}147{,}483{,}647$; the field is unsigned 32-bit on the wire.
@@ -219,13 +219,13 @@ With payoff standard deviation 15 and 100,000 paths the standard error is 0.0474
 > It is wrong in the second decimal (error of order $10^{-2}$, $8.0 \times 10^{-3}$ on the reference machine). $100 \pm 10^{-12}$ is not representable, so the step taken is 0.9948 of the nominal one, which alone costs $3.3 \times 10^{-3}$; the rest is round-off in two prices that agree in almost every digit, divided by a tiny $h$.
 
 > [!question]- qd-ps-bump-count | A trade depends on 50 curve pillars and 200 vol nodes. How many pricings for bump-and-reprice sensitivities, and what does AAD change?
-> 251 one-sided or 501 central pricings. Reverse-mode AAD returns all 250 sensitivities from one forward pass and one backward sweep, at a small constant multiple of one pricing and independent of the number of inputs, at the cost of memory for the tape.
+> 251 one-sided (the base price plus one bump per input) or 500 central (an up and a down bump per input; the differences never use the base price). Reverse-mode AAD returns all 250 sensitivities from one forward pass and one backward sweep, at a small constant multiple of one pricing and independent of the number of inputs, at the cost of memory for the tape.
 
 > [!question]- qd-ps-array-bytes | A float64 array of shape (10,000, 5,000): size and strides in C order and of its transpose?
 > 400,000,000 bytes (381.47 MiB); strides (40000, 8); the transpose is a view with strides (8, 40000). No data moves.
 
 > [!question]- qd-ps-column-sum-cache | Why is summing one column of that C-order array slow?
-> `a[:, 0]` is a view with stride 40,000 bytes, so each of the 10,000 elements sits on its own 64-byte cache line: 640,000 bytes move for 80,000 useful, an 8x amplification; every access also lands on a different page (4 KiB on x86 Linux, 16 KiB on Apple silicon, both smaller than the stride), so most hardware prefetchers, which stop at page boundaries, cannot help and the TLB misses too.
+> `a[:, 0]` is a view with stride 40,000 bytes, so each of the 10,000 elements sits on its own cache line: with 64-byte lines (x86) 640,000 bytes move for 80,000 useful, an 8x amplification, and with the 128-byte lines Apple silicon reports, 1,280,000 bytes, 16x; every access also lands on a different page (4 KiB on x86 Linux, 16 KiB on Apple silicon, both smaller than the stride), so most hardware prefetchers, which stop at page boundaries, cannot help and the TLB misses too.
 
 > [!question]- qd-ps-broadcast | What shape does broadcasting (3, 1, 5) with (4, 1) give? And (3, 2) with (3,)?
 > (3, 4, 5): align from the right, so (4, 1) acts as (1, 4, 1) and size-1 axes stretch. (3, 2) with (3,) is an error: trailing sizes 2 and 3 differ and neither is 1.
@@ -292,7 +292,7 @@ With payoff standard deviation 15 and 100,000 paths the standard error is 0.0474
 
 ## Further reading
 
-- Nasdaq, *TotalView-ITCH 5.0 Interface Specification* (in [protocol-specs](protocol-specs/)), sections 3 and 4.
+- Nasdaq, *TotalView-ITCH 5.0 Interface Specification*, version 5.0 of 03/06/2015 ([NASDAQ-TotalView-ITCH-5.pdf](protocol-specs/NASDAQ-TotalView-ITCH-5.pdf)), sections 3 and 4; the revision of April 28, 2023 ([Nasdaq-Totalview-ITCH-5.0.pdf](protocol-specs/Nasdaq-Totalview-ITCH-5.0.pdf)) drops the section numbers and adds the Direct Listing with Capital Raise message.
 - Nasdaq, *MoldUDP64 Protocol Specification*, version 1.00.
 - 17 CFR 240.15c3-5, Risk management controls for brokers or dealers with market access (75 FR 69825, November 15, 2010).
 - SEC, *In the Matter of Knight Capital Americas LLC*, Release No. 34-70694 (October 16, 2013).

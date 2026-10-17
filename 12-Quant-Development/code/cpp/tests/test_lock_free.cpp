@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <atomic>
 #include <cstdint>
-#include <cstdlib>
 #include <iostream>
 #include <mutex>
 #include <new>
@@ -17,18 +16,23 @@
 #include <thread>
 #include <vector>
 
-// Global allocation hook: when armed with n > 0, the n-th allocation from then on throws bad_alloc.
-std::atomic<int> g_fail_allocation_in{0};
-
-void* operator new(std::size_t n) {
-    if (g_fail_allocation_in.load(std::memory_order_relaxed) > 0 && g_fail_allocation_in.fetch_sub(1) == 1) throw std::bad_alloc();
-    if (void* p = std::malloc(n == 0 ? 1 : n)) return p;
-    throw std::bad_alloc();
-}
-void operator delete(void* p) noexcept { std::free(p); }
-void operator delete(void* p, std::size_t) noexcept { std::free(p); }
-
 namespace {
+
+// Allocator whose n-th allocation from the moment *fail_in is set to n > 0 throws bad_alloc.
+template <typename U>
+struct FailingAllocator {
+    using value_type = U;
+    int* fail_in;
+    explicit FailingAllocator(int* f) noexcept : fail_in(f) {}
+    template <typename V>
+    FailingAllocator(const FailingAllocator<V>& other) noexcept : fail_in(other.fail_in) {}
+    U* allocate(std::size_t n) {
+        if (*fail_in > 0 && --*fail_in == 0) throw std::bad_alloc();
+        return std::allocator<U>{}.allocate(n);
+    }
+    void deallocate(U* p, std::size_t n) noexcept { std::allocator<U>{}.deallocate(p, n); }
+    bool operator==(const FailingAllocator&) const noexcept = default;
+};
 
 int g_failures = 0;
 int g_total = 0;
@@ -255,18 +259,19 @@ void test_pool_constructor_throw_leaks_nothing() {
 // The block allocation succeeds but recording it in blocks_ throws: the pool must not keep free
 // slots that point into the block the unique_ptr just released.
 void test_pool_growth_failure_leaves_no_dangling_slots() {
-    qpmem::ObjectPool<Node, 8> pool;  // one block reserved, so the second block reallocates blocks_
+    int fail_in = 0;
+    qpmem::ObjectPool<Node, 8, FailingAllocator<Node>> pool(1, FailingAllocator<Node>(&fail_in));  // one block reserved, so the second block reallocates blocks_
     std::vector<Node*> v;
     v.reserve(16);
     for (int i = 0; i < 8; ++i) v.push_back(pool.create(i, i));
-    g_fail_allocation_in.store(2);  // 1st: the new block, 2nd: blocks_ growing
+    fail_in = 1;  // the next block-list allocation: blocks_ growing to hold the second block
     bool threw = false;
     try {
         (void)pool.create(8, 8);
     } catch (const std::bad_alloc&) {
         threw = true;
     }
-    g_fail_allocation_in.store(0);
+    fail_in = 0;
     EXPECT(threw);
     EXPECT(pool.live() == 8 && pool.capacity() == 8);
     Node* n = pool.create(9, -9);  // must grow a fresh block, not hand out a slot of the freed one

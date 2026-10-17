@@ -15,6 +15,7 @@ import time
 
 import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
+from pcg_stream import PcgStream
 
 
 def section(title: str) -> None:
@@ -29,7 +30,7 @@ def broadcasting() -> None:
     print("(3,1) + (1,4) ->", c.shape)
     assert c.shape == (3, 4) and c[2, 3] == 5.0
     # Demean the columns of a (T, N) returns panel: (T, N) - (N,) broadcasts over rows.
-    rng = np.random.default_rng(0)
+    rng = PcgStream(0)
     r = rng.normal(size=(250, 5))
     d = r - r.mean(axis=0)
     print("max |column mean| after demeaning:", f"{np.abs(d.mean(axis=0)).max():.1e}")
@@ -139,19 +140,22 @@ def summation() -> None:
     assert f"{100 * (seq - exact) / exact:.2f}" == "8.79"
     assert f"{exact:.4f}" == "1000000.0149"
     assert seq == 1087937.0
-    # np.sum's blocking (and so its last digits, 1000000.1250 on the author's machine) is platform-dependent;
-    # note 11 labels it so and the claim asserted is only that its error is below 1.
-    assert abs(pair - exact) < 1.0
-    # float64 with a Python loop versus np.sum versus fsum.
-    rng = np.random.default_rng(1)
-    y = rng.normal(0.0, 1.0, 1_000_000) * 1e6
+    # np.sum's blocking (and so its last digits, 1000000.1250 on the author's machine) depends on platform and
+    # NumPy version; note 11 labels it so and the script asserts only that its
+    # relative error is below 0.01%, against 8.79% for the sequential sum.
+    assert abs(pair - exact) / exact < 1e-4
+    # float64 with a Python loop versus np.sum versus fsum, on data uniform on +-sqrt(3) * 1e6 (sd 1e6).
+    # Uniforms from raw bits times a correctly rounded constant are bit-identical on every platform, which
+    # matters here: the loop's error is a sum of a million roundings and changes with any input bit.
+    rng = PcgStream(1)
+    y = (2.0 * rng.uniform(1_000_000) - 1.0) * (math.sqrt(3.0) * 1e6)
     loop = 0.0
     for v in y.tolist():
         loop += v
     ex = math.fsum(y.tolist())
     print(f"float64 n=1e6: |loop - fsum| {abs(loop - ex):.3e}, |np.sum - fsum| {abs(float(np.sum(y)) - ex):.3e}")
     assert abs(float(np.sum(y)) - ex) <= abs(loop - ex) + 1e-6
-    assert f"{abs(loop - ex):.3e}" == "1.994e-05" and f"{abs(loop - ex):.1e}" == "2.0e-05"
+    assert f"{abs(loop - ex):.3e}" == "8.076e-06" and f"{abs(loop - ex):.1e}" == "8.1e-06"
     # Since Python 3.12 the built-in sum() of floats is compensated (Neumaier), unlike a += loop.
     tenth = [0.1] * 10
     acc = 0.0
@@ -217,7 +221,7 @@ def overflow() -> None:
 
 def rolling() -> None:
     section("Rolling windows")
-    rng = np.random.default_rng(2)
+    rng = PcgStream(2)
     x = rng.normal(size=10_000)
     w = 20
     c = np.cumsum(np.concatenate(([0.0], x)))
@@ -233,16 +237,26 @@ def rolling() -> None:
     # cumsum differences lose precision when the running sum is large relative to the window sum.
     big = 1e8 + rng.normal(size=1_000_000)
     cb = np.cumsum(np.concatenate(([0.0], big)))
-    tail_cumsum = (cb[-1] - cb[-1 - w]) / w
-    tail_exact = math.fsum(big[-w:].tolist()) / w
-    tail_direct = float(big[-w:].mean())
-    err_cs, err_dir = abs(tail_cumsum - tail_exact), abs(tail_direct - tail_exact)
-    print(f"rolling mean of 1e8 + noise after 1e6 points: cumsum error {err_cs:.2e}, direct window mean error {err_dir:.2e}")
-    # Note 11 example 4: cumsum error about 4e-5; the direct mean is off by at most one ulp of 1e8 (about 1.5e-8).
-    # The cumsum is strictly sequential, so its error is deterministic; the direct mean's last bit may vary by platform.
-    assert f"{err_cs:.0e}" == "4e-05"
+    tail = 2000  # the last 2,000 windows, where the running total is near 1e14
+    starts = np.arange(len(big) - w + 1 - tail, len(big) - w + 1)
+    exact = np.array([math.fsum(big[i : i + w].tolist()) / w for i in starts])
+    err_cs = np.abs((cb[starts + w] - cb[starts]) / w - exact)
+    err_dir = np.abs(sliding_window_view(big, w)[starts].mean(axis=1) - exact)
+    med_cs, p90_cs = float(np.median(err_cs)), float(np.quantile(err_cs, 0.9))
+    # Theory: each of the w additions inside a window rounds to the ulp u of a total near 1e14, an error
+    # uniform on [-u/2, u/2] with sd u / sqrt(12); summed over w and divided by w the window mean has
+    # sd u * sqrt(w / 12) / w, and the median of |N(0, sd)| is 0.674 sd.
+    ulp_total = float(np.spacing(cb[-1]))
+    sd_theory = ulp_total * math.sqrt(w / 12) / w
     ulp_1e8 = float(np.spacing(1e8))
-    assert err_dir <= ulp_1e8 and f"{ulp_1e8:.1e}" == "1.5e-08"
+    print(f"rolling mean of 1e8 + noise, last {tail:,} windows of 1e6 points: cumsum error median {med_cs:.1e}, p90 {p90_cs:.1e}")
+    print(f"  theory: ulp of the running total {ulp_total}, error sd {sd_theory:.1e}, median {0.674 * sd_theory:.1e}")
+    print(f"  direct window mean error: max {float(err_dir.max()):.1e} = {float(err_dir.max()) / ulp_1e8:.1f} ulps of 1e8 ({ulp_1e8:.1e})")
+    # Note 11 example 4 and card qd-np-cumsum-rolling, at the quoted rounding.
+    assert ulp_total == 2.0**-6 and f"{sd_theory:.1e}" == "1.0e-03" and f"{0.674 * sd_theory:.1e}" == "6.8e-04"
+    assert 0.5 < med_cs / (0.674 * sd_theory) < 2.0 and 0.5 < p90_cs / (1.645 * sd_theory) < 2.0
+    assert f"{med_cs:.1e}" == "6.6e-04" and f"{p90_cs:.1e}" == "1.6e-03"
+    assert float(err_dir.max()) <= 4 * ulp_1e8 < med_cs / 100 and f"{ulp_1e8:.1e}" == "1.5e-08"
     # Max drawdown is path dependent but still vectorises with a running maximum.
     pnl = np.array([0.0, 3.0, 1.0, 4.0, -2.0, 5.0, 2.0])
     peak = np.maximum.accumulate(pnl)
@@ -276,18 +290,18 @@ def ewma_closed_form() -> None:
             out = np.concatenate(([x[0]], (1 - alpha) ** s[1:] * inner))
         return out
 
-    rng = np.random.default_rng(3)
+    rng = PcgStream(3)
     short = rng.normal(size=1000)
     long = rng.normal(size=10_000)
     e_short = np.abs(closed(short) - loop(short)).max()
     bad = int(np.count_nonzero(~np.isfinite(closed(long))))
     print(f"closed form vs loop n=1000: max err {e_short:.1e}; n=10000: {bad} non-finite outputs")
-    assert e_short < 1e-9 and bad == 3270
+    assert e_short < 1e-9 and bad == 3265
 
 
 def timing() -> None:
     section("Timing (machine-dependent; loose sanity bounds only)")
-    rng = np.random.default_rng(4)
+    rng = PcgStream(4)
     x = rng.normal(size=1_000_000)
     xs = x.tolist()
 

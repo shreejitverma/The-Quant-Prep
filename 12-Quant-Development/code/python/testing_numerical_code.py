@@ -24,6 +24,7 @@ import struct
 import sys
 
 import numpy as np
+from pcg_stream import PcgStream
 
 
 class SplitMix64:
@@ -248,17 +249,13 @@ def bs_put(s: float, k: float, r: float, sigma: float, t: float) -> float:
 
 
 def pinned_normals(seed: int, n: int) -> np.ndarray:
-    """Standard normals from the raw PCG64 stream through Box-Muller.
+    """Standard normals from the raw PCG64 stream through Box-Muller (pcg_stream.py).
 
     The raw 64-bit stream is fixed by the PCG64 algorithm and the seed; Generator.standard_normal
     is a distribution method that NEP 19 allows to change in feature releases, so a test that pins
     an exact Monte Carlo estimate builds its normals from the raw stream instead.
     """
-    raw = np.random.PCG64(seed).random_raw(n + n % 2)
-    u = (raw >> np.uint64(11)).astype(np.float64) * 2.0**-53  # uniforms on [0, 1)
-    radius = np.sqrt(-2.0 * np.log(1.0 - u[0::2]))  # 1 - u is in (0, 1], so the log is finite
-    angle = 2.0 * math.pi * u[1::2]
-    return np.concatenate([radius * np.cos(angle), radius * np.sin(angle)])[:n]
+    return PcgStream(seed).normal(size=n)
 
 
 def section_mc_tolerance() -> dict:
@@ -328,7 +325,6 @@ def section_metamorphic() -> dict:
     print(f"   bound violations {bound_violations}")
     print(f"   max |C(3S,3K) - 3C(S,K)| / 3S = {max_homog:.1e}")
     assert max_parity < 1e-13 and max_homog < 1e-13
-    assert mono_violations < 100, "libm-dependent count (6 on macOS, possibly 0 elsewhere): never assert it"
     assert mono_violations_tol == 0 and bound_violations == 0
     return out
 

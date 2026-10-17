@@ -166,7 +166,7 @@ ASan finds memory errors, UBSan finds overflow, bad shifts and misaligned access
 
 A data race (two threads access the same non-atomic object, at least one writes, and neither access happens before the other) is undefined behaviour ([intro.races]), even if the hardware would have done something sensible.
 `std::atomic` operations take a `std::memory_order`: `relaxed` gives atomicity and nothing else; a `release` store and an `acquire` load that reads the stored value synchronise, so every write before the store is visible after the load; `seq_cst` (the default) adds one total order over all `seq_cst` operations.
-On x86-64, acquire loads and release stores are plain `mov` instructions because the hardware is TSO, while a `seq_cst` store needs `xchg` (or `mov` plus `mfence`); on AArch64 they map to `ldar` and `stlr`.
+On x86-64, acquire loads and release stores are plain `mov` instructions because the hardware is TSO, while a `seq_cst` store needs `xchg` (or `mov` plus `mfence`); on AArch64 release stores map to `stlr`, and acquire loads to `ldapr` on cores with the RCpc extension (Apple clang 21 emits it on the M3 Pro) or to `ldar` without it, while `ldar` is also the `seq_cst` load.
 `volatile` gives neither atomicity nor ordering.
 The full treatment, with the SPSC ring and TSan, is in [Concurrency, Lock-Free Queues and Memory Pools](04-Concurrency-Lock-Free-and-Memory-Pools.md).
 

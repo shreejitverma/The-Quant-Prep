@@ -16,7 +16,7 @@ sources: [Harris - Trading and Exchanges (Oxford 2003) ch 5-6, Bouchaud Bonart D
 - The standard implementation: orders in a preallocated pool, each level an intrusive doubly linked list through the pool (O(1) cancel), an order-id hash map to find an order, and a price-ordered container of levels (a tree for generality, a tick-indexed array for speed).
 - Matching walks the opposite side from the best level, filling FIFO until the incoming order is done or no longer crosses; IOC and market orders cancel the remainder, FOK checks fillable quantity first, post-only rejects anything that would cross, and self-trade prevention decides what to cancel when both sides belong to one owner.
 - Cancel/replace keeps queue priority only for a size reduction at the same price; any price change or size increase re-enters at the back.
-- Measured on an Apple M3 Pro (machine-dependent), the repo's engine processed a synthetic flow at 62.4 ns per operation on average, and a tick-indexed array served level updates at 3.69 ns against 20.28 ns for `std::map`; correctness is checked by differential testing against a naive reference over 20,000 random adds, cancels, replaces, IOC, FOK and market orders.
+- Measured on an Apple M3 Pro (machine-dependent), the repo's engine processed a synthetic flow at 60.3 ns per operation on average, and a tick-indexed array served level updates at 3.69 ns against 20.28 ns for `std::map`; correctness is checked by differential testing against a naive reference over 20,000 random adds, cancels, replaces, IOC, FOK and market orders.
 
 ## Learning objectives
 
@@ -197,16 +197,17 @@ Feed handling end to end (sessions, gaps, arbitration) is the subject of [Market
 ### Engine throughput
 
 [lob_bench.cpp](code/cpp/lob_bench.cpp) drives the engine with a seeded synthetic flow (45% passive adds near the touch, 45% cancels of random live orders, 10% marketable IOC orders) of 2,000,000 operations.
-Median of three runs on the Apple M3 Pro (machine-dependent): 62.4 ns per operation on average (16.0 million operations per second).
+A cancel always targets an order that is still resting: ids filled since they rested are dropped from the candidate list outside the timed region, and the bench fails if any cancel is rejected.
+Median of three runs on the Apple M3 Pro (machine-dependent): 60.3 ns per operation on average (16.6 million operations per second), including the driver's bookkeeping.
 Per-operation latency read with the raw counter, which reports 1 GHz but advances in steps of about 42 ns on this machine (the bench measures and prints the step), so the low percentiles are quantised; the three runs agreed on every percentile:
 
 | Operation | p50 | p99 | p99.9 |
 | :--- | ---: | ---: | ---: |
-| Passive add | 42 ns | 84 ns | 125 ns |
-| Cancel | 42 ns | 84 ns | 125 ns |
+| Passive add | 42 ns | 84 ns | 84 ns |
+| Cancel | 42 ns | 84 ns | 84 ns |
 | Marketable IOC | 42 ns | 125 ns | 167 ns |
 
-The slowest single operation varied between runs from about 6 to 12 microseconds, far above p99.9: on an untuned desktop that is most likely an interrupt or a descheduling, which is why production engines pin cores and isolate them from the OS.
+The slowest single operation varied between runs from about 14 to 17 microseconds, far above p99.9: on an untuned desktop that is most likely an interrupt or a descheduling, which is why production engines pin cores and isolate them from the OS.
 
 ### Testing the engine
 
@@ -339,7 +340,7 @@ The 268-byte stream applies 7 messages, skips 1 (other stock), with 0 errors; th
 > A cancel of a random order touches cold memory: the hash bucket, the order node and both neighbours, each a potential DRAM miss of around 100 ns, while adds and executions mostly touch the hot top of the book.
 
 > [!question]- qd-lobimpl-benchmark-numbers | What did the repo's engine measure, and what should you not conclude from it?
-> 62.4 ns per operation on average on an Apple M3 Pro for a synthetic flow, with p99.9 between 125 and 167 ns by operation type (machine-dependent). Do not conclude production latency: the clock was quantised to 42 ns, the machine untuned, the flow synthetic, and the book small and cache-resident.
+> 60.3 ns per operation on average on an Apple M3 Pro for a synthetic flow, with p99.9 between 84 and 167 ns by operation type (machine-dependent). Do not conclude production latency: the clock was quantised to 42 ns, the machine untuned, the flow synthetic, and the book small and cache-resident.
 
 ## In this repo and SDE-Interview-Prep
 

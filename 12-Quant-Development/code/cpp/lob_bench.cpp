@@ -33,6 +33,7 @@ struct EngineResult {
     Pcts by_kind[3];  // passive add, cancel, marketable IOC
     std::uint64_t max;
     std::uint64_t fills;
+    std::uint64_t cancel_rejects;
     std::size_t resting;
 };
 
@@ -49,6 +50,7 @@ EngineResult engine_bench() {
     constexpr Price kMid = 10'000;
     OrderId next = 1;
     std::uint64_t fills = 0;
+    std::uint64_t cancel_rejects = 0;
     std::vector<qpbench::LatencyHistogram<7>> hist(3);
     const double hz = qpbench::cycle_counter_hz();
     // Pre-generate the operations so the timed loop measures the engine, not the generator.
@@ -77,14 +79,22 @@ EngineResult engine_bench() {
     const std::uint64_t t0 = qpbench::now_ns();
     for (auto& p : plan) {
         ev.clear();
-        const std::uint64_t c0 = qpbench::cycle_counter();
-        if (p.kind == 1) {
-            if (!live.empty()) {
-                const std::size_t k = p.cancel_pick % live.size();
-                book.cancel(live[k], ev);
-                live[k] = live.back();  // stale ids (already filled) are cancelled harmlessly: rejected
+        std::size_t k = 0;
+        if (p.kind == 1) {  // pick a live order outside the timed region: ids filled since they rested are dropped
+            for (;;) {
+                if (live.empty()) break;
+                k = p.cancel_pick % live.size();
+                if (book.open_qty(live[k])) break;
+                live[k] = live.back();
                 live.pop_back();
             }
+            if (live.empty()) continue;
+        }
+        const std::uint64_t c0 = qpbench::cycle_counter();
+        if (p.kind == 1) {
+            book.cancel(live[k], ev);
+            live[k] = live.back();
+            live.pop_back();
         } else {
             p.o.id = next++;
             book.submit(p.o, ev);
@@ -92,10 +102,13 @@ EngineResult engine_bench() {
         }
         const std::uint64_t c1 = qpbench::cycle_counter();
         hist[static_cast<std::size_t>(p.kind)].record(static_cast<std::uint64_t>(static_cast<double>(c1 - c0) * 1e9 / hz));
-        for (const auto& e : ev) fills += e.type == EventType::Fill;
+        for (const auto& e : ev) {
+            fills += e.type == EventType::Fill;
+            cancel_rejects += p.kind == 1 && e.type == EventType::Rejected;
+        }
     }
     const std::uint64_t t1 = qpbench::now_ns();
-    EngineResult out{static_cast<double>(t1 - t0) / ops, {}, 0, fills, book.order_count()};
+    EngineResult out{static_cast<double>(t1 - t0) / ops, {}, 0, fills, cancel_rejects, book.order_count()};
     for (std::size_t k = 0; k < 3; ++k) {
         out.by_kind[k] = {hist[k].percentile(50), hist[k].percentile(99), hist[k].percentile(99.9)};
         out.max = std::max(out.max, hist[k].max());
@@ -178,8 +191,8 @@ double level_ns_per_op(L& levels, const std::vector<LevelOp>& ops, std::int64_t&
 int main() {
     const auto e = engine_bench();
     std::printf("[engine] synthetic flow (45%% passive adds, 45%% cancels, 10%% marketable IOC), seed 42\n");
-    std::printf("  %.1f ns/op mean (%.1f M ops/s), fills %llu, resting orders at end %zu\n", e.ns_per_op, 1e3 / e.ns_per_op,
-                static_cast<unsigned long long>(e.fills), e.resting);
+    std::printf("  %.1f ns/op mean (%.1f M ops/s), fills %llu, resting orders at end %zu, rejected cancels %llu\n", e.ns_per_op,
+                1e3 / e.ns_per_op, static_cast<unsigned long long>(e.fills), e.resting, static_cast<unsigned long long>(e.cancel_rejects));
     const char* kinds[] = {"passive add", "cancel", "marketable IOC"};
     for (std::size_t k = 0; k < 3; ++k)
         std::printf("  %-15s p50 %5llu ns  p99 %6llu ns  p99.9 %7llu ns\n", kinds[k], static_cast<unsigned long long>(e.by_kind[k].p50),
@@ -216,7 +229,7 @@ int main() {
     std::printf("  tick-indexed array  %6.2f\n", t_arr);
     const bool same = c_map == c_vec && c_map == c_arr;
     std::printf("  containers agree on every best price: %s\n", same ? "yes" : "NO");
-    if (!same || e.fills == 0) return EXIT_FAILURE;
+    if (!same || e.fills == 0 || e.cancel_rejects != 0) return EXIT_FAILURE;
     if (kSan) {
         std::printf("sanitized build: timing checks skipped\n");
         return EXIT_SUCCESS;

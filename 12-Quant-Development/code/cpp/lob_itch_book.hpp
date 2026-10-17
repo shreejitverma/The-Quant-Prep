@@ -80,7 +80,9 @@ class BookBuilder {
 
     Status add(std::uint64_t ref, char side, std::uint32_t shares, std::uint32_t price) {
         if (side != 'B' && side != 'S') return Status::BadSide;
-        if (!orders_.try_emplace(ref, Resting{side == 'B', price, shares}).second) return Status::DuplicateOrder;
+        if (orders_.contains(ref)) return Status::DuplicateOrder;
+        if (shares == 0) return Status::Ok;  // zero display shares: dead on arrival, never rests
+        orders_.emplace(ref, Resting{side == 'B', price, shares});
         level_add(side == 'B', price, shares);
         return Status::Ok;
     }
@@ -96,6 +98,18 @@ class BookBuilder {
         r.shares -= take;
         if (r.shares == 0) orders_.erase(it);
         return Status::Ok;
+    }
+
+    // True when every block fits in the buffer and is long enough for its message type.
+    [[nodiscard]] static bool well_framed(const std::uint8_t* p, std::size_t n) noexcept {
+        std::size_t off = 0;
+        while (off < n) {
+            if (n - off < 2) return false;
+            const auto len = static_cast<std::size_t>(be(p + off, 2));
+            if (n - off - 2 < len || len == 0 || len < message_length(static_cast<char>(p[off + 2]))) return false;
+            off += 2 + len;
+        }
+        return true;
     }
 
 public:
@@ -138,15 +152,21 @@ public:
                 break;
             case 'U': {
                 // Replace: the old order disappears entirely; the new reference inherits its side.
-                const auto it = orders_.find(be(p + 11, 8));
+                const std::uint64_t old_ref = be(p + 11, 8);
+                const std::uint64_t new_ref = be(p + 19, 8);
+                const auto it = orders_.find(old_ref);
                 if (it == orders_.end()) {
                     s = Status::UnknownOrder;
                     break;
                 }
+                if (new_ref != old_ref && orders_.contains(new_ref)) {
+                    s = Status::DuplicateOrder;
+                    break;
+                }
                 const char side = it->second.buy ? 'B' : 'S';
-                s = reduce(be(p + 11, 8), 0, true);
+                s = reduce(old_ref, 0, true);
                 if (s == Status::Ok)
-                    s = add(be(p + 19, 8), side, static_cast<std::uint32_t>(be(p + 27, 4)), static_cast<std::uint32_t>(be(p + 31, 4)));
+                    s = add(new_ref, side, static_cast<std::uint32_t>(be(p + 27, 4)), static_cast<std::uint32_t>(be(p + 31, 4)));
                 break;
             }
             default:
@@ -159,19 +179,18 @@ public:
         return s;
     }
 
-    // Applies a buffer of [u16 length][message] blocks; stops at the first truncated block.
+    // Applies a buffer of [u16 length][message] blocks. The whole buffer is checked first: if any
+    // block is truncated, nothing is applied, so the caller can repair and resubmit the buffer.
     Status apply_stream(const std::uint8_t* p, std::size_t n) {
-        std::size_t off = 0;
-        while (off < n) {
-            if (n - off < 2) return Status::Truncated;
+        if (!well_framed(p, n)) return Status::Truncated;
+        for (std::size_t off = 0; off < n;) {
             const auto len = static_cast<std::size_t>(be(p + off, 2));
-            if (n - off - 2 < len) return Status::Truncated;
-            const Status s = apply(p + off + 2, len);
-            if (s == Status::Truncated) return s;
+            (void)apply(p + off + 2, len);
             off += 2 + len;
         }
         return Status::Ok;
     }
+
 
     [[nodiscard]] std::uint64_t bid_shares(std::uint32_t price) const {
         const auto it = bids_.find(price);

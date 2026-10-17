@@ -283,7 +283,7 @@ Monte Carlo with 100,000 antithetic pairs and seed 42 gives $10.4372 \pm 0.0231$
 | 1e-10 | 1.104e-5 | 3.768e-5 | 9.381e-13 |
 
 Reading it as you would in an interview:
-the forward error tracks $\tfrac12\Gamma h$ to three figures down to $h = 10^{-4}$, so it is first order;
+the forward error tracks $\tfrac12\Gamma h$ within 1% from $h = 1$ down to $h = 10^{-4}$, and to three figures from $h = 0.01$ down, so it is first order;
 the central error falls 100 times per decade of $h$ until about $h = 10^{-3}$, so it is second order;
 below that both are swamped by round-off, which grows like $1/h$, and at $h = 10^{-10}$ the "derivative" is wrong in the fifth decimal.
 The best forward error here is about $10^{-8}$ near $h = 10^{-6}$, and the best central error is of order $10^{-11}$ near $h = 10^{-3}$ to $10^{-4}$, consistent with $\sqrt\epsilon$ and $\epsilon^{1/3}$ times a spot of 100.

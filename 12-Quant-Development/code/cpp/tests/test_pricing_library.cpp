@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <stdexcept>
 
@@ -192,11 +193,11 @@ void test_missing_engine_throws_and_stays_dirty() {
     EXPECT(!call.isCalculated());  // a failed calculation must not leave a stale "calculated" flag
 }
 
-// A zero vol quote makes u = d = 1; with r == q the CRR probability is 0/0 = NaN, which must not
-// slip through as a price.
+// A vol of 1e-300 passes the sigma > 0 check but rounds u and d to exactly 1; with r == q the CRR
+// probability is 0/0 = NaN, which must not slip through as a price.
 void test_crr_rejects_degenerate_tree() {
     Market m;
-    m.vol.setValue(0.0);
+    m.vol.setValue(1e-300);
     m.dividend.setValue(0.05);  // r == q
     EuropeanOption call(OptionType::Call, 100.0, 1.0);
     call.setPricingEngine(std::make_shared<BinomialCrrEngine>(m.process, 100));
@@ -208,6 +209,81 @@ void test_crr_rejects_degenerate_tree() {
     }
     EXPECT(threw);
     EXPECT(!call.isCalculated());
+}
+
+template <typename Fn>
+bool throws_domain_error(Fn&& fn) {
+    try {
+        fn();
+    } catch (const std::domain_error&) {
+        return true;
+    }
+    return false;
+}
+
+// NaN fails every comparison, so a "<= 0" guard lets it through and the engine prices NaN silently.
+void test_engines_reject_nan_inputs() {
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    Market m;
+    EuropeanOption call(OptionType::Call, 100.0, 1.0);
+    const std::shared_ptr<PricingEngine> engines[] = {m.analytic, std::make_shared<BinomialCrrEngine>(m.process, 50),
+                                                      std::make_shared<MonteCarloEuropeanEngine>(m.process, 100, 7)};
+    for (const auto& e : engines) {
+        call.setPricingEngine(e);
+        m.spot.setValue(nan);
+        EXPECT(throws_domain_error([&] { (void)call.NPV(); }));
+        m.spot.setValue(100.0);
+        m.vol.setValue(nan);
+        EXPECT(throws_domain_error([&] { (void)call.NPV(); }));
+        m.vol.setValue(-0.1);
+        EXPECT(throws_domain_error([&] { (void)call.NPV(); }));
+        m.vol.setValue(0.25);
+        m.rate.setValue(nan);
+        EXPECT(throws_domain_error([&] { (void)call.NPV(); }));
+        m.rate.setValue(0.05);
+        EXPECT(std::isfinite(call.NPV()));
+    }
+    bool threw = false;
+    try {
+        EuropeanOption bad(OptionType::Call, 100.0, nan);
+    } catch (const std::invalid_argument&) {
+        threw = true;
+    }
+    EXPECT(threw);
+}
+
+// With vol 1e-300 every path ends at the forward, so each sample is the same number and the sample
+// variance is zero up to rounding, which can land just below zero: the error estimate must stay a
+// small non-negative number, and the price is the discounted intrinsic value against the forward.
+void test_mc_error_estimate_is_finite_for_constant_payoff() {
+    Market m;
+    m.vol.setValue(1e-300);
+    EuropeanOption call(OptionType::Call, 50.0, 1.0);
+    call.setPricingEngine(std::make_shared<MonteCarloEuropeanEngine>(m.process, 1000, 3));
+    const double forwardValue = std::exp(-0.05) * (100.0 * std::exp(0.05 - 0.02) - 50.0);
+    EXPECT(near(call.NPV(), forwardValue, 1e-9));
+    const double err = call.results().errorEstimate;
+    EXPECT(err >= 0.0 && err < 1e-6);
+}
+
+// A central vol bump of 0.3 from 0.25 drives the down leg negative, which the engine rejects: the
+// shared quote must come back to 0.25 for every other instrument.
+void test_failed_bump_and_calibration_restore_the_quote() {
+    Market m;
+    EuropeanOption call(OptionType::Call, 100.0, 1.0);
+    call.setPricingEngine(m.analytic);
+    EXPECT(throws_domain_error([&] { (void)bumpGreek(call, m.vol, 0.3, Difference::Central); }));
+    EXPECT(m.vol.value() == 0.25);
+    EuropeanOption other(OptionType::Put, 90.0, 0.5);
+    other.setPricingEngine(m.analytic);
+    EXPECT(std::isfinite(other.NPV()));
+    bool threw = false;
+    try {
+        (void)calibrateVolatility(call, m.vol, 1e6, 1e-12, 5);  // unreachable price: no convergence
+    } catch (const std::runtime_error&) {
+        threw = true;
+    }
+    EXPECT(threw && m.vol.value() == 0.25);
 }
 
 void test_calibration_recovers_vol() {
@@ -235,6 +311,9 @@ int main() {
     RUN_TEST(test_observer_lifetime_either_order);
     RUN_TEST(test_missing_engine_throws_and_stays_dirty);
     RUN_TEST(test_crr_rejects_degenerate_tree);
+    RUN_TEST(test_engines_reject_nan_inputs);
+    RUN_TEST(test_mc_error_estimate_is_finite_for_constant_payoff);
+    RUN_TEST(test_failed_bump_and_calibration_restore_the_quote);
     RUN_TEST(test_calibration_recovers_vol);
     std::cout << "\n" << (g_total - g_failures) << "/" << g_total << " assertions passed" << std::endl;
     return g_failures == 0 ? 0 : 1;

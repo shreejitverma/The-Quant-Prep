@@ -144,6 +144,9 @@ int main() {
     // Forward difference: error = gamma h / 2 to leading order for h in the truncation regime.
     check(near(fwdErr[1], 0.5 * c.gamma * 1e-1, 0.05 * 0.5 * c.gamma * 1e-1), "forward error ~ gamma h/2 at h=0.1");
     check(near(fwdErr[2], 0.5 * c.gamma * 1e-2, 0.02 * 0.5 * c.gamma * 1e-2), "forward error ~ gamma h/2 at h=0.01");
+    for (int i = 0; i < 5; ++i) check(std::fabs(fwdErr[i] / (0.5 * c.gamma * hs[i]) - 1.0) < 0.01, "forward error within 1% of gamma h/2 for h in [1e-4, 1]");
+    for (int i = 2; i < 5; ++i)
+        check(std::fabs(fwdErr[i] / (0.5 * c.gamma * hs[i]) - 1.0) < 5e-4, "forward error matches gamma h/2 to 3 figures for h in [1e-4, 0.01]");
     // Central difference: O(h^2); dividing h by 10 divides the error by about 100.
     check(std::fabs(cenErr[0] / cenErr[1]) > 90.0 && std::fabs(cenErr[0] / cenErr[1]) < 110.0, "central error is O(h^2)");
     check(std::fabs(cenErr[2]) < 1e-7, "central error at h=0.01 below 1e-7");

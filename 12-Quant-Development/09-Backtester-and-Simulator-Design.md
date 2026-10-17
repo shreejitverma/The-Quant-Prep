@@ -192,7 +192,7 @@ Five plus ten microseconds of latency cost $0.40$ on this round trip because the
 
 Trades print at the bid or the ask with equal probability around a random-walk mid (half-spread $h = 0.005$, mid step standard deviation $0.001$, 200,000 prints, seed 11).
 A contrarian rule buys after a down-tick and sells after an up-tick.
-Filled at the print that generated the signal and marked at the next mid, it earns about $+0.0025$ per trade (printed $+0.00251$).
+Filled at the print that generated the signal and marked at the next mid, it earns about $+0.0025$ per trade (printed $+0.00249$).
 Why: half the time consecutive prints sit on opposite sides, the down-tick is a bid print and buying at the bid earns $h$; otherwise the signal is noise; so the expectation is about $h/2$.
 Filled realistically at the next event by crossing the spread and held for one print, it earns about $-h = -0.0050$ per trade: it pays the half-spread, and the next mid step is independent of the signal.
 The edge was the bounce, which you cannot capture by crossing the spread.

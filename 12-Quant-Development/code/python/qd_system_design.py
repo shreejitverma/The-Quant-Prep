@@ -5,7 +5,8 @@ Used by 12-Quant-Development/06-System-Design-for-Trading.md.
 Part 1 derives capacity and latency numbers from explicit, stated assumptions (they are inputs,
 not market facts); every derived number is printed and asserted.
 Part 2 demonstrates why exchanges and trading systems put a sequencer in front of a deterministic
-state machine: replicas fed the same sequenced log agree bit for bit, replay from a snapshot
+state machine: a replica fed the serialized sequenced log agrees bit for bit with the primary, an
+independent reference matcher reproduces its fills, replay from a snapshot
 reproduces the live state, a gap in the sequence is detected and repaired from the journal, and
 replicas that each apply events in their own arrival order diverge.
 
@@ -16,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import random
 from collections import deque
 from dataclasses import dataclass, field
@@ -173,20 +175,58 @@ class Book:
         return b
 
 
+def below(rng: random.Random, n: int) -> int:
+    """An integer in [0, n) from random.random(), the one method whose stream Python keeps across versions."""
+    return int(rng.random() * n)
+
+
 def gateway_flow(rng: random.Random, n: int, trader: str, id_base: int) -> list[tuple[float, Event]]:
-    """One gateway's inbound orders with arrival timestamps (microseconds)."""
+    """One gateway's inbound orders with arrival timestamps (microseconds, exponential gaps of mean 1)."""
     out, t, live = [], 0.0, []
     for i in range(n):
-        t += rng.expovariate(1.0)
+        t += -math.log(1.0 - rng.random())
         if live and rng.random() < 0.3:
-            out.append((t, Event("cancel", live.pop(rng.randrange(len(live))))))
+            out.append((t, Event("cancel", live.pop(below(rng, len(live))))))
         else:
             oid = id_base + i
-            side = rng.choice("BS")
-            px = 100 + rng.randint(-3, 3)
-            out.append((t, Event("new", oid, side, px, rng.randint(1, 10), trader)))
+            side = "BS"[below(rng, 2)]
+            px = 97 + below(rng, 7)
+            out.append((t, Event("new", oid, side, px, 1 + below(rng, 10), trader)))
             live.append(oid)
     return out
+
+
+def reference_fills(journal: list[tuple[int, Event]]) -> tuple[list[tuple[int, int, int, int]], list[tuple[int, int]]]:
+    """An independent price-time matcher: one flat list of resting orders, searched linearly.
+
+    It shares no code with Book, so a bug in Book's per-level deques or price ordering shows up as a mismatch.
+    Returns the fills and the resting (order id, quantity) pairs in arrival order.
+    """
+    resting: list[list] = []  # [order_id, side, price, qty], in arrival order
+    fills = []
+    for _, e in journal:
+        if e.kind == "cancel":
+            resting = [o for o in resting if o[0] != e.order_id]
+            continue
+        qty = e.qty
+        while qty > 0:
+            if e.side == "B":
+                makers = [o for o in resting if o[1] == "S" and o[2] <= e.price]
+                best = min(makers, key=lambda o: o[2], default=None)  # min keeps the earliest of equal prices
+            else:
+                makers = [o for o in resting if o[1] == "B" and o[2] >= e.price]
+                best = max(makers, key=lambda o: o[2], default=None)  # max keeps the earliest of equal prices
+            if best is None:
+                break
+            q = min(qty, best[3])
+            fills.append((e.order_id, best[0], best[2], q))
+            qty -= q
+            best[3] -= q
+            if best[3] == 0:
+                resting.remove(best)
+        if qty > 0:
+            resting.append([e.order_id, e.side, e.price, qty])
+    return fills, [(o[0], o[3]) for o in resting]
 
 
 def sequencing() -> None:
@@ -197,14 +237,25 @@ def sequencing() -> None:
     journal = [(seq, e) for seq, (_, e) in enumerate(sorted(flows[0] + flows[1], key=lambda x: x[0]), start=1)]
     print(f"2a. sequencer journal: {len(journal)} events")
 
-    primary, replica = Book(), Book()
+    primary = Book()
     for seq, e in journal:
         primary.apply(seq, e)
-    for seq, e in journal:
-        replica.apply(seq, e)
-    print(f"   primary digest {primary.digest()}, replica digest {replica.digest()}, fills {len(primary.fills)}")
+    # The replica receives the journal the way a second host would: serialized, one JSON line per event.
+    wire = "\n".join(json.dumps([seq, e.kind, e.order_id, e.side, e.price, e.qty, e.trader]) for seq, e in journal)
+    replica = Book()
+    for line in wire.splitlines():
+        seq, *fields = json.loads(line)
+        replica.apply(seq, Event(*fields))
+    print(f"   primary digest {primary.digest()}, replica digest from the {len(wire):,}-byte wire journal {replica.digest()}")
     assert primary.digest() == replica.digest()
-    assert len(journal) == 8000 and len(primary.fills) == 4182
+    # Oracle: an independently written matcher must produce the same fills and the same resting orders.
+    ref_fills, ref_resting = reference_fills(journal)
+    resting = sorted(o for side in (primary.bids, primary.asks) for q in side.values() for o in q)
+    print(
+        f"   fills {len(primary.fills)}, resting orders {len(resting)}; independent reference matcher agrees: {ref_fills == primary.fills}"
+    )
+    assert ref_fills == primary.fills and sorted(ref_resting) == resting
+    assert len(journal) == 8000 and len(primary.fills) == 4172
 
     print("2b. recovery from a snapshot plus the journal tail")
     cut = 5000
@@ -216,7 +267,7 @@ def sequencing() -> None:
     for seq, e in journal[cut:]:
         recovered.apply(seq, e)
     print(f"   snapshot at seq {cut} ({len(blob):,} bytes), replay {len(journal) - cut} events -> digest {recovered.digest()}")
-    assert recovered.digest() == primary.digest() and len(blob) == 76_988
+    assert recovered.digest() == primary.digest() and len(blob) == 76_492
 
     print("2c. gap detection and retransmission")
     received = [m for m in journal if m[0] not in (1234, 1235, 6000)]  # three packets lost on the wire

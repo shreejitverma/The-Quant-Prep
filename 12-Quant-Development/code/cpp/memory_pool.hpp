@@ -11,6 +11,9 @@
 // which keeps recently freed (cache-warm) memory in use. Not thread-safe: one pool per thread,
 // or a lock-free free list such as qpconc::TaggedIndexStack over slot indices.
 //
+// Alloc allocates the pool's block list (the blocks themselves come from operator new); tests
+// inject a failing allocator through it to exercise the growth error path.
+//
 // Arena: bump-pointer allocation from one buffer, no per-object free, release everything at
 // once with reset() (per message batch, per request, per trading day). Destructors are never
 // run, so only trivially destructible types may be placed in it.
@@ -28,7 +31,7 @@
 
 namespace qpmem {
 
-template <typename T, std::size_t SlotsPerBlock = 4096>
+template <typename T, std::size_t SlotsPerBlock = 4096, typename Alloc = std::allocator<T>>
 class ObjectPool {
     union Slot {
         Slot* next;  // valid while the slot is free
@@ -38,7 +41,8 @@ class ObjectPool {
         Slot slots[SlotsPerBlock];
     };
 
-    std::vector<std::unique_ptr<Block>> blocks_;
+    using BlockPtr = std::unique_ptr<Block>;
+    std::vector<BlockPtr, typename std::allocator_traits<Alloc>::template rebind_alloc<BlockPtr>> blocks_;
     Slot* free_ = nullptr;
     std::size_t live_ = 0;
 
@@ -52,7 +56,7 @@ class ObjectPool {
     }
 
 public:
-    explicit ObjectPool(std::size_t reserve_blocks = 1) {
+    explicit ObjectPool(std::size_t reserve_blocks = 1, const Alloc& alloc = Alloc()) : blocks_(alloc) {
         blocks_.reserve(reserve_blocks);
         for (std::size_t i = 0; i < reserve_blocks; ++i) grow();
     }

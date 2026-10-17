@@ -134,6 +134,11 @@ class OrderBook {
     Phase phase_ = Phase::Continuous;
 
 public:
+    // Largest accepted open quantity: with fewer than 2^32 resting orders, every level total and
+    // every side-wide sum stays below 2^62, so no quantity sum can overflow.
+    static constexpr Qty kMaxQty = 1'000'000'000;
+    static_assert(kMaxQty * static_cast<Qty>(kNil) < (Qty{1} << 62));
+
     explicit OrderBook(std::size_t max_orders, Phase phase = Phase::Continuous) : phase_(phase) {
         if (max_orders >= kNil) throw std::length_error("OrderBook: pool indices are 32-bit");
         nodes_.resize(max_orders);
@@ -176,7 +181,7 @@ public:
 
     // ------------------------------------------------------------------ commands (HOT PATH)
     void submit(const NewOrder& o, std::vector<Event>& out) noexcept {
-        if (o.qty <= 0) return reject(o.id, Reason::BadQuantity, out);
+        if (o.qty <= 0 || o.qty > kMaxQty) return reject(o.id, Reason::BadQuantity, out);
         if (o.type == OrdType::Limit && o.price <= 0) return reject(o.id, Reason::BadPrice, out);
         if (o.type == OrdType::Market && o.post_only) return reject(o.id, Reason::BadPrice, out);
         if (index_.contains(o.id)) return reject(o.id, Reason::DuplicateId, out);
@@ -220,7 +225,7 @@ public:
     void replace(OrderId old_id, OrderId new_id, Price new_price, Qty new_qty, std::vector<Event>& out) noexcept {
         const auto it = index_.find(old_id);
         if (it == index_.end()) return reject(new_id, Reason::UnknownOrder, out);
-        if (new_qty <= 0) return reject(new_id, Reason::BadQuantity, out);
+        if (new_qty <= 0 || new_qty > kMaxQty) return reject(new_id, Reason::BadQuantity, out);
         if (new_price <= 0) return reject(new_id, Reason::BadPrice, out);
         if (new_id != old_id && index_.contains(new_id)) return reject(new_id, Reason::DuplicateId, out);
         const std::uint32_t i = it->second;

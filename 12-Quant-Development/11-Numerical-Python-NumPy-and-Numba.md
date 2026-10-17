@@ -13,7 +13,7 @@ sources: [Harris et al. - Array programming with NumPy - Nature 585 (2020), NumP
 ## TL;DR
 
 - An ndarray is a raw buffer plus dtype, shape and strides; basic slicing returns a view of the same buffer, while fancy and boolean indexing always copy, and `np.shares_memory` settles any doubt.
-- Vectorising moves the loop from the interpreter into compiled code over contiguous memory: a sum of squares over $10^6$ floats ran a few hundred times faster with `np.dot` than with a Python loop on the author's machine (machine-dependent).
+- Vectorising moves the loop from the interpreter into compiled code over contiguous memory: a sum of squares over $10^6$ floats ran about 150 to 300 times faster with `np.dot` than with a Python loop on the author's machine (machine-dependent).
 - Broadcasting aligns shapes from the right; each dimension must be equal or 1; use `keepdims=True` or `[:, None]` to make the intent explicit.
 - Floating point is the main source of silent bugs: $0.1 + 0.2 \ne 0.3$, the one-pass variance formula can return a negative variance, sequential float32 accumulation of $10^7$ values is off by 8.79%, and fixed-width integers wrap without warning in arrays.
 - Recursions with state (EWMA, path-dependent payoffs, order-book updates) do not vectorise safely; compile the loop with Numba's `@njit` or move it to C++.
@@ -174,8 +174,8 @@ Every number below is printed and asserted by [numpy_numerics.py](code/python/nu
 "What does `np.full(10**7, 0.1, dtype=np.float32)` sum to?"
 The stored value is $\text{float32}(0.1) \approx 0.100000001490116$, so the exact sum of the stored values is $1000000.0149$.
 Sequential accumulation (`np.cumsum(x)[-1]`) returns $1087937.0$, an error of 8.79%: once the running total is large, each added 0.1 is rounded to a multiple of the total's ulp.
-`np.sum` (pairwise) printed $1000000.1250$ here; the exact blocking can differ by platform, so the script asserts only that its error is below 1.
-For float64 data with standard deviation $10^6$ and $n = 10^6$, a Python loop is off from `math.fsum` by about $2.0 \times 10^{-5}$ and `np.sum` is at least as accurate.
+`np.sum` (pairwise) printed $1000000.1250$ here; the exact blocking differs by platform and NumPy version, so the script asserts only that its relative error is below 0.01%.
+For float64 data uniform with standard deviation $10^6$ and $n = 10^6$, a Python loop is off from `math.fsum` by about $8.1 \times 10^{-6}$ and `np.sum` is at least as accurate.
 
 ### 2. Negative variance
 
@@ -192,12 +192,13 @@ Casting either operand to int64 before multiplying fixes it.
 ### 4. Rolling means three ways
 
 For a window of 20 on 10,000 standard normals, the cumsum difference and `sliding_window_view(x, 20).mean(axis=1)` both agree with a Python loop to better than $10^{-14}$, and the window view shares memory with `x`.
-On a series around $10^8$ of length $10^6$, the cumsum version's last window mean is off by about $4 \times 10^{-5}$ while a direct window mean is off by at most one ulp of $10^8$, about $1.5 \times 10^{-8}$: prefix-sum differences inherit the rounding error of a running total near $10^{14}$.
+On a series around $10^8$ of length $10^6$, the cumsum version's window means over the last 2,000 windows are off by a median of about $6.6 \times 10^{-4}$ (90th percentile about $1.6 \times 10^{-3}$), while a direct window mean is off by a few ulps of $10^8$ (one ulp is about $1.5 \times 10^{-8}$): prefix-sum differences inherit the rounding error of a running total near $10^{14}$.
+That matches theory: the running total's ulp there is $2^{-6}$, each of the 20 additions inside a window rounds by up to half of it, so the window mean's error has standard deviation $2^{-6}\sqrt{20/12}/20 \approx 1.0 \times 10^{-3}$ and median absolute value $0.674$ times that, about $6.8 \times 10^{-4}$.
 
 ### 5. When the closed form overflows
 
 For $\alpha = 0.1$, $(0.9)^{-s}$ exceeds the largest double once $s > 6736.7$.
-On a 10,000-point series the vectorised closed form returns 3,270 non-finite values, while the loop is fine; this is exactly the loop to hand to Numba.
+On a 10,000-point series the vectorised closed form returns 3,265 non-finite values, while the loop is fine; this is exactly the loop to hand to Numba.
 
 ### 6. Drawdown without a loop
 
@@ -266,7 +267,7 @@ The script asserts only that the vectorised version is at least 3 times faster, 
 > Differences can be negative and unsigned arithmetic wraps: `uint32(3) - uint32(5)` is 4,294,967,294, which looks like a huge gap or position instead of an error.
 
 > [!question]- qd-np-cumsum-rolling | What is the trade-off of computing rolling means as differences of a cumsum?
-> It is $O(n)$ regardless of window, but each output is a difference of two large running totals, so the absolute error grows with the total: on a long series near $10^8$ it was about $4 \times 10^{-5}$ versus at most one ulp of $10^8$ (about $1.5 \times 10^{-8}$) for a direct window mean. Re-anchor periodically or use a windowed reduction.
+> It is $O(n)$ regardless of window, but each output is a difference of two large running totals, so the absolute error grows with the total: on a long series near $10^8$ it was about $6.6 \times 10^{-4}$ (median over the last 2,000 windows, in line with the theory value $u\sqrt{w/12}/w$ for a total whose ulp is $u$) versus a few ulps of $10^8$ (one ulp is about $1.5 \times 10^{-8}$) for a direct window mean. Re-anchor periodically or use a windowed reduction.
 
 > [!question]- qd-np-sliding-window | What does `sliding_window_view(x, w)` return and what does it cost?
 > A read-only strided view of shape `(n - w + 1, w)` that shares memory with `x` (no copy). Reductions over it cost $O(nw)$ arithmetic but run in compiled code.

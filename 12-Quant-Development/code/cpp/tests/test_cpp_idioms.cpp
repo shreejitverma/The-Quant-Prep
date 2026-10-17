@@ -80,21 +80,27 @@ void test_raii_releases_on_every_path() {
     }
 }
 
+// Expected signals worked by hand. Momentum is price minus the previous price (0 before the first
+// tick). Mean reversion keeps ema += (price - ema) / 8 in integer arithmetic (truncating toward zero)
+// and returns ema - price: ema 12, 23, 32, 43.
 void test_dispatch_styles_agree() {
     const Tick ticks[] = {{100, 1}, {104, 1}, {96, 1}, {120, 1}};
+    const std::int64_t momentum[] = {100, 4, -8, 24};
+    const std::int64_t reversion[] = {-88, -81, -64, -77};
     MomentumVirtual mv;
     MomentumCrtp mc;
     AnyStrategy av = MomentumCrtp{};
     MeanReversionVirtual rv;
     MeanReversionCrtp rc;
     AnyStrategy ar = MeanReversionCrtp{};
-    for (const auto& t : ticks) {
-        const auto a = mv.on_tick(t);
-        EXPECT(a == mc.on_tick(t));
-        EXPECT(a == on_tick(av, t));
-        const auto b = rv.on_tick(t);
-        EXPECT(b == rc.on_tick(t));
-        EXPECT(b == on_tick(ar, t));
+    for (std::size_t i = 0; i < std::size(ticks); ++i) {
+        const Tick& t = ticks[i];
+        EXPECT(mv.on_tick(t) == momentum[i]);
+        EXPECT(mc.on_tick(t) == momentum[i]);
+        EXPECT(on_tick(av, t) == momentum[i]);
+        EXPECT(rv.on_tick(t) == reversion[i]);
+        EXPECT(rc.on_tick(t) == reversion[i]);
+        EXPECT(on_tick(ar, t) == reversion[i]);
     }
 }
 
