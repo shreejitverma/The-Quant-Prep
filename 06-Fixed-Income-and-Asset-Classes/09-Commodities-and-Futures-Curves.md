@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [forwards-futures-and-carry]
 est_hours: 3
-sources: [Helyette Geman - Commodities and Commodity Derivatives (Wiley 2005), John Hull - Options Futures and Other Derivatives 10th ed (2018) ch 5, Working (1949) - The Theory of Price of Storage - American Economic Review 39(6), Kaldor (1939) - Speculation and Economic Stability - Review of Economic Studies 7(1), Brennan (1958) - The Supply of Storage - American Economic Review 48(1), Keynes (1930) - A Treatise on Money vol 2, Samuelson (1965) - Proof That Properly Anticipated Prices Fluctuate Randomly - Industrial Management Review 6(2), Gorton and Rouwenhorst (2006) - Facts and Fantasies about Commodity Futures - Financial Analysts Journal 62(2), Erb and Harvey (2006) - The Strategic and Tactical Value of Commodity Futures - Financial Analysts Journal 62(2), Gorton Hayashi and Rouwenhorst (2013) - The Fundamentals of Commodity Futures Returns - Review of Finance 17(1), CFTC Interim Staff Report - Trading in NYMEX WTI Crude Oil Futures Contract Leading up to on and around April 20 2020 (2020-11-23)]
+sources: [Helyette Geman - Commodities and Commodity Derivatives (Wiley 2005), John Hull - Options Futures and Other Derivatives 10th ed (2018) ch 5, Working (1949) - The Theory of Price of Storage - American Economic Review 39(6), Kaldor (1939) - Speculation and Economic Stability - Review of Economic Studies 7(1), Brennan (1958) - The Supply of Storage - American Economic Review 48(1), Keynes (1930) - A Treatise on Money vol 2, Samuelson (1965) - Proof That Properly Anticipated Prices Fluctuate Randomly - Industrial Management Review 6(2), Gorton and Rouwenhorst (2006) - Facts and Fantasies about Commodity Futures - Financial Analysts Journal 62(2), Erb and Harvey (2006) - The Strategic and Tactical Value of Commodity Futures - Financial Analysts Journal 62(2), Gorton Hayashi and Rouwenhorst (2013) - The Fundamentals of Commodity Futures Returns - Review of Finance 17(1), CFTC Interim Staff Report - Trading in NYMEX WTI Crude Oil Futures Contract Leading up to on and around April 20 2020 (2020-11-23), Berkovitz - Statement on the CFTC staff interim report on WTI (2020-11-23)]
 ---
 
 # Commodities and Futures Curves
@@ -88,7 +88,8 @@ It hedges the level and keeps the slope: inventory surprises, refinery outages, 
 ### The April 2020 negative WTI price
 
 NYMEX WTI is physically delivered: 1,000 barrels per contract at Cushing, Oklahoma.
-According to the CFTC interim staff report (2020-11-23), the May 2020 contract settled at $-37.63$ USD per barrel on April 20, 2020, the day before it expired, the first negative price since the contract was listed; it expired on April 21 at 10.01 USD.
+According to the CFTC interim staff report (2020-11-23), the May 2020 contract settled at $-37.63$ USD per barrel on April 20, 2020, the day before it expired, the first time the contract had traded at a negative price since it was listed 37 years earlier.
+Its final settlement on April 21 was 10.01 USD (Commissioner Berkovitz's statement on the report, 2020-11-23).
 The report describes an oversupplied market after the COVID-19 demand collapse, working storage at Cushing near capacity, and a long holder at expiry facing delivery with nowhere to put the oil.
 In cost-of-carry terms, the marginal storage cost for the front month went toward infinity, and the full-carry bound stopped capping the spread.
 
@@ -106,7 +107,8 @@ Two monthly curves are used, with $r = 4.5\%$ and storage $u = 3.0\%$ (continuou
 
 "Front month 80.00, second 79.40. Implied convenience yield?"
 $y = r + u - 12\ln(79.40/80.00) = 16.53\%$ a year.
-On the contango curve the same calculation gives $-4.44\%$: the curve is close to full carry.
+On the contango curve the same calculation gives $-4.44\%$: the M1-M2 spread is steeper than the assumed 7.5% a year of financing plus storage.
+A negative implied $y$ means either that marginal storage costs more than the assumed 3% (tanks filling up) or that the spread is above full carry and a cash-and-carry pays; it is the residual that absorbs a misspecified storage cost.
 Further out, between months 11 and 12 of the backwardated curve, $y = 9.07\%$: scarcity is priced mostly into the front.
 Over the year the backwardated curve falls 4.81% and the contango curve rises 7.07%.
 
@@ -166,7 +168,8 @@ The break-even spread is 0.580: below that, the curve is paying less than it cos
 > $y = r + u - \ln(79.40/80.00)/(1/12)$.
 
 > [!question]- fi-cmdty-contango-backwardation | What do contango and backwardation say about inventories?
-> Contango: inventories ample, convenience yield low, spreads near full carry. Backwardation: inventories scarce, convenience yield high, front above back.
+> Contango: inventories ample, convenience yield low, spreads near full carry.
+> Backwardation: inventories scarce, convenience yield high, front above back.
 > This is the theory of storage of Working, Kaldor and Brennan.
 
 > [!question]- fi-cmdty-roll-yield | You hold M2 at 79.40 for a month on an unchanged curve and it becomes M1 at 80.00. Roll yield?
@@ -243,3 +246,4 @@ The break-even spread is 0.580: below that, the curve is paying less than it cos
 - C. Erb and C. Harvey, "The Strategic and Tactical Value of Commodity Futures", *Financial Analysts Journal* 62(2) (2006).
 - G. Gorton, F. Hayashi and K. G. Rouwenhorst, "The Fundamentals of Commodity Futures Returns", *Review of Finance* 17(1) (2013).
 - CFTC, [Interim Staff Report: Trading in NYMEX WTI Crude Oil Futures Contract Leading up to, on, and around April 20, 2020](https://www.cftc.gov/PressRoom/PressReleases/8315-20) (2020-11-23).
+- Commissioner Dan M. Berkovitz, [Statement regarding the CFTC staff interim report](https://www.cftc.gov/PressRoom/SpeechesTestimony/berkovitzstatement112320) (2020-11-23).

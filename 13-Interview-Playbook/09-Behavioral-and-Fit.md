@@ -155,22 +155,28 @@ Why it works: the disagreement was settled with evidence, and the candidate show
 ## Interview questions
 
 > [!question]- int-beh-star | What is the STAR structure and what should you add for a trading-firm interview?
-> Situation, Task, Action, Result; add the Lesson (what you now do differently). Spend most of the time on Action and its reasoning.
+> Situation, Task, Action, Result; add the Lesson (what you now do differently).
+> Spend most of the time on Action and its reasoning.
 
 > [!question]- int-beh-why-trading | What makes a "why trading" answer strong?
-> Specific, true experiences showing you enjoy fast, measurable, probabilistic decisions and team feedback, each with evidence. Generic enthusiasm for markets or money scores poorly.
+> Specific, true experiences showing you enjoy fast, measurable, probabilistic decisions and team feedback, each with evidence.
+> Generic enthusiasm for markets or money scores poorly.
 
 > [!question]- int-beh-why-firm | How do you prepare "why this firm"?
-> Learn what the firm actually does from its own materials and from people who work there (products, style, team structure), and connect it to your experience and goals. Never state unverified facts about a firm.
+> Learn what the firm actually does from its own materials and from people who work there (products, style, team structure), and connect it to your experience and goals.
+> Never state unverified facts about a firm.
 
 > [!question]- int-beh-risk-structure | What must a "risk you took" answer contain?
-> The odds and payoffs you estimated before, how you sized it so the downside was survivable, the stop rule, the actual outcome, and whether you would repeat it. It shows decision quality separate from outcome.
+> The odds and payoffs you estimated before, how you sized it so the downside was survivable, the stop rule, the actual outcome, and whether you would repeat it.
+> It shows decision quality separate from outcome.
 
 > [!question]- int-beh-decision-vs-outcome | Why do trading firms care about separating decision quality from outcome?
-> Because outcomes are noisy: a good bet loses often and a bad bet sometimes wins. Judging by outcomes rewards luck and punishes sound risk-taking; desks review decisions on information available at the time.
+> Because outcomes are noisy: a good bet loses often and a bad bet sometimes wins.
+> Judging by outcomes rewards luck and punishes sound risk-taking; desks review decisions on information available at the time.
 
 > [!question]- int-beh-mistake | How should you answer "tell me about a mistake"?
-> A real mistake with real cost, owned in the first person, disclosed quickly, fixed, and followed by a process change. Speed of disclosure is the trait most firms weigh heavily.
+> A real mistake with real cost, owned in the first person, disclosed quickly, fixed, and followed by a process change.
+> Speed of disclosure matters most, because a hidden error keeps compounding.
 
 > [!question]- int-beh-fake-weakness | Why is "I work too hard" a bad answer to a weakness or mistake question?
 > It is evasive and reads as a lack of self-awareness or honesty, the opposite of what the question tests.
@@ -179,28 +185,35 @@ Why it works: the disagreement was settled with evidence, and the candidate show
 > That you resolved it with evidence or a test rather than authority or persistence, stayed respectful, and committed to the decision once made, even if it went the other way.
 
 > [!question]- int-beh-lose-day-one | "You lose a significant amount on your first day of trading. What do you do?"
-> Follow the risk limits and the plan for the position (cut or hedge as specified), tell your lead immediately with the facts, then review whether the decision was bad or the outcome unlucky. Do not double down to win it back.
+> Follow the risk limits and the plan for the position (cut or hedge as specified), tell your lead immediately with the facts, then review whether the decision was bad or the outcome unlucky.
+> Do not double down to win it back.
 
 > [!question]- int-beh-calibration-binomial | You say "90% confident" on 10 answers and get 6 right. Is that evidence of overconfidence?
-> Yes. If you were truly right 90% of the time, 6 or fewer correct has probability 0.0128.
+> Yes.
+> If you were truly right 90% of the time, 6 or fewer correct has probability 0.0128.
 
 > [!question]- int-beh-brier-score | Define the Brier score and give the score of always saying 50%.
-> $B = \frac1n\sum(p_i - o_i)^2$ over binary outcomes; lower is better. Always forecasting 0.5 scores 0.2500 whatever happens.
+> $B = \frac1n\sum(p_i - o_i)^2$ over binary outcomes; lower is better.
+> Always forecasting 0.5 scores 0.2500 whatever happens.
 
 > [!question]- int-beh-overconfidence-cost | Eight calls scored 0.1062 at the stated probabilities; restated at 99% or 1% they score 0.1226. Why worse, when the same calls are right?
-> One of the eight calls was wrong, and a miss at 99% costs $0.99^2 = 0.9801$ on its own, more than the small gains from sharpening the seven right calls. The Brier score punishes overconfidence.
+> One of the eight calls was wrong, and a miss at 99% costs $0.99^2 = 0.9801$ on its own, more than the small gains from sharpening the seven right calls.
+> The Brier score punishes overconfidence.
 
 > [!question]- int-beh-how-sure | The interviewer asks "how sure are you?" after an estimate. What is the right form of answer?
 > A probability or interval and what would change it, for example "about 70%; I would update if the volume figure is off by more than a factor of two". Refusing to give a number, or saying 100%, both score badly.
 
 > [!question]- int-beh-dont-know | What should you say when you do not know the answer to a factual question?
-> Say so, then reason towards an estimate out loud and state your confidence. Bluffing is the worst option: interviewers usually know the answer and treat bluffing as a red flag for how you would report risk.
+> Say so, then reason towards an estimate out loud and state your confidence.
+> Bluffing is the worst option: interviewers usually know the answer and treat bluffing as a red flag for how you would report risk.
 
 > [!question]- int-beh-we-vs-i | Why use "I" rather than "we" in behavioural answers?
-> The interviewer is assessing you; "we" hides what you personally did. Credit the team briefly, then describe your own actions and decisions.
+> The interviewer is assessing you; "we" hides what you personally did.
+> Credit the team briefly, then describe your own actions and decisions.
 
 > [!question]- int-beh-consistency | Why must behavioural answers match your resume and earlier rounds?
-> Interviewers compare notes, and inconsistencies read as exaggeration. Every claim should be one you can expand on in detail.
+> Interviewers compare notes, and inconsistencies read as exaggeration.
+> Every claim should be one you can expand on in detail.
 
 ## In this repo and SDE-Interview-Prep
 

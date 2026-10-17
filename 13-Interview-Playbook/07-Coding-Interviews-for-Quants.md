@@ -180,7 +180,7 @@ class OrderBook:
 | :--- | :--- | :--- |
 | `add` that rests at an existing level | $O(1)$ | append to a deque and a dict |
 | `add` that creates a level | $O(\log L)$ | heap push, $L$ live levels |
-| `add` that matches $F$ orders | $O(F + \log L)$ amortised | each fill is $O(1)$; emptied levels are popped from the heap |
+| `add` that matches $F$ orders and empties $E$ levels | $O(F + E \log L)$ amortised | each fill is $O(1)$; each emptied level costs one heap pop |
 | `cancel` | $O(1)$ | dict delete; the queue slot is reclaimed lazily |
 | best bid or offer | $O(1)$ amortised | heap top after skipping dead ids, each skipped once |
 
@@ -232,55 +232,71 @@ Quote a simulation with its standard error, and fix the seed so the number is re
 ## Interview questions
 
 > [!question]- int-code-loop | What is the step order you follow for an interview coding problem?
-> Clarify, hand example, brute force with its complexity, optimise by removing repeated work, code, test (hand case, edge cases, random comparison with the brute force), then state per-operation time and memory. Narrate each step so partial progress earns credit.
+> Clarify, hand example, brute force with its complexity, optimise by removing repeated work, code, test (hand case, edge cases, random comparison with the brute force), then state per-operation time and memory.
+> Narrate each step so partial progress earns credit.
 
 > [!question]- int-code-welford-update | Write Welford's update for a running mean and variance.
-> $\delta = x - \bar x$, $\bar x \mathrel{+}= \delta/n$, $M_2 \mathrel{+}= \delta(x - \bar x_{\text{new}})$, sample variance $M_2/(n-1)$. It avoids forming $\sum x^2$, so there is no catastrophic cancellation.
+> $\delta = x - \bar x$, $\bar x \mathrel{+}= \delta/n$, $M_2 \mathrel{+}= \delta(x - \bar x_{\text{new}})$, sample variance $M_2/(n-1)$.
+> It avoids forming $\sum x^2$, so there is no catastrophic cancellation.
 
 > [!question]- int-code-welford-cancellation | What does the naive one-pass variance formula return for $10^9 + \{4, 7, 13, 16\}$ in double precision, and why?
 > 0.0 instead of 30. $\sum x^2$ is about $4 \times 10^{18}$, where the spacing between doubles is 512, so $\sum x^2 - (\sum x)^2/n$ subtracts two nearly equal rounded numbers and loses every significant digit.
 
 > [!question]- int-code-window-max | Give an $O(n)$ algorithm for the maximum of every length-$k$ window.
-> A deque of indices with decreasing values: pop from the back while the new value is at least the back value, push the index, pop the front if it is out of the window, read the front. Each index enters and leaves once, so $O(n)$ total and $O(k)$ memory.
+> A deque of indices with decreasing values: pop from the back while the new value is at least the back value, push the index, pop the front if it is out of the window, read the front.
+> Each index enters and leaves once, so $O(n)$ total and $O(k)$ memory.
 
 > [!question]- int-code-streaming-median | How do you maintain the median of a stream?
-> Two heaps: a max-heap for the lower half and a min-heap for the upper half, sizes differing by at most one. Push to the correct side, rebalance by moving one top across, read the median from the tops: $O(\log n)$ insert, $O(1)$ query.
+> Two heaps: a max-heap for the lower half and a min-heap for the upper half, sizes differing by at most one.
+> Push to the correct side, rebalance by moving one top across, read the median from the tops: $O(\log n)$ insert, $O(1)$ query.
 
 > [!question]- int-code-sliding-median | What changes for a sliding-window median?
-> You must delete the element leaving the window. Use lazy deletion (a hash map of pending removals, discarded when they reach a heap top, with size bookkeeping) or a sorted container or balanced tree; either gives $O(\log k)$ per step.
+> You must delete the element leaving the window.
+> Use lazy deletion (a hash map of pending removals, discarded when they reach a heap top, with size bookkeeping) or a sorted container or balanced tree; either gives $O(\log k)$ per step.
 
 > [!question]- int-code-vwap-exact-sums | Why keep VWAP running sums in integer ticks and integer sizes?
-> Adding and subtracting the same products then cancels exactly, so the windowed VWAP equals a fresh recomputation forever. With floats each add and subtract leaves rounding error that accumulates over millions of updates and breaks equality tests.
+> Adding and subtracting the same products then cancels exactly, so the windowed VWAP equals a fresh recomputation forever.
+> With floats each add and subtract leaves rounding error that accumulates over millions of updates and breaks equality tests.
 
 > [!question]- int-code-vwap-window | Trades (0, 10000, 100), (2, 10010, 300), (5, 10020, 200) in (time, ticks, size). VWAP over the 5 seconds ending at $t = 5$, window $(0, 5]$?
-> 10014.0 ticks. The trade at time 0 has expired, so $(10010 \times 300 + 10020 \times 200)/500$.
+> 10014.0 ticks.
+> The trade at time 0 has expired, so $(10010 \times 300 + 10020 \times 200)/500$.
 
 > [!question]- int-code-max-drawdown | Maximum drawdown of the price path 100, 120, 90, 130, 80, 110?
-> $-38.46\%$, from the peak 130 to the trough 80. Track the running peak and the minimum of price over peak minus 1 in one pass; the earlier 120 to 90 drop is only $-25\%$.
+> $-38.46\%$, from the peak 130 to the trough 80.
+> Track the running peak and the minimum of price over peak minus 1 in one pass; the earlier 120 to 90 drop is only $-25\%$.
 
 > [!question]- int-code-lob-structures | Which data structures give an order book $O(1)$ cancel and $O(1)$ best price?
-> A hash map from order id to order (or to its list node), a FIFO per price level for time priority, and a heap or sorted map of prices per side (or an array indexed by tick when the range is bounded). Cancel deletes through the id map; best price reads the heap top or the cached best index.
+> A hash map from order id to order (or to its list node), a FIFO per price level for time priority, and a heap or sorted map of prices per side (or an array indexed by tick when the range is bounded).
+> Cancel deletes through the id map; best price reads the heap top or the cached best index.
 
 > [!question]- int-code-lob-trade-price | An aggressive buy limit at 102 meets resting offers at 101 and 102. At what prices does it trade?
-> At the resting prices: first 101, then 102. The resting order set the price; the aggressor's limit is only a bound, and it receives price improvement on the 101 fill.
+> At the resting prices: first 101, then 102.
+> The resting order set the price; the aggressor's limit is only a bound, and it receives price improvement on the 101 fill.
 
 > [!question]- int-code-lob-lazy-cancel | Why is lazy deletion on cancel still amortised $O(1)$?
-> Cancel only removes the id from the map. The dead id is skipped when it reaches the front of its level queue, and each id can be popped at most once, so total skipping work is bounded by the number of orders ever added.
+> Cancel only removes the id from the map.
+> The dead id is skipped when it reaches the front of its level queue, and each id can be popped at most once, so total skipping work is bounded by the number of orders ever added.
 
 > [!question]- int-code-lob-modify | How should a modify interact with time priority?
-> A size decrease usually keeps priority; a price change or size increase usually loses it and is treated as cancel plus new order. Rules are venue specific, so ask; implement decrease in place and the rest as cancel and re-add.
+> A size decrease usually keeps priority; a price change or size increase usually loses it and is treated as cancel plus new order.
+> Rules are venue specific, so ask; implement decrease in place and the rest as cancel and re-add.
 
 > [!question]- int-code-randomized-test | How do you test a fast algorithm under interview time pressure?
-> Write the obvious brute force (scan, sort, or all pairs), generate many small seeded random inputs including edge cases, and assert the fast and slow outputs are identical. Small inputs make failures easy to read and shrink.
+> Write the obvious brute force (scan, sort, or all pairs), generate many small seeded random inputs including edge cases, and assert the fast and slow outputs are identical.
+> Small inputs make failures easy to read and shrink.
 
 > [!question]- int-code-fix-checksum | How are the FIX BodyLength (9) and CheckSum (10) fields computed?
 > BodyLength is the byte count from after the SOH ending field 9 up to and including the SOH before `10=`. CheckSum is the sum of all bytes before `10=` modulo 256, as three digits.
 
 > [!question]- int-code-mc-check-two-sixes | Expected number of rolls of a fair die to get two sixes in a row, and how would you check it by simulation?
-> 42. From $E_0 = 1 + \tfrac56 E_0 + \tfrac16 E_1$ and $E_1 = 1 + \tfrac56 E_0$. A seeded simulation of 100,000 paths gives about 41.99 with standard error 0.13, consistent with 42.
+> 42 rolls.
+> From $E_0 = 1 + \tfrac56 E_0 + \tfrac16 E_1$ and $E_1 = 1 + \tfrac56 E_0$.
+> A seeded simulation of 100,000 paths gives about 41.99 with standard error 0.13, consistent with 42.
 
 > [!question]- int-code-complexity-per-op | Why state complexity per operation for a streaming or book problem?
-> Because the workload is a mix of operations at very different rates (cancels and adds dominate, matches are rarer), and latency is judged per message. An algorithm that is $O(n)$ overall can still hide an $O(n)$ cancel.
+> Because the workload is a mix of operations at very different rates (cancels and adds dominate, matches are rarer), and latency is judged per message.
+> An algorithm that is $O(n)$ overall can still hide an $O(n)$ cancel.
 
 > [!question]- int-code-numpy-vs-loop | When should a quant coding answer use a vectorised NumPy expression instead of a Python loop?
 > For batch transforms over arrays (returns, rolling sums with cumsum, Monte Carlo paths) vectorise, since the loop runs in C. For stateful streaming logic with branches per event (an order book, a parser) a clear loop is correct and the interviewer is scoring the data structure, not the constant factor.

@@ -86,7 +86,9 @@ where $D_i$ are the index dividend points paid on day $t_i$ before expiry on day
 - The fair value basis $F - S$ is financing minus dividends; it shrinks to zero at expiry.
 - Inverting the formula on a traded future gives the implied financing rate; compare it with your funding to see whether cash-and-carry pays you.
 - Delta-one desks also read implied dividends from the same relation; long-dated index futures and dividend futures are mostly dividend trades.
-- Quarterly E-mini S&P 500 futures are 50 USD times the index (CME Rulebook chapter 358) and cash-settle to a Special Opening Quotation computed from the opening prices of the index stocks on expiration day (CME final settlement procedures), so an arbitrageur unwinds the basket in the opening auctions to match the settlement price.
+- Quarterly E-mini S&P 500 futures are 50 USD times the index (CME Rulebook chapter 358) and cash-settle to a Special Opening Quotation (SOQ): a special calculation of the index from the opening prices of its component stocks on the third Friday of the contract month (CME final settlement procedures).
+  An arbitrageur therefore unwinds the basket in the opening auctions to match the settlement price.
+  The SOQ generally differs from the first index value published that morning, because the stocks do not all open at once and the published index carries stale prices until they do.
 
 ### Index arbitrage
 
@@ -215,7 +217,7 @@ That ratio, not the announcement itself, tells you the trade: someone must suppl
 > $(5031.00 - 5025.30 - 2.60) \times 50$, independent of where the index settles.
 
 > [!question]- fi-etf-index-arb-hedge-ratio | Why does a 1:1 index arbitrage hedge leave risk if you might unwind early, and what ratio fixes it?
-> Before expiry $\partial F/\partial S = 1 + r\tau$, so one index unit per short future leaves a short delta (about $-0.00478$ at 40 days in the note's example).
+> Before expiry $\partial F/\partial S = 1 + r\tau$, so one index unit per short future leaves a short delta (about $-0.00478$ with 40 days to expiry in the note's example).
 > Hold $1 + r\tau$ index units per future; in the note this makes the early-unwind P&L 87.02 USD per contract whether the index falls to 4800 or rises to 5200.
 
 > [!question]- fi-etf-soq-settlement | E-mini S&P 500 futures settle to the Special Opening Quotation. What does that mean for an arbitrageur holding the basket into expiry?

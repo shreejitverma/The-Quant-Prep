@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: []
 est_hours: 1
-sources: [Directive (EU) 2019/878 (CRD V) of 20 May 2019 - Article 1 amending Article 94(1)(m) of Directive 2013/36/EU, California Business and Professions Code sections 16600 and 16600.5 (16600.5 added by SB 699 effective 2024-01-01), US Federal Trade Commission - press release Federal Trade Commission Files to Accede to Vacatur of Non-Compete Clause Rule (2025-09-05), Roger Fisher William Ury and Bruce Patton - Getting to Yes 3rd ed (2011), Deepak Malhotra and Max Bazerman - Negotiation Genius (Bantam 2007)]
+sources: [Directive (EU) 2019/878 (CRD V) of 20 May 2019 - Article 1 amending Article 94(1)(m) of Directive 2013/36/EU, California Business and Professions Code sections 16600 and 16600.5 (16600.5 added by SB 699 effective 2024-01-01), US Federal Trade Commission - press release Federal Trade Commission Files to Accede to Vacatur of Non-Compete Clause Rule (2025-09-05), US Federal Trade Commission - press release FTC Takes Action to Protect Workers from Noncompete Agreements (2025-09-04), Roger Fisher William Ury and Bruce Patton - Getting to Yes 3rd ed (2011), Deepak Malhotra and Max Bazerman - Negotiation Genius (Bantam 2007)]
 ---
 
 # Offers, Compensation and Negotiation
@@ -63,8 +63,10 @@ The cost to you is the time out of work, the pay during it (full, base only, or 
 Enforceability depends on the jurisdiction and the contract's governing law, and the rules change, so check current law for your case.
 Two primary-source examples, as of 2026-10:
 
-- California Business and Professions Code section 16600 makes contracts that restrain anyone from a lawful profession, trade or business void, subject to statutory exceptions; section 16600.5 (added by SB 699, effective 2024-01-01) makes such contracts unenforceable regardless of where and when they were signed, bars employers from entering into or attempting to enforce them, and gives employees a private right of action with attorney's fees.
-- The US Federal Trade Commission's Non-Compete Clause Rule was set aside by the US District Court for the Northern District of Texas in Ryan, LLC v. FTC in August 2024, and on 2025-09-05 the FTC announced it was dismissing its appeals (Ryan, LLC v. FTC, No. 24-10951, 5th Cir., and Properties of the Villages v. FTC, No. 24-13102, 11th Cir.) and acceding to the vacatur; the FTC said it would continue to act against non-competes case by case.
+- California Business and Professions Code section 16600 makes contracts that restrain anyone from a lawful profession, trade or business void, subject to statutory exceptions; section 16600.5 (added by SB 699, Statutes of 2023 chapter 157, effective 2024-01-01) makes such contracts unenforceable regardless of where and when they were signed, bars employers from entering into or attempting to enforce them (a civil violation), and lets an employee, former employee or prospective employee sue for an injunction or actual damages, with reasonable attorney's fees and costs to a prevailing employee.
+- The US Federal Trade Commission's Non-Compete Clause Rule was set aside by the US District Court for the Northern District of Texas in Ryan, LLC v. FTC on 2024-08-20, before its effective date.
+  On 2025-09-05 the FTC announced that it had voted 3-1 to dismiss its appeals (Ryan, LLC v. FTC, No. 24-10951, 5th Cir., and Properties of the Villages v. FTC, No. 24-13102, 11th Cir.) and accede to the vacatur.
+  A day earlier (2025-09-04) it had announced an enforcement action against one employer's non-competes under Section 5 of the FTC Act, the case-by-case route it now uses instead of a rule.
 
 ### Valuing an offer
 
@@ -120,7 +122,7 @@ Ask which applies, and whether it is gross or net of tax.
 
 Leaving your current employer forfeits 40 U vesting in 6 months and 40 U vesting in 18 months.
 Their present value at 6% is $40 \times 1.06^{-0.5} + 40 \times 1.06^{-1.5} = 75.50$ U, so a cash buyout today should be measured against 75.50, not the 80 face value (a 4.50 U time-value discount).
-If the new firm instead offers a replacement award on a schedule that vests each tranche a year later than the original, it is worth 73.34 U, a shortfall of 2.17, before counting the extra year of forfeiture risk and the instrument's riskiness.
+If the new firm instead offers a replacement award on its own annual cycle, vesting 40 U at 1 year and 40 U at 2 years (each tranche six months later than the original), it is worth 73.34 U, a shortfall of 2.17, before counting the extra six months of forfeiture risk and the instrument's riskiness.
 Bring the vesting schedule documents; buyouts are negotiated on evidence.
 
 ### Example 4: guaranteed versus discretionary
@@ -154,13 +156,15 @@ The extension is worth 6.67 U over accepting immediately, which is why asking fo
 > Base, bonus (discretionary or guaranteed), sign-on, deferred awards with vesting, buyout of forfeited deferred pay, benefits, and restrictive terms: notice, garden leave, non-compete, non-solicit.
 
 > [!question]- int-offer-discretionary-vs-guaranteed | What is the difference between a guaranteed and a discretionary bonus?
-> A guaranteed bonus is a contractual amount payable if the conditions (usually still employed on the payment date) are met; a discretionary bonus is decided by the employer and may be zero. Equal expected amounts are worth less when discretionary.
+> A guaranteed bonus is a contractual amount payable if the conditions (usually still employed on the payment date) are met; a discretionary bonus is decided by the employer and may be zero.
+> Equal expected amounts are worth less when discretionary.
 
 > [!question]- int-offer-deferred-pv | A 90 U award vests in thirds at 1, 2 and 3 years. PV at 6%, and with a 10% annual chance of leaving and forfeiting?
 > $80.19$ U and $65.46$ U. Discount each 30 U tranche, then multiply tranche $k$ by $0.9^k$.
 
 > [!question]- int-offer-malus-clawback | What is the difference between malus and clawback?
-> Malus reduces or cancels awards before they vest or are paid; clawback recovers amounts already paid. Both are typically triggered by misconduct, errors or material losses.
+> Malus reduces or cancels awards before they vest or are paid; clawback recovers amounts already paid.
+> Both are typically triggered by misconduct, errors or material losses.
 
 > [!question]- int-offer-crd-deferral | What does EU law require for deferral of bank bonuses for staff in scope?
 > Under Article 94(1)(m) of Directive 2013/36/EU as amended by Directive (EU) 2019/878: at least 40% of variable pay deferred over not less than four to five years, at least 60% for particularly high amounts, vesting no faster than pro rata.
@@ -169,25 +173,31 @@ The extension is worth 6.67 U over accepting immediately, which is why asking fo
 > $18.75$ U. $30 \times (24-9)/24$; under a 12-month cliff it would be all 30.
 
 > [!question]- int-offer-buyout-pv | You forfeit 40 U vesting in 6 months and 40 U in 18 months. What should a cash buyout today be compared with, at 6%?
-> $75.50$ U, the present value, not the 80 face value. A replacement award that vests each tranche a year later is worth only 73.34.
+> $75.50$ U, the present value, not the 80 face value.
+> A replacement award vesting at 1 and 2 years (each tranche six months later) is worth only 73.34.
 
 > [!question]- int-offer-buyout-evidence | What do you need to negotiate a buyout?
-> Documentation of the awards you forfeit: amounts, instruments, vesting dates and forfeiture terms. The new firm's approvers need evidence, not a verbal estimate.
+> Documentation of the awards you forfeit: amounts, instruments, vesting dates and forfeiture terms.
+> The new firm's approvers need evidence, not a verbal estimate.
 
 > [!question]- int-offer-garden-leave | What is garden leave and why do trading firms use it?
-> Paid notice during which you are kept off work and away from clients and information. It lets your market knowledge go stale before you join a competitor.
+> Paid notice during which you are kept off work and away from clients and information.
+> It lets your market knowledge go stale before you join a competitor.
 
 > [!question]- int-offer-noncompete-cost | How do you value a non-compete in an offer?
-> As the time you would be out of work if you left, times the pay you would lose (it may be paid in full, base only, or unpaid), plus skill decay and lost opportunities, weighted by the chance you leave. Then negotiate length, scope and pay.
+> As the time you would be out of work if you left, times the pay you would lose (it may be paid in full, base only, or unpaid), plus skill decay and lost opportunities, weighted by the chance you leave.
+> Then negotiate length, scope and pay.
 
 > [!question]- int-offer-california-16600 | What does California Business and Professions Code section 16600.5 add to section 16600?
 > It makes contracts void under 16600 unenforceable regardless of where and when signed, bars employers from entering into or attempting to enforce them, and gives employees a private right of action with attorney's fees (added by SB 699, effective 2024-01-01).
 
 > [!question]- int-offer-ftc-rule | What happened to the US FTC Non-Compete Clause Rule?
-> A federal district court in Texas set it aside in Ryan, LLC v. FTC in August 2024, and on 2025-09-05 the FTC moved to dismiss its appeals and accede to the vacatur. Non-competes remain governed by state law and case-by-case enforcement.
+> The US District Court for the Northern District of Texas set it aside in Ryan, LLC v. FTC on 2024-08-20, before it took effect, and on 2025-09-05 the FTC announced it would dismiss its appeals and accede to the vacatur.
+> Non-competes remain governed by state law, with the FTC acting case by case under Section 5 of the FTC Act.
 
 > [!question]- int-offer-guarantee-vs-discretionary | Guaranteed 50 U, or discretionary 0, 60 or 100 U with probabilities 0.2, 0.5, 0.3?
-> The discretionary bonus has the higher mean (60.00 U) but a standard deviation of 34.64 and a 0.20 chance of paying less than the guarantee. The choice depends on risk tolerance and on trusting a distribution you usually cannot verify.
+> The discretionary bonus has the higher mean (60.00 U) but a standard deviation of 34.64 and a 0.20 chance of paying less than the guarantee.
+> The choice depends on risk tolerance and on trusting a distribution you usually cannot verify.
 
 > [!question]- int-offer-exploding-deadline | Offer A worth 100 expires before offer B resolves; B arrives with probability 0.5 and is then uniform on 80 to 140; fallback 70. What do you do?
 > Accept A rather than let it lapse (waiting is worth 90.00), but first ask for an extension: keeping A open while B resolves is worth 106.67.
@@ -196,10 +206,12 @@ The extension is worth 6.67 U over accepting immediately, which is why asking fo
 > Share the facts (written offer, components and deadline) with the firm you prefer, ask for specific changes, and never invent or exaggerate it; firms may verify.
 
 > [!question]- int-offer-what-to-ask | Which items are often movable when base is fixed by a band?
-> Sign-on, a guaranteed first-year bonus, a buyout of forfeited pay, start date, covenant length or pay, and title. Ask for named items with reasons.
+> Sign-on, a guaranteed first-year bonus, a buyout of forfeited pay, start date, covenant length or pay, and title.
+> Ask for named items with reasons.
 
 > [!question]- int-offer-renege | Why should you not renege on an accepted offer?
-> The industry is small and firms share information informally; reneging damages your reputation with both firms. Negotiate and resolve competing processes before you accept.
+> The industry is small and firms share information informally; reneging damages your reputation with both firms.
+> Negotiate and resolve competing processes before you accept.
 
 ## In this repo and SDE-Interview-Prep
 
@@ -212,5 +224,6 @@ The extension is worth 6.67 U over accepting immediately, which is why asking fo
 - Directive (EU) 2019/878 (CRD V), Article 1 amending Article 94 of Directive 2013/36/EU on variable remuneration.
 - California Business and Professions Code sections 16600 and 16600.5 (California Legislative Information).
 - US Federal Trade Commission, "Federal Trade Commission Files to Accede to Vacatur of Non-Compete Clause Rule", press release, 2025-09-05.
+- US Federal Trade Commission, "FTC Takes Action to Protect Workers from Noncompete Agreements", press release, 2025-09-04.
 - Roger Fisher, William Ury and Bruce Patton, *Getting to Yes*, 3rd edition (2011).
 - Deepak Malhotra and Max Bazerman, *Negotiation Genius* (Bantam, 2007).

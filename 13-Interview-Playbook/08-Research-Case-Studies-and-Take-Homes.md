@@ -181,25 +181,31 @@ A strategy with 8% gross alpha and annual turnover of 100 times capital breaks e
 ## Interview questions
 
 > [!question]- int-takehome-first-hour | You receive a take-home dataset. What do you do in the first hour?
-> Data checks before any modelling: missing values, outliers, duplicate keys, timestamps and time zones, universe size through time, units. Write down every defect with counts; they go in the write-up and often decide the grade.
+> Data checks before any modelling: missing values, outliers, duplicate keys, timestamps and time zones, universe size through time, units.
+> Write down every defect with counts; they go in the write-up and often decide the grade.
 
 > [!question]- int-takehome-bad-print-two-returns | One price in a daily series is recorded 10 times too high. How many bad returns does it create, and what are they?
-> Two: about $+900\%$ into the bad day and about $-90\%$ out of it. Both must be fixed, or the round trip leaks into any feature built from past returns.
+> Two: about $+900\%$ into the bad day and about $-90\%$ out of it.
+> Both must be fixed, or the round trip leaks into any feature built from past returns.
 
 > [!question]- int-takehome-baseline-why | Why report a baseline in a research take-home?
-> It shows what the pipeline produces without your idea. If a trivial baseline also looks predictive, the pipeline is leaking or you are measuring market exposure; if it is flat and yours is not, the comparison is the evidence.
+> It shows what the pipeline produces without your idea.
+> If a trivial baseline also looks predictive, the pipeline is leaking or you are measuring market exposure; if it is flat and yours is not, the comparison is the evidence.
 
 > [!question]- int-takehome-random-split | Why is a random train/test split wrong for daily return prediction?
-> It puts future observations in the training set and lets serially correlated or overlapping samples straddle the split, so test performance is inflated. Split by time and purge overlapping labels.
+> It puts future observations in the training set and lets serially correlated or overlapping samples straddle the split, so test performance is inflated.
+> Split by time and purge overlapping labels.
 
 > [!question]- int-takehome-purge-embargo | What are purging and embargo?
 > Purging removes training samples whose label windows overlap the test period; embargo also drops a short span after the test period, so serial correlation cannot leak test information back into training.
 
 > [!question]- int-takehome-test-once | Why should the test period be used only once?
-> Every look at the test set and every change made in response is selection on it, so the test set becomes a second training set. Count every look as a trial if you cannot avoid it.
+> Every look at the test set and every change made in response is selection on it, so the test set becomes a second training set.
+> Count every look as a trial if you cannot avoid it.
 
 > [!question]- int-takehome-leak-five-day | A 5-day momentum feature's window accidentally ends one day late and includes the target return. What IC do you expect on iid returns?
-> About $1/\sqrt5 = 0.4472$ (Pearson): the sum of five iid returns has that correlation with each of them. The mini example measures a rank IC of 0.4290; any daily IC that large is a bug until proven otherwise.
+> About $1/\sqrt5 = 0.4472$ (Pearson): the sum of five iid returns has that correlation with each of them.
+> The mini example measures a rank IC of 0.4290; any daily IC that large is a bug until proven otherwise.
 
 > [!question]- int-takehome-ic-tstat | Mean daily IC 0.02 with standard deviation 0.10 over 250 days. $t$-stat?
 > $3.16$. $t = 0.02/0.10 \times \sqrt{250}$.
@@ -208,28 +214,34 @@ A strategy with 8% gross alpha and annual turnover of 100 times capital breaks e
 > $2.00$. $t \approx SR\sqrt{\text{years}}$ because the annualised Sharpe's standard error is about $1/\sqrt{\text{years}}$.
 
 > [!question]- int-takehome-years-to-significance | How many years does a Sharpe-0.5 strategy need to reach $t = 2$?
-> 16. Years $= (t/SR)^2 = (2/0.5)^2$; a Sharpe of 1 needs 4 and a Sharpe of 2 needs 1.
+> 16 years.
+> Years $= (t/SR)^2 = (2/0.5)^2$; a Sharpe of 1 needs 4 and a Sharpe of 2 needs 1.
 
 > [!question]- int-takehome-six-month-holdout | A strategy shows Sharpe 2 on a six-month holdout. Is that significant?
-> No: $t \approx 2\sqrt{0.5} = 1.41$. Six months of data cannot distinguish Sharpe 2 from a much lower true Sharpe.
+> No: $t \approx 2\sqrt{0.5} = 1.41$.
+> Six months of data cannot distinguish Sharpe 2 from a much lower true Sharpe.
 
 > [!question]- int-takehome-lo-se-annual | Standard error of a Sharpe of 1 estimated from 10 annual returns (Lo 2002, iid)?
 > $0.3873$. $\sqrt{(1 + SR^2/2)/T} = \sqrt{1.5/10}$.
 
 > [!question]- int-takehome-lo-se-daily | Annualised standard error of a Sharpe of 1 from 5 years of daily returns?
-> About $0.4477$, essentially $1/\sqrt5$. The per-day Sharpe is tiny so the $SR^2/2$ term is negligible; sampling more often does not reduce the uncertainty, only more years do.
+> About $0.4477$, essentially $1/\sqrt5$.
+> The per-day Sharpe is tiny so the $SR^2/2$ term is negligible; sampling more often does not reduce the uncertainty, only more years do.
 
 > [!question]- int-takehome-family-wise-error | You test 20 independent signals at 5%. Probability of at least one false positive?
 > $0.6415$. $1 - 0.95^{20}$.
 
 > [!question]- int-takehome-bonferroni | What per-test level and two-sided $z$ hurdle does Bonferroni give for 20 tests at a 5% family-wise level?
-> Level $0.0025$ and $z \approx 3.02$. Bonferroni divides $\alpha$ by the number of tests; it is conservative when tests are correlated.
+> Level $0.0025$ and $z \approx 3.02$.
+> Bonferroni divides $\alpha$ by the number of tests; it is conservative when tests are correlated.
 
 > [!question]- int-takehome-hlz-hurdle | What $t$-stat hurdle did Harvey, Liu and Zhu (2016) propose for new factors, and why?
-> $t > 3.0$. Hundreds of factors have been tested on the same data, so the conventional 2.0 hurdle admits too many false discoveries.
+> $t > 3.0$.
+> Hundreds of factors have been tested on the same data, so the conventional 2.0 hurdle admits too many false discoveries.
 
 > [!question]- int-takehome-expected-max-noise | You backtest 100 zero-skill strategies on 5 years of daily data. Expected Sharpe of the best one?
-> About 1.13. Each Sharpe has standard error about $1/\sqrt5$, and $E[\max$ of 100 standard normals$] \approx 2.5306$ (Bailey and Lopez de Prado), so $2.5306/\sqrt5$; a simulation of the maximum gives about 2.51.
+> About 1.13.
+> Each Sharpe has standard error about $1/\sqrt5$, and $E[\max$ of 100 standard normals$] \approx 2.5306$ (Bailey and Lopez de Prado), so $2.5306/\sqrt5$; a simulation of the maximum gives about 2.51.
 
 > [!question]- int-takehome-fundamental-law | IC 0.02, 500 stocks, monthly rebalance, independent bets. Information ratio?
 > $1.55$. $\text{IR} = \text{IC}\sqrt{\text{BR}}$ with breadth $500 \times 12 = 6000$.
@@ -238,31 +250,39 @@ A strategy with 8% gross alpha and annual turnover of 100 times capital breaks e
 > About 9.82. $N/(1 + (N-1)\rho) = 500/50.9$; correlation is why breadth is the fragile input of the fundamental law.
 
 > [!question]- int-takehome-fundamental-law-check | In the mini example the test IC is 0.0263 on 200 stocks daily. What Sharpe does the fundamental law predict, and what was measured?
-> About 5.90 predicted ($0.0263\sqrt{200 \times 252}$) against 5.50 measured gross. Agreement within the 0.94 standard error is a sanity check that the backtest and the IC are consistent.
+> About 5.90 predicted ($0.0263\sqrt{200 \times 252}$) against 5.50 measured gross.
+> Agreement within the 0.94 standard error is a sanity check that the backtest and the IC are consistent.
 
 > [!question]- int-takehome-cost-drag | Daily turnover 0.5 at 5 bp per unit traded. Annual cost, and Sharpe lost at 10% volatility?
 > $6.30\%$ a year and $0.63$ of Sharpe. $0.5 \times 5\text{ bp} \times 252$, divided by 10%.
 
 > [!question]- int-takehome-break-even | Gross alpha 8% a year with annual turnover 100 times capital. Break-even cost per unit traded?
-> $8.0$ bp. Gross return divided by turnover.
+> $8.0$ bp.
+> Gross return divided by turnover.
 
 > [!question]- int-takehome-significant-but-unprofitable | Your signal's test IC has $t = 5.96$ but the strategy loses money net of 5 bp. What do you write?
-> That the signal is real but untradeable as constructed: break-even cost is 4.53 bp because turnover is 1.34 a day. Recommend slowing the signal (smoothing, trading only large changes, combining with slower signals) and re-testing net, counting each variant as a trial.
+> That the signal is real but untradeable as constructed: break-even cost is 4.53 bp because turnover is 1.34 a day.
+> Recommend slowing the signal (smoothing, trading only large changes, combining with slower signals) and re-testing net, counting each variant as a trial.
 
 > [!question]- int-takehome-train-test-drop | Train IC 0.0295 and test IC 0.0263. Is the drop a worry?
-> No. Some decay is expected from selection and noise, the drop is small relative to the IC's standard error, and the test $t$-stat (5.96) is still large. A collapse to zero, or a sign flip, would be the worry.
+> No. Some decay is expected from selection and noise, the drop is small relative to the IC's standard error, and the test $t$-stat (5.96) is still large.
+> A collapse to zero, or a sign flip, would be the worry.
 
 > [!question]- int-takehome-summary-first | What goes in the first five lines of a take-home write-up?
-> The question, the answer, the key number with its uncertainty, the main caveat, and the recommendation. The reader should be able to stop there and act.
+> The question, the answer, the key number with its uncertainty, the main caveat, and the recommendation.
+> The reader should be able to stop there and act.
 
 > [!question]- int-takehome-limitations | Why state limitations explicitly, and which ones?
-> Graders are testing judgement; naming the weaknesses before they do shows you understand them. State sample length, number of variants tried, cost and capacity assumptions, regime dependence, and any data you could not verify.
+> Graders are testing judgement; naming the weaknesses before they do shows you understand them.
+> State sample length, number of variants tried, cost and capacity assumptions, regime dependence, and any data you could not verify.
 
 > [!question]- int-takehome-reproducible | What makes a take-home reproducible?
 > A fixed environment, fixed seeds, raw data untouched, every transformation in code, and one command that regenerates every number and chart in the write-up.
 
 > [!question]- int-takehome-too-good | Your backtest shows Sharpe 8 on daily equities. First three things to check?
-> Position timing (weights at $t$ must earn returns from $t$ to $t+1$), features or normalisation using future data, and survivorship or bad prints in the universe. Then costs. A Sharpe like that is a bug until each is ruled out.
+> Position timing (weights at $t$ must earn returns from $t$ to $t+1$), features or normalisation using future data, and survivorship or bad prints in the universe.
+> Then costs.
+> A Sharpe like that is a bug until each is ruled out.
 
 ## In this repo and SDE-Interview-Prep
 

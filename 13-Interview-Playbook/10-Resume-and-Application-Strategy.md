@@ -125,16 +125,20 @@ Cut in this order: objective statements and generic soft skills, coursework a gr
 ## Interview questions
 
 > [!question]- int-resume-one-page | Why one page for most quant applicants?
-> The first screen is fast and the interviewers pick threads from it; one page forces you to keep only the strongest, defensible items. Long experienced-hire records may justify more, but density still wins.
+> The first screen is fast and the interviewers pick threads from it; one page forces you to keep only the strongest, defensible items.
+> Long experienced-hire records may justify more, but density still wins.
 
 > [!question]- int-resume-bullet-formula | What is the formula for a strong resume bullet?
-> Action verb + what you built or decided + how (method, tools) + measured result with scale. Results, not duties.
+> Action verb + what you built or decided + how (method, tools) + measured result with scale.
+> Results, not duties.
 
 > [!question]- int-resume-numbers-rule | What rule applies to every number on your resume?
-> You measured it and can explain how. Interviewers ask, and an unexplained number damages the credibility of everything else.
+> You measured it and can explain how.
+> Interviewers ask, and an unexplained number damages the credibility of everything else.
 
 > [!question]- int-resume-skills-section | How should you list programming languages?
-> With honest depth and context ("C++20 for latency-sensitive services, Python with NumPy for research"), only languages you are happy to be tested on. Interviewers often pick the first language listed.
+> With honest depth and context ("C++20 for latency-sensitive services, Python with NumPy for research"), only languages you are happy to be tested on.
+> Expect to be tested in any language you list.
 
 > [!question]- int-resume-trader-tailoring | What goes at the top of a trader resume?
 > Evidence of fast quantitative decision-making and competition: olympiads, estimation or trading competitions, strong mental maths, serious game play if true, then relevant experience.
@@ -146,25 +150,30 @@ Cut in this order: objective statements and generic soft skills, coursework a gr
 > Systems work with measurable performance: languages with depth, latency or throughput improvements, concurrency, low-level or open-source projects.
 
 > [!question]- int-resume-negative-result | Should a project that failed go on a research resume?
-> Yes, if it shows sound method and you can explain why it failed (for example a real signal that does not survive costs). Honest negative results demonstrate the judgement researchers are hired for.
+> Yes, if it shows sound method and you can explain why it failed (for example a real signal that does not survive costs).
+> Honest negative results demonstrate the judgement researchers are hired for.
 
 > [!question]- int-resume-ats | What layout choices keep a resume readable by online application systems?
 > Single column, standard section headings, no text in images or tables, standard fonts, PDF with selectable text.
 
 > [!question]- int-resume-referral | When is a referral worth asking for, and how?
-> When the person knows your work. Send them the resume and the exact role, and make it easy; a referral from a stranger adds little and spends goodwill.
+> When the person knows your work.
+> Send them the resume and the exact role, and make it easy; a referral from a stranger adds little and spends goodwill.
 
 > [!question]- int-resume-timing | How do you decide when to apply to each firm?
 > From each firm's careers page, apply as soon as roles open, since rolling review means fewer remaining slots later, and order processes so that top choices come after some practice but before your earliest offer deadline.
 
 > [!question]- int-resume-tracker | What fields belong in an application tracker?
-> Firm, role, open date, deadline, stage, next step and date, contacts, notes after each round, and offer deadline. It prevents missed deadlines and lets you align offers.
+> Firm, role, open date, deadline, stage, next step and date, contacts, notes after each round, and offer deadline.
+> It prevents missed deadlines and lets you align offers.
 
 > [!question]- int-resume-proprietary | What must you leave off a resume from a previous trading job?
-> Proprietary details: strategy parameters, signals, client names, non-public P&L by strategy, internal system names that reveal them. Describe scope, role, methods in general terms and public or approved metrics.
+> Proprietary details: strategy parameters, signals, client names, non-public P&L by strategy, internal system names that reveal them.
+> Describe scope, role, methods in general terms and public or approved metrics.
 
 > [!question]- int-resume-defend-every-line | How should you prepare your resume for interviews?
-> For every line, prepare a two-minute explanation, the hardest technical question it invites, and the numbers behind it. Interviewers use the resume as a question bank.
+> For every line, prepare a two-minute explanation, the hardest technical question it invites, and the numbers behind it.
+> Interviewers use the resume as a question bank.
 
 > [!question]- int-resume-what-to-cut | You have two pages. What do you cut first?
 > Objective statements and generic soft skills, coursework implied by the degree, old school-era items unless exceptional, duplicate bullets, and anything you could not defend in depth.

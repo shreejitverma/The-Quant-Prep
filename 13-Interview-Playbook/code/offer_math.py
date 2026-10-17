@@ -50,12 +50,13 @@ def section_sign_on() -> None:
 
 def section_buyout() -> None:
     print("\n== Buyout of forfeited deferred pay ==")
-    # Backs int-offer-buyout-pv and Worked example 3: old award 40 U at 0.5y and 40 U at 1.5y.
+    # Backs int-offer-buyout-pv and Worked example 3: old award 40 U at 0.5y and 40 U at 1.5y;
+    # the replacement vests 40 U at 1y and 40 U at 2y, each tranche six months later than the original.
     old = pv([40.0, 40.0], [0.5, 1.5], 0.06)
     check("PV of forfeited tranches at 6%", old, 75.50, 0.005)
     check("time-value discount of the forfeited tranches vs face", 80.0 - old, 4.50, 0.005)
     replacement = pv([40.0, 40.0], [1.0, 2.0], 0.06)
-    check("PV of a replacement award that vests a year later per tranche", replacement, 73.34, 0.005)
+    check("PV of a replacement award vesting at 1 and 2 years (6 months later per tranche)", replacement, 73.34, 0.005)
     check("shortfall of the delayed replacement vs forfeited award", old - replacement, 2.17, 0.005)
 
 

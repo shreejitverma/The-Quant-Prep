@@ -93,7 +93,7 @@ flowchart TD
 ```
 
 - Your former employer's confidential information is usually protected by your contract and by trade-secret law; in the US, 18 U.S.C. 1836 gives an owner of a misappropriated trade secret a civil action (Defend Trade Secrets Act of 2016).
-- Interviewers at reputable firms do not want proprietary details, and asking for them is a test: a candidate who discloses a former employer's secrets will disclose theirs too.
+- Reputable firms do not want proprietary details, and receiving them can expose the hiring firm to liability; if an interviewer presses, treat it as a test of discretion, since a candidate who discloses a former employer's secrets will disclose theirs too.
 - Bring nothing: no code, data, documents or models, in any form, including personal email or cloud storage.
 - Check your own contract (confidentiality, non-solicit, non-compete, notice) before interviews; see [Offers, Compensation and Negotiation](11-Offers-Compensation-and-Negotiation.md).
 
@@ -151,13 +151,16 @@ What I can bring is the research process: how I would find and validate this kin
 > About 7.1. $(2/0.75)^2$.
 
 > [!question]- int-senior-lucky-managers | 1000 zero-skill managers each run a strategy for 3 years. How many show an annualised Sharpe above 1.5?
-> About 4.7 in expectation. The Sharpe standard error is $1/\sqrt3 = 0.58$, so each has probability 0.0047 of exceeding 1.5 by luck.
+> About 4.7 in expectation.
+> The Sharpe standard error is $1/\sqrt3 = 0.58$, so each has probability 0.0047 of exceeding 1.5 by luck.
 
 > [!question]- int-senior-attribution-why | Why regress a track record on market and factor returns?
-> To separate returns available cheaply (beta, known styles) from residual alpha. With an intercept the mean return splits exactly into alpha plus loadings times factor means, and alpha's $t$-stat measures skill.
+> To separate returns available cheaply (beta, known styles) from residual alpha.
+> With an intercept the mean return splits exactly into alpha plus loadings times factor means, and alpha's $t$-stat measures skill.
 
 > [!question]- int-senior-attribution-alpha | A 5-year record has a Sharpe of 1.08, beta 0.47, and alpha 1.85% a year with $t = 0.75$. How do you describe it?
-> Mostly market exposure: beta contributes 7.68% of the 10.09% a year, and the alpha is not statistically distinguishable from zero. Lead with the residual and its uncertainty, not the headline Sharpe.
+> Mostly market exposure: beta contributes 7.68% of the 10.09% a year, and the alpha is not statistically distinguishable from zero.
+> Lead with the residual and its uncertainty, not the headline Sharpe.
 
 > [!question]- int-senior-capacity-one-third | If impact grows with $\sqrt{A}$, what is net alpha at the AUM that maximises dollar P&L?
 > One third of the small-size gross alpha. $A(a_0 - c\sqrt A)$ is maximised where $a_0 = \tfrac32 c\sqrt A$, leaving $a_0 - \tfrac23 a_0$.
@@ -166,22 +169,26 @@ What I can bring is the research process: how I would find and validate this kin
 > About 444.4 units, $(2/3)^2 \times 1000$, with net alpha 2.00% and dollar P&L 8.89 units.
 
 > [!question]- int-senior-transfer | What makes a track record not transferable to a new firm?
-> Dependence on the old firm's data, execution infrastructure, financing terms, client flow, risk capital or colleagues. Say what you need to rebuild it and how long it would take.
+> Dependence on the old firm's data, execution infrastructure, financing terms, client flow, risk capital or colleagues.
+> Say what you need to rebuild it and how long it would take.
 
 > [!question]- int-senior-disclosure-allowed | What can you usually discuss about a past strategy?
 > Public economics and mechanism, asset class, horizon and style, approved aggregate statistics (Sharpe and capacity ranges, turnover, drawdowns), and your research and risk process.
 
 > [!question]- int-senior-disclosure-forbidden | What must you not disclose or bring?
-> Signals, parameters, code, data, models, documents, client information and position-level P&L belonging to the former employer, in any form. In the US, misappropriated trade secrets support a civil action under 18 U.S.C. 1836.
+> Signals, parameters, code, data, models, documents, client information and position-level P&L belonging to the former employer, in any form.
+> In the US, misappropriated trade secrets support a civil action under 18 U.S.C. 1836.
 
 > [!question]- int-senior-asked-for-secrets | An interviewer presses for your old firm's exact signal. What do you do?
-> Decline politely and redirect to the mechanism and your process. Reputable firms do not want it, and disclosure signals you would leak their secrets too.
+> Decline politely and redirect to the mechanism and your process.
+> Reputable firms do not want it, and disclosure signals you would leak their secrets too.
 
 > [!question]- int-senior-drawdown-story | How should you answer "tell me about your worst drawdown"?
 > Size and duration, what you knew at the time, what you did (followed limits, reduced, hedged, or held with reasons), the outcome, and what changed in your process afterwards.
 
 > [!question]- int-senior-team-credit | How do you present results earned by a team?
-> State the team's result, then your specific role, decisions and contributions, with names of what others owned. Interviewers and references will probe it.
+> State the team's result, then your specific role, decisions and contributions, with names of what others owned.
+> Interviewers and references will probe it.
 
 > [!question]- int-senior-leadership-evidence | What counts as leadership evidence for a senior quant?
 > Specific people hired or developed, standards or processes you changed (research review, risk checks, code quality), platforms others adopted, and decisions you made that others followed.

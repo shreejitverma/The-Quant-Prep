@@ -55,7 +55,8 @@ F = \bar{P} + \text{clamp}\big(I - \bar{P},\ -0.05\%,\ +0.05\%\big), \qquad
 P = \frac{\max(0, \text{impact bid} - \text{index}) - \max(0, \text{index} - \text{impact ask})}{\text{index}},
 $$
 
-where $\bar{P}$ is the average premium index over the interval, the impact bid and ask are the average fill prices of a fixed-size market order, and $I$ is $0.01\%$ per interval (0.03% a day) for most contracts.
+where $\bar{P}$ is the time-weighted average premium index over the interval, the impact bid and ask are the average fill prices of a fixed-size market order, and $I$ is $0.01\%$ per interval (0.03% a day) for most contracts.
+The FAQ also scales the 8-hour formula by $N/8$ for contracts with an $N$-hour interval and bounds the result by a per-contract cap and floor, so the formula above is the 8-hour case away from the cap.
 The funding amount is the position's notional at mark price times $F$, exchanged between traders; Binance states it charges no fee on it.
 Other venues use variants of the same premium-plus-clamped-interest design, and some contracts have different intervals and caps, so read the contract page before trading.
 
@@ -88,7 +89,7 @@ What can go wrong:
 - **Liquidation of the short leg.** The spot leg usually sits in a different account or venue and does not margin the short perp, so a rally drains the perp margin even though the combined position is flat.
   If you cannot move collateral fast enough, the short is liquidated and you are left long spot.
 - **Exchange default.** Both legs and the collateral sit with exchanges; there is no central counterparty, and offshore venues typically offer nothing like the customer-segregation rules of a regulated futures broker.
-- **Auto-deleveraging.** If a liquidation cannot be filled above the bankrupt account's price and the venue's insurance fund cannot cover it, the venue reduces profitable opposite positions; your hedge can be closed for you.
+- **Auto-deleveraging.** If a liquidation cannot be filled at a better price than the bankrupt account's and the venue's insurance fund cannot cover it, the venue reduces profitable opposite positions; your hedge can be closed for you.
 - **Collateral risk.** Margin in a stablecoin or in the coin itself adds exposure to that asset.
 - **Funding regime change.** Funding can turn negative; the carry is not locked unless you use dated futures.
 
@@ -175,7 +176,7 @@ Without pre-funded inventory the trade needs a blockchain transfer, and the gap 
 - Assuming a hedged basis trade cannot be liquidated; the short leg is margined on its own.
 - Ignoring venue default: there is no clearing house, and customer assets on an exchange are an unsecured claim if it fails.
 - Using the mark price, last price and index price interchangeably; liquidation, funding and P&L may each use a different one.
-- Computing inverse-contract P&L as if it were linear in USD; the coin-denominated P&L is convex.
+- Computing inverse-contract P&L in coins as if it were linear in price; it is $N(1/P_0 - 1/P_1)$ coins, concave in $P_1$ for a long and convex for a short.
 - Quoting AMM liquidity as "depth" without the curve: impact on $xy = k$ is a formula of trade size over reserves.
 - Treating fees earned by an LP as profit; they must exceed impermanent loss and LVR.
 - Sending a large swap to a public mempool without a slippage limit.
@@ -247,7 +248,8 @@ Without pre-funded inventory the trade needs a blockchain transfer, and the gap 
 > The return is partly payment for bearing that risk.
 
 > [!question]- fi-crypto-cex-vs-amm | Compare a CEX order book with an AMM for a market maker.
-> CEX: you quote prices in a private, fast order book and bear exchange custody risk. AMM: you deposit into a curve that quotes for you, pay LVR to arbitrageurs, settle on-chain and face MEV.
+> CEX: you quote prices in a private, fast order book and bear exchange custody risk.
+> AMM: you deposit into a curve that quotes for you, pay LVR to arbitrageurs, settle on-chain and face MEV.
 > On an AMM you cannot cancel quotes when you are informed against, which is why LPs need fees to exceed LVR.
 
 ## In this repo and SDE-Interview-Prep
