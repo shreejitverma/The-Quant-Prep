@@ -80,14 +80,16 @@ flowchart TD
     B -->|no| X["No implied vol: flag the quote"]
     B -->|yes| C["Bracket [lo, hi]; seed sigma_0 (Manaster-Koehler or a rational approximation)"]
     C --> D["Evaluate price and vega at sigma"]
-    D --> E["Update bracket from the sign of C(sigma) - C"]
+    D --> R{"|C(sigma) - C| <= ftol?"}
+    R -->|yes| J["Return sigma"]
+    R -->|no| E["Update bracket from the sign of C(sigma) - C"]
     E --> F{"Newton step inside the bracket and vega not tiny?"}
     F -->|yes| G["sigma = sigma - (C(sigma) - C) / vega"]
     F -->|no| H["sigma = midpoint of bracket"]
     G --> I{"|step| < tol in vol?"}
     H --> I
     I -->|no| D
-    I -->|yes| J["Return sigma"]
+    I -->|yes| J
 ```
 
 ### Unconstrained minimisation
