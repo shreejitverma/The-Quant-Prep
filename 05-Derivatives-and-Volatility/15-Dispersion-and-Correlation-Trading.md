@@ -60,7 +60,7 @@ For a 500-name index the proxy is fine; for a concentrated basket (a sector, a f
 Implied correlation is a strike-dependent object.
 Read the index and single-stock vols at the same moneyness and you get a different $\rho$ at each strike: index skew is steeper than single-stock skew, so implied correlation is higher on the downside.
 This correlation skew is the market pricing correlation rising in sell-offs.
-Implied correlation read from variance-swap strikes integrates over the whole smile, so it sits above the ATM figure.
+Implied correlation read from variance-swap strikes integrates over the whole smile; when index skew is steeper than single-stock skew it sits above the ATM figure (Example 2).
 
 ### Why implied correlation trades rich
 
@@ -196,7 +196,8 @@ With 50 equally weighted names at 30% and the index at 18%, exact is 0.3469 and 
 ### Example 2: correlation skew and variance-swap correlation
 
 One-year smiles with total variance $w(k) = \sigma_{ATM}^2 + b(\rho k + \sqrt{k^2 + 0.01} - 0.1)$: single stocks with $b = 0.04$, $\rho = -0.3$ (flatter), the index with $b = 0.1$, $\rho = -0.7$ (steeper).
-The $1/K^2$ strip (a flat 20% smile returns 20.00, as it must) gives:
+The fair variance strike is the $1/K^2$ strip of out-of-the-money options (puts below the forward, calls above), $K_{var} = \frac{2e^{rT}}{T}\int_0^\infty\frac{\text{OTM}(K)}{K^2}\,dK$ (Demeterfi, Derman, Kamal and Zou 1999; see [Variance Swaps](14-Variance-Swaps-and-Volatility-Products.md)).
+Integrated numerically (a flat 20% smile returns 20.00, as it must), it gives:
 
 | | ATM vol | Variance strike | Strike minus ATM |
 | :--- | ---: | ---: | ---: |
@@ -241,7 +242,7 @@ One simulated year (seed 11) with true vols 20%, 24%, 40%, 30%, 45%, true pairwi
 | Correlation term | 143,541 |
 
 The decomposition adds up exactly (asserted to $10^{-6}$).
-"Correlation came in at 0.20 against 0.29 implied, worth 143,541; the vol term is small because the stock vols that rose and fell roughly offset in variance terms."
+"Correlation came in at 0.20 against 0.29 implied, worth 143,541; the vol term, 16,865, is about a tenth of the total even though every stock's realised vol missed its implied by several vol points (table above)."
 The correlation-swap estimator on the same path is 0.2072 with pair weights $w_iw_j$ and 0.2181 equally weighted: a correlation swap and a dispersion trade settle on different numbers.
 And a year of daily data measured 0.20 when the true correlation was 0.15: realised correlation is a noisy statistic.
 

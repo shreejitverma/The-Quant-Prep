@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [risk-neutral-pricing-and-ftap]
 est_hours: 4
-sources: [Shreve - Stochastic Calculus for Finance II (Springer 2004) sections 5.2 and 9.2-9.4, Oksendal - Stochastic Differential Equations (Springer 6th edition) section 8.6, Karatzas and Shreve - Brownian Motion and Stochastic Calculus (Springer 2nd edition) section 3.5, Geman El Karoui and Rochet - Changes of Numeraire Changes of Probability Measure and Option Pricing (Journal of Applied Probability 1995), Margrabe - The Value of an Option to Exchange One Asset for Another (Journal of Finance 1978), Jamshidian - An Exact Bond Option Formula (Journal of Finance 1989), Vasicek - An Equilibrium Characterization of the Term Structure (Journal of Financial Economics 1977), Brigo and Mercurio - Interest Rate Models Theory and Practice (Springer 2nd edition 2006) chapters 2 and 3, Glasserman - Monte Carlo Methods in Financial Engineering (Springer 2003) section 4.6]
+sources: [Shreve - Stochastic Calculus for Finance II (Springer 2004) sections 5.2 and 9.2-9.4, Oksendal - Stochastic Differential Equations (Springer 6th edition) section 8.6, Karatzas and Shreve - Brownian Motion and Stochastic Calculus (Springer 2nd edition) section 3.5, Geman El Karoui and Rochet - Changes of Numeraire Changes of Probability Measure and Option Pricing (Journal of Applied Probability 1995), Margrabe - The Value of an Option to Exchange One Asset for Another (Journal of Finance 1978), Jamshidian - An Exact Bond Option Formula (Journal of Finance 1989), Vasicek - An Equilibrium Characterization of the Term Structure (Journal of Financial Economics 1977), Brigo and Mercurio - Interest Rate Models Theory and Practice (Springer 2nd edition 2006) chapters 2 and 3, Glasserman - Monte Carlo Methods in Financial Engineering (Springer 2003) section 4.6, Sin - Complications with Stochastic Volatility Models (Advances in Applied Probability 1998)]
 ---
 
 # Change of Measure and Girsanov
@@ -85,7 +85,8 @@ In $d$ dimensions, $\theta$ is a vector, $Z_t = \exp(-\int\theta\cdot dW - \tfra
 
 - It changes drifts: any $dX = \mu\,dt + \sigma\,dW$ becomes $dX = (\mu - \sigma\theta)\,dt + \sigma\,dW^Q$.
 - It cannot change volatility: if $X$ has quadratic variation $\sigma_1^2 T$ almost surely under $P$, it has the same under every $Q \sim P$; two models with different volatilities give mutually singular laws. This is why the option price depends on $\sigma$ and not on $\mu$.
-- It needs the density to be a true martingale: if $Z$ is a strict local martingale ($E^P[Z_T] < 1$), $Q$ is not a probability measure; this is the mechanism behind price "bubbles" in some stochastic volatility models.
+- It needs the density to be a true martingale: if $Z$ is a strict local martingale ($E^P[Z_T] < 1$), $Q$ is not a probability measure.
+  The share-measure density is the discounted stock price itself, so this fails exactly when the discounted price is a strict local martingale under $Q$, which can happen in some stochastic volatility models (Sin 1998) and is how the asset-bubble literature defines a bubble.
 - It needs equivalence: a measure that puts zero weight on a $P$-possible scenario would price an arbitrage.
 
 ### From $P$ to $Q$: the market price of risk
@@ -222,7 +223,7 @@ Bond prices: $P(0, 1) = 0.967821$, $P(0, 5) = 0.820839$, forward bond price $P(0
 Under $Q^1$ the bond price $P(1, 5)$ is lognormal with that forward, so the price is Black's formula discounted by $P(0, 1)$: $0.0057565$.
 Check 1, under $Q$: $(r_1, \int_0^1 r\,ds)$ is jointly Gaussian and can be sampled exactly; $E^Q[e^{-\int r}(P(1, 5) - 0.85)^+]$ over $2 \times 10^6$ paths is about $0.0057584$ (standard error $0.0000065$).
 Check 2, under $Q^1$: the density $e^{-\int_0^1 r}/P(0, 1)$ tilts the Gaussian $r_1$ by $-\text{Cov}(r_1, \int_0^1 r)$, so sample $r_1$ there, with no discounting inside: $E^1[P(1, 5)] \approx 0.848149$ (the forward, as it must be) and $P(0, 1)E^1[(P(1, 5) - 0.85)^+] \approx 0.0057683$ (standard error $0.0000065$).
-The same tilt shows $E^Q[r_1] = 3.5184\%$ while $E^1[r_1] = f(0, 1) = 3.5146\%$: the gap is $\text{Cov}(r_1, \int_0^1 r) = 0.373$ bp, the covariance between the rate and the discount factor.
+The same tilt shows $E^Q[r_1] = 3.5184\%$ while $E^1[r_1] = f(0, 1) = 3.5146\%$: the gap is $\text{Cov}(r_1, \int_0^1 r) = 0.373$ bp, the covariance between the rate and the integrated rate (minus the log discount factor).
 
 ### Annuity measure: a 1y x 4y swaption
 
@@ -344,3 +345,4 @@ Simulating $(S, X)$ under $Q^f$ and weighting by $dQ^d/dQ^f = e^{(r_d - r_f)T}X_
 - O. Vasicek, "An Equilibrium Characterization of the Term Structure", *Journal of Financial Economics* 5 (1977).
 - Damiano Brigo and Fabio Mercurio, *Interest Rate Models: Theory and Practice*, 2nd edition, chapter 2 (numeraires) and chapter 3 (Vasicek bond options).
 - Paul Glasserman, *Monte Carlo Methods in Financial Engineering*, section 4.6 (importance sampling).
+- C. Sin, "Complications with Stochastic Volatility Models", *Advances in Applied Probability* 30 (1998), on stock prices that are strict local martingales.

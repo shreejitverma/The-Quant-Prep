@@ -189,7 +189,7 @@ Full-truncation Euler in $\ln S$, $2 \times 100{,}000$ antithetic paths, seed 11
 | (MC - Fourier) / s.e. | 0.7 | 2.2 | 4.0 | 6.0 | 6.0 |
 
 With 200 steps the simulation agrees with the semi-closed form within one standard error at every strike.
-With 25 steps the out-of-the-money calls are about 6 standard errors rich: the variance was truncated at zero on about 18.5% of steps (about 8.8% with 200 steps), which distorts the vol-of-vol and the smile.
+With 25 steps the out-of-the-money calls are about 6 standard errors rich, and the simulated variance sat below zero (and was truncated) on about 18.5% of steps, against about 8.8% with 200 steps.
 That bias, not the statistical error, is what a too-coarse grid costs; Andersen's QE scheme was built for exactly this coarse-step, Feller-violating regime.
 
 ### Example 3: what each parameter does to the smile
@@ -223,7 +223,7 @@ ATM-forward skew $\partial_k\sigma$ in the base case against the small-$T$ limit
 | $\partial_k\sigma$ | -0.526 | -0.530 | -0.499 | -0.300 | -0.148 |
 
 The skew is flat for short expiries and decays at long ones, roughly halving from one to three years.
-A market whose skew at one week is several times its one-month skew cannot be matched: fit the long end and Heston underprices short-dated puts; fit the short end and $\xi$ becomes so large the long end is wrong.
+A market whose one-week skew is much steeper than its one-month skew (as under a $T^{-1/2}$ decay) cannot be matched: fit the long end and Heston underprices short-dated puts; fit the short end and $\xi$ becomes so large the long end is wrong.
 
 ### Example 5: calibration and identifiability
 
@@ -267,7 +267,7 @@ Same parameters, Euler Monte Carlo in $F$ with absorption at zero and exact logn
 
 At one year Hagan is below Monte Carlo by about 0.03 to 0.08 vol points, at most 1.8 standard errors, and no path hits zero.
 At ten years the formula overstates every vol, by about 1.26 to 3.00 vol points (26.09 against 23.09 at the 2% strike, 13.5 to 19.7 standard errors), and about 8.46% of the simulated paths are absorbed at zero.
-Differentiating the Black prices implied by Hagan's vols twice in strike: at one year the density is positive on $[0.05\%, 3\%]$ (minimum $5.26 \times 10^{-3}$), at ten years it is negative for every strike below 0.70%, with a total negative mass of $-0.113$.
+Differentiating the Black prices implied by Hagan's vols twice in strike: at one year the density is positive on $[0.05\%, 3\%]$ (minimum $5.26 \times 10^{-3}$), at ten years it is negative for every grid strike below 0.70%, with a negative mass of $-0.113$ on the grid $[0.05\%, 0.70\%]$.
 The true process puts an atom at zero that a smooth implied-vol expansion cannot represent; long-dated low strikes (deep receiver swaptions, floors) need arbitrage-free SABR or a PDE.
 
 ### Example 8: shifted SABR for a negative forward
@@ -358,7 +358,7 @@ Shifted vols are quotes in a different unit: they are not comparable with unshif
 
 > [!question]- deriv-sabr-accuracy | How accurate is Hagan's formula?
 > Good at short expiries: at one year it is within about 0.08 vol points (at most 1.8 standard errors) of Monte Carlo across 2% to 5% strikes on a 3% forward.
-> At ten years it overstates by about 1.26 to 3.00 vol points, because the expansion is in $\nu^2T$ and ignores absorption at zero (about 8.46% of simulated paths absorbed).
+> At ten years it overstates by about 1.26 to 3.00 vol points, consistent with an expansion in $\nu^2T$ that ignores absorption at zero (about 8.46% of simulated paths are absorbed).
 
 > [!question]- deriv-sabr-negative-density | What arbitrage problem does Hagan's formula have and how is it fixed?
 > At long expiries and low strikes the Black prices it implies are not convex in strike: in the worked ten-year case the density is negative below 0.70% with total mass $-0.113$.

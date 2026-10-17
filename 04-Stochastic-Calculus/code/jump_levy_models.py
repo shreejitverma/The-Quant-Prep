@@ -69,10 +69,12 @@ def check(name: str, value: float, expected: float, tol: float) -> float:
     return value
 
 
-def check_mc(name: str, value: float, se: float, quoted: float, truth: float, quoted_tol: float) -> None:
-    """Seed-stable simulation number: equals the quoted value and lies within 4 standard errors of the truth."""
+def check_mc(name: str, value: float, se: float, quoted: float, truth: float, quoted_tol: float, se_quoted: float, se_tol: float) -> None:
+    """Seed-stable simulation number: equals the quoted value, its standard error equals the quoted one,
+    and it lies within 4 standard errors of the truth."""
     print(f"{name:64s} {value:.6g}  (se {se:.2g})")
     assert abs(value - quoted) <= quoted_tol, f"{name}: {value} vs quoted {quoted}"
+    assert abs(se - se_quoted) <= se_tol, f"{name}: standard error {se} vs quoted {se_quoted}"
     assert abs(value - truth) <= 4 * se, f"{name}: {value} vs truth {truth}, se {se}"
 
 
@@ -136,7 +138,7 @@ def merton(rng: np.random.Generator) -> None:
     check("  E[S_T] / (S0 e^{rT}) (martingale check)", float(ST.mean() / (S0 * math.exp(R * T))), 0.9997, 5e-5)
     assert abs(ST.mean() / (S0 * math.exp(R * T)) - 1) < 4 * ST.std() / math.sqrt(n) / (S0 * math.exp(R * T))
     pay = math.exp(-R * T) * np.maximum(ST - 100.0, 0.0)
-    check_mc("  K=100 Monte Carlo", float(pay.mean()), float(pay.std() / math.sqrt(n)), 12.741, float(series[2]), 5e-4)
+    check_mc("  K=100 Monte Carlo", float(pay.mean()), float(pay.std() / math.sqrt(n)), 12.741, float(series[2]), 5e-4, 0.013, 5e-4)
 
     iv = implied_vol(series, S0, STRIKES, T, R)
     for K, v in zip(STRIKES, iv, strict=True):
@@ -203,7 +205,7 @@ def kou(rng: np.random.Generator) -> None:
         jumps += np.where(has, size, 0.0)
     ST = S0 * np.exp(X + jumps)
     pay = math.exp(-R * T) * np.maximum(ST - 100.0, 0.0)
-    check_mc("K=100 Kou Monte Carlo", float(pay.mean()), float(pay.std() / math.sqrt(n)), 12.431, float(price[2]), 5e-4)
+    check_mc("K=100 Kou Monte Carlo", float(pay.mean()), float(pay.std() / math.sqrt(n)), 12.431, float(price[2]), 5e-4, 0.012, 5e-4)
     iv = implied_vol(price, S0, STRIKES, T, R)
     check("Kou implied vol at K=80 (%)", 100 * float(iv[0]), 29.20, 5e-3)
     check("Kou implied vol at K=120 (%)", 100 * float(iv[4]), 23.61, 5e-3)
@@ -243,6 +245,8 @@ def variance_gamma(rng: np.random.Generator) -> None:
         8.045,
         float(price[2]),
         5e-4,
+        0.0064,
+        5e-5,
     )
     iv = implied_vol(price, S0, STRIKES, T, R)
     check("VG implied vol at K=80 (%)", 100 * float(iv[0]), 15.68, 5e-3)

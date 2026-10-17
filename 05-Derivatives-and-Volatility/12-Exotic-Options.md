@@ -14,7 +14,7 @@ sources: [John Hull - Options Futures and Other Derivatives (Pearson) exotic opt
 
 - A digital is the limit of a call spread: price it with the skew term, $D = e^{-rT}N(d_2) - \text{vega}\,\partial\sigma/\partial K$, and hedge it as a slightly wide call spread that over-replicates; near expiry its delta at the strike grows like $1/\sqrt{T}$ (pin risk).
 - Barriers: in plus out equals vanilla; Reiner-Rubinstein closed forms price all eight continuously monitored types; simulate them with a Brownian-bridge crossing probability, and price daily monitoring as a continuous barrier shifted by $e^{\pm 0.5826\sigma\sqrt{\Delta t}}$.
-- Reverse knock-outs (barrier in the money) are short gamma and short vega near the barrier, with a delta that flips sign and jumps at the barrier; they are where hedging and model risk concentrate.
+- Reverse knock-outs (barrier in the money) are short vega and mostly short gamma between strike and barrier, with a delta that flips sign and jumps at the barrier; they are where hedging and model risk concentrate.
 - Asians and lookbacks: the geometric Asian has a lognormal closed form and is the control variate for the arithmetic one (variance cut by more than 1000x); floating-strike lookbacks have Goldman-Sosin-Gatto closed forms and can be simulated exactly with Brownian-bridge extremes.
 - Autocallables and cliquets are sold as notes: the investor is short a knock-in put and short volatility, so the issuing dealer ends up long vega and long dividends, and cliquet value lives in the forward smile, which local volatility gets wrong.
 
@@ -75,11 +75,11 @@ which for $r = q$ ($\mu = -\tfrac12$) is the classic $C_{BS}(S, K) - \tfrac{S}{H
 Simulation.
 On a grid of step $\Delta t$ a path can cross between dates.
 Conditional on log-prices $x_i, x_{i+1}$ above $h = \ln H$, the Brownian bridge crosses with probability $\exp\big(-2(x_i - h)(x_{i+1} - h)/(\sigma^2\Delta t)\big)$; multiplying the payoff by the product of the survival probabilities gives an unbiased continuous-monitoring estimator even on a coarse grid.
-If the contract is monitored discretely (daily closes), the naive grid simulation is the right model, and Broadie-Glasserman-Kou say the discrete price equals the continuous formula at a barrier shifted away from spot by $e^{\pm\beta\sigma\sqrt{\Delta t}}$, $\beta = 0.5826$; [Monte Carlo Pricing](10-Monte-Carlo-Pricing-and-Variance-Reduction.md) derives this.
+If the contract is monitored discretely (daily closes), the naive grid simulation is the right model, and Broadie-Glasserman-Kou show the discrete price is approximately the continuous formula at a barrier shifted away from spot by $e^{\pm\beta\sigma\sqrt{\Delta t}}$ (the error vanishes faster than $1/\sqrt{m}$ for $m$ monitoring dates), $\beta = 0.5826$; [Monte Carlo Pricing](10-Monte-Carlo-Pricing-and-Variance-Reduction.md) derives this.
 
 Greeks and model risk.
 A reverse knock-out (up-and-out call, down-and-out put) has a payoff that jumps from its maximum to zero at the barrier.
-Near $H$ its delta is negative and large, its gamma is negative, and its vega is negative everywhere near the money: more volatility means more chance to die.
+Approaching $H$ its delta turns negative (and becomes large close to expiry), its gamma is negative over most of the range between strike and barrier (it can turn slightly positive just below the barrier, as at spot 118 in Example 4), and its vega is negative everywhere near the money: more volatility means more chance to die.
 The price is continuous at the barrier but the hedge is not: on the touch the dealer must unwind the entire delta at once, so desks shift the barrier in the risk system (bending the payoff into a call spread) and charge for it.
 Barrier prices depend on the dynamics of the smile, not just today's surface: local volatility and stochastic volatility calibrated to the same vanillas give different knock-out prices because they imply different forward skews and different spot-vol correlation along the path; desks use local-stochastic volatility or mix the two and reserve the difference.
 
@@ -136,7 +136,7 @@ stateDiagram-v2
 Economically the investor holds a bond, is short a down-and-in put, and receives a high conditional coupon that is the premium for that put plus the digital-like call feature.
 The issuer (a bank) is the counterparty to all of it, and its trading desk holds the residual: it is long the put the investor sold.
 The sign of each sensitivity is a computation, not folklore; the worked example below bumps volatility and dividend yield with common random numbers and finds the dealer long vega and long dividends.
-The knock-in leg explains part of the dividend sign: higher dividends lower the forward, which raises the value of the down-and-in put the dealer holds.
+One leg's sign is unambiguous: higher dividends lower the forward, which raises the value of the down-and-in put the dealer holds.
 The autocall and coupon legs move too (fewer early calls means fewer coupons paid but a longer exposure), and their sign is not obvious, so the net exposure is the one the bump measures.
 A dealer left long dividends could hedge with dividend futures or dividend swaps.
 Other risks that matter in practice: the digital-like jump in value around the trigger on each observation date, correlation for worst-of baskets (the worst-of put gains value as correlation falls, so correlation is a first-order risk on both sides), and the issuer's own funding spread, which pays for part of the coupon.
@@ -260,7 +260,7 @@ With $q = 2\%$ it is $e^{-0.02}$ times the spot-start call on a 2% yield, 9.0443
 Cliquet: twelve monthly returns clipped to $[-3\%, +3\%]$, summed, globally floored at 2%, notional 100.
 Without the floor the strip is worth 1.1971 in closed form (simulation 1.1976); with the floor 4.9459, so the floor alone is worth 3.7483.
 Black-Scholes vega of the whole cliquet is $-0.0303$ per vol point: the capped strip has $-0.1299$ and the floor $+0.0996$.
-The near-zero net vega hides two large offsetting exposures to forward volatility, which is why cliquets are risk-managed on forward skew and vol-of-vol, not on Black-Scholes vega.
+The near-zero net vega hides two offsetting exposures to forward volatility, so Black-Scholes vega says little about the cliquet's risk; desks risk-manage it on forward skew and vol-of-vol.
 
 ## Pitfalls
 
@@ -304,7 +304,7 @@ The near-zero net vega hides two large offsetting exposures to forward volatilit
 > At 20% vol the daily shift is 0.734%: the down-and-out call at 90 becomes the continuous price at 89.34, 8.9139 against 8.6655 for continuous monitoring.
 
 > [!question]- deriv-barrier-reverse-greeks | Describe the Greeks of an up-and-out call with the barrier above the strike.
-> Price capped and falling to zero at the barrier, so delta turns negative as spot rises toward $H$, gamma is negative, and vega is negative: more vol means more chance of knock-out.
+> Price capped and falling to zero at the barrier, so delta turns negative as spot rises toward $H$, gamma is negative over most of the range (slightly positive just below $H$ with a year left: $+0.0008$ at 118), and vega is negative: more vol means more chance of knock-out.
 > $K = 100$, $H = 120$: price 1.1761, delta $-0.0237$ and vega $-0.13$ per vol point at spot 100, against a vanilla delta of 0.6368.
 
 > [!question]- deriv-barrier-delta-jump | Why is a reverse knock-out hard to hedge at the barrier, and what do desks do?
@@ -316,7 +316,7 @@ The near-zero net vega hides two large offsetting exposures to forward volatilit
 > Desks use local-stochastic volatility calibrated to vanillas and reserve the model spread.
 
 > [!question]- deriv-barrier-regular-delta | Near the barrier, how does a regular down-and-out call's delta compare with the vanilla's?
-> Much higher: close to $H$ the option is worth roughly $(S - H)$ times a slope, so delta is near or above 1 even out of the money.
+> Much higher: close to $H$ the option is worth roughly $(S - H)$ times a slope, so delta is close to 1 even out of the money.
 > $K = 100$, $H = 90$, spot 91: price 0.9320, delta 0.9202 against a vanilla delta of 0.4516.
 
 > [!question]- deriv-asian-control-variate | How do you price an arithmetic Asian efficiently, and how much does it help?

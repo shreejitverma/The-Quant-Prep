@@ -42,10 +42,12 @@ def check(name: str, value: float, expected: float, tol: float) -> float:
     return value
 
 
-def check_mc(name: str, value: float, se: float, quoted: float, truth: float, digits_tol: float) -> None:
-    """Seed-stable simulation number: equal to the quoted value and within 4 standard errors of the truth."""
+def check_mc(name: str, value: float, se: float, quoted: float, truth: float, digits_tol: float, se_quoted: float, se_tol: float) -> None:
+    """Seed-stable simulation number: equal to the quoted value, its standard error equal to the quoted one,
+    and within 4 standard errors of the truth."""
     print(f"{name:62s} {value:.6g}  (se {se:.2g})")
     assert abs(value - quoted) <= digits_tol, f"{name}: {value} vs quoted {quoted}"
+    assert abs(se - se_quoted) <= se_tol, f"{name}: standard error {se} vs quoted {se_quoted}"
     assert abs(value - truth) <= 4 * se, f"{name}: {value} vs truth {truth}, se {se}"
 
 
@@ -110,7 +112,7 @@ def affine_bonds(rng: np.random.Generator) -> None:
     m_i = th * tau + (r0 - th) * (1 - e1) / k
     v_i = s * s / (k * k) * (tau - 2 * (1 - e1) / k + (1 - e2) / (2 * k))
     disc = np.exp(-(m_i + math.sqrt(v_i) * rng.standard_normal(1_000_000)))
-    check_mc("Vasicek P(0,5) Monte Carlo", float(disc.mean()), float(disc.std() / 1e3), 0.82082, closed, 5e-6)
+    check_mc("Vasicek P(0,5) Monte Carlo", float(disc.mean()), float(disc.std() / 1e3), 0.82082, closed, 5e-6, 3.2e-5, 5e-7)
 
     # CIR: dr = kappa (theta - r) dt + sigma sqrt(r) dW
     k, th, s, r0 = 1.5, 0.04, 0.2, 0.02
@@ -136,7 +138,16 @@ def affine_bonds(rng: np.random.Generator) -> None:
         integral += 0.5 * (rp + np.maximum(r_new, 0.0)) * dt
         r = r_new
     disc = np.exp(-integral)
-    check_mc("CIR P(0,5) Monte Carlo (Euler, 1000 steps)", float(disc.mean()), float(disc.std() / math.sqrt(n)), 0.83072, closed, 5e-6)
+    check_mc(
+        "CIR P(0,5) Monte Carlo (Euler, 1000 steps)",
+        float(disc.mean()),
+        float(disc.std() / math.sqrt(n)),
+        0.83072,
+        closed,
+        5e-6,
+        9.3e-5,
+        5e-7,
+    )
 
 
 # ----------------------------------------------------------------------------------------------
@@ -186,7 +197,9 @@ def barrier_boundary(rng: np.random.Generator) -> None:
         alive &= (x_new > lh) & (rng.random(n) > p_cross)
         x = x_new
     pay = math.exp(-r * T) * np.where(alive, np.maximum(np.exp(x) - K, 0.0), 0.0)
-    check_mc("down-and-out Monte Carlo (bridge-corrected)", float(pay.mean()), float(pay.std() / math.sqrt(n)), 9.112, dao, 5e-4)
+    check_mc(
+        "down-and-out Monte Carlo (bridge-corrected)", float(pay.mean()), float(pay.std() / math.sqrt(n)), 9.112, dao, 5e-4, 0.040, 5e-4
+    )
 
 
 # ----------------------------------------------------------------------------------------------
@@ -274,7 +287,7 @@ def one_touch(rng: np.random.Generator) -> None:
     # Paths not hit by 40y contribute at most e^{-2} each; add the exact conditional value at the horizon
     left = ~np.isfinite(hit_time)
     pay[left] = math.exp(-r * horizon) * (np.exp(x[left]) / (H / S0)) ** p_plus
-    check_mc("one-touch Monte Carlo E[exp(-r tau)]", float(pay.mean()), float(pay.std() / math.sqrt(n)), 0.7907, closed, 5e-4)
+    check_mc("one-touch Monte Carlo E[exp(-r tau)]", float(pay.mean()), float(pay.std() / math.sqrt(n)), 0.7907, closed, 5e-4, 0.0010, 5e-5)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -298,7 +311,7 @@ def range_accrual(rng: np.random.Generator) -> None:
     logS = math.log(S0) + np.cumsum((r - 0.5 * sig**2) / days + sig / math.sqrt(days) * z, axis=1)
     inside = (logS > math.log(L)) & (logS < math.log(U))
     pay = (inside * np.exp(-r * t)).sum(axis=1) / days
-    check_mc("Monte Carlo with daily fixings", float(pay.mean()), float(pay.std() / math.sqrt(n)), 0.5637, value, 5e-4)
+    check_mc("Monte Carlo with daily fixings", float(pay.mean()), float(pay.std() / math.sqrt(n)), 0.5637, value, 5e-4, 0.0008, 5e-5)
 
 
 def main() -> None:

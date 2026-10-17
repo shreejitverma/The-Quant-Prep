@@ -151,7 +151,7 @@ V \approx e^{-rT}\sum_{k=0}^{N-1} w_k\,\text{Re}\Big[\varphi_y\Big(\frac{k\pi}{B
 $$
 
 where $w_0 = \tfrac12$, $w_k = 1$ otherwise, and $U_k$ integrates the payoff against $\cos(k\pi(y - A)/(B - A))$.
-The range is set from the cumulants, $[A, B] = c_1 \pm L\sqrt{c_2 + \sqrt{c_4}}$ with $L$ around 10.
+The range is set from the cumulants, $[A, B] = c_1 \pm L\sqrt{c_2 + \sqrt{c_4}}$ with $L$ around 10 (Fang and Oosterlee); the repo's script uses $c_1 \pm L\sqrt{c_2}$, exact for Black-Scholes where $c_4 = 0$, with $c_2 \approx \theta T$ and a wider $L = 12$ for Heston.
 For smooth densities the error decays exponentially in $N$, so 64 to 256 terms reach machine-level accuracy; the remaining error is truncation of the range, controlled by $L$.
 For a wide range the call coefficients grow like $e^{B}$, so implementations price puts and use parity.
 
@@ -173,7 +173,7 @@ flowchart TD
 
 | Method | Strength | Weakness | Desk use |
 | :--- | :--- | :--- | :--- |
-| Fourier (FFT, COS, Lewis) | microseconds per European, exact to $10^{-10}$ | needs a characteristic function; Europeans only (Bermudans via COS with extra work) | calibrating Heston or Levy models to the whole surface |
+| Fourier (FFT, COS, Lewis) | a few hundred characteristic-function evaluations per European, exact to $10^{-10}$ | needs a characteristic function; Europeans only (Bermudans via COS with extra work) | calibrating Heston or Levy models to the whole surface |
 | PDE (theta-scheme) | early exercise, barriers, smooth Greeks off the grid | cost explodes beyond two or three dimensions | American and barrier books under local vol, convertible bonds, one-factor rates |
 | Binomial tree ([Binomial Trees](03-Binomial-Trees.md)) | simplest early exercise | first order, odd-even oscillation, a crude explicit scheme | benchmarks and interviews |
 | Monte Carlo ([Monte Carlo Pricing](10-Monte-Carlo-Pricing-and-Variance-Reduction.md)) | any dimension and path dependence | $1/\sqrt{N}$ noise, early exercise needs regression | baskets, autocallables, XVA |
@@ -244,7 +244,7 @@ Rannacher keeps second-order accuracy and is 50 times better on gamma than fully
 
 PSOR and the penalty method agree to $10^{-9}$ on the same grid: they solve the same complementarity problem.
 The early-exercise premium is $6.0903 - 5.5735 = 0.5168$.
-Exercise boundary from the 800-node grid: $S^* = 90.26$ with 0.1 years left, 86.72 at 0.25, 83.95 at 0.5 and 80.86 at one year, falling toward the perpetual value $2rK/(2r + \sigma^2) = 71.43$.
+Exercise boundary from the 800-node grid, read at grid nodes about 0.2 apart in spot: $S^* = 90.26$ with 0.1 years left, 86.72 at 0.25, 83.95 at 0.5 and 80.86 at one year, falling toward the perpetual value $2rK/(2r + \sigma^2) = 71.43$.
 
 ### Example 5: Carr-Madan parameters
 
@@ -269,7 +269,8 @@ Read it like a desk quant:
 - On-node error is aliasing.
   The discrete sum is periodic in $k$, Simpson's alternating weights halve the period to $\pi/\eta$, and the image of the deep in-the-money calls (worth about $S_0$) leaks back with weight $e^{-\alpha\pi/\eta}/3$.
   The prediction $-S_0e^{-\alpha\pi/\eta}/3$ matches the observed error to three digits: $-1.16 \times 10^{-4}$ for $\alpha = 1$, $-2.17 \times 10^{-7}$ for $\alpha = 1.5$, $-4.05 \times 10^{-10}$ for $\alpha = 2$ or for $\alpha = 1$ with $\eta = 0.125$.
-- $\eta = 1$ fails because the $v$-integrand is sampled too coarsely, not because of the strikes.
+- $\eta = 1$ fails for the same reason at a larger scale: the alias period $\pi/\eta = \pi$ puts the image at strike $100e^{-\pi} = 4.32$, whose call is worth less than $S_0$, and $-e^{-\alpha\pi/\eta}C(4.32)/3 = -0.287$ accounts for most of the observed $-0.279$.
+  Sampling the $v$-integrand too coarsely and aliasing are the same failure seen from the two sides of the transform.
 
 Heston ($\kappa = 2$, $\theta = 0.04$, $\xi = 0.5$, $\rho = -0.7$, $v_0 = 0.04$) by Lewis's formula gives 25.2368, 17.1401, 10.1546, 4.8662 and 1.7382 for strikes 80 to 120; the FFT reproduces them to $1.05 \times 10^{-3}$ (interpolation) and to $2.2 \times 10^{-7}$ at the node.
 
@@ -343,7 +344,7 @@ Two independent Fourier pricers agreeing to $10^{-10}$ is how you validate a cha
 > PSOR (projected Gauss-Seidel with over-relaxation) or the penalty method (add $\rho$ on nodes where $V < g$ and re-solve); both give 6.0874 on the same 200 x 200 grid, against a tree value of 6.0903.
 
 > [!question]- deriv-fd-penalty-vs-psor | Penalty method or PSOR in production?
-> Penalty: each iteration is one $O(n)$ tridiagonal solve and it converges in a few iterations, independent of grid size; PSOR's iteration count grows with the grid and is sequential.
+> Penalty: each iteration is one $O(n)$ tridiagonal solve and it typically converges in a few iterations, with little growth in grid size; PSOR's iteration count grows with the grid and is sequential.
 > PSOR is simpler and fine for small grids; both need a tolerance-based stopping rule.
 
 > [!question]- deriv-fd-exercise-boundary | How does the American put exercise boundary behave in time, and what is its long-maturity limit?

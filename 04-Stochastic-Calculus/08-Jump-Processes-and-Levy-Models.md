@@ -182,7 +182,8 @@ The 90%-110% forward-moneyness skew (vol at $0.9F$ minus vol at $1.1F$) shows th
 | :--- | ---: | ---: | ---: | ---: |
 | Skew, vol points | 6.30 | 2.09 | 1.14 | 0.39 |
 
-From 0.1 to 1 year the skew falls by a factor of about 5.5, between the $T^{-1/2}$ and $T^{-1}$ rates; fitting a two-year index skew with these parameters would leave the short end far too flat or the long end far too steep.
+From 0.1 to 1 year the skew falls by a factor of about 5.5, between the $T^{-1/2}$ and $T^{-1}$ rates.
+An index skew that decays closer to $T^{-1/2}$ cannot be matched at both ends by one parameter set: calibrated to the short end, the model's long-dated skew is too flat; calibrated to the long end, its short-dated skew is too steep.
 
 ### Kou and variance gamma by Fourier inversion
 
@@ -195,7 +196,7 @@ For all three models $\phi_1(-i) = e^{r}$ to machine precision (the martingale c
 
 "You are short a three-month ATM call ($S = K = 100$, $r = 5\%$, $\sigma = 20\%$) and delta-hedged. Spot gaps to 80. What do you lose?"
 Before: call $4.6150$, delta $0.5695$; after: call $0.0564$.
-The short call gains $4.56$ but the $0.5695$ shares lose $11.39$: net loss $6.83$, 1.48 times the premium collected and the equivalent of about 237.5 days of the option's theta.
+The short call gains $4.56$ but the $0.5695$ shares lose $11.39$: net loss $6.83$, 1.48 times the premium collected and about 237.5 times today's one-calendar-day theta, more than the option's whole remaining life of about 91 days.
 No rebalancing frequency helps: the move happens between two hedge times, which is exactly the risk a jump model prices and Black-Scholes does not.
 
 ## Pitfalls
@@ -204,7 +205,8 @@ No rebalancing frequency helps: the move happens between two hedge times, which 
 - Using $\lambda$ instead of $\lambda' = \lambda(1 + \bar{k})$ for the Poisson weights while discounting each Black-Scholes term at $r_n$ (or mixing the two conventions); check the series against Fourier or simulation.
 - Calibrating jumps to one long expiry and expecting the short end to fit: Levy smiles flatten like $T^{-1}$ in kurtosis, faster than markets.
 - Treating $P$ and $Q$ jump intensities as equal; option-implied crash frequencies are much higher than historical ones.
-- Evaluating complex logarithms and powers in characteristic functions on the wrong branch; Heston's "little trap" and VG's power both need care for long maturities.
+- Evaluating complex logarithms in characteristic functions on the wrong branch; Heston's original form (and Bates, which builds on it) needs the "little trap" form for long maturities.
+  The VG base $1 - iu\theta\nu + \tfrac12\sigma^2\nu u^2$ has positive real part, so its principal-branch power is safe.
 - Truncating the Fourier integral too early for short maturities, where $\phi$ decays slowly; validate against Black-Scholes with the lognormal characteristic function.
 - Claiming that hedging more often removes jump risk; it removes diffusive error only.
 

@@ -20,7 +20,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
-from pricing_core import bs_price, heston_call, heston_cf, implied_vol, lewis_call
+from pricing_core import bs_price, heston_call, heston_cf, implied_vol, lewis_call, self_test
 
 
 def show(label: str, value: float, expected: float, tol: float, fmt: str = ".4f") -> None:
@@ -209,6 +209,7 @@ def sabr_mc(F: float, K: np.ndarray, T: float, alpha: float, beta: float, rho: f
 
 
 def main() -> None:
+    self_test()  # the shared Lewis pricer must reproduce Black-Scholes before any Heston number is trusted
     # Note 09 Example 1 and cards deriv-heston-feller, deriv-heston-sde
     p = BASE
     print("Heston base: S0 = 100, r = 2%, q = 0,", p)

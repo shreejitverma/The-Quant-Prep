@@ -21,7 +21,7 @@ import math
 from collections.abc import Callable
 
 import numpy as np
-from pricing_core import bs_price, heston_call, heston_cf, norm_cdf, norm_pdf
+from pricing_core import bs_price, heston_call, heston_cf, norm_cdf, norm_pdf, self_test
 
 CharFn = Callable[[np.ndarray], np.ndarray]
 
@@ -342,6 +342,7 @@ def check_sci(label: str, value: float, expected: float) -> float:
 
 
 def main() -> None:
+    self_test()  # the Lewis pricer used for the Heston reference prices must reproduce Black-Scholes
     bs = bs_price(S0, K, T, R, SIG, Q)
     check("Black-Scholes call", bs, 10.4506, 5e-5)
     print()
@@ -452,6 +453,14 @@ def main() -> None:
         alias = -S0 * math.exp(-alpha * math.pi / eta) / 3.0
         check_sci(f"FFT ATM error alpha {alpha} eta {eta}", node_err, alias)
         print(f"  alias estimate -S0 exp(-alpha pi / eta) / 3 = {alias:.2e}")
+    # eta = 1: the alias period pi / eta = pi brings the image strike K e^{-pi} = 4.32 close enough that the image call is
+    # worth only 95.9, not S0; the estimate with that value accounts for most of the error at K = 100.
+    node_err = carr_madan(bs_cf_logret(R, Q, SIG, T), S0, strikes[2:3], R, T, eta=1.0)[0] - bs_k[2]
+    k_img = K * math.exp(-math.pi / 1.0)
+    alias_img = -math.exp(-1.5 * math.pi / 1.0) * bs_price(S0, k_img, T, R, SIG, Q) / 3.0
+    check("FFT eta 1.0: signed error at K=100", node_err, -0.279, 5e-4)
+    check("FFT eta 1.0: image strike K e^{-pi / eta}", k_img, 4.32, 5e-3)
+    check("FFT eta 1.0: alias estimate -e^{-alpha pi / eta} C(K e^{-pi / eta}) / 3", alias_img, -0.287, 5e-4)
     hes = np.asarray(heston_call(S0, strikes, T, R, Q, **HESTON))
     for k_, p_, ex in zip(strikes, hes, (25.2368, 17.1401, 10.1546, 4.8662, 1.7382), strict=True):
         check(f"Heston call K={k_:.0f} (Lewis)", p_, ex, 5e-5)

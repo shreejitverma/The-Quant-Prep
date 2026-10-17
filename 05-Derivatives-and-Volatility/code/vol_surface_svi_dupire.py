@@ -324,6 +324,30 @@ def main() -> None:
         show(f"  gamma = {gam}, T = {t}: implied ATM skew d sigma / dk", skew, e_skew, 5e-4)
         show(f"  gamma = {gam}, T = {t}: ratio", (loc[1] - loc[0]) / (imp[1] - imp[0]), e_ratio, 0.005, ".2f")
 
+    # Skew stickiness ratio of local vol from the same averaging heuristic: the ATM vol moves by (1/T) int_0^T L(t) dt
+    # per unit of log spot, L(t) the ATM local skew at time t; divided by the implied skew psi(T). Flat skew -> 2,
+    # skew ~ T^-gamma -> (2 - gamma) / (1 - gamma). Integrated with t = T u^5 to absorb the t^-gamma singularity.
+    # Backs Core concepts "Skew, smile dynamics and the forward smile" and card deriv-dupire-smile-dynamics.
+    nodes, weights = np.polynomial.legendre.leggauss(200)
+    u = 0.5 * (nodes + 1.0)
+    for gam, t, e_ssr in ((0.0, 0.001, 2.00), (0.4, 1e-6, 2.68)):
+        ts_ = t * u**5
+        loc_skew = (
+            np.sqrt(local_var_from_w(np.full_like(ts_, h), ts_, gam)) - np.sqrt(local_var_from_w(np.full_like(ts_, -h), ts_, gam))
+        ) / (2 * h)
+        avg_loc = float(np.sum(0.5 * weights * loc_skew * 5 * u**4))
+        tt = np.array(t)
+        imp = [math.sqrt(float(ssvi_w(np.array(x), tt, gam)[0]) / t) for x in (-h, h)]
+        show(
+            f"  gamma = {gam}, T = {t}: local-vol skew stickiness ratio (heuristic)",
+            avg_loc / ((imp[1] - imp[0]) / (2 * h)),
+            e_ssr,
+            0.005,
+            ".2f",
+        )
+    show("  power-law limit (2 - gamma) / (1 - gamma) at gamma = 0.4", (2 - 0.4) / (1 - 0.4), 2.67, 0.005, ".2f")
+    show("  power-law limit (2 - gamma) / (1 - gamma) at gamma = 0.5", (2 - 0.5) / (1 - 0.5), 3.00, 0.005, ".2f")
+
     # 6. Local-vol Monte Carlo reprices the surface: Example 6, card deriv-dupire-validation
     print("6. Local-vol Monte Carlo, 2 x 100,000 antithetic paths, 250 steps per year")
     snaps = local_vol_mc(100_000, 250, 1.0, seed=7)

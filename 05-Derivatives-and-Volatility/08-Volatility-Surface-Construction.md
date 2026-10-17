@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [implied-volatility-and-the-smile]
 est_hours: 4
-sources: [Jim Gatheral - The Volatility Surface - A Practitioner's Guide (Wiley 2006) chapters 1-3, Gatheral and Jacquier (2014) - Arbitrage-free SVI volatility surfaces - Quantitative Finance 14(1), Gatheral (2004) - A parsimonious arbitrage-free implied volatility parameterization - Global Derivatives conference presentation, Dupire (1994) - Pricing with a smile - Risk 7(1), Derman and Kani (1994) - Riding on a smile - Risk 7(2), Durrleman (2010) - From implied to spot volatilities - Finance and Stochastics 14(2), Roger Lee (2004) - The moment formula for implied volatility at extreme strikes - Mathematical Finance 14(3), Zeliade Systems (2009) - Quasi-explicit calibration of Gatheral's SVI model - white paper, Gyongy (1986) - Mimicking the one-dimensional marginal distributions of processes having an Ito differential - Probability Theory and Related Fields 71, Hagan Kumar Lesniewski and Woodward (2002) - Managing smile risk - Wilmott Magazine]
+sources: [Jim Gatheral - The Volatility Surface - A Practitioner's Guide (Wiley 2006) chapters 1-3, Gatheral and Jacquier (2014) - Arbitrage-free SVI volatility surfaces - Quantitative Finance 14(1), Gatheral (2004) - A parsimonious arbitrage-free implied volatility parameterization - Global Derivatives conference presentation, Dupire (1994) - Pricing with a smile - Risk 7(1), Derman and Kani (1994) - Riding on a smile - Risk 7(2), Durrleman (2010) - From implied to spot volatilities - Finance and Stochastics 14(2), Roger Lee (2004) - The moment formula for implied volatility at extreme strikes - Mathematical Finance 14(3), Zeliade Systems (2009) - Quasi-explicit calibration of Gatheral's SVI model - white paper, Gyongy (1986) - Mimicking the one-dimensional marginal distributions of processes having an Ito differential - Probability Theory and Related Fields 71, Hagan Kumar Lesniewski and Woodward (2002) - Managing smile risk - Wilmott Magazine, Lorenzo Bergomi - Stochastic Volatility Modeling (CRC 2016) chapter 2]
 ---
 
 # Volatility Surface Construction and Arbitrage
@@ -88,7 +88,7 @@ $$
 | $m$ | horizontal shift of the vertex | none |
 | $\sigma$ | smoothness of the vertex (ATM curvature) | $\sigma > 0$ |
 
-Asymptotically $w(k) \approx a - b\rho m + b(1 + \rho)k$ on the right and $a - b\rho m - b(1 - \rho)k$ on the left, so the wing slopes are $b(1 \pm \rho)$ and Lee's bound requires $b(1 + \lvert\rho\rvert) \le 2$.
+Asymptotically $w(k) \approx a - b(1 + \rho)m + b(1 + \rho)k$ on the right and $a + b(1 - \rho)m - b(1 - \rho)k$ on the left, so the wing slopes are $b(1 \pm \rho)$ and Lee's bound requires $b(1 + \lvert\rho\rvert) \le 2$.
 The minimum of $w$ is $a + b\sigma\sqrt{1 - \rho^2}$, attained at $k = m - \rho\sigma/\sqrt{1 - \rho^2}$.
 SVI is not arbitrage-free by construction: the five parameters can produce $g < 0$ with perfectly reasonable-looking smiles (the Vogt example below).
 Gatheral and Jacquier (2011, Quantitative Finance) show SVI is the large-maturity limit of Heston's implied variance, which is one reason it fits equity slices well.
@@ -101,7 +101,7 @@ $$
 w = a + d\,y + c\sqrt{y^2 + 1}, \qquad c = b\sigma, \quad d = \rho b\sigma.
 $$
 
-For fixed $(m, \sigma)$ the slice is linear in $(a, d, c)$, so the inner problem is a weighted least squares solve (with the box $0 \le c \le 4\sigma$, $\lvert d\rvert \le c$, $\lvert d\rvert \le 4\sigma - c$ if it binds), and only a two-dimensional outer search over $(m, \sigma)$ remains (Zeliade 2009).
+For fixed $(m, \sigma)$ the slice is linear in $(a, d, c)$, so the inner problem is a weighted least squares solve (with the box $0 \le c \le 4\sigma$, $\lvert d\rvert \le c$, $\lvert d\rvert \le 4\sigma - c$ if it binds; the box encodes $b(1 + \lvert\rho\rvert) \le 4$, so impose Lee's tighter $b(1 + \lvert\rho\rvert) \le 2$ separately if you need it), and only a two-dimensional outer search over $(m, \sigma)$ remains (Zeliade 2009).
 Recover $b = c/\sigma$ and $\rho = d/c$.
 This is far more robust than a five-parameter Nelder-Mead from a random start, which routinely stalls in flat valleys.
 
@@ -116,7 +116,7 @@ $$
 - No calendar arbitrage if $\partial_t\theta_t \ge 0$ and $0 \le \partial_\theta(\theta\varphi(\theta)) \le \frac{1}{\rho^2}\big(1 + \sqrt{1 - \rho^2}\big)\varphi(\theta)$.
 - No butterfly arbitrage if $\theta\varphi(\theta)(1 + \lvert\rho\rvert) < 4$ and $\theta\varphi(\theta)^2(1 + \lvert\rho\rvert) \le 4$.
 
-A popular choice is the power law $\varphi(\theta) = \eta\,\theta^{-\gamma}(1 + \theta)^{\gamma - 1}$: the ATM skew $\partial_k\sigma$ then scales like $\theta^{1/2 - \gamma}/\sqrt{t}$, about $t^{-\gamma}$ for short maturities, which matches the empirical decay of equity skew for $\gamma$ near $1/2$.
+A popular choice is the power law $\varphi(\theta) = \eta\,\theta^{-\gamma}(1 + \theta)^{\gamma - 1}$ (Gatheral and Jacquier 2014, equation 4.5), which they show is free of static arbitrage provided $\eta(1 + \lvert\rho\rvert) \le 2$: the ATM skew $\partial_k\sigma$ then scales like $\theta^{1/2 - \gamma}/\sqrt{t}$, about $t^{-\gamma}$ for short maturities, which matches the empirical decay of equity skew for $\gamma$ near $1/2$.
 Desks typically fit SSVI first (three surface parameters plus the ATM term structure), then refine slice by slice with raw SVI under arbitrage constraints.
 
 ### Dupire local volatility
@@ -154,7 +154,16 @@ $$
 
 For a constant local skew this gives the classical one-half rule.
 If the implied skew decays like $T^{-\alpha}$, then $L(T) \approx (2 - \alpha)\,\partial_k\sigma_{imp}(0, T)$: local skew is twice the implied skew for a flat skew term structure and about 1.5 times for the empirical equity decay $\alpha \approx 1/2$.
-That ratio is also how far the ATM vol moves per unit of log spot under local-vol dynamics, the regime in the table of [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md) where sticky strike, sticky delta and local vol are compared.
+The same heuristic gives the smile dynamics.
+When log spot moves by $\delta x$, the new ATM implied vol averages the local vol along the flat path at the new spot, so it moves by $\delta x\,\frac1T\int_0^TL(t)\,dt$.
+Dividing by the implied skew gives local vol's skew stickiness ratio
+
+$$
+R_T = \frac{\frac1T\int_0^TL(t)\,dt}{\partial_k\sigma_{imp}(0, T)} = 1 + \frac{\int_0^T\partial_k\sigma_{imp}(0, t)\,dt}{T\,\partial_k\sigma_{imp}(0, T)},
+$$
+
+which is 2 for a flat skew term structure (the short-maturity limit Bergomi derives for local vol) and $(2 - \alpha)/(1 - \alpha)$ for a $T^{-\alpha}$ decay: 3 at $\alpha = 1/2$.
+So the ATM vol moves by more than the local-to-implied skew ratio $2 - \alpha$; compare the sticky-strike ($R = 1$) and sticky-delta ($R = 0$) regimes in [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md).
 
 Two consequences of the projection:
 
@@ -263,7 +272,7 @@ Simulate $d\ln(S_t/F_t) = -\tfrac12\sigma_{loc}^2\,dt + \sigma_{loc}\,dW$ with 2
 | 1.0 | MC implied | 24.96 | 22.34 | 19.81 | 17.49 | 15.61 |
 | 1.0 | Input | 25.05 | 22.37 | 19.82 | 17.50 | 15.63 |
 
-The largest gap is about 0.08 vol points, the size of the time-discretisation and sampling error.
+The largest gap is about 0.08 vol points.
 This is the acceptance test for any local-vol implementation: if the model does not give back the surface it was built from, the surface or the Dupire code is wrong.
 
 ### Example 7: skew ratio and the forward smile
@@ -280,10 +289,11 @@ Local skew over implied skew at the money, from the same code:
 | power law ($\gamma = 0.4$) | 1 | -0.2465 | 1.89 |
 
 With a flat skew term structure the short-maturity ratio is the textbook 2; with skew decaying like $T^{-0.4}$ it tends to $2 - 0.4 = 1.6$.
+Integrating the same local skews in time gives the heuristic skew stickiness ratio $R_T$: 2.00 for the flat skew at $T = 0.001$, and 2.68 for the power law at $T = 10^{-6}$, against the limit $(2 - 0.4)/(1 - 0.4) = 2.67$.
 
 Forward smile: in the same simulation, a forward-start call on $S_1/S_{0.5}$ struck at 90%, 100% and 110% of the forward gives forward implied vols of about 23.46%, 20.93% and 19.52%, a 90-110 skew of about 3.94 vol points.
 Today's 6-month smile at the same moneyness is 21.88%, 18.51% and 15.55%, a skew of 6.33.
-Local vol predicts that in six months the 6-month skew will be about 38% flatter than it is today, although nothing in the market says so; a cliquet priced on this model undervalues its skew exposure.
+Local vol predicts that in six months the 6-month skew will be about 38% flatter than it is today, although nothing in the market says so; a cliquet or forward-start priced on this model is priced off that flatter forward skew.
 
 ## Pitfalls
 
@@ -291,7 +301,7 @@ Local vol predicts that in six months the 6-month skew will be about 38% flatter
 - Checking Durrleman's $g$ only at quoted strikes; arbitrage often hides between or beyond them, as in the Vogt slice.
 - Checking calendar arbitrage only at the money; wings cross first.
 - Computing Dupire from raw prices with finite differences: the second strike derivative in the denominator amplifies noise into negative or infinite local variances.
-- Flat-vol extrapolation of the wings: it violates the shape implied by Lee, kills the density in the tails and biases variance swap strikes low.
+- Flat-vol extrapolation of the wings: Lee allows it, but it imposes thin lognormal tails beyond the last quote, underprices the wings and biases variance swap strikes low.
 - Weighting every quote equally: a wide, stale wing quote then drags the ATM fit.
 - Re-fitting from scratch every day with a global optimiser: parameters jump between equivalent minima and the Greeks jump with them.
 - Using a wrong forward (stale dividend, ignored borrow): calls and puts then imply different vols and the fitter "sees" skew that is not there.
@@ -373,8 +383,8 @@ Local vol predicts that in six months the 6-month skew will be about 38% flatter
 > In the worked example 250 steps per year and 200,000 paths reproduce the surface within about 0.08 vol points.
 
 > [!question]- deriv-dupire-smile-dynamics | Under a local-vol model calibrated today, what happens to the smile when spot falls?
-> The smile moves the opposite way to the spot move (Hagan et al. 2002), and the ATM vol rises by the local skew, about $(2 - \alpha)$ times the implied skew per unit of log spot.
-> Real index smiles move less than that, so local-vol deltas over-hedge the spot-vol effect; desks estimate the skew stickiness ratio from history.
+> The smile moves the opposite way to the spot move (Hagan et al. 2002), and the ATM vol moves by the time-averaged local skew: a skew stickiness ratio $R_T = 1 + \int_0^T\psi(t)\,dt/(T\psi(T))$ times the implied skew $\psi$ per unit of log spot.
+> That is 2 for a flat skew term structure and $(2 - \alpha)/(1 - \alpha)$ for skew decaying like $T^{-\alpha}$ (2.68 computed for $\alpha = 0.4$ at $T = 10^{-6}$); desks compare it with the ratio estimated from history.
 
 ## In this repo and SDE-Interview-Prep
 
@@ -395,3 +405,4 @@ Local vol predicts that in six months the 6-month skew will be about 38% flatter
 - Zeliade Systems (2009), "Quasi-explicit calibration of Gatheral's SVI model", white paper.
 - I. Gyongy (1986), "Mimicking the one-dimensional marginal distributions of processes having an Ito differential", *Probability Theory and Related Fields* 71.
 - P. Hagan, D. Kumar, A. Lesniewski and D. Woodward (2002), "Managing smile risk", *Wilmott Magazine*, for the critique of local-vol smile dynamics.
+- Lorenzo Bergomi, *Stochastic Volatility Modeling* (CRC 2016), chapter 2, on local volatility and its skew stickiness ratio.

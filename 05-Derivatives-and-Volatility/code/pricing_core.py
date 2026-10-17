@@ -113,7 +113,7 @@ def lewis_call(cf_logret: CharFn, S: float, K: ArrayLike, T: float, r: float, q:
 
     With F = S exp((r - q) T), Y = X - (r - q) T has E[exp(Y)] = 1 and
     C = exp(-r T) [F - sqrt(F K) / pi * int_0^inf Re(exp(i u ln(F / K)) phi_Y(u - i/2)) / (u^2 + 1/4) du].
-    The integral is truncated at u_max and done by 400-point Gauss-Legendre; callers check it against Black-Scholes.
+    The integral is truncated at u_max and done by 400-point Gauss-Legendre; self_test() checks it against Black-Scholes.
     """
     K = np.atleast_1d(np.asarray(K, dtype=float))
     u = 0.5 * u_max * (_GL_NODES + 1.0)
@@ -135,8 +135,11 @@ def heston_call(
     return lewis_call(lambda u: heston_cf(u, T, r, q, kappa, theta, xi, rho, v0), S, K, T, r, q)
 
 
-def _self_test() -> None:
-    """Fourier pricer reproduces Black-Scholes when fed the lognormal characteristic function."""
+def self_test() -> None:
+    """Fourier pricer reproduces Black-Scholes when fed the lognormal characteristic function.
+
+    Called at the start of heston_sabr.py and fd_fourier_pricing.py, so every run validates the shared Lewis pricer.
+    """
     S, r, q, sig = 100.0, 0.03, 0.01, 0.25
     for T in (0.1, 1.0, 5.0):
         K = np.array([60.0, 90.0, 100.0, 110.0, 150.0])
