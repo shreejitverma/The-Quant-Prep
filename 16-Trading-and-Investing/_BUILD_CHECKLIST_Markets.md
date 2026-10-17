@@ -180,10 +180,10 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Wire `fut_desk` and `port_alloc` into Trading Lab catalog and automated unit test suite (`tools/tests/test_fut_port.py`).
 
 ### Phase 13: Event Case Files, Market History, Psychology, & Regulation
-- [ ] Implement structured event simulation engine `tools/qp/lab/events.py`.
-- [ ] Author 10 historical market crisis case files with primary-source citations and dates.
-- [ ] Author trading psychology, decision making, regulatory, and career curriculum notes.
-- [ ] Build web UI for historical event replays and pre-mortem analysis.
+- [x] Implement structured event simulation engine `tools/qp/lab/event_study.py`.
+- [x] Author 10 historical market crisis case files with primary-source citations and dates.
+- [x] Author trading psychology, decision making, regulatory, and career curriculum notes.
+- [x] Build web UI for historical event replays and pre-mortem analysis.
 
 ### Phase 14: Mastery Engine, Study Board, & Persona Planner
 - [ ] Implement holistic mastery scoring formula in `tools/qp/markets.py`.

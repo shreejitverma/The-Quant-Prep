@@ -175,15 +175,17 @@ class FuturesDeskEngine(TradingLabEngine):
             basis_pct = (basis_dollar / spot) * 100.0
             annualized_basis = (basis_pct / t) if t > 0 else 0.0
 
-            term_structure.append({
-                "days": days,
-                "years": round(t, 4),
-                "theoretical_future": round(f_theo, 4),
-                "market_future": round(f_market, 4),
-                "basis_dollar": round(basis_dollar, 4),
-                "basis_pct": round(basis_pct, 4),
-                "annualized_basis_pct": round(annualized_basis, 2),
-            })
+            term_structure.append(
+                {
+                    "days": days,
+                    "years": round(t, 4),
+                    "theoretical_future": round(f_theo, 4),
+                    "market_future": round(f_market, 4),
+                    "basis_dollar": round(basis_dollar, 4),
+                    "basis_pct": round(basis_pct, 4),
+                    "annualized_basis_pct": round(annualized_basis, 2),
+                }
+            )
 
         # Front month (T1) and next month (T2) calendar spread
         front_contract = term_structure[0]
@@ -194,9 +196,7 @@ class FuturesDeskEngine(TradingLabEngine):
         # Roll yield: - (F2 - F1) / F1 normalized
         roll_days_diff = next_contract["days"] - front_contract["days"]
         roll_yield_annual = (
-            -(calendar_spread / front_contract["market_future"]) * (365.0 / roll_days_diff) * 100.0
-            if roll_days_diff > 0
-            else 0.0
+            -(calendar_spread / front_contract["market_future"]) * (365.0 / roll_days_diff) * 100.0 if roll_days_diff > 0 else 0.0
         )
 
         # Cash-and-carry arbitrage simulation on front contract
@@ -224,17 +224,17 @@ class FuturesDeskEngine(TradingLabEngine):
             remaining_t = (n_steps - day) / 365.0
             # As time reaches 0, future converges directly to spot
             theoretical_f_now = cur_spot * math.exp(net_carry_rate * remaining_t)
-            basis_premium = (front_contract["market_future"] - front_contract["theoretical_future"]) * (
-                (n_steps - day) / n_steps
-            )
+            basis_premium = (front_contract["market_future"] - front_contract["theoretical_future"]) * ((n_steps - day) / n_steps)
             sim_fut = theoretical_f_now + basis_premium
 
-            convergence_path.append({
-                "day": day,
-                "spot": round(cur_spot, 2),
-                "future": round(sim_fut, 2),
-                "basis": round(sim_fut - cur_spot, 4),
-            })
+            convergence_path.append(
+                {
+                    "day": day,
+                    "spot": round(cur_spot, 2),
+                    "future": round(sim_fut, 2),
+                    "basis": round(sim_fut - cur_spot, 4),
+                }
+            )
 
             # Advance spot price for next day
             shock = rng.gauss(0, daily_vol)

@@ -56,10 +56,18 @@ It examines order types, algorithmic execution schedules, transaction cost analy
 
 ---
 
+## Pillar Notes
+
+- [[16-Trading-and-Investing/08-Execution-Microstructure/01-Order-Types-and-Algorithmic-Execution|01. Order Types and Algorithmic Execution]]: Exchange order types, qualifiers, VWAP/TWAP, Almgren-Chriss optimal trajectories, and TCA.
+- [[16-Trading-and-Investing/08-Execution-Microstructure/02-Regulation-Tax-and-Trading-Operations|02. Regulation, Tax, and Trading Operations]]: Reg NMS, MiFID II, Indian STT/taxation, trade breaks, middle-office reconciliation, and post-trade settlement.
+
+---
+
 ## Trading Lab Engines
 
 - `lob_sim`: High-fidelity Limit Order Book simulation engine evaluating order queue position, priority matching, and slippage.
 - `mm_quote`: Automated quoting and inventory rebalancing engine modeling adverse selection.
+- `tca_engine`: Transaction Cost Analysis engine calculating Implementation Shortfall, VWAP/TWAP benchmark slippage, and permanent vs temporary market impact.
 
 ---
 

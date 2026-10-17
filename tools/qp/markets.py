@@ -347,11 +347,7 @@ def evaluate_gate(
                 and reviewed_cards[cid].get("reps", 0) > 0
             )
             total_fa_reviewed = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and reviewed_cards[cid].get("reps", 0) > 0
+                1 for cid in reviewed_cards if cid.startswith(prefix) and cid in vault_cards and reviewed_cards[cid].get("reps", 0) > 0
             )
             reqs = [
                 GateRequirement(
@@ -410,11 +406,7 @@ def evaluate_gate(
                 and reviewed_cards[cid].get("reps", 0) > 0
             )
             total_val_reviewed = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and reviewed_cards[cid].get("reps", 0) > 0
+                1 for cid in reviewed_cards if cid.startswith(prefix) and cid in vault_cards and reviewed_cards[cid].get("reps", 0) > 0
             )
             reqs = [
                 GateRequirement(
@@ -473,11 +465,7 @@ def evaluate_gate(
                 and reviewed_cards[cid].get("reps", 0) > 0
             )
             total_vi_reviewed = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and reviewed_cards[cid].get("reps", 0) > 0
+                1 for cid in reviewed_cards if cid.startswith(prefix) and cid in vault_cards and reviewed_cards[cid].get("reps", 0) > 0
             )
             reqs = [
                 GateRequirement(
@@ -536,11 +524,7 @@ def evaluate_gate(
                 and reviewed_cards[cid].get("reps", 0) > 0
             )
             total_pf_reviewed = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and reviewed_cards[cid].get("reps", 0) > 0
+                1 for cid in reviewed_cards if cid.startswith(prefix) and cid in vault_cards and reviewed_cards[cid].get("reps", 0) > 0
             )
             reqs = [
                 GateRequirement(

@@ -55,6 +55,7 @@ Rather than treating these schools as mutually exclusive, Markets Mastery OS tea
   - [[16-Trading-and-Investing/07-Trading-Styles/Quant-Prop-Trading/02-Fair-Value-and-Microprice|02. Fair Value, Microprice, and Order Flow Imbalance]]
   - [[16-Trading-and-Investing/07-Trading-Styles/Quant-Prop-Trading/03-Order-Flow-and-Adverse-Selection|03. Order Flow Dynamics, Glosten-Milgrom, and Adverse Selection]]
   - [[16-Trading-and-Investing/07-Trading-Styles/Quant-Prop-Trading/04-Inventory-Risk-and-Skew|04. Inventory Risk, Avellaneda-Stoikov, and Skew Optimization]]
+  - [[16-Trading-and-Investing/07-Trading-Styles/Quant-Prop-Trading/05-Quant-and-Prop-Trading-Careers|05. Quantitative and Proprietary Trading Careers: Firm Models, Roles, Compensation, and Interviews]]
 - **Lab Engine**: `lob_sim` (Limit Order Book matching) and `mm_quote` (Avellaneda-Stoikov market maker).
 
 ---
@@ -69,6 +70,8 @@ Rather than treating these schools as mutually exclusive, Markets Mastery OS tea
   - [[16-Trading-and-Investing/07-Trading-Styles/Discretionary-Trading/02-Position-Sizing-and-Ruin|02. Position Sizing, Volatility Targeting, and Risk of Ruin]]
   - [[16-Trading-and-Investing/07-Trading-Styles/Discretionary-Trading/03-Stop-Logic-and-Trade-Management|03. Stop Logic, Trade Management, and Dynamic Invalidation]]
   - [[16-Trading-and-Investing/07-Trading-Styles/Discretionary-Trading/04-Setup-Taxonomy-and-Evidence|04. Trade Setup Taxonomy, Evidence Grading, and Academic Verification]]
+  - [[16-Trading-and-Investing/07-Trading-Styles/Discretionary-Trading/05-Trading-Psychology-and-Performance|05. Trading Psychology, Emotional Regulation, and Peak Performance]]
+  - [[16-Trading-and-Investing/07-Trading-Styles/Discretionary-Trading/06-Probability-and-Decision-Making|06. Probability, Cognitive Biases, and Decision-Making Under Uncertainty]]
 - **Lab Engine**: `replay_chart` (Bar-by-bar tape reading and order execution) and `journal_stats` (Trade performance and tilt analytics).
 
 ---

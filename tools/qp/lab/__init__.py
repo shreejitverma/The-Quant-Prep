@@ -5,6 +5,7 @@ and browser-based interactive market experiment playback.
 """
 
 from . import (  # noqa: F401
+    event_study,
     fut_desk,
     games,
     journal_stats,

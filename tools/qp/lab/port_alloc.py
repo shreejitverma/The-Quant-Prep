@@ -278,8 +278,7 @@ class PortfolioAllocatorEngine(TradingLabEngine):
 
             # Asset returns this month
             asset_rets = [
-                math.exp((monthly_drifts[i] - 0.5 * monthly_vols[i] ** 2) + monthly_vols[i] * z_corr[i]) - 1.0
-                for i in range(n_assets)
+                math.exp((monthly_drifts[i] - 0.5 * monthly_vols[i] ** 2) + monthly_vols[i] * z_corr[i]) - 1.0 for i in range(n_assets)
             ]
 
             # Update holdings value
@@ -314,14 +313,16 @@ class PortfolioAllocatorEngine(TradingLabEngine):
         # Asset summary breakdown table
         asset_breakdown = []
         for i in range(n_assets):
-            asset_breakdown.append({
-                "asset": assets[i],
-                "weight_pct": round(final_weights[i] * 100.0, 2),
-                "expected_return_pct": round(drifts[i] * 100.0, 2),
-                "volatility_pct": round(vols[i] * 100.0, 2),
-                "mcr": round(mcr[i], 4),
-                "trc_pct": round(trc_pct[i], 2),
-            })
+            asset_breakdown.append(
+                {
+                    "asset": assets[i],
+                    "weight_pct": round(final_weights[i] * 100.0, 2),
+                    "expected_return_pct": round(drifts[i] * 100.0, 2),
+                    "volatility_pct": round(vols[i] * 100.0, 2),
+                    "mcr": round(mcr[i], 4),
+                    "trc_pct": round(trc_pct[i], 2),
+                }
+            )
 
         avg_annual_turnover = (total_turnover / (start_capital * n_years)) * 100.0
 
