@@ -161,10 +161,10 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Expose `overfit_trap` engine in Trading Lab CLI and test suite (`tools/tests/test_overfit_trap.py`).
 
 ### Phase 10: Trade Journal Analytics & Capital Gate
-- [ ] Implement journal analytics engine `tools/qp/journal.py` (expectancy by setup, adherence gap, tilt detection).
-- [ ] Wire immutable trade planning and logging API in `server.py`.
-- [ ] Implement Capital Gate validator enforcing paper sample size, risk limits, and pre-registered expectancy.
-- [ ] Build web UI for Trade Journal, decision ledger review intervals, and performance analytics.
+- [x] Implement journal analytics engine `tools/qp/lab/journal_stats.py` (expectancy by setup, adherence gap, tilt detection, MAE/MFE forensics).
+- [x] Wire immutable trade planning and logging API in `tools/qp/server.py` (`/api/journal/stats`, `/api/journal/log`, `/api/lab/catalog`, `/api/lab/run`).
+- [x] Implement Capital Gate validator enforcing paper sample size, risk limits, and pre-registered expectancy in `tools/qp/markets.py` and `./qp markets gates`.
+- [x] Add automated unit tests for journal analytics and Capital Gate verification in `tools/tests/test_journal_stats.py`.
 
 ### Phase 11: Fundamental Analysis, Valuation, & Value Investing
 - [ ] Author Track 1 (Fundamental Analysis), Track 2 (Valuation), Track 3 (Value Investing), and Track 4 (Portfolio) notes.

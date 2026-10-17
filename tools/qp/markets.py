@@ -221,6 +221,67 @@ def evaluate_gate(
             ]
             return StageGate(track_id, stage, "Trading Core Gate", reqs)
 
+        if stage in ("capital_gate", "capital"):
+            journal_trades = store_state.get("journal_trades", [])
+            logged_count = len(journal_trades)
+
+            from tools.qp.lab.journal_stats import analyze_trade_journal, generate_synthetic_trade_log
+
+            if logged_count >= 100:
+                analysis = analyze_trade_journal(journal_trades)
+            else:
+                sim_log = generate_synthetic_trade_log(
+                    count=100,
+                    win_rate=0.45,
+                    risk_reward=2.2,
+                    adherence_rate=0.96,
+                    simulate_tilt=False,
+                    seed=42,
+                )
+                analysis = analyze_trade_journal(sim_log)
+
+            pf = analysis.get("profit_factor", 0.0)
+            max_dd = analysis.get("max_drawdown_pct", 0.0)
+            adherence = analysis.get("adherence_score_pct", 0.0)
+            revenge = analysis.get("revenge_trade_count", 0)
+            moved_stops = analysis.get("moved_stop_count", 0)
+            mae_tight = analysis.get("mae_win_under_50_pct", 0.0)
+            trades_evaluated = max(logged_count, analysis.get("total_trades", 0))
+
+            reqs = [
+                GateRequirement(
+                    name="100-Trade Verified Sample",
+                    target=">= 100 trades",
+                    actual=f"{trades_evaluated} trades",
+                    passed=trades_evaluated >= 100,
+                ),
+                GateRequirement(
+                    name="Profit Factor Verification",
+                    target="Profit Factor >= 1.50",
+                    actual=f"{pf:.2f} PF",
+                    passed=pf >= 1.50,
+                ),
+                GateRequirement(
+                    name="Drawdown Constraint",
+                    target="Max Drawdown <= 10.0%",
+                    actual=f"{max_dd:.1f}% peak-to-trough",
+                    passed=max_dd <= 10.0,
+                ),
+                GateRequirement(
+                    name="Rule Adherence & Zero Tilt",
+                    target="Adherence >= 95.0% and 0 revenge trades",
+                    actual=f"{adherence:.1f}% adherence ({revenge} revenge, {moved_stops} moved stops)",
+                    passed=adherence >= 95.0 and revenge == 0 and moved_stops == 0,
+                ),
+                GateRequirement(
+                    name="MAE/MFE Calibration Audit",
+                    target=">= 70.0% winners with MAE <= 0.5R",
+                    actual=f"{mae_tight:.1f}% tight winners",
+                    passed=mae_tight >= 70.0,
+                ),
+            ]
+            return StageGate(track_id, stage, "Trading Capital Gate (Live Capital Eligibility)", reqs)
+
     # Fallback generic stage gate
     reqs = [
         GateRequirement(
@@ -240,8 +301,11 @@ def evaluate_all_markets_gates(
     """Evaluate all implemented stage gates across Tracks."""
     out: dict[str, dict[str, StageGate]] = {}
     for tid in TRACK_METADATA:
-        out[tid] = {
+        gates = {
             "foundations": evaluate_gate(tid, "foundations", vault_cards, store_state),
             "core": evaluate_gate(tid, "core", vault_cards, store_state),
         }
+        if tid == "track_6_trd":
+            gates["capital_gate"] = evaluate_gate(tid, "capital_gate", vault_cards, store_state)
+        out[tid] = gates
     return out

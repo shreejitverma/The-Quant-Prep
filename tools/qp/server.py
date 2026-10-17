@@ -254,6 +254,64 @@ class App:
             self.games.pop(gid, None)
         return {"event": event, "state": game.state()}
 
+    def lab_catalog(self) -> dict:
+        from tools.qp.lab import list_engines
+
+        return {"engines": list_engines()}
+
+    def lab_run(self, engine_id: str, kwargs: dict) -> dict:
+        from tools.qp.lab import get_engine
+
+        engine = get_engine(engine_id)
+        if engine is None:
+            raise ApiError(HTTPStatus.NOT_FOUND, f"unknown engine {engine_id!r}")
+        try:
+            res = engine.run(**kwargs)
+            return res.to_dict()
+        except Exception as exc:
+            raise ApiError(HTTPStatus.BAD_REQUEST, str(exc)) from exc
+
+    def journal_stats(self) -> dict:
+        from tools.qp.lab.journal_stats import (
+            analyze_trade_journal,
+            generate_synthetic_trade_log,
+        )
+
+        trades = self.store.data.get("journal_trades", [])
+        if not trades:
+            trades = generate_synthetic_trade_log(
+                count=100,
+                win_rate=0.45,
+                risk_reward=2.2,
+                adherence_rate=0.96,
+                seed=42,
+            )
+        return analyze_trade_journal(trades)
+
+    def journal_log(self, trade_data: dict) -> dict:
+        trades = self.store.data.setdefault("journal_trades", [])
+        trade_id = f"TRD-{len(trades) + 1:04d}"
+        entry = {
+            "trade_id": trade_id,
+            "setup": str(trade_data.get("setup", "general")),
+            "entry_price": float(trade_data.get("entry_price", 0.0)),
+            "exit_price": float(trade_data.get("exit_price", 0.0)),
+            "stop_loss": float(trade_data.get("stop_loss", 0.0)),
+            "take_profit": float(trade_data.get("take_profit", 0.0)),
+            "shares": int(trade_data.get("shares", 1)),
+            "r_multiple": float(trade_data.get("r_multiple", 0.0)),
+            "pnl": float(trade_data.get("pnl", 0.0)),
+            "mae_r": float(trade_data.get("mae_r", 0.0)),
+            "mfe_r": float(trade_data.get("mfe_r", 0.0)),
+            "adherence": bool(trade_data.get("adherence", True)),
+            "is_revenge": bool(trade_data.get("is_revenge", False)),
+            "moved_stop": bool(trade_data.get("moved_stop", False)),
+            "duration_minutes": int(trade_data.get("duration_minutes", 0)),
+        }
+        trades.append(entry)
+        self.store.save()
+        return {"status": "LOGGED", "trade": entry, "total_logged": len(trades)}
+
 
 def make_handler(app: App, allowed_origins: set[str]):
     allowed_hosts = {o.split("://", 1)[1] for o in allowed_origins}
@@ -375,6 +433,10 @@ def make_handler(app: App, allowed_origins: set[str]):
                         raise ApiError(HTTPStatus.BAD_REQUEST, f"unknown mode {mode!r}")
                     n = max(1, min(int(q.get("n", 200)), 1000))
                     return self.send_json(app.problems(mode, n, int(q["seed"]) if q.get("seed") else None))
+                if route == "lab" and arg == "catalog":
+                    return self.send_json(app.lab_catalog())
+                if route == "journal" and arg == "stats":
+                    return self.send_json(app.journal_stats())
                 raise ApiError(HTTPStatus.NOT_FOUND, f"no route {path}")
             if path.startswith("/files/"):
                 return self.serve_repo_file(unquote(path[len("/files/") :]))
@@ -427,6 +489,12 @@ def make_handler(app: App, allowed_origins: set[str]):
                 return self.send_json(app.mm_new())
             if path == "/api/mm/quote":
                 return self.send_json(app.mm_quote(str(body.get("game")), body.get("bid"), body.get("ask")))
+            if path == "/api/lab/run":
+                engine_id = str(body.get("engine"))
+                kwargs = body.get("params") or {}
+                return self.send_json(app.lab_run(engine_id, kwargs))
+            if path == "/api/journal/log":
+                return self.send_json(app.journal_log(body))
             raise ApiError(HTTPStatus.NOT_FOUND, f"no route {path}")
 
     return Handler

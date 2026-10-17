@@ -4,7 +4,7 @@ Designed for standard-library execution, verifiable quantitative modeling,
 and browser-based interactive market experiment playback.
 """
 
-from . import games, lob_sim, market, mm_quote, opt_desk, overfit_trap, pos_sizing, replay_chart  # noqa: F401
+from . import games, journal_stats, lob_sim, market, mm_quote, opt_desk, overfit_trap, pos_sizing, replay_chart  # noqa: F401
 from .base import LabResult, Param, TradingLabEngine
 from .registry import get_engine, list_engines, register
 
