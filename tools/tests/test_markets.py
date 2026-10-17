@@ -168,6 +168,13 @@ class TestMarketsGates(unittest.TestCase):
             self.assertEqual(len(store.data.get("lab_history", [])), 2)
             self.assertEqual(store.data["lab_history"][1]["engine"], "mm_quote")
 
+            # A non-finite metric cannot be stored as JSON: the run is refused and nothing is recorded.
+            from tools.qp.state import StateError
+
+            with self.assertRaises(StateError):
+                store.record_lab_run("pos_sizing", {"median_final_equity": float("nan")})
+            self.assertEqual(len(store.data["lab_history"]), 2)
+
             fake_opt_vault = {f"mkt-opt-{i:03d}": {} for i in range(1, 129)}
             store.data["cards"] = {f"mkt-opt-{i:03d}": {"reps": 1} for i in range(65, 129)}
             gate = evaluate_gate("track_opt", "core", fake_opt_vault, store.data)

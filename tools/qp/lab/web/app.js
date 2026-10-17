@@ -307,7 +307,7 @@ function loadEngine(engId) {
 // so the format is chosen by metric key rather than by value.
 const INTEGER_METRICS = new Set([
   "executed_shares", "final_inventory", "front_contract_days", "level", "median_time_under_water_bars",
-  "moved_stops", "pre_mortem_score", "revenge_trades", "round_tripped_losses", "rounds_completed",
+  "moved_stops", "paths_capped_at_ceiling", "pre_mortem_score", "revenge_trades", "round_tripped_losses", "rounds_completed",
   "simulations_run", "total_market_volume", "total_quoting_stages", "total_rebalances", "total_trades",
   "total_trials", "trade_plans_executed", "trades_executed",
 ]);

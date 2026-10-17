@@ -328,6 +328,10 @@ class Store:
         return row
 
     def record_lab_run(self, engine_id: str, metrics: dict) -> dict:
+        """Append one lab run; StateError on a non-finite metric, which JSON cannot represent."""
+        for name, val in metrics.items():
+            if isinstance(val, float) and not math.isfinite(val):
+                raise StateError(f"lab run {engine_id!r} produced non-finite metric {name!r}: {val!r}")
         row = {
             "engine": engine_id,
             "metrics": dict(metrics),

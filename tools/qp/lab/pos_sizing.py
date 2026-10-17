@@ -13,6 +13,10 @@ from typing import Any
 from .base import LabResult, Param, TradingLabEngine
 from .registry import register
 
+# Paths that compound past this stop there: it exceeds global financial wealth, and compounding
+# further overflows float equity to inf, which turns drawdowns and the summary statistics into NaN.
+EQUITY_CEILING = 1e15
+
 
 class PositionSizingEngine(TradingLabEngine):
     @property
@@ -146,6 +150,7 @@ class PositionSizingEngine(TradingLabEngine):
         max_drawdowns = []
         time_under_water_list = []
         ruin_count = 0
+        capped_count = 0
         sample_paths = []
 
         for sim_idx in range(n_sims):
@@ -171,6 +176,9 @@ class PositionSizingEngine(TradingLabEngine):
                 equity += pnl
                 if equity <= 0:
                     equity = 0.0
+                capped = equity >= EQUITY_CEILING
+                if capped:
+                    equity = EQUITY_CEILING
 
                 if equity > peak:
                     peak = equity
@@ -185,7 +193,8 @@ class PositionSizingEngine(TradingLabEngine):
                     sim_max_dd = dd
 
                 equity_curve.append(equity)
-                if equity <= 0:
+                if equity <= 0 or capped:
+                    capped_count += capped
                     break
 
             final_equities.append(equity)
@@ -218,6 +227,7 @@ class PositionSizingEngine(TradingLabEngine):
             "median_time_under_water_bars": median_tuw,
             "ruin_probability": round(ruin_probability, 4),
             "simulations_run": n_sims,
+            "paths_capped_at_ceiling": capped_count,
         }
 
         summary = (

@@ -1,9 +1,10 @@
 """Unit tests for tools/qp/lab/base.py and registry."""
 
+import json
 import unittest
 
 from tools.qp.lab.base import Param, TradingLabEngine
-from tools.qp.lab.pos_sizing import PositionSizingEngine
+from tools.qp.lab.pos_sizing import EQUITY_CEILING, PositionSizingEngine
 from tools.qp.lab.registry import get_engine, list_engines
 
 
@@ -76,6 +77,24 @@ class TestTradingLabBase(unittest.TestCase):
         self.assertIn("kelly_fraction", res.metrics)
         self.assertIn("ruin_probability", res.metrics)
         self.assertAlmostEqual(res.metrics["kelly_fraction"], 0.25)
+
+    def test_pos_sizing_at_web_form_maximums_stays_finite(self):
+        # Regression: these are the web form maximums. Compounding 11x per win overflowed equity to
+        # inf, and the run returned NaN equity (invalid JSON) and a 94.8% ruin rate at a 99% win rate.
+        res = get_engine("pos_sizing").run(
+            account_capital=1e7,
+            win_rate=0.99,
+            win_loss_ratio=20.0,
+            risk_per_trade_pct=0.5,
+            num_trades=1000,
+            num_simulations=1000,
+        )
+        json.dumps(res.to_dict(), allow_nan=False)  # RFC 8259 has no NaN or Infinity
+        self.assertLessEqual(res.metrics["median_final_equity"], EQUITY_CEILING)
+        self.assertGreater(res.metrics["paths_capped_at_ceiling"], 0)
+        # Oracle: a path reaches the ceiling after about 8 straight wins (11**8 > 1e15 / 1e7), and
+        # only a loss before that can draw it down 50%, so ruin is near 1 - 0.99**8 = 7.7%.
+        self.assertLess(res.metrics["ruin_probability"], 0.2)
 
 
 if __name__ == "__main__":
