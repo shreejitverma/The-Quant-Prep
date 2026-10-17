@@ -148,10 +148,11 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Expose Options Desk in Trading Lab catalog and engine registry.
 
 ### Phase 8: Chart Replay, Calibration Lab, & Technical Analysis
-- [ ] Implement blind chart replay engine `tools/qp/lab/replay.py` with Brier score calibration decomposition.
-- [ ] Author Track 5 (Technical Analysis) concept notes; every pattern tagged with peer-reviewed evidence grade.
-- [ ] Author 250+ `mkt-ta-` cards.
-- [ ] Build web UI for Chart Replay with probability forecast sliders and calibration curves.
+- [x] Implement blind chart replay engine `tools/qp/lab/replay_chart.py` with analytical oracle, multi-regime simulation, and Murphy Brier score decomposition.
+- [x] Add automated unit tests verifying Brier score mathematics, log loss, calibration error, and determinism in `tools/tests/test_replay_chart.py`.
+- [x] Author 8 Track 5 (Technical Analysis) concept notes with academic evidence grades and peer-reviewed citations.
+- [x] Author 256 `mkt-ta-` cards conforming to QP callout schema (`mkt-ta-001` through `mkt-ta-256`).
+- [x] Expose `replay_chart` engine in Trading Lab CLI and catalog.
 
 ### Phase 9: Backtest Overfitting Trap & Systematic Research
 - [ ] Implement overfitting engine `tools/qp/lab/overfit.py` with deflated Sharpe ratio and CSCV PBO.

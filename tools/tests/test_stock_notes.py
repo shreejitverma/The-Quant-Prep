@@ -12,6 +12,7 @@ spec = importlib.util.spec_from_file_location(
     REPO_ROOT / "16-Trading-and-Investing" / "scripts" / "stock_notes.py",
 )
 stock_notes = importlib.util.module_from_spec(spec)
+sys.modules["stock_notes"] = stock_notes
 spec.loader.exec_module(stock_notes)
 
 

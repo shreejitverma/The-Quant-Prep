@@ -94,5 +94,6 @@ Rather than treating these schools as mutually exclusive, Markets Mastery OS tea
 ## Navigation
 
 - **Master Hub**: [[16-Trading-and-Investing/MARKETS_HUB|Markets Mastery OS Master Hub]]
+- **Technical Analysis Pillar**: [[16-Trading-and-Investing/07-Trading-Styles/Technical-Analysis/_Index_Technical_Analysis|Technical Analysis and Price Action Index]]
 - **Stock Research Database**: [[16-Trading-and-Investing/Investing/Stock Research/_Index_Stock Research|Global Stock Research Vault]]
 - **Execution Microstructure**: [[16-Trading-and-Investing/08-Execution-Microstructure/_Index_Execution|Execution and Microstructure Index]]
