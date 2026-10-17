@@ -22,8 +22,8 @@ Sizing, risk and the trader's judgement: what separates a senior trader from a s
 | 04 | [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md) | TRQ | advanced | 4 | draft | 10 |
 | 05 | [Drawdowns and Risk Limits](05-Drawdowns-and-Risk-Limits.md) | TRQ | core | 4 | draft | 10 |
 | 06 | [P&L Attribution and Greek Risk](06-PnL-Attribution-and-Greek-Risk.md) | TDQ | core | 4 | draft | 10 |
-| 07 | [Game Theory for Traders](07-Game-Theory-for-Traders.md) | T | advanced | 3 | seed | 0 |
-| 08 | [Macro and Market Awareness](08-Macro-and-Market-Awareness.md) | T | core | 2 | seed | 0 |
+| 07 | [Game Theory for Traders](07-Game-Theory-for-Traders.md) | T | advanced | 3 | solid | 20 |
+| 08 | [Macro and Market Awareness](08-Macro-and-Market-Awareness.md) | T | core | 2 | solid | 17 |
 | 09 | [Trading Intuition and Judgement](09-Trading-Intuition-and-Judgement.md) | T | core | 3 | solid | 12 |
 | 10 | [Risk Factor Modelling](10-Risk-Factor-Modelling.md) | RDQ | advanced | 4 | draft | 10 |
 | 11 | [Scenario Generation](11-Scenario-Generation.md) | RQ | advanced | 4 | draft | 10 |

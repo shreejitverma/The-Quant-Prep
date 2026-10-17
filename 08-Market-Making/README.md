@@ -21,14 +21,14 @@ The [Quant Dev Market Making Guide](Quant-Dev-MM-Guide/README.md) is the systems
 | 01 | [Market Making Fundamentals](01-Market-Making-Fundamentals.md) | TRD | core | 3 | solid | 12 |
 | 02 | [Fair Value and Theoretical Pricing](02-Fair-Value-and-Theoretical-Pricing.md) | TR | core | 3 | solid | 11 |
 | 03 | [Inventory Risk and Avellaneda-Stoikov](03-Inventory-Risk-and-Avellaneda-Stoikov.md) | TR | core | 5 | solid | 11 |
-| 04 | [Gueant-Lehalle-Fernandez-Tapia and Extensions](04-Gueant-Lehalle-and-Extensions.md) | R | senior | 3 | seed | 0 |
+| 04 | [Gueant-Lehalle-Fernandez-Tapia and Extensions](04-Gueant-Lehalle-and-Extensions.md) | R | senior | 3 | solid | 16 |
 | 05 | [Quote Management: Skew, Width and Size](05-Quote-Management-Skew-Width-and-Size.md) | T | core | 3 | solid | 11 |
 | 06 | [Hedging and Risk for Market Makers](06-Hedging-and-Risk-for-Market-Makers.md) | T | core | 3 | solid | 12 |
 | 07 | [Options Market Making](07-Options-Market-Making.md) | T | core | 5 | solid | 13 |
-| 08 | [ETF and Futures Market Making](08-ETF-and-Futures-Market-Making.md) | T | advanced | 3 | seed | 0 |
+| 08 | [ETF and Futures Market Making](08-ETF-and-Futures-Market-Making.md) | T | advanced | 3 | solid | 17 |
 | 09 | [Market Making P&L Attribution and Markouts](09-Market-Making-PnL-Attribution-and-Markouts.md) | TR | core | 3 | solid | 13 |
 | 10 | [Market Making Games and Trading Simulations](10-Market-Making-Games.md) | T | core | 4 | solid | 12 |
-| 11 | [Market Making Systems Architecture](11-Market-Making-Systems-Architecture.md) | D | core | 4 | seed | 0 |
+| 11 | [Market Making Systems Architecture](11-Market-Making-Systems-Architecture.md) | D | core | 4 | solid | 17 |
 | 12 | [Market Making Problem Set](12-Market-Making-Problem-Set.md) | TR | core | 5 | solid | 42 |
 
 ### Supporting material
