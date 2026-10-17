@@ -244,7 +244,7 @@ PERSONA_CONFIGS = {
     },
 }
 
-PERSONA_CHOICES: list[str] = ["holistic", *list(PERSONA_CONFIGS.keys())]
+PERSONA_CHOICES: list[str] = list(PERSONA_CONFIGS)
 
 
 def get_card_count_for_prefix(cards: dict[str, Any], prefix: str) -> int:

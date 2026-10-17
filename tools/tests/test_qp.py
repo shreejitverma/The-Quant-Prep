@@ -601,6 +601,51 @@ class Api(TempRepo):
         self.assertEqual(self.store().data["drills"][-1]["mode"], "mm")
         self.assertEqual(self.call("/api/mm/quote", {"game": g["game"], "bid": 13, "ask": 15})[0], 404)
 
+    def journal_trade(self, r_multiple, pnl):
+        return {"r_multiple": r_multiple, "pnl": pnl, "mae_r": 0.2, "mfe_r": max(r_multiple, 0.0) + 0.2, "adherence": True}
+
+    def test_losing_journal_fails_capital_gate(self):
+        from tools.qp.markets import evaluate_gate
+
+        # 30 wins at +1R and 70 losses at -1R: net -40R, so PF = 30 / 70 and expectancy = -0.4R.
+        # $10 per R peaks equity at 50300 before the 700 loss run: drawdown 700 / 50300 = 1.39%,
+        # so only the profit factor can fail the gate.
+        for i in range(100):
+            r = 1.0 if i < 30 else -1.0
+            self.assertEqual(self.call("/api/journal/log", self.journal_trade(r, 10.0 * r))[0], 200)
+        code, stats = self.call("/api/journal/stats")
+        self.assertEqual(code, 200)
+        self.assertEqual(stats["total_trades"], 100)
+        self.assertAlmostEqual(stats["profit_factor"], round(30 / 70, 2))
+        self.assertAlmostEqual(stats["expectancy_r"], -0.4)
+        self.assertAlmostEqual(stats["max_drawdown_pct"], round(700 / 50300 * 100, 2))
+        self.assertEqual(stats["capital_gate"]["req_profit_factor_1_5"], "FAIL")
+        self.assertEqual(stats["capital_gate"]["overall_status"], "CAPITAL_GATE_FAILED")
+        self.assertFalse(evaluate_gate("track_6_trd", "capital_gate", store_state=self.store().data).passed)
+
+    def test_journal_log_rejects_malformed_trades(self):
+        bad = [
+            {**self.journal_trade(1.0, 10.0), "r_multiple": "abc"},
+            {**self.journal_trade(1.0, 10.0), "pnl": "nan"},
+            {**self.journal_trade(1.0, 10.0), "mae_r": "inf"},
+            {**self.journal_trade(1.0, 10.0), "shares": "many"},
+            {**self.journal_trade(1.0, 10.0), "adherence": "maybe"},
+            self.journal_trade(1.0, -10.0),
+            {"r_multiple": 1.0},
+        ]
+        for body in bad:
+            code, res = self.call("/api/journal/log", body)
+            self.assertEqual(code, 400, body)
+            self.assertIn("error", res)
+        self.assertEqual(self.store().data.get("journal_trades", []), [])
+
+    def test_lab_run_rejects_non_finite_param(self):
+        for value in ("nan", "inf", "-inf"):
+            code, res = self.call("/api/lab/run", {"engine": "pos_sizing", "params": {"win_rate": value}})
+            self.assertEqual(code, 400, value)
+            self.assertIn("finite", res["error"])
+        self.assertEqual(self.store().data.get("lab_history", []), [])
+
 
 if __name__ == "__main__":
     unittest.main()

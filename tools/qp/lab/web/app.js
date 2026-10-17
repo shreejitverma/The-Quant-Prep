@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data && data.metrics && Object.keys(data.metrics).length > 0) {
           const metricsList = Object.entries(data.metrics).map(([k, v]) => ({
             label: k.replace(/_/g, " ").toUpperCase(),
-            value: typeof v === "number" ? v.toFixed(3) : String(v),
+            value: formatMetric(k, v),
             sub: "Backend engine verification",
           }));
           renderMetrics(metricsList);
@@ -302,6 +302,13 @@ function loadEngine(engId) {
 }
 
 // Helper to set metric cards
+// Backend metrics: integer counts stay integers, *_pct values gain a "%" sign.
+function formatMetric(key, value) {
+  if (typeof value !== "number") return String(value);
+  const text = Number.isInteger(value) ? String(value) : value.toFixed(3);
+  return key.endsWith("_pct") ? text + "%" : text;
+}
+
 function renderMetrics(cards) {
   const container = document.getElementById("metrics-container");
   container.innerHTML = "";

@@ -124,6 +124,21 @@ def generate_synthetic_trade_log(
     return trades
 
 
+def _stored_bool(val: Any) -> bool:
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str) and val.strip().lower() in ("true", "false"):
+        return val.strip().lower() == "true"
+    raise ValueError(f"expected a boolean, got {val!r}")
+
+
+def _profit_factor(gross_gain: float, gross_loss: float) -> float:
+    """Gross gain over gross loss; 0 with no gains, and a 999 cap for a journal with gains and no losses."""
+    if gross_gain <= 0:
+        return 0.0
+    return gross_gain / gross_loss if gross_loss > 0 else 999.0
+
+
 def _coerce_trade_record(item: TradeRecord | dict[str, Any]) -> TradeRecord:
     if isinstance(item, TradeRecord):
         return item
@@ -135,13 +150,13 @@ def _coerce_trade_record(item: TradeRecord | dict[str, Any]) -> TradeRecord:
         stop_loss=float(item.get("stop_loss", 0.0)),
         take_profit=float(item.get("take_profit", 0.0)),
         shares=int(item.get("shares", 1)),
-        r_multiple=float(item.get("r_multiple", 0.0)),
-        pnl=float(item.get("pnl", 0.0)),
-        mae_r=float(item.get("mae_r", 0.0)),
-        mfe_r=float(item.get("mfe_r", 0.0)),
-        adherence=bool(item.get("adherence", item.get("adhered_to_rules", True))),
-        is_revenge=bool(item.get("is_revenge", False)),
-        moved_stop=bool(item.get("moved_stop", False)),
+        r_multiple=float(item["r_multiple"]),
+        pnl=float(item["pnl"]),
+        mae_r=float(item["mae_r"]),
+        mfe_r=float(item["mfe_r"]),
+        adherence=_stored_bool(item["adherence"]),
+        is_revenge=_stored_bool(item.get("is_revenge", False)),
+        moved_stop=_stored_bool(item.get("moved_stop", False)),
         duration_minutes=int(item.get("duration_minutes", 0)),
     )
 
@@ -161,18 +176,19 @@ def analyze_trade_journal(trades: list[TradeRecord | dict[str, Any]], initial_ca
     loss_count = len(losses)
     win_rate = win_count / total_trades if total_trades > 0 else 0.0
 
-    gross_profit = sum(t.pnl for t in wins)
-    gross_loss = abs(sum(t.pnl for t in losses))
-    net_pnl = gross_profit - gross_loss
-    profit_factor = gross_profit / gross_loss if gross_loss > 0 else 999.0
+    # Wins, losses and profit factor are all measured in R, so a trade cannot be a win by one field and a loss by another.
+    gross_profit_r = sum(t.r_multiple for t in wins)
+    gross_loss_r = abs(sum(t.r_multiple for t in losses))
+    net_pnl = sum(t.pnl for t in trades)
+    profit_factor = _profit_factor(gross_profit_r, gross_loss_r)
 
     avg_win_r = sum(t.r_multiple for t in wins) / win_count if win_count > 0 else 0.0
-    avg_loss_r = abs(sum(t.r_multiple for t in losses) / loss_count) if loss_count > 0 else 1.0
+    avg_loss_r = abs(sum(t.r_multiple for t in losses) / loss_count) if loss_count > 0 else 0.0
     payoff_ratio = avg_win_r / avg_loss_r if avg_loss_r > 0 else 0.0
 
-    # Mathematical Expectancy in R-multiples: E = W * AvgWin_R - (1 - W) * AvgLoss_R
-    expectancy_r = (win_rate * avg_win_r) - ((1.0 - win_rate) * avg_loss_r)
+    # Expectancy is the mean R per trade, so breakevens count as 0R rather than as losses.
     total_r = sum(t.r_multiple for t in trades)
+    expectancy_r = total_r / total_trades
 
     # Equity curve and maximum drawdown calculation
     equity = initial_capital
@@ -211,9 +227,7 @@ def analyze_trade_journal(trades: list[TradeRecord | dict[str, Any]], initial_ca
         s_trades = [t for t in trades if t.setup == s]
         s_wins = [t for t in s_trades if t.r_multiple > 0]
         s_losses = [t for t in s_trades if t.r_multiple < 0]
-        s_gp = sum(t.pnl for t in s_wins)
-        s_gl = abs(sum(t.pnl for t in s_losses))
-        s_pf = s_gp / s_gl if s_gl > 0 else 999.0
+        s_pf = _profit_factor(sum(t.r_multiple for t in s_wins), abs(sum(t.r_multiple for t in s_losses)))
         s_wr = len(s_wins) / len(s_trades) if s_trades else 0.0
         s_exp = sum(t.r_multiple for t in s_trades) / len(s_trades) if s_trades else 0.0
         setup_stats[s] = {

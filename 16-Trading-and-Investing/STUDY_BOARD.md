@@ -10,7 +10,7 @@ tags: [study-board, mastery-dashboard, capital-gate, progress, analytics]
 # Markets Mastery OS - Live Study Board & Progression Dashboard
 
 Markets Mastery OS integrates quantitative finance, market microstructure, and systematic strategy research.
-This study board tracks real-time progress across 19 curriculum pillars, 11 simulation engines, and 39 automated stage gates (last updated: 2026-10-17 02:44 UTC).
+This study board tracks real-time progress across 19 curriculum pillars, 11 simulation engines, and 39 automated stage gates (last updated: 2026-10-17 18:23 UTC).
 
 ---
 
@@ -124,4 +124,4 @@ The Trading Lab contains 11 pure-Python standard-library simulation engines loca
 - **Trading Styles**: [[16-Trading-and-Investing/07-Trading-Styles/_Index_Trading_Styles|Trading Styles Guide]]
 - **Execution Microstructure**: [[16-Trading-and-Investing/08-Execution-Microstructure/_Index_Execution|Execution]]
 - **Crisis Case Studies**: [[16-Trading-and-Investing/20-History-and-Events/_Index_History_Events|Historical Crises]]
-- **Interactive Web Lab**: Run `./qp serve` and navigate to `http://localhost:8000/lab/`
+- **Interactive Web Lab**: Run `./qp serve` and navigate to `http://localhost:8765/lab/`

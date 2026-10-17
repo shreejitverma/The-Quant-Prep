@@ -82,7 +82,7 @@ Markets Mastery OS develops four distinct trading personas:
 ## Interactive Trading Lab
 
 The Trading Lab provides eleven pure-Python standard-library simulation and analytics engines.
-Each engine runs locally via the `./qp lab run <engine>` CLI or via the web dashboard at `http://localhost:8000/lab/` under `./qp serve`.
+Each engine runs locally via the `./qp lab run <engine>` CLI or via the web dashboard at `http://localhost:8765/lab/` under `./qp serve`.
 
 | Engine ID | Name | Core Focus | Command |
 |---|---|---|---|

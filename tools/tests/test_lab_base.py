@@ -53,6 +53,16 @@ class TestTradingLabBase(unittest.TestCase):
         self.assertAlmostEqual(metrics["avg_loss"], -50.0)
         self.assertAlmostEqual(metrics["expectancy"], 37.5)
 
+    def test_trade_expectancy_counts_breakevens_as_zero(self):
+        # Mean of [10, 0, -10] is 0; treating the breakeven as a loss would give -3.33.
+        self.assertEqual(TradingLabEngine.calculate_trade_metrics([10.0, 0.0, -10.0])["expectancy"], 0.0)
+
+    def test_param_cast_rejects_non_finite_floats(self):
+        p = Param(name="x", param_type="float", default=0.5, description="x", min_val=0.0, max_val=1.0)
+        for raw in ("nan", float("nan"), "inf", float("-inf")):
+            with self.assertRaises(ValueError):
+                p.cast(raw)
+
     def test_registry_and_pos_sizing(self):
         engines = list_engines()
         self.assertTrue(any(e["id"] == "pos_sizing" for e in engines))

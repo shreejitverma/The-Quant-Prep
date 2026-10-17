@@ -191,7 +191,7 @@ def build_study_board_markdown(
             "- **Trading Styles**: [[16-Trading-and-Investing/07-Trading-Styles/_Index_Trading_Styles|Trading Styles Guide]]",
             "- **Execution Microstructure**: [[16-Trading-and-Investing/08-Execution-Microstructure/_Index_Execution|Execution]]",
             "- **Crisis Case Studies**: [[16-Trading-and-Investing/20-History-and-Events/_Index_History_Events|Historical Crises]]",
-            "- **Interactive Web Lab**: Run `./qp serve` and navigate to `http://localhost:8000/lab/`",
+            "- **Interactive Web Lab**: Run `./qp serve` and navigate to `http://localhost:8765/lab/`",
             "",
         ]
     )

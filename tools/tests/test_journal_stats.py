@@ -169,6 +169,23 @@ class TestJournalStats(unittest.TestCase):
         gate_full = evaluate_gate("track_6_trd", "capital_gate", store_state={"journal_trades": dict_trades})
         self.assertTrue(gate_full.passed)
 
+    def test_expectancy_is_mean_r_and_profit_factor_uses_r(self):
+        from tools.qp.lab.journal_stats import analyze_trade_journal
+
+        def trade(r, pnl):
+            return {"r_multiple": r, "pnl": pnl, "mae_r": 0.2, "mfe_r": max(r, 0.0) + 0.2, "adherence": True}
+
+        # +2R, 0R, -1R: mean R = 1/3, PF = 2R gained / 1R lost = 2.
+        stats = analyze_trade_journal([trade(2.0, 200.0), trade(0.0, 0.0), trade(-1.0, -100.0)])
+        self.assertAlmostEqual(stats["expectancy_r"], round(1 / 3, 3))
+        self.assertAlmostEqual(stats["profit_factor"], 2.0)
+        self.assertEqual(stats["breakeven_count"], 1)
+
+        # No gains at all means a profit factor of 0, never a passing sentinel.
+        losing = analyze_trade_journal([trade(-1.0, -100.0), trade(0.0, 0.0)])
+        self.assertEqual(losing["profit_factor"], 0.0)
+        self.assertAlmostEqual(losing["expectancy_r"], -0.5)
+
     def test_server_journal_stats_empty_and_logging(self):
         import tempfile
         from pathlib import Path
@@ -196,6 +213,8 @@ class TestJournalStats(unittest.TestCase):
                     "shares": 100,
                     "r_multiple": 2.5,
                     "pnl": 500.0,
+                    "mae_r": 0.3,
+                    "mfe_r": 2.8,
                     "adherence": "true",
                     "is_revenge": "false",
                 }

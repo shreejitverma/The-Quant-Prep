@@ -35,6 +35,8 @@ class Param:
             return val
         if self.param_type == "float":
             val = float(raw_val)
+            if not math.isfinite(val):
+                raise ValueError(f"Param '{self.name}' must be a finite number, got {raw_val!r}")
             if self.min_val is not None and val < self.min_val:
                 raise ValueError(f"Param '{self.name}' must be >= {self.min_val}, got {val}")
             if self.max_val is not None and val > self.max_val:
@@ -209,7 +211,7 @@ class TradingLabEngine(ABC):
 
         avg_win = sum_gains / n_wins if n_wins > 0 else 0.0
         avg_loss = sum(losses) / n_losses if n_losses > 0 else 0.0
-        expectancy = (win_rate * avg_win) + ((1.0 - win_rate) * avg_loss)
+        expectancy = sum(trades_pnl) / n_total
 
         return {
             "total_trades": n_total,

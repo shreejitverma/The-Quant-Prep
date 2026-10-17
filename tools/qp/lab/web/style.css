@@ -206,7 +206,8 @@ body {
   margin-bottom: 6px;
 }
 
-.param-group input {
+.param-group input,
+.param-group select {
   width: 100%;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -218,7 +219,8 @@ body {
   transition: border-color 0.15s ease;
 }
 
-.param-group input:focus {
+.param-group input:focus,
+.param-group select:focus {
   border-color: var(--accent-blue);
 }
 

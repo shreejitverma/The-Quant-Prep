@@ -11,6 +11,7 @@ from __future__ import annotations
 import contextlib
 import datetime as dt
 import json
+import math
 import os
 import shutil
 import tempfile
@@ -40,6 +41,49 @@ def default_profile() -> dict:
 
 class StateError(RuntimeError):
     pass
+
+
+_MISSING = object()
+
+
+def _journal_field(trade_data: dict, name: str, default: object) -> object:
+    val = trade_data.get(name, default)
+    if val is _MISSING or val is None:
+        raise StateError(f"journal trade needs {name!r}")
+    return val
+
+
+def _journal_number(trade_data: dict, name: str, default: object = _MISSING) -> float:
+    val = _journal_field(trade_data, name, default)
+    try:
+        num = float(val)
+    except (TypeError, ValueError) as exc:
+        raise StateError(f"journal trade {name!r} must be a number, got {val!r}") from exc
+    if isinstance(val, bool) or not math.isfinite(num):
+        raise StateError(f"journal trade {name!r} must be a finite number, got {val!r}")
+    return num
+
+
+def _journal_int(trade_data: dict, name: str, default: object = _MISSING) -> int:
+    val = _journal_field(trade_data, name, default)
+    if isinstance(val, bool) or not isinstance(val, (int, str)):
+        raise StateError(f"journal trade {name!r} must be a non-negative integer, got {val!r}")
+    try:
+        num = int(val)
+    except ValueError as exc:
+        raise StateError(f"journal trade {name!r} must be a non-negative integer, got {val!r}") from exc
+    if num < 0:
+        raise StateError(f"journal trade {name!r} must be a non-negative integer, got {val!r}")
+    return num
+
+
+def _journal_bool(trade_data: dict, name: str, default: object = _MISSING) -> bool:
+    val = _journal_field(trade_data, name, default)
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str) and val.strip().lower() in ("true", "false"):
+        return val.strip().lower() == "true"
+    raise StateError(f"journal trade {name!r} must be true or false, got {val!r}")
 
 
 def migrate_v1(data: dict) -> dict:
@@ -294,36 +338,34 @@ class Store:
         return row
 
     def record_journal_trade(self, trade_data: dict) -> dict:
-        def _parse_bool(val: object, default: bool = False) -> bool:
-            if isinstance(val, bool):
-                return val
-            if isinstance(val, str):
-                return val.strip().lower() in ("true", "1", "yes")
-            if isinstance(val, (int, float)):
-                return bool(val)
-            return default
+        """Append one closed trade; StateError on a missing, non-finite or inconsistent field.
 
+        The Capital Gate is computed from r_multiple, pnl, mae_r, mfe_r and adherence,
+        so those are required rather than defaulted to values that would pass it.
+        """
+        fields = {
+            "setup": str(trade_data.get("setup", "general")),
+            "entry_price": _journal_number(trade_data, "entry_price", 0.0),
+            "exit_price": _journal_number(trade_data, "exit_price", 0.0),
+            "stop_loss": _journal_number(trade_data, "stop_loss", 0.0),
+            "take_profit": _journal_number(trade_data, "take_profit", 0.0),
+            "shares": _journal_int(trade_data, "shares", 1),
+            "r_multiple": _journal_number(trade_data, "r_multiple"),
+            "pnl": _journal_number(trade_data, "pnl"),
+            "mae_r": _journal_number(trade_data, "mae_r"),
+            "mfe_r": _journal_number(trade_data, "mfe_r"),
+            "adherence": _journal_bool(trade_data, "adherence"),
+            "is_revenge": _journal_bool(trade_data, "is_revenge", False),
+            "moved_stop": _journal_bool(trade_data, "moved_stop", False),
+            "duration_minutes": _journal_int(trade_data, "duration_minutes", 0),
+        }
+        if fields["r_multiple"] * fields["pnl"] < 0:
+            raise StateError("r_multiple and pnl must have the same sign")
+        if fields["mae_r"] < 0 or fields["mfe_r"] < 0:
+            raise StateError("mae_r and mfe_r are excursion sizes in R and must be >= 0")
         with self._transaction() as data:
             trades = data.setdefault("journal_trades", [])
-            trade_id = f"TRD-{len(trades) + 1:04d}"
-            entry = {
-                "trade_id": trade_id,
-                "setup": str(trade_data.get("setup", "general")),
-                "entry_price": float(trade_data.get("entry_price", 0.0)),
-                "exit_price": float(trade_data.get("exit_price", 0.0)),
-                "stop_loss": float(trade_data.get("stop_loss", 0.0)),
-                "take_profit": float(trade_data.get("take_profit", 0.0)),
-                "shares": int(trade_data.get("shares", 1)),
-                "r_multiple": float(trade_data.get("r_multiple", 0.0)),
-                "pnl": float(trade_data.get("pnl", 0.0)),
-                "mae_r": float(trade_data.get("mae_r", 0.0)),
-                "mfe_r": float(trade_data.get("mfe_r", 0.0)),
-                "adherence": _parse_bool(trade_data.get("adherence", trade_data.get("adhered_to_rules", True)), True),
-                "is_revenge": _parse_bool(trade_data.get("is_revenge", False), False),
-                "moved_stop": _parse_bool(trade_data.get("moved_stop", False), False),
-                "duration_minutes": int(trade_data.get("duration_minutes", 0)),
-                "at": now_iso(),
-            }
+            entry = {"trade_id": f"TRD-{len(trades) + 1:04d}", **fields, "at": now_iso()}
             trades.append(entry)
             self._bump("journal_trades")
         return entry
