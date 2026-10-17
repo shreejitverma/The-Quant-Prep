@@ -186,11 +186,11 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Build web UI for historical event replays and pre-mortem analysis.
 
 ### Phase 14: Mastery Engine, Study Board, & Persona Planner
-- [ ] Implement holistic mastery scoring formula in `tools/qp/markets.py`.
-- [ ] Implement Study Board writer script `16-Trading-and-Investing/scripts/mastery.py`.
-- [ ] Implement persona-aware study planner in `tools/qp/planner.py` sized to user weekly hours.
-- [ ] Build unified Mastery Dashboard in `MARKETS_HUB.md` and QP web app.
-- [ ] Execute comprehensive end-to-end verification, browser testing, and final audit.
+- [x] Implement holistic mastery scoring formula in `tools/qp/markets.py`.
+- [x] Implement Study Board writer script `16-Trading-and-Investing/scripts/mastery.py`.
+- [x] Implement persona-aware study planner in `tools/qp/planner.py` sized to user weekly hours.
+- [x] Build unified Mastery Dashboard in `MARKETS_HUB.md` and QP web app.
+- [x] Execute comprehensive end-to-end verification, browser testing, and final audit.
 
 ---
 

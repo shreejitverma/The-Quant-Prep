@@ -172,3 +172,56 @@ def counts(vault: Vault, store: Store, tracks: list[str] | None = None) -> dict:
         "cards_due": sum(1 for s in seen if s.due <= t),
         "cards_mature": sum(1 for s in seen if s.interval >= MATURE_DAYS),
     }
+
+
+PERSONA_MARKET_TRACKS = {
+    "holistic": ["quant-trader", "quant-research", "quant-risk", "quant-dev"],
+    "quant_trader": ["quant-trader"],
+    "quant_researcher": ["quant-research", "quant-risk"],
+    "macro_derivatives_trader": ["quant-trader", "quant-research"],
+    "retail_algorithmic_trader": ["quant-trader"],
+}
+
+PERSONA_LAB_ROUTING = {
+    "quant_trader": ["lob_sim", "mm_quote", "games", "options_lab", "tca_engine"],
+    "quant_researcher": ["overfit_trap", "port_alloc", "options_lab", "event_study"],
+    "macro_derivatives_trader": ["fut_desk", "options_lab", "port_alloc", "event_study"],
+    "retail_algorithmic_trader": ["pos_sizing", "replay_chart", "journal_stats", "tca_engine"],
+    "holistic": [
+        "pos_sizing",
+        "lob_sim",
+        "mm_quote",
+        "games",
+        "options_lab",
+        "tca_engine",
+        "replay_chart",
+        "overfit_trap",
+        "journal_stats",
+        "fut_desk",
+        "port_alloc",
+        "event_study",
+    ],
+}
+
+
+def persona_weekly_plan(
+    vault: Vault,
+    store: Store,
+    persona: str = "holistic",
+    hours_per_week: float = 10.0,
+    tiers: tuple[str, ...] = TIERS,
+    start: dt.date | None = None,
+) -> list[dict]:
+    """Generate a persona-tailored study plan with weekly hour budgets and aligned Trading Lab simulation drills."""
+    tracks = PERSONA_MARKET_TRACKS.get(persona, PERSONA_MARKET_TRACKS["holistic"])
+    base_plan = weekly_plan(vault, store, tracks, hours_per_week, tiers, start)
+    drills_pool = list(PERSONA_LAB_ROUTING.get(persona, PERSONA_LAB_ROUTING["holistic"]))
+
+    for idx, week in enumerate(base_plan):
+        drill1 = drills_pool[idx % len(drills_pool)]
+        drill2 = drills_pool[(idx + 1) % len(drills_pool)] if len(drills_pool) > 1 else None
+        week["drills"] = [f"./qp lab run {drill1}"]
+        if drill2 and drill2 != drill1 and len(week.get("topics", [])) <= 3:
+            week["drills"].append(f"./qp lab run {drill2}")
+
+    return base_plan

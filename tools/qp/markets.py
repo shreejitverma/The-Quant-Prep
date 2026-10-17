@@ -84,6 +84,165 @@ TRACK_METADATA = {
         "description": "Asset allocation benchmark, factor replication, drawdown mathematics, Kelly sizing, and Risk Parity.",
         "card_prefix": "mkt-pf-",
     },
+    "track_opt": {
+        "id": "track_opt",
+        "name": "Options & Volatility Trading",
+        "description": "Greeks hedging, volatility surfaces, dealer positioning, GEX, and variance trading.",
+        "card_prefix": "mkt-opt-",
+    },
+    "track_ta": {
+        "id": "track_ta",
+        "name": "Technical Analysis & Market Profile",
+        "description": "Auction theory, Volume Profile, VWAP, market internals, and empirical rule validation.",
+        "card_prefix": "mkt-ta-",
+    },
+    "track_sys": {
+        "id": "track_sys",
+        "name": "Systematic Trading Systems",
+        "description": "Cross-sectional momentum, risk parity, deflated Sharpe, CPCV, and production decision ledgers.",
+        "card_prefix": "mkt-sys-",
+    },
+    "track_ind": {
+        "id": "track_ind",
+        "name": "Indian Markets Microstructure & F&O",
+        "description": "NSE/BSE co-location, NIFTY/BANKNIFTY weeklys, STT taxation, and SEBI regulatory architecture.",
+        "card_prefix": "mkt-ind-",
+    },
+    "track_mac": {
+        "id": "track_mac",
+        "name": "Macro Rates & FX Dynamics",
+        "description": "Yield curve regimes, duration/convexity, central bank plumbing, and rates curve trading.",
+        "card_prefix": "mkt-mac-",
+    },
+    "track_cmd": {
+        "id": "track_cmd",
+        "name": "Commodity Term Structures & Storage",
+        "description": "Contango, backwardation, roll yield, convenience yield, and physical storage arbitrage.",
+        "card_prefix": "mkt-cmd-",
+    },
+    "track_cry": {
+        "id": "track_cry",
+        "name": "Crypto Perpetuals & Funding Arbitrage",
+        "description": "Perpetual futures, hourly funding rate carry, cross-venue basis arbitrage, and liquidations.",
+        "card_prefix": "mkt-cry-",
+    },
+    "track_his": {
+        "id": "track_his",
+        "name": "Market Crises & Historical Event Studies",
+        "description": "1929 through 2022 crises, liquidity evaporation, abnormal returns, and strategy pre-mortems.",
+        "card_prefix": "mkt-his-",
+    },
+    "track_psy": {
+        "id": "track_psy",
+        "name": "Trading Psychology & Peak Performance",
+        "description": "Tilt mitigation, loss aversion, cognitive biases, autonomic regulation, and execution discipline.",
+        "card_prefix": "mkt-psy-",
+    },
+    "track_dec": {
+        "id": "track_dec",
+        "name": "Probability & Decision Making Under Uncertainty",
+        "description": "Bayesian inference, expected value betting, cognitive traps, and probabilistic reasoning.",
+        "card_prefix": "mkt-dec-",
+    },
+    "track_exe": {
+        "id": "track_exe",
+        "name": "Order Types & Algorithmic Execution",
+        "description": "VWAP, TWAP, Almgren-Chriss optimal trajectories, implementation shortfall, and market impact.",
+        "card_prefix": "mkt-exe-",
+    },
+    "track_reg": {
+        "id": "track_reg",
+        "name": "Regulation, Tax & Trading Operations",
+        "description": "Reg NMS, MiFID II, STT tax optimization, trade break reconciliation, and post-trade settlement.",
+        "card_prefix": "mkt-reg-",
+    },
+    "track_car": {
+        "id": "track_car",
+        "name": "Quantitative & Prop Trading Careers",
+        "description": "Firm models (prop vs pod), QT/QR/QD roles, formulaic PnL payouts, and interview rubrics.",
+        "card_prefix": "mkt-car-",
+    },
+}
+
+LAB_ENGINES = {
+    "games": "Mental Math & Market Making Games",
+    "lob_sim": "Limit Order Book Matching Simulator",
+    "mm_quote": "Avellaneda-Stoikov Market Maker Quoting",
+    "pos_sizing": "Position Sizing, Kelly & Ruin Simulator",
+    "options_lab": "Options Volatility & Greeks Hedging",
+    "tca_engine": "Transaction Cost Analysis & Optimal Execution",
+    "replay_chart": "Interactive Blind Chart Replay & Brier Calibration",
+    "overfit_trap": "Backtest Overfitting Trap & Deflated Sharpe",
+    "journal_stats": "Trade Journal Analytics & Expectancy",
+    "fut_desk": "Futures Term Structure & Basis Arbitrage",
+    "port_alloc": "Multi-Asset Portfolio Allocator & Risk Parity",
+    "event_study": "Historical Crisis Event Study & CAR Analysis",
+}
+
+PERSONA_CONFIGS = {
+    "holistic": {
+        "name": "Holistic Market Master",
+        "description": "Comprehensive multi-disciplinary mastery across all quant, discretionary, macro, and fundamental disciplines.",
+        "track_weights": {k: 1.0 for k in TRACK_METADATA},
+        "required_engines": list(LAB_ENGINES.keys()),
+    },
+    "quant_trader": {
+        "name": "Quantitative Trader (QT / Market Maker)",
+        "description": "High-frequency quoting, adverse selection, order book mechanics, options Greeks, and market making games.",
+        "track_weights": {
+            "track_0_pqt": 2.5,
+            "track_opt": 2.0,
+            "track_exe": 2.0,
+            "track_car": 1.5,
+            "track_dec": 1.5,
+            "track_ind": 1.0,
+            "track_cry": 1.0,
+            "track_sys": 1.0,
+        },
+        "required_engines": ["lob_sim", "mm_quote", "games", "options_lab", "tca_engine"],
+    },
+    "quant_researcher": {
+        "name": "Quantitative Researcher (QR / Alpha Modeler)",
+        "description": "Statistical signal discovery, backtest deflated Sharpe ratio, portfolio construction, and factor modeling.",
+        "track_weights": {
+            "track_sys": 3.0,
+            "track_pf": 2.0,
+            "track_opt": 1.5,
+            "track_his": 1.5,
+            "track_mac": 1.0,
+            "track_car": 1.0,
+            "track_cmd": 0.5,
+        },
+        "required_engines": ["overfit_trap", "port_alloc", "options_lab", "event_study"],
+    },
+    "macro_derivatives_trader": {
+        "name": "Macro & Derivatives Trader",
+        "description": "Yield curves, rates trading, commodities term structure, options skew, and risk parity.",
+        "track_weights": {
+            "track_mac": 2.5,
+            "track_cmd": 2.0,
+            "track_opt": 2.0,
+            "track_pf": 1.5,
+            "track_his": 1.5,
+            "track_ind": 1.0,
+            "track_cry": 1.0,
+        },
+        "required_engines": ["fut_desk", "options_lab", "port_alloc", "event_study"],
+    },
+    "retail_algorithmic_trader": {
+        "name": "Discretionary & Systematic Algorithmic Trader",
+        "description": "Expectancy, trade journal adherence, position sizing, setup taxonomy, tape reading, and discipline.",
+        "track_weights": {
+            "track_6_trd": 2.5,
+            "track_ta": 2.0,
+            "track_psy": 1.5,
+            "track_dec": 1.5,
+            "track_reg": 1.0,
+            "track_fa": 1.0,
+            "track_val": 1.0,
+        },
+        "required_engines": ["pos_sizing", "replay_chart", "journal_stats", "tca_engine"],
+    },
 }
 
 
@@ -542,6 +701,206 @@ def evaluate_gate(
             ]
             return StageGate(track_id, stage, "Portfolio Management Core Gate", reqs)
 
+    elif track_id == "track_opt":
+        prefix = "mkt-opt-"
+        if stage == "foundations":
+            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 64)
+            target_count = max(64, total_cards) if total_cards > 0 else 64
+            passed_cards = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and int(cid.split("-")[-1]) <= 64
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name="Options Foundations Cards Mastered",
+                    target=f"{target_count} cards",
+                    actual=f"{passed_cards} cards reviewed",
+                    passed=passed_cards >= target_count if total_cards > 0 else False,
+                ),
+            ]
+            return StageGate(track_id, stage, "Options & Volatility Foundations Gate", reqs)
+
+        if stage == "core":
+            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 64 < int(cid.split("-")[-1]) <= 128)
+            target_core = max(64, total_core) if total_core > 0 else 64
+            passed_core = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and 64 < int(cid.split("-")[-1]) <= 128
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            opt_runs = sum(1 for s in lab_history if s.get("engine") == "options_lab")
+            reqs = [
+                GateRequirement(
+                    name="Options Volatility Core Cards Mastered",
+                    target=f"{target_core} cards",
+                    actual=f"{passed_core} cards reviewed",
+                    passed=passed_core >= target_core if total_core > 0 else False,
+                ),
+                GateRequirement(
+                    name="Options Volatility Desk Simulation",
+                    target=">= 1 options_lab sessions completed",
+                    actual=f"{opt_runs} sessions",
+                    passed=opt_runs >= 1,
+                ),
+            ]
+            return StageGate(track_id, stage, "Options & Volatility Core Gate", reqs)
+
+    elif track_id == "track_ta":
+        prefix = "mkt-ta-"
+        if stage == "foundations":
+            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            target_count = max(128, total_cards) if total_cards > 0 else 128
+            passed_cards = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and int(cid.split("-")[-1]) <= 128
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name="Technical Analysis Foundations Cards Mastered",
+                    target=f"{target_count} cards",
+                    actual=f"{passed_cards} cards reviewed",
+                    passed=passed_cards >= target_count if total_cards > 0 else False,
+                ),
+            ]
+            return StageGate(track_id, stage, "Technical Analysis Foundations Gate", reqs)
+
+        if stage == "core":
+            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            target_core = max(128, total_core) if total_core > 0 else 128
+            passed_core = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and 128 < int(cid.split("-")[-1]) <= 256
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            chart_runs = sum(1 for s in lab_history if s.get("engine") == "replay_chart")
+            reqs = [
+                GateRequirement(
+                    name="Market Profile & Rule Validation Cards Mastered",
+                    target=f"{target_core} cards",
+                    actual=f"{passed_core} cards reviewed",
+                    passed=passed_core >= target_core if total_core > 0 else False,
+                ),
+                GateRequirement(
+                    name="Blind Chart Replay Calibration",
+                    target=">= 1 replay_chart sessions completed",
+                    actual=f"{chart_runs} sessions",
+                    passed=chart_runs >= 1,
+                ),
+            ]
+            return StageGate(track_id, stage, "Technical Analysis Core Gate", reqs)
+
+    elif track_id == "track_sys":
+        prefix = "mkt-sys-"
+        if stage == "foundations":
+            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            target_count = max(128, total_cards) if total_cards > 0 else 128
+            passed_cards = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and int(cid.split("-")[-1]) <= 128
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name="Systematic Strategy Foundations Cards Mastered",
+                    target=f"{target_count} cards",
+                    actual=f"{passed_cards} cards reviewed",
+                    passed=passed_cards >= target_count if total_cards > 0 else False,
+                ),
+            ]
+            return StageGate(track_id, stage, "Systematic Trading Foundations Gate", reqs)
+
+        if stage == "core":
+            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            target_core = max(128, total_core) if total_core > 0 else 128
+            passed_core = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and 128 < int(cid.split("-")[-1]) <= 256
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            trap_runs = sum(1 for s in lab_history if s.get("engine") == "overfit_trap")
+            reqs = [
+                GateRequirement(
+                    name="Overfitting & CPCV Systems Cards Mastered",
+                    target=f"{target_core} cards",
+                    actual=f"{passed_core} cards reviewed",
+                    passed=passed_core >= target_core if total_core > 0 else False,
+                ),
+                GateRequirement(
+                    name="Deflated Sharpe Overfitting Trap Audit",
+                    target=">= 1 overfit_trap sessions completed",
+                    actual=f"{trap_runs} sessions",
+                    passed=trap_runs >= 1,
+                ),
+            ]
+            return StageGate(track_id, stage, "Systematic Trading Core Gate", reqs)
+
+    # Specialized modules: Indian Markets, Macro, Commodities, Crypto, History, Psychology, Decision, Execution, Reg, Careers
+    elif track_id in TRACK_METADATA:
+        prefix = TRACK_METADATA[track_id]["card_prefix"]
+        t_name = TRACK_METADATA[track_id]["name"]
+        total_in_vault = sum(1 for cid in vault_cards if cid.startswith(prefix))
+        split_point = max(1, total_in_vault // 2) if total_in_vault > 0 else 16
+
+        if stage == "foundations":
+            target_count = split_point
+            passed_cards = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and int(cid.split("-")[-1]) <= split_point
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name=f"{t_name} Foundations Cards",
+                    target=f"{target_count} cards",
+                    actual=f"{passed_cards} cards reviewed",
+                    passed=passed_cards >= target_count if total_in_vault > 0 else False,
+                ),
+            ]
+            return StageGate(track_id, stage, f"{t_name} Foundations Gate", reqs)
+
+        if stage == "core":
+            target_core = total_in_vault - split_point if total_in_vault > split_point else split_point
+            passed_core = sum(
+                1
+                for cid in reviewed_cards
+                if cid.startswith(prefix)
+                and cid in vault_cards
+                and int(cid.split("-")[-1]) > split_point
+                and reviewed_cards[cid].get("reps", 0) > 0
+            )
+            reqs = [
+                GateRequirement(
+                    name=f"{t_name} Core Cards",
+                    target=f"{target_core} cards",
+                    actual=f"{passed_core} cards reviewed",
+                    passed=passed_core >= target_core if total_in_vault > 0 else False,
+                ),
+            ]
+            return StageGate(track_id, stage, f"{t_name} Core Gate", reqs)
+
     # Fallback generic stage gate
     reqs = [
         GateRequirement(
@@ -569,3 +928,159 @@ def evaluate_all_markets_gates(
             gates["capital_gate"] = evaluate_gate(tid, "capital_gate", vault_cards, store_state)
         out[tid] = gates
     return out
+
+
+def calculate_markets_mastery(
+    vault_cards: dict[str, Any] | None = None,
+    store_state: dict[str, Any] | None = None,
+    persona: str = "holistic",
+) -> dict[str, Any]:
+    """Calculate holistic mastery across all pillars, engines, and gates for a given persona."""
+    vault_cards = vault_cards or {}
+    store_state = store_state or {}
+    reviewed_cards = store_state.get("cards", {})
+    lab_history = store_state.get("lab_history", [])
+
+    if persona not in PERSONA_CONFIGS:
+        persona = "holistic"
+    p_config = PERSONA_CONFIGS[persona]
+
+    track_stats: dict[str, Any] = {}
+    total_markets_cards = 0
+    total_markets_reviewed = 0
+    total_markets_mature = 0
+
+    for tid, meta in TRACK_METADATA.items():
+        prefix = meta["card_prefix"]
+        t_total = sum(1 for cid in vault_cards if cid.startswith(prefix))
+        if t_total == 0 and tid in ("track_fa", "track_val", "track_vi", "track_pf"):
+            t_total = 256
+        t_reviewed = sum(1 for cid in reviewed_cards if cid.startswith(prefix) and reviewed_cards[cid].get("reps", 0) > 0)
+        t_mature = sum(1 for cid in reviewed_cards if cid.startswith(prefix) and reviewed_cards[cid].get("interval", 0) >= 21)
+
+        total_markets_cards += t_total
+        total_markets_reviewed += t_reviewed
+        total_markets_mature += t_mature
+
+        cov = (t_reviewed / t_total) if t_total > 0 else 0.0
+        ret = (
+            (
+                sum(
+                    min(reviewed_cards[cid].get("interval", 0) / 21.0, 1.0)
+                    for cid in reviewed_cards
+                    if cid.startswith(prefix) and cid in vault_cards
+                )
+                / t_reviewed
+            )
+            if t_reviewed > 0
+            else 0.0
+        )
+
+        mastery_pct = round((0.60 * cov + 0.40 * ret) * 100.0, 1)
+
+        track_stats[tid] = {
+            "name": meta["name"],
+            "prefix": prefix,
+            "total_cards": t_total,
+            "reviewed_cards": t_reviewed,
+            "mature_cards": t_mature,
+            "coverage_pct": round(cov * 100.0, 1),
+            "mastery_pct": mastery_pct,
+        }
+
+    # Persona-weighted card score
+    weights = p_config["track_weights"]
+    weighted_mastery_sum = sum(
+        track_stats[tid]["mastery_pct"] * weights.get(tid, 0.0) for tid in TRACK_METADATA if weights.get(tid, 0.0) > 0
+    )
+    total_weight = sum(weights.get(tid, 0.0) for tid in TRACK_METADATA if weights.get(tid, 0.0) > 0)
+    card_score = round(weighted_mastery_sum / total_weight, 1) if total_weight > 0 else 0.0
+
+    # Lab engines progress
+    engine_sessions: dict[str, int] = {e: 0 for e in LAB_ENGINES}
+    for s in lab_history:
+        eng = s.get("engine")
+        if eng in engine_sessions:
+            engine_sessions[eng] += 1
+
+    completed_engines = [e for e, count in engine_sessions.items() if count > 0]
+    req_engines = p_config["required_engines"]
+    req_completed = [e for e in req_engines if engine_sessions.get(e, 0) > 0]
+
+    req_pct = (len(req_completed) / len(req_engines) * 100.0) if req_engines else 100.0
+    all_pct = len(completed_engines) / len(LAB_ENGINES) * 100.0
+    lab_score = round(0.70 * req_pct + 0.30 * all_pct, 1)
+
+    # Gates evaluation
+    all_gates = evaluate_all_markets_gates(vault_cards, store_state)
+    relevant_tracks = [t for t in TRACK_METADATA if weights.get(t, 0.0) > 0]
+    total_gates_count = 0
+    passed_gates_count = 0
+
+    for tid in relevant_tracks:
+        tg = all_gates.get(tid, {})
+        for g in tg.values():
+            total_gates_count += 1
+            if g.passed:
+                passed_gates_count += 1
+
+    gate_score = round((passed_gates_count / total_gates_count * 100.0), 1) if total_gates_count > 0 else 0.0
+
+    # Capital Gate
+    cap_gate = evaluate_gate("track_6_trd", "capital_gate", vault_cards, store_state)
+
+    # Overall Mastery Composite
+    overall_score = round(0.50 * card_score + 0.30 * lab_score + 0.20 * gate_score, 1)
+
+    if overall_score >= 80.0 and cap_gate.passed:
+        readiness_level = "Elite / Live Desk Ready"
+    elif overall_score >= 60.0:
+        readiness_level = "Advanced Market Practitioner"
+    elif overall_score >= 35.0:
+        readiness_level = "Practitioner / Intermediate"
+    else:
+        readiness_level = "Novice / Foundations"
+
+    # Actionable next steps
+    next_actions = []
+    sorted_unmastered = sorted(
+        [tid for tid in relevant_tracks if track_stats[tid]["mastery_pct"] < 80.0],
+        key=lambda tid: (track_stats[tid]["mastery_pct"], -weights.get(tid, 0.0)),
+    )
+    for tid in sorted_unmastered[:3]:
+        next_actions.append(f"Review cards for {track_stats[tid]['name']} (currently {track_stats[tid]['mastery_pct']}% mastered)")
+
+    unrun_engines = [e for e in req_engines if engine_sessions.get(e, 0) == 0]
+    for e in unrun_engines[:2]:
+        next_actions.append(f"Execute Trading Lab simulation engine: ./qp lab run {e}")
+
+    if not cap_gate.passed and persona in ("retail_algorithmic_trader", "holistic"):
+        next_actions.append("Complete 100-trade journal logging and pass Capital Gate rule adherence")
+
+    return {
+        "persona": persona,
+        "persona_name": p_config["name"],
+        "persona_description": p_config["description"],
+        "overall_score": overall_score,
+        "readiness_level": readiness_level,
+        "card_score": card_score,
+        "lab_score": lab_score,
+        "gate_score": gate_score,
+        "total_markets_cards": total_markets_cards,
+        "total_markets_reviewed": total_markets_reviewed,
+        "total_markets_mature": total_markets_mature,
+        "track_stats": track_stats,
+        "lab_stats": {
+            "total_engines": len(LAB_ENGINES),
+            "completed_engines": len(completed_engines),
+            "required_engines_count": len(req_engines),
+            "required_completed_count": len(req_completed),
+            "engine_sessions": engine_sessions,
+        },
+        "gates_stats": {
+            "total_gates": total_gates_count,
+            "passed_gates": passed_gates_count,
+            "capital_gate_passed": cap_gate.passed,
+        },
+        "next_actions": next_actions,
+    }

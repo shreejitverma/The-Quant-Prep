@@ -84,20 +84,20 @@ Markets Mastery OS develops four distinct trading personas:
 The Trading Lab provides twelve pure-Python standard-library simulation and analytics engines.
 Each engine runs locally via the `./qp lab <engine>` CLI or via the standalone browser dashboard at `tools/qp/lab/web/index.html`.
 
-| Engine ID | Name | Core Focus | Asset Class / Domain |
+| Engine ID | Name | Core Focus | Command |
 |---|---|---|---|
-| `lob_sim` | Limit Order Book Simulator | Price-time priority matching, queue position, slippage | Microstructure |
-| `opt_desk` | Options Volatility Desk | Greeks calculation, PnL attribution, dynamic delta hedging | Options / Vol |
-| `gen_market` | Synthetic Market Generator | Geometric Brownian Motion, Heston stochastic vol, jump diffusion | Cross-Asset |
-| `pos_sizing` | Position Sizing and Ruin | Kelly criterion, optimal f, Monte Carlo drawdown risk | Risk Management |
-| `replay_chart` | Interactive Chart Replay | Bar-by-bar tape reading, order entry, execution log | Discretionary |
-| `overfit_trap` | Backtest Overfitting Trap | Multiple testing penalty, deflated Sharpe ratio (Bailey-Lopéz) | Systematic |
-| `fut_desk` | Futures and Basis Desk | Calendar spreads, cash-and-carry, roll yield tracking | Futures / Macro |
-| `port_alloc` | Multi-Asset Portfolio Allocator | Risk parity, Black-Litterman, hierarchical risk parity | Portfolio Theory |
-| `journal_stats` | Trade Journal Analytics | R-multiple expectancy, MAE/MFE, behavioral tilt detection | Performance |
-| `mm_quote` | Two-Sided Market Maker | Avellaneda-Stoikov inventory control, spread quotation | Market Making |
-| `event_study` | Earnings and Event Study | Pre/post announcement drift, abnormal returns, implied move | Equities |
-| `crypto_basis` | Crypto Funding and Perp Basis | Perp-spot basis, hourly funding rate carry, liquidation risks | Crypto |
+| `games` | Interview Trading Games | Mental arithmetic, market making game, Bayesian probability updates | `./qp lab run games` |
+| `lob_sim` | Limit Order Book Simulator | Price-time priority matching, queue position, slippage | `./qp lab run lob_sim` |
+| `mm_quote` | Two-Sided Market Maker | Avellaneda-Stoikov inventory control, reservation price, skew | `./qp lab run mm_quote` |
+| `pos_sizing` | Position Sizing and Ruin | Kelly criterion, optimal f, Monte Carlo drawdown risk | `./qp lab run pos_sizing` |
+| `options_lab` | Options Volatility Desk | Black-Scholes, Greeks calculation, PnL attribution, dynamic delta hedging | `./qp lab run options_lab` |
+| `tca_engine` | Transaction Cost Analysis | Implementation shortfall, Almgren-Chriss optimal trajectories, market impact | `./qp lab run tca_engine` |
+| `replay_chart` | Interactive Chart Replay | Bar-by-bar tape reading, order entry, Murphy Brier score calibration | `./qp lab run replay_chart` |
+| `overfit_trap` | Backtest Overfitting Trap | Multiple testing penalty, deflated Sharpe ratio, CSCV PBO | `./qp lab run overfit_trap` |
+| `journal_stats` | Trade Journal Analytics | R-multiple expectancy, MAE/MFE, behavioral tilt detection | `./qp lab run journal_stats` |
+| `fut_desk` | Futures and Basis Desk | Calendar spreads, cost-of-carry, roll yield tracking, cash-and-carry | `./qp lab run fut_desk` |
+| `port_alloc` | Multi-Asset Portfolio Allocator | Risk parity, equal weighting, 60/40, all weather, macro stress | `./qp lab run port_alloc` |
+| `event_study` | Market Crisis and Event Study | Abnormal returns, CAR, Patell Z-test, liquidity haircuts, pre-mortems | `./qp lab run event_study` |
 
 ---
 
@@ -119,6 +119,13 @@ To advance from simulation to real capital deployment, a trader must pass the ve
 
 ## Vault Navigation and Reference Links
 
+- **Progression Dashboard**: [[16-Trading-and-Investing/STUDY_BOARD|Live Study Board & Progression Dashboard]]
+- **Trading Styles**: [[16-Trading-and-Investing/07-Trading-Styles/_Index_Trading_Styles|Trading Styles and Personas Guide]]
+- **Execution Microstructure**: [[16-Trading-and-Investing/08-Execution-Microstructure/_Index_Execution|Execution and Microstructure Index]]
+- **Systematic Trading Systems**: [[16-Trading-and-Investing/60-Systems/_Index_Systems|Systematic Trading Systems Pillar]]
+- **Historical Market Crises**: [[16-Trading-and-Investing/20-History-and-Events/_Index_History_Events|Historical Market Crises Index]]
+- **Technical Analysis Pillar**: [[16-Trading-and-Investing/07-Trading-Styles/Technical-Analysis/_Index_Technical_Analysis|Technical Analysis and Price Action Index]]
+- **Stock Research Database**: [[16-Trading-and-Investing/Investing/Stock Research/_Index_Stock Research|Global Stock Research Vault]]
 - **Main Curriculum Dashboard**: [[00-Start-Here/Dashboard|Main Curriculum Dashboard]]
 - **Fixed Income Syllabus**: [[06-Fixed-Income-and-Asset-Classes/README|Fixed Income Syllabus]]
 - **Microstructure Syllabus**: [[07-Market-Microstructure/README|Market Microstructure]]

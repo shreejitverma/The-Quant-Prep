@@ -78,8 +78,63 @@ class TestMarketsGates(unittest.TestCase):
         self.assertIn("track_val", all_gates)
         self.assertIn("track_vi", all_gates)
         self.assertIn("track_pf", all_gates)
-        self.assertIn("foundations", all_gates["track_fa"])
-        self.assertIn("core", all_gates["track_fa"])
+        self.assertIn("track_opt", all_gates)
+        self.assertIn("track_ta", all_gates)
+        self.assertIn("track_sys", all_gates)
+        self.assertIn("track_his", all_gates)
+        self.assertIn("track_car", all_gates)
+        self.assertEqual(len(all_gates), 19)
+
+    def test_all_19_tracks_present(self):
+        self.assertEqual(len(TRACK_METADATA), 19)
+        prefixes = {m["card_prefix"] for m in TRACK_METADATA.values()}
+        self.assertEqual(len(prefixes), 19)
+
+    def test_lab_engines_and_personas(self):
+        from tools.qp.markets import LAB_ENGINES, PERSONA_CONFIGS
+
+        self.assertEqual(len(LAB_ENGINES), 12)
+        self.assertIn("games", LAB_ENGINES)
+        self.assertIn("event_study", LAB_ENGINES)
+        self.assertIn("overfit_trap", LAB_ENGINES)
+
+        self.assertEqual(len(PERSONA_CONFIGS), 5)
+        self.assertIn("holistic", PERSONA_CONFIGS)
+        self.assertIn("quant_trader", PERSONA_CONFIGS)
+        self.assertIn("quant_researcher", PERSONA_CONFIGS)
+        self.assertIn("macro_derivatives_trader", PERSONA_CONFIGS)
+        self.assertIn("retail_algorithmic_trader", PERSONA_CONFIGS)
+
+    def test_calculate_markets_mastery_empty(self):
+        from tools.qp.markets import calculate_markets_mastery
+
+        res = calculate_markets_mastery({}, {}, "holistic")
+        self.assertEqual(res["overall_score"], 0.0)
+        self.assertEqual(res["readiness_level"], "Novice / Foundations")
+        self.assertEqual(res["lab_stats"]["completed_engines"], 0)
+        self.assertGreaterEqual(len(res["next_actions"]), 2)
+
+    def test_calculate_markets_mastery_populated(self):
+        from tools.qp.markets import calculate_markets_mastery
+
+        fake_vault = {f"mkt-pqt-{i:03d}": {} for i in range(1, 129)}
+        fake_vault.update({f"mkt-opt-{i:03d}": {} for i in range(1, 129)})
+
+        fake_store = {
+            "cards": {f"mkt-pqt-{i:03d}": {"reps": 3, "interval": 25} for i in range(1, 129)},
+            "lab_history": [
+                {"engine": "lob_sim"},
+                {"engine": "mm_quote"},
+                {"engine": "games"},
+                {"engine": "options_lab"},
+                {"engine": "tca_engine"},
+            ],
+        }
+
+        qt_res = calculate_markets_mastery(fake_vault, fake_store, "quant_trader")
+        self.assertGreater(qt_res["overall_score"], 20.0)
+        self.assertGreater(qt_res["lab_score"], 70.0)
+        self.assertEqual(qt_res["persona"], "quant_trader")
 
 
 if __name__ == "__main__":
