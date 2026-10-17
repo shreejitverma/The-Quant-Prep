@@ -56,7 +56,7 @@ def girsanov_density(rng: np.random.Generator) -> None:
     W = rng.standard_normal(n) * math.sqrt(T)
     Z = np.exp(-theta * W - 0.5 * theta**2 * T)
     check("E^P[Z_T] (exact 1)", float(Z.mean()), 0.9999, 5e-5)
-    check("Var^P(Z_T) exact exp(theta^2 T) - 1", math.exp(theta**2 * T) - 1, 0.1735, 1e-4)
+    check("Var^P(Z_T) exact exp(theta^2 T) - 1", math.exp(theta**2 * T) - 1, 0.1735, 5e-5)
     check("Var^P(Z_T) Monte Carlo", float(Z.var()), 0.1735, 5e-5)
     # Under Q, W^Q_T = W_T + theta T is N(0, T): mean 0, second moment T, under the weights Z
     WQ = W + theta * T
@@ -64,7 +64,8 @@ def girsanov_density(rng: np.random.Generator) -> None:
     check("E^Q[(W_T + theta T)^2]", float((Z * WQ**2).mean()), 1.0001, 5e-5)
     check("E^Q[W_T] (drift -theta T)", float((Z * W).mean()), -0.3999, 5e-5)
     # The weights degenerate as theta grows: variance exp(theta^2 T) - 1
-    check("Var^P(Z_T) for theta = 3", math.exp(9.0) - 1, 8102.08, 0.01)
+    check("Var^P(Z_T) for theta = 3", math.exp(9.0) - 1, 8102.08, 5e-3)
+    check("  rounded to an integer (card)", math.exp(9.0) - 1, 8102, 0.5)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -76,13 +77,14 @@ def importance_sampling(rng: np.random.Generator) -> None:
     """Backs 'Worked examples > Importance sampling a three-in-a-hundred-thousand event'; card sc-girsanov-importance-sampling."""
     print("\n2. Importance sampling P(W_1 > 4)")
     exact = 0.5 * math.erfc(4.0 / SQRT2)
-    check("exact P(Z > 4)", exact, 3.167e-5, 1e-8)
+    check("exact P(Z > 4)", exact, 3.167e-5, 5e-9)
     n = 100_000
     z = rng.standard_normal(n)
     plain = (z > 4.0).astype(float)
     p_mean, p_se = mc_mean(plain)
     check("plain MC hits in 100,000 draws", float(plain.sum()), 1.0, 0.0)
-    check("plain MC relative standard error (theory)", math.sqrt((1 - exact) / (n * exact)), 0.562, 1e-3)
+    check("plain MC relative standard error (theory)", math.sqrt((1 - exact) / (n * exact)), 0.562, 5e-4)
+    check("  as a percentage (card)", 100 * math.sqrt((1 - exact) / (n * exact)), 56, 0.5)
     # Sample X ~ N(4, 1) and weight by dP/dQ = exp(-4 X + 8)
     mu = 4.0
     x = rng.standard_normal(n) + mu
@@ -91,8 +93,9 @@ def importance_sampling(rng: np.random.Generator) -> None:
     check("IS estimate x 1e5", is_mean * 1e5, 3.157, 5e-4)
     assert abs(is_mean - exact) < 4 * is_se
     check("IS relative standard error", is_se / is_mean, 0.0067, 5e-5)
+    check("  as a percentage (card)", 100 * is_se / is_mean, 0.67, 5e-3)
     var_ratio = exact * (1 - exact) / (is_se**2 * n)
-    check("variance reduction factor", var_ratio, 7050, 10)
+    check("variance reduction factor", var_ratio, 7050, 5)
     _ = p_mean, p_se
 
 
@@ -107,7 +110,7 @@ def stock_measure(rng: np.random.Generator) -> None:
     print("\n3. Stock measure")
     S0, K, T, r, sig = 100.0, 105.0, 0.5, 0.05, 0.25
     d1 = (math.log(S0 / K) + (r + 0.5 * sig**2) * T) / (sig * math.sqrt(T))
-    check("N(d1)", ncdf(d1), 0.4816, 1e-4)
+    check("N(d1)", ncdf(d1), 0.4816, 5e-5)
     n = 2_000_000
     z = rng.standard_normal(n)
     ST = S0 * np.exp((r - 0.5 * sig**2) * T + sig * math.sqrt(T) * z)
@@ -120,20 +123,26 @@ def stock_measure(rng: np.random.Generator) -> None:
     print("   Margrabe exchange option (S1_T - S2_T)^+")
     S1, S2, s1, s2, rho, T, r = 100.0, 100.0, 0.30, 0.20, 0.5, 1.0, 0.05
     sig = math.sqrt(s1 * s1 + s2 * s2 - 2 * rho * s1 * s2)
-    check("exchange-ratio vol sqrt(s1^2 + s2^2 - 2 rho s1 s2)", sig, 0.2646, 1e-4)
+    check("exchange-ratio vol sqrt(s1^2 + s2^2 - 2 rho s1 s2)", sig, 0.2646, 5e-5)
     d1 = (math.log(S1 / S2) + 0.5 * sig**2 * T) / (sig * math.sqrt(T))
     margrabe = S1 * ncdf(d1) - S2 * ncdf(d1 - sig * math.sqrt(T))
     check("Margrabe price", margrabe, 10.5243, 5e-5)
+    check("  Margrabe price to two decimals (card)", margrabe, 10.52, 5e-3)
     n = 1_000_000
     z1 = rng.standard_normal(n)
     z2 = rho * z1 + math.sqrt(1 - rho * rho) * rng.standard_normal(n)
+    prices = []
     for r_test in (0.05, 0.0):
         X1 = S1 * np.exp((r_test - 0.5 * s1 * s1) * T + s1 * math.sqrt(T) * z1)
         X2 = S2 * np.exp((r_test - 0.5 * s2 * s2) * T + s2 * math.sqrt(T) * z2)
         price, se = mc_mean(math.exp(-r_test * T) * np.maximum(X1 - X2, 0.0))
         check(f"MC under Q with r = {r_test}", price, 10.563, 5e-4)
         assert abs(price - margrabe) < 4 * se
-        check(f"  standard error (r = {r_test})", se, 0.0178, 5e-5)
+        check(f"  standard error (r = {r_test})", se, 0.018, 5e-4)
+        prices.append(price)
+    # Both legs are assets: e^{rT} scales X1 and X2 and the discount removes it, path by path
+    assert abs(prices[0] - prices[1]) < 1e-12 * prices[1], prices
+    print("   MC prices for r = 5% and r = 0 agree to within 1e-12 relative")
 
 
 # ----------------------------------------------------------------------------------------------
@@ -188,7 +197,7 @@ def forward_measure(rng: np.random.Generator) -> None:
     h = 1e-5
     f0T = -(math.log(float(vas_bond(T + h, R0))) - math.log(float(vas_bond(T - h, R0)))) / (2 * h)
     mean, cov = vas_joint(T)
-    check("E^Q[r_1]", float(mean[0]), 0.035184, 1e-6)
+    check("E^Q[r_1]", float(mean[0]), 0.035184, 5e-7)
     check("instantaneous forward f(0,1)", f0T, 0.035146, 5e-7)
     check("E^T[r_1] = E^Q[r_1] - Cov(r_1, I_1)", float(mean[0] - cov[0, 1]), f0T, 1e-9)
     check("Cov(r_1, I_1) in bp (E^Q[r_1] - f(0,1))", float(cov[0, 1]) * 1e4, 0.373, 5e-4)
@@ -256,7 +265,7 @@ def annuity_measure(rng: np.random.Generator) -> None:
     assert abs(mc - jam) < 4 * se
     # Annuity measure weights dQ^A/dQ = D(T0) A(T0) / A(0): swap rate is a martingale
     wA = disc * AT / A0
-    check("  E^A[1] (weights integrate to 1)", float(wA.mean()), 1.0, 2e-5)
+    check("  E^A[1] (weights integrate to 1)", float(wA.mean()), 1.0000, 5e-5)
     check("  E^A[S_T] = S(0)", float((wA * ST).mean()), 0.041906, 5e-7)
     check("  E^Q[S_T] without the annuity weights (biased)", float(ST.mean()), 0.042004, 5e-7)
     check("  E^Q[S_T] - S(0) in bp", (float(ST.mean()) - S0) * 1e4, 0.96, 5e-3)
@@ -285,8 +294,10 @@ def quanto(rng: np.random.Generator) -> None:
     adj = -rho * sS * sX
     check("drift adjustment -rho sigma_S sigma_X", adj, -0.006, 1e-12)
     fq = S0 * math.exp((rf - q + adj) * T)
-    check("quanto forward", fq, 97.9219, 1e-4)
-    check("ordinary (foreign-currency) forward", S0 * math.exp((rf - q) * T), 98.5112, 1e-4)
+    check("quanto forward", fq, 97.9219, 5e-5)
+    check("  quanto forward to two decimals (card)", fq, 97.92, 5e-3)
+    check("ordinary (foreign-currency) forward", S0 * math.exp((rf - q) * T), 98.5112, 5e-5)
+    check("  ordinary forward to two decimals (card)", S0 * math.exp((rf - q) * T), 98.51, 5e-3)
     # Simulate under the foreign measure Q^f: S has drift rf - q; X (domestic per foreign) has drift rd - rf + sX^2
     n = 2_000_000
     z1 = rng.standard_normal(n)

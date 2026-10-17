@@ -30,7 +30,7 @@ def show(label: str, value: float, expected: float, tol: float, fmt: str = ".4f"
 
 def show_row(label: str, values: np.ndarray, expected: list[float], tol: float, fmt: str = "7.2f") -> None:
     print(f"{label:<34s}" + "".join(f"{v:{fmt}}" for v in values))
-    assert np.allclose(values, expected, atol=tol), f"{label}: {values} vs {expected}"
+    assert np.allclose(values, expected, rtol=0.0, atol=tol), f"{label}: {values} vs {expected}"
 
 
 # ---------------------------------------------------------------------------
@@ -238,6 +238,7 @@ def main() -> None:
     k_var = 2 * math.exp(R * T) / T * float(np.sum(0.5 * (otm[1:] + otm[:-1]) * np.diff(Kgrid)))
     closed = p["theta"] + (p["v0"] - p["theta"]) * (1 - math.exp(-p["kappa"] * T)) / (p["kappa"] * T)
     show("variance swap strike from the 1/K^2 strip of Heston prices", k_var, closed, 1e-6, ".5f")
+    show("  quoted at 5 decimals", k_var, 0.04000, 5e-6, ".5f")
     show("  as a vol (%)", 100 * math.sqrt(k_var), 20.00, 0.005, ".2f")
     show("ATM-forward implied vol (%)", 100 * float(h_vols(np.array([F1]), T, p)[0]), 16.94, 0.005, ".2f")
 
@@ -246,7 +247,7 @@ def main() -> None:
     avg_var = p0["theta"] + (p0["v0"] - p0["theta"]) * (1 - math.exp(-p0["kappa"] * T)) / (p0["kappa"] * T)
     bs = np.asarray(bs_price(S0, STRIKES, T, R, math.sqrt(avg_var), Q))
     show("xi = 0.001, rho = 0, v0 = 0.09: BS vol sqrt(average variance) (%)", 100 * math.sqrt(avg_var), 25.67, 0.005, ".2f")
-    show("  max |Heston - BS| price", float(np.max(np.abs(h_call(STRIKES, T, p0) - bs))), 2.7e-6, 5e-7, ".1e")
+    show("  max |Heston - BS| price", float(np.max(np.abs(h_call(STRIKES, T, p0) - bs))), 2.7e-6, 5e-8, ".1e")
 
     # 2. Monte Carlo against the Fourier price: Example 2, card deriv-heston-mc-scheme
     print("2. Full-truncation Euler, 2 x 100,000 antithetic paths, seed 11")
@@ -261,7 +262,7 @@ def main() -> None:
         show_row(f"   {steps} steps: (MC - Fourier) / s.e.", (mc - c_lewis) / se, e_z, 0.05, "9.1f")
         show(f"   share of variance steps truncated ({steps} steps, %)", 100 * neg, e_neg, 0.05, ".1f")
         if steps == 200:
-            assert np.all(np.abs(mc - c_lewis) < 2 * se), "200-step MC must agree with Fourier within 2 s.e."
+            assert np.all(np.abs(mc - c_lewis) < se), "200-step MC must agree with Fourier within one s.e."
         else:
             assert np.max((mc - c_lewis) / se) > 5.5, "25-step bias must be visible"
 
@@ -374,17 +375,23 @@ def main() -> None:
         show_row("     Hagan - Monte Carlo (vol points)", iv_h - iv_mc, e_diff, 0.005)
         show_row("     (Hagan - Monte Carlo) / s.e.", (iv_h - iv_mc) / (2e-2 * se / vega), e_z, 0.05, "7.1f")
         show(f"     share of paths absorbed at zero (T = {T_}, %)", 100 * absorbed, e_abs, 0.005, ".2f")
+        z_abs = np.abs((iv_h - iv_mc) / (2e-2 * se / vega))
+        if T_ == 1.0:
+            assert absorbed == 0.0, "no one-year path may hit zero"
+            show("     largest |Hagan - Monte Carlo| / s.e. at one year", float(z_abs.max()), 1.8, 0.05, ".1f")
 
     # Density from Hagan prices: Example 7, card deriv-sabr-negative-density
     Kd = np.linspace(0.0005, 0.03, 600)
     h = 1e-5
     print(f"5c. Density d2C/dK2 from Hagan vols, beta {beta}, rho {rho}, nu {nu}, ATM 20%, K in [0.05%, 3%]")
-    for T_, e_min, e_below, e_mass in ((1.0, 5.26e-3, 0.0, 0.0), (10.0, -111.9, 0.70, -0.113)):
+    for T_, e_min, tol_min, e_below, e_mass in ((1.0, 5.26e-3, 5e-6, 0.0, 0.0), (10.0, -111.9, 0.05, 0.70, -0.113)):
         a_ = alpha_for_atm(0.20, F, T_, beta, rho, nu)
         c = [black_call(F, Kd + s_ * h, T_, hagan_vol(F, Kd + s_ * h, T_, a_, beta, rho, nu)) for s_ in (-1, 0, 1)]
         dens = (c[0] - 2 * c[1] + c[2]) / h**2
-        show(f"   T = {T_}: min density", float(dens.min()), e_min, max(5e-5, 0.05 * abs(e_min)), ".2e")
+        show(f"   T = {T_}: min density", float(dens.min()), e_min, tol_min, ".4g")
         neg = Kd[dens < 0]
+        if neg.size:
+            assert np.all(dens[Kd <= neg.max()] < 0), "density must be negative at every grid strike below the crossing"
         show(f"   T = {T_}: density < 0 for K below (%)", 100 * float(neg.max()) if neg.size else 0.0, e_below, 0.005, ".2f")
         mass = float(np.sum(np.minimum(dens, 0.0)) * (Kd[1] - Kd[0]))
         show(f"   T = {T_}: negative probability mass", mass, e_mass, 5e-4, ".3f")

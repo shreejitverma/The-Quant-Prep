@@ -360,9 +360,11 @@ def main() -> None:
     check("explicit dt limit dx^2 / (sigma^2 + r dx^2)", dt_max, 0.0024997, 5e-8)
     check("explicit minimum steps for one year, ceil(T / dt limit)", math.ceil(T / dt_max), 401, 0)
     check("diffusion-only dt limit dx^2 / sigma^2", dx**2 / SIG**2, 0.0025, 1e-12)
+    check("diffusion-only limit: steps for one year, T sigma^2 / dx^2 (exactly 400)", T * SIG**2 / dx**2, 400, 1e-9)
     check("explicit 500 steps price", fd_call(n_space, 500, 0.0)[0], 10.4504, 5e-5)
     p_bad, _, v_bad = fd_call(n_space, 380, 0.0)
     check("380 steps: percent by which dt exceeds the limit", 100 * ((T / 380) / dt_max - 1), 5.3, 0.05)
+    check("380 steps: percent over the limit, whole percent (card)", 100 * ((T / 380) / dt_max - 1), 5, 0.5)
     check("explicit 380 steps (dt 5% over the limit): log10 max |V|", math.log10(np.max(np.abs(v_bad))), 14.26, 5e-3)
     check_sci("explicit 380 steps price at S0", p_bad, "-1.79e14")
     print()
@@ -382,17 +384,22 @@ def main() -> None:
         check_sci(f"n={n} CN error", got[n][1], e_cn)
     check("implicit error ratio n 400 -> 800", got[400][0] / got[800][0], 2.2, 0.05)
     check("CN error ratio n 400 -> 800", got[400][1] / got[800][1], 4.0, 0.05)
-    check("implicit / CN error at n = 800 (equal cost)", got[800][0] / got[800][1], 10.3, 0.05)
+    check("implicit / CN error at n = 800 (equal cost)", got[800][0] / got[800][1], 10, 0.5)  # "about ten times"
     expected_bc = {3.0: ("-2.01e-4", "-3.32e-1"), 5.0: ("-5.62e-4", "-7.60e-4"), 8.0: ("-1.44e-3", "-1.44e-3")}
     for hw_sd, (e_d, e_z) in expected_bc.items():
         check_sci(f"+/- {hw_sd:.0f} sd, Dirichlet top", fd_call(400, 400, 0.5, half_width=hw_sd * SIG)[0] - bs, e_d)
-        check_sci(f"+/- {hw_sd:.0f} sd, V=0 top", fd_call(400, 400, 0.5, half_width=hw_sd * SIG, upper="zero")[0] - bs, e_z)
+        err_zero = check_sci(f"+/- {hw_sd:.0f} sd, V=0 top", fd_call(400, 400, 0.5, half_width=hw_sd * SIG, upper="zero")[0] - bs, e_z)
+        if hw_sd == 3.0:
+            check("V=0 top at 3 sd: cost in cents (card: 33 cents)", -100 * err_zero, 33, 0.5)
+    check("Black-Scholes call, two decimals (card: a 10.45 option)", bs, 10.45, 5e-3)
     print()
 
     # 4. CN oscillations on a digital, Rannacher fix. Backs "Non-smooth payoffs and Rannacher smoothing", Example 3
     #    and cards deriv-fd-cn-oscillation, deriv-fd-rannacher, deriv-fd-greeks-from-grid.
     n_space, n_time = 400, 25
     _, dx = log_grid(n_space)
+    check("digital grid: dx (400 cells over +/- 5 sd)", dx, 0.005, 5e-4)
+    check("digital grid: dt = T / 25", T / n_time, 0.04, 5e-3)
     check("digital grid: sigma^2 dt / dx^2", SIG**2 * (T / n_time) / dx**2, 64.0, 1e-9)
     mu = SIG**2 * (T / n_time) / dx**2
     # amplification of the highest-frequency (sawtooth) mode for the diffusion part, xi dx = pi
@@ -414,8 +421,8 @@ def main() -> None:
     err_cn = check_sci("digital max gamma error CN", np.max(np.abs(grid_gamma(s, v_cn)[win] - g_exact)), "0.414")
     err_ran = check_sci("digital max gamma error Rannacher", np.max(np.abs(grid_gamma(s, v_ran)[win] - g_exact)), "6.9e-7")
     err_imp = check_sci("digital max gamma error implicit", np.max(np.abs(grid_gamma(s, v_imp)[win] - g_exact)), "3.6e-5")
-    check("CN gamma error / true max gamma", err_cn / np.max(np.abs(g_exact)), 778, 2)
-    check("implicit / Rannacher gamma error", err_imp / err_ran, 52, 1)
+    check("CN gamma error / true max gamma", err_cn / np.max(np.abs(g_exact)), 778, 0.5)
+    check("implicit / Rannacher gamma error", err_imp / err_ran, 52, 0.5)
     print()
 
     # 5. American put. Backs "American options as a complementarity problem", Example 4 and cards
@@ -434,6 +441,12 @@ def main() -> None:
     bnd = exercise_boundary(800, 800, (0.1, 0.25, 0.5, 1.0))
     for tau, s_star in zip((0.1, 0.25, 0.5, 1.0), (90.26, 86.72, 83.95, 80.86), strict=True):
         check(f"exercise boundary S*(tau={tau})", bnd[tau], s_star, 5e-3)
+        # "read at grid nodes about 0.2 apart in spot": node spacing at the boundary, one decimal
+        s_nodes = np.exp(log_grid(800)[0])
+        i_star = int(np.argmin(np.abs(s_nodes - bnd[tau])))
+        check(f"  node spacing in spot at S*(tau={tau})", s_nodes[i_star + 1] - s_nodes[i_star], 0.2, 0.05)
+    check("card: exercise boundary with 0.1 years left, one decimal", bnd[0.1], 90.3, 5e-2)
+    check("card: exercise boundary with one year left, one decimal", bnd[1.0], 80.9, 5e-2)
     check("perpetual boundary 2rK / (2r + sigma^2)", 2 * R * K / (2 * R + SIG**2), 71.43, 5e-3)
     print()
 
@@ -486,7 +499,8 @@ def main() -> None:
     hc1, hc2 = (R - Q - 0.5 * HESTON["theta"]) * T, HESTON["theta"] * T
     for n, e in {32: "3.5e-2", 64: "4.3e-4", 128: "9.2e-8", 256: "2.8e-10"}.items():
         c = cos_call(heston_cf_logret(R, Q, T), S0, strikes, R, T, hc1, hc2, n=n, L=12.0)
-        check_sci(f"COS N={n} vs Lewis Heston max error", np.max(np.abs(c - hes)), e)
+        err_h = check_sci(f"COS N={n} vs Lewis Heston max error", np.max(np.abs(c - hes)), e)
+    assert err_h < 3e-10, "TL;DR and Example 6 quote COS within 3e-10 of Lewis on Heston at N = 256"
 
 
 if __name__ == "__main__":

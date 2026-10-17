@@ -181,7 +181,8 @@ flowchart TD
 
 ## Worked examples
 
-All numbers come from [dispersion_correlation.py](code/dispersion_correlation.py).
+All numbers come from [dispersion_correlation.py](code/dispersion_correlation.py), which prints and asserts each one at the rounding quoted here.
+Monte Carlo figures (Examples 4, 5 and 7) come from fixed seeds and change with the seed, so prose quotes them as "about"; the closed-form and quadrature figures are exact to the digits shown.
 The basket: five stocks with index weights 30%, 25%, 20%, 15%, 10% and three-month ATM implied vols 25%, 30%, 35%, 28%, 40%; index ATM vol 20%.
 
 ### Example 1: implied correlation of a basket
@@ -230,7 +231,9 @@ Correlation-weighted stock notionals: 419.6, 291.4, 194.7, 155.8, 71.8.
 Their total vega notional is 66,559 against 100,000 on the index, yet the book is vol-neutral to proportional moves because single-stock vols move more vol points.
 A naive hedge that spreads 100,000 of vega by index weight would put 600 variance notional on stock 1 alone, against 419.6.
 
-One simulated year (seed 11) with true vols 20%, 24%, 40%, 30%, 45%, true pairwise correlation 0.15 and a constant-weight index:
+One simulated year with true vols 20%, 24%, 40%, 30%, 45%, true pairwise correlation 0.15 and a constant-weight index.
+
+One path from seed 11; every value in this table changes with the seed.
 
 | | Value |
 | :--- | ---: |
@@ -241,35 +244,39 @@ One simulated year (seed 11) with true vols 20%, 24%, 40%, 30%, 45%, true pairwi
 | Vol term | 16,865 |
 | Correlation term | 143,541 |
 
-The decomposition adds up exactly (asserted to $10^{-6}$).
-"Correlation came in at 0.20 against 0.29 implied, worth 143,541; the vol term, 16,865, is about a tenth of the total even though every stock's realised vol missed its implied by several vol points (table above)."
-The correlation-swap estimator on the same path is 0.2072 with pair weights $w_iw_j$ and 0.2181 equally weighted: a correlation swap and a dispersion trade settle on different numbers.
-And a year of daily data measured 0.20 when the true correlation was 0.15: realised correlation is a noisy statistic.
+The decomposition is an identity: total minus the two terms is asserted to be within $10^{-6}$.
+"Correlation came in at about 0.20 against 0.29 implied, worth about 143,541; the vol term, about 16,865, is about a tenth of the total even though every stock's realised vol missed its implied by at least 2.5 vol points (table above)."
+The correlation-swap estimator on the same path is about 0.2072 with pair weights $w_iw_j$ and about 0.2181 equally weighted: a correlation swap and a dispersion trade settle on different numbers.
+And a year of daily data measured about 0.20 when the true correlation was 0.15: realised correlation is a noisy statistic.
 
 ### Example 5: the P&L distribution and the choice of weights
 
-Over 4,000 simulated years:
+Over 4,000 simulated years.
+
+Simulated with seed 12 (both rows, drawn in sequence); every value in this table changes with the seed.
 
 | World | Mean P&L | s.d. P&L | Note |
 | :--- | ---: | ---: | :--- |
 | Vols and correlation at implied | $-767$ | 55,743 | standard error 881, so fair; vol term s.d. 668, correlation term s.d. 55,753 |
 | Vols at implied, correlation 0.15 | 243,290 | 48,262 | mean correlation term 242,290 against the first-order $N_I(\rho_K - 0.15)B_K = 243{,}312.5$ |
 
-At implied correlation but with random vol shocks (common factor 30%, idiosyncratic 15% in log vol), the correlation-weighted book has P&L s.d. 16,183; the vega-notional-by-index-weight book has mean 150,822 and s.d. 446,310.
+At implied correlation but with random vol shocks (common factor 30%, idiosyncratic 15% in log vol, seed 13), the correlation-weighted book has P&L s.d. about 16,183; the vega-notional-by-index-weight book has mean about 150,822 and s.d. about 446,310.
 The second is a vol trade dressed as a correlation trade.
 
 ### Example 6: the crash, against a correlation swap
 
 Realised vols double and realised correlation is 0.9.
 Realised index vol is 57.98.
-The correlation-weighted book loses 4,403,500, all of it correlation term; the vol term is exactly 0, by Euler.
+The correlation-weighted book loses 4,403,500, all of it correlation term; the vol term is zero by Euler (asserted within $10^{-6}$ in floating point).
 A correlation swap with the same initial correlation sensitivity has notional $N_IB_K = 1{,}792{,}250$ per unit of correlation and loses 1,100,875.
 The ratio is $B_R/B_K = 4$: the variance dispersion's correlation notional scaled with realised variance.
 "So a long variance dispersion is short correlation with a notional that grows in the crash; size it for this scenario, not for the vega."
 
 ### Example 7: which way does a worst-of move with correlation?
 
-Two stocks, $S = K = 100$, vol 25%, one year, $r = 0$, 400,000 paths:
+Two stocks, $S = K = 100$, vol 25%, one year, $r = 0$, 400,000 paths; the correlation 1.0 row is the Black-Scholes closed form.
+
+Simulated with seed 5 (correlations 0.2 to 0.8); those values change with the seed.
 
 | Correlation | Worst-of put | Worst-of call |
 | ---: | ---: | ---: |
@@ -283,10 +290,10 @@ The issuer who owns the worst-of put inside an autocallable, or who is short a w
 ## Pitfalls
 
 - Using the proxy $\sigma_I^2/(\sum w_i\sigma_i)^2$ on a concentrated basket; it overstates implied correlation by a term of order $A/B$.
-- Quoting one implied correlation without saying which strikes or instruments; ATM, 90% and variance-strike correlations differ by tens of points.
+- Quoting one implied correlation without saying which strikes or instruments; in the worked example the 90% and variance-strike correlations sit 14 and 24 points above the ATM one.
 - Calling a vega-neutral straddle dispersion a correlation trade; it is net long vol and pays theta.
 - Sizing a long dispersion on its vega or its correlation sensitivity at inception; the correlation notional scales with realised variance and peaks in the crash.
-- Treating realised correlation over a year as precise; with 252 daily returns a single pair's estimate has a standard error of several correlation points.
+- Treating realised correlation over a year as precise; with 252 daily returns a single pair's estimate has a standard error of about $(1 - \rho^2)/\sqrt{252}$, 0.062 at $\rho = 0.15$.
 - Ignoring weight drift and index rebalancing; the identity holds for the weights actually used, and a cap-weighted index changes them.
 - Forgetting caps and jumps: capped single-stock variance and straddles both under-deliver on a single-name blow-up, the scenario the long leg is supposed to monetise.
 - Hedging a worst-of book's correlation with long dispersion; it has the same sign and doubles the risk.
@@ -339,7 +346,7 @@ The issuer who owns the worst-of put inside an autocallable, or who is short a w
 
 > [!question]- deriv-disp-pnl-decomposition | Decompose the P&L of a variance dispersion trade.
 > Vol term $\sum N_i(\sigma_{i,R}^2 - K_i) - N_I[(A_R - A_K) + \rho_K(B_R - B_K)]$ plus correlation term $-N_I(\rho_R - \rho_K)B_R$, with $\rho_R = (\sigma_{I,R}^2 - A_R)/B_R$.
-> It is an identity; in the simulated year 160,406 = 16,865 + 143,541.
+> It is an identity; in the simulated year (seed 11) a total of about 160,406 splits into about 16,865 of vol term and about 143,541 of correlation term.
 
 > [!question]- deriv-disp-crash | You are long a correlation-weighted variance dispersion. Vols double and correlation goes to 0.9. What happens?
 > You lose $N_I(0.9 - \rho_K)B_R$ with $B_R = 4B_K$: 4.40 million on 2,500 index variance notional, all correlation term, zero vol term.
@@ -350,11 +357,11 @@ The issuer who owns the worst-of put inside an autocallable, or who is short a w
 > Since correlation and vol spike together, short correlation through variance dispersion is convex against you; the two also settle on different realised-correlation statistics.
 
 > [!question]- deriv-corr-realised-noise | How precisely does a year of daily data measure correlation?
-> Poorly: the sampling standard error of one pair's correlation is roughly $(1 - \rho^2)/\sqrt{n}$, several points with $n = 252$.
-> In the simulation the true correlation was 0.15 and one year realised about 0.20.
+> Poorly: the sampling standard error of one pair's correlation is roughly $(1 - \rho^2)/\sqrt{n}$, 0.062 at $\rho = 0.15$ with $n = 252$.
+> In the simulation (seed 11) the true correlation was 0.15 and one year realised about 0.20.
 
 > [!question]- deriv-corr-worst-of-sign | An issuer sells worst-of autocallables. What is its correlation sensitivity, and does long dispersion hedge it?
-> Negative: the investor is short a worst-of down-and-in put, so the issuer owns it, and a worst-of put loses value as correlation rises (15.73 at 0.2 to 12.79 at 0.8 in the two-stock example).
+> Negative: the investor is short a worst-of down-and-in put, so the issuer owns it, and a worst-of put loses value as correlation rises (about 15.73 at 0.2 to about 12.79 at 0.8 in the simulated two-stock example).
 > Long dispersion also has negative correlation sensitivity, so it adds risk; the hedge buys correlation, for example short dispersion.
 
 > [!question]- deriv-disp-straddle-vs-varswap | Straddles or variance swaps for a dispersion trade?

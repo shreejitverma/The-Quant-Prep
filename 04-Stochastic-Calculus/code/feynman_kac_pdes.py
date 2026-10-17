@@ -103,6 +103,7 @@ def affine_bonds(rng: np.random.Generator) -> None:
     lnA = (th - s * s / (2 * k * k)) * (B - tau) - s * s * B * B / (4 * k)
     closed = math.exp(lnA - B * r0)
     check("Vasicek B(5)", B, 2.589566, 5e-7)
+    check("Vasicek B(5) to four decimals (card)", B, 2.5896, 5e-5)
     check("Vasicek P(0,5) closed form", closed, 0.820839, 5e-7)
     # Riccati system in tau: B' = 1 - kappa B, (ln A)' = -kappa theta B + sigma^2 B^2 / 2
     y = rk4(lambda y: np.array([1 - k * y[0], -k * th * y[0] + 0.5 * s * s * y[0] ** 2]), np.zeros(2), tau, 500)
@@ -171,9 +172,11 @@ def barrier_boundary(rng: np.random.Generator) -> None:
     dao = down_and_out(100.0, K, H, T, r, sig)
     check("vanilla call", vanilla, 12.3360, 5e-5)
     check("down-and-out call (images)", dao, 9.1112, 5e-5)
+    check("down-and-out call to two decimals (card)", dao, 9.11, 5e-3)
+    check("vanilla call to two decimals (card)", vanilla, 12.34, 5e-3)
     check("image exponent 1 - 2r/sigma^2", 1 - 2 * r / sig**2, -0.6, 1e-12)
     check("fraction of the vanilla removed by the knock-out", 1 - dao / vanilla, 0.26, 5e-3)
-    check("value on the barrier S = H", down_and_out(H, K, H, T, r, sig), 0.0, 1e-12)
+    check("value on the barrier S = H (exactly 0)", down_and_out(H, K, H, T, r, sig), 0.0, 0.0)
     # The image term solves the PDE too: residual at (tau, S) = (0.6, 100)
     tau, S, h, dt = 0.6, 100.0, 1e-2, 1e-5
 
@@ -223,6 +226,8 @@ def perpetual_put() -> None:
         return (K - s_star) * (spot / s_star) ** p
 
     check("perpetual put at S=100", value(100.0), 17.687, 5e-4)
+    check("perpetual put to two decimals (card)", value(100.0), 17.69, 5e-3)
+    check("exercise boundary to two decimals (card)", s_star, 61.54, 5e-3)
     h = 1e-4
     slope = (value(s_star + h) - value(s_star)) / h
     check("smooth pasting: V'(S*+) = -1", slope, -1.0, 1e-4)
@@ -245,6 +250,8 @@ def perpetual_put() -> None:
         Sx = 100.0 * u ** (i - 2 * np.arange(i + 1))
         V = np.maximum(K - Sx, disc * (qp * V[:-1] + (1 - qp) * V[1:]))
     check("100-year American put, 20,000-step CRR tree", float(V[0]), 17.682, 5e-4)
+    assert V[0] < value(100.0), "finite-maturity tree must sit below the perpetual value"
+    print("   tree value is below the perpetual value: ok")
 
 
 # ----------------------------------------------------------------------------------------------

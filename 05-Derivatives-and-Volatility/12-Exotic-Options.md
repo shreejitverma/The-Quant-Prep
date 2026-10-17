@@ -15,7 +15,7 @@ sources: [John Hull - Options Futures and Other Derivatives (Pearson) exotic opt
 - A digital is the limit of a call spread: price it with the skew term, $D = e^{-rT}N(d_2) - \text{vega}\,\partial\sigma/\partial K$, and hedge it as a slightly wide call spread that over-replicates; near expiry its delta at the strike grows like $1/\sqrt{T}$ (pin risk).
 - Barriers: in plus out equals vanilla; Reiner-Rubinstein closed forms price all eight continuously monitored types; simulate them with a Brownian-bridge crossing probability, and price daily monitoring as a continuous barrier shifted by $e^{\pm 0.5826\sigma\sqrt{\Delta t}}$.
 - Reverse knock-outs (barrier in the money) are short vega and mostly short gamma between strike and barrier, with a delta that flips sign and jumps at the barrier; they are where hedging and model risk concentrate.
-- Asians and lookbacks: the geometric Asian has a lognormal closed form and is the control variate for the arithmetic one (variance cut by more than 1000x); floating-strike lookbacks have Goldman-Sosin-Gatto closed forms and can be simulated exactly with Brownian-bridge extremes.
+- Asians and lookbacks: the geometric Asian has a lognormal closed form and makes a strong control variate for the arithmetic one (variance cut by more than a factor of 1000 for twelve monthly fixings in Example 5); floating-strike lookbacks have Goldman-Sosin-Gatto closed forms and can be simulated exactly with Brownian-bridge extremes.
 - Autocallables and cliquets are sold as notes: the investor is short a knock-in put and short volatility, so the issuing dealer ends up long vega and long dividends, and cliquet value lives in the forward smile, which local volatility gets wrong.
 
 ## Learning objectives
@@ -74,7 +74,7 @@ which for $r = q$ ($\mu = -\tfrac12$) is the classic $C_{BS}(S, K) - \tfrac{S}{H
 
 Simulation.
 On a grid of step $\Delta t$ a path can cross between dates.
-Conditional on log-prices $x_i, x_{i+1}$ above $h = \ln H$, the Brownian bridge crosses with probability $\exp\big(-2(x_i - h)(x_{i+1} - h)/(\sigma^2\Delta t)\big)$; multiplying the payoff by the product of the survival probabilities gives an unbiased continuous-monitoring estimator even on a coarse grid.
+Conditional on log-prices $x_i, x_{i+1}$ above $h = \ln H$, the Brownian bridge crosses with probability $\exp\big(-2(x_i - h)(x_{i+1} - h)/(\sigma^2\Delta t)\big)$; multiplying the payoff by the product of the survival probabilities targets the continuously monitored price under Black-Scholes dynamics on any grid, and Example 3 checks it against the closed forms with 12 and 252 steps.
 If the contract is monitored discretely (daily closes), the naive grid simulation is the right model, and Broadie-Glasserman-Kou show the discrete price is approximately the continuous formula at a barrier shifted away from spot by $e^{\pm\beta\sigma\sqrt{\Delta t}}$ (the error vanishes faster than $1/\sqrt{m}$ for $m$ monitoring dates), $\beta = 0.5826$; [Monte Carlo Pricing](10-Monte-Carlo-Pricing-and-Variance-Reduction.md) gives $\beta = -\zeta(1/2)/\sqrt{2\pi}$ and works a daily example.
 
 Greeks and model risk.
@@ -93,8 +93,9 @@ $$
 \ln G \sim N\Big(\ln S_0 + (r - q - \tfrac12\sigma^2)\bar{t},\ \frac{\sigma^2}{n^2}\sum_{i,j}\min(t_i, t_j)\Big), \qquad \bar{t} = \frac1n\sum_i t_i,
 $$
 
-and the geometric call is a Black-type formula on that lognormal (Kemna-Vorst for the continuous limit, where the variance is $\sigma^2T/3$).
-Since $G \le \bar{S}$ and the two are almost perfectly correlated, the geometric Asian is the control variate for the arithmetic one.
+and the geometric call is a Black-type formula on that lognormal.
+With $t_i = iT/n$ the double sum is $T(n + 1)(2n + 1)/6$, so the variance is $\sigma^2T(n + 1)(2n + 1)/(6n^2)$, which tends to $\sigma^2T/3$ in the continuous limit treated by Kemna and Vorst.
+Since $G \le \bar{S}$ on every path (AM-GM) and the two payoffs move almost one-for-one (correlation about 0.9996 in Example 5), the geometric Asian is a natural control variate for the arithmetic one.
 
 ### Lookbacks
 
@@ -155,12 +156,13 @@ The locally capped, globally floored cliquet pays notional times $\max\big(F, \s
 Each clipped return is $R_i - (R_i - c)^+ + (f - R_i)^+$, a forward-start position, so without the global floor the price is a sum of one-period Black-Scholes prices; the global floor is a put on the sum and needs simulation.
 Cliquets are the canonical forward-smile product: their value depends on the smile that will prevail at each reset, which today's vanillas do not pin down.
 Local volatility produces forward smiles that flatten and lose their skew as time passes, so it typically misprices cliquets; stochastic volatility (Bergomi's models) keeps a realistic forward skew and is the standard tool.
-The Black-Scholes vega of a capped cliquet can be negative while its exposure to forward skew and vol-of-vol dominates, so "vega" alone is the wrong risk measure for it.
+The Black-Scholes vega of a capped cliquet can be small and negative while its legs carry larger offsetting vegas (Example 8), so "vega" alone is the wrong risk measure for it; desks also measure forward-skew and vol-of-vol exposure, which a Black-Scholes model cannot.
 
 ## Worked examples
 
 Unless stated, $S_0 = K = 100$, $T = 1$, $r = 5\%$, $q = 0$, $\sigma = 20\%$, Black-Scholes call 10.4506 and put 5.5735.
 Every number below is printed and asserted by [exotic_options.py](code/exotic_options.py).
+Closed forms are exact; simulated values name their seed, are quoted as "about", and change with the seed.
 
 ### Example 1: a digital, its replication and its skew
 
@@ -176,13 +178,13 @@ Over-hedging call spreads, per unit of payout:
 The cost is linear in width: about half the width times the discounted risk-neutral density at the strike, $e^{-rT}\varphi(d_2)/(K\sigma\sqrt{T}) = 0.01876$ per unit of strike.
 With skew: a three-month digital, ATM vol 20% and skew $-0.004$ per strike point.
 Flat-vol price 0.5233; vega 19.64 per unit vol; skew term $-19.64 \times (-0.004) = 0.0786$; digital 0.6019, confirmed by a 0.02-wide call spread priced on the smile.
-Ignoring the skew undersells the digital by 8 points of payout.
+Ignoring the skew undersells the digital by about 8 points per 100 of payout.
 
 ### Example 2: pin risk
 
 A dealer is short a digital paying 1,000,000 if the stock (at 100, $\sigma = 20\%$) finishes above 100.
 At-the-strike delta of the hedge: 68,700 shares with a month left, 143,700 with a week and 316,600 with a day, that is about 31.66 million dollars of stock against a one-million payout.
-One day out, gamma is $+145{,}800$ shares per point at 99 and $-145{,}300$ at 101: a one-point move flips the hedge by roughly 145,000 shares in opposite directions on either side of the strike.
+One day out, gamma is $+145{,}800$ shares per point at 99 and $-145{,}300$ at 101: a one-point move changes the hedge by more than 145,000 shares, in opposite directions on either side of the strike.
 No one can rebalance that through the close, which is why the risk is booked as a call spread rather than a digital.
 
 ### Example 3: barrier prices, parity and simulation
@@ -196,8 +198,8 @@ Barriers at 90 (down) and 120 (up), strike 100:
 | Down-and-out put | 0.1512 | Down-and-in put | 5.4223 |
 | Up-and-out put | 5.3601 | Up-and-in put | 0.2134 |
 
-Each in-out pair adds to the vanilla call or put to $10^{-10}$.
-Simulation with 200,000 paths (vanilla payoff as control variate in every row):
+Each in-out pair adds to the vanilla call or put within $10^{-10}$.
+Simulation with 200,000 paths, seed 11, vanilla payoff as control variate in every row (values change with the seed):
 
 | Contract and method | Price (s.e.) |
 | :--- | :--- |
@@ -208,8 +210,8 @@ Simulation with 200,000 paths (vanilla payoff as control variate in every row):
 | Up-and-out call, 12 steps, Brownian bridge | 1.1813 (0.0063) |
 | Up-and-out call, 252 steps, barrier checked daily only | 1.3314 (0.0076) |
 
-The bridge reproduces the continuous formula even with 12 steps.
-Checking only on the grid misses crossings and overprices knock-outs, by 0.27 daily and 0.91 monthly for the down-and-out (relative to the closed form 8.6655).
+Each bridge row is within two standard errors of its closed form (8.6655 and 1.1761), even with 12 steps.
+Checking only on the grid misses crossings and overprices knock-outs, by about 0.27 daily and about 0.91 monthly for the down-and-out (relative to the closed form 8.6655).
 That naive daily number is the correct price of a daily-monitored contract, and Broadie-Glasserman-Kou predicts it without simulation: $\beta\sigma\sqrt{1/252} = 0.00734$, so price the continuous formula at $90e^{-0.00734} = 89.34$ to get 8.9139, and at $120e^{0.00734}$ to get 1.3321 for the up-and-out, both within two standard errors of the daily simulations.
 
 ### Example 4: Greeks of a reverse knock-out
@@ -230,36 +232,36 @@ Contrast the regular down-and-out call ($H = 90$): at spot 91 it is worth 0.9320
 ### Example 5: arithmetic Asian with a geometric control variate
 
 Twelve monthly fixings.
-Geometric closed form 5.9402 (simulated 5.9472 on the same paths).
-Arithmetic, 200,000 paths: plain 6.1624 with standard error 0.0190; with the geometric control ($b = 1.031$, payoff correlation 0.9996) 6.1552 with standard error 0.00053.
-The variance falls by a factor of about 1300, worth 260 million plain paths.
-The arithmetic Asian is worth 0.589 of the 10.45 vanilla: the log-variance of the twelve-fixing geometric average is 0.376 of the terminal log-variance (one third in the continuous limit).
+Geometric closed form 5.9402 (simulated about 5.9472 on the same paths).
+Arithmetic, 200,000 paths, seed 5: plain about 6.1624 with standard error 0.0190; with the geometric control ($b$ about 1.031, payoff correlation about 0.9996) about 6.1552 with standard error 0.00053.
+On these paths the variance falls by a factor of about 1301, worth about 260 million plain paths.
+The arithmetic Asian is worth about 0.589 of the 10.45 vanilla: the log-variance of the twelve-fixing geometric average is 0.376 of the terminal log-variance ($13 \times 25/(6 \times 144)$, tending to one third in the continuous limit).
 
 ### Example 6: lookbacks, exact and discrete
 
 Goldman-Sosin-Gatto: floating-strike call 17.2168, put 14.2906, against 10.4506 and 5.5735 for the ATM vanillas.
-Exact Brownian-bridge simulation with a single time step and 1,000,000 paths gives 17.2220 (s.e. 0.0146) and 14.2714 (s.e. 0.0098).
-Monitoring the minimum only at daily closes gives 16.6653: 0.55 less, because the true minimum is lower than the lowest close; contracts specify their fixings, and the model must match them.
+Exact Brownian-bridge simulation with a single time step, 1,000,000 paths and seed 3 gives about 17.2220 (s.e. 0.0146) and about 14.2714 (s.e. 0.0098).
+Monitoring the minimum only at daily closes (100,000 paths, seed 8) gives about 16.6653: about 0.55 less, because the true minimum is lower than the lowest close; contracts specify their fixings, and the model must match them.
 
 ### Example 7: an autocallable, priced and risk-signed
 
-Three years, quarterly observations, trigger 100%, memory coupon, European knock-in at 60%, $r = 3\%$, $q = 2\%$, $\sigma = 25\%$, 400,000 paths with fixed seed.
+Three years, quarterly observations, trigger 100%, memory coupon, European knock-in at 60%, $r = 3\%$, $q = 2\%$, $\sigma = 25\%$, 400,000 paths with seed 21 (every figure below is simulated and changes with the seed).
 
-- Fair coupon (note worth par, ignoring the issuer's funding spread and fees): 3.8805% per quarter, 15.52% a year.
-- Probability of being called at the first observation 0.4827, by the end of year one 0.7031; expected life 1.0328 years.
-- Probability of a capital loss 0.0836, with an average loss of 52.62% of notional when it happens.
-- Investor's note value per vol point: $-0.3982$ per 100 notional; per 1% of dividend yield: $-0.6843$.
+- Fair coupon (note worth par, ignoring the issuer's funding spread and fees): about 3.8805% per quarter, about 15.52% a year.
+- Probability of being called at the first observation about 0.4827, by the end of year one about 0.7031; expected life about 1.0328 years.
+- Probability of a capital loss about 0.0836, with an average loss of about 52.62% of notional when it happens.
+- Investor's note value per vol point: about $-0.3982$ per 100 notional; per 1% of dividend yield: about $-0.6843$ (bumps on common random numbers).
 
 The investor is short volatility and short dividends, so the dealer who sold the note is long both.
-The headline coupon looks generous because it is paid only on early redemption, which is most likely exactly when the investor would have done well anyway, and because the investor is selling a put with a 52% average loss in the bad states.
+The headline coupon looks generous because it is paid only on early redemption, which is most likely exactly when the investor would have done well anyway, and because the investor is selling a put with an average loss of about 53% in the bad states.
 
 ### Example 8: forward start and a cliquet
 
-A one-year ATM call starting in one year is worth $S_0C_{BS}(1, 1, 1) = 10.4506$ with $q = 0$, the same as today's one-year call; simulation with 1,000,000 paths gives 10.4368 (s.e. 0.0152).
+A one-year ATM call starting in one year is worth $S_0C_{BS}(1, 1, 1) = 10.4506$ with $q = 0$, the same as today's one-year call; simulation with 1,000,000 paths and seed 9 gives about 10.4368 (s.e. 0.0152).
 With $q = 2\%$ it is $e^{-0.02}$ times the spot-start call on a 2% yield, 9.0443.
 Cliquet: twelve monthly returns clipped to $[-3\%, +3\%]$, summed, globally floored at 2%, notional 100.
-Without the floor the strip is worth 1.1971 in closed form (simulation 1.1976); with the floor 4.9459, so the floor alone is worth 3.7483.
-Black-Scholes vega of the whole cliquet is $-0.0303$ per vol point: the capped strip has $-0.1299$ and the floor $+0.0996$.
+Without the floor the strip is worth 1.1971 in closed form (simulation with 400,000 paths and seed 13 about 1.1976, within two standard errors); with the floor about 4.9459 on the same paths, so the floor alone is worth about 3.7483.
+Black-Scholes vega of the whole cliquet is about $-0.0303$ per vol point (simulated bumps on common random numbers): the capped strip has $-0.1299$ in closed form and the floor about $+0.0996$.
 The near-zero net vega hides two offsetting exposures to forward volatility, so Black-Scholes vega says little about the cliquet's risk; desks risk-manage it on forward skew and vol-of-vol.
 
 ## Pitfalls
@@ -297,7 +299,7 @@ The near-zero net vega hides two offsetting exposures to forward volatility, so 
 
 > [!question]- deriv-barrier-bridge | How do you simulate a continuously monitored barrier without a fine grid?
 > Multiply the payoff by the probability of not crossing between grid points, $1 - \exp\big(-2(x_i - h)(x_{i+1} - h)/(\sigma^2\Delta t)\big)$ per step, from the Brownian bridge.
-> With 12 steps this gives 1.1813 for an up-and-out call worth 1.1761, while checking only on a daily grid gives 1.3314.
+> With 12 steps and seed 11 this gives about 1.1813 (s.e. 0.0063) for an up-and-out call worth 1.1761, while checking only on a daily grid gives about 1.3314.
 
 > [!question]- deriv-barrier-bgk | A barrier is monitored at daily closes. How do you price it with a continuous-barrier formula?
 > Shift the barrier away from spot by $e^{\beta\sigma\sqrt{\Delta t}}$ with $\beta = 0.5826$ (Broadie-Glasserman-Kou).
@@ -320,16 +322,16 @@ The near-zero net vega hides two offsetting exposures to forward volatility, so 
 > $K = 100$, $H = 90$, spot 91: price 0.9320, delta 0.9202 against a vanilla delta of 0.4516.
 
 > [!question]- deriv-asian-control-variate | How do you price an arithmetic Asian efficiently, and how much does it help?
-> Simulate it with the geometric Asian as control variate: the geometric average is lognormal, so its price is closed-form, and the two payoffs are almost perfectly correlated.
-> Twelve monthly fixings: correlation 0.9996 and a variance reduction of about 1300, standard error 0.00053 instead of 0.0190.
+> Simulate it with the geometric Asian as control variate: the geometric average is lognormal, so its price is closed-form, and it never exceeds the arithmetic average.
+> Twelve monthly fixings, 200,000 paths, seed 5: payoff correlation about 0.9996 and a variance reduction of about 1301, standard error 0.00053 instead of 0.0190.
 
 > [!question]- deriv-asian-geometric-formula | Why does the geometric Asian have a closed form and what is its effective volatility?
 > A geometric average of lognormals is lognormal: $\ln G$ is Gaussian with variance $\frac{\sigma^2}{n^2}\sum_{i,j}\min(t_i, t_j)$.
-> In continuous monitoring that variance is $\sigma^2T/3$, an effective volatility of $\sigma/\sqrt3$ (Kemna-Vorst).
+> With fixings $t_i = iT/n$ the variance is $\sigma^2T(n + 1)(2n + 1)/(6n^2)$, 0.376 of $\sigma^2T$ for twelve fixings and $\sigma^2T/3$ in the continuous limit, an effective volatility of $\sigma/\sqrt3$ (Kemna-Vorst).
 
 > [!question]- deriv-lookback-exact-sim | How can you simulate a continuously monitored lookback exactly?
 > Sample the endpoint, then the minimum of the Brownian bridge in closed form: $x_{\min} = \tfrac12\big(x_0 + x_1 - \sqrt{(x_1 - x_0)^2 - 2\sigma^2\tau\ln U}\big)$.
-> One step per path gives 17.2220 (s.e. 0.0146) against the Goldman-Sosin-Gatto 17.2168, while daily closes give 16.6653.
+> One step per path (1,000,000 paths, seed 3) gives about 17.2220 (s.e. 0.0146) against the Goldman-Sosin-Gatto 17.2168, while daily closes give about 16.6653.
 
 > [!question]- deriv-lookback-value | Why is a floating-strike lookback call worth much more than an ATM call?
 > It buys at the realised minimum, so its strike is at or below the initial spot and the payoff $S_T - \min S$ is never negative (zero only if the final price is the low).
@@ -340,11 +342,11 @@ The near-zero net vega hides two offsetting exposures to forward volatility, so 
 > The investor is long a bond and short a down-and-in put plus digital-like call features; the coupon is the premium.
 
 > [!question]- deriv-autocall-dealer-risk | After selling autocallables, is the dealer long or short vega and dividends? How would you check?
-> In the worked example the dealer is long both: the note value falls by 0.3982 per vol point and by 0.6843 per 1% of dividend yield for the investor.
+> In the worked example (seed 21) the dealer is long both: the note value falls by about 0.3982 per vol point and by about 0.6843 per 1% of dividend yield for the investor.
 > Check by bumping volatility and dividend yield in the pricer with common random numbers; trigger, memory and knock-in style can change magnitudes, so do not assume.
 
 > [!question]- deriv-autocall-coupon-illusion | An autocallable pays 15.5% a year with 60% protection. Why is that not a 15.5% yield?
-> The coupon is paid only on early call (expected life about one year in the example), and the investor bears losses averaging 52.62% of notional in the 8.36% of scenarios that knock in.
+> The coupon is paid only on early call (expected life about one year in the example), and the investor bears losses averaging about 52.62% of notional in about 8.36% of scenarios, those that knock in.
 > At the fair coupon the note is worth par: the high coupon is the price of the put the investor sold.
 
 > [!question]- deriv-cliquet-forward-start | Price an ATM forward-start call set in one year and expiring in two, with no dividends.
@@ -353,7 +355,7 @@ The near-zero net vega hides two offsetting exposures to forward volatility, so 
 
 > [!question]- deriv-cliquet-forward-skew | Why are cliquets called forward-smile products, and which model misprices them?
 > Each period is a forward-starting option whose value depends on the smile at the reset date, which today's surface does not fix.
-> Local volatility flattens the forward skew over time and misprices them; stochastic-volatility models are used, and Black-Scholes vega (here $-0.0303$ from $-0.1299$ and $+0.0996$ offsetting legs) hides the real exposure.
+> Local volatility flattens the forward skew over time and misprices them; stochastic-volatility models are used, and Black-Scholes vega (here about $-0.0303$ from a $-0.1299$ strip and an about $+0.0996$ floor) hides the real exposure.
 
 ## In this repo and SDE-Interview-Prep
 

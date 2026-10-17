@@ -15,7 +15,7 @@ sources: [Paul Wilmott - Paul Wilmott Introduces Quantitative Finance (Wiley 2nd
 - Write the pricing PDE in log-spot, $V_\tau = \tfrac12\sigma^2V_{xx} + (r - q - \tfrac12\sigma^2)V_x - rV$, discretise space with central differences and time with the theta-scheme: $\theta = 0$ explicit, $\theta = 1$ implicit, $\theta = \tfrac12$ Crank-Nicolson; each step is one $O(n)$ tridiagonal solve.
 - Explicit is stable only if $\sigma^2\Delta t/\Delta x^2 \le 1$ and blows up beyond it; implicit is first order in time and unconditionally damped; Crank-Nicolson is second order but only A-stable, so a kinked or discontinuous payoff leaves undamped sawtooth oscillations in gamma unless the first steps are implicit (Rannacher smoothing).
 - American options are a linear complementarity problem: enforce $V \ge$ intrinsic with projected SOR or the penalty method; both give the same answer and converge to the tree price, and the grid gives the exercise boundary for free.
-- Fourier methods price Europeans from the characteristic function: Carr-Madan damps the call by $e^{\alpha k}$ and FFTs a whole strike grid ($\eta\lambda = 2\pi/N$); COS expands the density in cosines and converges exponentially, pricing to $10^{-10}$ with a few hundred terms.
+- Fourier methods price Europeans from the characteristic function: Carr-Madan damps the call by $e^{\alpha k}$ and FFTs a whole strike grid ($\eta\lambda = 2\pi/N$); COS expands the density in cosines and converges exponentially: in the worked example it matches Black-Scholes within $10^{-12}$ with 64 terms and Lewis on Heston within $3 \times 10^{-10}$ with 256.
 - Pick by problem shape: Fourier for European calibration, PDE for early exercise and barriers in one or two factors, Monte Carlo for high dimension and heavy path dependence.
 
 ## Learning objectives
@@ -152,7 +152,7 @@ $$
 
 where $w_0 = \tfrac12$, $w_k = 1$ otherwise, and $U_k$ integrates the payoff against $\cos(k\pi(y - A)/(B - A))$.
 The range is set from the cumulants, $[A, B] = c_1 \pm L\sqrt{c_2 + \sqrt{c_4}}$ with $L$ around 10 (Fang and Oosterlee); the repo's script uses $c_1 \pm L\sqrt{c_2}$, exact for Black-Scholes where $c_4 = 0$, with $c_2 \approx \theta T$ and a wider $L = 12$ for Heston.
-For smooth densities the error decays exponentially in $N$, so 64 to 256 terms reach machine-level accuracy; the remaining error is truncation of the range, controlled by $L$.
+For smooth densities the error decays exponentially in $N$: in Example 6, 64 terms are within $10^{-12}$ of Black-Scholes and 256 terms within $3 \times 10^{-10}$ of Lewis on Heston; the remaining error is truncation of the range, controlled by $L$.
 For a wide range the call coefficients grow like $e^{B}$, so implementations price puts and use parity.
 
 ### Choosing a method
@@ -173,7 +173,7 @@ flowchart TD
 
 | Method | Strength | Weakness | Desk use |
 | :--- | :--- | :--- | :--- |
-| Fourier (FFT, COS, Lewis) | a few hundred characteristic-function evaluations per European, exact to $10^{-10}$ | needs a characteristic function; Europeans only (Bermudans via COS with extra work) | calibrating Heston or Levy models to the whole surface |
+| Fourier (FFT, COS, Lewis) | a few hundred characteristic-function evaluations per European; COS and Lewis agree within $3 \times 10^{-10}$ on Heston here | needs a characteristic function; Europeans only (Bermudans via COS with extra work) | calibrating Heston or Levy models to the whole surface |
 | PDE (theta-scheme) | early exercise, barriers, smooth Greeks off the grid | cost explodes beyond two or three dimensions | American and barrier books under local vol, convertible bonds, one-factor rates |
 | Binomial tree ([Binomial Trees](03-Binomial-Trees.md)) | simplest early exercise | first order, odd-even oscillation, a crude explicit scheme | benchmarks and interviews |
 | Monte Carlo ([Monte Carlo Pricing](10-Monte-Carlo-Pricing-and-Variance-Reduction.md)) | any dimension and path dependence | $1/\sqrt{N}$ noise, early exercise needs regression | baskets, autocallables, XVA |
@@ -228,8 +228,8 @@ The sawtooth amplification is $(1 - 64)/(1 + 64) = -0.9692$ per Crank-Nicolson s
 | Crank-Nicolson with 2 Rannacher steps | 0.5323 | $6.9 \times 10^{-7}$ |
 | Implicit | 0.5320 | $3.6 \times 10^{-5}$ |
 
-The true gamma is at most $5.32 \times 10^{-4}$ in that range, so plain Crank-Nicolson's gamma is wrong by nearly 800 times its size while its price looks fine.
-Rannacher keeps second-order accuracy and is 50 times better on gamma than fully implicit.
+The true gamma is at most $5.32 \times 10^{-4}$ in that range, so plain Crank-Nicolson's gamma error is 778 times the largest true gamma while its price looks fine.
+With Rannacher steps the gamma error is 52 times smaller than fully implicit's.
 
 ### Example 4: American put
 
@@ -242,7 +242,7 @@ Rannacher keeps second-order accuracy and is 50 times better on gamma than fully
 | Penalty, Crank-Nicolson-Rannacher, 800 x 800 | 6.0901 |
 | Penalty, implicit, 800 x 800 | 6.0884 |
 
-PSOR and the penalty method agree to $10^{-9}$ on the same grid: they solve the same complementarity problem.
+PSOR and the penalty method agree within $10^{-9}$ on the same grid: they solve the same complementarity problem.
 The early-exercise premium is $6.0903 - 5.5735 = 0.5168$.
 Exercise boundary from the 800-node grid, read at grid nodes about 0.2 apart in spot: $S^* = 90.26$ with 0.1 years left, 86.72 at 0.25, 83.95 at 0.5 and 80.86 at one year, falling toward the perpetual value $2rK/(2r + \sigma^2) = 71.43$.
 
@@ -286,7 +286,7 @@ Heston ($\kappa = 2$, $\theta = 0.04$, $\xi = 0.5$, $\rho = -0.7$, $v_0 = 0.04$)
 Error falls by orders of magnitude per doubling: exponential convergence, because the lognormal density is smooth and its cosine coefficients decay faster than any power.
 Truncation then dominates: with $N = 128$ the error is $6.25 \times 10^{-4}$ at $L = 4$, $2.74 \times 10^{-2}$ at $L = 3$ and 0.498 at $L = 2$.
 Against Lewis on the Heston smile ($L = 12$): $3.5 \times 10^{-2}$ at $N = 32$, $4.3 \times 10^{-4}$ at 64, $9.2 \times 10^{-8}$ at 128 and $2.8 \times 10^{-10}$ at 256.
-Two independent Fourier pricers agreeing to $10^{-10}$ is how you validate a characteristic function before calibrating to it.
+Two independent Fourier pricers agreeing within $3 \times 10^{-10}$ is how you validate a characteristic function before calibrating to it.
 
 ## Pitfalls
 
@@ -312,7 +312,7 @@ Two independent Fourier pricers agreeing to $10^{-10}$ is how you validate a cha
 
 > [!question]- deriv-fd-explicit-numbers | 200 log-spot cells over plus or minus one unit, $\sigma = 20\%$. Smallest number of explicit steps for one year?
 > About 400: $\Delta x = 0.01$ and $\Delta t \le \Delta x^2/\sigma^2 = 0.0025$.
-> At 380 steps (5% over the limit) the solution reaches about $10^{14}$.
+> At 380 steps (5.3% over the limit) the largest node value reaches about $10^{14}$.
 
 > [!question]- deriv-fd-orders | Convergence orders of implicit and Crank-Nicolson, and how you check them?
 > Implicit $O(\Delta t + \Delta x^2)$, Crank-Nicolson $O(\Delta t^2 + \Delta x^2)$.
@@ -365,7 +365,7 @@ Two independent Fourier pricers agreeing to $10^{-10}$ is how you validate a cha
 
 > [!question]- deriv-fourier-cos | How does the COS method work and how fast does it converge?
 > Truncate the log-price density to $[A, B]$, expand it in cosines whose coefficients come straight from the characteristic function, and integrate the payoff against each cosine in closed form.
-> For smooth densities the error decays exponentially in the number of terms: $8.6 \times 10^{-2}$ at 16 terms, $1.8 \times 10^{-6}$ at 32 and machine precision at 64 for Black-Scholes; the remaining error is truncation of $[A, B]$.
+> For smooth densities the error decays exponentially in the number of terms: $8.6 \times 10^{-2}$ at 16 terms, $1.8 \times 10^{-6}$ at 32 and below $10^{-12}$ at 64 for Black-Scholes; the remaining error is truncation of $[A, B]$.
 
 > [!question]- deriv-fourier-when | When would you use Fourier pricing rather than a PDE or Monte Carlo?
 > For European payoffs under models with a closed-form characteristic function, especially inside a calibration loop that prices the whole surface thousands of times.

@@ -156,25 +156,26 @@ Jumps also break the log-contract replication of variance swaps, which is why si
 
 ## Worked examples
 
-Every number below is printed and asserted by [jump_levy_models.py](code/jump_levy_models.py) (seed 1976); Monte Carlo figures are seed-stable and quoted with their standard errors.
+Every number below is printed and asserted by [jump_levy_models.py](code/jump_levy_models.py).
+Monte Carlo figures come from seed 1976 and change with the seed, so they are quoted as "about", with their standard errors; series, Fourier and cumulant results, including both tables below, are deterministic.
 
 ### Merton: three prices that must agree
 
 "$S_0 = 100$, $r = 5\%$, $T = 1$, $\sigma = 20\%$, one jump a year on average with mean log-jump $-10\%$ and jump volatility $15\%$. Price the strikes 80 to 120."
 $\bar{k} = e^{-0.1 + 0.01125} - 1 = -0.08493$, so the diffusion drift is raised to $r - \lambda\bar{k} = 13.49\%$ to pay for the expected crash.
-The series (16 terms to reach a Poisson weight below $10^{-12}$) and Fourier inversion of the characteristic function agree to $10^{-8}$:
+The series (16 terms to reach a Poisson weight below $10^{-12}$) and Fourier inversion of the characteristic function agree to within $10^{-8}$:
 
 | Strike | 80 | 90 | 100 | 110 | 120 |
 | :--- | ---: | ---: | ---: | ---: | ---: |
 | Merton call | 25.9555 | 18.6983 | 12.7613 | 8.2583 | 5.0906 |
 | Implied vol | 27.70% | 26.82% | 26.12% | 25.58% | 25.18% |
 
-Exact simulation ($2 \times 10^6$ paths: Poisson count, then a normal sum of jumps) gives about $12.741$ (standard error $0.013$) at the money, and $E[S_T]/(S_0e^{rT}) \approx 0.9997$ confirms the compensator.
+Exact simulation ($2 \times 10^6$ paths: Poisson count, then a normal sum of jumps) gives about $12.741$ (standard error $0.013$) at the money, and $E[S_T]/(S_0e^{rT})$ is about $0.9997$, within four standard errors of 1, as the compensator requires.
 The total volatility $\sqrt{\sigma^2 + \lambda(m^2 + \delta^2)} = 26.93\%$ sits inside the smile; downside strikes are richer because the mean jump is negative.
 
 ### Merton smile and its term structure
 
-The one-year log return has skewness $-0.397$ and excess kurtosis $0.565$ from the cumulant formulas, and the simulated paths give $-0.396$ and $0.562$.
+The one-year log return has skewness $-0.397$ and excess kurtosis $0.565$ from the cumulant formulas, and the simulated paths give about $-0.396$ and $0.562$.
 At $T = 0.1$ the excess kurtosis is ten times larger, $5.648$.
 The 90%-110% forward-moneyness skew (vol at $0.9F$ minus vol at $1.1F$) shows the decay:
 
@@ -190,7 +191,7 @@ An index skew that decays closer to $T^{-1/2}$ cannot be matched at both ends by
 Kou with $\sigma = 16\%$, $\lambda = 1$, $p = 0.4$, $\eta_1 = 10$, $\eta_2 = 5$ (mean up-jump 10%, mean down-jump 20%): $E[e^J] - 1 = -0.05556$, ATM call $12.4325$ by Fourier and about $12.431$ (standard error $0.012$) by simulating exponential jumps; implied vols $29.20\%$ at 80 and $23.61\%$ at 120.
 Variance gamma with $\sigma = 12\%$, $\nu = 0.2$, $\theta = -0.14$: martingale correction $\omega = \frac1\nu\ln(1 - \theta\nu - \tfrac12\sigma^2\nu) = 0.13107$, ATM call $8.0441$ by Fourier and about $8.045$ (standard error $0.0064$) by simulating Brownian motion in gamma time; implied vols $15.68\%$, $13.50\%$, $11.95\%$ at 80, 100, 120.
 Its CGMY form has $G = 18.37$ and $M = 37.81$: the left tail decays at 0.49 times the rate of the right, and the two characteristic functions agree to within $10^{-15}$.
-For all three models $\phi_1(-i) = e^{r}$ to machine precision (the martingale condition) and $\phi_2(u) = \phi_1(u)^2$, a consistency check that each characteristic function scales its exponent linearly in $T$ (it holds by construction once $\phi_T = e^{T\psi}$ is coded, so it does not test stationary independent increments).
+For all three models $\phi_1(-i) = e^{r}$ to within $10^{-12}$ relative (the martingale condition) and $\phi_2(u) = \phi_1(u)^2$ to within $10^{-12}$ on $u \in [-20, 20]$, a consistency check that each characteristic function scales its exponent linearly in $T$ (it holds by construction once $\phi_T = e^{T\psi}$ is coded, so it does not test stationary independent increments).
 
 ### The gap a delta hedge cannot cover
 

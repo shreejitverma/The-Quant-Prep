@@ -193,7 +193,8 @@ A desk rule of thumb: up to three state variables (spot, variance, a path statis
 
 ## Worked examples
 
-Every number below is printed and asserted by [feynman_kac_pdes.py](code/feynman_kac_pdes.py) (seed 6); Monte Carlo figures are seed-stable and quoted with their standard errors.
+Every number below is printed and asserted by [feynman_kac_pdes.py](code/feynman_kac_pdes.py).
+Monte Carlo figures come from seed 6 and change with the seed, so they are quoted as "about", with their standard errors; closed forms, ODE solutions, quadrature and the binomial tree are deterministic.
 
 ### The call satisfies the PDE and its boundaries
 
@@ -204,9 +205,9 @@ At $S = 1$ the price is below $10^{-12}$ (the $S \to 0$ condition), and at $S = 
 ### Bond prices: PDE, ODE and expectation agree
 
 "Vasicek with $\kappa = 0.3$, $\theta = 5\%$, $\sigma = 1\%$, $r_0 = 3\%$. Price the five-year zero."
-$B(5) = (1 - e^{-1.5})/0.3 = 2.589566$ and $P(0, 5) = 0.820839$; integrating the Riccati system with RK4 reproduces it to $10^{-10}$.
+$B(5) = (1 - e^{-1.5})/0.3 = 2.589566$ and $P(0, 5) = 0.820839$; integrating the Riccati system with RK4 reproduces it to within $10^{-10}$.
 On the expectation side, $\int_0^5 r\,ds$ is Gaussian, and $10^6$ draws of $e^{-\int r}$ average about $0.820819$ (standard error $0.000032$).
-For CIR with $\kappa = 1.5$, $\theta = 4\%$, $\sigma = 0.2$, $r_0 = 2\%$ (the Feller example in [SDEs](03-Stochastic-Differential-Equations.md)): $\gamma = 1.526434$, $B(5) = 0.660521$, $P(0, 5) = 0.830783$, again matched by RK4, and a full-truncation Euler simulation with 1000 steps gives about $0.830722$ (standard error $0.000093$).
+For CIR with $\kappa = 1.5$, $\theta = 4\%$, $\sigma = 0.2$, $r_0 = 2\%$ (the Feller example in [SDEs](03-Stochastic-Differential-Equations.md)): $\gamma = 1.526434$, $B(5) = 0.660521$, $P(0, 5) = 0.830783$, again matched by RK4 to within $10^{-10}$, and a full-truncation Euler simulation with 1000 steps gives about $0.830722$ (standard error $0.000093$).
 
 ### A knock-out boundary by images
 

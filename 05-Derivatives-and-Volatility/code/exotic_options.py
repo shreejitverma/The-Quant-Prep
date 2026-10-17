@@ -1,7 +1,8 @@
 """Exotic options: closed forms checked by Monte Carlo, and the risk numbers a desk looks at.
 
 Backs the note 05-Derivatives-and-Volatility/12-Exotic-Options.md.
-Every number the note quotes is printed here and asserted; simulations use fixed seeds.
+Every number the note quotes is printed here and asserted against the literal at the note's quoted rounding
+(half a unit of the last quoted digit); simulations use fixed seeds, and bounds are asserted as bounds.
 
 Sections
 1. Digitals: cash and asset legs, call-spread overhedge, skew-adjusted digital, Greeks near expiry.
@@ -23,7 +24,7 @@ import numpy as np
 from pricing_core import bs_price, bs_vega, norm_cdf, norm_pdf
 
 S0, K, T, R, Q, SIG = 100.0, 100.0, 1.0, 0.05, 0.0, 0.20
-BETA_BGK = 0.5826  # -zeta(1/2) / sqrt(2 pi), Broadie-Glasserman-Kou (1997)
+BETA_BGK = 0.5826  # -zeta(1/2) / sqrt(2 pi), Broadie-Glasserman-Kou (1997); checked in main()
 
 
 def check(label: str, value: float, expected: float, tol: float) -> float:
@@ -31,6 +32,15 @@ def check(label: str, value: float, expected: float, tol: float) -> float:
     print(f"{label}: {value:.6g}")
     assert abs(value - expected) <= tol, f"{label}: got {value}, expected {expected} +/- {tol}"
     return value
+
+
+def zeta_borwein(s: float, n: int = 40) -> float:
+    """Riemann zeta for real s > 0, s != 1, from the Dirichlet eta function by Borwein's (2000) algorithm 2:
+    eta(s) = -1/d_n sum_{k<n} (-1)^k (d_k - d_n) / (k + 1)^s, zeta(s) = eta(s) / (1 - 2^{1 - s})."""
+    terms = [math.factorial(n + i - 1) * 4**i / (math.factorial(n - i) * math.factorial(2 * i)) for i in range(n + 1)]
+    d = [n * sum(terms[: k + 1]) for k in range(n + 1)]
+    eta = -sum((-1) ** k * (d[k] - d[n]) / (k + 1) ** s for k in range(n)) / d[n]
+    return eta / (1.0 - 2.0 ** (1.0 - s))
 
 
 # ---------------------------------------------------------------------------
@@ -296,6 +306,7 @@ def main() -> None:
     check("3m skew term -vega * dsigma/dK", -vega3 * skew, 0.0786, 5e-5)
     check("3m digital with skew -0.004 per strike point", with_skew, 0.6019, 5e-5)
     check("3m digital as 0.02-wide call spread on the smile", tight, 0.6019, 5e-5)
+    check("  skew term in points of payout (per 100)", -100 * vega3 * skew, 8, 0.5)
     print("digital Greeks at the strike near expiry, payout 1,000,000")
     for label, tt, ex_delta in (("1 month", 1 / 12, 68_700), ("1 week", 1 / 52, 143_700), ("1 day", 1 / 252, 316_600)):
         delta, _ = cash_digital_delta_gamma(S0, K, tt, R, SIG)
@@ -306,6 +317,7 @@ def main() -> None:
     _, g_hi = cash_digital_delta_gamma(101.0, K, 1 / 252, R, SIG)
     check("  1 day gamma at S = 99 (shares per point)", 1e6 * g_lo, 145_800, 50)
     check("  1 day gamma at S = 101 (shares per point)", 1e6 * g_hi, -145_300, 50)
+    assert min(abs(1e6 * g_lo), abs(1e6 * g_hi)) > 145_000, "gamma flips by more than 145,000 shares per point"
     print()
 
     # 2. Barriers. Backs "Barriers", Examples 3-4 and cards deriv-barrier-in-out-parity, deriv-barrier-bridge,
@@ -331,33 +343,43 @@ def main() -> None:
         for d, H in (("d", 90.0), ("u", 120.0)):
             pair = barrier_price(c + d + "i", S0, K, H, T, R, Q, SIG) + barrier_price(c + d + "o", S0, K, H, T, R, Q, SIG)
             assert abs(pair - (vanilla if c == "c" else put_vanilla)) < 1e-10, (c, d, pair)
-    print("in + out = vanilla for all four pairs: ok")
+    print("in + out = vanilla within 1e-10 for all four pairs: ok")
     mu_r = (R - Q - 0.5 * SIG**2) / SIG**2
     reflected = bs_price(S0, K, T, R, SIG, Q) - (90.0 / S0) ** (2 * mu_r) * bs_price(90.0**2 / S0, K, T, R, SIG, Q)
     check("reflection C_BS(S) - (H/S)^{2 mu} C_BS(H^2/S) for the down-and-out call", reflected, 8.6655, 5e-5)
+    # r = q gives mu = -1/2 and the classic C_BS(S, K) - (S/H) C_BS(H^2/S, K); at S = H the two terms cancel.
+    rq = barrier_price("cdo", S0, K, 90.0, T, R, R, SIG)
+    classic = bs_price(S0, K, T, R, SIG, R) - S0 / 90.0 * bs_price(90.0**2 / S0, K, T, R, SIG, R)
+    assert abs(rq - classic) < 1e-10, (rq, classic)
+    assert abs(barrier_price("cdo", 90.0, K, 90.0, T, R, Q, SIG)) < 1e-12
+    print("r = q reflection matches C_BS(S) - (S/H) C_BS(H^2/S); price at S = H is 0: ok")
     mc_cases = {
-        # kind, barrier, steps, bridge: (price, tolerance = about 3 standard errors)
-        ("cdo", 90.0, 252, True): (8.6815, 0.0005),
-        ("cdo", 90.0, 252, False): (8.9316, 0.0005),
-        ("cdo", 90.0, 12, False): (9.5789, 0.0005),
-        ("cuo", 120.0, 252, True): (1.1794, 0.0005),
-        ("cuo", 120.0, 252, False): (1.3314, 0.0005),
-        ("cuo", 120.0, 12, True): (1.1813, 0.0005),
+        # kind, barrier, steps, bridge: price, standard error (seed 11, 200,000 paths)
+        ("cdo", 90.0, 252, True): (8.6815, 0.0123),
+        ("cdo", 90.0, 252, False): (8.9316, 0.0117),
+        ("cdo", 90.0, 12, False): (9.5789, 0.0087),
+        ("cuo", 120.0, 252, True): (1.1794, 0.0069),
+        ("cuo", 120.0, 252, False): (1.3314, 0.0076),
+        ("cuo", 120.0, 12, True): (1.1813, 0.0063),
     }
     mc_res = {}
-    mc_se = {"cdo252T": 0.0123, "cdo252F": 0.0117, "cdo12F": 0.0087, "cuo252T": 0.0069, "cuo252F": 0.0076, "cuo12T": 0.0063}
-    for (kind, H, steps, bridge), (ex, tol) in mc_cases.items():
+    for (kind, H, steps, bridge), (ex, ex_se) in mc_cases.items():
         price, se = barrier_mc(kind, H, steps, 200_000, seed=11, bridge=bridge)
         key = f"{kind}{steps}{'T' if bridge else 'F'}"
-        print(f"  MC {kind} H={H:g} steps={steps} bridge={bridge}: {price:.4f} (se {se:.4f})")
-        assert abs(price - ex) < tol, (kind, steps, bridge, price)
-        assert abs(se - mc_se[key]) < 5e-5, (key, se)
+        check(f"  MC {kind} H={H:g} steps={steps} bridge={bridge}", price, ex, 5e-5)
+        check(f"  MC {kind} H={H:g} steps={steps} bridge={bridge} standard error", se, ex_se, 5e-5)
+        if bridge:  # the bridge estimator targets the continuous closed form on any grid
+            cf_ = barrier_price(kind, S0, K, H, T, R, Q, SIG)
+            assert abs(price - cf_) < 2 * se, ("bridge vs closed form", key, price, cf_, se)
         mc_res[key] = (price, se)
+    print("  every bridge row is within two standard errors of its closed form: ok")
     cdo_cf = barrier_price("cdo", S0, K, 90.0, T, R, Q, SIG)
     check("daily grid-only overpricing of the down-and-out", mc_res["cdo252F"][0] - cdo_cf, 0.27, 0.005)
     check("monthly grid-only overpricing of the down-and-out", mc_res["cdo12F"][0] - cdo_cf, 0.91, 0.005)
     shift = BETA_BGK * SIG * math.sqrt(1 / 252)
+    check("BGK beta = -zeta(1/2) / sqrt(2 pi)", -zeta_borwein(0.5) / math.sqrt(2 * math.pi), BETA_BGK, 5e-5)
     check("BGK shift beta sigma sqrt(dt), daily", shift, 0.00734, 5e-6)
+    check("BGK shift in percent", 100 * shift, 0.734, 5e-4)
     check("shifted down barrier 90 e^{-shift}", 90 * math.exp(-shift), 89.34, 5e-3)
     bgk_dn = barrier_price("cdo", S0, K, 90 * math.exp(-shift), T, R, Q, SIG)
     bgk_up = barrier_price("cuo", S0, K, 120 * math.exp(shift), T, R, Q, SIG)
@@ -386,7 +408,12 @@ def main() -> None:
         got = barrier_greeks("cuo", s_, 120.0)
         print(f"  S={s_:g}: " + " ".join(f"{g:+.4f}" for g in got))
         for g, e in zip(got, ex, strict=True):
-            assert abs(g - e) < 6e-5, (s_, got, ex)
+            assert abs(g - e) <= 5e-5, (s_, got, ex)
+    uoc100 = barrier_greeks("cuo", 100.0, 120.0)
+    check("up-and-out price at 100, two decimals", uoc100[0], 1.18, 5e-3)
+    check("vanilla call, two decimals", vanilla, 10.45, 5e-3)
+    check("up-and-out vega at 100, two decimals", uoc100[3], -0.13, 5e-3)
+    check("up-and-out delta at 118, two decimals", barrier_greeks("cuo", 118.0, 120.0)[1], -0.07, 5e-3)
     vanilla_delta = norm_cdf(d1)
     check("vanilla call delta at 100", vanilla_delta, 0.6368, 5e-5)
     print("down-and-out call K 100 H 90 near the barrier: price, delta")
@@ -414,18 +441,27 @@ def main() -> None:
     cv = arith - b_cv * (geom - geo)
     se_plain = arith.std(ddof=1) / math.sqrt(n_paths)
     se_cv = cv.std(ddof=1) / math.sqrt(n_paths)
+    # G <= arithmetic mean on every path (AM-GM), so the geometric payoff never exceeds the arithmetic one.
+    assert np.all(geom <= arith), "geometric payoff above arithmetic payoff"
     check("MC geometric (check of closed form)", geom.mean(), 5.9472, 5e-5)
     check("arithmetic plain MC", arith.mean(), 6.1624, 5e-5)
     check("arithmetic plain MC standard error", se_plain, 0.0190, 5e-5)
     check("arithmetic with geometric control variate", cv.mean(), 6.1552, 5e-5)
     check("control-variate standard error", se_cv, 0.00053, 5e-6)
     check("correlation arithmetic vs geometric payoff", np.corrcoef(arith, geom)[0, 1], 0.9996, 5e-5)
-    check("variance reduction factor", (se_plain / se_cv) ** 2, 1300, 10)
+    check("variance reduction factor", (se_plain / se_cv) ** 2, 1301, 0.5)
+    assert (se_plain / se_cv) ** 2 > 1000, "variance reduction above 1000x"
     check("control coefficient b", b_cv, 1.031, 5e-4)
-    check("equivalent plain paths (millions)", (se_plain / se_cv) ** 2 * n_paths / 1e6, 260, 3)
+    check("equivalent plain paths (millions)", (se_plain / se_cv) ** 2 * n_paths / 1e6, 260, 0.5)
     check("arithmetic Asian / vanilla", cv.mean() / vanilla, 0.589, 5e-4)
     t_fix = T * np.arange(1, n_fix + 1) / n_fix
-    check("geometric log-variance / terminal log-variance", np.minimum.outer(t_fix, t_fix).sum() / n_fix**2 / T, 0.376, 5e-4)
+    var_ratio = np.minimum.outer(t_fix, t_fix).sum() / n_fix**2 / T
+    check("geometric log-variance / terminal log-variance", var_ratio, 0.376, 5e-4)
+    # sum_{i,j} min(i, j) = n(n + 1)(2n + 1)/6, so the ratio is (n + 1)(2n + 1)/(6 n^2) -> 1/3 (Kemna-Vorst limit).
+    assert abs(var_ratio - (n_fix + 1) * (2 * n_fix + 1) / (6 * n_fix**2)) < 1e-12
+    n_big = 2000
+    t_big = T * np.arange(1, n_big + 1) / n_big
+    check("ratio with 2000 fixings (continuous limit 1/3)", np.minimum.outer(t_big, t_big).sum() / n_big**2 / T, 1 / 3, 5e-4)
     print()
 
     # 4. Lookbacks. Backs "Lookbacks", Example 6 and cards deriv-lookback-exact-sim, deriv-lookback-value.
@@ -459,14 +495,28 @@ def main() -> None:
     principal, coupons, k_call, st = autocall_legs(AC["sigma"], AC["q"], z)
     fair_c = (100.0 - principal.mean()) / coupons.mean()
     check("fair quarterly coupon (% of notional 100)", fair_c, 3.8805, 5e-4)
-    check("fair coupon per annum (%)", 4 * fair_c, 15.522, 2e-3)
-    check("P(called at first observation)", float(np.mean(k_call == 1)), 0.4827, 5e-4)
-    check("P(called by the end of year 1)", float(np.mean((k_call >= 1) & (k_call <= 4))), 0.7031, 5e-4)
+    check("fair coupon per annum (%)", 4 * fair_c, 15.52, 5e-3)
+    check("fair coupon per annum (%), one decimal", 4 * fair_c, 15.5, 0.05)
+    check("P(called at first observation)", float(np.mean(k_call == 1)), 0.4827, 5e-5)
+    check("P(called by the end of year 1)", float(np.mean((k_call >= 1) & (k_call <= 4))), 0.7031, 5e-5)
     life = np.where(k_call > 0, k_call / AC["obs_per_year"], AC["years"])
-    check("expected life (years)", float(life.mean()), 1.0328, 5e-4)
+    check("expected life (years)", float(life.mean()), 1.0328, 5e-5)
     loss = (k_call == 0) & (st < AC["ki"] * AC["S0"])
-    check("P(capital loss at maturity)", float(loss.mean()), 0.0836, 5e-4)
-    check("expected loss given loss (% of notional)", float(100 - (100 * st[loss] / AC["S0"]).mean()), 52.62, 0.01)
+    check("P(capital loss at maturity)", float(loss.mean()), 0.0836, 5e-5)
+    check("P(capital loss at maturity) in percent", 100 * float(loss.mean()), 8.36, 5e-3)
+    avg_loss = float(100 - (100 * st[loss] / AC["S0"]).mean())
+    check("expected loss given loss (% of notional)", avg_loss, 52.62, 5e-3)
+    check("expected loss given loss, whole percent", avg_loss, 53, 0.5)
+
+    # The knock-in put leg the dealer holds: pathwise, a higher dividend yield lowers every path (common z), which
+    # removes early calls and lowers S_T, so the leg value rises.
+    def ki_put(q: float) -> float:
+        _, _, kc, s_t = autocall_legs(AC["sigma"], q, z)
+        pay = np.where((kc == 0) & (s_t < AC["ki"] * AC["S0"]), 100.0 - 100.0 * s_t / AC["S0"], 0.0)
+        return float(math.exp(-AC["r"] * AC["years"]) * pay.mean())
+
+    assert ki_put(AC["q"] + 0.005) > ki_put(AC["q"] - 0.005), "knock-in put should gain value with dividends"
+    print("  knock-in put leg rises with the dividend yield: ok")
 
     def note_pv(sigma: float, q: float) -> float:
         p_, c_, _, _ = autocall_legs(sigma, q, z)
@@ -474,8 +524,8 @@ def main() -> None:
 
     vega_note = note_pv(AC["sigma"] + 0.01, AC["q"]) - note_pv(AC["sigma"] - 0.01, AC["q"])
     div_note = note_pv(AC["sigma"], AC["q"] + 0.005) - note_pv(AC["sigma"], AC["q"] - 0.005)
-    check("note vega per vol point (investor, per 100)", vega_note / 2, -0.3982, 5e-4)
-    check("note dividend sensitivity per 1% yield (investor)", div_note, -0.6843, 5e-4)
+    check("note vega per vol point (investor, per 100)", vega_note / 2, -0.3982, 5e-5)
+    check("note dividend sensitivity per 1% yield (investor)", div_note, -0.6843, 5e-5)
     print("  dealer (short the note) is therefore long vega and long dividends")
     print()
 
@@ -496,17 +546,20 @@ def main() -> None:
     zc = rng.standard_normal((400_000, CLQ["n"]))
     with_floor, no_floor = cliquet_mc(SIG, zc)
     cf = cliquet_no_floor_closed_form(SIG)
-    check("cliquet without global floor, closed form", cf, 1.1971, 5e-4)
-    check("cliquet without global floor, MC", float(no_floor.mean()), 1.1976, 5e-4)
-    check("cliquet with 2% global floor, MC", float(with_floor.mean()), 4.9459, 5e-4)
-    check("value of the global floor", float(with_floor.mean() - no_floor.mean()), 3.7483, 5e-4)
+    check("cliquet without global floor, closed form", cf, 1.1971, 5e-5)
+    check("cliquet without global floor, MC", float(no_floor.mean()), 1.1976, 5e-5)
+    se_nf = float(no_floor.std(ddof=1) / math.sqrt(len(no_floor)))
+    assert abs(float(no_floor.mean()) - cf) < 2 * se_nf, ("strip closed form vs MC", cf, no_floor.mean(), se_nf)
+    print("  strip closed form within two standard errors of its simulation: ok")
+    check("cliquet with 2% global floor, MC", float(with_floor.mean()), 4.9459, 5e-5)
+    check("value of the global floor", float(with_floor.mean() - no_floor.mean()), 3.7483, 5e-5)
     v_up = cliquet_mc(SIG + 0.01, zc)[0].mean()
     v_dn = cliquet_mc(SIG - 0.01, zc)[0].mean()
-    check("cliquet vega per vol point (Black-Scholes)", float((v_up - v_dn) / 2), -0.0303, 5e-4)
+    check("cliquet vega per vol point (Black-Scholes)", float((v_up - v_dn) / 2), -0.0303, 5e-5)
     cf_up = cliquet_no_floor_closed_form(SIG + 0.01)
     cf_dn = cliquet_no_floor_closed_form(SIG - 0.01)
-    check("vega of the locally capped/floored strip alone", (cf_up - cf_dn) / 2, -0.1299, 5e-4)
-    check("vega of the global floor (difference)", float((v_up - v_dn) / 2) - (cf_up - cf_dn) / 2, 0.0996, 5e-4)
+    check("vega of the locally capped/floored strip alone", (cf_up - cf_dn) / 2, -0.1299, 5e-5)
+    check("vega of the global floor (difference)", float((v_up - v_dn) / 2) - (cf_up - cf_dn) / 2, 0.0996, 5e-5)
 
 
 if __name__ == "__main__":

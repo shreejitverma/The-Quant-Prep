@@ -192,29 +192,30 @@ The desk use cases are deep out-of-the-money options, credit portfolio tail loss
 
 ## Worked examples
 
-Every number below is printed and asserted by [girsanov_numeraire.py](code/girsanov_numeraire.py) (seed 20261016); Monte Carlo figures are seed-stable and quoted with their standard errors.
+Every number below is printed and asserted by [girsanov_numeraire.py](code/girsanov_numeraire.py).
+Monte Carlo figures come from seed 20261016 and change with the seed, so they are quoted as "about", with the standard error where the script asserts one; closed forms are exact.
 
 ### Girsanov density in a simulation
 
 "Take $\theta = 0.4$, $T = 1$. Check that $Z_T = e^{-\theta W_T - \theta^2T/2}$ is a density and that it shifts the drift."
-With $2 \times 10^6$ draws, $E^P[Z_T] = 0.9999$ (exact 1), and the sample variance of $Z_T$ is $0.1735$ against $e^{0.16} - 1 = 0.1735$.
-Weighting by $Z_T$: $E^Q[W_T] = -0.3999$ (exact $-\theta T = -0.4$), $E^Q[W_T + \theta T] = 0.0001$ and $E^Q[(W_T + \theta T)^2] = 1.0001$, so $W_T + \theta T$ is standard normal under $Q$.
+With $2 \times 10^6$ draws, $E^P[Z_T]$ is about $0.9999$ (exact 1), and the sample variance of $Z_T$ is about $0.1735$ against $e^{0.16} - 1 = 0.1735$.
+Weighting by $Z_T$: $E^Q[W_T]$ is about $-0.3999$ (exact $-\theta T = -0.4$), $E^Q[W_T + \theta T]$ about $0.0001$ and $E^Q[(W_T + \theta T)^2]$ about $1.0001$, consistent with $W_T + \theta T$ being standard normal under $Q$.
 At $\theta = 3$ the variance of the weights is $e^9 - 1 = 8102.08$: a reweighting that aggressive is useless for pricing, which is the importance-sampling warning in one number.
 
 ### Importance sampling a three-in-a-hundred-thousand event
 
 "Estimate $P(W_1 > 4)$."
 Exact: $1 - N(4) = 3.167 \times 10^{-5}$.
-Plain Monte Carlo with $10^5$ draws saw 1 hit; the theoretical relative standard error is $\sqrt{(1 - p)/(np)} = 0.562$, so the answer is noise.
-Shift to $N(4, 1)$ (half the samples now land in the event) and weight by $e^{-4x + 8}$: the estimate is $3.157 \times 10^{-5}$ with a relative standard error of $0.0067$, a variance reduction factor of about 7050 for the same number of draws.
+Plain Monte Carlo with $10^5$ draws saw a single hit with this seed; the theoretical relative standard error is $\sqrt{(1 - p)/(np)} = 0.562$, so the answer is noise.
+Shift to $N(4, 1)$ (half the samples now land in the event) and weight by $e^{-4x + 8}$: the estimate is about $3.157 \times 10^{-5}$ with a relative standard error of about $0.0067$, a variance reduction factor of about 7050 for the same number of draws.
 
 ### Exchange option with the second asset as numeraire
 
 "Price the right to exchange asset 2 for asset 1 at $T = 1$: $S_1 = S_2 = 100$, $\sigma_1 = 30\%$, $\sigma_2 = 20\%$, $\rho = 0.5$, $r = 5\%$."
 With $S_2$ as numeraire, $V_0 = S_{2,0}\,E^{S_2}[(S_{1,T}/S_{2,T} - 1)^+]$, and the ratio $R = S_1/S_2$ is a $Q^{S_2}$-martingale with volatility $\sqrt{\sigma_1^2 + \sigma_2^2 - 2\rho\sigma_1\sigma_2} = 0.2646$.
 So $V_0$ is Black's formula with forward $R_0 = 1$, strike 1 and zero rate (Margrabe): $V_0 = 10.5243$.
-The rate does not appear because both legs are assets; a $10^6$-path simulation under $Q$ gives about $10.563$ (standard error $0.018$) for $r = 5\%$ and exactly the same number for $r = 0$, path by path.
-The same reweighting shows $N(d_1) = 0.4816$ is a probability: for $S_0 = 100$, $K = 105$, $T = 0.5$, $r = 5\%$, $\sigma = 25\%$, weighting $Q$-paths by $S_T/(S_0e^{rT})$ gives $Q^S(S_T > K) \approx 0.4814$, and simulating with log-drift $r + \sigma^2/2$ gives $0.4812$.
+The rate does not appear because both legs are assets; a $10^6$-path simulation under $Q$ gives about $10.563$ (standard error $0.018$) for $r = 5\%$, and the same paths with $r = 0$ give the same price to within $10^{-12}$ relative.
+The same reweighting shows $N(d_1) = 0.4816$ is a probability: for $S_0 = 100$, $K = 105$, $T = 0.5$, $r = 5\%$, $\sigma = 25\%$, weighting $Q$-paths by $S_T/(S_0e^{rT})$ gives $Q^S(S_T > K)$ of about $0.4814$, and simulating with log-drift $r + \sigma^2/2$ gives about $0.4812$.
 
 ### Forward measure in Vasicek: bond option three ways
 
@@ -222,7 +223,7 @@ The same reweighting shows $N(d_1) = 0.4816$ is a probability: for $S_0 = 100$, 
 Bond prices: $P(0, 1) = 0.967821$, $P(0, 5) = 0.820839$, forward bond price $P(0, 5)/P(0, 1) = 0.848131$.
 Under $Q^1$ the bond price $P(1, 5)$ is lognormal with that forward, so the price is Black's formula discounted by $P(0, 1)$: $0.0057565$.
 Check 1, under $Q$: $(r_1, \int_0^1 r\,ds)$ is jointly Gaussian and can be sampled exactly; $E^Q[e^{-\int r}(P(1, 5) - 0.85)^+]$ over $2 \times 10^6$ paths is about $0.0057584$ (standard error $0.0000065$).
-Check 2, under $Q^1$: the density $e^{-\int_0^1 r}/P(0, 1)$ tilts the Gaussian $r_1$ by $-\text{Cov}(r_1, \int_0^1 r)$, so sample $r_1$ there, with no discounting inside: $E^1[P(1, 5)] \approx 0.848149$ (the forward, as it must be) and $P(0, 1)E^1[(P(1, 5) - 0.85)^+] \approx 0.0057683$ (standard error $0.0000065$).
+Check 2, under $Q^1$: the density $e^{-\int_0^1 r}/P(0, 1)$ tilts the Gaussian $r_1$ by $-\text{Cov}(r_1, \int_0^1 r)$, so sample $r_1$ there, with no discounting inside: $E^1[P(1, 5)]$ is about $0.848149$ (the forward $0.848131$ up to sampling error) and $P(0, 1)E^1[(P(1, 5) - 0.85)^+]$ is about $0.0057683$ (standard error $0.0000065$).
 The same tilt shows $E^Q[r_1] = 3.5184\%$ while $E^1[r_1] = f(0, 1) = 3.5146\%$: the gap is $\text{Cov}(r_1, \int_0^1 r) = 0.373$ bp, the covariance between the rate and the integrated rate (minus the log discount factor).
 
 ### Annuity measure: a 1y x 4y swaption
@@ -231,14 +232,14 @@ The same tilt shows $E^Q[r_1] = 3.5184\%$ while $E^1[r_1] = f(0, 1) = 3.5146\%$:
 Annuity $A_0 = P(0, 2) + \dots + P(0, 5) = 3.50723$ and forward swap rate $S_0 = (P(0, 1) - P(0, 5))/A_0 = 4.1908\%$.
 Jamshidian's trick (one-factor model: the swap value is monotone in $r_1$, so the payer swaption is a portfolio of zero-coupon puts struck at the bond prices at the critical rate $r^*$) gives $0.0074500$ per unit notional, 74.50 bp.
 Monte Carlo of $E^Q[e^{-\int r}A_1(S_1 - K)^+]$ gives about $0.0074434$ (standard error $0.0000076$).
-Reweighting the same paths by $dQ^A/dQ = e^{-\int_0^1 r}A_1/A_0$: the weights average $1.0000$ and $E^A[S_1] \approx 4.1906\%$, matching $S_0$; the unweighted $Q$-mean is $4.2004\%$, 0.96 bp too high.
+Reweighting the same paths by $dQ^A/dQ = e^{-\int_0^1 r}A_1/A_0$: the weights average about $1.0000$ and $E^A[S_1]$ is about $4.1906\%$, matching $S_0$; the unweighted $Q$-mean is about $4.2004\%$, about 0.96 bp too high.
 Quoted in the market's units: Black volatility $12.71\%$ or normal volatility 53.25 bp, from $V_0 = A_0\,\text{Black}(S_0, K, \sigma, 1)$ and $V_0 = A_0\sigma_N\sqrt{T/2\pi}$ at the money.
 
 ### Quanto forward
 
 "A foreign index at 100 with foreign rate $0.5\%$, dividend yield $2\%$, volatility $20\%$; the currency has volatility $10\%$ and correlation $0.3$ with the index. One-year quanto forward in domestic currency?"
 Adjustment: $-\rho\sigma_S\sigma_X = -0.006$, so $F^{quanto} = 100e^{(0.005 - 0.02 - 0.006)} = 97.9219$ against the ordinary forward $98.5112$.
-Simulating $(S, X)$ under $Q^f$ and weighting by $dQ^d/dQ^f = e^{(r_d - r_f)T}X_0/X_T$ (whose mean is $1.0001$) gives about $97.919$.
+Simulating $(S, X)$ under $Q^f$ and weighting by $dQ^d/dQ^f = e^{(r_d - r_f)T}X_0/X_T$ (whose sample mean is about $1.0001$) gives about $97.919$.
 
 ## Pitfalls
 
@@ -282,7 +283,7 @@ Simulating $(S, X)$ under $Q^f$ and weighting by $dQ^d/dQ^f = e^{(r_d - r_f)T}X_
 
 > [!question]- sc-girsanov-importance-sampling | Estimate $P(Z > 4)$ for standard normal $Z$ efficiently by simulation.
 > Sample $X \sim N(4, 1)$ and average $\mathbf{1}_{X > 4}e^{-4X + 8}$; exact answer $3.167 \times 10^{-5}$.
-> With $10^5$ draws the relative error falls from 56% (plain) to 0.67%, a variance reduction of about 7050.
+> With $10^5$ draws the relative error falls from 56% (plain, in theory) to about 0.67% in the seeded run, a variance reduction of about 7050.
 
 > [!question]- sc-girsanov-market-price-of-risk-multi | With $n$ assets driven by $d$ Brownian motions, when does a risk-neutral measure exist and when is it unique?
 > It exists iff $\Sigma\theta = \mu - r\mathbf{1}$ has a solution $\theta$ (no arbitrage), and it is unique iff $\Sigma$ has rank $d$ (completeness).
@@ -314,7 +315,7 @@ Simulating $(S, X)$ under $Q^f$ and weighting by $dQ^d/dQ^f = e^{(r_d - r_f)T}X_
 
 > [!question]- sc-numeraire-swap-rate-under-q | You simulate a model under $Q$. Is the forward swap rate driftless there?
 > No; it is a martingale only under the annuity measure.
-> In the Vasicek 1y x 4y example, $E^Q[S_1]$ is 0.96 bp above $S_0 = 4.1908\%$, while reweighting by $e^{-\int r}A_1/A_0$ recovers $S_0$.
+> In the Vasicek 1y x 4y example, a simulated $E^Q[S_1]$ is about 0.96 bp above $S_0 = 4.1908\%$, while reweighting by $e^{-\int r}A_1/A_0$ recovers $S_0$.
 
 > [!question]- sc-numeraire-vasicek-bond-option | Price a call on a zero-coupon bond in Vasicek.
 > Black's formula under the $T$-forward measure: $P(0, S)N(h) - KP(0, T)N(h - \sigma_p)$, $h = \ln\frac{P(0, S)}{KP(0, T)}/\sigma_p + \sigma_p/2$, $\sigma_p = \frac{\sigma}{\kappa}(1 - e^{-\kappa(S - T)})\sqrt{(1 - e^{-2\kappa T})/(2\kappa)}$.

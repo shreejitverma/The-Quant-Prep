@@ -207,12 +207,12 @@ def main() -> None:
     a, b, rho, m, sig = true
     print("1. Raw SVI slice, T = 0.5, (a, b, rho, m, sigma) =", true)
     show("ATM-forward vol of the true slice (%)", 100 * math.sqrt(float(svi_w(np.array(0.0), *true)) / T), 20.07, 0.005, ".2f")
-    show("minimum total variance a + b sigma sqrt(1 - rho^2)", a + b * sig * math.sqrt(1 - rho * rho), 0.017142, 1e-6, ".6f")
+    show("minimum total variance a + b sigma sqrt(1 - rho^2)", a + b * sig * math.sqrt(1 - rho * rho), 0.017142, 5e-7, ".6f")
     show("right wing slope b(1 + rho)", b * (1 + rho), 0.018, 1e-12)
     show("left wing slope b(1 - rho)", b * (1 - rho), 0.102, 1e-12)
     kk = np.linspace(-1.5, 1.5, 3001)
     g_true = durrleman_g(*svi_derivs(kk, *true), kk)
-    show("min g(k) on [-1.5, 1.5] for the true slice", float(g_true.min()), 0.2795, 5e-4)
+    show("min g(k) on [-1.5, 1.5] for the true slice", float(g_true.min()), 0.2795, 5e-5)
 
     # 2. Fit to noisy synthetic quotes: Example 2, card deriv-svi-quasi-explicit
     rng = np.random.default_rng(2024)
@@ -232,8 +232,8 @@ def main() -> None:
     show("RMSE fit vs noisy quotes (vol points)", rmse_mkt, 0.18, 0.005, ".2f")
     show("max |fit - true| on the quoted range (vol points)", float(err_true), 0.13, 0.005, ".2f")
     g_fit = durrleman_g(*svi_derivs(kk, *fit), kk)
-    show("min g(k) of the fitted slice", float(g_fit.min()), 0.2825, 5e-4)
-    show("fitted b(1 + |rho|) (Lee: <= 2)", fit[1] * (1 + abs(fit[2])), 0.1009, 5e-4)
+    show("min g(k) of the fitted slice", float(g_fit.min()), 0.2825, 5e-5)
+    show("fitted b(1 + |rho|) (Lee: <= 2)", fit[1] * (1 + abs(fit[2])), 0.1009, 5e-5)
 
     # 3. Vogt's arbitrageable slice (Gatheral and Jacquier 2014), T = 1, F = 1: Example 3, cards deriv-svi-vogt, deriv-svi-durrleman
     vogt = (-0.0410, 0.1331, 0.3060, 0.3586, 0.4153)
@@ -241,7 +241,7 @@ def main() -> None:
     gv = durrleman_g(*svi_derivs(kv, *vogt), kv)
     i = int(np.argmin(gv))
     print("3. Vogt slice (a, b, rho, m, sigma) =", vogt)
-    show("min g(k) of the Vogt slice", float(gv[i]), -0.0329, 5e-4)
+    show("min g(k) of the Vogt slice", float(gv[i]), -0.0329, 5e-5)
     show("  at k", float(kv[i]), 0.88, 0.005, ".2f")
     neg = kv[gv < 0]
     show("  g < 0 from k", float(neg.min()), 0.64, 0.005, ".2f")
@@ -283,7 +283,7 @@ def main() -> None:
     kg = np.linspace(-1.5, 1.0, 501)
     K2, T2 = np.meshgrid(kg, ts)
     w2, wk2, wkk2, wt2 = ssvi_w(K2, T2)
-    show("min Durrleman g over the grid", float(durrleman_g(w2, wk2, wkk2, K2).min()), 0.2655, 5e-4)
+    show("min Durrleman g over the grid", float(durrleman_g(w2, wk2, wkk2, K2).min()), 0.2655, 5e-5)
     show("min dw/dt over the grid", float(wt2.min()), 0.0143, 5e-5)
     for t, e in ((0.25, 17.97), (0.5, 18.51), (1.0, 19.33), (2.0, 20.34)):
         show(f"SSVI ATM-forward vol at T = {t} (%)", 100 * math.sqrt(float(theta_t(np.array(t))) / t), e, 0.005, ".2f")
@@ -310,8 +310,8 @@ def main() -> None:
         iv = 100 * math.sqrt(float(ssvi_w(np.array(k_), np.array(t))[0]) / t)
         max_gap = max(max_gap, abs(lv_w - lv_p))
         print(f"  T = {t:4.2f} K = {K:5.1f}: implied {iv:6.2f}  local (w-form) {lv_w:6.2f}  local (price form) {lv_p:6.2f}")
-        assert abs(iv - e_iv) < 0.005 and abs(lv_w - e_lv) < 0.005, (t, K, iv, lv_w)
-    show("max |w-form - price-form| local vol (vol points)", max_gap, 0.0, 0.001, ".4f")
+        assert abs(iv - e_iv) <= 0.005 and abs(lv_w - e_lv) <= 0.005 and abs(lv_p - e_lv) <= 0.005, (t, K, iv, lv_w, lv_p)
+    show("max |w-form - price-form| local vol (vol points)", max_gap, 0.0003, 5e-5, ".4f")
 
     # Short-maturity skew ratio d sigma_loc / dk over d sigma_imp / dk at k = 0: Example 7, cards deriv-dupire-skew-ratio,
     # deriv-dupire-smile-dynamics
@@ -329,7 +329,7 @@ def main() -> None:
         imp = [math.sqrt(float(ssvi_w(np.array(x), tt, gam)[0]) / t) for x in (-h, h)]
         loc = [math.sqrt(float(local_var_from_w(np.array(x), tt, gam))) for x in (-h, h)]
         skew = (imp[1] - imp[0]) / (2 * h)
-        show(f"  gamma = {gam}, T = {t}: implied ATM skew d sigma / dk", skew, e_skew, 5e-4)
+        show(f"  gamma = {gam}, T = {t}: implied ATM skew d sigma / dk", skew, e_skew, 5e-5)
         show(f"  gamma = {gam}, T = {t}: ratio", (loc[1] - loc[0]) / (imp[1] - imp[0]), e_ratio, 0.005, ".2f")
 
     # Skew stickiness ratio of local vol from the same averaging heuristic: the ATM vol moves by (1/T) int_0^T L(t) dt
@@ -373,8 +373,8 @@ def main() -> None:
         iv_in = 100 * np.sqrt(ssvi_w(np.log(strikes / fwd(np.array(t))), np.array(t))[0] / t)
         worst = max(worst, float(np.max(np.abs(iv_mc - iv_in))))
         print(f"  T = {t}: MC implied {np.round(iv_mc, 2)}  input {np.round(iv_in, 2)}  price s.e. {np.round(se, 3)}")
-        assert np.allclose(iv_mc, exp_mc[t], atol=0.005) and np.allclose(iv_in, exp_in[t], atol=0.005)
-    show("max |MC - input| implied vol (vol points)", worst, 0.0847, 0.0005, ".2f")
+        assert np.allclose(iv_mc, exp_mc[t], rtol=0.0, atol=0.005) and np.allclose(iv_in, exp_in[t], rtol=0.0, atol=0.005)
+    show("max |MC - input| implied vol (vol points)", worst, 0.08, 0.005, ".2f")
 
     # Forward smile, forward-start call on S_1 / S_0.5 versus today's 6-month smile: Example 7, card deriv-dupire-forward-smile
     ratio = snaps[1.0] / snaps[0.5]
@@ -387,7 +387,8 @@ def main() -> None:
     spot_iv = 100 * np.sqrt(ssvi_w(np.log(kappas), np.array(0.5))[0] / 0.5)
     print(f"  forward 6m smile in 6m (0.9, 1.0, 1.1 of forward): {np.round(fwd_iv, 2)}")
     print(f"  today's 6m smile (0.9, 1.0, 1.1 of forward): {np.round(spot_iv, 2)}")
-    assert np.allclose(fwd_iv, [23.46, 20.93, 19.52], atol=0.005) and np.allclose(spot_iv, [21.88, 18.51, 15.55], atol=0.005)
+    assert np.allclose(fwd_iv, [23.46, 20.93, 19.52], rtol=0.0, atol=0.005)
+    assert np.allclose(spot_iv, [21.88, 18.51, 15.55], rtol=0.0, atol=0.005)
     show("today's 6m skew, vol(90%) - vol(110%) (vol points)", float(spot_iv[0] - spot_iv[2]), 6.33, 0.005, ".2f")
     show("local-vol forward 6m skew in 6m, same moneyness", float(fwd_iv[0] - fwd_iv[2]), 3.94, 0.005, ".2f")
     show(

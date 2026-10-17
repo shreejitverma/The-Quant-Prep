@@ -124,10 +124,13 @@ def merton(rng: np.random.Generator) -> None:
     kbar = merton_kbar()
     check("mean jump size kbar = exp(m + delta^2/2) - 1", kbar, -0.08493, 5e-6)
     check("compensated drift r - lambda kbar", R - LAM_M * kbar, 0.13493, 5e-6)
+    check("  compensated drift in percent", 100 * (R - LAM_M * kbar), 13.49, 5e-3)
+    check("  drift added -lambda kbar in percent (card)", -100 * LAM_M * kbar, 8.49, 5e-3)
+    check("  kbar to four decimals (card)", kbar, -0.0849, 5e-5)
     series, nterms = merton_series(STRIKES, T)
     fourier = lewis_call(lambda u: merton_cf(u, T), S0, STRIKES, T, R)
     for K, s_, f_, quoted in zip(STRIKES, series, fourier, (25.9555, 18.6983, 12.7613, 8.2583, 5.0906), strict=True):
-        check(f"  K={K:.0f} series minus Fourier", float(s_), float(f_), 1e-8)
+        check(f"  K={K:.0f} series, Fourier within 1e-8", float(s_), float(f_), 1e-8)
         check(f"  K={K:.0f} Merton call", float(s_), quoted, 5e-5)
     check("  terms in the series to reach weight 1e-12", float(nterms), 16.0, 0.0)
     # Exact simulation: N ~ Poisson(lambda T), sum of N normal log-jumps
@@ -155,6 +158,8 @@ def merton(rng: np.random.Generator) -> None:
     skew, exkurt = c3 / c2**1.5, c4 / c2**2
     check("  skewness of the one-year log return", skew, -0.3970, 5e-5)
     check("  excess kurtosis of the one-year log return", exkurt, 0.5648, 5e-5)
+    check("  skewness to three decimals (as quoted)", skew, -0.397, 5e-4)
+    check("  excess kurtosis to three decimals (as quoted)", exkurt, 0.565, 5e-4)
     xc = X - X.mean()
     check("  skewness by simulation", float((xc**3).mean() / xc.var() ** 1.5), -0.396, 5e-4)
     check("  excess kurtosis by simulation", float((xc**4).mean() / xc.var() ** 2 - 3), 0.562, 5e-4)
@@ -302,7 +307,14 @@ def gap_risk() -> None:
     check("loss as a multiple of the premium collected", loss / V0, 1.48, 5e-3)
     check("short call gain on the jump V0 - V1", V0 - V1, 4.56, 5e-3)
     check("hedge loss delta x 20", delta * 20.0, 11.39, 5e-3)
-    check("same loss as days of theta at sigma = 20% (theta per day)", loss / (V0 - float(bs_call(S, K, T - 1 / 365, r, sig))), 237.5, 0.05)
+    theta_days = loss / (V0 - float(bs_call(S, K, T - 1 / 365, r, sig)))
+    check("same loss as days of theta at sigma = 20% (theta per day)", theta_days, 237.5, 0.05)
+    life_days = check("remaining life in calendar days (0.25 x 365)", T * 365, 91, 0.5)
+    assert theta_days > life_days, "loss must exceed the theta of the whole remaining life"
+    print("   loss exceeds the remaining life measured in days of theta: ok")
+    check("call price to three decimals (card)", V0, 4.615, 5e-4)
+    check("call after the jump to three decimals (card)", V1, 0.056, 5e-4)
+    check("delta to two decimals (card)", delta, 0.57, 5e-3)
 
 
 def main() -> None:

@@ -177,7 +177,7 @@ Sanity limits: integrating the $1/K^2$ strip of these Heston prices gives a vari
 
 ### Example 2: Monte Carlo check and discretisation bias
 
-Full-truncation Euler in $\ln S$, $2 \times 100{,}000$ antithetic paths, seed 11:
+Full-truncation Euler in $\ln S$, $2 \times 100{,}000$ antithetic paths, seed 11 (the simulated rows change with the seed; the Fourier row does not):
 
 | Steps | 80 | 90 | 100 | 110 | 120 |
 | :--- | ---: | ---: | ---: | ---: | ---: |
@@ -229,7 +229,7 @@ A market whose one-week skew is much steeper than its one-month skew (as under a
 
 Generate implied vols from the base parameters at expiries 0.25, 0.5, 1, 2 and strikes 80 to 120, then calibrate by Levenberg-Marquardt from $(\kappa, \theta, \xi, \rho, v_0) = (3, 0.06, 0.3, -0.3, 0.06)$.
 It recovers $(1.5000, 0.0400, 0.6000, -0.7000, 0.0400)$ in 11 iterations with RMSE below $10^{-8}$ vol points, and the Jacobian condition number is 16.
-Calibrate to the one-year slice alone and it stops at $(1.5937, 0.0318, 0.5916, -0.6967, 0.0480)$ with RMSE $6.3 \times 10^{-4}$ vol points, a perfect fit with the wrong $\theta$ and $v_0$: the condition number is 3749.
+Calibrate to the one-year slice alone and it stops at $(1.5937, 0.0318, 0.5916, -0.6967, 0.0480)$ with RMSE $6.3 \times 10^{-4}$ vol points, an essentially exact fit with the wrong $\theta$ and $v_0$: the condition number is 3749.
 One slice cannot separate the short-term level, the long-term level and the speed between them; add expiries, or fix $\kappa$.
 
 ### Example 6: SABR alpha, beta, rho and the backbone
@@ -254,7 +254,7 @@ Backbone, with $\alpha$ held fixed and $\rho = 0$: as the forward moves 2%, 3%, 
 
 ### Example 7: where Hagan's formula breaks
 
-Same parameters, Euler Monte Carlo in $F$ with absorption at zero and exact lognormal $\alpha$, $2 \times 100{,}000$ antithetic paths, seed 5:
+Same parameters, Euler Monte Carlo in $F$ with absorption at zero and exact lognormal $\alpha$, $2 \times 100{,}000$ antithetic paths, seed 5 (the Monte Carlo rows change with the seed; the Hagan rows do not):
 
 | $T$ | | 2% | 2.5% | 3% | 3.5% | 4% | 5% |
 | :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -265,8 +265,8 @@ Same parameters, Euler Monte Carlo in $F$ with absorption at zero and exact logn
 | 10 | Monte Carlo | 23.09 | 20.34 | 18.46 | 17.35 | 16.88 | 16.97 |
 | 10 | MC s.e. | 0.15 | 0.12 | 0.10 | 0.09 | 0.09 | 0.10 |
 
-At one year Hagan is below Monte Carlo by about 0.03 to 0.08 vol points, at most 1.8 standard errors, and no path hits zero.
-At ten years the formula overstates every vol, by about 1.26 to 3.00 vol points (26.09 against 23.09 at the 2% strike, 13.5 to 19.7 standard errors), and about 8.46% of the simulated paths are absorbed at zero.
+At one year Hagan is below Monte Carlo by about 0.03 to 0.08 vol points, at most about 1.8 standard errors, and no simulated path hits zero.
+At ten years the formula overstates every vol, by about 1.26 to 3.00 vol points (26.09 against about 23.09 at the 2% strike, about 13.5 to 19.7 standard errors), and about 8.46% of the simulated paths are absorbed at zero.
 Differentiating the Black prices implied by Hagan's vols twice in strike: at one year the density is positive on $[0.05\%, 3\%]$ (minimum $5.26 \times 10^{-3}$), at ten years it is negative for every grid strike below 0.70%, with a negative mass of $-0.113$ on the grid $[0.05\%, 0.70\%]$.
 The true process puts an atom at zero that a smooth implied-vol expansion cannot represent; long-dated low strikes (deep receiver swaptions, floors) need arbitrage-free SABR or a PDE.
 
@@ -357,7 +357,7 @@ Shifted vols are quotes in a different unit: they are not comparable with unshif
 > Fitting both makes them flip between days and the delta with them; fix $\beta$ from the historical backbone and calibrate $\alpha, \rho, \nu$.
 
 > [!question]- deriv-sabr-accuracy | How accurate is Hagan's formula?
-> Good at short expiries: at one year it is within about 0.08 vol points (at most 1.8 standard errors) of Monte Carlo across 2% to 5% strikes on a 3% forward.
+> Good at short expiries: at one year it is within about 0.08 vol points (at most about 1.8 standard errors) of Monte Carlo across 2% to 5% strikes on a 3% forward.
 > At ten years it overstates by about 1.26 to 3.00 vol points, consistent with an expansion in $\nu^2T$ that ignores absorption at zero (about 8.46% of simulated paths are absorbed).
 
 > [!question]- deriv-sabr-negative-density | What arbitrage problem does Hagan's formula have and how is it fixed?

@@ -133,39 +133,46 @@ def main() -> None:
     # cards deriv-disp-index-variance, deriv-disp-implied-corr-formula, deriv-disp-basket-number, deriv-disp-index-vol-bounds.
     print("1. Implied correlation of the five-stock basket")
     a, b = variance_parts(W, SIG)
-    check("weighted average vol sum w_i sig_i", float(W @ SIG), 0.302, 1e-12)
-    check("own-variance part A = sum w^2 sig^2", a, 0.019514, 1e-9)
-    check("cross part B at rho = 1", b, 0.07169, 1e-9)
-    rho_k = check("exact implied correlation", implied_corr(W, SIG, SIG_I), 0.285758, 1e-6)
-    check("proxy sig_I^2 / (sum w sig)^2", proxy_corr(W, SIG, SIG_I), 0.438577, 1e-6)
-    check("proxy minus exact", proxy_corr(W, SIG, SIG_I) - implied_corr(W, SIG, SIG_I), 0.152819, 1e-6)
-    check("index vol if rho = 1, sqrt(A + B)", math.sqrt(a + b), 0.302, 1e-12)
-    check("index vol if rho = 0, sqrt(A + 0 B)", math.sqrt(a + 0.0 * b), 0.139693, 1e-6)
+    check("weighted average vol sum w_i sig_i", float(W @ SIG), 0.302, 5e-4)
+    check("index vol at rho = 1 in vol points", 100 * float(W @ SIG), 30.2, 5e-2)
+    check("own-variance part A = sum w^2 sig^2", a, 0.019514, 5e-7)
+    check("cross part B at rho = 1", b, 0.07169, 5e-6)
+    rho_k = check("exact implied correlation", implied_corr(W, SIG, SIG_I), 0.2858, 5e-5)
+    check("exact implied correlation, two decimals", rho_k, 0.29, 5e-3)
+    check("proxy sig_I^2 / (sum w sig)^2", proxy_corr(W, SIG, SIG_I), 0.4386, 5e-5)
+    check("proxy minus exact", proxy_corr(W, SIG, SIG_I) - implied_corr(W, SIG, SIG_I), 0.1528, 5e-5)
+    check("index vol if rho = 1, sqrt(A + B)", math.sqrt(a + b), 0.302, 5e-4)
+    check("index vol if rho = 0, sqrt(A) in vol points", 100 * math.sqrt(a + 0.0 * b), 13.97, 5e-3)
     w50 = np.full(50, 1 / 50)
-    check("50 names at 30%, index 18%: exact", implied_corr(w50, np.full(50, 0.30), 0.18), 0.346939, 1e-6)
-    check("50 names at 30%, index 18%: proxy", proxy_corr(w50, np.full(50, 0.30), 0.18), 0.36, 1e-12)
-    check("index vol per +0.10 correlation (sig_I at rho_K + 0.1)", math.sqrt(a + (rho_k + 0.1) * b), 0.217184, 1e-6)
+    check("50 names at 30%, index 18%: exact", implied_corr(w50, np.full(50, 0.30), 0.18), 0.3469, 5e-5)
+    check("50 names at 30%, index 18%: proxy", proxy_corr(w50, np.full(50, 0.30), 0.18), 0.36, 5e-3)
+    check("index vol at rho_K + 0.10 (percent)", 100 * math.sqrt(a + (rho_k + 0.1) * b), 21.72, 5e-3)
 
     # Backs: Core concepts (correlation skew paragraph), Worked example 2;
     # cards deriv-corr-skew, deriv-corr-variance-strike-correlation.
     print("\n2. Strip variance strikes, correlation skew (one year, r = 0, F = 100)")
     flat = var_strike(lambda k: np.full_like(k, 0.04))
-    check("flat 20% smile strip strike (vol)", 100 * math.sqrt(flat), 20.0, 1e-3)
+    check("flat 20% smile strip strike (vol)", 100 * math.sqrt(flat), 20.00, 5e-3)
     stock_smiles = [svi_like(s, 0.04, -0.3, 0.1) for s in SIG]
     index_smile = svi_like(SIG_I, 0.10, -0.7, 0.1)
     k_stock = np.array([var_strike(f) for f in stock_smiles])
     k_index = var_strike(index_smile)
-    check("stock 1 (ATM 25) variance strike (vol)", 100 * math.sqrt(k_stock[0]), 26.306, 1e-3)
-    check("stock 1 strike minus ATM (vol points)", 100 * math.sqrt(k_stock[0]) - 25.0, 1.306, 1e-3)
-    check("index (ATM 20) variance strike (vol)", 100 * math.sqrt(k_index), 25.046, 1e-3)
-    check("index strike minus ATM (vol points)", 100 * math.sqrt(k_index) - 20.0, 5.046, 1e-3)
+    check("stock 1 (ATM 25) variance strike (vol)", 100 * math.sqrt(k_stock[0]), 26.31, 5e-3)
+    check("stock 1 strike minus ATM (vol points)", 100 * math.sqrt(k_stock[0]) - 25.0, 1.31, 5e-3)
+    check("index (ATM 20) variance strike (vol)", 100 * math.sqrt(k_index), 25.05, 5e-3)
+    check("index strike minus ATM (vol points)", 100 * math.sqrt(k_index) - 20.0, 5.05, 5e-3)
     rho_var = implied_corr(W, np.sqrt(k_stock), math.sqrt(k_index))
-    check("implied correlation from variance strikes", rho_var, 0.52827, 1e-5)
-    check("variance-strike minus ATM implied correlation", rho_var - rho_k, 0.24251, 1e-5)
-    for label, m, expected in (("90%", 0.9, 0.42749), ("100%", 1.0, 0.285758), ("110%", 1.1, 0.24367)):
+    check("implied correlation from variance strikes", rho_var, 0.5283, 5e-5)
+    check("implied correlation from variance strikes, two decimals", rho_var, 0.53, 5e-3)
+    check("variance-strike minus ATM implied correlation", rho_var - rho_k, 0.2425, 5e-5)
+    check("variance-strike minus ATM implied correlation, points (Pitfalls)", 100 * (rho_var - rho_k), 24, 0.5)
+    for label, m, expected, card in (("90%", 0.9, 0.4275, 0.43), ("100%", 1.0, 0.2858, 0.29), ("110%", 1.1, 0.2437, 0.24)):
         k = np.array([math.log(m)])
         s_i = np.array([math.sqrt(f(k)[0]) for f in stock_smiles])
-        check(f"implied correlation at {label} strike", implied_corr(W, s_i, math.sqrt(index_smile(k)[0])), expected, 1e-5)
+        rho_m = check(f"implied correlation at {label} strike", implied_corr(W, s_i, math.sqrt(index_smile(k)[0])), expected, 5e-5)
+        check("  same, two decimals (card deriv-corr-skew)", rho_m, card, 5e-3)
+        if label == "90%":
+            check("  90% minus ATM implied correlation, points (Pitfalls)", 100 * (rho_m - rho_k), 14, 0.5)
 
     # Backs: Core concepts "Weighting schemes" table, Worked example 3;
     # cards deriv-disp-weighting-schemes, deriv-disp-gamma-neutral-meaning.
@@ -173,31 +180,34 @@ def main() -> None:
     T = 0.25
     g_i = straddle_greeks(SIG_I, T)
     g_s = np.array([straddle_greeks(s, T) for s in SIG])
-    check("index straddle price", 2 * bs_price(100.0, 100.0, T, 0.0, SIG_I), 7.97552, 1e-5)
-    check("index straddle vega per vol point", g_i[0], 0.398444, 1e-6)
-    check("index straddle theta per day", g_i[1], -0.043665, 1e-6)
-    check("index straddle gamma P&L per 1% move", g_i[2], 0.039844, 1e-6)
-    h_vega = check("vega-neutral h (index vega / sum w vega_i)", g_i[0] / float(W @ g_s[:, 0]), 1.00167, 1e-5)
-    h_theta = check("theta-neutral h", g_i[1] / float(W @ g_s[:, 1]), 0.66346, 1e-5)
-    h_gamma = check("gamma-neutral h", g_i[2] / float(W @ g_s[:, 2]), 1.47698, 1e-5)
-    check("vega-neutral book: net theta per day", h_vega * float(W @ g_s[:, 1]) - g_i[1], -0.022259, 1e-6)
-    check("theta-neutral book: net vega per vol point", h_theta * float(W @ g_s[:, 0]) - g_i[0], -0.13453, 1e-5)
-    check("gamma-neutral book: net vega per vol point", h_gamma * float(W @ g_s[:, 0]) - g_i[0], 0.18907, 1e-5)
+    check("index straddle price", 2 * bs_price(100.0, 100.0, T, 0.0, SIG_I), 7.98, 5e-3)
+    check("index straddle vega per vol point", g_i[0], 0.3984, 5e-5)
+    check("index straddle theta per day", g_i[1], -0.04367, 5e-6)
+    check("index straddle gamma P&L per 1% move", g_i[2], 0.03984, 5e-6)
+    h_vega = check("vega-neutral h (index vega / sum w vega_i)", g_i[0] / float(W @ g_s[:, 0]), 1.0017, 5e-5)
+    h_theta = check("theta-neutral h", g_i[1] / float(W @ g_s[:, 1]), 0.6635, 5e-5)
+    h_gamma = check("gamma-neutral h", g_i[2] / float(W @ g_s[:, 2]), 1.4770, 5e-5)
+    check("card: vega-neutral h ~ 1", h_vega, 1, 0.5)
+    check("card: theta-neutral h ~ 0.66", h_theta, 0.66, 5e-3)
+    check("card: gamma-neutral h ~ 1.48", h_gamma, 1.48, 5e-3)
+    check("vega-neutral book: net theta per day", h_vega * float(W @ g_s[:, 1]) - g_i[1], -0.02226, 5e-6)
+    check("theta-neutral book: net vega per vol point", h_theta * float(W @ g_s[:, 0]) - g_i[0], -0.1345, 5e-5)
+    check("gamma-neutral book: net vega per vol point", h_gamma * float(W @ g_s[:, 0]) - g_i[0], 0.1891, 5e-5)
 
     # Backs: Core concepts "Weighting schemes" (correlation-weighted notionals), Worked example 4;
     # card deriv-disp-corr-weighted-notional.
     print("\n4. Variance-swap dispersion, correlation-weighted (index vega notional 100,000)")
     n_index = 100_000 / (2 * 100 * SIG_I)
-    check("index variance notional per variance point", n_index, 2500.0, 1e-9)
+    check("index variance notional per variance point", n_index, 2500, 0.5)
     kv = 100 * SIG
     kiv = 100 * SIG_I
     n_cw = corr_weighted_notionals(n_index, W, kv, rho_k)
-    for i, (n, e) in enumerate(zip(n_cw, (419.60, 291.39, 194.71, 155.76, 71.79), strict=True)):
-        check(f"stock {i + 1} variance notional", n, e, 5e-3)
+    for i, (n, e) in enumerate(zip(n_cw, (419.6, 291.4, 194.7, 155.8, 71.8), strict=True)):
+        check(f"stock {i + 1} variance notional", n, e, 5e-2)
     vega_cw = 2 * kv * n_cw
-    check("sum of stock vega notionals (correlation-weighted)", float(vega_cw.sum()), 66_559, 1)
+    check("sum of stock vega notionals (correlation-weighted)", float(vega_cw.sum()), 66_559, 0.5)
     n_vn = W * 100_000 / (2 * kv)
-    check("vega-neutral stock 1 variance notional", n_vn[0], 600.0, 1e-9)
+    check("vega-neutral stock 1 variance notional", n_vn[0], 600, 0.5)
 
     # Backs: Core concepts "The exact P&L decomposition", Worked example 4 table;
     # cards deriv-disp-pnl-decomposition, deriv-corr-realised-noise, deriv-corr-swap-vs-dispersion.
@@ -205,22 +215,30 @@ def main() -> None:
     r_vol_true = np.array([0.20, 0.24, 0.40, 0.30, 0.45])
     rv, riv, log_r = simulate_year(rng, r_vol_true, 0.15, 1)
     total, vol_t, corr_t, rho_r = dispersion_pnl(n_index, n_cw, W, kv, kiv, rv[0], riv[0])
-    for i, (v, e) in enumerate(zip(rv[0], (20.243, 24.832, 40.762, 30.547, 45.527), strict=True)):
+    for i, (v, e) in enumerate(zip(rv[0], (20.24, 24.83, 40.76, 30.55, 45.53), strict=True)):
         check(f"one path: realised vol stock {i + 1}", v, e, 5e-3)
-    check("one path: realised index vol", math.sqrt(riv[0]), 17.987, 5e-3)
-    check("one path: realised implied-style correlation rho_R", rho_r, 0.20263, 5e-5)
-    check("one path: total P&L", total, 160_406, 5)
-    check("one path: vol term", vol_t, 16_865, 5)
-    check("one path: correlation term", corr_t, 143_541, 5)
+    # "every stock's realised vol missed its implied by several vol points": at least 2.5 for each name
+    assert np.all(np.abs(rv[0] - kv) > 2.5), rv[0] - kv
+    check("one path: realised index vol", math.sqrt(riv[0]), 17.99, 5e-3)
+    check("one path: realised implied-style correlation rho_R", rho_r, 0.2026, 5e-5)
+    check("one path: rho_R, two decimals", rho_r, 0.20, 5e-3)
+    check("one path: total P&L", total, 160_406, 0.5)
+    check("one path: vol term", vol_t, 16_865, 0.5)
+    check("one path: correlation term", corr_t, 143_541, 0.5)
+    check("one path: vol term / total ('about a tenth')", vol_t / total, 0.1, 0.05)
     assert abs(total - vol_t - corr_t) < 1e-6, "decomposition must be exact"
     print("decomposition total - vol - corr                           0 (asserted to 1e-6)")
     c = np.corrcoef(log_r[0].T)
     iu = np.triu_indices(5, 1)
     pair_w = np.outer(W, W)[iu]
-    check("one path: correlation-swap estimator, weighted pairs", float(pair_w @ c[iu] / pair_w.sum()), 0.20716, 1e-5)
-    check("one path: correlation-swap estimator, equal-weighted pairs", float(c[iu].mean()), 0.21810, 1e-5)
+    check("one path: correlation-swap estimator, weighted pairs", float(pair_w @ c[iu] / pair_w.sum()), 0.2072, 5e-5)
+    check("one path: correlation-swap estimator, equal-weighted pairs", float(c[iu].mean()), 0.2181, 5e-5)
 
     # Backs: Worked example 5 table (fair world and realised correlation 0.15); card deriv-disp-long-is-short-corr.
+    # Pitfalls and card deriv-corr-realised-noise: one pair's sampling standard error (1 - rho^2) / sqrt(n),
+    # "several correlation points" with n = 252 at rho = 0.15.
+    check("sampling s.e. of one pair's correlation, rho 0.15, n 252", (1 - 0.15**2) / math.sqrt(DAYS), 0.062, 5e-4)
+
     rng = np.random.default_rng(12)
     paths = 4000
     rv, riv, _ = simulate_year(rng, SIG, rho_k, paths)
@@ -236,7 +254,7 @@ def main() -> None:
     check("realised corr 0.15: s.d. P&L", res[:, 0].std(), 48_262, 0.5)
     check("realised corr 0.15: mean correlation term", res[:, 2].mean(), 242_290, 0.5)
     a_k, b_k = variance_parts(W, kv)
-    check("first-order estimate N_I (rho_K - 0.15) B_K", n_index * (rho_k - 0.15) * b_k, 243_312.5, 1)
+    check("first-order estimate N_I (rho_K - 0.15) B_K", n_index * (rho_k - 0.15) * b_k, 243_312.5, 5e-2)
 
     # Vol shocks at the implied correlation: correlation-weighted vs vega-neutral notionals.
     # Backs: Worked example 5 (last paragraph); cards deriv-disp-corr-weighted-notional, deriv-disp-weighting-schemes.
@@ -255,14 +273,17 @@ def main() -> None:
     crash_vol = 2 * kv
     a_c, b_c = variance_parts(W, crash_vol)
     total, vol_t, corr_t, rho_c = dispersion_pnl(n_index, n_cw, W, kv, kiv, crash_vol, a_c + 0.9 * b_c)
-    check("crash: realised index vol", math.sqrt(a_c + 0.9 * b_c), 57.978, 5e-3)
-    check("crash: total P&L", total, -4_403_500, 1)
-    check("crash: vol term", vol_t, 0.0, 1e-6)
-    check("crash: correlation term", corr_t, -4_403_500, 1)
+    check("crash: realised index vol", math.sqrt(a_c + 0.9 * b_c), 57.98, 5e-3)
+    check("crash: total P&L", total, -4_403_500, 0.5)
+    check("crash: total P&L in millions", total / 1e6, -4.40, 5e-3)
+    check("crash: vol term (zero to within 1e-6)", vol_t, 0.0, 1e-6)
+    check("crash: correlation term", corr_t, -4_403_500, 0.5)
     a_k, b_k = variance_parts(W, kv)
     n_rho = n_index * b_k
-    check("correlation swap notional with the same initial rho exposure", n_rho, 1_792_250, 1e-6)
-    check("that correlation swap in the crash", -n_rho * (0.9 - rho_k), -1_100_875, 1)
+    check("correlation swap notional with the same initial rho exposure", n_rho, 1_792_250, 0.5)
+    swap_crash = check("that correlation swap in the crash", -n_rho * (0.9 - rho_k), -1_100_875, 0.5)
+    check("that correlation swap in the crash, millions", swap_crash / 1e6, -1.10, 5e-3)
+    check("dispersion loss / correlation swap loss", total / swap_crash, 4, 1e-9)
     check("ratio B_R / B_K", b_c / b_k, 4.0, 1e-12)
 
     # Backs: Core concepts "Who trades it" (worst-of sign), Worked example 7; card deriv-corr-worst-of-sign.
@@ -275,12 +296,13 @@ def main() -> None:
         s1 = 100 * np.exp(-0.5 * 0.0625 + 0.25 * z1)
         s2 = 100 * np.exp(-0.5 * 0.0625 + 0.25 * x2)
         lo = np.minimum(s1, s2)
-        check(f"worst-of put, rho = {rho}", float(np.maximum(100 - lo, 0).mean()), put_e, 0.01)
-        check(f"worst-of call, rho = {rho}", float(np.maximum(lo - 100, 0).mean()), call_e, 0.01)
-    check("rho = 1 limit: Black-Scholes call", bs_price(100.0, 100.0, 1.0, 0.0, 0.25), 9.94764, 1e-5)
-    check("rho = 1 limit: Black-Scholes put", bs_price(100.0, 100.0, 1.0, 0.0, 0.25, call=False), 9.94764, 1e-5)
+        check(f"worst-of put, rho = {rho}", float(np.maximum(100 - lo, 0).mean()), put_e, 5e-3)
+        check(f"worst-of call, rho = {rho}", float(np.maximum(lo - 100, 0).mean()), call_e, 5e-3)
+    check("rho = 1 limit: Black-Scholes call", bs_price(100.0, 100.0, 1.0, 0.0, 0.25), 9.95, 5e-3)
+    check("rho = 1 limit: Black-Scholes put", bs_price(100.0, 100.0, 1.0, 0.0, 0.25, call=False), 9.95, 5e-3)
     s1 = 100 * np.exp(-0.5 * 0.0625 + 0.25 * z1)
-    check("rho = 1 limit: worst-of put by Monte Carlo", float(np.maximum(100 - s1, 0).mean()), 9.95, 0.05)
+    # Sanity bound only (the note quotes the closed form): the simulated single-stock put is near 9.95.
+    check("rho = 1 limit: worst-of put by Monte Carlo (bound 0.05)", float(np.maximum(100 - s1, 0).mean()), 9.95, 0.05)
 
 
 if __name__ == "__main__":

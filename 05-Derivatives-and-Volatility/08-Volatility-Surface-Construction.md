@@ -216,9 +216,9 @@ On a grid over $k \in [-1.5, 1.5]$ the minimum of $g$ is 0.2795, so the slice is
 ### Example 2: fitting noisy quotes
 
 Generate 27 quotes for $k \in [-0.4, 0.25]$ from that slice, add Gaussian noise of 0.2 vol points (seed 2024), weight by $e^{-k^2/(2 \cdot 0.2^2)}$, and run the quasi-explicit fit.
-It returns $(a, b, \rho, m, \sigma) = (0.0125, 0.0590, -0.7100, 0.0238, 0.1065)$.
-RMSE against the noisy quotes is 0.18 vol points (the noise level, as it should be), and the fitted slice is within 0.13 vol points of the true one everywhere on the quoted range.
-The fitted slice has minimum $g = 0.2825$ and $b(1 + \lvert\rho\rvert) = 0.1009$: no butterfly arbitrage and wings well inside Lee.
+With this seed it returns about $(a, b, \rho, m, \sigma) = (0.0125, 0.0590, -0.7100, 0.0238, 0.1065)$; every number in this example changes with the seed.
+RMSE against the noisy quotes is about 0.18 vol points (the noise level, as it should be), and the fitted slice is within about 0.13 vol points of the true one everywhere on the quoted range.
+The fitted slice has minimum $g$ of about 0.2825 and $b(1 + \lvert\rho\rvert)$ of about 0.1009: no butterfly arbitrage and wings well inside Lee.
 Note $m$ and $\sigma$ moved more than the vols did: SVI parameters are weakly identified individually, which is why production fitters regularise them toward yesterday.
 
 ### Example 3: a good-looking slice with butterfly arbitrage
@@ -265,6 +265,8 @@ Local vol is far steeper than implied (35.01 against 26.85 at the 3-month 80 str
 
 Simulate $d\ln(S_t/F_t) = -\tfrac12\sigma_{loc}^2\,dt + \sigma_{loc}\,dW$ with 250 log-Euler steps per year and $2 \times 100{,}000$ antithetic paths (seed 7), evaluating $\sigma_{loc}$ from the $w$-form at each step.
 
+Monte Carlo rows from seed 7; they change with the seed, while the input rows do not:
+
 | $T$ | | 80 | 90 | 100 | 110 | 120 |
 | :--- | :--- | ---: | ---: | ---: | ---: | ---: |
 | 0.5 | MC implied | 25.55 | 22.20 | 18.87 | 15.89 | 13.95 |
@@ -291,7 +293,7 @@ Local skew over implied skew at the money, from the same code:
 With a flat skew term structure the short-maturity ratio is the textbook 2; with skew decaying like $T^{-0.4}$ it tends to $2 - 0.4 = 1.6$.
 Integrating the same local skews in time gives the heuristic skew stickiness ratio $R_T$: 2.00 for the flat skew at $T = 0.001$, and 2.68 for the power law at $T = 10^{-6}$, against the limit $(2 - 0.4)/(1 - 0.4) = 2.67$.
 
-Forward smile: in the same simulation, a forward-start call on $S_1/S_{0.5}$ struck at 90%, 100% and 110% of the forward gives forward implied vols of about 23.46%, 20.93% and 19.52%, a 90-110 skew of about 3.94 vol points.
+Forward smile: in the same simulation (seed 7), a forward-start call on $S_1/S_{0.5}$ struck at 90%, 100% and 110% of the forward gives forward implied vols of about 23.46%, 20.93% and 19.52%, a 90-110 skew of about 3.94 vol points.
 Today's 6-month smile at the same moneyness is 21.88%, 18.51% and 15.55%, a skew of 6.33.
 Local vol predicts that in six months the 6-month skew will be about 38% flatter than it is today, although nothing in the market says so; a cliquet or forward-start priced on this model is priced off that flatter forward skew.
 
