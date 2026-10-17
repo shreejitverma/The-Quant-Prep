@@ -5,7 +5,7 @@ const $app = document.getElementById("app");
 // Track labels and abbreviations come from the server (tools/qp/vault.py) at startup.
 let TRACKS = {};
 let TRACK_ABBR = {};
-const MASTERY = ["unseen", "studied", "practiced", "solid", "interview-ready"];
+const MASTERY = ["unseen", "studied", "practiced", "mastered", "interview-ready"];
 let drillCleanup = null;
 
 // ---------- helpers ----------
@@ -197,7 +197,7 @@ async function viewDashboard() {
       h("div", { class: "row" }, h("h3", {}, t.label), h("span", { class: "spacer" }), t.active ? null : h("span", { class: "chip" }, "not targeted")),
       h("div", { class: "pct" }, pct(t.readiness)),
       bar(t.readiness, t.readiness >= 0.75 ? "good" : ""),
-      h("div", { class: "meta" }, h("span", {}, `${t.solid}/${t.topics} topics solid`), h("span", {}, `${fmtHours(t.hours_left)} left`)))));
+      h("div", { class: "meta" }, h("span", {}, `${t.solid}/${t.topics} mastered`), h("span", {}, `${fmtHours(t.hours_left)} left`)))));
   const next = h("div", { class: "panel" },
     h("div", { class: "panel-head" }, h("h2", {}, "Next up"), h("a", { href: "#/plan", class: "sub" }, "Full plan")),
     s.next.length ? h("div", { class: "list" }, s.next.map((n) =>
@@ -206,7 +206,7 @@ async function viewDashboard() {
           h("a", { class: "title", href: `#/note/${encodeURIComponent(n.id)}` }, n.title),
           h("div", { class: "sub" }, n.blocked_by.length ? `Blocked by ${n.blocked_by.join(", ")}` : `${n.hours} h, ${n.status === "seed" ? "not written yet" : n.status}`)),
         tierChip(n.tier),
-        masteryControl(n, () => {})))) : h("p", { class: "muted" }, "Every targeted topic is at solid mastery."));
+        masteryControl(n, () => {})))) : h("p", { class: "muted" }, "Every targeted topic is mastered."));
   const firms = h("div", { class: "panel" },
     h("div", { class: "panel-head" }, h("h2", {}, "Firm readiness"), h("a", { href: "#/firms", class: "sub" }, "All firms")),
     s.firms.slice(0, 8).map((f) => h("div", { class: "bar-row" },
@@ -283,11 +283,12 @@ async function viewSyllabus(params) {
         && (!state.tracks.size || n.tracks.some((t) => state.tracks.has(t))));
       const extra = sec.notes.filter((n) => n.mastery === null && n.type !== "firm");
       if (!rows.length && (state.q || state.tier || state.written || state.tracks.size)) return [];
-      const done = rows.filter((n) => n.mastery >= 3).length;
+      const mastered = () => `${rows.filter((n) => n.mastery >= 3).length}/${rows.length} mastered`;
+      const count = h("span", { class: "faint num" }, mastered());
       const filtering = state.q || state.tier || state.written || state.tracks.size;
       return h("details", { class: "section-group", open: filtering || state.open === sec.folder || !state.open ? true : null, id: sec.folder },
         h("summary", {}, h("span", { class: "caret" }, "▸"), h("h2", {}, sec.title), sec.private ? h("span", { class: "chip", title: "Loaded from your private overlay; never committed" }, "private") : null,
-          rows.length ? h("span", { class: "faint num" }, `${done}/${rows.length} solid`) : null,
+          rows.length ? count : null,
           sec.readme ? h("a", { href: `#/note/${encodeURIComponent(sec.readme)}`, class: "btn small", onclick: (e) => e.stopPropagation() }, "Overview") : null),
         h("div", { class: "panel" }, rows.length ? h("table", { class: "t" },
           h("thead", {}, h("tr", {}, h("th", {}, "#"), h("th", {}, "Topic"), h("th", { class: "hide-sm" }, "Tracks"), h("th", {}, "Tier"),
@@ -300,14 +301,14 @@ async function viewSyllabus(params) {
             h("td", { class: "hide-sm" }, statusChip(n.status)),
             h("td", { class: "r num hide-sm muted" }, n.hours),
             h("td", { class: "r num hide-sm muted" }, n.cards || ""),
-            h("td", {}, masteryControl(n)))))) : null,
+            h("td", {}, masteryControl(n, () => { count.textContent = mastered(); })))))) : null,
           extra.length ? h("div", { class: "row", style: { padding: "10px" } }, h("span", { class: "faint" }, "Also:"),
             extra.map((n) => h("a", { href: `#/note/${encodeURIComponent(n.id)}`, class: "chip" }, n.title))) : null));
     }));
     if (!body.children.length || [...body.children].every((c) => !c)) body.replaceChildren(h("div", { class: "empty" }, h("h2", {}, "No topics match"), "Clear a filter to see more."));
   }
   draw();
-  $app.replaceChildren(page("Syllabus", "Every topic a senior quant is expected to know. Set mastery as you study: 1 studied, 2 practiced, 3 solid, 4 interview-ready."),
+  $app.replaceChildren(page("Syllabus", "Every topic a senior quant is expected to know. Set mastery as you study: 1 studied, 2 practiced, 3 mastered, 4 interview-ready."),
     h("div", { class: "row", style: { marginBottom: "18px" } }, search, tier, trackToggles, written), body);
   if (state.open) document.getElementById(state.open)?.scrollIntoView();
 }
@@ -558,7 +559,7 @@ async function viewPlan(params) {
   const weeks = plan.weeks.length ? plan.weeks.map((w) => h("div", { class: "week" },
     h("div", { class: "when" }, h("b", {}, `Week ${w.week}`), h("span", {}, `${w.starts}, ${w.hours} h`)),
     h("div", { class: "topics" }, w.topics.map((t) => h("a", { href: `#/note/${encodeURIComponent(t.id)}`, title: `${t.tier}, ${t.hours} h` }, t.title)))))
-    : [h("div", { class: "empty" }, h("h2", {}, "Nothing left to plan"), "Every topic in your tracks is at solid mastery.")];
+    : [h("div", { class: "empty" }, h("h2", {}, "Nothing left to plan"), "Every topic in your tracks is mastered.")];
   $app.replaceChildren(
     page("Study plan", `${plan.weeks.length} weeks, about ${Math.round(plan.total_hours)} hours at ${plan.hours_per_week} h per week, in prerequisite order. Mastered topics drop out automatically.`),
     h("div", { class: "panel", style: { marginBottom: "16px" } }, h("div", { class: "row" },

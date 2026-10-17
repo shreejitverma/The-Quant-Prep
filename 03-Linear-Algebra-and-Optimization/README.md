@@ -19,13 +19,13 @@ The language of covariance, factor models, portfolio optimizers and every numeri
 | 01 | [Vectors, Matrices and Linear Maps](01-Vectors-Matrices-and-Linear-Maps.md) | RD | core | 3 | solid | 19 |
 | 02 | [Eigendecomposition and the Spectral Theorem](02-Eigendecomposition-and-Spectral-Theorem.md) | R | core | 4 | solid | 18 |
 | 03 | [SVD and Low-Rank Approximation](03-SVD-and-Low-Rank-Approximation.md) | R | core | 3 | solid | 16 |
-| 04 | [Covariance Matrices and Positive Semi-Definiteness](04-Covariance-Matrices-and-PSD.md) | TR | core | 3 | solid | 18 |
-| 05 | [PCA and Factor Structure](05-PCA-and-Factor-Structure.md) | R | core | 4 | solid | 17 |
-| 06 | [Numerical Linear Algebra](06-Numerical-Linear-Algebra.md) | RD | core | 4 | solid | 18 |
-| 07 | [Calculus and Taylor Expansions](07-Calculus-and-Taylor-Expansions.md) | TRD | core | 3 | solid | 20 |
+| 04 | [Covariance Matrices and Positive Semi-Definiteness](04-Covariance-Matrices-and-PSD.md) | TRQ | core | 3 | solid | 18 |
+| 05 | [PCA and Factor Structure](05-PCA-and-Factor-Structure.md) | RQ | core | 4 | solid | 17 |
+| 06 | [Numerical Linear Algebra](06-Numerical-Linear-Algebra.md) | RDQ | core | 4 | solid | 18 |
+| 07 | [Calculus and Taylor Expansions](07-Calculus-and-Taylor-Expansions.md) | TRDQ | core | 3 | solid | 20 |
 | 08 | [Convex Optimization and KKT Conditions](08-Convex-Optimization-and-KKT.md) | R | core | 5 | solid | 19 |
 | 09 | [Quadratic Programming and Portfolio Solvers](09-Quadratic-Programming-and-Portfolio-Solvers.md) | RD | advanced | 3 | solid | 18 |
-| 10 | [Numerical Optimization and Root Finding](10-Numerical-Optimization-and-Root-Finding.md) | RD | core | 4 | solid | 21 |
+| 10 | [Numerical Optimization and Root Finding](10-Numerical-Optimization-and-Root-Finding.md) | RDQ | core | 4 | solid | 21 |
 | 11 | [Linear Algebra Problem Set](11-Linear-Algebra-Problem-Set.md) | RD | core | 4 | solid | 33 |
 
 <!-- qp:moc:end -->
