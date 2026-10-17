@@ -168,8 +168,11 @@ stateDiagram-v2
     PartiallyFilled --> PendingCancel: 35=F sent
     New --> PendingReplace: 35=G sent
     PartiallyFilled --> PendingReplace: 35=G sent
+    PendingReplace --> PendingCancel: 35=F sent while the replace is in flight
+    PendingCancel --> PendingReplace: 35=9 for the cancel, replace still in flight
     PendingCancel --> PendingCancel: 150=F even to leaves 0, or a late 150=0
-    PendingCancel --> Canceled: 150=4
+    PendingCancel --> Canceled: 150=4 on our cancel, or unsolicited
+    PendingCancel --> Expired: 150=C, our cancel becomes moot
     PendingCancel --> Filled: 35=9 after the order filled
     PendingCancel --> PartiallyFilled: 35=9 after a fill
     PendingCancel --> New: 35=9 with no fill
@@ -177,6 +180,8 @@ stateDiagram-v2
     PendingReplace --> New: 150=5, no fills yet
     PendingReplace --> PartiallyFilled: 150=5 after fills
     PendingReplace --> Filled: 150=5 when fills used up the new quantity, or 35=9
+    PendingReplace --> Canceled: unsolicited 150=4, our replace becomes moot
+    PendingReplace --> Expired: 150=C, our replace becomes moot
     New --> Canceled: unsolicited 150=4
     PartiallyFilled --> Canceled: unsolicited 150=4
     New --> Expired: 150=C
@@ -193,17 +198,24 @@ The transitions that bite in production:
   The fill's own OrdStatus depends on timing: a fill the venue sent before it saw your cancel says 1 Partially filled (B.1.b), and one sent after the venue acknowledged it with 150=6 says 6 Pending Cancel, even when it fills the order completely (B.1.c).
   Reconciliation must accept either while your request is in flight; demanding 6 trips the kill switch on a normal race.
 - **Cancel reject.** 35=9 returns the order to its pre-pending state, updated by any fills that arrived meanwhile.
-  It must name the request still in flight: a reject, Pending Cancel, Canceled or Replaced report carrying any other ClOrdID (say a resent reject for an earlier cancel) is a reconciliation failure, not a state change.
-  The exception is the too-late reject: when the venue ends the order on its own (end-of-day expiry, a venue risk cancel) while our cancel or replace is on the wire, it answers that request with a cancel reject, which changes nothing and must not trip the kill switch.
+  It names the cancel or replace it refuses, and only a request still in flight can be refused.
+  Two late answers are counted and ignored: a resent reject for a request already rejected, and the too-late reject for a request that became moot because the venue ended the order on its own (end-of-day expiry, a venue risk cancel) while the request was on the wire.
+  A reject for a request the venue accepted, a reject naming the order's own ClOrdID, and a Pending Cancel, Canceled or Replaced report naming a request that is not in flight are reconciliation failures.
 - **Replace in flight.** Until 150=5 arrives, either the old or the new terms can execute, so exposure is max(old leaves, new leaves) at the worse price.
   A replace cannot leave an order below CumQty: if fills crossing the request reach or pass the new quantity, the venue amends the order quantity to CumQty and reports 150=5 with OrdStatus Filled (C.3.b, C.3.c).
 - **Cancel over a pending replace.** A cancel may be sent while a replace is still in flight, with OrigClOrdID set to the last accepted ClOrdID; the order is then Pending Cancel, either set of terms can still execute, and the venue answers the replace and the cancel separately.
   Refusing that cancel would leave the order live under the kill switch until the replace resolves.
-- **Unsolicited cancels and expiries.** IOC remainders, end of day, venue-side risk or cancel-on-disconnect produce 150=4 or 150=C with no request from you.
+- **Unsolicited cancels and expiries.** IOC remainders, end of day, venue-side risk or cancel-on-disconnect produce 150=4 or 150=C with no request from you, on the order's current ClOrdID.
+  The order ends even when your cancel or replace is in flight; that request becomes moot, and the venue's later reject for it is the too-late answer above.
 - **Fill before acknowledgement.** Some flows deliver a fill before the New ack; treat it as an implicit acknowledgement.
-  The late ack still shows the pre-fill quantities (CumQty 0, LeavesQty the order quantity), so check that it adds up to the order and then apply it as a no-op rather than an illegal transition.
+  The late ack still shows the pre-fill quantities (CumQty 0, LeavesQty the order quantity), so check that it adds up to the order, then count it and ignore it rather than treat it as an illegal transition.
   Likewise a cancel sent before the ack can be followed by the ack itself (150=0, OrdStatus 0) and only then by the cancel (B.1.d, B.1.e).
 - **Terminal means terminal.** A report that moves a Filled, Canceled, Rejected or Expired order is not a state change you apply; it is evidence that your book and the venue's disagree.
+
+Patching these races one branch at a time is how gateways end up with a false kill on one race and a silent hole on the next.
+The repo's gateway keeps, for every order, a ledger of each ClOrdID it sent (the order, each cancel, each replace) and the state of that request: in flight, implied (filled before its ack), accepted, rejected, or moot (the order ended first).
+Each inbound message is classified by the order's phase (unacknowledged, live, filled, ended) and by the ledger state of the request it names, and one transition table decides the action; a combination the table does not list is a reconciliation failure.
+OrdStatus is recomputed from the phase and the ledger after every message, so it cannot drift from them.
 
 ### Idempotency and reconciliation
 
@@ -362,7 +374,7 @@ Re-arming is a separate, deliberate human action.
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [pretrade_risk_oms.hpp](code/cpp/pretrade_risk_oms.hpp) (gateway, checks, state machine, idempotent reports, kill switch), [pretrade_risk_oms.cpp](code/cpp/pretrade_risk_oms.cpp) (every number above, printed and asserted), [tests/test_pretrade_risk_oms.cpp](code/cpp/tests/test_pretrade_risk_oms.cpp) (each check at its boundary, illegal transitions, duplicates, overfills, fill and cancel races, late acks, responses matched to the request in flight, replace exposure, bad references, exposure overflow, kill switch).
+- Code: [pretrade_risk_oms.hpp](code/cpp/pretrade_risk_oms.hpp) (gateway, checks, state machine, idempotent reports, kill switch), [pretrade_risk_oms.cpp](code/cpp/pretrade_risk_oms.cpp) (every number above, printed and asserted), [tests/test_pretrade_risk_oms.cpp](code/cpp/tests/test_pretrade_risk_oms.cpp) (each check at its boundary, illegal transitions, duplicates, overfills, fill and cancel races, late acks, responses matched to the request ledger, contradictory answers, replace exposure, bad references, exposure overflow, kill switch, and a seeded model check that drives the gateway against an independently written venue with crossing messages, two-phase requests, replays and injected faults).
 - Intraday risk and pre-trade limits: [Intraday Risk and Pre-Trade Limits](../18-Pricing-and-Risk-Systems/08-Intraday-Risk-and-Pre-Trade-Limits.md).
 - Enterprise risk engine architecture: [Risk Engine Architecture](../18-Pricing-and-Risk-Systems/07-Risk-Engine.md).
 - Order types and venue mechanics: [Limit Order Books and Order Types](../07-Market-Microstructure/01-Limit-Order-Books-and-Order-Types.md).

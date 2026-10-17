@@ -5,15 +5,21 @@
 // Covers: each check at its boundary, illegal transitions, duplicate execution reports,
 // overfills and reconciliation failures tripping the kill switch, fills racing a cancel,
 // replace exposure, cancel rejects, kill-switch behaviour, the FIX 4.4 Appendix D cancel
-// scenarios B.1.b to B.1.d, late acks after fills, responses matched to the request in flight,
-// and fail-closed handling of clock steps, bad references and exposure overflow. Framework-free.
+// scenarios B.1.b to B.1.d, late acks after fills, responses matched to the request ledger,
+// fail-closed handling of clock steps, bad references and exposure overflow, and a randomized
+// model check against an independently written venue. Framework-free.
 
 #include "pretrade_risk_oms.hpp"
 
 #include <cstdint>
+#include <cstdlib>
+#include <deque>
 #include <iostream>
 #include <limits>
+#include <map>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -197,15 +203,16 @@ void test_late_ack_after_fill_is_reconciled() {
     RiskGateway gw = gateway();
     EXPECT(gw.submit({"o", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
     EXPECT(gw.onExecutionReport({"e1", "o", "", ExecType::Trade, OrdStatus::PartiallyFilled, 10, 5'000, 90, 10}) == ApplyResult::Applied);
-    EXPECT(gw.onExecutionReport({"e2", "o", "", ExecType::PendingNew, OrdStatus::PendingNew, 0, 0, 100, 0}) == ApplyResult::Applied);
-    EXPECT(gw.onExecutionReport({"e3", "o", "", ExecType::New, OrdStatus::New, 0, 0, 100, 0}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"e2", "o", "", ExecType::PendingNew, OrdStatus::PendingNew, 0, 0, 100, 0}) == ApplyResult::Ignored);
+    EXPECT(gw.onExecutionReport({"e3", "o", "", ExecType::New, OrdStatus::New, 0, 0, 100, 0}) == ApplyResult::Ignored);
+    EXPECT(gw.ignoredResponses() == 2);
     EXPECT(gw.order("o")->status == OrdStatus::PartiallyFilled && gw.order("o")->cumQty == 10 && gw.order("o")->leavesQty == 90);
     EXPECT(!gw.killed());
     // A cancel sent before the ack, then a fill, then the ack (B.1.d with a fill in between).
     EXPECT(gw.submit({"p", "ABC", Side::Buy, 50, 5'000}, 20 * kMs) == RejectReason::None);
     EXPECT(gw.requestCancel("p", "cp") == RejectReason::None);
     EXPECT(gw.onExecutionReport({"f1", "p", "", ExecType::Trade, OrdStatus::PartiallyFilled, 20, 5'000, 30, 20}) == ApplyResult::Applied);
-    EXPECT(gw.onExecutionReport({"f2", "p", "", ExecType::New, OrdStatus::New, 0, 0, 50, 0}) == ApplyResult::Applied);
+    EXPECT(gw.onExecutionReport({"f2", "p", "", ExecType::New, OrdStatus::New, 0, 0, 50, 0}) == ApplyResult::Ignored);
     EXPECT(gw.order("p")->status == OrdStatus::PendingCancel && !gw.killed());
     EXPECT(gw.onExecutionReport({"f3", "cp", "p", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 20}) == ApplyResult::Applied);
     EXPECT(gw.position("ABC") == 30 && !gw.killed());
@@ -222,17 +229,20 @@ void test_late_ack_after_fill_is_reconciled() {
     EXPECT(gw2.killed());
 }
 
-// Responses to a cancel or replace must name the request in flight.
+// Responses to a cancel or replace are matched against the request ledger.
 void test_responses_must_match_request_in_flight() {
-    // A stale reject for an earlier cancel must not undo the cancel now in flight.
+    // A resent reject for an earlier, already rejected cancel is counted and ignored: it must not
+    // undo the cancel now in flight.
     RiskGateway gw = gateway();
     EXPECT(gw.submit({"o", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
     ack(gw, "o", "e1", 100);
     EXPECT(gw.requestCancel("o", "c1") == RejectReason::None);
     EXPECT(gw.onCancelReject("c1") == ApplyResult::Applied);
     EXPECT(gw.requestCancel("o", "c2") == RejectReason::None);
-    EXPECT(gw.onCancelReject("c1") == ApplyResult::IllegalTransition);
-    EXPECT(gw.killed() && gw.order("o")->status == OrdStatus::PendingCancel);
+    EXPECT(gw.onCancelReject("c1") == ApplyResult::Ignored);
+    EXPECT(!gw.killed() && gw.order("o")->status == OrdStatus::PendingCancel && gw.ignoredResponses() == 1);
+    EXPECT(gw.onCancelReject("c2") == ApplyResult::Applied);
+    EXPECT(gw.order("o")->status == OrdStatus::New);
     // An unknown id trips the kill switch.
     RiskGateway gw2 = gateway();
     EXPECT(gw2.onCancelReject("nobody") == ApplyResult::UnknownOrder);
@@ -273,7 +283,7 @@ void test_responses_must_match_request_in_flight() {
     EXPECT(gw7.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
     EXPECT(gw7.requestCancel("X", "C") == RejectReason::None);
     EXPECT(gw7.onExecutionReport({"e1", "X", "", ExecType::Rejected, OrdStatus::Rejected, 0, 0, 0, 0}) == ApplyResult::Applied);
-    EXPECT(gw7.onCancelReject("C") == ApplyResult::Applied);
+    EXPECT(gw7.onCancelReject("C") == ApplyResult::Ignored);
     EXPECT(gw7.order("X")->status == OrdStatus::Rejected && !gw7.killed());
     // The venue ends the order on its own (end of day) while our cancel, or our replace, is on the
     // wire; the venue then answers that request with a too-late cancel reject, a routine race.
@@ -282,17 +292,454 @@ void test_responses_must_match_request_in_flight() {
     ack(gw8, "X", "e1", 100);
     EXPECT(gw8.requestCancel("X", "C1") == RejectReason::None);
     EXPECT(gw8.onExecutionReport({"e2", "X", "", ExecType::Expired, OrdStatus::Expired, 0, 0, 0, 0}) == ApplyResult::Applied);
-    EXPECT(gw8.onCancelReject("C1") == ApplyResult::Applied);
+    EXPECT(gw8.onCancelReject("C1") == ApplyResult::Ignored);
     EXPECT(gw8.order("X")->status == OrdStatus::Expired && !gw8.killed());
     RiskGateway gw9 = gateway();
     EXPECT(gw9.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
     ack(gw9, "X", "e1", 100);
     EXPECT(gw9.requestReplace("X", "R1", 200, 5'000, 20 * kMs) == RejectReason::None);
     EXPECT(gw9.onExecutionReport({"e2", "X", "", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 0}) == ApplyResult::Applied);
-    EXPECT(gw9.onCancelReject("R1") == ApplyResult::Applied);
+    EXPECT(gw9.onCancelReject("R1") == ApplyResult::Ignored);
     EXPECT(gw9.order("X")->status == OrdStatus::Canceled && !gw9.killed());
     // A reject naming the ended order itself, not a request sent for it, is still a reconciliation failure.
     EXPECT(gw9.onCancelReject("X") == ApplyResult::IllegalTransition && gw9.killed());
+}
+
+// The venue cannot both accept and reject one request: a reject for an accepted cancel or replace
+// is a reconciliation break, while a resent reject for one already rejected is only late.
+void test_contradictory_answers_are_breaks() {
+    // (a) the cancel succeeded, then a reject for the same cancel arrives.
+    RiskGateway a = gateway();
+    EXPECT(a.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(a, "X", "e1", 100);
+    EXPECT(a.requestCancel("X", "C1") == RejectReason::None);
+    EXPECT(a.onExecutionReport({"e2", "C1", "X", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 0}) == ApplyResult::Applied);
+    EXPECT(a.onCancelReject("C1") == ApplyResult::IllegalTransition && a.killed());
+    // (b) the cancel was rejected, the order later expired, then the reject is resent.
+    RiskGateway b = gateway();
+    EXPECT(b.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(b, "X", "e1", 100);
+    EXPECT(b.requestCancel("X", "C1") == RejectReason::None);
+    EXPECT(b.onCancelReject("C1") == ApplyResult::Applied);
+    EXPECT(b.onExecutionReport({"e2", "X", "", ExecType::Expired, OrdStatus::Expired, 0, 0, 0, 0}) == ApplyResult::Applied);
+    EXPECT(b.onCancelReject("C1") == ApplyResult::Ignored && !b.killed());
+    // (c) replace R1 was accepted and superseded by R2; a reject for R1 after the order ended.
+    RiskGateway c = gateway();
+    EXPECT(c.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(c, "X", "e1", 100);
+    EXPECT(c.requestReplace("X", "R1", 200, 5'000, 20 * kMs) == RejectReason::None);
+    EXPECT(c.onExecutionReport({"e2", "R1", "X", ExecType::Replaced, OrdStatus::New, 0, 0, 200, 0}) == ApplyResult::Applied);
+    EXPECT(c.requestReplace("R1", "R2", 300, 5'000, 40 * kMs) == RejectReason::None);
+    EXPECT(c.onExecutionReport({"e3", "R2", "R1", ExecType::Replaced, OrdStatus::New, 0, 0, 300, 0}) == ApplyResult::Applied);
+    EXPECT(c.onExecutionReport({"e4", "R2", "", ExecType::Expired, OrdStatus::Expired, 0, 0, 0, 0}) == ApplyResult::Applied);
+    EXPECT(!c.killed());
+    EXPECT(c.onCancelReject("R1") == ApplyResult::IllegalTransition && c.killed());
+    // A report naming a ClOrdID that was never sent for the order, routed by its OrigClOrdID.
+    RiskGateway d = gateway();
+    EXPECT(d.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    ack(d, "X", "e1", 100);
+    EXPECT(d.onExecutionReport({"e2", "Z", "X", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 0}) == ApplyResult::IllegalTransition);
+    EXPECT(d.killed() && d.order("X")->status == OrdStatus::New);
+}
+
+// ------------------------------------------------------------------ model check
+// A venue written independently of the gateway. It works our requests in arrival order, sometimes
+// in two phases (a Pending Cancel or Pending Replace ack first, the outcome later), fills, expires
+// or cancels orders on its own, sometimes holds an ack back until after a fill, rejects some
+// orders and replaces, and replays reports. Each direction of the session is a FIFO queue, and the
+// driver interleaves our sends, deliveries in both directions and venue events at random, so
+// requests and reports cross on the wire. Oracle: the venue's own book. Legal venue behaviour
+// must never trip the kill switch; whenever both queues are empty the gateway must agree with the
+// venue on every order, position and exposure; and an injected illegal message must trip it.
+
+struct Mix {  // SplitMix64
+    std::uint64_t s;
+    std::uint64_t next() {
+        std::uint64_t z = (s += 0x9E3779B97F4A7C15ull);
+        z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ull;
+        z = (z ^ (z >> 27)) * 0x94D049BB133111EBull;
+        return z ^ (z >> 31);
+    }
+    std::int64_t below(std::int64_t n) { return static_cast<std::int64_t>(next() % static_cast<std::uint64_t>(n)); }
+    bool chance(int oneIn) { return below(oneIn) == 0; }
+};
+
+struct ToVenue {
+    char kind;  // 'N' new, 'C' cancel, 'R' replace
+    std::string key;
+    std::string id;
+    std::int64_t qty;
+    std::int64_t px;
+};
+
+struct ToGateway {
+    bool cancelReject;
+    ExecReport er;
+    std::string rejectId;
+};
+
+struct VenueOrder {
+    std::string key;
+    std::string current;
+    std::string symbol;
+    Side side;
+    std::int64_t qty;
+    std::int64_t origQty;
+    std::int64_t px;
+    std::int64_t cum = 0;
+    bool ackOwed = false;
+    bool ackSent = false;
+    std::optional<OrdStatus> ended;
+    std::optional<ToVenue> working;  // a request between its Pending ack and its outcome
+    std::deque<ToVenue> backlog;     // requests that arrived while one was being worked
+    std::int64_t leaves() const { return ended ? 0 : qty - cum; }
+    OrdStatus status() const {
+        if (ended) return *ended;
+        if (working) return working->kind == 'C' ? OrdStatus::PendingCancel : OrdStatus::PendingReplace;
+        return qty == cum ? OrdStatus::Filled : cum > 0 ? OrdStatus::PartiallyFilled : OrdStatus::New;
+    }
+};
+
+struct ModelStats {
+    long steps = 0, reports = 0, implicitAcks = 0, tooLate = 0, twoPhase = 0, unsolicited = 0, replaced = 0, amendedToCum = 0, replays = 0,
+         orderRejects = 0, quiesces = 0, faultsCaught = 0;
+};
+
+class VenueModel {
+public:
+    explicit VenueModel(std::uint64_t seed) : rng_{seed} {}
+    std::map<std::string, VenueOrder> orders;
+    std::deque<ToGateway> out;
+    std::vector<ToGateway> sent;  // for replays
+    std::map<std::string, std::int64_t> position;
+    ModelStats* stats = nullptr;
+
+    void receive(const ToVenue& m) {
+        if (m.kind == 'N') {
+            VenueOrder& v = orders[m.key];
+            v.key = v.current = m.key;
+            v.symbol = m.id;
+            v.side = m.qty > 0 ? Side::Buy : Side::Sell;
+            v.qty = v.origQty = m.qty > 0 ? m.qty : -m.qty;
+            v.px = m.px;
+            if (rng_.chance(10)) {
+                v.ended = OrdStatus::Rejected;
+                ++stats->orderRejects;
+                report(v, ExecType::Rejected, v.key, "", 0, 0);
+            } else if (rng_.chance(4)) {
+                v.ackOwed = true;
+            } else {
+                if (rng_.chance(4)) report(v, ExecType::PendingNew, v.key, "", 0, 0, OrdStatus::PendingNew);
+                v.ackSent = true;
+                report(v, ExecType::New, v.key, "", 0, 0);
+            }
+            return;
+        }
+        VenueOrder& v = orders.at(m.key);
+        if (v.working) {
+            v.backlog.push_back(m);
+            return;
+        }
+        work(v, m);
+    }
+
+    // One spontaneous venue event on a random order.
+    void act() {
+        if (orders.empty()) return;
+        auto it = orders.begin();
+        std::advance(it, rng_.below(static_cast<std::int64_t>(orders.size())));
+        VenueOrder& v = it->second;
+        const std::int64_t r = rng_.below(10);
+        if (r < 5) {
+            fill(v);
+        } else if (r < 7) {
+            if (v.working) finishWorking(v);
+        } else if (r < 8) {
+            flushAck(v);
+        } else if (r < 9) {
+            if (v.ackSent && !v.ackOwed && !v.ended && v.leaves() > 0 && rng_.chance(3)) {
+                v.ended = rng_.chance(2) ? OrdStatus::Expired : OrdStatus::Canceled;
+                ++stats->unsolicited;
+                report(v, *v.ended == OrdStatus::Expired ? ExecType::Expired : ExecType::Canceled, v.current, "", 0, 0);
+            }
+        } else if (!sent.empty()) {
+            out.push_back(sent[static_cast<std::size_t>(rng_.below(static_cast<std::int64_t>(sent.size())))]);
+            ++stats->replays;
+        }
+    }
+
+    // Works every request to its end, so the venue has nothing pending.
+    void settle() {
+        for (auto& [key, v] : orders) {
+            flushAck(v);
+            while (v.working) finishWorking(v);
+        }
+    }
+
+private:
+    Mix rng_;
+
+    void report(VenueOrder& v, ExecType t, const std::string& id, const std::string& orig, std::int64_t lastQty, std::int64_t lastPx,
+                std::optional<OrdStatus> status = std::nullopt) {
+        ToGateway m{false, {"x" + std::to_string(++execIds_), id, orig, t, status ? *status : v.status(), lastQty, lastPx, v.leaves(), v.cum}, {}};
+        out.push_back(m);
+        sent.push_back(m);
+    }
+    void reject(const std::string& id) {
+        ToGateway m{true, {}, id};
+        out.push_back(m);
+        sent.push_back(m);
+    }
+
+    void flushAck(VenueOrder& v) {
+        if (!v.ackOwed) return;
+        v.ackOwed = false;
+        v.ackSent = true;
+        ToGateway m{false, {"x" + std::to_string(++execIds_), v.key, "", ExecType::New, OrdStatus::New, 0, 0, v.origQty, 0}, {}};
+        if (v.cum > 0) ++stats->implicitAcks;
+        out.push_back(m);
+        sent.push_back(m);
+    }
+
+    void fill(VenueOrder& v) {
+        if (v.ended || v.leaves() == 0 || !(v.ackSent || v.ackOwed)) return;
+        const std::int64_t q = rng_.chance(3) ? v.leaves() : 1 + rng_.below(v.leaves());
+        v.cum += q;
+        position[v.symbol] += v.side == Side::Buy ? q : -q;
+        report(v, ExecType::Trade, v.current, "", q, v.px);
+    }
+
+    void work(VenueOrder& v, const ToVenue& m) {
+        flushAck(v);
+        if (v.ended || v.leaves() == 0 || (m.kind == 'R' && rng_.chance(8))) {
+            if (v.ended || v.leaves() == 0) ++stats->tooLate;
+            reject(m.id);
+            return;
+        }
+        if (rng_.chance(3)) {
+            v.working = m;
+            ++stats->twoPhase;
+            report(v, m.kind == 'C' ? ExecType::PendingCancel : ExecType::PendingReplace, m.id, v.current, 0, 0);
+            return;
+        }
+        complete(v, m);
+    }
+
+    void complete(VenueOrder& v, const ToVenue& m) {
+        if (m.kind == 'C') {
+            v.ended = OrdStatus::Canceled;
+            report(v, ExecType::Canceled, m.id, v.current, 0, 0);
+            return;
+        }
+        const std::string orig = v.current;
+        v.qty = std::max(m.qty, v.cum);
+        if (v.qty == v.cum) ++stats->amendedToCum;
+        v.px = m.px;
+        v.current = m.id;
+        ++stats->replaced;
+        report(v, ExecType::Replaced, m.id, orig, 0, 0);
+    }
+
+    void finishWorking(VenueOrder& v) {
+        const ToVenue m = *v.working;
+        v.working.reset();
+        if (v.ended || v.leaves() == 0) {
+            ++stats->tooLate;
+            reject(m.id);
+        } else {
+            complete(v, m);
+        }
+        while (!v.working && !v.backlog.empty()) {
+            const ToVenue next = v.backlog.front();
+            v.backlog.pop_front();
+            work(v, next);
+        }
+    }
+
+    std::uint64_t execIds_ = 0;
+};
+
+RiskLimits wideLimits() {
+    RiskLimits l;
+    l.maxOrderQty = 1'000'000;
+    l.maxOrderNotionalCents = std::int64_t{1} << 50;
+    l.priceCollarBps = 1000;
+    l.maxAbsPosition = std::int64_t{1} << 40;
+    l.creditLimitCents = std::numeric_limits<std::int64_t>::max() - 1;
+    l.maxMessagesPerWindow = std::size_t{1} << 30;
+    l.throttleWindowNs = 1;
+    l.repeatWindowNs = 0;
+    return l;
+}
+
+// The book invariants that must hold after every message, legal or not.
+bool invariantsHold(const RiskGateway& gw, const std::vector<std::string>& keys) {
+    for (const std::string& k : keys) {
+        const Order* o = gw.order(k);
+        if (o == nullptr) continue;
+        if (o->cumQty < 0 || o->cumQty > o->orderQty) return false;
+        if (isTerminal(o->base) ? o->leavesQty != 0 : o->leavesQty != o->orderQty - o->cumQty) return false;
+        if (isTerminal(o->base) && o->worstCaseLeaves() != 0) return false;
+    }
+    return true;
+}
+
+// Runs one session. With fault set, one illegal message is injected at a random step; returns
+// false on any disagreement with the model.
+bool runSession(std::uint64_t seed, int steps, bool fault, ModelStats& st) {
+    Mix rng{seed * 7919 + 1};
+    VenueModel venue(seed);
+    venue.stats = &st;
+    RiskGateway gw(wideLimits());
+    const char* symbols[] = {"S", "T"};
+    for (const char* sym : symbols) gw.setReferencePrice(sym, 5'000);
+    std::deque<ToVenue> toVenue;
+    std::vector<std::string> keys;
+    std::uint64_t now = 0;
+    int ids = 0;
+    const int faultAt = fault ? 50 + static_cast<int>(rng.below(steps - 50)) : -1;
+
+    auto deliverToGateway = [&]() -> bool {
+        const ToGateway m = venue.out.front();
+        venue.out.pop_front();
+        ++st.reports;
+        const ApplyResult r = m.cancelReject ? gw.onCancelReject(m.rejectId) : gw.onExecutionReport(m.er);
+        if (r == ApplyResult::IllegalTransition || r == ApplyResult::Inconsistent || r == ApplyResult::UnknownOrder || gw.killed()) {
+            std::cerr << "  model: legal message rejected (" << toString(r) << ") id " << (m.cancelReject ? m.rejectId : m.er.clOrdId)
+                      << " type " << static_cast<char>(m.er.execType) << " seed " << seed << std::endl;
+            return false;
+        }
+        return invariantsHold(gw, keys);
+    };
+
+    auto quiesce = [&]() -> bool {
+        ++st.quiesces;
+        do {
+            while (!toVenue.empty()) {
+                venue.receive(toVenue.front());
+                toVenue.pop_front();
+            }
+            venue.settle();
+            while (!venue.out.empty())
+                if (!deliverToGateway()) return false;
+        } while (!toVenue.empty());
+        std::map<std::string, std::int64_t> exposure;
+        for (const auto& [key, v] : venue.orders) {
+            const Order* o = gw.order(key);
+            if (o == nullptr || o->cumQty != v.cum || o->leavesQty != v.leaves() || o->status != v.status() || o->currentClOrdId != v.current)
+                return false;
+        }
+        std::int64_t expectedGross = 0;
+        for (const char* sym : symbols) {
+            const std::int64_t pos = venue.position[sym];
+            if (gw.position(sym) != pos) return false;
+            expectedGross += (pos < 0 ? -pos : pos) * 5'000;
+            std::int64_t buys = 0, sells = 0;
+            for (const auto& [key, v] : venue.orders) {
+                if (v.symbol != sym) continue;
+                (v.side == Side::Buy ? buys : sells) += v.leaves();
+                expectedGross += v.leaves() * v.px;
+            }
+            if (gw.openQty(sym, Side::Buy) != buys || gw.openQty(sym, Side::Sell) != sells) return false;
+        }
+        return gw.grossExposureCents() == expectedGross;
+    };
+
+    for (int step = 0; step < steps; ++step) {
+        ++st.steps;
+        now += 1'000;
+        if (step == faultAt) {
+            // Pick an order and send something no legal venue can send; the kill switch must trip.
+            std::vector<const Order*> live, ended, accepted;
+            for (const std::string& k : keys) {
+                const Order* o = gw.order(k);
+                if (!isTerminal(o->base) && o->leavesQty > 0) live.push_back(o);
+                if (isTerminal(o->base) && o->base != OrdStatus::Filled) ended.push_back(o);
+                if (o->currentClOrdId != o->key) accepted.push_back(o);
+            }
+            const std::int64_t kind = rng.below(6);
+            if (kind == 0 && !live.empty()) {
+                const Order* o = live[static_cast<std::size_t>(rng.below(static_cast<std::int64_t>(live.size())))];
+                (void)gw.onExecutionReport({"bad", o->currentClOrdId, "", ExecType::Trade, OrdStatus::Filled, o->leavesQty + 1, o->priceCents, 0,
+                                            o->cumQty + o->leavesQty + 1});
+            } else if (kind == 1 && !live.empty()) {
+                const Order* o = live[static_cast<std::size_t>(rng.below(static_cast<std::int64_t>(live.size())))];
+                (void)gw.onExecutionReport({"bad", o->currentClOrdId, "", ExecType::Trade, OrdStatus::PartiallyFilled, 1, o->priceCents,
+                                            o->leavesQty - 1, o->cumQty + 2});
+            } else if (kind == 2 && !ended.empty()) {
+                const Order* o = ended[static_cast<std::size_t>(rng.below(static_cast<std::int64_t>(ended.size())))];
+                (void)gw.onExecutionReport({"bad", o->currentClOrdId, "", ExecType::Trade, OrdStatus::Filled, 1, o->priceCents, 0, o->cumQty + 1});
+            } else if (kind == 3 && !accepted.empty()) {
+                (void)gw.onCancelReject(accepted[static_cast<std::size_t>(rng.below(static_cast<std::int64_t>(accepted.size())))]->currentClOrdId);
+            } else if (kind == 4 && !keys.empty()) {
+                (void)gw.onCancelReject(keys[static_cast<std::size_t>(rng.below(static_cast<std::int64_t>(keys.size())))]);
+            } else {
+                (void)gw.onExecutionReport({"bad", "nobody", "", ExecType::New, OrdStatus::New, 0, 0, 1, 0});
+            }
+            if (!gw.killed()) {
+                std::cerr << "  model: injected fault " << kind << " not caught, seed " << seed << std::endl;
+                return false;
+            }
+            ++st.faultsCaught;
+            return true;
+        }
+        const std::int64_t a = rng.below(100);
+        if (a < 8) {
+            const std::string key = "o" + std::to_string(++ids);
+            const char* sym = symbols[rng.below(2)];
+            const Side side = rng.chance(2) ? Side::Buy : Side::Sell;
+            const std::int64_t qty = 1 + rng.below(200);
+            const std::int64_t px = 4'600 + rng.below(800);
+            if (gw.submit({key, sym, side, qty, px}, now) != RejectReason::None) return false;
+            keys.push_back(key);
+            toVenue.push_back({'N', key, sym, side == Side::Buy ? qty : -qty, px});
+        } else if (a < 16 && !keys.empty()) {
+            const std::string& key = keys[static_cast<std::size_t>(rng.below(static_cast<std::int64_t>(keys.size())))];
+            const std::string id = "c" + std::to_string(++ids);
+            if (gw.requestCancel(key, id) == RejectReason::None) toVenue.push_back({'C', key, id, 0, 0});
+        } else if (a < 24 && !keys.empty()) {
+            const std::string& key = keys[static_cast<std::size_t>(rng.below(static_cast<std::int64_t>(keys.size())))];
+            const std::string id = "r" + std::to_string(++ids);
+            const std::int64_t qty = gw.order(key)->cumQty + 1 + rng.below(200);
+            const std::int64_t px = 4'600 + rng.below(800);
+            if (gw.requestReplace(key, id, qty, px, now) == RejectReason::None) toVenue.push_back({'R', key, id, qty, px});
+        } else if (a < 44 && !toVenue.empty()) {
+            venue.receive(toVenue.front());
+            toVenue.pop_front();
+        } else if (a < 70 && !venue.out.empty()) {
+            if (!deliverToGateway()) return false;
+        } else if (a < 98) {
+            venue.act();
+        } else if (!fault && !quiesce()) {
+            std::cerr << "  model: gateway and venue disagree at rest, seed " << seed << std::endl;
+            return false;
+        }
+    }
+    if (fault) return true;
+    if (!quiesce()) {
+        std::cerr << "  model: gateway and venue disagree at the end, seed " << seed << std::endl;
+        return false;
+    }
+    return !gw.killed() && gw.ignoredResponses() > 0;
+}
+
+void test_model_check_against_venue() {
+    ModelStats st;
+    int failed = 0;
+    for (std::uint64_t seed = 1; seed <= 150; ++seed)
+        if (!runSession(seed, 2'000, false, st)) ++failed;
+    for (std::uint64_t seed = 1001; seed <= 1200; ++seed)
+        if (!runSession(seed, 400, true, st)) ++failed;
+    std::cout << "  model check: " << st.steps << " steps, " << st.reports << " venue messages, " << st.quiesces << " rest checks, "
+              << st.implicitAcks << " implicit acks, " << st.twoPhase << " two-phase requests, " << st.tooLate << " too-late rejects, "
+              << st.unsolicited << " unsolicited ends, " << st.replaced << " replaces (" << st.amendedToCum << " amended to CumQty), "
+              << st.replays << " replays, " << st.orderRejects << " order rejects, " << st.faultsCaught << "/200 faults caught" << std::endl;
+    EXPECT(failed == 0);
+    EXPECT(st.faultsCaught == 200);
+    EXPECT(st.steps > 300'000);
+    // Every race the session is meant to produce actually happened.
+    EXPECT(st.implicitAcks > 0 && st.twoPhase > 0 && st.tooLate > 0 && st.unsolicited > 0 && st.replaced > 0 && st.amendedToCum > 0);
+    EXPECT(st.replays > 0 && st.orderRejects > 0 && st.quiesces > 150);
 }
 
 // After a replace the venue knows the order by its new ClOrdID, so the kill switch cancels that one.
@@ -632,6 +1079,8 @@ int main() {
     RUN_TEST(test_late_ack_after_fill_is_reconciled);
     RUN_TEST(test_responses_must_match_request_in_flight);
     RUN_TEST(test_kill_switch_uses_current_clordid);
+    RUN_TEST(test_contradictory_answers_are_breaks);
+    RUN_TEST(test_model_check_against_venue);
     std::cout << "\n" << (g_total - g_failures) << "/" << g_total << " assertions passed" << std::endl;
     return g_failures == 0 ? 0 : 1;
 }

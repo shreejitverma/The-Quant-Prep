@@ -13,7 +13,7 @@ import bisect
 import math
 import struct
 import zlib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -75,8 +75,9 @@ def feed_bandwidth(msgs_per_sec: float) -> dict[str, float]:
 class GapTracker:
     """MoldUDP64-style sequencing: apply in order, buffer ahead, drop duplicates.
 
-    After draining, the gap before the first buffered message is requested once:
-    requested_end marks the end of what has already been asked for.
+    After draining, every hole between the next expected message and the highest buffered one
+    is requested as soon as it is seen, one request per contiguous run, and never twice:
+    requested holds every sequence number already asked for.
     """
 
     expected: int
@@ -84,7 +85,7 @@ class GapTracker:
     applied: list[int]
     requests: list[tuple[int, int]]
     duplicates: int = 0
-    requested_end: int = 0
+    requested: set[int] = field(default_factory=set)
 
     def on_packet(self, seq: int, count: int) -> None:
         for s in range(seq, seq + count):
@@ -96,12 +97,17 @@ class GapTracker:
             del self.pending[self.expected]
             self.applied.append(self.expected)
             self.expected += 1
-        if self.pending:
-            start = max(self.expected, self.requested_end)
-            gap_end = min(self.pending)
-            if start < gap_end:
-                self.requests.append((start, gap_end - start))
-                self.requested_end = gap_end
+        if not self.pending:
+            return
+        start = None
+        for s in range(self.expected, max(self.pending) + 1):
+            missing = s not in self.pending and s not in self.requested
+            if missing and start is None:
+                start = s
+            elif not missing and start is not None:
+                self.requests.append((start, s - start))
+                self.requested.update(range(start, s))
+                start = None
 
 
 def gap_example() -> GapTracker:
@@ -113,12 +119,14 @@ def gap_example() -> GapTracker:
     return t
 
 
-def gap_after_drain_example() -> GapTracker:
-    """A gap that only appears once a retransmission is drained, and a gap seen twice."""
+def gap_trace(seqs: list[int]) -> tuple[GapTracker, list[list[tuple[int, int]]]]:
+    """Feeds one-message packets and records the request list after each packet."""
     t = GapTracker(expected=1001, pending={}, applied=[], requests=[])
-    for seq in (1001, 1003, 1005, 1002):
+    after = []
+    for seq in seqs:
         t.on_packet(seq, 1)
-    return t
+        after.append(list(t.requests))
+    return t, after
 
 
 def ab_double_loss(packets_per_day: float, p_loss: float) -> tuple[float, float, float, float]:
@@ -509,10 +517,15 @@ def main() -> None:
     show("duplicates dropped", g.duplicates)
     assert g.requests == [(1004, 3)]
     assert g.applied == list(range(1001, 1009)) and g.expected == 1009 and g.duplicates == 2
-    g2 = gap_after_drain_example()
-    show("gap requests after a drain (seq, count)", g2.requests)
-    assert g2.requests == [(1002, 1), (1004, 1)]  # 1002 asked once, 1004 asked as soon as 1003 drains
+    # A hole between two buffered messages is requested as soon as it is seen, not after the
+    # messages below it arrive, and the retransmission of 1002 adds no request.
+    g2, after = gap_trace([1001, 1003, 1005, 1002])
+    show("gap requests after packets 1001 1003 1005 1002", after)
+    assert after == [[], [(1002, 1)], [(1002, 1), (1004, 1)], [(1002, 1), (1004, 1)]]
     assert g2.expected == 1004 and sorted(g2.pending) == [1005]
+    g3, _ = gap_trace([1001, 1003, 1005, 1007, 1009])
+    show("gap requests after packets 1001 1003 1005 1007 1009", g3.requests)
+    assert g3.requests == [(1002, 1), (1004, 1), (1006, 1), (1008, 1)]  # each hole exactly once
 
     per_line, hidden, both, days = ab_double_loss(20e6, 1e-5)
     check("expected losses per line per day", per_line, "200", ".0f")
