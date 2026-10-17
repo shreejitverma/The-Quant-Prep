@@ -173,7 +173,7 @@ input.field:focus, select.field:focus { outline: 2px solid var(--accent-soft); b
   border-top: 1px solid var(--border);
 }
 .list-item:first-child { border-top: 0; padding-top: 0; }
-.list-item .title { font-weight: 550; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list-item .title { display: block; font-weight: 550; min-width: 0; overflow-wrap: break-word; }
 .list-item .sub { color: var(--faint); font-size: 12px; }
 .list-item .grow { flex: 1; min-width: 0; }
 
@@ -331,7 +331,6 @@ table.t .ord { color: var(--faint); font-family: var(--mono); font-size: 12px; w
 }
 .kbd.on-accent { color: inherit; border-color: currentColor; opacity: 0.75; }
 .note-side .chip { white-space: normal; text-align: left; }
-.note-side .list-item .title { white-space: normal; }
 .note-side .list-item { flex-wrap: wrap; row-gap: 6px; }
 .note-side .list-item .grow { flex-basis: 100%; }
 .note-layout.wide-side { grid-template-columns: minmax(0, 1fr) 300px; }
