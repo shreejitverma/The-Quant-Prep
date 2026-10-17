@@ -20,10 +20,10 @@ Continuous-time models and the theory of arbitrage-free pricing.
 | 02 | [Ito Integral and Ito's Lemma](02-Ito-Integral-and-Ito-Lemma.md) | TRQ | core | 5 | solid | 14 |
 | 03 | [Stochastic Differential Equations](03-Stochastic-Differential-Equations.md) | TRQ | core | 4 | solid | 14 |
 | 04 | [Risk-Neutral Pricing and the FTAP](04-Risk-Neutral-Pricing-and-FTAP.md) | TRQ | core | 4 | solid | 14 |
-| 05 | [Change of Measure and Girsanov](05-Change-of-Measure-and-Girsanov.md) | RQ | advanced | 4 | seed | 0 |
-| 06 | [Feynman-Kac and Pricing PDEs](06-Feynman-Kac-and-Pricing-PDEs.md) | RQ | advanced | 3 | seed | 0 |
+| 05 | [Change of Measure and Girsanov](05-Change-of-Measure-and-Girsanov.md) | RQ | advanced | 4 | solid | 19 |
+| 06 | [Feynman-Kac and Pricing PDEs](06-Feynman-Kac-and-Pricing-PDEs.md) | RQ | advanced | 3 | solid | 19 |
 | 07 | [Black-Scholes Derivation](07-Black-Scholes-Derivation.md) | TRDQ | core | 4 | solid | 14 |
-| 08 | [Jump Processes and Levy Models](08-Jump-Processes-and-Levy-Models.md) | RQ | senior | 3 | seed | 0 |
+| 08 | [Jump Processes and Levy Models](08-Jump-Processes-and-Levy-Models.md) | RQ | senior | 3 | solid | 18 |
 | 09 | [Stochastic Calculus Problem Set](09-Stochastic-Calculus-Problem-Set.md) | TRQ | core | 5 | solid | 39 |
 
 <!-- qp:moc:end -->
