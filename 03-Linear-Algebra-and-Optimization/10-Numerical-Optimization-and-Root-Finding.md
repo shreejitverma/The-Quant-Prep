@@ -187,7 +187,8 @@ On Rosenbrock's function from $(-1.2, 1)$ with Armijo backtracking and a gradien
 
 Generate yields from $\beta = (4\%, -2\%, 1\%)$, $\tau = 2$ on ten tenors (3-month yield $2.18\%$, 30-year $3.93\%$).
 
-- From $(3.5\%, -1.5\%, 0.5\%, 1.5)$, LM recovers the parameters exactly in 12 iterations.
+- From $(3.5\%, -1.5\%, 0.5\%, 1.5)$, LM recovers the parameters to $10^{-8}$ in 5 iterations, stopping when the accepted step falls below the relative tolerance $10^{-8}$.
+  A tolerance near machine precision would keep it iterating on residuals that are pure rounding noise, and the iteration count would then differ between platforms.
 - From $(3\%, -1\%, 0\%, 1)$ it stops at $\tau = 0.811$, $\beta_2 = -0.0096$ with a 0.746 bp RMS error and $J^\top r$ below $10^{-13}$: a genuine local minimum with a sub-basis-point fit and the wrong sign on the curvature factor.
 - Profiling $\tau$ on a grid from 0.25 to 10 picks $\tau = 2.0$, and LM from there recovers the truth.
 - With 1 bp of noise added (seed 8), LM from the good start returns $\tau$ about $1.955$ and $\beta_2$ about $0.00906$ with about $0.596$ bp RMS error.
