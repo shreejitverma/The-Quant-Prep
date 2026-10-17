@@ -61,7 +61,9 @@ Notes marked `seed` are the writing backlog: objectives and references exist, fu
 | Avellaneda-Stoikov market-making simulator | [08-Market-Making/code](08-Market-Making/code/) |
 | Event-driven backtester (next-bar fills), performance metrics, pairs trading, Black-Litterman | [09-Alpha-Research-and-Portfolio/code](09-Alpha-Research-and-Portfolio/code/) |
 | Finite-difference Greeks bump engine, Taylor revaluation proxies, Cholesky Monte Carlo and filtered historical scenarios, rates stress scenarios, full versus proxy VaR and ES | [11-Risk-and-Trading/code](11-Risk-and-Trading/code/) |
-| Euler-Maruyama SDE solver, Greeks visualisation, LSTM baseline | sections [04](04-Stochastic-Calculus/code/), [05](05-Derivatives-and-Volatility/code/), [10](10-Machine-Learning-for-Finance/code/) |
+| Euler-Maruyama SDE solver, Girsanov and numeraire changes (Margrabe, forward and annuity measures, quanto), Feynman-Kac pricing PDEs (affine bonds, barriers, perpetual American put, one-touch, range accrual), Merton, Kou and variance gamma jump models | [04-Stochastic-Calculus/code](04-Stochastic-Calculus/code/) |
+| SVI, SSVI and Dupire local vol, Heston and SABR with calibration, finite-difference and Fourier (Carr-Madan, COS) pricers, digitals, barriers, Asians, lookbacks, autocallables and cliquets, dispersion and implied correlation, Greeks visualisation | [05-Derivatives-and-Volatility/code](05-Derivatives-and-Volatility/code/) |
+| LSTM baseline | [10-Machine-Learning-for-Finance/code](10-Machine-Learning-for-Finance/code/) |
 | Basel credit SA and IRB, SA-CCR, FRTB sensitivities-based method, DRC and RRAO, FRTB IMA (ES, NMRF, backtesting, PLA), liquidity and IRRBB | [17-Regulatory-Capital-Basel-and-FRTB/code](17-Regulatory-Capital-Basel-and-FRTB/code/) |
 | Reference pricing and risk engine | [18-Pricing-and-Risk-Systems/code](18-Pricing-and-Risk-Systems/code/) |
 
