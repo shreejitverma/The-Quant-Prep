@@ -440,6 +440,12 @@ def cmd_serve(vault: Vault, store: Store, args) -> int:
     return EXIT_OK
 
 
+def cmd_lab(vault: Vault, store: Store | None, args) -> int:
+    from .lab.cli import main as lab_main
+
+    return lab_main(args.lab_args)
+
+
 # --- parser --------------------------------------------------------------------
 
 
@@ -510,10 +516,12 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--host", default="127.0.0.1")
     sp.add_argument("--port", type=int, default=8765)
     sp.add_argument("--open", action="store_true", help="open a browser")
+    sp = add("lab", cmd_lab, "run interactive trading lab simulation engines")
+    sp.add_argument("lab_args", nargs="*", help="arguments for lab (list, info <id>, run <id>)")
     return p
 
 
-NO_STATE = {cmd_check, cmd_index, cmd_bank}
+NO_STATE = {cmd_check, cmd_index, cmd_bank, cmd_lab}
 
 
 def main(argv: list[str] | None = None) -> int:

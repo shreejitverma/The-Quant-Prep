@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markets Mastery OS - Trading Lab</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="layout">
+    <header class="header">
+      <div class="brand">
+        <span class="brand-badge">LAB</span>
+        <h1>Markets Mastery OS</h1>
+        <span class="subtext">Interactive Simulation & Analytics</span>
+      </div>
+      <div class="nav-links">
+        <a href="#sim" class="active">Simulations</a>
+        <a href="#docs">Documentation</a>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <aside class="sidebar">
+        <h2>Engines</h2>
+        <ul id="engine-list" class="engine-list">
+          <li class="active" data-engine="pos_sizing">
+            <div class="eng-title">Position Sizing & Ruin</div>
+            <div class="eng-meta">Kelly, Drawdown, Monte Carlo</div>
+          </li>
+          <li class="disabled" data-engine="lob_sim">
+            <div class="eng-title">Limit Order Book</div>
+            <div class="eng-meta">Microstructure, Priority, Slippage</div>
+          </li>
+          <li class="disabled" data-engine="opt_desk">
+            <div class="eng-title">Options Vol Desk</div>
+            <div class="eng-meta">Greeks, Hedging, PnL Attribution</div>
+          </li>
+          <li class="disabled" data-engine="overfit_trap">
+            <div class="eng-title">Backtest Overfit Trap</div>
+            <div class="eng-meta">Deflated Sharpe, Multi-Testing</div>
+          </li>
+        </ul>
+      </aside>
+
+      <section class="workspace">
+        <div class="engine-header">
+          <div>
+            <h2 id="engine-title">Position Sizing and Risk of Ruin Engine</h2>
+            <p id="engine-desc" class="engine-desc">Evaluates Kelly criterion, fractional Kelly, and Monte Carlo drawdown risk distributions.</p>
+          </div>
+          <button id="btn-run" class="btn-primary">Run Simulation</button>
+        </div>
+
+        <div class="control-panel">
+          <div class="param-grid" id="param-container">
+            <div class="param-group">
+              <label for="p-capital">Starting Capital ($)</label>
+              <input type="number" id="p-capital" value="100000" step="1000">
+            </div>
+            <div class="param-group">
+              <label for="p-winrate">Win Rate (0.01 - 0.99)</label>
+              <input type="number" id="p-winrate" value="0.55" step="0.01" min="0.01" max="0.99">
+            </div>
+            <div class="param-group">
+              <label for="p-winloss">Win/Loss Ratio (b)</label>
+              <input type="number" id="p-winloss" value="1.50" step="0.05" min="0.1">
+            </div>
+            <div class="param-group">
+              <label for="p-risk">Risk per Trade (%)</label>
+              <input type="number" id="p-risk" value="2.0" step="0.1" min="0.1" max="50">
+            </div>
+            <div class="param-group">
+              <label for="p-trades">Number of Trades</label>
+              <input type="number" id="p-trades" value="100" step="10" min="10" max="500">
+            </div>
+            <div class="param-group">
+              <label for="p-sims">Monte Carlo Paths</label>
+              <input type="number" id="p-sims" value="250" step="50" min="50" max="1000">
+            </div>
+          </div>
+        </div>
+
+        <div class="results-grid">
+          <div class="metric-card">
+            <div class="metric-label">Full Kelly Fraction</div>
+            <div class="metric-val" id="m-kelly">25.0%</div>
+            <div class="metric-sub" id="m-half-kelly">Half-Kelly: 12.5%</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Median Final Equity</div>
+            <div class="metric-val" id="m-median">$285,841</div>
+            <div class="metric-sub" id="m-mean">Mean: $306,025</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Mean Max Drawdown</div>
+            <div class="metric-val" id="m-drawdown">17.5%</div>
+            <div class="metric-sub" id="m-p95-dd">95th Percentile: 28.5%</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Ruin Probability (>=50% DD)</div>
+            <div class="metric-val highlight" id="m-ruin">0.0%</div>
+            <div class="metric-sub">Capital Gate: Pass (< 5%)</div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Sample Monte Carlo Equity Trajectories</h3>
+            <span class="chart-legend">Sample Paths (1 to 5)</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="equity-canvas" width="800" height="340"></canvas>
+          </div>
+        </div>
+
+        <div class="summary-box">
+          <p id="summary-text">Click "Run Simulation" to execute the Monte Carlo risk model with your customized parameters.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
