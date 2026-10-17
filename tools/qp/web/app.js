@@ -283,11 +283,12 @@ async function viewSyllabus(params) {
         && (!state.tracks.size || n.tracks.some((t) => state.tracks.has(t))));
       const extra = sec.notes.filter((n) => n.mastery === null && n.type !== "firm");
       if (!rows.length && (state.q || state.tier || state.written || state.tracks.size)) return [];
-      const done = rows.filter((n) => n.mastery >= 3).length;
+      const mastered = () => `${rows.filter((n) => n.mastery >= 3).length}/${rows.length} mastered`;
+      const count = h("span", { class: "faint num" }, mastered());
       const filtering = state.q || state.tier || state.written || state.tracks.size;
       return h("details", { class: "section-group", open: filtering || state.open === sec.folder || !state.open ? true : null, id: sec.folder },
         h("summary", {}, h("span", { class: "caret" }, "▸"), h("h2", {}, sec.title), sec.private ? h("span", { class: "chip", title: "Loaded from your private overlay; never committed" }, "private") : null,
-          rows.length ? h("span", { class: "faint num" }, `${done}/${rows.length} mastered`) : null,
+          rows.length ? count : null,
           sec.readme ? h("a", { href: `#/note/${encodeURIComponent(sec.readme)}`, class: "btn small", onclick: (e) => e.stopPropagation() }, "Overview") : null),
         h("div", { class: "panel" }, rows.length ? h("table", { class: "t" },
           h("thead", {}, h("tr", {}, h("th", {}, "#"), h("th", {}, "Topic"), h("th", { class: "hide-sm" }, "Tracks"), h("th", {}, "Tier"),
@@ -300,7 +301,7 @@ async function viewSyllabus(params) {
             h("td", { class: "hide-sm" }, statusChip(n.status)),
             h("td", { class: "r num hide-sm muted" }, n.hours),
             h("td", { class: "r num hide-sm muted" }, n.cards || ""),
-            h("td", {}, masteryControl(n)))))) : null,
+            h("td", {}, masteryControl(n, () => { count.textContent = mastered(); })))))) : null,
           extra.length ? h("div", { class: "row", style: { padding: "10px" } }, h("span", { class: "faint" }, "Also:"),
             extra.map((n) => h("a", { href: `#/note/${encodeURIComponent(n.id)}`, class: "chip" }, n.title))) : null));
     }));
