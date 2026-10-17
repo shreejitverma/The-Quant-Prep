@@ -199,23 +199,37 @@ def implied_vol_newton(
     return vol, max_iter, path
 
 
-def implied_vol_safeguarded(price: float, s: float, k: float, t: float, r: float, tol: float = 1e-12) -> tuple[float, int]:
+def implied_vol_safeguarded(
+    price: float,
+    s: float,
+    k: float,
+    t: float,
+    r: float,
+    tol: float = 1e-12,
+    ftol: float = 1e-13,
+    pricer: Callable[[float, float, float, float, float], float] | None = None,
+) -> tuple[float, int]:
     """Newton inside a shrinking bracket [lo, hi]; any step that leaves the bracket becomes a bisection step.
 
     The starting bracket [1e-6, 5] is widened until C(lo) < price < C(hi), so it always contains the root.
     """
+    call = pricer or bs_call
     intrinsic = max(s - k * math.exp(-r * t), 0.0)
     if not intrinsic < price < s:
         raise ValueError("price outside no-arbitrage bounds: no implied volatility exists")
     lo, hi = 1e-6, 5.0
-    while bs_call(s, k, t, r, hi) <= price:
+    while call(s, k, t, r, hi) <= price:
         hi *= 2.0
-    while bs_call(s, k, t, r, lo) >= price:
+    while call(s, k, t, r, lo) >= price:
         lo *= 0.5
     vol = math.sqrt(2 * abs(math.log(s / k) + r * t) / t)  # Manaster-Koehler seed
     vol = min(max(vol, lo), hi)
     for it in range(1, 200):
-        diff = bs_call(s, k, t, r, vol) - price
+        diff = call(s, k, t, r, vol) - price
+        # Stop on the price residual first: at the root, diff is pure rounding noise whose sign and size
+        # differ across libm builds, and acting on it would trigger spurious bisection steps.
+        if abs(diff) <= ftol:
+            return vol, it
         if diff > 0:
             hi = vol
         else:
@@ -259,6 +273,19 @@ def implied_vol_examples() -> None:
     vol_s, it_s = implied_vol_safeguarded(price, s, k, t, r)
     check("safeguarded implied vol", vol_s, true_vol, 1e-12)
     check("safeguarded iterations", it_s, 5, 0)
+    # Different libm builds round erf and exp differently in the last bits. Perturb every price by up to
+    # 4 ulps (seeded) and require the same iteration count: the residual stop makes the count reproducible.
+    counts = set()
+    for seed_ in range(200):
+        rng = np.random.default_rng(seed_)
+
+        def noisy(s_: float, k_: float, t_: float, r_: float, v_: float, _rng=rng) -> float:
+            p_ = bs_call(s_, k_, t_, r_, v_)
+            return p_ + float(_rng.integers(-4, 5)) * math.ulp(p_)
+
+        counts.add(implied_vol_safeguarded(price, s, k, t, r, pricer=noisy)[1])
+    check("distinct safeguarded iteration counts under 4-ulp price noise (200 seeds)", len(counts), 1, 0)
+    check("that iteration count", counts.pop(), 5, 0)
     big_price = bs_call(100.0, 100.0, 1.0, 0.0, 6.0)
     check("S = K = 100, T = 1, r = 0, vol 600%: call price", big_price, 99.73, 5e-3)
     vol_big, _ = implied_vol_safeguarded(big_price, 100.0, 100.0, 1.0, 0.0)

@@ -80,14 +80,16 @@ flowchart TD
     B -->|no| X["No implied vol: flag the quote"]
     B -->|yes| C["Bracket [lo, hi]; seed sigma_0 (Manaster-Koehler or a rational approximation)"]
     C --> D["Evaluate price and vega at sigma"]
-    D --> E["Update bracket from the sign of C(sigma) - C"]
+    D --> R{"|C(sigma) - C| <= ftol?"}
+    R -->|yes| J["Return sigma"]
+    R -->|no| E["Update bracket from the sign of C(sigma) - C"]
     E --> F{"Newton step inside the bracket and vega not tiny?"}
     F -->|yes| G["sigma = sigma - (C(sigma) - C) / vega"]
     F -->|no| H["sigma = midpoint of bracket"]
     G --> I{"|step| < tol in vol?"}
     H --> I
     I -->|no| D
-    I -->|yes| J["Return sigma"]
+    I -->|yes| J
 ```
 
 ### Unconstrained minimisation
@@ -151,6 +153,9 @@ Call with $S = 100$, $K = 110$, $T = 0.5$, $r = 3\%$, true $\sigma = 25\%$: pric
 The Manaster-Koehler seed is $\sqrt{2\lvert\ln(100/110) + 0.015\rvert/0.5} = 0.5668$, where $d_1d_2 = 0$ and vega peaks.
 Newton goes $0.5668 \to 0.2551 \to 0.25001 \to 0.25$ and stops after 5 iterations with a step below $10^{-12}$: errors $0.3168$, $0.0051$, $0.0000098$.
 Bisection on $[0.01, 3]$ needs 35 halvings for $10^{-10}$, and the safeguarded Newton needs 5 iterations.
+It stops as soon as the price residual is below $10^{-13}$, before touching the bracket: at the root the residual is rounding noise, and letting its sign move the bracket sends a solver that approached from above back into a bisection step towards the untouched lower end.
+Without that test the iteration count depended on the last bits of `math.erf`: CI on Linux once took 8 iterations where macOS took 5.
+The script now perturbs every price by up to 4 ulps over 200 seeds and asserts the count is 5 every time.
 
 ### When plain Newton breaks
 
@@ -193,6 +198,7 @@ Generate yields from $\beta = (4\%, -2\%, 1\%)$, $\tau = 2$ on ten tenors (3-mon
 
 - Running Newton without a bracket on a problem with flat regions (deep wings of an option smile, survival curves at long maturities).
 - Tolerances in the wrong space: a price tolerance of $10^{-8}$ is a huge vol tolerance where vega is tiny, and a vol tolerance is unreachable when the price is within rounding of intrinsic.
+- Stopping only on the step size: once the iterate is at the root, the price residual is rounding noise whose sign differs across libm builds, so test the residual first or a bracketed solver can take spurious bisection steps and its iteration count stops being reproducible.
 - Trying to imply vol from a price outside the no-arbitrage bounds (stale or crossed quotes) and getting garbage or an exception; check bounds first.
 - Using finite-difference gradients with a poor step and blaming the optimiser.
 - Declaring convergence on a small step when the method has merely stalled (LM with $\lambda$ blown up, line search failing); check the gradient or $J^\top r$ too.
