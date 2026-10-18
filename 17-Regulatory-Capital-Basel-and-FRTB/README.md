@@ -28,14 +28,14 @@ The rules that govern bank balance sheets, trading desks, counterparty exposures
 | 10 | [FRTB: Internal Model Approach - Expected Shortfall](10-FRTB-Internal-Model-Approach-ES.md) | Q | senior | 6 | solid | 17 |
 | 11 | [FRTB: Non-Modellable Risk Factors](11-FRTB-Non-Modellable-Risk-Factors.md) | Q | senior | 5 | solid | 15 |
 | 12 | [FRTB: Backtesting and P&L Attribution Testing](12-FRTB-Backtesting-and-PLA-Testing.md) | Q | senior | 5 | solid | 15 |
-| 13 | [FRTB: Implementation Challenges and Desk Strategy](13-FRTB-Implementation-Challenges-and-Desk-Strategy.md) | DQ | senior | 4 | draft | 10 |
+| 13 | [FRTB: Implementation Challenges and Desk Strategy](13-FRTB-Implementation-Challenges-and-Desk-Strategy.md) | DQ | senior | 4 | solid | 10 |
 | 14 | [Operational Risk: Standardised Measurement Approach](14-Operational-Risk-Standardised-Measurement-Approach.md) | Q | core | 4 | solid | 17 |
 | 15 | [Leverage Ratio and Liquidity Ratios: LCR and NSFR](15-Leverage-Ratio-and-Liquidity-Ratios-LCR-and-NSFR.md) | Q | core | 4 | solid | 16 |
 | 16 | [Interest Rate Risk in the Banking Book: IRRBB](16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md) | Q | advanced | 4 | solid | 17 |
-| 17 | [Stress Testing: CCAR, DFAST, and EBA](17-Stress-Testing-CCAR-DFAST-and-EBA.md) | Q | advanced | 4 | draft | 10 |
-| 18 | [BCBS 239: Risk Data Aggregation and Reporting](18-BCBS-239-Risk-Data-Aggregation.md) | DQ | advanced | 4 | draft | 10 |
-| 19 | [Implementation Status by Jurisdiction](19-Implementation-Status-by-Jurisdiction.md) | Q | advanced | 4 | draft | 10 |
-| 20 | [Capital-Aware Trading: KVA and RWA Limits](20-Capital-Aware-Trading-KVA-and-RWA-Limits.md) | TQ | senior | 4 | draft | 10 |
-| 21 | [Regulatory Capital Problem Set](21-Regulatory-Capital-Problem-Set.md) | Q | core | 4 | draft | 15 |
+| 17 | [Stress Testing: CCAR, DFAST, and EBA](17-Stress-Testing-CCAR-DFAST-and-EBA.md) | Q | advanced | 4 | solid | 10 |
+| 18 | [BCBS 239: Risk Data Aggregation and Reporting](18-BCBS-239-Risk-Data-Aggregation.md) | DQ | advanced | 4 | solid | 10 |
+| 19 | [Implementation Status by Jurisdiction](19-Implementation-Status-by-Jurisdiction.md) | Q | advanced | 4 | solid | 10 |
+| 20 | [Capital-Aware Trading: KVA and RWA Limits](20-Capital-Aware-Trading-KVA-and-RWA-Limits.md) | TQ | senior | 4 | solid | 10 |
+| 21 | [Regulatory Capital Problem Set](21-Regulatory-Capital-Problem-Set.md) | Q | core | 4 | solid | 15 |
 
 <!-- qp:moc:end -->

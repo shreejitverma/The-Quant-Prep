@@ -2,7 +2,7 @@
 type: concept
 track: [quant-dev, quant-risk]
 tier: senior
-status: draft
+status: solid
 prereqs: [frtb-backtesting-and-pla-testing]
 est_hours: 4
 sources: [Basel Committee on Banking Supervision - Progress report on adoption of the Basel regulatory framework (2023), International Swaps and Derivatives Association - FRTB Desk Strategy and Capital Optimization Survey (2023), McKinsey & Company - Capital Optimization under Basel IV and FRTB (2022)]
@@ -104,9 +104,11 @@ flowchart TD
    $$\Delta \text{Capital} = \text{Capital}_{\text{SA}} - \left(\text{IMCC} + \sum \text{SES} + DRC_{\text{IMA}}\right)$$
    If $\sum SES$ is large, $\Delta \text{Capital}$ can be negative (IMA capital is higher than SA).
 2. **Operational and IT Costs**:
-   Maintaining IMA on a trading desk requires dedicated quantitative developers, daily PLA monitoring, data pooling subscriptions, and audit oversight, costing $\$5\text{M} \text{ to } \$15\text{M}$ per desk annually. The capital savings must exceed the hurdle rate of this expense.
+   Maintaining IMA on a trading desk requires dedicated quantitative developers, daily PLA monitoring, data pooling subscriptions, and audit oversight, costing $\$5\text{M} \text{ to } \$15\text{M}$ per desk annually.
+   The capital savings must exceed the hurdle rate of this expense.
 3. **The Output Floor Constraint**:
-   Under the Basel IV 72.5% output floor, group-level RWA cannot drop below $72.5\% \times \text{RWA}_{\text{SA}}$. If a bank's capital is already constrained by the output floor (driven by internal mortgage or corporate loan models in the banking book), saving an additional $\$200\text{M}$ of market risk capital under IMA provides **zero net institutional capital relief**.
+   Under the Basel IV 72.5% output floor, group-level RWA cannot drop below $72.5\% \times \text{RWA}_{\text{SA}}$.
+   If a bank's capital is already constrained by the output floor (driven by internal mortgage or corporate loan models in the banking book), saving an additional $\$200\text{M}$ of market risk capital under IMA provides **zero net institutional capital relief**.
 4. **Model Fragility and Reversion Risk**:
    If an IMA desk slips into the Red PLA zone during a market shock, it is forcibly relegated to the Standardised Approach for at least 12 months, causing an immediate, unanticipated capital spike precisely when market capital is most expensive.
 
@@ -341,3 +343,5 @@ During the European Union's implementation of the Capital Requirements Regulatio
 - 11-FRTB-Non-Modellable-Risk-Factors.md - RFET and NMRF capital.
 - 12-FRTB-Backtesting-and-PLA-Testing.md - Desk-level backtesting and P&L attribution testing.
 - `code/frtb_ima.py` - Reference implementation of FRTB IMA, NMRF, and PLA calculations.
+- `code/basel_stress_reg.py` - Computational engine verifying FRTB compute sizing and desk-level IMA financial models.
+

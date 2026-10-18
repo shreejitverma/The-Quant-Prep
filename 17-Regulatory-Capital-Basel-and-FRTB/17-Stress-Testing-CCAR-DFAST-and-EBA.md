@@ -2,7 +2,7 @@
 type: concept
 track: [quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [interest-rate-risk-in-the-banking-book-irrbb]
 est_hours: 4
 sources: [Board of Governors of the Federal Reserve System - Comprehensive Capital Analysis and Review: Assessment Framework and Results (2023), European Banking Authority - EU-Wide Stress Test Methodology (2023), Bank of England - The Financial Policy Committee approach to the bank capital framework (2022)]
@@ -179,11 +179,15 @@ Under the static balance sheet rule, the bank cannot resolve this capital drain 
 
 ## Pitfalls
 
-- **Ignoring CECL Reserve Front-Loading:** Under US CECL, banks cannot recognize loan losses gradually as defaults occur. Lifetime expected credit losses must be recognized when economic forecasts worsen in Q1, creating an early CET1 trough.
-- **Assuming Constant RWA Under Stress:** RWAs do not remain static during economic crises. Corporate credit downgrades trigger higher regulatory risk weights, derivative netting sets suffer higher replacement costs, and drawn commitments increase total balance sheet assets.
+- **Ignoring CECL Reserve Front-Loading:** Under US CECL, banks cannot recognize loan losses gradually as defaults occur.
+  Lifetime expected credit losses must be recognized when economic forecasts worsen in Q1, creating an early CET1 trough.
+- **Assuming Constant RWA Under Stress:** RWAs do not remain static during economic crises.
+  Corporate credit downgrades trigger higher regulatory risk weights, derivative netting sets suffer higher replacement costs, and drawn commitments increase total balance sheet assets.
 - **Double Counting GMS and Credit Losses:** If corporate bond trading positions suffer mark-to-market declines under the Global Market Shock, analysts must verify that the same corporate issuers are not double-counted in the banking book credit default module.
-- **Confusing DFAST with CCAR:** DFAST is purely a supervisory and company-run stress testing exercise using standardized capital distributions. CCAR incorporates bank-proposed capital actions (dividends, share buybacks) and directly sets binding capital constraints via the SCB.
-- **Neglecting Tax Valuation Allowances:** In a severe stress scenario, accumulating pre-tax operating losses can create substantial Deferred Tax Assets (DTAs). If the bank cannot demonstrate future profitability to realize these DTAs, supervisory rules require deducting them from CET1 capital, compounding capital depletion.
+- **Confusing DFAST with CCAR:** DFAST is purely a supervisory and company-run stress testing exercise using standardized capital distributions.
+  CCAR incorporates bank-proposed capital actions (dividends, share buybacks) and directly sets binding capital constraints via the SCB.
+- **Neglecting Tax Valuation Allowances:** In a severe stress scenario, accumulating pre-tax operating losses can create substantial Deferred Tax Assets (DTAs).
+  If the bank cannot demonstrate future profitability to realize these DTAs, supervisory rules require deducting them from CET1 capital, compounding capital depletion.
 
 ## Interview questions
 
@@ -234,3 +238,12 @@ Under the static balance sheet rule, the bank cannot resolve this capital drain 
 - European Banking Authority (EBA). *Methodological Note: EU-wide Stress Test*. EBA guidelines.
 - Basel Committee on Banking Supervision. *Stress testing principles*. BCBS Working Paper 428, 2018.
 - Schuermann, Til. *Stress Testing Banks*. International Journal of Forecasting, 2014.
+- Federal Reserve Board. *Comprehensive Capital Analysis and Review: Summary Instructions and Results*. FRB Publications.
+
+## In this repo and SDE-Interview-Prep
+
+- 01-Capital-RWA-and-the-Basel-Framework.md - Basel capital definitions and minimums.
+- 03-Credit-Risk-Capital-SA-and-IRB.md - Standardised and IRB credit risk models.
+- 16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md - IRRBB principles and shocks.
+- `code/basel_stress_reg.py` - Reference implementation verifying SCB calculations and IFRS 9 stress staging.
+

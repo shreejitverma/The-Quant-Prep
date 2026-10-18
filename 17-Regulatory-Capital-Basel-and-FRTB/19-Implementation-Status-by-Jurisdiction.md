@@ -2,7 +2,7 @@
 type: concept
 track: [quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [bcbs-239-risk-data-aggregation]
 est_hours: 4
 sources: [European Union - Capital Requirements Regulation III and Delegated Regulation (EU) 2025/1496, Federal Reserve Board - March 19 2026 capital proposals, UK Prudential Regulation Authority - PS1/26 Implementation of Basel 3.1 final rules, Basel Committee on Banking Supervision - Basel III Monitoring Report (2024)]
@@ -49,16 +49,21 @@ Differences in enacted rules, proposals, and implementation dates affect cross-b
 
 ### 2. European Union: CRR3 and CRD VI
 
-CRR3 has applied since January 1, 2025. Relevant market-risk timing was subsequently changed by Commission Delegated Regulation (EU) 2025/1496:
+CRR3 has applied since January 1, 2025.
+Relevant market-risk timing was subsequently changed by Commission Delegated Regulation (EU) 2025/1496:
 - **Unrated Corporate Transitional Treatment:** Because European corporate borrowers rely on bank loans rather than public debt ratings, an unrated corporate with an internal PD equivalent to investment grade receives a favorable transitional risk weight of $65\%$ (rather than $100\%$) through 2032.
 - **Preservation of CVA Exemptions:** The EU retained historical exemptions from CVA capital charges for derivative transactions with non-financial corporates (NFCs), sovereigns, and pension funds to protect hedging costs for the real economy.
-- **FRTB Own-Funds Application:** Delegated Regulation (EU) 2025/1496 defers the application of FRTB market-risk own-funds requirements to January 1, 2027. Until then, the prior CRR market-risk framework continues to apply.
+- **FRTB Own-Funds Application:** Delegated Regulation (EU) 2025/1496 defers the application of FRTB market-risk own-funds requirements to January 1, 2027.
+  Until then, the prior CRR market-risk framework continues to apply.
 
 ### 3. United States: Basel III Endgame
 
-On March 19, 2026, the Fed, FDIC, and OCC requested comment on new capital proposals. The proposal primarily for the largest, most internationally active banks would use one rather than two sets of calculations for risk-based capital requirements; other banks could elect to adopt it, and the market-risk component would apply only to banks with significant trading activity.
-- **Proposal status:** These remain proposed rules, not effective requirements. The comment period closed June 18, 2026; the agencies’ announcement does not state a first-application date.
-- **Earlier proposals:** The July 2023 NPR and September 2024 re-proposal are historical stages, not the current proposal. Do not present the 2024 dual-calculation design, impact estimates, or operational-risk calibration as the current proposed framework.
+On March 19, 2026, the Fed, FDIC, and OCC requested comment on new capital proposals.
+The proposal primarily for the largest, most internationally active banks would use one rather than two sets of calculations for risk-based capital requirements; other banks could elect to adopt it, and the market-risk component would apply only to banks with significant trading activity.
+- **Proposal status:** These remain proposed rules, not effective requirements.
+  The comment period closed June 18, 2026; the agencies’ announcement does not state a first-application date.
+- **Earlier proposals:** The July 2023 NPR and September 2024 re-proposal are historical stages, not the current proposal.
+  Do not present the 2024 dual-calculation design, impact estimates, or operational-risk calibration as the current proposed framework.
 - **Credit risk models:** The March 2026 proposal continues to eliminate internal models for credit risk, as described in the agency statements; the details remain subject to the proposed rule and any final action.
 
 ### 4. United Kingdom: PRA Basel 3.1
@@ -78,7 +83,8 @@ Disparities in local rules incentivize multinational financial institutions to o
 
 ### Example 1: Illustrative CVA Calculation Under Assumed Rules
 
-This calculation is an illustrative comparison of assumed treatments, not a statement of the current US proposal or a recommendation to book a trade in a particular entity. A global bank models an uncollateralized 5-year Interest Rate Swap (IRS) with a European airline (a non-financial corporate without an external credit rating):
+This calculation is an illustrative comparison of assumed treatments, not a statement of the current US proposal or a recommendation to book a trade in a particular entity.
+A global bank models an uncollateralized 5-year Interest Rate Swap (IRS) with a European airline (a non-financial corporate without an external credit rating):
 - Netting Set Mark-to-Market Value: $\$10\text{ million}$
 - Notional: $\$250\text{ million}$
 - SA-CCR EAD: $\$18,500,000$
@@ -112,11 +118,13 @@ $$\text{Required Capital} = 12.0\% \times \$5,665,625 = \$679,875$$
 
 $$\text{Annual Drag} = 12\% \times \$679,875 = \$81,585\text{ per year}$$
 
-Under these assumptions, the calculated capital requirement is $\$679,875$ and annual drag is $\$81,585$. Actual entity-level treatment depends on the rules in force and the transaction facts; this example alone does not support a booking recommendation.
+Under these assumptions, the calculated capital requirement is $\$679,875$ and annual drag is $\$81,585$.
+Actual entity-level treatment depends on the rules in force and the transaction facts; this example alone does not support a booking recommendation.
 
 ### Example 2: Effect of the March 2026 US Single-Calculation Proposal
 
-The March 2026 proposal for the largest, most internationally active banks would replace the 2024 proposal’s two-calculation design with one calculation for risk-based capital compliance. The following arithmetic is only a contrast with a hypothetical two-calculation design, not a description of a current or proposed binding US requirement:
+The March 2026 proposal for the largest, most internationally active banks would replace the 2024 proposal’s two-calculation design with one calculation for risk-based capital compliance.
+The following arithmetic is only a contrast with a hypothetical two-calculation design, not a description of a current or proposed binding US requirement:
 - Total Standardized Approach RWA (Stack 1): $\$500,000\text{ million}$
 - Total Expanded Risk-Based Approach (ERBA) RWA (Stack 2):
   - Credit Risk (Standardized ERBA): $\$410,000\text{ million}$
@@ -130,20 +138,26 @@ Capital Ratios:
 - Standardized Approach Ratio: $\frac{\$60,000}{\$500,000} = 12.00\%$
 - ERBA Ratio: $\frac{\$60,000}{\$515,000} = 11.65\%$
 
-Under a hypothetical rule requiring both calculations, the higher RWA would be $\$515,000\text{ million}$. The March 2026 proposal instead describes one calculation for the covered banks, so the maximum-of-two-stacks determination above is not a description of that proposal. The agencies’ release does not specify a first-application date.
+Under a hypothetical rule requiring both calculations, the higher RWA would be $\$515,000\text{ million}$.
+The March 2026 proposal instead describes one calculation for the covered banks, so the maximum-of-two-stacks determination above is not a description of that proposal.
+The agencies’ release does not specify a first-application date.
 
 ## Pitfalls
 
 - **Assuming Global Parity in CVA Exemptions:** Assuming that an exemption in one jurisdiction applies in another can understate capital; check the current rule and counterparty facts for each entity.
-- **Confusing US proposal stages:** The 2024 re-proposal described two calculations; the March 2026 proposal for the largest banks describes one. Keep proposal history separate from current binding requirements.
+- **Confusing US proposal stages:** The 2024 re-proposal described two calculations; the March 2026 proposal for the largest banks describes one.
+  Keep proposal history separate from current binding requirements.
 - **Overlooking Transitional Phase-In Schedules:** Output floors do not jump to $72.5\%$ immediately on day one; check the local transition dates and percentages when modeling medium-term capital requirements.
 - **Neglecting Extraterritoriality in Risk Models:** Cross-border banks operating in London, New York, and Frankfurt must maintain dual-reporting engines running local variations of SA-CCR and FRTB simultaneously.
-- **Confusing Proposed and Effective Credit Rules:** The March 2026 US proposal uses standardized credit-risk approaches for covered banks, while the EU and UK Basel 3.1 rules retain IRB approaches subject to restrictions. Keep the US proposal distinct from effective requirements.
+- **Confusing Proposed and Effective Credit Rules:** The March 2026 US proposal uses standardized credit-risk approaches for covered banks, while the EU and UK Basel 3.1 rules retain IRB approaches subject to restrictions.
+  Keep the US proposal distinct from effective requirements.
 
 ## Interview questions
 
 > [!question]- reg-19-01 | How does the March 2026 US proposal change the calculation design?
-> Section 171 of the Dodd-Frank Act establishes a statutory capital floor. Separately, the March 2026 proposal for the largest, most internationally active banks would use one rather than two sets of calculations for risk-based capital compliance. It is a proposal, and the agency announcement does not state a first-application date.
+> Section 171 of the Dodd-Frank Act establishes a statutory capital floor.
+> Separately, the March 2026 proposal for the largest, most internationally active banks would use one rather than two sets of calculations for risk-based capital compliance.
+> It is a proposal, and the agency announcement does not state a first-application date.
 
 > [!question]- reg-19-02 | How does the EU CRR3 treat unrated corporate exposures differently from the BCBS baseline?
 > Under BCBS rules, unrated corporates receive a $100\%$ risk weight under the Standardized Approach.
@@ -157,10 +171,13 @@ Under a hypothetical rule requiring both calculations, the higher RWA would be $
 > It replaces them with a streamlined, conservative capital regime that reduces compliance costs while ensuring safety.
 
 > [!question]- reg-19-05 | What is the status of the US capital proposals issued in March 2026?
-> The agencies issued proposals on March 19, 2026, and the comment period closed June 18, 2026. The proposal for the largest, most internationally active banks uses one rather than two sets of risk-based capital calculations. The announcement does not state a first-application date.
+> The agencies issued proposals on March 19, 2026, and the comment period closed June 18, 2026.
+> The proposal for the largest, most internationally active banks uses one rather than two sets of risk-based capital calculations.
+> The announcement does not state a first-application date.
 
 > [!question]- reg-19-06 | How does the implementation timeline for FRTB market risk differ between the EU and the US?
-> The EU deferred FRTB market-risk own-funds application to January 1, 2027 under Delegated Regulation (EU) 2025/1496. The US March 2026 proposal includes market-risk requirements for banks with significant trading activity, but the agencies’ release does not state an application date.
+> The EU deferred FRTB market-risk own-funds application to January 1, 2027 under Delegated Regulation (EU) 2025/1496.
+> The US March 2026 proposal includes market-risk requirements for banks with significant trading activity, but the agencies’ release does not state an application date.
 
 > [!question]- reg-19-07 | How do credit risk approaches differ across the EU, UK, and March 2026 US proposal?
 > The EU and UK Basel 3.1 frameworks retain foundation and advanced IRB approaches subject to revised requirements.
@@ -179,7 +196,8 @@ Under a hypothetical rule requiring both calculations, the higher RWA would be $
 > Banks must assess applicable rules, transaction facts, and supervisory requirements for each entity.
 
 > [!question]- reg-19-10 | What is the application date for the US proposals issued in March 2026?
-> The agencies’ March 19, 2026 announcement does not state a first-application date. Any application date depends on subsequent final rules.
+> The agencies’ March 19, 2026 announcement does not state a first-application date.
+> Any application date depends on subsequent final rules.
 
 ## Further reading
 
@@ -187,3 +205,11 @@ Under a hypothetical rule requiring both calculations, the higher RWA would be $
 - Federal Reserve Board, FDIC, and OCC. *Agencies request comment on proposals to modernize the regulatory capital framework*. March 19, 2026.
 - Prudential Regulation Authority. *Implementation of Basel 3.1: Final rules*. Policy Statement PS1/26, January 2026.
 - Institute of International Finance. *Global Harmonization and Basel III Implementation*. IIF Policy Brief, 2024.
+
+## In this repo and SDE-Interview-Prep
+
+- 01-Capital-RWA-and-the-Basel-Framework.md - Basel framework structure and output floor.
+- 05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md - CVA capital charge methodologies.
+- 06-FRTB-Trading-and-Banking-Book-Boundary.md - Trading and banking book boundary rules.
+- `code/basel_stress_reg.py` - Reference implementation verifying cross-border CVA and US single-calculation proposals.
+

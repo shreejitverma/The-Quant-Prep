@@ -2,7 +2,7 @@
 type: problem-set
 track: [quant-risk]
 tier: core
-status: draft
+status: solid
 prereqs: [capital-aware-trading-kva-and-rwa-limits]
 est_hours: 4
 sources: [Basel Committee on Banking Supervision - The Basel Framework (Consolidated 2024), Jon Gregory - Counterparty Credit Risk and Credit Value Adjustment (2015), Darrell Duffie - How Big Banks Fail and What to Do About It (2011)]
@@ -175,11 +175,13 @@ Supervisory parameters:
   - Trade 3 (2y): $SD_3 = \frac{1 - e^{-0.05 \times 2}}{0.05} = \frac{1 - 0.904837}{0.05} = 1.9033$
 
 Maturity Buckets and Supervisory Delta:
-- Trade 1 (Time-to-maturity 5y, Time-to-start 0): Bucket 3 ($> 5$ years? 5y is Bucket 2: 1 to 5 years).
-  - Let's classify: Bucket 1 is $\le 1$ year, Bucket 2 is $> 1$ and $\le 5$ years, Bucket 3 is $> 5$ years.
-  - Trade 1: 5y $\to$ Bucket 2. Receive-fixed value falls when rates rise ($\delta_1 = -1$).
-  - Trade 2: 10y $\to$ Bucket 3. Pay-fixed value rises when rates rise ($\delta_2 = +1$).
-  - Trade 3: 2y $\to$ Bucket 2. Receive-fixed value falls when rates rise ($\delta_3 = -1$).
+- Supervisory maturity buckets: Bucket 1 ($\le 1\text{ year}$), Bucket 2 ($> 1\text{ year and } \le 5\text{ years}$), Bucket 3 ($> 5\text{ years}$).
+- Trade 1 (5y): Bucket 2.
+  Receive-fixed position falls in value when rates rise ($\delta_1 = -1$).
+- Trade 2 (10y): Bucket 3.
+  Pay-fixed position rises in value when rates rise ($\delta_2 = +1$).
+- Trade 3 (2y): Bucket 2.
+  Receive-fixed position falls in value when rates rise ($\delta_3 = -1$).
 
 Effective Notional within Buckets:
 - Bucket 2:
@@ -331,3 +333,17 @@ Posting daily margin with an $\$800,000$ cash cushion eliminates over $73\%$ of 
 - Gregory, Jon. *The xVA Challenge: Counterparty Risk, Funding, Collateral, Capital and Initial Margin*. 4th Edition, Wiley, 2020.
 - Resti, Andrea and Sironi, Andrea. *Risk Management and Shareholders' Value in Banking*. Wiley Finance, 2007.
 - Federal Reserve Board. *Supervisory Assessment of Capital Planning and Adequacy*. SR Letter 15-18.
+
+## In this repo and SDE-Interview-Prep
+
+- 01-Capital-RWA-and-the-Basel-Framework.md - Basel capital definitions and minimums.
+- 04-Counterparty-Credit-Risk-SA-CCR.md - SA-CCR exposure calculations and multipliers.
+- 05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md - Counterparty CVA capital formulas.
+- 07-FRTB-Sensitivities-Based-Method-Delta.md - FRTB market risk capital.
+- 10-FRTB-Internal-Model-Approach-ES.md - FRTB IMA Expected Shortfall.
+- 14-Operational-Risk-Standardised-Measurement-Approach.md - Operational risk SMA.
+- 15-Leverage-Ratio-and-Liquidity-Ratios-LCR-and-NSFR.md - Basel III liquidity and leverage ratios.
+- 16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md - IRRBB principles and shocks.
+- 20-Capital-Aware-Trading-KVA-and-RWA-Limits.md - KVA, EVA, and capital-aware trading.
+- `code/basel_stress_reg.py` - Reference implementation verifying problem set derivations and numerical solutions.
+
