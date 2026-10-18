@@ -11,6 +11,7 @@ import math
 import random
 from collections import deque
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Any
 
 from .base import LabResult, Param, TradingLabEngine
@@ -233,6 +234,20 @@ class LimitOrderBookEngine(TradingLabEngine):
         total_market_dollars = 0.0
         recent_trades: list[dict[str, Any]] = []
 
+        def record_trade(step: int, price: float, size: int, trade_side: str, aggressor: str) -> None:
+            elapsed_ms = step * 1000 + len(recent_trades)
+            timestamp = datetime(2000, 1, 1, 9, 30) + timedelta(milliseconds=elapsed_ms)
+            recent_trades.append(
+                {
+                    "step": step,
+                    "time": timestamp.strftime("%H:%M:%S.%f")[:-3],
+                    "price": round(price, 4),
+                    "size": size,
+                    "side": trade_side,
+                    "aggressor": aggressor,
+                }
+            )
+
         ac_schedule = almgren_chriss_schedule(q_parent, n_steps) if strategy == "almgren_chriss" else []
         ac_scheduled = 0
 
@@ -262,18 +277,7 @@ class LimitOrderBookEngine(TradingLabEngine):
                 for _, _, f_p, f_s in fills:
                     total_market_shares += f_s
                     total_market_dollars += f_p * f_s
-                    sec = step % 60
-                    minute = step // 60
-                    recent_trades.append(
-                        {
-                            "step": step,
-                            "time": f"09:{30 + minute:02d}:{sec:02d}.{rng.randint(100, 999)}",
-                            "price": round(f_p, 4),
-                            "size": f_s,
-                            "side": bg_mkt_side,
-                            "aggressor": "market",
-                        }
-                    )
+                    record_trade(step, f_p, f_s, bg_mkt_side, "market")
 
             # 2. Agent order placement based on strategy
             child_size = 0
@@ -297,18 +301,7 @@ class LimitOrderBookEngine(TradingLabEngine):
                     remaining_q -= fill_size
                     total_market_shares += fill_size
                     total_market_dollars += fill_price * fill_size
-                    sec = step % 60
-                    minute = step // 60
-                    recent_trades.append(
-                        {
-                            "step": step,
-                            "time": f"09:{30 + minute:02d}:{sec:02d}.{rng.randint(100, 999)}",
-                            "price": round(fill_price, 4),
-                            "size": fill_size,
-                            "side": side,
-                            "aggressor": "agent",
-                        }
-                    )
+                    record_trade(step, fill_price, fill_size, side, "agent")
 
         avg_exec_price = total_spent / executed_shares if executed_shares > 0 else arrival_price
         vwap_bench = total_market_dollars / total_market_shares if total_market_shares > 0 else arrival_price

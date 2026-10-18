@@ -713,7 +713,7 @@ function renderTimeAndSales(trades) {
     tbody.appendChild(row);
     return;
   }
-  const sorted = [...trades].reverse();
+  const sorted = [...trades].sort((a, b) => b.time.localeCompare(a.time));
   sorted.forEach((t) => {
     const tr = document.createElement("tr");
     const isBuy = t.side === "buy";

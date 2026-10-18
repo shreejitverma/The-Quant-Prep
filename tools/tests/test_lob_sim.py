@@ -101,18 +101,21 @@ class TestLimitOrderBook(unittest.TestCase):
             res_twap.metrics["implementation_shortfall_bps"],
         )
 
-        # Verify Time and Sales tape records
-        self.assertIn("trades", res_twap.data)
-        trades = res_twap.data["trades"]
+        # Oracle: every agent tape record is an execution fill, and the tape follows fill chronology.
+        tape_run = engine.run(
+            initial_price=100.0,
+            parent_size=100,
+            parent_side="buy",
+            n_steps=10,
+            strategy="aggressive",
+            seed=42,
+        )
+        trades = tape_run.data["trades"]
         self.assertGreater(len(trades), 0)
-        first = trades[0]
-        self.assertIn("time", first)
-        self.assertIn("price", first)
-        self.assertIn("size", first)
-        self.assertIn("side", first)
-        self.assertIn("aggressor", first)
-        self.assertIn(first["side"], ["buy", "sell"])
-        self.assertIn(first["aggressor"], ["agent", "market"])
+        agent_trades = [trade for trade in trades if trade["aggressor"] == "agent"]
+        self.assertEqual(sum(trade["size"] for trade in agent_trades), tape_run.metrics["executed_shares"])
+        self.assertTrue(all(trade["side"] == "buy" for trade in agent_trades))
+        self.assertEqual([trade["time"] for trade in trades], sorted(trade["time"] for trade in trades))
 
     def test_swept_side_keeps_its_last_level_in_the_mid(self):
         # Bid 99.99 and asks 100.01-100.03: a 300-share market buy empties the asks. The mid must be
