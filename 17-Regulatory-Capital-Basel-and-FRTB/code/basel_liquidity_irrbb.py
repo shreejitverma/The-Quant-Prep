@@ -200,7 +200,7 @@ def hqla_stock(
     a1, a2a, a2b = adjusted if adjusted is not None else (level1, l2a, l2b)
     adj15 = max(a2b - 15 / 85 * (a1 + a2a), a2b - 15 / 60 * a1, 0.0)
     adj40 = max(a2a + a2b - adj15 - 2 / 3 * a1, 0.0)
-    return HQLAResult(level1, l2a, l2b, adj15, adj40, level1 + l2a + l2b - adj15 - adj40)
+    return HQLAResult(level1, l2a, l2b, adj15, adj40, a1 + a2a + a2b - adj15 - adj40)
 
 
 def net_cash_outflows(outflows: dict[str, float], inflows: dict[str, float]) -> tuple[float, float, float]:
@@ -474,6 +474,8 @@ def _check_note_15() -> None:
     # LCR, simple stock and the cap mechanics.
     s = hqla_stock(100, 30, l2b_other_mv=10)
     q("HQLA, uncapped case", s.stock, 130.5, 1)
+    adjusted = hqla_stock(100, 30, adjusted=(80, 10, 0))
+    q("HQLA after secured transaction adjustments", adjusted.stock, 90, 0)
     out, inn, nco = net_cash_outflows({"financial institution unsecured": 100}, {"financial institution and central bank inflows": 40})
     q("LCR, simple case (%)", s.stock / nco * 100, 217.5, 1)
     c = hqla_stock(50, 60, l2b_other_mv=40)
