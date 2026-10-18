@@ -22,11 +22,11 @@ Formats, drills and tactics for each round, from online assessment to superday.
 | 04 | [Estimation and Fermi Problems](04-Estimation-and-Fermi-Problems.md) | T | core | 2 | solid | 11 |
 | 05 | [Trading Games in Interviews](05-Trading-Games-in-Interviews.md) | T | core | 3 | solid | 14 |
 | 06 | [Sequences and Numerical Reasoning Tests](06-Sequences-and-Numerical-Reasoning.md) | T | advanced | 2 | solid | 13 |
-| 07 | [Coding Interviews for Quants](07-Coding-Interviews-for-Quants.md) | RDQ | core | 3 | seed | 0 |
-| 08 | [Research Case Studies and Take-Homes](08-Research-Case-Studies-and-Take-Homes.md) | R | core | 3 | seed | 0 |
-| 09 | [Behavioral and Fit for Trading Firms](09-Behavioral-and-Fit.md) | TRDQ | core | 2 | seed | 0 |
-| 10 | [Resume and Application Strategy](10-Resume-and-Application-Strategy.md) | TRDQ | core | 1 | seed | 0 |
-| 11 | [Offers, Compensation and Negotiation](11-Offers-Compensation-and-Negotiation.md) | TRDQ | advanced | 1 | seed | 0 |
-| 12 | [Senior-Level Expectations](12-Senior-Level-Expectations.md) | TRDQ | senior | 2 | seed | 0 |
+| 07 | [Coding Interviews for Quants](07-Coding-Interviews-for-Quants.md) | RDQ | core | 3 | solid | 18 |
+| 08 | [Research Case Studies and Take-Homes](08-Research-Case-Studies-and-Take-Homes.md) | R | core | 3 | solid | 28 |
+| 09 | [Behavioral and Fit for Trading Firms](09-Behavioral-and-Fit.md) | TRDQ | core | 2 | solid | 16 |
+| 10 | [Resume and Application Strategy](10-Resume-and-Application-Strategy.md) | TRDQ | core | 1 | solid | 16 |
+| 11 | [Offers, Compensation and Negotiation](11-Offers-Compensation-and-Negotiation.md) | TRDQ | advanced | 1 | solid | 17 |
+| 12 | [Senior-Level Expectations](12-Senior-Level-Expectations.md) | TRDQ | senior | 2 | solid | 16 |
 
 <!-- qp:moc:end -->
