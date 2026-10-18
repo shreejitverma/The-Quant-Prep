@@ -231,6 +231,7 @@ class LimitOrderBookEngine(TradingLabEngine):
         # Market-wide volume tracking for VWAP benchmark
         total_market_shares = 0
         total_market_dollars = 0.0
+        recent_trades: list[dict[str, Any]] = []
 
         ac_schedule = almgren_chriss_schedule(q_parent, n_steps) if strategy == "almgren_chriss" else []
         ac_scheduled = 0
@@ -261,6 +262,18 @@ class LimitOrderBookEngine(TradingLabEngine):
                 for _, _, f_p, f_s in fills:
                     total_market_shares += f_s
                     total_market_dollars += f_p * f_s
+                    sec = step % 60
+                    minute = step // 60
+                    recent_trades.append(
+                        {
+                            "step": step,
+                            "time": f"09:{30 + minute:02d}:{sec:02d}.{rng.randint(100, 999)}",
+                            "price": round(f_p, 4),
+                            "size": f_s,
+                            "side": bg_mkt_side,
+                            "aggressor": "market",
+                        }
+                    )
 
             # 2. Agent order placement based on strategy
             child_size = 0
@@ -284,6 +297,18 @@ class LimitOrderBookEngine(TradingLabEngine):
                     remaining_q -= fill_size
                     total_market_shares += fill_size
                     total_market_dollars += fill_price * fill_size
+                    sec = step % 60
+                    minute = step // 60
+                    recent_trades.append(
+                        {
+                            "step": step,
+                            "time": f"09:{30 + minute:02d}:{sec:02d}.{rng.randint(100, 999)}",
+                            "price": round(fill_price, 4),
+                            "size": fill_size,
+                            "side": side,
+                            "aggressor": "agent",
+                        }
+                    )
 
         avg_exec_price = total_spent / executed_shares if executed_shares > 0 else arrival_price
         vwap_bench = total_market_dollars / total_market_shares if total_market_shares > 0 else arrival_price
@@ -320,7 +345,7 @@ class LimitOrderBookEngine(TradingLabEngine):
         return LabResult(
             engine_id=self.engine_id,
             metrics=metrics,
-            data={"params": p},
+            data={"params": p, "trades": recent_trades[-50:]},
             summary=summary,
         )
 

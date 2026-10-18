@@ -94,6 +94,9 @@ class LabMetricFormatTest(unittest.TestCase):
             with self.subTest(metric=key):
                 self.assertEqual(rendered[key], f"{value:,}")
 
+    def test_time_and_sales_function_is_defined(self):
+        self.assertEqual(run_js("typeof renderTimeAndSales"), "function")
+
 
 if __name__ == "__main__":
     unittest.main()

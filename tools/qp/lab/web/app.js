@@ -223,6 +223,9 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("summary-text").textContent =
               `[Backend Engine] ${data.summary}`;
           }
+          if (currentEngine === "lob_sim" && data.data && data.data.trades) {
+            renderTimeAndSales(data.data.trades);
+          }
           return;
         }
       } else {
@@ -262,6 +265,11 @@ function loadEngine(engId) {
   document.getElementById("engine-desc").textContent = config.desc;
   document.getElementById("chart-title").textContent = config.chartTitle;
   document.getElementById("chart-legend").textContent = config.chartLegend;
+
+  const tapeContainer = document.getElementById("lob-tape-container");
+  if (tapeContainer) {
+    tapeContainer.style.display = engId === "lob_sim" ? "block" : "none";
+  }
 
   // Render parameter controls
   const paramContainer = document.getElementById("param-container");
@@ -648,6 +656,7 @@ function runLOBSim() {
   const mid = parseFloat(document.getElementById("p-initial-price")?.value) || 100.0;
   const parentSize = parseInt(document.getElementById("p-parent-size")?.value) || 5000;
   const strategy = document.getElementById("p-strategy")?.value || "twap";
+  const parentSide = document.getElementById("p-parent-side")?.value || "buy";
   const spread = 0.02;
   const depth = 5;
 
@@ -672,6 +681,58 @@ function runLOBSim() {
     barData.push({ label: `Ask L${l}`, val: 3800 + l * 1100 });
   }
   drawBarChart(barData);
+
+  // Generate simulated Time & Sales tape trades for client-side mode
+  const sampleTrades = [];
+  for (let i = 0; i < 25; i++) {
+    const isAgent = i % 4 === 0;
+    const side = isAgent ? parentSide : (Math.random() < 0.5 ? "buy" : "sell");
+    const pOffset = side === "buy" ? halfSpread : -halfSpread;
+    const tradePrice = mid + pOffset + (Math.random() - 0.5) * 0.01;
+    const tradeSize = isAgent ? Math.round(parentSize / 25) : Math.floor(50 + Math.random() * 400);
+    const sec = 10 + Math.floor(i * 1.8);
+    const ms = Math.floor(100 + Math.random() * 899);
+    sampleTrades.push({
+      time: `09:30:${sec.toString().padStart(2, "0")}.${ms}`,
+      price: tradePrice,
+      size: tradeSize,
+      side: side,
+      aggressor: isAgent ? "agent" : "market",
+    });
+  }
+  renderTimeAndSales(sampleTrades);
+}
+
+function renderTimeAndSales(trades) {
+  const tbody = document.getElementById("tape-body");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  if (!trades || trades.length === 0) {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td colspan="5" style="text-align: center; color: var(--text-muted); padding: 16px;">No recent trades recorded</td>`;
+    tbody.appendChild(row);
+    return;
+  }
+  const sorted = [...trades].reverse();
+  sorted.forEach((t) => {
+    const tr = document.createElement("tr");
+    const isBuy = t.side === "buy";
+    const sideClass = isBuy ? "side-buy" : "side-sell";
+    const sideLabel = isBuy ? "BUY" : "SELL";
+    const aggrClass = t.aggressor === "agent" ? "badge-agent" : "badge-market";
+    const aggrLabel = t.aggressor === "agent" ? "ALGO" : "MARKET";
+    const isBlock = t.size >= 300 ? "block-trade" : "";
+
+    tr.className = isBlock;
+    tr.innerHTML = `
+      <td class="tape-time">${t.time || "09:30:00"}</td>
+      <td class="tape-price ${sideClass}">$${Number(t.price).toFixed(2)}</td>
+      <td class="tape-size">${Number(t.size).toLocaleString()}</td>
+      <td class="tape-side"><span class="badge ${sideClass}">${sideLabel}</span></td>
+      <td class="tape-aggr"><span class="badge ${aggrClass}">${aggrLabel}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 function runMMQuote() {

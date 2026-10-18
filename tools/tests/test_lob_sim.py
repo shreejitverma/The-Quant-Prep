@@ -101,6 +101,19 @@ class TestLimitOrderBook(unittest.TestCase):
             res_twap.metrics["implementation_shortfall_bps"],
         )
 
+        # Verify Time and Sales tape records
+        self.assertIn("trades", res_twap.data)
+        trades = res_twap.data["trades"]
+        self.assertGreater(len(trades), 0)
+        first = trades[0]
+        self.assertIn("time", first)
+        self.assertIn("price", first)
+        self.assertIn("size", first)
+        self.assertIn("side", first)
+        self.assertIn("aggressor", first)
+        self.assertIn(first["side"], ["buy", "sell"])
+        self.assertIn(first["aggressor"], ["agent", "market"])
+
     def test_swept_side_keeps_its_last_level_in_the_mid(self):
         # Bid 99.99 and asks 100.01-100.03: a 300-share market buy empties the asks. The mid must be
         # (99.99 + 100.03) / 2 = 100.01 using the deepest consumed level, not snap back to the 99.99 bid.
