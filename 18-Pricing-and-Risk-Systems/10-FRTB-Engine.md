@@ -163,7 +163,7 @@ The reduced set $R$ must explain at least $75\%$ of the full-set current ES over
 | **RFET (MAR31.13)** | Individual Risk Factor | Quarterly, monitored monthly | Trailing 12 months | $\ge 24$ verifiable prices/year (min 4 per 90d), or $\ge 100$ prices/year | Factor classified as Non-Modellable (NMRF); capitalized via SES |
 | **Bank-Wide Backtest (MAR32.9)** | Entire Institution | Daily | Trailing 250 business days | 99% 1-day VaR vs APL and HPL | Green (0-4 exceptions: $m_c = 1.50$), Amber (5-9: $m_c = 1.70-1.92$), Red ($\ge 10$: $m_c = 2.00$) |
 | **Desk Backtest (MAR32.19)** | Trading Desk | Quarterly | Trailing 250 business days | $\le 12$ exceptions at 99%, $\le 30$ at 97.5% | Desk demoted immediately to Fallback Standardised Approach ($C_U$) |
-| **PLA Testing (MAR32.42)** | Trading Desk | Quarterly | Trailing 250 business days | Spearman $r_S > 0.80$ and KS $p < 0.09$ (Green Zone) | Red ($r_S < 0.70$ or $KS > 0.12$) forces demotion to SA ($C_U$); Amber triggers capital surcharge |
+| **PLA Testing (MAR32.42)** | Trading Desk | Quarterly | Trailing 250 business days | Spearman $r_S > 0.80$ and KS statistic $< 0.09$ (Green Zone) | Red ($r_S < 0.70$ or $KS > 0.12$) forces demotion to SA ($C_U$); Amber triggers capital surcharge |
 
 ```mermaid
 stateDiagram-v2

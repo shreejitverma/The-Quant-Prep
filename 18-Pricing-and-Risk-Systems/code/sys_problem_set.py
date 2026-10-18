@@ -15,7 +15,7 @@ QUOTED: list[str] = []
 
 def quoted(label: str, value: float, expected: float, decimals: int) -> float:
     """Print a number the note quotes and assert it rounds to the quoted figure."""
-    tol = 0.5 * 10.0**-decimals + 1e-9 * max(1.0, abs(expected))
+    tol = 0.5 * 10.0**-decimals + 1e-9
     assert abs(value - expected) <= tol, f"{label}: computed {value!r}, quoted {expected}"
     QUOTED.append(label)
     print(f"    {label} = {value:,.{decimals}f}")
