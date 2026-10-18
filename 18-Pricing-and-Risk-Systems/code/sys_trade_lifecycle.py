@@ -314,7 +314,13 @@ def store_sizing(s: StoreInputs) -> dict[str, float]:
 def uti_ok(uti: str) -> bool:
     """CPMI-IOSCO UTI shape: 20-character LEI of the generating entity, then a value, at most 52 characters in total,
     upper-case letters and digits only."""
-    return 20 < len(uti) <= 52 and uti.isascii() and uti.isalnum() and uti == uti.upper()
+    if not (20 < len(uti) <= 52 and uti.isascii() and uti.isalnum() and uti == uti.upper()):
+        return False
+    lei = uti[:20]
+    if not (lei[:18].isalnum() and lei[18:].isdigit()):
+        return False
+    expanded = "".join(str(int(c) if c.isdigit() else ord(c) - ord("A") + 10) for c in lei)
+    return int(expanded) % 97 == 1
 
 
 def run_tests() -> None:
@@ -401,6 +407,7 @@ def run_tests() -> None:
     print("  UTI shape")
     lei = "506700GE1G29325QX363"  # LEI of the Global Legal Entity Identifier Foundation, used as the generating entity
     assert uti_ok(lei + "SWAP20261015000001")
+    assert not uti_ok("506700GE1G29325QX364" + "SWAP20261015000001")
     assert not uti_ok(lei + "X" * 33)  # 53 characters
     assert not uti_ok(lei + "swap-1")
 
