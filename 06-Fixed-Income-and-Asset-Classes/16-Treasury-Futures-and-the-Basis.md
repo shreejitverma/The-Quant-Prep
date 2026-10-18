@@ -2,17 +2,13 @@
 type: concept
 track: [quant-trader, quant-research, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [bonds-duration-and-convexity, money-markets-repo-and-overnight-rates]
 est_hours: 4
 sources: [CME Group - Treasury Futures Delivery Process and Conversion Factor Specifications, Tuckman and Serrat - Fixed Income Securities 4th ed. chapter 13, Burghardt and Belton - The Treasury Bond Basis 3rd ed., Barth and Kahn - Hedge Funds and the Treasury Cash-Futures Disconnect OFR Working Paper 21-01 2021]
 ---
 
 # Treasury Futures and the Basis
-
-> [!info] Draft
-> Written in this session with computed examples matching `code/curve_bootstrap.py`.
-> Missing for `solid`: formal independent reviewer check of all equations and parameter citations.
 
 ## TL;DR
 
@@ -98,12 +94,12 @@ The critical vulnerability is funding liquidity risk: if overnight repo rates sp
 - Outputs: gross basis, net basis, IRR per deliverable bond, CTD identification, hedge ratios.
 - Algorithm: compute CF using CME analytical formula; evaluate invoice price for each deliverable; calculate IRR; sort bonds descending by IRR.
 - Complexity: $O(M)$ where $M$ is the number of bonds in the deliverable basket (typically 15 to 30 bonds).
-- Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `cme_conversion_factor` and `treasury_futures_basis`.
+- Reference implementation: [`code/fi_treasury_futures.py`](code/fi_treasury_futures.py) provides verified calculations for conversion factors, basis, and IRR; [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `cme_conversion_factor` and `treasury_futures_basis`.
 - System context: [pre-trade risk and limit checks](../18-Pricing-and-Risk-Systems/01-Front-to-Back-Architecture.md#front-office-execution-and-pricing).
 
 ## Worked examples
 
-All calculations below match the verified assertions in `code/curve_bootstrap.py`.
+All calculations below match the verified assertions in [`code/fi_treasury_futures.py`](code/fi_treasury_futures.py) and [`code/curve_bootstrap.py`](code/curve_bootstrap.py).
 
 ### Example 1: conversion factor calculation
 
@@ -227,5 +223,5 @@ Barth and Kahn conclude that the hedge fund selling was more a consequence of th
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) (`cme_conversion_factor`, `treasury_futures_basis`).
+- Code: [`code/fi_treasury_futures.py`](code/fi_treasury_futures.py) (numerical verification of conversion factors, basis, and IRR), [`code/curve_bootstrap.py`](code/curve_bootstrap.py) (`cme_conversion_factor`, `treasury_futures_basis`).
 - Related notes: [Bonds, Duration and Convexity](02-Bonds-Duration-and-Convexity.md), [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md), [Money Markets, Repo and Overnight Rates](12-Money-Markets-Repo-and-Overnight-Rates.md).

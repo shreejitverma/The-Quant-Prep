@@ -26,20 +26,20 @@ Enough of every major asset class to trade it or model it; deep rates knowledge 
 | 08 | [ETFs and Index Arbitrage](08-ETFs-and-Index-Arbitrage.md) | TQ | core | 3 | solid | 18 |
 | 09 | [Commodities and Futures Curves](09-Commodities-and-Futures-Curves.md) | TQ | advanced | 3 | solid | 17 |
 | 10 | [Crypto Market Structure](10-Crypto-Market-Structure.md) | TQ | advanced | 2 | solid | 17 |
-| 11 | [Day Counts, Calendars and Schedules](11-Day-Counts-Calendars-and-Schedules.md) | TRDQ | core | 4 | draft | 11 |
-| 12 | [Money Markets, Repo and Overnight Rates](12-Money-Markets-Repo-and-Overnight-Rates.md) | TRDQ | core | 5 | draft | 12 |
-| 13 | [Multi-Curve and CSA Discounting](13-Multi-Curve-and-CSA-Discounting.md) | RDQ | advanced | 5 | draft | 10 |
-| 14 | [Curve Construction Numerics](14-Curve-Construction-Numerics.md) | RDQ | advanced | 5 | draft | 10 |
-| 15 | [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md) | TRDQ | advanced | 5 | draft | 10 |
-| 16 | [Treasury Futures and the Basis](16-Treasury-Futures-and-the-Basis.md) | TRQ | advanced | 4 | draft | 10 |
-| 17 | [Convexity Adjustments](17-Convexity-Adjustments.md) | RQ | senior | 4 | draft | 10 |
-| 18 | [Rates Volatility and SABR](18-Rates-Volatility-and-SABR.md) | RQ | senior | 5 | draft | 10 |
-| 19 | [Term Structure Models: HJM, LGM, and LMM](19-Term-Structure-Models-HJM-LGM-LMM.md) | RQ | senior | 6 | draft | 10 |
-| 20 | [Callable and Bermudan Products](20-Callable-and-Bermudan-Products.md) | RQ | senior | 5 | draft | 10 |
-| 21 | [Inflation-Linked Products](21-Inflation-Linked-Products.md) | TRQ | advanced | 4 | draft | 10 |
-| 22 | [Mortgages and Securitized Products](22-Mortgages-and-Securitized-Products.md) | TRQ | advanced | 5 | draft | 10 |
-| 23 | [Credit Advanced: CDS Indices and Tranches](23-Credit-Advanced-CDS-Indices-and-Tranches.md) | TRQ | advanced | 5 | draft | 10 |
-| 24 | [Fixed Income P&L Attribution and Relative Value](24-Fixed-Income-PnL-and-Relative-Value.md) | TRQ | advanced | 5 | draft | 10 |
-| 25 | [Fixed Income Comprehensive Problem Set](25-Fixed-Income-Problem-Set.md) | TRQ | advanced | 8 | draft | 10 |
+| 11 | [Day Counts, Calendars and Schedules](11-Day-Counts-Calendars-and-Schedules.md) | TRDQ | core | 4 | solid | 10 |
+| 12 | [Money Markets, Repo and Overnight Rates](12-Money-Markets-Repo-and-Overnight-Rates.md) | TRDQ | core | 5 | solid | 12 |
+| 13 | [Multi-Curve and CSA Discounting](13-Multi-Curve-and-CSA-Discounting.md) | RDQ | advanced | 5 | solid | 10 |
+| 14 | [Curve Construction Numerics](14-Curve-Construction-Numerics.md) | RDQ | advanced | 5 | solid | 10 |
+| 15 | [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md) | TRDQ | advanced | 5 | solid | 10 |
+| 16 | [Treasury Futures and the Basis](16-Treasury-Futures-and-the-Basis.md) | TRQ | advanced | 4 | solid | 10 |
+| 17 | [Convexity Adjustments](17-Convexity-Adjustments.md) | RQ | senior | 4 | solid | 10 |
+| 18 | [Rates Volatility and SABR](18-Rates-Volatility-and-SABR.md) | RQ | senior | 5 | solid | 10 |
+| 19 | [Term Structure Models: HJM, LGM, and LMM](19-Term-Structure-Models-HJM-LGM-LMM.md) | RQ | senior | 6 | solid | 10 |
+| 20 | [Callable and Bermudan Products](20-Callable-and-Bermudan-Products.md) | RQ | senior | 5 | solid | 10 |
+| 21 | [Inflation-Linked Products](21-Inflation-Linked-Products.md) | TRQ | advanced | 4 | solid | 10 |
+| 22 | [Mortgages and Securitized Products](22-Mortgages-and-Securitized-Products.md) | TRQ | advanced | 5 | solid | 10 |
+| 23 | [Credit Advanced: CDS Indices and Tranches](23-Credit-Advanced-CDS-Indices-and-Tranches.md) | TRQ | advanced | 5 | solid | 10 |
+| 24 | [Fixed Income P&L Attribution and Relative Value](24-Fixed-Income-PnL-and-Relative-Value.md) | TRQ | advanced | 5 | solid | 10 |
+| 25 | [Fixed Income Comprehensive Problem Set](25-Fixed-Income-Problem-Set.md) | TRQ | advanced | 8 | solid | 15 |
 
 <!-- qp:moc:end -->

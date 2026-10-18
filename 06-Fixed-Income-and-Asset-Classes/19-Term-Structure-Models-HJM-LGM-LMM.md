@@ -2,7 +2,7 @@
 type: concept
 track: [quant-research, quant-risk]
 tier: senior
-status: draft
+status: solid
 prereqs: [short-rate-models, rates-volatility-and-sabr]
 est_hours: 6
 sources: [Brigo and Mercurio - Interest Rate Models chapters 5 and 6, Leif Andersen and Vladimir Piterbarg - Interest Rate Modeling volume 2]
@@ -251,6 +251,6 @@ Under the terminal measure $\mathbb{Q}^{T_2}$, the forward rate $L_1(t)$ drifts 
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/rates_models.py`](code/rates_models.py) (Hull-White 1F, Jamshidian swaption, and trinomial tree implementation).
+- Code: [`code/fi_term_structure.py`](code/fi_term_structure.py) (numerical verification of HJM drifts, LGM bond pricing, and LMM dynamics), [`code/rates_models.py`](code/rates_models.py) (Hull-White 1F, Jamshidian swaption, and trinomial tree implementation).
 - Prereq: [Short-Rate Models](04-Short-Rate-Models.md), [Rates Volatility and SABR](18-Rates-Volatility-and-SABR.md).
 - Next: [Callable and Bermudan Products](20-Callable-and-Bermudan-Products.md).

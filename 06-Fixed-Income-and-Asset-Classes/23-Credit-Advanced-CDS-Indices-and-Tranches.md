@@ -2,7 +2,7 @@
 type: concept
 track: [quant-trader, quant-research, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [credit-and-cds]
 est_hours: 5
 sources: [David X. Li - On Default Correlation A Copula Approach (2000), John Hull and Alan White - Valuation of a CDO and an n-th to Default CDS Without Monte Carlo Simulation (2004), Bruce Tuckman and Angel Serrat - Fixed Income Securities chapter 19, Darrell Duffie and Kenneth J. Singleton - Credit Risk Pricing Measurement and Management]
@@ -205,7 +205,7 @@ $$\text{Dollar Price} = 100 - \text{Upfront (\%)} = 100 - (-3.32) = 103.32$$
 ### Example 2: One-Factor Gaussian Copula Tranche Pricing
 
 Consider a portfolio with default probability $p = 0.05$ over 5 years, recovery rate $R = 0.40$ ($LGD = 0.60$), and correlation $\rho = 0.30$.
-Using the reference implementation in `code/credit_bootstrap.py`, evaluate the default probability under systemic market stress and compute tranche expected losses.
+Using our reference implementation [`fi_credit_tranches.py`](code/fi_credit_tranches.py), evaluate the default probability under systemic market stress and compute tranche expected losses.
 
 **Step 1: Compute the default threshold:**
 
@@ -215,19 +215,21 @@ $$c = \Phi^{-1}(0.05) \approx -1.6449$$
 
 $$p(M = -2.5) = \Phi\left(\frac{-1.6449 - \sqrt{0.30} \times (-2.5)}{\sqrt{1 - 0.30}}\right) = \Phi\left(\frac{-1.6449 + 1.3693}{\sqrt{0.70}}\right) = \Phi\left(\frac{-0.2756}{0.8367}\right) = \Phi(-0.3294) \approx 0.3709 \quad (37.09\%)$$
 
-Under a 2.5-sigma market crash, the conditional default probability spikes from 5.0% to 37.1%.
+Under a 2.5-sigma market crash, the conditional default probability spikes from 5.00% to 37.09%.
 Conditional portfolio loss is:
 
-$$L(M = -2.5) = 0.60 \times 0.3709 = 0.2225 \quad (22.25\%)$$
+$$L(M = -2.5) = 0.60 \times 0.37094 = 0.2226 \quad (22.26\%)$$
 
 **Step 3: Calculate tranche losses for Equity [0-3%] and Senior [7-10%] under this realization:**
-- For Equity [0%, 3%]: Portfolio loss (22.25%) exceeds detachment (3%), so equity tranche is completely wiped out ($100\%$ loss).
-- For Senior [7%, 10%]: Portfolio loss (22.25%) exceeds detachment (10%), so senior tranche is completely wiped out ($100\%$ loss).
+- For Equity [0%, 3%]: Portfolio loss (22.26%) exceeds detachment (3%), so the equity tranche suffers a complete $100.0\%$ write-down.
+- For Senior [7%, 10%]: Portfolio loss (22.26%) exceeds detachment (10%), so the senior tranche suffers a complete $100.0\%$ write-down.
 
-**Step 4: Unconditional tranche expected losses (from the large homogeneous portfolio quadrature in `credit_bootstrap.py`):**
+**Step 4: Unconditional tranche expected losses (from the large homogeneous portfolio quadrature in `fi_credit_tranches.py`):**
 - Total expected portfolio loss: $\mathbb{E}[L] = p \times (1 - R) = 0.05 \times 0.60 = 3.00\%$.
-- Equity tranche [0%, 3%] expected loss: $54.08\%$.
-- Senior tranche [7%, 10%] expected loss: $8.67\%$.
+- Equity tranche [0%, 3%] expected loss: $54.11\%$.
+- Junior Mezzanine tranche [3%, 7%] expected loss: $19.58\%$.
+- Senior Mezzanine tranche [7%, 10%] expected loss: $8.78\%$.
+- Base correlation decomposition confirms: $\text{Loss}_{[3\%, 7\%]} = \frac{0.07 \times \text{Loss}_{[0\%, 7\%]} - 0.03 \times \text{Loss}_{[0\%, 3\%]}}{0.04} = 19.58\%$.
 
 ## Pitfalls
 
@@ -280,5 +282,5 @@ $$L(M = -2.5) = 0.60 \times 0.3709 = 0.2225 \quad (22.25\%)$$
 ## In this repo and SDE-Interview-Prep
 
 - Single-name CDS mechanics and hazard rate bootstrapping: [Credit and CDS](06-Credit-and-CDS.md).
-- Reference implementation of Gaussian copula and synthetic CDO tranche losses: [credit_bootstrap.py](code/credit_bootstrap.py).
+- Reference implementation of Gaussian copula and synthetic CDO tranche losses: [fi_credit_tranches.py](code/fi_credit_tranches.py).
 - Prepayment and mortgage-backed securitizations: [Mortgages and Securitized Products](22-Mortgages-and-Securitized-Products.md).

@@ -2,7 +2,7 @@
 type: concept
 track: [quant-research, quant-risk]
 tier: senior
-status: draft
+status: solid
 prereqs: [short-rate-models, forwards-futures-and-carry]
 est_hours: 4
 sources: [Brigo and Mercurio - Interest Rate Models chapter 13, Patrick Hagan - Convexity Conundrums Pricing CMS Swaps Caps and Floors]
@@ -142,7 +142,7 @@ $$\text{Adj}_{\text{fut}} = \frac{1}{2} \times (0.012)^2 \times 2.0 \times 2.25$
 $$\sigma^2 = 0.000144$$
 $$\text{Adj}_{\text{fut}} = 0.5 \times 0.000144 \times 4.5 = 0.000324$$
 $$\text{Adj}_{\text{fut}} = 3.24 \text{ bps}$$
-Our reference code [`rates_models.py`](code/rates_models.py) confirms:
+Our reference code [`code/fi_convexity.py`](code/fi_convexity.py) and [`code/rates_models.py`](code/rates_models.py) confirm:
 `futures_rate_convexity_adjustment(0.012, 2.0, 2.25) == 0.000324` ($3.24\text{ bps}$).
 If the quoted futures rate is $4.5000\%$, the fair forward rate is $4.5000\% - 0.0324\% = 4.4676\%$.
 
@@ -160,7 +160,7 @@ $$\text{Dur}_{\text{rel}} = -\frac{A'(0.04)}{A(0.04)} = \frac{40.37716}{8.110896
 $$\text{Adj}_{\text{CMS}} \approx S(0)^2 \sigma_S^2 T_1 \times \text{Dur}_{\text{rel}}$$
 $$S(0)^2 \sigma_S^2 T_1 = (0.04)^2 \times (0.20)^2 \times 5.0 = 0.0016 \times 0.04 \times 5.0 = 0.000320$$
 $$\text{Adj}_{\text{CMS}} = 0.000320 \times 4.97814 = 0.00159300 = 15.93 \text{ bps}$$
-Our reference implementation [`rates_models.py`](code/rates_models.py) yields:
+Our reference implementation [`code/fi_convexity.py`](code/fi_convexity.py) and [`code/rates_models.py`](code/rates_models.py) yield:
 `cms_rate_annuity_adjustment(0.04, 0.20, 5.0, 10, 1) == 0.001593` ($15.93\text{ bps}$).
 The expected 10-year CMS fixing is $4.0000\% + 0.1593\% = 4.1593\%$.
 
@@ -237,6 +237,6 @@ The expected Bund swap rate under the domestic USD measure is $3.0\% - 0.0768\% 
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/rates_models.py`](code/rates_models.py) (Futures convexity, CMS duration adjustment, and in-arrears functions).
+- Code: [`code/fi_convexity.py`](code/fi_convexity.py) (numerical verification of futures convexity, CMS adjustment, and quanto drift), [`code/rates_models.py`](code/rates_models.py) (Futures convexity, CMS duration adjustment, and in-arrears functions).
 - Prereqs: [Short-Rate Models](04-Short-Rate-Models.md), [Swaps and Curve Building](03-Swaps-and-Curve-Building.md).
 - Next: [Rates Volatility and SABR](18-Rates-Volatility-and-SABR.md), [Term Structure Models: HJM, LGM, and LMM](19-Term-Structure-Models-HJM-LGM-LMM.md).

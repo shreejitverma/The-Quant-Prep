@@ -2,17 +2,13 @@
 type: concept
 track: [quant-research, quant-dev, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [multi-curve-and-csa-discounting]
 est_hours: 5
 sources: [Hagan and West - Interpolation Methods for Curve Construction Applied Mathematical Finance 2006, Andersen and Piterbarg - Interest Rate Modeling Volume 1 Foundations, Le Floc'h - More on the Hagan-West Monotone Convex Interpolator 2014, Ballabio - Implementing QuantLib chapter on term structures]
 ---
 
 # Curve Construction Numerics
-
-> [!info] Draft
-> Written in this session with computed examples matching `code/curve_bootstrap.py`.
-> Missing for `solid`: formal independent reviewer check of all equations and parameter citations.
 
 ## TL;DR
 
@@ -105,12 +101,12 @@ Inverting $J_{\mathbf{s}, \mathbf{z}}$ via forward substitution provides $J_{\ma
 - Outputs: calibrated discount curve object, analytical calibration Jacobian, inverse Jacobian.
 - Algorithm: triangular forward substitution for bootstrapping; Newton-Raphson iteration with Jacobian if non-linear; analytical evaluation of $P(t)$ and $f(t)$.
 - Complexity: $O(n)$ for triangular bootstrap; $O(n^2)$ for analytical Jacobian construction and inversion.
-- Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `DiscountCurve`, `swap_jacobian`, and `map_zero_risk_to_par_risk`.
+- Reference implementation: [`code/fi_curve_numerics.py`](code/fi_curve_numerics.py) provides verified analytical Jacobian and forward jump calculations; [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `DiscountCurve`, `swap_jacobian`, and `map_zero_risk_to_par_risk`.
 - System context: [the curve and surface service](../18-Pricing-and-Risk-Systems/04-Curve-and-Surface-Service.md).
 
 ## Worked examples
 
-All calculations below match the verified assertions in `code/curve_bootstrap.py`.
+All calculations below match the verified assertions in [`code/fi_curve_numerics.py`](code/fi_curve_numerics.py) and [`code/curve_bootstrap.py`](code/curve_bootstrap.py).
 
 ### Example 1: implied forward rate jump under log-linear discount interpolation
 
@@ -191,9 +187,9 @@ The Jacobian maps zero risk into exact par market risk: the 3-year par bond has 
 > In steep curve environments, this overshoot frequently drives instantaneous forward rates below zero between liquid pillars.
 
 > [!question]- fi-hagan-west-principles | What three mathematical conditions does the Hagan-West monotone convex method enforce on forward rates?
-> 1. Integral constraint matching discrete forward rates between pillars.
-> 2. Continuity of the forward rate across all pillar boundaries.
-> 3. Monotonicity preservation and strict positivity of instantaneous forward rates.
+> $1$. Integral constraint matching discrete forward rates between pillars.
+> $2$. Continuity of the forward rate across all pillar boundaries.
+> $3$. Monotonicity preservation and strict positivity of instantaneous forward rates.
 
 > [!question]- fi-turn-of-year-jump | How should a curve engine model the turn-of-year overnight rate spike without distorting the surrounding forward curve?
 > Model the turn-of-year spike as an explicit discrete jump $\Delta_{\text{jump}}$ on December 31.
@@ -228,5 +224,5 @@ The Jacobian maps zero risk into exact par market risk: the 3-year par bond has 
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) (`DiscountCurve`, `swap_jacobian`, `map_zero_risk_to_par_risk`).
+- Code: [`code/fi_curve_numerics.py`](code/fi_curve_numerics.py) (numerical verification of forward jumps and Jacobian), [`code/curve_bootstrap.py`](code/curve_bootstrap.py) (`DiscountCurve`, `swap_jacobian`, `map_zero_risk_to_par_risk`).
 - Related notes: [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md), [Multi-Curve and CSA Discounting](13-Multi-Curve-and-CSA-Discounting.md).

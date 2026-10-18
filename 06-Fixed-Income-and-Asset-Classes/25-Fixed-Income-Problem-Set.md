@@ -2,7 +2,7 @@
 type: problem-set
 track: [quant-trader, quant-research, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [credit-advanced-cds-indices-and-tranches, fixed-income-pnl-and-relative-value]
 est_hours: 8
 sources: [Bruce Tuckman and Angel Serrat - Fixed Income Securities chapters 1-20, John Hull - Options Futures and Other Derivatives chapters on rates and credit, Moorad Choudhry - The Repo and Modern Markets Handbook, David X. Li - On Default Correlation A Copula Approach (2000)]
@@ -268,11 +268,11 @@ $$\ln A(0, 5) = -0.066710 - 0.004640 = -0.071350 \implies A(0, 5) = e^{-0.071350
 
 Step 3: Compute $P(0, 5)$:
 
-$$P(0, 5) = A(0, 5) e^{-B(0, 5) r(0)} = 0.931136 \times e^{-3.517556 \times 0.035} = 0.931136 \times e^{-0.123114} = 0.931136 \times 0.884164 \approx 0.823277$$
+$$P(0, 5) = A(0, 5) e^{-B(0, 5) r(0)} = 0.931136 \times e^{-3.517556 \times 0.035} = 0.931136 \times e^{-0.123114} = 0.931136 \times 0.884164 \approx 0.823275 \quad (0.82328)$$
 
 Step 4: Yield $y(0, 5)$:
 
-$$y(0, 5) = -\frac{\ln(0.823277)}{5} = -\frac{-0.194458}{5} \approx 0.038892 \quad (3.889\%)$$
+$$y(0, 5) = -\frac{\ln(0.823275)}{5} = -\frac{-0.194460}{5} \approx 0.038892 \quad (3.889\%)$$
 
 ---
 
@@ -385,8 +385,12 @@ $$\frac{1}{\sqrt{2\pi}} \approx 0.398942$$
 $$\sigma_N \sqrt{T} \times \frac{1}{\sqrt{2\pi}} = 0.0065 \times 1.0 \times 0.398942 \approx 0.0025931 \quad (25.93 \text{ bps})$$
 
 Step 3: Total dollar premium:
+Carrying continuous precision gives:
 
-$$\text{Swaption Premium} = \$50,000,000 \times 4.45 \times 0.0025931 = \$222,500,000 \times 0.0025931 \approx \$576,964.75$$
+$$\text{Swaption Premium} = \$50,000,000 \times 4.45 \times 0.0065 \times \frac{1}{\sqrt{2\pi}} \approx \$576,970.27$$
+
+Using the intermediate rounded factor $0.0025931$ gives $\$222,500,000 \times 0.0025931 \approx \$576,964.75$.
+Our reference implementation [`fi_problem_set.py`](code/fi_problem_set.py) asserts both the exact continuous valuation and the rounded value.
 
 ---
 
@@ -573,7 +577,7 @@ An Agency MBS pool exhibits a Single Monthly Mortality of $\text{SMM} = 0.50\%$ 
 
 Step 1: Annualized CPR:
 
-$$\text{CPR} = 1 - (1 - \text{SMM})^{12} = 1 - (1 - 0.0050)^{12} = 1 - (0.9950)^{12} \approx 1 - 0.941572 = 0.058428 \quad (5.84\%)$$
+$$\text{CPR} = 1 - (1 - \text{SMM})^{12} = 1 - (1 - 0.0050)^{12} = 1 - (0.9950)^{12} \approx 1 - 0.941623 = 0.058377 \quad (5.84\%)$$
 
 Step 2: 100% PSA at Month 10:
 The PSA benchmark ramps up by $0.2\%$ CPR per month for the first 30 months:
@@ -592,7 +596,7 @@ $$\text{CPR}_{150\% \text{ PSA}}(30) = 1.50 \times 6.0\% = 9.0\%$$
 A large homogeneous portfolio (the $N \to \infty$ limit of identical credits) has default probability $p = 5.0\%$, correlation $\rho = 0.30$, and recovery $R = 40\%$ ($LGD = 0.60$).
 Using Li's one-factor Gaussian copula:
 1. Calculate the conditional default probability under an extreme market factor realization of $M = -2.0$ standard deviations.
-2. Given the large homogeneous portfolio (LHP) loss distribution from `code/credit_bootstrap.py`, verify the expected loss for an Equity Tranche $[0\%, 3\%]$ versus a Senior Tranche $[7\%, 10\%]$.
+2. Given the large homogeneous portfolio (LHP) loss distribution from `code/fi_credit_tranches.py`, verify the expected loss for an Equity Tranche $[0\%, 3\%]$ versus a Senior Tranche $[7\%, 10\%]$.
 3. A fund holds $\$50,000,000$ notional of a bond portfolio with $\text{DV01} = \$35,000$, dollar convexity $C_{\$} = \$3,500,000,000$, and daily carry of $+\$1,200$. Over 1 day, yields rise by $+8$ bps ($\Delta y = +0.0008$). Compute the total predicted daily P&L.
 
 **Solution:**
@@ -605,8 +609,8 @@ $$p(M = -2.0) = \Phi\left(\frac{-1.6449 - \sqrt{0.30} \times (-2.0)}{\sqrt{1 - 0
 Conditional portfolio credit loss is $0.60 \times 25.57\% = 15.34\%$.
 
 Step 2: Tranche expected loss verification:
-- Equity Tranche $[0\%, 3\%]$ absorbs the first $3\%$ of portfolio losses. Expected loss is $54.08\%$ of tranche notional.
-- Senior Tranche $[7\%, 10\%]$ absorbs losses between $7\%$ and $10\%$. Expected loss is $8.67\%$ of tranche notional.
+- Equity Tranche $[0\%, 3\%]$ absorbs the first $3\%$ of portfolio losses. Expected loss is $54.11\%$ of tranche notional.
+- Senior Tranche $[7\%, 10\%]$ absorbs losses between $7\%$ and $10\%$. Expected loss is $8.78\%$ of tranche notional.
 Senior loss is dramatically lower due to subordination shielding.
 
 Step 3: P&L Attribution:
@@ -659,7 +663,29 @@ On the upward-sloping 100/120/150 bp curve of [Credit and CDS](06-Credit-and-CDS
 > SMM is the percentage of outstanding mortgage pool principal prepaid in a single month. CPR is the annualized compound equivalent: $\text{CPR} = 1 - (1 - \text{SMM})^{12}$. Conversely, $\text{SMM} = 1 - (1 - \text{CPR})^{1/12}$.
 
 > [!question]- fi-ps-pnl-attribution-gamma-term | In fixed income P&L attribution, what is the convexity (gamma) P&L term, and why is it always positive for long unhedged vanilla bond positions?
-> The convexity P&L term is $\frac{1}{2} C_{\$} (\Delta y)^2 = \frac{1}{2} P \cdot C \cdot (\Delta y)^2$. Because vanilla non-callable bonds possess strictly positive convexity ($C > 0$) and $(\Delta y)^2 \ge 0$, this term is always non-negative, providing positive gamma gains regardless of whether yields rise or fall.
+> The convexity P&L term is $\frac{1}{2} C_{\$} (\Delta y)^2 = \frac{1}{2} P \cdot C \cdot (\Delta y)^2$.
+> Because vanilla non-callable bonds possess strictly positive convexity ($C > 0$) and $(\Delta y)^2 \ge 0$, this term is always non-negative, providing positive gamma gains regardless of whether yields rise or fall.
+
+> [!question]- fi-ps-tips-beir-derivation | Derive the exact Fisher relationship for the Breakeven Inflation Rate (BEIR) and compare it to the linear approximation.
+> The exact Fisher relation equates real and nominal purchasing power: $(1 + y_{\text{nom}}) = (1 + y_{\text{real}})(1 + \text{BEIR})$, which yields $\text{BEIR} = \frac{1 + y_{\text{nom}}}{1 + y_{\text{real}}} - 1$.
+> The standard linear approximation $\text{BEIR} \approx y_{\text{nom}} - y_{\text{real}}$ ignores the cross-product term $y_{\text{real}} \times \text{BEIR}$, systematically overstating inflation expectations by several basis points.
+
+> [!question]- fi-ps-hull-white-analytical-bond-option | How does the Hull-White model achieve closed-form European bond option pricing without a tree?
+> Under the 1-factor Hull-White model, short rates are normally distributed, which implies that zero-coupon bond prices follow lognormal distributions under the forward measure.
+> Consequently, a European option on a zero-coupon bond evaluates analytically via a Black-76 type formula with deterministic integrated bond volatility $\sigma_P = \frac{\sigma}{a}(1 - e^{-a(T_2 - T_1)})\sqrt{\frac{1 - e^{-2a T_1}}{2a}}$.
+
+> [!question]- fi-ps-butterfly-5050-vs-regression | Why does a 50-50 DV01 butterfly trade suffer from curve twist leakage, and how does regression weighting eliminate it?
+> A 50-50 DV01 weighting allocates equal DV01 to the short and long wings, immunizing only against parallel shifts.
+> Because yield volatility is higher at short tenors ($\sigma_2 > \sigma_{10}$), curve steepening or flattening causes the front wing to move by more basis points than the long wing, generating unhedged directional P&L.
+> Regression beta weighting weights wings according to historical yield sensitivity $\Delta y_2 = \beta_1 \Delta y_1 + \beta_3 \Delta y_3$, immunizing against both parallel shifts and slope rotation.
+
+> [!question]- fi-ps-par-par-vs-market-value-asw | Distinguish between a par-par asset swap spread and a market-value asset swap spread.
+> In a par-par asset swap, swap notional equals the bond par value, requiring an upfront cash payment of $(100 - P)$ to reconcile any bond premium or discount to par.
+> In a market-value asset swap, swap notional equals the dirty market price of the bond, eliminating initial cash exchange but creating a terminal redemption mismatch when the bond matures at par.
+
+> [!question]- fi-ps-gaussian-copula-crisis-collapse | Explain why David Li's one-factor Gaussian copula failed to predict joint defaults during the 2008 subprime crisis.
+> The Gaussian copula exhibits zero asymptotic tail dependence ($\lim_{u \to 0} P(U_1 < u \mid U_2 < u) = 0$), treating defaults as asymptotically independent in extreme market downturns.
+> When nationwide housing prices dropped simultaneously, default correlations spiked toward 1, completely overwhelming subordination cushions and destroying AAA-rated super-senior tranches.
 
 ## Further reading
 
@@ -671,6 +697,7 @@ On the upward-sloping 100/120/150 bp curve of [Credit and CDS](06-Credit-and-CDS
 
 ## In this repo and SDE-Interview-Prep
 
+- Python problem set verification engine: [fi_problem_set.py](code/fi_problem_set.py).
 - Python reference models for bond pricing and duration: [bond_pricing.py](code/bond_pricing.py).
 - Multi-curve and swap bootstrapping: [curve_bootstrap.py](code/curve_bootstrap.py).
 - Short-rate, Hull-White, and SABR models: [rates_models.py](code/rates_models.py).

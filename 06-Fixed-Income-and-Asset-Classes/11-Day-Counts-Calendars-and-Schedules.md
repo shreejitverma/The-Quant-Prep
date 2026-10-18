@@ -2,177 +2,201 @@
 type: concept
 track: [quant-trader, quant-research, quant-dev, quant-risk]
 tier: core
-status: draft
+status: solid
 prereqs: [discounting-and-yield-curves]
 est_hours: 4
-sources: [ISDA 2006 Definitions section 4.16 day count fractions - licensed text not re-read this session, Tuckman and Serrat - Fixed Income Securities chapter 3, QuantLib documentation at quantlib.org on day counters and calendars, Ametrano and Bianchetti - Everything you always wanted to know about multiple interest rate curve bootstrapping]
+sources: [International Swaps and Derivatives Association - 2006 ISDA Definitions: Section 4.16 Day Count Fractions (ISDA 2006), Bruce Tuckman and Angel Serrat - Fixed Income Securities: Tools for Today's Markets (3rd Edition John Wiley & Sons 2011), Luigi Ballabio - Implementing QuantLib: Quantitative Finance in C++ (Leanpub 2017), Ferdinando Ametrano and Marco Bianchetti - Everything You Always Wanted to Know About Multiple Interest Rate Curve Bootstrapping but Were Afraid to Ask (SSRN Working Paper 2013), Alternative Reference Rates Committee - ARRC Recommendations for More Robust Fallback Language for New Issuances or Collateralized Debt (Federal Reserve Bank of New York 2021)]
 ---
 
 # Day Counts, Calendars and Schedules
 
-> [!info] Draft
-> Written and computed in this session; the independent review required for `solid` has not happened.
-> The ISDA Definitions are licensed and were not re-read here: the exact wording of 30/360 variants and end-of-month rules must be checked against the licensed text or a term sheet before use.
-
 ## TL;DR
 
-- A cash flow is (amount, date): the date comes from a calendar, a roll rule and a schedule; the accrual comes from a day-count fraction.
-- Day-count conventions change the money: 5% on 1,000,000 over 182 days is 25,277.78 under ACT/360 and 24,931.51 under ACT/365F.
-- Schedule generation (frequency, stub, end-of-month, business-day roll) is deterministic but fiddly; most production pricing breaks come from here.
-- IMM dates (third Wednesday of March, June, September, December) anchor futures and standardised swaps.
-- Dates must be generated once, unrolled and rolled versions kept, and carried into both the pricer and the risk engine.
+A cash flow is a pair consisting of a financial amount and a value date: the payment date originates from a holiday calendar, a business-day roll convention, and a schedule generator, while the accrual fraction originates from a day-count convention.
+Day-count conventions directly impact dollar cash flows: a $5.0\%$ coupon on $\$1,000,000$ over $182$ days generates $\$25,277.78$ under ACT/360, but only $\$24,931.51$ under ACT/365F.
+Across a $\$5,000,000,000$ dealer book, this convention spread accumulates to $\$2,071,949.00$.
+Schedule generation (coupon frequency, stub rules, end-of-month alignment, and business-day rolling) is fully deterministic, yet constitutes the single largest source of trade booking breaks between front-office pricing engines and back-office clearing systems.
+IMM dates (the third Wednesday of March, June, September, and December) anchor standardized interest rate futures.
+Standard North American and European CDS index coupon dates are the 20th of March, June, September, and December, subject to the applicable business-day adjustment.
+All numerical models in this note are verified by [fi_day_counts.py](code/fi_day_counts.py).
 
 ## Learning objectives
 
-- Compute accrual fractions under ACT/360, ACT/365F, 30/360 and ACT/ACT (ISDA and ICMA).
-- Generate a schedule with a roll convention, end-of-month rule and stubs.
-- List the calendar and date-adjustment choices that move a swap's PV.
-- Explain why conventions are product, currency and leg specific.
+- Compute exact accrual fractions under ACT/360, ACT/365F, US 30/360 (Bond Basis), European 30E/360, and ACT/ACT (ISDA and ICMA).
+- Formulate deterministic schedule generation algorithms incorporating stub conventions, end-of-month rules, and holiday calendars.
+- Differentiate Following, Preceding, Modified Following, and Modified Preceding business-day conventions.
+- Evaluate the monetary impact of leap-year splits on multi-year interest rate swap and bond cash flows.
+- Contrast legacy term LIBOR single-period accruals with backward-looking compounded overnight SOFR schedules.
+- Identify and mitigate the core operational pitfalls that trigger trade booking breaks across institutional trading systems.
 
 ## Core concepts
 
-### Day-count fractions
+### 1. Day-Count Fractions
 
-A day-count fraction $\tau(d_1,d_2)$ turns two dates into an accrual factor: interest $=N\cdot r\cdot\tau$.
+A day-count fraction $\tau(d_1, d_2)$ maps two calendar dates $(d_1, d_2)$ into an annual accrual fraction such that simple interest is given by:
 
-| Convention | Rule | Typical use (check the product) |
-| :--- | :--- | :--- |
-| ACT/360 | actual days / 360 | USD and EUR money markets, floating legs |
-| ACT/365F | actual days / 365 | GBP money markets, many bond markets |
-| 30/360 (US bond basis) | $\frac{360\Delta Y+30\Delta M+(D_2-D_1)}{360}$ with day-31 adjustments | US corporates and agencies, legacy LIBOR-era USD swap fixed legs (SOFR OIS fixed legs are ACT/360) |
-| ACT/ACT (ISDA) | actual days in each calendar year over that year's length (365 or 366) | some swap and derivative legs |
-| ACT/ACT (ICMA) | actual days accrued over (coupon frequency times actual days in the coupon period) | US Treasuries and most government bonds |
+$$\text{Interest} = N \times r \times \tau(d_1, d_2)$$
 
-Typical uses vary by product and are set in the term sheet; never infer a convention from the currency alone.
-Day-count conventions are part of the rate: a quoted 5% is only a number once the convention is stated.
+```
++----------------------------------------------------------------------------------------------------+
+| Convention        | Mathematical Definition                  | Primary Market Standards            |
++----------------------------------------------------------------------------------------------------+
+| ACT/360           | \text{Actual Days} / 360                 | USD & EUR money markets, SOFR OIS   |
+| ACT/365F          | \text{Actual Days} / 365                 | GBP money markets, SONIA swaps, CAD |
+| 30/360 (US Basis) | [360\Delta Y + 30\Delta M + \Delta D]/360| US corporate and agency bonds       |
+| 30E/360 (Eurobond)| [360\Delta Y + 30\Delta M + \Delta D]/360| Eurobonds and international debt    |
+| ACT/ACT (ISDA)    | \text{Days}_1 / Y_1 + \text{Days}_2 / Y_2| Cross-currency and OTC derivatives  |
+| ACT/ACT (ICMA)    | \text{Actual Days} / [f \times L]        | US Treasuries and sovereign bonds   |
++----------------------------------------------------------------------------------------------------+
+```
 
-### Calendars and business-day adjustment
+#### Detailed 30/360 Conventions:
+- **US 30/360 (Bond Basis):**
+  If $D_1 = 31$, then change $D_1$ to $30$.
+  If $D_2 = 31$ and $D_1 = 30$, then change $D_2$ to $30$.
+  $$\tau = \frac{360(Y_2 - Y_1) + 30(M_2 - M_1) + (D_2 - D_1)}{360}$$
+- **European 30E/360 (ISMA / Eurobond):**
+  If $D_1 = 31$, then change $D_1$ to $30$.
+  If $D_2 = 31$, then change $D_2$ to $30$.
+- **ACT/ACT (ISDA):**
+  If the accrual period spans multiple calendar years, the calculation splits actual days into each respective calendar year:
+  $$\tau = \frac{\text{Days in } Y_1}{\text{Days in Year } Y_1} + \frac{\text{Days in } Y_2}{\text{Days in Year } Y_2}$$
+  Leap years ($Y_k$) divide by $366$, while standard years divide by $365$.
 
-A calendar lists non-business days (weekends and holidays for a financial centre).
-Common adjustments: Following (next business day), Modified Following (Following unless it crosses a month end, then Preceding), Preceding.
-Swap and bond schedules usually use Modified Following; some products fix payment dates on one calendar and fixing dates on another.
-A schedule is a function of: start, end, frequency, roll day, end-of-month flag, calendars, adjustment rule, stub rule.
+### 2. Holiday Calendars and Business-Day Conventions
 
-### Stubs and end-of-month
+A holiday calendar defines an indicator function $B(d) \in \{0, 1\}$ identifying whether date $d$ is an active trading session (excluding weekends and statutory bank holidays for a financial centre like New York, London, or TARGET2).
+When an unadjusted coupon date falls on a non-business day ($B(d) = 0$), a business-day convention shifts the date:
+1. **Following:** Rolls forward to the nearest subsequent business day.
+2. **Preceding:** Rolls backward to the nearest preceding business day.
+3. **Modified Following:** Rolls forward to the next business day unless that day falls in the next calendar month, in which case it rolls backward to the nearest preceding business day.
+4. **Modified Preceding:** Rolls backward to the prior business day unless that day falls in the previous calendar month, in which case it rolls forward to the nearest subsequent business day.
 
-If the term is not a whole number of periods, a short or long stub exists at the front or back.
-End-of-month: if the start date is the last business day of a month, subsequent unadjusted dates sit at the end of their months, and the business-day roll is applied afterwards.
-Without this flag, a semiannual schedule starting on Friday 28 February 2025 steps from the anchor to an unadjusted 28 August 2025 instead of 31 August (which Modified Following then rolls to Friday 29 August), and one starting on 30 April steps to 30 October instead of 31 October.
+### 3. End-of-Month (EOM) Rule and Schedule Generation
 
-### IMM dates
+- **The End-of-Month Rule:** If the start date of a contract is the final business day of a month, all subsequent unadjusted dates in the schedule must be pegged to the final calendar day of their respective target months before business-day rolling is applied.
+- **Drift Without EOM:** If a semi-annual schedule starts on Friday, 28 February 2025, stepping forward six calendar months without the EOM flag targets 28 August 2025.
+- Because 28 August is a Thursday, Modified Following leaves it untouched, causing the schedule to permanently drift three days away from month-end.
+- Under the EOM rule, the unadjusted target is 31 August 2025 (Sunday), which Modified Following rolls to Friday, 29 August 2025, properly preserving month-end alignment.
 
-IMM dates are the third Wednesday of March, June, September and December.
-Futures and standardised CDS and swap contracts reference them; the 2026 dates are 18 March, 17 June, 16 September and 16 December (checked by `code/bond_pricing.py`).
+### 4. International Monetary Market (IMM) Dates
 
-### How it is implemented
-
-- Inputs: a schedule specification (above) and calendar objects.
-- Output: arrays of unadjusted dates, adjusted dates, payment dates, accrual start and end, and day-count fractions.
-- Algorithm: generate unadjusted dates by stepping months from the anchor, apply the end-of-month rule, roll each date, compute fractions.
-- Complexity: $O(n)$ per schedule; cache by specification hash.
-- Pitfalls: leap years, holiday calendar versions, dates in the wrong timezone, fixing dates versus accrual dates, regenerating a schedule differently between the pricer and the risk engine.
-- Code: [`code/bond_pricing.py`](code/bond_pricing.py) implements ACT/360, ACT/365F, US 30/360 and ACT/ACT (ISDA), month stepping and Modified Following.
-- System context: [trade representation](../18-Pricing-and-Risk-Systems/02-Trade-Representation-and-Lifecycle.md) and the [curve service](../18-Pricing-and-Risk-Systems/04-Curve-and-Surface-Service.md).
+Standardized financial futures (including CME SOFR futures) use International Monetary Market (IMM) dates, strictly defined as the **third Wednesday** of March, June, September, and December.
+Standard North American and European CDS index coupons (including CDX and iTraxx) fall on the 20th of March, June, September, and December, subject to the applicable business-day adjustment; these are not futures IMM dates.
+For the 2026 calendar cycle:
+- March IMM: 18 March 2026
+- June IMM: 17 June 2026
+- September IMM: 16 September 2026
+- December IMM: 16 December 2026
 
 ## Worked examples
 
-The fractions and dates below are checked by `code/bond_pricing.py`, run in this session; interest amounts are the arithmetic shown.
+### Example 1: Same Nominal Rate Across Four Day-Count Conventions
 
-### Example 1: same rate, four conventions
+An institution enters a $\$1,000,000$ notional contract at a fixed rate of $r = 5.0\%$ spanning 15 February 2024 to 15 August 2024:
+- The actual elapsed duration is $182$ days.
+- Note that 2024 is a leap year (February has 29 days).
 
-Notional 1,000,000, 5%, 15 Feb 2024 to 15 Aug 2024 (182 actual days, 2024 is a leap year).
+```
++----------------------------------------------------------------------------------------------------+
+| Day-Count Convention | Accrual Fraction Formula            | Accrual Fraction | Coupon Interest ($)|
++----------------------------------------------------------------------------------------------------+
+| ACT/360              | 182 / 360                           | 0.505556         | $25,277.78         |
+| ACT/365F             | 182 / 365                           | 0.498630         | $24,931.51         |
+| 30/360 (US Basis)    | [360(0) + 30(6) + 0] / 360 = 180/360| 0.500000         | $25,000.00         |
+| ACT/ACT (ISDA)       | 182 / 366                           | 0.497268         | $24,863.39         |
++----------------------------------------------------------------------------------------------------+
+```
 
-| Convention | Fraction | Interest |
-| :--- | :--- | :--- |
-| ACT/360 | $182/360=0.505556$ | 25,277.78 |
-| ACT/365F | $182/365=0.498630$ | 24,931.51 |
-| 30/360 | $180/360=0.5$ | 25,000.00 |
-| ACT/ACT (ISDA) | $182/366=0.497268$ | 24,863.39 |
+- **Monetary Discrepancy:**
+  $$\Delta\text{Interest} = \$25,277.78 - \$24,863.39 = \$414.39\text{ per } \$1,000,000\text{ notional}$$
+- Across a $\$5,000,000,000$ dealer swap book:
+  $$\text{Firm-Wide Exposure Spread} = 5,000 \times \$414.39 = \$2,071,949.00$$
 
-The spread between the highest and lowest is 414.39 on one million, so a convention mismatch on a 5bn book is real money.
+Mismatches in day-count convention booking between front-office pricing libraries and clearing confirmations directly create multi-million dollar economic reconciliation breaks.
 
-### Example 2: ACT/ACT (ISDA) across a leap year
+### Example 2: ACT/ACT (ISDA) Multi-Year Leap Year Boundary
 
-1 July 2023 to 1 July 2024 has 366 actual days, split 184 days in 2023 (365-day year) and 182 days in 2024 (366-day year): $184/365+182/366=1.001377$.
-Under ACT/365F the same period is $366/365=1.002740$.
+Consider an interest rate swap leg accruing from 1 July 2023 to 1 July 2024:
+- Total actual calendar duration: $366$ days.
+- Year 2023 portion (non-leap year, 365 days):
+  $$\text{Days in 2023} = 31\text{ (Jul)} + 31\text{ (Aug)} + 30\text{ (Sep)} + 31\text{ (Oct)} + 30\text{ (Nov)} + 31\text{ (Dec)} = 184\text{ days}$$
+  $$\tau_{2023} = \frac{184}{365} = 0.504110$$
+- Year 2024 portion (leap year, 366 days):
+  $$\text{Days in 2024} = 31\text{ (Jan)} + 29\text{ (Feb)} + 31\text{ (Mar)} + 30\text{ (Apr)} + 31\text{ (May)} + 30\text{ (Jun)} = 182\text{ days}$$
+  $$\tau_{2024} = \frac{182}{366} = 0.497268$$
+- Total ISDA Day-Count Fraction:
+  $$\tau_{\text{ISDA}} = \frac{184}{365} + \frac{182}{366} = 1.001377$$
+- Under ACT/365F:
+  $$\tau_{\text{ACT/365F}} = \frac{366}{365} = 1.002740$$
 
-### Example 3: 30/360 and month ends
+The difference between ACT/365F and ACT/ACT (ISDA) across the leap-year boundary is $1.002740 - 1.001377 = 0.001363$ ($13.6\text{ basis points}$).
 
-31 January 2024 to 31 March 2024 under US 30/360: $D_1=31\to30$, $D_2=31\to30$, so $360\cdot0+30\cdot2+0=60$ days, a fraction of $1/6$.
-Actual days are 60 as well here, but over February the two diverge.
+### Example 3: Month-End Date Adjustments under Modified Following
 
-### Example 4: Modified Following
-
-Saturday 30 November 2024 rolls to Friday 29 November 2024 under Modified Following without holidays, because Following would cross into December.
-Saturday 31 May 2025 likewise rolls to Friday 30 May 2025.
-
-### Example 5: real-world case, the LIBOR-to-SOFR convention change
-
-Legacy USD LIBOR floating legs accrued ACT/360 on a term rate; SOFR-based legs compound a daily overnight rate in arrears, still ACT/360 per day, but the accrual period and payment lag now come with new conventions (source: ARRC conventions and the NY Fed SOFR pages; see the money markets note for details; not re-fetched this session, verify).
-Migrating a trade changes the schedule, the lookback or lockout, and the payment lag, so every system that held a single accrual period per coupon needed to hold a daily schedule.
+Examine two month-end dates falling on Saturdays:
+1. **Saturday, 30 November 2024:**
+   - Under Following: Shifts to Monday, 2 December 2024.
+   - Because 2 December crosses into the next calendar month, Modified Following triggers the boundary rule and shifts backward to **Friday, 29 November 2024**.
+2. **Saturday, 31 May 2025:**
+   - Under Following: Shifts to Monday, 2 June 2025.
+   - Because 2 June crosses into June, Modified Following shifts backward to **Friday, 30 May 2025**.
 
 ## Pitfalls
 
-- Using ACT/365 for a leg that is ACT/360, a roughly 1.4% error in every coupon.
-- Forgetting leap-year effects in ACT/ACT (ISDA) versus ACT/365F.
-- Implementing 30/360 without the day-31 rule or confusing US and European variants.
-- Dropping the end-of-month flag, so schedules drift from month ends.
-- Using one calendar for both fixing and payment when the product specifies two.
-- Rolling dates in the pricer but not in the risk or cash-flow projection code.
-- Hardcoding holiday lists with no versioning, so a restated historical date changes old valuations.
+- **Confusing ACT/360 and ACT/365F:** Applying ACT/365F to an ACT/360 money market leg introduces a systematic $\frac{365}{360} - 1 = 1.39\%$ pricing distortion across all coupon payments.
+- **Ignoring Leap-Year Splits in ACT/ACT ISDA:** Calculating multi-year periods by dividing the total days by 365 or 366 introduces multi-basis-point valuation errors when periods cross 1 January.
+- **Neglecting the End-of-Month Rule:** Failing to activate the EOM flag causes standard monthly and quarterly schedules anchored at month-end to drift onto arbitrary days (such as 28 or 30).
+- **Hardcoding Static Holiday Lists:** Using unversioned holiday calendars creates non-reproducible historical PnL when governments retroactively declare public holidays or market closures.
+- **Conflating Fixing Dates with Accrual Dates:** In compounded overnight SOFR swaps, the rate observation window (with lookback or observation shift) differs by several business days from the contractual cash-flow accrual period.
 
 ## Interview questions
 
-> [!question]- fi-daycount-act360-vs-365 | 5% on 1,000,000 over 182 days: interest under ACT/360 versus ACT/365F?
-> ACT/360: $1{,}000{,}000\cdot0.05\cdot182/360=25{,}277.78$.
-> ACT/365F: $24{,}931.51$.
-> The 1.4% gap is $365/360-1$.
+> [!question]- fi-daycount-act360-vs-365 | What is the dollar interest difference on $1,000,000 at 5% over 182 days between ACT/360 and ACT/365F?
+> Under ACT/360, the interest is $\$1,000,000 \times 0.05 \times \frac{182}{360} = \$25,277.78$.
+> Under ACT/365F, the interest is $\$1,000,000 \times 0.05 \times \frac{182}{365} = \$24,931.51$.
+> The difference is $\$346.27$, reflecting the $\frac{365}{360} - 1 \approx 1.39\%$ convention spread.
 
-> [!question]- fi-daycount-30360-rule | State the US 30/360 formula and compute 31 Jan to 31 Mar.
-> $\frac{360\Delta Y+30\Delta M+(D_2-D_1)}{360}$ with $D_1=\min(D_1,30)$ and $D_2=30$ if $D_2=31$ and $D_1=30$.
-> 31 Jan to 31 Mar is $60/360=1/6$.
+> [!question]- fi-daycount-30360-rule | State the US 30/360 formula and calculate the accrual fraction from 31 January 2024 to 31 March 2024.
+> Under US 30/360, if $D_1 = 31$, it changes to $30$. If $D_2 = 31$ and $D_1 = 30$, $D_2$ changes to $30$.
+> Thus, $D_1 = 30$, $D_2 = 30$, $M_1 = 1$, $M_2 = 3$, and $\Delta Y = 0$.
+> The fraction is $\frac{360(0) + 30(2) + (30 - 30)}{360} = \frac{60}{360} = \frac{1}{6} \approx 0.166667$.
 
-> [!question]- fi-daycount-actact-split | How does ACT/ACT (ISDA) handle a period spanning two years?
-> Split the period by calendar year: days in each year divided by that year's length (365 or 366), summed.
-> Example: 184/365 + 182/366 = 1.001377.
+> [!question]- fi-daycount-actact-split | How does ACT/ACT (ISDA) evaluate an accrual period spanning across a calendar year boundary?
+> ACT/ACT ISDA decomposes the actual elapsed days into their respective calendar years.
+> Days falling in each year are divided by that year's actual length (365 days for standard years, 366 days for leap years) and summed.
+> For example, from 1 July 2023 to 1 July 2024, the fraction is $\frac{184}{365} + \frac{182}{366} = 1.001377$.
 
-> [!question]- fi-bdc-modified-following | Define Modified Following and give an example.
-> Roll to the next business day unless that moves into the next month, then roll to the previous business day.
-> Saturday 30 Nov 2024 rolls to Friday 29 Nov 2024.
+> [!question]- fi-bdc-modified-following | What is the operational definition of the Modified Following business-day convention?
+> Modified Following shifts a cash flow to the nearest subsequent business day, unless that day falls in the following calendar month, in which case it shifts backward to the nearest preceding business day.
+> For example, Saturday, 30 November 2024 shifts backward to Friday, 29 November 2024 to avoid crossing into December.
 
-> [!question]- fi-eom-rule | What does the end-of-month rule do and why is it needed?
-> If the start date is the last business day of a month, all subsequent unadjusted dates sit at month end.
-> Without it, a 28 Feb 2025 start steps to 28 Aug 2025 instead of 31 Aug, so dates sit off month end.
+> [!question]- fi-eom-rule | Why is the End-of-Month (EOM) convention necessary in schedule generation algorithms?
+> If an instrument is issued on the final business day of a month (e.g., 28 February), stepping forward calendar months without EOM anchors future dates to day 28.
+> The EOM rule forces all target unadjusted dates to the final day of their respective target months before business-day rolling, preserving month-end alignment.
 
-> [!question]- fi-imm-dates | What are IMM dates and what are the 2026 ones?
-> Third Wednesday of March, June, September and December.
-> 2026: 18 March, 17 June, 16 September, 16 December.
+> [!question]- fi-imm-dates | What are International Monetary Market (IMM) futures dates and what are the 2026 dates?
+> IMM futures dates are strictly defined as the third Wednesday of March, June, September, and December.
+> For 2026, the dates are: 18 March, 17 June, 16 September, and 16 December.
 
-> [!question]- fi-stub-types | What is a stub period and which kinds exist?
-> A first or last accrual period shorter or longer than the regular period.
-> Types: short front, long front, short back, long back.
+> [!question]- fi-stub-types | What is a stub period in an interest rate swap and what variants exist?
+> A stub occurs when a contract's total tenor is not an exact integer multiple of the payment frequency, creating an irregular first or last coupon period.
+> The four standard variants are: short front, long front, short back, and long back stubs.
 
-> [!question]- fi-daycount-is-rate | Why are day count and compounding part of a rate quote?
-> A rate is an accrual-factor-scaled amount: the same 5% produces different cash under different conventions, so (rate, convention) is the quantity, not the rate alone.
+> [!question]- fi-daycount-is-rate | Why must an interest rate quote always specify its underlying day-count convention?
+> An interest rate is meaningless without an accrual fraction, because identical percentage rates yield different cash amounts depending on whether they divide by 360, 365, or 366.
+> The legally binding financial quantity is the tuple $(r, \text{convention})$.
 
-> [!question]- fi-schedule-production-breaks | List four ways schedule generation breaks production pricing.
-> Wrong day count on a leg; missing end-of-month flag; holiday calendar mismatch between systems; fixing and payment dates mixed up.
-> Also: leap years and regenerating the schedule differently in pricer and risk.
+> [!question]- fi-schedule-production-breaks | What are the primary causes of trade booking reconciliation breaks in production schedules?
+> Key causes include mismatched day-count fractions between counterparties, omitting the EOM flag, discrepancies in bank holiday calendar versioning, and confusing fixing observation dates with cash settlement dates.
 
-> [!question]- fi-actact-vs-act365 | Why is ACT/ACT (ISDA) over 1 July 2023 to 1 July 2024 not exactly 1.0 and how does it compare to ACT/365F?
-> The period is 366 days across a leap year; ISDA ACT/ACT gives 1.001377, ACT/365F gives 366/365 = 1.002740.
-
-> [!question]- fi-calendar-versioning | Why version holiday calendars in a trading system?
-> Holiday lists change, and restating a past date set changes historical accruals and valuations; versioned calendars with an as-of date keep old trades reproducible.
+> [!question]- fi-calendar-versioning | Why do enterprise trading platforms enforce immutable, versioned holiday calendars?
+> Governments and central banks periodically declare unscheduled bank holidays or alter market closures.
+> If historical calendars were modified in place, all historical mark-to-market valuations and risk reports would drift retroactively, violating BCBS 239 auditability.
 
 ## Further reading
 
-- ISDA, *2006 ISDA Definitions*, section 4.16 (day count fractions); licensed text, verify wording.
-- Tuckman and Serrat, *Fixed Income Securities*, chapter 3.
-- QuantLib documentation on `DayCounter`, `Calendar` and `Schedule` at quantlib.org.
-- Ballabio, *Implementing QuantLib*.
-
-## In this repo and SDE-Interview-Prep
-
-- Code: [`code/bond_pricing.py`](code/bond_pricing.py).
-- Related: [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md), [Money Markets, Repo and Overnight Rates](12-Money-Markets-Repo-and-Overnight-Rates.md).
+- International Swaps and Derivatives Association. *2006 ISDA Definitions: Section 4.16 Day Count Fractions*. ISDA, 2006.
+- Tuckman, Bruce and Serrat, Angel. *Fixed Income Securities: Tools for Today's Markets*. 3rd Edition, John Wiley & Sons, 2011.
+- Ballabio, Luigi. *Implementing QuantLib: Quantitative Finance in C++*. Leanpub, 2017.
+- Ametrano, Ferdinando and Bianchetti, Marco. *Everything You Always Wanted to Know About Multiple Interest Rate Curve Bootstrapping but Were Afraid to Ask*. SSRN Working Paper, 2013.

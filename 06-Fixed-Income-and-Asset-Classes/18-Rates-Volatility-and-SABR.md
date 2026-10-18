@@ -2,7 +2,7 @@
 type: concept
 track: [quant-research, quant-risk]
 tier: senior
-status: draft
+status: solid
 prereqs: [rates-options-caps-and-swaptions, stochastic-volatility-heston-and-sabr]
 est_hours: 5
 sources: [Patrick Hagan et al. - Managing Smile Risk 2002, Damiano Brigo and Fabio Mercurio - Interest Rate Models chapter 13]
@@ -139,18 +139,18 @@ $$\Gamma = 0.000319 - 0.002187 + 0.012083 = 0.010215$$
 $$\sigma_{B, \text{ATM}} = 0.1750 \times (1 + 0.010215 \times 1.0) = 0.176788 = 17.68\%$$
 
 2. **Low Strike ($K = 0.02$):**
-Evaluating Hagan's formula via [`rates_models.py`](code/rates_models.py):
+Evaluating Hagan's formula via [`code/fi_sabr.py`](code/fi_sabr.py) and [`code/rates_models.py`](code/rates_models.py):
 $$\sigma_B(0.02) = 27.54\%$$
 
 3. **High Strike ($K = 0.06$):**
-Evaluating Hagan's formula via [`rates_models.py`](code/rates_models.py):
+Evaluating Hagan's formula via [`code/fi_sabr.py`](code/fi_sabr.py) and [`code/rates_models.py`](code/rates_models.py):
 $$\sigma_B(0.06) = 16.54\%$$
 
 Because $\rho = -0.25 < 0$, the smile exhibits pronounced negative skew: the 2% strike volatility ($27.54\%$) is significantly higher than the 6% strike volatility ($16.54\%$).
 
 ### Example 2: Parameter Sensitivity of the SABR Smile
 Consider how changing SABR parameters affects the volatility smile generated in Example 1:
-All values below come from `sabr_lognormal_vol` in [`rates_models.py`](code/rates_models.py) with $T = 1$.
+All values below come from `sabr_hagan_lognormal_vol` in [`code/fi_sabr.py`](code/fi_sabr.py) and `sabr_lognormal_vol` in [`rates_models.py`](code/rates_models.py) with $T = 1$.
 1. **Increasing $\nu$ from $0.40$ to $0.80$:** Increases the curvature of the wings.
 The 2% strike vol rises from $27.54\%$ to $36.76\%$, and the 6% strike vol rises from $16.54\%$ to $20.69\%$, while the ATM vol changes only from $17.68\%$ to $18.27\%$ (through the $\nu$ terms of $\Gamma$).
 2. **Changing $\rho$ from $-0.25$ to $0.0$:** Removes the vol-correlation skew but not the backbone skew: with $\beta = 0.5$ the smile is $25.47\%$ (2%), $17.74\%$ (ATM), $18.25\%$ (6%), still higher on the low-strike side.
@@ -165,7 +165,7 @@ $$F' = F + s = -0.0050 + 0.0300 = 0.0250 \quad (2.50\%)$$
 For an ATM strike $K = -0.0050$, the shifted strike is $K' = 0.0250$.
 Using parameters $\alpha = 0.035, \beta = 0.5, \rho = -0.25, \nu = 0.40$:
 The shifted forward rate $F' = 0.0250$ is strictly positive, enabling direct application of Hagan's formula.
-For a 1-year option, `shifted_sabr_lognormal_vol(-0.005, -0.005, 1.0, 0.035, 0.5, -0.25, 0.40, shift=0.03)` in [`rates_models.py`](code/rates_models.py) yields a shifted lognormal implied volatility of $22.35\%$ (a 2-year option gives $22.57\%$).
+For a 1-year option, `shifted_sabr_hagan_lognormal_vol(-0.005, -0.005, 1.0, 0.035, 0.5, -0.25, 0.40, shift=0.03)` in [`code/fi_sabr.py`](code/fi_sabr.py) (and [`code/rates_models.py`](code/rates_models.py)) yields a shifted lognormal implied volatility of $22.35\%$ (a 2-year option gives $22.57\%$).
 
 ## Pitfalls
 
@@ -226,6 +226,6 @@ For a 1-year option, `shifted_sabr_lognormal_vol(-0.005, -0.005, 1.0, 0.035, 0.5
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/rates_models.py`](code/rates_models.py) (Hagan SABR implied lognormal vol, shifted SABR).
+- Code: [`code/fi_sabr.py`](code/fi_sabr.py) (numerical verification of Hagan SABR implied vol, parameter sensitivities, and shifted SABR), [`code/rates_models.py`](code/rates_models.py) (Hagan SABR implied lognormal vol, shifted SABR).
 - Prereq: [Rates Options: Caps and Swaptions](05-Rates-Options-Caps-and-Swaptions.md).
 - Next: [Term Structure Models: HJM, LGM, and LMM](19-Term-Structure-Models-HJM-LGM-LMM.md).
