@@ -255,7 +255,7 @@ The script asserts only that the vectorised version is at least 3 times faster, 
 > Worst-case bounds relative to $\sum|x_i|$, with unit roundoff $u = 2^{-53}$: sequential about $(n-1)u$, pairwise about $u\log_2 n$, Kahan $2u + O(nu^2)$, independent of $n$ while $nu \ll 1$. `math.fsum` is correctly rounded.
 
 > [!question]- qd-np-negative-variance | The one-pass formula gives a sample variance of $-170.67$ for $10^9 + \{4, 7, 13, 16\}$. What is the true value and the fix?
-> 30. Catastrophic cancellation: $\sum x^2$ is about $4 \times 10^{18}$ with an ulp of 512, larger than the true difference 90. Use Welford's online update or a two-pass centred formula.
+> $30$. Catastrophic cancellation: $\sum x^2$ is about $4 \times 10^{18}$ with an ulp of 512, larger than the true difference 90. Use Welford's online update or a two-pass centred formula.
 
 > [!question]- qd-np-welford | Write Welford's update.
 > $\delta = x_k - \bar{x}_{k-1}$, $\bar{x}_k = \bar{x}_{k-1} + \delta/k$, $M_k = M_{k-1} + \delta(x_k - \bar{x}_k)$; variance $M_n/(n-1)$. One pass, $O(1)$ memory, numerically stable.

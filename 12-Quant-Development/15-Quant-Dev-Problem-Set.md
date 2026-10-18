@@ -159,7 +159,7 @@ With payoff standard deviation 15 and 100,000 paths the standard error is 0.0474
 > 36 bytes: type 1, stock locate 2, tracking number 2, timestamp 6, order reference number 8, buy/sell 1, shares 4, stock 8, price 4. The MPID-attributed `F` variant adds a 4-byte attribution field for 40 bytes.
 
 > [!question]- qd-ps-mold-packing | With MoldUDP64 over IPv4 and a 1500-byte MTU, how many 36-byte ITCH messages fit in one packet?
-> 38. UDP payload is $1500 - 20 - 8 = 1472$; minus the 20-byte MoldUDP64 header leaves 1452; each block is $36 + 2 = 38$ bytes, and $\lfloor 1452/38\rfloor = 38$.
+> $38$. UDP payload is $1500 - 20 - 8 = 1472$; minus the 20-byte MoldUDP64 header leaves 1452; each block is $36 + 2 = 38$ bytes, and $\lfloor 1452/38\rfloor = 38$.
 
 > [!question]- qd-ps-burst-bandwidth | 2 million Add Orders per second, batched 38 per packet: what is the wire rate?
 > 0.644 Gbit/s. 52,631.6 packets/s of 1492-byte IP packets, plus 38 bytes of Ethernet header, FCS, preamble and inter-frame gap, is 1530 bytes each; $52{,}631.6 \times 1530 \times 8$.
@@ -261,7 +261,7 @@ With payoff standard deviation 15 and 100,000 paths the standard error is 0.0474
 > 1000, 0, 10.029: $(3000 + 2004 + 5025)/1000$. After the second fill AvgPx is 10.008 with LeavesQty 500.
 
 > [!question]- qd-ps-replace-race | A 1,000 order has 500 filled when your replace to OrderQty 600 is accepted. LeavesQty?
-> 100. FIX OrderQty on a cancel/replace is the total intended quantity including what has already executed, so leaves = $600 - 500$.
+> $100$. FIX OrderQty on a cancel/replace is the total intended quantity including what has already executed, so leaves = $600 - 500$.
 
 > [!question]- qd-ps-knight-paragraphs | Which parts of Rule 15c3-5 did the SEC find Knight Capital violated?
 > (c)(1)(ii) erroneous-order controls, (c)(1)(i) aggregate capital thresholds, (b) twice (inadequate written description of controls, and no technology governance over code deployment and unused code), (e)(1) review, and (e)(2) the defective 2012 CEO certification (SEC Release No. 34-70694).

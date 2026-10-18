@@ -229,7 +229,7 @@ That is the test to keep in CI: the cross-process replays catch iteration over s
 > Exchange time (when the venue matched or published), receive time (when your handler saw it, exchange time plus market-data latency) and decision or send time (plus order latency to reach the venue). Collapsing them hides that you trade against a book that has moved and join queues later than the event you reacted to.
 
 > [!question]- qd-bt-queue-ahead-init | Your buy limit arrives at a level showing 500 shares. Later the level grows to 700 and then drops to 560 with no trades. With a pro rata cancellation rule, how many shares are ahead of you?
-> 400. Growth joins behind you, so 500 stay ahead; 140 cancelled from 700 others, pro rata $140 \times 500/700 = 100$ of them were ahead, leaving 400.
+> $400$. Growth joins behind you, so 500 stay ahead; 140 cancelled from 700 others, pro rata $140 \times 500/700 = 100$ of them were ahead, leaving 400.
 
 > [!question]- qd-bt-cancel-rules | Compare pessimistic, pro rata and optimistic cancellation rules for queue position on aggregated depth data.
 > Pessimistic keeps shares ahead unchanged (cancels come from behind) and understates fills; optimistic subtracts all cancels from ahead and overstates fills; pro rata scales ahead by the fraction cancelled. Pick by calibrating simulated fill rates against live fills; with order-by-order data you need no rule.

@@ -233,7 +233,7 @@ Ordering by decreasing alignment gives 8 + 8 + 3 = 19 bytes of data, padded to 2
 > `std::vector` relocates with `move_if_noexcept`: a throwing move with an available copy constructor makes it copy, to keep the strong exception guarantee. Measured here: 1000 appends cost 1023 copies instead of 1023 moves.
 
 > [!question]- qd-cpp-relocations-count | A vector grows by doubling from capacity 1. How many element relocations do 1000 `push_back` calls cause?
-> 1023. Reallocations happen when size reaches 1, 2, 4, ..., 512, moving that many elements each time: $2^{10} - 1 = 1023$. `reserve(1000)` makes it 0.
+> $1023$. Reallocations happen when size reaches 1, 2, 4, ..., 512, moving that many elements each time: $2^{10} - 1 = 1023$. `reserve(1000)` makes it 0.
 
 > [!question]- qd-cpp-rule-of-five | State the rule of zero and the rule of five.
 > Zero: if members manage all resources, declare no special members and the defaults are correct. Five: if you declare any of destructor, copy constructor, copy assignment, move constructor or move assignment, declare or delete all five.
