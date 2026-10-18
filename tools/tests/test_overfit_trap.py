@@ -144,7 +144,7 @@ class TestOverfitTrapOracles(unittest.TestCase):
     def test_log_tail_matches_erfc_including_past_the_series_switch(self):
         # Rejects a log tail that loses precision or jumps where the asymptotic branch takes over.
         for x in [0.0, 1.0, 3.0, 8.0, 20.0, 29.9, 30.0, 30.1, 33.0, 37.0]:
-            expected = math.log(STD_NORMAL.cdf(-x))
+            expected = math.log(0.5 * math.erfc(x / math.sqrt(2.0)))
             self.assertAlmostEqual(norm_logsf(x), expected, delta=1e-9 * max(1.0, abs(expected)))
             self.assertAlmostEqual(norm_isf_log(expected), x, delta=1e-9 * max(1.0, x))
 
