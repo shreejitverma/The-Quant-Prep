@@ -14,8 +14,8 @@ sources: [SEC Rule 15c3-5 - Risk Management Controls for Brokers or Dealers with
 
 - The wire-to-wire path is feed handler, book builder, fair value, quoting engine, pre-trade risk, order gateway; everything else (hedging, P&L, surveillance, parameter changes) hangs off it asynchronously.
 - Latency matters only where you race: reacting to a price change before a taker picks off your quote, or reaching the queue first. Everything off the critical path should be optimised for correctness and determinism instead.
-- Budget tail latency, not medians: stage p99s do not add (independent stages give a smaller end-to-end p99, a shared shock gives exactly the sum), and queueing delay explodes as utilisation approaches 1.
-- Pre-trade risk sits in-line on every order: size, price collar, notional, worst-case position including open orders, message rate; regulation (SEC Rule 15c3-5, MiFID II RTS 6) requires such controls and an immediate cancel-all kill function.
+- Budget tail latency, not medians: stage p99s do not add (independent stages give a smaller end-to-end p99, a shared shock gives exactly the sum, and stalls that hit one stage at a time can give more than the sum), and queueing delay explodes as utilisation approaches 1.
+- Pre-trade risk sits in-line on every order: size, price collar, notional, worst-case position including open orders, message rate; regulation (SEC Rule 15c3-5, MiFID II RTS 6) requires such controls, and RTS 6 also requires an immediate cancel-all kill function.
 - Design for failure: sequence gaps, stale data, crossed books, runaway loops and lost sessions must each have a defined safe state, usually "pull quotes".
 
 ## Learning objectives
@@ -207,9 +207,10 @@ All numbers are printed and asserted by [mm_system_design.py](code/mm_system_des
 | NIC transmit | 0.8 | 1.5 |
 | Sum | 4.1 | 9.0 |
 
-"About 75.61% of the median is spent outside the two strategy stages, so the first wins are in I/O and plumbing, not in the model."
+"About 75.61% of the summed stage medians is spent outside the two strategy stages (fair value and quote decision), so the first wins are in I/O and plumbing, not in the model."
 Modelling each stage as lognormal with these p50 and p99 and simulating a million trades (seed 17): with independent stages the end-to-end p99 is about 5.8177 us and the median about 4.3041 us; with one shared shock driving every stage the p99 is about 9.0006 us, the sum of the stage p99s.
-"Summing p99s is the worst case, reached when the tail events are correlated, for example a burst that slows every stage at once, which is exactly when you need the speed."
+"Summing p99s is exact when one shock slows every stage at once, for example a burst, which is exactly when you need the speed."
+It is not an upper bound, because quantiles are not subadditive (the same failure as VaR): if two 1 us stages each stall for 10 us with probability 0.8%, each stage's p99 is 1 us, but when the stalls never coincide the end-to-end p99 is 12 us, against 2 us when they always coincide.
 
 ### Example 2: queueing in the feed handler
 
@@ -221,7 +222,7 @@ At 2.375 million a second ($\rho = 0.95$) the mean wait is 3,800 ns.
 ### Example 3: a microburst
 
 10,000 messages arrive in 1 ms and the handler serves 2,500 in that time.
-The backlog is 7,500 messages, it takes 3 ms to drain, and a power-of-two ring buffer needs 8,192 slots.
+The backlog is 7,500 messages, it takes 3 ms to drain if nothing else arrives, and a power-of-two ring buffer needs 8,192 slots.
 Every quote decided during those 3 ms is decided on a book that is up to 3 ms old, which is why the quoting engine should check book age and pull quotes rather than trade on it.
 
 ### Example 4: the cost of losing a latency race
@@ -229,7 +230,7 @@ Every quote decided during those 3 ms is decided on a book that is up to 3 ms ol
 Your cancel reacts in $N(6, 1)$ us and the fastest taker in $N(5, 1)$ us, independently.
 "You lose when your time exceeds theirs: $P = \Phi(1/\sqrt2) \approx 0.7602$." (a million simulated races, seed 23, give about 0.7598)
 Cutting 1 us makes the race a coin flip (0.5); cutting 2 us brings it to about 0.2398.
-With 500 such events a day, 2 lots exposed and $\$12.50$ per tick, the expected pick-off cost is about $\$9{,}503.12$ a day and 1 us saves about $\$3{,}253.12$ a day, the number to set against the engineering cost.
+With 500 such events a day, 2 lots exposed and a loss of one E-mini tick ($\$12.50$) per lot each time you are picked off, the expected pick-off cost is about $\$9{,}503.12$ a day and 1 us saves about $\$3{,}253.12$ a day, the number to set against the engineering cost.
 
 ### Example 5: the risk gate on a scripted order stream
 
@@ -255,7 +256,7 @@ The handler detects 7 and 8 missing (2 messages to request from retransmission) 
 ## Pitfalls
 
 - Optimising the median while the tail, which is where the races are lost, gets worse.
-- Summing stage p99s and calling it the end-to-end p99, or assuming stage tails are independent.
+- Summing stage p99s and calling it the end-to-end p99 (it is exact only for a common shock and is not even an upper bound), or assuming stage tails are independent.
 - Sizing buffers for average message rates instead of bursts.
 - Position checks that ignore open orders: ten resting bids can each pass alone and breach the limit together.
 - A kill switch that runs inside the strategy process it is meant to stop.
@@ -275,8 +276,8 @@ The handler detects 7 and 8 missing (2 messages to request from retransmission) 
 > It does not for parameters, P&L, reports, slow model inputs and recovery logic, where correctness and determinism come first.
 
 > [!question]- mm-sys-p99-sum | Stage p99s sum to 9 us. Is the end-to-end p99 9 us?
-> Only if the stage tails are perfectly correlated; with independent stages it is lower (about 5.8 us in the repo's lognormal model).
-> Real systems sit in between, and bursts correlate the tails, so measure end to end.
+> Not in general: the sum is exact when one shock drives every stage, and with independent stages the p99 is lower (about 5.8 us in the repo's lognormal model).
+> It is not an upper bound either, because quantiles are not subadditive: stalls that hit one stage at a time can push the end-to-end p99 above the sum, so measure end to end.
 
 > [!question]- mm-sys-md1 | Messages take 400 ns each and arrive as a Poisson stream at 2 million a second. Mean queueing delay?
 > 800 ns.
@@ -303,7 +304,7 @@ The handler detects 7 and 8 missing (2 messages to request from retransmission) 
 > They must review them at least annually with a CEO certification.
 
 > [!question]- mm-sys-rts6-kill | What does MiFID II RTS 6 require of a kill function?
-> Article 12 of Delegated Regulation (EU) 2017/589: the ability to cancel immediately, as an emergency measure, any or all unexecuted orders, across venues.
+> Article 12 of Delegated Regulation (EU) 2017/589: the ability to cancel immediately, as an emergency measure, any or all unexecuted orders submitted to any or all trading venues the firm is connected to.
 > Article 15 adds pre-trade price collars, maximum order value, maximum order volume and maximum message limits.
 
 > [!question]- mm-sys-kill-switch-design | How would you design a kill switch?
@@ -320,7 +321,7 @@ The handler detects 7 and 8 missing (2 messages to request from retransmission) 
 
 > [!question]- mm-sys-knight | What happened at Knight Capital on 1 August 2012, per the SEC?
 > Its router sent over 4 million orders trying to fill 212 customer orders in about 45 minutes, traded over 397 million shares and lost over 460 million dollars.
-> The SEC fined it 12 million dollars under Rule 15c3-5; the lessons are deployment control, kill switches and limits that cannot be bypassed.
+> Knight agreed to pay a 12 million dollar penalty to settle SEC charges of violating Rule 15c3-5; the lessons are deployment control, kill switches and limits that cannot be bypassed.
 
 > [!question]- mm-sys-stale-book | Under a burst your feed handler is 3 ms behind. What should the quoting engine do?
 > Detect book age and pull or widen quotes on affected instruments rather than quote on stale prices.
@@ -353,6 +354,6 @@ The handler detects 7 and 8 missing (2 messages to request from retransmission) 
 - SEC Rule 15c3-5, Risk Management Controls for Brokers or Dealers with Market Access, 17 CFR 240.15c3-5.
 - Commission Delegated Regulation (EU) 2017/589 (MiFID II RTS 6), Articles 12 (kill functionality) and 15 (pre-trade controls).
 - SEC press release 2013-222, "SEC Charges Knight Capital With Violations of Market Access Rule" (16 October 2013).
-- E. Budish, P. Cramton and J. Shim, "The High-Frequency Trading Arms Race: Frequent Batch Auctions as a Market Design Response", *Quarterly Journal of Economics* 130(4) (2015).
+- E. Budish, P. Cramton and J. Shim, "The High-Frequency Trading Arms Race: Frequent Batch Auctions as a Market Design Response", *Quarterly Journal of Economics* 130(4), 1547-1621 (2015).
 - Leonard Kleinrock, *Queueing Systems, Volume 1: Theory* (1975), chapter 5 on M/G/1 and the Pollaczek-Khinchine formula.
 - Larry Harris, *Trading and Exchanges: Market Microstructure for Practitioners* (2003).

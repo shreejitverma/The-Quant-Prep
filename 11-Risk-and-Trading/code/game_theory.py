@@ -124,6 +124,7 @@ def section_auctions() -> None:
     print("\n2. independent private values, uniform on [0, 1]")
     rng = np.random.default_rng(42)
     surplus = 0.0
+    quoted = {2: 0.3333, 5: 0.6666}  # seed-42 simulated revenues as quoted in Example 3
     for n, rev in ((2, 1 / 3), (5, 2 / 3)):
         vals = rng.random((400_000, n))
         srt = np.sort(vals, axis=1)
@@ -132,6 +133,8 @@ def section_auctions() -> None:
         check(f"n = {n}: revenue formula (n - 1)/(n + 1)", (n - 1) / (n + 1), rev, 1e-12)
         check(f"n = {n}: simulated first-price revenue (seed 42)", first, rev, 0.002)
         check(f"n = {n}: simulated second-price revenue (seed 42)", second, rev, 0.002)
+        check(f"n = {n}: simulated first-price revenue, as quoted (seed 42)", first, quoted[n], 5e-5)
+        check(f"n = {n}: simulated second-price revenue, as quoted (seed 42)", second, quoted[n], 5e-5)
         if n == 2:
             surplus = float(np.mean(srt[:, -1])) - second
     check("n = 2: simulated winner surplus E[max] - revenue (seed 42)", surplus, 1 / 3, 0.002)
@@ -145,6 +148,7 @@ def section_auctions() -> None:
     hi, lo = vals.max(1), vals.min(1)
     rev_r = np.where(hi < 0.5, 0.0, np.maximum(lo, 0.5))
     check("two bidders, reserve 1/2: simulated revenue (seed 42)", float(rev_r.mean()), 0.4167, 0.002)
+    check("two bidders, reserve 1/2: simulated revenue, as quoted (seed 42)", float(rev_r.mean()), 0.4165, 5e-5)
     rs = np.linspace(0, 1, 1001)
     exact = 1 / 3 + rs**2 - 4 * rs**3 / 3  # E[revenue] with reserve r, two uniform bidders
     for r in (0.0, 0.25, 0.75):
@@ -176,6 +180,7 @@ def section_winners_curse() -> None:
     v = rng.uniform(0, 100, 2_000_000)
     sim = float(np.mean(np.where(v <= 60, 1.5 * v - 60, 0.0)))
     check("simulated profit of bid 60 (seed 7)", sim, -9.0, 0.05)
+    check("simulated profit of bid 60, as quoted (seed 7)", sim, -9.0031, 5e-5)
     check("unconditional naive value of the target 1.5 x 50", 1.5 * float(np.mean(v)), 75.0, 0.05)
     # common value, signals V + U[-a, a], n bidders; the winner holds the highest signal
     a, n = 10.0, 5

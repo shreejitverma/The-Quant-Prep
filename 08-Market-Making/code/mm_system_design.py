@@ -60,6 +60,25 @@ def section_budget() -> None:
     # exact comonotone p99: every stage at its own p99 simultaneously
     assert abs(sum(math.exp(m + s * z99) for m, s in zip(mus, sds, strict=True)) - p99) < 1e-9
 
+    # the sum of p99s is not an upper bound: quantiles are not subadditive (the same failure as VaR).
+    # Two stages each take 1 us, plus a 10 us stall with probability 0.8%, so each stage's p99 is 1 us.
+    # Enumerate the joint outcomes exactly when the stalls hit together and when they never coincide.
+    def p99_of_sum(outcomes: list[tuple[float, float]]) -> float:
+        total = 0.0
+        for value, prob in sorted(outcomes):
+            total += prob
+            if total >= 0.99 - 1e-12:
+                return value
+        raise AssertionError("probabilities must sum to 1")
+
+    stall, p_stall = 10.0, 0.008
+    single = p99_of_sum([(1.0, 1 - p_stall), (1.0 + stall, p_stall)])
+    check("stall example: p99 of one stage (us)", single, 1.0, 0)
+    together = p99_of_sum([(2.0, 1 - p_stall), (2.0 + 2 * stall, p_stall)])
+    check("stall example: p99 of the sum, stalls always together (us)", together, 2.0, 0)
+    apart = p99_of_sum([(2.0, 1 - 2 * p_stall), (2.0 + stall, 2 * p_stall)])
+    check("stall example: p99 of the sum, stalls never together (us)", apart, 12.0, 0)
+
 
 def md1_wait(lam: float, service: float) -> float:
     """Pollaczek-Khinchine mean queueing delay for M/D/1: rho / (2 mu (1 - rho))."""

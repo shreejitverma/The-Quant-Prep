@@ -31,8 +31,8 @@ sources: [SEC Rule 6c-11 under the Investment Company Act of 1940 (17 CFR 270.6c
 
 - Investors trade ETF shares on exchange (the secondary market) like a stock.
 - Authorised participants (APs), broker-dealers with an agreement with the fund, trade with the fund in the primary market: they deliver a basket of securities plus a cash component and receive a creation unit of ETF shares, or the reverse for a redemption.
-- SEC Rule 6c-11 (17 CFR 270.6c-11, adopted in Release No. 33-10695, 2019) defines a creation unit as a specified number of ETF shares the fund issues or redeems in exchange for a basket, and an authorised participant as a member or participant of a registered clearing agency with a written agreement with the fund.
-- The same rule requires each ETF to publish on its website, each business day, the portfolio holdings that form the basis of the next NAV calculation, the prior day's NAV, market price and premium or discount, and the median bid-ask spread over the last 30 days; it does not require an intraday indicative value.
+- SEC Rule 6c-11 (17 CFR 270.6c-11, adopted in Release No. 33-10695, 2019) defines a creation unit as a specified number of ETF shares the fund issues or redeems in exchange for a basket, and an authorised participant as a member or participant of a registered clearing agency with a written agreement with the fund or one of its service providers that lets it place orders to create and redeem.
+- The same rule requires each ETF to publish on its website, each business day, the portfolio holdings that form the basis of the next NAV calculation, the prior day's NAV, market price and premium or discount, and the median bid-ask spread over the last 30 calendar days (from the national best bid and offer sampled every 10 seconds); it does not require an intraday indicative value.
 - Exchanges and data vendors still publish intraday indicative values (iNAV or IIV), but a market maker computes its own theo from live prices because published values can be stale.
 
 In-kind creation means the AP's cost is the cost of trading the basket, plus a fixed creation or redemption fee per order set by the fund, plus financing and settlement friction.
@@ -201,7 +201,7 @@ Creating two units costs the basket half-spread plus 2 bp impact (about $\$4{,}9
 > With access, the primary market is an exit for inventory, so the market maker can quote tighter inside the arbitrage band.
 
 > [!question]- mm-etf-6c11-disclosure | What does SEC Rule 6c-11 require ETFs to publish daily, and does it require an intraday indicative value?
-> Portfolio holdings behind the next NAV, prior-day NAV, market price and premium or discount, and the median bid-ask spread over 30 days.
+> Portfolio holdings behind the next NAV, prior-day NAV, market price and premium or discount, and the median bid-ask spread over the last 30 calendar days.
 > It does not require an intraday indicative value.
 
 > [!question]- mm-etf-closed-market-fv | A Japan ETF: NAV 40.00 at the Tokyo close, futures +1.2%, USDJPY 150.00 to 151.50. Fair value?
@@ -218,7 +218,7 @@ Creating two units costs the basket half-spread plus 2 bp impact (about $\$4{,}9
 
 > [!question]- mm-futures-rate-sensitivity | How sensitive is an index future's fair value to the interest rate?
 > $\partial F/\partial r \approx TF$: about 0.15 index points per bp for $F \approx 6030$ and $T = 0.25$.
-> A long-cash, short-futures book is therefore short rates until expiry.
+> A long-cash, short-futures book therefore loses when rates rise (fair basis widens against the short future) until expiry.
 
 > [!question]- mm-futures-implied-repo | What is the implied financing (repo) rate of an index future and how do you use it?
 > The rate that makes the carry formula hold at the market futures price.
@@ -237,7 +237,7 @@ Creating two units costs the basket half-spread plus 2 bp impact (about $\$4{,}9
 > $h^* = \rho\sigma_E/\sigma_F$, residual $\sigma_E\sqrt{1 - \rho^2}$; the hedge removes 72% of variance but only 47% of volatility.
 
 > [!question]- mm-futures-no-tailing | Do you apply the $e^{-r(T-t)}$ tailing factor to a futures hedge of spot ETF inventory?
-> No: daily variation margin realises futures P&L at the same time as the spot P&L, so you match today's notional, $V/(	ext{multiplier} 	imes F)$.
+> No: daily variation margin realises futures P&L at the same time as the spot P&L, so you match today's notional, $V/(\text{multiplier} \times F)$.
 > The $e^{-r(T-t)}$ factor is for hedging an exposure that pays at expiry.
 
 > [!question]- mm-etf-create-vs-carry | You are short ETF shares, hedged with futures, at the close. How do you decide whether to create units?

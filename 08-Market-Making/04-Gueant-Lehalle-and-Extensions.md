@@ -5,7 +5,7 @@ tier: senior
 status: solid
 prereqs: [inventory-risk-and-avellaneda-stoikov]
 est_hours: 3
-sources: [Gueant Lehalle and Fernandez-Tapia (2013) Dealing with the inventory risk - a solution to the market making problem. Mathematics and Financial Economics 7(4) 477-507, Avellaneda and Stoikov (2008) High-frequency trading in a limit order book. Quantitative Finance 8(3) 217-224, Gueant (2016) The Financial Mathematics of Market Liquidity - From Optimal Execution to Market Making. Chapman and Hall/CRC, Gueant (2017) Optimal market making. Applied Mathematical Finance 24(2), Bergault Evangelista Gueant and Vieira (2021) Closed-form approximations in multi-asset market making. Applied Mathematical Finance, Cartea Jaimungal and Penalva (2015) Algorithmic and High-Frequency Trading. Cambridge University Press chapter 10, Cartea Jaimungal and Ricci (2014) Buy low sell high - a high frequency trading perspective. SIAM Journal on Financial Mathematics 5(1)]
+sources: [Gueant Lehalle and Fernandez-Tapia (2013) Dealing with the inventory risk - a solution to the market making problem. Mathematics and Financial Economics 7(4) 477-507, Avellaneda and Stoikov (2008) High-frequency trading in a limit order book. Quantitative Finance 8(3) 217-224, Gueant (2016) The Financial Mathematics of Market Liquidity - From Optimal Execution to Market Making. Chapman and Hall/CRC, Gueant (2017) Optimal market making. Applied Mathematical Finance 24(2) 112-154, Bergault Evangelista Gueant and Vieira (2021) Closed-form approximations in multi-asset market making. Applied Mathematical Finance 28(2) 101-142, Cartea Jaimungal and Penalva (2015) Algorithmic and High-Frequency Trading. Cambridge University Press chapter 10, Cartea Jaimungal and Ricci (2014) Buy low sell high - a high frequency trading perspective. SIAM Journal on Financial Mathematics 5(1) 415-444]
 ---
 
 # Gueant-Lehalle-Fernandez-Tapia and Extensions
@@ -16,7 +16,7 @@ sources: [Gueant Lehalle and Fernandez-Tapia (2013) Dealing with the inventory r
 - Quotes: $\delta^b = \frac1k\ln\frac{v_q}{v_{q+1}} + \frac1\gamma\ln(1 + \frac\gamma k)$ and $\delta^a = \frac1k\ln\frac{v_q}{v_{q-1}} + \frac1\gamma\ln(1 + \frac\gamma k)$; far from $T$ they converge to stationary quotes given by the ground-state eigenvector of $M$.
 - Closed form (a Gaussian approximation to that eigenvector): $\delta^{b,a} \approx \frac1\gamma\ln(1 + \frac\gamma k) \pm \frac{2q \pm 1}{2}\,c$ with $c = \sqrt{\frac{\sigma^2\gamma}{2kA}(1 + \frac\gamma k)^{1 + k/\gamma}}$; spread $\approx \frac2\gamma\ln(1 + \frac\gamma k) + c$, skew $c$ per unit, no dependence on $T$.
 - On the repo's Avellaneda-Stoikov parameters the exact skew is about $0.052$ per unit against AS's frozen-inventory $0.4$ at $T - t = 1$: AS is right only for short horizons, where there is no time to trade inventory away.
-- The same machinery extends to a drift (inventory target $\mu/(\gamma\sigma^2)$), to several correlated assets (skew driven by $\Sigma^{1/2}q$) and to fill-triggered price moves.
+- The same machinery extends to a drift (inventory target $\mu/(\gamma\sigma^2)$) and to fill-triggered price moves (widening $\xi/2$ per side), both in GLFT, and, in a closed form derived here, to several correlated assets (skew driven by $\Sigma^{1/2}q$).
 
 ## Learning objectives
 
@@ -95,6 +95,7 @@ $$
 $$
 
 That is exactly the Avellaneda-Stoikov reservation-bid offset $s - r^b$.
+GLFT (2013, Section 4) make the same point: the Avellaneda-Stoikov approximations are the Taylor expansions of the exact quotes for $t$ close to $T$.
 The frozen-inventory approximation is the leading term of the exact solution when there is too little time left to trade inventory away; it is not a good approximation for longer horizons.
 
 ### Long horizon: the ground state and the closed form
@@ -111,6 +112,8 @@ $$
 \delta^a_\infty(q) \approx \frac1\gamma\ln\Big(1 + \frac\gamma k\Big) - \frac{2q - 1}{2}\,c, \qquad
 c = \frac{1}{k}\sqrt{\frac{\alpha}{\eta}} = \sqrt{\frac{\sigma^2\gamma}{2kA}\Big(1 + \frac\gamma k\Big)^{1 + \frac k\gamma}}.
 $$
+
+These are the GLFT (2013) Section 4 approximations; the paper obtains them by replacing the discrete eigenvalue problem with the continuous one $\min \int (\alpha x^2 f^2 + \eta f'^2)\,dx$, whose minimiser is the same Gaussian.
 
 | Quantity | Closed form |
 | :--- | :--- |
@@ -132,12 +135,14 @@ $$
 \delta^a \approx \frac1\gamma\ln\Big(1 + \frac\gamma k\Big) + \Big(\frac{\mu}{\gamma\sigma^2} - \frac{2q - 1}{2}\Big)c.
 $$
 
+This is GLFT (2013) Proposition 4 and its closed-form approximation.
 A drift acts as an inventory target: the market maker skews towards holding $\mu/(\gamma\sigma^2)$ units, the Merton-style mean-variance position.
 On a desk $\mu$ is a short-horizon alpha (order-book imbalance, futures lead, see [Fair Value and Theoretical Pricing](02-Fair-Value-and-Theoretical-Pricing.md)) and the same formula says how far to lean.
 Cartea, Jaimungal and Ricci (2014) treat a stochastic short-term alpha and adverse selection in a related market-making model.
 
 ### Extension 2: several correlated assets
 
+The closed form in this subsection is derived here as an illustration; it is not taken from the papers.
 For $d$ assets with covariance $\Sigma$ and, for simplicity, the same $A$ and $k$ for every asset, the diagonal of $M$ becomes $\frac{k\gamma}{2}q^\top\Sigma q$ and each asset contributes a nearest-neighbour coupling $-\eta$.
 The Gaussian ansatz $f = e^{-\frac12 q^\top Bq}$ in the continuous approximation needs $\eta B^2 = \frac{k\gamma}{2}\Sigma$, so $B = \sqrt{\frac{k\gamma}{2\eta}}\,\Sigma^{1/2}$ and
 
@@ -148,25 +153,29 @@ $$
 with the mirror formula for the ask.
 For one asset this is the GLFT closed form.
 The point for a desk: a long position in asset $j$ skews the quotes of a correlated asset $i$, through the matrix square root $\Sigma^{1/2}$ rather than through $\Sigma$ itself.
-This derivation assumes equal $(A, k)$; Bergault, Evangelista, Gueant and Vieira (2021) develop closed-form approximations of this kind for the general multi-asset problem, and Gueant (2017) treats general intensity shapes and multiple assets.
+This derivation assumes equal $(A, k)$ and is checked against the exact two-asset solution in Example 6.
+Bergault, Evangelista, Gueant and Vieira (2021) derive closed-form approximations for the general multi-asset problem by a different route (a quadratic approximation of the Hamiltonian); their asymptotic inventory matrix also involves a matrix square root of the covariance, $\Gamma = D^{-1/2}(D^{1/2}\Sigma D^{1/2})^{1/2}D^{-1/2}$ with $D$ built from the intensity parameters, which is proportional to $\Sigma^{1/2}$ when every asset has the same $(A, k)$.
+Gueant (2017) treats general intensity shapes and multiple assets.
 
 ### Extension 3: adverse selection
 
 Avellaneda-Stoikov and GLFT have no adverse selection: fills are independent of future moves.
 Two ways to add it, both computed in the code:
 
-- Static: if the mid moves $\xi$ against you after each fill, a risk-neutral single-fill quoter maximises $Ae^{-k\delta}(\delta - \xi)$ and quotes $\delta = \frac1k + \xi$, one full $\xi$ wider per side.
-- Dynamic (derived here as an illustration, not taken from the papers): let each fill move the mid permanently by $\xi$ in the aggressor's direction.
-  The same substitution gives $\dot v_q = \alpha q^2v_q - \eta\big(e^{-k(q+1)\xi}v_{q+1} + e^{k(q-1)\xi}v_{q-1}\big)$, linear again, and $D = \text{diag}(e^{k\xi q^2/2})$ symmetrises it with coupling $\eta e^{-k\xi/2}$.
-  With $\delta^b = (q + 1)\xi + \frac1k\ln\frac{v_q}{v_{q+1}} + \frac1\gamma\ln(1 + \frac\gamma k)$, the stationary closed form is $\delta^b \approx \frac1\gamma\ln(1 + \frac\gamma k) + \frac\xi2 + \frac{2q + 1}{2}ce^{k\xi/4}$.
+- Static (a one-line illustration, not from the papers): if the mid moves $\xi$ against you after each fill, a risk-neutral single-fill quoter maximises $Ae^{-k\delta}(\delta - \xi)$ and quotes $\delta = \frac1k + \xi$, one full $\xi$ wider per side.
+- Dynamic (GLFT 2013, Section 5.2, "the case of market impact", Proposition 5): let each fill move the mid permanently by $\xi$ in the aggressor's direction, $dS = \sigma\,dW + \xi\,dN^a - \xi\,dN^b$; the paper reads this both as market impact and as adverse selection.
+  Written with the plain substitution $u = -e^{-\gamma(x + qs)}v_q^{-\gamma/k}$ it gives $\dot v_q = \alpha q^2v_q - \eta\big(e^{-k(q+1)\xi}v_{q+1} + e^{k(q-1)\xi}v_{q-1}\big)$, linear again, and $D = \text{diag}(e^{k\xi q^2/2})$ symmetrises it with coupling $\eta e^{-k\xi/2}$.
+  GLFT absorb $D$ into the ansatz instead, $u = -e^{-\gamma(x + qs + \frac12\xi q^2)}w_q^{-\gamma/k}$, which gives the symmetric system with coupling $\eta e^{-k\xi/2}$ and terminal condition $w_q(T) = e^{-\frac12 k\xi q^2}$; the two forms give identical quotes, and the code checks both.
+  With $\delta^b = (q + 1)\xi + \frac1k\ln\frac{v_q}{v_{q+1}} + \frac1\gamma\ln(1 + \frac\gamma k)$ (equivalently $\frac\xi2 + \frac1k\ln\frac{w_q}{w_{q+1}} + \frac1\gamma\ln(1 + \frac\gamma k)$), GLFT's stationary closed form is $\delta^b \approx \frac1\gamma\ln(1 + \frac\gamma k) + \frac\xi2 + \frac{2q + 1}{2}ce^{k\xi/4}$.
   Long-run widening is $\xi/2$ per side, not $\xi$: in this model a buy fill followed by a sell fill moves the mid down then back up, so a round trip loses $\xi$ in total.
+  The second effect, the factor $e^{k\xi/4}$ on the skew, is what GLFT call the side effect: quoting deeper means fewer fills, so inventory is harder to work off and the skew must be steeper.
   Whether real flow behaves like this (impact that later reverses) or like information that never comes back is exactly what markouts measure; see [Market Making P&L Attribution and Markouts](09-Market-Making-PnL-Attribution-and-Markouts.md).
 
 Cartea, Jaimungal and Penalva (2015, chapter 10) give the textbook treatment of market making with adverse selection and alpha signals in a risk-neutral setting with an inventory penalty.
 
 ### How desks use this
 
-- The closed form is a parametrisation, not a production model: spread $= 2h + c$, skew $= c$ per unit, with $h$ and $c$ calibrated to fill data and risk budget rather than to $\gamma$.
+- The closed form is a parametrisation, not a production model: spread $= 2h + c$, skew $= c$ per unit, with $h = \frac1\gamma\ln(1 + \frac\gamma k)$ the market-power half-spread, and with $h$ and $c$ calibrated to fill data and risk budget rather than to $\gamma$.
 - The exact solution is cheap ($2Q + 1$ states, one eigendecomposition) and shows where the closed form breaks: near the inventory limits, where the bounded system skews harder than the Gaussian approximation.
 - Inventory limits are a risk control first and a model input second; GLFT makes the quoting logic consistent with them, so the quote does not jump when the limit is hit.
 - Real books also need tick-size rounding, queue position, minimum quote obligations and a separate adverse-selection widening; none is in the base model.
@@ -249,7 +258,7 @@ Holding 3 units of asset 2 widens asset 1's bid by 0.0477, against 0.1540 for ho
 With $\xi = 0.2$, the static risk-neutral optimum moves from $1/k \approx 0.6667$ to $0.8667$.
 In the dynamic jump model the bid at $q = 0$ starts at $0.6454 + 0.2 = 0.8454$ when $T - t = 0$ and settles at 0.7737 by $T - t = 1$ (closed form 0.7733).
 The $q = 0$ spread is 1.5474 against 1.3433 without jumps.
-The script cross-checks the symmetrised solution against a direct Runge-Kutta integration of the unsymmetrised system ($Q = 10$, 20,000 steps).
+The script cross-checks the symmetrised solution against a direct Runge-Kutta integration of the unsymmetrised system ($Q = 10$, 20,000 steps) and against GLFT's own Proposition 5 formulation.
 
 ### Example 8: simulating the two policies
 
@@ -306,7 +315,7 @@ These are measured facts for this seed and this discretisation, not a proof of o
 
 > [!question]- mm-glft-stationary | What happens to the exact GLFT quotes far from the horizon, and how fast?
 > They converge to stationary quotes set by the eigenvector of the smallest eigenvalue of $M$.
-> The rate is the spectral gap, about $2\sqrt{\alpha\eta}$; with the repo parameters about 7.66, so a relaxation time near 0.13.
+> The rate is the spectral gap $\lambda_1 - \lambda_0$: about 7.66 with the repo parameters (the oscillator estimate $2\sqrt{\alpha\eta}$ gives 7.73), so a relaxation time near 0.13.
 
 > [!question]- mm-glft-boundary | How do quotes behave near the inventory limit $Q$ compared with the closed form?
 > At $q = Q$ there is no bid, and just inside the limit the exact solution skews harder than the closed form.
@@ -325,6 +334,7 @@ These are measured facts for this seed and this discretisation, not a proof of o
 > Maximise $Ae^{-k\delta}(\delta - \xi)$: the first-order condition is $1 - k(\delta - \xi) = 0$. With $k = 1.5$, $\xi = 0.2$ that is about 0.8667.
 
 > [!question]- mm-glft-adverse-roundtrip | If every fill moves the mid $\xi$ in the aggressor's direction permanently, why can the long-run optimal widening be only $\xi/2$ per side?
+> This is GLFT's (2013) market-impact extension, $dS = \sigma\,dW + \xi\,dN^a - \xi\,dN^b$.
 > A buy fill then a sell fill move the mid down then back up, so the round trip loses $\xi$ in total, shared across two quotes.
 > If instead the post-fill move never reverses (pure information), each side must carry the full $\xi$; markouts tell you which world you are in.
 
@@ -351,7 +361,7 @@ These are measured facts for this seed and this discretisation, not a proof of o
 - O. Gueant, C.-A. Lehalle and J. Fernandez-Tapia, "Dealing with the inventory risk: a solution to the market making problem", *Mathematics and Financial Economics* 7(4), 477-507 (2013).
 - M. Avellaneda and S. Stoikov, "High-frequency trading in a limit order book", *Quantitative Finance* 8(3), 217-224 (2008).
 - O. Gueant, *The Financial Mathematics of Market Liquidity: From Optimal Execution to Market Making*, Chapman and Hall/CRC (2016).
-- O. Gueant, "Optimal market making", *Applied Mathematical Finance* 24(2) (2017).
-- P. Bergault, D. Evangelista, O. Gueant and D. Vieira, "Closed-form approximations in multi-asset market making", *Applied Mathematical Finance* (2021).
+- O. Gueant, "Optimal market making", *Applied Mathematical Finance* 24(2), 112-154 (2017).
+- P. Bergault, D. Evangelista, O. Gueant and D. Vieira, "Closed-form approximations in multi-asset market making", *Applied Mathematical Finance* 28(2), 101-142 (2021).
 - A. Cartea, S. Jaimungal and J. Penalva, *Algorithmic and High-Frequency Trading*, Cambridge University Press (2015), chapter 10.
-- A. Cartea, S. Jaimungal and J. Ricci, "Buy low, sell high: a high frequency trading perspective", *SIAM Journal on Financial Mathematics* 5(1) (2014).
+- A. Cartea, S. Jaimungal and J. Ricci, "Buy low, sell high: a high frequency trading perspective", *SIAM Journal on Financial Mathematics* 5(1), 415-444 (2014).

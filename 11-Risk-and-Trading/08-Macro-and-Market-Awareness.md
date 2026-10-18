@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 2
-sources: [Board of Governors of the Federal Reserve System - Open Market Operations - FOMC target federal funds rate history (federalreserve.gov/monetarypolicy/openmarket.htm retrieved 2026-10-17), CME Group - 30-Day Federal Funds futures contract specifications (price = 100 minus the average daily effective federal funds rate for the contract month), Taylor (1993) Discretion versus policy rules in practice. Carnegie-Rochester Conference Series on Public Policy 39, John C. Hull - Options Futures and Other Derivatives (Pearson 11th edition) chapters 4 5 and 24, Bruce Tuckman and Angel Serrat - Fixed Income Securities (Wiley 3rd edition 2011), Kathy Lien - Day Trading and Swing Trading the Currency Market (Wiley 3rd edition 2015)]
+sources: [Board of Governors of the Federal Reserve System - Open Market Operations - FOMC target federal funds rate history (federalreserve.gov/monetarypolicy/openmarket.htm retrieved 2026-10-17), CME Group - 30-Day Federal Funds futures contract specifications (price = 100 minus the average daily effective federal funds rate for the contract month), Taylor (1993) Discretion versus policy rules in practice. Carnegie-Rochester Conference Series on Public Policy 39 195-214, John C. Hull - Options Futures and Other Derivatives (Pearson 11th edition) chapters 4 5 and 24, Bruce Tuckman and Angel Serrat - Fixed Income Securities (Wiley 3rd edition 2011)]
 ---
 
 # Macro and Market Awareness
@@ -34,7 +34,7 @@ sources: [Board of Governors of the Federal Reserve System - Open Market Operati
 - Balance-sheet policy (asset purchases, runoff) works on term premia and longer yields rather than the overnight rate.
 - Forward guidance (statements, projections, speeches) moves the expected path, which is what longer rates price.
 
-The target-range history from the Federal Reserve's open market operations page (retrieved 2026-10-17):
+The target-range history from the Federal Reserve's open market operations page (retrieved 2026-10-17), with every move cross-checked against its FOMC statement:
 
 | Period | Moves | Cumulative change | Upper bound after |
 | :--- | :--- | ---: | ---: |
@@ -43,7 +43,8 @@ The target-range history from the Federal Reserve's open market operations page 
 | 2024-09-19 to 2025-12-11 | 6 cuts (one 50 bp) | -175 bp | 3.75% |
 | 2026-09-17 | one 25 bp hike | +25 bp | 4.00% |
 
-As of 2026-10 the Fed page shows the target range at 3.75-4.00% after the 17 September 2026 move; check the page before quoting it, because it changes at every meeting.
+The dates are the effective dates the Fed page lists, one day after each decision: the 2026-09-17 entry is the 25 bp hike to 3-3/4 to 4 percent announced in the FOMC statement of 16 September 2026, and the 2020-03-16 entry follows the statement of 15 March 2020.
+As of 2026-10-17 the target range is 3.75-4.00%; check the page before quoting it, because it can change at every meeting.
 
 ### How markets price policy
 
@@ -201,7 +202,7 @@ If the desk's own regression said the 2-year moves 8 bp per 0.1 pp of core CPI s
 
 > [!question]- risk-macro-dv01-steepener | How do you build a 2s10s steepener, and what is its P&L in a bear flattener?
 > Long 2-year, short 10-year, weighted so DV01s match (about 4.29 times the 10-year face in 2-years here).
-> It loses DV01 times the flattening: 15 bp at about 8,176 dollars per bp is about 122,600 dollars.
+> It loses DV01 times the flattening: 15 bp at about 8,176 dollars per bp is about 122,636 dollars.
 
 > [!question]- risk-macro-cip-forward | EURUSD 1.1000, USD 4%, EUR 2%, 90 days act/360. Three-month forward?
 > About 1.10547.
@@ -256,6 +257,6 @@ If the desk's own regression said the 2-year moves 8 bp per 0.1 pp of core CPI s
 
 - Board of Governors of the Federal Reserve System, Open Market Operations: target federal funds rate history (federalreserve.gov/monetarypolicy/openmarket.htm).
 - CME Group, 30-Day Federal Funds futures contract specifications.
-- John B. Taylor, "Discretion versus policy rules in practice", *Carnegie-Rochester Conference Series on Public Policy* 39 (1993).
+- John B. Taylor, "Discretion versus policy rules in practice", *Carnegie-Rochester Conference Series on Public Policy* 39, 195-214 (1993).
 - John C. Hull, *Options, Futures, and Other Derivatives*, 11th edition, chapters 4 (interest rates), 5 (forwards and futures) and 24 (credit risk).
 - Bruce Tuckman and Angel Serrat, *Fixed Income Securities*, 3rd edition (2011).

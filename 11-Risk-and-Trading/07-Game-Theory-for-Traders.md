@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [expected-value-and-betting-decisions]
 est_hours: 3
-sources: [Dixit and Nalebuff - Thinking Strategically (Norton 1991), Osborne and Rubinstein - A Course in Game Theory (MIT Press 1994) chapters 2 3 6 7 and 8, Krishna - Auction Theory (Academic Press 2nd edition 2010) chapters 2 and 6, Vickrey (1961) Counterspeculation auctions and competitive sealed tenders. Journal of Finance 16(1), Myerson (1981) Optimal auction design. Mathematics of Operations Research 6(1), Rubinstein (1982) Perfect equilibrium in a bargaining model. Econometrica 50(1), Nash (1950) The bargaining problem. Econometrica 18(2), Samuelson and Bazerman (1985) The winner's curse in bilateral negotiations. Research in Experimental Economics 3, Capen Clapp and Campbell (1971) Competitive bidding in high-risk situations. Journal of Petroleum Technology 23(6), Nagel (1995) Unraveling in guessing games. American Economic Review 85(5)]
+sources: [Dixit and Nalebuff - Thinking Strategically (Norton 1991), Osborne and Rubinstein - A Course in Game Theory (MIT Press 1994) chapters 2 3 6 7 and 8, Krishna - Auction Theory (Academic Press 2nd edition 2010) chapters 2 3 and 6, Vickrey (1961) Counterspeculation auctions and competitive sealed tenders. Journal of Finance 16(1) 8-37, Myerson (1981) Optimal auction design. Mathematics of Operations Research 6(1) 58-73, Rubinstein (1982) Perfect equilibrium in a bargaining model. Econometrica 50(1) 97-109, Nash (1950) The bargaining problem. Econometrica 18(2) 155-162, Samuelson and Bazerman (1985) The winner's curse in bilateral negotiations. Research in Experimental Economics 3, Capen Clapp and Campbell (1971) Competitive bidding in high-risk situations. Journal of Petroleum Technology 23(6), Nagel (1995) Unraveling in guessing games. American Economic Review 85(5) 1313-1326]
 ---
 
 # Game Theory for Traders
@@ -82,7 +82,7 @@ For traders:
 
 ### Bargaining
 
-- Ultimatum game: with money divisible to one unit, the subgame-perfect equilibrium has the proposer offer the smallest unit and the responder accept; experiments show far more generous offers, because real responders reject unfair splits.
+- Ultimatum game: with money divisible to one unit, the subgame-perfect equilibria have the proposer offer the smallest unit (or nothing, if the responder accepts when indifferent) and the responder accept; experiments show far more generous offers, because real responders reject unfair splits.
 - Rubinstein (1982) alternating offers with discount factors $\delta_1$ (proposer) and $\delta_2$ (responder): the unique subgame-perfect split gives the first proposer $\frac{1 - \delta_2}{1 - \delta_1\delta_2}$, agreed immediately.
   Patience is bargaining power; so is the ability to make the first offer.
 - Nash (1950) bargaining solution: maximise $(x_1 - d_1)(x_2 - d_2)$ over feasible splits; with a surplus $S$ to share and disagreement payoffs $d_1, d_2$ it gives player 1 $\frac{S + d_1 - d_2}{2}$.
@@ -105,7 +105,7 @@ That is why reputation, last-look policies and "who do we show this to" decision
 In a simplified river poker decision with pot $P$ and bet $B$:
 
 - The bettor's bluffs make the caller indifferent when bluffs are a share $\frac{B}{P + 2B}$ of the betting range: calling then wins $P + B$ against a bluff and loses $B$ against value, and those balance.
-- The caller makes bluffs indifferent by calling with frequency $\frac{P}{P + B}$: a bluff then wins $P$ when called too rarely and loses $B$ when called.
+- The caller makes bluffs indifferent by calling with frequency $\frac{P}{P + B}$: a bluff wins $P$ when the caller folds and loses $B$ when called, and $(1 - c)P = cB$ at that frequency.
 
 Bigger bets need more value behind them and can be called less often.
 In trading games the same logic says: if you never bluff, every aggressive action reveals your hand; an interviewer's quote request or a trade you are offered carries information about what the other side holds.
@@ -236,7 +236,7 @@ Bluffing with a pot-sized bet: bluffs should be 1/3 of the betting range and the
 > Given acceptance $V \sim U[0, b]$, so you get $0.75b$ of value for $b$; expected profit $-b^2/400$ (bid 60 loses 9).
 
 > [!question]- risk-game-rfq-curse | You win an RFQ against 4 other dealers whose valuation errors, like yours, are N(0, 4 cents). How much should you have shaded?
-> About 4.65 cents on average.
+> About 4.65 cents, the expected error of the winning quote, just to break even when every dealer shades alike.
 > The winner has the most favourable error, $\sigma\,\mathbb{E}[\max_5 Z] \approx 4 \times 1.163$; more competitors means more shading.
 
 > [!question]- risk-game-rubinstein | Alternating-offer bargaining with discount factors 0.9 and 0.9. First proposer's share?
@@ -280,7 +280,7 @@ Bluffing with a pot-sized bet: bluffs should be 1/3 of the betting range and the
 
 - Avinash Dixit and Barry Nalebuff, *Thinking Strategically* (1991).
 - Martin Osborne and Ariel Rubinstein, *A Course in Game Theory* (1994), chapters 2 and 3 (Nash and mixed equilibria), 6 and 7 (extensive games and bargaining) and 8 (repeated games).
-- Vijay Krishna, *Auction Theory*, 2nd edition (2010), chapters 2 (private values) and 6 (common values and the winner's curse).
+- Vijay Krishna, *Auction Theory*, 2nd edition (2010), chapters 2 (private values), 3 (revenue equivalence) and 6 (interdependent values and the winner's curse).
 - William Vickrey, "Counterspeculation, auctions, and competitive sealed tenders", *Journal of Finance* 16(1) (1961).
 - Roger Myerson, "Optimal auction design", *Mathematics of Operations Research* 6(1) (1981).
 - Ariel Rubinstein, "Perfect equilibrium in a bargaining model", *Econometrica* 50(1) (1982).

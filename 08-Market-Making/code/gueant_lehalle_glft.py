@@ -302,7 +302,8 @@ def section_adverse_selection() -> None:
     g = A_RATE * np.exp(-K * grid) * (grid - xi)
     check("risk-neutral optimum with post-fill move xi = 0.2", float(grid[np.argmax(g)]), 0.8667, 5e-5)
     check("risk-neutral optimum without (1/k)", float(grid[np.argmax(A_RATE * np.exp(-K * grid) * grid)]), 0.6667, 5e-5)
-    # (b) GLFT with a permanent mid jump of xi in the aggressor's direction after each fill.
+    # (b) GLFT (2013) Section 5.2, Proposition 5: a permanent mid jump of xi in the aggressor's direction after
+    # each fill.  With the plain substitution u = -exp(-gamma (x + q s)) v_q^(-gamma / k):
     # v_q' = alpha q^2 v_q - eta (e^{-k (q+1) xi} v_{q+1} + e^{k (q-1) xi} v_{q-1}); D = diag(e^{k xi q^2 / 2})
     # symmetrises it: v = D exp(-S tau) D^{-1} 1 with S = diag(alpha q^2) - eta e^{-k xi / 2} (shift).
     alpha, eta = alpha_eta()
@@ -335,6 +336,14 @@ def section_adverse_selection() -> None:
     bid_rk = (qs[:-1] + 1) * xi + np.log(vv[:-1] / vv[1:]) / K + base
     bid, ask = quotes(1.0)
     assert np.max(np.abs(bid_rk - bid)) < 1e-8
+    # GLFT's own form of Proposition 5: w' = alpha q^2 w - eta e^{-k xi / 2} (w_{q+1} + w_{q-1}),
+    # w_q(T) = exp(-k xi q^2 / 2), delta_b = ln(w_q / w_{q+1}) / k + xi / 2 + base; the eigendecomposition is
+    # independent of the series used in quotes() and accurate here because Q = 10 keeps w well above round-off
+    sym = tridiagonal(alpha * qs.astype(float) ** 2, eta * math.exp(-K * xi / 2))
+    w = propagate_eig(sym, np.exp(-K * xi * qs.astype(float) ** 2 / 2), 1.0)
+    bid_glft = np.log(w[:-1] / w[1:]) / K + xi / 2 + base
+    ask_glft = np.log(w[1:] / w[:-1]) / K + xi / 2 + base
+    assert np.max(np.abs(bid_glft - bid)) < 1e-8 and np.max(np.abs(ask_glft - ask)) < 1e-8
     i0 = q_max
     check("jump model, T - t = 0: bid q = 0 (base + xi)", float(quotes(0.0)[0][i0]), 0.8454, 5e-5)
     check("jump model, T - t = 1: bid q = 0", float(bid[i0]), 0.7737, 5e-5)

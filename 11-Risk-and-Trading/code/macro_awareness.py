@@ -6,6 +6,8 @@ each printed number is asserted, so drift in the note fails CI.
 
 Section 1 uses the FOMC target-range history published by the Federal Reserve at
 https://www.federalreserve.gov/monetarypolicy/openmarket.htm (retrieved 2026-10-17, page dated 2026-09-16).
+The page lists effective dates, one day after each FOMC statement; every move was cross-checked against its statement
+(for example the 2026-09-16 statement raising the range by 1/4 point to 3-3/4 to 4 percent).
 Every other input (prices, yields, rates, vols, sensitivities) is hypothetical and chosen for the examples.
 """
 
