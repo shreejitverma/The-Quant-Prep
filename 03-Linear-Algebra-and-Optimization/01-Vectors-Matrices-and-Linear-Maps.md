@@ -222,7 +222,7 @@ GMV weights $\Sigma^{-1}\mathbf{1}/(\mathbf{1}^\top\Sigma^{-1}\mathbf{1})$ come 
 > The residual must be orthogonal to $C(A)$: $A^\top(b - A\hat{x}) = 0$, so $A^\top A\hat{x} = A^\top b$. Equivalently set the gradient of $\lVert b - Ax\rVert^2$, which is $-2A^\top(b - Ax)$, to zero.
 
 > [!question]- la-vec-hat-trace-dof | In OLS with $n = 100$ observations and $p = 5$ regressors (full rank), what is the trace of the hat matrix and why does it matter?
-> 5. It is the number of fitted parameters; $\text{tr}(I - P) = 95$ is the residual degrees of freedom, which is why the unbiased variance estimate divides the residual sum of squares by $n - p$.
+> $5$. It is the number of fitted parameters; $\text{tr}(I - P) = 95$ is the residual degrees of freedom, which is why the unbiased variance estimate divides the residual sum of squares by $n - p$.
 
 > [!question]- la-vec-rank-ata | Prove $\text{rank}(A^\top A) = \text{rank}(A)$.
 > $A^\top Ax = 0 \Rightarrow x^\top A^\top Ax = \lVert Ax\rVert^2 = 0 \Rightarrow Ax = 0$, and the converse is trivial, so the null spaces agree; rank-nullity then gives equal ranks.

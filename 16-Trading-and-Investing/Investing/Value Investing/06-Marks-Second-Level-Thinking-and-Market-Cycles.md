@@ -202,10 +202,14 @@ Global credit markets enter an inflection point:
 > Between euphoria and depression, greed and fear, credulity and skepticism, and risk tolerance and risk aversion.
 
 > [!question]- mkt-vi-164 | What are the three stages of a bull market identified by Howard Marks?
-> 1. When a few forward-looking people realize things will improve; 2. When most see improvement occurring; 3. When everyone concludes things will get better forever.
+> 1. When a few forward-looking people realize things will improve.
+> 2. When most see improvement occurring.
+> 3. When everyone concludes things will get better forever.
 
 > [!question]- mkt-vi-165 | What are the three stages of a bear market?
-> 1. When prudent investors recognize perfection cannot last; 2. When most recognize deterioration is underway; 3. When everyone believes things can only get worse.
+> 1. When prudent investors recognize perfection cannot last.
+> 2. When most recognize deterioration is underway.
+> 3. When everyone believes things can only get worse.
 
 > [!question]- mkt-vi-166 | Why is the Credit Cycle more volatile and impactful than the underlying economic GDP cycle?
 > Because lender emotions amplify economic swings: easy credit fuels over-investment during booms, and sudden lender panic cuts off liquidity during downturns.

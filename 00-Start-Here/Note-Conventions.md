@@ -80,6 +80,8 @@ Each card is a collapsible Obsidian callout whose title line carries a stable id
 - The prompt stays on the title line; the answer is every following line that starts with `>`.
 - Leave a blank line between cards, or Markdown merges them into one quote.
 - Answers give the result first, then the shortest convincing argument.
+- Wrap a standalone numeric result in inline maths (for example, `$6$.`) so it is not parsed as a list item.
+- For a multi-item answer, put each numbered item on its own quoted line; `./qp check` rejects a single-line answer that starts with `N. ` unless a later numbered item follows.
 - Answers must be correct; check every number.
 
 ## Maths and style

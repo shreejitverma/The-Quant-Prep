@@ -203,7 +203,9 @@ Management passes the One-Dollar Test with flying colors, creating $1.78 in ente
 ## Practice questions
 
 > [!question]- mkt-vi-065 | What are the three primary eras of Warren Buffett's investment career?
-> 1. Grahamite net-net cigar butts (1950s-1960s); 2. High-ROIC franchise moats (1970s-1990s); 3. Large-scale capital deployment in infrastructure and tech platforms (2000s-present).
+> 1. Grahamite net-net cigar butts (1950s-1960s).
+> 2. High-ROIC franchise moats (1970s-1990s).
+> 3. Large-scale capital deployment in infrastructure and tech platforms (2000s-present).
 
 > [!question]- mkt-vi-066 | What transaction served as the turning point from cigar butts to quality compounders?
 > The acquisition of See's Candies in 1972 for $25 million ($3.1x tangible book value), orchestrated with Charlie Munger.
@@ -221,7 +223,10 @@ Management passes the One-Dollar Test with flying colors, creating $1.78 in ente
 > A sustainable, structural competitive advantage that protects an enterprise's high return on invested capital from competitive erosion.
 
 > [!question]- mkt-vi-071 | What are the four primary structural sources of an Economic Moat?
-> 1. Inelastic pricing power / brand; 2. Low-cost production advantage; 3. High customer switching costs; 4. Network effects.
+> 1. Inelastic pricing power and brand.
+> 2. Low-cost production advantage.
+> 3. High customer switching costs.
+> 4. Network effects.
 
 > [!question]- mkt-vi-072 | What is Warren Buffett's 'toll bridge' metaphor?
 > A business that commands an indispensable service or product in its market, allowing it to charge an economic toll on commerce with minimal capital reinvestment.
@@ -254,7 +259,11 @@ Management passes the One-Dollar Test with flying colors, creating $1.78 in ente
 > No; what matters is knowing the perimeter of your circle and remaining strictly within it.
 
 > [!question]- mkt-vi-082 | What are the five capital allocation choices available to a CEO?
-> 1. Reinvest in existing operations; 2. Acquire other businesses; 3. Pay down debt; 4. Repurchase company shares; 5. Pay cash dividends.
+> 1. Reinvest in existing operations.
+> 2. Acquire other businesses.
+> 3. Pay down debt.
+> 4. Repurchase company shares.
+> 5. Pay cash dividends.
 
 > [!question]- mkt-vi-083 | When does a share repurchase create value for continuing shareholders?
 > Only when company stock is repurchased at a price below its conservatively appraised intrinsic business value.

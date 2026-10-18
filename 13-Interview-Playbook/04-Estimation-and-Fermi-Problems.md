@@ -142,7 +142,7 @@ On a $50$ stock that is about $1$ per day, and a $3$ move would be a 3-standard-
 > About $3 \times 10^9$. $70 \times 60 \times 24 \times 365 \times 80 \approx 2.9 \times 10^9$; a 90% interval of roughly 2.3 to 3.7 billion.
 
 > [!question]- int-est-hours-in-year | How many hours are in a (non-leap) year?
-> 8760. $365 \times 24$.
+> $8760$. $365 \times 24$.
 
 > [!question]- int-est-market-after-lifted | You quote 2.7 at 3.1 on an estimate and the interviewer lifts your offer. What do you do next?
 > Raise your fair value toward or above 3.1 and quote a new, possibly wider market, such as 3.0 at 3.4. The trade is information: a counterparty who may know the answer found your offer cheap.

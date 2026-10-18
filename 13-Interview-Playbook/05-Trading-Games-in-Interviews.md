@@ -164,7 +164,7 @@ Kelly stake $f^* = p - q = 0.2$ of wealth, with expected log growth $0.6 \ln 1.2
 > Your ask is probably below the value the counterparty believes, and they may be informed. Raise fair value, widen, and reduce size until you learn more.
 
 > [!question]- int-tg-acquirer-auction | A company is worth $V \sim U(0,100)$ to the owner, who accepts any bid $\ge V$, and $1.5V$ to you. What should you bid?
-> 0. If a bid $b$ is accepted, $E[V] = b/2$, so you gain $0.75b - b < 0$; expected profit is $-b^2/400$.
+> $0$. If a bid $b$ is accepted, $E[V] = b/2$, so you gain $0.75b - b < 0$; expected profit is $-b^2/400$.
 
 > [!question]- int-tg-vickrey-bid | In a sealed-bid second-price auction with private values, what should you bid?
 > Your true value. Bidding more only adds wins at prices above your value; bidding less only loses auctions you would have won at a price below your value.

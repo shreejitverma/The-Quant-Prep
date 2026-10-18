@@ -218,7 +218,9 @@ Conduct a Fisher Scuttlebutt and Fifteen-Point Audit on MedTech Diagnostics:
 > If the job has been correctly done when a common stock is purchased, the time to sell it is almost never.
 
 > [!question]- mkt-vi-044 | What are the only three valid reasons to sell a common stock under Fisher's framework?
-> 1. An error was made in the original evaluation; 2. The company ceases to qualify under the 15 points; 3. A vastly superior investment opportunity emerges.
+> 1. An error was made in the original evaluation.
+> 2. The company ceases to qualify under the 15 points.
+> 3. A vastly superior investment opportunity emerges.
 
 > [!question]- mkt-vi-045 | Why did Fisher strongly advise against selling an outstanding compounder because it appears temporarily overvalued?
 > Because superior companies regularly outgrow temporary valuation multiples, and selling incurs capital gains taxes and replaces high quality with mediocre ideas.

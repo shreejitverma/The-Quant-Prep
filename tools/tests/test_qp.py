@@ -514,6 +514,44 @@ class Checks(TempRepo):
         messages = [f.message for f in check.check_vault(self.vault())]
         self.assertFalse(any("inside-code" in m for m in messages))
 
+    def test_card_numbered_answer_isolated_number_fails(self):
+        write_note(
+            self.root,
+            "01-Alpha/05-Numbered.md",
+            "Numbered",
+            card("bad-num", answer="6. Geometric with $p = 1/6$."),
+        )
+        findings = [f for f in check.check_vault(self.vault()) if f.rule == "card"]
+        self.assertEqual(len(findings), 1)
+        self.assertIn("starts with 'N. ' without subsequent list items", findings[0].message)
+
+        write_note(
+            self.root,
+            "01-Alpha/05-Numbered.md",
+            "Numbered",
+            card("good-num", answer="$6$. Geometric with $p = 1/6$."),
+        )
+        findings = [f for f in check.check_vault(self.vault()) if f.rule == "card"]
+        self.assertEqual(len(findings), 0)
+
+        write_note(
+            self.root,
+            "01-Alpha/05-Numbered.md",
+            "Numbered",
+            "> [!question]- list-card | Steps?\n> 3. First step.\n> 4. Second step.\n",
+        )
+        findings = [f for f in check.check_vault(self.vault()) if f.rule == "card"]
+        self.assertEqual(len(findings), 0)
+
+        write_note(
+            self.root,
+            "01-Alpha/05-Numbered.md",
+            "Numbered",
+            "> [!question]- list-card | Steps?\n> 1. First step.\n> 2. Second step.\n",
+        )
+        findings = [f for f in check.check_vault(self.vault()) if f.rule == "card"]
+        self.assertEqual(len(findings), 0)
+
     def test_prereq_cycle(self):
         write_note(self.root, "01-Alpha/01-Base.md", "Base", prereqs="top")
         cycles = [f for f in check.check_vault(self.vault()) if "cycle" in f.message]
