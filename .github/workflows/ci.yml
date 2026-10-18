@@ -39,21 +39,6 @@ jobs:
           MPLBACKEND: Agg
         run: |
           python -m pip install numpy pandas matplotlib
-          python 09-Alpha-Research-and-Portfolio/code/simple_event_driven.py
-          python 09-Alpha-Research-and-Portfolio/code/performance_metrics.py
-          python 12-Quant-Development/code/python/itch_parser_mock.py
-          python 06-Fixed-Income-and-Asset-Classes/code/bond_pricing.py
-          python 06-Fixed-Income-and-Asset-Classes/code/curve_bootstrap.py
-          python 06-Fixed-Income-and-Asset-Classes/code/rates_models.py
-          python 06-Fixed-Income-and-Asset-Classes/code/credit_bootstrap.py
-          python 11-Risk-and-Trading/code/risk_analytics.py
-          python 11-Risk-and-Trading/code/exposure_xva.py
-          python 17-Regulatory-Capital-Basel-and-FRTB/code/basel_credit_saccr.py
-          python 17-Regulatory-Capital-Basel-and-FRTB/code/basel_cva.py
-          python 17-Regulatory-Capital-Basel-and-FRTB/code/frtb_sbm.py
-          python 17-Regulatory-Capital-Basel-and-FRTB/code/frtb_ima.py
-          python 17-Regulatory-Capital-Basel-and-FRTB/code/basel_liquidity_irrbb.py
-          python 18-Pricing-and-Risk-Systems/code/systems_pricing_engine.py
           python tools/run_examples.py
 
   secrets:
@@ -105,14 +90,14 @@ jobs:
             ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -pthread -o "/tmp/san_$f" "$src"
             "/tmp/san_$f"
           done
-      - name: Run concurrent examples under ThreadSanitizer
+      - name: Run concurrent examples and unit tests under ThreadSanitizer
         working-directory: 12-Quant-Development/code/cpp
         run: |
-          for src in *.cpp; do
-            f="${src%.cpp}"
+          for src in *.cpp tests/test_*.cpp; do
+            f=$(basename "${src%.cpp}")
             grep -q "qp-examples: no-run" "$src" && continue
             grep -q "#include <thread>" "$src" || continue
-            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=thread -pthread -o "/tmp/tsan_$f" "$src"
+            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=thread -pthread -I . -o "/tmp/tsan_$f" "$src"
             "/tmp/tsan_$f"
           done
       - name: Unit tests, warning-free and under ASan/UBSan
@@ -120,8 +105,8 @@ jobs:
         run: |
           for t in tests/test_*.cpp; do
             n=$(basename "${t%.cpp}")
-            ${{ matrix.cxx }} -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -I . -o "/tmp/$n" "$t"
+            ${{ matrix.cxx }} -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -pthread -I . -o "/tmp/$n" "$t"
             "/tmp/$n"
-            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -I . -o "/tmp/san_$n" "$t"
+            ${{ matrix.cxx }} -std=c++20 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -pthread -I . -o "/tmp/san_$n" "$t"
             "/tmp/san_$n"
           done
