@@ -200,12 +200,6 @@ def partial_novation(t: TradeState, transferee: str, novated: float, new_id: str
     return BusinessEvent("Novation", (t,), (remain, party_change(moved, transferee, new_id)))
 
 
-def gross_and_net(trades: tuple[TradeState, ...], me: str) -> tuple[float, float]:
-    """Gross live notional and net receive-fixed notional; positive quantity here means I receive fixed."""
-    live = [t for t in trades if t.status == "Live"]
-    return sum(t.quantity for t in live), sum(t.quantity for t in live if t.counterparty != me)
-
-
 # ============================================================================
 # 3. Multilateral compression of a cycle
 # ============================================================================
@@ -374,6 +368,8 @@ def run_tests() -> None:
         assert abs(nb[k] - na.get(k, 0.0)) < 1e-9
     quoted("net of A before and after", na["A"], -20, 0)
     quoted("net of C before and after", na["C"], 20, 0)
+    quoted("net of B before and after", na.get("B", 0.0), 0, 0)
+    assert nb["A"] == -20 and nb["B"] == 0 and nb["C"] == 20
 
     print("  Example 4: schedule generation, 5y semiannual from 2026-10-15, Modified Following, weekends only")
     sch = schedule(dt.date(2026, 10, 15), dt.date(2031, 10, 15), 6)

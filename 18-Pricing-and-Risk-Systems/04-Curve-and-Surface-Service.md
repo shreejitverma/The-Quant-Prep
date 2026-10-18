@@ -137,7 +137,8 @@ flowchart LR
 Design rules:
 
 - Topological order is computed once and cycles are rejected at configuration time (Kahn's algorithm), which catches circular proxy definitions before they reach production; genuine cycles (curves that are calibrated jointly) are declared as one node solved by a global solver.
-- Published curves are immutable snapshots with a version; a recalibration builds a new object off to the side and publishes it by an atomic pointer swap (in C++20, `std::atomic<std::shared_ptr<const Curve>>`), so readers never lock and never see a half-built curve.
+- Published curves are immutable snapshots with a version; a recalibration builds a new object off to the side and publishes it by an atomic pointer swap (in C++20, `std::atomic<std::shared_ptr<const Curve>>`), so readers never wait for a recalibration and never see a half-built curve.
+  The standard does not require that atomic to be lock-free (major implementations guard it with a short internal lock), so the hottest readers copy the `shared_ptr` once per task rather than per lookup.
 - Intraday the service may coalesce ticks: recompute at most every few milliseconds per node rather than on every tick, trading staleness for throughput, and stamp every output with the input snapshot version.
 - End of day it runs from a signed-off snapshot id only, so official numbers are reproducible.
 
@@ -192,9 +193,9 @@ A 6% receiver is worth 2,739,384 and has deltas of -88, -171 and -27,655: off-ma
 ### Example 3: spline overshoot and non-locality
 
 Hypothetical zero rates (continuously compounded) at 0.5, 1, 2, 3, 5, 7, 10 and 30 years: 5.0, 4.5, 2.7, 2.4, 2.8, 3.0, 3.2 and 3.3%, a sharply inverted short end.
-Every discrete forward between pillars is positive, the lowest 0.9% and the highest 4.0%.
-A natural cubic spline through the zero rates gives an instantaneous forward $f(t) = z(t) + t z'(t)$ that falls to -0.12% near 1.8 years and peaks at 4.61%, outside the range of the discrete forwards it should be averaging.
-Bumping the 2-year zero rate by 1 bp moves the spline's 1.5-year zero by about 0.6 bp and its 9-year zero by -0.041 bp, and changes 266 of 271 grid points from 3 to 30 years (the other 5 are pillars, which cannot move); with flat forwards the 9-year zero does not move at all.
+Every discrete forward between pillars is positive, the lowest 0.9% (between 1 and 2 years).
+A natural cubic spline through the zero rates gives an instantaneous forward $f(t) = z(t) + t z'(t)$ that falls to -0.12% near 1.8 years, below every discrete forward in the curve, although on each interval the instantaneous forward must average to that interval's discrete forward.
+Bumping the 2-year zero rate by 1 bp moves the spline's 1.5-year zero by 0.56 bp and its 9-year zero by -0.041 bp, and changes 266 of 271 grid points from 3 to 30 years (the other 5 are pillars, which cannot move); with flat forwards the 9-year zero does not move at all.
 So a spline curve reports 2-year risk at 9 years and can price forward-starting products off negative forwards that no quote implies.
 
 ### Example 4: what one tick invalidates
@@ -250,7 +251,7 @@ The arithmetic is cheap either way; what costs time is evaluating $F$ and its de
 
 > [!question]- sys-04-07 | How does the curve service guarantee thread-safety when serving thousands of parallel pricing workers?
 > It never mutates a published curve: a recalibration builds a new immutable curve set and publishes it by an atomic pointer swap (in C++20 `std::atomic<std::shared_ptr<const T>>`).
-> Workers hold a reference to the version they started with and report it, so readers never lock and never see a partly built curve.
+> Workers hold a reference to the version they started with and report it, so readers never wait for a recalibration and never see a partly built curve; because the atomic `shared_ptr` is usually not lock-free, a worker loads the handle once per task, not per discount factor.
 
 > [!question]- sys-04-08 | What is a tension spline and when is it preferred over a cubic spline?
 > A spline with a tension parameter $\sigma$: as $\sigma \to 0$ it tends to the cubic spline and as $\sigma \to \infty$ to linear interpolation.

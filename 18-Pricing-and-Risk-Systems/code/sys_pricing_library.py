@@ -321,6 +321,8 @@ def aad_monte_carlo(n_paths: int, seed: int) -> dict[str, float]:
     rng = random.Random(seed)
     tape = Tape()
     s0, vol = Var(tape, 100.0), Var(tape, 0.2)
+    path_delta: list[float] = []  # per-path pathwise derivatives written out by hand, for the standard errors
+    path_vega: list[float] = []
     k, r, t = 100.0, 0.03, 1.0
     half_var = vol * vol * (0.5 * t)  # recorded once, shared by every path
     sq = math.sqrt(t)
@@ -331,14 +333,22 @@ def aad_monte_carlo(n_paths: int, seed: int) -> dict[str, float]:
         st = s0 * vexp((r * t) - half_var + vol * (sq * zz))
         pay = vmax0(st - k)
         payoffs.append(pay.val)
+        itm = 1.0 if st.val > k else 0.0
+        path_delta.append(math.exp(-r * t) * itm * st.val / s0.val)
+        path_vega.append(math.exp(-r * t) * itm * st.val * (sq * zz - vol.val * t))
         total = total + pay
     price = total * (math.exp(-r * t) / n_paths)
     adj, _ = tape.gradient(price.idx)
     bs, bs_delta, bs_vega = bs_call(100.0, k, r, 0.2, t)
     se = math.exp(-r * t) * statistics.stdev(payoffs) / math.sqrt(n_paths)
+    # The hand-written pathwise estimators are a different computation of the same derivatives as the tape.
+    assert abs(statistics.fmean(path_delta) - adj[s0.idx]) < 1e-9
+    assert abs(statistics.fmean(path_vega) - adj[vol.idx]) < 1e-7
     return {
         "price": price.val,
         "se": se,
+        "delta_se": statistics.stdev(path_delta) / math.sqrt(n_paths),
+        "vega_se": statistics.stdev(path_vega) / math.sqrt(n_paths),
         "delta": adj[s0.idx],
         "vega": adj[vol.idx],
         "bs_price": bs,
@@ -443,7 +453,10 @@ def run_tests() -> None:
     assert abs(m["price"] - m["bs_price"]) < 3 * m["se"]
     quoted("AAD pathwise delta", m["delta"], 0.600, 3)
     quoted("AAD pathwise vega", m["vega"], 39.6, 1)
-    assert abs(m["delta"] - m["bs_delta"]) < 0.01 and abs(m["vega"] / m["bs_vega"] - 1) < 0.05
+    quoted("standard error of the pathwise delta", m["delta_se"], 0.004, 3)
+    quoted("standard error of the pathwise vega", m["vega_se"], 0.54, 2)
+    quoted("vega error in standard errors", (m["vega"] - m["bs_vega"]) / m["vega_se"], 1.8, 1)
+    assert abs(m["delta"] - m["bs_delta"]) < 3 * m["delta_se"] and abs(m["vega"] - m["bs_vega"]) < 3 * m["vega_se"]
     quoted("tape nodes for 20,000 paths", m["nodes"], 160_005, 0)
     quoted("tape nodes per path", (m["nodes"] - 5) / 20_000, 8, 0)
 

@@ -262,9 +262,29 @@ def delta_bits(ints: list[int]) -> int:
             bits += 2 + 7
         elif -255 <= d <= 256:
             bits += 3 + 9
+        elif -2047 <= d <= 2048:
+            bits += 4 + 12
         else:
             bits += 4 + 32
     return bits
+
+
+def luhn_digit_sum(digits: str) -> int:
+    """Sum of digits after doubling every second digit starting with the rightmost (card sys-03-14 working)."""
+    total = 0
+    for i, ch in enumerate(reversed(digits)):
+        d = int(ch) * (2 if i % 2 == 0 else 1)
+        total += d // 10 + d % 10
+    return total
+
+
+def luhn_valid(number: str) -> bool:
+    """Validate a complete number (check digit included): double every second digit from the right, excluding the last."""
+    total = 0
+    for i, ch in enumerate(reversed(number)):
+        d = int(ch) * (2 if i % 2 == 1 else 1)
+        total += d - 9 if d > 9 else d
+    return total % 10 == 0
 
 
 def synthetic_ticks(n: int, seed: int) -> tuple[list[int], list[float]]:
@@ -301,9 +321,9 @@ def run_tests() -> None:
     cz = classic_z(quotes)
     quoted("mean with the outlier", statistics.mean(quotes), 68.2, 1)
     quoted("sample standard deviation with the outlier", statistics.stdev(quotes), 11.91, 2)
-    quoted("classic z of broker 4", cz[3], 1.79, 2)
+    quoted("classic z of broker 4", cz[3], 1.788, 3)
     assert abs(cz[3]) < 3.0  # masking: a 3-sigma rule misses the outlier it inflated
-    quoted("largest possible classic z with n = 5, (n - 1)/sqrt(n)", 4 / 5**0.5, 1.79, 2)
+    quoted("largest possible classic z with n = 5, (n - 1)/sqrt(n)", 4 / 5**0.5, 1.789, 3)
     assert abs(cz[3]) <= 4 / 5**0.5  # Shiffler (1988): no sample z can exceed (n - 1)/sqrt(n)
 
     print("  Quote checks")
@@ -342,6 +362,8 @@ def run_tests() -> None:
     assert not lei_valid(gleif[:17] + "R" + gleif[18:])
     assert "".join(str(_alnum_value(c)) for c in "US037833100") == "3028037833100"  # card sys-03-14
     quoted("ISIN check digit for US037833100 (Apple Inc.)", isin_check_digit("US037833100"), 5, 0)
+    quoted("Luhn digit sum of 3028037833100 (card sys-03-14)", luhn_digit_sum("3028037833100"), 45, 0)
+    assert luhn_valid("30280378331005") and not luhn_valid("30280378331004")  # validation of the full ISIN
     quoted("CUSIP check digit for 03783310 (Apple Inc.)", cusip_check_digit("03783310"), 0, 0)
     quoted("FIGI check digit for BBG000B9XRY (Apple Inc.)", figi_check_digit("BBG000B9XRY"), 4, 0)
     # The ISIN embeds the CUSIP for US securities: country code + 9-character CUSIP + ISIN check digit.

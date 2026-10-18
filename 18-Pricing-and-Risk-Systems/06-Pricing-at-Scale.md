@@ -5,7 +5,7 @@ tier: senior
 status: solid
 prereqs: [pricing-library-architecture]
 est_hours: 4
-sources: [Jeffrey Dean and Sanjay Ghemawat - MapReduce - Simplified Data Processing on Large Clusters (OSDI 2004), Gene M. Amdahl - Validity of the single processor approach to achieving large scale computing capabilities (AFIPS Spring Joint Computer Conference 1967), Antoine Savine - Modern Computational Finance - AAD and Parallel Simulations (Wiley 2018), Martin Kleppmann - Designing Data-Intensive Applications (O'Reilly 2017), Goldman Sachs - Our firm history - 1993 SecDB (goldmansachs.com retrieved 2026-10), PCI-SIG - PCI Express Base Specification 5.0 (2019) signalling rate and encoding]
+sources: [Jeffrey Dean and Sanjay Ghemawat - MapReduce - Simplified Data Processing on Large Clusters (OSDI 2004), Gene M. Amdahl - Validity of the single processor approach to achieving large scale computing capabilities (AFIPS Spring Joint Computer Conference 1967), Antoine Savine - Modern Computational Finance - AAD and Parallel Simulations (Wiley 2018), Martin Kleppmann - Designing Data-Intensive Applications (O'Reilly 2017), Goldman Sachs - Our firm history - 1993 SecDB (goldmansachs.com retrieved 2026-10), PCI-SIG - PCI Express Base Specification 5.0 (2019) signalling rate and encoding, PyData London 2018 talk - Python at Massive Scale (abstract retrieved 2026-10), PyGotham 2018 talk - Seventeen Million Lines of Python Later - Launching a Startup in an Investment Bank (abstract retrieved 2026-10)]
 ---
 
 # Pricing at Scale
@@ -111,7 +111,7 @@ flowchart LR
 ### Graph platforms
 
 Goldman Sachs describes SecDB (Securities DataBase) as "a platform to price trades and assess risk for trading positions", originally conceived for the foreign exchange business of J. Aron and first launched on 24 November 1992 (goldmansachs.com, firm history).
-Public conference talks have described JPMorgan's Athena (PyData London 2018) and Bank of America Merrill Lynch's Quartz (PyGotham 2018) as Python-based trading and risk platforms, and Beacon Platform's 2019 press materials describe its founders as technologists who worked with SecDB and created Athena and Quartz.
+Two public conference talks describe the Python-based successors: the PyData London 2018 talk "Python at Massive Scale" describes "how JPMorgan has scaled its Athena Python trading and risk analytics platform over 10 years", and the PyGotham 2018 talk "Seventeen Million Lines of Python Later: Launching a Startup in an Investment Bank", given from inside the programme, describes Bank of America Merrill Lynch realigning "its sales and trading systems around the Python-based Quartz platform".
 The common pattern: every trade, quote, curve and risk measure is a node in one object graph with dependency tracking, so an intraday change recomputes only what depends on it (the dirty-flag graph of [Curve and Surface Service](04-Curve-and-Surface-Service.md)), while overnight batches fan the same objects out to a grid.
 The design questions are the same as for any graph system: who owns invalidation, how to make recomputation deterministic, how to version the code that defines nodes, and how to keep a single graph from becoming a single point of failure.
 
@@ -314,4 +314,4 @@ Resending the trades for every scenario costs 5.71 s of transfer before any arit
 - Kleppmann, M., *Designing Data-Intensive Applications*, O'Reilly, 2017, chapter 10 (batch processing).
 - Goldman Sachs, firm history, "SecDB", https://www.goldmansachs.com/our-firm/history/moments/1993-secdb.
 - Aeron, https://github.com/aeron-io/aeron.
-- Public descriptions of Athena and Quartz: PyData London 2018 talk abstract, https://pydata.org/london2018/schedule/presentation/48, and PyGotham 2018 talk, https://pyvideo.org/pygotham-2018/seventeen-million-lines-of-python-later-launching-a-startup-in-an-investment-bank.html.
+- Public descriptions of Athena and Quartz (both retrieved 2026-10): PyData London 2018, "Python at Massive Scale", https://pydata.org/london2018/schedule/presentation/48; PyGotham 2018, "Seventeen Million Lines of Python Later: Launching a Startup in an Investment Bank", https://pyvideo.org/pygotham-2018/seventeen-million-lines-of-python-later-launching-a-startup-in-an-investment-bank.html.

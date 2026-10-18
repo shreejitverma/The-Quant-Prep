@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [trade-representation-and-lifecycle]
 est_hours: 4
-sources: [Basel Committee on Banking Supervision - Principles for effective risk data aggregation and risk reporting (BCBS 239 January 2013), Basel Committee on Banking Supervision - The Basel Framework MAR31.12 and MAR31.13 (retrieved 2026-10-16), Iglewicz and Hoaglin - How to Detect and Handle Outliers (ASQC Quality Press 1993) via NIST/SEMATECH e-Handbook of Statistical Methods section 1.3.5.17, Shiffler - Maximum Z Scores and Outliers (The American Statistician 42(1) 1988), Pelkonen et al. - Gorilla - A Fast Scalable In-Memory Time Series Database (PVLDB 8(12) 2015), Regulatory Oversight Committee - LEI structure (leiroc.org retrieved 2026-10), OpenFIGI - About FIGI (retrieved 2026-10), Japan Exchange Group - news release on extended trading hours (5 November 2024), Nasdaq TotalView-ITCH 5.0 specification]
+sources: [Basel Committee on Banking Supervision - Principles for effective risk data aggregation and risk reporting (BCBS 239 January 2013), Basel Committee on Banking Supervision - The Basel Framework MAR31.12 and MAR31.13 (retrieved 2026-10-16), Iglewicz and Hoaglin - How to Detect and Handle Outliers (ASQC Quality Press 1993) via NIST/SEMATECH e-Handbook of Statistical Methods section 1.3.5.17, Shiffler - Maximum Z Scores and Outliers (The American Statistician 42(1) 1988), Pelkonen et al. - Gorilla - A Fast Scalable In-Memory Time Series Database (PVLDB 8(12) 2015), Regulatory Oversight Committee - LEI structure (leiroc.org retrieved 2026-10), OpenFIGI - About FIGI (retrieved 2026-10), Japan Exchange Group - news release on the extension of trading hours (20 September 2023) effective 5 November 2024, Nasdaq TotalView-ITCH 5.0 specification]
 ---
 
 # Market and Reference Data Platform
@@ -13,9 +13,9 @@ sources: [Basel Committee on Banking Supervision - Principles for effective risk
 ## TL;DR
 
 - Every price and risk number must be reproducible, so the platform's core product is an immutable, versioned snapshot id: consumers pin it, and lineage records which raw quotes, rules and overrides produced each value.
-- Clean with robust statistics: a modified z-score built on the median and MAD flags a bad broker quote at 89.37, while the classic z-score of the same quote is only 1.79, because the outlier inflates the standard deviation and no z-score in a sample of 5 can exceed $(n-1)/\sqrt{n} = 1.79$.
+- Clean with robust statistics: a modified z-score built on the median and MAD flags a bad broker quote at 89.37, while the classic z-score of the same quote is only 1.788, because the outlier inflates the standard deviation and no z-score in a sample of 5 can exceed $(n-1)/\sqrt{n} = 1.789$.
 - Reference data mastering is field-level survivorship with a named winning source per field, plus a human queue for disagreements; identifiers carry check digits (LEI MOD 97-10, ISIN and FIGI Luhn-type, CUSIP), which should be validated at ingestion.
-- Market data feeds FRTB directly: a risk factor is modellable only if it passes the RFET of MAR31.13 (24 real prices a year with no 90-day window under four, or 100 a year), so the platform must store real-price evidence, not only cleaned curves.
+- Market data feeds FRTB directly: a risk factor is modellable only if it passes one of the real-price observation routes in MAR31.13, so the platform must store real-price evidence, not only cleaned curves; see [the RFET requirements](#frtb-and-real-price-evidence).
 - Snapshot times are local, so their UTC gap moves with daylight saving: a 16:30 London and 16:00 New York snap are 4.5 hours apart most of 2026 but 3.5 hours apart on 28 days, which shows up as phantom P&L in cross-currency books.
 
 ## Learning objectives
@@ -148,7 +148,7 @@ $$M_i = \frac{0.6745\,(x_i - \tilde{x})}{MAD},$$
 
 and they recommend labelling $|M_i| > 3.5$ as potential outliers (NIST/SEMATECH e-Handbook, section 1.3.5.17).
 The constant 0.6745 is the 75th percentile of the standard normal, which makes $MAD/0.6745$ a consistent estimator of $\sigma$ for normal data, so $M_i$ is on the scale of an ordinary z-score.
-The classic z-score fails on small panels for a structural reason: Shiffler (1988) showed that no z-score computed with the sample standard deviation can exceed $(n-1)/\sqrt{n}$, which is 1.79 for $n = 5$, so a "3 sigma" rule can never fire on five broker quotes, however bad one of them is.
+The classic z-score fails on small panels for a structural reason: Shiffler (1988) showed that no z-score computed with the sample standard deviation can exceed $(n-1)/\sqrt{n}$, which is 1.789 for $n = 5$, so a "3 sigma" rule can never fire on five broker quotes, however bad one of them is.
 
 ### Reference data: identifiers, entities and survivorship
 
@@ -206,7 +206,7 @@ Golden-copy survivorship is per field: each field has an ordered list of trusted
 A proxy is a value for an illiquid instrument derived from liquid benchmarks, for example an issuer spread mapped to a sector curve by a beta and an offset.
 Proxies keep valuations and scenarios populated, but they are model outputs, so they are flagged, versioned and reviewed, and they have capital consequences under FRTB.
 For an internal-models desk a risk factor is modellable only if it passes the RFET, which requires real prices: a transaction by the bank, a verifiable transaction between other arm's-length parties, a committed quote collected through a third-party vendor, trading platform or exchange, or a vendor price meeting those conditions; collateral reconciliations or valuations are not real prices (MAR31.12).
-To pass, the factor needs at least 24 real price observations per year (at most one per day) with no 90-day period in the previous 12 months with fewer than four, or at least 100 observations over the previous 12 months, tested quarterly (MAR31.13).
+To pass, the factor needs either at least 24 real price observations per year, measured over the period used to calibrate the current ES model, with no 90-day period in the previous 12 months with fewer than four (monitored monthly), or at least 100 observations over the previous 12 months; at most one observation per day counts, and the test is met on a quarterly basis (MAR31.13).
 So the platform must store real-price evidence per risk factor (date, source, type) alongside the cleaned curves; failures become non-modellable risk factors with a separate stress capital charge, see [FRTB Non-Modellable Risk Factors](../17-Regulatory-Capital-Basel-and-FRTB/11-FRTB-Non-Modellable-Risk-Factors.md).
 
 ### Lineage and BCBS 239
@@ -232,7 +232,7 @@ Quotes in basis points of normal volatility: 62.5, 63.0, 62.8, 89.5, 63.2.
 "The median is 63.0, absolute deviations are 0.5, 0, 0.2, 26.5 and 0.2, so the MAD is 0.2."
 "Broker 4's modified z-score is $0.6745 \times 26.5 / 0.2 = 89.37$, far beyond 3.5; the largest of the others is 1.69."
 "Four quotes survive; their mean is 62.875 and their median 62.9; I publish one of those by policy and send broker 4 to the exception queue with the rule id."
-"A classic z-score would have missed it: the mean with the outlier is 68.2 and the sample standard deviation 11.91, so broker 4 scores only 1.79, which is the maximum any point can score with five observations, $(5-1)/\sqrt{5}$."
+"A classic z-score would have missed it: the mean with the outlier is 68.2 and the sample standard deviation 11.91, so broker 4 scores only 1.788, just below the 1.789 that is the most any point can score with five observations, $(5-1)/\sqrt{5}$."
 
 ### Example 2: a proxy spread for an illiquid bond
 
@@ -261,7 +261,7 @@ A cross-currency book valued with one region's curves and the other region's FX 
 
 ### Example 6: sizing tick ingestion
 
-Hypothetical inputs: 80,000 ticks per second on average and 450,000 at peak, a 32-byte normalised record (8-byte timestamp, 4-byte instrument id, 8-byte bid and ask, 4-byte sizes and flags), 10 market hours a day, a 4.5:1 compression ratio, 30 days hot, 7 years archived at 252 days a year.
+Hypothetical inputs: 80,000 ticks per second on average and 450,000 at peak, a 32-byte normalised record (8-byte timestamp, 4-byte instrument id, 8-byte bid, 8-byte ask, 4 bytes of sizes and flags), 10 market hours a day, a 4.5:1 compression ratio, 30 days hot, 7 years archived at 252 days a year.
 
 | Quantity | Value |
 | :--- | ---: |
@@ -305,7 +305,7 @@ Only the price encoding changed between the two rows, so the difference is the c
 
 > [!question]- sys-03-02 | How does the Median Absolute Deviation (MAD) handle outlier filtering better than standard deviation?
 > The median and MAD have a 50% breakdown point, so one bad quote cannot move them much, while one bad quote inflates the mean and standard deviation and hides itself (masking).
-> In the code's example the bad quote scores 89.37 on the modified z-score and only 1.79 on the classic z-score.
+> In the code's example the bad quote scores 89.37 on the modified z-score and only 1.788 on the classic z-score.
 
 > [!question]- sys-03-03 | What is a Legal Entity Identifier (LEI) and why is it essential for counterparty risk?
 > A 20-character ISO 17442 code for a legal entity, with a 4-character issuer prefix and two ISO/IEC 7064 MOD 97-10 check digits; GLEIF publishes entity and parent relationship data.
@@ -340,7 +340,7 @@ Only the price encoding changed between the two rows, so the difference is the c
 > Changes (a new holiday) are effective-dated events that trigger regeneration of adjusted dates for affected trades.
 
 > [!question]- sys-03-11 | With five quotes, can a classic 3-sigma rule ever flag an outlier?
-> No: with the sample standard deviation no z-score can exceed $(n-1)/\sqrt{n}$ (Shiffler, 1988), which is 1.79 for $n = 5$.
+> No: with the sample standard deviation no z-score can exceed $(n-1)/\sqrt{n}$ (Shiffler, 1988), which is 1.789 for $n = 5$.
 > Use the median and MAD instead: the modified z-score has no such ceiling.
 
 > [!question]- sys-03-12 | Why is the constant 0.6745 in the modified z-score?
@@ -348,11 +348,11 @@ Only the price encoding changed between the two rows, so the difference is the c
 > Multiplying by it puts $M_i$ on the same scale as an ordinary z-score, so the 3.5 cut-off reads like a z threshold.
 
 > [!question]- sys-03-13 | State the FRTB RFET. Does a factor with 30 real prices, all in the first six months, pass?
-> At least 24 real prices per year (one per day at most) and no 90-day period in the last 12 months with fewer than four, or at least 100 real prices in the last 12 months (MAR31.13).
+> At least 24 real prices per year over the ES calibration period and no 90-day period in the last 12 months with fewer than four, or at least 100 real prices in the last 12 months, counting at most one per day (MAR31.13).
 > It fails: some 90-day window has zero observations and 30 is below 100; 26 prices spaced 14 days apart pass.
 
 > [!question]- sys-03-14 | Verify the check digit of the ISIN US0378331005.
-> Convert U to 30 and S to 28 to get 3028037833100, apply Luhn by doubling every second digit from the right and summing digits, and the complement mod 10 is 5, which matches.
+> Convert U to 30 and S to 28 to get 3028037833100, double every second digit starting with the rightmost (the check digit is not yet appended), sum the digits of the results to get 45, and the complement mod 10 is 5, which matches; equivalently, Luhn over the full 30280378331005 sums to a multiple of 10.
 > The middle nine characters are the CUSIP, whose own check digit (0) is part of the national number.
 
 > [!question]- sys-03-15 | Why can a cross-currency book show unexplained P&L on a few days each spring and autumn?
