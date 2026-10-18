@@ -5,307 +5,311 @@ tier: senior
 status: solid
 prereqs: [multi-curve-and-csa-discounting, monte-carlo-pricing-and-variance-reduction]
 est_hours: 6
-sources: [Jon Gregory - Counterparty Credit Risk and Credit Value Adjustment chapters 1-8, Michael Pykhtin - Counterparty Credit Risk Modelling Risk Books, Basel Committee on Banking Supervision - CRE50 to CRE54]
+sources: [Gregory - The xVA Challenge - Counterparty Risk Funding Collateral Capital and Initial Margin 4th edition (Wiley 2020), Pykhtin and Zhu - A Guide to Modelling Counterparty Credit Risk - GARP Risk Review July-August 2007 16-22, Canabarro and Duffie - Measuring and Marking Counterparty Risk - in Tilman (ed.) Asset-Liability Management of Financial Institutions (Euromoney 2003), Brigo and Mercurio - Interest Rate Models Theory and Practice 2nd edition (Springer 2006) chapter 3, Jamshidian - An Exact Bond Option Formula - Journal of Finance 44(1) 205-209 (1989), Basel Framework CRE52 CRE53.11 to CRE53.24 CRE53.47 to CRE53.48 and MGN20.4 to MGN20.17 (version effective 1 January 2023)]
 ---
 
 # Counterparty Credit Risk Analytics
 
 ## TL;DR
 
-Counterparty Credit Risk (CCR) is the risk that a counterparty defaults on an over-the-counter (OTC) derivative contract prior to final contractual settlement.
-Unlike standard loans where credit risk is unilateral and fixed to the principal balance, CCR is bilateral, dynamic, and market-driven: exposure fluctuates stochastically with market risk factors and can alternate between an asset and a liability.
-CCR analytics generates exposure profiles over time: Expected Exposure (EE), Potential Future Exposure (PFE), Expected Positive Exposure (EPE), and Effective EPE (the non-decreasing Basel capital metric).
-Exposure geometry reflects contract mechanics: forward contracts exhibit monotonically growing exposure, while interest rate swaps display a characteristic "hump shape" resulting from the battle between diffusion and remaining annuity amortization.
-CCR is mitigated through close-out netting under ISDA Master Agreements and dynamic collateralization under Credit Support Annexes (CSAs) governed by Thresholds, Minimum Transfer Amounts (MTAs), and the Margin Period of Risk (MPOR).
+- Counterparty credit risk is the risk that a derivative counterparty defaults while the netting set is worth something to you; exposure is $\max(V_t - C_t, 0)$ for the netted value $V$ and collateral $C$, and it is a random process, not a number.
+- The profile measures are EE (mean exposure), PFE (a high quantile, for limits), EPE (time average of EE), Effective EE (running maximum) and Effective EPE (first-year average of Effective EE, CRE53.12 to CRE53.13); IMM EAD is $1.4 \times$ Effective EPE.
+- A forward's EE grows with time and has a closed form; a swap's EE is humped because the remaining annuity shrinks, and its discounted EE at a reset date is exactly a swaption price (checked here against Jamshidian's formula).
+- Netting and collateral cut exposure: in the example the 2-year receiver swap cut the 5-year payer's EE at one year from about 200,200 (sum) to about 121,500; daily margin with a 10-day MPOR cut a forward's EE to 0.2003 of the uncollateralised value, rising by $\sqrt 2$ for 20 days.
+- Wrong-way risk (exposure rising as the counterparty weakens) is identified and stressed (CRE53.47) and, when specific, taken out of the netting set (CRE53.48); its pricing effect is in [XVA](15-XVA.md).
 
 ## Learning objectives
 
 - Differentiate Counterparty Credit Risk from traditional loan credit risk and directional market risk.
-- Compute mathematical exposure profiles: Current Exposure (CE), Expected Exposure (EE), Potential Future Exposure (PFE), and Expected Negative Exposure (ENE).
-- Formulate Basel regulatory metrics: Effective EE and Effective EPE (the non-decreasing envelope).
+- Compute exposure profiles: Current Exposure (CE), Expected Exposure (EE), Potential Future Exposure (PFE), and Expected Negative Exposure (ENE), by Monte Carlo and in closed form where one exists.
+- Formulate Basel regulatory metrics: Effective EE and Effective EPE (the non-decreasing envelope) and compare IMM with SA-CCR.
 - Contrast the exposure geometries of forward contracts, vanilla interest rate swaps, cross-currency swaps, and options.
 - Quantify close-out netting benefits under ISDA Master Agreements using the Net-to-Gross Ratio (NGR).
-- Model dynamic collateralization mechanics under modern CSAs, including Thresholds, MTAs, and Margin Period of Risk (MPOR).
-- Differentiate Specific Wrong-Way Risk (SWWR) from General Wrong-Way Risk (GWWR) and analyze its pricing impact.
+- Model dynamic collateralization under CSAs, including Thresholds, MTAs, and the Margin Period of Risk (MPOR).
+- Differentiate Specific Wrong-Way Risk (SWWR) from General Wrong-Way Risk (GWWR).
 
 ## Core concepts
 
-### The Nature of Counterparty Credit Risk
+### What makes counterparty risk different
 
-Counterparty Credit Risk (CCR) arises in bilateral, uncleared over-the-counter derivatives contracts (e.g., interest rate swaps, FX forwards, cross-currency swaps, swaptions).
-CCR differs fundamentally from cash bond or loan credit risk:
+A loan's exposure is its principal; a derivative's exposure is its replacement cost at the default date, which depends on the market path up to then.
+Three features follow:
 
-1. **Bilateral Uncertainty:** A bank holding a corporate bond has unilateral credit exposure equal to par value plus accrued coupon.
-In an interest rate swap, if interest rates rise, the swap may have positive value to the bank (credit risk to the counterparty); if rates fall, it becomes a liability (counterparty has credit risk to the bank).
-2. **Stochastic Exposure:** Future exposure is not fixed; it is an endogenous stochastic process coupled directly to market rates, equities, and FX.
-3. **Double Default Interplay:** Default occurs only if the counterparty defaults at a future time $t$ when the market value of the contract is positive to the surviving bank ($V(t) > 0$).
+1. Bilateral: either side can be in the money, so each party has exposure to the other at different times (the mirror image is DVA).
+2. Stochastic: exposure is a function of market factors, so it needs a simulation of the netting set's value through time.
+3. Default and exposure interact: the loss is $\text{LGD} \cdot \max(V_\tau - C_\tau, 0)$ at the default time $\tau$, and if $\tau$ and $V$ are dependent (wrong-way risk) the expected loss is not the product of the expectations.
 
-```mermaid
-flowchart TD
-  CCR[Counterparty Credit Risk] --> Mkt[Stochastic Market Value: V_t]
-  CCR --> Def[Counterparty Default Time: tau]
-  Mkt & Def --> Loss[Loss given Default: 1 - R * max 0, V_tau]
-  Loss --> Netting[ISDA Close-Out Netting]
-  Loss --> Collateral[CSA Variation & Initial Margin]
-  Netting & Collateral --> NetLoss[Net Residual Credit Loss]
-```
-
-### Exposure Profile Taxonomy
-
-Let $V(t)$ represent the replacement value (mark-to-market) of a derivative portfolio with a specific counterparty at future date $t \in [0, T]$:
-
-- **Current Exposure (CE):** The replacement cost of the transaction if the counterparty defaults today ($t = 0$):
-
-$$\text{CE} = \max(V(0), 0)$$
-
-- **Expected Exposure ($\text{EE}(t)$):** The expected positive value of the contract at future date $t$ under the risk-neutral or real-world simulation measure:
-
-$$\text{EE}(t) = \mathbb{E}[\max(V(t), 0)]$$
-
-- **Expected Negative Exposure ($\text{ENE}(t)$):** The expected value from the counterparty's perspective (the bank's liability):
-
-$$\text{ENE}(t) = \mathbb{E}[\max(-V(t), 0)]$$
-
-- **Potential Future Exposure ($\text{PFE}_{\alpha}(t)$):** A high-confidence statistical upper quantile $\alpha$ (typically $95\%$ or $99\%$) of exposure at future date $t$:
-
-$$\text{PFE}_{\alpha}(t) = \inf \{ x \ge 0 \mid P(\max(V(t), 0) \le x) \ge \alpha \}$$
-
-$\text{PFE}$ represents a peak credit line metric used by risk officers to set counterparty credit limits.
-
-- **Maximum PFE ($\text{MaxPFE}$):** The highest peak of the $\text{PFE}$ curve over the entire life of the transaction:
-
-$$\text{MaxPFE} = \sup_{0 \le t \le T} \text{PFE}_{\alpha}(t)$$
-
-- **Expected Positive Exposure ($\text{EPE}$):** The time-weighted average of Expected Exposure over the life of the contract:
-
-$$\text{EPE} = \frac{1}{T} \int_0^T \text{EE}(t) \, dt$$
-
-- **Effective Expected Exposure ($\text{EEE}(t)$):** Under the Basel framework, a non-decreasing envelope is enforced to prevent banks from artificially understating capital as short-dated contracts roll off:
-
-$$\text{EEE}(t_k) = \max(\text{EEE}(t_{k-1}), \text{EE}(t_k)) \quad \text{with} \quad \text{EEE}(0) = \text{EE}(0)$$
-
-- **Effective EPE ($\text{EEPE}$):** The time-weighted average of Effective Expected Exposure over the first year (or contract maturity if shorter):
-
-$$\text{EEPE} = \frac{1}{\min(1, T)} \int_0^{\min(1, T)} \text{EEE}(t) \, dt$$
-
-Under the Internal Model Method (IMM), regulatory Exposure at Default is computed as:
-
-$$\text{EAD} = \alpha \times \text{EEPE} \quad \text{where} \quad \alpha = 1.4$$
-
-### Contract Exposure Geometries
-
-Different derivative payoff structures produce distinct exposure profiles over time:
+### The exposure engine
 
 ```mermaid
 flowchart LR
-  subgraph Forward Contract
-    Fwd[Diffusion Dominates] --> FwdPeak[Monotonically Rising Exposure to Maturity]
-  end
-  subgraph Interest Rate Swap
-    SwapDiff[Early Diffusion] --> SwapPeak[Mid-Life Peak Hump Shape]
-    SwapPeak --> SwapAmort[Annuity Amortization to Zero]
-  end
-  subgraph Cross Currency Swap
-    CCDiff[Rate & FX Diffusion] --> CCPeak[High Terminal Exposure with Principal Exchange]
-  end
+    MD["Market data: curves, vols, correlations"] --> SIM["Scenario simulation of risk factors on a time grid"]
+    TR["Trades and netting-set membership"] --> PR["Pathwise pricing: analytic, regression (AMC), grids"]
+    SIM --> PR
+    PR --> NS["Net by legal netting set"]
+    CSA["CSA terms: threshold, MTA, IA, frequency, MPOR"] --> COL["Collateral path C_t with the MPOR lag"]
+    NS --> COL
+    COL --> EXP["Exposure max(V - C, 0) per path and date"]
+    EXP --> PROF["EE, ENE, PFE, EPE, Effective EPE"]
+    PROF --> LIM["Limits: PFE against credit lines"]
+    PROF --> CAP["Capital: IMM EAD = 1.4 x Effective EPE"]
+    PROF --> XVA["CVA, DVA, FVA: discounted EE and ENE"]
 ```
 
-#### 1. Forward / FX Forward Contracts
-A forward contract has no interim cash flows; all uncertainty accumulates until settlement date $T$.
-Under lognormal diffusion, the dispersion of underlying asset price grows proportional to $\sqrt{t}$.
-Consequently, **Expected Exposure and PFE grow monotonically**, peaking at final maturity $T$.
+Production engines run on the order of thousands of paths and tens to hundreds of grid dates, price trades pathwise with closed forms or American Monte Carlo regressions, and aggregate per netting set as they go so the full path cube is never stored; see [XVA Engine](../18-Pricing-and-Risk-Systems/11-XVA-Engine.md) for the architecture.
 
-#### 2. Vanilla Interest Rate Swaps
-A par interest rate swap exhibits a classic **"hump-shaped" exposure profile**:
-- **Early Phase ($t \to 0$):** Market rates diffuse away from the par strike with standard deviation proportional to $\sqrt{t}$, expanding the dispersion of possible swap rates.
-- **Late Phase ($t \to T$):** Although rate dispersion remains high, the remaining coupon annuity $A(t) = \sum_{t_i > t} \tau_i P(t, t_i) \to 0$ amortizes toward zero as fewer coupon payments remain.
-- The product of expanding rate diffusion and declining annuity creates a peak exposure typically occurring around one-third to one-half of the swap's total tenor (e.g., Year 2 to 2.5 for a 5-year swap).
+### Exposure measures
 
-#### 3. Cross-Currency Swaps
-In a cross-currency swap, counterparties exchange notional principal in different currencies at inception and maturity.
-Because the terminal principal exchange is subject to cumulative foreign exchange diffusion, the exposure profile does not amortize to zero; it grows continuously, displaying massive terminal exposure risk.
+With $E_t = \max(V_t - C_t, 0)$:
 
-#### 4. Options
-- **Long Option:** Begins with exposure equal to the paid premium and evolves with underlying asset price; exposure is always non-negative.
-- **Short Option:** Because the option seller cannot receive positive replacement value from the option, **the short option generates zero counterparty credit risk** to the seller (the counterparty bears 100% of the CCR).
+| Measure | Definition | Used for |
+| :--- | :--- | :--- |
+| CE | $\max(V_0 - C_0, 0)$ | current replacement cost |
+| EE$(t)$ | $E[E_t]$ | capital (IMM), CVA (discounted: $E[D(t)E_t]$) |
+| ENE$(t)$ | $E[\max(C_t - V_t, 0)]$ | DVA, funding benefit |
+| PFE$_\alpha(t)$ | $\alpha$-quantile of $E_t$ | credit limits |
+| EPE | $\frac{1}{T}\int_0^T \text{EE}(t)\,dt$ | summary, loan equivalent |
+| Effective EE | $\text{EEE}_{t_k} = \max(\text{EEE}_{t_{k-1}}, \text{EE}_{t_k})$, $\text{EEE}_{t_0} = $ CE | IMM capital (CRE53.12) |
+| Effective EPE | $\sum_{t_k \le \min(1, M)} \text{EEE}_{t_k}\Delta t_k / \min(1, M)$ | IMM capital (CRE53.13) |
 
-### Mitigants: Netting and Collateralization
+The running maximum stops a short-dated book from showing falling exposure when trades roll off, because in practice they are replaced.
+EAD under IMM is $\alpha \cdot$ Effective EPE with $\alpha = 1.4$ (CRE53.11, CRE53.14); supervisors may require more (CRE53.15) and approved banks may estimate their own alpha with a floor of 1.2 (CRE53.16).
+The Basel text says the expectation should in theory be under the real-world distribution, but supervisors do not mandate which (CRE53.12 footnote 236): many banks simulate PFE for limits under real-world calibrations and CVA under risk-neutral ones, and the choice must be documented.
 
-Bilateral OTC counterparty risk is managed through legally enforceable documentation:
+### Exposure of a forward: closed form
 
-#### 1. Close-Out Netting (ISDA Master Agreement)
-Under the ISDA Master Agreement, if a counterparty defaults, all outstanding transactions within the covered netting set are terminated immediately and marked to market.
-Instead of settling each winning and losing trade separately (which would expose the bank to "cherry-picking" by bankruptcy administrators), all positive and negative values are legally summed into a single net payment:
+For a par forward on a lognormal asset with value $V_t = N(S_t/S_0 - e^{rt})$,
 
-$$\text{Net Exposure}(t) = \max\left( \sum_{i=1}^N V_i(t), 0 \right) \le \sum_{i=1}^N \max(V_i(t), 0) = \text{Gross Exposure}(t)$$
+$$\text{EE}(t) = N e^{rt}\left(2\Phi\!\left(\tfrac12\sigma\sqrt t\right) - 1\right), \qquad \text{PFE}_\alpha(t) = N e^{rt}\left(e^{-\sigma^2 t/2 + \sigma\sqrt t\, z_\alpha} - 1\right).$$
 
-The efficiency of netting is quantified by the **Net-to-Gross Ratio (NGR)**:
+With $N = 1\text{m}$, $\sigma = 20\%$, $r = 3\%$: EE(1) = 82,082 and EE(5) = 205,571; PFE$_{95}$(1) = 373,048 and PFE$_{95}$(5) = 1,031,891; 200,000 simulated paths agree within their standard error.
+For small $\sigma\sqrt t$, $2\Phi(\tfrac12\sigma\sqrt t) - 1 \approx \sigma\sqrt t/\sqrt{2\pi} \approx 0.4\,\sigma\sqrt t$: exposure grows like $\sqrt t$, with a drift correction.
 
-$$\text{NGR} = \frac{\text{Net Exposure}}{\text{Gross Exposure}} \in [0, 1]$$
+### Exposure of a swap: the hump, and EE as a swaption
 
-#### 2. Credit Support Annex (CSA) Collateral Mechanics
-A CSA obligates counterparties to post collateral (cash or high-quality sovereign bonds) against mark-to-market fluctuations:
-- **Threshold ($TH$):** The uncollateralized credit buffer granted to a counterparty; collateral is posted only for net exposure exceeding $TH$. Modern post-2016 CSAs enforce a **zero threshold** ($TH = 0$).
-- **Minimum Transfer Amount (MTA):** A operational friction buffer (typically $\$50,000$ to $\$500,000$) to prevent daily cash transfers for trivial market fluctuations.
-- **Independent Amount (IA) / Initial Margin (IM):** Upfront collateral posted to cover extreme market moves during the close-out window (governed by the BCBS-IOSCO framework and calculated via the ISDA SIMM model).
-- **Margin Period of Risk (MPOR):** The time elapsed between the last successful collateral call and the date the defaulting counterparty's portfolio is successfully closed out or re-hedged:
+A payer swap's value at a reset date $t$ is $V_t = N\left[1 - P(t, T) - K\sum_{t_i > t}\tau_i P(t, t_i)\right]$: roughly the swap rate move times the remaining annuity.
+Rate uncertainty grows like $\sqrt t$ while the annuity shrinks like $T - t$, so EE behaves like $\sqrt t\,(T - t)$, which peaks at $T/3$ (1.6667 years for $T = 5$).
+And $E[D(t)\max(V_t, 0)]$ is by definition the price today of a payer swaption expiring at $t$ on the remaining swap, so in a model with closed-form swaptions the discounted EE profile needs no simulation.
 
-$$MPOR = \text{Call Frequency} + \text{Cure Period} + \text{Liquidation Window}$$
+The code simulates a 10m 5-year quarterly payer swap at its par rate 3.2091% under a one-factor Hull-White model (mean reversion 5%, volatility 1%, fitted to an upward-sloping zero curve), simulating the short rate and its integral exactly, and checks the discounted EE at every reset date against Jamshidian's (1989) decomposition of the swaption into zero-coupon bond options.
+A martingale test, $E[D(5)]/P(0, 5) = 1.000178$, confirms the discounting.
 
-Under Basel regulations, standard MPOR is **10 business days** for bilateral OTC derivatives, **20 business days** for large or illiquid netting sets, and **5 business days** for cleared repo transactions.
+| $t$ (years) | discounted EE, closed form | PFE$_{95}$ (about) |
+| ---: | ---: | ---: |
+| 0.5 | 129,704 | 471,600 |
+| 1.0 | 171,439 | 617,000 |
+| 1.5 | 187,394 | |
+| 2.0 | 186,310 | 669,600 |
+| 3.0 | 149,934 | 566,000 |
+| 4.0 | 84,065 | 337,700 |
+| 4.75 | 22,317 | |
 
-### Wrong-Way Risk (WWR)
+The discounted EE peaks at 1.75 years (188,641); the undiscounted EE peaks at about 199,300, also at 1.75 years, and PFE$_{95}$ peaks at about 676,800.
+Because the curve slopes up, the payer swap is expected to move into the money, so its EE exceeds its ENE; on a flat curve the two would coincide at reset dates (payer and receiver swaptions struck at the forward have equal prices).
 
-Wrong-Way Risk occurs when exposure to a counterparty is positively correlated with the probability of default of that counterparty:
+Other geometries:
 
-$$\text{Cov}(\text{Exposure}(t), \text{Hazard Rate}(t)) > 0$$
+- Cross-currency swaps exchange notional at maturity, so FX diffusion on the final exchange keeps exposure rising to the end.
+- A bought option's exposure is its value, always non-negative; a sold option with premium paid upfront has no exposure to the buyer (CRE52.1 FAQ1 lets SA-CCR set its EAD to zero outside netting and margin agreements).
+- A netting set's profile is not the sum of its trades' profiles: $E[\max(\sum_i V_i, 0)] \le \sum_i E[\max(V_i, 0)]$.
 
-- **Specific Wrong-Way Risk (SWWR):** Arises from structural, legal, or financial relationships between the counterparty and the underlying reference asset. Example: Purchasing a Credit Default Swap (CDS) protection on Company A from Bank B, where Bank B is the parent company of Company A.
-- **General (Systematic) Wrong-Way Risk (GWWR):** Arises when macro-economic market factors simultaneously drive up portfolio exposure and counterparty credit spreads. Example: a domestic bank holding a cross-currency swap that receives USD from a Turkish bank and pays Turkish lira during a severe lira crisis, so the collapsing lira raises the mark-to-market of the USD receipt at the same time as the counterparty's hazard rate rises.
+### Netting
 
-Wrong-way risk amplifies expected losses, requiring explicit exposure add-ons or copula-coupled default simulation.
+Close-out netting under an ISDA Master Agreement terminates all transactions on default and nets them into one amount, which removes the administrator's ability to cherry-pick (pay out on contracts in its favour and default on the rest).
+Netting is recognised for capital only with a legally enforceable agreement and legal opinions (CRE52.7 to CRE52.8).
+Today's netting benefit is measured by the net-to-gross ratio $\text{NGR} = \max(\sum_i V_i, 0)/\sum_i\max(V_i, 0)$, which the BCBS-IOSCO standardised initial margin schedule uses to scale gross margin: net IM $= (0.4 + 0.6 \cdot \text{NGR}) \times$ gross IM (MGN20.17).
+
+Adding a 10m 2-year receiver swap (par rate 2.7337%) to the 5-year payer:
+
+- EE at one year: about 121,500 netted against about 200,200 for the sum of the two trades' EEs, an expected net-to-gross of about 0.607.
+- Effective EPE: about 87,900 netted, against about 139,300 for the payer alone.
+- After the 2-year swap matures the netted EE equals the payer's alone (the code checks equality at 3 years).
+
+### Collateral and the margin period of risk
+
+A CSA sets a threshold (exposure below it is not collateralised), a minimum transfer amount, independent amounts or initial margin, eligible collateral and haircuts, and the call frequency.
+For covered entities under the BCBS-IOSCO framework, variation margin is exchanged with a zero threshold (MGN20.4), initial margin may have a threshold of up to €50m (MGN20.5), transfers may have an MTA of up to €500,000 (MGN20.6), and initial margin is a one-tailed 99% 10-day potential future exposure calibrated to include stress (MGN20.9), exchanged gross and not rehypothecated except under strict conditions (MGN20.40 to MGN20.41); national rules implement these with their own dates and thresholds.
+
+Collateral never removes exposure, because after the last successful margin call it takes time to declare default, stop paying, and close out or re-hedge: the margin period of risk.
+Modelling collateral as $C_t = V_{t - \delta}$ for MPOR $\delta$, the exposure is $\max(V_t - V_{t-\delta}, 0)$.
+For the forward with $r = 0$ this has a closed form: $E[\max(V_t - V_{t-\delta}, 0)] = N\left(2\Phi\!\left(\tfrac12\sigma\sqrt\delta\right) - 1\right)$ for every $t \ge \delta$, flat in time.
+
+| $N = 1\text{m}$, $\sigma = 20\%$, exposure at 1 year | EE | PFE$_{95}$ (about) |
+| :--- | ---: | ---: |
+| Uncollateralised | 79,656 | |
+| Daily VM, MPOR 10 business days | 15,957 | 67,760 |
+| Daily VM, MPOR 20 business days | 22,565 | 96,400 |
+| MPOR 10, symmetric threshold 50,000 | about 23,900 | |
+| MPOR 20, symmetric threshold 50,000 | about 28,000 | |
+
+The collateralised EE is 0.2003 of the uncollateralised one ($\approx\sqrt{\delta/t}$) and grows by a factor 1.4141 from 10 to 20 days.
+Regulatory floors: under IMM, at least 5 business days for netting sets of only repo-style transactions and 10 for others with daily margining, 20 for netting sets above 5,000 trades or containing illiquid collateral or hard-to-replace OTC derivatives, and double the floor for two quarters after more than two disputes longer than the MPOR in the previous two quarters (CRE53.24 to CRE53.25); SA-CCR uses 10 business days for daily margining and $9 + N$ for margining every $N$ days (CRE52.50).
+
+### IMM against SA-CCR on the same trade
+
+For the 5-year swap: Effective EPE is about 139,300, so IMM-style EAD is about 195,000.
+SA-CCR at inception: supervisory duration $(1 - e^{-0.25})/0.05 = 4.4240$, add-on $0.5\% \times 10\text{m} \times 4.4240 = 221,199$, RC 0 and multiplier 1, so $\text{EAD} = 1.4 \times 221{,}199 = 309{,}679$, about 1.59 times the simulated number.
+SA-CCR is calibrated to be conservative across portfolios and recognises no model-specific diversification; see [Counterparty Credit Risk: SA-CCR](../17-Regulatory-Capital-Basel-and-FRTB/04-Counterparty-Credit-Risk-SA-CCR.md).
+
+### Wrong-way risk
+
+General wrong-way risk: exposure and the counterparty's default probability move together through common market factors (for example, receiving a hard currency from a counterparty whose local currency and credit both deteriorate in the same crisis).
+Banks must identify it, stress test for it and report it to senior management (CRE53.47).
+Specific wrong-way risk: future exposure is highly correlated with the counterparty's default through a legal or structural link; the Basel text's example is a company writing put options on its own stock (CRE53.48).
+For capital, specific wrong-way trades are taken out of the netting set, and single-name CDS with a legal connection between counterparty and reference entity take EAD equal to the full expected loss on the underlying assuming the issuer is in liquidation (CRE53.48).
+Right-way risk is the opposite (exposure falls as the counterparty weakens, as for a commodity producer hedging its output).
+The CVA effect of wrong-way risk, with the default curve held fixed, is computed in [XVA](15-XVA.md).
 
 ## Worked examples
 
-### Example 1: Netting Set and Net-to-Gross Ratio (NGR) Calculation
+All numbers are printed and asserted by `python 11-Risk-and-Trading/code/risk_ccr_analytics.py`.
 
-A bank executes three bilateral OTC interest rate swaps with a single hedge fund counterparty under an enforceable ISDA Master Agreement.
-On the valuation date, the mark-to-market replacement values of the three trades are:
-- Trade 1 (10y Payer Swap): $V_1 = +\$12,000,000$
-- Trade 2 (5y Receiver Swap): $V_2 = -\$8,500,000$
-- Trade 3 (2y Basis Swap): $V_3 = +\$1,500,000$
+### Example 1: netting set and net-to-gross ratio
 
-1. Compute Gross Exposure and Net Exposure.
-2. Calculate the Net-to-Gross Ratio (NGR).
-3. Compute the Basel standardized netting factor $0.4 + 0.6 \times \text{NGR}$.
+Three swaps with one counterparty under an enforceable ISDA agreement: MtM $+12\text{m}$, $-8.5\text{m}$ and $+1.5\text{m}$, notionals 100m, 80m and 50m in the 5+, 2 to 5 and 0 to 2 year duration buckets of the standardised margin schedule (4%, 2% and 1%, MGN20.16).
 
-**Solution:**
+1. Gross replacement cost $12 + 1.5 = 13.5\text{m}$; net $\max(12 - 8.5 + 1.5, 0) = 5\text{m}$.
+2. NGR $= 5/13.5 = 0.370370$: netting removes 0.629630 of current exposure.
+3. Gross standardised IM $= 4\text{m} + 1.6\text{m} + 0.5\text{m} = 6.1\text{m}$.
+4. Net standardised IM $= (0.4 + 0.6 \times 0.370370) \times 6.1\text{m} = 0.622222 \times 6.1\text{m} = 3{,}795{,}556$.
 
-Step 1: Compute Gross Exposure:
+### Example 2: the swap profile and regulatory numbers
 
-$$\text{Gross Exposure} = \sum_{i=1}^3 \max(V_i, 0) = \max(12, 0) + \max(-8.5, 0) + \max(1.5, 0) = 12.0 + 0 + 1.5 = \$13,500,000$$
+1. Discounted EE at one year from Jamshidian: 171,439; the 50,000-path Monte Carlo agrees within 3.5 standard errors at every reported date.
+2. Undiscounted EE rises to a peak of about 199,300 at 1.75 years and falls to zero at maturity; EPE over the life is about 136,800.
+3. Effective EE is the running maximum starting from CE $= 0$; over the first year it equals EE because EE is still rising, so Effective EPE (CRE53.13 weights) is about 139,300.
+4. IMM-style EAD about 195,000 against SA-CCR EAD 309,679.
+5. PFE$_{95}$ peaks at about 676,800 at 1.75 years: that, not EE, is what a credit officer compares with the counterparty's line.
 
-Step 2: Compute Net Exposure under ISDA Netting:
+### Example 3: what daily margining buys
 
-$$\text{Net Exposure} = \max\left( \sum_{i=1}^3 V_i, 0 \right) = \max(12.0 - 8.5 + 1.5, 0) = \max(5.0, 0) = \$5,000,000$$
+Forward, $N = 1\text{m}$, $\sigma = 20\%$, $r = 0$, one-year horizon.
 
-Step 3: Compute Net-to-Gross Ratio (NGR):
-
-$$\text{NGR} = \frac{\text{Net Exposure}}{\text{Gross Exposure}} = \frac{\$5,000,000}{\$13,500,000} \approx 0.37037 \quad (37.04\%)$$
-
-The netting agreement reduces current uncollateralized credit exposure by $62.96\%$.
-
-Step 4: Basel Netting Factor:
-
-$$\text{Netting Factor} = 0.4 + 0.6 \times \text{NGR} = 0.4 + 0.6(0.37037) = 0.4 + 0.22222 = 0.6222 \quad (62.22\%)$$
-
-### Example 2: Exposure Profile Simulation and Effective EPE
-
-Using the reference implementation in `code/exposure_xva.py` with `num_paths=1000` and `seed=42`, analyze a 5-year payer interest rate swap with notional $\$10,000,000$, normal rate volatility $100 \text{ bps/year}$, and swap rate $4.00\%$.
-The simulation generates the following profile over 50 time steps:
-- Time $t = 0.0$: $EE(0) = \$0.00$
-- Time $t = 1.0$: $EE(1.0) = \$144,101.27$, $PFE_{95}(1.0) = \$608,302.12$
-- Time $t = 2.3$ (Peak Hump): $EE(2.3) = \$159,124.02$, $PFE_{95}(2.3) = \$655,890.68$
-- Time $t = 2.5$: $EE(2.5) = \$153,456.89$, $PFE_{95}(2.5) = \$614,332.86$
-- Time $t = 5.0$ (Maturity): $EE(5.0) = \$0.00$, $PFE_{95}(5.0) = \$0.00$
-
-Compute Expected Positive Exposure (EPE), construct the Effective EE profile at Year 1.0 and Year 2.3, and evaluate the Effective EPE.
-
-**Solution:**
-
-Step 1: Expected Positive Exposure (EPE):
-EPE is the time-weighted average of EE over the full 5-year horizon:
-From numerical integration in `exposure_xva.py`:
-
-$$\text{EPE} = \frac{1}{5.0} \int_0^{5.0} \text{EE}(t) dt \approx \$111,327.61$$
-
-Step 2: Effective Expected Exposure (EEE):
-Under the Basel envelope rule, $\text{EEE}(t) = \max(\text{EEE}(t - \Delta t), \text{EE}(t))$:
-- At $t = 1.0$: Because EE has been rising monotonically from 0, $\text{EEE}(1.0) = \text{EE}(1.0) = \$144,101.27$.
-- At $t = 2.3$ (Peak): $\text{EEE}(2.3) = \text{EE}(2.3) = \$159,124.02$.
-- Beyond Year 2.3, as swap annuity amortizes and EE drops toward $\$0$, **Effective EE is pinned at the historical peak**:
-
-$$\text{EEE}(t) = \$159,124.02 \quad \forall t \ge 2.3$$
-
-Step 3: Effective EPE (over 1-year capital horizon):
-Integrating EEE over the interval $[0, 1.0]$ using the time grid endpoints:
-
-$$\text{EEPE} = \frac{1}{1.0} \int_0^{1.0} \text{EEE}(t) dt \approx \$102,386.87$$
-
-Step 4: Regulatory Exposure at Default (EAD):
-
-$$\text{EAD} = \alpha \times \text{EEPE} = 1.4 \times \$102,386.87 \approx \$143,341.62$$
+1. Uncollateralised: $\text{EE} = N(2\Phi(0.1) - 1) = 79{,}656$.
+2. Daily VM with a 10-day MPOR: $\text{EE} = N(2\Phi(\tfrac12 \times 0.2\sqrt{10/250}) - 1) = 15{,}957$, a ratio of 0.2003, close to $\sqrt{(10/250)/1} = 0.2$.
+3. A 20-day MPOR (more than 5,000 trades, or illiquid collateral): 22,565, up by 1.4141.
+4. A 50,000 threshold each way: about 23,900, because exposure up to the threshold is never collateralised.
+5. PFE$_{95}$ with a 10-day MPOR is about 67,760, about 4.25 times the EE: collateralised exposure is a gap risk with a fat right tail.
 
 ## Pitfalls
 
-- **Ignoring Negative Replacement Values in Netting Sets:** Computing exposure as the sum of positive values when a legally valid ISDA Master Agreement is in place severely overstates exposure by ignoring the liability offsets.
-- **Assuming CSA Collateral Eliminates 100% of Exposure:** Assuming a collateralized trade has zero credit risk ignores the Margin Period of Risk (MPOR). If the counterparty defaults, asset prices move during the 10-20 day liquidation window, creating significant uncollateralized gap risk.
-- **Applying Forward Diffusion Curves to Swaps:** Assuming swap exposure expands with $\sqrt{t}$ until maturity fails to account for annuity amortization, massively overstating long-dated swap exposure.
-- **Neglecting Wrong-Way Risk in FX and Emerging Markets:** Modeling counterparty default intensity as independent of FX exchange rates during sovereign balance-of-payments crises leads to catastrophic CVA losses.
-- **Confusing Risk-Neutral with Real-World Simulation Measure:** Simulating PFE under the risk-neutral measure ($\mathbb{Q}$) rather than the physical real-world measure ($\mathbb{P}$) distorts tail quantiles due to risk-neutral drift bias.
+- Summing trade-level exposures in a netting set, or netting across sets without enforceable agreements.
+- Treating a collateralised set as riskless: the MPOR leaves about 20% of the one-year uncollateralised EE in the forward example, more with thresholds.
+- Modelling the MPOR in calendar days or ignoring the regulatory floors (5, 10, 20 business days, and doubling after disputes).
+- Using a $\sqrt t$ profile for amortising products: swaps hump and cross-currency swaps keep rising.
+- Evaluating exposure only at reset dates when cash flows happen in between: exposure jumps at payments, and coarse grids miss peaks.
+- Using trapezoid weights for Effective EPE; CRE53.13 is a sum of Effective EE times $\Delta t_k$ over the grid dates in the first year.
+- Mixing measures without saying so: real-world PFE against risk-neutral CVA exposure.
+- Ignoring wrong-way risk because the model assumes independence; independence is an assumption to be stressed, not a fact.
 
 ## Interview questions
 
 > [!question]- risk-ccr-vs-loan-credit-risk | What are the three fundamental differences between Counterparty Credit Risk (CCR) and traditional loan credit risk?
-> First, CCR is bilateral: exposure can alternate between an asset and a liability depending on market movements, whereas loans are strictly unilateral. Second, exposure is stochastic and dynamic, coupled to underlying market variables rather than fixed principal balances. Third, CCR is subject to double-default conditioning: a loss occurs only if the counterparty defaults when portfolio mark-to-market is positive to the bank.
+> Exposure is bilateral (either side can be in the money), stochastic (it is the future value of the netting set, not a fixed principal), and the loss depends jointly on default time and market path, $\text{LGD} \cdot \max(V_\tau - C_\tau, 0)$.
+> So it needs a simulation of exposure through time, and dependence between default and exposure (wrong-way risk) changes the expected loss.
 
-> [!question]- risk-swap-exposure-hump-shape | Why does the Expected Exposure (EE) profile of an interest rate swap exhibit a "hump shape" over time?
-> The hump shape is produced by two competing mathematical forces. Early in the swap's life, rate diffusion dominates, expanding the variance of swap rates proportional to $\sqrt{t}$. Late in the swap's life, the remaining annuity amortization $A(t) = \sum \tau_i P(t, t_i) \to 0$ dominates because fewer coupon cash flows remain. The product of expanding rate variance and contracting annuity produces a mid-life peak.
+> [!question]- risk-swap-exposure-hump-shape | Why does the Expected Exposure (EE) profile of an interest rate swap exhibit a hump shape over time?
+> Value is roughly rate change times remaining annuity: the rate dispersion grows like $\sqrt t$, the annuity shrinks like $T - t$, so EE behaves like $\sqrt t\,(T - t)$, peaking at $T/3$ (1.67 years for 5 years).
+> In the Hull-White example the 5-year payer's discounted EE peaks at 1.75 years (188,641 from Jamshidian swaption prices) and is zero at maturity.
 
 > [!question]- risk-potential-future-exposure-definition | Define Potential Future Exposure (PFE) and explain how it is used by credit risk officers.
-> PFE is a high-confidence upper quantile (typically 95% or 99%) of the simulated exposure distribution at future date $t$: $\text{PFE}_{\alpha}(t) = \text{Quantile}_{\alpha}(\max(V(t), 0))$. Risk officers use PFE profiles to establish pre-deal credit limits, ensuring that the maximum peak exposure over the transaction's life does not exceed the counterparty's authorized credit capacity.
+> The $\alpha$-quantile (typically 95% or 99%) of exposure at a future date; the peak over the life is compared with the counterparty's credit line before a trade is approved.
+> For a par forward ($N = 1\text{m}$, $\sigma = 20\%$, $r = 3\%$), PFE$_{95}$ is 373,048 at one year against an EE of 82,082: limits are about tails, capital and CVA about means.
 
-> [!question]- risk-effective-epe-basel-rationale | Why did the Basel Committee mandate the Effective Expected Exposure (EEE) non-decreasing envelope?
-> Under standard Expected Exposure, short-dated derivative contracts roll off as they mature, causing the aggregate EE curve to decline over time. In reality, banks routinely roll over maturing trades to maintain commercial client hedges. Basel introduced the non-decreasing envelope $\text{EEE}(t_k) = \max(\text{EEE}(t_{k-1}), \text{EE}(t_k))$ to prevent banks from artificially understating regulatory capital via roll-off effects.
+> [!question]- risk-effective-epe-basel-rationale | Why did the Basel Committee mandate the Effective Expected Exposure non-decreasing envelope?
+> Short-dated trades mature and are usually replaced, so a falling EE profile would understate the exposure of a continuing relationship; the running maximum $\text{EEE}_{t_k} = \max(\text{EEE}_{t_{k-1}}, \text{EE}_{t_k})$ prevents that (CRE53.12).
+> Effective EPE averages it over the first year (CRE53.13) and EAD is $1.4\times$ that: about 195,000 for the 5-year swap example.
 
-> [!question]- risk-close-out-netting-cherry-picking | How does ISDA close-out netting protect a solvent bank against bankruptcy "cherry-picking"?
-> Without an enforceable netting agreement, a bankruptcy administrator could "cherry-pick" contracts: demanding full payment on trades where the solvent bank owes money, while defaulting on trades where the bankrupt entity owes money. Close-out netting terminates all transactions simultaneously into a single net balance, preventing selective enforcement.
+> [!question]- risk-close-out-netting-cherry-picking | How does ISDA close-out netting protect a solvent bank against bankruptcy cherry-picking?
+> On default all transactions are terminated and their values combined into one net amount, so the administrator cannot enforce the contracts it wins on while defaulting on those it loses.
+> In Example 1 that turns 13.5m of gross exposure into 5m; capital recognises it only with enforceable agreements and legal opinions (CRE52.7 to CRE52.8).
 
 > [!question]- risk-margin-period-of-risk-mpor | What is the Margin Period of Risk (MPOR), and what are its standard regulatory horizons?
-> MPOR is the time elapsed between the final unfulfilled collateral call and the date when the defaulting counterparty's portfolio is legally closed out and re-hedged. During this window, market prices move without fresh collateral posting. Standard regulatory horizons under Basel are 10 business days for bilateral OTC derivatives, 20 business days for illiquid netting sets, and 5 business days for cleared repo.
+> The time from the last successful margin exchange to close-out and re-hedging of a defaulting counterparty, during which the portfolio moves without new collateral.
+> IMM floors with daily margining: 5 business days for repo-style netting sets, 10 for others, 20 for sets above 5,000 trades or with illiquid collateral or hard-to-replace derivatives, doubled after repeated disputes (CRE53.24 to CRE53.25); SA-CCR uses 10 days or $9 + N$ (CRE52.50).
+> Exposure scales roughly with $\sqrt{\text{MPOR}}$: 15,957 at 10 days and 22,565 at 20 in the forward example.
 
-> [!question]- risk-wrong-way-risk-classification | Differentiate Specific Wrong-Way Risk (SWWR) from General Wrong-Way Risk (GWWR) with concrete market examples.
-> Specific Wrong-Way Risk arises when counterparty default and exposure are linked by a direct legal or structural tie (e.g., selling put options on a bank's own stock, or buying CDS on a corporate from its own parent company). General Wrong-Way Risk arises when macroeconomic factors systematically degrade creditworthiness while expanding exposure (e.g., holding a cross-currency swap receiving USD from a Turkish bank during a severe Turkish lira currency crisis).
+> [!question]- risk-wrong-way-risk-classification | Differentiate Specific Wrong-Way Risk (SWWR) from General Wrong-Way Risk (GWWR) with concrete examples.
+> Specific: a legal or structural link makes exposure rise as the counterparty fails, as when a company writes puts on its own stock (CRE53.48); such trades leave the netting set, and linked single-name CDS take EAD equal to the loss assuming the issuer is in liquidation.
+> General: common market factors drive both, as when a counterparty's credit and the currency it pays you both weaken in one crisis; banks must identify and stress it (CRE53.47).
 
 > [!question]- risk-net-to-gross-ratio-ngr | What is the Net-to-Gross Ratio (NGR), and what does an NGR of zero indicate?
-> NGR is the ratio of net credit exposure under netting to gross credit exposure: $\text{NGR} = \frac{\max(\sum V_i, 0)}{\sum \max(V_i, 0)}$. An NGR of 1.0 indicates zero netting benefit (all trades are positive). An NGR of 0 indicates perfect netting (portfolio net value is negative or zero, eliminating current credit exposure).
+> $\text{NGR} = \max(\sum V_i, 0)/\sum\max(V_i, 0)$, today's net replacement cost over gross; 0.370370 in Example 1.
+> NGR 0 means the netting set is out of the money as a whole: no current exposure, though future exposure remains.
+> The standardised margin schedule scales gross IM by $0.4 + 0.6\,\text{NGR}$ (MGN20.17).
 
-> [!question]- risk-simm-initial-margin-framework | What is ISDA SIMM, and how does it protect counterparties beyond Variation Margin?
-> Variation Margin covers daily mark-to-market changes. ISDA SIMM (Standard Initial Margin Model) is an industry-standard parametric sensitivity-based model that calculates upfront Initial Margin (IM) to cover potential liquidation losses over the 10-day Margin Period of Risk at a 99% confidence level. IM is held in segregated third-party custody, protecting against counterparty default during liquidation.
+> [!question]- risk-simm-initial-margin-framework | What is the regulatory standard for initial margin on non-cleared derivatives, and where does ISDA SIMM fit?
+> Covered entities exchange IM equal to a one-tailed 99% 10-day potential future exposure calibrated to include stress (MGN20.9), computed either by an approved quantitative model or by the standardised schedule (MGN20.10); IM is exchanged gross and segregated, with rehypothecation only under strict conditions (MGN20.40 to MGN20.41).
+> ISDA SIMM is the industry's sensitivity-based model used as that quantitative model; it is not a Basel formula.
 
-> [!question]- risk-simulation-measure-pfe-vs-cva | Why is Potential Future Exposure (PFE) simulated under the physical measure $\mathbb{P}$ while CVA is simulated under the risk-neutral measure $\mathbb{Q}$?
-> PFE measures actual real-world potential credit risk for capital and limit allocation, requiring historical drift and realistic economic dynamics (the physical measure $\mathbb{P}$). CVA is an accounting valuation adjustment and pricing deduction that must be actively hedged with financial derivatives in market markets, requiring risk-neutral pricing expectations (the pricing measure $\mathbb{Q}$).
+> [!question]- risk-simulation-measure-pfe-vs-cva | Why is PFE often simulated under the physical measure while CVA is simulated under the risk-neutral measure?
+> PFE is a risk measure for limits: it should reflect how the market can actually move, so real-world drifts and volatilities are natural.
+> CVA is a price that is hedged, so it uses risk-neutral dynamics calibrated to market prices.
+> For IMM capital the Basel text prefers the real-world distribution in theory but leaves the choice to the bank (CRE53.12 footnote 236).
 
-> [!question]- risk-ccr-effective-eepe-regulatory-multiplier | What is the Basel regulatory multiplier $\alpha = 1.4$ applied to Effective EPE, and what risks does it compensate for?
-> Under the Internal Model Method (IMM), Basel defines regulatory Exposure at Default as $\text{EAD} = \alpha \times \text{Effective EPE}$, where $\alpha = 1.4$. This statutory scalar accounts for model risk, correlation between market exposure and counterparty credit deterioration (Wrong-Way Risk), concentration risk across large dealer counterparties, and the systemic risk of interconnected OTC networks during liquidity crises.
+> [!question]- risk-forward-ee-closed-form | Derive the EE of a par forward on a lognormal asset.
+> $V_t = N(S_t/S_0 - e^{rt})$, so $E[\max(V_t, 0)]$ is a call on $S_t$ struck at its forward: $N e^{rt}(2\Phi(\tfrac12\sigma\sqrt t) - 1)$.
+> With $N = 1\text{m}$, $\sigma = 20\%$, $r = 3\%$: 82,082 at one year and 205,571 at five; for small $\sigma\sqrt t$ it is about $0.4\,N\sigma\sqrt t$.
+
+> [!question]- risk-swap-ee-equals-swaption | Why is the discounted EE of a swap at a reset date a swaption price, and how do you use that?
+> $E[D(t)\max(V_t, 0)]$ is the risk-neutral price of the right to enter the remaining swap at $t$, a payer swaption expiring at $t$.
+> In models with closed-form swaptions (Hull-White via Jamshidian) the discounted EE needs no simulation, which makes it the natural unit test for an exposure engine: here the Monte Carlo matched it within 3.5 standard errors at every date.
+
+> [!question]- risk-collateralised-ee-sqrt-mpor | With daily margin and a 10-day MPOR, how does a forward's EE compare with the uncollateralised EE at one year?
+> With $C_t = V_{t-\delta}$ and $r = 0$, $\text{EE} = N(2\Phi(\tfrac12\sigma\sqrt\delta) - 1)$, flat in $t$: 15,957 against 79,656 for $N = 1\text{m}$ and $\sigma = 20\%$, a ratio of 0.2003, about $\sqrt{\delta/t}$.
+> Doubling the MPOR to 20 days multiplies it by 1.4141.
+
+> [!question]- risk-threshold-effect-on-exposure | How does a CSA threshold change collateralised exposure?
+> Exposure up to the threshold is never called, so the collateralised EE is roughly the threshold-capped uncollateralised exposure plus the MPOR gap: in the forward example a 50,000 threshold raised the 10-day EE from 15,957 to about 23,900.
+> This is why MGN20.4 requires zero-threshold VM between covered entities and SA-CCR adds TH + MTA - NICA to margined RC.
+
+> [!question]- risk-imm-vs-saccr-ead | For an at-the-money 5-year swap, how does SA-CCR EAD compare with an IMM-style EAD, and why?
+> SA-CCR: $1.4 \times 0.5\% \times 10\text{m} \times 4.4240 = 309{,}679$; simulated Effective EPE about 139,300 gives about 195,000, so SA-CCR is about 1.59 times higher here.
+> SA-CCR uses supervisory factors calibrated across portfolios, a one-year horizon for trades over a year and no model-specific diversification; IMM banks must still compute SA-CCR for the output floor.
+
+> [!question]- risk-ee-discounted-vs-undiscounted | When do you use discounted and when undiscounted EE?
+> CVA, DVA and FVA integrate the discounted EE $E[D(t)E_t]$ (a price); capital and limits use undiscounted EE and PFE (amounts at the future date).
+> For the 5-year swap at 2 years the discounted EE is 186,310; the undiscounted EE at its 1.75-year peak is about 199,300.
+
+> [!question]- risk-exposure-engine-design | Sketch the data flow of a counterparty exposure engine and say where it usually breaks.
+> Market data and calibrations feed a factor simulation on a time grid; trades are priced pathwise (closed forms, regression for callables); values are netted by legal netting set; collateral is simulated with CSA terms and the MPOR lag; exposure statistics are aggregated as the paths stream.
+> It breaks on data (netting-set and CSA reference data out of sync with legal), on pricing coverage (exotics without fast pathwise pricers), and on grids too coarse to see payment-date jumps; unit-test it on products with closed-form exposures (forwards, swaps via swaptions).
+
+> [!question]- risk-ccr-effective-eepe-regulatory-multiplier | What is the Basel regulatory multiplier $\alpha = 1.4$ applied to Effective EPE, and what does it compensate for?
+> $\text{EAD} = \alpha \cdot$ Effective EPE with $\alpha = 1.4$ (CRE53.11, CRE53.14); alpha is defined as economic capital from a full joint simulation of exposures across counterparties divided by economic capital treating each counterparty's EPE as a fixed loan (CRE53.16).
+> So it corrects for exposure randomness, correlation of exposures across counterparties and dependence between exposure and defaults; supervisors may raise it for low granularity, high general wrong-way risk or high correlation of market values (CRE53.15), and own estimates are floored at 1.2.
 
 > [!question]- risk-cross-currency-swap-exposure-diffusion | Contrast the exposure profile of a cross-currency swap with that of a single-currency interest rate swap.
-> A single-currency interest rate swap exhibits a hump-shaped exposure profile that decays to zero at maturity because the underlying floating rate diffuses while remaining annuity payments amortize. A cross-currency swap involves final exchange of notionals in different currencies, so foreign exchange diffusion dominates over the entire tenor, causing exposure to grow monotonically toward maturity similar to an FX forward.
+> The single-currency swap's exposure is humped (rate dispersion grows like $\sqrt t$, the remaining annuity shrinks) and ends at zero: the 5-year example peaks at 1.75 years.
+> A cross-currency swap exchanges notionals at maturity, so FX dispersion on the final exchange keeps EE rising towards maturity, like an FX forward; its peak exposure is near the end and much larger per unit notional.
 
 > [!question]- risk-specific-wrong-way-risk-treatment | How does the Basel framework treat transactions with Specific Wrong-Way Risk (SWWR)?
-> When a transaction exhibits Specific Wrong-Way Risk (e.g., buying CDS protection on an entity from its parent or affiliate, or lending against collateral issued by the borrower), the Basel framework prohibits the use of internal modeling (IMM). The transaction is decoupled from the netting set and assigned an explicit exposure equal to full unhedged mark-to-market plus haircut with zero netting relief.
+> Banks must identify and control it from inception (CRE53.48).
+> For capital, instruments with a legal connection between counterparty and underlying issuer and identified SWWR are taken out of the netting set; for such single-name CDS the EAD is the full expected loss on the underlying assuming the issuer is in liquidation, with LGD 100% under IRB; for equity derivatives, bond options or SFTs on a single legally connected company, EAD is the value assuming jump to default of the underlying, again with LGD 100% (CRE53.48).
 
-> [!question]- risk-mpor-margin-period-of-risk-regulatory-windows | What are the regulatory Basel MPOR windows for bilateral uncleared, illiquid, and centrally cleared netting sets?
-> The Margin Period of Risk (MPOR) is the time elapsed between collateral call default and successful portfolio re-hedging. Under Basel regulations: centrally cleared derivatives have a minimum MPOR of 5 business days; standard bilateral uncleared netting sets have a floor of 10 business days; large netting sets (over 5,000 trades) or portfolios containing illiquid collateral/derivatives require a 20-business-day MPOR.
+> [!question]- risk-mpor-margin-period-of-risk-regulatory-windows | What are the regulatory MPOR floors for margined netting sets?
+> IMM with daily margining: at least 5 business days for netting sets of only repo-style transactions and 10 for all others; 20 when a netting set exceeds 5,000 trades in a quarter or contains illiquid collateral or hard-to-replace OTC derivatives (CRE53.24); doubled for two quarters after more than two long margin disputes (CRE53.25).
+> SA-CCR: 10 business days with daily margining or $9 + N$ for margining every $N$ days (CRE52.50); cleared exposures follow CRE54.
 
-> [!question]- risk-isda-simm-mva-sensitivities-driver | How does ISDA SIMM calculate initial margin from trade sensitivities, and why does it drive MVA?
-> ISDA SIMM calculates initial margin by aggregating trade first-order delta and vega sensitivities into predefined regulatory risk buckets using prescribed risk weights and intra-bucket correlation matrices: $\text{IM} = \sqrt{\mathbf{s}^T \mathbf{\Psi} \mathbf{s}} + \text{Curvature}$. Because posting unencumbered cash or treasury collateral incurs financing spreads over OIS, funding this margin over a trade's lifetime generates Margin Valuation Adjustment (MVA).
+> [!question]- risk-isda-simm-mva-sensitivities-driver | How does a sensitivity-based initial margin model such as ISDA SIMM work, and why does it drive MVA?
+> It weights delta and vega sensitivities (plus a curvature term) by prescribed risk weights, aggregates them with prescribed correlations within buckets, across buckets and across risk classes, and serves as the quantitative model allowed by MGN20.10 for the 99% 10-day IM of MGN20.9.
+> Because IM must be posted gross and segregated, it is funded for the trade's life: in the 10m 5-year swap example a delta-normal stand-in starts near 191,334 and the MVA at 80bp is about 3,871.
 
-> [!question]- risk-close-out-netting-bankruptcy-cherry-picking | Why is statutory close-out netting essential to prevent cherry-picking by bankruptcy trustees?
-> Without legally enforceable close-out netting, a bankruptcy trustee can "cherry-pick" contracts: demanding full payment on winning trades where the bank owes money while defaulting on losing trades where the counterparty owes the bank. Enforceable close-out netting under an ISDA Master Agreement collapses all reciprocal contracts into a single net creditor balance, preventing asymmetric wealth transfer.
-
-## Further reading
-
-- Jon Gregory, *Counterparty Credit Risk and Credit Value Adjustment: A Continuing Challenge for Global Financial Markets*, Chapters 1-8.
-- Michael Pykhtin, *Counterparty Credit Risk Modelling: Risk Management, Pricing and Regulation*, Risk Books.
-- Basel Committee on Banking Supervision, *CRE50 to CRE54: Counterparty Credit Risk Standards*.
-- ISDA, *ISDA SIMM Methodology: Standard Initial Margin Model for Non-Cleared Derivatives*.
-- Eduardo Canabarro and Darrell Duffie (2003), "Measuring and Marking Counterparty Risk", *Citigroup Quantitative Credit Research*.
+> [!question]- risk-close-out-netting-bankruptcy-cherry-picking | Why is enforceable close-out netting essential against cherry-picking?
+> Without it an administrator could enforce the contracts in the defaulter's favour and default on the rest; close-out netting terminates everything into one net amount.
+> In Example 1, 13.5m of gross positive value becomes a 5m net claim (NGR 0.370370), and capital recognises the netting only with enforceable agreements and legal opinions (CRE52.7 to CRE52.8).
 
 ## In this repo and SDE-Interview-Prep
 
-- Multi-curve and CSA discounting: [Multi-Curve and CSA Discounting](../06-Fixed-Income-and-Asset-Classes/13-Multi-Curve-and-CSA-Discounting.md).
-- Credit default swaps and hazard rates: [Credit and CDS](../06-Fixed-Income-and-Asset-Classes/06-Credit-and-CDS.md).
-- Python reference implementation of exposure profiles and netting: [exposure_xva.py](code/exposure_xva.py).
-- Numerical verification of counterparty exposure and Effective EPE: [risk_ccr_analytics.py](code/risk_ccr_analytics.py).
-- Credit Value Adjustment and XVA framework: [XVA](15-XVA.md).
+- [risk_ccr_analytics.py](code/risk_ccr_analytics.py): forward EE and PFE in closed form and by simulation, Hull-White swap exposure checked against Jamshidian swaption prices, Effective EE and EPE, netting, MPOR and thresholds, SA-CCR comparison, NGR and standardised IM; every number above except the initial margin and MVA figures in card risk-isda-simm-mva-sensitivities-driver, which are asserted by [risk_xva_pricing.py](code/risk_xva_pricing.py).
+- Pricing the exposure: [XVA](15-XVA.md); capital: [Counterparty Credit Risk: SA-CCR](../17-Regulatory-Capital-Basel-and-FRTB/04-Counterparty-Credit-Risk-SA-CCR.md), [CVA Capital Charge](../17-Regulatory-Capital-Basel-and-FRTB/05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md); production: [XVA Engine](../18-Pricing-and-Risk-Systems/11-XVA-Engine.md).
+- Rates background: [Short Rate Models](../06-Fixed-Income-and-Asset-Classes/04-Short-Rate-Models.md), [Rates Options, Caps and Swaptions](../06-Fixed-Income-and-Asset-Classes/05-Rates-Options-Caps-and-Swaptions.md), [Multi-Curve and CSA Discounting](../06-Fixed-Income-and-Asset-Classes/13-Multi-Curve-and-CSA-Discounting.md), [Credit and CDS](../06-Fixed-Income-and-Asset-Classes/06-Credit-and-CDS.md).
+
+## Further reading
+
+- J. Gregory, *The xVA Challenge: Counterparty Risk, Funding, Collateral, Capital and Initial Margin*, 4th edition, Wiley 2020 (exposure, netting, collateral and wrong-way risk chapters).
+- M. Pykhtin and S. Zhu, "A guide to modelling counterparty credit risk", *GARP Risk Review*, July/August 2007, 16-22.
+- E. Canabarro and D. Duffie, "Measuring and marking counterparty risk", in L. Tilman (ed.), *Asset/Liability Management of Financial Institutions*, Euromoney 2003.
+- D. Brigo and F. Mercurio, *Interest Rate Models: Theory and Practice*, 2nd edition, Springer 2006, chapter 3 (Hull-White bond prices and options).
+- F. Jamshidian, "An exact bond option formula", *Journal of Finance* 44(1), 205-209, 1989.
+- Basel Committee on Banking Supervision, Basel Framework CRE52, CRE53 and MGN20.

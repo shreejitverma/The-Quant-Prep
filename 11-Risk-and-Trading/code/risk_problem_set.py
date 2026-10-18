@@ -1,340 +1,507 @@
-"""Comprehensive Risk and Trading Problem Set Numerical Calculation Engine.
+"""Risk problem set: every number in 11-Risk-and-Trading/17-Risk-Problem-Set.md.
 
-Pure Python 3.10+ standard library implementation:
-Asserts every single numerical figure across all 16 problems in Note 17:
-- Problem 1: Kelly Criterion and Position Sizing (leverage, drawdown probabilities)
-- Problem 2: Parametric VaR vs Expected Shortfall Gaussian
-- Problem 3: Filtered Historical Simulation (FHS) return updating
-- Problem 4: Reverse Stress Testing & Mahalanobis Distance
-- Problem 5: Expected Maximum Drawdown Analytics (Magdon-Ismail & Atiya)
-- Problem 6: Derivatives Greek P&L Attribution & Residual
-- Problem 7: Black-Scholes PDE Theta vs Gamma Break-Even Move
-- Problem 8: Euler Risk Allocation and Component VaR
-- Problem 9: Almgren-Chriss Optimal Liquidation Trajectory
-- Problem 10: Liquidity-Adjusted VaR (L-VaR)
-- Problem 11: Counterparty Exposure Profiles and Effective EPE
-- Problem 12: Bilateral CVA and DVA Calculation
-- Problem 13: PCA Yield Curve Factor Shocks
-- Problem 14: Funding Valuation Adjustment (FVA / FCA)
-- Problem 15: Margin Valuation Adjustment (MVA)
-- Problem 16: Capital Valuation Adjustment (KVA)
+Each problem recomputes its answer from the stated inputs and checks it against an independent route (a closed form
+against a simulation, a short-cut against the full formula, an Euler sum against brute-force differences).
+Functions are reused from the section's other scripts: risk_sensitivities.py, risk_decomposition.py,
+risk_ccr_analytics.py and risk_liquidity_model.py.  Simulations use fixed seeds and are quoted as "about".
+
+Run: python 11-Risk-and-Trading/code/risk_problem_set.py
 """
 
 from __future__ import annotations
 
 import math
 
+import numpy as np
+from drawdowns import asymptotic_mdd, expected_mdd
+from risk_ccr_analytics import collateralised_ee_closed, effective_ee, effective_epe, ncdf, ninv
+from risk_decomposition import Z95, cov_matrix, erc_newton, euler_normal, normal_var
+from risk_liquidity_model import Z99, bachelier_put, black_put, horizon_variance_factor
+from risk_sensitivities import bs_call, bs_greeks
 
-def run_all_problem_set_assertions() -> None:
-    """Run exact verification of all 16 problems in Note 17."""
-    print("Verifying Problem 1: Kelly Criterion and Position Sizing...")
-    mu_minus_r = 0.120
-    sigma = 0.160
-    f_star = mu_minus_r / (sigma**2)
-    assert abs(f_star - 4.6875) < 1e-6, f"Full Kelly mismatch: {f_star}"
 
-    f_half = 0.5 * f_star
-    assert abs(f_half - 2.34375) < 1e-6, f"Half Kelly mismatch: {f_half}"
+def check(label: str, value: float, expected: float, tol: float) -> float:
+    """Print a value and assert it matches the literal quoted in the note to within tol (absolute)."""
+    print(f"  {label}: {value:.10g}")
+    assert abs(value - expected) <= tol, f"{label}: got {value}, note quotes {expected} (tol {tol})"
+    return value
 
-    mu_p_half = f_half * mu_minus_r
-    sigma_p_half = f_half * sigma
-    assert abs(mu_p_half - 0.28125) < 1e-6, f"Expected return mismatch: {mu_p_half}"
-    assert abs(sigma_p_half - 0.3750) < 1e-6, f"Portfolio vol mismatch: {sigma_p_half}"
 
-    # Growth rate comparisons: g(f) = f*mu - 0.5*f^2*sigma^2
-    g_full = f_star * mu_minus_r - 0.5 * (f_star**2) * (sigma**2)
-    g_half = f_half * mu_minus_r - 0.5 * (f_half**2) * (sigma**2)
-    assert abs(g_full - 0.28125) < 1e-6, f"Full growth rate mismatch: {g_full}"
-    assert abs(g_half - 0.2109375) < 1e-6, f"Half growth rate mismatch: {g_half}"
-    assert abs(g_half / g_full - 0.75) < 1e-6, "Half Kelly must achieve 75% of max growth"
+def npdf(x: float) -> float:
+    return math.exp(-0.5 * x * x) / math.sqrt(2.0 * math.pi)
 
-    # 50% drawdown probabilities: (0.50)^a where a = 2/c - 1
-    # Full Kelly (c=1.0 -> a=1): 0.50^1 = 0.50 (50%)
-    # Half Kelly (c=0.5 -> a=3): 0.50^3 = 0.125 (12.5%)
-    prob_dd50_full = 0.50**1
-    prob_dd50_half = 0.50**3
-    assert abs(prob_dd50_full - 0.50) < 1e-6
-    assert abs(prob_dd50_half - 0.125) < 1e-6
 
-    # Halving before doubling: 1 / (2^a + 1)
-    p_halve_full = 1.0 / (2**1 + 1)
-    p_halve_half = 1.0 / (2**3 + 1)
-    assert abs(p_halve_full - 1.0 / 3.0) < 1e-6
-    assert abs(p_halve_half - 1.0 / 9.0) < 1e-6
+# Problem 1 (card risk-full-vs-half-kelly-drawdown)
+def problem_kelly() -> None:
+    print("\n[Problem: Kelly sizing, excess return 12%, vol 16%]")
+    mu, sig = 0.12, 0.16
+    f_star = mu / sig**2
+    check("full Kelly leverage", f_star, 4.6875, 1e-12)
+    check("Sharpe ratio", mu / sig, 0.75, 1e-12)
 
-    print("Verifying Problem 2: Parametric VaR vs Expected Shortfall...")
-    val_p2 = 50_000_000.0
-    daily_vol = 0.0120
-    sigma_dollar = val_p2 * daily_vol
-    assert abs(sigma_dollar - 600_000.0) < 1e-6
+    def growth(f: float) -> float:
+        return f * mu - 0.5 * f * f * sig * sig
 
-    z_99 = 2.3263478740408408
-    var_99 = z_99 * sigma_dollar
-    assert abs(var_99 - 1_395_808.7) < 5.0  # Asserts $1,395,810
+    check("growth at full Kelly", growth(f_star), 0.28125, 1e-12)
+    check("growth at half Kelly", growth(0.5 * f_star), 0.2109375, 1e-12)
+    check("half-Kelly volatility", 0.5 * f_star * sig, 0.375, 1e-12)
+    check("growth at twice Kelly", growth(2.0 * f_star), 0.0, 1e-12)
+    for c, p_half, p_hd in ((1.0, 0.5, 1.0 / 3.0), (0.5, 0.125, 1.0 / 9.0)):
+        f = c * f_star
+        m, v = growth(f), (f * sig) ** 2  # log-wealth drift and variance
+        theta = 2.0 * m / v
+        u = math.log(2.0)
+        # Brownian motion with drift: P(hit -u before +u) = (1 - e^{-theta u}) / (e^{theta u} - e^{-theta u})
+        p_first = (1.0 - math.exp(-theta * u)) / (math.exp(theta * u) - math.exp(-theta * u))
+        check(f"exponent 2/c - 1 at c = {c}", theta, 2.0 / c - 1.0, 1e-12)
+        check(f"P(ever fall to half the starting capital), c = {c}", math.exp(-theta * u), p_half, 1e-12)
+        check(f"P(halve before doubling), c = {c}", p_first, p_hd, 1e-12)
+    # Simulation check for full Kelly: log wealth is Brownian with drift S^2/2 and variance S^2 per year
+    rng = np.random.default_rng(3)
+    n, dt = 20_000, 1.0 / 2520.0
+    m, s = 0.5 * 0.75**2, 0.75
+    x = np.zeros(n)
+    done = np.zeros(n, dtype=bool)
+    down = np.zeros(n, dtype=bool)
+    for _ in range(200_000):
+        idx = ~done
+        if not idx.any():
+            break
+        x[idx] += m * dt + s * math.sqrt(dt) * rng.standard_normal(int(idx.sum()))
+        hit_dn = idx & (x <= -math.log(2.0))
+        hit_up = idx & (x >= math.log(2.0))
+        down |= hit_dn
+        done |= hit_dn | hit_up
+    check("simulated P(halve before doubling), full Kelly (about)", float(down.mean()), 1.0 / 3.0, 0.012)
 
-    # Normal PDF at z_99: phi(z) = exp(-0.5 * z^2) / sqrt(2*pi)
-    phi_z99 = math.exp(-0.5 * (z_99**2)) / math.sqrt(2.0 * math.pi)
-    assert abs(phi_z99 - 0.026652) < 1e-4
 
-    es_mult = phi_z99 / 0.0100
-    assert abs(es_mult - 2.6652) < 0.01
-    es_99 = es_mult * sigma_dollar
-    assert abs(es_99 - 1_599_120.0) < 50.0  # Asserts $1,599,120
+# Problem 2 (card risk-var-vs-es-coherence)
+def problem_var_es() -> None:
+    print("\n[Problem: 50m book, 1.2% daily vol, normal]")
+    sd = 50e6 * 0.012
+    z = ninv(0.99)
+    check("z_0.99", z, 2.326348, 5e-7)
+    check("99% VaR", z * sd, 1_395_809, 1.0)
+    check("ES multiplier phi(z) / 0.01", npdf(z) / 0.01, 2.665214, 5e-7)
+    check("99% ES", npdf(z) / 0.01 * sd, 1_599_128, 1.0)
+    check("97.5% ES multiplier", npdf(ninv(0.975)) / 0.025, 2.337803, 5e-7)
+    # Brute-force ES by quadrature of the tail quantile function: ES = (1 / 0.01) integral_{0.99}^{1} VaR_u du
+    us = np.linspace(0.99, 1.0, 200_001)[1:-1]
+    qs = np.array([ninv(float(u)) for u in us[::100]])
+    es_quad = float(np.mean(qs))
+    check("ES multiplier by averaging tail quantiles (about)", es_quad, 2.665, 0.002)
 
-    print("Verifying Problem 3: Filtered Historical Simulation...")
-    current_vol = 0.0220
-    r_a, vol_a = -0.0300, 0.0100
-    r_b, vol_b = -0.0450, 0.0300
 
-    r_a_fhs = r_a * (current_vol / vol_a)
-    r_b_fhs = r_b * (current_vol / vol_b)
-    assert abs(r_a_fhs - (-0.0660)) < 1e-6  # -6.60%
-    assert abs(r_b_fhs - (-0.0330)) < 1e-4  # -3.30%
+# Problem 3 (card risk-fhs-volatility-updating)
+def problem_fhs() -> None:
+    print("\n[Problem: filtered historical simulation, today's vol 2.2%]")
+    now = 0.022
+    for r, vol, exp_r in ((-0.03, 0.01, -0.066), (-0.045, 0.03, -0.033)):
+        check(f"filtered return for {r} at vol {vol}", r * now / vol, exp_r, 1e-12)
 
-    print("Verifying Problem 4: Reverse Stress Testing...")
-    # Minimize 0.5 * u^T R^-1 u subject to u1 - 2*u2 = -12.5
-    # R = [[1.0, 0.20], [0.20, 1.0]], c = [1.0, -2.0]
-    # u* = lambda * R * c
-    # R * c = [1.0 - 0.40, 0.20 - 2.0] = [0.60, -1.80]
-    # c^T (R c) = 1(0.60) - 2(-1.80) = 0.60 + 3.60 = 4.20
-    # lambda = -12.5 / 4.20 = -2.976190476
-    lam = -12.5 / 4.20
-    assert abs(lam - (-2.97619)) < 1e-4
 
-    u1_star = lam * 0.60
-    u2_star = lam * (-1.80)
-    assert abs(u1_star - (-1.785714)) < 1e-4
-    assert abs(u2_star - 5.357143) < 1e-4
+# Problem 4 (card risk-reverse-stress-testing-mahalanobis)
+def problem_reverse_stress() -> None:
+    print("\n[Problem: most plausible scenario losing 2.5m; P&L = 20m x1 - 50k x2, sd 1% and 8bp, correlation 0.2]")
+    delta = np.array([20e6, -50e3])
+    sd = np.array([0.01, 8.0])
+    cov = np.outer(sd, sd) * np.array([[1.0, 0.2], [0.2, 1.0]])
+    loss = 2.5e6
+    s2 = float(delta @ cov @ delta)
+    x_star = -loss * (cov @ delta) / s2
+    dist = loss / math.sqrt(s2)
+    check("equity move", x_star[0], -0.017857, 5e-7)
+    check("yield move (bp)", x_star[1], 42.857, 5e-4)
+    check("P&L at the scenario", float(delta @ x_star), -2.5e6, 1e-6)
+    check("Mahalanobis distance", dist, 6.0994, 5e-4)
+    # Brute force: smallest Mahalanobis radius along 3,600 directions that reaches the loss
+    chol = np.linalg.cholesky(cov)
+    best = math.inf
+    for a in np.linspace(0.0, 2.0 * math.pi, 3600, endpoint=False):
+        u = np.array([math.cos(a), math.sin(a)])
+        slope = float(delta @ (chol @ u))
+        if slope < 0.0:
+            best = min(best, loss / -slope)
+    check("brute-force minimum distance over directions minus closed form", best - dist, 0.0, 1e-5)
+    check("one-dimensional tail probability 1 - Phi(d) x 1e10", (1.0 - ncdf(dist)) * 1e10, 5.32, 0.01)
 
-    # Convert to physical variables: x1 = u1 * 0.010, x2 = u2 * 8.0
-    x1_star = u1_star * 0.010
-    x2_star = u2_star * 8.0
-    assert abs(x1_star - (-0.017857)) < 1e-4  # -1.79%
-    assert abs(x2_star - 42.857) < 0.05  # +42.9 bps
 
-    # Check constraint: PnL = 20M * x1 - 50k * x2 = -2.5M
-    pnl_stress = 20_000_000.0 * x1_star - 50_000.0 * x2_star
-    assert abs(pnl_stress - (-2_500_000.0)) < 1e-4
+# Problem 5 (card risk-expected-maximum-drawdown-analytics)
+def problem_mdd() -> None:
+    print("\n[Problem: expected maximum drawdown, Sharpe 1.2, vol 12% (log units)]")
+    sig, sharpe = 0.12, 1.2
+    mu = sharpe * sig
+    for t, exp_exact, exp_asym in ((2.0, 0.1319, 0.1164), (10.0, 0.2022, 0.1969)):
+        exact = expected_mdd(t, mu, sig)
+        asym = asymptotic_mdd(t, mu, sig)
+        check(f"exact E[MDD], T = {t}", exact, exp_exact, 5e-5)
+        check(f"Magdon-Ismail asymptote, T = {t}", asym, exp_asym, 5e-5)
+        check(
+            f"same asymptote in the form (sigma / 2S)(ln(S^2 T / 2) + 1.9635), T = {t}",
+            sig / (2 * sharpe) * (math.log(sharpe**2 * t / 2) + 4 * 0.49088),
+            asym,
+            1e-12,
+        )
+    check("asymptote / exact at T = 2", asymptotic_mdd(2.0, mu, sig) / expected_mdd(2.0, mu, sig), 0.8825, 5e-4)
+    check("zero drift, sqrt(pi / 2) sigma sqrt(T), T = 2", math.sqrt(math.pi / 2) * sig * math.sqrt(2.0), 0.2127, 5e-5)
+    check("zero drift by the exact series, T = 2", expected_mdd(2.0, 0.0, sig), 0.2127, 5e-4)
 
-    print("Verifying Problem 5: Expected Maximum Drawdown Analytics...")
-    sr = 1.20
-    vol_p5 = 0.120
-    scale = vol_p5 / (2.0 * sr)
-    assert abs(scale - 0.050) < 1e-6
 
-    # 2-year horizon:
-    s2_t_half_2 = (sr**2) * 2.0 / 2.0
-    assert abs(s2_t_half_2 - 1.44) < 1e-6
-    mdd_2y = scale * (math.log(1.44) + 1.9635)
-    assert abs(mdd_2y - 0.11641) < 1e-4  # 11.64%
+# Problem 6 (card risk-vanna-volga-pnl-attribution)
+def problem_greek_attribution() -> None:
+    print("\n[Problem: 1,000 reference calls, spot +2, vol -2.5 points, one day: Taylor attribution against full revaluation]")
+    q, ds, dv, dt = 1000.0, 2.0, -0.025, 1.0 / 252.0
+    g = bs_greeks()
+    t1 = 1.0 - dt
+    full = q * (bs_call(100.0 + ds, 100.0, 0.05, 0.2 + dv, t1) - bs_call(100.0, 100.0, 0.05, 0.2, 1.0))
+    theta = -(bs_call(100.0, 100.0, 0.05, 0.2, 1.0) - bs_call(100.0, 100.0, 0.05, 0.2, t1))
+    terms = {
+        "delta": q * g["delta"] * ds,
+        "gamma": q * 0.5 * g["gamma"] * ds * ds,
+        "vega": q * g["vega"] * dv,
+        "vanna": q * g["vanna"] * ds * dv,
+        "volga": q * 0.5 * g["volga"] * dv * dv,
+        "theta": q * theta,
+    }
+    for k, v in terms.items():
+        print(f"  {k}: {v:,.2f}")
+    explained = sum(terms.values())
+    check("delta P&L", terms["delta"], 1_273.66, 0.01)
+    check("gamma P&L", terms["gamma"], 37.52, 0.01)
+    check("vega P&L", terms["vega"], -938.10, 0.01)
+    check("vanna P&L", terms["vanna"], 14.07, 0.01)
+    check("volga P&L", terms["volga"], 3.08, 0.01)
+    check("theta P&L (one day, full revaluation in time)", terms["theta"], -25.47, 0.01)
+    check("full revaluation P&L", full, 373.83, 0.01)
+    check("unexplained with vanna and volga", full - explained, 9.06, 0.01)
+    check("unexplained without vanna and volga", full - (explained - terms["vanna"] - terms["volga"]), 26.21, 0.01)
 
-    # 10-year horizon:
-    s2_t_half_10 = (sr**2) * 10.0 / 2.0
-    assert abs(s2_t_half_10 - 7.20) < 1e-6
-    mdd_10y = scale * (math.log(7.20) + 1.9635)
-    assert abs(mdd_10y - 0.19688) < 1e-4  # 19.69%
 
-    # Zero drift 2-year: sqrt(pi/2) * sigma * sqrt(T)
-    mdd_zero_2y = math.sqrt(math.pi / 2.0) * vol_p5 * math.sqrt(2.0)
-    assert abs(mdd_zero_2y - 0.2127) < 1e-3  # 21.27%
+# Problem 7 (card risk-black-scholes-daily-breakeven-rule-of-16)
+def problem_breakeven() -> None:
+    print("\n[Problem: delta-hedged long gamma, S = 500, gamma 800, implied vol 18%]")
+    s0, gam, vol = 500.0, 800.0, 0.18
+    theta_day = 0.5 * vol * vol * s0 * s0 * gam / 252.0
+    lo, hi = 0.0, 50.0
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        if 0.5 * gam * mid * mid < theta_day:
+            lo = mid
+        else:
+            hi = mid
+    check("daily theta from the PDE, 1/2 sigma^2 S^2 gamma / 252", theta_day, 12_857.14, 0.01)
+    check("break-even move solved numerically", 0.5 * (lo + hi), 5.6695, 5e-5)
+    check("closed form sigma S / sqrt(252)", vol * s0 / math.sqrt(252.0), 5.6695, 5e-5)
+    check("rule of 16, sigma S / 16", vol * s0 / 16.0, 5.625, 1e-12)
+    check("sqrt(252)", math.sqrt(252.0), 15.875, 5e-4)
 
-    print("Verifying Problem 6: Derivatives Greek P&L Attribution...")
-    delta_pnl = 10_000.0 * 2.00
-    gamma_pnl = 0.5 * 2_500.0 * (2.00**2)
-    theta_pnl = -850.0
-    vega_pnl = 400_000.0 * (-0.0250)
-    vanna_pnl = 15_000.0 * 2.00 * (-0.0250)
-    volga_pnl = 0.5 * 800_000.0 * ((-0.0250) ** 2)
 
-    assert abs(delta_pnl - 20_000.0) < 1e-6
-    assert abs(gamma_pnl - 5_000.0) < 1e-6
-    assert abs(theta_pnl - (-850.0)) < 1e-6
-    assert abs(vega_pnl - (-10_000.0)) < 1e-6
-    assert abs(vanna_pnl - (-750.0)) < 1e-6
-    assert abs(volga_pnl - 250.0) < 1e-6
+# Problem 8 (card risk-pca-yield-curve-factor-shocks)
+def problem_pca() -> None:
+    print("\n[Problem: PCA eigenvalues 0.000180, 0.000018, 0.000002; +1.5 sd level shock]")
+    lam = np.array([0.000180, 0.000018, 0.000002])
+    shares = lam / lam.sum()
+    check("PC1 share", shares[0], 0.90, 1e-12)
+    check("PC2 share", shares[1], 0.09, 1e-12)
+    v1 = np.ones(3) / math.sqrt(3.0)
+    shock = 1.5 * math.sqrt(lam[0]) * v1
+    check("level loading 1 / sqrt(3)", v1[0], 0.57735, 5e-6)
+    check("level sd sqrt(lambda_1)", math.sqrt(lam[0]), 0.013416, 5e-7)
+    check("shock per tenor (bp)", shock[0] * 1e4, 116.19, 0.01)
+    # The factor scenario has Mahalanobis distance 1.5 under the covariance it came from
+    q, _ = np.linalg.qr(np.column_stack([v1, [1.0, 0.0, -1.0], [1.0, -2.0, 1.0]]))
+    cov = q @ np.diag(lam) @ q.T
+    check("Mahalanobis distance of the level shock", math.sqrt(float(shock @ np.linalg.solve(cov, shock))), 1.5, 1e-9)
 
-    pred_pnl = delta_pnl + gamma_pnl + theta_pnl + vega_pnl + vanna_pnl + volga_pnl
-    assert abs(pred_pnl - 13_650.0) < 1e-6
 
-    actual_pnl = 14_200.0
-    residual = actual_pnl - pred_pnl
-    assert abs(residual - 550.0) < 1e-6
+# Problem 9 (cards risk-forward-vs-central-difference, risk-fd-regulatory-forward-bump)
+def problem_bumps() -> None:
+    print("\n[Problem: delta of the reference call by forward and central 1% bumps]")
+    g = bs_greeks()
+    h = 1.0
+    fwd = (bs_call(101.0, 100.0, 0.05, 0.2, 1.0) - bs_call(100.0, 100.0, 0.05, 0.2, 1.0)) / h
+    cen = (bs_call(101.0, 100.0, 0.05, 0.2, 1.0) - bs_call(99.0, 100.0, 0.05, 0.2, 1.0)) / (2 * h)
+    check("forward-bump delta", fwd, 0.646125, 5e-7)
+    check("central-bump delta", cen, 0.636745, 5e-7)
+    check("forward error / (gamma h / 2)", (fwd - g["delta"]) / (0.5 * g["gamma"] * h), 0.9907, 5e-4)
+    check("forward error / central error", (fwd - g["delta"]) / abs(cen - g["delta"]), 108.1, 0.1)
+    check("central error / (speed h^2 / 6)", (cen - g["delta"]) / (g["speed"] * h * h / 6.0), 0.9996, 5e-4)
 
-    print("Verifying Problem 7: Black-Scholes PDE Theta vs Gamma Break-Even...")
-    s_p7 = 500.0
-    gamma_p7 = 800.0
-    vol_p7 = 0.180
-    theta_annual = -0.5 * (vol_p7**2) * (s_p7**2) * gamma_p7
-    assert abs(theta_annual - (-3_240_000.0)) < 1e-6
 
-    theta_daily = theta_annual / 252.0
-    assert abs(theta_daily - (-12_857.142857)) < 1e-4
+# Problem 10 (cards risk-diagonal-vs-cross-gamma, risk-aad-cost-count)
+def problem_bump_counts() -> None:
+    print("\n[Problem: pricing calls for a 50-factor book, counted by running central differences on a counting pricer]")
+    n = 50
+    calls = {"n": 0}
 
-    # Break-even move: 0.5 * gamma * (dS)^2 = -theta_daily
-    ds_sq = (-theta_daily) / (0.5 * gamma_p7)
-    assert abs(ds_sq - 32.142857) < 1e-4
-    ds_breakeven = math.sqrt(ds_sq)
-    assert abs(ds_breakeven - 5.6695) < 1e-4
+    def pricer(x: list[float]) -> float:
+        calls["n"] += 1
+        return float(sum(xi * xi for xi in x))
 
-    rule_of_16 = (vol_p7 / 16.0) * s_p7
-    assert abs(rule_of_16 - 5.6250) < 1e-4
+    x0, h = [1.0] * n, 1e-3
+    calls["n"] = 0
+    for i in range(n):
+        up, dn = list(x0), list(x0)
+        up[i] += h
+        dn[i] -= h
+        pricer(up)
+        pricer(dn)
+    grad_calls = calls["n"]
+    calls["n"] = 0
+    pricer(x0)  # base value, shared by every diagonal term
+    for i in range(n):
+        for d in (h, -h):
+            y = list(x0)
+            y[i] += d
+            pricer(y)
+        for j in range(i + 1, n):
+            for di, dj in ((h, h), (h, -h), (-h, h), (-h, -h)):
+                y = list(x0)
+                y[i] += di
+                y[j] += dj
+                pricer(y)
+    hess_calls = calls["n"]
+    check("central gradient calls", grad_calls, 100, 0)
+    check("full central Hessian calls, 2N^2 + 1", hess_calls, 5_001, 0)
+    check("formula 2N^2 + 1 minus the count", 2 * n * n + 1 - hess_calls, 0, 0)
 
-    print("Verifying Problem 8: Euler Risk Allocation and Component VaR...")
-    w1, w2 = 0.80, 0.20
-    s1_p8, s2_p8 = 0.15, 0.25
-    rho_p8 = 0.40
-    cov12_p8 = rho_p8 * s1_p8 * s2_p8
-    var_p8 = (w1**2) * (s1_p8**2) + (w2**2) * (s2_p8**2) + 2.0 * w1 * w2 * cov12_p8
-    assert abs(var_p8 - 0.021700) < 1e-6
-    sigma_p8 = math.sqrt(var_p8)
-    assert abs(sigma_p8 - 0.147309) < 1e-5
 
-    port_val_p8 = 100_000_000.0
-    z_p8 = 1.6449
-    var_dollar_p8 = port_val_p8 * z_p8 * sigma_p8
-    assert abs(var_dollar_p8 - 24_230_890.0) < 2.0
+# Problem 11 (card risk-taylor-proxy-tail-underestimation, risk-short-gamma-proxy-crash)
+def problem_short_put_crash() -> None:
+    print("\n[Problem: short 1-year ATM put (S = K = 100, r = 5%, vol 20%), spot falls 25 with vol unchanged]")
 
-    cov1_p = w1 * (s1_p8**2) + w2 * cov12_p8
-    cov2_p = w2 * (s2_p8**2) + w1 * cov12_p8
-    assert abs(cov1_p - 0.02100) < 1e-6
-    assert abs(cov2_p - 0.02450) < 1e-6
+    def put(s: float) -> float:
+        return bs_call(s, 100.0, 0.05, 0.2, 1.0) - s + 100.0 * math.exp(-0.05)
 
-    beta1_p8 = cov1_p / var_p8
-    beta2_p8 = cov2_p / var_p8
-    assert abs(beta1_p8 - 0.967742) < 1e-5
-    assert abs(beta2_p8 - 1.129032) < 1e-5
+    g = bs_greeks()
+    p_delta, p_gamma = g["delta"] - 1.0, g["gamma"]
+    ds = -25.0
+    full = -(put(100.0 + ds) - put(100.0))
+    prox = -(p_delta * ds + 0.5 * p_gamma * ds * ds)
+    check("put value", put(100.0), 5.5735, 5e-4)
+    check("short put full-revaluation P&L", full, -15.5166, 5e-4)
+    check("short put delta-gamma P&L", prox, -14.9425, 5e-4)
+    check("proxy understates the loss by", prox - full, 0.5743, 5e-4)
+    check("speed (third derivative) of the put, equal to the call's", g["speed"], -0.000516, 5e-7)
 
-    mvar1_p8 = beta1_p8 * var_dollar_p8
-    mvar2_p8 = beta2_p8 * var_dollar_p8
-    assert abs(mvar1_p8 - 23_449_248.0) < 2.0
-    assert abs(mvar2_p8 - 27_357_457.0) < 2.0
 
-    cvar1_p8 = w1 * mvar1_p8
-    cvar2_p8 = w2 * mvar2_p8
-    assert abs(cvar1_p8 - 18_759_399.0) < 2.0
-    assert abs(cvar2_p8 - 5_471_491.0) < 2.0
-    assert abs((cvar1_p8 + cvar2_p8) - var_dollar_p8) < 2.0
+# Problem 12 (cards risk-euler-allocation-homogeneity, risk-marginal-vs-component-var)
+def problem_euler() -> None:
+    print("\n[Problem: 80m at 15% vol and 20m at 25% vol, correlation 0.4, 95% VaR]")
+    x = np.array([80e6, 20e6])
+    cov = cov_matrix(np.array([0.15, 0.25]), np.array([[1.0, 0.4], [0.4, 1.0]]))
+    var, marg, comp = euler_normal(x, cov, Z95)
+    check("portfolio volatility", math.sqrt(float(x @ cov @ x)) / 1e8, 0.147309, 5e-7)
+    check("VaR", var, 24_230_207, 1.0)
+    check("marginal VaR asset 1 per dollar", marg[0], 0.234486, 5e-7)
+    check("marginal VaR asset 2 per dollar", marg[1], 0.273567, 5e-7)
+    check("component VaR asset 1", comp[0], 18_758_870, 1.0)
+    check("component VaR asset 2", comp[1], 5_471_338, 1.0)
+    h = 1_000.0
+    up, dn = x.copy(), x.copy()
+    up[1] += h
+    dn[1] -= h
+    check(
+        "brute-force marginal VaR asset 2 minus Euler", (normal_var(up, cov, Z95) - normal_var(dn, cov, Z95)) / (2 * h) - marg[1], 0.0, 1e-9
+    )
 
-    print("Verifying Problem 9: Almgren-Chriss Optimal Liquidation Trajectory...")
-    x0_p9 = 500_000.0
-    t_p9 = 3.0
-    sigma_p9 = 2.00
-    eta_p9 = 2.0e-6
-    lam_p9 = 2.0e-6
-    kappa_p9 = math.sqrt(lam_p9 * (sigma_p9**2) / eta_p9)
-    assert abs(kappa_p9 - 2.00) < 1e-6
 
-    sinh_6 = math.sinh(kappa_p9 * t_p9)
-    sinh_4 = math.sinh(kappa_p9 * (t_p9 - 1.0))
-    sinh_2 = math.sinh(kappa_p9 * (t_p9 - 2.0))
-    assert abs(sinh_6 - 201.7132) < 0.01
-    assert abs(sinh_4 - 27.2899) < 0.01
-    assert abs(sinh_2 - 3.6269) < 0.01
+# Problem 13 (cards risk-erc-two-asset-any-correlation, risk-erc-two-asset-inverse-vol)
+def problem_erc_two() -> None:
+    print("\n[Problem: equal risk contribution with two assets, vols 15% and 25%]")
+    for rho in (-0.5, 0.0, 0.8):
+        w = erc_newton(cov_matrix(np.array([0.15, 0.25]), np.array([[1.0, rho], [rho, 1.0]])))
+        check(f"weight of the 15% asset at correlation {rho}", w[0], 0.625, 1e-10)
 
-    x1_p9 = x0_p9 * (sinh_4 / sinh_6)
-    x2_p9 = x0_p9 * (sinh_2 / sinh_6)
-    assert abs(x1_p9 - 67_645) < 2.0
-    assert abs(x2_p9 - 8_990) < 2.0
 
-    sold_1 = x0_p9 - x1_p9
-    sold_2 = x1_p9 - x2_p9
-    sold_3 = x2_p9
-    assert abs(sold_1 - 432_355) < 2.0
-    assert abs(sold_2 - 58_655) < 2.0
-    assert abs(sold_3 - 8_990) < 2.0
+# Problem 14 (cards risk-forward-pfe-closed-form, risk-forward-ee-closed-form)
+def problem_forward_exposure() -> None:
+    print("\n[Problem: par forward, N = 10m, vol 30%, r = 0, one year]")
+    n, vol = 10e6, 0.30
+    ee = n * (2.0 * ncdf(0.5 * vol) - 1.0)
+    pfe = n * (math.exp(-0.5 * vol * vol + vol * ninv(0.95)) - 1.0)
+    check("EE(1) = N (2 Phi(sigma / 2) - 1)", ee, 1_192_354, 1.0)
+    check("PFE95(1)", pfe, 5_658_927, 1.0)
+    check("rule of thumb EE ~ 0.4 N sigma sqrt(t)", 0.4 * n * vol, 1_200_000, 1e-6)
+    rng = np.random.default_rng(8)
+    st = np.exp(-0.5 * vol * vol + vol * rng.standard_normal(1_000_000))
+    pos = n * np.maximum(st - 1.0, 0.0)
+    check("simulated EE (about)", float(pos.mean()), ee, 6_000)
+    check("simulated PFE95 (about)", float(np.quantile(pos, 0.95)), pfe, 15_000)
 
-    print("Verifying Problem 10: Liquidity-Adjusted VaR (L-VaR)...")
-    val_p10 = 30_000_000.0
-    var_1d_p10 = 1_500_000.0
-    mean_s_p10 = 0.0120
-    vol_s_p10 = 0.0060
-    z_p10 = 2.326
-    l_p10 = 3.0
 
-    spread_cost_p10 = 0.5 * (mean_s_p10 + z_p10 * vol_s_p10) * val_p10
-    assert abs(spread_cost_p10 - 389_340.0) < 1.0
+# Problem 15 (cards risk-effective-epe-definition, risk-eepe-discrete-weights)
+def problem_eepe() -> None:
+    print("\n[Problem: Effective EPE from a coarse EE profile, CRE53.12 to CRE53.13]")
+    grid = np.array([0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0])
+    ee = np.array([0.0, 80e3, 120e3, 160e3, 130e3, 80e3, 0.0])
+    eee = effective_ee(ee, 0.0)
+    check("Effective EE at 3y", eee[4], 160e3, 0.0)
+    check("Effective EE at 5y", eee[6], 160e3, 0.0)
+    eepe = effective_epe(grid, eee, 5.0)
+    check("Effective EPE (right-endpoint weights)", eepe, 100_000, 1e-6)
+    trap = float(np.sum(0.5 * (eee[1:3] + eee[:2]) * np.diff(grid[:3])))
+    check("trapezoid instead (not the CRE53.13 sum)", trap, 70_000, 1e-6)
+    check("EAD = 1.4 x Effective EPE", 1.4 * eepe, 140_000, 1e-6)
+    epe = float(np.sum(0.5 * (ee[1:] + ee[:-1]) * np.diff(grid)) / 5.0)
+    check("EPE over the life (trapezoid)", epe, 100_000, 1e-6)
 
-    multiplier_p10 = math.sqrt(1.0 + (l_p10 - 1.0) / 3.0)
-    assert abs(multiplier_p10 - math.sqrt(5.0 / 3.0)) < 1e-6
-    assert abs(multiplier_p10 - 1.290994) < 1e-5
 
-    scaled_var_p10 = var_1d_p10 * multiplier_p10
-    assert abs(scaled_var_p10 - 1_936_492.0) < 2.0
+# Problem 16 (cards risk-margin-period-of-risk-mpor, risk-collateralised-ee-sqrt-mpor)
+def problem_mpor() -> None:
+    print("\n[Problem: daily VM, MPOR 10 and 20 days, forward N = 10m, vol 30%, r = 0]")
+    n, vol = 10e6, 0.30
+    c10 = collateralised_ee_closed(n, vol, 10 / 250)
+    c20 = collateralised_ee_closed(n, vol, 20 / 250)
+    unc = collateralised_ee_closed(n, vol, 1.0)
+    check("collateralised EE, MPOR 10", c10, 239_330, 1.0)
+    check("collateralised EE, MPOR 20", c20, 338_412, 1.0)
+    check("ratio", c20 / c10, 1.4139, 5e-4)
+    check("uncollateralised EE at 1 year", unc, 1_192_354, 1.0)
+    check("collateral cuts EE by", 1.0 - c10 / unc, 0.7993, 5e-4)
 
-    total_lvar_p10 = scaled_var_p10 + spread_cost_p10
-    assert abs(total_lvar_p10 - 2_325_832.0) < 2.0
 
-    print("Verifying Problem 11: Counterparty Exposure Profiles and Effective EPE...")
-    ee_profile = [0.0, 80_000.0, 120_000.0, 160_000.0, 130_000.0, 80_000.0, 0.0]
-    eee_profile = [0.0]
-    for e in ee_profile[1:]:
-        eee_profile.append(max(eee_profile[-1], e))
-    assert eee_profile == [0.0, 80_000.0, 120_000.0, 160_000.0, 160_000.0, 160_000.0, 160_000.0]
+# Problem 17 (cards risk-ngr-four-trades, risk-net-to-gross-ratio-ngr)
+def problem_ngr() -> None:
+    print("\n[Problem: four trades +20, -15, +5, -2 (millions)]")
+    v = np.array([20.0, -15.0, 5.0, -2.0])
+    gross, net = float(np.maximum(v, 0).sum()), max(float(v.sum()), 0.0)
+    check("gross", gross, 25.0, 0.0)
+    check("net", net, 8.0, 0.0)
+    check("NGR", net / gross, 0.32, 1e-12)
+    check("MGN20.17 factor 0.4 + 0.6 NGR", 0.4 + 0.6 * net / gross, 0.592, 1e-12)
 
-    # 1-year EEPE: trapezoidal over [0, 0.5] and [0.5, 1.0]
-    eepe_1y = (0.5 * 0.5 * (0.0 + 80_000.0) + 0.5 * 0.5 * (80_000.0 + 120_000.0)) / 1.0
-    assert abs(eepe_1y - 70_000.0) < 1e-6
-    ead_p11 = 1.4 * eepe_1y
-    assert abs(ead_p11 - 98_000.0) < 1e-6
 
-    print("Verifying Problem 12: Bilateral CVA and DVA Calculation...")
-    ee_p12 = 500_000.0
-    ene_p12 = 300_000.0
-    df_half = math.exp(-0.04 * 0.5)
-    assert abs(df_half - 0.98019867) < 1e-5
+# Problem 18 (cards risk-cva-flat-exposure, risk-credit-triangle-cva)
+def problem_cva_flat() -> None:
+    print("\n[Problem: 1-year trade, average EE 500k, ENE 300k, hazards 3% and 1.5%, LGD 60%, r = 4%]")
+    df = math.exp(-0.04 * 0.5)
+    pd_c, pd_b = 1.0 - math.exp(-0.03), 1.0 - math.exp(-0.015)
+    cva = 0.6 * df * 500e3 * pd_c
+    dva = 0.6 * df * 300e3 * pd_b
+    check("counterparty 1y PD", pd_c, 0.029554, 5e-7)
+    check("bank 1y PD", pd_b, 0.014888, 5e-7)
+    check("CVA", cva, 8_691, 1.0)
+    check("DVA", dva, 2_627, 1.0)
+    check("net adjustment DVA - CVA", dva - cva, -6_064, 1.0)
+    # Same with a continuous integral: exposure flat at 500k, hazard density 0.03 e^{-0.03 t}, discount e^{-0.04 t}
+    integral = 0.6 * 500e3 * 0.03 * (1.0 - math.exp(-0.07)) / 0.07
+    check("CVA by the exact integral", integral, 8_691, 2.0)
+    check("credit-triangle approximation spread x EE x annuity", 0.018 * 500e3 * (1.0 - math.exp(-0.04)) / 0.04, 8_823, 1.0)
 
-    pd_c_p12 = 1.0 - math.exp(-0.030 * 1.0)
-    pd_b_p12 = 1.0 - math.exp(-0.015 * 1.0)
-    assert abs(pd_c_p12 - 0.0295545) < 1e-5
-    assert abs(pd_b_p12 - 0.0148886) < 1e-5
 
-    cva_p12 = 0.60 * df_half * ee_p12 * pd_c_p12
-    dva_p12 = 0.60 * df_half * ene_p12 * pd_b_p12
-    assert abs(cva_p12 - 8_690.65) < 1.0
-    assert abs(dva_p12 - 2_626.78) < 1.0
-    net_p12 = dva_p12 - cva_p12
-    assert abs(net_p12 - (-6_063.87)) < 1.0
+# Problem 19 (cards risk-xva-midpoint-shortcut, risk-mva-regulatory-driver, risk-kva-capital-valuation-adjustment)
+def problem_fva_mva_kva() -> None:
+    print("\n[Problem: midpoint short-cuts against the integrals with a flat discount curve]")
+    fca = 0.0075 * 400e3 * 0.945 * 3.0
+    mva = 0.0120 * 2e6 * 0.910 * 5.0
+    kva = 0.100 * 500e3 * 0.910 * 5.0
+    check("FCA short-cut", fca, 8_505, 1e-6)
+    check("MVA short-cut", mva, 109_200, 1e-6)
+    check("KVA short-cut", kva, 227_500, 1e-6)
+    r = -math.log(0.910) / 2.5
+    ann = (1.0 - math.exp(-5.0 * r)) / r
+    check("flat rate implied by P(0, 2.5) = 0.910", r, 0.037724, 5e-7)
+    check("integral of e^{-rt} over 5 years", ann, 4.5567, 5e-4)
+    check("MVA with the integral", 0.0120 * 2e6 * ann, 109_362, 1.0)
+    check("short-cut error, relative", mva / (0.0120 * 2e6 * ann) - 1.0, -0.0015, 5e-5)
 
-    print("Verifying Problem 13: PCA Yield Curve Factor Shocks...")
-    lambdas = [0.000180, 0.000018, 0.000002]
-    tot_var = sum(lambdas)
-    assert abs(tot_var - 0.000200) < 1e-9
-    pcts = [lam / tot_var for lam in lambdas]
-    assert abs(pcts[0] - 0.90) < 1e-6
-    assert abs(pcts[1] - 0.09) < 1e-6
-    assert abs(pcts[2] - 0.01) < 1e-6
 
-    sigma_level = math.sqrt(lambdas[0])
-    assert abs(sigma_level - 0.0134164) < 1e-5
-    shock_level = 1.50 * sigma_level * 0.577
-    assert abs(shock_level - 0.011612) < 1e-4  # +116.1 bps
+# Problem 20 (card risk-wrong-way-risk-classification, risk-wwr-two-state)
+def problem_wwr_two_state() -> None:
+    print("\n[Problem: two-state wrong-way risk]")
+    p_stress, e_stress, e_normal, pd, lgd = 0.10, 10e6, 1e6, 0.01, 0.6
+    ee = p_stress * e_stress + (1 - p_stress) * e_normal
+    cva_ind = lgd * pd * ee
+    cva_wwr = lgd * (pd / p_stress) * p_stress * e_stress  # every default happens in the stress state
+    check("expected exposure", ee, 1_900_000, 1e-6)
+    check("CVA, independent", cva_ind, 11_400, 1e-6)
+    check("CVA, all defaults in the stress state", cva_wwr, 60_000, 1e-6)
+    check("ratio", cva_wwr / cva_ind, 5.263, 5e-4)
+    rng = np.random.default_rng(14)
+    n = 2_000_000
+    stress = rng.random(n) < p_stress
+    default = stress & (rng.random(n) < pd / p_stress)
+    loss = lgd * np.where(stress, e_stress, e_normal) * default
+    check("simulated wrong-way CVA (about)", float(loss.mean()), 60_000, 1_500)
 
-    print("Verifying Problem 14: Funding Valuation Adjustment (FVA)...")
-    ee_p14 = 400_000.0
-    s_fund_p14 = 0.0075
-    df_p14 = 0.945
-    t_p14 = 3.0
-    fca_p14 = s_fund_p14 * ee_p14 * df_p14 * t_p14
-    assert abs(fca_p14 - 8_505.0) < 1e-6
 
-    print("Verifying Problem 15: Margin Valuation Adjustment (MVA)...")
-    im_p15 = 2_000_000.0
-    s_margin_p15 = 0.0120
-    df_p15 = 0.910
-    t_p15 = 5.0
-    mva_p15 = s_margin_p15 * im_p15 * df_p15 * t_p15
-    assert abs(mva_p15 - 109_200.0) < 1e-6
+# Problem 21 (cards risk-almgren-chriss-urgency-parameter, risk-ac-discrete-kappa)
+def problem_almgren_chriss() -> None:
+    print("\n[Problem: sell 500,000 shares over 3 days, sigma 2, eta 2e-6, lambda 2e-6, no permanent impact]")
+    x0, t_days, sig, eta, lam = 5e5, 3, 2.0, 2e-6, 2e-6
+    kt2 = lam * sig * sig / eta
+    kappa = math.acosh(1.0 + 0.5 * kt2)
+    check("kappa_tilde^2", kt2, 4.0, 1e-12)
+    check("discrete kappa = acosh(3)", kappa, 1.762747, 5e-7)
+    hold = [x0 * math.sinh(kappa * (t_days - k)) / math.sinh(kappa * t_days) for k in range(t_days + 1)]
+    sells = [hold[k] - hold[k + 1] for k in range(t_days)]
+    check("day 1 sale", sells[0], 414_286, 1.0)
+    check("day 2 sale", sells[1], 71_429, 1.0)
+    check("day 3 sale", sells[2], 14_286, 1.0)
+    # Brute force: minimise E + lam Var over (x1, x2) on the first-order conditions
+    a = np.array([[2 * eta + lam * sig * sig, -eta], [-eta, 2 * eta + lam * sig * sig]])
+    sol = np.linalg.solve(a, np.array([eta * x0, 0.0]))
+    check("x1 from the linear system minus sinh formula", sol[0] - hold[1], 0.0, 1e-6)
+    cont = [x0 * math.sinh(2.0 * (t_days - k)) / math.sinh(2.0 * t_days) for k in range(t_days + 1)]
+    check("day 1 sale with the continuous kappa = 2 (wrong for daily trading)", cont[0] - cont[1], 432_355, 1.0)
 
-    print("Verifying Problem 16: Capital Valuation Adjustment (KVA)...")
-    capital_p16 = 500_000.0
-    coc_p16 = 0.100
-    df_p16 = 0.910
-    t_p16 = 5.0
-    kva_p16 = coc_p16 * capital_p16 * df_p16 * t_p16
-    assert abs(kva_p16 - 227_500.0) < 1e-6
 
-    print("All 16 problems in Note 17 verified with exact numerical precision!")
+# Problem 22 (cards risk-lvar-spread-cost-and-scaling, risk-liquidation-horizon-variance-factor)
+def problem_lvar() -> None:
+    print("\n[Problem: 30m EM sovereign bond, VaR 1.5m, spread 1.2% (sd 0.6%), 3 days to liquidate]")
+    col = 0.5 * 30e6 * (0.012 + Z99 * 0.006)
+    m = math.sqrt(horizon_variance_factor(3))
+    check("cost of liquidation", col, 389_371, 1.0)
+    check("horizon sd multiplier, L = 3", m, 1.2472, 5e-5)
+    check("L-VaR", 1.5e6 * m + col, 2_260_200, 1.0)
+
+
+# Problem 23 (cards risk-negative-oil-options-failure, risk-model-reserve-black-bachelier)
+def problem_black_bachelier() -> None:
+    print("\n[Problem: futures at 5, Bachelier vol 15.96, one month: probability of a negative settlement]")
+    nvol, t = 15.96, 1.0 / 12.0
+    check("P(F_T < 0) from F = 5", ncdf(-5.0 / (nvol * math.sqrt(t))), 0.1389, 5e-4)
+    check("Bachelier put struck at 0", bachelier_put(5.0, 0.0, nvol, t), 0.3256, 5e-4)
+    check("Black put struck at 0 (a lognormal forward cannot go below 0)", black_put(5.0, 0.0, 3.2, t), 0.0, 0.0)
+
+
+# Problem 24 (cards risk-bgk-barrier-shift, risk-barrier-monitoring-validation)
+def problem_bgk() -> None:
+    print("\n[Problem: daily-monitored barrier at 90, vol 20%]")
+    beta = 0.5826
+    shifted = 90.0 * math.exp(-beta * 0.2 * math.sqrt(1.0 / 252.0))
+    check("shifted continuous barrier", shifted, 89.3418, 5e-4)
+    check("shift in vol units, beta sigma sqrt(dt)", beta * 0.2 * math.sqrt(1.0 / 252.0), 0.007340, 5e-7)
+
+
+def main() -> None:
+    problem_kelly()
+    problem_var_es()
+    problem_fhs()
+    problem_reverse_stress()
+    problem_mdd()
+    problem_greek_attribution()
+    problem_breakeven()
+    problem_pca()
+    problem_bumps()
+    problem_bump_counts()
+    problem_short_put_crash()
+    problem_euler()
+    problem_erc_two()
+    problem_forward_exposure()
+    problem_eepe()
+    problem_mpor()
+    problem_ngr()
+    problem_cva_flat()
+    problem_fva_mva_kva()
+    problem_wwr_two_state()
+    problem_almgren_chriss()
+    problem_lvar()
+    problem_black_bachelier()
+    problem_bgk()
+    print("\nAll problem set checks passed.")
 
 
 if __name__ == "__main__":
-    run_all_problem_set_assertions()
+    main()
