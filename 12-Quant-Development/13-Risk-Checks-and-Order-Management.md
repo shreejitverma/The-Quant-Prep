@@ -145,7 +145,7 @@ Design principles that interviews probe:
 | 8 | ExecutionReport | from venue |
 | 9 | OrderCancelReject | from venue |
 
-Key tags: ClOrdID (11) is the client's id for each request (every cancel and replace gets a new one), OrigClOrdID (41) points to the request being cancelled or replaced, OrderID (37) is the venue's id, ExecID (17) is unique per execution report, OrderQty (38), Price (44), Side (54), Symbol (55), LastQty (32) and LastPx (31) describe the latest fill, CumQty (14) and LeavesQty (151) the totals, and AvgPx (6) the average fill price.
+Key tags: ClOrdID (11) is the client's id for each request (every cancel and replace gets a new one), OrigClOrdID (41) names the last accepted ClOrdID of the order being cancelled or replaced, OrderID (37) is the venue's id, ExecID (17) is unique per execution report, OrderQty (38), Price (44), Side (54), Symbol (55), LastQty (32) and LastPx (31) describe the latest fill, CumQty (14) and LeavesQty (151) the totals, and AvgPx (6) the average fill price.
 
 ExecType (150) says what this report is about; OrdStatus (39) says what state the order is in afterwards.
 FIX 4.4 values of ExecType: 0 New, 3 Done for day, 4 Canceled, 5 Replaced, 6 Pending Cancel, 7 Stopped, 8 Rejected, 9 Suspended, A Pending New, B Calculated, C Expired, D Restated, E Pending Replace, F Trade (partial fill or fill), G Trade Correct, H Trade Cancel, I Order Status; the older values 1 and 2 (partial fill, fill) were replaced by F.
@@ -158,34 +158,42 @@ stateDiagram-v2
     [*] --> PendingNew: checks pass, 35=D sent
     PendingNew --> New: 150=0
     PendingNew --> Rejected: 150=8
-    PendingNew --> PartiallyFilled: 150=F before the ack
+    PendingNew --> PartiallyFilled: 150=F before the ack, an implicit ack
+    PendingNew --> Filled: 150=F to leaves 0 before the ack
+    PendingNew --> Canceled: unsolicited 150=4 before the ack, an implicit ack
+    PendingNew --> Expired: 150=C before the ack, an implicit ack
     PendingNew --> PendingCancel: 35=F sent before the ack
+    PendingNew --> PendingReplace: 35=G sent before the ack
     New --> PartiallyFilled: 150=F, leaves above 0
     New --> Filled: 150=F, leaves 0
+    New --> Canceled: unsolicited 150=4
+    New --> Expired: 150=C
+    New --> PendingCancel: 35=F sent
+    New --> PendingReplace: 35=G sent
     PartiallyFilled --> PartiallyFilled: 150=F, leaves above 0
     PartiallyFilled --> Filled: 150=F, leaves 0
-    New --> PendingCancel: 35=F sent
+    PartiallyFilled --> Canceled: unsolicited 150=4
+    PartiallyFilled --> Expired: 150=C
     PartiallyFilled --> PendingCancel: 35=F sent
-    New --> PendingReplace: 35=G sent
     PartiallyFilled --> PendingReplace: 35=G sent
-    PendingReplace --> PendingCancel: 35=F sent while the replace is in flight
-    PendingCancel --> PendingReplace: 35=9 for the cancel, replace still in flight
-    PendingCancel --> PendingCancel: 150=F even to leaves 0, or a late 150=0
+    PendingCancel --> PendingCancel: 150=F even to leaves 0
     PendingCancel --> Canceled: 150=4 on our cancel, or unsolicited
     PendingCancel --> Expired: 150=C, our cancel becomes moot
+    PendingCancel --> Rejected: 150=8, the cancel was sent before the ack
     PendingCancel --> Filled: 35=9 after the order filled
     PendingCancel --> PartiallyFilled: 35=9 after a fill
     PendingCancel --> New: 35=9 with no fill
+    PendingCancel --> PendingNew: 35=9 before the ack
+    PendingCancel --> PendingReplace: 35=9 for the cancel, replace still in flight
     PendingReplace --> PendingReplace: 150=F
-    PendingReplace --> New: 150=5, no fills yet
-    PendingReplace --> PartiallyFilled: 150=5 after fills
+    PendingReplace --> PendingCancel: 35=F sent while the replace is in flight
+    PendingReplace --> New: 150=5 with no fills, or 35=9 with no fill
+    PendingReplace --> PartiallyFilled: 150=5 after fills, or 35=9 after a fill
     PendingReplace --> Filled: 150=5 when fills used up the new quantity, or 35=9
+    PendingReplace --> PendingNew: 35=9 before the ack
     PendingReplace --> Canceled: unsolicited 150=4, our replace becomes moot
     PendingReplace --> Expired: 150=C, our replace becomes moot
-    New --> Canceled: unsolicited 150=4
-    PartiallyFilled --> Canceled: unsolicited 150=4
-    New --> Expired: 150=C
-    PartiallyFilled --> Expired: 150=C
+    PendingReplace --> Rejected: 150=8, the replace was sent before the ack
     Filled --> [*]
     Canceled --> [*]
     Rejected --> [*]
@@ -207,6 +215,7 @@ The transitions that bite in production:
   Refusing that cancel would leave the order live under the kill switch until the replace resolves.
 - **Unsolicited cancels and expiries.** IOC remainders, end of day, venue-side risk or cancel-on-disconnect produce 150=4 or 150=C with no request from you, on the order's current ClOrdID.
   The order ends even when your cancel or replace is in flight; that request becomes moot, and the venue's later reject for it is the too-late answer above.
+  One that arrives before the New ack is also an implicit acknowledgement, like a fill before the ack below: the order was live at the venue, and the late ack, if it still comes, is counted and ignored.
 - **Fill before acknowledgement.** Some flows deliver a fill before the New ack; treat it as an implicit acknowledgement.
   The late ack still shows the pre-fill quantities (CumQty 0, LeavesQty the order quantity), so check that it adds up to the order, then count it and ignore it rather than treat it as an illegal transition.
   Likewise a cancel sent before the ack can be followed by the ack itself (150=0, OrdStatus 0) and only then by the cancel (B.1.d, B.1.e).
@@ -215,6 +224,7 @@ The transitions that bite in production:
 Patching these races one branch at a time is how gateways end up with a false kill on one race and a silent hole on the next.
 The repo's gateway keeps, for every order, a ledger of each ClOrdID it sent (the order, each cancel, each replace) and the state of that request: in flight, implied (filled before its ack), accepted, rejected, or moot (the order ended first).
 Each inbound message is classified by the order's phase (unacknowledged, live, filled, ended) and by the ledger state of the request it names, and one transition table decides the action; a combination the table does not list is a reconciliation failure.
+The diagram above is that table seen as OrdStatus changes: the repo's model check requires every row to fire and the status changes it observes to be exactly these edges.
 OrdStatus is recomputed from the phase and the ledger after every message, so it cannot drift from them.
 
 ### Idempotency and reconciliation
@@ -352,7 +362,7 @@ Re-arming is a separate, deliberate human action.
 > On the worst case while it is in flight: either set of terms can execute, so count max(old leaves, new leaves) = 300 shares at the worse price 105.00. The repo's gateway then reports a worst-case long of 900 and gross exposure of USD 101,550 for the example book.
 
 > [!question]- qd-oms-clordid-chain | Why does every cancel and replace need its own ClOrdID, and how do you key the order?
-> FIX requires each request to carry a unique ClOrdID (11) with OrigClOrdID (41) pointing at the previous one, so replies can be matched to the request. Key the order internally by its first ClOrdID and keep an alias map from every id in the chain, or use the venue's OrderID (37).
+> FIX requires each request to carry a unique ClOrdID (11) with OrigClOrdID (41) naming the order's last accepted ClOrdID, so replies can be matched to the request. Key the order internally by its first ClOrdID and keep an alias map from every id in the chain, or use the venue's OrderID (37).
 
 > [!question]- qd-oms-avgpx | O1 fills 200 at 100.00 and 300 at 99.98. What is AvgPx (6)?
 > 99.988: $(200 \times 100.00 + 300 \times 99.98)/500$.

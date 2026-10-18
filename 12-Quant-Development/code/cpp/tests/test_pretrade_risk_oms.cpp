@@ -11,6 +11,8 @@
 
 #include "pretrade_risk_oms.hpp"
 
+#include <algorithm>
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <deque>
@@ -18,6 +20,7 @@
 #include <limits>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -342,6 +345,24 @@ void test_contradictory_answers_are_breaks() {
     EXPECT(d.killed() && d.order("X")->status == OrdStatus::New);
 }
 
+// An unsolicited end naming the order's own ClOrdID before its ack is an implicit ack followed by
+// the end: no kill, and the late ack and the too-late reject that follow are counted and ignored.
+void test_unsolicited_end_before_ack() {
+    RiskGateway gw = gateway();
+    EXPECT(gw.submit({"X", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    EXPECT(gw.requestCancel("X", "C") == RejectReason::None);
+    EXPECT(gw.onExecutionReport({"e1", "X", "", ExecType::Expired, OrdStatus::Expired, 0, 0, 0, 0}) == ApplyResult::Applied);
+    EXPECT(gw.order("X")->status == OrdStatus::Expired && !gw.killed() && gw.implicitAcks() == 1);
+    EXPECT(gw.onExecutionReport({"e2", "X", "", ExecType::New, OrdStatus::New, 0, 0, 100, 0}) == ApplyResult::Ignored);
+    EXPECT(gw.onCancelReject("C") == ApplyResult::Ignored);
+    EXPECT(!gw.killed() && gw.ignoredResponses() == 2 && gw.openQty("ABC", Side::Buy) == 0);
+    // The end must name the order: a Canceled on a ClOrdID never sent for it is still a break.
+    RiskGateway gw2 = gateway();
+    EXPECT(gw2.submit({"Y", "ABC", Side::Buy, 100, 5'000}, 0) == RejectReason::None);
+    EXPECT(gw2.onExecutionReport({"f1", "Q", "Y", ExecType::Canceled, OrdStatus::Canceled, 0, 0, 0, 0}) == ApplyResult::IllegalTransition);
+    EXPECT(gw2.killed() && gw2.order("Y")->status == OrdStatus::PendingNew);
+}
+
 // ------------------------------------------------------------------ model check
 // A venue written independently of the gateway. It works our requests in arrival order, sometimes
 // in two phases (a Pending Cancel or Pending Replace ack first, the outcome later), fills, expires
@@ -400,9 +421,13 @@ struct VenueOrder {
     }
 };
 
+using Edge = std::pair<OrdStatus, OrdStatus>;
+
 struct ModelStats {
     long steps = 0, reports = 0, implicitAcks = 0, tooLate = 0, twoPhase = 0, unsolicited = 0, replaced = 0, amendedToCum = 0, replays = 0,
-         orderRejects = 0, quiesces = 0, faultsCaught = 0;
+         orderRejects = 0, quiesces = 0, faultsCaught = 0, beforeAck = 0;
+    std::set<Edge> edges;  // OrdStatus changes seen in legal sessions, plus fills that keep the status
+    std::array<std::uint64_t, kTransitionCount> rows{};
 };
 
 class VenueModel {
@@ -437,6 +462,10 @@ public:
         }
         VenueOrder& v = orders.at(m.key);
         if (v.working) {
+            if (m.kind == 'C' && rng_.chance(2)) {  // refused at once: a replace is still being worked
+                reject(m.id);
+                return;
+            }
             v.backlog.push_back(m);
             return;
         }
@@ -457,9 +486,10 @@ public:
         } else if (r < 8) {
             flushAck(v);
         } else if (r < 9) {
-            if (v.ackSent && !v.ackOwed && !v.ended && v.leaves() > 0 && rng_.chance(3)) {
+            if ((v.ackSent || v.ackOwed) && !v.working && !v.ended && v.leaves() > 0 && rng_.chance(3)) {
                 v.ended = rng_.chance(2) ? OrdStatus::Expired : OrdStatus::Canceled;
                 ++stats->unsolicited;
+                if (v.ackOwed && rng_.chance(2)) v.ackOwed = false;  // the held-back ack is never sent
                 report(v, *v.ended == OrdStatus::Expired ? ExecType::Expired : ExecType::Canceled, v.current, "", 0, 0);
             }
         } else if (!sent.empty()) {
@@ -495,6 +525,11 @@ private:
         if (!v.ackOwed) return;
         v.ackOwed = false;
         v.ackSent = true;
+        if (rng_.chance(4)) {
+            ToGateway p{false, {"x" + std::to_string(++execIds_), v.key, "", ExecType::PendingNew, OrdStatus::PendingNew, 0, 0, v.origQty, 0}, {}};
+            out.push_back(p);
+            sent.push_back(p);
+        }
         ToGateway m{false, {"x" + std::to_string(++execIds_), v.key, "", ExecType::New, OrdStatus::New, 0, 0, v.origQty, 0}, {}};
         if (v.cum > 0) ++stats->implicitAcks;
         out.push_back(m);
@@ -510,8 +545,19 @@ private:
     }
 
     void work(VenueOrder& v, const ToVenue& m) {
+        if (v.ackOwed && v.leaves() > 0 && rng_.chance(3)) {  // answered before the held-back ack goes out
+            ++stats->beforeAck;
+            if (m.kind == 'C' && rng_.chance(2)) {
+                v.ended = OrdStatus::Canceled;
+                report(v, ExecType::Canceled, m.id, v.current, 0, 0);
+                if (rng_.chance(2)) v.ackOwed = false;
+            } else {
+                reject(m.id);
+            }
+            return;
+        }
         flushAck(v);
-        if (v.ended || v.leaves() == 0 || (m.kind == 'R' && rng_.chance(8))) {
+        if (v.ended || v.leaves() == 0 || rng_.chance(8)) {
             if (v.ended || v.leaves() == 0) ++stats->tooLate;
             reject(m.id);
             return;
@@ -599,11 +645,16 @@ bool runSession(std::uint64_t seed, int steps, bool fault, ModelStats& st) {
     int ids = 0;
     const int faultAt = fault ? 50 + static_cast<int>(rng.below(steps - 50)) : -1;
 
+    auto statusOf = [&](const std::string& id) { return gw.order(id) != nullptr ? gw.order(id)->status : OrdStatus::PendingNew; };
     auto deliverToGateway = [&]() -> bool {
         const ToGateway m = venue.out.front();
         venue.out.pop_front();
         ++st.reports;
+        const std::string& named = m.cancelReject ? m.rejectId : m.er.clOrdId;
+        const OrdStatus before = statusOf(named);
         const ApplyResult r = m.cancelReject ? gw.onCancelReject(m.rejectId) : gw.onExecutionReport(m.er);
+        const OrdStatus after = statusOf(named);
+        if (before != after || (!m.cancelReject && m.er.execType == ExecType::Trade && r == ApplyResult::Applied)) st.edges.insert({before, after});
         if (r == ApplyResult::IllegalTransition || r == ApplyResult::Inconsistent || r == ApplyResult::UnknownOrder || gw.killed()) {
             std::cerr << "  model: legal message rejected (" << toString(r) << ") id " << (m.cancelReject ? m.rejectId : m.er.clOrdId)
                       << " type " << static_cast<char>(m.er.execType) << " seed " << seed << std::endl;
@@ -696,13 +747,21 @@ bool runSession(std::uint64_t seed, int steps, bool fault, ModelStats& st) {
         } else if (a < 16 && !keys.empty()) {
             const std::string& key = keys[static_cast<std::size_t>(rng.below(static_cast<std::int64_t>(keys.size())))];
             const std::string id = "c" + std::to_string(++ids);
-            if (gw.requestCancel(key, id) == RejectReason::None) toVenue.push_back({'C', key, id, 0, 0});
+            const OrdStatus before = gw.order(key)->status;
+            if (gw.requestCancel(key, id) == RejectReason::None) {
+                st.edges.insert({before, gw.order(key)->status});
+                toVenue.push_back({'C', key, id, 0, 0});
+            }
         } else if (a < 24 && !keys.empty()) {
             const std::string& key = keys[static_cast<std::size_t>(rng.below(static_cast<std::int64_t>(keys.size())))];
             const std::string id = "r" + std::to_string(++ids);
             const std::int64_t qty = gw.order(key)->cumQty + 1 + rng.below(200);
             const std::int64_t px = 4'600 + rng.below(800);
-            if (gw.requestReplace(key, id, qty, px, now) == RejectReason::None) toVenue.push_back({'R', key, id, qty, px});
+            const OrdStatus before = gw.order(key)->status;
+            if (gw.requestReplace(key, id, qty, px, now) == RejectReason::None) {
+                st.edges.insert({before, gw.order(key)->status});
+                toVenue.push_back({'R', key, id, qty, px});
+            }
         } else if (a < 44 && !toVenue.empty()) {
             venue.receive(toVenue.front());
             toVenue.pop_front();
@@ -716,12 +775,59 @@ bool runSession(std::uint64_t seed, int steps, bool fault, ModelStats& st) {
         }
     }
     if (fault) return true;
+    for (std::size_t i = 0; i < kTransitionCount; ++i) st.rows[i] += gw.transitionHits()[i];
     if (!quiesce()) {
         std::cerr << "  model: gateway and venue disagree at the end, seed " << seed << std::endl;
         return false;
     }
     return !gw.killed() && gw.ignoredResponses() > 0;
 }
+
+// The edges of the state diagram in note 13, each a change of OrdStatus (a fill that leaves the
+// status unchanged is drawn as a loop). The model check must produce exactly these.
+const std::set<Edge> kDiagramEdges = [] {
+    using S = OrdStatus;
+    return std::set<Edge>{
+        {S::PendingNew, S::New},
+        {S::PendingNew, S::Rejected},
+        {S::PendingNew, S::PartiallyFilled},
+        {S::PendingNew, S::Filled},
+        {S::PendingNew, S::PendingCancel},
+        {S::PendingNew, S::PendingReplace},
+        {S::PendingNew, S::Canceled},
+        {S::PendingNew, S::Expired},
+        {S::New, S::PartiallyFilled},
+        {S::New, S::Filled},
+        {S::New, S::PendingCancel},
+        {S::New, S::PendingReplace},
+        {S::New, S::Canceled},
+        {S::New, S::Expired},
+        {S::PartiallyFilled, S::PartiallyFilled},
+        {S::PartiallyFilled, S::Filled},
+        {S::PartiallyFilled, S::PendingCancel},
+        {S::PartiallyFilled, S::PendingReplace},
+        {S::PartiallyFilled, S::Canceled},
+        {S::PartiallyFilled, S::Expired},
+        {S::PendingCancel, S::PendingCancel},
+        {S::PendingCancel, S::Canceled},
+        {S::PendingCancel, S::Expired},
+        {S::PendingCancel, S::Rejected},
+        {S::PendingCancel, S::Filled},
+        {S::PendingCancel, S::PartiallyFilled},
+        {S::PendingCancel, S::New},
+        {S::PendingCancel, S::PendingNew},
+        {S::PendingCancel, S::PendingReplace},
+        {S::PendingReplace, S::PendingReplace},
+        {S::PendingReplace, S::PendingCancel},
+        {S::PendingReplace, S::New},
+        {S::PendingReplace, S::PartiallyFilled},
+        {S::PendingReplace, S::Filled},
+        {S::PendingReplace, S::PendingNew},
+        {S::PendingReplace, S::Canceled},
+        {S::PendingReplace, S::Expired},
+        {S::PendingReplace, S::Rejected},
+    };
+}();
 
 void test_model_check_against_venue() {
     ModelStats st;
@@ -739,7 +845,17 @@ void test_model_check_against_venue() {
     EXPECT(st.steps > 300'000);
     // Every race the session is meant to produce actually happened.
     EXPECT(st.implicitAcks > 0 && st.twoPhase > 0 && st.tooLate > 0 && st.unsolicited > 0 && st.replaced > 0 && st.amendedToCum > 0);
-    EXPECT(st.replays > 0 && st.orderRejects > 0 && st.quiesces > 150);
+    EXPECT(st.replays > 0 && st.orderRejects > 0 && st.quiesces > 150 && st.beforeAck > 0);
+    // Every row of the transition table fires under legal venue behaviour, and the status changes
+    // it produces are exactly the diagram's edges: none missing from the diagram, none unreachable.
+    for (std::size_t i = 0; i < kTransitionCount; ++i)
+        if (st.rows[i] == 0) std::cerr << "  model: transition row " << i << " never fired" << std::endl;
+    EXPECT(std::all_of(st.rows.begin(), st.rows.end(), [](std::uint64_t n) { return n > 0; }));
+    for (const Edge& e : st.edges)
+        if (!kDiagramEdges.contains(e)) std::cerr << "  model: edge not in the diagram " << toString(e.first) << " -> " << toString(e.second) << std::endl;
+    for (const Edge& e : kDiagramEdges)
+        if (!st.edges.contains(e)) std::cerr << "  model: diagram edge never seen " << toString(e.first) << " -> " << toString(e.second) << std::endl;
+    EXPECT(st.edges == kDiagramEdges);
 }
 
 // After a replace the venue knows the order by its new ClOrdID, so the kill switch cancels that one.
@@ -1080,6 +1196,7 @@ int main() {
     RUN_TEST(test_responses_must_match_request_in_flight);
     RUN_TEST(test_kill_switch_uses_current_clordid);
     RUN_TEST(test_contradictory_answers_are_breaks);
+    RUN_TEST(test_unsolicited_end_before_ack);
     RUN_TEST(test_model_check_against_venue);
     std::cout << "\n" << (g_total - g_failures) << "/" << g_total << " assertions passed" << std::endl;
     return g_failures == 0 ? 0 : 1;

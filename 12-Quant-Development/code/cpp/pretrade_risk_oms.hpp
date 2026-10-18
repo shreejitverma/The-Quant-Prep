@@ -37,6 +37,8 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <deque>
 #include <limits>
@@ -257,7 +259,7 @@ enum class Action : char {
     RejectOrder,     // the venue refused the new order: it ends, requests in flight become moot
     Fill,            // book the fill; a fill before the ack is an implicit ack
     EndSolicited,    // our cancel is accepted: the order ends, other requests in flight become moot
-    EndUnsolicited,  // the venue ended the order itself (IOC remainder, expiry, venue cancel)
+    EndUnsolicited,  // the venue ended the order itself (IOC remainder, expiry, venue cancel); before the ack it is an implicit ack
     ApplyReplace,    // the replace is accepted: new terms, new current ClOrdID
     RejectRequest,   // the venue refused the cancel or replace: the order is as if it was never sent
     LateAck,         // an ack overtaken by fills: it must describe the order before them
@@ -285,6 +287,7 @@ inline constexpr Transition kTransitions[] = {
     {Event::PendingReplaceAck, Phase::Any, Ref::ReplaceInFlight, false, Action::Confirm},
     {Event::Ended, Phase::Unacked, Ref::CancelInFlight, false, Action::EndSolicited},
     {Event::Ended, Phase::Live, Ref::CancelInFlight, false, Action::EndSolicited},
+    {Event::Ended, Phase::Unacked, Ref::NewInFlight, true, Action::EndUnsolicited},
     {Event::Ended, Phase::Live, Ref::NewAccepted, true, Action::EndUnsolicited},
     {Event::Ended, Phase::Live, Ref::NewImplied, true, Action::EndUnsolicited},
     {Event::Ended, Phase::Live, Ref::ReplaceAccepted, true, Action::EndUnsolicited},
@@ -332,11 +335,16 @@ inline Ref refOf(const Request& r) {
     return Ref::NewRejected;  // unreachable; a value no permissive row accepts
 }
 
-inline const Transition* findTransition(Event e, Phase p, Ref r, bool namesCurrent) {
-    for (const Transition& t : kTransitions)
+inline constexpr std::size_t kTransitionCount = std::size(kTransitions);
+
+// Index of the first matching row, or kTransitionCount when none matches.
+inline std::size_t findTransition(Event e, Phase p, Ref r, bool namesCurrent) {
+    for (std::size_t i = 0; i < kTransitionCount; ++i) {
+        const Transition& t = kTransitions[i];
         if (t.event == e && (t.phase == Phase::Any || t.phase == p) && (t.ref == Ref::Any || t.ref == r) && (!t.namesCurrent || namesCurrent))
-            return &t;
-    return nullptr;
+            return i;
+    }
+    return kTransitionCount;
 }
 
 // Prices above this are rejected as invalid; it also keeps price * 10000 inside int64.
@@ -485,6 +493,9 @@ public:
     bool killed() const { return killed_; }
     const std::string& killReason() const { return killReason_; }
     std::uint64_t ignoredResponses() const { return ignoredResponses_; }
+    std::uint64_t implicitAcks() const { return implicitAcks_; }
+    // How often each row of kTransitions has fired, in table order.
+    const std::array<std::uint64_t, kTransitionCount>& transitionHits() const { return transitionHits_; }
     const Order* order(const std::string& anyClOrdId) const {
         const auto a = alias_.find(anyClOrdId);
         if (a == alias_.end()) return nullptr;
@@ -614,6 +625,14 @@ private:
         return std::nullopt;
     }
 
+    // A fill or an unsolicited end before the New ack acknowledges the order implicitly.
+    void impliedAck(Order& o) {
+        Request& created = o.ledger.at(o.key);
+        if (created.state != RequestState::InFlight) return;
+        created.state = RequestState::Implied;
+        ++implicitAcks_;
+    }
+
     static void mootInFlight(Order& o) {
         for (auto& [id, r] : o.ledger)
             if (r.state == RequestState::InFlight) r.state = RequestState::Moot;
@@ -625,9 +644,10 @@ private:
         const auto it = o.ledger.find(named);
         if (it == o.ledger.end()) return ApplyResult::IllegalTransition;
         Request& req = it->second;
-        const Transition* t = findTransition(ev, phaseOf(o.base), refOf(req), named == o.currentClOrdId);
-        if (t == nullptr) return ApplyResult::IllegalTransition;
-        switch (t->action) {
+        const std::size_t row = findTransition(ev, phaseOf(o.base), refOf(req), named == o.currentClOrdId);
+        if (row == kTransitionCount) return ApplyResult::IllegalTransition;
+        ++transitionHits_[row];
+        switch (kTransitions[row].action) {
             case Action::Ignore:
                 ++ignoredResponses_;
                 return ApplyResult::Ignored;
@@ -665,8 +685,7 @@ private:
                     __builtin_add_overflow(o.fillNotionalCents, fillNotional, &totalNotional) ||
                     __builtin_add_overflow(position(o.symbol), o.side == Side::Buy ? er->lastQty : -er->lastQty, &newPosition))
                     return ApplyResult::Inconsistent;
-                Request& created = o.ledger.at(o.key);
-                if (created.state == RequestState::InFlight) created.state = RequestState::Implied;
+                impliedAck(o);
                 o.cumQty += er->lastQty;
                 o.leavesQty -= er->lastQty;
                 o.fillNotionalCents = totalNotional;
@@ -675,9 +694,12 @@ private:
                 break;
             }
             case Action::EndSolicited:
-                req.state = RequestState::Accepted;
-                [[fallthrough]];
             case Action::EndUnsolicited:
+                if (kTransitions[row].action == Action::EndSolicited) {
+                    req.state = RequestState::Accepted;
+                } else {
+                    impliedAck(o);
+                }
                 mootInFlight(o);
                 o.base = er->execType == ExecType::Canceled ? OrdStatus::Canceled : OrdStatus::Expired;
                 o.leavesQty = 0;
@@ -711,6 +733,8 @@ private:
     RiskLimits limits_;
     std::uint64_t invalidReferencePrices_ = 0;
     std::uint64_t ignoredResponses_ = 0;
+    std::uint64_t implicitAcks_ = 0;
+    std::array<std::uint64_t, kTransitionCount> transitionHits_{};
     bool killed_ = false;
     std::string killReason_;
     std::unordered_map<std::string, std::int64_t> referencePx_;
