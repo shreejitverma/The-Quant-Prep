@@ -2,182 +2,194 @@
 type: concept
 track: [quant-dev, quant-risk]
 tier: senior
-status: draft
+status: solid
 prereqs: [model-governance]
 est_hours: 4
-sources: [Martin Kleppmann - Designing Data-Intensive Applications (2017), Christian Voigt - High-Reliability Financial Software Architecture (2022), Betsy Beyer et al. - Site Reliability Engineering: How Google Runs Production Systems (2016)]
+sources: [Martin Kleppmann - Designing Data-Intensive Applications: The Big Ideas Behind Reliable Scalable and Maintainable Systems (O'Reilly Media 2017), David Goldberg - What Every Computer Scientist Should Know About Floating-Point Arithmetic (ACM Computing Surveys Vol 23 No 1 March 1991), Nicholas J. Higham - Accuracy and Stability of Numerical Algorithms (2nd Edition Society for Industrial and Applied Mathematics 2002), Board of Governors of the Federal Reserve System - Sound Practices to Strengthen Operational Resilience (SR Letter 20-24 November 2020), Betsy Beyer Chris Jones Jennifer Petoff and Niall Richard Murphy - Site Reliability Engineering: How Google Runs Production Systems (O'Reilly Media 2016)]
 ---
 
 # Non-Functional Architecture and Production Operations
 
 ## TL;DR
 
-While functional design focuses on mathematical pricing and risk models, non-functional design determines whether enterprise trading systems survive production stress, regulatory audits, and infrastructure disasters.
-Core non-functional pillars include: **Bit-Exact Determinism** (guaranteeing that identical portfolio runs yield identical binary numbers regardless of thread scheduling or CPU architecture); **Bitemporality** (enabling point-in-time reconstruction of historical books as known on any past date); **Security and Chinese Walls** (strictly separating public trading desks from private investment banking data); **Disaster Recovery (DR)** (enforcing zero Recovery Point Objective $\text{RPO} = 0$ for trade capture and $< 15\text{ minutes}$ for risk batches); and **Cloud FinOps** (optimizing the cost per trade evaluated using dynamic spot-instance autoscaling).
-Without rigorous non-functional engineering, institutions face regulatory fines, catastrophic trading halts, and unmanageable infrastructure costs.
+- While functional software engineering produces mathematical pricing algorithms and risk aggregations, non-functional architecture determines whether enterprise trading platforms survive market volatility spikes, regulatory audits, and physical data center failures.
+- Non-functional pillars for mission-critical trading include: **Bit-Exact Determinism** (guaranteeing that identical portfolio runs produce identical binary outputs regardless of thread scheduling or compiler optimizations); **Bitemporality** (reconstructing historical book states as valid on any date); **Security and Information Barriers** (enforcing Chinese Walls separating public trading desks from private investment banking data); **Disaster Recovery (DR)** (enforcing Recovery Point Objective $\text{RPO} = 0$ for trade capture and Recovery Time Objective $\text{RTO} < 5\text{ minutes}$ across geographic data centers); and **Cloud FinOps** (optimizing unit economics per scenario evaluation via dynamic spot instance scheduling).
+- In multi-threaded numerical computing, non-associative floating-point addition causes phantom P&L discrepancies; deterministic reduction trees and Kahan compensated summation recover lost precision.
+- Synchronous transactional replication across dark-fiber links (such as New York Equinix NY4 to Chicago Equinix CH1) requires pipelined concurrent WAL streams to sustain thousands of transactions per second against speed-of-light propagation delays.
+- All numerical figures in this note are verified by [sys_non_functional.py](code/sys_non_functional.py).
 
 ## Learning objectives
 
 - Guarantee bit-exact floating-point reproducibility across distributed multi-threaded CPU and GPU grids.
-- Implement reproducible pseudo-random number generator (PRNG) pipelines for Monte Carlo simulations using deterministic seed leapfrogging.
-- Architect bitemporal data repositories and cryptographic audit trails for historical regulatory reconstruction.
-- Design Chinese Wall information barriers and Attribute-Based Access Control (ABAC) isolating trading desks from private market information.
-- Formulate Disaster Recovery architectures achieving $\text{RPO} = 0$ and $\text{RTO} < 5\text{ minutes}$ across geographic data centers.
-- Implement Cloud FinOps cost-governance frameworks tracking compute expenditure per trade and per risk scenario.
+- Implement Kahan compensated summation to eliminate truncation error accumulation during multi-million-position portfolio roll-ups.
+- Construct counter-based pseudo-random number generator (PRNG) leapfrogging pipelines ensuring pathwise Monte Carlo determinism.
+- Design high-availability disaster recovery architectures achieving $\text{RPO} = 0$ and $\text{RTO} < 5\text{ minutes}$ across geographically separated metro data centers.
+- Implement Attribute-Based Access Control (ABAC) and Chinese Wall information barriers isolating flow market makers from private advisory divisions.
+- Formulate Cloud FinOps unit-cost frameworks evaluating on-demand infrastructure against spot-instance cluster bursting.
 
 ## Core concepts
 
 ### 1. Non-Functional Pillars for Capital Markets Infrastructure
 
-```
-+----------------------------------------------------------------------------------------------------+
-| Dimension           | Architectural Mandate                      | Primary Failure Mode            |
-+----------------------------------------------------------------------------------------------------+
-| Determinism         | IEEE 754 compliance, fixed PRNG seeds      | Phantom PnL breaks between runs |
-| Bitemporality       | Valid Time vs. Transaction Time tracking   | Inability to pass historical audit|
-| Security & Walls    | ABAC entitlements, Kerberos / mTLS, KMS    | Insider trading, regulatory fine|
-| Disaster Recovery   | Synchronous cross-region replication (RPO=0)| Data loss during datacenter outage|
-| Observability       | OpenTelemetry traces, Prometheus metrics   | Undetected queue stalls / breaks|
-| Cloud FinOps        | Spot autoscaling, per-trade unit economics | Multi-million cloud budget blowup|
-+----------------------------------------------------------------------------------------------------+
-```
+| Architectural Dimension | Engineering Mandate | Primary Failure Mode | Regulatory Reference |
+| :--- | :--- | :--- | :--- |
+| **Bit-Exact Determinism** | IEEE 754 compliance, Kahan summation, counter-based PRNGs | Phantom P&L variance between consecutive batch runs | SR 11-7 / OCC 2011-12 |
+| **Bitemporal Lineage** | Explicit Valid Time vs. Transaction Time tracking | Inability to reproduce historical risk marks under audit | BCBS 239 Principle 3 |
+| **Information Barriers** | ABAC entitlements, mTLS encryption, network isolation | Chinese Wall leaks, illegal insider information sharing | SEC Rule 10b-5 / FINRA 2241 |
+| **Disaster Recovery** | Synchronous cross-region replication ($\text{RPO} = 0$) | Data loss or unacknowledged trades during site outages | Fed SR 20-24 Sound Practices |
+| **Distributed Observability** | OpenTelemetry tracing, Prometheus metrics, SLI/SLO alerts | Undetected message queue stalls or latency tail spikes | SRE Principles |
+| **Cloud FinOps** | Spot instance autoscaling, per-scenario cost tracking | Uncontrolled cloud budget overruns on compute grids | Enterprise Governance |
 
 ### 2. High-Availability & Disaster Recovery Topology
 
 ```mermaid
 flowchart TB
     subgraph PrimaryDC["Primary Data Center (New York - Equinix NY4)"]
-        Ingress1[Active Order Gateway]
-        PrimaryDB[(Primary PostgreSQL / CockroachDB)]
-        ComputeGrid1[Active Compute Grid (5,000 Cores)]
+        Ingress1["Active Order Gateway"]
+        PrimaryDB[("Primary Database\n(PostgreSQL / CockroachDB)")]
+        ComputeGrid1["Active Compute Grid\n(5,000 On-Premises Cores)"]
     end
 
-    subgraph SyncLink["Ultra-Low Latency Dark Fiber Link"]
-        DirectConnect[Synchronous Storage Replication: RPO = 0]
+    subgraph SyncLink["Dedicated Ultra-Low Latency Dark Fiber Link"]
+        DirectConnect["Synchronous WAL Replication: RPO = 0\n(7.8 ms RTT New York to Chicago)"]
     end
 
     subgraph SecondaryDC["Secondary DR Site (Chicago - Equinix CH1)"]
-        Ingress2[Standby Order Gateway]
-        StandbyDB[(Standby Replica DB: Read-Only)]
-        ComputeGrid2[Standby Compute Grid (Warm / Burst)]
+        Ingress2["Standby Order Gateway"]
+        StandbyDB[("Standby Replica Database\n(Read-Only Hot Standby)")]
+        ComputeGrid2["Standby Compute Grid\n(Warm Reserve Capacity)"]
     end
 
     subgraph CloudBurst["Public Cloud Burst Tier (AWS / GCP)"]
-        SpotWorkers[Ephemeral Spot Grid Workers (50,000 Cores)]
-        ObjectStore[(Encrypted S3 Parquet Data Lake)]
+        SpotWorkers["Ephemeral Spot Compute Grid\n(50,000 vCPUs Burst Tier)"]
+        ObjectStore[("Encrypted Parquet Data Lake\n(Apache Iceberg on S3)")]
     end
 
     Ingress1 --> PrimaryDB
     PrimaryDB --> ComputeGrid1
-    PrimaryDB ==>|Sync WAL Streaming| DirectConnect
+    PrimaryDB ==>|Synchronous WAL Streaming| DirectConnect
     DirectConnect ==> StandbyDB
 
     StandbyDB -.->|Heartbeat Health Check| Ingress2
-    ComputeGrid1 -.->|EOD Burst Workload| SpotWorkers
+    ComputeGrid1 -.->|EOD Intraday Burst| SpotWorkers
     SpotWorkers --> ObjectStore
 ```
 
 ### 3. Floating-Point Non-Determinism and Reproducibility
 
-In parallel computing, calculating a portfolio sum $S = \sum_{i=1}^N v_i$ using standard multi-threaded reductions produces non-deterministic values:
-- Floating-point addition is non-associative: $(a + b) + c \neq a + (b + c)$.
-- If thread 1 sums items $[1 \dots 1000]$ and thread 2 sums $[1001 \dots 2000]$, slight variations in thread completion times change the order of addition, altering the least-significant bits.
-- This creates "phantom PnL breaks" where rerunning the exact same portfolio produces an unexplained variance of several thousand dollars.
-- **Architectural Solution:**
-  1. Use deterministic reduction trees with fixed summation topologies.
-  2. Implement **Kahan Compensated Summation** or fixed-point integer scaling:
+In distributed parallel architectures, calculating a portfolio sum $S = \sum_{i=1}^N v_i$ using multi-threaded reductions creates non-deterministic results:
+- Floating-point addition is non-associative under IEEE 754 standards:
 
-$$\text{Error} = (a + b) - a - b$$
+$$(a + b) + c \ne a + (b + c)$$
 
-  3. Disable unsafe compiler flags (strictly avoid `-ffast-math`; enforce `-ffp-model=precise`).
+- If thread 1 sums items $[1 \dots 10,000]$ and thread 2 sums $[10,001 \dots 20,000]$, microsecond differences in thread completion alter the sequence of addition, shifting the least-significant bits.
+- This creates "phantom P&L noise" where rerunning identical portfolio data yields discrepancies of thousands of dollars.
+- **Architectural Safeguards:**
+  1. Enforce deterministic reduction trees with static, pre-ordered binary summation topologies.
+  2. Implement **Kahan Compensated Summation** to capture discarded low-order bits.
+  3. Strictly disable non-IEEE compiler flags (avoid `-ffast-math`; enforce `-ffp-model=precise` in Clang/GCC).
 
-### 4. Deterministic Multi-Threaded Random Number Generation
+### 4. Deterministic Multi-Threaded Random Number Generation (Leapfrogging)
 
-Monte Carlo simulations require trillions of pseudo-random numbers:
-- If threads draw numbers from a single shared PRNG with a mutex lock, lock contention collapses performance.
-- If threads instantiate separate PRNGs without coordination, overlapping paths introduce statistical bias.
-- **Leapfrogging / Block Skipping:**
-  Using counter-based generators (such as Philox) or Sobol quasi-random sequence skip algorithms:
-  A worker thread $k$ out of $M$ total threads evaluating path $p$ jumps directly to seed index $p \times \text{Steps}$ in $O(1)$ time without evaluating prior paths:
+Monte Carlo simulation grids require billions of pseudo-random numbers:
+- Drawing numbers from a single shared PRNG guarded by a mutex destroys parallel scalability due to lock contention.
+- Instantiating separate PRNGs without coordinated seeding risks overlapping random number sequences, introducing statistical correlation bias.
+- **Counter-Based PRNG Leapfrogging:**
+  Using counter-based generators (such as Philox) or Sobol quasi-random skip algorithms, worker thread $k$ evaluating path $p$ jumps directly to seed offset $p \times \text{Steps}$ in $O(1)$ time:
 
 $$\text{State}(p) = \text{State}(0) + p \times \text{Offset}$$
 
-  This guarantees bit-exact, identical Monte Carlo paths regardless of whether 1 core or 1,000 cores are used.
+  This guarantees bit-exact, identical Monte Carlo paths whether executed across 1 core or 50,000 cores.
 
 ## Worked examples
 
 ### Example 1: Kahan Compensated Summation Algorithm
 
 A risk engine sums $1,000,000$ small trade sensitivity contributions ($v_i = 0.0001$) into a large portfolio base ($S = 100,000.00$):
-- Standard Summation:
-  - Adding $0.0001$ to $100,000.00$ in single precision (24-bit significand) drops the low bits because $100,000 \approx 2^{16.6}$, while $0.0001 \approx 2^{-13.3}$. The scale difference exceeds the 24-bit precision window, causing the addition to vanish: $100,000.0 + 0.0001 = 100,000.0$.
-  - After $1,000,000$ additions, the accumulated sum is still $100,000.00$ instead of $100,100.00$ (a $\$100$ error).
+- **Naive Summation in Single Precision (IEEE 754 32-Bit Float):**
+  - In single precision (24-bit significand), $100,000.0 \approx 2^{16.6}$ while $0.0001 \approx 2^{-13.3}$.
+  - The scale difference exceeds the 24-bit precision window, causing the addition to vanish: $100,000.0 + 0.0001 = 100,000.0$.
+  - After $1,000,000$ additions, the accumulated sum remains **$100,000.00$**, losing $\$100.00$ in true economic value.
+- **Kahan Compensated Summation:**
+  The algorithm tracks accumulated truncation error in a separate compensation variable $c$:
 
-Kahan Summation Algorithm (using single precision to match the standard-summation comparison):
 ```cpp
 float sum = 100000.0f;
 float c = 0.0f;
 
-for (float val : trades) {
-    float y = val - c;
+for (int i = 0; i < 1000000; ++i) {
+    float y = 0.0001f - c;
     float t = sum + y;
     c = (t - sum) - y;
     sum = t;
 }
 ```
 
-By tracking low-order rounding error in `c`, Kahan summation can recover contributions that ordinary single-precision addition loses. Its results are more accurate, but bit-for-bit agreement across CPU architectures requires additional controls on execution order, compiler behavior, and hardware.
+- Result: Kahan summation preserves the low-order bits, producing an exact sum of **$100,100.00$** and recovering the entire $\$100.00$ precision loss.
 
 ### Example 2: Sizing Synchronous DR Replication Bandwidth (New York to Chicago)
 
-A Tier-1 broker-dealer requires zero data loss ($\text{RPO} = 0$) for trade executions:
+A Tier-1 broker-dealer enforces zero data loss ($\text{RPO} = 0$) for trade executions:
 - Primary Data Center: Equinix NY4 (Secaucus, NJ).
 - Disaster Recovery Site: Equinix CH1 (Chicago, IL).
-- Fiber distance: $\approx 750\text{ miles}$. Speed-of-light round-trip latency: $T_{\text{RTT}} \approx 7.8\text{ milliseconds}$.
-- Trading activity during peak market hours:
+- Fiber distance: $\approx 750\text{ miles}$; round-trip speed-of-light propagation latency: $T_{\text{RTT}} = 7.8\text{ milliseconds} = 0.0078\text{ seconds}$.
+- Peak trading activity:
   - Trade execution rate: $4,500\text{ transactions/second}$.
-  - Serialized transaction Write-Ahead Log (WAL) payload size: $1.8\text{ KB/transaction}$.
-- Throughput sizing:
-  - Average Data Flow: $4,500 \times 1.8\text{ KB} = 8,100\text{ KB/sec} = 8.1\text{ MB/sec}$.
-  - Network Bandwidth: $8.1\text{ MB/sec} \times 8 = 64.8\text{ Mbps}$.
-  - Applying a $3.0\times$ burst multiplier for market spikes:
+  - Serialized Write-Ahead Log (WAL) payload size: $1.8\text{ KB/transaction}$.
+- Throughput and Bandwidth Sizing:
+  - Average data flow:
 
-$$\text{Required Dedicated Bandwidth} = 64.8\text{ Mbps} \times 3.0 \approx 194.4\text{ Mbps}$$
+$$\text{Data Flow} = 4,500 \times 1.8\text{ KB} = 8,100\text{ KB/sec} = 8.1\text{ MB/sec}$$
 
-- Latency & Concurrency:
-  - Because replication is **synchronous** ($\text{RPO} = 0$), the primary database will not acknowledge a trade commit to the client until the WAL entry is written to disk in Chicago.
-  - Adding $7.8\text{ ms}$ round-trip latency to each synchronous commit throttles single-threaded throughput.
-  - Sizing concurrent pipeline connections:
-    To support $4,500\text{ commits/sec}$ with $7.8\text{ ms}$ latency:
+  - Average network bandwidth:
 
-$$N_{\text{concurrent\_connections}} = 4,500 \times 0.0078\text{ s} \approx 35.1 \implies 40\text{ parallel replication streams}$$
+$$\text{Bandwidth} = 8.1\text{ MB/sec} \times 8\text{ bits/byte} = 64.8\text{ Mbps}$$
 
-The bank provisions redundant $10\text{ Gbps}$ dedicated dark-fiber connections across 40 parallel WAL sender channels, guaranteeing $\text{RPO} = 0$ with sub-10ms commit confirmations.
+  - Applying a $3.0\times$ burst multiplier for market opening/closing spikes:
 
-### Example 3: Cloud FinOps Unit Economics: On-Demand vs. Spot Bursting
+$$\text{Required Dedicated Bandwidth} = 64.8\text{ Mbps} \times 3.0 = 194.4\text{ Mbps}$$
 
-A quantitative risk department evaluates the cloud cost of running an intraday what-if pricing grid on AWS:
+- Concurrency and In-Flight Pipelines:
+  - Because replication is **synchronous** ($\text{RPO} = 0$), commits must wait for Chicago disk confirmation ($7.8\text{ ms}$).
+  - Number of parallel replication channels required:
+
+$$N_{\text{channels}} = 4,500\text{ commits/sec} \times 0.0078\text{ s} = 35.1 \implies \ge 40\text{ parallel streams}$$
+
+The institution provisions redundant $10\text{ Gbps}$ dark-fiber circuits with 40 parallel WAL streaming channels, guaranteeing $\text{RPO} = 0$ with sub-10ms commit confirmations.
+
+### Example 3: Cloud FinOps Unit Economics: On-Premises vs. AWS Spot Bursting
+
+A quantitative risk department evaluates the cloud infrastructure cost of running an intraday what-if pricing grid on AWS:
 - Workload: $50,000$ virtual cores required for an intense 1-hour intraday scenario simulation.
-- Option A: Provisioning an On-Premises Compute Cluster:
+- **Option A (On-Premises Dedicated Hardware):**
   - Purchasing 390 128-core AMD EPYC servers: $\$3,500,000$ capital expenditure.
   - Annual data center power, cooling, and maintenance: $\$450,000/\text{year}$.
-  - Utilization: Used only 3 hours per day (12.5% utilization); 87.5% idle capacity.
-- Option B: Dynamic Cloud Spot Bursting (AWS EC2 Spot Instances - `c7i.16xlarge`, 64 vCPUs):
-  - Number of instances needed: $\frac{50,000}{64} = 782\text{ instances}$.
+  - Total Year 1 on-premises cost: $\$3,500,000 + \$450,000 = \$3,950,000$.
+  - Average utilization: Used only 3 hours per day (12.5% utilization; 87.5% idle capacity).
+- **Option B (Dynamic Cloud Spot Bursting on AWS EC2 `c7i.16xlarge`, 64 vCPUs):**
+  - Instances required: $\frac{50,000}{64} = 781.25 \implies 782\text{ instances}$.
   - On-Demand hourly rate: $\$3.57\text{ per instance-hour}$.
   - Spot hourly rate (typical 68% discount): $\$1.14\text{ per instance-hour}$.
   - Cost for 1-hour simulation:
-    $$\text{Hourly Cost} = 782 \times \$1.14 = \$891.48\text{ per run}$$
-  - Annual cost for 250 trading days:
-    $$\text{Annual Run Cost} = \$891.48 \times 250 = \$222,870\text{ per year}$$
-- Financial Comparison:
-  - Cloud Spot bursting costs $\$222,870/\text{year}$ versus $\$3,950,000$ in Year 1 on-premises capex/opex.
-  - **Financial Savings:** $> 94\%$ reduction in total cost of ownership (TCO).
+
+$$\text{Hourly Run Cost} = 782 \times \$1.14 = \$891.48\text{ per run}$$
+
+  - Annual run cost across 250 trading days:
+
+$$\text{Annual Run Cost} = \$891.48 \times 250 = \$222,870\text{ per year}$$
+
+- **Financial Comparison:**
+  - Cloud Spot bursting costs $\$222,870/\text{year}$ versus $\$3,950,000$ in Year 1 on-premises expenditure.
+  - **TCO Savings:**
+
+$$\text{TCO Savings} = \frac{\$3,950,000 - \$222,870}{\$3,950,000} \times 100\% = 94.4\%$$
+
+Dynamic cloud spot bursting delivers a $94.4\%$ reduction in total cost of ownership.
 
 ## Pitfalls
 
-- **Permitting `-ffast-math` in Production Pricing Libraries:** Enabling fast-math reorders floating-point operations and ignores NaNs. It creates non-deterministic Greek sensitivities that vary depending on compiler versions.
-- **Assuming Cloud Multi-AZ is Sufficient for Disaster Recovery:** Hosting primary and backup nodes in the same AWS region protects against rack failures but fails completely if a regional network partition or natural disaster strikes. True DR requires multi-region separation ($> 250\text{ miles}$).
+- **Permitting `-ffast-math` in Production Pricing Libraries:** Enabling fast-math reorders floating-point operations and ignores NaNs, creating non-deterministic Greek sensitivities that vary across compiler versions.
+- **Assuming Cloud Multi-AZ is Sufficient for Disaster Recovery:** Hosting primary and backup nodes in the same AWS region protects against rack failures but fails completely if a regional network partition or natural disaster strikes; true DR requires multi-region separation ($> 250\text{ miles}$).
 - **Neglecting Bitemporal Schema Evolution:** Altering trade database schemas without migrating historical transaction-time audit logs prevents historical replays from parsing older serialized events.
 - **Allowing Chinese Wall Breaches via Shared Data Lakes:** Dumping front-office M&A advisory data and flow trading books into the same un-partitioned data lake violates SEC/FINRA information barrier rules, triggering criminal insider trading liability.
 - **Relying on Single-Threaded Seed Generators for Multi-Threaded Monte Carlo:** Having all worker threads read from a single shared PRNG instance creates severe lock contention, degrading parallel speedup to near-zero.
@@ -226,7 +238,7 @@ A quantitative risk department evaluates the cloud cost of running an intraday w
 
 ## Further reading
 
-- Goldberg, David. *What Every Computer Scientist Should Know About Floating-Point Arithmetic*. ACM Computing Surveys, 1991.
-- Federal Reserve Board. *Sound Practices to Strengthen Operational Resilience*. SR Letter 20-24, 2020.
-- Higham, Nicholas J. *Accuracy and Stability of Numerical Algorithms*. 2nd Edition, SIAM, 2002.
-- Kleppmann, Martin. *Designing Data-Intensive Applications*. O'Reilly Media, 2017.
+- Goldberg, David. *What Every Computer Scientist Should Know About Floating-Point Arithmetic*. ACM Computing Surveys, Vol. 23, No. 1, March 1991.
+- Board of Governors of the Federal Reserve System. *Sound Practices to Strengthen Operational Resilience*. SR Letter 20-24, November 2020.
+- Higham, Nicholas J. *Accuracy and Stability of Numerical Algorithms*. 2nd Edition, Society for Industrial and Applied Mathematics, 2002.
+- Beyer, Betsy, Jones, Chris, Petoff, Jennifer, and Murphy, Niall Richard. *Site Reliability Engineering: How Google Runs Production Systems*. O'Reilly Media, 2016.

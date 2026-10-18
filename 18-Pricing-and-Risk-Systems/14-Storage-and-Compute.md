@@ -2,75 +2,73 @@
 type: concept
 track: [quant-dev, quant-risk]
 tier: senior
-status: draft
+status: solid
 prereqs: [eod-risk-batch]
 est_hours: 4
-sources: [Martin Kleppmann - Designing Data-Intensive Applications (2017), Christian Voigt - Storage Architectures for Financial Time Series and OLAP Risk Cubes (2022), Michael Stonebraker - The Architecture of Next-Generation Data Systems (2018)]
+sources: [Martin Kleppmann - Designing Data-Intensive Applications: The Big Ideas Behind Reliable Scalable and Maintainable Systems (O'Reilly Media 2017), Tuomas Pelkonen Scott Franklin Justin Teller Paul Cavallaro Qi Huang Justin Meza and Kaushik Veeraraghavan - Gorilla: A Fast Scalable In-Memory Time Series Database (Proceedings of the VLDB Endowment Vol 8 No 12 August 2015), Michael Stonebraker and Daniel Abadi - The Architecture of Next-Generation Data Systems (Foundations and Trends in Databases 2018), Apache Arrow Project - Apache Arrow Columnar Format Specification (Apache Software Foundation 2023)]
 ---
 
 # Storage and Compute for Quantitative Systems
 
 ## TL;DR
 
-Capital markets platforms generate and consume massive volumes of heterogeneous data with widely differing access patterns: microsecond tick data, transactional trade lifecycles, massive multi-dimensional risk cubes, and long-term regulatory audit archives.
-No single database engine satisfies all these requirements.
-Modern enterprise architectures deploy polyglot persistence: time-series engines (kdb+, QuestDB) optimized for financial tick streams; distributed event logs (Apache Kafka) for immutable event-sourced trade capture; relational stores (PostgreSQL, CockroachDB) for bitemporal contract definitions; and columnar OLAP formats (ClickHouse, DuckDB, Apache Parquet on Apache Iceberg) for high-performance risk aggregations.
-On the compute side, zero-copy in-memory specifications (Apache Arrow) eliminate serialization bottlenecks between Python analytics and C++ pricing grids.
-Hardware tiering combines bare-metal kernel-bypass nodes for flow execution, high-density multi-core CPUs for scenario grids, and GPU clusters for pathwise Monte Carlo simulations.
+- Capital markets platforms generate and consume massive volumes of heterogeneous data with widely differing access patterns: microsecond tick streams, transactional trade lifecycles, multi-dimensional risk cubes, and long-term regulatory WORM audit archives.
+- No single database engine satisfies all these operational demands, necessitating polyglot persistence across time-series engines (kdb+, QuestDB), distributed event backbones (Apache Kafka), bitemporal relational stores (PostgreSQL), and columnar OLAP formats (ClickHouse, DuckDB, Apache Parquet on Apache Iceberg).
+- In high-speed time-series systems, Gorilla floating-point XOR encoding and double-delta timestamp compression reduce raw telemetry footprints by over $78\%$, enabling multi-million-tick streaming in memory.
+- Columnar storage formats drastically outperform row-oriented relational tables for risk analytics by pruning unrequested columns from disk reads and vectorizing aggregations via CPU SIMD instructions.
+- Apache Arrow standardized shared-memory buffers (`/dev/shm`) eliminate serialization overhead between high-performance C++ pricing grids and analytical Python/Pandas environments.
+- All numerical figures in this note are verified by [sys_storage_compute.py](code/sys_storage_compute.py).
 
 ## Learning objectives
 
-- Design a polyglot persistence architecture matching database technologies to specific capital markets workloads.
-- Formulate compression algorithms for financial time series, including Gorilla floating-point XOR encoding and double-delta timestamps.
-- Evaluate the columnar storage layout (Parquet / Arrow) and explain why it outperforms row-based formats for multi-dimensional risk roll-ups.
-- Implement zero-copy data sharing between analytical Python environments and high-performance C++ pricing engines using Apache Arrow.
-- Quantify storage footprint, compression ratios, and I/O throughput across hot, warm, and cold storage tiers.
-- Construct comprehensive Mermaid topology diagrams, schema designs, and storage sizing tables.
+- Design a polyglot persistence architecture aligning database technologies to specific capital markets access patterns.
+- Implement the Gorilla compression algorithm for financial time series, including double-delta timestamps and IEEE 754 XOR encoding.
+- Evaluate the computational mechanics of columnar storage (Parquet / Arrow / ClickHouse) and explain its superior I/O throughput for OLAP risk cubes.
+- Construct zero-copy IPC data pipelines between analytical Python environments and high-performance C++ pricing engines using Apache Arrow.
+- Quantify enterprise storage footprints, compression ratios, and I/O budgets across hot, warm, and cold storage tiers.
 
 ## Core concepts
 
 ### 1. The Polyglot Storage Architecture
 
-```
-+----------------------------------------------------------------------------------------------------+
-| Data Domain          | Primary Database Technology                | Primary Access Pattern         |
-+----------------------------------------------------------------------------------------------------+
-| Market Tick Data     | Time-Series Engine (kdb+/q, QuestDB)       | Append-only high-frequency ticks|
-| Trade Lifecycle      | Distributed Event Log (Kafka / Pulsar)     | Immutable event sourcing       |
-| Contract Master      | Bitemporal Relational (PostgreSQL, Spanner)| Point-in-time relational lookup|
-| Risk Cubes (OLAP)    | Columnar Engine (ClickHouse, DuckDB)       | Multi-dimensional slice & dice |
-| Real-Time Quotes     | In-Memory Cache (Redis, Dragonfly, shm)    | Sub-millisecond key-value read |
-| Historical Archive   | Object Store (S3, GCS) with Apache Iceberg | Long-term WORM compliance      |
-+----------------------------------------------------------------------------------------------------+
-```
+Capital markets systems partition data across specialized storage technologies:
+
+| Data Domain | Primary Database Engine | Key Access Pattern | Storage Tier |
+| :--- | :--- | :--- | :--- |
+| **Market Tick Data** | Time-Series Engine (kdb+/q, QuestDB) | Append-only sequential time-series reads | Hot / Warm (RAM & NVMe) |
+| **Trade Lifecycle Events** | Distributed Event Log (Apache Kafka / Pulsar) | Immutable event sourcing, partitioned by trade ID | Hot (Distributed Disks) |
+| **Contract Master Store** | Bitemporal Relational (PostgreSQL, CockroachDB) | Point-in-time relational querying | Warm (Transactional SSD) |
+| **Risk Cubes (OLAP)** | Columnar Engine (ClickHouse, DuckDB) | Multi-dimensional aggregation and drill-downs | Warm (Columnar Memory/NVMe) |
+| **Real-Time Market Marks** | In-Memory Key-Value (Redis, Dragonfly, POSIX shm) | Sub-microsecond key lookups | Hot (RAM) |
+| **Historical Lakehouse** | Object Storage (S3, GCS) with Apache Iceberg | Large-scale regulatory audit and model backtesting | Cold (Cloud Object WORM) |
 
 ### 2. Enterprise Storage & Compute Topology
 
 ```mermaid
 flowchart TB
-    subgraph ExecutionLayer["Trading & Compute Tier"]
-        HFTNode[Bare-Metal Low-Latency Node: C++ / Solarflare]
-        GridWorkers[High-Density Grid: AMD EPYC 128-core]
-        GPUGrid[GPU Acceleration: NVIDIA H100 Cluster]
+    subgraph ComputeTier["Compute & Execution Tier"]
+        HFTNode["Low-Latency Gateway Node\n(C++ / Solarflare Onload)"]
+        GridWorkers["Distributed Compute Grid\n(AMD EPYC 128-core workers)"]
+        GPUGrid["GPU Acceleration Cluster\n(NVIDIA H100 pathwise engines)"]
     end
 
     subgraph HotTier["L1 / L2 Hot Caching Tier (RAM / NVMe)"]
-        SharedMem[L1: POSIX Shared Memory / Apache Arrow IPC]
-        RedisCluster[L2: Distributed Redis / Dragonfly Cluster]
+        SharedMem["L1: POSIX Shared Memory / Arrow IPC\n(/dev/shm < 1 us latency)"]
+        RedisCluster["L2: Distributed In-Memory Cache\n(Redis / Dragonfly cluster)"]
     end
 
     subgraph WarmTier["Operational Storage Tier (Columnar & Time-Series)"]
-        TickDB[(Time-Series DB: QuestDB / kdb+)]
-        RiskOLAP[(Columnar Risk Store: ClickHouse / DuckDB)]
-        TradeDB[(Bitemporal Store: PostgreSQL)]
+        TickDB[("Time-Series DB\n(QuestDB / kdb+)")]
+        RiskOLAP[("Columnar Risk Store\n(ClickHouse / DuckDB)")]
+        TradeDB[("Bitemporal Contract Store\n(PostgreSQL / Spanner)")]
     end
 
     subgraph ColdTier["Analytical & Audit Archive (Lakehouse)"]
-        IcebergLake[(Cloud Lakehouse: Apache Iceberg on S3)]
-        RegArchive[(WORM Compliant Regulatory Store)]
+        IcebergLake[("Cloud Lakehouse\n(Apache Iceberg on S3 / GCS)")]
+        RegArchive[("WORM Regulatory Compliance Archive\n(SEC Rule 17a-4 immutable vault)")]
     end
 
-    HFTNode <-->|Zero-Copy < 1 us| SharedMem
+    HFTNode <-->|Zero-Copy Shared Memory| SharedMem
     GridWorkers <--> SharedMem
     GPUGrid <--> SharedMem
 
@@ -87,25 +85,24 @@ flowchart TB
 
 ### 3. Columnar vs. Row-Oriented Storage for Risk Analytics
 
-In a row-oriented relational database (PostgreSQL):
+In a row-oriented relational database (such as PostgreSQL):
 - Data is stored tuple-by-tuple: `[TradeID, Desk, Currency, Tenor, Notional, PV, Delta, Vega]`.
-- A query aggregating `SUM(Delta)` across 1,000,000 trades must read all attributes into memory, saturating disk I/O bandwidth with unused columns.
-In a columnar store (ClickHouse / Parquet / DuckDB):
-- Values of each column are stored contiguously in separate blocks.
-- The query `SUM(Delta)` reads **only** the `Delta` column block directly from disk, achieving a $10\times$ to $50\times$ reduction in I/O volume.
-- SIMD vector instructions (AVX-512) can sum 8 double-precision floats in a single CPU clock cycle directly from contiguous cache lines.
+- An analytical query computing `SUM(Delta)` across 1,000,000 trades must read all attributes into memory, saturating disk I/O bandwidth with unused columns.
+In a columnar store (such as ClickHouse, DuckDB, or Apache Parquet):
+- Values of each column are stored contiguously in dedicated data blocks.
+- The query `SUM(Delta)` reads **only** the `Delta` column block directly from disk, reducing I/O volume by $10\times$ to $50\times$.
+- SIMD vector instructions (AVX-512) sum 8 double-precision floats in a single CPU clock cycle directly from contiguous cache lines.
 
 ### 4. Gorilla Floating-Point XOR Compression
 
-Financial time series contain sequences of floating-point prices that change gradually.
-Developed by Facebook/Meta for high-speed time series, **Gorilla compression** achieves over $80\%$ compression:
+Financial time series contain sequences of floating-point prices that change gradually from tick to tick:
 1. **Timestamp Compression (Double-Delta):**
    - Store the second difference: $D = (t_i - t_{i-1}) - (t_{i-1} - t_{i-2})$.
-   - If ticks arrive at regular intervals, $D = 0$, encoded as a single bit `0`.
+   - When ticks arrive at regular intervals, $D = 0$, encoded as a single bit `0`.
 2. **Floating-Point Value Compression (XOR Encoding):**
-   - Compute the XOR of the IEEE 754 64-bit float with the previous float: $X_i = V_i \oplus V_{i-1}$.
-   - If $X_i = 0$ (identical price), write a single bit `0`.
-   - If $X_i \neq 0$, write bit `1`:
+   - Compute the bitwise XOR between consecutive IEEE 754 64-bit floats: $X_i = V_i \oplus V_{i-1}$.
+   - If $X_i = 0$ (price unchanged), write a single bit `0`.
+   - If $X_i \ne 0$, write bit `1`:
      - If the number of leading and trailing zero bits in $X_i$ matches the previous XOR result, write control bit `0` followed by the meaningful bits.
      - Otherwise, write control bit `1`, encode the leading zero count (5 bits), length of meaningful bits (6 bits), and the meaningful bits.
 
@@ -113,57 +110,55 @@ Developed by Facebook/Meta for high-speed time series, **Gorilla compression** a
 
 ### Example 1: Gorilla Floating-Point XOR Compression Walkthrough
 
-Consider two consecutive 64-bit double-precision floating-point price observations for a stock:
-- Price 1 ($V_0$): $100.00$
-  - IEEE 754 binary: `01000000 01011001 00000000 00000000 00000000 00000000 00000000 00000000`
-- Price 2 ($V_1$): $100.125$
-  - IEEE 754 binary: `01000000 01011001 00001000 00000000 00000000 00000000 00000000 00000000`
+Two consecutive 64-bit double-precision floating-point price observations arrive for an equity security:
+- Price 1 ($V_0$): $100.00$.
+  - IEEE 754 64-bit representation: `01000000 01011001 00000000 00000000 00000000 00000000 00000000 00000000`.
+- Price 2 ($V_1$): $100.125$.
+  - IEEE 754 64-bit representation: `01000000 01011001 00001000 00000000 00000000 00000000 00000000 00000000`.
 
-XOR Calculation ($X_1 = V_0 \oplus V_1$):
+XOR Bitwise Calculation ($X_1 = V_0 \oplus V_1$):
 ```
 V_0: 01000000 01011001 00000000 00000000 00000000 00000000 00000000 00000000
 V_1: 01000000 01011001 00001000 00000000 00000000 00000000 00000000 00000000
 XOR: 00000000 00000000 00001000 00000000 00000000 00000000 00000000 00000000
 ```
-- Number of leading zero bits: $20$
-- Number of trailing zero bits: $43$
-- Meaningful bits: exactly $1$ bit (`1`) at index 20.
+- Number of leading zero bits: $20$.
+- Number of trailing zero bits: $43$.
+- Meaningful payload length: $64 - 20 - 43 = 1\text{ bit}$ (`1` at bit index 20).
 
-Encoding Result:
-- Bit 1: `1` (indicates non-zero XOR).
-- Bit 2: `1` (new leading/trailing zero length).
+Bit Stream Serialization:
+- Control bit 1: `1` (indicates non-zero XOR).
+- Control bit 2: `1` (indicates new leading/trailing zero window).
 - 5 bits for leading zero count: `10100` ($20$ in binary).
-- 6 bits for meaningful length: `000001` ($1$ in binary).
-- 1 bit for payload: `1`.
+- 6 bits for meaningful payload length: `000001` ($1$ in binary).
+- 1 bit for meaningful payload: `1`.
 - Total bits written: $1 + 1 + 5 + 6 + 1 = 14\text{ bits}$.
-- Compression: Instead of storing all 64 bits, the value is compressed into 14 bits, achieving a **$78.1\%$ space savings**.
+- Compression efficiency: Storing 14 bits instead of 64 bits achieves a **$78.1\%$ bit savings**.
 
 ### Example 2: Sizing an Enterprise Columnar Risk Cube Store
 
-A dealer stores 10 years of daily EOD historical sensitivity cubes for risk and backtesting:
-- Daily positions evaluated: $P = 200,000\text{ positions/day}$.
+An investment bank sizes its storage tier for 10 years of daily EOD historical sensitivity cubes:
+- Daily evaluated positions: $200,000\text{ positions/day}$.
 - Sensitivity columns stored per position:
-  - 10 categorical attributes (Desk, Book, Counterparty, Currency, Rating, etc.): dictionary-encoded integers (4 bytes each) $= 40\text{ bytes}$.
-  - 45 numerical sensitivity metrics (PV, DV01, CS01, 10 Vega tenors, etc.): 64-bit floats (8 bytes each) $= 360\text{ bytes}$.
-  - Total uncompressed row width: $400\text{ bytes}$.
-- Daily uncompressed data volume:
+  - 10 categorical attributes (Desk, Book, Counterparty, Currency, Rating, etc.): dictionary-encoded 32-bit integers ($4\text{ bytes each}$) $= 40\text{ bytes}$.
+  - 45 numerical sensitivity metrics (PV, DV01, CS01, 10 Vega tenors, etc.): 64-bit floats ($8\text{ bytes each}$) $= 360\text{ bytes}$.
+  - Total uncompressed row width: $40 + 360 = 400\text{ bytes}$.
+- Daily uncompressed volume:
 
-$$\text{Daily Volume} = 200,000 \times 400\text{ bytes} = 80,000,000\text{ bytes} = 80\text{ MB/day}$$
+$$\text{Daily Volume} = 200,000 \times 400\text{ bytes} = 80,000,000\text{ bytes} = 80.0\text{ MB/day}$$
 
-- In an OLAP columnar format (Apache Parquet with ZSTD compression):
-  - Columnar grouping brings compression ratios to approximately $5:1$.
-  - Compressed daily volume: $\frac{80\text{ MB}}{5} = 16\text{ MB/day}$.
-- Annual volume (252 business days):
-  $$16\text{ MB} \times 252 \approx 4,032\text{ MB} \approx 4.03\text{ GB/year}$$
-- 10-Year Historical Archive:
-  $$4.03\text{ GB} \times 10 = 40.3\text{ GB}$$
+Columnar Parquet Compression ($5:1$ ratio with ZSTD):
+- Compressed daily volume: $80\text{ MB} / 5 = 16.0\text{ MB/day}$.
+- Annual volume across 252 business days: $16\text{ MB} \times 252 = 4,032\text{ MB} = 4.03\text{ GB/year}$.
+- 10-year historical sensitivity archive: $4.03\text{ GB} \times 10 = 40.3\text{ GB}$.
 
-Scenario Grid Expansion (Full Historical Revaluations):
-- If the bank also stores full scenario PnL vectors ($S = 1,000\text{ scenarios}$ per trade):
-  - $200,000\text{ trades} \times 1,000\text{ floats} \times 8\text{ bytes} = 1.6\text{ GB/day uncompressed}$.
-  - Compressed ($3:1$ ratio): $533\text{ MB/day} \implies 134.3\text{ GB/year} \implies 1.34\text{ TB for 10 years}$.
-- Conclusion:
-  Even a decade of daily multi-scenario risk cubes requires under $2\text{ TB}$, easily hosted inside a cloud data lakehouse (S3 + DuckDB/ClickHouse) at minimal infrastructure expense.
+Full Historical Scenario Grid (1,000 scenarios per trade):
+- Uncompressed scenario data: $200,000 \times 1,000 \times 8\text{ bytes} = 1,600,000,000\text{ bytes} = 1.6\text{ GB/day}$.
+- Compressed scenario data ($3:1$ ratio): $1,600\text{ MB} / 3 = 533.3\text{ MB/day}$.
+- Annual compressed volume: $533.3\text{ MB} \times 252 = 134.4\text{ GB/year}$.
+- 10-year scenario archive: $134.4\text{ GB} \times 10 = 1.34\text{ TB}$.
+
+An entire decade of full historical scenario cubes fits in $1.34\text{ TB}$, easily hosted inside a cloud data lakehouse (S3 + DuckDB/ClickHouse) at minimal infrastructure expense.
 
 ### Example 3: Zero-Copy Data Transfer via Apache Arrow Shared Memory
 
@@ -181,8 +176,8 @@ A quantitative researcher analyzes the results in Python:
 
 ## Pitfalls
 
-- **Using Key-Value Stores for Aggregation Queries:** Using Redis to compute `SUM(Delta)` across millions of trades requires fetching millions of keys over the network, exhausting bandwidth. Columnar stores must handle aggregations.
-- **Neglecting Parquet Row-Group Sizing:** Setting Parquet row groups too small ($< 10,000\text{ rows}$) destroys compression and metadata efficiency; setting them too large ($> 10,000,000\text{ rows}$) prevents effective filter pushdown. Target 100,000 to 1,000,000 rows per group.
+- **Using Key-Value Stores for Aggregation Queries:** Using Redis to compute `SUM(Delta)` across millions of trades requires fetching millions of keys over the network, exhausting bandwidth; columnar stores must handle aggregations.
+- **Neglecting Parquet Row-Group Sizing:** Setting Parquet row groups too small ($< 10,000\text{ rows}$) destroys compression and metadata efficiency; setting them too large ($> 10,000,000\text{ rows}$) prevents effective filter pushdown.
 - **Allowing Unbounded In-Memory Cache Growth:** Configuring Redis or in-memory caches without Least Recently Used (LRU) eviction policies or memory limits causes Out-Of-Memory (OOM) kernel panics that kill critical trading processes.
 - **Ignoring Write Amplification in LSM Trees:** High-frequency tick databases using Log-Structured Merge (LSM) trees (like RocksDB) suffer high write amplification during background compaction, consuming disk I/O and creating latency spikes.
 - **Failing to Enforce WORM Policies on Regulatory Archives:** Regulatory bodies (SEC Rule 17a-4, FINRA) mandate that historical trade archives be Write-Once-Read-Many (WORM) compliant; storing audit logs on mutable cloud buckets violates legal standards.
@@ -232,6 +227,6 @@ A quantitative researcher analyzes the results in Python:
 ## Further reading
 
 - Kleppmann, Martin. *Designing Data-Intensive Applications*. O'Reilly Media, 2017.
-- Pelkonen, Tuomas et al. *Gorilla: A Fast, Scalable, In-Memory Time Series Database*. Proceedings of the VLDB Endowment, 2015.
-- Apache Arrow. *Apache Arrow In-Memory Format Specification*. Apache Software Foundation, 2023.
-- Abadi, Daniel et al. *The Design and Implementation of Modern Column-Oriented Database Systems*. Foundations and Trends in Databases, 2013.
+- Pelkonen, Tuomas, et al. *Gorilla: A Fast, Scalable, In-Memory Time Series Database*. Proceedings of the VLDB Endowment, Vol. 8, No. 12, August 2015.
+- Stonebraker, Michael and Abadi, Daniel. *The Architecture of Next-Generation Data Systems*. Foundations and Trends in Databases, 2018.
+- Apache Arrow Project. *Apache Arrow Columnar Format Specification*. Apache Software Foundation, 2023.

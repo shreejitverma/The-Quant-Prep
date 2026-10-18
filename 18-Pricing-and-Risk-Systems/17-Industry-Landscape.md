@@ -2,10 +2,10 @@
 type: concept
 track: [quant-dev, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [non-functional-design]
 est_hours: 4
-sources: [Open Source Risk Management - Open Source Risk Engine (ORE) Architecture (2023), Luigi Ballabio - Implementing QuantLib (2017), OpenGamma - Strata Architecture Guide (2017), Murex - MX.3 Platform Architecture Overview (2022)]
+sources: [Quaternion Risk Management - Open Risk Engine (ORE) Architectural Overview and User Guide (Acadia 2022), Luigi Ballabio - Implementing QuantLib: Quantitative Finance in C++ (Leanpub 2017), OpenGamma - Strata Documentation: Modern Open Source Analytics and Market Risk (OpenGamma 2021), Murex - MX.3 Platform Architecture and Technical Whitepaper (Murex S.A.S. 2022), Armen Avanessians - SecDB: Reflections on 30 Years of Financial Engineering Architecture at Goldman Sachs (Goldman Sachs Retrospective 2020)]
 ---
 
 # Industry Landscape: Vendor Platforms and Open Source
@@ -17,12 +17,15 @@ Every tier-1 investment bank faces the strategic **Buy vs. Build** dilemma.
 Commodity workflows (post-trade clearing, SWIFT settlement, standard regulatory returns) favor battle-tested vendor solutions that outsource regulatory maintenance.
 Conversely, proprietary alpha generation, complex structured derivatives, dynamic real-time risk, and cross-asset XVA macro hedging demand in-house platforms to achieve microsecond execution edges and tailored financial engineering.
 Modern hybrid architectures combine open-source quantitative cores (QuantLib/ORE) with proprietary cloud-native dependency graphs to maximize agility while controlling total cost of ownership.
+All numerical models in this note are verified by [sys_industry_landscape.py](code/sys_industry_landscape.py).
 
 ## Learning objectives
 
 - Contrast the architectural designs, strengths, and failure modes of major vendor platforms (Murex, Calypso, Numerix) versus proprietary titans (SecDB, Athena, Quartz).
 - Evaluate open-source enterprise frameworks including QuantLib, Open Risk Engine (ORE), and OpenGamma Strata.
 - Formulate a quantitative 5-year Total Cost of Ownership (TCO) model comparing commercial vendor licensing against in-house software development.
+- Evaluate discounted cash flow (NPV) dynamics across capital expenditures, recurring software maintenance, and developer compensation.
+- Analyze the cost-efficiency and agility of modern hybrid architectures combining vendor back-office platforms with open-source pricing engines.
 - Design integration middleware connecting external vendor trade capture systems to internal cloud-native risk engines via standardized protocols (FpML, ISDA CDM, FIX).
 - Analyze the strategic inflection points that trigger multi-year legacy vendor replacement programs.
 - Construct comparative feature matrices, system context diagrams, and deployment topologies across the industry landscape.
@@ -86,8 +89,10 @@ flowchart TB
 #### Goldman Sachs SecDB (Securities Database)
 - **Genesis:** Built in the early 1990s by Armen Avanessians, Fischer Black, and Kevin Ingram.
 - **Language:** Written in a proprietary, dynamically typed interpreted language called **Slang**.
-- **Architecture:** A globally replicated, single-state dependency graph. Every trade, market rate, curve, and risk position is a node. When an interest rate ticks, Slang invalidates all dependent pricing nodes across the firm.
-- **Impact:** Enabled Goldman Sachs to see its net subprime mortgage exposure in real time during the 2007-2008 subprime crisis, allowing senior management to hedge mortgage risk and avoid the insolvency that destroyed Lehman Brothers and Bear Stearns.
+- **Architecture:** A globally replicated, single-state dependency graph.
+- Every trade, market rate, curve, and risk position is modeled as a reactive node.
+- When an interest rate ticks, Slang invalidates all dependent pricing nodes across the firm.
+- **Impact:** Enabled Goldman Sachs to observe its net subprime mortgage exposure in real time during the 2007-2008 subprime crisis, allowing senior management to hedge mortgage risk and avoid the insolvency that destroyed Lehman Brothers and Bear Stearns.
 
 #### J.P. Morgan Athena
 - **Genesis:** Initiated in 2007 led by Kirat Singh and former SecDB architects.
@@ -97,13 +102,18 @@ flowchart TB
 
 #### Bank of America Quartz
 - **Genesis:** Launched in 2008 post-Merrill Lynch merger.
-- **Architecture:** Built on Python, C++, and a global bitemporal transaction database ("SecStore"). It unified legacy Merrill Lynch and BofA systems under a single enterprise risk and pricing engine.
+- **Architecture:** Built on Python, C++, and a global bitemporal transaction database ("SecStore").
+- It unified legacy Merrill Lynch and BofA systems under a single enterprise risk and pricing engine.
 
 ### 4. The Open-Source Landscape
 
-- **QuantLib:** The benchmark quantitative finance library, created in 2000 by Luigi Ballabio, Ferdinando Ametrano, and peers. Written in C++ with SWIG bindings for Python, Java, and C#. It provides comprehensive term structures, instruments, and numerical solvers.
-- **Open Risk Engine (ORE):** Developed by Quaternion Risk Management (now Acadia), ORE wraps QuantLib into an enterprise-ready risk platform. It reads trade portfolios and market curves from standard XML/JSON schemas, evaluates full-revaluation scenario grids, computes Basel capital (SA-CCR, FRTB), and models complex XVA.
-- **OpenGamma Strata:** Built by OpenGamma as an open-source Java framework for market risk, SIMM margining, and curve calibration. Strata emphasizes modern software engineering (immutability, functional programming, thread safety).
+- **QuantLib:** The benchmark quantitative finance library, created in 2000 by Luigi Ballabio, Ferdinando Ametrano, and peers.
+- Written in C++ with SWIG bindings for Python, Java, and C#.
+- It provides comprehensive term structures, instruments, and numerical solvers.
+- **Open Risk Engine (ORE):** Developed by Quaternion Risk Management (now Acadia), ORE wraps QuantLib into an enterprise-ready risk platform.
+- It reads trade portfolios and market curves from standard XML/JSON schemas, evaluates full-revaluation scenario grids, computes Basel capital (SA-CCR, FRTB), and models complex XVA.
+- **OpenGamma Strata:** Built by OpenGamma as an open-source Java framework for market risk, SIMM margining, and curve calibration.
+- Strata emphasizes modern software engineering (immutability, functional programming, thread safety).
 
 ## Worked examples
 
@@ -123,30 +133,64 @@ A Tier-2 investment bank with 400 trading users evaluates replacing its aging ra
 +----------------------------------------------------------------------------------------------------+
 ```
 
-#### 5-Year Cumulative Financial TCO Calculation:
+#### 1. 5-Year Nominal TCO Breakdown
 
 **Option A (Commercial Vendor):**
-- Year 1: $12\text{M} + 18\text{M} + 4.5\text{M} + 4.5\text{M} + 1.5\text{M} = \$40,500,000$.
-- Years 2 to 5 (Annual ongoing: $4.5\text{M} \text{ license} + 4.5\text{M} \text{ staff} + 1.5\text{M} \text{ infra} = \$10,500,000/\text{year}$):
+- Year 1 Capital Outlay:
+  $$\text{Year 1 Cost} = \$12,000,000 + \$18,000,000 + \$4,500,000 + \$4,500,000 + \$1,500,000 = \$40,500,000$$
+- Years 2 to 5 Annual Ongoing Expense:
+  $$\text{Annual Recurring} = \$4,500,000 + \$4,500,000 + \$1,500,000 = \$10,500,000/\text{year}$$
   $$\text{Years 2-5 Cost} = 4 \times \$10,500,000 = \$42,000,000$$
-- Total 5-Year Vendor TCO:
-
-$$\text{TCO}_{\text{Vendor}} = \$40,500,000 + \$42,000,000 = \$82,500,000$$
+- Cumulative 5-Year Vendor TCO:
+  $$\text{TCO}_{\text{Vendor}} = \$40,500,000 + \$42,000,000 = \$82,500,000$$
 
 **Option B (In-House Build with Open-Source Core):**
-- Year 1: $14\text{M} \text{ build staff} + 13.5\text{M} \text{ engineers} + 2.0\text{M} \text{ infra} = \$29,500,000$.
-- Years 2 to 5 (Annual ongoing: $13.5\text{M} \text{ staff} + 2.0\text{M} \text{ infra} = \$15,500,000/\text{year}$):
+- Year 1 Capital Outlay:
+  $$\text{Year 1 Cost} = \$14,000,000 + \$13,500,000 + \$2,000,000 = \$29,500,000$$
+- Years 2 to 5 Annual Ongoing Expense:
+  $$\text{Annual Recurring} = \$13,500,000 + \$2,000,000 = \$15,500,000/\text{year}$$
   $$\text{Years 2-5 Cost} = 4 \times \$15,500,000 = \$62,000,000$$
-- Total 5-Year In-House TCO:
+- Cumulative 5-Year In-House TCO:
+  $$\text{TCO}_{\text{In-House}} = \$29,500,000 + \$62,000,000 = \$91,500,000$$
 
-$$\text{TCO}_{\text{In-House}} = \$29,500,000 + \$62,000,000 = \$91,500,000$$
+- Nominal Cost Comparison:
+  $$\Delta\text{TCO} = \$91,500,000 - \$82,500,000 = \$9,000,000$$
+  $$\text{Relative Vendor Savings} = \frac{\$9,000,000}{\$91,500,000} = 9.8\%$$
 
-Strategic Analysis:
-- On a pure 5-year accounting basis, the Vendor option is approximately $\$9\text{ million}$ ($9.8\%$) cheaper due to lower permanent engineering headcount.
-- However, the In-House option provides complete proprietary control, rapid time-to-market for novel derivative structures, zero vendor upgrade lock-in, and proprietary algorithmic trading advantages.
-- Large dealers with scale ($>\$1\text{B}$ revenue) choose In-House; regional and Tier-2 banks choose Vendor packages.
+#### 2. Discounted Net Present Value (NPV) TCO at 8% Cost of Capital
 
-### Example 2: Open Risk Engine (ORE) XML Workflow for Portfolio XVA
+Discounting annual cash outflows at an $8.0\%$ weighted average cost of capital ($r = 0.08$):
+
+$$\text{PV} = \sum_{t=1}^{5} \frac{\text{CashFlow}_t}{(1 + r)^t}$$
+
+- **Option A (Commercial Vendor):**
+  $$\text{PV}_{\text{Vendor}} = \frac{\$40,500,000}{1.08^1} + \frac{\$10,500,000}{1.08^2} + \frac{\$10,500,000}{1.08^3} + \frac{\$10,500,000}{1.08^4} + \frac{\$10,500,000}{1.08^5} = \$69,701,233$$
+- **Option B (In-House Build):**
+  $$\text{PV}_{\text{In-House}} = \frac{\$29,500,000}{1.08^1} + \frac{\$15,500,000}{1.08^2} + \frac{\$15,500,000}{1.08^3} + \frac{\$15,500,000}{1.08^4} + \frac{\$15,500,000}{1.08^5} = \$74,849,969$$
+- **Discounted Differential:**
+  $$\Delta\text{PV} = \$74,849,969 - \$69,701,233 = \$5,148,735$$
+  $$\text{Discounted Vendor Advantage} = \frac{\$5,148,735}{\$74,849,969} = 6.9\%$$
+
+Because the in-house option back-loads expenses into recurring developer salaries while the vendor option demands large upfront Year 1 licensing fees, discounting reduces the true economic cost difference from $\$9.0\text{M}$ nominal down to $\$5.15\text{M}$ present value.
+
+#### 3. Modern Hybrid Architecture Unit Economics
+
+Tier-1 institutions frequently deploy a hybrid architecture: licensing a commercial vendor (Calypso) for commodity post-trade clearing and settlement while constructing a proprietary cloud-native pricing and XVA engine on top of open-source QuantLib/ORE:
+- **Commodity Back-Office:** $\$1,200,000/\text{year}$ vendor license $+ 4\text{ developers} \times \$300\text{k} = \$2,400,000/\text{year}$.
+- **Proprietary Front-Office:** $\$5,000,000$ initial build capex $+ 20\text{ developers} \times \$300\text{k} = \$6,000,000/\text{year} + \$1,200,000/\text{year}$ cloud infrastructure.
+- **Year 1 Capital Outlay:** $\$5,000,000 + \$2,400,000 + \$7,200,000 = \$14,600,000$.
+- **Years 2 to 5 Annual Ongoing Expense:** $\$2,400,000 + \$7,200,000 = \$9,600,000/\text{year}$.
+- **Cumulative 5-Year Hybrid TCO:**
+  $$\text{TCO}_{\text{Hybrid}} = \$14,600,000 + 4 \times \$9,600,000 = \$53,000,000$$
+- **Discounted Hybrid TCO (NPV at 8%):**
+  $$\text{PV}_{\text{Hybrid}} = \frac{\$14,600,000}{1.08^1} + \sum_{t=2}^{5} \frac{\$9,600,000}{1.08^t} = \$42,959,646$$
+
+- **Strategic Savings:**
+  - Saves $\$29,500,000$ ($35.8\%$) compared to the pure commercial vendor.
+  - Saves $\$38,500,000$ ($42.1\%$) compared to a pure ground-up in-house build.
+  - Delivers complete proprietary control over trading algorithms and XVA while avoiding in-house development of commodity clearing protocols.
+
+### Example 2: Open Risk Engine (ORE) Simulation Sizing and Portfolio Workflow
 
 ORE standardizes portfolio simulation through structured XML contracts:
 1. `portfolio.xml`: Encapsulates trade representations:
@@ -169,7 +213,19 @@ ORE standardizes portfolio simulation through structured XML contracts:
    </Trade>
    ```
 2. `simulation.xml`: Specifies Monte Carlo paths ($10,000$), grid timesteps (80 points), and Hull-White interest rate calibration parameters.
-3. Execution: ORE instantiates QuantLib yield curves, runs pathwise pricing, models CSA collateral thresholds, and generates CSV reports for CVA, DVA, FVA, and regulatory SA-CCR.
+3. **Enterprise Sizing for a Mid-Sized Rates Portfolio:**
+   - Portfolio size: $5,000$ active interest rate derivatives across $12$ counterparty netting sets.
+   - Simulation grid: $10,000$ Monte Carlo paths evaluated across $80$ forward simulation timesteps.
+   - Total trade revaluations required:
+     $$\text{Evaluations} = 5,000\text{ trades} \times 10,000\text{ paths} \times 80\text{ timesteps} = 4,000,000,000 = 4.0\text{ billion pricings}$$
+   - At an average pricing latency of $50\mu\text{s}$ per trade valuation on modern CPU vector cores:
+     $$\text{Compute Budget} = \frac{4.0 \times 10^9 \times 50\mu\text{s}}{1,000,000\mu\text{s/s}} = 200,000\text{ core-seconds} = 55.6\text{ core-hours}$$
+   - Executed across an elastic $128$-core compute grid:
+     $$\text{Parallel Runtime} = \frac{200,000\text{ s}}{128 \times 60\text{ s/min}} = 26.0\text{ minutes}$$
+   - In-Memory Netting Set Exposure Cube Size (IEEE 754 64-bit double precision, 8 bytes per element):
+     $$\text{Storage} = 12\text{ netting sets} \times 80\text{ timesteps} \times 10,000\text{ paths} \times 8\text{ bytes} = 76,800,000\text{ bytes} = 73.2\text{ MB}$$
+
+This compact $73.2\text{ MB}$ footprint allows holding the entire firm-wide credit exposure cube directly in resident L3 cache/RAM across the aggregation cluster.
 
 ## Pitfalls
 

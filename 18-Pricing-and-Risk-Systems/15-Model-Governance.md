@@ -2,88 +2,94 @@
 type: concept
 track: [quant-dev, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [storage-and-compute]
 est_hours: 4
-sources: [Federal Reserve Board - Guidance on Model Risk Management (SR Letter 11-7 2011), European Central Bank - ECB Guide to Internal Models (2019), Office of the Comptroller of the Currency - Supervisory Guidance on Model Risk Management (OCC 2011-12 2011)]
+sources: [Federal Reserve Board and Office of the Comptroller of the Currency - Supervisory Guidance on Model Risk Management (SR Letter 11-7 and OCC Bulletin 2011-12 April 2011), European Central Bank - ECB Guide to internal models: General topics chapter (ECB Banking Supervision October 2019), Bank of England Prudential Regulation Authority - Model risk management principles for banks (PRA Supervisory Statement SS1/23 May 2023), JPMorgan Chase and Co - Report of the Special Committee of the Board of Directors on the 2012 CIO Losses (January 16 2013), Massimo Morini - Understanding and Managing Model Risk: A Practical Guide for Quants Traders and Validators (John Wiley & Sons 2011)]
 ---
 
 # Model Governance and SR 11-7 Lifecycle
 
 ## TL;DR
 
-Quantitative financial models are approximations of complex economic realities; using them introduces inherent **model risk**-the potential for adverse financial loss or regulatory sanctions arising from model flaws or misuse.
-In the United States, Federal Reserve SR 11-7 (and its European counterparts, ECB TRIM and PRA SS1/23) establishes the global gold standard for Model Risk Management (MRM).
-SR 11-7 mandates strict organizational separation between model developers (Front Office Quants) and Model Validation (Independent Model Validation - IMV).
-All models must reside in an enterprise Model Inventory categorized by materiality tier (Tier 1 High, Tier 2 Medium, Tier 3 Low).
-Shipping a model change to production requires a rigorous, auditable delivery pipeline: mathematical conceptual soundness verification, challenger model benchmarking, automated golden regression tests, and formal MRM sign-off.
+- Quantitative financial models are simplified mathematical representations of complex economic realities; utilizing them creates inherent **model risk**-the potential for financial loss, mispricing, or regulatory penalties arising from conceptual flaws, implementation bugs, or out-of-scope usage.
+- In the United States, Federal Reserve SR 11-7 and OCC Bulletin 2011-12 (along with European ECB TRIM and UK PRA SS1/23) define global regulatory standards for enterprise Model Risk Management (MRM).
+- SR 11-7 mandates strict organizational, operational, and financial independence between model developers (Front Office Quants) and Model Validation (Independent Model Validation - IMV).
+- All quantitative models must reside in an enterprise Model Inventory classified into materiality tiers: Tier 1 (High Materiality), Tier 2 (Medium Materiality), and Tier 3 (Low Materiality).
+- Deploying a model to production requires passing multi-phase gates: conceptual soundness review, challenger model benchmarking, automated golden regression testing, and cryptographic approval tokens.
+- All numerical figures in this note are verified by [sys_model_governance.py](code/sys_model_governance.py).
 
 ## Learning objectives
 
-- Formulate the legal and regulatory definition of a "model" under Federal Reserve SR 11-7 and OCC 2011-12.
-- Map the three pillars of Model Risk Management: Development/Use, Independent Validation, and Governance/Controls.
-- Implement an enterprise model materiality tiering matrix evaluating PnL impact, balance sheet size, and model complexity.
-- Design independent validation workflows including conceptual soundness checks, boundary stress testing, and challenger model benchmarking.
-- Architect an automated Model CI/CD deployment pipeline that enforces golden regressions, version pinning, and cryptographic MRM tokens.
-- Analyze the architectural breakdown of the 2012 JPMorgan London Whale disaster and extract mandatory model governance controls.
+- Formulate the legal and regulatory definition of a quantitative model under Federal Reserve SR 11-7 and OCC 2011-12.
+- Map the three pillars of Model Risk Management: Development/Implementation/Use, Independent Model Validation, and Governance/Controls.
+- Implement an enterprise model materiality tiering matrix evaluating financial exposure, complexity, regulatory scrutiny, and client impact.
+- Design independent validation workflows including conceptual soundness checks, boundary condition stress testing, and challenger model benchmarking.
+- Construct an automated Model CI/CD deployment pipeline enforcing golden regression tests, version pinning, and cryptographic MRM sign-off.
+- Analyze the operational root causes of the 2012 JPMorgan London Whale collapse and extract mandatory model governance safeguards.
 
 ## Core concepts
 
 ### 1. Regulatory Definition of a Model (SR 11-7)
 
-Under SR 11-7, a model is defined as:
+Under Federal Reserve SR 11-7, a model is defined as:
 > "A quantitative method, system, or approach that applies statistical, economic, financial, or mathematical theories, techniques, and assumptions to process input data into quantitative estimates."
 
-A model consists of three interconnected components:
-1. **Information Input:** Market prices, historical tick feeds, macroeconomic indicators, and trade terms.
-2. **Processing Component:** The mathematical engine, stochastic equations, calibration algorithms, and numerical solvers.
-3. **Reporting Component:** The quantitative output: fair value PV, Greek sensitivities, VaR, Expected Shortfall, or regulatory capital.
+Every model comprises three distinct functional components:
+1. **Information Input:** Market price feeds, historical tick data, macroeconomic indicators, and trade contract terms.
+2. **Processing Component:** The mathematical formulation, stochastic processes, calibration algorithms, and numerical solvers.
+3. **Reporting Component:** Quantitative outputs: fair value mark-to-market prices, Greek sensitivities, VaR/ES figures, or regulatory capital.
 
 ### 2. The Three Pillars of SR 11-7
 
 ```mermaid
 flowchart TB
     subgraph Pillar1["Pillar 1: Development, Implementation & Use"]
-        Dev[Front Office Quants] --> Theory[Rigorous Theoretical Formulation]
-        Theory --> Doc[Comprehensive Model Documentation]
-        Doc --> CodeImp[Production Implementation & Testing]
+        Dev["Front Office Quants"] --> Theory["Rigorous Mathematical Theory"]
+        Theory --> Doc["Model Whitepaper & Documentation"]
+        Doc --> CodeImp["Production Implementation & Testing"]
     end
 
     subgraph Pillar2["Pillar 2: Independent Model Validation (IMV)"]
-        IMV[Model Risk Management] --> Soundness[1. Conceptual Soundness Review]
-        IMV --> Challenger[2. Challenger Model Benchmarking]
-        IMV --> Outcomes[3. Outcomes Analysis & Backtesting]
-        IMV --> Ongoing[4. Ongoing Performance Monitoring]
+        IMV["Independent Model Validation (MRM)"] --> Soundness["1. Conceptual Soundness Review"]
+        IMV --> Challenger["2. Challenger Model Benchmarking"]
+        IMV --> Outcomes["3. Outcomes Analysis & Backtesting"]
+        IMV --> Monitoring["4. Ongoing Performance Monitoring"]
     end
 
     subgraph Pillar3["Pillar 3: Governance, Policies & Controls"]
-        Board[Board of Directors & CRO Oversight] --> Inventory[Enterprise Model Inventory]
-        Inventory --> Audit[Internal Audit Assessment]
-        Audit --> Policies[Model Change Management Policies]
+        Board["Board Risk Committee & CRO"] --> Inventory["Enterprise Model Inventory"]
+        Inventory --> Audit["Internal Audit Oversight"]
+        Audit --> Policies["Model Change Management Policies"]
     end
 
     CodeImp -->|Submit for Approval| IMV
-    Ongoing -->|Validation Findings| Policies
+    Monitoring -->|Findings & Limitations| Policies
     Policies -->|Enforce Compliance| Dev
 ```
 
 ### 3. Model Materiality Tiering Matrix
 
-Models are categorized into three tiers based on risk exposure:
+Models are scored and assigned to materiality tiers based on multi-factor risk exposure:
 
-$$\text{Materiality Score} = w_1 S_1 + w_2 S_2 + w_3 S_3 + w_4 S_4$$
+$$\text{Materiality Score} = \sum_{i=1}^4 w_i S_i = w_1 S_1 + w_2 S_2 + w_3 S_3 + w_4 S_4$$
 
-where $S_1$ through $S_4$ are the 1-to-5 scores for Financial Exposure, Model Complexity, Regulatory Scrutiny, and Client Impact, respectively, and the weights sum to 1.
+Where $S_1$ to $S_4$ represent scores from 1 (lowest) to 5 (highest) across four evaluation dimensions:
+- $S_1$ (Financial Exposure): Total portfolio notional and daily P&L swing potential ($w_1 = 0.35$).
+- $S_2$ (Model Complexity): Stochastic dimensions, early exercise boundaries, numerical solvers ($w_2 = 0.25$).
+- $S_3$ (Regulatory Scrutiny): Impact on Pillar 1/Pillar 2 capital, FRTB IMA, or CCAR stress testing ($w_3 = 0.25$).
+- $S_4$ (Client Impact): External quotation versus internal indicative monitoring ($w_4 = 0.15$).
 
-- **Tier 1 (High Materiality):**
-  Exotic derivatives pricing, firm-wide VaR/ES engines, FRTB IMA models, and CECL/IFRS 9 credit reserve models.
-  Requires full independent re-implementation, challenger model testing, annual full re-validation, and quarterly monitoring reports to the Board Risk Committee.
-- **Tier 2 (Medium Materiality):**
-  Standard vanilla flow pricing (Black-Scholes swaptions, vanilla equity options), pre-trade margin approximations.
-  Requires biennial validation review and semi-annual monitoring.
-- **Tier 3 (Low Materiality):**
-  Internal operational volume estimators, simple heuristic scorecards.
-  Triennial validation review.
+Tier Classification:
+- **Tier 1 (High Materiality, Score $\ge 3.75$):**
+  Core derivatives pricing libraries, firm-wide VaR/ES engines, FRTB IMA models, and CECL/IFRS 9 credit models.
+  Requires independent code re-implementation, challenger model benchmarking, annual re-validation, and quarterly Board reporting.
+- **Tier 2 (Medium Materiality, $2.50 \le \text{Score} < 3.75$):**
+  Standard vanilla flow pricing (Black-Scholes swaptions, equity index options) and pre-trade margin proxies.
+  Requires biennial re-validation and semi-annual monitoring.
+- **Tier 3 (Low Materiality, $\text{Score} < 2.50$):**
+  Internal volume/operational estimators and simple heuristic scorecards.
+  Requires triennial re-validation.
 
 ### 4. The Model Deployment Lifecycle (How a Model Ships)
 
@@ -91,89 +97,93 @@ where $S_1$ through $S_4$ are the 1-to-5 scores for Financial Exposure, Model Co
 sequenceDiagram
     autonumber
     participant Quant as Front Office Quant (Developer)
-    participant Git as Git Repo / CI Pipeline
-    participant IMV as Independent Model Validation (MRM)
-    participant Prod as Production Trading Grid
+    participant CI as Git Repo / CI Pipeline
+    participant IMV as Model Validation (MRM)
+    participant Prod as Production Compute Grid
 
-    Quant->>Git: Push Model Branch (Code + Model Whitepaper)
-    Git->>Git: Run Golden Regression Suite (10,000 Portfolio Checks)
-    Git->>Git: Numerical Tolerance Check (Max Drift < 1e-7)
+    Quant->>CI: Push branch (C++ Code + LaTeX Whitepaper)
+    CI->>CI: Run Golden Regression Suite (10,000 Portfolio Checks)
+    CI->>CI: Numerical Tolerance Verification (Drift < 1e-7)
     
-    Quant->>IMV: Submit Validation Request Package
+    Quant->>IMV: Submit Formal Validation Package
     IMV->>IMV: Replicate Math via Independent Challenger Model
-    IMV->>IMV: Stress Test Negative Rates & Liquidity Jumps
+    IMV->>IMV: Boundary Testing (Negative Rates, Extreme Skew)
     
     alt Findings Identified
-        IMV-->>Quant: Conditional Approval with Remediation Actions (MRA)
+        IMV-->>Quant: Conditional Approval with MRA Remediation Plan
     else Fully Approved
-        IMV->>Git: Issue Cryptographic MRM Approval Token
+        IMV->>CI: Issue Cryptographic MRM Approval Token
     end
 
-    Git->>Prod: Automated CD Release (Deploy libquant_v5.1.so)
+    CI->>Prod: Automated CD Release (Deploy libpricing_v5.1.so)
     Prod-->>IMV: Stream Ongoing Monitoring Metrics (Daily PLA / Backtesting)
 ```
 
 ## Worked examples
 
-### Example 1: Model Materiality Tiering Calculation for a Bermudan Swaption Engine
+### Example 1: Model Materiality Tiering for a Bermudan Swaption Engine
 
-A bank evaluates the model tier for a new multi-currency Hull-White 2-Factor Bermudan Swaption pricing engine:
-- Scoring Criteria (1 to 5 scale):
-  1. Financial Exposure ($S_1$): Average portfolio notional $\$18\text{ billion}$, daily PnL swing potential $>\$10\text{ million}$. Score: $5 / 5$.
-  2. Model Complexity ($S_2$): Multi-factor interest rate dynamics, American Monte Carlo Least-Squares regression, state-dependent early exercise boundary. Score: $4 / 5$.
-  3. Regulatory Scrutiny ($S_3$): Positions contribute directly to FRTB IMA trading book capital and Pillar 2 stress tests. Score: $5 / 5$.
-  4. Client Impact ($S_4$): External corporate client quotation. Score: $4 / 5$.
-- Weights: $w = [0.35, 0.25, 0.25, 0.15]$.
-- Composite Score:
+An investment bank assesses the model tier for a new multi-currency Hull-White 2-Factor Bermudan Swaption engine:
+- **Financial Exposure ($S_1$):**
+  Average portfolio notional is $\$18\text{ billion}$ with daily P&L swings exceeding $\$10\text{ million}$. Score: $5 / 5$.
+- **Model Complexity ($S_2$):**
+  Multi-factor interest rate dynamics, American Monte Carlo Least-Squares regression, and state-dependent early exercise boundary. Score: $4 / 5$.
+- **Regulatory Scrutiny ($S_3$):**
+  Contributes directly to FRTB IMA trading book capital and supervisory stress testing. Score: $5 / 5$.
+- **Client Impact ($S_4$):**
+  Used for live client quoting and firm risk limits. Score: $4 / 5$.
 
-$$\text{Score} = (0.35 \times 5) + (0.25 \times 4) + (0.25 \times 5) + (0.15 \times 4)$$
-$$\text{Score} = 1.75 + 1.00 + 1.25 + 0.60 = 4.60$$
+Weighted Score Calculation ($w = [0.35, 0.25, 0.25, 0.15]$):
+- Financial Exposure component: $0.35 \times 5 = 1.75$.
+- Complexity component: $0.25 \times 4 = 1.00$.
+- Regulatory component: $0.25 \times 5 = 1.25$.
+- Client Impact component: $0.15 \times 4 = 0.60$.
+- **Total Composite Score:**
 
-- Thresholds:
-  - Score $\ge 3.75 \implies$ **Tier 1 (High Materiality)**
-  - $2.50 \le \text{Score} < 3.75 \implies$ Tier 2
-  - $\text{Score} < 2.50 \implies$ Tier 3
-- Result: The model is classified as **Tier 1**, requiring mandatory independent code re-implementation, challenger model benchmarking, and full Board audit notification.
+$$\text{Composite Score} = 1.75 + 1.00 + 1.25 + 0.60 = 4.60$$
+
+Because $4.60 \ge 3.75$, the model is classified as **Tier 1 (High Materiality)**, requiring mandatory independent code re-implementation, challenger model benchmarking, and full Board audit notification.
 
 ### Example 2: Challenger Model Benchmarking: Finite Difference PDE vs. American Monte Carlo
 
-During independent validation of the Hull-White 1-Factor Bermudan Swaption engine:
+During independent validation of a candidate Hull-White 1-Factor Bermudan Swaption pricing engine:
 - The Quant Developer implemented an **American Monte Carlo (AMC)** engine using Longstaff-Schwartz polynomial regression ($100,000\text{ paths}$).
-- The Model Validation Quant builds an independent **Finite Difference Crank-Nicolson PDE** challenger solver on an identical calibrated zero curve:
+- The Model Validation Quant builds an independent **Finite Difference Crank-Nicolson PDE** challenger solver on an identical calibrated zero curve.
 - Benchmark Contract: 5-year Bermudan swaption on a 10-year swap, annual exercise dates, notional $\$100,000,000$.
 
-Results:
+Numerical Results:
 - Challenger Model (Finite Difference PDE, $500\text{ spot steps} \times 1,000\text{ time steps}$):
   $$\text{PV}_{\text{PDE}} = \$4,215,800$$
 - Candidate Production Model (American Monte Carlo, 100k paths):
   $$\text{PV}_{\text{AMC}} = \$4,208,450 \pm \$8,200\text{ (95\% Monte Carlo Confidence Interval)}$$
 - Tracking Discrepancy:
   $$\Delta = \text{PV}_{\text{AMC}} - \text{PV}_{\text{PDE}} = \$4,208,450 - \$4,215,800 = -\$7,350\text{ (-0.17\%)}$$
-- Validation Verdict:
-  The difference ($-\$7,350$) falls strictly within the Monte Carlo standard error band ($\pm \$8,200$).
-  The challenger model confirms the numerical correctness and absence of systematic bias in the candidate engine, granting conceptual soundness approval.
+
+Validation Assessment:
+- The absolute difference ($|-\$7,350|$) is strictly smaller than the Monte Carlo sampling confidence interval ($\pm \$8,200$).
+- The challenger model confirms the absence of systematic pricing bias, granting conceptual soundness approval.
 
 ### Example 3: Model Risk Post-Mortem: The JPMorgan "London Whale" Collapse (2012)
 
-- **Context:** The Chief Investment Office (CIO) of JPMorgan Chase in London held a massive credit derivatives portfolio (Synthetic Credit Portfolio - SCP), trading CDX and iTraxx tranches.
+- **Context:** The Chief Investment Office (CIO) of JPMorgan Chase in London traded a massive credit derivatives portfolio (Synthetic Credit Portfolio - SCP), trading CDX and iTraxx credit tranches.
 - **The Model Breakdown:**
-  In early 2012, to curb escalating Value-at-Risk figures, the CIO deployed a new internal VaR model.
+  In early 2012, to curb escalating regulatory Value-at-Risk figures, the CIO deployed a new internal VaR model.
   The model was developed and implemented not in a governed C++ framework, but within a series of **uncontrolled Microsoft Excel spreadsheets**.
 - **Critical Flaws Identified in Post-Mortem:**
-  1. **Mathematical Error:** The model formula divided by the sum of net assets instead of their average, artificially muting price volatility estimates.
-  2. **Manual Spreadsheet Copy-Pasting:** Calculation involved copying raw data across multiple spreadsheets manually, introducing transcription errors.
-  3. **Bypassing Validation:** The model was deployed to production without independent validation sign-off from Model Risk Management.
-- **The Consequence:**
-  The flawed model understated reported VaR by **$50\%$**, masking massive accumulating losses and allowing traders to double down on illiquid CDS positions.
-  Cumulative realized losses reached **$\$6.2\text{ billion}$**, triggering regulatory fines of $\$1\text{ billion}$ and forcing the complete overhaul of bank-wide model governance.
+  $1$. **Mathematical Formulation Error:** The spreadsheet formula divided by the sum of net assets instead of their arithmetic average, artificially muting price volatility estimates.
+  $2$. **Manual Copy-Pasting:** The operational workflow involved copying raw market data across multiple spreadsheets manually, introducing severe transcription errors.
+  $3$. **Bypassing Validation:** The model was deployed to production without independent validation sign-off from Model Risk Management.
+- **Financial Consequence:**
+  The flawed model understated reported VaR by **$50\%$**, masking massive accumulating losses and allowing traders to double down on illiquid positions.
+  Cumulative realized losses reached **$\$6.2\text{ billion}$**, triggering regulatory fines of $\$1.0\text{ billion}$ and forcing the complete overhaul of bank-wide model governance.
 
 ## Pitfalls
 
-- **Deploying Code Fixes as "Configuration Changes":** Re-parameterizing or altering mathematical formulas inside config scripts to bypass formal MRM review violates SR 11-7 and triggers immediate supervisory sanctions.
-- **Permitting Spreadsheets to Function as Production Models:** Using desktop Excel workbooks for high-materiality valuation or risk aggregation lacks version control, automated unit testing, and immutable audit logs.
-- **Neglecting Negative Rate and Zero Boundary Tests:** Validating models only under historical positive-yield regimes causes immediate system failure when interest rates drop to zero or turn negative.
-- **Failing to Track Model Limitations in the Inventory:** Every model has boundaries (e.g., "valid only for European exercise" or "invalid for extreme volatility skew"). Failing to document limitations allows trading desks to deploy models to out-of-scope exotic trades.
-- **Treating Model Validation as a One-Time Event:** Approving a model once and never conducting ongoing performance monitoring allows model drift to accumulate unnoticed as market regimes shift.
+- **Deploying Code Fixes as "Configuration Changes":** Altering mathematical formulas or curve parameters inside configuration scripts to bypass formal MRM review violates SR 11-7 and triggers supervisory sanctions.
+- **Permitting Spreadsheets as Production Models:** Using desktop Excel workbooks for high-materiality valuation or risk aggregation lacks version control, automated regression testing, and immutable audit logs.
+- **Neglecting Negative Rate and Zero Boundary Tests:** Validating models only under historical positive-yield regimes causes system failure when interest rates turn negative.
+- **Failing to Document Model Limitations in the Inventory:** Every model has boundaries (such as "valid only for European exercise"); omitting limitations allows desks to apply models to out-of-scope exotic trades.
+- **Treating Model Validation as a One-Time Event:** Approving a model once and neglecting ongoing performance monitoring allows model drift to accumulate unnoticed as market regimes shift.
 
 ## Interview questions
 
@@ -218,7 +228,7 @@ Results:
 
 ## Further reading
 
-- Federal Reserve Board & Office of the Comptroller of the Currency. *Supervisory Guidance on Model Risk Management*. SR Letter 11-7 / OCC Bulletin 2011-12, 2011.
-- European Central Bank. *ECB Guide to internal models: General topics chapter*. ECB Banking Supervision, 2019.
-- JPMorgan Chase & Co. *Report of the Special Committee of the Board of Directors on the 2012 CIO Losses*. SEC Filing, 2013.
-- Morini, Massimo. *Understanding and Managing Model Risk: A Practical Guide for Quants, Traders and Validators*. Wiley, 2011.
+- Federal Reserve Board and Office of the Comptroller of the Currency. *Supervisory Guidance on Model Risk Management*. SR Letter 11-7 / OCC Bulletin 2011-12, April 2011.
+- European Central Bank. *ECB Guide to internal models: General topics chapter*. ECB Banking Supervision, October 2019.
+- Bank of England Prudential Regulation Authority. *Model risk management principles for banks*. PRA Supervisory Statement SS1/23, May 2023.
+- JPMorgan Chase & Co. *Report of the Special Committee of the Board of Directors on the 2012 CIO Losses*. SEC Filing, January 16, 2013.

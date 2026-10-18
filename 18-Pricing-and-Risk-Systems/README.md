@@ -22,17 +22,17 @@ The architecture, design patterns, and production engineering behind quantitativ
 | 04 | [Curve and Surface Service](04-Curve-and-Surface-Service.md) | DQ | advanced | 4 | solid | 16 |
 | 05 | [Pricing Library Architecture](05-Pricing-Library-Architecture.md) | DQ | advanced | 4 | solid | 17 |
 | 06 | [Pricing at Scale](06-Pricing-at-Scale.md) | DQ | senior | 4 | solid | 16 |
-| 07 | [Risk Engine Architecture](07-Risk-Engine.md) | DQ | senior | 4 | draft | 10 |
-| 08 | [Intraday Risk and Pre-Trade Limits](08-Intraday-Risk-and-Pre-Trade-Limits.md) | DQ | advanced | 4 | draft | 10 |
-| 09 | [P&L Platform and Attribution](09-PnL-Platform.md) | DQ | senior | 4 | draft | 10 |
-| 10 | [FRTB Engine Architecture](10-FRTB-Engine.md) | DQ | senior | 5 | draft | 13 |
-| 11 | [XVA Engine Architecture](11-XVA-Engine.md) | DQ | senior | 4 | draft | 10 |
-| 12 | [Regulatory Reporting Pipeline](12-Regulatory-Reporting-Pipeline.md) | DQ | advanced | 4 | draft | 10 |
-| 13 | [The EOD Risk Batch](13-EOD-Risk-Batch.md) | DQ | senior | 4 | draft | 10 |
-| 14 | [Storage and Compute for Quantitative Systems](14-Storage-and-Compute.md) | DQ | senior | 4 | draft | 10 |
-| 15 | [Model Governance and SR 11-7 Lifecycle](15-Model-Governance.md) | DQ | advanced | 4 | draft | 10 |
-| 16 | [Non-Functional Architecture and Production Operations](16-Non-Functional-Design.md) | DQ | senior | 4 | draft | 10 |
-| 17 | [Industry Landscape: Vendor Platforms and Open Source](17-Industry-Landscape.md) | DQ | advanced | 4 | draft | 10 |
-| 18 | [Systems Design Problem Set](18-Systems-Design-Problem-Set.md) | DQ | senior | 4 | draft | 15 |
+| 07 | [Risk Engine Architecture](07-Risk-Engine.md) | DQ | senior | 4 | solid | 10 |
+| 08 | [Intraday Risk and Pre-Trade Limits](08-Intraday-Risk-and-Pre-Trade-Limits.md) | DQ | advanced | 4 | solid | 10 |
+| 09 | [P&L Platform and Attribution](09-PnL-Platform.md) | DQ | senior | 4 | solid | 10 |
+| 10 | [FRTB Engine Architecture](10-FRTB-Engine.md) | DQ | senior | 5 | solid | 13 |
+| 11 | [XVA Engine Architecture](11-XVA-Engine.md) | DQ | senior | 4 | solid | 10 |
+| 12 | [Regulatory Reporting Pipeline](12-Regulatory-Reporting-Pipeline.md) | DQ | advanced | 4 | solid | 10 |
+| 13 | [The EOD Risk Batch](13-EOD-Risk-Batch.md) | DQ | senior | 4 | solid | 10 |
+| 14 | [Storage and Compute for Quantitative Systems](14-Storage-and-Compute.md) | DQ | senior | 4 | solid | 10 |
+| 15 | [Model Governance and SR 11-7 Lifecycle](15-Model-Governance.md) | DQ | advanced | 4 | solid | 10 |
+| 16 | [Non-Functional Architecture and Production Operations](16-Non-Functional-Design.md) | DQ | senior | 4 | solid | 10 |
+| 17 | [Industry Landscape: Vendor Platforms and Open Source](17-Industry-Landscape.md) | DQ | advanced | 4 | solid | 10 |
+| 18 | [Systems Design Problem Set: Quantitative Financial Infrastructure](18-Systems-Design-Problem-Set.md) | DQ | senior | 4 | solid | 15 |
 
 <!-- qp:moc:end -->

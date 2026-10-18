@@ -2,82 +2,79 @@
 type: concept
 track: [quant-dev, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [xva-engine]
 est_hours: 4
-sources: [Basel Committee on Banking Supervision - Principles for effective risk data aggregation and risk reporting (BCBS 239 2013), Christian Voigt - Regulatory Reporting and Compliance Architecture in Banking (2021), European Central Bank - Guide on effective risk data aggregation and risk reporting (2024)]
+sources: [Basel Committee on Banking Supervision - Principles for effective risk data aggregation and risk reporting (BCBS 239 January 2013), Basel Committee on Banking Supervision - The standardised approach for measuring counterparty credit risk exposures (BCBS 279 March 2014), European Banking Authority - EBA Reporting Framework and Data Point Model (EBA DPM 3.3 December 2023), European Central Bank - Guide on effective risk data aggregation and risk reporting (ECB Banking Supervision May 2024), Board of Governors of the Federal Reserve System - Instructions for Preparation of Consolidated Financial Statements for Holding Companies (Reporting Form FR Y-9C OMB No. 7100-0128)]
 ---
 
 # Regulatory Reporting Pipeline
 
 ## TL;DR
 
-Regulatory reporting is the legal bridge between an investment bank's internal trading systems and financial supervisory authorities.
-Failing to submit accurate, validated regulatory returns results in severe supervisory sanctions, public enforcement orders, and punitive Pillar 2 capital add-ons.
-Modern architectures encapsulate regulatory computations into specialized microservices, such as an enterprise SA-CCR calculation service that computes Exposure at Default (EAD) across millions of derivative contracts.
-The reporting pipeline ingests multi-asset transaction feeds, translates risk metrics into standardized regulatory taxonomies (European COREP/FINREP under the EBA Data Point Model, US FR Y-9C and FFIEC 101, and granular FR 2052a liquidity reports), and enforces automated reconciliation against the General Ledger.
-Under BCBS 239, every aggregated metric submitted in an XBRL regulatory filing must have automated, verifiable end-to-end data lineage back to the originating front-office trade execution.
+- The regulatory reporting pipeline serves as the legally binding data bridge between an investment bank's internal trading systems and financial supervisory authorities (such as the Federal Reserve, OCC, ECB, and EBA).
+- Inaccurate, late, or unreconciled regulatory returns trigger severe public enforcement actions, administrative fines, and punitive Pillar 2 capital add-ons.
+- Modern architectures decouple regulatory calculations into specialized microservices, such as an enterprise SA-CCR calculation engine that computes Exposure at Default (EAD) and multi-asset add-ons across millions of derivative positions.
+- Ingestion pipelines transform raw transaction records into standardized regulatory taxonomies: European COREP/FINREP under the EBA Data Point Model (DPM / XBRL) and US Federal Reserve Form FR Y-9C, FFIEC 101, and FR 2052a liquidity filings.
+- Under BCBS 239 principles, every aggregated line item submitted in a regulatory filing must maintain automated, auditable, and deterministic data lineage tracing back to originating trade store records.
+- Pre-submission validation engines enforce multi-dimensional consistency checks, business logic rules, and automated reconciliation against the Finance General Ledger.
+- All numerical figures in this note are verified by [sys_regulatory_reporting.py](code/sys_regulatory_reporting.py).
 
 ## Learning objectives
 
-- Design an enterprise regulatory reporting pipeline meeting BCBS 239 data governance, accuracy, and auditability mandates.
-- Implement an automated SA-CCR calculation service computing replacement cost, potential future exposure, and multi-asset add-ons.
-- Map internal trade attributes and risk measures to supervisory taxonomies: European COREP (XBRL/DPM) and US Fed Form FR Y-9C / FFIEC 101.
-- Formulate automated reconciliation rules between front-office risk engine outputs and back-office General Ledger balances.
-- Construct pre-submission validation engines executing cross-table consistency checks, boundary conditions, and filing rules.
-- Design Mermaid container, sequence, and data lineage diagrams for regulatory filing engines.
+- Design an enterprise regulatory reporting architecture compliant with BCBS 239 principles for risk data aggregation and reporting.
+- Implement an automated SA-CCR microservice computing replacement cost, supervisory duration, potential future exposure, and multi-asset add-ons.
+- Map internal transaction attributes and portfolio metrics to supervisory taxonomies: European COREP/FINREP (EBA DPM) and US FR Y-9C / FFIEC 101.
+- Formulate automated reconciliation pipelines linking middle-office risk engine measures with back-office General Ledger financial statements.
+- Construct pre-submission validation engines enforcing cross-table accounting identities, boundary conditions, and XBRL filing rules.
+- Maintain end-to-end data lineage Directed Acyclic Graphs (DAGs) documenting transformations from front-office trade capture to regulatory portals.
 
 ## Core concepts
 
-### 1. The Regulatory Reporting Landscape
+### 1. The Global Regulatory Reporting Taxonomy
 
 Global banking organizations report across multiple distinct regulatory axes:
 
-```
-+----------------------------------------------------------------------------------------------------+
-| Regulatory Domain    | US Framework (Federal Reserve / OCC)       | European Framework (EBA / ECB) |
-+----------------------------------------------------------------------------------------------------+
-| Capital Adequacy     | FR Y-9C (Schedule HC-R), FFIEC 101        | COREP (Common Reporting: CA, CR)|
-| Financial Statements | FR Y-9C (Balance Sheet / Income Statement) | FINREP (Financial Reporting)   |
-| Counterparty Risk    | FFIEC 101 (Schedule D: SA-CCR / IMM)      | COREP C 34.02 (CCR by Approach)|
-| Liquidity Monitoring | FR 2052a (Complex Liquidity Monitoring)   | EBA LCR and NSFR Templates     |
-| Large Exposures      | Federal Reserve Regulation YY (SCCL)       | COREP LE (Large Exposures)     |
-| Transaction Repos    | Dodd-Frank Title VII (CFTC / SEC SDR)     | EMIR / MiFIR Transaction Report|
-+----------------------------------------------------------------------------------------------------+
-```
+| Regulatory Objective | US Framework (Federal Reserve / OCC) | European Framework (EBA / ECB) | Filing Frequency |
+| :--- | :--- | :--- | :--- |
+| **Capital Adequacy** | FR Y-9C (Schedule HC-R), FFIEC 101 | COREP (Common Reporting: CA, CR, MR) | Quarterly |
+| **Financial Accounting** | FR Y-9C (Balance Sheet / Income Statement) | FINREP (Financial Reporting: F 01 to F 46) | Quarterly / Semi-Annual |
+| **Counterparty Credit Risk** | FFIEC 101 (Schedule D: SA-CCR / IMM) | COREP C 34.02 (CCR by Approach) | Quarterly |
+| **Liquidity Monitoring** | FR 2052a (Complex Institution Liquidity) | EBA LCR (C 72 to C 76) & NSFR (C 80 to C 84) | Daily (FR 2052a) / Monthly |
+| **Large Exposures** | Federal Reserve Regulation YY (SCCL) | COREP LE (Large Exposures: C 27 to C 31) | Quarterly |
+| **Transaction Repositories** | Dodd-Frank Title VII (CFTC / SEC SDR) | EMIR / MiFIR Transaction Reporting | Real-Time ($T+0$ to $T+1$) |
 
-### 2. Regulatory Reporting Architecture and Lineage
+### 2. End-to-End Regulatory Reporting Pipeline Architecture
 
 ```mermaid
 flowchart TB
     subgraph UpstreamSources["Upstream Systems of Record"]
-        Trades[(Bitemporal Trade Store)]
-        RiskCube[(Middle Office Risk Cube)]
-        FinanceGL[(Finance General Ledger)]
-        CollateralDB[(Collateral & CSA Store)]
+        Trades[("Bitemporal Trade Store\n(Front Office Execution Data)")]
+        RiskCube[("Middle Office Risk Cube\n(Sensitivities, VaR, Scenarios)")]
+        FinanceGL[("Finance General Ledger\n(SAP / Oracle Official Accounts)")]
+        CollateralDB[("Collateral & CSA Store\n(Cash, Securities, Thresholds)")]
     end
 
-    subgraph CalculationServices["Regulatory Calculation Microservices"]
-        SACCRService[SA-CCR Calculation Service]
-        FRTBService[FRTB Capital Aggregator]
-        LiquidityService[LCR / NSFR Rules Engine]
+    subgraph CalcServices["Regulatory Calculation Microservices"]
+        SACCRService["SA-CCR Calculation Service\n(EAD, RC, PFE Multiplier)"]
+        FRTBService["FRTB Capital Engine\n(SbM, DRC, IMA Aggregator)"]
+        LiquidityService["LCR / NSFR Rules Engine\n(HQLA Inflows & Outflows)"]
     end
 
-    subgraph DataLineageCatalog["BCBS 239 Metadata & Lineage Engine"]
-        LineageGraph[(Apache Atlas / Collibra Lineage DAG)]
-        DataQuality[Data Quality Monitor: 5 Dimensions]
+    subgraph Governance["BCBS 239 Metadata & Lineage Engine"]
+        LineageDAG[("Data Lineage Graph\n(Apache Atlas / OpenLineage)")]
+        DQMonitor["Data Quality Rules Engine\n(Accuracy, Completeness, Timeliness)"]
     end
 
-    subgraph ReportingEngine["Regulatory Transformation & Validation Hub"]
-        SchemaTransformer[ETL & Taxonomy Mapper]
-        TaxonomyEngine[EBA DPM / Fed Rules Engine]
-        ReconEngine[GL-to-Risk Reconciliation Engine]
-        XBRLGenerator[XBRL / XML Filing Packager]
+    subgraph TransformationHub["Reporting Transformation & Validation Hub"]
+        TaxonomyMapper["Taxonomy & Schema Mapper\n(EBA DPM / Fed MDRM Codes)"]
+        ReconEngine["GL-to-Risk Reconciliation Engine\n(Identity & Variance Checks)"]
+        XBRLPackager["XBRL / XML Filing Packager\n(Schema Validation & Signing)"]
     end
 
-    subgraph Supervisors["Regulatory Portals"]
-        FedPortal[Federal Reserve Reporting Portal]
-        EBAPortal[ECB / EBA Supervisory Hub]
+    subgraph Portals["Supervisory Submission Portals"]
+        FedPortal["Federal Reserve Reporting Gateway"]
+        EBAPortal["ECB / EBA Supervisory Hub"]
     end
 
     Trades --> SACCRService
@@ -85,83 +82,88 @@ flowchart TB
     RiskCube --> FRTBService
     FinanceGL --> ReconEngine
 
-    SACCRService --> SchemaTransformer
-    FRTBService --> SchemaTransformer
-    LiquidityService --> SchemaTransformer
+    SACCRService --> TaxonomyMapper
+    FRTBService --> TaxonomyMapper
+    LiquidityService --> TaxonomyMapper
 
-    SchemaTransformer --> TaxonomyEngine
-    TaxonomyEngine --> ReconEngine
-    ReconEngine --> XBRLGenerator
+    TaxonomyMapper --> ReconEngine
+    ReconEngine --> XBRLPackager
 
-    SchemaTransformer -.->|Record Transformations| LineageGraph
-    DataQuality -.->|Audit Quality Scores| LineageGraph
+    TaxonomyMapper -.->|Register Lineage| LineageDAG
+    DQMonitor -.->|Validate Dimensions| LineageDAG
 
-    XBRLGenerator --> FedPortal
-    XBRLGenerator --> EBAPortal
+    XBRLPackager --> FedPortal
+    XBRLPackager --> EBAPortal
 ```
 
 ### 3. Enterprise SA-CCR Microservice Architecture
 
-Counterparty Credit Risk under Basel III finalisation mandates SA-CCR:
+Under Basel III finalisation (BCBS 279), counterparty credit risk exposure is evaluated via the Standardised Approach for Counterparty Credit Risk:
 
 $$\text{EAD} = 1.4 \times (\text{RC} + \text{PFE})$$
 
-The calculation service exposes a low-latency gRPC / JSON interface:
-- **Input:** Legal netting set ID, list of trades (notional, maturity, underlying asset class, direction), and collateral details ($V, C, \text{TH}, \text{MTA}, \text{NICA}, \text{MPOR}$).
-- **Processing:**
-  1. Partitions trades into 5 asset classes: Interest Rate, Foreign Exchange, Credit, Equity, Commodity.
-  2. Applies supervisory delta ($\delta_i$) and supervisory duration ($SD_i$).
-  3. Computes maturity-bucketed effective notionals and aggregates within hedging sets using supervisory correlation parameters.
-  4. Applies supervisory factors ($SF$) to compute Add-Ons: $\text{AddOn}_{\text{total}} = \sum_a \text{AddOn}^{(a)}$.
-  5. Evaluates the replacement cost ($\text{RC}$) and PFE multiplier:
+The microservice processes incoming netting set requests:
+1. **Partitioning:** Separates trades into 5 asset classes: Interest Rate, Foreign Exchange, Credit, Equity, and Commodity.
+2. **Supervisory Adjustments:** Applies supervisory delta ($\delta_i$) and supervisory duration ($SD_i$):
 
-$$\text{Multiplier} = \min\left(1.0, 0.05 + 0.95 \times \exp\left( \frac{V - C}{2 \times 0.95 \times \text{AddOn}_{\text{total}}} \right)\right)$$
+$$SD_i = \frac{e^{-0.05 \times S_i} - e^{-0.05 \times E_i}}{0.05}$$
 
-- **Output:** Netting set EAD, Asset-class Add-on breakdown, Multiplier, and Risk-Weighted Assets ($\text{RWA} = \text{EAD} \times RW_{\text{cpty}}$). The factor $12.5$ converts an 8% minimum capital requirement into an equivalent RWA amount; it is not part of the RWA calculation.
+3. **Effective Notional Aggregation:** Computes bucketed effective notionals ($D_i$) and aggregates within hedging sets using regulatory correlation parameters.
+4. **Supervisory Factors ($SF$):** Multiplies net effective notionals by prescribed asset-class factors to obtain asset add-ons: $\text{AddOn}_{\text{total}} = \sum_a \text{AddOn}^{(a)}$.
+5. **Replacement Cost and PFE Multiplier:**
 
-### 4. BCBS 239 End-to-End Data Lineage Requirements
+$$\text{RC} = \max(V - C, 0) \quad \text{(unmargined)}$$
+$$\text{Multiplier} = \min\left(1.0, \, 0.05 + 0.95 \times \exp\left( \frac{V - C}{2 \times 0.95 \times \text{AddOn}_{\text{total}}} \right)\right)$$
+$$\text{PFE} = \text{Multiplier} \times \text{AddOn}_{\text{total}}$$
 
-To fulfill Principle 3 (Accuracy) and Principle 4 (Completeness):
-- Every cell in a COREP or FR Y-9C filing must maintain a deterministic backward lineage trace to the underlying transaction rows in the trade store.
-- **Lineage Metadata Schema:**
-  - `report_id`: `COREP_C_07_00`
-  - `cell_coordinate`: `{row: 010, col: 020}`
-  - `transformation_rule`: `SUM(trade.ead * cpty.risk_weight)`
-  - `source_system`: `MUREX_FO_NY`
-  - `extraction_timestamp`: `2026-10-15T22:00:00Z`
-  - `reconciliation_status`: `RECONCILED_TO_GL`
+6. **Output Generation:** Returns netting set EAD, asset-class add-on breakdowns, multiplier, and Risk-Weighted Assets ($\text{RWA} = \text{EAD} \times RW_{\text{cpty}}$).
+
+### 4. BCBS 239 Governance and Data Lineage
+
+To satisfy Basel Committee Principle 3 (Accuracy and Integrity) and Principle 4 (Completeness):
+- Every cell in a COREP or FR Y-9C filing must maintain deterministic backward lineage to originating trade records.
+- Lineage metadata records:
+  - `report_id`: Unique template identifier (such as `COREP_C_34_02`).
+  - `cell_coordinate`: Grid location (`{sheet: "C_34_02", row: 010, col: 020}`).
+  - `transformation_rule`: Algebraic mapping (`SUM(trade.ead * cpty.risk_weight)`).
+  - `source_system`: Source database of record (`MUREX_FO_LON`).
+  - `extraction_timestamp`: UTC timestamp of the snapshot.
+  - `reconciliation_status`: State of reconciliation against the General Ledger.
 
 ## Worked examples
 
-### Example 1: SA-CCR Service Request and Multi-Asset EAD Calculation
+### Example 1: SA-CCR Microservice Request and Multi-Asset EAD Calculation
 
 A client invokes the SA-CCR microservice for an unmargined netting set ($C = 0$) containing two trades with a corporate counterparty:
-- Trade 1: 5-year USD IRS, Notional $\$100,000,000$, $\text{MtM} = +\$1,500,000$, Payer swap ($\delta = +1$).
-  - Supervisory Duration: $SD = \frac{1 - e^{-0.05 \times 5}}{0.05} = 4.4240$.
-  - Effective Notional: $D_1 = +1 \times 100\text{M} \times 4.4240 = +\$442,400,000$.
-  - Asset Class: Interest Rate ($SF = 0.5\%$).
-  - Add-On: $\text{AddOn}_{\text{IR}} = 0.005 \times 442,400,000 = \$2,212,000$.
-- Trade 2: 1-year EUR/USD FX forward, Notional EUR $50,000,000$ (EUR/USD $= 1.10 \implies \$55,000,000$), $\text{MtM} = -\$300,000$, Long EUR ($\delta = +1$).
-  - Maturity Factor ($1\text{y}$ unmargined): $MF = \sqrt{\min(1.0, 1.0)} = 1.0$.
-  - Asset Class: FX ($SF = 4.0\%$).
-  - Effective Notional: $D_2 = \$55,000,000$.
-  - Add-On: $\text{AddOn}_{\text{FX}} = 0.04 \times 55,000,000 = \$2,200,000$.
+- **Trade 1 (5-Year USD Payer IRS):**
+  - Notional: $\$100,000,000$, $\text{MtM} = +\$1,500,000$, Payer swap ($\delta = +1$).
+  - Start time $S = 0$, End time $E = 5\text{ years}$.
+  - Supervisory duration:
+
+$$SD = \frac{1 - e^{-0.05 \times 5}}{0.05} = \frac{1 - e^{-0.25}}{0.05} = 4.4240$$
+
+  - Effective notional: $D_1 = +1 \times \$100,000,000 \times 4.4240 = \$442,400,000$.
+  - Asset class: Interest Rate ($SF = 0.5\% = 0.005$).
+  - Add-on: $\text{AddOn}_{\text{IR}} = 0.005 \times \$442,400,000 = \$2,212,000$.
+- **Trade 2 (1-Year EUR/USD FX Forward):**
+  - Notional: $\text{EUR } 50,000,000$ at $\text{EUR/USD} = 1.10 \implies \$55,000,000$, $\text{MtM} = -\$300,000$, Long EUR ($\delta = +1$).
+  - Maturity factor for 1-year unmargined trade: $MF = \sqrt{\min(1.0, 1.0)} = 1.0$.
+  - Asset class: Foreign Exchange ($SF = 4.0\% = 0.04$).
+  - Effective notional: $D_2 = \$55,000,000$.
+  - Add-on: $\text{AddOn}_{\text{FX}} = 0.04 \times \$55,000,000 = \$2,200,000$.
 
 Netting Set Aggregation:
 - Total Net MtM: $V = \$1,500,000 - \$300,000 = +\$1,200,000$.
-- Replacement Cost ($C = 0$):
+- Replacement Cost ($C = 0$): $\text{RC} = \max(\$1,200,000, 0) = \$1,200,000$.
+- Total Netting Set Add-On:
 
-$$\text{RC} = \max(V - C, 0) = \max(\$1,200,000, 0) = \$1,200,000$$
-
-- Total Add-On:
-
-$$\text{AddOn}_{\text{total}} = \text{AddOn}_{\text{IR}} + \text{AddOn}_{\text{FX}} = \$2,212,000 + \$2,200,000 = \$4,412,000$$
+$$\text{AddOn}_{\text{total}} = \$2,212,000 + \$2,200,000 = \$4,412,000$$
 
 - PFE Multiplier:
 
-$$\text{Multiplier} = \min\left(1.0, 0.05 + 0.95 \times \exp\left( \frac{1,200,000}{2 \times 0.95 \times 4,412,000} \right)\right)$$
-$$\text{Exponent} = \frac{1,200,000}{8,382,800} = 0.14315 \implies \exp(0.14315) = 1.1539$$
-$$\text{Multiplier} = \min(1.0, 0.05 + 0.95 \times 1.1539) = \min(1.0, 0.05 + 1.0962) = 1.0$$
+$$\text{Denominator} = 2 \times 0.95 \times \$4,412,000 = \$8,382,800$$
+$$\text{Exponent} = \frac{\$1,200,000}{\$8,382,800} = 0.14315 \implies \exp(0.14315) = 1.1539$$
+$$\text{Multiplier} = \min(1.0, \, 0.05 + 0.95 \times 1.1539) = \min(1.0, \, 0.05 + 1.0962) = 1.0$$
 
 - Potential Future Exposure (PFE):
 
@@ -171,57 +173,62 @@ $$\text{PFE} = 1.0 \times \$4,412,000 = \$4,412,000$$
 
 $$\text{EAD} = 1.4 \times (\text{RC} + \text{PFE}) = 1.4 \times (\$1,200,000 + \$4,412,000) = 1.4 \times \$5,612,000 = \$7,856,800$$
 
-If the corporate counterparty has a supervisory risk weight of $100\%$, the resulting RWA reported in COREP C 34.02 is:
+- Risk-Weighted Assets (RWA):
+  For an unrated corporate counterparty with a $100\%$ supervisory risk weight:
 
 $$\text{RWA} = \$7,856,800 \times 100\% = \$7,856,800$$
 
 ### Example 2: EBA XBRL Data Point Model (DPM) Validation Break
 
 Prior to submitting the quarterly COREP return to the European Central Bank, the automated filing engine executes supervisory validation rules:
-- Table 1: Own Funds (`C 01.00`, Row 010, Col 010 - Total Common Equity Tier 1 Capital):
-  Value reported: $€45,250,000,000$.
-- Table 2: Capital Ratios (`C 02.00`, Row 010, Col 010 - Total Risk Exposure Amount / RWA):
-  Value reported: $€380,000,000,000$.
-- Table 3: Capital Ratio Check (`C 03.00`, Row 010, Col 010 - Reported CET1 Ratio):
-  Value reported: $11.85\%$.
+- Table 1 (`C 01.00`, Row 010, Col 010 - Total Common Equity Tier 1 Capital):
+  Reported CET1: $€45,250,000,000$.
+- Table 2 (`C 02.00`, Row 010, Col 010 - Total Risk Exposure Amount / RWA):
+  Reported Total RWA: $€380,000,000,000$.
+- Table 3 (`C 03.00`, Row 010, Col 010 - Reported CET1 Ratio):
+  Reported CET1 ratio: $11.85\%$.
 
-Validation Rule `v0841_m` Check:
+Validation Rule `v0841_m` Verification:
 
 $$\left| \text{Reported Ratio} - \frac{\text{CET1 Capital}}{\text{Total RWA}} \right| \le 0.0001$$
 
-Evaluation:
+Evaluating the true ratio:
 
 $$\frac{€45,250,000,000}{€380,000,000,000} = 0.1190789 \implies 11.91\%$$
 $$\text{Discrepancy} = |0.1185 - 0.1191| = 0.0006 > 0.0001$$
 
-- Result: Rule `v0841_m` fails!
-- Root Cause Investigation:
-  A credit risk team applied an unapproved manual adjustment subtracting $€2,100,000,000$ of RWA in an offline spreadsheet without updating the master RWA aggregation table.
-- System Action:
-  The filing engine rejects the submission package, flags the line-item break in the audit dashboard, and blocks submission until the underlying database is reconciled.
+- Result: Validation rule `v0841_m` fails.
+- Root Cause Analysis:
+  An analyst applied an unreconciled offline spreadsheet adjustment subtracting $€2,100,000,000$ of RWA in an offline template without updating the master database.
+- Action: The pipeline halts submission, generates an audit discrepancy ticket, and blocks filing until the database records are corrected.
 
 ### Example 3: General Ledger to Risk Engine Reconciliation Break
 
-At month-end, Product Control reconciles the derivative fair value asset balance between the Finance General Ledger (SAP) and the Middle-Office Risk Engine:
+At month-end close, Product Control reconciles derivative asset fair values between the Finance General Ledger (SAP) and the Middle-Office Risk Engine:
 - General Ledger Balance (Account 1410 - Derivative Financial Instruments Asset):
   $$\text{GL Balance} = \$14,850,200,000$$
-- Risk Engine Sum of Mark-to-Market Values ($\sum \max(V_i, 0)$):
-  $$\text{Risk Sum} = \$14,620,000,000$$
-- Reconciliation Variance:
+- Middle-Office Risk Engine Sum ($\sum \max(V_i, 0)$):
+  $$\text{Risk Engine Balance} = \$14,620,000,000$$
+- Initial Reconciliation Variance:
   $$\Delta = \$14,850,200,000 - \$14,620,000,000 = \$230,200,000\text{ (GL is higher)}$$
 - Investigation:
-  Automated reconciliation scripts match trades by unique trade ID across both systems:
-  - 98.4% of trades match perfectly.
-  - Break identified: 45 cross-currency swap contracts executed in the Tokyo branch on the last business day were booked in the local back-office booking system (feeding GL) but failed to replicate to the central risk engine due to a message queue serialization error.
-- Resolution: The message queue was replayed, the 45 trades were ingested, and the risk balance updated to $\$14,850,150,000$, bringing the final variance to $\$50,000$ (well within the $\$1\text{M}$ materiality threshold).
+  Automated reconciliation scripts match positions by trade ID:
+  - $45$ cross-currency swap transactions executed in the Tokyo branch were booked in the local back-office system (feeding GL) but failed to replicate to the central risk engine due to a Kafka message schema serialization error.
+- Resolution:
+  The failed message queue was replayed, the 45 trades were ingested, and the risk balance updated to $\$14,850,150,000$.
+  Final variance:
+
+$$\Delta_{\text{final}} = \$14,850,200,000 - \$14,850,150,000 = \$50,000$$
+
+The final $\$50,000$ variance is well within the $\$1,000,000$ materiality threshold, enabling Product Control to sign off on the financial return.
 
 ## Pitfalls
 
-- **Permitting Manual Spreadsheet Adjustments in Regulatory Returns:** Overwriting regulatory line items in Excel before submitting filings directly violates BCBS 239 Principle 3, inviting regulatory scrutiny and audit penalties.
-- **Failing to Reconcile Risk Metrics Against Accounting Ledgers:** Submitting regulatory capital figures that do not tie back to audited financial balance sheets causes immediate regulatory inquiry and rejection of supervisory models.
-- **Ignoring Netting Set Identifier Harmonization:** Using different counterparty identifiers across trades belonging to the same legal netting set prevents the SA-CCR engine from recognizing netting benefits, grossly inflating reported EAD.
-- **Neglecting Filing Calendar Cutoffs and Timezone Discrepancies:** Submitting cross-border regulatory returns without accounting for home-host supervisory calendar differences (e.g., UK vs US holidays) causes missed statutory filing deadlines.
-- **Hardcoding Regulatory Taxonomy Schemas:** Hardcoding validation rules in application code causes system failure when the EBA or Federal Reserve updates taxonomy frameworks (e.g., EBA DPM 3.2 to 3.3). Engines must use metadata-driven rule parsers.
+- **Permitting Manual Spreadsheet Adjustments:** Overwriting regulatory return values in desktop spreadsheets before filing directly violates BCBS 239 Principle 3, inviting regulatory penalties and mandatory independent audits.
+- **Failing to Reconcile Risk Metrics Against Accounting Ledgers:** Submitting regulatory capital figures that do not tie back to audited financial balance sheets causes regulatory rejection of supervisory models.
+- **Inconsistent Netting Set Identifiers:** Using different counterparty identifiers across trades belonging to the same legal netting set prevents the SA-CCR engine from recognizing netting benefits, grossly inflating reported EAD.
+- **Ignoring Filing Calendars and Timezone Cutoffs:** Submitting cross-border regulatory returns without accounting for supervisory calendar differences (such as UK vs US bank holidays) causes missed statutory filing deadlines.
+- **Hardcoding Regulatory Taxonomy Schemas:** Hardcoding validation rules in application code causes system failure when the EBA or Federal Reserve updates taxonomy frameworks (such as EBA DPM 3.2 to 3.3). Pipelines must use metadata-driven rule parsers.
 
 ## Interview questions
 
@@ -267,7 +274,7 @@ At month-end, Product Control reconciles the derivative fair value asset balance
 
 ## Further reading
 
-- Basel Committee on Banking Supervision. *The standardised approach for measuring counterparty credit risk exposures*. BIS BCBS 279, 2014.
-- European Banking Authority. *EBA Data Point Model (DPM) and XBRL Filing Rules*. EBA Reporting Guidelines, 2023.
-- Federal Reserve Board. *Instructions for the Preparation of Consolidated Financial Statements for Holding Companies (FR Y-9C)*. Federal Reserve Reporting Instructions.
-- Basel Committee on Banking Supervision. *Principles for effective risk data aggregation and risk reporting*. BIS BCBS 239, 2013.
+- Basel Committee on Banking Supervision. *Principles for effective risk data aggregation and risk reporting*. BCBS 239, January 2013.
+- Basel Committee on Banking Supervision. *The standardised approach for measuring counterparty credit risk exposures*. BCBS 279, March 2014.
+- European Banking Authority. *EBA Reporting Framework and Data Point Model (DPM)*. EBA Guidelines, December 2023.
+- Board of Governors of the Federal Reserve System. *Instructions for Preparation of Consolidated Financial Statements for Holding Companies (FR Y-9C)*. Federal Reserve Reporting Instructions.
