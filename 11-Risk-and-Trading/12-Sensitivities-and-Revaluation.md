@@ -5,268 +5,341 @@ tier: advanced
 status: solid
 prereqs: [risk-factor-modelling, the-greeks]
 est_hours: 5
-sources: [Antoine Savine - Modern Computational Finance AAD and Parallel Simulations, Paul Glasserman - Monte Carlo Methods in Financial Engineering chapter 7, Bruce Tuckman and Angel Serrat - Fixed Income Securities chapter 15, Basel Committee on Banking Supervision - MAR21 Standardised Approach]
+sources: [Glasserman - Monte Carlo Methods in Financial Engineering (Springer 2003) chapter 7 Estimating Sensitivities, Griewank and Walther - Evaluating Derivatives - Principles and Techniques of Algorithmic Differentiation 2nd edition (SIAM 2008), Giles and Glasserman - Smoking Adjoints - Fast Monte Carlo Greeks - Risk 19(1) 88-92 (2006), Savine - Modern Computational Finance - AAD and Parallel Simulations (Wiley 2018), Trefethen - Approximation Theory and Approximation Practice (SIAM 2013), Gass Glau Mahlstedt and Mair - Chebyshev Interpolation for Parametric Option Pricing - Finance and Stochastics 22(3) 701-731 (2018), Hull - Options Futures and Other Derivatives (Pearson) chapter on exotic options for the barrier formula, Basel Framework MAR21.5 MAR21.19 to MAR21.24 and MAR50.47 FAQ1 (version effective 1 January 2023)]
 ---
 
 # Sensitivities and Revaluation
 
 ## TL;DR
 
-Risk engines face a fundamental trade-off between computational latency and mathematical accuracy when pricing portfolios across thousands of simulated scenarios: Full Revaluation versus Sensitivity-Based Proxies.
-Full revaluation prices every contract through its complete pricing library under each scenario, ensuring perfect non-linear fidelity at the cost of massive computational burden ($O(K \cdot M)$ for $K$ scenarios and $M$ trades).
-Sensitivity proxies approximate scenario P&L via first-order (Delta) or second-order (Delta-Gamma and Cross-Gamma) Taylor expansions, reducing revaluation to vectorized matrix multiplication.
-Finite difference bumping requires careful selection of optimal step size $h \approx \epsilon_{\text{mach}}^{1/3} x$ to balance $O(h^2)$ truncation error against catastrophic floating-point cancellation.
-Modern quantitative production architectures employ Adjoint Algorithmic Differentiation (AAD) to compute exact analytic Greeks across thousands of factors in runtime equivalent to a single pricing function evaluation, alongside Chebyshev grid interpolation for non-linear exotic books.
+- A risk engine turns scenarios into P&L either by full revaluation (one pricing call per trade per scenario), by a Taylor expansion in precomputed sensitivities, or by interpolating precomputed prices on a grid; each trades cost against accuracy in a different place.
+- Finite differences have two errors: truncation ($O(h)$ forward, $O(h^2)$ central) and round-off ($\sim\varepsilon|V|/h$, or $/h^2$ for gamma); for the reference call the central delta error is $8.6 \times 10^{-5}$ at $h = 1$, $8.6 \times 10^{-9}$ at $h = 0.01$ and back up to between $10^{-8}$ and $10^{-5}$ at $h = 10^{-8}$.
+- Bumping a Monte Carlo pricer needs common random numbers: with independent seeds the delta estimate had a standard deviation of about 7.07, with the same seeds about 0.0039.
+- Adjoint algorithmic differentiation (AAD) gives every first-order sensitivity to machine precision for a few times the cost of one pricing (2.65 operations per pricing operation on Black-Scholes, 2.28 on a 30-pillar curve), against $2N$ pricings for central bumps.
+- A full second-order proxy matched full-revaluation 99% VaR on an option book (5.50 against 5.50) but gave 8.84 against 8.68 when the shocks were doubled, and is wrong by construction across a barrier; Chebyshev grids are excellent for smooth payoffs and slow at kinks unless split there.
 
 ## Learning objectives
 
 - Contrast Full Revaluation against Taylor series approximations across computational cost, memory bandwidth, and tail accuracy.
 - Derive optimal step sizes for forward, backward, and central finite difference bumping.
 - Construct the full Hessian matrix, distinguishing diagonal gamma from off-diagonal cross-gamma terms.
-- Formulate the computational principles of Adjoint Algorithmic Differentiation (AAD) and explain how it evaluates gradients in $O(1)$ time relative to pricing.
+- Formulate the computational principles of Adjoint Algorithmic Differentiation (AAD) and explain why its cost relative to one pricing does not grow with the number of inputs.
 - Quantify proxy approximation error using Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and maximum tail divergence.
-- Implement Chebyshev polynomial grid revaluation to accelerate Monte Carlo pricing for non-linear multi-asset portfolios.
+- Implement Chebyshev polynomial grid revaluation and know when it fails.
+- Bump Monte Carlo pricers correctly and know when pathwise (AAD) derivatives fail.
 
 ## Core concepts
 
-### Full Revaluation vs. Sensitivity Proxies
-
-When evaluating risk for a portfolio of $M$ financial instruments across $K$ simulated market scenarios:
+### Three ways to get scenario P&L
 
 ```mermaid
 flowchart TD
-  Portfolio[Portfolio of M Trades] --> Choice{Revaluation Architecture}
-  Choice -->|Exact / Non-linear| FR[Full Revaluation]
-  Choice -->|Taylor Expansion| Proxy[Sensitivity Proxies]
-  Choice -->|Precomputed Grid| Grid[Grid / Chebyshev Interpolation]
-  FR --> FR_Cost[O(K * M) pricing calls / Exact tail fidelity / High CPU/GPU load]
-  Proxy --> Proxy_Cost[Vectorized dot products / Ultra-fast / Breaks down on barrier/tail options]
-  Grid --> Grid_Cost[Fast spline evaluation / Bounded error / Memory intensive]
+    SC["Scenarios: K vectors of factor shocks"] --> CH{"Revaluation method"}
+    CH -->|"price every trade in every scenario"| FR["Full revaluation: K x M pricing calls"]
+    CH -->|"Greeks at the base point"| TX["Taylor proxy: delta, gamma, cross-gamma"]
+    CH -->|"price on nodes once"| GR["Grid or Chebyshev interpolation"]
+    BASE["Base market state"] --> SENS["Sensitivities: bumps or AAD"]
+    SENS --> TX
+    BASE --> GR
+    FR --> PNL["P&L vector per scenario"]
+    TX --> PNL
+    GR --> PNL
+    PNL --> RM["VaR, ES, stress, attribution"]
+    PNL --> CMP["Proxy check: compare with full revaluation on a sample"]
 ```
 
-#### 1. Full Revaluation
-In full revaluation, the risk engine executes the full closed-form, tree, PDE, or Monte Carlo pricing function for every trade $i$ under each shocked risk factor vector $\mathbf{x}_k = \mathbf{x}_0 + \Delta \mathbf{x}_k$:
+For $M$ trades, $N$ factors and $K$ scenarios:
 
-$$\Delta V_{\text{portfolio}}(\Delta \mathbf{x}_k) = \sum_{i=1}^M \left[ V_i(\mathbf{x}_0 + \Delta \mathbf{x}_k) - V_i(\mathbf{x}_0) \right]$$
+| Method | Cost | Exact where | Fails where |
+| :--- | :--- | :--- | :--- |
+| Full revaluation | $K \cdot M$ pricings | everywhere the pricer is right | compute budget, pricer noise (Monte Carlo pricers) |
+| Delta proxy | $N$ sensitivities, then $K \cdot N$ multiply-adds | linear books | any optionality |
+| Delta-gamma (with cross terms) | $O(N^2)$ second derivatives | small moves of smooth books | large moves, discontinuities, path dependence |
+| Grid or Chebyshev | nodes $\times$ pricings, then cheap lookups | smooth functions of few factors | kinks, high dimension (tensor grids grow as $n^d$) |
 
-- **Strengths:** 100% pricing fidelity; natively captures all higher-order Greeks, path dependencies, barrier crossings, and non-smooth payoffs.
-- **Weaknesses:** Computationally demanding. For a bank with 500,000 trades evaluated across 10,000 historical or Monte Carlo scenarios, full revaluation requires 5 billion pricing calls, exceeding overnight batch windows unless accelerated by massive GPU clusters.
+With labelled hypothetical inputs of 500,000 trades, 10,000 scenarios and 10 microseconds a pricing call, full revaluation is 5 billion calls, about 13.9 CPU-hours a run; that is why banks mix methods by product and keep full revaluation for the books where the proxy check fails.
 
-#### 2. Sensitivity-Based Proxies (Taylor Expansion)
-The sensitivity approach precomputes portfolio Greeks at the base state $\mathbf{x}_0$, approximating scenario P&L via polynomial expansion:
+Full revaluation:
 
-- **Delta-Only (Linear) Proxy:**
+$$\Delta V_k = \sum_{i=1}^M \left[V_i(x_0 + \Delta x_k) - V_i(x_0)\right].$$
 
-$$\Delta V_k \approx \mathbf{\delta}^T \Delta \mathbf{x}_k = \sum_{j=1}^N \delta_j \cdot \Delta x_{j, k}$$
+Second-order proxy with gradient $\delta$ and Hessian $\Gamma$:
 
-- **Delta-Gamma (Quadratic) Proxy:**
+$$\Delta V_k \approx \delta^\top \Delta x_k + \tfrac12 \Delta x_k^\top \Gamma\, \Delta x_k .$$
 
-$$\Delta V_k \approx \mathbf{\delta}^T \Delta \mathbf{x}_k + \frac{1}{2} \Delta \mathbf{x}_k^T \mathbf{\Gamma} \Delta \mathbf{x}_k = \sum_{j=1}^N \delta_j \Delta x_{j, k} + \frac{1}{2}\sum_{i=1}^N \sum_{j=1}^N \Gamma_{ij} \Delta x_{i, k} \Delta x_{j, k}$$
+The diagonal of $\Gamma$ is gamma, volga and so on; the off-diagonal terms are cross-gammas (vanna is $\partial^2 V/\partial S\,\partial\sigma$).
 
-- **Strengths:** Extreme speed. Revaluation reduces to standard matrix-vector operations executed in milliseconds using BLAS libraries.
-- **Weaknesses:** Truncation error. For large market moves (3+ standard deviations), Taylor approximations diverge significantly, particularly for discontinuous payoffs (digitals, barrier options) and deep OTM optionality.
+### Finite differences: truncation against round-off
 
-### Finite Difference Bumping Mechanics
+Taylor expansion gives the truncation errors:
 
-When analytical formulas for sensitivities are unavailable, quants estimate derivatives numerically via finite difference bumping:
+$$\frac{V(x+h) - V(x)}{h} = V' + \tfrac{h}{2}V'' + O(h^2), \qquad \frac{V(x+h) - V(x-h)}{2h} = V' + \tfrac{h^2}{6}V''' + O(h^4),$$
 
-1. **Forward Difference:**
+$$\frac{V(x+h) - 2V(x) + V(x-h)}{h^2} = V'' + \tfrac{h^2}{12}V'''' + O(h^4).$$
 
-$$\delta_i \approx \frac{V(x_i + h) - V(x_i)}{h}, \quad \text{Truncation Error} = O(h)$$
+Round-off: each price carries a relative error of order $\varepsilon = 2^{-52} \approx 2.22 \times 10^{-16}$, so the difference of two prices has absolute error of order $\varepsilon|V|$ that does not shrink with $h$.
+Total error for the central delta is about $\tfrac{h^2}{6}|V'''| + \varepsilon|V|/h$; setting the derivative to zero gives
 
-2. **Central Difference:**
+$$h^*_{\text{fwd}} = 2\sqrt{\varepsilon|V|/|V''|}, \qquad h^*_{\text{cen}} = \left(3\varepsilon|V|/|V'''|\right)^{1/3}, \qquad h^*_{\text{gamma}} = \left(48\varepsilon|V|/|V''''|\right)^{1/4},$$
 
-$$\delta_i \approx \frac{V(x_i + h) - V(x_i - h)}{2h}, \quad \text{Truncation Error} = O(h^2)$$
+so the optimal bumps scale as $\varepsilon^{1/2} = 1.49 \times 10^{-8}$, $\varepsilon^{1/3} = 6.06 \times 10^{-6}$ and $\varepsilon^{1/4} = 1.22 \times 10^{-4}$ times the natural scale of the input.
 
-3. **Second Derivative (Diagonal Gamma):**
+For the reference call ($S = K = 100$, $r = 5\%$, $\sigma = 20\%$, $T = 1$: value 10.4506, delta 0.636831, gamma 0.018762, $V''' = -0.000516$, $V'''' = -0.0000276$) the measured errors are:
 
-$$\Gamma_{ii} \approx \frac{V(x_i + h) - 2V(x_i) + V(x_i - h)}{h^2}, \quad \text{Truncation Error} = O(h^2)$$
+| $h$ (spot units) | forward delta error | central delta error | central gamma error |
+| ---: | ---: | ---: | ---: |
+| 1 | $9.29 \times 10^{-3}$ | $8.60 \times 10^{-5}$ | $2.30 \times 10^{-6}$ |
+| 0.01 | $9.38 \times 10^{-5}$ | $8.60 \times 10^{-9}$ | below $10^{-9}$ |
+| $10^{-4}$ | $9.38 \times 10^{-7}$ | below $10^{-10}$ | $10^{-8}$ to $10^{-6}$ |
+| $10^{-6}$ | $10^{-9}$ to $10^{-7}$ | $10^{-10}$ to $10^{-7}$ | $10^{-4}$ to $10$ |
+| $10^{-8}$ | $10^{-8}$ to $10^{-5}$ | $10^{-8}$ to $10^{-5}$ | $10^{-3}$ to $10^{3}$ |
 
-4. **Cross-Derivative (Cross-Gamma):**
+The truncation regime matches the leading terms exactly: $\Gamma/2 = 0.0094$ against a measured 0.0093 at $h = 1$, $|V'''|/6 = 8.6 \times 10^{-5}$, $|V''''|/12 = 2.30 \times 10^{-6}$.
+The optimal bumps here are $h^*_{\text{fwd}} \approx 7.0 \times 10^{-7}$, $h^*_{\text{cen}} \approx 0.00024$ and $h^*_{\text{gamma}} \approx 0.0080$ in spot units; at $h = 10^{-6}$ the round-off bound on gamma, $4\varepsilon|V|/h^2$, is already 0.0093 against a gamma of 0.0188.
+Errors in the round-off regime depend on the platform's last bits, so the table gives the ranges the code asserts rather than digits; on any platform the central delta is best near $h = 10^{-4}$ and a gamma bumped at $10^{-6}$ is useless.
 
-$$\Gamma_{ij} \approx \frac{V(x_i + h_i, x_j + h_j) - V(x_i + h_i, x_j - h_j) - V(x_i - h_i, x_j + h_j) + V(x_i - h_i, x_j - h_j)}{4 h_i h_j}$$
+The bump a desk uses is rarely the numerically optimal one: risk sensitivities are defined at the scale of plausible moves (1bp for rates, 1% relative for spot), and regulatory ones are prescribed.
+FRTB defines equity delta as the one-sided $\left(V(1.01\,S) - V(S)\right)/0.01$ (MAR21.21) and GIRR delta as a one-sided 1bp bump divided by 0.0001 (MAR21.19); for the reference call the MAR21.21 number is 64.6125 against $S \cdot \Delta = 63.6831$, the 0.9294 difference being about $\tfrac12 S^2\Gamma \times 0.01$.
+Know which definition each consumer of a sensitivity expects.
 
-Evaluating the full $N \times N$ Hessian matrix requires $2N$ bumps for diagonal terms and $4 \times \frac{N(N-1)}{2} = 2N(N-1)$ bumps for off-diagonal terms, totaling $2N^2$ pricing evaluations.
+Cost of bumping $N$ inputs: a forward gradient takes $N + 1$ pricings, a central gradient $2N$, and a full central Hessian $2N^2 + 1$ (the base, $2N$ diagonal bumps and four per pair): 201 pricings at $N = 10$, 20,001 at $N = 100$, 2,000,001 at $N = 1{,}000$.
 
-#### Optimal Bump Size Selection
-Selecting bump size $h$ involves balancing two opposing error sources:
-- **Truncation Error:** Increases with larger $h$ (due to neglected higher-order Taylor terms).
-- **Floating-Point Cancellation Error:** Increases with smaller $h$ as subtracting two nearly identical floating-point numbers loses significant digits:
+### Bumping a Monte Carlo pricer
 
-$$\text{Roundoff Error} \sim \frac{\epsilon_{\text{mach}} |V|}{h}$$
+A Monte Carlo price carries statistical noise of order $\sigma_{\text{payoff}}/\sqrt{n}$, so with independent seeds for the up and down prices the difference quotient has noise of order $\sigma_{\text{payoff}}/(h\sqrt{n})$, which explodes as $h \to 0$.
+With common random numbers (the same normals for base and bumped prices) the noise cancels to first order.
+In 200 replications of 20,000-path estimates of the reference call's delta:
 
-where $\epsilon_{\text{mach}} \approx 2.22 \times 10^{-16}$ for standard IEEE 754 64-bit floating point.
-Minimizing total error yields the optimal bump sizes:
-- For **Central Difference First Derivative**:
+| Estimator | standard deviation |
+| :--- | ---: |
+| independent seeds, $h = 0.01$ | about 7.07 |
+| common random numbers, $h = 0.01$ | about 0.0039 |
+| common random numbers, $h = 1$ | about 0.0039 |
+| pathwise $e^{-rT}\,1\{S_T > K\}\,S_T/S_0$ | about 0.0039 |
 
-$$h_{\text{opt}} \approx \epsilon_{\text{mach}}^{1/3} \cdot x \approx (2.22 \times 10^{-16})^{1/3} \cdot x \approx 6.06 \times 10^{-6} \cdot x$$
+The pathwise estimator is what AAD computes when it differentiates a simulation path by path (Giles and Glasserman 2006); its mean was about 0.636702 against the exact 0.636831.
+It needs the payoff to be differentiable almost everywhere and continuous: for a digital $1\{S_T > K\}$ the pathwise derivative is zero on every path, although the true delta is $e^{-rT}\varphi(d_2)/(S\sigma\sqrt{T}) = 0.018762$.
+Bumping the digital with common random numbers works but is noisy for small bumps (standard deviation about 0.00065 at $h = 1$ and about 0.0067 at $h = 0.01$); production engines smooth the payoff (call spreads), use likelihood-ratio weights, or condition on the last step (Glasserman 2003, chapter 7).
 
-- For **Second Derivative (Gamma)**:
+### Adjoint algorithmic differentiation
 
-$$h_{\text{opt, gamma}} \approx \epsilon_{\text{mach}}^{1/4} \cdot x \approx (2.22 \times 10^{-16})^{1/4} \cdot x \approx 1.22 \times 10^{-4} \cdot x$$
+A pricer is a sequence of elementary operations $v_j = \phi_j(v_{\text{parents}})$.
+Forward (tangent) mode propagates $\dot v_j = \sum_p \partial\phi_j/\partial v_p\,\dot v_p$ from one input direction, so a gradient costs $N$ sweeps, like bumping but without truncation error.
+Reverse (adjoint) mode records the operations on a tape, seeds $\bar V = 1$ and propagates adjoints backwards, $\bar v_p \mathrel{+}= \bar v_j\,\partial\phi_j/\partial v_p$, so one backward sweep gives $\partial V/\partial x_i$ for every input at once.
+The work of the backward sweep is a small constant multiple of the forward sweep, independent of $N$ (the cheap gradient principle, Griewank and Walther 2008).
 
-In financial practice, traders adopt standardized basis point bumps: $1 \text{ bp}$ ($0.0001$) for rates and credit, $0.1\%$ to $1.0\%$ relative for spot equities, and $0.01$ ($1\text{ vol point}$) for implied volatility.
+Measured on the minimal tape in the code, counting elementary operations, not wall-clock time:
 
-### Adjoint Algorithmic Differentiation (AAD)
+| Pricer | forward operations | reverse multiply-adds | AAD cost per pricing | central bumps per pricing |
+| :--- | ---: | ---: | ---: | ---: |
+| Black-Scholes, 5 inputs | 20 | 33 | 2.65 | 10 |
+| 60 cash flows on a 30-pillar zero curve | 414 | 530 | 2.28 | 60 |
 
-For complex computational graphs (e.g., multi-curve fixed income trees or Monte Carlo XVA simulations), finite difference bumping scales linearly with factor count ($O(N)$ revaluations for gradient, $O(N^2)$ for Hessian).
-Adjoint Algorithmic Differentiation (AAD) applies the reverse chain rule to the execution graph of the pricing function.
-Instead of propagating perturbations forward, AAD records the forward execution trace (the "tape") and sweeps backward, propagating adjoints (sensitivities $\bar{x} = \frac{\partial V}{\partial x}$) from the output scalar back to all inputs simultaneously.
+The AAD gradients matched the analytic Greeks to within $10^{-12}$ (Black-Scholes: delta 0.636831, $\partial V/\partial K = -0.532325$, rho 53.2325, vega 37.5240, $\partial V/\partial T = 6.4140$) and the chain-rule key-rate PV01s of the bond book to a relative $10^{-12}$.
+On the 30-year pillar (PV01 $-813.26$ per bp on a book worth 667,555.34), a one-sided 1bp bump is off by a relative 0.0015 (the convexity term $h t/2$ for a 30-year cash flow) and a central 1bp bump by $1.5 \times 10^{-6}$.
 
-Key AAD performance advantages:
-- **Dimension Independence:** Computing the full gradient vector $\nabla V = [\frac{\partial V}{\partial x_1}, \dots, \frac{\partial V}{\partial x_N}]$ takes a constant multiple of a single forward pricing run (typically $3\times$ to $5\times$ cost of $V$), completely independent of factor dimension $N$.
-- **Zero Truncation Error:** AAD computes mathematically exact floating-point derivatives, eliminating finite difference step-size tuning and cancellation errors.
+Practical points:
 
-### Grid Revaluation and Polynomial Interpolation
+- Memory: the tape stores every operation, so long Monte Carlo paths are taped path by path and accumulated, or checkpointed (recompute segments instead of storing them).
+- Second order: Hessians come from forward-over-reverse AD or from central differences of the AAD gradient, which has only one division by $h$; the latter recovered gamma, vanna ($-0.281430$) and volga (9.8501) of the reference call to $10^{-8}$, $10^{-7}$ and $10^{-5}$.
+- Discontinuities: AAD differentiates the code, so it inherits the pathwise failure on digitals and barriers.
+- Regulation: SA-CVA sensitivities may be computed with AAD (MAR50.47 FAQ1).
 
-For portfolios containing exotic options with localized non-linearities, sensitivity proxies fail while full revaluation is too slow.
-Production risk engines deploy grid-based proxy models:
-1. Define a bounded multidimensional domain around base factor values (e.g., $\pm 4$ standard deviations).
-2. Precompute exact prices on a structured grid of Chebyshev collocation nodes.
-3. Fit multidimensional Chebyshev polynomials or tensor-product cubic splines.
-4. During scenario revaluation, evaluate the analytic polynomial representation in microseconds per scenario, achieving $100\times$ speedups with bounded approximation error ($< 0.1\%$).
+### Grids and Chebyshev interpolation
+
+Pricing on a set of nodes once and interpolating per scenario is fast; the question is how many nodes.
+Chebyshev interpolation of a function analytic on the interval converges geometrically in the degree (Trefethen 2013), which is why it is used to compress parametric pricers (Gass, Glau, Mahlstedt and Mair 2018).
+For the reference call as a function of spot on $[50, 150]$, interpolating at the $n + 1$ Chebyshev points of the first kind (the roots of $T_{n+1}$) for degree $n$:
+
+| Interpolant | pricings | max error |
+| :--- | ---: | ---: |
+| Chebyshev degree 4 | 5 | 0.325 |
+| Chebyshev degree 8 | 9 | $9.38 \times 10^{-3}$ |
+| Chebyshev degree 16 | 17 | $1.98 \times 10^{-6}$ |
+| Chebyshev degree 32 | 33 | below $10^{-9}$ |
+| linear on a 21-point spot ladder | 21 | 0.0676 |
+
+A down-and-out call has a kink at the barrier (value zero below it), and convergence drops to algebraic: max error 0.246 at degree 16 and 0.063 at degree 64 on $[80, 120]$.
+Splitting the domain at the barrier and interpolating only on $[90, 120]$ brings degree 16 below $10^{-9}$.
+Tensor grids in $d$ factors need $n^d$ nodes, so grids are used for a few dominant factors per trade (spot, vol) with the rest handled by sensitivities.
+
+### Where Taylor fails: a barrier
+
+A down-and-out call ($S = K = 100$, barrier 90, $r = 5\%$, $\sigma = 20\%$, $T = 1$, continuous monitoring) is worth 8.6655 in closed form (Hull); a Monte Carlo with the Brownian-bridge crossing probability gave about 8.668.
+At spot 100 its delta is 0.8302 and gamma $-0.00101$, so the delta-gamma proxy sees an almost linear position:
+
+| spot move | full revaluation P&L | delta-gamma P&L |
+| ---: | ---: | ---: |
+| $-5$ | $-4.1966$ | $-4.1634$ |
+| $-9.9$ | $-8.5712$ | $-8.2680$ |
+| $-10.1$ (knocked out) | $-8.6655$ | $-8.4360$ |
+| $-15$ | $-8.6655$ | $-12.5657$ |
+
+Below the barrier the true loss is capped at the premium while the proxy keeps extrapolating; near the barrier the curvature is local (gamma $-0.0243$ at spot 90.5, 24 times the value at 100), so Greeks from today's spot say nothing about it.
 
 ## Worked examples
 
-### Example 1: Finite Difference Bump Size Optimization
+All numbers are printed and asserted by `python 11-Risk-and-Trading/code/risk_sensitivities.py`.
 
-An equity derivatives desk computes the Gamma of an at-the-money call option with underlying spot price $S = \$100.00$.
-The pricing function returns double precision floating-point numbers ($\epsilon_{\text{mach}} \approx 2.22 \times 10^{-16}$).
-1. Calculate the theoretically optimal central difference bump size $h_{\text{opt}}$ for Delta.
-2. Calculate the optimal bump size $h_{\text{gamma}}$ for Gamma.
-3. Demonstrate the effect of an excessively small bump size ($h = 10^{-10}$) versus optimal bump ($h = 0.01$).
+### Example 1: choosing a bump for gamma
 
-**Solution:**
+"The reference call has gamma 0.018762. What bump would you use, and what goes wrong at $h = 10^{-6}$?"
 
-Step 1: Optimal Delta bump size:
+1. Central gamma has truncation $\tfrac{h^2}{12}|V''''|$ and round-off of order $4\varepsilon|V|/h^2$.
+2. With $|V''''| = 0.0000276$ and $|V| = 10.45$ the optimum is $h^* = (48\varepsilon|V|/|V''''|)^{1/4} \approx 0.0080$, where the measured error is below $5 \times 10^{-8}$.
+3. At $h = 10^{-6}$ the round-off bound $4\varepsilon|V|/h^2$ is 0.0093, half the gamma, and the measured error is of that order (the code asserts it exceeds 1% of gamma on every platform).
+4. On a desk you would use a bump at the scale of the moves you care about (1% of spot gives an error of $2.30 \times 10^{-6}$ here) or AAD on the delta.
 
-$$h_{\text{opt, delta}} = \epsilon_{\text{mach}}^{1/3} \times S \approx (2.22 \times 10^{-16})^{1/3} \times 100 \approx 6.06 \times 10^{-6} \times 100 \approx 0.000606 \quad (\$0.06 \text{ cents})$$
+### Example 2: full revaluation against proxies on an option book
 
-In practice, a $\$0.01$ (1 cent) or $\$0.05$ bump is standard.
+Long the reference call; 100,000 joint normal scenarios on spot (sd 5), rate (sd 25bp) and vol (sd 2 vol points), correlations spot-rate $+0.2$, spot-vol $-0.5$, rate-vol 0.
+Greeks from AAD, Hessian from central differences of the AAD gradient ($\partial^2 V/\partial S\,\partial r = 1.8762$).
 
-Step 2: Optimal Gamma bump size:
+| P&L method | 99% VaR | 99% ES | MAE | max abs error |
+| :--- | ---: | ---: | ---: | ---: |
+| Full revaluation | 5.50 | 6.06 | | |
+| First order (delta, rho, vega) | 6.78 | 7.71 | 0.252 | |
+| Second order, diagonal only | 5.56 | | 0.030 | |
+| Second order with cross terms | 5.50 | 6.09 | 0.019 | 0.76 |
 
-$$h_{\text{opt, gamma}} = \epsilon_{\text{mach}}^{1/4} \times S \approx (2.22 \times 10^{-16})^{1/4} \times 100 \approx 1.22 \times 10^{-4} \times 100 \approx 0.0122 \quad (\$1.22 \text{ cents})$$
+Reading it as in an interview:
 
-Gamma requires a larger bump size because dividing by $h^2$ squares any floating-point cancellation error.
-
-Step 3: Numerical cancellation demonstration:
-Suppose $V(100) = 10.450583572186$.
-With $h = 10^{-10}$, $V(100 + h) = 10.450583572249$.
-Subtracting the two numbers:
-
-$$V(100 + h) - V(100) = 0.000000000063$$
-
-The top 10 significant digits completely canceled out, leaving only 2 reliable digits of precision.
-Dividing by $h = 10^{-10}$ yields $0.63$, introducing massive numerical noise.
-With $h = 0.01$, subtraction preserves 12+ digits of precision, providing a clean, stable derivative.
-
-### Example 2: Revaluation Comparison Diagnostics
-
-Using the reference implementation in `code/risk_analytics.py`, compare Full Revaluation against a Delta-Gamma Taylor proxy (with cross-gamma) for a long 1-year at-the-money call ($K = 100$, $r = 5\%$, $\sigma = 20\%$) across 2,000 correlated scenarios.
-The portfolio Greeks at base factors are:
-- Spot $S = 100.0$, Delta $\delta = 0.6368$, Gamma $\Gamma = 0.0188$, Vega $\mathcal{V} = 37.52$.
-- Base option value $V_0 = 10.4506$.
-
-The scenarios shock $[S, r, \sigma]$ jointly normally with standard deviations $\$5.00$ (5% of spot), 25 bp and 2 vol points, and correlations $+0.20$ (spot-rate), $-0.50$ (spot-vol) and $0$ (rate-vol).
-Under the 2,000 generated scenarios:
-- Mean Absolute Error (MAE): $0.0197$
-- Root Mean Squared Error (RMSE): $0.0442$
-- Maximum absolute error: $0.7452$
-- 99% Full Revaluation VaR: $\$5.38$
-- 99% Delta-Gamma Proxy VaR: $\$5.32$
-- 99% Full Revaluation Expected Shortfall: $\$5.88$
-- 99% Delta-Gamma Proxy Expected Shortfall: $\$5.91$
-
-Analyze the error metrics and explain why the proxy tracks the 99% tail this closely here.
-
-**Solution:**
-
-Step 1: Analyze Error Diagnostics:
-- The MAE is $\$0.0197$ on a $\$10.45$ option ($0.0197 / 10.4506 \approx 0.19\%$), so for typical moves the Delta-Gamma expansion tracks full revaluation closely.
-- RMSE is $0.0442 / 0.0197 \approx 2.2$ times MAE and the maximum error is $0.7452 / 0.0197 \approx 38$ times MAE: the error is concentrated in a few extreme scenarios.
-- The maximum error sits in the largest rally ($\Delta S = +\$15.93$ together with $\Delta \sigma = -8.2$ vol points), where full revaluation gains $\$10.71$ and the proxy only $\$9.97$: once spot and vol both move about 3 or more standard deviations, third- and higher-order terms matter.
-
-Step 2: Tail Analysis:
-- Proxy 99% VaR understates full revaluation by $\$0.06$ ($(5.381 - 5.316) / 5.381 \approx 1.2\%$), while proxy 99% ES overstates it by $\$0.03$ ($(5.909 - 5.878) / 5.878 \approx 0.5\%$).
-- The worst 1% of losses come from spot drops of $\$8.48$ to $\$15.04$ (1.7 to 3.0 standard deviations), well inside the range where the quadratic is accurate.
-- Sanity bound: a long call cannot lose more than its premium, and every full-revaluation loss is below $V_0 = \$10.45$ (the worst is $\$6.98$); the proxy's worst loss is $\$7.22$.
-
-Step 3: When the parabola fails:
-- The quadratic $\delta \Delta S + \frac{1}{2}\Gamma (\Delta S)^2$ turns upward only beyond its vertex at $\Delta S = -\delta / \Gamma = -0.6368 / 0.01876 \approx -\$33.9$.
-- The largest simulated drop here is $\$15.04$, so the proxy never reaches the regime where it starts reporting artificial gains on large drops.
-- Under crash-sized shocks beyond a 34% drop, the proxy loss shrinks while the true loss keeps approaching the $\$10.45$ premium, and the proxy then understates tail VaR.
+1. The linear proxy overstates VaR by 23% (6.78 against 5.50) because it ignores the convexity of a long option (gamma and volga are positive).
+2. Adding the diagonal second-order terms removes most of the error; the cross terms (vanna with spot-vol correlation $-0.5$) remove most of what is left.
+3. Doubling every shock (a stress calibration): full revaluation VaR 8.68 and ES 9.18, second-order proxy 8.84 and 9.62, and a maximum error of 6.72.
+4. Sanity bound: a long call cannot lose more than its premium 10.4506; the worst full-revaluation loss in the stressed run was 10.29 while the proxy's was 12.41.
+5. The spot-only parabola turns up at $-\Delta/\Gamma = -33.94$, so for crash moves of that size the proxy would even report gains; this is why proxy tails are validated against full revaluation (and why FRTB's curvature charge uses full revaluation at the risk-weight shock).
 
 ## Pitfalls
 
-- **Catastrophic Cancellation from Microscopic Bumps:** Setting bump size $h = 10^{-9}$ or smaller in finite difference routines causes catastrophic floating-point cancellation, injecting pure random roundoff noise into Greeks.
-- **Ignoring Cross-Gamma in Multi-Asset Books:** Relying on diagonal-only gammas in multi-asset baskets assumes risk factors interact independently, completely missing large cross-factor P&L shifts ($\frac{\partial^2 V}{\partial x_i \partial x_j} \Delta x_i \Delta x_j$).
-- **Taylor Breakdown on Discontinuous Payoffs:** Applying Delta-Gamma proxies to digital options, barrier options, or structured credit tranches produces catastrophic pricing errors near barrier trigger levels.
-- **AAD Memory Bloat (Tape Exhaustion):** In unoptimized reverse-mode AAD engines, recording every intermediate floating-point operation in long Monte Carlo paths can exhaust RAM, requiring checkpointing to trade recomputation against memory.
-- **Unadjusted Sticky-Strike Assumptions:** When bumping spot price, assuming implied volatility remains fixed (sticky-strike) ignores market smile dynamics (sticky-delta or local volatility), introducing hedge ratio slippage.
+- Microscopic bumps: below the optimal $h$ the round-off term dominates, and second differences lose it twice as fast ($/h^2$).
+- One-sided bumps reported as derivatives: a forward 1% spot bump on the reference call overstates delta by 0.0093 (half gamma times the bump).
+- Bumping Monte Carlo with fresh random numbers: the noise scales as $1/h$; always reuse the seeds (and the same time grid and path ordering).
+- Pathwise or AAD derivatives of discontinuous payoffs (digitals, barriers, autocall triggers): zero on every path, not the true sensitivity; smooth first.
+- Diagonal-only gammas on multi-factor books: on the option book above adding the cross terms cut the proxy MAE from 0.030 to 0.019, and they matter more when factors are strongly correlated.
+- Validating a proxy at normal-market shock sizes and using it for stress: the error grew from 0.76 to 6.72 when the shocks doubled.
+- Interpolating across a kink (barrier, strike at expiry, default boundary): split the grid there.
+- Bump definitions that differ between systems: absolute or relative, one or two sided, sticky strike or sticky delta for the vol surface when spot moves; the numbers are not comparable unless the definitions are.
+- AAD tape memory on long simulations without checkpointing.
 
 ## Interview questions
 
 > [!question]- risk-full-revaluation-vs-taylor-tradeoff | What are the core computational and mathematical trade-offs between Full Revaluation and Taylor series proxy models in enterprise risk engines?
-> Full Revaluation revalues every trade using its exact pricing library under all scenarios, guaranteeing 100% pricing accuracy and capturing non-linearities, but incurs high computational cost ($O(K \cdot M)$). Taylor series proxies approximate P&L via precomputed Greeks (Delta, Gamma, Vega), executing millions of scenario evaluations in milliseconds via matrix multiplication, but suffer from truncation error in extreme tails and break down for non-smooth payoffs.
+> Full revaluation costs one pricing call per trade per scenario (500,000 trades times 10,000 scenarios is 5 billion calls) but is exact wherever the pricer is.
+> A Taylor proxy costs one set of Greeks and then a dot product per scenario, and is accurate only for small moves of smooth books.
+> On a long call, a second-order proxy matched full-revaluation 99% VaR (5.50) at normal shock sizes but gave 8.84 against 8.68 with doubled shocks, and fails outright across barriers.
+> Banks mix the two: proxies or grids where a regular comparison against full revaluation stays within tolerance, full revaluation elsewhere.
 
 > [!question]- risk-optimal-finite-difference-bump-size | Derive the optimal step size $h$ for central difference first derivatives, balancing truncation and cancellation error.
-> Central difference truncation error is $O(h^2) \approx c_1 h^2$. Floating-point roundoff cancellation error is $O(\epsilon_{\text{mach}} / h) \approx c_2 \frac{\epsilon_{\text{mach}}}{h}$. Total error $E(h) = c_1 h^2 + c_2 \frac{\epsilon_{\text{mach}}}{h}$ is minimized by setting $\frac{dE}{dh} = 2 c_1 h - c_2 \frac{\epsilon_{\text{mach}}}{h^2} = 0 \implies h^3 \propto \epsilon_{\text{mach}} \implies h_{\text{opt}} \sim \epsilon_{\text{mach}}^{1/3} \cdot x \approx 10^{-5}$ to $10^{-6} \cdot x$.
+> Error $E(h) \approx \tfrac{h^2}{6}|V'''| + \varepsilon|V|/h$; $E'(h) = 0$ gives $h^* = (3\varepsilon|V|/|V'''|)^{1/3}$, of order $\varepsilon^{1/3} = 6.06 \times 10^{-6}$ times the input's scale.
+> For the reference call $h^* \approx 0.00024$ spot units and the error there is below $5 \times 10^{-10}$.
+> Forward differences give $h^* = 2\sqrt{\varepsilon|V|/|V''|}$ (order $\varepsilon^{1/2}$), second differences $(48\varepsilon|V|/|V''''|)^{1/4}$ (order $\varepsilon^{1/4}$).
 
-> [!question]- risk-aad-adjoint-algorithmic-differentiation | What is Adjoint Algorithmic Differentiation (AAD), and why is it revolutionary for quantitative risk management?
-> AAD is an exact analytical differentiation technique based on the reverse chain rule. Instead of revaluing the pricing model $N$ times via finite difference bumps ($O(N)$ runtime), AAD records the forward execution tape and sweeps backward once, calculating all partial derivatives with respect to all $N$ input factors simultaneously in $O(1)$ runtime (typically $3-5\times$ the cost of a single pricing call).
+> [!question]- risk-aad-adjoint-algorithmic-differentiation | What is Adjoint Algorithmic Differentiation (AAD), and why does it matter for quantitative risk management?
+> Reverse-mode differentiation of the pricing code: tape the forward computation, then propagate adjoints backwards so one sweep gives the derivative with respect to every input.
+> Its cost is a small constant multiple of one pricing regardless of the number of inputs (2.65 and 2.28 in operation counts on the examples here), against $2N$ pricings for central bumps, and the result is exact to machine precision.
+> That makes thousands of curve and surface sensitivities affordable for XVA, SA-CVA and SIMM, at the price of tape memory and engineering effort, and it fails on discontinuous payoffs like any pathwise method.
 
 > [!question]- risk-diagonal-vs-cross-gamma | Contrast diagonal gamma with cross-gamma, and explain the computational penalty of computing full cross-gamma matrices.
-> Diagonal gamma $\Gamma_{ii} = \frac{\partial^2 V}{\partial x_i^2}$ measures curvature with respect to a single risk factor in isolation, requiring $2N$ bumps. Cross-gamma $\Gamma_{ij} = \frac{\partial^2 V}{\partial x_i \partial x_j}$ measures interaction between two distinct factors. Evaluating full cross-gamma requires $2N(N-1)$ additional bumps ($O(N^2)$), which becomes computationally prohibitive for books with thousands of risk factors.
+> Diagonal: $\partial^2 V/\partial x_i^2$ (gamma, volga); cross: $\partial^2 V/\partial x_i\partial x_j$ (vanna, spot-rate cross-gamma).
+> By central differences the full Hessian costs $2N^2 + 1$ pricings (the base, $2N$ diagonal bumps, four per pair): 20,001 for 100 factors, against $2N + 1$ for the diagonal.
+> Cross terms matter when factors are correlated: on the long-call book they cut the proxy MAE from 0.030 to 0.019.
+> With AAD a Hessian costs about $N$ adjoint sweeps (or differences of the AAD gradient), and banks usually keep cross terms only within a risk class.
 
-> [!question]- risk-taylor-proxy-tail-underestimation | Why does a Delta-Gamma Taylor proxy often underestimate Value at Risk (VaR) for portfolios containing long options?
-> For a long call option, losses are bounded by the paid premium, as the price cannot drop below zero. A second-order Taylor expansion is a symmetric parabola: for severe negative asset shocks, the quadratic $\frac{1}{2}\Gamma (\Delta S)^2$ term begins expanding upward, creating artificial gains that soften simulated losses and cause the proxy to understate 99% tail VaR.
+> [!question]- risk-taylor-proxy-tail-underestimation | Why does a Delta-Gamma Taylor proxy misstate tail VaR for portfolios containing options?
+> The quadratic has no knowledge of the payoff's bounds or kinks.
+> For a long call the parabola turns up at $-\Delta/\Gamma = -33.94$, so very large drops can show as gains, while the true loss is capped at the premium (10.45 here); in a doubled-shock run the proxy's worst loss was 12.41 against a true worst of 10.29.
+> For a short put after a 25-point drop the proxy loss was 14.94 against a true 15.52: the error's sign depends on the third derivative, so check the proxy against full revaluation in the tail rather than assume a direction.
 
 > [!question]- risk-chebyshev-grid-revaluation | How does Chebyshev polynomial interpolation accelerate portfolio revaluation while preserving non-linear accuracy?
-> Chebyshev interpolation pre-calculates exact full revaluations on a structured multidimensional grid of Chebyshev collocation nodes across a bounding box of risk factors. It fits smooth orthogonal polynomial surfaces that are evaluated in microseconds during Monte Carlo simulations, eliminating 99% of pricing library calls while guaranteeing uniform minimax error bounds.
+> Price the trade once at Chebyshev nodes on a bounding box of the dominant factors and evaluate the interpolating polynomial per scenario.
+> For an analytic payoff the error falls geometrically: on the reference call over spot $[50, 150]$, 9 pricings gave max error $9.38 \times 10^{-3}$ and 17 pricings $1.98 \times 10^{-6}$.
+> At a kink it converges only algebraically (0.246 at degree 16 for a barrier), so split the domain at the kink, and keep dimension low because tensor grids grow as $n^d$.
 
-> [!question]- risk-barrier-options-taylor-failure | Why do sensitivity proxies fail completely for knock-out barrier options?
-> Barrier options have discontinuous second derivatives and sharp delta cliffs near the barrier level. A small move can cause the option to knock out, resulting in a step-function price drop to zero. A smooth polynomial Taylor expansion cannot represent discontinuities, predicting moderate linear or quadratic changes when the contract has actually suffered a total loss.
+> [!question]- risk-barrier-options-taylor-failure | Why do sensitivity proxies fail for knock-out barrier options?
+> The value is continuous but has a kink at the barrier and is flat at zero below it, while the curvature is concentrated near the barrier.
+> For a down-and-out call (barrier 90, spot 100) the gamma at spot is only $-0.00101$, so a delta-gamma proxy gives $-12.57$ for a 15-point drop while the true loss is capped at the premium, 8.67.
+> Greeks at today's spot cannot see a feature 10 points away; use full revaluation or a grid split at the barrier.
 
 > [!question]- risk-forward-vs-central-difference | Why is central finite difference preferred over forward difference despite requiring twice as many pricing calls?
-> Forward difference $\frac{V(x+h) - V(x)}{h}$ has first-order truncation error $O(h)$, requiring a tiny step size that exacerbates roundoff error. Central difference $\frac{V(x+h) - V(x-h)}{2h}$ causes odd-order error terms to cancel out via symmetry, achieving second-order error $O(h^2)$, providing significantly higher accuracy and numerical stability for a modest $2\times$ computational cost.
+> The odd terms cancel, so the truncation error is $\tfrac{h^2}{6}V'''$ instead of $\tfrac{h}{2}V''$.
+> For the reference call at a 1% bump: forward error 0.0093, central 0.000086, a factor of about 100 for twice the cost.
+> Forward bumps are still used when a definition prescribes them (FRTB MAR21.19 to MAR21.24) or when $N + 1$ instead of $2N$ pricings matters.
 
 > [!question]- risk-basel-frtb-curvature-charge | How does the Basel FRTB Standardised Approach (SbM) compute the Curvature risk charge?
-> FRTB SbM calculates Curvature risk as the incremental non-linear loss beyond linear delta: $CVR_k = -\min(V(x_k + h_k) - V(x_k) - \delta_k h_k, V(x_k - h_k) - V(x_k) + \delta_k h_k)$, where $h_k$ is the prescribed regulatory stress bump. This requires two full revaluations per risk factor, explicitly isolating non-linear gamma loss. $CVR_k$ itself can be negative; the floor at zero applies later, in the bucket-level aggregation $K_b = \sqrt{\max(0, \sum_k \max(CVR_k, 0)^2 + \sum_k \sum_{l \ne k} \rho_{kl} CVR_k CVR_l \psi(CVR_k, CVR_l))}$.
+> For each curvature risk factor $k$, revalue at an up and a down shock equal to the curvature risk weight and subtract the delta prediction: $CVR_k^{\pm} = -\sum_i \{V_i(x_k^{\pm}) - V_i(x_k) \mp RW_k s_{ik}\}$ (MAR21.5).
+> So it is a two-point full revaluation measuring the loss beyond delta: positive for short gamma, negative for long gamma.
+> Within a bucket $K_b^{\pm} = \sqrt{\max(0, \sum_k \max(CVR_k^{\pm}, 0)^2 + \sum_{k \ne l} \rho_{kl} CVR_k^{\pm} CVR_l^{\pm} \psi)}$, the larger scenario is selected, and buckets aggregate under the three correlation scenarios; see [FRTB vega and curvature](../17-Regulatory-Capital-Basel-and-FRTB/08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md).
 
 > [!question]- risk-floating-point-cancellation-definition | What is catastrophic floating-point cancellation in numerical risk calculations?
-> Catastrophic cancellation occurs when two nearly equal floating-point numbers are subtracted. The leading identical significant digits cancel out, shifting remaining unrounded bits into high-significance positions and amplifying floating-point representation noise. In finite difference engines with microscopic bumps, this destroys derivative precision.
+> Subtracting two nearly equal doubles leaves only the digits in which they differ; their absolute rounding errors (about $\varepsilon|V| = 2.32 \times 10^{-15}$ on the reference price of 10.45) survive and are divided by $h$.
+> For the reference call a central delta at $h = 10^{-8}$ has an error between $10^{-8}$ and $10^{-5}$ (platform dependent), worse than at $h = 0.01$ ($8.6 \times 10^{-9}$); a central gamma at $h = 10^{-6}$ faces a round-off bound of 0.0093 against a gamma of 0.0188.
 
-> [!question]- risk-optimal-gamma-step-size-derivation | Derive the optimal finite difference step size $h_{\text{opt, gamma}} \approx \epsilon_{\text{mach}}^{1/4} x$ for second derivatives.
-> The second derivative finite difference formula has truncation error $O(h^2) \approx c_1 h^2$ and roundoff cancellation error $O(\epsilon_{\text{mach}} / h^2) \approx c_2 \frac{\epsilon_{\text{mach}}}{h^2}$ because division is by $h^2$. Minimizing total error $E(h) = c_1 h^2 + c_2 \frac{\epsilon_{\text{mach}}}{h^2}$ yields $\frac{dE}{dh} = 2 c_1 h - 2 c_2 \frac{\epsilon_{\text{mach}}}{h^3} = 0 \implies h^4 \propto \epsilon_{\text{mach}} \implies h_{\text{opt, gamma}} \sim \epsilon_{\text{mach}}^{1/4} \cdot x \approx 1.22 \times 10^{-4} \cdot x$.
+> [!question]- risk-common-random-numbers-bumping | You bump a Monte Carlo pricer by 0.01 and the delta jumps around wildly. Why, and what fixes it?
+> With independent random numbers the up and down prices each carry Monte Carlo noise, and the difference quotient divides it by $2h$: the 20,000-path delta of the reference call had a standard deviation of about 7.07.
+> Reusing the same normals for base and bumped runs (common random numbers) cancels the noise to first order: about 0.0039 at either $h = 0.01$ or $h = 1$, the same as the pathwise estimator.
+> Keep the time grid, path ordering and any early-exercise regressions identical between runs too.
+
+> [!question]- risk-pathwise-digital-failure | Why does AAD (or the pathwise method) give a delta of zero for a digital option, and what do you do instead?
+> The payoff $1\{S_T > K\}$ is piecewise constant, so its derivative is zero on every path; the true delta is $e^{-rT}\varphi(d_2)/(S\sigma\sqrt T) = 0.018762$ for the reference parameters, all from the probability mass crossing the strike.
+> Fixes: smooth the payoff (a tight call spread), likelihood-ratio weights, conditioning on the last step, or bumping with common random numbers (standard deviation about 0.00065 at $h = 1$).
+
+> [!question]- risk-aad-cost-count | A book has 2,000 curve and surface inputs. Compare the cost of a full gradient by bumping and by AAD.
+> Central bumps: 4,000 pricings; forward bumps: 2,001.
+> AAD: one forward sweep plus one reverse sweep, a few pricings' worth of work regardless of the 2,000 (2.28 to 2.65 times in operation counts on the examples here), plus tape memory.
+> The saving grows linearly in the number of inputs, which is why AAD is standard for XVA and SIMM sensitivities.
+
+> [!question]- risk-fd-regulatory-forward-bump | FRTB defines equity delta as (V(1.01 S) - V(S))/0.01. How does that differ from S times delta for an at-the-money option?
+> It includes half the second-order term: for the reference call it is 64.6125 against $S\Delta = 63.6831$, a gap of 0.9294, about $\tfrac12 S^2\Gamma \times 0.01$ (MAR21.21).
+> GIRR uses a one-sided 1bp bump (MAR21.19), so risk systems must produce the regulatory definition, not their internal central-difference Greeks.
+
+> [!question]- risk-proxy-stress-breakdown | Your delta-gamma proxy passes its daily validation. Can you use it for the stress test?
+> Not without checking at stress sizes: on the long-call book the proxy's maximum error was 0.76 at normal shock sizes and 6.72 with doubled shocks, and its 99% ES moved from 6.09 (true 6.06) to 9.62 (true 9.18).
+> The neglected terms are third order, so the error grows roughly with the cube of the shock (the ratio here was 8.84 for a doubling, against $2^3 = 8$), and stress scenarios can also cross barriers or strikes where the expansion is meaningless.
+> Use full revaluation (or a grid spanning the stress range) for stress and reverse stress tests.
+
+> [!question]- risk-spot-ladder-interpolation | A desk reports a spot ladder (P&L at fixed spot shifts) and interpolates it linearly in VaR. How accurate is that?
+> Linear interpolation error is about $\tfrac18 h^2 \max|V''|$: on a 21-point ladder over spot 50 to 150 the reference call's max error was 0.0676.
+> A Chebyshev interpolant on 17 nodes gets $1.98 \times 10^{-6}$, but linear ladders are robust at kinks and are what traders read, so the ladder is often kept and refined near strikes and barriers.
+
+> [!question]- risk-optimal-gamma-step-size-derivation | Derive the optimal finite difference step size for a second derivative.
+> Central second difference: truncation $\tfrac{h^2}{12}|V''''|$, round-off of order $4\varepsilon|V|/h^2$ (two subtractions, divided by $h^2$).
+> Minimising $\tfrac{h^2}{12}|V''''| + 4\varepsilon|V|/h^2$ gives $h^4 = 48\varepsilon|V|/|V''''|$, so $h^*$ scales as $\varepsilon^{1/4} = 1.22 \times 10^{-4}$ times the input's scale.
+> For the reference call ($|V''''| = 0.0000276$, $|V| = 10.45$) $h^* \approx 0.0080$ spot units.
 
 > [!question]- risk-taylor-quadratic-vertex-breakdown | At what shock level does the second-order Taylor Delta-Gamma proxy turn upward and report artificial gains?
-> For a long call option, delta is positive ($\delta > 0$) and gamma is positive ($\Gamma > 0$). The second-order quadratic polynomial $\Delta V(\Delta S) \approx \delta \Delta S + \frac{1}{2}\Gamma (\Delta S)^2$ is a parabola whose vertex occurs at $\frac{d \Delta V}{d \Delta S} = \delta + \Gamma \Delta S = 0 \implies \Delta S^* = -\frac{\delta}{\Gamma}$. For asset drops beyond this critical threshold, the quadratic term dominates, predicting rising values rather than capping losses at option premium.
+> The spot-only parabola $\Delta\,\Delta S + \tfrac12\Gamma\,\Delta S^2$ has its vertex at $\Delta S^* = -\Delta/\Gamma$: $-33.94$ for the reference call (delta 0.636831, gamma 0.018762).
+> Beyond it the proxy reports smaller losses and then gains as spot falls further, while the true loss tends to the premium (10.4506); already in the doubled-shock run the proxy's worst loss (12.41) exceeded what a long call can lose.
 
 > [!question]- risk-cross-gamma-matrix-scaling | How does the computational cost of evaluating a full cross-gamma Hessian scale with factor dimension $N$?
-> Evaluating the full $N \times N$ Hessian matrix via central differences requires $2N$ pricing runs for diagonal gammas and $4 \times \frac{N(N-1)}{2} = 2N(N-1)$ pricing runs for off-diagonal cross-gammas. The total evaluation count is $2N^2$, scaling quadratically with factor dimension. For large enterprise portfolios with 5,000 risk factors, this requires 50,000,000 pricing evaluations, forcing production engines to rely on block diagonal approximations or AAD.
+> Central differences need the base, $2N$ diagonal bumps and four per pair, $2N^2 + 1$ pricings: 20,001 at $N = 100$ and 50,000,001 at $N = 5{,}000$.
+> Production engines keep cross terms only within risk classes or between a few dominant factors, or get Hessian rows from AAD (one adjoint sweep per row, or differences of the AAD gradient as in the code).
 
 > [!question]- risk-aad-tape-checkpointing | What is tape checkpointing in reverse-mode AAD, and how does it balance memory against compute?
-> Reverse-mode AAD requires storing the complete forward computational execution tape in memory to propagate adjoints backward. For long Monte Carlo paths or multi-step PDE solvers, this tape exhausts available RAM. Checkpointing stores the system state only at discrete milestone intervals during the forward sweep, recomputing intermediate forward operations on-the-fly during the reverse sweep, trading a modest increase in CPU runtime for bounded memory footprint.
+> The reverse sweep needs every intermediate value of the forward sweep, so the tape grows with the length of the computation (time steps times paths times trades).
+> Checkpointing stores the state only at chosen points and recomputes each segment's forward pass just before its reverse sweep, trading extra forward work for bounded memory (Griewank and Walther 2008); Monte Carlo engines also tape one path at a time and accumulate adjoints.
 
-> [!question]- risk-digital-option-proxy-failure | Why do finite difference bumping and Taylor proxies fail for digital cash-or-nothing options?
-> A digital cash-or-nothing option payoff has a discontinuous step at the strike $K$, so its true mathematical delta is a Dirac delta function and its gamma is a distribution derivative. Finite difference bumping around the strike produces an extreme spike that is sensitive to step size $h$, while a smooth Taylor polynomial fails to capture the discontinuous jump, generating severe mispricings in scenario revaluations.
+> [!question]- risk-digital-option-proxy-failure | Why do finite difference bumping and Taylor proxies struggle with digital options?
+> The payoff is a step, so pathwise (and AAD) derivatives are zero on every path while the true delta is finite: $e^{-rT}\varphi(d_2)/(S\sigma\sqrt T) = 0.018762$ for the reference parameters.
+> Bumping with common random numbers is unbiased but noisy for small bumps (sd about 0.0067 at $h = 0.01$ against about 0.00065 at $h = 1$), and near expiry the value is almost a step in spot, so any smooth Taylor proxy fails for moves across the strike; smooth the payoff (call spread) or use likelihood-ratio weights.
 
 > [!question]- risk-chebyshev-collocation-nodes | Why are Chebyshev nodes preferred over equidistant grid points for polynomial proxy interpolation?
-> Equidistant polynomial interpolation suffers from Runge's phenomenon, where high-degree polynomial interpolants oscillate wildly near domain boundaries. Chebyshev nodes cluster points quadratically toward interval boundaries, minimizing the maximum interpolation error (minimax property) according to Chebyshev's Equioscillation Theorem and ensuring stable, uniform convergence as polynomial degree increases.
-
-## Further reading
-
-- Antoine Savine, *Modern Computational Finance: AAD and Parallel Simulations*, Chapters 1-6.
-- Paul Glasserman, *Monte Carlo Methods in Financial Engineering*, Chapter 7: "Sensitivity Estimation".
-- Bruce Tuckman and Angel Serrat, *Fixed Income Securities: Tools for Today's Markets*, Chapter 15: "Measuring and Hedging Yield Curve Risk".
-- Basel Committee on Banking Supervision, *MAR21: Standardised Approach - Sensitivities-based Method*.
-- Mike Giles (2008), "An Extended Collection of Matrix Derivative Results for Forward and Reverse Mode Algorithmic Differentiation".
+> High-degree interpolation on equally spaced points can diverge near the ends (Runge's phenomenon); Chebyshev points cluster towards the ends, their Lebesgue constant grows only logarithmically, and for analytic functions the error falls geometrically with the degree (Trefethen 2013).
+> On the reference call over spot 50 to 150 the max error was $9.38 \times 10^{-3}$ at degree 8 and $1.98 \times 10^{-6}$ at degree 16; equally spaced points are kept for low-order piecewise ladders, not global polynomials.
 
 ## In this repo and SDE-Interview-Prep
 
-- Risk factor taxonomy and return conventions: [Risk Factor Modelling](10-Risk-Factor-Modelling.md).
-- Python reference implementation of bump engine and Taylor proxy comparison: [risk_analytics.py](code/risk_analytics.py).
-- Numerical verification of optimal bump sizes and proxy diagnostics: [risk_sensitivities.py](code/risk_sensitivities.py).
-- Scenario generation and simulation algorithms: [Scenario Generation](11-Scenario-Generation.md).
-- Greek definitions and mathematical derivations: [The Greeks](../05-Derivatives-and-Volatility/05-The-Greeks.md).
+- [risk_sensitivities.py](code/risk_sensitivities.py): finite-difference error table, optimal bumps, Monte Carlo bumping, a minimal AAD tape on Black-Scholes and a curve book, Hessian from the AAD gradient, full revaluation against proxies, barrier closed form and bridge Monte Carlo, Chebyshev grids; every number above except the short-put crash in card risk-taylor-proxy-tail-underestimation, which is Problem 11 of [risk_problem_set.py](code/risk_problem_set.py).
+- Greek definitions: [The Greeks](../05-Derivatives-and-Volatility/05-The-Greeks.md); Monte Carlo pricing: [Monte Carlo Pricing and Variance Reduction](../05-Derivatives-and-Volatility/10-Monte-Carlo-Pricing-and-Variance-Reduction.md); barriers: [Exotic Options](../05-Derivatives-and-Volatility/12-Exotic-Options.md).
+- Upstream and downstream: [Risk Factor Modelling](10-Risk-Factor-Modelling.md), [Scenario Generation](11-Scenario-Generation.md), [P&L Attribution and Greek Risk](06-PnL-Attribution-and-Greek-Risk.md), [Risk Decomposition and Attribution](13-Risk-Decomposition-and-Attribution.md).
+- Regulatory sensitivities: [FRTB Sensitivities-Based Method: Delta](../17-Regulatory-Capital-Basel-and-FRTB/07-FRTB-Sensitivities-Based-Method-Delta.md); production engines: [Risk Engine](../18-Pricing-and-Risk-Systems/07-Risk-Engine.md).
+
+## Further reading
+
+- P. Glasserman, *Monte Carlo Methods in Financial Engineering*, Springer 2003, chapter 7 (finite differences, pathwise and likelihood-ratio estimators).
+- A. Griewank and A. Walther, *Evaluating Derivatives: Principles and Techniques of Algorithmic Differentiation*, 2nd edition, SIAM 2008.
+- M. Giles and P. Glasserman, "Smoking adjoints: fast Monte Carlo Greeks", *Risk* 19(1), 88-92, 2006.
+- A. Savine, *Modern Computational Finance: AAD and Parallel Simulations*, Wiley 2018.
+- L. N. Trefethen, *Approximation Theory and Approximation Practice*, SIAM 2013.
+- M. Gass, K. Glau, M. Mahlstedt and M. Mair, "Chebyshev interpolation for parametric option pricing", *Finance and Stochastics* 22(3), 701-731, 2018.
+- Basel Committee on Banking Supervision, Basel Framework MAR21 (sensitivity definitions and curvature) and MAR50.47.

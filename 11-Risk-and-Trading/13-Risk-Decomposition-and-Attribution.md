@@ -5,304 +5,292 @@ tier: advanced
 status: solid
 prereqs: [var-and-expected-shortfall]
 est_hours: 4
-sources: [Philippe Jorion - Value at Risk chapter 7, Carol Alexander - Market Risk Analysis Volume IV chapter 2, Thierry Roncalli - Introduction to Risk Parity and Budgeting, Dirk Tasche - Euler Allocation Method for Risk Capital (2008)]
+sources: [Tasche - Risk Contributions and Performance Measurement - working paper TU Munich (1999), Tasche - Capital Allocation to Business Units and Sub-Portfolios - the Euler Principle - in Resti (ed.) Pillar II in the New Basel Accord (Risk Books 2008) 423-453 and arXiv 0708.2542, Gourieroux Laurent and Scaillet - Sensitivity Analysis of Values at Risk - Journal of Empirical Finance 7(3-4) 225-245 (2000), Scaillet - Nonparametric Estimation and Sensitivity Analysis of Expected Shortfall - Mathematical Finance 14(1) 115-129 (2004), Litterman - Hot Spots and Hedges - Journal of Portfolio Management 23 (December 1996 special issue) 52-75, Jorion - Value at Risk 3rd edition (McGraw-Hill 2006) chapter 7, Maillard Roncalli and Teiletche - The Properties of Equally Weighted Risk Contribution Portfolios - Journal of Portfolio Management 36(4) 60-70 (2010), Griveau-Billion Richard and Roncalli - A Fast Algorithm for Computing High-Dimensional Risk Parity Portfolios - arXiv 1311.4057 (2013), Roncalli - Introduction to Risk Parity and Budgeting (Chapman and Hall CRC 2013), Grinold and Kahn - Active Portfolio Management 2nd edition (McGraw-Hill 2000) chapter 3]
 ---
 
 # Risk Decomposition and Attribution
 
 ## TL;DR
 
-Risk decomposition breaks down aggregate portfolio risk into exact, non-overlapping contributions attributable to individual positions, asset classes, or systematic risk factors.
-For any risk measure satisfying Euler's homogeneity condition (such as portfolio standard deviation, Value at Risk, or Expected Shortfall), total portfolio risk equals the sum of its component risks: $\rho(\mathbf{w}) = \sum_{i=1}^N w_i \frac{\partial \rho}{\partial w_i}$.
-Marginal VaR measures the sensitivity of portfolio VaR to an incremental allocation in asset $i$, scaling directly with asset beta $\beta_i$.
-Component VaR isolates the dollar amount of total VaR contributed by each position, enabling risk budgeting and the construction of Risk Parity (Equal Risk Contribution) portfolios.
-Incremental VaR quantifies the finite before-and-after change in risk resulting from executing a discrete block trade or adding a new alpha strategy.
+- A risk measure that is homogeneous of degree one in position sizes (volatility, normal VaR, VaR and ES of any loss distribution) splits exactly into Euler contributions $x_i\,\partial\rho/\partial x_i$; for a continuously differentiable measure they are the only contributions compatible with return-on-risk-capital (RORAC) performance measurement (Tasche 2008, Proposition 2.1, proved in Tasche 1999).
+- Marginal VaR is the gradient (per dollar), component VaR the Euler contribution (sums to the total), incremental VaR the before-and-after difference of a finite trade (does not sum, and differs from the marginal estimate for large trades: 5.20m against 1.99m for a 50m add).
+- Beyond the normal, the Euler contributions are conditional expectations: $E[L_i \mid L = \text{VaR}]$ for VaR and $E[L_i \mid L \ge \text{VaR}]$ for ES; ES contributions are stable in simulation, VaR contributions are noisy.
+- Equal risk contribution (risk parity) weights solve a strictly convex problem; with two assets they are inverse-volatility for any correlation.
+- Factor decomposition splits the same total along factor exposures plus specific risk and shows concentrations an asset list hides.
 
 ## Learning objectives
 
 - Apply Euler's allocation theorem to linearly decompose homogeneous risk measures into component contributions.
 - Calculate Marginal VaR, Component VaR, and percentage risk contributions across multi-asset portfolios.
 - Differentiate Marginal VaR (instantaneous partial derivative) from Incremental VaR (discrete finite difference).
+- Estimate VaR and ES contributions by simulation for non-normal and nonlinear books and check them against brute force.
 - Construct Risk Parity portfolios where each asset or factor contributes an equal share to total portfolio volatility.
-- Decompose portfolio risk along orthogonal risk factor dimensions using factor betas and residual variance.
+- Decompose portfolio risk along risk factor dimensions using factor betas and residual variance.
 - Establish risk budgeting limits to enforce capital discipline across decentralized trading desks.
 
 ## Core concepts
 
-### Euler's Allocation Principle for Coherent Risk Measures
+### Euler allocation
 
-Let $\mathbf{w} = [w_1, w_2, \dots, w_N]^T$ represent portfolio dollar or weight allocations across $N$ assets, and let $\rho(\mathbf{w})$ be a risk measure (such as standard deviation $\sigma_p$, Parametric VaR, or Expected Shortfall).
-A risk measure is **linearly homogeneous of degree 1** if scaling all portfolio holdings by a constant scalar $c > 0$ scales total portfolio risk by the exact same proportion:
+Let $x = (x_1, \dots, x_N)$ be position sizes (dollars, or scale factors on sub-portfolios) and $\rho(x)$ a risk measure.
+If $\rho(cx) = c\,\rho(x)$ for $c > 0$ and $\rho$ is differentiable, Euler's theorem for homogeneous functions gives
 
-$$\rho(c \mathbf{w}) = c \, \rho(\mathbf{w})$$
+$$\rho(x) = \sum_{i=1}^N x_i\,\frac{\partial\rho}{\partial x_i}(x).$$
 
-By Euler's Homogeneous Function Theorem, any continuously differentiable function homogeneous of degree 1 can be decomposed as:
-
-$$\rho(\mathbf{w}) = \sum_{i=1}^N w_i \frac{\partial \rho(\mathbf{w})}{\partial w_i} = \mathbf{w}^T \nabla \rho(\mathbf{w})$$
-
-This mathematical identity guarantees that:
-- Total portfolio risk is fully exhausted by the sum of its components with zero unexplained residual.
-- It provides an axiomatic, economically sound foundation for attributing risk and allocating regulatory capital across desks.
+Proof in one line: differentiate $\rho(cx) = c\rho(x)$ with respect to $c$ and set $c = 1$.
+The contribution $RC_i = x_i\,\partial\rho/\partial x_i$ is the Euler or component risk; the sum is exact, with no unexplained residual.
+Why this allocation and not another: call contributions RORAC compatible if, whenever a sub-portfolio's expected return divided by its risk contribution beats the portfolio's RORAC, adding a small enough amount of that sub-portfolio raises the portfolio's RORAC.
+Tasche (2008, Proposition 2.1, citing Theorem 4.4 of Tasche 1999) shows that if $\rho(x)$ is continuously differentiable and contributions are to be RORAC compatible for arbitrary expected returns, they must be $\partial\rho/\partial x_i$ per unit, that is the Euler contributions; that is what a capital allocation used for performance measurement needs.
+For a measure that is also subadditive (volatility, ES), each Euler contribution is at most the position's standalone risk, and the with-and-without (incremental) contributions sum to at most the total (Tasche 2008, (2.9b) and Proposition 2.2): Example 1 shows both.
 
 ```mermaid
 flowchart TD
-  PortRisk[Total Portfolio Risk: rho w] --> Euler[Euler Allocation Theorem]
-  Euler --> C1[Component Risk 1: w1 * d rho / dw1]
-  Euler --> C2[Component Risk 2: w2 * d rho / dw2]
-  Euler --> C3[Component Risk 3: w3 * d rho / dw3]
-  Euler --> CN[Component Risk N: wN * d rho / dwN]
-  C1 & C2 & C3 & CN --> Sum[Sum of Components == Total Risk]
+    P["Positions x_i and a risk measure rho"] --> H{"rho(c x) = c rho(x)?"}
+    H -->|"yes: sd, normal VaR, VaR, ES"| G["Gradient: marginal risk d rho / d x_i"]
+    H -->|"no: variance is degree 2"| FIX["Use sd, or halve the variance contributions"]
+    G --> C["Component RC_i = x_i d rho / d x_i"]
+    C --> S["Sum of components = rho exactly"]
+    S --> B["Budgets and limits by desk, asset, factor"]
+    G --> I["Marginal estimate of a trade dx: grad . dx"]
+    I --> R["Large trades: recompute rho(x + dx) - rho(x)"]
 ```
 
-### Marginal, Component, and Incremental VaR
+Which measures qualify: volatility $\sqrt{x^\top\Sigma x}$; normal VaR $z_\alpha\sqrt{x^\top\Sigma x}$ (with zero mean); VaR and ES of any loss distribution as functions of the position scales, because scaling every position scales the loss.
+Variance is homogeneous of degree two, so $\sum_i x_i\,\partial\sigma^2/\partial x_i = 2\sigma^2$ (checked with finite-difference gradients in the code): use $\sigma$, or halve the variance contributions.
+A measure with a fixed add-on or a nonlinear transformation (for example a VaR floor) is not homogeneous and has no exact Euler split.
 
-To manage risk dynamically, quants track three distinct formulations of risk attribution:
+### Marginal, component and incremental VaR
 
-#### 1. Marginal VaR ($\text{MVaR}$)
-Marginal VaR is the instantaneous partial derivative of portfolio VaR with respect to position weight or dollar allocation $w_i$:
+With dollar positions $x$, covariance $\Sigma$ of returns and $\sigma_P = \sqrt{x^\top\Sigma x}$ the dollar volatility, normal VaR is $z_\alpha\sigma_P$ and
 
-$$\text{MVaR}_i = \frac{\partial \text{VaR}_p}{\partial w_i}$$
+$$\frac{\partial \text{VaR}}{\partial x_i} = z_\alpha\,\frac{(\Sigma x)_i}{\sigma_P} = z_\alpha\,\frac{\text{Cov}(r_i, P)}{\sigma_P}, \qquad \text{CVaR}_i = x_i\,\frac{\partial \text{VaR}}{\partial x_i},$$
 
-For a portfolio governed by joint normality where $\text{VaR}_p = z_{\alpha} \sigma_p$ (with portfolio variance $\sigma_p^2 = \mathbf{w}^T \mathbf{\Sigma} \mathbf{w}$):
+where $P = x^\top r$ is the dollar P&L.
+In weight terms with portfolio return $r_p$, $\partial\sigma_p/\partial w_i = \text{Cov}(r_i, r_p)/\sigma_p = \beta_i\sigma_p$, so the marginal VaR per dollar is $\beta_i$ times the VaR per dollar of the whole portfolio and the component share is $w_i\beta_i$, with $\sum_i w_i\beta_i = 1$.
 
-$$\frac{\partial \sigma_p}{\partial w_i} = \frac{(\mathbf{\Sigma} \mathbf{w})_i}{\sigma_p} = \frac{\text{Cov}(r_i, r_p)}{\sigma_p} = \beta_i \sigma_p$$
+| Quantity | Definition | Adds up? | Use |
+| :--- | :--- | :--- | :--- |
+| Standalone VaR | VaR of position $i$ alone | no, overstates by the diversification benefit | limits per book in isolation |
+| Marginal VaR | $\partial\text{VaR}/\partial x_i$ | not a contribution | which position to cut or grow at the margin |
+| Component VaR | $x_i\,\partial\text{VaR}/\partial x_i$ | yes, exactly | risk budgets, capital allocation |
+| Incremental VaR | $\text{VaR}(x + \Delta x) - \text{VaR}(x)$ | no | pre-trade approval of a finite trade |
 
-$$\text{MVaR}_i = z_{\alpha} \frac{\text{Cov}(r_i, r_p)}{\sigma_p} = \beta_i \text{VaR}_p$$
+For a small trade, $\text{IVaR} \approx \nabla\text{VaR}^\top\Delta x$; the error is second order in $\Delta x$, so large trades must be recomputed.
+A component is negative when the position's covariance with the portfolio is negative: it is a hedge at the margin.
+The best hedge in instrument $j$ (Litterman 1996) is the holding that minimises variance, $x_j^* = -\text{Cov}(r_j, P_{\text{rest}})/\sigma_j^2$, where at that point the marginal VaR of $j$ is zero.
 
-Marginal VaR is proportional to the asset's beta $\beta_i$ relative to the total portfolio:
-- If $\beta_i > 1.0$, increasing position $i$ expands portfolio VaR at a rate higher than the current average.
-- If $\beta_i = 1.0$, increasing position $i$ expands VaR at exactly the portfolio's average rate.
-- If $\beta_i < 0.0$ (a hedge), increasing position $i$ reduces total portfolio VaR.
+### Euler beyond the normal: simulation
 
-#### 2. Component VaR ($\text{CVaR}$)
-Component VaR multiplies position weight $w_i$ by its Marginal VaR:
+For a general loss $L = \sum_i L_i$ with a continuous distribution, Gourieroux, Laurent and Scaillet (2000) show
 
-$$\text{CVaR}_i = w_i \cdot \text{MVaR}_i = w_i \frac{\partial \text{VaR}_p}{\partial w_i} = w_i \beta_i \text{VaR}_p$$
+$$\frac{\partial\,\text{VaR}_\alpha}{\partial x_i}\,x_i = E[L_i \mid L = \text{VaR}_\alpha], \qquad \frac{\partial\,\text{ES}_\alpha}{\partial x_i}\,x_i = E[L_i \mid L \ge \text{VaR}_\alpha]$$
 
-By Euler's theorem, the sum of all Component VaRs equals total portfolio VaR:
+(the ES version in Scaillet 2004), where $L_i$ is the loss of position $i$ at its current size.
+In a simulation, the ES contribution is the average of position $i$'s loss over the tail scenarios, and the contributions sum to the simulated ES exactly.
+The VaR contribution conditions on a single quantile, so it is estimated from the scenarios nearest the VaR order statistic and is much noisier.
 
-$$\sum_{i=1}^N \text{CVaR}_i = \sum_{i=1}^N w_i \beta_i \text{VaR}_p = \text{VaR}_p \sum_{i=1}^N w_i \beta_i = \text{VaR}_p$$
+On 1,000,000 simulated days of a Student $t_4$ (elliptical) linear book of 60m equities, 40m bonds and 10m gold (daily volatilities 1.25%, 0.40% and 0.90%, correlations $-0.15$ equity-bond, 0.10 equity-gold and 0.30 bond-gold, the $t_4$ scaled to unit variance), the 97.5% ES was about 2.161m and the equity ES share about 0.946, equal to its covariance share 0.946: for elliptical distributions every homogeneous measure allocates in proportion to $x_i(\Sigma x)_i$.
+Adding a short put changes that, as the second worked example shows.
 
-The Percentage Contribution to Risk ($\% \text{RC}_i$) is:
+### Risk budgeting and risk parity
 
-$$\% \text{RC}_i = \frac{\text{CVaR}_i}{\text{VaR}_p} = w_i \beta_i \quad \text{such that} \quad \sum_{i=1}^N \% \text{RC}_i = 100\%$$
+A risk budget sets target shares $b_i$ of total risk, $x_i(\Sigma x)_i/x^\top\Sigma x = b_i$; equal risk contribution (ERC) is $b_i = 1/N$.
+Maillard, Roncalli and Teiletche (2010) show the ERC portfolio exists, is unique, and lies between the minimum-variance and equal-weight portfolios in volatility.
+It can be computed by minimising the strictly convex
 
-#### 3. Incremental VaR ($\text{IVaR}$)
-Incremental VaR measures the finite discrete change in portfolio VaR resulting from adding or removing a specific block of trades $\Delta \mathbf{w}$:
+$$f(y) = \tfrac12 y^\top\Sigma y - \sum_i \ln y_i, \qquad y > 0,$$
 
-$$\text{IVaR} = \text{VaR}(\mathbf{w} + \Delta \mathbf{w}) - \text{VaR}(\mathbf{w})$$
+whose first-order condition $(\Sigma y)_i = 1/y_i$ says $y_i(\Sigma y)_i = 1$ for every $i$, then normalising $w = y/\sum_i y_i$.
+The code solves it by Newton's method and checks against cyclical coordinate descent (Griveau-Billion, Richard and Roncalli 2013), which solves $\Sigma_{ii}y_i^2 + c_i y_i - 1 = 0$ one coordinate at a time.
+With two assets, ERC weights are inverse-volatility for any correlation: $w_1\sigma_1(w_1\sigma_1 + \rho w_2\sigma_2) = w_2\sigma_2(w_2\sigma_2 + \rho w_1\sigma_1)$ forces $w_1\sigma_1 = w_2\sigma_2$.
+With three or more assets correlations matter: for equities 18%, bonds 5% and commodities 20% with correlations $-0.2$ (equity-bond), 0.3 (equity-commodity) and 0 (bond-commodity), ERC weights are 0.1712, 0.6931 and 0.1357, while inverse-volatility weights give risk shares of 0.34375, 0.25 and 0.40625.
+ERC says nothing about expected returns; any claim that it improves the Sharpe ratio is an empirical claim about a specific period and asset set.
 
-For small reallocations ($\Delta \mathbf{w} \to 0$), Incremental VaR is approximated by the first-order Taylor expansion:
+### Factor risk attribution
 
-$$\text{IVaR} \approx \sum_{i=1}^N \Delta w_i \cdot \text{MVaR}_i = \Delta \mathbf{w}^T \nabla \text{VaR}_p$$
+With returns $r = Bf + \epsilon$, factor covariance $\Sigma_f$ and diagonal specific variances $D$, a portfolio with weights $w$ has factor exposures $x = B^\top w$ and
 
-For large block trades, full recomputation of $\text{VaR}(\mathbf{w} + \Delta \mathbf{w})$ is mandatory to capture non-linear diversification changes.
+$$\sigma_P^2 = x^\top\Sigma_f x + w^\top D w, \qquad RC_k = x_k\,\frac{(\Sigma_f x)_k}{\sigma_P}, \qquad RC_{\text{spec}} = \frac{w^\top D w}{\sigma_P}.$$
 
-### Risk Parity and Equal Risk Contribution (ERC)
-
-Traditional mean-variance portfolios allocated 60% to equities and 40% to bonds (60/40 asset allocation).
-However, because equities exhibit substantially higher volatility than bonds ($\sigma_{\text{equity}} \approx 18\%$ vs. $\sigma_{\text{bond}} \approx 5\%$), equities account for over 90% of total portfolio variance, exposing the fund to unhedged equity crash risk.
-
-The Risk Parity (Equal Risk Contribution) framework allocates capital such that every asset contributes an identical amount to total portfolio risk:
-
-$$\text{CVaR}_i = \text{CVaR}_j \iff w_i \frac{\partial \sigma_p}{\partial w_i} = w_j \frac{\partial \sigma_p}{\partial w_j} = \frac{\sigma_p}{N} \quad \forall i, j$$
-
-In the absence of correlation between assets, the risk parity weights simplify to inverse-volatility weighting:
-
-$$w_i \propto \frac{1}{\sigma_i}$$
-
-When assets are correlated, finding risk parity weights requires numerical optimization.
-While the formulation minimizing pairwise squared differences $\sum_{i=1}^N \sum_{j=1}^N \left( w_i (\mathbf{\Sigma} \mathbf{w})_i - w_j (\mathbf{\Sigma} \mathbf{w})_j \right)^2$ is non-convex (Maillard, Roncalli and Teïletche 2010), the problem can be reformulated into an equivalent strictly convex log-barrier optimization:
-
-$$\min_{\mathbf{y}} \frac{1}{2} \mathbf{y}^T \mathbf{\Sigma} \mathbf{y} - c \sum_{i=1}^N \ln(y_i) \quad \text{subject to} \quad y_i > 0$$
-
-where normalizing the unconstrained positive solution vector $\mathbf{w} = \mathbf{y} / \sum_{i=1}^N y_i$ yields the unique Equal Risk Contribution portfolio weights.
-Risk parity portfolios achieve superior Sharpe ratios and drawdown resilience across economic cycles by leveraging lower-volatility assets to balance risk contributions.
-
-### Factor Risk Attribution
-
-Rather than decomposing risk by individual securities, institutional allocators decompose risk into macroeconomic factors (e.g., Market, Value, Momentum, Quality, Term, Credit):
-
-$$\mathbf{r} = \mathbf{B} \mathbf{f} + \mathbf{\epsilon}$$
-
-Portfolio variance decomposes into systematic factor variance and idiosyncratic specific variance.
-The systematic part depends on factor exposures $\mathbf{x} = \mathbf{B}^T \mathbf{w}$, not on the realized factor returns $\mathbf{f}$:
-
-$$\sigma_p^2 = \mathbf{x}^T \mathbf{\Sigma}_f \mathbf{x} + \mathbf{w}^T \mathbf{D}_{\epsilon} \mathbf{w}$$
-
-The risk contribution of factor $k$ is the Euler term in that exposure:
-
-$$\text{RC}_{\text{factor } k} = x_k \frac{\partial \sigma_p}{\partial x_k} = x_k \frac{(\mathbf{\Sigma}_f \mathbf{x})_k}{\sigma_p}$$
-
-This decomposition reveals whether a portfolio's risk is genuinely diversified across independent economic drivers or concentrated in a single latent factor (e.g., hidden tech growth momentum).
+The factor contributions plus the specific contribution sum to $\sigma_P$, the same total as the asset-level Euler split computed from $\Sigma = B\Sigma_f B^\top + D$: one number, two axes.
+In the code's four-stock long-short example (market and value factors), the exposures are 0.82 and $-0.24$, the volatility 20.25%, and the shares 0.4290 market, 0.0143 value and 0.5567 specific.
+A desk manager reads it as: half the risk is stock-specific, almost all the systematic risk is the market, and the value tilt costs nothing in risk.
 
 ## Worked examples
 
-### Example 1: Calculating Marginal and Component VaR
+All numbers are printed and asserted by `python 11-Risk-and-Trading/code/risk_decomposition.py`.
 
-A fund manages $\$100,000,000$ split across two asset classes:
-- Equities ($w_1 = \$60,000,000$, weight $0.60$): $\sigma_1 = 20.0\%$ per annum.
-- Bonds ($w_2 = \$40,000,000$, weight $0.40$): $\sigma_2 = 6.0\%$ per annum.
-- Correlation between equities and bonds: $\rho = -0.15$.
-Confidence level is 95% ($z_{0.95} = 1.6449$).
-Compute total portfolio volatility, 95% annual VaR, Marginal VaRs, and Component VaRs.
+### Example 1: marginal and component VaR, two assets
 
-**Solution:**
+60m equities (20% vol) and 40m bonds (6% vol), correlation $-0.15$, one-year 95% VaR with $z_{0.95} = 1.644854$.
 
-Step 1: Compute portfolio variance and standard deviation:
+1. Weights 0.6 and 0.4: $\sigma_p^2 = 0.36 \times 0.04 + 0.16 \times 0.0036 + 2 \times 0.6 \times 0.4 \times (-0.15) \times 0.2 \times 0.06 = 0.014112$, $\sigma_p = 11.8794\%$.
+2. VaR $= 1.644854 \times 0.118794 \times 100\text{m} = 19{,}539{,}864$.
+   (Using $z = 1.6449$ rounded gives 19,540,415; carry full precision.)
+3. Betas: $\text{Cov}(r_1, r_p)/\sigma_p^2 = 0.02328/0.014112 = 1.649660$ and $0.00036/0.014112 = 0.025510$; check $0.6 \times 1.649660 + 0.4 \times 0.025510 = 1$.
+4. Marginal VaR per dollar: 0.322341 for equities, 0.004985 for bonds; brute-force central differences of VaR in each position (bump 1,000) agree to $10^{-9}$.
+5. Components: 19,340,478 and 199,386, summing to the VaR; equities carry 98.98%.
+6. Standalone VaRs are 19,738,244 and 3,947,649, so diversification is worth 4,146,028.
+7. Incremental VaRs of removing each position (full recomputation) are 15,592,215 and $-198{,}379$: the bonds add to VaR at the margin (their marginal VaR is positive: the book holds more bonds than their variance-minimising amount) yet removing them entirely raises VaR, and the two incremental numbers sum to 15,393,836, not to the VaR.
 
-$$\sigma_p^2 = w_1^2 \sigma_1^2 + w_2^2 \sigma_2^2 + 2 w_1 w_2 \rho \sigma_1 \sigma_2$$
+### Example 2: a trade, its marginal estimate and the best hedge
 
-$$w_1^2 \sigma_1^2 = 0.60^2 \times 0.20^2 = 0.36 \times 0.0400 = 0.014400$$
+Add gold (15% vol, correlation 0.10 with equities, 0.30 with bonds) to Example 1.
 
-$$w_2^2 \sigma_2^2 = 0.40^2 \times 0.06^2 = 0.16 \times 0.0036 = 0.000576$$
+1. $\text{Cov}(r_{\text{gold}}, P) = 60\text{m} \times 0.003 + 40\text{m} \times 0.0027 = 0.288\text{m}$, so the marginal VaR of gold is $1.644854 \times 0.288\text{m}/\sigma_P = 0.039877$ per dollar.
+2. Adding 5m: marginal estimate 199,386; recomputed incremental VaR 236,893 (the trade's own variance, a second-order term, is already visible at 5% of the book).
+3. Adding 50m: marginal estimate 1,993,864; recomputed 5,197,006.
+4. The best hedge in gold is $-0.288\text{m}/0.0225 = -12{,}800{,}000$ (short gold), which lowers VaR to 19,282,961; a grid search over holdings from $-30$m to $+10$m in 1,000 steps finds the same minimiser to within half a step.
 
-$$2 w_1 w_2 \rho \sigma_1 \sigma_2 = 2 \times 0.60 \times 0.40 \times (-0.15) \times 0.20 \times 0.06 = -0.072 \times 0.012 = -0.000864$$
+### Example 3: ES and VaR contributions with a short put
 
-$$\sigma_p^2 = 0.014400 + 0.000576 - 0.000864 = 0.014112$$
+The simulated $t_4$ book of the core concepts (60m equities, 40m bonds, 10m gold, one-day horizon) plus a short position of 4,000 one-month at-the-money puts on the equity index (multiplier 100, index 100, implied vol 20% held fixed, zero rates, premium 2.3030 per index point), revalued in full after one trading day with the index moving by the simulated equity return.
 
-$$\sigma_p = \sqrt{0.014112} \approx 0.1187939 \quad (11.88\%)$$
+| Position | ES contribution (97.5%) | VaR contribution, $\pm 500$ scenarios | VaR contribution, $\pm 50$ scenarios |
+| :--- | ---: | ---: | ---: |
+| Equities | about 2,082,000 | | |
+| Bonds | about 14,500 | about 17,400 | about $-3{,}000$ |
+| Gold | about 57,200 | | |
+| Short put | about 824,000 | about 746,000 | about 755,000 |
+| Total | about 2,978,000 | about 2,765,000 (VaR 99%) | |
 
-Total portfolio VaR:
-
-$$\text{VaR}_p = \$100,000,000 \times 1.6449 \times \sqrt{0.014112} \approx \$19,540,415 \quad (19.54\%)$$
-
-Step 2: Compute covariances with portfolio:
-
-$$\text{Cov}(r_1, r_p) = w_1 \sigma_1^2 + w_2 \rho \sigma_1 \sigma_2 = (0.60 \times 0.0400) + (0.40 \times -0.15 \times 0.20 \times 0.06) = 0.0240 - 0.00072 = 0.02328$$
-
-$$\text{Cov}(r_2, r_p) = w_2 \sigma_2^2 + w_1 \rho \sigma_1 \sigma_2 = (0.40 \times 0.0036) + (0.60 \times -0.15 \times 0.20 \times 0.06) = 0.00144 - 0.00108 = 0.00036$$
-
-Step 3: Compute Betas:
-
-$$\beta_1 = \frac{\text{Cov}(r_1, r_p)}{\sigma_p^2} = \frac{0.02328}{0.014112} \approx 1.64966$$
-
-$$\beta_2 = \frac{\text{Cov}(r_2, r_p)}{\sigma_p^2} = \frac{0.00036}{0.014112} \approx 0.02551$$
-
-Check weighted beta: $0.60(1.64966) + 0.40(0.02551) = 0.9898 + 0.0102 = 1.0000$.
-
-Step 4: Compute Marginal VaRs:
-
-$$\text{MVaR}_1 = \beta_1 \times \text{VaR}_p = 1.64966 \times \$19,540,415 \approx \$32,235,038 \quad (32.24\%)$$
-
-$$\text{MVaR}_2 = \beta_2 \times \text{VaR}_p = 0.02551 \times \$19,540,415 \approx \$498,480 \quad (0.50\%)$$
-
-Step 5: Compute Component VaRs:
-
-$$\text{CVaR}_1 = w_1 \times \text{MVaR}_1 = 0.60 \times \$32,235,038 \approx \$19,341,023$$
-
-$$\text{CVaR}_2 = w_2 \times \text{MVaR}_2 = 0.40 \times \$498,480 \approx \$199,392$$
-
-$$\text{Total VaR} = \$19,341,023 + \$199,392 = \$19,540,415$$
-
-Risk shares:
-- Equity contributes: $\$19,341,023 / \$19,540,415 = 98.98\%$ of total risk.
-- Bonds contribute: $\$199,392 / \$19,540,415 = 1.02\%$ of total risk.
-Despite a 60/40 capital allocation, equities represent 99% of total portfolio risk.
-
-### Example 2: Sizing an Incremental Trade
-
-Using the portfolio from Example 1 ($\text{VaR}_p = \$19,540,415$), the trader considers adding a $\$5,000,000$ block position in a gold ETF ($i=3$).
-Gold has annual volatility $\sigma_3 = 15.0\%$.
-Its correlation with equities is $\rho_{31} = 0.10$ and with bonds is $\rho_{32} = 0.30$.
-Estimate the Incremental VaR ($\text{IVaR}$) using Marginal VaR.
-
-**Solution:**
-
-Step 1: Compute covariance of Gold with the existing portfolio:
-
-$$\text{Cov}(r_3, r_p) = w_1 \text{Cov}(r_3, r_1) + w_2 \text{Cov}(r_3, r_2)$$
-
-$$\text{Cov}(r_3, r_1) = 0.10 \times 0.15 \times 0.20 = 0.00300$$
-
-$$\text{Cov}(r_3, r_2) = 0.30 \times 0.15 \times 0.06 = 0.00270$$
-
-$$\text{Cov}(r_3, r_p) = (0.60 \times 0.00300) + (0.40 \times 0.00270) = 0.00180 + 0.00108 = 0.00288$$
-
-Step 2: Compute Gold's portfolio beta:
-
-$$\beta_3 = \frac{\text{Cov}(r_3, r_p)}{\sigma_p^2} = \frac{0.00288}{0.014112} \approx 0.20408$$
-
-Step 3: Compute Gold's Marginal VaR:
-
-$$\text{MVaR}_3 = \beta_3 \times \text{VaR}_p = 0.20408 \times \$19,540,415 \approx \$3,987,840 \quad (3.9878\%)$$
-
-Step 4: Compute Incremental VaR for a $\$5,000,000$ addition:
-
-$$\text{IVaR} \approx \Delta w_3 \times \frac{\text{MVaR}_3}{W} = \$5,000,000 \times 0.0398784 \approx +\$199,392$$
-
-Adding $\$5\text{M}$ of gold expands portfolio 95% VaR by approximately $\$199,392$ (from $\$19.540\text{M}$ to $\$19.740\text{M}$).
+1. ES contributions are tail averages and sum to the ES exactly; a brute-force check (central differences of the simulated ES in each position's scale, bump 1%) agrees within 0.6% for every position.
+2. The short put is 27.7% of the ES but its delta-equivalent is a modest equity position: the extra share is gamma risk that a covariance-based split would miss.
+3. VaR contributions depend on how many neighbours of the VaR scenario are averaged: the bond contribution flips sign between the two windows, a reminder that simulated VaR contributions need large samples or smoothing before anyone sets limits on them.
 
 ## Pitfalls
 
-- **Confusing Standalone VaR with Component VaR:** Standalone VaR evaluates an asset in isolation; summing standalone VaRs ignores diversification and overstates total portfolio risk.
-- **Applying Euler Allocation to Non-Homogeneous Measures:** Attempting Euler decomposition on risk measures that are not degree-1 homogeneous (e.g., semi-variance or tracking error with fixed benchmark constraints) violates the additive summation property.
-- **Using Marginal VaR for Giant Trades:** Linear Marginal VaR approximations ($\text{IVaR} \approx \mathbf{\delta}^T \Delta \mathbf{w}$) fail for large block trades because executing a giant trade alters the portfolio's covariance structure and beta weights.
-- **Ignoring Negative Component VaR:** A hedging asset with negative beta exhibits negative Component VaR; failing to account for negative signs distorts percentage risk budgeting calculations.
-- **Instability of Covariance Inverses in ERC Optimization:** Solving Risk Parity weights using ill-conditioned sample covariance matrices produces unstable, extreme allocations.
+- Summing standalone VaRs: overstates risk by the diversification benefit (4.15m of 23.69m in Example 1).
+- Applying Euler to a non-homogeneous measure, or to variance without halving.
+- Using marginal VaR for big trades: for a 50m gold trade the linear estimate was 1.99m against a recomputed 5.20m.
+- Treating incremental VaRs as contributions: they do not sum to the total.
+- Dropping negative components from percentage tables: a hedge's negative share is real and the positive shares then exceed 100%.
+- Covariance-based contributions for option books: they miss gamma; use simulated ES contributions.
+- Setting limits on simulated VaR contributions without checking their noise.
+- Solving ERC by minimising squared differences of contributions with a general optimiser: non-convex and slow; use the convex log-barrier form.
+- Reading factor contributions from a model with stale or missing factors: the specific share absorbs whatever the factors miss.
 
 ## Interview questions
 
 > [!question]- risk-euler-allocation-theorem | State Euler's allocation theorem and explain why it is essential for risk capital budgeting.
-> For any risk measure $\rho(\mathbf{w})$ that is linearly homogeneous of degree 1 ($\rho(c\mathbf{w}) = c\rho(\mathbf{w})$), Euler's theorem states that $\rho(\mathbf{w}) = \sum_{i=1}^N w_i \frac{\partial \rho}{\partial w_i}$. This is essential for capital budgeting because it guarantees that the sum of risk allocated to individual desks, positions, or business units equals total firm risk exactly, eliminating arbitrary overhead allocation or residual surplus.
+> If $\rho(cx) = c\rho(x)$ and $\rho$ is differentiable, then $\rho(x) = \sum_i x_i\,\partial\rho/\partial x_i$ (differentiate the homogeneity identity in $c$ at $c = 1$).
+> So allocated risk adds up to the total with no residual, which capital allocation needs.
+> Tasche (2008, Proposition 2.1; proof in Tasche 1999) adds the reason to prefer it: for a continuously differentiable measure the Euler contributions are the only ones that are RORAC compatible, meaning that growing a sub-portfolio whose return on its contribution beats the portfolio's RORAC by a small enough amount raises the portfolio's RORAC.
 
 > [!question]- risk-marginal-vs-component-var | Distinguish between Marginal VaR and Component VaR.
-> Marginal VaR is the partial derivative $\frac{\partial \text{VaR}}{\partial w_i} = \beta_i \text{VaR}_p$, measuring the rate of change in total risk per dollar added to position $i$. Component VaR is the dollar risk contribution of the position: $\text{CVaR}_i = w_i \cdot \text{MVaR}_i = w_i \beta_i \text{VaR}_p$. Marginal VaR guides position sizing decisions at the margin, while Component VaR sums to total portfolio VaR.
+> Marginal VaR is $\partial\text{VaR}/\partial x_i$, the change in VaR per extra dollar in position $i$: 0.322341 for the equities in Example 1.
+> Component VaR is $x_i\,\partial\text{VaR}/\partial x_i$, the position's share of the total: 19,340,478 of 19,539,864.
+> Marginal guides the next trade; components sum to the VaR and feed budgets.
 
 > [!question]- risk-beta-relationship-marginal-var | Prove that under joint normality, Marginal VaR is proportional to the position's beta relative to the portfolio.
-> For $\text{VaR}_p = z_{\alpha}\sigma_p$, the derivative is $\frac{\partial \text{VaR}_p}{\partial w_i} = z_{\alpha}\frac{\partial \sigma_p}{\partial w_i}$. Because $\sigma_p = (\mathbf{w}^T\mathbf{\Sigma}\mathbf{w})^{1/2}$, its derivative is $\frac{\partial \sigma_p}{\partial w_i} = \frac{(\mathbf{\Sigma}\mathbf{w})_i}{\sigma_p} = \frac{\text{Cov}(r_i, r_p)}{\sigma_p}$. Multiplying by $\sigma_p/\sigma_p$ gives $\frac{\text{Cov}(r_i, r_p)}{\sigma_p^2} z_{\alpha}\sigma_p = \beta_i \text{VaR}_p$.
+> $\text{VaR} = z\sigma_P$ and $\partial\sigma_P/\partial x_i = (\Sigma x)_i/\sigma_P = \text{Cov}(r_i, P)/\sigma_P$.
+> In weights, $\text{Cov}(r_i, r_p)/\sigma_p = \beta_i\sigma_p$, so marginal VaR per dollar is $\beta_i \cdot \text{VaR}/W$ and the component share is $w_i\beta_i$.
+> Example 1: $\beta = 1.649660$ and 0.025510, shares 98.98% and 1.02%.
 
-> [!question]- risk-60-40-equity-risk-concentration | Why does a conventional 60/40 equity/bond portfolio have approximately 90% of its risk concentrated in equities?
-> Equity volatility is typically 3 to 4 times higher than bond volatility ($\sigma_E \approx 18\%$ vs $\sigma_B \approx 5\%$). Because variance scales quadratically with volatility, $(18/5)^2 \approx 13$ times bond variance. In the risk decomposition $\text{CVaR}_i = w_i \beta_i \text{VaR}_p$, the 60% equity weight combined with an equity beta near 1.6 accounts for roughly $96\%$ to $99\%$ of total portfolio volatility (as shown in Example 1 where equity contributes $98.98\%$).
+> [!question]- risk-60-40-equity-risk-concentration | Why does a conventional 60/40 equity/bond portfolio have most of its risk in equities?
+> Risk scales with weight times volatility, and contributions with $w_i(\Sigma w)_i$, which is quadratic in volatility.
+> With 18% and 5% vols the equity share of risk is 96.7% at zero correlation and 93.6% at correlation 0.2; in Example 1 (20% and 6%, correlation $-0.15$) it is 98.98%.
+> Capital weights say little about risk weights.
 
 > [!question]- risk-parity-definition | What is the mathematical condition for a Risk Parity (Equal Risk Contribution) portfolio?
-> A Risk Parity portfolio requires every asset to have an identical Component Risk: $w_i \frac{\partial \sigma_p}{\partial w_i} = w_j \frac{\partial \sigma_p}{\partial w_j} = \frac{\sigma_p}{N}$ for all $i, j$. In terms of covariance, this requires $w_i (\mathbf{\Sigma}\mathbf{w})_i = w_j (\mathbf{\Sigma}\mathbf{w})_j = \frac{\sigma_p^2}{N}$, ensuring no single asset or factor dominates total portfolio risk.
+> $w_i(\Sigma w)_i = w^\top\Sigma w/N$ for all $i$: equal Euler contributions to volatility.
+> Compute it from the convex problem $\min \tfrac12 y^\top\Sigma y - \sum\ln y_i$, whose solution satisfies $y_i(\Sigma y)_i = 1$, then normalise.
+> For equities 18%, bonds 5%, commodities 20% (correlations $-0.2$, 0.3, 0) the weights are 0.1712, 0.6931 and 0.1357.
 
 > [!question]- risk-incremental-var-formula | How does Incremental VaR differ from Marginal VaR, and when should the linear approximation be rejected?
-> Incremental VaR is the finite discrete change in risk $\text{VaR}(\mathbf{w} + \Delta\mathbf{w}) - \text{VaR}(\mathbf{w})$. The linear approximation $\text{IVaR} \approx \Delta\mathbf{w}^T \text{MVaR}$ assumes the trade does not alter portfolio beta or covariance. When executing a large block trade that shifts portfolio weights significantly (e.g., adding 10% to a single position), the linear approximation must be rejected in favor of full re-computation.
+> Incremental VaR is the full before-and-after difference $\text{VaR}(x + \Delta x) - \text{VaR}(x)$; the marginal estimate is $\nabla\text{VaR}^\top\Delta x$, accurate to first order.
+> The neglected term grows with the square of the trade: adding 5m gold gave 199,386 linear against 236,893 recomputed, and 50m gave 1,993,864 against 5,197,006.
+> Recompute whenever the trade is material relative to the book; it is cheap.
 
 > [!question]- risk-negative-component-var-meaning | What does it mean if an asset has a negative Component VaR?
-> A negative Component VaR ($\text{CVaR}_i < 0$) occurs when an asset has a negative covariance and beta with the existing portfolio ($\beta_i < 0$). Economically, the asset acts as a portfolio hedge: holding it actively reduces total portfolio VaR below what the portfolio would have risked without it.
+> Its covariance with the portfolio P&L is negative, so increasing it lowers VaR at the margin: it is a hedge of the current book.
+> It does not mean removing it lowers VaR: in Example 1 the bonds' component is positive but small, while removing them raises VaR by 198,379; a negative component works the other way only locally.
+> Keep negative shares in reports; dropping them overstates the others.
 
 > [!question]- risk-budgeting-framework | How does a chief risk officer enforce risk budgeting across trading desks?
-> The risk committee allocates a fixed percentage budget of total firm VaR or Expected Shortfall to each desk (e.g., 40% Rates, 35% Equities, 25% Credit). Desks are monitored daily using Component VaR. If a desk's Component VaR exceeds its allocated risk budget, it must reduce gross leverage or hedge exposures, preventing individual units from consuming excessive firm capital.
+> Allocate the firm's risk (VaR, ES or capital) to desks by Euler contributions, set each desk a budget, and monitor contributions daily alongside standalone limits.
+> Euler contributions add to the total and reward desks that diversify the firm, which standalone limits do not.
+> Pre-trade, large trades are checked by incremental (recomputed) risk; contributions from simulation are smoothed (ES rather than VaR) so limits do not chase noise.
 
-> [!question]- risk-factor-risk-decomposition-advantage | Why is factor-based risk decomposition superior to asset-based risk decomposition for multi-asset funds?
-> Asset-based decomposition groups risk by nominal tickers or asset classes, masking hidden common exposures. A portfolio holding emerging market equities, high-yield credit, and copper futures appears diversified by asset class, but factor decomposition reveals that all three holdings share high exposure to a single global cyclical growth factor.
+> [!question]- risk-factor-risk-decomposition-advantage | Why is factor-based risk decomposition useful for multi-asset funds?
+> It splits the same total along economic drivers: $RC_k = x_k(\Sigma_f x)_k/\sigma_P$ for factor exposures $x = B^\top w$ plus a specific term.
+> In the four-stock long-short example the shares are 0.4290 market, 0.0143 value and 0.5567 specific: a book that looks like four stock bets is half a market bet.
+> Concentrations in a common factor across nominally different assets show up only on this axis.
 
 > [!question]- risk-expected-shortfall-euler-decomposition | Does Expected Shortfall satisfy Euler's allocation theorem?
-> Yes. Expected Shortfall is a coherent risk measure and is strictly positive homogeneous of degree 1 ($\text{ES}(c\mathbf{w}) = c\text{ES}(\mathbf{w})$). Its component risk is given by $\text{CES}_i = w_i \frac{\partial \text{ES}}{\partial w_i} = w_i \mathbb{E}[-r_i \mid r_p \le -\text{VaR}_p]$, representing the expected loss of asset $i$ conditional on the portfolio experiencing a tail loss.
+> Yes: ES is homogeneous of degree one in position sizes, and its Euler contribution is $E[L_i \mid L \ge \text{VaR}]$ (Scaillet 2004), the average loss of position $i$ in the tail scenarios.
+> In simulation these sum to ES exactly; with a short put in the book the put's contribution was about 824,000 of 2,978,000, and brute-force differences of ES agreed within 0.6%.
+
+> [!question]- risk-erc-two-asset-inverse-vol | Two assets with vols 18% and 5%. What are the equal-risk-contribution weights if the correlation is 0.5? And -0.3?
+> The same in both cases: inverse-volatility, $w = (0.05, 0.18)/0.23$, so 0.217391 in the 18% asset.
+> Equal contributions $w_1\sigma_1(w_1\sigma_1 + \rho w_2\sigma_2) = w_2\sigma_2(w_2\sigma_2 + \rho w_1\sigma_1)$ hold only when $w_1\sigma_1 = w_2\sigma_2$.
+> With three or more assets correlations matter.
+
+> [!question]- risk-best-hedge-position | What is the best hedge of a portfolio in a given instrument, and what is its marginal VaR there?
+> The holding that minimises portfolio variance, $x^* = -\text{Cov}(r_j, P)/\sigma_j^2$, where the marginal VaR of instrument $j$ is zero (Litterman 1996).
+> For the 60/40 book in gold: $-0.288\text{m}/0.0225 = -12.8\text{m}$, lowering VaR from 19,539,864 to 19,282,961.
+> A small reduction means the instrument is a poor hedge; the residual is what no position in it can remove.
+
+> [!question]- risk-component-var-simulation-noise | Why are simulated VaR contributions noisy while ES contributions are not?
+> The VaR contribution is $E[L_i \mid L = \text{VaR}]$, a conditional expectation on a single quantile, estimated from the few scenarios near it.
+> The ES contribution averages over the whole tail, so the 2.5% tail of 1,000,000 scenarios gives 25,000 points.
+> In the example the bond VaR contribution was about 17,400 with $\pm 500$ neighbours and about $-3{,}000$ with $\pm 50$.
+
+> [!question]- risk-euler-var-gradient-conditional-expectation | For a non-normal portfolio, what is the derivative of VaR with respect to a position's scale?
+> $x_i\,\partial\text{VaR}/\partial x_i = E[L_i \mid L = \text{VaR}]$ (Gourieroux, Laurent and Scaillet 2000), for continuous loss distributions.
+> Under normality this reduces to $x_i z(\Sigma x)_i/\sigma_P$, because $E[L_i \mid L]$ is linear in $L$ with slope $\text{Cov}(L_i, L)/\sigma_L^2$.
+
+> [!question]- risk-incremental-vs-component-not-additive | A risk manager sums the incremental VaRs of every position (VaR with minus VaR without). Why does the total not equal the VaR?
+> Each incremental VaR measures a finite removal with everything else held, so the interaction terms are counted differently in each.
+> In Example 1 they were 15,592,215 and $-198{,}379$, summing to 15,393,836 against a VaR of 19,539,864.
+> Only the Euler (component) split adds up.
+
+> [!question]- risk-variance-euler-degree-two | Can you allocate portfolio variance with Euler contributions?
+> Variance is homogeneous of degree two, so $\sum_i x_i\,\partial\sigma^2/\partial x_i = 2\sigma^2$, not $\sigma^2$ (checked with finite-difference gradients in the code).
+> Halving the contributions gives $x_i(\Sigma x)_i$, which sum to $\sigma^2$ and are proportional to the volatility contributions, so the shares are the same; only the units differ.
+
+> [!question]- risk-factor-euler-contributions | How do you allocate volatility to factors and to specific risk, and does it agree with the asset-level split?
+> $RC_k = x_k(\Sigma_f x)_k/\sigma_P$ for exposures $x = B^\top w$, plus $w^\top Dw/\sigma_P$ for specific risk; they sum to $\sigma_P$.
+> The asset-level Euler split from $\Sigma = B\Sigma_f B^\top + D$ sums to the same $\sigma_P$ (20.25% in the example): one total, two axes, both exact.
 
 > [!question]- risk-euler-decomposition-sum-proof | Prove that the sum of Component VaRs across all assets equals total portfolio VaR.
-> Component VaR is defined as $\text{CVaR}_i = w_i \text{MVaR}_i = w_i \frac{\partial \text{VaR}_p}{\partial w_i} = w_i \beta_i \text{VaR}_p$. Summing across all $N$ assets yields $\sum_{i=1}^N \text{CVaR}_i = \text{VaR}_p \sum_{i=1}^N w_i \beta_i$. Because $\sum_{i=1}^N w_i \beta_i = \sum_{i=1}^N w_i \frac{\text{Cov}(r_i, r_p)}{\sigma_p^2} = \frac{\text{Cov}(\sum w_i r_i, r_p)}{\sigma_p^2} = \frac{\text{Cov}(r_p, r_p)}{\sigma_p^2} = \frac{\sigma_p^2}{\sigma_p^2} = 1.0$, the sum of Component VaRs equals total portfolio VaR with zero residual.
+> With weights $w$, $\text{CVaR}_i = w_i\beta_i\,\text{VaR}_p$ and $\sum_i w_i\beta_i = \sum_i w_i\text{Cov}(r_i, r_p)/\sigma_p^2 = \text{Cov}(r_p, r_p)/\sigma_p^2 = 1$.
+> More generally Euler's theorem gives it for any degree-one homogeneous measure; in Example 1 the components 19,340,478 and 199,386 sum to the VaR 19,539,864.
 
 > [!question]- risk-risk-parity-coordinate-descent | How does cyclical coordinate descent solve Risk Parity weights when asset correlations are non-zero?
-> For general non-zero correlations, the Equal Risk Contribution condition $w_i (\mathbf{\Sigma} \mathbf{w})_i = \sigma_p^2 / N$ lacks a closed-form analytical solution. Cyclical coordinate descent iterates through each asset $i$, updating weight $w_i$ multiplicatively via $w_i \leftarrow w_i \sqrt{\frac{1 / N}{\text{RC}_i(\mathbf{w})}}$, followed by simplex normalization $\sum w_i = 1$. This contracts monotonically toward the unique convex ERC minimum.
+> Minimise the convex $f(y) = \tfrac12 y^\top\Sigma y - \sum\ln y_i$ one coordinate at a time: holding the others, $\partial f/\partial y_i = 0$ is the quadratic $\Sigma_{ii}y_i^2 + c_iy_i - 1 = 0$ with $c_i = \sum_{j \ne i}\Sigma_{ij}y_j$, whose positive root is the update (Griveau-Billion, Richard and Roncalli 2013); normalise $w = y/\sum y$ at the end.
+> On the three-asset example it agreed with Newton's method to $10^{-10}$ (weights 0.1712, 0.6931, 0.1357) and every risk share equalled 1/3 to $10^{-12}$.
 
 > [!question]- risk-incremental-vs-marginal-var-derivation | Derive the linear relationship connecting Incremental VaR to Marginal VaR for small trades.
-> Incremental VaR is the discrete change $\Delta \text{VaR}_p = \text{VaR}_p(\mathbf{w} + \Delta \mathbf{w}) - \text{VaR}_p(\mathbf{w})$. Taking the first-order Taylor expansion of $\text{VaR}_p$ around $\mathbf{w}$ yields $\text{VaR}_p(\mathbf{w} + \Delta \mathbf{w}) \approx \text{VaR}_p(\mathbf{w}) + \sum_{i=1}^N \frac{\partial \text{VaR}_p}{\partial w_i} \Delta w_i$. Subtracting $\text{VaR}_p(\mathbf{w})$ gives $\text{IVaR} \approx \sum_{i=1}^N \text{MVaR}_i \cdot \Delta w_i = \sum_{i=1}^N \beta_i \text{VaR}_p \cdot \Delta w_i$.
+> First-order Taylor expansion: $\text{VaR}(x + \Delta x) - \text{VaR}(x) \approx \nabla\text{VaR}^\top\Delta x = \sum_i \text{MVaR}_i\,\Delta x_i$, with error of second order in $\Delta x$.
+> For gold (marginal VaR 0.039877 per dollar) a 5m trade gives 199,386 against a recomputed 236,893, and a 50m trade 1,993,864 against 5,197,006.
 
 > [!question]- risk-factor-euler-decomposition-formula | State the Euler risk decomposition formula across systematic risk factors and idiosyncratic variance.
-> Under a linear multi-factor model $r = \mathbf{B} f + \epsilon$, portfolio variance is $\sigma_p^2 = \mathbf{x}^T \mathbf{\Sigma}_f \mathbf{x} + \mathbf{w}^T \mathbf{D}_{\epsilon} \mathbf{w}$, where $\mathbf{x} = \mathbf{B}^T \mathbf{w}$ is factor exposure. By Euler's theorem, total risk decomposes into systematic factor contributions and idiosyncratic residual: $\sigma_p = \sum_{k=1}^K x_k \frac{(\mathbf{\Sigma}_f \mathbf{x})_k}{\sigma_p} + \sum_{i=1}^N w_i \frac{w_i \sigma_{\epsilon, i}^2}{\sigma_p}$.
+> With $r = Bf + \epsilon$, exposures $x = B^\top w$, factor covariance $\Sigma_f$ and specific variances $D$: $\sigma_p = \sum_k x_k(\Sigma_f x)_k/\sigma_p + w^\top Dw/\sigma_p$.
+> In the four-stock example the shares are 0.4290 (market), 0.0143 (value) and 0.5567 (specific) of a 20.25% volatility.
 
-> [!question]- risk-negative-beta-hedging-asset-cvar | Explain mathematically why an asset with negative covariance produces a negative Component VaR and reduces total risk.
-> If an asset has negative covariance with the portfolio ($\text{Cov}(r_i, r_p) < 0$), its beta is negative ($\beta_i < 0$). In the Euler decomposition $\text{CVaR}_i = w_i \beta_i \text{VaR}_p$, a positive position ($w_i > 0$) combined with $\beta_i < 0$ produces a negative dollar contribution ($\text{CVaR}_i < 0$). This reduces the required sum of risks across remaining positions, reflecting diversification benefit.
+> [!question]- risk-negative-beta-hedging-asset-cvar | Explain why an asset with negative covariance to the portfolio produces a negative Component VaR.
+> $\text{CVaR}_i = x_i\,z\,(\Sigma x)_i/\sigma_P$ has the sign of $x_i\text{Cov}(r_i, P)$, so a long position with negative covariance has a negative component: increasing it lowers VaR at the margin.
+> The best hedge pushes this to its limit: in gold, $-12.8\text{m}$ makes the marginal VaR zero and lowers VaR from 19,539,864 to 19,282,961; beyond it the hedge starts adding risk.
 
-> [!question]- risk-expected-shortfall-euler-risk-contribution | Formulate the Component Expected Shortfall of an asset as a conditional tail expectation.
-> Because Expected Shortfall is linear in expectation conditional on tail losses exceeding VaR, its Euler partial derivative is $\frac{\partial \text{ES}_{\alpha}}{\partial w_i} = \mathbb{E}[-r_i \mid r_p \le -\text{VaR}_{\alpha}]$. Multiplying by position weight $w_i$ gives the Component Expected Shortfall: $\text{CES}_i = w_i \mathbb{E}[-r_i \mid r_p \le -\text{VaR}_{\alpha}]$, measuring the dollar loss contributed by asset $i$ precisely during tail market crashes.
-
-## Further reading
-
-- Philippe Jorion, *Value at Risk: The New Benchmark for Managing Financial Risk*, Chapter 7: "Portfolio Risk: Analytical Methods".
-- Carol Alexander, *Market Risk Analysis, Volume IV: Value at Risk Models*, Chapter 2: "Parametric VaR and Risk Attribution".
-- Thierry Roncalli, *Introduction to Risk Parity and Budgeting*, Chapters 1-3.
-- Dirk Tasche (2008), "Euler Allocation Method for Risk Capital", in *Mathematical Modeling and Information Technology*.
-- Edward Qian (2005), "Risk Parity Portfolios: Efficient Portfolios Through True Diversification", *PanAgora Asset Management*.
+> [!question]- risk-expected-shortfall-euler-risk-contribution | Formulate the Component Expected Shortfall of a position as a conditional tail expectation.
+> $\text{CES}_i = x_i\,\partial\text{ES}/\partial x_i = E[L_i \mid L \ge \text{VaR}_\alpha]$ (Scaillet 2004): the position's average loss in the tail scenarios, summing exactly to ES.
+> In the simulated book with a short put, the put's 97.5% contribution was about 824,000 of about 2,978,000, confirmed by brute-force differences of ES within 0.6%.
 
 ## In this repo and SDE-Interview-Prep
 
-- Value at Risk and Expected Shortfall mathematics: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md).
-- Risk factor taxonomy and covariance modeling: [Risk Factor Modelling](10-Risk-Factor-Modelling.md).
-- Python reference implementation of risk analytics and scenarios: [risk_analytics.py](code/risk_analytics.py).
-- Numerical verification of Euler decomposition and risk parity: [risk_decomposition.py](code/risk_decomposition.py).
-- Drawdown management and risk thresholds: [Drawdowns and Risk Limits](05-Drawdowns-and-Risk-Limits.md).
+- [risk_decomposition.py](code/risk_decomposition.py): Examples 1 and 2 with brute-force gradients, simulated ES and VaR contributions with a short put, ERC by Newton and coordinate descent, factor decomposition; every number above.
+- Definitions and component VaR in brief: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md); covariance inputs: [Risk Factor Modelling](10-Risk-Factor-Modelling.md); sensitivities for nonlinear books: [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md).
+- Portfolio construction side: [Mean-Variance Portfolio Construction](../09-Alpha-Research-and-Portfolio/10-Mean-Variance-Portfolio-Construction.md), [Covariance Estimation and Shrinkage](../09-Alpha-Research-and-Portfolio/11-Covariance-Estimation-and-Shrinkage.md); limits: [Drawdowns and Risk Limits](05-Drawdowns-and-Risk-Limits.md).
+
+## Further reading
+
+- D. Tasche, "Risk contributions and performance measurement", working paper, Technische Universitat Munchen, 1999.
+- D. Tasche, "Capital allocation to business units and sub-portfolios: the Euler principle", in A. Resti (ed.), *Pillar II in the New Basel Accord*, Risk Books 2008, 423-453 (arXiv 0708.2542).
+- C. Gourieroux, J.-P. Laurent and O. Scaillet, "Sensitivity analysis of values at risk", *Journal of Empirical Finance* 7(3-4), 225-245, 2000.
+- O. Scaillet, "Nonparametric estimation and sensitivity analysis of expected shortfall", *Mathematical Finance* 14(1), 115-129, 2004.
+- R. Litterman, "Hot spots and hedges", *Journal of Portfolio Management* 23, December 1996 special issue, 52-75.
+- P. Jorion, *Value at Risk*, 3rd edition, McGraw-Hill 2006, chapter 7.
+- S. Maillard, T. Roncalli and J. Teiletche, "The properties of equally weighted risk contribution portfolios", *Journal of Portfolio Management* 36(4), 60-70, 2010.
+- T. Roncalli, *Introduction to Risk Parity and Budgeting*, Chapman and Hall/CRC 2013.
+- R. Grinold and R. Kahn, *Active Portfolio Management*, 2nd edition, McGraw-Hill 2000, chapter 3.

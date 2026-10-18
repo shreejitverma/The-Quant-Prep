@@ -27,11 +27,11 @@ Sizing, risk and the trader's judgement: what separates a senior trader from a s
 | 09 | [Trading Intuition and Judgement](09-Trading-Intuition-and-Judgement.md) | T | core | 3 | solid | 12 |
 | 10 | [Risk Factor Modelling](10-Risk-Factor-Modelling.md) | RDQ | advanced | 4 | solid | 19 |
 | 11 | [Scenario Generation](11-Scenario-Generation.md) | RQ | advanced | 4 | solid | 19 |
-| 12 | [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md) | RDQ | advanced | 5 | solid | 16 |
-| 13 | [Risk Decomposition and Attribution](13-Risk-Decomposition-and-Attribution.md) | TRQ | advanced | 4 | solid | 16 |
-| 14 | [Counterparty Credit Risk Analytics](14-Counterparty-Credit-Risk-Analytics.md) | RDQ | senior | 6 | solid | 16 |
-| 15 | [XVA: Credit, Funding, Margin, and Capital Valuation Adjustments](15-XVA.md) | RDQ | senior | 6 | solid | 16 |
-| 16 | [Liquidity and Model Risk](16-Liquidity-and-Model-Risk.md) | TRDQ | advanced | 4 | solid | 16 |
-| 17 | [Risk and Trading Problem Set](17-Risk-Problem-Set.md) | TRQ | core | 8 | solid | 16 |
+| 12 | [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md) | RDQ | advanced | 5 | solid | 22 |
+| 13 | [Risk Decomposition and Attribution](13-Risk-Decomposition-and-Attribution.md) | TRQ | advanced | 4 | solid | 23 |
+| 14 | [Counterparty Credit Risk Analytics](14-Counterparty-Credit-Risk-Analytics.md) | RDQ | senior | 6 | solid | 23 |
+| 15 | [XVA: Credit, Funding, Margin, and Capital Valuation Adjustments](15-XVA.md) | RDQ | senior | 6 | solid | 23 |
+| 16 | [Liquidity and Model Risk](16-Liquidity-and-Model-Risk.md) | TRDQ | advanced | 4 | solid | 25 |
+| 17 | [Risk and Trading Problem Set](17-Risk-Problem-Set.md) | TRQ | core | 8 | solid | 28 |
 
 <!-- qp:moc:end -->

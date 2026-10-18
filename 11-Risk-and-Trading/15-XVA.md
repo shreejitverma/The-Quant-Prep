@@ -5,307 +5,295 @@ tier: senior
 status: solid
 prereqs: [counterparty-credit-risk-analytics]
 est_hours: 6
-sources: [Jon Gregory - The xVA Challenge Counterparty Credit Risk Funding Collateral and Capital, Andrew Green - XVA Desks A New Order for Derivatives, Leif Andersen and Mark Piterbarg - Interest Rate Modeling chapters 18-20, Vladimir Piterbarg - Funding Beyond Discounting (2010)]
+sources: [Gregory - The xVA Challenge - Counterparty Risk Funding Collateral Capital and Initial Margin 4th edition (Wiley 2020), Green - XVA - Credit Funding and Capital Valuation Adjustments (Wiley 2015), Piterbarg - Funding Beyond Discounting - Collateral Agreements and Derivatives Pricing - Risk 23(2) 97-102 (2010), Burgard and Kjaer - Partial Differential Equation Representations of Derivatives with Bilateral Counterparty Risk and Funding Costs - Journal of Credit Risk 7(3) 75-93 (2011), Hull and White - The FVA Debate - Risk 25(7) 83-85 (2012), Hull and White - CVA and Wrong-Way Risk - Financial Analysts Journal 68(5) 58-69 (2012), Andersen Duffie and Song - Funding Value Adjustments - Journal of Finance 74(1) 145-192 (2019), IFRS 13 Fair Value Measurement paragraph 42, Basel Framework CAP30.15 MAR50 CRE52 MGN20 (version effective 1 January 2023)]
 ---
 
 # XVA: Credit, Funding, Margin, and Capital Valuation Adjustments
 
 ## TL;DR
 
-Total Valuation Adjustments (XVA) represent the suite of market-calibrated pricing deductions applied to uncollateralized or partially collateralized over-the-counter (OTC) derivatives to reconcile theoretical risk-free valuation with the real-world costs of counterparty default, funding asymmetries, regulatory margin posting, and capital allocation.
-The master fair-value equation is: $V_{\text{actual}} = V_{\text{risk-free}} - \text{CVA} + \text{DVA} - \text{FVA} - \text{MVA} - \text{KVA}$.
-Credit Valuation Adjustment (CVA) prices the expected loss from counterparty default; Debit Valuation Adjustment (DVA) reflects the counterparty's loss from the bank's own default (creating the accounting paradox where a deteriorating bank books paper profits).
-Funding Valuation Adjustment (FVA) prices the uncollateralized treasury borrowing costs incurred when funding collateral requirements on offsetting street hedges.
-Under Uncleared Margin Rules (UMR), Margin Valuation Adjustment (MVA) charges for funding segregated initial margin, while Capital Valuation Adjustment (KVA) prices the return demanded by bank shareholders for holding regulatory capital over the trade lifetime.
+- XVA adjusts the collateralised, default-free value of a derivative for counterparty default (CVA), own default (DVA), funding of uncollateralised positions (FVA), funding of initial margin (MVA) and the cost of regulatory capital (KVA); which of them enter accounting fair value, which only pricing, is a policy choice that must be stated.
+- Unilateral CVA is $\text{LGD}_C\int_0^T E[D(t)E_t]\,dPD_C(t)$; on a 10m 5-year payer swap with a 150bp counterparty it is 8,994 (semi-analytic, from swaption prices), with the Monte Carlo within 0.4%; the spread-times-exposure shortcut gives 9,491.
+- Bilateral CVA subtracts DVA (2,925 here), with or without first-to-default survival weighting (5,934 against 6,069); DVA rises when your own credit worsens (by 6,149 here if your hazard went from 1.5% to 5%) and is derecognised from CET1 (CAP30.15).
+- Wrong-way risk changes CVA at an unchanged default curve: in a Hull-White hazard model that only moves the dependence parameter, CVA went from about 8,990 (independent) to about 20,310 (strong wrong-way) and about 4,870 (right-way).
+- FVA, MVA and KVA are funding and capital costs over the trade's life: here about 2,379, 3,871 and 18,130, so capital dominates; the total of about 30,450 is about 6.58bp a year on the swap rate.
 
 ## Learning objectives
 
-- Formulate the unified master XVA valuation equation across CVA, DVA, FVA, MVA, and KVA.
-- Derive unilateral and bilateral CVA integrals using risk-neutral discount factors, Expected Exposure profiles, and hazard rates.
-- Explain the Debit Valuation Adjustment (DVA) paradox and analyze the practical limits of hedging own credit risk.
-- Structure Funding Valuation Adjustment (FVA), differentiating Funding Cost Adjustment (FCA) from Funding Benefit Adjustment (FBA).
-- Formulate Margin Valuation Adjustment (MVA) based on forward-simulated ISDA SIMM initial margin profiles.
-- Formulate Capital Valuation Adjustment (KVA) as the lifetime hurdle cost of holding regulatory capital (SA-CCR and CVA capital).
-- Architect an enterprise XVA desk workflow, including pre-trade incremental pricing, internal transfer charges, and Greek hedging.
+- Formulate the master XVA valuation equation across CVA, DVA, FVA, MVA, and KVA, and say which terms are prices and which are costs.
+- Derive unilateral and bilateral CVA integrals using discount factors, Expected Exposure profiles, and hazard rates.
+- Explain the DVA paradox, its regulatory treatment and the limits of hedging own credit risk.
+- Structure FVA as FCA and FBA and explain its overlap with DVA.
+- Formulate MVA from simulated initial margin and KVA from simulated regulatory capital.
+- Quantify wrong-way risk with a model that holds the default curve fixed.
+- Price incrementally at the netting-set level and describe the XVA desk's workflow and hedges.
 
 ## Core concepts
 
-### The Master XVA Fair-Value Equation
+### The XVA stack
 
-Prior to the 2008 financial crisis, derivatives were valued under the single-curve Black-Scholes or Libor framework, implicitly assuming that financial institutions were default-free and possessed unlimited funding at the risk-free rate.
-In modern post-crisis markets, uncollateralized derivative transactions are priced by adjusting the idealized risk-free value $V_{\text{risk-free}}$ by the full spectrum of valuation adjustments:
+$$V = V_{\text{rf}} - \text{CVA} + \text{DVA} - \text{FVA} - \text{MVA} - \text{KVA},$$
 
-$$V_{\text{actual}} = V_{\text{risk-free}} - \text{CVA} + \text{DVA} - \text{FVA} - \text{MVA} - \text{KVA} - \text{LVA}$$
+where $V_{\text{rf}}$ is the value of the trade under perfect collateralisation (discounted at the collateral rate) and $\text{FVA} = \text{FCA} - \text{FBA}$.
 
-```mermaid
-flowchart TD
-  RF[Risk-Free Present Value: V_riskfree] --> CVA[Subtract CVA: Counterparty Default Risk]
-  RF --> DVA[Add DVA: Bank Own Default Benefit]
-  RF --> FVA[Subtract FVA: Net Treasury Funding Cost]
-  RF --> MVA[Subtract MVA: Cost of Initial Margin]
-  RF --> KVA[Subtract KVA: Cost of Regulatory Capital]
-  CVA & DVA & FVA & MVA & KVA --> Total[Total Exit Fair Value: V_actual]
-```
-
-| Valuation Adjustment | Economic Driver | Sign | Hedging Instrument |
+| Adjustment | Economic driver | Exposure input | Typical hedge |
 | :--- | :--- | :--- | :--- |
-| **CVA (Credit)** | Expected loss from counterparty default | Negative (cost) | Single-name CDS, CDX index |
-| **DVA (Debit)** | Benefit from bank's own default option | Positive (benefit) | Cannot legally short own debt |
-| **FVA (Funding)** | Uncollateralized funding spread over OIS | Net negative (cost) | Floating debt, Treasury repo |
-| **MVA (Margin)** | Cost to fund segregated Initial Margin (SIMM) | Negative (cost) | Term funding lines |
-| **KVA (Capital)** | Cost of equity hurdle on regulatory capital | Negative (cost) | Structural balance-sheet optimization |
-| **LVA (Liquidity)** | Collateral basis spread (e.g., SOFR vs FedFunds) | Variable | Collateral switch agreements |
+| CVA | counterparty default | discounted EE | single-name or index CDS, plus market-risk hedges of the exposure |
+| DVA | own default | discounted ENE | cannot sell protection on itself; proxies only |
+| FCA, FBA | unsecured funding of uncollateralised positions or their collateralised hedges | discounted EE and ENE | treasury funding, not hedged in the market |
+| MVA | funding segregated initial margin | expected discounted IM | IM optimisation (compression, clearing, collateral choice) |
+| KVA | return required on regulatory capital held for the trade | expected discounted capital | capital relief trades, netting, clearing |
 
-### Credit Valuation Adjustment (CVA)
-
-Credit Valuation Adjustment is the expected present value of the loss caused by counterparty default over the transaction lifetime $[0, T]$.
-Under the risk-neutral pricing measure $\mathbb{Q}$, assuming independence between market exposure and counterparty default:
-
-$$\text{CVA} = (1 - R_C) \int_0^T P(0, t) \, \text{EE}^*(t) \, d\text{PD}_C(t)$$
-
-where:
-- $R_C$ is the counterparty recovery rate (standard corporate recovery $R_C = 0.40 \implies \text{LGD} = 0.60$).
-- $P(0, t)$ is the risk-free discount factor to time $t$.
-- $\text{EE}^*(t) = \mathbb{E}^{\mathbb{Q}}[\max(V(t), 0)]$ is the risk-neutral Expected Exposure.
-- $d\text{PD}_C(t) = -\frac{d Q_C(t)}{dt} dt = \lambda_C(t) e^{-\int_0^t \lambda_C(s) ds} dt$ is the marginal probability density of counterparty default between $t$ and $t + dt$, calibrated to liquid single-name CDS spreads:
-
-$$\lambda_C(t) \approx \frac{S_{\text{CDS}}(t)}{1 - R_C}$$
-
-In discrete implementation over a time grid $0 = t_0 < t_1 < \dots < t_N = T$:
-
-$$\text{CVA} \approx (1 - R_C) \sum_{i=1}^N P(0, t_i^*) \left( \frac{\text{EE}(t_{i-1}) + \text{EE}(t_i)}{2} \right) [Q_C(t_{i-1}) - Q_C(t_i)]$$
-
-### Debit Valuation Adjustment (DVA) and the Accounting Paradox
-
-Bilateral contracts recognize that the bank itself may default before the counterparty.
-Debit Valuation Adjustment (DVA) is the expected present value of the gain to the bank (loss to the counterparty) if the bank defaults while the contract has negative value:
-
-$$\text{DVA} = (1 - R_B) \int_0^T P(0, t) \, \text{ENE}^*(t) \, d\text{PD}_B(t)$$
-
-where $\text{ENE}^*(t) = \mathbb{E}^{\mathbb{Q}}[\max(-V(t), 0)]$ is Expected Negative Exposure, and $\text{PD}_B(t)$ is the bank's own cumulative default probability calibrated to its senior unsecured bond or CDS spreads.
-Under IFRS 13 and US GAAP (ASC 820), fair-value accounting mandates the inclusion of non-performance risk, requiring banks to book DVA as an asset.
-
-#### The DVA Paradox
-When a bank's own creditworthiness deteriorates (its CDS spread widens from 50 bps to 300 bps):
-- $\text{PD}_B(t)$ surges, causing **DVA to increase**.
-- The bank records an **accounting mark-to-market gain** in its quarterly earnings, artificially boosting reported profits during acute institutional distress.
-- Conversely, when a bank strengthens and its credit spreads tighten, it must record a DVA accounting loss.
-- Furthermore, **DVA cannot be effectively hedged**: a bank cannot legally short its own stock or buy CDS protection on itself to hedge DVA delta without triggering insider trading and insolvency violations.
-
-### Funding Valuation Adjustment (FVA)
-
-Funding Valuation Adjustment accounts for the funding costs incurred when an uncollateralized client trade is hedged in the interdealer market under a collateralized CSA:
+CVA and DVA are fair-value adjustments under IFRS 13, which requires the fair value of a liability to reflect non-performance risk including the entity's own credit (IFRS 13 paragraph 42).
+Whether FVA belongs in fair value is an accounting policy question on which banks have differed (fair value is an exit price, and funding costs are specific to the holder), while KVA is a pricing and performance charge rather than an accounting entry; say which convention a number uses.
 
 ```mermaid
 flowchart LR
-  Client[Uncollateralized Client] -->|No Collateral Posted| Bank[Dealer Bank]
-  Bank -->|Posts Cash VM Daily| Street[Street Counterparty / CCP]
-  Treasury[Bank Treasury] -->|Lends Cash at OIS + s_funding| Bank
+    SIM["Exposure simulation: V, collateral, IM, capital per path and date"] --> AGG["Profiles: discounted EE, ENE, E[IM], E[capital]"]
+    CR["Credit curves: counterparty and own hazard rates"] --> CVA["CVA and DVA"]
+    AGG --> CVA
+    FUND["Funding spreads"] --> FVA["FCA, FBA, MVA"]
+    AGG --> FVA
+    HUR["Hurdle rate on capital"] --> KVA["KVA"]
+    AGG --> KVA
+    CVA --> PRICE["Incremental XVA quoted to sales: XVA(set + trade) - XVA(set)"]
+    FVA --> PRICE
+    KVA --> PRICE
+    CVA --> HEDGE["XVA desk hedges: CDS for spread risk, swaps and options for exposure risk"]
+    CVA --> CAPM["CVA capital (MAR50) on the same exposures"]
 ```
 
-Consider a dealer who sells an uncollateralized swap to an corporate client and hedges with an offsetting swap against a street dealer under a standard zero-threshold CSA.
-If market rates move such that the hedge has negative value to the street:
-1. The street requires the dealer to post cash Variation Margin equal to the mark-to-market liability.
-2. Because the corporate client posts zero collateral, the dealer must borrow cash from its bank treasury at unsecured funding rate $r_{\text{funding}} = r_{\text{OIS}} + s_{\text{funding}}$.
-3. The dealer posts this borrowed cash to the street, earning only the collateral interest rate (SOFR / OIS).
-4. The dealer incurs a continuous cash drag equal to the funding spread $s_{\text{funding}} = r_{\text{funding}} - r_{\text{OIS}}$.
+### CVA
 
-FVA decomposes into:
-- **Funding Cost Adjustment (FCA):** The cost of borrowing cash to fund positive exposure:
+With counterparty default time $\tau_C$, recovery $R_C$ and exposure $E_t = \max(V_t - C_t, 0)$, and assuming default is independent of exposure,
 
-$$\text{FCA} = \int_0^T s_{\text{borrow}}(t) \, P(0, t) \, \mathbb{E}^{\mathbb{Q}}[\max(V(t), 0)] \, dt$$
+$$\text{CVA} = (1 - R_C)\,E\left[D(\tau_C)E_{\tau_C}1\{\tau_C \le T\}\right] = \text{LGD}_C\int_0^T E[D(t)E_t]\,dPD_C(t).$$
 
-- **Funding Benefit Adjustment (FBA):** The benefit of receiving cash from the street and redeploying it into treasury operations:
+A flat hazard $\lambda$ gives $PD(t) = 1 - e^{-\lambda t}$, and the credit triangle $s \approx \lambda\,\text{LGD}$ ties it to the CDS spread: $\lambda = 2.5\%$ with LGD 60% is a 150bp spread, and a 5-year default probability of 0.117503.
+Discretised on the exposure grid,
 
-$$\text{FBA} = \int_0^T s_{\text{lend}}(t) \, P(0, t) \, \mathbb{E}^{\mathbb{Q}}[\max(-V(t), 0)] \, dt$$
+$$\text{CVA} \approx \text{LGD}_C\sum_k \tfrac12\left(\text{DEE}_{t_{k-1}} + \text{DEE}_{t_k}\right)\left(e^{-\lambda t_{k-1}} - e^{-\lambda t_k}\right).$$
 
-$$\text{FVA} = \text{FCA} - \text{FBA}$$
+The quick approximation $\text{CVA} \approx s\int_0^T \text{DEE}(t)\,dt$ ignores survival and overstates slightly.
 
-Under modern treasury conventions, many banks view FBA and DVA as overlapping accounting concepts for the same underlying funding option, leading to asymmetric pricing where dealers charge FCA on positive exposure but refuse to credit FBA on liabilities.
+### DVA and bilateral CVA
 
-### Margin Valuation Adjustment (MVA)
+DVA is the same integral on the negative side, with the bank's own default: $\text{DVA} = \text{LGD}_B\int_0^T E[D(t)\max(C_t - V_t, 0)]\,dPD_B(t)$.
+Two conventions for the bilateral adjustment:
 
-Under the global Uncleared Margin Rules (UMR) mandated by BCBS-IOSCO, non-cleared derivatives between financial entities require the bilateral posting of segregated **Initial Margin (IM)**.
-Initial Margin is calculated via the ISDA SIMM model to cover 10-day liquidation risk at a 99% confidence level.
-Unlike Variation Margin, Initial Margin is segregated in third-party custodian accounts and cannot be rehypothecated to fund ongoing operations.
-Margin Valuation Adjustment (MVA) is the expected cost of borrowing cash or pledging unencumbered securities to fund this regulatory initial margin over the trade life:
+- Simple: $\text{CVA} - \text{DVA}$ with each integral ignoring the other party's default.
+- First-to-default: each integrand is weighted by the other party's survival, because only the first default triggers the close-out.
 
-$$\text{MVA} = \int_0^T s_{\text{funding}}(t) \, P(0, t) \, \mathbb{E}^{\mathbb{Q}}[\text{IM}(t)] \, dt$$
+DVA rises when the bank's own spread widens, so a weakening bank reports gains; it cannot be hedged directly (a bank cannot buy meaningful protection on itself), and proxies such as indices of peer banks leave basis risk.
+Regulators remove it from capital: all accounting valuation adjustments on derivative liabilities from the bank's own credit risk are derecognised from CET1, and offsetting own-credit adjustments against counterparty CVA is not allowed (CAP30.15).
+Regulatory CVA for capital also excludes DVA (MAR50.3), as covered in [CVA Capital Charge](../17-Regulatory-Capital-Basel-and-FRTB/05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md).
 
-Because SIMM IM is a non-linear function of portfolio sensitivities at each future time step, computing $\mathbb{E}[\text{IM}(t)]$ requires simulating nested Monte Carlo exposures or training fast neural network approximations.
+### Wrong-way risk without moving the default curve
 
-### Capital Valuation Adjustment (KVA)
+Independence is the assumption that breaks first.
+Hull and White (2012) model the hazard as $\lambda(t) = \exp(a(t) + b\,V_t)$: $a(t)$ is recalibrated so the unconditional survival curve still matches the CDS curve, and $b$ alone controls the dependence ($b > 0$ wrong-way, $b < 0$ right-way).
+That is a one-change-at-a-time experiment: the code changes only $b$, re-solves $a(t)$ interval by interval (survival curve reproduced to $10^{-10}$), and reruns the same paths; $b = 0$ reproduces the independent CVA exactly.
 
-Under the Basel regulatory capital framework (Basel III / Basel IV), banks must maintain Common Equity Tier 1 (CET1) capital against derivative exposures:
-- Credit Risk Capital (via SA-CCR)
-- CVA Risk Capital (under the standard or basic CVA capital charge)
-- Market Risk Capital (FRTB)
+### FVA and its overlap with DVA
 
-Bank equity shareholders demand a return on equity (Cost of Capital, $\text{CoC}$, typically $8\%$ to $12\%$ per annum) that exceeds the risk-free rate.
-Capital Valuation Adjustment (KVA) is the cumulative discounted hurdle cost of holding regulatory capital over the entire life of the transaction:
+When a dealer trades uncollateralised with a client and hedges with a collateralised trade in the market, the hedge's variation margin must be funded when the client trade is in the money (the hedge is out of the money) and is received when it is not.
+If the dealer borrows at the collateral rate plus a spread $s_b$ and lends excess cash at the collateral rate plus $s_l$,
 
-$$\text{KVA} = \text{CoC} \int_0^T P(0, t) \, \mathbb{E}[\text{Capital}(t)] \, dt$$
+$$\text{FCA} = \int_0^T s_b(t)\,\text{DEE}(t)\,dt, \qquad \text{FBA} = \int_0^T s_l(t)\,\text{DENE}(t)\,dt$$
 
-Because regulatory capital depends on future net exposure, netting set composition, and counterparty credit rating migration, KVA represents a long-term capital charge passed directly to clients during pre-trade pricing.
+(optionally weighted by both parties' survival).
+Two debates: whether FVA belongs in value at all (Hull and White 2012 argue that funding costs should not affect the valuation of a derivative, by the same reasoning as Modigliani-Miller; Andersen, Duffie and Song 2019 show that funding costs are a real transfer from shareholders to creditors, so they belong in pricing to shareholders but not in a market value), and how FBA overlaps DVA.
+If the bank's funding spread is its own credit spread, $s_l = \lambda_B\,\text{LGD}_B$, and FBA is weighted by own survival, the two integrals are identical: $s_l\int\text{DENE}\,e^{-\lambda_B t}dt = \text{LGD}_B\int\text{DENE}\,\lambda_B e^{-\lambda_B t}dt = \text{DVA}$.
+On the example's grid both come to 2,925 (the code's two discretisations agree to better than a relative $10^{-6}$, which checks the quadrature, not the identity), so booking both counts the same benefit twice.
+Burgard and Kjaer (2011) derive the combined adjustment from a replication argument in which the outcome depends on how the bank funds and what it can repurchase on default.
 
-### Enterprise XVA Desk Architecture and Hedging
+### MVA
 
-To manage these complex multi-factor valuation adjustments, global investment banks establish centralized **XVA Desks**:
+Initial margin on non-cleared trades between covered entities is a 99% 10-day potential future exposure, exchanged gross and segregated (MGN20.9, MGN20.40 to MGN20.41), so it must be funded for the life of the trade:
 
-1. **Pre-Trade Pricing (Internal Transfer Pricing):** When a corporate sales desk quotes a 10-year uncollateralized swap, the pricing engine queries the central XVA engine to calculate incremental XVA:
+$$\text{MVA} = \int_0^T s_{IM}(t)\,E[D(t)\,\text{IM}_t]\,dt,$$
 
-$$\Delta \text{XVA} = \text{XVA}(\text{Netting Set} \cup \text{New Trade}) - \text{XVA}(\text{Netting Set})$$
+where $s_{IM}$ is the funding spread net of what posted IM earns.
+$\text{IM}_t$ is a nonlinear function of the portfolio's sensitivities at $t$, so $E[\text{IM}_t]$ needs IM computed on every path and date: by nested simulation, by regression of IM on path state, or with pathwise sensitivities (AAD) fed into a SIMM-style formula.
+The code uses a labelled delta-normal stand-in: $\text{IM}_t = z_{0.99}\,|\partial V_t/\partial x_t|\,\text{sd}(\Delta x \text{ over 10 days})$ on each path.
 
-The sales desk adds $\Delta \text{XVA}$ to the client quote and transfers the credit/funding risk to the XVA desk.
-2. **CVA Market Risk Hedging:** As interest rates or asset prices move, Expected Exposure fluctuates, altering CVA.
-The XVA desk delta-hedges market Greeks ($\frac{\partial \text{CVA}}{\partial S}$, $\frac{\partial \text{CVA}}{\partial r}$) in the liquid swap and equity futures markets.
-3. **CVA Credit Risk Hedging:** As counterparty credit spreads widen, CVA increases.
-The XVA desk hedges credit delta ($\frac{\partial \text{CVA}}{\partial S_{\text{CDS}}}$) by buying single-name CDS or proxy index baskets (CDX IG, iTraxx Europe).
+### KVA
+
+Capital held against the trade (counterparty credit capital from SA-CCR or IMM, CVA capital, market risk capital on hedges) must earn a hurdle rate $h$ in excess of what it earns invested:
+
+$$\text{KVA} = \int_0^T h\,E[D(t)\,K_t]\,dt.$$
+
+$K_t$ depends on the future state (SA-CCR replacement cost and multiplier depend on the future value), so it is simulated pathwise; in the example $K_t$ is SA-CCR EAD times an 8% charge at a 100% risk weight plus reduced BA-CVA with $RW = 3\%$ (MAR50.16, consumer goods and services, IG) and the 0.65 discount scalar (MAR50.14).
+KVA is not a market price: the hurdle rate is a management choice, so KVA belongs to pricing and performance measurement.
+
+### The XVA desk
+
+- Pricing: sales request a quote, the engine prices the incremental $\Delta\text{XVA} = \text{XVA}(\text{set} + \text{trade}) - \text{XVA}(\text{set})$ against the existing netting set, and the charge is added to the client price.
+- Hedging: CVA moves with the counterparty spread (hedged with CDS) and with every market factor that moves exposure (hedged with swaps, FX forwards, options); CVA sensitivities come from AAD or bump-and-revalue of the whole simulation with common random numbers, and SA-CVA capital uses the same sensitivities (MAR50.47 FAQ1).
+- Jump to default is not hedged by spread delta: when a counterparty defaults the CVA becomes a realised loss in one step.
 
 ## Worked examples
 
-### Example 1: Bilateral CVA and DVA Numerical Evaluation
+All numbers are printed and asserted by `python 11-Risk-and-Trading/code/risk_xva_pricing.py`; the exposure model is the Hull-White swap of [Counterparty Credit Risk Analytics](14-Counterparty-Credit-Risk-Analytics.md): 10m 5-year quarterly payer at the par rate, 50,000 paths.
 
-Using the reference implementation in `code/exposure_xva.py`, evaluate the Bilateral CVA and DVA for a 5-year interest rate swap with notional $\$10,000,000$.
-Parameters:
-- Flat risk-free discount rate: $r = 3.50\%$ ($P(0, t) = e^{-0.035 t}$).
-- Counterparty hazard rate: $\lambda_C = 2.50\%$ per annum (par CDS spread $\approx 150$ bps), recovery rate $R_C = 40\%$ ($LGD_C = 0.60$).
-- Bank own hazard rate: $\lambda_B = 1.50\%$ per annum (bank CDS spread $\approx 90$ bps), recovery rate $R_B = 40\%$ ($LGD_B = 0.60$).
-- Swap exposure profile generated with $1,000$ paths and seed 42 exhibits peak Expected Exposure of $\$159,124.02$ at Year 2.3 (and $\$153,456.89$ at Year 2.5).
-Evaluate CVA, DVA, and Net Bilateral Adjustment.
+### Example 1: unilateral and bilateral CVA
 
-**Solution:**
+Counterparty hazard 2.5% (150bp), bank hazard 1.5% (90bp), both LGD 60%.
 
-Step 1: Compute marginal default probabilities:
-Over each interval $[t_i, t_{i+1}]$:
+1. Discounted EE from the Jamshidian swaption prices, integrated against the default probabilities on the quarterly grid: CVA 8,994.
+2. The same integral on the simulated profile: about 8,965, a relative gap of $-0.0032$.
+3. DVA from the receiver swaptions (discounted ENE): 2,925 (simulation about 2,934).
+4. Simple bilateral adjustment: $8{,}994 - 2{,}925 = 6{,}069$; first-to-default: $8{,}712 - 2{,}778 = 5{,}934$.
+5. Shortcut $s\int\text{DEE}\,dt$ with $s = 150$bp: 9,491, 5.5% high because it ignores survival.
+6. CS01: a 1bp wider counterparty spread raises CVA by 56.74, the notional of 5-year CDS protection the desk would buy is the amount whose CS01 matches it.
+7. As a running spread: with annuity $\sum\tau_i P(0, t_i) = 4.6295$, the bilateral 6,069 is 1.31bp a year on 10m.
+8. DVA paradox: if the bank's own hazard rose to 5%, DVA would be 9,074, a gain of 6,149 from its own deterioration.
 
-$$d\text{PD}_C(t) = e^{-\lambda_C t_i} - e^{-\lambda_C t_{i+1}}$$
+### Example 2: wrong-way risk at a fixed default curve
 
-$$d\text{PD}_B(t) = e^{-\lambda_B t_i} - e^{-\lambda_B t_{i+1}}$$
+Hazard $\lambda_t = \exp(a_t + b\,V_t/N)$ on each quarter, $a_t$ recalibrated so the survival curve stays $e^{-0.025t}$; exposure at the end of each interval.
 
-Over 5 years:
-- Counterparty 5-year cumulative default probability: $1 - e^{-0.025 \times 5} = 1 - e^{-0.125} \approx 1 - 0.8825 = 11.75\%$.
-- Bank 5-year cumulative default probability: $1 - e^{-0.015 \times 5} = 1 - e^{-0.075} \approx 1 - 0.9277 = 7.23\%$.
+| $b$ | CVA (about) |
+| ---: | ---: |
+| $-20$ (right-way) | 4,870 |
+| 0 (independent) | 8,990 |
+| $+20$ (wrong-way) | 14,510 |
+| $+40$ (wrong-way) | 20,310 |
 
-Step 2: Numerical integration of CVA:
-From trapezoidal quadrature in `exposure_xva.py`:
+The payer swap is in the money when rates have risen, so $b > 0$ describes a counterparty that weakens as rates rise.
+With $b = 40$ the CVA is 2.26 times the independent value although the counterparty's spread curve, the exposure paths and the recovery are identical: the difference is only the dependence.
 
-$$\text{CVA} = 0.60 \sum_{i=1}^{50} e^{-0.035 t_i^*} \left( \frac{\text{EE}_{i-1} + \text{EE}_i}{2} \right) d\text{PD}_C(t_i) = \$7,336.14$$
+### Example 3: FVA, MVA, KVA and the all-in charge
 
-Step 3: Numerical integration of DVA:
-Because the payer swap has symmetric receiver value under negative rate shocks, Expected Negative Exposure mirrors EE:
-
-$$\text{DVA} = 0.60 \sum_{i=1}^{50} e^{-0.035 t_i^*} \left( \frac{\text{ENE}_{i-1} + \text{ENE}_i}{2} \right) d\text{PD}_B(t_i) = \$4,457.21$$
-
-Step 4: Net Bilateral Adjustment:
-
-$$\text{Net Adjustment} = \text{DVA} - \text{CVA} = \$4,457.21 - \$7,336.14 = -\$2,878.93$$
-
-The bank deducts $\$2,878.93$ from the risk-free mark-to-market value of the swap to reflect net counterparty default exposure.
-
-### Example 2: Pre-Trade Incremental MVA and FVA Pricing
-
-A corporate client requests a 5-year uncollateralized interest rate swap with an expected positive exposure of $\text{EPE} = \$200,000$ and notional $N = \$10,000,000$.
-The dealer must hedge the trade in the interdealer market under a collateralized CSA requiring daily variation margin.
-Parameters:
-- Bank unsecured borrowing funding spread: $s_{\text{funding}} = 80 \text{ bps/year} = 0.0080$.
-- Average discount factor: $P(0, 2.5) \approx 0.916$.
-- Average initial margin required by street clearing broker: $\mathbb{E}[\text{IM}] = \$150,000$.
-- Cost of funding initial margin: $s_{\text{margin}} = 100 \text{ bps/year} = 0.0100$.
-- Trade tenor $T = 5.0$ years.
-
-Compute the incremental FVA and MVA charges that must be added to the trade price.
-
-**Solution:**
-
-Step 1: Compute Funding Valuation Adjustment (FVA / FCA):
-
-$$\text{FCA} \approx s_{\text{funding}} \times \text{EPE} \times P(0, T/2) \times T$$
-
-$$\text{FCA} \approx 0.0080 \times \$200,000 \times 0.916 \times 5.0 = \$1,600 \times 4.580 \approx \$7,328.00$$
-
-Step 2: Compute Margin Valuation Adjustment (MVA):
-
-$$\text{MVA} \approx s_{\text{margin}} \times \mathbb{E}[\text{IM}] \times P(0, T/2) \times T$$
-
-$$\text{MVA} \approx 0.0100 \times \$150,000 \times 0.916 \times 5.0 = \$1,500 \times 4.580 \approx \$6,870.00$$
-
-Step 3: Total Funding and Margin Charge:
-
-$$\text{Total Funding Cost} = \text{FCA} + \text{MVA} = \$7,328 + \$6,870 = \$14,198.00$$
-
-For a swap notional of $N = \$10,000,000$ and the midpoint annuity proxy $A = T \times P(0, T/2) = 5.0 \times 0.916 = 4.58$, this upfront fee translates to a running spread of $\frac{\$14,198}{\$10,000,000 \times 4.58} \approx 0.000310$ or $3.10 \text{ bps}$ added to the fixed rate paid by the client.
+1. Funding spread 80bp both ways: FCA 5,062, FBA 2,683, FVA 2,379; weighting by both survivals cuts FCA to 4,647.
+2. FBA at the bank's own credit spread (90bp) weighted by its survival: 2,925, equal to DVA because the two integrals are the same (see the core concepts), which is the double-counting argument.
+3. Initial margin today from the delta-normal stand-in: 191,334, close to the MGN20.16 schedule's 2% of notional, 200,000 (the swap's annuity of 4.6295 years puts it in the 2 to 5 year duration bucket); expected discounted IM at 2.5 years about 97,300; MVA at 80bp about 3,871.
+4. Capital today: SA-CCR EAD 309,679, counterparty credit capital 24,774, BA-CVA capital 19,082; KVA at a 10% hurdle about 18,130.
+5. Total XVA $\approx 6{,}069 + 2{,}379 + 3{,}871 + 18{,}130 \approx 30{,}450$, about 6.58bp a year: capital, not credit, is the largest cost of this trade.
+6. Incrementally, on the same simulated paths, adding a 2-year receiver swap to the netting set lowers CVA from about 8,965 to about 7,870, an incremental CVA of about $-1{,}100$ although the receiver's stand-alone CVA is about 528.
 
 ## Pitfalls
 
-- **Double Counting DVA and FBA:** Booking both full DVA and full Funding Benefit Adjustment (FBA) double counts the bank's own default option, as funding liabilities cannot be defaulted on independently of derivative obligations.
-- **Treating Unilateral CVA as Sufficient Under Accounting Standards:** US GAAP (ASC 820) and IFRS 13 mandate bilateral pricing including non-performance risk (DVA); ignoring DVA produces non-compliant regulatory audits.
-- **Ignoring Incremental Netting Effects in Pre-Trade Pricing:** Quoting XVA on a standalone trade basis rather than calculating incremental impact on the existing netting set ($\Delta \text{XVA}$) causes the desk to turn away valuable risk-reducing trades.
-- **Static Exposure Profiling in MVA Simulation:** Using initial day-1 SIMM margin for all 5 years of an amortizing trade severely overcharges MVA by ignoring portfolio decay.
-- **Overlooking Unhedged Jump-to-Default in CVA Greeks:** Delta-hedging CVA using infinitesimal CDS spread sensitivities without hedging jump-to-default risk leaves the desk exposed to massive losses when a counterparty unexpectedly defaults.
+- Mixing conventions: unilateral or bilateral, first-to-default or not, survival-weighted funding or not; state them.
+- Booking FBA and DVA in full when the funding spread is own credit: the same benefit twice.
+- Pricing XVA trade by trade: a risk-reducing trade gets a positive charge instead of a credit (incremental CVA $-1{,}100$ in Example 3).
+- Using today's IM or capital for the whole life: both decay with the trade and move with the market, so use simulated profiles.
+- Assuming independence of default and exposure: in Example 2 the dependence alone more than doubled CVA.
+- Hedging CVA spread delta and calling it hedged: jump to default remains.
+- Using credit-triangle shortcuts for limits or capital: they ignore survival and the shape of the profile.
+- Treating KVA as a market price: the hurdle rate is internal, so KVA numbers from two banks are not comparable.
 
 ## Interview questions
 
-> [!question]- risk-xva-master-equation-components | State the master XVA valuation equation and define the economic rationale for each adjustment term.
-> $V_{\text{actual}} = V_{\text{risk-free}} - \text{CVA} + \text{DVA} - \text{FVA} - \text{MVA} - \text{KVA}$. CVA deducts expected losses from counterparty default. DVA adds the benefit from the bank's own default option on negative mark-to-market liabilities. FVA prices the funding spread incurred borrowing collateral for street hedges against uncollateralized clients. MVA prices the cost of funding segregated initial margin (SIMM). KVA charges for the shareholder cost of holding regulatory equity capital over the trade life.
+> [!question]- risk-xva-master-equation-components | State the master XVA valuation equation and the economic rationale for each adjustment term.
+> $V = V_{\text{rf}} - \text{CVA} + \text{DVA} - \text{FVA} - \text{MVA} - \text{KVA}$, with $V_{\text{rf}}$ the fully collateralised value.
+> CVA: expected loss from counterparty default; DVA: the mirror for own default; FVA: funding uncollateralised exposure (FCA minus FBA); MVA: funding segregated initial margin; KVA: return required on capital held for the trade.
+> CVA and DVA are IFRS 13 fair value; FVA in fair value is an accounting policy choice; KVA is a pricing charge only.
 
 > [!question]- risk-dva-paradox-explanation | What is the DVA paradox, and why can banks not easily hedge DVA?
-> The DVA paradox arises because DVA increases when a bank's own credit spread widens. Under fair-value accounting (IFRS 13), this generates paper mark-to-market profits during acute distress. DVA cannot be dynamically hedged in practice because doing so would require the bank to buy CDS protection on its own debt, which is legally prohibited and market-infeasible.
+> DVA rises when the bank's own credit worsens, so a weakening bank books gains: in the example DVA goes from 2,925 to 9,074 if its hazard rises from 1.5% to 5%.
+> It cannot be hedged directly because a bank cannot meaningfully buy protection on itself; peer-bank proxies leave basis risk.
+> CET1 derecognises it and forbids netting it against CVA (CAP30.15).
 
-> [!question]- risk-fva-piterbarg-debate | What is the core economic debate surrounding Funding Valuation Adjustment (FVA) initiated by Piterbarg (2010)?
-> Piterbarg proved that uncollateralized derivatives must be discounted at the dealer's unsecured borrowing rate rather than OIS. Modern finance academics argued that under Modigliani-Miller, individual projects should be discounted based on their asset risk rather than the firm's funding costs. Practitioners demonstrated that in real dealer banks, treasury operates under hard cash constraints: funding costs cannot be diversified away and must be priced to avoid negative cash flow bleeding.
+> [!question]- risk-fva-piterbarg-debate | What is the core debate around Funding Valuation Adjustment?
+> Piterbarg (2010) showed that collateral terms change the discounting rate, so a collateralised trade discounts at the collateral rate and funding spreads enter uncollateralised pricing; that put funding into derivative valuation.
+> Hull and White (2012) argued that funding costs should not affect a derivative's value, by Modigliani-Miller reasoning; Andersen, Duffie and Song (2019) showed funding costs are a real transfer from shareholders to creditors, so they belong in the price a dealer charges but not in the market value.
+> Whatever the policy, the FBA-DVA overlap must be handled consistently.
 
-> [!question]- risk-mva-calculation-driver | Why did Margin Valuation Adjustment (MVA) become a major pricing driver following Uncleared Margin Rules (UMR)?
-> UMR mandated that financial counterparties exchange bilateral, segregated Initial Margin (IM) calculated via ISDA SIMM. Because IM is locked in third-party custodian accounts and cannot be rehypothecated to fund operations, dealers must raise dedicated term debt or pledge unencumbered cash. Over a 10-year trade, funding hundreds of millions in regulatory margin creates a massive cash drag that must be priced upfront via MVA.
+> [!question]- risk-mva-calculation-driver | Why did Margin Valuation Adjustment (MVA) become a major pricing driver following the uncleared margin rules?
+> Covered entities must exchange initial margin equal to a 99% 10-day potential future exposure (MGN20.9), gross and segregated, with rehypothecation only under strict conditions (MGN20.40 to MGN20.41), so it has to be funded for the trade's life.
+> For the 10m 5-year swap example, IM starts near 191,334 and MVA at an 80bp funding spread is about 3,871.
 
-> [!question]- risk-kva-cost-of-capital-driver | How is Capital Valuation Adjustment (KVA) formulated, and what is the typical Cost of Capital hurdle rate?
-> KVA is formulated as $\text{KVA} = \text{CoC} \int_0^T P(0, t) \mathbb{E}[\text{Capital}(t)] dt$, where $\text{Capital}(t)$ is the regulatory capital required under Basel standards (SA-CCR, CVA capital, and FRTB). The Cost of Capital ($\text{CoC}$) reflects the return on equity demanded by bank shareholders, historically calibrated between $8\%$ and $12\%$ per annum.
+> [!question]- risk-kva-cost-of-capital-driver | How is Capital Valuation Adjustment (KVA) formulated, and what drives it?
+> $\text{KVA} = \int_0^T h\,E[D(t)K_t]\,dt$, with $K_t$ the simulated regulatory capital (counterparty credit, CVA, market risk on hedges) and $h$ the hurdle rate in excess of what capital earns.
+> In the example (SA-CCR capital plus reduced BA-CVA, $h = 10\%$) KVA is about 18,130, the largest component of a total of about 30,450.
+> $h$ is a management choice, so KVA is a pricing charge, not a market price.
 
 > [!question]- risk-incremental-xva-pricing | Why must XVA be priced incrementally at the netting set level rather than on a standalone trade basis?
-> XVA is deeply non-linear due to netting and collateralization. Adding a new trade that opposes existing positions reduces aggregate Expected Exposure, producing negative incremental CVA ($\Delta \text{CVA} < 0$). Pricing on a standalone basis would treat the trade as an additional cost, leading the bank to uncompetitively overprice trades that actually reduce overall firm risk.
+> Exposure, collateral and capital are computed per netting set, so a trade's cost is $\text{XVA}(\text{set} + \text{trade}) - \text{XVA}(\text{set})$, which can be negative.
+> Adding a 2-year receiver to the 5-year payer lowered CVA by about 1,100 although the receiver's stand-alone CVA was about 528.
 
 > [!question]- risk-cva-greeks-market-vs-credit | Differentiate CVA market risk Greeks from CVA credit risk Greeks.
-> CVA market risk Greeks ($\frac{\partial \text{CVA}}{\partial S}$, $\frac{\partial \text{CVA}}{\partial r}$) measure sensitivity to changes in the underlying market variables that drive Expected Exposure; they are hedged using standard vanilla swaps, futures, and options. CVA credit risk Greeks ($\frac{\partial \text{CVA}}{\partial S_{\text{CDS}}}$) measure sensitivity to counterparty hazard rates and credit spreads; they are hedged using single-name CDS and index tranches.
+> Market Greeks are sensitivities of CVA to the factors that move exposure (rates, FX, vols), hedged with swaps, forwards and options; credit Greeks are sensitivities to the counterparty's spread curve, hedged with CDS.
+> In the example the CVA CS01 is 56.74 per bp; cross-gamma between spread and exposure (wrong-way risk) and jump to default are what the simple hedges miss.
 
 > [!question]- risk-unilateral-vs-bilateral-cva | Contrast unilateral CVA with bilateral CVA.
-> Unilateral CVA assumes the bank is default-free ($\text{PD}_B = 0$) and equals $(1 - R_C) \int_0^T P(0, t) \, \text{EE}^*(t) \, d\text{PD}_C(t)$. The bilateral charge in this note is that unilateral CVA minus DVA, with DVA equal to $(1 - R_B) \int_0^T P(0, t) \, \text{ENE}^*(t) \, d\text{PD}_B(t)$. Neither integral is multiplied by the survival of the other party.
+> Unilateral: the bank is default-free; $\text{LGD}_C\int\text{DEE}\,dPD_C$, 8,994 in the example.
+> Bilateral: subtract DVA, either ignoring the other party's default (6,069 here) or weighting each side by the other's survival because only the first default matters (5,934 here).
+> Regulatory CVA for capital is unilateral (no DVA, MAR50.3).
 
-> [!question]- risk-fca-vs-fba-asymmetry | Why do many bank XVA desks charge clients for FCA but refuse to credit clients for FBA?
-> FCA is an actual cash outflow paid to treasury when borrowing cash to post collateral. FBA represents a hypothetical funding benefit when receiving collateral from the street. However, in practice, a bank cannot readily monetize this liquidity unless treasury has an immediate commercial use for it. To prevent speculative dependency on unmonetizable liabilities, desks price FCA conservatively while damping or zeroing FBA.
+> [!question]- risk-fca-vs-fba-asymmetry | Why do many bank XVA desks charge clients for FCA but give little or no credit for FBA?
+> FCA is a cash cost when the bank funds hedge margin at its unsecured spread; FBA assumes excess cash can be deployed at that spread, which treasury may not be able to do.
+> And if the funding spread is the bank's own credit spread, FBA overlaps DVA: in the example FBA at 90bp with own-survival weighting is 2,925, equal to DVA, so booking both double counts.
 
-> [!question]- risk-nested-monte-carlo-mva-challenge | Why does computing MVA pose a massive nested Monte Carlo computational challenge?
-> Calculating MVA requires knowing the Expected Initial Margin $\mathbb{E}[\text{IM}(t)]$ at future dates $t$. Under ISDA SIMM, Initial Margin at time $t$ is calculated from portfolio sensitivities (Greeks) at time $t$. Computing future Greeks traditionally requires an inner simulation across the yield surface for every outer scenario path, creating an $O(N_{\text{outer}} \times N_{\text{inner}})$ nested simulation bottleneck that necessitates AAD or machine learning regression.
+> [!question]- risk-nested-monte-carlo-mva-challenge | Why does computing MVA pose a nested Monte Carlo challenge?
+> IM at a future date is a function of the portfolio's sensitivities there, which in principle need an inner valuation on every outer path and date.
+> Engines avoid the nesting with pathwise sensitivities (AAD) fed into the IM formula, regressions of IM on path state, or proxies such as the delta-normal IM used in the example.
 
-> [!question]- risk-xva-unilateral-vs-bilateral-integral | Contrast the mathematical integrals for unilateral CVA versus bilateral CVA and DVA.
-> Unilateral CVA integrates counterparty default loss assuming the bank is default-free: $\text{CVA} = (1 - R_C) \int_0^T P(0, t) \text{EE}(t) d\text{PD}_C(t)$. Bilateral accounting introduces the bank's own default option through Debit Valuation Adjustment: $\text{DVA} = (1 - R_B) \int_0^T P(0, t) \text{ENE}(t) d\text{PD}_B(t)$. Net bilateral fair value adjustment equals $\text{DVA} - \text{CVA}$, directly deducting net credit exposure from risk-free mark-to-market.
+> [!question]- risk-cva-semi-analytic-check | How would you validate the CVA of a simple swap produced by a Monte Carlo XVA engine?
+> Replace the simulated discounted EE by closed-form swaption prices at each grid date (Jamshidian under Hull-White) and redo the integral: 8,994 semi-analytic against about 8,965 from the simulation.
+> A gap well outside Monte Carlo error points at discounting, grid or payment-timing bugs.
 
-> [!question]- risk-fca-vs-fba-asymmetric-pricing | Why do institutional dealers routinely charge clients FCA while zeroing or dampening FBA credits?
-> Funding Cost Adjustment (FCA) is an actual cash outflow paid to corporate treasury when borrowing uncollateralized funds to post variation margin on street hedges. Funding Benefit Adjustment (FBA) represents a hypothetical treasury saving from receiving street collateral. In practice, dealers cannot reliably monetize incoming collateral unless treasury has an immediate commercial borrowing deficit, leading risk committees to conservatively price FCA while heavily haircutting FBA.
+> [!question]- risk-credit-triangle-cva | What is the quick CVA approximation, and how good is it?
+> $\text{CVA} \approx s\int_0^T\text{DEE}(t)\,dt$ with $s = \lambda\,\text{LGD}$, which drops the survival probability from the default density.
+> For the 5-year swap with $s = 150$bp it gives 9,491 against 8,994, 5.5% high; the error grows with spread and maturity.
 
-> [!question]- risk-kva-capital-hurdle-coc | Formulate the lifetime KVA integral and identify the typical shareholder Cost of Capital hurdle rate.
-> Capital Valuation Adjustment prices the shareholder return demanded for holding regulatory equity capital: $\text{KVA} = \text{CoC} \int_0^T P(0, t) \mathbb{E}[\text{Capital}(t)] dt$. Here, $\mathbb{E}[\text{Capital}(t)]$ reflects forward-simulated Basel regulatory capital requirements (SA-CCR, CVA capital, and FRTB market risk), and $\text{CoC}$ represents the hurdle rate above the risk-free return demanded by equity investors (historically calibrated between 8% and 12%).
+> [!question]- risk-wwr-hull-white-control | How would you measure the effect of wrong-way risk on CVA without changing the counterparty's credit curve?
+> Use a hazard model $\lambda_t = \exp(a_t + bV_t)$ and recalibrate $a_t$ so the unconditional survival curve is unchanged (Hull and White 2012); then only $b$ moves.
+> In the example CVA was about 4,870 at $b = -20$, about 8,990 at $b = 0$ and about 20,310 at $b = 40$, with the survival curve reproduced to $10^{-10}$.
 
-> [!question]- risk-pre-trade-incremental-xva-workflow | How does an enterprise XVA desk compute incremental XVA for new client quotes at the netting set level?
-> The XVA engine simulates future portfolio exposure across the existing counterparty netting set, computing base XVA. It then inserts the prospective trade and re-evaluates the entire netting set, calculating incremental charge $\Delta \text{XVA} = \text{XVA}(\text{Netting Set} \cup \text{New Trade}) - \text{XVA}(\text{Netting Set})$. If the new trade offsets existing market delta, $\Delta \text{XVA}$ can be negative, allowing sales to offer an aggressive, risk-reducing quote.
+> [!question]- risk-fba-dva-overlap | Show that FBA and DVA can be the same number.
+> If the bank lends at its own credit spread $s = \lambda_B\,\text{LGD}_B$ and weights by its own survival, $s\int\text{DENE}\,e^{-\lambda_B t}dt = \text{LGD}_B\int\text{DENE}\,\lambda_B e^{-\lambda_B t}dt = \text{DVA}$.
+> The equality is exact in continuous time; on the example's grid both are 2,925, and the numerical match only checks the quadrature.
 
-> [!question]- risk-cva-credit-spread-delta-hedging | How does an XVA desk hedge counterparty credit spread risk, and what instruments are used?
-> The sensitivity of CVA to counterparty credit spreads is credit delta: $\frac{\partial \text{CVA}}{\partial S_{\text{CDS}}} \approx (1 - R_C) \int_0^T P(0, t) \text{EE}(t) \frac{\partial d\text{PD}_C(t)}{\partial S_{\text{CDS}}}$. The XVA desk hedges this risk by purchasing single-name CDS protection on the counterparty or, when illiquid, shorting liquid credit index tranches (CDX Investment Grade or iTraxx Europe) weighted by sector and rating betas.
+> [!question]- risk-xva-running-spread | How do you turn an upfront XVA charge into a spread on a swap rate?
+> Divide by notional times the swap annuity: here $\sum\tau_i P(0, t_i) = 4.6295$, so a 30,450 total charge on 10m is about 6.58bp a year and the bilateral CVA alone (6,069) is 1.31bp.
 
-> [!question]- risk-jump-to-default-cva-risk | What is jump-to-default risk in CVA management, and why is infinitesimal delta hedging insufficient?
-> Infinitesimal CDS spread delta hedging protects against continuous, small credit spread fluctuations. If a counterparty suddenly defaults without warning (a jump-to-default), the CDS spread jumps to infinity and the full replacement exposure $\text{LGD} \times \max(V, 0)$ is immediately realized. A continuous delta hedge sized only for local spread moves suffers a catastrophic loss, requiring the desk to hold jump-to-default notional protection.
+> [!question]- risk-dva-cet1-derecognition | How does Basel treat DVA in regulatory capital?
+> CET1 derecognises unrealised gains and losses from changes in own credit on fair-valued liabilities and all accounting valuation adjustments on derivative liabilities from own credit, with no offset against counterparty CVA (CAP30.15).
+> Regulatory CVA for the CVA capital charge excludes DVA too (MAR50.3).
 
-## Further reading
+> [!question]- risk-cva-cs01-hedge | Your CVA on a counterparty is 8,994 and rises by 56.74 for a 1bp wider spread. How do you hedge it, and what is left?
+> Buy CDS protection on the counterparty (or a proxy) with a matching CS01 of 56.74 per bp, and hedge the exposure's market sensitivities with swaps.
+> Left: jump to default (the CVA becomes a realised loss of the exposure at default), basis to proxies, the cross-gamma between spread and exposure, and the change in CS01 as exposure moves.
 
-- Jon Gregory, *The xVA Challenge: Counterparty Credit Risk, Funding, Collateral and Capital*, 4th Edition.
-- Andrew Green, *XVA Desks: A New Order for Derivatives*, Palgrave Macmillan.
-- Vladimir Piterbarg (2010), "Funding Beyond Discounting: Collateral Agreements and Derivatives Pricing", *Risk Magazine*.
-- Leif Andersen and Mark Piterbarg, *Interest Rate Modeling, Volume I: Foundations and Vanilla Models*, Chapters 18-20.
-- Darrell Duffie and Kenneth J. Singleton, *Credit Risk: Pricing, Measurement, and Management*, Chapter 8.
+> [!question]- risk-xva-unilateral-vs-bilateral-integral | Contrast the integrals for unilateral CVA and for bilateral CVA and DVA.
+> Unilateral: $\text{CVA} = \text{LGD}_C\int_0^T E[D(t)E_t]\,dPD_C(t)$, 8,994 in the swap example.
+> DVA is the same on the negative side with the bank's default: $\text{LGD}_B\int_0^T E[D(t)\max(-V_t, 0)]\,dPD_B(t)$, 2,925.
+> The bilateral deduction from the default-free value is $\text{CVA} - \text{DVA} = 6{,}069$, or 5,934 if each side is weighted by the other's survival (first-to-default).
+
+> [!question]- risk-fca-vs-fba-asymmetric-pricing | Why do dealers often charge FCA in full but haircut FBA?
+> FCA is a real cost of funding hedge margin at the bank's unsecured spread; FBA assumes excess cash can be redeployed at that spread, which treasury may not be able to do, and it overlaps DVA when the spread is the bank's own credit.
+> In the example, at 80bp both ways, FCA is 5,062 and FBA 2,683; a desk that credits no FBA charges 5,062 instead of the symmetric 2,379.
+
+> [!question]- risk-kva-capital-hurdle-coc | Formulate the lifetime KVA integral and say what sets the hurdle rate.
+> $\text{KVA} = \int_0^T h\,E[D(t)K_t]\,dt$, with $K_t$ the simulated regulatory capital (SA-CCR counterparty credit, CVA capital, market risk on hedges) and $h$ the return required on capital in excess of what it earns.
+> $h$ is set by management from the bank's cost of equity, so KVA is a pricing charge, not a market price; at a labelled 10% the swap example's KVA is about 18,130.
+
+> [!question]- risk-pre-trade-incremental-xva-workflow | How does an XVA desk compute incremental XVA for a new client quote?
+> Re-simulate the existing netting set with and without the trade on the same paths (common random numbers) and charge $\text{XVA}(\text{set} + \text{trade}) - \text{XVA}(\text{set})$; fast engines reuse the stored set profile and add the trade pathwise.
+> The charge can be negative: adding a 2-year receiver to the 5-year payer lowered CVA by about 1,100.
+
+> [!question]- risk-cva-credit-spread-delta-hedging | How does an XVA desk hedge counterparty credit spread risk, and with what instruments?
+> Compute CS01 by bumping the counterparty's spread curve (or by AAD) and buy single-name CDS protection with matching CS01, or index CDS as a proxy for names without a liquid CDS.
+> In the example CS01 is 56.74 per bp of spread; proxies leave basis risk, and the exposure side is hedged separately with swaps.
+
+> [!question]- risk-jump-to-default-cva-risk | What is jump-to-default risk in CVA management, and why is spread delta hedging insufficient?
+> On default the CVA is replaced by a realised loss of $\text{LGD} \cdot \max(V_\tau, 0)$, a discrete jump that a hedge sized to small spread moves does not match.
+> A CDS bought to match CS01 pays LGD times its notional on default, which generally differs from the realised exposure loss; desks monitor and limit jump-to-default separately.
 
 ## In this repo and SDE-Interview-Prep
 
-- Counterparty credit risk analytics: [Counterparty Credit Risk Analytics](14-Counterparty-Credit-Risk-Analytics.md).
-- Multi-curve and CSA discounting: [Multi-Curve and CSA Discounting](../06-Fixed-Income-and-Asset-Classes/13-Multi-Curve-and-CSA-Discounting.md).
-- Python reference implementation of bilateral CVA and DVA: [exposure_xva.py](code/exposure_xva.py).
-- Numerical verification of bilateral XVA, FVA, MVA, and KVA: [risk_xva_pricing.py](code/risk_xva_pricing.py).
-- Risk-neutral Monte Carlo simulation: [Scenario Generation](11-Scenario-Generation.md).
+- [risk_xva_pricing.py](code/risk_xva_pricing.py): semi-analytic and simulated CVA and DVA, first-to-default weighting, the credit-triangle shortcut, CS01, Hull-White wrong-way risk with recalibrated survival, FCA, FBA, the FBA-DVA overlap, delta-normal IM and MVA, SA-CCR and BA-CVA capital and KVA, incremental CVA; every number above. Exposures come from [risk_ccr_analytics.py](code/risk_ccr_analytics.py).
+- Exposure: [Counterparty Credit Risk Analytics](14-Counterparty-Credit-Risk-Analytics.md); capital: [CVA Capital Charge](../17-Regulatory-Capital-Basel-and-FRTB/05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md), [Counterparty Credit Risk: SA-CCR](../17-Regulatory-Capital-Basel-and-FRTB/04-Counterparty-Credit-Risk-SA-CCR.md), [Capital-Aware Trading, KVA and RWA Limits](../17-Regulatory-Capital-Basel-and-FRTB/20-Capital-Aware-Trading-KVA-and-RWA-Limits.md); production: [XVA Engine](../18-Pricing-and-Risk-Systems/11-XVA-Engine.md).
+- Discounting and credit background: [Multi-Curve and CSA Discounting](../06-Fixed-Income-and-Asset-Classes/13-Multi-Curve-and-CSA-Discounting.md), [Credit and CDS](../06-Fixed-Income-and-Asset-Classes/06-Credit-and-CDS.md).
+
+## Further reading
+
+- J. Gregory, *The xVA Challenge*, 4th edition, Wiley 2020.
+- A. Green, *XVA: Credit, Funding and Capital Valuation Adjustments*, Wiley 2015.
+- V. Piterbarg, "Funding beyond discounting: collateral agreements and derivatives pricing", *Risk* 23(2), 97-102, 2010.
+- C. Burgard and M. Kjaer, "Partial differential equation representations of derivatives with bilateral counterparty risk and funding costs", *Journal of Credit Risk* 7(3), 75-93, 2011.
+- J. Hull and A. White, "The FVA debate", *Risk* 25(7), 83-85, 2012; and "CVA and wrong-way risk", *Financial Analysts Journal* 68(5), 58-69, 2012.
+- L. Andersen, D. Duffie and Y. Song, "Funding value adjustments", *Journal of Finance* 74(1), 145-192, 2019.
+- IFRS Foundation, IFRS 13 *Fair Value Measurement*, paragraph 42; Basel Framework CAP30.15 and MAR50.

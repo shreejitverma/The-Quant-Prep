@@ -5,770 +5,386 @@ tier: core
 status: solid
 prereqs: [kelly-criterion-and-position-sizing, var-and-expected-shortfall, xva, liquidity-and-model-risk]
 est_hours: 8
-sources: [Philippe Jorion - Value at Risk, Jon Gregory - Counterparty Credit Risk and Credit Value Adjustment, Robert Carver - Systematic Trading, Robert Almgren and Neil Chriss - Optimal Execution of Portfolio Transactions (2000), Sheldon Natenberg - Option Volatility and Pricing]
+sources: [Jorion - Value at Risk 3rd edition (McGraw-Hill 2006), Gregory - The xVA Challenge 4th edition (Wiley 2020), Almgren and Chriss - Optimal Execution of Portfolio Transactions - Journal of Risk 3(2) 5-39 (2000), Magdon-Ismail Atiya Pratap and Abu-Mostafa - On the Maximum Drawdown of a Brownian Motion - Journal of Applied Probability 41(1) 147-161 (2004), Hull and White - Incorporating Volatility Updating into the Historical Simulation Method for Value-at-Risk - Journal of Risk 1(1) 5-19 (1998), Broadie Glasserman and Kou - A Continuity Correction for Discrete Barrier Options - Mathematical Finance 7(4) 325-349 (1997), Basel Framework CRE52 CRE53 MAR21 MGN20 (version effective 1 January 2023), SR 26-2 Revised Guidance on Model Risk Management (17 April 2026)]
 ---
 
 # Risk and Trading Problem Set
 
 ## TL;DR
 
-Quantitative risk management and trading interviews demand rapid, error-free computational proficiency across betting decisions, portfolio tail risk, stress testing, drawdown mechanics, Greek attribution, counterparty exposure profiles, XVA pricing, and market impact.
-This problem set presents sixteen comprehensive, fully worked computational problems spanning the entire risk analytics and trading curriculum.
-Every problem contains exact analytical derivations, intermediate equations, numerical calculations, and real-world sanity checks.
-Mastering these problems equips researchers, risk managers, and quantitative traders to evaluate Kelly leverage, compute VaR and Expected Shortfall, decompose Euler risk, analyze Almgren-Chriss market impact, model CVA/DVA exposure integrals, and stress test complex multi-asset portfolios.
+- Twenty-four problems across the section, each solved the way you would at a whiteboard and each answer recomputed and asserted by code against an independent route (closed form against simulation, shortcut against full formula, Euler sum against brute force).
+- Problems 1 to 8 revisit sizing, VaR and ES, scenarios, drawdowns and Greek P&L; problems 9 to 24 cover sensitivities, risk decomposition, counterparty exposure, XVA, liquidity and model risk.
+- Recurring lessons: shortcuts are fine when you know their error (the midpoint MVA shortcut is 0.15% off, the drawdown asymptote 12% off at two years), conventions decide the answer (Effective EPE is 100,000 by the Basel sum and 70,000 by trapezoid), and dependence can dominate (a two-state wrong-way book has 5.26 times the independent CVA).
 
 ## Learning objectives
 
-- Calculate optimal position sizing under the discrete and continuous Kelly criterion, applying fractional Kelly scaling.
-- Formulate and compute Parametric VaR and Expected Shortfall (CVaR) under normal and Student-t distributions.
-- Implement Filtered Historical Simulation (FHS) to scale historical returns to prevailing volatility regimes.
-- Execute forward and reverse stress testing across multi-asset portfolios.
-- Evaluate expected maximum drawdown as an analytical function of annual Sharpe ratio, volatility, and trading horizon.
-- Attribute derivatives portfolio P&L across Delta, Gamma, Theta, Vega, Vanna, and Volga, isolating unexplained residuals.
-- Derive the break-even daily asset move for delta-hedged options under the Black-Scholes PDE.
-- Execute Euler risk decomposition into Marginal VaR, Component VaR, and Equal Risk Contribution (Risk Parity).
-- Generate counterparty exposure profiles: Expected Exposure (EE), Potential Future Exposure (PFE), and Effective EPE.
-- Calculate bilateral Credit Valuation Adjustment (CVA) and Debit Valuation Adjustment (DVA) via numerical quadrature.
-- Optimize execution trajectories under the Almgren-Chriss framework and compute Liquidity-Adjusted VaR (L-VaR).
+- Calculate optimal position sizing under the Kelly criterion and the drawdown probabilities of fractional Kelly.
+- Compute parametric VaR and ES, filtered historical scenarios, the most plausible reverse-stress scenario and expected maximum drawdown.
+- Attribute option P&L with vanna and volga and derive the daily break-even move.
+- Choose bumps, count pricing calls and judge Taylor proxies against full revaluation.
+- Execute Euler risk decomposition and equal-risk-contribution weights.
+- Compute exposure profiles, Effective EPE, collateralised exposure, NGR, CVA and DVA, and funding, margin and capital adjustments.
+- Solve discrete Almgren-Chriss schedules, liquidity-adjusted VaR, and quantify model risk with alternative models and continuity corrections.
 
 ## Core concepts
 
-Key analytical formulas applied across this problem set:
+Formulas used, each derived in the linked note:
 
-- **Continuous Kelly Optimal Leverage:**
-
-$$f^* = \frac{\mu - r}{\sigma^2} = \frac{S}{\sigma}$$
-
-- **Parametric VaR and Expected Shortfall (Gaussian):**
-
-$$\text{VaR}_{\alpha} = z_{\alpha} \sigma_p, \quad \text{ES}_{\alpha} = \frac{\phi(z_{\alpha})}{1 - \alpha} \sigma_p$$
-
-- **Filtered Historical Simulation Scaling:**
-
-$$r_{\tau}^{\text{filtered}} = r_{\tau} \times \frac{\sigma_{\text{current}}}{\sigma_{\tau}}$$
-
-- **Expected Maximum Drawdown (Magdon-Ismail & Atiya):**
-
-$$\mathbb{E}[\text{MDD}(T)] \approx \frac{\sigma}{2S} \left[ \ln\left( \frac{S^2 T}{2} \right) + 1.9635 \right]$$
-
-- **Derivatives Greek P&L Attribution:**
-
-$$\Delta \Pi = \Delta \cdot \Delta S + \frac{1}{2}\Gamma (\Delta S)^2 + \Theta \Delta t + \mathcal{V} \Delta \sigma + \text{Vanna} \Delta S \Delta \sigma + \frac{1}{2}\text{Volga} (\Delta \sigma)^2 + \epsilon$$
-
-- **Black-Scholes Daily Break-Even Move:**
-
-$$|\Delta S_{\text{break-even}}| = \sigma_{\text{imp}} S \sqrt{\Delta t} \approx \frac{\sigma_{\text{imp}}}{16} \times S$$
-
-- **Euler Allocation: Marginal and Component VaR:**
-
-$$\text{MVaR}_i = \beta_i \text{VaR}_p, \quad \text{CVaR}_i = w_i \text{MVaR}_i = w_i \beta_i \text{VaR}_p, \quad \sum_{i=1}^N \text{CVaR}_i = \text{VaR}_p$$
-
-- **Counterparty Effective EPE:**
-
-$$\text{EEE}(t_k) = \max(\text{EEE}(t_{k-1}), \text{EE}(t_k)), \quad \text{EEPE} = \frac{1}{1.0} \int_0^1 \text{EEE}(t) dt$$
-
-- **Unilateral Credit Valuation Adjustment (CVA):**
-
-$$\text{CVA} = (1 - R_C) \int_0^T P(0, t) \text{EE}^*(t) d\text{PD}_C(t)$$
-
-- **Almgren-Chriss Optimal Trajectory:**
-
-$$x(t) = X_0 \frac{\sinh(\kappa (T - t))}{\sinh(\kappa T)}, \quad \kappa = \sqrt{\frac{\lambda_{\text{risk}} \sigma^2}{\eta}}$$
-
-- **Liquidity-Adjusted VaR (L-VaR):**
-
-$$\text{L-VaR} = \text{VaR} \times \sqrt{1 + \frac{1}{3}(L - 1)} + \frac{1}{2}(\bar{S} + z_{\alpha}\sigma_S) V$$
+| Topic | Formula | Note |
+| :--- | :--- | :--- |
+| Kelly | $f^* = (\mu - r)/\sigma^2$, growth $f\mu - \tfrac12 f^2\sigma^2$, $P(\text{reach } x \text{ of start}) = x^{2/c - 1}$ at fraction $c$ | [Kelly](01-Kelly-Criterion-and-Position-Sizing.md) |
+| Normal VaR and ES | $z_\alpha\sigma$, $\varphi(z_\alpha)\sigma/(1 - \alpha)$ | [VaR and ES](03-VaR-and-Expected-Shortfall.md) |
+| Reverse stress, linear | $x^* = -L\,\Sigma\delta/(\delta^\top\Sigma\delta)$, distance $L/\sqrt{\delta^\top\Sigma\delta}$ | [Stress Testing](04-Stress-Testing-and-Scenarios.md) |
+| Drawdown asymptote | $E[\text{MDD}] \approx \tfrac{\sigma}{2S}(\ln(S^2T/2) + 1.9635)$ | [Drawdowns](05-Drawdowns-and-Risk-Limits.md) |
+| Break-even move | $\sigma S\sqrt{\Delta t}$, about $\sigma S/16$ per trading day | [P&L Attribution](06-PnL-Attribution-and-Greek-Risk.md) |
+| Bumps | forward error $\tfrac h2 V''$, central $\tfrac{h^2}{6}V'''$; Hessian $2N^2 + 1$ pricings | [Sensitivities](12-Sensitivities-and-Revaluation.md) |
+| Euler | $\rho = \sum_i x_i\,\partial\rho/\partial x_i$; normal: $x_i z(\Sigma x)_i/\sigma_P$ | [Risk Decomposition](13-Risk-Decomposition-and-Attribution.md) |
+| Exposure | forward $\text{EE} = Ne^{rt}(2\Phi(\tfrac12\sigma\sqrt t) - 1)$; Effective EPE $= \sum \text{EEE}_{t_k}\Delta t_k$ over year one | [CCR Analytics](14-Counterparty-Credit-Risk-Analytics.md) |
+| XVA | $\text{CVA} = \text{LGD}\int\text{DEE}\,dPD$; $\text{FCA} = \int s\,\text{DEE}\,dt$; $\text{KVA} = \int h\,E[DK]\,dt$ | [XVA](15-XVA.md) |
+| Liquidity | $\text{COL} = \tfrac12 V(\bar s + a\sigma_s)$; horizon factor $(L+1)(2L+1)/(6L)$; $\cosh\kappa\tau = 1 + \tfrac12\tilde\kappa^2\tau^2$ | [Liquidity and Model Risk](16-Liquidity-and-Model-Risk.md) |
 
 ## Worked examples
 
-### Problem 1: Kelly Criterion and Position Sizing
+All numbers are printed and asserted by `python 11-Risk-and-Trading/code/risk_problem_set.py`, which reuses functions from the section's other scripts.
 
-A quantitative statistical arbitrage strategy has an expected annualized excess return of $\mu - r = 12.0\%$ ($0.120$) and an annualized return volatility of $\sigma = 16.0\%$ ($0.160$).
-1. Compute the full Kelly optimal leverage fraction $f^*$.
-2. The fund manager mandates a half-Kelly policy ($f_{\text{half}} = 0.5 f^*$); compute the resulting portfolio expected return and volatility.
-3. If an unconstrained trader uses full Kelly versus half Kelly, calculate the theoretical probability of suffering a $50\%$ drawdown before doubling capital.
+### Problem 1: Kelly sizing and drawdown odds
 
-**Solution:**
+Excess return 12%, volatility 16%.
 
-Step 1: Compute Full Kelly Leverage:
+1. Full Kelly $f^* = 0.12/0.0256 = 4.6875$ (Sharpe 0.75); growth $S^2/2 = 0.28125$.
+2. Half Kelly: leverage 2.34375, volatility 0.375, growth 0.2109375, so 75% of the growth for a quarter of the variance.
+3. Log wealth is Brownian with drift $cS^2 - \tfrac12 c^2S^2$ and variance $c^2S^2$ at fraction $c$ of Kelly, so the probability of ever falling to a fraction $x$ of the starting capital is $x^{2/c - 1}$: 0.5 at full Kelly and 0.125 at half Kelly for $x = \tfrac12$.
+4. Halving before doubling: $1/(2^{2/c - 1} + 1)$, i.e. $1/3$ and $1/9$; a 20,000-path simulation at full Kelly gives about 0.33.
+5. A 50% drawdown from a running peak happens with probability one eventually; these numbers are about the starting capital.
 
-$$f^* = \frac{\mu - r}{\sigma^2} = \frac{0.120}{(0.160)^2} = \frac{0.120}{0.0256} = 4.6875 \quad (4.69\times \text{ leverage})$$
+### Problem 2: VaR and ES of a 50m book
 
-The strategy's annual Sharpe ratio is $S = 0.120 / 0.160 = 0.75$.
-Full Kelly leverage equals $S / \sigma = 0.75 / 0.160 = 4.6875$.
+Daily volatility 1.2%, normal, zero mean: $\sigma = 600{,}000$.
 
-Step 2: Half-Kelly Allocation and Portfolio Metrics:
+1. $z_{0.99} = 2.326348$, VaR $= 1{,}395{,}809$.
+2. ES multiplier $\varphi(z)/0.01 = 2.665214$, ES $= 1{,}599{,}128$; averaging the quantile function over the tail gives about 2.665, the definition of ES.
+3. The 97.5% ES multiplier is 2.337803, almost the 99% VaR multiplier, which is why FRTB's switch kept normal-tail capital roughly level.
 
-$$f_{\text{half}} = 0.5 \times 4.6875 = 2.34375 \quad (2.34\times \text{ leverage})$$
+### Problem 3: filtered historical scenarios
 
-Expected excess portfolio return:
+Today's EWMA vol 2.2%; day A fell 3% at vol 1%, day B fell 4.5% at vol 3%.
 
-$$\mu_p = f_{\text{half}} (\mu - r) = 2.34375 \times 0.120 = 0.28125 \quad (28.13\%)$$
+1. Day A: $-0.03 \times 0.022/0.01 = -6.6\%$ (a 3-sigma day replayed at today's vol).
+2. Day B: $-0.045 \times 0.022/0.03 = -3.3\%$.
+3. Unfiltered HS ranks B as worse; after filtering, A is twice as severe.
 
-Portfolio volatility:
+### Problem 4: the most plausible 2.5m loss
 
-$$\sigma_p = f_{\text{half}} \sigma = 2.34375 \times 0.160 = 0.3750 \quad (37.50\%)$$
+P&L $= 20\text{m}\,x_1 - 50{,}000\,x_2$ (equity return, yield change in bp), sds 1% and 8bp, correlation 0.2.
 
-Notice that expected excess growth rate is $g(f) = f \mu - \frac{1}{2} f^2 \sigma^2$:
-- Full Kelly growth rate: $g(f^*) = \frac{S^2}{2} = \frac{0.75^2}{2} = 0.28125$ ($28.13\%$).
-- Half-Kelly growth rate: $g(0.5 f^*) = \frac{3}{4} g(f^*) = 0.75 \times 0.28125 \approx 0.21094$ ($21.09\%$).
-Half-Kelly captures $75\%$ of maximum compound growth while slashing variance by $75\%$ (volatility and leverage by $50\%$, since $\text{Var}(0.5 f^* \cdot r) = 0.25 \text{Var}(f^* \cdot r)$).
+1. $x^* = -L\,\Sigma\delta/(\delta^\top\Sigma\delta)$: equity $-1.7857\%$ and yields $+42.857$bp, which loses exactly 2.5m.
+2. Mahalanobis distance $L/\sqrt{\delta^\top\Sigma\delta} = 6.0994$; a search over 3,600 directions finds the same minimum.
+3. The scenario mixes a modest equity fall (1.8 sd) with a large yield rise (5.4 sd): the book loses 50,000 per bp of higher yields, so it is long duration, and that rate risk is invisible to an equity limit.
+4. A one-dimensional tail at that distance has probability $5.32 \times 10^{-10}$; in two factors the probability of some scenario at least that far out is higher, which is why plausibility is judged by distance, not by one quantile.
 
-Step 3: Probability of a 50% Drawdown:
-For a geometric Brownian motion under continuous trading at fraction $c = f / f^*$, the scale function exponent is $a = \frac{2}{c} - 1$:
-- For full Kelly ($c = 1.0$), $a = 2(1) - 1 = 1$.
-- For half-Kelly ($c = 0.5$), $a = \frac{2}{0.5} - 1 = 4 - 1 = 3$.
+### Problem 5: expected maximum drawdown
 
-The probability of ever suffering a $50\%$ drawdown ($D = 0.50$) over an infinite horizon is $(1 - D)^a = (0.50)^a$:
-- Full Kelly ($a = 1$): $(0.50)^1 = 50\%$.
-- Half-Kelly ($a = 3$): $(0.50)^3 = 12.5\%$.
+Sharpe 1.2, volatility 12%, log-equity drift $\mu = S\sigma$.
 
-The probability of suffering a $50\%$ drawdown before doubling capital ($W \to 2 W_0$) satisfies the scale function ratio:
+| Horizon | exact $E[\text{MDD}]$ | Magdon-Ismail asymptote |
+| ---: | ---: | ---: |
+| 2 years | 0.1319 | 0.1164 |
+| 10 years | 0.2022 | 0.1969 |
 
-$$P(\text{Halving before Doubling}) = \frac{2^{-a} - 1}{2^{-a} - 2^a} = \frac{1}{2^a + 1}$$
+1. The asymptote $(\sigma/2S)(\ln(S^2T/2) + 1.9635)$ is the large-$T$ limit (the constant is $4 \times 0.49088$) and undershoots at short horizons by 12% here.
+2. With zero drift, $E[\text{MDD}] = \sqrt{\pi/2}\,\sigma\sqrt T = 0.2127$ at two years: drift turns $\sqrt T$ growth into logarithmic growth.
 
-- For full Kelly ($a = 1$): $P = \frac{1}{2^1 + 1} = \frac{1}{3} \approx 33.33\%$.
-- For half-Kelly ($a = 3$): $P = \frac{1}{2^3 + 1} = \frac{1}{8 + 1} = \frac{1}{9} \approx 11.11\%$.
+### Problem 6: Greek P&L with cross terms
 
-Trading half-Kelly slashes the probability of ever suffering a $50\%$ drawdown from $50\%$ down to $12.5\%$, and cuts the probability of halving before doubling from $33.3\%$ down to $11.1\%$.
+1,000 reference calls ($S = K = 100$, $r = 5\%$, $\sigma = 20\%$, $T = 1$); over one day spot rises 2 and vol falls 2.5 points.
 
----
+| Term | P&L |
+| :--- | ---: |
+| Delta | 1,273.66 |
+| Gamma | 37.52 |
+| Vega | $-938.10$ |
+| Vanna | 14.07 |
+| Volga | 3.08 |
+| Theta (one day) | $-25.47$ |
+| Full revaluation | 373.83 |
 
-### Problem 2: Parametric VaR vs. Expected Shortfall (CVaR)
+1. Without vanna and volga the unexplained P&L is 26.21; with them it is 9.06 (the rest is third order and time cross terms).
+2. A desk whose explain ignores spot-vol cross terms sees unexplained P&L on exactly the days spot and vol move together.
 
-A trading portfolio has a market value of $\$50,000,000$ and a daily return volatility of $\sigma_d = 1.20\%$ ($0.0120$).
-Assume daily returns are normally distributed with zero mean ($\mu = 0$).
-Compute the 1-day 99% Value at Risk (VaR) and the 1-day 99% Expected Shortfall (ES).
+### Problem 7: break-even move
 
-**Solution:**
+Delta-hedged long gamma 800 at $S = 500$, implied vol 18%.
 
-Step 1: Daily standard deviation in dollars:
+1. Daily theta $\tfrac12\sigma^2S^2\Gamma/252 = 12{,}857.14$.
+2. Break-even $|\Delta S|$ solves $\tfrac12\Gamma\Delta S^2 = 12{,}857.14$: 5.6695, equal to $\sigma S/\sqrt{252}$.
+3. Rule of 16: $\sigma S/16 = 5.625$, since $\sqrt{252} = 15.875$.
 
-$$\sigma_{\$} = \$50,000,000 \times 0.0120 = \$600,000$$
+### Problem 8: a PCA level shock
 
-Step 2: 99% VaR:
-For confidence level $\alpha = 0.99$, the standard normal critical value is $z_{0.99} \approx 2.32635$:
+Eigenvalues 0.000180, 0.000018, 0.000002 (three tenors), level eigenvector $(1, 1, 1)/\sqrt 3$.
 
-$$\text{VaR}_{0.99} = z_{0.99} \times \sigma_{\$} = 2.32635 \times \$600,000 \approx \$1,395,810 \quad (2.79\%)$$
+1. Variance shares 0.90, 0.09 and 0.01.
+2. A $+1.5$ sd level shock is $1.5\sqrt{0.00018} \times 0.57735 = 116.19$bp at every tenor.
+3. Its Mahalanobis distance under the covariance it came from is exactly 1.5: factor shocks are plausibility-calibrated by construction.
 
-Step 3: 99% Expected Shortfall (ES):
-For a standard normal distribution, Expected Shortfall is given by:
+### Problem 9: forward against central bumps
 
-$$\text{ES}_{\alpha} = \frac{\phi(z_{\alpha})}{1 - \alpha} \times \sigma_{\$}$$
+Reference call, 1% spot bump.
 
-Evaluate standard normal density at $z = 2.32635$:
+1. Forward: 0.646125, an error of 0.9907 times $\Gamma h/2$.
+2. Central: 0.636745, an error of 0.9996 times $V'''h^2/6$.
+3. Central costs two pricings instead of one and is about 100 times more accurate here.
 
-$$\phi(2.32635) = \frac{1}{\sqrt{2\pi}} e^{-0.5 \times (2.32635)^2} = 0.398942 \times e^{-2.70595} = 0.398942 \times 0.066807 \approx 0.026652$$
+### Problem 10: counting pricing calls
 
-Evaluate multiplier:
+A 50-factor book.
+Running central differences on a pricer that counts its calls: 100 calls for the gradient and 5,001 for the full Hessian, matching $2N^2 + 1$.
+With AAD the gradient costs a few pricings' worth of work instead of 100.
 
-$$\frac{\phi(z_{0.99})}{1 - 0.99} = \frac{0.026652}{0.0100} = 2.6652$$
+### Problem 11: a short put in a crash
 
-Step 4: Compute dollar Expected Shortfall:
+Short the 1-year at-the-money put (worth 5.5735), spot falls 25 with vol unchanged.
 
-$$\text{ES}_{0.99} = 2.6652 \times \$600,000 = \$1,599,120 \quad (3.20\%)$$
+1. Full revaluation: $-15.5166$.
+2. Delta-gamma: $-14.9424$, understating the loss by 0.5743.
+3. The sign comes from the third derivative ($V''' = -0.000516$, the same for put and call); a short option's proxy error can go either way, so test it.
 
-Expected Shortfall exceeds VaR by $\$203,310$ ($14.6\%$), capturing the average severity of tail losses beyond the 99th percentile.
+### Problem 12: Euler decomposition
 
----
+80m at 15% vol and 20m at 25% vol, correlation 0.4, 95% one-year VaR.
 
-### Problem 3: Filtered Historical Simulation (FHS) Volatility Updating
+1. Portfolio volatility 14.73%, VaR 24,230,207.
+2. Marginal VaR per dollar 0.234486 and 0.273567; components 18,758,870 and 5,471,337, summing to the VaR.
+3. Brute-force central differences agree with the Euler gradient to $10^{-9}$.
+4. The smaller position has the larger marginal VaR: cutting it reduces VaR faster per dollar.
 
-A risk system evaluates an equity portfolio on valuation date $T$.
-Today's prevailing market volatility estimated by EWMA is $\sigma_{\text{current}} = 2.20\%$ per day.
-In the 250-day historical lookback window:
-- Historical Day A: Observed return was $r_A = -3.00\%$, and estimated volatility was $\sigma_A = 1.00\%$.
-- Historical Day B: Observed return was $r_B = -4.50\%$, and estimated volatility was $\sigma_B = 3.00\%$.
-Compute the volatility-scaled filtered scenario returns $r_A^{\text{FHS}}$ and $r_B^{\text{FHS}}$, and contrast them with unscaled historical simulation.
+### Problem 13: two-asset risk parity
 
-**Solution:**
+Vols 15% and 25%.
+The equal-risk-contribution weight of the 15% asset is 0.625 at correlation $-0.5$, 0 and 0.8: with two assets ERC is inverse volatility whatever the correlation.
 
-Step 1: Day A Filtered Return:
-The historical event occurred during a low-volatility regime ($\sigma_A = 1.00\%$ vs current $2.20\%$):
+### Problem 14: forward exposure in closed form
 
-$$r_A^{\text{FHS}} = r_A \times \frac{\sigma_{\text{current}}}{\sigma_A} = -0.0300 \times \frac{0.0220}{0.0100} = -0.0300 \times 2.20 = -0.0660 \quad (-6.60\%)$$
+Par forward, $N = 10\text{m}$, vol 30%, $r = 0$, one year.
 
-Step 2: Day B Filtered Return:
-The historical event occurred during a high-volatility regime ($\sigma_B = 3.00\%$ vs current $2.20\%$):
+1. $\text{EE} = N(2\Phi(0.15) - 1) = 1{,}192{,}354$; rule of thumb $0.4N\sigma\sqrt t = 1{,}200{,}000$.
+2. $\text{PFE}_{95} = N(e^{-0.045 + 0.3 z_{0.95}} - 1) = 5{,}658{,}927$.
+3. A million-path simulation gives about 1,192,500 and about 5,651,000.
 
-$$r_B^{\text{FHS}} = r_B \times \frac{\sigma_{\text{current}}}{\sigma_B} = -0.0450 \times \frac{0.0220}{0.0300} = -0.0450 \times 0.7333 \approx -0.0330 \quad (-3.30\%)$$
+### Problem 15: Effective EPE by the Basel sum
 
-Step 3: Comparison:
-- Under unscaled historical simulation, Day B would be treated as the more severe risk scenario ($-4.50\%$ vs $-3.00\%$).
-- Under Filtered Historical Simulation, Day A produces a dramatically larger shock ($-6.60\%$) because its historical $3$-sigma move is appropriately amplified to reflect today's volatile market conditions.
+EE at 0, 0.5, 1, 2, 3, 4, 5 years: 0, 80k, 120k, 160k, 130k, 80k, 0.
 
----
+1. Effective EE: 0, 80k, 120k, 160k, then 160k to maturity.
+2. Effective EPE $= \sum_{t_k \le 1}\text{EEE}_{t_k}\Delta t_k = 0.5 \times 80\text{k} + 0.5 \times 120\text{k} = 100{,}000$ (CRE53.13); a trapezoid would give 70,000.
+3. EAD $= 1.4 \times 100{,}000 = 140{,}000$; EPE over the life (trapezoid) is 100,000.
 
-### Problem 4: Reverse Stress Testing
+### Problem 16: what the MPOR costs
 
-A proprietary trading desk has equity capital of $\$10,000,000$ and a mandatory firm liquidation stop if losses reach $\$2,500,000$ ($25\%$).
-The portfolio has sensitivities to two principal risk factors:
-- S&P 500 Equity Index return ($x_1$, daily vol $\sigma_1 = 1.0\%$).
-- 10-year Treasury yield change in bps ($x_2$, daily vol $\sigma_2 = 8 \text{ bps}$).
-- Correlation between S&P 500 and 10y yields: $\rho = +0.20$.
-The portfolio P&L function is:
+Same forward, daily variation margin.
 
-$$\text{P\&L}(x_1, x_2) = \$20,000,000 \cdot x_1 - \$50,000 \cdot x_2$$
+1. Collateralised EE $= N(2\Phi(\tfrac12\sigma\sqrt\delta) - 1)$: 239,329 for 10 business days, 338,412 for 20 (ratio 1.4140).
+2. Against 1,192,354 uncollateralised at one year, daily margin removes 0.7993 of the EE.
 
-Find the most plausible shock vector $(x_1^*, x_2^*)$ (minimizing Mahalanobis statistical distance $d^2 = \mathbf{x}^T \mathbf{\Sigma}^{-1} \mathbf{x}$) that triggers the $\$2,500,000$ liquidation stop.
+### Problem 17: net-to-gross
 
-**Solution:**
+Trades worth $+20$, $-15$, $+5$, $-2$ (millions).
+Gross 25, net 8, NGR 0.32, so standardised initial margin is scaled by $0.4 + 0.6 \times 0.32 = 0.592$ (MGN20.17).
+This is the MGN20.17 standardised initial margin schedule; the identical $0.4 + 0.6 \times \text{NGR}$ form was the pre-SA-CCR current exposure method add-on for capital, which SA-CCR replaced.
 
-Step 1: Express standardized variables:
-Let $u_1 = x_1 / \sigma_1 = x_1 / 0.010$ and $u_2 = x_2 / \sigma_2 = x_2 / 8.0$.
-The correlation matrix is:
+### Problem 18: CVA and DVA with flat exposure
 
-$$\mathbf{R} = \begin{pmatrix} 1.0 & 0.20 \\ 0.20 & 1.0 \end{pmatrix} \implies \mathbf{R}^{-1} = \frac{1}{1 - 0.20^2} \begin{pmatrix} 1.0 & -0.20 \\ -0.20 & 1.0 \end{pmatrix} = \frac{1}{0.96} \begin{pmatrix} 1.0 & -0.20 \\ -0.20 & 1.0 \end{pmatrix}$$
+One year, average EE 500k, ENE 300k, hazards 3% (counterparty) and 1.5% (bank), LGD 60%, rate 4%.
 
-The P&L constraint is:
+1. PDs 0.029554 and 0.014888.
+2. CVA $\approx 0.6 \times e^{-0.02} \times 500\text{k} \times 0.029554 = 8{,}691$; the exact integral with flat exposure gives 8,692.
+3. DVA by the same midpoint rule $= 0.6 \times e^{-0.02} \times 300\text{k} \times 0.014888 = 2{,}627$; net midpoint $\text{DVA} - \text{CVA} = -6{,}064$.
+4. Credit-triangle shortcut $1.8\% \times 500\text{k} \times (1 - e^{-0.04})/0.04 = 8{,}822$.
 
-$$\text{P\&L} = \$20,000,000(0.010 u_1) - \$50,000(8.0 u_2) = \$200,000 u_1 - \$400,000 u_2 = -\$2,500,000$$
+### Problem 19: midpoint shortcuts for FVA, MVA, KVA
 
-Dividing by $\$100,000$:
+Flat profiles priced with the discount factor at the midpoint: average EE 400k funded at 75bp over 3 years with $P(0, 1.5) = 0.945$; average initial margin 2m funded at 1.2% over 5 years and average capital 500k at a 10% hurdle over 5 years, both with $P(0, 2.5) = 0.910$.
 
-$$2 u_1 - 4 u_2 = -25 \implies u_1 - 2 u_2 = -12.5$$
+1. FCA $0.0075 \times 400\text{k} \times 0.945 \times 3 = 8{,}505$; MVA $0.012 \times 2\text{m} \times 0.910 \times 5 = 109{,}200$; KVA $0.10 \times 500\text{k} \times 0.910 \times 5 = 227{,}500$.
+2. With the flat rate implied by $P(0, 2.5) = 0.910$ (3.7724%), $\int_0^5 e^{-rt}dt = 4.5567$ against the midpoint 4.55, so the MVA integral is 109,362: the shortcut is 0.15% low.
+3. The bigger error in practice is the flat profile itself: IM and capital decay over the life (see the simulated profiles in [XVA](15-XVA.md)).
 
-Step 2: Solve constrained optimization using Lagrange multipliers:
-Minimize $\frac{1}{2}\mathbf{u}^T \mathbf{R}^{-1} \mathbf{u}$ subject to $\mathbf{c}^T \mathbf{u} = -12.5$ where $\mathbf{c} = [1.0, -2.0]^T$:
-The optimal shock vector satisfies:
+### Problem 20: wrong-way risk in two states
 
-$$\mathbf{u}^* = \lambda \mathbf{R} \mathbf{c} = \lambda \begin{pmatrix} 1.0 & 0.20 \\ 0.20 & 1.0 \end{pmatrix} \begin{pmatrix} 1.0 \\ -2.0 \end{pmatrix} = \lambda \begin{pmatrix} 1.0 - 0.40 \\ 0.20 - 2.0 \end{pmatrix} = \lambda \begin{pmatrix} 0.60 \\ -1.80 \end{pmatrix}$$
+Exposure 10m with probability 10% (stress) and 1m otherwise; PD 1%, LGD 60%.
 
-Substitute into constraint $\mathbf{c}^T \mathbf{u}^* = -12.5$:
+1. Independent: $0.6 \times 0.01 \times 1.9\text{m} = 11{,}400$.
+2. All defaults in the stress state: $0.6 \times 0.1 \times 0.1 \times 10\text{m} = 60{,}000$, 5.26 times as much, with the same PD and the same exposure distribution; simulation gives about 59,800.
 
-$$\begin{pmatrix} 1.0 & -2.0 \end{pmatrix} \left[ \lambda \begin{pmatrix} 0.60 \\ -1.80 \end{pmatrix} \right] = \lambda (0.60 + 3.60) = 4.20 \lambda = -12.5 \implies \lambda = \frac{-12.5}{4.20} \approx -2.97619$$
+### Problem 21: Almgren-Chriss in discrete time
 
-Step 3: Compute standardized shocks:
+Sell 500,000 shares over 3 daily intervals, $\sigma = 2$, $\eta = 2 \times 10^{-6}$, $\lambda = 2 \times 10^{-6}$, no permanent impact.
 
-$$u_1^* = -2.97619 \times 0.60 \approx -1.7857$$
+1. $\tilde\kappa^2 = 4$, so $\cosh\kappa = 3$ and $\kappa = 1.762747$ per day.
+2. Sales: 414,286, 71,429 and 14,286; the first-order linear system gives the same holdings.
+3. Using the continuous $\kappa = 2$ would sell 432,355 on day 1: the continuous formula is wrong for daily trading.
 
-$$u_2^* = -2.97619 \times (-1.80) \approx +5.3571$$
+### Problem 22: liquidity-adjusted VaR
 
-Step 4: Convert back to actual financial market variables:
+30m bond, 1-day VaR 1.5m, spread 1.2% (sd 0.6%), 3 days to sell.
 
-$$x_1^* = u_1^* \times \sigma_1 = -1.7857 \times 0.010 \approx -0.01786 \quad (-1.79\% \text{ S\&P 500 drop})$$
+1. Cost of liquidation with $a = z_{0.99} = 2.326348$: $\tfrac12 \times 30\text{m} \times (0.012 + 2.326348 \times 0.006) = 389{,}371$.
+2. Equal daily sales: multiplier $\sqrt{4 \times 7/18} = 1.2472$.
+3. L-VaR $= 1.5\text{m} \times 1.2472 + 389{,}371 = 2{,}260{,}200$.
 
-$$x_2^* = u_2^* \times \sigma_2 = +5.3571 \times 8.0 \approx +42.86 \text{ bps} \quad (+42.9 \text{ bp yield jump})$$
+### Problem 23: negative prices
 
-Reverse stress testing reveals that the path of least statistical resistance to firm insolvency is not a pure stock crash, but a simultaneous $-1.79\%$ equity decline paired with an acute $+42.9$ bp surge in 10-year yields (e.g., an unexpected inflation shock).
+Futures at 5, Bachelier vol 15.96 a year, one month.
+$P(F_T < 0) = 0.1389$ and the zero-strike put is worth 0.3255; Black prices both at zero.
 
----
+### Problem 24: a barrier continuity correction
 
-### Problem 5: Expected Maximum Drawdown Analytics
-
-A quantitative macro hedge fund achieves an annualized Sharpe ratio of $S = 1.20$ with annualized volatility $\sigma = 12.0\%$.
-1. Compute the expected maximum drawdown over a 2-year horizon ($T = 2.0$).
-2. Compute the expected maximum drawdown over a 10-year horizon ($T = 10.0$).
-3. If strategy drift drops to zero ($\mu = 0$, unhedged random walk), compute the expected drawdown over 2 years.
-
-**Solution:**
-
-Step 1: Compute 2-Year Expected Maximum Drawdown:
-Using the Magdon-Ismail and Atiya (2004) asymptotic formula with positive drift:
-
-$$\mathbb{E}[\text{MDD}] \approx \frac{\sigma}{2S} \left[ \ln\left( \frac{S^2 T}{2} \right) + 1.9635 \right]$$
-
-where $\frac{\sigma}{2S} = \frac{0.120}{2 \times 1.20} = \frac{0.120}{2.40} = 0.050 \quad (5.0\%)$.
-For $T = 2.0$:
-
-$$\frac{S^2 T}{2} = \frac{1.20^2 \times 2.0}{2} = 1.44 \implies \ln(1.44) \approx 0.36464$$
-
-$$\mathbb{E}[\text{MDD}(2y)] \approx 0.050 \times (0.36464 + 1.9635) = 0.050 \times 2.32814 \approx 0.11641 \quad (11.64\%)$$
-
-Step 2: Compute 10-Year Expected Maximum Drawdown:
-For $T = 10.0$:
-
-$$\frac{S^2 T}{2} = \frac{1.20^2 \times 10.0}{2} = 7.20 \implies \ln(7.20) \approx 1.97408$$
-
-$$\mathbb{E}[\text{MDD}(10y)] \approx 0.050 \times (1.97408 + 1.9635) = 0.050 \times 3.93758 \approx 0.19688 \quad (19.69\%)$$
-
-Step 3: Zero-Drift Regime ($\mu = 0$):
-
-$$\mathbb{E}[\text{MDD}_{\mu=0}(2y)] \approx \sqrt{\frac{\pi}{2}} \cdot \sigma \sqrt{T} \approx 1.2533 \times 0.120 \times \sqrt{2.0} \approx 1.2533 \times 0.120 \times 1.4142 \approx 0.2127 \quad (21.27\%)$$
-
-Without positive drift, expected drawdown jumps from $11.6\%$ to $21.3\%$.
-
----
-
-### Problem 6: Derivatives Greek P&L Attribution
-
-An equity options portfolio on stock $ABC$ ($S = \$50.00$) has the following Greeks at start of day:
-- $\Delta = +10,000$ shares ($+\$500,000$ delta notional)
-- $\Gamma = +2,500$ per $\$1$ stock move
-- $\Theta = -\$850$ per day ($\Delta t = 1/252$)
-- $\mathcal{V} = +\$4,000$ per $1\%$ vol point ($+\$400,000$ per unit vol)
-- $\text{Vanna} = +\$15,000$ per $\$1$ stock move per unit vol
-- $\text{Volga} = +\$800,000$ per unit vol squared
-During the trading session:
-- Stock price increases by $+\$2.00$ ($\Delta S = +2.00$).
-- Implied volatility drops by $-2.50$ percentage points ($\Delta \sigma = -0.0250$).
-- Total actual realized P&L is $\Delta \Pi_{\text{actual}} = +\$14,200$.
-Decompose P&L across all Greek components and compute the unexplained residual $\epsilon$.
-
-**Solution:**
-
-Step 1: Compute Greek contributions:
-- Delta P&L:
-
-$$\Delta \Pi_{\text{Delta}} = 10,000 \times (+2.00) = +\$20,000.00$$
-
-- Gamma P&L:
-
-$$\Delta \Pi_{\text{Gamma}} = \frac{1}{2} \times 2,500 \times (2.00)^2 = 1,250 \times 4.0 = +\$5,000.00$$
-
-- Theta P&L:
-
-$$\Delta \Pi_{\text{Theta}} = -\$850.00$$
-
-- Vega P&L:
-
-$$\Delta \Pi_{\text{Vega}} = \$400,000 \times (-0.0250) = -\$10,000.00$$
-
-- Vanna P&L:
-
-$$\Delta \Pi_{\text{Vanna}} = \$15,000 \times (+2.00) \times (-0.0250) = -\$750.00$$
-
-- Volga P&L:
-
-$$\Delta \Pi_{\text{Volga}} = \frac{1}{2} \times \$800,000 \times (-0.0250)^2 = \$400,000 \times 0.000625 = +\$250.00$$
-
-Step 2: Sum Predicted P&L:
-
-$$\Delta \Pi_{\text{predicted}} = \$20,000 + \$5,000 - \$850 - \$10,000 - \$750 + \$250 = +\$13,650.00$$
-
-Step 3: Compute Unexplained Residual ($\epsilon$):
-
-$$\epsilon = \Delta \Pi_{\text{actual}} - \Delta \Pi_{\text{predicted}} = \$14,200.00 - \$13,650.00 = +\$550.00$$
-
-The unexplained residual is $+\$550$ (only $3.9\%$ of total P&L), confirming accurate attribution.
-
----
-
-### Problem 7: Black-Scholes PDE Theta vs. Gamma Break-Even
-
-A quantitative options trader holds a delta-neutral, long gamma position on the S&P 500 index ETF ($SPY$, trading at $S = \$500.00$).
-The position gamma is $\Gamma = +800$ per $\$1$ move.
-The implied volatility of the options is $\sigma_{\text{imp}} = 18.0\%$ ($0.180$).
-1. Using the Black-Scholes PDE identity ($\Theta + \frac{1}{2}\sigma_{\text{imp}}^2 S^2 \Gamma = 0$), compute the daily dollar theta decay ($\Delta t = 1/252$).
-2. Compute the exact 1-day break-even move $|\Delta S_{\text{break-even}}|$ required to offset theta.
-3. Verify the Rule of 16 approximation $|\Delta S| \approx \frac{\sigma_{\text{imp}}}{16} S$.
-
-**Solution:**
-
-Step 1: Compute Daily Theta Decay:
-
-$$\Theta_{\text{annual}} = -\frac{1}{2}\sigma_{\text{imp}}^2 S^2 \Gamma = -\frac{1}{2}(0.180)^2 \times (500)^2 \times 800$$
-
-$$(0.180)^2 = 0.0324, \quad 500^2 = 250,000$$
-
-$$\Theta_{\text{annual}} = -\frac{1}{2} \times 0.0324 \times 250,000 \times 800 = -0.5 \times 8,100 \times 800 = -\$3,240,000 \text{ per year}$$
-
-Daily theta decay ($\Delta t = 1/252$):
-
-$$\Theta_{\text{daily}} = \frac{-\$3,240,000}{252} \approx -\$12,857.14 \text{ per day}$$
-
-Step 2: Compute Exact Break-Even Price Move:
-Setting $\frac{1}{2}\Gamma (\Delta S)^2 + \Theta_{\text{daily}} = 0$:
-
-$$\frac{1}{2} \times 800 \times (\Delta S)^2 = \$12,857.14 \implies 400 (\Delta S)^2 = \$12,857.14$$
-
-$$(\Delta S)^2 = \frac{12,857.14}{400} \approx 32.14285 \implies |\Delta S_{\text{break-even}}| = \sqrt{32.14285} \approx \$5.6695$$
-
-Step 3: Verify Rule of 16:
-
-$$|\Delta S_{\text{Rule of 16}}| \approx \frac{\sigma_{\text{imp}}}{16} \times S = \frac{0.180}{16} \times \$500.00 = 0.01125 \times \$500.00 = \$5.6250$$
-
-The Rule of 16 estimate ($\$5.63$) matches the exact PDE break-even move ($\$5.67$) within $0.8\%$.
-
----
-
-### Problem 8: Euler Risk Allocation and Component VaR
-
-A portfolio consists of two asset classes:
-- Asset 1: Value $w_1 = \$80,000,000$, annual volatility $\sigma_1 = 15.0\%$.
-- Asset 2: Value $w_2 = \$20,000,000$, annual volatility $\sigma_2 = 25.0\%$.
-- Correlation: $\rho = +0.40$.
-- Confidence level: 95% ($z_{0.95} = 1.6449$).
-Compute total portfolio volatility, 95% portfolio VaR, Marginal VaRs, Component VaRs, and verify that the sum of Component VaRs equals total VaR.
-
-**Solution:**
-
-Step 1: Portfolio weights and variance:
-Total portfolio value $V = \$100,000,000$, weights $x_1 = 0.80$, $x_2 = 0.20$:
-
-$$\sigma_p^2 = x_1^2 \sigma_1^2 + x_2^2 \sigma_2^2 + 2 x_1 x_2 \rho \sigma_1 \sigma_2$$
-
-$$x_1^2 \sigma_1^2 = 0.80^2 \times 0.15^2 = 0.64 \times 0.0225 = 0.014400$$
-
-$$x_2^2 \sigma_2^2 = 0.20^2 \times 0.25^2 = 0.04 \times 0.0625 = 0.002500$$
-
-$$2 x_1 x_2 \rho \sigma_1 \sigma_2 = 2(0.80)(0.20)(0.40)(0.15)(0.25) = 0.128 \times 0.0375 = 0.004800$$
-
-$$\sigma_p^2 = 0.014400 + 0.002500 + 0.004800 = 0.021700$$
-
-$$\sigma_p = \sqrt{0.021700} \approx 0.147309 \quad (14.73\%)$$
-
-Total portfolio VaR:
-
-$$\text{VaR}_p = \$100,000,000 \times 1.6449 \times \sqrt{0.021700} \approx \$24,230,890 \quad (24.23\%)$$
-
-Step 2: Covariances and Betas:
-
-$$\text{Cov}(r_1, r_p) = x_1 \sigma_1^2 + x_2 \rho \sigma_1 \sigma_2 = (0.80 \times 0.0225) + (0.20 \times 0.40 \times 0.15 \times 0.25) = 0.01800 + 0.00300 = 0.02100$$
-
-$$\text{Cov}(r_2, r_p) = x_2 \sigma_2^2 + x_1 \rho \sigma_1 \sigma_2 = (0.20 \times 0.0625) + (0.80 \times 0.40 \times 0.15 \times 0.25) = 0.01250 + 0.01200 = 0.02450$$
-
-$$\beta_1 = \frac{0.02100}{0.021700} \approx 0.967742$$
-
-$$\beta_2 = \frac{0.02450}{0.021700} \approx 1.129032$$
-
-Step 3: Marginal VaRs:
-
-$$\text{MVaR}_1 = \beta_1 \text{VaR}_p = 0.967742 \times \$24,230,890 \approx \$23,449,248 \quad (23.45\%)$$
-
-$$\text{MVaR}_2 = \beta_2 \text{VaR}_p = 1.129032 \times \$24,230,890 \approx \$27,357,457 \quad (27.36\%)$$
-
-Step 4: Component VaRs:
-
-$$\text{CVaR}_1 = x_1 \times \text{MVaR}_1 = 0.80 \times \$23,449,248 \approx \$18,759,399$$
-
-$$\text{CVaR}_2 = x_2 \times \text{MVaR}_2 = 0.20 \times \$27,357,457 \approx \$5,471,491$$
-
-Step 5: Euler Verification:
-
-$$\text{Sum} = \$18,759,399 + \$5,471,491 = \$24,230,890 = \text{VaR}_p$$
-
-The Euler condition holds with exact equality.
-
----
-
-### Problem 9: Almgren-Chriss Optimal Liquidation Trajectory
-
-A hedge fund must liquidate $X_0 = 500,000$ shares of a stock over $T = 3$ days.
-Parameters:
-- Price $S_0 = \$100.00$.
-- Daily volatility $\sigma = \$2.00$ ($2.0\%$).
-- Temporary impact parameter $\eta = 2.0 \times 10^{-6}$ per share per day.
-- Risk aversion parameter $\lambda_{\text{risk}} = 2.0 \times 10^{-6}$.
-1. Compute the urgency parameter $\kappa$.
-2. Calculate the optimal shares remaining at the end of Day 1 and Day 2.
-3. Compute the shares sold each day.
-
-**Solution:**
-
-Step 1: Compute $\kappa$:
-
-$$\kappa = \sqrt{\frac{\lambda_{\text{risk}} \sigma^2}{\eta}} = \sqrt{\frac{2.0 \times 10^{-6} \times (2.0)^2}{2.0 \times 10^{-6}}} = \sqrt{4.0} = 2.00 \text{ day}^{-1}$$
-
-Step 2: Compute Hyperbolic Sines:
-
-$$\sinh(\kappa T) = \sinh(2.0 \times 3) = \sinh(6.0) = \frac{e^6 - e^{-6}}{2} = \frac{403.428793 - 0.002479}{2} \approx 201.7132$$
-
-- At $t = 1$ (end of Day 1): $\kappa(T - t) = 2.0(3 - 1) = 4.0$:
-
-$$\sinh(4.0) = \frac{e^4 - e^{-4}}{2} = \frac{54.598150 - 0.018316}{2} \approx 27.2899$$
-
-$$x(1) = 500,000 \times \frac{27.2899}{201.7132} \approx 67,645 \text{ shares remaining}$$
-
-- At $t = 2$ (end of Day 2): $\kappa(T - t) = 2.0(3 - 2) = 2.0$:
-
-$$\sinh(2.0) = \frac{e^2 - e^{-2}}{2} = \frac{7.389056 - 0.135335}{2} \approx 3.6269$$
-
-$$x(2) = 500,000 \times \frac{3.6269}{201.7132} \approx 8,990 \text{ shares remaining}$$
-
-Step 3: Daily Execution Quantities:
-- Day 1 Sales: $500,000 - 67,645 = 432,355$ shares ($86.5\%$ of position).
-- Day 2 Sales: $67,645 - 8,990 = 58,655$ shares ($11.7\%$ of position).
-- Day 3 Sales: $8,990 - 0 = 8,990$ shares ($1.8\%$ of position).
-Due to high risk aversion ($\kappa = 2.0$), the trader aggressively front-loads execution to eliminate market risk.
-
----
-
-### Problem 10: Liquidity-Adjusted VaR (L-VaR)
-
-A fund holds $\$30,000,000$ in an emerging market sovereign bond.
-- Standard 1-day 99% VaR: $\text{VaR}_{1\text{d}} = \$1,500,000$.
-- Average bid-ask spread: $\bar{S} = 1.20\%$ ($0.0120$).
-- Standard deviation of bid-ask spread: $\sigma_S = 0.60\%$ ($0.0060$).
-- Confidence level: 99% ($z_{0.99} = 2.326$).
-- Position represents 3 days of orderly liquidation ($L = 3$).
-Compute total Liquidity-Adjusted VaR.
-
-**Solution:**
-
-Step 1: Compute Exogenous Bid-Ask Spread Cost:
-
-$$\text{Spread Cost} = \frac{1}{2} (\bar{S} + z_{0.99} \sigma_S) \times \text{Portfolio Value}$$
-
-$$\bar{S} + z_{0.99} \sigma_S = 0.0120 + 2.326(0.0060) = 0.0120 + 0.013956 = 0.025956 \quad (2.60\%)$$
-
-$$\text{Spread Cost} = \frac{1}{2} \times 0.025956 \times \$30,000,000 = \$389,340$$
-
-Step 2: Liquidation Horizon Scaling ($L = 3$ days):
-
-$$\text{Multiplier} = \sqrt{1 + \frac{1}{3}(L - 1)} = \sqrt{1 + \frac{1}{3}(2)} = \sqrt{\frac{5}{3}} \approx 1.29099$$
-
-$$\text{Scaled VaR} = \$1,500,000 \times 1.29099 \approx \$1,936,492$$
-
-Step 3: Total Liquidity-Adjusted VaR:
-
-$$\text{L-VaR} = \$1,936,492 + \$389,340 = \$2,325,832$$
-
-Liquidity friction and multi-day execution expand calculated risk by $\$825,832$ ($+55.1\%$).
-
----
-
-### Problem 11: Counterparty Exposure Profiles and Effective EPE
-
-A 5-year payer interest rate swap has the following simulated Expected Exposure (EE) profile:
-- Year 0.0: $EE(0) = \$0$
-- Year 0.5: $EE(0.5) = \$80,000$
-- Year 1.0: $EE(1.0) = \$120,000$
-- Year 2.0: $EE(2.0) = \$160,000$ (Peak hump)
-- Year 3.0: $EE(3.0) = \$130,000$
-- Year 4.0: $EE(4.0) = \$80,000$
-- Year 5.0: $EE(5.0) = \$0$
-1. Construct the Effective Expected Exposure (EEE) profile across all years.
-2. Compute the 1-year Effective EPE ($\text{EEPE}$).
-3. Compute the Basel IMM Exposure at Default ($\text{EAD} = 1.4 \times \text{EEPE}$).
-
-**Solution:**
-
-Step 1: Construct Effective EE (non-decreasing envelope):
-- Year 0.0: $EEE(0) = \$0$
-- Year 0.5: $\max(0, 80,000) = \$80,000$
-- Year 1.0: $\max(80k, 120k) = \$120,000$
-- Year 2.0: $\max(120k, 160k) = \$160,000$
-- Year 3.0: $\max(160k, 130k) = \$160,000$ (pinned at peak)
-- Year 4.0: $\max(160k, 80k) = \$160,000$ (pinned at peak)
-- Year 5.0: $\max(160k, 0) = \$160,000$ (pinned at peak)
-
-Step 2: Compute 1-Year Effective EPE ($\text{EEPE}$):
-Integrating EEE over $[0, 1.0]$ using trapezoidal approximation:
-
-$$\text{EEPE} = \frac{1}{1.0} \left[ 0.5 \times \frac{0 + 80,000}{2} + 0.5 \times \frac{80,000 + 120,000}{2} \right] = 0.5(40,000) + 0.5(100,000) = 20,000 + 50,000 = \$70,000$$
-
-Step 3: Compute Regulatory EAD:
-
-$$\text{EAD} = 1.4 \times \text{EEPE} = 1.4 \times \$70,000 = \$98,000$$
-
----
-
-### Problem 12: Bilateral CVA and DVA Calculation
-
-An uncollateralized 1-year derivative contract has average Expected Exposure $\text{EE} = \$500,000$ and average Expected Negative Exposure $\text{ENE} = \$300,000$.
-- Flat risk-free rate: $r = 4.00\%$ ($P(0, 0.5) = e^{-0.02} \approx 0.9802$).
-- Counterparty hazard rate: $\lambda_C = 3.00\%$ per annum, recovery $R_C = 40\%$ ($LGD_C = 0.60$).
-- Bank hazard rate: $\lambda_B = 1.50\%$ per annum, recovery $R_B = 40\%$ ($LGD_B = 0.60$).
-Calculate unilateral CVA, DVA, and Net Bilateral Adjustment over the 1-year horizon.
-
-**Solution:**
-
-Step 1: Compute 1-year default probabilities:
-
-$$\text{PD}_C(1) = 1 - e^{-\lambda_C \times 1} = 1 - e^{-0.030} \approx 1 - 0.970446 = 0.029554 \quad (2.96\%)$$
-
-$$\text{PD}_B(1) = 1 - e^{-\lambda_B \times 1} = 1 - e^{-0.015} \approx 1 - 0.985112 = 0.014888 \quad (1.49\%)$$
-
-Step 2: Compute Unilateral CVA:
-
-$$\text{CVA} \approx (1 - R_C) \times P(0, 0.5) \times \text{EE} \times \text{PD}_C(1)$$
-
-$$\text{CVA} \approx 0.60 \times 0.9802 \times \$500,000 \times 0.029554 \approx \$294.06 \times 29.554 \approx \$8,690.65$$
-
-Step 3: Compute DVA:
-
-$$\text{DVA} \approx (1 - R_B) \times P(0, 0.5) \times \text{ENE} \times \text{PD}_B(1)$$
-
-$$\text{DVA} \approx 0.60 \times 0.9802 \times \$300,000 \times 0.014888 \approx \$176.436 \times 14.888 \approx \$2,626.78$$
-
-Step 4: Net Bilateral Adjustment:
-
-$$\text{Net Adjustment} = \text{DVA} - \text{CVA} = \$2,626.78 - \$8,690.65 = -\$6,063.87$$
-
-The net fair value deduction is $\$6,063.87$.
-
----
-
-### Problem 13: PCA Yield Curve Factor Shocks
-
-A 3-factor PCA decomposition of a yield curve produces eigenvalues $\lambda_1 = 0.000180$, $\lambda_2 = 0.000018$, $\lambda_3 = 0.000002$.
-1. Compute the percentage of total yield curve variance explained by each principal component.
-2. Given Level eigenvector $\mathbf{v}_1 = [0.577, 0.577, 0.577]^T$, compute the basis point shock across all three tenors for a $+1.5$-standard-deviation Level move.
-
-**Solution:**
-
-Step 1: Percentage Variance Explained:
-Total variance:
-
-$$\Lambda_{\text{total}} = 0.000180 + 0.000018 + 0.000002 = 0.000200$$
-
-- PC1 (Level): $\frac{0.000180}{0.000200} = 0.9000$ ($90.0\%$)
-- PC2 (Slope): $\frac{0.000018}{0.000200} = 0.0900$ ($9.0\%$)
-- PC3 (Curvature): $\frac{0.000002}{0.000200} = 0.0100$ ($1.0\%$)
-Together, the three components explain 100% of the variance.
-
-Step 2: Level Factor Shock:
-Standard deviation of Level factor:
-
-$$\sigma_1 = \sqrt{\lambda_1} = \sqrt{0.000180} \approx 0.013416 \quad (134.16 \text{ bps})$$
-
-For $z_1 = +1.50$:
-
-$$\Delta \mathbf{y} = z_1 \sigma_1 \mathbf{v}_1 = 1.50 \times 0.013416 \times \begin{pmatrix} 0.577 \\ 0.577 \\ 0.577 \end{pmatrix} \approx 0.020125 \times \begin{pmatrix} 0.577 \\ 0.577 \\ 0.577 \end{pmatrix} \approx \begin{pmatrix} 0.01161 \\ 0.01161 \\ 0.01161 \end{pmatrix}$$
-
-The $+1.5$-sigma level shock produces a uniform parallel upward shift of $+116.1$ basis points across all tenors.
-
----
-
-### Problem 14: Funding Valuation Adjustment (FVA)
-
-A dealer enters an uncollateralized 3-year interest rate swap with a corporate client having Expected Exposure $\text{EE} = \$400,000$.
-The dealer hedges in the interdealer market under a zero-threshold CSA requiring cash variation margin.
-The dealer's unsecured borrowing funding spread over OIS is $s_{\text{funding}} = 75 \text{ bps/year} = 0.0075$.
-The average 3-year discount factor is $P(0, 1.5) \approx 0.945$.
-Compute the Funding Cost Adjustment (FCA).
-
-**Solution:**
-
-Step 1: Compute FCA:
-
-$$\text{FCA} \approx s_{\text{funding}} \times \text{EE} \times P(0, T/2) \times T$$
-
-$$\text{FCA} \approx 0.0075 \times \$400,000 \times 0.945 \times 3.0 = \$3,000 \times 2.835 = \$8,505.00$$
-
-The dealer must deduct $\$8,505$ from the trade's present value to cover the funding cost of posting collateral on the offsetting hedge.
-
----
-
-### Problem 15: Margin Valuation Adjustment (MVA)
-
-Under Uncleared Margin Rules (UMR), a bank must post bilateral segregated Initial Margin on an uncollateralized exotic derivative portfolio.
-- Average simulated Initial Margin over 5 years: $\mathbb{E}[\text{IM}] = \$2,000,000$.
-- Cost of raising term liquidity to fund segregated IM: $s_{\text{margin}} = 1.20\%$ per annum ($0.0120$).
-- Average discount factor: $P(0, 2.5) \approx 0.910$.
-Compute the lifetime Margin Valuation Adjustment (MVA).
-
-**Solution:**
-
-Step 1: Compute MVA:
-
-$$\text{MVA} \approx s_{\text{margin}} \times \mathbb{E}[\text{IM}] \times P(0, 2.5) \times T$$
-
-$$\text{MVA} \approx 0.0120 \times \$2,000,000 \times 0.910 \times 5.0 = \$24,000 \times 4.550 = \$109,200.00$$
-
-The dealer charges $\$109,200$ upfront to cover the lifetime interest drag of funding the regulatory initial margin requirement.
-
----
-
-### Problem 16: Capital Valuation Adjustment (KVA)
-
-A 5-year derivative trade requires the bank to hold an average regulatory capital balance of $\mathbb{E}[\text{Capital}] = \$500,000$ to cover SA-CCR credit risk and CVA capital.
-The bank's equity shareholders demand a hurdle return on equity (Cost of Capital) of $\text{CoC} = 10.0\%$ per annum ($0.100$).
-Average discount factor is $P(0, 2.5) \approx 0.910$.
-Calculate the Capital Valuation Adjustment (KVA).
-
-**Solution:**
-
-Step 1: Compute KVA:
-
-$$\text{KVA} \approx \text{CoC} \times \mathbb{E}[\text{Capital}] \times P(0, 2.5) \times T$$
-
-$$\text{KVA} \approx 0.100 \times \$500,000 \times 0.910 \times 5.0 = \$50,000 \times 4.550 = \$227,500.00$$
-
-The bank must charge $\$227,500$ upfront to provide shareholders with their required 10% return on regulatory capital over the trade life.
+Daily-monitored barrier at 90, vol 20%.
+The equivalent continuous barrier is $90e^{-0.5826 \times 0.2\sqrt{1/252}} = 89.3418$, a shift of 0.007340 in log terms; pricing with 90 instead overstates knock-out probability.
 
 ## Pitfalls
 
-- **Confusing Full Kelly with Realistic Sizing:** Applying full Kelly leverage without parameter uncertainty buffers leads to catastrophic drawdowns and near-certain ruin in fat-tailed markets.
-- **Assuming Constant Exposure in CVA Calculations:** Using current mark-to-market instead of full stochastic Expected Exposure profiles drastically misstates CVA on amortizing or diffusing swaps.
-- **Ignoring Netting Set Boundaries in XVA Pricing:** Pricing XVA trade by trade rather than on an incremental netting set basis miscalculates risk and leads to uncompetitive client quotes.
-- **Treating Model Output as Ground Truth:** Assuming mathematical models fully capture market reality without independent validation and boundary testing invites catastrophic model risk.
-- **Ignoring Margin Liquidity in Delta-Hedged Portfolios:** Assuming a delta-neutral book has zero risk while ignoring variation margin cash drains during market gaps leads to forced liquidation.
+- Reading "probability of a 50% drawdown" as relative to the start when it is relative to the peak, or vice versa.
+- Quoting VaR from $z$ rounded to four digits on large books: the difference is visible in the dollars.
+- Applying the drawdown asymptote to short track records.
+- Taylor proxies of short-option books in crashes, and diagonal-only Greeks in spot-vol moves.
+- Trapezoid instead of the CRE53.13 sum for Effective EPE; undiscounted EE in CVA.
+- Midpoint shortcuts with flat profiles for IM and capital, which decay.
+- Continuous-time Almgren-Chriss on daily schedules.
+- Liquidation multipliers without a stated convention.
+- Pricing near-zero underlyings with lognormal models.
 
 ## Interview questions
 
 > [!question]- risk-full-vs-half-kelly-drawdown | Why do professional quants recommend trading at half-Kelly rather than full Kelly?
-> Full Kelly maximizes the expected compound growth rate of capital in the infinite horizon, but suffers from extreme volatility: it has a 50% probability of ever suffering a 50% drawdown and a 33.3% probability of halving before doubling capital.
-> Half-Kelly achieves 75% of maximum compound growth rate while cutting variance by 75% (volatility and leverage by 50%), slashes the probability of ever suffering a 50% drawdown down to 12.5%, and reduces the probability of halving before doubling to 11.1%, providing a massive safety buffer against parameter estimation error.
+> Half Kelly keeps 75% of the growth rate (0.2109 against 0.28125 at Sharpe 0.75) with a quarter of the variance.
+> The chance of ever falling to half the starting capital is $x^{2/c - 1}$: 0.5 at full Kelly and 0.125 at half; of halving before doubling, 1/3 against 1/9.
+> And Kelly is computed from estimated edges: overestimating the edge by a factor of two puts you at twice Kelly, where growth is zero.
 
 > [!question]- risk-var-vs-es-coherence | Why is Expected Shortfall (ES) a coherent risk measure while Value at Risk (VaR) is not?
-> Value at Risk fails the subadditivity axiom: the VaR of a combined portfolio can exceed the sum of individual VaRs ($\text{VaR}(X + Y) > \text{VaR}(X) + \text{VaR}(Y)$) for non-normal or skewed distributions, meaning VaR can penalize diversification.
-> Expected Shortfall (CVaR) satisfies subadditivity, translation invariance, positive homogeneity, and monotonicity, making it a mathematically coherent risk measure that accurately captures tail risk.
+> VaR can fail subadditivity: for discrete or skewed losses, combining positions can raise VaR above the sum, penalising diversification; ES is monotone, translation invariant, positively homogeneous and subadditive for all distributions (Artzner, Delbaen, Eber and Heath 1999).
+> For normal tails the two are close: 99% VaR is $2.326\sigma$, 99% ES $2.665\sigma$ and 97.5% ES $2.338\sigma$.
+> ES is harder to backtest because it is not elicitable.
 
-> [!question]- risk-fhs-volatility-updating | How does Filtered Historical Simulation (FHS) adapt historical return scenarios to prevailing market regimes?
-> Filtered Historical Simulation standardizes historical returns by the historical volatility estimated at the time of each event ($\hat{\epsilon}_{\tau} = r_{\tau} / \sigma_{\tau}$), and then re-scales these standardized residuals by current conditional volatility: $r_{\tau}^{\text{filtered}} = \hat{\epsilon}_{\tau} \times \sigma_{\text{current}}$.
-> This prevents risk models from understating tail risk during sudden volatility spikes when recent history was calm, and prevents overstating risk when markets normalize after acute crises.
+> [!question]- risk-euler-allocation-homogeneity | State the condition for Euler risk allocation to hold, and which risk measures qualify.
+> The measure must be homogeneous of degree one in position sizes, $\rho(cx) = c\rho(x)$; then $\rho = \sum x_i\,\partial\rho/\partial x_i$.
+> Volatility, normal VaR, and VaR and ES of any loss distribution qualify; variance (degree two) does not without halving.
+> In Problem 12 the components 18,758,870 and 5,471,337 sum to the VaR 24,230,207.
 
-> [!question]- risk-reverse-stress-testing-mahalanobis | How does reverse stress testing identify the most plausible scenario triggering portfolio insolvency?
-> Reverse stress testing inverts standard stress testing by fixing a catastrophic loss threshold ($L^*$) and finding the minimum Mahalanobis distance shock vector $\mathbf{x}^* = \arg\min \mathbf{x}^T \mathbf{\Sigma}^{-1} \mathbf{x}$ subject to $\text{P\&L}(\mathbf{x}) \le -L^*$.
-> This identifies the path of least statistical resistance to capital exhaustion, revealing hidden risk concentrations where correlated factor moves breach stop-loss limits far more easily than single-factor extremes.
+> [!question]- risk-almgren-chriss-urgency-parameter | In the Almgren-Chriss framework, what does the urgency parameter $\kappa$ dictate?
+> Holdings decay like $\sinh(\kappa(T - t))/\sinh(\kappa T)$, so $1/\kappa$ is the time scale over which the order is worked off; $\kappa$ grows with risk aversion and volatility and falls with temporary impact.
+> In discrete time $\cosh(\kappa\tau) = 1 + \tfrac12\tilde\kappa^2\tau^2$ with $\tilde\kappa^2 = \lambda\sigma^2/\tilde\eta$: $\kappa = 1.762747$ in Problem 21, not the continuous 2, and $\lambda = 0$ gives TWAP.
 
-> [!question]- risk-expected-maximum-drawdown-analytics | How does expected maximum drawdown scale with strategy Sharpe ratio, volatility, and trading horizon under the Magdon-Ismail framework?
-> Under the Magdon-Ismail and Atiya formula for positive drift, expected maximum drawdown scales as $\mathbb{E}[\text{MDD}(T)] \approx \frac{\sigma}{2S} [\ln(S^2 T / 2) + 1.9635]$, growing only logarithmically with horizon $T$.
-> In contrast, when strategy drift collapses to zero ($S = 0$), expected maximum drawdown scales with the square root of time ($\mathbb{E}[\text{MDD}] \approx \sqrt{\pi / 2} \cdot \sigma \sqrt{T}$), illustrating how a sustained edge caps long-term drawdowns.
-
-> [!question]- risk-vanna-volga-pnl-attribution | Why are cross-Greeks Vanna and Volga essential in institutional options P&L attribution?
-> Standard second-order Taylor attribution with only Delta, Gamma, Theta, and Vega assumes asset price changes and implied volatility changes are independent and that vol changes affect option prices linearly.
-> Vanna ($\partial^2 V / \partial S \partial \sigma$) captures the change in Delta per unit move in volatility (or Vega per unit move in underlying), and Volga ($\partial^2 V / \partial \sigma^2$) captures the convexity of option price with respect to implied volatility, explaining skew dynamics and preventing large unexplained residuals during market gap moves.
-
-> [!question]- risk-black-scholes-daily-breakeven-rule-of-16 | Derive the daily break-even asset move for a delta-hedged option portfolio and explain the Rule of 16.
-> Under the Black-Scholes PDE with zero rates, Theta decay exactly offsets expected Gamma gains: $\Theta + \frac{1}{2}\sigma_{\text{imp}}^2 S^2 \Gamma = 0$.
-> Setting daily Gamma P&L $\frac{1}{2}\Gamma (\Delta S)^2$ equal to daily Theta decay $|\Theta_{\text{daily}}| = \frac{1}{2}\sigma_{\text{imp}}^2 S^2 \Gamma \Delta t$ yields $|\Delta S_{\text{break-even}}| = \sigma_{\text{imp}} S \sqrt{\Delta t}$.
-> Since $\sqrt{1/252} \approx 1/15.874 \approx 1/16$, the daily break-even move simplifies to the trader's Rule of 16: $|\Delta S| \approx \frac{\sigma_{\text{imp}}}{16} \times S$.
-
-> [!question]- risk-euler-allocation-homogeneity | State the mathematical condition required for Euler risk allocation to hold, and identify which risk measures qualify.
-> Euler allocation requires that the risk measure $\rho(\mathbf{w})$ be linearly homogeneous of degree 1: $\rho(c \mathbf{w}) = c \rho(\mathbf{w})$ for any $c > 0$.
-> Portfolio standard deviation, Parametric VaR, and Expected Shortfall are degree-1 homogeneous, guaranteeing that the sum of Component Risks equals total portfolio risk exactly: $\sum w_i \frac{\partial \rho}{\partial w_i} = \rho(\mathbf{w})$.
-
-> [!question]- risk-almgren-chriss-urgency-parameter | In the Almgren-Chriss framework, what does the urgency parameter $\kappa = \sqrt{\lambda_{\text{risk}} \sigma^2 / \eta}$ dictate?
-> The urgency parameter $\kappa$ dictates the rate of trade liquidation.
-> When risk aversion $\lambda_{\text{risk}}$ or asset volatility $\sigma^2$ is high relative to temporary impact cost $\eta$, $\kappa$ is large: the execution schedule aggressively front-loads sales to eliminate price volatility timing risk.
-> When risk aversion is zero, $\kappa \to 0$ and the schedule collapses to a linear TWAP execution.
-
-> [!question]- risk-lvar-spread-cost-and-scaling | How does Liquidity-Adjusted VaR (L-VaR) account for both exogenous spread costs and multi-day liquidation horizon?
-> L-VaR decomposes liquidity risk into two distinct penalties: exogenous spread cost $\frac{1}{2}(\bar{S} + z_{\alpha} \sigma_S) V$ reflecting the stochastic widening of bid-ask spreads in stressed markets, and an endogenous liquidation horizon multiplier $\sqrt{1 + \frac{1}{3}(L - 1)}$ applied to base VaR.
-> This horizon scaling accounts for unhedged price variance accumulated as the position is systematically unwound across $L$ days rather than liquidated instantaneously.
+> [!question]- risk-swap-vs-forward-exposure-geometry | Contrast the Expected Exposure profile of an interest rate swap with that of an FX forward.
+> A forward's EE rises with time to maturity, like $0.4N\sigma\sqrt t$ for small $\sigma\sqrt t$, because all value settles at the end.
+> A swap's EE is humped: rate dispersion grows like $\sqrt t$ while the remaining annuity shrinks, so it peaks early (1.75 years for the 5-year example in [CCR Analytics](14-Counterparty-Credit-Risk-Analytics.md)) and ends at zero.
 
 > [!question]- risk-effective-epe-definition | What is Effective EPE under the Basel framework, and why was it introduced?
-> Effective EPE is the time-weighted average of Effective Expected Exposure ($\text{EEE}$) over the first year of a derivative contract, where $\text{EEE}(t) = \max(\text{EEE}(t - \Delta t), \text{EE}(t))$ enforces a non-decreasing envelope.
-> It was introduced to prevent banks from artificially understating regulatory capital as short-dated contracts roll off, reflecting the commercial reality that banks continually replace maturing client hedges.
+> The time-weighted average over the first year of Effective EE, the running maximum of EE starting from current exposure (CRE53.12 to CRE53.13); IMM EAD is $1.4\times$ it.
+> The running maximum stops maturing short-dated trades from lowering exposure when in practice they are rolled over.
+> In Problem 15 it is 100,000 and EAD 140,000.
 
 > [!question]- risk-dva-paradox-accounting | Explain the DVA paradox and why it creates controversial accounting profits.
-> Debit Valuation Adjustment (DVA) measures the expected profit to a bank if it defaults on its own negative mark-to-market liabilities.
-> When a bank's credit rating is downgraded and its CDS spread widens, its cumulative default probability increases, causing DVA to expand.
-> Under fair-value accounting (IFRS 13), this requires the bank to record mark-to-market accounting profits, artificially inflating earnings precisely when the institution is in severe distress.
+> DVA values the bank's option to default on its liabilities, so it grows as the bank's own credit worsens and the bank books gains while weakening: in the XVA example DVA rises from 2,925 to 9,074 if its hazard goes from 1.5% to 5%.
+> CET1 derecognises it (CAP30.15), and it cannot be hedged directly.
 
-> [!question]- risk-pca-yield-curve-factor-shocks | How are principal components interpreted in yield curve modeling, and how are factor scenario shocks constructed?
-> The first three principal components explain over 99% of yield curve variance and map to Level (parallel shift, all eigenvector loadings positive and near-equal), Slope (twist/steepening, opposite signs between short and long tenors), and Curvature (butterfly/bend, middle tenors have opposite sign to ends).
-> A factor scenario shock of $k$ standard deviations along component $i$ is constructed as $\Delta \mathbf{y} = k \sqrt{\lambda_i} \mathbf{v}_i$, where $\lambda_i$ is the eigenvalue and $\mathbf{v}_i$ is the eigenvector.
+> [!question]- risk-fva-mechanics-dealer | Why does an uncollateralised client swap hedged with a collateralised interdealer swap generate FVA?
+> When the client trade is in the money the hedge is out of the money, so the dealer posts variation margin on the hedge while receiving nothing from the client; it funds that cash at its unsecured spread and earns only the collateral rate.
+> The cost is $\int s\,\text{DEE}\,dt$: 5,062 at 80bp on the 10m 5-year swap in [XVA](15-XVA.md), with a symmetric benefit of 2,683 on the other side.
 
-> [!question]- risk-fva-mechanics-dealer | Why does an uncollateralized client swap hedged with a collateralized interdealer swap generate FVA?
-> When market rates move against the street hedge, the dealer must post cash variation margin to the clearing broker.
-> Because the uncollateralized corporate client posts no collateral, the dealer must borrow cash from its internal treasury at an unsecured funding spread over OIS ($r_{\text{OIS}} + s_{\text{funding}}$).
-> The dealer posts this cash and earns only OIS, incurring a continuous funding drag equal to $s_{\text{funding}} \times \text{Exposure}$, which is priced as FVA.
+> [!question]- risk-mva-regulatory-driver | What regulatory development made Margin Valuation Adjustment (MVA) a pricing component?
+> The BCBS-IOSCO margin requirements: covered entities exchange initial margin equal to a 99% 10-day potential future exposure (MGN20.9), gross and segregated, with rehypothecation only under strict conditions (MGN20.40 to MGN20.41), so IM must be funded for the trade's life.
+> Problem 19: average IM of 2m funded at 1.2% for five years costs 109,362 with the exact discount integral.
 
-> [!question]- risk-mva-regulatory-driver | What regulatory development made Margin Valuation Adjustment (MVA) an essential pricing component?
-> The implementation of the global Uncleared Margin Rules (UMR) by the BCBS-IOSCO framework mandated that financial institutions post bilateral, segregated Initial Margin (IM) on non-cleared derivatives.
-> Because initial margin is locked in third-party custodian accounts and cannot be reused, dealers must raise term funding to maintain these multi-million dollar reserves, creating lifetime financing costs priced as MVA.
+> [!question]- risk-sr-11-7-three-lines-of-defense | What are the responsibilities of the second line of defence in model risk management?
+> Independent model risk management and validation: effective challenge of design, implementation and use, independent testing and benchmarking, the model inventory, and findings that can restrict use or require reserves.
+> SR 26-2 (17 April 2026) superseded SR 11-7: it requires effective challenge by objective experts with standing to effect change, but says validation quality depends on rigour rather than organisational structure, and has internal audit evaluate rather than duplicate validation.
+
+> [!question]- risk-fhs-volatility-updating | How does Filtered Historical Simulation adapt historical return scenarios to the current regime?
+> Divide each historical return by the volatility of its own day and multiply by today's: $r\,\sigma_{\text{now}}/\sigma_\tau$ (Hull and White 1998).
+> With today's vol at 2.2%, a 3% fall on a 1% vol day becomes $-6.6\%$, while a 4.5% fall on a 3% vol day becomes $-3.3\%$: the ranking of historical days reverses.
+
+> [!question]- risk-reverse-stress-testing-mahalanobis | How does reverse stress testing identify the most plausible scenario triggering a given loss?
+> Minimise the Mahalanobis distance $\sqrt{x^\top\Sigma^{-1}x}$ subject to the loss; for a linear book the answer is $x^* = -L\,\Sigma\delta/(\delta^\top\Sigma\delta)$ at distance $L/\sqrt{\delta^\top\Sigma\delta}$.
+> In Problem 4 a 2.5m loss is reached most plausibly by equity $-1.79\%$ and yields $+42.86$bp, at distance 6.0994; nonlinear books need numerical search and several starting points.
+
+> [!question]- risk-expected-maximum-drawdown-analytics | How does expected maximum drawdown scale with Sharpe ratio, volatility and horizon?
+> With positive drift it grows only logarithmically: the Magdon-Ismail asymptote is $(\sigma/2S)(\ln(S^2T/2) + 1.9635)$; with zero drift it grows like $\sqrt{\pi/2}\,\sigma\sqrt T$.
+> At Sharpe 1.2 and 12% vol, the exact expectation is 0.1319 at two years against an asymptote of 0.1164, and 0.2022 against 0.1969 at ten; with zero drift it is 0.2127 at two years.
+> Use the exact series for short records; the asymptote undershoots.
+
+> [!question]- risk-vanna-volga-pnl-attribution | Why are Vanna and Volga needed in options P&L attribution?
+> On days when spot and implied vol move together, the cross term $\text{vanna}\,\Delta S\,\Delta\sigma$ and the vol convexity $\tfrac12\text{volga}\,\Delta\sigma^2$ are first-order visible.
+> In Problem 6 (spot +2, vol $-2.5$ points on 1,000 calls) they add 14.07 and 3.08 and cut the unexplained P&L from 26.21 to 9.06.
+
+> [!question]- risk-black-scholes-daily-breakeven-rule-of-16 | Derive the daily break-even move for a delta-hedged option and explain the Rule of 16.
+> From $\Theta + \tfrac12\sigma^2S^2\Gamma = 0$, one day's theta is $\tfrac12\sigma^2S^2\Gamma\Delta t$; equating to $\tfrac12\Gamma\Delta S^2$ gives $|\Delta S| = \sigma S\sqrt{\Delta t}$.
+> With 252 trading days $\sqrt{252} = 15.875 \approx 16$: for $S = 500$ and 18% vol, 5.6695 exactly and 5.625 by the rule.
+
+> [!question]- risk-lvar-spread-cost-and-scaling | How does Liquidity-Adjusted VaR account for spread costs and a multi-day liquidation horizon?
+> Add half the stressed relative spread times the position, $\tfrac12 V(\bar s + a\sigma_s)$, and scale the 1-day VaR for the days the position is still held.
+> With equal daily sales the variance factor is $(L+1)(2L+1)/(6L)$ (1.2472 in sd for $L = 3$); the often-quoted $\sqrt{1 + (L-1)/3}$ assumes one full day and then continuous selling; in Problem 22 the total is 2,260,200 on a 1.5m VaR.
+
+> [!question]- risk-pca-yield-curve-factor-shocks | How are principal components interpreted for a yield curve, and how are factor shocks built?
+> The first components are usually level, slope and curvature (see [Risk Factor Modelling](10-Risk-Factor-Modelling.md)); a shock of $k$ sds along component $i$ is $k\sqrt{\lambda_i}\,v_i$.
+> In Problem 8, $1.5\sqrt{0.00018} \times 0.57735 = 116.19$bp per tenor, and its Mahalanobis distance is exactly 1.5.
 
 > [!question]- risk-kva-capital-valuation-adjustment | What is Capital Valuation Adjustment (KVA), and how is it priced into OTC derivatives?
-> KVA is the present value of the cost of holding regulatory capital (under SA-CCR, CVA capital charges, and FRTB market risk) over the entire lifetime of a transaction.
-> It is calculated as $\text{KVA} = \text{CoC} \int_0^T P(0, t) \mathbb{E}[\text{Capital}(t)] dt$, where $\text{CoC}$ is the hurdle return on equity demanded by bank shareholders (typically 8-12%) above the risk-free rate, reflecting the opportunity cost of regulatory equity commitment.
+> The cost of the return required on regulatory capital held over the trade's life, $\int h\,E[D(t)K_t]\,dt$, with $K_t$ simulated (SA-CCR, CVA capital, market risk on hedges) and $h$ a management-set hurdle.
+> A midpoint shortcut with flat capital of 500k at 10% over five years gives 227,500; with a simulated, decaying capital profile the 10m 5-year swap in [XVA](15-XVA.md) carries about 18,130.
 
-## Further reading
+> [!question]- risk-short-gamma-proxy-crash | A risk system uses delta-gamma for a book short at-the-money puts. In a 25% crash, is the proxy loss too high or too low?
+> Too low here: full revaluation loses 15.5166 per put, the proxy 14.9424.
+> The error is third order, so its sign depends on $V'''$; for a long call the proxy overstated large-move losses in the stress run of [Sensitivities](12-Sensitivities-and-Revaluation.md).
+> Never assume the direction; revalue stress scenarios in full.
 
-- Philippe Jorion, *Value at Risk: The New Benchmark for Managing Financial Risk*, Chapters 1-15.
-- Jon Gregory, *Counterparty Credit Risk and Credit Value Adjustment*, 3rd Edition, Chapters 1-12.
-- Robert Carver, *Systematic Trading: A Unique New Method for Designing Trading and Investing Systems*.
-- Robert Almgren and Neil Chriss (2000), "Optimal Execution of Portfolio Transactions", *Journal of Risk*.
-- Sheldon Natenberg, *Option Volatility and Pricing*, Chapters 6-12.
+> [!question]- risk-eepe-discrete-weights | EE at 0.5 and 1 year is 80k and 120k with zero today. What is Effective EPE, and what do people get wrong?
+> 100,000: CRE53.13 sums Effective EE at each grid date times $\Delta t_k$ over the first year, $0.5 \times 80\text{k} + 0.5 \times 120\text{k}$.
+> A trapezoid gives 70,000, 30% lower; use the regulatory weights for regulatory numbers.
+
+> [!question]- risk-wwr-two-state | Exposure is 10m with probability 10% and 1m otherwise, PD 1%, LGD 60%. What is CVA if every default happens in the bad state?
+> 60,000, against 11,400 if default is independent of the state: 5.26 times as much with identical PD and exposure distribution.
+> Wrong-way risk is about the joint distribution, which marginal inputs cannot reveal.
+
+> [!question]- risk-ac-discrete-kappa | Why does the discrete Almgren-Chriss schedule use $\cosh(\kappa\tau) = 1 + \tfrac12\tilde\kappa^2\tau^2$ rather than $\kappa = \tilde\kappa$?
+> The first-order conditions are a second-order difference equation whose solutions are $e^{\pm\kappa t_k}$ with that $\kappa$; $\kappa \to \tilde\kappa$ only as $\tau \to 0$.
+> With $\tilde\kappa = 2$ and daily steps $\kappa = 1.762747$: day-1 sales of 414,286, against 432,355 from the continuous formula.
+
+> [!question]- risk-xva-midpoint-shortcut | Is $\text{MVA} \approx s \cdot E[\text{IM}] \cdot P(0, T/2) \cdot T$ a good approximation?
+> For the discounting, yes: with $P(0, 2.5) = 0.910$ the integral $\int_0^5 e^{-rt}dt = 4.5567$ against 4.55, so 109,362 against 109,200.
+> The real error is assuming flat IM: initial margin and capital decay as the trade ages, which is why engines simulate the profiles.
+
+> [!question]- risk-forward-pfe-closed-form | Give the 95% PFE at one year of a par forward with vol 30% and notional 10m (zero rates).
+> $N(e^{-\sigma^2/2 + \sigma z_{0.95}} - 1) = 5{,}658{,}927$, against an EE of 1,192,354.
+> The PFE is the quantile of $\max(V, 0)$, valid as a closed form because more than 5% of outcomes are positive.
+
+> [!question]- risk-ngr-four-trades | Trades worth +20, -15, +5 and -2 with one counterparty: what are NGR and the standardised IM scaling?
+> Gross 25, net 8, NGR 0.32; the standardised schedule scales gross IM by $0.4 + 0.6 \times 0.32 = 0.592$ (MGN20.17).
+> This is the MGN20.17 standardised initial margin schedule; the identical $0.4 + 0.6 \times \text{NGR}$ form was the pre-SA-CCR current exposure method add-on for capital, which SA-CCR replaced.
+
+> [!question]- risk-cva-flat-exposure | One-year trade, flat EE 500k, hazard 3%, LGD 60%, rate 4%. Estimate CVA two ways.
+> Midpoint: $0.6 \times e^{-0.02} \times 500\text{k} \times (1 - e^{-0.03}) = 8{,}691$; exact integral $0.6 \times 500\text{k} \times 0.03(1 - e^{-0.07})/0.07 = 8{,}692$.
+> The credit-triangle shortcut with spread 1.8% gives 8,822, too high because it ignores survival.
+
+> [!question]- risk-bgk-barrier-shift | How do you price a daily-monitored barrier with a continuous-monitoring formula?
+> Shift the barrier away from spot by $e^{\mp 0.5826\sigma\sqrt{\Delta t}}$ (Broadie, Glasserman and Kou 1997): 90 becomes 89.3418 for 20% vol and daily monitoring.
+> In [Liquidity and Model Risk](16-Liquidity-and-Model-Risk.md) the shifted formula gives 8.9139 for a down-and-out call against 8.6655 unshifted, matching a daily Monte Carlo.
+
+> [!question]- risk-erc-two-asset-any-correlation | Two assets have vols 15% and 25%. What equal-risk-contribution weights do correlations of -0.5, 0 and 0.8 give?
+> 0.625 and 0.375 in every case: with two assets equal contributions force $w_1\sigma_1 = w_2\sigma_2$, so correlation drops out.
 
 ## In this repo and SDE-Interview-Prep
 
-- Python reference implementation of risk problem set solutions: [risk_problem_set.py](code/risk_problem_set.py).
-- Python reference implementation of exposure profiles and XVA: [exposure_xva.py](code/exposure_xva.py).
-- Python reference implementation of risk analytics and bumping: [risk_analytics.py](code/risk_analytics.py).
-- Counterparty credit risk analytics: [Counterparty Credit Risk Analytics](14-Counterparty-Credit-Risk-Analytics.md).
-- XVA framework: [XVA](15-XVA.md).
-- Liquidity and model risk: [Liquidity and Model Risk](16-Liquidity-and-Model-Risk.md).
+- [risk_problem_set.py](code/risk_problem_set.py): every problem above, reusing [drawdowns.py](code/drawdowns.py), [risk_sensitivities.py](code/risk_sensitivities.py), [risk_decomposition.py](code/risk_decomposition.py), [risk_ccr_analytics.py](code/risk_ccr_analytics.py) and [risk_liquidity_model.py](code/risk_liquidity_model.py).
+- Numbers quoted from other notes in the cards (the swap peak, DVA and FVA of the XVA example, KVA of the simulated swap, the barrier prices) are asserted by [risk_ccr_analytics.py](code/risk_ccr_analytics.py), [risk_xva_pricing.py](code/risk_xva_pricing.py), [risk_sensitivities.py](code/risk_sensitivities.py) and [risk_liquidity_model.py](code/risk_liquidity_model.py).
+- Notes: [Kelly](01-Kelly-Criterion-and-Position-Sizing.md), [VaR and ES](03-VaR-and-Expected-Shortfall.md), [Stress Testing](04-Stress-Testing-and-Scenarios.md), [Drawdowns](05-Drawdowns-and-Risk-Limits.md), [P&L Attribution](06-PnL-Attribution-and-Greek-Risk.md), [Sensitivities](12-Sensitivities-and-Revaluation.md), [Risk Decomposition](13-Risk-Decomposition-and-Attribution.md), [CCR Analytics](14-Counterparty-Credit-Risk-Analytics.md), [XVA](15-XVA.md), [Liquidity and Model Risk](16-Liquidity-and-Model-Risk.md).
+
+## Further reading
+
+- P. Jorion, *Value at Risk*, 3rd edition, McGraw-Hill 2006.
+- J. Gregory, *The xVA Challenge*, 4th edition, Wiley 2020.
+- R. Almgren and N. Chriss, "Optimal execution of portfolio transactions", *Journal of Risk* 3(2), 5-39, 2000.
+- M. Magdon-Ismail, A. Atiya, A. Pratap and Y. Abu-Mostafa, "On the maximum drawdown of a Brownian motion", *Journal of Applied Probability* 41(1), 147-161, 2004.
+- J. Hull and A. White, "Incorporating volatility updating into the historical simulation method for value-at-risk", *Journal of Risk* 1(1), 5-19, 1998.
+- M. Broadie, P. Glasserman and S. Kou, "A continuity correction for discrete barrier options", *Mathematical Finance* 7(4), 325-349, 1997.
+- Basel Committee on Banking Supervision, Basel Framework CRE52, CRE53 and MGN20.
