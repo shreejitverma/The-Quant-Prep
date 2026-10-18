@@ -121,21 +121,24 @@ class NaturalSpline:
         sup = [h[i] for i in range(1, n - 2)]
         rhs = [3.0 * ((y[i + 1] - y[i]) / h[i] - (y[i] - y[i - 1]) / h[i - 1]) for i in range(1, n - 1)]
 
-        cp = [0.0] * (m - 1)
-        dp = [0.0] * m
-        cp[0] = sup[0] / diag[0]
-        dp[0] = rhs[0] / diag[0]
-        for i in range(1, m - 1):
-            denom = diag[i] - sub[i - 1] * cp[i - 1]
-            cp[i] = sup[i] / denom
-            dp[i] = (rhs[i] - sub[i - 1] * dp[i - 1]) / denom
-        denom = diag[m - 1] - sub[m - 2] * cp[m - 2]
-        dp[m - 1] = (rhs[m - 1] - sub[m - 2] * dp[m - 2]) / denom
+        if m == 1:
+            c_interior = [rhs[0] / diag[0]]
+        else:
+            cp = [0.0] * (m - 1)
+            dp = [0.0] * m
+            cp[0] = sup[0] / diag[0]
+            dp[0] = rhs[0] / diag[0]
+            for i in range(1, m - 1):
+                denom = diag[i] - sub[i - 1] * cp[i - 1]
+                cp[i] = sup[i] / denom
+                dp[i] = (rhs[i] - sub[i - 1] * dp[i - 1]) / denom
+            denom = diag[m - 1] - sub[m - 2] * cp[m - 2]
+            dp[m - 1] = (rhs[m - 1] - sub[m - 2] * dp[m - 2]) / denom
 
-        c_interior = [0.0] * m
-        c_interior[m - 1] = dp[m - 1]
-        for i in range(m - 2, -1, -1):
-            c_interior[i] = dp[i] - cp[i] * c_interior[i + 1]
+            c_interior = [0.0] * m
+            c_interior[m - 1] = dp[m - 1]
+            for i in range(m - 2, -1, -1):
+                c_interior[i] = dp[i] - cp[i] * c_interior[i + 1]
 
         self.x = x
         self.y = y
@@ -359,6 +362,9 @@ def run_tests() -> None:
     nonlocal_pillars = sum(abs(sb.value(t) - s.value(t)) > 1e-12 for t in test_grid)
     quoted("spline: grid points from 3y to 30y moved by the 2y bump (of 271)", nonlocal_pillars, 266, 0)
     quoted("grid points that are pillars (3, 5, 7, 10, 30) and cannot move", sum(t in x for t in test_grid), 5, 0)
+    # Minimal 3-point spline verification (m=1 case)
+    s3 = NaturalSpline([0.0, 1.0, 2.0], [0.0, 1.0, 0.0])
+    assert len(s3.c) == 3 and abs(s3.c[1] - (-1.5)) < 1e-14
 
     print("  Example 4: dirty-flag DAG on a hypothetical 15-currency curve set")
     ccys = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD", "SEK", "NOK", "DKK", "HKD", "SGD", "CNH", "MXN"]
