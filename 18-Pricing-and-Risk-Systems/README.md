@@ -16,12 +16,12 @@ The architecture, design patterns, and production engineering behind quantitativ
 
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
-| 01 | [Front-to-Back Architecture](01-Front-to-Back-Architecture.md) | DQ | core | 4 | draft | 10 |
-| 02 | [Trade Representation and Lifecycle](02-Trade-Representation-and-Lifecycle.md) | DQ | core | 4 | draft | 10 |
-| 03 | [Market and Reference Data Platform](03-Market-and-Reference-Data-Platform.md) | DQ | core | 4 | draft | 10 |
-| 04 | [Curve and Surface Service](04-Curve-and-Surface-Service.md) | DQ | advanced | 4 | draft | 10 |
-| 05 | [Pricing Library Architecture](05-Pricing-Library-Architecture.md) | DQ | advanced | 4 | draft | 10 |
-| 06 | [Pricing at Scale](06-Pricing-at-Scale.md) | DQ | senior | 4 | draft | 10 |
+| 01 | [Front-to-Back Architecture](01-Front-to-Back-Architecture.md) | DQ | core | 4 | solid | 18 |
+| 02 | [Trade Representation and Lifecycle](02-Trade-Representation-and-Lifecycle.md) | DQ | core | 4 | solid | 18 |
+| 03 | [Market and Reference Data Platform](03-Market-and-Reference-Data-Platform.md) | DQ | core | 4 | solid | 18 |
+| 04 | [Curve and Surface Service](04-Curve-and-Surface-Service.md) | DQ | advanced | 4 | solid | 16 |
+| 05 | [Pricing Library Architecture](05-Pricing-Library-Architecture.md) | DQ | advanced | 4 | solid | 17 |
+| 06 | [Pricing at Scale](06-Pricing-at-Scale.md) | DQ | senior | 4 | solid | 16 |
 | 07 | [Risk Engine Architecture](07-Risk-Engine.md) | DQ | senior | 4 | draft | 10 |
 | 08 | [Intraday Risk and Pre-Trade Limits](08-Intraday-Risk-and-Pre-Trade-Limits.md) | DQ | advanced | 4 | draft | 10 |
 | 09 | [P&L Platform and Attribution](09-PnL-Platform.md) | DQ | senior | 4 | draft | 10 |
