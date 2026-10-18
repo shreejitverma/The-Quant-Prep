@@ -1,6 +1,6 @@
 ---
 type: guide
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-trader, quant-research, quant-dev, quant-risk]
 tier: core
 status: solid
 sources: []

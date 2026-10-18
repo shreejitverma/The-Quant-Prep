@@ -150,7 +150,7 @@ def card_text(q: Question) -> str:
 
 
 def render(bank: Path, questions: dict[str, Question], name: str, topics: dict[str, str]) -> list[Path]:
-    """Write bank.json, one note per topic, By-Firm.md and README.md. Returns written paths."""
+    """Write bank.json, one note per topic under notes/, and By-Firm.md. Returns written paths."""
     live = [q for q in questions.values() if not q.duplicate_of]
     unknown = sorted({q.topic for q in live if q.topic and q.topic not in topics})
     if unknown:

@@ -5,9 +5,11 @@ Everything committed here is public.
 
 ## Layout
 
-- `00-Start-Here/` guides; `01-` to `15-` the syllabus; `16-Trading-and-Investing/` and `17-CFA/` free-form Obsidian libraries (`curriculum: false`, not validated by `qp`).
+- `00-Start-Here/` guides; `01-` to `15-`, `17-Regulatory-Capital-Basel-and-FRTB/` and `18-Pricing-and-Risk-Systems/` the syllabus.
+- `16-Trading-and-Investing/` holds the Markets Mastery OS curriculum, which `qp` loads, tracks and checks (README `index: false`; also run `python3 16-Trading-and-Investing/scripts/verify_markets.py`), next to a free-form investing library that `qp` skips (`is_markets_library` in `tools/qp/vault.py`).
+- `17-CFA/` is a library (`curriculum: false`): `qp` loads only its README.
 - `17-CFA/` is the CFA Level II platform: notes are governed by `17-CFA/scripts/cfa_l2/NOTE_SPEC.md`, `ITEMSET_SPEC.md` and `MOCK_SPEC.md`, progress lives in `17-CFA/CFA-L-2/00-Strategy/Build-Checklist.md`, and `verify_notes.py` and `verify_practice.py` there must pass before shipping anything under `17-CFA/CFA-L-2/`. They read the gitignored curriculum extracts, so run them from the main checkout, or from a worktree with `CFA_BUILD` and `CFA_PRIVATE` set to the main checkout's `build/cfa_l2` and `17-CFA/Private`; CI cannot run them.
-- `tools/qp/` the platform: `vault.py` (parsing), `state.py` (progress, SM-2), `planner.py`, `drills.py`, `check.py`, `moc.py`, `cli.py`, `server.py`, `web/` (static app). Standard library only.
+- `tools/qp/` the platform: `vault.py` (parsing), `state.py` (progress, SM-2), `planner.py`, `drills.py`, `check.py`, `moc.py` (generated README blocks), `cli.py`, `server.py`, `bank.py` (question-bank import), `markets.py`, `mastery.py` and `verify_markets.py` (Markets Mastery OS), `lab/` (Trading Lab engines), `web/` and `lab/web/` (static apps). Standard library only; architecture in `tools/qp/README.md`.
 - `tools/obsidian/` plugin lock and bootstrap; `.obsidian/` shared settings only.
 - `_archive/` pre-2026 material and superseded drafts; never edit, index or link it from the syllabus.
 
@@ -31,14 +33,16 @@ Everything committed here is public.
 
 ## Checks
 
-Run before committing; CI (`.github/workflows/ci.yml`) and `.no-mistakes.yaml` run the same:
+Run these before committing.
+`.no-mistakes.yaml` runs `./qp check` (which also flags a stale index), the secret scan, ruff and the unit tests; CI (`.github/workflows/ci.yml`) runs `./qp check --strict-sde`, the unit tests, ruff and every example, with the secret scan as its own job:
 
 ```sh
 ./qp check              # add --strict-sde when ../SDE-Interview-Prep is cloned
-./qp index              # regenerate section README tables after adding or renaming notes
+./qp index              # regenerate section README tables and the root README catalog after adding or renaming notes
 python3 -m unittest discover -s tools/tests -t .
 tools/scan-secrets.sh   # secrets in the branch's commits vs origin/main; rules in .gitleaks.toml
 ruff check . && ruff format --check .
+python3 tools/run_examples.py   # every Python example under NN-*/code (needs numpy, pandas, matplotlib)
 ```
 
 C++ examples in `12-Quant-Development/code/cpp` must build with `-std=c++20 -Wall -Wextra -Wpedantic -Werror` on GCC and Clang and run clean under ASan/UBSan (TSan for the concurrent ones).

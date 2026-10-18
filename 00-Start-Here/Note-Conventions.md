@@ -1,6 +1,6 @@
 ---
 type: guide
-track: [quant-trader, quant-research, quant-dev]
+track: [quant-trader, quant-research, quant-dev, quant-risk]
 tier: core
 status: solid
 sources: []
@@ -40,6 +40,9 @@ sources: []            # URLs or citations used while writing
 - `concept`, `problem-set` and `playbook` notes are topics: learners mark their mastery and they appear in plans.
 - `guide`, `reference`, `firm` and `moc` notes are supporting material.
 - Frontmatter is flat: scalars and inline `[a, b]` lists only.
+- List items must not contain commas: the parser splits on every comma.
+- Numbers become numbers; every other value, including `true` and `false`, stays a string.
+- Other keys with meaning: `focus` (a firm guide's topic ids), `extends` (a private overlay note's target topic), and in a section README `index: false` (hand-written, no generated table) and `curriculum: false` (a library outside the syllabus).
 - Tiers mean: `core` is expected of every candidate for the track, `advanced` separates strong candidates, and `senior` is expected of experienced hires.
 
 ## Status
@@ -48,12 +51,14 @@ sources: []            # URLs or citations used while writing
 | :--- | :--- |
 | `seed` | Objectives and references only. The backlog of unwritten notes. |
 | `draft` | Partly written; may lack sections or cards. |
-| `solid` | Complete: every required section, at least 6 cards (15 for a problem set), and all maths checked. |
+| `solid` | Complete: every required section, at least 6 cards (15 for a problem set, 3 for a playbook), and every number checked as described in [How Notes Are Verified](How-Notes-Are-Verified.md). |
 | `canonical` | `solid`, and reviewed by a human against the references. Only a human sets this. |
 
 ## Required sections for `solid`
 
-Use these `##` headings in this order, then any extra sections you need:
+Use these `##` headings in this order, then any extra sections you need.
+`./qp check` verifies that each one is present; keeping the order is part of review.
+Notes under `16-Trading-and-Investing/Investing/` need only TL;DR, Learning objectives, Core concepts and Further reading.
 
 1. `## TL;DR` - three to six bullet points a candidate should be able to say from memory.
 2. `## Learning objectives` - carried over from the seed.
@@ -75,7 +80,7 @@ Each card is a collapsible Obsidian callout whose title line carries a stable id
 > $1/6$. Six of the 36 equally likely ordered outcomes sum to 7: (1,6), (2,5), ..., (6,1).
 ```
 
-- The id is kebab-case, unique across the whole repo, and starts with the section prefix: `prob`, `stat`, `la`, `sc`, `deriv`, `fi`, `ms`, `mm`, `alpha`, `ml`, `risk`, `qd`, `int`, `reg`, `sys`.
+- The id is kebab-case, unique across the whole repo, and starts with the section prefix: `prob`, `stat`, `la`, `sc`, `deriv`, `fi`, `ms`, `mm`, `alpha`, `ml`, `risk`, `qd`, `int`, `reg`, `sys`, and `mkt-<track>` in the Markets Mastery OS.
 - Never change an id once published: review history is keyed on it.
 - The prompt stays on the title line; the answer is every following line that starts with `>`.
 - Leave a blank line between cards, or Markdown merges them into one quote.
@@ -87,7 +92,7 @@ Each card is a collapsible Obsidian callout whose title line carries a stable id
 ## Maths and style
 
 - Inline maths `$...$`, display maths `$$...$$` on their own lines; GitHub, Obsidian and the dashboard all render them.
-- One sentence per line in prose.
+- One sentence per line in prose (enforced in review, and by `tools/qp/verify_markets.py` for section 16).
 - No emojis and no em dashes; use a plain `-`.
 - Link notes with relative Markdown links (`[Greeks](../05-Derivatives-and-Volatility/05-The-Greeks.md)`), not wikilinks, so the links work on GitHub too.
 - Link SDE-Interview-Prep with absolute GitHub URLs (`https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/...`); `./qp check` verifies each target exists in your local clone (`SDE_REPO`, default `../SDE-Interview-Prep`).
