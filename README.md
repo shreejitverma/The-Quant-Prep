@@ -8,7 +8,7 @@ It is three things over one set of Markdown notes:
 - **A progress platform**: the `qp` command line and a local web dashboard for readiness by track and by firm, a prerequisite-ordered weekly plan, daily card review, and timed drills (arithmetic sprint, 80-in-8 numerical test, market-making game).
 - **An Obsidian vault**: open the folder in Obsidian to read; question cards are collapsible callouts.
 
-[Trading and Investing](16-Trading-and-Investing/README.md) adds the Markets Mastery OS curriculum, persona-based study planning, mastery scoring, and an interactive trading lab to the `qp` platform.
+[Markets Mastery OS](16-Trading-and-Investing/MARKETS_HUB.md) (in [16-Trading-and-Investing](16-Trading-and-Investing/README.md)) adds the practice-first trading and investing curriculum, persona-based study planning, mastery scoring, and an interactive trading lab to the `qp` platform.
 
 General software engineering (DSA, C++, system design, low-latency systems) lives in [SDE-Interview-Prep](https://github.com/shreejitverma/SDE-Interview-Prep) and is linked, not copied: see the [SDE Link Map](00-Start-Here/SDE-Link-Map.md).
 
@@ -43,6 +43,7 @@ Progress is stored outside the repo (`~/.local/share/quant-prep/`, or `$QP_HOME`
 | 11 | [Risk and Trading](11-Risk-and-Trading/README.md) | Kelly, betting, VaR and ES, stress testing, drawdowns and limits, P&L attribution and Greek risk, risk factors, scenario generation, sensitivities and revaluation, trading judgement. |
 | 12 | [Quant Development](12-Quant-Development/README.md) | Order books, feed handlers, backtesters, pricing libraries, risk checks; bridges to SDE-Interview-Prep. |
 | 13 | [Interview Playbook](13-Interview-Playbook/README.md) | Formats, mental math, brainteasers, estimation, trading games, behavioural, senior expectations. |
+| 16 | [Markets Mastery OS](16-Trading-and-Investing/MARKETS_HUB.md) | Practice-first microstructure, limit order books, options volatility, systematic research, fundamental valuation, and 11 interactive lab engines. |
 | 17 | [Regulatory Capital, Basel, and FRTB](17-Regulatory-Capital-Basel-and-FRTB/README.md) | Capital and RWA, credit SA and IRB, SA-CCR, CVA capital, FRTB standardised and internal models, liquidity, IRRBB, stress testing, BCBS 239. |
 | 18 | [Pricing and Risk Systems](18-Pricing-and-Risk-Systems/README.md) | Front-to-back architecture, trade and market data, curve and pricing services, risk, P&L, FRTB and XVA engines, EOD batch, governance. |
 | 14 | [Firms](14-Firms/README.md) | One guide per firm: roles, process, what they test, a focused plan. |
@@ -69,6 +70,7 @@ Notes marked `seed` are the writing backlog: objectives and references exist, fu
 | LSTM baseline | [10-Machine-Learning-for-Finance/code](10-Machine-Learning-for-Finance/code/) |
 | Basel credit SA and IRB, SA-CCR, FRTB sensitivities-based method, DRC and RRAO, FRTB IMA (ES, NMRF, backtesting, PLA), liquidity and IRRBB | [17-Regulatory-Capital-Basel-and-FRTB/code](17-Regulatory-Capital-Basel-and-FRTB/code/) |
 | Reference pricing and risk engine | [18-Pricing-and-Risk-Systems/code](18-Pricing-and-Risk-Systems/code/) |
+| 11 interactive simulation and analytics engines: limit order book matching, Avellaneda-Stoikov quoting, options volatility desk, futures term structure, multi-asset risk parity, Kelly sizing, event study, chart replay, overfitting trap, interview games, trade journal analytics | [tools/qp/lab](tools/qp/lab/) |
 
 Every example must run cleanly in CI; examples that assert their numbers also fail CI when a quoted number drifts.
 Run them all with `python tools/run_examples.py` (needs numpy, pandas and matplotlib; `--list` shows them), or one at a time with `python <file>.py`.

@@ -103,7 +103,7 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Create `16-Trading-and-Investing/MARKETS_HUB.md` with links to tracks, labs, disclaimers, and dashboard.
 - [x] Create folder index maps for all `Finance/` and `Investing/` subdirectories.
 - [x] Author standard YAML templates in `Templates/` (`Markets_Concept.md`, `Markets_Investment_Memo.md`, `Markets_Playbook.md`, `Markets_Trade_Journal.md`).
-- [ ] Author the remaining planned templates (trade plan, decision journal, post-mortem, weekly review, monthly review, drill attempt).
+- [x] Author the remaining planned templates (trade plan, decision journal, post-mortem, weekly review, monthly review, drill attempt).
 - [x] Build content verifier `16-Trading-and-Investing/scripts/verify_markets.py`.
 - [x] Register `mkt-` card prefix in `00-Start-Here/Note-Conventions.md` and `tools/qp/check.py`.
 - [x] Implement State Schema v2 with atomic migration in `tools/qp/state.py`.
@@ -112,10 +112,10 @@ Each phase produces working software, tested content, and passing verification c
 ### Phase 2: Curriculum Structure, Markets Canon, and Masters Codex
 - [x] Author `16-Trading-and-Investing/00-Curriculum/Learning-Path.md` with Mermaid progression graph.
 - [x] Author `16-Trading-and-Investing/00-Curriculum/Canon.md` with 25 publications across six domains.
-- [ ] Expand `Canon.md` to 60+ verified publications organised into Gateway, Core, and Capstone tiers.
+- [x] Expand `Canon.md` to 60+ verified publications organised into Gateway, Core, and Capstone tiers.
 - [x] Author `16-Trading-and-Investing/00-Curriculum/Masters-Codex.md` and initial 10 master profiles.
 - [x] Wire curriculum navigation into `MARKETS_HUB.md`.
-- [ ] Link the Markets curriculum from the repo `README.md`.
+- [x] Link the Markets curriculum from the repo `README.md`.
 
 ### Phase 3: Synthetic Market Engine & Sizing / Ruin Lab
 - [x] Implement synthetic price-path generator `tools/qp/lab/market.py` with analytical and Monte Carlo oracle.
@@ -128,7 +128,7 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Implement Almgren-Chriss, TWAP, and VWAP benchmarks with implementation shortfall scoring.
 - [x] Add unit tests verifying order conservation, price priority, and no crossed books.
 - [x] Build web UI with a depth chart and execution metrics.
-- [ ] Add a time and sales tape to the LOB web UI.
+- [x] Add a time and sales tape to the LOB web UI.
 
 ### Phase 5: Market Making Upgrade & Interview Games Lab
 - [x] Refactor and upgrade market-making engine into `tools/qp/lab/mm_quote.py` with multi-level progression.

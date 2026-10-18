@@ -18,7 +18,12 @@ HARNESS = r"""
 const fs = require("fs");
 const vm = require("vm");
 const [appPath, expr] = process.argv.slice(1);
-const ctx = { document: { addEventListener: () => {}, getElementById: () => null } };
+const tapeBody = { children: [], appendChild(row) { this.children.push(row); } };
+const ctx = { document: {
+  addEventListener: () => {},
+  getElementById: (id) => id === "tape-body" ? tapeBody : null,
+  createElement: () => ({ innerHTML: "", className: "" }),
+}, tapeBody };
 ctx.window = ctx;
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(appPath, "utf8"), ctx);
@@ -93,6 +98,18 @@ class LabMetricFormatTest(unittest.TestCase):
         for key, value in int_metrics.items():
             with self.subTest(metric=key):
                 self.assertEqual(rendered[key], f"{value:,}")
+
+    def test_time_and_sales_renders_newest_trade_first(self):
+        trades = [
+            {"time": "09:30:01.100", "price": 100.25, "size": 40, "side": "buy", "aggressor": "agent"},
+            {"time": "09:30:02.200", "price": 99.75, "size": 60, "side": "sell", "aggressor": "market"},
+        ]
+        rendered = run_js("(renderTimeAndSales(" + json.dumps(trades) + "), tapeBody.children.map(row => row.innerHTML))")
+        self.assertEqual(len(rendered), 2)
+        self.assertIn("09:30:02.200", rendered[0])
+        self.assertIn("$99.75", rendered[0])
+        self.assertIn("09:30:01.100", rendered[1])
+        self.assertIn("$100.25", rendered[1])
 
 
 if __name__ == "__main__":

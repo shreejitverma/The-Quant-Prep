@@ -308,3 +308,119 @@ canvas {
   color: var(--text-secondary);
   line-height: 1.6;
 }
+
+/* Time and Sales Tape Widget */
+.lob-tape-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.tape-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.tape-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tape-badge {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.tape-table-wrapper {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+}
+
+.tape-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.tape-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.tape-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(36, 48, 68, 0.5);
+  color: var(--text-secondary);
+}
+
+.tape-table tr:hover {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.tape-table tr.block-trade {
+  background: rgba(245, 158, 11, 0.06);
+  font-weight: 600;
+}
+
+.tape-price.side-buy {
+  color: var(--accent-green);
+  font-weight: 600;
+}
+
+.tape-price.side-sell {
+  color: var(--accent-red);
+  font-weight: 600;
+}
+
+.tape-table .badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.tape-table .badge.side-buy {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+}
+
+.tape-table .badge.side-sell {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--accent-red);
+}
+
+.tape-table .badge.badge-agent {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--accent-blue);
+}
+
+.tape-table .badge.badge-market {
+  background: rgba(100, 116, 139, 0.2);
+  color: var(--text-muted);
+}
+

@@ -102,6 +102,33 @@
           </div>
         </div>
 
+        <div id="lob-tape-container" class="lob-tape-container" style="display: none;">
+          <div class="tape-header">
+            <h3>Time and Sales Tape</h3>
+            <span class="tape-badge" id="tape-status">Live Execution Stream</span>
+          </div>
+          <div class="tape-table-wrapper">
+            <table class="tape-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Price ($)</th>
+                  <th>Size</th>
+                  <th>Side</th>
+                  <th>Aggressor</th>
+                </tr>
+              </thead>
+              <tbody id="tape-body">
+                <tr>
+                  <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 16px;">
+                    Execute simulation to stream order fills
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div class="summary-box">
           <p id="summary-text">Click "Run Simulation" to execute the model with your customized parameters.</p>
         </div>
