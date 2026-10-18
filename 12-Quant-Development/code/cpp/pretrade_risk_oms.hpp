@@ -20,14 +20,16 @@
 //     ClOrdID); the order is then Pending Cancel, either set of replace terms can still execute, and
 //     the venue answers the two requests separately.
 //   * Every order keeps a ledger of the ClOrdIDs sent for it (the new order, each cancel, each
-//     replace) with the state of each request: in flight, implied (a new order filled before its
-//     ack), accepted, rejected, or moot (the order ended while the request was in flight). Every
-//     inbound message is classified by the order's phase and by the ledger state of the request it
-//     names, and one transition table (kTransitions) decides what it does; anything the table does
-//     not list is a reconciliation failure. OrdStatus is derived from the phase and the ledger.
-//   * Late answers are counted and ignored: an ack overtaken by fills (an implicit ack), an ack or
-//     cancel reject for a request that became moot, a resent cancel reject for a request already
-//     rejected. A reject for a request the venue accepted, or for the order itself, is a break.
+//     replace) with the state of each request: in flight, implied (a new order filled or ended by
+//     the venue before its ack), accepted, rejected, or moot (the order ended while the request was
+//     in flight). Every inbound message is classified by the order's phase and by the ledger state
+//     of the request it names, and one transition table (kTransitions) decides what it does;
+//     anything the table does not list is a reconciliation failure. OrdStatus is derived from the
+//     phase and the ledger.
+//   * Late answers are counted and ignored: an ack overtaken by a fill or a venue end (an implicit
+//     ack), an ack or cancel reject for a request that became moot, a resent cancel reject for a
+//     request already rejected. A reject for a request the venue accepted, or for the order itself,
+//     is a break.
 //   * Exposure arithmetic saturates instead of overflowing, so an exposure too large to represent
 //     fails the credit check closed.
 //

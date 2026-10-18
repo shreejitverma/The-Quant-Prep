@@ -222,7 +222,7 @@ The transitions that bite in production:
 - **Terminal means terminal.** A report that moves a Filled, Canceled, Rejected or Expired order is not a state change you apply; it is evidence that your book and the venue's disagree.
 
 Patching these races one branch at a time is how gateways end up with a false kill on one race and a silent hole on the next.
-The repo's gateway keeps, for every order, a ledger of each ClOrdID it sent (the order, each cancel, each replace) and the state of that request: in flight, implied (filled before its ack), accepted, rejected, or moot (the order ended first).
+The repo's gateway keeps, for every order, a ledger of each ClOrdID it sent (the order, each cancel, each replace) and the state of that request: in flight, implied (filled or ended by the venue before its ack), accepted, rejected, or moot (the order ended first).
 Each inbound message is classified by the order's phase (unacknowledged, live, filled, ended) and by the ledger state of the request it names, and one transition table decides the action; a combination the table does not list is a reconciliation failure.
 The diagram above is that table seen as OrdStatus changes: the repo's model check requires every row to fire and the status changes it observes to be exactly these edges.
 OrdStatus is recomputed from the phase and the ledger after every message, so it cannot drift from them.

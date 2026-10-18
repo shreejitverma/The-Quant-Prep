@@ -16,8 +16,8 @@ sources: [ISO/IEC 14882:2020 (C++20) [intro.races] and [atomics.order], Williams
 - Release on the writer and acquire on the reader is enough for message passing (the pattern inside every queue); only `seq_cst` (operations or fences) forbids the store-buffering outcome that breaks Dekker-style flags.
 - The SPSC ring buffer is the workhorse between pinned threads: one writer per index, release to publish, acquire to consume, cached copies of the other side's index, indices padded onto separate cache lines.
 - Lock-free structures that recycle nodes must solve ABA (tags, or never-freed index pools) and reclamation (hazard pointers, epochs, RCU); bounded index-based designs sidestep both.
-- Steady state must not allocate: object pools and arenas measured about 2.0 and 1.3 ns per allocate-and-free on the test machine, against 11.9 ns for `new`/`delete`, and their latency does not depend on allocator state.
-- Prove lock-free code with ThreadSanitizer, not with passing tests: weakening one acquire to relaxed in the SPSC ring passed its functional checksum in 10 of 20 runs on the test machine, while TSan reported the race on every run.
+- Steady state must not allocate: object pools and arenas beat `new`/`delete` by several times in the single-session measurements under Measured on the test machine below, and their latency does not depend on allocator state.
+- Prove lock-free code with ThreadSanitizer, not with passing tests: weakening one acquire to relaxed in the SPSC ring still passed its functional checksum in some runs, while TSan reported the race on every run (a single-session observation, see A test that passes on broken code below).
 
 ## Learning objectives
 
@@ -112,7 +112,7 @@ Ordering is the subtle part (Boehm, 2012): the reader's re-read of the sequence 
 The repo version makes the data stores release and the data loads acquire, which gives both properties without fences (free on x86, `STLR` and `LDAPR` per word on ARM); Boehm's fence-based variant is cheaper on ARM.
 Writers are wait-free, readers can retry indefinitely under a continuous stream of writes, so seqlocks suit small, frequently read, less frequently written data.
 In [tests/test_lock_free.cpp](code/cpp/tests/test_lock_free.cpp) three readers check an invariant across four words of every snapshot while the writer publishes 100,000 versions; removing the reader's second sequence check made that test report torn snapshots in each of three runs.
-That is a single-session observation on the Apple M3 Pro, not something CI asserts; reproduce it from `code/cpp` by deleting the second sequence check in `Seqlock::read` in `lock_free.hpp` and running `clang++ -std=c++20 -O2 -pthread -I . tests/test_lock_free.cpp -o /tmp/tlf && /tmp/tlf` a few times.
+That is a single-session observation on the Apple M3 Pro, not something CI asserts; reproduce it from `code/cpp` by deleting the second sequence check in `Seqlock::try_load` in `lock_free.hpp` and running `clang++ -std=c++20 -O2 -pthread -I . tests/test_lock_free.cpp -o /tmp/tlf && /tmp/tlf` a few times.
 
 ### Memory reclamation and ABA
 
@@ -261,13 +261,13 @@ Because of the clamp no test can observe the wrap; the unit test only calls `siz
 > `weak` may fail spuriously (LL/SC hardware), so use it in a retry loop where a spurious failure just loops; use `strong` when a single attempt's result is acted on.
 
 > [!question]- qd-conc-pool-why | Why use an object pool on the hot path, and what are its limits?
-> O(1) allocate and free with no allocator state dependence, no system calls, cache-warm LIFO reuse. Measured: 2.04 ns per create-destroy pair vs 11.88 ns for new/delete. Limits: fixed object size, single-threaded unless paired with a lock-free free list, capacity planned up front.
+> O(1) allocate and free with no allocator state dependence, no system calls, cache-warm LIFO reuse. In one session on an Apple M3 Pro, not asserted by CI, concurrency_bench.cpp measured 2.04 ns per create-destroy pair vs 11.88 ns for new/delete (reproduce from code/cpp with `clang++ -std=c++20 -O2 -pthread concurrency_bench.cpp -o /tmp/cb && /tmp/cb`). Limits: fixed object size, single-threaded unless paired with a lock-free free list, capacity planned up front.
 
 > [!question]- qd-conc-arena | What is an arena allocator and when is it the right choice?
 > Bump-pointer allocation from one buffer, freed all at once by `reset()`. Ideal for scratch data with a common lifetime (one message, one batch, one request); it cannot free individual objects and must not hold types with non-trivial destructors.
 
 > [!question]- qd-conc-tsan | What does ThreadSanitizer catch that a stress test does not?
-> Data races that did not cause a visible failure in that run: it tracks happens-before and reports conflicting accesses without an ordering edge. Weakening one acquire in the SPSC ring passed the functional checks in 10 of 20 runs on the ARM test machine (and can pass every time on x86), while TSan reported the race on every run.
+> Data races that did not cause a visible failure in that run: it tracks happens-before and reports conflicting accesses without an ordering edge. Weakening one acquire in the SPSC ring passed the functional checks in 10 of 20 runs in one session on an Apple M3 Pro (ARM; it can pass every time on x86), while TSan reported the race on every run; reproduce from code/cpp by making the consumer's head load relaxed in lock_free.hpp and running `clang++ -std=c++20 -O2 -pthread lock_free_spsc_queue.cpp -o /tmp/spsc && for i in $(seq 20); do /tmp/spsc; done`.
 
 > [!question]- qd-conc-mutex-vs-lockfree | When is a mutex the better choice than a lock-free queue?
 > When contention is low, critical sections are short, there are many producers and consumers, or simplicity and auditability matter more than a few hundred nanoseconds. Uncontended mutexes are cheap; the cost appears under contention, when threads block in the kernel.
@@ -282,7 +282,7 @@ Because of the clamp no test can observe the wrap; the unit test only calls `siz
 > Release sequences: a release operation heads the run of read-modify-writes that follow it in the atomic's modification order, and an acquire that reads any value in that run synchronizes with the release. Every write to the head is a CAS, so each push's release covers all later pops.
 
 > [!question]- qd-conc-core-to-core | How would you measure core-to-core latency, and what did it come to here?
-> Ping-pong a value between two threads through two SPSC rings and halve the round trip. On the test machine the median round trip was 89.2 ns, about 45 ns one way, with thread placement changing it run to run (81.2 to 89.2 ns over five runs).
+> Ping-pong a value between two threads through two SPSC rings and halve the round trip. In one session on an Apple M3 Pro, not asserted by CI, concurrency_bench.cpp measured a median round trip of 89.2 ns, about 45 ns one way, with thread placement changing it run to run (81.2 to 89.2 ns over five runs; reproduce from code/cpp with `clang++ -std=c++20 -O2 -pthread concurrency_bench.cpp -o /tmp/cb && /tmp/cb`).
 
 ## In this repo and SDE-Interview-Prep
 
