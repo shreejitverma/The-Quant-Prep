@@ -125,14 +125,22 @@ def fair_value(spot: float, r: float, days: int, divs: list[tuple[int, float]]) 
 def section_fair_value() -> float:
     print("\n== 3. Index futures fair value ==")
     fv = fair_value(SPOT, R, DAYS, DIVS)
-    # Independent check by cash flows: borrow SPOT, buy index, receive and lend dividends, deliver at fv.
-    debt = SPOT * (1 + R * DAYS / 360)
-    div_cash = sum(d * (1 + R * (DAYS - t) / 360) for t, d in DIVS)
-    check("carry identity: debt - dividends - fair value", debt - div_cash - fv, 0.0, 1e-9, ".1e")
+    # Cash-flow ledger on a daily schedule: borrow SPOT and buy the index on day 0, receive each dividend on its
+    # payment day and lend it, and accrue one day of simple ACT/360 interest on every principal each day.
+    paid = dict(DIVS)
+    debt, debt_interest, div_principal, div_interest = SPOT, 0.0, 0.0, 0.0
+    for day in range(DAYS):
+        div_principal += paid.get(day, 0.0)
+        debt_interest += debt * R / 360
+        div_interest += div_principal * R / 360
+    div_cash = div_principal + div_interest
+    # Delivering the index against the short future at F repays the loan net of the dividend deposits.
+    check("fair value from the daily cash-flow ledger minus the closed form", debt + debt_interest - div_cash - fv, 0.0, 1e-9, ".1e")
     # fi-etf-index-fair-value, Worked example 3
-    check("financing cost to expiry (index points)", SPOT * R * DAYS / 360, 35.83, 0.005, ".2f")
+    check("financing cost to expiry (index points)", debt_interest, 35.83, 0.005, ".2f")
     check("dividends carried to expiry (index points)", div_cash, 10.53, 0.005, ".2f")
     check("index futures fair value", fv, 5025.30, 0.005, ".2f")
+    check("index futures fair value, four decimals", fv, 5025.3026, 5e-5, ".4f")
     check("fair value basis F - S (index points)", fv - SPOT, 25.30, 0.005, ".2f")
     f_mkt = 5031.00
     # Implied financing rate from the quoted future: solve S (1 + r d/360) - FV(divs, r) = F for r (linear in r).
@@ -164,7 +172,7 @@ def section_index_arb(fv: float) -> None:
     check("lower band for buying the future", fv - band, 5022.70, 0.005, ".2f")
     edge = f_mkt - fv
     # fi-etf-index-arb-pnl, Worked example 4
-    check("mispricing of a 5031.00 future (index points)", edge, 5.70, 0.005, ".2f")
+    check("mispricing of a 5031.00 future (index points)", edge, 5.6974, 5e-5, ".4f")
     # Simulate the trade at expiry for three settlement values: P&L must not depend on where the index ends.
     contracts = 100
     pnls = []

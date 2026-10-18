@@ -22,7 +22,7 @@ Enough of every major asset class to trade it or model it; deep rates knowledge 
 | 04 | [Short-Rate Models](04-Short-Rate-Models.md) | RQ | advanced | 5 | draft | 10 |
 | 05 | [Rates Options: Caps and Swaptions](05-Rates-Options-Caps-and-Swaptions.md) | RQ | senior | 5 | draft | 10 |
 | 06 | [Credit Basics: Hazard Rates and CDS](06-Credit-and-CDS.md) | TRQ | advanced | 5 | draft | 10 |
-| 07 | [FX Markets and Interest Rate Parity](07-FX-Markets-and-Interest-Rate-Parity.md) | TQ | advanced | 3 | solid | 19 |
+| 07 | [FX Markets and Interest Rate Parity](07-FX-Markets-and-Interest-Rate-Parity.md) | TQ | advanced | 3 | solid | 20 |
 | 08 | [ETFs and Index Arbitrage](08-ETFs-and-Index-Arbitrage.md) | TQ | core | 3 | solid | 18 |
 | 09 | [Commodities and Futures Curves](09-Commodities-and-Futures-Curves.md) | TQ | advanced | 3 | solid | 17 |
 | 10 | [Crypto Market Structure](10-Crypto-Market-Structure.md) | TQ | advanced | 2 | solid | 17 |

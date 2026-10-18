@@ -104,14 +104,20 @@ def section_carry() -> None:
     check("round-trip taker fees on both legs (USD)", fees, 1200, 1e-6, ".0f")
     check("net carry (USD)", collected - fees, 4200, 1e-6, ".0f")
     check("net carry annualised (%)", (collected - fees) / notional * 365 / days * 100, 8.52, 0.005, ".2f")
-    # Simulation: price path random, funding paid on mark notional. Spot gain offsets perp loss each step.
+    # Simulation on a random mark path. The spot leg is valued from its entry and exit prices only. The perp leg
+    # is settled interval by interval from its own cash flows: variation margin on the mark move, then the funding
+    # payment on the mark notional at the funding time (the short receives when the rate is positive).
     rng = np.random.default_rng(7)
     path = px * np.exp(np.cumsum(rng.normal(0, 0.01, intervals)))
     path = np.concatenate([[px], path])
     spot_pnl = qty * (path[-1] - px)
-    perp_pnl = -qty * (path[-1] - px)
-    funding = float(np.sum(qty * path[:-1] * INTEREST))
-    check("delta P&L of spot plus short perp on a random path (USD)", spot_pnl + perp_pnl, 0.0, 1e-6, ".1e")
+    perp_cash = 0.0
+    funding = 0.0
+    for m0, m1 in zip(path[:-1], path[1:], strict=True):
+        payment = qty * m0 * funding_rate(0.0)
+        funding += payment
+        perp_cash += -qty * (m1 - m0) + payment
+    check("spot P&L plus perp cash flows minus funding received, random path (USD)", spot_pnl + perp_cash - funding, 0.0, 1e-6, ".1e")
     check("funding collected on that path (USD, seed 7)", funding, 4829, 0.5, ".0f")
     # Dated future: quarterly at 61500 with 90 days left.
     f, d = 61500.0, 90
@@ -211,7 +217,7 @@ def section_amm() -> None:
     check("victim ETH received when sandwiched", v_eth, 9.4907, 5e-5, ".4f")
     check("victim shortfall versus no attack (ETH)", out - v_eth, 0.3809, 5e-5, ".4f")
     check("attacker profit before gas (USDC)", a_usdc - 60_000.0, 809.48, 0.005, ".2f")
-    # Impermanent loss: closed form against brute-force re-arbitrage of the pool with no fees.
+    # Impermanent loss: closed form against the pool's reserves after no-fee re-arbitrage to the new price.
     for r in (2.0, 0.5, 1.25):
         k = x * y
         p0 = y / x
@@ -220,9 +226,9 @@ def section_amm() -> None:
         y_new = math.sqrt(k * p1)
         lp = x_new * p1 + y_new
         hodl = x * p1 + y
-        brute = lp / hodl - 1
+        from_reserves = lp / hodl - 1
         closed = 2 * math.sqrt(r) / (1 + r) - 1
-        assert abs(brute - closed) < 1e-12
+        assert abs(from_reserves - closed) < 1e-12
     # fi-crypto-impermanent-loss
     check("impermanent loss at a 2x price move (%)", (2 * math.sqrt(2.0) / 3 - 1) * 100, -5.72, 0.005, ".2f")
     check("impermanent loss at a 0.5x price move (%)", (2 * math.sqrt(0.5) / 1.5 - 1) * 100, -5.72, 0.005, ".2f")

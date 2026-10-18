@@ -134,7 +134,7 @@ The baseline annualises to 10.95% simple, 11.57% compounded.
 
 "Long 10 BTC spot at 60,000, short 10 BTC perp, funding in the band for 30 days, taker fees 0.05% on each leg in and out."
 Funding received: $600{,}000 \times 0.01\% \times 90 = 5{,}400$ USD; fees $4 \times 0.05\% \times 600{,}000 = 1{,}200$; net 4,200 USD, 8.52% annualised.
-On a random price path (seed 7) the spot and perp P&L cancel exactly and funding on the moving mark notional comes to about 4,829 USD.
+On a random price path (seed 7) the script settles the perp leg interval by interval from its own variation margin and funding payments and values the spot leg from its entry and exit prices; the hedged total equals the funding received, which on the moving mark notional comes to about 4,829 USD.
 A 90-day quarterly future at 61,500 against spot 60,000 locks 10.14% annualised instead, with no funding regime risk.
 
 ### Example 3: how far can BTC rally before the short leg is liquidated?

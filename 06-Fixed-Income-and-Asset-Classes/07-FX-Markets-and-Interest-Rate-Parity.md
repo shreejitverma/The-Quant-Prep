@@ -85,7 +85,8 @@ flowchart LR
     F -->|"synthetic = cash"| H["CIP holds, b = 0"]
 ```
 
-- $b < 0$ for EURUSD or USDJPY means the forward is higher than CIP implies, so borrowing dollars synthetically (borrow EUR, swap into USD) costs more than borrowing dollars directly: there is excess demand for dollar funding through swaps.
+- $b < 0$ means borrowing dollars synthetically (borrow the other currency, swap into USD) costs more than borrowing dollars directly: there is excess demand for dollar funding through swaps.
+- The forward moves the opposite way in the two quoting conventions: in EURUSD (USD is the quote currency) the basis is in the denominator and $b < 0$ puts the forward above CIP; in USDJPY (USD is the base currency) $F = S(1 + (r_¥ + b)\tau)/(1 + r_\$\tau)$, so $b < 0$ puts the forward below CIP.
 - Why it is not arbitraged away: the trade (borrow USD, lend EUR, hedge with an FX swap) expands a bank's balance sheet, and since 2008 leverage-ratio and other balance-sheet charges make that expensive; Du, Tepper and Verdelhan document that deviations widen at quarter-ends, when banks report balance sheets.
 - Who trades it: banks with spare balance sheet, supranationals and corporates issuing in one currency and swapping to another, and reserve managers.
 - Cross-currency swaps (floating rates in two currencies plus the basis on one leg, notional exchanges at start and end) are the long-dated version; see [Multi-Curve and CSA Discounting](13-Multi-Curve-and-CSA-Discounting.md).
@@ -155,6 +156,11 @@ The arbitrage runs the other way: borrow 100m USD at 4.30%, sell spot for EUR, d
 At 3M that leaves 62,402 USD, about 24.69 bp annualised on the notional.
 Whether a bank does it depends on whether 24.69 bp covers its balance-sheet cost for a quarter, which is the whole post-2008 story of the basis.
 
+The same sign moves a USDJPY forward the other way, because USD is the base currency there.
+With hypothetical spot 150.00, USD 4.30%, JPY 0.50%, both ACT/360 over 91 days, CIP gives $F = 150 \times (1 + 0.005\tau)/(1 + 0.043\tau) = 148.57466$, or $-142.53$ points of 0.01 JPY.
+A basis of $-40$ bp on the JPY leg gives $F = 150 \times (1 + 0.001\tau)/(1 + 0.043\tau) = 148.42462$, 15.00 points below CIP, not above it.
+Borrowing JPY at 0.50% and swapping into USD at that forward costs a synthetic 4.7042%, 40.42 bp over cash dollars: the same dollar premium as in EURUSD.
+
 ### Example 3: triangular arbitrage
 
 "EURUSD 1.0848/1.0850, USDJPY 151.20/151.22, EURJPY 164.10/164.14. Is there an arbitrage?"
@@ -222,6 +228,10 @@ Inverting the forward delta, $K = F\exp(\mp\sigma\sqrt{T}N^{-1}(0.25) + \tfrac12
 > [!question]- fi-fx-basis-from-forward | Spot 1.0850, USD 4.30%, EUR 2.00%, 91 days, forward points quoted at 69.50. Implied basis?
 > About $-24.53$ bp.
 > Solve $1 + (r_€ + b)\tau = S(1 + r_\$\tau)/F$ with $F = 1.09195$; the quote is 6.74 pips above CIP.
+
+> [!question]- fi-fx-basis-usdjpy | USDJPY spot 150.00, USD 4.30%, JPY 0.50%, 91 days ACT/360, basis $-40$ bp on the JPY leg. Is the forward above or below CIP, and by how much?
+> Below, by 15.00 points of 0.01 JPY: 148.42462 against a CIP forward of 148.57466.
+> USD is the base, so $F = S(1 + (r_¥ + b)\tau)/(1 + r_\$\tau)$ and a negative basis shrinks the numerator; the synthetic USD rate via JPY is 4.7042%, 40.42 bp over cash.
 
 > [!question]- fi-fx-basis-arbitrage-limits | If the basis is $-25$ bp, why don't banks borrow dollars and lend them through FX swaps until it closes?
 > The trade grows the balance sheet, and leverage-ratio and other capital charges since 2008 make that costly, especially at reporting dates.

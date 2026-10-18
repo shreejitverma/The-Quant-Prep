@@ -93,16 +93,28 @@ def section_roll() -> None:
     check("annualised roll yield, backwardated (% compounded)", ((1 + rb) ** 12 - 1) * 100, 9.45, 0.005, ".2f")
     check("annualised roll yield, contango (% compounded)", ((1 + rc) ** 12 - 1) * 100, -11.26, 0.005, ".2f")
 
-    # Brute force: a long position that buys M2, holds a month, sells it as M1 and rebuys M2, for 12 months,
-    # with the spot (M1) and the whole curve unchanged. Spot return is zero; the whole P&L is roll.
+    # Trade-by-trade simulation of a fully collateralised long. Contracts are labelled by expiry month; with the
+    # curve unchanged in time to expiry, a contract expiring in month e trades at curve[e - t - 1] in month t, so
+    # each contract converges towards the front-month (spot) price as it ages. Each month sell the held contract
+    # at its new price, book the futures P&L into collateral, and buy the contract expiring two months out.
     def rolled_wealth(curve: list[float]) -> float:
-        wealth = 1.0
-        for _ in range(12):
-            wealth = wealth / curve[1] * curve[0]  # buy M2 with all wealth, sell it a month later as M1
-        return wealth
+        def price(expiry: int, t: int) -> float:
+            return curve[expiry - t - 1]
 
-    check("12-month rolling excess return, backwardated, spot unchanged (%)", (rolled_wealth(BACKWARDATED) - 1) * 100, 9.45, 0.005, ".2f")
-    check("12-month rolling excess return, contango, spot unchanged (%)", (rolled_wealth(CONTANGO) - 1) * 100, -11.26, 0.005, ".2f")
+        collateral = 1.0
+        expiry = 2
+        contracts = collateral / price(expiry, 0)
+        for t in range(1, 13):
+            collateral += contracts * (price(expiry, t) - price(expiry, t - 1))
+            expiry = t + 2
+            contracts = collateral / price(expiry, t)
+        return collateral
+
+    for name, curve, expected in (("backwardated", BACKWARDATED, 9.45), ("contango", CONTANGO, -11.26)):
+        sim = rolled_wealth(curve) - 1
+        closed = (1 + roll_yield_one_month(curve)) ** 12 - 1
+        check(f"12-month rolling excess return, {name}, simulated minus (1 + roll)^12 - 1", sim - closed, 0.0, 1e-12, ".1e")
+        check(f"12-month rolling excess return, {name}, spot unchanged (%)", sim * 100, expected, 0.005, ".2f")
 
 
 # ---------------------------------------------------------------------------

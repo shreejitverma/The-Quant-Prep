@@ -117,7 +117,7 @@ Over the year the backwardated curve falls 4.81% and the contango curve rises 7.
 "You hold the second contract for a month and the curve does not move. What do you earn?"
 Backwardated: $80.00/79.40 - 1 = 0.756\%$ a month, 9.45% a year compounded.
 Contango: $70.00/70.70 - 1 = -0.990\%$ a month, $-11.26\%$ a year.
-A brute-force simulation that buys month 2, sells it as month 1 a month later and rolls, twelve times, with spot unchanged, reproduces both numbers: the entire P&L is roll.
+The script also simulates the roll trade by trade: each month it sells the contract it holds, which has aged into the front month, books the futures P&L into collateral and buys the contract two months out; over twelve months with spot unchanged the simulated wealth matches $(1 + \text{roll})^{12}$ to machine precision, so the entire P&L is roll.
 
 ### Example 3: spot up, futures down
 

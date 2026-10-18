@@ -4,7 +4,8 @@ Backs 06-Fixed-Income-and-Asset-Classes/07-FX-Markets-and-Interest-Rate-Parity.m
 All market inputs are hypothetical round numbers chosen for the examples, not market data.
 
 1. Covered interest parity with money-market day counts (EURUSD 3M, GBPUSD 1Y), forward points.
-2. Cross-currency basis implied by a quoted forward, the synthetic dollar rate and the arbitrage P&L.
+2. Cross-currency basis implied by a quoted forward, the synthetic dollar rate and the arbitrage P&L;
+   the same basis sign on USDJPY, where USD is the base currency.
 3. Uncovered interest parity and the carry trade.
 4. Triangular arbitrage with bid and ask quotes.
 5. Garman-Kohlhagen, delta-neutral ATM, 25-delta strikes from ATM, risk reversal and butterfly.
@@ -14,6 +15,7 @@ Run: uv run --no-project --with numpy python 06-Fixed-Income-and-Asset-Classes/c
 
 from __future__ import annotations
 
+import itertools
 import math
 import sys
 from statistics import NormalDist
@@ -114,6 +116,23 @@ def section_basis(cip_fwd: float) -> None:
     check("arbitrage P&L at 3M on 100m USD borrowed (USD)", pnl, 62402, 1.0, ".0f")
     check("arbitrage P&L annualised (bp of notional)", pnl / usd / tau * 1e4, 24.69, 0.005, ".2f")
 
+    # USDJPY: USD is the base, so the basis on the JPY leg sits in the numerator, F = S (1 + (r_jpy + b) tau) / (1 + r_usd tau).
+    # fi-fx-basis-usdjpy, Worked example 2
+    s_jpy, r_jpy, b_jpy = 150.00, 0.0050, -0.0040
+    fwd_cip = cip_forward(s_jpy, r_jpy, tau, R_USD, tau)
+    fwd_b = cip_forward(s_jpy, r_jpy + b_jpy, tau, R_USD, tau)
+    check("USDJPY 3M CIP forward", fwd_cip, 148.57466, 5e-6, ".5f")
+    check("USDJPY 3M CIP forward points (0.01 JPY)", (fwd_cip - s_jpy) * 100, -142.53, 0.005, ".2f")
+    check("USDJPY 3M forward with a -40 bp basis", fwd_b, 148.42462, 5e-6, ".5f")
+    check("USDJPY forward with basis minus CIP forward (0.01 JPY)", (fwd_b - fwd_cip) * 100, -15.00, 0.005, ".2f")
+    assert fwd_b < fwd_cip, "a negative basis must put the USDJPY forward below CIP"
+    b_back = (fwd_b * (1 + R_USD * tau) / s_jpy - 1) / tau - r_jpy
+    check("USDJPY basis recovered from the forward (bp)", b_back * 1e4, -40.00, 1e-9, ".2f")
+    # Borrow JPY at r_jpy, sell JPY spot for USD, buy the JPY back forward at fwd_b to repay the loan.
+    synth_usd_jpy = ((s_jpy / fwd_b) * (1 + r_jpy * tau) - 1) / tau
+    check("synthetic USD rate via JPY and FX swap (%)", synth_usd_jpy * 100, 4.7042, 5e-5, ".4f")
+    check("synthetic minus direct USD rate via JPY (bp)", (synth_usd_jpy - R_USD) * 1e4, 40.42, 0.005, ".2f")
+
 
 # ---------------------------------------------------------------------------
 # 3. Uncovered interest parity and the carry trade
@@ -161,14 +180,23 @@ def section_triangle() -> None:
     profit = jpy_in - jpy_out
     check("triangular arbitrage profit on 1m EUR (JPY)", profit, 26300, 0.5, ".0f")
     check("profit in USD at the USDJPY ask", profit / usdjpy[1], 173.92, 0.005, ".2f")
-    # Brute force: try all 8 direction combinations around the triangle and keep the best round trip.
-    best = 0.0
-    for start_ccy_pnl in (
-        eurjpy[0] / (eurusd[1] * usdjpy[1]),  # EUR->JPY at bid, JPY->USD at ask, USD->EUR at ask
-        (eurusd[0] * usdjpy[0]) / eurjpy[1],  # EUR->USD at bid, USD->JPY at bid, JPY->EUR at ask
-    ):
-        best = max(best, start_ccy_pnl - 1)
+    # Brute force: every start currency and direction around the triangle (3 x 2 cycles), each leg converted at
+    # the side of the quote the dealer gives you: sell the base at the bid, buy it at the ask.
+    rate = {}
+    for (base, quote), (bid, ask) in {("EUR", "USD"): eurusd, ("USD", "JPY"): usdjpy, ("EUR", "JPY"): eurjpy}.items():
+        rate[base, quote] = bid
+        rate[quote, base] = 1 / ask
+    returns = {}
+    for cycle in itertools.permutations(("EUR", "USD", "JPY")):
+        amount = 1.0
+        for a, b in zip(cycle, cycle[1:] + cycle[:1], strict=True):
+            amount *= rate[a, b]
+        returns[cycle] = amount - 1
+    profitable = [c for c, r in returns.items() if r > 0]
+    assert sorted(profitable) == sorted([("EUR", "JPY", "USD"), ("JPY", "USD", "EUR"), ("USD", "EUR", "JPY")]), profitable
+    best = max(returns.values())
     check("best round-trip return around the triangle (bp)", best * 1e4, 1.60, 0.005, ".2f")
+    check("profit of the JPY-start cycle on the JPY paid for the USD leg (JPY)", returns["JPY", "USD", "EUR"] * jpy_out, 26300, 0.5, ".0f")
 
 
 # ---------------------------------------------------------------------------

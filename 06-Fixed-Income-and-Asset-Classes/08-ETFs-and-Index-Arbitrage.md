@@ -130,7 +130,7 @@ In a trend (ten days of +1%), the index gains 10.46% and the 2x fund 21.90%, mor
 ### Example 3: index futures fair value and implied financing
 
 Index 5000.00, $r = 4.30\%$ ACT/360, 60 days to expiry, dividends of 4.00 points on day 20 and 6.50 points on day 45.
-Financing costs 35.83 points; dividends carried to expiry are worth 10.53 points; fair value is 5025.30, a basis of 25.30 points.
+Financing costs 35.83 points; dividends carried to expiry are worth 10.53 points; fair value is 5025.30 (5025.3026 to four decimals), a basis of 25.30 points.
 "The future trades at 5031.00. What financing rate does that imply?"
 Solve the fair-value formula for $r$: 4.9843%, 68.43 bp over our funding, so the future is rich for anyone funding at 4.30%.
 
@@ -138,10 +138,10 @@ Solve the fair-value formula for $r$: 4.9843%, 68.43 bp over our funding, so the
 
 Costs: 2.5 bp of the index per basket trade each way (2.50 points round trip) and 0.10 points per futures trade.
 The band is fair value $\pm 2.60$: sell futures above 5027.90, buy below 5022.70.
-At 5031.00 the future is 5.70 points rich: sell 100 futures, buy the basket.
-Held to expiry, P&L is 154.87 USD per contract (15,487 USD on 100), the same whether the index settles at 4600, 5000 or 5400.
+At 5031.00 the future is $5031.00 - 5025.3026 = 5.6974$ points rich: sell 100 futures, buy the basket.
+Held to expiry, P&L is $(5.6974 - 2.60) \times 50 = 154.87$ USD per contract (15,487 USD on 100), the same whether the index settles at 4600, 5000 or 5400.
 "Twenty days later the future is only 1.20 points rich and you close."
-The quick estimate, entry minus exit mispricing less a second set of costs, is 89.87 USD per contract.
+The quick estimate, entry minus exit mispricing less a second set of costs, is $(5.6974 - 1.20 - 2.50 - 0.20) \times 50 = 89.87$ USD per contract.
 With one index unit per future the actual P&L is 136.69 if the index has fallen to 4800 and 41.14 if it has risen to 5200: at day 20 the position has a residual delta of $-0.00478$ index units per future, because $\partial F/\partial S = 1 + r\tau$.
 Holding $1 + r\tau$ index units per future (the only change) removes the dependence on the index level and gives 87.02 USD per contract in both scenarios.
 
@@ -214,7 +214,7 @@ That ratio, not the announcement itself, tells you the trade: someone must suppl
 
 > [!question]- fi-etf-index-arb-pnl | The future is at 5031.00 and you sell it against the basket, holding to expiry. P&L per E-mini contract?
 > 154.87 USD.
-> $(5031.00 - 5025.30 - 2.60) \times 50$, independent of where the index settles.
+> $(5031.00 - 5025.3026 - 2.60) \times 50$, independent of where the index settles.
 
 > [!question]- fi-etf-index-arb-hedge-ratio | Why does a 1:1 index arbitrage hedge leave risk if you might unwind early, and what ratio fixes it?
 > Before expiry $\partial F/\partial S = 1 + r\tau$, so one index unit per short future leaves a short delta (about $-0.00478$ with 40 days to expiry in the note's example).
