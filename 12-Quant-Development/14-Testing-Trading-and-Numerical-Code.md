@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-dev]
+track: [quant-dev, quant-risk]
 tier: core
 status: solid
 prereqs: []

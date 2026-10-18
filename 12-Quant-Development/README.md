@@ -30,11 +30,11 @@ See [SDE-Link-Map](../00-Start-Here/SDE-Link-Map.md) for everything that lives i
 | 07 | [Order Book and Matching Engine Implementation](07-Order-Book-and-Matching-Engine.md) | D | core | 5 | solid | 21 |
 | 08 | [Market Data Feed Handlers and Protocols](08-Market-Data-Feed-Handlers-and-Protocols.md) | D | core | 4 | solid | 25 |
 | 09 | [Backtester and Exchange Simulator Design](09-Backtester-and-Simulator-Design.md) | D | core | 4 | solid | 21 |
-| 10 | [Pricing Library Design](10-Pricing-Library-Design.md) | D | advanced | 4 | solid | 21 |
+| 10 | [Pricing Library Design](10-Pricing-Library-Design.md) | DQ | advanced | 4 | solid | 21 |
 | 11 | [Numerical Python: NumPy, pandas and Numba](11-Numerical-Python-NumPy-and-Numba.md) | RD | core | 3 | solid | 24 |
 | 12 | [Tick Data Storage and Time-Series Databases](12-Tick-Data-Storage-and-Time-Series-Databases.md) | D | advanced | 3 | solid | 21 |
-| 13 | [Risk Checks and Order Management Systems](13-Risk-Checks-and-Order-Management.md) | D | core | 3 | solid | 21 |
-| 14 | [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md) | D | core | 3 | solid | 22 |
+| 13 | [Risk Checks and Order Management Systems](13-Risk-Checks-and-Order-Management.md) | DQ | core | 3 | solid | 21 |
+| 14 | [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md) | DQ | core | 3 | solid | 22 |
 | 15 | [Quant Dev Problem Set](15-Quant-Dev-Problem-Set.md) | D | core | 6 | solid | 43 |
 
 <!-- qp:moc:end -->

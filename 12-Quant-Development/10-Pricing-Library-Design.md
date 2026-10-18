@@ -1,6 +1,6 @@
 ---
 type: concept
-track: [quant-dev]
+track: [quant-dev, quant-risk]
 tier: advanced
 status: solid
 prereqs: [cpp-for-trading-systems, monte-carlo-pricing-and-variance-reduction]
