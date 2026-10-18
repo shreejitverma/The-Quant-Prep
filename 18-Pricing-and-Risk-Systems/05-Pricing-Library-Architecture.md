@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [curve-and-surface-service]
 est_hours: 4
-sources: [Luigi Ballabio - Implementing QuantLib (Leanpub), QuantLib 1.44 source - ql/instrument.hpp ql/patterns/lazyobject.hpp ql/userconfig.hpp ql/handle.hpp (13 October 2026), Open Source Risk Engine README and release 1.8.17.0 (15 September 2026), Antoine Savine - Modern Computational Finance - AAD and Parallel Simulations (Wiley 2018), Andreas Griewank and Andrea Walther - Evaluating Derivatives 2nd edition (SIAM 2008), Michael B. Giles and Paul Glasserman - Smoking Adjoints - Fast Monte Carlo Greeks (Risk 19(1) January 2006)]
+sources: [Luigi Ballabio - Implementing QuantLib (Leanpub), QuantLib 1.44 source - ql/instrument.hpp ql/patterns/lazyobject.hpp ql/userconfig.hpp ql/handle.hpp (13 October 2026), Open Source Risk Engine README and release 1.8.17.0 (15 September 2026), Antoine Savine - Modern Computational Finance - AAD and Parallel Simulations (Wiley 2018), Andreas Griewank and Andrea Walther - Evaluating Derivatives 2nd edition (SIAM 2008), Michael B. Giles and Paul Glasserman - Smoking Adjoints - Fast Monte Carlo Greeks (Risk 2006)]
 ---
 
 # Pricing Library Architecture
@@ -221,7 +221,8 @@ In elementary operations: the forward pass records 163 nodes and the reverse swe
 ### Example 4: Monte Carlo Greeks by AAD
 
 A 1-year at-the-money call (spot 100, strike 100, rate 3%, volatility 20%) has Black-Scholes price 9.4134, delta 0.5987 and vega 38.67.
-Pricing it by Monte Carlo with 20,000 paths (seed 2024) on a tape gives about 9.57 with standard error 0.10, and one reverse sweep gives pathwise delta about 0.600 and vega about 39.6, within sampling error of the closed forms.
+Pricing it by Monte Carlo with 20,000 paths (seed 2024) on a tape gives about 9.57 with standard error 0.10, and one reverse sweep gives pathwise delta about 0.600 (standard error 0.004) and vega about 39.6 (standard error 0.54), within sampling error of the closed forms: the vega is 1.8 standard errors high.
+The code also writes the pathwise estimators out by hand per path, $e^{-rT}\mathbf{1}\{S_T > K\} S_T/S_0$ for delta and $e^{-rT}\mathbf{1}\{S_T > K\} S_T(\sqrt{T}Z - \sigma T)$ for vega, and asserts that their averages equal the tape's adjoints.
 The tape has 160,005 nodes, 8 per path, so memory, not arithmetic, is what limits a production Monte Carlo AAD engine.
 
 ### Example 5: why the grid size changed the P&L
@@ -333,4 +334,4 @@ Memory: 100,000 paths of 100 steps with 10 operations a step is 0.1 billion tape
 - Open Source Risk Engine, https://github.com/OpenSourceRisk/Engine.
 - Savine, A., *Modern Computational Finance: AAD and Parallel Simulations*, Wiley, 2018.
 - Griewank, A. and Walther, A., *Evaluating Derivatives: Principles and Techniques of Algorithmic Differentiation*, 2nd edition, SIAM, 2008.
-- Giles, M. B. and Glasserman, P., "Smoking Adjoints: Fast Monte Carlo Greeks", *Risk* 19(1), January 2006, pp. 88-92.
+- Giles, M. B. and Glasserman, P., "Smoking Adjoints: Fast Monte Carlo Greeks", *Risk*, 2006.

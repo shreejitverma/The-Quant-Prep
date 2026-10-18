@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [var-and-expected-shortfall]
 est_hours: 4
-sources: [Basel Committee on Banking Supervision - The Basel Framework CAP50 Prudent valuation guidance (version effective 15 December 2019 retrieved 2026-10-16), Commission Delegated Regulation (EU) No 149/2013 Articles 12 and 13 (as adopted), Regulation (EU) No 648/2012 (EMIR) Article 9(2) (as adopted), 17 CFR 45.2(c) (eCFR retrieved 2026-10), Bank of England Board of Banking Supervision - Report of the Inquiry into the Circumstances of the Collapse of Barings (HC 673 July 1995), Societe Generale - Special Committee progress report (20 February 2008) and General Inspection Mission Green summary report (20 May 2008), Apache Kafka 4.3 documentation - Introduction (retrieved 2026-10), Gregor Hohpe and Bobby Woolf - Enterprise Integration Patterns (Addison-Wesley 2003), Martin Kleppmann - Designing Data-Intensive Applications (O'Reilly 2017), Martin Fowler - Patterns of Enterprise Application Architecture (Addison-Wesley 2002)]
+sources: [Basel Committee on Banking Supervision - The Basel Framework CAP50 Prudent valuation guidance (version effective 15 December 2019 retrieved 2026-10-16), Commission Delegated Regulation (EU) No 149/2013 Articles 12 and 13 (unamended as of 2026-10 per EUR-Lex), Regulation (EU) No 648/2012 (EMIR) Article 9(2) (unamended by Regulations 2019/834 and 2024/2987 as of 2026-10), 17 CFR 45.2(c) (eCFR retrieved 2026-10), Bank of England Board of Banking Supervision - Report of the Inquiry into the Circumstances of the Collapse of Barings (HC 673 July 1995), Societe Generale General Inspection - Mission Green summary report (20 May 2008), Commission Bancaire - decision of 3 July 2008 against Societe Generale, Apache Kafka 4.3 documentation - Introduction (retrieved 2026-10), Gregor Hohpe and Bobby Woolf - Enterprise Integration Patterns (Addison-Wesley 2003), Martin Kleppmann - Designing Data-Intensive Applications (O'Reilly 2017), Martin Fowler - Patterns of Enterprise Application Architecture (Addison-Wesley 2002)]
 ---
 
 # Front-to-Back Architecture
@@ -202,7 +202,7 @@ An economic amendment reopens confirmation; an operational amendment (book, trad
   Exactly-once features in brokers cover the broker's own read-process-write cycle; an external side effect such as a payment instruction still needs a business idempotency key.
 - **Outbox.** Trade capture writes the trade and the outgoing event in one local transaction and a relay publishes the event, so there is never a booked trade without an event or an event without a trade.
 - **Strong where money or limits move.** Booking, limit reservation and payment release each have one serialised writer; everything else is a derived view, which is cheaper to scale and can be rebuilt.
-- **Reconciliation is the control for every eventual boundary.** Front office against risk (trade population and PV), front office against operations (economic terms, confirmed status), product control against finance (P&L to GL), and the bank against its counterparties: the EU requires daily portfolio reconciliation between financial counterparties with 500 or more uncleared OTC contracts outstanding with each other, weekly between 51 and 499 and quarterly at 50 or fewer (Delegated Regulation 149/2013 Article 13(3), as adopted; later amendments may apply).
+- **Reconciliation is the control for every eventual boundary.** Front office against risk (trade population and PV), front office against operations (economic terms, confirmed status), product control against finance (P&L to GL), and the bank against its counterparties: in the EU a financial counterparty, or a non-financial counterparty above the clearing threshold, must reconcile uncleared OTC portfolios each business day with a counterparty with which it has 500 or more contracts outstanding, weekly between 51 and 499 and quarterly at 50 or fewer; smaller non-financial counterparties reconcile quarterly above 100 contracts and yearly otherwise (Delegated Regulation 149/2013 Article 13(3); Articles 12 to 14 unamended as of 2026-10 per EUR-Lex).
 - **Schema evolution.** Producers and consumers deploy independently, so event schemas must stay backward and forward compatible (add optional fields, never reuse a field number or change a meaning) and carry a schema version.
 
 ```mermaid
@@ -225,21 +225,21 @@ flowchart TB
 ### Independence and segregation of duties
 
 The Basel prudent valuation guidance requires "clear and independent (ie independent of front office) reporting lines for the department accountable for the valuation process" (CAP50.3(2)).
-Independent price verification is distinct from daily marking: market prices or model inputs are verified by a unit independent of the dealing room at least monthly, or more often depending on the market (CAP50.7), and banks must formally consider valuation adjustments for unearned credit spreads, close-out costs, operational risks, early termination, investing and funding costs, future administrative costs and, where appropriate, model risk (CAP50.10).
+Independent price verification is distinct from daily marking: market prices or model inputs are verified by a unit independent of the dealing room at least monthly, or more often depending on the market (CAP50.7), and supervisors expect banks to formally consider valuation adjustments for unearned credit spreads, close-out costs, operational risks, early termination, investing and funding costs, future administrative costs and, where appropriate, model risk (CAP50.10).
 Models used for marking must be developed or approved independently of the front office and independently tested (CAP50.6(4)).
 In systems terms this means: traders cannot edit official marks or the IPV price source, cannot change a trade's status after operations has confirmed it without a new version and a new confirmation, cannot access settlement instructions, and every manual override is a logged, attributed, four-eyes event.
 
 ### What the published inquiries found
 
 **Barings (1995).**
-The Bank of England Board of Banking Supervision report (HC 673, ordered to be printed 18 July 1995) describes Nick Leeson as general manager and head trader of Baring Futures (Singapore), who was also responsible for its back office, and an account 88888 opened in July 1992, designated internally as a client account and described as an error account on BFS's system (paras 1.9, 4.2, 4.5).
-Cumulative losses were £827m at 27 February 1995 and £927m after liquidating the positions (para 1.69, Figures 4.1 and 4.5).
+The Bank of England Board of Banking Supervision report (HC 673, ordered to be printed 18 July 1995) names Nick Leeson as General Manager and Head Trader of Baring Futures (Singapore) (BFS) from late 1992 (para 1.35), and describes account 88888, set up at the beginning of July 1992, designated internally as a client account and described as an error account on BFS's system (para 4.5).
+Cumulative losses were £827m at 27 February 1995 (para 1.69, Figure 4.1) and £927m after closing out the positions (Figure 4.5).
 The report calls the fact that Leeson "was permitted throughout to remain in charge of both front office and back office at BFS" "a most serious failing" and notes that 1994 internal audit recommendations to separate those duties were never implemented (para 13.13); among its lessons is that "clear segregation of duties is fundamental to any effective control system" (para 14.2(c)).
 
 **Societe Generale (2008).**
-The bank reported a loss of 4.9 billion euros after unwinding unauthorised positions between 21 and 23 January 2008 (Special Committee progress report, 20 February 2008).
-Its General Inspection's Mission Green summary report (20 May 2008) found that supervision of the trader was weak despite several alerts, and that support-function controls were carried out according to procedures but did not detect the fraud, while controls that would have detected it were missing, including checks on cancelled or modified trades, trades with a deferred start date, technical counterparties and positions with a high nominal value.
-The French Commission Bancaire issued a reprimand and a 4 million euro fine for serious internal control deficiencies in July 2008.
+The bank's General Inspection, in its Mission Green summary report (20 May 2008), put the global loss from the fraud at 4.9 billion euros.
+It found that front-office supervision of the trader was weak despite several alerts, and that support-function controls were carried out according to procedures but did not detect the fraud, while controls that would have detected it were missing, including checks on cancelled or modified trades, trades with a deferred start date, technical counterparties and positions with a high nominal value.
+The French Commission Bancaire issued a reprimand and a 4 million euro fine for serious internal control deficiencies (decision of 3 July 2008).
 
 The architectural lessons are concrete: no individual may control both booking and the reconciliation that checks it; cancelled, amended and forward-starting trades and internal or technical counterparties need their own exception reports; gross notional per trader and per book is a control metric, not just net risk; and every manual change to a trade, mark or settlement instruction must be attributable and reviewed.
 
@@ -265,7 +265,7 @@ The inputs below are hypothetical; the method is what transfers.
 | Partitions with 1.5x headroom | 21 |
 
 Retention is a legal requirement, not a sizing choice.
-EMIR Article 9(2) requires counterparties to "keep a record of any derivative contract they have concluded and any modification for at least five years following the termination of the contract" (Regulation (EU) No 648/2012, as adopted), and CFTC rule 17 CFR 45.2(c) requires swap records to be retained "throughout the life of the swap and for a period of at least five years following the final termination of the swap".
+EMIR Article 9(2) requires counterparties to "keep a record of any derivative contract they have concluded and any modification for at least five years following the termination of the contract" (Regulation (EU) No 648/2012; the paragraph is unchanged by EMIR REFIT and EMIR 3 as of 2026-10), and CFTC rule 17 CFR 45.2(c) requires swap records to be retained "throughout the life of the swap and for a period of at least five years following the final termination of the swap".
 So the archive is sized by the life of the longest-dated trade plus at least five years, not by a fixed number of days; a 30-year swap booked today must stay reproducible for its whole life plus at least five years.
 
 ### Latency budgets
@@ -300,7 +300,9 @@ A hypothetical 5-year receiver swap: receive 4.5% annually on a notional amortis
 The front office prices the schedule correctly at 1,297,927.
 A downstream feed drops the amortisation schedule and values a 50 million bullet at 2,113,914.
 The break is 815,986, 16.3 times a hypothetical 50,000 tolerance, so the reconciliation raises it.
-The diagnosis comes from the shape of the break, not its size: on any curve the ratio of the two PVs equals the ratio of discount-factor-weighted notionals, which the code asserts, so a break whose ratio matches that signature is a schedule-mapping error rather than a curve or model difference.
+The diagnosis comes from repricing, not from the size of the break: run the front-office pricer on the trade exactly as the feed delivered it, and if that reproduces the downstream PV the curves and models agree and the break is in the terms.
+On this flat curve there is also a quick signature: every period has the same forward, so the PV ratio (1.63) equals the ratio of discount-factor-weighted notionals.
+On a sloped curve the signature fails, because each period's forward differs (the code asserts both cases), so it is a hint, never the proof.
 The fix belongs in the feed's mapping of the amortisation schedule, with a schema test that rejects a swap whose notional schedule is missing, never a manual adjustment in the downstream copy.
 
 ### Example 3: duplicates, reordering and idempotent consumers
@@ -393,12 +395,12 @@ Reordering corrupts state (a later amendment overwritten by an earlier one) and 
 > For correlated stages (shared garbage collection pauses, a market data burst) it can approach or exceed the sum, so measure the end-to-end distribution instead of adding percentiles.
 
 > [!question]- sys-01-16 | A downstream PV is 1.63 times the front-office PV for one swap. How do you diagnose it?
-> Check whether the ratio matches a mapping signature before blaming models: for an amortising swap valued as a bullet, the PV ratio equals the ratio of discount-factor-weighted notionals, independent of the rate level.
-> In the code's example the amortising PV is 1,297,927 and the bullet 2,113,914, so the fix is the feed's schedule mapping, with a schema check, not a manual adjustment.
+> Reprice the trade in the front-office pricer exactly as the feed delivered it: if that reproduces the downstream PV, models and curves agree and the terms were mapped wrongly.
+> In the code's flat-curve example the amortising PV is 1,297,927 and the bullet 2,113,914, and the ratio equals the ratio of discount-factor-weighted notionals, a quick signature of a dropped amortisation schedule that holds only when every period has the same forward; the fix is the feed's schedule mapping with a schema check, not a manual adjustment.
 
 > [!question]- sys-01-17 | What are the EU timeliness rules for confirming and reconciling uncleared OTC derivatives between financial counterparties?
-> Interest rate swaps and CDS concluded after 28 February 2014 must be confirmed by the end of the next business day (Delegated Regulation 149/2013 Article 12, as adopted).
-> Portfolios must be reconciled daily with 500 or more contracts outstanding with each other, weekly between 51 and 499 and quarterly at 50 or fewer (Article 13(3)).
+> Between financial counterparties (and non-financial counterparties above the clearing threshold) every uncleared OTC derivative is confirmed by the end of the business day after execution, the final phase-in step (from 28 February 2014 for interest rate swaps and CDS, from 31 August 2014 for other classes); a trade concluded after 16:00 local time, or across time zones that prevent it, gets one more business day (Delegated Regulation 149/2013 Article 12).
+> Portfolios are reconciled each business day with 500 or more contracts outstanding with each other, weekly between 51 and 499 and quarterly at 50 or fewer (Article 13(3)); Articles 12 to 14 are unamended as of 2026-10.
 
 > [!question]- sys-01-18 | Why does a cancelled trade differ from a terminated trade in the lifecycle model?
 > A cancellation voids a booking that should never have existed: its versions are kept for audit but it has no economic effect and no P&L.

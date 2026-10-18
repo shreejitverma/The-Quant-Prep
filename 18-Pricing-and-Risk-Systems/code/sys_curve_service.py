@@ -304,6 +304,9 @@ def run_tests() -> None:
             d_dn[c] -= 1e-7
             fd_val = (model_quotes(d_up)[r] - model_quotes(d_dn)[r]) / 2e-7
             assert abs(fd_val - j[r][c]) < 1e-6
+    # Lower triangular with a non-zero diagonal, so the bootstrap is a forward substitution.
+    assert all(j[r][c] == 0.0 for r in range(3) for c in range(r + 1, 3))
+    assert all(j[k][k] != 0.0 for k in range(3))
 
     print("  Example 2: market-quote sensitivities through the Jacobian (per 1 bp, notional 100m)")
     n = 100e6
@@ -320,6 +323,8 @@ def run_tests() -> None:
 
     at_market = lambda dd: receiver_swap_pv(dd, n, 0.05)  # noqa: E731
     s_at = [x * 1e-4 for x in quote_sensitivity(receiver_swap_grad(n, 0.05), j)]
+    for a, b in zip(s_at, [x * 1e-4 for x in bump_sensitivity(at_market, q)], strict=True):
+        assert abs(a - b) < 1e-3  # Jacobian solve versus bump-and-rebootstrap
     quoted("at-market 3y receiver PV", at_market(d), 0.0, 6)
     quoted("at-market 3y receiver delta to the 1y quote (per bp)", s_at[0], 0.0, 6)
     quoted("at-market 3y receiver delta to the 2y quote (per bp)", s_at[1], 0.0, 6)
@@ -328,6 +333,8 @@ def run_tests() -> None:
 
     off = lambda dd: receiver_swap_pv(dd, n, 0.06)  # noqa: E731
     s_off = [x * 1e-4 for x in quote_sensitivity(receiver_swap_grad(n, 0.06), j)]
+    for a, b in zip(s_off, [x * 1e-4 for x in bump_sensitivity(off, q)], strict=True):
+        assert abs(a - b) < 1e-3  # Jacobian solve versus bump-and-rebootstrap
     quoted("6% receiver PV", off(d), 2_739_384, 0)
     quoted("6% receiver delta to the 1y quote (per bp)", s_off[0], -88, 0)
     quoted("6% receiver delta to the 2y quote (per bp)", s_off[1], -171, 0)
@@ -349,15 +356,20 @@ def run_tests() -> None:
     min_idx = fwd.index(min_fwd)
     quoted("lowest spline instantaneous forward (%)", min_fwd * 100, -0.12, 2)
     quoted("maturity of the lowest spline forward (years)", grid[min_idx], 1.8, 1)
-    quoted("highest spline instantaneous forward (%)", max(fwd) * 100, 4.61, 2)
-    quoted("highest discrete forward (%)", max(disc) * 100, 4.0, 1)
+    assert min_fwd < min(disc)  # below every discrete forward between pillars
+    assert disc.index(min(disc)) == 1  # the lowest discrete forward is on the 1y to 2y interval
+    # On each interval the instantaneous forward averages to the discrete forward: integrate f = d(t z)/dt numerically.
+    a_, b_ = 1.0, 2.0
+    m = 2_000
+    avg = sum(spline_forward(s, a_ + (k + 0.5) * (b_ - a_) / m) for k in range(m)) / m
+    assert abs(avg - disc[1]) < 1e-6
 
     # Locality: bump the 2y zero rate by 1 bp and look at the 9y zero rate.
     yb = list(y)
     yb[2] += 1e-4
     sb = NaturalSpline(x, yb)
     quoted("spline: change in 9y zero from a 1 bp 2y bump (bp)", (sb.value(9.0) - s.value(9.0)) * 1e4, -0.041, 3)
-    quoted("spline: change in 1.5y zero (bp)", (sb.value(1.5) - s.value(1.5)) * 1e4, 0.6, 1)
+    quoted("spline: change in 1.5y zero (bp)", (sb.value(1.5) - s.value(1.5)) * 1e4, 0.56, 2)
     quoted("flat forwards: change in 9y zero (bp)", (flat_forward_zero(x, yb, 9.0) - flat_forward_zero(x, y, 9.0)) * 1e4, 0.0, 6)
 
     test_grid = [3.0 + i * (30.0 - 3.0) / 270 for i in range(271)]

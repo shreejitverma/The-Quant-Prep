@@ -297,11 +297,25 @@ def run_tests() -> None:
     quoted("downstream PV, bullet (USD)", pv_b, 2_113_914, 0)
     quoted("valuation break (USD)", pv_b - pv_a, 815_986, 0)
     quoted("break as a multiple of a 50,000 tolerance", (pv_b - pv_a) / 50_000, 16.3, 1)
-    # The break is not a curve effect: on any curve the ratio of the two PVs is the ratio of DF-weighted notionals.
+    # Signature of a dropped schedule on a FLAT curve: every period has the same forward, so the PV ratio equals the
+    # ratio of DF-weighted notionals (computed here without the pricer).
     w = [math.exp(-zero * i) for i in range(1, 6)]
     ratio = sum(n * d for n, d in zip(amort, w, strict=True)) / sum(n * d for n, d in zip(bullet, w, strict=True))
     assert abs(pv_a / pv_b - ratio) < 1e-12
     quoted("bullet PV over amortising PV (card sys-01-16)", pv_b / pv_a, 1.63, 2)
+    # On a sloped curve the forwards differ by period and the signature fails (the note says it is a hint, not a proof).
+    sloped = [0.02 + 0.006 * i for i in range(6)]  # hypothetical zero rates at 0..5 years
+
+    def pv_sloped(notionals: list[float]) -> float:
+        out = 0.0
+        for i, n in enumerate(notionals, start=1):
+            df_prev, df = math.exp(-sloped[i - 1] * (i - 1)), math.exp(-sloped[i] * i)
+            out += n * (fixed - (df_prev / df - 1.0)) * df
+        return out
+
+    ws = [math.exp(-sloped[i] * i) for i in range(1, 6)]
+    ratio_s = sum(n * d for n, d in zip(amort, ws, strict=True)) / sum(n * d for n, d in zip(bullet, ws, strict=True))
+    assert abs(pv_sloped(amort) / pv_sloped(bullet) - ratio_s) > 0.1
 
     print("  Example 3: at-least-once delivery and ordering (seed 7, 10,000 trades, 12 partitions, 2% redelivery)")
     r = ordering_experiment()

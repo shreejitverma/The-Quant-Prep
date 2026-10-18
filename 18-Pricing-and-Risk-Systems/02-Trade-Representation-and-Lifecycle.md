@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [front-to-back-architecture]
 est_hours: 4
-sources: [ISDA - FpML 5.13 Recommendation 2 (10 August 2026) and 5.14 Trial Recommendation (28 September 2026) per fpml.org archive retrieved 2026-10, FINOS Common Domain Model documentation - Event Model (cdm.finos.org retrieved 2026-10) and release 6.30.0 (16 October 2026), Commission Delegated Regulation (EU) No 149/2013 Article 14 (as adopted), Kulkarni and Michels - Temporal Features in SQL 2011 (ACM SIGMOD Record 2012), Richard T. Snodgrass - Developing Time-Oriented Database Applications in SQL (Morgan Kaufmann 1999), CPMI-IOSCO - Technical Guidance Harmonisation of the Unique Transaction Identifier (CPMI Papers No 158 February 2017) and Unique Product Identifier (CPMI Papers No 169 September 2017), Martin Fowler - Patterns of Enterprise Application Architecture (Addison-Wesley 2002)]
+sources: [ISDA - FpML 5.13 Recommendation 2 (10 August 2026) and 5.14 Trial Recommendation (28 September 2026) per fpml.org archive retrieved 2026-10, FINOS Common Domain Model documentation - Event Model (cdm.finos.org retrieved 2026-10) and release 6.30.0 (16 October 2026), Commission Delegated Regulation (EU) No 149/2013 Article 14 (unamended as of 2026-10 per EUR-Lex), Kulkarni and Michels - Temporal Features in SQL 2011 (ACM SIGMOD Record 2012), Richard T. Snodgrass - Developing Time-Oriented Database Applications in SQL (Morgan Kaufmann 1999), CPMI-IOSCO - Technical Guidance Harmonisation of the Unique Transaction Identifier (CPMI Papers No 158 28 February 2017) and Unique Product Identifier (CPMI Papers No 169 September 2017), Martin Fowler - Patterns of Enterprise Application Architecture (Addison-Wesley 2002)]
 ---
 
 # Trade Representation and Lifecycle
@@ -13,7 +13,7 @@ sources: [ISDA - FpML 5.13 Recommendation 2 (10 August 2026) and 5.14 Trial Reco
 ## TL;DR
 
 - A trade record has to answer three questions forever: what are the economics, what happened to them, and what did we know when; that means a typed product model, an append-only stream of lifecycle events, and two time axes (valid time and transaction time).
-- FpML is the XML message standard for OTC derivatives confirmations and reporting (5.13 Recommendation 2 is dated 10 August 2026); the ISDA CDM, hosted by FINOS since February 2023, models products and lifecycle events as executable types and functions, with every business event built from nine primitive instructions.
+- FpML is the XML message standard for OTC derivatives confirmations and reporting (5.13 Recommendation 2 is dated 10 August 2026); the ISDA CDM, hosted by FINOS since February 2023, models products and lifecycle events as executable types and functions, with every business event built from a small set of primitive instructions (nine fundamental operators in the documentation).
 - Every lifecycle event is a transformation from "before" trade states to "after" trade states: allocation and partial novation are split plus quantity change plus party change, termination is a quantity change to zero, and compression terminates or downsizes many trades atomically.
 - A bitemporal table never updates economics in place: a correction closes the transaction-time interval of the superseded row and inserts new rows, so "what did the risk run on 1 October see" (100m) and "what is true now" (85m) are both one query.
 - Conservation invariants are the tests that matter: allocated children sum to the block, novated pieces sum to the original, and compression changes gross notional (280 to 40 in the example) without changing any participant's net.
@@ -113,7 +113,9 @@ Design rules that follow from it:
 
 ### The CDM event model
 
-In the CDM a `TradeState` holds the trade plus its state, reset history and transfer history, and a `BusinessEvent` holds an optional `eventQualifier` and the `after` trade states; each `Instruction` names the `before` trade state and a `PrimitiveInstruction` with one optional attribute for each of nine primitives: contract formation, execution, exercise, party change, quantity change, reset, split, terms change and transfer (CDM Event Model documentation).
+In the CDM a `TradeState` holds the trade plus its state and its reset, transfer, observation and valuation histories, and a `BusinessEvent` holds an optional `eventQualifier` and the `after` trade states; each `Instruction` names the `before` trade state and a `PrimitiveInstruction`.
+The Event Model documentation describes nine fundamental primitive operators: contract formation, execution, exercise, party change, quantity change, reset, split, terms change and transfer.
+In release 6.30.0 `PrimitiveInstruction` has one optional attribute for each of these plus four more (index transition, stock split, observation and valuation), so check the model version before counting primitives in an interview.
 An `EventIntentEnum` (for example `Allocation`, `Clearing`, `Compression`, `Novation`, `OptionExercise`) records intent where the primitives alone do not identify the event.
 
 | Business event | Primitive composition (CDM documentation) | Invariant to test |
@@ -240,9 +242,9 @@ A full termination is a quantity change to zero, which closes the trade as termi
 
 Three dealers hold fungible swaps (same maturity, rate and index), with A paying fixed to B on 100m, B paying fixed to C on 100m and C paying fixed to A on 80m.
 The three trades form a cycle; compressing it removes the smallest edge, 80m, along the whole cycle.
-Gross notional falls from 280m to 40m (85.7%), the number of trades from three to two, and every dealer's net is unchanged: A is net -20m (pays fixed on 20m) and C net +20m before and after.
+Gross notional falls from 280m to 40m (85.7%), the number of trades from three to two, and every dealer's net, measured as receive-fixed minus pay-fixed notional, is unchanged: A is net -20m (pays fixed on 20m), B is flat and C is net +20m before and after.
 Real compression services work across many maturities and rates with risk tolerances, but the invariant is the same, and the trade store records it as one atomic business event with many before states and fewer after states, intent `Compression`.
-In the EU, financial counterparties with 500 or more uncleared OTC contracts outstanding with a counterparty must have procedures to analyse, at least twice a year, the possibility of compression (Delegated Regulation 149/2013 Article 14, as adopted).
+In the EU, financial and non-financial counterparties with 500 or more uncleared OTC contracts outstanding with a counterparty must have procedures to analyse, at least twice a year, the possibility of a compression exercise, and must be able to explain to their competent authority why one was not appropriate (Delegated Regulation 149/2013 Article 14, unamended as of 2026-10 per EUR-Lex).
 
 ### Example 4: generating a schedule rather than storing dates
 
@@ -289,7 +291,7 @@ The conclusion survives either way: ten years of events is a few terabytes, so t
 
 > [!question]- sys-02-02 | How does the ISDA Common Domain Model (CDM) improve upon legacy FpML?
 > FpML is an XML message schema for products and processes such as confirmation and reporting; behaviour lives in each firm's code.
-> The CDM models trade state and lifecycle events as types and executable functions, with every business event composed from nine primitive instructions, so two firms applying the same event to the same trade get the same result by construction.
+> The CDM models trade state and lifecycle events as types and executable functions, with every business event composed from a small set of primitive instructions (nine fundamental operators in the documentation), so two firms applying the same event to the same trade get the same result by construction.
 
 > [!question]- sys-02-03 | What is an event-sourced architecture for trade repositories?
 > The store keeps the ordered, immutable sequence of business events per trade and derives current state by replaying them; current state, bitemporal tables and risk views are rebuildable projections.
@@ -342,7 +344,7 @@ The conclusion survives either way: ten years of events is a few terabytes, so t
 
 > [!question]- sys-02-15 | Three dealers hold a cycle of fungible swaps: A pays B on 100m, B pays C on 100m, C pays A on 80m. What does compression achieve?
 > Removing 80m along the cycle leaves A paying B on 20m and B paying C on 20m: gross falls from 280m to 40m, a 85.7% reduction, and trades from three to two.
-> Every net is unchanged (A at -20m, C at +20m, B at 0), which is the invariant a compression event must satisfy.
+> Every net (receive-fixed minus pay-fixed notional) is unchanged (A at -20m, C at +20m, B at 0), which is the invariant a compression event must satisfy.
 
 > [!question]- sys-02-16 | Why store both unadjusted and adjusted schedule dates?
 > Adjusted dates depend on calendars and conventions that can change after booking (a new holiday); with the unadjusted dates and rules you regenerate, with only adjusted dates you cannot tell which were rolled.
