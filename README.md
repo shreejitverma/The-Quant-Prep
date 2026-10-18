@@ -56,8 +56,7 @@ Notes marked `seed` are the writing backlog: objectives and references exist, fu
 
 | Code | Where |
 | :--- | :--- |
-| Price-time order book and matching engine, lock-free SPSC queue, object pool, multicast receiver, compile-time N(x) table, multithreaded Monte Carlo (C++20) | [12-Quant-Development/code/cpp](12-Quant-Development/code/cpp/) |
-| ITCH parser, Python benchmarking | [12-Quant-Development/code/python](12-Quant-Development/code/python/) |
+| Quant developer examples and tests | [12-Quant-Development](12-Quant-Development/README.md) |
 | Linear maps, eigendecomposition and SVD, covariance PSD repair and PCA, numerical linear algebra, Taylor expansions, KKT and QP portfolio solvers, root finding and implied volatility, problem-set checks | [03-Linear-Algebra-and-Optimization/code](03-Linear-Algebra-and-Optimization/code/) |
 | Day counts, schedules, bond pricing and risk, overnight-rate compounding, curve bootstrapping, dual-curve swap pricing, Jacobian par risk, Treasury futures basis, CDS hazard bootstrap, TIPS indexation, mortgage prepayment, Gaussian copula tranche loss, covered interest parity and the cross-currency basis, ETF fair value and index arbitrage, futures curves and roll yield, crypto perpetual funding and basis | [06-Fixed-Income-and-Asset-Classes/code](06-Fixed-Income-and-Asset-Classes/code/) |
 | Call-auction uncross and fee economics, Roll and Glosten-Milgrom spreads, Kyle equilibrium, square-root and propagator impact, Almgren-Chriss optimal execution, TWAP, VWAP, POV and implementation shortfall, Reg NMS routing, latency-arbitrage races | [07-Market-Microstructure/code](07-Market-Microstructure/code/) |
