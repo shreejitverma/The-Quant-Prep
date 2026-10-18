@@ -79,7 +79,7 @@ $$\text{HQLA} = L1 + L2A + L2B - \text{Adj}_{15} - \text{Adj}_{40},$$
 $$\text{Adj}_{15} = \max\left(\widetilde{L2B} - \tfrac{15}{85}(\widetilde{L1} + \widetilde{L2A}),\; \widetilde{L2B} - \tfrac{15}{60}\widetilde{L1},\; 0\right),$$
 $$\text{Adj}_{40} = \max\left(\widetilde{L2A} + \widetilde{L2B} - \text{Adj}_{15} - \tfrac{2}{3}\widetilde{L1},\; 0\right),$$
 
-where tildes are the adjusted amounts (LCR30.38 to LCR30.39).
+where tildes are the adjusted amounts (LCR30.38 to LCR30.39) and the untilded first three terms are the actual post-haircut holdings (the 2013 LCR standard, Annex 1 paragraph 5, writes the same formula out in words).
 The fractions are the caps rearranged: $L2 \le 40\%$ of the stock is $L2 \le \tfrac{2}{3} L1$, and $L2B \le 15\%$ is $L2B \le \tfrac{15}{85}(L1 + L2A)$, or $\tfrac{15}{60} L1$ when the 40% cap binds.
 
 **Outflows and inflows.**
@@ -181,6 +181,11 @@ $\text{Adj}_{15} = \max(20 - \tfrac{15}{85} \times 101,\; 20 - \tfrac{15}{60} \t
 The stock is 83.33, which is $50/0.6$: Level 2 is exactly 40.0% and Level 2B 15.0% of it.
 Without binding caps (Level 1 100, Level 2A 30, Level 2B 10 at market value) the stock is 130.5, and against outflows of 100 and inflows of 40 the LCR is 217.5%.
 
+The unwind matters when a bank turns Level 2 into Level 1 through short repo.
+Suppose 30 of a bank's Level 1 of 50 is cash raised by repoing Level 2A of market value 30 for two weeks, and it also holds unencumbered Level 2A of market value 30 (25.5 after haircut).
+Unwinding the repo gives adjusted Level 1 of 20 and adjusted Level 2A of $0.85 \times 60 = 51$, so $\text{Adj}_{40} = 51 - \tfrac{2}{3} \times 20 = 37.67$.
+The stock is $50 + 25.5 - 37.67 = 37.83$, not the 75.5 the actual holdings would give: the first three terms of the formula are the actual post-haircut holdings, and only the cap adjustments use the adjusted amounts, so the repo cannot dodge the 40% cap.
+
 ### Example 3: a full LCR
 
 | Outflow | Balance | Rate | Outflow |
@@ -215,7 +220,7 @@ With Tier 1 of 16,000 the limit to any counterparty group is 4,000, and to anoth
 - Netting collateral against derivative exposure in the leverage ratio; only eligible cash VM, and only against RC (LEV30.22 to LEV30.25).
 - Using the SA-CCR multiplier or omitting written options in leverage PFE; the multiplier is fixed at one and written options are in (LEV30.16).
 - Forgetting the effective notional of written credit derivatives (LEV30.31).
-- Applying the 40% and 15% caps before haircuts or without unwinding short-term SFTs and collateral swaps (LCR30.34, LCR30.37).
+- Applying the 40% and 15% caps before haircuts or without unwinding short-term SFTs and collateral swaps (LCR30.34, LCR30.37), or the opposite slip of building the stock itself from the adjusted amounts: only the cap adjustments use them.
 - Applying 15% to Level 2B corporates; it is 50%, and 25% only for qualifying RMBS (LCR30.45).
 - Recognising inflows from facilities the bank holds at other banks; they get 0% (LCR40.82).
 - Treating corporate deposits as operational without evidence of a substantive dependency and supervisory approval (LCR40.26).
@@ -274,6 +279,11 @@ With Tier 1 of 16,000 the limit to any counterparty group is 4,000, and to anoth
 > [!question]- reg-lcr-cap-formula-worked | Level 1 is 50, Level 2A 60 and Level 2B corporates 40 at market value. What is the HQLA stock?
 > 83.33.
 > After haircuts 2A is 51 and 2B 20; $\text{Adj}_{15} = \max(20 - 17.82, 20 - 12.5, 0) = 7.5$ and $\text{Adj}_{40} = 63.5 - 33.33 = 30.17$; Level 2 ends at 40.0% and Level 2B at 15.0%.
+
+> [!question]- reg-lcr-sft-unwind-cap | A bank holds Level 1 of 50, of which 30 is cash from a two-week repo of Level 2A (market value 30), plus unencumbered Level 2A of market value 30. What is its HQLA stock?
+> 37.83, not 75.5.
+> The caps are tested after unwinding short-term SFTs (LCR30.37): adjusted Level 1 is 20 and adjusted Level 2A $0.85 \times 60 = 51$, so $\text{Adj}_{40} = 51 - 13.33 = 37.67$.
+> The stock is the actual holdings $50 + 25.5$ minus that adjustment (LCR30.38), so repoing Level 2 into cash cannot get round the 40% cap.
 
 > [!question]- reg-nsfr-worked | A bank has ASF of 93,500 and RSF of 72,100. What is its NSFR and how much stable retail could it swap for short wholesale funding?
 > 129.68%; a surplus of 21,400 allows about 22,526.32 of stable retail (95% ASF) to be replaced by sub-6-month funding from financials (0% ASF).

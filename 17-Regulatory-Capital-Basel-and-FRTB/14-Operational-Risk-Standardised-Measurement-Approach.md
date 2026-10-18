@@ -203,7 +203,7 @@ An event with a 1,000,000 loss in 2010 (outside), 300,000 in 2013 and a 500,000 
 > The 0.8 power inside a log makes ILM concave with slope $0.8/e = 0.2943$ at 1: LC at ten times BIC gives ILM 2.0829, and with no losses ILM tends to $\ln(e - 1) = 0.5413$.
 > So losses scale capital, but sub-linearly in both directions.
 
-> [!question]- reg-national-discretion-ilm-one | Why have the European Union and the United States chosen to set $ILM = 1.0$ under national discretion?
+> [!question]- reg-national-discretion-ilm-one | Why might a supervisor use the national discretion to set $ILM = 1.0$ for all banks, and what does it cost?
 > OPE25.11 allows any supervisor to set ILM = 1 for all banks, making capital equal to BIC; banks must still disclose ten years of losses (OPE25.35).
 > Arguments for it are simplicity, comparability and avoiding capital that depends on loss history or on how losses are booked; the cost is losing the incentive to control losses.
 > Whether a given jurisdiction has used it is a national fact that changes; check its rule text rather than relying on a summary (this note does not assert any jurisdiction's choice).

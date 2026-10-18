@@ -73,7 +73,9 @@ flowchart TB
 | DTAs relying on future profitability from tax losses and credits | Deducted in full, net of eligible DTLs | CAP30.9 |
 | DTAs from temporary differences, MSRs, significant investments in unconsolidated financials' common shares | Threshold treatment: each recognised up to 10% of CET1, together up to 15% of CET1 after all deductions, the rest deducted; recognised amounts weighted at 250% | CAP30.32 to CAP30.34 |
 | Defined benefit pension fund net asset | Deducted net of the associated DTL; liabilities stay recognised | CAP30.16 |
-| Non-common-share holdings of other financials | Corresponding deduction from the tier the instrument would qualify for; a shortfall in a tier moves to the next higher tier | CAP30.30 |
+| Own shares and reciprocal cross-holdings | Deducted in full, cross-holdings from the tier they would qualify for | CAP30.18 to CAP30.21 |
+| Holdings of unconsolidated financials' capital where the bank owns at most 10% of their common shares | Aggregate above 10% of the bank's common equity deducted, pro rata across tiers by corresponding deduction | CAP30.22 to CAP30.28 |
+| Non-common holdings in significant investments (more than 10% owned) | Deducted in full from the tier the instrument would qualify for; a shortfall in a tier moves to the next higher tier | CAP30.30 |
 
 Why these: goodwill is worthless in a failure, a tax-loss DTA needs future taxable profit the failing bank will not have, and a pension surplus belongs to the scheme.
 The 15% test is circular as stated (15% of CET1 after deducting the excess), so the CAP30.33 FAQ gives the closed form: the recognised amount is at most 15/85 = 17.65% of CET1 net of a full deduction of the three items.
@@ -163,7 +165,8 @@ With exposure $E$ and RWA density $d = RWA/E$, the risk-based Tier 1 need is $r 
 $$d < \frac{\ell}{r}.$$
 
 For a non-G-SIB, $\ell = 3\%$ and $r = 6\% + 2.5\% = 8.5\%$ give a breakeven density of 35.29%; for a bucket 2 G-SIB, $3.75\% / 10.0\% = 37.5\%$.
-Against the bare minima the ratio is $3\%/6\% = 50\%$, which is why LEV40.1 sets the G-SIB leverage buffer at half the risk-based one: it keeps the breakeven density from drifting as the surcharge grows.
+Against the bare minima the ratio is $3\%/6\% = 50\%$, and a leverage buffer of half the surcharge $h$ keeps it there for every bucket, since $(3\% + h/2)/(6\% + h) = 50\%$: that is what LEV40.1 means by maintaining "the relative roles" of the two requirements.
+Once the 2.5% conservation buffer is counted the breakeven does drift, from 35.29% for a non-G-SIB to 39.58% for bucket 5 ($4.75\%/12.0\%$).
 Repo, Treasury inventory and central bank reserves carry low or zero risk weights but full leverage exposure, so dealer balance sheets are the ones that end up leverage-bound.
 
 **United States (as of 2026-10).**
@@ -318,7 +321,7 @@ Note 02 works a full bank through the RBC90.1 phase-in years.
 > [!question]- reg-leverage-density-breakeven | Derive the RWA density below which the leverage ratio binds, and explain the 50% G-SIB leverage buffer.
 > Leverage needs $\ell E$ of Tier 1, risk-based needs $r \cdot d \cdot E$; leverage binds when $d < \ell / r$.
 > Non-G-SIB: $3\%/(6\% + 2.5\%) = 35.29\%$; bucket 2 G-SIB: $3.75\%/10.0\% = 37.5\%$; bare minima $3\%/6\% = 50\%$.
-> Setting the leverage buffer at half the risk-based surcharge (LEV40.2) keeps the leverage add-on proportional to the risk-based one, preserving the relative roles of the two requirements (LEV40.1).
+> Setting the leverage buffer at half the risk-based surcharge (LEV40.2) keeps $(3\% + h/2)/(6\% + h)$ at 50% for every surcharge $h$, preserving the relative roles of the two requirements (LEV40.1); with the conservation buffer included the breakeven rises from 35.29% to 39.58% in bucket 5.
 
 > [!question]- reg-gsib-substitutability-cap | Why is the substitutability category capped at 500 bps?
 > In 2013 the Committee found that substitutability had more influence than intended for banks dominant in payments, underwriting and custody, so it capped the category score at 500 bps (SCO40.8).
