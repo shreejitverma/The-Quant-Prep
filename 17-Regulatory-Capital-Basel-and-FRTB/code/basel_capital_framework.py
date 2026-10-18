@@ -203,7 +203,7 @@ def rwa_density_breakeven(leverage_req: float, tier1_req_risk_based: float) -> f
 # ============================================================================
 
 BASEL_I_RATIO = 0.08  # 1988 Accord para 44 (core capital at least 4%)
-BASEL_I_WEIGHTS = (0.0, 0.10, 0.20, 0.50, 1.00)  # 1988 Accord para 28: 0, 10, 20, 50 and 100%
+BASEL_I_WEIGHTS = (0.0, 0.10, 0.20, 0.50, 1.00)  # 1988 Accord para 29: 0, 10, 20, 50 and 100%
 BASEL_II_CORPORATE = {"AAA to AA-": 0.20, "A+ to A-": 0.50, "BBB+ to BB-": 1.00, "Below BB-": 1.50, "Unrated": 1.00}  # Basel II para 66
 MRA_MIN_MULTIPLIER = 3.0  # 1996 amendment B.4(j); Basel 2.5 para 718(Lxxvi)(l) for mc and ms
 PLUS_FACTOR_1996 = {**dict.fromkeys(range(5), 0.0), 5: 0.40, 6: 0.50, 7: 0.65, 8: 0.75, 9: 0.85}  # 1996 backtesting Table 2
@@ -395,6 +395,13 @@ def _check_note_01() -> dict[str, float]:
     q("breakeven RWA density, non-G-SIB 3% / 8.5% (%)", rwa_density_breakeven(0.03, TIER1_MIN + CCB) * 100, 35.29, 2)
     q("breakeven RWA density, bucket 2 G-SIB 3.75% / 10.0% (%)", rwa_density_breakeven(0.0375, TIER1_MIN + CCB + 0.015) * 100, 37.5, 1)
     q("breakeven RWA density, minima only 3% / 6% (%)", rwa_density_breakeven(0.03, TIER1_MIN) * 100, 50.0, 1)
+    # LEV40.1 "relative roles": against the minima plus surcharge the breakeven stays at 50% in every bucket,
+    # while with the 2.5% conservation buffer included it drifts with the bucket.
+    for _, hla_b in GSIB_BUCKETS.values():
+        lev_req_b = LEVERAGE_MIN + LEVERAGE_GSIB_SHARE * hla_b
+        assert abs(rwa_density_breakeven(lev_req_b, TIER1_MIN + hla_b) - 0.5) < 1e-12
+    bucket5 = rwa_density_breakeven(0.0475, TIER1_MIN + CCB + 0.035)
+    q("breakeven RWA density with the CCB, bucket 5 G-SIB 4.75% / 12.0% (%)", bucket5 * 100, 39.58, 2)
     q("bank RWA density (%)", rwa / lev_exposure * 100, 33.02, 2)
 
     return {"rwa": rwa, "t1": t1}

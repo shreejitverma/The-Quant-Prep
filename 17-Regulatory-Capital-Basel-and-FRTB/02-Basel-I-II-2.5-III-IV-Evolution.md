@@ -98,8 +98,8 @@ The backtesting framework counts days in the last 250 when the one-day loss exce
 
 The yellow zone starts where the cumulative binomial probability first reaches 95% and the red zone where it reaches 99.99%; with $n = 250$ and $p = 1\%$ the expected count is 2.5 and an accurate model shows 5 or more exceptions 10.78% of the time.
 The red zone means an automatic increase of the factor from three to four and an investigation of the model, not an automatic withdrawal of approval (1996 backtesting framework, section on the red zone).
-The 0.40 at five exceptions comes from normality: five exceptions in 250 suggests 98% coverage, and the ratio of the normal 99th to 98th percentile is 1.133 (the text rounds it to "approximately 1.14"), so the factor must rise by about $3 \times 0.133 = 0.40$.
-The same table survives in MAR99.17 Table 2 rescaled to a base multiplier of 1.5: 1.70, 1.76, 1.83, 1.88, 1.92 and 2.00, equal to $1.5 \times (3 + \text{plus})/3$ except at six exceptions, where the rescale would give 1.75.
+The 0.40 at five exceptions comes from normality: five exceptions in 250 suggests 98% coverage, and the ratio of the normal 99th to 98th percentile is 1.133 (the 1996 text says "approximately 1.14", although the exact ratio rounds to 1.13), so the factor must rise by about $3 \times 0.133 = 0.40$, the figure the text gives for a scaling factor of 3.
+The same table survives in MAR99.17 Table 2 rescaled to a base multiplier of 1.5: 1.70, 1.76, 1.83, 1.88, 1.92 and 2.00, within 0.005 of $1.5 \times (3 + \text{plus})/3$ except at six exceptions, where the rescale would give 1.75.
 
 ### Basel II (2004)
 

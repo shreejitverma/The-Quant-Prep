@@ -154,6 +154,7 @@ USD: short-up +281.8 bp at 3 months and +0.6 bp at 25 years; steepener -170.9 bp
 
 Assets: a 50 bond portfolio paying 3% annually for 10 years (1.5 a year, 51.5 at year 10); a 20 amortising mortgage book paying 5.0, 4.8, 4.6, 4.4 and 4.2 in years 1 to 5 with full prepayment compensation; 30 of floating loans resetting in 3 months; 5 of central bank cash.
 Liabilities: 60 of retail transactional NMDs, 42 core (70%, under the 90% cap) slotted 6 each at 0.875 to 6.5 years (average 3.59 years, under 5) and 18 overnight; 10 of wholesale NMDs, 4 core (40%, under 50%) at 1.75 and 2.5 years (average 2.125, under 4) and 6 overnight; 15 of one-year term deposits without early withdrawal; 10 of five-year senior debt.
+For simplicity liability cash flows are principal only: the NMDs pay no interest, and the term deposits and senior debt are treated as zero-coupon.
 On a flat 4% continuous curve: PV of assets 102.12, PV of liabilities 86.99, EVE 15.12; duration of assets 4.31 years against 2.11 for liabilities.
 
 | Scenario | $\Delta EVE$ (loss positive) |
@@ -165,13 +166,17 @@ On a flat 4% continuous curve: PV of assets 102.12, PV of liabilities 86.99, EVE
 | Short up | 0.07 |
 | Short down | -0.06 |
 
-The worst case is the steepener, not the parallel up shock: short rates fall (raising the value of the short liabilities) while long rates rise (cutting the value of the long bonds), so both sides hurt.
+The worst case is the steepener, not the parallel up shock.
+Split the net cash flows at 2.70 years, where the USD steepener changes sign: below it the bank is a net payer of 7.10, so in parallel up that short end gains 0.28 and offsets part of the 4.87 loss on the long end.
+In the steepener short rates fall, so the same short end loses 0.08, while the long end loses 4.62, only a little less than in parallel up since the steepener reaches 165.5 bp at 9.5 years.
+The sign flip at the short end outweighs the smaller long-end shift: $0.08 + 4.62 = 4.70 > 4.87 - 0.28 = 4.59$.
 With Tier 1 of 15 the outlier ratio is 31.31%, above 15%.
-A 25 notional 10-year payer swap (pay 4% annually, receive floating resetting in 3 months) cuts the steepener loss to 1.75 and the parallel up loss to 0.98, an outlier ratio of 11.68%; the steepener is still the binding scenario, because the swap's floating leg is short.
+A 25 notional 10-year payer swap (pay 4% annually, receive floating resetting in 3 months) cuts the steepener loss to 1.75 and the parallel up loss to 0.98, an outlier ratio of 11.68%, and the steepener is still the binding scenario.
 
 ### Example 3: NII up, EVE down
 
 Repricing within a year: overnight 5 of cash against 24 of non-core NMDs, 30 of floating loans at 3 months, 6 of core retail NMDs in the 0.875-year bucket.
+The one-year term deposits and the year-1 bond and mortgage payments reprice at the 12-month horizon itself, so they add nothing to this horizon's NII.
 Under +200 bp with full pass-through, 12-month NII rises by 0.06; if overnight deposit rates move only 40% of the shock, NII rises by 0.34.
 In the same scenario EVE falls by 4.59: the short-horizon earnings view and the economic value view point in opposite directions, which is why SRP31 requires both and why SVB's NII-only risk appetite missed the risk.
 
@@ -241,7 +246,8 @@ A portfolio with duration 6.2 years loses about 12.4% of its value for a 200 bp 
 
 > [!question]- reg-irrbb-standardised-eve-worked | A bank's $\Delta EVE$ are 4.59 (parallel up), 4.70 (steepener), 0.07 (short up) and negative otherwise, with Tier 1 of 15. Is it an outlier, and why is the steepener the worst?
 > Yes: $4.70 / 15 = 31.31\% > 15\%$.
-> The steepener lowers short rates, raising the value of its short liabilities, and raises long rates, cutting the value of its long bonds, so both sides lose; a 25 notional 10-year payer swap brings the measure to 1.75, or 11.68%.
+> Below 2.70 years the bank is a net payer, so parallel up gives that short end a 0.28 gain against a 4.87 long-end loss, while the steepener lowers short rates (a 0.08 short-end loss) and still raises long rates (a 4.62 long-end loss): $4.70 > 4.59$.
+> A 25 notional 10-year payer swap brings the measure to 1.75, or 11.68%.
 
 > [!question]- reg-irrbb-currency-aggregation | How are EVE losses aggregated across currencies, and why does it matter?
 > For each scenario, sum only the currencies with positive losses, floor at zero, then take the maximum over scenarios (SRP31.129(5)); gains in one currency never offset losses in another, though supervisors may prescribe another method with evidence (footnote 541).

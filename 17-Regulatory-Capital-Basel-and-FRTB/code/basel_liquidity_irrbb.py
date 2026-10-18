@@ -192,6 +192,9 @@ def hqla_stock(
 ) -> HQLAResult:
     """LCR30.38 to LCR30.39 with the haircuts of LCR30.43 and LCR30.45.
 
+    Stock = L1 + L2A + L2B - Adj15 - Adj40: the first three terms are the actual post-haircut holdings, while
+    the two cap adjustments are computed on the adjusted amounts (LCR30.36 to LCR30.37, and the January 2013
+    LCR standard, Annex 1 paragraph 5, which states the same formula in words).
     `adjusted` gives the post-haircut adjusted Level 1, 2A and 2B amounts after unwinding short-term secured
     funding, secured lending and collateral swaps (LCR30.37); by default no such transactions exist.
     """
@@ -200,7 +203,7 @@ def hqla_stock(
     a1, a2a, a2b = adjusted if adjusted is not None else (level1, l2a, l2b)
     adj15 = max(a2b - 15 / 85 * (a1 + a2a), a2b - 15 / 60 * a1, 0.0)
     adj40 = max(a2a + a2b - adj15 - 2 / 3 * a1, 0.0)
-    return HQLAResult(a1, a2a, a2b, adj15, adj40, a1 + a2a + a2b - adj15 - adj40)
+    return HQLAResult(level1, l2a, l2b, adj15, adj40, level1 + l2a + l2b - adj15 - adj40)
 
 
 def net_cash_outflows(outflows: dict[str, float], inflows: dict[str, float]) -> tuple[float, float, float]:
@@ -474,8 +477,6 @@ def _check_note_15() -> None:
     # LCR, simple stock and the cap mechanics.
     s = hqla_stock(100, 30, l2b_other_mv=10)
     q("HQLA, uncapped case", s.stock, 130.5, 1)
-    adjusted = hqla_stock(100, 30, adjusted=(80, 10, 0))
-    q("HQLA after secured transaction adjustments", adjusted.stock, 90, 0)
     out, inn, nco = net_cash_outflows({"financial institution unsecured": 100}, {"financial institution and central bank inflows": 40})
     q("LCR, simple case (%)", s.stock / nco * 100, 217.5, 1)
     c = hqla_stock(50, 60, l2b_other_mv=40)
@@ -492,6 +493,21 @@ def _check_note_15() -> None:
     q("Level 2 share of the stock (%)", (c.stock - 50) / c.stock * 100, 40.0, 1)
     q("Level 2B share of the stock (%)", (c.level2b - c.adj15) / c.stock * 100, 15.0, 1)
     q("stock = Level 1 / 0.6 when the 40% cap binds", 50 / 0.6, 83.33, 2)
+    # SFT unwind (LCR30.36 to LCR30.37): 30 of the Level 1 is cash raised by repoing Level 2A of market value 30
+    # for two weeks; unencumbered Level 2A has market value 30. Unwinding moves 30 out of Level 1 and the
+    # collateral back into Level 2A, so the caps are tested on adjusted Level 1 of 20 and adjusted Level 2A of 51.
+    adj_l2a = (1 - L2A_HAIRCUT) * (30 + 30)
+    q("adjusted Level 1 after the unwind", 50 - 30, 20, 0)
+    q("adjusted Level 2A after the unwind", adj_l2a, 51, 0)
+    u = hqla_stock(50, 30, adjusted=(50 - 30, adj_l2a, 0.0))
+    q("unwind: adjustment for the 40% cap", u.adj40, 37.67, 2)
+    q("unwind: HQLA stock", u.stock, 37.83, 2)
+    q("same holdings ignoring the repo", hqla_stock(50, 30).stock, 75.5, 1)
+    # Cross-check with the one-line form of the 2013 LCR standard, Annex 1 paragraph 6.
+    for res, adj in ((u, (20.0, adj_l2a, 0.0)), (c, (50.0, c.level2a, c.level2b))):
+        a1, a2a, a2b = adj
+        alt = res.level1 + res.level2a + res.level2b - max(a2a + a2b - 2 / 3 * a1, a2b - 15 / 85 * (a1 + a2a), 0.0)
+        assert abs(alt - res.stock) < 1e-9, (alt, res.stock)
 
     outflows = {
         "stable retail deposits": 20_000,
@@ -564,14 +580,35 @@ def _check_note_15() -> None:
     q("G-SIB to G-SIB limit", LARGE_EXPOSURE_GSIB_LIMIT * tier1, 2_400, 0)
 
 
+# NMD book of the note 16 bank (USD billions): core amounts by bucket midpoint, non-core goes overnight (SRP31.111).
+CORE_RETAIL_TRANSACTIONAL = dict.fromkeys((0.875, 1.75, 2.5, 3.5, 4.5, 5.5, 6.5), 6.0)
+NON_CORE_RETAIL_TRANSACTIONAL = 18.0
+CORE_WHOLESALE = {1.75: 2.0, 2.5: 2.0}
+NON_CORE_WHOLESALE = 6.0
+
+
+def _core_share_and_maturity(core: dict[float, float], non_core: float) -> tuple[float, float]:
+    total_core = sum(core.values())
+    return total_core / (total_core + non_core), sum(t * v for t, v in core.items()) / total_core
+
+
 def _irrbb_bank() -> dict[str, dict[float, float]]:
-    """Illustrative USD bank, USD billions, repricing cash flows slotted per SRP31.96(1)."""
+    """Illustrative USD bank, USD billions, repricing cash flows slotted per SRP31.96(1).
+
+    Liability cash flows are principal only: NMDs are non-remunerated, and the term deposits and senior debt
+    are treated as zero-coupon for simplicity.
+    """
     bonds = slot([(float(t), 1.5) for t in range(1, 10)] + [(10.0, 51.5)])
     mortgages = slot([(1.0, 5.0), (2.0, 4.8), (3.0, 4.6), (4.0, 4.4), (5.0, 4.2)])
     floating = slot([(0.25, 30.0)])
     cash = slot([(1 / 365, 5.0)])
-    core_retail = {m: -6.0 for m in (0.875, 1.75, 2.5, 3.5, 4.5, 5.5, 6.5)}
-    nmd = net(core_retail, {0.0028: -18.0}, {1.75: -2.0, 2.5: -2.0}, {0.0028: -6.0})
+    on = MIDPOINTS[0]
+    nmd = net(
+        {m: -v for m, v in CORE_RETAIL_TRANSACTIONAL.items()},
+        {on: -NON_CORE_RETAIL_TRANSACTIONAL},
+        {m: -v for m, v in CORE_WHOLESALE.items()},
+        {on: -NON_CORE_WHOLESALE},
+    )
     term = slot([(1.0, -15.0)])
     senior = slot([(5.0, -10.0)])
     return {"assets": net(bonds, mortgages, floating, cash), "liabilities": net(nmd, term, senior)}
@@ -600,11 +637,15 @@ def _check_note_16() -> None:
     bank = _irrbb_bank()
     cfs = net(bank["assets"], bank["liabilities"])
     curve = lambda t: 0.04  # noqa: E731 - flat 4% continuously compounded risk-free curve
-    q("average maturity of core retail NMDs (y)", sum((0.875, 1.75, 2.5, 3.5, 4.5, 5.5, 6.5)) / 7, 3.59, 2)
-    q("core share of retail transactional NMDs (%)", 42 / 60 * 100, 70, 0)
-    q("core share of wholesale NMDs (%)", 4 / 10 * 100, 40, 0)
-    q("average maturity of core wholesale NMDs (y)", (1.75 + 2.5) / 2, 2.125, 3)
-    for cat, (share, mat) in {"retail transactional": (0.70, 3.589), "wholesale": (0.40, 2.125)}.items():
+    retail_share, retail_mat = _core_share_and_maturity(CORE_RETAIL_TRANSACTIONAL, NON_CORE_RETAIL_TRANSACTIONAL)
+    whole_share, whole_mat = _core_share_and_maturity(CORE_WHOLESALE, NON_CORE_WHOLESALE)
+    q("retail transactional NMDs (USD bn)", sum(CORE_RETAIL_TRANSACTIONAL.values()) + NON_CORE_RETAIL_TRANSACTIONAL, 60, 0)
+    q("core retail transactional NMDs (USD bn)", sum(CORE_RETAIL_TRANSACTIONAL.values()), 42, 0)
+    q("average maturity of core retail NMDs (y)", retail_mat, 3.59, 2)
+    q("core share of retail transactional NMDs (%)", retail_share * 100, 70, 0)
+    q("core share of wholesale NMDs (%)", whole_share * 100, 40, 0)
+    q("average maturity of core wholesale NMDs (y)", whole_mat, 2.125, 3)
+    for cat, (share, mat) in {"retail transactional": (retail_share, retail_mat), "wholesale": (whole_share, whole_mat)}.items():
         cap_share, cap_mat = NMD_CAPS[cat]
         assert share <= cap_share and mat <= cap_mat, cat
     pv_a = eve(bank["assets"], curve, lambda t: 0.0)
@@ -622,6 +663,18 @@ def _check_note_16() -> None:
     assert worst == "steepener"
     tier1 = 15.0
     q("outlier ratio (%)", measure / tier1 * 100, 31.31, 2)
+    # Why the steepener beats parallel up: split the net cash flows at the steepener's zero crossing (2.70y).
+    cut = _zero_crossing("USD", "steepener")
+    short_end = {t: v for t, v in cfs.items() if t < cut}
+    long_end = {t: v for t, v in cfs.items() if t > cut}
+    assert len(short_end) + len(long_end) == len(cfs)
+    d_short, d_long = delta_eve(short_end, curve, "USD"), delta_eve(long_end, curve, "USD")
+    q("short end (below 2.70y) delta EVE, parallel up (USD bn)", d_short["parallel up"], -0.28, 2)
+    q("long end delta EVE, parallel up (USD bn)", d_long["parallel up"], 4.87, 2)
+    q("short end delta EVE, steepener (USD bn)", d_short["steepener"], 0.08, 2)
+    q("long end delta EVE, steepener (USD bn)", d_long["steepener"], 4.62, 2)
+    q("USD steepener at 9.5y (bp)", shock("USD", "steepener", 9.5) * 10_000, 165.5, 1)
+    q("net short-end cash flows below 2.70y (USD bn)", sum(short_end.values()), -7.10, 2)
     # Hedge: 10y payer swap, pay 4% fixed annually, receive floating repricing quarterly (USD bn notional N).
     n = 25.0
     swap = net(slot([(0.25, n)]), slot([(float(t), -0.04 * n) for t in range(1, 11)]), slot([(10.0, -n)]))

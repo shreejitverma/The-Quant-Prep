@@ -264,7 +264,7 @@ With the EUR 4,800 structural position the ratio stays at 12.00% after a 10% eur
 
 > [!question]- reg-girr-irt-desk-standalone-capital | An IRT desk receives fixed at 10 years (PV01 -80,000) and hedges with a 5-year payer (PV01 +80,000). What is its GIRR delta capital?
 > About 3.03m USD.
-> Weighted sensitivities are $\mp 8.8$m at 1.1%; with $\rho(5, 10) = 0.9704$ the capital is 2.14m (medium), 3.03m (low, $\rho = \max(2\rho - 1, 0.75\rho)$) and 0 (high); SBM takes the largest (MAR21.6).
+> Weighted sensitivities are $\mp 8.8$m at 1.1%; with $\rho(5, 10) = 0.9704$ the capital is 2.14m (medium), 3.03m (low, $\rho = \max(2\rho - 1, 0.75\rho)$) and 0 (high); SBM takes the largest of the three scenarios (MAR21.6 to MAR21.7).
 > Because the desk is capitalised stand-alone (RBC25.25(3)), the curve mismatch cannot be offset by other rates desks.
 
 > [!question]- reg-structural-fx-neutral-position | Derive the structural FX position that makes a bank's CET1 ratio insensitive to the exchange rate.

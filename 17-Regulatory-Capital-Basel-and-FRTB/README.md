@@ -30,7 +30,7 @@ The rules that govern bank balance sheets, trading desks, counterparty exposures
 | 12 | [FRTB: Backtesting and P&L Attribution Testing](12-FRTB-Backtesting-and-PLA-Testing.md) | Q | senior | 5 | solid | 15 |
 | 13 | [FRTB: Implementation Challenges and Desk Strategy](13-FRTB-Implementation-Challenges-and-Desk-Strategy.md) | DQ | senior | 4 | solid | 10 |
 | 14 | [Operational Risk: Standardised Measurement Approach](14-Operational-Risk-Standardised-Measurement-Approach.md) | Q | core | 4 | solid | 17 |
-| 15 | [Leverage Ratio and Liquidity Ratios: LCR and NSFR](15-Leverage-Ratio-and-Liquidity-Ratios-LCR-and-NSFR.md) | Q | core | 4 | solid | 16 |
+| 15 | [Leverage Ratio and Liquidity Ratios: LCR and NSFR](15-Leverage-Ratio-and-Liquidity-Ratios-LCR-and-NSFR.md) | Q | core | 4 | solid | 17 |
 | 16 | [Interest Rate Risk in the Banking Book: IRRBB](16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md) | Q | advanced | 4 | solid | 17 |
 | 17 | [Stress Testing: CCAR, DFAST, and EBA](17-Stress-Testing-CCAR-DFAST-and-EBA.md) | Q | advanced | 4 | solid | 10 |
 | 18 | [BCBS 239: Risk Data Aggregation and Reporting](18-BCBS-239-Risk-Data-Aggregation.md) | DQ | advanced | 4 | solid | 10 |
