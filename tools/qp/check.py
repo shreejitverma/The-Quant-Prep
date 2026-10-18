@@ -135,7 +135,7 @@ def check_vault(vault: Vault, strict_sde: bool = False, files: list[Path] | None
         for card in note.cards:
             if not card.answer:
                 findings.append(Finding(p, card.line, "card", f"card {card.id!r} has no answer"))
-            elif re.match(r"^[0-9]+\. ", card.answer) and not re.search(r"(?m)^\s*2\. ", card.answer):
+            elif re.match(r"^[0-9]+\. ", card.answer) and not re.search(r"\n\s*[0-9]+\. ", card.answer):
                 findings.append(
                     Finding(
                         p,

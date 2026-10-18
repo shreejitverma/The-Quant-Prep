@@ -538,6 +538,15 @@ class Checks(TempRepo):
             self.root,
             "01-Alpha/05-Numbered.md",
             "Numbered",
+            "> [!question]- list-card | Steps?\n> 3. First step.\n> 4. Second step.\n",
+        )
+        findings = [f for f in check.check_vault(self.vault()) if f.rule == "card"]
+        self.assertEqual(len(findings), 0)
+
+        write_note(
+            self.root,
+            "01-Alpha/05-Numbered.md",
+            "Numbered",
             "> [!question]- list-card | Steps?\n> 1. First step.\n> 2. Second step.\n",
         )
         findings = [f for f in check.check_vault(self.vault()) if f.rule == "card"]
