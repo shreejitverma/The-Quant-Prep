@@ -186,7 +186,7 @@ def mdd_quantile(q: float, t: float, mu: float, sigma: float) -> float:
     lo, hi = 1e-9, _h_max(t, mu, sigma)
     for _ in range(80):
         mid = 0.5 * (lo + hi)
-        if survival_mdd(mid, t, mu, sigma) < q:
+        if survival_mdd(mid, t, mu, sigma) < 1.0 - q:
             lo = mid
         else:
             hi = mid
