@@ -112,10 +112,7 @@ def generate_schedule(
     eom: bool = False,
     holidays: set[datetime.date] | None = None,
 ) -> list[datetime.date]:
-    return [
-        roll_modified_following(add_months(start, i * months_per_period, eom), holidays)
-        for i in range(1, periods + 1)
-    ]
+    return [roll_modified_following(add_months(start, i * months_per_period, eom), holidays) for i in range(1, periods + 1)]
 
 
 def third_wednesday(year: int, month: int) -> datetime.date:
