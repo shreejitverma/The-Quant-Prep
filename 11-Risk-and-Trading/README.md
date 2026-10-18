@@ -19,14 +19,14 @@ Sizing, risk and the trader's judgement: what separates a senior trader from a s
 | 01 | [Kelly Criterion and Position Sizing](01-Kelly-Criterion-and-Position-Sizing.md) | TR | core | 3 | solid | 12 |
 | 02 | [Expected Value and Betting Decisions](02-Expected-Value-and-Betting-Decisions.md) | T | core | 3 | solid | 12 |
 | 03 | [Value at Risk and Expected Shortfall](03-VaR-and-Expected-Shortfall.md) | TRDQ | core | 3 | solid | 14 |
-| 04 | [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md) | TRQ | advanced | 4 | draft | 10 |
-| 05 | [Drawdowns and Risk Limits](05-Drawdowns-and-Risk-Limits.md) | TRQ | core | 4 | draft | 10 |
-| 06 | [P&L Attribution and Greek Risk](06-PnL-Attribution-and-Greek-Risk.md) | TDQ | core | 4 | draft | 10 |
+| 04 | [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md) | TRQ | advanced | 4 | solid | 19 |
+| 05 | [Drawdowns and Risk Limits](05-Drawdowns-and-Risk-Limits.md) | TRQ | core | 4 | solid | 20 |
+| 06 | [P&L Attribution and Greek Risk](06-PnL-Attribution-and-Greek-Risk.md) | TDQ | core | 4 | solid | 21 |
 | 07 | [Game Theory for Traders](07-Game-Theory-for-Traders.md) | T | advanced | 3 | solid | 20 |
 | 08 | [Macro and Market Awareness](08-Macro-and-Market-Awareness.md) | T | core | 2 | solid | 17 |
 | 09 | [Trading Intuition and Judgement](09-Trading-Intuition-and-Judgement.md) | T | core | 3 | solid | 12 |
-| 10 | [Risk Factor Modelling](10-Risk-Factor-Modelling.md) | RDQ | advanced | 4 | draft | 10 |
-| 11 | [Scenario Generation](11-Scenario-Generation.md) | RQ | advanced | 4 | draft | 10 |
+| 10 | [Risk Factor Modelling](10-Risk-Factor-Modelling.md) | RDQ | advanced | 4 | solid | 19 |
+| 11 | [Scenario Generation](11-Scenario-Generation.md) | RQ | advanced | 4 | solid | 19 |
 | 12 | [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md) | RDQ | advanced | 5 | draft | 10 |
 | 13 | [Risk Decomposition and Attribution](13-Risk-Decomposition-and-Attribution.md) | TRQ | advanced | 4 | draft | 10 |
 | 14 | [Counterparty Credit Risk Analytics](14-Counterparty-Credit-Risk-Analytics.md) | RDQ | senior | 6 | draft | 10 |
