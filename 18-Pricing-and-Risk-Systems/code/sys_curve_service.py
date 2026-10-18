@@ -121,7 +121,9 @@ class NaturalSpline:
         sup = [h[i] for i in range(1, n - 2)]
         rhs = [3.0 * ((y[i + 1] - y[i]) / h[i] - (y[i] - y[i - 1]) / h[i - 1]) for i in range(1, n - 1)]
 
-        if m == 1:
+        if m == 0:
+            c_interior = []
+        elif m == 1:
             c_interior = [rhs[0] / diag[0]]
         else:
             cp = [0.0] * (m - 1)
