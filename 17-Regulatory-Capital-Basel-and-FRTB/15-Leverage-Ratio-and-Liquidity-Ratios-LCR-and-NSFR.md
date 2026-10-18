@@ -2,349 +2,305 @@
 type: concept
 track: [quant-risk]
 tier: core
-status: draft
+status: solid
 prereqs: [operational-risk-standardised-measurement-approach]
 est_hours: 4
-sources: [Basel Committee on Banking Supervision - Basel III: The Liquidity Coverage Ratio and liquidity risk monitoring tools (2013), Basel Committee on Banking Supervision - Basel III: The Net Stable Funding Ratio (2014), Basel Committee on Banking Supervision - Basel III Leverage Ratio framework and disclosure requirements (2014)]
+sources: [Basel Committee on Banking Supervision - The Basel Framework (consolidated) chapters LEV10 LEV20 LEV30 LEV40 LCR20 LCR30 LCR40 LCR90 NSF20 NSF30 LEX20 (versions in force retrieved 2026-10-16), Basel Committee on Banking Supervision - Basel III: The Liquidity Coverage Ratio and liquidity risk monitoring tools (7 January 2013), Basel Committee on Banking Supervision - Basel III leverage ratio framework and disclosure requirements (12 January 2014), Basel Committee on Banking Supervision - Basel III: the net stable funding ratio (31 October 2014), Board of Governors of the Federal Reserve System - Review of the Federal Reserve's Supervision and Regulation of Silicon Valley Bank (April 2023), House of Commons Treasury Committee - The run on the Rock (HC 56-I January 2008), Board of Governors of the Federal Reserve System - press release on the enhanced supplementary leverage ratio final rule (25 November 2025)]
 ---
 
 # Leverage Ratio and Liquidity Ratios: LCR and NSFR
 
 ## TL;DR
 
-Prior to the 2007-2009 global financial crisis, international banks maintained ostensibly high risk-weighted capital ratios (often exceeding 10% to 12%) while simultaneously accumulating massive leverage on nominal balance sheets and relying heavily on fragile, short-term wholesale funding markets.
-When liquidity evaporated in 2007, institutions such as Northern Rock, Bear Stearns, and Lehman Brothers collapsed into immediate insolvency, demonstrating that capital adequacy is meaningless without liquidity adequacy.
-To establish non-risk-weighted backstops, Basel III introduced three structural pillars: the Leverage Ratio, the Liquidity Coverage Ratio (LCR), and the Net Stable Funding Ratio (NSFR).
-The Basel III Leverage Ratio mandates that a bank's Tier 1 Capital must equal at least 3.0% of its Total Leverage Exposure (on-balance sheet assets, derivatives via SA-CCR, securities financing transactions, and off-balance commitments), augmented by a G-SIB leverage surcharge.
-The Liquidity Coverage Ratio (LCR, Basel LCR40) requires banks to hold an unencumbered buffer of High-Quality Liquid Assets (HQLA) sufficient to survive a severe 30-day acute stress scenario:
-$$\text{LCR} = \frac{\text{HQLA}}{\text{Total Net Stressed Cash Outflows over 30 days}} \ge 100\%$$
-The Net Stable Funding Ratio (NSFR, Basel NSF30) ensures structural, long-term funding stability over a 1-year horizon by requiring Available Stable Funding (ASF) to match or exceed Required Stable Funding (RSF):
-$$\text{NSFR} = \frac{\text{ASF}}{\text{RSF}} \ge 100\%$$
-Finally, the Large Exposures framework (LEX30) limits total exposure to a single counterparty or connected group to 25% of Tier 1 capital (tightened to 15% between G-SIBs).
+- Leverage ratio: Tier 1 over an exposure measure of on-balance sheet assets, derivatives at $1.4 \times (RC + PFE)$ with the PFE multiplier fixed at one, SFTs at gross assets plus current exposure, and off-balance sheet items at CCFs of 10% to 100%; at least 3% (LEV20.7) plus, for G-SIBs, half the risk-based surcharge (LEV40.2).
+- Collateral does not reduce leverage exposure, except cash variation margin meeting five conditions, and then only the replacement cost (LEV30.22 to LEV30.25).
+- LCR: high-quality liquid assets over 30-day stressed net cash outflows, at least 100% (LCR20.1, LCR20.5); Level 2 is capped at 40% and Level 2B at 15% of the stock after haircuts of 15% (2A), 25% (RMBS) and 50% (other 2B), and inflows are capped at 75% of outflows (LCR40.77), so HQLA must cover at least 25% of gross outflows.
+- NSFR: available stable funding (liabilities weighted 0% to 100% by stickiness) over required stable funding (assets weighted 0% to 100% by illiquidity), at least 100% on an ongoing basis (NSF20.2).
+- Large exposures to one counterparty or connected group are limited to 25% of Tier 1, and 15% between G-SIBs (LEX20.1).
 
 ## Learning objectives
 
 - Formulate the Basel III Leverage Ratio and quantify the four components of the Total Leverage Exposure measure.
-- Analyze the G-SIB leverage surcharge and the US Enhanced Supplementary Leverage Ratio (eSLR).
-- Classify High-Quality Liquid Assets into Level 1, Level 2A, and Level 2B, applying regulatory haircuts and portfolio caps.
+- Analyze the G-SIB leverage surcharge and the US Enhanced Supplementary Leverage Ratio (eSLR) as it stands in 2026.
+- Classify High-Quality Liquid Assets into Level 1, Level 2A, and Level 2B, applying regulatory haircuts and portfolio caps with the LCR30.38 formula.
 - Calculate 30-day stressed cash outflows and evaluate the 75% regulatory cap on cash inflows under LCR.
 - Structure Available Stable Funding (ASF) and Required Stable Funding (RSF) balance sheet weights under NSFR.
 - Contrast the short-term acute focus of LCR against the structural 1-year horizon of NSFR.
-- Dissect the 2007-2008 failures of Northern Rock and Bear Stearns as liquidity-driven bank runs.
+- Use the Northern Rock and Silicon Valley Bank official reviews to show what the liquidity standards are designed to catch.
 
 ## Core concepts
 
-### The Basel III Leverage Ratio (LEV30)
+### The leverage ratio (LEV20 to LEV40)
 
-The Leverage Ratio is a transparent, non-risk-weighted regulatory backstop designed to prevent the build-up of excessive leverage during credit booms and guard against model risk in internal RWA calculations.
-It is defined as:
-$$\text{Leverage Ratio} = \frac{\text{Tier 1 Capital}}{\text{Total Leverage Exposure}} \ge 3.0\%$$
+$$\text{Leverage ratio} = \frac{\text{Tier 1 capital}}{\text{exposure measure}} \ge 3\%,$$
 
-#### The Total Leverage Exposure measure
-The denominator comprises four distinct balance sheet components:
-1. **On-balance sheet assets**: All balance sheet assets, excluding accounting deductions already applied to Tier 1 capital (e.g., goodwill, intangible assets, deferred tax assets).
-2. **Derivative exposures**: Evaluated using the Standardised Approach for Counterparty Credit Risk (SA-CCR):
-   $$\text{Exposure}_{\text{derivatives}} = \text{Replacement Cost} + \text{PFE}$$
-   Cash variation margin received can reduce Replacement Cost only if strict settlement and bankruptcy-remoteness criteria are met; non-cash collateral cannot reduce derivative leverage exposure.
-3. **Securities Financing Transactions (SFTs)**: Repurchase agreements, reverse repos, and securities lending; gross accounting receivables are recognized, plus an add-on for counterparty exposure computed via net SFT collateralization.
-4. **Off-balance sheet commitments**: Credit lines, guarantees, and letters of credit; converted to leverage exposure using credit conversion factors (CCFs) identical to the Standardised Approach for credit risk (10% for unconditionally cancellable commitments, 40-50% for commercial credit lines, 100% for financial guarantees).
+computed at quarter end, or on more frequent averages with supervisory approval (LEV20.3 to LEV20.7).
+The exposure measure follows gross accounting values, does not recognise collateral or other mitigation unless stated, and may exclude only items already deducted from Tier 1 (LEV30.1 to LEV30.4).
 
-#### Global Systemically Important Bank (G-SIB) leverage surcharge
-Under LEV30.15, Global Systemically Important Banks must hold an additional Tier 1 leverage buffer:
-$$\text{G-SIB Leverage Buffer} = 50\% \cdot \text{G-SIB Risk-Weighted Surcharge}$$
-For example, a G-SIB in the 2.0% surcharge bucket must maintain a minimum leverage ratio of:
-$$\text{Minimum Leverage Ratio} = 3.0\% + (0.50 \cdot 2.0\%) = 4.0\%$$
-In the United States, the Federal Reserve established the Enhanced Supplementary Leverage Ratio (eSLR):
-- Bank holding companies: minimum $5.0\%$ (including a 2.0% buffer).
-- Insured depository institution (IDI) subsidiaries: minimum $6.0\%$ to be considered "well-capitalized."
+| Component | Measure | Paragraphs |
+| :--- | :--- | :--- |
+| On-balance sheet | Accounting value less specific provisions, excluding derivative and SFT assets; general provisions that reduced Tier 1 may be deducted | LEV30.8 to LEV30.9 |
+| Derivatives | $1.4 \times (RC + PFE)$, $RC = \max(V - CVM_r + CVM_p, 0)$, PFE from SA-CCR with the multiplier fixed at 1; margined maturity factor allowed; written options included even when risk-based EAD is zero | LEV30.13 to LEV30.16 |
+| Written credit derivatives | Add the effective notional of the reference exposure, reducible by purchased protection meeting conditions | LEV30.30 to LEV30.31 |
+| SFTs | Gross SFT assets (netting cash payables and receivables only under strict conditions) plus a current exposure without PFE, $E^* = \max(0, \sum E - \sum C)$ per counterparty under a qualifying master netting agreement | LEV30.37 |
+| Off-balance sheet | CCF times notional: 100% direct credit substitutes, 50% NIFs, RUFs and transaction-related contingents, 40% commitments, 20% trade letters of credit, 10% unconditionally cancellable commitments | LEV30.49 to LEV30.54 |
 
-### The Liquidity Coverage Ratio (LCR, LCR40)
+Collateral received never reduces the exposure, because it can be reused to lever up (LEV30.21 to LEV30.22); collateral provided that reduced balance sheet assets must be grossed back up (LEV30.23).
+The one exception: cash variation margin may reduce replacement cost (not PFE) if it is unsegregated (for non-cleared trades), exchanged at least daily on daily marks, in the contract currency, for the full mark-to-market subject to threshold and MTA, under a single enforceable master netting agreement (LEV30.24 to LEV30.25).
+A jurisdiction may temporarily exempt central bank reserves in exceptional circumstances, but must recalibrate the minimum upward to keep the same resilience and banks must disclose the ratio without the exemption (LEV30.7).
 
-The LCR addresses short-term acute liquidity stress.
-It models a severe 30-day scenario combining an institutional credit rating downgrade (up to 3 notches), substantial deposit run-offs, complete loss of unsecured wholesale funding, and massive derivative collateral calls.
-$$\text{LCR} = \frac{\text{Stock of High-Quality Liquid Assets (HQLA)}}{\text{Total Net Stressed Cash Outflows over 30 days}} \ge 100\%$$
+**G-SIB buffer.**
+Half of the risk-based higher loss absorbency, in Tier 1: 1% for a 2% G-SIB (LEV40.2); the buffer has distribution bands like the risk-based buffer, and the stricter test sets the payout limit (LEV40.4 to LEV40.5); note 01 works an example.
 
-#### High-Quality Liquid Assets (HQLA) categories and haircuts
-HQLA must be unencumbered, liquid in private repo markets, and central bank eligible:
-- **Level 1 Assets (Zero Haircut, No Cap)**:
-  - Physical currency and central bank reserves withdrawable in stress.
-  - Qualifying sovereign, central bank, and public sector debt carrying a 0% risk weight under the Standardised Approach (e.g., US Treasuries, German Bunds, UK Gilts).
-- **Level 2A Assets (15% Haircut)**:
-  - Sovereign and public sector bonds with 20% risk weights.
-  - High-grade non-financial corporate bonds and covered bonds rated AA- or higher.
-- **Level 2B Assets**:
-  - Qualifying residential mortgage-backed securities (RMBS) rated AA or higher (25% haircut).
-  - Investment-grade corporate bonds rated BBB- to A+ (50% haircut).
-  - Qualifying common equity shares included in major developed market indices (50% haircut).
+**United States (as of 2026-10).**
+A joint final rule announced on 25 November 2025 and effective 1 April 2026 (optional adoption from 1 January 2026) set the eSLR buffer of a US G-SIB holding company at half its method 1 surcharge on top of the 3% supplementary leverage ratio, and capped the buffer of its depository institutions at 1%, so their requirement is at most 4%; before it the figures were a 2% buffer for the holding company and 6% for depository institutions to be well capitalized.
+A G-SIB with a 3% method 1 surcharge would therefore need 4.5% at the holding company and at most 4.0% at the bank.
 
-#### Level 2 asset caps
-To prevent banks from relying excessively on private securities, Basel LCR Annex 1 enforces strict caps on post-haircut HQLA:
-$$\text{Level 2 Assets (2A + 2B)} \le 40\% \cdot \text{Total HQLA}$$
-$$\text{Level 2B Assets} \le 15\% \cdot \text{Total HQLA}$$
-Any excess Level 2 assets exceeding these caps are legally disqualified from HQLA.
+### The Liquidity Coverage Ratio (LCR20 to LCR40)
 
-#### Stressed cash outflows and run-off rates
-Outflows are computed by multiplying outstanding balances by supervisory run-off rates:
-- Fully insured stable retail deposits: 3% to 5% run-off.
-- Less stable retail deposits (high-balance, internet-only, uninsured): 10% to 20% run-off.
-- Unsecured operational corporate deposits (clearing, custody, cash management): 25% run-off.
-- Non-operational corporate deposits (treasury surplus, institutional wholesale): 40% to 100% run-off.
-- Committed credit and liquidity facilities to non-financial corporates: 10% to 30% draw-down.
-- Committed facilities to financial institutions (hedge funds, SPVs): 40% to 100% draw-down.
+$$LCR = \frac{\text{stock of HQLA}}{\text{total net cash outflows over the next 30 calendar days}} \ge 100\%.$$
 
-#### The 75% inflow cap
-Supervisors recognize contractual cash inflows (loan repayments from performing clients, maturing short-term assets) up to an aggregate ceiling:
-$$\text{Recognized Inflows} = \min\left( \text{Gross Cash Inflows}, 75\% \cdot \text{Gross Cash Outflows} \right)$$
-$$\text{Net Cash Outflows} = \text{Gross Cash Outflows} - \text{Recognized Inflows}$$
-The 75% cap ensures that a bank must always maintain a stock of HQLA equal to at least 25% of its gross 30-day outflows, preventing banks from relying entirely on expected counterparty inflows.
+The scenario combines idiosyncratic and market-wide stress: partial run-off of retail deposits and unsecured wholesale funding, loss of some secured funding, collateral calls including a downgrade of up to three notches, higher collateral haircuts, draws on committed facilities, and non-contractual buy-backs to protect reputation (LCR20.2).
+It is a minimum; in stress banks are expected to use the HQLA and fall below 100%, with supervisors judging the response (LCR20.5 to LCR20.6); it is reported at least monthly (LCR20.7), and the 100% minimum has applied since 1 January 2019 (LCR90.1).
 
-### The Net Stable Funding Ratio (NSFR, NSF30)
+**HQLA.**
 
-While LCR handles an acute 30-day liquidity shock, the Net Stable Funding Ratio enforces long-term structural balance sheet stability over a 1-year horizon:
-$$\text{NSFR} = \frac{\text{Available Stable Funding (ASF)}}{\text{Required Stable Funding (RSF)}} \ge 100\%$$
+| Level | Examples | Haircut | Paragraph |
+| :--- | :--- | ---: | :--- |
+| 1 | Cash, withdrawable central bank reserves, 0%-risk-weight sovereign, central bank and PSE securities, own-sovereign debt in domestic currency | 0% | LCR30.40 to LCR30.41 |
+| 2A | 20%-risk-weight sovereign and PSE securities; non-financial corporate bonds and covered bonds rated AA- or better | 15% | LCR30.43 |
+| 2B | RMBS rated AA or better, full recourse, average LTV at issuance at most 80% | 25% | LCR30.45(1) |
+| 2B | Non-financial corporate bonds A+ to BBB-; non-financial common equity in a major index | 50% | LCR30.45(2) to (3) |
 
-#### Available Stable Funding (ASF)
-ASF measures the proportion of capital and liabilities expected to remain reliable over a 1-year horizon:
-- **100% ASF**: Regulatory capital (Tier 1 and Tier 2) and other capital instruments or liabilities with residual maturity $\ge 1\text{ year}$.
-- **90% - 95% ASF**: Stable retail and small business deposits with residual maturity $< 1\text{ year}$.
-- **50% ASF**: Wholesale funding and non-operational deposits from non-financial corporates with residual maturity $< 1\text{ year}$.
-- **0% ASF**: Short-term funding from financial institutions (interbank deposits, repo) with residual maturity $< 6\text{ months}$.
+Assets must be unencumbered and under the control of the liquidity function (LCR30.13 to LCR30.25).
+Level 2 may be at most 40% of the stock and Level 2B at most 15%, after haircuts and after unwinding secured funding, lending and collateral swaps maturing within 30 days (LCR30.34 to LCR30.37), via
 
-#### Required Stable Funding (RSF)
-RSF measures the amount of stable funding required to support assets and off-balance sheet exposures based on their liquidity and liquidation horizon:
-- **0% RSF**: Unencumbered central bank reserves, cash, and short-term sovereign claims.
-- **5% RSF**: High-grade unencumbered Level 1 sovereign debt.
-- **15% RSF**: Unencumbered loans to financial institutions with residual maturity $< 6\text{ months}$.
-- **65% RSF**: Performing residential mortgages with residual maturity $\ge 1\text{ year}$.
-- **50% RSF**: Corporate loans with maturity $< 1\text{ year}$.
-- **85% RSF**: Unencumbered corporate loans and retail loans with residual maturity $\ge 1\text{ year}$.
-- **100% RSF**: Non-performing loans, physical real estate, unlisted equities, and derivative net assets.
+$$\text{HQLA} = L1 + L2A + L2B - \text{Adj}_{15} - \text{Adj}_{40},$$
+$$\text{Adj}_{15} = \max\left(\widetilde{L2B} - \tfrac{15}{85}(\widetilde{L1} + \widetilde{L2A}),\; \widetilde{L2B} - \tfrac{15}{60}\widetilde{L1},\; 0\right),$$
+$$\text{Adj}_{40} = \max\left(\widetilde{L2A} + \widetilde{L2B} - \text{Adj}_{15} - \tfrac{2}{3}\widetilde{L1},\; 0\right),$$
 
-### The Large Exposures Framework (LEX30)
+where tildes are the adjusted amounts (LCR30.38 to LCR30.39).
+The fractions are the caps rearranged: $L2 \le 40\%$ of the stock is $L2 \le \tfrac{2}{3} L1$, and $L2B \le 15\%$ is $L2B \le \tfrac{15}{85}(L1 + L2A)$, or $\tfrac{15}{60} L1$ when the 40% cap binds.
 
-To prevent the sudden default of a single connected corporate conglomerate or banking counterparty from threatening bank solvency, Basel LEX establishes hard concentration limits:
-$$\frac{\text{Total Net Exposure to Single Connected Counterparty}}{\text{Tier 1 Capital}} \le 25\%$$
-For Global Systemically Important Banks (G-SIBs), the inter-G-SIB concentration limit is tightened to **15% of Tier 1 Capital**, mitigating systemic network contagion across the core of the global financial system.
+**Outflows and inflows.**
 
-### Regulatory text map
+| Item | Minimum rate | Paragraph |
+| :--- | ---: | :--- |
+| Stable retail deposits (fully insured, transactional or relationship) | 5% (3% if the deposit insurance meets LCR40.11) | LCR40.7, LCR40.11 |
+| Less stable retail deposits | 10% and higher | LCR40.13 |
+| Operational deposits (clearing, custody, cash management) | 25% | LCR40.26 |
+| Non-operational deposits of non-financial corporates, sovereigns, PSEs | 40% (20% if fully insured) | LCR40.40 to LCR40.41 |
+| Unsecured funding from financial institutions and other legal entities | 100% | LCR40.42 |
+| Committed facilities: retail; corporate credit; corporate liquidity | 5%; 10%; 30% | LCR40.64(1) to (3) |
+| Committed facilities: banks; other FI credit; other FI liquidity; SPEs and conduits | 40%; 40%; 100%; 100% | LCR40.64(4) to (7) |
+| Inflows from retail and small business loans; non-financial wholesale | 50% | LCR40.86, LCR40.87(2) |
+| Inflows from financial institutions and central banks; maturing non-HQLA securities | 100% | LCR40.87(1), LCR40.88 |
+| Facilities the bank holds at other banks | 0% inflow | LCR40.82 |
 
-- **LEV30**: Basel III Leverage Ratio framework - Exposure definitions, derivative treatments, SFT accounting, and off-balance sheet CCFs.
-- **LCR40**: Liquidity Coverage Ratio - HQLA eligibility criteria, Level 2 caps, cash outflow run-off rates, and the 75% inflow cap.
-- **NSF30**: Net Stable Funding Ratio - ASF liability weighting tables, RSF asset weighting tables, and derivative netting rules.
-- **LEX30**: Large Exposures framework - Identification of connected counterparties, exposure aggregation, and the 25% / 15% Tier 1 limits.
+Inflows may offset at most 75% of outflows (LCR40.1, LCR40.77):
 
-### How it is implemented
+$$NCO = \text{Outflows} - \min(\text{Inflows}, 75\% \times \text{Outflows}) \ge 25\% \times \text{Outflows}.$$
 
-- **Inputs**: Balance sheet asset and liability ledgers, contractual maturity schedules, counterparty classifications (retail, SME, corporate, financial, sovereign), collateral encumbrance flags, derivative SA-CCR exposures, SFT registers.
-- **Outputs**: Total Leverage Exposure, Leverage Ratio, post-haircut HQLA, Level 2 cap adjustments, gross outflows/inflows, net outflows, LCR ratio, Available Stable Funding (ASF), Required Stable Funding (RSF), NSFR ratio, top single-name concentration ratios.
-- **Data model**: Legal Entity $\to$ Account Balance Ledger $\to$ Counterparty Tag $\to$ Maturity Bucket $\to$ LCR/NSFR/LEV Mapping Rules.
-- **Algorithm**:
-  1. For Leverage Ratio: sum on-balance assets (minus Tier 1 deductions); add SA-CCR derivative exposure ($RC + PFE$); add SFT counterparty exposure; add off-balance commitments scaled by CCF; evaluate $\text{Tier 1} / \text{Exposure}$.
-  2. For LCR: classify liquid assets into Level 1, 2A, 2B; apply haircuts ($0\%, 15\%, 50\%$); check 40% and 15% caps via Annex 1 formulas; multiply 30-day liability balances by run-off rates; cap inflows at $75\%$ of outflows; compute $\text{Adjusted HQLA} / \text{Net Outflows}$.
-  3. For NSFR: map liabilities to ASF weights ($0\% \text{ to } 100\%$); map assets and commitments to RSF weights ($0\% \text{ to } 100\%$); compute $\sum \text{ASF} / \sum \text{RSF}$.
-  4. For Large Exposures: map legal entity identifiers (LEI) to parent corporate ownership groups; sum gross exposures; verify $\le 25\%$ Tier 1.
-- **Complexity**: $O(N)$ across balance sheet accounts; executed daily for LCR and monthly/quarterly for NSFR and Leverage Ratio.
-- **Numerical pitfalls**: Forgetting the 75% cap on inflows in LCR; failing to deduct Level 2 cap excess from HQLA; allowing non-cash collateral to reduce derivative exposure in the Leverage Ratio; misclassifying financial entity corporate deposits as operational deposits.
-- **Systems integration**: Feeds the Treasury Asset-Liability Management (ALM) engine and regulatory balance sheet platform in 18-Pricing-and-Risk-Systems.
+### The Net Stable Funding Ratio (NSF20, NSF30)
+
+$$NSFR = \frac{ASF}{RSF} \ge 100\%, \quad ASF = \sum_j a_j L_j, \quad RSF = \sum_i r_i A_i,$$
+
+reported at least quarterly (NSF20.2 to NSF20.3).
+
+| ASF factor | Liabilities (NSF30.10 to NSF30.14) |
+| ---: | :--- |
+| 100% | Regulatory capital (excluding Tier 2 with less than a year left); other liabilities with effective residual maturity of a year or more |
+| 95% | Stable retail and small business deposits under a year |
+| 90% | Less stable retail and small business deposits under a year |
+| 50% | Non-financial corporate funding under a year; operational deposits; sovereign and PSE funding under a year; other funding from 6 months to a year, including from financials |
+| 0% | Everything else, including funding from financials and central banks under 6 months |
+
+| RSF factor | Assets (NSF30.25 to NSF30.34) |
+| ---: | :--- |
+| 0% | Cash, all central bank reserves, central bank claims under 6 months |
+| 5% | Unencumbered Level 1; undrawn committed facilities (off-balance sheet) |
+| 10% | Loans to financials under 6 months secured by rehypothecable Level 1 |
+| 15% | Unencumbered Level 2A; other loans to financials under 6 months |
+| 50% | Level 2B; HQLA encumbered 6 to 12 months; loans to financials 6 to 12 months; operational deposits placed; other non-HQLA under a year, including loans to non-financials |
+| 65% | Residential mortgages and other loans of a year or more at a 35% or lower risk weight |
+| 85% | Other performing loans of a year or more; initial margin posted; non-HQLA securities; physical commodities |
+| 100% | Assets encumbered a year or more, net derivative assets, non-performing loans, fixed assets; plus 5% to 20% of derivative liabilities at national discretion |
+
+ASF rewards funding that stays for a year; RSF charges assets that would need funding for a year because they cannot be sold or repo'd at par in stress.
+
+### Large exposures (LEX20)
+
+Exposure values to a single counterparty or group of connected counterparties may not exceed 25% of Tier 1, and 15% for a G-SIB's exposures to another G-SIB; breaches must be reported immediately and rectified (LEX20.1 to LEX20.3).
+
+### What the reviews found
+
+The UK Treasury Committee's report *The run on the Rock* (HC 56-I, January 2008) concluded that Northern Rock's directors pursued a business model that relied too heavily on wholesale funding, which failed when markets froze in August 2007; the September 2007 run was the first on a UK bank's retail deposits since Victorian times.
+The Federal Reserve's April 2023 review of Silicon Valley Bank found that about 94% of its deposits were uninsured at year-end 2022, that it lost over $40 billion of deposits on 9 March 2023 and expected over $100 billion more the next day, and that under the pre-2019 rules it would have been subject to the full LCR with an HQLA shortfall of about 9% in December 2022 and about 17% by February 2023.
+Both are funding-run failures that the LCR (a stock of HQLA against a 30-day run) and the NSFR (no funding of long assets with short wholesale money) target.
 
 ```mermaid
 flowchart TD
-    A["Enterprise Balance Sheet & Off-Balance Commitments"] --> B["Leverage Ratio Engine (LEV30)"]
-    A --> C["Liquidity Coverage Ratio Engine (LCR40)"]
-    A --> D["Net Stable Funding Ratio Engine (NSF30)"]
-    
-    B --> E["Total Leverage Exposure = Assets + SA-CCR + SFT + CCF*Commitments"]
-    E --> F["Leverage Ratio = Tier 1 / Exposure >= 3.0% (+ G-SIB Buffer)"]
-    
-    C --> G["HQLA: Level 1 (0%) + Level 2A (15%) + Level 2B (25% RMBS, 50% other eligible assets)"]
-    G --> H["Apply Level 2 Caps: Max 40% Total Level 2, Max 15% Level 2B"]
-    C --> I["30-Day Stressed Outflows & Capped Inflows (Max 75% of Outflows)"]
-    H & I --> J["LCR = Adjusted HQLA / Net Outflows >= 100%"]
-    
-    D --> K["Available Stable Funding: Capital (100%), Retail (90-95%), Wholesale (0-50%)"]
-    D --> L["Required Stable Funding: Reserves (0%), Sov (5%), Mortgages (50%), Loans (85%)"]
-    K & L --> M["NSFR = ASF / RSF >= 100%"]
+    BS["Balance sheet and off-balance sheet ledger, counterparty and maturity tags"] --> LEV["Leverage engine: on-balance + 1.4 x (RC + PFE) + SFT + CCF x OBS"]
+    BS --> LCR["LCR engine: HQLA by level, haircuts, caps; outflows and inflows by category"]
+    BS --> NSFR["NSFR engine: ASF and RSF factors by counterparty and residual maturity"]
+    BS --> LEX["Large exposures: connected groups, 25% and 15% of Tier 1"]
+    LEV --> LR["Tier 1 over exposure: at least 3% plus G-SIB buffer"]
+    LCR --> L1["HQLA over NCO, inflows capped at 75%: at least 100%"]
+    NSFR --> N1["ASF over RSF: at least 100%"]
+    LR --> REP["Pillar 3 and treasury: DIS80, DIS85, funding plan"]
+    L1 --> REP
+    N1 --> REP
+    LEX --> REP
 ```
+
+### How it is implemented
+
+These ratios are classification problems over the whole balance sheet.
+Each account needs a counterparty type (retail, small business, non-financial corporate, sovereign, financial), an operational-deposit flag with evidence, insurance coverage, contractual and behavioural maturity, encumbrance status and collateral links for unwinding SFTs (LCR30.37).
+The LCR runs daily or monthly (LCR20.7), the NSFR and leverage ratio quarterly, from the same golden source as the financial statements; the hard engineering is reconciliation, the SFT unwind for the caps, and keeping classifications auditable.
+`code/basel_liquidity_irrbb.py` implements the leverage derivative formula and CCFs, the LCR30.38 caps, the LCR40 rates and inflow cap, and the NSFR factors used below.
 
 ## Worked examples
 
-### Example 1: Comprehensive LCR calculation with asset caps and inflow ceiling
+Amounts in millions; every number is printed and asserted by `code/basel_liquidity_irrbb.py`.
 
-A commercial bank evaluates its 30-day liquidity position under acute stress (verified in `code/basel_liquidity_irrbb.py`):
-- Unencumbered Liquid Assets:
-  - Cash and central bank reserves (Level 1): $\$100,000,000.00$
-  - US Treasury bonds (Level 1): $\$0.00$
-  - High-grade AA corporate bonds (Level 2A): $\$30,000,000.00$
-  - Developed market equities / BBB corporate bonds (Level 2B): $\$10,000,000.00$
-- 30-Day Cash Flow Projections under Stressed Conditions:
-  - Gross contractual cash outflows (deposit run-off, committed facility draws): $\$100,000,000.00$
-  - Gross contractual cash inflows (loan repayments from performing borrowers): $\$40,000,000.00$
+### Example 1: leverage exposure
 
-**Step 1: Post-haircut liquid asset values**
-- Level 1:
-  $$H_1 = \$100,000,000.00 \cdot (1 - 0.0) = \$100,000,000.00$$
-- Level 2A (15% haircut):
-  $$H_{2A} = \$30,000,000.00 \cdot (1 - 0.15) = \$25,500,000.00$$
-- Level 2B (50% haircut):
-  $$H_{2B} = \$10,000,000.00 \cdot (1 - 0.50) = \$5,000,000.00$$
+On-balance sheet assets 380,000 less goodwill deducted from Tier 1 of 1,800.
+Derivatives with net replacement cost 6,000 and add-ons 10,000: $1.4 \times 16,000 = 22,400$.
+SFT exposure under LEV30.37: 45,000.
+Off-balance sheet: commitments 50,000 at 40% (20,000), unconditionally cancellable lines 30,000 at 10% (3,000), standby letters of credit as financial guarantees 5,000 at 100% (5,000), trade letters of credit 4,000 at 20% (800), total 28,800.
+Exposure measure $= 378,200 + 22,400 + 45,000 + 28,800 = 474,400$; with Tier 1 of 16,000 the ratio is 3.37%.
+A bucket 2 G-SIB needs 3.75%, a shortfall of 1,790, even though its risk-based Tier 1 ratio on RWA of 145,000 is 11.03%: its RWA density is 30.56%.
+For one netting set with $V = 50$, eligible cash VM received 30 and add-on 100, the exposure is $1.4 \times (20 + 100) = 168$; if the 30 were bonds it would be $1.4 \times 150 = 210$.
 
-**Step 2: Regulatory cap verification**
-Using the Basel LCR Annex 1 cap formulas:
-- Level 2B cap ($15/85$ of Level 1 + Level 2A):
-  $$\text{Cap}_{2B} = \frac{15}{85} \cdot (H_1 + H_{2A}) = \frac{15}{85} \cdot (\$100\text{M} + \$25.5\text{M}) = \frac{15}{85} \cdot \$125,500,000 = \$22,147,058.82$$
-  Because $H_{2B} = \$5,000,000 < \$22,147,059$, Level 2B is fully recognized.
-- Total Level 2 cap ($40/60$ of Level 1):
-  $$\text{Cap}_2 = \frac{40}{60} \cdot H_1 = \frac{2}{3} \cdot \$100,000,000 = \$66,666,666.67$$
-  Total Level 2 assets:
-  $$H_2 = H_{2A} + H_{2B} = \$25,500,000.00 + \$5,000,000.00 = \$30,500,000.00$$
-  Because $\$30.5\text{M} < \$66.67\text{M}$, the cap does not bind.
-- Adjusted HQLA:
-  $$\text{Adjusted HQLA} = H_1 + H_{2A} + H_{2B} = \$100\text{M} + \$25.5\text{M} + \$5\text{M} = \$130,500,000.00$$
+### Example 2: HQLA caps
 
-**Step 3: Stressed net cash outflows and inflow cap**
-- Inflow cap ($75\%$ of gross outflows):
-  $$\text{Inflow Cap} = 75\% \cdot \$100,000,000.00 = \$75,000,000.00$$
-- Because gross inflows ($\$40\text{M}$) are less than the cap ($\$75\text{M}$), all inflows are recognized:
-  $$\text{Net Cash Outflows} = \$100,000,000.00 - \$40,000,000.00 = \$60,000,000.00$$
+Level 1 of 50, Level 2A market value 60 (51 after haircut) and Level 2B corporate bonds 40 (20 after haircut).
+$\text{Adj}_{15} = \max(20 - \tfrac{15}{85} \times 101,\; 20 - \tfrac{15}{60} \times 50,\; 0) = 7.5$, $\text{Adj}_{40} = \max(51 + 20 - 7.5 - \tfrac{2}{3} \times 50, 0) = 30.17$.
+The stock is 83.33, which is $50/0.6$: Level 2 is exactly 40.0% and Level 2B 15.0% of it.
+Without binding caps (Level 1 100, Level 2A 30, Level 2B 10 at market value) the stock is 130.5, and against outflows of 100 and inflows of 40 the LCR is 217.5%.
 
-**Step 4: LCR ratio**
-$$\text{LCR} = \frac{\text{Adjusted HQLA}}{\text{Net Cash Outflows}} = \frac{\$130,500,000.00}{\$60,000,000.00} = 2.1750 = 217.50\%$$
-Because $217.50\% \ge 100\%$, the bank is fully compliant, maintaining a $\$70.5\text{M}$ liquidity surplus.
+### Example 3: a full LCR
 
-### Example 2: Net Stable Funding Ratio (NSFR) balance sheet profile
+| Outflow | Balance | Rate | Outflow |
+| :--- | ---: | ---: | ---: |
+| Stable retail deposits | 20,000 | 5% | 1,000 |
+| Less stable retail deposits | 8,000 | 10% | 800 |
+| Operational deposits | 6,000 | 25% | 1,500 |
+| Non-financial corporate, non-operational | 5,000 | 40% | 2,000 |
+| Financial institutions, unsecured | 3,000 | 100% | 3,000 |
+| Committed credit facilities to corporates | 10,000 | 10% | 1,000 |
+| Committed liquidity facilities to corporates | 2,000 | 30% | 600 |
+| Liquidity facility to an SPE | 500 | 100% | 500 |
+| Total | | | 10,400 |
 
-A regional bank models its 1-year structural funding position:
+Inflows: retail loan payments 1,200 at 50% (600), non-financial wholesale 2,000 at 50% (1,000), financial institutions 4,000 at 100% (4,000), total 5,600, below the cap of 7,800, so net cash outflows are 4,800.
+HQLA: Level 1 4,000, Level 2A 1,000 (850 after haircut), Level 2B corporates 600 (300), no cap binding: 5,150, so the LCR is 107.29%.
+If financial inflows were 9,000, inflows would be 10,600 but capped at 7,800, so net outflows are 2,600, exactly 25.0% of gross outflows.
+A 3% stable retail run-off (where deposit insurance qualifies) instead of 5% would cut outflows by 400.
 
-**Liabilities and Capital (Available Stable Funding):**
-- Tier 1 and Tier 2 Regulatory Capital: $\$15,000,000,000$ ($100\%$ ASF weight $\implies \$15.0\text{B}$)
-- Stable Retail Customer Deposits: $\$50,000,000,000$ ($95\%$ ASF weight $\implies \$47.5\text{B}$)
-- Less Stable Retail Deposits: $\$20,000,000,000$ ($90\%$ ASF weight $\implies \$18.0\text{B}$)
-- Unsecured Wholesale Funding from Corporates ($< 1\text{y}$): $\$10,000,000,000$ ($50\%$ ASF weight $\implies \$5.0\text{B}$)
-- Interbank Repo Funding from Financials ($< 6\text{m}$): $\$15,000,000,000$ ($0\%$ ASF weight $\implies \$0.0\text{B}$)
-- Total Available Stable Funding:
-  $$\text{ASF} = \$15.0\text{B} + \$47.5\text{B} + \$18.0\text{B} + \$5.0\text{B} + \$0.0\text{B} = \$85,500,000,000.00$$
+### Example 4: NSFR
 
-**Assets and Off-Balance Commitments (Required Stable Funding):**
-- Central Bank Cash Reserves: $\$5,000,000,000$ ($0\%$ RSF weight $\implies \$0.0\text{B}$)
-- US Treasury Level 1 Bonds: $\$10,000,000,000$ ($5\%$ RSF weight $\implies \$0.5\text{B}$)
-- Performing Residential Mortgages ($> 1\text{y}$): $\$40,000,000,000$ ($65\%$ RSF weight $\implies \$26.0\text{B}$)
-- Performing Corporate Loans ($> 1\text{y}$): $\$50,000,000,000$ ($85\%$ RSF weight $\implies \$42.5\text{B}$)
-- Total Required Stable Funding:
-  $$\text{RSF} = \$0.0\text{B} + \$0.5\text{B} + \$26.0\text{B} + \$42.5\text{B} = \$69,000,000,000.00$$
+ASF: capital 15,000 at 100% (15,000), stable retail 50,000 at 95% (47,500), less stable retail 20,000 at 90% (18,000), corporate funding under a year 10,000 at 50% (5,000), financial funding under 6 months 15,000 at 0% (0), term debt over a year 8,000 at 100% (8,000): 93,500.
+RSF: reserves 5,000 at 0%, Level 1 10,000 at 5% (500), Level 2A 3,000 at 15% (450), mortgages 40,000 at 65% (26,000), other loans over a year 45,000 at 85% (38,250), loans to non-financials under a year 8,000 at 50% (4,000), short loans to financials 6,000 at 15% (900), non-performing loans 1,000 at 100% (1,000), undrawn commitments 20,000 at 5% (1,000): 72,100.
+NSFR is 129.68%, a surplus of 21,400; the bank could replace about 22,526.32 of stable retail deposits with sub-6-month funding from financials before falling to 100%.
 
-**NSFR Evaluation:**
-$$\text{NSFR} = \frac{\text{ASF}}{\text{RSF}} = \frac{\$85,500,000,000.00}{\$69,000,000,000.00} = 1.2391 = 123.91\%$$
-Because $123.91\% \ge 100\%$, the bank satisfies structural funding standards, holding $\$16.5\text{B}$ in surplus stable funding.
+### Example 5: large exposures
 
-### Example 3: Northern Rock and the wholesale funding run of 2007
-
-In September 2007, British mortgage lender Northern Rock became the first European bank in modern history to experience an overt bank run:
-- Northern Rock's balance sheet had grown aggressively from 17 billion GBP in 1999 to over 113 billion GBP by mid-2007.
-- Its regulatory risk-weighted capital ratio was an ostensibly pristine **16.5%**, far above the 8% Basel II statutory minimum.
-- However, Northern Rock operated an extreme asset-liability mismatch:
-  - Assets: Long-dated 25-year fixed-rate and floating-rate UK residential mortgages.
-  - Liabilities: Only 23% of funding came from retail deposits; **77% came from short-term wholesale markets** (3-month securitization conduits and short-term interbank repo).
-When the subprime mortgage panic struck in August 2007, global wholesale funding markets seized:
-- Conduits could not roll over short-term asset-backed commercial paper (ABCP).
-- Interbank counterparties refused to renew repo loans against mortgage collateral.
-- Northern Rock had almost zero High-Quality Liquid Assets (Level 1 cash or Gilts) to absorb the cash drain.
-- Within days, the bank was unable to fund its daily balance sheet, forcing it to seek emergency liquidity support from the Bank of England and leading to its formal nationalization.
-Had LCR and NSFR been in place, Northern Rock's NSFR would have been under 45% (violating the 100% minimum) and its LCR would have collapsed to zero within 48 hours, legally preventing management from operating this fatal funding mismatch.
+With Tier 1 of 16,000 the limit to any counterparty group is 4,000, and to another G-SIB 2,400.
 
 ## Pitfalls
 
-- **Confusing Level 2A and Level 2B haircut schedules**: Applying a 15% haircut to equity or BBB corporate bonds in LCR; qualifying RMBS use 25%, while other eligible Level 2B assets use 50%, with a 15% cap.
-- **Treating non-cash collateral as a derivative deduction in the Leverage Ratio**: In standard accounting, posted securities reduce derivative liabilities; under Basel LEV30, only eligible *cash* variation margin can reduce Replacement Cost.
-- **Overestimating operational deposit stickiness**: Assuming corporate deposits are "operational" (25% run-off) without proving contractual linkages to daily payroll or clearing services; auditors reclassify unproven operational deposits as non-operational, spiking run-off rates to 40% or 100%.
-- **Neglecting SFT netting rules under the Leverage Ratio**: Grossing up reverse repos and repos without strictly enforcing identical legal counterparties and matching settlement dates; invalid SFT netting adds billions of dollars in artificial exposure.
-- **Ignoring the 15% inter-G-SIB Large Exposure limit**: Assuming the standard 25% single-name limit applies across all counterparties; transactions with other G-SIBs are strictly capped at 15% of Tier 1 capital.
+- Netting collateral against derivative exposure in the leverage ratio; only eligible cash VM, and only against RC (LEV30.22 to LEV30.25).
+- Using the SA-CCR multiplier or omitting written options in leverage PFE; the multiplier is fixed at one and written options are in (LEV30.16).
+- Forgetting the effective notional of written credit derivatives (LEV30.31).
+- Applying the 40% and 15% caps before haircuts or without unwinding short-term SFTs and collateral swaps (LCR30.34, LCR30.37).
+- Applying 15% to Level 2B corporates; it is 50%, and 25% only for qualifying RMBS (LCR30.45).
+- Recognising inflows from facilities the bank holds at other banks; they get 0% (LCR40.82).
+- Treating corporate deposits as operational without evidence of a substantive dependency and supervisory approval (LCR40.26).
+- Forgetting the 5% RSF on undrawn committed facilities and the 5% to 20% RSF on derivative liabilities in the NSFR.
+- Quoting the US eSLR as 5% and 6% without a date; those calibrations changed with the 2025 final rule effective 1 April 2026.
 
 ## Interview questions
 
 > [!question]- reg-leverage-ratio-vs-rwa-philosophy | Why does the Basel framework maintain both Risk-Weighted Asset (RWA) capital requirements and a non-risk-weighted Leverage Ratio?
-> RWA-based capital and the Leverage Ratio serve complementary regulatory functions:
-> - **RWA-based capital** ensures that capital is allocated efficiently based on relative risk: pristine government bonds require near-zero capital, while speculative corporate debt requires high capital.
->   However, RWA is highly vulnerable to model risk, optimistic parameter calibrations (e.g., banks assigning near-zero risk weights to AAA subprime tranches in 2006), and regulatory capital arbitrage.
-> - **The Leverage Ratio** is a simple, deterministic backstop that ignores risk weights: it establishes that no matter how low a bank's models estimate risk to be, the institution must maintain at least $\$1$ of hard equity for every $\$33.33$ of nominal assets (3.0% Tier 1 ratio).
-> The Leverage Ratio prevents banks from accumulating massive balance sheets on low-risk-weighted assets that suddenly become risky during crises.
+> RWA can understate risk through model error or optimisation; the leverage ratio is a simple backstop that restricts the build-up of leverage regardless of risk weights (LEV20.1).
+> At 3%, Tier 1 must be at least 1 per 33.33 of exposure.
+> It binds for low-density balance sheets: the worked bank has an 11.03% risk-based Tier 1 ratio but only 3.37% leverage against a 3.75% requirement.
 
 > [!question]- reg-lcr-vs-nsfr-structural-difference | What is the fundamental difference in horizon and economic objective between the Liquidity Coverage Ratio (LCR) and the Net Stable Funding Ratio (NSFR)?
-> - **Liquidity Coverage Ratio (LCR)**:
->   - Time horizon: **30 calendar days**.
->   - Objective: **Acute liquidity survival**. It tests whether a bank holds sufficient unencumbered High-Quality Liquid Assets (cash, reserves, Treasuries) to survive a catastrophic 30-day liquidity drain (severe deposit run, wholesale funding freeze, and rating downgrade).
-> - **Net Stable Funding Ratio (NSFR)**:
->   - Time horizon: **1 year (ongoing)**.
->   - Objective: **Structural balance sheet funding alignment**. It penalizes excessive maturity transformation, ensuring that long-term, illiquid assets (e.g., 30-year mortgages and corporate loans) are funded by stable, medium- and long-term liabilities (equity, term deposits, long-term debt) rather than overnight repo.
+> LCR: survive a 30-calendar-day combined stress with a stock of unencumbered HQLA at least equal to net outflows (LCR20.1, LCR20.5).
+> NSFR: fund the balance sheet structurally over one year, available stable funding at least equal to required stable funding (NSF20.2).
+> LCR is a buffer against a run; NSFR limits the maturity transformation that makes the run dangerous.
 
 > [!question]- reg-hqla-level-caps-derivation | Why does the Basel LCR framework impose strict percentage caps on Level 2A and Level 2B assets within HQLA?
-> Under Basel LCR40, Level 2 assets are capped at 40% of total HQLA, and Level 2B assets are capped at 15%.
-> These caps exist because during severe systemic financial panics:
-> 1. Private corporate bonds and equities experience sharp market illiquidity, bid-ask spread blowout, and severe price declines.
-> 2. Private repo counterparties demand punitive collateral haircuts or refuse to accept non-sovereign securities entirely.
-> 3. Only Level 1 assets (central bank reserves and top-tier sovereign debt) remain continuously liquid and accepted by central banks at par.
-> Capping Level 2 assets guarantees that at least **60% of a bank's liquid asset buffer consists of pristine Level 1 sovereign instruments**, ensuring that the bank can raise immediate cash under all market conditions.
+> Level 2 assets are less liquid and lose value in stress, so they may be at most 40% of the stock and Level 2B at most 15% (LCR30.31, LCR30.33), after haircuts and SFT unwinds.
+> Algebraically $L2 \le 0.4 S$ with $S = L1 + L2$ is $L2 \le \tfrac{2}{3} L1$, and $L2B \le 0.15 S$ is $L2B \le \tfrac{15}{85}(L1 + L2A)$; when both bind the stock is $L1 / 0.6$, 83.33 for Level 1 of 50.
 
 > [!question]- reg-lcr-75-percent-inflow-cap-rationale | What is the regulatory rationale for capping recognized cash inflows at 75% of gross cash outflows in the LCR?
-> The LCR formula mandates:
-> $$\text{Net Cash Outflows} = \text{Outflows} - \min(\text{Inflows}, 75\% \cdot \text{Outflows})$$
-> If 100% of inflows could offset outflows, a bank with $\$100\text{M}$ in outflows and $\$100\text{M}$ in contractual inflows would report zero net outflows, requiring zero HQLA.
-> In a real-world panic:
-> 1. Borrowers whose loans are maturing may default, request emergency credit line extensions, or fail to repay due to counterparty distress.
-> 2. Inflows can be frozen by clearing house delays, operational interruptions, or foreign exchange payment freezes.
-> The 75% ceiling guarantees that **net outflows can never fall below 25% of gross outflows**, forcing every bank to maintain an absolute HQLA cash buffer equal to at least a quarter of its gross outflows.
+> So that no bank relies only on expected inflows and every bank holds HQLA of at least 25% of gross outflows (LCR40.77).
+> With outflows of 10,400 and inflows of 10,600, net outflows are $10,400 - 7,800 = 2,600$.
 
 > [!question]- reg-eslr-us-banking-rules | How does the US Enhanced Supplementary Leverage Ratio (eSLR) differ from the standard Basel III Leverage Ratio?
-> Under standard Basel III, the minimum Tier 1 leverage ratio is 3.0% for all banks, augmented by a 50% G-SIB buffer (e.g., 3.5% to 4.5%).
-> In the United States:
-> - The Federal Reserve, FDIC, and OCC established the Enhanced Supplementary Leverage Ratio (eSLR) for US Category I G-SIBs (JPMorgan, Bank of America, Citigroup, etc.).
-> - **Holding Company Level**: G-SIBs must maintain an eSLR of at least **5.0%** (a 3.0% base requirement plus a 2.0% leverage buffer). Failing the 5.0% threshold restricts capital distributions (dividends and share repurchases).
-> - **Insured Depository Institution (IDI) Level**: The bank's lead insured commercial bank subsidiary must maintain at least **6.0%** to be rated "well-capitalized" by regulators.
+> Basel: 3% plus a G-SIB buffer of half the risk-based surcharge (LEV20.7, LEV40.2).
+> US as of 2026-10: the final rule announced on 25 November 2025, effective 1 April 2026, sets the holding company eSLR buffer at half the G-SIB's method 1 surcharge over the 3% SLR, and caps the depository institution buffer at 1% (requirement at most 4%); previously 3% plus 2% at the holding company and 6% for well-capitalized banks.
 
 > [!question]- reg-derivative-leverage-exposure-treatment | How are derivative contracts measured in the Total Leverage Exposure under Basel LEV30?
-> Derivatives cannot be evaluated simply by accounting balance sheet fair value (which nets positive and negative mark-to-market values).
-> Under LEV30, derivative exposure is computed using the Standardised Approach for Counterparty Credit Risk (SA-CCR):
-> $$\text{Exposure} = \text{Replacement Cost} + \text{Potential Future Exposure (PFE)}$$
-> Key rules:
-> 1. Non-cash collateral posted by counterparties **cannot** reduce Replacement Cost.
-> 2. Cash variation margin received can reduce Replacement Cost *only* if variation margin is exchanged daily, in the currency of settlement, and under legally enforceable netting agreements.
-> 3. PFE add-ons must be included in full, ensuring that off-balance sheet derivative leverage is fully capitalized.
+> $1.4 \times (RC + PFE)$ per netting set, $RC = \max(V - CVM_r + CVM_p, 0)$, PFE from SA-CCR with the multiplier fixed at 1, margined maturity factor allowed (LEV30.14 to LEV30.16).
+> Collateral received does not reduce it except qualifying cash VM against RC (LEV30.24 to LEV30.25), written options are included, and written credit derivatives add their effective notional (LEV30.31).
+> $V = 50$, cash VM 30, add-on 100 gives 168; the same 30 in bonds gives 210.
 
 > [!question]- reg-nsfr-asf-rsf-weighting-logic | What is the underlying economic logic governing Available Stable Funding (ASF) and Required Stable Funding (RSF) weightings in the NSFR?
-> - **ASF weights** reflect funding "stickiness" (the probability that liabilities will remain with the bank across a 1-year horizon).
->   Equity and 10-year subordinated debt receive 100% (cannot be withdrawn); insured retail deposits receive 90-95% (sticky consumer behavior); short-term interbank repo receives 0% (institutional money runs immediately).
-> - **RSF weights** reflect asset illiquidity and the degree to which an asset must be refinanced:
->   Cash and central bank reserves receive 0% (already liquid cash); unencumbered Treasuries receive 5% (can be converted to cash via repo instantly); 30-year mortgages receive 65% and corporate loans receive 85% (cannot be liquidated or securitized quickly without massive fire-sale discounts).
+> ASF factors measure how much of a source is expected to stay for a year: capital and term funding 100%, stable retail 95%, less stable retail 90%, corporate and operational deposits 50%, short funding from financials 0% (NSF30.10 to NSF30.14).
+> RSF factors measure how much of an asset must be funded for a year: reserves 0%, Level 1 5%, Level 2A 15%, short loans to non-financials 50%, low-risk-weight mortgages 65%, other term loans 85%, illiquid and non-performing assets 100% (NSF30.25 to NSF30.32).
 
 > [!question]- reg-large-exposures-framework-g-sib-rule | Why is the Large Exposures limit tightened from 25% to 15% of Tier 1 capital between Global Systemically Important Banks?
-> Under Basel LEX30, the standard single-counterparty exposure limit is 25% of Tier 1 capital.
-> However, for exposures between two G-SIBs, the limit is lowered to **15%**.
-> Global systemically important banks represent the structural hubs of the international financial network.
-> If G-SIB A were permitted to hold an exposure equal to 25% of its capital to G-SIB B, the sudden distress or insolvency of G-SIB B would inflict a catastrophic blow to G-SIB A's solvency, triggering systemic cascading contagion across the global derivatives clearing and interbank settlement systems.
-> The 15% limit legally restricts systemic interconnectedness within the financial core.
+> LEX20.1 sets 25% of Tier 1 for any counterparty or connected group and 15% for a G-SIB's exposures to another G-SIB, because the failure of one G-SIB would hit another directly and contagion between them is the systemic channel.
+> With Tier 1 of 16,000 the limits are 4,000 and 2,400.
 
 > [!question]- reg-operational-deposits-lcr-definition | What constitutes an "operational deposit" under the LCR, and why does it receive a favorable 25% run-off rate?
-> An operational deposit is a cash balance placed by a corporate or financial client that is fundamentally required for the client to access operational banking services (clearing, custody, cash management, international trade settlement, payroll processing).
-> It receives a favorable 25% run-off rate (compared to 40% to 100% for non-operational deposits) because:
-> - The client cannot withdraw these operational balances without disrupting its own day-to-day corporate operations.
-> - Moving clearing and payroll accounts to another bank requires months of operational transition, making these deposits highly sticky even when the bank is under reputational stress.
+> A deposit the customer needs for clearing, custody or cash management services with a substantive dependency on the bank (LCR40.26 onward), with supervisory approval that the activity is real.
+> It runs off at 25% instead of 40% (non-financial corporates) or 100% (financials), because moving such services takes time; the excess above operational needs is non-operational.
 
-> [!question]- reg-northern-rock-balance-sheet-flaw | What was the primary structural balance sheet flaw that bankrupted Northern Rock in 2007 despite having a 16.5% Basel II capital ratio?
-> Northern Rock was capitalized for credit risk (holding 16.5% capital against mortgages that had historically low default rates), but had zero resilience against liquidity risk:
-> 1. **Extreme maturity mismatch**: 77% of its liabilities were short-term wholesale borrowings (3-month commercial paper and repo) funding 25-year illiquid residential mortgages.
-> 2. **Absence of HQLA**: The bank held virtually zero cash or government bonds; its liquidity buffer consisted of promises of future credit lines.
-> 3. **Wholesale market run**: When wholesale markets froze in August 2007, Northern Rock could not roll over its commercial paper, exhausting its cash reserves in days.
-> Capital measures solvency, but liquidity dictates immediate survival; an institution with high capital can become insolvent in 48 hours if it lacks cash to settle maturing liabilities.
+> [!question]- reg-northern-rock-balance-sheet-flaw | What was the primary structural balance sheet flaw behind the failure of Northern Rock in 2007?
+> Its funding model: the Treasury Committee (*The run on the Rock*, HC 56-I, January 2008) concluded the directors pursued a strategy too reliant on wholesale funding, which failed when markets froze in August 2007, leading to the September 2007 retail run.
+> A capital ratio says nothing about funding; the NSFR gives short wholesale funding from financials 0% ASF and the LCR requires HQLA against a 30-day run, which is the gap this case exposed.
 
-## Further reading
+> [!question]- reg-lcr-full-calculation | Compute the LCR for outflows of 10,400, inflows of 5,600 and HQLA of Level 1 4,000, Level 2A 1,000 and Level 2B corporates 600 at market value.
+> 107.29%.
+> Inflows are below the 7,800 cap, so NCO is 4,800; HQLA is $4,000 + 850 + 300 = 5,150$ with no cap binding.
 
-- Basel Committee on Banking Supervision. *Basel III: A global regulatory framework for more resilient banks and banking systems*. Bank for International Settlements, December 2010.
-- Basel Committee on Banking Supervision. *Basel III: The Liquidity Coverage Ratio and liquidity risk monitoring tools*. Bank for International Settlements, January 2013.
-- Basel Committee on Banking Supervision. *Basel III: The Net Stable Funding Ratio*. Bank for International Settlements, October 2014.
-- Basel Committee on Banking Supervision. *Supervisory framework for measuring and controlling large exposures*. Bank for International Settlements, April 2014.
-- King, M. R. "The Basel III Net Stable Funding Ratio and bank net interest margins." *Journal of Banking & Finance*, 37(11):4144-4156, 2013.
+> [!question]- reg-lcr-cap-formula-worked | Level 1 is 50, Level 2A 60 and Level 2B corporates 40 at market value. What is the HQLA stock?
+> 83.33.
+> After haircuts 2A is 51 and 2B 20; $\text{Adj}_{15} = \max(20 - 17.82, 20 - 12.5, 0) = 7.5$ and $\text{Adj}_{40} = 63.5 - 33.33 = 30.17$; Level 2 ends at 40.0% and Level 2B at 15.0%.
+
+> [!question]- reg-nsfr-worked | A bank has ASF of 93,500 and RSF of 72,100. What is its NSFR and how much stable retail could it swap for short wholesale funding?
+> 129.68%; a surplus of 21,400 allows about 22,526.32 of stable retail (95% ASF) to be replaced by sub-6-month funding from financials (0% ASF).
+
+> [!question]- reg-leverage-collateral-rule | Why can collateral not reduce the leverage exposure, and what is the exception?
+> Collateral received increases the resources a bank can use to lever up, so it may not be netted (LEV30.21 to LEV30.22).
+> Cash VM can reduce replacement cost only when unsegregated (non-cleared), exchanged daily on daily marks in the contract currency, for the full amount subject to threshold and MTA, under one enforceable MNA (LEV30.24 to LEV30.25).
+
+> [!question]- reg-svb-lcr-finding | What did the Federal Reserve's SVB review say about liquidity rules?
+> About 94% of deposits were uninsured at year-end 2022; over $40 billion left on 9 March 2023 with over $100 billion expected the next day.
+> Under the pre-2019 requirements SVBFG would have been subject to the full LCR, with an HQLA shortfall of about 9% in December 2022 and about 17% in February 2023 (Federal Reserve review, April 2023).
+
+> [!question]- reg-lcr-usable-in-stress | Is a bank in breach when its LCR falls below 100% during stress?
+> The standard intends the HQLA to be used in stress, so falling below 100% is expected then; the bank must notify the supervisor immediately and the supervisor responds proportionately, considering causes, magnitude and system-wide effects (LCR20.5 to LCR20.6, LCR20.8).
 
 ## In this repo and SDE-Interview-Prep
 
-- 01-Capital-RWA-and-the-Basel-Framework.md - Foundational capital stack and regulatory ratios.
-- 14-Operational-Risk-Standardised-Measurement-Approach.md - Operational risk SMA and Business Indicator.
-- `code/basel_liquidity_irrbb.py` - Reference implementation of LCR, NSFR, and Level 2 cap analytics.
+- [Capital, RWA, and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) for the leverage breakeven density and the G-SIB leverage MDA.
+- [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md) for the RC and PFE used in the leverage exposure.
+- [Interest Rate Risk in the Banking Book: IRRBB](16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md) for the SVB balance sheet from the interest rate side.
+- `code/basel_liquidity_irrbb.py` computes, prints and asserts every number on this page.
+
+## Further reading
+
+- Basel Committee on Banking Supervision, *The Basel Framework*, chapters LEV, LCR, NSF and LEX, https://www.bis.org/basel_framework/.
+- Basel Committee on Banking Supervision, *Basel III: The Liquidity Coverage Ratio and liquidity risk monitoring tools*, 7 January 2013 (bis.org/publ/bcbs238).
+- Basel Committee on Banking Supervision, *Basel III leverage ratio framework and disclosure requirements*, 12 January 2014 (bis.org/publ/bcbs270).
+- Basel Committee on Banking Supervision, *Basel III: the net stable funding ratio*, 31 October 2014 (bis.org/bcbs/publ/d295).
+- Board of Governors of the Federal Reserve System, *Review of the Federal Reserve's Supervision and Regulation of Silicon Valley Bank*, April 2023.
+- House of Commons Treasury Committee, *The run on the Rock*, Fifth Report of Session 2007-08, HC 56-I, January 2008.

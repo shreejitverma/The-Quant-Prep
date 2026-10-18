@@ -2,324 +2,350 @@
 type: concept
 track: [quant-risk]
 tier: core
-status: draft
+status: solid
 prereqs: [var-and-expected-shortfall]
 est_hours: 4
-sources: [Basel Committee on Banking Supervision - Basel III: A Global Regulatory Framework for More Resilient Banks and Banking Systems (2010), Darrell Duffie - Prone to Fail: The Pre-Crisis Financial System (2019), Viral Acharya et al. - Regulating Wall Street (2011), Hal S. Scott - Connectedness and Contagion (2016)]
+sources: [Basel Committee on Banking Supervision - The Basel Framework (consolidated) chapters RBC20 RBC30 RBC40 RBC90 CAP10 CAP30 SCO40 LEV20 LEV40 SRP20 (versions in force retrieved 2026-10-16), Basel Committee on Banking Supervision - Basel III: Finalising post-crisis reforms (7 December 2017), Board of Governors of the Federal Reserve System - press release Agencies issue final rule to modify certain regulatory capital standards (25 November 2025), Electronic Code of Federal Regulations - 12 CFR 217.10 (retrieved 2026-10-17)]
 ---
 
 # Capital, RWA, and the Basel Framework
 
 ## TL;DR
 
-Bank capital represents the loss-absorbing equity cushion standing between market shocks and depositor insolvency.
-Unlike accounting equity or economic capital, regulatory capital is strictly codified by the Basel Committee on Banking Supervision (BCBS) into tiers based on permanence and loss-absorption capacity: Common Equity Tier 1 (CET1), Additional Tier 1 (AT1), and Tier 2.
-Regulatory minimums are expressed as percentages of Risk-Weighted Assets (RWA), which quantify the aggregate credit, market, and operational risk across the balance sheet.
-Under Basel III, a bank must maintain a minimum 4.5% CET1 ratio, 6.0% Tier 1 ratio, and 8.0% Total Capital ratio, augmented by mandatory buffers: the Capital Conservation Buffer (2.5%), Countercyclical Capital Buffer (0-2.5%), and G-SIB systemic surcharges (1.0-3.5%).
-To prevent banks from gaming internal risk models to compress RWA, Basel III introduced a binding non-risk-weighted Leverage Ratio (minimum 3.0%, with an enhanced 5.0% standard for US global systemically important banks).
-The regulatory architecture is governed by the Three Pillars: Pillar 1 (prescribed minimum quantitative capital requirements), Pillar 2 (supervisory review process and bank-specific ICAAP stress buffers), and Pillar 3 (market discipline and standardized public disclosures).
+- Regulatory capital is accounting equity and subordinated instruments that pass the CAP10 eligibility criteria, net of the CAP30 deductions (goodwill, DTAs that need future profits, pension assets, and holdings of other financials above the 10% and 15% thresholds).
+- The minima are 4.5% CET1, 6% Tier 1 and 8% total capital of RWA (RBC20.1), and RWA are credit RWA plus 12.5 times the market and operational risk capital requirements, floored at 72.5% of the all-standardised RWA (RBC20.4).
+- On top sit CET1 buffers: 2.5% conservation (RBC30.2), 0% to 2.5% countercyclical as a weighted average of host rates (RBC30.9, RBC30.14), and 1% to 3.5% for G-SIBs (RBC40.4); a bank inside the combined buffer is not in breach, it is limited in distributions by quartile (RBC30.4).
+- The 3% Tier 1 leverage ratio (LEV20.7) plus a G-SIB buffer of half the risk-based surcharge (LEV40.2) is a non-risk-weighted backstop; it binds when the average risk weight falls below the leverage requirement divided by the risk-based Tier 1 requirement, 35.29% for a non-G-SIB.
+- Pillar 1 sets the formulas, Pillar 2 makes supervisors require capital above the minimum when the bank's own assessment or their review calls for it (SRP20.1 to SRP20.4), and Pillar 3 forces disclosure of all of it (DIS).
 
 ## Learning objectives
 
 - Differentiate regulatory capital, economic capital, and balance-sheet accounting equity.
 - Deconstruct the regulatory capital waterfall across CET1, AT1, and Tier 2, identifying statutory deductions including goodwill, deferred tax assets (DTAs), and defined benefit pension assets.
-- Formulate the calculation of Risk-Weighted Assets (RWA) across credit risk, market risk, and operational risk.
+- Formulate the calculation of Risk-Weighted Assets (RWA) across credit risk, market risk, and operational risk, including the output floor.
 - Compute the standard Basel III capital ratios and evaluate compliance against regulatory minimums and macroprudential buffers.
-- Analyze the mechanics of the Capital Conservation Buffer (CCB), Countercyclical Capital Buffer (CCyB), and Global Systemically Important Bank (G-SIB) surcharges.
-- Formulate the Basel III non-risk-weighted Leverage Ratio and explain how the US Enhanced Supplementary Leverage Ratio (eSLR) impacts bank trading desks and Treasury clearing.
+- Analyze the mechanics of the Capital Conservation Buffer (CCB), Countercyclical Capital Buffer (CCyB), and Global Systemically Important Bank (G-SIB) surcharges, and compute the maximum distributable amount band.
+- Formulate the Basel III non-risk-weighted Leverage Ratio, derive when it binds, and explain the US enhanced supplementary leverage ratio (eSLR) as it stands in 2026.
 - Explain the regulatory responsibilities and interaction across the Three Pillars of the Basel Framework.
 
 ## Core concepts
 
-### 1. The Three Faces of Capital: Regulatory, Economic, and Accounting
+### Three meanings of capital
 
-Capital serves fundamentally different purposes across accounting, risk management, and regulatory oversight:
+Accounting equity is assets minus liabilities under IFRS or US GAAP, including intangibles such as goodwill and assets such as deferred tax assets whose value depends on the bank staying alive and profitable.
+Economic capital is the bank's own estimate of the loss it must absorb at a chosen confidence level and horizon across all risks, including risks with no Pillar 1 charge (business, strategic, concentration, interest rate risk in the banking book).
+Regulatory capital is the subset of accounting capital that qualifies under CAP10, after the regulatory adjustments of CAP30, measured against requirements set by the Basel Framework and its national implementations.
+The gap between the first and the third is what the deductions remove: items that would not absorb losses when the bank is failing.
 
-1. **Accounting Equity (Book Value):**
-   - Defined under US GAAP or IFRS as total assets minus total liabilities ($A - L$).
-   - Reflects historical cost conventions, amortized accruals, and fair-value mark-to-market adjustments on trading assets.
-   - Includes intangible assets (goodwill from acquisitions) that cannot be liquidated during acute insolvency to satisfy depositor claims.
-2. **Economic Capital (Internal Risk Perspective):**
-   - The capital amount a bank determines it needs internally to absorb extreme losses over a 1-year horizon at a target solvency confidence level (e.g., 99.97% probability of survival, corresponding to an AA credit rating).
-   - Driven by proprietary quantitative models across all risks, including non-regulatory risks such as business risk, strategic risk, and reputational risk.
-3. **Regulatory Capital (Statutory Solvent Cushion):**
-   - The strictly prescribed eligible funds mandated by bank supervisors to protect insured depositors and the broader financial system from bankruptcy.
-   - Calculated by taking qualifying accounting instruments and applying statutory supervisory deductions and prudential filters.
+### The capital stack (CAP10)
 
-### 2. The Regulatory Capital Waterfall: CET1, AT1, and Tier 2
+Regulatory capital has three tiers, each with its own eligibility criteria (CAP10.1 to CAP10.2):
 
-Basel III stratifies regulatory capital into distinct tiers based on going-concern loss absorbency (absorbing losses while the bank remains solvent and open) versus gone-concern loss absorbency (absorbing losses in resolution or bankruptcy after insolvency):
-
-```mermaid
-flowchart TD
-  subgraph GoingConcern[Going-Concern Capital: Tier 1]
-    CET1[Common Equity Tier 1 - CET1<br>Common shares, retained earnings, AOCI<br>Mandatory deductions: Goodwill, DTAs]
-    AT1[Additional Tier 1 - AT1<br>Preferred stock, CoCos with loss write-down<br>Perpetual, discretionary non-cumulative dividends]
-  end
-  subgraph GoneConcern[Gone-Concern Capital: Tier 2]
-    T2[Tier 2 Capital<br>Subordinated debt min 5y maturity<br>Eligible general loan loss provisions]
-  end
-  TotalCap[Total Regulatory Capital = CET1 + AT1 + Tier 2]
-  CET1 --> TotalCap
-  AT1 --> TotalCap
-  T2 --> TotalCap
-```
-
-#### Tier 1 Capital (Going-Concern Capital)
-Tier 1 capital must absorb losses while the bank continues its daily banking operations:
-
-- **Common Equity Tier 1 (CET1):**
-  - The highest-quality capital tier.
-  - Consists of common voting shares, paid-in surplus, retained earnings, and accumulated other comprehensive income (AOCI).
-  - Must bear first losses unconditionally and possess no repayment obligations or mandatory dividend distribution dates.
-  - **Supervisory Deductions from CET1:**
-    - Goodwill and all other intangible assets (deducted 100% dollar-for-dollar).
-    - Deferred Tax Assets (DTAs) that rely on future profitability to be realized.
-    - Defined benefit pension fund assets on the balance sheet.
-    - Investments in own shares (treasury stock).
-    - Reciprocal cross-holdings of capital instruments in other financial institutions.
-- **Additional Tier 1 (AT1):**
-  - Subordinated hybrid instruments that rank junior to depositors, general creditors, and subordinated debt.
-  - Perpetual with no incentive to redeem (no step-up coupons).
-  - Dividends or coupons must be fully discretionary and non-cumulative (omitting a coupon does not constitute an event of default).
-  - Must include a statutory principal write-down or equity conversion trigger when CET1 falls below a contractual threshold (typically 5.125% or 7.0% of RWA).
-  - Instruments include perpetual non-cumulative preferred stock and Contingent Convertible bonds (CoCos).
-
-#### Tier 2 Capital (Gone-Concern Capital)
-Tier 2 capital absorbs losses when the bank has failed, protecting senior depositors and taxpayers during resolution or liquidation:
-
-- **Subordinated Debt:**
-  - Unsecured debt with an original minimum maturity of at least 5 years.
-  - Subordinated in right of payment to all depositors and senior debt.
-  - During the final 5 years before maturity, eligible Tier 2 value amortizes straight-line by 20% per year (0% recognized in final year).
-- **General Loan Loss Reserves:**
-  - Eligible allowances for credit losses under the Standardised Approach, capped at 1.25% of credit risk-weighted assets.
-
-### 3. Risk-Weighted Assets (RWA)
-
-Risk-Weighted Assets normalize balance sheet and off-balance sheet exposures by their underlying riskiness:
-
-$$\text{Total RWA} = \text{RWA}_{\text{Credit}} + \text{RWA}_{\text{Market}} + \text{RWA}_{\text{Operational}}$$
-
-- **Credit RWA:** Covers potential default losses on corporate loans, retail mortgages, sovereign bonds, and OTC derivatives (via SA-CCR or IRB models).
-- **Market RWA:** Capital requirement for trading book assets ($K_{\text{Market}}$) multiplied by the reciprocal of the 8.0% minimum capital ratio ($12.5 = 1 / 0.08$):
-  $$\text{RWA}_{\text{Market}} = 12.5 \times K_{\text{Market}}$$
-- **Operational RWA:** Capital requirement for internal fraud, cyber risk, execution errors, and legal litigation ($K_{\text{OpRisk}}$) scaled by 12.5:
-  $$\text{RWA}_{\text{Operational}} = 12.5 \times K_{\text{Operational}}$$
-
-### 4. Basel III Capital Ratios and Macroprudential Buffers
-
-Basel III enforces minimum capital adequacy ratios expressed as percentages of Total RWA:
-
-$$\text{CET1 Ratio} = \frac{\text{CET1 Capital}}{\text{Total RWA}} \ge 4.5\%$$
-
-$$\text{Tier 1 Capital Ratio} = \frac{\text{Tier 1 Capital}}{\text{Total RWA}} \ge 6.0\%$$
-
-$$\text{Total Capital Ratio} = \frac{\text{Total Capital}}{\text{Total RWA}} \ge 8.0\%$$
-
-```mermaid
-flowchart TD
-  subgraph TotalStack[Total Capital Stack over RWA]
-    B1[Minimum CET1: 4.5%]
-    B2[AT1 Allowance: 1.5% -> Total Tier 1: 6.0%]
-    B3[Tier 2 Allowance: 2.0% -> Total Minimum: 8.0%]
-    B4[Capital Conservation Buffer - CCB: +2.5% CET1]
-    B5[Countercyclical Buffer - CCyB: 0% to 2.5% CET1]
-    B6[G-SIB Systemic Surcharge: +1.0% to 3.5% CET1]
-  end
-  B1 --> B2 --> B3 --> B4 --> B5 --> B6
-```
-
-#### The Capital Buffers (All Satisfied Exclusively via CET1)
-1. **Capital Conservation Buffer (CCB, 2.5%):**
-   - Establishes a mandatory 2.5% CET1 layer above the 4.5% minimum, creating an effective 7.0% CET1 threshold.
-   - If a bank dips into the CCB, it is not placed into immediate receivership, but faces mandatory statutory restrictions on discretionary capital distributions (share repurchases, common dividends, and executive bonus pools) via the Maximum Distributable Amount (MDA) framework.
-2. **Countercyclical Capital Buffer (CCyB, 0.0% to 2.5%):**
-   - Macroprudential buffer calibrated by national central banks during excessive credit expansion to counter procyclicality.
-   - Released during systemic economic downturns to allow banks to absorb credit losses without cutting lending to the real economy.
-3. **G-SIB Surcharge (1.0% to 3.5%):**
-   - Imposed on Global Systemically Important Banks based on the BCBS indicator-based scoring methodology measuring size, interconnectedness, substitutability, complexity, and cross-jurisdictional activity across 5 buckets.
-
-### 5. The Basel III Leverage Ratio
-
-Before the 2008 financial crisis, major investment banks maintained high regulatory Tier 1 ratios while running gross balance sheet leverage exceeding $35:1$ by using internal models that produced near-zero risk weights on sovereign bonds and AAA tranches.
-To prevent model gaming and eliminate excessive balance sheet expansion, Basel III introduced a non-risk-weighted backstop:
-
-$$\text{Leverage Ratio} = \frac{\text{Tier 1 Capital}}{\text{Total Leverage Exposure (TLE)}} \ge 3.0\%$$
-
-#### Total Leverage Exposure (TLE)
-TLE measures gross balance-sheet and off-balance-sheet exposure without risk-weight discounting:
-- **On-Balance Sheet Assets:** Gross accounting assets minus regulatory deductions (goodwill, DTAs). Cash and government bonds receive zero haircut; they count at 100% of face value.
-- **Derivative Exposures:** Net replacement cost plus PFE calculated under the SA-CCR standard.
-- **Securities Financing Transactions (SFT):** Gross repo and reverse-repo receivables adjusted for collateral haircuts and master netting agreements.
-- **Off-Balance Sheet Commitments:** Undrawn credit lines and trade letters of credit multiplied by standardized Credit Conversion Factors (CCF).
-
-#### US Enhanced Supplementary Leverage Ratio (eSLR)
-The US Federal Reserve established a stricter standard for US Bank Holding Companies designated as Category I G-SIBs:
-- Minimum eSLR of **5.0%** at the consolidated bank holding company level (3% minimum + 2% buffer).
-- Minimum eSLR of **6.0%** at the insured depository institution (IDI) operating bank level.
-Because government bonds receive a 0% risk weight under RWA but are counted at 100% under the leverage ratio, large repo desks and Treasury market makers are frequently leverage-bound rather than RWA-bound, impacting bond market liquidity during flight-to-safety crises.
-
-### 6. The Three Pillars of the Basel Architecture
-
-The Basel regulatory system functions through three mutually reinforcing pillars:
-
-| Pillar | Focus | Core Mechanisms |
+| Tier | What qualifies | Key criteria |
 | :--- | :--- | :--- |
-| **Pillar 1: Minimum Capital Requirements** | Quantitative statutory rules | Standardized rules and approved internal models for Credit, Market, and Operational Risk; Capital Ratios; Leverage Ratio; Output Floor. |
-| **Pillar 2: Supervisory Review Process** | Qualitative governance & bank-specific buffers | Internal Capital Adequacy Assessment Process (ICAAP) performed by banks; Supervisory Review and Evaluation Process (SREP) conducted by regulators; CCAR stress tests; Pillar 2A and 2B add-ons. |
-| **Pillar 3: Market Discipline** | Transparency & public disclosure | Standardized disclosure templates; qualitative risk management disclosures; quantitative disclosures of RWA, capital waterfalls, LCR, and NSFR in quarterly Pillar 3 reports. |
+| Common Equity Tier 1 (going concern) | Common shares, share premium, retained earnings, AOCI and disclosed reserves, qualifying minority interest (CAP10.6) | Most subordinated claim, perpetual, no expectation of buy-back, fully discretionary distributions (CAP10.8) |
+| Additional Tier 1 (going concern) | Perpetual subordinated instruments meeting CAP10.11 | Callable only after five years with supervisory approval; full discretion to cancel coupons, and cancellation is not a default; if classified as a liability, conversion or write-down at a trigger of at least 5.125% CET1 (CAP10.11(11)) |
+| Tier 2 (gone concern) | Subordinated debt meeting CAP10.16, general provisions | Minimum original maturity five years, recognition amortised straight-line over the last five years (CAP10.16(4)); general provisions up to 1.25% of SA credit RWA (CAP10.18); IRB excess provisions up to 0.6% of IRB credit RWA (CAP10.19) |
+
+Tier 1 is CET1 plus AT1; total capital is Tier 1 plus Tier 2, each net of the adjustments applied to that tier (CAP10.2).
+The straight-line rule means a Tier 2 bond with $\tau$ years left counts at $\min(1, \tau/5)$ of its nominal: 2,000 with three years left counts as 1,200.
+The 5.125% trigger is not arbitrary: it is the top of the first quartile of the 2.5% conservation buffer above 4.5% (RBC30.4), the point where 100% of earnings must be retained.
+
+```mermaid
+flowchart TB
+    A["Accounting equity: shares, premium, retained earnings, AOCI"] --> B["CAP30 deductions: goodwill net of DTL, NOL DTAs, pension assets, own shares, threshold excess"]
+    B --> C["CET1"]
+    D["AT1: perpetual, discretionary coupons, 5.125% trigger if a liability"] --> E["Tier 1 = CET1 + AT1"]
+    C --> E
+    F["Tier 2: 5y+ subordinated debt amortised over the last 5 years, general provisions up to 1.25% of SA credit RWA"] --> G["Total capital = Tier 1 + Tier 2"]
+    E --> G
+    C --> H["Ratios over RWA: CET1 4.5%, Tier 1 6%, total 8%, plus CET1 buffers"]
+    E --> H
+    G --> H
+    E --> I["Leverage ratio: Tier 1 over exposure measure, 3% plus G-SIB buffer"]
+```
+
+### Regulatory adjustments (CAP30)
+
+| Item | Treatment | Paragraph |
+| :--- | :--- | :--- |
+| Goodwill and other intangibles (except mortgage servicing rights) | Deducted from CET1 in full, net of any DTL that would be extinguished on impairment | CAP30.7 |
+| DTAs relying on future profitability from tax losses and credits | Deducted in full, net of eligible DTLs | CAP30.9 |
+| DTAs from temporary differences, MSRs, significant investments in unconsolidated financials' common shares | Threshold treatment: each recognised up to 10% of CET1, together up to 15% of CET1 after all deductions, the rest deducted; recognised amounts weighted at 250% | CAP30.32 to CAP30.34 |
+| Defined benefit pension fund net asset | Deducted net of the associated DTL; liabilities stay recognised | CAP30.16 |
+| Non-common-share holdings of other financials | Corresponding deduction from the tier the instrument would qualify for; a shortfall in a tier moves to the next higher tier | CAP30.30 |
+
+Why these: goodwill is worthless in a failure, a tax-loss DTA needs future taxable profit the failing bank will not have, and a pension surplus belongs to the scheme.
+The 15% test is circular as stated (15% of CET1 after deducting the excess), so the CAP30.33 FAQ gives the closed form: the recognised amount is at most 15/85 = 17.65% of CET1 net of a full deduction of the three items.
+
+### Risk-weighted assets and the output floor
+
+RWA is the sum of credit RWA (including counterparty credit risk, CCP exposures, securitisation and equity in funds), market RWA (including CVA) and operational RWA (RBC20.6 to RBC20.10).
+Market and operational risk are calibrated as capital amounts; multiplying by $12.5 = 1/8\%$ turns them into the RWA that would need the same capital at the 8% minimum (OPE25.2 states it for operational risk).
+The RWA used for every ratio and buffer is (RBC20.4)
+
+$$RWA = \max\left(RWA_{\text{nominated}},\; 72.5\% \times RWA_{\text{standardised}}\right),$$
+
+where the standardised base may not use IRB, SEC-IRBA, the market risk IMA, the VaR models approach for CCR or IMM (RBC20.12).
+RBC20.13 gives the Committee's example: pre-floor RWA 76 against standardised 140, so the floored RWA is $0.725 \times 140 = 101.5$.
+
+| Date (RBC90.1 Table 1) | Floor calibration |
+| :--- | ---: |
+| 1 January 2023 | 50% |
+| 1 January 2024 | 55% |
+| 1 January 2025 | 60% |
+| 1 January 2026 | 65% |
+| 1 January 2027 | 70% |
+| 1 January 2028 | 72.5% |
+
+During the phase-in a supervisor may cap the floor-driven increase at 25% of pre-floor RWA, which would cap the RBC20.13 bank at 95 (RBC90.2).
+These are the Basel dates; national implementation dates differ and keep moving, so check the local rule.
+
+### Minimum ratios and the buffer stack
+
+| Layer | Size | Capital | Source |
+| :--- | :--- | :--- | :--- |
+| CET1 minimum | 4.5% | CET1 | RBC20.1(1) |
+| Tier 1 minimum | 6% | CET1 + AT1 | RBC20.1(2) |
+| Total capital minimum | 8% | CET1 + AT1 + Tier 2 | RBC20.1(3) |
+| Capital conservation buffer | 2.5% | CET1 | RBC30.2 |
+| Countercyclical buffer | 0% to 2.5% (reciprocity cap) | CET1 | RBC30.9, RBC30.12 |
+| G-SIB higher loss absorbency | 1.0%, 1.5%, 2.0%, 2.5%, 3.5% by bucket | CET1 | RBC40.1, RBC40.4 |
+| D-SIB higher loss absorbency | set nationally | CET1 | RBC40.7 to RBC40.8 |
+
+**Countercyclical buffer.**
+Each jurisdiction sets a rate between 0% and 2.5% of RWA when it judges credit growth excessive; increases are pre-announced by up to 12 months and decreases take effect immediately (RBC30.9, RBC30.11).
+A bank's own rate is the average of the rates where its private-sector credit exposures sit, weighted by the credit risk charge on those exposures, located on an ultimate-risk basis (RBC30.13 to RBC30.14), and it applies to total RWA (RBC30.12 FAQ1).
+
+**Distribution constraints.**
+The CCyB and the G-SIB requirement extend the conservation buffer, which is split into four equal quartiles (RBC30.17, RBC40.2).
+Inside the buffer a bank must retain a minimum share of earnings, defined before distributions and after tax (RBC30.5(2)):
+
+| CET1 ratio for the buffer test | Minimum conservation | Maximum payout |
+| :--- | ---: | ---: |
+| First quartile above 4.5% | 100% | 0% |
+| Second quartile | 80% | 20% |
+| Third quartile | 60% | 40% |
+| Fourth quartile | 40% | 60% |
+| Above the buffer | 0% | 100% |
+
+With the 2.5% buffer alone the bounds are 5.125%, 5.75%, 6.375% and 7.0% (RBC30.4); with a 2.5% CCyB they become 5.75%, 7.0%, 8.25% and 9.5% (RBC30.18).
+Distributions are dividends, buy-backs, discretionary AT1 coupons and discretionary bonuses (RBC30.5(1)).
+The CET1 ratio for this test excludes any CET1 used to meet the 6% Tier 1 and 8% total minima (RBC30.4): a bank with 8% CET1 and no AT1 or Tier 2 meets its minima but has a zero buffer and is 100% constrained.
+
+### G-SIB scoring (SCO40)
+
+The score is a size-relative measure of the damage a failure would do (a system-wide LGD, SCO40.6), not a probability of default.
+Five categories each weigh 20%: cross-jurisdictional activity, size (the leverage exposure measure), interconnectedness, substitutability and complexity (SCO40.7 Table 1).
+Each indicator score is the bank's share of the sample total times 10,000 bps, so a 3% share is 300 bps (SCO40.10); category scores average their indicators (substitutability weights them 6.67, 6.67, 3.33 and 3.33 of its 20%), the substitutability category is capped at 500 bps (SCO40.8), and the total is the average of the five categories rounded to a whole bp.
+
+| Bucket (RBC40.4 Table 1) | Score range (bps) | Higher loss absorbency |
+| ---: | :--- | ---: |
+| 5 | 530 to 629 | 3.5% |
+| 4 | 430 to 529 | 2.5% |
+| 3 | 330 to 429 | 2.0% |
+| 2 | 230 to 329 | 1.5% |
+| 1 | 130 to 229 | 1.0% |
+
+Bucket 5 is kept empty to deter growth; if it fills, a 4.5% bucket 6 is added (RBC40.5).
+A bank moving up a bucket has 12 months to comply; moving down releases capital immediately (RBC40.6).
+
+### The leverage ratio and when it binds
+
+$$\text{Leverage ratio} = \frac{\text{Tier 1}}{\text{exposure measure}} \ge 3\% \quad \text{(LEV20.3, LEV20.7)}$$
+
+The exposure measure adds on-balance sheet assets, derivatives (1.4 times SA-CCR replacement cost plus PFE with the multiplier fixed at one), securities financing transactions and off-balance sheet items at credit conversion factors (LEV20.5); note 15 derives each piece.
+G-SIBs hold a Tier 1 leverage buffer equal to 50% of their risk-based higher loss absorbency, with its own distribution bands (LEV40.2 to LEV40.5), and the stricter of the two constraints sets the payout limit (LEV40.4).
+
+**When does leverage bind?**
+With exposure $E$ and RWA density $d = RWA/E$, the risk-based Tier 1 need is $r \cdot d \cdot E$ and the leverage need is $\ell \cdot E$, so leverage binds when
+
+$$d < \frac{\ell}{r}.$$
+
+For a non-G-SIB, $\ell = 3\%$ and $r = 6\% + 2.5\% = 8.5\%$ give a breakeven density of 35.29%; for a bucket 2 G-SIB, $3.75\% / 10.0\% = 37.5\%$.
+Against the bare minima the ratio is $3\%/6\% = 50\%$, which is why LEV40.1 sets the G-SIB leverage buffer at half the risk-based one: it keeps the breakeven density from drifting as the surcharge grows.
+Repo, Treasury inventory and central bank reserves carry low or zero risk weights but full leverage exposure, so dealer balance sheets are the ones that end up leverage-bound.
+
+**United States (as of 2026-10).**
+US advanced approaches banks report each risk-based ratio as the lower of the ratio on standardized RWA and on advanced approaches RWA (12 CFR 217.10(d)), which implements the floor of section 171 of the Dodd-Frank Act (12 U.S.C. 5371, often called the Collins Amendment).
+Until 2026 a US G-SIB holding company needed a supplementary leverage ratio of 3% plus a 2% buffer, and its insured depository subsidiaries 6% to be well capitalized.
+A final rule announced by the Federal Reserve, FDIC and OCC on 25 November 2025, effective 1 April 2026 with optional adoption from 1 January 2026, sets the holding company buffer at half the G-SIB's method 1 surcharge and caps the depository institution buffer at 1%, so the depository requirement is at most 4%.
+
+### The three pillars
+
+| Pillar | What it does | Where |
+| :--- | :--- | :--- |
+| 1: minimum requirements | Formulas for credit, market and operational RWA, minima, buffers, output floor, leverage ratio | RBC, CRE, MAR, OPE, LEV |
+| 2: supervisory review | Banks assess their own capital adequacy (ICAAP); supervisors review it, expect banks to operate above the minimum, may require more capital and intervene early (SRP20.1 to SRP20.4); IRRBB lives here (SRP31) | SRP |
+| 3: market discipline | Standard disclosure templates for capital, RWA, leverage, liquidity, IRRBB and distribution constraints | DIS |
+
+National Pillar 2 add-ons and stress-test buffers (for example the US stress capital buffer or the EU Pillar 2 requirement) sit on top of Pillar 1 and are set under national law, not by the Basel text.
+
+### How it is implemented
+
+A capital engine is a reconciliation machine more than a calculator.
+Inputs: the general ledger and consolidation perimeter (for capital elements and deductions), the credit, market, CVA and operational RWA engines, the leverage exposure engine, the jurisdictional CCyB rates published on the BIS website, and the bank's G-SIB indicators.
+It computes deductions in the order CAP30 prescribes (full deductions, then the 10% individual thresholds, then the 15% aggregate), the three ratios, the floored RWA, the buffer requirement, the MDA band under both the risk-based and leverage tests, and the headroom to each constraint.
+The output feeds Pillar 3 (DIS20 key metrics, DIS25 composition of capital), capital planning and the desk-level capital allocation discussed in [Capital-Aware Trading](20-Capital-Aware-Trading-KVA-and-RWA-Limits.md).
+`code/basel_capital_framework.py` implements the threshold deductions, Tier 2 amortisation, the MDA bands, the G-SIB score, the CCyB average and the leverage breakeven, and reuses the output floor of `code/basel_credit_saccr.py`.
 
 ## Worked examples
 
-### Example 1: Deconstructing Regulatory Capital and RWA Ratios
+All amounts are EUR millions and every number is printed and asserted by `code/basel_capital_framework.py`.
 
-A commercial bank exhibits the following balance sheet and risk numbers (in millions USD):
-- Common stock and paid-in surplus: $\$6,000\text{M}$
-- Retained earnings: $\$8,500\text{M}$
-- Accumulated Other Comprehensive Income (AOCI): $+\$500\text{M}$
-- Goodwill and intangible assets: $\$1,800\text{M}$
-- Net Deferred Tax Assets (reliance on future profit): $\$400\text{M}$
-- Qualifying Perpetual CoCos (AT1, contractual 5.125% trigger): $\$2,500\text{M}$
-- Qualifying 10-year Subordinated Debt (Tier 2, remaining maturity 7y): $\$3,000\text{M}$
-- Credit Risk-Weighted Assets ($\text{RWA}_{\text{Credit}}$): $\$110,000\text{M}$
-- Market Risk Capital Charge ($K_{\text{Market}}$): $\$1,200\text{M}$
-- Operational Risk Capital Charge ($K_{\text{OpRisk}}$): $\$1,600\text{M}$
-- The bank is subject to a 2.5% CCB, a 1.0% CCyB, and a 1.5% G-SIB surcharge.
+### Example 1: the bank's countercyclical buffer
 
-1. Compute CET1 Capital, Tier 1 Capital, and Total Regulatory Capital.
-2. Compute Total Risk-Weighted Assets (Total RWA).
-3. Compute the CET1, Tier 1, and Total Capital ratios.
-4. Determine whether the bank complies with its total CET1 requirement (minimum + all buffers).
+Private-sector credit risk charges are 400 in country A (CCyB 2.0%), 200 in B (1.0%) and 400 in C (0%).
+The weighted rate is $(400 \times 2\% + 200 \times 1\% + 400 \times 0\%)/1,000 = 1.00\%$, applied to total RWA (RBC30.14 and FAQ1).
 
-**Solution:**
+### Example 2: G-SIB score and bucket
 
-Step 1: Compute Qualifying Regulatory Capital:
-- Gross CET1:
-  $$\text{Gross CET1} = \$6,000 + \$8,500 + \$500 = \$15,000\text{M}$$
-- Regulatory Deductions:
-  $$\text{Deductions} = \text{Goodwill} + \text{DTA} = \$1,800 + \$400 = \$2,200\text{M}$$
-- Net CET1 Capital:
-  $$\text{CET1} = \$15,000 - \$2,200 = \$12,800\text{M}$$
-- Tier 1 Capital:
-  $$\text{Tier 1} = \text{CET1} + \text{AT1} = \$12,800 + \$2,500 = \$15,300\text{M}$$
-- Tier 2 Capital:
-  Because subordinated debt has 7 years remaining ($>5$ years), 100% qualifies:
-  $$\text{Tier 2} = \$3,000\text{M}$$
-- Total Capital:
-  $$\text{Total Capital} = \text{Tier 1} + \text{Tier 2} = \$15,300 + \$3,000 = \$18,300\text{M}$$
+Shares of the sample totals: cross-jurisdictional claims 3.0% and liabilities 2.6%; size 2.8%; intra-financial assets 2.5%, liabilities 2.9%, securities outstanding 3.1%; custody 4.0%, payments 3.5%, underwriting 2.0%, trading volume 3.0%; OTC notional 2.0%, level 3 assets 2.5%, trading and AFS securities 3.0%.
+Category scores: cross-jurisdictional 280, size 280, interconnectedness 283.33, substitutability $(400 + 350)/3 + (200 + 300)/6 = 333.33$, complexity 250 bps.
+The average is 285 bps, bucket 2, so the higher loss absorbency is 1.5% of RWA and the leverage buffer 0.75%.
+Had the substitutability shares all been 6%, that category would score 600 and be capped at 500.
 
-Step 2: Compute Total Risk-Weighted Assets (Total RWA):
-Convert Market and Operational risk capital requirements to RWA by multiplying by $12.5$:
-- Market RWA:
-  $$\text{RWA}_{\text{Market}} = 12.5 \times \$1,200\text{M} = \$15,000\text{M}$$
-- Operational RWA:
-  $$\text{RWA}_{\text{OpRisk}} = 12.5 \times \$1,600\text{M} = \$20,000\text{M}$$
-- Total RWA:
-  $$\text{Total RWA} = \$110,000 + \$15,000 + \$20,000 = \$145,000\text{M}$$
+### Example 3: from the balance sheet to the payout limit
 
-Step 3: Compute Capital Adequacy Ratios:
+CET1 elements: shares 6,000, premium 1,500, retained earnings 8,000, AOCI -200, total 15,300.
+Deduct goodwill 1,800 net of its 100 DTL (1,700), tax-loss DTAs 400 in full, and a pension surplus 300 net of its 60 DTL (240): CET1 before thresholds is 12,960.
+Threshold items: significant investments 1,500, MSRs 200, temporary-difference DTAs 900.
+The 10% limit is 1,296, so 204 of the investments go; the 15% aggregate cap is $15/85 \times (12,960 - 2,600) = 1,828.24$, so the total threshold deduction is 771.76 and CET1 is 12,188.24, of which the recognised items are exactly 15.00%.
+The recognised 1,828.24 is weighted at 250%: 4,570.59 of RWA.
+RWA: credit 100,000 plus 4,570.59, market $12.5 \times 1,200 = 15,000$, operational $12.5 \times 1,000 = 12,500$, total 132,070.59.
+AT1 is 1,500; Tier 2 is a 2,000 bond with three years left (1,200) plus a 1,000 bond with eight years (1,000), plus general provisions of 1,600 capped at $1.25\% \times 104,570.59 = 1,307.13$, total 3,507.13.
 
-$$\text{CET1 Ratio} = \frac{\$12,800\text{M}}{\$145,000\text{M}} \approx 0.088276 \quad (8.83\%)$$
+| Ratio | Value | Minimum |
+| :--- | ---: | ---: |
+| CET1 | 9.23% | 4.5% |
+| Tier 1 | 10.36% | 6% |
+| Total | 13.02% | 8% |
 
-$$\text{Tier 1 Ratio} = \frac{\$15,300\text{M}}{\$145,000\text{M}} \approx 0.105517 \quad (10.55\%)$$
+With a 1.00% CCyB (Example 1) and a 1.5% G-SIB surcharge (Example 2) the CET1 requirement is $4.5 + 2.5 + 1.0 + 1.5 = 9.5\%$.
+AT1 is only 1.14% of RWA, so 0.36% of CET1 is used to reach the 6% Tier 1 minimum; Tier 2 at 2.66% covers its 2%.
+The CET1 ratio for the buffer test is therefore 8.86%, in the fourth quartile of the 5.0% combined buffer (8.25% to 9.5%): at least 40% of earnings must be retained, at most 60% paid out, and 839.53 of CET1 would clear the buffer.
+Leverage: Tier 1 13,688.24 over an exposure measure of 400,000 is 3.42%, against 3.75% for a bucket 2 G-SIB.
+The leverage buffer of 0.75% splits into quarters of 0.1875%, so 3.42% sits in the third quarter and requires 60% retention.
+The stricter constraint wins (LEV40.4): payouts are limited to 40% of earnings, and it would take 1,311.76 of Tier 1 to clear the leverage buffer.
+The bank's RWA density is 33.02%, below the 37.5% breakeven, which is exactly why leverage, not the risk-based ratio, is its binding constraint.
 
-$$\text{Total Capital Ratio} = \frac{\$18,300\text{M}}{\$145,000\text{M}} \approx 0.126207 \quad (12.62\%)$$
+### Example 4: output floor with the transitional cap
 
-Step 4: Evaluate Buffer Requirements:
-The bank's required CET1 threshold is:
-
-$$\text{Required CET1} = \text{Minimum (4.5%)} + \text{CCB (2.5%)} + \text{CCyB (1.0%)} + \text{G-SIB (1.5%)} = 9.50\%$$
-
-The bank's actual CET1 ratio is $8.83\%$, which exceeds the statutory minimum ($4.5\%$) and the conservation buffer ($7.0\%$), but falls $67 \text{ bps}$ short of its required $9.50\%$ macroprudential hurdle.
-Under the Maximum Distributable Amount (MDA) rules, the bank must restrict discretionary distributions (curbing stock buybacks and capping executive bonuses) until retained earnings restore CET1 above $9.50\%$.
-
-### Example 2: Evaluating the Non-Risk-Weighted Leverage Ratio
-
-Using the bank from Example 1 (Tier 1 Capital = $\$15,300\text{M}$):
-- On-balance sheet assets: $\$380,000\text{M}$ (including $\$60,000\text{M}$ in US Treasuries and $\$40,000\text{M}$ in cash at the Fed).
-- Regulatory balance-sheet deductions: $\$2,200\text{M}$.
-- Derivative SA-CCR exposure ($RC + PFE$): $\$24,000\text{M}$.
-- Securities Financing Transactions gross exposure: $\$45,000\text{M}$.
-- Off-balance sheet commitments (after CCF conversion): $\$33,200\text{M}$.
-
-1. Compute Total Leverage Exposure (TLE).
-2. Calculate the Basel III Leverage Ratio and determine whether it complies with the 3.0% international standard.
-3. Determine whether the bank complies with the 5.0% US Enhanced Supplementary Leverage Ratio (eSLR).
-
-**Solution:**
-
-Step 1: Compute Total Leverage Exposure (TLE):
-Notice that cash and US Treasuries cannot be deducted from TLE under standard leverage rules:
-
-$$\text{On-Balance Sheet TLE} = \$380,000\text{M} - \$2,200\text{M} = \$377,800\text{M}$$
-
-$$\text{TLE} = \$377,800 + \$24,000 + \$45,000 + \$33,200 = \$480,000\text{M}$$
-
-Step 2: Compute Basel III Leverage Ratio:
-
-$$\text{Leverage Ratio} = \frac{\text{Tier 1 Capital}}{\text{TLE}} = \frac{\$15,300\text{M}}{\$480,000\text{M}} = 0.031875 \quad (3.19\%)$$
-
-The ratio exceeds the 3.0% international Basel III minimum by $19 \text{ bps}$.
-
-Step 3: Evaluate Against US eSLR Standard (5.0%):
-The bank's ratio of $3.19\%$ falls significantly below the $5.0\%$ US eSLR requirement.
-To achieve $5.0\%$ on a $\$480,000\text{M}$ exposure, the bank would require:
-$$\text{Required Tier 1} = 0.05 \times \$480,000\text{M} = \$24,000\text{M}$$
-The bank suffers a $\$8,700\text{M}$ Tier 1 capital deficit under the leverage rule despite having a comfortable $10.55\%$ Tier 1 ratio under RWA rules.
-This demonstrates how high gross balances of zero-risk assets (such as Treasury repos) cause the non-risk-weighted leverage ratio to bind before risk-weighted metrics.
+RBC20.13: pre-floor RWA 76, standardised 140; the floor is 101.5, a 33.55% increase in RWA.
+With the RBC90.2 transitional cap the supervisor may hold the increase to 25%, so RWA would be 95.
+Note 02 works a full bank through the RBC90.1 phase-in years.
 
 ## Pitfalls
 
-- **Confusing Tier 1 Ratio with CET1 Ratio:** Assessing solvency using Tier 1 capital alone ignores the composition of hybrid AT1 CoCos. If a bank has the minimum 4.5% CET1 and 1.5% AT1, its loss absorption capacity is substantially weaker than a bank with 6.0% pure CET1.
-- **Ignoring Tier 2 Subordinated Debt Amortization:** Assuming subordinated debt retains 100% capital value until the day of maturity ignores the straight-line regulatory amortization factor in its final 5 years.
-- **Treating Capital Buffers as Hard Insolvency Triggers:** Dipping into the Capital Conservation Buffer (CCB) does not cause regulatory seizure or loan acceleration; it triggers the Maximum Distributable Amount (MDA) regime restricting bonus payouts and share dividends.
-- **Assuming High RWA Ratios Guarantee Low Leverage:** A bank can report a pristine 14% CET1 ratio while holding hundreds of billions in zero-risk-weighted sovereign bonds and cash repo, hiding vulnerability to sudden liquidity runs and gross leverage failures.
-- **Overlooking Goodwill Deductions in M&A:** Valuing a proposed bank acquisition based on headline book value equity without deducting the resulting creation of goodwill inflates projected post-merger regulatory capital.
+- Testing the buffers on the headline CET1 ratio: CET1 that fills an AT1 or Tier 2 gap is not available for the buffer (RBC30.4), which moved Example 3 from 9.23% to 8.86%.
+- Treating the buffer as a minimum: falling into it is allowed and expected in stress; only distributions are restricted, and supervisors may impose time limits (RBC30.3, RBC30.5(4)).
+- Applying the 15% threshold as 15% of CET1 before deducting the excess; the closed form is 17.65% of CET1 net of a full deduction of the items (CAP30.33 FAQ1).
+- Deducting goodwill gross of the associated DTL, or DTAs from temporary differences in full; the first is net (CAP30.7), the second goes through the thresholds (CAP30.9).
+- Counting Tier 2 at full value until maturity; recognition amortises straight-line over the last five years (CAP10.16(4)).
+- Computing the CCyB on credit RWA only, or by the location of the booking office; it applies to total RWA and uses the location of ultimate risk (RBC30.12 FAQ1, RBC30.14 footnote 81).
+- Ignoring the leverage MDA for G-SIBs: the payout limit is the stricter of the risk-based and leverage tests (LEV40.4), as Example 3 shows.
+- Quoting the US eSLR as 5% and 6%: those were the pre-2026 calibrations; check the date of any jurisdictional number.
+- Forgetting that the output floor applies to the denominator of every ratio and buffer, so a floored bank's buffers grow with the floor (RBC20.4).
 
 ## Interview questions
 
 > [!question]- reg-regulatory-vs-economic-capital | Contrast regulatory capital, economic capital, and accounting equity.
-> Accounting equity is book net worth ($Assets - Liabilities$) under financial accounting standards, containing illiquid intangibles like goodwill. Economic capital is an internal, model-driven estimate of the capital needed to absorb unexpected losses at a specific solvency quantile (e.g., 99.97% over 1 year) across all risks. Regulatory capital is the legally mandated capital calculated under standardized Basel Committee rules, consisting of qualifying instruments minus statutory deductions like goodwill and DTAs.
+> Accounting equity is assets minus liabilities under the accounting standard, including goodwill and DTAs.
+> Regulatory capital is the part that passes the CAP10 eligibility criteria net of the CAP30 deductions, measured against Basel minima and buffers.
+> Economic capital is the bank's own estimate of the loss it must absorb at its chosen confidence and horizon, covering risks Pillar 1 ignores; supervisors see it through the ICAAP under Pillar 2 (SRP20.1).
 
 > [!question]- reg-cet1-deductions-rationale | Explain why goodwill, deferred tax assets (DTAs), and defined benefit pension assets are deducted from CET1 capital.
-> Regulatory deductions eliminate balance-sheet assets that provide zero loss-absorption capacity during acute bank distress. Goodwill reflects historical acquisition premiums that evaporate when a bank is failing. DTAs rely on future accounting profitability; if a bank is insolvent, it cannot generate the taxable income required to monetize tax credits. Defined benefit pension assets are legally segregated for employee retirements and cannot be seized to pay depositors.
+> Each has no value in a failure: goodwill is a purchase premium that vanishes when the business is impaired (CAP30.7, deducted net of the DTL that would disappear with it).
+> A DTA from tax losses needs future taxable profit, so it is deducted in full (CAP30.9); temporary-difference DTAs only go through the 10% and 15% thresholds.
+> A pension surplus belongs to the scheme, so the net asset is deducted net of its DTL, while pension deficits stay recognised (CAP30.16).
 
 > [!question]- reg-rwa-scaling-factor-12-5 | Why are market risk and operational risk capital requirements multiplied by 12.5 to compute RWA?
-> Basel capital requirements are structured around an 8.0% minimum total capital ratio ($Total Capital / RWA \ge 8\%$). Because $8\% = 8/100 = 1/12.5$, multiplying a capital dollar requirement by $12.5$ converts it into its equivalent Risk-Weighted Asset volume. For example, a $\$100\text{M}$ market risk capital requirement produces $\$100\text{M} \times 12.5 = \$1,250\text{M}$ of RWA, ensuring that $8\% \times \$1,250\text{M} = \$100\text{M}$.
+> Because $12.5 = 1/8\%$: RWA is defined so that 8% of it is the capital requirement.
+> Market and operational risk are calibrated as capital amounts, so multiplying by 12.5 gives the RWA that would need the same capital at the 8% total minimum (OPE25.2 states it for ORC).
+> A 100 market risk charge becomes 1,250 of RWA, and 8% of 1,250 is 100.
 
 > [!question]- reg-coco-bond-at1-mechanics | How do Contingent Convertible (CoCo) bonds function as Additional Tier 1 (AT1) capital?
-> CoCos are perpetual subordinated debt instruments that pay discretionary, non-cumulative coupons. When the bank's CET1 ratio breaches a contractually predefined trigger (typically 5.125% or 7.0% of RWA) or when supervisors declare a Point of Non-Viability (PONV), CoCos automatically convert into common equity or suffer an immediate permanent or temporary principal write-down, instantly generating CET1 capital.
+> They are perpetual, callable only after five years with supervisory approval, with coupons the bank can cancel at any time without default (CAP10.11).
+> If classified as a liability they must convert to common shares or be written down at a pre-specified trigger of at least 5.125% CET1, by at least enough to restore CET1 to the trigger (CAP10.11(11) to (12)).
+> 5.125% is the top of the first buffer quartile above 4.5%, where 100% of earnings must already be retained (RBC30.4).
 
 > [!question]- reg-capital-conservation-buffer-mda | What occurs when a bank's CET1 ratio breaches the 2.5% Capital Conservation Buffer?
-> Breaching the CCB does not constitute an event of default or trigger bank resolution. Instead, it activates the Maximum Distributable Amount (MDA) framework, legally enforcing sliding-scale percentage caps on the bank's ability to distribute earnings via common share repurchases, common dividend payouts, and executive discretionary bonus pools to force capital retention.
+> Nothing operational: it may keep lending; only distributions (dividends, buy-backs, discretionary AT1 coupons and bonuses) are limited (RBC30.2, RBC30.5).
+> The buffer is split into quartiles requiring 100%, 80%, 60% and 40% retention of earnings; with 2.5% alone the bounds are 5.125%, 5.75%, 6.375% and 7.0% (RBC30.4).
+> The ratio tested excludes CET1 used to meet the Tier 1 and total minima, and the CCyB and G-SIB surcharge widen the same quartiles (RBC30.17, RBC40.2).
 
 > [!question]- reg-countercyclical-buffer-purpose | What is the economic objective of the Countercyclical Capital Buffer (CCyB)?
-> The CCyB combats the inherent procyclicality of financial regulation. During credit booms, risk weights naturally decline as default rates fall, encouraging excessive balance-sheet expansion. National macroprudential authorities mandate an additional 0% to 2.5% CET1 buffer during credit expansions. When a recession hits, regulators release the buffer to 0%, allowing banks to absorb credit losses without restricting lending to the real economy.
+> To make banks build CET1 when national authorities judge credit growth excessive and release it when risk crystallises, so losses can be absorbed without cutting credit (RBC30.6 to RBC30.8).
+> Rates run from 0% to 2.5% for reciprocity, increases are pre-announced up to 12 months, decreases are immediate (RBC30.9, RBC30.11).
+> A bank's rate is the average of host rates weighted by its private-sector credit risk charges, applied to total RWA: 400 at 2%, 200 at 1% and 400 at 0% give 1.00% (RBC30.14).
 
 > [!question]- reg-leverage-ratio-vs-rwa | Why is the Basel III Leverage Ratio necessary if banks already calculate comprehensive RWA?
-> RWA calculations rely heavily on quantitative statistical models and external credit ratings, which can be gamed through optimization or broken by correlation breakdowns during tail crises. The non-risk-weighted Leverage Ratio acts as a hard, model-agnostic backstop that caps gross balance-sheet gearing ($Tier 1 / Exposure \ge 3\%$), preventing banks from running excessive gross leverage against low-risk-weighted assets.
+> RWA depend on models and risk weights that can be wrong or optimised; the leverage ratio is a simple non-risk-based backstop on Tier 1 over gross exposure (LEV20.1).
+> It binds when the RWA density falls below the leverage requirement over the risk-based Tier 1 requirement: $3\%/8.5\% = 35.29\%$ for a non-G-SIB.
+> Low-density businesses (repo, government bonds, reserves) are therefore leverage-bound.
 
 > [!question]- reg-us-eslr-treasury-market-impact | How does the US Enhanced Supplementary Leverage Ratio (eSLR) impact liquidity in the US Treasury market?
-> Under the eSLR, US G-SIB broker-dealer affiliates must maintain a 6.0% Tier 1 leverage ratio against all assets, treating zero-risk US Treasuries and central bank reserves identically to risky commercial loans. Because repo financing and market-making in Treasuries produce thin profit margins on massive gross balances, holding Treasuries consumes expensive equity capital, forcing primary dealers to reduce market-making inventory during Treasury volatility spikes.
+> Treasuries, reserves and repo carry low risk weights but full leverage exposure, so a fixed leverage add-on makes holding or financing them consume Tier 1 at near-zero RWA, and leverage-bound dealers ration that balance sheet.
+> Until 2026 G-SIB holding companies needed 3% plus a 2% buffer and their banks 6% to be well capitalized.
+> The rule announced on 25 November 2025 (effective 1 April 2026) sets the holding company buffer at half the method 1 surcharge and caps the bank-level buffer at 1%, with the stated aim of reducing disincentives to intermediate in Treasury markets (as of 2026-10).
 
 > [!question]- reg-g-sib-scoring-methodology | Describe the five categories used by the Basel Committee to determine G-SIB systemic surcharges.
-> The BCBS indicator-based measurement framework assigns equal 20% weights to five categories: (1) Size (total leverage exposure); (2) Interconnectedness (intra-financial system assets, liabilities, and securities outstanding); (3) Substitutability (assets under custody, payments processed, underwriting activity); (4) Complexity (notional derivatives, level 3 illiquid assets); and (5) Cross-jurisdictional activity (cross-border claims and liabilities).
+> Cross-jurisdictional activity (claims, liabilities), size (leverage exposure measure), interconnectedness (intra-financial assets, liabilities, securities outstanding), substitutability (custody, payments, underwriting, trading volume) and complexity (OTC notional, level 3 assets, trading and AFS securities), 20% each (SCO40.7).
+> Indicator scores are shares of the sample times 10,000 bps, substitutability is capped at 500, and the average maps to buckets from 130 bps (1.0%) in 100 bp steps to 3.5% (SCO40.8, SCO40.10, RBC40.4).
 
 > [!question]- reg-three-pillars-interaction | How do Pillar 1 and Pillar 2 interact in determining a bank's total capital requirement?
-> Pillar 1 sets the universal, legally binding formulaic minimum capital requirements applicable across all institutions for credit, market, and operational risk. Under Pillar 2, the bank conducts its own Internal Capital Adequacy Assessment Process (ICAAP), and the supervisory authority (e.g., Federal Reserve or ECB SREP) conducts independent stress tests (such as CCAR). The supervisor then levies bespoke Pillar 2A (unmodelled risks like concentration and IRRBB) and Pillar 2B (stress capital buffers) requirements on top of Pillar 1.
+> Pillar 1 gives the formula minimum and buffers; Pillar 2 requires the bank to assess its overall capital adequacy and supervisors to review it, expect operation above the minimum, and require more capital or early remediation when needed (SRP20.1 to SRP20.4).
+> Risks outside Pillar 1, such as IRRBB (SRP31) and concentration, are priced there, and national regimes add Pillar 2 requirements and stress buffers on top.
 
-## Further reading
+> [!question]- reg-mda-buffer-test-cet1 | A bank has 8% CET1 and no AT1 or Tier 2. What is its maximum payout ratio?
+> Zero.
+> The buffer test excludes CET1 used for the 6% Tier 1 and 8% total minima, so its buffer-test ratio is $8 - 1.5 - 2 = 4.5\%$, the bottom of the buffer: 100% retention (RBC30.4).
+> This is the Committee's own example, and the reason banks issue AT1 and Tier 2: they free CET1 for the buffers.
 
-- Basel Committee on Banking Supervision (2011), *Basel III: A Global Regulatory Framework for More Resilient Banks and Banking Systems*.
-- Viral Acharya, Thomas Cooley, Matthew Richardson, and Ingo Walter, *Regulating Wall Street: The Dodd-Frank Act and the New Architecture of Global Finance*, Chapters 1-4.
-- Hal S. Scott, *Connectedness and Contagion: Protecting the Financial System from Panics*, MIT Press.
-- Darrell Duffie (2019), "Prone to Fail: The Pre-Crisis Financial System", *Journal of Economic Perspectives*.
-- Jon Gregory, *The xVA Challenge*, Chapter 3: "Regulatory Capital and the Basel Framework".
+> [!question]- reg-threshold-deductions-10-15 | How do the 10% and 15% threshold deductions work, and why 17.65%?
+> Significant investments in financials' common shares, MSRs and temporary-difference DTAs are each recognised up to 10% of CET1, together up to 15% of CET1 after all deductions; the excess is deducted and the recognised part weighted at 250% (CAP30.32 to CAP30.34).
+> Since 15% of final CET1 $X$ with $X = C_{net} + R$ gives $R = 0.15(C_{net} + R)$, $R = (15/85) C_{net} = 17.65\% \cdot C_{net}$ (CAP30.33 FAQ1).
+> In the worked bank, $15/85 \times 10,360 = 1,828.24$ is recognised and 771.76 deducted.
+
+> [!question]- reg-tier2-amortisation | How much of a Tier 2 bond with 3 years left counts as capital, and why does the rule exist?
+> 60%: recognition amortises straight-line over the last five years, $\min(1, \tau/5)$ (CAP10.16(4)).
+> Gone-concern capital is only useful if it is still there at failure, so instruments approaching maturity are phased out rather than dropping off a cliff.
+
+> [!question]- reg-output-floor-base-approaches | Which approaches are excluded from the output floor base, and what does the floor do to a bank with RWA 76 and standardised RWA 140?
+> IRB, SEC-IRBA, the market risk IMA, the VaR models approach for CCR and IMM (RBC20.12); the base uses the standardised counterparts.
+> RWA becomes $\max(76, 0.725 \times 140) = 101.5$ (RBC20.13); during the phase-in a supervisor may cap the increase at 25%, giving 95 (RBC90.2).
+
+> [!question]- reg-leverage-density-breakeven | Derive the RWA density below which the leverage ratio binds, and explain the 50% G-SIB leverage buffer.
+> Leverage needs $\ell E$ of Tier 1, risk-based needs $r \cdot d \cdot E$; leverage binds when $d < \ell / r$.
+> Non-G-SIB: $3\%/(6\% + 2.5\%) = 35.29\%$; bucket 2 G-SIB: $3.75\%/10.0\% = 37.5\%$; bare minima $3\%/6\% = 50\%$.
+> Setting the leverage buffer at half the risk-based surcharge (LEV40.2) keeps the leverage add-on proportional to the risk-based one, preserving the relative roles of the two requirements (LEV40.1).
+
+> [!question]- reg-gsib-substitutability-cap | Why is the substitutability category capped at 500 bps?
+> In 2013 the Committee found that substitutability had more influence than intended for banks dominant in payments, underwriting and custody, so it capped the category score at 500 bps (SCO40.8).
+> With every substitutability share at 6% the category would score 600 and is capped at 500, which then counts for 100 bps of the total after averaging over five categories.
+
+> [!question]- reg-joint-mda-leverage | A G-SIB is in the fourth quartile of its risk-based buffer and the third quarter of its leverage buffer. What is its payout limit?
+> 40% of earnings.
+> LEV40.4 applies the higher of the two minimum conservation ratios: 40% retention from the risk-based test and 60% from the leverage test, so 60% must be retained.
+> In the worked bank, Tier 1 leverage of 3.42% against a 3.75% requirement is the binding constraint even though the risk-based ratios exceed every minimum.
+
+> [!question]- reg-capital-stack-worked | Walk through CET1 for a bank with 15,300 of equity, 1,800 goodwill (100 DTL), 400 tax-loss DTAs, a 300 pension surplus (60 DTL) and threshold items of 1,500, 200 and 900.
+> CET1 12,188.24.
+> Full deductions take 1,700, 400 and 240, leaving 12,960; the 10% limit (1,296) cuts the investments and the 15% cap of $15/85 \times 10,360 = 1,828.24$ binds, so 771.76 more is deducted.
+> The recognised 1,828.24 is 15.00% of final CET1 and adds 4,570.59 of RWA at 250%.
 
 ## In this repo and SDE-Interview-Prep
 
-- Basel timeline and regulatory evolution: [Basel I, II, 2.5, III, and IV Evolution](02-Basel-I-II-2.5-III-IV-Evolution.md).
-- Credit risk capital under IRB and Vasicek models: [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md).
-- Counterparty credit risk under SA-CCR: [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md).
-- Value at Risk and tail risk fundamentals: [VaR and Expected Shortfall](../11-Risk-and-Trading/03-VaR-and-Expected-Shortfall.md).
+- [Basel I, II, 2.5, III, and IV Evolution](02-Basel-I-II-2.5-III-IV-Evolution.md) for how each layer arrived and a phase-in example of the output floor.
+- [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) and [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md) for the credit RWA that dominates the denominator.
+- [Leverage Ratio and Liquidity Ratios: LCR and NSFR](15-Leverage-Ratio-and-Liquidity-Ratios-LCR-and-NSFR.md) for the leverage exposure measure in detail.
+- [Capital-Aware Trading: KVA and RWA Limits](20-Capital-Aware-Trading-KVA-and-RWA-Limits.md) for how these constraints are pushed down to desks.
+- [VaR and Expected Shortfall](../11-Risk-and-Trading/03-VaR-and-Expected-Shortfall.md) for the risk measures behind market risk capital.
+- `code/basel_capital_framework.py` computes, prints and asserts every number on this page.
+
+## Further reading
+
+- Basel Committee on Banking Supervision, *The Basel Framework*, chapters CAP10, CAP30, RBC20, RBC30, RBC40, RBC90, SCO40, LEV20, LEV40 and SRP20, https://www.bis.org/basel_framework/.
+- Basel Committee on Banking Supervision, *Basel III: Finalising post-crisis reforms*, 7 December 2017 (bis.org/bcbs/publ/d424), for the output floor and the G-SIB leverage buffer.
+- Basel Committee on Banking Supervision, *Basel III: A global regulatory framework for more resilient banks and banking systems*, December 2010, revised June 2011 (bis.org/publ/bcbs189), for the original capital definition and buffers.
+- Board of Governors of the Federal Reserve System, *Agencies issue final rule to modify certain regulatory capital standards*, press release, 25 November 2025, and 12 CFR 217.10 for the US implementation.
