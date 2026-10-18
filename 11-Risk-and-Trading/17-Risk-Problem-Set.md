@@ -190,6 +190,7 @@ Same forward, daily variation margin.
 
 Trades worth $+20$, $-15$, $+5$, $-2$ (millions).
 Gross 25, net 8, NGR 0.32, so standardised initial margin is scaled by $0.4 + 0.6 \times 0.32 = 0.592$ (MGN20.17).
+This is the MGN20.17 standardised initial margin schedule; the identical $0.4 + 0.6 \times \text{NGR}$ form was the pre-SA-CCR current exposure method add-on for capital, which SA-CCR replaced.
 
 ### Problem 18: CVA and DVA with flat exposure
 
@@ -359,6 +360,7 @@ The equivalent continuous barrier is $90e^{-0.5826 \times 0.2\sqrt{1/252}} = 89.
 
 > [!question]- risk-ngr-four-trades | Trades worth +20, -15, +5 and -2 with one counterparty: what are NGR and the standardised IM scaling?
 > Gross 25, net 8, NGR 0.32; the standardised schedule scales gross IM by $0.4 + 0.6 \times 0.32 = 0.592$ (MGN20.17).
+> This is the MGN20.17 standardised initial margin schedule; the identical $0.4 + 0.6 \times \text{NGR}$ form was the pre-SA-CCR current exposure method add-on for capital, which SA-CCR replaced.
 
 > [!question]- risk-cva-flat-exposure | One-year trade, flat EE 500k, hazard 3%, LGD 60%, rate 4%. Estimate CVA two ways.
 > Midpoint: $0.6 \times e^{-0.02} \times 500\text{k} \times (1 - e^{-0.03}) = 8{,}691$; exact integral $0.6 \times 500\text{k} \times 0.03(1 - e^{-0.07})/0.07 = 8{,}692$.

@@ -372,7 +372,8 @@ def problem_ngr() -> None:
     check("gross", gross, 25.0, 0.0)
     check("net", net, 8.0, 0.0)
     check("NGR", net / gross, 0.32, 1e-12)
-    check("MGN20.17 factor 0.4 + 0.6 NGR", 0.4 + 0.6 * net / gross, 0.592, 1e-12)
+    # MGN20.17 standardised IM schedule; the same form formerly scaled the CEM add-on for capital.
+    check("MGN20.17 standardised IM schedule factor", 0.4 + 0.6 * net / gross, 0.592, 1e-12)
 
 
 # Problem 18 (cards risk-cva-flat-exposure, risk-credit-triangle-cva)
