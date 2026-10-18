@@ -2,7 +2,7 @@
 type: problem-set
 track: [quant-trader, quant-research, quant-risk]
 tier: core
-status: draft
+status: solid
 prereqs: [kelly-criterion-and-position-sizing, var-and-expected-shortfall, xva, liquidity-and-model-risk]
 est_hours: 8
 sources: [Philippe Jorion - Value at Risk, Jon Gregory - Counterparty Credit Risk and Credit Value Adjustment, Robert Carver - Systematic Trading, Robert Almgren and Neil Chriss - Optimal Execution of Portfolio Transactions (2000), Sheldon Natenberg - Option Volatility and Pricing]
@@ -85,7 +85,7 @@ $$\text{L-VaR} = \text{VaR} \times \sqrt{1 + \frac{1}{3}(L - 1)} + \frac{1}{2}(\
 
 A quantitative statistical arbitrage strategy has an expected annualized excess return of $\mu - r = 12.0\%$ ($0.120$) and an annualized return volatility of $\sigma = 16.0\%$ ($0.160$).
 1. Compute the full Kelly optimal leverage fraction $f^*$.
-2. To avoid high drawdown risk and parameter estimation error, the fund manager mandates a half-Kelly policy ($f_{\text{half}} = 0.5 f^*$). Compute the resulting portfolio expected return and volatility.
+2. The fund manager mandates a half-Kelly policy ($f_{\text{half}} = 0.5 f^*$); compute the resulting portfolio expected return and volatility.
 3. If an unconstrained trader uses full Kelly versus half Kelly, calculate the theoretical probability of suffering a $50\%$ drawdown before doubling capital.
 
 **Solution:**
@@ -594,7 +594,7 @@ The net fair value deduction is $\$6,063.87$.
 
 A 3-factor PCA decomposition of a yield curve produces eigenvalues $\lambda_1 = 0.000180$, $\lambda_2 = 0.000018$, $\lambda_3 = 0.000002$.
 1. Compute the percentage of total yield curve variance explained by each principal component.
-2. The Level eigenvector is $\mathbf{v}_1 = [0.577, 0.577, 0.577]^T$. Compute the basis point shock across all three tenors for a $+1.5$-standard-deviation Level move.
+2. Given Level eigenvector $\mathbf{v}_1 = [0.577, 0.577, 0.577]^T$, compute the basis point shock across all three tenors for a $+1.5$-standard-deviation Level move.
 
 **Solution:**
 
@@ -689,34 +689,72 @@ The bank must charge $\$227,500$ upfront to provide shareholders with their requ
 ## Interview questions
 
 > [!question]- risk-full-vs-half-kelly-drawdown | Why do professional quants recommend trading at half-Kelly rather than full Kelly?
-> Full Kelly maximizes the expected compound growth rate of capital in the infinite horizon, but suffers from extreme volatility: it has a 50% probability of ever suffering a 50% drawdown and a 33.3% probability of halving before doubling capital. Half-Kelly achieves 75% of maximum compound growth rate while cutting variance by 75% (volatility and leverage by 50%), slashes the probability of ever suffering a 50% drawdown down to 12.5%, and reduces the probability of halving before doubling to 11.1%, providing a massive safety buffer against parameter estimation error.
+> Full Kelly maximizes the expected compound growth rate of capital in the infinite horizon, but suffers from extreme volatility: it has a 50% probability of ever suffering a 50% drawdown and a 33.3% probability of halving before doubling capital.
+> Half-Kelly achieves 75% of maximum compound growth rate while cutting variance by 75% (volatility and leverage by 50%), slashes the probability of ever suffering a 50% drawdown down to 12.5%, and reduces the probability of halving before doubling to 11.1%, providing a massive safety buffer against parameter estimation error.
 
 > [!question]- risk-var-vs-es-coherence | Why is Expected Shortfall (ES) a coherent risk measure while Value at Risk (VaR) is not?
-> Value at Risk fails the subadditivity axiom: the VaR of a combined portfolio can exceed the sum of individual VaRs ($\text{VaR}(X + Y) > \text{VaR}(X) + \text{VaR}(Y)$) for non-normal or skewed distributions, meaning VaR can penalize diversification. Expected Shortfall (CVaR) satisfies subadditivity, translation invariance, positive homogeneity, and monotonicity, making it a mathematically coherent risk measure that accurately captures tail risk.
+> Value at Risk fails the subadditivity axiom: the VaR of a combined portfolio can exceed the sum of individual VaRs ($\text{VaR}(X + Y) > \text{VaR}(X) + \text{VaR}(Y)$) for non-normal or skewed distributions, meaning VaR can penalize diversification.
+> Expected Shortfall (CVaR) satisfies subadditivity, translation invariance, positive homogeneity, and monotonicity, making it a mathematically coherent risk measure that accurately captures tail risk.
+
+> [!question]- risk-fhs-volatility-updating | How does Filtered Historical Simulation (FHS) adapt historical return scenarios to prevailing market regimes?
+> Filtered Historical Simulation standardizes historical returns by the historical volatility estimated at the time of each event ($\hat{\epsilon}_{\tau} = r_{\tau} / \sigma_{\tau}$), and then re-scales these standardized residuals by current conditional volatility: $r_{\tau}^{\text{filtered}} = \hat{\epsilon}_{\tau} \times \sigma_{\text{current}}$.
+> This prevents risk models from understating tail risk during sudden volatility spikes when recent history was calm, and prevents overstating risk when markets normalize after acute crises.
+
+> [!question]- risk-reverse-stress-testing-mahalanobis | How does reverse stress testing identify the most plausible scenario triggering portfolio insolvency?
+> Reverse stress testing inverts standard stress testing by fixing a catastrophic loss threshold ($L^*$) and finding the minimum Mahalanobis distance shock vector $\mathbf{x}^* = \arg\min \mathbf{x}^T \mathbf{\Sigma}^{-1} \mathbf{x}$ subject to $\text{P\&L}(\mathbf{x}) \le -L^*$.
+> This identifies the path of least statistical resistance to capital exhaustion, revealing hidden risk concentrations where correlated factor moves breach stop-loss limits far more easily than single-factor extremes.
+
+> [!question]- risk-expected-maximum-drawdown-analytics | How does expected maximum drawdown scale with strategy Sharpe ratio, volatility, and trading horizon under the Magdon-Ismail framework?
+> Under the Magdon-Ismail and Atiya formula for positive drift, expected maximum drawdown scales as $\mathbb{E}[\text{MDD}(T)] \approx \frac{\sigma}{2S} [\ln(S^2 T / 2) + 1.9635]$, growing only logarithmically with horizon $T$.
+> In contrast, when strategy drift collapses to zero ($S = 0$), expected maximum drawdown scales with the square root of time ($\mathbb{E}[\text{MDD}] \approx \sqrt{\pi / 2} \cdot \sigma \sqrt{T}$), illustrating how a sustained edge caps long-term drawdowns.
+
+> [!question]- risk-vanna-volga-pnl-attribution | Why are cross-Greeks Vanna and Volga essential in institutional options P&L attribution?
+> Standard second-order Taylor attribution with only Delta, Gamma, Theta, and Vega assumes asset price changes and implied volatility changes are independent and that vol changes affect option prices linearly.
+> Vanna ($\partial^2 V / \partial S \partial \sigma$) captures the change in Delta per unit move in volatility (or Vega per unit move in underlying), and Volga ($\partial^2 V / \partial \sigma^2$) captures the convexity of option price with respect to implied volatility, explaining skew dynamics and preventing large unexplained residuals during market gap moves.
+
+> [!question]- risk-black-scholes-daily-breakeven-rule-of-16 | Derive the daily break-even asset move for a delta-hedged option portfolio and explain the Rule of 16.
+> Under the Black-Scholes PDE with zero rates, Theta decay exactly offsets expected Gamma gains: $\Theta + \frac{1}{2}\sigma_{\text{imp}}^2 S^2 \Gamma = 0$.
+> Setting daily Gamma P&L $\frac{1}{2}\Gamma (\Delta S)^2$ equal to daily Theta decay $|\Theta_{\text{daily}}| = \frac{1}{2}\sigma_{\text{imp}}^2 S^2 \Gamma \Delta t$ yields $|\Delta S_{\text{break-even}}| = \sigma_{\text{imp}} S \sqrt{\Delta t}$.
+> Since $\sqrt{1/252} \approx 1/15.874 \approx 1/16$, the daily break-even move simplifies to the trader's Rule of 16: $|\Delta S| \approx \frac{\sigma_{\text{imp}}}{16} \times S$.
 
 > [!question]- risk-euler-allocation-homogeneity | State the mathematical condition required for Euler risk allocation to hold, and identify which risk measures qualify.
-> Euler allocation requires that the risk measure $\rho(\mathbf{w})$ be linearly homogeneous of degree 1: $\rho(c \mathbf{w}) = c \rho(\mathbf{w})$ for any $c > 0$. Portfolio standard deviation, Parametric VaR, and Expected Shortfall are degree-1 homogeneous, guaranteeing that the sum of Component Risks equals total portfolio risk exactly: $\sum w_i \frac{\partial \rho}{\partial w_i} = \rho(\mathbf{w})$.
+> Euler allocation requires that the risk measure $\rho(\mathbf{w})$ be linearly homogeneous of degree 1: $\rho(c \mathbf{w}) = c \rho(\mathbf{w})$ for any $c > 0$.
+> Portfolio standard deviation, Parametric VaR, and Expected Shortfall are degree-1 homogeneous, guaranteeing that the sum of Component Risks equals total portfolio risk exactly: $\sum w_i \frac{\partial \rho}{\partial w_i} = \rho(\mathbf{w})$.
 
 > [!question]- risk-almgren-chriss-urgency-parameter | In the Almgren-Chriss framework, what does the urgency parameter $\kappa = \sqrt{\lambda_{\text{risk}} \sigma^2 / \eta}$ dictate?
-> The urgency parameter $\kappa$ dictates the rate of trade liquidation. When risk aversion $\lambda_{\text{risk}}$ or asset volatility $\sigma^2$ is high relative to temporary impact cost $\eta$, $\kappa$ is large: the execution schedule aggressively front-loads sales to eliminate price volatility timing risk. When risk aversion is zero, $\kappa \to 0$ and the schedule collapses to a linear TWAP execution.
+> The urgency parameter $\kappa$ dictates the rate of trade liquidation.
+> When risk aversion $\lambda_{\text{risk}}$ or asset volatility $\sigma^2$ is high relative to temporary impact cost $\eta$, $\kappa$ is large: the execution schedule aggressively front-loads sales to eliminate price volatility timing risk.
+> When risk aversion is zero, $\kappa \to 0$ and the schedule collapses to a linear TWAP execution.
 
-> [!question]- risk-swap-vs-forward-exposure-geometry | Contrast the Expected Exposure profile of an interest rate swap with that of an FX forward contract.
-> An FX forward contract exhibits monotonically expanding exposure over time because no interim payments occur and underlying exchange rate variance grows proportional to $\sqrt{t}$. An interest rate swap exhibits a "hump-shaped" exposure profile: rate diffusion expands uncertainty early, but the remaining coupon annuity $A(t)$ amortizes toward zero at maturity, causing exposure to peak mid-life and drop to zero at final maturity.
+> [!question]- risk-lvar-spread-cost-and-scaling | How does Liquidity-Adjusted VaR (L-VaR) account for both exogenous spread costs and multi-day liquidation horizon?
+> L-VaR decomposes liquidity risk into two distinct penalties: exogenous spread cost $\frac{1}{2}(\bar{S} + z_{\alpha} \sigma_S) V$ reflecting the stochastic widening of bid-ask spreads in stressed markets, and an endogenous liquidation horizon multiplier $\sqrt{1 + \frac{1}{3}(L - 1)}$ applied to base VaR.
+> This horizon scaling accounts for unhedged price variance accumulated as the position is systematically unwound across $L$ days rather than liquidated instantaneously.
 
 > [!question]- risk-effective-epe-definition | What is Effective EPE under the Basel framework, and why was it introduced?
-> Effective EPE is the time-weighted average of Effective Expected Exposure ($\text{EEE}$) over the first year of a derivative contract, where $\text{EEE}(t) = \max(\text{EEE}(t - \Delta t), \text{EE}(t))$ enforces a non-decreasing envelope. It was introduced to prevent banks from artificially understating regulatory capital as short-dated contracts roll off, reflecting the commercial reality that banks continually replace maturing client hedges.
+> Effective EPE is the time-weighted average of Effective Expected Exposure ($\text{EEE}$) over the first year of a derivative contract, where $\text{EEE}(t) = \max(\text{EEE}(t - \Delta t), \text{EE}(t))$ enforces a non-decreasing envelope.
+> It was introduced to prevent banks from artificially understating regulatory capital as short-dated contracts roll off, reflecting the commercial reality that banks continually replace maturing client hedges.
 
 > [!question]- risk-dva-paradox-accounting | Explain the DVA paradox and why it creates controversial accounting profits.
-> Debit Valuation Adjustment (DVA) measures the expected profit to a bank if it defaults on its own negative mark-to-market liabilities. When a bank's credit rating is downgraded and its CDS spread widens, its cumulative default probability increases, causing DVA to expand. Under fair-value accounting (IFRS 13), this requires the bank to record mark-to-market accounting profits, artificially inflating earnings precisely when the institution is in severe distress.
+> Debit Valuation Adjustment (DVA) measures the expected profit to a bank if it defaults on its own negative mark-to-market liabilities.
+> When a bank's credit rating is downgraded and its CDS spread widens, its cumulative default probability increases, causing DVA to expand.
+> Under fair-value accounting (IFRS 13), this requires the bank to record mark-to-market accounting profits, artificially inflating earnings precisely when the institution is in severe distress.
+
+> [!question]- risk-pca-yield-curve-factor-shocks | How are principal components interpreted in yield curve modeling, and how are factor scenario shocks constructed?
+> The first three principal components explain over 99% of yield curve variance and map to Level (parallel shift, all eigenvector loadings positive and near-equal), Slope (twist/steepening, opposite signs between short and long tenors), and Curvature (butterfly/bend, middle tenors have opposite sign to ends).
+> A factor scenario shock of $k$ standard deviations along component $i$ is constructed as $\Delta \mathbf{y} = k \sqrt{\lambda_i} \mathbf{v}_i$, where $\lambda_i$ is the eigenvalue and $\mathbf{v}_i$ is the eigenvector.
 
 > [!question]- risk-fva-mechanics-dealer | Why does an uncollateralized client swap hedged with a collateralized interdealer swap generate FVA?
-> When market rates move against the street hedge, the dealer must post cash variation margin to the clearing broker. Because the uncollateralized corporate client posts no collateral, the dealer must borrow cash from its internal treasury at an unsecured funding spread over OIS ($r_{\text{OIS}} + s_{\text{funding}}$). The dealer posts this cash and earns only OIS, incurring a continuous funding drag equal to $s_{\text{funding}} \times \text{Exposure}$, which is priced as FVA.
+> When market rates move against the street hedge, the dealer must post cash variation margin to the clearing broker.
+> Because the uncollateralized corporate client posts no collateral, the dealer must borrow cash from its internal treasury at an unsecured funding spread over OIS ($r_{\text{OIS}} + s_{\text{funding}}$).
+> The dealer posts this cash and earns only OIS, incurring a continuous funding drag equal to $s_{\text{funding}} \times \text{Exposure}$, which is priced as FVA.
 
 > [!question]- risk-mva-regulatory-driver | What regulatory development made Margin Valuation Adjustment (MVA) an essential pricing component?
-> The implementation of the global Uncleared Margin Rules (UMR) by the BCBS-IOSCO framework mandated that financial institutions post bilateral, segregated Initial Margin (IM) on non-cleared derivatives. Because initial margin is locked in third-party custodian accounts and cannot be reused, dealers must raise term funding to maintain these multi-million dollar reserves, creating lifetime financing costs priced as MVA.
+> The implementation of the global Uncleared Margin Rules (UMR) by the BCBS-IOSCO framework mandated that financial institutions post bilateral, segregated Initial Margin (IM) on non-cleared derivatives.
+> Because initial margin is locked in third-party custodian accounts and cannot be reused, dealers must raise term funding to maintain these multi-million dollar reserves, creating lifetime financing costs priced as MVA.
 
-> [!question]- risk-sr-11-7-three-lines-of-defense | What are the responsibilities of the Second Line of Defense under Federal Reserve SR 11-7?
-> Under SR 11-7, the Second Line of Defense is the independent Model Risk Management / Validation group. It is organizationally separate from trading desks and is responsible for providing unbiased "effective challenge" to model designs, independently verifying mathematical derivations, replicating code, benchmarking against challenger models, testing boundary stress conditions, and maintaining the firm's authoritative Model Inventory.
+> [!question]- risk-kva-capital-valuation-adjustment | What is Capital Valuation Adjustment (KVA), and how is it priced into OTC derivatives?
+> KVA is the present value of the cost of holding regulatory capital (under SA-CCR, CVA capital charges, and FRTB market risk) over the entire lifetime of a transaction.
+> It is calculated as $\text{KVA} = \text{CoC} \int_0^T P(0, t) \mathbb{E}[\text{Capital}(t)] dt$, where $\text{CoC}$ is the hurdle return on equity demanded by bank shareholders (typically 8-12%) above the risk-free rate, reflecting the opportunity cost of regulatory equity commitment.
 
 ## Further reading
 
@@ -728,6 +766,7 @@ The bank must charge $\$227,500$ upfront to provide shareholders with their requ
 
 ## In this repo and SDE-Interview-Prep
 
+- Python reference implementation of risk problem set solutions: [risk_problem_set.py](code/risk_problem_set.py).
 - Python reference implementation of exposure profiles and XVA: [exposure_xva.py](code/exposure_xva.py).
 - Python reference implementation of risk analytics and bumping: [risk_analytics.py](code/risk_analytics.py).
 - Counterparty credit risk analytics: [Counterparty Credit Risk Analytics](14-Counterparty-Credit-Risk-Analytics.md).

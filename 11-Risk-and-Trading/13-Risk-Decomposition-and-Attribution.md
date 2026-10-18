@@ -2,7 +2,7 @@
 type: concept
 track: [quant-trader, quant-research, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [var-and-expected-shortfall]
 est_hours: 4
 sources: [Philippe Jorion - Value at Risk chapter 7, Carol Alexander - Market Risk Analysis Volume IV chapter 2, Thierry Roncalli - Introduction to Risk Parity and Budgeting, Dirk Tasche - Euler Allocation Method for Risk Capital (2008)]
@@ -273,6 +273,24 @@ Adding $\$5\text{M}$ of gold expands portfolio 95% VaR by approximately $\$199,3
 > [!question]- risk-expected-shortfall-euler-decomposition | Does Expected Shortfall satisfy Euler's allocation theorem?
 > Yes. Expected Shortfall is a coherent risk measure and is strictly positive homogeneous of degree 1 ($\text{ES}(c\mathbf{w}) = c\text{ES}(\mathbf{w})$). Its component risk is given by $\text{CES}_i = w_i \frac{\partial \text{ES}}{\partial w_i} = w_i \mathbb{E}[-r_i \mid r_p \le -\text{VaR}_p]$, representing the expected loss of asset $i$ conditional on the portfolio experiencing a tail loss.
 
+> [!question]- risk-euler-decomposition-sum-proof | Prove that the sum of Component VaRs across all assets equals total portfolio VaR.
+> Component VaR is defined as $\text{CVaR}_i = w_i \text{MVaR}_i = w_i \frac{\partial \text{VaR}_p}{\partial w_i} = w_i \beta_i \text{VaR}_p$. Summing across all $N$ assets yields $\sum_{i=1}^N \text{CVaR}_i = \text{VaR}_p \sum_{i=1}^N w_i \beta_i$. Because $\sum_{i=1}^N w_i \beta_i = \sum_{i=1}^N w_i \frac{\text{Cov}(r_i, r_p)}{\sigma_p^2} = \frac{\text{Cov}(\sum w_i r_i, r_p)}{\sigma_p^2} = \frac{\text{Cov}(r_p, r_p)}{\sigma_p^2} = \frac{\sigma_p^2}{\sigma_p^2} = 1.0$, the sum of Component VaRs equals total portfolio VaR with zero residual.
+
+> [!question]- risk-risk-parity-coordinate-descent | How does cyclical coordinate descent solve Risk Parity weights when asset correlations are non-zero?
+> For general non-zero correlations, the Equal Risk Contribution condition $w_i (\mathbf{\Sigma} \mathbf{w})_i = \sigma_p^2 / N$ lacks a closed-form analytical solution. Cyclical coordinate descent iterates through each asset $i$, updating weight $w_i$ multiplicatively via $w_i \leftarrow w_i \sqrt{\frac{1 / N}{\text{RC}_i(\mathbf{w})}}$, followed by simplex normalization $\sum w_i = 1$. This contracts monotonically toward the unique convex ERC minimum.
+
+> [!question]- risk-incremental-vs-marginal-var-derivation | Derive the linear relationship connecting Incremental VaR to Marginal VaR for small trades.
+> Incremental VaR is the discrete change $\Delta \text{VaR}_p = \text{VaR}_p(\mathbf{w} + \Delta \mathbf{w}) - \text{VaR}_p(\mathbf{w})$. Taking the first-order Taylor expansion of $\text{VaR}_p$ around $\mathbf{w}$ yields $\text{VaR}_p(\mathbf{w} + \Delta \mathbf{w}) \approx \text{VaR}_p(\mathbf{w}) + \sum_{i=1}^N \frac{\partial \text{VaR}_p}{\partial w_i} \Delta w_i$. Subtracting $\text{VaR}_p(\mathbf{w})$ gives $\text{IVaR} \approx \sum_{i=1}^N \text{MVaR}_i \cdot \Delta w_i = \sum_{i=1}^N \beta_i \text{VaR}_p \cdot \Delta w_i$.
+
+> [!question]- risk-factor-euler-decomposition-formula | State the Euler risk decomposition formula across systematic risk factors and idiosyncratic variance.
+> Under a linear multi-factor model $r = \mathbf{B} f + \epsilon$, portfolio variance is $\sigma_p^2 = \mathbf{x}^T \mathbf{\Sigma}_f \mathbf{x} + \mathbf{w}^T \mathbf{D}_{\epsilon} \mathbf{w}$, where $\mathbf{x} = \mathbf{B}^T \mathbf{w}$ is factor exposure. By Euler's theorem, total risk decomposes into systematic factor contributions and idiosyncratic residual: $\sigma_p = \sum_{k=1}^K x_k \frac{(\mathbf{\Sigma}_f \mathbf{x})_k}{\sigma_p} + \sum_{i=1}^N w_i \frac{w_i \sigma_{\epsilon, i}^2}{\sigma_p}$.
+
+> [!question]- risk-negative-beta-hedging-asset-cvar | Explain mathematically why an asset with negative covariance produces a negative Component VaR and reduces total risk.
+> If an asset has negative covariance with the portfolio ($\text{Cov}(r_i, r_p) < 0$), its beta is negative ($\beta_i < 0$). In the Euler decomposition $\text{CVaR}_i = w_i \beta_i \text{VaR}_p$, a positive position ($w_i > 0$) combined with $\beta_i < 0$ produces a negative dollar contribution ($\text{CVaR}_i < 0$). This reduces the required sum of risks across remaining positions, reflecting diversification benefit.
+
+> [!question]- risk-expected-shortfall-euler-risk-contribution | Formulate the Component Expected Shortfall of an asset as a conditional tail expectation.
+> Because Expected Shortfall is linear in expectation conditional on tail losses exceeding VaR, its Euler partial derivative is $\frac{\partial \text{ES}_{\alpha}}{\partial w_i} = \mathbb{E}[-r_i \mid r_p \le -\text{VaR}_{\alpha}]$. Multiplying by position weight $w_i$ gives the Component Expected Shortfall: $\text{CES}_i = w_i \mathbb{E}[-r_i \mid r_p \le -\text{VaR}_{\alpha}]$, measuring the dollar loss contributed by asset $i$ precisely during tail market crashes.
+
 ## Further reading
 
 - Philippe Jorion, *Value at Risk: The New Benchmark for Managing Financial Risk*, Chapter 7: "Portfolio Risk: Analytical Methods".
@@ -286,4 +304,5 @@ Adding $\$5\text{M}$ of gold expands portfolio 95% VaR by approximately $\$199,3
 - Value at Risk and Expected Shortfall mathematics: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md).
 - Risk factor taxonomy and covariance modeling: [Risk Factor Modelling](10-Risk-Factor-Modelling.md).
 - Python reference implementation of risk analytics and scenarios: [risk_analytics.py](code/risk_analytics.py).
+- Numerical verification of Euler decomposition and risk parity: [risk_decomposition.py](code/risk_decomposition.py).
 - Drawdown management and risk thresholds: [Drawdowns and Risk Limits](05-Drawdowns-and-Risk-Limits.md).

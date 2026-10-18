@@ -2,7 +2,7 @@
 type: concept
 track: [quant-research, quant-dev, quant-risk]
 tier: senior
-status: draft
+status: solid
 prereqs: [counterparty-credit-risk-analytics]
 est_hours: 6
 sources: [Jon Gregory - The xVA Challenge Counterparty Credit Risk Funding Collateral and Capital, Andrew Green - XVA Desks A New Order for Derivatives, Leif Andersen and Mark Piterbarg - Interest Rate Modeling chapters 18-20, Vladimir Piterbarg - Funding Beyond Discounting (2010)]
@@ -157,8 +157,10 @@ To manage these complex multi-factor valuation adjustments, global investment ba
 $$\Delta \text{XVA} = \text{XVA}(\text{Netting Set} \cup \text{New Trade}) - \text{XVA}(\text{Netting Set})$$
 
 The sales desk adds $\Delta \text{XVA}$ to the client quote and transfers the credit/funding risk to the XVA desk.
-2. **CVA Market Risk Hedging:** As interest rates or asset prices move, Expected Exposure fluctuates, altering CVA. The XVA desk delta-hedges market Greeks ($\frac{\partial \text{CVA}}{\partial S}$, $\frac{\partial \text{CVA}}{\partial r}$) in the liquid swap and equity futures markets.
-3. **CVA Credit Risk Hedging:** As counterparty credit spreads widen, CVA increases. The XVA desk hedges credit delta ($\frac{\partial \text{CVA}}{\partial S_{\text{CDS}}}$) by buying single-name CDS or proxy index baskets (CDX IG, iTraxx Europe).
+2. **CVA Market Risk Hedging:** As interest rates or asset prices move, Expected Exposure fluctuates, altering CVA.
+The XVA desk delta-hedges market Greeks ($\frac{\partial \text{CVA}}{\partial S}$, $\frac{\partial \text{CVA}}{\partial r}$) in the liquid swap and equity futures markets.
+3. **CVA Credit Risk Hedging:** As counterparty credit spreads widen, CVA increases.
+The XVA desk hedges credit delta ($\frac{\partial \text{CVA}}{\partial S_{\text{CDS}}}$) by buying single-name CDS or proxy index baskets (CDX IG, iTraxx Europe).
 
 ## Worked examples
 
@@ -274,6 +276,24 @@ For a swap notional of $N = \$10,000,000$ and the midpoint annuity proxy $A = T 
 > [!question]- risk-nested-monte-carlo-mva-challenge | Why does computing MVA pose a massive nested Monte Carlo computational challenge?
 > Calculating MVA requires knowing the Expected Initial Margin $\mathbb{E}[\text{IM}(t)]$ at future dates $t$. Under ISDA SIMM, Initial Margin at time $t$ is calculated from portfolio sensitivities (Greeks) at time $t$. Computing future Greeks traditionally requires an inner simulation across the yield surface for every outer scenario path, creating an $O(N_{\text{outer}} \times N_{\text{inner}})$ nested simulation bottleneck that necessitates AAD or machine learning regression.
 
+> [!question]- risk-xva-unilateral-vs-bilateral-integral | Contrast the mathematical integrals for unilateral CVA versus bilateral CVA and DVA.
+> Unilateral CVA integrates counterparty default loss assuming the bank is default-free: $\text{CVA} = (1 - R_C) \int_0^T P(0, t) \text{EE}(t) d\text{PD}_C(t)$. Bilateral accounting introduces the bank's own default option through Debit Valuation Adjustment: $\text{DVA} = (1 - R_B) \int_0^T P(0, t) \text{ENE}(t) d\text{PD}_B(t)$. Net bilateral fair value adjustment equals $\text{DVA} - \text{CVA}$, directly deducting net credit exposure from risk-free mark-to-market.
+
+> [!question]- risk-fca-vs-fba-asymmetric-pricing | Why do institutional dealers routinely charge clients FCA while zeroing or dampening FBA credits?
+> Funding Cost Adjustment (FCA) is an actual cash outflow paid to corporate treasury when borrowing uncollateralized funds to post variation margin on street hedges. Funding Benefit Adjustment (FBA) represents a hypothetical treasury saving from receiving street collateral. In practice, dealers cannot reliably monetize incoming collateral unless treasury has an immediate commercial borrowing deficit, leading risk committees to conservatively price FCA while heavily haircutting FBA.
+
+> [!question]- risk-kva-capital-hurdle-coc | Formulate the lifetime KVA integral and identify the typical shareholder Cost of Capital hurdle rate.
+> Capital Valuation Adjustment prices the shareholder return demanded for holding regulatory equity capital: $\text{KVA} = \text{CoC} \int_0^T P(0, t) \mathbb{E}[\text{Capital}(t)] dt$. Here, $\mathbb{E}[\text{Capital}(t)]$ reflects forward-simulated Basel regulatory capital requirements (SA-CCR, CVA capital, and FRTB market risk), and $\text{CoC}$ represents the hurdle rate above the risk-free return demanded by equity investors (historically calibrated between 8% and 12%).
+
+> [!question]- risk-pre-trade-incremental-xva-workflow | How does an enterprise XVA desk compute incremental XVA for new client quotes at the netting set level?
+> The XVA engine simulates future portfolio exposure across the existing counterparty netting set, computing base XVA. It then inserts the prospective trade and re-evaluates the entire netting set, calculating incremental charge $\Delta \text{XVA} = \text{XVA}(\text{Netting Set} \cup \text{New Trade}) - \text{XVA}(\text{Netting Set})$. If the new trade offsets existing market delta, $\Delta \text{XVA}$ can be negative, allowing sales to offer an aggressive, risk-reducing quote.
+
+> [!question]- risk-cva-credit-spread-delta-hedging | How does an XVA desk hedge counterparty credit spread risk, and what instruments are used?
+> The sensitivity of CVA to counterparty credit spreads is credit delta: $\frac{\partial \text{CVA}}{\partial S_{\text{CDS}}} \approx (1 - R_C) \int_0^T P(0, t) \text{EE}(t) \frac{\partial d\text{PD}_C(t)}{\partial S_{\text{CDS}}}$. The XVA desk hedges this risk by purchasing single-name CDS protection on the counterparty or, when illiquid, shorting liquid credit index tranches (CDX Investment Grade or iTraxx Europe) weighted by sector and rating betas.
+
+> [!question]- risk-jump-to-default-cva-risk | What is jump-to-default risk in CVA management, and why is infinitesimal delta hedging insufficient?
+> Infinitesimal CDS spread delta hedging protects against continuous, small credit spread fluctuations. If a counterparty suddenly defaults without warning (a jump-to-default), the CDS spread jumps to infinity and the full replacement exposure $\text{LGD} \times \max(V, 0)$ is immediately realized. A continuous delta hedge sized only for local spread moves suffers a catastrophic loss, requiring the desk to hold jump-to-default notional protection.
+
 ## Further reading
 
 - Jon Gregory, *The xVA Challenge: Counterparty Credit Risk, Funding, Collateral and Capital*, 4th Edition.
@@ -287,4 +307,5 @@ For a swap notional of $N = \$10,000,000$ and the midpoint annuity proxy $A = T 
 - Counterparty credit risk analytics: [Counterparty Credit Risk Analytics](14-Counterparty-Credit-Risk-Analytics.md).
 - Multi-curve and CSA discounting: [Multi-Curve and CSA Discounting](../06-Fixed-Income-and-Asset-Classes/13-Multi-Curve-and-CSA-Discounting.md).
 - Python reference implementation of bilateral CVA and DVA: [exposure_xva.py](code/exposure_xva.py).
+- Numerical verification of bilateral XVA, FVA, MVA, and KVA: [risk_xva_pricing.py](code/risk_xva_pricing.py).
 - Risk-neutral Monte Carlo simulation: [Scenario Generation](11-Scenario-Generation.md).

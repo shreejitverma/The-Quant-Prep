@@ -2,7 +2,7 @@
 type: concept
 track: [quant-research, quant-dev, quant-risk]
 tier: senior
-status: draft
+status: solid
 prereqs: [multi-curve-and-csa-discounting, monte-carlo-pricing-and-variance-reduction]
 est_hours: 6
 sources: [Jon Gregory - Counterparty Credit Risk and Credit Value Adjustment chapters 1-8, Michael Pykhtin - Counterparty Credit Risk Modelling Risk Books, Basel Committee on Banking Supervision - CRE50 to CRE54]
@@ -35,7 +35,8 @@ CCR is mitigated through close-out netting under ISDA Master Agreements and dyna
 Counterparty Credit Risk (CCR) arises in bilateral, uncleared over-the-counter derivatives contracts (e.g., interest rate swaps, FX forwards, cross-currency swaps, swaptions).
 CCR differs fundamentally from cash bond or loan credit risk:
 
-1. **Bilateral Uncertainty:** A bank holding a corporate bond has unilateral credit exposure equal to par value plus accrued coupon. In an interest rate swap, if interest rates rise, the swap may have positive value to the bank (credit risk to the counterparty); if rates fall, it becomes a liability (counterparty has credit risk to the bank).
+1. **Bilateral Uncertainty:** A bank holding a corporate bond has unilateral credit exposure equal to par value plus accrued coupon.
+In an interest rate swap, if interest rates rise, the swap may have positive value to the bank (credit risk to the counterparty); if rates fall, it becomes a liability (counterparty has credit risk to the bank).
 2. **Stochastic Exposure:** Future exposure is not fixed; it is an endogenous stochastic process coupled directly to market rates, equities, and FX.
 3. **Double Default Interplay:** Default occurs only if the counterparty defaults at a future time $t$ when the market value of the contract is positive to the surviving bank ($V(t) > 0$).
 
@@ -275,6 +276,24 @@ $$\text{EAD} = \alpha \times \text{EEPE} = 1.4 \times \$102,386.87 \approx \$143
 > [!question]- risk-simulation-measure-pfe-vs-cva | Why is Potential Future Exposure (PFE) simulated under the physical measure $\mathbb{P}$ while CVA is simulated under the risk-neutral measure $\mathbb{Q}$?
 > PFE measures actual real-world potential credit risk for capital and limit allocation, requiring historical drift and realistic economic dynamics (the physical measure $\mathbb{P}$). CVA is an accounting valuation adjustment and pricing deduction that must be actively hedged with financial derivatives in market markets, requiring risk-neutral pricing expectations (the pricing measure $\mathbb{Q}$).
 
+> [!question]- risk-ccr-effective-eepe-regulatory-multiplier | What is the Basel regulatory multiplier $\alpha = 1.4$ applied to Effective EPE, and what risks does it compensate for?
+> Under the Internal Model Method (IMM), Basel defines regulatory Exposure at Default as $\text{EAD} = \alpha \times \text{Effective EPE}$, where $\alpha = 1.4$. This statutory scalar accounts for model risk, correlation between market exposure and counterparty credit deterioration (Wrong-Way Risk), concentration risk across large dealer counterparties, and the systemic risk of interconnected OTC networks during liquidity crises.
+
+> [!question]- risk-cross-currency-swap-exposure-diffusion | Contrast the exposure profile of a cross-currency swap with that of a single-currency interest rate swap.
+> A single-currency interest rate swap exhibits a hump-shaped exposure profile that decays to zero at maturity because the underlying floating rate diffuses while remaining annuity payments amortize. A cross-currency swap involves final exchange of notionals in different currencies, so foreign exchange diffusion dominates over the entire tenor, causing exposure to grow monotonically toward maturity similar to an FX forward.
+
+> [!question]- risk-specific-wrong-way-risk-treatment | How does the Basel framework treat transactions with Specific Wrong-Way Risk (SWWR)?
+> When a transaction exhibits Specific Wrong-Way Risk (e.g., buying CDS protection on an entity from its parent or affiliate, or lending against collateral issued by the borrower), the Basel framework prohibits the use of internal modeling (IMM). The transaction is decoupled from the netting set and assigned an explicit exposure equal to full unhedged mark-to-market plus haircut with zero netting relief.
+
+> [!question]- risk-mpor-margin-period-of-risk-regulatory-windows | What are the regulatory Basel MPOR windows for bilateral uncleared, illiquid, and centrally cleared netting sets?
+> The Margin Period of Risk (MPOR) is the time elapsed between collateral call default and successful portfolio re-hedging. Under Basel regulations: centrally cleared derivatives have a minimum MPOR of 5 business days; standard bilateral uncleared netting sets have a floor of 10 business days; large netting sets (over 5,000 trades) or portfolios containing illiquid collateral/derivatives require a 20-business-day MPOR.
+
+> [!question]- risk-isda-simm-mva-sensitivities-driver | How does ISDA SIMM calculate initial margin from trade sensitivities, and why does it drive MVA?
+> ISDA SIMM calculates initial margin by aggregating trade first-order delta and vega sensitivities into predefined regulatory risk buckets using prescribed risk weights and intra-bucket correlation matrices: $\text{IM} = \sqrt{\mathbf{s}^T \mathbf{\Psi} \mathbf{s}} + \text{Curvature}$. Because posting unencumbered cash or treasury collateral incurs financing spreads over OIS, funding this margin over a trade's lifetime generates Margin Valuation Adjustment (MVA).
+
+> [!question]- risk-close-out-netting-bankruptcy-cherry-picking | Why is statutory close-out netting essential to prevent cherry-picking by bankruptcy trustees?
+> Without legally enforceable close-out netting, a bankruptcy trustee can "cherry-pick" contracts: demanding full payment on winning trades where the bank owes money while defaulting on losing trades where the counterparty owes the bank. Enforceable close-out netting under an ISDA Master Agreement collapses all reciprocal contracts into a single net creditor balance, preventing asymmetric wealth transfer.
+
 ## Further reading
 
 - Jon Gregory, *Counterparty Credit Risk and Credit Value Adjustment: A Continuing Challenge for Global Financial Markets*, Chapters 1-8.
@@ -288,4 +307,5 @@ $$\text{EAD} = \alpha \times \text{EEPE} = 1.4 \times \$102,386.87 \approx \$143
 - Multi-curve and CSA discounting: [Multi-Curve and CSA Discounting](../06-Fixed-Income-and-Asset-Classes/13-Multi-Curve-and-CSA-Discounting.md).
 - Credit default swaps and hazard rates: [Credit and CDS](../06-Fixed-Income-and-Asset-Classes/06-Credit-and-CDS.md).
 - Python reference implementation of exposure profiles and netting: [exposure_xva.py](code/exposure_xva.py).
+- Numerical verification of counterparty exposure and Effective EPE: [risk_ccr_analytics.py](code/risk_ccr_analytics.py).
 - Credit Value Adjustment and XVA framework: [XVA](15-XVA.md).
