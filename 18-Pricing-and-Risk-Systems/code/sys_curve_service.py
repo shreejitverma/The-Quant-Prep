@@ -17,10 +17,10 @@ Run it with `python 18-Pricing-and-Risk-Systems/code/sys_curve_service.py`.
 
 from __future__ import annotations
 
+import bisect
 import math
 from collections import deque
-
-import numpy as np
+from collections.abc import Callable
 
 QUOTED: list[str] = []
 
@@ -39,66 +39,70 @@ def quoted(label: str, value: float, expected: float, decimals: int) -> float:
 # ============================================================================
 
 
-def bootstrap(q: np.ndarray) -> np.ndarray:
+def bootstrap(q: list[float]) -> list[float]:
     """q[0] = 1y continuously compounded zero rate; q[1], q[2] = 2y and 3y annual par swap rates. Returns D1, D2, D3."""
     d1 = math.exp(-q[0] * 1.0)
     d2 = (1.0 - q[1] * d1) / (1.0 + q[1])
     d3 = (1.0 - q[2] * (d1 + d2)) / (1.0 + q[2])
-    return np.array([d1, d2, d3])
+    return [d1, d2, d3]
 
 
-def model_quotes(d: np.ndarray) -> np.ndarray:
+def model_quotes(d: list[float]) -> list[float]:
     """F(D): the quotes implied by discount factors (the calibration targets)."""
-    return np.array([-math.log(d[0]) / 1.0, (1 - d[1]) / (d[0] + d[1]), (1 - d[2]) / (d[0] + d[1] + d[2])])
+    return [-math.log(d[0]) / 1.0, (1 - d[1]) / (d[0] + d[1]), (1 - d[2]) / (d[0] + d[1] + d[2])]
 
 
-def jacobian(d: np.ndarray) -> np.ndarray:
+def jacobian(d: list[float]) -> list[list[float]]:
     """Analytic J_ij = dF_i/dD_j."""
     a2, a3 = d[0] + d[1], d[0] + d[1] + d[2]
     q2, q3 = (1 - d[1]) / a2, (1 - d[2]) / a3
-    return np.array(
-        [
-            [-1.0 / d[0], 0.0, 0.0],
-            [-q2 / a2, -(1 + q2) / a2, 0.0],
-            [-q3 / a3, -q3 / a3, -(1 + q3) / a3],
-        ]
-    )
+    return [
+        [-1.0 / d[0], 0.0, 0.0],
+        [-q2 / a2, -(1 + q2) / a2, 0.0],
+        [-q3 / a3, -q3 / a3, -(1 + q3) / a3],
+    ]
 
 
-def zero_coupon_pv(d: np.ndarray, notional: float, t: float = 2.5) -> float:
+def zero_coupon_pv(d: list[float], notional: float, t: float = 2.5) -> float:
     """PV of a zero-coupon payment at t between pillars 2 and 3, log-linear in discount factor."""
     w = (t - 2.0) / 1.0
     return notional * math.exp((1 - w) * math.log(d[1]) + w * math.log(d[2]))
 
 
-def zero_coupon_grad(d: np.ndarray, notional: float, t: float = 2.5) -> np.ndarray:
+def zero_coupon_grad(d: list[float], notional: float, t: float = 2.5) -> list[float]:
     w = (t - 2.0) / 1.0
     v = zero_coupon_pv(d, notional, t)
-    return np.array([0.0, v * (1 - w) / d[1], v * w / d[2]])
+    return [0.0, v * (1 - w) / d[1], v * w / d[2]]
 
 
-def receiver_swap_pv(d: np.ndarray, notional: float, k: float) -> float:
+def receiver_swap_pv(d: list[float], notional: float, k: float) -> float:
     """3y annual receiver swap: receive fixed k, pay floating (floating leg = 1 - D3 per unit notional)."""
-    return notional * (k * d.sum() - (1 - d[2]))
+    return notional * (k * sum(d) - (1 - d[2]))
 
 
-def receiver_swap_grad(notional: float, k: float) -> np.ndarray:
-    return notional * np.array([k, k, k + 1.0])
+def receiver_swap_grad(notional: float, k: float) -> list[float]:
+    return [notional * k, notional * k, notional * (k + 1.0)]
 
 
-def quote_sensitivity(grad_d: np.ndarray, j: np.ndarray) -> np.ndarray:
-    """dV/dq = (dD/dq)^T dV/dD with dD/dq = J^{-1}; solve J^T x = dV/dD (triangular, so forward/back substitution)."""
-    return np.linalg.solve(j.T, grad_d)
+def quote_sensitivity(grad_d: list[float], j: list[list[float]]) -> list[float]:
+    """dV/dq = (dD/dq)^T dV/dD with dD/dq = J^{-1}; solve J^T x = dV/dD (upper triangular back substitution)."""
+    # [ j[0][0]  j[1][0]  j[2][0] ] [x0]   [g0]
+    # [    0     j[1][1]  j[2][1] ] [x1] = [g1]
+    # [    0        0     j[2][2] ] [x2]   [g2]
+    x2 = grad_d[2] / j[2][2]
+    x1 = (grad_d[1] - j[2][1] * x2) / j[1][1]
+    x0 = (grad_d[0] - j[1][0] * x1 - j[2][0] * x2) / j[0][0]
+    return [x0, x1, x2]
 
 
-def bump_sensitivity(pv, q: np.ndarray, h: float = 1e-6) -> np.ndarray:
+def bump_sensitivity(pv: Callable[[list[float]], float], q: list[float], h: float = 1e-6) -> list[float]:
     """Central differences of PV to each quote, re-bootstrapping the curve for every bump."""
-    out = np.zeros(len(q))
+    out = []
     for k in range(len(q)):
-        up, dn = q.copy(), q.copy()
+        up, dn = list(q), list(q)
         up[k] += h
         dn[k] -= h
-        out[k] = (pv(bootstrap(up)) - pv(bootstrap(dn))) / (2 * h)
+        out.append((pv(bootstrap(up)) - pv(bootstrap(dn))) / (2 * h))
     return out
 
 
@@ -108,23 +112,42 @@ def bump_sensitivity(pv, q: np.ndarray, h: float = 1e-6) -> np.ndarray:
 
 
 class NaturalSpline:
-    def __init__(self, x: np.ndarray, y: np.ndarray) -> None:
+    def __init__(self, x: list[float], y: list[float]) -> None:
         n = len(x)
-        h = np.diff(x)
-        a = np.zeros((n, n))
-        b = np.zeros(n)
-        a[0, 0] = a[-1, -1] = 1.0
-        for i in range(1, n - 1):
-            a[i, i - 1], a[i, i], a[i, i + 1] = h[i - 1], 2 * (h[i - 1] + h[i]), h[i]
-            b[i] = 3 * ((y[i + 1] - y[i]) / h[i] - (y[i] - y[i - 1]) / h[i - 1])
-        self.x, self.y, self.h = x, y, h
-        self.c = np.linalg.solve(a, b)
+        h = [x[i + 1] - x[i] for i in range(n - 1)]
+        m = n - 2
+        diag = [2.0 * (h[i - 1] + h[i]) for i in range(1, n - 1)]
+        sub = [h[i] for i in range(1, n - 2)]
+        sup = [h[i] for i in range(1, n - 2)]
+        rhs = [3.0 * ((y[i + 1] - y[i]) / h[i] - (y[i] - y[i - 1]) / h[i - 1]) for i in range(1, n - 1)]
+
+        cp = [0.0] * (m - 1)
+        dp = [0.0] * m
+        cp[0] = sup[0] / diag[0]
+        dp[0] = rhs[0] / diag[0]
+        for i in range(1, m - 1):
+            denom = diag[i] - sub[i - 1] * cp[i - 1]
+            cp[i] = sup[i] / denom
+            dp[i] = (rhs[i] - sub[i - 1] * dp[i - 1]) / denom
+        denom = diag[m - 1] - sub[m - 2] * cp[m - 2]
+        dp[m - 1] = (rhs[m - 1] - sub[m - 2] * dp[m - 2]) / denom
+
+        c_interior = [0.0] * m
+        c_interior[m - 1] = dp[m - 1]
+        for i in range(m - 2, -1, -1):
+            c_interior[i] = dp[i] - cp[i] * c_interior[i + 1]
+
+        self.x = x
+        self.y = y
+        self.h = h
+        self.c = [0.0] + c_interior + [0.0]
 
     def _seg(self, t: float) -> tuple[int, float, float, float]:
-        i = int(min(max(np.searchsorted(self.x, t) - 1, 0), len(self.x) - 2))
+        idx = bisect.bisect_right(self.x, t) - 1
+        i = int(min(max(idx, 0), len(self.x) - 2))
         h, c = self.h[i], self.c
-        bb = (self.y[i + 1] - self.y[i]) / h - h * (2 * c[i] + c[i + 1]) / 3
-        dd = (c[i + 1] - c[i]) / (3 * h)
+        bb = (self.y[i + 1] - self.y[i]) / h - h * (2 * c[i] + c[i + 1]) / 3.0
+        dd = (c[i + 1] - c[i]) / (3.0 * h)
         return i, bb, dd, t - self.x[i]
 
     def value(self, t: float) -> float:
@@ -141,10 +164,18 @@ def spline_forward(s: NaturalSpline, t: float) -> float:
     return s.value(t) + t * s.deriv(t)
 
 
-def flat_forward_zero(x: np.ndarray, y: np.ndarray, t: float) -> float:
+def flat_forward_zero(x: list[float], y: list[float], t: float) -> float:
     """Zero rate under linear interpolation of log discount factors (piecewise flat forwards)."""
-    lx = -y * x
-    return -float(np.interp(t, x, lx)) / t
+    lx = [-y_i * x_i for x_i, y_i in zip(x, y, strict=True)]
+    if t <= x[0]:
+        val = lx[0]
+    elif t >= x[-1]:
+        val = lx[-1]
+    else:
+        i = bisect.bisect_right(x, t) - 1
+        w = (t - x[i]) / (x[i + 1] - x[i])
+        val = lx[i] + w * (lx[i + 1] - lx[i])
+    return -val / t
 
 
 # ============================================================================
@@ -241,81 +272,93 @@ def run_tests() -> None:
     print("Curve and surface service checks")
 
     print("  Example 1: three-pillar bootstrap")
-    q = np.array([0.04, 0.045, 0.05])
+    q = [0.04, 0.045, 0.05]
     d = bootstrap(q)
     quoted("D1", d[0], 0.960789, 6)
     quoted("D2", d[1], 0.915564, 6)
     quoted("D3", d[2], 0.863031, 6)
     quoted("2y zero rate (%)", -math.log(d[1]) / 2 * 100, 4.4107, 4)
     quoted("3y zero rate (%)", -math.log(d[2]) / 3 * 100, 4.9102, 4)
-    assert np.allclose(model_quotes(d), q, atol=1e-15)
+    mq = model_quotes(d)
+    for q_calc, q_exp in zip(mq, q, strict=True):
+        assert abs(q_calc - q_exp) < 1e-14
     j = jacobian(d)
-    quoted("J11 = -1/D1", j[0, 0], -1.040811, 6)
-    quoted("J21 = -q2/(D1 + D2)", j[1, 0], -0.023983, 6)
-    quoted("J22 = -(1 + q2)/(D1 + D2)", j[1, 1], -0.556931, 6)
-    quoted("J31 = J32 = -q3/(D1 + D2 + D3)", j[2, 0], -0.018252, 6)
-    quoted("J33 = -(1 + q3)/(D1 + D2 + D3)", j[2, 2], -0.383298, 6)
+    quoted("J11 = -1/D1", j[0][0], -1.040811, 6)
+    quoted("J21 = -q2/(D1 + D2)", j[1][0], -0.023983, 6)
+    quoted("J22 = -(1 + q2)/(D1 + D2)", j[1][1], -0.556931, 6)
+    quoted("J31 = J32 = -q3/(D1 + D2 + D3)", j[2][0], -0.018252, 6)
+    quoted("J33 = -(1 + q3)/(D1 + D2 + D3)", j[2][2], -0.383298, 6)
     quoted("D1 + D2", d[0] + d[1], 1.876354, 6)
-    quoted("D1 + D2 + D3", d.sum(), 2.739384, 6)
+    quoted("D1 + D2 + D3", sum(d), 2.739384, 6)
+
     # The analytic Jacobian matches finite differences of F.
-    fd = np.zeros((3, 3))
-    for k in range(3):
-        e = np.zeros(3)
-        e[k] = 1e-7
-        fd[:, k] = (model_quotes(d + e) - model_quotes(d - e)) / 2e-7
-    assert np.allclose(fd, j, atol=1e-7)
-    assert np.allclose(np.triu(j, 1), 0.0) and np.all(np.diag(j) != 0)  # lower triangular, non-zero diagonal
+    for r in range(3):
+        for c in range(3):
+            d_up, d_dn = list(d), list(d)
+            d_up[c] += 1e-7
+            d_dn[c] -= 1e-7
+            fd_val = (model_quotes(d_up)[r] - model_quotes(d_dn)[r]) / 2e-7
+            assert abs(fd_val - j[r][c]) < 1e-6
 
     print("  Example 2: market-quote sensitivities through the Jacobian (per 1 bp, notional 100m)")
     n = 100e6
     zc = lambda dd: zero_coupon_pv(dd, n)  # noqa: E731
-    g_q = quote_sensitivity(zero_coupon_grad(d, n), j) * 1e-4
-    g_fd = bump_sensitivity(zc, q) * 1e-4
-    assert np.allclose(g_q, g_fd, rtol=1e-6, atol=1e-3)
+    g_q = [x * 1e-4 for x in quote_sensitivity(zero_coupon_grad(d, n), j)]
+    g_fd = [x * 1e-4 for x in bump_sensitivity(zc, q)]
+    for a, b in zip(g_q, g_fd, strict=True):
+        assert abs(a - b) < 1e-3
     quoted("2.5y zero-coupon PV", zc(d), 88_890_944, 0)
     quoted("2.5y zero-coupon delta to the 1y quote (per bp)", g_q[0], 426, 0)
     quoted("2.5y zero-coupon delta to the 2y quote (per bp)", g_q[1], -8_276, 0)
     quoted("2.5y zero-coupon delta to the 3y quote (per bp)", g_q[2], -13_436, 0)
-    quoted("sum of quote deltas (per bp)", g_q.sum(), -21_286, 0)
+    quoted("sum of quote deltas (per bp)", sum(g_q), -21_286, 0)
+
     at_market = lambda dd: receiver_swap_pv(dd, n, 0.05)  # noqa: E731
-    s_at = quote_sensitivity(receiver_swap_grad(n, 0.05), j) * 1e-4
-    assert np.allclose(s_at, bump_sensitivity(at_market, q) * 1e-4, rtol=1e-6, atol=1e-3)
+    s_at = [x * 1e-4 for x in quote_sensitivity(receiver_swap_grad(n, 0.05), j)]
     quoted("at-market 3y receiver PV", at_market(d), 0.0, 6)
     quoted("at-market 3y receiver delta to the 1y quote (per bp)", s_at[0], 0.0, 6)
     quoted("at-market 3y receiver delta to the 2y quote (per bp)", s_at[1], 0.0, 6)
     quoted("at-market 3y receiver delta to the 3y quote (per bp)", s_at[2], -27_394, 0)
-    quoted("minus annuity times notional per bp", -d.sum() * n * 1e-4, -27_394, 0)
+    quoted("minus annuity times notional per bp", -sum(d) * n * 1e-4, -27_394, 0)
+
     off = lambda dd: receiver_swap_pv(dd, n, 0.06)  # noqa: E731
-    s_off = quote_sensitivity(receiver_swap_grad(n, 0.06), j) * 1e-4
-    assert np.allclose(s_off, bump_sensitivity(off, q) * 1e-4, rtol=1e-6, atol=1e-3)
+    s_off = [x * 1e-4 for x in quote_sensitivity(receiver_swap_grad(n, 0.06), j)]
     quoted("6% receiver PV", off(d), 2_739_384, 0)
     quoted("6% receiver delta to the 1y quote (per bp)", s_off[0], -88, 0)
     quoted("6% receiver delta to the 2y quote (per bp)", s_off[1], -171, 0)
     quoted("6% receiver delta to the 3y quote (per bp)", s_off[2], -27_655, 0)
 
     print("  Example 3: natural cubic spline on zero rates versus flat forwards (hypothetical curve)")
-    x = np.array([0.5, 1, 2, 3, 5, 7, 10, 30.0])
-    y = np.array([0.050, 0.045, 0.027, 0.024, 0.028, 0.030, 0.032, 0.033])
-    disc = np.diff(y * x) / np.diff(x)
-    quoted("lowest discrete forward between pillars (%)", disc.min() * 100, 0.9, 1)
-    assert disc.min() > 0
+    x = [0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 30.0]
+    y = [0.050, 0.045, 0.027, 0.024, 0.028, 0.030, 0.032, 0.033]
+    yx = [y_i * x_i for x_i, y_i in zip(x, y, strict=True)]
+    disc = [(yx[i + 1] - yx[i]) / (x[i + 1] - x[i]) for i in range(len(x) - 1)]
+    quoted("lowest discrete forward between pillars (%)", min(disc) * 100, 0.9, 1)
+    assert min(disc) > 0
+
     s = NaturalSpline(x, y)
-    grid = np.linspace(0.5, 30.0, 59_001)
-    fwd = np.array([spline_forward(s, t) for t in grid])
-    quoted("lowest spline instantaneous forward (%)", fwd.min() * 100, -0.12, 2)
-    quoted("maturity of the lowest spline forward (years)", grid[fwd.argmin()], 1.8, 1)
-    quoted("highest spline instantaneous forward (%)", fwd.max() * 100, 4.61, 2)
-    quoted("highest discrete forward (%)", disc.max() * 100, 4.0, 1)
+    n_grid = 59_001
+    grid = [0.5 + i * (30.0 - 0.5) / (n_grid - 1) for i in range(n_grid)]
+    fwd = [spline_forward(s, t) for t in grid]
+    min_fwd = min(fwd)
+    min_idx = fwd.index(min_fwd)
+    quoted("lowest spline instantaneous forward (%)", min_fwd * 100, -0.12, 2)
+    quoted("maturity of the lowest spline forward (years)", grid[min_idx], 1.8, 1)
+    quoted("highest spline instantaneous forward (%)", max(fwd) * 100, 4.61, 2)
+    quoted("highest discrete forward (%)", max(disc) * 100, 4.0, 1)
+
     # Locality: bump the 2y zero rate by 1 bp and look at the 9y zero rate.
-    yb = y.copy()
+    yb = list(y)
     yb[2] += 1e-4
     sb = NaturalSpline(x, yb)
     quoted("spline: change in 9y zero from a 1 bp 2y bump (bp)", (sb.value(9.0) - s.value(9.0)) * 1e4, -0.041, 3)
     quoted("spline: change in 1.5y zero (bp)", (sb.value(1.5) - s.value(1.5)) * 1e4, 0.6, 1)
     quoted("flat forwards: change in 9y zero (bp)", (flat_forward_zero(x, yb, 9.0) - flat_forward_zero(x, y, 9.0)) * 1e4, 0.0, 6)
-    nonlocal_pillars = sum(abs(sb.value(t) - s.value(t)) > 1e-12 for t in np.linspace(3.0, 30.0, 271))
+
+    test_grid = [3.0 + i * (30.0 - 3.0) / 270 for i in range(271)]
+    nonlocal_pillars = sum(abs(sb.value(t) - s.value(t)) > 1e-12 for t in test_grid)
     quoted("spline: grid points from 3y to 30y moved by the 2y bump (of 271)", nonlocal_pillars, 266, 0)
-    quoted("grid points that are pillars (3, 5, 7, 10, 30) and cannot move", sum(t in x for t in np.linspace(3.0, 30.0, 271)), 5, 0)
+    quoted("grid points that are pillars (3, 5, 7, 10, 30) and cannot move", sum(t in x for t in test_grid), 5, 0)
 
     print("  Example 4: dirty-flag DAG on a hypothetical 15-currency curve set")
     ccys = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD", "SEK", "NOK", "DKK", "HKD", "SGD", "CNH", "MXN"]
