@@ -26,8 +26,8 @@ How researchers at Two Sigma, Citadel, Squarepoint, Millennium and Balyasny find
 | 08 | [Overfitting, Deflated Sharpe and Multiple Testing](08-Overfitting-and-Deflated-Sharpe.md) | R | core | 4 | solid | 14 |
 | 09 | [Performance Metrics and the Fundamental Law](09-Performance-Metrics-and-Fundamental-Law.md) | RT | core | 3 | solid | 13 |
 | 10 | [Mean-Variance Portfolio Construction](10-Mean-Variance-Portfolio-Construction.md) | R | core | 4 | solid | 12 |
-| 11 | [Covariance Estimation and Shrinkage](11-Covariance-Estimation-and-Shrinkage.md) | R | advanced | 3 | solid | 19 |
-| 12 | [Black-Litterman, Risk Parity and HRP](12-Black-Litterman-Risk-Parity-and-HRP.md) | R | advanced | 3 | solid | 18 |
+| 11 | [Covariance Estimation and Shrinkage](11-Covariance-Estimation-and-Shrinkage.md) | RQ | advanced | 3 | solid | 19 |
+| 12 | [Black-Litterman, Risk Parity and HRP](12-Black-Litterman-Risk-Parity-and-HRP.md) | RQ | advanced | 3 | solid | 18 |
 | 13 | [Transaction Costs and Turnover Optimization](13-Transaction-Costs-and-Turnover.md) | R | advanced | 3 | solid | 18 |
 | 14 | [Alternative Data and Feature Engineering](14-Alternative-Data-and-Feature-Engineering.md) | R | advanced | 3 | solid | 19 |
 | 15 | [Alpha Research Case Studies](15-Alpha-Research-Case-Studies.md) | R | core | 6 | solid | 27 |
