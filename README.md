@@ -16,8 +16,8 @@ One set of Markdown notes serves three surfaces:
 Interview prep material is usually written once and never checked.
 This repo treats every note like production code:
 
-- **Numbers are computed, not recalled.** In every section with a `code/` folder, the scripts print each number the notes quote and assert it at the quoted rounding; the other sections derive their numbers in the note itself.
-- **CI re-runs every script on every change.** If a quoted number drifts, the build fails.
+- **Computed numbers in syllabus topics are computed, not recalled.** The scripts back notes in the sections with `code/` folders; section 01 derives its numbers in the notes.
+- **CI runs the syllabus examples on every change.** Script assertions catch drift in the numbers they check.
   C++ examples build warning-free on GCC and Clang and run under AddressSanitizer, UndefinedBehaviorSanitizer and, for concurrent code, ThreadSanitizer.
 - **Rules and papers are cited to the source.** Basel and FRTB parameters cite the Basel Framework paragraph (for example `MAR21.6`), market conventions cite the exchange or regulator, and papers cite authors, venue and year.
 - **Changes are reviewed before they merge.** Every pull request passes an automated review and test gate, and the sections rebuilt in October 2026 were re-derived and recomputed by an independent verifier who did not write them.
@@ -72,10 +72,10 @@ Tracks: T = trader, R = researcher, D = developer, Q = risk and strats.
 | [Fixed Income and Asset Classes](06-Fixed-Income-and-Asset-Classes/README.md) | 25 | 25 | 114 | 346 | TRDQ |
 | [Market Microstructure](07-Market-Microstructure/README.md) | 12 | 12 | 41 | 200 | TRD |
 | [Market Making](08-Market-Making/README.md) | 12 | 12 | 44 | 187 | TRD |
-| [Alpha Research and Portfolio Construction](09-Alpha-Research-and-Portfolio/README.md) | 15 | 15 | 57 | 253 | TRD |
+| [Alpha Research and Portfolio Construction](09-Alpha-Research-and-Portfolio/README.md) | 15 | 15 | 57 | 253 | TRDQ |
 | [Machine Learning for Finance](10-Machine-Learning-for-Finance/README.md) | 11 | 11 | 38 | 209 | RD |
 | [Risk and Trading](11-Risk-and-Trading/README.md) | 17 | 11 | 70 | 245 | TRDQ |
-| [Quant Development](12-Quant-Development/README.md) | 15 | 15 | 86 | 347 | RD |
+| [Quant Development](12-Quant-Development/README.md) | 15 | 15 | 86 | 347 | RDQ |
 | [Interview Playbook](13-Interview-Playbook/README.md) | 12 | 12 | 32 | 208 | TRDQ |
 | [Trading and Investing Library](16-Trading-and-Investing/README.md) | 69 | 69 | 223.5 | 2248 | TRDQ |
 | [Regulatory Capital, Basel, and FRTB](17-Regulatory-Capital-Basel-and-FRTB/README.md) | 21 | 21 | 99 | 320 | TDQ |

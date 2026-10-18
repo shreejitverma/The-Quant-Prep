@@ -17,7 +17,7 @@ This page states exactly what the repo promises about its content, how each prom
 | Promise | How it is enforced |
 | :--- | :--- |
 | Computed numbers in syllabus topics are computed, not recalled. | Section `code/` scripts enforce this where a section has them; otherwise the numbers are derived in the note. |
-| Quoted numbers cannot silently drift. | CI runs every script on every pull request and on `main`; a failed assert fails the build. |
+| Asserted numbers in syllabus topics cannot silently drift. | CI runs the syllabus examples on every pull request and on `main`; a failed assert fails the build. |
 | Results do not depend on your machine. | CI runs on Linux x86-64; authors also run the scripts in a Linux container, and tolerances sit well above floating-point noise. |
 | Facts come from primary sources. | Rules cite the regulation and paragraph, conventions cite the exchange or regulator, papers cite authors, venue and year. |
 | Claims about causes are tested. | A note says a simulation "shows why" only when the script changes one thing at a time and asserts the result. |
