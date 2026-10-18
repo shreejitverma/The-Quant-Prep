@@ -268,7 +268,7 @@ Differencing twice on a strike grid and integrating $e^{rT}C_{KK}$ recovers tota
 > $\ln 100 + \gamma + 1/200 \approx 5.1874$, matching the exact value to four decimals; without the $1/(2n)$ term the estimate is $5.1824$.
 
 > [!question]- la-calc-series-kx | Evaluate $\sum_{k \ge 1}k/2^k$.
-> 2. Differentiate $\sum x^k = 1/(1 - x)$ to get $\sum kx^{k-1} = 1/(1 - x)^2$, multiply by $x$, and set $x = 1/2$: $(1/2)/(1/4) = 2$. It is the mean of a Geometric(1/2) number of trials.
+> $2$. Differentiate $\sum x^k = 1/(1 - x)$ to get $\sum kx^{k-1} = 1/(1 - x)^2$, multiply by $x$, and set $x = 1/2$: $(1/2)/(1/4) = 2$. It is the mean of a Geometric(1/2) number of trials.
 
 ## In this repo and SDE-Interview-Prep
 

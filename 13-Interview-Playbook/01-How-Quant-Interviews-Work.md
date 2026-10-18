@@ -146,7 +146,7 @@ The interviewer is scoring requirements gathering, correctness under edge cases 
 > Expected-value reasoning, updating on information including the counterparty's trades, position and risk control, clear communication, and composure. P&L in a short game is mostly noise.
 
 > [!question]- int-pipeline-geometric-first-six | Expected number of die rolls until the first 6?
-> 6. Geometric with $p = 1/6$ has mean $1/p$; check with $E = 1 + (5/6)E$.
+> $6$. Geometric with $p = 1/6$ has mean $1/p$; check with $E = 1 + (5/6)E$.
 
 > [!question]- int-pipeline-test-pacing | An 80-question test lasts 8 minutes. What is your per-question budget?
 > 6 seconds on average; skip anything that clearly needs more than about twice that and return if time remains.

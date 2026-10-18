@@ -151,7 +151,7 @@ So it is impossible.
 > Yes. There are 24 cases and $3^3 = 27$ outcomes; weigh 4 against 4, then split each branch of 8 cases into groups of at most 3 (for example $\{1,2,5\}$ against $\{3,6,9\}$). Three weighings handle at most $(3^3-3)/2 = 12$ coins.
 
 > [!question]- int-bt-eight-balls-two-weighings | Eight balls, one heavier. Minimum number of weighings to find it?
-> 2. Weigh 3 against 3; if balanced it is among the other 2 (one more weighing), otherwise among the heavy 3 (weigh 1 against 1). Lower bound: 8 cases need $\lceil \log_3 8 \rceil = 2$.
+> $2$. Weigh 3 against 3; if balanced it is among the other 2 (one more weighing), otherwise among the heavy 3 (weigh 1 against 1). Lower bound: 8 cases need $\lceil \log_3 8 \rceil = 2$.
 
 > [!question]- int-bt-ropes-45-minutes | Two ropes each burn in exactly 60 minutes but unevenly. Measure 45 minutes.
 > Light rope A at both ends and rope B at one end. A finishes at 30 minutes; then light B's other end, and its remaining 30 minutes of burn take 15, finishing at 45.
@@ -160,16 +160,16 @@ So it is impossible.
 > $(98, 0, 1, 0, 1)$. By backward induction: 2 pirates $(100,0)$; 3 pirates $(99,0,1)$; 4 pirates $(99,0,1,0)$; with 5, the pirates who would get 0 under the next proposer (third and fifth) are bought with 1 coin each.
 
 > [!question]- int-bt-hats-in-a-line | 100 prisoners in a line with black or white hats call their colour from the back. How many can be guaranteed saved?
-> 99. The last prisoner announces the parity of black hats he sees; each subsequent prisoner deduces his own hat from that parity, the hats ahead and the calls behind. The first caller is saved with probability $1/2$.
+> $99$. The last prisoner announces the parity of black hats he sees; each subsequent prisoner deduces his own hat from that parity, the hats ahead and the calls behind. The first caller is saved with probability $1/2$.
 
 > [!question]- int-bt-hundred-lockers | 100 closed lockers; pass $k$ toggles every $k$-th locker for $k = 1..100$. How many are open at the end?
-> 10. Locker $n$ is toggled once per divisor; divisors pair up except for perfect squares, so only the 10 squares $1, 4, \dots, 100$ have an odd count.
+> $10$. Locker $n$ is toggled once per divisor; divisors pair up except for perfect squares, so only the 10 squares $1, 4, \dots, 100$ have an odd count.
 
 > [!question]- int-bt-two-eggs-100-floors | Two eggs, 100 floors: minimum worst-case drops to find the critical floor?
-> 14. With $k$ drops you can cover $k(k+1)/2$ floors by dropping first at $k$, then $k-1$ floors higher, and so on; $14 \cdot 15/2 = 105 \ge 100$ while $13 \cdot 14/2 = 91 < 100$.
+> $14$. With $k$ drops you can cover $k(k+1)/2$ floors by dropping first at $k$, then $k-1$ floors higher, and so on; $14 \cdot 15/2 = 105 \ge 100$ while $13 \cdot 14/2 = 91 < 100$.
 
 > [!question]- int-bt-trailing-zeros-100-factorial | How many trailing zeros does $100!$ have?
-> 24. Count factors of 5: $\lfloor 100/5 \rfloor + \lfloor 100/25 \rfloor = 20 + 4 = 24$, and 2s are more plentiful.
+> $24$. Count factors of 5: $\lfloor 100/5 \rfloor + \lfloor 100/25 \rfloor = 20 + 4 = 24$, and 2s are more plentiful.
 
 > [!question]- int-bt-mutilated-chessboard | Remove two opposite corners of a chessboard. Can 31 dominoes tile the remaining 62 squares?
 > No. Opposite corners share a colour, leaving 32 of one colour and 30 of the other, but each domino covers one of each.
@@ -181,7 +181,7 @@ So it is impossible.
 > Fill the 5, pour into the 3 (2 left), empty the 3, pour the 2 into it, fill the 5, top up the 3 (uses 1), leaving 4 in the 5. Possible because $\gcd(3,5) = 1$.
 
 > [!question]- int-bt-poisoned-wine | 1000 bottles, one poisoned; poison acts in 24 hours. How many testers to find it in one round?
-> 10. Label bottles in binary; tester $i$ drinks from every bottle whose bit $i$ is 1. The set of testers who fall ill spells the bottle's number, and $2^{10} = 1024 \ge 1000$.
+> $10$. Label bottles in binary; tester $i$ drinks from every bottle whose bit $i$ is 1. The set of testers who fall ill spells the bottle's number, and $2^{10} = 1024 \ge 1000$.
 
 > [!question]- int-bt-mislabelled-boxes | Three boxes labelled apples, oranges and mixed are all wrongly labelled. Drawing one fruit from one box, how do you fix all labels?
 > Draw from the box labelled mixed. It must hold a single type, say apples; the box labelled oranges cannot be oranges or apples now, so it is mixed, and the remaining box is oranges.
@@ -190,7 +190,7 @@ So it is impossible.
 > 100 seconds. A collision is equivalent to the ants passing through each other, so each "ant path" walks straight off, and the longest path is the full metre.
 
 > [!question]- int-bt-knockout-matches | How many matches does a single-elimination tournament with 64 players need?
-> 63. Every match eliminates exactly one player and all but one must be eliminated; this works for any $n$ ($n-1$ matches) even with byes.
+> $63$. Every match eliminates exactly one player and all but one must be eliminated; this works for any $n$ ($n-1$ matches) even with byes.
 
 > [!question]- int-bt-light-switches | Three switches outside a room control one of three bulbs inside; you may enter once. Which switch is which?
 > Turn on switch 1 for a few minutes, turn it off, turn on switch 2, enter. The lit bulb is 2, the warm unlit bulb is 1, the cold unlit bulb is 3.
@@ -214,10 +214,10 @@ So it is impossible.
 > Go first and take 1. Multiples of 11 are losing positions for the player to move; leave 99, then answer any take $t$ with $11 - t$.
 
 > [!question]- int-bt-frobenius-3-and-5 | With only 3 and 5 unit coins, what is the largest amount you cannot pay exactly?
-> 7. $8 = 3+5$, $9 = 3 \cdot 3$, $10 = 5 \cdot 2$, and adding 3 to each covers every larger amount by induction; 7 is not a non-negative combination. In general $ab - a - b$ for coprime $a, b$.
+> $7$. $8 = 3+5$, $9 = 3 \cdot 3$, $10 = 5 \cdot 2$, and adding 3 to each covers every larger amount by induction; 7 is not a non-negative combination. In general $ab - a - b$ for coprime $a, b$.
 
 > [!question]- int-bt-clock-overlaps | How many times do the hour and minute hands overlap in 24 hours?
-> 22. The minute hand gains a full lap on the hour hand every $12/11$ hours, so there are 11 overlaps in 12 hours.
+> $22$. The minute hand gains a full lap on the hour hand every $12/11$ hours, so there are 11 overlaps in 12 hours.
 
 > [!question]- int-bt-clock-angle-3-15 | What is the angle between the hands at 3:15?
 > $7.5$ degrees. The minute hand is at $90$ degrees; the hour hand is at $90 + 15 \times 0.5 = 97.5$ degrees.
@@ -232,19 +232,19 @@ So it is impossible.
 > 2, 2 and 9. Only sum 13 is ambiguous, from $(1,6,6)$ and $(2,2,9)$; "the eldest" rules out twins at the top.
 
 > [!question]- int-bt-last-digit-7-power | What is the last digit of $7^{2026}$?
-> 9. Last digits of powers of 7 cycle $7, 9, 3, 1$ with period 4, and $2026 \equiv 2 \pmod 4$.
+> $9$. Last digits of powers of 7 cycle $7, 9, 3, 1$ with period 4, and $2026 \equiv 2 \pmod 4$.
 
 > [!question]- int-bt-squares-on-chessboard | How many squares of any size are on an $8 \times 8$ chessboard?
-> 204. There are $(9-k)^2$ squares of side $k$, so $\sum_{j=1}^{8} j^2 = 204$.
+> $204$. There are $(9-k)^2$ squares of side $k$, so $\sum_{j=1}^{8} j^2 = 204$.
 
 > [!question]- int-bt-rectangles-on-chessboard | How many rectangles (including squares) are on an $8 \times 8$ chessboard?
-> 1296. Choose 2 of the 9 vertical lines and 2 of the 9 horizontal lines: $\binom{9}{2}^2 = 36^2$.
+> $1296$. Choose 2 of the 9 vertical lines and 2 of the 9 horizontal lines: $\binom{9}{2}^2 = 36^2$.
 
 > [!question]- int-bt-truth-liar-guards | Two doors, two guards; one always lies and one always tells the truth. One question to find the safe door?
 > Ask either guard "Which door would the other guard say is safe?" and take the other door. Both paths through the question pass through exactly one lie.
 
 > [!question]- int-bt-staircase-one-or-two | In how many ways can you climb 10 stairs taking 1 or 2 steps at a time?
-> 89. $f(n) = f(n-1) + f(n-2)$ with $f(1) = 1$, $f(2) = 2$ gives Fibonacci numbers, and $f(10) = 89$.
+> $89$. $f(n) = f(n-1) + f(n-2)$ with $f(1) = 1$, $f(2) = 2$ gives Fibonacci numbers, and $f(10) = 89$.
 
 ## Further reading
 
