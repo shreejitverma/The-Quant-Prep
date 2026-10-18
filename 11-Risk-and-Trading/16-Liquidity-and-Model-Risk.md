@@ -2,7 +2,7 @@
 type: concept
 track: [quant-trader, quant-research, quant-dev, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [stress-testing-and-scenarios]
 est_hours: 4
 sources: [Robert Almgren and Neil Chriss - Optimal Execution of Portfolio Transactions (2000), Albert S. Kyle - Continuous Auctions and Insider Trading (1985), Federal Reserve SR 11-7 and OCC 2011-12 - Supervisory Guidance on Model Risk Management, Markus K. Brunnermeier and Lasse Heje Pedersen - Market Liquidity and Funding Liquidity (2009)]
@@ -151,8 +151,10 @@ flowchart TD
 ```
 
 #### The Three Lines of Defense in Risk Management:
-1. **First Line (Model Developers and Trading Desks):** Quants who design, code, calibrate, and operate models. Responsible for documenting conceptual soundness, limitations, and operational boundaries.
-2. **Second Line (Model Risk Management / Validation):** An independent organizational unit with zero reporting lines to commercial trading desks. Conducts unbiased "effective challenge", verifies code implementations, tests boundary conditions, and maintains the authoritative institutional Model Inventory.
+1. **First Line (Model Developers and Trading Desks):** Quants who design, code, calibrate, and operate models.
+Responsible for documenting conceptual soundness, limitations, and operational boundaries.
+2. **Second Line (Model Risk Management / Validation):** An independent organizational unit with zero reporting lines to commercial trading desks.
+Conducts unbiased "effective challenge", verifies code implementations, tests boundary conditions, and maintains the authoritative institutional Model Inventory.
 3. **Third Line (Internal Audit):** Independently evaluates whether the overall model risk governance framework complies with regulatory standards and corporate policy.
 
 ### Historical Model Risk Disasters
@@ -160,13 +162,22 @@ flowchart TD
 Major financial failures highlight the primary mechanisms of model risk:
 
 1. **JPMorgan London Whale (2012, $\$6.2\text{B}$ Loss):**
-   - **Root Cause:** Spreadsheet implementation error. The quant team built a revised VaR model in Excel to demonstrate reduced risk on synthetic credit tranches. A spreadsheet formula divided a cell by the *sum* of numbers instead of the *average*, artificially deflating calculated risk by half. The desk doubled down into an illiquid market until the position collapsed.
+   - **Root Cause:** Spreadsheet implementation error.
+   The quant team built a revised VaR model in Excel to demonstrate reduced risk on synthetic credit tranches.
+   A spreadsheet formula divided a cell by the *sum* of numbers instead of the *average*, artificially deflating calculated risk by half.
+   The desk doubled down into an illiquid market until the position collapsed.
 2. **Knight Capital (2012, $\$440\text{M}$ Loss in 45 Minutes):**
-   - **Root Cause:** Software deployment and dead code failure. During an exchange routing update, engineers failed to deploy updated code to one of eight production servers. The rogue server ran legacy "Power Peg" test code, rapidly buying at the offer and selling at the bid across 154 stocks, executing over 4 million trades totaling more than 397 million shares, losing $\$440\text{M}$ in 45 minutes and requiring a $\$400\text{M}$ emergency recapitalization by outside investors.
+   - **Root Cause:** Software deployment and dead code failure.
+   During an exchange routing update, engineers failed to deploy updated code to one of eight production servers.
+   The rogue server ran legacy "Power Peg" test code, rapidly buying at the offer and selling at the bid across 154 stocks, executing over 4 million trades totaling more than 397 million shares, losing $\$440\text{M}$ in 45 minutes and requiring a $\$400\text{M}$ emergency recapitalization by outside investors.
 3. **Negative Oil Prices (April 20, 2020, WTI at $-\$37.63/\text{bbl}$):**
-   - **Root Cause:** Conceptual assumption failure. Commodity option pricing libraries across retail and institutional brokers relied strictly on the Black-76 lognormal model. Because lognormal models assume positive prices ($S > 0$), trading platforms displayed zero or crashed entirely when WTI oil futures plummeted into deep negative territory, preventing traders from hedging and triggering catastrophic margin liquidations.
+   - **Root Cause:** Conceptual assumption failure.
+   Commodity option pricing libraries across retail and institutional brokers relied strictly on the Black-76 lognormal model.
+   Because lognormal models assume positive prices ($S > 0$), trading platforms displayed zero or crashed entirely when WTI oil futures plummeted into deep negative territory, preventing traders from hedging and triggering catastrophic margin liquidations.
 4. **Long-Term Capital Management (LTCM, 1998, $\$4.6\text{B}$ Loss):**
-   - **Root Cause:** Fat tails and correlation breakdown. LTCM assumed asset returns were normally distributed and that historical correlations between sovereign bonds would persist. When Russia defaulted, liquidity froze globally, correlations converged to 1, and the fund's $25\times$ leverage caused a $\$4.6\text{B}$ loss, requiring a $\$3.6\text{B}$ consortium recapitalization organized by the Federal Reserve Bank of New York.
+   - **Root Cause:** Fat tails and correlation breakdown.
+   LTCM assumed asset returns were normally distributed and that historical correlations between sovereign bonds would persist.
+   When Russia defaulted, liquidity froze globally, correlations converged to 1, and the fund's $25\times$ leverage caused a $\$4.6\text{B}$ loss, requiring a $\$3.6\text{B}$ consortium recapitalization organized by the Federal Reserve Bank of New York.
 
 ## Worked examples
 
@@ -297,6 +308,24 @@ Accounting for bid-ask widening and a 4-day liquidation horizon expands true tai
 > [!question]- risk-twap-vs-almgren-chriss-risk | Under what risk-aversion condition does the Almgren-Chriss optimal execution schedule reduce to linear TWAP?
 > The Almgren-Chriss schedule reduces to linear TWAP (Time-Weighted Average Price) when the trader's risk-aversion parameter is zero ($\lambda_{\text{risk}} = 0$, risk-neutral). In that case, the trader ignores price volatility timing risk and focuses entirely on minimizing temporary market impact, which is mathematically minimized by trading at a constant, uniform rate throughout the execution window.
 
+> [!question]- risk-almgren-chriss-permanent-cost-independence | Prove why permanent market impact cost in Almgren-Chriss depends only on total shares $X_0$ and is independent of execution trajectory.
+> Permanent impact shifts the mid-price by $\Delta \tilde{S}_k = -\gamma n_k$. The price received for slice $k$ is depressed by the cumulative impact of all preceding slices plus half of its own impact: $\tilde{S}_k = S_0 - \gamma \sum_{j=1}^{k-1} n_j - \frac{1}{2}\gamma n_k$. Summing across all $N$ slices yields total permanent impact cost $\sum_{k=1}^N n_k (\gamma \sum_{j=1}^{k-1} n_j + \frac{1}{2}\gamma n_k) = \frac{1}{2}\gamma (\sum n_k)^2 = \frac{1}{2}\gamma X_0^2$. This depends strictly on total position size $X_0$, regardless of speed.
+
+> [!question]- risk-liquidation-horizon-square-root-derivation | Derive the liquidation horizon variance scaling factor $\sqrt{1 + \frac{1}{3}(L - 1)}$ for linear position unwinds.
+> For an orderly linear liquidation of position $X_0$ over $L$ days with daily fraction $1/L$, the unhedged position variance on day $k$ scales with remaining holdings: $X(k) = X_0(1 - \frac{k-1}{L})$. Integrating cumulative variance over discrete steps $\sum_{k=1}^L X(k)^2 \approx \int_0^L (1 - t/L)^2 dt = \frac{L}{3}$ gives the expected price variance of shortfall. Combining with day-1 baseline volatility yields the horizon multiplier $\sqrt{1 + \frac{1}{3}(L - 1)}$.
+
+> [!question]- risk-sr11-7-conceptual-soundness-pillar | What specific criteria define "conceptual soundness" during initial model validation under SR 11-7?
+> Conceptual soundness assesses whether the mathematical theory, behavioral assumptions, and economic modeling approach are appropriate for the intended application. Validators scrutinize: whether underlying stochastic processes match empirical asset dynamics; the validity of mathematical simplifications and boundary approximations; empirical justification for parameter calibration; and whether stress behavior adheres to physical constraints.
+
+> [!question]- risk-knight-capital-dead-code-failure | Analyze the system design and operational risk failure in the 2012 Knight Capital disaster.
+> Knight Capital deployed an updated order router to seven of eight production servers, accidentally leaving dormant legacy "Power Peg" test code active on the eighth. When an operational flag repurposed an old parameter, the legacy code entered an infinite loop, buying at market offer and selling at bid across 154 equities. Lack of deployment verification, dead code decommissioning, and automated kill switches led to 4 million unintended executions and a $440M loss in 45 minutes.
+
+> [!question]- risk-model-inventory-tiering-governance | How does an institutional Model Risk Management framework tier models in the firm-wide Model Inventory?
+> Models are categorized into Materiality Tiers (e.g., Tier 1 High, Tier 2 Medium, Tier 3 Low) based on financial materiality, product complexity, portfolio size, and decision autonomy. Tier 1 models (e.g., automated market making, firm-wide VaR, Basel capital engines) undergo annual independent re-validation, continuous monitoring, and board-level reporting, whereas Tier 3 operational models are re-validated triennially.
+
+> [!question]- risk-bachelier-vs-black76-negative-prices | Contrast the Bachelier normal model with Black-76 lognormal when commodity prices turn negative.
+> Black-76 assumes asset prices follow geometric Brownian motion ($dS = \mu S dt + \sigma S dW$), where prices are lognormally distributed and bounded strictly positive ($S > 0$). When physical storage constraints pushed WTI crude to -$37.63, Black-76 pricing libraries crashed due to logarithms of negative numbers. The Bachelier model assumes arithmetic Brownian motion ($dS = \mu dt + \sigma dW$), supporting positive, zero, and negative underlying prices natively.
+
 ## Further reading
 
 - Robert Almgren and Neil Chriss (2000), "Optimal Execution of Portfolio Transactions", *Journal of Risk*.
@@ -311,3 +340,4 @@ Accounting for bid-ask widening and a 4-day liquidation horizon expands true tai
 - Drawdown limits and position sizing: [Drawdowns and Risk Limits](05-Drawdowns-and-Risk-Limits.md).
 - Counterparty exposure profiles: [Counterparty Credit Risk Analytics](14-Counterparty-Credit-Risk-Analytics.md).
 - Python reference implementation of risk analytics and scenarios: [risk_analytics.py](code/risk_analytics.py).
+- Numerical verification of Almgren-Chriss impact and L-VaR: [risk_liquidity_model.py](code/risk_liquidity_model.py).

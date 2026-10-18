@@ -2,7 +2,7 @@
 type: concept
 track: [quant-research, quant-dev, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [risk-factor-modelling, the-greeks]
 est_hours: 5
 sources: [Antoine Savine - Modern Computational Finance AAD and Parallel Simulations, Paul Glasserman - Monte Carlo Methods in Financial Engineering chapter 7, Bruce Tuckman and Angel Serrat - Fixed Income Securities chapter 15, Basel Committee on Banking Supervision - MAR21 Standardised Approach]
@@ -237,6 +237,24 @@ Step 3: When the parabola fails:
 > [!question]- risk-floating-point-cancellation-definition | What is catastrophic floating-point cancellation in numerical risk calculations?
 > Catastrophic cancellation occurs when two nearly equal floating-point numbers are subtracted. The leading identical significant digits cancel out, shifting remaining unrounded bits into high-significance positions and amplifying floating-point representation noise. In finite difference engines with microscopic bumps, this destroys derivative precision.
 
+> [!question]- risk-optimal-gamma-step-size-derivation | Derive the optimal finite difference step size $h_{\text{opt, gamma}} \approx \epsilon_{\text{mach}}^{1/4} x$ for second derivatives.
+> The second derivative finite difference formula has truncation error $O(h^2) \approx c_1 h^2$ and roundoff cancellation error $O(\epsilon_{\text{mach}} / h^2) \approx c_2 \frac{\epsilon_{\text{mach}}}{h^2}$ because division is by $h^2$. Minimizing total error $E(h) = c_1 h^2 + c_2 \frac{\epsilon_{\text{mach}}}{h^2}$ yields $\frac{dE}{dh} = 2 c_1 h - 2 c_2 \frac{\epsilon_{\text{mach}}}{h^3} = 0 \implies h^4 \propto \epsilon_{\text{mach}} \implies h_{\text{opt, gamma}} \sim \epsilon_{\text{mach}}^{1/4} \cdot x \approx 1.22 \times 10^{-4} \cdot x$.
+
+> [!question]- risk-taylor-quadratic-vertex-breakdown | At what shock level does the second-order Taylor Delta-Gamma proxy turn upward and report artificial gains?
+> For a long call option, delta is positive ($\delta > 0$) and gamma is positive ($\Gamma > 0$). The second-order quadratic polynomial $\Delta V(\Delta S) \approx \delta \Delta S + \frac{1}{2}\Gamma (\Delta S)^2$ is a parabola whose vertex occurs at $\frac{d \Delta V}{d \Delta S} = \delta + \Gamma \Delta S = 0 \implies \Delta S^* = -\frac{\delta}{\Gamma}$. For asset drops beyond this critical threshold, the quadratic term dominates, predicting rising values rather than capping losses at option premium.
+
+> [!question]- risk-cross-gamma-matrix-scaling | How does the computational cost of evaluating a full cross-gamma Hessian scale with factor dimension $N$?
+> Evaluating the full $N \times N$ Hessian matrix via central differences requires $2N$ pricing runs for diagonal gammas and $4 \times \frac{N(N-1)}{2} = 2N(N-1)$ pricing runs for off-diagonal cross-gammas. The total evaluation count is $2N^2$, scaling quadratically with factor dimension. For large enterprise portfolios with 5,000 risk factors, this requires 50,000,000 pricing evaluations, forcing production engines to rely on block diagonal approximations or AAD.
+
+> [!question]- risk-aad-tape-checkpointing | What is tape checkpointing in reverse-mode AAD, and how does it balance memory against compute?
+> Reverse-mode AAD requires storing the complete forward computational execution tape in memory to propagate adjoints backward. For long Monte Carlo paths or multi-step PDE solvers, this tape exhausts available RAM. Checkpointing stores the system state only at discrete milestone intervals during the forward sweep, recomputing intermediate forward operations on-the-fly during the reverse sweep, trading a modest increase in CPU runtime for bounded memory footprint.
+
+> [!question]- risk-digital-option-proxy-failure | Why do finite difference bumping and Taylor proxies fail for digital cash-or-nothing options?
+> A digital cash-or-nothing option payoff has a discontinuous step at the strike $K$, so its true mathematical delta is a Dirac delta function and its gamma is a distribution derivative. Finite difference bumping around the strike produces an extreme spike that is sensitive to step size $h$, while a smooth Taylor polynomial fails to capture the discontinuous jump, generating severe mispricings in scenario revaluations.
+
+> [!question]- risk-chebyshev-collocation-nodes | Why are Chebyshev nodes preferred over equidistant grid points for polynomial proxy interpolation?
+> Equidistant polynomial interpolation suffers from Runge's phenomenon, where high-degree polynomial interpolants oscillate wildly near domain boundaries. Chebyshev nodes cluster points quadratically toward interval boundaries, minimizing the maximum interpolation error (minimax property) according to Chebyshev's Equioscillation Theorem and ensuring stable, uniform convergence as polynomial degree increases.
+
 ## Further reading
 
 - Antoine Savine, *Modern Computational Finance: AAD and Parallel Simulations*, Chapters 1-6.
@@ -249,5 +267,6 @@ Step 3: When the parabola fails:
 
 - Risk factor taxonomy and return conventions: [Risk Factor Modelling](10-Risk-Factor-Modelling.md).
 - Python reference implementation of bump engine and Taylor proxy comparison: [risk_analytics.py](code/risk_analytics.py).
+- Numerical verification of optimal bump sizes and proxy diagnostics: [risk_sensitivities.py](code/risk_sensitivities.py).
 - Scenario generation and simulation algorithms: [Scenario Generation](11-Scenario-Generation.md).
 - Greek definitions and mathematical derivations: [The Greeks](../05-Derivatives-and-Volatility/05-The-Greeks.md).
