@@ -2,21 +2,22 @@
 type: concept
 track: [quant-trader, quant-research, quant-risk]
 tier: core
-status: draft
+status: solid
 prereqs: [kelly-criterion-and-position-sizing]
 est_hours: 4
-sources: [Robert Carver - Systematic Trading chapters 8 and 12, Agustin Lebron - The Laws of Trading chapters 4 and 9, Malik Magdon-Ismail and Amir F. Atiya - Maximum Drawdown (2004), Marcos Lopez de Prado - Advances in Financial Machine Learning chapter 14]
+sources: [Magdon-Ismail Atiya Pratap and Abu-Mostafa - On the Maximum Drawdown of a Brownian Motion - Journal of Applied Probability 41(1) 147-161 (2004), Magdon-Ismail and Atiya - Maximum Drawdown - Risk 17(10) 99-102 (2004), Grossman and Zhou - Optimal Investment Strategies for Controlling Drawdowns - Mathematical Finance 3(3) 241-276 (1993), Black and Perold - Theory of Constant Proportion Portfolio Insurance - Journal of Economic Dynamics and Control 16(3-4) 403-426 (1992), Lehoczky - Formulas for Stopped Diffusion Processes with Stopping Times Based on the Maximum - Annals of Probability 5(4) 601-607 (1977), Young - Calmar Ratio A Smoother Tool - Futures (October 1991), Lopez de Prado - Advances in Financial Machine Learning (Wiley 2018) chapter 14]
 ---
 
 # Drawdowns and Risk Limits
 
 ## TL;DR
 
-Drawdown measures the peak-to-trough percentage decline in portfolio equity over a specific evaluation window.
-Maximum Drawdown (MDD) is the primary real-world risk metric evaluated by capital allocators and risk committees, as consecutive drawdowns trigger investor redemptions, margin liquidation, or desk closure long before theoretical asymptotic long-run returns materialize.
-For a strategy following a Brownian motion with annual Sharpe ratio $S$ and volatility $\sigma$, the expected maximum drawdown over horizon $T$ scales analytically with $\sqrt{T}$ or logarithmically when drift dominates.
-Risk limits enforce operational survival via hard stop-loss thresholds, trailing drawdown throttles, leverage constraints, and factor concentration caps.
-However, dynamic de-risking entails a fundamental trade-off: cutting risk during a drawdown protects against terminal ruin, but locks in realized losses and impairs recovery capacity if the strategy rebounds.
+- Drawdown is the fall from the running peak, $D_t = M_t - X_t$ in log equity; the maximum drawdown $\text{MDD}_T$ is its worst value over $[0, T]$, and it is the number that stops strategies, triggers redemptions and closes desks.
+- For log equity $X_t = \mu t + \sigma W_t$, $\text{MDD}_T / \sigma$ depends only on the Sharpe ratio $S = \mu/\sigma$ and $T$; at zero drift $E[\text{MDD}_T] = \sqrt{\pi/2}\,\sigma\sqrt{T} \approx 1.2533\,\sigma\sqrt{T}$, and with positive drift it grows only like $\frac{\sigma^2}{2\mu}\ln T$ (Magdon-Ismail et al. 2004).
+- The large-$T$ formula $\frac{2\sigma^2}{\mu}\left(\tfrac14\ln x + 0.49088\right)$, $x = \mu^2 T / (2\sigma^2)$, is an asymptote: at Sharpe 1.5, 10% vol and 3 years it gives 10.60% against an exact 11.20%.
+- Two drift identities every risk manager should know: the long-run average drawdown is $\sigma^2/(2\mu) = \sigma/(2S)$, and the probability of ever losing $h$ from today is $e^{-2\mu h/\sigma^2}$.
+- A drawdown limit is a hypothesis test with a false-alarm rate: a Sharpe-1, 10%-vol strategy has a 33% chance of a 10% drawdown within a year, so a 10% stop kills good strategies a third of the time.
+- Cutting risk after losses (ladders, CPPI, drawdown floors) caps the loss but costs expected return and slows recovery, and only works if positions can be cut faster than the market gaps.
 
 ## Learning objectives
 
@@ -26,281 +27,374 @@ However, dynamic de-risking entails a fundamental trade-off: cutting risk during
 - Structure institutional risk limit hierarchies across intraday stops, trailing drawdown triggers, VaR limits, and leverage caps.
 - Analyze the de-risking dilemma: mathematically quantify how cutting exposure after losses impairs recovery velocity and introduces whipsaw drag.
 - Implement adaptive capital allocation frameworks, including volatility targeting, Constant Proportion Portfolio Insurance (CPPI), and drawdown-adjusted Kelly scaling.
+- Compute the full distribution of the maximum drawdown, not just its mean, and use it to calibrate a stop so that its false-alarm rate is known.
+- Check that a desk's VaR limit, drawdown limit and target Sharpe are mutually consistent.
 
 ## Core concepts
 
-### Drawdown Definitions and Mathematical Formulation
+### Definitions
 
-Let $V(t)$ represent the total portfolio equity value at time $t \ge 0$.
-The High Water Mark (HWM) represents the peak cumulative portfolio value achieved up to time $t$:
+Let $V_t$ be equity and $X_t = \ln V_t$.
+The high water mark is $M_t = \sup_{s \le t} X_s$ (in log units) or $\text{HWM}_t = \sup_{s \le t} V_s$.
 
-$$\text{HWM}(t) = \sup_{0 \le s \le t} V(s)$$
+$$D_t = M_t - X_t \ge 0, \qquad \text{MDD}_T = \sup_{t \le T} D_t$$
 
-The drawdown at time $t$, denoted $DD(t)$, is the percentage decline from the historical high water mark:
+In percentage terms the drawdown is $1 - V_t/\text{HWM}_t = 1 - e^{-D_t}$, so log and percentage drawdowns agree to first order and the percentage one is smaller: a log drawdown of 0.10 is a 9.52% fall.
+Other descriptors:
 
-$$DD(t) = \frac{V(t) - \text{HWM}(t)}{\text{HWM}(t)} \in (-\infty, 0]$$
-
-Drawdown is commonly expressed as a positive loss percentage:
-
-$$D(t) = -DD(t) = \frac{\text{HWM}(t) - V(t)}{\text{HWM}(t)} \in [0, 1)$$
-
-Key drawdown characteristics:
-- **Maximum Drawdown (MDD):** The worst observed peak-to-trough loss over a specified evaluation period $[0, T]$:
-
-$$\text{MDD}(T) = \sup_{0 \le t \le T} D(t) = \sup_{0 \le t \le T} \left[ \frac{\text{HWM}(t) - V(t)}{\text{HWM}(t)} \right]$$
-
-- **Drawdown Duration (Underwater Period):** The continuous time elapsed between a new high water mark and the date when portfolio equity fully recovers to that prior peak:
-
-$$\tau_{\text{recovery}} = \inf \{ t > t_{\text{peak}} \mid V(t) \ge V(t_{\text{peak}}) \} - t_{\text{peak}}$$
-
-- **Time to Trough:** The elapsed duration from the high water mark to the point of maximum loss.
+- time to trough: from the peak to the lowest point of a drawdown;
+- time to recovery (underwater period): from the peak until $V$ first regains the old HWM;
+- drawdown frequency: how often $D_t$ crosses a threshold.
 
 ```mermaid
 flowchart LR
-  Peak[High Water Mark HWM] -->|Drawdown Phase| Trough[Trough Value: Maximum Drawdown]
-  Trough -->|Recovery Phase| NewPeak[New High Water Mark]
-  subgraph Underwater Period
-    Peak
-    Trough
-    NewPeak
-  end
+  A["New high water mark"] -->|"losses: D rises"| B["Trough: D = drawdown size"]
+  B -->|"gains: D falls"| C["Old HWM regained: D = 0"]
+  C --> A
+  B -->|"D crosses a limit"| L["Limit action: cut, hedge or stop"]
 ```
 
-### Expected Maximum Drawdown Analytics
+### The model and the scaling law
 
-Assuming portfolio log-equity follows an arithmetic Brownian motion with annualized drift $\mu$ and annualized volatility $\sigma$:
+Model log equity as arithmetic Brownian motion, $X_t = \mu t + \sigma W_t$, with $\mu$ the log drift (for a fund with arithmetic mean return $m$, $\mu = m - \sigma^2/2$) and Sharpe ratio $S = \mu/\sigma$ at zero rates.
+Since $X = \sigma(S t + W_t)$, every drawdown statistic scales with $\sigma$ at fixed $S$:
 
-$$dX(t) = \mu \, dt + \sigma \, dW(t)$$
+$$\text{MDD}_T(\mu, \sigma) \overset{d}{=} \sigma \cdot \text{MDD}_T(S, 1)$$
 
-The annual Sharpe ratio is $S = \mu / \sigma$.
-Malik Magdon-Ismail and Amir Atiya derived closed-form analytical approximations for the expected maximum drawdown $\mathbb{E}[\text{MDD}(T)]$:
+Doubling leverage doubles $\sigma$ and $\mu$, keeps $S$, and doubles every drawdown in log units.
+So drawdowns should always be quoted in units of $\sigma$, and the only free parameters are $S$ and $T$.
 
-#### 1. Zero-Drift Limit ($\mu = 0$):
-When the strategy has zero directional edge, the expected maximum drawdown scales with the square root of time:
+### The exact distribution
 
-$$\mathbb{E}[\text{MDD}(T)] \approx \sqrt{\frac{\pi}{2}} \cdot \sigma \sqrt{T} \approx 1.2533 \cdot \sigma \sqrt{T}$$
+$D_t$ is a Brownian motion with drift $-\mu$, reflected at 0 (the running maximum pushes it back up from 0).
+$\text{MDD}_T < h$ means $D$ has not reached $h$ by time $T$, so $u(t, x) = P_x(D \text{ stays below } h \text{ until } t)$ solves
 
-#### 2. Positive-Drift Regime ($\mu > 0$, Large $T$):
-When drift is positive, the trajectory trends upward, preventing drawdowns from growing indefinitely with $\sqrt{T}$.
-For large $T$, expected maximum drawdown scales logarithmically with the evaluation horizon:
+$$u_t = \tfrac12 \sigma^2 u_{xx} - \mu u_x \text{ on } (0, h), \qquad u_x(0) = 0, \qquad u(h) = 0, \qquad u(0, x) = 1.$$
 
-$$\mathbb{E}[\text{MDD}(T)] \approx \frac{\sigma^2}{2\mu} \left[ \ln\left( \frac{2\mu^2 T}{\sigma^2} \right) + \gamma \right] = \frac{\sigma}{2S} \left[ \ln(2 S^2 T) + \gamma \right]$$
+Separating variables with $\phi(x) = e^{cx}\psi(x)$, $c = \mu/\sigma^2$, removes the first-order term: the eigenfunctions are $\psi = \cos kx - (c/k)\sin kx$ with $kh\cos kh = ch\sin kh$ and eigenvalue $-\tfrac12\sigma^2 k^2 - \mu^2/(2\sigma^2)$, plus one hyperbolic mode when $ch > 1$.
+Expanding the initial condition in this basis gives $P(\text{MDD}_T < h)$ as a rapidly convergent series, and $E[\text{MDD}_T] = \int_0^\infty P(\text{MDD}_T \ge h)\,dh$ is a one-dimensional integral.
+This is the route Magdon-Ismail, Atiya, Pratap and Abu-Mostafa (2004) take; [drawdowns.py](code/drawdowns.py) implements it independently, checks the closed-form coefficients against quadrature, and checks the zero-drift result to $10^{-9}$.
 
-where $\gamma \approx 0.5772$ is the Euler-Mascheroni constant.
-This is the large-$T$ limit $Q_p(x) \to \frac{1}{4}\ln x + 0.49088$ of Magdon-Ismail and Atiya's $\mathbb{E}[\text{MDD}] = \frac{2\sigma^2}{\mu} Q_p\left(\frac{\mu^2 T}{2\sigma^2}\right)$, since $0.49088 \times 4 - \ln 4 \approx \gamma$.
-This analytical result reveals that:
-- Expected maximum drawdown is inversely proportional to the Sharpe ratio $S$.
-- Doubling strategy volatility doubles the expected dollar drawdown.
-- Over realistic multi-year horizons (e.g., 5-10 years), even high-Sharpe strategies ($S = 1.5$) reliably experience drawdowns equal to about $1.23$ times (5 years) to $1.46$ times (10 years) their annual standard deviation.
+The paper writes the mean as
 
-### Performance Metrics Based on Drawdowns
+$$E[\text{MDD}_T] = \begin{cases} \frac{2\sigma^2}{\mu} Q_p\!\left(\frac{\mu^2 T}{2\sigma^2}\right) & \mu > 0 \\ \sqrt{\pi/2}\,\sigma\sqrt{T} & \mu = 0 \\ -\frac{2\sigma^2}{\mu} Q_n\!\left(\frac{\mu^2 T}{2\sigma^2}\right) & \mu < 0 \end{cases}$$
 
-Standard Sharpe ratios treat upside and downside volatility symmetrically.
-Investors and allocators evaluate asymmetric drawdown-adjusted ratios:
+with $Q_p(x) \to \tfrac14\ln x + 0.49088$ and $Q_n(x) \to x + \tfrac12$ as $x \to \infty$, and $Q_p(x), Q_n(x) \approx \sqrt{\pi/8}\sqrt{2x}$ as $x \to 0$.
+Interpretation:
 
-#### 1. Calmar Ratio
-The Calmar ratio measures annualized compound return relative to the maximum drawdown over a rolling 3-year or 5-year window:
+- zero drift: $\sqrt{\pi/2} \approx 1.2533$, against $\sqrt{2/\pi} \approx 0.7979$ for the expected maximum of the same Brownian motion;
+- positive drift: logarithmic growth, $E[\text{MDD}_T] \approx \frac{\sigma^2}{2\mu}\left(\ln\frac{\mu^2 T}{2\sigma^2} + 1.96352\right) = \frac{\sigma}{2S}\left(\ln(2S^2T) + \gamma_E\right)$, since $4 \times 0.49088 = 1.96352$ and $(\ln 4 + \gamma_E)/4 = 0.490878$ agrees with the paper's constant to the five digits it quotes;
+- negative drift: $E[\text{MDD}_T] \approx |\mu| T + \sigma^2/|\mu|$, the whole expected loss plus a constant.
 
-$$\text{Calmar Ratio} = \frac{\text{Annualized Return}}{\text{Maximum Drawdown}(T)}$$
+How good is the asymptote?
+The exact $Q_p$ against $\tfrac14\ln x + 0.49088$:
 
-A Calmar ratio above $1.0$ is generally considered acceptable in systematic trading, while ratios exceeding $2.0$ represent elite risk-managed performance.
+| $x$ | 1 | 10 | 100 | 1000 |
+| :--- | ---: | ---: | ---: | ---: |
+| exact $Q_p(x)$ | 0.5877 | 1.0875 | 1.6457 | 2.2183 |
+| asymptote | 0.4909 | 1.0665 | 1.6422 | 2.2178 |
 
-#### 2. Sterling Ratio
-The Sterling ratio replaces the single maximum drawdown with the average of annual maximum drawdowns plus an arbitrary buffer (historically 10%):
+The asymptote always undershoots: the gap is 0.021 at $x = 10$, 0.0035 at $x = 100$ and 0.0005 at $x = 1000$, and $x = 100$ already means $S^2 T = 200$, far longer than any track record.
 
-$$\text{Sterling Ratio} = \frac{\text{Annualized Return}}{\frac{1}{N}\sum_{i=1}^N \text{MDD}_i + 0.10}$$
+### Expected maximum drawdown in units of $\sigma$
 
-#### 3. Burke Ratio
-The Burke ratio penalizes both the frequency and severity of drawdowns by taking the square root of the sum of squared drawdowns:
+Exact $E[\text{MDD}_T]/\sigma$ (log units):
 
-$$\text{Burke Ratio} = \frac{\text{Annualized Return}}{\sqrt{\sum_{k=1}^M D_k^2}}$$
+| Sharpe | $T = 1$ | $T = 3$ | $T = 10$ |
+| :--- | ---: | ---: | ---: |
+| 0.0 | 1.253 | 2.171 | 3.963 |
+| 0.5 | 1.069 | 1.663 | 2.525 |
+| 1.0 | 0.925 | 1.336 | 1.855 |
+| 2.0 | 0.727 | 0.969 | 1.252 |
 
-### Institutional Risk Limits Architecture
+Read it as: a Sharpe-1 strategy run at 10% vol should expect a worst drawdown of about 13% over three years, and a Sharpe-0.5 strategy about 17%.
 
-Quantitative hedge funds and proprietary trading desks enforce multi-layered limit structures to prevent catastrophic loss:
+The mean understates what a limit-setter needs; the tail matters.
+Exact probabilities with $\sigma = 10\%$:
 
-1. **Intraday Stop-Loss Limits:** If cumulative daily trading loss exceeds threshold $L_{\text{daily}}$ (e.g., 1% of allocated equity), the automated execution system freezes new risk-increasing orders and systematically hedges delta to cash.
-2. **Monthly / Trailing Drawdown Throttles:** If rolling monthly drawdown breaches threshold $L_{\text{month}}$ (e.g., 5%), portfolio leverage is automatically scaled down by 50%. If drawdown reaches 10%, the desk is completely liquidated and suspended pending risk audit.
-3. **VaR and Expected Shortfall Limits:** Daily 99% 1-day VaR cannot exceed a set percentage of capital (e.g., 2.5% of AUM).
-4. **Gross and Net Leverage Caps:**
-   - Gross Leverage $= (\sum |L_i| + \sum |S_i|) / \text{Equity} \le \text{Cap}_{\text{gross}}$ (e.g., $4.0\times$ for equities, $20\times$ for fixed income relative value).
-   - Net Leverage $= (\sum L_i - \sum S_i) / \text{Equity} \le \text{Cap}_{\text{net}}$ (e.g., $\pm 20\%$).
-5. **Factor and Liquidity Concentration Limits:** No single risk factor (e.g., tech momentum, energy beta, 10y rates) may account for more than 25% of total portfolio variance.
+| Sharpe | $P(\text{MDD}_{1y} \ge 10\%)$ | $P(\text{MDD}_{3y} \ge 20\%)$ |
+| :--- | ---: | ---: |
+| 0.0 | 0.629 | 0.495 |
+| 0.5 | 0.476 | 0.242 |
+| 1.0 | 0.331 | 0.089 |
+| 2.0 | 0.126 | 0.006 |
 
-### The De-Risking Dilemma and Recovery Asymmetry
+### Two identities from the drift
 
-When a fund incurs a significant drawdown, risk managers face a difficult operational dilemma:
-**Should capital allocation be reduced to prevent further losses, or should risk be maintained to recover quickly?**
+Long-run drawdown.
+For $\mu > 0$ the reflected process $D$ has a stationary law, exponential with rate $2\mu/\sigma^2$, because the density $p$ of a reflected drifted Brownian motion solves $\tfrac12\sigma^2 p'' + \mu p' = 0$ with zero flux at 0.
+So at a random time far in the future the expected drawdown is $\sigma^2/(2\mu) = \sigma/(2S)$ and $P(D > h) = e^{-2\mu h/\sigma^2}$: a Sharpe-1, 10%-vol strategy spends on average 5% below its peak and 13.5% of its time more than 10% below it.
 
-#### 1. The Mathematical Recovery Asymmetry
-Losses compound non-linearly:
+Ruin-type probabilities.
+$e^{-2\mu X_t/\sigma^2}$ is a martingale, so by optional stopping the probability that $X$ ever falls $h$ below its starting value is
 
-$$\text{Required Return to Recover} = \frac{1}{1 - D} - 1$$
+$$P\left(\inf_t X_t \le -h\right) = e^{-2\mu h/\sigma^2} = e^{-2Sh/\sigma}.$$
 
-| Drawdown ($D$) | Required Gain to Break Even |
-| :--- | :--- |
-| 10% | 11.1% |
-| 20% | 25.0% |
-| 30% | 42.9% |
-| 50% | 100.0% |
-| 75% | 300.0% |
-| 90% | 900.0% |
+For $S = 1$, $\sigma = 10\%$ and $h = 0.20$ this is $e^{-4} = 0.0183$.
+The same exponent is the [gambler's ruin](../01-Probability/11-Random-Walks-and-Gamblers-Ruin.md) result in continuous time, and it is the cleanest statement of why Sharpe and not return controls survival.
 
-#### 2. The Cost of Dynamic De-Risking (Whipsaw Drag)
-Suppose a fund reduces its position sizing by 50% after suffering a 20% drawdown.
-If the strategy subsequently generates the exact sequence of returns required to recover under full sizing (+25%), the de-risked fund only gains:
+### Discrete monitoring
 
-$$\text{De-risked Return} = 0.50 \times 25\% = +12.5\%$$
+Daily marks miss intraday extremes, so a simulated or historical MDD from daily data is biased low.
+With $S = 1.5$, $\sigma = 10\%$, $T = 3$: the exact mean is 0.1120, daily Monte Carlo gives about 0.1049, ten-times-finer steps about 0.1092, and extrapolating linearly in $\sqrt{\Delta t}$ recovers about 0.1112.
+The bias is larger in the tail: daily monitoring gives $P(\text{MDD}_{3y} \ge 15\%)$ of about 0.105 against the exact 0.131.
+The $\sqrt{\Delta t}$ scaling is the same one behind the continuity correction for discretely monitored barrier options (Broadie, Glasserman and Kou 1997).
 
-The portfolio equity recovers to only $0.80 \times 1.125 = 0.90$ (down 10%), rather than returning to par ($1.00$).
-The fund now requires an additional $+11.1\%$ gain to reach its high water mark.
-De-risking protects against the absorbing boundary of ruin (zero capital), but locks in drawdowns and impairs the expected time to recovery if the strategy maintains positive edge.
+### Drawdown-based performance ratios
 
-### Adaptive Sizing: Volatility Targeting and CPPI
+The Calmar ratio is annualised return over maximum drawdown, as introduced by Young (1991) on a 36-month window.
+Because $\text{MDD}$ grows with the window length (about $\ln T$ for good strategies, $\sqrt{T}$ for bad ones), Calmar ratios are only comparable at the same window and the same sampling frequency.
+Sterling and Burke ratios replace the single maximum by an average of large drawdowns or a root sum of squared drawdowns; definitions differ between sources, so state the formula whenever you quote one.
+All of them inherit the small-sample problem of a single extreme: a three-year MDD is essentially one observation.
 
-To balance survival against recovery drag, systematic funds implement rule-based dynamic sizing:
+### The limit framework
 
-- **Volatility Targeting:** Position sizes are scaled inversely to prevailing market volatility:
+A trading firm turns its risk appetite into a hierarchy of limits, each catching a different failure:
 
-$$w_t = w_{\text{base}} \times \frac{\sigma_{\text{target}}}{\hat{\sigma}_t}$$
+| Limit type | Measures | Catches | Blind spot |
+| :--- | :--- | :--- | :--- |
+| VaR or ES | loss quantile or tail mean at a horizon | aggregate market risk under normal correlations | regime changes, liquidity, tails beyond the window |
+| Stress loss | loss under named scenarios | crisis co-movements, nonlinearity | scenarios nobody wrote down |
+| Sensitivities | DV01 by bucket, CS01, vega by expiry and strike, gamma | concentration on one factor, hedgeable exposures | correlation between factors |
+| Notional, gross and net | position size, gross and net leverage | balance-sheet use, funding, crowding | risk per unit notional differs wildly |
+| Liquidity | position against average daily volume, days to exit | positions that cannot be cut | liquidity in stress, not normal days |
+| Stop-loss and drawdown | realised P&L from start or from the HWM | model failure and broken strategies that the other limits did not see | cuts good strategies on noise |
 
-When market volatility spikes during a drawdown, exposure naturally contracts, preserving capital without discretionary intervention.
+Operational rules that make a framework work:
 
-- **Constant Proportion Portfolio Insurance (CPPI):** Equity exposure is dynamically scaled based on the dollar distance (cushion $C_t$) above a guaranteed floor value $F$:
+- hard limits block risk-increasing trades pre-trade; soft limits trigger escalation, a documented excess approval and a remediation deadline;
+- utilisation is monitored intraday for fast books, and every breach is logged with cause and resolution;
+- limits must be consistent with each other (next section) and reviewed when volatility regimes change;
+- for banks using internal models, stress test results must be reflected in the policies and limits set by management and the board (Basel MAR30.11(3)).
 
-$$\text{Exposure}_t = m \cdot (\text{Equity}_t - F)$$
+```mermaid
+flowchart TD
+  A["Risk appetite: board-level loss tolerance"] --> B["Firm limits: ES, stress loss, capital"]
+  B --> C["Desk limits: VaR or ES, sensitivities, notional, drawdown"]
+  C --> D["Trader limits and pre-trade checks"]
+  D --> E{"Utilisation above soft limit?"}
+  E -->|"no"| F["Trade"]
+  E -->|"yes, below hard limit"| G["Escalate: approve temporary excess or cut"]
+  E -->|"at hard limit"| H["Block risk-increasing orders"]
+  G --> I["Breach log, cause, remediation date"]
+  H --> I
+```
 
-where $m$ is a leverage multiplier. As equity approaches the floor, exposure automatically shrinks to zero, guaranteeing that the capital floor is not breached.
+### Making limits consistent
+
+A 1% one-day 99% VaR limit on a normal P&L allows a daily sd of $0.01/2.3263 = 0.43\%$, about 6.82% a year.
+At that vol, a Sharpe-1 strategy hits a 10% drawdown within a year with probability 0.080, and a zero-Sharpe strategy with probability 0.286.
+So a 10% annual drawdown stop beside a 1% VaR limit fires on about one good strategy in twelve: the two limits are consistent only if the firm accepts that false-alarm rate.
+
+### Drawdown limits as hypothesis tests
+
+A stop is a sequential test of "the strategy still has its edge".
+Its size (false alarm) is $P(\text{MDD} \ge h \mid S = S_{\text{claimed}})$ and its power is $P(\text{MDD} \ge h \mid S = 0)$.
+With $\sigma = 10\%$ and a one-year 10% stop, the size is 0.331 at $S = 1$ and the power only 0.629 at $S = 0$: the test cannot tell a good strategy from a dead one in a year, which is the drawdown version of the statement that Sharpe ratios are hard to estimate (see [Overfitting and Deflated Sharpe](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md)).
+Wider stops at longer horizons separate better: over three years a 20% stop has size 0.089 at $S = 1$ and power 0.495 at $S = 0$.
+
+### De-risking: what a ladder costs and buys
+
+Recovery is asymmetric: after a fall of $D$ the gain needed to recover is $1/(1 - D) - 1$.
+
+| Drawdown | 10% | 20% | 30% | 50% | 75% | 90% |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Gain to recover | 11.1% | 25.0% | 42.9% | 100% | 300% | 900% |
+
+Cutting risk after losses makes recovery slower: after a 20% loss, halving the position and then earning the 25% the full position needed leaves equity at $0.8 \times 1.125 = 0.90$.
+
+The trade-off, measured.
+[drawdowns.py](code/drawdowns.py) runs the same 20,000 one-year daily paths at 20% vol with and without the ladder of worked example 2 (full risk below 5%, 70% to 10%, 40% to 15%, stop at 15%):
+
+| | Sharpe 1, no ladder | Sharpe 1, ladder | Sharpe 0, no ladder | Sharpe 0, ladder |
+| :--- | ---: | ---: | ---: | ---: |
+| Mean return | about 22.2% | about 16.7% | about 0 | about 0 |
+| Mean MDD | about 15.9% | about 12.2% | about 21.3% | about 13.8% |
+| $P(\text{MDD} \ge 20\%)$ | about 0.217 | 0 | about 0.499 | 0 |
+| Share stopped out | 0 | about 0.180 | 0 | about 0.454 |
+
+The ladder removes every 20% drawdown, costs a good strategy about 5.6 points of expected return, and stops 18% of good strategies; for a dead strategy it leaves the mean return at about zero and cuts the average maximum drawdown from about 21.3% to 13.8%.
+Whether that is worth it depends on what a 20% drawdown costs the business (redemptions, funding, the franchise), not on the strategy's Sharpe.
+
+### Drawdown control by construction: CPPI and the Grossman-Zhou floor
+
+CPPI (Black and Perold 1992) holds risky exposure $m(V_t - F)$ against a fixed floor $F$; Grossman and Zhou (1993) solve the optimal investment problem under the constraint $V_t \ge \alpha \sup_{s \le t} V_s$ and the optimal risky holding is proportional to the cushion $V_t - \alpha\,\text{HWM}_t$, a CPPI whose floor ratchets up with the high water mark.
+In continuous time the floor is never breached, because exposure goes to zero as the cushion does.
+In practice the guarantee fails if the market gaps by more than $1/m$ between rebalances: with $m = 4$ a 25% gap wipes the whole cushion.
+Simulated with daily rebalancing ($m = 4$, $\alpha = 0.8$, 20% vol, 5 years), the worst $V/\text{HWM}$ on any path is about 0.800 without gaps; with one -30% day it is 0.76 on the worst paths and every path breaches, since the loss is $4 \times 0.30 = 1.2$ times the cushion.
+
+Volatility targeting, $w_t = \sigma_{\text{target}}/\hat\sigma_t$, is the other common rule: it keeps the ex-ante risk constant rather than reacting to realised losses, so it cuts exposure when volatility rises, which often precedes drawdowns, but it does nothing against a loss that arrives without a volatility spike.
 
 ## Worked examples
 
-### Example 1: Calculating Expected Maximum Drawdown
+All numbers are printed and asserted by `python 11-Risk-and-Trading/code/drawdowns.py`.
 
-A quantitative equity market-neutral hedge fund operates with an annualized return of $\mu = 15.0\%$ and annualized volatility of $\sigma = 10.0\%$.
-The strategy has an annual Sharpe ratio of $S = 1.50$.
-Compute the expected maximum drawdown over a 3-year trading horizon ($T = 3.0$).
+### Example 1: expected maximum drawdown at Sharpe 1.5
 
-**Solution:**
+A market-neutral fund has log drift $\mu = 15\%$ and vol $\sigma = 10\%$, so $S = 1.5$.
+What maximum drawdown should the investor expect over 3 and 10 years?
 
-Step 1: Compute model parameters:
+1. $x = \mu^2 T/(2\sigma^2) = 0.0225 \times 3/0.02 = 3.375$ for $T = 3$, and 11.25 for $T = 10$.
+2. Asymptote: $\frac{2\sigma^2}{\mu}(\tfrac14 \ln x + 0.49088) = 0.1060$ at 3 years and 0.1461 at 10 years; the equivalent form $\frac{\sigma}{2S}(\ln(2S^2T) + \gamma_E)$ gives the same numbers.
+3. Exact (series): 0.1120 at 3 years and 0.1487 at 10 years. At 3 years the asymptote is 0.60 percentage points (about 5%) too low, because $x = 3.375$ is far from the large-$x$ regime.
+4. In percentage terms, $E[1 - e^{-\text{MDD}}] = 10.54\%$ at 3 years and 13.75% at 10 years.
+5. The tail: the 95% quantile of the 3-year MDD is 0.1799 (and 0.2234 at 10 years), and $P(\text{MDD}_{3y} \ge 15\%) = 0.131$.
 
-$$S = \frac{0.15}{0.10} = 1.50$$
+What to say in the interview: "The expected 3-year drawdown is about 11%, a one-in-twenty bad case is 18%, and anyone who sizes a stop at 11% will be stopped out about half the time by a perfectly healthy strategy."
 
-$$\frac{\sigma}{2S} = \frac{0.10}{2 \times 1.50} = \frac{0.10}{3.00} \approx 0.03333 \quad (3.33\%)$$
+### Example 2: a drawdown ladder after a 12% loss
 
-Step 2: Compute logarithmic term:
+A $100m fund runs this ladder: full risk below a 5% drawdown, 70% from 5% to 10%, 40% from 10% to 15%, liquidate at 15%.
+It falls to $88m (a 12% drawdown), and the underlying models then return +15%.
 
-$$2 S^2 T = 2 \times 1.50^2 \times 3.0 = 2 \times 2.25 \times 3.0 = 13.50$$
+1. The drawdown is in the 10% to 15% band, so the multiplier is 0.40.
+2. The fund earns $0.40 \times 15\% = 6\%$: equity $88 \times 1.06 = 93.28$m.
+3. It is still 6.72% below the HWM and needs another 7.20% to recover.
+4. Unthrottled it would have reached $88 \times 1.15 = 101.2$m, a new high.
 
-$$\ln(2 S^2 T) = \ln(13.50) \approx 2.60269$$
+The cost is real but so is the protection: the measured comparison in the core concepts shows the ladder removing every 20% drawdown at the price of about 5.6 points of expected annual return for a Sharpe-1 strategy.
 
-Step 3: Add the Euler-Mascheroni constant:
+### Example 3: is the stop consistent with the VaR limit?
 
-$$\text{Bracket Sum} = 2.60269 + 0.57722 = 3.17991$$
+A desk has a 1% one-day 99% VaR limit, targets Sharpe 1, and has a 10% one-year drawdown stop.
 
-Step 4: Compute Expected Maximum Drawdown:
+1. Allowed daily sd: $1\%/2.3263 = 0.43\%$, annualised $0.43\% \times \sqrt{252} = 6.82\%$.
+2. $P(\text{MDD}_{1y} \ge 10\%)$ at $\sigma = 6.82\%$, $S = 1$: 0.080.
+3. At $S = 0$ it is 0.286.
 
-$$\mathbb{E}[\text{MDD}] \approx 0.03333 \times 3.17991 \approx 0.1060 \quad (10.60\%)$$
-
-Over a 3-year horizon, a Sharpe 1.5 fund with 10% volatility should expect a maximum peak-to-trough drawdown of approximately $10.6\%$.
-If the evaluation window extends to $T = 10$ years:
-
-$$2 S^2 T = 2 \times 2.25 \times 10 = 45.0 \implies \ln(45.0) \approx 3.80666$$
-
-$$\mathbb{E}[\text{MDD}_{10y}] \approx 0.03333 \times (3.80666 + 0.57722) = 0.03333 \times 4.38388 \approx 0.1461 \quad (14.61\%)$$
-
-Even an exceptional Sharpe 1.5 strategy faces a 14.6% expected drawdown over a decade.
-
-### Example 2: Drawdown-Triggered De-Risking Mechanics
-
-A multi-strategy fund manages $\$100,000,000$.
-The mandate enforces the following drawdown limit ladder:
-- Level 0 (Normal): Drawdown $< 5\% \implies 100\%$ risk allocation.
-- Level 1 (Warning): $5\% \le \text{Drawdown} < 10\% \implies$ Cut gross leverage by $30\%$ (run at $70\%$ risk).
-- Level 2 (De-risk): $10\% \le \text{Drawdown} < 15\% \implies$ Cut gross leverage by $60\%$ (run at $40\%$ risk).
-- Level 3 (Hard Stop): $\text{Drawdown} \ge 15\% \implies$ Complete portfolio liquidation to cash.
-
-The fund suffers a sequence of daily losses totaling $12.0\%$ drawdown (fund equity falls to $\$88,000,000$).
-1. Determine the active risk allocation multiplier.
-2. If the underlying alpha models subsequently generate a $+15.0\%$ cumulative gross rebound return, calculate the final portfolio equity and determine whether the fund has reclaimed its high water mark.
-
-**Solution:**
-
-Step 1: Determine Active Risk Allocation:
-Current drawdown is $12.0\%$, which falls into **Level 2** ($10\% \le DD < 15\%$).
-The risk allocation multiplier is $40\%$ ($0.40$).
-
-Step 2: Evaluate Rebound Performance:
-The alpha models generate a $+15.0\%$ return on capital.
-Because the fund is operating at $40\%$ risk weighting:
-
-$$\text{Effective Portfolio Return} = 0.40 \times 15.0\% = +6.0\%$$
-
-Step 3: Compute Final Portfolio Equity:
-
-$$\text{Final Equity} = \$88,000,000 \times (1 + 0.060) = \$88,000,000 \times 1.060 = \$93,280,000$$
-
-Step 4: Check High Water Mark Recovery:
-Initial HWM was $\$100,000,000$.
-Current equity is $\$93,280,000$, leaving an ongoing drawdown of:
-
-$$\text{Remaining Drawdown} = \frac{\$93,280,000 - \$100,000,000}{\$100,000,000} = -6.72\%$$
-
-Under unthrottled risk, the $+15\%$ rebound would have produced $\$88\text{M} \times 1.15 = \$101.2\text{M}$, fully restoring the high water mark and generating $\$1.2\text{M}$ in net profit.
-Due to de-risking, the fund remains underwater at $\$93.28\text{M}$.
-This illustrates the mathematical cost of de-risking: risk reduction prevents terminal ruin at the expense of locking in losses during market reversals.
+The desk will hit the stop in about one year in twelve even if it is as good as claimed, and will survive a year with probability 0.714 even if it has no edge; if management wants a sharper test, it must lengthen the horizon, not tighten the stop.
 
 ## Pitfalls
 
-- **Confusing Drawdown with Volatility:** A strategy can exhibit low annualized volatility (e.g., a carry trade with a Sharpe of 2.0) but experience catastrophic sudden drawdowns of 40%+ when market regimes shift.
-- **Procyclical Stop-Loss Whipsaw:** Setting tight intraday or weekly stop-loss limits on mean-reverting alpha strategies causes the system to systematically buy high and sell low at the bottom of temporary noise fluctuations.
-- **Ignoring Compounding Recovery Asymmetry:** Assuming that recovering from a 50% loss requires only a 50% gain leads to severe undercapitalization and reckless leverage scaling.
-- **Lookback Window Truncation:** Evaluating a strategy's maximum drawdown over a 2-year sample period that excluded 2008, 2020, or 2022 severely misrepresents true strategy tail risk.
-- **Survivorship Bias in Historical Drawdown Reporting:** Tracking only funds or models that currently exist ignores all historical peers that were liquidated after breaching maximum drawdown limits.
+- Quoting drawdowns without the volatility: MDD scales with $\sigma$ at fixed Sharpe, so "a 20% drawdown" means nothing until you know whether vol is 5% or 30%.
+- Using the large-$T$ asymptote for short track records: at $x = 3.375$ it understates the mean by about 5%, and the mean itself understates the tail.
+- Measuring drawdowns from daily or monthly marks and comparing them with a continuous-time formula: discrete monitoring always misses part of the drawdown.
+- Mixing log and percentage drawdowns, or arithmetic and log drift ($\mu_{\log} = m - \sigma^2/2$).
+- Setting a stop by intuition rather than by its false-alarm rate: a tight stop is a test with huge size and little power.
+- Treating a de-risking ladder as free: it cuts expected return and the probability of recovering quickly, and the measured cost should be weighed against what the drawdown would cost the business.
+- Trusting CPPI or a drawdown floor through gaps: the guarantee assumes you can rebalance before the cushion is gone.
+- Comparing Calmar ratios computed over different windows or sampling frequencies.
+- Judging drawdown risk from the surviving funds or strategies only: survivorship removes exactly the paths that breached limits.
+- Ignoring the gross book: a market-neutral portfolio with large gross leverage can have small VaR and large drawdowns from factor or crowding moves that the VaR window has not seen.
 
 ## Interview questions
 
 > [!question]- risk-expected-mdd-vs-sharpe | How does expected maximum drawdown scale with the Sharpe ratio and time horizon for a continuous drift-diffusion process?
-> For a process with positive drift, expected maximum drawdown scales inversely with the Sharpe ratio: $\mathbb{E}[\text{MDD}] \propto \frac{\sigma}{2S} \ln(S^2 T)$. Higher Sharpe ratios compress drawdown magnitude, but drawdowns still grow logarithmically with evaluation time $T$. In zero-drift regimes, expected drawdown scales with the square root of time: $\mathbb{E}[\text{MDD}] \approx 1.2533 \sigma \sqrt{T}$.
+> At zero drift exactly $\sqrt{\pi/2}\,\sigma\sqrt{T} \approx 1.2533\,\sigma\sqrt T$; with positive drift it grows only logarithmically, $E[\text{MDD}] \approx \frac{\sigma}{2S}\left(\ln(2S^2T) + \gamma_E\right)$ for large $S^2T$ (Magdon-Ismail et al. 2004).
+> At fixed Sharpe, MDD is proportional to $\sigma$, because $X = \sigma(St + W_t)$.
+> The log form is an asymptote: its constant 0.49088 is only reached for $\mu^2T/(2\sigma^2)$ in the hundreds; at $x = 1000$ the exact $Q_p$ is 2.2183 against 2.2178.
 
 > [!question]- risk-calmar-ratio-definition | Define the Calmar ratio and explain why institutional investors often prefer it over the Sharpe ratio.
-> The Calmar ratio is the ratio of annualized compound return to the maximum drawdown observed over a specified window (typically 36 months): $\text{Calmar} = \text{Return} / \text{MDD}$. Allocators prefer the Calmar ratio because it measures return against actual severe peak-to-trough capital loss rather than symmetric standard deviation, directly penalizing crash risk and tail clustering.
+> Annualised return divided by maximum drawdown, originally over 36 months (Young 1991).
+> It prices the path, not just the dispersion: two strategies with the same Sharpe can have very different worst peak-to-trough losses, and that loss is what triggers redemptions.
+> Its weakness: MDD is one extreme observation and grows with the window, so Calmar ratios are noisy and comparable only at the same window and sampling frequency.
 
 > [!question]- risk-de-risking-dilemma-explanation | What is the "de-risking dilemma" faced by quantitative hedge fund risk managers during severe drawdowns?
-> When a fund suffers a drawdown, cutting leverage protects capital against terminal ruin if performance continues to deteriorate. However, if the underlying alpha strategy has positive edge and rebounds, the reduced position size generates proportionally smaller dollar profits, permanently locking in realized losses and prolonging the time required to regain the high water mark.
+> Cutting risk after a loss protects against a dead strategy but, if the strategy is still good, it shrinks the dollars earned on the rebound and lengthens the time underwater.
+> Measured on 20,000 one-year paths at 20% vol, a 5/10/15% ladder removed every 20% drawdown but cut a Sharpe-1 strategy's mean return from about 22.2% to 16.7% and stopped 18% of good strategies.
+> The right ladder depends on the cost of a deep drawdown to the business and on how quickly a dead strategy can be detected, not on the strategy's average return.
 
 > [!question]- risk-recovery-return-asymmetry | Why does a 50% drawdown require a 100% return to break even, and what are the implications for position sizing?
-> If capital drops from 100 to 50, the base against which future percentage gains are measured is halved. To return to 100, the fund must generate 50 points of profit on a 50-point base, which is $50/50 = 100\%$. This non-linear asymmetry implies that position sizing must be constrained conservatively (e.g., via fractional Kelly) to avoid large drawdowns where recovery becomes mathematically improbable.
+> Recovery needs $1/(1 - D) - 1$: from 50, gaining 50 is 100% of the remaining base.
+> The required gain is 11.1% after 10%, 25% after 20%, 42.9% after 30% and 900% after 90%, so deep drawdowns are effectively permanent.
+> In log terms losses and gains are symmetric, which is why sizing should target the log-growth rate and its drawdowns (fractional Kelly) rather than arithmetic return.
 
 > [!question]- risk-trailing-vs-hard-drawdown-stops | Contrast a hard stop-loss limit with a trailing drawdown limit.
-> A hard stop-loss limit triggers when cumulative portfolio loss from inception reaches a fixed dollar or percentage threshold (e.g., $-10\%$ of initial capital). A trailing drawdown limit triggers when portfolio equity declines by a specified percentage from its peak high water mark, locking in accrued profits and resetting dynamically as the portfolio reaches new equity peaks.
+> A hard stop triggers on cumulative loss from a fixed reference (start of year or inception capital); a trailing limit triggers on the fall from the running high water mark and moves up with every new high.
+> The trailing limit protects accrued profits but fires more often: its trigger variable is $M_t - X_t$, which is always at least the loss from the start.
+> Calibrate either one from the distribution of the variable it monitors, not from intuition.
 
 > [!question]- risk-cppi-mechanism | Explain the operational mechanism of Constant Proportion Portfolio Insurance (CPPI).
-> CPPI dynamically allocates capital between a risky asset and a risk-free reserve based on the cushion: $\text{Exposure} = m \cdot (\text{Equity} - \text{Floor})$, where $m > 1$ is the multiplier and $\text{Floor}$ is the capital threshold that must never be breached. As equity drops toward the floor, the cushion shrinks, automatically forcing risk exposure down to zero before the floor is violated.
+> Hold risky exposure $m(V - F)$ against a floor $F$, with the rest in cash; as $V$ falls toward $F$ the exposure shrinks to zero, so in continuous time the floor holds (Black and Perold 1992).
+> With a ratcheting floor $\alpha \cdot \text{HWM}$ it becomes the drawdown-control policy of Grossman and Zhou (1993).
+> The guarantee breaks if the risky asset gaps by more than $1/m$ between rebalances, and the rule is pro-cyclical: it sells after falls and buys after rises.
 
 > [!question]- risk-volatility-targeting-drawdown-mitigation | How does volatility targeting dynamically stabilize drawdowns during market panics?
-> Volatility targeting sets position size inversely proportional to rolling realized volatility: $w_t = w_{\text{base}} \times (\sigma_{\text{target}} / \hat{\sigma}_t)$. During market panics, asset volatility surges by $2\times$ to $5\times$. The rule-based engine automatically sells assets and scales back gross leverage as volatility expands, systematically capping dollar losses without relying on ad-hoc discretionary stops.
+> It sets exposure to $\sigma_{\text{target}}/\hat\sigma_t$, so when realised volatility rises the position shrinks and ex-ante risk stays roughly constant.
+> It helps when large losses arrive together with rising volatility, which is common in stress, and it is mechanical, so it avoids discretionary hesitation.
+> It does not help against a loss that arrives without a vol spike (a gap or a slow bleed), it lags because $\hat\sigma$ is estimated from the past, and it raises turnover.
 
 > [!question]- risk-underwater-period-significance | What is an underwater period, and why is drawdown duration often more damaging to hedge funds than drawdown magnitude?
-> The underwater period is the total time elapsed between setting a high water mark, reaching a trough, and fully recovering back to that peak. Extended underwater periods demoralize trading talent, prevent managers from earning performance fees (due to high water mark covenants), and trigger investor redemptions, frequently causing hedge fund closures even if ultimate insolvency is avoided.
+> The time from a high water mark until it is regained; for a positive-drift strategy the time spent far below the peak is governed by the stationary law $P(D > h) = e^{-2\mu h/\sigma^2}$.
+> While underwater, a fund charging incentive fees above a high water mark earns no performance fee, so staff costs are paid out of management fees and talent may leave.
+> Investors judge managers by time since the last high as much as by depth, so long shallow drawdowns can do as much commercial damage as short deep ones.
 
 > [!question]- risk-gross-vs-net-leverage-limits | Why do prime brokers and risk committees enforce separate limits on gross leverage and net leverage?
-> Net leverage measures directional market beta exposure ($\text{Long} - \text{Short}$), while gross leverage measures total balance sheet exposure ($\text{Long} + \text{Short}$). A market-neutral book can have zero net leverage while running $10\times$ gross leverage. High gross leverage exposes the fund to factor rotation, short squeezes, borrow cost spikes, and margin liquidation risks that net leverage metrics completely hide.
+> Net leverage measures directional exposure ($\text{Long} - \text{Short}$), gross leverage the balance sheet ($\text{Long} + \text{Short}$).
+> A market-neutral book can have zero net and ten times gross, and its risk sits in the spread between longs and shorts: factor rotations, short squeezes, borrow recalls and crowded unwinds, none of which net leverage sees.
+> Gross also drives financing and margin needs, which is what the prime broker cares about.
 
-> [!question]- risk-psychological-drawdown-limits | Why do proprietary trading desks implement mandatory "cooling-off" desk halts after consecutive losing sessions?
-> Following severe drawdowns, human and algorithmic traders are prone to tilt, behavioral loss aversion, and reckless risk escalation (gambler's fallacy or "revenge trading") to rapidly recover losses. Mandatory cooling-off periods enforce emotional de-escalation, mandate trade reconciliation, and ensure model assumptions are re-verified before fresh capital is committed.
+> [!question]- risk-psychological-drawdown-limits | What is the case for a mandatory cooling-off halt after consecutive losing sessions, and what does it cost?
+> It is a pre-committed control for the period when judgement is least reliable: after losses, decision-makers tend to escalate risk to win it back, and a halt forces a review of positions, models and data before new risk is taken.
+> It costs the same as any stop: it fires on noise as well as on broken strategies, and missed rebounds are real money.
+> Set it as part of the limit framework with an explicit false-alarm rate, and make the review (not just the pause) the point.
+
+> [!question]- risk-probability-ever-losing-h | A strategy has Sharpe 1 and 10% annual vol. What is the probability that it ever falls 20% (in log terms) below today's level?
+> $e^{-2\mu h/\sigma^2} = e^{-2 \times 0.10 \times 0.20/0.01} = e^{-4} = 0.0183$.
+> Proof: $e^{-2\mu X_t/\sigma^2}$ is a martingale, so by optional stopping $P(\text{hit } -h) \cdot e^{2\mu h/\sigma^2} + P(\text{never}) \cdot 0 = 1$.
+> The exponent is $2Sh/\sigma$: survival depends on Sharpe times the loss measured in vols.
+> A bridge-corrected Monte Carlo over 100 years gives about 0.0179, consistent with it.
+
+> [!question]- risk-mdd-zero-drift-closed-form | What is the expected maximum drawdown of a driftless Brownian motion with volatility sigma over T, and how does it compare with the expected maximum?
+> $E[\text{MDD}_T] = \sqrt{\pi/2}\,\sigma\sqrt T \approx 1.2533\,\sigma\sqrt T$, against $E[\max_{t \le T} W_t] = \sqrt{2/\pi}\,\sigma\sqrt T \approx 0.7979\,\sigma\sqrt T$.
+> The drawdown is larger because it can start from any interior peak, not just from 0.
+> So a zero-edge strategy at 10% vol should expect a 12.5% drawdown in its first year and about 21.7% over three years.
+
+> [!question]- risk-stationary-drawdown-mean | For a strategy with positive drift, what is the long-run average drawdown and why?
+> $\sigma^2/(2\mu) = \sigma/(2S)$: the drawdown is a reflected Brownian motion with drift $-\mu$, whose stationary law is exponential with rate $2\mu/\sigma^2$.
+> A Sharpe-1, 10%-vol strategy averages 5% below its peak and spends $e^{-2} = 13.5\%$ of its time more than 10% below it.
+> Halving the Sharpe doubles the typical drawdown in units of $\sigma$.
+
+> [!question]- risk-mdd-discrete-monitoring-bias | You estimate maximum drawdown from daily marks of a simulated strategy. Is the estimate biased, and how would you fix it?
+> Biased low: the path between marks can go lower than either mark, so daily monitoring misses part of every drawdown.
+> At Sharpe 1.5, 10% vol, 3 years: exact mean 0.1120, daily Monte Carlo about 0.1049, ten-times-finer steps about 0.1092.
+> The error shrinks like $\sqrt{\Delta t}$, so a two-step-size extrapolation (about 0.1112 here) or a Brownian-bridge correction removes most of it.
+
+> [!question]- risk-drawdown-stop-as-hypothesis-test | A strategy claims Sharpe 1 at 10% vol. The risk manager proposes a 10% drawdown stop over the first year. Critique it.
+> It is a test with size 0.331 (the chance a true Sharpe-1 strategy hits it) and power 0.629 (the chance a zero-Sharpe strategy hits it): it stops a third of good strategies and lets a third of dead ones through.
+> A year of data cannot separate Sharpe 1 from Sharpe 0 at any reasonable error rates.
+> Better: a wider stop over a longer horizon (a 20% three-year stop has size 0.089 and power 0.495), plus monitoring of what the strategy is supposed to be earning from, not just its P&L.
+
+> [!question]- risk-var-limit-drawdown-consistency | A desk has a 1% one-day 99% VaR limit and a 10% annual drawdown stop and targets Sharpe 1. Are the limits consistent?
+> The VaR limit allows a daily sd of $1\%/2.3263 = 0.43\%$, about 6.82% a year.
+> At that vol a Sharpe-1 strategy hits a 10% drawdown within a year with probability 0.080, and a zero-Sharpe strategy with probability 0.286.
+> So the stop fires on about one good year in twelve; consistent if management accepts that, otherwise widen the stop or lower the VaR limit.
+
+> [!question]- risk-cppi-gap-risk | A CPPI with multiplier 4 rebalances daily. What one-day move breaks its floor, and what happens on a -30% day?
+> Any fall larger than $1/m = 25\%$ before rebalancing: the loss $m \times \text{move} \times \text{cushion}$ then exceeds the cushion.
+> On a -30% day the loss is 1.2 times the cushion, so with a floor at 80% of the high water mark and a full 20% cushion, equity ends at $0.8 - 0.2 \times 0.2 = 0.76$ of the HWM.
+> Higher multipliers give more upside participation and a smaller gap tolerance; the gap risk is what option-based insurance sells.
+
+> [!question]- risk-magdon-asymptote-accuracy | A colleague uses E[MDD] = (sigma/2S)(ln(2S^2 T) + 0.5772) for a Sharpe 1.5, 10% vol, 3-year track record. Is that accurate?
+> It gives 10.60%, while the exact expectation is 11.20%: the formula is the large-$T$ asymptote of Magdon-Ismail et al., and here $x = \mu^2T/(2\sigma^2) = 3.375$ is not large.
+> The asymptote always undershoots; the gap in $Q_p$ is still 0.0035 at $x = 100$.
+> Use the exact series (or a fine-step simulation) for real track records, and quote the tail (95% quantile 18.0% here), not just the mean.
+
+> [!question]- risk-limit-framework-hierarchy | Design the limit set for a new options market-making desk. Which limits, and what does each one catch?
+> VaR or ES for aggregate normal-market risk; stress-loss limits on named crash, vol-spike and rates scenarios for nonlinearity; sensitivity limits (delta, gamma, vega by expiry and strike bucket, rho) for concentration; notional and liquidity limits against average volume; a stop-loss or drawdown limit as the backstop for model failure.
+> Make them consistent (the stop's false-alarm rate at the VaR-implied vol), define hard limits as pre-trade blocks and soft limits as escalation with a documented excess and remediation date.
+> Review them when the vol regime changes, since a fixed vega limit means very different risk at 15 and at 40 vol.
+
+> [!question]- risk-log-vs-percent-drawdown | A fund's log drawdown is 0.10. What is the percentage fall, and why does the distinction matter?
+> $1 - e^{-0.10} = 9.52\%$; percentage drawdowns are always smaller than log ones and the gap grows with depth.
+> Formulas for Brownian motion give log drawdowns, while investors see percentage ones: at Sharpe 1.5, 10% vol and 3 years the expected MDD is 11.20% in log units but 10.54% in percentage terms.
+> Also check the drift convention: the log drift is the arithmetic mean return minus $\sigma^2/2$.
 
 ## Further reading
 
-- Malik Magdon-Ismail and Amir F. Atiya (2004), "Maximum Drawdown", *Risk Magazine*.
-- Robert Carver, *Systematic Trading: A Unique New Method for Designing Trading and Investing Systems*, Chapter 8: "Managing Risk".
-- Agustin Lebron, *The Laws of Trading: A Trader's Guide to Better Decision-Making for Everyone*, Chapter 4: "The Law of Risk".
-- Marcos Lopez de Prado, *Advances in Financial Machine Learning*, Chapter 14: "Backtest Statistics and Maximum Drawdown".
-- E. B. Derman, *Models.Behaving.Badly: Why Confusing Illusion with Reality Can Lead to Disaster, on Wall Street and in Life*.
+- M. Magdon-Ismail, A. F. Atiya, A. Pratap and Y. S. Abu-Mostafa, "On the maximum drawdown of a Brownian motion", *Journal of Applied Probability* 41(1), 147-161, 2004: the series solution and the $Q_p$, $Q_n$ functions and asymptotics.
+- M. Magdon-Ismail and A. F. Atiya, "Maximum drawdown", *Risk* 17(10), 99-102, 2004: the practitioner version, including drawdown-based ratios.
+- S. J. Grossman and Z. Zhou, "Optimal investment strategies for controlling drawdowns", *Mathematical Finance* 3(3), 241-276, 1993.
+- F. Black and A. F. Perold, "Theory of constant proportion portfolio insurance", *Journal of Economic Dynamics and Control* 16(3-4), 403-426, 1992.
+- J. P. Lehoczky, "Formulas for stopped diffusion processes with stopping times based on the maximum", *Annals of Probability* 5(4), 601-607, 1977: the drawdown stopping time.
+- T. W. Young, "Calmar ratio: a smoother tool", *Futures*, October 1991.
+- M. Lopez de Prado, *Advances in Financial Machine Learning*, Wiley 2018, chapter 14 (backtest statistics, including drawdown and time under water).
 
 ## In this repo and SDE-Interview-Prep
 
-- Optimal sizing and risk of ruin: [Kelly Criterion and Position Sizing](01-Kelly-Criterion-and-Position-Sizing.md).
+- [drawdowns.py](code/drawdowns.py): exact MDD distribution by eigenfunction expansion, the Magdon-Ismail asymptotes, Monte Carlo checks, the ladder and drawdown-floor simulations; every number above.
+- Optimal sizing and growth: [Kelly Criterion and Position Sizing](01-Kelly-Criterion-and-Position-Sizing.md).
 - Tail risk metrics: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md).
-- Stress testing and extreme scenario modeling: [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md).
-- Python reference implementation of risk analytics and scenarios: [risk_analytics.py](code/risk_analytics.py).
+- Stress testing and extreme scenarios: [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md).
+- Reflection principle and running maxima: [Brownian Motion](../04-Stochastic-Calculus/01-Brownian-Motion.md); discrete analogue: [Random Walks and Gambler's Ruin](../01-Probability/11-Random-Walks-and-Gamblers-Ruin.md).
+- Pre-trade limit systems: [Intraday Risk and Pre-Trade Limits](../18-Pricing-and-Risk-Systems/08-Intraday-Risk-and-Pre-Trade-Limits.md).

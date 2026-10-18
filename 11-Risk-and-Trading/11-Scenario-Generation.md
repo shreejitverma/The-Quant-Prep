@@ -2,21 +2,21 @@
 type: concept
 track: [quant-research, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [risk-factor-modelling]
 est_hours: 4
-sources: [Paul Glasserman - Monte Carlo Methods in Financial Engineering chapters 1-4, Carol Alexander - Market Risk Analysis Volume IV Value at Risk Models, John Hull - Risk Management and Financial Institutions chapter 12, Basel Committee on Banking Supervision - MAR31 Internal Models Approach]
+sources: [Hull and White - Incorporating Volatility Updating into the Historical Simulation Method for Value-at-Risk - Journal of Risk 1(1) 5-19 (1998), Barone-Adesi Giannopoulos and Vosper - VaR without Correlations for Portfolios of Derivative Securities - Journal of Futures Markets 19(5) 583-602 (1999), Glasserman - Monte Carlo Methods in Financial Engineering (Springer 2003) chapters 2 4 5 and 9, Kupiec - Techniques for Verifying the Accuracy of Risk Measurement Models - Journal of Derivatives 3(2) 73-84 (1995), McNeil Frey and Embrechts - Quantitative Risk Management revised edition (Princeton 2015) chapter 7, Bollerslev - Generalized Autoregressive Conditional Heteroskedasticity - Journal of Econometrics 31(3) 307-327 (1986), Box and Muller - A Note on the Generation of Random Normal Deviates - Annals of Mathematical Statistics 29(2) 610-611 (1958), Halton (1960) Numerische Mathematik 2 84-90, Basel Framework MAR32.18 FAQ1 and MAR33.4 to MAR33.9 (version effective 1 January 2023)]
 ---
 
 # Scenario Generation
 
 ## TL;DR
 
-Scenario generation is the computational engine of market risk measurement, transforming estimated risk factor distributions into discrete simulated market states across which a portfolio is revalued.
-The four principal generation paradigms are Unfiltered Historical Simulation, Filtered Historical Simulation (FHS), Parametric Monte Carlo, and Stress/Hypothetical scenarios.
-While raw historical simulation preserves non-linear empirical copulas and heavy tails without parametric assumptions, it reflects historical rather than current volatility regimes.
-Filtered Historical Simulation (Hull-White updating) resolves this limitation by standardizing historical returns by contemporaneous GARCH volatility and rescaling them by current prevailing volatility.
-Parametric Monte Carlo leverages Cholesky factorization of the covariance matrix ($\Delta \mathbf{x} = \mathbf{L} \mathbf{z}$) to produce arbitrary sample sizes, enhanced by variance reduction techniques such as antithetic variates and Sobol low-discrepancy sequences.
+- A market risk engine is a scenario generator plus a revaluation engine: VaR and ES are quantiles and tail means of the P&L across scenarios, so the scenarios decide what the risk number can see.
+- Historical simulation (HS) reuses past factor moves and keeps their fat tails and joint behaviour, but it reflects the volatility of the window, not today's; filtered historical simulation (FHS) divides each past move by the volatility of its day and multiplies by today's.
+- On simulated data with a doubling of volatility, 99% HS VaR had exception rates of 7.2% in the first 20 days and 4.7% in days 21-60, against 3.5% and 1.2% for FHS; over a long stationary sample both had the same count (62 in 5,000 days), while a normal model with the same volatility had 97.
+- Monte Carlo draws $x = \mu + Lz$ from a fitted model; copulas add tail dependence (a $t_4$ copula at $\rho = 0.5$ has $\lambda = 0.253$, a Gaussian copula zero), and variance reduction helps only where it fits the payoff (antithetics cut variance for a call to 0.63 but raise it to 1.90 for a straddle).
+- Horizons need care: $\sqrt{10}$ scaling ignores volatility mean reversion and clustering, and Basel's 10-day ES may use overlapping observations (MAR33.4(7)).
 
 ## Learning objectives
 
@@ -26,225 +26,270 @@ Parametric Monte Carlo leverages Cholesky factorization of the covariance matrix
 - Formulate non-Gaussian dependency sampling using copulas (Student-t, Clayton, Gumbel) with explicit tail dependence.
 - Apply variance reduction techniques, including antithetic variates and quasi-Monte Carlo (Sobol sequences), to reduce estimator variance.
 - Project multi-period scenarios incorporating mean-reversion drift and term structure evolution.
+- Backtest a scenario model and read the Kupiec unconditional coverage test.
 
 ## Core concepts
 
-### The Scenario Generation Spectrum
-
-Risk engines evaluate portfolio distribution across $M$ simulated scenarios $\Delta \mathbf{x}_m = [\Delta x_{1, m}, \Delta x_{2, m}, \dots, \Delta x_{N, m}]^T$ for $m = 1, \dots, M$:
+### The paradigms
 
 ```mermaid
 flowchart TD
-  SG[Scenario Generation Paradigms] --> HS[Historical Simulation]
-  SG --> FHS[Filtered Historical Simulation]
-  SG --> PMC[Parametric Monte Carlo]
-  SG --> Cop[Copula-Based Simulation]
-  HS --> HS_Props[Non-parametric / Empirical tails / Slow regime adaptation]
-  FHS --> FHS_Props[Hull-White vol scaling / Volatility clustering + Empirical tails]
-  PMC --> PMC_Props[Cholesky factorization / Arbitrary sample size / Normality bias]
-  Cop --> Cop_Props[Student-t & Archimedean / Asymmetric tail dependence]
+  D["Factor histories"] --> HS["Historical simulation: past moves as they were"]
+  D --> F["Filter: divide by that day's vol (EWMA or GARCH)"]
+  F --> FHS["FHS: residuals times today's vol"]
+  D --> M["Fit a model: covariance, marginals, copula"]
+  M --> MC["Monte Carlo: x = mu + L z, or copula draws"]
+  SC["Stress and hypothetical scenarios"] --> R
+  HS --> R["Revalue the book per scenario"]
+  FHS --> R
+  MC --> R
+  R --> Q["P&L vector: VaR, ES, contributions"]
+  Q --> B["Backtest against realised P&L"]
+  B -->|"exceptions cluster or exceed"| M
 ```
 
-#### 1. Unfiltered Historical Simulation (HS)
-Historical simulation takes observed daily market changes over a rolling historical window (typically $T = 250$ to $500$ days):
+| Method | Keeps | Misses | Cost |
+| :--- | :--- | :--- | :--- |
+| Historical simulation | empirical tails and joint moves | today's volatility; anything not in the window | one revaluation per day of history |
+| Filtered HS | empirical shape of residuals, today's volatility | dependence in volatility across factors unless filtered jointly | same, plus a filter per factor |
+| Parametric Monte Carlo | any sample size, path dependence, multi-period | tails and dependence the model does not have | many revaluations |
+| Copula Monte Carlo | chosen marginals and tail dependence | parameter uncertainty in tails | as Monte Carlo |
 
-$$\Delta \mathbf{x}_m = \mathbf{x}_{t - m + 1} - \mathbf{x}_{t - m} \quad \text{for } m = 1, \dots, T$$
+### Historical and filtered historical simulation
 
-- **Advantages:** Completely non-parametric; requires no distributional assumptions; natively captures empirical correlations, fat tails, and cross-asset non-linearities.
-- **Drawbacks:** Strictly backward-looking; cannot generate scenarios more extreme than the historical sample; treats an observation from 12 months ago with equal weight to yesterday; suffers from the "ghost feature" problem when an extreme shock rolls out of the window.
+HS applies each of the last $T$ days' factor changes to today's book (with the same relative or absolute convention used in [risk factor modelling](10-Risk-Factor-Modelling.md)) and reads the loss quantile.
+Its volatility is the window's volatility: after a calm year, VaR is low however turbulent today is, and when a crisis day leaves the window VaR drops overnight.
 
-#### 2. Filtered Historical Simulation (FHS / Hull-White Volatility Updating)
-Hull and White (1998) introduced volatility scaling to combine the empirical realism of historical simulation with the dynamic responsiveness of GARCH models.
-Let $r_{\tau}$ be the historical return observed at day $\tau$ in the lookback window, $\sigma_{\tau}$ be the estimated volatility on day $\tau$, and $\sigma_{\text{current}}$ be the prevailing volatility at the valuation date.
-The standardized historical innovation is scaled to current market conditions:
+Hull and White (1998) rescale each historical return by the ratio of today's volatility to the volatility on its own day:
 
-$$r_{\tau}^{\text{filtered}} = r_{\tau} \times \frac{\sigma_{\text{current}}}{\sigma_{\tau}}$$
+$$r_\tau^{\text{scaled}} = r_\tau\,\frac{\sigma_{\text{now}}}{\sigma_\tau}.$$
 
-If market volatility was calm when the historical event occurred ($\sigma_{\tau} \ll \sigma_{\text{current}}$), the historical return is scaled upward, generating realistically severe shocks reflecting current turbulence.
-Conversely, if past volatility was elevated, historical returns are compressed to match a calm current environment.
+Barone-Adesi, Giannopoulos and Vosper (1999) formalised filtered historical simulation: fit a GARCH model (Bollerslev 1986) per factor, keep the standardised residuals $r_\tau/\sigma_\tau$, and bootstrap them through the volatility model, which also produces multi-day scenarios with volatility clustering.
+The standardised residuals keep their joint ordering in time, so cross-factor dependence of the shocks is preserved without estimating a correlation matrix.
 
-#### 3. Parametric Monte Carlo (Multivariate Normal)
-Parametric Monte Carlo assumes risk factor shocks follow a joint multivariate normal distribution $\Delta \mathbf{x} \sim \mathcal{N}(\mathbf{\mu}, \mathbf{\Sigma})$.
-Using the lower triangular Cholesky factor $\mathbf{L}$ such that $\mathbf{\Sigma} = \mathbf{L} \mathbf{L}^T$:
+Regulatory note: for the FRTB trading desk VaR used in backtesting, volatility scaling that effectively shortens the observation period is not allowed at the bank's discretion; a bank may scale up the volatility of all observations of selected factors to reflect a recent stress period, after notifying the supervisor in advance (MAR32.18 FAQ1).
 
-$$\Delta \mathbf{x}_m = \mathbf{\mu} + \mathbf{L} \mathbf{z}_m \quad \text{where } \mathbf{z}_m \sim \mathcal{N}(0, \mathbf{I}_N)$$
+### What filtering buys: a controlled experiment
 
-- **Advantages:** Capable of generating millions of independent scenarios; facilitates pricing of path-dependent, multi-period instruments; enables analytical error bounds.
-- **Drawbacks:** Multivariate normality severely underestimates tail risk and joint crash probabilities; requires explicit matrix repair when empirical covariance matrices lose positive semi-definiteness.
+Two experiments in [scenario_generation.py](code/scenario_generation.py), each changing only the scenario method:
 
-#### 4. Copula-Based Scenario Generation
-To model fat-tailed marginal distributions while preserving realistic tail dependence:
-By Sklar's Theorem, any multivariate cumulative distribution function $F(x_1, \dots, x_N)$ can be decomposed into its marginal distributions $F_i(x_i)$ and a copula $C$:
+1. A 5,250-day GARCH(1,1) path with Student $t_5$ innovations (unconditional vol 1% a day), 99% one-day VaR from a 250-day window:
 
-$$F(x_1, \dots, x_N) = C(F_1(x_1), \dots, F_N(x_N))$$
+| Method | Exceptions in 5,000 days | Rate | Kupiec p-value |
+| :--- | ---: | ---: | ---: |
+| HS | 62 | 1.24% | 0.1002 |
+| FHS (EWMA 0.94 filter) | 62 | 1.24% | 0.1002 |
+| Normal with EWMA vol | 97 | 1.94% | below $10^{-8}$ |
 
-To generate a scenario under a Student-t copula with $\nu$ degrees of freedom and correlation matrix $\mathbf{R}$:
-1. Sample a random scalar from a chi-squared distribution: $W \sim \chi^2(\nu)$.
-2. Sample independent standard normals: $\mathbf{z} \sim \mathcal{N}(0, \mathbf{I}_N)$.
-3. Generate correlated t-shocks: $\mathbf{y} = \sqrt{\frac{\nu}{W}} \mathbf{L} \mathbf{z}$, where $\mathbf{L} \mathbf{L}^T = \mathbf{R}$.
-4. Transform through the univariate Student-t CDF: $u_i = t_{\nu}(y_i) \sim U(0, 1)$.
-5. Invert through empirical or Generalized Pareto marginal distributions: $\Delta x_i = F_i^{-1}(u_i)$.
+Over a long stationary sample, filtering does not change the count; assuming normal tails does.
 
-This framework captures non-zero asymptotic tail dependence: extreme market crashes occur simultaneously across assets even when correlation $\rho < 1$.
+2. 2,000 paths of 250 days at 1% daily vol followed by 60 days at 2% (and the reverse), $t_5$ innovations:
 
-### Variance Reduction Techniques
+| Regime change | HS days 1-20 | HS days 21-60 | FHS days 1-20 | FHS days 21-60 |
+| :--- | ---: | ---: | ---: | ---: |
+| calm to stressed | 7.2% | 4.7% | 3.5% | 1.2% |
+| stressed to calm | 0.1% | 0.1% | 0.2% | 0.8% |
 
-Monte Carlo estimator standard error converges slowly at rate $O(1/\sqrt{M})$, requiring $10,000$ scenarios to reduce error by a factor of 10.
-Variance reduction methods accelerate convergence without adding bias:
+After a volatility shift, HS breaches seven times as often as it should for weeks, while FHS returns to about 1% once the EWMA has caught up; after a calm-down, HS is over-conservative.
+This is the risk that backtesting over a long sample misses: the exceptions are not too many on average, they arrive together.
 
-#### 1. Antithetic Variates
-For every random normal draw $\mathbf{z}_m \sim \mathcal{N}(0, \mathbf{I})$, include its exact negative counterpart $-\mathbf{z}_m$:
+### Monte Carlo from a model
 
-$$\Delta \mathbf{x}_m^{(1)} = \mathbf{L} \mathbf{z}_m, \quad \Delta \mathbf{x}_m^{(2)} = -\mathbf{L} \mathbf{z}_m$$
+Factor the covariance $\Sigma = LL^\top$ (Cholesky, or $V\Lambda^{1/2}$ if only PSD), draw $z \sim N(0, I)$ by inverse CDF or Box-Muller (Box and Muller 1958), and set $x = \mu + Lz$.
+The Monte Carlo error of a quantile matters as much as the model: the standard error of the empirical $p$-quantile from $N$ draws is about $\sqrt{p(1 - p)/N}/f(q_p)$, which for a 99% normal quantile and $N = 1{,}000$ is $0.118\sigma$, 5.1% of the VaR (1.6% at $N = 10{,}000$); a simulation of 2,000 such estimates gave a standard deviation of about $0.116\sigma$.
 
-The fair benchmark for one antithetic pair is the average of two independent draws, whose variance is $\frac{1}{2}\text{Var}(\Delta V)$:
+### Copulas and tail dependence
 
-$$\text{Var}\left(\frac{\Delta V(\mathbf{z}) + \Delta V(-\mathbf{z})}{2}\right) = \frac{1}{2}\text{Var}(\Delta V) + \frac{1}{2}\text{Cov}(\Delta V(\mathbf{z}), \Delta V(-\mathbf{z})) < \frac{1}{2}\text{Var}(\Delta V) \iff \text{Cov}(\Delta V(\mathbf{z}), \Delta V(-\mathbf{z})) < 0$$
+By Sklar's theorem a joint distribution is its marginals plus a copula; generating from a $t$ copula means drawing $y = Lz/\sqrt{W/\nu}$ with $W \sim \chi^2_\nu$ and mapping each $y_i$ through the $t_\nu$ CDF and then through the chosen marginal.
+The coefficient of tail dependence, $\lambda = \lim_{q \to 0} P(U_2 \le q \mid U_1 \le q)$, is zero for a Gaussian copula with $\rho < 1$ and for a $t$ copula is $2\,t_{\nu+1}\!\left(-\sqrt{(\nu + 1)(1 - \rho)/(1 + \rho)}\right)$ (McNeil, Frey and Embrechts 2015, chapter 7): 0.253 for $\nu = 4$, $\rho = 0.5$ and 0.082 for $\nu = 10$.
+Simulated with 2 million draws at $\rho = 0.5$:
 
-The linear component of portfolio P&L is perfectly negatively correlated across the pair, so the covariance is negative whenever delta dominates; a pure even (gamma-only) payoff gives positive covariance and antithetics then increase variance.
+| $q$ | Gaussian $P(\text{joint} \mid \text{one})$ | $t_4$ |
+| ---: | ---: | ---: |
+| 0.01 | about 0.132 | about 0.293 |
+| 0.001 | about 0.052 | about 0.266 |
 
-#### 2. Quasi-Monte Carlo (Low-Discrepancy Sequences)
-Pseudorandom number generators suffer from random clumping and empty gaps in multidimensional space.
-Quasi-Monte Carlo replaces pseudo-random draws with deterministic, low-discrepancy sequences (e.g., Sobol, Halton) that fill the unit hypercube $[0, 1]^N$ uniformly.
-QMC error converges asymptotically at rate $O((\ln M)^N / M) \approx O(1/M)$, dramatically outperforming standard Monte Carlo for moderate factor dimensions ($N \le 20$).
+The Gaussian joint-crash probability keeps falling as the threshold moves out; the $t$ copula's settles near its $\lambda$.
+Archimedean copulas (Clayton for lower-tail, Gumbel for upper-tail dependence) give asymmetric tails, at the cost of being hard to extend to many factors with different pairwise dependence.
 
-#### 3. Latin Hypercube Sampling (LHS)
-Stratified sampling divides the cumulative probability range $[0, 1]$ for each risk factor into $M$ equally probable bins.
-Exactly one draw is sampled randomly from each stratum and randomly permuted across factors, ensuring that the tails and center of each marginal distribution are sampled uniformly.
+### Variance reduction and low-discrepancy points
 
-### Multi-Period Scenario Projection
+Antithetic variates pair $z$ with $-z$; the pair average beats two independent draws if and only if $\text{Cov}(f(z), f(-z)) < 0$.
+Variance of the pair average relative to two independent draws (lognormal spot, 20% vol, 1 million draws):
 
-For regulatory credit exposure (CCR), Initial Margin simulation (SIMM/MVA), or multi-year capital planning, risk engines project scenarios forward across multiple time steps $t_1, t_2, \dots, t_K$:
+| Payoff | $\text{corr}(f(z), f(-z))$ | Variance ratio |
+| :--- | ---: | ---: |
+| forward $S - 100$ | $-0.961$ | 0.039 |
+| call $\max(S - 100, 0)$ | $-0.367$ | 0.632 |
+| straddle $\lvert S - 100\rvert$ | $+0.899$ | 1.898 |
 
-- **Compounding Geometric Asset Shocks:**
+For an even payoff antithetics nearly double the variance: the method suits books dominated by delta, not by gamma.
+Control variates, importance sampling toward the loss region, and stratification (Latin hypercube sampling stratifies each marginal) are covered in Glasserman (2003, chapter 4), and Glasserman, Heidelberger and Shahabuddin (2000) use the delta-gamma approximation as a control and an importance-sampling guide for VaR.
 
-$$S(t_{k+1}) = S(t_k) \exp\left[ \left(\mu - \frac{1}{2}\sigma^2\right)\Delta t + \sigma \sqrt{\Delta t} \, z \right]$$
+Quasi-Monte Carlo replaces random points with low-discrepancy sequences (Halton, Sobol); the Koksma-Hlawka inequality bounds the error by roughly $(\log N)^d/N$ for smooth integrands.
+For $E[e^{0.2Z_1 + 0.3Z_2}] = e^{0.065}$ via Box-Muller on Halton points in bases 2 and 3, the error is $9.96 \times 10^{-4}$ at $N = 1{,}024$ and $7.66 \times 10^{-5}$ at $N = 16{,}384$, against a pseudo-random RMSE of $1.29 \times 10^{-2}$ and $2.98 \times 10^{-3}$: 13 and 39 times smaller.
+The advantage shrinks with dimension and for discontinuous payoffs, which is why Sobol sequences are combined with Brownian-bridge or PCA orderings that put the important variance in the first coordinates (Glasserman 2003, chapter 5).
 
-- **Mean-Reverting Term Structures (Vasicek / Hull-White):**
-Rates do not diffuse indefinitely; mean reversion prevents long-horizon yields from exploding:
+### Horizons
 
-$$r(t_{k+1}) = r(t_k) + a(b - r(t_k))\Delta t + \sigma \sqrt{\Delta t} \, z$$
+The square-root-of-time rule assumes i.i.d. returns.
+Under GARCH with persistence 0.98 and long-run vol 1% a day, a day-ahead vol of 2% gives a 10-day vol of 6.12%, against $\sqrt{10} \times 2\% = 6.32\%$: the forecast mean-reverts (ratio 0.967); in the opposite case $\sqrt{10}$ understates.
+For mean-reverting factors (Ornstein-Uhlenbeck with speed $a$), the variance over $h$ is $\sigma^2(1 - e^{-2ah})/(2a)$, i.e. a fraction $(1 - e^{-2ah})/(2ah)$ of the random-walk variance: 0.632 over a year at $a = 0.5$ but 0.980 over 10 days.
+For multi-period exposure simulation (counterparty risk, margin, capital planning) factors are evolved step by step with their own dynamics and path-dependent events are evaluated at each date.
 
-- **Path-Dependent State Tracking:**
-As scenarios evolve, path-dependent contract events (e.g., American exercise, barrier knock-outs, credit rating migration, collateral calls) must be evaluated sequentially at each time node.
+FRTB internal models compute ES at 97.5% (MAR33.3) on a 10-day base horizon scaled to longer liquidity horizons (MAR33.4), calibrated to a 12-month stress period (MAR33.5 to MAR33.7), and the 10-day changes may come from overlapping observations (MAR33.4(7)).
+Overlapping windows reuse data, so they are correlated, but they still help: estimating the 10-day 97.5% ES of i.i.d. normal days from 259 days, 2,000 trials gave an estimator standard deviation of about 1.31 with 250 overlapping windows against 1.61 with 25 non-overlapping ones (true value 7.39; means about 6.92 and 6.23, both biased low on such short samples).
 
 ## Worked examples
 
-### Example 1: Volatility-Scaled Filtered Historical Simulation (FHS)
+All numbers are printed and asserted by `python 11-Risk-and-Trading/code/scenario_generation.py`.
 
-A risk manager models a portfolio of tech equities on valuation date $T$.
-On valuation date $T$, the prevailing EWMA daily volatility is $\sigma_{\text{current}} = 2.40\%$ ($0.0240$).
-In the historical lookback window, day $\tau = 142$ corresponded to a calm market period where daily volatility was $\sigma_{\tau} = 1.10\%$ ($0.0110$).
-On that historical day $\tau$, the observed return of the stock was $r_{\tau} = -2.20\%$ ($-0.0220$, a 2-sigma event relative to that period's volatility).
+### Example 1: one filtered historical scenario
 
-Compute the filtered historical scenario return $r_{\tau}^{\text{filtered}}$ to be applied to today's portfolio.
+Today's EWMA vol of a tech stock is 2.40% a day.
+On a day in the window when vol was 1.10%, the stock fell 2.20%, a $-2.0$ standardised residual.
 
-**Solution:**
+1. Scale: $0.024/0.011 = 2.1818$.
+2. Filtered scenario: $-0.022 \times 2.1818 = -0.048$, a 4.8% fall.
 
-Step 1: Compute the volatility scaling ratio:
+Unfiltered HS would apply $-2.2\%$, a two-sigma day of a calm regime, to a book in a turbulent one.
 
-$$\text{Scale Ratio} = \frac{\sigma_{\text{current}}}{\sigma_{\tau}} = \frac{0.0240}{0.0110} \approx 2.1818$$
+### Example 2: one correlated draw
 
-Step 2: Apply the scaling ratio to the historical raw return:
+Equity vol 20% a year ($0.012599$ a day), 10-year yield vol 100bp a year (0.00062994 a day), correlation $-0.35$, independent normals $z = (1.2, -0.8)$.
 
-$$r_{\tau}^{\text{filtered}} = r_{\tau} \times \left(\frac{\sigma_{\text{current}}}{\sigma_{\tau}}\right) = -0.0220 \times 2.1818 \approx -0.0480 \quad (-4.80\%)$$
+1. $L_{11} = 0.012599$, $L_{21} = \rho\sigma_y = -0.00022048$, $L_{22} = \sigma_y\sqrt{1 - \rho^2} = 0.00059010$.
+2. Equity: $0.012599 \times 1.2 = +1.512\%$.
+3. Yield: $-0.00022048 \times 1.2 + 0.00059010 \times (-0.8) = -7.37$bp.
 
-Step 3: Analyze the economic outcome:
-Under unscaled historical simulation, the scenario shock would have been only $-2.20\%$, which fails to reflect the reality that current markets are more than twice as volatile.
-Filtered Historical Simulation scales the shock to $-4.80\%$, preserving the historical correlation structure and empirical tail shape while adapting dynamically to current turbulence.
+### Example 3: reading a backtest
 
-### Example 2: Bivariate Correlated Monte Carlo Draw with Cholesky
-
-Generate a single correlated pair of risk factor shocks for Equity ($S$) and Rates ($y$) using the reference engine in `code/risk_analytics.py`:
-- Equity annualized volatility: $\sigma_S = 20.0\%$ (daily $\sigma_{S, d} = 0.20 / \sqrt{252} \approx 0.01260$).
-- 10-year yield annualized volatility: $\sigma_y = 100 \text{ bps}$ (daily $\sigma_{y, d} = 0.0100 / \sqrt{252} \approx 0.000630$).
-- Correlation: $\rho = -0.35$.
-- Independent standard normal draws: $z_1 = +1.200$, $z_2 = -0.800$.
-
-**Solution:**
-
-Step 1: Construct the daily covariance matrix $\mathbf{\Sigma}$:
-
-$$\mathbf{\Sigma}_{11} = \sigma_{S, d}^2 = (0.01260)^2 \approx 0.00015876$$
-
-$$\mathbf{\Sigma}_{22} = \sigma_{y, d}^2 = (0.000630)^2 \approx 0.0000003969$$
-
-$$\mathbf{\Sigma}_{12} = \rho \cdot \sigma_{S, d} \cdot \sigma_{y, d} = -0.35 \times 0.01260 \times 0.000630 \approx -0.0000027783$$
-
-$$\mathbf{\Sigma} = \begin{pmatrix} 0.00015876 & -0.0000027783 \\ -0.0000027783 & 0.0000003969 \end{pmatrix}$$
-
-Step 2: Compute Cholesky factor $\mathbf{L}$:
-
-$$L_{11} = \sigma_{S, d} \approx 0.01260$$
-
-$$L_{21} = \frac{\mathbf{\Sigma}_{12}}{L_{11}} = \rho \cdot \sigma_{y, d} = -0.35 \times 0.000630 \approx -0.0002205$$
-
-$$L_{22} = \sqrt{\sigma_{y, d}^2 - L_{21}^2} = \sigma_{y, d} \sqrt{1 - \rho^2} = 0.000630 \times \sqrt{1 - (-0.35)^2} = 0.000630 \times \sqrt{0.8775} \approx 0.0005901$$
-
-$$\mathbf{L} = \begin{pmatrix} 0.01260 & 0 \\ -0.0002205 & 0.0005901 \end{pmatrix}$$
-
-Step 3: Compute correlated shocks $\Delta \mathbf{x} = \mathbf{L} \mathbf{z}$:
-
-$$\Delta S = L_{11} z_1 = 0.01260 \times 1.200 = +0.01512 \quad (+1.51\%)$$
-
-$$\Delta y = L_{21} z_1 + L_{22} z_2 = (-0.0002205 \times 1.200) + (0.0005901 \times -0.800) = -0.0002646 - 0.0004721 = -0.0007367 \quad (-7.37 \text{ bps})$$
-
-The resulting shock pairs an equity gain of $+1.51\%$ with an interest rate rally of $-7.37$ bps, reflecting the negative correlation parameter.
+A desk's 99% VaR had 62 exceptions in 5,000 days.
+Kupiec's likelihood ratio, $-2\ln\frac{(1 - p)^{n - x}p^x}{(1 - \hat p)^{n - x}\hat p^x}$ with $\hat p = x/n$, is chi-square with one degree of freedom under correct coverage; here the p-value is 0.1002, so 1.24% is not significantly above 1%.
+A normal model on the same path had 97 exceptions, p-value below $10^{-8}$: rejected.
+Then look at timing: unconditional coverage cannot see that HS exceptions bunch after volatility shifts (example in the core concepts), which is what independence tests and the FRTB backtesting zones over 12 months are for.
 
 ## Pitfalls
 
-- **Unscaled Historical Simulation in Volatility Transients:** Running unfiltered historical simulation immediately after a volatility spike results in severely lagging, understated risk forecasts until the high-volatility regime accumulates in the lookback window.
-- **Multivariate Normality Blindness:** Using a pure Gaussian copula for multi-asset derivatives portfolios dramatically underpredicts simultaneous joint tail crashes (e.g., 2008 or March 2020).
-- **Ignoring Cholesky Matrix Invalidation:** Randomly modifying correlations in stress tests without re-checking positive semi-definiteness leads to negative square roots and run-time simulation crashes.
-- **Inconsistent Scenario Tenor Alignment:** Generating 10-day scenarios by simply scaling 1-day simulated returns by $\sqrt{10}$ assumes random walk independence, completely ignoring short-term momentum, mean reversion, and volatility clustering.
-- **Overfitting Quasi-Monte Carlo Dimensions:** In high-dimensional portfolios ($N > 50$), low-discrepancy Sobol sequences suffer from high-dimensional projection correlation degradation, requiring Brownian bridge or PCA dimensionality reduction.
+- Running unfiltered HS straight after a volatility shift: exceptions cluster for weeks while the window catches up.
+- Calling a long-sample backtest a pass when exceptions arrive in clusters.
+- Normal or Gaussian-copula Monte Carlo for tail measures: the marginal tails and the joint crashes are both too thin.
+- Antithetic variates on books dominated by gamma: variance goes up.
+- Too few scenarios: with 1,000 normal draws the 99% quantile has a 5% standard error.
+- $\sqrt{10}$ scaling when volatility is far from its long-run level or factors mean-revert.
+- Filtering factors one at a time and assuming the cross-factor dependence of volatilities is preserved.
+- Re-using random numbers inconsistently between base and bumped revaluations, which turns sensitivities into noise (use common random numbers).
+- Quasi-Monte Carlo in high dimension without an ordering that front-loads the important variance.
 
 ## Interview questions
 
 > [!question]- risk-historical-vs-monte-carlo-scenarios | Compare Historical Simulation and Parametric Monte Carlo scenario generation in terms of computational cost, tail modeling, and sample size flexibility.
-> Historical Simulation is non-parametric, requires no distribution fitting, and natively captures fat tails and non-linear cross-correlations, but is constrained to observed sample size $T$ and lags volatility shifts. Parametric Monte Carlo allows generating arbitrary scenario counts ($M = 100,000+$) and enables fast convergence via variance reduction, but relies on assumed distributions (often multivariate normal) that underestimate tail crashes and non-linear correlation clustering.
+> HS: no distributional model, keeps empirical tails and joint moves, cost fixed at one revaluation per historical day, but limited to the window and its volatility.
+> Monte Carlo: any number of scenarios, paths and horizons, but only the tails and dependence the model contains; normal models understate both.
+> On a simulated GARCH-$t$ path, HS had 62 exceptions in 5,000 days at 99% while a normal-EWMA model had 97.
 
 > [!question]- risk-filtered-historical-simulation-concept | How does Filtered Historical Simulation (FHS) solve the limitations of standard historical simulation?
-> Standard historical simulation weights a calm historical return equally with a volatile one. FHS standardizes historical returns by the volatility prevailing on the date the return occurred ($r_t / \sigma_t$), creating independent standardized residuals. It then multiplies these residuals by current prevailing volatility ($\sigma_{\text{current}}$). This captures both empirical fat-tailed distributions and real-time volatility clustering.
+> Divide each historical move by the volatility of its day (EWMA or GARCH) and multiply by today's: $r\,\sigma_{\text{now}}/\sigma_\tau$ (Hull and White 1998; Barone-Adesi et al. 1999).
+> The empirical shape of the residuals is kept, but the scale follows the current regime.
+> After a simulated doubling of vol, HS breached 7.2% of the time in the first 20 days and FHS 3.5%; in days 21-60, 4.7% against 1.2%.
 
 > [!question]- risk-cholesky-generation-algorithm | Outline the mathematical algorithm to generate $M$ correlated multivariate normal scenarios given covariance matrix $\mathbf{\Sigma}$.
-> 1. Compute the lower triangular Cholesky factor $\mathbf{L}$ such that $\mathbf{\Sigma} = \mathbf{L} \mathbf{L}^T$.
-> 2. For each scenario $m = 1, \dots, M$, generate an $N$-dimensional vector $\mathbf{z}_m$ of independent standard normal random variables $\mathcal{N}(0, 1)$ using Box-Muller or inverse CDF transforms.
-> 3. Compute correlated shocks $\Delta \mathbf{x}_m = \mathbf{\mu} + \mathbf{L} \mathbf{z}_m$.
-> 4. Verify that $\frac{1}{M}\sum \Delta \mathbf{x} \Delta \mathbf{x}^T \to \mathbf{\Sigma}$ as $M \to \infty$.
+> Factor $\Sigma = LL^\top$ (Cholesky, or $V\Lambda^{1/2}$ if only PSD); for each scenario draw $z \sim N(0, I)$ by inverse CDF or Box-Muller, and set $x = \mu + Lz$.
+> Then $\text{Cov}(x) = LL^\top = \Sigma$.
+> Check: with $\sigma_S = 0.012599$, $\sigma_y = 0.00062994$, $\rho = -0.35$ and $z = (1.2, -0.8)$, the draw is $+1.512\%$ equity and $-7.37$bp yield.
 
 > [!question]- risk-student-t-copula-advantage | Why is a Student-t copula superior to a Gaussian copula for generating multi-asset market risk scenarios?
-> The Gaussian copula has zero asymptotic tail dependence: as events become more extreme, the probability of joint simultaneous default or crash approaches zero. The Student-t copula possesses positive symmetric tail dependence parameterized by degrees of freedom $\nu$. Even with moderate linear correlation, the Student-t copula generates joint clustered crashes across asset classes during tail events.
+> It has tail dependence: $\lambda = 2t_{\nu+1}(-\sqrt{(\nu+1)(1-\rho)/(1+\rho)})$, 0.253 at $\nu = 4$, $\rho = 0.5$, while the Gaussian copula's is zero.
+> Simulated: $P(\text{joint} \mid \text{one})$ at the 0.1% level is about 0.266 for $t_4$ and 0.052 for Gaussian.
+> It is symmetric, though, so it also fattens joint rallies; asymmetric tails need other copulas or skewed $t$ variants.
 
 > [!question]- risk-antithetic-variates-variance-reduction | How do antithetic variates reduce estimator variance in Monte Carlo scenario generation?
-> For each simulated random vector $\mathbf{z}$, the engine also computes the portfolio revaluation under its opposite $-\mathbf{z}$. Because linear Greek components (Delta) respond symmetrically ($\Delta V(-\mathbf{z}) \approx -\Delta V(\mathbf{z})$), the covariance between the antithetic pairs is strongly negative. Averaging the pairs cancels first-order variance, reducing standard error without increasing bias.
+> Pair each $z$ with $-z$; the pair average has variance $\tfrac12\text{Var}f\,(1 + \text{corr}(f(z), f(-z)))$, below two independent draws iff the correlation is negative.
+> It works for monotone payoffs: variance ratio 0.039 for a forward and 0.632 for a call in the simulation.
+> It backfires for even payoffs (straddle: ratio 1.898), so check the correlation before using it.
 
 > [!question]- risk-sobol-sequences-vs-pseudorandom | Why do Sobol quasi-Monte Carlo sequences achieve faster convergence than pseudorandom numbers?
-> Pseudorandom numbers cluster randomly, leaving large empty voids and dense clusters in the sampling space, yielding an error convergence rate of $O(1/\sqrt{M})$. Sobol sequences are deterministic low-discrepancy numbers engineered to maximize uniform coverage of the unit hypercube, achieving asymptotic error convergence of approximately $O(1/M)$ for low to moderate dimensions.
+> They fill the cube evenly by construction, so for smooth integrands the error is roughly $(\log N)^d/N$ (Koksma-Hlawka) against $1/\sqrt N$ for random points.
+> With Halton points in two dimensions the error was 13 times smaller than the pseudo-random RMSE at $N = 1{,}024$ and 39 times at 16,384.
+> The gain shrinks in high dimension and for discontinuous payoffs; order the inputs (Brownian bridge, PCA) so the first coordinates carry most of the variance.
 
 > [!question]- risk-latin-hypercube-sampling-principles | What is Latin Hypercube Sampling (LHS), and how does it guarantee tail representation?
-> LHS divides the cumulative probability range $[0, 1]$ of each risk factor into $M$ equal strata of width $1/M$ and draws exactly one random point within each stratum. By randomly shuffling assignments across variables, LHS guarantees that every segment of the marginal distribution, including the extreme 1% tails, is sampled evenly across the simulation grid.
+> Divide each marginal's probability range into $M$ equal strata, draw one point per stratum, and pair the strata across factors by random permutation.
+> Every marginal is sampled evenly, including its outer strata, which removes the marginal part of the sampling noise.
+> It does not stratify the joint distribution, so joint tails (both factors extreme together) are not guaranteed to be sampled.
 
 > [!question]- risk-square-root-of-time-scaling-limits | What are the statistical risks of scaling 1-day simulated scenarios to a 10-day horizon using $\sqrt{10}$?
-> The $\sqrt{T}$ scaling rule strictly requires that daily returns be independent and identically distributed (i.i.d.) random variables. In real financial markets, returns exhibit strong autocorrelation, mean reversion in interest rates, and volatility clustering (GARCH). Scaling by $\sqrt{10}$ ignores compounding path dependency, underestimating risk during persistent trending panics and overestimating risk for mean-reverting curves.
+> It assumes i.i.d. returns; with volatility clustering the 10-day vol depends on where vol is relative to its long-run level.
+> Under GARCH with persistence 0.98 and long-run vol 1%, a 2% day-ahead vol gives a 10-day vol of 6.12% against $\sqrt{10} \times 2\% = 6.32\%$; from below the long-run level, $\sqrt{10}$ understates.
+> Mean-reverting factors and autocorrelated returns also break it; FRTB computes the 10-day ES directly, without scaling from a shorter horizon (MAR33.4(5)).
 
 > [!question]- risk-mean-reverting-scenario-drift | How must interest rate and commodity scenarios be modeled over long multi-year projection horizons?
-> Over multi-year horizons, pure random walks allow interest rates and commodity prices to diffuse to unrealistically negative or astronomical levels. Long-horizon simulation engines incorporate mean reversion (e.g., Ornstein-Uhlenbeck or Hull-White drift $a(b - r_t)dt$), pulling simulated yields back toward macroeconomic equilibrium levels and preventing artificial variance explosion.
+> With their own dynamics: mean reversion keeps rates and spreads from diffusing without limit, and the OU variance over $h$ is $\sigma^2(1 - e^{-2ah})/(2a)$.
+> At $a = 0.5$ the variance over one year is 0.632 of a random walk's, but over 10 days 0.980, so the distinction matters only for long horizons.
+> Long-horizon engines (exposure, margin, capital planning) evolve factors step by step and evaluate path-dependent events on the way.
 
 > [!question]- risk-scenario-ghost-features | What is a "ghost feature" in historical simulation, and how does it impact risk monitoring?
-> A ghost feature occurs when an extreme market shock (e.g., a one-day 10% market crash) abruptly rolls out of a 250-day rolling historical window. On day 251, the calculated VaR drops discontinuously overnight, even though prevailing market risk has not changed. This creates an artificial illusion of safety and can trigger unwarranted portfolio risk expansion.
+> When a large move leaves an equally weighted window, VaR drops discontinuously on that day although nothing about today's risk changed.
+> The same day entering the window raised VaR equally abruptly, so the series jumps twice on one event.
+> Exponential weighting, filtering, or a stressed-period calibration (as in MAR33.5) smooth or remove the effect.
+
+> [!question]- risk-fhs-regime-switch-backtest | Your 99% HS VaR passes its 5-year backtest. Why might a regulator still worry?
+> Because unconditional coverage averages over time; in a simulated vol doubling, HS breached 7.2% of days in the first month and 4.7% in the next two, then fell back.
+> Exceptions that cluster are what destroy capital and trigger backtesting zones within a 12-month window.
+> Look at timing (independence tests, exception rates after vol changes), not just the count.
+
+> [!question]- risk-kupiec-test | A 99% VaR has 62 exceptions in 5,000 days. Is it miscalibrated?
+> Kupiec's unconditional coverage LR test gives a p-value of 0.1002, so 1.24% is not significantly above 1% at the usual 5% level.
+> 97 exceptions (1.94%) in the same days gives a p-value below $10^{-8}$: rejected.
+> The test ignores clustering; combine it with an independence test or look at exception timing.
+
+> [!question]- risk-t-copula-tail-dependence-value | Compute the tail dependence of a t copula with nu = 4 and rho = 0.5. What happens as nu grows?
+> $\lambda = 2t_5\!\left(-\sqrt{5 \times 0.5/1.5}\right) = 2t_5(-1.291) = 0.253$.
+> At $\nu = 10$ it falls to 0.082, and as $\nu \to \infty$ it tends to 0, the Gaussian value.
+> In simulation, $P(\text{joint} \mid \text{one})$ at the 0.1% level is about 0.266 for $\nu = 4$, close to the limit.
+
+> [!question]- risk-antithetic-even-payoff | You use antithetic variates to price a delta-hedged straddle book in Monte Carlo. What happens?
+> Variance goes up: $f(z)$ and $f(-z)$ are positively correlated for an even payoff ($+0.899$ for $|S - 100|$), and the pair average has 1.898 times the variance of two independent draws.
+> Antithetics only cancel the odd (first-order) part of the payoff.
+> Use control variates (the delta-gamma P&L) or stratification instead.
+
+> [!question]- risk-overlapping-windows-es | Should a 10-day ES be estimated from overlapping or non-overlapping 10-day windows?
+> FRTB allows overlapping observations (MAR33.4(7)); they are correlated but still add information.
+> In 2,000 trials on 259 i.i.d. normal days, the estimator sd was about 1.31 with 250 overlapping windows and 1.61 with 25 non-overlapping ones; the non-overlapping 97.5% ES is just the single worst window.
+> Both are biased low on short samples (means about 6.92 and 6.23 against 7.39).
+
+> [!question]- risk-mc-var-standard-error | How many Monte Carlo scenarios do you need for a stable 99% VaR?
+> The quantile's standard error is about $\sqrt{p(1-p)/N}/f(q_p)$: for a normal P&L, $0.118\sigma$ at $N = 1{,}000$ (5.1% of VaR) and $0.037\sigma$ at $N = 10{,}000$ (1.6%).
+> A simulation of 2,000 estimates at $N = 1{,}000$ gave a standard deviation of about $0.116\sigma$.
+> ES and higher confidence levels need more; importance sampling toward the loss region helps most.
+
+> [!question]- risk-garch-ten-day-scaling | Today's day-ahead vol is 2% and the long-run vol is 1% under a GARCH with persistence 0.98. What is the 10-day vol?
+> Sum the expected daily variances: $\sum_{k=1}^{10}\left(\bar\sigma^2 + 0.98^{k-1}(\sigma_1^2 - \bar\sigma^2)\right)$, giving a 10-day vol of 6.12%.
+> $\sqrt{10} \times 2\% = 6.32\%$ overstates by 3.3% because the forecast decays toward 1%.
+> When vol is below its long-run level, the same reasoning shows $\sqrt{10}$ understating.
+
+> [!question]- risk-mar32-vol-scaling-faq | Can a bank volatility-scale returns in its FRTB backtesting VaR?
+> Not at its own discretion in a way that effectively shortens the observation period (MAR32.18 FAQ1).
+> It may scale up the volatility of all observations of selected risk factors to reflect a recent stress period, and use that for future VaR and ES, only after notifying the supervisor in advance.
+> So FHS-style rescaling is a regulated choice, not a free modelling decision, for the regulatory measures.
+
+> [!question]- risk-normal-ewma-fat-tails | A normal model with an EWMA volatility tracks volatility well. Why does it still fail its backtest?
+> Tracking volatility fixes the scale, not the shape: with $t_5$ innovations, the normal quantile is too small, and on the simulated path it had 97 exceptions in 5,000 days (1.94%) against 62 for HS and FHS.
+> FHS keeps the empirical residual shape and matched the 1% level as well as HS on the stationary sample.
+> Fix the tails (FHS, $t$ or EVT residuals), not the volatility.
 
 ## Further reading
 
-- Paul Glasserman, *Monte Carlo Methods in Financial Engineering*, Chapters 1-4.
-- Carol Alexander, *Market Risk Analysis, Volume IV: Value at Risk Models*, Chapters 4-6.
-- John Hull and Alan White (1998), "Incorporating Volatility Updating into the Historical Simulation Method for Value-at-Risk", *Journal of Risk*.
-- Basel Committee on Banking Supervision, *MAR31: Internal Models Approach - Model Requirements*.
-- McNeil, A. J., Frey, R., and Embrechts, P., *Quantitative Risk Management: Concepts, Techniques, and Tools*.
+- J. Hull and A. White, "Incorporating volatility updating into the historical simulation method for value-at-risk", *Journal of Risk* 1(1), 5-19, 1998.
+- G. Barone-Adesi, K. Giannopoulos and L. Vosper, "VaR without correlations for portfolios of derivative securities", *Journal of Futures Markets* 19(5), 583-602, 1999.
+- P. Glasserman, *Monte Carlo Methods in Financial Engineering*, Springer 2003: chapter 2 (random variables), 4 (variance reduction), 5 (quasi-Monte Carlo), 9 (risk management).
+- P. Glasserman, P. Heidelberger and P. Shahabuddin, "Variance reduction techniques for estimating value-at-risk", *Management Science* 46(10), 1349-1364, 2000.
+- P. Kupiec, "Techniques for verifying the accuracy of risk measurement models", *Journal of Derivatives* 3(2), 73-84, 1995.
+- A. J. McNeil, R. Frey and P. Embrechts, *Quantitative Risk Management*, revised edition, Princeton 2015, chapter 7 (copulas and dependence).
+- Basel Committee on Banking Supervision, Basel Framework MAR32.18 (with FAQ1) and MAR33.1 to MAR33.12.
 
 ## In this repo and SDE-Interview-Prep
 
-- Taxonomy and covariance estimation: [Risk Factor Modelling](10-Risk-Factor-Modelling.md).
-- Python reference implementation of Cholesky and FHS: [risk_analytics.py](code/risk_analytics.py).
-- Portfolio revaluation and Greek proxies: [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md).
-- Tail risk metrics: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md).
+- [scenario_generation.py](code/scenario_generation.py): FHS and Cholesky examples, the HS/FHS/normal backtests, copula tail dependence, antithetics, Halton points, horizon scaling, overlapping windows, quantile error; every number above.
+- Inputs: [Risk Factor Modelling](10-Risk-Factor-Modelling.md); volatility models: [GARCH](../02-Statistics-and-Econometrics/09-Volatility-Models-GARCH.md); Monte Carlo techniques in pricing: [Monte Carlo Pricing and Variance Reduction](../05-Derivatives-and-Volatility/10-Monte-Carlo-Pricing-and-Variance-Reduction.md).
+- Using the scenarios: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md), [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md), [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md); regulatory ES: [FRTB Internal Model Approach: ES](../17-Regulatory-Capital-Basel-and-FRTB/10-FRTB-Internal-Model-Approach-ES.md).
