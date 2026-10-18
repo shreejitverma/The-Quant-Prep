@@ -104,9 +104,7 @@ class LabMetricFormatTest(unittest.TestCase):
             {"time": "09:30:01.100", "price": 100.25, "size": 40, "side": "buy", "aggressor": "agent"},
             {"time": "09:30:02.200", "price": 99.75, "size": 60, "side": "sell", "aggressor": "market"},
         ]
-        rendered = run_js(
-            "(renderTimeAndSales(" + json.dumps(trades) + "), tapeBody.children.map(row => row.innerHTML))"
-        )
+        rendered = run_js("(renderTimeAndSales(" + json.dumps(trades) + "), tapeBody.children.map(row => row.innerHTML))")
         self.assertEqual(len(rendered), 2)
         self.assertIn("09:30:02.200", rendered[0])
         self.assertIn("$99.75", rendered[0])
