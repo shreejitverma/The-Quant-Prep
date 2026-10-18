@@ -236,7 +236,7 @@ Under the static balance sheet rule, the bank cannot resolve this capital drain 
 
 - Federal Reserve Board. *Dodd-Frank Act Stress Testing (DFAST) and CCAR Supervisory Scenarios*. Published annually in February.
 - European Banking Authority (EBA). *Methodological Note: EU-wide Stress Test*. EBA guidelines.
-- Basel Committee on Banking Supervision. *Stress testing principles*. BCBS Working Paper 428, 2018.
+- Basel Committee on Banking Supervision. *Stress testing principles*. BCBS guidelines, October 2018. https://www.bis.org/bcbs/publ/d450.htm
 - Schuermann, Til. *Stress Testing Banks*. International Journal of Forecasting, 2014.
 - Federal Reserve Board. *Comprehensive Capital Analysis and Review: Summary Instructions and Results*. FRB Publications.
 
