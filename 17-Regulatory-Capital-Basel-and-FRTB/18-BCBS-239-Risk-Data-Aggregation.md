@@ -218,4 +218,3 @@ This capital penalty substantially outweighs the cost of building automated risk
 - 03-Market-and-Reference-Data-Platform.md - Golden source data pipelines and LEI hierarchies.
 - 17-Stress-Testing-CCAR-DFAST-and-EBA.md - Stress testing data requirements and capital linkage.
 - `code/basel_stress_reg.py` - Reference implementation verifying Data Quality Index (DQI) and EUC failure losses.
-

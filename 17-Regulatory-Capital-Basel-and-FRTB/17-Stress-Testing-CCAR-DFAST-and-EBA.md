@@ -246,4 +246,3 @@ Under the static balance sheet rule, the bank cannot resolve this capital drain 
 - 03-Credit-Risk-Capital-SA-and-IRB.md - Standardised and IRB credit risk models.
 - 16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md - IRRBB principles and shocks.
 - `code/basel_stress_reg.py` - Reference implementation verifying SCB calculations and IFRS 9 stress staging.
-

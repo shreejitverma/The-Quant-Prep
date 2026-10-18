@@ -255,4 +255,3 @@ Strategic Pricing Decision:
 - 05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md - Counterparty CVA capital formulas.
 - 07-FRTB-Sensitivities-Based-Method-Delta.md - FRTB market risk capital.
 - `code/basel_stress_reg.py` - Reference implementation verifying KVA schedules, EVA, and negative incremental KVA.
-

@@ -212,4 +212,3 @@ The agencies’ release does not specify a first-application date.
 - 05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md - CVA capital charge methodologies.
 - 06-FRTB-Trading-and-Banking-Book-Boundary.md - Trading and banking book boundary rules.
 - `code/basel_stress_reg.py` - Reference implementation verifying cross-border CVA and US single-calculation proposals.
-

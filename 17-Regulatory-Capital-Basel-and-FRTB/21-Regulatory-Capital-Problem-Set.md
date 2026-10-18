@@ -346,4 +346,3 @@ Posting daily margin with an $\$800,000$ cash cushion eliminates over $73\%$ of 
 - 16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md - IRRBB principles and shocks.
 - 20-Capital-Aware-Trading-KVA-and-RWA-Limits.md - KVA, EVA, and capital-aware trading.
 - `code/basel_stress_reg.py` - Reference implementation verifying problem set derivations and numerical solutions.
-

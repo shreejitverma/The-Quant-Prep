@@ -344,4 +344,3 @@ During the European Union's implementation of the Capital Requirements Regulatio
 - 12-FRTB-Backtesting-and-PLA-Testing.md - Desk-level backtesting and P&L attribution testing.
 - `code/frtb_ima.py` - Reference implementation of FRTB IMA, NMRF, and PLA calculations.
 - `code/basel_stress_reg.py` - Computational engine verifying FRTB compute sizing and desk-level IMA financial models.
-
