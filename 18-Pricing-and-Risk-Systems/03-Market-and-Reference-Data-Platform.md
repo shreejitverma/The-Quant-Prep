@@ -15,7 +15,7 @@ sources: [Basel Committee on Banking Supervision - Principles for effective risk
 - Every price and risk number must be reproducible, so the platform's core product is an immutable, versioned snapshot id: consumers pin it, and lineage records which raw quotes, rules and overrides produced each value.
 - Clean with robust statistics: a modified z-score built on the median and MAD flags a bad broker quote at 89.37, while the classic z-score of the same quote is only 1.788, because the outlier inflates the standard deviation and no z-score in a sample of 5 can exceed $(n-1)/\sqrt{n} = 1.789$.
 - Reference data mastering is field-level survivorship with a named winning source per field, plus a human queue for disagreements; identifiers carry check digits (LEI MOD 97-10, ISIN and FIGI Luhn-type, CUSIP), which should be validated at ingestion.
-- Market data feeds FRTB directly: a risk factor is modellable only if it passes the RFET of MAR31.13 (24 real prices a year with no 90-day window under four, or 100 a year), so the platform must store real-price evidence, not only cleaned curves.
+- Market data feeds FRTB directly: a risk factor is modellable only if it passes one of the real-price observation routes in MAR31.13, so the platform must store real-price evidence, not only cleaned curves; see [the RFET requirements](#frtb-and-real-price-evidence).
 - Snapshot times are local, so their UTC gap moves with daylight saving: a 16:30 London and 16:00 New York snap are 4.5 hours apart most of 2026 but 3.5 hours apart on 28 days, which shows up as phantom P&L in cross-currency books.
 
 ## Learning objectives
@@ -148,7 +148,7 @@ $$M_i = \frac{0.6745\,(x_i - \tilde{x})}{MAD},$$
 
 and they recommend labelling $|M_i| > 3.5$ as potential outliers (NIST/SEMATECH e-Handbook, section 1.3.5.17).
 The constant 0.6745 is the 75th percentile of the standard normal, which makes $MAD/0.6745$ a consistent estimator of $\sigma$ for normal data, so $M_i$ is on the scale of an ordinary z-score.
-The classic z-score fails on small panels for a structural reason: Shiffler (1988) showed that no z-score computed with the sample standard deviation can exceed $(n-1)/\sqrt{n}$, which is 1.79 for $n = 5$, so a "3 sigma" rule can never fire on five broker quotes, however bad one of them is.
+The classic z-score fails on small panels for a structural reason: Shiffler (1988) showed that no z-score computed with the sample standard deviation can exceed $(n-1)/\sqrt{n}$, which is 1.789 for $n = 5$, so a "3 sigma" rule can never fire on five broker quotes, however bad one of them is.
 
 ### Reference data: identifiers, entities and survivorship
 
