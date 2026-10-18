@@ -5,7 +5,7 @@ tier: senior
 status: solid
 prereqs: [short-rate-models, black-scholes-formula-and-intuition]
 est_hours: 5
-sources: [Black - The Pricing of Commodity Contracts - Journal of Financial Economics 3(1-2) 1976, Bachelier - Theorie de la speculation - Annales scientifiques de l'Ecole Normale Superieure 1900, Brigo and Mercurio - Interest Rate Models: Theory and Practice 2nd ed. (Springer 2006) chapters 1 and 2 and 6, Hull - Options Futures and Other Derivatives (chapter on standard market models for interest rate derivatives), Lyashenko and Mercurio - Looking Forward to Backward-Looking Rates: A Modeling Framework for Term Rates Replacing LIBOR (SSRN 2019), ISDA press release on the 2021 Interest Rate Derivatives Definitions (14 June 2021), ECB key interest rates table (retrieved 2026-10-17)]
+sources: [Black - The Pricing of Commodity Contracts - Journal of Financial Economics 3(1-2) 1976, Bachelier - Theorie de la speculation - Annales scientifiques de l'Ecole Normale Superieure 1900, Brigo and Mercurio - Interest Rate Models: Theory and Practice 2nd ed. (Springer 2006) chapters 1 and 2 and 6, Hull - Options Futures and Other Derivatives (chapter on standard market models for interest rate derivatives), Lyashenko and Mercurio - Looking Forward to Backward-Looking Rates: A Modeling Framework for Term Rates Replacing LIBOR (SSRN 2019), Willems - SABR smiles for RFR caplets (arXiv 2004.04501 2020), ISDA press release on the 2021 Interest Rate Derivatives Definitions (14 June 2021), ECB key interest rates table (retrieved 2026-10-17)]
 ---
 
 # Rates Options: Caps and Swaptions
@@ -91,7 +91,9 @@ Liquid cap maturities are sparse, so desks interpolate cap prices or caplet vols
 For an overnight-compounded rate over $[T_s, T_e]$, the rate keeps fixing until $T_e$.
 In a normal model where the period's expected compounded rate moves like a Brownian motion until $T_s$ and is then progressively fixed by the daily rates, the payoff depends on an average of the path over the accrual period.
 For the arithmetic average of a Brownian motion over $[T_s, T_e]$ the variance is $T_s + (T_e - T_s)/3$, so the caplet is a Bachelier option with effective expiry $T_s + (T_e - T_s)/3$, paid at $T_e$.
-Lyashenko and Mercurio (2019) give a market-model framework that prices forward-looking and backward-looking rates jointly.
+Equivalently, let the period's expected compounded rate $R(t) = \mathbb{E}_t[R]$ have normal volatility $\sigma$ up to $T_s$ and $\sigma (T_e - t)/(T_e - T_s)$ inside the period, decaying linearly to zero as the fixings are realised; then $\int_{T_s}^{T_e} \sigma^2 (T_e - t)^2/(T_e - T_s)^2\,dt = \sigma^2 (T_e - T_s)/3$, the same effective variance.
+Lyashenko and Mercurio (2019) introduced the forward market model in which backward-looking rates keep diffusing through the accrual period with a decaying volatility of this kind; Willems (2020) uses $\psi(t) = \min\left(1, ((T_e - t)/(T_e - T_s))^q\right)$ as the scaling, a special case of their model, and $q = 1$ is the linear decay above.
+The 1/3 depends on that linear-decay assumption, which a desk should treat as a modelling choice, not a market fact.
 
 ### How it is implemented
 
@@ -262,3 +264,4 @@ Simulating the average of 63 daily values of the Brownian path over the period (
 - John Hull, *Options, Futures, and Other Derivatives* (Pearson), the chapter on standard market models for interest rate derivatives.
 - Andrei Lyashenko and Fabio Mercurio, "Looking Forward to Backward-Looking Rates: A Modeling Framework for Term Rates Replacing LIBOR", SSRN working paper, 2019.
 - ISDA, "ISDA Publishes First Digital Definitions for Interest Rate Derivatives", press release, 14 June 2021.
+- Sander Willems, "SABR smiles for RFR caplets", arXiv 2004.04501, 2020.

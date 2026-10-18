@@ -145,6 +145,13 @@ def ns_df(t: float) -> float:
     return 1.0 if t == 0 else math.exp(-ns_zero(t) * t)
 
 
+def ns_forward_and_slope(t: float, b0: float = 0.045, b1: float = -0.01, b2: float = 0.01, lam: float = 2.0) -> tuple[float, float]:
+    """Analytic Nelson-Siegel instantaneous forward f(0,t) = b0 + b1 e^{-x} + b2 x e^{-x}, x = t/lam, and its t-derivative."""
+    x = t / lam
+    e = math.exp(-x)
+    return b0 + b1 * e + b2 * x * e, (-b1 * e + b2 * (1 - x) * e) / lam
+
+
 def inst_forward(df: Callable[[float], float], t: float, h: float = 1e-5) -> float:
     return -(math.log(df(t + h)) - math.log(df(max(t - h, 0.0)))) / (t + h - max(t - h, 0.0))
 
@@ -296,7 +303,16 @@ def main() -> None:
     a, sig = 0.03, 0.012
     q("ex4", "market 5y zero (Nelson-Siegel), %", 100 * ns_zero(5.0), "4.4179")
     q("ex4", "market P(0,5)", ns_df(5.0), "0.801800")
-    q("ex4", "theta(0)", hw_theta(ns_df, 1e-6, a, sig), "0.0106")
+    # theta(0) = f'(0) + a f(0) from the analytic Nelson-Siegel forward (the convexity term vanishes at t = 0)
+    f0, f0_slope = ns_forward_and_slope(0.0)
+    q("ex4", "f(0,0)", f0, "0.035")
+    q("ex4", "df(0,t)/dt at t = 0", f0_slope, "0.01")
+    q("ex4", "theta(0)", f0_slope + a * f0, "0.01105")
+    # the finite-difference theta(t) used by the simulation (first midpoint t = 0.005) matches the analytic one
+    for t_chk in (0.005, 0.5, 2.0, 4.995):
+        f_c, fs_c = ns_forward_and_slope(t_chk)
+        exact = fs_c + a * f_c + sig**2 / (2 * a) * (1 - math.exp(-2 * a * t_chk))
+        assert abs(hw_theta(ns_df, t_chk, a, sig) - exact) < 1e-7, (t_chk, hw_theta(ns_df, t_chk, a, sig), exact)
     r5, int5 = hw_simulate(ns_df, a, sig, 5.0, 200_000, 500, seed=21)
     disc5 = np.exp(-int5)
     q("ex4", "Monte Carlo E[exp(-int r)] to 5y with fitted theta, seed 21", float(disc5.mean()), "0.80180")

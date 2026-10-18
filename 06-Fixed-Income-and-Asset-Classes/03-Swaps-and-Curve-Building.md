@@ -43,7 +43,7 @@ The USD SOFR OIS contracts made subject to the CFTC trade execution requirement 
 | Payment lag | 2 days | 0 days |
 | Fixing calendar | US Government Securities | London |
 
-These are the terms of the standardised, exchange-traded contracts; bilateral swaps can deviate.
+These are the terms of the swaps that must be executed on a swap execution facility or designated contract market; other swaps can deviate.
 Interest rate swap terms are documented under the ISDA definitions; the 2021 ISDA Interest Rate Derivatives Definitions, published 14 June 2021 and implemented over the weekend of 2 to 3 October 2021, consolidated the 70-plus supplements to the 2006 Definitions (ISDA press release, 14 June 2021).
 
 ### Compounded SOFR
@@ -122,9 +122,9 @@ Every number is computed, printed and asserted by `code/fi_swaps_ois.py`.
 ### Example 1: compounding one week of SOFR
 
 Fixings for Monday 19 to Friday 23 October 2026 of 4.30%, 4.31%, 4.29%, 4.32% and 4.33%, with the Friday rate applying for 3 calendar days, give a compounded rate to Monday 26 October of 4.31704% ACT/360.
-"The day-weighted simple average is 4.31571%, so compounding adds 0.13 bp over a week; treating Friday as one day instead of three understates the rate by -0.60 bp."
+"The day-weighted simple average is 4.31571%, so compounding adds 0.13 bp over a week; treating Friday as one day instead of three understates the rate by 0.60 bp."
 Interest on 100mm for the week is 83,942.51 USD.
-Recovered from SOFR Index values rounded to 8 decimals, the average is 4.31705%: index rounding moves the fifth decimal, as the NY Fed warns.
+Recovered from SOFR Index values rounded to 8 decimals (starting from a hypothetical index level of 1.12345678), the average is 4.31705%: index rounding moves the fifth decimal, as the NY Fed warns.
 
 ### Example 2: bootstrapping a SOFR OIS curve on real dates
 
@@ -141,7 +141,7 @@ Trade on Monday 19 October 2026, spot Wednesday 21 October; par quotes 1y 3.60%,
 
 Every quote reprices to within $10^{-14}$.
 Discount factors here are from the spot date; to value at the trade date multiply by the two-day overnight factor, 0.999761 at 4.30%.
-"Note the 1y forwards: a mildly humped par curve produces a forward curve that dips and then rises sharply, because forwards are differences of the zero curve."
+"Note the 1y forwards: a par curve that falls and then rises produces a forward curve that dips and then rises sharply, because forwards are differences of the zero curve."
 
 ### Example 3: what the payment lag costs
 
