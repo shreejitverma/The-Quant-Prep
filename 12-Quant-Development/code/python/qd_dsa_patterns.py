@@ -21,6 +21,10 @@ from collections.abc import Iterable, Iterator
 
 def top_k(values: Iterable[float], k: int) -> list[float]:
     """k largest values, descending. Min-heap of size k: O(n log k) time, O(k) memory."""
+    if k < 0:
+        raise ValueError("k must be non-negative")
+    if k == 0:
+        return []
     heap: list[float] = []
     for v in values:
         if len(heap) < k:
