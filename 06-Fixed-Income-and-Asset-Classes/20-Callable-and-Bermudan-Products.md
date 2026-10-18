@@ -2,7 +2,7 @@
 type: concept
 track: [quant-research, quant-risk]
 tier: senior
-status: draft
+status: solid
 prereqs: [term-structure-models-hjm-lgm-lmm, monte-carlo-pricing-and-variance-reduction]
 est_hours: 5
 sources: [Francis Longstaff and Eduardo Schwartz - Valuing American Options by Simulation 2001, Leif Andersen and Vladimir Piterbarg - Interest Rate Modeling volume 3]
@@ -140,7 +140,7 @@ The swap has fixed strike $K = 4.0\%$ and annual coupons.
 The Bermudan swaption can be exercised at $T = 1.0, 2.0, 3.0, 4.0\text{ years}$ into a swap expiring at $T = 5.0\text{ years}$.
 The Hull-White parameters are $a = 0.03$ and $\sigma = 0.012$.
 
-Using `hw_bermudan_swaption_tree` in our reference implementation [`rates_models.py`](code/rates_models.py) with time step $\Delta t = 0.05$:
+Using `hw_bermudan_swaption_tree` in our reference implementation [`code/fi_callable_bermudan.py`](code/fi_callable_bermudan.py) and [`code/rates_models.py`](code/rates_models.py) with time step $\Delta t = 0.05$:
 1. **European Swaption (exercise at $T = 1.0$ only, 1y into 4y):**
 $$\text{Price}(\text{European}) = 0.0176082 \quad (176.08 \text{ bps})$$
 The analytic Jamshidian price of the same 1y into 4y swaption is $0.017568$, so the tree is within $0.23\%$.
@@ -234,6 +234,6 @@ The regression separates optimal immediate exercise from continuation across sim
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/rates_models.py`](code/rates_models.py) (Hull-White trinomial tree pricing for Bermudan vs European swaptions).
+- Code: [`code/fi_callable_bermudan.py`](code/fi_callable_bermudan.py) (numerical verification of Bermudan swaption tree, negative convexity, and LSMC regression), [`code/rates_models.py`](code/rates_models.py) (Hull-White trinomial tree pricing for Bermudan vs European swaptions).
 - Prereqs: [Term Structure Models: HJM, LGM, and LMM](19-Term-Structure-Models-HJM-LGM-LMM.md), [Short-Rate Models](04-Short-Rate-Models.md).
-- Next: Inflation-Linked Products (planned note 21 in Wave 4).
+- Next: [Inflation-Linked Products](21-Inflation-Linked-Products.md).

@@ -2,7 +2,7 @@
 type: concept
 track: [quant-trader, quant-research, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [swaps-and-curve-building]
 est_hours: 4
 sources: [Damiano Brigo and Fabio Mercurio - Interest Rate Models chapter 18, US Treasury TIPS Guidelines at treasurydirect.gov]
@@ -143,7 +143,7 @@ $$\text{Index Ratio} = \frac{\text{Ref CPI}}{\text{Base CPI}} = \frac{315.0}{300
 $$\text{Adjusted Principal} = \$1,000 \times 1.0500 = \$1,050.00$$
 3. Compute the semi-annual coupon:
 $$\text{Coupon} = \frac{2.0\%}{2} \times \$1,050.00 = 1.0\% \times \$1,050.00 = \$10.50$$
-Our reference code [`credit_bootstrap.py`](code/credit_bootstrap.py) confirms:
+Our reference code [`code/fi_inflation.py`](code/fi_inflation.py) confirms:
 `tips_cash_flow(0.02, 1000.0, 1.05, is_maturity=False) == 10.50`.
 If the bond matured on this date, terminal cash flow would be $\$10.50 + \$1,050.00 = \$1,060.50$.
 
@@ -159,7 +159,7 @@ $$\text{Coupon} = 1.0\% \times (\$1,000 \times 0.95) = 1.0\% \times \$950.00 = \
 $$\text{Principal} = \$1,000 \times \max(1.0, 0.9500) = \$1,000.00$$
 4. Total terminal cash flow:
 $$\text{Total} = \$9.50 + \$1,000.00 = \$1,009.50$$
-Our reference implementation [`credit_bootstrap.py`](code/credit_bootstrap.py) verifies:
+Our reference implementation [`code/fi_inflation.py`](code/fi_inflation.py) verifies:
 `tips_cash_flow(0.02, 1000.0, 0.95, is_maturity=True) == 1009.50`.
 The deflation floor preserves full par value against cumulative deflation.
 
@@ -171,7 +171,7 @@ Calculate the exact and approximate breakeven inflation rates.
 $$\text{BEIR}_{\text{exact}} = \frac{1 + y_{\text{nom}}}{1 + y_{\text{real}}} - 1 = \frac{1 + 0.0425}{1 + 0.0185} - 1 = \frac{1.0425}{1.0185} - 1 = 1.023564 - 1 = 2.3564\% \quad (235.64 \text{ bps})$$
 2. Approximate breakeven:
 $$\text{BEIR}_{\text{approx}} = y_{\text{nom}} - y_{\text{real}} = 4.25\% - 1.85\% = 2.4000\% \quad (240.00 \text{ bps})$$
-Our reference implementation [`credit_bootstrap.py`](code/credit_bootstrap.py) yields:
+Our reference implementation [`code/fi_inflation.py`](code/fi_inflation.py) yields:
 `breakeven_inflation_rate(0.0425, 0.0185) == 0.023564`.
 The approximation overstates the exact compound breakeven inflation rate by $4.36\text{ bps}$.
 
@@ -235,6 +235,6 @@ The approximation overstates the exact compound breakeven inflation rate by $4.3
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/credit_bootstrap.py`](code/credit_bootstrap.py) (TIPS index ratio, deflation floor, and breakeven inflation rate).
+- Code: [`code/fi_inflation.py`](code/fi_inflation.py) (numerical verification of TIPS index ratio, deflation floor, and breakeven inflation), [`code/credit_bootstrap.py`](code/credit_bootstrap.py) (TIPS index ratio, deflation floor, and breakeven inflation rate).
 - Prereqs: [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [Day Counts, Calendars and Schedules](11-Day-Counts-Calendars-and-Schedules.md).
 - Next: [Mortgages and Securitized Products](22-Mortgages-and-Securitized-Products.md).

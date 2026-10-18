@@ -2,17 +2,13 @@
 type: concept
 track: [quant-trader, quant-research, quant-dev, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [curve-construction-numerics]
 est_hours: 5
 sources: [Litterman and Scheinkman - Common factors affecting bond returns Journal of Fixed Income 1991, Ho - Key rate durations Journal of Fixed Income 1992, Tuckman and Serrat - Fixed Income Securities 4th ed. chapters 4 to 6, Bank of England - Financial Stability Report December 2022]
 ---
 
 # Curve Risk and Hedging
-
-> [!info] Draft
-> Written in this session with computed examples matching `code/curve_bootstrap.py`.
-> Missing for `solid`: formal independent reviewer check of all equations and parameter citations.
 
 ## TL;DR
 
@@ -94,12 +90,12 @@ The weights are chosen to neutralize empirical slope shocks, insulating the trad
 - Outputs: bucketed zero DV01, bucketed par DV01, PCA factor exposures, optimal hedge notional in benchmark instruments.
 - Algorithm: calculate cash-flow sensitivities to zero rates; apply inverse Jacobian to compute par sensitivities; solve linear equations for hedge notional.
 - Complexity: $O(K^2)$ where $K$ is the number of benchmark curve pillars.
-- Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `map_zero_risk_to_par_risk` and Jacobian inversion.
+- Reference implementation: [`code/fi_curve_risk.py`](code/fi_curve_risk.py) provides verified calculations for KRD, steepeners, and butterflies; [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `map_zero_risk_to_par_risk` and Jacobian inversion.
 - System context: risk and PnL controls in the [front-to-back architecture](../18-Pricing-and-Risk-Systems/01-Front-to-Back-Architecture.md).
 
 ## Worked examples
 
-All calculations below match the verified assertions in `code/curve_bootstrap.py`.
+All calculations below match the verified assertions in [`code/fi_curve_risk.py`](code/fi_curve_risk.py) and [`code/curve_bootstrap.py`](code/curve_bootstrap.py).
 
 ### Example 1: zero DV01 versus par DV01 on a 3-year par bond
 
@@ -184,9 +180,9 @@ The lesson for curve risk is that a DV01-matched hedge still needs a collateral 
 > The sum of all key-rate durations across the curve equals the aggregate effective duration under a parallel shift: $\sum \text{KRD}_k = D_{\text{eff}}$.
 
 > [!question]- fi-pca-three-factors | State the three principal components of yield curve movements identified by Litterman and Scheinkman (1991) and their variance contributions.
-> 1. Level (PC1): Parallel shift, explains $80\text{--}90\%$ of variance.
-> 2. Slope (PC2): Steepening/flattening, explains $8\text{--}12\%$ of variance.
-> 3. Curvature (PC3): Belly vs wings twist, explains $2\text{--}5\%$ of variance.
+> $1$. Level (PC1): Parallel shift, explains $80\text{--}90\%$ of variance.
+> $2$. Slope (PC2): Steepening/flattening, explains $8\text{--}12\%$ of variance.
+> $3$. Curvature (PC3): Belly vs wings twist, explains $2\text{--}5\%$ of variance.
 
 > [!question]- fi-par-vs-zero-dv01 | Why is par DV01 more practical for a trading desk than zero DV01?
 > Zero DV01 measures sensitivity to non-tradable abstract zero-rate points.
@@ -230,5 +226,5 @@ The lesson for curve risk is that a DV01-matched hedge still needs a collateral 
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) (`map_zero_risk_to_par_risk`).
+- Code: [`code/fi_curve_risk.py`](code/fi_curve_risk.py) (numerical verification of KRD, steepeners, and butterflies), [`code/curve_bootstrap.py`](code/curve_bootstrap.py) (`map_zero_risk_to_par_risk`).
 - Related notes: [Curve Construction Numerics](14-Curve-Construction-Numerics.md), [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [Bonds, Duration and Convexity](02-Bonds-Duration-and-Convexity.md).

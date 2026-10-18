@@ -2,7 +2,7 @@
 type: concept
 track: [quant-trader, quant-research, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [bonds-duration-and-convexity, curve-risk-and-hedging]
 est_hours: 5
 sources: [Bruce Tuckman and Angel Serrat - Fixed Income Securities chapters 5 and 6, Moorad Choudhry - The Repo and Modern Markets Handbook, Antti Ilmanen - Expected Returns chapters 4 and 5]
@@ -205,6 +205,8 @@ $$\text{P\&L}_{\text{Convexity}} = \frac{1}{2} \times C_{\$} \times (\Delta y)^2
 
 $$\Delta \text{P\&L}_{\text{predicted}} = \$366.67 + \$24,403.20 - \$406,720.00 + \$967.20 = -\$380,982.93$$
 
+Our reference implementation [`fi_relative_value.py`](code/fi_relative_value.py) confirms:
+`pnl_attribution_1d(100_000_000, 99.20, 8.20, 78.0, 0.0410, 0.0400, 0.0005, -0.00003)` asserts each component to half a cent.
 The roll-down and positive convexity partially softened the $\$406,720$ delta loss.
 
 ### Example 2: Structuring a 2s-5s-10s Butterfly Trade
@@ -238,7 +240,24 @@ $$\text{Total Wing DV01} = \$22,100 + \$22,100 = \$44,200$$
 
 $$\text{Net DV01} = \text{Total Wing DV01} - \text{Body DV01} = \$44,200 - \$44,200 = \$0$$
 
+Our reference implementation [`fi_relative_value.py`](code/fi_relative_value.py) confirms:
+`butterfly_50_50_weighting(100_000_000.0, 19.50, 44.20, 81.50)` produces exact notionals $\$113,333,333$ and $\$27,116,564$ with net DV01 $\$0.00$.
 The trade is strictly immune to a parallel yield curve shift.
+
+### Example 3: Par-Par Asset Swap Spread Calculation
+
+A corporate bond with clean price $P = 98.00$ trades at an annual yield of $y_{\text{bond}} = 4.45\%$.
+The corresponding par swap rate is $y_{\text{swap}} = 4.10\%$, and the swap PV01 is $\text{PV01}_{\text{swap}} = 7.50$.
+Compute the par-par asset swap spread $s_{\text{ASW}}$.
+
+Using the upfront-adjusted par-par formula:
+$$s_{\text{ASW}} \approx \frac{y_{\text{bond}} - y_{\text{swap}}}{1 + \frac{100 - P}{100 \cdot \text{PV01}_{\text{swap}}}}$$
+Substitute values:
+$$100 - P = 100 - 98 = 2.00$$
+$$\text{Upfront Adjustment} = \frac{2.00}{100 \times 7.50} = \frac{2.00}{750.0} = 0.002667$$
+$$s_{\text{ASW}} = \frac{0.0445 - 0.0410}{1 + 0.002667} = \frac{0.0035}{1.002667} = 0.0034907 \implies 34.91\text{ bps}$$
+Our reference implementation [`fi_relative_value.py`](code/fi_relative_value.py) confirms:
+`par_par_asw_spread(0.0445, 0.0410, 98.00, 7.50) == 0.0034907` ($34.91\text{ bps}$).
 
 ## Pitfalls
 
@@ -289,6 +308,7 @@ The trade is strictly immune to a parallel yield curve shift.
 
 ## In this repo and SDE-Interview-Prep
 
+- Code: [`code/fi_relative_value.py`](code/fi_relative_value.py) (Daily P&L attribution, 50-50 DV01 butterfly weighting, and par-par asset swap spread calculation).
 - Discounting and yield curve foundations: [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md).
 - Duration, convexity, and immunization mathematics: [Bonds, Duration, and Convexity](02-Bonds-Duration-and-Convexity.md).
 - Advanced credit indices and tranche trading: [Credit Advanced: CDS Indices and Tranches](23-Credit-Advanced-CDS-Indices-and-Tranches.md).

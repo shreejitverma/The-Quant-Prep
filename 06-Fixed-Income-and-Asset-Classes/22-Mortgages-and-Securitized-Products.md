@@ -2,7 +2,7 @@
 type: concept
 track: [quant-trader, quant-research, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [callable-and-bermudan-products]
 est_hours: 5
 sources: [SIFMA Uniform Practices for the Clearance and Settlement of Mortgage-Backed Securities, Frank Fabozzi - The Handbook of Mortgage-Backed Securities, Bruce Tuckman and Angel Serrat - Fixed Income Securities chapter 20]
@@ -165,10 +165,10 @@ Use the compound annualization formula:
 $$\text{CPR} = 1 - (1 - \text{SMM})^{12}$$
 Substitute $\text{SMM} = 0.005$:
 $$1 - \text{SMM} = 1 - 0.005 = 0.995$$
-$$(0.995)^{12} = 0.941572$$
-$$\text{CPR} = 1 - 0.941572 = 0.058428 = 5.8428\% \quad (5.84\%)$$
-Our reference implementation [`credit_bootstrap.py`](code/credit_bootstrap.py) confirms:
-`smm_to_cpr(0.005) == 0.058428`.
+$$(0.995)^{12} = 0.941623$$
+$$\text{CPR} = 1 - 0.941623 = 0.058377 = 5.8377\% \quad (5.84\%)$$
+Our reference implementation [`fi_mortgages.py`](code/fi_mortgages.py) confirms:
+`smm_to_cpr(0.005) == 0.058377` ($5.84\%$).
 
 ### Example 2: PSA Benchmark Prepayment Schedule
 Evaluate the projected CPR for:
@@ -181,7 +181,7 @@ $$\text{CPR} = 6.0\% \times \left(\frac{10}{30}\right) \times \frac{100}{100} = 
 2. **Month 30 at 150% PSA:**
 Since $m = 30$:
 $$\text{CPR} = 6.0\% \times \left(\frac{30}{30}\right) \times \frac{150}{100} = 6.0\% \times 1.5 = 9.00\%$$
-Our reference implementation [`credit_bootstrap.py`](code/credit_bootstrap.py) yields:
+Our reference implementation [`fi_mortgages.py`](code/fi_mortgages.py) yields:
 `psa_cpr(10, 100.0) == 0.02` ($2.0\%$) and `psa_cpr(30, 150.0) == 0.09` ($9.0\%$).
 
 ### Example 3: Implied Financing Rate in a Dollar Roll
@@ -195,9 +195,19 @@ Rolling means selling the pool for front-month settlement at $P_1$ and buying it
 The cost of that financing is the cash flow given up net of the drop:
 $$\text{Net Cost} = \text{Expected Cash Flow Given Up} - \text{Drop} = 0.480 - 0.375 = 0.105$$
 The trader effectively borrows $P_1$ for 30 days and repays $P_2$ plus the forgone cash flows, so:
-$$\text{Implied Rate} = \frac{P_2 + 0.480 - P_1}{P_1} \times \frac{360}{30} = \frac{0.105}{101.50} \times 12 = 1.24\%$$
+$$\text{Implied Rate} = \frac{P_2 + 0.480 - P_1}{P_1} \times \frac{360}{30} = \frac{0.105}{101.50} \times 12 = 1.2414\% \quad (1.24\%)$$
 With the Treasury repo rate at $4.50\%$, the roll is trading $4.50\% - 1.24\% = 3.26\%$ ($326\text{ bps}$) "on special".
 The trader saves 326 bps by financing MBS in the dollar roll rather than in the general collateral repo market.
+
+### Example 4: Sequential CMO Cash Flow Waterfall
+Consider a two-tranche sequential CMO backed by a mortgage pool with initial outstanding balances:
+Tranche A balance is $\$60,000,000$ and Tranche B balance is $\$40,000,000$.
+In month 1, total principal cash flow (scheduled amortization plus unscheduled prepayments) returned from the collateral is $\$1,500,000$.
+Under sequential pay rules, all principal flows to Tranche A until Tranche A is fully retired.
+Tranche A receives the full $\$1,500,000$, reducing its ending balance to $\$60,000,000 - \$1,500,000 = \$58,500,000$.
+Tranche B receives $\$0$ of principal, maintaining its ending balance at $\$40,000,000$.
+Our reference implementation [`fi_mortgages.py`](code/fi_mortgages.py) confirms:
+`sequential_cmo_month_waterfall([60_000_000.0, 40_000_000.0], 1_500_000.0)` produces `[1_500_000.0, 0.0]` received and `[58_500_000.0, 40_000_000.0]` ending balances.
 
 ## Pitfalls
 
@@ -258,6 +268,6 @@ The trader saves 326 bps by financing MBS in the dollar roll rather than in the 
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/credit_bootstrap.py`](code/credit_bootstrap.py) (SMM to CPR conversion and PSA benchmark schedules).
+- Code: [`code/fi_mortgages.py`](code/fi_mortgages.py) (SMM to CPR conversion, PSA benchmark schedules, dollar roll implied financing rates, and sequential CMO cash flow waterfalls).
 - Prereq: [Callable and Bermudan Products](20-Callable-and-Bermudan-Products.md).
 - Next: [Credit Advanced: CDS Indices and Tranches](23-Credit-Advanced-CDS-Indices-and-Tranches.md).
