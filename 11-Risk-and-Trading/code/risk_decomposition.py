@@ -11,6 +11,7 @@ Pure Python 3.10+ standard library implementation:
 from __future__ import annotations
 
 import math
+from statistics import NormalDist
 from collections.abc import Sequence
 
 
@@ -55,13 +56,7 @@ def compute_euler_var_decomposition(
 ) -> dict[str, float | list[float]]:
     """Perform full Euler risk decomposition into Marginal and Component VaR."""
     if z_score is None:
-        # Standard normal inverse CDF approximation or exact standard z-scores
-        if abs(confidence_level - 0.95) < 1e-4:
-            z_score = 1.6448536269514722
-        elif abs(confidence_level - 0.99) < 1e-4:
-            z_score = 2.3263478740408408
-        else:
-            z_score = 1.6449
+        z_score = NormalDist().inv_cdf(confidence_level)
 
     var_p, betas = compute_betas(weights, cov)
     sigma_p = math.sqrt(var_p)
@@ -92,9 +87,11 @@ def compute_incremental_var_trade(
     trade_dollars: float,
     trade_asset_idx: int,
     confidence_level: float = 0.95,
-    z_score: float = 1.6449,
+    z_score: float | None = None,
 ) -> tuple[float, float]:
     """Compute linear marginal IVaR approximation and exact non-linear IVaR."""
+    if z_score is None:
+        z_score = NormalDist().inv_cdf(confidence_level)
     # Linear approximation using marginal VaR of trade asset relative to initial portfolio
     var_p = compute_portfolio_variance(initial_weights, cov_extended[: len(initial_weights)])
     sigma_p = math.sqrt(var_p)

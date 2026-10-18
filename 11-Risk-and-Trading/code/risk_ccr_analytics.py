@@ -96,7 +96,7 @@ def simulate_interest_rate_swap(
             z = rng.gauss(0.0, 1.0)
             s_t = s_t + rate_vol * math.sqrt(dt) * z
             rem_time = max(0.0, maturity - t)
-            annuity = (1.0 - math.exp(-swap_rate * rem_time)) / swap_rate if swap_rate > 0 else rem_time
+            annuity = -math.expm1(-swap_rate * rem_time) / swap_rate if swap_rate != 0 else rem_time
             v = notional * (s_t - swap_rate) * annuity
             values[i][p] = v
 
@@ -126,8 +126,17 @@ def simulate_interest_rate_swap(
     epe = sum(0.5 * (ee[i - 1] + ee[i]) * dt for i in range(1, num_steps + 1)) / maturity
 
     # Effective EPE: average EEE over 1 year (min(T, 1y))
-    steps_1y = int(round(1.0 / dt))
-    effective_epe = sum(0.5 * (effective_ee[i - 1] + effective_ee[i]) * dt for i in range(1, steps_1y + 1)) / 1.0
+    horizon = min(maturity, 1.0)
+    integrated_effective_ee = 0.0
+    for i in range(1, num_steps + 1):
+        start = grid[i - 1]
+        end = min(grid[i], horizon)
+        if end <= start:
+            break
+        start_value = effective_ee[i - 1]
+        end_value = effective_ee[i - 1] + (effective_ee[i] - effective_ee[i - 1]) * (end - start) / dt
+        integrated_effective_ee += 0.5 * (start_value + end_value) * (end - start)
+    effective_epe = integrated_effective_ee / horizon
 
     regulatory_ead = 1.4 * effective_epe
 

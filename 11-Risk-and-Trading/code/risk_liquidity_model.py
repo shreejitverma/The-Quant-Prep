@@ -11,6 +11,7 @@ Pure Python 3.10+ standard library implementation:
 from __future__ import annotations
 
 import math
+from statistics import NormalDist
 
 
 def compute_almgren_chriss_trajectory(
@@ -75,10 +76,12 @@ def compute_liquidity_adjusted_var(
     mean_spread: float,
     spread_vol: float,
     confidence_level: float = 0.99,
-    z_score: float = 2.326,
+    z_score: float | None = None,
     liquidation_days: float = 4.0,
 ) -> dict[str, float]:
     """Compute exogenous and multi-day Liquidity-Adjusted Value at Risk (L-VaR)."""
+    if z_score is None:
+        z_score = NormalDist().inv_cdf(confidence_level)
     # Spread penalty: 0.5 * (mean_spread + z * spread_vol) * V
     stressed_spread = mean_spread + z_score * spread_vol
     spread_cost = 0.5 * stressed_spread * portfolio_value
