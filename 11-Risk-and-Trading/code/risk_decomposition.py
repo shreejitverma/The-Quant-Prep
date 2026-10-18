@@ -11,8 +11,8 @@ Pure Python 3.10+ standard library implementation:
 from __future__ import annotations
 
 import math
-from statistics import NormalDist
 from collections.abc import Sequence
+from statistics import NormalDist
 
 
 def compute_portfolio_variance(weights: Sequence[float], cov: Sequence[Sequence[float]]) -> float:
