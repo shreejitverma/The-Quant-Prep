@@ -5,7 +5,7 @@ tier: senior
 status: solid
 prereqs: [frtb-backtesting-and-pla-testing]
 est_hours: 4
-sources: [Basel Committee on Banking Supervision - Progress report on adoption of the Basel regulatory framework (2023), International Swaps and Derivatives Association - FRTB Desk Strategy and Capital Optimization Survey (2023), McKinsey & Company - Capital Optimization under Basel IV and FRTB (2022)]
+sources: [Basel Committee on Banking Supervision - Minimum capital requirements for market risk (2019), International Swaps and Derivatives Association - The Fundamental Review of the Trading Book and Emerging Markets (2019), McKinsey & Company - FRTB reloaded: Overhauling the trading-risk infrastructure (2018)]
 ---
 
 # FRTB: Implementation Challenges and Desk Strategy
@@ -332,8 +332,8 @@ During the European Union's implementation of the Capital Requirements Regulatio
 ## Further reading
 
 - Basel Committee on Banking Supervision. *Minimum capital requirements for market risk*. BCBS 457, January 2019.
-- International Swaps and Derivatives Association (ISDA). *FRTB Implementation: A Global Overview of Industry Readiness and Desk Strategies*. ISDA Whitepaper, 2022.
-- McKinsey & Company. *The Future of Market Risk: Navigating the FRTB Challenge*. McKinsey Risk Practice, 2021.
+- International Swaps and Derivatives Association (ISDA). [*The Fundamental Review of the Trading Book and Emerging Markets*](https://www.isda.org/2019/04/11/the-fundamental-review-of-the-trading-book-and-emerging-markets/), 2019.
+- McKinsey & Company. [*FRTB reloaded: Overhauling the trading-risk infrastructure*](https://www.mckinsey.com/capabilities/risk-and-resilience/our-insights/frtb-reloaded-the-need-for-a-fundamental-revamp-of-trading-risk-infrastructure), 2018.
 - European Banking Authority. *Basel III Monitoring Report on the impacts of FRTB and Output Floor*. EBA, 2023.
 - Savine, Antoine. *Modern Computational Finance: AAD and Parallel Simulations*. Wiley, 2018.
 

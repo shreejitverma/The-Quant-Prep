@@ -143,19 +143,19 @@ $$\text{CET1 Ratio}_{\text{Q3}} = \frac{\$40,500}{\$425,000} = 9.5294\% \approx 
 
 $$\text{Depletion} = \text{Starting CET1 Ratio} - \text{Minimum Stressed CET1 Ratio} = 12.50\% - 9.53\% = 2.97\%$$
 
-- Dividend Add-On Component (using projected Q0-Q4 average RWA of $\$410,000\text{ million}$):
+- Dividend Add-On Component (using Q3 RWA of $\$425,000\text{ million}$, the quarter with the lowest projected CET1 ratio, as required by 12 CFR 225.8):
 
-$$\text{Dividend Add-on} = \frac{4 \times \$500}{\$410,000} = \frac{\$2,000}{\$410,000} = 0.4878\% \approx 0.49\%$$
+$$\text{Dividend Add-on} = \frac{4 \times \$500}{\$425,000} = \frac{\$2,000}{\$425,000} = 0.4706\% \approx 0.47\%$$
 
 - Calculated SCB:
 
-$$\text{SCB} = \max\left(2.5\%, 2.97\% + 0.49\%\right) = \max(2.5\%, 3.46\%) = 3.46\%$$
+$$\text{SCB} = \max\left(2.5\%, 2.97\% + 0.47\%\right) = \max(2.5\%, 3.44\%) = 3.44\%$$
 
 The bank's new binding CET1 capital requirement (assuming a $2.0\%$ G-SIB surcharge and $0.0\%$ CCyB) is:
 
-$$\text{Required CET1} = 4.5\% + 3.46\% + 2.0\% + 0.0\% = 9.96\%$$
+$$\text{Required CET1} = 4.5\% + 3.44\% + 2.0\% + 0.0\% = 9.94\%$$
 
-With a starting capital ratio of $12.50\%$, the bank maintains a capital cushion of $12.50\% - 9.96\% = 2.54\%$ above its regulatory restriction threshold.
+With a starting capital ratio of $12.50\%$, the bank maintains a capital cushion of $12.50\% - 9.94\% = 2.56\%$ above its regulatory restriction threshold.
 
 ### Example 2: EBA IFRS 9 Staging Transition Under Macroeconomic Stress
 

@@ -106,7 +106,6 @@ class StressCapitalBufferResult:
     trough_cet1_ratio: float
     peak_to_trough_depletion: float
     planned_annual_dividends: float
-    avg_projected_rwa: float
     dividend_add_on: float
     scb: float
     g_sib_surcharge: float
@@ -122,7 +121,6 @@ def compute_scb(
     trough_after_tax_loss: float,
     trough_rwa: float,
     planned_annual_dividends: float,
-    avg_projected_rwa: float,
     g_sib_surcharge: float = 0.02,
     ccyb: float = 0.0,
     pillar1_min: float = 0.045,
@@ -133,7 +131,7 @@ def compute_scb(
     trough_cet1 = starting_cet1 - trough_after_tax_loss
     trough_ratio = trough_cet1 / trough_rwa
     depletion = starting_ratio - trough_ratio
-    dividend_add_on = planned_annual_dividends / avg_projected_rwa
+    dividend_add_on = planned_annual_dividends / trough_rwa
     scb = max(scb_floor, depletion + dividend_add_on)
     total_req = pillar1_min + scb + g_sib_surcharge + ccyb
     cushion = starting_ratio - total_req
@@ -146,7 +144,6 @@ def compute_scb(
         trough_cet1_ratio=trough_ratio,
         peak_to_trough_depletion=depletion,
         planned_annual_dividends=planned_annual_dividends,
-        avg_projected_rwa=avg_projected_rwa,
         dividend_add_on=dividend_add_on,
         scb=scb,
         g_sib_surcharge=g_sib_surcharge,
@@ -447,7 +444,6 @@ def run_tests() -> None:
         trough_after_tax_loss=9_500.0,
         trough_rwa=425_000.0,
         planned_annual_dividends=2_000.0,
-        avg_projected_rwa=410_000.0,
         g_sib_surcharge=0.02,
         ccyb=0.0,
     )
@@ -455,10 +451,10 @@ def run_tests() -> None:
     quoted("note17_trough_cet1", scb_res.trough_cet1, 40_500.0, 0)
     quoted("note17_trough_cet1_ratio", scb_res.trough_cet1_ratio * 100.0, 9.53, 2)
     quoted("note17_depletion", scb_res.peak_to_trough_depletion * 100.0, 2.97, 2)
-    quoted("note17_div_add_on", scb_res.dividend_add_on * 100.0, 0.49, 2)
-    quoted("note17_scb", scb_res.scb * 100.0, 3.46, 2)
-    quoted("note17_required_cet1", scb_res.total_cet1_requirement * 100.0, 9.96, 2)
-    quoted("note17_cushion", scb_res.capital_cushion * 100.0, 2.54, 2)
+    quoted("note17_div_add_on", scb_res.dividend_add_on * 100.0, 0.47, 2)
+    quoted("note17_scb", scb_res.scb * 100.0, 3.44, 2)
+    quoted("note17_required_cet1", scb_res.total_cet1_requirement * 100.0, 9.94, 2)
+    quoted("note17_cushion", scb_res.capital_cushion * 100.0, 2.56, 2)
 
     # Note 17 Example 2 (IFRS 9 Staging)
     ifrs9_res = compute_ifrs9_staging_stress(
