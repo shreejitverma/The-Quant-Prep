@@ -2,261 +2,273 @@
 type: concept
 track: [quant-research, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [stochastic-differential-equations, swaps-and-curve-building]
 est_hours: 5
-sources: [Brigo and Mercurio - Interest Rate Models chapters 3 and 4, Steven Shreve - Stochastic Calculus for Finance II chapter 10]
+sources: [Brigo and Mercurio - Interest Rate Models: Theory and Practice 2nd ed. (Springer 2006) chapter 3, Vasicek - An Equilibrium Characterization of the Term Structure - Journal of Financial Economics 5(2) 1977, Cox Ingersoll and Ross - A Theory of the Term Structure of Interest Rates - Econometrica 53(2) 1985, Ho and Lee - Term Structure Movements and Pricing Interest Rate Contingent Claims - Journal of Finance 41(5) 1986, Hull and White - Pricing Interest-Rate-Derivative Securities - Review of Financial Studies 3(4) 1990, Hull and White - Numerical Procedures for Implementing Term Structure Models I - Journal of Derivatives 2(1) 1994, Jamshidian - An Exact Bond Option Formula - Journal of Finance 44(1) 1989, Glasserman - Monte Carlo Methods in Financial Engineering (Springer 2004) section 3.4, Lord Koekkoek and van Dijk - A comparison of biased simulation schemes for stochastic volatility models - Quantitative Finance 10(2) 2010]
 ---
 
 # Short-Rate Models
 
 ## TL;DR
 
-Short-rate models specify the stochastic evolution of the instantaneous risk-free interest rate $r(t)$ under the risk-neutral measure.
-Equilibrium models such as Vasicek and Cox-Ingersoll-Ross (CIR) derive the entire yield curve from a small set of stationary parameters, but fail to match the observed market curve today.
-No-arbitrage models such as Hull-White (extended Vasicek) introduce time-dependent drift $\theta(t)$ to match the market discount curve exactly.
-Under affine Gaussian dynamics, zero-coupon bond prices are exponential-affine in $r(t)$, enabling closed-form zero-coupon bond option pricing and Jamshidian's decomposition for European swaptions.
-Single-factor models drive all yield movements via a single Brownian motion, forcing 100% correlation across maturities; capturing curve twists and slope changes requires multi-factor models.
+- A short-rate model specifies $dr = \mu(t,r)\,dt + s(t,r)\,dW$ under the risk-neutral measure and prices every bond as $P(t,T) = \mathbb{E}_t[e^{-\int_t^T r\,du}]$; affine drift and variance make $P = A(t,T)e^{-B(t,T)r}$ with $A, B$ from Riccati ODEs.
+- Vasicek (Gaussian, mean-reverting) and CIR (square-root, non-negative) are equilibrium models with a handful of constant parameters, so they cannot match today's curve; Hull-White adds a deterministic $\theta(t)$ that fits any curve exactly.
+- Every closed form here has an independent check: Vasicek and Hull-White against Monte Carlo, CIR against a Crank-Nicolson PDE solve; the Hull-White $\theta(t)$ is verified by simulating with it and recovering the market discount factor.
+- In one-factor models all bond prices are monotone in one state variable, which gives Jamshidian's exact swaption formula and also forces instantaneous correlation 1 between all rates.
+- CIR needs $2k\theta \ge \sigma^2$ (Feller) for zero to be unattainable; simulation needs a scheme that never takes the square root of a negative number.
 
 ## Learning objectives
 
 - Differentiate equilibrium models from no-arbitrage term structure models.
-- Formulate the Vasicek and CIR stochastic differential equations and evaluate their analytical zero-coupon bond pricing formulas.
-- Derive the time-dependent drift $\theta(t)$ in the Hull-White 1-factor model that matches the initial instantaneous forward rate curve.
-- Implement Jamshidian's decomposition to price European swaptions as portfolios of zero-coupon bond options.
+- Formulate the Vasicek and CIR SDEs and derive and evaluate their zero-coupon bond formulas.
+- Derive the time-dependent drift $\theta(t)$ in the Hull-White one-factor model that matches the initial forward curve, and verify it numerically.
+- Price zero-bond options and, by Jamshidian's decomposition, European swaptions in Hull-White.
 - State the Feller condition $2k\theta \ge \sigma^2$ for CIR and explain simulation failure modes when it is violated.
-- Analyze the structural limitations of 1-factor short-rate models regarding terminal correlation and term structure dynamics.
+- Analyse the structural limits of one-factor models: correlation, volatility shape, negative rates.
 
 ## Core concepts
 
-### 1. Classification: Equilibrium vs No-Arbitrage
+### Equilibrium versus no-arbitrage
 
-Interest rate term structure models fall into two core philosophical traditions.
+Equilibrium (endogenous) models treat $r$ as a time-homogeneous state variable, so the whole curve $T \mapsto P(0,T)$ is an output of three or four constants: Vasicek (1977) and Cox, Ingersoll and Ross (1985).
+They cannot reprice an arbitrary market curve, which rules them out for pricing anything hedged with the curve.
+No-arbitrage (exogenous) models take today's curve as an input and fit it with a deterministic function of time: Ho and Lee (1986), $dr = \theta(t)dt + \sigma dW$, and Hull and White (1990), $dr = (\theta(t) - a r)dt + \sigma dW$.
+The curve is then matched by construction and the remaining parameters (mean reversion $a$ and volatility $\sigma$) are free for option calibration.
 
-Equilibrium models treat the short rate $r(t)$ as an economic state variable governed by a time-homogeneous process.
-The yield curve $T \mapsto P(0, T)$ is an endogenous output of the model parameters.
-Prominent examples include Vasicek (1977) and Cox, Ingersoll, and Ross (1985).
-Because equilibrium models possess only 3 or 4 static parameters, they cannot reprice the rich spectrum of liquid market instruments (cash deposits, futures, swaps) without substantial pricing errors.
-For market-making and relative value trading, an endogenous mispricing of liquid benchmark bonds is unacceptable.
+### The affine machinery
 
-No-arbitrage models take the observed market discount curve $T \mapsto P(0, T)$ as an exogenous input and calibrate time-dependent functions to match it perfectly.
-Ho and Lee (1986) introduced time-dependent drift without mean reversion: $dr(t) = \theta(t)dt + \sigma dW(t)$.
-Hull and White (1990) extended Vasicek by incorporating both mean reversion and time-dependent drift: $dr(t) = (\theta(t) - a r(t))dt + \sigma dW(t)$.
-No-arbitrage models guarantee that vanilla instruments reprice at par by construction, leaving model volatility and correlation parameters free to calibrate to option surfaces.
+By Feynman-Kac ([note](../04-Stochastic-Calculus/06-Feynman-Kac-and-Pricing-PDEs.md)) a bond price solves
+$$\partial_t P + \mu\,\partial_r P + \tfrac12 s^2\,\partial_{rr} P - rP = 0, \qquad P(T,T) = 1.$$
+If $\mu$ and $s^2$ are affine in $r$, try $P = A(\tau)e^{-B(\tau)r}$ with $\tau = T - t$ and match the terms in $r^0$ and $r^1$:
 
-### 2. The Vasicek Model
+| Model | $dr$ | $B'(\tau)$ | $(\ln A)'(\tau)$ |
+| :--- | :--- | :--- | :--- |
+| Vasicek | $k(\theta - r)dt + \sigma dW$ | $1 - kB$ | $-k\theta B + \tfrac12\sigma^2 B^2$ |
+| CIR | $k(\theta - r)dt + \sigma\sqrt{r}\,dW$ | $1 - kB - \tfrac12\sigma^2 B^2$ | $-k\theta B$ |
 
-Vasicek (1977) models the instantaneous short rate as an Ornstein-Uhlenbeck process with constant parameters under the risk-neutral measure:
-$$dr(t) = k(\theta - r(t))dt + \sigma dW(t)$$
-where $k > 0$ is the mean reversion speed, $\theta$ is the long-term mean rate, $\sigma > 0$ is the volatility, and $W(t)$ is a standard Brownian motion.
+with $B(0) = 0$, $\ln A(0) = 0$; Vasicek's $B$ is linear and solves to $B = (1 - e^{-k\tau})/k$, CIR's is a Riccati equation.
 
-Integrating the linear SDE yields the conditional distribution of $r(T)$ given $r(t)$:
-$$r(T) = r(t)e^{-k(T-t)} + \theta(1 - e^{-k(T-t)}) + \sigma \int_t^T e^{-k(T-u)}dW(u)$$
-The conditional distribution is Gaussian:
-$$\mathbb{E}[r(T) \mid r(t)] = r(t)e^{-k(T-t)} + \theta(1 - e^{-k(T-t)})$$
-$$\text{Var}(r(T) \mid r(t)] = \frac{\sigma^2}{2k}\left(1 - e^{-2k(T-t)}\right)$$
+### Vasicek
 
-The zero-coupon bond price is given by $P(t, T) = \mathbb{E}_t\left[\exp\left(-\int_t^T r(u)du\right)\right]$.
-Because $\int_t^T r(u)du$ is normally distributed, evaluation of its moment-generating function yields an exponential-affine form:
-$$P(t, T) = A(t, T)\exp(-B(t, T)r(t))$$
-where:
-$$B(t, T) = \frac{1 - e^{-k(T-t)}}{k}$$
-$$A(t, T) = \exp\left( \left(\theta - \frac{\sigma^2}{2k^2}\right)(B(t, T) - (T-t)) - \frac{\sigma^2}{4k}B(t, T)^2 \right)$$
+$dr = k(\theta - r)dt + \sigma dW$ is an Ornstein-Uhlenbeck process:
+$$r(T) = r(t)e^{-k\tau} + \theta(1 - e^{-k\tau}) + \sigma\int_t^T e^{-k(T-u)}dW_u,$$
+Gaussian with mean $r(t)e^{-k\tau} + \theta(1 - e^{-k\tau})$ and variance $\frac{\sigma^2}{2k}(1 - e^{-2k\tau})$.
+The integral $I = \int_t^T r\,du$ is Gaussian too, with mean $\theta\tau + (r - \theta)B$ and variance $\frac{\sigma^2}{k^2}\left(\tau - B - \frac{k}{2}B^2\right)$, so $P = \mathbb{E}[e^{-I}] = e^{-\mathbb{E}I + \frac12 \text{Var}\,I}$, which gives
+$$P(t,T) = A\,e^{-Br}, \qquad B = \frac{1 - e^{-k\tau}}{k}, \qquad \ln A = \left(\theta - \frac{\sigma^2}{2k^2}\right)(B - \tau) - \frac{\sigma^2}{4k}B^2.$$
+As $\tau \to \infty$ the yield tends to $\theta - \frac{\sigma^2}{2k^2}$: the long end sits below the long-run mean by a convexity term, because $e^{-I}$ is convex in $I$.
+The weakness is the Gaussian distribution: $\mathbb{P}(r(T) < 0) = \Phi(-\mathbb{E}r_T/\text{sd}\,r_T) > 0$, which is a feature in negative-rate markets and a bug for anything that needs $r > 0$.
 
-The yield to maturity $y(t, T) = -\frac{\ln P(t, T)}{T - t} = \frac{B(t, T)}{T - t}r(t) - \frac{\ln A(t, T)}{T - t}$ is affine in $r(t)$.
-As maturity $T \to \infty$, the asymptotic yield approaches:
-$$y_\infty = \theta - \frac{\sigma^2}{2k^2}$$
-The term $-\frac{\sigma^2}{2k^2}$ is the Jensen convexity adjustment on long-term bond yields.
+### Cox-Ingersoll-Ross
 
-The major drawback of Vasicek is that $r(T)$ is normally distributed, meaning $r(T)$ can become negative with non-zero probability:
-$$\mathbb{P}(r(T) < 0) = \Phi\left( -\frac{\mathbb{E}[r(T)]}{\sqrt{\text{Var}(r(T))}} \right)$$
+$dr = k(\theta - r)dt + \sigma\sqrt{r}\,dW$ keeps $r \ge 0$: the diffusion vanishes at zero while the drift $k\theta$ pushes up.
+**Feller condition.** If $2k\theta \ge \sigma^2$, zero is never reached; if $2k\theta < \sigma^2$, the process hits zero and is instantaneously reflected (Feller 1951 for the boundary classification).
+**Distribution.** With $c = \frac{2k}{\sigma^2(1 - e^{-k\tau})}$, $2c\,r(T)$ given $r(t)$ is non-central chi-square with $d = 4k\theta/\sigma^2$ degrees of freedom and non-centrality $2c\,r(t)e^{-k\tau}$; that is what exact simulation samples (Glasserman 2004, section 3.4).
+**Bond price.** With $\gamma = \sqrt{k^2 + 2\sigma^2}$:
+$$B = \frac{2(e^{\gamma\tau} - 1)}{(\gamma + k)(e^{\gamma\tau} - 1) + 2\gamma}, \qquad A = \left(\frac{2\gamma\,e^{(k+\gamma)\tau/2}}{(\gamma + k)(e^{\gamma\tau} - 1) + 2\gamma}\right)^{2k\theta/\sigma^2}.$$
+**Simulation.** Plain Euler can step below zero and then needs $\sqrt{r}$ of a negative number; fixes are full truncation (use $\max(r,0)$ in drift and diffusion, Lord, Koekkoek and van Dijk 2010) or exact non-central chi-square sampling.
 
-### 3. The Cox-Ingersoll-Ross (CIR) Model
+### Hull-White one factor
 
-To prevent negative interest rates, Cox, Ingersoll, and Ross (1985) introduced a square-root diffusion term:
-$$dr(t) = k(\theta - r(t))dt + \sigma \sqrt{r(t)} dW(t)$$
+$dr = (\theta(t) - a r)dt + \sigma dW$.
+Write $r(t) = x(t) + \varphi(t)$ with $dx = -a x\,dt + \sigma dW$, $x(0) = 0$.
+Matching $P(0,T) = \mathbb{E}[e^{-\int_0^T r}]$ for every $T$ forces
+$$\varphi(t) = f(0,t) + \frac{\sigma^2}{2a^2}\left(1 - e^{-at}\right)^2, \qquad \theta(t) = \partial_t f(0,t) + a f(0,t) + \frac{\sigma^2}{2a}\left(1 - e^{-2at}\right).$$
+The last term is a convexity correction: without it, simulated discount factors miss the curve.
+Bond prices are affine in $r(t)$ (Brigo and Mercurio, section 3.3):
+$$P(t,T) = \frac{P(0,T)}{P(0,t)}\exp\left(B f(0,t) - \frac{\sigma^2}{4a}\left(1 - e^{-2at}\right)B^2 - B\,r(t)\right), \qquad B = \frac{1 - e^{-a(T-t)}}{a}.$$
+**Zero-bond options.** $P(T,S)$ is lognormal under the $T$-forward measure with total volatility
+$$\sigma_P = \sigma\sqrt{\frac{1 - e^{-2aT}}{2a}}\,B(T,S),$$
+so a call is $P(0,S)\Phi(d_1) - K P(0,T)\Phi(d_2)$ with $d_{1,2} = \frac{\ln\frac{P(0,S)}{K P(0,T)} \pm \frac12\sigma_P^2}{\sigma_P}$, a Black formula on the forward bond price.
 
-Key properties of CIR include:
-1. **Feller condition:** If $2k\theta \ge \sigma^2$, the upward drift at near-zero rates dominates diffusion, making the boundary $r=0$ strictly inaccessible.
-If $2k\theta < \sigma^2$, the rate can reach zero, where it is instantaneously reflected back into positive territory.
-2. **Distribution:** The transition density of $2c r(T)$ given $r(t)$ (where $c = \frac{2k}{\sigma^2(1 - e^{-k(T-t)})}$) follows a non-central chi-square distribution $\chi^2(d, \lambda)$ with degrees of freedom $d = \frac{4k\theta}{\sigma^2}$ and non-centrality parameter $\lambda = 2c r(t)e^{-k(T-t)}$.
-3. **Affine bond prices:** Zero-coupon bond prices retain the affine structure $P(t, T) = A(t, T)e^{-B(t, T)r(t)}$, where:
-$$B(t, T) = \frac{2(e^{\gamma(T-t)} - 1)}{(\gamma + k)(e^{\gamma(T-t)} - 1) + 2\gamma}$$
-$$A(t, T) = \left( \frac{2\gamma e^{(k+\gamma)(T-t)/2}}{(\gamma + k)(e^{\gamma(T-t)} - 1) + 2\gamma} \right)^{2k\theta / \sigma^2}$$
-with $\gamma = \sqrt{k^2 + 2\sigma^2}$.
+### Jamshidian's decomposition
 
-The primary drawback of CIR in practice is analytical rigidity.
-It cannot match the initial term structure of interest rates, and discrete Euler-Maruyama simulations can step into negative values if not handled with specialized schemes (such as absorbing boundaries, reflection, or exact non-central chi-square sampling).
+A payer swaption expiring at $T$ on a swap with fixed coupons $c_i = K\tau_i$ (plus 1 at $T_n$) pays $\left(1 - \sum_i c_i P(T,T_i)\right)^+$: a put on a coupon bond struck at 1.
+In a one-factor model every $P(T,T_i; r)$ is strictly decreasing in $r$, so there is a unique $r^*$ with $\sum_i c_i P(T,T_i;r^*) = 1$.
+Set $K_i = P(T,T_i;r^*)$.
+Because all bonds move the same way, $1 - \sum c_i P_i > 0 \iff r > r^* \iff P_i < K_i$ for every $i$ simultaneously, so
+$$\Big(1 - \sum_i c_i P_i\Big)^+ = \sum_i c_i\,(K_i - P_i)^+,$$
+an exact sum of zero-bond puts (Jamshidian 1989).
+The receiver swaption is the matching sum of calls.
 
-### 4. The Hull-White One-Factor Model (Extended Vasicek)
+### Numerical methods
 
-The Hull-White 1-factor model generalizes Vasicek by allowing the drift parameter $\theta(t)$ to be a deterministic function of time:
-$$dr(t) = (\theta(t) - a r(t))dt + \sigma dW(t)$$
-where $a > 0$ is the constant mean-reversion speed and $\sigma > 0$ is the constant short-rate volatility.
+- Trees: the Hull and White (1994) trinomial tree discretises $x$, then shifts each time slice by $\alpha_m$ found by forward induction on Arrow-Debreu prices so that the tree reprices $P(0,t_{m+1})$ exactly; Bermudans are priced by backward induction.
+- PDE: the bond-pricing PDE above, solved by Crank-Nicolson; the CIR boundary at $r = 0$ needs care because the diffusion vanishes there.
+- Monte Carlo: exact transitions for Gaussian models, exact or full-truncation schemes for CIR; the control that every simulated discount factor reprices the input curve is the first test.
 
-#### Calibration of $\theta(t)$ to the Initial Term Structure
-Let $f(0, t) = -\frac{\partial \ln P(0, t)}{\partial t}$ be the instantaneous market forward rate observed at time 0.
-To match $P(0, T)$ exactly for all maturities $T$, the drift function must satisfy:
-$$\theta(t) = \frac{\partial f(0, t)}{\partial t} + a f(0, t) + \frac{\sigma^2}{2a}\left(1 - e^{-2at}\right)$$
+### Limits of one-factor models
 
-#### Zero-Coupon Bond Pricing Under Hull-White
-The bond price formula is exponential-affine:
-$$P(t, T) = A(t, T)\exp(-B(t, T)r(t))$$
-where:
-$$B(t, T) = \frac{1 - e^{-a(T-t)}}{a}$$
-$$\ln A(t, T) = \ln \frac{P(0, T)}{P(0, t)} + B(t, T)f(0, t) - \frac{\sigma^2}{4a}\left(1 - e^{-2at}\right)B(t, T)^2$$
+- **Correlation.** All instantaneous bond returns load on one Brownian motion, $dP/P = r\,dt - \sigma B(t,T)\,dW$, so their correlation is 1: the model moves the curve, it cannot twist it on its own.
+- **Volatility shape.** With constant $a$ and $\sigma$, forward-rate volatility is $\sigma e^{-a(T-t)}$, monotone in maturity, so a humped volatility term structure needs time-dependent $\sigma(t)$ or more factors.
+- **Calibration.** A swap rate's variance is roughly $\sum_{i,j} w_i w_j \rho_{ij}\sigma_i\sigma_j$, which is maximal at $\rho = 1$; a one-factor model calibrated to caplets therefore implies the highest swaption volatility consistent with them, and the choice of calibration instruments (co-terminal swaptions for a Bermudan, caplets for a cap-like product) is part of the model.
+- **Negative rates.** Gaussian models allow them, lognormal and square-root models do not.
 
-Equivalently, expressing the bond price in terms of the initial discount curve directly:
-$$P(t, T) = \frac{P(0, T)}{P(0, t)}\exp\left( -B(t, T)(r(t) - f(0, t)) - \frac{\sigma^2}{4a}(1 - e^{-2at})B(t, T)^2 \right)$$
+### How it is implemented
 
-#### Zero-Coupon Bond Options
-Hull-White provides an exact closed-form solution for European options on zero-coupon bonds.
-Consider a European call option with strike $K$ expiring at time $T$ on a zero-coupon bond maturing at $S > T$.
-The price at time $t=0$ is:
-$$\text{Call}(0) = P(0, S)\Phi(d_1) - K P(0, T)\Phi(d_2)$$
-$$\text{Put}(0) = K P(0, T)\Phi(-d_2) - P(0, S)\Phi(-d_1)$$
-where:
-$$\sigma_P = \sigma \sqrt{\frac{1 - e^{-2aT}}{2a}} B(T, S) = \frac{\sigma}{a}\left(1 - e^{-a(S-T)}\right)\sqrt{\frac{1 - e^{-2aT}}{2a}}$$
-$$d_1 = \frac{\ln\left(\frac{P(0, S)}{K P(0, T)}\right) + \frac{1}{2}\sigma_P^2}{\sigma_P}$$
-$$d_2 = d_1 - \sigma_P$$
-
-### 5. Jamshidian's Decomposition
-
-A European swaption can be viewed as an option on a coupon-bearing bond.
-Consider a payer swaption with expiry $T$, swap maturity $T_n$, coupon frequency $\tau$, and fixed strike $R_K$.
-At expiry $T$, the payer swaption payoff is:
-$$\text{Payoff}(T) = \max\left(0, 1 - \sum_{i=1}^n c_i P(T, T_i)\right)$$
-where $c_i = R_K \tau$ for $i < n$ and $c_n = 1 + R_K \tau$.
-
-Because $P(T, T_i) = A(T, T_i)\exp(-B(T, T_i)r(T))$ and $B(T, T_i) > 0$, each zero-coupon bond price is a strictly monotonically decreasing function of the short rate $r(T)$.
-Consequently, the portfolio value $\Psi(r) = \sum_{i=1}^n c_i P(T, T_i; r)$ is also strictly decreasing in $r$.
-There exists a unique critical short rate $r^*$ such that:
-$$\sum_{i=1}^n c_i P(T, T_i; r^*) = 1$$
-The swaption exercise condition $\Psi(r(T)) < 1$ is equivalent to $r(T) > r^*$.
-
-For each individual maturity $T_i$, define the strike price:
-$$K_i = P(T, T_i; r^*)$$
-Then for any $r(T)$:
-$$\max\left(0, 1 - \sum_{i=1}^n c_i P(T, T_i; r(T))\right) = \sum_{i=1}^n c_i \max(0, K_i - P(T, T_i; r(T)))$$
-A European payer swaption decomposes exactly into a portfolio of $n$ European put options on zero-coupon bonds with strikes $K_i$.
-A European receiver swaption decomposes into a portfolio of $n$ European call options on zero-coupon bonds.
-This result, discovered by Farshid Jamshidian (1989), turns a complex multi-cash-flow swaption pricing problem into an exact sum of analytic Black-style bond options.
-
-### 6. Limitations of 1-Factor Models
-
-Single-factor short-rate models are subject to structural constraints:
-1. **Terminal correlation is 1:** Because all zero-coupon bond prices are deterministic functions of a single state variable $r(t)$, instantaneous returns on bonds of all maturities are perfectly correlated:
-$$\text{Corr}\left(\frac{dP(t, T_1)}{P(t, T_1)}, \frac{dP(t, T_2)}{P(t, T_2)}\right) = 1.0$$
-The model can capture parallel shifts, but cannot generate steepening, flattening, or butterfly curvature shocks autonomously.
-2. **Implied volatility term structure:** With constant $a$ and $\sigma$, the volatility of forward rates $f(t, T)$ decays exponentially as $e^{-a(T-t)}$.
-This monotonic decay cannot fit humped swaption volatility curves without time-dependent volatility $\sigma(t)$.
-3. **Hedging basis risk:** Hedging multi-leg products (such as curve spread options or CMS spread options) using 1-factor models severely misstates residual variance because basis decorrelation is zero by assumption.
+```mermaid
+flowchart TD
+    C[Today's discount curve] --> T["Fit theta(t) or the tree shifts alpha_m"]
+    V[Calibration instruments: swaptions or caplets] --> K["Fit a and sigma, or sigma(t)"]
+    T --> M[Calibrated model]
+    K --> M
+    M --> J{Product}
+    J -- European swaption or zero-bond option --> A1[Closed form: Jamshidian, Black on bond]
+    J -- Bermudan or callable --> A2[Tree or PDE, backward induction]
+    J -- path dependent --> A3[Monte Carlo, exact transitions]
+    A1 --> X[Checks: reprice curve, reprice calibration set, convergence in steps or paths]
+    A2 --> X
+    A3 --> X
+```
 
 ## Worked examples
 
-### Example 1: Hull-White B(t, T) and Volatility Factor
-Calculate the factor $B(0, 5)$ and the bond option volatility $\sigma_P$ for a 1-year option on a 5-year zero-coupon bond, given $a = 0.03$ and $\sigma = 0.012$ (120 bps).
+Every number below is computed, printed and asserted by `code/fi_short_rate.py`; simulation results are quoted as "about" the seed-stable printed value and checked against the closed form within four standard errors.
 
-First, calculate $B(1, 5)$:
-$$B(1, 5) = \frac{1 - e^{-0.03 \times (5 - 1)}}{0.03} = \frac{1 - e^{-0.12}}{0.03} = \frac{1 - 0.886920}{0.03} = 3.769318$$
+### Example 1: Vasicek bond price, checked by simulation
 
-Next, compute the integrated variance factor for $T = 1$:
-$$V = \frac{1 - e^{-2 \times 0.03 \times 1}}{2 \times 0.03} = \frac{1 - e^{-0.06}}{0.06} = \frac{1 - 0.941765}{0.06} = 0.970591$$
-$$\sqrt{V} = \sqrt{0.970591} = 0.985186$$
+$k = 0.30$, $\theta = 4\%$, $\sigma = 1\%$, $r_0 = 3\%$.
+Closed form: $P(0,5) = 0.840865$, a 5-year yield of 3.4665%.
+Monte Carlo with 100,000 antithetic paths of the exact OU transition (500 steps, seed 7) gives about 0.84086 with a standard error of 4.1e-6.
+The long yield is $\theta - \sigma^2/(2k^2) = 3.9444\%$, and the 100-year yield is already 3.9139%.
+$r_5$ has mean 3.7769% and standard deviation 1.2584%, so $\mathbb{P}(r_5 < 0) = 0.1345\%$; the simulation shows about 0.127% of paths below zero.
 
-Finally, evaluate $\sigma_P$:
-$$\sigma_P = \sigma \times \sqrt{V} \times B(1, 5) = 0.012 \times 0.985186 \times 3.769318 = 0.044561$$
-The implied volatility of the zero-coupon bond price is approximately 4.456%.
+### Example 2: CIR closed form against a PDE
 
-### Example 2: Jamshidian Swaption Pricing Verification
-Consider a flat 4.0% continuously compounded yield curve where $P(0, t) = e^{-0.04t}$.
-We price a 1y into 5y European payer swaption (strike $R_K = 4.0\%$, annual coupons at $t = 2, 3, 4, 5, 6$) with Hull-White parameters $a = 0.03$ and $\sigma = 0.012$.
+$k = 0.5$, $\theta = 4\%$, $\sigma = 10\%$, $r_0 = 3\%$; the Feller ratio $2k\theta/\sigma^2 = 4.00$.
+Closed form $P(0,5) = 0.835234$; a Crank-Nicolson solve of the bond PDE on $r \in [0, 0.6]$ gives 0.835234, differing by -5e-9.
+The non-central chi-square has $d = 8$ degrees of freedom here, and 400,000 exact draws (seed 11) give a mean of about 3.92%, matching the exact conditional mean 3.92%.
 
-Using our reference implementation [`rates_models.py`](code/rates_models.py):
-1. The 1-year discount factor is $P(0, 1) = e^{-0.04} = 0.960789$.
-2. The root-finding step identifies the critical short rate deviation $r^* - f(0, 1)$ that equates the coupon bond value to 1.0.
-3. For each of the 5 coupon cash flows, the individual zero-bond put strike $K_i$ is evaluated.
-4. The sum of the 5 zero-bond put option values yields:
-$$\text{Swaption Price} = 0.021268 \quad (212.68 \text{ bps})$$
-This matches the analytic Jamshidian formula implemented in `hw_swaption_jamshidian`.
+### Example 3: violating the Feller condition
 
-### Example 3: CIR Feller Condition Check
-Let a CIR process have parameters $k = 0.20$, $\theta = 0.05$, and $\sigma = 0.15$.
-Evaluate whether the process can reach zero.
+$k = 0.20$, $\theta = 5\%$, $\sigma = 15\%$: $2k\theta = 0.020 < 0.0225 = \sigma^2$, so zero is attainable.
+The closed form still holds: $P(0,5) = 0.836017$, and the PDE agrees to 8e-7, a larger gap than the -5e-9 of Example 2 on the same grid.
+Plain Euler with 50 steps a year sends 0.34% of all steps below zero; with full truncation the Monte Carlo price is about 0.8360 (standard error 3.1e-4), consistent with the closed form.
+"Without a fix the code would take the square root of a negative number on those steps."
+Lord, Koekkoek and van Dijk (2010) compare the usual fixes (absorption, reflection, partial and full truncation) and recommend full truncation as the least biased of them.
 
-Compute the Feller ratio:
-$$2k\theta = 2 \times 0.20 \times 0.05 = 0.020$$
-$$\sigma^2 = (0.15)^2 = 0.0225$$
-Comparing the values:
-$$2k\theta = 0.020 < 0.0225 = \sigma^2$$
-The Feller condition is violated ($2k\theta < \sigma^2$).
-The origin $r = 0$ is accessible.
-When simulated using a standard Euler discretization, the short rate will regularly produce negative numbers.
-A simple clipping $\max(0, r)$ creates an artificial probability mass at zero, distorting the pricing of deep out-of-the-money options.
+### Example 4: Hull-White fits any curve, and the convexity term is needed
+
+Market curve: a hypothetical Nelson-Siegel zero curve with a 5-year zero of 4.4179%, $P(0,5) = 0.801800$.
+With $a = 0.03$, $\sigma = 1.2\%$ the fitted drift starts at $\theta(0) = 0.0106$.
+Simulating $dr = (\theta(t) - ar)dt + \sigma dW$ with that $\theta$ (200,000 antithetic paths, seed 21) gives $\mathbb{E}[e^{-\int_0^5 r}] \approx 0.80180$: the curve is recovered.
+On the same paths with the term $\frac{\sigma^2}{2a}(1 - e^{-2at})$ removed from $\theta$, the estimate is about 0.80395: the only change is that term, and it moves the 5-year discount factor by about 22 bp of price.
+
+### Example 5: a zero-bond option
+
+1-year option on the 5-year zero, $a = 0.03$, $\sigma = 1.2\%$:
+$B(1,5) = (1 - e^{-0.12})/0.03 = 3.769319$, the variance factor $(1 - e^{-0.06})/0.06 = 0.970591$ with square root 0.985186, so $\sigma_P = 0.012 \times 0.985186 \times 3.769319 = 0.044562$.
+On the Nelson-Siegel curve, a call struck at the forward bond price $P(0,5)/P(0,1)$ is worth 0.014253; Monte Carlo (seed 5) gives about 0.01426.
+
+### Example 6: a swaption by Jamshidian
+
+Flat 4% continuous curve, 1y into 5y payer at 4%, annual fixed leg, $a = 0.03$, $\sigma = 1.2\%$.
+The forward swap rate is 4.0811% on an annuity of 4.267539.
+Jamshidian gives 0.021268 per unit notional (212.68 bp); Monte Carlo of the payoff $(1 - \sum c_i P(1,T_i))^+$ (seed 9) gives about 0.02127.
+
+### Example 7: why one factor is not enough
+
+With $a = 0.03$, $\sigma = 1.2\%$ the instantaneous volatility of a 2-year zero is $\sigma B(0,2) = 2.3294\%$ and of a 10-year zero 10.3673%, but both are driven by the same $dW$: a 2s10s steepener cannot happen in this model except through the deterministic drift.
 
 ## Pitfalls
 
-- **Ignoring the Feller condition in CIR simulations:** Using naive Euler-Maruyama discretization when $2k\theta < \sigma^2$ generates negative rate values, causing `math.sqrt(r)` to throw domain errors; practitioners must use full-truncation schemes or exact non-central chi-square simulation.
-- **Calibrating Hull-White to market caps without accounting for correlation:** Caps are portfolios of caplets, each dependent on a single forward rate, whereas swaptions depend on the joint distribution of multiple forward rates.
-Calibrating a 1-factor model to caps will overprice swaptions because the model forces terminal correlation to 1.0.
-- **Static vs dynamic calibration:** A time-dependent parameter set $(\theta(t), \sigma(t))$ that perfectly fits today's market prices will experience parameter instability over time, generating dynamic arbitrage if recalibrated daily without regularizing constraints.
-- **Negative rates under Gaussian models:** Gaussian models (Vasicek, Hull-White) assign positive probability to negative rates; while realistic in post-2014 EUR or JPY markets, pricing lognormal derivatives directly on Gaussian short rates produces undefined quantities.
-- **Confusing short rate $r(t)$ with forward rate $f(t, T)$:** The short rate $r(t)$ is instantaneous spot rate at time $t$, whereas $f(t, T)$ is the forward rate agreed at $t$ for instant $T$.
-In Hull-White, $r(t) = f(0, t) + x(t) + \alpha(t)$, requiring explicit separation of stochastic and deterministic components.
+- Using naive Euler for CIR when $2k\theta < \sigma^2$: negative rates and a square root of a negative number; use full truncation or exact sampling.
+- Fitting $\theta(t)$ without the $\frac{\sigma^2}{2a}(1 - e^{-2at})$ term: the model no longer reprices the curve it was fitted to.
+- Differentiating a noisy forward curve to get $\partial_t f(0,t)$: $\theta(t)$ inherits the noise; fit $\varphi(t)$ directly or use a smooth curve.
+- Calibrating a one-factor model to caplets and pricing swaptions (or the reverse) without acknowledging the correlation assumption.
+- Treating daily recalibrated parameters as if they were constants: the model does not anticipate its own recalibration, and P&L explain shows the jumps.
+- Confusing the short rate $r(t)$ with the instantaneous forward $f(t,T)$; in Hull-White $r(t) = x(t) + \varphi(t)$ and $\varphi(t) \ne f(0,t)$.
+- Mixing lognormal option formulas with Gaussian rate models when rates can be negative.
 
 ## Interview questions
 
 > [!question]- fi-short-rate-vasicek-sde | Write the SDE for the Vasicek model and define all parameters.
-> The SDE is $dr(t) = k(\theta - r(t))dt + \sigma dW(t)$.
-> Here $k > 0$ is the mean-reversion speed, $\theta$ is the long-term equilibrium rate, $\sigma > 0$ is the volatility of the short rate, and $W(t)$ is standard Brownian motion under the risk-neutral measure.
+> $dr = k(\theta - r)dt + \sigma dW$ under the risk-neutral measure.
+> $k > 0$ is the speed of mean reversion, $\theta$ the long-run mean, $\sigma > 0$ the absolute (normal) volatility of the short rate; the solution is Gaussian.
 
 > [!question]- fi-short-rate-vasicek-neg-prob | Why does the Vasicek model allow negative interest rates?
-> Because the diffusion coefficient $\sigma$ is constant, the conditional distribution of $r(T)$ given $r(t)$ is Gaussian with support on $(-\infty, \infty)$.
-> The probability of negative rates is $\Phi\left(-\frac{\mathbb{E}[r(T)]}{\sqrt{\text{Var}(r(T))}}\right)$, which is strictly positive for any finite parameters.
+> The diffusion coefficient is constant, so $r(T)$ is Gaussian with support on the whole line and $\mathbb{P}(r_T < 0) = \Phi(-\mathbb{E}r_T/\text{sd}\,r_T) > 0$.
+> With $k = 0.3$, $\theta = 4\%$, $\sigma = 1\%$, $r_0 = 3\%$ it is 0.1345% at 5 years.
 
 > [!question]- fi-short-rate-cir-feller | What is the Feller condition in the CIR model and what happens if it is violated?
-> The condition is $2k\theta \ge \sigma^2$.
-> If satisfied, the upward mean-reverting drift at low rates dominates the diffusion term $\sigma\sqrt{r}$, guaranteeing that the boundary $r=0$ is strictly inaccessible.
-> If violated, the process can touch zero, where it is reflected back into the positive domain.
+> $2k\theta \ge \sigma^2$.
+> If it holds, zero is unattainable; if not, the process reaches zero and is instantaneously reflected, bond prices are still given by the closed form, but naive Euler simulation produces negative rates and needs full truncation or exact sampling.
 
 > [!question]- fi-short-rate-hw-theta-derivation | Why is $\theta(t)$ in the Hull-White model time-dependent?
-> In equilibrium models with constant drift, the model yields an endogenous term structure that cannot fit arbitrary market discount curves.
-> Making $\theta(t)$ time-dependent provides the infinite-dimensional degree of freedom necessary to match the initial market forward curve $f(0, t)$ and discount factors $P(0, T)$ exactly for all maturities.
+> A constant drift gives an endogenous curve with a few degrees of freedom; a deterministic $\theta(t)$ gives one degree of freedom per maturity, enough to match $P(0,T)$ for every $T$.
+> The fit is $\theta(t) = \partial_t f(0,t) + a f(0,t) + \frac{\sigma^2}{2a}(1 - e^{-2at})$.
 
 > [!question]- fi-short-rate-jamshidian-trick | Explain the mathematical foundation of Jamshidian's decomposition.
-> Jamshidian's decomposition prices European options on coupon bonds (swaptions) as sums of options on zero-coupon bonds.
-> It works because in a 1-factor model, all zero-coupon bond prices $P(T, T_i; r)$ are strictly decreasing monotonic functions of the single short rate $r(T)$.
-> This implies there is a unique threshold $r^*$ where the coupon bond price equals the strike, allowing the global max operator $\max(0, 1 - \sum c_i P_i)$ to distribute across individual cash flows.
+> In a one-factor model every $P(T,T_i;r)$ is strictly decreasing in $r$, so the coupon bond equals the strike at a unique $r^*$ and every bond is above or below its own strike $K_i = P(T,T_i;r^*)$ at the same time.
+> Hence $(1 - \sum c_i P_i)^+ = \sum c_i (K_i - P_i)^+$, a sum of zero-bond puts; the note's 1y into 5y payer is 0.021268, confirmed by Monte Carlo.
 
 > [!question]- fi-short-rate-jamshidian-failure | Under what circumstances does Jamshidian's decomposition fail?
-> It fails in multi-factor models (e.g. 2-factor Hull-White, LMM) or stochastic volatility models where bond prices depend on two or more state variables.
-> In multi-factor models, the exercise boundary in state space is a curve or surface rather than a single point $r^*$, preventing the payoff operator from distributing into separate 1D zero-coupon options.
+> When bond prices are not all monotone in a single state variable: two-factor models (G2++), LMM, stochastic volatility.
+> The exercise boundary is then a curve or surface in state space and the max does not distribute over the cash flows.
 
 > [!question]- fi-short-rate-one-factor-correlation | What is the correlation between any two zero-coupon bond returns in a 1-factor short-rate model?
-> The correlation is identically 1.0.
-> Because all bond prices $P(t, T) = A(t, T)e^{-B(t, T)r(t)}$ are driven by the single Brownian motion $W(t)$, their stochastic differential terms $dP/P = \mu dt - B(t, T)\sigma dW(t)$ are perfectly collinear.
+> 1.
+> $dP(t,T)/P(t,T) = r\,dt - \sigma B(t,T)\,dW$ for every $T$, the same $dW$ with different loadings (2.3294% for a 2y and 10.3673% for a 10y zero in the note's Hull-White).
 
 > [!question]- fi-short-rate-hw-bond-option-vol | What is the volatility $\sigma_P$ of a zero-coupon bond option expiring at $T$ on a bond maturing at $S$ under Hull-White?
-> $\sigma_P = \frac{\sigma}{a}(1 - e^{-a(S-T)})\sqrt{\frac{1 - e^{-2aT}}{2a}}$.
-> It reflects the rate volatility $\sigma$ scaled by the duration factor $B(T, S)$ and the integrated variance of the mean-reverting process up to option expiry $T$.
+> $\sigma_P = \sigma\sqrt{\frac{1 - e^{-2aT}}{2a}}\,B(T,S)$, the standard deviation of $\ln P(T,S)$: rate variance accumulated to expiry times the bond's duration factor.
+> For $a = 0.03$, $\sigma = 1.2\%$, $T = 1$, $S = 5$: $0.012 \times 0.985186 \times 3.769319 = 0.044562$.
 
 > [!question]- fi-short-rate-equilibrium-vs-no-arb | Compare the practical uses of equilibrium vs no-arbitrage short-rate models.
-> Equilibrium models (Vasicek, CIR) are used for economic macro modeling and long-term risk management where stationary parameters are desired.
-> No-arbitrage models (Hull-White, Black-Karasinski) are required for front-office pricing, market making, and relative value trading because they price vanilla calibration instruments with zero error.
+> Equilibrium models (Vasicek, CIR) give closed forms and interpretable constant parameters, useful for teaching, scenario generation and studying term-structure shape, but cannot match today's curve.
+> No-arbitrage models (Ho-Lee, Hull-White, Black-Karasinski) fit the curve exactly, so they are the ones used to price and hedge instruments against the curve.
 
 > [!question]- fi-short-rate-tree-induction | Describe how the Hull-White trinomial tree is calibrated.
-> Calibration uses forward induction.
-> At each time step $m$, the tree calculates Arrow-Debreu state prices $Q(m, j)$ for each node from previous transition probabilities.
-> The drift shift $\alpha_m = \alpha(m\Delta t)$ is solved analytically to force the expected discount factor across all nodes at step $m$ to match the market discount factor $P(0, (m+1)\Delta t)$.
+> Build a tree for the driftless OU state $x$ with spacing $\sigma\sqrt{3\Delta t}$ and mean-reverting branching, truncated where probabilities would go negative.
+> Then go forward in time: with Arrow-Debreu prices $Q_{m,j}$ at step $m$, solve in closed form for the shift $\alpha_m$ so that $\sum_j Q_{m,j}e^{-(\alpha_m + x_j)\Delta t} = P(0,t_{m+1})$, and propagate $Q$ (Hull and White 1994).
 
-## Further reading
+> [!question]- fi-sr-vasicek-long-yield | What does the Vasicek yield converge to at long maturities, and why is it below $\theta$?
+> $\theta - \sigma^2/(2k^2)$, 3.9444% for $\theta = 4\%$, $\sigma = 1\%$, $k = 0.3$.
+> $P = \mathbb{E}[e^{-I}] = e^{-\mathbb{E}I + \frac12\text{Var}I}$: Jensen's inequality makes bonds worth more than discounting at the mean rate, so yields sit below it, and $\text{Var}\,I$ grows like $\sigma^2\tau/k^2$.
 
-- Damiano Brigo and Fabio Mercurio, *Interest Rate Models - Theory and Practice*, Chapter 3: "One-Factor Short-Rate Models".
-- Farshid Jamshidian, *An Exact Bond Option Formula for the Heath-Jarrow-Morton Model*, Financial Analysts Journal, 1989.
-- John Hull and Alan White, *Pricing Interest-Rate-Derivative Securities*, The Review of Financial Studies, 1990.
-- Steven Shreve, *Stochastic Calculus for Finance II: Continuous-Time Models*, Chapter 10: "Term-Structure Models".
+> [!question]- fi-sr-vasicek-bond-derivation | Derive the Vasicek bond price in two lines.
+> $I = \int_t^T r\,du$ is Gaussian with mean $\theta\tau + (r - \theta)B$ and variance $\frac{\sigma^2}{k^2}(\tau - B - \frac{k}{2}B^2)$.
+> So $P = e^{-\mathbb{E}I + \frac12\text{Var}I}$, which rearranges to $A e^{-Br}$ with $B = (1 - e^{-k\tau})/k$.
+
+> [!question]- fi-sr-affine-riccati | Plug $P = A(\tau)e^{-B(\tau)r}$ into the CIR pricing PDE. What equations do you get?
+> $B' = 1 - kB - \frac12\sigma^2B^2$ and $(\ln A)' = -k\theta B$, with $B(0) = 0$, $A(0) = 1$.
+> The $r^1$ terms give the Riccati equation for $B$ (the $\sigma^2 r$ variance contributes $B^2$), the $r^0$ terms give $A$.
+
+> [!question]- fi-sr-cir-distribution | What is the transition distribution of CIR and how do you simulate it exactly?
+> $2c\,r(T) \sim \chi'^2_d(\lambda)$ with $c = \frac{2k}{\sigma^2(1 - e^{-k\tau})}$, $d = 4k\theta/\sigma^2$, $\lambda = 2c\,r(t)e^{-k\tau}$.
+> Draw a non-central chi-square and divide by $2c$; with $k = 0.5$, $\theta = 4\%$, $\sigma = 10\%$, $d = 8$ and the sample mean matches $\theta + (r_0 - \theta)e^{-k\tau}$.
+
+> [!question]- fi-sr-cir-simulation-scheme | Your CIR Monte Carlo crashes with a math domain error. What happened and what do you change?
+> An Euler step took $r$ below zero (here 0.34% of steps with $2k\theta < \sigma^2$) and the next step took $\sqrt{r}$.
+> Use full truncation, $\max(r,0)$ inside drift and diffusion, or exact non-central chi-square transitions; among the Euler fixes compared by Lord, Koekkoek and van Dijk (2010), full truncation had the smallest bias.
+
+> [!question]- fi-sr-hw-fit-check | How would you test that a Hull-White implementation really fits the input curve?
+> Simulate $r$ with the fitted $\theta(t)$ and check $\mathbb{E}[e^{-\int_0^T r}]$ against $P(0,T)$ within a few standard errors (0.80180 against 0.801800 in the note), and in a tree check that Arrow-Debreu prices sum to $P(0,t_m)$.
+> A strong negative control: drop the $\frac{\sigma^2}{2a}(1 - e^{-2at})$ term and the same paths give about 0.80395.
+
+> [!question]- fi-sr-mean-reversion-vol-decay | What does mean reversion do to forward-rate and long-bond volatility in Hull-White?
+> Forward-rate volatility is $\sigma e^{-a(T-t)}$, so long forwards move less than short ones, and bond volatility $\sigma B(t,T)$ saturates at $\sigma/a$ instead of growing linearly in maturity.
+> Mean reversion is therefore a volatility-term-structure parameter, calibrated from how swaption volatilities change with tenor and expiry.
+
+> [!question]- fi-sr-calibration-judgement | You must price a 10y non-call 1y Bermudan swaption with Hull-White. What do you calibrate to and why?
+> The co-terminal European swaptions (1y into 9y, 2y into 8y, ..., 9y into 1y); a common setup fits a time-dependent $\sigma(t)$ to them with $a$ fixed or set from the volatility term structure.
+> Those are the options the Bermudan holder chooses among; calibrating to unrelated caplets would misprice the switch option, and the result should be checked against the most expensive co-terminal European, a lower bound.
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/rates_models.py`](code/rates_models.py) (Hull-White 1F Jamshidian swaption and trinomial tree implementation).
-- Next: [Rates Options: Caps and Swaptions](05-Rates-Options-Caps-and-Swaptions.md), [Convexity Adjustments](17-Convexity-Adjustments.md).
+- Code: [`code/fi_short_rate.py`](code/fi_short_rate.py) computes, prints and asserts every number on this page.
+- Prereqs: [Stochastic Differential Equations](../04-Stochastic-Calculus/03-Stochastic-Differential-Equations.md), [Feynman-Kac and Pricing PDEs](../04-Stochastic-Calculus/06-Feynman-Kac-and-Pricing-PDEs.md).
+- Next: [Rates Options: Caps and Swaptions](05-Rates-Options-Caps-and-Swaptions.md), [Term Structure Models: HJM, LGM, and LMM](19-Term-Structure-Models-HJM-LGM-LMM.md), [Callable and Bermudan Products](20-Callable-and-Bermudan-Products.md).
+
+## Further reading
+
+- Damiano Brigo and Fabio Mercurio, *Interest Rate Models: Theory and Practice*, 2nd edition (Springer 2006), chapter 3 (one-factor short-rate models: Vasicek, CIR, Hull-White, Jamshidian's formula).
+- Oldrich Vasicek, "An Equilibrium Characterization of the Term Structure", *Journal of Financial Economics* 5(2), 1977.
+- John Cox, Jonathan Ingersoll and Stephen Ross, "A Theory of the Term Structure of Interest Rates", *Econometrica* 53(2), 1985.
+- Thomas Ho and Sang-Bin Lee, "Term Structure Movements and Pricing Interest Rate Contingent Claims", *Journal of Finance* 41(5), 1986.
+- John Hull and Alan White, "Pricing Interest-Rate-Derivative Securities", *Review of Financial Studies* 3(4), 1990.
+- John Hull and Alan White, "Numerical Procedures for Implementing Term Structure Models I: Single-Factor Models", *Journal of Derivatives* 2(1), 1994.
+- Farshid Jamshidian, "An Exact Bond Option Formula", *Journal of Finance* 44(1), 1989.
+- William Feller, "Two Singular Diffusion Problems", *Annals of Mathematics* 54(1), 1951.
+- Paul Glasserman, *Monte Carlo Methods in Financial Engineering* (Springer 2004), section 3.4 (square-root diffusions).
+- Roger Lord, Remmert Koekkoek and Dick van Dijk, "A comparison of biased simulation schemes for stochastic volatility models", *Quantitative Finance* 10(2), 2010.

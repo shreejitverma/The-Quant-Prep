@@ -2,203 +2,286 @@
 type: concept
 track: [quant-trader, quant-research, quant-dev, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [bonds-duration-and-convexity]
 est_hours: 5
-sources: [Tuckman and Serrat - Fixed Income Securities 4th ed. chapter 7, Brigo and Mercurio - Interest Rate Models chapters 1 and 2, Ametrano and Bianchetti - Everything you always wanted to know about multiple interest rate curve bootstrapping, ISDA Interest Rate Derivatives Definitions]
+sources: [Federal Reserve Bank of New York - Additional Information about Reference Rates Administered by the New York Fed (SOFR and SOFR Averages and Index methodology retrieved 2026-10-17), CFTC press release 8745-23 - trade execution requirement for SOFR and SONIA OIS (7 July 2023), ISDA press release - ISDA Publishes First Digital Definitions for Interest Rate Derivatives (14 June 2021), ARRC letter on the discounting transition (4 September 2020), Sengupta and Tam - The LIBOR-OIS Spread as a Summary Indicator - Federal Reserve Bank of St. Louis Monetary Trends November 2008, Piterbarg - Funding beyond discounting - Risk 2010, Tuckman and Serrat - Fixed Income Securities 3rd ed. (Wiley 2011), Ametrano and Bianchetti - Everything You Always Wanted to Know About Multiple Interest Rate Curve Bootstrapping but Were Afraid to Ask (SSRN 2013)]
 ---
 
 # Swaps and Curve Building
 
-> [!info] Draft
-> Written in this session with computed examples matching `code/curve_bootstrap.py`.
-> Missing for `solid`: formal independent reviewer check of all equations and parameter citations.
-
 ## TL;DR
 
-- A vanilla interest rate swap exchanges fixed coupon payments for floating reference rate fixings on a specified notional without exchanging principal.
-- The par swap rate $S$ equates the present value of the fixed leg to the present value of the floating leg: $S = \frac{P(0, T_0) - P(0, T_n)}{\sum_{i=1}^n \tau_i P(0, T_i)}$.
-- The swap annuity $A = \sum_{i=1}^n \tau_i P(0, T_i)$ is the swap's value sensitivity per unit notional to a unit change in the par rate; $A \times 10^{-4}$ is the per-basis-point figure (PV01).
-- In a single-curve setting, the floating leg telescopes to $P(0, T_0) - P(0, T_n)$, which equals par minus the terminal zero-coupon bond.
-- Yield curve bootstrapping inverts market par swap quotes into zero-coupon discount factors sequentially from short to long maturities.
+- A fixed-for-floating swap exchanges a fixed coupon for a floating index on a notional that is never exchanged; a USD SOFR OIS pays annually on both legs, ACT/360, starts T+2 and pays 2 business days after each period end (CFTC, 7 July 2023).
+- The floating leg pays SOFR compounded daily in arrears; investing 1 at $T_{i-1}$ overnight replicates it, so on one curve its PV is exactly $P(0,T_{i-1}) - P(0,T_i)$ and the whole leg telescopes to $P(0,T_0) - P(0,T_n)$.
+- Par rate $S = \frac{P(0,T_0) - P(0,T_n)}{A}$ with annuity $A = \sum_i \tau_i P(0,T_i)$; a receiver at $K$ is worth $N(K - S)A$.
+- "DV01" has several definitions that differ for off-market swaps: $N A \times 10^{-4}$ holds the curve fixed (45,800 USD on the note's 5y receiver), re-bootstrapping after a 1 bp par bump also moves the annuity (46,156 USD).
+- Bootstrapping is triangular when each new instrument adds one pillar; with real dates and ACT/360 accruals every quote must reprice to machine precision, which is the first test of any curve build.
 
 ## Learning objectives
 
 - Value a fixed-for-floating interest rate swap from discount factors and compute its mark-to-market.
-- Derive the par swap rate formula and explain why the floating leg cash flows telescope in single-curve pricing.
-- Calculate swap DV01 and explain how dealers manage directional swap risk using the annuity.
-- Execute a sequential bootstrap to extract zero rates and discount factors from market swap rates.
-- Identify production pricing breaks arising from day-count differences between fixed and floating legs.
+- Derive the par swap rate and explain why the floating leg telescopes, and why for an OIS that is exact rather than an approximation.
+- Compute compounded SOFR for a period with weekends and explain the SOFR Index.
+- Calculate swap DV01 in its several definitions and explain how dealers hedge directional swap risk.
+- Execute a sequential bootstrap on a real schedule with ACT/360 accruals and check it by repricing.
+- Identify production breaks from conventions: day counts, payment lags, calendars and stale single-curve assumptions.
 
 ## Core concepts
 
-### Anatomy of an interest rate swap
+### Anatomy and market conventions
 
-A fixed-for-floating interest rate swap is an agreement between two counterparties to exchange interest payments on a fixed notional $N$ over $n$ periods.
-The payer of the fixed rate (payer swap) pays a predetermined fixed coupon $K$ and receives floating reference fixings.
-The receiver of the fixed rate (receiver swap) receives the fixed rate $K$ and pays floating.
-Payment frequencies frequently differ between legs: a standard USD swap historically had semiannual fixed payments on 30/360 and quarterly floating fixings on ACT/360.
-Principal is never exchanged at inception or maturity, making the swap an off-balance-sheet synthetic commitment.
+A fixed-for-floating swap exchanges, on notional $N$, fixed coupons $K\tau_i$ for floating coupons $L_i\tau_i$ over periods $[T_{i-1}, T_i]$; the notional is not exchanged.
+The payer swap pays fixed and receives floating (gains when rates rise); the receiver swap receives fixed (gains when rates fall).
+The USD SOFR OIS contracts made subject to the CFTC trade execution requirement are specified as follows (CFTC press release 8745-23, 7 July 2023):
 
-### Single-curve swap valuation and the telescoping float leg
+| Term | USD SOFR OIS | GBP SONIA OIS |
+| :--- | :--- | :--- |
+| Start | spot T+2, or IMM dates | spot T+0, or IMM dates |
+| Payment frequency | annual, both legs | annual, both legs |
+| Day count | ACT/360 | ACT/365 fixed |
+| Payment lag | 2 days | 0 days |
+| Fixing calendar | US Government Securities | London |
 
-Let $P(0, T)$ denote the discount factor to maturity $T$.
-The present value of the fixed leg paying coupon $K$ at times $T_1, \dots, T_n$ with accrual fractions $\tau_i$ is
-$$PV_{\text{fixed}} = N \sum_{i=1}^n \tau_i P(0, T_i) K = N \cdot K \cdot A(0, T_n),$$
-where $A(0, T_n) = \sum_{i=1}^n \tau_i P(0, T_i)$ is the swap annuity (PV01 per unit notional is $A \times 10^{-4}$).
-On the floating leg, the forward rate covering $[T_{i-1}, T_i]$ in a single-curve model is $F(0; T_{i-1}, T_i) = \frac{1}{\tau_i} \left( \frac{P(0, T_{i-1})}{P(0, T_i)} - 1 \right)$.
-The present value of each floating payment is $\tau_i P(0, T_i) F(0; T_{i-1}, T_i) = P(0, T_{i-1}) - P(0, T_i)$.
-Summing across all $n$ periods yields a telescoping series:
-$$PV_{\text{float}} = N \sum_{i=1}^n [P(0, T_{i-1}) - P(0, T_i)] = N [P(0, T_0) - P(0, T_n)].$$
-For a spot-starting swap where $T_0 = 0$, $P(0, 0) = 1.0$, reducing the floating leg value to $N [1 - P(0, T_n)]$.
-Economically, receiving floating is equivalent to holding a floating-rate note that resets to par at each coupon date, financed by borrowing par.
+These are the terms of the standardised, exchange-traded contracts; bilateral swaps can deviate.
+Interest rate swap terms are documented under the ISDA definitions; the 2021 ISDA Interest Rate Derivatives Definitions, published 14 June 2021 and implemented over the weekend of 2 to 3 October 2021, consolidated the 70-plus supplements to the 2006 Definitions (ISDA press release, 14 June 2021).
 
-### The par swap rate
+### Compounded SOFR
 
-The par swap rate $S(T_n)$ is the fixed coupon $K$ that sets the initial net present value of the swap to zero ($PV_{\text{fixed}} = PV_{\text{float}}$):
-$$S(T_n) = \frac{P(0, T_0) - P(0, T_n)}{\sum_{i=1}^n \tau_i P(0, T_i)} = \frac{P(0, T_0) - P(0, T_n)}{A(0, T_n)}.$$
-Once market rates shift, an existing swap with fixed coupon $K$ has mark-to-market value
-$$V_{\text{payer}} = PV_{\text{float}} - PV_{\text{fixed}} = N (S - K) A(0, T_n).$$
-The value of a swap is therefore the spread between the current market par swap rate $S$ and the contract coupon $K$, scaled by the annuity.
+SOFR is a volume-weighted median of overnight Treasury repo transactions (tri-party, GCF and FICC-cleared bilateral DVP, with the lowest 20% of DVP volume trimmed), published one business day after its value date and rounded to the nearest basis point (Federal Reserve Bank of New York, retrieved 2026-10-17).
+Over a period with business days $i$ and calendar-day weights $n_i$ (the days until the next business day), the compounded rate is
+$$R = \left[\prod_i \left(1 + \frac{r_i n_i}{360}\right) - 1\right]\frac{360}{d_c},$$
+where $d_c = \sum_i n_i$ is the number of calendar days: daily compounding on business days and simple interest at the prior business day's rate over weekends and holidays, as in the NY Fed's SOFR Averages methodology.
+The NY Fed's SOFR Index starts at 1.00000000 on 2 April 2018 and compounds every SOFR since, so the compounded rate over any period is $(I_{end}/I_{start} - 1)\cdot 360/d_c$.
+Because the last fixing of a period is published on the period end date, a payment on that date would be impossible to calculate in time; the standard USD OIS pays 2 days later.
 
-### Swap DV01 and sensitivity
+### Why the OIS floating leg telescopes exactly
 
-The dollar value of a basis point (DV01) measures the change in swap present value for a 1 basis point (0.0001) shift in the par swap rate:
-$$\text{DV01}_{\text{swap}} = \frac{\partial V}{\partial S} \times 10^{-4} = N \cdot A(0, T_n) \times 10^{-4}.$$
-Because the annuity $A$ is the sum of discount factors weighted by accrual fractions, it increases with swap maturity but decreases as interest rates rise.
-A trader hedging a 10-year swap position with a 2-year swap matches total DV01 by sizing notional in inverse proportion to their respective annuities: $N_2 = N_{10} \frac{A_{10}}{A_2}$.
+Invest 1 at $T_{i-1}$ in an overnight SOFR deposit and roll it: at $T_i$ it has grown to $\prod_j(1 + r_j n_j/360)$, which is exactly 1 plus the floating coupon.
+So receiving the floating coupon at $T_i$ is worth having 1 at $T_{i-1}$ minus 1 at $T_i$:
+$$PV_i^{float} = P(0,T_{i-1}) - P(0,T_i), \qquad PV^{float} = \sum_i \big[P(0,T_{i-1}) - P(0,T_i)\big] = P(0,T_0) - P(0,T_n).$$
+This is model-free on a single curve, that is when cash flows are discounted at SOFR itself, as for cleared USD swaps since the October 2020 discounting transition.
+With a forward-looking index fixed at $T_{i-1}$ (the old LIBOR swaps), the same identity needs the forwarding and discounting curves to be the same curve, which stopped being true in 2007 ([Multi-Curve and CSA Discounting](13-Multi-Curve-and-CSA-Discounting.md)).
+With a payment lag the identity is no longer exact, because the coupon is paid at $T_i + 2$ days rather than at $T_i$.
 
-### Curve bootstrapping from swaps
+### Par rate, annuity and mark-to-market
 
-The par swap rate equation allows sequential extraction of zero-coupon discount factors.
-Given par swap quotes $s_1, s_2, \dots, s_k$ at annual maturities $1, 2, \dots, k$:
-For a 1-year swap with single payment: $s_1 P(0, 1) + P(0, 1) = 1 \implies P(0, 1) = \frac{1}{1 + s_1}$.
-For an $m$-year swap, assuming discount factors $P(0, 1), \dots, P(0, m-1)$ are already determined:
-$$s_m \sum_{i=1}^{m-1} P(0, i) + (1 + s_m) P(0, m) = 1 \implies P(0, m) = \frac{1 - s_m \sum_{i=1}^{m-1} P(0, i)}{1 + s_m}.$$
-This recursive algorithm is triangular and solves in $O(m)$ operations without iterative optimization.
+The fixed leg is worth $N K \sum_i \tau_i P(0,T_i) = N K A$, where $A$ is the annuity (the PV of 1 per year paid on the fixed schedule).
+Setting fixed equal to floating gives the par rate
+$$S = \frac{P(0,T_0) - P(0,T_n)}{A}.$$
+A swap at coupon $K$ is then worth $V_{payer} = N(S - K)A$ and $V_{receiver} = N(K - S)A$.
+$S$ is a weighted average of the period forwards, $S = \sum_i w_i F_i$ with $w_i = \tau_i P(0,T_i)/A$, which is why the swap rate is the natural underlying of a swaption ([Rates Options](05-Rates-Options-Caps-and-Swaptions.md)).
+
+### DV01: four numbers with one name
+
+| Definition | What is held fixed | Note's 5y receiver, USD per bp |
+| :--- | :--- | ---: |
+| Annuity DV01 $N A \times 10^{-4}$ | the curve and therefore $A$ | 45,800 |
+| Parallel par-point DV01 | the build; all quotes bumped and the curve rebuilt | 46,156 |
+| Bucketed par-point deltas | all quotes but one | 23, 46, 70, 95, 45,922 |
+| Zero-rate DV01 | pillars bumped in zero space | depends on interpolation |
+
+The annuity DV01 is exact only for a par swap.
+Differentiating $V = N(K - S)A$ with respect to the swap rate gives $-dV/dS = NA - N(K - S)\,dA/dS$, and $dA/dS < 0$, so an in-the-money receiver ($K > S$) gains more than $NA$ per bp fall: the annuity it is long also rises.
+Risk systems report par-point (bucketed) deltas because they map one to one onto hedge trades in the quoted par swaps; [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md) treats the Jacobian between zero and par risk.
+
+### Bootstrapping
+
+Each par OIS quote adds one unknown discount factor, at its maturity.
+With annual pillars that coincide with the coupon dates, the par condition $S_n \sum_{i \le n}\tau_i P_i = 1 - P_n$ (discount factors measured from the spot date) solves in closed form:
+$$P_n = \frac{1 - S_n \sum_{i<n}\tau_i P_i}{1 + S_n\tau_n}.$$
+The system is lower triangular, so it is $O(n)$ and needs no solver.
+Real builds are not that clean: short deposits and futures overlap, coupon dates fall between pillars, and each step needs a one-dimensional root solve with an interpolation rule; global methods fit all quotes at once with a smoothness penalty ([Curve Construction Numerics](14-Curve-Construction-Numerics.md)).
+Whatever the method, the acceptance test is the same: every input instrument reprices to its quote at machine precision.
 
 ### How it is implemented
 
-- Inputs: swap term sheet (notional, fixed rate, start date, tenor, payment frequencies, day count conventions, calendars), zero or discount curve.
-- Outputs: clean mark-to-market, fixed leg PV, floating leg PV, annuity, swap DV01, par swap rate.
-- Algorithm: generate cash flow schedule for both legs, lookup discount factors for payment dates, project forward rates on floating dates, multiply and sum.
-- Complexity: $O(n)$ where $n$ is the number of payment periods in the swap.
-- Reference implementation: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `par_swap_rate_single_curve`, `swap_annuity`, and `bootstrap_single_curve`.
+```mermaid
+flowchart LR
+    Q[Par OIS quotes and conventions] --> S[Schedule generator: spot, roll, business-day adjustment, ACT/360 accruals]
+    S --> B[Bootstrap: one pillar per instrument]
+    B --> C[Curve object: pillar log discount factors and interpolator]
+    C --> R{Reprice every input to machine precision}
+    R -- fails --> B
+    R -- passes --> P[Pricing: annuity, par rate, PV]
+    C --> K[Risk: bump each quote, rebuild, reprice]
+    K --> D[Par-point bucket deltas and hedge notionals]
+```
+
+- Inputs: trade date, quotes with their full conventions (start lag, roll, calendar, day count, payment lag), fixings for the current period.
+- Outputs: discount factors at any date, par rates, annuities, PVs, bucketed deltas.
+- Complexity: $O(n)$ per bootstrap with closed forms; bucketed risk by rebuilding is $O(n)$ rebuilds, or one Jacobian solve.
+- Reference implementation: [`code/fi_swaps_ois.py`](code/fi_swaps_ois.py).
 - System context: [the curve and surface service](../18-Pricing-and-Risk-Systems/04-Curve-and-Surface-Service.md).
 
 ## Worked examples
 
-All calculations below match the verified assertions in `code/curve_bootstrap.py`.
+Rates and quotes below are hypothetical; conventions are the sourced ones above.
+Every number is computed, printed and asserted by `code/fi_swaps_ois.py`.
 
-### Example 1: single-curve bootstrap from three annual swaps
+### Example 1: compounding one week of SOFR
 
-Market quotes for annual-pay par interest rate swaps:
-$s_1 = 3.00\%$, $s_2 = 3.50\%$, $s_3 = 4.00\%$.
+Fixings for Monday 19 to Friday 23 October 2026 of 4.30%, 4.31%, 4.29%, 4.32% and 4.33%, with the Friday rate applying for 3 calendar days, give a compounded rate to Monday 26 October of 4.31704% ACT/360.
+"The day-weighted simple average is 4.31571%, so compounding adds 0.13 bp over a week; treating Friday as one day instead of three understates the rate by -0.60 bp."
+Interest on 100mm for the week is 83,942.51 USD.
+Recovered from SOFR Index values rounded to 8 decimals, the average is 4.31705%: index rounding moves the fifth decimal, as the NY Fed warns.
 
-Pillar 1:
-$$P(0, 1) = \frac{1}{1 + 0.030} = 0.970874.$$
-Continuous zero rate: $z(1) = -\ln(0.970874) / 1 = 2.9559\%$.
+### Example 2: bootstrapping a SOFR OIS curve on real dates
 
-Pillar 2:
-$$P(0, 2) = \frac{1 - 0.035 \times 0.970874}{1 + 0.035} = \frac{1 - 0.033981}{1.035} = \frac{0.966019}{1.035} = 0.933352.$$
-Continuous zero rate: $z(2) = -\ln(0.933352) / 2 = 3.4486\%$.
-Annual compounding zero rate: $0.933352^{-1/2} - 1 = 3.5088\%$.
+Trade on Monday 19 October 2026, spot Wednesday 21 October; par quotes 1y 3.60%, 2y 3.45%, 3y 3.40%, 4y 3.42%, 5y 3.48%.
+"The anniversaries 21 October 2028 and 2029 fall on a Saturday and a Sunday, so modified following moves them to 23 and 22 October; the accruals are therefore 1.013889, 1.022222, 1.011111, 1.011111 and 1.013889 years on ACT/360."
 
-Pillar 3:
-Sum of prior discount factors: $P(0, 1) + P(0, 2) = 0.970874 + 0.933352 = 1.904226$.
-$$P(0, 3) = \frac{1 - 0.040 \times 1.904226}{1 + 0.040} = \frac{1 - 0.076169}{1.040} = \frac{0.923831}{1.040} = 0.888299.$$
-Continuous zero rate: $z(3) = -\ln(0.888299) / 3 = 3.9482\%$.
+| Pillar | $P(\text{spot},T)$ | Zero (cont., ACT/365F) | 1y forward starting here (ACT/360) |
+| :--- | ---: | ---: | ---: |
+| 2027-10-21 | 0.964785 | 3.5850% | 3.2962% |
+| 2028-10-23 | 0.933337 | 3.4353% | 3.2942% |
+| 2029-10-22 | 0.903251 | 3.3856% | 3.4845% |
+| 2030-10-21 | 0.872511 | 3.4072% | 3.7424% |
+| 2031-10-21 | 0.840614 | 3.4705% | |
 
-Check par rate reconstruction for 3-year swap:
-Annuity $A(0, 3) = 0.970874 + 0.933352 + 0.888299 = 2.792525$.
-Par rate $S_3 = (1 - 0.888299) / 2.792525 = 0.111701 / 2.792525 = 4.0000\%$.
+Every quote reprices to within $10^{-14}$.
+Discount factors here are from the spot date; to value at the trade date multiply by the two-day overnight factor, 0.999761 at 4.30%.
+"Note the 1y forwards: a mildly humped par curve produces a forward curve that dips and then rises sharply, because forwards are differences of the zero curve."
 
-### Example 2: mark-to-market and DV01 of an off-market swap
+### Example 3: what the payment lag costs
 
-Consider an existing 3-year payer swap with notional $N = 100{,}000{,}000$ and fixed coupon $K = 3.50\%$.
-Current market par rate for 3-year maturity has risen to $S = 4.00\%$.
-Annuity $A(0, 3) = 2.792525$.
-Mark-to-market value to the payer:
-$$V_{\text{payer}} = N \cdot (S - K) \cdot A(0, 3) = 100{,}000{,}000 \cdot (0.040 - 0.035) \cdot 2.792525 = 1{,}396{,}262.50.$$
-DV01 of the swap:
-$$\text{DV01} = N \cdot A(0, 3) \times 10^{-4} = 100{,}000{,}000 \cdot 2.792525 \times 10^{-4} = 27{,}925.25.$$
-If market par rates rise by 1 bp to 4.01%, the new MTM is $100{,}000{,}000 \cdot (0.0401 - 0.035) \cdot 2.792525 = 1{,}424{,}187.75$, a gain of exactly $27{,}925.25$.
+Paying both legs of the 5y swap 2 business days after each period end, the par rate becomes 3.4800% against the 3.48% quote, a difference of -0.0005 bp.
+"The lag is a convention you must model to reconcile cash flows, but it is not where the risk is."
 
-### Example 3: DV01 hedge between 3-year and 1-year swap
+### Example 4: an off-market swap and its DV01s
 
-A desk is long $100{,}000{,}000$ of a 3-year receiver swap ($K = 4.00\%$).
-The desk is exposed to rising rates and wants to hedge directional curve risk using 1-year swaps.
-Annuity of 3-year swap: $A_3 = 2.792525 \implies \text{DV01}_3 = 27{,}925.25$.
-Annuity of 1-year swap: $A_1 = P(0, 1) = 0.970874 \implies \text{DV01}_1 = 9{,}708.74$ per $100{,}000{,}000$ notional.
-Hedge ratio:
-$$N_1 = N_3 \cdot \frac{A_3}{A_1} = 100{,}000{,}000 \cdot \frac{2.792525}{0.970874} = 287{,}630{,}063.$$
-The trader pays fixed on $287.63$ million of 1-year swaps to neutralize parallel curve exposure.
-Residual curve risk remains: if the curve steepens (1-year rate falls while 3-year rate rises), the position suffers losses on both legs.
+A 5y receiver at 3.75% on 100mm against the 3.48% par rate: annuity 4.580045, PV $= 10^8 \times (0.0375 - 0.0348) \times 4.580045 = 1{,}236{,}612$ USD.
+Annuity DV01 is 45,800 USD per bp.
+Bumping all five par quotes ±1 bp and rebuilding gives 46,156 USD per bp, and the bucket deltas are 23, 46, 70, 95 and 45,922 USD per bp, summing to 46,156.
+"The 5y bucket carries almost all the risk because the swap's own maturity is a quoted pillar."
+The control isolates the rest: the same swap struck at par (3.48%) has zero 1y to 4y deltas and a rebuild DV01 of 45,800, equal to its annuity DV01, so the shorter buckets and the gap between 45,800 and 46,156 come from the off-market coupon, which makes the swap long an annuity that depends on the shorter discount factors.
 
-### Example 4: real-world case, the 2008 Lehman collapse and single-curve breakdown
+### Example 5: the textbook annual bootstrap
 
-Prior to August 2007, the spread between 3-month USD LIBOR and the overnight Fed Funds OIS rate was small and stable.
-Single-curve swap models treated the Libor forwarding rate and the discounting rate as identical.
-During the global financial crisis of 2008 and following Lehman Brothers' default in September 2008, the 3-month Libor-OIS spread blew out to about 365 basis points on 10 October 2008 (source: Sengupta and Tam, "The LIBOR-OIS Spread as a Summary Indicator", Federal Reserve Bank of St. Louis Economic Synopses, 2008).
-Because swap collateral posted under standard Credit Support Annexes earned the overnight rate, discounting future swap cash flows at Libor significantly mispriced counterparty and replacement costs.
-The crisis forced the global derivatives industry to abandon single-curve pricing and adopt the multi-curve framework.
+Par swaps 3.00%, 3.50%, 4.00% at 1, 2, 3 years.
+$P(0,1) = 1/1.03 = 0.970874$, continuous zero 2.9559%.
+$P(0,2) = (1 - 0.035 \times 0.970874)/1.035 = 0.933352$, continuous zero 3.4486% (annual 3.5088%).
+$P(0,3) = (1 - 0.04 \times 1.904226)/1.04 = 0.888299$, continuous zero 3.9482%.
+Check: $A(0,3) = 2.792525$ and $(1 - 0.888299)/2.792525 = 4.0000\%$.
+
+### Example 6: mark-to-market and why "exactly one annuity per bp" is wrong
+
+A 3y payer on 100mm at 3.50% when the 3y par rate is 4.00%: $V = 10^8 \times 0.005 \times 2.792525 = 1{,}396{,}262.44$ USD, and the annuity DV01 is 27,925.25 USD.
+If the 3y quote moves to 4.01% and the curve is rebuilt, the annuity falls to 2.792256 and the MTM becomes 1,424,050.76: a change of 27,788.32, not 27,925.25.
+"Higher rates shrink the annuity the payer is short, so the gain per bp is smaller than the annuity DV01."
+
+### Example 7: hedging 3y risk with 1y swaps
+
+Long 100mm of a 3y receiver at 4.00%: annuity DV01 27,925.25 USD.
+The 1y swap's annuity is 0.970874, so its DV01 is 9,708.74 USD per 100mm.
+Hedge notional $= 10^8 \times 2.792525/0.970874 = 287{,}630{,}063$: pay fixed on 287.63mm of 1y swaps.
+The position is flat to a parallel move and fully exposed to the 1y-3y slope: if 1y rates fall while 3y rates rise, both legs lose.
+
+### Example 8: the single-curve breakdown and the SOFR discounting switch
+
+Before August 2007 the 3-month LIBOR-OIS spread was around 10 bp; it reached 365 bp on 10 October 2008 after Lehman Brothers failed (Sengupta and Tam, St. Louis Fed Monetary Trends, November 2008).
+Once the index rate and the rate earned on collateral diverge that much, discounting LIBOR cash flows at LIBOR misprices collateralised swaps; Piterbarg (2010) shows that a perfectly collateralised derivative is discounted at the collateral rate.
+In USD, CME and LCH moved price alignment interest and discounting for cleared swaps from EFFR to SOFR after the close of business on 16 October 2020 (ARRC letter, 4 September 2020).
 
 ## Pitfalls
 
-- Assuming floating leg cash flows telescope in modern multi-curve markets: telescoping occurs only when forwarding and discounting curves are identical.
-- Overlooking payment frequency mismatches between legs: an annual fixed leg versus quarterly floating leg requires separate schedule generators.
-- Using clean par rates without adjusting for differing day-count conventions on the fixed leg (30/360) and floating leg (ACT/360).
-- Confusing payer and receiver conventions: a payer swap is short duration (benefits when rates rise): $\frac{\partial V}{\partial y} > 0$, so its dollar duration and DV01 have the opposite sign to a long bond's.
-- Extrapolating the curve beyond the longest liquid swap pillar with flat zero rates instead of flat forward rates.
+- Assuming the floating leg telescopes when forwarding and discounting curves differ (any non-OIS index, or an OIS discounted under a different collateral rate).
+- Generating one schedule for both legs when frequencies or day counts differ.
+- Treating a weekend fixing as one day: the Friday SOFR accrues for three.
+- Forgetting the payment lag and getting cash flow dates, and therefore settlement breaks, wrong.
+- Reporting annuity DV01 for an off-market swap as if it were the rebuild DV01.
+- Sign conventions: a payer swap is short duration; its DV01 has the opposite sign to a long bond.
+- Extrapolating beyond the last liquid pillar with flat zeros rather than flat forwards.
+- Accepting a curve build without checking that every input reprices.
 
 ## Interview questions
 
 > [!question]- fi-swap-par-rate-derivation | Derive the formula for the par swap rate $S$ of a spot-starting vanilla fixed-for-floating swap in a single-curve setting.
-> Set $PV_{\text{fixed}} = PV_{\text{float}}$.
-> $PV_{\text{fixed}} = S \sum_{i=1}^n \tau_i P(0, T_i)$ and $PV_{\text{float}} = \sum_{i=1}^n [P(0, T_{i-1}) - P(0, T_i)] = 1 - P(0, T_n)$.
-> Solving for $S$ yields $S = \frac{1 - P(0, T_n)}{\sum_{i=1}^n \tau_i P(0, T_i)}$.
+> Set $PV_{fixed} = PV_{float}$.
+> $PV_{fixed} = S\sum_i \tau_i P(0,T_i)$ and $PV_{float} = \sum_i [P(0,T_{i-1}) - P(0,T_i)] = 1 - P(0,T_n)$, so $S = (1 - P(0,T_n))/\sum_i \tau_i P(0,T_i)$.
 
 > [!question]- fi-floating-leg-par | Why is the floating leg of an interest rate swap worth par at every coupon reset date under single-curve pricing?
-> A floating leg pays forward interest that exactly compensates for the time value of money over the coupon period.
-> Holding a floating leg is economically equivalent to buying a floating-rate note for 100, receiving coupon interest, and having principal returned at maturity.
+> Because a floating-rate note paying the curve's own rate is replicated by rolling a deposit: 1 invested at the reset grows to exactly 1 plus the coupon at the payment date.
+> So the leg plus the final notional is worth 1 at each reset, and the leg alone is worth $P(0,T_0) - P(0,T_n)$.
 
 > [!question]- fi-swap-annuity-def | Define the swap annuity and explain its relationship to swap DV01.
-> The annuity $A(0, T_n) = \sum_{i=1}^n \tau_i P(0, T_i)$ represents the present value of receiving 1 basis currency unit per period.
-> Swap DV01 is the dollar value change for a 1 basis point shift in par swap rate: $\text{DV01} = N \cdot A(0, T_n) \times 10^{-4}$.
+> $A = \sum_i \tau_i P(0,T_i)$, the PV of receiving 1 per year on the fixed schedule.
+> $N A \times 10^{-4}$ is the PV change for a 1 bp change in the fixed rate or, holding the curve fixed, in the par rate; for an off-market swap the rebuild DV01 differs because $A$ moves with the curve.
 
 > [!question]- fi-swap-payer-vs-receiver | Does a payer swap gain or lose value when interest rates rise? Explain why.
-> A payer swap gains value when interest rates rise.
-> The payer pays a fixed coupon $K$ and receives floating; as rates rise, floating cash receipts increase while fixed obligations remain unchanged.
+> It gains.
+> It pays a fixed coupon and receives floating, so higher rates raise the floating leg's value while the fixed leg's obligations are unchanged; in PV terms $V = N(S - K)A$ rises with $S$.
 
 > [!question]- fi-bootstrap-p3-calc | Given $P(0, 1) = 0.970874$, $P(0, 2) = 0.933352$, and 3-year par swap rate $s_3 = 4.00\%$, compute $P(0, 3)$.
-> $P(0, 3) = \frac{1 - s_3 [P(0, 1) + P(0, 2)]}{1 + s_3} = \frac{1 - 0.040 \cdot 1.904226}{1.040} = \frac{0.923831}{1.040} = 0.888299$.
+> $P(0,3) = \frac{1 - 0.04 \times (0.970874 + 0.933352)}{1.04} = \frac{1 - 0.04 \times 1.904226}{1.04} = 0.888299$.
 
 > [!question]- fi-swap-mtm-formula | An investor is long a $100\text{M}$ payer swap at fixed rate $3.50\%$. The current 3-year par swap rate is $4.00\%$ and the annuity is $2.7925$. What is its mark-to-market?
-> $V_{\text{payer}} = N \cdot (S - K) \cdot A = 100{,}000{,}000 \cdot (0.040 - 0.035) \cdot 2.7925 = 1{,}396{,}250$.
+> $V_{payer} = N(S - K)A = 10^8 \times 0.005 \times 2.7925 = 1{,}396{,}250$ USD.
+> With the unrounded annuity 2.792525 it is 1,396,262.44.
 
 > [!question]- fi-swap-dv01-hedge-ratio | How do you hedge a 10-year swap with DV01 of $85{,}000$ using a 2-year swap with DV01 of $19{,}000$?
-> Notional ratio equals $\frac{\text{DV01}_{10}}{\text{DV01}_2} = \frac{85{,}000}{19{,}000} \approx 4.474$.
-> Execute 4.474 times the notional in the 2-year swap with the opposite direction.
+> Trade $85{,}000/19{,}000 = 4.474$ times the notional of the 2y swap in the opposite direction (DV01s per unit notional).
+> The hedge is flat to a parallel move only; the 2s10s slope remains.
 
 > [!question]- fi-single-curve-breakdown | Why did single-curve swap pricing break down during the 2008 financial crisis?
-> Credit and liquidity risk drove the 3-month Libor-OIS spread from a small, stable level to about 365 bps in October 2008.
-> Swap collateral posted under CSAs earned the overnight rate, requiring overnight OIS discounting while floating cash flows reflected Libor risk.
+> The 3-month LIBOR-OIS spread went from around 10 bp before August 2007 to 365 bp on 10 October 2008 (St. Louis Fed), so LIBOR stopped being a proxy for the riskless collateral rate.
+> Collateralised swaps are discounted at the collateral (overnight) rate while LIBOR coupons are projected on their own curve, so one curve could no longer do both jobs.
 
 > [!question]- fi-bootstrap-triangular | Why is standard swap bootstrapping triangular rather than requiring an iterative multi-dimensional solver?
-> Each $m$-year swap instrument introduces only one new unknown discount factor $P(0, m)$ while all earlier discount factors $P(0, 1), \dots, P(0, m-1)$ were solved at earlier maturities.
+> Each instrument introduces one new discount factor, at its maturity, while all earlier coupon dates are already known pillars.
+> When coupon dates fall between pillars, each step needs a one-dimensional root solve through the interpolator, still sequential.
 
 > [!question]- fi-swap-daycount-friction | How does day count convention mismatch between fixed leg (30/360) and floating leg (ACT/360) affect par rate quoting?
-> $1$ year on 30/360 is $\frac{360}{360} = 1.0$, whereas on ACT/360 it is $\frac{365}{360} \approx 1.0139$.
-> Ignoring the mismatch misstates a year's accrual by $\frac{365}{360} - 1 = 1.39\%$, which on a $4\%$ coupon is $0.04 \times \frac{5}{360} = 5.56$ bps of running rate.
+> A 365-day year is 1.0000 on 30/360 and 365/360 = 1.0139 on ACT/360, so ignoring the mismatch misstates a year's accrual by 1.39%, about 5.56 bp of notional per year on a 4% coupon.
+> USD SOFR OIS avoids it by using ACT/360 on both legs (CFTC 2023); the mismatch appears on bespoke and legacy trades and must be in the schedule generator, not patched into the rate.
 
-## Further reading
+> [!question]- fi-sw-sofr-compounding | SOFR is 4.33% on a Friday and you treat it as a one-day accrual. What goes wrong?
+> Friday's rate applies until Monday, three calendar days, as simple interest; using one day understated the note's weekly compounded rate by 0.60 bp.
+> The compounding formula weights each business-day rate by the calendar days to the next business day and divides by total calendar days.
 
-- Tuckman and Serrat, *Fixed Income Securities: Tools for Today's Markets*, chapter 7.
-- Brigo and Mercurio, *Interest Rate Models - Theory and Practice*, chapter 1.
-- Ametrano and Bianchetti, *Everything You Always Wanted to Know About Multiple Interest Rate Curve Bootstrapping but Were Afraid to Ask*.
-- ISDA 2006 / 2021 Interest Rate Derivatives Definitions.
+> [!question]- fi-sw-sofr-index | How do you get compounded SOFR for an arbitrary period from the SOFR Index, and what precision issue arises?
+> $(I_{end}/I_{start} - 1) \times 360/d_c$, with $d_c$ the calendar days.
+> The index is published rounded to 8 decimals, so the result can differ in the fifth decimal of a percent from compounding the fixings (4.31705% versus 4.31704% in the note's example).
+
+> [!question]- fi-sw-ois-conventions | State the conventions of a spot-starting USD SOFR OIS as specified for the CFTC trade execution requirement.
+> Spot T+2 start, annual payments on both legs, ACT/360, 2-day payment lag, US Government Securities fixing calendar, New York business days (CFTC press release 8745-23, July 2023).
+
+> [!question]- fi-sw-ois-replication | Prove that the PV of an OIS floating coupon on $[T_{i-1}, T_i]$ is $P(0,T_{i-1}) - P(0,T_i)$ when discounting is at the same overnight rate.
+> Invest 1 at $T_{i-1}$ and roll it overnight: at $T_i$ you hold $\prod_j(1 + r_j n_j/360)$, exactly 1 plus the coupon.
+> So coupon at $T_i$ = (1 at $T_{i-1}$) minus (1 at $T_i$), worth $P(0,T_{i-1}) - P(0,T_i)$ with no model for future rates.
+
+> [!question]- fi-sw-payment-lag | Why does a USD SOFR OIS pay 2 days after the period end, and does it matter for pricing?
+> SOFR for a value date is published the next business day, so the last fixing of a period is known only on the period end date; the lag gives time to calculate and settle.
+> It breaks exact telescoping but moves the note's 5y par rate by only -0.0005 bp; it matters for cash-flow dates and reconciliation more than for value.
+
+> [!question]- fi-sw-dv01-definitions | Your 5y receiver at 3.75% (par 3.48%) on 100mm shows DV01 of 45,800 in one system and 46,156 in another. Which is right?
+> Both, for different definitions: $N A \times 10^{-4}$ holds the curve and annuity fixed; bumping every par quote and rebuilding also raises the annuity the in-the-money receiver is long.
+> $-dV/dS = NA - N(K - S)\,dA/dS$ with $dA/dS < 0$, so the rebuild number is larger; agree the definition before comparing.
+
+> [!question]- fi-sw-bucket-deltas | An off-market 5y swap has par-point deltas of 23, 46, 70, 95 and 45,922 USD per bp at 1y to 5y. Why are the short buckets not zero?
+> A par 5y swap would have only a 5y delta.
+> The off-market coupon makes the swap long an annuity of $N(K - S)$, and the annuity depends on every discount factor out to 5y, which in a bootstrapped curve depends on every shorter quote.
+
+> [!question]- fi-sw-annuity-moves | A 3y payer worth $N(S-K)A$ has annuity DV01 27,925.25. The 3y quote rises 1 bp and you rebuild. Is the gain 27,925.25?
+> No, 27,788.32 in the note's example.
+> The rebuilt annuity falls from 2.792525 to 2.792256, and the payer with $S > K$ is short that annuity, so its gain per bp is below the annuity DV01.
+
+> [!question]- fi-sw-discounting-switch | What happened to USD cleared swaps on 16 October 2020 and why would a desk care?
+> CME and LCH switched price alignment interest and discounting from EFFR to SOFR after the close (ARRC, September 2020), with cash compensation for the value change.
+> Every cleared swap's PV, its discounting risk, and hedges against EFFR-SOFR basis changed; a desk needed its curves, collateral rates and risk to switch the same day.
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/curve_bootstrap.py`](code/curve_bootstrap.py) (`bootstrap_single_curve`, `par_swap_rate_single_curve`, `swap_annuity`).
-- Related notes: [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md), [Bonds, Duration and Convexity](02-Bonds-Duration-and-Convexity.md), [Multi-Curve and CSA Discounting](13-Multi-Curve-and-CSA-Discounting.md).
+- Code: [`code/fi_swaps_ois.py`](code/fi_swaps_ois.py) computes, prints and asserts every number on this page.
+- Related notes: [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md), [Money Markets, Repo and Overnight Rates](12-Money-Markets-Repo-and-Overnight-Rates.md), [Multi-Curve and CSA Discounting](13-Multi-Curve-and-CSA-Discounting.md), [Curve Construction Numerics](14-Curve-Construction-Numerics.md), [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md).
+
+## Further reading
+
+- Federal Reserve Bank of New York, "Additional Information about Reference Rates Administered by the New York Fed" (SOFR calculation, SOFR Averages and Index), retrieved 2026-10-17.
+- Commodity Futures Trading Commission, press release 8745-23, trade execution requirement for SOFR and SONIA OIS, 7 July 2023.
+- ISDA, "ISDA Publishes First Digital Definitions for Interest Rate Derivatives", press release, 14 June 2021.
+- Alternative Reference Rates Committee, letter requesting guidance on the discounting transition, 4 September 2020.
+- Rajdeep Sengupta and Yu Man Tam, "The LIBOR-OIS Spread as a Summary Indicator", Federal Reserve Bank of St. Louis, *Monetary Trends*, November 2008.
+- Vladimir Piterbarg, "Funding beyond discounting: collateral agreements and derivatives pricing", *Risk*, February 2010.
+- Ferdinando Ametrano and Marco Bianchetti, "Everything You Always Wanted to Know About Multiple Interest Rate Curve Bootstrapping but Were Afraid to Ask", SSRN working paper, 2013.
+- Bruce Tuckman and Angel Serrat, *Fixed Income Securities: Tools for Today's Markets*, 3rd edition (Wiley 2011).

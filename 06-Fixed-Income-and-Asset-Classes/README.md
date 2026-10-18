@@ -16,12 +16,12 @@ Enough of every major asset class to trade it or model it; deep rates knowledge 
 
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
-| 01 | [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md) | TRDQ | core | 4 | draft | 11 |
-| 02 | [Bonds, Duration and Convexity](02-Bonds-Duration-and-Convexity.md) | TRQ | core | 4 | draft | 12 |
-| 03 | [Swaps and Curve Building](03-Swaps-and-Curve-Building.md) | TRDQ | advanced | 5 | draft | 10 |
-| 04 | [Short-Rate Models](04-Short-Rate-Models.md) | RQ | advanced | 5 | draft | 10 |
-| 05 | [Rates Options: Caps and Swaptions](05-Rates-Options-Caps-and-Swaptions.md) | RQ | senior | 5 | draft | 10 |
-| 06 | [Credit Basics: Hazard Rates and CDS](06-Credit-and-CDS.md) | TRQ | advanced | 5 | draft | 10 |
+| 01 | [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md) | TRDQ | core | 4 | solid | 19 |
+| 02 | [Bonds, Duration and Convexity](02-Bonds-Duration-and-Convexity.md) | TRQ | core | 4 | solid | 21 |
+| 03 | [Swaps and Curve Building](03-Swaps-and-Curve-Building.md) | TRDQ | advanced | 5 | solid | 19 |
+| 04 | [Short-Rate Models](04-Short-Rate-Models.md) | RQ | advanced | 5 | solid | 18 |
+| 05 | [Rates Options: Caps and Swaptions](05-Rates-Options-Caps-and-Swaptions.md) | RQ | senior | 5 | solid | 19 |
+| 06 | [Credit Basics: Hazard Rates and CDS](06-Credit-and-CDS.md) | TRQ | advanced | 5 | solid | 21 |
 | 07 | [FX Markets and Interest Rate Parity](07-FX-Markets-and-Interest-Rate-Parity.md) | TQ | advanced | 3 | solid | 20 |
 | 08 | [ETFs and Index Arbitrage](08-ETFs-and-Index-Arbitrage.md) | TQ | core | 3 | solid | 18 |
 | 09 | [Commodities and Futures Curves](09-Commodities-and-Futures-Curves.md) | TQ | advanced | 3 | solid | 17 |
