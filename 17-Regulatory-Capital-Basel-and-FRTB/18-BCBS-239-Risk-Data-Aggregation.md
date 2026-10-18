@@ -2,7 +2,7 @@
 type: concept
 track: [quant-dev, quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [stress-testing-ccar-dfast-and-eba]
 est_hours: 4
 sources: [Basel Committee on Banking Supervision - Principles for effective risk data aggregation and risk reporting (BCBS 239 2013), Basel Committee on Banking Supervision - Progress in adopting the Principles for effective risk data aggregation and risk reporting (2023), European Central Bank - Guide on effective risk data aggregation and risk reporting (2024)]
@@ -81,8 +81,10 @@ BCBS 239 groups 14 principles into four operational domains:
 ### 4. Technical Architecture: Data Lineage and Governance
 
 To fulfill BCBS 239, enterprise risk systems require:
-- **End-to-End Data Lineage:** Full backward and forward traceability from source front-office transaction capture, through middleware and pricing engines, to regulatory reports. Every transformation, enrichment, and calculation rule must be cataloged in a machine-readable data dictionary.
-- **Enterprise Data Glossary:** Standardized business semantics. For instance, defining precisely what "Exposure at Default" or "Notional" means across credit, rates, FX, and equity desks.
+- **End-to-End Data Lineage:** Full backward and forward traceability from source front-office transaction capture, through middleware and pricing engines, to regulatory reports.
+  Every transformation, enrichment, and calculation rule must be cataloged in a machine-readable data dictionary.
+- **Enterprise Data Glossary:** Standardized business semantics.
+  For instance, defining precisely what "Exposure at Default" or "Notional" means across credit, rates, FX, and equity desks.
 - **Golden Source of Reference Data:** Centralized enterprise repository for counterparty hierarchies (mapped via ISO 17442 Legal Entity Identifiers - LEI), contract master agreements (ISDA/CSA terms), and market risk factor curves.
 - **Elimination and Remediation of EUCs:** High-risk desktop spreadsheets must be decommissioned and engineered into governed, version-controlled backend pipelines with automated regression testing.
 
@@ -151,10 +153,13 @@ This capital penalty substantially outweighs the cost of building automated risk
 
 ## Pitfalls
 
-- **Confusing Reporting with Data Aggregation:** BCBS 239 is primarily an infrastructure and architecture mandate, not a dashboard design standard. Beautiful BI reports that pull from fragmented, manually reconciled data silos violate the regulation.
+- **Confusing Reporting with Data Aggregation:** BCBS 239 is primarily an infrastructure and architecture mandate, not a dashboard design standard.
+  Beautiful BI reports that pull from fragmented, manually reconciled data silos violate the regulation.
 - **Relying on Manual Spreadsheet Patches:** Regulators view recurring manual journal entries and Excel reconciliation sheets as red flags proving underlying systemic architecture failure.
-- **Ignoring Legal Entity Hierarchy:** Counterparty exposures must aggregate up to the ultimate parent guarantor level. Summing exposures only at the immediate booking entity level miscalculates true default risk.
-- **Neglecting Stress Adaptability:** Building an IT architecture that only executes rigid overnight batch jobs fails Principle 6 (Adaptability). Systems must support flexible, parameter-driven slicing under crisis conditions.
+- **Ignoring Legal Entity Hierarchy:** Counterparty exposures must aggregate up to the ultimate parent guarantor level.
+  Summing exposures only at the immediate booking entity level miscalculates true default risk.
+- **Neglecting Stress Adaptability:** Building an IT architecture that only executes rigid overnight batch jobs fails Principle 6 (Adaptability).
+  Systems must support flexible, parameter-driven slicing under crisis conditions.
 - **Treating BCBS 239 as a One-Time IT Project:** Compliance requires continuous operational governance, metadata maintenance, and ongoing automated reconciliation against general ledger feeds.
 
 ## Interview questions
@@ -206,3 +211,10 @@ This capital penalty substantially outweighs the cost of building automated risk
 - European Central Bank. *ECB Guide on effective risk data aggregation and risk reporting*. Published July 2024.
 - Financial Stability Board. *Thematic Review on Risk Data Aggregation and Reporting: Peer Review Report*. FSB, 2023.
 - Senior Supervisors Group. *Progress on the Implementation of Principles for Effective Risk Data Aggregation and Risk Reporting*. SSG Report.
+
+## In this repo and SDE-Interview-Prep
+
+- 01-Front-to-Back-Architecture.md - Front-to-back risk system architecture and lineage.
+- 03-Market-and-Reference-Data-Platform.md - Golden source data pipelines and LEI hierarchies.
+- 17-Stress-Testing-CCAR-DFAST-and-EBA.md - Stress testing data requirements and capital linkage.
+- `code/basel_stress_reg.py` - Reference implementation verifying Data Quality Index (DQI) and EUC failure losses.

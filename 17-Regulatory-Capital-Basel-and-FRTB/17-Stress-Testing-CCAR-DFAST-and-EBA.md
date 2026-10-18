@@ -2,7 +2,7 @@
 type: concept
 track: [quant-risk]
 tier: advanced
-status: draft
+status: solid
 prereqs: [interest-rate-risk-in-the-banking-book-irrbb]
 est_hours: 4
 sources: [Board of Governors of the Federal Reserve System - Comprehensive Capital Analysis and Review: Assessment Framework and Results (2023), European Banking Authority - EU-Wide Stress Test Methodology (2023), Bank of England - The Financial Policy Committee approach to the bank capital framework (2022)]
@@ -143,19 +143,19 @@ $$\text{CET1 Ratio}_{\text{Q3}} = \frac{\$40,500}{\$425,000} = 9.5294\% \approx 
 
 $$\text{Depletion} = \text{Starting CET1 Ratio} - \text{Minimum Stressed CET1 Ratio} = 12.50\% - 9.53\% = 2.97\%$$
 
-- Dividend Add-On Component (using projected Q0-Q4 average RWA of $\$410,000\text{ million}$):
+- Dividend Add-On Component (using Q3 RWA of $\$425,000\text{ million}$, the quarter with the lowest projected CET1 ratio, as required by 12 CFR 225.8):
 
-$$\text{Dividend Add-on} = \frac{4 \times \$500}{\$410,000} = \frac{\$2,000}{\$410,000} = 0.4878\% \approx 0.49\%$$
+$$\text{Dividend Add-on} = \frac{4 \times \$500}{\$425,000} = \frac{\$2,000}{\$425,000} = 0.4706\% \approx 0.47\%$$
 
 - Calculated SCB:
 
-$$\text{SCB} = \max\left(2.5\%, 2.97\% + 0.49\%\right) = \max(2.5\%, 3.46\%) = 3.46\%$$
+$$\text{SCB} = \max\left(2.5\%, 2.97\% + 0.47\%\right) = \max(2.5\%, 3.44\%) = 3.44\%$$
 
 The bank's new binding CET1 capital requirement (assuming a $2.0\%$ G-SIB surcharge and $0.0\%$ CCyB) is:
 
-$$\text{Required CET1} = 4.5\% + 3.46\% + 2.0\% + 0.0\% = 9.96\%$$
+$$\text{Required CET1} = 4.5\% + 3.44\% + 2.0\% + 0.0\% = 9.94\%$$
 
-With a starting capital ratio of $12.50\%$, the bank maintains a capital cushion of $12.50\% - 9.96\% = 2.54\%$ above its regulatory restriction threshold.
+With a starting capital ratio of $12.50\%$, the bank maintains a capital cushion of $12.50\% - 9.94\% = 2.56\%$ above its regulatory restriction threshold.
 
 ### Example 2: EBA IFRS 9 Staging Transition Under Macroeconomic Stress
 
@@ -179,11 +179,15 @@ Under the static balance sheet rule, the bank cannot resolve this capital drain 
 
 ## Pitfalls
 
-- **Ignoring CECL Reserve Front-Loading:** Under US CECL, banks cannot recognize loan losses gradually as defaults occur. Lifetime expected credit losses must be recognized when economic forecasts worsen in Q1, creating an early CET1 trough.
-- **Assuming Constant RWA Under Stress:** RWAs do not remain static during economic crises. Corporate credit downgrades trigger higher regulatory risk weights, derivative netting sets suffer higher replacement costs, and drawn commitments increase total balance sheet assets.
+- **Ignoring CECL Reserve Front-Loading:** Under US CECL, banks cannot recognize loan losses gradually as defaults occur.
+  Lifetime expected credit losses must be recognized when economic forecasts worsen in Q1, creating an early CET1 trough.
+- **Assuming Constant RWA Under Stress:** RWAs do not remain static during economic crises.
+  Corporate credit downgrades trigger higher regulatory risk weights, derivative netting sets suffer higher replacement costs, and drawn commitments increase total balance sheet assets.
 - **Double Counting GMS and Credit Losses:** If corporate bond trading positions suffer mark-to-market declines under the Global Market Shock, analysts must verify that the same corporate issuers are not double-counted in the banking book credit default module.
-- **Confusing DFAST with CCAR:** DFAST is purely a supervisory and company-run stress testing exercise using standardized capital distributions. CCAR incorporates bank-proposed capital actions (dividends, share buybacks) and directly sets binding capital constraints via the SCB.
-- **Neglecting Tax Valuation Allowances:** In a severe stress scenario, accumulating pre-tax operating losses can create substantial Deferred Tax Assets (DTAs). If the bank cannot demonstrate future profitability to realize these DTAs, supervisory rules require deducting them from CET1 capital, compounding capital depletion.
+- **Confusing DFAST with CCAR:** DFAST is purely a supervisory and company-run stress testing exercise using standardized capital distributions.
+  CCAR incorporates bank-proposed capital actions (dividends, share buybacks) and directly sets binding capital constraints via the SCB.
+- **Neglecting Tax Valuation Allowances:** In a severe stress scenario, accumulating pre-tax operating losses can create substantial Deferred Tax Assets (DTAs).
+  If the bank cannot demonstrate future profitability to realize these DTAs, supervisory rules require deducting them from CET1 capital, compounding capital depletion.
 
 ## Interview questions
 
@@ -232,5 +236,13 @@ Under the static balance sheet rule, the bank cannot resolve this capital drain 
 
 - Federal Reserve Board. *Dodd-Frank Act Stress Testing (DFAST) and CCAR Supervisory Scenarios*. Published annually in February.
 - European Banking Authority (EBA). *Methodological Note: EU-wide Stress Test*. EBA guidelines.
-- Basel Committee on Banking Supervision. *Stress testing principles*. BCBS Working Paper 428, 2018.
+- Basel Committee on Banking Supervision. *Stress testing principles*. BCBS guidelines, October 2018. https://www.bis.org/bcbs/publ/d450.htm
 - Schuermann, Til. *Stress Testing Banks*. International Journal of Forecasting, 2014.
+- Federal Reserve Board. *Comprehensive Capital Analysis and Review: Summary Instructions and Results*. FRB Publications.
+
+## In this repo and SDE-Interview-Prep
+
+- 01-Capital-RWA-and-the-Basel-Framework.md - Basel capital definitions and minimums.
+- 03-Credit-Risk-Capital-SA-and-IRB.md - Standardised and IRB credit risk models.
+- 16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md - IRRBB principles and shocks.
+- `code/basel_stress_reg.py` - Reference implementation verifying SCB calculations and IFRS 9 stress staging.

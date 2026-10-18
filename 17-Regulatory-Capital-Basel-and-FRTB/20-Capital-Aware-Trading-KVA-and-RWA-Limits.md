@@ -2,7 +2,7 @@
 type: concept
 track: [quant-trader, quant-risk]
 tier: senior
-status: draft
+status: solid
 prereqs: [implementation-status-by-jurisdiction]
 est_hours: 4
 sources: [Andrew Green - XVA: Credit Funding and Capital Valuation Adjustments (2015), Jon Gregory - The xVA Challenge: Counterparty Credit Risk Funding Collateral and Capital (2020), Chris Kenyon and Roland Stamm - Discounting Derivatives and Capital (2012)]
@@ -191,11 +191,15 @@ Strategic Pricing Decision:
 
 ## Pitfalls
 
-- **Treating KVA as an Accounting Reserve:** Unlike CVA and DVA, KVA is not an IFRS 13 fair value accounting reserve recognized on public income statements. It is an internal cost-of-capital pricing hurdle and shareholder value metric.
-- **Ignoring Netting Set Path-Dependency:** Calculating KVA on a standalone basis is mathematically invalid. Capital depends on netting set netting efficiency, collateral agreements, and existing portfolio sign.
-- **Neglecting Dynamic Maturity Shortening:** As time progresses during simulation, remaining maturity $M(t)$ declines, reducing the SA-CCR maturity factor and CVA capital multipliers. Assuming constant maturity overestimates lifetime KVA.
+- **Treating KVA as an Accounting Reserve:** Unlike CVA and DVA, KVA is not an IFRS 13 fair value accounting reserve recognized on public income statements.
+  It is an internal cost-of-capital pricing hurdle and shareholder value metric.
+- **Ignoring Netting Set Path-Dependency:** Calculating KVA on a standalone basis is mathematically invalid.
+  Capital depends on netting set netting efficiency, collateral agreements, and existing portfolio sign.
+- **Neglecting Dynamic Maturity Shortening:** As time progresses during simulation, remaining maturity $M(t)$ declines, reducing the SA-CCR maturity factor and CVA capital multipliers.
+  Assuming constant maturity overestimates lifetime KVA.
 - **Double Counting Funding and Capital Costs:** If a bank funds initial margin via equity capital rather than debt borrowing, FVA and KVA formulas must be adjusted to prevent charging twice for the same equity buffer.
-- **Overlooking CCP Compression Alternatives:** Trading desks often overlook portfolio compression runs. Participating in multilateral trade compression (e.g., TriOptima, Quantile) eliminates gross notionals without changing net risk, slashing RWA and KVA without consuming sales budget.
+- **Overlooking CCP Compression Alternatives:** Trading desks often overlook portfolio compression runs.
+  Participating in multilateral trade compression (e.g., TriOptima, Quantile) eliminates gross notionals without changing net risk, slashing RWA and KVA without consuming sales budget.
 
 ## Interview questions
 
@@ -244,3 +248,10 @@ Strategic Pricing Decision:
 - Kenyon, Chris and Green, Andrew (eds.). *Landmarks in XVA: From Current Approaches to Future Frontiers*. Risk Books, 2016.
 - Burgard, Christoph and Kjaer, Mats. *Derivatives funding, hedging and regulatory capital*. Journal of Investment Strategies, 2013.
 - Albanese, Claudio, Caenazzo, Simone, and Crépey, Stéphane. *Capital and Funding: A Systems Approach*. Risk Magazine, 2017.
+
+## In this repo and SDE-Interview-Prep
+
+- 04-Counterparty-Credit-Risk-SA-CCR.md - SA-CCR exposure calculations and multipliers.
+- 05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md - Counterparty CVA capital formulas.
+- 07-FRTB-Sensitivities-Based-Method-Delta.md - FRTB market risk capital.
+- `code/basel_stress_reg.py` - Reference implementation verifying KVA schedules, EVA, and negative incremental KVA.
