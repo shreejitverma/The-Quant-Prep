@@ -93,7 +93,7 @@ Post-2008 benchmark reform replaced forward-looking term interbank rates (LIBOR)
   where $r_i$ is the overnight fixing for business day $i$, $d_i$ is the number of calendar days the rate applies (typically $1$ for weekdays, $3$ over weekends), and $B$ is the year basis ($360$ for SOFR/€STR, $365$ for SONIA).
 - **Simple Average Comparison:**
   $$\bar{r} = \frac{\sum_{i=1}^n r_i d_i}{\sum_{i=1}^n d_i}$$
-- Because compounding captures interest on interest, $R_{\text{comp}} > \bar{r}$.
+- For positive fixings, compounding generally raises the annualized rate above the day-weighted simple average; with negative fixings, compounding can lower it, and mixed fixings make the difference depend on their levels and sequence.
 - The spread between compounding and simple averaging expands with the square of the rate level ($O(r^2)$) and the tenor length.
 
 ### 5. LIBOR Cessation and ISDA IBOR Fallbacks
@@ -196,9 +196,10 @@ Holding the special collateral reduces the firm's monthly financing bill by $\$1
 > The formula is $R_{\text{comp}} = \frac{B}{\sum d_i} \left[ \prod_{i=1}^n \left(1 + \frac{r_i d_i}{B}\right) - 1 \right]$.
 > The variable $d_i$ is the number of calendar days rate $r_i$ applies (1 for weekdays, 3 over weekends).
 
-> [!question]- fi-compound-vs-average | Why does compounded SOFR exceed the simple day-weighted average of daily fixings?
+> [!question]- fi-compound-vs-average | How does compounded SOFR compare with the simple day-weighted average of daily fixings?
 > Compounding incorporates interest earned on prior accrued interest.
-> The product of growth factors exceeds one plus the sum of rates by second-order cross terms of order $O(r^2 d_i d_j / B^2)$, adding roughly $0.18\text{ bps}$ over a week at $5.0\%$ rates.
+> For positive fixings the cross terms generally raise the annualized rate; negative or mixed fixings can make the compounded rate lower, depending on the rates and their sequence.
+> At constant $5.0\%$ fixings, compounding adds roughly $0.18\text{ bps}$ over a week.
 
 > [!question]- fi-gc-special | What does it mean for a bond to trade "on special" and who benefits economically?
 > A bond trades special when heavy borrowing demand pushes its repo rate below the general collateral (GC) rate.

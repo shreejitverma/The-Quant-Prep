@@ -16,7 +16,8 @@ A cash flow is a pair consisting of a financial amount and a value date: the pay
 Day-count conventions directly impact dollar cash flows: a $5.0\%$ coupon on $\$1,000,000$ over $182$ days generates $\$25,277.78$ under ACT/360, but only $\$24,931.51$ under ACT/365F.
 Across a $\$5,000,000,000$ dealer book, this convention spread accumulates to $\$2,071,949.00$.
 Schedule generation (coupon frequency, stub rules, end-of-month alignment, and business-day rolling) is fully deterministic, yet constitutes the single largest source of trade booking breaks between front-office pricing engines and back-office clearing systems.
-IMM settlement dates (the third Wednesday of March, June, September, and December) anchor standardized interest rate futures and credit default swaps.
+IMM dates (the third Wednesday of March, June, September, and December) anchor standardized interest rate futures.
+Standard North American and European CDS index coupon dates are the 20th of March, June, September, and December, subject to the applicable business-day adjustment.
 All numerical models in this note are verified by [fi_day_counts.py](code/fi_day_counts.py).
 
 ## Learning objectives
@@ -80,8 +81,8 @@ When an unadjusted coupon date falls on a non-business day ($B(d) = 0$), a busin
 
 ### 4. International Monetary Market (IMM) Dates
 
-Standardized financial futures (CME SOFR futures) and cleared credit default swaps (CDX/iTraxx) roll on International Monetary Market (IMM) dates.
-An IMM date is strictly defined as the **third Wednesday** of March, June, September, and December.
+Standardized financial futures (including CME SOFR futures) use International Monetary Market (IMM) dates, strictly defined as the **third Wednesday** of March, June, September, and December.
+Standard North American and European CDS index coupons (including CDX and iTraxx) fall on the 20th of March, June, September, and December, subject to the applicable business-day adjustment; these are not futures IMM dates.
 For the 2026 calendar cycle:
 - March IMM: 18 March 2026
 - June IMM: 17 June 2026
@@ -174,8 +175,8 @@ Examine two month-end dates falling on Saturdays:
 > If an instrument is issued on the final business day of a month (e.g., 28 February), stepping forward calendar months without EOM anchors future dates to day 28.
 > The EOM rule forces all target unadjusted dates to the final day of their respective target months before business-day rolling, preserving month-end alignment.
 
-> [!question]- fi-imm-dates | What are International Monetary Market (IMM) settlement dates and what are the 2026 dates?
-> IMM dates are strictly defined as the third Wednesday of March, June, September, and December.
+> [!question]- fi-imm-dates | What are International Monetary Market (IMM) futures dates and what are the 2026 dates?
+> IMM futures dates are strictly defined as the third Wednesday of March, June, September, and December.
 > For 2026, the dates are: 18 March, 17 June, 16 September, and 16 December.
 
 > [!question]- fi-stub-types | What is a stub period in an interest rate swap and what variants exist?

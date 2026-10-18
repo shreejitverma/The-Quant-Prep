@@ -42,6 +42,12 @@ def dcf_act_365f(d1: datetime.date, d2: datetime.date) -> float:
 def dcf_30_360_us(d1: datetime.date, d2: datetime.date) -> float:
     day1 = d1.day
     day2 = d2.day
+    last_feb1 = d1.month == 2 and d1.day == calendar.monthrange(d1.year, 2)[1]
+    last_feb2 = d2.month == 2 and d2.day == calendar.monthrange(d2.year, 2)[1]
+    if last_feb1:
+        day1 = 30
+    if last_feb1 and last_feb2:
+        day2 = 30
     if day1 == 31:
         day1 = 30
     if day2 == 31 and day1 == 30:
@@ -88,6 +94,28 @@ def roll_modified_following(d: datetime.date, holidays: set[datetime.date] | Non
     while not is_bus(cur):
         cur -= datetime.timedelta(days=1)
     return cur
+
+
+def add_months(d: datetime.date, months: int, eom: bool = False) -> datetime.date:
+    month_index = d.year * 12 + d.month - 1 + months
+    year, month0 = divmod(month_index, 12)
+    month = month0 + 1
+    last_day = calendar.monthrange(year, month)[1]
+    day = last_day if eom else min(d.day, last_day)
+    return datetime.date(year, month, day)
+
+
+def generate_schedule(
+    start: datetime.date,
+    periods: int,
+    months_per_period: int,
+    eom: bool = False,
+    holidays: set[datetime.date] | None = None,
+) -> list[datetime.date]:
+    return [
+        roll_modified_following(add_months(start, i * months_per_period, eom), holidays)
+        for i in range(1, periods + 1)
+    ]
 
 
 def third_wednesday(year: int, month: int) -> datetime.date:
@@ -168,6 +196,14 @@ def test_month_ends_and_rolls() -> None:
 
     quoted("November Saturday rolled day", float(nov_rolled.day), 29.0, 0)
     quoted("May Saturday rolled day", float(may_rolled.day), 30.0, 0)
+
+    feb29 = datetime.date(2024, 2, 29)
+    mar30 = datetime.date(2024, 3, 30)
+    quoted("29 Feb to 30 Mar US 30/360 fraction", dcf_30_360_us(feb29, mar30), 30.0 / 360.0, 6)
+
+    schedule = generate_schedule(datetime.date(2025, 2, 28), 1, 6, eom=True)
+    assert schedule == [datetime.date(2025, 8, 29)]
+    quoted("EOM schedule rolled August day", float(schedule[0].day), 29.0, 0)
 
 
 def test_imm_dates() -> None:
