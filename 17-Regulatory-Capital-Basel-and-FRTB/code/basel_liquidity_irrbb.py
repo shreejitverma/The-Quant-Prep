@@ -200,7 +200,7 @@ def hqla_stock(
     a1, a2a, a2b = adjusted if adjusted is not None else (level1, l2a, l2b)
     adj15 = max(a2b - 15 / 85 * (a1 + a2a), a2b - 15 / 60 * a1, 0.0)
     adj40 = max(a2a + a2b - adj15 - 2 / 3 * a1, 0.0)
-    return HQLAResult(level1, l2a, l2b, adj15, adj40, a1 + a2a + a2b - adj15 - adj40)
+    return HQLAResult(a1, a2a, a2b, adj15, adj40, a1 + a2a + a2b - adj15 - adj40)
 
 
 def net_cash_outflows(outflows: dict[str, float], inflows: dict[str, float]) -> tuple[float, float, float]:
