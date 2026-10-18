@@ -103,7 +103,8 @@ $$\text{FCA} = \int_0^T s_b(t)\,\text{DEE}(t)\,dt, \qquad \text{FBA} = \int_0^T 
 
 (optionally weighted by both parties' survival).
 Two debates: whether FVA belongs in value at all (Hull and White 2012 argue that funding costs should not affect the valuation of a derivative, by the same reasoning as Modigliani-Miller; Andersen, Duffie and Song 2019 show that funding costs are a real transfer from shareholders to creditors, so they belong in pricing to shareholders but not in a market value), and how FBA overlaps DVA.
-If the bank's funding spread is its own credit spread, $s_l = \lambda_B\,\text{LGD}_B$ and FBA weighted by own survival equals DVA to first order: in the example it is 2,925 against a DVA of 2,925 (ratio 1.000), so booking both counts the same benefit twice.
+If the bank's funding spread is its own credit spread, $s_l = \lambda_B\,\text{LGD}_B$, and FBA is weighted by own survival, the two integrals are identical: $s_l\int\text{DENE}\,e^{-\lambda_B t}dt = \text{LGD}_B\int\text{DENE}\,\lambda_B e^{-\lambda_B t}dt = \text{DVA}$.
+On the example's grid both come to 2,925 (the code's two discretisations agree to better than a relative $10^{-6}$, which checks the quadrature, not the identity), so booking both counts the same benefit twice.
 Burgard and Kjaer (2011) derive the combined adjustment from a replication argument in which the outcome depends on how the bank funds and what it can repurchase on default.
 
 ### MVA
@@ -165,11 +166,11 @@ With $b = 40$ the CVA is 2.26 times the independent value although the counterpa
 ### Example 3: FVA, MVA, KVA and the all-in charge
 
 1. Funding spread 80bp both ways: FCA 5,062, FBA 2,683, FVA 2,379; weighting by both survivals cuts FCA to 4,647.
-2. FBA at the bank's own credit spread (90bp) weighted by its survival: 2,925, equal to DVA (ratio 1.000), which is the double-counting argument.
+2. FBA at the bank's own credit spread (90bp) weighted by its survival: 2,925, equal to DVA because the two integrals are the same (see the core concepts), which is the double-counting argument.
 3. Initial margin today from the delta-normal stand-in: 191,334, close to the MGN20.16 schedule's 2% of notional, 200,000 (the swap's annuity of 4.6295 years puts it in the 2 to 5 year duration bucket); expected discounted IM at 2.5 years about 97,300; MVA at 80bp about 3,871.
 4. Capital today: SA-CCR EAD 309,679, counterparty credit capital 24,774, BA-CVA capital 19,082; KVA at a 10% hurdle about 18,130.
 5. Total XVA $\approx 6{,}069 + 2{,}379 + 3{,}871 + 18{,}130 \approx 30{,}450$, about 6.58bp a year: capital, not credit, is the largest cost of this trade.
-6. Incrementally, adding a 2-year receiver swap to the netting set lowers CVA from 8,994 to about 7,870, an incremental CVA of about $-1{,}100$ although the receiver's stand-alone CVA is about 528.
+6. Incrementally, on the same simulated paths, adding a 2-year receiver swap to the netting set lowers CVA from about 8,965 to about 7,870, an incremental CVA of about $-1{,}100$ although the receiver's stand-alone CVA is about 528.
 
 ## Pitfalls
 
@@ -243,7 +244,7 @@ With $b = 40$ the CVA is 2.26 times the independent value although the counterpa
 
 > [!question]- risk-fba-dva-overlap | Show that FBA and DVA can be the same number.
 > If the bank lends at its own credit spread $s = \lambda_B\,\text{LGD}_B$ and weights by its own survival, $s\int\text{DENE}\,e^{-\lambda_B t}dt = \text{LGD}_B\int\text{DENE}\,\lambda_B e^{-\lambda_B t}dt = \text{DVA}$.
-> Numerically 2,925 against 2,925 in the example.
+> The equality is exact in continuous time; on the example's grid both are 2,925, and the numerical match only checks the quadrature.
 
 > [!question]- risk-xva-running-spread | How do you turn an upfront XVA charge into a spread on a swap rate?
 > Divide by notional times the swap annuity: here $\sum\tau_i P(0, t_i) = 4.6295$, so a 30,450 total charge on 10m is about 6.58bp a year and the bilateral CVA alone (6,069) is 1.31bp.

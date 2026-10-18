@@ -138,9 +138,10 @@ def section_example_2() -> None:
     y[2] = best
     check("variance-minimising gold position", best, -12_800_000, 1.0)
     check("VaR after the best hedge", normal_var(y, cov, Z95), 19_282_961, 1.0)
-    grid = np.linspace(best - 1e6, best + 1e6, 2001)
+    # Brute force on a grid that does not contain the closed form: -30m to +10m in steps of 1,000 offset by 137
+    grid = np.arange(-30e6 + 137.0, 10e6, 1_000.0)
     brute = grid[np.argmin([normal_var(np.array([60e6, 40e6, g]), cov, Z95) for g in grid])]
-    check("brute-force grid minimiser minus closed form", brute - best, 0.0, 1_000.0)
+    check("brute-force grid minimiser minus closed form", brute - best, 0.0, 500.0)
 
 
 # ---------------------------------------------------------------------------
@@ -347,8 +348,15 @@ def section_factor() -> None:
     cov_assets = b @ cov_f @ b.T + np.diag(spec**2)
     rc_assets = w * (cov_assets @ w) / sig
     check("sum of asset contributions minus sigma (same total, other axis)", rc_assets.sum() - sig, 0.0, 1e-15)
-    # Euler on variance gives twice the variance: variance is homogeneous of degree 2
-    check("sum w_i d(var)/dw_i divided by var", float(w @ (2.0 * cov_assets @ w)) / float(w @ cov_assets @ w), 2.0, 1e-12)
+
+    # Euler on variance gives twice the variance: variance is homogeneous of degree 2.  The gradient comes from central
+    # differences of the variance in each weight, not from the closed form 2 Sigma w.
+    def variance(v: np.ndarray) -> float:
+        return float(v @ cov_assets @ v)
+
+    hw = 1e-5
+    grad_fd = np.array([(variance(w + hw * e) - variance(w - hw * e)) / (2.0 * hw) for e in np.eye(len(w))])
+    check("sum w_i d(var)/dw_i divided by var, finite differences", float(w @ grad_fd) / variance(w), 2.0, 1e-8)
 
 
 def main() -> None:

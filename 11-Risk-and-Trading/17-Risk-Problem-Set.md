@@ -79,7 +79,7 @@ P&L $= 20\text{m}\,x_1 - 50{,}000\,x_2$ (equity return, yield change in bp), sds
 
 1. $x^* = -L\,\Sigma\delta/(\delta^\top\Sigma\delta)$: equity $-1.7857\%$ and yields $+42.857$bp, which loses exactly 2.5m.
 2. Mahalanobis distance $L/\sqrt{\delta^\top\Sigma\delta} = 6.0994$; a search over 3,600 directions finds the same minimum.
-3. The scenario mixes a modest equity fall with a large yield rise: the book is short duration risk in a way the equity limit does not see.
+3. The scenario mixes a modest equity fall (1.8 sd) with a large yield rise (5.4 sd): the book loses 50,000 per bp of higher yields, so it is long duration, and that rate risk is invisible to an equity limit.
 4. A one-dimensional tail at that distance has probability $5.32 \times 10^{-10}$; in two factors the probability of some scenario at least that far out is higher, which is why plausibility is judged by distance, not by one quantile.
 
 ### Problem 5: expected maximum drawdown
@@ -197,10 +197,12 @@ One year, average EE 500k, ENE 300k, hazards 3% (counterparty) and 1.5% (bank), 
 
 1. PDs 0.029554 and 0.014888.
 2. CVA $\approx 0.6 \times e^{-0.02} \times 500\text{k} \times 0.029554 = 8{,}691$; the exact integral with flat exposure gives 8,692.
-3. DVA $= 2{,}627$; net $\text{DVA} - \text{CVA} = -6{,}064$.
-4. Credit-triangle shortcut $1.8\% \times 500\text{k} \times (1 - e^{-0.04})/0.04 = 8{,}823$.
+3. DVA by the same midpoint rule $= 0.6 \times e^{-0.02} \times 300\text{k} \times 0.014888 = 2{,}627$; net midpoint $\text{DVA} - \text{CVA} = -6{,}064$.
+4. Credit-triangle shortcut $1.8\% \times 500\text{k} \times (1 - e^{-0.04})/0.04 = 8{,}822$.
 
 ### Problem 19: midpoint shortcuts for FVA, MVA, KVA
+
+Flat profiles priced with the discount factor at the midpoint: average EE 400k funded at 75bp over 3 years with $P(0, 1.5) = 0.945$; average initial margin 2m funded at 1.2% over 5 years and average capital 500k at a 10% hurdle over 5 years, both with $P(0, 2.5) = 0.910$.
 
 1. FCA $0.0075 \times 400\text{k} \times 0.945 \times 3 = 8{,}505$; MVA $0.012 \times 2\text{m} \times 0.910 \times 5 = 109{,}200$; KVA $0.10 \times 500\text{k} \times 0.910 \times 5 = 227{,}500$.
 2. With the flat rate implied by $P(0, 2.5) = 0.910$ (3.7724%), $\int_0^5 e^{-rt}dt = 4.5567$ against the midpoint 4.55, so the MVA integral is 109,362: the shortcut is 0.15% low.
@@ -225,7 +227,7 @@ Sell 500,000 shares over 3 daily intervals, $\sigma = 2$, $\eta = 2 \times 10^{-
 
 30m bond, 1-day VaR 1.5m, spread 1.2% (sd 0.6%), 3 days to sell.
 
-1. Cost of liquidation $\tfrac12 \times 30\text{m} \times (0.012 + 2.326 \times 0.006) = 389{,}371$.
+1. Cost of liquidation with $a = z_{0.99} = 2.326348$: $\tfrac12 \times 30\text{m} \times (0.012 + 2.326348 \times 0.006) = 389{,}371$.
 2. Equal daily sales: multiplier $\sqrt{4 \times 7/18} = 1.2472$.
 3. L-VaR $= 1.5\text{m} \times 1.2472 + 389{,}371 = 2{,}260{,}200$.
 
@@ -360,7 +362,7 @@ The equivalent continuous barrier is $90e^{-0.5826 \times 0.2\sqrt{1/252}} = 89.
 
 > [!question]- risk-cva-flat-exposure | One-year trade, flat EE 500k, hazard 3%, LGD 60%, rate 4%. Estimate CVA two ways.
 > Midpoint: $0.6 \times e^{-0.02} \times 500\text{k} \times (1 - e^{-0.03}) = 8{,}691$; exact integral $0.6 \times 500\text{k} \times 0.03(1 - e^{-0.07})/0.07 = 8{,}692$.
-> The credit-triangle shortcut with spread 1.8% gives 8,823, too high because it ignores survival.
+> The credit-triangle shortcut with spread 1.8% gives 8,822, too high because it ignores survival.
 
 > [!question]- risk-bgk-barrier-shift | How do you price a daily-monitored barrier with a continuous-monitoring formula?
 > Shift the barrier away from spot by $e^{\mp 0.5826\sigma\sqrt{\Delta t}}$ (Broadie, Glasserman and Kou 1997): 90 becomes 89.3418 for 20% vol and daily monitoring.

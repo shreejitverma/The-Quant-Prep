@@ -5,7 +5,7 @@ tier: senior
 status: solid
 prereqs: [multi-curve-and-csa-discounting, monte-carlo-pricing-and-variance-reduction]
 est_hours: 6
-sources: [Gregory - The xVA Challenge - Counterparty Risk Funding Collateral Capital and Initial Margin 4th edition (Wiley 2020), Pykhtin and Zhu - A Guide to Modelling Counterparty Credit Risk - GARP Risk Review July-August 2007 16-22, Canabarro and Duffie - Measuring and Marking Counterparty Risk - in Tilman (ed.) Asset-Liability Management of Financial Institutions (Euromoney 2003), Brigo and Mercurio - Interest Rate Models Theory and Practice 2nd edition (Springer 2006) chapter 3, Jamshidian - An Exact Bond Option Formula - Journal of Finance 44(1) 205-209 (1989), Basel Framework CRE52 CRE53.11 to CRE53.24 CRE53.47 to CRE53.48 and MGN20.4 to MGN20.17 (version effective 1 January 2023)]
+sources: [Gregory - The xVA Challenge - Counterparty Risk Funding Collateral Capital and Initial Margin 4th edition (Wiley 2020), Pykhtin and Zhu - A Guide to Modelling Counterparty Credit Risk - GARP Risk Review July-August 2007 16-22, Canabarro and Duffie - Measuring and Marking Counterparty Risk - in Tilman (ed.) Asset-Liability Management of Financial Institutions (Euromoney 2003), Brigo and Mercurio - Interest Rate Models Theory and Practice 2nd edition (Springer 2006) chapter 3, Jamshidian - An Exact Bond Option Formula - Journal of Finance 44(1) 205-209 (1989), Basel Framework CRE52 CRE53.11 to CRE53.26 CRE53.47 to CRE53.48 and MGN20.4 to MGN20.17 (version effective 1 January 2023)]
 ---
 
 # Counterparty Credit Risk Analytics
@@ -16,7 +16,7 @@ sources: [Gregory - The xVA Challenge - Counterparty Risk Funding Collateral Cap
 - The profile measures are EE (mean exposure), PFE (a high quantile, for limits), EPE (time average of EE), Effective EE (running maximum) and Effective EPE (first-year average of Effective EE, CRE53.12 to CRE53.13); IMM EAD is $1.4 \times$ Effective EPE.
 - A forward's EE grows with time and has a closed form; a swap's EE is humped because the remaining annuity shrinks, and its discounted EE at a reset date is exactly a swaption price (checked here against Jamshidian's formula).
 - Netting and collateral cut exposure: in the example the 2-year receiver swap cut the 5-year payer's EE at one year from about 200,200 (sum) to about 121,500; daily margin with a 10-day MPOR cut a forward's EE to 0.2003 of the uncollateralised value, rising by $\sqrt 2$ for 20 days.
-- Wrong-way risk (exposure rising as the counterparty weakens) is identified and stressed (CRE53.47) and, when specific, taken out of the netting set (CRE53.48); its pricing effect is in [XVA](15-XVA.md).
+- Wrong-way risk (exposure rising as the counterparty weakens) is identified and stressed (CRE53.47) and, when specific with a legal connection between counterparty and underlying issuer, taken out of the netting set (CRE53.48); its pricing effect is in [XVA](15-XVA.md).
 
 ## Learning objectives
 
@@ -143,7 +143,8 @@ For the forward with $r = 0$ this has a closed form: $E[\max(V_t - V_{t-\delta},
 | MPOR 20, symmetric threshold 50,000 | about 28,000 | |
 
 The collateralised EE is 0.2003 of the uncollateralised one ($\approx\sqrt{\delta/t}$) and grows by a factor 1.4141 from 10 to 20 days.
-Regulatory floors: under IMM, at least 5 business days for netting sets of only repo-style transactions and 10 for others with daily margining, 20 for netting sets above 5,000 trades or containing illiquid collateral or hard-to-replace OTC derivatives, and double the floor for two quarters after more than two disputes longer than the MPOR in the previous two quarters (CRE53.24 to CRE53.25); SA-CCR uses 10 business days for daily margining and $9 + N$ for margining every $N$ days (CRE52.50).
+Regulatory floors: under IMM, at least 5 business days for netting sets of only repo-style transactions and 10 for others with daily margining, 20 for netting sets above 5,000 trades or containing illiquid collateral or hard-to-replace OTC derivatives, and double the floor for two quarters after more than two disputes longer than the MPOR in the previous two quarters (CRE53.24 to CRE53.25); with re-margining every $N$ days the IMM MPOR is at least the floor $F$ plus $N - 1$ days (CRE53.26).
+SA-CCR floors the MPOR of non-centrally cleared netting sets at 10 business days for daily margining and $9 + N$ for margining every $N$ days (CRE52.50), with the same 20-day exceptions (CRE52.51).
 
 ### IMM against SA-CCR on the same trade
 
@@ -155,8 +156,8 @@ SA-CCR is calibrated to be conservative across portfolios and recognises no mode
 
 General wrong-way risk: exposure and the counterparty's default probability move together through common market factors (for example, receiving a hard currency from a counterparty whose local currency and credit both deteriorate in the same crisis).
 Banks must identify it, stress test for it and report it to senior management (CRE53.47).
-Specific wrong-way risk: future exposure is highly correlated with the counterparty's default through a legal or structural link; the Basel text's example is a company writing put options on its own stock (CRE53.48).
-For capital, specific wrong-way trades are taken out of the netting set, and single-name CDS with a legal connection between counterparty and reference entity take EAD equal to the full expected loss on the underlying assuming the issuer is in liquidation (CRE53.48).
+Specific wrong-way risk: future exposure to a specific counterparty is highly correlated with that counterparty's probability of default, typically through a legal or structural link; the Basel text's example is a company writing put options on its own stock (CRE53.48).
+For capital, trades with a legal connection between counterparty and underlying issuer and identified specific wrong-way risk are taken out of the netting set; such single-name CDS take EAD equal to the full expected loss on the underlying assuming the issuer is in liquidation, and such equity derivatives, bond options and securities financing transactions take EAD equal to their value assuming the underlying jumps to default, both with LGD 100% (CRE53.48).
 Right-way risk is the opposite (exposure falls as the counterparty weakens, as for a commodity producer hedging its output).
 The CVA effect of wrong-way risk, with the default curve held fixed, is computed in [XVA](15-XVA.md).
 
@@ -226,7 +227,7 @@ Forward, $N = 1\text{m}$, $\sigma = 20\%$, $r = 0$, one-year horizon.
 
 > [!question]- risk-margin-period-of-risk-mpor | What is the Margin Period of Risk (MPOR), and what are its standard regulatory horizons?
 > The time from the last successful margin exchange to close-out and re-hedging of a defaulting counterparty, during which the portfolio moves without new collateral.
-> IMM floors with daily margining: 5 business days for repo-style netting sets, 10 for others, 20 for sets above 5,000 trades or with illiquid collateral or hard-to-replace derivatives, doubled after repeated disputes (CRE53.24 to CRE53.25); SA-CCR uses 10 days or $9 + N$ (CRE52.50).
+> IMM floors with daily margining: 5 business days for repo-style netting sets, 10 for others, 20 for sets above 5,000 trades or with illiquid collateral or hard-to-replace derivatives, doubled after repeated disputes (CRE53.24 to CRE53.25); SA-CCR floors are 10 days or $9 + N$ (CRE52.50).
 > Exposure scales roughly with $\sqrt{\text{MPOR}}$: 15,957 at 10 days and 22,565 at 20 in the forward example.
 
 > [!question]- risk-wrong-way-risk-classification | Differentiate Specific Wrong-Way Risk (SWWR) from General Wrong-Way Risk (GWWR) with concrete examples.
@@ -289,7 +290,8 @@ Forward, $N = 1\text{m}$, $\sigma = 20\%$, $r = 0$, one-year horizon.
 
 > [!question]- risk-mpor-margin-period-of-risk-regulatory-windows | What are the regulatory MPOR floors for margined netting sets?
 > IMM with daily margining: at least 5 business days for netting sets of only repo-style transactions and 10 for all others; 20 when a netting set exceeds 5,000 trades in a quarter or contains illiquid collateral or hard-to-replace OTC derivatives (CRE53.24); doubled for two quarters after more than two long margin disputes (CRE53.25).
-> SA-CCR: 10 business days with daily margining or $9 + N$ for margining every $N$ days (CRE52.50); cleared exposures follow CRE54.
+> IMM with margining every $N$ days: the floor plus $N - 1$ days (CRE53.26).
+> SA-CCR floors: 10 business days with daily margining or $9 + N$ for margining every $N$ days (CRE52.50), 20 in the CRE52.51 cases; cleared exposures follow CRE54.
 
 > [!question]- risk-isda-simm-mva-sensitivities-driver | How does a sensitivity-based initial margin model such as ISDA SIMM work, and why does it drive MVA?
 > It weights delta and vega sensitivities (plus a curvature term) by prescribed risk weights, aggregates them with prescribed correlations within buckets, across buckets and across risk classes, and serves as the quantitative model allowed by MGN20.10 for the 99% 10-day IM of MGN20.9.

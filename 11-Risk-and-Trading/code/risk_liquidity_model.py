@@ -138,7 +138,9 @@ def section_almgren_chriss() -> None:
     print("\n[Worked example 2: sell 1m shares over 5 days, daily intervals]")
     lam = 1e-6
     kt2 = lam * SIG**2 / ETA_T
+    check("eta_tilde = eta - gamma tau / 2, x 1e7", ETA_T * 1e7, 8.75, 1e-9)
     check("kappa_tilde^2", kt2, 1.142857, 5e-7)
+    check("kappa_tilde^2 / 2", 0.5 * kt2, 0.571429, 5e-7)
     kappa = math.acosh(1.0 + 0.5 * kt2)
     check("kappa (per day), discrete", kappa, 1.0237, 5e-5)
     check("discrete kappa / continuous sqrt(lam sigma^2 / eta)", kappa / math.sqrt(lam * SIG**2 / ETA), 1.0237, 5e-5)
@@ -215,6 +217,7 @@ def section_spiral() -> None:
         if m == 0.10:
             check("linearised amplification, m = 10%", amp_lin, 1.0989, 5e-5)
             check("simulated total price fall, m = 10%", fall, 1.0991, 5e-4)
+            check("units sold, m = 10%", sold, 99_101, 1.0)
         else:
             check("linearised amplification, m = 5%", amp_lin, 1.2346, 5e-5)
             check("simulated total price fall, m = 5%", fall, 1.2270, 5e-4)
@@ -253,8 +256,8 @@ def section_black_bachelier() -> None:
         else:
             hi = mid
     nvol = 0.5 * (lo + hi)
-    check("ATM put, Black", atm, 1.8390, 5e-4)
-    check("calibrated Bachelier vol (dollars per year)", nvol, 15.97, 0.01)
+    check("ATM put, Black", atm, 1.8385, 5e-5)
+    check("calibrated Bachelier vol (dollars per year)", nvol, 15.96, 5e-3)
     check("calibrated Bachelier vol / (F x sigma_Black)", nvol / (f * vol), 0.9978, 5e-5)
     for k, eb, en in ((10.0, 0.0012, 0.0245), (5.0, 0.0000, 0.0007), (0.0, 0.0, 0.0000)):
         b, n = black_put(f, k, vol, t), bachelier_put(f, k, nvol, t)

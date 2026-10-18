@@ -149,7 +149,7 @@ Practical points:
 
 Pricing on a set of nodes once and interpolating per scenario is fast; the question is how many nodes.
 Chebyshev interpolation of a function analytic on the interval converges geometrically in the degree (Trefethen 2013), which is why it is used to compress parametric pricers (Gass, Glau, Mahlstedt and Mair 2018).
-For the reference call as a function of spot on $[50, 150]$:
+For the reference call as a function of spot on $[50, 150]$, interpolating at the $n + 1$ Chebyshev points of the first kind (the roots of $T_{n+1}$) for degree $n$:
 
 | Interpolant | pricings | max error |
 | :--- | ---: | ---: |

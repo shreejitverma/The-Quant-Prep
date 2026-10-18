@@ -50,9 +50,9 @@ flowchart TD
 
 A stylised spiral: a fund holds $Q$ units at price $p$ at its margin limit $Qp \le E/m$; an exogenous shock lowers the price, it sells just enough to restore the limit, and each unit sold moves the price by $\lambda$.
 Linearising, the total price fall is the shock times $1/(1 - \lambda Q(1/m - 1)/p)$, and it diverges when $\lambda Q(1/m - 1)/p \to 1$.
-With $Q = 1\text{m}$, $p = 100$, $\lambda = 10^{-6}$ and a shock of 1: amplification 1.0989 at $m = 10\%$ (iterating the nonlinear process: 1.0991, selling 99,101 units) and 1.2346 at $m = 5\%$ (nonlinear 1.2270); at $m = 5\%$ a spiral needs $\lambda Q/p = 1/19 = 0.052632$.
+With $Q = 1\text{m}$, $p = 100$, $\lambda = 10^{-6}$ and a shock of 1: amplification 1.0989 at $m = 10\%$ (iterating the nonlinear process round by round, each round's sales executed at that round's pre-impact price: 1.0991, selling 99,101 units) and 1.2346 at $m = 5\%$ (nonlinear 1.2270); at $m = 5\%$ a spiral needs $\lambda Q/p = 1/19 = 0.052632$.
 Leverage, not the shock, sets the amplification.
-LTCM in 1998 is the standard reference: the President's Working Group report records total assets of 129 billion dollars at the end of 1997 against equity of 4.8 billion on 1 January 1998 (balance-sheet leverage of 28 to 1), losses of 1.8 billion in August 1998 alone, and a recapitalisation of about 3.6 billion by a consortium of fourteen firms.
+LTCM in 1998 is the standard reference: the President's Working Group report records total assets of 129 billion dollars and balance-sheet leverage of 28 to 1 at the end of 1997, over 125 billion dollars of assets on 31 August 1998 against the 1 January 1998 equity of 4.8 billion (more than 25 to 1), losses of 1.8 billion in August 1998 alone, and a recapitalisation of about 3.6 billion by a consortium of fourteen firms.
 
 ### Liquidity-adjusted VaR
 
@@ -60,7 +60,7 @@ Exogenous cost of liquidation (Bangia, Diebold, Schuermann and Stroughair 1999):
 
 $$\text{COL} = \tfrac12\,V\left(\bar s + a\,\sigma_s\right), \qquad \text{L-VaR} = \text{VaR} + \text{COL},$$
 
-with $\bar s$ and $\sigma_s$ the mean and volatility of the relative spread and $a$ chosen for the tail probability (Bangia et al. calibrate it empirically because spreads are not normal; the example uses the normal 2.326 as a labelled assumption).
+with $\bar s$ and $\sigma_s$ the mean and volatility of the relative spread and $a$ chosen for the tail probability (Bangia et al. calibrate it empirically because spreads are not normal; the example uses the normal quantile $z_{0.99} = 2.326348$ as a labelled assumption).
 
 Liquidation horizon: if a position needs $L$ days and is sold in equal amounts at the end of each day, the exposure on day $k$ is $(L - k + 1)/L$ of the position, so with i.i.d. returns
 
@@ -130,9 +130,9 @@ All numbers are printed and asserted by `python 11-Risk-and-Trading/code/risk_li
 
 ### Example 1: liquidity-adjusted VaR of a high-yield ETF position
 
-50m position, 1-day 99% VaR 2.2m, mean relative spread 0.80% with sd 0.40%, $a = 2.326$, position 400% of ADV.
+50m position, 1-day 99% VaR 2.2m, mean relative spread 0.80% with sd 0.40%, $a = z_{0.99} = 2.326348$, position 400% of ADV.
 
-1. Stressed relative spread $0.008 + 2.326 \times 0.004 = 0.017305$; cost of liquidation $\tfrac12 \times 50\text{m} \times 0.017305 = 432{,}635$, 19.67% of the VaR.
+1. Stressed relative spread $0.008 + 2.326348 \times 0.004 = 0.017305$; cost of liquidation $\tfrac12 \times 50\text{m} \times 0.017305 = 432{,}635$, 19.67% of the VaR.
 2. Exogenous L-VaR $= 2{,}632{,}635$.
 3. Selling at 100% of ADV takes $L = 4$ days; the equal-sales multiplier is $\sqrt{5 \times 9/24} = 1.3693$, so the horizon VaR is 3,012,474 (a simulation of the four-day P&L gives a variance factor of about 1.874 against 1.875).
 4. Total 3,445,109, 56.6% above the 1-day VaR.
@@ -140,12 +140,12 @@ All numbers are printed and asserted by `python 11-Risk-and-Trading/code/risk_li
 
 ### Example 2: the cost distribution of selling 1m shares in 5 days
 
-$\sigma = 1$ dollar per share per $\sqrt{\text{day}}$, $\gamma = 2.5 \times 10^{-7}$, $\eta = 10^{-6}$, daily intervals, risk aversion $\lambda = 10^{-6}$ (the same inputs as the earlier draft of this note, now solved in discrete time).
+$\sigma = 1$ dollar per share per $\sqrt{\text{day}}$, $\gamma = 2.5 \times 10^{-7}$, $\eta = 10^{-6}$, daily intervals, risk aversion $\lambda = 10^{-6}$, solved in discrete time.
 
 1. $\tilde\eta = 8.75 \times 10^{-7}$, $\tilde\kappa^2 = 1.142857$, so $\kappa = \cosh^{-1}(1 + 0.571429) = 1.0237$ per day, 2.4% above the continuous $\sqrt{\lambda\sigma^2/\eta} = 1$; the sinh trajectory matches the solution of the first-order linear system to $10^{-6}$ shares.
 2. Sales: 640,841 on day 1 and 230,374 on day 2, so 87.1% is sold in two days.
 3. Moments: optimal $E = 537{,}867$ and sd 384,538 (a simulation of the price process gives about 537,300 and 384,400); TWAP $E = 300{,}000$ and sd 1,095,445; selling everything on day 1 costs 1,000,000 for certain.
-4. As a risk number, $E + 2.326\,\text{sd}$ is 2,848,386 for TWAP, 1,432,436 for the $\lambda = 10^{-6}$ schedule and 1,000,000 for an immediate sale; across the whole frontier up to $\lambda = 10^{-3}$ nothing beats the immediate sale (the best is 505 above it).
+4. As a risk number, $E + z_{0.99}\,\text{sd}$ with $z_{0.99} = 2.326348$ is 2,848,386 for TWAP, 1,432,436 for the $\lambda = 10^{-6}$ schedule and 1,000,000 for an immediate sale; across the whole frontier up to $\lambda = 10^{-3}$ nothing beats the immediate sale (the best is 505 above it).
    With these inputs one day's 99% price risk on the full block exceeds the impact cost of dumping it, which is the regime a stressed market puts you in.
 
 ### Example 3: Black against Bachelier near zero
@@ -218,7 +218,7 @@ A down-and-out call ($S = K = 100$, barrier 90, $r = 5\%$, $\sigma = 20\%$, one 
 
 > [!question]- risk-liquidity-adjusted-var-formulation | How does Bangia's exogenous Liquidity-Adjusted VaR adjust for spread volatility?
 > It adds the cost of crossing half a stressed spread: $\text{L-VaR} = \text{VaR} + \tfrac12 V(\bar s + a\sigma_s)$, with $a$ calibrated to the spread's tail (Bangia et al. 1999).
-> With $V = 50\text{m}$, $\bar s = 0.8\%$, $\sigma_s = 0.4\%$ and $a = 2.326$ the cost is 432,635 on a 2.2m VaR; add the liquidation horizon separately.
+> With $V = 50\text{m}$, $\bar s = 0.8\%$, $\sigma_s = 0.4\%$ and $a = z_{0.99} = 2.326348$ the cost is 432,635 on a 2.2m VaR; add the liquidation horizon separately.
 
 > [!question]- risk-twap-vs-almgren-chriss-risk | Under what risk-aversion condition does the Almgren-Chriss optimal execution schedule reduce to linear TWAP?
 > Zero risk aversion: $\lambda = 0$ gives $\kappa = 0$ and a straight line, which minimises expected temporary cost.

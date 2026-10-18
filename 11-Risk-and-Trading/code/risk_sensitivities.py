@@ -657,6 +657,8 @@ def section_chebyshev() -> None:
         p = np.polynomial.Chebyshev.interpolate(f, deg, domain=[50.0, 150.0])
         errs[deg] = float(np.abs(p(grid) - exact).max())
         print(f"  degree {deg:>2} ({deg + 1} pricings): max error {errs[deg]:.2e}")
+    # numpy's Chebyshev.interpolate uses the deg + 1 Chebyshev points of the first kind (roots of T_{deg+1})
+    check("max error, degree 4", errs[4], 0.325, 5e-4)
     check("max error, degree 8, x 1e3", errs[8] * 1e3, 9.38, 0.01)
     check("max error, degree 16, x 1e6", errs[16] * 1e6, 1.98, 0.01)
     check_range("max error, degree 32", errs[32], 0.0, 1e-9)

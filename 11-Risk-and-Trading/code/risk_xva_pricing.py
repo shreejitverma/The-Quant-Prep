@@ -208,7 +208,8 @@ def section_funding_capital(sim: dict[str, np.ndarray], base: dict[str, float]) 
     check("FCA weighted by both survivals", fca_s, 4_647, 1.0)
     fba_own = funding_integral(base["dene"], LAM_B * LGD_B, lam_b=LAM_B)
     check("FBA at the bank's own credit spread, own-survival weighted", fba_own, 2_925, 1.0)
-    check("same, relative to DVA", fba_own / base["dva"], 1.000, 5e-4)
+    # The two continuous integrals are identical; this checks only that the two quadratures agree.
+    check("same, relative to DVA, minus 1", fba_own / base["dva"] - 1.0, 0.0, 1e-6)
 
     im = im_profile(sim)
     dim = (disc * im).mean(axis=1)

@@ -5,14 +5,14 @@ tier: advanced
 status: solid
 prereqs: [var-and-expected-shortfall]
 est_hours: 4
-sources: [Tasche - Capital Allocation to Business Units and Sub-Portfolios - the Euler Principle - in Resti (ed.) Pillar II in the New Basel Accord (Risk Books 2008) 423-453 and arXiv 0708.2542, Gourieroux Laurent and Scaillet - Sensitivity Analysis of Values at Risk - Journal of Empirical Finance 7(3-4) 225-245 (2000), Scaillet - Nonparametric Estimation and Sensitivity Analysis of Expected Shortfall - Mathematical Finance 14(1) 115-129 (2004), Litterman - Hot Spots and Hedges - Journal of Portfolio Management 23 (December 1996 special issue) 52-75, Jorion - Value at Risk 3rd edition (McGraw-Hill 2006) chapter 7, Maillard Roncalli and Teiletche - The Properties of Equally Weighted Risk Contribution Portfolios - Journal of Portfolio Management 36(4) 60-70 (2010), Griveau-Billion Richard and Roncalli - A Fast Algorithm for Computing High-Dimensional Risk Parity Portfolios - arXiv 1311.4057 (2013), Roncalli - Introduction to Risk Parity and Budgeting (Chapman and Hall CRC 2013), Grinold and Kahn - Active Portfolio Management 2nd edition (McGraw-Hill 2000) chapter 3]
+sources: [Tasche - Risk Contributions and Performance Measurement - working paper TU Munich (1999), Tasche - Capital Allocation to Business Units and Sub-Portfolios - the Euler Principle - in Resti (ed.) Pillar II in the New Basel Accord (Risk Books 2008) 423-453 and arXiv 0708.2542, Gourieroux Laurent and Scaillet - Sensitivity Analysis of Values at Risk - Journal of Empirical Finance 7(3-4) 225-245 (2000), Scaillet - Nonparametric Estimation and Sensitivity Analysis of Expected Shortfall - Mathematical Finance 14(1) 115-129 (2004), Litterman - Hot Spots and Hedges - Journal of Portfolio Management 23 (December 1996 special issue) 52-75, Jorion - Value at Risk 3rd edition (McGraw-Hill 2006) chapter 7, Maillard Roncalli and Teiletche - The Properties of Equally Weighted Risk Contribution Portfolios - Journal of Portfolio Management 36(4) 60-70 (2010), Griveau-Billion Richard and Roncalli - A Fast Algorithm for Computing High-Dimensional Risk Parity Portfolios - arXiv 1311.4057 (2013), Roncalli - Introduction to Risk Parity and Budgeting (Chapman and Hall CRC 2013), Grinold and Kahn - Active Portfolio Management 2nd edition (McGraw-Hill 2000) chapter 3]
 ---
 
 # Risk Decomposition and Attribution
 
 ## TL;DR
 
-- A risk measure that is homogeneous of degree one in position sizes (volatility, normal VaR, VaR and ES of any loss distribution) splits exactly into Euler contributions $x_i\,\partial\rho/\partial x_i$; no other per-unit allocation is consistent with return-on-risk performance measurement (Tasche 2008).
+- A risk measure that is homogeneous of degree one in position sizes (volatility, normal VaR, VaR and ES of any loss distribution) splits exactly into Euler contributions $x_i\,\partial\rho/\partial x_i$; for a continuously differentiable measure they are the only contributions compatible with return-on-risk-capital (RORAC) performance measurement (Tasche 2008, Proposition 2.1, proved in Tasche 1999).
 - Marginal VaR is the gradient (per dollar), component VaR the Euler contribution (sums to the total), incremental VaR the before-and-after difference of a finite trade (does not sum, and differs from the marginal estimate for large trades: 5.20m against 1.99m for a 50m add).
 - Beyond the normal, the Euler contributions are conditional expectations: $E[L_i \mid L = \text{VaR}]$ for VaR and $E[L_i \mid L \ge \text{VaR}]$ for ES; ES contributions are stable in simulation, VaR contributions are noisy.
 - Equal risk contribution (risk parity) weights solve a strictly convex problem; with two assets they are inverse-volatility for any correlation.
@@ -39,7 +39,9 @@ $$\rho(x) = \sum_{i=1}^N x_i\,\frac{\partial\rho}{\partial x_i}(x).$$
 
 Proof in one line: differentiate $\rho(cx) = c\rho(x)$ with respect to $c$ and set $c = 1$.
 The contribution $RC_i = x_i\,\partial\rho/\partial x_i$ is the Euler or component risk; the sum is exact, with no unexplained residual.
-Why this allocation and not another: Tasche (2008) shows that the Euler contributions are the only per-unit contributions for which increasing a position whose return on its risk contribution beats the portfolio's improves the portfolio's return on risk; that is what a capital allocation used for performance measurement needs.
+Why this allocation and not another: call contributions RORAC compatible if, whenever a sub-portfolio's expected return divided by its risk contribution beats the portfolio's RORAC, adding a small enough amount of that sub-portfolio raises the portfolio's RORAC.
+Tasche (2008, Proposition 2.1, citing Theorem 4.4 of Tasche 1999) shows that if $\rho(x)$ is continuously differentiable and contributions are to be RORAC compatible for arbitrary expected returns, they must be $\partial\rho/\partial x_i$ per unit, that is the Euler contributions; that is what a capital allocation used for performance measurement needs.
+For a measure that is also subadditive (volatility, ES), each Euler contribution is at most the position's standalone risk, and the with-and-without (incremental) contributions sum to at most the total (Tasche 2008, (2.9b) and Proposition 2.2): Example 1 shows both.
 
 ```mermaid
 flowchart TD
@@ -54,7 +56,7 @@ flowchart TD
 ```
 
 Which measures qualify: volatility $\sqrt{x^\top\Sigma x}$; normal VaR $z_\alpha\sqrt{x^\top\Sigma x}$ (with zero mean); VaR and ES of any loss distribution as functions of the position scales, because scaling every position scales the loss.
-Variance is homogeneous of degree two, so $\sum_i x_i\,\partial\sigma^2/\partial x_i = 2\sigma^2$ (checked numerically in the code): use $\sigma$, or halve the variance contributions.
+Variance is homogeneous of degree two, so $\sum_i x_i\,\partial\sigma^2/\partial x_i = 2\sigma^2$ (checked with finite-difference gradients in the code): use $\sigma$, or halve the variance contributions.
 A measure with a fixed add-on or a nonlinear transformation (for example a VaR floor) is not homogeneous and has no exact Euler split.
 
 ### Marginal, component and incremental VaR
@@ -87,7 +89,7 @@ $$\frac{\partial\,\text{VaR}_\alpha}{\partial x_i}\,x_i = E[L_i \mid L = \text{V
 In a simulation, the ES contribution is the average of position $i$'s loss over the tail scenarios, and the contributions sum to the simulated ES exactly.
 The VaR contribution conditions on a single quantile, so it is estimated from the scenarios nearest the VaR order statistic and is much noisier.
 
-On 1,000,000 simulated days of a Student $t_4$ (elliptical) linear book of 60m equities, 40m bonds and 10m gold, the 97.5% ES was about 2.161m and the equity ES share about 0.946, equal to its covariance share 0.946: for elliptical distributions every homogeneous measure allocates in proportion to $x_i(\Sigma x)_i$.
+On 1,000,000 simulated days of a Student $t_4$ (elliptical) linear book of 60m equities, 40m bonds and 10m gold (daily volatilities 1.25%, 0.40% and 0.90%, correlations $-0.15$ equity-bond, 0.10 equity-gold and 0.30 bond-gold, the $t_4$ scaled to unit variance), the 97.5% ES was about 2.161m and the equity ES share about 0.946, equal to its covariance share 0.946: for elliptical distributions every homogeneous measure allocates in proportion to $x_i(\Sigma x)_i$.
 Adding a short put changes that, as the second worked example shows.
 
 ### Risk budgeting and risk parity
@@ -138,11 +140,11 @@ Add gold (15% vol, correlation 0.10 with equities, 0.30 with bonds) to Example 1
 1. $\text{Cov}(r_{\text{gold}}, P) = 60\text{m} \times 0.003 + 40\text{m} \times 0.0027 = 0.288\text{m}$, so the marginal VaR of gold is $1.644854 \times 0.288\text{m}/\sigma_P = 0.039877$ per dollar.
 2. Adding 5m: marginal estimate 199,386; recomputed incremental VaR 236,893 (the trade's own variance, a second-order term, is already visible at 5% of the book).
 3. Adding 50m: marginal estimate 1,993,864; recomputed 5,197,006.
-4. The best hedge in gold is $-0.288\text{m}/0.0225 = -12{,}800{,}000$ (short gold), which lowers VaR to 19,282,961; a grid search over holdings finds the same minimiser.
+4. The best hedge in gold is $-0.288\text{m}/0.0225 = -12{,}800{,}000$ (short gold), which lowers VaR to 19,282,961; a grid search over holdings from $-30$m to $+10$m in 1,000 steps finds the same minimiser to within half a step.
 
 ### Example 3: ES and VaR contributions with a short put
 
-Book of Example 3 in the core concepts (60m equities, 40m bonds, 10m gold, Student $t_4$ daily returns) plus a short position of 4,000 one-month at-the-money index puts (multiplier 100, index 100, implied vol 20%, premium 2.3030 per index point).
+The simulated $t_4$ book of the core concepts (60m equities, 40m bonds, 10m gold, one-day horizon) plus a short position of 4,000 one-month at-the-money puts on the equity index (multiplier 100, index 100, implied vol 20% held fixed, zero rates, premium 2.3030 per index point), revalued in full after one trading day with the index moving by the simulated equity return.
 
 | Position | ES contribution (97.5%) | VaR contribution, $\pm 500$ scenarios | VaR contribution, $\pm 50$ scenarios |
 | :--- | ---: | ---: | ---: |
@@ -173,7 +175,7 @@ Book of Example 3 in the core concepts (60m equities, 40m bonds, 10m gold, Stude
 > [!question]- risk-euler-allocation-theorem | State Euler's allocation theorem and explain why it is essential for risk capital budgeting.
 > If $\rho(cx) = c\rho(x)$ and $\rho$ is differentiable, then $\rho(x) = \sum_i x_i\,\partial\rho/\partial x_i$ (differentiate the homogeneity identity in $c$ at $c = 1$).
 > So allocated risk adds up to the total with no residual, which capital allocation needs.
-> Tasche (2008) adds the reason to prefer it: the Euler contributions are the only per-unit contributions consistent with return-on-risk performance measurement.
+> Tasche (2008, Proposition 2.1; proof in Tasche 1999) adds the reason to prefer it: for a continuously differentiable measure the Euler contributions are the only ones that are RORAC compatible, meaning that growing a sub-portfolio whose return on its contribution beats the portfolio's RORAC by a small enough amount raises the portfolio's RORAC.
 
 > [!question]- risk-marginal-vs-component-var | Distinguish between Marginal VaR and Component VaR.
 > Marginal VaR is $\partial\text{VaR}/\partial x_i$, the change in VaR per extra dollar in position $i$: 0.322341 for the equities in Example 1.
@@ -244,7 +246,7 @@ Book of Example 3 in the core concepts (60m equities, 40m bonds, 10m gold, Stude
 > Only the Euler (component) split adds up.
 
 > [!question]- risk-variance-euler-degree-two | Can you allocate portfolio variance with Euler contributions?
-> Variance is homogeneous of degree two, so $\sum_i x_i\,\partial\sigma^2/\partial x_i = 2\sigma^2$, not $\sigma^2$ (checked numerically in the code).
+> Variance is homogeneous of degree two, so $\sum_i x_i\,\partial\sigma^2/\partial x_i = 2\sigma^2$, not $\sigma^2$ (checked with finite-difference gradients in the code).
 > Halving the contributions gives $x_i(\Sigma x)_i$, which sum to $\sigma^2$ and are proportional to the volatility contributions, so the shares are the same; only the units differ.
 
 > [!question]- risk-factor-euler-contributions | How do you allocate volatility to factors and to specific risk, and does it agree with the asset-level split?
@@ -283,6 +285,7 @@ Book of Example 3 in the core concepts (60m equities, 40m bonds, 10m gold, Stude
 
 ## Further reading
 
+- D. Tasche, "Risk contributions and performance measurement", working paper, Technische Universitat Munchen, 1999.
 - D. Tasche, "Capital allocation to business units and sub-portfolios: the Euler principle", in A. Resti (ed.), *Pillar II in the New Basel Accord*, Risk Books 2008, 423-453 (arXiv 0708.2542).
 - C. Gourieroux, J.-P. Laurent and O. Scaillet, "Sensitivity analysis of values at risk", *Journal of Empirical Finance* 7(3-4), 225-245, 2000.
 - O. Scaillet, "Nonparametric estimation and sensitivity analysis of expected shortfall", *Mathematical Finance* 14(1), 115-129, 2004.

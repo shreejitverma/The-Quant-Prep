@@ -44,6 +44,7 @@ def problem_kelly() -> None:
 
     check("growth at full Kelly", growth(f_star), 0.28125, 1e-12)
     check("growth at half Kelly", growth(0.5 * f_star), 0.2109375, 1e-12)
+    check("half-Kelly leverage", 0.5 * f_star, 2.34375, 1e-12)
     check("half-Kelly volatility", 0.5 * f_star * sig, 0.375, 1e-12)
     check("growth at twice Kelly", growth(2.0 * f_star), 0.0, 1e-12)
     for c, p_half, p_hd in ((1.0, 0.5, 1.0 / 3.0), (0.5, 0.125, 1.0 / 9.0)):
@@ -114,6 +115,8 @@ def problem_reverse_stress() -> None:
     check("yield move (bp)", x_star[1], 42.857, 5e-4)
     check("P&L at the scenario", float(delta @ x_star), -2.5e6, 1e-6)
     check("Mahalanobis distance", dist, 6.0994, 5e-4)
+    check("equity move in sds", x_star[0] / sd[0], -1.8, 0.05)
+    check("yield move in sds", x_star[1] / sd[1], 5.4, 0.05)
     # Brute force: smallest Mahalanobis radius along 3,600 directions that reaches the loss
     chol = np.linalg.cholesky(cov)
     best = math.inf
@@ -280,7 +283,7 @@ def problem_short_put_crash() -> None:
     prox = -(p_delta * ds + 0.5 * p_gamma * ds * ds)
     check("put value", put(100.0), 5.5735, 5e-4)
     check("short put full-revaluation P&L", full, -15.5166, 5e-4)
-    check("short put delta-gamma P&L", prox, -14.9425, 5e-4)
+    check("short put delta-gamma P&L", prox, -14.9424, 5e-5)
     check("proxy understates the loss by", prox - full, 0.5743, 5e-4)
     check("speed (third derivative) of the put, equal to the call's", g["speed"], -0.000516, 5e-7)
 
@@ -296,7 +299,7 @@ def problem_euler() -> None:
     check("marginal VaR asset 1 per dollar", marg[0], 0.234486, 5e-7)
     check("marginal VaR asset 2 per dollar", marg[1], 0.273567, 5e-7)
     check("component VaR asset 1", comp[0], 18_758_870, 1.0)
-    check("component VaR asset 2", comp[1], 5_471_338, 1.0)
+    check("component VaR asset 2", comp[1], 5_471_337, 1.0)
     h = 1_000.0
     up, dn = x.copy(), x.copy()
     up[1] += h
@@ -354,9 +357,9 @@ def problem_mpor() -> None:
     c10 = collateralised_ee_closed(n, vol, 10 / 250)
     c20 = collateralised_ee_closed(n, vol, 20 / 250)
     unc = collateralised_ee_closed(n, vol, 1.0)
-    check("collateralised EE, MPOR 10", c10, 239_330, 1.0)
+    check("collateralised EE, MPOR 10", c10, 239_329, 1.0)
     check("collateralised EE, MPOR 20", c20, 338_412, 1.0)
-    check("ratio", c20 / c10, 1.4139, 5e-4)
+    check("ratio", c20 / c10, 1.4140, 5e-5)
     check("uncollateralised EE at 1 year", unc, 1_192_354, 1.0)
     check("collateral cuts EE by", 1.0 - c10 / unc, 0.7993, 5e-4)
 
@@ -386,8 +389,8 @@ def problem_cva_flat() -> None:
     check("net adjustment DVA - CVA", dva - cva, -6_064, 1.0)
     # Same with a continuous integral: exposure flat at 500k, hazard density 0.03 e^{-0.03 t}, discount e^{-0.04 t}
     integral = 0.6 * 500e3 * 0.03 * (1.0 - math.exp(-0.07)) / 0.07
-    check("CVA by the exact integral", integral, 8_691, 2.0)
-    check("credit-triangle approximation spread x EE x annuity", 0.018 * 500e3 * (1.0 - math.exp(-0.04)) / 0.04, 8_823, 1.0)
+    check("CVA by the exact integral", integral, 8_692, 1.0)
+    check("credit-triangle approximation spread x EE x annuity", 0.018 * 500e3 * (1.0 - math.exp(-0.04)) / 0.04, 8_822, 1.0)
 
 
 # Problem 19 (cards risk-xva-midpoint-shortcut, risk-mva-regulatory-driver, risk-kva-capital-valuation-adjustment)
@@ -461,8 +464,8 @@ def problem_lvar() -> None:
 def problem_black_bachelier() -> None:
     print("\n[Problem: futures at 5, Bachelier vol 15.96, one month: probability of a negative settlement]")
     nvol, t = 15.96, 1.0 / 12.0
-    check("P(F_T < 0) from F = 5", ncdf(-5.0 / (nvol * math.sqrt(t))), 0.1389, 5e-4)
-    check("Bachelier put struck at 0", bachelier_put(5.0, 0.0, nvol, t), 0.3256, 5e-4)
+    check("P(F_T < 0) from F = 5", ncdf(-5.0 / (nvol * math.sqrt(t))), 0.1389, 5e-5)
+    check("Bachelier put struck at 0", bachelier_put(5.0, 0.0, nvol, t), 0.3255, 5e-5)
     check("Black put struck at 0 (a lognormal forward cannot go below 0)", black_put(5.0, 0.0, 3.2, t), 0.0, 0.0)
 
 
