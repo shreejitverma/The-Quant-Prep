@@ -16,12 +16,12 @@ The rules that govern bank balance sheets, trading desks, counterparty exposures
 
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
-| 01 | [Capital, RWA, and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) | Q | core | 4 | draft | 10 |
-| 02 | [Basel I, II, 2.5, III, and IV Evolution](02-Basel-I-II-2.5-III-IV-Evolution.md) | Q | core | 4 | draft | 10 |
+| 01 | [Capital, RWA, and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) | Q | core | 4 | solid | 18 |
+| 02 | [Basel I, II, 2.5, III, and IV Evolution](02-Basel-I-II-2.5-III-IV-Evolution.md) | Q | core | 4 | solid | 17 |
 | 03 | [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) | Q | core | 6 | solid | 17 |
 | 04 | [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md) | Q | core | 6 | solid | 17 |
 | 05 | [CVA Capital Charge: SA-CVA and BA-CVA](05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md) | Q | core | 6 | solid | 16 |
-| 06 | [FRTB: Trading and Banking Book Boundary](06-FRTB-Trading-and-Banking-Book-Boundary.md) | Q | advanced | 4 | draft | 10 |
+| 06 | [FRTB: Trading and Banking Book Boundary](06-FRTB-Trading-and-Banking-Book-Boundary.md) | Q | advanced | 4 | solid | 18 |
 | 07 | [FRTB: Sensitivities-Based Method - Delta](07-FRTB-Sensitivities-Based-Method-Delta.md) | Q | advanced | 6 | solid | 20 |
 | 08 | [FRTB: Sensitivities-Based Method - Vega and Curvature](08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md) | Q | advanced | 6 | solid | 17 |
 | 09 | [FRTB: Default Risk Charge and Residual Risk Add-On](09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md) | Q | advanced | 5 | solid | 18 |
@@ -29,9 +29,9 @@ The rules that govern bank balance sheets, trading desks, counterparty exposures
 | 11 | [FRTB: Non-Modellable Risk Factors](11-FRTB-Non-Modellable-Risk-Factors.md) | Q | senior | 5 | solid | 15 |
 | 12 | [FRTB: Backtesting and P&L Attribution Testing](12-FRTB-Backtesting-and-PLA-Testing.md) | Q | senior | 5 | solid | 15 |
 | 13 | [FRTB: Implementation Challenges and Desk Strategy](13-FRTB-Implementation-Challenges-and-Desk-Strategy.md) | DQ | senior | 4 | draft | 10 |
-| 14 | [Operational Risk: Standardised Measurement Approach](14-Operational-Risk-Standardised-Measurement-Approach.md) | Q | core | 4 | draft | 10 |
-| 15 | [Leverage Ratio and Liquidity Ratios: LCR and NSFR](15-Leverage-Ratio-and-Liquidity-Ratios-LCR-and-NSFR.md) | Q | core | 4 | draft | 10 |
-| 16 | [Interest Rate Risk in the Banking Book: IRRBB](16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md) | Q | advanced | 4 | draft | 10 |
+| 14 | [Operational Risk: Standardised Measurement Approach](14-Operational-Risk-Standardised-Measurement-Approach.md) | Q | core | 4 | solid | 17 |
+| 15 | [Leverage Ratio and Liquidity Ratios: LCR and NSFR](15-Leverage-Ratio-and-Liquidity-Ratios-LCR-and-NSFR.md) | Q | core | 4 | solid | 16 |
+| 16 | [Interest Rate Risk in the Banking Book: IRRBB](16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md) | Q | advanced | 4 | solid | 17 |
 | 17 | [Stress Testing: CCAR, DFAST, and EBA](17-Stress-Testing-CCAR-DFAST-and-EBA.md) | Q | advanced | 4 | draft | 10 |
 | 18 | [BCBS 239: Risk Data Aggregation and Reporting](18-BCBS-239-Risk-Data-Aggregation.md) | DQ | advanced | 4 | draft | 10 |
 | 19 | [Implementation Status by Jurisdiction](19-Implementation-Status-by-Jurisdiction.md) | Q | advanced | 4 | draft | 10 |
