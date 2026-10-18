@@ -2,7 +2,9 @@
 ticker: SHOP
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 32%
+  implied_growth_rate: 32.0%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 0.82%
     peg_ratio: 2.10
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:14
 market_data:
   ticker: SHOP
@@ -28,11 +29,11 @@ market_data:
   dividend_yield: 0
   52w_high: 182.19
   52w_low: 94.0
+  data_quality: ok
+---
 
 # Stock: Shopify (SHOP)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 E-commerce platform for entrepreneurs. Scaling into payments and logistics. High merchant loyalty.

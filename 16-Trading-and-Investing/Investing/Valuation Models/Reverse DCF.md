@@ -9,7 +9,8 @@ tags: [valuation, quant, framework]
 A **Reverse DCF** is a valuation technique that starts with the current market price of a stock and works backward to determine what growth rate the market is currently pricing in.
 
 ## Perspective (The Quant View)
-Unlike a standard DCF, which is highly sensitive to the analyst's potentially biased growth assumptions, a Reverse DCF is a "sanity check." It tells you: *"Does the market expect this company to grow at 10% or 30%? And is that realistic given its history?"*
+Unlike a standard DCF, which is highly sensitive to the analyst's potentially biased growth assumptions, a Reverse DCF is a "sanity check".
+It tells you whether the market expects this company to grow at 10% or 30%, and whether that is realistic given its history.
 
 ## Core Principles
 1. **Free Cash Flow (FCF):** The starting point is the TTM (Trailing Twelve Months) FCF.
@@ -24,4 +25,4 @@ Unlike a standard DCF, which is highly sensitive to the analyst's potentially bi
 - **Calculation:** If a stock is trading at $100 and a Reverse DCF shows an implied growth of 25% for the next 10 years, but the industry is only growing at 5%, the stock is likely **Overvalued**.
 
 ---
-[[16-Trading-and-Investing/Investing/Stock Research/_Index_Stock Research|Back to Stock Research]] | [[Dashboard|Back to Dashboard]]
+[[16-Trading-and-Investing/Investing/Stock Research/_Index_Stock Research|Back to Stock Research]] | [[00-Start-Here/Dashboard|Back to Dashboard]]

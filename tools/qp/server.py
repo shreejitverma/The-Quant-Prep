@@ -26,7 +26,23 @@ from .state import GRADES, MASTERY_LABELS, StateError, Store, today
 from .vault import TRACK_ABBR, TRACK_LABELS, TRACKS, Note, Vault, load_vault
 
 WEB_DIR = Path(__file__).with_name("web")
-FILE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".py", ".cpp", ".hpp", ".h", ".md", ".txt", ".csv", ".ipynb", ".pdf"}
+LAB_WEB_DIR = Path(__file__).parent / "lab" / "web"
+FILE_EXTS = {
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".webp",
+    ".py",
+    ".cpp",
+    ".hpp",
+    ".h",
+    ".md",
+    ".txt",
+    ".csv",
+    ".ipynb",
+    ".pdf",
+}
 TEXT_EXTS = {".py", ".cpp", ".hpp", ".h", ".md", ".txt", ".csv", ".ipynb"}
 VAULT_TTL = 2.0  # seconds; notes are re-read at most this often so edits show up live
 MAX_BODY = 64 * 1024
@@ -254,6 +270,36 @@ class App:
             self.games.pop(gid, None)
         return {"event": event, "state": game.state()}
 
+    def lab_catalog(self) -> dict:
+        from tools.qp.lab import list_engines
+
+        return {"engines": list_engines()}
+
+    def lab_run(self, engine_id: str, kwargs: dict) -> dict:
+        from tools.qp.lab import get_engine
+
+        engine = get_engine(engine_id)
+        if engine is None:
+            raise ApiError(HTTPStatus.NOT_FOUND, f"unknown engine {engine_id!r}")
+        try:
+            res = engine.run(**kwargs)
+            self.store.record_lab_run(engine.engine_id, res.metrics)
+            return res.to_dict()
+        except Exception as exc:
+            raise ApiError(HTTPStatus.BAD_REQUEST, str(exc)) from exc
+
+    def journal_stats(self) -> dict:
+        from tools.qp.lab.journal_stats import analyze_trade_journal
+
+        return analyze_trade_journal(self.store.data.get("journal_trades", []))
+
+    def journal_log(self, trade_data: dict) -> dict:
+        if not isinstance(trade_data, dict):
+            raise ApiError(HTTPStatus.BAD_REQUEST, "trade data must be a JSON object")
+        entry = self.store.record_journal_trade(trade_data)
+        total = len(self.store.data.get("journal_trades", []))
+        return {"status": "LOGGED", "trade": entry, "total_logged": total}
+
 
 def make_handler(app: App, allowed_origins: set[str]):
     allowed_hosts = {o.split("://", 1)[1] for o in allowed_origins}
@@ -375,9 +421,35 @@ def make_handler(app: App, allowed_origins: set[str]):
                         raise ApiError(HTTPStatus.BAD_REQUEST, f"unknown mode {mode!r}")
                     n = max(1, min(int(q.get("n", 200)), 1000))
                     return self.send_json(app.problems(mode, n, int(q["seed"]) if q.get("seed") else None))
+                if route == "lab" and arg == "catalog":
+                    return self.send_json(app.lab_catalog())
+                if route == "journal" and arg == "stats":
+                    return self.send_json(app.journal_stats())
                 raise ApiError(HTTPStatus.NOT_FOUND, f"no route {path}")
             if path.startswith("/files/"):
                 return self.serve_repo_file(unquote(path[len("/files/") :]))
+            if path == "/lab":
+                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
+                self.send_header("Location", "/lab/")
+                self.end_headers()
+                return
+            if path.startswith("/lab/"):
+                rel = path[len("/lab/") :]
+                if not rel:
+                    rel = "index.html"
+                target = (LAB_WEB_DIR / rel).resolve()
+                if LAB_WEB_DIR.resolve() not in (target, *target.parents) or not target.is_file():
+                    raise ApiError(HTTPStatus.NOT_FOUND, "not found")
+                ctype = (
+                    "text/html; charset=utf-8"
+                    if target.suffix == ".html"
+                    else (
+                        "application/javascript; charset=utf-8"
+                        if target.suffix == ".js"
+                        else ("text/css; charset=utf-8" if target.suffix == ".css" else None)
+                    )
+                )
+                return self.send_file(target, ctype)
             name = "index.html" if path in ("/", "/index.html") else path.lstrip("/")
             target = (WEB_DIR / name).resolve()
             if target.parent != WEB_DIR.resolve() or not target.is_file():
@@ -427,6 +499,12 @@ def make_handler(app: App, allowed_origins: set[str]):
                 return self.send_json(app.mm_new())
             if path == "/api/mm/quote":
                 return self.send_json(app.mm_quote(str(body.get("game")), body.get("bid"), body.get("ask")))
+            if path == "/api/lab/run":
+                engine_id = str(body.get("engine"))
+                kwargs = body.get("params") or {}
+                return self.send_json(app.lab_run(engine_id, kwargs))
+            if path == "/api/journal/log":
+                return self.send_json(app.journal_log(body))
             raise ApiError(HTTPStatus.NOT_FOUND, f"no route {path}")
 
     return Handler

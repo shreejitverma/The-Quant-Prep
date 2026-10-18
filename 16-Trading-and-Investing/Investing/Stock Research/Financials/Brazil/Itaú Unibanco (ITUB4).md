@@ -2,7 +2,9 @@
 ticker: ITUB4
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: -2%
+  implied_growth_rate: 7.7%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: BRL
   returns:
@@ -12,27 +14,21 @@ value_metrics:
     roe: 21.82%
     roa: 1.57%
     gross_margin: N/A
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: 4.80%
     peg_ratio: 1.35
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:09
 market_data:
-  ticker: ITUB4
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: ITUB4.SA
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Itaú Unibanco (ITUB4)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Largest private bank in Latin America. Highly profitable with a strong technology moat and conservative risk management.

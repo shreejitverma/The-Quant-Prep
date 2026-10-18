@@ -2,7 +2,9 @@
 ticker: MCD
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 15%
+  implied_growth_rate: 14.0%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -12,13 +14,12 @@ value_metrics:
     roe: N/A
     roa: 13.56%
     gross_margin: 57.35%
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: 3.00%
     peg_ratio: 2.56
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:25
 market_data:
   ticker: MCD
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 2.66
   52w_high: 341.75
   52w_low: 271.98
+  data_quality: ok
+---
 
 # Stock: McDonalds (MCD)
 

@@ -2,7 +2,9 @@
 ticker: CRM
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: -3%
+  implied_growth_rate: -3.1%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 10.58%
     peg_ratio: 0.93
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:12
 market_data:
   ticker: CRM
@@ -28,11 +29,11 @@ market_data:
   dividend_yield: 0.92
   52w_high: 276.8
   52w_low: 163.52
+  data_quality: ok
+---
 
 # Stock: Salesforce (CRM)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 CRM pioneer and market leader. Expanding into 'Data Cloud' and AI agents. Strong ecosystem through Slack and Mulesoft.

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markets Mastery OS - Interactive Trading Lab</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="layout">
+    <header class="header">
+      <div class="brand">
+        <span class="brand-badge">LAB</span>
+        <h1>Markets Mastery OS</h1>
+        <span class="subtext">Interactive Simulation & Analytics Lab</span>
+      </div>
+      <div class="nav-links">
+        <a href="#sim" class="active">Simulations</a>
+        <a href="/files/16-Trading-and-Investing/MARKETS_HUB.md" target="_blank">Master Hub</a>
+        <a href="/files/16-Trading-and-Investing/STUDY_BOARD.md" target="_blank">Study Board</a>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <aside class="sidebar">
+        <h2>Simulation Engines</h2>
+        <ul id="engine-list" class="engine-list">
+          <li class="active" data-engine="pos_sizing">
+            <div class="eng-title">Position Sizing & Ruin</div>
+            <div class="eng-meta">Kelly, Drawdown, Monte Carlo</div>
+          </li>
+          <li data-engine="overfit_trap">
+            <div class="eng-title">Backtest Overfit Trap</div>
+            <div class="eng-meta">Deflated Sharpe, Multi-Testing</div>
+          </li>
+          <li data-engine="opt_desk">
+            <div class="eng-title">Options Vol Desk</div>
+            <div class="eng-meta">Black-Scholes, Greeks, Hedging</div>
+          </li>
+          <li data-engine="fut_desk">
+            <div class="eng-title">Futures & Basis Desk</div>
+            <div class="eng-meta">Term Structure, Roll Yield, Carry</div>
+          </li>
+          <li data-engine="port_alloc">
+            <div class="eng-title">Portfolio Allocator</div>
+            <div class="eng-meta">Risk Parity, 60/40, Stress Test</div>
+          </li>
+          <li data-engine="event_study">
+            <div class="eng-title">Historical Event Study</div>
+            <div class="eng-meta">1929-2022 Crises, CAR, Liquidity</div>
+          </li>
+          <li data-engine="lob_sim">
+            <div class="eng-title">Limit Order Book & TCA</div>
+            <div class="eng-meta">Price-Time Priority, Almgren-Chriss</div>
+          </li>
+          <li data-engine="mm_quote">
+            <div class="eng-title">Market Maker Quoting</div>
+            <div class="eng-meta">Avellaneda-Stoikov, Inventory Skew</div>
+          </li>
+          <li data-engine="replay_chart">
+            <div class="eng-title">Chart Replay</div>
+            <div class="eng-meta">Tape Reading, Brier Calibration</div>
+          </li>
+          <li data-engine="journal_stats">
+            <div class="eng-title">Journal Analytics</div>
+            <div class="eng-meta">Expectancy, Tilt, MAE/MFE</div>
+          </li>
+          <li data-engine="games">
+            <div class="eng-title">Trading Games</div>
+            <div class="eng-meta">Mental Math, Market Making</div>
+          </li>
+        </ul>
+      </aside>
+
+      <section class="workspace">
+        <div class="engine-header">
+          <div>
+            <h2 id="engine-title">Position Sizing and Risk of Ruin Engine</h2>
+            <p id="engine-desc" class="engine-desc">Evaluates Kelly criterion, fractional Kelly, and Monte Carlo drawdown risk distributions.</p>
+          </div>
+          <button id="btn-run" class="btn-primary">Run Simulation</button>
+        </div>
+
+        <div class="control-panel">
+          <div class="param-grid" id="param-container">
+            <!-- Dynamic parameters injected by JavaScript -->
+          </div>
+        </div>
+
+        <div class="results-grid" id="metrics-container">
+          <!-- Dynamic metric cards injected by JavaScript -->
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3 id="chart-title">Sample Monte Carlo Equity Trajectories</h3>
+            <span class="chart-legend" id="chart-legend">Sample Paths (1 to 5)</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="equity-canvas" width="840" height="340"></canvas>
+          </div>
+        </div>
+
+        <div class="summary-box">
+          <p id="summary-text">Click "Run Simulation" to execute the model with your customized parameters.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

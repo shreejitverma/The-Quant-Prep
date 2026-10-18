@@ -2,9 +2,11 @@
 ticker: PBBANK
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: n/a
+  implied_growth_status: missing_fcf
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
-  currency: USD
+  currency: MYR
   returns:
     cagr_10y: 11.59%
     cagr_5y: 6.77%
@@ -12,27 +14,21 @@ value_metrics:
     roe: N/A
     roa: N/A
     gross_margin: N/A
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
-    fcf_yield: 0.00%
-    peg_ratio: 0.00
-status: complete
+    fcf_yield: N/A
+    peg_ratio: N/A
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:10
 market_data:
-  ticker: PBBANK
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: PBBANK.KL
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Public Bank (PBBANK)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The most efficient bank in Malaysia. Legendary for its low cost-to-income ratio and conservative lending.

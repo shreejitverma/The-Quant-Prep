@@ -2,7 +2,9 @@
 ticker: 9983
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: 20.4%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: JPY
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 1.88%
     peg_ratio: 3.09
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:26
 market_data:
-  ticker: 9983
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: 9983.T
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Fast Retailing (9983)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Uniqlo owner. Focus on 'LifeWear' - functional, high-quality basics. Global expansion success.

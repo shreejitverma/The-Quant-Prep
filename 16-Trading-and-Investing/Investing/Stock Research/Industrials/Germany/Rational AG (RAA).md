@@ -2,7 +2,9 @@
 ticker: RAA
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 17%
+  implied_growth_rate: 16.0%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 2.59%
     peg_ratio: 3.15
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:24
 market_data:
-  ticker: RAA
-  price: 30.4069
-  market_cap: None
-  pe_ratio: 27.184343
-  dividend_yield: 2.18
-  52w_high: 30.502
-  52w_low: 24.31
+  ticker: RAA.DE
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Rational AG (RAA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Dominant world market leader in combi-steamers for professional kitchens with >50% market share. Extreme focus on one product category.

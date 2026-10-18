@@ -2,7 +2,9 @@
 ticker: SUNPHARMA
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: 27.3%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: INR
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 1.14%
     peg_ratio: 1.04
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:17
 market_data:
-  ticker: SUNPHARMA
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: SUNPHARMA.NS
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Sun Pharma (SUNPHARMA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Largest Indian pharma company. Specialty focus (Dermatology, Ophthalmology) in the US market.

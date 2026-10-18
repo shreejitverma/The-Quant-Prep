@@ -2,7 +2,9 @@
 ticker: INVE.B
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: -11%
+  implied_growth_rate: -3.4%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: SEK
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 10.81%
     peg_ratio: 5.08
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:06
 market_data:
-  ticker: INVE.B
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: INVE-B.ST
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Investor AB (INVE.B)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Investment vehicle of the Wallenberg family. Provides exposure to high-quality Swedish industrials (ABB, Atlas Copco, etc.).

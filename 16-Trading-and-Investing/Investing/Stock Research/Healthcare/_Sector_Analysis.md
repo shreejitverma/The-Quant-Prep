@@ -9,7 +9,7 @@ tags: [quant, benchmark, healthcare]
 | :--- | :--- | :--- | :--- | :--- |
 | Eli Lilly (LLY) | 107.46% | 33.02% | 1.39 | 0.93% |
 | IDEXX Laboratories (IDXX) | 72.91% | 20.48% | 0.71 | 1.77% |
-| Novo Nordisk (NVO) | 71.40% | 7.44% | 0.72 | -5.96% |
+| Novo Nordisk (NVO) | 71.40% | 7.44% | 0.72 | currency_mismatch |
 | Johnson & Johnson (JNJ) | 26.42% | 10.16% | 0.68 | 2.31% |
 | Hoya (7741) | 25.06% | 22.81% | 0.04 | 1.93% |
 | Raia Drogasil (RADL3) | 18.86% | 6.93% | 1.18 | 1.64% |
@@ -18,9 +18,12 @@ tags: [quant, benchmark, healthcare]
 | Thermo Fisher Scientific (TMO) | 13.52% | 12.82% | 0.83 | 3.02% |
 | UnitedHealth Group (UNH) | 12.18% | 12.87% | 0.74 | 5.12% |
 | Danaher (DHR) | 7.08% | 16.30% | 0.37 | 3.53% |
-| CSL (CSL.AX) | 6.66% | -0.49% | 0.54 | 3.99% |
+| CSL (CSL.AX) | 6.66% | -0.49% | 0.54 | currency_mismatch |
 | Sartorius (SRT3) | 6.18% | 15.40% | 1.11 | 1.85% |
 | Carl Zeiss Meditec (AFX) | 4.54% | -2.00% | 0.28 | 3.89% |
+
+## Not benchmarked
+- Roche: no value_metrics block
 
 ## Investment Logic
 - **Quality Dominance**: Higher ROE combined with low Debt/Equity indicates a strong structural moat ([Economic Moat](obsidian://open?vault=shreejit-verma-obsidian&file=Mental%20Models%2FWarren%20Buffett%2FEconomic%20Moat)).

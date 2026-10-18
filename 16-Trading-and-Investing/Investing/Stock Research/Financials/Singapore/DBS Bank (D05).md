@@ -2,7 +2,9 @@
 ticker: D05
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: n/a
+  implied_growth_status: missing_fcf
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: SGD
   returns:
@@ -12,27 +14,21 @@ value_metrics:
     roe: N/A
     roa: N/A
     gross_margin: N/A
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
-    fcf_yield: 0.00%
+    fcf_yield: N/A
     peg_ratio: 3.60
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:10
 market_data:
-  ticker: D05
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: D05.SI
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: DBS Bank (D05)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Southeast Asia's largest bank. Digital transformation leader with dominant positioning in Singapore and expansion into India/Indonesia.

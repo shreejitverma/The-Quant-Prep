@@ -2,7 +2,9 @@
 ticker: NTES
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: -25%
+  implied_growth_rate: n/a
+  implied_growth_status: currency_mismatch
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -14,11 +16,10 @@ value_metrics:
     gross_margin: 65.69%
     debt_to_equity: 0.06
   valuation:
-    fcf_yield: 43.40%
+    fcf_yield: currency_mismatch
     peg_ratio: 1.30
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:29
 market_data:
   ticker: NTES
@@ -28,11 +29,11 @@ market_data:
   dividend_yield: 2.46
   52w_high: 159.55
   52w_low: 106.06
+  data_quality: ok
+---
 
 # Stock: NetEase (NTES)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Gaming giant with strong R&D and long-lived franchises. Expanding into international markets.

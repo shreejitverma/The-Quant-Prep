@@ -2,7 +2,9 @@
 ticker: PEP
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 9%
+  implied_growth_rate: 8.8%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 4.44%
     peg_ratio: 1.55
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:18
 market_data:
   ticker: PEP
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 4.11
   52w_high: 171.48
   52w_low: 127.6
+  data_quality: ok
+---
 
 # Stock: PepsiCo (PEP)
 

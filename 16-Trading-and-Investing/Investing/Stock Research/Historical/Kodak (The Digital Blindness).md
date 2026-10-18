@@ -1,32 +1,12 @@
----52w_low: 0
-value_metrics:
-  last_deep_fetch: 2026-05-31
-  returns:
-    cagr_10y: 0.00%
-    cagr_5y: 0.00%
-  quality:
-    roe: 0.00%
-    roa: 0.00%
-    gross_margin: 0.00%
-    debt_to_equity: 0.00
-  valuation:
-    fcf_yield: 0.00%
-    peg_ratio: 0.00
 ---
-last_updated: 2026-05-31 14:01:21
-market_data:
-  ticker: The Digital Blindness
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
-
+ticker: KODK
+company: Kodak
+tags: [investing, stock-research, historical, case-study]
+status: historical-case
+priority: low
+---
 # Stock: Kodak (KODK)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The 'Digital Blindness' tale. Invented the digital camera but suppressed it to protect its high-margin film business.

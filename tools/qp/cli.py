@@ -13,7 +13,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import bank, drills, moc, planner
+from . import bank, drills, markets, moc, planner
 from .check import check_vault
 from .state import GRADES, MASTERY_LABELS, StateError, Store
 from .vault import REPO_ROOT, TRACK_LABELS, TRACKS, Note, Vault, load_vault
@@ -181,9 +181,22 @@ def cmd_next(vault: Vault, store: Store, args) -> int:
 
 
 def cmd_plan(vault: Vault, store: Store, args) -> int:
-    tracks = profile_tracks(store, args.track)
     hours = args.hours or float(store.profile.get("hours_per_week", 10))
     tiers = ("core",) if args.core else ("core", "advanced") if args.no_senior else ("core", "advanced", "senior")
+    persona = getattr(args, "persona", None)
+    if persona:
+        weeks = planner.persona_weekly_plan(vault, store, persona, hours, tiers)
+        shown = weeks[: args.weeks] if args.weeks else weeks
+        rows = [[w["week"], w["starts"], round(w["hours"], 1), n.id, "; ".join(w.get("drills", []))] for w in shown for n in w["topics"]]
+        total = sum(w["hours"] for w in weeks)
+        emit(
+            f"plan: {len(weeks)} week(s) at {hours:g} h/week for persona {persona} (tiers: {', '.join(tiers)}), {total:.0f} h total",
+            table("plan", ["week", "starts", "week_hours", "topic", "drills"], rows),
+            help_lines=["--hours sets weekly hours", "`qp profile --hours N` saves it"],
+        )
+        return EXIT_OK
+
+    tracks = profile_tracks(store, args.track)
     weeks = planner.weekly_plan(vault, store, tracks, hours, tiers)
     shown = weeks[: args.weeks] if args.weeks else weeks
     rows = [[w["week"], w["starts"], round(w["hours"], 1), n.id] for w in shown for n in w["topics"]]
@@ -440,6 +453,134 @@ def cmd_serve(vault: Vault, store: Store, args) -> int:
     return EXIT_OK
 
 
+def cmd_lab(vault: Vault, store: Store | None, args) -> int:
+    from .lab.cli import main as lab_main
+
+    return lab_main(args.lab_args, store=store)
+
+
+def cmd_journal(vault: Vault, store: Store, args) -> int:
+    from .lab.journal_stats import analyze_trade_journal
+
+    if args.journal_subcommand == "log":
+        trade: dict[str, str] = {}
+        for item in args.fields:
+            key, sep, val = item.partition("=")
+            if not sep or not key:
+                raise CliError(
+                    f"expected key=value, got {item!r}",
+                    hint="e.g. `qp journal log r_multiple=1.5 pnl=150 mae_r=0.3 mfe_r=1.8 adherence=true`",
+                )
+            trade[key] = val
+        entry = store.record_journal_trade(trade)
+        total = len(store.data.get("journal_trades", []))
+        emit(
+            f"logged: {entry['trade_id']} ({entry['r_multiple']:+g}R, {total} trades in the journal)",
+            help_lines=["`qp journal` shows the journal stats and Capital Gate"],
+        )
+        return EXIT_OK
+    if args.fields:
+        raise CliError("`qp journal stats` takes no fields; use `qp journal log key=value ...` to log a trade")
+
+    stats = analyze_trade_journal(store.data.get("journal_trades", []))
+    cg = stats["capital_gate"]
+    rows = [
+        ["trades", stats["total_trades"]],
+        ["win_rate_pct", stats["win_rate_pct"]],
+        ["profit_factor", stats["profit_factor"]],
+        ["expectancy_r", stats["expectancy_r"]],
+        ["max_drawdown_r", stats["max_drawdown_r"]],
+        ["adherence_score_pct", stats["adherence_score_pct"]],
+        ["capital_gate", cg["overall_status"]],
+    ]
+    emit(
+        table("journal", ["metric", "value"], rows),
+        help_lines=[
+            "`qp journal log r_multiple=<R> pnl=<$> mae_r=<R> mfe_r=<R> adherence=<true|false>` logs a closed trade",
+            "optional fields: setup, entry_price, exit_price, stop_loss, take_profit, shares, is_revenge, moved_stop, duration_minutes",
+        ],
+    )
+    return EXIT_OK
+
+
+def cmd_markets(vault: Vault, store: Store | None, args) -> int:
+    from . import markets
+
+    sub = args.markets_subcommand or "status"
+    state = store.data if store else {}
+    all_gates = markets.evaluate_all_markets_gates(vault.cards, state)
+
+    if sub == "gates":
+        rows = []
+        for tid, gates in all_gates.items():
+            tname = markets.TRACK_METADATA.get(tid, {}).get("name", tid)
+            for stage, g in gates.items():
+                status = "PASSED" if g.passed else "PENDING"
+                req_summary = "; ".join(f"{r.name} ({r.actual}/{r.target})" for r in g.requirements)
+                rows.append([tname, stage, status, req_summary])
+        emit(table("gates", ["track", "stage", "status", "requirements"], rows))
+        return EXIT_OK
+
+    if sub == "mastery":
+        persona = getattr(args, "persona", "holistic")
+        mastery = markets.calculate_markets_mastery(vault.cards, state, persona)
+        summary_rows = [
+            ["Persona", f"{mastery['persona_name']} ({mastery['persona']})"],
+            ["Overall Score", f"{mastery['overall_score']:.1f}%"],
+            ["Readiness Level", mastery["readiness_level"]],
+            [
+                "Card Retention & Mastery",
+                (
+                    f"{mastery['card_score']:.1f}% "
+                    f"({mastery['total_markets_reviewed']}/{mastery['total_markets_cards']} cards, "
+                    f"{mastery['total_markets_mature']} mature)"
+                ),
+            ],
+            [
+                "Trading Lab Simulation",
+                (
+                    f"{mastery['lab_score']:.1f}% "
+                    f"({mastery['lab_stats']['completed_engines']}/{mastery['lab_stats']['total_engines']} engines, "
+                    f"{mastery['lab_stats']['required_completed_count']}/{mastery['lab_stats']['required_engines_count']} required)"
+                ),
+            ],
+            [
+                "Stage Gates Passed",
+                (
+                    f"{mastery['gate_score']:.1f}% "
+                    f"({mastery['gates_stats']['passed_gates']}/{mastery['gates_stats']['total_gates']} gates, "
+                    f"Cap Gate: {'PASSED' if mastery['gates_stats']['capital_gate_passed'] else 'PENDING'})"
+                ),
+            ],
+        ]
+        track_rows = []
+        for _tid, tinfo in mastery["track_stats"].items():
+            track_rows.append(
+                [
+                    tinfo["name"],
+                    f"{tinfo['mastery_pct']:.1f}%",
+                    f"{tinfo['reviewed_cards']}/{tinfo['total_cards']}",
+                    f"{tinfo['mature_cards']}",
+                ]
+            )
+        blocks = [
+            table("mastery_summary", ["metric", "value"], summary_rows),
+            table("tracks_mastery", ["track", "mastery", "cards_reviewed", "mature_cards"], track_rows),
+        ]
+        help_lines = [f"Next action: {a}" for a in mastery["next_actions"]]
+        emit(*blocks, help_lines=help_lines)
+        return EXIT_OK
+
+    rows = []
+    for tid, meta in markets.TRACK_METADATA.items():
+        gates = all_gates.get(tid, {})
+        f_passed = "PASSED" if gates.get("foundations") and gates["foundations"].passed else "PENDING"
+        c_passed = "PASSED" if gates.get("core") and gates["core"].passed else "PENDING"
+        rows.append([meta["name"], f_passed, c_passed, meta["description"]])
+    emit(table("markets_tracks", ["track", "foundations", "core", "description"], rows))
+    return EXIT_OK
+
+
 # --- parser --------------------------------------------------------------------
 
 
@@ -475,6 +616,11 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--weeks", type=int, help="only show the first N weeks")
     sp.add_argument("--core", action="store_true", help="core topics only")
     sp.add_argument("--no-senior", action="store_true", help="core and advanced topics")
+    sp.add_argument(
+        "--persona",
+        choices=markets.PERSONA_CHOICES,
+        help="persona archetype for targeted weekly study plan and lab drills",
+    )
     sp = add("due", cmd_due, "list today's review queue (non-interactive)")
     tracks_opt(sp)
     sp.add_argument("--limit", type=int)
@@ -510,6 +656,19 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--host", default="127.0.0.1")
     sp.add_argument("--port", type=int, default=8765)
     sp.add_argument("--open", action="store_true", help="open a browser")
+    sp = add("lab", cmd_lab, "run interactive trading lab simulation engines")
+    sp.add_argument("lab_args", nargs="*", help="arguments for lab (list, info <id>, run <id>)")
+    sp = add("journal", cmd_journal, "log closed trades and show trade journal stats and the Capital Gate")
+    sp.add_argument("journal_subcommand", nargs="?", choices=("stats", "log"), default="stats")
+    sp.add_argument("fields", nargs="*", help="key=value trade fields for `log`")
+    sp = add("markets", cmd_markets, "inspect markets tracks, evaluate stage gates, and calculate holistic mastery")
+    sp.add_argument("markets_subcommand", nargs="?", choices=("status", "gates", "mastery"), default="status")
+    sp.add_argument(
+        "--persona",
+        default="holistic",
+        choices=markets.PERSONA_CHOICES,
+        help="persona archetype for mastery scoring",
+    )
     return p
 
 

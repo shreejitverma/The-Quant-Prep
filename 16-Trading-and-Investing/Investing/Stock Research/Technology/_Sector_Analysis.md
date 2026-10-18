@@ -14,7 +14,7 @@ tags: [quant, benchmark, technology]
 | ASML (ASML) | 52.24% | 32.75% | 0.13 | 1.54% |
 | Alphabet (GOOGL) | 38.88% | 26.21% | 0.20 | 0.61% |
 | Microsoft (MSFT) | 34.01% | 25.41% | 0.30 | 1.11% |
-| Infosys (INFY) | 31.44% | 9.15% | 0.10 | 0.07% |
+| Infosys (INFY) | 31.44% | 9.15% | 0.10 | currency_mismatch |
 | Nemetschek (NEM) | 23.86% | 14.22% | 0.33 | 4.52% |
 | Intuit (INTU) | 22.50% | 12.89% | 0.33 | 5.77% |
 | Hexagon AB (HEXA.B) | 17.89% | 6.58% | 0.27 | -2.65% |
@@ -22,6 +22,14 @@ tags: [quant, benchmark, technology]
 | Sea Ltd (SE) | 14.86% | 22.08% | 0.28 | 1.60% |
 | Shopify (SHOP) | 11.31% | 44.84% | 0.01 | 0.82% |
 | Murata Manufacturing (6981) | 8.83% | 23.52% | 0.02 | 0.66% |
+
+## Not benchmarked
+- SAP: no value_metrics block
+- TCS: no value_metrics block
+- Keyence: no value_metrics block
+- Sony Group: no value_metrics block
+- Samsung Electronics: no value_metrics block
+- TSMC: no value_metrics block
 
 ## Investment Logic
 - **Quality Dominance**: Higher ROE combined with low Debt/Equity indicates a strong structural moat ([Economic Moat](obsidian://open?vault=shreejit-verma-obsidian&file=Mental%20Models%2FWarren%20Buffett%2FEconomic%20Moat)).

@@ -2,7 +2,9 @@
 ticker: SU.PA
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 16%
+  implied_growth_rate: 15.9%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 2.62%
     peg_ratio: 1.95
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:25
 market_data:
   ticker: SU.PA
@@ -28,11 +29,11 @@ market_data:
   dividend_yield: 1.56
   52w_high: 287.9
   52w_low: 208.8
+  data_quality: ok
+---
 
 # Stock: Schneider Electric (SU.PA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Leader in energy management and industrial automation. Beneficiary of electrification and data center trends.

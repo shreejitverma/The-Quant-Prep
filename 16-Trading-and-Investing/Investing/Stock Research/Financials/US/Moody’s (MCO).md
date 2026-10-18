@@ -2,7 +2,9 @@
 ticker: MCO
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 15%
+  implied_growth_rate: 14.7%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 2.86%
     peg_ratio: 2.06
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:07
 market_data:
   ticker: MCO
@@ -28,11 +29,11 @@ market_data:
   dividend_yield: 0.91
   52w_high: 546.88
   52w_low: 402.28
+  data_quality: ok
+---
 
 # Stock: Moody’s (MCO)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The other half of the rating duopoly. Massive pricing power and recurring revenue from data analytics.

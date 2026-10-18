@@ -2,7 +2,9 @@
 ticker: HD
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 14%
+  implied_growth_rate: 13.2%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 3.20%
     peg_ratio: 1.79
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:26
 market_data:
   ticker: HD
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 2.94
   52w_high: 426.75
   52w_low: 289.1
+  data_quality: ok
+---
 
 # Stock: Home Depot (HD)
 

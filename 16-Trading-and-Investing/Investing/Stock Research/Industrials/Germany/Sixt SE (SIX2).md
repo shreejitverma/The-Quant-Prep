@@ -2,7 +2,9 @@
 ticker: SIX2
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: -12.9%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 20.57%
     peg_ratio: 27.09
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:24
 market_data:
-  ticker: SIX2
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: SIX2.DE
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Sixt SE (SIX2)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Premium car rental company with superior technology and fleet management. Family-run with an owner-operator mindset.

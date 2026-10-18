@@ -2,7 +2,9 @@
 ticker: ASSA.B
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 8%
+  implied_growth_rate: 8.1%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: SEK
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 4.67%
     peg_ratio: 1.53
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:22
 market_data:
-  ticker: ASSA.B
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: ASSA-B.ST
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Assa Abloy (ASSA.B)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Global leader in access solutions (locks, doors, entrance automation). Growth through continuous M&A.

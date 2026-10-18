@@ -2,7 +2,9 @@
 ticker: HEXA.B
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: n/a
+  implied_growth_status: non_positive_fcf
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: SEK
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: -2.65%
     peg_ratio: 0.74
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:11
 market_data:
-  ticker: HEXA.B
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: HEXA-B.ST
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Hexagon AB (HEXA.B)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Global leader in digital reality solutions (sensors, software, autonomous technologies).

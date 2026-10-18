@@ -2,7 +2,9 @@
 ticker: OR.PA
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 15%
+  implied_growth_rate: 14.5%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 2.90%
     peg_ratio: 3.22
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:19
 market_data:
   ticker: OR.PA
@@ -28,26 +29,33 @@ market_data:
   dividend_yield: 1.88
   52w_high: 408.35
   52w_low: 338.85
+  data_quality: ok
+---
 
 # Stock: L'Oréal (OR.PA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
-The world's largest beauty company. A master of brand building and global distribution.
+The world's largest beauty company.
+A master of brand building and global distribution.
+Massive brand portfolio and R&D budget.
+Digital marketing powerhouse.
 
 ## Financial Moat (7 Powers Analysis)
-Branding: A portfolio of iconic brands. Scale Economies: Largest R&D and marketing budget in beauty.
+Branding: A portfolio of iconic brands.
+Scale Economies: Largest R&D and marketing budget in beauty.
+Network Effects: The influencer ecosystem.
 
 ## Historical Performance (CAGR, long-term context)
 Decades of consistent growth and high margins.
 
 ## Risk Factors (Anti-Models)
 Emergence of 'indie' beauty brands on social media; China slowdown.
+Fast-moving beauty trends and the shift to direct-to-consumer brands.
 
 ## Architect Perspective (Buffett/Munger/Lynch)
 Buffett: 'A share of mind is a share of market.'
+Buffett: 'Inexhaustible brand equity.'
 ## Inception-to-Date Yearly Performance
 | Year | Close Price | YoY Return | Annual Volatility |
 | :--- | :--- | :--- | :--- |

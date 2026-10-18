@@ -2,7 +2,9 @@
 ticker: EVD
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: 21.4%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 1.74%
     peg_ratio: 1.65
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:28
 market_data:
-  ticker: EVD
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: 44.56
-  52w_low: 44.56
+  ticker: EVD.DE
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: CTS Eventim (EVD)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 European ticketing and live entertainment monopoly. Vertically integrated from venues to software.

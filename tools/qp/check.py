@@ -121,9 +121,14 @@ def check_vault(vault: Vault, strict_sde: bool = False, files: list[Path] | None
                     findings.append(Finding(p, 1, "prereq", f"unknown focus topic {f!r}"))
         if note.status in ("solid", "canonical") and note.trackable:
             headings = {h.strip().lower() for h in re.findall(r"^##\s+(.+)$", note.body, re.MULTILINE)}
-            for want in SOLID_SECTIONS:
-                if want.lower() not in headings:
-                    findings.append(Finding(p, 1, "solid", f"status {note.status} needs a '## {want}' section"))
+            if str(note.path).startswith("16-Trading-and-Investing/Investing/"):
+                for want in ("tl;dr", "learning objectives", "core concepts", "further reading"):
+                    if want not in headings:
+                        findings.append(Finding(p, 1, "solid", f"status {note.status} needs a '## {want.title()}' section"))
+            else:
+                for want in SOLID_SECTIONS:
+                    if want.lower() not in headings:
+                        findings.append(Finding(p, 1, "solid", f"status {note.status} needs a '## {want}' section"))
             need = MIN_CARDS.get(note.type, 0)
             if len(note.cards) < need:
                 findings.append(Finding(p, 1, "solid", f"status {note.status} needs at least {need} cards, has {len(note.cards)}"))

@@ -1,160 +1,132 @@
-import os
-import re
-import yfinance as yf
+"""Fetch historical fundamental metrics and superinvestor ratios via yfinance.
+
+Uses stock_notes helpers to maintain clean YAML frontmatter, preserve
+all existing fields, guard against cross-currency calculation errors,
+and never substitute placeholder 0 or 1 for missing data.
+"""
+
+from __future__ import annotations
+
+import sys
 from datetime import datetime
+from pathlib import Path
 
-VAULT_ROOT = "16-Trading-and-Investing/Investing/Stock Research"
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(REPO_ROOT / "16-Trading-and-Investing" / "scripts"))
 
-# Refined Ticker Map for Global Markets
-TICKER_MAP = {
-    # US
-    "BRK.B": "BRK-B", "BRK.A": "BRK-A",
-    # India (NSE)
-    "RELIANCE": "RELIANCE.NS", "HDFCBANK": "HDFCBANK.NS", "TCS": "TCS.NS",
-    "ASIANPAINT": "ASIANPAINT.NS", "TITAN": "TITAN.NS", "INFY": "INFY.NS",
-    "ICICIBANK": "ICICIBANK.NS", "BAJFINANCE": "BAJFINANCE.NS",
-    "PIDILITIND": "PIDILITIND.NS", "NESTLEIND": "NESTLEIND.NS",
-    "HINDUNILVR": "HINDUNILVR.NS", "MARICO": "MARICO.NS", "LT": "LT.NS",
-    "SUNPHARMA": "SUNPHARMA.NS",
-    # Japan (TSE)
-    "7203": "7203.T", "6758": "6758.T", "6861": "6861.T", "7974": "7974.T",
-    "6954": "6954.T", "9983": "9983.T", "4063": "4063.T", "6981": "6981.T",
-    "7741": "7741.T",
-    # Germany (XETRA)
-    "RAA": "RAA.DE", "SY1": "SY1.DE", "FPE3": "FPE3.DE", "SRT3": "SRT3.DE",
-    "NEM": "NEM.DE", "EVD": "EVD.DE", "SIX2": "SIX2.DE", "AFX": "AFX.DE",
-    "SIE": "SIE.DE", "SAP": "SAP.DE", "ASML": "ASML.AS",
-    # Brazil (B3)
-    "WEGE3": "WEGE3.SA", "RADL3": "RADL3.SA", "ITUB4": "ITUB4.SA",
-    "RENT3": "RENT3.SA", "EQTL3": "EQTL3.SA",
-    # China (Shanghai/HK)
-    "600519": "600519.SS", "0700.HK": "0700.HK", "3690.HK": "3690.HK", "1211.HK": "1211.HK",
-    # Singapore/SE Asia
-    "D05": "D05.SI", "BBCA": "BBCA.JK", "CPALL": "CPALL.BK", "PBBANK": "PBBANK.KL",
-    "SE": "SE", "MELI": "MELI", "SHOP": "SHOP",
-    # Australia
-    "CSL.AX": "CSL.AX", "CBA.AX": "CBA.AX",
-    # Sweden
-    "INVE.B": "INVE-B.ST", "ATCO.A": "ATCO-A.ST", "ASSA.B": "ASSA-B.ST", "HEXA.B": "HEXA-B.ST"
-}
+import stock_notes  # noqa: E402
 
-def extract_ticker(filename):
-    # Only match what looks like a ticker (shorter, uppercase/digits/dots/hyphens)
-    match = re.search(r'\(([^)]+)\)', filename)
-    if match:
-        candidate = match.group(1)
-        if len(candidate) <= 10 and candidate.upper() == candidate:
-            return candidate
-    return None
+try:
+    import yfinance as yf
+except ImportError:
+    yf = None
 
-def get_cagr(history, years):
-    if history.empty or len(history) < 20: return 0
-    end_price = history['Close'].iloc[-1]
-    start_price = history['Close'].iloc[0]
-    if start_price <= 0: return 0
-    return ((end_price / start_price) ** (1 / years) - 1) * 100
 
-def update_value_metrics(file_path, original_ticker):
-    try:
-        yf_ticker = TICKER_MAP.get(original_ticker, original_ticker)
-        stock = yf.Ticker(yf_ticker)
-        info = stock.info
-        
-        # Use a slightly longer period if 10y fails
-        hist_10y = stock.history(period="10y")
-        if hist_10y.empty: hist_10y = stock.history(period="max")
-        
-        hist_5y = stock.history(period="5y")
+def get_cagr(history, years: float) -> str:
+    if history is None or history.empty or len(history) < 20 or years <= 0:
+        return "N/A"
+    end_price = history["Close"].iloc[-1]
+    start_price = history["Close"].iloc[0]
+    if start_price <= 0:
+        return "N/A"
+    cagr = ((end_price / start_price) ** (1 / years) - 1) * 100
+    return f"{cagr:.2f}%"
 
-        # Dynamic period for CAGR if less than 10y available
-        actual_years_10 = (hist_10y.index[-1] - hist_10y.index[0]).days / 365.25 if not hist_10y.empty else 0
-        actual_years_5 = (hist_5y.index[-1] - hist_5y.index[0]).days / 365.25 if not hist_5y.empty else 0
-        
-        cagr_10y = get_cagr(hist_10y, actual_years_10) if actual_years_10 > 1 else 0
-        cagr_5y = get_cagr(hist_5y, actual_years_5) if actual_years_5 > 1 else 0
-        
-        # Superinvestor Metrics
-        roe = info.get('returnOnEquity') or info.get('returnOnEquity_avg', 0)
-        roa = info.get('returnOnAssets', 0)
-        debt_to_equity = (info.get('debtToEquity') or 0) / 100 
-        peg_ratio = info.get('pegRatio', 0)
-        gross_margin = info.get('grossMargins', 0)
-        fcf = info.get('freeCashflow') or info.get('operatingCashflow', 0)
-        market_cap = info.get('marketCap', 1)
-        fcf_yield = (fcf / market_cap) * 100 if fcf else 0
-        currency = info.get('currency', 'USD')
 
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+def update_value_metrics(file_path: Path, original_ticker: str) -> bool:
+    if yf is None:
+        raise RuntimeError("yfinance is required to fetch historical value metrics.")
 
-        value_meta = f"""
-value_metrics:
-  last_deep_fetch: {datetime.now().strftime('%Y-%m-%d')}
-  currency: {currency}
-  returns:
-    cagr_10y: {cagr_10y:.2f}%
-    cagr_5y: {cagr_5y:.2f}%
-  quality:
-    roe: {roe*100:.2f}% if roe else "N/A"
-    roa: {roa*100:.2f}% if roa else "N/A"
-    gross_margin: {gross_margin*100:.2f}% if gross_margin else "N/A"
-    debt_to_equity: {debt_to_equity:.2f}
-  valuation:
-    fcf_yield: {fcf_yield:.2f}%
-    peg_ratio: {peg_ratio:.2f}
-"""
-        # Cleanup python logic strings in f-string
-        roe_str = f"{roe*100:.2f}%" if roe else "N/A"
-        roa_str = f"{roa*100:.2f}%" if roa else "N/A"
-        gm_str = f"{gross_margin*100:.2f}%" if gross_margin else "N/A"
-        
-        value_meta = f"""
-value_metrics:
-  last_deep_fetch: {datetime.now().strftime('%Y-%m-%d')}
-  currency: {currency}
-  returns:
-    cagr_10y: {cagr_10y:.2f}%
-    cagr_5y: {cagr_5y:.2f}%
-  quality:
-    roe: {roe_str}
-    roa: {roa_str}
-    gross_margin: {gm_str}
-    debt_to_equity: {debt_to_equity:.2f}
-  valuation:
-    fcf_yield: {fcf_yield:.2f}%
-    peg_ratio: {peg_ratio:.2f}
-"""
-        
-        if content.startswith('---'):
-            parts = content.split('---', 2)
-            frontmatter = parts[1]
-            # Precise regex to remove previous iterations of metrics
-            clean_fm = re.sub(r'market_data:.*?\n(  .*?\n)+', '', frontmatter, flags=re.DOTALL)
-            clean_fm = re.sub(r'value_metrics:.*?\n(  .*?\n)+', '', clean_fm, flags=re.DOTALL)
-            clean_fm = re.sub(r'last_updated:.*?\n', '', clean_fm)
-            
-            new_content = "---" + clean_fm.strip() + "\n" + value_meta.strip() + "\n---" + parts[2]
-        else:
-            new_content = "---" + value_meta.strip() + "\n---\n" + content
+    yf_ticker = stock_notes.fetch_symbol(file_path, original_ticker)
+    stock = yf.Ticker(yf_ticker)
+    info = stock.info or {}
 
-        with open(file_path, 'w', encoding='utf-8') as f:
-            f.write(new_content)
-        print(f"Enhanced {yf_ticker}")
+    hist_10y = stock.history(period="10y")
+    if hist_10y.empty:
+        hist_10y = stock.history(period="max")
+    hist_5y = stock.history(period="5y")
 
-    except Exception as e:
-        print(f"Error in {original_ticker}: {e}")
+    actual_years_10 = (hist_10y.index[-1] - hist_10y.index[0]).days / 365.25 if not hist_10y.empty else 0
+    actual_years_5 = (hist_5y.index[-1] - hist_5y.index[0]).days / 365.25 if not hist_5y.empty else 0
+
+    cagr_10y_str = get_cagr(hist_10y, actual_years_10) if actual_years_10 > 1 else "N/A"
+    cagr_5y_str = get_cagr(hist_5y, actual_years_5) if actual_years_5 > 1 else "N/A"
+
+    quote_currency = info.get("currency")
+    _, major_currency = stock_notes.to_major_unit(None, quote_currency)
+    financial_currency = info.get("financialCurrency") or major_currency
+
+    roe = info.get("returnOnEquity") or info.get("returnOnEquity_avg")
+    roa = info.get("returnOnAssets")
+    raw_dte = info.get("debtToEquity")
+    debt_to_equity = stock_notes.format_ratio(None if raw_dte is None else raw_dte / 100)
+    peg_ratio = stock_notes.format_ratio(info.get("pegRatio"))
+    gross_margin = info.get("grossMargins")
+    fcf = info.get("freeCashflow")
+    market_cap = info.get("marketCap")
+
+    roe_str = f"{roe * 100:.2f}%" if roe is not None else "N/A"
+    roa_str = f"{roa * 100:.2f}%" if roa is not None else "N/A"
+    gm_str = f"{gross_margin * 100:.2f}%" if gross_margin is not None else "N/A"
+
+    # Currency guard: do not compute cross-currency ratios; Yahoo's marketCap is in the major unit
+    currency_ok = stock_notes.check_currency_guard(financial_currency, major_currency)
+    if not currency_ok or original_ticker in stock_notes.KNOWN_CURRENCY_MISMATCHES:
+        fcf_yield_str = stock_notes.CURRENCY_MISMATCH
+    elif fcf is not None and market_cap and market_cap > 0:
+        fcf_yield_str = f"{(fcf / market_cap) * 100:.2f}%"
+    else:
+        fcf_yield_str = stock_notes.MISSING
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
+    val_block = [
+        "value_metrics:",
+        f"  last_deep_fetch: {today_str}",
+        *([f"  currency: {quote_currency}"] if quote_currency else []),
+        "  returns:",
+        f"    cagr_10y: {cagr_10y_str}",
+        f"    cagr_5y: {cagr_5y_str}",
+        "  quality:",
+        f"    roe: {roe_str}",
+        f"    roa: {roa_str}",
+        f"    gross_margin: {gm_str}",
+        f"    debt_to_equity: {debt_to_equity}",
+        "  valuation:",
+        f"    fcf_yield: {fcf_yield_str}",
+        f"    peg_ratio: {peg_ratio}",
+    ]
+
+    content = file_path.read_text(encoding="utf-8")
+    fm, body = stock_notes.split_note(content)
+    if fm is None:
+        return False
+
+    fm = stock_notes.set_block(fm, "value_metrics", val_block)
+    # Re-apply reverse DCF calculation based on the new fcf_yield
+    fm, _ = stock_notes.apply_implied_growth(fm, ticker=original_ticker)
+
+    new_content = stock_notes.join_note(fm, body)
+    file_path.write_text(new_content, encoding="utf-8")
+    print(f"Updated value metrics for {yf_ticker}")
+    return True
+
 
 def main():
-    print(f"Fixing and Improving Value Metrics at {datetime.now()}...")
-    for root, dirs, files in os.walk(VAULT_ROOT):
-        # Skip Historical folder for metrics
-        if "Historical" in root: continue
-        for file in files:
-            if file.endswith(".md") and "(" in file:
-                ticker = extract_ticker(file)
-                if ticker:
-                    update_value_metrics(os.path.join(root, file), ticker)
-    print("Improvement Complete.")
+    print("Updating historical value metrics...")
+    if yf is None:
+        print("Error: yfinance is not installed in the active environment.")
+        sys.exit(1)
+
+    updated = 0
+    for path, ticker in stock_notes.iter_ticker_notes():
+        try:
+            if update_value_metrics(path, ticker):
+                updated += 1
+        except Exception as e:
+            print(f"Error updating {ticker}: {e}")
+    print(f"Completed. Updated {updated} notes.")
+
 
 if __name__ == "__main__":
     main()

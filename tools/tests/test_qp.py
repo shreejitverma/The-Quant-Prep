@@ -231,6 +231,41 @@ class StoreBehaviour(TempRepo):
                     self.assertEqual(cli.main(["mark", topic, word]), 0)
         self.assertEqual((self.store().mastery("base"), self.store().mastery("middle")), (3, 3))
 
+    def test_journal_cli_logs_trades_and_reports_the_gate(self):
+        import io
+        from contextlib import redirect_stdout
+
+        with mock.patch.object(cli, "load_vault", lambda _root: self.vault()), mock.patch.dict(os.environ, {"QP_HOME": str(self.home)}):
+            out = io.StringIO()
+            with redirect_stdout(out):
+                self.assertEqual(cli.main(["journal"]), 0)
+            self.assertIn("NO_TRADES_LOGGED", out.getvalue())
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(cli.main(["journal", "log", "r_multiple=2", "pnl=200", "mae_r=0.3", "mfe_r=2.4", "adherence=true"]), 0)
+            with mock.patch("sys.stderr"):
+                self.assertEqual(cli.main(["journal", "log", "r_multiple=2", "pnl=-200", "mae_r=0.3", "mfe_r=2.4", "adherence=true"]), 1)
+                self.assertEqual(cli.main(["journal", "log", "r_multiple"]), 2)
+            out = io.StringIO()
+            with redirect_stdout(out):
+                self.assertEqual(cli.main(["journal", "stats"]), 0)
+            self.assertIn("CAPITAL_GATE_FAILED", out.getvalue())
+        trades = self.store().data["journal_trades"]
+        self.assertEqual([(t["r_multiple"], t["pnl"], t["adherence"]) for t in trades], [(2.0, 200.0, True)])
+
+    def test_study_board_is_written_from_learner_state_outside_the_repo(self):
+        from tools.qp import mastery
+
+        store = self.store()
+        store.record_lab_run("pos_sizing", {"ruin_probability": 0.1})
+        target = mastery.write_study_board(store=store)
+        self.assertEqual(target, self.home / "STUDY_BOARD.md")
+        self.assertIn("| `pos_sizing` | Position Sizing, Kelly & Ruin Simulator | 1 | Active (1 runs) |", target.read_text())
+        template = mastery.write_study_board(output_path=self.home / "template.md", template=True)
+        text = template.read_text()
+        self.assertIn("Study Board Template", text)
+        self.assertIn("| `pos_sizing` | Position Sizing, Kelly & Ruin Simulator | 0 | Unrun |", text)
+        self.assertNotIn("last updated", text)
+
     def test_profile_validation(self):
         s = self.store()
         for bad in ({"hours_per_week": -5}, {"hours_per_week": 0}, {"new_cards_per_day": -1}):
@@ -316,6 +351,27 @@ class Planning(TempRepo):
         ids = [[n.id for n in w["topics"]] for w in weeks]
         self.assertEqual(ids, [["middle"], ["top"]])
         self.assertEqual(weeks[1]["starts"], "2026-01-17")
+
+    def test_persona_plan_follows_the_persona_track_weights(self):
+        from tools.qp.markets import PERSONA_CONFIGS
+
+        # Oracle: PERSONA_CONFIGS weights track_0_pqt (mkt-pqt-) for quant_trader but not track_6_trd,
+        # and track_6_trd (mkt-trd-) for retail_algorithmic_trader but not track_0_pqt.
+        self.assertIn("track_0_pqt", PERSONA_CONFIGS["quant_trader"]["track_weights"])
+        self.assertNotIn("track_6_trd", PERSONA_CONFIGS["quant_trader"]["track_weights"])
+        self.assertIn("track_6_trd", PERSONA_CONFIGS["retail_algorithmic_trader"]["track_weights"])
+        self.assertNotIn("track_0_pqt", PERSONA_CONFIGS["retail_algorithmic_trader"]["track_weights"])
+        write_note(self.root, "01-Alpha/05-Quoting.md", "Quoting", card("mkt-pqt-001"), prereqs="base")
+        write_note(self.root, "01-Alpha/06-Stops.md", "Stops", card("mkt-trd-001"))
+        topics = {}
+        for persona in ("quant_trader", "retail_algorithmic_trader"):
+            weeks = planner.persona_weekly_plan(self.vault(), self.store(), persona, 40)
+            topics[persona] = [n.id for w in weeks for n in w["topics"]]
+            self.assertTrue(all(d.startswith("./qp lab run ") for w in weeks for d in w["drills"]))
+        self.assertEqual(topics["quant_trader"], ["base", "quoting"])
+        self.assertEqual(topics["retail_algorithmic_trader"], ["stops"])
+        with self.assertRaises(ValueError):
+            planner.persona_weekly_plan(self.vault(), self.store(), "day_trader", 40)
 
     def test_readiness_formula(self):
         v, s = self.vault(), self.store()
@@ -571,6 +627,14 @@ class Api(TempRepo):
             self.assertIn("script-src 'self' https://cdn.jsdelivr.net", r.headers["Content-Security-Policy"])
             self.assertEqual(r.headers["X-Content-Type-Options"], "nosniff")
 
+    def test_lab_web_served(self):
+        with urllib.request.urlopen(self.base + "/lab/") as r:
+            self.assertEqual(r.status, 200)
+            self.assertIn("Trading Lab", r.read().decode())
+        with urllib.request.urlopen(self.base + "/lab") as r:
+            self.assertEqual(r.status, 200)
+            self.assertEqual(r.geturl(), self.base + "/lab/")
+
     def test_sees_updates_from_another_process(self):
         self.store().set_mastery("top", 4)  # a terminal session writes while the server runs
         code, note = self.call("/api/note/top")
@@ -592,6 +656,77 @@ class Api(TempRepo):
         self.assertTrue(res["state"]["finished"])
         self.assertEqual(self.store().data["drills"][-1]["mode"], "mm")
         self.assertEqual(self.call("/api/mm/quote", {"game": g["game"], "bid": 13, "ask": 15})[0], 404)
+
+    def journal_trade(self, r_multiple, pnl):
+        return {"r_multiple": r_multiple, "pnl": pnl, "mae_r": 0.2, "mfe_r": max(r_multiple, 0.0) + 0.2, "adherence": True}
+
+    def test_losing_journal_fails_capital_gate(self):
+        from tools.qp.markets import evaluate_gate
+
+        # 30 wins at +1R then 70 losses at -1R: net -40R, so PF = 30 / 70 and expectancy = -0.4R.
+        # Cumulative R peaks at +30R and ends at -40R, a 70R drawdown.
+        for i in range(100):
+            r = 1.0 if i < 30 else -1.0
+            self.assertEqual(self.call("/api/journal/log", self.journal_trade(r, 10.0 * r))[0], 200)
+        code, stats = self.call("/api/journal/stats")
+        self.assertEqual(code, 200)
+        self.assertEqual(stats["total_trades"], 100)
+        self.assertAlmostEqual(stats["profit_factor"], round(30 / 70, 2))
+        self.assertAlmostEqual(stats["expectancy_r"], -0.4)
+        self.assertAlmostEqual(stats["max_drawdown_r"], 70.0)
+        self.assertAlmostEqual(stats["max_drawdown_dollars"], 700.0)
+        self.assertEqual(stats["capital_gate"]["req_profit_factor_1_5"], "FAIL")
+        self.assertEqual(stats["capital_gate"]["req_drawdown_under_10r"], "FAIL")
+        self.assertEqual(stats["capital_gate"]["overall_status"], "CAPITAL_GATE_FAILED")
+        self.assertFalse(evaluate_gate("track_6_trd", "capital_gate", store_state=self.store().data).passed)
+
+    def test_capital_gate_drawdown_does_not_depend_on_dollar_size(self):
+        from tools.qp.markets import evaluate_gate
+
+        # 12 straight -1R losses, then 88 +1R wins: PF = 88 / 12, and the drawdown is 12R, which is
+        # 12% of equity at 1% risk per trade. At $10 per R a fixed $50,000 account would call it
+        # 120 / 50000 = 0.24% and pass; the gate must fail it whatever the dollar size.
+        for i in range(100):
+            r = -1.0 if i < 12 else 1.0
+            self.assertEqual(self.call("/api/journal/log", self.journal_trade(r, 10.0 * r))[0], 200)
+        stats = self.call("/api/journal/stats")[1]
+        self.assertAlmostEqual(stats["max_drawdown_r"], 12.0)
+        self.assertEqual(stats["capital_gate"]["req_profit_factor_1_5"], "PASS")
+        self.assertEqual(stats["capital_gate"]["req_drawdown_under_10r"], "FAIL")
+        gate = evaluate_gate("track_6_trd", "capital_gate", store_state=self.store().data)
+        dd = next(r for r in gate.requirements if r.name == "Drawdown Constraint")
+        self.assertFalse(dd.passed)
+        self.assertEqual(dd.actual, "12.0R peak-to-trough")
+
+    def test_empty_journal_reports_no_trades(self):
+        code, stats = self.call("/api/journal/stats")
+        self.assertEqual(code, 200)
+        self.assertEqual(stats["total_trades"], 0)
+        self.assertEqual(stats["capital_gate"]["overall_status"], "NO_TRADES_LOGGED")
+        self.assertEqual(set(stats["capital_gate"].values()) - {"NO_TRADES_LOGGED"}, {"FAIL"})
+
+    def test_journal_log_rejects_malformed_trades(self):
+        bad = [
+            {**self.journal_trade(1.0, 10.0), "r_multiple": "abc"},
+            {**self.journal_trade(1.0, 10.0), "pnl": "nan"},
+            {**self.journal_trade(1.0, 10.0), "mae_r": "inf"},
+            {**self.journal_trade(1.0, 10.0), "shares": "many"},
+            {**self.journal_trade(1.0, 10.0), "adherence": "maybe"},
+            self.journal_trade(1.0, -10.0),
+            {"r_multiple": 1.0},
+        ]
+        for body in bad:
+            code, res = self.call("/api/journal/log", body)
+            self.assertEqual(code, 400, body)
+            self.assertIn("error", res)
+        self.assertEqual(self.store().data.get("journal_trades", []), [])
+
+    def test_lab_run_rejects_non_finite_param(self):
+        for value in ("nan", "inf", "-inf"):
+            code, res = self.call("/api/lab/run", {"engine": "pos_sizing", "params": {"win_rate": value}})
+            self.assertEqual(code, 400, value)
+            self.assertIn("finite", res["error"])
+        self.assertEqual(self.store().data.get("lab_history", []), [])
 
 
 if __name__ == "__main__":

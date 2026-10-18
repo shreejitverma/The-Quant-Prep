@@ -2,7 +2,9 @@
 ticker: RADL3
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 23%
+  implied_growth_rate: 22.2%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: BRL
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 1.64%
     peg_ratio: 0.27
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:16
 market_data:
-  ticker: RADL3
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: RADL3.SA
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Raia Drogasil (RADL3)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 The 'Walgreens of Brazil' but with much better execution. Dominant pharmacy chain with superior logistics.

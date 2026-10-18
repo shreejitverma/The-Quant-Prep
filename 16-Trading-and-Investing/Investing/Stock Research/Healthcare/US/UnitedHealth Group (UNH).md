@@ -2,7 +2,9 @@
 ticker: UNH
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 7%
+  implied_growth_rate: 6.8%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 5.12%
     peg_ratio: 1.32
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:15
 market_data:
   ticker: UNH
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 2.32
   52w_high: 404.15
   52w_low: 234.6
+  data_quality: ok
+---
 
 # Stock: UnitedHealth Group (UNH)
 

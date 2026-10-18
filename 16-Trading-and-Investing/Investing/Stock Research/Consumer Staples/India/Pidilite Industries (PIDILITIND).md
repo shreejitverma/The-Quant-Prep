@@ -2,7 +2,9 @@
 ticker: PIDILITIND
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: 26.3%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: INR
   returns:
@@ -15,24 +17,18 @@ value_metrics:
     debt_to_equity: 0.04
   valuation:
     fcf_yield: 1.22%
-    peg_ratio: 0.00
-status: complete
+    peg_ratio: N/A
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:19
 market_data:
-  ticker: PIDILITIND
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: PIDILITIND.NS
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Pidilite Industries (PIDILITIND)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Monopoly in adhesives (Fevicol). Massive brand recall and distribution in India.

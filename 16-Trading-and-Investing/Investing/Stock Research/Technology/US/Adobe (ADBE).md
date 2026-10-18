@@ -2,7 +2,9 @@
 ticker: ADBE
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: -0.7%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 8.90%
     peg_ratio: 0.74
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:11
 market_data:
   ticker: ADBE
@@ -28,11 +29,11 @@ market_data:
   dividend_yield: 0
   52w_high: 421.48
   52w_low: 224.13
+  data_quality: ok
+---
 
 # Stock: Adobe (ADBE)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Creative Cloud monopoly. Successfully transitioned to SaaS. Integrating Firefly AI into workflows.

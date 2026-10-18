@@ -10,7 +10,11 @@ tags: [quant, benchmark, communication services]
 | Netflix (NFLX) | 48.49% | 23.71% | 0.54 | 7.18% |
 | Meta Platforms (META) | 32.93% | 18.31% | 0.36 | 1.59% |
 | CTS Eventim (EVD) | 25.45% | 8.33% | 0.10 | 1.74% |
-| NetEase (NTES) | 22.13% | 15.21% | 0.06 | 43.40% |
+| NetEase (NTES) | 22.13% | 15.21% | 0.06 | currency_mismatch |
+
+## Not benchmarked
+- Tencent: no value_metrics block
+- Nintendo: no value_metrics block
 
 ## Investment Logic
 - **Quality Dominance**: Higher ROE combined with low Debt/Equity indicates a strong structural moat ([Economic Moat](obsidian://open?vault=shreejit-verma-obsidian&file=Mental%20Models%2FWarren%20Buffett%2FEconomic%20Moat)).

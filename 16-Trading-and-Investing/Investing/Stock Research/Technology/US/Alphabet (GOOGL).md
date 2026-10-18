@@ -2,7 +2,9 @@
 ticker: GOOGL
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 26%
+  implied_growth_rate: 36.2%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 0.61%
     peg_ratio: 1.50
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:11
 market_data:
   ticker: GOOGL
@@ -28,11 +29,11 @@ market_data:
   dividend_yield: 0.23
   52w_high: 408.61
   52w_low: 162.0
+  data_quality: ok
+---
 
 # Stock: Alphabet (GOOGL)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Dominant search monopoly with massive data advantages and 'moonshot' optionality through Other Bets. Leading in AI infrastructure (TPUs, Gemini).

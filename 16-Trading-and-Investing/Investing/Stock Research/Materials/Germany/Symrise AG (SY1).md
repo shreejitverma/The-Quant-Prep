@@ -2,7 +2,9 @@
 ticker: SY1
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 20%
+  implied_growth_rate: 19.1%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 2.07%
     peg_ratio: 2.91
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:05
 market_data:
-  ticker: SY1
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: SY1.DE
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Symrise AG (SY1)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Global leader in flavors and fragrances. Highly defensive industry with high barriers to entry and sticky customer relationships.

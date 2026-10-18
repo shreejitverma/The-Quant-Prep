@@ -2,7 +2,9 @@
 ticker: AI.PA
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 24%
+  implied_growth_rate: 23.7%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: EUR
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 1.48%
     peg_ratio: 2.09
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:06
 market_data:
   ticker: AI.PA
@@ -28,11 +29,11 @@ market_data:
   dividend_yield: 2.08
   52w_high: 189.8
   52w_low: 154.86
+  data_quality: ok
+---
 
 # Stock: Air Liquide (AI.PA)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Industrial gas giant. Long-term take-or-pay contracts with customers. Essential to semi, healthcare, and energy.

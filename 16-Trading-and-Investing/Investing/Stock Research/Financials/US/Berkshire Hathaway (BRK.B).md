@@ -2,7 +2,9 @@
 ticker: BRK.B
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: -1%
+  implied_growth_rate: 4.7%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,18 +18,14 @@ value_metrics:
   valuation:
     fcf_yield: 5.98%
     peg_ratio: 10.06
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:06
 market_data:
-  ticker: BRK.B
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: BRK-B
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Berkshire Hathaway (BRK.B)
 

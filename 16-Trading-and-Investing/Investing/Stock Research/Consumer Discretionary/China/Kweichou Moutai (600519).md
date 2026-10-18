@@ -2,7 +2,9 @@
 ticker: 600519
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 13%
+  implied_growth_rate: 12.6%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: CNY
   returns:
@@ -12,27 +14,21 @@ value_metrics:
     roe: 31.20%
     roa: 22.06%
     gross_margin: 90.51%
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: 3.33%
     peg_ratio: 1.80
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:27
 market_data:
-  ticker: 600519
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: 600519.SS
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Kweichou Moutai (600519)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Ultra-premium Baijiu maker. Cultural icon with extreme pricing power and supply scarcity.

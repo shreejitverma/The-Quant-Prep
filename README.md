@@ -8,6 +8,8 @@ It is three things over one set of Markdown notes:
 - **A progress platform**: the `qp` command line and a local web dashboard for readiness by track and by firm, a prerequisite-ordered weekly plan, daily card review, and timed drills (arithmetic sprint, 80-in-8 numerical test, market-making game).
 - **An Obsidian vault**: open the folder in Obsidian to read; question cards are collapsible callouts.
 
+[Trading and Investing](16-Trading-and-Investing/README.md) adds the Markets Mastery OS curriculum, persona-based study planning, mastery scoring, and an interactive trading lab to the `qp` platform.
+
 General software engineering (DSA, C++, system design, low-latency systems) lives in [SDE-Interview-Prep](https://github.com/shreejitverma/SDE-Interview-Prep) and is linked, not copied: see the [SDE Link Map](00-Start-Here/SDE-Link-Map.md).
 
 ## Quick start

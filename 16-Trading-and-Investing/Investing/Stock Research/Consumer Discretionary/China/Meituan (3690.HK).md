@@ -2,7 +2,9 @@
 ticker: 3690.HK
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: n/a
+  implied_growth_status: currency_mismatch
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: HKD
   returns:
@@ -14,25 +16,23 @@ value_metrics:
     gross_margin: 30.43%
     debt_to_equity: 0.57
   valuation:
-    fcf_yield: -3.68%
+    fcf_yield: currency_mismatch
     peg_ratio: 16.84
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:27
 market_data:
   ticker: 3690.HK
   price: 73.45
   market_cap: 453508431872
-  pe_ratio: None
   dividend_yield: 0
   52w_high: 149.8
   52w_low: 72.25
+  data_quality: ok
+---
 
 # Stock: Meituan (3690.HK)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Super-app for local services (Food delivery, hotel booking). Dominant market share and massive user base.

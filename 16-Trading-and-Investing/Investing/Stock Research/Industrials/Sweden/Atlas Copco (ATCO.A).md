@@ -2,7 +2,9 @@
 ticker: ATCO.A
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 12%
+  implied_growth_rate: 16.6%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: SEK
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 2.48%
     peg_ratio: 2.64
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:22
 market_data:
-  ticker: ATCO.A
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: ATCO-A.ST
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Atlas Copco (ATCO.A)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 World leader in compressors, vacuum solutions, and industrial tools. Known for its decentralized model and service-heavy revenue.

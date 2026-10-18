@@ -2,7 +2,9 @@
 ticker: ORCL
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: n/a
+  implied_growth_status: non_positive_fcf
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: -3.43%
     peg_ratio: 1.43
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:13
 market_data:
   ticker: ORCL
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 0.89
   52w_high: 345.72
   52w_low: 134.57
+  data_quality: ok
+---
 
 # Stock: Oracle (ORCL)
 

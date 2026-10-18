@@ -2,7 +2,9 @@
 ticker: CBA.AX
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: n/a
+  implied_growth_status: non_positive_fcf
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: AUD
   returns:
@@ -12,13 +14,12 @@ value_metrics:
     roe: 13.64%
     roa: 0.77%
     gross_margin: N/A
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: -16.56%
     peg_ratio: 3.49
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:11
 market_data:
   ticker: CBA.AX
@@ -28,11 +29,11 @@ market_data:
   dividend_yield: 3.0
   52w_high: 192.0
   52w_low: 146.98
+  data_quality: ok
+---
 
 # Stock: Commonwealth Bank (CBA.AX)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Largest Australian bank. Dominant retail deposit base and digital leadership.

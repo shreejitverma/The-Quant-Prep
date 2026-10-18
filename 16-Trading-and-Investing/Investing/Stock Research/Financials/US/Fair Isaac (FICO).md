@@ -2,7 +2,9 @@
 ticker: FICO
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 17%
+  implied_growth_rate: 16.4%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -12,13 +14,12 @@ value_metrics:
     roe: N/A
     roa: 36.92%
     gross_margin: 84.17%
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: 2.52%
     peg_ratio: 1.11
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:09
 market_data:
   ticker: FICO
@@ -28,11 +29,11 @@ market_data:
   dividend_yield: 0
   52w_high: 1998.01
   52w_low: 870.01
+  data_quality: ok
+---
 
 # Stock: Fair Isaac (FICO)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Standardized credit scoring (FICO Score). Embedded in almost every US lending decision.

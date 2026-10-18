@@ -2,7 +2,9 @@
 ticker: SHW
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 15%
+  implied_growth_rate: 14.7%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 2.86%
     peg_ratio: 2.35
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:04
 market_data:
   ticker: SHW
@@ -28,11 +29,11 @@ market_data:
   dividend_yield: 1.05
   52w_high: 379.65
   52w_low: 294.32
+  data_quality: ok
+---
 
 # Stock: Sherwin-Williams (SHW)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Largest paint retailer in the US. Massive distribution network and brand loyalty among professional contractors.

@@ -2,7 +2,9 @@
 ticker: LT
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: 8.1%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: INR
   returns:
@@ -16,23 +18,17 @@ value_metrics:
   valuation:
     fcf_yield: 4.66%
     peg_ratio: 1.06
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:25
 market_data:
-  ticker: LT
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: LT.NS
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Larsen & Toubro (LT)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Infrastructure giant. Proxy for India's growth. Massive order book across defense, energy, and infra.

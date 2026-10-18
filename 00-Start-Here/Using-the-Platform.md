@@ -47,6 +47,7 @@ The file is written as version 2 on the next save.
 | `./qp mark <topic> <0-4>` | Record mastery: 1 studied, 2 practiced, 3 mastered, 4 interview-ready. |
 | `./qp next` | Unblocked topics to study next. |
 | `./qp plan [--hours H] [--core] [--weeks N]` | A dated weekly plan in prerequisite order. |
+| `./qp plan [--persona P]` | Tailor a weekly plan and lab drills to a Markets Mastery persona (`holistic`, `quant_trader`, `quant_researcher`, `macro_derivatives_trader`, or `retail_algorithmic_trader`). |
 | `./qp review` | Interactive spaced-repetition review of due cards. |
 | `./qp due` and `./qp grade <card> <again,hard,good,easy>` | The same review, non-interactively (for scripts and agents). |
 | `./qp drill arith` | Arithmetic sprint on Zetamac rules (120 seconds). |
@@ -54,10 +55,15 @@ The file is written as version 2 on the next save.
 | `./qp drill mm` | Market-making game on the sum of hidden dice. |
 | `./qp stats` | Drill history and daily activity. |
 | `./qp firms [firm]` | Readiness per firm; for one firm, its weakest focus topics. |
+| `./qp markets [status|gates|mastery] [--persona P]` | Markets curriculum readiness, stage gates, and persona mastery scores. |
+| `./qp lab [list|info <id>|run <id>]` | Browse or run a Trading Lab simulation engine. |
 | `./qp serve [--open]` | Local dashboard. |
 | `./qp check` | Validate notes, cards, links and style (CI runs this). |
 | `./qp index` | Regenerate the topic tables in section READMEs. |
 | `./qp bank <folder>` | Import a private question bank into the overlay (see below). |
+
+The Trading Lab web interface is available at `http://localhost:8765/lab/` after starting `./qp serve`.
+See the [Markets Mastery OS hub](../16-Trading-and-Investing/MARKETS_HUB.md) for the curriculum map, engine list, and study board.
 
 ## How the numbers are computed
 

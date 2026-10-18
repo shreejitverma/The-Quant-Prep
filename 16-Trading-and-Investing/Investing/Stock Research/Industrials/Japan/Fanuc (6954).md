@@ -2,7 +2,9 @@
 ticker: 6954
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 0%
+  implied_growth_rate: 18.4%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: JPY
   returns:
@@ -12,27 +14,21 @@ value_metrics:
     roe: 9.35%
     roa: 5.70%
     gross_margin: 38.29%
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: 2.17%
     peg_ratio: 3.93
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:24
 market_data:
-  ticker: 6954
-  price: None
-  market_cap: None
-  pe_ratio: None
-  dividend_yield: 0
-  52w_high: None
-  52w_low: None
+  ticker: 6954.T
+  data_quality: missing
+  missing: price market_cap
+---
 
 # Stock: Fanuc (6954)
 
-status:: deep-research
-priority:: high
 
 ## Investment Thesis
 Leader in factory automation and CNC machines. High margins and dominant global market share.

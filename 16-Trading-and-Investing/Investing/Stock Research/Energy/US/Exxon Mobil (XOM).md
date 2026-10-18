@@ -2,7 +2,9 @@
 ticker: XOM
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 20%
+  implied_growth_rate: 20.0%
+  implied_growth_status: solved
+  implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
   returns:
@@ -16,9 +18,8 @@ value_metrics:
   valuation:
     fcf_yield: 1.93%
     peg_ratio: 1.34
-status: complete
+status: stub
 priority: high
----
 last_updated: 2026-05-31 14:01:14
 market_data:
   ticker: XOM
@@ -28,6 +29,8 @@ market_data:
   dividend_yield: 2.84
   52w_high: 176.41
   52w_low: 101.73
+  data_quality: ok
+---
 
 # Stock: Exxon Mobil (XOM)
 
