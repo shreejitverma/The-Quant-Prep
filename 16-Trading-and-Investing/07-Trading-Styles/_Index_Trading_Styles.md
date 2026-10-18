@@ -80,7 +80,7 @@ Rather than treating these schools as mutually exclusive, Markets Mastery OS tea
 - **Core Edge**: Exploiting institutional behavioral under-reaction and delayed capital reallocation across global asset classes.
 - **Signal Formulation**: Time-series momentum (absolute momentum), cross-sectional momentum (relative momentum), moving average crossovers, and breakout filters (Donchian channels).
 - **Portfolio Construction**: Equal risk contribution, volatility targeting (scaling position sizes inversely to rolling realized volatility), and correlation diversification.
-- **Statistical Rigor**: Mitigating backtest overfitting, Deflated Sharpe Ratio (Bailey-Lopéz de Prado), and walk-forward out-of-sample testing.
+- **Statistical Rigor**: Mitigating backtest overfitting, Deflated Sharpe Ratio (Bailey-Lopez de Prado), and walk-forward out-of-sample testing.
 - **Pillar Curriculum**: [[16-Trading-and-Investing/60-Systems/_Index_Systems|Systematic Trading Systems Pillar (8 Notes, 256 Cards)]]
 - **Lab Engine**: `overfit_trap` (Overfitting and multiple testing penalty calculator) and `port_alloc` (Risk parity allocator).
 
@@ -91,7 +91,7 @@ Rather than treating these schools as mutually exclusive, Markets Mastery OS tea
 - **Lineage**: Benjamin Graham (margin of safety), Warren Buffett (economic moats and pricing power), Charlie Munger (mental models and multidisciplinary thinking).
 - **Forensic Accounting**: Beneish M-Score for earnings manipulation, Altman Z-Score for insolvency risk, and Sloan Accruals anomaly for cash flow quality.
 - **Valuation Framework**: Reverse Discounted Cash Flow (DCF) to isolate the market's implied revenue growth rate, Return on Invested Capital (ROIC) versus Weighted Average Cost of Capital (WACC), and owner earnings calculation.
-- **Lab Engine**: `quant_reverse_dcf.py` (Reverse DCF solver) and `quant_sector_benchmarker.py` (Sector peer comparative benchmarking).
+- **Scripts** (standalone, not `./qp lab` engines): `16-Trading-and-Investing/scripts/quant_reverse_dcf.py` (Reverse DCF solver) and `16-Trading-and-Investing/scripts/quant_sector_benchmarker.py` (Sector peer comparative benchmarking).
 
 ---
 

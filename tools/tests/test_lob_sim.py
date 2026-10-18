@@ -1,8 +1,9 @@
 """Unit tests for tools/qp/lab/lob_sim.py Limit Order Book matching engine."""
 
+import math
 import unittest
 
-from tools.qp.lab.lob_sim import LimitOrderBook, LimitOrderBookEngine, Order
+from tools.qp.lab.lob_sim import AC_KAPPA, LimitOrderBook, LimitOrderBookEngine, Order, almgren_chriss_schedule
 from tools.qp.lab.registry import get_engine
 
 
@@ -99,6 +100,81 @@ class TestLimitOrderBook(unittest.TestCase):
             res_aggr.metrics["implementation_shortfall_bps"],
             res_twap.metrics["implementation_shortfall_bps"],
         )
+
+    def test_swept_side_keeps_its_last_level_in_the_mid(self):
+        # Bid 99.99 and asks 100.01-100.03: a 300-share market buy empties the asks. The mid must be
+        # (99.99 + 100.03) / 2 = 100.01 using the deepest consumed level, not snap back to the 99.99 bid.
+        lob = LimitOrderBook(tick_size=0.01)
+        lob.insert_order(Order(1, "buy", 99.99, 100, 0))
+        for i, px in enumerate([100.01, 100.02, 100.03], start=2):
+            lob.insert_order(Order(i, "sell", px, 100, 0))
+        lob.insert_order(Order(9, "buy", 0.0, 300, 1, order_type="market"))
+        self.assertIsNone(lob.best_ask())
+        self.assertAlmostEqual(lob.mid_price(), 100.01, places=4)
+
+        mirror = LimitOrderBook(tick_size=0.01)
+        mirror.insert_order(Order(1, "sell", 100.01, 100, 0))
+        for i, px in enumerate([99.99, 99.98, 99.97], start=2):
+            mirror.insert_order(Order(i, "buy", px, 100, 0))
+        mirror.insert_order(Order(9, "sell", 0.0, 300, 1, order_type="market"))
+        self.assertIsNone(mirror.best_bid())
+        self.assertAlmostEqual(mirror.mid_price(), 99.99, places=4)
+
+    def test_one_sided_mid_never_falls_below_the_live_best_bid(self):
+        # A limit buy at 100.10 sweeps every ask up to 100.03 and rests 100 shares at 100.10;
+        # a mid below the live best bid would be a crossed quote.
+        lob = LimitOrderBook(tick_size=0.01)
+        for i, px in enumerate([100.01, 100.02, 100.03], start=1):
+            lob.insert_order(Order(i, "sell", px, 100, 0))
+        lob.insert_order(Order(9, "buy", 100.10, 400, 1))
+        self.assertEqual(lob.best_bid(), 100.10)
+        self.assertIsNone(lob.best_ask())
+        self.assertGreaterEqual(lob.mid_price(), lob.best_bid())
+
+
+class TestExecutionSchedules(unittest.TestCase):
+    def test_almgren_chriss_schedule_fills_the_parent_exactly(self):
+        # Holdings follow x_k = X sinh(kappa (N - k)) / sinh(kappa N) to within half a share, never sell
+        # back, and telescope to the parent quantity; ceil-rounding the holdings left shares unscheduled.
+        for qty, steps in [(100, 10), (101, 37), (2000, 50), (5000, 100), (99999, 1000)]:
+            children = almgren_chriss_schedule(qty, steps, AC_KAPPA)
+            with self.subTest(qty=qty, steps=steps):
+                self.assertEqual(len(children), steps)
+                self.assertEqual(sum(children), qty)
+                self.assertTrue(all(c >= 0 for c in children))
+                held = qty
+                for k, child in enumerate(children, start=1):
+                    held -= child
+                    exact = qty * math.sinh(AC_KAPPA * (steps - k)) / math.sinh(AC_KAPPA * steps)
+                    self.assertLessEqual(abs(held - exact), 0.5)
+
+    def test_almgren_chriss_engine_executes_the_whole_parent(self):
+        engine = get_engine("lob_sim")
+        for size in [100, 2000, 5000]:
+            for side in ["buy", "sell"]:
+                metrics = engine.run(parent_size=size, parent_side=side, n_steps=100, strategy="almgren_chriss", seed=42).metrics
+                with self.subTest(size=size, side=side):
+                    self.assertEqual(metrics["executed_shares"], size)
+                    self.assertEqual(metrics["fill_rate"], 1.0)
+
+    def test_impact_is_monotone_in_parent_size(self):
+        # Same seed means the same background flow (the agent never draws from the RNG), so a bigger
+        # parent can only walk further through the same liquidity: shortfall vs the arrival mid must not
+        # fall with size. Sizes past the 5000-share seeded depth exercise the one-sided book.
+        engine = get_engine("lob_sim")
+        cases = [
+            ("aggressive", [500, 1000, 2000, 5000, 6000, 8000, 12000, 20000, 50000]),
+            ("almgren_chriss", [1000, 2000, 5000, 8000, 12000, 20000, 50000]),
+        ]
+        for strategy, sizes in cases:
+            for side in ["buy", "sell"]:
+                runs = [engine.run(parent_size=q, parent_side=side, n_steps=100, strategy=strategy, seed=42).metrics for q in sizes]
+                shortfalls = [m["implementation_shortfall_bps"] for m in runs]
+                with self.subTest(strategy=strategy, side=side):
+                    self.assertEqual(shortfalls, sorted(shortfalls))
+                    for q, m in zip(sizes, runs, strict=True):
+                        if q <= 20000:
+                            self.assertEqual(m["executed_shares"], q)
 
 
 if __name__ == "__main__":

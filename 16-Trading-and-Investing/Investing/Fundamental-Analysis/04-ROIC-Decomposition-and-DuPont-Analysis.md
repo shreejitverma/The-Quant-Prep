@@ -180,12 +180,15 @@ Consider Enterprise Corp with the following reported figures:
 - Cash and Cash Equivalents: $80M (operating cash needed is $20M; excess cash is $60M)
 - Accounts Receivable: $120M
 - Inventory: $100M
-- Accounts Payable: $70M
 - Net PP&E: $400M
-- Total Assets: $850M
+- Goodwill and Acquired Intangibles (operating): $150M
+- Total Assets: $850M ($80M + $120M + $100M + $400M + $150M)
+- Accounts Payable: $70M
+- Accrued Expenses (non-interest-bearing): $130M
 - Short-Term Debt: $30M
 - Long-Term Debt: $170M
 - Total Shareholders' Equity: $450M
+- Total Liabilities and Equity: $850M ($70M + $130M + $30M + $170M + $450M)
 - Cost of Capital (WACC): 9.0%
 
 ### Step 1: Calculate NOPAT
@@ -195,29 +198,30 @@ $$\text{NOPAT} = \text{EBIT} \times (1 - t) = 150 \times (1 - 0.25) = \$112.5\te
 
 Operating Approach:
 - Operating Current Assets = Operating Cash ($20M) + Receivables ($120M) + Inventory ($100M) = $240M
-- Operating Current Liabilities (NIBCL) = Accounts Payable = $70M
-- Operating Net Working Capital = $240M - $70M = $170M
+- Operating Current Liabilities (NIBCL) = Accounts Payable ($70M) + Accrued Expenses ($130M) = $200M
+- Operating Net Working Capital = $240M - $200M = $40M
 - Net PP&E = $400M
-- Invested Capital = $170M + $400M = $570M
+- Goodwill and Acquired Intangibles = $150M
+- Invested Capital = $40M + $400M + $150M = $590M
 
 Financing Approach Verification:
 - Total Debt = Short-Term Debt ($30M) + Long-Term Debt ($170M) = $200M
 - Shareholders' Equity = $450M
 - Less Excess Cash = -$60M
-- Invested Capital = $200M + $450M - $60M = $570M (exact match)
+- Invested Capital = $200M + $450M - $60M = $590M (exact match, because the balance sheet balances)
 
 ### Step 3: Compute ROIC and Decompose
-$$\text{ROIC} = \frac{\text{NOPAT}}{\text{Invested Capital}} = \frac{112.5}{570} = 19.74\%$$
+$$\text{ROIC} = \frac{\text{NOPAT}}{\text{Invested Capital}} = \frac{112.5}{590} = 19.07\%$$
 
 Decomposition:
 - NOPAT Margin = $\frac{112.5}{1,000} = 11.25\%$
-- Capital Turnover = $\frac{1,000}{570} = 1.7544\times$
-- Check: $11.25\% \times 1.7544 = 19.74\%$
+- Capital Turnover = $\frac{1,000}{590} = 1.6949\times$
+- Check: $11.25\% \times 1.6949 = 19.07\%$
 
 ### Step 4: Compute Economic Value Added (EVA)
-$$\text{Economic Spread} = \text{ROIC} - \text{WACC} = 19.74\% - 9.00\% = 10.74\%$$
-$$\text{EVA} = 10.74\% \times 570\text{M} = \$61.2\text{M}$$
-Enterprise Corp creates $61.2M of true economic value annually above its cost of capital.
+$$\text{Economic Spread} = \text{ROIC} - \text{WACC} = 19.07\% - 9.00\% = 10.07\%$$
+$$\text{EVA} = 10.07\% \times 590\text{M} = \$59.4\text{M}$$
+Enterprise Corp creates $59.4M of true economic value annually above its cost of capital.
 
 ### Step 5: Compute 5-Stage DuPont Analysis
 - Return on Equity (ROE) = $\frac{97.5}{450} = 21.67\%$

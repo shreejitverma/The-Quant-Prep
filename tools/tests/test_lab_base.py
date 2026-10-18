@@ -92,9 +92,31 @@ class TestTradingLabBase(unittest.TestCase):
         json.dumps(res.to_dict(), allow_nan=False)  # RFC 8259 has no NaN or Infinity
         self.assertLessEqual(res.metrics["median_final_equity"], EQUITY_CEILING)
         self.assertGreater(res.metrics["paths_capped_at_ceiling"], 0)
-        # Oracle: a path reaches the ceiling after about 8 straight wins (11**8 > 1e15 / 1e7), and
-        # only a loss before that can draw it down 50%, so ruin is near 1 - 0.99**8 = 7.7%.
-        self.assertLess(res.metrics["ruin_probability"], 0.2)
+        # Oracle: at 50% risk every loss halves equity from at or below its peak, so any loss is a
+        # >= 50% drawdown and ruin is P(at least one loss in 1000 trades) = 1 - 0.99**1000 = 0.99996.
+        # Stopping a path at the ceiling (after about 8 straight wins) would report about 0.077.
+        self.assertGreaterEqual(res.metrics["ruin_probability"], 0.99)
+
+    def test_pos_sizing_counts_drawdowns_after_the_ceiling(self):
+        # Every path compounds past the ceiling, yet a 10% risk with 1000 trades still sees deep
+        # drawdowns. Oracle: the first 100 trades of each path are a prefix of its 1000-trade path
+        # (same seed), so per-path max drawdown, and hence ruin, cannot fall as trades are added.
+        engine = get_engine("pos_sizing")
+        kwargs = dict(account_capital=100000, win_rate=0.6, win_loss_ratio=3.0, risk_per_trade_pct=0.1, num_simulations=1000)
+        short = engine.run(num_trades=100, **kwargs)
+        long = engine.run(num_trades=1000, **kwargs)
+        self.assertEqual(long.metrics["paths_capped_at_ceiling"], 1000)
+        self.assertGreaterEqual(long.metrics["ruin_probability"], short.metrics["ruin_probability"])
+        self.assertGreater(long.metrics["ruin_probability"], 0.5)
+
+    def test_validate_params_rejects_unknown_and_off_choice_values(self):
+        engine = get_engine("pos_sizing")
+        with self.assertRaises(ValueError):
+            engine.validate_params({"win_rat": 0.6})
+        p_int = Param("blocks", "int", 4, "desc", choices=[4, 6, 8])
+        self.assertEqual(p_int.cast("6"), 6)
+        with self.assertRaises(ValueError):
+            p_int.cast("5")
 
 
 if __name__ == "__main__":

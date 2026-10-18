@@ -43,8 +43,8 @@ Breadth divergences - where mega-cap indices (e.g. S&P 500, Nasdaq 100) make new
 In their 1993 *Journal of Finance* paper, Jegadeesh and Titman examined the relative performance of US equities sorted into deciles based on returns over the past $J$ months ($J \in \{3, 6, 9, 12\}$) and held for $K$ months ($K \in \{3, 6, 9, 12\}$):
 
 1. **Portfolio Construction Protocol ($12-1$ Momentum)**:
-   - At month $t$, evaluate the cumulative gross return of each asset $i$ from month $t-12$ to month $t-1$:
-     $$R_i(t-12, t-1) = \prod_{k=1}^{11} (1 + r_{i, t-k}) - 1$$
+   - At month $t$, evaluate the cumulative gross return of each asset $i$ over the 11 months from $t-12$ through $t-2$:
+     $$R_i(t-12, t-2) = \prod_{k=2}^{12} (1 + r_{i, t-k}) - 1$$
    - The most recent month $t-1$ is deliberately skipped ("the 1-month skip") to avoid the well-documented 1-month short-term reversal anomaly driven by bid-ask bounce and liquidity provision (Jegadeesh 1990).
    - Assets are ranked:
      - Long top decile ($P_1$, "Winners").
@@ -52,7 +52,8 @@ In their 1993 *Journal of Finance* paper, Jegadeesh and Titman examined the rela
 
 2. **Empirical Return Distribution**:
    - The $12-1$ Momentum portfolio generates average annualized excess returns of $8\%$ to $12\%$ across global equities.
-   - Eugene Fama and Kenneth French (2012) confirmed that the momentum premium cannot be explained by standard market beta, firm size, or value factors, prompting the addition of the UMD (Up Minus Down) factor to the Fama-French factor suite.
+   - Carhart (1997) added a one-year momentum factor to the Fama-French three-factor model, the origin of the four-factor model and of the UMD (Up Minus Down) factor.
+   - Fama and French (2012) found momentum returns in North America, Europe and Asia Pacific, though not Japan, that their market, size and value factors do not explain.
    - Asness, Moskowitz, and Pedersen (2013) demonstrated in *Value and Momentum Everywhere* that momentum is pervasive across international equities, government bond markets, currencies, and commodity futures.
 
 ```
@@ -134,8 +135,8 @@ Market breadth monitors the broad underlying distribution of equities to detect 
 |     - Following major market panics, past losers violently rebound while past   |
 |       winners lag, triggering severe short squeezes in unhedged momentum.       |
 |  4. Barroso and Santa-Clara (2015, Journal of Financial Economics):             |
-|     - "Beyond the Carry": dynamic volatility-scaled momentum eliminates         |
-|       crash risk and nearly doubles the Sharpe ratio from 0.53 to 0.97.         |
+|     - "Momentum Has Its Moments": volatility-scaled momentum largely removes    |
+|       crash risk and nearly doubles the Sharpe ratio, from 0.53 to 0.97.        |
 +---------------------------------------------------------------------------------+
 |  Counter-Evidence & Failure Modes:                                              |
 |  1. High Turnover and Execution Drag:                                           |
@@ -357,7 +358,8 @@ A chief investment officer assesses market internals during a quarterly S&P 500 
 - De Bondt, W. F., & Thaler, R. (1985). *Does the stock market overreact?* The Journal of Finance, 40(3), 793-805.
 - McClellan, S., & McClellan, M. (1969). *Patterns for Profit: The McClellan Oscillator and Summation Index*. Trade Signals Inc.
 - Jegadeesh, N., & Titman, S. (1993). *Returns to buying winners and selling losers: Implications for stock market efficiency*. The Journal of Finance, 48(1), 65-91.
+- Carhart, M. M. (1997). *On persistence in mutual fund performance*. The Journal of Finance, 52(1), 57-82.
 - Fama, E. F., & French, K. R. (2012). *Size, value, and momentum in international stock returns*. Journal of Financial Economics, 105(3), 457-472.
 - Asness, C. S., Moskowitz, T. J., & Pedersen, L. H. (2013). *Value and momentum everywhere*. The Journal of Finance, 68(3), 929-985.
-- Barroso, P., & Santa-Clara, P. (2015). *Beyond the carry: Momentum has a volatility bug*. Journal of Financial Economics, 116(1), 111-120.
+- Barroso, P., & Santa-Clara, P. (2015). *Momentum has its moments*. Journal of Financial Economics, 116(1), 111-120.
 - Daniel, K., & Moskowitz, T. J. (2016). *Momentum crashes*. Journal of Financial Economics, 122(2), 221-247.

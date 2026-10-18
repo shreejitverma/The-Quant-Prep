@@ -111,12 +111,12 @@ $$S(t) = Y_{\text{off}}(t) - Y_{\text{on}}(t)$$
 Under normal historical regimes, $S(t) \sim \mathcal{N}(\mu, \sigma^2)$ with mean $\mu = 5 \text{ bps}$ and daily volatility $\sigma = 0.8 \text{ bps}$.
 LTCM took a long off-the-run position and short on-the-run position with notional $N = \$20 \text{ billion}$:
 $$\Delta \text{PnL} = N \times D \times \Delta S$$
-where $D \approx 18$ years is the modified duration.
+where $D \approx 14.6$ is the modified duration of a 30-year par bond yielding 5.5% with semiannual coupons.
 Under Gaussian assumptions, a 3-standard-deviation blowout is $3 \times 0.8 = 2.4 \text{ bps}$, producing a loss of:
-$$\Delta \text{PnL} = \$20,000,000,000 \times 18 \times (-0.00024) = -\$86.4 \text{ million}$$
+$$\Delta \text{PnL} = \$20,000,000,000 \times 14.6 \times (-0.00024) = -\$70.1 \text{ million}$$
 This was well within LTCM's $4.7 billion equity capital cushion.
 However, in August 1998, the spread exploded from 6 bps to over 24 bps, an 18 bps widening representing a 22.5-standard-deviation event under LTCM's Gaussian model:
-$$\Delta \text{PnL} = \$20,000,000,000 \times 18 \times (-0.0018) = -\$648 \text{ million}$$
+$$\Delta \text{PnL} = \$20,000,000,000 \times 14.6 \times (-0.0018) = -\$525.6 \text{ million}$$
 Because LTCM held identical leveraged convergence bets across multiple global fixed income and equity markets, aggregate daily losses exceeded $500 million in a single session, completely wiping out equity capital.
 
 ---

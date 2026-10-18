@@ -98,7 +98,7 @@ Price
 
 ### 3. The Universal Square-Root Law of Market Impact
 
-Extensive empirical research across global equity and futures markets (Barra, Kissell, Bouchaud et al., 2012) demonstrates that total market impact scales with the square root of relative order size:
+Extensive empirical research across global equity and futures markets (Barra, Kissell, Bouchaud et al., 2012) demonstrates that the per-share price impact scales with the square root of relative order size:
 
 $$I = Y \cdot \sigma_{\text{daily}} \cdot \sqrt{\frac{Q}{V_{\text{ADV}}}}$$
 
@@ -108,7 +108,9 @@ Where:
 - $Q$: Total shares to be executed.
 - $V_{\text{ADV}}$: Average daily volume (ADV) in shares.
 
-The square root implies sub-linear impact: executing $1\%$ of ADV costs roughly $10$ times more in total dollars than executing $0.01\%$ of ADV, but the percentage price impact per share decreases with size.
+The square root makes impact concave in size: the per-share price impact still grows as order size grows, but less than proportionally.
+Executing $1\%$ of ADV instead of $0.01\%$ is $100$ times the size, so the per-share impact rises by $\sqrt{100} = 10$ times.
+Total impact cost in dollars is size times per-share impact, so it scales as $Q^{3/2}$ and rises by $100^{3/2} = 1000$ times.
 
 ### 4. Strategy Capacity and the Sharpe Ratio Decay Curve
 

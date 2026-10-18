@@ -3,7 +3,7 @@ type: moc
 track: [quant-trader, quant-research]
 tier: advanced
 status: draft
-curriculum: false
+index: false
 sources: []
 ---
 
@@ -12,7 +12,9 @@ sources: []
 Discretionary markets knowledge that complements the quant syllabus: finance fundamentals, valuation, value and growth investing, macro, capital allocation, hedge funds, private markets, and about 100 single-stock research notes.
 It came over from the author's private Obsidian second brain in September 2026 and is written Obsidian-first: notes use wikilinks and Dataview, and some link back to the private vault through `obsidian://` URIs that only resolve on the author's machine.
 
-This section is a library, not part of the tracked syllabus (`curriculum: false`): `qp` lists it but does not validate or track it.
+The Markets Mastery OS notes are part of the tracked syllabus: `qp` validates and tracks the numbered folders (`00-Curriculum/` to `60-Systems/`) and the curriculum folders `Investing/Fundamental-Analysis/`, `Investing/Portfolio-Management/`, `Investing/Valuation Models/` and `Investing/Value Investing/`, with their cards in the review queue.
+`Finance/`, the other `Investing/` folders (including `Stock Research/`), `Private/` and `scripts/` remain a free-form library that `qp` skips.
+[MARKETS_HUB.md](MARKETS_HUB.md) is the map of the curriculum.
 About 150 wikilinks point at concept notes that are not written yet; they are this library's writing backlog.
 
 ## Contents

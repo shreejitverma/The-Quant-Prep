@@ -18,7 +18,7 @@ tags: [quant, benchmark, industrials]
 | Assa Abloy (ASSA.B) | 15.04% | 8.62% | 0.61 | 4.67% |
 | Sixt SE (SIX2) | 14.12% | 6.97% | 1.57 | 20.57% |
 | Siemens (SIE.DE) | 12.59% | 15.23% | 0.76 | -0.15% |
-| Fanuc (6954) | 9.35% | 11.51% | 0.00 | 2.17% |
+| Fanuc (6954) | 9.35% | 11.51% | N/A | 2.17% |
 | Localiza (RENT3) | 8.53% | 18.23% | 1.66 | 22.51% |
 
 ## Investment Logic

@@ -131,7 +131,7 @@ Active proxy hedging completely neutralizes systemic market delta, converting di
 $$\sigma_{\text{residual}}^2 = \sigma_S^2 (1 - \rho^2)$$
 
 Where $\rho$ is the correlation between the asset and the proxy.
-If $\rho = 0.95$, residual variance drops by $1 - 0.95^2 = 9.75\%$, eliminating over $90\%$ of directional variance.
+If $\rho = 0.95$, residual variance falls to $1 - 0.95^2 = 9.75\%$ of the unhedged variance, eliminating $90.25\%$ of directional variance.
 
 ---
 
@@ -163,14 +163,16 @@ A market maker operates on a stock with:
      $$r(100, 10, 1) = \$100.00 - (10 \times 0.1 \times 0.25 \times 1.0) = \$100.00 - \$0.2500 = \$99.7500$$
    - Optimal Bid: $P_b^* = \$99.7500 - \$0.6579 = \$99.0921$.
    - Optimal Ask: $P_a^* = \$99.7500 + \$0.6579 = \$100.4079$.
-   - **Result**: Both quotes drop by 25 cents. The ask is now significantly more attractive to market buyers, while the bid is insulated from further selling.
+   - **Result**: Both quotes drop by 25 cents.
+     The ask is now significantly more attractive to market buyers, while the bid is insulated from further selling.
 
 4. **Scenario C: Short Inventory ($q = -10\text{ units}$)**:
    - Reservation price:
      $$r(100, -10, 1) = \$100.00 - (-10 \times 0.1 \times 0.25 \times 1.0) = \$100.00 + \$0.2500 = \$100.2500$$
    - Optimal Bid: $P_b^* = \$100.2500 - \$0.6579 = \$99.5921$.
    - Optimal Ask: $P_a^* = \$100.2500 + \$0.6579 = \$100.9079$.
-   - **Result**: Both quotes rise by 25 cents. The bid is now competitive to attract sellers, while the ask is shaded upward.
+   - **Result**: Both quotes rise by 25 cents.
+     The bid is now competitive to attract sellers, while the ask is shaded upward.
 
 ### Example 2: Proxy Hedging Residual Delta
 
@@ -275,9 +277,9 @@ Correlation $\rho = 0.90$.
 > Spread s* contains the term gamma * sigma^2 * (T - t).
 > Higher volatility expands the variance of terminal inventory value, forcing the desk to demand a wider compensation spread.
 
-> [!question]- mkt-pqt-114 | What is the Guéant-Tapia-Manziadi (2012) extension to Avellaneda-Stoikov?
-> It solves the optimal quoting problem under general utility functions and multi-asset books without requiring CARA approximations.
-> It yields exact Hamilton-Jacobi-Bellman (HJB) viscosity solutions for execution and market making.
+> [!question]- mkt-pqt-114 | What is the Guéant-Lehalle-Fernandez-Tapia (2013) extension to Avellaneda-Stoikov?
+> It keeps the Avellaneda-Stoikov CARA setup but adds hard inventory limits, and a change of variables turns the Hamilton-Jacobi-Bellman (HJB) equation into a system of linear ODEs with an explicit solution.
+> It also derives closed-form asymptotic quotes for long horizons, in which the skew of bid and ask grows with inventory.
 
 > [!question]- mkt-pqt-115 | How does overnight inventory financing impact market-making economics?
 > Carrying long inventory requires financing at SOFR plus a prime broker spread; carrying short inventory incurs stock borrow fees.
@@ -341,5 +343,5 @@ Correlation $\rho = 0.90$.
 
 - Ho, T., & Stoll, H. R. (1981). *Optimal dealer pricing under transactions and return uncertainty*. Journal of Financial Economics, 9(1), 47-73.
 - Avellaneda, M., & Stoikov, S. (2008). *High-frequency trading in a limit order book*. Quantitative Finance, 8(3), 217-224.
-- Guéant, O., Tapia, C. A., & Manziadi, Z. (2012). *Dealing with the inventory risk: a solution to the market making problem*. Mathematics and Financial Economics, 6(4), 259-277.
+- Guéant, O., Lehalle, C.-A., & Fernandez-Tapia, J. (2013). *Dealing with the inventory risk: a solution to the market making problem*. Mathematics and Financial Economics, 7(4), 477-507.
 - Cartea, Á., Jaimungal, S., & Penalva, J. (2015). *Algorithmic and High-Frequency Trading*. Cambridge University Press.

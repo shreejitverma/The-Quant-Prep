@@ -78,16 +78,19 @@ $$g(f) = p \ln(1 + b f) + (1 - p) \ln(1 - f)$$
 - **Peak at $f^*$**: The maximum compound growth rate occurs uniquely at $f = f^*$.
 - **The Danger Zone ($f > f^*$)**:
   Betting more than $f^*$ decreases expected compound growth while increasing volatility.
-- **The Absolute Ruin Threshold ($f \ge 2 f^*$)**:
-  Betting twice the optimal Kelly fraction yields an expected geometric growth rate of **zero or negative**, guaranteeing eventual mathematical bankruptcy despite having a positive mathematical edge.
+- **The Zero-Growth Threshold (near $2 f^*$)**:
+  In the small-edge continuous approximation $g(f) \approx \mu f - \frac{1}{2}\sigma^2 f^2$, growth falls to exactly zero at $f = 2 f^*$ and is negative beyond it.
+  For a discrete bet the exact crossing must be solved numerically: for Example 1 below ($p = 0.40$, $b = 2.50$, $f^* = 0.16$) it is $f \approx 0.331$, about $2.07 f^*$, so $g(2 f^*) = g(0.32)$ is still slightly positive.
+  Beyond the crossing, expected log growth is negative and wealth converges to zero with probability 1 despite the positive edge per trade.
 - **Fractional Kelly**:
   Because real-world parameters $p$ and $b$ are estimated with error and returns exhibit fat tails, professional funds deploy "Half-Kelly" ($0.50f^*$) or "Quarter-Kelly" ($0.25f^*$).
-  Half-Kelly captures $75\%$ of the maximum compound growth rate while slashing return variance by $50\%$ and drastically reducing peak-to-trough drawdown.
+  In the continuous approximation a bet of $c f^*$ earns $(2c - c^2)$ of the maximum growth rate, so Half-Kelly captures $2(0.5) - 0.5^2 = 75\%$ of it.
+  Return volatility scales with $f$, so Half-Kelly halves volatility, cuts variance to $25\%$ of full Kelly, and drastically reduces peak-to-trough drawdown.
 
 ### 3. The Mathematics of Risk of Ruin
 
 Risk of ruin $R$ is the probability that an account's equity falls to or below an absorbing bankruptcy threshold before reaching a target profit boundary.
-For independent Bernoulli trials with win probability $p$, loss probability $q = 1 - p$, and edge $A = p - q > 0$, the exact probability of losing $C$ capital risk units from an infinite horizon is:
+For independent even-money bets ($b = 1$) of a fixed dollar size, with win probability $p$, loss probability $q = 1 - p$, and edge $A = p - q > 0$, the exact probability of ever losing $C$ capital risk units over an infinite horizon is:
 
 $$R = \left(\frac{q}{p}\right)^C = \left(\frac{1 - A}{1 + A}\right)^C$$
 
@@ -96,7 +99,8 @@ Where:
 
 When $p = 0.50$ (zero edge), $R = 1.00$ ($100\%$ certainty of ruin over an infinite horizon).
 When $p > 0.50$, the probability of ruin decreases exponentially as capital units $C$ increase.
-By ensuring $C \ge 50$ (i.e. risking no more than $2.0\%$ of equity per trade), the probability of ruin drops to negligible fractions of a percent for any viable edge.
+With $C = 50$ (risking $2.0\%$ of starting equity per trade), ruin is $(0.45/0.55)^{50} = 0.0044\%$ at $p = 0.55$ and $(0.48/0.52)^{50} = 1.8\%$ at $p = 0.52$, but still $(0.49/0.51)^{50} = 13.5\%$ at $p = 0.51$, so thin edges need far more risk units.
+The formula does not apply to fixed fractional sizing, under which equity shrinks geometrically and never reaches zero; there ruin has to be redefined as hitting a drawdown floor.
 
 ### 4. The Asymmetric Drawdown Law
 
@@ -145,8 +149,9 @@ A trader develops a trend-following setup with:
    $$g(0.32) = 0.40 \ln(1 + 2.5 \times 0.32) + 0.60 \ln(1 - 0.32)$$
    $$= 0.40 \ln(1.80) + 0.60 \ln(0.68) = 0.40(0.5878) + 0.60(-0.3857) = 0.2351 - 0.2314 = +0.0037\text{ (0.37% per trade)}$$
    If the trader bets $35\%$ ($f = 0.35$):
-   $$g(0.35) = 0.40 \ln(1.875) + 0.60 \ln(0.65) = 0.40(0.6286) + 0.60(-0.4308) = 0.2514 - 0.2585 = -0.0071\text{ (-0.71% per trade)}$$
-   The trader has an edge ($p=0.40, b=2.50$), yet betting $35\%$ guarantees geometric bankruptcy over time.
+   $$g(0.35) = 0.40 \ln(1.875) + 0.60 \ln(0.65) = 0.40(0.6286) + 0.60(-0.4308) = 0.25144 - 0.25847 = -0.0070\text{ (-0.70% per trade)}$$
+   Doubling Kelly to $32\%$ leaves only $0.37\%$ growth per trade, about one eighth of full Kelly's $3.00\%$, and growth turns negative past $f \approx 0.331$.
+   The trader has an edge ($p=0.40, b=2.50$), yet betting $35\%$ drives wealth toward zero with probability 1 over time.
 
 ### Example 2: ATR Volatility-Targeted Position Sizing
 
@@ -195,14 +200,15 @@ The trader enters stock XYZ at $\$150.00$.
 > Here p is win probability, q = 1 - p is loss probability, and b is the average win/loss payoff ratio.
 
 > [!question]- mkt-trd-035 | What happens to expected geometric compounding growth if a trader bets more than 2 * f*?
-> Expected geometric compounding growth becomes negative: g(f) < 0.
-> Despite having a positive mathematical edge, the trader is mathematically guaranteed to experience total bankruptcy over time due to variance drag.
+> In the small-edge continuous approximation growth is zero at 2 * f* and negative beyond it: g(f) < 0.
+> For a discrete bet the exact zero crossing sits near but not at 2 * f* (about 0.331 versus 2 * f* = 0.32 for p = 0.40 and b = 2.50).
+> Past the crossing, despite a positive edge per trade, wealth converges to zero with probability 1 because variance drag outweighs the edge.
 
 > [!question]- mkt-trd-036 | Why do quantitative prop desks deploy Fractional Kelly (e.g. Half-Kelly or Quarter-Kelly)?
 > Real-world win rates and payoff ratios are estimated with statistical uncertainty, and market returns exhibit fat-tailed jump risks.
 > Half-Kelly captures 75% of maximum growth while cutting return volatility by 50% and dramatically reducing catastrophic drawdown risk.
 
-> [!question]- mkt-trd-037 | State the classical risk of ruin equation for an account risking a constant fraction across independent bets.
+> [!question]- mkt-trd-037 | State the classical risk of ruin equation for an account risking a fixed dollar amount on independent even-money bets.
 > Ruin Probability R = ((1 - A) / (1 + A))^C, where A = p - q is the trader's net directional edge and C is the total number of risk units in the account.
 > Ruin decays exponentially as the number of risk units C increases.
 

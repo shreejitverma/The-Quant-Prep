@@ -1,8 +1,10 @@
 """Unit tests for tools/qp/lab/market.py and upgraded pos_sizing."""
 
+import math
+import statistics
 import unittest
 
-from tools.qp.lab.market import SyntheticMarketGenerator
+from tools.qp.lab.market import REGIME_PARAMS, SyntheticMarketGenerator
 from tools.qp.lab.pos_sizing import PositionSizingEngine
 
 
@@ -42,6 +44,30 @@ class TestSyntheticMarketGenerator(unittest.TestCase):
             self.assertLessEqual(b.low, b.high)
             self.assertGreater(b.volume, 0.0)
             self.assertIn(b.regime, ("bull", "bear", "consolidation"))
+
+    def test_garch_long_run_variance(self):
+        # Bollerslev (1986): a stationary GARCH(1,1) has unconditional variance omega / (1 - alpha - beta).
+        omega, alpha, beta = 2e-6, 0.08, 0.90
+        prices = SyntheticMarketGenerator(seed=5).generate_garch(omega=omega, alpha=alpha, beta=beta, n_steps=200000)
+        log_rets = [math.log(prices[i] / prices[i - 1]) for i in range(1, len(prices))]
+        sample_var = statistics.fmean(r * r for r in log_rets)
+        self.assertAlmostEqual(sample_var / (omega / (1.0 - alpha - beta)), 1.0, delta=0.08)
+        with self.assertRaises(ValueError):
+            SyntheticMarketGenerator(seed=5).generate_garch(alpha=0.2, beta=0.8)
+
+    def test_regime_path_realizes_declared_regime_volatility(self):
+        # Per-step omega is set for sub-step returns, so each regime's realized annual vol must sit near
+        # its declared long-run vol; sizing omega per bar instead put the old path near 94% annual vol.
+        bars = SyntheticMarketGenerator(seed=2).generate_regime_path(s0=100.0, n_bars=20000, sub_steps=10)
+        by_regime: dict[str, list[float]] = {}
+        for i in range(2, len(bars)):
+            if bars[i].regime == bars[i - 1].regime == bars[i - 2].regime:
+                by_regime.setdefault(bars[i].regime, []).append(math.log(bars[i].close / bars[i].open))
+        self.assertEqual(set(by_regime), set(REGIME_PARAMS))
+        for regime, rets in by_regime.items():
+            realized = statistics.pstdev(rets) * math.sqrt(252.0)
+            with self.subTest(regime=regime):
+                self.assertAlmostEqual(realized / REGIME_PARAMS[regime]["vol"], 1.0, delta=0.15)
 
     def test_oracle_probability(self):
         gen = SyntheticMarketGenerator(seed=1)

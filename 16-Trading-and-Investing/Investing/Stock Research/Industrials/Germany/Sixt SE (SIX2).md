@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:24
 market_data:
-  ticker: SIX2
-  data_quality: ok
+  ticker: SIX2.DE
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Sixt SE (SIX2)

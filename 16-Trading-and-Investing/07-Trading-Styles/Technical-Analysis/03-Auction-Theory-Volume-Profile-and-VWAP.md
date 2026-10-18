@@ -140,10 +140,9 @@ where $P_i$ is the typical price $\frac{H_i + L_i + C_i}{3}$ and $V_i$ is the vo
 |  Evidence Grade: STRONG (Execution & Microstructure), MIXED (Directional Edge)  |
 +---------------------------------------------------------------------------------+
 |  Key Empirical Studies:                                                         |
-|  1. Berkowitz, Logue, and Noser (1988, Financial Analysts Journal):             |
-|     - Established VWAP as the standard benchmark for institutional TCA.         |
-|     - Demonstrated that execution algorithms targeting VWAP minimize adverse    |
-|       selection and market impact costs across large block orders.              |
+|  1. Berkowitz, Logue, and Noser (1988, Journal of Finance):                     |
+|     - Proposed VWAP as a benchmark for measuring institutional execution        |
+|       cost, the basis of modern transaction cost analysis (TCA).                |
 |  2. Madhavan (2000, Journal of Financial Markets):                              |
 |     - Evaluated VWAP execution strategies and institutional order flow.         |
 |     - Showed institutional desks systematically execute orders using VWAP       |

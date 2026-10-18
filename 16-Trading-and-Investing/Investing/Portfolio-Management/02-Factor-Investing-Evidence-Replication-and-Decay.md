@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Asness Frazzini and Pedersen (2019) - Quality Minus Junk, Fama and French (1993) - Common Risk Factors in the Returns on Stocks and Bonds, Harvey Liu and Zhu (2016) - ...and the Cross-Section of Expected Returns, McLean and Pontiff (2016) - Does Academic Research Destroy Stock Return Predictability?]
+sources: [Asness Frazzini and Pedersen (2019) - Quality Minus Junk, Fama and French (1993) - Common Risk Factors in the Returns on Stocks and Bonds, Frazzini and Pedersen (2014) - Betting Against Beta, Harvey Liu and Zhu (2016) - ...and the Cross-Section of Expected Returns, McLean and Pontiff (2016) - Does Academic Research Destroy Stock Return Predictability?]
 ---
 
 # Factor Investing: Evidence, Replication, and Factor Decay
@@ -14,8 +14,8 @@ sources: [Asness Frazzini and Pedersen (2019) - Quality Minus Junk, Fama and Fre
 
 - Factor investing systematically captures structural risk premiums and behavioral anomalies across equities, fixed income, currencies, and commodities.
 - The canonical equity factors that have survived rigorous replication include Value (HML), Size (SMB), Momentum (WML), Operating Profitability (RMW), Conservative Investment (CMA), Quality (QMJ), and Low Beta (BAB).
-- Campbell Harvey, Yan Liu, and Caroline Zhu (2016) exposed the academic "Factor Zoo," demonstrating that data snooping and multiple testing require a raised statistical significance hurdle of $t > 3.0$ ($p < 0.0027$) to validate any new factor.
-- David McLean and Jeffrey Pontiff (2016) proved that published academic factor premiums decay by approximately 50% post-publication as institutional capital arbitrages the anomaly.
+- Campbell Harvey, Yan Liu, and Heqing Zhu (2016) exposed the academic "Factor Zoo," demonstrating that data snooping and multiple testing require a raised statistical significance hurdle of $t > 3.0$ ($p < 0.0027$) to validate any new factor.
+- David McLean and Jeffrey Pontiff (2016) showed that published anomaly returns are 26% lower out-of-sample before publication and 58% lower after publication, as institutional capital arbitrages the anomaly.
 - Value and Momentum exhibit a powerful structural negative correlation (typically -0.40 to -0.60), making multi-factor integration the most resilient quantitative portfolio architecture.
 
 ## Learning objectives
@@ -115,12 +115,12 @@ In reality, empirical data across a century shows that **low-beta and low-volati
 Why does the Low Volatility Anomaly persist?
 1. **Leverage Constraints**: Most institutional investors (mutual funds, pensions) are legally prohibited from using leverage. To maximize absolute returns, they bid up high-beta, lottery-like stocks, overpaying for volatility.
 2. **Agency Incentives**: Fund managers are judged on benchmark outperformance. High-beta stocks provide cheap tracking risk, causing institutional crowding.
-3. **The Solution (BAB)**: Asness, Frazzini, and Pedersen construct the **Betting Against Beta (BAB)** portfolio: buy low-beta stocks, apply modest leverage to match market volatility, and short high-beta stocks, capturing massive risk-adjusted alpha.
+3. **The Solution (BAB)**: Frazzini and Pedersen (2014, Journal of Financial Economics) construct the **Betting Against Beta (BAB)** portfolio: buy low-beta stocks, apply modest leverage to match market volatility, and short high-beta stocks, capturing massive risk-adjusted alpha.
 
 ### 4. The Factor Zoo and Multiple-Testing Haircuts
 
 Over 400 distinct "factors" have been claimed in academic finance journals.
-Campbell Harvey, Yan Liu, and Caroline Zhu (2016) demonstrated that this "Factor Zoo" is largely a statistical artifact of **p-hacking, data mining, and publication bias**:
+Campbell Harvey, Yan Liu, and Heqing Zhu (2016) demonstrated that this "Factor Zoo" is largely a statistical artifact of **p-hacking, data mining, and publication bias**:
 - In standard statistical testing, researchers use a significance threshold of $t > 2.0$ ($p < 0.05$).
 - If 1,000 independent researchers run regressions on historical financial data searching for anomalies, 50 spurious factors will pass a $t > 2.0$ test purely by random chance under the null hypothesis.
 
@@ -150,7 +150,7 @@ In *Does Academic Research Destroy Stock Return Predictability?* (2016), McLean 
 |    - High abnormal returns (Average: +58 bps / month).                |
 |                                                                       |
 | 2. Post-Sample, Pre-Publication Period:                               |
-|    - Anomaly drops by 10% to 15% purely due to data mining fade.      |
+|    - Anomaly drops by 26% on average (upper bound on data mining).    |
 |                                                                       |
 | 3. Post-Publication Period (Public Knowledge):                        |
 |    - Anomaly drops by an average of 58% (collapses to ~24 bps).       |
@@ -236,7 +236,7 @@ $$\text{Fund Excess Return}: \quad R_t - R_f = \alpha + \beta_{\text{mkt}} (R_{m
 > [!question]- mkt-pf-038 | Why does the Low Volatility anomaly exist according to leverage constraint theory?
 > Many institutional investors are prohibited from using leverage, compelling them to overpay for high-beta stocks to boost absolute returns.
 
-> [!question]- mkt-pf-039 | What is the 'Factor Zoo' described by Campbell Harvey, Yan Liu, and Caroline Zhu?
+> [!question]- mkt-pf-039 | What is the 'Factor Zoo' described by Campbell Harvey, Yan Liu, and Heqing Zhu?
 > The proliferation of over 400 claimed academic return anomalies, most of which are false discoveries resulting from data mining and p-hacking.
 
 > [!question]- mkt-pf-040 | What statistical significance hurdle did Harvey, Liu, and Zhu recommend for new factor discovery?
@@ -321,5 +321,6 @@ $$\text{Fund Excess Return}: \quad R_t - R_f = \alpha + \beta_{\text{mkt}} (R_{m
 - Asness, C. S., Frazzini, A., & Pedersen, L. H. (2019). *Quality Minus Junk*. Review of Accounting Studies, 24(1), 34-112.
 - Fama, E. F., & French, K. R. (1993). *Common Risk Factors in the Returns on Stocks and Bonds*. Journal of Financial Economics, 33(1), 3-56.
 - Fama, E. F., & French, K. R. (2015). *A Five-Factor Asset Pricing Model*. Journal of Financial Economics, 116(1), 1-22.
-- Harvey, C. R., Liu, Y., & Zhu, C. (2016). *...and the Cross-Section of Expected Returns*. The Review of Financial Studies, 29(1), 5-68.
+- Frazzini, A., & Pedersen, L. H. (2014). *Betting Against Beta*. Journal of Financial Economics, 111(1), 1-25.
+- Harvey, C. R., Liu, Y., & Zhu, H. (2016). *...and the Cross-Section of Expected Returns*. The Review of Financial Studies, 29(1), 5-68.
 - McLean, R. D., & Pontiff, J. (2016). *Does Academic Research Destroy Stock Return Predictability?* The Journal of Finance, 71(1), 5-32.

@@ -133,7 +133,7 @@ To test whether a technical rule has true predictive power, quantitative desks e
      A ratio below $0.50$ indicates severe overfitting.
 
 2. **Combinatorially Symmetric Cross-Validation (CSCV) and PBO**:
-   - Developed by David Bailey, Jonathan Borwein, Marcos López de Prado, and Qiji Jim Zhu (2016).
+   - Developed by David Bailey, Jonathan Borwein, Marcos Lopez de Prado, and Qiji Jim Zhu (2017).
    - Generates $S$ combinations of IS/OOS splits, testing all strategy variants across each combination.
    - **Probability of Backtest Overfitting (PBO)**:
      $$\text{PBO} = \mathbb{P}(\text{Rank of Best IS Strategy in OOS} > \text{Median})$$
@@ -153,7 +153,7 @@ To test whether a technical rule has true predictive power, quantitative desks e
 |     - Established mathematically proper scoring rule for probability forecasts. |
 |  2. Murphy (1973, Journal of Applied Meteorology):                              |
 |     - Proved Brier score partitions into Reliability, Resolution, Uncertainty.  |
-|  3. Bailey, Borwein, Lopez de Prado, and Zhu (2016, Mathematical Finance):       |
+|  3. Bailey, Borwein, Lopez de Prado, and Zhu (2017, J. Computational Finance):  |
 |     - Established CSCV and PBO framework to quantify backtest overfitting.      |
 |  4. Aronson (2006, Evidence-Based Technical Analysis):                          |
 |     - Demonstrated that applying bootstrap data-snooping corrections erases     |
@@ -278,7 +278,7 @@ A quantitative analyst evaluates $1,000$ machine learning breakout forecasts acr
 > A ratio below 0.50 signals significant strategy overfitting.
 
 > [!question]- mkt-ta-237 | What is Combinatorially Symmetric Cross-Validation (CSCV)?
-> A cross-validation technique developed by Bailey et al. (2016) that splits a dataset into N blocks and evaluates all combinations of training and testing subsets.
+> A cross-validation technique developed by Bailey et al. (2017) that splits a dataset into N blocks and evaluates all combinations of training and testing subsets.
 > It preserves historical time structure while creating a distribution of out-of-sample rankings.
 
 > [!question]- mkt-ta-238 | What is the Probability of Backtest Overfitting (PBO)?
@@ -365,5 +365,5 @@ A quantitative analyst evaluates $1,000$ machine learning breakout forecasts acr
 - Murphy, A. H. (1973). *A new vector partition of the probability score*. Journal of Applied Meteorology, 12(4), 595-600.
 - Aronson, D. R. (2006). *Evidence-Based Technical Analysis: Applying the Scientific Method and Statistical Inference to Trading Signals*. John Wiley & Sons.
 - Bailey, D. H., & Lopez de Prado, M. (2014). *The deflated Sharpe ratio: Correcting for selection bias, backtest overfitting, and non-normality*. The Journal of Portfolio Management, 40(5), 94-107.
-- Bailey, D. H., Borwein, J., Lopez de Prado, M., & Zhu, Q. J. (2016). *The probability of backtest overfitting*. Mathematical Finance, 27(4), 987-1014.
+- Bailey, D. H., Borwein, J., Lopez de Prado, M., & Zhu, Q. J. (2017). *The probability of backtest overfitting*. Journal of Computational Finance, 20(4), 39-69.
 - Lopez de Prado, M. (2018). *Advances in Financial Machine Learning*. John Wiley & Sons.

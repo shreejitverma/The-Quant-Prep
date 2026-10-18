@@ -17,13 +17,14 @@ value_metrics:
     debt_to_equity: 3.13
   valuation:
     fcf_yield: -11.64%
-    peg_ratio: 0.00
+    peg_ratio: N/A
 status: stub
 priority: high
 last_updated: 2026-05-31 14:01:11
 market_data:
-  ticker: BAJFINANCE
-  data_quality: ok
+  ticker: BAJFINANCE.NS
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Bajaj Finance (BAJFINANCE)

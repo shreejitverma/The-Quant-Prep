@@ -291,39 +291,7 @@ class App:
     def journal_stats(self) -> dict:
         from tools.qp.lab.journal_stats import analyze_trade_journal
 
-        trades = self.store.data.get("journal_trades", [])
-        if not trades:
-            return {
-                "total_trades": 0,
-                "win_count": 0,
-                "loss_count": 0,
-                "breakeven_count": 0,
-                "win_rate_pct": 0.0,
-                "profit_factor": 0.0,
-                "payoff_ratio": 0.0,
-                "expectancy_r": 0.0,
-                "total_r_accumulated": 0.0,
-                "net_pnl_dollars": 0.0,
-                "max_drawdown_pct": 0.0,
-                "max_drawdown_dollars": 0.0,
-                "max_drawdown_r": 0.0,
-                "adherence_score_pct": 0.0,
-                "revenge_trade_count": 0,
-                "moved_stop_count": 0,
-                "mae_win_under_50_pct": 0.0,
-                "avg_mfe_left_on_table_r": 0.0,
-                "round_tripped_loss_count": 0,
-                "setup_attribution": {},
-                "capital_gate": {
-                    "overall_status": "NO_TRADES_LOGGED",
-                    "req_100_sample": "FAIL",
-                    "req_profit_factor_1_5": "FAIL",
-                    "req_drawdown_under_10": "FAIL",
-                    "req_adherence_95": "FAIL",
-                    "req_mae_mfe_calibrated": "FAIL",
-                },
-            }
-        return analyze_trade_journal(trades)
+        return analyze_trade_journal(self.store.data.get("journal_trades", []))
 
     def journal_log(self, trade_data: dict) -> dict:
         if not isinstance(trade_data, dict):

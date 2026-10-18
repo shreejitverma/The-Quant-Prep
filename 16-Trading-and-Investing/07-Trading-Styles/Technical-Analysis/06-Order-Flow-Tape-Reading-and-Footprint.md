@@ -34,7 +34,7 @@ When price rallies to a new high while CVD diverges downward, aggressive buying 
 - Deconstruct Bid-Ask Footprint charts: volume clusters, bar delta, delta finish, and trapped trader footprints.
 - Calculate and interpret Cumulative Volume Delta (CVD) and identify institutional absorption divergences.
 - Model the execution mechanics of iceberg orders, spoofing, and queue priority manipulation.
-- Analyze academic microstructure literature (Hasbrouck 1991, Cont et al. 2010, O'Hara 2015) validating order flow predictive power.
+- Analyze academic microstructure literature (Hasbrouck 1991, Cont, Kukanov and Stoikov 2014, O'Hara 2015) validating order flow predictive power.
 
 ---
 
@@ -43,7 +43,8 @@ When price rallies to a new high while CVD diverges downward, aggressive buying 
 ### 1. The Mechanics of the Limit Order Book (LOB)
 
 The Limit Order Book organizes resting limit orders in price-time priority:
-- **Resting Limit Orders (Passive Liquidity)**: Traders place bids below the current price and asks above. They commit capital, face adverse selection risk, and earn or pay exchange maker fees/rebates.
+- **Resting Limit Orders (Passive Liquidity)**: Traders place bids below the current price and asks above.
+  They commit capital, face adverse selection risk, and earn or pay exchange maker fees/rebates.
 - **Market Orders (Aggressive Liquidity)**: Traders execute immediately at the best available quote, paying the bid-ask spread and taker fees.
 - **The Core Rule of Price Movement**:
   Price does not move because of an imbalance in total buyers and sellers (every trade has exactly one buyer and one seller).
@@ -100,7 +101,7 @@ Footprint charts (also known as Cluster Charts) open up the interior of a candle
 |  100.01 |      480  x       95  |   -385  |                                     |
 |  100.00 |      650  x       20  |   -630  |  <--- Trapped Sellers at the Low    |
 +---------------------------------------------------------------------------------+
-|  Bar Summary: Total Volume = 3,322 | Bar Delta = +218 | Delta % = +6.56%        |
+|  Bar Summary: Total Volume = 3,312 | Bar Delta = +218 | Delta % = +6.58%        |
 +---------------------------------------------------------------------------------+
 ```
 
@@ -150,8 +151,9 @@ Absorption occurs when a passive institutional participant deploys massive limit
 |       security prices, reflecting private information incorporation.            |
 |  3. Cont, Stoikov, and Talreja (2010, Operations Research):                     |
 |     - Formulated continuous Poisson order book dynamics.                        |
-|     - Proved order flow imbalance (OFI) has a linear relationship with          |
-|       short-term price changes across equities and futures.                     |
+|     Cont, Kukanov, and Stoikov (2014, Journal of Financial Econometrics):       |
+|     - Showed order flow imbalance (OFI) has a linear relationship with          |
+|       short-term price changes in US equities.                                  |
 |  4. Cartea, Jaimungal, and Penalva (2015, Algorithmic and High-Frequency Trading):|
 |     - Validated that order book queue position and volume delta provide         |
 |       statistically significant short-term alpha for market makers.             |
@@ -302,7 +304,7 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 > That unexpected order flow shocks have a permanent price impact on asset prices.
 > The permanent impact represents the market's assessment of private information carried by aggressive orders.
 
-> [!question]- mkt-ta-175 | What is Order Flow Imbalance (OFI) as defined by Cont, Stoikov, and Talreja (2010)?
+> [!question]- mkt-ta-175 | What is Order Flow Imbalance (OFI) as defined by Cont, Kukanov, and Stoikov (2014)?
 > A quantitative metric measuring the net change in order book depth: changes in limit order arrivals, cancellations, and market order executions across the best bid and ask.
 > OFI exhibits a strong, linear contemporaneous relationship with price changes.
 
@@ -381,6 +383,7 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 - Lee, C. M., & Ready, M. J. (1991). *Inferring trade direction from intraday data*. The Journal of Finance, 46(2), 733-746.
 - Hasbrouck, J. (1991). *Measuring the information content of stock trades*. The Journal of Finance, 46(1), 179-207.
 - Cont, R., Stoikov, S., & Talreja, R. (2010). *A stochastic model for order book dynamics*. Operations Research, 58(3), 549-563.
+- Cont, R., Kukanov, A., & Stoikov, S. (2014). *The price impact of order book events*. Journal of Financial Econometrics, 12(1), 47-88.
 - Easley, D., López de Prado, M. M., & O'Hara, M. (2012). *Flow toxicity and liquidity in a high-frequency world*. The Review of Financial Studies, 25(5), 1457-1493.
 - Cartea, Á., Jaimungal, S., & Penalva, J. (2015). *Algorithmic and High-Frequency Trading*. Cambridge University Press.
 - O'Hara, M. (2015). *High frequency market microstructure*. Journal of Financial Economics, 116(2), 257-270.

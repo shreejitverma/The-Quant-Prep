@@ -35,7 +35,7 @@ The complete 8-variable model is specified as:
 
 $$\begin{aligned}
 M = &-4.84 + 0.920 \times \text{DSRI} + 0.528 \times \text{GMI} + 0.404 \times \text{AQI} + 0.892 \times \text{SGI} \\
-&+ 0.115 \times \text{DEPI} - 0.172 \times \text{SGAI} + 4.037 \times \text{TATA} + 0.0327 \times \text{LVGI}
+&+ 0.115 \times \text{DEPI} - 0.172 \times \text{SGAI} + 4.679 \times \text{TATA} - 0.327 \times \text{LVGI}
 \end{aligned}$$
 
 ```
@@ -95,6 +95,7 @@ M = &-4.84 + 0.920 \times \text{DSRI} + 0.528 \times \text{GMI} + 0.404 \times \
    $$\text{Leverage} = \frac{\text{Current Liabilities} + \text{Long-Term Debt}}{\text{Total Assets}}$$
    $$\text{LVGI} = \frac{\text{Leverage}_t}{\text{Leverage}_{t-1}}$$
    A ratio > 1.0 indicates rising leverage, heightening risk of debt covenant violations.
+   In the estimated model LVGI carries a negative coefficient (-0.327), so rising leverage on its own lowers the M-Score.
 
 8. **Total Accruals to Total Assets (TATA)**:
    $$\text{TATA} = \frac{\text{Net Income}_t - \text{Operating Cash Flow}_t}{\text{Total Assets}_t}$$
@@ -143,7 +144,7 @@ Piotroski demonstrated that value stocks are heavily populated by financially di
 A quantitative screen combining value with F-Score generates powerful risk-adjusted alpha:
 - **F-Score 8 to 9 (Strong Fundamentals)**: High historical outperformance, robust balance sheets, accelerating cash flows.
 - **F-Score 0 to 2 (Weak Fundamentals)**: High probability of bankruptcy, dilutive share issuances, deteriorating margins.
-- A long/short strategy (Long Top Quintile BM with F-Score 8-9, Short Top Quintile BM with F-Score 0-2) generated 23% annualized returns between 1972 and 1996.
+- A long/short strategy (Long Top Quintile BM with F-Score 8-9, Short Top Quintile BM with F-Score 0-2) generated 23% annualized returns between 1976 and 1996.
 
 ### 3. Comparing Fraud, Distress, and Quality Frameworks
 
@@ -196,7 +197,7 @@ Evaluate Apex Logistics across two fiscal years:
 3. **AQI**:
    $$\text{Asset Non-PP&E/CA}_t = 1 - \frac{330 + 350}{780} = 1 - \frac{680}{780} = 1 - 0.8718 = 0.1282$$
    $$\text{Asset Non-PP&E/CA}_{t-1} = 1 - \frac{220 + 300}{600} = 1 - \frac{520}{600} = 1 - 0.8667 = 0.1333$$
-   $$\text{AQI} = \frac{0.1282}{0.1333} = 0.9617$$
+   $$\text{AQI} = \frac{0.12821}{0.13333} = 0.9615$$
 
 4. **SGI**:
    $$\text{SGI} = \frac{1040}{800} = 1.3000$$
@@ -204,7 +205,7 @@ Evaluate Apex Logistics across two fiscal years:
 5. **DEPI**:
    $$\text{Gross PP&E approx} = 300 + 30 = 330; \quad \text{Dep Rate}_{t-1} = \frac{30}{330} = 0.0909$$
    $$\text{Gross PP&E approx}_t = 350 + 25 = 375; \quad \text{Dep Rate}_t = \frac{25}{375} = 0.0667$$
-   $$\text{DEPI} = \frac{0.0909}{0.0667} = 1.3628$$
+   $$\text{DEPI} = \frac{30/330}{25/375} = \frac{0.09091}{0.06667} = 1.3636$$
 
 6. **SGAI**:
    $$\text{SGA/Sales}_t = \frac{176.8}{1040} = 0.1700; \quad \text{SGA/Sales}_{t-1} = \frac{120}{800} = 0.1500$$
@@ -219,14 +220,14 @@ Evaluate Apex Logistics across two fiscal years:
 
 #### Compute M-Score:
 $$\begin{aligned}
-M = &-4.84 + 0.920(1.5385) + 0.528(1.0769) + 0.404(0.9617) + 0.892(1.3000) \\
-&+ 0.115(1.3628) - 0.172(1.1333) + 4.037(0.0577) + 0.0327(1.1692) \\
-M = &-4.84 + 1.4154 + 0.5686 + 0.3885 + 1.1596 + 0.1567 - 0.1949 + 0.2329 + 0.0382 \\
-M = &-1.075
+M = &-4.84 + 0.920(1.5385) + 0.528(1.0769) + 0.404(0.9615) + 0.892(1.3000) \\
+&+ 0.115(1.3636) - 0.172(1.1333) + 4.679(0.0577) - 0.327(1.1692) \\
+M = &-4.84 + 1.4154 + 0.5686 + 0.3885 + 1.1596 + 0.1568 - 0.1949 + 0.2699 - 0.3823 \\
+M = &-1.458
 \end{aligned}$$
 
 M-Score Verdict:
-Apex Logistics yields an M-Score of -1.075, substantially higher than the critical threshold of -1.78.
+Apex Logistics yields an M-Score of -1.458, well above the critical threshold of -1.78.
 This signals a high statistical probability of accounting manipulation, driven by extreme receivables expansion (DSRI = 1.54) and slowing depreciation (DEPI = 1.36).
 
 ### Part 2: Compute Piotroski F-Score
@@ -296,7 +297,7 @@ Apex Logistics scores a dismal 2 out of 9, placing it squarely in the distress /
 > An F-Score of 0, 1, or 2, identifying financially deteriorating companies and prime short candidates.
 
 > [!question]- mkt-fa-177 | What historical annualized excess return did Piotroski find by buying high F-Score value stocks and shorting low F-Score value stocks?
-> Approximately 23% annualized spread between 1972 and 1996.
+> Approximately 23% annualized spread between 1976 and 1996.
 
 > [!question]- mkt-fa-178 | What is the primary difference between Altman Z-Score and Beneish M-Score?
 > Altman Z-Score evaluates bankruptcy and default probability, while Beneish M-Score specifically evaluates fraud and accounting manipulation.

@@ -1,16 +1,17 @@
 ---
 type: moc
-title: "Markets Mastery OS - Live Study Board & Progression Dashboard"
+title: "Markets Mastery OS - Study Board Template"
 track: [quant-trader, quant-research, quant-risk]
 tier: core
 status: solid
 tags: [study-board, mastery-dashboard, capital-gate, progress, analytics]
 ---
 
-# Markets Mastery OS - Live Study Board & Progression Dashboard
+# Markets Mastery OS - Study Board Template
 
 Markets Mastery OS integrates quantitative finance, market microstructure, and systematic strategy research.
-This study board tracks real-time progress across 19 curriculum pillars, 11 simulation engines, and 39 automated stage gates (last updated: 2026-10-17 18:23 UTC).
+This tracked file is the empty-state template of the study board across 19 curriculum pillars, 11 simulation engines, and 39 automated stage gates.
+Run `python3 16-Trading-and-Investing/scripts/mastery.py` to write your live board to `$QP_HOME/STUDY_BOARD.md`, outside the repo, so your progress is never committed.
 
 ---
 
@@ -30,7 +31,7 @@ Overall curriculum scope encompasses 2248 cards, 11 pure-Python simulation engin
 | **Card Retention & Mastery** | >= 80.0% | 0.0% (0/2248 cards, 0 mature) | In Progress |
 | **Simulation Engine Execution** | 11/11 Engines | 0/11 engines executed | In Progress |
 | **Automated Stage Gates** | 39 Gates | 0/39 gates passed | In Progress |
-| **Capital Gate Eligibility** | 100 trades, PF >= 1.50, DD <= 10% | Pending Paper Sample | PENDING |
+| **Capital Gate Eligibility** | 100 trades, PF >= 1.50, DD <= 10R | Pending Paper Sample | PENDING |
 
 ---
 
@@ -100,8 +101,8 @@ The Trading Lab contains 11 pure-Python standard-library simulation engines loca
 
 ### Key Criteria for Live Deployment
 - **Sample Depth**: Minimum 100 documented trades executed according to pre-registered setup rules.
-- **Profit Factor**: Realized Gross Profit / Realized Gross Loss >= 1.50 across the sample.
-- **Maximum Drawdown**: Realized portfolio peak-to-trough equity decline <= 10.0%.
+- **Profit Factor**: Gross R won / Gross R lost >= 1.50 across the sample.
+- **Maximum Drawdown**: Peak-to-trough decline of cumulative R <= 10.0R (10% of equity at 1% risk per trade).
 - **Strict Rule Adherence**: >= 95.0% trade adherence score with 0 revenge trades and 0 moved stop losses.
 - **MAE/MFE Efficiency**: >= 70.0% of winning trades experiencing Maximum Adverse Excursion <= 0.5R.
 
@@ -114,7 +115,7 @@ The Trading Lab contains 11 pure-Python standard-library simulation engines loca
 - Review cards for Fundamental Analysis & Forensics (currently 0.0% mastered)
 - Execute Trading Lab simulation engine: ./qp lab run games
 - Execute Trading Lab simulation engine: ./qp lab run lob_sim
-- Complete 100-trade journal logging and pass Capital Gate rule adherence
+- Log closed trades with `qp journal log` until the 100-trade Capital Gate passes (`qp journal` shows it)
 
 ---
 

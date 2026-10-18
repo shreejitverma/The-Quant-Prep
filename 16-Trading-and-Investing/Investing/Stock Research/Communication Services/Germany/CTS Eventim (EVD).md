@@ -22,10 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:28
 market_data:
-  ticker: EVD
-  52w_high: 44.56
-  52w_low: 44.56
-  data_quality: ok
+  ticker: EVD.DE
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: CTS Eventim (EVD)

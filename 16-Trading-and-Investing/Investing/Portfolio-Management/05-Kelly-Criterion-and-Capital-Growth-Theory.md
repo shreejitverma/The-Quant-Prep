@@ -127,21 +127,24 @@ Evaluating the growth rate function at multiples of $f^*$:
 
 ```
 +-----------------------------------------------------------------------+
-|               GROWTH VS RISK TRADEOFF ACROSS KELLY FRACTIONS          |
+|             GROWTH VS RISK TRADEOFF ACROSS KELLY FRACTIONS            |
 +-----------------------------------------------------------------------+
-| Fraction      | % of Max Growth | Volatility  | Prob of 50% Drawdown  |
-|---------------+-----------------+-------------+-----------------------|
-| 0.25 f*       | 43.75%          | 0.25 sigma  | 5.8%                  |
-| 0.50 f*       | 75.00%          | 0.50 sigma  | 13.5%                 |
-| 0.75 f*       | 93.75%          | 0.75 sigma  | 23.3%                 |
-| 1.00 f*       | 100.00%         | 1.00 sigma  | 33.3%                 |
-| 1.50 f*       | 75.00%          | 1.50 sigma  | 57.7%                 |
-| 2.00 f*       | 0.00%           | 2.00 sigma  | 100.0% (asymptote)    |
+| Fraction | % Max Growth | Volatility | P(ever halve) | P(halve<double)|
+|----------+--------------+------------+---------------+----------------|
+| 0.25 f*  | 43.75%       | 0.25 sigma | 0.78%         | 0.78%          |
+| 0.50 f*  | 75.00%       | 0.50 sigma | 12.50%        | 11.11%         |
+| 0.75 f*  | 93.75%       | 0.75 sigma | 31.50%        | 23.95%         |
+| 1.00 f*  | 100.00%      | 1.00 sigma | 50.00%        | 33.33%         |
+| 1.50 f*  | 75.00%       | 1.50 sigma | 79.37%        | 44.25%         |
+| 2.00 f*  | 0.00%        | 2.00 sigma | 100.00%       | 50.00%         |
 +-----------------------------------------------------------------------+
 ```
 
-Notice that Half Kelly achieves 75% of the theoretical maximum growth rate with only 50% of the volatility and a dramatic reduction in drawdown severity.
-Conversely, betting at $1.5 f^*$ delivers the exact same growth rate as Half Kelly while tripling the drawdown risk.
+For a Kelly fraction $c = f / f^*$, log wealth in excess of the risk-free growth path is a Brownian motion with $2 \times \text{drift} / \text{variance} = a = 2/c - 1$, so the probability of ever falling to half of the current wealth is $0.5^{a}$.
+The probability of halving before doubling is $(1 - 2^{-a}) / (2^{a} - 2^{-a})$, which is one-third at Full Kelly and tends to one-half as $c \to 2$.
+
+Notice that Half Kelly achieves 75% of the theoretical maximum growth rate with only 50% of the volatility and a dramatic reduction in drawdown severity (12.5% versus 50% chance of ever halving).
+Conversely, betting at $1.5 f^*$ delivers the exact same growth rate as Half Kelly while raising the chance of ever halving from 12.5% to 79.4%, more than six times higher.
 
 ### 4. Multi-Asset Matrix Kelly Optimization
 
@@ -212,7 +215,7 @@ Because return estimation error is typically an order of magnitude larger than c
 > f* = Sigma^(-1) * (mu - r * 1), where Sigma is the covariance matrix.
 
 > [!question]- mkt-pf-141 | What is the probability of a 50% drawdown under a Full Kelly sizing strategy?
-> Exactly 33.3% (one-third).
+> The probability of ever halving is 0.5^(2/c - 1) = 50% at c = 1, while the probability of halving before doubling is exactly one-third (33.3%).
 
 > [!question]- mkt-pf-142 | What is the utility function implicitly maximized by the Kelly Criterion?
 > Logarithmic utility: U(W) = ln(W).

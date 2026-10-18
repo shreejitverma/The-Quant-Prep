@@ -13,9 +13,10 @@ from typing import Any
 from .base import LabResult, Param, TradingLabEngine
 from .registry import register
 
-# Paths that compound past this stop there: it exceeds global financial wealth, and compounding
-# further overflows float equity to inf, which turns drawdowns and the summary statistics into NaN.
+# Reported equity is clamped here: it exceeds global financial wealth, and float equity would overflow
+# to inf. Paths keep trading in log space, so drawdowns after the ceiling still count.
 EQUITY_CEILING = 1e15
+LOG_EQUITY_CEILING = math.log(EQUITY_CEILING)
 
 
 class PositionSizingEngine(TradingLabEngine):
@@ -154,48 +155,57 @@ class PositionSizingEngine(TradingLabEngine):
         sample_paths = []
 
         for sim_idx in range(n_sims):
-            equity = capital
-            peak = capital
+            log_equity = math.log(capital)
+            to_peak = 1.0
             sim_max_dd = 0.0
-            equity_curve = [equity]
+            equity_curve = [capital]
+            ruined = False
 
             time_under_water = 0
             current_under_water = 0
 
-            for _ in range(n_trades):
-                bet_size = equity * f_risk
+            for trade_idx in range(n_trades):
                 if rng.random() < p_win:
-                    pnl = bet_size * b
+                    growth = 1.0 + f_risk * b
+                elif dist_mode == "fat_tailed" and rng.random() < 0.05:
+                    # 5% probability of gap/slippage causing 2.5x standard loss
+                    growth = 1.0 - f_risk * 2.5
                 else:
-                    if dist_mode == "fat_tailed" and rng.random() < 0.05:
-                        # 5% probability of gap/slippage causing 2.5x standard loss
-                        pnl = -bet_size * 2.5
-                    else:
-                        pnl = -bet_size
+                    growth = 1.0 - f_risk
 
-                equity += pnl
-                if equity <= 0:
-                    equity = 0.0
-                capped = equity >= EQUITY_CEILING
-                if capped:
-                    equity = EQUITY_CEILING
+                if growth <= 0.0:
+                    ruined = True
+                    sim_max_dd = 1.0
+                    current_under_water += n_trades - trade_idx
+                    time_under_water = max(time_under_water, current_under_water)
+                    if sim_idx < 5:
+                        equity_curve.append(0.0)
+                    break
 
-                if equity > peak:
-                    peak = equity
+                log_equity += math.log(growth)
+                to_peak *= growth
+                if to_peak >= 1.0:
+                    to_peak = 1.0
                     current_under_water = 0
                 else:
                     current_under_water += 1
                     if current_under_water > time_under_water:
                         time_under_water = current_under_water
 
-                dd = (peak - equity) / peak if peak > 0 else 1.0
+                dd = 1.0 - to_peak
                 if dd > sim_max_dd:
                     sim_max_dd = dd
 
-                equity_curve.append(equity)
-                if equity <= 0 or capped:
-                    capped_count += capped
-                    break
+                if sim_idx < 5:
+                    equity_curve.append(min(math.exp(min(log_equity, LOG_EQUITY_CEILING)), EQUITY_CEILING))
+
+            if ruined:
+                equity = 0.0
+            elif log_equity >= LOG_EQUITY_CEILING:
+                equity = EQUITY_CEILING
+                capped_count += 1
+            else:
+                equity = math.exp(log_equity)
 
             final_equities.append(equity)
             max_drawdowns.append(sim_max_dd)

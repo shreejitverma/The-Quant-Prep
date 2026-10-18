@@ -112,15 +112,15 @@ Trend following exhibits a return profile structurally distinct from traditional
 |     - Tested 58 liquid futures contracts across 4 asset classes over 25 years.  |
 |     - Documented statistically significant positive auto-correlation at horizons|
 |       up to 12 months, generating a t-statistic exceeding 5.0.                  |
-|  2. Hurst, Ooi, and Pedersen (2017, Journal of Financial Economics):           |
+|  2. Hurst, Ooi, and Pedersen (2017, Journal of Portfolio Management):           |
 |     - Extended TSMOM backtest across a full century (1880 to 2016).             |
 |     - Confirmed trend following was profitable in every single decade,          |
 |       generating an annualized gross Sharpe ratio of ~0.8 across 136 years.     |
-|  3. Fung and Hsieh (2001, Journal of Finance):                                  |
+|  3. Fung and Hsieh (2001, Review of Financial Studies):                         |
 |     - Replicated CTA return profiles using lookback straddle options.           |
 |     - Proved trend following provides unique non-linear diversification to      |
 |       equity and bond portfolios during market distress.                        |
-|  4. Lempérière et al. (2014, Quantitative Finance):                             |
+|  4. Lempérière et al. (2014, Journal of Investment Strategies):                 |
 |     - Evaluated two centuries of trend following (1800-2014).                   |
 |     - Demonstrated that trend following returns are invariant to historical     |
 |       macroeconomic regimes, central banking structures, and technological shifts.|
@@ -343,9 +343,9 @@ Over the subsequent month, a geopolitical crisis erupts in the Middle East:
 
 ## Further reading
 
-- Fung, W., & Hsieh, D. A. (2001). *The risk in hedge fund strategies: Theory and evidence from trend followers*. The Journal of Finance, 56(1), 313-341.
+- Fung, W., & Hsieh, D. A. (2001). *The risk in hedge fund strategies: Theory and evidence from trend followers*. The Review of Financial Studies, 14(2), 313-341.
 - Moskowitz, T. J., Ooi, Y. H., & Pedersen, L. H. (2012). *Time series momentum*. Journal of Financial Economics, 104(2), 228-250.
-- Lempérière, Y., Deremble, C., Seager, P., Potters, M., & Bouchaud, J. P. (2014). *Two centuries of trend following*. Quantitative Finance, 14(8), 1431-1445.
+- Lempérière, Y., Deremble, C., Seager, P., Potters, M., & Bouchaud, J. P. (2014). *Two centuries of trend following*. Journal of Investment Strategies, 3(3), 41-61.
 - Hurst, B., Ooi, Y. H., & Pedersen, L. H. (2017). *A century of evidence on trend-following investing*. The Journal of Portfolio Management, 44(1), 39-51.
 - Greyserman, A., & Kaminski, K. (2014). *Trend Following with Managed Futures: The Search for Crisis Alpha*. John Wiley & Sons.
 - Carver, R. (2015). *Systematic Trading: A Unique New Method for Designing Trading and Investing Systems*. Harriman House.

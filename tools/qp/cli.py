@@ -459,6 +459,50 @@ def cmd_lab(vault: Vault, store: Store | None, args) -> int:
     return lab_main(args.lab_args, store=store)
 
 
+def cmd_journal(vault: Vault, store: Store, args) -> int:
+    from .lab.journal_stats import analyze_trade_journal
+
+    if args.journal_subcommand == "log":
+        trade: dict[str, str] = {}
+        for item in args.fields:
+            key, sep, val = item.partition("=")
+            if not sep or not key:
+                raise CliError(
+                    f"expected key=value, got {item!r}",
+                    hint="e.g. `qp journal log r_multiple=1.5 pnl=150 mae_r=0.3 mfe_r=1.8 adherence=true`",
+                )
+            trade[key] = val
+        entry = store.record_journal_trade(trade)
+        total = len(store.data.get("journal_trades", []))
+        emit(
+            f"logged: {entry['trade_id']} ({entry['r_multiple']:+g}R, {total} trades in the journal)",
+            help_lines=["`qp journal` shows the journal stats and Capital Gate"],
+        )
+        return EXIT_OK
+    if args.fields:
+        raise CliError("`qp journal stats` takes no fields; use `qp journal log key=value ...` to log a trade")
+
+    stats = analyze_trade_journal(store.data.get("journal_trades", []))
+    cg = stats["capital_gate"]
+    rows = [
+        ["trades", stats["total_trades"]],
+        ["win_rate_pct", stats["win_rate_pct"]],
+        ["profit_factor", stats["profit_factor"]],
+        ["expectancy_r", stats["expectancy_r"]],
+        ["max_drawdown_r", stats["max_drawdown_r"]],
+        ["adherence_score_pct", stats["adherence_score_pct"]],
+        ["capital_gate", cg["overall_status"]],
+    ]
+    emit(
+        table("journal", ["metric", "value"], rows),
+        help_lines=[
+            "`qp journal log r_multiple=<R> pnl=<$> mae_r=<R> mfe_r=<R> adherence=<true|false>` logs a closed trade",
+            "optional fields: setup, entry_price, exit_price, stop_loss, take_profit, shares, is_revenge, moved_stop, duration_minutes",
+        ],
+    )
+    return EXIT_OK
+
+
 def cmd_markets(vault: Vault, store: Store | None, args) -> int:
     from . import markets
 
@@ -614,12 +658,15 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--open", action="store_true", help="open a browser")
     sp = add("lab", cmd_lab, "run interactive trading lab simulation engines")
     sp.add_argument("lab_args", nargs="*", help="arguments for lab (list, info <id>, run <id>)")
+    sp = add("journal", cmd_journal, "log closed trades and show trade journal stats and the Capital Gate")
+    sp.add_argument("journal_subcommand", nargs="?", choices=("stats", "log"), default="stats")
+    sp.add_argument("fields", nargs="*", help="key=value trade fields for `log`")
     sp = add("markets", cmd_markets, "inspect markets tracks, evaluate stage gates, and calculate holistic mastery")
     sp.add_argument("markets_subcommand", nargs="?", choices=("status", "gates", "mastery"), default="status")
     sp.add_argument(
         "--persona",
         default="holistic",
-        choices=("holistic", "quant_trader", "quant_researcher", "macro_derivatives_trader", "retail_algorithmic_trader"),
+        choices=markets.PERSONA_CHOICES,
         help="persona archetype for mastery scoring",
     )
     return p

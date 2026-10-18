@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:24
 market_data:
-  ticker: WEGE3
-  data_quality: ok
+  ticker: WEGE3.SA
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: WEG SA (WEGE3)

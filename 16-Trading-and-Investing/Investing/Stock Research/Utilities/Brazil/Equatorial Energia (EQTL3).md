@@ -2,7 +2,7 @@
 ticker: EQTL3
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: -0.0%
+  implied_growth_rate: 0.0%
   implied_growth_status: solved
   implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:20
 market_data:
-  ticker: EQTL3
-  data_quality: ok
+  ticker: EQTL3.SA
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Equatorial Energia (EQTL3)

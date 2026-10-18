@@ -42,8 +42,10 @@ Beyond delta-gamma rebalancing, cross-Greek flows - notably Vanna (delta changes
 ### 1. Market Maker Inventory Assumptions and GEX Formulation
 
 To calculate aggregate dealer positioning from public exchange open interest (OI), quantitative desks make structural assumptions regarding retail and institutional customer trading behavior:
-- **Customers are net buyers of protective puts**: Institutional asset managers systematically purchase out-of-the-money puts for downside portfolio insurance. Consequently, options dealers are structurally **short puts**.
-- **Customers are net sellers of covered calls and buyers of upside calls**: Retail investors and yield-enhancement funds sell call options against long stock (covered call strategies), while retail speculators purchase out-of-the-money call options. On net balance across index chains, dealers are structurally **long calls**.
+- **Customers are net buyers of protective puts**: Institutional asset managers systematically purchase out-of-the-money puts for downside portfolio insurance.
+  Consequently, options dealers are structurally **short puts**.
+- **Customers are net sellers of covered calls and buyers of upside calls**: Retail investors and yield-enhancement funds sell call options against long stock (covered call strategies), while retail speculators purchase out-of-the-money call options.
+  On net balance across index chains, dealers are structurally **long calls**.
 
 For a single option contract $i$ on strike $K_i$ with open interest $\text{OI}_i$, underlying spot price $S$, and contract multiplier $M$ (typically $100$ shares):
 
@@ -88,13 +90,17 @@ The net sign of aggregate GEX establishes two fundamentally distinct market regi
 
 1. **Positive Gamma Regime ($\text{GEX} > 0$)**:
    - Dealers hold net positive gamma.
-   - When the market rises, dealer delta increases ($\Delta_{\text{portfolio}} > 0$). To return to delta-neutral, dealers must **sell** underlying stock.
-   - When the market drops, dealer delta decreases ($\Delta_{\text{portfolio}} < 0$). To restore neutrality, dealers must **buy** underlying stock.
-   - Economic outcome: Dealers act as systemic liquidity providers. Realized volatility is compressed below implied volatility, and intraday price action exhibits strong mean reversion.
+   - When the market rises, dealer delta increases ($\Delta_{\text{portfolio}} > 0$).
+   - To return to delta-neutral, dealers must **sell** underlying stock.
+   - When the market drops, dealer delta decreases ($\Delta_{\text{portfolio}} < 0$).
+   - To restore neutrality, dealers must **buy** underlying stock.
+   - Economic outcome: Dealers act as systemic liquidity providers.
+   - Realized volatility is compressed below implied volatility, and intraday price action exhibits strong mean reversion.
 
 2. **Negative Gamma Regime ($\text{GEX} < 0$)**:
    - Dealers hold net negative gamma (short put gamma dominates).
-   - When the market declines, dealer short delta deepens rapidly. To prevent runaway directional losses, dealers must **sell** stock into a falling market.
+   - When the market declines, the short puts gain delta, so the dealer book turns increasingly long delta.
+   - To prevent runaway directional losses, dealers must **sell** stock into a falling market.
    - When the market rebounds, dealers must aggressively **buy** stock into the rally.
    - Economic outcome: Dealer hedging becomes pro-cyclical, draining market depth, triggering liquidity cascades, and amplifying realized volatility.
 
@@ -113,8 +119,9 @@ $$\text{GEX}_{\text{total}}(S^*) = \sum_{i \in \text{Calls}} \text{OI}_i M \Gamm
 While gamma hedging responds strictly to changes in spot price ($\Delta S$), second-order Greek exposures trigger massive mechanical rebalancing from changes in volatility ($\Delta \sigma$) and time ($\Delta t$):
 
 1. **Vanna Flows ($\frac{\partial \Delta}{\partial \sigma}$)**:
-   - Recall that for an out-of-the-money put, Vanna is positive.
-   - When a market sells off, implied volatility surges ($\Delta \sigma > 0$). High IV increases put deltas toward $-1.0$, requiring dealers to sell more stock.
+   - Recall that for an out-of-the-money put ($K < S$, $d_2 > 0$), Vanna $= -e^{-q T} \phi(d_1) d_2 / \sigma$ is negative.
+   - When a market sells off, implied volatility surges ($\Delta \sigma > 0$).
+   - With negative Vanna, higher IV pushes put deltas further toward $-1.0$, so dealers short those puts must sell more stock.
    - Conversely, when the market stabilizes or rallies, implied volatility drops sharply ($\Delta \sigma < 0$).
    - This volatility collapse causes put deltas to shrink toward zero.
    - Because dealers were short those puts and short stock as a hedge, the vanishing put delta forces dealers to aggressively **buy back their short stock hedges**.
@@ -130,10 +137,12 @@ While gamma hedging responds strictly to changes in spot price ($\Delta S$), sec
 ### 5. Strike Pinning Mechanics
 
 On options expiration days, the underlying asset frequently converges toward and "pins" to a major open interest strike price:
-- Suppose a massive concentration of call and put open interest resides at strike $K_{\text{pin}}$.
-- If spot drifts slightly above $K_{\text{pin}}$, call gamma increases while put gamma vanishes. Dealers must sell stock to neutralize expanding call deltas, pushing spot back down toward $K_{\text{pin}}$.
-- If spot drifts slightly below $K_{\text{pin}}$, put gamma explodes. Dealers must buy stock to neutralize put deltas, lifting spot back up toward $K_{\text{pin}}$.
-- This bilateral gamma feedback loop traps the spot price in a tight band around the strike until the final minutes of trading.
+- Suppose a massive concentration of open interest resides at strike $K_{\text{pin}}$ and dealers are net **long** gamma there (for example, customers overwrite calls or sell straddles at that strike).
+- Gamma at a single strike is identical for its calls and puts, and it peaks near $K_{\text{pin}}$ as expiry approaches.
+- If spot drifts slightly above $K_{\text{pin}}$, the long-gamma dealer book gains delta, so dealers sell stock and push spot back down toward $K_{\text{pin}}$.
+- If spot drifts slightly below $K_{\text{pin}}$, the book loses delta, so dealers buy stock and lift spot back up toward $K_{\text{pin}}$.
+- This bilateral feedback loop traps the spot price in a tight band around the strike until the final minutes of trading.
+- The direction depends on the sign of dealer gamma: if dealers are net **short** gamma at the strike (for example, short the puts customers bought), they buy above and sell below the strike, which pushes spot away from it and amplifies the move instead of pinning it.
 
 ---
 
@@ -147,49 +156,58 @@ A quantitative analyst evaluates the S&P 500 options chain expiring in 14 days (
 - Multiplier: $M = 100$.
 - The analyst aggregates open interest across two dominant strikes:
   1. **Strike 5050 Call**: $\text{OI} = 50,000\text{ contracts}$.
-     - Call Gamma: $\Gamma_{5050} = 0.00220$.
   2. **Strike 4950 Put**: $\text{OI} = 70,000\text{ contracts}$.
-     - Put Gamma: $\Gamma_{4950} = 0.00195$.
+- Rates and dividends are set to zero, so $\Gamma = \phi(d_1) / (S \sigma \sqrt{T})$ with $\sqrt{T} = 0.19585$, $\sigma \sqrt{T} = 0.031336$ and $S \sigma \sqrt{T} = 156.68$.
+  1. **5050 Call**: $d_1 = \frac{\ln(5000/5050) + 0.5(0.16)^2(0.03836)}{0.031336} = \frac{-0.009950 + 0.000491}{0.031336} = -0.3019$, $\phi(d_1) = 0.38117$, so $\Gamma_{5050} = 0.38117 / 156.68 = 0.002433$.
+  2. **4950 Put**: $d_1 = \frac{\ln(5000/4950) + 0.000491}{0.031336} = \frac{0.010050 + 0.000491}{0.031336} = +0.3364$, $\phi(d_1) = 0.37700$, so $\Gamma_{4950} = 0.37700 / 156.68 = 0.002406$.
 
 1. **Compute Call Gamma Exposure**:
-   $$\text{Call GEX} = +50,000 \times 100 \times 0.00220 \times 5000 = +\$55,000,000\text{ per 1 point spot move}$$
+   $$\text{Call GEX} = +50,000 \times 100 \times 0.002433 \times 5000 = +\$60,825,000\text{ per 1 point spot move}$$
 
 2. **Compute Put Gamma Exposure (Dealers Short Puts)**:
-   $$\text{Put GEX} = -70,000 \times 100 \times 0.00195 \times 5000 = -\$68,250,000\text{ per 1 point spot move}$$
+   $$\text{Put GEX} = -70,000 \times 100 \times 0.002406 \times 5000 = -\$84,210,000\text{ per 1 point spot move}$$
 
 3. **Calculate Net Spot GEX**:
-   $$\text{Net GEX} = +\$55,000,000 - \$68,250,000 = -\$13,250,000\text{ per point}$$
+   $$\text{Net GEX} = +\$60,825,000 - \$84,210,000 = -\$23,385,000\text{ per point}$$
 
 4. **Calculate Dollar GEX per 1% Move**:
-   $$\text{Dollar GEX} = \text{Net GEX} \times \frac{S}{100} = -\$13,250,000 \times 50 = -\$662,500,000$$
+   $$\text{Dollar GEX} = \text{Net GEX} \times \frac{S}{100} = -\$23,385,000 \times 50 = -\$1,169,250,000$$
 
 5. **Regime Diagnosis**:
-   - The market is in a **Short Gamma Regime** ($\text{Dollar GEX} = -\$662.5\text{M}$).
-   - For every $1\%$ drop in the index, options dealers are forced to sell approximately $\$662.5\text{M}$ of S&P 500 futures and equities to maintain delta neutrality, accelerating downside momentum.
+   - The market is in a **Short Gamma Regime** ($\text{Dollar GEX} = -\$1,169.25\text{M}$).
+   - For every $1\%$ drop in the index, options dealers are forced to sell approximately $\$1.17\text{B}$ of S&P 500 futures and equities to maintain delta neutrality, accelerating downside momentum.
 
 ### Example 2: Quantifying Vanna Hedging Flow on Volatility Drop
 
 Following a major CPI print, the S&P 500 rallies, and the VIX drops by $3.0$ volatility points ($\Delta \sigma = -0.03$).
-A market making desk is short $100,000$ contracts of 4800 strike OTM puts.
+A market making desk is short $100,000$ contracts of 4800 strike OTM puts ($100,000 \times 100 = 10,000,000$ index units).
 - Current Spot: $S = \$5,000.00$.
 - Strike: $K = \$4,800.00$.
-- Average Put Vanna: $\text{Vanna}_{\text{put}} = +0.012$ (rate of delta change per $1.0$ change in volatility).
+- Time to Expiry: $T = 30 / 365 = 0.08219$ years ($\sqrt{T} = 0.28669$).
+- Implied Volatility Before the Print: $\sigma = 20\%$ ($0.20$); rates and dividends are set to zero.
 - Contract Multiplier: $100$.
 
-1. **Compute Delta Change per Contract**:
-   $$\Delta (\text{Delta}) = \text{Vanna} \times \Delta \sigma = +0.012 \times (-0.03) = -0.00036\text{ per contract}$$
-   Because the desk is short puts, their portfolio delta change is:
-   $$\Delta \text{Delta}_{\text{portfolio}} = -(-100,000 \times 100) \times (-0.00036) = +10,000,000 \times (-0.00036) = -3,600\text{ shares}$$
-   Wait, let's verify the exact sign:
-   For an OTM put, when volatility drops, the put value collapses and its Delta shrinks from e.g. $-0.15$ toward $0.00$ (delta increases from negative to near zero).
-   The desk holding short puts had previously sold stock as a hedge (short delta hedge).
-   As the put delta goes from $-0.15$ to $-0.10$, the required short stock hedge drops by $0.05$ shares per option.
-   For $100,000$ contracts ($10,000,000$ shares equivalent):
-   $$\text{Shares to Buy} = 10,000,000 \times 0.05 = 500,000\text{ shares}$$
+1. **Compute the Put Delta and Vanna Before the Print**:
+   $$d_1 = \frac{\ln(5000/4800) + 0.5(0.20)^2(0.08219)}{0.20 \times 0.28669} = \frac{0.040822 + 0.001644}{0.057338} = 0.7406$$
+   $$d_2 = 0.7406 - 0.0573 = 0.6833$$
+   $$\Delta_{\text{put}} = N(d_1) - 1 = 0.7705 - 1 = -0.2295$$
+   $$\text{Vanna} = -\phi(d_1) \frac{d_2}{\sigma} = -0.30325 \times \frac{0.6833}{0.20} = -1.0361\text{ per 1.00 of volatility}$$
+   Vanna is negative because $d_2 > 0$ for this OTM put.
 
-2. **Compute Total Dollar Inflow**:
-   $$\text{Dollar Flow} = 500,000\text{ shares} \times \$5,000.00 = +\$2,500,000,000$$
-   The $3.0$ point drop in implied volatility forces the desk to execute $\$2.5\text{B}$ in systematic buying, igniting a powerful Vanna squeeze.
+2. **Compute the Delta Change per Option**:
+   $$\Delta (\text{Delta}) \approx \text{Vanna} \times \Delta \sigma = -1.0361 \times (-0.03) = +0.03108$$
+   The put delta rises from $-0.2295$ toward zero, to about $-0.1984$.
+
+3. **Compute the Dealer Hedge Trade**:
+   The short put book has position delta $-10,000,000 \times (-0.2295) = +2,295,000$, hedged with $2,295,000$ shares of short index exposure.
+   After the volatility drop, the position delta changes by $-10,000,000 \times 0.03108 = -310,800$.
+   To stay neutral, the desk buys back $310,800$ units of its short hedge.
+
+4. **Compute Total Dollar Inflow**:
+   $$\text{Dollar Flow} = 310,800 \times \$5,000.00 = +\$1,554,000,000$$
+   The $3.0$ point drop in implied volatility forces about $\$1.55\text{B}$ of systematic buying, the mechanism behind a Vanna rally.
+   Full Black-Scholes revaluation at $\sigma = 17\%$ gives $d_1 = 0.8620$ and $\Delta_{\text{put}} = -0.1944$, a change of $+0.0351$ and a flow of $351,000 \times \$5,000 = \$1.755\text{B}$.
+   The linear Vanna estimate understates the flow because Vanna itself grows in magnitude as volatility falls (it is $-1.3162$ at $\sigma = 17\%$).
 
 ---
 
@@ -221,7 +239,7 @@ A market making desk is short $100,000$ contracts of 4800 strike OTM puts.
 > This maps positive gamma to calls and negative gamma to puts in aggregate formulas.
 
 > [!question]- mkt-opt-067 | How do dealers behave in a positive gamma regime when the underlying price drops?
-> Dealers buy underlying shares as price falls to neutralize expanding long call and put deltas.
+> Dealers buy underlying shares as price falls because their long-gamma book loses delta on the way down.
 > This programmatic buying provides liquidity and dampens downside price momentum.
 
 > [!question]- mkt-opt-068 | How do dealers behave in a negative gamma regime when the underlying price drops?
@@ -254,7 +272,7 @@ A market making desk is short $100,000$ contracts of 4800 strike OTM puts.
 
 > [!question]- mkt-opt-075 | What is strike pinning on options expiration day?
 > The empirical tendency for an underlying asset price to close exactly at a strike with massive open interest.
-> Dynamic dealer hedging creates a localized gamma feedback trap that pulls spot price back toward the strike whenever it drifts away.
+> When dealers are net long gamma at that strike, their hedging sells above and buys below it, pulling spot back toward the strike whenever it drifts away.
 
 > [!question]- mkt-opt-076 | What is the Call Wall in market maker positioning?
 > The specific strike price with the single highest concentration of net positive call gamma exposure.

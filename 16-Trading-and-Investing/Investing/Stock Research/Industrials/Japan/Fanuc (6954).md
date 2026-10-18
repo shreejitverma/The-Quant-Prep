@@ -14,7 +14,7 @@ value_metrics:
     roe: 9.35%
     roa: 5.70%
     gross_margin: 38.29%
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: 2.17%
     peg_ratio: 3.93
@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:24
 market_data:
-  ticker: 6954
-  data_quality: ok
+  ticker: 6954.T
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Fanuc (6954)

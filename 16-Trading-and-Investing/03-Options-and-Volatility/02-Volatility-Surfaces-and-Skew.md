@@ -95,13 +95,15 @@ Quantitative desks model this behavior under two competing operational regimes:
 2. **Sticky Delta (Sticky Moneyness)**:
    - Implied volatility is assumed to be an invariant function of moneyness $m = \frac{K}{S}$ or delta $\Delta$:
      $$\sigma_{IV}(K, S) = g\left(\frac{K}{S}\right)$$
-   - When the spot price $S$ drops, the entire smile shifts horizontally to match the new spot level.
-   - At a fixed strike $K$, moneyness $K/S$ increases, causing implied volatility at strike $K$ to change:
+   - When the spot price $S$ moves, the entire smile shifts horizontally with it, so the ATM implied volatility stays constant.
+   - A fixed-strike option instead slides along the smile as its moneyness changes; when $S$ drops, its moneyness $K/S$ increases and its implied volatility becomes the smile value at the new moneyness:
      $$\frac{\partial \sigma_{IV}}{\partial S} = -\frac{K}{S^2} g'\left(\frac{K}{S}\right)$$
    - By the chain rule, the effective delta of the option includes a skew adjustment term:
      $$\Delta_{\text{sticky delta}} = \frac{\partial V_{\text{BSM}}}{\partial S} + \frac{\partial V_{\text{BSM}}}{\partial \sigma} \frac{\partial \sigma_{IV}}{\partial S} = \Delta_{\text{BSM}} + \mathcal{V} \frac{\partial \sigma_{IV}}{\partial S}$$
-   - Because equity index skew is downward-sloping ($\frac{\partial \sigma_{IV}}{\partial K} < 0$, meaning $\frac{\partial \sigma_{IV}}{\partial S} > 0$ when spot falls), $\Delta_{\text{sticky delta}}$ is more conservative than standard BSM delta.
-   - Ignoring the skew term results in severe under-hedging during rapid market selloffs.
+   - Equity index skew is downward-sloping in moneyness ($g' < 0$), so $\frac{\partial \sigma_{IV}}{\partial S} = -\frac{K}{S^2} g' > 0$ at every strike.
+   - When spot falls, a fixed-strike put moves toward the money and its implied volatility falls toward the unchanged ATM level.
+   - The skew term $\mathcal{V} \frac{\partial \sigma_{IV}}{\partial S}$ is therefore positive: sticky-moneyness put deltas are smaller in magnitude than BSM deltas, and call deltas are larger.
+   - The two regimes disagree on the hedge ratio, so the choice must be tested against how the surface actually moved, not assumed.
 
 ### 4. Static Arbitrage Bounds
 
@@ -171,27 +173,35 @@ An options quantitative analyst extracts at-the-money implied volatilities for t
 A market maker is hedging a 25-delta OTM European put on an index:
 - Spot: $S = \$5,000.00$.
 - Strike: $K = \$4,750.00$ ($m = K / S = 0.95$).
-- Time to Expiration: $T = 0.10$ years.
-- Standard BSM Delta: $\Delta_{\text{BSM}} = -0.25$.
-- Option Vega: $\mathcal{V} = \$4.50$ per $1\%$ ($0.01$) IV change ($450$ in raw volatility terms).
-- Skew Slope: At moneyness $0.95$, implied volatility increases by $1.2\%$ for every $1\%$ drop in spot price:
-  $$\frac{\partial \sigma_{IV}}{\partial S} = -\frac{0.012}{\$50.00} = -0.00024\text{ per dollar of spot move}$$
+- Time to Expiration: $T = 0.10$ years ($\sqrt{T} = 0.31623$).
+- Implied Volatility at the Strike: $\sigma_{IV} = 25\%$; rates and dividends are set to zero.
+- Skew Slope: implied volatility rises by $1.2$ volatility points for every $\$50$ ($1\%$ of spot) lower strike, so $\frac{\partial \sigma_{IV}}{\partial K} = -\frac{0.012}{\$50.00} = -0.00024$ per dollar of strike, which in moneyness terms is $g' = -0.00024 \times 5000 = -1.2$.
 
-1. **Calculate the Skew Adjustment Term**:
-   $$\text{Adjustment} = \mathcal{V}_{\text{raw}} \times \frac{\partial \sigma_{IV}}{\partial S} = 450 \times (-0.00024) = -0.108$$
+1. **Compute the BSM Delta and Vega**:
+   $$d_1 = \frac{\ln(5000/4750) + 0.5(0.25)^2(0.10)}{0.25 \times 0.31623} = \frac{0.051293 + 0.003125}{0.079057} = 0.6883$$
+   $$\Delta_{\text{BSM}} = N(d_1) - 1 = 0.7544 - 1 = -0.2456$$
+   $$\mathcal{V}_{\text{raw}} = S \phi(d_1) \sqrt{T} = 5000 \times 0.31479 \times 0.31623 = 497.73\text{ (\$4.98 per 1\% IV change)}$$
 
-2. **Compute Effective Delta**:
-   $$\Delta_{\text{sticky delta}} = \Delta_{\text{BSM}} + \text{Adjustment} = -0.25 + (-0.108) = -0.358$$
-   Under sticky moneyness, the effective short put hedge ratio is $-0.358$ rather than $-0.25$.
-   Hedging only with standard BSM delta leaves the market maker severely under-hedged during an equity selloff.
+2. **Compute the Sticky-Moneyness Vol Sensitivity**:
+   $$\frac{\partial \sigma_{IV}}{\partial S} = -\frac{K}{S^2} g' = -\frac{4750}{5000^2} \times (-1.2) = +0.000228\text{ per dollar of spot move}$$
+   As spot falls, this strike moves toward the money and its implied volatility falls toward the ATM level.
+
+3. **Calculate the Skew Adjustment Term**:
+   $$\text{Adjustment} = \mathcal{V}_{\text{raw}} \times \frac{\partial \sigma_{IV}}{\partial S} = 497.73 \times 0.000228 = +0.1135$$
+
+4. **Compute Effective Delta**:
+   $$\Delta_{\text{sticky delta}} = \Delta_{\text{BSM}} + \text{Adjustment} = -0.2456 + 0.1135 = -0.1321$$
+   A central finite difference that reprices the put with the smile moving with spot gives the same $-0.1321$.
+   Under sticky moneyness, the short put needs a hedge of only $0.132$ delta per option rather than the BSM $0.246$, so hedging with BSM delta would over-hedge if the surface really moves that way.
+   Under sticky strike the BSM delta of $-0.2456$ is the right hedge, which is why the choice of regime matters.
 
 ---
 
 ## Pitfalls
 
 - **Confusing Sticky Strike with Sticky Delta During Crashes**:
-  Using sticky strike delta during a sharp market selloff ignores that implied volatility surges along the skew curve.
-  This leads to massive unhedged directional losses for short options positions.
+  The two regimes give different deltas, and in a sharp equity selloff fixed-strike implied volatilities often rise, which neither rule captures.
+  A short put book hedged with sticky-moneyness deltas is the most exposed, because that rule shrinks put deltas exactly when realized put losses grow.
 - **Negative Forward Variance From Uncalibrated Raw Quotes**:
   Interpolating implied volatilities across maturities using unconstrained splines frequently produces negative forward variance.
   Every quantitative surface must enforce $\partial_T w \ge 0$ across all strikes.
@@ -256,7 +266,7 @@ A market maker is hedging a 25-delta OTM European put on an index:
 
 > [!question]- mkt-opt-045 | State the skew-adjusted delta formula under sticky delta dynamics.
 > Delta_effective = Delta_BSM + Vega * (d sigma_IV / dS).
-> Because equity skew is downward-sloping, this adjustment increases put delta and reduces call delta during selloffs.
+> Because equity skew is downward-sloping in moneyness, d sigma_IV / dS > 0 at a fixed strike, so the adjustment is positive: put deltas shrink in magnitude and call deltas grow.
 
 > [!question]- mkt-opt-046 | What is risk reversal (RR) in volatility quotes?
 > The implied volatility difference between an out-of-the-money call and an out-of-the-money put of equal delta: RR_25d = sigma(25d Call) - sigma(25d Put).

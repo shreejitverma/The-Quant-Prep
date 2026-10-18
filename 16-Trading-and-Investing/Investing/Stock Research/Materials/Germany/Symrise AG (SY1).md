@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:05
 market_data:
-  ticker: SY1
-  data_quality: ok
+  ticker: SY1.DE
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Symrise AG (SY1)

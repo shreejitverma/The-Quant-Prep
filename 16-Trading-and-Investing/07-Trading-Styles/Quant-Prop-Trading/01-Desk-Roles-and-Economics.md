@@ -124,17 +124,21 @@ Exchange maker rebate is $\$0.0020$ per share, and taker fee is $\$0.0030$ per s
    - Adverse selection at $1\text{s}$: $\$0.00$.
    - Rebate earned: $+\$2.00$.
 
-3. **Trade 3 ($t = 40\text{s}$)**: Desk aggressively unloads net flat using a market sell of 1,000 shares at bid $\$99.95$ when mid is $\$99.97$.
+3. **Trade 3 ($t = 40\text{s}$)**: Desk sends an aggressive market sell of 1,000 shares at bid $\$99.95$ when mid is $\$99.97$.
+   - Trades 1 and 2 already left the desk flat, so this sell does not flatten anything; it opens a 1,000-share short.
    - Taker fee paid: $1,000 \times \$0.0030 = -\$3.00$.
    - Spread cost: $(\$99.95 - \$99.97) \times 1,000 = -\$20.00$.
 
 **Net Desk Economics Calculation**:
 - Gross Spread Capture: $+\$20.00 + \$20.00 - \$20.00 = +\$20.00$.
-- Adverse Selection Loss: $-\$40.00$.
 - Net Exchange Fees: $+\$2.00 + \$2.00 - \$3.00 = +\$1.00$.
-- Inventory Mark-to-Market: Starting cash was $-\$99,980 + \$100,020 + \$99,950 = +\$99,990$.
-- Initial inventory was 0, final inventory is 0.
-- Net Realized PnL: $-\$19.00$.
+- Inventory Drift: the long 1,000 shares was held from mid $\$100.00$ (Trade 1) to mid $\$100.00$ (Trade 2), so $1,000 \times (\$100.00 - \$100.00) = \$0.00$.
+- Adverse Selection: the $-\$40.00$ one-second markout on Trade 1 reversed before the position was closed, so it is a toxicity diagnostic here, not a realized loss.
+- Cash from trades: $-\$99,980 + \$100,020 + \$99,950 = +\$99,990$.
+- Inventory: initial 0, final $0 + 1,000 - 1,000 - 1,000 = -1,000$ shares.
+- Mark-to-Market PnL at the $\$99.97$ mid: $+\$99,990 - 1,000 \times \$99.97 + \$1.00 = +\$21.00$.
+- Check: spread capture plus inventory drift plus fees is $+\$20.00 + \$0.00 + \$1.00 = +\$21.00$.
+- The round trip of Trades 1 and 2 locked in $+\$40.00$ of cash plus $\$4.00$ of rebates, $+\$44.00$; the open short is marked at $-\$20.00 - \$3.00 = -\$23.00$ and carries all of the remaining risk ($\$44.00 - \$23.00 = \$21.00$).
 
 ### Example 2: Desk Risk Metrics and Capital Productivity
 

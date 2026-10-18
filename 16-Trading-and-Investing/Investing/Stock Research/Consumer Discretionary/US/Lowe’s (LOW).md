@@ -14,7 +14,7 @@ value_metrics:
     roe: N/A
     roa: 12.79%
     gross_margin: 33.29%
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: 4.01%
     peg_ratio: 1.40

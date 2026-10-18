@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:16
 market_data:
-  ticker: RADL3
-  data_quality: ok
+  ticker: RADL3.SA
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Raia Drogasil (RADL3)

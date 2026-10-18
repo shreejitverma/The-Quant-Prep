@@ -16,6 +16,18 @@ from typing import Any
 from .base import LabResult, Param, TradingLabEngine
 from .registry import register
 
+AC_KAPPA = 0.03
+
+
+def almgren_chriss_schedule(total_qty: int, n_steps: int, kappa: float = AC_KAPPA) -> list[int]:
+    """Child order sizes per step for the Almgren-Chriss (2000) optimal liquidation trajectory.
+
+    Holdings x_k = X sinh(kappa (N - k)) / sinh(kappa N) are rounded to whole shares with
+    x_0 = X and x_N = 0 exactly, so the children x_k - x_{k+1} are non-negative and sum to X.
+    """
+    holdings = [round(total_qty * math.sinh(kappa * (n_steps - k)) / math.sinh(kappa * n_steps)) for k in range(n_steps + 1)]
+    return [holdings[k] - holdings[k + 1] for k in range(n_steps)]
+
 
 @dataclass
 class Order:
@@ -34,6 +46,8 @@ class LimitOrderBook:
         self.bids: dict[float, deque[Order]] = {}
         self.asks: dict[float, deque[Order]] = {}
         self.orders: dict[int, Order] = {}
+        self.last_bid: float | None = None
+        self.last_ask: float | None = None
 
     def round_tick(self, price: float) -> float:
         return round(round(price / self.tick_size) * self.tick_size, 4)
@@ -45,11 +59,29 @@ class LimitOrderBook:
         return min(self.asks.keys()) if self.asks else None
 
     def mid_price(self) -> float | None:
+        """Mid of the best quotes; an emptied side is quoted at its last price level.
+
+        After a sweep removes a whole side, its reference is the deepest level that was
+        consumed (never the opposite side's best), so the mid keeps the impact instead of
+        snapping back.
+        """
         bb = self.best_bid()
         ba = self.best_ask()
+        if ba is None and self.last_ask is not None:
+            ba = self.last_ask if bb is None else max(self.last_ask, bb)
+        if bb is None and self.last_bid is not None:
+            bb = self.last_bid if ba is None else min(self.last_bid, ba)
         if bb is not None and ba is not None:
             return round(0.5 * (bb + ba), 4)
-        return bb or ba
+        return bb if bb is not None else ba
+
+    def _remove_level(self, side: str, price: float) -> None:
+        if side == "buy":
+            del self.bids[price]
+            self.last_bid = price
+        else:
+            del self.asks[price]
+            self.last_ask = price
 
     def spread(self) -> float | None:
         bb = self.best_bid()
@@ -68,7 +100,7 @@ class LimitOrderBook:
             try:
                 queue.remove(order)
                 if not queue:
-                    del book[order.price]
+                    self._remove_level(order.side, order.price)
             except ValueError:
                 pass
         del self.orders[order_id]
@@ -96,7 +128,7 @@ class LimitOrderBook:
                         queue.popleft()
                         del self.orders[maker.order_id]
                 if not queue:
-                    del self.asks[best_ask]
+                    self._remove_level("sell", best_ask)
 
             # Unfilled remainder
             if order.size > 0 and order.order_type not in ("market", "ioc"):
@@ -123,7 +155,7 @@ class LimitOrderBook:
                         queue.popleft()
                         del self.orders[maker.order_id]
                 if not queue:
-                    del self.bids[best_bid]
+                    self._remove_level("buy", best_bid)
 
             if order.size > 0 and order.order_type not in ("market", "ioc"):
                 if order.order_type == "post_only" and fills:
@@ -163,7 +195,7 @@ class LimitOrderBookEngine(TradingLabEngine):
                 "strategy",
                 "str",
                 "twap",
-                "Execution schedule: 'twap', 'aggressive', 'almgren_chriss'",
+                "Execution schedule: 'twap', 'aggressive' (sweep the whole remainder every step), 'almgren_chriss'",
                 choices=["twap", "aggressive", "almgren_chriss"],
             ),
             "seed": Param("seed", "int", 42, "Random seed"),
@@ -200,18 +232,14 @@ class LimitOrderBookEngine(TradingLabEngine):
         total_market_shares = 0
         total_market_dollars = 0.0
 
-        # Almgren-Chriss schedule calculation
-        ac_trajectory = []
-        if strategy == "almgren_chriss":
-            # Optimal liquidation parameter: kappa = 0.03
-            kappa = 0.03
-            for t in range(n_steps):
-                # Sinh trajectory: n_t = Q * sinh(kappa*(T-t)) / sinh(kappa*T)
-                fraction = math.sinh(kappa * (n_steps - t)) / math.sinh(kappa * n_steps)
-                ac_trajectory.append(fraction)
+        ac_schedule = almgren_chriss_schedule(q_parent, n_steps) if strategy == "almgren_chriss" else []
+        ac_scheduled = 0
 
+        mid = arrival_price
         for step in range(n_steps):
-            mid = lob.mid_price() or s0
+            book_mid = lob.mid_price()
+            if book_mid is not None:
+                mid = book_mid
 
             # 1. Background flow (Poisson arrivals for bids, asks, and random market orders)
             for _ in range(5):
@@ -237,13 +265,12 @@ class LimitOrderBookEngine(TradingLabEngine):
             # 2. Agent order placement based on strategy
             child_size = 0
             if strategy == "aggressive":
-                if step == 0:
-                    child_size = remaining_q
+                child_size = remaining_q
             elif strategy == "twap":
                 child_size = math.ceil(remaining_q / (n_steps - step))
             elif strategy == "almgren_chriss":
-                target_remaining = math.ceil(q_parent * (ac_trajectory[step] if step < len(ac_trajectory) else 0.0))
-                child_size = max(0, remaining_q - target_remaining)
+                ac_scheduled += ac_schedule[step]
+                child_size = max(0, remaining_q - (q_parent - ac_scheduled))
 
             if child_size > 0 and remaining_q > 0:
                 alloc_size = min(child_size, remaining_q)

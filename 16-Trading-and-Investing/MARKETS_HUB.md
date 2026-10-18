@@ -15,6 +15,16 @@ Every concept in this curriculum is designed to lead directly to concrete drills
 
 ---
 
+## Curriculum and Progression
+
+Start with the learning path, then use the canon and the masters codex as the reading spine for every pillar below.
+
+- **Learning Path**: [[16-Trading-and-Investing/00-Curriculum/Learning-Path|Learning Path and Progression Stages]]
+- **Foundational Canon**: [[16-Trading-and-Investing/00-Curriculum/Canon|Foundational Canon and Bibliography]]
+- **Masters Codex**: [[16-Trading-and-Investing/00-Curriculum/Masters-Codex|Masters Codex]]
+
+---
+
 ## The Six Market Pillars
 
 The curriculum spans six interconnected asset classes and market structures.
@@ -118,7 +128,7 @@ To advance from simulation to real capital deployment, a trader must pass the ve
 
 ## Vault Navigation and Reference Links
 
-- **Progression Dashboard**: [[16-Trading-and-Investing/STUDY_BOARD|Live Study Board & Progression Dashboard]]
+- **Progression Dashboard**: [[16-Trading-and-Investing/STUDY_BOARD|Study Board Template]] (your live board: `python3 16-Trading-and-Investing/scripts/mastery.py` writes `$QP_HOME/STUDY_BOARD.md`)
 - **Trading Styles**: [[16-Trading-and-Investing/07-Trading-Styles/_Index_Trading_Styles|Trading Styles and Personas Guide]]
 - **Execution Microstructure**: [[16-Trading-and-Investing/08-Execution-Microstructure/_Index_Execution|Execution and Microstructure Index]]
 - **Systematic Trading Systems**: [[16-Trading-and-Investing/60-Systems/_Index_Systems|Systematic Trading Systems Pillar]]

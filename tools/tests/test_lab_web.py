@@ -52,6 +52,10 @@ class LabFormBoundsTest(unittest.TestCase):
                     if field["type"] == "select":
                         self.assertTrue(set(field["options"]) <= set(param.choices or field["options"]))
                         continue
+                    if field["type"] == "text":
+                        self.assertEqual(param.param_type, "str")
+                        self.assertEqual(param.cast(field["value"]), field["value"])
+                        continue
                     if param.min_val is not None:
                         self.assertGreaterEqual(field["min"], param.min_val)
                     if param.max_val is not None:

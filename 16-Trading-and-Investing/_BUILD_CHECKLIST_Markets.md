@@ -9,7 +9,7 @@ status: in-progress
 # Markets Mastery OS Build Checklist
 
 This document is the master resume point and execution ledger for the Markets Mastery platform.
-It tracks inventory coverage across the vault, records defect resolution, and governs progression through all fourteen delivery phases.
+It tracks inventory coverage across the vault, records defect resolution, and governs progression through all fifteen delivery phases (Phase 0 to Phase 14).
 
 ---
 
@@ -20,12 +20,12 @@ All three known defects identified in the Markets Mastery build specification ha
 ### Defect 1: Misplaced Blocks Below the Closing Fence
 - **Root cause**: `update_market_data.py` previously embedded `---` delimiters inside its replacement metadata string.
   Subsequent executions of `fetch_historical_value.py` used `split('---', 2)`, which partitioned the note into an opening fence, a frontmatter block, and body text containing the misplaced `last_updated` and `market_data` blocks.
-  Regex cleaners only purged the frontmatter block, stranding metadata in the body text across 98 of 103 notes.
+  Regex cleaners only purged the frontmatter block, stranding metadata in the body text across 98 of the 103 generated notes (98 ticker notes plus 5 historical case studies).
   Dataview queries could not access these fields because they were outside YAML frontmatter.
 - **Repair**: Created `16-Trading-and-Investing/scripts/stock_notes.py` using standard-library frontmatter parsing and manipulation.
   Wrote `16-Trading-and-Investing/scripts/migrate_stock_notes.py` to relocate misplaced blocks into frontmatter.
   Updated `update_market_data.py` to use `stock_notes.set_block` so misplaced fences can never recur.
-- **Verification**: Verified across all 123 notes in `16-Trading-and-Investing/Investing/Stock Research`.
+- **Verification**: Verified across all 123 notes now in `16-Trading-and-Investing/Investing/Stock Research` (the 103 generated notes plus 20 hand-written research notes).
   Misplaced blocks below the closing fence dropped from 98 to exactly 0.
 
 ### Defect 2: Silent Fetch Failures Masquerading as Numbers
@@ -60,7 +60,7 @@ Status key:
 | Domain / Module | Current Vault Asset | Status | Plan Resolution |
 | :--- | :--- | :--- | :--- |
 | **Track 0: Pro Quant Trading** | `07-Market-Microstructure` (12 notes), `08-Market-Making` (12 notes), `11-Risk-and-Trading` (17 notes) | PARTIAL | Add desk practice notes; wire to LOB, MM, and interview games labs (Phase 6) |
-| **Track 1: Fundamental Analysis** | `16-Trading-and-Investing/Investing/Stock Research` (98 notes), `Templates/Value_Investing_Profile.md` | PARTIAL | Build 10-K, 3-statement linkage, forensic accounting notes and statement drills (Phase 11) |
+| **Track 1: Fundamental Analysis** | `16-Trading-and-Investing/Investing/Stock Research` (123 notes, 98 of them ticker stubs), `Templates/Value_Investing_Profile.md` | PARTIAL | Build 10-K, 3-statement linkage, forensic accounting notes and statement drills (Phase 11) |
 | **Track 2: Valuation** | `16-Trading-and-Investing/Investing/Valuation Models/Reverse DCF.md`, `scripts/quant_reverse_dcf.py` | PARTIAL | Add DCF rebuilds, SOTP, multiples, expectations investing notes and valuation drills (Phase 11) |
 | **Track 3: Value Investing** | `16-Trading-and-Investing/Investing/Value Investing/_Index_Value Investing.md` (stub) | PARTIAL | Build Graham-to-Buffett lineage, checklists, capital allocation, moat notes (Phase 11) |
 | **Track 4: Portfolio Construction** | `09-Alpha-Research-and-Portfolio` (10-12), `16-Trading-and-Investing/Investing/Risk Management/Correlation Matrix.md` | PARTIAL | Build asset allocation, factor decay, drawdown maths, rebalancing notes (Phase 11) |
@@ -95,37 +95,40 @@ Each phase produces working software, tested content, and passing verification c
 - [x] Reproduce and document root causes for misplaced blocks and numerical failures.
 - [x] Create standard-library frontmatter helper `16-Trading-and-Investing/scripts/stock_notes.py`.
 - [x] Write and pass unit test suite `tools/tests/test_stock_notes.py`.
-- [x] Execute migration across all 103 stock research notes; relocate misplaced blocks and normalize values.
+- [x] Execute migration across all 103 generated stock research notes (98 ticker notes plus 5 historical case studies); relocate misplaced blocks and normalize values.
 - [x] Refactor `update_market_data.py`, `quant_reverse_dcf.py`, `fetch_historical_value.py`, `quant_sector_benchmarker.py`, and `generate_stock_moc.py`.
 - [x] Compile comprehensive coverage matrix and write `16-Trading-and-Investing/_BUILD_CHECKLIST_Markets.md`.
 
 ### Phase 1: Hub, Templates, Verifier, and Platform Shell
 - [x] Create `16-Trading-and-Investing/MARKETS_HUB.md` with links to tracks, labs, disclaimers, and dashboard.
 - [x] Create folder index maps for all `Finance/` and `Investing/` subdirectories.
-- [x] Author standard YAML templates in `Templates/` (`Markets-Investment-Memo.md`, `Markets-Trade-Plan.md`, `Markets-Trade-Log.md`, `Markets-Decision-Journal.md`, `Markets-Post-Mortem.md`, `Markets-Weekly-Review.md`, `Markets-Monthly-Review.md`, `Markets-Drill-Attempt.md`).
+- [x] Author standard YAML templates in `Templates/` (`Markets_Concept.md`, `Markets_Investment_Memo.md`, `Markets_Playbook.md`, `Markets_Trade_Journal.md`).
+- [ ] Author the remaining planned templates (trade plan, decision journal, post-mortem, weekly review, monthly review, drill attempt).
 - [x] Build content verifier `16-Trading-and-Investing/scripts/verify_markets.py`.
 - [x] Register `mkt-` card prefix in `00-Start-Here/Note-Conventions.md` and `tools/qp/check.py`.
 - [x] Implement State Schema v2 with atomic migration in `tools/qp/state.py`.
 - [x] Scaffold `tools/qp/lab/` package, `/api/lab/catalog` route in `server.py`, and Trading Lab navigation in web app.
 
 ### Phase 2: Curriculum Structure, Markets Canon, and Masters Codex
-- [x] Author `16-Trading-and-Investing/00 Curriculum/Learning Path.md` with Mermaid progression graph.
-- [x] Author `16-Trading-and-Investing/00 Curriculum/Markets Canon.md` with 60+ verified publications across Gateway, Core, and Capstone tiers.
-- [x] Author `16-Trading-and-Investing/00 Curriculum/Masters Codex.md` and initial 10 verified master profiles.
-- [x] Wire curriculum navigation into `MARKETS_HUB.md` and repo `README.md`.
+- [x] Author `16-Trading-and-Investing/00-Curriculum/Learning-Path.md` with Mermaid progression graph.
+- [x] Author `16-Trading-and-Investing/00-Curriculum/Canon.md` with 25 publications across six domains.
+- [ ] Expand `Canon.md` to 60+ verified publications organised into Gateway, Core, and Capstone tiers.
+- [x] Author `16-Trading-and-Investing/00-Curriculum/Masters-Codex.md` and initial 10 master profiles.
+- [x] Wire curriculum navigation into `MARKETS_HUB.md`.
+- [ ] Link the Markets curriculum from the repo `README.md`.
 
 ### Phase 3: Synthetic Market Engine & Sizing / Ruin Lab
 - [x] Implement synthetic price-path generator `tools/qp/lab/market.py` with analytical and Monte Carlo oracle.
-- [x] Implement Sizing and Risk of Ruin simulator `tools/qp/lab/sizing.py`.
+- [x] Implement Sizing and Risk of Ruin simulator `tools/qp/lab/pos_sizing.py`.
 - [x] Add unit tests for generator statistical moments, regime transitions, and Kelly growth peaks.
 - [x] Build web UI for Sizing Lab with Monte Carlo equity fan charts.
 
 ### Phase 4: Limit Order Book & Execution Lab
-- [x] Implement price-time priority matching engine `tools/qp/lab/book.py`.
-- [x] Implement execution simulator `tools/qp/lab/execution.py` with zero-intelligence and informed Poisson arrivals.
+- [x] Implement price-time priority matching engine and execution simulator in `tools/qp/lab/lob_sim.py` with zero-intelligence Poisson arrivals.
 - [x] Implement Almgren-Chriss, TWAP, and VWAP benchmarks with implementation shortfall scoring.
 - [x] Add unit tests verifying order conservation, price priority, and no crossed books.
-- [x] Build web UI with interactive depth ladder, time and sales tape, and execution report.
+- [x] Build web UI with a depth chart and execution metrics.
+- [ ] Add a time and sales tape to the LOB web UI.
 
 ### Phase 5: Market Making Upgrade & Interview Games Lab
 - [x] Refactor and upgrade market-making engine into `tools/qp/lab/mm_quote.py` with multi-level progression.
@@ -168,7 +171,7 @@ Each phase produces working software, tested content, and passing verification c
 
 ### Phase 11: Fundamental Analysis, Valuation, & Value Investing
 - [x] Author Track 1 (Fundamental Analysis), Track 2 (Valuation), Track 3 (Value Investing), and Track 4 (Portfolio) notes.
-- [x] Build hidden-answer drill banks in `30 Drills/` (statement forensics, valuation rebuilds, blind company memos).
+- [x] Build hidden-answer drill banks in `30-Drills/` (statement forensics, valuation rebuilds, blind company memos).
 - [x] Author 1000+ cards across `mkt-fa-`, `mkt-val-`, `mkt-vi-`, and `mkt-pf-`.
 - [x] Implement stage gates for fundamental analysis and valuation.
 

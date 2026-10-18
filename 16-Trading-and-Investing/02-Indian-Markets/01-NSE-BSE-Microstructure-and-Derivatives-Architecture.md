@@ -127,8 +127,10 @@ Additional key derivatives indicators include:
    A very low $\text{PCR}_{\text{OI}} < 0.60$ indicates heavy call writing (ceiling resistance), acting as a bearish contrarian signal.
 
 2. **Max Pain Theory**:
-   The Max Pain strike is the specific option strike price where option writers (sellers) would pay out the least aggregate money to option buyers upon expiration:
-   $$\text{Payout}(K) = \sum_{i} \max(0, K - K_{P,i}) \cdot \text{OI}_{P,i} + \sum_{j} \max(0, K_{C,j} - K) \cdot \text{OI}_{C,j}$$
+   The Max Pain strike is the specific option strike price where option writers (sellers) would pay out the least aggregate money to option buyers upon expiration.
+   For each candidate settlement level $K$, puts pay out when they finish below their strikes and calls pay out when they finish above theirs:
+   $$\text{Payout}(K) = \sum_{i} \max(0, K_{P,i} - K) \cdot \text{OI}_{P,i} + \sum_{j} \max(0, K - K_{C,j}) \cdot \text{OI}_{C,j}$$
+   The Max Pain strike is $\arg\min_K \text{Payout}(K)$ over the listed strikes.
    Because institutional market makers hedge dynamically, the underlying index often drifts toward the Max Pain strike on Thursday expiration afternoons.
 
 ### 4. Transaction Economics and Statutory Friction Schedule

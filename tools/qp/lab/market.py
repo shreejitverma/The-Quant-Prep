@@ -18,7 +18,23 @@ import random
 from dataclasses import dataclass
 from typing import Any
 
-GENERATOR_VERSION = 1
+GENERATOR_VERSION = 2
+
+# Per-regime GARCH(1,1) dynamics; "vol" is the annualized long-run volatility, from which
+# omega is set so the stationary variance omega / (1 - alpha - beta) matches it per sub-step.
+REGIME_PARAMS: dict[str, dict[str, float]] = {
+    "bull": {"mu": 0.15, "vol": 0.16, "alpha": 0.08, "beta": 0.88, "jump_prob": 0.01, "jump_mu": 0.01},
+    "bear": {"mu": -0.25, "vol": 0.32, "alpha": 0.15, "beta": 0.80, "jump_prob": 0.04, "jump_mu": -0.03},
+    "consolidation": {"mu": 0.0, "vol": 0.12, "alpha": 0.05, "beta": 0.90, "jump_prob": 0.005, "jump_mu": 0.0},
+}
+
+# Bar-boundary regime transition probabilities: rows are the current state, entries the next state.
+REGIME_TRANSITIONS: dict[str, list[tuple[str, float]]] = {
+    "bull": [("bull", 0.92), ("consolidation", 0.06), ("bear", 0.02)],
+    "bear": [("bear", 0.85), ("consolidation", 0.12), ("bull", 0.03)],
+    "consolidation": [("consolidation", 0.90), ("bull", 0.06), ("bear", 0.04)],
+}
+REGIME_JUMP_SD = 0.02
 
 
 @dataclass(frozen=True)
@@ -98,6 +114,28 @@ class SyntheticMarketGenerator:
 
         return prices
 
+    def generate_garch(
+        self,
+        s0: float = 100.0,
+        omega: float = 0.000002,
+        alpha: float = 0.08,
+        beta: float = 0.90,
+        n_steps: int = 252,
+    ) -> list[float]:
+        """GARCH(1,1) log returns: h_t = omega + alpha * eps_{t-1}^2 + beta * h_{t-1}, per-step variance units.
+
+        Starts at the stationary variance omega / (1 - alpha - beta), which requires alpha + beta < 1.
+        """
+        if omega <= 0.0 or alpha < 0.0 or beta < 0.0 or alpha + beta >= 1.0:
+            raise ValueError(f"GARCH(1,1) needs omega > 0, alpha, beta >= 0 and alpha + beta < 1, got {omega}, {alpha}, {beta}")
+        variance = omega / (1.0 - alpha - beta)
+        prices = [s0]
+        for _ in range(n_steps):
+            eps = math.sqrt(variance) * self.rng.gauss(0.0, 1.0)
+            prices.append(prices[-1] * math.exp(eps))
+            variance = omega + alpha * eps**2 + beta * variance
+        return prices
+
     def generate_regime_path(
         self,
         s0: float = 100.0,
@@ -106,52 +144,26 @@ class SyntheticMarketGenerator:
         dt: float = 1.0 / 252.0,
     ) -> list[Bar]:
         """Multi-regime market generator with GARCH volatility, jumps, and intrabar sub-steps."""
-        regimes = {
-            "bull": {"mu": 0.15, "omega": 0.00001, "alpha": 0.08, "beta": 0.88, "jump_prob": 0.01, "jump_mu": 0.01},
-            "bear": {
-                "mu": -0.25,
-                "omega": 0.00005,
-                "alpha": 0.15,
-                "beta": 0.80,
-                "jump_prob": 0.04,
-                "jump_mu": -0.03,
-            },
-            "consolidation": {
-                "mu": 0.0,
-                "omega": 0.000005,
-                "alpha": 0.05,
-                "beta": 0.90,
-                "jump_prob": 0.005,
-                "jump_mu": 0.0,
-            },
-        }
-
-        # Transition probabilities [bull, bear, consolidation]
-        # Rows: current state, Cols: next state
-        transition_matrix = {
-            "bull": [("bull", 0.92), ("consolidation", 0.06), ("bear", 0.02)],
-            "bear": [("bear", 0.85), ("consolidation", 0.12), ("bull", 0.03)],
-            "consolidation": [("consolidation", 0.90), ("bull", 0.06), ("bear", 0.04)],
-        }
+        regimes = REGIME_PARAMS
 
         current_regime = "bull"
         current_price = s0
-        current_variance = 0.04 * dt  # (20% annualized)^2 * dt
-
         bars: list[Bar] = []
         sub_dt = dt / sub_steps
+        current_variance = 0.04 * sub_dt  # (20% annualized)^2 per sub-step
 
         for bar_idx in range(n_bars):
             # Transition state at bar boundary
             roll = self.rng.random()
             cum_p = 0.0
-            for next_state, prob in transition_matrix[current_regime]:
+            for next_state, prob in REGIME_TRANSITIONS[current_regime]:
                 cum_p += prob
                 if roll <= cum_p:
                     current_regime = next_state
                     break
 
             r_params = regimes[current_regime]
+            omega = r_params["vol"] ** 2 * sub_dt * (1.0 - r_params["alpha"] - r_params["beta"])
             bar_open = current_price
             bar_high = current_price
             bar_low = current_price
@@ -165,13 +177,13 @@ class SyntheticMarketGenerator:
 
                 # Merton jump
                 if self.rng.random() < r_params["jump_prob"] / sub_steps:
-                    jump = self.rng.gauss(r_params["jump_mu"], 0.02)
+                    jump = self.rng.gauss(r_params["jump_mu"], REGIME_JUMP_SD)
                     ret += jump
                     bar_volume += 5000.0  # volume spike on jumps
 
                 # Update GARCH variance
                 resid_sq = (sub_vol * z) ** 2
-                current_variance = r_params["omega"] + r_params["alpha"] * resid_sq + r_params["beta"] * current_variance
+                current_variance = omega + r_params["alpha"] * resid_sq + r_params["beta"] * current_variance
 
                 current_price *= math.exp(ret)
                 if current_price > bar_high:

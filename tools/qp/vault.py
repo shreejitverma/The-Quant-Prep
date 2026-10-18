@@ -248,6 +248,23 @@ def section_info(root: Path, folder: str) -> tuple[str, bool]:
     return title, library
 
 
+MARKETS_FOLDER = "16-Trading-and-Investing"
+MARKETS_LIBRARY_DIRS = ("Finance", "Private", "scripts")
+MARKETS_INVESTING_CURRICULUM = ("Fundamental-Analysis", "Valuation Models", "Value Investing", "Portfolio-Management")
+
+
+def is_markets_library(rel: Path) -> bool:
+    """True for free-form library material in the markets section (``rel`` is relative to it):
+    Finance/, Private/, scripts/ and the legacy Investing/ folders. The rest is Markets Mastery OS
+    curriculum that qp tracks and that verify_markets checks."""
+    parts = rel.parts
+    if parts[0] in MARKETS_LIBRARY_DIRS:
+        return True
+    if parts[0] == "Investing":
+        return len(parts) <= 2 or parts[1] not in MARKETS_INVESTING_CURRICULUM or rel.name == "Reverse DCF.md"
+    return False
+
+
 def private_root(root: Path) -> Path:
     """The private overlay: ``$QP_PRIVATE`` if set, else ``<repo>/private`` (gitignored)."""
     env = os.environ.get("QP_PRIVATE")
@@ -275,21 +292,11 @@ def load_vault(root: Path = REPO_ROOT) -> Vault:
     for folder in sorted(p.name for p in root.iterdir() if p.is_dir() and SECTION_RE.match(p.name)):
         title, library = section_info(root, folder)
         section = Section(folder, int(folder[:2]), title, library=library)
-        if folder.startswith("16-"):
+        if folder == MARKETS_FOLDER:
             paths = sorted(
                 p
                 for p in (root / folder).rglob("*.md")
-                if not any(part in ("Finance", "Private", "scripts", "Templates") for part in p.relative_to(root / folder).parts)
-                and (
-                    "Investing" not in p.relative_to(root / folder).parts
-                    or (
-                        len(p.relative_to(root / folder).parts) > 2
-                        and p.relative_to(root / folder).parts[1]
-                        in ("Fundamental-Analysis", "Valuation Models", "Value Investing", "Portfolio-Management")
-                        and not p.name.startswith("_")
-                        and p.name != "Reverse DCF.md"
-                    )
-                )
+                if not p.name.startswith("_") and not is_markets_library(p.relative_to(root / folder))
             )
         elif library:
             paths = [root / folder / "README.md"]
@@ -297,7 +304,7 @@ def load_vault(root: Path = REPO_ROOT) -> Vault:
             paths = sorted((root / folder).rglob("*.md"))
         for path in paths:
             rel = path.relative_to(root)
-            if path.name.startswith("_") or any(part in SKIP_DIRS or part.startswith(".") for part in rel.parts[1:-1]):
+            if any(part in SKIP_DIRS or part.startswith(".") for part in rel.parts[1:-1]):
                 continue
             try:
                 add(load_note(root, rel, folder), section)

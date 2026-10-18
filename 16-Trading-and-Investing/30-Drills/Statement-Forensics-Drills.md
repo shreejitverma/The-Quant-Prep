@@ -108,7 +108,7 @@ $$\text{DSO}_{Q3} = \frac{185}{220} \times 90 = 75.7 \text{ days}$$
 $$\text{DSO}_{Q4} = \frac{270}{280} \times 90 = 86.8 \text{ days}$$
 
 #### Step 2: Year-over-Year Growth Comparison
-Assuming Q4 of the prior year had revenue of $215 million and AR of $135 million:
+Assuming Q4 of the prior year had revenue of \$215 million and AR of \$135 million:
 Revenue grew at:
 $$\frac{280 - 215}{215} = +30.2\%$$
 Accounts Receivable grew at:
@@ -194,7 +194,7 @@ An automated quantitative forensic screen flags Company Delta with the following
 | Gross Margin Index (GMI)                   | 1.28    | <= 1.02        |
 | Asset Quality Index (AQI)                  | 1.35    | <= 1.04        |
 | Sales Growth Index (SGI)                   | 1.32    | <= 1.15        |
-| Depreciation Index (DEPI)                  | 0.82    | >= 0.95        |
+| Depreciation Index (DEPI)                  | 0.82    | <= 1.00        |
 | Sales, General & Admin Index (SGAI)        | 1.18    | <= 1.03        |
 | Leverage Index (LVGI)                      | 1.12    | <= 1.05        |
 | Total Accruals to Total Assets (TATA)      | 0.08    | <= 0.02        |
@@ -203,7 +203,7 @@ An automated quantitative forensic screen flags Company Delta with the following
 
 ### Questions to Solve
 1. Using the 8-variable Beneish M-Score formula, compute the composite M-Score:
-   $$\text{M-Score} = -4.84 + 0.920 \cdot \text{DSRI} + 0.528 \cdot \text{GMI} + 0.404 \cdot \text{AQI} + 0.892 \cdot \text{SGI} + 0.115 \cdot \text{DEPI} - 0.172 \cdot \text{SGAI} + 0.0327 \cdot \text{LVGI} + 4.379 \cdot \text{TATA}$$
+   $$\text{M-Score} = -4.84 + 0.920 \cdot \text{DSRI} + 0.528 \cdot \text{GMI} + 0.404 \cdot \text{AQI} + 0.892 \cdot \text{SGI} + 0.115 \cdot \text{DEPI} - 0.172 \cdot \text{SGAI} + 4.679 \cdot \text{TATA} - 0.327 \cdot \text{LVGI}$$
 2. Determine whether Company Delta is flagged as an earnings manipulator (threshold: $M > -1.78$).
 3. Detail which three individual components contribute the most risk to the score.
 
@@ -218,15 +218,15 @@ $$0.404 \times 1.35 = +0.5454$$
 $$0.892 \times 1.32 = +1.1774$$
 $$0.115 \times 0.82 = +0.0943$$
 $$-0.172 \times 1.18 = -0.2030$$
-$$0.0327 \times 1.12 = +0.0366$$
-$$4.379 \times 0.08 = +0.3503$$
+$$4.679 \times 0.08 = +0.3743$$
+$$-0.327 \times 1.12 = -0.3662$$
 
-$$\text{M-Score} = -4.84 + 1.3340 + 0.6758 + 0.5454 + 1.1774 + 0.0943 - 0.2030 + 0.0366 + 0.3503 = -0.8292$$
+$$\text{M-Score} = -4.84 + 1.3340 + 0.6758 + 0.5454 + 1.1774 + 0.0943 - 0.2030 + 0.3743 - 0.3662 = -1.2080$$
 
 #### Step 2: Evaluation Against Critical Threshold
 The critical cutoff is $-1.78$.
 A score greater than $-1.78$ indicates a high probability of accounting manipulation.
-Here, $-0.83 > -1.78$.
+Here, $-1.21 > -1.78$.
 Company Delta is strongly flagged as a probable financial statement manipulator.
 
 #### Step 3: Primary Risk Drivers

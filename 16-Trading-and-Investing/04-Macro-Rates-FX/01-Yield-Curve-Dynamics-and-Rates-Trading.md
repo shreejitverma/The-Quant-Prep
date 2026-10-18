@@ -113,10 +113,10 @@ $$\text{DV01}_{\text{Leg 1}} = \text{DV01}_{\text{Leg 2}}$$
 
 $$\text{Notional}_{2Y} \times \text{DV01}_{2Y} = \text{Notional}_{10Y} \times \text{DV01}_{10Y}$$
 
-$$\frac{\text{Notional}_{2Y}}{\text{Notional}_{10Y}} = \frac{\text{DV01}_{10Y}}{\text{DV01}_{2Y}} \approx \frac{8.2}{1.9} \approx 4.31$$
+$$\frac{\text{Notional}_{2Y}}{\text{Notional}_{10Y}} = \frac{\text{DV01}_{10Y}}{\text{DV01}_{2Y}} \approx \frac{8.2}{1.9} \approx 4.32$$
 
 To execute a **Bull Steepener** (expecting the Fed to slash short rates):
-- Long $43.1 million 2-year notes.
+- Long $43.2 million 2-year notes.
 - Short $10.0 million 10-year bonds.
 The net portfolio has zero exposure to parallel level shifts ($\text{DV01}_{\text{net}} = 0$), but generates pure alpha if the 2s10s spread widens.
 
@@ -206,8 +206,8 @@ $$\text{Notional}_{2Y} = \frac{\$50,000}{0.000190} \approx \$263,157,895 \text{ 
 $$\text{Notional}_{10Y} = \frac{\$50,000}{0.000820} \approx \$60,975,610 \text{ (Long)}$$
 
 If the 2-year yield rises by 25 bps while the 10-year yield rises by only 10 bps (a 15 bps flattening):
-$$\Delta \text{PnL}_{2Y} = -\text{Notional}_{2Y} \times \text{DV01\%} \times \Delta y_{2Y} = -\$263.16\text{M} \times 0.000190 \times (-25) = +\$1,250,000$$
-$$\Delta \text{PnL}_{10Y} = \text{Notional}_{10Y} \times \text{DV01\%} \times (-\Delta y_{10Y}) = \$60.98\text{M} \times 0.0820\% \times (-10) = -\$500,000$$
+$$\Delta \text{PnL}_{2Y} = \text{Notional}_{2Y} \times \text{DV01\%} \times \Delta y_{2Y} = \$263.16\text{M} \times 0.000190 \times 25 = +\$1,250,000$$
+$$\Delta \text{PnL}_{10Y} = \text{Notional}_{10Y} \times \text{DV01\%} \times (-\Delta y_{10Y}) = \$60.98\text{M} \times 0.000820 \times (-10) = -\$500,000$$
 $$\text{Net Trade PnL} = \$1,250,000 - \$500,000 = +\$750,000$$
 The trade successfully generated $750,000 of profit by capturing 15 bps of flattening on $50,000 DV01 ($15 \times \$50,000 = \$750,000$), completely immune to the parallel level shift.
 

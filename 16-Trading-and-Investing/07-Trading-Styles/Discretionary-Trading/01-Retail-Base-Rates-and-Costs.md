@@ -20,7 +20,7 @@ Understanding these empirical base rates and the mathematical structure of all-i
 
 ## TL;DR
 
-Peer-reviewed academic studies across the US, Taiwan, Brazil, and India demonstrate that between 80% and 97% of individual day traders and derivatives participants lose money over meaningful horizons.
+Peer-reviewed academic studies (US, Taiwan, Brazil) and SEBI regulatory studies (India) demonstrate that between 80% and 97% of individual day traders and derivatives participants lose money over meaningful horizons.
 Trading performance is governed by the mathematical expectancy equation:
 $$E = (P_{\text{win}} \times \bar{W}) - (P_{\text{loss}} \times \bar{L}) - C_{\text{friction}}$$
 All-in friction includes explicit commissions, exchange fees, bid-ask spread crossing, market impact, borrow fees, margin financing, and taxation.
@@ -47,7 +47,7 @@ Academic research evaluating comprehensive, regulatory-mandated trading datasets
 1. **Barber and Odean (2000) - "Trading Is Hazardous to Your Wealth" (US Equities)**:
    - Analyzed 66,465 retail household accounts at a major US discount brokerage from 1991 to 1996.
    - The average household turned over 75% of their portfolio annually and underperformed the broad market by 1.5% per year.
-   - The most active quartile of households turned over 250% annually and underperformed the market by 6.5% annually net of trading costs.
+   - Sorted into quintiles by turnover, the most active fifth of households turned over more than 250% annually and underperformed the market by 6.5% annually net of trading costs.
    - Conclusion: High turnover is directly correlated with catastrophic wealth destruction.
 
 2. **Barber, Lee, Liu, and Odean (2009) - "Just How Much Do Individual Investors Lose?" (Taiwan Stock Exchange)**:
@@ -67,9 +67,11 @@ Academic research evaluating comprehensive, regulatory-mandated trading datasets
 4. **SEBI Regulatory Study (2023) - Indian Equity Futures and Options**:
    - The Securities and Exchange Board of India (SEBI) analyzed 4.5 million individual retail accounts active in equity F&O during FY 2022.
    - **89.0%** of all retail traders incurred net trading losses.
-   - The average loss among losing traders was approximately ₹110,000 (roughly $1,350 USD).
-   - In addition to net trading losses, active retail traders paid an additional **15% to 50%** of their net losses in transaction costs (brokerage, STT, exchange turnover fees).
-   - Among the top 11% who were net profitable, average profits were heavily concentrated in the top 1% institutional-grade entities.
+   - The average loss among losing traders was approximately ₹1.1 lakh (₹110,000, about $1,350 at roughly ₹81.5 per US dollar in early 2023).
+   - Loss-makers paid transaction costs (brokerage, STT, exchange turnover fees) equal to an additional 28% of their net trading losses.
+   - Profit-makers paid between 15% and 50% of their trading profits in transaction costs.
+   - The remaining $100\% - 89\% = 11\%$ of individual traders were net profitable.
+   - A follow-up SEBI study (September 2024) found that 93% of more than 1 crore (10 million) individual F&O traders lost money over FY 2022 to FY 2024.
 
 ### 2. The All-In Transaction Friction Waterfall
 
@@ -82,7 +84,7 @@ $$C_{\text{friction}} = C_{\text{comm}} + C_{\text{spread}} + C_{\text{impact}} 
 - **Half-Spread Crossing ($C_{\text{spread}}$)**: Crossing the bid-ask spread on market orders ($P_a - S$ on buy, $S - P_b$ on sell).
 - **Market Slippage and Impact ($C_{\text{impact}}$)**: Moving the order book depth during execution, scaling with size relative to liquidity.
 - **Regulatory and Exchange Fees ($C_{\text{exchange}}$)**: Exchange access/clearing fees, SEC Section 31 fees, FINRA TAF, clearing house levies.
-- **Statutory Taxes ($C_{\text{tax}}$)**: Stamp duty, Securities Transaction Tax (STT in India: 0.1% on delivery equity, 0.0625% on option exercise/turnover), capital gains taxes.
+- **Statutory Taxes ($C_{\text{tax}}$)**: Stamp duty, Securities Transaction Tax (STT in India: 0.1% on each side of delivery equity trades; the futures and options rates were raised in 2023 and again from 1 October 2024, so check the current schedule), capital gains taxes.
 - **Financing and Borrow Drag ($C_{\text{funding}}$)**: Margin interest on leveraged longs, hard-to-borrow annualized fees on short stock.
 
 ### 3. Mathematical Expectancy in Trading
@@ -123,7 +125,8 @@ A retail day trader with a $\$25,000$ account trades 5 round-trips per day (1,26
 Position size is 500 shares ($GMV = \$50,000$ using $2\times$ intraday margin).
 The broker charges $\$0.00$ commission.
 The all-in frictions per trade are:
-- Quoted spread: $\$0.02$ ($2\text{ cents}$). The trader crosses the spread twice (market buy and market sell):
+- Quoted spread: $\$0.02$ ($2\text{ cents}$).
+  The trader crosses the spread twice (market buy and market sell):
   $$C_{\text{spread}} = 2 \times \frac{\$0.02}{2} \times 500 = \$0.02 \times 500 = \$10.00$$
 - Slippage / delayed queue fill: $\$0.01$ total per round-trip:
   $$C_{\text{slippage}} = \$0.01 \times 500 = \$5.00$$
@@ -185,7 +188,7 @@ Round-trip execution friction is $\$35$ ($c_R = \frac{\$35}{\$500} = 0.07R$).
 
 > [!question]- mkt-trd-001 | What was the central finding of Barber and Odean's 2000 empirical study on individual investors?
 > High portfolio turnover is strongly correlated with severe wealth destruction.
-> The most active trading quartile turned over 250% of their capital annually and underperformed the market by 6.5% per year net of transaction costs.
+> The most active turnover quintile turned over more than 250% of their portfolio annually and underperformed the market by 6.5% per year net of transaction costs.
 
 > [!question]- mkt-trd-002 | What did the 2020 Chague et al. study discover regarding individuals day-trading Brazilian equity futures?
 > 97% of all individuals who day-traded for more than 300 days lost money.
@@ -193,7 +196,8 @@ Round-trip execution friction is $\$35$ ($c_R = \frac{\$35}{\$500} = 0.07R$).
 
 > [!question]- mkt-trd-003 | What percentage of retail traders lost money in Indian equity F&O according to the 2023 SEBI study?
 > 89% of all individual retail traders incurred net trading losses during FY 2022.
-> Losing traders spent an additional 15% to 50% of their total trading losses on brokerage, taxes, and exchange turnover charges.
+> Loss-makers paid transaction costs equal to an additional 28% of their net trading losses, and profit-makers paid 15% to 50% of their profits.
+> A September 2024 SEBI follow-up found 93% of individual F&O traders lost money over FY 2022 to FY 2024.
 
 > [!question]- mkt-trd-004 | State the mathematical expectancy equation for a trading strategy.
 > Expectancy = (P_win * Average_Win) - (P_loss * Average_Loss) - Cost_friction.
@@ -323,3 +327,4 @@ Round-trip execution friction is $\$35$ ($c_R = \frac{\$35}{\$500} = 0.07R$).
 - Barber, B. M., Lee, Y. T., Liu, Y. J., & Odean, T. (2009). *Just how much do individual investors lose by trading?*. The Review of Financial Studies, 22(2), 609-632.
 - Chague, F., De-Losso, R., & Giovannetti, B. (2020). *Day trading for a living?*. Emerging Markets Review, 100769.
 - Securities and Exchange Board of India (SEBI). (2023). *Analysis of Profit and Loss of Individual Traders dealing in Equity F&O Segment*. SEBI Research Study.
+- Securities and Exchange Board of India (SEBI). (2024). Follow-up study of individual traders' profit and loss in the equity F&O segment, FY 2022 to FY 2024 (published September 2024). SEBI Research Study.

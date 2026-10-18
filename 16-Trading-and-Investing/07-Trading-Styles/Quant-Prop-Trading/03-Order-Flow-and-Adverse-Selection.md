@@ -47,7 +47,8 @@ $$\mathbb{P}(V = V_H) = p_0, \quad \mathbb{P}(V = V_L) = 1 - p_0$$
 The unconditional expected value is $S_0 = p_0 V_H + (1 - p_0) V_L$.
 Trading occurs sequentially.
 At each step $t$, an incoming trader is either:
-- **Informed** with probability $\alpha$: Knows the true value $V$ with certainty. If $V = V_H$, they buy; if $V = V_L$, they sell.
+- **Informed** with probability $\alpha$: Knows the true value $V$ with certainty.
+  If $V = V_H$, they buy; if $V = V_L$, they sell.
 - **Uninformed (Noise)** with probability $1 - \alpha$: Buys with probability $\frac{1}{2}$ and sells with probability $\frac{1}{2}$, driven purely by exogenous liquidity needs.
 
 A competitive, risk-neutral market maker posts bid $P_b$ and ask $P_a$ to earn zero expected economic profit conditional on an order arrival:
@@ -58,25 +59,31 @@ Applying Bayes' rule:
 
 $$\mathbb{P}(V = V_H \mid \text{Buy}) = \frac{\mathbb{P}(\text{Buy} \mid V = V_H) \mathbb{P}(V = V_H)}{\mathbb{P}(\text{Buy})}$$
 
+A buy arrives from an informed trader only in the high state, and from a noise trader in either state, so:
+
+$$\mathbb{P}(\text{Buy} \mid V = V_H) = \alpha + \frac{1 - \alpha}{2} = \frac{1 + \alpha}{2}, \quad \mathbb{P}(\text{Buy} \mid V = V_L) = \frac{1 - \alpha}{2}$$
+
 Where the total probability of an incoming buy is:
 
-$$\mathbb{P}(\text{Buy}) = \alpha \cdot 1 + (1 - \alpha) \cdot \frac{1}{2} = \frac{1 + \alpha}{2}$$
+$$\mathbb{P}(\text{Buy}) = p_0 \frac{1 + \alpha}{2} + (1 - p_0) \frac{1 - \alpha}{2} = \frac{1 + \alpha (2 p_0 - 1)}{2}$$
 
 Thus:
 
-$$\mathbb{P}(V = V_H \mid \text{Buy}) = \frac{1 \cdot p_0}{\frac{1 + \alpha}{2}} = p_0 \left(\frac{2}{1 + \alpha}\right) > p_0$$
+$$\mathbb{P}(V = V_H \mid \text{Buy}) = \frac{p_0 (1 + \alpha)}{1 + \alpha (2 p_0 - 1)} > p_0, \quad \mathbb{P}(V = V_H \mid \text{Sell}) = \frac{p_0 (1 - \alpha)}{1 - \alpha (2 p_0 - 1)} < p_0$$
 
 The ask price is therefore strictly higher than the prior expectation:
 
-$$P_a = V_L + (V_H - V_L) \cdot p_0 \left(\frac{1 + \alpha}{1 + \alpha}\right) = S_0 + (V_H - S_0) \left(\frac{\alpha}{1 + \alpha}\right)$$
+$$P_a = V_L + (V_H - V_L) \cdot \frac{p_0 (1 + \alpha)}{1 + \alpha (2 p_0 - 1)} = S_0 + (V_H - S_0) \cdot \frac{2 \alpha p_0}{1 + \alpha (2 p_0 - 1)}$$
 
 Similarly, the bid price satisfies:
 
-$$P_b = S_0 - (S_0 - V_L) \left(\frac{\alpha}{1 + \alpha}\right)$$
+$$P_b = S_0 - (S_0 - V_L) \cdot \frac{2 \alpha (1 - p_0)}{1 - \alpha (2 p_0 - 1)}$$
 
 The resulting bid-ask spread $w = P_a - P_b$ is:
 
-$$w = (V_H - V_L) \cdot \frac{\alpha (1 - \alpha^2) \dots}{\dots} = (V_H - V_L) \cdot \frac{2 \alpha p_0 (1 - p_0)}{1 - \alpha^2 (2 p_0 - 1)^2}$$
+$$w = (V_H - V_L) \cdot 2 \alpha p_0 (1 - p_0) \left[\frac{1}{1 + \alpha (2 p_0 - 1)} + \frac{1}{1 - \alpha (2 p_0 - 1)}\right] = (V_H - V_L) \cdot \frac{4 \alpha p_0 (1 - p_0)}{1 - \alpha^2 (2 p_0 - 1)^2}$$
+
+With a symmetric prior $p_0 = \frac{1}{2}$ this collapses to $w = \alpha (V_H - V_L)$, with the quotes at $S_0 \pm \alpha (V_H - S_0)$.
 
 When $\alpha > 0$, the spread is strictly positive even in the complete absence of exchange fees or processing costs.
 The spread widens monotonically with the fraction of informed traders $\alpha$ and the fundamental uncertainty $(V_H - V_L)$.
@@ -164,20 +171,23 @@ Consider an asset with binary terminal value:
 - Informed trader fraction: $\alpha = 0.25$ (25% of all incoming traders know $V$ with certainty; 75% are random noise).
 
 1. **Calculate the Ask Price $P_a$**:
-   $$\mathbb{P}(\text{Buy}) = \frac{1 + \alpha}{2} = \frac{1 + 0.25}{2} = 0.625$$
-   $$\mathbb{P}(V = V_H \mid \text{Buy}) = \frac{p_0}{\mathbb{P}(\text{Buy})} = \frac{0.50}{0.625} = 0.80$$
-   $$P_a = \mathbb{E}[V \mid \text{Buy}] = 0.80 \times \$120.00 + 0.20 \times \$80.00 = \$96.00 + \$16.00 = \$112.00$$
+   $$\mathbb{P}(\text{Buy} \mid V_H) = \frac{1 + \alpha}{2} = \frac{1 + 0.25}{2} = 0.625, \quad \mathbb{P}(\text{Buy} \mid V_L) = \frac{1 - 0.25}{2} = 0.375$$
+   $$\mathbb{P}(\text{Buy}) = 0.50 \times 0.625 + 0.50 \times 0.375 = 0.50$$
+   $$\mathbb{P}(V = V_H \mid \text{Buy}) = \frac{0.50 \times 0.625}{0.50} = 0.625$$
+   $$P_a = \mathbb{E}[V \mid \text{Buy}] = 0.625 \times \$120.00 + 0.375 \times \$80.00 = \$75.00 + \$30.00 = \$105.00$$
 
 2. **Calculate the Bid Price $P_b$**:
-   $$\mathbb{P}(\text{Sell}) = \frac{1 + \alpha}{2} = 0.625$$
-   $$\mathbb{P}(V = V_L \mid \text{Sell}) = \frac{1 - p_0}{0.625} = \frac{0.50}{0.625} = 0.80$$
-   $$\mathbb{P}(V = V_H \mid \text{Sell}) = 0.20$$
-   $$P_b = \mathbb{E}[V \mid \text{Sell}] = 0.20 \times \$120.00 + 0.80 \times \$80.00 = \$24.00 + \$64.00 = \$88.00$$
+   $$\mathbb{P}(\text{Sell}) = 1 - 0.50 = 0.50$$
+   $$\mathbb{P}(V = V_L \mid \text{Sell}) = \frac{0.50 \times 0.625}{0.50} = 0.625$$
+   $$\mathbb{P}(V = V_H \mid \text{Sell}) = 0.375$$
+   $$P_b = \mathbb{E}[V \mid \text{Sell}] = 0.375 \times \$120.00 + 0.625 \times \$80.00 = \$45.00 + \$50.00 = \$95.00$$
 
 3. **Calculate the Quoted Spread**:
-   $$w = P_a - P_b = \$112.00 - \$88.00 = \$24.00$$
-   The market maker quotes $\$88.00 \text{ bid} \times \$112.00 \text{ ask}$ around a $\$100.00$ prior.
-   The $\$24.00$ spread compensates the desk for the 25% probability that an incoming order is from an insider who extracts $\$20.00$ on every trade.
+   $$w = P_a - P_b = \$105.00 - \$95.00 = \$10.00$$
+   The closed form agrees: $w = \alpha (V_H - V_L) = 0.25 \times \$40.00 = \$10.00$.
+   The market maker quotes $\$95.00 \text{ bid} \times \$105.00 \text{ ask}$ around a $\$100.00$ prior.
+   An insider who buys at $\$105.00$ in the high state, or sells at $\$95.00$ in the low state, takes $\$15.00$ from the desk; a noise trader pays the desk $\$5.00$ against the prior.
+   The desk breaks even: $0.25 \times \$15.00 = 0.75 \times \$5.00 = \$3.75$ per order.
 
 ### Example 2: Estimating Roll Effective Spread from Return Series
 
@@ -198,7 +208,10 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 
 3. **Calculate the Roll Implied Spread**:
    $$s_{\text{Roll}} = 2 \sqrt{-\text{Cov}} = 2 \sqrt{-(-0.0025)} = 2 \sqrt{0.0025} = 2 \times 0.05 = \$0.10$$
-   The estimated effective spread is exactly 10 cents ($2 \times \$0.05$ half-tick bounce).
+   The estimate is 10 cents, but the quoted spread in this sample is only 5 cents ($\$100.05 - \$100.00$), so the estimator overstates it by a factor of 2.
+   Roll's derivation assumes independent trade signs, under which a 5-cent spread gives an expected covariance of $-s^2/4 = -0.05^2/4 = -0.000625$.
+   This sample reverses direction on every trade, the extreme case, so each product is $-s^2 = -0.0025$, four times the expected value, which doubles the implied spread.
+   Four price changes are far too few for the estimator; it needs long samples in which trade signs are close to independent.
 
 ---
 
@@ -353,6 +366,6 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 ## Further reading
 
 - Glosten, L. R., & Milgrom, P. R. (1985). *Bid, ask and transaction prices in a specialist market with heterogeneously informed traders*. Journal of Financial Economics, 14(1), 71-100.
-- Kyle, A. S. (1985). *Continuous auctions and informed trader*. Econometrica: Journal of the Econometric Society, 1315-1335.
+- Kyle, A. S. (1985). *Continuous auctions and insider trading*. Econometrica, 53(6), 1315-1335.
 - Roll, R. (1984). *A simple implicit measure of the effective bid-ask spread in an efficient market*. The Journal of Finance, 39(4), 1127-1139.
 - Lee, C. M., & Ready, M. J. (1991). *Inferring trade direction from intraday data*. The Journal of Finance, 46(2), 733-746.

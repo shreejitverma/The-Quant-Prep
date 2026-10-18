@@ -1,6 +1,6 @@
 ---
 ticker: RMS.PA
-tags: [investing, stocks, consistent-compounder]
+tags: [investing, stocks, consistent-compounder, luxury]
 value_metrics:
   implied_growth_rate: 17.2%
   implied_growth_status: solved
@@ -36,19 +36,32 @@ market_data:
 
 
 ## Investment Thesis
-The pinnacle of luxury. Extreme scarcity and craftsmanship-led growth.
+The pinnacle of luxury.
+Extreme scarcity and craftsmanship-led growth.
+Unlike conglomerates such as LVMH, Hermès focuses on extreme scarcity and craftsmanship.
+Its Birkin and Kelly bags are not just products; collectors treat them as an alternative asset class.
 
 ## Financial Moat (7 Powers Analysis)
-Branding: Unrivaled prestige. Process Power: Hand-crafted production by master artisans. Cornered Resource: Supply of ultra-high-quality leather.
+Branding: Unrivaled prestige, built on a long heritage and "anti-marketing".
+Process Power: Hand-crafted production by master artisans.
+Cornered Resource: Supply of ultra-high-quality leather and a limited pool of master artisans in France.
+Pricing Power: Hermès can raise prices without hurting demand (a Veblen good).
+Counter-Positioning: Avoiding mass-market trends and logo-mania to maintain exclusivity.
 
 ## Historical Performance (CAGR, long-term context)
 Exceptional resilience and long-term value compounding.
+Historically less sensitive to economic downturns than aspirational luxury brands.
 
 ## Risk Factors (Anti-Models)
 Over-exposure to the ultra-wealthy segment; succession risk.
+Key person risk: dependence on the creative direction and the Hermès family leadership.
+Supply constraints: scarcity is a moat, but it also caps the ceiling for growth.
+China exposure: high sensitivity to the Chinese luxury consumer.
 
 ## Architect Perspective (Buffett/Munger/Lynch)
 Munger: 'A business that sells for 10x cost and people wait in line for it.'
+Buffett: would value the untouchable brand and the lack of inventory risk, since everything sells.
+Munger: 'Hermès is a business where the product sells itself because it is the best.'
 ## Inception-to-Date Yearly Performance
 | Year | Close Price | YoY Return | Annual Volatility |
 | :--- | :--- | :--- | :--- |

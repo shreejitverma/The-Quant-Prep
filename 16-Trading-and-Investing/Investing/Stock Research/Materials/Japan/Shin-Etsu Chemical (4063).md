@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:05
 market_data:
-  ticker: 4063
-  data_quality: ok
+  ticker: 4063.T
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Shin-Etsu Chemical (4063)

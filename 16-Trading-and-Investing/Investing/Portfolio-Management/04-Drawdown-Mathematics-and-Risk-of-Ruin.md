@@ -139,8 +139,8 @@ $$P(\text{Ruin} \mid C) = \begin{cases} 1 & \text{if } p \le \frac{1}{2} \\ \lef
 |--------------+-------------+--------------+--------------+--------------|
 | 0.48         | 1.0833      | 100.00%      | 100.00%      | 100.00%      |
 | 0.50         | 1.0000      | 100.00%      | 100.00%      | 100.00%      |
-| 0.52         | 0.9231      | 44.64%       | 13.06%       | 1.70%        |
-| 0.55         | 0.8182      | 13.44%       | 0.69%        | 0.005%       |
+| 0.52         | 0.9231      | 44.91%       | 13.52%       | 1.83%        |
+| 0.55         | 0.8182      | 13.44%       | 0.66%        | 0.004%       |
 | 0.60         | 0.6667      | 1.73%        | 0.004%       | ~0.00%       |
 +-----------------------------------------------------------------------+
 ```
@@ -164,14 +164,14 @@ Consider two portfolios starting with $1,000,000 with annual withdrawals of $60,
 |------+---------------------------------+-------------------------------|
 | Y1   | -25.0% -> Capital: $690,000     | +25.0% -> Capital: $1,190,000 |
 | Y2   | -15.0% -> Capital: $525,300     | +15.0% -> Capital: $1,307,300 |
-| Y3   | -5.0%  -> Capital: $436,635     | +5.0%  -> Capital: $1,309,865 |
-| Y4   | +5.0%  -> Capital: $394,867     | -5.0%  -> Capital: $1,180,772 |
-| Y5   | +15.0% -> Capital: $388,497     | -15.0% -> Capital: $938,056   |
-| Y6   | +25.0% -> Capital: $418,021     | -25.0% -> Capital: $634,942   |
+| Y3   | -5.0%  -> Capital: $436,611     | +5.0%  -> Capital: $1,310,241 |
+| Y4   | +5.0%  -> Capital: $394,769     | -5.0%  -> Capital: $1,181,056 |
+| Y5   | +15.0% -> Capital: $389,039     | -15.0% -> Capital: $938,952   |
+| Y6   | +25.0% -> Capital: $420,053     | -25.0% -> Capital: $637,969   |
 +-----------------------------------------------------------------------+
 ```
 
-Although both sequences have the exact same geometric compound return before withdrawals (+0.54% annualized), Portfolio A is crippled by withdrawing capital while asset prices are depressed.
+Although both sequences have the exact same geometric compound return before withdrawals (-1.49% annualized), Portfolio A is crippled by withdrawing capital while asset prices are depressed.
 The liquidated units can never recover during the subsequent bull market.
 
 ### 6. Constant Proportion Portfolio Insurance (CPPI)

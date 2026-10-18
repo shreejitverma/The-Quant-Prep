@@ -139,8 +139,8 @@ In modern quantitative practice, subjective chart reading is replaced by objecti
 |     - Hamilton's live editorial recommendations underperformed buy-and-hold     |
 |       from 1903 to 1929 by ~3% per year due to trading friction and late calls. |
 |  2. Transaction Costs and Whipsaws:                                            |
-|     - Sullivan, Timmermann, and White (1999) demonstrated that simple technical |
-|       rules lose all excess returns in modern data post-1986 after costs.       |
+|     - Sullivan, Timmermann, and White (1999) tested 7,846 rules: the best one   |
+|       survived data-snooping tests to 1986 but failed out of sample, 1987-1996. |
 |     - Moving average strategies suffer continuous drawdown in choppy markets.   |
 +---------------------------------------------------------------------------------+
 ```
@@ -186,7 +186,7 @@ A macro strategist assesses market health using closing prices across two consec
 - **Dow Jones Industrial Average (DJIA)**:
   - January Peak: $38,000$.
   - March Retracement: $36,800$.
-  - May Rally Close: $39,200$ (New Primary High, $+3.15\%$ above January peak).
+  - May Rally Close: $39,200$ (New Primary High, $+3.16\%$ above January peak).
 - **Dow Jones Transportation Average (DJTA)**:
   - January Peak: $16,000$.
   - March Retracement: $15,200$.
@@ -299,8 +299,9 @@ A macro strategist assesses market health using closing prices across two consec
 > Trend desks set stop-loss distances and position sizing as multiples of ATR (e.g. 2x ATR).
 
 > [!question]- mkt-ta-021 | What did Sullivan, Timmermann, and White (1999) conclude regarding technical trading rules?
-> After adjusting for data-snooping bias across 7,835 technical rules using White's Reality Check, technical rules generated no statistically significant outperformance post-1986.
-> Outperformance in earlier samples vanished once data-mining penalties were applied.
+> They applied White's Reality Check to a universe of 7,846 technical rules on the Dow Jones Industrial Average.
+> Over Brock, Lakonishok, and LeBaron's 1897-1986 sample, the best rule stayed significant even after the data-snooping adjustment.
+> Over the 1987-1996 out-of-sample decade, the best rule delivered no statistically significant outperformance.
 
 > [!question]- mkt-ta-022 | What is a trendline and what constitutes a valid algorithmic trendline?
 > A line connecting sequential swing lows in an uptrend or swing highs in a downtrend.

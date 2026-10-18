@@ -55,7 +55,8 @@ $$d_1 = \frac{\ln(S / K) + (r - q + \frac{1}{2}\sigma^2)T}{\sigma \sqrt{T}}, \qu
    - Measures the decay of option value as time elapses toward expiration:
      $$\Theta_{\text{call}} = -\frac{S e^{-q T} \phi(d_1) \sigma}{2 \sqrt{T}} - r K e^{-r T} N(d_2) + q S e^{-q T} N(d_1)$$
      $$\Theta_{\text{put}} = -\frac{S e^{-q T} \phi(d_1) \sigma}{2 \sqrt{T}} + r K e^{-r T} N(-d_2) - q S e^{-q T} N(-d_1)$$
-   - Always negative for long plain-vanilla options; options lose value simply through the passage of time.
+   - Usually negative for long plain-vanilla options, which lose value simply through the passage of time.
+   - Exceptions exist: a deep in-the-money European put (or a deep in-the-money European call on a high-dividend asset) can carry positive theta.
 
 3. **Vega ($\mathcal{V} = \frac{\partial V}{\partial \sigma}$)**:
    - Measures sensitivity to changes in implied volatility:
@@ -78,7 +79,10 @@ $$d_1 = \frac{\ln(S / K) + (r - q + \frac{1}{2}\sigma^2)T}{\sigma \sqrt{T}}, \qu
 2. **Vanna ($\frac{\partial \Delta}{\partial \sigma} = \frac{\partial \mathcal{V}}{\partial S}$)**:
    - Cross sensitivity connecting directional price moves to volatility changes:
      $$\text{Vanna} = -e^{-q T} \phi(d_1) \frac{d_2}{\sigma}$$
-   - For OTM puts ($d_2 < 0$), Vanna is positive; when volatility surges during a crash, put delta expands dramatically, forcing dealers to sell additional underlying stock.
+   - Vanna is identical for European calls and puts with the same strike, and its sign is the opposite of the sign of $d_2$.
+   - For OTM puts ($K < S$, so $d_2 > 0$ unless the expiry is long or volatility is extreme), Vanna is negative: a volatility surge pushes put delta further toward $-1$.
+   - Dealers who are short those puts therefore become longer delta as volatility rises in a selloff and must sell additional underlying stock.
+   - For OTM calls ($K > S$, so $d_2 < 0$), Vanna is positive: a volatility surge raises call delta.
 
 3. **Volga / Vomma ($\frac{\partial^2 V}{\partial \sigma^2} = \frac{\partial \mathcal{V}}{\partial \sigma}$)**:
    - Convexity of option price with respect to implied volatility:
@@ -133,11 +137,16 @@ An options trader evaluates a 30-day European call on an index:
    - **Gamma**:
      $$\Gamma = \frac{0.99877 \times 0.39811}{5000 \times 0.20 \times 0.28669} = \frac{0.39762}{286.69} = 0.001387$$
    - **Vega (per 1% Volatility Move)**:
-     $$\mathcal{V}_{\text{unit}} = 5000 \times 0.99877 \times 0.39811 \times 0.28669 = 569.95$$
-     $$\mathcal{V}_{1\%} = \frac{569.95}{100} = \$5.70\text{ per option contract}$$
+     $$\mathcal{V}_{\text{unit}} = 5000 \times 0.99877 \times 0.39811 \times 0.28669 = 569.97$$
+     $$\mathcal{V}_{1\%} = \frac{569.97}{100} = \$5.70\text{ per option contract}$$
    - **Theta (Daily Calendar Decay)**:
-     $$\Theta_{\text{ann}} \approx -\frac{5000 \times 0.99877 \times 0.39811 \times 0.20}{2 \times 0.28669} = -\frac{397.62}{0.57338} = -\$693.47\text{ per year}$$
-     $$\Theta_{\text{daily}} = \frac{-\$693.47}{365} = -\$1.90\text{ per day}$$
+     All three terms of the call theta formula are needed; with $N(d_2) = N(0.00716) = 0.50286$ and $e^{-r T} = e^{-0.04 \times 0.08219} = 0.99672$:
+     $$\text{Decay term} = -\frac{5000 \times 0.99877 \times 0.39811 \times 0.20}{2 \times 0.28669} = -\frac{397.62}{0.57338} = -\$693.47$$
+     $$\text{Rate term} = -0.04 \times 5000 \times 0.99672 \times 0.50286 = -\$100.24$$
+     $$\text{Dividend term} = +0.015 \times 5000 \times 0.99877 \times 0.5257 = +\$39.38$$
+     $$\Theta_{\text{ann}} = -693.47 - 100.24 + 39.38 = -\$754.33\text{ per year}$$
+     $$\Theta_{\text{daily}} = \frac{-\$754.33}{365} = -\$2.07\text{ per day}$$
+     Dropping the rate and dividend terms would understate the decay at $-\$1.90$ per day.
 
 ### Example 2: Discrete Delta Hedging PnL Attribution
 
@@ -155,15 +164,15 @@ A trader sells 100 call contracts ($10,000$ shares equivalent) with the paramete
    $$\Gamma_{\text{position}} = -10,000 \times 0.001387 = -13.87$$
    $$\text{PnL}_{\Gamma} = \frac{1}{2} \Gamma (\Delta S)^2 = \frac{1}{2} \times (-13.87) \times (50.00)^2 = -6.935 \times 2,500 = -\$17,337.50$$
 3. **Theta Contribution**:
-   $$\Theta_{\text{position}} = -10,000 \times (-\$1.90) = +\$19,000\text{ per day}$$
-   $$\text{PnL}_{\Theta} = +\$19,000.00$$
+   $$\Theta_{\text{position}} = -10,000 \times (-\$2.07) = +\$20,700\text{ per day}$$
+   $$\text{PnL}_{\Theta} = +\$20,700.00$$
 4. **Vega Contribution**:
-   $$\mathcal{V}_{\text{position}} = -10,000 \times (-\$5.70\text{ per 1%}) \dots \text{Short option position Vega is negative}:$$
+   The short option position has negative vega:
    $$\mathcal{V}_{\text{net}} = -10,000 \times \$5.70 = -\$57,000\text{ per 1%}$$
    $$\text{PnL}_{\mathcal{V}} = -\$57,000 \times (-1.0\%) = +\$57,000.00$$
 5. **Total Attributed PnL**:
-   $$\Delta \text{PnL} \approx \$0.00 - \$17,337.50 + \$19,000.00 + \$57,000.00 = +\$58,662.50$$
-   The massive gain from implied volatility crush ($+\$57,000$) and theta decay ($+\$19,000$) easily absorbed the gamma loss ($-\$17,338$) from the spot rally.
+   $$\Delta \text{PnL} \approx \$0.00 - \$17,337.50 + \$20,700.00 + \$57,000.00 = +\$60,362.50$$
+   The massive gain from implied volatility crush ($+\$57,000$) and theta decay ($+\$20,700$) easily absorbed the gamma loss ($-\$17,338$) from the spot rally.
 
 ---
 
@@ -243,7 +252,7 @@ A trader sells 100 call contracts ($10,000$ shares equivalent) with the paramete
 
 > [!question]- mkt-opt-015 | How does discrete rebalancing introduce gamma leak in delta-hedging?
 > Because delta is rebalanced at discrete time steps delta_t rather than continuously, the desk is temporarily unhedged between intervals.
-> The variance of hedging error scales with 0.5 * Gamma^2 * S^2 * sigma^4 * delta_t.
+> The per-step hedging error variance is 0.5 * Gamma^2 * S^4 * sigma^4 * delta_t^2, so summed over T / delta_t steps the total variance scales linearly with delta_t.
 
 > [!question]- mkt-opt-016 | What is the Black-Scholes partial differential equation (PDE)?
 > dV/dt + 0.5 * sigma^2 * S^2 * d^2V/dS^2 + r * S * dV/dS - r * V = 0.
@@ -289,13 +298,13 @@ A trader sells 100 call contracts ($10,000$ shares equivalent) with the paramete
 > By computing two-sided central differences: Delta_FD = (V(S + eps) - V(S - eps)) / (2 * eps).
 > If analytical Greek code differs from finite difference estimates by more than machine epsilon tolerances, a derivation bug exists.
 
-> [!question]- mkt-opt-027 | Why do deep in-the-money (ITM) puts carry negative Theta under high interest rates?
+> [!question]- mkt-opt-027 | Why can deep in-the-money (ITM) European puts carry positive Theta under high interest rates?
 > A deep ITM put has virtually zero time premium and is worth K * exp(-r*T) - S.
 > As time passes, the present value of the cash to be received grows, creating positive daily theta for the put owner.
 
 > [!question]- mkt-opt-028 | What is dollar gamma (cash gamma) and how is it calculated?
-> Dollar Gamma = 0.5 * Gamma * S^2 / 100.
-> It quantifies the dollar change in position delta for a 1% move in the underlying asset, enabling direct comparison across multi-price assets.
+> Dollar Gamma = Gamma * S^2 / 100.
+> It quantifies the change in dollar delta (Delta * S) for a 1% move in the underlying asset, enabling direct comparison across multi-price assets.
 
 > [!question]- mkt-opt-029 | What is Vega weighted by time to maturity (Weighted Vega)?
 > Weighting Vega by 1 / sqrt(T) to normalize volatility exposure across contracts with differing maturities.

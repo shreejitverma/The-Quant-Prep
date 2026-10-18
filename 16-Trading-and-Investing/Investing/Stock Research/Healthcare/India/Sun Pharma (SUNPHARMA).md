@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:17
 market_data:
-  ticker: SUNPHARMA
-  data_quality: ok
+  ticker: SUNPHARMA.NS
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Sun Pharma (SUNPHARMA)

@@ -126,12 +126,14 @@ Consider an equity trading with a 2-cent spread:
 Track three consecutive market updates for a security:
 
 - **Timestamp $t=0$**: Bid $\$100.00$ (size 500), Ask $\$100.05$ (size 500).
-- **Timestamp $t=1$**: Limit buy orders arrive at the bid. Bid $\$100.00$ (size 900), Ask $\$100.05$ (size 500).
+- **Timestamp $t=1$**: Limit buy orders arrive at the bid.
+  Bid $\$100.00$ (size 900), Ask $\$100.05$ (size 500).
   - Price did not change: $P_{b,1} = P_{b,0}$ and $P_{a,1} = P_{a,0}$.
   - $e_{b,1} = Q_{b,1} - Q_{b,0} = 900 - 500 = +400$.
   - $e_{a,1} = Q_{a,1} - Q_{a,0} = 500 - 500 = 0$.
   - $\text{OFI}_1 = +400 - 0 = +400$.
-- **Timestamp $t=2$**: Aggressive buyer sweeps the ask. Bid $\$100.05$ (size 200), Ask $\$100.10$ (size 600).
+- **Timestamp $t=2$**: Aggressive buyer sweeps the ask.
+  Bid $\$100.05$ (size 200), Ask $\$100.10$ (size 600).
   - Bid price increased: $P_{b,2} > P_{b,1} \implies e_{b,2} = Q_{b,2} = +200$.
   - Ask price increased: $P_{a,2} > P_{a,1} \implies e_{a,2} = -Q_{a,1} = -500$.
   - $\text{OFI}_2 = e_{b,2} - e_{a,2} = +200 - (-500) = +700$.

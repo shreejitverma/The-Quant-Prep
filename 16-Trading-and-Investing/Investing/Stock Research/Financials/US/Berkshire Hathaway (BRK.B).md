@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:06
 market_data:
-  ticker: BRK.B
-  data_quality: ok
+  ticker: BRK-B
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Berkshire Hathaway (BRK.B)

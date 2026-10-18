@@ -17,13 +17,14 @@ value_metrics:
     debt_to_equity: 0.09
   valuation:
     fcf_yield: 1.38%
-    peg_ratio: 0.00
+    peg_ratio: N/A
 status: stub
 priority: high
 last_updated: 2026-05-31 14:01:20
 market_data:
-  ticker: NESTLEIND
-  data_quality: ok
+  ticker: NESTLEIND.NS
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Nestle India (NESTLEIND)

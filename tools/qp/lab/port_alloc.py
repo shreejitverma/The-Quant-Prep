@@ -48,7 +48,7 @@ class PortfolioAllocatorEngine(TradingLabEngine):
                 name="leverage",
                 param_type="float",
                 default=1.0,
-                description="Total gross portfolio leverage multiplier (e.g. 1.0 = unlevered, 1.5 = 150% gross).",
+                description="Gross leverage multiplier, and the cap on vol-target scaling (e.g. 1.0 = unlevered, 1.5 = 150% gross).",
                 min_val=0.5,
                 max_val=3.0,
             ),
@@ -215,12 +215,10 @@ class PortfolioAllocatorEngine(TradingLabEngine):
 
         unscaled_vol = calc_port_vol(raw_weights)
 
-        # Scale weights if volatility targeting is enabled
+        # Scale weights to the volatility target when enabled, never beyond the gross leverage cap
         effective_scale = leverage
         if vol_target > 0.001 and unscaled_vol > 0.0001:
-            target_scale = vol_target / unscaled_vol
-            # Blend nominal leverage with target volatility
-            effective_scale = min(leverage * 2.0, max(0.5, target_scale))
+            effective_scale = min(leverage, vol_target / unscaled_vol)
 
         final_weights = [w * effective_scale for w in raw_weights]
         port_vol = calc_port_vol(final_weights)
@@ -309,6 +307,8 @@ class PortfolioAllocatorEngine(TradingLabEngine):
 
         # Calculate performance metrics
         perf = self.calculate_returns_metrics(equity_curve, risk_free_rate=drifts[6], periods_per_year=12)
+        mean_monthly = sum(monthly_returns) / n_months
+        realized_vol = math.sqrt(sum((r - mean_monthly) ** 2 for r in monthly_returns) / (n_months - 1) * 12.0)
 
         # Asset summary breakdown table
         asset_breakdown = []
@@ -334,7 +334,8 @@ class PortfolioAllocatorEngine(TradingLabEngine):
             "scenario": scenario,
             "leverage": round(effective_scale, 2),
             "cagr_pct": round(perf["cagr"] * 100.0, 2),
-            "annual_volatility_pct": round(perf.get("annual_volatility", port_vol) * 100.0, 2),
+            "annual_volatility_pct": round(realized_vol * 100.0, 2),
+            "ex_ante_volatility_pct": round(port_vol * 100.0, 2),
             "sharpe_ratio": round(perf["sharpe"], 2),
             "sortino_ratio": round(perf["sortino"], 2),
             "max_drawdown_pct": round(perf["max_drawdown"] * 100.0, 2),

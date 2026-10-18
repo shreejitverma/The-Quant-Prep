@@ -2,7 +2,9 @@
 
 Provides historical market crisis simulation, abnormal return tracking,
 Cumulative Abnormal Return (CAR) analytics, Patell Z-tests, and pre-mortem risk evaluation.
-Pure Python standard library implementation.
+The market model is fitted by OLS on a seeded pre-event estimation window whose volatility is the
+event-window volatility divided by the event's vol shock multiplier.
+Pure Python standard library implementation, deterministic for a given seed.
 """
 
 from __future__ import annotations
@@ -12,6 +14,9 @@ import random
 
 from .base import LabResult, Param, TradingLabEngine
 from .registry import register
+
+# Share of normal-time asset volatility explained by the market, matching the 0.75 event-window market link.
+MARKET_LOADING = 0.75
 
 # Historical crisis specifications with calibrated stylized return sequences and primary source records
 CRISIS_CATALOG: dict[str, dict] = {
@@ -492,31 +497,15 @@ class EventStudyEngine(TradingLabEngine):
                 name="estimation_window",
                 param_type="int",
                 default=250,
-                description="Number of pre-event trading days used to calibrate alpha and beta.",
+                description="Number of pre-event trading days used to fit the market model (alpha, beta, residual volatility) by OLS.",
                 min_val=50,
                 max_val=500,
-            ),
-            "event_window_pre": Param(
-                name="event_window_pre",
-                param_type="int",
-                default=5,
-                description="Trading days prior to official event announcement.",
-                min_val=1,
-                max_val=30,
-            ),
-            "event_window_post": Param(
-                name="event_window_post",
-                param_type="int",
-                default=15,
-                description="Trading days following the event announcement.",
-                min_val=1,
-                max_val=60,
             ),
             "alpha": Param(
                 name="alpha",
                 param_type="float",
                 default=0.0,
-                description="Pre-event estimated intercept (daily alpha).",
+                description="True daily intercept of the asset's market model in the estimation window (the engine re-estimates it).",
                 min_val=-0.05,
                 max_val=0.05,
             ),
@@ -524,11 +513,32 @@ class EventStudyEngine(TradingLabEngine):
                 name="beta",
                 param_type="float",
                 default=1.0,
-                description="Pre-event estimated systematic market exposure (beta).",
+                description="True market exposure of the asset in the estimation window (the engine re-estimates it).",
                 min_val=0.0,
                 max_val=3.0,
             ),
+            "seed": Param(
+                name="seed",
+                param_type="int",
+                default=42,
+                description="Deterministic random seed for the estimation window and market noise.",
+                min_val=0,
+                max_val=999999,
+            ),
         }
+
+    @staticmethod
+    def fit_market_model(asset_returns: list[float], market_returns: list[float]) -> tuple[float, float, float]:
+        """OLS market model R_i = alpha + beta R_m + e; returns (alpha, beta, residual sd with L - 2 dof)."""
+        n = len(asset_returns)
+        mean_m = sum(market_returns) / n
+        mean_i = sum(asset_returns) / n
+        sxx = sum((m - mean_m) ** 2 for m in market_returns)
+        sxy = sum((m - mean_m) * (a - mean_i) for a, m in zip(asset_returns, market_returns, strict=True))
+        beta_hat = sxy / sxx
+        alpha_hat = mean_i - beta_hat * mean_m
+        ssr = sum((a - alpha_hat - beta_hat * m) ** 2 for a, m in zip(asset_returns, market_returns, strict=True))
+        return alpha_hat, beta_hat, math.sqrt(ssr / (n - 2))
 
     def run(self, **kwargs) -> LabResult:
         params = self.validate_params(kwargs)
@@ -538,6 +548,8 @@ class EventStudyEngine(TradingLabEngine):
         pos_size_pct = float(params["position_size_pct"]) / 100.0
         alpha = float(params["alpha"])
         beta = float(params["beta"])
+        est_window = int(params["estimation_window"])
+        rng = random.Random(int(params["seed"]))
 
         # Fetch or generate scenario returns
         if event_id in CRISIS_CATALOG:
@@ -608,26 +620,36 @@ class EventStudyEngine(TradingLabEngine):
 
         n_days = len(raw_daily_returns)
 
-        # Baseline market returns (stylized correlation)
-        # Abnormal Return: AR_t = R_it - (alpha + beta * R_mt)
-        market_returns = [r * 0.75 + (random.uniform(-0.005, 0.005) if "test" not in event_id else 0.0) for r in raw_daily_returns]
+        # Pre-event estimation window: normal-time volatility is the event volatility scaled down by the shock multiplier
+        event_mean = sum(raw_daily_returns) / n_days
+        event_vol = math.sqrt(sum((r - event_mean) ** 2 for r in raw_daily_returns) / (n_days - 1))
+        normal_vol = event_vol / vol_multiplier
+        market_vol = MARKET_LOADING * normal_vol
+        idio_vol = math.sqrt(1.0 - MARKET_LOADING**2) * normal_vol
+        est_market = [rng.gauss(0.0, market_vol) for _ in range(est_window)]
+        est_asset = [alpha + beta * m + rng.gauss(0.0, idio_vol) for m in est_market]
+        alpha_hat, beta_hat, est_vol = self.fit_market_model(est_asset, est_market)
+        est_market_mean = sum(est_market) / est_window
+        est_market_sxx = sum((m - est_market_mean) ** 2 for m in est_market)
+
+        # Event-window market returns (stylized correlation); AR_t = R_it - (alpha_hat + beta_hat * R_mt)
+        market_returns = [r * MARKET_LOADING + rng.uniform(-0.005, 0.005) for r in raw_daily_returns]
         abnormal_returns = []
+        sar_values = []
         car_series = []
         cumulative_ar = 0.0
 
         for r_asset, r_mkt in zip(raw_daily_returns, market_returns, strict=True):
-            expected_r = alpha + beta * r_mkt
-            ar = r_asset - expected_r
+            ar = r_asset - (alpha_hat + beta_hat * r_mkt)
             abnormal_returns.append(ar)
             cumulative_ar += ar
             car_series.append(cumulative_ar)
+            # Patell (1976) standardization by the out-of-sample prediction error variance
+            pred_var = est_vol**2 * (1.0 + 1.0 / est_window + (r_mkt - est_market_mean) ** 2 / est_market_sxx)
+            sar_values.append(ar / math.sqrt(pred_var))
 
-        # Statistical test: Patell Z-Score (standardized abnormal return test)
-        # Pre-event estimation variance proxy
-        est_vol = 0.015  # 1.5% daily standard deviation (~24% annual)
-        sar_values = [ar / est_vol for ar in abnormal_returns]
-        mean_sar = sum(sar_values) / len(sar_values) if sar_values else 0.0
-        patell_z = mean_sar * math.sqrt(len(sar_values))
+        # Patell Z: sum of SARs over sqrt(T (L - 2) / (L - 4)), the variance of a sum of t-distributed SARs
+        patell_z = sum(sar_values) / math.sqrt(n_days * (est_window - 2) / (est_window - 4))
 
         # Portfolio simulation under strategy
         equity = capital
@@ -636,6 +658,7 @@ class EventStudyEngine(TradingLabEngine):
         max_drawdown = 0.0
         position_active = True
         stopped_out = False
+        ruined = False
         timeline = []
 
         stop_loss_threshold = -0.05
@@ -648,8 +671,10 @@ class EventStudyEngine(TradingLabEngine):
             ar = abnormal_returns[t]
             car = car_series[t]
 
-            # Strategy rule execution
-            if strategy == "unhedged_long":
+            # Strategy rule execution; a ruined account holds no position
+            if ruined:
+                pass
+            elif strategy == "unhedged_long":
                 day_pnl = equity * pos_size_pct * asset_ret
                 equity += day_pnl
             elif strategy == "cash_buffer_50pct":
@@ -694,6 +719,10 @@ class EventStudyEngine(TradingLabEngine):
                     day_pnl = equity * pos_size_pct * asset_ret * 2.5
                 equity += day_pnl
 
+            if equity <= 0.0 and not ruined:
+                equity = 0.0
+                ruined = True
+
             # Track peak and drawdown
             if equity > peak_equity:
                 peak_equity = equity
@@ -712,6 +741,7 @@ class EventStudyEngine(TradingLabEngine):
                     "portfolio_equity": round(equity, 2),
                     "drawdown_pct": round(dd * 100.0, 2),
                     "stopped_out": stopped_out,
+                    "ruined": ruined,
                 }
             )
 
@@ -748,6 +778,10 @@ class EventStudyEngine(TradingLabEngine):
             "max_drawdown_pct": round(max_drawdown * 100.0, 2),
             "car_pct": round(car_final_pct, 2),
             "patell_z_score": round(patell_z, 3),
+            "estimated_alpha": round(alpha_hat, 6),
+            "estimated_beta": round(beta_hat, 4),
+            "estimation_residual_vol_pct": round(est_vol * 100.0, 4),
+            "ruined": ruined,
             "vol_shock_multiplier": round(vol_multiplier, 2),
             "liquidity_haircut_pct": round(liquidity_haircut * 100.0, 1),
             "pre_mortem_score": pre_mortem_score,
@@ -755,7 +789,8 @@ class EventStudyEngine(TradingLabEngine):
 
         summary = (
             f"Event '{event_title}' under strategy '{strategy}': Final Return {final_return_pct:.2f}%, "
-            f"Max Drawdown {max_drawdown * 100.0:.2f}%, CAR {car_final_pct:.2f}%, Patell Z {patell_z:.2f}. "
+            f"Max Drawdown {max_drawdown * 100.0:.2f}%, CAR {car_final_pct:.2f}%, Patell Z {patell_z:.2f}"
+            f"{' (account ruined)' if ruined else ''}. "
             f"Pre-mortem risk score: {pre_mortem_score}/100."
         )
 

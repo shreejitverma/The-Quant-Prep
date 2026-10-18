@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:26
 market_data:
-  ticker: 9983
-  data_quality: ok
+  ticker: 9983.T
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Fast Retailing (9983)

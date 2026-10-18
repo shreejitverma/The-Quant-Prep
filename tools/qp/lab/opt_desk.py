@@ -9,9 +9,24 @@ from __future__ import annotations
 
 import math
 import random
+from collections.abc import Callable
 
 from .base import LabResult, Param, TradingLabEngine
 from .registry import register
+
+GREEK_DECIMALS = {
+    "delta": 4,
+    "gamma": 5,
+    "vega": 4,
+    "vega_unit": 4,
+    "theta_daily": 4,
+    "theta_annual": 2,
+    "rho": 4,
+    "vanna": 4,
+    "volga": 4,
+}
+HEDGE_BAND_SHARES = 0.01
+COMPONENT_TO_INDEX_VOL = 1.40
 
 
 class OptionsDeskEngine(TradingLabEngine):
@@ -147,8 +162,11 @@ class OptionsDeskEngine(TradingLabEngine):
     ) -> dict[str, float]:
         """Analytical first, second, and third order Greeks."""
         if t <= 1e-6:
-            delta = 1.0 if (option_type == "call" and s >= k) else (-1.0 if (option_type == "put" and s <= k) else 0.0)
-            return {"delta": delta, "gamma": 0.0, "vega": 0.0, "theta": 0.0, "rho": 0.0, "vanna": 0.0, "volga": 0.0}
+            if option_type == "call":
+                delta = 1.0 if s > k else 0.0
+            else:
+                delta = -1.0 if s < k else 0.0
+            return {name: delta if name == "delta" else 0.0 for name in GREEK_DECIMALS}
 
         d1, d2 = cls.calc_d1_d2(s, k, t, r, sigma, q)
         sqrt_t = math.sqrt(t)
@@ -188,16 +206,48 @@ class OptionsDeskEngine(TradingLabEngine):
         volga = vega_unit * ((d1 * d2) / sigma)
 
         return {
-            "delta": round(delta, 4),
-            "gamma": round(gamma, 5),
-            "vega": round(vega_1pct, 4),
-            "vega_unit": round(vega_unit, 4),
-            "theta_daily": round(theta_daily, 4),
-            "theta_annual": round(theta_ann, 2),
-            "rho": round(rho, 4),
-            "vanna": round(vanna, 4),
-            "volga": round(volga, 4),
+            "delta": delta,
+            "gamma": gamma,
+            "vega": vega_1pct,
+            "vega_unit": vega_unit,
+            "theta_daily": theta_daily,
+            "theta_annual": theta_ann,
+            "rho": rho,
+            "vanna": vanna,
+            "volga": volga,
         }
+
+    @staticmethod
+    def round_greeks(greeks: dict[str, float]) -> dict[str, float]:
+        return {name: round(value, GREEK_DECIMALS[name]) for name, value in greeks.items()}
+
+    @classmethod
+    def straddle_greeks(cls, s: float, k: float, t: float, r: float, sigma: float) -> dict[str, float]:
+        call = cls.bsm_greeks(s, k, t, r, sigma, "call")
+        put = cls.bsm_greeks(s, k, t, r, sigma, "put")
+        return {name: call[name] + put[name] for name in call}
+
+    @classmethod
+    def put_delta_strike(cls, s: float, t: float, r: float, vol_at: Callable[[float], float], target_delta: float = -0.25) -> float:
+        """Strike whose put delta, priced at that strike's own smile vol, equals target_delta."""
+
+        def excess(log_m: float) -> float:
+            stk = s * math.exp(log_m)
+            return cls.bsm_greeks(s, stk, t, r, vol_at(stk), "put")["delta"] - target_delta
+
+        grid = [-6.0 + 0.01 * i for i in range(801)]
+        values = [excess(log_m) for log_m in grid]
+        bracket = next((i for i in range(len(grid) - 1) if values[i] > 0.0 >= values[i + 1]), None)
+        if bracket is None:
+            raise ValueError(f"No strike has a put delta of {target_delta} on this smile; lower implied_vol or days_to_expiry")
+        lo, hi = grid[bracket], grid[bracket + 1]
+        for _ in range(100):
+            mid = 0.5 * (lo + hi)
+            if excess(mid) > 0.0:
+                lo = mid
+            else:
+                hi = mid
+        return s * math.exp(0.5 * (lo + hi))
 
     def run(self, **kwargs) -> LabResult:
         params = self.validate_params(kwargs)
@@ -213,82 +263,65 @@ class OptionsDeskEngine(TradingLabEngine):
 
         rng = random.Random(seed)
         t_years = days / 365.0
+        hours_per_year = 24.0 * 365.0
 
-        # Initial option pricing for ATM straddle
+        # Initial option pricing for the straddle
         call_init = self.bsm_price(s0, k, t_years, r, iv, "call")
         put_init = self.bsm_price(s0, k, t_years, r, iv, "put")
         straddle_cost = call_init + put_init
 
         call_greeks = self.bsm_greeks(s0, k, t_years, r, iv, "call")
         put_greeks = self.bsm_greeks(s0, k, t_years, r, iv, "put")
-        net_gamma = call_greeks["gamma"] + put_greeks["gamma"]
-        net_theta_daily = call_greeks["theta_daily"] + put_greeks["theta_daily"]
-        net_vega = call_greeks["vega"] + put_greeks["vega"]
+        net_greeks = {name: call_greeks[name] + put_greeks[name] for name in call_greeks}
 
         if scenario == "gamma_scalp":
-            # Simulation of dynamic delta hedging a long straddle over N intervals
-            steps_per_day = max(1, 24 // hedge_hrs)
-            total_steps = days * steps_per_day
-            dt = t_years / total_steps
-            dt_days = days / total_steps
+            # Dynamic delta hedging of a long straddle, rebalanced every hedge_hrs hours
+            total_hours = days * 24
+            total_steps = math.ceil(total_hours / hedge_hrs)
 
             spot = s0
-            stock_shares = -(call_greeks["delta"] + put_greeks["delta"])  # delta neutral initial
+            held = net_greeks
+            stock_shares = -held["delta"]
             cash = -straddle_cost - (stock_shares * spot)
             total_hedges = 0
+            max_residual_delta = 0.0
+            elapsed_hours = 0
 
             gamma_pnl_accum = 0.0
             theta_cost_accum = 0.0
-            rebalance_history = []
 
-            for step in range(total_steps):
-                time_left = max(1e-6, t_years - (step * dt))
+            for step in range(1, total_steps + 1):
+                step_hours = min(hedge_hrs, total_hours - elapsed_hours)
+                elapsed_hours += step_hours
+                dt = step_hours / hours_per_year
+                time_left = (total_hours - elapsed_hours) / hours_per_year
+
+                cash *= math.exp(r * dt)
 
                 # Underlying path under realized volatility
                 z = rng.gauss(0.0, 1.0)
-                drift = (r - 0.5 * rv * rv) * dt
-                diffusion = rv * math.sqrt(dt) * z
                 prev_spot = spot
-                spot = round(spot * math.exp(drift + diffusion), 4)
-
+                spot *= math.exp((r - 0.5 * rv * rv) * dt + rv * math.sqrt(dt) * z)
                 delta_s = spot - prev_spot
 
-                # Option Greeks calculation
-                curr_cg = self.bsm_greeks(spot, k, time_left, r, iv, "call")
-                curr_pg = self.bsm_greeks(spot, k, time_left, r, iv, "put")
+                # Attribution uses the Greeks held over the interval: 1/2 * Gamma * (Delta S)^2 and Theta * dt
+                gamma_pnl_accum += 0.5 * held["gamma"] * (delta_s**2)
+                theta_cost_accum -= held["theta_annual"] * dt
 
-                target_delta = curr_cg["delta"] + curr_pg["delta"]
-                step_gamma = curr_cg["gamma"] + curr_pg["gamma"]
-                step_theta = (curr_cg["theta_daily"] + curr_pg["theta_daily"]) * dt_days
+                if step == total_steps:
+                    break
 
-                # 1/2 * Gamma * (Delta S)^2
-                step_gamma_pnl = 0.5 * step_gamma * (delta_s**2)
-                gamma_pnl_accum += step_gamma_pnl
-                theta_cost_accum += abs(step_theta)
-
-                # Rebalance stock hedge
-                hedge_trade = -target_delta - stock_shares
-                if abs(hedge_trade) >= 0.01:
+                held = self.straddle_greeks(spot, k, time_left, r, iv)
+                hedge_trade = -held["delta"] - stock_shares
+                if abs(hedge_trade) >= HEDGE_BAND_SHARES:
                     stock_shares += hedge_trade
                     cash -= hedge_trade * spot
                     total_hedges += 1
-
-                if step < 5 or step == total_steps - 1:
-                    rebalance_history.append(
-                        {
-                            "step": step + 1,
-                            "spot": round(spot, 2),
-                            "portfolio_delta": round(target_delta + stock_shares, 4),
-                            "stock_held": round(stock_shares, 3),
-                        }
-                    )
+                max_residual_delta = max(max_residual_delta, abs(held["delta"] + stock_shares))
 
             # Final settlement at expiration
-            final_call_payoff = max(0.0, spot - k)
-            final_put_payoff = max(0.0, k - spot)
-            final_straddle_val = final_call_payoff + final_put_payoff
-            final_equity = cash + final_straddle_val + (stock_shares * spot)
-            total_pnl = final_equity
+            final_straddle_val = max(0.0, spot - k) + max(0.0, k - spot)
+            total_pnl = cash + final_straddle_val + (stock_shares * spot)
 
             metrics = {
                 "scenario": scenario,
@@ -299,7 +332,7 @@ class OptionsDeskEngine(TradingLabEngine):
                 "total_theta_decay_cost": round(theta_cost_accum, 2),
                 "net_hedged_pnl": round(total_pnl, 2),
                 "vol_differential_pct": round((rv - iv) * 100, 1),
-                "delta_neutrality_verified": True,
+                "max_residual_delta": round(max_residual_delta, 4),
             }
 
             summary = (
@@ -310,22 +343,23 @@ class OptionsDeskEngine(TradingLabEngine):
             )
 
         elif scenario == "earnings_crush":
-            # Scenario: Short ATM straddle ahead of earnings announcement
-            # Implied vol drops violently from e.g. 60% to 25% post-earnings
+            # Short straddle ahead of earnings: implied vol is crushed by 55% (not below 12%, never upward)
             pre_iv = iv
-            post_iv = max(0.12, iv * 0.45)  # 55% crush
-            earnings_move_pct = rng.gauss(0.0, rv / math.sqrt(252.0) * 2.0)  # gap move
-            post_spot = round(s0 * (1.0 + earnings_move_pct), 2)
+            post_iv = min(iv, max(0.12, iv * 0.45))
+            gap_sigma = rv / math.sqrt(252.0) * 2.0
+            post_spot = s0 * math.exp(gap_sigma * rng.gauss(0.0, 1.0) - 0.5 * gap_sigma * gap_sigma)
+            earnings_move_pct = post_spot / s0 - 1.0
             post_days = max(1, days - 1)
             post_t = post_days / 365.0
 
-            pre_straddle = self.bsm_price(s0, k, t_years, r, pre_iv, "call") + self.bsm_price(s0, k, t_years, r, pre_iv, "put")
+            pre_straddle = straddle_cost
             post_straddle = self.bsm_price(post_spot, k, post_t, r, post_iv, "call") + self.bsm_price(
                 post_spot, k, post_t, r, post_iv, "put"
             )
 
             short_straddle_pnl = pre_straddle - post_straddle
-            vega_pnl = net_vega * (post_iv - pre_iv) * 100.0
+            iv_drop_pts = (pre_iv - post_iv) * 100.0
+            vega_pnl = net_greeks["vega"] * iv_drop_pts
 
             metrics = {
                 "scenario": scenario,
@@ -344,74 +378,88 @@ class OptionsDeskEngine(TradingLabEngine):
             )
 
         elif scenario == "skew_shift":
-            # SVI-style quadratic volatility smile evaluation across moneyness strikes
-            strikes = [round(s0 * m, 1) for m in [0.80, 0.85, 0.90, 0.95, 1.00, 1.05, 1.10, 1.15, 1.20]]
+            # SVI-style quadratic volatility smile in log-moneyness
             base_skew = -0.15  # negative equity index skew
             stress_skew = -0.35  # steepening put bid during panic
 
-            smile_data = []
-            for stk in strikes:
+            def calm_vol(stk: float) -> float:
                 log_m = math.log(stk / s0)
-                calm_vol = iv + base_skew * log_m + 0.20 * (log_m**2)
-                stressed_vol = iv + 0.08 + stress_skew * log_m + 0.40 * (log_m**2)
-                smile_data.append(
-                    {
-                        "strike": stk,
-                        "moneyness": round(stk / s0, 2),
-                        "calm_implied_vol": round(max(0.05, calm_vol), 4),
-                        "stressed_implied_vol": round(max(0.05, stressed_vol), 4),
-                    }
-                )
+                return max(0.05, iv + base_skew * log_m + 0.20 * (log_m**2))
+
+            def stressed_vol(stk: float) -> float:
+                log_m = math.log(stk / s0)
+                return max(0.05, iv + 0.08 + stress_skew * log_m + 0.40 * (log_m**2))
+
+            put25_calm = self.put_delta_strike(s0, t_years, r, calm_vol)
+            put25_stressed = self.put_delta_strike(s0, t_years, r, stressed_vol)
 
             metrics = {
                 "scenario": scenario,
-                "atm_vol": round(iv, 3),
+                "atm_vol": round(calm_vol(s0), 3),
                 "base_skew_slope": base_skew,
                 "stressed_skew_slope": stress_skew,
-                "25d_put_vol_calm": smile_data[2]["calm_implied_vol"],
-                "25d_put_vol_stressed": smile_data[2]["stressed_implied_vol"],
+                "25d_put_strike_calm": round(put25_calm, 2),
+                "25d_put_vol_calm": round(calm_vol(put25_calm), 4),
+                "25d_put_strike_stressed": round(put25_stressed, 2),
+                "25d_put_vol_stressed": round(stressed_vol(put25_stressed), 4),
             }
 
             summary = (
-                f"Volatility skew steepening simulation: Downside put implied volatility shifted from "
-                f"{smile_data[2]['calm_implied_vol'] * 100:.1f}% to {smile_data[2]['stressed_implied_vol'] * 100:.1f}%."
+                f"Volatility skew steepening simulation: 25-delta put implied volatility shifted from "
+                f"{calm_vol(put25_calm) * 100:.1f}% (strike {put25_calm:,.2f}) to "
+                f"{stressed_vol(put25_stressed) * 100:.1f}% (strike {put25_stressed:,.2f})."
             )
 
         else:  # dispersion
-            # Long single-stock vol basket (avg vol 35%) vs short index vol (20%)
-            # Captures the variance risk premium / correlation spread
+            # Long single-stock variance vs short index variance. For a large equal-weight basket the index
+            # variance is rho * component variance, so implied and realized correlation follow from the vols.
+            # implied_vol is the index implied vol, realized_vol the realized index vol; components are priced
+            # at COMPONENT_TO_INDEX_VOL times the index vol and realize at least their implied vol.
             index_vol = iv
-            component_vol = iv * 1.40
-            implied_corr = 0.50
-            realized_corr = 0.30  # actual correlation was lower than priced
+            component_vol = iv * COMPONENT_TO_INDEX_VOL
+            component_realized_vol = max(component_vol, rv)
+            implied_corr = (index_vol / component_vol) ** 2
+            realized_corr = (rv / component_realized_vol) ** 2
 
             dispersion_edge = (component_vol**2) - (index_vol**2)
+            component_leg_pnl = component_realized_vol**2 - component_vol**2
+            index_leg_pnl = index_vol**2 - rv**2
+            dispersion_pnl = component_leg_pnl + index_leg_pnl
+            if dispersion_pnl > 0.0:
+                status = "PROFITABLE_LONG_DISPERSION"
+            elif dispersion_pnl < 0.0:
+                status = "LOSING_LONG_DISPERSION"
+            else:
+                status = "FLAT_LONG_DISPERSION"
+
             metrics = {
                 "scenario": scenario,
                 "index_implied_vol_pct": round(index_vol * 100, 1),
                 "component_implied_vol_pct": round(component_vol * 100, 1),
-                "priced_implied_correlation": implied_corr,
-                "realized_correlation": realized_corr,
+                "index_realized_vol_pct": round(rv * 100, 1),
+                "priced_implied_correlation": round(implied_corr, 4),
+                "realized_correlation": round(realized_corr, 4),
                 "variance_dispersion_spread": round(dispersion_edge, 4),
-                "strategy_edge_status": "PROFITABLE_LONG_DISPERSION",
+                "long_dispersion_variance_pnl": round(dispersion_pnl, 4),
+                "strategy_edge_status": status,
             }
 
             summary = (
-                f"Dispersion trading simulation: Realized correlation ({realized_corr}) fell below implied ({implied_corr}). "
-                f"Long component options outpaced short index options. Dispersion Spread: {dispersion_edge:.4f}."
+                f"Dispersion trading simulation: realized correlation {realized_corr:.3f} vs implied {implied_corr:.3f}. "
+                f"Long component variance minus short index variance PnL: {dispersion_pnl:+.4f} ({status})."
             )
 
         return LabResult(
             engine_id=self.engine_id,
             metrics=metrics,
             data={
-                "call_greeks": call_greeks,
-                "put_greeks": put_greeks,
+                "call_greeks": self.round_greeks(call_greeks),
+                "put_greeks": self.round_greeks(put_greeks),
                 "net_straddle_greeks": {
-                    "delta": round(call_greeks["delta"] + put_greeks["delta"], 4),
-                    "gamma": round(net_gamma, 5),
-                    "vega_1pct": round(net_vega, 4),
-                    "theta_daily": round(net_theta_daily, 4),
+                    "delta": round(net_greeks["delta"], 4),
+                    "gamma": round(net_greeks["gamma"], 5),
+                    "vega_1pct": round(net_greeks["vega"], 4),
+                    "theta_daily": round(net_greeks["theta_daily"], 4),
                 },
             },
             summary=summary,

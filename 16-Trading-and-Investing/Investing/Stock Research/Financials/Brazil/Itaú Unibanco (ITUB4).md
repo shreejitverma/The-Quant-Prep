@@ -14,7 +14,7 @@ value_metrics:
     roe: 21.82%
     roa: 1.57%
     gross_margin: N/A
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: 4.80%
     peg_ratio: 1.35
@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:09
 market_data:
-  ticker: ITUB4
-  data_quality: ok
+  ticker: ITUB4.SA
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Itaú Unibanco (ITUB4)

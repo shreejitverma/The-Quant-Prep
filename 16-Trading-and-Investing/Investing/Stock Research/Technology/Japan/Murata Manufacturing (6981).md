@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:13
 market_data:
-  ticker: 6981
-  data_quality: ok
+  ticker: 6981.T
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Murata Manufacturing (6981)

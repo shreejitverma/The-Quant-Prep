@@ -152,7 +152,8 @@ Trace the exact impact of a $\$100.00$ increase in depreciation on the three fin
      - Retained Earnings (Equity) decreases by $-\$75.00$ from Net Income.
      - Total Liabilities & Equity decrease by $-\$75.00$.
 
-**Balance Sheet check**: Assets ($-\$75$) = Liabilities ($\$0$) + Equity ($-\$75$). The balance sheet balances perfectly.
+**Balance Sheet check**: Assets ($-\$75$) = Liabilities ($\$0$) + Equity ($-\$75$).
+The balance sheet balances perfectly.
 
 ### Example 2: Reconciling True Economic FCF vs Headline FCF
 

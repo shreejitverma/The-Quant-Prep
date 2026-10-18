@@ -411,14 +411,14 @@ def evaluate_gate(
 
             from tools.qp.lab.journal_stats import analyze_trade_journal
 
-            analysis = analyze_trade_journal(journal_trades) if logged_count > 0 else {}
+            analysis = analyze_trade_journal(journal_trades)
 
-            pf = analysis.get("profit_factor", 0.0)
-            max_dd = analysis.get("max_drawdown_pct", 0.0)
-            adherence = analysis.get("adherence_score_pct", 0.0)
-            revenge = analysis.get("revenge_trade_count", 0)
-            moved_stops = analysis.get("moved_stop_count", 0)
-            mae_tight = analysis.get("mae_win_under_50_pct", 0.0)
+            pf = analysis["profit_factor"]
+            max_dd_r = analysis["max_drawdown_r"]
+            adherence = analysis["adherence_score_pct"]
+            revenge = analysis["revenge_trade_count"]
+            moved_stops = analysis["moved_stop_count"]
+            mae_tight = analysis["mae_win_under_50_pct"]
             trades_evaluated = logged_count
 
             reqs = [
@@ -436,9 +436,9 @@ def evaluate_gate(
                 ),
                 GateRequirement(
                     name="Drawdown Constraint",
-                    target="Max Drawdown <= 10.0%",
-                    actual=f"{max_dd:.1f}% peak-to-trough",
-                    passed=logged_count > 0 and max_dd <= 10.0,
+                    target="Max Drawdown <= 10.0R",
+                    actual=f"{max_dd_r:.1f}R peak-to-trough",
+                    passed=logged_count > 0 and max_dd_r <= 10.0,
                 ),
                 GateRequirement(
                     name="Rule Adherence & Zero Tilt",
@@ -1045,7 +1045,7 @@ def calculate_markets_mastery(
         next_actions.append(f"Execute Trading Lab simulation engine: ./qp lab run {e}")
 
     if not cap_gate.passed and persona in ("retail_algorithmic_trader", "holistic"):
-        next_actions.append("Complete 100-trade journal logging and pass Capital Gate rule adherence")
+        next_actions.append("Log closed trades with `qp journal log` until the 100-trade Capital Gate passes (`qp journal` shows it)")
 
     return {
         "persona": persona,

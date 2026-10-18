@@ -32,7 +32,7 @@ The crash was catalyzed by aggressive Federal Reserve interest rate hikes (raisi
   - The NASDAQ Composite suffers its worst weekly decline in history, dropping 355.49 points (-9.67%) on the day to close down 25.3% for the week.
   - Retail margin calls force widespread broker liquidations.
 - **May 16, 2000**: The Federal Reserve raises the federal funds rate by 50 basis points to 6.50%, its sixth consecutive rate hike to combat asset inflation.
-- **December 2000**: Prominent dot-com icons (Pets.com, Webvan, eToys) file for bankruptcy liquidation, having incinerated billions in venture capital within months of their IPOs.
+- **November 2000 - July 2001**: Prominent dot-com icons fail within months of their IPOs, having incinerated billions in venture capital: Pets.com announces its liquidation in November 2000, eToys files for bankruptcy in March 2001 and Webvan files in July 2001.
 - **October 9, 2002**: The bear market finally reaches its bottom with the NASDAQ closing at 1,114.11; it takes fifteen years (until April 2015) for the index to reclaim its March 2000 high.
 
 ---
@@ -123,7 +123,7 @@ The wreckage of the dot-com crash led directly to major structural transformatio
 
 - **Narrative Is Not Cash Flow**: A transformative technological revolution does not guarantee equity returns; the companies that build the initial infrastructure frequently go bankrupt, leaving the residual assets to be acquired for pennies on the dollar by second-generation operators.
 - **Float Scarcity Creates False Signals**: Low-float IPOs are microstructurally prone to short-term upward price squeezes that completely misrepresent the long-term equilibrium valuation of the underlying enterprise.
-- **Discount Rate Sensitivity of Long-Duration Assets**: High-growth companies whose cash flows lie ten to twenty years in the future possess extreme negative duration; small increases in the benchmark discount rate cause catastrophic multiple compression.
+- **Discount Rate Sensitivity of Long-Duration Assets**: High-growth companies whose cash flows lie ten to twenty years in the future possess extremely long (high positive) equity duration; small increases in the benchmark discount rate cause catastrophic multiple compression.
 
 ---
 

@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:11
 market_data:
-  ticker: HEXA.B
-  data_quality: ok
+  ticker: HEXA-B.ST
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Hexagon AB (HEXA.B)

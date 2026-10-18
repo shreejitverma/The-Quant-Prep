@@ -171,7 +171,7 @@ An 8-K filing is triggered by major corporate events and must be filed within fo
 Analyze the footnotes of Matrix Cloud Corp:
 - Reported Net Income: $120M
 - Reported Revenue: $1,000M
-- Reported GAAP Income Tax Expense: $12M (Effective tax rate: 10.0%)
+- Reported GAAP Income Tax Expense: $12M (Effective tax rate: 12 / 132 = 9.1%)
 - Statutory Tax Rate: 21.0%
 
 ### Footnote Examination:
@@ -189,8 +189,10 @@ Analyze the footnotes of Matrix Cloud Corp:
    - Remaining Performance Obligations (RPO): Dropped from $400M to $310M (-$90M, -22.5%)
 
 3. **Executive Compensation (DEF 14A)**:
-   - CEO target bonus metric: "Adjusted EBITDA", which adds back $85M of Stock-Based Compensation and $25M of "Cloud Transformation Restructuring Charges".
-   - Total adjustments: $110M added to GAAP operating profit of $40M to claim "Adjusted EBITDA" of $150M.
+   - GAAP operating profit: $140M, less $8M of net interest expense, ties to the $132M pre-tax income in the tax footnote.
+   - CEO target bonus metric: "Adjusted EBITDA", which adds back $40M of depreciation and amortization plus $85M of Stock-Based Compensation and $25M of "Cloud Transformation Restructuring Charges".
+   - Total adjustments: $150M ($40M + $85M + $25M) added to GAAP operating profit of $140M to claim "Adjusted EBITDA" of $290M.
+   - The $110M of SBC and restructuring add-backs are recurring costs that plain EBITDA ($180M) would still deduct, so they inflate the bonus metric by 61.1%.
 
 ### Forensic Synthesis:
 Matrix Cloud Corp is exhibiting terminal earnings management.

@@ -314,11 +314,13 @@ struct OptimizedDeskStats {
 
 ## Pitfalls
 
-- **Confusing Principal Risk with Agency Flow**: Assuming sell-side investment bank structuring operates identically to buy-side proprietary market making. Banks prioritize client facilitation, regulatory balance sheet limits, and franchise value; prop shops trade pure principal capital with zero customer obligations.
+- **Confusing Principal Risk with Agency Flow**: Assuming sell-side investment bank structuring operates identically to buy-side proprietary market making.
+  Banks prioritize client facilitation, regulatory balance sheet limits, and franchise value; prop shops trade pure principal capital with zero customer obligations.
 - **Ignoring the Cost of Capital and Pass-Through Charges**: Evaluating a prop or pod job offer solely on gross payout percentage without verifying whether infrastructure costs, software licenses, data feeds, and capital charges are deducted prior to PnL distribution.
 - **Overlooking Non-Compete Scope and Enforceability**: Signing an aggressive 18-month non-compete without explicit contractual guarantees of 100% base salary and average bonus compensation throughout the mandatory garden leave period.
 - **Neglecting Transaction Costs and Latency Slippage in Alpha Research**: Proposing a high-turnover predictive model with an apparent Sharpe ratio of 3.5 that degrades to negative returns once realistic bid-ask half-spreads, exchange maker-taker fees, and exchange queue positions are simulated.
-- **Failing to Skew During Market Making Games**: Maintaining stationary symmetric spreads when an interviewer repeatedly trades on one side of the market. Repeatedly buying without lowering quotes signals severe adverse selection blindness.
+- **Failing to Skew During Market Making Games**: Maintaining stationary symmetric spreads when an interviewer repeatedly trades on one side of the market.
+  Repeatedly buying without lowering quotes signals severe adverse selection blindness.
 - **Premature C++ Optimization Without Hardware Benchmarking**: Writing obscure low-level assembly or bit-manipulation tricks without measuring hardware performance counters via tools like `perf`, resulting in branch mispredictions or instruction cache thrashing.
 
 ---
@@ -326,16 +328,20 @@ struct OptimizedDeskStats {
 ## Interview questions
 
 > [!question]- mkt-car-001 | What is the fundamental difference in capital source and client mandate between a proprietary trading firm and a multi-manager hedge fund?
-> Proprietary trading firms trade 100% internal partner balance sheet capital with zero external clients or fiduciary obligations, acting purely as principal market makers or statistical arbitrageurs. Multi-manager hedge funds deploy external institutional limited partner (LP) capital combined with prime brokerage leverage across autonomous pods, enforcing strict factor neutrality and tight loss cut-offs.
+> Proprietary trading firms trade 100% internal partner balance sheet capital with zero external clients or fiduciary obligations, acting purely as principal market makers or statistical arbitrageurs.
+> Multi-manager hedge funds deploy external institutional limited partner (LP) capital combined with prime brokerage leverage across autonomous pods, enforcing strict factor neutrality and tight loss cut-offs.
 
 > [!question]- mkt-car-002 | How does the day-to-day workflow and objective function differ between a Quantitative Trader (QT) and a Quantitative Researcher (QR)?
-> A Quantitative Trader focuses on real-time execution, managing live book risk, adjusting pricing spreads, monitoring inventory skews, and handling market regime shifts during trading hours. A Quantitative Researcher works offline on longer cycles, formulating mathematical hypotheses, mining tick or alternative data, testing out-of-sample statistical signals, and engineering feature pipelines.
+> A Quantitative Trader focuses on real-time execution, managing live book risk, adjusting pricing spreads, monitoring inventory skews, and handling market regime shifts during trading hours.
+> A Quantitative Researcher works offline on longer cycles, formulating mathematical hypotheses, mining tick or alternative data, testing out-of-sample statistical signals, and engineering feature pipelines.
 
 > [!question]- mkt-car-003 | What are the core responsibilities and technical proficiencies required of a Quantitative Developer (QD)?
-> A Quantitative Developer designs and maintains production execution engines, exchange gateways, order management systems, and high-throughput data pipelines. Key competencies include modern C++ (C++17/20), Linux kernel internals, cache optimization, lock-free concurrency, kernel-bypass network protocols (Solarflare OpenOnload, DPDK), and low-level system profiling.
+> A Quantitative Developer designs and maintains production execution engines, exchange gateways, order management systems, and high-throughput data pipelines.
+> Key competencies include modern C++ (C++17/20), Linux kernel internals, cache optimization, lock-free concurrency, kernel-bypass network protocols (Solarflare OpenOnload, DPDK), and low-level system profiling.
 
 > [!question]- mkt-car-004 | What is a formulaic payout compensation model in a proprietary trading firm, and how is the bonus pool calculated?
-> A formulaic payout model awards the trading desk an explicit contractual percentage (typically 10% to 30%) of net trading profits. The bonus pool equals max(0, payout_pct * (Gross PnL - Exchange Fees - Infrastructure Overhead - Capital Charges)).
+> A formulaic payout model awards the trading desk an explicit contractual percentage (typically 10% to 30%) of net trading profits.
+> The bonus pool equals max(0, payout_pct * (Gross PnL - Exchange Fees - Infrastructure Overhead - Capital Charges)).
 
 > [!question]- mkt-car-005 | In a multi-manager pod shop, what are typical drawdown triggers that result in capital halving or pod liquidation?
 > Multi-manager hedge funds typically enforce a two-tier risk stop: a 5% peak-to-trough drawdown results in an automatic 50% reduction in allocated risk capital, while an 8% to 10% cumulative drawdown triggers immediate contract termination, complete book liquidation, and pod shutdown.
@@ -344,19 +350,23 @@ struct OptimizedDeskStats {
 > A High-Water Mark is a contractual provision ensuring that a portfolio manager or desk receives performance fees only after fully recovering past cumulative losses, preventing managers from collecting incentive fees on volatile bounce-backs without net wealth creation.
 
 > [!question]- mkt-car-007 | What is the legal and operational distinction between "garden leave" and a "non-compete period"?
-> Garden leave is an active employment phase after resignation where the employee remains on the firm payroll and receives full salary/benefits while being locked out of company systems and barred from work. A non-compete is a post-termination restrictive covenant prohibiting the former employee from working for a competing entity for a specified duration, typically compensated via statutory or contractual payments.
+> Garden leave is an active employment phase after resignation where the employee remains on the firm payroll and receives full salary/benefits while being locked out of company systems and barred from work.
+> A non-compete is a post-termination restrictive covenant prohibiting the former employee from working for a competing entity for a specified duration, typically compensated via statutory or contractual payments.
 
 > [!question]- mkt-car-008 | Why do quantitative trading firms assess an internal "cost of capital" charge against desk PnL?
 > An internal cost of capital charge reflects the firm treasury's opportunity cost and funding hurdle rate for extending balance sheet liquidity and margin to a desk, ensuring trading strategies deliver returns exceeding risk-free money market yields or corporate funding costs.
 
 > [!question]- mkt-car-009 | In an interactive market making interview game, why must a candidate immediately widen their spread and skew quotes after a trade?
-> A trade execution signals potential adverse selection, indicating the counterparty may possess superior information or toxic order flow. Widening the spread prices in increased uncertainty, while skewing quotes away from the accumulated inventory disincentivizes further one-sided fills and incentivizes rebalancing trades.
+> A trade execution signals potential adverse selection, indicating the counterparty may possess superior information or toxic order flow.
+> Widening the spread prices in increased uncertainty, while skewing quotes away from the accumulated inventory disincentivizes further one-sided fills and incentivizes rebalancing trades.
 
 > [!question]- mkt-car-010 | What is false sharing in a multithreaded low-latency C++ trading engine, and how is it resolved?
-> False sharing occurs when multiple CPU cores concurrently mutate independent variables that reside within the same 64-byte hardware cache line, forcing continuous cache line invalidations across L1/L2 caches via cache coherence protocols. It is resolved by cache-line aligning data structures using alignas(64) and inserting explicit padding.
+> False sharing occurs when multiple CPU cores concurrently mutate independent variables that reside within the same 64-byte hardware cache line, forcing continuous cache line invalidations across L1/L2 caches via cache coherence protocols.
+> It is resolved by cache-line aligning data structures using alignas(64) and inserting explicit padding.
 
 > [!question]- mkt-car-011 | Why is standard k-fold cross-validation flawed when applied to financial time-series research?
-> Standard k-fold cross-validation randomly partitions data across time, causing information leakage where future observations predict past outcomes due to serial autocorrelation and overlapping return windows. Quantitative researchers use purged and embargoed time-series cross-validation to isolate test folds from training data.
+> Standard k-fold cross-validation randomly partitions data across time, causing information leakage where future observations predict past outcomes due to serial autocorrelation and overlapping return windows.
+> Quantitative researchers use purged and embargoed time-series cross-validation to isolate test folds from training data.
 
 > [!question]- mkt-car-012 | What is the Deflated Sharpe Ratio (DSR), and why is it essential in quantitative research candidate evaluations?
 > The Deflated Sharpe Ratio adjusts the standard estimated Sharpe ratio for selection bias under multiple testing, accounting for non-normal asset return skewness/kurtosis, sample length, and the total number of trial strategies tested during research to prevent overfitting.
@@ -365,43 +375,53 @@ struct OptimizedDeskStats {
 > Kernel bypass (e.g., Solarflare OpenOnload or Intel DPDK) routes network packets directly from the physical network interface card (NIC) to user-space application memory, completely bypassing the operating system kernel's TCP/IP stack, socket buffers, and system call interrupt context switches, reducing round-trip latency from microseconds to sub-microsecond levels.
 
 > [!question]- mkt-car-014 | What is the difference between a maker-taker pricing model and an inverted (taker-maker) fee schedule?
-> In a maker-taker venue, liquidity providers (limit orders) receive a rebate for adding liquidity, while liquidity takers (market orders) pay a transaction fee. In an inverted (taker-maker) venue, liquidity providers pay a fee to quote while liquidity takers receive a rebate, attracting aggressive retail flow and providing faster fill queues for passive makers.
+> In a maker-taker venue, liquidity providers (limit orders) receive a rebate for adding liquidity, while liquidity takers (market orders) pay a transaction fee.
+> In an inverted (taker-maker) venue, liquidity providers pay a fee to quote while liquidity takers receive a rebate, attracting aggressive retail flow and providing faster fill queues for passive makers.
 
 > [!question]- mkt-car-015 | How does an interviewer test a candidate's mental math and probabilistic thinking under time pressure?
 > Interviewers deploy timed mental arithmetic batteries (e.g., Zetamac tests requiring 45+ score in 120 seconds), rapid compounding approximations, two-sided probability betting games with asymmetric payoffs, and rolling Bayesian updates where new evidence is introduced mid-calculation.
 
 > [!question]- mkt-car-016 | In probability interviews, what is the Optional Stopping Theorem, and what are its standard trading applications?
-> The Optional Stopping Theorem states that the expected value of a martingale stopped at a stopping time equals its initial expectation under specific boundedness or finite stopping conditions. It is used to solve absorption problems, hitting times, and expected payoff values in fair coin toss and random walk models without calculating infinite series.
+> The Optional Stopping Theorem states that the expected value of a martingale stopped at a stopping time equals its initial expectation under specific boundedness or finite stopping conditions.
+> It is used to solve absorption problems, hitting times, and expected payoff values in fair coin toss and random walk models without calculating infinite series.
 
 > [!question]- mkt-car-017 | How does survivorship bias distort historical quantitative equity backtests?
-> Survivorship bias occurs when a backtest includes only companies that currently exist, excluding firms that went bankrupt, merged, or were delisted over the historical period. This artificially inflates simulated returns and understates tail risk and maximum drawdowns.
+> Survivorship bias occurs when a backtest includes only companies that currently exist, excluding firms that went bankrupt, merged, or were delisted over the historical period.
+> This artificially inflates simulated returns and understates tail risk and maximum drawdowns.
 
 > [!question]- mkt-car-018 | What is the role of memory ordering semantics like std::memory_order_relaxed vs std::memory_order_acquire/release in C++ lock-free queues?
-> `memory_order_relaxed` guarantees atomic reads and writes without enforcing synchronization or memory operation reordering across threads. `memory_order_release` ensures prior writes are made visible to other threads, while `memory_order_acquire` prevents reads/writes after the acquire from being reordered before it, enabling lock-free message passing with minimal hardware bus locking.
+> `memory_order_relaxed` guarantees atomic reads and writes without enforcing synchronization or memory operation reordering across threads.
+> `memory_order_release` ensures prior writes are made visible to other threads, while `memory_order_acquire` prevents reads/writes after the acquire from being reordered before it, enabling lock-free message passing with minimal hardware bus locking.
 
 > [!question]- mkt-car-019 | What are the primary differences between Single-Producer Single-Consumer (SPSC) and Multi-Producer Multi-Consumer (MPMC) lock-free ring buffers?
-> An SPSC ring buffer requires no atomic read-modify-write instructions (like CAS) on head and tail pointers since only one thread mutates each index, operating with simple atomic load/store acquire-release semantics. An MPMC queue requires atomic compare-and-swap (CAS) loops or ticket schemes to handle contention across threads, incurring higher latency and cache synchronization overhead.
+> An SPSC ring buffer requires no atomic read-modify-write instructions (like CAS) on head and tail pointers since only one thread mutates each index, operating with simple atomic load/store acquire-release semantics.
+> An MPMC queue requires atomic compare-and-swap (CAS) loops or ticket schemes to handle contention across threads, incurring higher latency and cache synchronization overhead.
 
 > [!question]- mkt-car-020 | What is the purpose of CPU core pinning and thread affinity in electronic market making infrastructure?
 > Thread affinity binds critical execution threads to designated physical CPU cores using system calls like `pthread_setaffinity_np`, preventing the operating system scheduler from migrating threads between cores, which preserves L1/L2 cache warmth and eliminates context switching penalties.
 
 > [!question]- mkt-car-021 | Why do hedge fund pod shops mandate factor neutrality (e.g., zero beta to market, value, momentum)?
-> Pod shops require alpha that is uncorrelated with broad asset classes and systemic risk premia. If a pod holds unhedged beta or style tilts, its performance reflects systemic market risk rather than idiosyncratic skill, exposing the fund to severe systemic drawdowns that cannot be leveraged safely.
+> Pod shops require alpha that is uncorrelated with broad asset classes and systemic risk premia.
+> If a pod holds unhedged beta or style tilts, its performance reflects systemic market risk rather than idiosyncratic skill, exposing the fund to severe systemic drawdowns that cannot be leveraged safely.
 
 > [!question]- mkt-car-022 | What is a post-trade markout curve, and what does a decaying markout signify to a quantitative trader?
-> A markout curve measures the cumulative price movement of an instrument relative to the execution price at discrete intervals (e.g., 1ms, 10ms, 1s, 10s) following a trade. A markout that quickly drifts against the trader's position indicates toxic informed counterparty flow and adverse selection.
+> A markout curve measures the cumulative price movement of an instrument relative to the execution price at discrete intervals (e.g., 1ms, 10ms, 1s, 10s) following a trade.
+> A markout that quickly drifts against the trader's position indicates toxic informed counterparty flow and adverse selection.
 
 > [!question]- mkt-car-023 | In statistical arbitrage, what is cointegration, and how does it differ from simple correlation?
-> Correlation measures the linear co-movement of periodic returns, which can be transient or spurious. Cointegration indicates that a linear combination of non-stationary asset price series is stationary, confirming a true long-run economic equilibrium spread that mean-reverts over time.
+> Correlation measures the linear co-movement of periodic returns, which can be transient or spurious.
+> Cointegration indicates that a linear combination of non-stationary asset price series is stationary, confirming a true long-run economic equilibrium spread that mean-reverts over time.
 
 > [!question]- mkt-car-024 | What is the significance of non-allocatable overhead in desk PnL accounting?
-> Non-allocatable overhead includes firm-wide executive salaries, central legal/compliance budgets, and enterprise facilities costs. Negotiating whether desk payouts are calculated net or gross of non-allocatable overhead determines whether traders are penalized for corporate expenses outside their operational control.
+> Non-allocatable overhead includes firm-wide executive salaries, central legal/compliance budgets, and enterprise facilities costs.
+> Negotiating whether desk payouts are calculated net or gross of non-allocatable overhead determines whether traders are penalized for corporate expenses outside their operational control.
 
 > [!question]- mkt-car-025 | How does an interviewer evaluate behavioral resilience and risk ethics during a Superday?
 > Interviewers assess how candidates react to acute failure by presenting scenarios where an algorithm incurs unexpected losses, probing whether the candidate takes immediate accountability, analyzes root causes methodically, adheres to firm-wide hard stops, and communicates transparently rather than concealing errors.
 
 > [!question]- mkt-car-026 | What is the Gambler's Ruin problem, and what is the exact probability of reaching wealth A before 0 starting from k in a fair game?
-> In a fair random walk starting at wealth k with absorbing barriers at 0 and A, the probability of reaching A before ruin is exactly k / A. This demonstrates that probability of ruin is inversely proportional to capital depth in fair games.
+> In a fair random walk starting at wealth k with absorbing barriers at 0 and A, the probability of reaching A before ruin is exactly k / A.
+> The ruin probability is therefore 1 - k / A, which falls linearly as starting capital k rises toward the target A; in a fair game, deeper capital buys survival odds but never positive expectancy.
 
 > [!question]- mkt-car-027 | What is the significance of cache warming in algorithmic trading systems?
 > Cache warming involves pre-loading instructions and lookup table data into CPU L1 instruction and data caches prior to anticipated market events (e.g., scheduled macroeconomic releases), preventing initial cold-cache misses when execution signals trigger.
@@ -416,7 +436,8 @@ struct OptimizedDeskStats {
 > The candidate should first state a broad, conservative spread reflecting extreme uncertainty, specify clear size limits, explain their underlying distributional assumptions, and proactively state what information would cause them to narrow their spread or skew their quote.
 
 > [!question]- mkt-car-031 | What is an Order Management System (OMS) versus an Execution Management System (EMS)?
-> An OMS manages long-term portfolio positions, regulatory compliance limits, order routing workflows, and allocation across accounts. An EMS connects directly to market venues and brokers, focusing on real-time execution algorithms, route optimization, queue telemetry, and low-latency order placement.
+> An OMS manages long-term portfolio positions, regulatory compliance limits, order routing workflows, and allocation across accounts.
+> An EMS connects directly to market venues and brokers, focusing on real-time execution algorithms, route optimization, queue telemetry, and low-latency order placement.
 
 > [!question]- mkt-car-032 | Why do top quantitative firms prefer candidates with competitive programming or math olympiad backgrounds?
 > Competitive programming and olympiad contests test the ability to rapidly dissect complex novel problems, formulate optimal algorithmic solutions under extreme time pressure, write bug-free code on the first attempt, and handle mathematical edge cases intuitively.

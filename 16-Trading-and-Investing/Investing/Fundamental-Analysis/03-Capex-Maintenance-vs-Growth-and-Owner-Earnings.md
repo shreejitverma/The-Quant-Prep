@@ -17,7 +17,8 @@ sources: [Buffett (1986) - Berkshire Hathaway Shareholder Letter (Owner Earnings
 - Growth Capex is discretionary capital deployed to open new facilities, enter new geographic markets, or acquire revenue-producing capacity.
 - Warren Buffett (1986) formulated Owner Earnings as reported earnings plus non-cash charges minus the average annual maintenance capex required to maintain long-term competitive position.
 - In inflationary environments, historical cost depreciation severely underestimates the cash required to replace physical assets, creating phantom accounting profits.
-- Under IFRS 16 and ASC 842, all material operating leases must be recognized on the balance sheet as Right-of-Use (ROU) assets and lease liabilities, transforming rent expense into depreciation and interest.
+- Under IFRS 16 and ASC 842, operating leases longer than 12 months must be recognized on the balance sheet as Right-of-Use (ROU) assets and lease liabilities.
+- Only IFRS 16 transforms rent expense into depreciation and interest (raising EBITDA); ASC 842 keeps a single straight-line operating-lease cost inside operating expenses, so EBITDA is essentially unchanged.
 
 ## Learning objectives
 
@@ -67,8 +68,9 @@ In his 1986 Berkshire Hathaway shareholder letter, Warren Buffett critiqued stan
 
 $$\text{Owner Earnings} = \text{Reported Net Income} + \text{D&A} + \text{Other Non-Cash Charges} - \text{Average Maintenance Capex} \pm \Delta \text{Working Capital}$$
 
-Buffett emphasized:
-"If we think all day about what we would pay for a business, we think about owner earnings... Question: If a company must spend $\$100\text{M}$ annually simply to replace trucks, machines, and software to maintain unit volume, can that $\$100\text{M}$ ever be distributed to owners? No. It is a mandatory cost of staying in business."
+Buffett's argument, paraphrased rather than quoted:
+- If a company must spend $\$100\text{M}$ annually simply to replace trucks, machines, and software to maintain unit volume, that $\$100\text{M}$ can never be distributed to owners.
+- It is a mandatory cost of staying in business, so it must be deducted before any earnings are called distributable.
 
 EBITDA completely ignores capex, treating cash spent on replacement machinery as if it were distributable profit.
 For capital-intensive companies (railroads, utilities, airlines), Owner Earnings is often less than half of reported EBITDA.
@@ -106,11 +108,14 @@ Prior to 2019, companies categorized leases as either capital leases (on balance
 Retailers and airlines hid tens of billions in lease debt off their balance sheets, recognizing rent as a simple operating expense.
 
 Under ASC 842 and IFRS 16:
-- All material leases are capitalized on the balance sheet:
+- All leases longer than 12 months are capitalized on the balance sheet (IFRS 16 also exempts low-value assets):
   - **Asset Side**: Right-of-Use (ROU) Asset, reflecting the present value of future lease payments.
   - **Liability Side**: Lease Liability, reflecting the debt obligation to make lease payments.
-- **Income Statement Shift**: Rent expense is eliminated. It is replaced by **Amortization of the ROU Asset** (operating expense) and **Interest Expense** on the lease liability (financing expense).
-- **Valuation Impact**: EBITDA increases significantly because rent is removed from operating costs, but total Enterprise Value must now include lease liabilities as debt to avoid valuation distortions.
+- **Income Statement Shift under IFRS 16** (single lessee model): Rent expense is eliminated.
+  It is replaced by **Depreciation of the ROU Asset** (operating expense below EBITDA) and **Interest Expense** on the lease liability (financing expense).
+- **Income Statement under ASC 842** (dual model): Finance leases get the same depreciation-plus-interest split, but operating leases keep a single straight-line lease cost inside operating expenses, so EBITDA and EBIT are essentially unchanged.
+- **Valuation Impact under IFRS 16**: EBITDA increases because rent is removed from operating costs, so Enterprise Value must include lease liabilities as debt to avoid valuation distortions.
+- **Valuation Impact under ASC 842**: EBITDA still deducts operating-lease rent, so either leave operating-lease liabilities out of EV/EBITDA or add them to EV and divide by EBITDAR (EBITDA plus rent).
 
 ---
 
@@ -139,24 +144,28 @@ The remaining $\$180,000,000$ was spent laying new double-track routes to expand
 Standard FCF ($\$280\text{M}$) penalizes the business for $\$180\text{M}$ of growth investments that expand future earning power.
 Owner Earnings ($\$460\text{M}$) reflects the true annual cash generated that could be distributed to owners without impairing operations.
 
-### Example 2: Lease Capitalization Impact (ASC 842 / IFRS 16)
+### Example 2: Lease Capitalization Impact (IFRS 16 versus ASC 842)
 
 A national retail chain enters into a 5-year operating lease for store locations:
 - Annual lease payment: $\$10,000,000$ due at year-end.
 - Incremental borrowing rate: $6.0\%$.
 
 1. **Calculate Present Value of Lease Payments (ROU Asset & Liability)**:
-   $$\text{PV} = \$10\text{M} \times \left[ \frac{1 - (1 + 0.06)^{-5}}{0.06} \right] = \$10\text{M} \times 4.21236 = \$42,123,600$$
+   $$\text{PV} = \$10\text{M} \times \left[ \frac{1 - (1 + 0.06)^{-5}}{0.06} \right] = \$10\text{M} \times 4.212364 = \$42,123,638$$
 2. **Balance Sheet Recognition**:
-   - ROU Asset: $+\$42,123,600$
-   - Lease Liability: $+\$42,123,600$
+   - ROU Asset: $+\$42,123,638$
+   - Lease Liability: $+\$42,123,638$
 3. **Year 1 Income Statement & Cash Flow Shift**:
-   - Prior Accounting: Operating Rent Expense $= \$10,000,000$. EBITDA reflected $-\$10\text{M}$.
-   - Under ASC 842 / IFRS 16:
-     - Straight-line ROU Amortization: $\frac{\$42,123,600}{5} = \$8,424,720$ (Operating D&A).
-     - Year 1 Interest Expense: $\$42,123,600 \times 6.0\% = \$2,527,416$ (Financing Expense).
-   - **EBITDA Impact**: EBITDA increases by the full $+\$10,000,000$ because rent is eliminated from operating costs.
-   - **CFO Impact**: Under IFRS, principal repayment is moved to CFF, artificially inflating CFO.
+   - Prior Accounting: Operating Rent Expense of $\$10,000,000$ reduced EBITDA by $\$10\text{M}$.
+   - Under IFRS 16:
+     - Straight-line ROU Depreciation: $\frac{\$42,123,638}{5} = \$8,424,728$ (Operating D&A).
+     - Year 1 Interest Expense: $\$42,123,638 \times 6.0\% = \$2,527,418$ (Financing Expense).
+     - **EBITDA Impact**: EBITDA increases by the full $+\$10,000,000$ because rent is eliminated from operating costs.
+     - **CFO Impact**: The Year 1 principal repayment of $\$10,000,000 - \$2,527,418 = \$7,472,582$ is classified in CFF, inflating CFO by that amount.
+   - Under ASC 842 (operating lease):
+     - Single straight-line lease cost: $\frac{5 \times \$10,000,000}{5} = \$10,000,000$ in operating expenses.
+     - **EBITDA Impact**: None; EBITDA still deducts the $\$10,000,000$, and only the balance sheet gains the ROU asset and lease liability.
+     - **CFO Impact**: None; the whole $\$10,000,000$ payment stays in CFO.
 
 ---
 
@@ -165,7 +174,7 @@ A national retail chain enters into a 5-year operating lease for store locations
 - **Confusing Total Capex with Maintenance Capex**: Assuming that all capex is mandatory; high-growth compounders reinvesting $100\%$ of cash flow into high-ROIC expansion appear to have zero free cash flow, masking underlying earning power.
 - **Ignoring Software Capitalization**: Software companies capitalizing internal developer salaries into balance sheet intangible assets, hiding operating expenses from the Income Statement and bloating perceived margins.
 - **Relying on Depreciation in Asset-Heavy Mature Companies**: Assuming maintenance capex equals D&A during periods of severe inflation; replacing 20-year-old infrastructure requires far more cash than historical depreciation allowances.
-- **Double-Counting Lease Debt in Valuation Multiples**: Adding capitalized lease debt to Enterprise Value while failing to use lease-adjusted EBITDA in the denominator.
+- **Double-Counting Lease Debt in Valuation Multiples**: Adding capitalized lease debt to Enterprise Value while failing to use lease-adjusted EBITDA in the denominator (EBITDAR for ASC 842 operating leases).
 - **Underestimating Maintenance Capex in Cyclical Troughs**: Slashing capex during recessions to preserve reported cash flow; deferred maintenance accumulates as an invisible liability, leading to future catastrophic equipment failures.
 
 ---
@@ -199,8 +208,8 @@ A national retail chain enters into a 5-year operating lease for store locations
 > [!question]- mkt-fa-073 | What is the impact of IFRS 16 lease capitalization on reported EBITDA?
 > EBITDA increases significantly because operating rent expense is eliminated from operating costs, replaced by depreciation of the ROU asset and financing interest expense.
 
-> [!question]- mkt-fa-074 | When evaluating EV/EBITDA under ASC 842 / IFRS 16, why must lease liabilities be included in Enterprise Value?
-> Because EBITDA now excludes rent expense; to maintain mathematical consistency, the capitalized lease liabilities must be treated as debt in Enterprise Value.
+> [!question]- mkt-fa-074 | When evaluating EV/EBITDA under IFRS 16 versus ASC 842, when must lease liabilities be included in Enterprise Value?
+> Under IFRS 16, EBITDA no longer deducts rent, so lease liabilities must be treated as debt in EV for consistency; under ASC 842, operating-lease cost still sits inside EBITDA, so lease liabilities belong in EV only if rent is added back (EV/EBITDAR).
 
 > [!question]- mkt-fa-075 | What is the Reinvestment Rate formula in corporate finance?
 > Reinvestment Rate = (Net Capex + Delta Non-Cash Working Capital) / NOPAT; measuring the fraction of after-tax operating profits reinvested into the business.

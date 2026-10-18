@@ -86,8 +86,8 @@ Because retail clients cannot be forced to pay hundreds of thousands of dollars 
 |    (producing 2,000 pips of unintended adverse slippage)              |
 |                                                                       |
 | 4. Catastrophic Retail Deficits                                       |
-|    A 200:1 leveraged position losing 20% creates an account deficit   |
-|    equal to 40x the client's total deposited capital                  |
+|    A 200:1 leveraged position losing 20% loses 40x the deposit,       |
+|    leaving a deficit equal to 39x the client's deposited capital      |
 |                                                                       |
 | 5. Broker Balance Sheet Obliteration                                  |
 |    Brokers owe liquidity providers hundreds of millions for executed  |
@@ -107,17 +107,19 @@ Trades executed at wildly disparate prices across different platforms depending 
 
 ## Quantitative Autopsy
 
-Consider a retail trader with an account equity $E_0 = \$10,000$ using 200:1 leverage to purchase EUR/CHF at $P_0 = 1.2005$:
-$$\text{Position Notional} = \$10,000 \times 200 = \$2,000,000 \quad (€1,666,000)$$
-$$\text{Required Initial Margin (0.50%)} = \$10,000$$
-The trader sets a prudent stop-loss at $P_{\text{stop}} = 1.1985$ (20 pips risk):
-$$\text{Expected Loss at Stop} = €1,666,000 \times (1.2005 - 1.1985) = €333 \approx \$400 \quad (4\% \text{ of account})$$
+Consider a retail trader with a Swiss-franc account, equity $E_0 = \text{CHF } 10,000$, using 200:1 leverage to buy EUR/CHF at $P_0 = 1.2005$ (CHF per EUR):
+$$\text{Position Notional} = \text{CHF } 10,000 \times 200 = \text{CHF } 2,000,000 \approx €1,666,000 \quad (2,000,000 / 1.2005)$$
+$$\text{Required Initial Margin } (0.50\%) = \text{CHF } 10,000$$
+The trader sets a tight stop-loss at $P_{\text{stop}} = 1.1985$ (20 pips risk).
+Because P&L on a EUR/CHF position accrues in Swiss francs, the loss at the stop is:
+$$\text{Expected Loss at Stop} = €1,666,000 \times (1.2005 - 1.1985) = \text{CHF } 3,332 \quad (33.3\% \text{ of account})$$
+Even a 20-pip stop risks a third of the account at 200:1 leverage.
 However, when the peg breaks, there are zero bids in the interbank market until $P_{\text{fill}} = 1.0200$.
 The broker's automated liquidation engine finally executes the sell order at 1.0200:
-$$\text{Realized Loss} = €1,666,000 \times (1.2005 - 1.0200) = €1,666,000 \times 0.1805 = €300,713 \approx \$361,000$$
+$$\text{Realized Loss} = €1,666,000 \times (1.2005 - 1.0200) = €1,666,000 \times 0.1805 = \text{CHF } 300,713$$
 The net account balance after liquidation is:
-$$\text{Account Equity} = \$10,000 - \$361,000 = -\$351,000$$
-The retail trader owes the broker $351,000.
+$$\text{Account Equity} = \text{CHF } 10,000 - \text{CHF } 300,713 = -\text{CHF } 290,713$$
+The retail trader owes the broker CHF 290,713, about 29 times the deposited capital, from a 15.0% price move ($0.1805 / 1.2005$).
 When thousands of clients simultaneously incur six-figure negative balances, the broker faces aggregate claims from its liquidity providers (who executed the other side of the trade at 1.0200) totaling hundreds of millions of dollars.
 Because client bad debt is uncollectible, broker equity is destroyed instantly.
 

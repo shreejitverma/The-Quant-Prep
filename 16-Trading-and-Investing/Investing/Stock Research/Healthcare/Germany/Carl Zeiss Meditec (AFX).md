@@ -22,10 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:16
 market_data:
-  ticker: AFX
-  52w_high: 2221.0
-  52w_low: 2200.0
-  data_quality: ok
+  ticker: AFX.DE
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Carl Zeiss Meditec (AFX)

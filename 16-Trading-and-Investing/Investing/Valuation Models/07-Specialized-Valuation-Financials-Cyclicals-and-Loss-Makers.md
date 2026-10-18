@@ -181,7 +181,7 @@ If First Metro Bank trades in the market at $22.00 (1.10x TBV), it represents a 
 
 ### Part 2: Normalizing Cyclical Earnings for Vulcan Mining
 - Current Spot Copper Price: $5.20 / lb (All-time high peak)
-- Current Reported EBIT: $1,200M (Reported P/E = 6.0x on $35 stock price)
+- Current Reported EBIT: $1,200M; even with zero interest, 25% tax leaves net income of at most $900M, so the reported P/E is at least $\$7,000\text{M} / \$900\text{M} = 7.8\times$ on the $35 stock price
 - Annual Copper Production Capacity: 500M lbs
 - All-In Sustaining Cash Cost (AISC): $2.20 / lb
 - Historical 10-Year Mid-Cycle Copper Price: $3.80 / lb
@@ -196,14 +196,14 @@ $$\text{Normalized NOPAT} = \$650\text{M} \times (1 - 0.25) = \$487.5\text{M}$$
 
 #### Step 2: Value Mid-Cycle Enterprise Value
 Assuming mid-cycle reinvestment rate of 25% (Capex exceeds D&A by $121.9M to maintain mines):
-$$\text{Normalized Mid-Cycle FCFF} = 487.5 \times (1 - 0.25) = \$365.6M$$
-$$\text{Enterprise Value (assuming 2\% terminal growth)} = \frac{365.6}{0.09 - 0.02} = \frac{365.6}{0.07} = \$5,222.9\text{M}$$
-$$\text{Equity Value} = \text{EV} - \text{Net Debt} = 5,222.9 - 500.0 = \$4,722.9\text{M}$$
-$$\text{Normalized Fair Value Per Share} = \frac{\$4,722.9\text{M}}{200\text{M shares}} = \$23.61$$
+$$\text{Normalized Mid-Cycle FCFF} = 487.5 \times (1 - 0.25) = \$365.625\text{M}$$
+$$\text{Enterprise Value (assuming 2\% terminal growth)} = \frac{365.625}{0.09 - 0.02} = \frac{365.625}{0.07} = \$5,223.2\text{M}$$
+$$\text{Equity Value} = \text{EV} - \text{Net Debt} = 5,223.2 - 500.0 = \$4,723.2\text{M}$$
+$$\text{Normalized Fair Value Per Share} = \frac{\$4,723.2\text{M}}{200\text{M shares}} = \$23.62$$
 
 Forensic Cyclical Takeaway:
-At $35.00, Vulcan Mining looks superficially "cheap" on peak earnings at 6.0x P/E.
-However, on normalized mid-cycle copper economics ($3.80/lb), its true intrinsic value is only **$23.61**.
+At $35.00, Vulcan Mining looks superficially "cheap" on peak earnings at a low P/E (at least 7.8x, and slightly higher once interest on the $500M net debt is deducted).
+However, on normalized mid-cycle copper economics ($3.80/lb), its true intrinsic value is only **$23.62**.
 The stock is severely overvalued by 48% at the peak of the commodity cycle.
 
 ## Practice questions

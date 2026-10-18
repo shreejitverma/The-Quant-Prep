@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:20
 market_data:
-  ticker: CPALL
-  data_quality: ok
+  ticker: CPALL.BK
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: CP All (CPALL)

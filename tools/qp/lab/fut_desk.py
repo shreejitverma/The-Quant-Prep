@@ -13,6 +13,9 @@ import random
 from .base import LabResult, Param, TradingLabEngine
 from .registry import register
 
+FUNDING_PERIODS_PER_YEAR = 3.0 * 365.0
+MAX_MATURITY_DAYS = 3650
+
 
 class FuturesDeskEngine(TradingLabEngine):
     """Engine for futures term structures, calendar spreads, and basis arbitrage."""
@@ -80,7 +83,7 @@ class FuturesDeskEngine(TradingLabEngine):
                 name="maturities_days",
                 param_type="str",
                 default="30,60,90,180,360",
-                description="Comma-separated contract expirations in days.",
+                description="Comma-separated distinct contract expirations in whole days (1 to 3650).",
             ),
             "sim_regime": Param(
                 name="sim_regime",
@@ -113,6 +116,23 @@ class FuturesDeskEngine(TradingLabEngine):
             ),
         }
 
+    @staticmethod
+    def parse_maturities(raw: str) -> list[int]:
+        """Parse a comma-separated list of distinct whole-day maturities in [1, MAX_MATURITY_DAYS], sorted ascending."""
+        days_list = []
+        for token in raw.split(","):
+            token = token.strip()
+            try:
+                days = int(token)
+            except ValueError:
+                raise ValueError(f"maturities_days must be comma-separated whole days, got {token!r} in {raw!r}") from None
+            if not 1 <= days <= MAX_MATURITY_DAYS:
+                raise ValueError(f"maturities_days entries must be between 1 and {MAX_MATURITY_DAYS} days, got {days}")
+            if days in days_list:
+                raise ValueError(f"maturities_days lists {days} more than once")
+            days_list.append(days)
+        return sorted(days_list)
+
     def run(self, **kwargs) -> LabResult:
         p = self.validate_params(kwargs)
         rng = random.Random(p["seed"])
@@ -142,25 +162,18 @@ class FuturesDeskEngine(TradingLabEngine):
             c = 0.0
             y = 0.0
         elif regime == "crypto_funding":
-            # Perpetual funding rate drives effective annualized carry
-            annual_funding = funding_8h * 3.0 * 365.0
+            # Spot crypto pays no income and costs nothing to store; r stays the arbitrageur's borrowing rate
+            q = 0.0
             c = 0.0
             y = 0.0
-            # Let the funding rate represent the forward premium / basis spread
-            r = annual_funding
 
-        # Parse maturities
-        try:
-            days_list = [int(d.strip()) for d in str(p["maturities_days"]).split(",") if d.strip()]
-        except Exception:
-            days_list = [30, 60, 90, 180, 360]
+        days_list = self.parse_maturities(str(p["maturities_days"]))
 
-        if not days_list:
-            days_list = [30, 60, 90, 180, 360]
-        days_list.sort()
-
-        # Net cost of carry rate
-        net_carry_rate = (r - q + c) - y
+        if regime == "crypto_funding":
+            # The perpetual funding rate, not financing, sets the forward premium
+            net_carry_rate = funding_8h * FUNDING_PERIODS_PER_YEAR
+        else:
+            net_carry_rate = (r - q + c) - y
 
         term_structure = []
         for days in days_list:
@@ -173,7 +186,7 @@ class FuturesDeskEngine(TradingLabEngine):
 
             basis_dollar = f_market - spot
             basis_pct = (basis_dollar / spot) * 100.0
-            annualized_basis = (basis_pct / t) if t > 0 else 0.0
+            annualized_basis = basis_pct / t
 
             term_structure.append(
                 {
@@ -211,7 +224,7 @@ class FuturesDeskEngine(TradingLabEngine):
         revenue_from_short = units * front_contract["market_future"]
         net_repayment = capital + borrowed_cost + storage_paid - dividend_collected
         arb_net_pnl = revenue_from_short - net_repayment
-        arb_annualized_roi = (arb_net_pnl / capital) * (1.0 / front_t) * 100.0 if front_t > 0 else 0.0
+        arb_annualized_roi = (arb_net_pnl / capital) * (1.0 / front_t) * 100.0
 
         # Multi-day convergence path simulation for front contract
         convergence_path = []

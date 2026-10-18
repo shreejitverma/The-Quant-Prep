@@ -10,6 +10,10 @@ tags: [quant, benchmark, energy]
 | Exxon Mobil (XOM) | 9.87% | 9.68% | 0.18 | 1.93% |
 | Chevron (CVX) | 6.64% | 10.69% | 0.24 | 3.24% |
 
+## Not benchmarked
+- Reliance Industries: no value_metrics block
+- Saudi Aramco: no value_metrics block
+
 ## Investment Logic
 - **Quality Dominance**: Higher ROE combined with low Debt/Equity indicates a strong structural moat ([Economic Moat](obsidian://open?vault=shreejit-verma-obsidian&file=Mental%20Models%2FWarren%20Buffett%2FEconomic%20Moat)).
 - **Growth Gap**: Compare 10y CAGR with current ROE to identify if the company is effectively reinvesting its capital.

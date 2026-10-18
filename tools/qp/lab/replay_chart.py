@@ -12,11 +12,67 @@ from __future__ import annotations
 
 import math
 import random
+from functools import lru_cache
 from typing import Any
 
 from .base import LabResult, Param, TradingLabEngine
-from .market import SyntheticMarketGenerator
+from .market import REGIME_JUMP_SD, REGIME_PARAMS, REGIME_TRANSITIONS, SyntheticMarketGenerator
 from .registry import register
+
+
+def normal_cdf(x: float) -> float:
+    return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
+
+
+@lru_cache(maxsize=256)
+def regime_oracle(regime: str, horizon: int, dt: float) -> float:
+    """P(up over horizon bars) given the current regime of the generate_regime_path Markov chain.
+
+    Exact mixture over regime paths, grouped by bars spent in each regime (the summed drift and variance depend
+    only on those counts); each path's log return is Gaussian with drift mu dt plus mean jump per bar and the
+    stationary GARCH variance vol^2 dt plus jump variance per bar.
+    """
+    names = list(REGIME_PARAMS)
+    bar_mean = [REGIME_PARAMS[n]["mu"] * dt + REGIME_PARAMS[n]["jump_prob"] * REGIME_PARAMS[n]["jump_mu"] for n in names]
+    bar_var = [
+        REGIME_PARAMS[n]["vol"] ** 2 * dt + REGIME_PARAMS[n]["jump_prob"] * (REGIME_PARAMS[n]["jump_mu"] ** 2 + REGIME_JUMP_SD**2)
+        for n in names
+    ]
+    paths: dict[tuple[str, tuple[int, ...]], float] = {(regime, (0,) * len(names)): 1.0}
+    for _ in range(horizon):
+        nxt: dict[tuple[str, tuple[int, ...]], float] = {}
+        for (state, counts), w in paths.items():
+            for to_state, prob in REGIME_TRANSITIONS[state]:
+                j = names.index(to_state)
+                key = (to_state, counts[:j] + (counts[j] + 1,) + counts[j + 1 :])
+                nxt[key] = nxt.get(key, 0.0) + w * prob
+        paths = nxt
+    p_up = 0.0
+    for (_, counts), w in paths.items():
+        mean_move = sum(c * m for c, m in zip(counts, bar_mean, strict=True))
+        move_sd = math.sqrt(sum(c * v for c, v in zip(counts, bar_var, strict=True)))
+        p_up += w * normal_cdf(mean_move / move_sd)
+    return p_up
+
+
+def parse_user_forecasts(raw: str, num_trials: int) -> list[float] | None:
+    """Parse comma-separated probabilities; None when blank, ValueError on a wrong count or a value outside [0, 1]."""
+    text = raw.strip()
+    if not text:
+        return None
+    parts = [part.strip() for part in text.split(",")]
+    if len(parts) != num_trials:
+        raise ValueError(f"user_forecasts needs exactly {num_trials} probabilities (one per trial), got {len(parts)}")
+    out = []
+    for idx, part in enumerate(parts, start=1):
+        try:
+            val = float(part)
+        except ValueError:
+            raise ValueError(f"user_forecasts entry {idx} is not a number: {part!r}") from None
+        if not math.isfinite(val) or not 0.0 <= val <= 1.0:
+            raise ValueError(f"user_forecasts entry {idx} must be a probability in [0, 1], got {part!r}")
+        out.append(val)
+    return out
 
 
 class ChartReplayEngine(TradingLabEngine):
@@ -47,6 +103,12 @@ class ChartReplayEngine(TradingLabEngine):
             "forecast_horizon": Param("forecast_horizon", "int", 5, "Number of future bars to predict (h-step horizon)", 1, 20),
             "num_trials": Param("num_trials", "int", 10, "Number of consecutive chart replay evaluation trials", 1, 50),
             "seed": Param("seed", "int", 42, "Deterministic random seed", 0, 999999),
+            "user_forecasts": Param(
+                "user_forecasts",
+                "str",
+                "",
+                "Your P(price higher after the horizon), one per trial, comma-separated in [0, 1]; blank scores a simulated forecaster",
+            ),
         }
 
     @staticmethod
@@ -60,6 +122,33 @@ class ChartReplayEngine(TradingLabEngine):
         eps = 1e-6
         p = max(eps, min(1.0 - eps, forecast))
         return -math.log(p) if outcome == 1 else -math.log(1.0 - p)
+
+    @staticmethod
+    def expected_calibration_error(forecasts: list[float], outcomes: list[int], n_bins: int = 5) -> float:
+        """ECE: bin-weighted mean absolute gap between mean forecast and observed frequency (equal-width bins)."""
+        n = len(forecasts)
+        if n == 0:
+            return 0.0
+        bins: list[list[int]] = [[] for _ in range(n_bins)]
+        for idx, f in enumerate(forecasts):
+            bins[min(n_bins - 1, int(f * n_bins))].append(idx)
+        ece = 0.0
+        for b_indices in bins:
+            if b_indices:
+                n_k = len(b_indices)
+                f_k_mean = sum(forecasts[i] for i in b_indices) / n_k
+                o_k_mean = sum(outcomes[i] for i in b_indices) / n_k
+                ece += (n_k / n) * abs(f_k_mean - o_k_mean)
+        return ece
+
+    @staticmethod
+    def mean_reversion_oracle(curr_price: float, theta: float, kappa: float, sigma: float, horizon: int, dt: float) -> float:
+        """P(S_{t+h} > S_t) for the generator's discrete log-OU: x_{k+1} - m = phi (x_k - m) + sigma sqrt(dt) z, phi = 1 - kappa dt."""
+        phi = 1.0 - kappa * dt
+        gap = math.log(curr_price) - math.log(theta)
+        mean_move = (phi**horizon - 1.0) * gap
+        move_var = sigma**2 * dt * (1.0 - phi ** (2 * horizon)) / (1.0 - phi**2)
+        return normal_cdf(mean_move / math.sqrt(move_var))
 
     @classmethod
     def decompose_brier(cls, forecasts: list[float], outcomes: list[int], n_bins: int = 5) -> dict[str, float]:
@@ -113,9 +202,9 @@ class ChartReplayEngine(TradingLabEngine):
         dt = 1.0 / 252.0
 
         if level == 1:
-            # Pure Random Walk (GBM with mu = 0.0): Oracle is exactly 0.50
+            # Driftless GBM: the log return has mean -sigma^2/2 per unit time, so P(up) sits just below 0.50
             prices = gen.generate_gbm(s0=100.0, mu=0.0, sigma=0.20, n_steps=total_bars, dt=dt)
-            oracle_p = 0.50
+            oracle_p = gen.oracle_probability_higher(prices[bars_visible - 1], horizon, mu=0.0, sigma=0.20, dt=dt)
             regime_label = "random_walk"
         elif level == 2:
             # Trend Regime: Alternating strong drift up or down
@@ -138,23 +227,14 @@ class ChartReplayEngine(TradingLabEngine):
                 n_steps=total_bars,
                 dt=dt,
             )
-            curr_price = prices[bars_visible - 1]
-            # If price is above theta, reversion probability of higher is < 0.5; if below, > 0.5
-            expected_future = theta + (curr_price - theta) * math.exp(-kappa * horizon * dt)
-            oracle_p = 0.5 * (1.0 + math.erf((expected_future - curr_price) / (sigma * math.sqrt(horizon * dt) * math.sqrt(2.0))))
-            oracle_p = max(0.05, min(0.95, oracle_p))
+            oracle_p = self.mean_reversion_oracle(prices[bars_visible - 1], theta, kappa, sigma, horizon, dt)
             regime_label = "mean_reversion"
         else:
             # Level 4: Hidden Markov Regime Switching with GARCH and jumps
             bars = gen.generate_regime_path(s0=100.0, n_bars=total_bars, dt=dt)
             prices = [b.close for b in bars]
             curr_regime = bars[bars_visible - 1].regime
-            if curr_regime == "bull":
-                oracle_p = 0.62
-            elif curr_regime == "bear":
-                oracle_p = 0.38
-            else:
-                oracle_p = 0.50
+            oracle_p = regime_oracle(curr_regime, horizon, dt)
             regime_label = f"markov_{curr_regime}"
 
         visible_prices = prices[:bars_visible]
@@ -184,8 +264,8 @@ class ChartReplayEngine(TradingLabEngine):
         num_trials = int(params.get("num_trials", 10))
         base_seed = int(params.get("seed", 42))
 
-        # Check for user-provided forecasts; if absent, simulate a calibrated technical trader with noise
-        user_forecasts_input = params.get("user_forecasts")
+        user_forecasts = parse_user_forecasts(str(params["user_forecasts"]), num_trials)
+        forecast_source = "user" if user_forecasts is not None else "simulated"
 
         forecasts: list[float] = []
         oracle_probs: list[float] = []
@@ -201,14 +281,13 @@ class ChartReplayEngine(TradingLabEngine):
             oracle_p = trial_info["oracle_probability"]
             outcome = trial_info["binary_outcome"]
 
-            if user_forecasts_input and trial_idx < len(user_forecasts_input):
-                f_p = float(user_forecasts_input[trial_idx])
+            if user_forecasts is not None:
+                f_p = user_forecasts[trial_idx]
             else:
                 # Simulated forecaster: blends oracle with noisy technical chart bias
                 chart_noise = rng.gauss(0.0, 0.12)
                 f_p = round(max(0.05, min(0.95, oracle_p + chart_noise)), 2)
 
-            f_p = max(0.01, min(0.99, f_p))
             forecasts.append(f_p)
             oracle_probs.append(oracle_p)
             outcomes.append(outcome)
@@ -232,6 +311,7 @@ class ChartReplayEngine(TradingLabEngine):
                 {
                     "trial": trial_idx + 1,
                     "regime": trial_info["regime"],
+                    "visible_series": trial_info["visible_series"],
                     "current_price": trial_info["current_price"],
                     "final_price": trial_info["final_price"],
                     "return_pct": ret_pct,
@@ -255,8 +335,7 @@ class ChartReplayEngine(TradingLabEngine):
         naive_brier = 0.25
         brier_skill_score = 1.0 - (mean_brier / naive_brier)
 
-        # Expected Calibration Error (ECE)
-        ece = decomp["reliability"]
+        ece = self.expected_calibration_error(forecasts, outcomes, n_bins=5)
 
         # Trade Plan metrics
         active_plans = [r for r in trial_records if r["plan_action"] != "flat"]
@@ -281,7 +360,7 @@ class ChartReplayEngine(TradingLabEngine):
         }
 
         summary = (
-            f"Chart Replay Calibration session complete ({num_trials} trials, Level {level}). "
+            f"Chart Replay Calibration session complete ({num_trials} trials, Level {level}, {forecast_source} forecasts). "
             f"Brier Score: {mean_brier:.4f} (Oracle: {oracle_mean_brier:.4f}, Skill: {brier_skill_score:+.2f}). "
             f"ECE: {ece:.4f}, Win Rate: {win_rate:.1f}%, Avg Expectancy: {avg_r:+.2f}R."
         )
@@ -289,7 +368,7 @@ class ChartReplayEngine(TradingLabEngine):
         return LabResult(
             engine_id=self.engine_id,
             metrics=metrics,
-            data={"trials": trial_records, "brier_decomposition": decomp},
+            data={"forecast_source": forecast_source, "trials": trial_records, "brier_decomposition": decomp},
             summary=summary,
         )
 

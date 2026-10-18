@@ -36,19 +36,26 @@ market_data:
 
 
 ## Investment Thesis
-The world's largest beauty company. A master of brand building and global distribution.
+The world's largest beauty company.
+A master of brand building and global distribution.
+Massive brand portfolio and R&D budget.
+Digital marketing powerhouse.
 
 ## Financial Moat (7 Powers Analysis)
-Branding: A portfolio of iconic brands. Scale Economies: Largest R&D and marketing budget in beauty.
+Branding: A portfolio of iconic brands.
+Scale Economies: Largest R&D and marketing budget in beauty.
+Network Effects: The influencer ecosystem.
 
 ## Historical Performance (CAGR, long-term context)
 Decades of consistent growth and high margins.
 
 ## Risk Factors (Anti-Models)
 Emergence of 'indie' beauty brands on social media; China slowdown.
+Fast-moving beauty trends and the shift to direct-to-consumer brands.
 
 ## Architect Perspective (Buffett/Munger/Lynch)
 Buffett: 'A share of mind is a share of market.'
+Buffett: 'Inexhaustible brand equity.'
 ## Inception-to-Date Yearly Performance
 | Year | Close Price | YoY Return | Annual Volatility |
 | :--- | :--- | :--- | :--- |

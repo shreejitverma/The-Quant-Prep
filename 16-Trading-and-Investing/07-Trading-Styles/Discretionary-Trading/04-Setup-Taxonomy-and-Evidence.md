@@ -94,7 +94,8 @@ Markets Mastery OS assigns every setup a standardized Evidence Grade based on pe
 #### 3. Moving Average Rules and Breakouts (Brock, Lakonishok, and LeBaron, 1992) - Grade: MIXED
 - Tested variable-length moving average crossover and trading range breakout rules on the Dow Jones Industrial Average from 1897 to 1986 (90 years).
 - Buy signals consistently generated higher returns than sell signals with lower volatility ($t$-statistics $> 2.5$).
-- However, subsequent modern replications (e.g. Sullivan, Timmermann, and White, 1999) showed that once high retail transaction costs and data-snooping corrections are applied, net excess return largely vanishes in liquid large caps.
+- Sullivan, Timmermann, and White (1999) tested these rules inside a universe of 7,846 rules with White's Reality Check.
+- The best rule stayed significant over the 1897-1986 sample even after the data-snooping adjustment, but delivered no significant outperformance over the 1987-1996 out-of-sample decade.
 
 #### 4. Automated Pattern Recognition (Lo, Mamaysky, and Wang, 2000) - Grade: MIXED
 - Developed kernel regression algorithms to formally define and detect classical technical patterns (Head and Shoulders, Double Bottoms, Rectangles).
@@ -200,8 +201,8 @@ A quantitative discretionary desk audits four proposed trading setups:
 > Buy signals consistently produced higher returns and lower volatility than sell signals.
 
 > [!question]- mkt-trd-102 | Why did Sullivan, Timmermann, and White (1999) question the real-world tradability of Brock et al.'s findings?
-> Once historical transaction costs and data-snooping corrections (White's Reality Check) were applied, net out-of-sample excess returns largely vanished.
-> The apparent edge was heavily eroded by bid-ask spread crossing and execution fees.
+> Inside a universe of 7,846 rules, the best rule survived White's Reality Check over the original 1897-1986 sample.
+> It then delivered no statistically significant outperformance over the 1987-1996 out-of-sample decade, so the in-sample edge did not carry forward, and trading costs only widen that gap.
 
 > [!question]- mkt-trd-103 | How did Lo, Mamaysky, and Wang (2000) formalize technical chart pattern analysis?
 > They used non-parametric kernel regression to construct mathematical definitions of classical patterns (Head and Shoulders, Double Bottoms).

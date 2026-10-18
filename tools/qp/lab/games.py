@@ -65,6 +65,7 @@ class InterviewTradingGamesEngine(TradingLabEngine):
         total_pnl = 0.0
         total_spread_quoted = 0.0
         total_quotes = 0
+        trades_filled = 0
         correct_direction_count = 0
 
         round_history = []
@@ -106,6 +107,7 @@ class InterviewTradingGamesEngine(TradingLabEngine):
                         trade_pnl = ask - true_final_sum
                         total_pnl += trade_pnl
                         round_trades.append({"action": "sold_ask", "price": ask, "pnl": trade_pnl})
+                        trades_filled += 1
                         if ask > true_final_sum:
                             correct_direction_count += 1
                     # If counterparty thinks it's lower than our bid, they sell to our bid
@@ -114,6 +116,7 @@ class InterviewTradingGamesEngine(TradingLabEngine):
                         trade_pnl = true_final_sum - bid
                         total_pnl += trade_pnl
                         round_trades.append({"action": "bought_bid", "price": bid, "pnl": trade_pnl})
+                        trades_filled += 1
                         if true_final_sum > bid:
                             correct_direction_count += 1
 
@@ -154,12 +157,14 @@ class InterviewTradingGamesEngine(TradingLabEngine):
                         trade_pnl = ask - true_final_sum
                         total_pnl += trade_pnl
                         round_trades.append({"action": "sold_ask", "price": ask, "pnl": trade_pnl})
+                        trades_filled += 1
                         if ask > true_final_sum:
                             correct_direction_count += 1
                     elif cp_val < bid:
                         trade_pnl = true_final_sum - bid
                         total_pnl += trade_pnl
                         round_trades.append({"action": "bought_bid", "price": bid, "pnl": trade_pnl})
+                        trades_filled += 1
                         if true_final_sum > bid:
                             correct_direction_count += 1
 
@@ -173,7 +178,7 @@ class InterviewTradingGamesEngine(TradingLabEngine):
                 )
 
         avg_spread = total_spread_quoted / total_quotes if total_quotes > 0 else 0.0
-        accuracy = (correct_direction_count / total_quotes) * 100 if total_quotes > 0 else 0.0
+        accuracy = (correct_direction_count / trades_filled) * 100 if trades_filled > 0 else 0.0
         score = max(0.0, min(100.0, 50.0 + (total_pnl * 2.0) + (accuracy * 0.5)))
 
         metrics = {

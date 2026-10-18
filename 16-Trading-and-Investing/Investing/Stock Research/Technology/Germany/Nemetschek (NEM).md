@@ -22,14 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:13
 market_data:
-  ticker: NEM
-  price: 109.81
-  market_cap: 117227970560
-  pe_ratio: 14.242541
-  dividend_yield: 0.95
-  52w_high: 134.88
-  52w_low: 52.08
-  data_quality: ok
+  ticker: NEM.DE
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Nemetschek (NEM)

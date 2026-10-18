@@ -1,17 +1,22 @@
 """Migrate stock research notes to fix Phase 0 known defects.
 
 - Relocates misplaced `market_data` and `last_updated` blocks into the frontmatter.
-- Normalizes `market_data`: removes placeholder values (None, null, 0) and tags `data_quality: missing` or `ok`.
+- Drops `market_data` recorded under another symbol (an ADR or an unrelated US listing).
+- Normalizes `market_data`: removes placeholder values (None, null, 0) and derives `data_quality` from the fields present.
+- Replaces placeholder zeros for D/E, PEG and FCF yield with N/A and blanks FCF yields of known currency mismatches.
 - Replaces fake `implied_growth_rate: 0%` with solved rate or explicit failure status (missing_fcf, non_positive_fcf, currency_mismatch).
 - Updates note status from `complete` to `status: stub` for boilerplate company notes.
 - Strips body inline Dataview fields (status:: ..., priority:: ...) that conflict with frontmatter.
 - Repairs corrupted frontmatter in Historical corporate failure case studies.
+
+Every step is idempotent: a second run leaves the notes unchanged.
 """
 
 from __future__ import annotations
 
 import re
 from pathlib import Path
+
 import stock_notes
 
 STOCK_ROOT = stock_notes.STOCK_ROOT
@@ -36,7 +41,7 @@ def migrate_historical_note(path: Path) -> None:
     m_body = re.search(r"(# Stock:.*)", content, flags=re.DOTALL)
     if not m_body:
         return
-    body = stock_notes.strip_inline_metadata(m_body.group(1).lstrip())
+    body = stock_notes.strip_inline_metadata(m_body.group(1)).strip()
 
     new_content = f"""---
 ticker: {ticker}
@@ -73,10 +78,18 @@ def migrate_ticker_note(path: Path, ticker: str) -> dict[str, int]:
     else:
         fm.append("status: stub")
 
-    # 3. Normalize market data
+    # 3. Drop data fetched from another listing, then normalize market data
+    rejected = None
+    try:
+        fm, rejected = stock_notes.drop_foreign_listing_data(fm, stock_notes.fetch_symbol(path, ticker))
+    except stock_notes.UnmappedTickerError as e:
+        print(f"Not checking listing of {path.name}: {e}")
+    if rejected:
+        print(f"Dropped market data for {path.name}: recorded under {rejected}")
     fm, missing = stock_notes.normalize_market_data(fm)
 
-    # 4. Apply reverse DCF solve with currency check
+    # 4. Replace placeholder zeros, then apply reverse DCF solve with currency check
+    fm = stock_notes.normalize_value_metrics(fm, ticker=ticker)
     fm, implied_res = stock_notes.apply_implied_growth(fm, ticker=ticker)
 
     new_text = stock_notes.join_note(fm, body)
@@ -86,7 +99,7 @@ def migrate_ticker_note(path: Path, ticker: str) -> dict[str, int]:
         "moved": len(moved),
         "missing_price": 1 if "price" in missing else 0,
         "solved_growth": 1 if (implied_res and implied_res.status == "solved") else 0,
-        "non_pos_growth": 1 if (implied_res and implied_res.status != "solved") else 0,
+        "unsolved_growth": 1 if (implied_res and implied_res.status != "solved") else 0,
     }
 
 
@@ -97,7 +110,7 @@ def main():
         "moved": 0,
         "missing_price": 0,
         "solved_growth": 0,
-        "non_pos_growth": 0,
+        "unsolved_growth": 0,
         "historical": 0,
     }
 
@@ -108,7 +121,7 @@ def main():
         totals["moved"] += 1 if stats["moved"] > 0 else 0
         totals["missing_price"] += stats["missing_price"]
         totals["solved_growth"] += stats["solved_growth"]
-        totals["non_pos_growth"] += stats["non_pos_growth"]
+        totals["unsolved_growth"] += stats["unsolved_growth"]
 
     # Migrate historical notes
     hist_dir = STOCK_ROOT / "Historical"

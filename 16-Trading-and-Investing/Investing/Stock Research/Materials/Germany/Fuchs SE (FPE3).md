@@ -17,13 +17,14 @@ value_metrics:
     debt_to_equity: 0.06
   valuation:
     fcf_yield: 6.52%
-    peg_ratio: 0.00
+    peg_ratio: N/A
 status: stub
 priority: high
 last_updated: 2026-05-31 14:01:05
 market_data:
-  ticker: FPE3
-  data_quality: ok
+  ticker: FPE3.DE
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Fuchs SE (FPE3)

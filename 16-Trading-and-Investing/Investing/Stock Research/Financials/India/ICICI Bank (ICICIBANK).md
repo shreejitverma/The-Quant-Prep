@@ -14,7 +14,7 @@ value_metrics:
     roe: 16.36%
     roa: 2.08%
     gross_margin: N/A
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: -13.40%
     peg_ratio: 0.53
@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:10
 market_data:
-  ticker: ICICIBANK
-  data_quality: ok
+  ticker: ICICIBANK.NS
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: ICICI Bank (ICICIBANK)

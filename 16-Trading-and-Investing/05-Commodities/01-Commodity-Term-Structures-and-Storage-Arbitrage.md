@@ -119,7 +119,8 @@ On April 20, 2020, the May 2020 WTI Crude Oil futures contract settled at **-$37
 ```
 
 Because financial futures contracts with physical delivery require actual pipeline off-take, an absolute physical constraint overrides financial arbitrage.
-When physical storage cost $u \to +\infty$, the theoretical forward price $F(T) = S e^{(r + u) T}$ can drop below zero if disposal costs are positive.
+The cost-of-carry formula $F(T) = S e^{(r + u - y) T}$ cannot produce a negative price, because it assumes storage is available at some finite cost.
+When no storage is available at all, a long holding an expiring contract must instead pay someone to take the barrels, so the expiring futures price falls to minus that disposal cost.
 
 ### 4. Refinery Crack Spreads: The 3:2:1 Model
 
@@ -157,13 +158,15 @@ When crack spreads collapse below operating costs, refineries curtail utilizatio
 ### Example 1: Cash-and-Carry Storage Arbitrage in Crude Oil
 Suppose spot crude oil is trading at $70.00 per barrel.
 The 6-month forward futures contract ($T = 0.5$ years) trades at $76.00 per barrel.
-Financing interest rate is $r = 5.0\%$ annually, and physical storage plus insurance costs $u = \$0.60$ per barrel per month ($10.28\%$ annualized rate of spot price).
+Financing interest rate is $r = 5.0\%$ annually (continuously compounded), and physical storage plus insurance costs a fixed $\$0.60$ per barrel per month, invoiced at maturity ($U_T = 6 \times \$0.60 = \$3.60$).
 Convenience yield is $y = 0.0\%$ due to physical inventory surplus.
 
-The theoretical no-arbitrage futures price is:
-$$F_{\text{theo}} = S \cdot e^{(r + u) T} = 70.00 \times e^{(0.05 + 0.1028) \times 0.5} = 70.00 \times e^{0.0764} = 70.00 \times 1.0794 = \$75.56 \text{ per barrel}$$
+Because storage is a fixed dollar amount paid at $T$, the theoretical no-arbitrage futures price adds it to the financed spot price:
+$$F_{\text{theo}} = S \cdot e^{r T} + U_T = 70.00 \times e^{0.05 \times 0.5} + 3.60 = 70.00 \times 1.02532 + 3.60 = 71.77 + 3.60 = \$75.37 \text{ per barrel}$$
+Quoting the storage as a simple $7.20 / 70.00 = 10.29\%$ annual rate and plugging it into $S e^{(r + u) T}$ would give $70.00 \times e^{0.07643} = \$75.56$, which overstates the carry by compounding and financing the storage charge.
+The continuously compounded storage rate consistent with $\$3.60$ paid at maturity is $u = 2 \ln(75.372 / 70.00) - 0.05 = 9.79\%$.
 
-Because the market futures price ($76.00) exceeds theoretical cost-of-carry ($75.56):
+Because the market futures price ($76.00) exceeds theoretical cost-of-carry ($75.37):
 1. **Borrow cash** at 5.0% and purchase physical crude at $70.00.
 2. **Contract commercial storage** for 6 months at $3.60 ($0.60 \times 6).
 3. **Sell 6-month futures** at $76.00.

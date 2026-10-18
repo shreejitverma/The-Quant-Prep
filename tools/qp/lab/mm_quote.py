@@ -3,6 +3,14 @@
 Implements the Avellaneda-Stoikov (2008) optimal quoting framework under inventory risk,
 Glosten-Milgrom (1985) adverse selection, and exact PnL attribution:
 Total PnL = Spread Capture + Inventory PnL + Adverse Selection (Markout) - Fees.
+
+Units: one run is a single trading-day session (T = 1, 252 sessions a year) split into
+`n_steps` quoting steps, inventory is counted in lots of `LOT_SIZE` shares, and the
+user-facing `gamma` and `kappa` are per 1% of mid.
+`dollar_units` converts them to the absolute units of the paper, so every quote scales
+with price: the same seed at 10x the price gives 10x the quotes and 10x the PnL.
+A configuration whose flat opening bid is non-positive is rejected; during the run the
+bid is withdrawn (not posted) on any step where inventory skew pushes it to zero or below.
 """
 
 from __future__ import annotations
@@ -13,6 +21,12 @@ from typing import Any
 
 from .base import LabResult, Param, TradingLabEngine
 from .registry import register
+
+SESSIONS_PER_YEAR = 252.0
+LOT_SIZE = 100
+FEE_BPS = 0.1
+INFORMED_MOVE_SIGMAS = 1.5
+MAX_FILL_PROBABILITY = 0.95
 
 
 class MarketMakerEngine(TradingLabEngine):
@@ -36,9 +50,9 @@ class MarketMakerEngine(TradingLabEngine):
     def params(self) -> dict[str, Param]:
         return {
             "initial_price": Param("initial_price", "float", 100.0, "Starting fair value mid-price", min_val=1.0),
-            "gamma": Param("gamma", "float", 0.1, "Risk aversion parameter", min_val=0.001, max_val=10.0),
+            "gamma": Param("gamma", "float", 0.1, "Risk aversion per 1% of mid", min_val=0.001, max_val=10.0),
             "sigma": Param("sigma", "float", 0.20, "Annualized asset volatility", min_val=0.01, max_val=2.0),
-            "kappa": Param("kappa", "float", 1.5, "Order arrival liquidity density", min_val=0.1, max_val=10.0),
+            "kappa": Param("kappa", "float", 1.5, "Order arrival decay per 1% of mid from the quote", min_val=0.1, max_val=10.0),
             "informed_fraction": Param(
                 "informed_fraction",
                 "float",
@@ -47,7 +61,7 @@ class MarketMakerEngine(TradingLabEngine):
                 min_val=0.0,
                 max_val=0.9,
             ),
-            "n_steps": Param("n_steps", "int", 100, "Number of quoting steps", min_val=10, max_val=1000),
+            "n_steps": Param("n_steps", "int", 100, "Quoting steps in the one-day session", min_val=10, max_val=1000),
             "strategy": Param(
                 "strategy",
                 "str",
@@ -61,24 +75,30 @@ class MarketMakerEngine(TradingLabEngine):
     @staticmethod
     def avellaneda_stoikov_quotes(
         mid: float,
-        inventory: int,
+        inventory: float,
         gamma: float,
         sigma: float,
         kappa: float,
         time_left: float,
     ) -> tuple[float, float, float]:
-        """Compute reservation price and optimal bid/ask quotes.
+        """Compute reservation price and optimal bid/ask quotes in the paper's absolute units.
+
+        `sigma` is dollar volatility per square root of the time unit, `gamma` and `kappa`
+        are per dollar, `inventory` is in lots and `time_left` is T - t in the same time unit.
 
         r(s, q, t) = s - q * gamma * sigma^2 * (T - t)
         delta_spread = gamma * sigma^2 * (T - t) + (2 / gamma) * ln(1 + gamma / kappa)
         """
-        vol_term = gamma * (sigma**2) * max(1e-4, time_left)
+        vol_term = gamma * (sigma**2) * time_left
         reservation_price = mid - (inventory * vol_term)
         optimal_half_spread = 0.5 * (vol_term + (2.0 / gamma) * math.log(1.0 + gamma / kappa))
+        return reservation_price, reservation_price - optimal_half_spread, reservation_price + optimal_half_spread
 
-        bid = reservation_price - optimal_half_spread
-        ask = reservation_price + optimal_half_spread
-        return round(reservation_price, 4), round(bid, 4), round(ask, 4)
+    @staticmethod
+    def dollar_units(mid: float, sigma: float, gamma: float, kappa: float) -> tuple[float, float, float]:
+        """Convert annual fractional sigma and per-1%-of-mid gamma and kappa to per-dollar, per-session units."""
+        one_pct = 0.01 * mid
+        return sigma * mid / math.sqrt(SESSIONS_PER_YEAR), gamma / one_pct, kappa / one_pct
 
     def run(self, **kwargs: Any) -> LabResult:
         p = self.validate_params(kwargs)
@@ -91,97 +111,110 @@ class MarketMakerEngine(TradingLabEngine):
         strategy = str(p["strategy"])
         seed = int(p["seed"])
 
+        sigma_d, gamma_d, kappa_d = self.dollar_units(mid, sigma, gamma, kappa)
+        _r, opening_bid, opening_ask = self.avellaneda_stoikov_quotes(mid, 0, gamma_d, sigma_d, kappa_d, 1.0)
+        if opening_bid <= 0.0:
+            raise ValueError(
+                f"gamma={gamma}, sigma={sigma}, kappa={kappa} give an opening half-spread of "
+                f"{(opening_ask - mid) / mid:.1%} of mid, so the bid would be non-positive; "
+                "lower gamma or sigma, or raise kappa"
+            )
+        naive_half_spread_frac = (opening_ask - mid) / mid
+
         rng = random.Random(seed)
-        dt = 1.0 / 252.0
-        time_left_total = 1.0
+        step_vol = sigma / math.sqrt(SESSIONS_PER_YEAR) * math.sqrt(1.0 / n_steps)
 
         inventory = 0
         cash = 0.0
 
-        # Exact PnL attribution buckets
         spread_capture = 0.0
         adverse_selection = 0.0
+        inventory_pnl = 0.0
         exchange_fees = 0.0
-        fee_per_share = 0.001  # 10 bps maker rebate / taker fee structure
 
         trades_executed = 0
-        starting_mid = mid
+        bid_withdrawn_steps = 0
 
-        price_history = [starting_mid]
+        price_history = [round(mid, 6)]
         inventory_history = [0]
+        quotes: list[dict[str, Any]] = []
+        fills: list[dict[str, Any]] = []
 
         for step in range(n_steps):
-            time_left = max(1e-4, time_left_total * (n_steps - step) / n_steps)
-
-            # Quoting decision
-            if strategy == "avellaneda_stoikov":
-                _res_p, bid, ask = self.avellaneda_stoikov_quotes(mid, inventory, gamma, sigma, kappa, time_left)
-            else:  # naive symmetric
-                half_spread = 0.05
-                bid = round(mid - half_spread, 4)
-                ask = round(mid + half_spread, 4)
-
-            # Flow arrival (Poisson)
-            # Distance from mid influences fill probability: lambda = A * exp(-kappa * delta)
-            delta_bid = mid - bid
-            delta_ask = ask - mid
-
-            p_bid_fill = max(0.01, min(0.95, math.exp(-kappa * max(0.01, delta_bid))))
-            p_ask_fill = max(0.01, min(0.95, math.exp(-kappa * max(0.01, delta_ask))))
-
+            time_left = (n_steps - step) / n_steps
             pre_trade_mid = mid
 
-            # Mid price diffusion for step
-            z = rng.gauss(0.0, 1.0)
-            mid_drift = (sigma * math.sqrt(dt)) * z
-            mid = round(mid * math.exp(mid_drift), 4)
+            if strategy == "avellaneda_stoikov":
+                sigma_d, gamma_d, kappa_d = self.dollar_units(mid, sigma, gamma, kappa)
+                reservation, bid, ask = self.avellaneda_stoikov_quotes(mid, inventory / LOT_SIZE, gamma_d, sigma_d, kappa_d, time_left)
+            else:
+                kappa_d = kappa / (0.01 * mid)
+                reservation = mid
+                bid = mid * (1.0 - naive_half_spread_frac)
+                ask = mid * (1.0 + naive_half_spread_frac)
 
-            # Check for buys of our ask (market buy arriving)
+            bid_live = bid > 0.0
+            if not bid_live:
+                bid_withdrawn_steps += 1
+            quotes.append(
+                {
+                    "step": step,
+                    "time_left": round(time_left, 6),
+                    "mid": round(mid, 6),
+                    "inventory_lots": inventory // LOT_SIZE,
+                    "reservation": round(reservation, 6),
+                    "bid": round(bid, 6) if bid_live else None,
+                    "ask": round(ask, 6),
+                }
+            )
+
+            # Fill intensity lambda = exp(-kappa * delta), with delta the quote's distance from mid
+            p_ask_fill = min(MAX_FILL_PROBABILITY, math.exp(-kappa_d * max(0.0, ask - mid)))
+            p_bid_fill = min(MAX_FILL_PROBABILITY, math.exp(-kappa_d * max(0.0, mid - bid))) if bid_live else 0.0
+
+            z = rng.gauss(0.0, 1.0)
+            mid *= math.exp(step_vol * z - 0.5 * step_vol**2)
+
+            step_fills: list[tuple[int, float, bool]] = []
             if rng.random() < p_ask_fill:
                 is_informed = rng.random() < alpha_informed
-                trade_size = 100
-                inventory -= trade_size
-                cash += ask * trade_size
-                trades_executed += 1
-                exchange_fees += trade_size * fee_per_share
-
-                # Spread capture vs mid: (ask - pre_mid)
-                spread_capture += (ask - pre_trade_mid) * trade_size
-
-                # If informed, mid moves adversely post-trade
+                step_fills.append((-1, ask, is_informed))
                 if is_informed:
-                    adverse_move = (sigma * math.sqrt(dt)) * 1.5
-                    mid = round(mid * math.exp(adverse_move), 4)
-                    adverse_selection -= abs(mid - pre_trade_mid) * trade_size
+                    mid *= math.exp(INFORMED_MOVE_SIGMAS * step_vol)
 
-            # Check for sells to our bid (market sell arriving)
-            if rng.random() < p_bid_fill:
+            if bid_live and rng.random() < p_bid_fill:
                 is_informed = rng.random() < alpha_informed
-                trade_size = 100
-                inventory += trade_size
-                cash -= bid * trade_size
-                trades_executed += 1
-                exchange_fees += trade_size * fee_per_share
-
-                # Spread capture vs mid: (pre_mid - bid)
-                spread_capture += (pre_trade_mid - bid) * trade_size
-
+                step_fills.append((1, bid, is_informed))
                 if is_informed:
-                    adverse_move = -(sigma * math.sqrt(dt)) * 1.5
-                    mid = round(mid * math.exp(adverse_move), 4)
-                    adverse_selection -= abs(pre_trade_mid - mid) * trade_size
+                    mid *= math.exp(-INFORMED_MOVE_SIGMAS * step_vol)
 
-            price_history.append(mid)
+            inventory_pnl += inventory * (mid - pre_trade_mid)
+            for side, price, is_informed in step_fills:
+                fee = FEE_BPS * 1e-4 * price * LOT_SIZE
+                inventory += side * LOT_SIZE
+                cash -= side * price * LOT_SIZE + fee
+                exchange_fees += fee
+                trades_executed += 1
+                spread_capture += side * (pre_trade_mid - price) * LOT_SIZE
+                markout = side * (mid - pre_trade_mid) * LOT_SIZE
+                adverse_selection += markout
+                fills.append(
+                    {
+                        "step": step,
+                        "side": "buy" if side > 0 else "sell",
+                        "price": round(price, 6),
+                        "pre_mid": round(pre_trade_mid, 6),
+                        "post_mid": round(mid, 6),
+                        "informed": is_informed,
+                        "markout": round(markout, 6),
+                    }
+                )
+
+            price_history.append(round(mid, 6))
             inventory_history.append(inventory)
 
-        # Mark-to-market ending valuation
         ending_mid = mid
-        ending_inventory_value = inventory * ending_mid
-        total_pnl = cash + ending_inventory_value
-
-        # Inventory PnL is total_pnl minus (spread_capture + adverse_selection - exchange_fees)
-        # ensuring mathematical identity: Total = Spread + Inventory + Adverse - Fees
-        inventory_pnl = total_pnl - (spread_capture + adverse_selection - exchange_fees)
+        total_pnl = cash + inventory * ending_mid
 
         metrics = {
             "total_pnl": round(total_pnl, 2),
@@ -207,6 +240,9 @@ class MarketMakerEngine(TradingLabEngine):
                 "params": p,
                 "price_history": price_history,
                 "inventory_history": inventory_history,
+                "quotes": quotes,
+                "fills": fills,
+                "bid_withdrawn_steps": bid_withdrawn_steps,
             },
             summary=summary,
         )

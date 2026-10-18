@@ -169,7 +169,7 @@ $$\text{Impermanent Loss (IL)} = \frac{2 \sqrt{k}}{1 + k} - 1$$
 +-----------------------------------------------------------------------+
 | Price Change (k) | Asset Shift       | Impermanent Loss (%)           |
 |------------------+-------------------+--------------------------------|
-| 1.25x            | +25% Move         | -0.60%                         |
+| 1.25x            | +25% Move         | -0.62%                         |
 | 1.50x            | +50% Move         | -2.02%                         |
 | 2.00x            | +100% (2x) Move   | -5.72%                         |
 | 3.00x            | +200% (3x) Move   | -13.40%                        |
@@ -187,15 +187,17 @@ To be profitable, the trading fee yield earned by the liquidity pool must exceed
 ### Example 1: Cash-and-Carry Funding Arbitrage with Margin Buffer
 Suppose a desk deploys $1,000,000 of capital into a BTC cash-and-carry funding rate arbitrage trade when BTC trades at $60,000.
 The desk allocates $500,000 to buy 8.333 BTC on the spot exchange and deposits the remaining $500,000 into a derivatives exchange as USD collateral.
-The desk shorts 8.333 BTC worth of perpetual futures contracts at $60,000, establishing a net delta of 0.0 with 2x effective account leverage ($500,000 collateral backing $500,000 notional).
+The desk shorts 8.333 BTC worth of perpetual futures contracts at $60,000, establishing a net delta of 0.0 with 1x leverage on the perpetual account ($500,000 collateral backing $500,000 notional) and 1x gross exposure on the $1,000,000 of capital.
 Over the next 30 days, the average 8-hour funding rate remains steady at +0.025% (2.5 bps per 8 hours, or 7.5 bps per day).
 The total funding cash flow collected over 30 days (90 funding intervals) is:
 $$\text{Cash Flow} = 8.333 \times \$60,000 \times 0.00025 \times 90 = \$500,000 \times 0.0225 = \$11,250$$
 On an annualized basis relative to the entire $1,000,000 deployed capital, the realized simple yield is:
 $$\text{APY}_{\text{net}} = \frac{\$11,250}{\$1,000,000} \times \frac{365}{30} = 1.125\% \times 12.167 = 13.69\%$$
-If the perpetual contract maintenance margin requirement is 0.50%, the short position liquidation price with $500,000 collateral backing $500,000 notional is approximately:
-$$P_{\text{liq}} = P_{\text{entry}} \times \left(1 + \frac{\text{Collateral}}{\text{Notional}} - \text{MMR}\right) = \$60,000 \times (1 + 1.0 - 0.005) = \$119,700$$
-BTC would need to appreciate by nearly 100% before the short leg reaches liquidation, providing ample time for the desk to transfer spot assets into collateral if a rapid rally occurs.
+If the perpetual contract maintenance margin requirement is 0.50% of the position value at the mark price, the short leg is liquidated when its equity falls to that requirement:
+$$\text{Collateral} - Q (P_{\text{liq}} - P_{\text{entry}}) = \text{MMR} \times Q \times P_{\text{liq}}$$
+$$P_{\text{liq}} = P_{\text{entry}} \times \frac{1 + \text{Collateral} / \text{Notional}}{1 + \text{MMR}} = \$60,000 \times \frac{1 + 1.0}{1.005} = \$119,402.99$$
+Charging the maintenance margin on entry notional instead, $\$60,000 \times (1 + 1.0 - 0.005) = \$119,700$, overstates the buffer by about $\$297$.
+BTC would need to appreciate by about 99.0% before the short leg reaches liquidation, providing ample time for the desk to transfer spot assets into collateral if a rapid rally occurs.
 
 ---
 

@@ -19,10 +19,44 @@ from typing import Any
 from .base import LabResult, Param, TradingLabEngine
 from .registry import register
 
+_LOG_SQRT_2PI = 0.5 * math.log(2.0 * math.pi)
+
 
 def norm_cdf(x: float) -> float:
     """Standard normal cumulative distribution function."""
     return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
+
+
+def norm_logsf(x: float) -> float:
+    """Natural log of the standard normal upper tail P(Z > x), finite for every finite x.
+
+    Uses erfc (no cancellation in the tail) and, past x = 30 where erfc nears underflow,
+    the Mills-ratio asymptotic series, whose truncation error there is below 2e-12.
+    """
+    if x < 30.0:
+        return math.log(0.5 * math.erfc(x / math.sqrt(2.0)))
+    inv = 1.0 / (x * x)
+    series = 1.0 - inv + 3.0 * inv**2 - 15.0 * inv**3 + 105.0 * inv**4
+    return -0.5 * x * x - math.log(x) - _LOG_SQRT_2PI + math.log(series)
+
+
+def norm_isf_log(log_p: float) -> float:
+    """Upper-tail quantile x >= 0 with log P(Z > x) = log_p, for log_p <= log(0.5).
+
+    Newton iteration on the concave norm_logsf, so tail probabilities far below the
+    smallest double (t-stats past 38) still invert without underflow.
+    """
+    if log_p >= -math.log(2.0):
+        return 0.0
+    x = -norm_inv_cdf(math.exp(log_p)) if log_p > -700.0 else math.sqrt(-2.0 * log_p)
+    for _ in range(100):
+        log_sf = norm_logsf(x)
+        hazard = math.exp(-0.5 * x * x - _LOG_SQRT_2PI - log_sf)
+        step = (log_sf - log_p) / hazard
+        x += step
+        if abs(step) <= 1e-14 * (1.0 + abs(x)):
+            break
+    return x
 
 
 def norm_inv_cdf(p: float) -> float:
@@ -152,26 +186,41 @@ def deflated_sharpe_ratio(
     return dsr, sr_0_ann, psr_zero
 
 
+HLZ_T_HURDLE = 3.0
+
+
 def harvey_liu_haircuts(sharpe_ann: float, sample_length_days: int, num_trials: int) -> dict[str, float]:
-    """Harvey, Liu, and Zhu (2016) multiple-testing adjustments (Bonferroni, Holm, BHY)."""
+    """Harvey, Liu, and Zhu (2016) multiple-testing adjustments (Bonferroni, Sidak, BHY).
+
+    Each adjustment maps the two-sided raw p-value to an adjusted p-value and back to an
+    adjusted t-stat and Sharpe; the work is done on log p-values so huge t-stats neither
+    underflow nor invent a haircut. The HLZ t > 3.0 hurdle already prices in multiple
+    testing, so it is applied to the raw t-stat, never to an adjusted one.
+    """
     years = max(0.1, sample_length_days / 252.0)
     t_stat = sharpe_ann * math.sqrt(years)
-    p_val = 2.0 * (1.0 - norm_cdf(abs(t_stat)))
-    p_val = max(1e-15, min(1.0, p_val))
+    log_p = min(0.0, math.log(2.0) + norm_logsf(abs(t_stat)))
+    p_val = math.exp(log_p)
+    log_n = math.log(num_trials)
 
-    # Bonferroni adjustment
-    p_bonf = min(1.0, p_val * num_trials)
-    t_bonf = norm_inv_cdf(1.0 - p_bonf / 2.0) if p_bonf < 1.0 else 0.0
-    sr_bonf = max(0.0, t_bonf / math.sqrt(years))
-    haircut_bonf = max(0.0, (1.0 - sr_bonf / sharpe_ann) * 100.0) if sharpe_ann > 0 else 100.0
+    def adjusted(log_p_adj: float) -> tuple[float, float, float]:
+        t_adj = norm_isf_log(min(0.0, log_p_adj) - math.log(2.0))
+        sr_adj = max(0.0, t_adj / math.sqrt(years))
+        haircut = max(0.0, (1.0 - sr_adj / sharpe_ann) * 100.0) if sharpe_ann > 0 else 100.0
+        return t_adj, sr_adj, haircut
 
-    # BHY (Benjamini-Hochberg-Yekutieli) adjustment under arbitrary dependence
-    # harmonic factor c(M) = sum_{j=1}^M 1/j
+    t_bonf, sr_bonf, haircut_bonf = adjusted(log_p + log_n)
+
+    if p_val * num_trials > 1e-12:
+        p_sidak = -math.expm1(num_trials * math.log1p(-p_val)) if p_val < 1.0 else 1.0
+        log_p_sidak = math.log(p_sidak)
+    else:
+        log_p_sidak = log_p + log_n
+    t_sidak, sr_sidak, haircut_sidak = adjusted(log_p_sidak)
+
+    # BHY under arbitrary dependence: harmonic factor c(M) = sum_{j=1}^M 1/j
     c_m = sum(1.0 / j for j in range(1, num_trials + 1))
-    p_bhy = min(1.0, p_val * num_trials * c_m)
-    t_bhy = norm_inv_cdf(1.0 - p_bhy / 2.0) if p_bhy < 1.0 else 0.0
-    sr_bhy = max(0.0, t_bhy / math.sqrt(years))
-    haircut_bhy = max(0.0, (1.0 - sr_bhy / sharpe_ann) * 100.0) if sharpe_ann > 0 else 100.0
+    t_bhy, sr_bhy, haircut_bhy = adjusted(log_p + log_n + math.log(c_m))
 
     return {
         "t_stat": round(t_stat, 3),
@@ -179,16 +228,25 @@ def harvey_liu_haircuts(sharpe_ann: float, sample_length_days: int, num_trials: 
         "t_bonferroni": round(t_bonf, 3),
         "sharpe_bonferroni": round(sr_bonf, 3),
         "haircut_bonferroni_pct": round(haircut_bonf, 2),
+        "t_sidak": round(t_sidak, 3),
+        "sharpe_sidak": round(sr_sidak, 3),
+        "haircut_sidak_pct": round(haircut_sidak, 2),
         "t_bhy": round(t_bhy, 3),
         "sharpe_bhy": round(sr_bhy, 3),
         "haircut_bhy_pct": round(haircut_bhy, 2),
-        "passes_hlz_threshold": 1.0 if t_bonf >= 3.0 else 0.0,
+        "passes_hlz_threshold": 1.0 if t_stat >= HLZ_T_HURDLE else 0.0,
     }
 
 
 def min_backtest_length_years(num_trials: int, target_sharpe_ann: float) -> float:
-    """Bailey et al. (2014) minimum backtest length in years to clear selection bias."""
-    if target_sharpe_ann <= 0.0 or num_trials <= 1:
+    """Bailey et al. (2014) minimum backtest length in years to clear selection bias.
+
+    Infinite for a non-positive Sharpe, which no backtest length can establish as skill;
+    zero for a single trial, which carries no selection bias.
+    """
+    if target_sharpe_ann <= 0.0:
+        return math.inf
+    if num_trials <= 1:
         return 0.0
     gamma = euler_mascheroni()
     p1 = 1.0 - (1.0 / num_trials)
@@ -239,10 +297,9 @@ def run_cscv_and_mining_simulation(
         return (m / std) * sqrt_252
 
     for combo in combinations:
-        train_indices: list[int] = []
-        for b in combo:
-            train_indices.extend(blocks[b])
-        test_indices = [idx for idx in range(sample_length_days) if idx not in train_indices]
+        train_blocks = set(combo)
+        train_indices = [idx for b in range(num_blocks) if b in train_blocks for idx in blocks[b]]
+        test_indices = [idx for b in range(num_blocks) if b not in train_blocks for idx in blocks[b]]
 
         # In-sample Sharpes for all N strategies
         is_sharpes = [calc_sharpe(train_indices, returns_matrix[n]) for n in range(num_trials)]
@@ -422,6 +479,7 @@ class OverfitTrapEngine(TradingLabEngine):
 
         # 3. Minimum Backtest Length (MinBTL)
         min_btl = min_backtest_length_years(num_trials=trials, target_sharpe_ann=obs_sr)
+        min_btl_defined = math.isfinite(min_btl)
 
         # 4. CSCV and Noise Mining Simulation
         cscv_result: dict[str, Any] = {}
@@ -444,9 +502,9 @@ class OverfitTrapEngine(TradingLabEngine):
             "harvey_liu_sharpe_bonferroni": hlz["sharpe_bonferroni"],
             "harvey_liu_haircut_pct": hlz["haircut_bonferroni_pct"],
             "passes_hlz_t3_threshold": "PASS" if hlz["passes_hlz_threshold"] == 1.0 else "FAIL",
-            "min_backtest_length_years": round(min_btl, 2),
+            "min_backtest_length_years": round(min_btl, 2) if min_btl_defined else "UNDEFINED",
             "sample_length_years": round(years, 2),
-            "sufficient_sample_length": "PASS" if years >= min_btl else "FAIL",
+            "sufficient_sample_length": "PASS" if min_btl_defined and years >= min_btl else "FAIL",
         }
 
         if cscv_result:
@@ -460,9 +518,13 @@ class OverfitTrapEngine(TradingLabEngine):
             f"Expected max null Sharpe is {exp_max_ann:.2f}. "
             f"Deflated Sharpe Ratio (DSR) is {dsr:.1%} ({metrics['passes_dsr_95_confidence']}). "
             f"Harvey-Liu Bonferroni haircut is {hlz['haircut_bonferroni_pct']:.1f}% "
-            f"(Adjusted SR: {hlz['sharpe_bonferroni']:.2f}, t={hlz['t_bonferroni']:.2f}, "
-            f"Threshold t>3.0: {metrics['passes_hlz_t3_threshold']}). "
-            f"Min Backtest Length needed: {min_btl:.1f} years."
+            f"(Adjusted SR: {hlz['sharpe_bonferroni']:.2f}, adjusted t={hlz['t_bonferroni']:.2f}). "
+            f"Raw t={hlz['t_stat']:.2f} vs HLZ hurdle t>{HLZ_T_HURDLE:.1f}: {metrics['passes_hlz_t3_threshold']}. "
+            + (
+                f"Min Backtest Length needed: {min_btl:.1f} years."
+                if min_btl_defined
+                else "Min Backtest Length is undefined: a non-positive Sharpe cannot clear selection bias at any length."
+            )
         )
 
         data = {
@@ -477,9 +539,9 @@ class OverfitTrapEngine(TradingLabEngine):
             },
             "harvey_liu_details": hlz,
             "min_backtest_length": {
-                "min_years_required": min_btl,
+                "min_years_required": min_btl if min_btl_defined else None,
                 "actual_years": years,
-                "gap_years": round(min_btl - years, 2),
+                "gap_years": round(min_btl - years, 2) if min_btl_defined else None,
             },
             "cscv_simulation": cscv_result,
         }

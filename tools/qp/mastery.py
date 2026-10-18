@@ -1,11 +1,14 @@
 """Study Board generator and mastery reporting engine for Markets Mastery OS.
 
 Inspects learner state across all 19 market tracks, 11 simulation engines,
-and 39 stage gates, generating an updated STUDY_BOARD.md dashboard.
+and 39 stage gates. The live board is written to ``$QP_HOME/STUDY_BOARD.md``,
+outside the repo, because learner progress never goes into git; the tracked
+``16-Trading-and-Investing/STUDY_BOARD.md`` is the empty-state template.
 """
 
 from __future__ import annotations
 
+import argparse
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -18,13 +21,15 @@ from tools.qp.markets import (
 from tools.qp.state import Store
 from tools.qp.vault import REPO_ROOT, load_vault
 
+TEMPLATE_PATH = REPO_ROOT / "16-Trading-and-Investing" / "STUDY_BOARD.md"
+
 
 def build_study_board_markdown(
     holistic: dict,
     personas: dict[str, dict],
     all_gates: dict,
+    template: bool = False,
 ) -> str:
-    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     c_score = holistic["card_score"]
     c_status = "Satisfied" if c_score >= 80.0 else "In Progress"
@@ -44,23 +49,40 @@ def build_study_board_markdown(
     cap_actual = "Passed" if cap_passed else "Pending Paper Sample"
     cap_status = "PASSED" if cap_passed else "PENDING"
 
+    if template:
+        heading = "Markets Mastery OS - Study Board Template"
+        scope = (
+            f"This tracked file is the empty-state template of the study board across 19 curriculum pillars, "
+            f"{l_tot} simulation engines, and 39 automated stage gates."
+        )
+        where = (
+            "Run `python3 16-Trading-and-Investing/scripts/mastery.py` to write your live board to "
+            "`$QP_HOME/STUDY_BOARD.md`, outside the repo, so your progress is never committed."
+        )
+    else:
+        now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+        heading = "Markets Mastery OS - Live Study Board & Progression Dashboard"
+        scope = (
+            f"This study board tracks your progress across 19 curriculum pillars, "
+            f"{l_tot} simulation engines, and 39 automated stage gates (last updated: {now_utc})."
+        )
+        where = "It is generated from your `qp` state and lives outside the repo; do not commit it."
+
     lines = [
         "---",
         "type: moc",
-        'title: "Markets Mastery OS - Live Study Board & Progression Dashboard"',
+        f'title: "{heading}"',
         "track: [quant-trader, quant-research, quant-risk]",
         "tier: core",
         "status: solid",
         "tags: [study-board, mastery-dashboard, capital-gate, progress, analytics]",
         "---",
         "",
-        "# Markets Mastery OS - Live Study Board & Progression Dashboard",
+        f"# {heading}",
         "",
         "Markets Mastery OS integrates quantitative finance, market microstructure, and systematic strategy research.",
-        (
-            f"This study board tracks real-time progress across 19 curriculum pillars, "
-            f"{l_tot} simulation engines, and 39 automated stage gates (last updated: {now_utc})."
-        ),
+        scope,
+        where,
         "",
         "---",
         "",
@@ -83,7 +105,7 @@ def build_study_board_markdown(
         f"| **Card Retention & Mastery** | >= 80.0% | {c_score:.1f}% ({c_rev}/{c_tot} cards, {c_mat} mature) | {c_status} |",
         f"| **Simulation Engine Execution** | {l_tot}/{l_tot} Engines | {l_comp}/{l_tot} engines executed | {l_status} |",
         f"| **Automated Stage Gates** | 39 Gates | {g_pass}/{g_tot} gates passed | {g_status} |",
-        f"| **Capital Gate Eligibility** | 100 trades, PF >= 1.50, DD <= 10% | {cap_actual} | {cap_status} |",
+        f"| **Capital Gate Eligibility** | 100 trades, PF >= 1.50, DD <= 10R | {cap_actual} | {cap_status} |",
         "",
         "---",
         "",
@@ -165,8 +187,8 @@ def build_study_board_markdown(
             "",
             "### Key Criteria for Live Deployment",
             "- **Sample Depth**: Minimum 100 documented trades executed according to pre-registered setup rules.",
-            "- **Profit Factor**: Realized Gross Profit / Realized Gross Loss >= 1.50 across the sample.",
-            "- **Maximum Drawdown**: Realized portfolio peak-to-trough equity decline <= 10.0%.",
+            "- **Profit Factor**: Gross R won / Gross R lost >= 1.50 across the sample.",
+            "- **Maximum Drawdown**: Peak-to-trough decline of cumulative R <= 10.0R (10% of equity at 1% risk per trade).",
             "- **Strict Rule Adherence**: >= 95.0% trade adherence score with 0 revenge trades and 0 moved stop losses.",
             "- **MAE/MFE Efficiency**: >= 70.0% of winning trades experiencing Maximum Adverse Excursion <= 0.5R.",
             "",
@@ -199,39 +221,41 @@ def build_study_board_markdown(
     return "\n".join(lines)
 
 
-def write_study_board(output_path: Path | None = None, store: Store | None = None) -> Path:
+def write_study_board(output_path: Path | None = None, store: Store | None = None, template: bool = False) -> Path:
+    """Write the live board for ``store`` (default ``$QP_HOME/STUDY_BOARD.md``), or with
+    ``template`` the empty-state board to the tracked template path."""
     vault = load_vault(REPO_ROOT)
-    target = output_path or (REPO_ROOT / "16-Trading-and-Investing" / "STUDY_BOARD.md")
-
-    # If writing to the tracked repo file and no store is explicitly provided,
-    # use a clean empty baseline so private learner state is never published into git.
-    if store is None and target == (REPO_ROOT / "16-Trading-and-Investing" / "STUDY_BOARD.md"):
-        store_data = {}
-    elif store is not None:
-        store_data = store.data
+    if template:
+        store_data: dict = {}
+        target = output_path or TEMPLATE_PATH
     else:
-        store_data = Store().data
+        store = store or Store()
+        store_data = store.data
+        target = output_path or (store.home / "STUDY_BOARD.md")
 
     all_gates = evaluate_all_markets_gates(vault.cards, store_data)
-
-    personas = {}
-    for p_id in PERSONA_CONFIGS:
-        personas[p_id] = calculate_markets_mastery(vault.cards, store_data, p_id)
-
+    personas = {p_id: calculate_markets_mastery(vault.cards, store_data, p_id) for p_id in PERSONA_CONFIGS}
     holistic = personas["holistic"]
 
-    study_board_md = build_study_board_markdown(holistic, personas, all_gates)
-    target.write_text(study_board_md, encoding="utf-8")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(build_study_board_markdown(holistic, personas, all_gates, template=template), encoding="utf-8")
     return target
 
 
-def main() -> int:
-    target = write_study_board()
-    vault = load_vault(REPO_ROOT)
-    store = Store()
-    holistic = calculate_markets_mastery(vault.cards, store.data, "holistic")
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Write the Markets Mastery OS study board.")
+    parser.add_argument("--template", action="store_true", help="regenerate the tracked empty-state template instead")
+    args = parser.parse_args(argv)
 
-    print(f"study_board: generated {target}")
+    if args.template:
+        print(f"study_board: wrote template {write_study_board(template=True)}")
+        return 0
+
+    store = Store()
+    target = write_study_board(store=store)
+    holistic = calculate_markets_mastery(load_vault(REPO_ROOT).cards, store.data, "holistic")
+
+    print(f"study_board: wrote {target}")
     print(f"Overall Score: {holistic['overall_score']:.1f}% ({holistic['readiness_level']})")
     print(f"Cards: {holistic['total_markets_reviewed']}/{holistic['total_markets_cards']} reviewed")
     print(f"Engines: {holistic['lab_stats']['completed_engines']}/{holistic['lab_stats']['total_engines']} completed")

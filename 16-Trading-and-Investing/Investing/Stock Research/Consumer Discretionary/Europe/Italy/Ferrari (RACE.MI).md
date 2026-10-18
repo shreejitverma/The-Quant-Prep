@@ -36,10 +36,15 @@ market_data:
 
 
 ## Investment Thesis
-A luxury brand disguised as a car company. Veblen good with waiting lists and high pricing power.
+A luxury brand disguised as a car company.
+Veblen good with waiting lists and high pricing power.
+Limited production ensures high resale value and exclusivity.
 
 ## Financial Moat (7 Powers Analysis)
-Branding: The most powerful brand in the world. Scale Economies: High margins despite low volume. Switching Costs: Loyalty to the 'Tifosi' culture.
+Branding: The most powerful brand in the world.
+Scale Economies: High margins despite low volume.
+Switching Costs: Loyalty to the 'Tifosi' culture.
+Counter-Positioning: Luxury over volume.
 
 ## Historical Performance (CAGR, long-term context)
 Incredible stock performance since IPO; software-like margins.
@@ -49,6 +54,7 @@ Transition to electric supercars; brand dilution through over-extension.
 
 ## Architect Perspective (Buffett/Munger/Lynch)
 Buffett: 'A business with an iron-clad franchise.'
+Munger: 'A company that can raise prices without losing customers.'
 ## Inception-to-Date Yearly Performance
 | Year | Close Price | YoY Return | Annual Volatility |
 | :--- | :--- | :--- | :--- |

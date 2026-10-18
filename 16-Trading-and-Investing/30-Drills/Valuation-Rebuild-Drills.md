@@ -80,13 +80,13 @@ $$\text{NWC}_t = \text{Revenue}_t \times 0.10 \implies \Delta \text{NWC}_t = \te
 #### Step 2: Discounting Discrete Cash Flows (WACC = 8.5%)
 $$\text{Discount Factor}_t = \frac{1}{(1.085)^t}$$
 
-- Year 1: $199.2 / 1.085^1 = \$183.60 \text{ million}$
-- Year 2: $223.8 / 1.085^2 = \$189.98 \text{ million}$
-- Year 3: $251.4 / 1.085^3 = \$196.87 \text{ million}$
-- Year 4: $282.3 / 1.085^4 = \$203.71 \text{ million}$
+- Year 1: $199.2 / 1.085^1 = \$183.59 \text{ million}$
+- Year 2: $223.8 / 1.085^2 = \$190.11 \text{ million}$
+- Year 3: $251.4 / 1.085^3 = \$196.82 \text{ million}$
+- Year 4: $282.3 / 1.085^4 = \$203.70 \text{ million}$
 - Year 5: $317.0 / 1.085^5 = \$210.82 \text{ million}$
 
-$$\text{PV of Discrete FCFF} = 183.60 + 189.98 + 196.87 + 203.71 + 210.82 = \$984.98 \text{ million}$$
+$$\text{PV of Discrete FCFF} = 183.59 + 190.11 + 196.82 + 203.70 + 210.82 = \$985.04 \text{ million}$$
 
 #### Step 3: Terminal Value Calculation
 $$\text{Terminal FCFF}_{\text{Year 6}} = \text{FCFF}_5 \times (1 + g) = 317.0 \times 1.025 = \$324.93 \text{ million}$$
@@ -97,12 +97,12 @@ $$\text{PV of Terminal Value} = \frac{5,415.50}{(1.085)^5} = \frac{5,415.50}{1.5
 
 #### Step 4: Enterprise Value to Equity Value Bridge
 $$\text{Enterprise Value (EV)} = \text{PV of Discrete Cash Flows} + \text{PV of Terminal Value}$$
-$$\text{EV} = 984.98 + 3,601.55 = \$4,586.53 \text{ million}$$
+$$\text{EV} = 985.04 + 3,601.55 = \$4,586.59 \text{ million}$$
 
 $$\text{Equity Value} = \text{EV} + \text{Cash} - \text{Debt}$$
-$$\text{Equity Value} = 4,586.53 + 150.0 - 300.0 = \$4,436.53 \text{ million}$$
+$$\text{Equity Value} = 4,586.59 + 150.0 - 300.0 = \$4,436.59 \text{ million}$$
 
-$$\text{Intrinsic Value per Share} = \frac{\$4,436.53 \text{ million}}{50.0 \text{ million shares}} = \$88.73 \text{ per share}$$
+$$\text{Intrinsic Value per Share} = \frac{\$4,436.59 \text{ million}}{50.0 \text{ million shares}} = \$88.73 \text{ per share}$$
 
 </details>
 
@@ -112,7 +112,7 @@ $$\text{Intrinsic Value per Share} = \frac{\$4,436.53 \text{ million}}{50.0 \tex
 
 ### Scenario
 An analyst is calculating the Weighted Average Cost of Capital (WACC) for a private medical device company (Company Beta).
-Company Beta has a capital structure with $40% debt and 60% equity ($D/E = 0.667$).
+Company Beta has a capital structure with 40% debt and 60% equity ($D/E = 0.667$).
 Its corporate marginal tax rate is 25%.
 The yield on 10-year US Treasuries (risk-free rate $R_f$) is 4.0%, and the market risk premium (ERP) is 5.5%.
 Company Beta can borrow long-term debt at an interest rate of 6.5%.
@@ -213,20 +213,20 @@ $$\text{EV} = \sum_{t=1}^{10} \frac{\text{FCF}_t}{(1.09)^t} + \frac{\text{TV}_{1
   - Year 10 FCF: $5,187 \times 0.1180 = \$612.1 \text{M}$
   - $\text{TV}_{10} = 612.1 \times 17.167 = \$10,508 \text{M}$
   - PV of TV: $10,508 / (1.09)^{10} = 10,508 / 2.3674 = \$4,439 \text{M}$
-  - PV of 10-yr cash flows: $\approx \$1,870 \text{M}$
-  - Total EV $\approx \$6,309 \text{M}$ (Much too low; market is pricing significantly higher growth).
+  - PV of 10-yr cash flows: $\approx \$2,482 \text{M}$
+  - Total EV $\approx 4,439 + 2,482 = \$6,921 \text{M}$ (Much too low; market is pricing significantly higher growth).
 
-- At $g = 18.25\%$:
-  - Year 10 Revenue: $2,000 \times (1.1825)^{10} = 2,000 \times 5.346 = \$10,692 \text{M}$
-  - Year 10 FCF: $10,692 \times 0.1180 = \$1,261.7 \text{M}$
-  - $\text{TV}_{10} = 1,261.7 \times 17.167 = \$21,659 \text{M}$
-  - PV of TV: $21,659 / 2.3674 = \$9,149 \text{M}$
-  - PV of 10-yr cash flows: $\approx \$3,851 \text{M}$
-  - Total EV = $9,149 + 3,851 = \$13,000 \text{M}$
+- At $g = 18.31\%$ (solved by bisection so that EV equals the market's $13,000 \text{M}$):
+  - Year 10 Revenue: $2,000 \times (1.18307)^{10} = 2,000 \times 5.3716 = \$10,743 \text{M}$
+  - Year 10 FCF: $10,743 \times 0.1180 = \$1,267.7 \text{M}$
+  - $\text{TV}_{10} = 1,267.7 \times 17.167 = \$21,763 \text{M}$
+  - PV of TV: $21,763 / 2.3674 = \$9,193 \text{M}$
+  - PV of 10-yr cash flows: $\approx \$3,807 \text{M}$
+  - Total EV $= 9,193 + 3,807 = \$13,000 \text{M}$
 
 #### Conclusion:
-The current market price of $120.00 implies that Company Gamma must grow revenues at an aggressive 18.25% CAGR for an entire decade while sustaining high 20% operating margins.
-If the underlying addressable market cannot support a 5.3x expansion in company revenue, the stock is overvalued.
+The current market price of \$120.00 implies that Company Gamma must grow revenues at an aggressive 18.3% CAGR for an entire decade while sustaining high 20% operating margins.
+If the underlying addressable market cannot support a 5.4x expansion in company revenue, the stock is overvalued.
 
 </details>
 
@@ -293,7 +293,7 @@ $$\text{Net Liquidation Value per Share} = \frac{\$7.5 \text{ million}}{10.0 \te
 #### Step 3: Margin of Safety Evaluation
 - Current Stock Price: $6.00
 - NCAV per share: $3.30 (Stock trades at a 81.8% premium to NCAV)
-- Conservative Liquidation Value per share: $0.75 (Stock trades at an 8x premium to liquidation value)
+- Conservative Liquidation Value per share: $0.75 (Stock trades at 8x liquidation value)
 
 #### Conclusion:
 Company Delta fails Benjamin Graham's Net-Net rule completely.

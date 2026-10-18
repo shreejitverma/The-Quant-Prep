@@ -106,7 +106,8 @@ The breakdown illustrated the fragmentation of the US equity market under Regula
 Let limit order book depth $D(p)$ represent the cumulative resting buy limit orders within distance $\Delta p$ of the mid-price $P_0$.
 Under normal conditions, depth is thick:
 $$D(P_0 - 0.01) \approx \$50,000,000$$
-When an aggressive sell order with size $Q = 75,000 \times 50 \times 1,150 \approx \$4.3 \text{ billion}$ arrives at rate $\lambda_{\text{sell}}$, market impact $\Delta P$ is governed by the exhaustion of order book depth:
+An aggressive sell order of $Q \approx \$4.1 \text{ billion}$ ($75,000$ contracts $\times$ the $\$50$ multiplier at an average index level of $4.1 \text{ billion} / 3.75 \text{ million} \approx 1,093$) arrives at rate $\lambda_{\text{sell}}$.
+Its market impact $\Delta P$ is governed by the exhaustion of order book depth:
 $$\int_{P_{\text{low}}}^{P_0} D(p) dp = Q$$
 During the panic, the effective market-making supply rate $\lambda_{\text{MM}}$ dropped to zero as HFT algorithms withdrew:
 $$\lambda_{\text{net}} = \lambda_{\text{sell}} - \lambda_{\text{MM}} \gg 0$$

@@ -17,13 +17,14 @@ value_metrics:
     debt_to_equity: 0.04
   valuation:
     fcf_yield: 1.22%
-    peg_ratio: 0.00
+    peg_ratio: N/A
 status: stub
 priority: high
 last_updated: 2026-05-31 14:01:19
 market_data:
-  ticker: PIDILITIND
-  data_quality: ok
+  ticker: PIDILITIND.NS
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Pidilite Industries (PIDILITIND)

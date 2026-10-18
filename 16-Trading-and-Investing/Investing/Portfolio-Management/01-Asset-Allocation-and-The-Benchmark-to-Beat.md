@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Bogle (2007) - The Little Book of Common Sense Investing, Brinson Singer and Beebower (1991) - Determinants of Portfolio Performance II: An Update, Ilmanen (2011) - Expected Returns: An Investor's Guide to Harvesting Market Rewards, Sharpe (1991) - The Arithmetic of Active Management]
+sources: [Bogle (2007) - The Little Book of Common Sense Investing, Brinson Hood and Beebower (1986) - Determinants of Portfolio Performance, Brinson Singer and Beebower (1991) - Determinants of Portfolio Performance II: An Update, Ilmanen (2011) - Expected Returns: An Investor's Guide to Harvesting Market Rewards, Sharpe (1991) - The Arithmetic of Active Management]
 ---
 
 # Asset Allocation and The Benchmark to Beat
@@ -30,7 +30,8 @@ sources: [Bogle (2007) - The Little Book of Common Sense Investing, Brinson Sing
 
 ### 1. The Primacy of Asset Allocation
 
-In their landmark 1986 and 1991 studies, Gary Brinson, Randolph Hood, Brian Singer, and Gilbert Beebower investigated the performance of 82 large corporate pension funds over a 10-year period:
+Brinson, Hood, and Beebower (1986) found that investment policy explained 93.6% of the variation in quarterly returns of 91 large US pension plans (1974-1983).
+The 1991 update by Brinson, Singer, and Beebower, whose figures are shown below, studied 82 large US pension plans over 1977-1987:
 
 ```
 +-----------------------------------------------------------------------+
@@ -76,9 +77,11 @@ In 1991, Nobel laureate William Sharpe published a two-page mathematical proof t
 +-----------------------------------------------------------------------+
 ```
 
-Over a 30-year compounding horizon, an annual fee differential of 1.5% does not reduce terminal wealth by 1.5%; it consumes approximately **35% to 45% of total cumulative wealth** due to the lost compounding on the deducted fees:
+Over a 30-year compounding horizon, an annual fee differential of 1.5% does not reduce terminal wealth by 1.5%; it consumes roughly a third of terminal wealth due to the lost compounding on the deducted fees:
 
 $$\text{Wealth Destruction} = 1 - \left( \frac{1 + R - \text{Fee}}{1 + R} \right)^T$$
+
+With Fee = 1.5% and T = 30, the drag is at most $1 - 0.985^{30} = 36.4\%$ (the R = 0 limit), and it is 34.5% at a 7% gross return $R$, because a higher $R$ shrinks the fee as a fraction of $1 + R$.
 
 ### 3. John Bogle and the Low-Cost Index Benchmark
 
@@ -182,13 +185,13 @@ The endowment cannot meet its 7.0% mandate without either:
 ## Practice questions
 
 > [!question]- mkt-pf-001 | What percentage of the long-term variability in portfolio returns is explained by Strategic Asset Allocation (SAA)?
-> Over 90% (91.5% in the landmark Brinson, Hood, and Beebower study).
+> Over 90%: 93.6% in Brinson, Hood, and Beebower (1986) and 91.5% in the Brinson, Singer, and Beebower (1991) update.
 
 > [!question]- mkt-pf-002 | What is William Sharpe's 'Arithmetic of Active Management'?
 > Before expenses, the return on the average actively managed dollar equals the market return; after expenses and fees, active management is mathematically a negative-sum game.
 
 > [!question]- mkt-pf-003 | Why does a 1.5% annual management fee reduce 30-year terminal wealth by far more than 1.5%?
-> Fees compound negatively over time; a 1.5% fee typically destroys 35% to 45% of total cumulative terminal wealth over three decades.
+> Fees compound negatively over time; over 30 years a 1.5% fee destroys 1 - ((1 + R - 0.015) / (1 + R))^30 of terminal wealth, which is 34.5% at a 7% gross return and at most 36.4% (the R = 0 limit).
 
 > [!question]- mkt-pf-004 | What is the Cost Matters Hypothesis (CMH) formulated by John Bogle?
 > In financial markets, gross return minus intermediation costs equals net investor return; minimizing fees is the most reliable predictor of superior performance.
@@ -282,6 +285,7 @@ The endowment cannot meet its 7.0% mandate without either:
 ## Further reading
 
 - Bogle, J. C. (2007). *The Little Book of Common Sense Investing: The Only Way to Guarantee Your Fair Share of Stock Market Returns*. John Wiley & Sons.
+- Brinson, G. P., Hood, L. R., & Beebower, G. L. (1986). *Determinants of Portfolio Performance*. Financial Analysts Journal, 42(4), 39-44.
 - Brinson, G. P., Singer, B. D., & Beebower, G. L. (1991). *Determinants of Portfolio Performance II: An Update*. Financial Analysts Journal, 47(3), 40-48.
 - Ilmanen, A. (2011). *Expected Returns: An Investor's Guide to Harvesting Market Rewards*. John Wiley & Sons.
 - Sharpe, W. F. (1991). *The Arithmetic of Active Management*. Financial Analysts Journal, 47(1), 7-9.

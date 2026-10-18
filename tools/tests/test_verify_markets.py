@@ -85,6 +85,24 @@ class TestVerifyMarkets(unittest.TestCase):
             findings = verify_markets_vault(Path(td))
             self.assertIsInstance(findings, list)
 
+    def test_vault_checks_investing_curriculum_but_not_the_library(self):
+        two_sentences = "The first sentence of this paragraph is here. The second one shares its line.\n"
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            for rel in (
+                "Investing/Fundamental-Analysis/01-Note.md",
+                "Investing/Stock Research/Apple (AAPL).md",
+                "Investing/Valuation Models/Reverse DCF.md",
+                "Finance/Note.md",
+            ):
+                path = root / rel
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("---\ntype: concept\n---\n# Note\n\n" + two_sentences, encoding="utf-8")
+            flagged = {Path(f.path).name for f in verify_markets_vault(root) if f.rule == "style-sentence-per-line"}
+            legacy = {f.path for f in verify_markets_vault(root, include_legacy=True) if f.rule == "style-sentence-per-line"}
+        self.assertEqual(flagged, {"01-Note.md"})
+        self.assertEqual(len(legacy), 4)
+
     def test_known_lab_engines_and_detection(self):
         from tools.qp.lab import list_engines
         from tools.qp.verify_markets import KNOWN_LAB_ENGINES

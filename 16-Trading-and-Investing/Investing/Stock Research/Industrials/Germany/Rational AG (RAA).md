@@ -22,13 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:24
 market_data:
-  ticker: RAA
-  price: 30.4069
-  pe_ratio: 27.184343
-  dividend_yield: 2.18
-  52w_high: 30.502
-  52w_low: 24.31
-  data_quality: ok
+  ticker: RAA.DE
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Rational AG (RAA)

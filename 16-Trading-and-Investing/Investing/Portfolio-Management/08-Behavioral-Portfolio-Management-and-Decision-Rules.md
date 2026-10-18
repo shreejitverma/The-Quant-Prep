@@ -187,7 +187,8 @@ To neutralize hard-wired human cognitive biases, institutional investment firms 
 ```
 
 1. **The Pre-Mortem Protocol (Gary Klein)**:
-   Before executing a major trade, the team gathers and assumes the premise: "It is exactly twelve months in the future, and this trade has suffered total catastrophic failure. Write down a comprehensive history of how and why it happened."
+   Before executing a major trade, the team gathers and assumes the premise that it is exactly twelve months in the future and the trade has suffered total catastrophic failure.
+   Each member then writes down a comprehensive history of how and why it happened.
    This legitimatizes dissent and surfaces unexamined tail risks.
 
 2. **Automated Rebalancing and Execution Rules**:

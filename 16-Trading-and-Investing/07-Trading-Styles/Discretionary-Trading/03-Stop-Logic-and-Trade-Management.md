@@ -32,7 +32,7 @@ Dynamic trade management utilizes trailing stops, partial scale-outs at structur
 
 - Differentiate structural market invalidation stops from arbitrary accounting and percentage stops.
 - Calculate Wilder's Average True Range (ATR) and determine optimal volatility stop multiples ($k \times \text{ATR}$).
-- Formulate the Turtle Trader pyramiding algorithm for adding size to winning trades without increasing initial risk.
+- Formulate the Turtle Trader pyramiding algorithm for adding size to winning trades and quantify how much it raises open risk.
 - Compare the mathematical expected payoff of All-In/All-Out vs Scale-Out execution styles.
 - Implement time stops to prevent dead capital allocation during sideways consolidation.
 
@@ -90,7 +90,10 @@ Once a trade is active and moves in the anticipated direction, management choice
   - If price advances by $+0.5N$, enter unit 2; move stop on both units to $P_0 - 1.5N$.
   - If price advances by another $+0.5N$, enter unit 3; move stop on all units to $P_0 - 1.0N$.
   - Cap maximum position at 4 units.
-- **Key Insight**: Pyramiding aggressively expands position size during sustained multi-month secular trends while guaranteeing that a sudden reversal never incurs a loss larger than the initial risk budget.
+- **Key Insight**: Pyramiding aggressively expands position size during sustained multi-month secular trends, but it does not cap the loss at the initial risk budget.
+  With equal units, a reversal after unit 3 to the $P_0 - 1.0N$ stop loses $1.0N + 1.5N + 2.0N = 4.5N$ per unit of size, versus $2N$ for the first unit alone.
+  After unit 4 (entered at $P_0 + 1.5N$, stop $P_0 - 0.5N$) the reversal loss is $0.5N + 1.0N + 1.5N + 2.0N = 5.0N$, 2.5 times the initial risk.
+  Trailing the stops limits how much open risk grows; the 4-unit cap is what bounds it.
 
 #### 3. Time-Based Invalidation (Time Stops)
 - If a stock breaks out on heavy volume, the momentum thesis predicts immediate follow-through buying.
@@ -190,7 +193,8 @@ Historical setup distribution:
 
 > [!question]- mkt-trd-069 | Explain the Turtle Trader pyramiding algorithm.
 > Adding incremental position tranches (up to 4 units) every time price advances by 0.5 * ATR (N).
-> The stop-loss on all previously accumulated tranches is ratcheted up simultaneously, ensuring total account risk never exceeds the initial budget.
+> The stop-loss on all accumulated tranches is ratcheted up to 2N below the latest entry, but total open risk still grows: with 4 units the reversal loss is 5.0N against 2N for one unit.
+> The 4-unit cap, not the trailing stop, is what bounds total risk.
 
 > [!question]- mkt-trd-070 | What is a time stop and under what market conditions is it deployed?
 > An exit rule that liquidates a position if price fails to advance within a specified number of bars or time intervals.

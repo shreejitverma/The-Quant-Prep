@@ -78,7 +78,8 @@ Implementation Shortfall decomposes into four distinct friction components:
 $$\text{Delay} = Q \cdot (P_0 - P_d)$$
 2. **Realized Price Impact (Slippage)**: The difference between average execution price $\bar{P}$ and arrival price $P_0$:
 $$\text{Impact} = Q_{\text{filled}} \cdot (\bar{P} - P_0)$$
-3. **Opportunity Cost (Unexecuted Shares)**: The lost profit on unfilled shares $(Q - Q_{\text{filled}})$ if price moves away before completion.
+3. **Opportunity Cost (Unexecuted Shares)**: The lost profit on unfilled shares $(Q - Q_{\text{filled}})$ if price moves away before completion, measured from the arrival price because the delay term already charges all $Q$ shares from $P_d$ to $P_0$:
+$$\text{Opportunity} = (Q - Q_{\text{filled}}) \cdot (P_n - P_0)$$
 4. **Explicit Fees**: Exchange transaction fees, clearing charges, regulatory turnover taxes, and broker commissions.
 
 ### 4. The Almgren-Chriss Optimal Execution Framework
@@ -141,11 +142,12 @@ $$\text{Delay} = 10,000 \times (\$100.20 - \$100.00) = 10,000 \times \$0.20 = \$
 2. Realized Price Impact:
 $$\text{Impact} = 8,000 \times (\$100.80 - \$100.20) = 8,000 \times \$0.60 = \$4,800.00$$
 3. Opportunity Cost (Unfilled Shares):
-$$\text{Opportunity} = (10,000 - 8,000) \times (\$101.50 - \$100.00) = 2,000 \times \$1.50 = \$3,000.00$$
+$$\text{Opportunity} = (10,000 - 8,000) \times (\$101.50 - \$100.20) = 2,000 \times \$1.30 = \$2,600.00$$
 4. Explicit Fees:
 $$\text{Fees} = \$160.00$$
-$$\text{Total Implementation Shortfall} = \$2,000 + \$4,800 + \$3,000 + \$160 = \$9,960.00$$
-Relative to the $1,000,000 paper notional, the total implementation friction is $99.6 \text{ basis points}$.
+$$\text{Total Implementation Shortfall} = \$2,000 + \$4,800 + \$2,600 + \$160 = \$9,560.00$$
+The direct formula agrees: $8,000 \times \$100.80 + 2,000 \times \$101.50 - 10,000 \times \$100.00 + \$160 = \$806,400 + \$203,000 - \$1,000,000 + \$160 = \$9,560.00$.
+Relative to the $1,000,000 paper notional, the total implementation friction is $95.6 \text{ basis points}$.
 
 ---
 

@@ -37,7 +37,7 @@ def update_value_metrics(file_path: Path, original_ticker: str) -> bool:
     if yf is None:
         raise RuntimeError("yfinance is required to fetch historical value metrics.")
 
-    yf_ticker = stock_notes.yahoo_symbol(original_ticker)
+    yf_ticker = stock_notes.fetch_symbol(file_path, original_ticker)
     stock = yf.Ticker(yf_ticker)
     info = stock.info or {}
 
@@ -53,37 +53,37 @@ def update_value_metrics(file_path: Path, original_ticker: str) -> bool:
     cagr_5y_str = get_cagr(hist_5y, actual_years_5) if actual_years_5 > 1 else "N/A"
 
     quote_currency = info.get("currency")
-    financial_currency = info.get("financialCurrency") or quote_currency
+    _, major_currency = stock_notes.to_major_unit(None, quote_currency)
+    financial_currency = info.get("financialCurrency") or major_currency
 
     roe = info.get("returnOnEquity") or info.get("returnOnEquity_avg")
     roa = info.get("returnOnAssets")
     raw_dte = info.get("debtToEquity")
-    debt_to_equity = f"{(raw_dte / 100):.2f}" if raw_dte is not None else "N/A"
-    raw_peg = info.get("pegRatio")
-    peg_ratio = f"{raw_peg:.2f}" if raw_peg is not None else "N/A"
+    debt_to_equity = stock_notes.format_ratio(None if raw_dte is None else raw_dte / 100)
+    peg_ratio = stock_notes.format_ratio(info.get("pegRatio"))
     gross_margin = info.get("grossMargins")
-    fcf = info.get("freeCashflow") or info.get("operatingCashflow")
+    fcf = info.get("freeCashflow")
     market_cap = info.get("marketCap")
 
     roe_str = f"{roe * 100:.2f}%" if roe is not None else "N/A"
     roa_str = f"{roa * 100:.2f}%" if roa is not None else "N/A"
     gm_str = f"{gross_margin * 100:.2f}%" if gross_margin is not None else "N/A"
 
-    # Currency guard: do not compute cross-currency ratios
-    currency_ok = stock_notes.check_currency_guard(financial_currency, quote_currency)
-    if not currency_ok:
-        fcf_yield_str = "currency_mismatch"
-    elif fcf and market_cap and market_cap > 0:
+    # Currency guard: do not compute cross-currency ratios; Yahoo's marketCap is in the major unit
+    currency_ok = stock_notes.check_currency_guard(financial_currency, major_currency)
+    if not currency_ok or original_ticker in stock_notes.KNOWN_CURRENCY_MISMATCHES:
+        fcf_yield_str = stock_notes.CURRENCY_MISMATCH
+    elif fcf is not None and market_cap and market_cap > 0:
         fcf_yield_str = f"{(fcf / market_cap) * 100:.2f}%"
     else:
-        fcf_yield_str = "N/A"
+        fcf_yield_str = stock_notes.MISSING
 
     today_str = datetime.now().strftime("%Y-%m-%d")
 
     val_block = [
         "value_metrics:",
         f"  last_deep_fetch: {today_str}",
-        f"  currency: {quote_currency or 'USD'}",
+        *([f"  currency: {quote_currency}"] if quote_currency else []),
         "  returns:",
         f"    cagr_10y: {cagr_10y_str}",
         f"    cagr_5y: {cagr_5y_str}",

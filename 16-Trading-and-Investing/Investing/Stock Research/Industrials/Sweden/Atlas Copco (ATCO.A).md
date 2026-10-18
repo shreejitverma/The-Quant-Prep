@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:22
 market_data:
-  ticker: ATCO.A
-  data_quality: ok
+  ticker: ATCO-A.ST
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Atlas Copco (ATCO.A)

@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:25
 market_data:
-  ticker: LT
-  data_quality: ok
+  ticker: LT.NS
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Larsen & Toubro (LT)

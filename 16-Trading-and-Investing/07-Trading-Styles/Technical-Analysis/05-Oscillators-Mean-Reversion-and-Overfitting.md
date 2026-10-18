@@ -127,14 +127,15 @@ When a researcher tests $N$ indicator variations (varying lookback periods, thre
    - If a researcher evaluates $1,000$ oscillator variants, approximately $50$ will pass standard $t$-tests ($t > 1.96$) on pure random noise.
 
 2. **The Harvey, Liu, and Zhu (2016) Hurdle**:
-   - In *... and the Cross-Section of Expected Returns*, Campbell Harvey, Yan Liu, and Caroline Zhu analyzed over $300$ published financial factors.
+   - In *... and the Cross-Section of Expected Returns*, Campbell Harvey, Yan Liu, and Heqing Zhu analyzed over $300$ published financial factors.
    - They demonstrated that widespread data mining requires raising the statistical significance bar from $t > 2.0$ to at least **$t > 3.0$** (corresponding to a $p$-value $< 0.0027$) for newly claimed trading edges.
 
 3. **Deflated Sharpe Ratio (DSR, Bailey and Lopez de Prado 2014)**:
    - DSR adjusts the estimated Sharpe ratio $\widehat{\text{SR}}$ to account for the number of trials $N$, the variance of trial returns, non-normality (skewness $\gamma_3$, kurtosis $\gamma_4$), and sample length $T$:
      $$\text{DSR} = Z\left(\frac{(\widehat{\text{SR}} - \text{SR}^*) \sqrt{T-1}}{\sqrt{1 - \gamma_3 \widehat{\text{SR}} + \frac{\gamma_4 - 1}{4} \widehat{\text{SR}}^2}}\right)$$
-   - where $\text{SR}^*$ is the expected maximum Sharpe ratio under the null hypothesis of zero true edge across $N$ independent trials:
-     $$\text{SR}^* \approx \sqrt{2 \ln N} + \frac{\gamma}{\sqrt{2 \ln N}}$$
+   - where $\gamma_4$ is raw kurtosis ($3$ for a normal distribution), and $\text{SR}^*$ is the expected maximum Sharpe ratio under the null hypothesis of zero true edge across $N$ independent trials whose Sharpe ratios have standard deviation $\sigma_{\text{SR}}$:
+     $$\text{SR}^* \approx \sigma_{\text{SR}} \left[(1 - \gamma) \Phi^{-1}\left(1 - \frac{1}{N}\right) + \gamma \Phi^{-1}\left(1 - \frac{1}{N e}\right)\right]$$
+   - Here $\gamma \approx 0.5772$ is the Euler-Mascheroni constant and $\Phi^{-1}$ is the inverse standard normal CDF.
    - If $\text{DSR} < 0.95$, the strategy is rejected as a statistical artifact of multiple testing.
 
 ---
@@ -166,16 +167,19 @@ An analyst calculates 14-period RSI using five initial daily closing prices:
 A quantitative trader backtests $N = 500$ parameter variations of an RSI and Bollinger Band mean-reversion model on 5 years of daily data ($T = 1,260$ days):
 - Best in-sample annualized Sharpe ratio: $\widehat{\text{SR}} = 1.40$ (daily $\widehat{\text{sr}} = \frac{1.40}{\sqrt{252}} = 0.0882$).
 - Variance of trial Sharpe ratios: $\sigma_{\text{SR}}^2 = 0.25$ ($\sigma_{\text{SR}} = 0.50$).
-- Daily returns exhibit negative skewness ($\gamma_3 = -0.60$) and excess kurtosis ($\gamma_4 = 4.50$).
+- Daily returns exhibit negative skewness ($\gamma_3 = -0.60$) and excess kurtosis of $4.50$, so raw kurtosis is $\gamma_4 = 4.50 + 3 = 7.50$.
 
 1. **Calculate Expected Maximum Sharpe Ratio Under Zero Edge ($\text{SR}^*$)**:
-   $$\text{SR}^* \approx \sqrt{2 \ln(500)} = \sqrt{2 \times 6.2146} = \sqrt{12.429} = 3.5255\text{ standard errors}$$
+   $$\Phi^{-1}\left(1 - \frac{1}{500}\right) = 2.8782, \quad \Phi^{-1}\left(1 - \frac{1}{500 e}\right) = 3.1802$$
+   $$\mathbb{E}[\max] \approx (1 - 0.5772)(2.8782) + 0.5772(3.1802) = 3.0525\text{ standard deviations}$$
+   A simulation of the maximum of 500 independent standard normals gives about $3.04$, so the approximation is close.
    Annualized benchmark hurdle:
-   $$\text{SR}^*_{\text{ann}} = 0.50 \times \left(\sqrt{2 \ln 500} - \frac{\ln(\pi \ln 500)}{2 \sqrt{2 \ln 500}}\right) \approx 0.50 \times (3.5255 - 0.42) \approx 1.55$$
+   $$\text{SR}^*_{\text{ann}} = 0.50 \times 3.0525 = 1.526, \quad \text{SR}^*_{\text{daily}} = \frac{1.526}{\sqrt{252}} = 0.0961$$
 
 2. **Evaluate the Strategy**:
-   - The best in-sample Sharpe ratio ($\widehat{\text{SR}} = 1.40$) is **lower** than the expected maximum Sharpe ratio from testing 500 random variations ($\text{SR}^* \approx 1.55$).
-   - The Deflated Sharpe Ratio calculation yields $\text{DSR} < 0.40$.
+   - The best in-sample Sharpe ratio ($\widehat{\text{SR}} = 1.40$) is **lower** than the expected maximum Sharpe ratio from testing 500 random variations ($\text{SR}^* \approx 1.53$).
+   - With $\gamma_3 = -0.60$ and $\gamma_4 = 7.50$, the denominator is $\sqrt{1 + 0.60 \times 0.0882 + \frac{7.50 - 1}{4} \times 0.0882^2} = 1.0323$.
+   - $$\text{DSR} = Z\left(\frac{(0.0882 - 0.0961)\sqrt{1,259}}{1.0323}\right) = Z(-0.27) = 0.39$$
    - **Verdict**: The strategy is rejected.
    - The apparent outperformance is entirely attributable to data-mining selection bias across 500 trials.
 
@@ -323,7 +327,7 @@ A quantitative trader backtests $N = 500$ parameter variations of an RSI and Bol
 > Desks use half-life to set maximum holding periods and time-based stops.
 
 > [!question]- mkt-ta-159 | What is probability of backtest overfitting (PBO)?
-> A statistical measure developed by Bailey et al. (2016) using Combinatorially Symmetric Cross-Validation (CSCV).
+> A statistical measure developed by Bailey et al. (2017) using Combinatorially Symmetric Cross-Validation (CSCV).
 > It quantifies the probability that the best in-sample strategy will underperform the median strategy out-of-sample.
 
 > [!question]- mkt-ta-160 | Why should quantitative traders use walk-forward validation instead of standard cross-validation?
@@ -340,4 +344,4 @@ A quantitative trader backtests $N = 500$ parameter variations of an RSI and Bol
 - White, H. (2000). *A reality check for data snooping*. Econometrica, 68(5), 1097-1126.
 - Hansen, P. R. (2005). *A test for superior predictive ability*. Journal of Business & Economic Statistics, 23(4), 365-380.
 - Bailey, D. H., & Lopez de Prado, M. (2014). *The deflated Sharpe ratio: Correcting for selection bias, backtest overfitting, and non-normality*. The Journal of Portfolio Management, 40(5), 94-107.
-- Harvey, C. R., Liu, Y., & Zhu, C. (2016). *... and the cross-section of expected returns*. The Review of Financial Studies, 29(1), 5-68.
+- Harvey, C. R., Liu, Y., & Zhu, H. (2016). *... and the cross-section of expected returns*. The Review of Financial Studies, 29(1), 5-68.

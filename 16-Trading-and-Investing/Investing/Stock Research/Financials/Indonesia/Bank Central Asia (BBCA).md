@@ -14,7 +14,7 @@ value_metrics:
     roe: 22.97%
     roa: 3.66%
     gross_margin: N/A
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: -0.76%
     peg_ratio: 1.58
@@ -22,13 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:10
 market_data:
-  ticker: BBCA
-  price: 100.93
-  pe_ratio: 19.750153
-  dividend_yield: 1.74
-  52w_high: 101.28
-  52w_low: 78.68
-  data_quality: ok
+  ticker: BBCA.JK
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Bank Central Asia (BBCA)

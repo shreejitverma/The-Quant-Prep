@@ -2,8 +2,8 @@
 ticker: INFY
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
-  implied_growth_rate: 70.8%
-  implied_growth_status: solved
+  implied_growth_rate: n/a
+  implied_growth_status: currency_mismatch
   implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: INR
@@ -16,20 +16,15 @@ value_metrics:
     gross_margin: 29.52%
     debt_to_equity: 0.10
   valuation:
-    fcf_yield: 0.07%
+    fcf_yield: currency_mismatch
     peg_ratio: 2.13
 status: stub
 priority: high
 last_updated: 2026-05-31 14:01:14
 market_data:
-  ticker: INFY
-  price: 12.65
-  market_cap: 51203518464
-  pe_ratio: 15.812499
-  dividend_yield: 4.09
-  52w_high: 30.0
-  52w_low: 11.56
-  data_quality: ok
+  ticker: INFY.NS
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Infosys (INFY)

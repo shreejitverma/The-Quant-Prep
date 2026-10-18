@@ -130,7 +130,7 @@ The 1987 crash generated the modern market architecture governing exchanges toda
 ## Case Study Drills and Review Questions
 
 > [!question]- mkt-his-005 | What was the percentage decline of the Dow Jones Industrial Average on Black Monday (October 19, 1987)?
-> Exactly 22.61% (508.32 points), the largest single-day percentage drop in US market history.
+> 22.61%, or 508.00 points from 2,246.74 to 1,738.74, the largest single-day percentage drop in US market history.
 
 > [!question]- mkt-his-006 | What was the mathematical flaw in the Portfolio Insurance strategy developed by Leland and Rubinstein?
 > It assumed continuous pricing and infinite market depth for delta-hedging; in reality, collective selling caused discontinuous price gaps and evaporated market liquidity.

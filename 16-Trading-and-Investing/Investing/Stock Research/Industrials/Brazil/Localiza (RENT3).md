@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:23
 market_data:
-  ticker: RENT3
-  data_quality: ok
+  ticker: RENT3.SA
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Localiza (RENT3)

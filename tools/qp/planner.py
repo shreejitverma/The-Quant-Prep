@@ -12,6 +12,7 @@ number shown on the dashboard can always be explained:
 from __future__ import annotations
 
 import datetime as dt
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from .state import Store, today
@@ -93,11 +94,20 @@ def next_topics(vault: Vault, store: Store, tracks: list[str], limit: int = 5) -
     return [(n, blockers(vault, store, n)) for n in ranked[:limit]]
 
 
-def study_order(vault: Vault, store: Store, tracks: list[str], tiers: tuple[str, ...] = TIERS) -> list[Note]:
-    """Topological order of unlearned topics for the tracks, pulling in unlearned prerequisites
-    from other tracks. Ties break by tier, then syllabus order."""
+def study_order(
+    vault: Vault,
+    store: Store,
+    tracks: list[str],
+    tiers: tuple[str, ...] = TIERS,
+    *,
+    seeds: list[Note] | None = None,
+    rank: Callable[[Note], tuple] = _priority,
+) -> list[Note]:
+    """Topological order of unlearned topics for the tracks (or the given seed topics), pulling in
+    unlearned prerequisites from other tracks. Ties break by ``rank``: tier, then syllabus order."""
     wanted: dict[str, Note] = {}
-    stack = [n for n in vault.topics(tracks) if n.tier in tiers and store.mastery(n.id) < SOLID]
+    roots = vault.topics(tracks) if seeds is None else seeds
+    stack = [n for n in roots if n.tier in tiers and store.mastery(n.id) < SOLID]
     while stack:
         n = stack.pop()
         if n.id in wanted:
@@ -111,7 +121,7 @@ def study_order(vault: Vault, store: Store, tracks: list[str], tiers: tuple[str,
             if p in wanted:
                 indeg[n.id] += 1
                 children[p].append(n.id)
-    ready = sorted((wanted[i] for i, d in indeg.items() if d == 0), key=_priority)
+    ready = sorted((wanted[i] for i, d in indeg.items() if d == 0), key=rank)
     order: list[Note] = []
     while ready:
         n = ready.pop(0)
@@ -120,21 +130,29 @@ def study_order(vault: Vault, store: Store, tracks: list[str], tiers: tuple[str,
             indeg[c] -= 1
             if indeg[c] == 0:
                 ready.append(wanted[c])
-        ready.sort(key=_priority)
+        ready.sort(key=rank)
     if len(order) != len(wanted):  # a cycle; qp check reports it, keep the plan usable
-        order += sorted((n for n in wanted.values() if n not in order), key=_priority)
+        order += sorted((n for n in wanted.values() if n not in order), key=rank)
     return order
 
 
 def weekly_plan(
-    vault: Vault, store: Store, tracks: list[str], hours_per_week: float, tiers: tuple[str, ...] = TIERS, start: dt.date | None = None
+    vault: Vault,
+    store: Store,
+    tracks: list[str],
+    hours_per_week: float,
+    tiers: tuple[str, ...] = TIERS,
+    start: dt.date | None = None,
+    *,
+    seeds: list[Note] | None = None,
+    rank: Callable[[Note], tuple] = _priority,
 ) -> list[dict]:
     if hours_per_week <= 0:
         raise ValueError("hours_per_week must be positive")
     start = start or today()
     weeks: list[dict] = []
     current: dict | None = None
-    for note in study_order(vault, store, tracks, tiers):
+    for note in study_order(vault, store, tracks, tiers, seeds=seeds, rank=rank):
         hours = max(remaining_hours(store, note), 0.5)
         if current is None or (current["hours"] + hours > hours_per_week and current["topics"]):
             current = {"week": len(weeks) + 1, "starts": (start + dt.timedelta(weeks=len(weeks))).isoformat(), "hours": 0.0, "topics": []}
@@ -174,21 +192,10 @@ def counts(vault: Vault, store: Store, tracks: list[str] | None = None) -> dict:
     }
 
 
-PERSONA_MARKET_TRACKS = {
-    "holistic": ["quant-trader", "quant-research", "quant-risk", "quant-dev"],
-    "quant_trader": ["quant-trader"],
-    "quant_researcher": ["quant-research", "quant-risk"],
-    "macro_derivatives_trader": ["quant-trader", "quant-research"],
-    "retail_algorithmic_trader": ["quant-trader"],
-}
-
-
 def _build_persona_lab_routing() -> dict[str, list[str]]:
-    from .markets import LAB_ENGINES, PERSONA_CONFIGS
+    from .markets import PERSONA_CONFIGS
 
-    routing = {p_id: list(cfg["required_engines"]) for p_id, cfg in PERSONA_CONFIGS.items()}
-    routing["holistic"] = list(LAB_ENGINES.keys())
-    return routing
+    return {p_id: list(cfg["required_engines"]) for p_id, cfg in PERSONA_CONFIGS.items()}
 
 
 PERSONA_LAB_ROUTING: dict[str, list[str]] = _build_persona_lab_routing()
@@ -202,10 +209,23 @@ def persona_weekly_plan(
     tiers: tuple[str, ...] = TIERS,
     start: dt.date | None = None,
 ) -> list[dict]:
-    """Generate a persona-tailored study plan with weekly hour budgets and aligned Trading Lab simulation drills."""
-    tracks = PERSONA_MARKET_TRACKS.get(persona, PERSONA_MARKET_TRACKS["holistic"])
-    base_plan = weekly_plan(vault, store, tracks, hours_per_week, tiers, start)
-    drills_pool = list(PERSONA_LAB_ROUTING.get(persona, PERSONA_LAB_ROUTING["holistic"]))
+    """Generate a persona-tailored study plan with weekly hour budgets and aligned Trading Lab simulation drills.
+
+    The plan covers the market topics whose cards belong to a track the persona weights, highest
+    persona weight first (prerequisites still come before the topics that need them).
+    """
+    from .markets import PERSONA_CONFIGS, TRACK_METADATA
+
+    if persona not in PERSONA_CONFIGS:
+        raise ValueError(f"unknown persona {persona!r}; expected one of {sorted(PERSONA_CONFIGS)}")
+    prefix_weights = {TRACK_METADATA[t]["card_prefix"]: w for t, w in PERSONA_CONFIGS[persona]["track_weights"].items()}
+
+    def persona_weight(note: Note) -> float:
+        return max((w for prefix, w in prefix_weights.items() if any(c.id.startswith(prefix) for c in note.cards)), default=0.0)
+
+    seeds = [n for n in vault.topics() if persona_weight(n) > 0]
+    base_plan = weekly_plan(vault, store, [], hours_per_week, tiers, start, seeds=seeds, rank=lambda n: (-persona_weight(n), *_priority(n)))
+    drills_pool = PERSONA_LAB_ROUTING[persona]
 
     for idx, week in enumerate(base_plan):
         drill1 = drills_pool[idx % len(drills_pool)]

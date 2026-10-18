@@ -37,7 +37,8 @@ The resulting panic required unprecedented sovereign bailouts: the federal takeo
   - The Federal Reserve authorizes an $85 billion loan to seize and rescue American International Group (AIG) to prevent the collapse of its Credit Default Swap (CDS) insurance obligations.
 - **September 18, 2008**: Treasury Secretary Henry Paulson and Fed Chairman Ben Bernanke meet congressional leaders, warning that without immediate legislation, the US commercial financial system could freeze within days.
 - **October 3, 2008**: Congress passes the Emergency Economic Stabilization Act of 2008, establishing the $700 billion Troubled Asset Relief Program (TARP).
-- **March 9, 2009**: The S&P 500 reaches its Great Financial Crisis low at 666.79 (the "Devil's Low"), down 56.8% from its October 2007 peak.
+- **March 6, 2009**: The S&P 500 touches its Great Financial Crisis intraday low of 666.79 (the "Devil's Low").
+- **March 9, 2009**: The S&P 500 closes at its crisis closing low of 676.53, down 56.8% from its October 9, 2007 closing peak of 1,565.15.
 
 ---
 
@@ -94,7 +95,7 @@ When both occurred simultaneously in September 2008, AIG faced an immediate $32 
 |    Money funds raise repo haircuts on structured paper from 2% to 25% |
 |                                                                       |
 | 3. Severe Cash Depletion                                              |
-|    Borrower must pledge $125 of assets for every $100 borrowed        |
+|    Borrower must pledge $133.33 of assets for every $100 borrowed     |
 |                                                                       |
 | 4. Lehman Bankruptcy Announcement                                     |
 |    Overnight repo lines pulled completely; interbank LIBOR-OIS spikes |
@@ -117,7 +118,7 @@ Banks hoarded cash reserves at the central bank and completely refused to lend t
 
 Consider an investment bank with balance sheet assets $A = \$600 \text{ billion}$, funded by liabilities (debt) $D = \$580 \text{ billion}$ and equity capital $E = \$20 \text{ billion}$:
 $$\text{Leverage Ratio} = \frac{A}{E} = \frac{600}{20} = 30x$$
-Assume the asset base contains $10% of subprime-linked securities and structured CDOs ($A_{\text{sub}} = \$60 \text{ billion}$):
+Assume the asset base contains 10% of subprime-linked securities and structured CDOs ($A_{\text{sub}} = \$60 \text{ billion}$):
 If structured credit markets write down these assets by 35% ($0.35 \times 60 = \$21 \text{ billion}$), the bank's total asset value drops to:
 $$A_{\text{new}} = 600 - 21 = \$579 \text{ billion}$$
 The revised equity capital is:

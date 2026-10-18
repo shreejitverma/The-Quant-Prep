@@ -121,13 +121,16 @@ $$f^* = 0.60 - 0.40 = 0.20 \quad (20\% \text{ of equity})$$
 |       |     *       *                    *                            |
 |       |   *                                *                          |
 |   ----+--------------------------------------+--------------------> f |
-|   0.0 |                                      | 2*f* (Certain Ruin)   |
+|   0.0 |                                      | ~2*f* (Zero Growth)   |
 |       v                                      v                        |
 +-----------------------------------------------------------------------+
 ```
 
 Betting beyond the Kelly threshold ($f > f^*$) yields less compound growth while dramatically increasing volatility.
-Betting twice the Kelly threshold ($f \ge 2f^*$) mathematically guarantees long-term portfolio bankruptcy with probability 1.0.
+For this bet the growth rate is $g(f) = 0.60 \ln(1 + f) + 0.40 \ln(1 - f)$, which peaks at $g(0.20) = 0.0201$ per bet.
+Betting twice Kelly gives $g(0.40) = 0.60 \ln(1.40) + 0.40 \ln(0.60) = 0.2019 - 0.2043 = -0.0024$, and the exact zero crossing is $f \approx 0.389$.
+The continuous approximation puts that crossing at exactly $2f^*$; for discrete bets it sits near, not at, $2f^*$.
+Past the crossing, log wealth drifts downward and wealth converges to zero with probability 1 even though each bet has a positive edge.
 Institutional desks deploy **Fractional Kelly** (typically $0.25f^*$ to $0.50f^*$) to provide a safety margin against parameter estimation error and non-stationary market regimes.
 
 ---
@@ -193,7 +196,8 @@ Because the observed frequency (80%) is very close to the forecasted probability
 > f* = p - q = 2p - 1, where q = 1 - p.
 
 > [!question]- mkt-dec-011 | What happens mathematically if an investor consistently sizes positions at twice the Kelly optimal fraction (2 * f*)?
-> Terminal portfolio wealth approaches zero with probability 1.0 (guaranteed mathematical ruin).
+> Expected log growth falls to about zero: exactly zero in the continuous approximation, slightly negative or positive for a discrete bet (g(0.40) = -0.0024 for an even-money bet with p = 0.60).
+> The investor takes double Kelly's volatility for no compound growth, and any fraction past the zero crossing drives wealth to zero with probability 1.
 
 > [!question]- mkt-dec-012 | Why do quantitative funds deploy Fractional Kelly (such as Half-Kelly) rather than Full Kelly?
 > To buffer against parameter estimation errors, market regime shifts, and non-Gaussian fat-tailed drawdowns.
@@ -241,7 +245,8 @@ Because the observed frequency (80%) is very close to the forecasted probability
 > The statistical probability that an account equity will drop to a level where trading can no longer continue.
 
 > [!question]- mkt-dec-027 | How does increasing position size affect the Risk of Ruin?
-> Risk of ruin increases exponentially as position sizing approaches and exceeds the Kelly optimal threshold.
+> With fixed-dollar even-money bets of a fraction f of starting equity, ruin is R = (q / p)^(1 / f), so it rises steeply with size.
+> At p = 0.55, risking 2% gives (0.45 / 0.55)^50 = 0.0044% while risking 10% gives (0.45 / 0.55)^10 = 13.4%.
 
 > [!question]- mkt-dec-028 | What is a calibration curve in probabilistic forecasting?
 > A plot of predicted probabilities on the x-axis against observed empirical frequencies on the y-axis; a perfect model traces a 45-degree line.

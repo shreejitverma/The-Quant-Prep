@@ -204,7 +204,7 @@ Compare two competitors in the industrial equipment sector:
 | P / E (Market Cap/NI)  | 16.67x                | 31.11x               |
 | P / B (Market Cap/BV)  | 2.00x                 | 2.33x                |
 | ROE (Net Income / BV)  | 12.00%                | 7.50%                |
-| Financial Leverage     | 1.15x Net Debt/EBITDA | 4.07x Net Debt/EBITDA|
+| Financial Leverage     | 0.91x Net Debt/EBITDA | 4.07x Net Debt/EBITDA|
 +------------------------+-----------------------+----------------------+
 ```
 
@@ -294,7 +294,7 @@ Compare two competitors in the industrial equipment sector:
 > The portion of consolidated equity in a subsidiary owned by external third parties, included in Enterprise Value because 100% of the subsidiary's cash flow is in EBITDA.
 
 > [!question]- mkt-val-120 | Why must operating lease liabilities be added to debt in Enterprise Value under ASC 842?
-> Because lease obligations represent debt-like contractual financing commitments, and rental costs are split into interest and amortization.
+> Because lease obligations are debt-like contractual financing commitments; ASC 842 still books operating-lease cost as a single straight-line operating expense inside EBITDA (only IFRS 16 and finance leases split it into interest and depreciation), so adding the lease liability to EV requires adding rent back to the denominator (EV/EBITDAR) to keep the multiple consistent.
 
 > [!question]- mkt-val-121 | What is a 'pure play' comparable company?
 > A peer company operating exclusively in the same industry segment, without distortion from unrelated business units or conglomerate divisions.

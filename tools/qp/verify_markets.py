@@ -13,6 +13,9 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from tools.qp.markets import LAB_ENGINES
+from tools.qp.vault import is_markets_library
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MARKETS_ROOT = REPO_ROOT / "16-Trading-and-Investing"
 
@@ -27,19 +30,7 @@ INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 LAB_CLI_RE = re.compile(r"\./qp\s+lab\s+(?:run|info)\s+([a-z0-9_]+)")
 LAB_BULLET_RE = re.compile(r"^-\s+`([a-z0-9_]+)`:")
 
-KNOWN_LAB_ENGINES = {
-    "lob_sim",
-    "opt_desk",
-    "pos_sizing",
-    "replay_chart",
-    "overfit_trap",
-    "fut_desk",
-    "port_alloc",
-    "journal_stats",
-    "mm_quote",
-    "event_study",
-    "games",
-}
+KNOWN_LAB_ENGINES = set(LAB_ENGINES)
 
 
 @dataclass(frozen=True)
@@ -221,13 +212,11 @@ def check_links_and_engines(path: Path, text: str) -> list[MarketFinding]:
 
 def verify_markets_vault(root: Path = MARKETS_ROOT, include_legacy: bool = False) -> list[MarketFinding]:
     findings: list[MarketFinding] = []
-    # By default, verify the structured Markets Mastery OS curriculum, styles, and labs.
-    # Legacy unmigrated Obsidian notes in Investing/ and Finance/ are skipped unless include_legacy=True.
-    skip_top_dirs = {"Private"} if include_legacy else {"Private", "Investing", "Finance", "scripts"}
-
+    # By default, verify the Markets Mastery OS curriculum, styles, and labs, including the Investing
+    # curriculum folders. Legacy library notes in Finance/ and Investing/ are skipped unless include_legacy=True.
     for md_path in sorted(root.rglob("*.md")):
         rel = md_path.relative_to(root)
-        if any(part in skip_top_dirs for part in rel.parts[:1]):
+        if rel.parts[0] == "Private" or (not include_legacy and is_markets_library(rel)):
             continue
         text = md_path.read_text(encoding="utf-8")
         _, _, fm_findings = check_frontmatter(md_path, text)

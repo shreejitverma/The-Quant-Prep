@@ -14,7 +14,7 @@ value_metrics:
     roe: 31.20%
     roa: 22.06%
     gross_margin: 90.51%
-    debt_to_equity: 0.00
+    debt_to_equity: N/A
   valuation:
     fcf_yield: 3.33%
     peg_ratio: 1.80
@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:27
 market_data:
-  ticker: 600519
-  data_quality: ok
+  ticker: 600519.SS
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Kweichou Moutai (600519)

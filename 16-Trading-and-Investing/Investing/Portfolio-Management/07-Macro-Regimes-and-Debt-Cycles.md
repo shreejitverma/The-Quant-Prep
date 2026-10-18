@@ -137,11 +137,13 @@ Policymakers have four primary levers to reduce debt-to-income ratios:
 
 1. **Austerity (Spending Cuts)**:
    Individuals, corporations, and governments cut spending to service debt.
-   *Consequence*: Deflationary and painful. One person's spending is another person's income; cutting spending causes GDP to fall faster than debt is repaid, temporarily worsening the debt-to-GDP ratio.
+   *Consequence*: Deflationary and painful.
+   One person's spending is another person's income; cutting spending causes GDP to fall faster than debt is repaid, temporarily worsening the debt-to-GDP ratio.
 
 2. **Debt Restructuring and Defaults**:
    Creditors accept write-downs, haircuts, and extended maturities.
-   *Consequence*: Deflationary. Bank capital is destroyed, credit availability contracts, and wealth is obliterated.
+   *Consequence*: Deflationary.
+   Bank capital is destroyed, credit availability contracts, and wealth is obliterated.
 
 3. **Wealth Transfers (Taxation)**:
    Taxing high-net-worth individuals and capital to fund social safety nets.

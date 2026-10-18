@@ -166,9 +166,13 @@ Borrow Cash ($100 at Cash Rate r) ----+         |
          +----------------------------+----------------------------+
          |                            |                            |
          v                            v                            v
-    $50 Equities                 $120 Treasuries              $30 Commodities
+    $40 Equities                 $128 Treasuries              $32 Commodities
    (Risk: 33.3%)                 (Risk: 33.3%)                 (Risk: 33.3%)
 ```
+
+The split uses inverse-volatility weights with the volatilities above (16%, 5%, 20%), which equalize risk contributions when pairwise correlations are equal.
+Weights are proportional to $1/0.16 = 6.25$, $1/0.05 = 20$ and $1/0.20 = 5$, which sum to 31.25, so equities get $200 \times 6.25 / 31.25 = \$40$, Treasuries $\$128$ and commodities $\$32$.
+Each sleeve then carries the same standalone dollar volatility: $40 \times 16\% = 128 \times 5\% = 32 \times 20\% = \$6.40$.
 
 While levered risk parity delivered superior Sharpe ratios for decades during the Great Moderation (1982-2021) when inflation was subdued and stock-bond correlations were negative, it faces three critical failure modes:
 

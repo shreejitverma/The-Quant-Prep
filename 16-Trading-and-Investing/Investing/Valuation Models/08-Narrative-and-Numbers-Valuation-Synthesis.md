@@ -205,7 +205,7 @@ Conduct a Narrative-to-Numbers synthesis and Pre-Mortem for AeroVolt Robotics:
 
 | Driver | Management Fantasy Story | Disciplined Synthesized Narrative |
 |---|---|---|
-| Year 10 Revenue | $15,000M (60% CAGR) | $5,000M (38% CAGR) |
+| Year 10 Revenue | $15,000M (54.0% CAGR) | $5,000M (38.0% CAGR) |
 | Operating Margin | 35.0% | 18.0% |
 | Year 10 EBIT | $5,250M | $900M |
 | Capital Efficiency (Sales/Capital) | 3.0x | 1.5x (Hardware manufacturing capex) |
@@ -215,20 +215,21 @@ Conduct a Narrative-to-Numbers synthesis and Pre-Mortem for AeroVolt Robotics:
 
 ### Step 4: Value the Disciplined Synthesized Narrative
 - Year 10 NOPAT: $\$900\text{M} \times (1 - 0.25) = \$675.0\text{M}$.
-- Terminal Reinvestment: $g / \text{RONIC} = 2.5\% / 15.0\% = 16.7\%$.
-- Year 11 Terminal FCFF: $\$675\text{M} \times (1 + 0.025) \times (1 - 0.167) = \$576.0\text{M}$.
-- Terminal Value at Year 10: $\frac{\$576.0\text{M}}{0.105 - 0.025} = \frac{576.0}{0.08} = \$7,200.0\text{M}$.
-- PV of Terminal Value at Year 0 ($1 / 1.105^{10} = 0.3685$): $\$2,653.2\text{M}$.
+- Terminal Reinvestment: $g / \text{RONIC} = 2.5\% / 15.0\% = 1/6 = 16.67\%$.
+- Year 11 Terminal FCFF: $\$675\text{M} \times (1 + 0.025) \times (1 - 1/6) = \$576.6\text{M}$.
+- Terminal Value at Year 10: $\frac{\$576.6\text{M}}{0.105 - 0.025} = \frac{576.6}{0.08} = \$7,207.0\text{M}$.
+- PV of Terminal Value at Year 0 ($1 / 1.105^{10} = 0.36845$): $\$2,655.4\text{M}$.
 - Sum of Explicit 10-Year PV of Cash Flows (accounting for heavy early hardware capex): -$450.0M.
-- Total Enterprise Value: $\$2,653.2\text{M} - \$450.0\text{M} = \$2,203.2\text{M}$.
+- Total Enterprise Value: $\$2,655.4\text{M} - \$450.0\text{M} = \$2,205.4\text{M}$.
 - Plus Net Cash: +$300.0M.
-- Fair Equity Value: $\$2,503.2\text{M}$.
-- Fair Value Per Share: $\frac{\$2,503.2\text{M}}{100\text{M shares}} = \mathbf{\$25.03}$.
+- Fair Equity Value: $\$2,505.4\text{M}$.
+- Fair Value Per Share: $\frac{\$2,505.4\text{M}}{100\text{M shares}} = \mathbf{\$25.05}$.
 
 ### Step 5: The Gary Klein Pre-Mortem
-"It is 2029. AeroVolt has collapsed from $45 to $8 per share. What killed the company?"
+Imagine it is 2029 and AeroVolt has collapsed from $45 to $8 per share.
+Then ask: "What killed the company?"
 - **Forensic Failure Analysis**:
-  1. The FAA enforced strict visual-line-of-sight (BVLOS) urban flight restrictions, delaying commercial airspace rollouts by five years.
+  1. The FAA kept strict visual-line-of-sight rules for urban flights and withheld beyond-visual-line-of-sight (BVLOS) approvals, delaying commercial airspace rollouts by five years.
   2. Battery weight constraints limited payload to under 5 pounds, eliminating 70% of potential retail delivery contracts.
   3. Heavy capital expenditures required to build regional service hubs exhausted cash reserves by Year 3, forcing massive, dilutive equity raises at distressed valuations.
 - **Pre-Registered Kill Criteria**:
@@ -237,7 +238,7 @@ Conduct a Narrative-to-Numbers synthesis and Pre-Mortem for AeroVolt Robotics:
 
 Synthesis Verdict:
 At $45.00, AeroVolt is pricing in the impossible management fantasy.
-Under disciplined economic constraints, fair value is $25.03.
+Under disciplined economic constraints, fair value is $25.05.
 The stock is an avoid or short candidate with severe structural downside.
 
 ## Practice questions

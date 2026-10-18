@@ -131,8 +131,8 @@ Below are signal z-scores and forward 1-day realized returns for Day 1:
 
 | Asset | Signal Score $s_i$ | Realized Return $R_{i, t+1}$ | Signal Rank | Return Rank |
 |:---|:---:|:---:|:---:|:---:|
-| A | $+1.40$ | $+2.1\%$ | 8 | 7 |
-| B | $+0.90$ | $+1.5\%$ | 7 | 8 |
+| A | $+1.40$ | $+2.1\%$ | 8 | 8 |
+| B | $+0.90$ | $+1.5\%$ | 7 | 7 |
 | C | $+0.50$ | $+0.4\%$ | 6 | 5 |
 | D | $+0.10$ | $+0.8\%$ | 5 | 6 |
 | E | $-0.20$ | $-0.3\%$ | 4 | 4 |
@@ -141,8 +141,8 @@ Below are signal z-scores and forward 1-day realized returns for Day 1:
 | H | $-1.20$ | $-1.2\%$ | 1 | 2 |
 
 Calculating metrics for Day 1:
-- Pearson correlation $\text{IC}_1 = 0.942$.
-- Spearman rank correlation $\text{Rank IC}_1 = 0.929$.
+- Pearson correlation $\text{IC}_1 = 0.957$.
+- Spearman rank correlation $\text{Rank IC}_1 = 0.952$.
 
 Suppose across a 252-day testing sample:
 - $\text{Mean}(\text{Rank IC}) = 0.045$.

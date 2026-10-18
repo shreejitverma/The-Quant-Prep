@@ -135,32 +135,41 @@ Corporate quarterly earnings announcements introduce discrete event jump risk in
 
 ### Example 1: Gamma Scalping PnL Attribution Under Realized Volatility Outperformance
 
-A quantitative options trader purchases an ATM straddle on an index:
+A quantitative options trader purchases $1,000$ units of an ATM straddle on an index (for example $10$ contracts with a $100$ multiplier):
 - Spot Price: $S = \$5,000.00$.
 - Strike: $K = \$5,000.00$.
-- Maturity: $T = 30\text{ days} = 0.08219\text{ years}$.
-- Implied Volatility Paid: $\sigma_{\text{implied}} = 16.0\%$ ($0.16$).
-- Straddle Position Gamma: $\Gamma = 0.00280$ (combined call + put gamma).
-- Daily Straddle Theta: $\Theta = -\$1,100.00\text{ per day}$.
+- Maturity: $T = 30\text{ days} = 0.08219\text{ years}$ ($\sqrt{T} = 0.28669$).
+- Implied Volatility Paid: $\sigma_{\text{implied}} = 16.0\%$ ($0.16$); rates and dividends are set to zero.
 - Daily Holding Period: $\Delta t = 1\text{ day} = 1/365\text{ years}$.
 
+1. **Compute the Straddle Greeks**:
+   $$d_1 = 0.5 \sigma \sqrt{T} = 0.5 \times 0.16 \times 0.28669 = 0.02293, \quad \phi(d_1) = 0.39884$$
+   $$\Gamma_{\text{unit}} = \frac{2 \phi(d_1)}{S \sigma \sqrt{T}} = \frac{0.79768}{229.35} = 0.003478, \quad \Gamma_{\text{position}} = 1,000 \times 0.003478 = 3.478$$
+   With zero rates, theta is exactly the gamma rent at implied volatility:
+   $$\Theta_{\text{daily}} = -\frac{1}{2} \Gamma_{\text{position}} S^2 \sigma_{\text{implied}}^2 \Delta t = -0.5 \times 3.478 \times 5000^2 \times 0.0256 / 365 = -\$3,049.21$$
+   The entry delta of $1,000 \times (2 N(d_1) - 1) = 18.3$ is neutralized at entry, so later hedges only offset the gamma-driven delta $\Gamma_{\text{position}} \times (S - 5000)$.
+
 Over the subsequent 24-hour trading session, the market experiences high intraday volatility:
-- Intraday high: $\$5,080.00$, intraday low: $\$4,940.00$, close: $\$5,060.00$.
-- The trader executes two threshold delta hedges:
-  1. Hedges at $\$5,050.00$ by selling $140$ shares.
-  2. Hedges at $\$4,960.00$ by buying $250$ shares.
-  3. Rebalances at the close of $\$5,060.00$ by selling $110$ shares.
-- Total gross trading profit captured from underlying shares: $+\$2,450.00$.
+- The trader rebalances to delta-neutral at $\$5,050.00$, at $\$4,960.00$ and at the close of $\$5,060.00$.
+  1. At $\$5,050.00$ the straddle delta is $3.478 \times 50 = +173.9$, so the trader sells $174$ units.
+  2. At $\$4,960.00$ it is $3.478 \times (-40) = -139.1$ against a hedge of $-174$, so the trader buys $313$ units.
+  3. At the close of $\$5,060.00$ it is $3.478 \times 60 = +208.7$ against a hedge of $+139$, so the trader sells $348$ units, ending short $209$ units.
 - Transaction costs (fees and bid-ask slippage): $-\$120.00$.
 
-1. **Evaluate Net Daily Strategy PnL**:
-   $$\text{Net Gamma Gains} = +\$2,450.00 - \$120.00 = +\$2,330.00$$
-   $$\text{Theta Bleed Incurred} = -\$1,100.00$$
-   $$\text{Net Session PnL} = +\$2,330.00 - \$1,100.00 = +\$1,230.00$$
+2. **Evaluate the Hedge and Option Legs**:
+   $$\text{Hedge Cash} = 174 \times 5050 - 313 \times 4960 + 348 \times 5060 = 878,700 - 1,552,480 + 1,760,880 = +\$1,087,100$$
+   $$\text{Hedge PnL} = 1,087,100 - 209 \times 5060 = 1,087,100 - 1,057,540 = +\$29,560$$
+   $$\text{Option Convexity on the Net Move} = 0.5 \times 3.478 \times 60^2 = +\$6,260.40$$
+   $$\text{Gross Gamma Gains} = 29,560 + 6,260.40 = +\$35,820.40$$
+   This matches the leg-by-leg sum $0.5 \times 3.478 \times (50^2 + 90^2 + 100^2) = 0.5 \times 3.478 \times 20,600 = \$35,823.40$ to within the $\$3$ lost by rounding hedges to whole units.
 
-2. **Analyze Implied vs Realized Volatility**:
-   - The realized intraday path generated annualized volatility of approximately $24.0\%$.
-   - Because realized volatility ($24\%$) significantly exceeded implied volatility ($16\%$), gross gamma scalping profits exceeded daily theta decay, generating a clean positive return.
+3. **Evaluate Net Daily Strategy PnL**:
+   $$\text{Net Session PnL} = 35,820.40 - 120.00 - 3,049.21 = +\$32,651.19$$
+
+4. **Analyze Implied vs Realized Volatility**:
+   - The hedged path has $\sum (\Delta S)^2 = 20,600$, an annualized realized volatility of $\sqrt{20,600 \times 365} / 5000 = 54.8\%$.
+   - The breakeven daily move at $16\%$ implied is $S \sigma \sqrt{\Delta t} = 5000 \times 0.16 \times \sqrt{1/365} = 41.87$ points.
+   - Because realized volatility ($54.8\%$) far exceeded implied volatility ($16\%$), gamma scalping gains were more than ten times the theta paid.
 
 ### Example 2: Pricing and Weighting a Dispersion Trade
 

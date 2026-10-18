@@ -3,7 +3,7 @@ ticker: NVO
 tags: [investing, stocks, consistent-compounder]
 value_metrics:
   implied_growth_rate: n/a
-  implied_growth_status: non_positive_fcf
+  implied_growth_status: currency_mismatch
   implied_growth_basis: fcf_yield r=10% terminal=3% years=10 range=-50% to 100%
   last_deep_fetch: 2026-05-31
   currency: USD
@@ -16,20 +16,15 @@ value_metrics:
     gross_margin: 83.20%
     debt_to_equity: 0.72
   valuation:
-    fcf_yield: -5.96%
+    fcf_yield: currency_mismatch
     peg_ratio: 3.36
 status: stub
 priority: high
 last_updated: 2026-05-31 14:01:17
 market_data:
-  ticker: NVO
-  price: 45.58
-  market_cap: 201954295808
-  pe_ratio: 10.699531
-  dividend_yield: 3.95
-  52w_high: 81.44
-  52w_low: 35.12
-  data_quality: ok
+  ticker: NOVO-B.CO
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Novo Nordisk (NVO)

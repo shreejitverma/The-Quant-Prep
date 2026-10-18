@@ -32,7 +32,7 @@ No second-hand summaries or unverified pop-finance titles are included.
 
 - **Natenberg, Sheldon (2014)**. *Option Volatility and Pricing: Advanced Trading Strategies and Techniques* (2nd Edition). McGraw-Hill.
   - The standard floor-trader manual for Greeks dynamics, implied versus realized volatility, dynamic delta hedging, and multi-leg risk management.
-- **Sinclair, Euan (2010)**. *Volatility Trading*. John Wiley & Sons.
+- **Sinclair, Euan (2008)**. *Volatility Trading*. John Wiley & Sons.
   - Quantitative options trading from a professional market-maker's perspective: variance risk premia, volatility forecasting, delta-hedging transaction costs, and edge extraction.
 - **Gatheral, Jim (2006)**. *The Volatility Surface: A Practitioner's Guide*. John Wiley & Sons.
   - Advanced geometric and mathematical modeling of the implied volatility smile, local volatility (Dupire), stochastic volatility (Heston), and the asymptotic behavior of skew.
@@ -43,9 +43,9 @@ No second-hand summaries or unverified pop-finance titles are included.
 
 ## 3. Systematic Strategy Design, Factor Investing, and Overfitting Defense
 
-- **Lopéz de Prado, Marcos (2018)**. *Advances in Financial Machine Learning*. John Wiley & Sons.
+- **Lopez de Prado, Marcos (2018)**. *Advances in Financial Machine Learning*. John Wiley & Sons.
   - Groundbreaking techniques for quantitative financial engineering: Combinatorial Purged Cross-Validation (CPCV), financial fractional differentiation, triple-barrier labeling, and feature importance.
-- **Lopéz de Prado, Marcos (2020)**. *Machine Learning for Asset Managers*. Cambridge University Press.
+- **Lopez de Prado, Marcos (2020)**. *Machine Learning for Asset Managers*. Cambridge University Press.
   - Mathematical defense against backtest overfitting: Deflated Sharpe Ratio (DSR), Probability of Backtest Overfitting (PBO), and Hierarchical Risk Parity (HRP).
 - **Carver, Robert (2015)**. *Systematic Trading: A unique new method for designing trading and investing systems*. Harriman House.
   - Practical framework for trend-following, forecast scaling, instrument weighting, cash volatility targeting, and institutional position inertia.

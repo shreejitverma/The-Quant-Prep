@@ -22,8 +22,9 @@ status: stub
 priority: high
 last_updated: 2026-05-31 14:01:19
 market_data:
-  ticker: HINDUNILVR
-  data_quality: ok
+  ticker: HINDUNILVR.NS
+  data_quality: missing
+  missing: price market_cap
 ---
 
 # Stock: Hindustan Unilever (HINDUNILVR)

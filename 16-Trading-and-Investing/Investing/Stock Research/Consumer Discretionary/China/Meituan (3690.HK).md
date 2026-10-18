@@ -16,7 +16,7 @@ value_metrics:
     gross_margin: 30.43%
     debt_to_equity: 0.57
   valuation:
-    fcf_yield: -3.68%
+    fcf_yield: currency_mismatch
     peg_ratio: 16.84
 status: stub
 priority: high

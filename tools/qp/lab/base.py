@@ -32,6 +32,8 @@ class Param:
                 raise ValueError(f"Param '{self.name}' must be >= {self.min_val}, got {val}")
             if self.max_val is not None and val > self.max_val:
                 raise ValueError(f"Param '{self.name}' must be <= {self.max_val}, got {val}")
+            if self.choices and val not in self.choices:
+                raise ValueError(f"Param '{self.name}' must be one of {self.choices}, got {val}")
             return val
         if self.param_type == "float":
             val = float(raw_val)
@@ -111,6 +113,9 @@ class TradingLabEngine(ABC):
         """Dictionary of configurable parameters."""
 
     def validate_params(self, raw_kwargs: dict[str, Any]) -> dict[str, Any]:
+        unknown = sorted(set(raw_kwargs) - set(self.params))
+        if unknown:
+            raise ValueError(f"Unknown param(s) for {self.engine_id}: {', '.join(unknown)}; expected one of {sorted(self.params)}")
         out = {}
         for p_name, param in self.params.items():
             if p_name in raw_kwargs:

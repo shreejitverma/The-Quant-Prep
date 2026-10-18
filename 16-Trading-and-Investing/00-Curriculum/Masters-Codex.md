@@ -112,7 +112,7 @@ Rather than treating their biographies as lore, this codex extracts the operatio
 - **Lineage**: Concentrated Macro Aggression and Liquidity Analysis.
 - **Core Principles**:
   - **Liquidity Over Earnings**: Central bank liquidity and monetary flows drive market direction, not corporate earnings forecasts.
-  - **Concentrated Conviction**: When a high-conviction macro setup presents itself, size it aggressively: "It's not whether you're right or wrong, but how much money you make when you're right and how much you lose when you're wrong."
+  - **Concentrated Conviction**: When a high-conviction macro setup presents itself, size it aggressively, the lesson Druckenmiller credits to George Soros: "It's not whether you're right or wrong that's important, but how much money you make when you're right and how much you lose when you're wrong."
   - **Agile Mindset**: The willingness to reverse a multi-billion dollar position overnight when macroeconomic evidence disproves the thesis.
 - **Concrete Execution Rules**:
   - If a trade is working and the macro thesis strengthens, add aggressively to the winning position; never average down on a loser.

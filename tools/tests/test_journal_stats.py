@@ -67,7 +67,7 @@ class TestJournalStats(unittest.TestCase):
             ),
         ]
 
-        analysis = analyze_trade_journal(trades, initial_capital=10000.0)
+        analysis = analyze_trade_journal(trades)
 
         # 2 wins, 1 loss -> Win Rate = 66.67%
         self.assertAlmostEqual(analysis["win_rate_pct"], 66.67, places=1)
@@ -112,7 +112,7 @@ class TestJournalStats(unittest.TestCase):
         cg = analysis["capital_gate"]
         self.assertEqual(cg["req_100_sample"], "PASS")
         self.assertEqual(cg["req_profit_factor_1_5"], "PASS")
-        self.assertEqual(cg["req_drawdown_under_10"], "PASS")
+        self.assertEqual(cg["req_drawdown_under_10r"], "PASS")
         self.assertEqual(cg["req_adherence_95"], "PASS")
         self.assertEqual(cg["req_mae_mfe_calibrated"], "PASS")
         self.assertEqual(cg["overall_status"], "CAPITAL_GATE_PASSED")

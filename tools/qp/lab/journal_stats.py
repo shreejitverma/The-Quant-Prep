@@ -124,14 +124,6 @@ def generate_synthetic_trade_log(
     return trades
 
 
-def _stored_bool(val: Any) -> bool:
-    if isinstance(val, bool):
-        return val
-    if isinstance(val, str) and val.strip().lower() in ("true", "false"):
-        return val.strip().lower() == "true"
-    raise ValueError(f"expected a boolean, got {val!r}")
-
-
 def _profit_factor(gross_gain: float, gross_loss: float) -> float:
     """Gross gain over gross loss; 0 with no gains, and a 999 cap for a journal with gains and no losses."""
     if gross_gain <= 0:
@@ -154,19 +146,21 @@ def _coerce_trade_record(item: TradeRecord | dict[str, Any]) -> TradeRecord:
         pnl=float(item["pnl"]),
         mae_r=float(item["mae_r"]),
         mfe_r=float(item["mfe_r"]),
-        adherence=_stored_bool(item["adherence"]),
-        is_revenge=_stored_bool(item.get("is_revenge", False)),
-        moved_stop=_stored_bool(item.get("moved_stop", False)),
+        adherence=bool(item["adherence"]),
+        is_revenge=bool(item.get("is_revenge", False)),
+        moved_stop=bool(item.get("moved_stop", False)),
         duration_minutes=int(item.get("duration_minutes", 0)),
     )
 
 
-def analyze_trade_journal(trades: list[TradeRecord | dict[str, Any]], initial_capital: float = 50000.0) -> dict[str, Any]:
-    """Calculate comprehensive expectancy, MAE/MFE statistics, tilt metrics, and Capital Gate status."""
+def analyze_trade_journal(trades: list[TradeRecord | dict[str, Any]]) -> dict[str, Any]:
+    """Calculate comprehensive expectancy, MAE/MFE statistics, tilt metrics, and Capital Gate status.
+
+    Drawdown is measured in R so the Capital Gate does not depend on an assumed account size.
+    An empty journal returns the zero state with a NO_TRADES_LOGGED gate verdict.
+    """
     trades = [_coerce_trade_record(t) for t in trades]
     total_trades = len(trades)
-    if total_trades == 0:
-        return {}
 
     wins = [t for t in trades if t.r_multiple > 0.0]
     losses = [t for t in trades if t.r_multiple < 0.0]
@@ -188,31 +182,25 @@ def analyze_trade_journal(trades: list[TradeRecord | dict[str, Any]], initial_ca
 
     # Expectancy is the mean R per trade, so breakevens count as 0R rather than as losses.
     total_r = sum(t.r_multiple for t in trades)
-    expectancy_r = total_r / total_trades
+    expectancy_r = total_r / total_trades if total_trades > 0 else 0.0
 
-    # Equity curve and maximum drawdown calculation
-    equity = initial_capital
-    peak = equity
+    # Peak-to-trough drawdown of cumulative P&L and of cumulative R
+    cum_pnl = 0.0
+    peak_pnl = 0.0
     max_dd_dollars = 0.0
-    max_dd_pct = 0.0
-    equity_curve = [equity]
 
     cum_r = 0.0
     peak_r = 0.0
     max_dd_r = 0.0
 
     for t in trades:
-        equity += t.pnl
+        cum_pnl += t.pnl
         cum_r += t.r_multiple
-        equity_curve.append(equity)
 
-        if equity > peak:
-            peak = equity
-        dd_dollars = peak - equity
-        dd_pct = (dd_dollars / peak) * 100.0 if peak > 0 else 0.0
-        if dd_pct > max_dd_pct:
-            max_dd_pct = dd_pct
-            max_dd_dollars = dd_dollars
+        if cum_pnl > peak_pnl:
+            peak_pnl = cum_pnl
+        if peak_pnl - cum_pnl > max_dd_dollars:
+            max_dd_dollars = peak_pnl - cum_pnl
 
         if cum_r > peak_r:
             peak_r = cum_r
@@ -249,18 +237,23 @@ def analyze_trade_journal(trades: list[TradeRecord | dict[str, Any]], initial_ca
 
     # Discipline and Tilt Metrics
     adherent_trades = sum(1 for t in trades if t.adherence)
-    adherence_score = (adherent_trades / total_trades) * 100.0
+    adherence_score = (adherent_trades / total_trades) * 100.0 if total_trades > 0 else 0.0
     revenge_trades = sum(1 for t in trades if t.is_revenge)
     moved_stops = sum(1 for t in trades if t.moved_stop)
 
-    # Capital Gate 5-Point Audit
+    # Capital Gate 5-Point Audit; 10R is a 10% drawdown at the standard 1% risk per trade
+    logged = total_trades > 0
     gate_req_sample = total_trades >= 100
-    gate_req_pf = profit_factor >= 1.50
-    gate_req_dd = max_dd_pct <= 10.0
-    gate_req_adherence = adherence_score >= 95.0 and revenge_trades == 0 and moved_stops == 0
+    gate_req_pf = logged and profit_factor >= 1.50
+    gate_req_dd = logged and max_dd_r <= 10.0
+    gate_req_adherence = logged and adherence_score >= 95.0 and revenge_trades == 0 and moved_stops == 0
     gate_req_mae_mfe = win_mae_under_50 >= 0.70  # At least 70% of winners had tight MAE <= 0.5R
 
     capital_gate_passed = gate_req_sample and gate_req_pf and gate_req_dd and gate_req_adherence and gate_req_mae_mfe
+    if not logged:
+        gate_status = "NO_TRADES_LOGGED"
+    else:
+        gate_status = "CAPITAL_GATE_PASSED" if capital_gate_passed else "CAPITAL_GATE_FAILED"
 
     return {
         "total_trades": total_trades,
@@ -273,7 +266,6 @@ def analyze_trade_journal(trades: list[TradeRecord | dict[str, Any]], initial_ca
         "expectancy_r": round(expectancy_r, 3),
         "total_r_accumulated": round(total_r, 2),
         "net_pnl_dollars": round(net_pnl, 2),
-        "max_drawdown_pct": round(max_dd_pct, 2),
         "max_drawdown_dollars": round(max_dd_dollars, 2),
         "max_drawdown_r": round(max_dd_r, 2),
         "adherence_score_pct": round(adherence_score, 2),
@@ -284,10 +276,10 @@ def analyze_trade_journal(trades: list[TradeRecord | dict[str, Any]], initial_ca
         "round_tripped_loss_count": round_tripped_count,
         "setup_attribution": setup_stats,
         "capital_gate": {
-            "overall_status": "CAPITAL_GATE_PASSED" if capital_gate_passed else "CAPITAL_GATE_FAILED",
+            "overall_status": gate_status,
             "req_100_sample": "PASS" if gate_req_sample else "FAIL",
             "req_profit_factor_1_5": "PASS" if gate_req_pf else "FAIL",
-            "req_drawdown_under_10": "PASS" if gate_req_dd else "FAIL",
+            "req_drawdown_under_10r": "PASS" if gate_req_dd else "FAIL",
             "req_adherence_95": "PASS" if gate_req_adherence else "FAIL",
             "req_mae_mfe_calibrated": "PASS" if gate_req_mae_mfe else "FAIL",
         },
@@ -355,14 +347,6 @@ class JournalStatsEngine(TradingLabEngine):
                 default=False,
                 description="Simulate revenge trading and moved stops after consecutive loss streaks",
             ),
-            "initial_capital": Param(
-                name="initial_capital",
-                param_type="float",
-                default=50000.0,
-                description="Initial starting account equity ($)",
-                min_val=1000.0,
-                max_val=10000000.0,
-            ),
             "seed": Param(
                 name="seed",
                 param_type="int",
@@ -378,7 +362,6 @@ class JournalStatsEngine(TradingLabEngine):
         rr: float = p["risk_reward_ratio"]
         adh: float = p["adherence_rate"]
         tilt: bool = p["simulate_tilt"]
-        capital: float = p["initial_capital"]
         seed: int = p["seed"]
 
         trade_log = generate_synthetic_trade_log(
@@ -390,7 +373,7 @@ class JournalStatsEngine(TradingLabEngine):
             seed=seed,
         )
 
-        analysis = analyze_trade_journal(trade_log, initial_capital=capital)
+        analysis = analyze_trade_journal(trade_log)
         cg = analysis["capital_gate"]
 
         metrics: dict[str, float | int | str] = {
@@ -401,7 +384,7 @@ class JournalStatsEngine(TradingLabEngine):
             "expectancy_r": analysis["expectancy_r"],
             "total_r_accumulated": analysis["total_r_accumulated"],
             "net_pnl_dollars": analysis["net_pnl_dollars"],
-            "max_drawdown_pct": analysis["max_drawdown_pct"],
+            "max_drawdown_r": analysis["max_drawdown_r"],
             "adherence_score_pct": analysis["adherence_score_pct"],
             "revenge_trades": analysis["revenge_trade_count"],
             "moved_stops": analysis["moved_stop_count"],
@@ -410,7 +393,7 @@ class JournalStatsEngine(TradingLabEngine):
             "capital_gate_verdict": cg["overall_status"],
             "gate_sample_100": cg["req_100_sample"],
             "gate_profit_factor_1_5": cg["req_profit_factor_1_5"],
-            "gate_drawdown_under_10": cg["req_drawdown_under_10"],
+            "gate_drawdown_under_10r": cg["req_drawdown_under_10r"],
             "gate_adherence_95": cg["req_adherence_95"],
             "gate_mae_mfe": cg["req_mae_mfe_calibrated"],
         }
@@ -419,9 +402,9 @@ class JournalStatsEngine(TradingLabEngine):
             f"Trade Journal Analysis for {trades_count} trades: Win Rate={analysis['win_rate_pct']:.1f}%, "
             f"Profit Factor={analysis['profit_factor']:.2f}, Expectancy={analysis['expectancy_r']:.2f}R/trade, "
             f"Net PnL=${analysis['net_pnl_dollars']:,.2f} ({analysis['total_r_accumulated']:+.1f}R). "
-            f"Max Drawdown={analysis['max_drawdown_pct']:.1f}%, Adherence={analysis['adherence_score_pct']:.1f}%. "
+            f"Max Drawdown={analysis['max_drawdown_r']:.1f}R, Adherence={analysis['adherence_score_pct']:.1f}%. "
             f"Capital Gate Status: {cg['overall_status']} (PF: {cg['req_profit_factor_1_5']}, "
-            f"DD: {cg['req_drawdown_under_10']}, Rules: {cg['req_adherence_95']})."
+            f"DD: {cg['req_drawdown_under_10r']}, Rules: {cg['req_adherence_95']})."
         )
 
         # Pack top trades and setup attribution into data payload

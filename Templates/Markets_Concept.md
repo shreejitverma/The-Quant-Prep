@@ -71,10 +71,10 @@ def calculate_metric(price: float, volume: float) -> float:
 
 ## Interview Questions and Drills
 
-> [!question] mkt-concept-id-01 | Core conceptual interview question?
+> [!question]- mkt-concept-id-01 | Core conceptual interview question?
 > Detailed answer explaining the mechanism, institutional implications, and edge cases.
 
-> [!question] mkt-concept-id-02 | Quantitative derivation or calculation drill?
+> [!question]- mkt-concept-id-02 | Quantitative derivation or calculation drill?
 > Step-by-step mathematical derivation showing how the formula resolves.
 
 ---

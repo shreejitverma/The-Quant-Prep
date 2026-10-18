@@ -76,7 +76,8 @@ Current Stock Price + WACC + Balance Sheet ----> Root Finder ----> Output: Marke
 
 In a traditional DCF, an analyst who loves a stock subconsciously increases growth from 12% to 16% to force the model to spit out a higher target price.
 A Reverse DCF eliminates this cognitive trap.
-It presents an objective mirror: *"At $150 per share, the market requires this company to grow revenue at 24.5% annually for 10 years and expand margins from 15% to 28%. Is that realistic?"*
+It presents an objective mirror, for example: *"At $150 per share, the market requires this company to grow revenue at 24.5% annually for 10 years and expand margins from 15% to 28%."*
+The analyst's only job is then to ask: *"Is that realistic?"*
 
 ### 3. Mathematical Mechanics of the Reverse DCF
 
@@ -160,27 +161,28 @@ Let us test trial values of constant annual revenue growth ($g$):
 
 - **Trial 1 ($g = 10.0\%$)**:
   - Year 7 Revenue: $800 \times (1.10)^7 = \$1,559.0\text{M}$
-  - PV of 7-Year Explicit FCFF: $776.4M
-  - Terminal Value at Year 7: $\frac{1,559.0 \times 1.025 \times 0.159375}{0.09 - 0.025} = \frac{254.71}{0.065} = \$3,918.6\text{M}$
-  - PV of Terminal Value ($1 / 1.09^7 = 0.5470$): $\$2,143.5\text{M}$
-  - Total Enterprise Value: $776.4 + 2,143.5 = \$2,919.9\text{M}$ (Much too low; market is $\$6,200M$).
+  - PV of 7-Year Explicit FCFF: $925.9M
+  - Terminal Value at Year 7: $\frac{1,559.0 \times 1.025 \times 0.159375}{0.09 - 0.025} = \frac{254.67}{0.065} = \$3,918.0\text{M}$
+  - PV of Terminal Value ($1 / 1.09^7 = 0.54703$): $3,918.0 \times 0.54703 = \$2,143.3\text{M}$
+  - Total Enterprise Value: $925.9 + 2,143.3 = \$3,069.2\text{M}$ (Much too low; market is $\$6,200M$).
 
 - **Trial 2 ($g = 25.0\%$)**:
   - Year 7 Revenue: $800 \times (1.25)^7 = \$3,814.7\text{M}$
-  - PV of 7-Year Explicit FCFF: $1,349.5M
-  - Terminal Value at Year 7: $\frac{3,814.7 \times 1.025 \times 0.159375}{0.065} = \frac{623.16}{0.065} = \$9,587.1\text{M}$
-  - PV of Terminal Value: $9,587.1 \times 0.5470 = \$5,244.1\text{M}$
-  - Total Enterprise Value: $1,349.5 + 5,244.1 = \$6,593.6\text{M}$ (Slightly too high).
+  - PV of 7-Year Explicit FCFF: $1,602.2M
+  - Terminal Value at Year 7: $\frac{3,814.7 \times 1.025 \times 0.159375}{0.065} = \frac{623.17}{0.065} = \$9,587.2\text{M}$
+  - PV of Terminal Value: $9,587.2 \times 0.54703 = \$5,244.5\text{M}$
+  - Total Enterprise Value: $1,602.2 + 5,244.5 = \$6,846.7\text{M}$ (Too high).
 
-- **Exact Solution via Interpolation**:
-  $$g_{\text{implied}}^* = 23.4\% \text{ per annum for 7 consecutive years}$$
+- **Exact Solution via Bisection** (linear interpolation between the two trials gives only a first guess of 22.43%, because EV is convex in $g$):
+  $$g_{\text{implied}}^* = 23.08\% \text{ per annum for 7 consecutive years}$$
 
 ### Step 3: The Sanity Test & Variant Perception
-The current $120 stock price demands that CyberShield grow revenue at **23.4% annually** for the next 7 years, expanding sales from $800M to $3,485M, while maintaining a 25% operating margin.
+The current $120 stock price demands that CyberShield grow revenue at **23.08% annually** for the next 7 years, expanding sales from $800M to $3,422.9M, while maintaining a 25% operating margin.
 - Industry cybersecurity market growth: 12.0% annually.
-- To grow at 23.4%, CyberShield must outgrow the market by nearly 2x every year, taking market share from Microsoft, Palo Alto Networks, and CrowdStrike.
-- If proprietary checks show that customer acquisition costs are rising and competition is intensifying, revenue will likely grow at 15%, not 23.4%.
-- At 15% growth, the fair value is $41.50 per share.
+- To grow at 23.08%, CyberShield must outgrow the market by nearly 2x every year, taking market share from Microsoft, Palo Alto Networks, and CrowdStrike.
+- If proprietary checks show that customer acquisition costs are rising and competition is intensifying, revenue will likely grow at 15%, not 23.08%.
+- At 15% growth, enterprise value is $1,112.2M (explicit FCFF) + $2,925.6M (PV of terminal value) = $4,037.8M.
+- Equity value is $4,037.8M - $400.0M debt + $200.0M cash = $3,837.8M, or $76.76 per share on 50.0M shares, 36.0% below the $120 price.
 - Conclusion: CyberShield is priced for perfection with massive downside asymmetry.
 
 ## Practice questions
