@@ -70,7 +70,7 @@ Notes marked `seed` are the writing backlog: objectives and references exist, fu
 | LSTM baseline | [10-Machine-Learning-for-Finance/code](10-Machine-Learning-for-Finance/code/) |
 | Basel credit SA and IRB, SA-CCR, FRTB sensitivities-based method, DRC and RRAO, FRTB IMA (ES, NMRF, backtesting, PLA), liquidity and IRRBB | [17-Regulatory-Capital-Basel-and-FRTB/code](17-Regulatory-Capital-Basel-and-FRTB/code/) |
 | Reference pricing and risk engine | [18-Pricing-and-Risk-Systems/code](18-Pricing-and-Risk-Systems/code/) |
-| 11 interactive simulation and analytics engines: limit order book matching, Avellaneda-Stoikov quoting, options volatility desk, futures term structure, multi-asset risk parity, Kelly sizing, event study, chart replay, overfitting trap, interview games | [tools/qp/lab](tools/qp/lab/) |
+| 11 interactive simulation and analytics engines: limit order book matching, Avellaneda-Stoikov quoting, options volatility desk, futures term structure, multi-asset risk parity, Kelly sizing, event study, chart replay, overfitting trap, interview games, trade journal analytics | [tools/qp/lab](tools/qp/lab/) |
 
 Every example must run cleanly in CI; examples that assert their numbers also fail CI when a quoted number drifts.
 Run them all with `python tools/run_examples.py` (needs numpy, pandas and matplotlib; `--list` shows them), or one at a time with `python <file>.py`.
