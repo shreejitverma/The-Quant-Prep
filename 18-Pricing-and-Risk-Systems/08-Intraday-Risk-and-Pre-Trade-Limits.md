@@ -18,7 +18,7 @@ sources: [US Securities and Exchange Commission - 17 CFR Part 240 Risk Managemen
 - In high-frequency flow environments (Equities, FX, Listed Futures), risk evaluations execute in under 25 microseconds using kernel-bypass networking (Solarflare Onload, DPDK) and lock-free ring buffers (LMAX Disruptor).
 - For complex OTC derivatives, proxy engines evaluate incremental credit and market risk in under 15 milliseconds.
 - Automated kill switches provide programmatic circuit breakers when market volatility or algorithmic anomalies trigger loss velocity limits.
-- All numerical figures in this note are verified by [sys_intraday_limits.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_intraday_limits.py).
+- All numerical figures in this note are verified by [sys_intraday_limits.py](code/sys_intraday_limits.py).
 
 ## Learning objectives
 

@@ -17,7 +17,7 @@ Every tier-1 investment bank faces the strategic **Buy vs. Build** dilemma.
 Commodity workflows (post-trade clearing, SWIFT settlement, standard regulatory returns) favor battle-tested vendor solutions that outsource regulatory maintenance.
 Conversely, proprietary alpha generation, complex structured derivatives, dynamic real-time risk, and cross-asset XVA macro hedging demand in-house platforms to achieve microsecond execution edges and tailored financial engineering.
 Modern hybrid architectures combine open-source quantitative cores (QuantLib/ORE) with proprietary cloud-native dependency graphs to maximize agility while controlling total cost of ownership.
-All numerical models in this note are verified by [sys_industry_landscape.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_industry_landscape.py).
+All numerical models in this note are verified by [sys_industry_landscape.py](code/sys_industry_landscape.py).
 
 ## Learning objectives
 

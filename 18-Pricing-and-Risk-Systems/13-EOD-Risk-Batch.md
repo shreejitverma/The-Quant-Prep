@@ -17,7 +17,7 @@ sources: [Christian Voigt - Batch Processing and High-Performance Compute in Fin
 - Execution timelines strictly follow regional market closes across a follow-the-sun architecture: Asia close by 18:00 JST, EMEA close by 20:00 GMT, and Americas close by 21:00 EST, culminating in global consolidated capital sign-off by 03:00 EST.
 - Critical Path Method (CPM) forward and backward passes identify zero-float tasks ($Float = 0$), directing compute infrastructure investments to tasks that directly dictate end-to-end batch duration.
 - Operational resiliency requires task-level idempotency, atomic partition swapping, automated checkpointing, and dynamic sub-DAG invalidation to backfill late-booked trades without restarting the entire multi-hour batch.
-- All numerical figures in this note are verified by [sys_eod_batch.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_eod_batch.py).
+- All numerical figures in this note are verified by [sys_eod_batch.py](code/sys_eod_batch.py).
 
 ## Learning objectives
 

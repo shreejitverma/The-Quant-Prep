@@ -17,7 +17,7 @@ sources: [Andrew Green - XVA: Credit Funding and Capital Valuation Adjustments (
 - The simulation architecture combines multi-asset Monte Carlo path generation with forward portfolio revaluations using analytical formulas and American Monte Carlo (AMC / Longstaff-Schwartz) cross-sectional regressions.
 - Streaming aggregation reduces raw Monte Carlo trade valuation grids from hundreds of gigabytes down to compact megabyte-scale Expected Exposure vectors in resident memory.
 - Centralized XVA desks actively manage macro hedges (CDS indices, interest rate swaps, cross-currency basis) using Adjoint Algorithmic Differentiation (AAD) to extract thousands of cross-asset Greeks in a single reverse sweep.
-- All numerical figures in this note are verified by [sys_xva_engine.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_xva_engine.py).
+- All numerical figures in this note are verified by [sys_xva_engine.py](code/sys_xva_engine.py).
 
 ## Learning objectives
 

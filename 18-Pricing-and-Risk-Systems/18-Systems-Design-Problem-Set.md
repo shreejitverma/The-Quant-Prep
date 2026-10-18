@@ -19,7 +19,7 @@ It presents five end-to-end quantitative systems design case studies:
 3. **Design a Resilient End-of-Day Risk Batch Orchestrator** (evaluating Critical Path Method schedules, task floats, and dynamic sub-DAG recovery for late trade bookings).
 4. **Design a Reactive Multi-Curve and Volatility Surface Engine** (comparing reader contention between shared mutexes and lock-free atomic pointer exchanges).
 5. **Model Electronic Trading Gateway Queueing Latencies under Non-Linear Load Spikes** ($M/M/1$ queueing models analyzing average and $p99$ tail latencies under $70\%$ versus $95\%$ utilization).
-All numerical models in this note are verified by [sys_problem_set.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_problem_set.py).
+All numerical models in this note are verified by [sys_problem_set.py](code/sys_problem_set.py).
 
 ## Learning objectives
 

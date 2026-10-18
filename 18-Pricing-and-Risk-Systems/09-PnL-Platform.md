@@ -17,7 +17,7 @@ sources: [Basel Committee on Banking Supervision - The Basel Framework MAR32 Int
 - The P&L Explain engine attributes daily mark-to-market changes to mathematical risk factors via multi-variable Taylor series expansions across Delta ($\Delta$), Gamma ($\Gamma$), Vega ($\mathcal{V}$), Theta ($\Theta$), Rho ($\rho$), and higher-order cross-Greeks (Vanna, Volga).
 - Under the FRTB P&L Attribution (PLA) framework (BCBS MAR32), trading desks must pass strict Spearman correlation and Kolmogorov-Smirnov distribution tests between HPL and RTPL to retain Internal Models Approach (IMA) eligibility.
 - Day 1 P&L accounting rules under IFRS 13 and ASC 820 prohibit immediate recognition of upfront inception profit for Level 3 unobservable derivatives, requiring deferral into unearned revenue reserves.
-- All numerical figures in this note are verified by [sys_pnl_platform.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_pnl_platform.py).
+- All numerical figures in this note are verified by [sys_pnl_platform.py](code/sys_pnl_platform.py).
 
 ## Learning objectives
 

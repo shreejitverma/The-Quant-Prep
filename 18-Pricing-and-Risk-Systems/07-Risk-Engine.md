@@ -18,7 +18,7 @@ sources: [Jon Gregory - The xVA Challenge: Counterparty Credit Risk Funding Coll
 - Under Basel III and FRTB (BCBS d457), 97.5% Expected Shortfall replaces 99% VaR, producing equivalent capital under Gaussian returns while capturing fat-tailed leptokurtic shocks.
 - Results are materialized into multi-dimensional in-memory OLAP risk cubes that allow instant roll-ups across Legal Entity, Division, Desk, Portfolio, Counterparty, and Tenor dimensions.
 - Euler's allocation theorem uniquely decomposes total portfolio risk into additive component risks, enabling what-if pre-trade incremental risk evaluations.
-- All numerical figures in this note are verified by [sys_risk_engine.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_risk_engine.py).
+- All numerical figures in this note are verified by [sys_risk_engine.py](code/sys_risk_engine.py).
 
 ## Learning objectives
 

@@ -17,7 +17,7 @@ sources: [Basel Committee on Banking Supervision - The Basel Framework MAR20 to 
 - Desk eligibility is governed by quarterly control gates: the Risk Factor Eligibility Test (RFET under MAR31) classifies risk factors as modellable or non-modellable (NMRFs), while P&L Attribution (PLA) Spearman and Kolmogorov-Smirnov statistical tests decide whether a desk retains internal model approval.
 - Bank-level capital aggregation enforces the floor mechanism: $ACR_{\text{total}} = \min(IMA_{G,A} + \text{surcharge} + C_U, SA_{\text{all}}) + \max(0, IMA_{G,A} - SA_{G,A})$ (MAR33.43), requiring daily SA computation for every desk even when internal models are fully approved.
 - The dominant engineering bottlenecks are data lineage (reconciling front-office HPL and risk-theoretical RTPL pipelines) and distributed compute scale (executing nearly a billion scenario revaluations during a tight overnight batch window).
-- All numerical figures in this note are verified by [sys_frtb_engine.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_frtb_engine.py).
+- All numerical figures in this note are verified by [sys_frtb_engine.py](code/sys_frtb_engine.py).
 
 ## Learning objectives
 

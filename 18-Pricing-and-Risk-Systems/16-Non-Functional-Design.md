@@ -16,7 +16,7 @@ sources: [Martin Kleppmann - Designing Data-Intensive Applications: The Big Idea
 - Non-functional pillars for mission-critical trading include: **Bit-Exact Determinism** (guaranteeing that identical portfolio runs produce identical binary outputs regardless of thread scheduling or compiler optimizations); **Bitemporality** (reconstructing historical book states as valid on any date); **Security and Information Barriers** (enforcing Chinese Walls separating public trading desks from private investment banking data); **Disaster Recovery (DR)** (enforcing Recovery Point Objective $\text{RPO} = 0$ for trade capture and Recovery Time Objective $\text{RTO} < 5\text{ minutes}$ across geographic data centers); and **Cloud FinOps** (optimizing unit economics per scenario evaluation via dynamic spot instance scheduling).
 - In multi-threaded numerical computing, non-associative floating-point addition causes phantom P&L discrepancies; deterministic reduction trees and Kahan compensated summation recover lost precision.
 - Synchronous transactional replication across dark-fiber links (such as New York Equinix NY4 to Chicago Equinix CH1) requires pipelined concurrent WAL streams to sustain thousands of transactions per second against speed-of-light propagation delays.
-- All numerical figures in this note are verified by [sys_non_functional.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_non_functional.py).
+- All numerical figures in this note are verified by [sys_non_functional.py](code/sys_non_functional.py).
 
 ## Learning objectives
 

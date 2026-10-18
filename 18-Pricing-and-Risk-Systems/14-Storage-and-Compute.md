@@ -17,7 +17,7 @@ sources: [Martin Kleppmann - Designing Data-Intensive Applications: The Big Idea
 - In high-speed time-series systems, Gorilla floating-point XOR encoding and double-delta timestamp compression reduce raw telemetry footprints by over $78\%$, enabling multi-million-tick streaming in memory.
 - Columnar storage formats drastically outperform row-oriented relational tables for risk analytics by pruning unrequested columns from disk reads and vectorizing aggregations via CPU SIMD instructions.
 - Apache Arrow standardized shared-memory buffers (`/dev/shm`) eliminate serialization overhead between high-performance C++ pricing grids and analytical Python/Pandas environments.
-- All numerical figures in this note are verified by [sys_storage_compute.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_storage_compute.py).
+- All numerical figures in this note are verified by [sys_storage_compute.py](code/sys_storage_compute.py).
 
 ## Learning objectives
 

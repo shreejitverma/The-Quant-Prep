@@ -18,7 +18,7 @@ sources: [Basel Committee on Banking Supervision - Principles for effective risk
 - Ingestion pipelines transform raw transaction records into standardized regulatory taxonomies: European COREP/FINREP under the EBA Data Point Model (DPM / XBRL) and US Federal Reserve Form FR Y-9C, FFIEC 101, and FR 2052a liquidity filings.
 - Under BCBS 239 principles, every aggregated line item submitted in a regulatory filing must maintain automated, auditable, and deterministic data lineage tracing back to originating trade store records.
 - Pre-submission validation engines enforce multi-dimensional consistency checks, business logic rules, and automated reconciliation against the Finance General Ledger.
-- All numerical figures in this note are verified by [sys_regulatory_reporting.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_regulatory_reporting.py).
+- All numerical figures in this note are verified by [sys_regulatory_reporting.py](code/sys_regulatory_reporting.py).
 
 ## Learning objectives
 

@@ -17,7 +17,7 @@ sources: [Federal Reserve Board and Office of the Comptroller of the Currency - 
 - SR 11-7 mandates strict organizational, operational, and financial independence between model developers (Front Office Quants) and Model Validation (Independent Model Validation - IMV).
 - All quantitative models must reside in an enterprise Model Inventory classified into materiality tiers: Tier 1 (High Materiality), Tier 2 (Medium Materiality), and Tier 3 (Low Materiality).
 - Deploying a model to production requires passing multi-phase gates: conceptual soundness review, challenger model benchmarking, automated golden regression testing, and cryptographic approval tokens.
-- All numerical figures in this note are verified by [sys_model_governance.py](file:///Users/shreejitverma/.treehouse/The-Quant-Prep-106fe7/5/The-Quant-Prep/18-Pricing-and-Risk-Systems/code/sys_model_governance.py).
+- All numerical figures in this note are verified by [sys_model_governance.py](code/sys_model_governance.py).
 
 ## Learning objectives
 
