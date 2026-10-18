@@ -581,6 +581,26 @@ class Index(TempRepo):
         self.assertIn("[Middle](02-Middle.md)", text)
         self.assertEqual(moc.update_all(self.vault()), [])
 
+    def test_root_catalog_counts_sections_and_flags_staleness(self):
+        readme = self.root / "README.md"
+        readme.write_text(f"# Repo\n\nBefore.\n\n{moc.CATALOG_START}\nold\n{moc.CATALOG_END}\n\nAfter.\n", encoding="utf-8")
+        write_note(self.root, "01-Alpha/05-Done.md", "Done", card("a-four"), status="solid", track="quant-risk", hours=5)
+        self.assertIn(moc.ROOT, moc.update_all(self.vault(), apply=False))
+        moc.update_all(self.vault())
+        text = readme.read_text(encoding="utf-8")
+        # Five topics (four seeds plus one solid), 4 + 6 + 3 + 2 + 5 hours, four public cards; the firm folder has no topics.
+        self.assertIn("| [Alpha](01-Alpha/README.md) | 5 | 1 | 20 | 4 | TDQ |", text)
+        self.assertIn("| **Total** | **5** | **1** | **20** | **4** | |", text)
+        self.assertNotIn("Firms", text)
+        self.assertTrue(text.startswith("# Repo\n\nBefore.\n\n") and text.endswith("\n\nAfter.\n"))
+        self.assertEqual(moc.update_all(self.vault()), [])
+
+    def test_root_readme_without_catalog_markers_is_untouched(self):
+        readme = self.root / "README.md"
+        readme.write_text("# Repo\n", encoding="utf-8")
+        self.assertNotIn(moc.ROOT, moc.update_all(self.vault()))
+        self.assertEqual(readme.read_text(encoding="utf-8"), "# Repo\n")
+
     def test_risk_track_is_valid_and_abbreviated(self):
         write_note(self.root, "01-Alpha/05-Capital.md", "Capital", "", track="quant-dev, quant-risk")
         self.assertEqual([f for f in check.check_vault(self.vault()) if f.rule == "schema"], [])

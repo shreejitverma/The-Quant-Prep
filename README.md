@@ -1,96 +1,177 @@
 # The Quant Prep
 
-A complete, self-tracking preparation system for senior **quant trader**, **quant researcher** and **quant developer** interviews at proprietary trading firms, market makers, HFT firms and multi-manager hedge funds (Jane Street, Optiver, Citadel and Citadel Securities, Two Sigma, DRW, Squarepoint, Radix, Akuna, SIG, Millennium, Balyasny, HRT, Jump, IMC, Tower, Five Rings, D. E. Shaw and AQR), and for **quant risk and strats** roles at banks: desk quants, market risk and FRTB, counterparty risk and XVA, model validation and risk technology.
+[![CI](https://github.com/shreejitverma/The-Quant-Prep/actions/workflows/ci.yml/badge.svg)](https://github.com/shreejitverma/The-Quant-Prep/actions/workflows/ci.yml)
 
-It is three things over one set of Markdown notes:
+A complete, self-tracking preparation system for quantitative finance interviews and the job after them.
+It covers senior **quant trader**, **quant researcher** and **quant developer** roles at proprietary trading firms, market makers, HFT firms and multi-manager hedge funds, and **quant risk and strats** roles at banks: desk quants, market risk and FRTB, counterparty risk and XVA, model validation and risk technology.
 
-- **A syllabus**: more than 200 topics in 15 subjects, each with learning objectives, prerequisites, tier (core, advanced, senior), study hours, and spaced-repetition question cards; `./qp syllabus` and each section README give live counts.
-- **A progress platform**: the `qp` command line and a local web dashboard for readiness by track and by firm, a prerequisite-ordered weekly plan, daily card review, and timed drills (arithmetic sprint, 80-in-8 numerical test, market-making game).
-- **An Obsidian vault**: open the folder in Obsidian to read; question cards are collapsible callouts.
+One set of Markdown notes serves three surfaces:
 
-[Markets Mastery OS](16-Trading-and-Investing/MARKETS_HUB.md) (in [16-Trading-and-Investing](16-Trading-and-Investing/README.md)) adds the practice-first trading and investing curriculum, persona-based study planning, mastery scoring, and an interactive trading lab to the `qp` platform.
+- **A syllabus** of interview-depth topics, each with learning objectives, prerequisites, a tier, study hours, worked examples and spaced-repetition question cards.
+- **A progress platform**: the `qp` command line and a local web dashboard for readiness by track and by firm, a prerequisite-ordered weekly plan, daily card review, timed drills and an interactive trading lab.
+- **An Obsidian vault**: open the folder in Obsidian to read; question cards are collapsible callouts you can quiz yourself on.
 
-General software engineering (DSA, C++, system design, low-latency systems) lives in [SDE-Interview-Prep](https://github.com/shreejitverma/SDE-Interview-Prep) and is linked, not copied: see the [SDE Link Map](00-Start-Here/SDE-Link-Map.md).
+## Why trust it
+
+Interview prep material is usually written once and never checked.
+This repo treats every note like production code:
+
+- **Numbers are computed, not recalled.** In every section with a `code/` folder, the scripts print each number the notes quote and assert it at the quoted rounding; the other sections derive their numbers in the note itself.
+- **CI re-runs every script on every change.** If a quoted number drifts, the build fails.
+  C++ examples build warning-free on GCC and Clang and run under AddressSanitizer, UndefinedBehaviorSanitizer and, for concurrent code, ThreadSanitizer.
+- **Rules and papers are cited to the source.** Basel and FRTB parameters cite the Basel Framework paragraph (for example `MAR21.6`), market conventions cite the exchange or regulator, and papers cite authors, venue and year.
+- **Changes are reviewed before they merge.** Every pull request passes an automated review and test gate, and the sections rebuilt in October 2026 were re-derived and recomputed by an independent verifier who did not write them.
+
+The full standard is in [How Notes Are Verified](00-Start-Here/How-Notes-Are-Verified.md).
 
 ## Quick start
 
-Python 3.10+ and nothing else:
+Python 3.10 or later and nothing else; the platform uses only the standard library.
 
 ```sh
 git clone https://github.com/shreejitverma/The-Quant-Prep.git && cd The-Quant-Prep
-./qp profile --tracks quant-trader --hours 12   # your target role(s) and weekly hours
+./qp profile --tracks quant-trader --hours 12   # your target role(s) and weekly study hours
 ./qp                                            # readiness, today's reviews, what to study next
-./qp serve --open                               # dashboard at http://127.0.0.1:8765/
+./qp serve --open                               # the dashboard at http://127.0.0.1:8765/
 ```
 
-Then read [Start Here](00-Start-Here/README.md): [Tracks](00-Start-Here/Tracks.md), the [Roadmap](00-Start-Here/Roadmap.md) and [Using the Platform](00-Start-Here/Using-the-Platform.md).
-Progress is stored outside the repo (`~/.local/share/quant-prep/`, or `$QP_HOME`).
+Then read [Start Here](00-Start-Here/README.md).
+Your progress is stored outside the repo (`~/.local/share/quant-prep/`, or `$QP_HOME`), so `git pull` never touches it.
 
-## Syllabus
+## How it fits together
 
-| # | Subject | Focus |
+```mermaid
+flowchart LR
+    notes["Markdown notes<br/>frontmatter + question cards"] --> vault["qp vault loader<br/>tools/qp/vault.py"]
+    private["private/ overlay<br/>(gitignored)"] --> vault
+    vault --> cli["qp CLI<br/>plan, review, drills, check"]
+    vault --> server["qp serve<br/>local JSON API + web app"]
+    notes --> obsidian["Obsidian<br/>reading and self-quiz"]
+    cli <--> state["state.json<br/>$QP_HOME, outside the repo"]
+    server <--> state
+    code["NN-Section/code/<br/>runnable examples"] --> ci["CI<br/>run, assert, sanitize"]
+    notes -. "quoted numbers" .- code
+```
+
+## Syllabus at a glance
+
+The table below is generated from the notes by `./qp index`, and `./qp check` fails when it is stale, so the counts are always current.
+
+<!-- qp:catalog:start (generated by `./qp index`; edit notes, not this table) -->
+
+292 topics, 286 written to `solid` or better, about 1141.5 study hours and 5974 question cards.
+Tracks: T = trader, R = researcher, D = developer, Q = risk and strats.
+
+| Section | Topics | Written | Hours | Cards | Tracks |
+| :--- | ---: | ---: | ---: | ---: | :---: |
+| [Probability](01-Probability/README.md) | 15 | 15 | 65 | 264 | TRDQ |
+| [Statistics and Econometrics](02-Statistics-and-Econometrics/README.md) | 14 | 14 | 57 | 257 | TRDQ |
+| [Linear Algebra and Optimization](03-Linear-Algebra-and-Optimization/README.md) | 11 | 11 | 40 | 217 | TRDQ |
+| [Stochastic Calculus](04-Stochastic-Calculus/README.md) | 9 | 9 | 36 | 167 | TRDQ |
+| [Derivatives and Volatility](05-Derivatives-and-Volatility/README.md) | 16 | 16 | 66 | 275 | TRDQ |
+| [Fixed Income and Asset Classes](06-Fixed-Income-and-Asset-Classes/README.md) | 25 | 25 | 114 | 346 | TRDQ |
+| [Market Microstructure](07-Market-Microstructure/README.md) | 12 | 12 | 41 | 200 | TRD |
+| [Market Making](08-Market-Making/README.md) | 12 | 12 | 44 | 187 | TRD |
+| [Alpha Research and Portfolio Construction](09-Alpha-Research-and-Portfolio/README.md) | 15 | 15 | 57 | 253 | TRD |
+| [Machine Learning for Finance](10-Machine-Learning-for-Finance/README.md) | 11 | 11 | 38 | 209 | RD |
+| [Risk and Trading](11-Risk-and-Trading/README.md) | 17 | 11 | 70 | 245 | TRDQ |
+| [Quant Development](12-Quant-Development/README.md) | 15 | 15 | 86 | 347 | RD |
+| [Interview Playbook](13-Interview-Playbook/README.md) | 12 | 12 | 32 | 208 | TRDQ |
+| [Trading and Investing Library](16-Trading-and-Investing/README.md) | 69 | 69 | 223.5 | 2248 | TRDQ |
+| [Regulatory Capital, Basel, and FRTB](17-Regulatory-Capital-Basel-and-FRTB/README.md) | 21 | 21 | 99 | 320 | TDQ |
+| [Pricing and Risk Systems](18-Pricing-and-Risk-Systems/README.md) | 18 | 18 | 73 | 231 | DQ |
+| **Total** | **292** | **286** | **1141.5** | **5974** | |
+
+<!-- qp:catalog:end -->
+
+| # | Section | What it covers |
 | :--- | :--- | :--- |
 | 01 | [Probability](01-Probability/README.md) | Combinatorics to martingales; the most-tested subject in trader and researcher interviews. |
-| 02 | [Statistics and Econometrics](02-Statistics-and-Econometrics/README.md) | Estimation, testing, regression, time series, volatility models, Kalman filters. |
-| 03 | [Linear Algebra and Optimization](03-Linear-Algebra-and-Optimization/README.md) | Spectral methods, PCA, covariance, convex optimisation, numerics. |
-| 04 | [Stochastic Calculus](04-Stochastic-Calculus/README.md) | Brownian motion, Ito, SDEs, risk-neutral pricing, Black-Scholes. |
-| 05 | [Derivatives and Volatility](05-Derivatives-and-Volatility/README.md) | Parity, Greeks, hedging P&L, smiles, surfaces, Monte Carlo, vol trading. |
-| 06 | [Fixed Income and Asset Classes](06-Fixed-Income-and-Asset-Classes/README.md) | Curves, duration, day counts, money markets and repo, swaps, multi-curve and curve risk, Treasury futures, short-rate models, credit, CDS indices and tranches, inflation, mortgages and securitized products, P&L attribution and relative value, FX, ETFs, commodities, crypto. |
-| 07 | [Market Microstructure](07-Market-Microstructure/README.md) | Order books, spread models, impact, execution, Reg NMS, microprice. |
-| 08 | [Market Making](08-Market-Making/README.md) | Fair value, inventory models, quoting, hedging, options MM, games, systems. |
-| 09 | [Alpha Research and Portfolio](09-Alpha-Research-and-Portfolio/README.md) | Research process, signals, factors, backtesting, overfitting, portfolio construction. |
-| 10 | [Machine Learning for Finance](10-Machine-Learning-for-Finance/README.md) | Leakage-safe validation, ensembles, deep and reinforcement learning, NLP. |
-| 11 | [Risk and Trading](11-Risk-and-Trading/README.md) | Kelly, betting, VaR and ES, stress testing, drawdowns and limits, P&L attribution and Greek risk, risk factors, scenario generation, sensitivities and revaluation, trading judgement. |
-| 12 | [Quant Development](12-Quant-Development/README.md) | Order books, feed handlers, backtesters, pricing libraries, risk checks; bridges to SDE-Interview-Prep. |
-| 13 | [Interview Playbook](13-Interview-Playbook/README.md) | Formats, mental math, brainteasers, estimation, trading games, behavioural, senior expectations. |
-| 16 | [Markets Mastery OS](16-Trading-and-Investing/MARKETS_HUB.md) | Practice-first microstructure, limit order books, options volatility, systematic research, fundamental valuation, and 11 interactive lab engines. |
-| 17 | [Regulatory Capital, Basel, and FRTB](17-Regulatory-Capital-Basel-and-FRTB/README.md) | Capital and RWA, credit SA and IRB, SA-CCR, CVA capital, FRTB standardised and internal models, liquidity, IRRBB, stress testing, BCBS 239. |
-| 18 | [Pricing and Risk Systems](18-Pricing-and-Risk-Systems/README.md) | Front-to-back architecture, trade and market data, curve and pricing services, risk, P&L, FRTB and XVA engines, EOD batch, governance. |
+| 02 | [Statistics and Econometrics](02-Statistics-and-Econometrics/README.md) | Estimation, testing, regression and robust inference, Bayesian methods, time series, cointegration, Kalman filters, extreme values. |
+| 03 | [Linear Algebra and Optimization](03-Linear-Algebra-and-Optimization/README.md) | Spectral methods, PCA, covariance and PSD repair, convex optimisation and KKT, numerical linear algebra, root finding. |
+| 04 | [Stochastic Calculus](04-Stochastic-Calculus/README.md) | Brownian motion, Ito, SDEs, risk-neutral pricing, Girsanov, Feynman-Kac, Black-Scholes, jump processes. |
+| 05 | [Derivatives and Volatility](05-Derivatives-and-Volatility/README.md) | Parity, Greeks, hedging P&L, smiles and surfaces, Heston and SABR, PDE and Fourier pricing, exotics, Monte Carlo, dispersion. |
+| 06 | [Fixed Income and Asset Classes](06-Fixed-Income-and-Asset-Classes/README.md) | Curves, bonds, swaps and OIS, short-rate and term-structure models, rates options, credit and CDS, Treasury futures, inflation, mortgages, FX, ETFs, commodities, crypto. |
+| 07 | [Market Microstructure](07-Market-Microstructure/README.md) | Order books, auctions and fees, spread models, Kyle, impact, optimal execution, Reg NMS routing, latency, microprice. |
+| 08 | [Market Making](08-Market-Making/README.md) | Fair value, Avellaneda-Stoikov and Gueant-Lehalle inventory models, quoting, hedging, ETF and futures market making, systems. |
+| 09 | [Alpha Research and Portfolio](09-Alpha-Research-and-Portfolio/README.md) | Research process, point-in-time data, factors, stat arb, backtesting, overfitting, covariance shrinkage, portfolio construction, costs. |
+| 10 | [Machine Learning for Finance](10-Machine-Learning-for-Finance/README.md) | Leakage-safe validation, labeling, feature importance, online learning, neural nets, reinforcement learning, NLP, production monitoring. |
+| 11 | [Risk and Trading](11-Risk-and-Trading/README.md) | Kelly and sizing, VaR and ES, stress testing, drawdowns and limits, P&L attribution, risk factors, scenarios, counterparty risk and XVA, game theory, macro. |
+| 12 | [Quant Development](12-Quant-Development/README.md) | Modern C++, low latency, lock-free concurrency, order books, feed handlers, backtesters, pricing libraries, risk checks and order management, testing. |
+| 13 | [Interview Playbook](13-Interview-Playbook/README.md) | Formats, mental math, brainteasers, estimation, trading games, coding, take-homes, behavioural, offers, senior expectations. |
+| 17 | [Regulatory Capital, Basel, and FRTB](17-Regulatory-Capital-Basel-and-FRTB/README.md) | Capital and RWA, credit SA and IRB, SA-CCR, CVA capital, FRTB standardised and internal models, operational risk, liquidity, IRRBB, stress testing, BCBS 239. |
+| 18 | [Pricing and Risk Systems](18-Pricing-and-Risk-Systems/README.md) | Front-to-back architecture, trade and market data, curve and pricing services, risk engines, P&L, FRTB and XVA engines, EOD batch, governance. |
+| 16 | [Trading and Investing](16-Trading-and-Investing/README.md) | The [Markets Mastery OS](16-Trading-and-Investing/MARKETS_HUB.md): a practice-first trading and investing curriculum with persona plans, stage gates and the interactive lab. |
 | 14 | [Firms](14-Firms/README.md) | One guide per firm: roles, process, what they test, a focused plan. |
 | 15 | [Resources](15-Resources/README.md) | Books, papers, datasets and tools. |
 
-Each section README carries a generated table of its topics with status and card counts.
-Notes marked `seed` are the writing backlog: objectives and references exist, full content does not yet.
+[17-CFA](17-CFA/README.md) is a separate CFA Level II study platform inside the vault, outside the `qp` syllabus.
+General software engineering (data structures and algorithms, C++, system design) lives in [SDE-Interview-Prep](https://github.com/shreejitverma/SDE-Interview-Prep) and is linked, not copied: see the [SDE Link Map](00-Start-Here/SDE-Link-Map.md).
+
+## Pick your path
+
+| You are aiming for | Start with | Then |
+| :--- | :--- | :--- |
+| Quant trader (prop, market making, HFT) | Probability, mental math, brainteasers | Derivatives, market making, microstructure, trading games, Kelly sizing |
+| Quant researcher (hedge funds, systematic) | Probability, statistics, linear algebra | Alpha research, machine learning, portfolio construction, microstructure |
+| Quant developer (trading systems) | Quant development, DSA in SDE-Interview-Prep | Order books, feed handlers, backtesters, pricing libraries, systems design |
+| Quant risk and strats (banks) | Probability, stochastic calculus, derivatives | Fixed income, VaR and ES, counterparty risk and XVA, Basel and FRTB, pricing and risk systems |
+
+[Tracks](00-Start-Here/Tracks.md) explains what each role does and what its interviews test, and the [Roadmap](00-Start-Here/Roadmap.md) turns it into phases and a weekly rhythm; `./qp plan` turns that into dated weeks.
 
 ## Runnable code
 
-| Code | Where |
-| :--- | :--- |
-| Quant developer examples and tests | [12-Quant-Development](12-Quant-Development/README.md) |
-| Linear maps, eigendecomposition and SVD, covariance PSD repair and PCA, numerical linear algebra, Taylor expansions, KKT and QP portfolio solvers, root finding and implied volatility, problem-set checks | [03-Linear-Algebra-and-Optimization/code](03-Linear-Algebra-and-Optimization/code/) |
-| Day counts, schedules, bond pricing and risk, overnight-rate compounding, curve bootstrapping, dual-curve swap pricing, Jacobian par risk, Treasury futures basis, CDS hazard bootstrap, TIPS indexation, mortgage prepayment, Gaussian copula tranche loss, covered interest parity and the cross-currency basis, ETF fair value and index arbitrage, futures curves and roll yield, crypto perpetual funding and basis | [06-Fixed-Income-and-Asset-Classes/code](06-Fixed-Income-and-Asset-Classes/code/) |
-| Call-auction uncross and fee economics, Roll and Glosten-Milgrom spreads, Kyle equilibrium, square-root and propagator impact, Almgren-Chriss optimal execution, TWAP, VWAP, POV and implementation shortfall, Reg NMS routing, latency-arbitrage races | [07-Market-Microstructure/code](07-Market-Microstructure/code/) |
-| Avellaneda-Stoikov market-making simulator | [08-Market-Making/code](08-Market-Making/code/) |
-| Event-driven backtester (next-bar fills), performance metrics, point-in-time and survivorship biases, cross-sectional factor models, momentum and carry, pairs and residual stat arb, covariance shrinkage, Black-Litterman, risk parity and HRP, transaction costs and turnover, alternative-data evaluation, end-to-end research case studies | [09-Alpha-Research-and-Portfolio/code](09-Alpha-Research-and-Portfolio/code/) |
-| Finite-difference Greeks bump engine, Taylor revaluation proxies, Cholesky Monte Carlo and filtered historical scenarios, rates stress scenarios, full versus proxy VaR and ES | [11-Risk-and-Trading/code](11-Risk-and-Trading/code/) |
-| Interview coding problems tested against brute force (streaming statistics, order book, FIX parser), a mini research take-home on synthetic data, offer arithmetic, track-record statistics and calibration | [13-Interview-Playbook/code](13-Interview-Playbook/code/) |
-| Euler-Maruyama SDE solver, Girsanov and numeraire changes (Margrabe, forward and annuity measures, quanto), Feynman-Kac pricing PDEs (affine bonds, barriers, perpetual American put, one-touch, range accrual), Merton, Kou and variance gamma jump models | [04-Stochastic-Calculus/code](04-Stochastic-Calculus/code/) |
-| SVI, SSVI and Dupire local vol, Heston and SABR with calibration, finite-difference and Fourier (Carr-Madan, COS) pricers, digitals, barriers, Asians, lookbacks, autocallables and cliquets, dispersion and implied correlation, Greeks visualisation | [05-Derivatives-and-Volatility/code](05-Derivatives-and-Volatility/code/) |
-| LSTM baseline | [10-Machine-Learning-for-Finance/code](10-Machine-Learning-for-Finance/code/) |
-| Basel credit SA and IRB, SA-CCR, FRTB sensitivities-based method, DRC and RRAO, FRTB IMA (ES, NMRF, backtesting, PLA), liquidity and IRRBB | [17-Regulatory-Capital-Basel-and-FRTB/code](17-Regulatory-Capital-Basel-and-FRTB/code/) |
-| Reference pricing and risk engine | [18-Pricing-and-Risk-Systems/code](18-Pricing-and-Risk-Systems/code/) |
-| 11 interactive simulation and analytics engines: limit order book matching, Avellaneda-Stoikov quoting, options volatility desk, futures term structure, multi-asset risk parity, Kelly sizing, event study, chart replay, overfitting trap, interview games, trade journal analytics | [tools/qp/lab](tools/qp/lab/) |
+Every section with numbers has a `code/` folder of runnable examples that back them.
 
-Every example must run cleanly in CI; examples that assert their numbers also fail CI when a quoted number drifts.
-Run them all with `python tools/run_examples.py` (needs numpy, pandas and matplotlib; `--list` shows them), or one at a time with `python <file>.py`.
-Build a C++ example with `g++ -std=c++20 -O2 -pthread <file>.cpp`.
+| Section | Examples |
+| :--- | :--- |
+| [02 Statistics](02-Statistics-and-Econometrics/code/) | Bayesian inference, cointegration and VAR, extreme value theory, Kalman filtering, robust inference. |
+| [03 Linear algebra](03-Linear-Algebra-and-Optimization/code/) | Linear maps, eigendecomposition and SVD, covariance PSD repair and PCA, numerical linear algebra, Taylor expansions, KKT and QP portfolio solvers, root finding and implied volatility. |
+| [04 Stochastic calculus](04-Stochastic-Calculus/code/) | Euler-Maruyama, Girsanov and numeraire changes, Feynman-Kac pricing PDEs, Merton, Kou and variance-gamma jump models. |
+| [05 Derivatives](05-Derivatives-and-Volatility/code/) | SVI, SSVI and Dupire local vol, Heston and SABR calibration, finite-difference and Fourier pricers, exotics, dispersion and implied correlation. |
+| [06 Fixed income](06-Fixed-Income-and-Asset-Classes/code/) | Day counts and schedules, bond pricing and risk, OIS and swap curves, short-rate models, caps and swaptions, CDS, Treasury futures, inflation, mortgages, tranches, FX parity, ETFs, futures curves, crypto perpetuals. |
+| [07 Microstructure](07-Market-Microstructure/code/) | Auction uncross and fees, Roll and Glosten-Milgrom, Kyle equilibrium, impact models, Almgren-Chriss, execution algorithms, Reg NMS routing, latency races. |
+| [08 Market making](08-Market-Making/code/) | Avellaneda-Stoikov simulator, Gueant-Lehalle-Fernandez-Tapia closed forms and exact solution, ETF and futures market making, market-making system sizing. |
+| [09 Alpha research](09-Alpha-Research-and-Portfolio/code/) | Event-driven backtester, point-in-time and survivorship biases, factor models, momentum and carry, stat arb, shrinkage, Black-Litterman, risk parity and HRP, costs, case studies. |
+| [10 Machine learning](10-Machine-Learning-for-Finance/code/) | Online linear models, backprop and LSTM in numpy, triple-barrier labels and meta-labeling, feature importance, Q-learning execution, text signals, drift monitoring. |
+| [11 Risk](11-Risk-and-Trading/code/) | Stress testing, drawdowns, P&L attribution, risk factors, scenario generation, risk analytics, exposure and XVA, game theory, macro. |
+| [12 Quant development](12-Quant-Development/code/) | C++20 order book and matching engine, ITCH 5.0 feed handler, lock-free queues, memory pools, pricing library, pre-trade risk and order management, latency lab, with unit tests; Python backtester, tick storage and numerical-testing examples. |
+| [13 Interview playbook](13-Interview-Playbook/code/) | Coding problems tested against brute force, a mini research take-home, offer arithmetic, track-record statistics. |
+| [17 Regulatory capital](17-Regulatory-Capital-Basel-and-FRTB/code/) | Basel capital framework, credit SA and IRB, SA-CCR, CVA capital, FRTB sensitivities-based method, DRC and RRAO, FRTB IMA, liquidity and IRRBB, stress testing. |
+| [18 Pricing and risk systems](18-Pricing-and-Risk-Systems/code/) | One script per systems note: sizing models, queueing, curve service, AAD, risk and P&L engines, FRTB and XVA engines, EOD batch, storage and compute. |
+| [Trading Lab](tools/qp/lab/) | Eleven interactive engines (`./qp lab list`): order book and execution, market-maker quoting, options desk, futures and carry, risk parity, Kelly sizing, event studies, chart replay, overfitting trap, interview games, journal analytics. |
+
+Run every example the way CI does with `python tools/run_examples.py` (needs numpy, pandas and matplotlib; `--list` shows them), or one at a time with `python <file>.py`.
+Build a C++ example with `g++ -std=c++20 -O2 -pthread <file>.cpp`; [CONTRIBUTING](CONTRIBUTING.md#code-examples) has the exact CI flags.
 
 ## Repository layout
 
+```text
+00-Start-Here/          onboarding: tracks, roadmap, platform guide, verification standard, note conventions
+01-..13-, 17-, 18-      the syllabus: Markdown notes, with code/ beside the notes that use it
+14-Firms/, 15-Resources/  firm guides and the reference library
+16-Trading-and-Investing/ the Markets Mastery OS curriculum and a free-form investing library
+17-CFA/                 the CFA Level II platform (separate pipeline, not part of the qp syllabus)
+Templates/              Obsidian templates for journals, reviews and CFA logs
+tools/qp/               the qp CLI, local server, web app and trading lab (standard library only)
+tools/run_examples.py   runs every Python example, as CI does
+tools/tests/            platform tests
+_archive/               pre-2026 material, outside the curriculum
 ```
-00-Start-Here/     tracks, roadmap, platform guide, note conventions, SDE link map
-01-..15-           the syllabus (Markdown notes, code/ folders beside the notes that use them)
-16-, 17-CFA/       Obsidian libraries outside the syllabus: trading and investing; the CFA Level II platform
-17-, 18-           regulatory capital (Basel, FRTB) and pricing and risk systems, inside the syllabus
-tools/qp/          the qp CLI, local server and dashboard (standard library only)
-tools/run_examples.py  runs every Python example (CI does too)
-tools/tests/       platform tests
-_archive/          the pre-2026 notebook collection and superseded drafts, outside the curriculum
-```
+
+## Documentation
+
+| For | Read |
+| :--- | :--- |
+| Learners | [Start Here](00-Start-Here/README.md), [Tracks](00-Start-Here/Tracks.md), [Roadmap](00-Start-Here/Roadmap.md), [Using the Platform](00-Start-Here/Using-the-Platform.md) |
+| Anyone checking the content | [How Notes Are Verified](00-Start-Here/How-Notes-Are-Verified.md) |
+| Authors | [CONTRIBUTING](CONTRIBUTING.md), [Note Conventions](00-Start-Here/Note-Conventions.md) |
+| Platform developers | [The qp platform](tools/qp/README.md): architecture, data model, API and how to extend it |
 
 ## Contributing
 
-Read [Note Conventions](00-Start-Here/Note-Conventions.md) and [CONTRIBUTING](CONTRIBUTING.md).
-Before a pull request, run the checks listed in [CONTRIBUTING](CONTRIBUTING.md#workflow), including the secret scan.
+Corrections are the most valuable contribution: a wrong number in a public study guide misleads everyone who reads it.
+Read [CONTRIBUTING](CONTRIBUTING.md) and run its checks before a pull request.
 
-Maintained by [Shreejit Verma](https://github.com/shreejitverma). MIT licence.
+Maintained by [Shreejit Verma](https://github.com/shreejitverma).
+Released under the [MIT licence](LICENSE).
