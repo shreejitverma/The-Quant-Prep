@@ -16,7 +16,7 @@ This page states exactly what the repo promises about its content, how each prom
 
 | Promise | How it is enforced |
 | :--- | :--- |
-| Every number is computed, not recalled. | The section's `code/` scripts print each quoted number and assert it at the quoted rounding. |
+| Computed numbers in syllabus topics are computed, not recalled. | Section `code/` scripts enforce this where a section has them; otherwise the numbers are derived in the note. |
 | Quoted numbers cannot silently drift. | CI runs every script on every pull request and on `main`; a failed assert fails the build. |
 | Results do not depend on your machine. | CI runs on Linux x86-64; authors also run the scripts in a Linux container, and tolerances sit well above floating-point noise. |
 | Facts come from primary sources. | Rules cite the regulation and paragraph, conventions cite the exchange or regulator, papers cite authors, venue and year. |
@@ -26,7 +26,7 @@ This page states exactly what the repo promises about its content, how each prom
 
 ## The numbers contract
 
-Each number in a note is one of three things:
+Each number in a syllabus topic is one of three things:
 
 1. **Computed and asserted.** A script prints it and asserts it to the precision the note quotes.
    If the note says 4.4107%, the script checks 4.4107 to four decimals, not 4.41 to two.
@@ -86,12 +86,13 @@ The live count of each status is in the [syllabus catalog](../README.md#syllabus
 
 - **`solid` is not `canonical`.** Solid notes are machine-checked and reviewed, but no human expert has yet signed off every page; if something looks wrong, it may be.
 - **Interview practice changes.** What a firm asks, and how, changes over time; [firm guides](../14-Firms/README.md) stay `draft` until a human verifies them.
+- **Firm guides and reference pages quote sourced facts.** They stay `draft` until a human verifies them, and their claims are not script-asserted.
 - **Regulation changes.** Implementation dates and national choices move; check the dated source before relying on one.
 - **Models are models.** A note that prices or sizes something shows the method on stated inputs; it is not trading or investment advice.
 
 ## Check a number yourself
 
-1. Find the script: notes with computed numbers name the script that asserts them (usually in their code or "In this repo" section), and it lives in the section's `code/` folder.
+1. Find the script: syllabus topics with computed numbers name the script that asserts them (usually in their code or "In this repo" section), and it lives in the section's `code/` folder when one exists.
 2. Run it: `python 06-Fixed-Income-and-Asset-Classes/code/fi_swaps_ois.py` (the examples need numpy; some need pandas or matplotlib).
 3. Compare: the script prints each number and stops with an assertion error if any differs from what the note quotes.
 

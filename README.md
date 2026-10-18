@@ -121,7 +121,7 @@ General software engineering (data structures and algorithms, C++, system design
 
 ## Runnable code
 
-Every section with numbers has a `code/` folder of runnable examples that back them.
+The sections below have `code/` folders whose scripts back their notes; section 01 derives its numbers in the notes.
 
 | Section | Examples |
 | :--- | :--- |
