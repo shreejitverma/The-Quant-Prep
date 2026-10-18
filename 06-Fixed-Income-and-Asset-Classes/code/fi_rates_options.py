@@ -183,6 +183,11 @@ def main() -> None:
     ts, te, vol_n, fk = 1.0, 1.25, 0.0100, 0.04
     t_eff = ts + (te - ts) / 3
     q("fi-ro-sofr-caplet-variance", "effective expiry T_s + (T_e - T_s)/3, years", t_eff, "1.0833")
+    # equivalent route (Core concepts): volatility decaying linearly to zero over the period, integrated numerically
+    m_grid = 100_000
+    h_grid = (te - ts) / m_grid
+    decay_var = sum(((te - (ts + (j + 0.5) * h_grid)) / (te - ts)) ** 2 for j in range(m_grid)) * h_grid
+    assert abs(ts + decay_var - t_eff) < 1e-10, (ts + decay_var, t_eff)
     forward_looking = bachelier(fk, fk, vol_n, ts, 1.0)
     backward_looking = bachelier(fk, fk, vol_n, t_eff, 1.0)
     q("ex8", "forward-looking caplet per unit tau P, bp", 1e4 * forward_looking, "39.89")

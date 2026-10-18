@@ -143,14 +143,13 @@ The non-central chi-square has $d = 8$ degrees of freedom here, and 400,000 exac
 
 $k = 0.20$, $\theta = 5\%$, $\sigma = 15\%$: $2k\theta = 0.020 < 0.0225 = \sigma^2$, so zero is attainable.
 The closed form still holds: $P(0,5) = 0.836017$, and the PDE agrees to 8e-7, a larger gap than the -5e-9 of Example 2 on the same grid.
-Plain Euler with 50 steps a year sends 0.34% of all steps below zero; with full truncation the Monte Carlo price is about 0.8360 (standard error 3.1e-4), consistent with the closed form.
-"Without a fix the code would take the square root of a negative number on those steps."
+With 50 Euler steps a year, 0.34% of all steps land below zero (counted in the full-truncation run, seed 3); plain Euler would have to take the square root of the negative value on the next step, while full truncation gives a Monte Carlo price of about 0.8360 (standard error 3.1e-4), consistent with the closed form.
 Lord, Koekkoek and van Dijk (2010) compare the usual fixes (absorption, reflection, partial and full truncation) and recommend full truncation as the least biased of them.
 
 ### Example 4: Hull-White fits any curve, and the convexity term is needed
 
 Market curve: a hypothetical Nelson-Siegel zero curve with a 5-year zero of 4.4179%, $P(0,5) = 0.801800$.
-With $a = 0.03$, $\sigma = 1.2\%$ the fitted drift starts at $\theta(0) = 0.0106$.
+Its instantaneous forward starts at $f(0,0) = 3.5\%$ with slope $\partial_t f(0,0) = 0.01$, so with $a = 0.03$, $\sigma = 1.2\%$ the fitted drift starts at $\theta(0) = 0.01 + 0.03 \times 0.035 = 0.01105$ (the convexity term is zero at $t = 0$).
 Simulating $dr = (\theta(t) - ar)dt + \sigma dW$ with that $\theta$ (200,000 antithetic paths, seed 21) gives $\mathbb{E}[e^{-\int_0^5 r}] \approx 0.80180$: the curve is recovered.
 On the same paths with the term $\frac{\sigma^2}{2a}(1 - e^{-2at})$ removed from $\theta$, the estimate is about 0.80395: the only change is that term, and it moves the 5-year discount factor by about 22 bp of price.
 

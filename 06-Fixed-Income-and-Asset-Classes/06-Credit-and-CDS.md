@@ -69,11 +69,11 @@ The first sum pays the full coupon on survival; the integral pays the premium ac
 $$\text{PV}_{prot} = (1 - R)\int_0^T P(0,u)\,(-dQ(u)).$$
 The par spread is $s = \text{PV}_{prot}/\text{RPV01}$.
 
-**Exact integrals.** The ISDA CDS Standard Model assumes hazard rates piecewise constant between credit-curve pillars and interest rates piecewise flat-forward between yield-curve pillars (QuantLib's `IsdaCdsEngine` documents this, citing OpenGamma Quantitative Research 2013 and Markit's 2012 numerical-fix note).
+**Exact integrals.** The ISDA CDS Standard Model assumes hazard rates piecewise constant between credit-curve pillars and interest rates piecewise flat-forward between yield-curve pillars (QuantLib's `IsdaCdsEngine`, which cites OpenGamma Quantitative Research 2013 and Markit's 2012 numerical-fix note, accepts only log-linear discount or flat-forward rate curves and requires the accrued premium to be paid at default).
 On any sub-interval of length $\delta$ where both are constant, with $\lambda = h + f$:
 $$\int (1-R) h\,e^{-\lambda u}du = (1-R)\frac{h}{h+f}\left(1 - e^{-\lambda\delta}\right), \qquad \int (x_0 + u)h\,e^{-\lambda u}du = h\left[x_0\frac{1 - e^{-\lambda\delta}}{\lambda} + \frac{1 - e^{-\lambda\delta}(1 + \lambda\delta)}{\lambda^2}\right],$$
 each times $P(0,a)Q(a)$ at the sub-interval start $a$.
-The $h + f$ denominators are why the model needs a numerical fix when $h + f$ is near zero, possible with negative rates (Markit 2012 proposed a Taylor expansion there).
+The $h + f$ denominators are why the model needs a numerical fix when $h + f$ is near zero, possible with negative rates (Markit 2012 proposed a Taylor expansion when $h + f < 10^{-4}$, as implemented in QuantLib).
 
 ### The credit triangle, exactly
 
@@ -94,7 +94,7 @@ A spread curve that falls too steeply would need a negative forward hazard; a pr
 **Full first coupon.** The buyer pays a full first coupon and the seller rebates the accrued from the accrual start to the trade date, like bond accrued interest, so all contracts with the same coupon pay identical cash flows (Markit, March 2009).
 **Upfront.** With par spread $s$ for the maturity, the upfront paid by the buyer is
 $$U = \text{PV}_{prot} - c\cdot\text{RPV01} = (s - c)\,\text{RPV01}.$$
-**Quoting.** Investment-grade names were expected to be quoted as a conventional (quoted) spread, converted to an upfront through the ISDA Standard Model with standard inputs and a single flat hazard rate, and high-yield names in points upfront (Markit, March 2009; ISDA Standard CDS Examples).
+**Quoting.** Contracts on the 100 bp coupon (expected to be investment-grade names) were generally to be quoted in dealer runs as a conventional (quoted) spread, and 500 bp contracts in points upfront, with exceptions both ways (Markit, March 2009); the conventional spread is converted to an upfront through the ISDA Standard Model with standard inputs and a single flat hazard rate (ISDA Standard CDS Examples).
 The standard converter treats days up to and including the trade date as riskless and the rest as risky (ISDA Standard CDS Examples).
 
 ### Risk measures
@@ -145,6 +145,7 @@ A 1-year 100 bp standard CDS on 36mm traded in February 2009 and maturing Saturd
 Payment dates 20 March 2009, 22 June 2009 (20 June was a Saturday), 21 September, 21 December 2009 and 22 March 2010; accrual periods of 88, 94, 91, 91 and 90 days (the last runs to and includes the maturity date), so coupons of 88,000, 94,000, 91,000, 91,000 and 90,000 USD over 454 coupon days.
 Every 10mm 100 bp contract paid the same 2Q09 coupon of 26,111 USD, except those maturing 20 June 2009, which paid 25,833 USD.
 Booked on 20 February 2009 at 2 points upfront: the buyer pays $2\% \times 36\text{mm} = 720{,}000$ and the seller rebates 61 riskless days of accrual, 61,000 USD, so the buyer pays 659,000 USD net.
+The converter, following CDSW, treats that rebate as settlement-date money although it is actually paid on the next coupon date, 20 March 2009; discounted to settlement it is closer to 60.95k USD, an omission the document calls rarely significant (ISDA Standard CDS Examples).
 
 ### Example 6: conventional spread to upfront
 

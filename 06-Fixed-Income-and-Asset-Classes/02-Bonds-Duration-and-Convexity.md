@@ -115,6 +115,7 @@ A hypothetical 4.25% note maturing 15 November 2034 settles on Monday 19 October
 Accrued $= 2.125 \times 157/184 = 1.813179$ per 100.
 After the next coupon there are $n$ = 16 semiannual periods, so the Appendix B formula gives a dirty price of 102.829978 and a clean price of 101.016799.
 Discounting the fraction as $(1.0205)^{-27/184}$ instead gives 102.832642: 0.27 cents per 100, or 2,664 USD on 100mm, from the convention alone.
+15 November 2026 is a Sunday, so the coupon is paid on Monday 16 November "without additional interest" (31 CFR 356.30(a)) and accrual runs on the unadjusted 15th.
 Settling on Friday 13 November (before the coupon) and on Monday 16 November (after it) at the same yield: the dirty price goes from 103.116329 to 101.025519, a change of -2.090811, while the clean price moves by only -0.000649.
 
 ### Example 2: 2-year 5% annual bond at a 4% yield
@@ -151,14 +152,14 @@ Its yield is 3.9737%, where the Macaulay duration is 2.8861 and the modified (an
 
 Hedge 100 of the 10-year par bond with the 2-year 5% bond: ratio $= 0.081109/0.019131 = 4.2396$ face of the 2-year per 100 of the 10-year.
 A parallel +10 bp move leaves a hedged P&L of +0.0029 per 100, the convexity mismatch.
-A steepener with the 10-year yield +10 bp and the 2-year unchanged loses -0.8071 per 100: the hedge does nothing because its yield did not move.
+A steepener with the 10-year yield +10 bp and the 2-year unchanged loses 0.8071 per 100 (P&L -0.8071): the hedge does nothing because its yield did not move.
 
 ### Example 7: barbell versus bullet
 
 On a flat 4% annual curve, match a 5-year zero (the bullet) in PV and Macaulay duration with 2-year and 10-year zeros: PV weight 0.625 in the 2-year.
 Convexities are 27.737 (bullet) and 41.605 (barbell).
 Long barbell, short bullet gains 0.0651 per 100 at +100 bp and 0.0740 at -100 bp, and 6.9 USD per 100mm of PV for a 1 bp move.
-"A flat curve that only moves in parallel would make this a free lunch, which is why real curves are not flat: the market charges for convexity through yield."
+"A model in which a flat curve only moves in parallel would make this a free lunch, so that model is not arbitrage-free; in an arbitrage-free model the convex position is paid for through a lower yield."
 
 ### Example 8: accrued on a corporate 30/360 bond
 
