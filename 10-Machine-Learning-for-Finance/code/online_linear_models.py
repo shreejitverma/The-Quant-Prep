@@ -5,11 +5,13 @@ Backs 10-Machine-Learning-for-Finance/04-Online-Learning-and-Linear-Models-at-Sc
 1. Scalar RLS by hand: three observations, each step equals the batch ridge fit.
 2. Multivariate RLS: equals batch ridge (lambda = 1) and exponentially weighted ridge (lambda < 1).
 3. Forgetting factor arithmetic: memory 1/(1 - lambda), half-life, effective sample size (1 + lambda)/(1 - lambda).
-4. LMS / SGD on squared loss: stability bound 2/lambda_max, per-mode contraction, the cost of an
-   ill-conditioned design, and steady-state excess error against the small-step formula eta*sigma^2*tr(R)/2.
+4. LMS / SGD on squared loss: mean bound 2/lambda_max, the tighter mean-square bound for Gaussian inputs
+   (Feuer and Weinstein 1985's closed-form condition, and the spectral radius of the second-moment recursion,
+   whose one-step map is itself checked by Monte Carlo), per-mode contraction, the cost of an ill-conditioned
+   design, and steady-state excess error against the small-step formula eta*sigma^2*tr(R)/2 and the exact one.
 5. Tracking a random-walk beta: grid of forgetting factors and rolling windows against the Kalman filter,
-   and the steady-state Kalman gain that predicts the best forgetting factor.
-6. Sharded sufficient statistics: summing X'X and X'y over shards reproduces the full OLS fit.
+   the steady-state Kalman gain that predicts the best forgetting factor, and a one-change control.
+6. Sharded sufficient statistics: summing X'X and X'y over shards reproduces the full ridge fit.
 7. Feature hashing: probability that a feature shares its bucket.
 
 Run: uv run --no-project --with numpy python 10-Machine-Learning-for-Finance/code/online_linear_models.py
@@ -121,30 +123,84 @@ def section_forgetting() -> None:
 # ---------------------------------------------------------------------------
 
 
-def section_lms() -> None:
-    # Backs: Worked examples 3 and 4; cards ml-online-lms-stability, ml-online-conditioning, ml-online-misadjustment.
-    print("\n== 4. LMS / SGD on squared loss ==")
-    # Ill-conditioned design: feature variances 1 and 100.
-    eig = np.array([1.0, 100.0])
-    check("LMS stability bound 2/lambda_max", 2.0 / eig.max(), 0.0200, 1e-12)
-    eta = 1.0 / eig.max()
-    slow = 1.0 - eta * eig.min()
-    check("fast-mode contraction per step at eta 0.01", 1.0 - eta * eig.max(), 0.0, 1e-12, ".2f")
-    steps = math.log(1e-3) / math.log(slow)
-    check("slow-mode contraction per step at eta 0.01", slow, 0.99, 1e-12, ".2f")
-    check("steps to cut slow-mode error 1000x", steps, 687.3, 0.05, ".1f")
-    # Mean dynamics simulated exactly: E[w_t - w*] = (I - eta R)^t (w_0 - w*).
-    err = np.ones(2)
-    t = 0
-    while np.max(np.abs(err)) > 1e-3:
-        err = (1.0 - eta * eig) * err
-        t += 1
-    check("mean-error iteration count, ill-conditioned", t, 688, 0, ".0f")
-    # Standardised features: both eigenvalues 1, eta 0.5 gives contraction 0.5.
-    t_std = math.ceil(math.log(1e-3) / math.log(0.5))
-    check("steps to cut error 1000x after standardising, eta 0.5", t_std, 10, 0, ".0f")
+def lms_mean_square_ok(eta: float, eig: np.ndarray) -> bool:
+    """Feuer and Weinstein (1985) eq. (30), written for the step eta = 2 mu: finite weight-error variance."""
+    return bool(np.all(eta * eig < 1.0) and np.sum(eta * eig / (2.0 - 2.0 * eta * eig)) < 1.0)
 
-    # Steady-state excess MSE of LMS against the small-step formula.
+
+def lms_second_moment_map(eta: float, eig: np.ndarray) -> np.ndarray:
+    """Matrix F with diag(E[v_t v_t']) = F diag(E[v_(t-1) v_(t-1)']) (noise-free part) for independent Gaussian inputs.
+
+    Built from the Gaussian fourth-moment identity E[x x' M x x'] = 2 R M R + tr(R M) R (M diagonal),
+    not from the closed-form condition above.
+    """
+    return np.diag(1.0 - 2.0 * eta * eig + 2.0 * eta**2 * eig**2) + eta**2 * np.outer(eig, eig)
+
+
+def lms_second_moment_radius(eta: float, eig: np.ndarray) -> float:
+    """Spectral radius of the second-moment map; above 1 means the weight-error variance is unbounded."""
+    return float(np.max(np.abs(np.linalg.eigvals(lms_second_moment_map(eta, eig)))))
+
+
+def lms_second_moment_map_mc(eta: float, eig: np.ndarray, n: int, seed: int) -> np.ndarray:
+    """Monte Carlo of the same map: column j is diag E[(I - eta x x') e_j e_j' (I - eta x x')] over Gaussian x."""
+    rng = np.random.default_rng(seed)
+    x = rng.standard_normal((n, eig.size)) * np.sqrt(eig)
+    cols = []
+    for j in range(eig.size):
+        # (I - eta x x') e_j = e_j - eta x_j x; its squared entries are the diagonal of the outer product.
+        v = -eta * x[:, j : j + 1] * x
+        v[:, j] += 1.0
+        cols.append((v**2).mean(axis=0))
+    return np.column_stack(cols)
+
+
+def bisect_bound(stable, hi: float) -> float:
+    lo = 0.0
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if stable(mid) else (lo, mid)
+    return lo
+
+
+def steps_to_shrink(contraction: np.ndarray, factor: float = 1e-3) -> int:
+    """Iterate the mean error E[w_t - w*] = (I - eta R)^t (w_0 - w*) from (1, 1) until every mode is below factor."""
+    err = np.ones(contraction.size)
+    t = 0
+    while np.max(np.abs(err)) > factor:
+        err = contraction * err
+        t += 1
+    return t
+
+
+def section_lms() -> None:
+    # Backs: Core concepts (LMS) and Worked examples 3 and 4;
+    # cards ml-online-lms-stability, ml-online-conditioning, ml-online-misadjustment.
+    print("\n== 4. LMS / SGD on squared loss ==")
+    # Ill-conditioned design: independent Gaussian features with variances 1 and 100.
+    eig = np.array([1.0, 100.0])
+    check("LMS mean-stability bound 2/lambda_max", 2.0 / eig.max(), 0.0200, 1e-12)
+    ms_bound = bisect_bound(lambda e: lms_mean_square_ok(e, eig), 1.0 / eig.max())
+    ms_bound_radius = bisect_bound(lambda e: lms_second_moment_radius(e, eig) < 1.0, 1.0 / eig.max())
+    check("LMS mean-square bound, variances 1 and 100 (Feuer-Weinstein condition)", ms_bound, 0.00666, 5e-6, ".5f")
+    check("LMS mean-square bound, same, from the second-moment recursion", ms_bound_radius, 0.00666, 5e-6, ".5f")
+    check("conservative mean-square bound 2/(3 tr R)", 2.0 / (3.0 * eig.sum()), 0.0066, 5e-5)
+    check("second-moment growth factor at eta 0.01 (above 1 = unbounded variance)", lms_second_moment_radius(0.01, eig), 2.00, 5e-3, ".2f")
+    # Independent leg: the fourth-moment identity behind the map, checked by sampling x (seed 17, 2 million draws).
+    f_exact = lms_second_moment_map(0.01, eig)
+    f_mc = lms_second_moment_map_mc(0.01, eig, 2_000_000, 17)
+    check_below("max relative error, second-moment map formula vs Monte Carlo, eta 0.01", float(np.max(np.abs(f_mc / f_exact - 1))), 0.02)
+    eta = 0.005
+    check("fast-mode contraction per step at eta 0.005", 1.0 - eta * eig.max(), 0.5, 1e-12, ".1f")
+    check("slow-mode contraction per step at eta 0.005", 1.0 - eta * eig.min(), 0.995, 1e-12, ".3f")
+    check("steps to cut slow-mode error 1000x, closed form", math.log(1e-3) / math.log(1.0 - eta), 1378.1, 0.05, ".1f")
+    check("mean-error iteration count, ill-conditioned, eta 0.005", steps_to_shrink(1.0 - eta * eig), 1379, 0, ".0f")
+    # Standardised: both variances 1; mean-square bound 2/(p + 2) = 0.5 for p = 2; take half of it.
+    std = np.ones(2)
+    check("LMS mean-square bound after standardising, p 2", bisect_bound(lambda e: lms_mean_square_ok(e, std), 1.0), 0.5, 1e-9, ".2f")
+    check("mean-error iteration count after standardising, eta 0.25", steps_to_shrink(1.0 - 0.25 * std), 25, 0, ".0f")
+
+    # Steady-state excess MSE of LMS against the small-step formula and the exact Gaussian-data result.
     rng = np.random.default_rng(11)
     p, n, eta, sigma = 5, 400_000, 0.01, 1.0
     w_true = rng.standard_normal(p)
@@ -159,6 +215,8 @@ def section_lms() -> None:
         dev[t] = (w - w_true) @ (w - w_true)  # excess MSE = (w - w*)' R (w - w*) with R = I
     excess = float(dev[n // 4 :].mean())
     check("LMS excess MSE, small-step theory eta*sigma^2*tr(R)/2", eta * sigma**2 * p / 2, 0.025, 1e-12, ".3f")
+    s_fw = float(np.sum(eta * np.ones(p) / (2.0 - 2.0 * eta * np.ones(p))))
+    check("LMS excess MSE, exact for Gaussian data sigma^2 S/(1 - S)", sigma**2 * s_fw / (1.0 - s_fw), 0.0259, 5e-5, ".4f")
     check("LMS excess MSE, simulated", excess, 0.0259, 5e-5, ".4f")
 
 
@@ -217,7 +275,8 @@ def section_tracking() -> None:
     n, burn = 60_000, 2_000
     beta = 1.0 + np.cumsum(math.sqrt(q) * rng.standard_normal(n))
     x = rng.standard_normal(n)
-    y = beta * x + math.sqrt(r) * rng.standard_normal(n)
+    eps = math.sqrt(r) * rng.standard_normal(n)
+    y = beta * x + eps
 
     def mse(est: np.ndarray) -> float:
         return float(np.mean((est[burn:] - beta[burn:]) ** 2))
@@ -225,6 +284,14 @@ def section_tracking() -> None:
     kal = mse(kalman_rw_beta(x, y, q, r))
     check("tracking MSE x 1e3, Kalman filter (true q)", 1e3 * kal, 10.46, 0.005, ".2f")
     check("Kalman steady-state posterior variance x 1e3 (local level)", 1e3 * p_prior * (1 - gain), 9.95, 0.005, ".2f")
+    # Independent route: iterate the Riccati recursion, then evaluate the EW error formula at lambda = 1 - K.
+    pp = 1.0
+    for _ in range(20_000):
+        pp = pp * r / (pp + r) + q
+    k_iter = pp / (pp + r)
+    lam_k = 1.0 - k_iter
+    ew_at_k = r * (1 - lam_k) / (1 + lam_k) + q * lam_k**2 / (1 - lam_k**2)
+    check_below("|EW formula at lambda = 1 - K minus Kalman posterior variance|", abs(ew_at_k - pp * (1 - k_iter)), 1e-12)
     # Local-level approximation of the EW estimator: noise r(1-lam)/(1+lam) plus lag q lam^2/(1-lam^2).
     expected = {0.95: (27.74, 26.57), 0.98: (13.00, 12.53), 0.99: (10.49, 9.95), 0.995: (13.20, 12.43), 0.999: (49.31, 50.43)}
     results = {}
@@ -243,13 +310,14 @@ def section_tracking() -> None:
     check("expanding OLS MSE / RLS 0.99 MSE", results[1.0] / results[0.99], 40.1, 0.05, ".1f")
     gaps = [results[lam] / (r * (1 - lam) / (1 + lam) + q * lam**2 / (1 - lam**2)) - 1 for lam in expected]
     check("largest |simulated / formula - 1| over the grid (%)", 100 * max(abs(g) for g in gaps), 6.2, 0.05, ".1f")
-    # Control: the same simulation with a constant regressor x = 1 (the local-level model the formula assumes).
-    y_level = beta + math.sqrt(r) * rng.standard_normal(n)
+    # Control: one change only, the regressor becomes the constant x = 1 (the local-level model the formula
+    # assumes); the beta path and the noise draws are reused.
+    y_level = beta + eps
     ones = np.ones(n)
     level = mse(rls_scalar_path(ones, y_level, 0.99))
-    check("tracking MSE x 1e3, RLS lambda 0.99, constant regressor (control)", 1e3 * level, 9.86, 0.005, ".2f")
+    check("tracking MSE x 1e3, RLS lambda 0.99, constant regressor (control)", 1e3 * level, 9.99, 0.005, ".2f")
     level_formula = r * 0.01 / 1.99 + q * 0.99**2 / (1 - 0.99**2)
-    check("control |simulated / formula - 1| (%)", 100 * abs(level / level_formula - 1), 0.9, 0.05, ".1f")
+    check("control |simulated / formula - 1| (%)", 100 * abs(level / level_formula - 1), 0.4, 0.05, ".1f")
 
 
 # ---------------------------------------------------------------------------

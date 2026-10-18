@@ -6,10 +6,13 @@ Backs 10-Machine-Learning-for-Finance/10-ML-Production-and-Monitoring.md.
 2. PSI by hand on four bins; its sampling distribution under no drift (chi-square approximation against
    simulation) for several sample sizes; population PSI of a mean shift.
 3. The two-sample Kolmogorov-Smirnov test: statistic by hand, asymptotic critical value, and detection power for a
-   0.1 sd mean shift compared with a PSI > 0.1 rule.
+   0.1 sd mean shift compared with the fixed PSI > 0.1 rule and with a PSI threshold calibrated to the sample size
+   (the control that separates "PSI is weak" from "the fixed threshold is wrong").
 4. A unit bug (serving a feature in percent instead of decimals) caught by PSI on the prediction distribution.
-5. Decaying signal: daily IC drops from 0.05 to 0 on day 500. Page's CUSUM against a 60-day rolling-mean rule:
-   false alarms per year before the change and detection delay after it.
+5. Decaying signal: daily IC drops from 0.05 to 0 on day 500. Page's CUSUM against rolling-mean rules: share of paths
+   with a false alarm in the 500 healthy days and detection delay after the change. The simulated CUSUM false-alarm
+   shares are checked against an independent Markov-chain computation (Brook and Evans 1972), which also gives the
+   average run lengths ARL0 and ARL1.
 
 Run: uv run --no-project --with numpy python 10-Machine-Learning-for-Finance/code/drift_monitoring.py
 """
@@ -183,8 +186,13 @@ def section_ks() -> None:
     d_crit = c05 * math.sqrt(2 / n)
     check("KS 5% critical value, n = m = 5000", d_crit, 0.0272, 5e-5)
     check("population KS distance of a 0.1 sd shift, 2 Phi(0.05) - 1", float(2 * norm_cdf(0.05) - 1), 0.0399, 5e-5)
+    # Calibrated PSI threshold: the chi-square 95% quantile scaled by (1/n + 1/m), the 5% test under no drift.
+    psi_crit = chi2_quantile(0.95, 9) * (2 / n)
+    check("calibrated 5% PSI threshold, 10 bins, n = m = 5000", psi_crit, 0.0068, 5e-5)
     rng = np.random.default_rng(13)
-    ks_hits, psi_hits, psi_vals = 0, 0, []
+    rng_null = np.random.default_rng(113)  # separate stream so the shifted samples are unchanged by the null control
+    ks_hits, psi_hits, psi_cal_hits, psi_vals = 0, 0, 0, []
+    ks_null, psi_cal_null = 0, 0
     reps = 400
     for _ in range(reps):
         ref = rng.standard_normal(n)
@@ -193,8 +201,18 @@ def section_ks() -> None:
         p = psi_samples(ref, cur)
         psi_vals.append(p)
         psi_hits += p > 0.1
+        psi_cal_hits += p > psi_crit
+    # Same tests on pairs with no shift: both calibrated rules should reject about 5% of the time.
+    reps_null = 1000
+    for _ in range(reps_null):
+        ref0, cur0 = rng_null.standard_normal(n), rng_null.standard_normal(n)
+        ks_null += ks_stat(ref0, cur0) > d_crit
+        psi_cal_null += psi_samples(ref0, cur0) > psi_crit
     check("detection rate, KS at 5%, 0.1 sd shift, n = m = 5000", ks_hits / reps, 0.990, 5e-4, ".3f")
     check("detection rate, PSI > 0.1, same samples", psi_hits / reps, 0.000, 5e-4, ".3f")
+    check("detection rate, PSI > calibrated 5% threshold, same samples", psi_cal_hits / reps, 0.950, 5e-4, ".3f")
+    check("false-alarm rate with no shift, KS at 5%", ks_null / reps_null, 0.040, 5e-4, ".3f")
+    check("false-alarm rate with no shift, calibrated PSI", psi_cal_null / reps_null, 0.049, 5e-4, ".3f")
     check("mean PSI, 0.1 sd shift, n = m = 5000", float(np.mean(psi_vals)), 0.013, 5e-4, ".3f")
 
 
@@ -223,39 +241,113 @@ def section_unit_bug() -> None:
 # ---------------------------------------------------------------------------
 
 
+def cusum_chain(mu: float, sd: float, k: float, h: float, cells: int = 400) -> tuple[np.ndarray, np.ndarray]:
+    """Brook and Evans (1972) Markov chain for S_t = max(0, S_{t-1} + k - X_t), X_t ~ N(mu, sd^2), alarm when S_t > h.
+
+    State 0 is the atom S = 0; states 1..cells are equal cells of (0, h] represented by their midpoints.
+    Returns the substochastic transition matrix among non-alarm states and the start vector (S_0 = 0).
+    """
+    width = h / cells
+    starts = np.concatenate([[0.0], (np.arange(cells) + 0.5) * width])
+    bounds = np.arange(cells + 1) * width  # cell j covers (bounds[j-1], bounds[j]]
+    z = (bounds[None, :] - starts[:, None] - (k - mu)) / sd
+    cdf = norm_cdf(z)
+    q = np.empty((cells + 1, cells + 1))
+    q[:, 0] = cdf[:, 0]  # S_t = 0 when s + k - X <= 0
+    q[:, 1:] = np.diff(cdf, axis=1)
+    start = np.zeros(cells + 1)
+    start[0] = 1.0
+    return q, start
+
+
 def section_cusum_ic() -> None:
-    # Backs: Worked example 6 and TL;DR; cards ml-prod-cusum, ml-prod-ic-noise.
+    # Backs: Worked example 6 and TL;DR; cards ml-prod-cusum, ml-prod-ic-noise, ml-prod-arl.
     print("\n== 5. Detecting a dead signal ==")
     n_names = 200
     sd_ic = 1 / math.sqrt(n_names)
     check("daily IC standard error, 200 names, 1/sqrt(200)", sd_ic, 0.0707, 5e-5)
     mu0, mu1, k = 0.05, 0.0, 0.025
     rng = np.random.default_rng(15)
-    paths, days, change = 2000, 1500, 500
-    ic = rng.standard_normal((paths, days)) * sd_ic + np.where(np.arange(days) < change, mu0, mu1)
-    # Page's CUSUM for a fall in the mean: S_t = max(0, S_{t-1} + (k - IC_t)), alarm when S_t > h.
-    # Delays are measured on paths without a false alarm before the change.
-    for h, exp_false, exp_delay in [(0.5, 0.283, 15), (0.75, 0.028, 24), (1.0, 0.003, 34)]:
-        s = np.zeros(paths)
-        first_alarm = np.full(paths, -1)
-        for t in range(days):
-            s = np.maximum(0.0, s + (k - ic[:, t]))
-            new = (s > h) & (first_alarm < 0)
-            first_alarm[new] = t
-            s[s > h] = 0.0
-        false_before = (first_alarm >= 0) & (first_alarm < change)
+    paths, days, change, chunk = 10_000, 1200, 500, 2500
+    # (h, simulated false-alarm share, median delay, Markov-chain false-alarm probability, ARL0 to 3 significant
+    # figures, ARL1)
+    cusum_cases = [
+        (0.5, 0.310, 15, 0.311, 1320, 19.3),
+        (0.75, 0.026, 24, 0.029, 16400, 29.3),
+        (1.0, 0.002, 34, 0.002, 200000, 39.3),
+    ]
+    windows = [(20, 0.111, 19), (40, 0.001, 38.5), (60, 0.000, 59)]
+    # First alarm day per path for each rule. Paths are simulated in chunks of rows to bound memory; the generator
+    # fills arrays in row-major order, so the draws are identical to one (paths, days) draw.
+    first_cusum = {h: np.full(paths, -1) for h, *_ in cusum_cases}
+    first_roll = {w: np.full(paths, -1) for w, *_ in windows}
+    mean_path = np.where(np.arange(days) < change, mu0, mu1)
+    for lo in range(0, paths, chunk):
+        ic = rng.standard_normal((chunk, days)) * sd_ic + mean_path
+        # Page's CUSUM for a fall in the mean: S_t = max(0, S_{t-1} + (k - IC_t)), alarm when S_t > h.
+        for h in first_cusum:
+            s = np.zeros(chunk)
+            first = np.full(chunk, -1)
+            for t in range(days):
+                s = np.maximum(0.0, s + (k - ic[:, t]))
+                first[(s > h) & (first < 0)] = t
+            first_cusum[h][lo : lo + chunk] = first
+        csum = np.concatenate([np.zeros((chunk, 1)), np.cumsum(ic, axis=1)], axis=1)
+        for w in first_roll:
+            below = (csum[:, w:] - csum[:, :-w]) < 0.0  # column j: mean of days j..j+w-1 below 0, known at day j+w-1
+            assert below.any(axis=1).all(), "every path must alarm within the simulated horizon"
+            first_roll[w][lo : lo + chunk] = below.argmax(axis=1) + w - 1
+    # Delays are measured on paths without a false alarm before the change; day 500 is the first dead day (delay 0).
+    arls: dict[float, tuple[float, float]] = {}
+    for h, exp_false, exp_delay, exp_chain, exp_arl0, exp_arl1 in cusum_cases:
+        first_alarm = first_cusum[h]
+        assert (first_alarm >= 0).all(), "every path must alarm within the simulated horizon"
+        false_before = first_alarm < change
         delay = first_alarm[first_alarm >= change] - change
-        check(f"CUSUM h {h}: share of paths with a false alarm in the 500 healthy days", float(false_before.mean()), exp_false, 5e-4, ".3f")
-        check(f"CUSUM h {h}: median detection delay (days)", float(np.median(delay)), exp_delay, 0.5, ".0f")
-    csum = np.concatenate([np.zeros((paths, 1)), np.cumsum(ic, axis=1)], axis=1)
-    for w, exp_false, exp_delay in [(20, 0.098, 19), (40, 0.001, 38), (60, 0.000, 59)]:
-        roll = (csum[:, w:] - csum[:, :-w]) / w  # column j is the mean of days j..j+w-1, known at day j+w-1
-        below = roll < 0.0
-        first = np.where(below.any(axis=1), below.argmax(axis=1) + w - 1, -1)
-        false_roll = (first >= 0) & (first < change)
+        sim_false = float(false_before.mean())
+        check(f"CUSUM h {h}: share of paths with a false alarm in the 500 healthy days", sim_false, exp_false, 5e-4, ".3f")
+        check(f"CUSUM h {h}: median detection delay (days)", float(np.median(delay)), exp_delay, 0.0, "g")
+        # Independent check: probability of an alarm within 500 healthy days from the Brook and Evans chain, which
+        # shares only the inputs (mu, sd, k, h) with the simulation.
+        q0, start = cusum_chain(mu0, sd_ic, k, h)
+        alive = start.copy()
+        for _ in range(change):
+            alive = alive @ q0
+        chain_false = 1.0 - float(alive.sum())
+        se = math.sqrt(chain_false * (1 - chain_false) / paths)
+        check(f"CUSUM h {h}: Markov-chain P(false alarm in 500 healthy days)", chain_false, exp_chain, 5e-4, ".3f")
+        print(f"CUSUM h {h}: simulation standard error = {se:.4f}")
+        assert abs(sim_false - chain_false) < 4 * se + 1e-4, f"simulation {sim_false} vs chain {chain_false}"
+        arl0 = float(start @ np.linalg.solve(np.eye(q0.shape[0]) - q0, np.ones(q0.shape[0])))
+        q1, _ = cusum_chain(mu1, sd_ic, k, h)
+        arl1 = float(start @ np.linalg.solve(np.eye(q1.shape[0]) - q1, np.ones(q1.shape[0])))
+        arl0_3sf = float(f"{arl0:.3g}")
+        assert abs(arl0 - exp_arl0) <= 0.005 * exp_arl0, f"ARL0 {arl0} vs {exp_arl0}"
+        check(f"CUSUM h {h}: ARL0, mean days to a false alarm from S = 0 (3 significant figures)", arl0_3sf, exp_arl0, 0.0, ".0f")
+        check(f"CUSUM h {h}: ARL1, mean days to detect from S = 0, counting the alarm day", arl1, exp_arl1, 0.05, ".1f")
+        # Independent check of ARL1: simulate run lengths with the signal dead from day 0 (separate seed).
+        sim_rng = np.random.default_rng(16)
+        n_run, horizon = 4000, 400
+        s1 = np.zeros(n_run)
+        run = np.full(n_run, -1)
+        for t in range(horizon):
+            s1 = np.maximum(0.0, s1 + (k - (mu1 + sd_ic * sim_rng.standard_normal(n_run))))
+            run[(s1 > h) & (run < 0)] = t + 1
+        assert (run > 0).all(), "every dead-signal run must alarm within the horizon"
+        se_run = float(run.std()) / math.sqrt(n_run)
+        print(f"CUSUM h {h}: simulated ARL1 = {run.mean():.1f} (standard error {se_run:.2f})")
+        assert abs(run.mean() - arl1) < 4 * se_run, f"simulated ARL1 {run.mean()} vs chain {arl1}"
+        arls[h] = (arl0, arl1)
+    # Card ml-prod-arl and Worked example 6: raising h by 0.25 multiplies ARL0 by about 12 and adds about 10 days to ARL1.
+    for h_lo, h_hi in [(0.5, 0.75), (0.75, 1.0)]:
+        check(f"ARL0 ratio, h {h_hi} over h {h_lo}", arls[h_hi][0] / arls[h_lo][0], 12.0, 0.5, ".0f")
+        check(f"ARL1 increase, h {h_lo} to h {h_hi} (days)", arls[h_hi][1] - arls[h_lo][1], 10.0, 0.5, ".0f")
+    for w, exp_false, exp_delay in windows:
+        first = first_roll[w]
+        false_roll = first < change
         delay_roll = first[first >= change] - change
         check(f"rolling {w}-day mean IC < 0: share of paths with a false alarm", float(false_roll.mean()), exp_false, 5e-4, ".3f")
-        check(f"rolling {w}-day mean IC < 0: median detection delay (days)", float(np.median(delay_roll)), exp_delay, 0.5, ".0f")
+        check(f"rolling {w}-day mean IC < 0: median detection delay (days)", float(np.median(delay_roll)), exp_delay, 0.0, "g")
 
 
 if __name__ == "__main__":

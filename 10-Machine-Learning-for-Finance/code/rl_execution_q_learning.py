@@ -19,6 +19,7 @@ Run: uv run --no-project --with numpy python 10-Machine-Learning-for-Finance/cod
 
 from __future__ import annotations
 
+import itertools
 import math
 
 import numpy as np
@@ -96,6 +97,12 @@ def section_execution_dp() -> None:
     print(f"DP schedule = {path}")
     check("DP schedule equals [5, 3, 1, 1, 0] (1 = yes)", float(path == [5, 3, 1, 1, 0]), 1, 0, ".0f")
     check("DP optimal expected cost", v[0, total], 51.00, 1e-9, ".2f")
+    # Independent of the recursion: enumerate every integer schedule that sells all 10 shares in 5 periods.
+    schedules = [t for t in itertools.product(range(total + 1), repeat=periods) if sum(t) == total]
+    check("number of integer schedules enumerated (C(14, 4))", len(schedules), 1001, 0, ".0f")
+    brute_cost, brute_best = min((schedule_cost(list(t), total), t) for t in schedules)
+    check("brute-force optimum is (5, 3, 1, 1, 0) (1 = yes)", float(brute_best == (5, 3, 1, 1, 0)), 1, 0, ".0f")
+    check("brute-force optimal expected cost", brute_cost, 51.00, 1e-9, ".2f")
     check("TWAP (2 per period) expected cost", schedule_cost([2] * 5, total), 80.00, 1e-9, ".2f")
     check("TWAP cost / DP cost - 1 (%)", 100 * (schedule_cost([2] * 5, total) / v[0, total] - 1), 56.9, 0.05, ".1f")
     for name, trades_k, exp_imp, exp_risk in [("TWAP", [2] * 5, 20.0, 60.0), ("DP", path, 36.0, 15.0)]:
@@ -103,9 +110,17 @@ def section_execution_dp() -> None:
         check(f"{name} impact part of the cost", float(ETA * np.sum(np.square(trades_k))), exp_imp, 1e-9, ".2f")
         check(f"{name} risk part of the cost", float(LAM_SIG2 * np.sum(np.square(left))), exp_risk, 1e-9, ".2f")
     check("immediate sale expected cost", schedule_cost([10, 0, 0, 0, 0], total), 100.00, 1e-9, ".2f")
+    # The continuous optimum solves the tridiagonal first-order conditions x_{k-1} - 2 x_k + x_{k+1} = (lam sigma^2/eta) x_k
+    # with x_0 = X and x_N = 0; solve them directly, independently of the sinh closed form.
+    a = np.diag(np.full(periods - 1, 2 + LAM_SIG2 / ETA)) - np.diag(np.ones(periods - 2), 1) - np.diag(np.ones(periods - 2), -1)
+    rhs = np.zeros(periods - 1)
+    rhs[0] = total
+    x_lin = np.concatenate(([float(total)], np.linalg.solve(a, rhs), [0.0]))
+    check("cosh kappa = 1 + lam sigma^2 / (2 eta)", 1 + LAM_SIG2 / (2 * ETA), 1.25, 1e-12, ".2f")
     kappa = math.acosh(1 + LAM_SIG2 / (2 * ETA))
-    check("cosh kappa = 1 + lam sigma^2 / (2 eta)", math.cosh(kappa), 1.25, 1e-12, ".2f")
-    check("Almgren-Chriss kappa (cosh kappa = 1.25, so ln 2)", kappa, 0.6931, 5e-5, ".4f")
+    check("Almgren-Chriss kappa = acosh(1.25)", kappa, 0.6931, 5e-5, ".4f")
+    # acosh(c) = ln(c + sqrt(c^2 - 1)) = ln(1.25 + 0.75) = ln 2: compare with the logarithm, a different function.
+    check_below("|acosh(1.25) - ln 2|", abs(kappa - math.log(2)), 1e-12)
     xs = [total * math.sinh(kappa * (periods - k)) / math.sinh(kappa * periods) for k in range(periods + 1)]
     trades = [xs[k] - xs[k + 1] for k in range(periods)]
     exp_trades = [5.015, 2.522, 1.290, 0.704, 0.469]
@@ -113,15 +128,8 @@ def section_execution_dp() -> None:
         check(f"Almgren-Chriss continuous trade in period {k + 1}", trades[k], exp_trades[k], 5e-4, ".3f")
     ac_cost = schedule_cost(trades, total)
     check("Almgren-Chriss continuous schedule expected cost", ac_cost, 50.15, 5e-3, ".2f")
-    # The continuous schedule solves the tridiagonal first-order conditions x_{k-1} - 2 x_k + x_{k+1} = (lam sigma^2/eta) x_k.
-    a = np.diag(np.full(periods - 1, 2 + LAM_SIG2 / ETA)) - np.diag(np.ones(periods - 2), 1) - np.diag(np.ones(periods - 2), -1)
-    rhs = np.zeros(periods - 1)
-    rhs[0] = total
-    check_below(
-        "closed form vs tridiagonal solve, max |x_k difference|", float(np.abs(np.linalg.solve(a, rhs) - xs[1:periods]).max()), 1e-12
-    )
+    check_below("closed form vs tridiagonal solve, max |x_k difference|", float(np.abs(x_lin - np.array(xs)).max()), 1e-12)
     check("integer DP cost above continuous optimum (%)", 100 * (v[0, total] / ac_cost - 1), 1.7, 0.05, ".1f")
-    return v, pol
 
 
 # ---------------------------------------------------------------------------
@@ -266,6 +274,11 @@ def section_sim_gap() -> None:
     cost_sim_policy = evaluate_policy(pol_sim, total, eta=2.0)
     check("true-market (eta 2) cost of the eta-1 policy", cost_sim_policy, 87.00, 1e-9, ".2f")
     check("true-market (eta 2) optimal cost", v_true[0, total], 80.50, 1e-9, ".2f")
+    schedules = [t for t in itertools.product(range(total + 1), repeat=periods) if sum(t) == total]
+    brute_cost, brute_best = min((schedule_cost(list(t), total, eta=2.0), t) for t in schedules)
+    check("eta 2 brute-force optimum is (4, 2, 2, 1, 1) (1 = yes)", float(brute_best == (4, 2, 2, 1, 1)), 1, 0, ".0f")
+    check("eta 2 brute-force optimal expected cost", brute_cost, 80.50, 1e-9, ".2f")
+    check("eta 2 cost of (5, 3, 1, 1, 0) by direct summation", schedule_cost([5, 3, 1, 1, 0], total, eta=2.0), 87.00, 1e-9, ".2f")
     check("excess cost from the simulator gap (%)", 100 * (cost_sim_policy / v_true[0, total] - 1), 8.1, 0.05, ".1f")
 
 

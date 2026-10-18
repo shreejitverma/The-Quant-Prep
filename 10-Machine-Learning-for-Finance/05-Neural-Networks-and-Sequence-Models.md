@@ -48,12 +48,13 @@ $$
 $$
 
 For a batch, the same formulas hold with matrices, and the gradient of the mean loss divides by $n$.
-Backprop costs about the same as a forward pass (reverse-mode differentiation, Rumelhart, Hinton and Williams 1986); finite differences would cost one forward pass per parameter.
+Backprop (popularised for neural networks by Rumelhart, Hinton and Williams 1986) is reverse-mode differentiation: the gradient with respect to all parameters costs a small constant multiple of one forward pass, whereas finite differences cost one or two forward passes per parameter.
 Always verify a hand-written backward pass with central differences, $(L(\theta + \epsilon) - L(\theta - \epsilon))/(2\epsilon)$, whose truncation error is $O(\epsilon^2)$; scale the error by the largest gradient, not entry by entry, because tiny gradient entries are dominated by rounding.
 
 ### Training and regularisation
 
-- Initialisation: weights with variance $1/\text{fan-in}$ (LeCun, and Glorot for tanh) or $2/\text{fan-in}$ (He, for ReLU) keep activations and gradients at a stable scale through depth.
+- Initialisation: weights with variance $1/\text{fan-in}$ (LeCun), $2/(\text{fan-in} + \text{fan-out})$ (Glorot and Bengio 2010, for tanh) or $2/\text{fan-in}$ (He et al. 2015, for ReLU) keep activations and gradients at a stable scale through depth.
+- Random rather than zero initialisation is required: if every hidden unit starts with the same weights, every unit receives the same gradient and they stay identical forever (the symmetry is never broken).
 - Optimiser: Adam (Kingma and Ba 2015) keeps running means of the gradient and its square ($\beta_1 = 0.9$, $\beta_2 = 0.999$ by default) and scales each coordinate's step; it is forgiving of poor scaling, and because each step is normalised, even a tiny gradient moves a weight by up to about the learning rate.
 - Weight decay adds $\tfrac{\lambda}{2}\lVert W\rVert^2$, the network analogue of ridge.
 - Early stopping keeps the parameters at the epoch with the lowest validation loss; with a fixed learning rate, stopping early limits how far the weights travel from their small initial values, which acts like an L2 penalty (Goodfellow et al., section 7.8).
@@ -63,7 +64,9 @@ Always verify a hand-written backward pass with central differences, $(L(\theta 
 
 With daily-return $R^2$ in the low single-digit percent at best, a network with thousands of parameters can memorise noise long before it learns the signal.
 The decomposition in [ML Fundamentals and Generalization](01-ML-Fundamentals-and-Generalization.md) applies with full force: variance dominates, so capacity must be paid for with regularisation, and the validation block must come after the training block in time.
-Gu, Kelly and Xiu (2020) found trees and neural networks the strongest predictors of monthly US stock returns in a large panel, with their shallower networks doing at least as well as deeper ones; the gains over penalised linear models came from nonlinearities and interactions among a few predictors, not from depth.
+Gu, Kelly and Xiu (2020) compared methods on monthly US stock returns (1957 to 2016; 94 stock characteristics, their interactions with eight macro variables and 74 industry dummies, 920 features in all) and found trees and neural networks the best, tracing the gains to nonlinear predictor interactions that linear models miss.
+Their Table 1 reports monthly out-of-sample $R^2$ of $-3.46\%$ for unregularised OLS on all 920 features, $0.11\%$ for elastic net and $0.16\%$ for a three-characteristic OLS, against $0.33\%$ for a one-hidden-layer network peaking at $0.40\%$ with three hidden layers; four and five layers did not improve on three ("shallow learning outperforms deeper learning").
+The same pattern appears in Example 2 below: unregularised capacity destroys value out of sample, and regularised nonlinear models gain over linear ones only through the interaction they can represent.
 
 ### Recurrent networks and vanishing gradients
 
@@ -93,6 +96,7 @@ $$
 - Along the cell path, $\partial c_t/\partial c_{t-1} = \mathrm{diag}(f_t)$ with no squashing, so the direct gradient from $c_T$ to $c_0$ is $\prod_t f_t$: memory survives as long as the network learns to hold $f_t$ near 1.
 - Initialising the forget-gate bias to 1 (Jozefowicz, Zaremba and Sutskever 2015) starts $f_t$ at $\sigma(1) = 0.7311$, which still forgets quickly over 50 steps; the network must learn larger values for long memory.
 - Parameter count: four gates, each mapping $[x_t, h_{t-1}, 1]$ to $h$ units, so $4h(d + h + 1)$; for $d = 10$ inputs and $h = 32$ that is 5,504.
+  PyTorch's `nn.LSTM` keeps two bias vectors per gate block ($b_{ih}$ and $b_{hh}$), so it reports $4h(d + h + 2) = 5{,}632$ for the same layer; the second bias is redundant.
 - The GRU (Cho et al. 2014) merges the input and forget gates and drops the separate cell, with three gate blocks instead of four.
 
 ```mermaid
@@ -124,7 +128,7 @@ $$
 
 - If query and key entries are independent with unit variance, $q \cdot k$ has variance $d_k$; without the $1/\sqrt{d_k}$ the logits for $d_k = 64$ have standard deviation 8, the softmax saturates on one key and its gradients vanish.
 - Every position attends to every other in one step, so path length between distant time steps is 1 rather than $T$; the price is $O(T^2)$ memory and compute in sequence length.
-- Attention is permutation-invariant, so order enters only through positional encodings; a causal mask (scores set to $-\infty$ above the diagonal) makes position $t$ depend only on positions $\le t$, which is mandatory for forecasting.
+- Self-attention is permutation-equivariant (permuting the inputs permutes the outputs the same way), so order enters only through positional encodings; a causal mask (scores set to $-\infty$ above the diagonal) makes position $t$ depend only on positions $\le t$, which is mandatory for forecasting.
 - A transformer layer has $4d^2$ attention weights ($Q, K, V$, output) and $8d^2$ feed-forward weights with the usual $4d$ hidden width, about $12d^2$ per layer before biases and norms: 49,152 for $d = 64$.
 
 ### Failure modes on market data
@@ -149,9 +153,10 @@ All numbers come from [nn_backprop_lstm.py](code/nn_backprop_lstm.py); simulatio
 
 One input $x = 1$, target $y = 1$, weights $w_1 = 0.5$, $w_2 = 2$, zero biases, $L = \tfrac12(\hat y - y)^2$.
 
-- Forward: $z = 0.5$, $h = \tanh 0.5 = 0.4621$, $\hat y = 2h = 0.9242$, $L = 0.00287$.
-- Backward: $\partial L/\partial\hat y = -0.0758$; $\partial L/\partial w_2 = -0.0758 \times 0.4621 = -0.0350$; $\partial L/\partial h = -0.0758 \times 2 = -0.1515$; local tanh factor $1 - h^2 = 0.7864$; $\partial L/\partial w_1 = -0.1515 \times 0.7864 \times 1 = -0.1192$.
-- A step with learning rate 0.5 moves $w_1$ from 0.5 to 0.5596.
+- Forward: $z = 0.5$, $h = \tanh 0.5 = 0.462117$, $\hat y = 2h = 0.924234$, $L = 0.00287$.
+- Backward: $\partial L/\partial\hat y = \hat y - y = -0.075766$; $\partial L/\partial w_2 = -0.075766 \times 0.462117 = -0.0350$; $\partial L/\partial h = -0.075766 \times 2 = -0.15153$; local tanh factor $1 - h^2 = 0.786448$; $\partial L/\partial w_1 = -0.15153 \times 0.786448 \times 1 = -0.1192$.
+- Intermediates carry extra digits because the four-decimal values do not chain: $-0.0758 \times 2 = -0.1516$, and $-0.1515 \times 0.7864 = -0.1191$.
+- Gradient descent moves against the gradient, $w_1 \leftarrow w_1 - \eta\,\partial L/\partial w_1$; with $\eta = 0.5$ the negative gradient raises $w_1$ from 0.5 to 0.5596, which raises $\hat y$ towards the target.
 
 Central differences agree with both derivatives to better than $10^{-9}$.
 For a 5-8-1 tanh MLP with weight decay, and for an LSTM unrolled over 12 steps, the script finds the largest gap between analytic and finite-difference gradients is below $10^{-7}$ of the largest gradient entry.
@@ -171,18 +176,22 @@ Train on 3,000 rows, validate on the next 1,000, test on 20,000 (seed 42); $R^2$
 | Average of the 5 seeds' predictions | - | 0.027 |
 
 The unregularised wide network fits a third of the training variance and destroys value out of sample.
-Regularised, the same features beat the linear model because they can represent the $x_1x_2$ interaction.
-The five seeds of the small MLP range from about 0.013 to 0.022: the seed alone moves the result by a factor of about 1.76, which is why a single run proves little.
+Regularised, the same features beat the linear model.
+The best linear forecast in population is the oracle $0.1x_3$ (every $x_j$ is uncorrelated with $x_1x_2$), which scores 0.0100 on this test set (population value 0.0095); the ridge random-feature net, every MLP seed and the ensemble all score above that linear ceiling, so their extra $R^2$ comes from the $x_1x_2$ interaction.
+The five seeds of the small MLP range from about 0.0125 to 0.0221: the seed alone moves the result by a factor of about 1.8, which is why a single run proves little.
 Averaging the five seeds' forecasts gives about 0.027, more than any single seed.
 The random-feature net's output layer is a convex least-squares fit, so its numbers do not depend on the optimiser or the starting point.
 
 ### Example 3: vanishing gradients, RNN against LSTM
 
-A scalar tanh RNN with recurrent weight 0.9 driven by noise inputs: the bound is $0.9^{50} = 0.00515$, and the realised $|\partial h_{50}/\partial h_0|$ is about $9.11 \times 10^{-12}$ because every step also multiplies by $1 - h_t^2 < 1$.
-Raising the weight to 1.5 does not make the gradient explode here: the units saturate and $|\partial h_{50}/\partial h_0|$ is about $2.40 \times 10^{-10}$.
+A scalar tanh RNN with recurrent weight 0.9 driven by noise inputs ($0.5$ times standard normal, seed 3): the bound is $0.9^{50} = 0.00515$, and the realised $|\partial h_{50}/\partial h_0|$ is about $9.11 \times 10^{-12}$, because every step also multiplies by $1 - h_t^2 < 1$; the geometric mean of the per-step factor $w(1 - h_t^2)$ is 0.601 rather than 0.9.
+Raising the weight to 1.5 does not make the gradient explode here: $|\partial h_{50}/\partial h_0|$ is about $2.40 \times 10^{-10}$ (geometric-mean factor 0.642), because the noise pushes $h_t$ away from 0 and $1.5(1 - h_t^2) < 1$ whenever $|h_t| > 0.577$.
+The control isolates that cause: with zero inputs the state stays at $h_t = 0$, where tanh is linear, every factor is exactly 1.5 and the derivative is $1.5^{50} = 6.38 \times 10^{8}$.
+More generally, a trajectory that settles on a stable fixed point contracts gradients by definition: the fixed point of $h = \tanh(1.5h)$ is $h^* = 0.8586$ with factor $1.5(1 - h^{*2}) = 0.394$; explosions come from trajectories that stay in, or cross, the near-linear region.
 An LSTM (3 inputs, 8 units, small random weights) with forget-gate bias 1 has $f_t \approx \sigma(1) = 0.7311$; over 50 steps the product of one unit's forget gates is about $1.63 \times 10^{-7}$ and the full derivative $\partial c_{50}/\partial c_0$ about $7.31 \times 10^{-7}$.
 With forget-gate bias 5, $f_t \approx 0.9933$, the product of forget gates is about 0.709 and the full derivative about 1.31: fifty steps later, the cell still carries the initial memory.
-The full derivative exceeds the direct product because the perturbation also flows through $h_t$ into later gates and candidates.
+The full derivative exceeds the product because the perturbation also flows through $h_t$ into later gates and candidates: the control that zeroes the recurrent weights (so the gates no longer see $h_{t-1}$) makes $\partial c_{50}/\partial c_0$ equal the product of that run's forget gates exactly.
+These derivatives are computed by complex-step differentiation, which has no subtraction and so stays accurate at $10^{-7}$.
 
 ### Example 4: why divide by $\sqrt{d_k}$
 
@@ -199,9 +208,10 @@ The same perturbation test catches look-ahead in any sequence pipeline (bidirect
 
 - MLP 10-16-1: $(10 + 1)16 + (16 + 1)1 = 193$.
 - LSTM with $d = 3$, $h = 8$: $4 \cdot 8 \cdot (3 + 8 + 1) = 384$; with $d = 10$, $h = 32$: 5,504.
-- Transformer layer, $d = 64$: $4d^2 + 8d^2 = 49{,}152$ weights before biases and norms.
+- PyTorch's LSTM with $d = 10$, $h = 32$: $4 \cdot 32 \cdot (10 + 32 + 2) = 5{,}632$, because it keeps two bias vectors.
+- Transformer layer, $d = 64$ (4 heads; splitting into heads does not change the count): $4d^2 + 8d^2 = 49{,}152$ weights before biases and norms.
 
-With 3,000 noisy training rows, even the 384-parameter LSTM has a high ratio of parameters to effective information; size the model to the signal, not the sample count.
+The 193-parameter MLP in Example 2 already spreads across seeds by a factor of about 1.8 on 3,000 rows; a bigger model on the same rows needs proportionately more regularisation, so size the model to the signal, not the sample count.
 
 ## Pitfalls
 
@@ -222,15 +232,17 @@ With 3,000 noisy training rows, even the 384-parameter LSTM has a high ratio of 
 
 > [!question]- ml-nn-tiny-net | $x = 1$, $y = 1$, $h = \tanh(w_1x)$, $\hat y = w_2h$, $w_1 = 0.5$, $w_2 = 2$, $L = \frac12(\hat y - y)^2$. Find $\partial L/\partial w_1$.
 > About $-0.1192$.
-> $h = 0.4621$, $\hat y = 0.9242$, $\partial L/\partial\hat y = -0.0758$, $\partial L/\partial h = -0.1515$, times $1 - h^2 = 0.7864$ and $x = 1$.
+> $h = 0.462117$, $\hat y = 0.924234$, $\partial L/\partial\hat y = \hat y - y = -0.075766$, $\partial L/\partial h = 2 \times (-0.075766) = -0.15153$, times $1 - h^2 = 0.786448$ and $x = 1$ gives $-0.1192$.
+> The sign is negative because the prediction is below the target, so a gradient-descent step increases $w_1$.
 
 > [!question]- ml-nn-tanh-derivative | Derivative of tanh and of the sigmoid in terms of their outputs?
 > $\tanh' = 1 - h^2$ and $\sigma' = \sigma(1 - \sigma)$.
-> Both are at most 1 (tanh) and 0.25 (sigmoid), and near zero when saturated, which is the root of vanishing gradients.
+> $\tanh'$ is at most 1 and $\sigma'$ at most 0.25 (both at zero input), and both are near zero when saturated, which is the root of vanishing gradients.
 
 > [!question]- ml-nn-gradient-check | How do you verify a hand-written backward pass?
 > Compare with central differences $(L(\theta + \epsilon) - L(\theta - \epsilon))/(2\epsilon)$ in float64, with $\epsilon$ around $10^{-5}$ to $10^{-6}$.
-> Scale the worst absolute gap by the largest gradient; a correct implementation gives $10^{-7}$ or better, a bug gives order 1.
+> Scale the worst absolute gap by the largest gradient; a correct implementation gives $10^{-7}$ or better in float64 (the note's MLP and LSTM checks pass that bound with a wide margin), while a bug typically gives $10^{-3}$ or worse, often order 1.
+> For derivatives far below the function's scale use complex-step differentiation, $\mathrm{Im}\,f(\theta + i\epsilon)/\epsilon$, which has no subtractive cancellation.
 
 > [!question]- ml-nn-param-count-mlp | How many parameters does a 10-16-1 MLP have?
 > 193.
@@ -238,7 +250,7 @@ With 3,000 noisy training rows, even the 384-parameter LSTM has a high ratio of 
 
 > [!question]- ml-nn-lstm-params | How many parameters does an LSTM layer with $d$ inputs and $h$ units have?
 > $4h(d + h + 1)$: four gate blocks, each a map from $[x_t, h_{t-1}, 1]$ to $h$ units.
-> For $d = 10$, $h = 32$ that is 5,504.
+> For $d = 10$, $h = 32$ that is 5,504; PyTorch keeps two bias vectors and reports $4h(d + h + 2) = 5{,}632$.
 
 > [!question]- ml-nn-vanishing-rnn | Why do gradients vanish in a vanilla RNN?
 > $\partial h_T/\partial h_0$ is a product of $T$ Jacobians $\mathrm{diag}(1 - h_t^2)W$; if their norms are below 1 it decays geometrically.
@@ -246,7 +258,7 @@ With 3,000 noisy training rows, even the 384-parameter LSTM has a high ratio of 
 
 > [!question]- ml-nn-exploding | How do you deal with exploding gradients?
 > Clip the gradient norm (Pascanu, Mikolov and Bengio 2013), lower the learning rate, and use architectures with bounded recurrences.
-> Clipping changes the step size, not its direction, so training stays stable without changing the minimiser.
+> Norm clipping rescales the gradient to a maximum length without changing its direction, so one bad step cannot throw the weights far, and points where the gradient is zero are unchanged.
 
 > [!question]- ml-nn-lstm-gates | Write the LSTM cell update and say what each gate does.
 > $c_t = f_t \odot c_{t-1} + i_t \odot g_t$, $h_t = o_t \odot \tanh(c_t)$, gates sigmoid of an affine map of $[x_t, h_{t-1}]$.
@@ -258,7 +270,7 @@ With 3,000 noisy training rows, even the 384-parameter LSTM has a high ratio of 
 
 > [!question]- ml-nn-forget-bias | Why initialise the LSTM forget-gate bias to 1, and is that enough for long memory?
 > It starts $f_t$ near $\sigma(1) = 0.7311$ instead of 0.5, so early gradients survive more steps (Jozefowicz, Zaremba and Sutskever 2015).
-> It is not enough by itself: $0.73^{50}$ is tiny, so memory over 50 steps needs learned forget gates close to 1.
+> It is not enough by itself: $0.7311^{50} = 1.58 \times 10^{-7}$, so memory over 50 steps needs learned forget gates close to 1.
 
 > [!question]- ml-nn-attention-scaling | Why divide by $\sqrt{d_k}$ in attention?
 > With unit-variance entries $q \cdot k$ has variance $d_k$; dividing keeps logits at unit scale.
@@ -282,7 +294,11 @@ With 3,000 noisy training rows, even the 384-parameter LSTM has a high ratio of 
 
 > [!question]- ml-nn-seed-variance | Your network's test result changes a lot with the random seed. What do you report?
 > The distribution across seeds (mean and range), and use an ensemble of seeds in production.
-> In the note's example five seeds ranged from about 0.013 to 0.022 test $R^2$ and their average forecast scored about 0.027.
+> In the note's example five seeds ranged from about 0.0125 to 0.0221 test $R^2$ and their average forecast scored about 0.027.
+
+> [!question]- ml-nn-zero-init | Why not initialise every weight of a hidden layer to zero (or to the same value)?
+> All hidden units then compute the same function and receive the same gradient, so they stay identical after every update and the layer acts like one unit.
+> Random initialisation breaks the symmetry; its variance ($1/\text{fan-in}$ for LeCun, $2/(\text{fan-in} + \text{fan-out})$ for Glorot, $2/\text{fan-in}$ for He) keeps activations and gradients stable through depth.
 
 > [!question]- ml-nn-early-stopping-reg | Why is early stopping a regulariser?
 > With small initial weights and a bounded number of steps, the weights cannot travel far, which behaves like an L2 penalty (Goodfellow et al., section 7.8).
@@ -298,7 +314,7 @@ With 3,000 noisy training rows, even the 384-parameter LSTM has a high ratio of 
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [nn_backprop_lstm.py](code/nn_backprop_lstm.py) prints and asserts every number in this note (hand backprop, MLP and LSTM gradient checks, the low signal-to-noise study, RNN and LSTM gradient decay, attention scaling and the causal-mask test).
+- Code: [nn_backprop_lstm.py](code/nn_backprop_lstm.py) prints and asserts every computed number in this note (hand backprop, MLP and LSTM gradient checks, the low signal-to-noise study and its linear ceiling, RNN and LSTM gradient decay with their controls, attention scaling, the causal-mask test and parameter counts); the Gu, Kelly and Xiu figures are quoted from their Table 1.
 - Code: [lstm_price_prediction.ipynb](code/lstm_price_prediction.ipynb) is a PyTorch LSTM on a noiseless sine wave; it shows the mechanics, not a realistic financial result (a deterministic periodic series is perfectly predictable).
 - Related: [Tree Ensembles and Gradient Boosting](03-Tree-Ensembles-and-Gradient-Boosting.md), [Time-Series Cross-Validation: Purging and Embargo](02-Time-Series-Cross-Validation-Purging-Embargo.md).
 - SDE-Interview-Prep: [Perceptron](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/03-Data-Structures-Algorithms/01-Topics/Machine-Learning-Basics/Perceptron/README.md), [The Transformer From Scratch](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/13-Agentic-AI/Agentic_AI_Zero_to_Godhood/Volume_01_LLM_Foundations/Chapter_02_The_Transformer_From_Scratch.md).
@@ -316,5 +332,6 @@ With 3,000 noisy training rows, even the 384-parameter LSTM has a high ratio of 
 - Vaswani et al. (2017), Attention Is All You Need, NeurIPS.
 - Kingma and Ba (2015), Adam: A Method for Stochastic Optimization, ICLR.
 - Cybenko (1989), Approximation by Superpositions of a Sigmoidal Function, *Mathematics of Control, Signals and Systems* 2(4); Hornik, Stinchcombe and White (1989), Multilayer Feedforward Networks are Universal Approximators, *Neural Networks* 2(5).
-- Gu, Kelly and Xiu (2020), Empirical Asset Pricing via Machine Learning, *Review of Financial Studies* 33(5).
+- Gu, Kelly and Xiu (2020), Empirical Asset Pricing via Machine Learning, *Review of Financial Studies* 33(5), 2223-2273; Table 1 for the out-of-sample $R^2$ by model.
+- Glorot and Bengio (2010), Understanding the Difficulty of Training Deep Feedforward Neural Networks, AISTATS; He, Zhang, Ren and Sun (2015), Delving Deep into Rectifiers, ICCV.
 - Sirignano and Cont (2019), Universal Features of Price Formation in Financial Markets: Perspectives from Deep Learning, *Quantitative Finance* 19(9).

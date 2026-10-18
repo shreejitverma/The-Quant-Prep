@@ -16,6 +16,7 @@ Run: uv run --no-project --with numpy python 10-Machine-Learning-for-Finance/cod
 
 from __future__ import annotations
 
+import cmath
 import math
 
 import numpy as np
@@ -63,14 +64,20 @@ def section_tiny_backprop() -> None:
     d_h = d_yhat * w2
     d_z = d_h * (1 - h * h)
     d_w1 = d_z * x
-    check("tiny net h = tanh(0.5)", h, 0.4621, 5e-5)
-    check("tiny net prediction", yhat, 0.9242, 5e-5)
+    # Intermediates are quoted to enough digits that the card's chained products reproduce each rounded answer.
+    check("tiny net h = tanh(0.5)", h, 0.462117, 5e-7, ".6f")
+    check("tiny net prediction", yhat, 0.924234, 5e-7, ".6f")
     check("tiny net loss", loss(w1, w2), 0.00287, 5e-6, ".5f")
-    check("tiny net dL/dyhat", d_yhat, -0.0758, 5e-5)
+    check("tiny net dL/dyhat", d_yhat, -0.075766, 5e-7, ".6f")
     check("tiny net dL/dw2", d_w2, -0.0350, 5e-5)
-    check("tiny net dL/dh", d_h, -0.1515, 5e-5)
-    check("tiny net tanh derivative 1 - h^2", 1 - h * h, 0.7864, 5e-5)
+    check("tiny net dL/dh", d_h, -0.15153, 5e-6, ".5f")
+    check("tiny net tanh derivative 1 - h^2", 1 - h * h, 0.786448, 5e-7, ".6f")
     check("tiny net dL/dw1", d_w1, -0.1192, 5e-5)
+    # The note's chain from its quoted (rounded) intermediates must land on the same rounded answers.
+    assert f"{-0.075766 * 0.462117:.4f}" == "-0.0350" and f"{-0.075766 * 2:.5f}" == "-0.15153"
+    assert f"{-0.15153 * 0.786448 * x:.4f}" == "-0.1192" and f"{0.5 - 0.5 * -0.1192:.4f}" == "0.5596"
+    # Worked example 1: the four-decimal intermediates do not chain to the right answers.
+    assert f"{-0.0758 * 2:.4f}" == "-0.1516" and f"{-0.1515 * 0.7864:.4f}" == "-0.1191"
     eps = 1e-6
     fd_w1 = (loss(w1 + eps, w2) - loss(w1 - eps, w2)) / (2 * eps)
     fd_w2 = (loss(w1, w2 + eps) - loss(w1, w2 - eps)) / (2 * eps)
@@ -190,6 +197,13 @@ def section_low_snr() -> None:
     check("population R^2 of the true function", 0.05 / 1.05, 0.0476, 5e-5)
     check("population R^2 of the best linear model", 0.01 / 1.05, 0.0095, 5e-5)
     check("test R^2 of the true function (sample)", r2(y_te, f_te), 0.0529, 5e-5)
+    # Independent check of the population variance of the signal by Monte Carlo (seed 11, 2 million draws).
+    xm = np.random.default_rng(11).standard_normal((2_000_000, 3))
+    signal_mc = 0.2 * xm[:, 0] * xm[:, 1] + 0.1 * xm[:, 2]
+    check("Monte Carlo variance of 0.2 x1 x2 + 0.1 x3 (theory 0.05)", float(signal_mc.var()), 0.050, 5e-4, ".3f")
+    # The best linear predictor is 0.1 x3 (x1 x2 is uncorrelated with every x_j); its test-sample R^2 is the linear ceiling.
+    lin_ceiling = r2(y_te, 0.1 * x_te[:, 2])
+    check("test R^2 of the oracle linear forecast 0.1 x3 (linear ceiling)", lin_ceiling, 0.0100, 5e-5)
 
     xa = np.hstack([x_tr, np.ones((x_tr.shape[0], 1))])
     beta = np.linalg.solve(xa.T @ xa + 10.0 * np.eye(p + 1), xa.T @ y_tr)
@@ -219,11 +233,17 @@ def section_low_snr() -> None:
         pred = mlp_forward(small, x_te)[0]
         preds.append(pred)
         test_r2.append(r2(y_te, pred))
+    print("small MLP test R^2 by seed: " + ", ".join(f"{v:.4f}" for v in test_r2))
     check("small MLP (16 hidden, wd 1e-3, early stopping) mean test R^2 over 5 seeds", float(np.mean(test_r2)), 0.016, 5e-4, ".3f")
-    check("small MLP min test R^2 over 5 seeds", float(np.min(test_r2)), 0.013, 5e-4, ".3f")
-    check("small MLP max test R^2 over 5 seeds", float(np.max(test_r2)), 0.022, 5e-4, ".3f")
-    check("5-seed ensemble test R^2", r2(y_te, np.mean(preds, axis=0)), 0.027, 5e-4, ".3f")
-    check("ratio of best to worst seed test R^2", float(np.max(test_r2) / np.min(test_r2)), 1.76, 5e-3, ".2f")
+    check("small MLP min test R^2 over 5 seeds", float(np.min(test_r2)), 0.0125, 5e-5)
+    check("small MLP max test R^2 over 5 seeds", float(np.max(test_r2)), 0.0221, 5e-5)
+    ens = r2(y_te, np.mean(preds, axis=0))
+    check("5-seed ensemble test R^2", ens, 0.027, 5e-4, ".3f")
+    check("ratio of best to worst seed test R^2", float(np.max(test_r2) / np.min(test_r2)), 1.8, 0.05, ".1f")
+    # Beating the linear ceiling can only come from the nonlinear (x1 x2) part of the signal.
+    rf_ridge_te = r2(y_te, h_te @ out_ridge)
+    assert ens > lin_ceiling and rf_ridge_te > lin_ceiling and min(test_r2) > lin_ceiling, "nonlinear models must beat the linear ceiling"
+    print("ensemble, ridge random-feature net and every MLP seed beat the linear ceiling: True")
 
 
 # ---------------------------------------------------------------------------
@@ -237,12 +257,39 @@ def section_rnn_vanishing() -> None:
     check("0.9^50 (bound on dh_50/dh_0 for |w| = 0.9)", 0.9**50, 0.00515, 5e-6, ".5f")
     rng = np.random.default_rng(3)
     u = 0.5 * rng.standard_normal(50)
-    for w, exp, tol in [(0.9, 9.11e-12, 5e-15), (1.5, 2.40e-10, 5e-13)]:
+
+    def rnn_jacobian(w: float, inputs: np.ndarray) -> float:
         h, jac = 0.0, 1.0
         for t in range(50):
-            h = math.tanh(w * h + u[t])
+            h = math.tanh(w * h + inputs[t])
             jac *= w * (1 - h * h)
+        return jac
+
+    for w, exp, tol, exp_geo in [(0.9, 9.11e-12, 5e-15, 0.601), (1.5, 2.40e-10, 5e-13, 0.642)]:
+        jac = rnn_jacobian(w, u)
+        # Independent check by complex-step differentiation of h_50 in h_0 (no subtraction, so no cancellation at 1e-12).
+        hc = complex(0.0, 1e-30)
+        for t in range(50):
+            hc = cmath.tanh(w * hc + u[t])
+        assert abs(hc.imag / 1e-30 - jac) <= 1e-9 * abs(jac), f"RNN Jacobian {jac} disagrees with complex step {hc.imag / 1e-30}"
         check(f"dh_50/dh_0 for recurrent weight {w}", abs(jac), exp, tol, ".2e")
+        check(f"geometric mean of the per-step factor w(1 - h_t^2), w = {w}", abs(jac) ** (1 / 50), exp_geo, 5e-4, ".3f")
+    # The factor 1.5 (1 - h^2) drops below 1 once |h| exceeds the root of 1.5 (1 - h^2) = 1, found here by bisection.
+    lo, hi = 0.0, 1.0
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if 1.5 * (1 - mid * mid) > 1 else (lo, mid)
+    check("|h| above which 1.5 (1 - h^2) < 1", lo, 0.577, 5e-4, ".3f")
+    # Control: zero inputs keep h_t = 0, where tanh is linear, so every factor is exactly w and the gradient explodes.
+    check("dh_50/dh_0 for recurrent weight 1.5 with zero inputs (= 1.5^50)", rnn_jacobian(1.5, np.zeros(50)), 6.38e8, 5e5, ".2e")
+    # Closed form against the recursion above: with h_t = 0 every factor is w, so the product is 1.5^50.
+    assert abs(rnn_jacobian(1.5, np.zeros(50)) - 1.5**50) <= 1e-12 * 1.5**50
+    print(f"1.5^50 = {1.5**50:.2e} (equals the zero-input recursion)")
+    hstar = 0.9
+    for _ in range(200):  # fixed point of h = tanh(1.5 h), by iteration
+        hstar = math.tanh(1.5 * hstar)
+    check("stable fixed point h* of h = tanh(1.5 h)", hstar, 0.8586, 5e-5)
+    check("per-step factor at the fixed point, 1.5 (1 - h*^2)", 1.5 * (1 - hstar**2), 0.394, 5e-4, ".3f")
 
 
 # ---------------------------------------------------------------------------
@@ -299,6 +346,10 @@ def section_lstm() -> None:
     for d, hdim, exp in [(3, 8, 384), (10, 32, 5504)]:
         w = lstm_params(np.random.default_rng(0), d, hdim, 1.0, 0.1)
         check(f"LSTM parameter count, d {d}, h {hdim}", w["W"].size, exp, 0, ".0f")
+    # PyTorch's nn.LSTM keeps two bias vectors (b_ih and b_hh), so it reports 4h(d + h + 2).
+    torch_shapes = [(4 * 32, 10), (4 * 32, 32), (4 * 32,), (4 * 32,)]  # weight_ih, weight_hh, bias_ih, bias_hh
+    torch_count = sum(np.zeros(shape).size for shape in torch_shapes)
+    check("LSTM parameter count with two bias vectors (PyTorch convention), d 10, h 32", torch_count, 5632, 0, ".0f")
     rng = np.random.default_rng(4)
     d, hdim, steps = 3, 8, 12
     w = lstm_params(rng, d, hdim, 1.0, 0.3)["W"]
@@ -333,12 +384,25 @@ def section_lstm() -> None:
         c0 = np.zeros(hdim)
         _, _, cache = lstm_forward(w, xs, hdim, c0)
         prod_f = float(np.prod([fc[2][0] for fc in cache]))
-        e = np.zeros(hdim)
-        e[0] = 1e-6
-        fd = (lstm_forward(w, xs, hdim, c0 + e)[1][0] - lstm_forward(w, xs, hdim, c0 - e)[1][0]) / 2e-6
+        # Complex-step derivative of c_50[0] in c_0[0]: exact to rounding even when the derivative is 1e-7.
+        e = np.zeros(hdim, dtype=complex)
+        e[0] = 1e-30j
+        fd = float(lstm_forward(w, xs, hdim, c0 + e)[1][0].imag / 1e-30)
         check(f"forget bias {bias}: sigmoid(bias)", float(sigmoid(np.array(bias))), exp_sig, 5e-5)
+        if bias == 1.0:
+            # Card ml-nn-forget-bias: a gate pinned at sigmoid(1) for 50 steps keeps this fraction of the memory.
+            check("sigmoid(1)^50", float(sigmoid(np.array(1.0))) ** 50, 1.58e-07, 5e-10, ".3g")
         check(f"forget bias {bias}: product of 50 forget gates", prod_f, exp_prod, 5e-3 * exp_prod, ".3g")
-        check(f"forget bias {bias}: dc_50/dc_0 by finite difference", fd, exp_fd, 5e-3 * exp_fd, ".3g")
+        check(f"forget bias {bias}: dc_50/dc_0 by complex step", fd, exp_fd, 5e-3 * exp_fd, ".3g")
+        # Control: cut the recurrent rows (h_{t-1} into the gates). Then c_0 reaches c_50 only along the cell path,
+        # and the derivative must equal the product of forget gates exactly.
+        w_cut = w.copy()
+        w_cut[d : d + hdim, :] = 0.0
+        _, _, cache_cut = lstm_forward(w_cut, xs, hdim, c0)
+        prod_cut = float(np.prod([fc[2][0] for fc in cache_cut]))
+        fd_cut = float(lstm_forward(w_cut, xs, hdim, c0 + e)[1][0].imag / 1e-30)
+        print(f"forget bias {bias}, recurrent weights cut: dc_50/dc_0 = {fd_cut:.4g}, product of forget gates = {prod_cut:.4g}")
+        assert abs(fd_cut - prod_cut) <= 1e-9 * prod_cut, "without the h path, dc_T/dc_0 must equal the product of forget gates"
 
 
 # ---------------------------------------------------------------------------
@@ -389,7 +453,12 @@ def section_attention() -> None:
     full_diff = float(np.abs(self_attention(x, wq, wk, wv, False)[:6] - self_attention(x2, wq, wk, wv, False)[:6]).max())
     check("causal attention: max change in outputs 0-5 when inputs 6-9 change", causal_diff, 0.0, 0.0, ".1f")
     check("unmasked attention: max change in outputs 0-5", full_diff, 9.93, 5e-3, ".2f")
-    check("transformer layer weights 12 d^2 for d_model 64 (no biases, no norms)", 4 * 64 * 64 + 2 * 64 * 256, 49152, 0, ".0f")
+    # Build the weight matrices of one layer (4 heads; the head split does not change the count) and count them.
+    dmod, heads = 64, 4
+    layer = [rng.standard_normal((dmod, dmod // heads)) for _ in range(3 * heads)]  # per-head Q, K, V projections
+    layer += [rng.standard_normal((dmod, dmod)), rng.standard_normal((dmod, 4 * dmod)), rng.standard_normal((4 * dmod, dmod))]
+    check("transformer layer weights for d_model 64, 4 heads (no biases, no norms)", sum(a.size for a in layer), 49152, 0, ".0f")
+    check("12 d^2 for d_model 64", 12 * dmod**2, 49152, 0, ".0f")
 
 
 if __name__ == "__main__":

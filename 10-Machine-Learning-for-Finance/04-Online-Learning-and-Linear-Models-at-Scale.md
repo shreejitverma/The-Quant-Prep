@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [ml-fundamentals-and-generalization]
 est_hours: 3
-sources: [Murphy - Probabilistic Machine Learning - An Introduction (MIT Press 2022) ch 8 and 11, Hastie Tibshirani and Friedman - The Elements of Statistical Learning (2nd ed. 2009) sec 3.4, Haykin - Adaptive Filter Theory (5th ed. Pearson 2014) - LMS and RLS chapters, Zinkevich (2003) - Online Convex Programming and Generalized Infinitesimal Gradient Ascent - ICML, Hazan - Introduction to Online Convex Optimization - Foundations and Trends in Optimization 2(3-4) 2016 ch 3, Duchi Hazan and Singer (2011) - Adaptive Subgradient Methods for Online Learning and Stochastic Optimization - JMLR 12, McMahan et al. (2013) - Ad Click Prediction - a View from the Trenches - KDD, Weinberger Dasgupta Langford Smola and Attenberg (2009) - Feature Hashing for Large Scale Multitask Learning - ICML]
+sources: [Murphy - Probabilistic Machine Learning - An Introduction (MIT Press 2022) ch 8 and 11, Hastie Tibshirani and Friedman - The Elements of Statistical Learning (2nd ed. 2009) sec 3.4, Haykin - Adaptive Filter Theory (5th ed. Pearson 2014) ch 6 7 10 13 and 14, Feuer and Weinstein (1985) - Convergence Analysis of LMS Filters with Uncorrelated Gaussian Data - IEEE Transactions on Acoustics Speech and Signal Processing 33(1), Zinkevich (2003) - Online Convex Programming and Generalized Infinitesimal Gradient Ascent - ICML, Hazan - Introduction to Online Convex Optimization - Foundations and Trends in Optimization 2(3-4) 2016 ch 3, Duchi Hazan and Singer (2011) - Adaptive Subgradient Methods for Online Learning and Stochastic Optimization - JMLR 12, McMahan et al. (2013) - Ad Click Prediction - a View from the Trenches - KDD, Weinberger Dasgupta Langford Smola and Attenberg (2009) - Feature Hashing for Large Scale Multitask Learning - ICML]
 ---
 
 # Online Learning and Linear Models at Scale
@@ -14,8 +14,8 @@ sources: [Murphy - Probabilistic Machine Learning - An Introduction (MIT Press 2
 
 - Recursive least squares (RLS) updates a ridge fit in $O(p^2)$ per observation with the Sherman-Morrison identity and gives exactly the batch ridge answer at every step; a forgetting factor $\lambda < 1$ turns it into exponentially weighted ridge.
 - A forgetting factor $\lambda$ has memory $1/(1-\lambda)$, half-life $\ln 0.5/\ln\lambda$ and effective sample size $(1+\lambda)/(1-\lambda)$: for $\lambda = 0.99$ that is 100, 68.97 and 199 observations.
-- For a random-walk coefficient the best forgetting factor balances noise $r(1-\lambda)/(1+\lambda)$ against lag $q\lambda^2/(1-\lambda^2)$, giving $1-\lambda \approx \sqrt{q/r}$, the steady-state Kalman gain; RLS is the Kalman filter with a fixed gain schedule.
-- SGD on squared loss (LMS) is stable only for step $\eta < 2/\lambda_{\max}$ of the feature covariance, converges at a rate set by $\lambda_{\min}$, so standardise features; a constant step leaves an excess error of about $\eta\sigma^2\,\mathrm{tr}(R)/2$.
+- For a random-walk coefficient the best forgetting factor balances noise $r(1-\lambda)/(1+\lambda)$ against lag $q\lambda^2/(1-\lambda^2)$, giving $1-\lambda \approx \sqrt{q/r}$, the steady-state Kalman gain; for a local-level model, exponential weighting with $\lambda = 1 - K$ is exactly the steady-state Kalman filter.
+- SGD on squared loss (LMS) converges in the mean only for $\eta < 2/\lambda_{\max}$ of the feature covariance and needs a smaller step (below $2/(3\,\mathrm{tr}R)$ is safe for Gaussian inputs) for a bounded weight variance; it converges at a rate set by $\lambda_{\min}$, so standardise features; a constant step leaves an excess error of about $\eta\sigma^2\,\mathrm{tr}(R)/2$.
 - Linear models win in production because at financial signal-to-noise ratios variance dominates, and they are cheap to refit online, shardable through sufficient statistics, easy to constrain and attribute, and fail in visible ways.
 
 ## Learning objectives
@@ -94,7 +94,8 @@ For the local-level analogue ($x_t \equiv 1$) the exponentially weighted estimat
 
 With $\varepsilon = 1 - \lambda$ small the sum is about $r\varepsilon/2 + q/(2\varepsilon)$, minimised at $\varepsilon^* = \sqrt{q/r}$ with error about $\sqrt{qr}$.
 The Kalman filter for this state-space model is the optimal linear tracker; its steady-state prior variance solves $P^2 - qP - qr = 0$ and its gain is $K = P/(P + r) \approx \sqrt{q/r}$.
-So a forgetting factor is a hand-set Kalman gain, and $\lambda^* \approx 1 - K$: the Kalman filter is what you get when you estimate $q$ instead of guessing $\lambda$ (see [State-Space Models and the Kalman Filter](../02-Statistics-and-Econometrics/11-State-Space-Models-and-Kalman-Filter.md), where $Q = 0$ reduces the filter to RLS).
+In steady state the local-level filter is $\hat\beta_t = (1-K)\hat\beta_{t-1} + Ky_t = K\sum_j(1-K)^jy_{t-j}$, which is exactly the exponentially weighted estimate with $\lambda = 1 - K$, so the error formula above is minimised at $\lambda^* = 1 - K$ and its minimum equals the Kalman posterior variance.
+So a forgetting factor is a hand-set Kalman gain: the Kalman filter is what you get when you estimate $q$ instead of guessing $\lambda$ (see [State-Space Models and the Kalman Filter](../02-Statistics-and-Econometrics/11-State-Space-Models-and-Kalman-Filter.md), where $Q = 0$ reduces the filter to RLS).
 In practice the drift variance is unknown and itself changes, which is why desks often run a few forgetting factors side by side or pick $\lambda$ by out-of-sample forecast error on a later block.
 
 ### LMS and SGD on squared loss
@@ -105,15 +106,18 @@ $$
 w_t = w_{t-1} + \eta\,(y_t - x_t^\top w_{t-1})\,x_t.
 $$
 
+Sign convention: the error is $e_t = y_t - x_t^\top w_{t-1}$ (realised minus forecast), the gradient of the loss is $-e_tx_t$, so the descent step adds $\eta e_tx_t$; RLS uses the same innovation sign.
 It is RLS with the matrix gain $P_{t-1}$ replaced by the scalar $\eta$: $O(p)$ per step, but blind to the scale and correlation of the features.
 Taking expectations with $R = E[xx^\top]$, the mean error evolves as $E[w_t - w^*] = (I - \eta R)\,E[w_{t-1} - w^*]$, so along eigenvector $i$ it contracts by $1 - \eta\lambda_i$ per step:
 
 - stability in the mean needs $0 < \eta < 2/\lambda_{\max}$;
+- a bounded weight-error variance (mean-square stability) needs more, because the update multiplies the error by the random matrix $I - \eta x_tx_t^\top$ and $E[x^4]$ enters: for independent Gaussian inputs Feuer and Weinstein (1985, eq. 30) show the exact condition is $\eta\lambda_i < 1$ for all $i$ and $\sum_i\eta\lambda_i/(2 - 2\eta\lambda_i) < 1$, which is $\eta < 2/(p+2)$ for $p$ standardised white features and is implied by the simple bound $\eta \le 2/(3\,\mathrm{tr}R)$ (their eq. 35, with the step $\eta = 2\mu$ in their notation);
 - the slowest mode contracts by $1 - \eta\lambda_{\min}$, so the number of steps scales with the condition number $\kappa = \lambda_{\max}/\lambda_{\min}$;
-- with a constant step the weights never settle: they jitter around $w^*$ and add an excess squared error of about $\eta\sigma^2\,\mathrm{tr}(R)/2$ for small $\eta$ (the LMS misadjustment), so the step size trades tracking speed against steady-state noise exactly as $\lambda$ does for RLS.
+- with a constant step the weights never settle: they jitter around $w^*$ and add an excess squared error of about $\eta\sigma^2\,\mathrm{tr}(R)/2$ for small $\eta$ (the LMS misadjustment); for Gaussian inputs the exact value is $\sigma^2S/(1-S)$ with $S = \sum_i\eta\lambda_i/(2 - 2\eta\lambda_i)$ (Feuer and Weinstein 1985, eq. 48), so the step size trades tracking speed against steady-state noise exactly as $\lambda$ does for RLS.
 
 Standardising features (or whitening them) is therefore not cosmetic for SGD: it is what makes a single learning rate work.
-Per-coordinate step sizes (AdaGrad, Duchi, Hazan and Singer 2011) and second-order methods (RLS itself) are the two standard fixes when features cannot be put on one scale.
+Normalised LMS, which divides the step by $\lVert x_t\rVert^2$, removes the dependence on the input scale (Haykin, chapter 7).
+Per-coordinate step sizes (AdaGrad, Duchi, Hazan and Singer 2011) and second-order methods (RLS itself) are the standard fixes when features cannot be put on one scale.
 
 ### Online convex optimisation and regret
 
@@ -127,7 +131,7 @@ Regret against a fixed comparator is the wrong yardstick when the target drifts;
 
 - Sufficient statistics shard: compute $X_k^\top X_k$ and $X_k^\top y_k$ on each shard or day, sum them and solve once; the answer equals the single-machine fit, and an exponentially weighted version just decays the running sums.
 - Updating is cheap and deterministic: a daily refit of a $p = 500$ ridge model costs one $500 \times 500$ solve; there is no random seed, early stopping or architecture choice to drift between runs.
-- Feature hashing maps an unbounded vocabulary (tickers crossed with event types, text tokens) into $m$ buckets without a dictionary (Weinberger et al. 2009); collisions add noise, so size $m$ from the collision rate.
+- Feature hashing maps an unbounded vocabulary (tickers crossed with event types, text tokens) into $m$ buckets without a dictionary (Weinberger et al. 2009), with a second hash that gives each feature a random sign so that collisions cancel in expectation; collisions still add noise, so size $m$ from the collision rate.
 - Constraints and attribution are direct: a coefficient is an exposure, so sign constraints, neutrality to factors and risk attribution are linear algebra, and a bad coefficient is visible.
 
 ### Why simple linear models often win in production
@@ -176,22 +180,23 @@ Simulating 60,000 steps (seed 2024) and scoring the mean squared error of the be
 $\lambda = 0.99$ is the best forgetting factor on the grid and only about 0.3% worse than the Kalman filter that knows $q$.
 Expanding OLS is about 40.1 times worse: it estimates the average beta of the whole history, not today's.
 The formula column, derived for a constant regressor, tracks the simulation to within 6.2% across the grid.
-A control run that changes only the regressor to a constant $x_t = 1$ gives about 9.86 for $\lambda = 0.99$, within 0.9% of the formula, so the remaining gap comes from the randomness of the regressor.
+A control run that changes only the regressor to a constant $x_t = 1$, reusing the same beta path and noise draws, gives about 9.99 for $\lambda = 0.99$, within 0.4% of the formula, so most of the gap comes from the randomness of the regressor.
 The rolling window with about the same effective sample size (200) is worse than $\lambda = 0.99$, about 12.47 against 10.49.
 
 ### Example 3: SGD on an ill-conditioned design
 
-Two uncorrelated features with variances 1 and 100.
-The stability bound is $\eta < 2/100 = 0.02$; take $\eta = 0.01$.
-The fast mode contracts by $1 - 0.01 \times 100 = 0$ in one step, but the slow mode contracts by only 0.99 per step, so cutting its error by a factor of 1,000 takes $\ln(10^{-3})/\ln 0.99 = 687.3$, that is 688 steps.
-After standardising both variances to 1, $\eta = 0.5$ contracts both modes by 0.5 per step and the same reduction takes 10 steps.
+Two independent Gaussian features with variances 1 and 100.
+The mean bound is $\eta < 2/100 = 0.0200$, but the mean-square condition above gives $\eta < 0.00666$ (the conservative $2/(3\,\mathrm{tr}R) = 0.0066$): at $\eta = 0.01$ the weight-error variance grows by a factor of about 2.00 per step, so the error variance is unbounded even though the mean converges.
+Take $\eta = 0.005$.
+The fast mode contracts by $1 - 0.005 \times 100 = 0.5$ per step, but the slow mode contracts by only 0.995 per step, so cutting its error by a factor of 1,000 takes $\ln(10^{-3})/\ln 0.995 = 1378.1$, that is 1379 steps.
+After standardising both variances to 1 the mean-square bound is $2/(p+2) = 0.50$; $\eta = 0.25$ contracts both modes by 0.75 per step and the same reduction takes 25 steps.
 The same arithmetic is why unscaled features (a price level next to a return) make SGD look like it "does not converge".
 
 ### Example 4: the cost of a constant step
 
 Five unit-variance independent features, noise variance 1 and $\eta = 0.01$.
 The small-step misadjustment formula predicts an excess squared error of $\eta\sigma^2\,\mathrm{tr}(R)/2 = 0.025$ on top of the noise.
-Running LMS for 400,000 steps (seed 11) gives about 0.0259; the formula is a first-order approximation in $\eta$ and slightly understates the jitter.
+Running LMS for 400,000 steps (seed 11) gives about 0.0259; the formula is a first-order approximation in $\eta$ and slightly understates the jitter, while the exact Gaussian-data value $\sigma^2S/(1-S)$ with $S = 5 \times 0.01/1.98$ is 0.0259.
 Halving $\eta$ halves the jitter but doubles the time to adapt to a change in $w^*$.
 
 ### Example 5: sizing a hash space
@@ -210,8 +215,8 @@ The script finds the coefficients agree with the single-pass fit to better than 
 - Forgetting that the RLS prior $P_0 = I/\delta$ is a ridge penalty that decays as $\lambda^t$ under forgetting; with $\lambda < 1$ the long-run fit is unregularised unless you add a persistent penalty.
 - Covariance windup: with $\lambda < 1$ and a feature that stops moving (a dummy that stays 0, a regime with no variation), $P$ grows like $\lambda^{-t}$ in that direction and the next observation causes a huge jump; bound $P$, add a persistent ridge term or switch to a Kalman filter with explicit $q$.
 - Letting $P$ drift from symmetric and positive definite after millions of updates; symmetrise, use a square-root or QR form, or periodically re-solve from the sufficient statistics.
-- Choosing $\lambda$ or a window by in-sample fit; the in-sample error always prefers the shortest memory, so choose by one-step-ahead out-of-sample error.
-- Running SGD on unscaled features and blaming the model when it diverges or crawls; the step size must respect $2/\lambda_{\max}$ and the speed is set by $\lambda_{\min}$.
+- Choosing $\lambda$ or a window by in-sample fit; the in-sample error favours the shortest memory, so choose by one-step-ahead out-of-sample error.
+- Running SGD on unscaled features and blaming the model when it diverges or crawls; the step size must respect the mean-square bound (tighter than $2/\lambda_{\max}$) and the speed is set by $\lambda_{\min}$.
 - Comparing an online model with a batch model fit on the full sample; the batch fit has seen the future, so give both the same information set at every date.
 - Treating a regret bound as a performance forecast; it is relative to the best fixed weight in hindsight, which may itself lose money.
 - Hashing a few critical dense features together with millions of sparse ones; collisions silently corrupt the coefficients that matter.
@@ -236,7 +241,7 @@ The script finds the coefficients agree with the single-pass fit to better than 
 
 > [!question]- ml-online-optimal-lambda | A beta follows a random walk with step variance $q$; noise variance is $r$. Which forgetting factor do you choose?
 > About $1 - \lambda = \sqrt{q/r}$.
-> Error is noise $r(1-\lambda)/(1+\lambda)$ plus lag $q\lambda^2/(1-\lambda^2)$, about $r\varepsilon/2 + q/(2\varepsilon)$ with $\varepsilon = 1 - \lambda$, minimised at $\varepsilon = \sqrt{q/r}$; this is the steady-state Kalman gain.
+> Error is noise $r(1-\lambda)/(1+\lambda)$ plus lag $q\lambda^2/(1-\lambda^2)$, about $r\varepsilon/2 + q/(2\varepsilon)$ with $\varepsilon = 1 - \lambda$, minimised at $\varepsilon = \sqrt{q/r}$, which is the steady-state Kalman gain to leading order; exactly, the error formula is minimised at $\lambda = 1 - K$ (for $q = 10^{-4}$, $r = 1$: $K = 0.00995$ against $\sqrt{q/r} = 0.01$).
 
 > [!question]- ml-online-rls-vs-kalman | How is RLS with forgetting related to the Kalman filter?
 > Both update by gain times innovation; the Kalman filter with a random-walk state and process variance $Q$ chooses the gain optimally, and RLS replaces $Q$ with a fixed forgetting factor.
@@ -249,17 +254,19 @@ The script finds the coefficients agree with the single-pass fit to better than 
 > [!question]- ml-online-lms-stability | When does LMS / SGD on squared loss converge in the mean?
 > When $0 < \eta < 2/\lambda_{\max}(R)$ with $R = E[xx^\top]$.
 > The mean error obeys $e_t = (I - \eta R)e_{t-1}$, so each eigen-mode needs $|1 - \eta\lambda_i| < 1$.
+> That is not enough for a bounded weight variance: for Gaussian inputs mean-square stability needs $\sum_i\eta\lambda_i/(2 - 2\eta\lambda_i) < 1$ (Feuer and Weinstein 1985), and $\eta \le 2/(3\,\mathrm{tr}R)$ is a safe rule.
 
-> [!question]- ml-online-conditioning | Feature variances are 1 and 100. How many SGD steps to cut the slow-mode error 1000-fold at $\eta = 0.01$, and after standardising?
-> About 688 steps unscaled (the slow mode contracts by 0.99 per step) against 10 after standardising with $\eta = 0.5$.
+> [!question]- ml-online-conditioning | Independent Gaussian features with variances 1 and 100. How many SGD steps to cut the slow-mode mean error 1000-fold at $\eta = 0.005$, and after standardising with $\eta = 0.25$?
+> 1379 steps unscaled (the slow mode contracts by 0.995 per step, $\ln 10^{-3}/\ln 0.995 = 1378.1$) against 25 after standardising (contraction 0.75 per step).
+> The larger unscaled step $\eta = 0.01$ would converge in the mean but has unbounded weight variance (mean-square bound 0.00666).
 > The step is capped by the largest eigenvalue and the speed is set by the smallest, so the condition number sets the iteration count.
 
 > [!question]- ml-online-misadjustment | What does a constant SGD step cost in steady state?
-> An excess squared error of about $\eta\sigma^2\,\mathrm{tr}(R)/2$ for small $\eta$ (LMS misadjustment), because the weights keep jittering around $w^*$.
+> An excess squared error of about $\eta\sigma^2\,\mathrm{tr}(R)/2$ for small $\eta$ (LMS misadjustment), because the weights keep jittering around $w^*$; for Gaussian inputs the exact value is $\sigma^2S/(1-S)$ with $S = \sum_i\eta\lambda_i/(2 - 2\eta\lambda_i)$.
 > The step trades adaptation speed against this jitter, the same trade-off as the forgetting factor.
 
 > [!question]- ml-online-rls-vs-sgd | RLS or SGD for an online linear model with 50 features?
-> RLS: an $O(p^2)$ update is trivial at $p = 50$, it is invariant to feature scaling and gives the exact (weighted) ridge answer.
+> RLS: an $O(p^2)$ update is trivial at $p = 50$, it is invariant to feature scaling apart from its ridge prior and gives the exact (weighted) ridge answer.
 > SGD's $O(p)$ cost only wins with very large or sparse $p$ (text, hashed features), where per-coordinate rates such as AdaGrad or FTRL fix its scaling problem.
 
 > [!question]- ml-online-ogd-regret | State the regret bound of online gradient descent.
@@ -291,19 +298,20 @@ The script finds the coefficients agree with the single-pass fit to better than 
 > It is easy to constrain (neutrality, sign) and attribute, and its failures are visible in its coefficients.
 
 > [!question]- ml-online-lambda-in-sample | You pick the forgetting factor that minimises in-sample squared error. What happens?
-> You get the shortest memory on the grid, because a shorter memory always fits the recent past better in sample.
+> You tend to get the shortest memory on the grid, because a shorter memory fits the recent past better in sample.
 > Choose $\lambda$ by one-step-ahead out-of-sample error, which is what the innovation sequence of RLS gives you for free.
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [online_linear_models.py](code/online_linear_models.py) prints and asserts every number in this note (scalar RLS by hand, RLS against batch and weighted ridge, forgetting factor arithmetic, LMS stability and misadjustment, the drifting-beta tracking study, sharded sufficient statistics and hashing collisions).
+- Code: [online_linear_models.py](code/online_linear_models.py) prints and asserts every number in this note (scalar RLS by hand, RLS against batch and weighted ridge, forgetting factor arithmetic, LMS mean and mean-square stability and misadjustment, the drifting-beta tracking study, sharded sufficient statistics and hashing collisions).
 - Related: [State-Space Models and the Kalman Filter](../02-Statistics-and-Econometrics/11-State-Space-Models-and-Kalman-Filter.md), [Regularization: Ridge and Lasso](../02-Statistics-and-Econometrics/06-Regularization-Ridge-Lasso.md), [ML Fundamentals and Generalization](01-ML-Fundamentals-and-Generalization.md).
 
 ## Further reading
 
 - Kevin Murphy, *Probabilistic Machine Learning: An Introduction* (MIT Press 2022), chapter 8 (optimisation and SGD) and chapter 11 (linear regression).
 - Hastie, Tibshirani and Friedman, *The Elements of Statistical Learning* (2nd ed., 2009), section 3.4 (shrinkage methods).
-- Simon Haykin, *Adaptive Filter Theory* (5th ed., Pearson 2014), the LMS and RLS chapters (stability, misadjustment, tracking).
+- Simon Haykin, *Adaptive Filter Theory* (5th ed., Pearson 2014), chapters 6 (LMS), 7 (normalised LMS), 10 (RLS), 13 (adaptation in nonstationary environments) and 14 (Kalman filters).
+- Arie Feuer and Ehud Weinstein (1985), Convergence Analysis of LMS Filters with Uncorrelated Gaussian Data, *IEEE Transactions on Acoustics, Speech, and Signal Processing* 33(1), 222-230.
 - Martin Zinkevich (2003), Online Convex Programming and Generalized Infinitesimal Gradient Ascent, ICML.
 - Elad Hazan (2016), Introduction to Online Convex Optimization, *Foundations and Trends in Optimization* 2(3-4), chapter 3.
 - Duchi, Hazan and Singer (2011), Adaptive Subgradient Methods for Online Learning and Stochastic Optimization, *JMLR* 12.

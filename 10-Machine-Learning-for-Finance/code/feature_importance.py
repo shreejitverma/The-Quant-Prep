@@ -12,6 +12,10 @@ is fitted by the code below; no external ML library is used.
    together) and single-feature importance, showing the substitution effect.
 3. Exact interventional Shapley values for the forest by enumerating all 64 coalitions, with the efficiency check.
 4. Importance on a pure-noise target: MDI still sums to one, MDA does not.
+5. Cardinality control: four pure-noise features that differ only in their number of distinct values; MDI rises with it.
+
+Controls: the substitution effect is isolated by refitting with x2 deleted (one change, same data and forest seed), and
+the cardinality bias by noise features that differ only in their number of distinct values.
 
 Run: uv run --no-project --with numpy python 10-Machine-Learning-for-Finance/code/feature_importance.py
 """
@@ -183,6 +187,27 @@ def interventional_values(f, x_explain: np.ndarray, background: np.ndarray) -> d
     return values
 
 
+def shapley_by_orderings(f, x: np.ndarray, background: np.ndarray) -> np.ndarray:
+    """Interventional Shapley values at one point as the average marginal contribution over every feature ordering."""
+    p = x.size
+    orders = list(itertools.permutations(range(p)))
+    blocks = []
+    for order in orders:  # p + 1 nested hybrids per ordering: known set grows one feature at a time
+        known = np.zeros(p, dtype=bool)
+        for i in (None, *order):
+            if i is not None:
+                known[i] = True
+            hybrid = background.copy()
+            hybrid[:, known] = x[known]
+            blocks.append(hybrid)
+    preds = f(np.concatenate(blocks)).reshape(len(orders), p + 1, background.shape[0]).mean(axis=2)
+    phi = np.zeros(p)
+    for o, order in enumerate(orders):
+        for pos, i in enumerate(order):
+            phi[i] += preds[o, pos + 1] - preds[o, pos]
+    return phi / len(orders)
+
+
 def section_shapley_basics() -> None:
     # Backs: Worked example 1; cards ml-fi-shapley-game, ml-fi-linear-shap.
     print("\n== 1. Shapley values by hand and Linear SHAP ==")
@@ -193,7 +218,9 @@ def section_shapley_basics() -> None:
 
     rng = np.random.default_rng(0)
     w, b = np.array([1.5, -2.0, 0.5]), 0.3
-    background = rng.standard_normal((40, 3))
+    # Correlated background: interventional Linear SHAP needs no independence assumption.
+    mix = np.array([[1.0, 0.0, 0.0], [0.9, 0.3, 0.0], [0.2, 0.5, 0.8]])
+    background = rng.standard_normal((40, 3)) @ mix.T
     x_explain = rng.standard_normal((5, 3))
     vals = interventional_values(lambda z: z @ w + b, x_explain, background)
     phi = shapley_from_values(vals, 3)
@@ -206,13 +233,24 @@ def section_shapley_basics() -> None:
 # ---------------------------------------------------------------------------
 
 
-def permutation_drop(model: Forest, x: np.ndarray, y: np.ndarray, cols: list[int], rng: np.random.Generator, reps: int = 5) -> float:
+def permutation_drop(
+    model: Forest, x: np.ndarray, y: np.ndarray, cols: list[int], rng: np.random.Generator, reps: int = 5, joint: bool = True
+) -> float:
+    """Mean drop in test R^2 when the columns in cols are permuted.
+
+    joint=True applies one permutation to every column in the group, which keeps their joint distribution;
+    joint=False shuffles each column independently, as in Lopez de Prado's clustered MDA code (2020, chapter 6).
+    """
     base = r2(y, model.predict(x))
     drops = []
     for _ in range(reps):
         xp = x.copy()
-        perm = rng.permutation(x.shape[0])
-        xp[:, cols] = x[perm][:, cols]  # one permutation for all columns in the group keeps their joint distribution
+        if joint:
+            perm = rng.permutation(x.shape[0])
+            xp[:, cols] = x[perm][:, cols]
+        else:
+            for c in cols:
+                xp[:, c] = x[rng.permutation(x.shape[0]), c]
         drops.append(base - r2(y, model.predict(xp)))
     return float(np.mean(drops))
 
@@ -227,7 +265,9 @@ def section_importance() -> None:
     x_tr, y_tr = make_data(rng, 3000)
     x_te, y_te = make_data(rng, 3000)
     check("correlation of x1 and x2", float(np.corrcoef(x_tr[:, 0], x_tr[:, 1])[0, 1]), 0.981, 5e-4, ".3f")
-    check("population R^2 of the true model", 0.5 / 1.5, 0.333, 5e-4, ".3f")
+    beta = np.array([0.5, 0.5])  # coefficients on x1 and x3, unit-variance independent regressors and noise
+    check("population R^2 of the true model", float(beta @ beta / (beta @ beta + 1.0)), 0.333, 5e-4, ".3f")
+    check("test R^2 of the true conditional mean (oracle)", r2(y_te, 0.5 * x_te[:, 0] + 0.5 * x_te[:, 2]), 0.335, 5e-4, ".3f")
     forest = Forest(x_tr, y_tr, seed=1)
     base = r2(y_te, forest.predict(x_te))
     check("forest test R^2", base, 0.319, 5e-4, ".3f")
@@ -241,6 +281,19 @@ def section_importance() -> None:
     for j in range(6):
         check(f"MDA (test R^2 drop) {NAMES[j]}", permutation_drop(forest, x_te, y_te, [j], perm_rng), exp_mda[j], 5e-4, ".3f")
     check("clustered MDA, x1 and x2 permuted together", permutation_drop(forest, x_te, y_te, [0, 1], perm_rng), 0.323, 5e-4, ".3f")
+    indep = permutation_drop(forest, x_te, y_te, [0, 1], perm_rng, joint=False)
+    check("clustered MDA, x1 and x2 shuffled independently", indep, 0.234, 5e-4, ".3f")
+
+    # Control for the substitution effect (one change: delete the copy x2, same data, same forest seed).
+    # Backs: Worked example 2 control; cards ml-fi-substitution, ml-fi-correlated-mda.
+    keep = [0, 2, 3, 4, 5]
+    no_copy = Forest(x_tr[:, keep], y_tr, seed=1)
+    mdi_nc = no_copy.mdi()
+    check("control without x2: MDI x1", float(mdi_nc[0]), 0.438, 5e-4, ".3f")
+    check("control without x2: MDI x3", float(mdi_nc[1]), 0.480, 5e-4, ".3f")
+    ctrl_rng = np.random.default_rng(7)
+    check("control without x2: MDA x1", permutation_drop(no_copy, x_te[:, keep], y_te, [0], ctrl_rng), 0.293, 5e-4, ".3f")
+    check("control without x2: MDA x3", permutation_drop(no_copy, x_te[:, keep], y_te, [1], ctrl_rng), 0.323, 5e-4, ".3f")
 
     exp_drop = [0.005, 0.005, 0.165, 0.003, 0.003, 0.002]
     for j in range(6):
@@ -263,6 +316,12 @@ def section_importance() -> None:
     phi = shapley_from_values(vals, 6)
     gap = np.abs(phi.sum(axis=0) - (forest.predict(x_explain) - forest.predict(background).mean())).max()
     check_below("Shapley efficiency: max |sum phi - (f(x) - E f)|", float(gap), 1e-10)
+    # Independent route at one point with a 20-row background: average marginal contributions over all 720 feature
+    # orderings, calling the forest directly on nested hybrid rows (no coalition table, no factorial weights).
+    bg20, x0 = background[:20], x_explain[:1]
+    phi_table = shapley_from_values(interventional_values(forest.predict, x0, bg20), 6)[:, 0]
+    gap_orders = float(np.abs(shapley_by_orderings(forest.predict, x0[0], bg20) - phi_table).max())
+    check_below("forest Shapley: max |coalition formula - average over 720 orderings|", gap_orders, 1e-10)
     exp_shap = [0.233, 0.141, 0.438, 0.014, 0.003, 0.015]
     for j in range(6):
         check(f"mean |SHAP| {NAMES[j]}", float(np.abs(phi[j]).mean()), exp_shap[j], 5e-4, ".3f")
@@ -270,7 +329,7 @@ def section_importance() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 4. Pure-noise target
+# 4. Cardinality control and pure-noise target
 # ---------------------------------------------------------------------------
 
 
@@ -283,12 +342,27 @@ def section_noise_target() -> None:
     forest = Forest(x_tr, y_tr, seed=2)
     mdi = forest.mdi()
     check("noise target: forest test R^2", r2(y_te, forest.predict(x_te)), -0.006, 5e-4, ".3f")
-    check("noise target: sum of MDI", float(mdi.sum()), 1.000, 1e-9, ".3f")
+    check("noise target: sum of MDI (1 by construction)", float(mdi.sum()), 1.000, 1e-9, ".3f")
     check("noise target: largest MDI", float(mdi.max()), 0.234, 5e-4, ".3f")
     check("noise target: MDI of the binary feature", float(mdi[4]), 0.012, 5e-4, ".3f")
     perm_rng = np.random.default_rng(8)
     mda = [permutation_drop(forest, x_te, y_te, [j], perm_rng) for j in range(6)]
     check("noise target: largest MDA", max(mda), 0.002, 5e-4, ".3f")
+
+    # Cardinality control (Strobl et al. 2007 design): four noise features that differ only in their number of
+    # distinct values (2, 4 and 16 levels of a uniform, and the uniform itself), pure-noise target.
+    # Backs: Core concepts MDI bullet; card ml-fi-mdi-bias.
+    print("\n== 5. MDI and cardinality on a pure-noise target ==")
+    rng = np.random.default_rng(5)
+    n = 3000
+    u = rng.random((n, 4))
+    x_card = np.column_stack([np.floor(u[:, 0] * 2), np.floor(u[:, 1] * 4), np.floor(u[:, 2] * 16), u[:, 3]])
+    y_card = rng.standard_normal(n)
+    mdi_card = Forest(x_card, y_card, seed=3).mdi()
+    card_labels = ["2 levels", "4 levels", "16 levels", "continuous"]
+    for j, (label, expected) in enumerate(zip(card_labels, [0.050, 0.134, 0.257, 0.559], strict=True)):
+        check(f"cardinality control: MDI of noise with {label}", float(mdi_card[j]), expected, 5e-4, ".3f")
+    assert np.all(np.diff(mdi_card) > 0), "MDI should increase with the number of distinct values"
 
 
 if __name__ == "__main__":

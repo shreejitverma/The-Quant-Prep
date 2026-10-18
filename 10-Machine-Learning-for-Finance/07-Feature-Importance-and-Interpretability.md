@@ -15,7 +15,7 @@ sources: [Lopez de Prado - Advances in Financial Machine Learning (Wiley 2018) c
 - MDI (mean decrease impurity) sums each feature's in-sample split gains; it is cheap but in-sample, biased toward continuous and high-cardinality features, and normalised to sum to one, so it ranks features even when nothing is predictable.
 - MDA (permutation importance) is the drop in an out-of-sample score when one feature is shuffled; it works for any model, but with correlated features the model leans on the substitute and each feature looks less important than it is.
 - The substitution effect: with $x_2$ a near copy of $x_1$, MDI splits their credit, MDA understates both, drop-column importance is close to zero for each, and only importance measured on the cluster (or a single-feature model) shows the information they carry.
-- SHAP values are Shapley values of the game "prediction with a subset of features known": they are the unique attribution with efficiency, symmetry, dummy and additivity; for a linear model with independent features they are $w_i(x_i - E[x_i])$.
+- SHAP values are Shapley values of the game "prediction with a subset of features known": they are the unique attribution with efficiency, symmetry, dummy and additivity; for a linear model, interventional SHAP values are $w_i(x_i - E[x_i])$ even when features are correlated.
 - Use importance for research (which features carry information, and whether that is stable across time and clusters), not as proof of alpha: importance is model-relative, not causal, and says nothing about trading after costs.
 
 ## Learning objectives
@@ -38,15 +38,16 @@ sources: [Lopez de Prado - Advances in Financial Machine Learning (Wiley 2018) c
 | How much information does this feature carry alone? | SFI (single-feature model) | Held-out data | None, but misses interactions |
 | How does each feature move this prediction? | SHAP | Any points | Splits credit between correlated features |
 
-Lopez de Prado (2018, chapter 8) groups these into methods with substitution effects (MDI, MDA) and without (SFI, and importance on orthogonalised PCA features), and argues that feature importance, not repeated backtesting, is the research tool.
+Lopez de Prado (2018, chapter 8) groups these into methods with substitution effects (MDI and MDA, section 8.3) and without (SFI and importance on orthogonalised PCA features, section 8.4), and argues that feature importance, not repeated backtesting, is the research tool.
 
 ### MDI: mean decrease impurity
 
 Every split in a tree reduces the training impurity (squared error for regression, Gini or entropy for classification) by $\Delta_{\text{node}}$, weighted by the number of samples in the node.
-MDI credits that decrease to the split feature, sums over the tree, normalises each tree's total to one, and averages over trees (Breiman 2001).
+MDI (often called Gini importance) credits that decrease to the split feature, sums over the tree, normalises each tree's total to one (the convention used here, by scikit-learn and by Lopez de Prado), and averages over trees.
 
 - It is computed on the training data, so it measures what the model used to fit, including fitted noise.
 - Features with many possible split points (continuous, high cardinality) get more chances to produce a lucky gain, so pure noise of that kind gets positive MDI (Strobl et al. 2007); a binary noise feature gets less.
+  In the script's control, four pure-noise features that differ only in their number of distinct values get MDI of about 0.050 (2 levels), 0.134 (4 levels), 0.257 (16 levels) and 0.559 (continuous).
 - Because each tree's importances sum to one, MDI always ranks something first, even on a pure-noise target.
 - Random feature subsets at each split ($m < p$) force the trees to use substitutes, so correlated features share the credit.
 
@@ -58,6 +59,7 @@ $$
 \mathrm{MDA}_j = S(f, X_{\text{test}}) - S(f, X_{\text{test}}^{(\pi_j)}).
 $$
 
+- Sign convention: $S$ is a score where higher is better ($R^2$, accuracy or minus log-loss), so a positive MDA means the score fell when the feature was shuffled.
 - It is out of sample and model-agnostic, and a value near zero or negative is honest evidence of no reliance.
 - In finance the test folds must be purged and embargoed, or the score reflects leakage (see [Time-Series Cross-Validation: Purging and Embargo](02-Time-Series-Cross-Validation-Purging-Embargo.md)); Lopez de Prado computes MDA on purged k-fold with log-loss or accuracy.
 - Shuffling one of two correlated features creates combinations never seen in training (a large $x_1$ with a small $x_2$), so the model is evaluated off its data manifold (Hooker, Mentch and Zhou 2021).
@@ -66,7 +68,9 @@ $$
 ### Drop-column and clustered importance
 
 Drop-column importance refits the model without feature $j$ and measures the score loss; it answers "is this feature needed given the rest", which for a redundant feature is close to zero.
-Clustered feature importance (Lopez de Prado 2020, chapter 6) first clusters features by correlation, then permutes (or drops) whole clusters with a single shared permutation, so substitutes cannot cover for each other.
+Clustered feature importance (Lopez de Prado 2020, chapter 6) first clusters features by correlation, then computes MDI summed over each cluster or MDA with every feature of a cluster shuffled at once, so substitutes cannot cover for each other.
+Lopez de Prado's clustered MDA shuffles each column of the cluster independently; one shared permutation instead keeps the within-cluster joint distribution, so the model is not fed combinations it never saw.
+Dropping a whole cluster and refitting is the drop-column analogue.
 Single-feature importance (SFI) fits a model on each feature alone; it has no substitution effect, but it misses features that matter only through interactions.
 
 ### Shapley values and SHAP
@@ -84,7 +88,8 @@ Lundberg and Lee (2017) showed that SHAP values are the unique additive feature 
 
 - Interventional (marginal) SHAP sets $v(S) = E_{X_{\bar S}}[f(x_S, X_{\bar S})]$, averaging the missing features over a background sample as if independent; it explains the model, and gives zero to features the model never uses.
 - Observational (conditional) SHAP uses $E[f(X) \mid X_S = x_S]$; it explains the data-generating relationship, and can credit a feature the model never uses because it is correlated with one it does (Janzing, Minorics and Bloebaum 2020 argue for the interventional version).
-- For $f(x) = w^\top x + b$ with independent features, interventional SHAP is exactly $\phi_i = w_i(x_i - E[x_i])$.
+- For $f(x) = w^\top x + b$, interventional SHAP is exactly $\phi_i = w_i(x_i - E[x_i])$, because $f$ is linear and the background average enters only through $E[x_i]$; this holds with correlated features, while conditional SHAP equals it only when the features are independent.
+- Sign convention: $\phi_i > 0$ means feature $i$ pushed this prediction above the base value $v(\varnothing) = E[f(X)]$, $\phi_i < 0$ below it.
 - Global importance is usually summarised as mean $|\phi_i|$ over many points; SHAP's advantage over permutation is the per-prediction view: why this name, on this day, got this forecast.
 
 ### Importance is research, not proof of alpha
@@ -117,12 +122,12 @@ All numbers come from [feature_importance.py](code/feature_importance.py), which
 Two players with $v(\varnothing) = 0$, $v(\{1\}) = 2$, $v(\{2\}) = 1$, $v(\{1, 2\}) = 5$.
 Player 1's marginal contributions are $2 - 0$ (joining first) and $5 - 1$ (joining second), so $\phi_1 = \tfrac12(2 + 4) = 3$; similarly $\phi_2 = \tfrac12(1 + 3) = 2$.
 They sum to $v(\{1, 2\}) = 5$ (efficiency) and split the interaction surplus $5 - 2 - 1 = 2$ equally.
-For a linear model, enumerating all coalitions with a 40-row background reproduces $w_i(x_i - \bar x_i)$ to $10^{-12}$.
+For a linear model, enumerating all coalitions with a 40-row background whose features are correlated reproduces $w_i(x_i - \bar x_i)$ to $10^{-12}$.
 
 ### Example 2: the substitution effect
 
-Simulate $y = 0.5x_1 + 0.5x_3 + \varepsilon$ with $x_2 = x_1 + 0.2\,\text{noise}$ (correlation about 0.981), continuous noise features $x_4$ and $x_6$, and binary noise $x_5$; the true $R^2$ is $0.5/1.5 = 0.333$.
-Train on 3,000 rows and test on 3,000 (seed 42); the forest's test $R^2$ is about 0.319.
+Simulate $y = 0.5x_1 + 0.5x_3 + \varepsilon$ with $x_1$, $x_3$ and $\varepsilon$ independent standard normal, $x_2 = x_1 + 0.2\,\text{noise}$ (correlation about 0.981), continuous noise features $x_4$ (standard normal) and $x_6$ (uniform on $[0, 1]$), and binary noise $x_5$; the true $R^2$ is $0.5/1.5 = 0.333$.
+Train on 3,000 rows and test on 3,000 (seed 42); the forest's test $R^2$ is about 0.319, against 0.335 for the true conditional mean on the same test rows.
 $x_1$ (with its copy $x_2$) and $x_3$ carry equal information by construction.
 
 | Feature | MDI | MDA (test $R^2$ drop) | Drop-column | SFI (test $R^2$ alone) | Mean $\lvert\text{SHAP}\rvert$ |
@@ -135,13 +140,15 @@ $x_1$ (with its copy $x_2$) and $x_3$ carry equal information by construction.
 | $x_6$ (noise) | 0.031 | 0.000 | 0.002 | -0.017 | 0.015 |
 
 - MDI splits the credit: $x_1$ and $x_2$ get 0.277 and 0.202, each well below $x_3$'s 0.458, though together they get 0.479.
-- MDA understates both: 0.121 and 0.051 against 0.312 for $x_3$; permuting the pair together gives about 0.323, in line with $x_3$.
+- MDA understates both: 0.121 and 0.051 against 0.312 for $x_3$; permuting the pair together with one shared permutation gives about 0.323, in line with $x_3$, while shuffling the two columns independently (Lopez de Prado's clustered MDA) gives about 0.234.
 - Drop-column refits say neither is needed (about 0.005 each) because the other covers; dropping the pair costs about 0.161, again in line with $x_3$'s 0.165.
 - SFI has no substitution effect: $x_1$, $x_2$ and $x_3$ each score about 0.146 to 0.150 alone.
 - SHAP splits the credit like MDI: 0.233 and 0.141, while the mean absolute sum of the pair's SHAP values is about 0.372.
 - Continuous noise ($x_4$, $x_6$) gets MDI of about 0.028 and 0.031 against 0.004 for binary noise, while every out-of-sample measure gives all three noise features about zero.
+- Control (one change: delete $x_2$, same data and forest seed): $x_1$'s MDI rises from 0.277 to about 0.438 (against 0.480 for $x_3$) and its MDA from 0.121 to about 0.293 (against 0.323 for $x_3$), so the dilution in the table is caused by the copy.
 
 The exact Shapley values come from enumerating all 64 coalitions for 100 test points with a 50-row background; their sum matches $f(x) - E[f]$ to $10^{-10}$.
+At one test point a second computation, averaging marginal contributions over all 720 feature orderings with no coalition weights, agrees with the coalition formula to $10^{-10}$.
 
 ### Example 3: importance on pure noise
 
@@ -168,7 +175,7 @@ A ranked MDI chart is not evidence that anything is predictable; an out-of-sampl
 
 > [!question]- ml-fi-mdi-bias | Why does MDI favour continuous and high-cardinality features?
 > They offer many candidate split points, so even pure noise produces some split with a positive in-sample gain (Strobl et al. 2007).
-> In the note's simulation continuous noise got MDI about 0.028 and 0.031 against 0.004 for binary noise.
+> In the note's control, pure-noise features that differ only in cardinality got MDI about 0.050 (2 levels), 0.134 (4), 0.257 (16) and 0.559 (continuous); in the main example continuous noise got about 0.028 and 0.031 against 0.004 for binary noise.
 
 > [!question]- ml-fi-mdi-noise | You fit a forest to a pure-noise target. What does MDI show, and what does MDA show?
 > MDI still sums to one and ranks features (top feature about 0.234 in the note's run); MDA is about zero for every feature (largest about 0.002).
@@ -183,7 +190,7 @@ A ranked MDI chart is not evidence that anything is predictable; an out-of-sampl
 > With a near copy, MDI dilutes, MDA understates and drop-column importance is near zero for each feature of the pair.
 
 > [!question]- ml-fi-correlated-mda | $x_2$ is a 0.981-correlated copy of $x_1$. Permuting $x_1$ drops test $R^2$ by 0.121 and $x_2$ by 0.051, while an equally informative $x_3$ drops it by 0.312. What do you conclude?
-> That the pair shares credit, not that $x_1$ is weak: permuting both together drops $R^2$ by about 0.323 in the note's simulation, matching $x_3$.
+> That the pair shares credit, not that $x_1$ is weak: permuting both together drops $R^2$ by about 0.323 in the note's simulation, matching $x_3$, and refitting without $x_2$ raises $x_1$'s MDA to about 0.293.
 > Cluster correlated features and measure importance per cluster.
 
 > [!question]- ml-fi-drop-column | What does drop-column importance measure, and why can it be near zero for an important feature?
@@ -191,8 +198,8 @@ A ranked MDI chart is not evidence that anything is predictable; an out-of-sampl
 > A redundant feature scores near zero because a substitute takes over (about 0.005 for each of the twins in the note's example).
 
 > [!question]- ml-fi-clustered | How does clustered feature importance remove substitution effects?
-> Cluster features by correlation, then permute (or drop) each cluster as a block with one shared permutation (Lopez de Prado 2020).
-> Substitutes are removed together, so the cluster's importance reflects the information it carries.
+> Cluster features by correlation, then sum MDI within each cluster or shuffle every feature of a cluster at once for MDA (Lopez de Prado 2020, chapter 6, shuffles each column independently).
+> Substitutes are removed together, so the cluster's importance reflects the information it carries; in the note's example the pair scores about 0.323 with one shared permutation and 0.234 with independent shuffles.
 
 > [!question]- ml-fi-sfi | What is single-feature importance, and what does it miss?
 > The out-of-sample score of a model fitted on one feature at a time; it has no substitution effect.
@@ -208,10 +215,10 @@ A ranked MDI chart is not evidence that anything is predictable; an out-of-sampl
 
 > [!question]- ml-fi-shap-axioms | Which properties single out Shapley values?
 > Efficiency (attributions sum to $v(N) - v(\varnothing)$), symmetry, dummy (no effect means zero) and additivity across games.
-> Lundberg and Lee (2017) restate these for model explanation as local accuracy, missingness and consistency.
+> Lundberg and Lee (2017) prove that among additive feature attributions, local accuracy, missingness and consistency (a monotonicity property) also single out the Shapley values.
 
 > [!question]- ml-fi-linear-shap | What are the SHAP values of a linear model?
-> $\phi_i = w_i(x_i - E[x_i])$ under the interventional definition (features treated as independent).
+> $\phi_i = w_i(x_i - E[x_i])$ under the interventional definition, whether or not the features are correlated; conditional SHAP gives the same only when they are independent.
 > They sum to $f(x) - E[f(X)]$.
 
 > [!question]- ml-fi-interventional-vs-conditional | Interventional or conditional SHAP?
@@ -236,7 +243,7 @@ A ranked MDI chart is not evidence that anything is predictable; an out-of-sampl
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [feature_importance.py](code/feature_importance.py) prints and asserts every number in this note (a numpy random forest, MDI, MDA, drop-column, clustered MDA, SFI, exact interventional Shapley values with the efficiency check, Linear SHAP, and the pure-noise control).
+- Code: [feature_importance.py](code/feature_importance.py) prints and asserts every number in this note (a numpy random forest, MDI, MDA, drop-column, clustered MDA, SFI, exact interventional Shapley values with the efficiency check, Linear SHAP, the refit-without-the-copy control, the cardinality control and the pure-noise control).
 - Related: [Tree Ensembles and Gradient Boosting](03-Tree-Ensembles-and-Gradient-Boosting.md), [Labeling: Triple Barrier and Meta-Labeling](06-Labeling-Triple-Barrier-and-Meta-Labeling.md), [PCA and Factor Structure](../03-Linear-Algebra-and-Optimization/05-PCA-and-Factor-Structure.md) for orthogonalised features.
 
 ## Further reading

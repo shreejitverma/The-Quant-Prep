@@ -20,12 +20,12 @@ ML where the signal-to-noise ratio is tiny and the data is non-stationary.
 | 02 | [Time-Series Cross-Validation: Purging and Embargo](02-Time-Series-Cross-Validation-Purging-Embargo.md) | R | core | 3 | solid | 12 |
 | 03 | [Tree Ensembles and Gradient Boosting](03-Tree-Ensembles-and-Gradient-Boosting.md) | R | core | 4 | solid | 13 |
 | 04 | [Online Learning and Linear Models at Scale](04-Online-Learning-and-Linear-Models-at-Scale.md) | R | advanced | 3 | solid | 19 |
-| 05 | [Neural Networks and Sequence Models](05-Neural-Networks-and-Sequence-Models.md) | R | advanced | 4 | solid | 20 |
-| 06 | [Labeling: Triple Barrier and Meta-Labeling](06-Labeling-Triple-Barrier-and-Meta-Labeling.md) | R | advanced | 3 | solid | 19 |
+| 05 | [Neural Networks and Sequence Models](05-Neural-Networks-and-Sequence-Models.md) | R | advanced | 4 | solid | 21 |
+| 06 | [Labeling: Triple Barrier and Meta-Labeling](06-Labeling-Triple-Barrier-and-Meta-Labeling.md) | R | advanced | 3 | solid | 20 |
 | 07 | [Feature Importance and Interpretability](07-Feature-Importance-and-Interpretability.md) | R | advanced | 3 | solid | 18 |
-| 08 | [Reinforcement Learning for Trading and Execution](08-Reinforcement-Learning-for-Trading.md) | R | senior | 3 | solid | 18 |
-| 09 | [NLP and LLMs for Finance](09-NLP-and-LLMs-for-Finance.md) | R | advanced | 3 | solid | 17 |
-| 10 | [ML in Production: Serving and Monitoring](10-ML-Production-and-Monitoring.md) | D | advanced | 3 | solid | 17 |
+| 08 | [Reinforcement Learning for Trading and Execution](08-Reinforcement-Learning-for-Trading.md) | R | senior | 3 | solid | 20 |
+| 09 | [NLP and LLMs for Finance](09-NLP-and-LLMs-for-Finance.md) | R | advanced | 3 | solid | 20 |
+| 10 | [ML in Production: Serving and Monitoring](10-ML-Production-and-Monitoring.md) | D | advanced | 3 | solid | 18 |
 | 11 | [ML Problem Set](11-ML-Problem-Set.md) | R | core | 5 | solid | 36 |
 
 <!-- qp:moc:end -->

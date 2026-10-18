@@ -147,6 +147,26 @@ def section_lattice() -> None:
         check(f"triple barrier +-3, horizon 10, p {tag}: P(lower)", lo, exp[1], 5e-5)
         check(f"triple barrier +-3, horizon 10, p {tag}: P(vertical)", v, exp[2], 5e-5)
         check(f"triple barrier +-3, horizon 10, p {tag}: E[holding period]", et, exp[3], 5e-4, ".3f")
+    # Independent check of the horizon-10 table: enumerate all 2^10 step sequences and walk each path.
+    for p_up, tag in [(0.5, "0.50"), (0.55, "0.55")]:
+        hi, lo, v, et = lattice_triple_barrier(p_up, 3, 3, 10)
+        e_hi = e_lo = e_v = e_t = 0.0
+        for code in range(2**10):
+            steps_seq = [1 if (code >> k) & 1 else -1 for k in range(10)]
+            n_up = sum(1 for s in steps_seq if s == 1)
+            prob = p_up**n_up * (1 - p_up) ** (10 - n_up)
+            pos, end, where = 0, 10, "v"
+            for k, s in enumerate(steps_seq, 1):
+                pos += s
+                if abs(pos) >= 3:
+                    end, where = k, "hi" if pos > 0 else "lo"
+                    break
+            e_hi += prob * (where == "hi")
+            e_lo += prob * (where == "lo")
+            e_v += prob * (where == "v")
+            e_t += prob * end
+        err = max(abs(hi - e_hi), abs(lo - e_lo), abs(v - e_v), abs(et - e_t))
+        check_below(f"DP vs enumeration of 1,024 paths, p {tag}, max abs difference", err, 1e-12)
     # Monte Carlo check of the drifted case.
     rng = np.random.default_rng(2)
     steps = np.where(rng.random((200_000, 10)) < 0.55, 1, -1)
@@ -194,6 +214,19 @@ def section_fixed_vs_scaled() -> None:
         # Control: the same rule with the true (known) volatility instead of the lagging EWMA estimate.
         oracle = np.abs(fwd[mask]) > vol[t_idx][mask] * math.sqrt(h)
         check(f"simulated fraction labelled +-1, 1 sd true-vol threshold (control), {tag}", float(oracle.mean()), exp_ctrl, 5e-4, ".3f")
+    # Second control: keep the EWMA estimate but drop the first 300 days of each block, where the estimate still lags
+    # the regime switch. If the lag is the cause, both regimes return to the theoretical 0.317.
+    settled = (t_idx % 2_000) >= 300
+    for reg, tag, exp_settled in [(0, "low vol", 0.318), (1, "high vol", 0.317)]:
+        mask = (regime[t_idx] == reg) & settled
+        scaled = np.abs(fwd[mask]) > ew[t_idx][mask] * math.sqrt(h)
+        check(
+            f"simulated fraction labelled +-1, EWMA-scaled, excluding 300 days after each switch, {tag}",
+            float(scaled.mean()),
+            exp_settled,
+            5e-4,
+            ".3f",
+        )
 
     # Triple barrier with EWMA-scaled horizontal barriers at +-1 sd*sqrt(h) and a 5-day vertical barrier.
     m = n - h - 1
@@ -204,20 +237,23 @@ def section_fixed_vs_scaled() -> None:
     first_up = np.where(up.any(axis=1), up.argmax(axis=1), h)
     first_dn = np.where(dn.any(axis=1), dn.argmax(axis=1), h)
     label = np.where(first_up < first_dn, 1, np.where(first_dn < first_up, -1, 0))
-    hold = np.minimum(first_up, first_dn) + 1
-    # A fixed-horizon label at the same width implies a barrier touch: |final| > width means the path reached the barrier.
-    fixed_nonzero = np.abs(path[:, -1]) > width[:, 0]
+    # Holding period in bars: the touch step (1-based) for a horizontal touch, h for a vertical touch.
+    hold = np.where(label != 0, np.minimum(first_up, first_dn) + 1, h)
+    # Path dependence: share of barrier touches whose 5-day return has the opposite sign (stopped out, then recovered,
+    # or the reverse); a fixed-horizon label would give these events the opposite label.
+    touched = label != 0
     check(
-        "fixed-horizon non-zero labels that are also triple-barrier touches (%)",
-        100 * float((up | dn)[fixed_nonzero].any(axis=1).mean()),
-        100.0,
-        1e-12,
+        "triple-barrier touches whose 5-day return has the opposite sign (%)",
+        100 * float((np.sign(path[touched, -1]) != label[touched]).mean()),
+        3.2,
+        0.05,
         ".1f",
     )
+    check("triple barrier share of events ending at the vertical barrier", float((~touched).mean()), 0.570, 5e-4, ".3f")
     for reg, tag, exp in [(0, "low vol", 0.411), (1, "high vol", 0.448)]:
         mask = regime[:m] == reg
         check(f"triple barrier fraction touching a horizontal barrier, {tag}", float((label[mask] != 0).mean()), exp, 5e-4, ".3f")
-    check("triple barrier mean holding period (days), all events", float(hold.mean()), 4.84, 5e-3, ".2f")
+    check("triple barrier mean holding period (days), all events", float(hold.mean()), 4.27, 5e-3, ".2f")
     uniqueness_report(hold)
 
 
@@ -226,21 +262,40 @@ def section_fixed_vs_scaled() -> None:
 # ---------------------------------------------------------------------------
 
 
-def uniqueness_report(hold: np.ndarray) -> None:
-    print("\n== 4. Concurrency and uniqueness of triple-barrier labels ==")
+def average_uniqueness(hold: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Label i (one per bar) spans bars i+1 .. i+hold_i; returns per-label uniqueness and per-bar concurrency."""
     n = hold.size
-    start = np.arange(n) + 1  # label i spans bars start_i .. start_i + hold_i - 1
+    start = np.arange(n) + 1
     end = start + hold - 1
-    conc = np.zeros(n + 10)
+    conc = np.zeros(n + int(hold.max()) + 2)
     np.add.at(conc, start, 1)
     np.add.at(conc, end + 1, -1)
     conc = np.cumsum(conc)
     inv = np.concatenate([[0.0], np.cumsum(np.where(conc > 0, 1.0 / np.maximum(conc, 1), 0.0))])
-    uniq = (inv[end + 1] - inv[start]) / hold
-    check("average uniqueness, daily triple-barrier events (5-day vertical barrier)", float(uniq.mean()), 0.212, 5e-4, ".3f")
-    check("average concurrency", float(conc[1 : n + 1].mean()), 4.84, 5e-3, ".2f")
-    # Fixed 5-day labels for comparison: every label lasts 5 bars and concurrency is 5 in steady state.
-    check("uniqueness of fixed 5-day labels in steady state, 1/h", 1 / 5, 0.20, 1e-12, ".2f")
+    return (inv[end + 1] - inv[start]) / hold, conc
+
+
+def uniqueness_report(hold: np.ndarray) -> None:
+    # Backs: Worked example 3 (uniqueness) and Core concepts (sample weights); card ml-label-uniqueness.
+    print("\n== 4. Concurrency and uniqueness of triple-barrier labels ==")
+    n = hold.size
+    uniq, conc = average_uniqueness(hold)
+    # Independent brute force on the first 5,000 labels: count overlapping labels bar by bar.
+    k = 5_000
+    brute_conc = np.zeros(k + 20)
+    for i in range(n):
+        if i + 1 > k + 10:
+            break
+        brute_conc[i + 1 : i + 1 + hold[i]] += 1
+    brute = np.array([np.mean(1.0 / brute_conc[i + 1 : i + 1 + hold[i]]) for i in range(k)])
+    check_below(
+        "prefix-sum vs brute-force uniqueness, first 5,000 labels, max abs difference", float(np.abs(brute - uniq[:k]).max()), 1e-12
+    )
+    check("average uniqueness, daily triple-barrier events (5-day vertical barrier)", float(uniq.mean()), 0.238, 5e-4, ".3f")
+    check("average concurrency", float(conc[1 : n + 1].mean()), 4.27, 5e-3, ".2f")
+    # Fixed 5-day labels through the same routine: concurrency is 5 away from the sample edges, so uniqueness is 1/5.
+    fixed_uniq, _ = average_uniqueness(np.full(n, 5))
+    check("average uniqueness of fixed 5-day labels, one per bar", float(fixed_uniq.mean()), 0.200, 5e-4, ".3f")
 
 
 # ---------------------------------------------------------------------------
@@ -311,6 +366,13 @@ def section_meta() -> None:
         check(f"meta threshold {tag}: F1", f1, e_f1, 5e-4, ".3f")
         check(f"meta threshold {tag}: mean PnL per bet taken", float(pnl_te[take].mean()), e_pnl, 5e-4, ".3f")
         check(f"meta threshold {tag}: per-event Sharpe", float(strat.mean() / strat.std()), e_sr, 5e-4, ".3f")
+    # Note, Example 4: P&L per bet = 2 * precision - 1 with unit barriers. Precision is counted from labels and P&L is
+    # averaged from the payoff array, two separate computations; the unrounded precisions are quoted because the
+    # rounded ones (0.521, 0.787) would give 0.042 and 0.574.
+    for tag, mask, e_prec in [("primary", np.ones_like(y), 0.52145), ("meta threshold 0.7", prob > 0.7, 0.78653)]:
+        prec_u = float(y[mask].mean())
+        check(f"{tag}: unrounded precision", prec_u, e_prec, 5e-6, ".5f")
+        check_below(f"{tag}: |PnL per bet - (2 precision - 1)|", abs(float(pnl_te[mask].mean()) - (2 * prec_u - 1)), 1e-12)
     sr_primary = float(pnl_te.mean() / pnl_te.std())
     take5 = np.where(prob > 0.5, pnl_te, 0.0)
     check("per-event Sharpe ratio, meta threshold 0.5 over primary", float(take5.mean() / take5.std()) / sr_primary, 6.4, 0.05, ".1f")
@@ -319,9 +381,25 @@ def section_meta() -> None:
     sized = size * pnl_te
     check("sized by 2 Phi(z) - 1: mean size when betting", float(size[prob > 0.5].mean()), 0.332, 5e-4, ".3f")
     check("sized by 2 Phi(z) - 1: per-event Sharpe", float(sized.mean() / sized.std()), 0.329, 5e-4, ".3f")
-    # Oracle: bet only when the true probability exceeds 0.5 (the best any meta model could do with z).
+    # Oracle filter: bet only when the true probability exceeds 0.5 (knows p, but still a 0/1 rule).
     oracle = np.where(p_correct[te] > 0.5, pnl_te, 0.0)
     check("oracle filter (true p > 0.5): per-event Sharpe", float(oracle.mean() / oracle.std()), 0.278, 5e-4, ".3f")
+    # Scan thresholds 0.30 .. 0.895 in steps of 0.005 for the meta model and for the oracle filter.
+    grid = np.round(np.arange(0.30, 0.90, 0.005), 3)
+
+    def filt_sharpe(score: np.ndarray, thr: float) -> float:
+        s = np.where(score > thr, pnl_te, 0.0)
+        return float(s.mean() / s.std())
+
+    meta_scan = [filt_sharpe(prob, t) for t in grid]
+    oracle_scan = [filt_sharpe(p_correct[te], t) for t in grid]
+    check("best meta threshold on the grid", float(grid[int(np.argmax(meta_scan))]), 0.635, 1e-9, ".3f")
+    check("best meta-filter per-event Sharpe on the grid", max(meta_scan), 0.308, 5e-4, ".3f")
+    check("best oracle-filter per-event Sharpe on the grid", max(oracle_scan), 0.308, 5e-4, ".3f")
+    # Reference: with +-1 payoffs, mean/sd of s*pnl is maximised by s proportional to E[pnl | p] = 2p - 1
+    # (Cauchy-Schwarz); restricted to p > 0.5 and using the true p it gives the ceiling for long-only sizing.
+    ideal = np.clip(2 * p_correct[te] - 1, 0.0, None) * pnl_te
+    check("oracle sizing 2p - 1 (true p, p > 0.5): per-event Sharpe", float(ideal.mean() / ideal.std()), 0.331, 5e-4, ".3f")
 
 
 if __name__ == "__main__":
