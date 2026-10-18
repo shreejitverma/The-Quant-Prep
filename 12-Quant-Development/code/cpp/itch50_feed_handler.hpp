@@ -32,6 +32,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <map>
 #include <optional>
 #include <unordered_map>
@@ -392,7 +393,7 @@ public:
         const MoldStatus st = parse_mold_packet(p, n, h, [&](std::uint64_t, const std::uint8_t* d, std::size_t len) {
             msgs.emplace_back(d, len);
         });
-        if (st != MoldStatus::Ok) return PacketAction::Malformed;
+        if (st != MoldStatus::Ok || h.sequence > std::numeric_limits<std::uint64_t>::max() - msgs.size()) return PacketAction::Malformed;
         if (!session_) {
             session_ = h.session;
         } else if (*session_ != h.session) {

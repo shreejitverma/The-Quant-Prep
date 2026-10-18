@@ -277,13 +277,46 @@ void test_failed_bump_and_calibration_restore_the_quote() {
     EuropeanOption other(OptionType::Put, 90.0, 0.5);
     other.setPricingEngine(m.analytic);
     EXPECT(std::isfinite(other.NPV()));
+    EXPECT(throws_domain_error([&] { (void)calibrateVolatility(call, m.vol, 1e6, 1e-12, 5); }));  // above S e^{-qT}
+    EXPECT(m.vol.value() == 0.25);
+    // A reachable target with one iteration and a tolerance one Newton step cannot meet.
+    m.vol.setValue(0.4);
+    const double target = call.NPV();
+    m.vol.setValue(0.25);
     bool threw = false;
     try {
-        (void)calibrateVolatility(call, m.vol, 1e6, 1e-12, 5);  // unreachable price: no convergence
+        (void)calibrateVolatility(call, m.vol, target, 1e-12, 1);
     } catch (const std::runtime_error&) {
         threw = true;
     }
     EXPECT(threw && m.vol.value() == 0.25);
+}
+
+// The price bounds of a call: S e^{-qT} - K e^{-rT} (vol to zero, when positive) below and S e^{-qT}
+// (vol to infinity) above. Targets outside them have no implied vol and must be reported as such.
+void test_calibration_rejects_targets_outside_no_arbitrage_bounds() {
+    Market m;
+    EuropeanOption call(OptionType::Call, 50.0, 1.0);
+    call.setPricingEngine(m.analytic);
+    const double lower = 100.0 * std::exp(-0.02) - 50.0 * std::exp(-0.05);
+    const double upper = 100.0 * std::exp(-0.02);
+    EXPECT(throws_domain_error([&] { (void)calibrateVolatility(call, m.vol, lower - 1.0); }));
+    EXPECT(throws_domain_error([&] { (void)calibrateVolatility(call, m.vol, upper + 1e-9); }));
+    EXPECT(m.vol.value() == 0.25);
+}
+
+// Deep out of the money the starting vega underflows, so a pure Newton solve stalls; the bracketed
+// fallback still recovers the vol that produced the target.
+void test_calibration_recovers_deep_otm_vol() {
+    Market m;
+    EuropeanOption call(OptionType::Call, 200.0, 0.1);
+    call.setPricingEngine(m.analytic);
+    EXPECT(call.results().vega < 1e-12);
+    m.vol.setValue(0.9);
+    const double target = call.NPV();
+    m.vol.setValue(0.25);
+    const CalibrationResult c = calibrateVolatility(call, m.vol, target);
+    EXPECT(near(c.vol, 0.9, 1e-8) && near(call.NPV(), target, 1e-12));
 }
 
 void test_calibration_recovers_vol() {
@@ -315,6 +348,8 @@ int main() {
     RUN_TEST(test_mc_error_estimate_is_finite_for_constant_payoff);
     RUN_TEST(test_failed_bump_and_calibration_restore_the_quote);
     RUN_TEST(test_calibration_recovers_vol);
+    RUN_TEST(test_calibration_rejects_targets_outside_no_arbitrage_bounds);
+    RUN_TEST(test_calibration_recovers_deep_otm_vol);
     std::cout << "\n" << (g_total - g_failures) << "/" << g_total << " assertions passed" << std::endl;
     return g_failures == 0 ? 0 : 1;
 }

@@ -32,6 +32,9 @@ from __future__ import annotations
 import hashlib
 import heapq
 import math
+import os
+import subprocess
+import sys
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -364,6 +367,9 @@ def random_tape(seed: int, n: int) -> list[tuple[int, object]]:
     return tape
 
 
+SEED7_DIGEST = "2d735870cb68f066a0b17cd5dc7c0fd975bdd3c04002eb5f40408fde3f4d10f2"
+
+
 def run_random(seed: int) -> Engine:
     eng = Engine(Config(), random_tape(seed, 5000), Quoter())
     eng.run()
@@ -461,10 +467,23 @@ def main() -> None:
     assert abs(net0 - (-1.10)) < 1e-9
 
     print("Determinism")
-    a, b = run_random(7), run_random(7)
-    da, db = fill_log_digest(a.pf.fills), fill_log_digest(b.pf.fills)
+    a = run_random(7)
+    da = fill_log_digest(a.pf.fills)
     print(f"  seed 7: {len(a.pf.fills)} fills, position {a.pf.position}, digest {da[:16]}")
-    assert da == db and len(a.pf.fills) > 50
+    # Replays in fresh interpreters with different string-hash seeds: iterating a set or a dict keyed by
+    # strings would change order across these processes, and the digests would differ.
+    for hash_seed in ("1", "2"):
+        out = subprocess.run(
+            [sys.executable, __file__, "--digest", "7"],
+            env={**os.environ, "PYTHONHASHSEED": hash_seed},
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        print(f"  PYTHONHASHSEED={hash_seed} replay digest {out.stdout.strip()[:16]}")
+        assert out.stdout.strip() == da
+    # The regression artifact: the seed-7 fill log, pinned. A change to the fill model changes it.
+    assert da == SEED7_DIGEST and len(a.pf.fills) > 50
     c = run_random(8)
     assert fill_log_digest(c.pf.fills) != da
 
@@ -495,4 +514,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) == 3 and sys.argv[1] == "--digest":
+        print(fill_log_digest(run_random(int(sys.argv[2])).pf.fills))
+    else:
+        main()

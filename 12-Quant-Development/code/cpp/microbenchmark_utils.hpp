@@ -1,7 +1,8 @@
 // Portable microbenchmark helpers for the Quant Development notes.
 //
 // - now_ns(): monotonic nanoseconds from std::chrono::steady_clock (portable; on Apple Silicon
-//   it ticks at 24 MHz, so one reading is quantised to 41.67 ns).
+//   with libc++ it ticks at 24 MHz, so one reading is quantised to 41.67 ns; with libstdc++ on
+//   macOS it advances in 1 us steps).
 // - cycle_counter(): the cheapest monotonic counter the CPU exposes to user space
 //   (rdtsc on x86-64, cntvct_el0 on AArch64, steady_clock elsewhere), with its frequency.
 // - percentile(): nearest-rank percentile of a sample (sorts a copy).
@@ -109,9 +110,11 @@ inline double percentile(std::vector<double> sample, double q) {
 // Values below 2^SubBits are recorded exactly; above, each power-of-two range is split into
 // 2^(SubBits-1) equal buckets, so the relative error of a reported value is below 2^-(SubBits-1).
 // record() is O(1), branch-light and never allocates: suitable for a hot path.
+// SubBits is capped at 10 (224 KiB of counters) so a histogram fits on a thread's stack;
+// macOS gives secondary threads 512 KiB, which SubBits 12 (about 864 KiB) would overflow.
 template <unsigned SubBits = 7>
 class LatencyHistogram {
-    static_assert(SubBits >= 2 && SubBits <= 16);
+    static_assert(SubBits >= 2 && SubBits <= 10, "larger histograms do not fit on a secondary thread's stack");
     static constexpr std::uint64_t kSub = std::uint64_t{1} << SubBits;  // exact region size
     static constexpr std::uint64_t kHalf = kSub / 2;
     static constexpr std::size_t kRanges = 64 - SubBits + 1;

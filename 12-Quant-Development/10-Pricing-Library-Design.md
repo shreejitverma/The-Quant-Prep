@@ -197,7 +197,7 @@ What makes AAD hard in production:
 
 Calibration solves for model parameters so that model prices match market prices.
 In an observer design it is a loop that sets a parameter quote, lets the notification invalidate dependants and reprices, so the instruments being calibrated are just more consumers of the graph.
-The demo calibrates a single Black vol by Newton's method using the engine's vega; real calibrations (SABR, Heston, local vol) minimise a weighted least-squares error over many quotes, and their Jacobian is exactly where AAD pays off.
+The demo calibrates a single Black vol by Newton's method using the engine's vega, falling back to bisection on a bracket when a Newton step would leave it (deep out of the money the starting vega underflows) and rejecting a target that no vol between 1e-6 and 10 can reach, such as a call above $S e^{-qT}$; real calibrations (SABR, Heston, local vol) minimise a weighted least-squares error over many quotes, and their Jacobian is exactly where AAD pays off.
 
 ### Thread safety
 

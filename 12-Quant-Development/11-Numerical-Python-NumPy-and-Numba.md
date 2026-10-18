@@ -77,7 +77,7 @@ IEEE 754 binary64 has a 53-bit significand, so machine epsilon (the gap from 1 t
 | `0.1 + 0.2` | `0.30000000000000004`, which exceeds `0.3` by $2^{-54} \approx 5.55 \times 10^{-17}$ |
 | Largest integer range exact in float64 | up to $2^{53}$; `float64(2**53 + 1)` is `2**53` |
 | Largest integer range exact in float32 | up to $2^{24}$; `float32(16777217)` is `16777216` |
-| `float32(123456.78)` | `123456.78125`; from 131,072 upward the float32 spacing is $1/64 = 0.015625$, so neighbouring cent prices collide |
+| `float32(123456.78)` | `123456.78125`, off by 0.00125: 123,456.78 lies between 65,536 and 131,072, where the float32 spacing is $1/128 = 0.0078125$; from 131,072 upward it is $1/64 = 0.015625$, so neighbouring cent prices collide |
 | `(1e16 + 1) - 1e16` in float64 | `0.0`: the ulp of $10^{16}$ is 2, so adding 1 is a tie that rounds to even |
 
 Compare floats with a tolerance: `math.isclose(a, b, rel_tol=1e-9, abs_tol=...)` or `np.isclose`, and choose the absolute tolerance from the problem's units (see [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md)).

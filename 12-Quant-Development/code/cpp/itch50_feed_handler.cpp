@@ -11,6 +11,7 @@
 
 #include "itch50_feed_handler.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -230,7 +231,9 @@ int main() {
     check(gap.has_value(), "a gap remains after both lines");
     const std::uint64_t gap_first = gap ? gap->first : 0;
     const std::uint64_t gap_size = gap ? gap->size() : 0;
-    const auto request = build_mold_request(session, gap_first, static_cast<std::uint16_t>(gap_size));
+    const auto request_count = static_cast<std::uint16_t>(std::min<std::uint64_t>(gap_size, kMoldEndOfSession - 1));
+    check(request_count == gap_size, "the gap fits in one request");
+    const auto request = build_mold_request(session, gap_first, request_count);
     // The re-request server answers with a normal downstream packet built
     // from its message store, unicast to the requesting socket.
     MoldHeader req_hdr;

@@ -73,8 +73,8 @@ public:
         try {
             obj = ::new (static_cast<void*>(slot->storage)) T{std::forward<Args>(args)...};
         } catch (...) {
-            slot->next = next;  // the constructor may have scribbled over the link: restore it
-            throw;              // free_ still points at this slot, so nothing leaks
+            ::new (static_cast<void*>(slot)) Slot{next};  // the constructor may have scribbled over the link: restore it
+            throw;                                        // free_ still points at this slot, so nothing leaks
         }
         free_ = next;
         ++live_;
@@ -84,12 +84,9 @@ public:
     void destroy(T* obj) noexcept {
         if (obj == nullptr) return;
         obj->~T();
-        // obj points at the T that lived in the slot's storage, at offset 0 of the union. The T is
-        // gone but the Slot object is not; launder turns the address back into a Slot pointer
-        // (strictly valid when sizeof(Slot) == sizeof(T), i.e. T is at least pointer-sized; for
-        // smaller T it is the usual intrusive free-list idiom that every mainstream compiler supports).
-        Slot* slot = std::launder(reinterpret_cast<Slot*>(obj));
-        slot->next = free_;
+        // obj points at the T that lived in the slot's storage, at offset 0 of the union. Creating
+        // the T ended the Slot's lifetime, so a new Slot with its link active is created in place.
+        Slot* slot = ::new (static_cast<void*>(obj)) Slot{free_};
         free_ = slot;
         --live_;
     }

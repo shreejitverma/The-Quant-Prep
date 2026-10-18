@@ -256,7 +256,7 @@ With a closed-loop tester, a 2 s freeze becomes one slow sample among 58,000; me
 > 67.2 ns: (64 + 20 bytes of preamble and inter-frame gap) x 8 bits / 10 Gbit/s. At 1 GbE it is 672 ns, at 25 GbE 26.88 ns.
 
 > [!question]- qd-lowlat-fibre-vs-radio | Why do HFT firms use microwave links between data centres?
-> Light in fibre travels at about c/1.468, 4.897 µs per km, versus 3.336 µs per km in air: a 31.9% saving over the same distance, and radio paths are also straighter than fibre routes.
+> Light in fibre travels at about c/1.468, 4.897 µs per km, versus 3.337 µs per km in air (refractive index about 1.0003; 3.336 in free space): a 31.9% saving over the same distance, and radio paths are also straighter than fibre routes.
 
 > [!question]- qd-lowlat-cache-numbers | Roughly what does a dependent load cost from L1, L2 and DRAM?
 > Order of 1 ns, several ns, and around 100 ns. Measured on an Apple M3 Pro: 1.11 ns (16 KiB set), 4.87 to 8.61 ns (256 KiB to 4 MiB), 106 to 114 ns (64 MiB and up). Always measure on your hardware.

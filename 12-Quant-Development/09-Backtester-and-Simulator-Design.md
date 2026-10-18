@@ -137,7 +137,7 @@ Requirements:
 - no iteration over hash-ordered containers where order affects output;
 - floating-point reductions in a fixed order (parallel sums are not associative).
 
-The regression artifact is a hash of the fill log: if it changes, either the tape, the configuration or the code changed, and the diff of the logs says which event first diverged.
+The regression artifact is a hash of the fill log, pinned as a golden value: if it changes, either the tape, the configuration or the code changed, and the diff of the logs says which event first diverged.
 Day-level independence (reset state at the open) makes a multi-year backtest embarrassingly parallel across days.
 
 ### Look-ahead and survivorship, engineering edition
@@ -204,8 +204,8 @@ Use this to decide whether a strategy's size is small enough for no-impact repla
 
 ### 5. Determinism check
 
-The script runs a quoting strategy on a 5,000-event seeded random tape twice and hashes both fill logs with SHA-256: the digests are equal, and a different seed gives a different digest.
-That is the test to keep in CI: it catches unordered iteration, wall-clock reads and unseeded randomness the day they are introduced.
+The script runs a quoting strategy on a 5,000-event seeded random tape, hashes the fill log with SHA-256, and replays the same seed in two fresh Python processes with different `PYTHONHASHSEED` values: all three digests must equal a pinned golden digest, and a different seed must give a different one.
+That is the test to keep in CI: the cross-process replays catch iteration over string-keyed sets and dicts, whose order changes with the hash seed, and the pinned digest catches any change to the fill model, a wall-clock read or unseeded randomness the day it is introduced.
 
 ## Pitfalls
 

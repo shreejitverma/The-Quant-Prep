@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <iostream>
+#include <limits>
 #include <random>
 #include <utility>
 #include <vector>
@@ -496,6 +497,29 @@ void test_replace_keeps_side_and_locate() {
     EXPECT(t.has_ask && t.ask_price == 1'005'000 && t.ask_shares == 120 && !t.has_bid);
     EXPECT(b.level(9, 'S', 1'010'000) == 0);
     EXPECT(b.apply(u) == ApplyStatus::UnknownOrder);  // the old reference is dead
+    // The spec gives the replacement a new day-unique reference: reusing the old one is rejected
+    // and leaves the order as it was.
+    DecodedMessage same = u;
+    same.order_ref = 2;
+    same.new_order_ref = 2;
+    same.shares = 50;
+    EXPECT(b.apply(same) == ApplyStatus::DuplicateOrder);
+    EXPECT(b.top(9).ask_shares == 120 && b.level(9, 'S', 1'005'000) == 120);
+}
+
+// A sequence number so large that the packet's last message would wrap past 2^64 cannot come from
+// a real session: it is malformed, not a duplicate of messages already delivered.
+void test_sequence_overflow_is_malformed() {
+    DecodedMessage d;
+    d.type = 'D';
+    d.order_ref = 5;
+    int delivered = 0;
+    LineArbitrator arb([&](std::uint64_t, const std::uint8_t*, std::size_t) { ++delivered; }, 1, 64);
+    const auto wrap = build_mold_packet(kSession, std::numeric_limits<std::uint64_t>::max(), {encode(d), encode(d)});
+    EXPECT(arb.on_packet(wrap.data(), wrap.size()) == PacketAction::Malformed);
+    const auto last = build_mold_packet(kSession, std::numeric_limits<std::uint64_t>::max() - 1, {encode(d)});
+    EXPECT(arb.on_packet(last.data(), last.size()) == PacketAction::Buffered);  // ends exactly at 2^64 - 1: still valid
+    EXPECT(delivered == 0 && arb.stats().duplicate_packets == 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -734,6 +758,7 @@ int main() {
     RUN_TEST(test_zero_share_add_never_rests);
     RUN_TEST(test_card_cumulative_deltas_300_e100_x150);
     RUN_TEST(test_replace_keeps_side_and_locate);
+    RUN_TEST(test_sequence_overflow_is_malformed);
     RUN_TEST(test_property_arbitration_rebuilds_reference_book);
     RUN_TEST(test_fuzz_decode_random_bytes);
     RUN_TEST(test_fuzz_packets_into_arbitrator_and_book);

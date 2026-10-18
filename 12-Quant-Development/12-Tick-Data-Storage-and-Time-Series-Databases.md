@@ -158,7 +158,8 @@ Quotes for AAA at times 100, 200, 300 and for BBB at 150, 250; trades AAA at 50,
 | AAA 400 | 300 | none | none (quote is 100 old) |
 | BBB 260 | 250 | none | 250 |
 
-The script also checks the `searchsorted` join against a brute-force scan on 3,000 quotes and 600 trades over five symbols (one with no quotes): 600 of 600 matched quote indices agree in both directions, and 13 quotes share a symbol and time with the quote before them, so the check exercises ties.
+The script also checks the `searchsorted` join against a brute-force scan on 3,000 quotes and 600 random trades over five symbols (one with no quotes), plus one trade stamped at each of the 13 quote times that a symbol's quotes share.
+All 613 matched quote indices agree in both directions, and 13 trades on the backward join and 14 on the forward join land on a tied quote, so the comparison exercises the tie rule both ways.
 Among quotes stamped at the same time the backward join takes the last in feed order, as q's `aj` and pandas' `merge_asof` do, and the forward join the first; the script asserts both on a hand-built tie.
 
 ### 2. How a forward join biases an effective-spread study

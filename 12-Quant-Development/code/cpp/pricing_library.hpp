@@ -476,9 +476,19 @@ struct CalibrationResult {
     int iterations;
 };
 
+// Price is increasing in vol, so the solve keeps a bracket [lo, hi] around the root and takes the
+// Newton step only while it stays inside; otherwise (vega underflowing deep out of the money, or a
+// step overshooting) it bisects. The first time it leaves Newton it prices the vol bounds once and
+// rejects a target no vol in [kMinCalibrationVol, kMaxCalibrationVol] can reach, such as one at or above S e^{-qT}.
+inline constexpr double kMinCalibrationVol = 1e-6;
+inline constexpr double kMaxCalibrationVol = 10.0;
+
 inline CalibrationResult calibrateVolatility(const EuropeanOption& option, SimpleQuote& volQuote, double targetPrice,
                                              double tolerance = 1e-12, int maxIterations = 50) {
     QuoteRestorer restore(volQuote);
+    double lo = kMinCalibrationVol;
+    double hi = kMaxCalibrationVol;
+    bool boundsChecked = false;
     for (int i = 1; i <= maxIterations; ++i) {
         const OptionResults& r = option.results();
         const double diff = r.value - targetPrice;
@@ -486,8 +496,27 @@ inline CalibrationResult calibrateVolatility(const EuropeanOption& option, Simpl
             restore.commit();
             return {volQuote.value(), i - 1};
         }
-        if (!(r.vega > 1e-12)) throw std::runtime_error("calibration needs an engine with positive vega");
-        volQuote.setValue(std::max(volQuote.value() - diff / r.vega, 1e-6));
+        if (std::isnan(r.vega)) throw std::runtime_error("calibration needs an engine with positive vega");
+        const double vol = volQuote.value();
+        if (diff > 0.0) {
+            hi = std::min(hi, vol);
+        } else {
+            lo = std::max(lo, vol);
+        }
+        double next = r.vega > 0.0 ? vol - diff / r.vega : lo;
+        if (!(next > lo && next < hi)) {
+            if (!boundsChecked) {
+                boundsChecked = true;
+                volQuote.setValue(kMinCalibrationVol);
+                const double atMin = option.NPV();
+                volQuote.setValue(kMaxCalibrationVol);
+                const double atMax = option.NPV();
+                if (!(targetPrice > atMin && targetPrice < atMax))
+                    throw std::domain_error("calibration target is outside the prices reachable for vol in [1e-6, 10]");
+            }
+            next = 0.5 * (lo + hi);
+        }
+        volQuote.setValue(next);
     }
     throw std::runtime_error("calibration did not converge");
 }

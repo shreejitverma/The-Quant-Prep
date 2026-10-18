@@ -109,16 +109,27 @@ def random_check() -> None:
     q_sym, q_time = q_sym[o], q_time[o]
     t_sym = rng.integers(0, 5, nt)  # symbol 4 has no quotes at all
     t_time = rng.integers(0, 100_000, nt)
+    tie_next = (np.diff(q_sym) == 0) & (np.diff(q_time) == 0)
+    tied = int(tie_next.sum())
+    print(f"quotes sharing a symbol and time with the previous quote: {tied}")
+    assert tied == 13  # note 12 example 1
+    # One extra trade stamped at each tied quote time, so both joins must resolve real ties.
+    t_sym = np.concatenate([t_sym, q_sym[1:][tie_next]])
+    t_time = np.concatenate([t_time, q_time[1:][tie_next]])
+    nt = len(t_sym)
+    in_tie = np.zeros(nq, dtype=bool)
+    in_tie[1:] |= tie_next
+    in_tie[:-1] |= tie_next
     for d in ("backward", "forward"):
         fast = asof_join(q_sym, q_time, t_sym, t_time, d)
         slow = asof_brute(q_sym, q_time, t_sym, t_time, d)
         same = fast == slow  # indices, so a join that picks the wrong one of two tied quotes fails
-        print(f"{d}: {nq:,} quotes, {nt} trades: {int(same.sum())}/{nt} agree, unmatched {int((fast < 0).sum())}")
+        hits = int(in_tie[fast[fast >= 0]].sum())
+        unmatched = int((fast < 0).sum())
+        print(f"{d}: {nq:,} quotes, {nt} trades: {int(same.sum())}/{nt} agree, unmatched {unmatched}, matched to a tied quote {hits}")
         assert same.all()
-    # Tied quote times must occur, or the index comparison above would not exercise the tie rule.
-    tied = int(np.sum((np.diff(q_sym) == 0) & (np.diff(q_time) == 0)))
-    print(f"quotes sharing a symbol and time with the previous quote: {tied}")
-    assert tied == 13  # note 12 example 1
+        assert hits >= tied  # every added trade lands on a tie, so the tie rule is exercised in both directions
+        assert hits == {"backward": 13, "forward": 14}[d]  # note 12 example 1
 
 
 def tied_quotes() -> None:

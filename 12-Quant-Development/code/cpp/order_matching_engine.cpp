@@ -66,9 +66,9 @@ int main() {
     book.submit(limit(5, Side::Buy, 10200, 600, 2), ev);
     print(ev);
     check(ev.size() == 4, "accept + three fills");
-    check(ev[1] == Event{EventType::Fill, 5, 1, 10100, 300, Reason::None}, "fill 300 @ 101.00 against order 1 (time priority)");
-    check(ev[2] == Event{EventType::Fill, 5, 2, 10100, 200, Reason::None}, "fill 200 @ 101.00 against order 2");
-    check(ev[3] == Event{EventType::Fill, 5, 3, 10200, 100, Reason::None}, "fill 100 @ 102.00 against order 3");
+    check(ev.size() > 1 && ev[1] == Event{EventType::Fill, 5, 1, 10100, 300, Reason::None}, "fill 300 @ 101.00 against order 1 (time priority)");
+    check(ev.size() > 2 && ev[2] == Event{EventType::Fill, 5, 2, 10100, 200, Reason::None}, "fill 200 @ 101.00 against order 2");
+    check(ev.size() > 3 && ev[3] == Event{EventType::Fill, 5, 3, 10200, 100, Reason::None}, "fill 100 @ 102.00 against order 3");
     // Notional and average price from the engine's fill events, not from the expected fills.
     Qty filled = 0;
     Qty notional = 0;  // cents x shares
@@ -111,8 +111,9 @@ int main() {
     ev.clear();
     book.submit(NewOrder{21, 2, Side::Buy, OrdType::Limit, Tif::Ioc, 10200, 500}, ev);
     print(ev);
-    check(ev[1].type == EventType::Fill && ev[1].qty == 400, "IOC fills 400");
-    check(ev[2].type == EventType::Cancelled && ev[2].qty == 100 && ev[2].reason == Reason::IocRemainder, "IOC remainder 100 cancelled");
+    check(ev.size() > 1 && ev[1].type == EventType::Fill && ev[1].qty == 400, "IOC fills 400");
+    check(ev.size() > 2 && ev[2].type == EventType::Cancelled && ev[2].qty == 100 && ev[2].reason == Reason::IocRemainder,
+          "IOC remainder 100 cancelled");
     book.submit(limit(22, Side::Sell, 10300, 100), ev);
     ev.clear();
     book.submit(NewOrder{23, 2, Side::Buy, OrdType::Limit, Tif::Day, 10300, 100, true}, ev);
@@ -126,8 +127,8 @@ int main() {
     ev.clear();
     stp.submit(NewOrder{32, 7, Side::Buy, OrdType::Limit, Tif::Day, 10000, 150, false, Stp::CancelResting}, ev);
     print(ev);
-    check(ev[1] == Event{EventType::Cancelled, 30, 32, 10000, 100, Reason::SelfTrade}, "own resting order cancelled");
-    check(ev[2] == Event{EventType::Fill, 32, 31, 10000, 100, Reason::None}, "then trades with the other firm");
+    check(ev.size() > 1 && ev[1] == Event{EventType::Cancelled, 30, 32, 10000, 100, Reason::SelfTrade}, "own resting order cancelled");
+    check(ev.size() > 2 && ev[2] == Event{EventType::Fill, 32, 31, 10000, 100, Reason::None}, "then trades with the other firm");
     check(stp.best_bid() == 10000 && stp.depth_at(Side::Buy, 10000) == 50, "remaining 50 rests");
 
     std::printf("5. opening auction\n");
@@ -157,9 +158,12 @@ int main() {
     }
     ev.clear();
     const auto res = auction.uncross(10050, ev);
-    std::printf("    clearing price %lld volume %lld imbalance %lld, %zu fills\n", static_cast<long long>(res->price),
-                static_cast<long long>(res->volume), static_cast<long long>(res->imbalance), ev.size());
-    check(res->price == 10000 && res->volume == 40 && res->imbalance == 20, "qd-lobimpl-auction-numeric: clears 40 @ 100.00, buy imbalance 20");
+    check(res.has_value(), "the auction uncrosses");
+    const AuctionResult cleared = res.value_or(AuctionResult{});
+    std::printf("    clearing price %lld volume %lld imbalance %lld, %zu fills\n", static_cast<long long>(cleared.price),
+                static_cast<long long>(cleared.volume), static_cast<long long>(cleared.imbalance), ev.size());
+    check(cleared.price == 10000 && cleared.volume == 40 && cleared.imbalance == 20,
+          "qd-lobimpl-auction-numeric: clears 40 @ 100.00, buy imbalance 20");
     Qty traded = 0;
     for (const auto& e : ev) traded += e.qty;
     check(traded == 40 && ev.size() == 4, "four fills totalling 40");
@@ -167,11 +171,10 @@ int main() {
     OrderBook tie(16, Phase::PreOpen);
     tie.submit(limit(50, Side::Buy, 10100, 10), ev);
     tie.submit(limit(51, Side::Sell, 9900, 10), ev);
-    const auto t_hi = tie.indicative_auction(10100);
-    const auto t_lo = tie.indicative_auction(9800);
-    std::printf("    tie: reference 101.00 -> %lld, reference 98.00 -> %lld\n", static_cast<long long>(t_hi->price),
-                static_cast<long long>(t_lo->price));
-    check(t_hi->price == 10100 && t_lo->price == 9900, "reference price breaks the tie");
+    const Price t_hi = tie.indicative_auction(10100).value_or(AuctionResult{}).price;
+    const Price t_lo = tie.indicative_auction(9800).value_or(AuctionResult{}).price;
+    std::printf("    tie: reference 101.00 -> %lld, reference 98.00 -> %lld\n", static_cast<long long>(t_hi), static_cast<long long>(t_lo));
+    check(t_hi == 10100 && t_lo == 9900, "reference price breaks the tie");
 
     std::printf("6. ITCH 5.0 book building\n");
     namespace it = lob::itch;

@@ -121,14 +121,20 @@ public:
 
     // Applies one unframed message of n bytes.
     Status apply(const std::uint8_t* p, std::size_t n) {
-        if (n < 1) return Status::Truncated;
+        if (n < 1) {
+            ++errors;
+            return Status::Truncated;
+        }
         const char type = static_cast<char>(p[0]);
         const std::size_t need = message_length(type);
         if (need == 0) {
             ++skipped;
             return Status::Skipped;
         }
-        if (n < need) return Status::Truncated;
+        if (n < need) {
+            ++errors;
+            return Status::Truncated;
+        }
         if (be(p + 1, 2) != locate_) {
             ++skipped;
             return Status::Skipped;
@@ -159,7 +165,7 @@ public:
                     s = Status::UnknownOrder;
                     break;
                 }
-                if (new_ref != old_ref && orders_.contains(new_ref)) {
+                if (orders_.contains(new_ref)) {
                     s = Status::DuplicateOrder;
                     break;
                 }

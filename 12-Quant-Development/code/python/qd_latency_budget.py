@@ -16,6 +16,7 @@ import math
 
 C_KM_PER_S = 299_792.458  # speed of light in vacuum, exact by definition of the metre
 FIBRE_GROUP_INDEX = 1.468  # stated assumption: typical single-mode fibre near 1550 nm
+AIR_INDEX = 1.000293  # sea-level air, the medium a line-of-sight radio path actually crosses
 ETH_OVERHEAD_BYTES = 8 + 12  # preamble + start-of-frame delimiter, inter-frame gap
 
 
@@ -64,6 +65,10 @@ def main() -> None:
     assert math.isclose(one_way_1000[0] / 1000, 4.897, abs_tol=5e-4)
     assert math.isclose(one_way_1000[1] / 1000, 3.336, abs_tol=5e-4)
     assert math.isclose(saving, 0.319, abs_tol=5e-4)
+    air = propagation_us_per_km(AIR_INDEX)
+    air_saving = 1 - air / fibre
+    print(f"   air (n = {AIR_INDEX}): {air:.3f} us/km, saving {air_saving:.1%} of the fibre delay")
+    assert f"{air:.3f}" == "3.337" and f"{air_saving:.1%}" == "31.9%"
     ratio = one_way_1000[0] * 1000 / ser[(64, 10.0)]
     print(f"   1000 km of fibre vs serializing 64 bytes at 10 GbE: {ratio:,.0f} times longer")
     assert round(ratio) == 72_868

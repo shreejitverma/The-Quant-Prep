@@ -158,6 +158,7 @@ When an incoming order would match a resting order with the same owner (trader, 
 - Cancel both: cancel the resting order and the incoming remainder.
 
 Venues also offer decrement variants; the FOK pre-check must apply the same rule, or a FOK could partially fill and then be cancelled by STP.
+In the repo's engine STP applies to continuous matching only: the call-auction uncross matches every crossing buy against every crossing sell at the clearing price without comparing owners, so a firm's own orders can trade with each other in the auction unless they are screened before it.
 
 ### Call auctions
 
@@ -212,7 +213,7 @@ The slowest single operation varied between runs from about 14 to 17 microsecond
 ### Testing the engine
 
 - Unit tests for each rule: validation, market orders on an empty book, cancel in the middle of a queue, every replace variant, every STP mode, FOK with STP, auction phase rules.
-- Differential testing: [tests/test_lob_engine.cpp](code/cpp/tests/test_lob_engine.cpp) runs 20,000 seeded random adds, cancels, cancel/replaces (size down, size up, reprice), IOC, FOK and market orders through the engine and through a deliberately naive reference (linear scans, obviously correct), and requires identical event streams and identical depth at every price after every operation, plus an uncrossed book.
+- Differential testing: [tests/test_lob_engine.cpp](code/cpp/tests/test_lob_engine.cpp) runs 20,000 seeded random adds, cancels, cancel/replaces (size down, size up, reprice, some under the same id), limit and market orders with Day, IOC and FOK time in force through the engine and through a deliberately naive reference (linear scans, obviously correct), and requires identical event streams and identical depth at every price after every operation, plus an uncrossed book.
   The test also asserts that replaces, FOK kills and fills actually occurred, so it cannot pass vacuously; seeded bugs (a size increase keeping priority, fills at the aggressor's price, a missing FOK pre-check) each make it fail.
 - Sanitizers: the engine, demo and tests run clean under ASan and UBSan (they are single-threaded, so TSan has nothing to check).
 

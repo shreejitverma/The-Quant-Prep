@@ -78,8 +78,9 @@ void test_market_order_and_empty_book() {
     b.submit(limit(3, Side::Buy, 98, 5), ev);
     ev.clear();
     b.submit(NewOrder{4, 2, Side::Sell, OrdType::Market, Tif::Day, 0, 8}, ev);
-    EXPECT(ev[1] == (Event{EventType::Fill, 4, 2, 99, 5, Reason::None}));  // best bid first
-    EXPECT(ev[2] == (Event{EventType::Fill, 4, 3, 98, 3, Reason::None}));
+    EXPECT(ev.size() == 3);
+    EXPECT(ev.size() > 1 && ev[1] == (Event{EventType::Fill, 4, 2, 99, 5, Reason::None}));  // best bid first
+    EXPECT(ev.size() > 2 && ev[2] == (Event{EventType::Fill, 4, 3, 98, 3, Reason::None}));
     EXPECT(b.best_bid() == 98 && b.depth_at(Side::Buy, 98) == 2);
 }
 
@@ -109,8 +110,8 @@ void test_replace_variants() {
     EXPECT(!b.open_qty(1).has_value() && b.open_qty(11) == 4);
     ev.clear();
     b.replace(2, 12, 102, 6, ev);  // reprice through the offer: trades immediately
-    EXPECT(ev[0].type == EventType::Replaced && ev[1].type == EventType::Accepted);
-    EXPECT(ev[2] == (Event{EventType::Fill, 12, 3, 102, 6, Reason::None}));
+    EXPECT(ev.size() == 3 && ev[0].type == EventType::Replaced && ev[1].type == EventType::Accepted);
+    EXPECT(ev.size() > 2 && ev[2] == (Event{EventType::Fill, 12, 3, 102, 6, Reason::None}));
     EXPECT(b.depth_at(Side::Sell, 102) == 4 && b.depth_at(Side::Buy, 100) == 4);
     b.replace(11, 3, 100, 1, ev);  // new id clashes with a live order
     EXPECT(ev.back().reason == Reason::DuplicateId);
@@ -285,7 +286,7 @@ void test_differential_against_reference() {
     std::vector<Event> ev;
     OrderId next_id = 1;
     int mismatches = 0;
-    int replaces = 0, fok_kills = 0, fills = 0;
+    int replaces = 0, same_id_replaces = 0, fok_kills = 0, fills = 0, market_remainders = 0;
     int steps = 0;
     for (; steps < 20'000 && mismatches == 0; ++steps) {
         const int r = static_cast<int>(rng() % 100);
@@ -298,7 +299,7 @@ void test_differential_against_reference() {
         } else if (r < 35 && next_id > 1) {  // cancel/replace: size down, size up or reprice
             const OrderId span = std::min<OrderId>(next_id - 1, 40);  // recent ids: mostly still live
             const OrderId old_id = next_id - 1 - rng() % span;
-            const OrderId new_id = next_id++;
+            const OrderId new_id = rng() % 4 == 0 ? old_id : next_id++;  // sometimes amend under the same id
             const auto px = static_cast<Price>(95 + rng() % 11);
             const auto q = static_cast<Qty>(1 + rng() % 20);
             fast.replace(old_id, new_id, px, q, ev);
@@ -306,15 +307,23 @@ void test_differential_against_reference() {
         } else {
             NewOrder o{next_id++, 1, (rng() & 1) ? Side::Buy : Side::Sell, OrdType::Limit, Tif::Day,
                        static_cast<Price>(95 + rng() % 11), static_cast<Qty>(1 + rng() % 20)};
-            if (r >= 85) o.tif = Tif::Ioc;
-            if (r >= 91) o.tif = Tif::Fok;
-            if (r >= 97) o.type = OrdType::Market;
+            if (r >= 85) {  // order type and time in force drawn independently: market Day, IOC and FOK all occur
+                constexpr Tif kTifs[] = {Tif::Day, Tif::Ioc, Tif::Fok};
+                o.tif = kTifs[rng() % 3];
+                if (rng() % 3 == 0) {
+                    o.type = OrdType::Market;
+                    o.qty = static_cast<Qty>(1 + rng() % 400);  // large enough to sweep a side and leave a remainder
+                }
+            }
             fast.submit(o, ev);
             want = ref.submit(o);
+            if (o.type == OrdType::Market && o.tif != Tif::Fok)
+                market_remainders += std::any_of(ev.begin(), ev.end(), [](const Event& e) { return e.reason == Reason::IocRemainder; });
         }
         if (ev != want) ++mismatches;
         for (const auto& e : ev) {
             replaces += e.type == EventType::Replaced;
+            same_id_replaces += e.type == EventType::Replaced && e.id == e.counter_id;
             fok_kills += e.reason == Reason::FokNotFillable;
             fills += e.type == EventType::Fill;
         }
@@ -326,10 +335,11 @@ void test_differential_against_reference() {
         if (bb && ba && *bb >= *ba) ++mismatches;  // continuous book is never crossed after matching
     }
     std::cout << "differential: " << steps << " operations, " << replaces << " replaces, " << fok_kills << " FOK kills, " << fills
-              << " fills, " << mismatches << " mismatches" << std::endl;
+              << " fills, " << mismatches << " mismatches, " << same_id_replaces << " same-id replaces, " << market_remainders << " market remainders" << std::endl;
     EXPECT(mismatches == 0);
     EXPECT(steps == 20'000);  // the note quotes 20,000 operations (card qd-lobimpl-differential)
     EXPECT(replaces > 0 && fok_kills > 0 && fills > 0);  // every path was actually exercised
+    EXPECT(same_id_replaces > 0 && market_remainders > 0);
 }
 
 // ------------------------------------------------------------------ ITCH builder errors
@@ -385,10 +395,33 @@ void test_itch_rejects_do_not_mutate() {
     EXPECT(bb.apply_stream(stream.data(), stream.size()) == it::Status::Ok);
     EXPECT(bb.ask_shares(600) == 40 && bb.errors == 1);  // 70 - 20 - 10; the one error is the clash above
 
+    auto same_ref = it::encode_replace(1, 0, 1, 1, 40, 520);  // the replacement must carry a new reference
+    EXPECT(bb.apply(same_ref.data(), same_ref.size()) == it::Status::DuplicateOrder);
+    EXPECT(bb.bid_shares(500) == 100 && bb.bid_shares(520) == 0 && bb.live_orders() == 2);
+
     it::BookBuilder fresh(1);
     auto zero = it::encode_add(1, 0, 3, 'B', 0, stock, 505);  // zero display shares: dead on arrival
     EXPECT(fresh.apply(zero.data(), zero.size()) == it::Status::Ok);
     EXPECT(fresh.live_orders() == 0 && fresh.bid_shares(505) == 0);
+}
+
+// Every message offered to apply() is counted exactly once as applied, skipped or an error,
+// including truncated ones.
+void test_itch_counters_account_for_every_message() {
+    namespace it = lob::itch;
+    const char stock[9] = "TEST    ";
+    it::BookBuilder bb(1);
+    const auto add = it::encode_add(1, 0, 1, 'B', 100, stock, 500);
+    const auto other = it::encode_add(2, 0, 2, 'B', 100, stock, 500);
+    const std::uint8_t sys[] = {'S', 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'O'};
+    (void)bb.apply(add.data(), add.size());       // applied
+    (void)bb.apply(add.data(), add.size());       // duplicate: error
+    (void)bb.apply(add.data(), 20);               // truncated: error
+    (void)bb.apply(add.data(), 0);                // empty: error
+    (void)bb.apply(other.data(), other.size());   // another locate: skipped
+    (void)bb.apply(sys, sizeof sys);              // not a book message: skipped
+    EXPECT(bb.applied == 1 && bb.skipped == 2 && bb.errors == 3);
+    EXPECT(bb.applied + bb.skipped + bb.errors == 6);
 }
 
 }  // namespace
@@ -405,6 +438,7 @@ int main() {
     test_differential_against_reference();
     test_itch_errors();
     test_itch_rejects_do_not_mutate();
+    test_itch_counters_account_for_every_message();
     std::cout << (g_total - g_failures) << "/" << g_total << " assertions passed" << std::endl;
     return g_failures == 0 ? 0 : 1;
 }

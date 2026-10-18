@@ -120,6 +120,8 @@ def floats() -> None:
     p = np.float32(123456.78)
     print("float32(123456.78) =", repr(float(p)), " error:", f"{abs(float(p) - 123456.78):.6f}")
     assert float(p) == 123456.78125
+    assert f"{abs(float(p) - 123456.78):.5f}" == "0.00125"
+    assert float(np.spacing(np.float32(123456.78))) == 1 / 128  # 65,536 <= 123,456.78 < 131,072
     print("1e16 + 1 - 1e16 in float64:", (1e16 + 1.0) - 1e16, " ulp of 1e16:", float(np.spacing(1e16)))
     assert (1e16 + 1.0) - 1e16 == 0.0 and np.spacing(1e16) == 2.0
     gap = float(np.spacing(np.float32(131072.0)))
@@ -269,7 +271,7 @@ def ewma_closed_form() -> None:
     section("A recursion that does not vectorise safely")
     alpha = 0.1
     # y_t = (1 - alpha) y_{t-1} + alpha x_t has the closed form
-    # y_t = (1 - alpha)^t [ y_0 + alpha * sum_{s<=t} x_s (1 - alpha)^{-s} ]
+    # y_t = (1 - alpha)^t [ y_0 + alpha * sum_{s=1}^{t} x_s (1 - alpha)^{-s} ]
     limit = math.log(np.finfo(np.float64).max) / -math.log(1 - alpha)
     print(f"(1 - alpha)^(-s) overflows float64 for s > {limit:.1f} when alpha = {alpha}")
     assert f"{limit:.1f}" == "6736.7" and f"{limit:,.0f}" == "6,737"

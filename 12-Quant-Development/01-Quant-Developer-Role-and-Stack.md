@@ -12,7 +12,7 @@ sources: [Harris - Trading and Exchanges - Market Microstructure for Practitione
 
 ## TL;DR
 
-- "Quant developer" names at least five different jobs: low-latency core developer, strategy developer, research-infrastructure engineer, quant library developer at a bank, and data or platform engineer at a systematic fund.
+- "Quant developer" names at least five different jobs: low-latency core developer, strategy developer, research-infrastructure engineer, quant library developer at a bank, and execution and platform developer on the buy side or at an agency broker.
 - They differ along one axis more than any other: how much of the job is latency (nanoseconds to microseconds), throughput (millions of messages, thousands of cores) or correctness of numerics (prices, risk, P&L).
 - The common core every interview tests: data structures and algorithms, one systems language (usually C++) in depth, Python fluency, Linux and networking basics, and system design specialised to trading.
 - What separates tiers: juniors are tested on coding speed and language mechanics; seniors on design trade-offs, failure modes, measurement and ownership of production incidents.
@@ -20,7 +20,7 @@ sources: [Harris - Trading and Exchanges - Market Microstructure for Practitione
 
 ## Learning objectives
 
-- Distinguish core-dev, strategy-dev, research-infra and low-latency roles.
+- Distinguish the low-latency core, strategy, research-infrastructure, quant-library and execution-and-platform roles.
 - Map each role to the skills it is interviewed on and where to study them.
 - Describe the standard quant-dev stack (C++, Python, kdb+/q, Linux, networking, protocols) and what each piece is used for.
 - Explain what interviewers look for at junior, mid and senior level.
