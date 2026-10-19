@@ -4,7 +4,8 @@ Backs every number in `18-Pricing-and-Risk-Systems/12-Regulatory-Reporting-Pipel
 Trades, balances, tolerances and the reconciliation data set are labelled-hypothetical inputs.
 SA-CCR is computed here from CRE52 directly and cross-checked against the independently written and verified
 implementation in `17-Regulatory-Capital-Basel-and-FRTB/code/basel_credit_saccr.py`.
-The reconciliation is a real matching run over a seeded synthetic data set, not arithmetic on literals.
+The reconciliation is a real matching run over a seeded synthetic data set, not arithmetic on literals, and its
+break categories are checked against the faults injected into that data set.
 Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
 Run it with `python 18-Pricing-and-Risk-Systems/code/sys_regulatory_reporting.py`.
 """
@@ -148,7 +149,9 @@ def check_reconciliation() -> None:
     over = {t: d for t, d in diffs.items() if abs(d) > tolerance}
     under = {t: d for t, d in diffs.items() if abs(d) <= tolerance}
     total_gap = sum(gl.values()) - sum(risk.values())
-    assert abs(total_gap - (missing + sum(diffs.values()))) < 1e-3, "breaks must explain the whole gap"
+    # the matching above never saw the fault lists; its categories must recover exactly the faults injected
+    assert {t for t in gl if t not in risk} == set(tokyo), "missing-trade breaks differ from the dropped trades"
+    assert set(diffs) == set(fx_rate_gap), "value breaks differ from the trades revalued at another FX fixing"
     quoted("GL total ($m)", sum(gl.values()) / 1e6, 6_706.95, 2)
     quoted("risk total before investigation ($m)", sum(risk.values()) / 1e6, 6_553.83, 2)
     quoted("total gap ($m)", total_gap / 1e6, 153.12, 2)

@@ -151,6 +151,8 @@ def check_pla() -> None:
         ("rates desk", 3, 0.20, 0.00, 0.981, 0.060, "green"),
         ("FX options desk", 5, 0.70, -0.50, 0.846, 0.116, "amber"),
         ("credit desk", 3, 1.10, -0.60, 0.707, 0.136, "red"),
+        ("FX options desk, vega P&L at half size only", 5, 0.00, -0.50, 0.966, 0.064, "green"),
+        ("FX options desk, missing basis only", 5, 0.70, 0.00, 0.876, 0.096, "amber"),
     ):
         hpl, rtpl = desk_series(seed, bw, se)
         rs = spearman_rank_difference(hpl, rtpl)

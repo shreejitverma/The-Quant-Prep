@@ -169,7 +169,8 @@ A desk holds 10,000,000 face of a 5% annual-coupon bond with five coupons left, 
 - Funding cost of $-12,500$ is a time effect and belongs in APL (MAR32.27); APL $= 12,184 + 15,000 - 12,500 = 14,684$.
 - Commissions of $8,000$ and clearing fees of $4,500$ are excluded from APL and HPL (MAR32.26) but are part of reported P&L: $14,684 - 12,500 = 2,184$.
 
-The code checks the walk against an independent account: starting value, ending positions, coupon received, purchase cash, funding and fees.
+The code rebuilds the day a second way, from position quantities times unit marks at both closes plus a cash ledger with one event per flow (coupon, purchase, funding, commissions, clearing), and asserts that it agrees with the walk to the cent.
+It also asserts that booking any one flow twice in the ledger, or adding the coupon again in the walk, leaves a break.
 
 ### Example 3: deferring a day-one gain
 
@@ -257,7 +258,7 @@ Under US GAAP the same gain would generally be recognised on day one (ASC 820-10
 
 ## In this repo and SDE-Interview-Prep
 
-- [sys_pnl_platform.py](code/sys_pnl_platform.py) computes, prints and asserts every number on this page; Greeks are checked against finite differences and the bond walk against an independent cash account.
+- [sys_pnl_platform.py](code/sys_pnl_platform.py) computes, prints and asserts every number on this page; Greeks are checked against finite differences and the bond walk against a rebuild from position marks and a cash ledger that catches any flow booked twice.
 - [P&L Attribution and Greek Risk](../11-Risk-and-Trading/06-PnL-Attribution-and-Greek-Risk.md) for explain theory; [FRTB Backtesting and PLA Testing](../17-Regulatory-Capital-Basel-and-FRTB/12-FRTB-Backtesting-and-PLA-Testing.md) for the tests the regulatory series feed.
 - [FRTB Engine](10-FRTB-Engine.md) for how the PLA results drive desk eligibility, [Risk Engine](07-Risk-Engine.md) for the VaR being backtested, [Trade Representation and Lifecycle](02-Trade-Representation-and-Lifecycle.md) for bitemporal positions.
 

@@ -4,7 +4,8 @@ Backs every number in `18-Pricing-and-Risk-Systems/09-PnL-Platform.md`.
 Books, market moves, trades, fees and reserve policies are labelled-hypothetical teaching inputs.
 Nothing is a plug: the option book is repriced with Black-Scholes, its Greeks are analytic and checked against
 finite differences, and the residual is whatever full revaluation leaves; the bond is priced from its yield, and the
-walk's total is checked against an independent cash-and-position account.
+walk's total is checked against the day rebuilt from position quantities times unit marks and a cash ledger with one
+event per flow, which must catch any flow booked twice in the ledger or the coupon added again in the walk.
 Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
 Run it with `python 18-Pricing-and-Risk-Systems/code/sys_pnl_platform.py`.
 """
@@ -145,6 +146,15 @@ def bond_dirty(face: float, coupon: float, y: float, years_to_next: float, n_cou
     return pv
 
 
+def book_value(book: dict[str, tuple[float, float]]) -> float:
+    return sum(qty * mark for qty, mark in book.values())
+
+
+def account_pnl(start: dict[str, tuple[float, float]], end: dict[str, tuple[float, float]], cash: list[tuple[str, float]]) -> float:
+    """Day's P&L from the books: (quantity, unit mark) positions at both closes plus every cash event of the day."""
+    return book_value(end) - book_value(start) + sum(amount for _, amount in cash)
+
+
 def check_pnl_walk() -> None:
     print("  Example 2: bond desk P&L walk (hypothetical)")
     face, cpn = 10_000_000.0, 0.05
@@ -169,11 +179,23 @@ def check_pnl_walk() -> None:
     quoted("new trade P&L, bought at 99.50, closed at 99.80 ($)", new_trade, 15_000, 0)
     quoted("actual P&L, Basel definition, excluding fees and commissions ($)", apl, 14_684, 0)
     quoted("reported daily P&L including fees and commissions ($)", reported, 2_184, 0)
-    # independent account: start with the T-1 position worth v_prev; end with both positions, cash flows and costs
-    start = v_prev
-    end = v_now + 5_000_000.0 * 0.9980
-    cash = coupon_cash - 5_000_000.0 * 0.9950 + funding + commissions + clearing
-    assert abs((end + cash - start) - reported) < 1e-6
+    # second route: the day rebuilt from quantities times unit marks at both closes and a cash ledger of every flow
+    start_book = {"5% bond": (face, bond_dirty(1.0, cpn, 0.0450, 1.0 / 365.0, 5))}
+    end_book = {"5% bond": (face, bond_dirty(1.0, cpn, 0.0447, 1.0, 4)), "new bond": (5_000_000.0, 0.9980)}
+    ledger = [
+        ("coupon received", face * cpn),
+        ("new bond purchase at 99.50", -5_000_000.0 * 0.9950),
+        ("funding", -12_500.0),
+        ("commissions", -8_000.0),
+        ("clearing fees", -4_500.0),
+    ]
+    tol = 0.01
+    assert abs(account_pnl(start_book, end_book, ledger) - reported) < tol, "walk and account disagree"
+    for event in ledger:
+        doubled = account_pnl(start_book, end_book, [*ledger, event])
+        assert abs(doubled - reported) > tol, f"{event[0]} booked twice was not caught"
+    wrong_reported = wrong + new_trade + funding + commissions + clearing
+    assert abs(account_pnl(start_book, end_book, ledger) - wrong_reported) > tol, "coupon added twice was not caught"
 
 
 def check_day_one() -> None:

@@ -14,7 +14,7 @@ sources: [Basel Committee on Banking Supervision - Principles for effective risk
 
 - A regulatory reporting pipeline turns trade, risk and ledger data as of a reference date into supervisory returns (in the EU, COREP and FINREP; in the US, FR Y-9C, FFIEC 101, FR Y-14 and FR 2052a among others), with every reported cell traceable to its sources and reconciled to the accounts.
 - BCBS 239 (January 2013) sets 14 principles for risk data aggregation and reporting, expected of G-SIBs from January 2016; it asks for largely automated aggregation, a data dictionary, reconciliation with accounting data and effective controls around any manual or spreadsheet steps (Principle 3); the ECB's May 2024 guide extends the expectations explicitly to supervisory reports such as FINREP and COREP and asks for attribute-level data lineage.
-- Calculation services such as SA-CCR are deterministic functions of versioned inputs: for an unmargined swap and FX forward the example gives an aggregate add-on of 4,411,992 dollars and EAD of 7,856,789, and the 5% multiplier floor only starts to matter when the netting set is out of the money.
+- Calculation services such as SA-CCR are deterministic functions of versioned inputs: for an unmargined swap and FX forward the example gives an aggregate add-on of 4,411,992 dollars and EAD of 7,856,789, and the PFE multiplier only falls below 1 when the netting set is out of the money, and never below 5%.
 - Pre-submission checks recompute identities from the reported components (a CET1 ratio 5.8 bp away from its own numerator and denominator stops the filing) and reconcile risk to the general ledger by trade id, so that every break has a cause.
 - Every number on this page is produced and asserted by [sys_regulatory_reporting.py](code/sys_regulatory_reporting.py).
 
@@ -156,7 +156,8 @@ At month end, derivative asset fair values for 2,000 trades are reconciled betwe
 - Of the matched trades, $3$ differ by more than a 1,000 dollar per-trade tolerance (together $10,112$) and $7$ differ by less, all from a different FX fixing used in risk.
 - After the missing trades are replayed, the residual is $12,507$, every dollar of it attributed to named trades and a named cause.
 
-The code asserts that the categorised breaks add up to the whole gap; a reconciliation that leaves an unexplained residual has not finished.
+The code matches the two stores without knowing which faults were injected, then asserts that the trades it reports as missing are exactly the 45 dropped and the trades with value breaks exactly the 10 revalued at the other FX fixing.
+A reconciliation that leaves an unexplained residual has not finished.
 
 ## Pitfalls
 
@@ -220,7 +221,7 @@ The code asserts that the categorised breaks add up to the whole gap; a reconcil
 
 > [!question]- sys-12-13 | Why reconcile risk to the ledger by trade id rather than by total?
 > Offsetting breaks cancel in a total, so a small net difference can hide large errors; matching by trade id gives each break a category, owner and cause.
-> In Example 3 the 153.12m gap was 45 missing trades worth 153.11m plus FX-fixing differences, and the categorised breaks were checked to add up to the whole gap.
+> In Example 3 the 153.12m gap was 45 missing trades worth 153.11m plus FX-fixing differences, and each break category was checked against the faults injected into the data.
 
 > [!question]- sys-12-14 | How should an SA-CCR calculation service be designed so that results are auditable?
 > Make it a deterministic function of a netting set id, snapshot ids for trades, collateral and legal terms, and a rule version; return RC, every add-on, the multiplier and EAD, not just EAD.
@@ -236,7 +237,7 @@ The code asserts that the categorised breaks add up to the whole gap; a reconcil
 
 ## In this repo and SDE-Interview-Prep
 
-- [sys_regulatory_reporting.py](code/sys_regulatory_reporting.py) computes, prints and asserts every number on this page; SA-CCR is cross-checked against [basel_credit_saccr.py](../17-Regulatory-Capital-Basel-and-FRTB/code/basel_credit_saccr.py), and the reconciliation is a real matching run.
+- [sys_regulatory_reporting.py](code/sys_regulatory_reporting.py) computes, prints and asserts every number on this page; SA-CCR is cross-checked against [basel_credit_saccr.py](../17-Regulatory-Capital-Basel-and-FRTB/code/basel_credit_saccr.py), and the reconciliation is a real matching run whose break categories are checked against the injected faults.
 - [Counterparty Credit Risk: SA-CCR](../17-Regulatory-Capital-Basel-and-FRTB/04-Counterparty-Credit-Risk-SA-CCR.md) and [BCBS 239 Risk Data Aggregation](../17-Regulatory-Capital-Basel-and-FRTB/18-BCBS-239-Risk-Data-Aggregation.md) for the rules.
 - [Front-to-Back Architecture](01-Front-to-Back-Architecture.md) for transaction and trade reporting, [FRTB Engine](10-FRTB-Engine.md) and [XVA Engine](11-XVA-Engine.md) for the calculation services that feed returns.
 - SDE-Interview-Prep: [Idempotency and Delivery](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).

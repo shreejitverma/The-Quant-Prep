@@ -16,7 +16,7 @@ sources: [Basel Committee on Banking Supervision - Basel Framework MAR20 to MAR2
 - Quarterly gates decide what may be modelled: the risk factor eligibility test (MAR31.13), desk backtesting (more than 12 exceptions at 99% or 30 at 97.5% sends a desk to SA, MAR32.19) and the P&L attribution test (green needs Spearman above 0.80 and KS below 0.09; red is Spearman below 0.70 or KS above 0.12, MAR32.42).
 - Bank capital is $ACR_{total} = \min(IMA_{G,A} + \text{surcharge} + C_U, SA_{all}) + \max(0, IMA_{G,A} - SA_{G,A})$ (MAR33.43), so SA must be computed daily for all desks, for the approved desks together and for each desk standalone (for the amber surcharge factor).
 - Compute is dominated by ES revaluations: 15 scenario vectors per position per day (3 calibrations by 5 liquidity-horizon subsets) gave about 1.0 billion valuations for a hypothetical 250,000-position bank, 105 cores for a 2-hour window at 0.5 ms each with 50% headroom.
-- Data alignment between front-office HPL and risk-engine RTPL decides PLA outcomes: in the simulated desks an RTPL that under-scales vega P&L by half pushed KS to 0.116 (amber) with Spearman still at 0.846.
+- Data alignment between front-office HPL and risk-engine RTPL decides PLA outcomes: in the simulated desks an RTPL that misses a basis factor and under-scales vega P&L by half pushed KS to 0.116 (amber) with Spearman still at 0.846.
 - Every number on this page is produced and asserted by [sys_frtb_engine.py](code/sys_frtb_engine.py).
 
 ## Learning objectives
@@ -211,6 +211,7 @@ Each desk has 250 days of HPL and RTPL generated with a fixed seed; the RTPL mis
 
 Spearman is computed both from the rank-difference formula and as Pearson correlation of the ranks; KS both by a merge of the sorted series and by evaluating the MAR32.39 definition at every observation.
 The FX desk shows why both metrics exist: the ranks still agree (0.846) but the distributions differ in scale, which KS catches.
+Changing one thing at a time on the FX desk's data separates the causes: vega P&L at half size alone gives Spearman $0.966$ and KS $0.064$ (green), and the missing basis alone gives $0.876$ and $0.096$ (amber), so the basis drives most of the KS move.
 The credit desk fails on KS alone; Spearman 0.707 is just above the red threshold.
 
 ### Example 3: capital through three quarters

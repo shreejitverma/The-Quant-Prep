@@ -180,7 +180,8 @@ A prime broker gives a client a 50,000,000 dollar intraday limit with 44,000,000
 5. Outcome B: all 20,000 fill at 199.50; committed becomes 47,990,000 and the 10,000 price improvement returns to available.
 6. Outcome C: the session drops with order 2 working; available stays at 2,000,000 until an order status reply or cancel confirmation settles it.
 
-The code processes these events through a ledger that checks available plus reserved plus committed equals the limit after every event.
+The code processes these events through a reservation ledger.
+It then replays a seeded random sequence of new orders, fills, cancels and releases through the ledger and through a naive model that recomputes available from the order history, and asserts after every event that the two agree, including on which orders are rejected for exceeding the limit.
 
 ### Example 3: what the SEC found at Knight Capital
 
@@ -279,7 +280,7 @@ From SEC Release No. 34-70694 (October 16, 2013):
 
 ## In this repo and SDE-Interview-Prep
 
-- [sys_intraday_limits.py](code/sys_intraday_limits.py) computes, prints and asserts every number on this page; the credit example runs through a reservation ledger with a conservation check after each event.
+- [sys_intraday_limits.py](code/sys_intraday_limits.py) computes, prints and asserts every number on this page; the credit example runs through a reservation ledger, which a random event replay checks against a naive recomputation from the order history.
 - [Risk Checks and Order Management](../12-Quant-Development/13-Risk-Checks-and-Order-Management.md) for the full 15c3-5 text, the FIX state machine and a C++ gateway; [Concurrency, Lock-Free and Memory Pools](../12-Quant-Development/04-Concurrency-Lock-Free-and-Memory-Pools.md) for ring buffers.
 - [Risk Engine](07-Risk-Engine.md) for the risk numbers intraday limits are set on, [Front-to-Back Architecture](01-Front-to-Back-Architecture.md) for where the gateway sits.
 - SDE-Interview-Prep: [Idempotency and Delivery](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).

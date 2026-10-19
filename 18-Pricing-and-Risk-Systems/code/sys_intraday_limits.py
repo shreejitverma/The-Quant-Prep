@@ -5,13 +5,16 @@ Latency budgets, limits, orders and buffer sizes are labelled-hypothetical desig
 product; Knight Capital figures are quoted from SEC Release No. 34-70694 (October 16, 2013); the order-to-trade
 ratio formula is Article 3 of Commission Delegated Regulation (EU) 2017/566.
 The credit example is not arithmetic on literals: a small reservation ledger processes the order and execution
-events and the asserted balances are whatever it ends in, with the conservation invariant checked after each event.
+events and the asserted balances are whatever it ends in; a seeded random replay of reserve, fill, cancel and release
+events then checks its available balance after every event against a naive model that recomputes it from the order
+history, including the rejection of every reservation that would exceed the limit.
 Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
 Run it with `python 18-Pricing-and-Risk-Systems/code/sys_intraday_limits.py`.
 """
 
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass, field
 
 QUOTED: list[str] = []
@@ -63,7 +66,7 @@ def check_latency_budget() -> None:
 
 @dataclass
 class CreditLedger:
-    """Available + reserved + committed == limit at all times; amounts in dollars."""
+    """Running balances: available is the limit less committed and reserved; amounts in dollars."""
 
     limit: float
     committed: float
@@ -74,6 +77,7 @@ class CreditLedger:
         return self.limit - self.committed - sum(self.reserved.values())
 
     def check(self) -> None:
+        """Internal sanity check: conservation holds by construction, so only a negative available can trip it."""
         total = self.available + sum(self.reserved.values()) + self.committed
         assert abs(total - self.limit) < 1e-6 and self.available >= -1e-6
 
@@ -128,6 +132,68 @@ def check_credit_reservation() -> None:
     unk = CreditLedger(limit=50_000_000.0, committed=44_000_000.0)
     unk.new_order("O2", 20_000, 200.0)
     quoted("available while order 2's status is unknown ($)", unk.available, 2_000_000, 0)
+    check_ledger_replay()
+
+
+@dataclass
+class NaiveCreditModel:
+    """Keeps only the event history and recomputes available from scratch on every query."""
+
+    limit: float
+    committed_at_open: float
+    orders: dict[str, tuple[int, float]] = field(default_factory=dict)  # accepted order id -> (qty, limit price)
+    fills: list[tuple[str, int, float]] = field(default_factory=list)  # (order id, qty, price)
+    closed: set[str] = field(default_factory=set)
+
+    def filled_qty(self, order_id: str) -> int:
+        return sum(q for oid, q, _ in self.fills if oid == order_id)
+
+    def working(self) -> list[str]:
+        return [oid for oid in self.orders if oid not in self.closed]
+
+    def available(self) -> float:
+        committed = self.committed_at_open + sum(q * px for _, q, px in self.fills)
+        held = sum((self.orders[oid][0] - self.filled_qty(oid)) * self.orders[oid][1] for oid in self.working())
+        return self.limit - committed - held
+
+
+def check_ledger_replay(steps: int = 600, seed: int = 15) -> None:
+    """Replay random reserve, fill, cancel and release events through the ledger and the naive model."""
+    rng = random.Random(seed)
+    book = CreditLedger(limit=50_000_000.0, committed=44_000_000.0)
+    model = NaiveCreditModel(limit=50_000_000.0, committed_at_open=44_000_000.0)
+    counts = dict.fromkeys(("accepted", "rejected", "fill", "release", "cancel"), 0)
+    for step in range(steps):
+        working = model.working()
+        action = rng.choice(("new", "new", "fill", "fill", "cancel")) if working else "new"
+        if action == "new":
+            oid, qty, limit_px = f"N{step}", rng.randrange(100, 10_100, 100), rng.choice((25.0, 80.0, 200.0))
+            accepted = book.new_order(oid, qty, limit_px)
+            assert accepted == (qty * limit_px <= model.available()), f"{oid}: ledger and model disagree on acceptance"
+            if accepted:
+                model.orders[oid] = (qty, limit_px)
+            counts["accepted" if accepted else "rejected"] += 1
+        elif action == "fill":
+            oid = rng.choice(working)
+            qty, limit_px = model.orders[oid]
+            fill_qty = rng.randint(1, qty - model.filled_qty(oid))
+            px = limit_px - rng.choice((0.0, 0.01, 0.05, 0.25))
+            book.fill(oid, fill_qty, px, limit_px)
+            model.fills.append((oid, fill_qty, px))
+            counts["fill"] += 1
+            if model.filled_qty(oid) == qty:
+                book.terminal(oid)
+                model.closed.add(oid)
+                counts["release"] += 1
+        else:
+            oid = rng.choice(working)
+            book.terminal(oid)
+            model.closed.add(oid)
+            counts["cancel"] += 1
+        assert abs(book.available - model.available()) < 1e-4, f"step {step}: available drifted from the model"
+        assert set(book.reserved) == set(model.working()), f"step {step}: working orders differ"
+    assert all(counts.values()), f"replay must exercise every event type: {counts}"
+    print(f"    ledger replay: {steps} events matched the naive model ({counts['rejected']} rejections)")
 
 
 # ============================================================================
