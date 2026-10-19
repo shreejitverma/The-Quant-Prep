@@ -205,7 +205,12 @@ def map_zero_risk_to_par_risk(d_pv_dz: list[float], j_s_z: list[list[float]]) ->
 
 
 def cme_conversion_factor(coupon: float, years: int) -> float:
-    """Standard CME conversion factor for whole years maturity with 6% benchmark yield."""
+    """Price of 1 par at a 6% semiannual yield for a maturity of exactly `years` whole years.
+
+    This is only the z = 0 special case of CME's formula and is not rounded; CME rounds the
+    remaining maturity down to whole months or quarters and the factor to four decimals, as
+    implemented and checked against CME's published examples in `fi_treasury_futures.py`.
+    """
     n_semi = 2 * years
     r_semi = 0.03
     return (coupon / 2.0 / r_semi) * (1.0 - (1.0 + r_semi) ** (-n_semi)) + (1.0 + r_semi) ** (-n_semi)

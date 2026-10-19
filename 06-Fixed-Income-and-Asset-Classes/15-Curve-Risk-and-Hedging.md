@@ -5,18 +5,18 @@ tier: advanced
 status: solid
 prereqs: [curve-construction-numerics]
 est_hours: 5
-sources: [Litterman and Scheinkman - Common factors affecting bond returns Journal of Fixed Income 1991, Ho - Key rate durations Journal of Fixed Income 1992, Tuckman and Serrat - Fixed Income Securities 4th ed. chapters 4 to 6, Bank of England - Financial Stability Report December 2022]
+sources: [Robert Litterman and Jose Scheinkman - Common Factors Affecting Bond Returns (Journal of Fixed Income 1(1) 1991), Thomas Ho - Key Rate Durations: Measures of Interest Rate Risks (Journal of Fixed Income 2(2) 1992), Bruce Tuckman and Angel Serrat - Fixed Income Securities 3rd ed. (Wiley 2011), Bank of England - Market Notice 28 September 2022 Gilt Market Operations, Bank of England - Financial Stability Report December 2022]
 ---
 
 # Curve Risk and Hedging
 
 ## TL;DR
 
-- Parallel duration is insufficient for portfolio risk management because real yield curves do not shift purely in parallel.
-- Key-rate duration (or bucketed DV01) measures price sensitivity to localized shifts at specific maturity pillars, holding all other pillars constant.
-- Zero-rate sensitivities are mathematical artifacts of the curve model; the calibration Jacobian transforms them into actionable market quote sensitivities.
-- Principal Component Analysis (PCA) decomposes yield curve variations into three orthogonal modes: Level ($80\text{--}90\%$), Slope ($8\text{--}12\%$), and Curvature ($2\text{--}5\%$).
-- Curve trades (e.g., 2s10s steepeners and 2s5s10s butterflies) isolate specific shape deformations; butterflies can be weighted by duration-neutrality, cash-neutrality, or regression weights.
+- One duration number assumes parallel moves; curve risk needs a vector: bucketed zero DV01s, key-rate durations, or par-quote DV01s, and they answer different questions.
+- Zero DV01s are model coordinates; par DV01s are hedge tickets: a 3y par bond shows zero DV01s at 1y, 2y and 3y but par DV01 only at 3y (0.027925 per 100, which is $100A_3 \times 10^{-4}$, the 3y swap's DV01).
+- Key-rate durations from triangular shifts add up to the parallel duration: 0.2597 + 0.7956 + 7.1809 = 8.2362 for a 10y par bond with keys at 2y, 5y and 10y.
+- Curve trades are DV01-weighted: a 10,000 USD per bp 2s10s steepener makes about 100,000 USD on a 10 bp steepening and here carries +75,857 USD a year; whether a steepener carries depends on $(s - r)/A$ per leg, not on which fixed rate is higher.
+- PCA on yield changes gives level, slope and curvature factors (Litterman and Scheinkman 1991); a PCA-weighted butterfly is neutral to the first two by construction, while a 50/50 fly is not.
 
 ## Learning objectives
 
@@ -25,206 +25,204 @@ sources: [Litterman and Scheinkman - Common factors affecting bond returns Journ
 - Interpret the empirical findings of Litterman and Scheinkman (1991) and explain the economic drivers of Level, Slope, and Curvature.
 - Construct duration-neutral and regression-weighted butterfly trades (e.g., 2s5s10s) and compute their carry and roll-down.
 - Explain how leverage and collateral calls turned a jump in long gilt yields into a liquidity spiral during the 2022 UK gilt crisis.
+- Build a PCA-neutral butterfly from a covariance matrix and quantify the residual risk.
 
 ## Core concepts
 
-### Limits of single-factor duration
+### 1. From one number to a risk vector
 
-Single-factor modified duration assumes that all interest rates along the curve shift simultaneously by the exact same amount $\Delta y$.
-In reality, the yield curve experiences complex transformations: steepening, flattening, inversions, and localized kinks around economic events.
-A portfolio that is duration-neutral ($\sum \text{DV01} = 0$) under parallel shifts remains violently exposed to curve slope changes and butterfly twists.
-Comprehensive risk management requires decomposing curve risk into a vector of localized sensitivities.
+A book that is flat to a parallel shift ($\sum$ DV01 $= 0$) can still lose heavily on a steepening, a flattening or a twist.
+Curve risk is reported as a vector of sensitivities, each to a chosen deformation of the curve; the choice of deformations is the choice of risk factors, and hedges are only as good as that choice.
 
-### Key-rate duration and bucketed DV01
+| Measure | Bump | Use |
+| :--- | :--- | :--- |
+| Zero (bucketed) DV01 | one pillar zero rate, others fixed | model diagnostics, aggregation |
+| Key-rate duration (Ho 1992) | triangular shift around a key tenor | bond portfolio risk |
+| Par (quote) DV01 | one market quote, curve rebuilt | hedging with the quoted instruments |
+| Forward DV01 | one forward period | forward-starting trades, futures strips |
+| Factor exposure | PCA or other factor shape | macro hedges, relative value |
 
-Introduced by Thomas Ho (1992), key-rate duration measures the price sensitivity of a security to a localized shift in the spot rate at a specific maturity pillar $T_k$, with zero shift at all other specified key rates:
-$$\text{KRD}_k = -\frac{1}{P} \frac{\partial P}{\partial z(T_k)} \approx -\frac{1}{P} \frac{P\left(z(T_k) + \Delta z\right) - P\left(z(T_k) - \Delta z\right)}{2 \Delta z}.$$
-Between key rates, the shock linearly decays to zero at adjacent pillars $T_{k-1}$ and $T_{k+1}$, forming a triangular perturbation.
-The sum of all key-rate durations equals the aggregate effective duration under a parallel shift:
-$$\sum_{k=1}^K \text{KRD}_k = D_{\text{eff}}.$$
-In trading and risk systems, key-rate sensitivities are typically expressed in dollar terms as bucketed DV01:
-$$\text{DV01}_k = -\frac{\partial P}{\partial z(T_k)} \times 10^{-4}.$$
+### 2. Key-rate durations
 
-### Par sensitivities versus zero sensitivities
+Ho (1992) shifts the spot curve by a triangle that is 1 at key tenor $T_k$ and falls linearly to 0 at the neighbouring keys (flat beyond the first and last key):
+$$KRD_k = -\frac{1}{P}\frac{\partial P}{\partial \kappa_k}, \qquad \text{DV01}_k = -\frac{\partial P}{\partial \kappa_k} \times 10^{-4}.$$
+Because the triangles sum to a parallel shift at every maturity, the key-rate durations sum to the parallel (effective) duration, to first order.
 
-When risk engines bump zero rates directly, the resulting zero DV01s do not correspond to instruments tradable on an exchange.
-For example, bumping the 10-year zero rate by 1 bp requires an artificial shock that cannot be purchased directly in the cash market.
-To obtain actionable hedges, the desk requires par sensitivities: the sensitivity of portfolio value to a 1 bp bump in the quoted par rate of liquid benchmark instruments (e.g., 2y, 5y, 10y swaps or Treasury benchmarks).
-The calibration Jacobian matrix $J_{\mathbf{s}, \mathbf{z}} = \left[ \frac{\partial s_i}{\partial z_j} \right]$ maps par quotes to zero rates.
-The vector of market par quote sensitivities $\frac{\partial PV}{\partial \mathbf{s}}$ is obtained by applying the inverse Jacobian:
-$$\frac{\partial PV}{\partial \mathbf{s}} = \left( J_{\mathbf{s}, \mathbf{z}}^{-1} \right)^T \frac{\partial PV}{\partial \mathbf{z}}.$$
-This transformation removes artificial contamination: as proven in Note 14, a liquid benchmark swap has non-zero sensitivities across multiple zero rates, but when transformed via the Jacobian, its par sensitivity is non-zero exclusively at its own maturity.
+### 3. Zero risk versus par risk
 
-### Principal component analysis of curve movements
+Par risk is what you hedge: $\partial PV/\partial \mathbf{s} = J^{-T}\partial PV/\partial \mathbf{z}$ with $J = \partial\mathbf{s}/\partial\mathbf{z}$ ([Curve Construction Numerics](14-Curve-Construction-Numerics.md)), or equivalently bump each quote, rebuild, reprice.
+The hedge in benchmark $i$ is $N_i = -v_{par,i}/h_i$ with $h_i = \partial V_i/\partial s_i$ per unit notional ($+A_i$ for a payer swap).
+A yield DV01 (bumping the bond's own yield) is a third number again: it moves all of the bond's discount rates equally, which is neither a par-quote nor a zero bump.
 
-Litterman and Scheinkman (1991) performed PCA on empirical yield curve changes and established that over $98\%$ of all yield curve variance is explained by three orthogonal factors:
+### 4. Principal components
+
+Litterman and Scheinkman (1991) found that three factors, which they called level, steepness and curvature, account for most of the variation in Treasury returns, with the level factor by far the largest.
+PCA diagonalises the covariance matrix $C$ of yield changes: $C = \sum_k \lambda_k e_k e_k^\top$; $\lambda_k/\sum\lambda$ is the variance share of factor $k$.
+A position with DV01 vector $d$ (receiver positive) loses $d \cdot \Delta y$, so its exposure to factor $k$ is $d \cdot e_k$, and it is neutral to factor $k$ when $d \cdot e_k = 0$.
+The shares and loadings depend on the sample, the tenors and the period; estimate them over a window that includes both easing and tightening, and expect them to drift.
+
+### 5. Curve trades
+
+- Steepener: receive the short tenor, pay the long tenor, DV01-matched; gains when $s_{long} - s_{short}$ widens.
+- Flattener: the reverse.
+- Butterfly (2s5s10s): wings against the belly; weights decide what it is exposed to:
+
+| Weighting | Wing DV01s per unit belly DV01 | Neutral to |
+| :--- | :--- | :--- |
+| 50/50 | 0.5 and 0.5 | parallel moves only |
+| Regression | from regressing belly changes on wing changes | the historically typical wing co-movement |
+| PCA | solve $d\cdot e_1 = d \cdot e_2 = 0$ | level and slope, by construction |
+
+Carry matters: against a common floating rate $r$, a receiver earns $(s - r)$ per year on notional $N$, and its DV01 is $NA \times 10^{-4}$, so per unit of DV01 a receiver carries $(s - r)/A$.
 
 ```mermaid
-flowchart TD
-    subgraph Yield_Curve_Deformation["Yield Curve Deformation Modes"]
-        PC1["PC1: Level (80-90% variance)<br/>Parallel shift across all tenors<br/>Driven by macroeconomic cycle & monetary policy"]
-        PC2["PC2: Slope (8-12% variance)<br/>Steepening / Flattening<br/>Driven by term premium & inflation expectations"]
-        PC3["PC3: Curvature (2-5% variance)<br/>Belly moves vs Wings<br/>Driven by rate uncertainty & supply/demand imbalances"]
-    end
+flowchart LR
+    P[Portfolio cash flows] --> Z[Zero DV01 vector]
+    Z --> J[Jacobian inverse transpose]
+    J --> PAR[Par DV01 per quoted instrument]
+    PAR --> H[Hedge notionals in benchmarks]
+    Z --> F[Factor exposures d dot e_k]
+    F --> FH[Factor hedges: PCA-neutral packages]
+    H --> L[Limits and P&L explain]
+    FH --> L
 ```
 
-1. Level (PC1): All tenors move in the same direction with roughly equal magnitude. Factor loadings are nearly uniform across maturities. Explains $80\text{--}90\%$ of total curve variation.
-2. Slope / Steepness (PC2): Short-end rates and long-end rates move in opposite directions, pivoting around the 3-year to 5-year sector. Explains $8\text{--}12\%$ of total variation.
-3. Curvature / Twist (PC3): The belly of the curve (intermediate maturities, e.g., 5-year) moves in the opposite direction to both the short and long wings (e.g., 2-year and 10-year). Explains $2\text{--}5\%$ of total variation.
+### 6. Case: the 2022 gilt crisis
 
-### Curve trades and butterfly construction
-
-Traders exploit yield curve shape deformations through multi-leg relative value strategies:
-- Curve steepener: Pay fixed on long tenor (e.g., 10y), receive fixed on short tenor (e.g., 2y). Gains when $s_{10} - s_2$ widens.
-- Curve flattener: Receive fixed on long tenor, pay fixed on short tenor. Gains when $s_{10} - s_2$ narrows.
-- Butterfly trade: Combines two wings ($T_1$ short, $T_3$ long) against the belly ($T_2$ intermediate), typically buying the wings and selling the belly (long butterfly) or vice versa.
-Standard 2s5s10s butterfly weighting schemes:
-1. Duration-neutral butterfly: Set weights $w_1, w_2, w_3$ such that total DV01 is zero ($w_1 \text{DV01}_1 + w_3 \text{DV01}_3 = w_2 \text{DV01}_2$) and the trade is neutral to parallel shifts.
-2. 50/50 barbell weighting: Allocate half of the belly DV01 to each wing: $w_1 \text{DV01}_1 = 0.5 w_2 \text{DV01}_2$ and $w_3 \text{DV01}_3 = 0.5 w_2 \text{DV01}_2$.
-3. Regression-weighted butterfly: Regress changes in the belly yield on changes in the wings: $\Delta y_2 = \beta_1 \Delta y_1 + \beta_3 \Delta y_3 + \epsilon$.
-The weights are chosen to neutralize empirical slope shocks, insulating the trade from both Level and Slope and exposing it purely to Curvature.
-
-### How it is implemented
-
-- Inputs: portfolio cash flows, calibrated discount curve, calibration Jacobian matrix, historical curve covariance matrix.
-- Outputs: bucketed zero DV01, bucketed par DV01, PCA factor exposures, optimal hedge notional in benchmark instruments.
-- Algorithm: calculate cash-flow sensitivities to zero rates; apply inverse Jacobian to compute par sensitivities; solve linear equations for hedge notional.
-- Complexity: $O(K^2)$ where $K$ is the number of benchmark curve pillars.
-- Reference implementation: [`code/fi_curve_risk.py`](code/fi_curve_risk.py) provides verified calculations for KRD, steepeners, and butterflies; [`code/curve_bootstrap.py`](code/curve_bootstrap.py) provides `map_zero_risk_to_par_risk` and Jacobian inversion.
-- System context: risk and PnL controls in the [front-to-back architecture](../18-Pricing-and-Risk-Systems/01-Front-to-Back-Architecture.md).
+After the UK government's fiscal statement of 23 September 2022, long-dated gilt yields rose sharply.
+Defined-benefit pension schemes using liability-driven investment (LDI) held leveraged gilt and swap positions that hedged the rate risk of their liabilities; on value the hedges worked, as liabilities fell with the assets.
+The failure was liquidity: collateral and margin calls on the leveraged positions came faster than funds could raise cash, so they sold long gilts, pushing yields higher and triggering more calls.
+The Bank of England announced temporary purchases of long-dated conventional gilts on 28 September 2022 to restore market functioning, extended them to index-linked gilts from 11 October, and ended them on 14 October 2022 (Bank of England Market Notice, 28 September 2022; *Financial Stability Report*, December 2022).
+The risk lesson: a DV01-matched hedge still needs a liquidity buffer sized for a plausible jump in the hedged rates.
 
 ## Worked examples
 
-All calculations below match the verified assertions in [`code/fi_curve_risk.py`](code/fi_curve_risk.py) and [`code/curve_bootstrap.py`](code/curve_bootstrap.py).
+Every number below is computed, printed and asserted by [fi_curve_risk.py](code/fi_curve_risk.py); curves are hypothetical, and the PCA covariance is a labelled hypothetical input.
 
-### Example 1: zero DV01 versus par DV01 on a 3-year par bond
+### Example 1: zero DV01 versus par DV01 for a 3y par bond
 
-Consider the 3-year annual par bond from Note 14 with coupon $4.00\%$ and face value $100$.
-Zero rates at pillars $T = 1, 2, 3$: $z = [2.9559\%, 3.4486\%, 3.9482\%]$.
-Discount factors: $P = [0.970874, 0.933352, 0.888299]$.
-Cash flows: $CF = [4.0, 4.0, 104.0]$.
+Par curve 3.00%, 3.50%, 4.00%; continuous zeros 2.9559%, 3.4486%, 3.9482%; bond cash flows 4, 4, 104.
+Zero DV01s per 100: 0.000388, 0.000747, 0.027715, summing to 0.028850.
+Bumping each par quote by ±1 bp and rebuilding gives par DV01s 0.000000, 0.000000, 0.027925, and $100A_3 \times 10^{-4} = 0.027925$.
+The bond's own yield DV01 is $100 \times (1 - 1.04^{-3})/0.04 \times 10^{-4} = 0.027751$ (for a par bond the modified duration equals the annuity factor at its yield), a third, different number.
+Hedge: pay fixed on $0.027925/(2.792525 \times 10^{-4}) = 100$ notional of 3y swap per 100 face.
 
-Zero-rate dollar sensitivities $\frac{\partial PV}{\partial z_k} = -k \cdot CF_k \cdot P_k$:
-$$\text{Zero DV01}_1 = -\frac{\partial PV}{\partial z_1} \times 10^{-4} = 3.8835 \times 10^{-4} = 0.000388.$$
-$$\text{Zero DV01}_2 = -\frac{\partial PV}{\partial z_2} \times 10^{-4} = 7.4668 \times 10^{-4} = 0.000747.$$
-$$\text{Zero DV01}_3 = -\frac{\partial PV}{\partial z_3} \times 10^{-4} = 277.1493 \times 10^{-4} = 0.027715.$$
-Sum of zero DV01s: $0.000388 + 0.000747 + 0.027715 = 0.028850$ per $100$ face.
+### Example 2: key-rate durations of a 10y bond
 
-Now apply the inverse Jacobian $J_{\mathbf{z}, \mathbf{s}}$ to compute market par quote sensitivities:
-$$\frac{\partial PV}{\partial s} = \left( J_{\mathbf{s}, \mathbf{z}}^{-1} \right)^T \frac{\partial PV}{\partial z} = \begin{pmatrix} 0.0 \\ 0.0 \\ -279.2525 \end{pmatrix}.$$
-$$\text{Par DV01}_1 = 0.000000.$$
-$$\text{Par DV01}_2 = 0.000000.$$
-$$\text{Par DV01}_3 = 279.2525 \times 10^{-4} = 0.027925.$$
-Total par DV01 equals $100 \cdot A_3 \times 10^{-4} = 0.027925$, the DV01 of the 3-year par swap on the bootstrapped curve.
-It differs from the bond's own yield DV01, modified duration times price times $10^{-4} = 100 \cdot \frac{1 - 1.04^{-3}}{0.04} \times 10^{-4} = 0.027751$, because bumping the 3-year par quote is a different scenario from bumping the bond's flat $4\%$ yield.
-Notice the critical insight: reporting zero DV01s suggests the bond has exposure to the 1-year and 2-year rates; reporting par DV01s confirms that the benchmark par bond has zero exposure to the 1y and 2y market rates.
+On the par curve 3.00, 3.50, 3.75, 3.90, 4.00, 4.10, 4.20, 4.30, 4.40, 4.50% (1y to 10y, annual), a 10y 4.5% annual bond prices at 100.0000.
+Triangular key-rate shifts at 2y, 5y and 10y on the continuous zero curve give KRDs 0.2597, 0.7956 and 7.1809, summing to 8.2362, which equals the duration from a separate parallel shift.
 
-### Example 2: 2s10s curve steepener sizing
+### Example 3: a 2s10s steepener
 
-A hedge fund initiates a 2s10s steepener with $\$10{,}000$ DV01 on the 10-year leg.
-Market parameters: an annual-pay par swap curve with $s_1, \dots, s_{10} = 3.00, 3.50, 3.75, 3.90, 4.00, 4.10, 4.20, 4.30, 4.40, 4.50\%$, bootstrapped as in Note 03 with `bootstrap_single_curve`.
-2-year swap par rate: $s_2 = 3.50\%$, Annuity $A_2 = 1.9042 \implies \text{DV01}_2 = \$190.42$ per million notional.
-10-year swap par rate: $s_{10} = 4.50\%$, Annuity $A_{10} = 8.0335 \implies \text{DV01}_{10} = \$803.35$ per million notional.
-To achieve $\$10{,}000$ DV01 on the 10-year leg:
-$$N_{10} = \frac{\$10{,}000}{\$803.35 / \text{M}} = \$12.448\text{ million}.$$
-The trader pays fixed on $\$12.448\text{M}$ of 10-year swaps.
-To make the trade duration-neutral, the trader receives fixed on the 2-year swap with matching total DV01 of $\$10{,}000$:
-$$N_2 = \frac{\$10{,}000}{\$190.42 / \text{M}} = \$52.515\text{ million}.$$
-Net parallel DV01 of the package is $\$0$.
-If the 2s10s curve steepens by $10\text{ bps}$ (e.g., 2-year yield drops 5 bps and 10-year yield rises 5 bps):
-Gain on 2-year leg: $\$10{,}000 \times (+5\text{ bps}) = +\$50{,}000$.
-Gain on 10-year leg: $\$10{,}000 \times (+5\text{ bps}) = +\$50{,}000$.
-Total profit: $\$100{,}000$.
-Carry: with both floating legs fixing at the 1-year rate of $3.00\%$, first-year carry is $52.515\text{M} \times (3.50\% - 3.00\%) - 12.448\text{M} \times (4.50\% - 3.00\%) = \$262{,}575 - \$186{,}720 = +\$75{,}855$.
-Per unit of DV01 a receiver carries $(s - r)/A$, so this DV01-neutral steepener carries positively because $(3.50\% - 3.00\%)/1.9042 = 0.26\%$ exceeds $(4.50\% - 3.00\%)/8.0335 = 0.19\%$.
+Same curve: $A_2 = 1.9042$, $A_{10} = 8.0335$, so DV01 per 1mm is 190.42 and 803.35 USD.
+For 10,000 USD per bp on each leg: pay fixed on 12.448mm 10y, receive fixed on 52.515mm 2y.
+Shock the 2y quote down 5 bp and the 10y up 5 bp, rebuild, reprice: the receiver makes 50,024 USD and the payer 49,980 USD, total 100,004, against 100,000 from DV01s alone.
+First-year carry with floating legs at 3.00%: $52.5148\text{mm} \times 0.50\% = 262{,}574$ USD on the receiver and $-12.4478\text{mm} \times 1.50\% = -186{,}717$ USD on the payer, net +75,857 USD.
+"Per unit of DV01 the 2y receiver carries $(3.50\% - 3.00\%)/1.9042 = 0.26\%$, the 10y payer gives up $(4.50\% - 3.00\%)/8.0335 = 0.19\%$, so this steepener carries positively even though it pays the higher fixed rate."
 
-### Example 3: 2s5s10s duration-neutral butterfly weights
+### Example 4: a 50/50 butterfly
 
-A desk constructs a long 2s5s10s butterfly: receive 2y wings, receive 10y wings, pay 5y belly.
-Annuities from the Example 2 curve ($s_5 = 4.00\%$):
-$A_2 = 1.9042$, $A_5 = 4.4775$, $A_{10} = 8.0335$.
-Assume belly notional $N_5 = \$100\text{ million}$ (payer).
-Belly DV01:
-$$\text{DV01}_5 = 100{,}000{,}000 \cdot 4.4775 \times 10^{-4} = \$44{,}775.$$
-Under a 50/50 barbell allocation, each wing absorbs half of the belly DV01 ($\$22{,}387.50$):
-2-year wing notional:
-$$N_2 = \frac{\$22{,}387.50}{1.9042 \times 10^{-4}} = \$117.569\text{ million}.$$
-10-year wing notional:
-$$N_{10} = \frac{\$22{,}387.50}{8.0335 \times 10^{-4}} = \$27.868\text{ million}.$$
-Check duration neutrality:
-Total wing DV01: $117.569\text{M} \times 1.9042 \times 10^{-4} + 27.868\text{M} \times 8.0335 \times 10^{-4} = \$22{,}387.50 + \$22{,}387.50 = \$44{,}775$.
-Belly DV01: $\$44{,}775$.
-Net DV01 is exactly $\$0$.
+Pay fixed on 100mm 5y ($A_5 = 4.4775$): belly DV01 44,775.43 USD.
+Each wing takes 22,387.71 USD: receive 117.569mm 2y and 27.868mm 10y.
+On a 40,000 USD belly each wing would carry 20,000.
 
-### Example 4: real-world case, the September 2022 UK gilt crisis and LDI collateral spirals
+### Example 5: PCA and a PCA-neutral butterfly
 
-In late September 2022, after the UK government's "mini-budget", yields on long-dated gilts rose sharply in a few days.
-UK defined-benefit pension schemes running Liability-Driven Investment (LDI) strategies held leveraged gilt and swap positions that hedged the interest rate risk of their long-dated liabilities.
-On value the hedges worked: as long yields rose, liabilities fell along with the hedge assets.
-The failure was liquidity: leveraged LDI funds faced collateral calls faster than they could raise cash, sold long gilts to meet them, and pushed yields higher, which triggered further calls.
-The Bank of England broke the spiral with temporary purchases of long-dated gilts from 28 September to 14 October 2022 under its financial stability remit (source: Bank of England, statement on the end of gilt market operations, October 2022; Bank of England, *Financial Stability Report*, December 2022).
-The lesson for curve risk is that a DV01-matched hedge still needs a collateral buffer sized for the largest plausible level move at the long end.
+Hypothetical daily yield-change covariance: volatilities 6.0, 7.0, 6.5 bp for 2y, 5y, 10y; correlations 0.90 (2y-5y), 0.75 (2y-10y), 0.93 (5y-10y).
+
+| Factor | Variance share | 2y | 5y | 10y |
+| :--- | ---: | ---: | ---: | ---: |
+| PC1 level | 91.43% | 0.5104 | 0.6443 | 0.5695 |
+| PC2 slope | 7.63% | -0.7509 | 0.0113 | 0.6603 |
+| PC3 curvature | 0.94% | 0.4190 | -0.7647 | 0.4896 |
+
+The eigenvalues match the roots of the characteristic polynomial and each pair satisfies $Cv = \lambda v$.
+A 50/50 fly (receive 0.5 of 2y and 0.5 of 10y DV01, pay 1 of 5y) has exposures -0.1044 to level, -0.0566 to slope and 1.2190 to curvature.
+Solving $d \cdot e_1 = d \cdot e_2 = 0$ with belly $-1$ gives wings 0.5479 (2y) and 0.6403 (10y): zero level and slope exposure, 1.3077 to curvature, and a net DV01 of +0.1882, so it is not DV01-neutral.
+Daily P&L standard deviation per 1 USD of belly DV01 is 1.7529 USD for the 50/50 fly and 1.4290 for the PCA fly, all of which is curvature.
 
 ## Pitfalls
 
-- Hedging long-dated cash flows with 2-year swaps based on parallel DV01, leaving the book completely exposed to curve steepening and PCA slope shocks.
-- Using zero-rate DV01s directly for trading hedges rather than converting to market par quote sensitivities via the Jacobian.
-- Forgetting that butterfly weights depend on the choice of weighting scheme (50/50 DV01 vs regression-neutral), which determines whether the trade is exposed to slope residuals.
-- Omitting carry and roll-down when analyzing curve trades: a DV01-neutral steepener carries negatively when $(s_2 - r)/A_2 < (s_{10} - r)/A_{10}$, for example under a flat front end and a steep long end, even though it carries positively on the Example 2 curve.
-- Re-estimating PCA covariance matrices over short sample windows that omit major monetary tightening or easing cycles.
+- Hedging long-dated risk with short-dated swaps on parallel DV01, leaving the book exposed to slope.
+- Hedging with zero DV01s instead of par DV01s, or adding DV01s computed under different bump definitions.
+- Assuming a DV01-neutral butterfly is curve-neutral: on the example covariance it still has level and slope exposure.
+- Assuming a PCA-neutral butterfly is DV01-neutral: it is not, by design.
+- Comparing fixed rates to judge carry instead of $(s - r)/A$ per leg.
+- Estimating PCA on a short or one-regime window and treating loadings as constants.
+- Matching DV01 without a liquidity plan for margin and collateral calls, as in 2022.
 
 ## Interview questions
 
 > [!question]- fi-key-rate-duration-def | Define key-rate duration and explain how the sum of key-rate durations relates to aggregate effective duration.
-> Key-rate duration measures percentage price change in response to a localized 1 bp shift at a specific curve pillar $T_k$, decaying to zero at adjacent pillars.
-> The sum of all key-rate durations across the curve equals the aggregate effective duration under a parallel shift: $\sum \text{KRD}_k = D_{\text{eff}}$.
+> The percentage price sensitivity to a triangular shift of the spot curve centred on one key tenor and fading to zero at the neighbouring keys (Ho 1992).
+> The triangles add up to a parallel shift, so the KRDs sum to the parallel duration: 8.2362 for the note's 10y bond.
 
 > [!question]- fi-pca-three-factors | State the three principal components of yield curve movements identified by Litterman and Scheinkman (1991) and their variance contributions.
-> $1$. Level (PC1): Parallel shift, explains $80\text{--}90\%$ of variance.
-> $2$. Slope (PC2): Steepening/flattening, explains $8\text{--}12\%$ of variance.
-> $3$. Curvature (PC3): Belly vs wings twist, explains $2\text{--}5\%$ of variance.
+> Level, steepness (slope) and curvature, with level by far the largest.
+> The shares depend on the sample and tenors; the note's hypothetical covariance gives 91.43%, 7.63% and 0.94%.
 
 > [!question]- fi-par-vs-zero-dv01 | Why is par DV01 more practical for a trading desk than zero DV01?
-> Zero DV01 measures sensitivity to non-tradable abstract zero-rate points.
-> Par DV01 measures sensitivity to liquid benchmark market instruments (e.g., 2y, 5y, 10y swaps) that the desk can directly buy or sell to hedge.
+> Each par DV01 is the sensitivity to a quote the desk can trade, so it maps one to one to a hedge notional.
+> Zero DV01s are coordinates of the curve model: a 3y par bond shows zero risk at 1y and 2y that disappears in par terms.
 
 > [!question]- fi-steepener-mechanics | What positions does a trader take to construct a 2s10s curve steepener?
-> Pay fixed on the 10-year swap and receive fixed on the 2-year swap.
-> As the 10-year rate rises relative to the 2-year rate, the payer swap gains more than the receiver swap loses.
+> Receive fixed on the 2y and pay fixed on the 10y, DV01-matched.
+> It gains when the 10y rate rises relative to the 2y: about 100,000 USD for 10 bp at 10,000 USD per bp a leg.
 
 > [!question]- fi-butterfly-5050-weighting | In a 2s5s10s butterfly with $\$40{,}000$ DV01 on the 5-year belly, what DV01 is assigned to each wing under a 50/50 weighting?
-> Each wing is assigned $\$20{,}000$ of DV01 ($50\%$ of the belly DV01).
-> Total wing DV01 equals $\$40{,}000$, neutralizing the package against parallel shifts.
+> $20{,}000$ USD per bp on each wing.
+> The package is neutral to parallel moves but not, in general, to slope.
 
 > [!question]- fi-regression-butterfly-advantage | What advantage does a regression-weighted butterfly have over a 50/50 duration-neutral butterfly?
-> A regression-weighted butterfly neutralizes exposure to empirical slope changes (PC2) as well as parallel shifts (PC1).
-> It isolates pure curvature (PC3), whereas a 50/50 butterfly can suffer large losses if the curve steepens or flattens dramatically.
+> Its wing weights reflect how the belly has actually co-moved with the wings, so typical level and slope moves cancel and the P&L is closer to pure curvature.
+> A 50/50 fly can lose on a steepening alone; regression weights are only as stable as the regression.
 
 > [!question]- fi-curve-trade-carry-cost | When does a DV01-neutral 2s10s steepener (receive 2y, pay 10y) carry negatively?
-> Against a common floating rate $r$, a receiver carries $(s - r)/A$ per unit of DV01, so the steepener carries negatively only when $(s_2 - r)/A_2 < (s_{10} - r)/A_{10}$, for example when the front end is flat ($s_2 \approx r$) but the long end is steep.
-> Comparing the two fixed rates alone is wrong: on the Example 2 curve ($r = 3.00\%$) the steepener earns $52.515\text{M} \times 0.50\% - 12.448\text{M} \times 1.50\% = +\$75{,}855$ in the first year.
+> When $(s_2 - r)/A_2 < (s_{10} - r)/A_{10}$: per unit of DV01 the receiver earns less than the payer gives up.
+> On the note's curve it carries +75,857 USD a year, although it pays the higher fixed rate.
 
 > [!question]- fi-ldi-crisis-collateral-spiral | Why did leveraged LDI hedges fail UK pension schemes during the 2022 gilt crisis even though they matched liability rate risk?
-> On value the hedges worked: as long gilt yields jumped, liabilities fell along with the leveraged gilt and swap positions.
-> The failure was liquidity: collateral calls arrived faster than funds could raise cash, forced gilt sales pushed yields higher and triggered more calls, until the Bank of England's temporary gilt purchases broke the spiral.
+> The hedges worked on value; collateral calls on leveraged positions arrived faster than funds could raise cash.
+> Forced gilt sales pushed yields up and triggered more calls until the Bank of England's temporary gilt purchases from 28 September to 14 October 2022.
 
 > [!question]- fi-pca-belly-curvature | Why is the 5-year sector of the yield curve called the "belly" in curvature trades?
-> It sits between the monetary-policy-anchored short end (2-year) and the pension/macro-anchored long end (10-year to 30-year).
-> Shifts in rate volatility or term premia cause the 5-year rate to bow upward or sag downward relative to the wings.
+> It sits between the short wing (2y) and the long wing (10y), and the curvature factor moves it against both.
+> In the note's PCA, PC3 loads -0.7647 on 5y against +0.4190 and +0.4896 on 2y and 10y.
 
 > [!question]- fi-jacobian-hedge-solution | How do you calculate the exact notional of $K$ benchmark instruments required to immunize a portfolio against non-parallel curve shifts?
-> Compute the portfolio's par sensitivity vector $\mathbf{v}_{\text{par}} = (J^T)^{-1} \mathbf{v}_{\text{zero}}$.
-> Each hedge notional is $N_i = -v_{\text{par}, i} / h_i$, where $h_i = \partial V_i / \partial s_i$ per unit notional of benchmark $i$ ($+A_i$ for a payer swap, $-A_i$ for a receiver), measured in the same per-unit-rate scale as $\mathbf{v}_{\text{par}}$.
-> For the Example 1 par bond, $N_3 = 279.2525 / 2.792525 = 100$ notional of the 3-year payer swap per $100$ face.
+> Map zero risk to par risk, $\mathbf{v}_{par} = J^{-T}\mathbf{v}_{zero}$, then set $N_i = -v_{par,i}/h_i$ with $h_i$ the benchmark's own par sensitivity ($+A_i$ per unit notional for a payer).
+> For the 3y par bond, $N_3 = 279.2525/2.792525 = 100$ notional of 3y payer per 100 face.
 
-## Further reading
+> [!question]- fi-pca-neutral-fly-weights | How do you weight a butterfly to be neutral to the first two principal components?
+> Fix the belly DV01 at $-1$ and solve $d \cdot e_1 = 0$, $d \cdot e_2 = 0$ for the two wing DV01s.
+> On the note's covariance the wings are 0.5479 (2y) and 0.6403 (10y), leaving only curvature exposure (1.3077) and a net DV01 of +0.1882.
 
-- Litterman and Scheinkman, "Common Factors Affecting Bond Returns", *Journal of Fixed Income*, 1991.
-- Ho, "Key Rate Durations: Measures of Interest Rate Risks", *Journal of Fixed Income*, 1992.
-- Tuckman and Serrat, *Fixed Income Securities*, chapters 4 to 6.
-- Bank of England, *Financial Stability Report*, December 2022.
+> [!question]- fi-krd-sum-parallel | Why do key-rate durations sum to the parallel duration, and when does that fail?
+> The triangular shifts sum to 1 at every maturity, so their sum is a parallel shift, and first derivatives add.
+> It fails if the end keys are not extended flat, or for large shifts where second-order (convexity) terms matter.
+
+> [!question]- fi-yield-dv01-vs-par-dv01 | A 3y 4% par bond has yield DV01 0.027751 and 3y par DV01 0.027925 per 100. Why do they differ?
+> Yield DV01 shifts the bond's single flat yield; par DV01 shifts the 3y swap quote and rebuilds the curve, which reshapes the 3y discount factor only.
+> They are different scenarios, so they give different numbers; hedging with swaps needs the par number.
+
+> [!question]- fi-steepener-revaluation | Why does full revaluation of a DV01-matched steepener give slightly more than DV01 times the move?
+> Convexity: the receiver gains on an annuity that grows as rates fall, the payer's annuity shrinks as rates rise, and the curve rebuild couples the legs.
+> In the note's example 10 bp gives 100,004 USD against 100,000 from DV01s.
+
+> [!question]- fi-pca-instability | What are the main risks of hedging with PCA factors?
+> Loadings and variance shares are estimates that change with the sample and the regime, so yesterday's neutral fly can carry level or slope risk today.
+> PCA also ignores carry, and a PCA-neutral fly is not DV01-neutral, so its parallel risk must be monitored separately.
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/fi_curve_risk.py`](code/fi_curve_risk.py) (numerical verification of KRD, steepeners, and butterflies), [`code/curve_bootstrap.py`](code/curve_bootstrap.py) (`map_zero_risk_to_par_risk`).
+- Code: [`code/fi_curve_risk.py`](code/fi_curve_risk.py) (zero versus par DV01, key rates, curve trades, PCA); [`code/curve_bootstrap.py`](code/curve_bootstrap.py) (`map_zero_risk_to_par_risk`).
 - Related notes: [Curve Construction Numerics](14-Curve-Construction-Numerics.md), [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [Bonds, Duration and Convexity](02-Bonds-Duration-and-Convexity.md).
+- System context: risk and P&L controls in the [front-to-back architecture](../18-Pricing-and-Risk-Systems/01-Front-to-Back-Architecture.md).
+
+## Further reading
+
+- Robert Litterman and José Scheinkman, "Common Factors Affecting Bond Returns", *Journal of Fixed Income* 1(1), 1991.
+- Thomas S. Y. Ho, "Key Rate Durations: Measures of Interest Rate Risks", *Journal of Fixed Income* 2(2), 1992.
+- Bruce Tuckman and Angel Serrat, *Fixed Income Securities: Tools for Today's Markets*, 3rd edition (Wiley 2011).
+- Bank of England, Market Notice, "Gilt Market Operations", 28 September 2022.
+- Bank of England, *Financial Stability Report*, December 2022.

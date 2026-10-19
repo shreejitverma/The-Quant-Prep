@@ -1,7 +1,10 @@
-"""Multi-curve pricing, CSA collateral discounting, and tenor / cross-currency basis swaps.
+"""Multi-curve pricing, collateral discounting, tenor and cross-currency basis, collateral choice.
 
 Backs every number in `06-Fixed-Income-and-Asset-Classes/13-Multi-Curve-and-CSA-Discounting.md`.
-Dual-curve vs single-curve par swaps, tenor basis swaps (3M vs 6M), cross-currency basis swaps, and CTD collateral are verified.
+Independent checks: par rates from the closed form are re-derived by a bisection root search on the
+swap's cash-flow NPV, the cross-currency basis implied by an FX forward is recovered by bisection and
+compared with the input, and the collateral-choice discount factor in closed form is compared with a
+seeded Monte Carlo estimate.
 Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
 Run it with `python 06-Fixed-Income-and-Asset-Classes/code/fi_multi_curve_csa.py`.
 """
@@ -9,6 +12,8 @@ Run it with `python 06-Fixed-Income-and-Asset-Classes/code/fi_multi_curve_csa.py
 from __future__ import annotations
 
 import math
+import random
+from collections.abc import Callable
 
 QUOTED: list[str] = []
 
@@ -22,101 +27,132 @@ def quoted(label: str, value: float, expected: float, decimals: int) -> float:
     return value
 
 
-def test_dual_curve_swap() -> None:
-    print("  1. Dual-Curve Par Swap vs Single-Curve Par Swap")
-    # OIS Curve
-    r_ois_1 = 0.030
-    s_ois_2 = 0.035
-    p_ois_1 = 1.0 / (1.0 + r_ois_1)
-    p_ois_2 = (1.0 - s_ois_2 * p_ois_1) / (1.0 + s_ois_2)
-    a_ois = p_ois_1 + p_ois_2
-    s_single = (1.0 - p_ois_2) / a_ois
-
-    quoted("P_ois(1)", p_ois_1, 0.970874, 6)
-    quoted("P_ois(2)", p_ois_2, 0.933352, 6)
-    quoted("OIS annuity A_ois", a_ois, 1.904226, 6)
-    quoted("single-curve par swap rate (%)", s_single * 100.0, 3.5000, 4)
-
-    # Projection Curve (+20 bps spread on zero rates: 3.2% and 3.7%)
-    p_proj_1 = 1.0 / (1.0 + 0.032)
-    p_proj_2 = 1.0 / ((1.0 + 0.037) ** 2)
-    f_proj_1 = (1.0 / p_proj_1) - 1.0
-    f_proj_2 = (p_proj_1 / p_proj_2) - 1.0
-
-    c1_pv = p_ois_1 * f_proj_1
-    c2_pv = p_ois_2 * f_proj_2
-    pv_float = c1_pv + c2_pv
-    s_dual = pv_float / a_ois
-    dual_spread_bps = (s_dual - s_single) * 10_000.0
-
-    quoted("P_proj(1)", p_proj_1, 0.968992, 6)
-    quoted("P_proj(2)", p_proj_2, 0.929913, 6)
-    quoted("projected forward F(0, 1) (%)", f_proj_1 * 100.0, 3.2000, 4)
-    quoted("projected forward F(1, 2) (%)", f_proj_2 * 100.0, 4.2024, 4)
-    quoted("coupon 1 floating leg PV", c1_pv, 0.031068, 6)
-    quoted("coupon 2 floating leg PV", c2_pv, 0.039223, 6)
-    quoted("total floating leg PV", pv_float, 0.070291, 6)
-    quoted("dual-curve par swap rate (%)", s_dual * 100.0, 3.6913, 4)
-    quoted("dual vs single spread (bps)", dual_spread_bps, 19.13, 2)
+def bisect(f: Callable[[float], float], lo: float, hi: float, tol: float = 1e-14) -> float:
+    flo = f(lo)
+    assert flo * f(hi) < 0.0, "root not bracketed"
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        fm = f(mid)
+        if fm == 0.0 or hi - lo < tol:
+            return mid
+        if (fm < 0.0) == (flo < 0.0):
+            lo, flo = mid, fm
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
 
 
-def test_tenor_basis_swap() -> None:
-    print("  2. Tenor Basis Swap Valuation: 3M vs 6M Floating")
-    r_ois = 0.030
-    p_25 = math.exp(-r_ois * 0.25)
-    p_50 = math.exp(-r_ois * 0.50)
-    p_75 = math.exp(-r_ois * 0.75)
-    p_100 = math.exp(-r_ois * 1.00)
+def norm_cdf(x: float) -> float:
+    return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
-    a_4 = 0.25 * (p_25 + p_50 + p_75 + p_100)
-    a_2 = 0.50 * (p_50 + p_100)
 
+def example_dual_curve() -> None:
+    print("  1. Dual-curve versus single-curve par swap rate (2y annual)")
+    p_ois = [1.0 / 1.03]
+    p_ois.append((1.0 - 0.035 * p_ois[0]) / 1.035)
+    annuity = sum(p_ois)
+    s_single = (1.0 - p_ois[1]) / annuity
+    quoted("P_ois(1)", p_ois[0], 0.970874, 6)
+    quoted("P_ois(2)", p_ois[1], 0.933352, 6)
+    quoted("OIS annuity", annuity, 1.904226, 6)
+    quoted("2y OIS par rate reprices (%)", s_single * 100.0, 3.5000, 4)
+    quoted("2y OIS zero rate, annual compounding (%)", (p_ois[1] ** -0.5 - 1.0) * 100.0, 3.5088, 4)
+    p_proj = [1.0 / 1.032, 1.0 / 1.037**2]
+    fwd = [1.0 / p_proj[0] - 1.0, p_proj[0] / p_proj[1] - 1.0]
+    quoted("P_proj(1)", p_proj[0], 0.968992, 6)
+    quoted("P_proj(2)", p_proj[1], 0.929913, 6)
+    quoted("projected forward 0-1y (%)", fwd[0] * 100.0, 3.2000, 4)
+    quoted("projected forward 1-2y (%)", fwd[1] * 100.0, 4.2024, 4)
+    pv1, pv2 = p_ois[0] * fwd[0], p_ois[1] * fwd[1]
+    quoted("floating coupon 1 PV", pv1, 0.031068, 6)
+    quoted("floating coupon 2 PV", pv2, 0.039223, 6)
+    quoted("floating leg PV", pv1 + pv2, 0.070291, 6)
+    s_dual = (pv1 + pv2) / annuity
+    quoted("dual-curve par rate (%)", s_dual * 100.0, 3.6913, 4)
+    quoted("dual minus single (bp)", (s_dual - s_single) * 1e4, 19.13, 2)
+
+    def npv(k: float) -> float:  # receive float, pay fixed k, cash flow by cash flow
+        return sum(df * (f - k) for df, f in zip(p_ois, fwd, strict=True))
+
+    root = bisect(npv, 0.0, 0.10)
+    assert abs(root - s_dual) < 1e-12
+    # Discounting the same projected flows on the projection curve (the pre-2008 habit).
+    s_proj_disc = sum(df * f for df, f in zip(p_proj, fwd, strict=True)) / sum(p_proj)
+    quoted("par rate if discounted on the projection curve (%)", s_proj_disc * 100.0, 3.6909, 4)
+
+
+def example_tenor_basis() -> None:
+    print("  2. 3M versus 6M tenor basis (1y, OIS discounting)")
+    p = {t: math.exp(-0.03 * t) for t in (0.25, 0.5, 0.75, 1.0)}
+    for t, v in zip((0.25, 0.5, 0.75, 1.0), (0.992528, 0.985112, 0.977751, 0.970446), strict=True):
+        quoted(f"P_ois({t})", p[t], v, 6)
     f3 = [0.032, 0.033, 0.034, 0.035]
     f6 = [0.0345, 0.0365]
+    a4 = 0.25 * sum(p.values())
+    pv3 = 0.25 * sum(p[t] * f for t, f in zip((0.25, 0.5, 0.75, 1.0), f3, strict=True))
+    pv6 = 0.5 * (p[0.5] * f6[0] + p[1.0] * f6[1])
+    quoted("quarterly annuity", a4, 0.981459, 6)
+    quoted("semiannual annuity", 0.5 * (p[0.5] + p[1.0]), 0.977779, 6)
+    quoted("PV 3M leg", pv3, 0.032870, 6)
+    quoted("PV 6M leg", pv6, 0.034704, 6)
+    beta = (pv6 - pv3) / a4
 
-    pv_3 = 0.25 * (p_25 * f3[0] + p_50 * f3[1] + p_75 * f3[2] + p_100 * f3[3])
-    pv_6 = 0.50 * (p_50 * f6[0] + p_100 * f6[1])
+    def npv(b: float) -> float:
+        return pv3 + b * a4 - pv6
 
-    beta_3v6 = (pv_6 - pv_3) / a_4
-    beta_bps = beta_3v6 * 10_000.0
-
-    quoted("P_ois(0.25)", p_25, 0.992528, 6)
-    quoted("P_ois(0.50)", p_50, 0.985112, 6)
-    quoted("P_ois(0.75)", p_75, 0.977751, 6)
-    quoted("P_ois(1.00)", p_100, 0.970446, 6)
-    quoted("quarterly OIS annuity A4", a_4, 0.981459, 6)
-    quoted("semiannual OIS annuity A2", a_2, 0.977779, 6)
-    quoted("PV of 3M floating leg", pv_3, 0.032870, 6)
-    quoted("PV of 6M floating leg", pv_6, 0.034704, 6)
-    quoted("3M vs 6M par basis spread (%)", beta_3v6 * 100.0, 0.1869, 4)
-    quoted("3M vs 6M par basis spread (bps)", beta_bps, 18.69, 2)
+    assert abs(bisect(npv, -0.01, 0.01) - beta) < 1e-12
+    quoted("par basis on the 3M leg (bp)", beta * 1e4, 18.69, 2)
+    two_3m = (1 + 0.25 * f3[0]) * (1 + 0.25 * f3[1])
+    quoted("two 3M periods compounded, as a 6M rate (%)", (two_3m - 1.0) / 0.5 * 100.0, 3.2632, 4)
 
 
-def test_cross_currency_basis() -> None:
-    print("  3. Cross-Currency Basis Swap (EUR/USD)")
-    spot_fx = 1.1000  # USD per EUR
-    usd_notional = 100_000_000.0
-    eur_notional = usd_notional / spot_fx
+def example_xccy() -> None:
+    print("  3. EUR/USD cross-currency basis and the FX forward")
+    spot, usd, eur, basis, days = 1.1000, 0.0500, 0.0350, -0.0025, 365
+    tau = days / 360.0
+    fwd_cip = spot * (1.0 + usd * tau) / (1.0 + eur * tau)
+    fwd_mkt = spot * (1.0 + usd * tau) / (1.0 + (eur + basis) * tau)
+    quoted("EUR notional for 100mm USD", 100_000_000.0 / spot, 90_909_090.91, 2)
+    quoted("1y forward with zero basis (USD per EUR)", fwd_cip, 1.116156, 6)
+    quoted("1y forward with -25 bp basis (USD per EUR)", fwd_mkt, 1.118895, 6)
+    quoted("forward points difference (pips)", (fwd_mkt - fwd_cip) * 1e4, 27.39, 2)
 
-    basis_spread_bps = -25.0
-    basis_spread = basis_spread_bps / 10_000.0
+    def gap(b: float) -> float:
+        return spot * (1.0 + usd * tau) / (1.0 + (eur + b) * tau) - fwd_mkt
 
-    sofr = 0.0500
-    synthetic_dollar_borrowing = sofr - basis_spread  # SOFR + 25 bps
+    implied = bisect(gap, -0.02, 0.02)
+    quoted("basis implied by the forward (bp)", implied * 1e4, -25.0, 1)
+    quoted("all-in synthetic USD cost for EUR funded at the EUR rate (%)", (usd - basis) * 100.0, 5.25, 2)
 
-    quoted("spot FX rate (USD per EUR)", spot_fx, 1.1000, 4)
-    quoted("EUR initial notional posted (€)", eur_notional, 90_909_091.0, 0)
-    quoted("cross-currency basis spread (bps)", basis_spread_bps, -25.0, 1)
-    quoted("synthetic dollar borrowing cost over SOFR (bps)", -basis_spread_bps, 25.0, 1)
-    quoted("all-in synthetic dollar borrowing rate (%)", synthetic_dollar_borrowing * 100.0, 5.25, 2)
+
+def example_collateral_option() -> None:
+    print("  4. Collateral currency choice (cheapest to deliver)")
+    t, c1, mu, sigma = 5.0, 0.04, -0.0010, 0.0030
+    df_fixed = math.exp(-c1 * t)
+    # Spread s of currency 2 over currency 1 (domestic-equivalent) drawn once, constant thereafter.
+    e_opt = norm_cdf(-mu / sigma) + math.exp(-t * mu + 0.5 * t * t * sigma * sigma) * norm_cdf(mu / sigma - t * sigma)
+    df_opt = df_fixed * e_opt
+    rng = random.Random(20261018)
+    n = 400_000
+    mc = sum(math.exp(-t * max(rng.gauss(mu, sigma), 0.0)) for _ in range(n)) / n
+    assert abs(mc - e_opt) < 5e-5
+    quoted("DF posting currency 1 only", df_fixed, 0.818731, 6)
+    quoted("DF with the choice (closed form)", df_opt, 0.815635, 6)
+    quoted("DF with the choice (Monte Carlo, about)", df_fixed * mc, 0.81563, 5)
+    quoted("value of the option per 100 received in 5y", (df_fixed - df_opt) * 100.0, 0.3096, 4)
+    quoted("equivalent running spread (bp)", -math.log(df_opt / df_fixed) / t * 1e4, 7.58, 2)
+
+    df_at_mean = df_fixed * math.exp(-t * max(mu, 0.0))
+    quoted("value if the spread were fixed at its mean (no optionality)", (df_fixed - df_at_mean) * 100.0, 0.0, 4)
 
 
 def main() -> None:
-    print("=== fi_multi_curve_csa: Multi-Curve and CSA Discounting ===")
-    test_dual_curve_swap()
-    test_tenor_basis_swap()
-    test_cross_currency_basis()
-    print(f"\nSuccessfully verified {len(QUOTED)} multi-curve and CSA figures.")
+    print("=== fi_multi_curve_csa: multi-curve and collateral discounting ===")
+    example_dual_curve()
+    example_tenor_basis()
+    example_xccy()
+    example_collateral_option()
+    print(f"\nVerified {len(QUOTED)} multi-curve and CSA figures.")
 
 
 if __name__ == "__main__":
