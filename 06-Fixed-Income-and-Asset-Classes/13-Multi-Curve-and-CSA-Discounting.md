@@ -5,19 +5,18 @@ tier: advanced
 status: solid
 prereqs: [swaps-and-curve-building, money-markets-repo-and-overnight-rates]
 est_hours: 5
-sources: [Vladimir Piterbarg - Funding Beyond Discounting: Collateral Agreements and Derivatives Pricing (Risk Magazine February 2010), Marco Bianchetti - Two Curves One Price: Pricing and Hedging Interest Rate Derivatives Decoupling Forwarding and Discounting Yield Curves (Risk Magazine August 2010), Claudio Borio Robert McCauley Patrick McGuire and Vladyslav Sushko - Covered Interest Parity Lost: Understanding the Cross-Currency Basis (BIS Quarterly Review September 2016), Ferdinando Ametrano and Marco Bianchetti - Everything You Always Wanted to Know About Multiple Interest Rate Curve Bootstrapping but Were Afraid to Ask (SSRN Working Paper 2013), Darrell Duffie - Special Repo Rates (The Journal of Finance Vol 51 No 2 June 1996)]
+sources: [Vladimir Piterbarg - Funding beyond discounting: collateral agreements and derivatives pricing (Risk February 2010), Marco Bianchetti - Two Curves One Price (Risk August 2010), Ferdinando Ametrano and Marco Bianchetti - Everything You Always Wanted to Know About Multiple Interest Rate Curve Bootstrapping but Were Afraid to Ask (SSRN 2013), Claudio Borio Robert McCauley Patrick McGuire and Vladyslav Sushko - Covered interest parity lost: understanding the cross-currency basis (BIS Quarterly Review September 2016), Wenxin Du Alexander Tepper and Adrien Verdelhan - Deviations from Covered Interest Rate Parity (Journal of Finance 73(3) 2018), LCH - Circular 4102 Euro Short Term Rate rate change notice (20 July 2020), ARRC letter on the SOFR discounting transition (4 September 2020)]
 ---
 
 # Multi-Curve and CSA Discounting
 
 ## TL;DR
 
-Under modern post-2008 derivatives pricing, collateralized transactions governed by a Credit Support Annex (CSA) must be discounted at the contractual interest rate paid on posted cash collateral, known as the collateral rate.
-For standard collateralized derivatives, the discount curve is the overnight index swap (OIS) curve, while floating reference rates require distinct forwarding curves for each discrete tenor.
-The dual-curve par swap rate is given by $S = \frac{\sum_{i=1}^n \tau_i P_{\text{disc}}(0, T_i) F_{\text{proj}}(0; T_{i-1}, T_i)}{\sum_{j=1}^m \tau_j P_{\text{disc}}(0, T_j)}$.
-Tenor basis swaps exchange one floating tenor for another in the same currency plus a basis spread, reflecting term credit risk, funding liquidity premia, and rollover friction.
-Cross-currency basis swaps exchange floating interest across currencies; persistent deviations from Covered Interest Parity manifest as non-zero basis spreads driven by imbalances in US dollar funding demand and bank regulatory balance-sheet constraints.
-All numerical models in this note are verified by [fi_multi_curve_csa.py](code/fi_multi_curve_csa.py).
+- A perfectly cash-collateralised derivative is discounted at the rate paid on the collateral (Piterbarg 2010); with no collateral it is discounted at the holder's funding rate, and partial collateral mixes the two.
+- Discounting and forwarding are separate curves: the floating leg of a EURIBOR swap is projected on a EURIBOR curve and discounted on €STR; the leg no longer telescopes, so the par rate is $\sum \tau_i P_d(T_i) F_i / \sum \tau_j P_d(T_j)$.
+- CCPs moved EUR discounting and price alignment from EONIA to €STR on 27 July 2020 and USD from EFFR to SOFR after the close on 16 October 2020; uncleared trades follow their CSA's collateral rate.
+- Tenor and cross-currency bases are prices, not errors: a -25 bp EUR/USD basis moves the 1y forward by 27.39 pips against covered interest parity, and the basis can be read back from forwards.
+- A CSA that lets the poster choose the collateral currency embeds an option: the effective discount rate is the maximum of the eligible rates, so collateral choice lowers the value of an asset by Jensen's inequality.
 
 ## Learning objectives
 
@@ -30,180 +29,176 @@ All numerical models in this note are verified by [fi_multi_curve_csa.py](code/f
 
 ## Core concepts
 
-### 1. Why Collateral Governs the Discount Curve
+### 1. Why collateral sets the discount curve
 
-Prior to the 2007-2008 global financial crisis, quantitative finance assumed a single yield curve served simultaneously as the discount curve for present values and the projection curve for future reference rates.
-Vladimir Piterbarg (2010) formalized the modern pricing framework: a derivative contract whose replacement value is continuously collateralized in cash must be discounted at the rate paid on that collateral.
-Consider a derivative with market value $V_t$.
-Under a zero-threshold daily variation margin CSA, the out-of-the-money party posts cash collateral equal to $V_t$.
-The in-the-money party holds this cash and pays interest on it at the contractually agreed collateral rate $c_t$.
-By self-financing replication, the holding of collateral offsets funding costs: the hedging portfolio requires only an investment of $V_t - C_t = 0$.
-The growth rate of the risk-neutral numeraire is dictated by $c_t$, forcing the discount factor to maturity $T$ to be:
+Piterbarg (2010) replicates a derivative with the underlying financed in repo, the collateral $C$ earning the collateral rate $r_C$, and any remaining cash borrowed or lent unsecured at $r_F$, and obtains
+$$V_t = \mathbb{E}_t\left[e^{-\int_t^T r_F(u)du}V_T\right] - \mathbb{E}_t\left[\int_t^T e^{-\int_t^u r_F(v)dv}\big(r_F(u) - r_C(u)\big)C(u)\,du\right].$$
+With full cash collateral $C = V$ the value grows at $r_C$, so $V_t = \mathbb{E}_t[e^{-\int_t^T r_C}V_T]$: discount at the collateral rate.
+With no collateral $C = 0$ it is discounted at the funding rate $r_F$, the starting point of funding valuation adjustments.
+Standard CSAs and CCPs pay the overnight rate on cash collateral, so the OIS curve of the collateral currency is the discount curve for collateralised and cleared trades; the expectation is under the measure in which traded assets grow at their repo rates, not at a single "risk-free" rate.
+The discount curve therefore follows the documentation: LCH replaced EONIA with €STR for price alignment interest and EUR discounting effective 27 July 2020 (LCH Circular 4102, 20 July 2020), with EONIA itself then defined as €STR plus 8.5 bp, and CME and LCH moved USD discounting and price alignment from EFFR to SOFR after the close on 16 October 2020 (ARRC letter, 4 September 2020).
 
-$$P_{\text{disc}}(t, T) = \mathbb{E}_t^{\mathbb{Q}^c}\left[ \exp\left( -\int_t^T c_u \, du \right) \right]$$
+### 2. Dual-curve swap valuation
 
-Because standard CSAs remunerate cash collateral at the central bank overnight rate (SOFR for USD, €STR for EUR, SONIA for GBP), the OIS curve is the unique risk-neutral discount curve for collateralized cash flows.
+For an index with a term (EURIBOR 3M or 6M, or historically LIBOR) the forward is read off its own projection curve:
+$$F_i = \frac{1}{\tau_i}\left(\frac{P_p(0,T_{i-1})}{P_p(0,T_i)} - 1\right), \qquad PV_{float} = N\sum_i \tau_i P_d(0,T_i) F_i.$$
+On one curve ($P_p = P_d$) each term is $P_d(T_{i-1}) - P_d(T_i)$ and the leg telescopes to $P_d(T_0) - P_d(T_n)$; with two curves it does not, and the par rate is
+$$S = \frac{\sum_i \tau_i P_d(0,T_i) F_i}{\sum_j \tau_j P_d(0,T_j)},$$
+a discount-weighted average of the projected forwards.
+Changing the discount curve moves a par rate only through the weights, which is why the par rate barely changes while off-market PVs and risk move a lot.
+An OIS itself is the exception: its compounded overnight leg is replicated by rolling a deposit, so on its own discount curve it telescopes exactly ([Swaps and Curve Building](03-Swaps-and-Curve-Building.md)).
 
-### 2. Dual-Curve Swap Valuation
+### 3. Tenor basis
 
-When the floating reference rate $L$ has a distinct tenor (such as 3-month or 6-month term rates), future fixings cannot be assumed to earn the overnight collateral rate.
-The market separates the discount curve $P_{\text{disc}}(0, t)$ from the index-specific projection curve $P_{\text{proj}}(0, t)$.
-The projected forward rate over $[T_{i-1}, T_i]$ with accrual fraction $\tau_i$ is:
+A tenor basis swap exchanges two floating legs of different tenors in one currency, the shorter leg typically paying a spread $\beta$:
+$$\sum_i \tau^{(3)}_i P_d(T^{(3)}_i)\big(F^{(3)}_i + \beta\big) = \sum_j \tau^{(6)}_j P_d(T^{(6)}_j) F^{(6)}_j.$$
+Lending unsecured for 6 months carries more bank credit and liquidity risk than lending for 3 months and rolling, so 6M term rates exceed compounded 3M rates and $\beta > 0$.
+USD tenor basis on LIBOR disappeared with LIBOR; EURIBOR 3M versus 6M remains a live multi-curve market, alongside €STR discounting.
 
-$$F_{\text{proj}}(0; T_{i-1}, T_i) = \frac{1}{\tau_i} \left( \frac{P_{\text{proj}}(0, T_{i-1})}{P_{\text{proj}}(0, T_i)} - 1 \right)$$
+### 4. Cross-currency basis and covered interest parity
 
-The present value of the floating leg discounted at the collateral rate is:
+Covered interest parity says the forward is $F = S\frac{1 + r_d\tau}{1 + r_f\tau}$ (with $S$ in domestic per foreign); a cross-currency basis $\beta$ on the foreign leg replaces $r_f$ by $r_f + \beta$.
+A cross-currency basis swap exchanges notionals at spot, pays floating in both currencies (USD SOFR flat against, for example, €STR plus $\beta$), and re-exchanges notionals at maturity; in the mark-to-market version the USD notional resets each period to current spot, with the difference paid, so FX exposure does not accumulate.
+For EUR, JPY and other currencies against USD, $\beta$ has been persistently negative since 2008: swapping EUR into USD means receiving the EUR rate plus a negative spread, so synthetic dollars cost more than cash dollars.
+Borio, McCauley, McGuire and Sushko (2016) attribute the basis to hedging demand for dollars meeting limits to arbitrage; Du, Tepper and Verdelhan (2018) document CIP deviations that are persistent, larger at quarter ends, and consistent with the balance-sheet costs that post-crisis regulation imposes on the banks that would arbitrage them.
+Foreign-currency cash flows collateralised in USD are discounted on a curve built from cross-currency basis swaps, not on the foreign OIS curve.
 
-$$PV_{\text{float}} = N \sum_{i=1}^n \tau_i P_{\text{disc}}(0, T_i) F_{\text{proj}}(0; T_{i-1}, T_i)$$
+### 5. Collateral choice
 
-Because $P_{\text{proj}} \neq P_{\text{disc}}$, the product $P_{\text{disc}}(0, T_i) F_{\text{proj}}(0; T_{i-1}, T_i)$ no longer simplifies to $P_{\text{disc}}(0, T_{i-1}) - P_{\text{disc}}(0, T_i)$.
-The floating leg fails to telescope, and the dual-curve par swap rate becomes:
+If the poster may deliver cash in any of several currencies, it delivers the one with the highest domestic-equivalent collateral rate $\tilde c_k(t)$ (the foreign OIS rate converted with the cross-currency basis), and the receiver's discount rate is $\max_k \tilde c_k(t)$:
+$$P^{choice}(0,T) = \mathbb{E}\left[e^{-\int_0^T \max_k \tilde c_k(u)du}\right] \le \min_k P_k(0,T).$$
+The inequality is Jensen's: the max of the rates is convex, so the option has value whenever the spreads are uncertain, even if each currency's forward curve is the same.
+The option belongs to the poster and lowers the value of the receiver's asset.
 
-$$S_{\text{dual}} = \frac{\sum_{i=1}^n \tau_i P_{\text{disc}}(0, T_i) F_{\text{proj}}(0; T_{i-1}, T_i)}{\sum_{j=1}^m \tau_j P_{\text{disc}}(0, T_j)} = \frac{\sum_{i=1}^n \tau_i P_{\text{disc}}(0, T_i) F_{\text{proj}}(0; T_{i-1}, T_i)}{A_{\text{disc}}(0, T_m)}$$
+### 6. Build order
 
-### 3. Tenor Basis Swaps
+```mermaid
+flowchart TD
+    OIS[OIS quotes per currency: SOFR, €STR, SONIA] --> D[Discount curves per collateral currency]
+    D --> PR[Projection curves: IRS on each term index, discounted on the OIS curve]
+    PR --> TB[Other tenors: tenor basis swaps on top of the main projection curve]
+    D --> XC[Foreign curves under USD collateral: cross-currency basis swaps]
+    TB --> RISK[Risk: one Jacobian across all curves]
+    XC --> RISK
+```
 
-A tenor basis swap exchanges one floating tenor for another in the same currency, such as 3-month floating versus 6-month floating.
-One leg pays the reference rate flat, while the other leg pays the reference rate plus a quoted basis spread $\beta_{3v6}$:
-
-$$\sum_{i=1}^{n_3} \tau_i^{(3)} P_{\text{disc}}(0, T_i^{(3)}) \left( F_3(T_{i-1}^{(3)}, T_i^{(3)}) + \beta_{3v6} \right) = \sum_{j=1}^{n_6} \tau_j^{(6)} P_{\text{disc}}(0, T_j^{(6)}) F_6(T_{j-1}^{(6)}, T_j^{(6)})$$
-
-Tenor basis spreads exist because lending for 6 months unsecured entails greater credit risk, term liquidity risk, and rollover uncertainty than lending for two consecutive 3-month periods.
-
-### 4. Cross-Currency Swaps and Covered Interest Parity Failure
-
-A standard cross-currency basis swap (XCCY) exchanges floating interest payments in two different currencies on agreed principal amounts.
-Principal is exchanged at the prevailing spot foreign exchange rate $S_0$ at inception and returned at the same spot rate at maturity.
-In standard market convention, the USD leg pays SOFR flat, while the non-USD leg pays its floating rate (e.g., 3-month Euribor or €STR) plus a cross-currency basis spread $\beta_{\text{XCCY}}$.
-Under classical Covered Interest Parity (CIP), no-arbitrage between spot and forward foreign exchange dictates that $\beta_{\text{XCCY}} = 0$.
-Post-2008, CIP failed systematically, with $\beta_{\text{XCCY}}$ trading persistently negative for major currencies versus the US dollar (e.g., EUR, JPY).
-A negative spread means the party that swaps EUR into USD receives the EUR rate minus $|\beta_{\text{XCCY}}|$ on its EUR while paying SOFR flat, so non-US borrowers pay a premium to borrow US dollars synthetically.
-The persistent basis is driven by heavy global demand for US dollar assets, coupled with bank balance sheet constraints under Basel III (the leverage ratio and liquidity coverage ratio) that penalize arbitrageurs for intermediating currency flows.
-
-### 5. Collateral Currency Choice and Cheapest-to-Deliver Optionality
-
-Many legacy and multi-currency CSAs permit the collateral posting party to choose among several eligible currencies (e.g., USD, EUR, GBP, JPY).
-If cash collateral is posted in currency $k$, it earns the overnight rate $c_t^{(k)}$.
-The posting party naturally selects the currency that minimizes its economic cost, creating an embedded cheapest-to-deliver (CTD) collateral option:
-
-$$c_t^{\text{eff}} = \max_k \left( c_t^{(k)} - \text{cost of funding currency } k \right)$$
-
-Valuing derivatives under a multi-currency CSA requires pricing this collateral switching option, which raises the effective discount rate, lowers effective discount factors, and lowers derivative asset values.
+Each layer depends on the ones above it, which is why curves are often bootstrapped in this order; production builds also solve all curves together with one Newton step over the full Jacobian, which gives the same answer when the dependency is triangular and handles circular dependencies when it is not ([Curve Construction Numerics](14-Curve-Construction-Numerics.md)).
 
 ## Worked examples
 
-### Example 1: Dual-Curve Par Swap Rate vs. Single-Curve Par Swap Rate
+Quotes are hypothetical; every number is computed, printed and asserted by [fi_multi_curve_csa.py](code/fi_multi_curve_csa.py).
 
-A dealer prices a 2-year annual fixed-for-floating interest rate swap:
-- **OIS Discount Curve:**
-  - 1-Year OIS discount factor: $P_{\text{ois}}(1) = \frac{1}{1 + 0.030} = 0.970874$.
-  - 2-Year OIS discount factor: $P_{\text{ois}}(2) = \frac{1 - 0.035 \times 0.970874}{1.035} = 0.933352$.
-  - OIS Annuity: $A_{\text{ois}} = 0.970874 + 0.933352 = 1.904226$.
-  - Single-Curve OIS Par Swap Rate:
-    $$S_{\text{single}} = \frac{1 - P_{\text{ois}}(2)}{A_{\text{ois}}} = \frac{1 - 0.933352}{1.904226} = 3.5000\%$$
-- **Projection Curve (Term Rates with +20 bps Spread on Zero Rates):**
-  - $P_{\text{proj}}(1) = \frac{1}{1 + 0.032} = 0.968992 \implies F(0, 1) = \frac{1}{0.968992} - 1 = 3.2000\%$.
-  - $P_{\text{proj}}(2) = \frac{1}{(1 + 0.037)^2} = 0.929913 \implies F(1, 2) = \frac{0.968992}{0.929913} - 1 = 4.2024\%$.
-- **Floating Leg Present Value Discounted at OIS:**
-  - Coupon 1 PV: $1.0 \times 0.970874 \times 0.032000 = 0.031068$.
-  - Coupon 2 PV: $1.0 \times 0.933352 \times 0.042024 = 0.039223$.
-  - Total Floating Leg PV: $0.031068 + 0.039223 = 0.070291$.
-- **Dual-Curve Par Swap Rate:**
-  $$S_{\text{dual}} = \frac{PV_{\text{float}}}{A_{\text{ois}}} = \frac{0.070291}{1.904226} = 3.6913\%$$
-- **Dual-Curve Premium:**
-  $$\Delta S = 3.6913\% - 3.5000\% = 19.13\text{ basis points}$$
+### Example 1: dual-curve versus single-curve par rate
 
-Dual-curve pricing adds $19.13\text{ bps}$ to the fixed swap rate relative to the pure OIS rate, reflecting the credit and term liquidity spread embedded in the projection curve.
+OIS par quotes 3.00% (1y) and 3.50% (2y), annual: $P_d(1) = 1/1.03 = 0.970874$, $P_d(2) = (1 - 0.035 \times 0.970874)/1.035 = 0.933352$, annuity 1.904226; the 2y quote reprices to 3.5000% (the bootstrap acceptance test).
+Projection curve with annual zero rates 3.20% and 3.70%, 20 bp over the OIS par quotes (the 2y OIS zero rate is 3.5088%): $P_p(1) = 0.968992$, $P_p(2) = 0.929913$, forwards 3.2000% and 4.2024%.
+Floating leg $= 0.970874 \times 0.032 + 0.933352 \times 0.042024 = 0.031068 + 0.039223 = 0.070291$, par rate $0.070291/1.904226 = 3.6913\%$, 19.13 bp above the OIS rate; a bisection on the swap's NPV gives the same rate.
+"Discounting the same projected flows on the projection curve gives 3.6909%: the projection curve sets the par rate, the discount curve only reweights it."
 
-### Example 2: Tenor Basis Swap Valuation (3M vs. 6M Floating)
+### Example 2: 3M versus 6M basis
 
-Consider a 1-year tenor basis swap exchanging quarterly 3-month floating cash flows for semiannual 6-month floating cash flows:
-- **Discount Curve:** Flat OIS discounting at $r_{\text{ois}} = 3.00\%$ continuous ($P(0, t) = e^{-0.03 t}$):
-  $$P(0.25) = 0.992528, \quad P(0.50) = 0.985112, \quad P(0.75) = 0.977751, \quad P(1.00) = 0.970446$$
-  - Quarterly OIS annuity: $A_4 = 0.25 \times (0.992528 + 0.985112 + 0.977751 + 0.970446) = 0.981459$.
-  - Semiannual OIS annuity: $A_2 = 0.50 \times (0.985112 + 0.970446) = 0.977779$.
-- **Forward Reference Rates:**
-  - 3M Forward Rates: $F_3 = [3.20\%, 3.30\%, 3.40\%, 3.50\%]$.
-  - 6M Forward Rates: $F_6 = [3.45\%, 3.65\%]$.
-- **Leg Valuations:**
-  - Present Value of 3M Leg (without spread):
-    $$PV_3 = 0.25 \times [0.992528(0.032) + 0.985112(0.033) + 0.977751(0.034) + 0.970446(0.035)] = 0.032870$$
-  - Present Value of 6M Leg:
-    $$PV_6 = 0.50 \times [0.985112(0.0345) + 0.970446(0.0365)] = 0.034704$$
-- **Par Tenor Basis Spread Added to 3M Leg:**
-  $$\beta_{3v6} = \frac{PV_6 - PV_3}{A_4} = \frac{0.034704 - 0.032870}{0.981459} = \frac{0.001834}{0.981459} = 0.1869\% = 18.69\text{ basis points}$$
+OIS discounting at a flat 3% continuous rate: $P = 0.992528, 0.985112, 0.977751, 0.970446$ at 3, 6, 9, 12 months; quarterly annuity 0.981459.
+3M forwards 3.20%, 3.30%, 3.40%, 3.50% give a 3M leg PV of 0.032870; 6M forwards 3.45% and 3.65% give 0.034704.
+$\beta = (0.034704 - 0.032870)/0.981459 = 18.69$ bp on the 3M leg.
+Two 3M periods compounded give 3.2632% as a 6-month rate, against 3.45% for the 6M forward: the basis is the price of that term premium.
 
-### Example 3: Cross-Currency Basis Swap (EUR/USD) Synthetic Dollar Borrowing
+### Example 3: reading the cross-currency basis from an FX forward
 
-A European corporate borrows $\$100,000,000$ USD for 1 year via a mark-to-market cross-currency swap against EUR:
-- Spot FX rate: $S_0 = 1.1000$ USD per EUR.
-- Initial EUR principal posted:
-  $$\text{EUR Principal} = \frac{\$100,000,000}{1.1000} = €90,909,091$$
-- EUR/USD cross-currency basis spread: $\beta_{\text{XCCY}} = -25.0\text{ basis points}$.
-- Market rates: USD SOFR $= 5.00\%$, EUR €STR $= 3.50\%$.
-- Cash flows:
-  - The European bank pays USD SOFR flat ($5.00\%$) on the borrowed dollars.
-  - The bank receives €STR plus basis on its posted EUR: $3.50\% + (-0.25\%) = 3.25\%$.
-- **All-In Synthetic Dollar Borrowing Cost:**
-  $$\text{All-In Cost} = \text{SOFR} - \beta_{\text{XCCY}} = 5.00\% - (-0.25\%) = 5.25\%$$
+EUR/USD spot 1.1000, 1y (365 days, ACT/360) USD rate 5.00%, EUR rate 3.50%.
+Covered interest parity gives $1.1 \times (1 + 0.05 \times 365/360)/(1 + 0.035 \times 365/360) = 1.116156$.
+With a -25 bp basis on the EUR leg the forward is 1.118895, 27.39 pips higher; inverting the market forward by bisection returns -25.0 bp.
+A borrower that funds EUR at the EUR rate and swaps into 100mm USD (90,909,090.91 EUR at spot) pays an all-in 5.25%: SOFR plus 25 bp.
 
-The negative $25\text{ bps}$ basis spread represents the scarcity premium non-US entities pay to access synthetic US dollar balance sheet liquidity.
+### Example 4: the value of collateral choice
+
+Currency 1 collateral earns a flat 4% over 5 years ($P = 0.818731$); currency 2's domestic-equivalent rate is 4% plus a spread drawn once from a normal distribution with mean -10 bp and standard deviation 30 bp (a hypothetical toy model).
+With the choice, $P = e^{-0.2}\,\mathbb{E}[e^{-5\max(s,0)}] = 0.815635$ in closed form and about 0.81563 by Monte Carlo (seed 20261018, 400,000 draws).
+The option costs the receiver 0.3096 per 100 received in 5 years, a running 7.58 bp, although at the mean spread currency 2 is never chosen: all of the value is optionality.
 
 ## Pitfalls
 
-- **Discounting Uncollateralized Cash Flows at OIS:** Using the OIS rate for uncollateralized or corporate derivative legs without an explicit Credit Valuation Adjustment (CVA) understates counterparty risk.
-- **Ignoring the Collateral Currency:** Discounting a EUR swap at USD SOFR when the contract strictly specifies EUR cash collateral produces material mark-to-market valuation breaks.
-- **Assuming Zero Cross-Currency Basis in FX Forwards:** Neglecting the cross-currency basis spread leads to pricing errors of tens of basis points when converting cash flows across international currencies.
-- **Solving Multi-Curve Systems Simultaneously Without Hierarchy:** Attempting to calibrate all curves simultaneously with iterative solvers instead of respecting the dependency hierarchy (OIS first, then tenor basis, then cross-currency) leads to numerical instability and non-convergence.
-- **Omitting Mark-to-Market Reset Mechanisms:** Failing to model periodic notional resets in modern cross-currency swaps overstates counterparty exposure and capital requirements.
+- Discounting uncollateralised trades at OIS: the funding rate and counterparty risk enter through FVA and CVA.
+- Discounting a trade at a curve other than its CSA's collateral currency and rate.
+- Ignoring the cross-currency basis when converting foreign cash flows or building FX forwards: tens of basis points a year.
+- Assuming a par rate measures discounting: discount changes reweight par rates only slightly but change off-market PVs and risk.
+- Treating sequential bootstrapping as the only correct method: global Newton solves give the same curves and handle circular dependencies.
+- Ignoring MTM resets in a cross-currency swap, which overstates FX exposure and capital.
+- Valuing a multi-currency CSA as if the collateral currency were fixed.
 
 ## Interview questions
 
 > [!question]- fi-piterbarg-collateral-discount | Explain Piterbarg's (2010) core argument for why derivative cash flows must be discounted at the collateral rate.
-> A daily cash-collateralized position requires zero unsecured financing because the collateral received or posted exactly matches the contract value.
-> The replication portfolio grows at the contractual interest rate paid on that collateral, forcing that rate to be the risk-neutral discounting rate.
+> Replicating the derivative, the cash held as collateral earns (or costs) the collateral rate, and only the uncollateralised part is funded at the unsecured rate.
+> With full cash collateral the replicating portfolio grows at the collateral rate, so $V_t = \mathbb{E}_t[e^{-\int r_C}V_T]$; with none it is discounted at the funding rate.
 
 > [!question]- fi-dual-curve-par-swap-formula | Write the formula for the dual-curve par swap rate and identify why the floating leg fails to telescope.
-> The par swap rate is $S = \frac{\sum \tau_i P_{\text{disc}}(0, T_i) F_{\text{proj}}(0; T_{i-1}, T_i)}{\sum \tau_j P_{\text{disc}}(0, T_j)}$.
-> Telescoping fails because $F_{\text{proj}}(0; T_{i-1}, T_i) = \frac{1}{\tau_i}\left(\frac{P_{\text{proj}}(0, T_{i-1})}{P_{\text{proj}}(0, T_i)} - 1\right)$ involves projection discount factors that do not cancel out with collateral discount factors $P_{\text{disc}}$.
+> $S = \sum_i \tau_i P_d(T_i)F_i / \sum_j \tau_j P_d(T_j)$ with $F_i$ from the projection curve.
+> $\tau_i P_d(T_i)F_i = P_d(T_i)[P_p(T_{i-1})/P_p(T_i) - 1]$, which equals $P_d(T_{i-1}) - P_d(T_i)$ only if the two curves coincide.
 
 > [!question]- fi-tenor-basis-spread-causes | Why is the 6-month reference rate higher than compounded consecutive 3-month reference rates over the same half-year?
-> 6-month lending exposes the lender to greater borrower default risk over the longer uninterrupted period.
-> It also incorporates term liquidity premia and the inability to call back or roll cash at the intermediate 3-month mark.
+> Unsecured 6-month lending carries more bank credit and liquidity risk than 3-month lending that can be stopped at the roll.
+> The difference is quoted as a tenor basis spread: 18.69 bp in the note's example.
 
 > [!question]- fi-cip-failure-drivers | What economic factors explain the persistent breakdown of Covered Interest Parity since 2008?
-> The primary driver is an imbalance between massive global structural demand for US dollars and foreign currency supplies.
-> Post-crisis bank regulation (e.g., Basel III leverage ratio) limits dealers from expanding balance sheets to arbitrate the gap.
+> Persistent hedging demand for dollars meets limits to arbitrage.
+> Du, Tepper and Verdelhan (2018) show deviations are larger at quarter ends, consistent with balance-sheet costs on the banks that would arbitrage them.
 
 > [!question]- fi-cross-currency-basis-sign | If the 5-year EUR/USD cross-currency basis spread is $-25$ bps, what interest rate does a party borrowing USD against EUR collateral pay?
-> By convention the basis sits on the EUR leg: the party pays SOFR flat on the USD and receives the EUR rate minus 25 bps on its EUR.
-> Relative to funding the EUR at the EUR rate, its all-in USD cost is SOFR plus 25 bps, the premium for synthetic dollar borrowing.
+> It pays SOFR flat on the USD and receives the EUR rate minus 25 bp on its EUR.
+> If it funds the EUR at the EUR rate, its all-in USD cost is SOFR plus 25 bp.
 
 > [!question]- fi-cheapest-to-deliver-csa | How does an embedded collateral currency choice option affect the present value of a swap?
-> The party posting collateral has the option to deliver whichever currency has the cheapest effective financing rate.
-> This option has positive value to the poster and negative value to the receiver, lowering the net valuation of the derivative asset.
+> The poster delivers the currency with the highest domestic-equivalent collateral rate, so the receiver discounts at the maximum of the rates.
+> By Jensen's inequality that lowers the receiver's asset value even when expected rates are equal: 0.3096 per 100 over 5 years in the note's toy example.
 
 > [!question]- fi-mtm-xccy-mechanism | What is a mark-to-market (MTM) cross-currency swap and why was it adopted?
-> In an MTM cross-currency swap, the non-base currency notional is periodically adjusted to match spot FX fluctuations, with a cash balancing settlement.
-> This removes large accumulated foreign exchange exposure, reducing counterparty credit risk and capital requirements.
+> One leg's notional (the USD leg for EUR/USD) resets each period to current spot times the other notional, with the difference exchanged.
+> FX moves are settled period by period rather than accumulating to maturity, cutting counterparty exposure and capital.
 
 > [!question]- fi-dual-curve-spread-effect | If the forwarding zero rates sit 20 bps above the OIS par rates, how does the dual-curve par swap rate compare to the single-curve OIS swap rate?
-> The dual-curve par swap rate is higher than the single-curve OIS rate by approximately the 20 bp spread.
-> Higher projected floating cash flows require a higher fixed coupon to balance the swap at inception.
+> About 20 bp higher: 3.6913% against 3.5000% in the 2y example, 19.13 bp.
+> The projected coupons are higher, so a higher fixed rate balances them; the discount curve only reweights.
 
 > [!question]- fi-ois-discounting-numeraire | What is the change of numeraire associated with moving from unsecured Libor discounting to OIS discounting?
-> The numeraire shifts from an unsecured money market bank account to a secured money market account growing at the overnight collateral rate $c_t$.
-> Forward rates remain martingales under their specific forward measures, but present values discount under the collateral measure $\mathbb{Q}^c$.
+> From a bank account growing at the unsecured rate to one growing at the collateral (overnight) rate.
+> Forwards remain martingales under their forward measures, now defined with OIS discount bonds as numeraires.
 
 > [!question]- fi-curve-bootstrap-hierarchy | In what order must curves be bootstrapped in a modern multi-curve interest rate trading desk?
-> $1$. OIS discount curves per currency from overnight swaps.
-> $2$. Floating tenor projection curves from single-currency basis swaps.
-> $3$. Cross-currency discount curves from cross-currency basis swaps.
+> $1$. OIS discount curves per collateral currency.
+> $2$. Projection curves for each term index from its swaps, discounted on OIS, and other tenors via tenor basis.
+> $3$. Foreign-currency curves under foreign collateral from cross-currency basis swaps; a simultaneous Newton solve gives the same result.
+
+> [!question]- fi-ccp-discounting-switch | When did the main CCPs switch EUR and USD discounting, and to what?
+> EUR: from EONIA to €STR on 27 July 2020 (LCH Circular 4102).
+> USD: from EFFR to SOFR after the close on 16 October 2020.
+
+> [!question]- fi-fx-forward-implied-basis | Spot EUR/USD is 1.1000, 1y rates are 5.00% USD and 3.50% EUR (ACT/360, 365 days), the forward is 1.118895. What basis is implied?
+> $-25$ bp on the EUR leg.
+> CIP alone gives 1.116156; solving $1.1(1 + 0.05\tau)/(1 + (0.035 + \beta)\tau) = 1.118895$ gives $\beta = -0.25\%$.
+
+> [!question]- fi-uncollateralised-discounting | How should an uncollateralised swap with a corporate be discounted?
+> At the bank's funding rate in Piterbarg's formula, in practice OIS discounting plus funding (FVA) and credit (CVA, DVA) adjustments.
+> Discounting it at OIS alone overstates the value of an asset the bank must fund unsecured.
+
+> [!question]- fi-par-rate-vs-pv-discounting | Why does switching from LIBOR to OIS discounting barely move par swap rates but move off-market swap values materially?
+> The par rate is a discount-weighted average of forwards, so new weights barely change it (3.6913% versus 3.6909% in the note).
+> An off-market swap's PV is $N(S - K)A$, and the annuity $A$ itself changes with the discount curve.
+
+> [!question]- fi-collateral-choice-jensen | Why does the cheapest-to-deliver collateral option have value even when all currencies have the same expected rate?
+> The discount rate is $\max_k \tilde c_k$, a convex function of the rates, so its expectation exceeds the max of expectations.
+> Any uncertainty in the spreads gives the poster positive option value, as in the toy example where the option is never in the money at the mean spread.
+
+## In this repo and SDE-Interview-Prep
+
+- Code: [`code/fi_multi_curve_csa.py`](code/fi_multi_curve_csa.py) (dual-curve par rates, tenor basis, FX-forward basis, collateral choice).
+- Related notes: [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [FX Markets and Interest Rate Parity](07-FX-Markets-and-Interest-Rate-Parity.md), [Curve Construction Numerics](14-Curve-Construction-Numerics.md).
 
 ## Further reading
 
-- Piterbarg, Vladimir. *Funding Beyond Discounting: Collateral Agreements and Derivatives Pricing*. Risk Magazine, February 2010.
-- Bianchetti, Marco. *Two Curves, One Price: Pricing and Hedging Interest Rate Derivatives Decoupling Forwarding and Discounting Yield Curves*. Risk Magazine, August 2010.
-- Borio, Claudio; McCauley, Robert; McGuire, Patrick; and Sushko, Vladyslav. *Covered Interest Parity Lost: Understanding the Cross-Currency Basis*. BIS Quarterly Review, September 2016.
-- Ametrano, Ferdinando and Bianchetti, Marco. *Everything You Always Wanted to Know About Multiple Interest Rate Curve Bootstrapping but Were Afraid to Ask*. SSRN Working Paper, 2013.
-- Duffie, Darrell. *Special Repo Rates*. The Journal of Finance, Vol. 51, No. 2, June 1996.
+- Vladimir Piterbarg, "Funding beyond discounting: collateral agreements and derivatives pricing", *Risk*, February 2010.
+- Marco Bianchetti, "Two Curves, One Price", *Risk*, August 2010.
+- Ferdinando Ametrano and Marco Bianchetti, "Everything You Always Wanted to Know About Multiple Interest Rate Curve Bootstrapping but Were Afraid to Ask", SSRN working paper, 2013.
+- Claudio Borio, Robert McCauley, Patrick McGuire and Vladyslav Sushko, "Covered interest parity lost: understanding the cross-currency basis", *BIS Quarterly Review*, September 2016.
+- Wenxin Du, Alexander Tepper and Adrien Verdelhan, "Deviations from Covered Interest Rate Parity", *Journal of Finance* 73(3), 2018.
+- LCH, Circular 4102, "Euro Short Term Rate (€STR) rate change notice", 20 July 2020.
+- Alternative Reference Rates Committee, letter on the SOFR discounting transition, 4 September 2020.

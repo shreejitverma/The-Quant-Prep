@@ -26,13 +26,13 @@ Enough of every major asset class to trade it or model it; deep rates knowledge 
 | 08 | [ETFs and Index Arbitrage](08-ETFs-and-Index-Arbitrage.md) | TQ | core | 3 | solid | 18 |
 | 09 | [Commodities and Futures Curves](09-Commodities-and-Futures-Curves.md) | TQ | advanced | 3 | solid | 17 |
 | 10 | [Crypto Market Structure](10-Crypto-Market-Structure.md) | TQ | advanced | 2 | solid | 17 |
-| 11 | [Day Counts, Calendars and Schedules](11-Day-Counts-Calendars-and-Schedules.md) | TRDQ | core | 4 | solid | 10 |
-| 12 | [Money Markets, Repo and Overnight Rates](12-Money-Markets-Repo-and-Overnight-Rates.md) | TRDQ | core | 5 | solid | 12 |
-| 13 | [Multi-Curve and CSA Discounting](13-Multi-Curve-and-CSA-Discounting.md) | RDQ | advanced | 5 | solid | 10 |
-| 14 | [Curve Construction Numerics](14-Curve-Construction-Numerics.md) | RDQ | advanced | 5 | solid | 10 |
-| 15 | [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md) | TRDQ | advanced | 5 | solid | 10 |
-| 16 | [Treasury Futures and the Basis](16-Treasury-Futures-and-the-Basis.md) | TRQ | advanced | 4 | solid | 10 |
-| 17 | [Convexity Adjustments](17-Convexity-Adjustments.md) | RQ | senior | 4 | solid | 10 |
+| 11 | [Day Counts, Calendars and Schedules](11-Day-Counts-Calendars-and-Schedules.md) | TRDQ | core | 4 | solid | 18 |
+| 12 | [Money Markets, Repo and Overnight Rates](12-Money-Markets-Repo-and-Overnight-Rates.md) | TRDQ | core | 5 | solid | 17 |
+| 13 | [Multi-Curve and CSA Discounting](13-Multi-Curve-and-CSA-Discounting.md) | RDQ | advanced | 5 | solid | 15 |
+| 14 | [Curve Construction Numerics](14-Curve-Construction-Numerics.md) | RDQ | advanced | 5 | solid | 15 |
+| 15 | [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md) | TRDQ | advanced | 5 | solid | 15 |
+| 16 | [Treasury Futures and the Basis](16-Treasury-Futures-and-the-Basis.md) | TRQ | advanced | 4 | solid | 15 |
+| 17 | [Convexity Adjustments](17-Convexity-Adjustments.md) | RQ | senior | 4 | solid | 15 |
 | 18 | [Rates Volatility and SABR](18-Rates-Volatility-and-SABR.md) | RQ | senior | 5 | solid | 10 |
 | 19 | [Term Structure Models: HJM, LGM, and LMM](19-Term-Structure-Models-HJM-LGM-LMM.md) | RQ | senior | 6 | solid | 10 |
 | 20 | [Callable and Bermudan Products](20-Callable-and-Bermudan-Products.md) | RQ | senior | 5 | solid | 10 |
