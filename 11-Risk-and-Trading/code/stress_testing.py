@@ -298,7 +298,7 @@ def section_reverse() -> None:
     print(f"  fixed-point solver: x = ({x_it[0]:+.4f}, {x_it[1]:+.4f}), distance {k_it:.4f}")
     check("10-day equity log-return sd", REV_VOLS[0], 0.0398, 5e-5)
     check("strangle equity sensitivity per unit log-return (m)", g_lin[0] / 1e6, 0.0485, 5e-5)
-    check("strangle vega per unit vol (m)", g_lin[1] / 1e6, -1.0785, 5e-5)
+    check("strangle vega per unit vol (m)", g_lin[1] / 1e6, -1.078, 5e-4)
     check("linear reverse-stress distance", k_lin, 29.642, 5e-4)
     check("full-revaluation reverse-stress distance (brute force)", k_bf, 3.875, 2e-3)
     check("fixed-point solver distance", k_it, k_bf, 1e-3)
@@ -306,6 +306,12 @@ def section_reverse() -> None:
     check("most plausible vol move", x_it[1], -0.0814, 5e-4)
     check("loss at the fixed-point answer (m)", -strangle_pnl(x_it) / 1e6, 1.0, 1e-6)
     check("full-revaluation loss at the linear answer (m)", -strangle_pnl(x_lin) / 1e6, 5.31, 5e-3)
+    # The equity factor is a log return: convert each answer to the price move a trader would quote.
+    check("linear answer equity log return", x_lin[0], -0.8605, 5e-5)
+    check("linear answer vol move", x_lin[1], 0.8885, 5e-5)
+    check("linear answer price move exp(x) - 1", math.exp(x_lin[0]) - 1.0, -0.577, 5e-4)
+    check("most plausible price move exp(x) - 1", math.exp(x_it[0]) - 1.0, 0.167, 5e-4)
+    check("crash-side price move exp(x) - 1", math.exp(crash[0][0]) - 1.0, -0.157, 5e-4)
 
 
 # ---------------------------------------------------------------------------

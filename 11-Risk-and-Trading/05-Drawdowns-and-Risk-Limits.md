@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [kelly-criterion-and-position-sizing]
 est_hours: 4
-sources: [Magdon-Ismail Atiya Pratap and Abu-Mostafa - On the Maximum Drawdown of a Brownian Motion - Journal of Applied Probability 41(1) 147-161 (2004), Magdon-Ismail and Atiya - Maximum Drawdown - Risk 17(10) 99-102 (2004), Grossman and Zhou - Optimal Investment Strategies for Controlling Drawdowns - Mathematical Finance 3(3) 241-276 (1993), Black and Perold - Theory of Constant Proportion Portfolio Insurance - Journal of Economic Dynamics and Control 16(3-4) 403-426 (1992), Lehoczky - Formulas for Stopped Diffusion Processes with Stopping Times Based on the Maximum - Annals of Probability 5(4) 601-607 (1977), Young - Calmar Ratio A Smoother Tool - Futures (October 1991), Lopez de Prado - Advances in Financial Machine Learning (Wiley 2018) chapter 14]
+sources: [Magdon-Ismail Atiya Pratap and Abu-Mostafa - On the Maximum Drawdown of a Brownian Motion - Journal of Applied Probability 41(1) 147-161 (2004), Magdon-Ismail and Atiya - Maximum Drawdown - Risk 17(10) 99-102 (2004), Grossman and Zhou - Optimal Investment Strategies for Controlling Drawdowns - Mathematical Finance 3(3) 241-276 (1993), Black and Perold - Theory of Constant Proportion Portfolio Insurance - Journal of Economic Dynamics and Control 16(3-4) 403-426 (1992), Lehoczky - Formulas for Stopped Diffusion Processes with Stopping Times Based on the Maximum - Annals of Probability 5(4) 601-607 (1977), Young - Calmar Ratio A Smoother Tool - Futures (October 1991), Lopez de Prado - Advances in Financial Machine Learning (Wiley 2018) chapter 14, Broadie Glasserman and Kou - A Continuity Correction for Discrete Barrier Options - Mathematical Finance 7(4) 325-349 (1997)]
 ---
 
 # Drawdowns and Risk Limits
@@ -95,6 +95,7 @@ The exact $Q_p$ against $\tfrac14\ln x + 0.49088$:
 | asymptote | 0.4909 | 1.0665 | 1.6422 | 2.2178 |
 
 The asymptote always undershoots: the gap is 0.021 at $x = 10$, 0.0035 at $x = 100$ and 0.0005 at $x = 1000$, and $x = 100$ already means $S^2 T = 200$, far longer than any track record.
+Further out the exact $Q_p(x) - \tfrac14\ln x$ is 0.49094 at $x = 10^4$ and 0.490885 at $x = 10^5$, falling toward $(\ln 4 + \gamma_E)/4 = 0.490878$.
 
 ### Expected maximum drawdown in units of $\sigma$
 
@@ -123,7 +124,8 @@ Exact probabilities with $\sigma = 10\%$:
 
 Long-run drawdown.
 For $\mu > 0$ the reflected process $D$ has a stationary law, exponential with rate $2\mu/\sigma^2$, because the density $p$ of a reflected drifted Brownian motion solves $\tfrac12\sigma^2 p'' + \mu p' = 0$ with zero flux at 0.
-So at a random time far in the future the expected drawdown is $\sigma^2/(2\mu) = \sigma/(2S)$ and $P(D > h) = e^{-2\mu h/\sigma^2}$: a Sharpe-1, 10%-vol strategy spends on average 5% below its peak and 13.5% of its time more than 10% below it.
+So at a random time far in the future the expected drawdown is $\sigma^2/(2\mu) = \sigma/(2S)$ and $P(D > h) = e^{-2\mu h/\sigma^2}$: a Sharpe-1, 10%-vol strategy spends on average 5% below its peak and 13.5% of its time more than 10% below it (both in log units).
+An independent check that uses no time grid: draw $X_T$, then the running maximum from its exact conditional law given the endpoint (a Brownian bridge, by the reflection principle); at $T = 20$ years 400,000 such draws give a mean drawdown of about 0.0501 and $P(D_T > 10\%)$ of about 0.1357.
 
 Ruin-type probabilities.
 $e^{-2\mu X_t/\sigma^2}$ is a martingale, so by optional stopping the probability that $X$ ever falls $h$ below its starting value is
@@ -221,7 +223,7 @@ Whether that is worth it depends on what a 20% drawdown costs the business (rede
 CPPI (Black and Perold 1992) holds risky exposure $m(V_t - F)$ against a fixed floor $F$; Grossman and Zhou (1993) solve the optimal investment problem under the constraint $V_t \ge \alpha \sup_{s \le t} V_s$ and the optimal risky holding is proportional to the cushion $V_t - \alpha\,\text{HWM}_t$, a CPPI whose floor ratchets up with the high water mark.
 In continuous time the floor is never breached, because exposure goes to zero as the cushion does.
 In practice the guarantee fails if the market gaps by more than $1/m$ between rebalances: with $m = 4$ a 25% gap wipes the whole cushion.
-Simulated with daily rebalancing ($m = 4$, $\alpha = 0.8$, 20% vol, 5 years), the worst $V/\text{HWM}$ on any path is about 0.800 without gaps; with one -30% day it is 0.76 on the worst paths and every path breaches, since the loss is $4 \times 0.30 = 1.2$ times the cushion.
+Simulated with daily rebalancing ($m = 4$, $\alpha = 0.8$, risky asset with 8% drift and 20% vol, 5 years, 4,000 paths), the worst $V/\text{HWM}$ on any path is about 0.800 without gaps; with one -30% day it is 0.76 on the worst paths and every path breaches, since the loss is $4 \times 0.30 = 1.2$ times the cushion.
 
 Volatility targeting, $w_t = \sigma_{\text{target}}/\hat\sigma_t$, is the other common rule: it keeps the ex-ante risk constant rather than reacting to realised losses, so it cuts exposure when volatility rises, which often precedes drawdowns, but it does nothing against a loss that arrives without a volatility spike.
 
@@ -333,7 +335,7 @@ The desk will hit the stop in about one year in twelve even if it is as good as 
 > $e^{-2\mu h/\sigma^2} = e^{-2 \times 0.10 \times 0.20/0.01} = e^{-4} = 0.0183$.
 > Proof: $e^{-2\mu X_t/\sigma^2}$ is a martingale, so by optional stopping $P(\text{hit } -h) \cdot e^{2\mu h/\sigma^2} + P(\text{never}) \cdot 0 = 1$.
 > The exponent is $2Sh/\sigma$: survival depends on Sharpe times the loss measured in vols.
-> A bridge-corrected Monte Carlo over 100 years gives about 0.0179, consistent with it.
+> A Monte Carlo over 100 years with yearly steps and the exact Brownian-bridge crossing probability between steps gives about 0.0182 on 200,000 paths, consistent with it.
 
 > [!question]- risk-mdd-zero-drift-closed-form | What is the expected maximum drawdown of a driftless Brownian motion with volatility sigma over T, and how does it compare with the expected maximum?
 > $E[\text{MDD}_T] = \sqrt{\pi/2}\,\sigma\sqrt T \approx 1.2533\,\sigma\sqrt T$, against $E[\max_{t \le T} W_t] = \sqrt{2/\pi}\,\sigma\sqrt T \approx 0.7979\,\sigma\sqrt T$.
@@ -344,6 +346,7 @@ The desk will hit the stop in about one year in twelve even if it is as good as 
 > $\sigma^2/(2\mu) = \sigma/(2S)$: the drawdown is a reflected Brownian motion with drift $-\mu$, whose stationary law is exponential with rate $2\mu/\sigma^2$.
 > A Sharpe-1, 10%-vol strategy averages 5% below its peak and spends $e^{-2} = 13.5\%$ of its time more than 10% below it.
 > Halving the Sharpe doubles the typical drawdown in units of $\sigma$.
+> Check without the stationary argument: sampling the exact joint law of the 20-year endpoint and running maximum gives a mean drawdown of about 0.0501.
 
 > [!question]- risk-mdd-discrete-monitoring-bias | You estimate maximum drawdown from daily marks of a simulated strategy. Is the estimate biased, and how would you fix it?
 > Biased low: the path between marks can go lower than either mark, so daily monitoring misses part of every drawdown.
@@ -380,6 +383,15 @@ The desk will hit the stop in about one year in twelve even if it is as good as 
 > Formulas for Brownian motion give log drawdowns, while investors see percentage ones: at Sharpe 1.5, 10% vol and 3 years the expected MDD is 11.20% in log units but 10.54% in percentage terms.
 > Also check the drift convention: the log drift is the arithmetic mean return minus $\sigma^2/2$.
 
+## In this repo and SDE-Interview-Prep
+
+- [drawdowns.py](code/drawdowns.py): exact MDD distribution by eigenfunction expansion (checked against quadrature, the zero-drift closed form and a step-extrapolated Monte Carlo), the Magdon-Ismail asymptotes, exact endpoint-and-maximum sampling of the stationary drawdown, the ladder and drawdown-floor simulations; every number above.
+- Optimal sizing and growth: [Kelly Criterion and Position Sizing](01-Kelly-Criterion-and-Position-Sizing.md).
+- Tail risk metrics: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md).
+- Stress testing and extreme scenarios: [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md).
+- Reflection principle and running maxima: [Brownian Motion](../04-Stochastic-Calculus/01-Brownian-Motion.md); discrete analogue: [Random Walks and Gambler's Ruin](../01-Probability/11-Random-Walks-and-Gamblers-Ruin.md).
+- Pre-trade limit systems: [Intraday Risk and Pre-Trade Limits](../18-Pricing-and-Risk-Systems/08-Intraday-Risk-and-Pre-Trade-Limits.md).
+
 ## Further reading
 
 - M. Magdon-Ismail, A. F. Atiya, A. Pratap and Y. S. Abu-Mostafa, "On the maximum drawdown of a Brownian motion", *Journal of Applied Probability* 41(1), 147-161, 2004: the series solution and the $Q_p$, $Q_n$ functions and asymptotics.
@@ -389,12 +401,4 @@ The desk will hit the stop in about one year in twelve even if it is as good as 
 - J. P. Lehoczky, "Formulas for stopped diffusion processes with stopping times based on the maximum", *Annals of Probability* 5(4), 601-607, 1977: the drawdown stopping time.
 - T. W. Young, "Calmar ratio: a smoother tool", *Futures*, October 1991.
 - M. Lopez de Prado, *Advances in Financial Machine Learning*, Wiley 2018, chapter 14 (backtest statistics, including drawdown and time under water).
-
-## In this repo and SDE-Interview-Prep
-
-- [drawdowns.py](code/drawdowns.py): exact MDD distribution by eigenfunction expansion, the Magdon-Ismail asymptotes, Monte Carlo checks, the ladder and drawdown-floor simulations; every number above.
-- Optimal sizing and growth: [Kelly Criterion and Position Sizing](01-Kelly-Criterion-and-Position-Sizing.md).
-- Tail risk metrics: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md).
-- Stress testing and extreme scenarios: [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md).
-- Reflection principle and running maxima: [Brownian Motion](../04-Stochastic-Calculus/01-Brownian-Motion.md); discrete analogue: [Random Walks and Gambler's Ruin](../01-Probability/11-Random-Walks-and-Gamblers-Ruin.md).
-- Pre-trade limit systems: [Intraday Risk and Pre-Trade Limits](../18-Pricing-and-Risk-Systems/08-Intraday-Risk-and-Pre-Trade-Limits.md).
+- M. Broadie, P. Glasserman and S. Kou, "A continuity correction for discrete barrier options", *Mathematical Finance* 7(4), 325-349, 1997: the $\sqrt{\Delta t}$ bias of discretely monitored extremes.

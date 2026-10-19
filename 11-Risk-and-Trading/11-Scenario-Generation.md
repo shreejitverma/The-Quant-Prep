@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [risk-factor-modelling]
 est_hours: 4
-sources: [Hull and White - Incorporating Volatility Updating into the Historical Simulation Method for Value-at-Risk - Journal of Risk 1(1) 5-19 (1998), Barone-Adesi Giannopoulos and Vosper - VaR without Correlations for Portfolios of Derivative Securities - Journal of Futures Markets 19(5) 583-602 (1999), Glasserman - Monte Carlo Methods in Financial Engineering (Springer 2003) chapters 2 4 5 and 9, Kupiec - Techniques for Verifying the Accuracy of Risk Measurement Models - Journal of Derivatives 3(2) 73-84 (1995), McNeil Frey and Embrechts - Quantitative Risk Management revised edition (Princeton 2015) chapter 7, Bollerslev - Generalized Autoregressive Conditional Heteroskedasticity - Journal of Econometrics 31(3) 307-327 (1986), Box and Muller - A Note on the Generation of Random Normal Deviates - Annals of Mathematical Statistics 29(2) 610-611 (1958), Halton (1960) Numerische Mathematik 2 84-90, Basel Framework MAR32.18 FAQ1 and MAR33.4 to MAR33.9 (version effective 1 January 2023)]
+sources: [Hull and White - Incorporating Volatility Updating into the Historical Simulation Method for Value-at-Risk - Journal of Risk 1(1) (Fall 1998), Barone-Adesi Giannopoulos and Vosper - VaR without Correlations for Portfolios of Derivative Securities - Journal of Futures Markets 19(5) 583-602 (1999), Glasserman - Monte Carlo Methods in Financial Engineering (Springer 2003) chapters 2 4 5 and 9, Kupiec - Techniques for Verifying the Accuracy of Risk Measurement Models - Journal of Derivatives 3(2) 73-84 (1995), McNeil Frey and Embrechts - Quantitative Risk Management revised edition (Princeton 2015) chapter 7, Bollerslev - Generalized Autoregressive Conditional Heteroskedasticity - Journal of Econometrics 31(3) 307-327 (1986), Box and Muller - A Note on the Generation of Random Normal Deviates - Annals of Mathematical Statistics 29(2) 610-611 (1958), Halton (1960) Numerische Mathematik 2 84-90, Basel Framework MAR32.18 FAQ1 and MAR33.4 to MAR33.9 (version effective 1 January 2023)]
 ---
 
 # Scenario Generation
@@ -64,7 +64,7 @@ Hull and White (1998) rescale each historical return by the ratio of today's vol
 
 $$r_\tau^{\text{scaled}} = r_\tau\,\frac{\sigma_{\text{now}}}{\sigma_\tau}.$$
 
-Barone-Adesi, Giannopoulos and Vosper (1999) formalised filtered historical simulation: fit a GARCH model (Bollerslev 1986) per factor, keep the standardised residuals $r_\tau/\sigma_\tau$, and bootstrap them through the volatility model, which also produces multi-day scenarios with volatility clustering.
+Barone-Adesi, Giannopoulos and Vosper (1999) apply filtered historical simulation to derivative portfolios: fit a GARCH model (Bollerslev 1986) per factor, keep the standardised residuals $r_\tau/\sigma_\tau$, bootstrap them through the volatility model, which also produces multi-day scenarios with volatility clustering, and revalue the options in full rather than through a linear approximation.
 The standardised residuals keep their joint ordering in time, so cross-factor dependence of the shocks is preserved without estimating a correlation matrix.
 
 Regulatory note: for the FRTB trading desk VaR used in backtesting, volatility scaling that effectively shortens the observation period is not allowed at the bank's discretion; a bank may scale up the volatility of all observations of selected factors to reflect a recent stress period, after notifying the supervisor in advance (MAR32.18 FAQ1).
@@ -81,7 +81,7 @@ Two experiments in [scenario_generation.py](code/scenario_generation.py), each c
 | FHS (EWMA 0.94 filter) | 62 | 1.24% | 0.1002 |
 | Normal with EWMA vol | 97 | 1.94% | below $10^{-8}$ |
 
-Over a long stationary sample, filtering does not change the count; assuming normal tails does.
+On this long stationary path filtering left the count unchanged (one path, so this is not a general result); assuming normal tails raised it by more than half.
 
 2. 2,000 paths of 250 days at 1% daily vol followed by 60 days at 2% (and the reverse), $t_5$ innovations:
 
@@ -126,8 +126,9 @@ Variance of the pair average relative to two independent draws (lognormal spot, 
 For an even payoff antithetics nearly double the variance: the method suits books dominated by delta, not by gamma.
 Control variates, importance sampling toward the loss region, and stratification (Latin hypercube sampling stratifies each marginal) are covered in Glasserman (2003, chapter 4), and Glasserman, Heidelberger and Shahabuddin (2000) use the delta-gamma approximation as a control and an importance-sampling guide for VaR.
 
-Quasi-Monte Carlo replaces random points with low-discrepancy sequences (Halton, Sobol); the Koksma-Hlawka inequality bounds the error by roughly $(\log N)^d/N$ for smooth integrands.
+Quasi-Monte Carlo replaces random points with low-discrepancy sequences (Halton, Sobol); the Koksma-Hlawka inequality bounds the error by the integrand's variation (in the sense of Hardy and Krause) times the point set's discrepancy, which is of order $(\log N)^d/N$ for these sequences.
 For $E[e^{0.2Z_1 + 0.3Z_2}] = e^{0.065}$ via Box-Muller on Halton points in bases 2 and 3, the error is $9.96 \times 10^{-4}$ at $N = 1{,}024$ and $7.66 \times 10^{-5}$ at $N = 16{,}384$, against a pseudo-random RMSE of $1.29 \times 10^{-2}$ and $2.98 \times 10^{-3}$: 13 and 39 times smaller.
+Box-Muller makes this integrand unbounded near the faces of the cube, so the Koksma-Hlawka bound does not strictly apply; the measured errors are the evidence here, not the bound.
 The advantage shrinks with dimension and for discontinuous payoffs, which is why Sobol sequences are combined with Brownian-bridge or PCA orderings that put the important variance in the first coordinates (Glasserman 2003, chapter 5).
 
 ### Horizons
@@ -209,7 +210,7 @@ Then look at timing: unconditional coverage cannot see that HS exceptions bunch 
 > It backfires for even payoffs (straddle: ratio 1.898), so check the correlation before using it.
 
 > [!question]- risk-sobol-sequences-vs-pseudorandom | Why do Sobol quasi-Monte Carlo sequences achieve faster convergence than pseudorandom numbers?
-> They fill the cube evenly by construction, so for smooth integrands the error is roughly $(\log N)^d/N$ (Koksma-Hlawka) against $1/\sqrt N$ for random points.
+> They fill the cube evenly by construction, so for integrands of bounded variation the error is of order $(\log N)^d/N$ (Koksma-Hlawka) against $1/\sqrt N$ for random points.
 > With Halton points in two dimensions the error was 13 times smaller than the pseudo-random RMSE at $N = 1{,}024$ and 39 times at 16,384.
 > The gain shrinks in high dimension and for discontinuous payoffs; order the inputs (Brownian bridge, PCA) so the first coordinates carry most of the variance.
 
@@ -231,7 +232,7 @@ Then look at timing: unconditional coverage cannot see that HS exceptions bunch 
 > [!question]- risk-scenario-ghost-features | What is a "ghost feature" in historical simulation, and how does it impact risk monitoring?
 > When a large move leaves an equally weighted window, VaR drops discontinuously on that day although nothing about today's risk changed.
 > The same day entering the window raised VaR equally abruptly, so the series jumps twice on one event.
-> Exponential weighting, filtering, or a stressed-period calibration (as in MAR33.5) smooth or remove the effect.
+> Exponential weighting or filtering smooths the effect, because no single day's weight falls off a cliff; a stressed-period calibration (as in MAR33.5) keeps the crisis in the measure by construction.
 
 > [!question]- risk-fhs-regime-switch-backtest | Your 99% HS VaR passes its 5-year backtest. Why might a regulator still worry?
 > Because unconditional coverage averages over time; in a simulated vol doubling, HS breached 7.2% of days in the first month and 4.7% in the next two, then fell back.
@@ -265,7 +266,7 @@ Then look at timing: unconditional coverage cannot see that HS exceptions bunch 
 
 > [!question]- risk-garch-ten-day-scaling | Today's day-ahead vol is 2% and the long-run vol is 1% under a GARCH with persistence 0.98. What is the 10-day vol?
 > Sum the expected daily variances: $\sum_{k=1}^{10}\left(\bar\sigma^2 + 0.98^{k-1}(\sigma_1^2 - \bar\sigma^2)\right)$, giving a 10-day vol of 6.12%.
-> $\sqrt{10} \times 2\% = 6.32\%$ overstates by 3.3% because the forecast decays toward 1%.
+> $\sqrt{10} \times 2\% = 6.32\%$ overstates by 3.4% because the forecast decays toward 1%.
 > When vol is below its long-run level, the same reasoning shows $\sqrt{10}$ understating.
 
 > [!question]- risk-mar32-vol-scaling-faq | Can a bank volatility-scale returns in its FRTB backtesting VaR?
@@ -278,18 +279,18 @@ Then look at timing: unconditional coverage cannot see that HS exceptions bunch 
 > FHS keeps the empirical residual shape and matched the 1% level as well as HS on the stationary sample.
 > Fix the tails (FHS, $t$ or EVT residuals), not the volatility.
 
+## In this repo and SDE-Interview-Prep
+
+- [scenario_generation.py](code/scenario_generation.py): FHS and Cholesky examples, the HS/FHS/normal backtests, copula tail dependence, antithetics, Halton points, horizon scaling, overlapping windows, quantile error; every number above.
+- Inputs: [Risk Factor Modelling](10-Risk-Factor-Modelling.md); volatility models: [GARCH](../02-Statistics-and-Econometrics/09-Volatility-Models-GARCH.md); Monte Carlo techniques in pricing: [Monte Carlo Pricing and Variance Reduction](../05-Derivatives-and-Volatility/10-Monte-Carlo-Pricing-and-Variance-Reduction.md).
+- Using the scenarios: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md), [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md), [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md); regulatory ES: [FRTB Internal Model Approach: ES](../17-Regulatory-Capital-Basel-and-FRTB/10-FRTB-Internal-Model-Approach-ES.md).
+
 ## Further reading
 
-- J. Hull and A. White, "Incorporating volatility updating into the historical simulation method for value-at-risk", *Journal of Risk* 1(1), 5-19, 1998.
+- J. Hull and A. White, "Incorporating volatility updating into the historical simulation method for value-at-risk", *Journal of Risk* 1(1), Fall 1998.
 - G. Barone-Adesi, K. Giannopoulos and L. Vosper, "VaR without correlations for portfolios of derivative securities", *Journal of Futures Markets* 19(5), 583-602, 1999.
 - P. Glasserman, *Monte Carlo Methods in Financial Engineering*, Springer 2003: chapter 2 (random variables), 4 (variance reduction), 5 (quasi-Monte Carlo), 9 (risk management).
 - P. Glasserman, P. Heidelberger and P. Shahabuddin, "Variance reduction techniques for estimating value-at-risk", *Management Science* 46(10), 1349-1364, 2000.
 - P. Kupiec, "Techniques for verifying the accuracy of risk measurement models", *Journal of Derivatives* 3(2), 73-84, 1995.
 - A. J. McNeil, R. Frey and P. Embrechts, *Quantitative Risk Management*, revised edition, Princeton 2015, chapter 7 (copulas and dependence).
 - Basel Committee on Banking Supervision, Basel Framework MAR32.18 (with FAQ1) and MAR33.1 to MAR33.12.
-
-## In this repo and SDE-Interview-Prep
-
-- [scenario_generation.py](code/scenario_generation.py): FHS and Cholesky examples, the HS/FHS/normal backtests, copula tail dependence, antithetics, Halton points, horizon scaling, overlapping windows, quantile error; every number above.
-- Inputs: [Risk Factor Modelling](10-Risk-Factor-Modelling.md); volatility models: [GARCH](../02-Statistics-and-Econometrics/09-Volatility-Models-GARCH.md); Monte Carlo techniques in pricing: [Monte Carlo Pricing and Variance Reduction](../05-Derivatives-and-Volatility/10-Monte-Carlo-Pricing-and-Variance-Reduction.md).
-- Using the scenarios: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md), [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md), [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md); regulatory ES: [FRTB Internal Model Approach: ES](../17-Regulatory-Capital-Basel-and-FRTB/10-FRTB-Internal-Model-Approach-ES.md).

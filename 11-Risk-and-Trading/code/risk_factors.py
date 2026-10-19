@@ -64,6 +64,8 @@ def section_ewma() -> None:
     lam = 0.94
     check("EWMA half-life in days, ln 0.5 / ln 0.94", math.log(0.5) / math.log(lam), 11.20, 5e-3)
     check("effective number of observations (1 + lambda) / (1 - lambda)", (1.0 + lam) / (1.0 - lam), 32.33, 5e-3)
+    weights = (1.0 - lam) * lam ** np.arange(5000)
+    check("Kish size 1 / sum w_k^2 of the EWMA weights, summed directly", 1.0 / float(np.sum(weights**2)), 32.33, 5e-3)
     check("weight left beyond 75 days, 0.94^75", lam**75, 0.0097, 5e-5)
 
 
@@ -201,6 +203,7 @@ def section_shrinkage() -> None:
     print(f"  one-factor returns (pairwise correlation 0.25): top eigenvalue {ev_m.max():.2f}, next {np.sort(ev_m)[-2]:.3f}")
     check("population top eigenvalue 1 + (N - 1) rho", 1.0 + 99 * 0.25, 25.75, 1e-12)
     check("sample top eigenvalue", float(ev_m.max()), 24.55, 5e-3)
+    check("second sample eigenvalue", float(np.sort(ev_m)[-2]), 1.69, 5e-3)
     assert np.sort(ev_m)[-2] < lam_plus * 0.8, "the rest of the spectrum sits inside the noise band"
 
 
@@ -270,6 +273,9 @@ def section_proxies() -> None:
 
 def section_async() -> None:
     print("\n[Core concepts: non-synchronous closes understate correlation]")
+    # Asset a reacts to the common factor f on the day; asset b takes 60% on the day and 40% the next day.
+    # Both have total factor loading 1, so the correlation they would show with synchronous closes (and the
+    # limit of the n-day correlation as n grows) is 1 / sqrt(2 x 2) = 0.5.
     rng = np.random.default_rng(11)
     t = 200_000
     f = rng.standard_normal(t)
@@ -278,18 +284,30 @@ def section_async() -> None:
     b[0] = 0.6 * f[0]
     b[1:] = 0.6 * f[1:] + 0.4 * f[:-1]
     b += rng.standard_normal(t)
-    true_corr = 1.0 / math.sqrt(2.0 * (0.36 + 0.16 + 1.0))
+    ac, bc = a - a.mean(), b - b.mean()
     sync = float(np.corrcoef(a, b)[0, 1])
     two_day = float(np.corrcoef(a[0::2][: t // 2 - 1] + a[1::2][: t // 2 - 1], b[0::2][: t // 2 - 1] + b[1::2][: t // 2 - 1])[0, 1])
-    lead_lag = float(np.mean((a[:-1] - a.mean()) * (b[1:] - b.mean())))
-    adj = (np.cov(a, b)[0, 1] + lead_lag) / math.sqrt(np.var(a) * np.var(b))
-    print(f"  daily corr {sync:.4f}, 2-day corr {two_day:.4f}, daily + lead-lag {adj:.4f}")
+    lead_lag = float(np.mean(ac[:-1] * bc[1:]))
+    # Covariance-only adjustment: adds the lead-lag covariance but keeps the daily variances (overshoots).
+    adj_cov_only = (float(np.mean(ac * bc)) + lead_lag) / math.sqrt(np.var(a) * np.var(b))
+    # Full adjustment: also add each series' lag-1 autocovariances to its variance (a long-run covariance estimate).
+    var_a_lr = float(np.var(a)) + 2.0 * float(np.mean(ac[:-1] * ac[1:]))
+    var_b_lr = float(np.var(b)) + 2.0 * float(np.mean(bc[:-1] * bc[1:]))
+    lag_ba = float(np.mean(bc[:-1] * ac[1:]))
+    adj_full = (float(np.mean(ac * bc)) + lead_lag + lag_ba) / math.sqrt(var_a_lr * var_b_lr)
+    ten_day = float(np.corrcoef(a[: t // 10 * 10].reshape(-1, 10).sum(axis=1), b[: t // 10 * 10].reshape(-1, 10).sum(axis=1))[0, 1])
+    print(f"  daily {sync:.4f}, 2-day {two_day:.4f}, 10-day {ten_day:.4f}, "
+          f"covariance-only adjustment {adj_cov_only:.4f}, full adjustment {adj_full:.4f}")  # fmt: skip
+    check("synchronous (and long-horizon) correlation, 1 / sqrt(2 x 2)", 1.0 / math.sqrt(2.0 * 2.0), 0.50, 1e-12)
     check("daily correlation, population 0.6 / sqrt(2 x 1.52)", 0.6 / math.sqrt(2.0 * 1.52), 0.3441, 5e-5)
-    check("correlation if closes were synchronous", true_corr, 0.5735, 5e-5)
     check("daily correlation, simulated", sync, 0.3441, 5e-3)
-    check("daily plus lead-lag covariance, simulated", float(adj), 0.5735, 5e-3)
     check("2-day correlation, population 1.6 / sqrt(4 x 3.52)", 1.6 / math.sqrt(4.0 * 3.52), 0.4264, 5e-5)
     check("non-overlapping 2-day correlation, simulated", two_day, 0.4264, 5e-3)
+    check("10-day correlation, population 9.6 / sqrt(20 x 19.52)", 9.6 / math.sqrt(20.0 * 19.52), 0.4859, 5e-5)
+    check("non-overlapping 10-day correlation, simulated", ten_day, 0.4859, 5e-3)
+    check("covariance-only lead-lag adjustment, population 1 / sqrt(2 x 1.52)", 1.0 / math.sqrt(2.0 * 1.52), 0.5735, 5e-5)
+    check("covariance-only lead-lag adjustment, simulated (overshoots)", adj_cov_only, 0.5735, 5e-3)
+    check("full adjustment with lag-1 autocovariances in the variances, simulated", adj_full, 0.50, 5e-3)
 
 
 # ---------------------------------------------------------------------------
