@@ -42,6 +42,17 @@ Choosing $k$ items from $n$ distinct items:
 | With replacement | $n^k$ | $\binom{n+k-1}{k}$ |
 | Without replacement | $n!/(n-k)!$ | $\binom{n}{k} = \dfrac{n!}{k!(n-k)!}$ |
 
+```mermaid
+flowchart TD
+    q1{"Does the order<br/>of the k picks matter?"}
+    q1 -- yes --> q2{"Can an item<br/>be picked again?"}
+    q1 -- no --> q3{"Can an item<br/>be picked again?"}
+    q2 -- yes --> a1["n^k<br/>sequences"]
+    q2 -- no --> a2["n!/(n-k)!<br/>permutations"]
+    q3 -- no --> a3["C(n,k)<br/>subsets"]
+    q3 -- yes --> a4["C(n+k-1,k)<br/>multisets, not equally likely"]
+```
+
 The unordered with-replacement count is a multiset count and is not a probability model with equally likely outcomes: rolling two dice, $\{1,2\}$ is twice as likely as $\{1,1\}$.
 
 Multinomial: the number of ways to split $n$ distinct items into labelled groups of sizes $n_1,\dots,n_r$ is
@@ -53,7 +64,7 @@ $$
 It also counts distinct arrangements of a word with repeated letters: MISSISSIPPI has $11!/(4!\,4!\,2!\,1!) = 34650$.
 If the groups are unlabelled and of equal size, divide by the number of ways to permute the groups.
 
-Circular arrangements of $n$ people: $(n-1)!$, because rotations are the same seating; divide by 2 again if reflections are identified (necklaces).
+Circular arrangements of $n$ people: $(n-1)!$, because rotations are the same seating; for $n\ge3$ divide by 2 again if reflections are also identified (bracelets, or seatings where clockwise and anticlockwise are not distinguished).
 
 ### Stars and bars
 
@@ -144,7 +155,7 @@ The check to say aloud: "are these two ranks distinguishable by role? If yes, or
 This is $D_n/n!$.
 By inclusion-exclusion, $P = \sum_{j=0}^{n}(-1)^j/j!$.
 For $n=4$: $1 - 1 + 1/2 - 1/6 + 1/24 = 9/24 = 3/8$.
-As $n\to\infty$ it tends to $e^{-1}\approx 0.3679$, and already at $n=6$ it agrees to three decimals, so for any realistic $n$ the answer is "about 37%".
+As $n\to\infty$ it tends to $e^{-1}\approx 0.3679$, and already at $n=6$ it agrees to three decimals ($265/720$ and $e^{-1}$ both round to $0.368$), so for any realistic $n$ the answer is "about 37%".
 The expected number of people who do get their own hat is exactly 1 for every $n$ (linearity, each person with probability $1/n$); see [Expectation, Variance and Linearity](04-Expectation-Variance-and-Linearity.md).
 
 ### Example 3 - three dice summing to 10
@@ -182,7 +193,7 @@ The multinomial route, $4!\,\binom{48}{12,12,12,12}\big/\binom{52}{13,13,13,13}$
 - Mixing ordered and unordered counts between numerator and denominator.
 - Treating multisets as equally likely: $\{1,1\}$ and $\{1,2\}$ are not equally likely on two dice.
 - Overcounting interchangeable roles (two pair) or undercounting distinguishable roles (full house).
-- Double counting in "at least one" problems: $\binom{4}{1}\binom{51}{4}$ is not the number of hands containing an ace; use the complement.
+- Double counting in "at least one" problems: $\binom{4}{1}\binom{51}{4} = 999{,}600$ is not the number of hands containing an ace (it counts a hand with $j$ aces $j$ times); the complement gives $\binom{52}{5}-\binom{48}{5} = 886{,}656$.
 - Forgetting upper bounds in stars and bars (dice faces stop at 6).
 - Stopping inclusion-exclusion after two terms when higher intersections are nonzero.
 - Using $n!$ for circular seatings, where rotations are identical.
@@ -246,9 +257,18 @@ The multinomial route, $4!\,\binom{48}{12,12,12,12}\big/\binom{52}{13,13,13,13}$
 > Count (committee, chair) pairs two ways.
 > Choose the committee of size $k$ then a chair from it: $\sum_k k\binom nk$; or choose the chair ($n$ ways) then any subset of the remaining $n-1$: $n2^{n-1}$.
 
+> [!question]- prob-count-at-least-one-ace | How many five-card hands contain at least one ace, and what is wrong with $\binom41\binom{51}{4}$?
+> $886{,}656$, by the complement $\binom{52}{5}-\binom{48}{5} = 2{,}598{,}960-1{,}712{,}304$.
+> $\binom41\binom{51}{4} = 999{,}600$ picks a "designated" ace and then any four cards, so a hand with $j$ aces is counted $j$ times.
+
 > [!question]- prob-count-de-mere-bets | Which is more likely: at least one six in 4 rolls of a die, or at least one double six in 24 rolls of two dice?
 > At least one six in 4 rolls: $1-(5/6)^4 \approx 0.518$ versus $1-(35/36)^{24} \approx 0.491$.
 > Complementary counting; the naive "4/6 versus 24/36" proportionality argument is wrong because events overlap.
+
+## In this repo and SDE-Interview-Prep
+
+- Code: [`code/prob_01_counting.py`](code/prob_01_counting.py) prints and asserts every count and probability on this page, each against an independent route: exhaustive enumeration (poker hands over all 6188 rank multisets, all $\binom{52}{4}$ ace placements, every ballot order, every parenthesis string, every permutation for derangements), a memoised recursion for the MISSISSIPPI count, exact `Fraction` arithmetic, and seeded simulation for the birthday and de Mere numbers.
+- Related notes: [Expectation, Variance and Linearity](04-Expectation-Variance-and-Linearity.md) (indicators), [Generating Functions](07-Generating-Functions.md) (counting with polynomials), [Random Walks and Gambler's Ruin](11-Random-Walks-and-Gamblers-Ruin.md) (reflection).
 
 ## Further reading
 

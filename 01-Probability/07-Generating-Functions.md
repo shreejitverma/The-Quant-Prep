@@ -104,7 +104,7 @@ Renewal example: with $u_n = P(\text{partial sums of die rolls hit } n \text{ ex
 $(s+s^2+\dots+s^6)^2 = s^2+2s^3+3s^4+4s^5+5s^6+6s^7+5s^8+\dots+s^{12}$, giving counts $1,2,\dots,6,\dots,1$ out of 36.
 Factor: $s+\dots+s^6 = s(1+s)(1+s+s^2)(1-s+s^2)$.
 The square has two copies of each factor; redistribute them so each die still has $G(1) = 6$ faces and a factor $s$ (no zero face): one die gets $s(1+s)(1+s+s^2) = s+2s^2+2s^3+s^4$, the other $s(1+s)(1+s+s^2)(1-s+s^2)^2 = s+s^3+s^4+s^5+s^6+s^8$.
-So faces $\{1,2,2,3,3,4\}$ and $\{1,3,4,5,6,8\}$ give exactly the same sum distribution, and this is the only alternative.
+So faces $\{1,2,2,3,3,4\}$ and $\{1,3,4,5,6,8\}$ give exactly the same sum distribution, and this is the only alternative: the other ways to share the factors give a die with a zero face, a negative coefficient or the wrong number of faces (the script also confirms it by exhaustive search over all six-faced dice).
 
 ### Example 2 - compound Poisson volume
 
@@ -224,6 +224,11 @@ The same filter with cube roots of unity shows the sum of three dice is divisibl
 > [!question]- prob-gf-die-sum-hits-n | You keep rolling a die and track the running total. For large n, what is the probability the total ever equals exactly n?
 > $2/7$.
 > Renewal: $U(s) = 1/(1-G(s))$ has a simple pole at 1 with residue giving $u_n\to1/E[X] = 1/3.5$.
+
+## In this repo and SDE-Interview-Prep
+
+- Code: [`code/prob_07_generating_functions.py`](code/prob_07_generating_functions.py) prints and asserts every number on this page by a route other than the generating function: dice, parity and divisibility by enumeration, Sicherman uniqueness by exhaustive search with exact polynomial division, HH and HT moments and the renewal limit from exact distributions computed by dynamic programming, extinction probabilities by iterating $G$ from 0 and by simulation, and compound-Poisson moments by seeded simulation.
+- Related notes: [Expectation, Variance and Linearity](04-Expectation-Variance-and-Linearity.md) (random sums), [Inequalities and Limit Theorems](06-Inequalities-and-Limit-Theorems.md) (Chernoff and the CLT), [Classic Expectation Problems](14-Classic-Expectation-Problems.md) (pattern waiting times).
 
 ## Further reading
 

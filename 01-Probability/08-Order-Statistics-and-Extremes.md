@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [joint-distributions-and-transformations]
 est_hours: 3
-sources: [Blitzstein and Hwang - Introduction to Probability (2nd ed.), Zhou - A Practical Guide to Quantitative Finance Interviews, Grimmett and Stirzaker - Probability and Random Processes, David and Nagaraja - Order Statistics (3rd ed.)]
+sources: [Blitzstein and Hwang - Introduction to Probability 2nd ed ch 8, Zhou - A Practical Guide to Quantitative Finance Interviews ch 4, David and Nagaraja - Order Statistics 3rd ed, Renyi 1953 - On the theory of order statistics, Fisher and Tippett 1928 - Limiting forms of the frequency distribution of the largest or smallest member of a sample, Gnedenko 1943 - Sur la distribution limite du terme maximum d'une serie aleatoire]
 ---
 
 # Order Statistics and Extremes
@@ -138,55 +138,84 @@ This matters for risk: tail estimation belongs to [Heavy Tails and Extreme Value
 - Saying $E[U_{(k)}] = k/n$; the correct denominator is $n+1$ because there are $n+1$ gaps.
 - Computing $E[\max]$ of dice as $\max$ of expectations or by averaging $P(M = k)$ incorrectly; the tail sum is the fastest reliable route.
 - Quoting $\sqrt{2\ln n}$ as a number for moderate $n$: it overstates the Gaussian max by about 0.5 at $n = 100$.
-- Treating order statistics as independent: $U_{(1)}$ and $U_{(n)}$ are positively correlated; what is independent is the set of spacings of exponentials, and the identity of the argmin versus the value of the min.
+- Treating order statistics as independent: $U_{(1)}$ and $U_{(n)}$ are positively correlated (correlation $1/n$); what is independent is the set of spacings of exponentials, and the identity of the argmin versus the value of the min.
 
 ## Interview questions
 
 > [!question]- prob-os-expected-max-two-dice | What is the expected value of the maximum of two fair dice?
-> $161/36 \approx 4.47$. $P(M \ge k) = 1 - ((k-1)/6)^2$, and summing over $k = 1..6$ gives $6 - 55/36 = 161/36$.
+> $161/36 \approx 4.47$.
+> $P(M \ge k) = 1 - ((k-1)/6)^2$, and summing over $k = 1..6$ gives $6 - 55/36 = 161/36$.
 
 > [!question]- prob-os-expected-min-two-dice | What is the expected value of the minimum of two fair dice?
-> $91/36 \approx 2.53$. By the reflection $X \to 7 - X$, $E[\min] = 7 - E[\max] = 7 - 161/36$; or $E[\min] = \sum_k ((7-k)/6)^2 = 91/36$.
+> $91/36 \approx 2.53$.
+> By the reflection $X \to 7 - X$, $E[\min] = 7 - E[\max] = 7 - 161/36$; or $E[\min] = \sum_k ((7-k)/6)^2 = 91/36$.
 
 > [!question]- prob-os-expected-max-three-dice | What is the expected maximum of three fair dice?
-> $119/24 \approx 4.96$. Tail sum: $6 - \sum_{k=1}^{5} (k/6)^3 = 6 - 225/216$.
+> $119/24 \approx 4.96$.
+> Tail sum: $6 - \sum_{k=1}^{5} (k/6)^3 = 6 - 225/216$.
 
 > [!question]- prob-os-kth-uniform-order-stat | What is the distribution and mean of the $k$-th smallest of $n$ i.i.d. $U(0,1)$ variables?
-> $\text{Beta}(k, n-k+1)$ with mean $k/(n+1)$. The $n$ points create $n+1$ exchangeable gaps of mean $1/(n+1)$ each, and $U_{(k)}$ is the sum of the first $k$.
+> $\text{Beta}(k, n-k+1)$ with mean $k/(n+1)$.
+> The $n$ points create $n+1$ exchangeable gaps of mean $1/(n+1)$ each, and $U_{(k)}$ is the sum of the first $k$.
 
 > [!question]- prob-os-expected-range-uniforms | What is the expected range (max minus min) of $n$ i.i.d. uniforms on $[0,1]$?
-> $(n-1)/(n+1)$. It is $n/(n+1) - 1/(n+1)$, or equivalently $n-1$ interior gaps of mean $1/(n+1)$ each.
+> $(n-1)/(n+1)$.
+> It is $n/(n+1) - 1/(n+1)$, or equivalently $n-1$ interior gaps of mean $1/(n+1)$ each.
 
 > [!question]- prob-os-variance-max-uniforms | What is the variance of the max of $n$ i.i.d. uniforms?
-> $n/((n+1)^2(n+2))$. The max is $\text{Beta}(n,1)$ with $E[M] = n/(n+1)$ and $E[M^2] = n/(n+2)$; subtract.
+> $n/((n+1)^2(n+2))$.
+> The max is $\text{Beta}(n,1)$ with $E[M] = n/(n+1)$ and $E[M^2] = n/(n+2)$; subtract.
 
 > [!question]- prob-os-min-max-two-uniforms-correlation | $U, V$ are i.i.d. uniform. What is the correlation between $\min(U,V)$ and $\max(U,V)$?
-> $1/2$. $E[\min \cdot \max] = E[UV] = 1/4$, so the covariance is $1/4 - (1/3)(2/3) = 1/36$, and each variance is $1/18$.
+> $1/2$.
+> $E[\min \cdot \max] = E[UV] = 1/4$, so the covariance is $1/4 - (1/3)(2/3) = 1/36$, and each variance is $1/18$.
 
 > [!question]- prob-os-median-three-uniforms | What is the CDF of the median of three i.i.d. uniforms?
-> $3x^2 - 2x^3$. The median is below $x$ when at least two points are: $3x^2(1-x) + x^3$; the density $6x(1-x)$ is $\text{Beta}(2,2)$.
+> $3x^2 - 2x^3$.
+> The median is below $x$ when at least two points are: $3x^2(1-x) + x^3$; the density $6x(1-x)$ is $\text{Beta}(2,2)$.
+
+> [!question]- prob-os-uniform-range-within-half | Three points are dropped uniformly on $[0,1]$. What is the probability they all lie within some interval of length $1/2$?
+> $1/2$.
+> The range of $n$ uniforms has $P(\text{range}\le r) = nr^{n-1}-(n-1)r^n$: condition on which point is the minimum and its position $x$; the other $n-1$ must land in $[x, \min(x+r,1)]$, and integrating over $x$ gives the formula.
+> At $n=3$, $r=1/2$: $3/4-2/8 = 1/2$.
+
+> [!question]- prob-os-german-tank-serials | Tanks carry serial numbers $1,\dots,N$. You capture 4 at random and the largest serial is 60. Estimate $N$.
+> $74$, from the unbiased estimator $m(1+1/k)-1$ with $m=60$, $k=4$.
+> The discrete analogue of $E[U_{(k)}] = k/(n+1)$ is $E[m] = k(N+1)/(k+1)$, so $m$ sits one average gap below $N$; adding the average gap $m/k$ and subtracting 1 removes the bias.
 
 > [!question]- prob-os-min-of-exponentials | $X \sim \text{Exp}(\lambda)$ and $Y \sim \text{Exp}(\mu)$ are independent. What is the law of $\min(X,Y)$ and the probability that $X$ is smaller?
-> $\min \sim \text{Exp}(\lambda + \mu)$ and $P(X < Y) = \lambda/(\lambda+\mu)$. $P(\min > t) = e^{-\lambda t} e^{-\mu t}$, and $P(X<Y) = \int_0^\infty \lambda e^{-\lambda t} e^{-\mu t}\,dt$.
+> $\min \sim \text{Exp}(\lambda + \mu)$ and $P(X < Y) = \lambda/(\lambda+\mu)$.
+> $P(\min > t) = e^{-\lambda t} e^{-\mu t}$, and $P(X<Y) = \int_0^\infty \lambda e^{-\lambda t} e^{-\mu t}\,dt$.
 
 > [!question]- prob-os-max-of-exponentials | What is the expected maximum of $n$ i.i.d. $\text{Exp}(1)$ variables?
-> $H_n = 1 + 1/2 + \dots + 1/n$. The gaps between successive order statistics are independent $\text{Exp}(n), \text{Exp}(n-1), \dots, \text{Exp}(1)$ by memorylessness.
+> $H_n = 1 + 1/2 + \dots + 1/n$.
+> The gaps between successive order statistics are independent $\text{Exp}(n), \text{Exp}(n-1), \dots, \text{Exp}(1)$ by memorylessness.
 
 > [!question]- prob-os-second-price-auction-revenue | $n$ bidders have i.i.d. uniform values and bid truthfully in a second-price auction. What is the expected revenue?
-> $(n-1)/(n+1)$. Revenue is the second highest value $U_{(n-1)}$, whose mean is $(n-1)/(n+1)$.
+> $(n-1)/(n+1)$.
+> Revenue is the second highest value $U_{(n-1)}$, whose mean is $(n-1)/(n+1)$.
 
 > [!question]- prob-os-expected-records | In $n$ i.i.d. continuous draws, what is the expected number of records (draws larger than every earlier draw)?
-> $H_n \approx \ln n + 0.577$. Draw $j$ is the max of the first $j$ with probability $1/j$ by symmetry; sum the indicators.
+> $H_n \approx \ln n + 0.577$.
+> Draw $j$ is the max of the first $j$ with probability $1/j$ by symmetry; sum the indicators.
 
 > [!question]- prob-os-max-of-normals-growth | Roughly how large is the max of $n$ i.i.d. standard normals, and how good is the approximation?
-> Asymptotically $\sqrt{2 \ln n}$, but it overstates at practical sizes: the true mean is about $2.51$ at $n = 100$ versus $\sqrt{2\ln 100} \approx 3.03$. It follows from $n(1 - \Phi(x)) \approx 1$ with $1 - \Phi(x) \approx \phi(x)/x$.
+> Asymptotically $\sqrt{2 \ln n}$, but it overstates at practical sizes: the true mean is about $2.51$ at $n = 100$ versus $\sqrt{2\ln 100} \approx 3.03$.
+> It follows from $n(1 - \Phi(x)) \approx 1$ with $1 - \Phi(x) \approx \phi(x)/x$.
 
 > [!question]- prob-os-extreme-value-families | What are the three possible limit laws for a normalised maximum, and which applies to Student-t returns?
-> Gumbel, Frechet and Weibull (Fisher-Tippett-Gnedenko). Student-t has power-law tails, so its maxima are in the Frechet domain; normals and exponentials are Gumbel, bounded variables are Weibull.
+> Gumbel, Frechet and Weibull (Fisher-Tippett-Gnedenko).
+> Student-t has power-law tails, so its maxima are in the Frechet domain; normals and exponentials are Gumbel, bounded variables are Weibull.
+
+## In this repo and SDE-Interview-Prep
+
+- Code: [`code/prob_08_order_statistics.py`](code/prob_08_order_statistics.py) prints and asserts every number on this page: dice maxima by enumeration, uniform order-statistic moments by exact polynomial integration of $P(\text{Bin}(n,x)<k)$ (not the Beta formula), exponential maxima by inclusion-exclusion integrals and simulation, records and the German tank estimator by enumerating every permutation or sample, and Gaussian maxima by numerical integration cross-checked by simulation.
+- Related notes: [Joint Distributions and Transformations](05-Joint-Distributions-and-Transformations.md), [Estimation, MLE and Method of Moments](../02-Statistics-and-Econometrics/01-Estimation-MLE-and-Method-of-Moments.md) (the German tank problem as estimation), [Heavy Tails and Extreme Value Theory](../02-Statistics-and-Econometrics/13-Heavy-Tails-and-Extreme-Value-Theory.md).
 
 ## Further reading
 
 - Blitzstein and Hwang, *Introduction to Probability* (2nd ed.), chapter 8 (order statistics and Beta).
-- Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews*, chapter 4.
-- Grimmett and Stirzaker, *Probability and Random Processes*, sections on order statistics and the exponential distribution.
+- Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews*, chapter 4 (order statistics section).
+- A. Renyi, "On the theory of order statistics", *Acta Mathematica Academiae Scientiarum Hungaricae* 4 (1953), 191-231 (the exponential representation).
+- R. A. Fisher and L. H. C. Tippett, "Limiting forms of the frequency distribution of the largest or smallest member of a sample", *Proceedings of the Cambridge Philosophical Society* 24 (1928), 180-190, and B. Gnedenko, "Sur la distribution limite du terme maximum d'une serie aleatoire", *Annals of Mathematics* 44 (1943), 423-453 (the three extreme-value families).
 - H. A. David and H. N. Nagaraja, *Order Statistics* (3rd ed.).

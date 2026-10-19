@@ -222,6 +222,11 @@ This is the joint law of the min and max of two iid uniforms, whose covariance i
 > $s/2$.
 > By symmetry $E[X\mid S] = E[Y\mid S]$, and they add to $S$.
 
+## In this repo and SDE-Interview-Prep
+
+- Code: [`code/prob_05_joint.py`](code/prob_05_joint.py) prints and asserts every number on this page: the unit-square and triangle results by exact polynomial integration with `Fraction`, and the bivariate-normal forecast, hedge ratio, orthant probabilities, radius tail, portfolio volatility, Cauchy ratio and the normal-marginals counterexample by seeded simulation with stated tolerances.
+- Related notes: [Order Statistics and Extremes](08-Order-Statistics-and-Extremes.md) (min and max of uniforms), [Generating Functions](07-Generating-Functions.md) (convolutions as products), [Mean-Variance Portfolio Construction](../09-Alpha-Research-and-Portfolio/10-Mean-Variance-Portfolio-Construction.md).
+
 ## Further reading
 
 - Blitzstein and Hwang, *Introduction to Probability* (2nd ed.), chapter 7 (joint distributions, bivariate normal) and chapter 8 (transformations, convolutions, beta-gamma).

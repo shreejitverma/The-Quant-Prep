@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [conditional-probability-and-bayes]
 est_hours: 5
-sources: [Blitzstein and Hwang - Introduction to Probability 2nd ed ch 3-8, Ross - A First Course in Probability ch 4-5, Zhou - A Practical Guide to Quantitative Finance Interviews ch 4, Hull - Options Futures and Other Derivatives]
+sources: [Blitzstein and Hwang - Introduction to Probability 2nd ed ch 3-8, Ross - A First Course in Probability ch 4-5, Zhou - A Practical Guide to Quantitative Finance Interviews ch 4, Hull - Options Futures and Other Derivatives 10th ed ch 15, Le Cam 1960 - An approximation theorem for the Poisson binomial distribution]
 ---
 
 # Random Variables and Distributions
@@ -105,7 +105,7 @@ The $-\tfrac12\sigma^2$ term is exactly the gap between mean and median in log s
 
 The count is Binomial$(1000, 0.001)$ with mean 1, so approximate by Poisson(1).
 $P(\ge1) \approx 1 - e^{-1} \approx 0.632$; the exact value $1 - 0.999^{1000} \approx 0.6323$ agrees to three decimals.
-Rule of thumb to say aloud: Poisson is excellent when $n$ is large and $p$ small, with error of order $p$ (here $10^{-3}$).
+Rule of thumb to say aloud: Poisson is excellent when $n$ is large and $p$ small; Le Cam's inequality bounds the error in the probability of any event by $\sum_i p_i^2 = np^2$ (here $10^{-3}$, and the actual total variation distance is about $2.8\times10^{-4}$).
 Follow-up, probability of exactly two errors: $e^{-1}/2 \approx 0.184$.
 
 ### Example 2 - an exponential race
@@ -141,7 +141,7 @@ The first point's rank among the $n+1$ is uniform, so the number of heads is uni
 - Using Poisson when the count is bounded and $p$ is not small, or when events cluster (overdispersion: variance well above the mean).
 - Forgetting that memorylessness means residual waiting time, not total waiting time; the inspection paradox makes the interval you land in longer than average.
 - Assuming the lognormal median equals its mean, or that $E[e^X] = e^{E[X]}$; it is $e^{\mu+\sigma^2/2}$ for normal $X$.
-- Using normal tail probabilities for real returns without comment: empirical tails are much fatter, so "3-sigma" days happen far more often than once in about three years.
+- Using normal tail probabilities for real returns without comment: empirical tails are much fatter, so "3-sigma" down days happen far more often than the normal model's once in about 741 trading days.
 - Quoting 1.96 for a one-sided 95% bound (that is 1.645) or 2.33 for a two-sided 99% interval (that is 2.576).
 
 ## Interview questions
@@ -175,7 +175,7 @@ The first point's rank among the $n+1$ is uniform, so the number of heads is uni
 > The 97.5% and 99.5% quantiles give the two-sided 95% and 99% intervals.
 
 > [!question]- prob-dist-three-sigma-down-day | Daily returns are normal with 1% vol and zero mean. How often is a daily loss worse than 3%?
-> About $0.135\%$ of days, roughly once every 741 trading days (about 3 years).
+> About $0.135\%$ of days, roughly once every 741 trading days (about 2.9 years of 252 days).
 > $P(Z<-3)\approx0.00135$; in real markets such moves are much more frequent because returns are fat-tailed.
 
 > [!question]- prob-dist-lognormal-mean-median | If $\ln X\sim N(0,1)$, what are the mean and median of $X$?
@@ -194,6 +194,10 @@ The first point's rank among the $n+1$ is uniform, so the number of heads is uni
 > $e^{-3}\approx0.050$; yes, independent.
 > Thinning gives buys Poisson(3) and sells Poisson(7), independent of each other.
 
+> [!question]- prob-dist-poisson-given-total | Buys arrive Poisson at 2 per second and sells Poisson at 1 per second, independently. In a second with exactly 3 orders, what is the probability all 3 are buys?
+> $8/27\approx0.296$.
+> Given the total $n$, the buy count is Binomial$(n, 2/3)$: $P(B=3,S=0)/P(B+S=3) = \frac{e^{-2}2^3/3!\cdot e^{-1}}{e^{-3}3^3/3!} = (2/3)^3$.
+
 > [!question]- prob-dist-uniform-variance | Derive the variance of $U(a,b)$.
 > $(b-a)^2/12$.
 > For $U(0,1)$, $E[U^2]-E[U]^2 = 1/3-1/4 = 1/12$; an affine map $a+(b-a)U$ scales variance by $(b-a)^2$.
@@ -202,10 +206,16 @@ The first point's rank among the $n+1$ is uniform, so the number of heads is uni
 > Mean $k$, variance $2k$.
 > $E[Z^2]=1$ and $E[Z^4]=3$, so $\text{Var}(Z^2)=2$; it is $\text{Gamma}(k/2,1/2)$.
 
+## In this repo and SDE-Interview-Prep
+
+- Code: [`code/prob_03_distributions.py`](code/prob_03_distributions.py) prints and asserts every number on this page: it recomputes the mean and variance column of the table from each PMF by summation and each PDF by Simpson integration, builds the normal table and quantiles by integrating the density (not from `erf`), measures the Le Cam error of the Poisson approximation, and reproduces the exponential race, memorylessness, lognormal, thinning and Beta-binomial results by exact integration or seeded simulation.
+- Related notes: [Expectation, Variance and Linearity](04-Expectation-Variance-and-Linearity.md), [Poisson Processes](13-Poisson-Processes.md), [Order Statistics and Extremes](08-Order-Statistics-and-Extremes.md).
+
 ## Further reading
 
 - Blitzstein and Hwang, *Introduction to Probability* (2nd ed.), chapters 3-5 and 8 (named distributions, universality of the uniform, beta-gamma relations).
 - Sheldon Ross, *A First Course in Probability*, chapters 4-5.
+- Lucien Le Cam, "An approximation theorem for the Poisson binomial distribution", *Pacific Journal of Mathematics* 10 (1960), 1181-1197.
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews*, chapter 4 (discrete and continuous distributions).
-- John C. Hull, *Options, Futures, and Other Derivatives*, the lognormal property of stock prices.
+- John C. Hull, *Options, Futures, and Other Derivatives* (10th ed.), chapter 15, section 15.1 (the lognormal property of stock prices).
 - Next: [Expectation, Variance and Linearity](04-Expectation-Variance-and-Linearity.md).

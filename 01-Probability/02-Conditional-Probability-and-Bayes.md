@@ -151,7 +151,7 @@ That threshold, not $0.6$, is the decision boundary, and saying it aloud shows y
 - Treating pairwise independence as mutual independence.
 - Assuming independence survives conditioning, or that conditional independence implies independence.
 - Multiplying likelihood ratios from evidence that is not conditionally independent (two analysts reading the same report are one data point).
-- Simpson's paradox: an association within every subgroup can reverse after aggregation when group sizes differ; condition on the confounder.
+- Simpson's paradox: an association within every subgroup can reverse after aggregation when group sizes differ; condition on the confounder (worked numbers in the card `prob-bayes-simpson-fill-rates`).
 
 ## Interview questions
 
@@ -161,11 +161,16 @@ That threshold, not $0.6$, is the decision boundary, and saying it aloud shows y
 
 > [!question]- prob-bayes-monty-hall-switch | In Monty Hall, the host knowingly opens a goat door. Should you switch, and what is your win probability?
 > Switch; $2/3$.
-> Your first pick is right with probability $1/3$ and the host's action cannot change that; the remaining $2/3$ concentrates on the unopened door.
+> Your first pick is right with probability $1/3$, and because the host's rule treats the two other doors symmetrically his action carries no information about door 1; the remaining $2/3$ concentrates on the unopened door.
 
 > [!question]- prob-bayes-monty-fall-random-host | The host opens one of the other two doors uniformly at random and it happens to show a goat. Does switching help?
 > No; switching wins with probability $1/2$.
 > Say he opens door 3. He picks it with probability $1/2$ whatever the car's location, and it shows a goat unless the car is there, so the weights are $\tfrac13\cdot\tfrac12$ for car at 1, $\tfrac13\cdot\tfrac12$ for car at 2 and 0 for car at 3: equal.
+
+> [!question]- prob-bayes-monty-hall-hundred-doors | 100 doors, one car. You pick door 1; the host, who knows where the car is, opens 98 of the other doors, all goats, leaving door 57 shut. Switch?
+> Yes; switching wins with probability $99/100$.
+> Car at 1 (prior $1/100$): the host keeps any of 99 doors shut, door 57 with probability $1/99$; car at 57 (prior $1/100$): he must keep 57 shut.
+> Weights $\tfrac{1}{9900}$ against $\tfrac{1}{100}$ give $99/100$.
 
 > [!question]- prob-bayes-boy-girl-at-least-one | A two-child family is selected among families with at least one boy. Probability both are boys?
 > $1/3$.
@@ -207,9 +212,19 @@ That threshold, not $0.6$, is the decision boundary, and saying it aloud shows y
 > About $0.647$.
 > Likelihood ratio $1.2^7\cdot0.8^3 \approx 1.835$, so posterior odds $1.835{:}1$.
 
+> [!question]- prob-bayes-simpson-fill-rates | Hypothetical: algo A fills 18 of 20 easy orders and 40 of 80 hard ones; algo B fills 70 of 80 easy and 9 of 20 hard. Which algo is better?
+> A, in both regimes ($90\%$ against $87.5\%$ easy, $50\%$ against $45\%$ hard), even though B's pooled fill rate is higher ($79\%$ against $58\%$).
+> Simpson's paradox: B was mostly given easy orders.
+> Compare within regime, or reweight both to the same order mix.
+
 > [!question]- prob-bayes-second-positive-test | In the 1-in-1000, 99%/95% test, a second independent test is also positive. New posterior?
 > About $28\%$.
 > Odds $1{:}999$ times $19.8^2 \approx 392$ give $392{:}999$; independence of test errors given status is the key assumption.
+
+## In this repo and SDE-Interview-Prep
+
+- Code: [`code/prob_02_bayes.py`](code/prob_02_bayes.py) prints and asserts every posterior on this page by enumerating the joint sample space of each protocol with exact `Fraction` weights (never via the odds formula), checks the rule of succession by exact polynomial integration, and simulates the rare-condition test and both Monty Hall protocols with a fixed seed.
+- Related notes: [Counting and Combinatorics](01-Counting-and-Combinatorics.md), [Bayesian Inference](../02-Statistics-and-Econometrics/07-Bayesian-Inference.md), [Markov Chains](10-Markov-Chains.md) (first-step conditioning).
 
 ## Further reading
 
