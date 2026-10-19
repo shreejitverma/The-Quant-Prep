@@ -7,7 +7,8 @@ Backs every number in `06-Fixed-Income-and-Asset-Classes/22-Mortgages-and-Securi
 - Example 5 and card fi-mbs-securitized-dollar-roll: dollar roll implied financing rate.
 - Example 6: sequential CMO waterfall.
 - Example 7 and cards fi-mbs-securitized-oas-mechanics and fi-mbs-securitized-negative-convexity: Monte Carlo OAS,
-  zero-volatility spread, option cost, effective duration and convexity, under a labelled toy prepayment model.
+  zero-volatility spread, option cost, effective duration and convexity, under a labelled toy prepayment model, and
+  the range of the OAS and the convexity over seeds 2026 to 2030.
 Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
 Run it with `python 06-Fixed-Income-and-Asset-Classes/code/fi_mortgages.py`.
 """
@@ -190,28 +191,41 @@ def solve_spread(cash: np.ndarray, disc: np.ndarray, times: np.ndarray, target: 
     return 0.5 * (lo + hi)
 
 
+MARKET_PRICE, BUMP = 101.00, 0.0025
+
+
+def oas_duration_convexity(seed: int) -> tuple[float, float, float]:
+    """OAS, then effective duration and convexity from +-25 bp curve shifts with the OAS held."""
+    oas = solve_spread(*simulate_pool(F0, SIGMA, 2_000, seed), MARKET_PRICE)
+    p_up = price_with_spread(*simulate_pool(F0 + BUMP, SIGMA, 2_000, seed), oas)
+    p_dn = price_with_spread(*simulate_pool(F0 - BUMP, SIGMA, 2_000, seed), oas)
+    eff_dur = (p_dn - p_up) / (2.0 * MARKET_PRICE * BUMP)
+    eff_conv = (p_up + p_dn - 2.0 * MARKET_PRICE) / (MARKET_PRICE * BUMP * BUMP)
+    return oas, eff_dur, eff_conv
+
+
 def example7_oas() -> None:
     print("  6. Monte Carlo OAS under a toy prepayment model (Example 7)")
-    market_price = 101.00
-    cash, disc, times = simulate_pool(F0, SIGMA, 2_000, 2026)
+    _, disc, times = simulate_pool(F0, SIGMA, 2_000, 2026)
     # The simulated discount factors must reprice the flat curve (Ho-Lee is fitted to it).
     mean_df_10y = float(disc[:, 119].mean())
     quoted("mean path discount factor to 10y", mean_df_10y, 0.670, 3)
     quoted("curve discount factor exp(-0.4)", math.exp(-F0 * 10.0), 0.670, 3)
-    oas = solve_spread(cash, disc, times, market_price)
     cash0, disc0, _ = simulate_pool(F0, 0.0, 1, 2026)
-    z_spread = solve_spread(cash0[:1], disc0[:1], times, market_price)
+    z_spread = solve_spread(cash0[:1], disc0[:1], times, MARKET_PRICE)
+    # Seed 2026 gives the quoted figures; seeds 2027 to 2030 measure the Monte Carlo noise.
+    runs = [oas_duration_convexity(seed) for seed in range(2026, 2031)]
+    oas, eff_dur, eff_conv = runs[0]
     quoted("zero-volatility spread (bp)", z_spread * 1e4, 132.0, 0)
-    quoted("OAS (bp), seed-stable", oas * 1e4, 64.0, 0)
+    quoted("OAS (bp)", oas * 1e4, 64.0, 0)
     quoted("option cost (bp)", (z_spread - oas) * 1e4, 68.0, 0)
-    bump = 0.0025
-    p_up = price_with_spread(*simulate_pool(F0 + bump, SIGMA, 2_000, 2026), oas)
-    p_dn = price_with_spread(*simulate_pool(F0 - bump, SIGMA, 2_000, 2026), oas)
-    eff_dur = (p_dn - p_up) / (2.0 * market_price * bump)
-    eff_conv = (p_up + p_dn - 2.0 * market_price) / (market_price * bump * bump)
-    quoted("effective duration, seed-stable", eff_dur, 4.2, 1)
-    quoted("effective convexity, seed-stable", eff_conv, -122.0, 0)
+    quoted("effective duration", eff_dur, 4.2, 1)
+    quoted("effective convexity", eff_conv, -122.0, 0)
     assert eff_conv < 0.0, "a premium pass-through should be negatively convex in this model"
+    quoted("lowest OAS over seeds 2026-2030 (bp)", min(r[0] for r in runs) * 1e4, 62.0, 0)
+    quoted("highest OAS over seeds 2026-2030 (bp)", max(r[0] for r in runs) * 1e4, 65.0, 0)
+    quoted("lowest effective convexity over seeds 2026-2030", min(r[2] for r in runs), -130.0, 0)
+    quoted("highest effective convexity over seeds 2026-2030", max(r[2] for r in runs), -120.0, 0)
 
 
 def main() -> None:

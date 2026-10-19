@@ -48,7 +48,8 @@ sources: [David X. Li - On Default Correlation - A Copula Function Approach - Jo
 **Upfront and price.**
 With a flat hazard curve calibrated to the quoted spread $S$ (the ISDA standard model convention), protection leg $= S \times \text{RPV01}$, so
 $$\text{Upfront} = (S - C) \times \text{RPV01},$$
-paid by the protection buyer when $S > C$, plus accrued coupon since the last coupon date.
+paid by the protection buyer when $S > C$.
+At settlement the seller also rebates the coupon accrued since the last coupon date, because the buyer pays a full first coupon.
 CDX HY is quoted as a price, $100 - \text{Upfront}\%$.
 
 ### 2. Intrinsic spread and the index basis
@@ -108,7 +109,7 @@ For such structures the problems went beyond the copula: the inputs (default pro
 ## Worked examples
 
 ### Example 1: CDX HY upfront
-$\$50$ million of 5-year CDX HY protection, coupon $500$ bp, market spread $420$ bp, $\text{RPV01} = 4.15$:
+$\$50$ million of 5-year CDX HY protection traded on a coupon date (so there is no accrued to rebate), coupon $500$ bp, market spread $420$ bp, $\text{RPV01} = 4.15$:
 $$\text{Upfront} = (0.0420 - 0.0500) \times 4.15 = -3.32\%,$$
 so the seller pays the buyer $\$1,660,000$ (the buyer will overpay $80$ bp a year in coupon), and the quoted price is $100 + 3.32 = 103.32$.
 

@@ -76,7 +76,7 @@ With deterministic $\sigma_k$, $L_k(T_{k-1})$ is lognormal and Black's caplet fo
 Changing numeraire from $P(t, T_k)$ to $P(t, T_{k+1})$ adds $-\frac{\tau_{k+1} L_{k+1}}{1 + \tau_{k+1} L_{k+1}} \sigma_k \sigma_{k+1} \rho_{k,k+1} dt$, because $P(t, T_k)/P(t, T_{k+1}) = 1 + \tau_{k+1} L_{k+1}$ has relative volatility $\frac{\tau_{k+1} L_{k+1}}{1 + \tau_{k+1} L_{k+1}}\sigma_{k+1}$.
 Chaining to the terminal measure $\mathbb{Q}^{T_N}$:
 $$\frac{dL_k}{L_k} = -\sum_{j=k+1}^N \frac{\tau_j L_j}{1 + \tau_j L_j} \rho_{kj} \sigma_k \sigma_j\, dt + \sigma_k dW_k^{T_N}.$$
-Under the spot LIBOR measure (numeraire: roll over the front bond at each reset, $q(t)$ the index of the first rate not yet fixed) the drift is positive and sums over rates already in play:
+Under the spot LIBOR measure (numeraire: roll over the front bond at each reset, $q(t)$ the index of the first rate not yet fixed) the drift is positive and sums over the rates from the first unfixed one up to $k$, so every live rate, the front one included, drifts:
 $$\frac{dL_k}{L_k} = \sum_{j=q(t)}^{k} \frac{\tau_j L_j}{1 + \tau_j L_j} \rho_{kj} \sigma_k \sigma_j\, dt + \sigma_k dW_k^{\text{spot}}.$$
 The drifts depend on the simulated rates, so the model is simulated by Monte Carlo; a log-Euler step that freezes the drift at the start of the step has a discretization error that grows with the step length, and predictor-corrector schemes (Hunter, Jaeckel and Joshi, Risk 2001) re-evaluate the drift at a predicted end state to reduce it.
 
@@ -123,6 +123,8 @@ an absolute drift of $0.04 \times (-0.000303)$, or $-0.12$ bp per year: negligib
 
 Monte Carlo test of an LMM drift implementation: under $\mathbb{Q}^{T_2}$, $P(t, T_0)/P(t, T_2) = (1 + \tau L_1)(1 + \tau L_2)$ must keep its initial expectation.
 With exaggerated inputs ($\tau = 1$, $L = 10\%$, vols $50\%$, $\rho = 0.9$, horizon 2 years, 200,000 paths, 50 log-Euler steps, seed 1997) the target is $1.21$; with the drift the simulated mean is $-0.4$ standard errors from it, and without the drift it is $13.0$ standard errors too high.
+The same test under the spot measure, before the first reset, uses the numeraire $P(t, T_0)$, so $P(t, T_1)/P(t, T_0) = 1/(1 + \tau L_1)$ must keep its initial expectation $0.9091$.
+With the front-rate drift $\frac{\tau L_1}{1 + \tau L_1}\sigma_1^2$ the simulated mean is $0.9$ standard errors from it, and with $L_1$ driftless it is $33.1$ standard errors too high, so even the front rate drifts under the spot measure.
 
 ## Pitfalls
 
@@ -130,7 +132,7 @@ With exaggerated inputs ($\tau = 1$, $L = 10\%$, vols $50\%$, $\rho = 0.9$, hori
 - **Non-separable HJM volatilities:** a general $\sigma(t, T)$ forces the simulation to carry the whole curve and rules out low-dimensional lattices and PDEs.
 - **Expecting caps to pin correlation:** caplets depend on each $\sigma_k$ alone; correlation enters only through swaptions and other multi-rate products, and a correlation matrix fitted entry by entry to swaptions can fail to be positive semi-definite.
 - **Lognormal LMM with low or negative rates:** $dL/L$ cannot produce negative forwards; use a displaced-diffusion or normal LMM.
-- **Measure choice without thought:** under the terminal measure every short-dated rate carries a drift summed over all later rates; the spot measure sums only over rates already set; both are arbitrage-free, but their discretization errors and Monte Carlo variances differ, so test the one you use.
+- **Measure choice without thought:** under the terminal measure every short-dated rate carries a drift summed over all later rates; the spot measure sums only over rates from the first unfixed one up to $k$; both are arbitrage-free, but their discretization errors and Monte Carlo variances differ, so test the one you use.
 - **LGM normalisation:** $H$ and $\zeta$ are identified only up to the two LGM invariances; fix them before comparing calibrated parameters across systems.
 
 ## Interview questions
@@ -180,8 +182,8 @@ With exaggerated inputs ($\tau = 1$, $L = 10\%$, vols $50\%$, $\rho = 0.9$, hori
 > This is Ho-Lee: constant volatility, parallel moves, drift linear in maturity.
 
 > [!question]- fi-tsm-spot-vs-terminal-measure | How does the LMM drift of $L_k$ differ between the spot and the terminal measures?
-> Under the terminal measure it is $-\sum_{j > k} \frac{\tau_j L_j}{1 + \tau_j L_j}\rho_{kj}\sigma_k\sigma_j$, negative and summed over later rates; under the spot LIBOR measure it is $+\sum_{j=q(t)}^{k} \frac{\tau_j L_j}{1 + \tau_j L_j}\rho_{kj}\sigma_k\sigma_j$, positive and summed over earlier rates still alive.
-> Only the last rate is driftless under the terminal measure, and only the front rate under the spot measure.
+> Under the terminal measure it is $-\sum_{j > k} \frac{\tau_j L_j}{1 + \tau_j L_j}\rho_{kj}\sigma_k\sigma_j$, negative and summed over later rates; under the spot LIBOR measure it is $+\sum_{j=q(t)}^{k} \frac{\tau_j L_j}{1 + \tau_j L_j}\rho_{kj}\sigma_k\sigma_j$, positive and summed over the live rates up to and including $k$.
+> A rate $L_k$ is driftless only under its own forward measure $\mathbb{Q}^{T_k}$: under the terminal measure only the last rate is driftless, and under the spot measure every live rate, the front one included, has a positive drift.
 
 > [!question]- fi-tsm-lmm-drift-test | How would you unit-test the drift of an LMM Monte Carlo engine?
 > Check martingales: under $\mathbb{Q}^{T_N}$ every $P(t, T_i)/P(t, T_N) = \prod_{j > i}(1 + \tau_j L_j)$ must keep its initial expectation, within a few standard errors.

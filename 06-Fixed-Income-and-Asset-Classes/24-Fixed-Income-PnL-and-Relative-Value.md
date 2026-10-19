@@ -58,7 +58,8 @@ A long butterfly (long wings, short body) gains when the fly spread rises.
 It is neutral to parallel moves, but not to a twist unless the body sits at the midpoint of the wings: for a linear twist of $k$ bp per year of maturity about the body, the P&L is $-\frac{1}{2}\text{DV01}_b\, k\,(T_1 + T_3 - 2T_2)$, which for 2s5s10s ($2 + 10 - 10 = 2$) is not zero.
 
 **Regression weighting:** estimate $\Delta y_2 = \beta_1 \Delta y_1 + \beta_3 \Delta y_3 + \epsilon$ from history and hold wing DV01s of $\beta_1 \text{DV01}_b$ and $\beta_3 \text{DV01}_b$; the trade then carries only the residual $\epsilon$ if the betas are stable.
-Unless $\beta_1 + \beta_3 = 1$ it is not neutral to a parallel move; PCA weighting instead neutralises the first two (or three) factors exactly.
+Unless $\beta_1 + \beta_3 = 1$ it is not neutral to a parallel move; PCA weighting instead neutralises the first two factors exactly.
+With the body fixed a butterfly has only two free wing weights, so neutralising a third factor needs a fourth instrument.
 
 ### 4. Asset swaps
 

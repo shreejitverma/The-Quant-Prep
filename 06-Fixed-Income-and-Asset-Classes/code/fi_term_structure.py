@@ -1,12 +1,14 @@
-"""Term structure models: HJM drift condition, LGM bond pricing, and LMM terminal-measure drift.
+"""Term structure models: HJM drift condition, LGM bond pricing, and LMM terminal- and spot-measure drifts.
 
 Backs every number in `06-Fixed-Income-and-Asset-Classes/19-Term-Structure-Models-HJM-LGM-LMM.md`.
 - Examples 1 and 2 and card fi-tsm-hjm-drift-condition: Ho-Lee and Hull-White HJM drifts, and a quadrature check that the
   closed-form drift makes discounted bonds martingales (drift integral equals half the variance) while a zero drift does not.
 - Example 3 and card fi-tsm-lgm-vs-hw: LGM H(T), zeta(t), the bond price at x = 0, and a Gauss-Hermite check of the martingale
   property E[P(t, T; x) / N(t, x)] = P(0, T).
-- Example 4 and card fi-tsm-lmm-terminal-drift: two-rate LMM drift, and a Monte Carlo check that with the drift the ratio
-  P(t, T0) / P(t, T2) is a martingale under the terminal measure while without it the simulation is biased.
+- Example 4 and cards fi-tsm-lmm-terminal-drift and fi-tsm-spot-vs-terminal-measure: two-rate LMM drift, and a Monte Carlo
+  check that with the drift the ratio P(t, T0) / P(t, T2) is a martingale under the terminal measure while without it the
+  simulation is biased, and the same check under the spot measure, P(t, T1) / P(t, T0), showing that even the front rate
+  L1 drifts there.
 Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
 Run it with `python 06-Fixed-Income-and-Asset-Classes/code/fi_term_structure.py`.
 """
@@ -105,7 +107,7 @@ def example_lgm() -> None:
 
 
 def example_lmm() -> None:
-    print("  3. LMM terminal-measure drift (Example 4, card fi-tsm-lmm-terminal-drift)")
+    print("  3. LMM terminal- and spot-measure drift (Example 4, cards fi-tsm-lmm-terminal-drift, fi-tsm-spot-vs-terminal-measure)")
     tau2, l1, l2 = 0.25, 0.040, 0.040
     sigma1, sigma2, rho12 = 0.200, 0.180, 0.85
     ratio = tau2 * l2 / (1.0 + tau2 * l2)
@@ -141,6 +143,26 @@ def example_lmm() -> None:
     quoted("with drift: error in standard errors, seed-stable", results[True], -0.4, 1)
     quoted("without drift: error in standard errors, seed-stable", results[False], 13.0, 1)
     assert abs(results[True]) < 3.0 < results[False]
+
+    # Under the spot measure before the first reset the numeraire is P(t, T0), so
+    # P(t, T1) / P(t, T0) = 1 / (1 + tau L1) must keep its initial expectation: the front rate needs a positive drift.
+    spot_target = 1.0 / (1.0 + tau * f1)
+    spot_results = {}
+    for use_drift in (True, False):
+        rng = np.random.default_rng(1997)
+        x1 = np.full(n_paths, f1)
+        for _ in range(n_steps):
+            z1 = rng.standard_normal(n_paths)
+            drift = tau * x1 / (1.0 + tau * x1) * s1 * s1 if use_drift else 0.0
+            x1 = x1 * np.exp((drift - 0.5 * s1 * s1) * dt + s1 * math.sqrt(dt) * z1)
+        ratio_paths = 1.0 / (1.0 + tau * x1)
+        mean = float(ratio_paths.mean())
+        stderr = float(ratio_paths.std()) / math.sqrt(n_paths)
+        spot_results[use_drift] = (mean - spot_target) / stderr
+    quoted("spot-measure martingale target 1 / (1 + L1)", spot_target, 0.9091, 4)
+    quoted("spot measure, front-rate drift: error in standard errors", spot_results[True], 0.9, 1)
+    quoted("spot measure, driftless front rate: error in standard errors", spot_results[False], 33.1, 1)
+    assert abs(spot_results[True]) < 3.0 < spot_results[False], "the front rate must drift under the spot measure"
 
 
 def main() -> None:

@@ -80,7 +80,7 @@ flowchart LR
     S -- yes --> O[That spread is the OAS]
 ```
 
-- **Zero-volatility spread:** the constant spread over the curve that reprices the cash flows projected along a single unchanged-rates path; it ignores the option's time value.
+- **Zero-volatility spread:** the constant spread over the curve that reprices the cash flows projected along the zero-volatility path, on which rates follow the forwards implied by the curve; it ignores the option's time value.
 - **OAS:** the same equation averaged over volatile rate paths with the prepayment model on each.
 - **Option cost:** $\text{ZV spread} - \text{OAS}$, positive for a pass-through whose investors are short the prepayment option.
 - **Effective duration and convexity:** bump the curve, keep the OAS, and reprice with the same random numbers.
@@ -150,7 +150,7 @@ Inputs (labelled illustrative, not a production prepayment model): Ho-Lee short 
 - Zero-volatility spread: $132$ bp; OAS: about $64$ bp; option cost: about $68$ bp.
 - With the OAS held, $\pm 25$ bp curve shifts give an effective duration of about $4.2$ and an effective convexity of about $-122$.
 
-Other seeds move the OAS by about one bp and the convexity by about ten, so quote these to that precision.
+Seeds 2026 to 2030 put the OAS between $62$ and $65$ bp and the effective convexity between $-130$ and $-120$, so quote these only to that precision.
 
 ## Pitfalls
 
@@ -209,7 +209,7 @@ Other seeds move the OAS by about one bp and the convexity by about ten, so quot
 
 > [!question]- fi-mbs-securitized-oas-mechanics | Walk through how an OAS is computed for a pass-through.
 > Simulate curve-calibrated rate paths, derive a mortgage rate on each, run the prepayment model to get path cash flows, discount at path short rates plus a constant spread, average, and solve for the spread that matches the market price.
-> The zero-volatility spread does the same on one unchanged-rates path; their difference is the option cost (Example 7: $132$ bp ZV, about $64$ bp OAS, about $68$ bp option cost).
+> The zero-volatility spread does the same on the single zero-volatility path, where rates follow the curve's forwards; their difference is the option cost (Example 7: $132$ bp ZV, about $64$ bp OAS, about $68$ bp option cost).
 
 > [!question]- fi-mbs-securitized-ctd-pools | In the TBA market, which pools are cheapest to deliver for a premium coupon, and which for a discount coupon?
 > Premium coupons: the fastest-paying pools, because each prepayment returns par for a bond worth more than par.
