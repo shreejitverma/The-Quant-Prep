@@ -197,7 +197,9 @@ Across both desks $IMA_{G,A} = 120$ and $SA_{G,A} = 200$; out-of-scope desks add
 3. $ACR_{\text{total}} = \min(120 + 10 + 30, 230) + \max(0, 120 - 200) = 160$, against 150 with no amber desk (MAR33.43).
 4. At a 12% hurdle the surcharge costs $1.2$ a year.
 5. If both desks were amber, $k = 0.5$ and the surcharge would be 40, but the SA cap would still be slack: $ACR = \min(120 + 40 + 30, 230) = 190$, and $190 < 230$.
-6. The cap binds only when cross-desk netting leaves SA for all desks below $SA_{G,A} + C_U = 230$; at an SA for all desks of 180, both desks amber gives $ACR = \min(190, 180) + \max(0, 120 - 200) = 180$, so the cap absorbs 10 of the 40 surcharge.
+6. The cap binds if and only if SA for all desks is below $IMA_{G,A} + \text{surcharge} + C_U = 190$ (MAR33.43), not below 230.
+   At an SA for all desks of 200 it is still slack: $ACR = \min(190, 200) + \max(0, 120 - 200) = 190$.
+   At 180 it binds: $ACR = \min(190, 180) + \max(0, 120 - 200) = 180$, so the cap absorbs 10 of the 40 surcharge.
 
 The surcharge is levied on the bank, scaled by the amber desks' share of SA, so one amber desk taxes the green desks' IMA benefit too.
 

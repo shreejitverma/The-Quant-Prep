@@ -187,15 +187,16 @@ def check_note13() -> None:
     k_all, s_all = amber_surcharge(sa_by_desk, {"rates_green", "credit_amber"}, ima_ga, sa_ga)
     quoted("note13_amber_k_all_amber", k_all, 0.5, 3)
     quoted("note13_amber_surcharge_all_amber", s_all, 40.0, 1)
-    # The SA cap is slack: IMA + surcharge + C_U = 190 is below SA for all desks of 230.
+    # The SA cap binds if and only if SA for all desks < IMA + surcharge + C_U = 190 (MAR33.43).
+    uncapped = ima_ga + s_all + c_u
+    quoted("note13_amber_cap_threshold", uncapped, 190.0, 1)
     acr_all = aggregate_capital(ima_ga, s_all, c_u, sa_all, sa_ga)
     quoted("note13_amber_acr_all_amber", acr_all, 190.0, 1)
     assert acr_all < sa_all
-    # With SA for all desks netted down to 180, the cap binds and ACR is the SA figure.
-    sa_all_netted = 180.0
-    acr_capped = aggregate_capital(ima_ga, s_all, c_u, sa_all_netted, sa_ga)
+    quoted("note13_amber_acr_all_amber_sa200", aggregate_capital(ima_ga, s_all, c_u, 200.0, sa_ga), 190.0, 1)
+    acr_capped = aggregate_capital(ima_ga, s_all, c_u, 180.0, sa_ga)
     quoted("note13_amber_acr_all_amber_capped", acr_capped, 180.0, 1)
-    quoted("note13_amber_cap_absorbed", ima_ga + s_all + c_u - acr_capped, 10.0, 1)
+    quoted("note13_amber_cap_absorbed", uncapped - acr_capped, 10.0, 1)
 
     # Output floor and desk-level relief (card reg-output-floor-neutralizing-ima), RWA in USD billions.
     for label, internal, saving, expected in (
