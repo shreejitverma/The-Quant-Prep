@@ -4,6 +4,9 @@ Backs every number in `18-Pricing-and-Risk-Systems/07-Risk-Engine.md`.
 Books, P&L vectors, volatilities, correlations and platform sizes are labelled-hypothetical teaching inputs.
 Random data use fixed seeds of Python's Mersenne Twister, so every platform prints the same values.
 Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
+Where a result has a second, independent route (numerical integration against a closed form, a finite difference
+against an analytic derivative, a brute-force quantile integral against an order-statistic formula), both are computed
+and compared.
 Run it with `python 18-Pricing-and-Risk-Systems/code/sys_risk_engine.py`.
 """
 
@@ -60,6 +63,23 @@ def bs_delta_gamma(s: float, k: float, t: float, r: float, vol: float) -> tuple[
     return norm_cdf(d1), norm_pdf(d1) / (s * vol * math.sqrt(t))
 
 
+def call_by_integration(s: float, k: float, t: float, r: float, vol: float, n: int = 20_000) -> float:
+    """Discounted expected call payoff under the lognormal law, by Simpson's rule in the normal variable.
+
+    An independent route to the Black-Scholes price: no closed form, only the payoff and the density.
+    """
+    a, b = -10.0, 10.0
+    h = (b - a) / n
+    total = 0.0
+    for i in range(n + 1):
+        z = a + i * h
+        st = s * math.exp((r - 0.5 * vol * vol) * t + vol * math.sqrt(t) * z)
+        f = max(st - k, 0.0) * norm_pdf(z)
+        w = 1 if i in (0, n) else (4 if i % 2 else 2)
+        total += w * f
+    return math.exp(-r * t) * total * h / 3.0
+
+
 # ============================================================================
 # 2. Historical-simulation VaR and ES conventions
 # ============================================================================
@@ -77,6 +97,36 @@ def student_t_pnl(n: int, df: int, scale: float, seed: int) -> list[float]:
     return out
 
 
+def t_pdf(x: float, df: int) -> float:
+    c = math.gamma((df + 1) / 2) / (math.sqrt(df * math.pi) * math.gamma(df / 2))
+    return c * (1.0 + x * x / df) ** (-(df + 1) / 2)
+
+
+def t4_quantile_closed_form(p: float) -> float:
+    """Upper quantile of Student-t(4), p > 0.5, from the closed form of the four-degree-of-freedom CDF."""
+    a = 4.0 * p * (1.0 - p)
+    q = math.cos(math.acos(math.sqrt(a)) / 3.0) / math.sqrt(a)
+    return 2.0 * math.sqrt(q - 1.0)
+
+
+def simpson(f, a: float, b: float, n: int = 20_000) -> float:
+    h = (b - a) / n
+    total = f(a) + f(b)
+    for i in range(1, n):
+        total += (4 if i % 2 else 2) * f(a + i * h)
+    return total * h / 3.0
+
+
+def t4_quantile_numeric(p: float) -> float:
+    """Quantile of Student-t(4) by bisection on the numerically integrated density."""
+    lo, hi = 0.0, 50.0
+    for _ in range(80):
+        mid = 0.5 * (lo + hi)
+        cdf = 0.5 + simpson(lambda x: t_pdf(x, 4), 0.0, mid, 4_000)
+        lo, hi = (mid, hi) if cdf < p else (lo, mid)
+    return 0.5 * (lo + hi)
+
+
 def discrete_var(dist: dict[float, float], alpha: float) -> float:
     """inf{l : P(L <= l) >= alpha} for a discrete loss distribution {loss: probability}."""
     cum = 0.0
@@ -85,6 +135,25 @@ def discrete_var(dist: dict[float, float], alpha: float) -> float:
         if cum >= alpha - 1e-12:
             return loss
     raise ValueError("probabilities do not reach alpha")
+
+
+def discrete_es(dist: dict[float, float], alpha: float) -> float:
+    """ES as (1 / (1 - alpha)) times the integral of the quantile function above alpha, piece by piece."""
+    cum, total = 0.0, 0.0
+    for loss in sorted(dist):
+        lo, hi = cum, cum + dist[loss]
+        total += loss * max(0.0, hi - max(lo, alpha))
+        cum = hi
+    return total / (1.0 - alpha)
+
+
+def es_by_quantile_grid(dist: dict[float, float], alpha: float, n: int = 200_000) -> float:
+    """Brute force: average the quantile function on a fine midpoint grid of u in (alpha, 1)."""
+    total = 0.0
+    for i in range(n):
+        u = alpha + (i + 0.5) * (1.0 - alpha) / n
+        total += discrete_var(dist, u)
+    return total / n
 
 
 def worst_losses(pnl: list[float]) -> list[float]:
@@ -100,6 +169,13 @@ def var_lower_quantile(pnl: list[float], alpha: float) -> float:
     """inf{l : F_L(l) >= alpha} on the empirical loss distribution: the ceil(n alpha)-th smallest loss."""
     losses = sorted(-x for x in pnl)
     return losses[math.ceil(len(losses) * alpha - 1e-12) - 1]
+
+
+def var_lower_quantile_by_count(pnl: list[float], alpha: float) -> float:
+    """Same quantile by scanning candidate losses and counting, with no sorting index arithmetic."""
+    losses = [-x for x in pnl]
+    n = len(losses)
+    return min(c for c in losses if sum(1 for x in losses if x <= c) / n >= alpha - 1e-12)
 
 
 def var_interpolated(pnl: list[float], alpha: float) -> float:
@@ -189,13 +265,20 @@ def correlated_desk_vectors(n: int, seed: int) -> list[list[float]]:
 # ============================================================================
 
 
-def run_tests() -> None:
-    print("Risk engine checks")
-
+def check_example_1() -> None:
     print("  Example 1: sensitivities against full revaluation (hypothetical short call book)")
     s0, k, t, r, vol, qty = 100.0, 100.0, 0.5, 0.03, 0.25, -10_000.0
-    v0 = qty * bs_call(s0, k, t, r, vol)
+    price = bs_call(s0, k, t, r, vol)
+    assert abs(price - call_by_integration(s0, k, t, r, vol)) < 1e-6, "closed form disagrees with integration"
+    quoted("single call price", price, 7.7603, 4)
     d, g = bs_delta_gamma(s0, k, t, r, vol)
+    h = 1e-3  # central differences of the closed-form price, an independent route to the Greeks
+    fd_delta = (bs_call(s0 + h, k, t, r, vol) - bs_call(s0 - h, k, t, r, vol)) / (2 * h)
+    fd_gamma = (bs_call(s0 + h, k, t, r, vol) - 2 * price + bs_call(s0 - h, k, t, r, vol)) / (h * h)
+    assert abs(fd_delta - d) < 1e-8 and abs(fd_gamma - g) < 1e-5
+    quoted("single call delta", d, 0.56877, 5)
+    quoted("single call gamma", g, 0.02223, 5)
+    v0 = qty * price
     quoted("book delta (units of underlying)", qty * d, -5_688, 0)
     quoted("book gamma (per unit of spot squared)", qty * g, -222.3, 1)
     rows = {
@@ -206,9 +289,11 @@ def run_tests() -> None:
         0.10: (-67_067, -56_877, -67_993, -11_116, 926),
         0.25: (-195_336, -142_192, -211_666, -69_473, 16_330),
     }
+    full_by_shock = {}
     for shock, (full_q, delta_q, dg_q, gamma_q, err_q) in rows.items():
         ds = s0 * shock
         full = qty * bs_call(s0 + ds, k, t, r, vol) - v0
+        full_by_shock[shock] = full
         delta_pnl = qty * d * ds
         gamma_pnl = 0.5 * qty * g * ds * ds
         dg = delta_pnl + gamma_pnl
@@ -218,17 +303,42 @@ def run_tests() -> None:
         quoted(f"spot {tag}: delta-gamma P&L", dg, dg_q, 0)
         quoted(f"spot {tag}: gamma term", gamma_pnl, gamma_q, 0)
         quoted(f"spot {tag}: delta-gamma error (full minus approximation)", full - dg, err_q, 0)
+    quoted("+25%: loss the delta-only estimate misses", -full_by_shock[0.25] - qty * d * -25.0, 53_144, 0)
+    g125 = bs_delta_gamma(125.0, k, t, r, vol)[1]
+    quoted("single call gamma at spot 125 (falls as the call goes into the money)", g125, 0.00644, 5)
+    assert g125 < g, "gamma must fall from 100 to 125 for the quadratic to overstate the short book's loss"
 
+
+def check_subadditivity() -> None:
     print("  Subadditivity: two independent defaultable bonds, 4% default probability, loss 100 each")
     p = 0.04
-    one = discrete_var({0.0: 1 - p, 100.0: p}, 0.95)
+    single = {0.0: 1 - p, 100.0: p}
+    one = discrete_var(single, 0.95)
     pair = {0.0: (1 - p) ** 2, 100.0: 2 * p * (1 - p), 200.0: p * p}
+    # independent route to the pair distribution: enumerate the four default outcomes
+    enum: dict[float, float] = {}
+    for d1 in (0, 1):
+        for d2 in (0, 1):
+            pr = (p if d1 else 1 - p) * (p if d2 else 1 - p)
+            enum[100.0 * (d1 + d2)] = enum.get(100.0 * (d1 + d2), 0.0) + pr
+    assert all(abs(enum[x] - pair[x]) < 1e-15 for x in pair)
+    quoted("probability that both survive", pair[0.0], 0.9216, 4)
+    quoted("probability of exactly one default", pair[100.0], 0.0768, 4)
+    quoted("probability of two defaults", pair[200.0], 0.0016, 4)
     quoted("probability that at least one of two defaults", pair[100.0] + pair[200.0], 0.0784, 4)
     two = discrete_var(pair, 0.95)
     quoted("95% VaR of each bond alone", one, 0, 0)
     quoted("95% VaR of the two together", two, 100, 0)
     assert two > 2 * one
+    es_one, es_two = discrete_es(single, 0.95), discrete_es(pair, 0.95)
+    assert abs(es_one - es_by_quantile_grid(single, 0.95)) < 1e-3
+    assert abs(es_two - es_by_quantile_grid(pair, 0.95)) < 1e-3
+    quoted("95% ES of each bond alone", es_one, 80.0, 1)
+    quoted("95% ES of the two together", es_two, 103.2, 1)
+    assert es_two <= 2 * es_one
 
+
+def check_example_2() -> None:
     print("  Example 2: VaR and ES conventions on a 500-scenario P&L vector (Student-t 4 df, sd 1m, seed 7)")
     pnl = student_t_pnl(500, 4, 1.0e6, 7)
     worst = worst_losses(pnl)
@@ -236,7 +346,10 @@ def run_tests() -> None:
         quoted(f"worst loss number {i}", worst[i - 1], q, 0)
     quoted("worst loss number 13", worst[12], 2_140_701, 0)
     quoted("99% VaR as the 5th worst loss", var_kth_worst(pnl, 5), 3_330_749, 0)
-    quoted("99% VaR as the lower quantile inf{l: F(l) >= 0.99} (6th worst)", var_lower_quantile(pnl, 0.99), 3_072_109, 0)
+    lq = var_lower_quantile(pnl, 0.99)
+    assert lq == var_lower_quantile_by_count(pnl, 0.99), "order-statistic index disagrees with counting"
+    quoted("99% VaR as the lower quantile inf{l: F(l) >= 0.99} (6th worst)", lq, 3_072_109, 0)
+    quoted("5th worst over 6th worst, minus 1 (%)", (var_kth_worst(pnl, 5) / lq - 1.0) * 100.0, 8.4, 1)
     quoted("99% VaR by linear interpolation at position 499 x 0.99", var_interpolated(pnl, 0.99), 3_074_695, 0)
     es = es_fractional(pnl, 0.975)
     quoted("97.5% ES: 12 worst plus half the 13th, over 12.5", es, 3_119_195, 0)
@@ -244,14 +357,30 @@ def run_tests() -> None:
     quoted("97.5% ES as the mean of the 13 worst", sum(worst[:13]) / 13, 3_081_561, 0)
     quoted("normal-equivalent 99% VaR, 2.326 sd", norm_ppf(0.99) * 1.0e6, 2_326_348, 0)
     quoted("normal 99% VaR multiple of sd (card sys-07-02)", norm_ppf(0.99), 2.3263, 4)
-    quoted("normal 97.5% ES multiple of sd (card sys-07-02)", norm_pdf(norm_ppf(0.975)) / 0.025, 2.3378, 4)
+    es_norm = norm_pdf(norm_ppf(0.975)) / 0.025
+    es_norm_numeric = simpson(lambda x: x * norm_pdf(x), norm_ppf(0.975), 12.0) / 0.025
+    assert abs(es_norm - es_norm_numeric) < 1e-9
+    quoted("normal 97.5% ES multiple of sd (card sys-07-02)", es_norm, 2.3378, 4)
+    quoted("normal-equivalent 97.5% ES, 1m sd", es_norm * 1.0e6, 2_337_803, 0)
+    quoted("sample ES over normal ES, minus 1 (%)", (es / (es_norm * 1.0e6) - 1.0) * 100.0, 33.4, 1)
+    # population Student-t(4) at unit standard deviation: closed form against numerical integration
+    tq = t4_quantile_closed_form(0.975)
+    assert abs(tq - t4_quantile_numeric(0.975)) < 1e-6
+    es_t_closed = t_pdf(tq, 4) / 0.025 * (4 + tq * tq) / 3.0 * math.sqrt(0.5)
+    es_t_numeric = simpson(lambda x: x * t_pdf(x, 4), tq, 2_000.0, 400_000) / 0.025 * math.sqrt(0.5)
+    assert abs(es_t_closed - es_t_numeric) < 1e-4
+    quoted("population t(4) 97.5% ES at unit sd", es_t_closed, 2.824, 3)
+    quoted("population t(4) ES over normal ES, minus 1 (%)", (es_t_closed / es_norm - 1.0) * 100.0, 20.8, 1)
 
+
+def check_example_3() -> None:
     print("  Example 3: Euler allocation, parametric (hypothetical three desks)")
     z99 = norm_ppf(0.99)
     cov = desk_cov()
     w = [1.0, 1.0, 1.0]
     sigma_p = math.sqrt(sum(a * b for a, b in zip(w, mat_vec(cov, w), strict=True)))
     var_p = z99 * sigma_p
+    quoted("99% normal quantile", z99, 2.326348, 6)
     quoted("portfolio sd", sigma_p, 2_091_889, 0)
     quoted("portfolio 99% VaR", var_p, 4_866_462, 0)
     standalone = [z99 * s for s in DESK_SIGMA]
@@ -260,17 +389,30 @@ def run_tests() -> None:
     quoted("sum of standalone VaRs", sum(standalone), 6_979_044, 0)
     quoted("diversification benefit", sum(standalone) - var_p, 2_112_582, 0)
     cw = mat_vec(cov, w)
+    for i, q in enumerate((1.840, 0.688, 1.848)):
+        quoted(f"Cov(desk {i + 1}, portfolio) in units of 10^12 dollars squared", cw[i] / 1e12, q, 3)
     comp = [z99 * w[i] * cw[i] / sigma_p for i in range(3)]
     for i, q in enumerate((2_046_227, 765_111, 2_055_124)):
         quoted(f"desk {i + 1} component VaR", comp[i], q, 0)
-    assert abs(sum(comp) - var_p) < 1e-6
+    # marginal VaR by central difference of the portfolio VaR, independent of the covariance formula
+    h = 1e-6
+    for i in range(3):
+        up = [w[j] + (h if j == i else 0.0) for j in range(3)]
+        dn = [w[j] - (h if j == i else 0.0) for j in range(3)]
+        fd = (parametric_var(up, cov, z99) - parametric_var(dn, cov, z99)) / (2 * h)
+        assert abs(fd - comp[i]) < 1e-3, "analytic marginal VaR disagrees with finite difference"
     marginal2 = z99 * cw[1] / sigma_p
     quoted("desk 2 marginal VaR per unit of scale", marginal2, 765_111, 0)
     w_new = [1.0, 1.1, 1.0]
-    ivar = parametric_var(w_new, cov, z99) - var_p
+    var_new = parametric_var(w_new, cov, z99)
+    quoted("portfolio VaR with desk 2 scaled by 1.1", var_new, 4_945_883, 0)
+    ivar = var_new - var_p
     quoted("incremental VaR of scaling desk 2 by 10%", ivar, 79_422, 0)
     quoted("marginal approximation 0.1 x marginal VaR", 0.1 * marginal2, 76_511, 0)
+    quoted("approximation error relative to exact (%)", (1 - 0.1 * marginal2 / ivar) * 100.0, 3.7, 1)
 
+
+def check_example_4() -> None:
     print("  Example 4: historical ES allocation and a what-if trade (multivariate t, 500 scenarios, seed 11)")
     desks = correlated_desk_vectors(500, 11)
     total = [sum(desks[dd][i] for dd in range(3)) for i in range(500)]
@@ -282,7 +424,13 @@ def run_tests() -> None:
     comp_es = [-sum(wt * desks[dd][i] for i, wt in tail) for dd in range(3)]
     for i, q in enumerate((1_771_519, 1_216_433, 1_441_227)):
         quoted(f"desk {i + 1} ES contribution in the bank's tail scenarios", comp_es[i], q, 0)
-    assert abs(sum(comp_es) - es_total) < 1e-6
+    # Euler check: the contribution is the derivative of bank ES with respect to the desk's scale, re-sorted each time
+    h = 1e-4
+    for dd in range(3):
+        up = [total[i] + h * desks[dd][i] for i in range(500)]
+        dn = [total[i] - h * desks[dd][i] for i in range(500)]
+        fd = (es_fractional(up, 0.975) - es_fractional(dn, 0.975)) / (2 * h)
+        assert abs(fd - comp_es[dd]) < 1e-3, "ES contribution is not the Euler derivative"
     var_base = var_lower_quantile(total, 0.99)
     quoted("bank 99% VaR (lower quantile)", var_base, 4_385_198, 0)
     hedge = [-0.5 * x for x in desks[0]]  # a what-if trade whose P&L is minus half of desk 1 in every scenario
@@ -290,6 +438,8 @@ def run_tests() -> None:
     quoted("bank 99% VaR with the what-if hedge", var_new, 3_514_364, 0)
     quoted("incremental VaR of the hedge", var_new - var_base, -870_834, 0)
 
+
+def check_example_5() -> None:
     print("  Example 5: storage sizing (hypothetical bank)")
     trades, scenarios = 400_000, 1_000
     quoted("trade-level P&L vectors per run, float64 (GB)", trades * scenarios * 8 / 1e9, 3.2, 1)
@@ -300,6 +450,15 @@ def run_tests() -> None:
     quoted("node-level vectors per run (MB)", nodes * scenarios * 8 / 1e6, 43.4, 1)
     quoted("sparse sensitivities, 30 factors per trade at 12 bytes (MB)", trades * 30 * 12 / 1e6, 144, 0)
 
+
+def run_tests() -> None:
+    print("Risk engine checks")
+    check_example_1()
+    check_subadditivity()
+    check_example_2()
+    check_example_3()
+    check_example_4()
+    check_example_5()
     print(f"  {len(QUOTED)} numbers quoted in note 07 computed, printed and asserted")
     print("All risk engine checks passed.")
 
