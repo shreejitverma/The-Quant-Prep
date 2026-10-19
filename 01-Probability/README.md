@@ -26,9 +26,9 @@ The single most tested subject in trader and researcher interviews. Fluency here
 | 08 | [Order Statistics and Extremes](08-Order-Statistics-and-Extremes.md) | TRQ | advanced | 3 | solid | 16 |
 | 09 | [Geometric Probability](09-Geometric-Probability.md) | TRQ | advanced | 3 | solid | 15 |
 | 10 | [Markov Chains](10-Markov-Chains.md) | TRDQ | core | 5 | solid | 16 |
-| 11 | [Random Walks and Gambler's Ruin](11-Random-Walks-and-Gamblers-Ruin.md) | TRQ | core | 4 | solid | 14 |
+| 11 | [Random Walks and Gambler's Ruin](11-Random-Walks-and-Gamblers-Ruin.md) | TRQ | core | 4 | solid | 15 |
 | 12 | [Martingales and Optional Stopping](12-Martingales-and-Optional-Stopping.md) | TRQ | core | 5 | solid | 16 |
-| 13 | [Poisson Processes](13-Poisson-Processes.md) | TRQ | advanced | 3 | solid | 14 |
+| 13 | [Poisson Processes](13-Poisson-Processes.md) | TRQ | advanced | 3 | solid | 15 |
 | 14 | [Classic Expectation Problems](14-Classic-Expectation-Problems.md) | TRQ | core | 3 | solid | 21 |
 | 15 | [Probability Problem Set](15-Probability-Problem-Set.md) | TRDQ | core | 10 | solid | 49 |
 

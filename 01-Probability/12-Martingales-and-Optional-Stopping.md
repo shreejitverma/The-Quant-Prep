@@ -69,6 +69,7 @@ Then $E[M_\tau] = M_0$.
 Counterexample: a fair walk from 0 with $\tau$ = first hit of $+1$.
 $\tau < \infty$ a.s. and $S_\tau = 1$, so $E[S_\tau] = 1 \ne 0$; every condition fails ($E[\tau] = \infty$, and the stopped walk is unbounded below).
 The doubling strategy is the same trap: it wins 1 with probability 1 but needs unbounded credit, and the expected loss on the rare losing path exactly offsets the gains once any credit limit is imposed.
+With credit for ten straight losses (a bankroll of \$1023), it wins \$1 with probability $1023/1024$ and loses \$1023 with probability $1/1024$: mean exactly 0.
 
 ### No betting system beats a fair game
 
@@ -197,10 +198,16 @@ For a non-negative martingale started at $M_0$, $P(\sup_n M_n \ge a) \le M_0/a$,
 > A submartingale. Conditional Jensen with the convex function $|x|$: $E[|M_{n+1}| \mid \mathcal{F}_n] \ge |E[M_{n+1} \mid \mathcal{F}_n]| = |M_n|$.
 
 > [!question]- prob-mart-likelihood-ratio | Under $X_k \sim f$ i.i.d., why is $L_n = \prod_{k \le n} g(X_k)/f(X_k)$ a martingale, and where does it appear in finance?
-> $E_f[g(X)/f(X)] = \int g = 1$, so each factor has mean 1. It is the discrete Radon-Nikodym derivative behind change of measure and Girsanov.
+> $E_f[g(X)/f(X)] = \int_{f > 0} g = 1$ when $g$ vanishes wherever $f$ does, so each independent factor has mean 1 and the product is a martingale. It is the discrete Radon-Nikodym derivative behind change of measure and Girsanov.
 
 > [!question]- prob-mart-drift-duration | For a $\pm 1$ walk with $p > q$ from 0, expected time to hit $+b$?
 > $b/(p-q)$. $S_n - n(p-q)$ is a martingale and $E[\tau] < \infty$ with bounded steps, so $b = (p-q)E[\tau]$.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/prob_12_martingales.py`](code/prob_12_martingales.py) asserts every number in this note.
+  Pattern waits (including the 16-digit ABRACADABRA count) come from an exact first-step solve on the suffix-prefix automaton, not the casino formula; Wald's die example from a first-step equation for the remaining sum and a simulation; the exit time and the biased-ruin formulas from exact solves; the Polya urn law from enumerating every draw sequence; the capped doubling P&L from enumeration; and the driftless GBM hitting probability from the drifted-Brownian hitting law and a simulation with exact Brownian-bridge maxima.
+- Prereq: [Random Walks and Gambler's Ruin](11-Random-Walks-and-Gamblers-Ruin.md); continuous-time sequel: [Brownian Motion](../04-Stochastic-Calculus/01-Brownian-Motion.md).
 
 ## Further reading
 
