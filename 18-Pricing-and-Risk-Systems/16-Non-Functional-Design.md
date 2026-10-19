@@ -115,10 +115,10 @@ Spot capacity is cheaper but can be reclaimed: AWS issues an interruption notice
 
 ### Example 1: same data, different totals
 
-One million position P&Ls of mixed magnitude (from cents to tens of millions of dollars, both signs, seed 2026) sum to $-1{,}012.773$ million dollars.
+One million position P&Ls of mixed magnitude (from fractions of a cent to about 5 million dollars, both signs, seed 2026) sum to $-1{,}012.773$ million dollars.
 Summing forward, backward, by ascending magnitude and in a shuffled order gives four different float64 totals, spread over 23 millionths of a dollar, which is 190 units in the last place of the total.
 Kahan summation lands exactly on the correctly rounded total from `math.fsum`.
-Combining 4,096-value block sums in completion order gives 10 distinct totals over 20 simulated runs; the fixed block-and-tree reduction gives one total for 1, 4, 16 and 64 workers.
+Combining 4,096-value block sums in completion order gives 10 distinct totals over 20 simulated runs; filing the same partials under their block index and combining them in a fixed pairwise tree gives one total in all 20 runs.
 
 ### Example 2: float32 and Kahan
 

@@ -164,7 +164,8 @@ flowchart LR
 ```
 
 Only the lease holder may schedule.
-If the leader dies, the standby can take over only after the lease expires, so the TTL is a floor on detection time and a ceiling on how long a dead leader blocks the batch.
+If the leader dies, the standby can take over only after the lease expires, so detection takes at least the TTL minus the renewal interval and at most the TTL.
+A dead leader blocks the batch for that detection time plus up to one standby polling interval plus the takeover reconciliation (Example 5).
 A lease is not safe by itself: a leader paused by a long GC or a network partition may wake up after its lease expired and still act.
 The fix is a fencing token (a number that increases with every lease grant) attached to every write; the result store rejects writes carrying an older token (Kleppmann, chapter 8).
 Workers keep running through a scheduler failover because they pull from a durable queue; the new leader reconciles the metadata DB and re-queues only the tasks whose workers are gone.

@@ -3,8 +3,8 @@
 Backs every number in `18-Pricing-and-Risk-Systems/16-Non-Functional-Design.md`.
 
 1. Floating-point order dependence: a sum of 1,000,000 values of mixed magnitude in different orders versus the
-   correctly rounded sum (math.fsum); a fixed reduction tree gives one answer for any worker count, while combining
-   partial sums in completion order does not.
+   correctly rounded sum (math.fsum); partial sums filed by block index and combined in a fixed tree give one answer
+   in any completion order, while combining partial sums in completion order does not.
 2. Kahan compensated summation in float32 (emulated with struct round-trips) against naive float32 and the exact sum
    of the float32 addends (fractions.Fraction).
 3. Counter-based random numbers (NumPy Philox keyed per path): identical results for any partition of paths over
@@ -49,7 +49,7 @@ def quoted(label: str, value: float, expected: float, decimals: int) -> float:
 
 
 def position_pnls(n: int, seed: int) -> list[float]:
-    """Mixed magnitudes from 1 cent to 10 million dollars, both signs (random.random only, no libm)."""
+    """Mixed magnitudes from fractions of a cent to about 5 million dollars, both signs (random.random only, no libm)."""
     rng = random.Random(seed)
     scales = (0.01, 0.1, 1.0, 10.0, 100.0, 1e3, 1e4, 1e5, 1e6, 1e7)  # literals, so no libm pow is involved
     return [(rng.random() - 0.5) * scales[rng.randrange(10)] for _ in range(n)]
@@ -62,14 +62,9 @@ def naive_sum(xs: list[float]) -> float:
     return s
 
 
-def fixed_tree_sum(xs: list[float], block: int, workers: int = 1) -> float:
-    """Blocks are fixed by position; workers take blocks round-robin and file each partial under its block index;
-    the partials are then combined in a fixed pairwise tree, so the worker count cannot change the result."""
-    n_blocks = (len(xs) + block - 1) // block
-    level = [0.0] * n_blocks
-    for w in range(workers):
-        for b in reversed(range(w, n_blocks, workers)):  # each worker runs its blocks in its own order
-            level[b] = naive_sum(xs[b * block : (b + 1) * block])
+def tree_combine(slots: list[float]) -> float:
+    """Combine partial sums indexed by block position in a fixed pairwise tree, so arrival order cannot matter."""
+    level = slots
     while len(level) > 1:
         nxt = [level[i] + level[i + 1] for i in range(0, len(level) - 1, 2)]
         if len(level) % 2:
@@ -105,20 +100,21 @@ def test_order_dependence() -> None:
         c = (t - kahan) - y
         kahan = t
     quoted("Kahan sum minus exact (units in the last place)", (kahan - exact) / math.ulp(exact), 0, 0)
-    # Fixed tree versus completion-order combination of partial sums.
+    # Completion-order combination versus filing partials by block index and combining them in a fixed tree.
     block = 4096
-    trees = {fixed_tree_sum(xs, block, workers) for workers in (1, 4, 16, 64)}
-    tree = trees.pop()
-    assert not trees  # one total for every worker count
     partials = [naive_sum(xs[i : i + block]) for i in range(0, len(xs), block)]
-    dynamic = set()
+    dynamic, trees = set(), set()
     for run in range(20):
-        order = partials[:]
-        random.Random(100 + run).shuffle(order)  # workers finish in a different order each run
-        dynamic.add(naive_sum(order))
+        arrivals = list(enumerate(partials))
+        random.Random(100 + run).shuffle(arrivals)  # workers finish in a different order each run
+        dynamic.add(naive_sum([p for _, p in arrivals]))
+        slots = [0.0] * len(partials)
+        for b, p in arrivals:
+            slots[b] = p
+        trees.add(tree_combine(slots))
     quoted("distinct totals in 20 runs, completion-order combine", len(dynamic), 10, 0)
-    quoted("distinct totals for 1, 4, 16 and 64 workers, fixed tree", 1 + len(trees), 1, 0)
-    print(f"    fixed-tree total - exact = {tree - exact:+.3e}")
+    quoted("distinct totals in the same 20 runs, block-indexed fixed tree", len(trees), 1, 0)
+    print(f"    fixed-tree total - exact = {trees.pop() - exact:+.3e}")
 
 
 # ============================================================================

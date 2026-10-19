@@ -169,7 +169,7 @@ Mapping a vendor's trade export into such a schema, and reconciling PVs between 
 > Goldman describes SecDB as "a platform to price trades and assess risk for trading positions", first launched on 24 November 1992 for J. Aron's FX business and then extended so risk across the firm could be aggregated and measured in an integrated manner.
 > The idea interviewers mean is one firm-wide model of trades, market data and risk with shared pricing code, rather than per-desk systems; specific claims about its role in particular crises are anecdote, not something the firm's description establishes.
 
-> [!question]- sys-17-02 | What is the relationship between QuantLib and Open Risk Engine (ORE)?
+> [!question]- sys-17-02 | What is the relationship between QuantLib and the Open Source Risk Engine (ORE)?
 > ORE (Open Source Risk Engine) is built on QuantLib and extends it with simulation models, instruments and pricing engines for risk analytics and XVA, driven by XML configuration and an API.
 > QuantLib is the pricing library; ORE adds portfolio-level exposure simulation and analytics on top.
 
