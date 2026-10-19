@@ -5,17 +5,16 @@ tier: advanced
 status: solid
 prereqs: [credit-advanced-cds-indices-and-tranches, fixed-income-pnl-and-relative-value]
 est_hours: 8
-sources: [Bruce Tuckman and Angel Serrat - Fixed Income Securities chapters 1-20, John Hull - Options Futures and Other Derivatives chapters on rates and credit, Moorad Choudhry - The Repo and Modern Markets Handbook, David X. Li - On Default Correlation A Copula Approach (2000)]
+sources: [Bruce Tuckman and Angel Serrat - Fixed Income Securities 3rd edition - Wiley 2012, Damiano Brigo and Fabio Mercurio - Interest Rate Models 2nd edition - Springer 2006, John Hull - Options Futures and Other Derivatives, David X. Li - On Default Correlation - A Copula Function Approach - Journal of Fixed Income 2000]
 ---
 
 # Fixed Income Comprehensive Problem Set
 
 ## TL;DR
 
-Quantitative fixed income interviews demand rapid, error-free computational proficiency across cash bonds, curves, linear swaps, interest rate options, credit derivatives, securitized mortgages, and relative value P&L attribution.
-This problem set provides sixteen comprehensive, fully worked computational problems spanning the entire fixed income curriculum.
-Every problem contains exact analytical derivations, intermediate equations, numerical steps, and real-world sanity checks.
-Mastering these problems equips researchers and traders to price bonds, bootstrap zero curves, evaluate caplets and swaptions, calibrate SABR smiles, bootstrap CDS hazard rates, analyze mortgage prepayments, model CDO tranche losses via Gaussian copulas, and attribute portfolio P&L.
+- Twenty-two worked problems across cash bonds, curves, swaps, short-rate and term structure models, options and SABR, CDS and tranches, inflation, mortgages and relative value.
+- Each problem shows the working as you would say it in an interview, and [`code/fi_problem_set.py`](code/fi_problem_set.py) recomputes and asserts every number, with an independent check where one exists (repricing, parity, quadrature, round trips).
+- The habits that matter: state the compounding and day-count convention, sanity-check the sign and size, and know which shortcut (credit triangle, ATM normal-vol conversion, carry over DV01) is accurate to what.
 
 ## Learning objectives
 
@@ -30,8 +29,9 @@ Mastering these problems equips researchers and traders to price bonds, bootstra
 - Calibrate SABR model parameters ($\alpha, \beta, \rho, \nu$) to market volatility smiles using Hagan's formula.
 - Value inflation-linked bonds (TIPS) and compute the Fisher breakeven inflation rate.
 - Convert prepayment speeds between Single Monthly Mortality (SMM), Constant Prepayment Rate (CPR), and the PSA benchmark.
-- Compute synthetic CDO tranche expected losses using Li's one-factor Gaussian copula.
+- Compute synthetic CDO tranche expected losses using the one-factor Gaussian copula.
 - Execute daily fixed income P&L attribution across carry, roll-down, delta, twist, and gamma.
+- Solve SABR $\alpha$ from an ATM quote, convert lognormal to normal vols, value asset swaps, and compute carry breakevens and pool WAL.
 
 ## Core concepts
 
@@ -45,7 +45,7 @@ $$P_{\text{dirty}} = P_{\text{clean}} + \text{AI} = \sum_{k=1}^n \frac{C/m}{(1 +
 
 $$\frac{\Delta P}{P} \approx -D_{\text{mod}} \cdot \Delta y + \frac{1}{2} C \cdot (\Delta y)^2, \quad \text{DV01} = P_{\text{dirty}} \cdot D_{\text{mod}} \cdot 0.0001$$
 
-- **Par Swap Rate from Discount Factors:**
+- **Par Swap Rate from Discount Factors (single curve):**
 
 $$S_n = \frac{1 - P(0, T_n)}{\sum_{i=1}^n \tau_i P(0, T_i)}$$
 
@@ -130,7 +130,7 @@ Because coupon rate equals yield, the bond trades at par: $P = \$1,000.00$.
 
 Step 2: Macaulay Duration:
 
-$$D_{\text{mac}} = \frac{1 \times 47.6190 + 2 \times 45.3515 + 3 \times 907.0295}{1,000.00} = \frac{47.6190 + 90.7030 + 2,721.0885}{1,000.00} = \frac{2,859.4105}{1,000.00} \approx 2.8594 \text{ years}$$
+$$D_{\text{mac}} = \frac{1 \times 47.6190 + 2 \times 45.3515 + 3 \times 907.0295}{1,000.00} = \frac{47.6190 + 90.7029 + 2,721.0884}{1,000.00} = \frac{2,859.4104}{1,000.00} \approx 2.8594 \text{ years}$$
 
 Step 3: Modified Duration:
 
@@ -194,9 +194,9 @@ The 2-year par bond pays $\$3.50$ at $t=1$ and $\$103.50$ at $t=2$:
 
 $$100 = 3.50 \times P(0, 1) + 103.50 \times P(0, 2)$$
 
-$$100 = 3.50 \times 0.970874 + 103.50 \times P(0, 2) = 3.398059 + 103.50 \times P(0, 2)$$
+$$100 = 3.50 \times 0.970874 + 103.50 \times P(0, 2) = 3.398058 + 103.50 \times P(0, 2)$$
 
-$$P(0, 2) = \frac{100 - 3.398059}{103.50} = \frac{96.601941}{103.50} \approx 0.933352$$
+$$P(0, 2) = \frac{100 - 3.398058}{103.50} = \frac{96.601942}{103.50} \approx 0.933352$$
 
 Step 3: 3-year discount factor:
 The 3-year par bond pays $\$4.00$ at $t=1, 2$ and $\$104.00$ at $t=3$:
@@ -268,11 +268,11 @@ $$\ln A(0, 5) = -0.066710 - 0.004640 = -0.071350 \implies A(0, 5) = e^{-0.071350
 
 Step 3: Compute $P(0, 5)$:
 
-$$P(0, 5) = A(0, 5) e^{-B(0, 5) r(0)} = 0.931136 \times e^{-3.517556 \times 0.035} = 0.931136 \times e^{-0.123114} = 0.931136 \times 0.884164 \approx 0.823275 \quad (0.82328)$$
+$$P(0, 5) = A(0, 5) e^{-B(0, 5) r(0)} = 0.931136 \times e^{-3.517556 \times 0.035} = 0.931136 \times e^{-0.123114} = 0.931136 \times 0.884162 = 0.823275 \quad (0.82328, \text{ carrying full precision})$$
 
 Step 4: Yield $y(0, 5)$:
 
-$$y(0, 5) = -\frac{\ln(0.823275)}{5} = -\frac{-0.194460}{5} \approx 0.038892 \quad (3.889\%)$$
+$$y(0, 5) = -\frac{\ln P(0, 5)}{5} = -\frac{-0.194464}{5} \approx 0.038893 \quad (3.889\%)$$
 
 ---
 
@@ -329,7 +329,7 @@ The call is deep out-of-the-money ($F_B = 0.875$ vs $K = 0.950$), yielding a tin
 
 ### Problem 8: Black-76 Caplet Pricing
 
-A 6-month caplet on 6-month SOFR forward rate has fixing at $T = 1.0$ year and settlement at $T + \tau = 1.5$ years ($\tau = 0.50$).
+A 6-month caplet on a 6-month forward-looking term rate (for example 6M Term SOFR) has fixing at $T = 1.0$ year and settlement at $T + \tau = 1.5$ years ($\tau = 0.50$).
 The current forward rate is $F = 4.50\%$ ($0.0450$).
 The strike rate is $K = 4.25\%$ ($0.0425$).
 The Black implied volatility is $\sigma = 22.0\%$ ($0.220$).
@@ -353,11 +353,11 @@ $\Phi(0.3698) \approx 0.6442383$, $\Phi(0.1498) \approx 0.5595431$.
 
 Step 3: Caplet payout in forward terms:
 
-$$F \Phi(d_1) - K \Phi(d_2) = 0.0450 \times 0.6442383 - 0.0425 \times 0.5595431 = 0.028990724 - 0.023780582 = 0.005210142$$
+$$F \Phi(d_1) - K \Phi(d_2) = 0.0450 \times \Phi(d_1) - 0.0425 \times \Phi(d_2) = 0.028990725 - 0.023780583 = 0.005210142$$
 
 Step 4: Present value per $\$10,000,000$ notional:
 
-$$\text{Caplet} = \$10,000,000 \times 0.9350 \times 0.50 \times 0.005211 = \$4,675,000 \times 0.005210142 \approx \$24,357.41$$
+$$\text{Caplet} = \$10,000,000 \times 0.9350 \times 0.50 \times 0.005210142 = \$4,675,000 \times 0.005210142 \approx \$24,357.41$$
 
 ---
 
@@ -384,13 +384,9 @@ $$\frac{1}{\sqrt{2\pi}} \approx 0.398942$$
 
 $$\sigma_N \sqrt{T} \times \frac{1}{\sqrt{2\pi}} = 0.0065 \times 1.0 \times 0.398942 \approx 0.0025931 \quad (25.93 \text{ bps})$$
 
-Step 3: Total dollar premium:
-Carrying continuous precision gives:
+Step 3: Total dollar premium, carrying full precision (rounding the factor to $0.0025931$ first would cost about $\$5$):
 
 $$\text{Swaption Premium} = \$50,000,000 \times 4.45 \times 0.0065 \times \frac{1}{\sqrt{2\pi}} \approx \$576,970.27$$
-
-Using the intermediate rounded factor $0.0025931$ gives $\$222,500,000 \times 0.0025931 \approx \$576,964.75$.
-Our reference implementation [`fi_problem_set.py`](code/fi_problem_set.py) asserts both the exact continuous valuation and the rounded value.
 
 ---
 
@@ -409,9 +405,9 @@ Step 1: Hazard rate approximation:
 
 $$\lambda \approx \frac{S}{1 - R} = \frac{0.0150}{1 - 0.40} = \frac{0.0150}{0.60} = 0.0250 \quad (2.50\% \text{ per annum})$$
 
-(Bootstrapping this single 150 bp quote exactly in `code/credit_bootstrap.py`, with quarterly premiums, accrual on default and discounting, gives $\lambda = 2.4875\%$, so the shortcut is off by about $0.5\%$ of its value.)
+(Solving the premium and protection legs exactly in [`code/fi_problem_set.py`](code/fi_problem_set.py), with quarterly premiums, half-period accrual on default, default settled mid-period and continuous discounting at 4%, gives $\lambda = 2.4875\%$, so the shortcut is off by about $0.5\%$ of its value.)
 
-Step 2: 5-year survival probability (using `credit_bootstrap.py`):
+Step 2: 5-year survival probability:
 
 $$Q(5) = e^{-0.0250 \times 5} \approx 0.8825 \quad (88.25\%)$$
 
@@ -435,7 +431,7 @@ A Treasury futures contract has a settlement price of $108.50$.
 Two deliverable bonds have the following characteristics:
 - Bond A: Clean Price $= 118.25$, Conversion Factor $CF_A = 1.0850$.
 - Bond B: Clean Price $= 132.50$, Conversion Factor $CF_B = 1.2150$.
-Determine which bond is cheaper to deliver on a gross basis (basis net of conversion factor).
+Determine which bond has the lower gross basis (clean price minus futures price times conversion factor).
 
 **Solution:**
 
@@ -447,19 +443,19 @@ $$\text{Invoice}_A = 108.50 \times 1.0850 = 117.7225$$
 
 $$\text{Invoice}_B = 108.50 \times 1.2150 = 131.8275$$
 
-Step 2: Compute net gross basis ($\text{Clean Price} - \text{Invoice Price}$):
+Step 2: Compute the gross basis ($\text{Clean Price} - \text{Invoice Price}$):
 
 $$\text{Basis}_A = 118.25 - 117.7225 = +0.5275$$
 
 $$\text{Basis}_B = 132.50 - 131.8275 = +0.6725$$
 
 Step 3: Compare:
-Bond A has the lower net basis ($+0.5275 < +0.6725$).
-Therefore, **Bond A is the Cheapest-to-Deliver (CTD)**.
+Bond A has the lower gross basis ($+0.5275 < +0.6725$), so on this screen it is the cheaper to deliver.
+The full test subtracts carry to delivery (net basis) or, equivalently, picks the highest implied repo rate; with different coupons and financing the two bonds' carry can reorder them.
 
 ---
 
-### Problem 12: SOFR in Arrears Convexity Adjustment
+### Problem 12: Convexity Adjustment for a Rate Paid at Its Fixing Date
 
 A swap leg pays a term SOFR rate that fixes at $T_1$ for the accrual period $[T_1, T_2]$, but pays it at the fixing date $T_1$ instead of at the natural payment date $T_2$ (the in-arrears timing mismatch).
 $T_1 = 2.0$ years, $T_2 = 2.5$ years ($\tau = 0.50$).
@@ -497,7 +493,7 @@ $$F_{\text{adjusted}} = 4.00\% + 0.0063\% = 4.0063\%$$
 
 ---
 
-### Problem 13: SABR Implied Volatility Calibration
+### Problem 13: SABR ATM Implied Volatility
 
 Consider a SABR model with parameters:
 Forward rate $f = 0.0400$, expiry $T = 2.0$ years.
@@ -531,13 +527,13 @@ $$\frac{2 - 3(-0.25)^2}{24} \times 0.40^2 = \frac{2 - 0.1875}{24} \times 0.160 =
 
 Step 4: Sum of correction terms multiplied by $T = 2.0$:
 
-$$\text{Sum} = 0.000104 - 0.001250 + 0.012083 = 0.010937$$
+$$\text{Sum} = 0.000104 - 0.001250 + 0.012083 = 0.0109375 \text{ (unrounded)}$$
 
-$$\text{Multiplier} = 1 + (0.010937 \times 2.0) = 1 + 0.021874 = 1.021874$$
+$$\text{Multiplier} = 1 + (0.0109375 \times 2.0) = 1.021875$$
 
 Step 5: ATM Implied Volatility:
 
-$$\sigma_{\text{B}} = 0.100 \times 1.021874 \approx 0.102187 \quad (10.22\%)$$
+$$\sigma_{\text{B}} = 0.100 \times 1.021875 \approx 10.22\%$$
 
 ---
 
@@ -594,9 +590,9 @@ $$\text{CPR}_{150\% \text{ PSA}}(30) = 1.50 \times 6.0\% = 9.0\%$$
 ### Problem 16: Gaussian Copula CDO Tranche Loss and P&L Attribution
 
 A large homogeneous portfolio (the $N \to \infty$ limit of identical credits) has default probability $p = 5.0\%$, correlation $\rho = 0.30$, and recovery $R = 40\%$ ($LGD = 0.60$).
-Using Li's one-factor Gaussian copula:
+Using the one-factor Gaussian copula:
 1. Calculate the conditional default probability under an extreme market factor realization of $M = -2.0$ standard deviations.
-2. Given the large homogeneous portfolio (LHP) loss distribution from `code/fi_credit_tranches.py`, verify the expected loss for an Equity Tranche $[0\%, 3\%]$ versus a Senior Tranche $[7\%, 10\%]$.
+2. Given the large homogeneous portfolio (LHP) loss distribution (computed and asserted in [`code/fi_credit_tranches.py`](code/fi_credit_tranches.py)), compare the expected loss of an Equity Tranche $[0\%, 3\%]$ with a Senior Tranche $[7\%, 10\%]$.
 3. A fund holds $\$50,000,000$ notional of a bond portfolio with $\text{DV01} = \$35,000$, dollar convexity $C_{\$} = \$3,500,000,000$, and daily carry of $+\$1,200$. Over 1 day, yields rise by $+8$ bps ($\Delta y = +0.0008$). Compute the total predicted daily P&L.
 
 **Solution:**
@@ -604,7 +600,7 @@ Using Li's one-factor Gaussian copula:
 Step 1: Conditional default probability at $M = -2.0$:
 Threshold $c = \Phi^{-1}(0.05) \approx -1.6449$:
 
-$$p(M = -2.0) = \Phi\left(\frac{-1.6449 - \sqrt{0.30} \times (-2.0)}{\sqrt{1 - 0.30}}\right) = \Phi\left(\frac{-1.6449 + 1.0954}{\sqrt{0.70}}\right) = \Phi\left(\frac{-0.5495}{0.8367}\right) = \Phi(-0.6567) \approx 0.2557 \quad (25.57\%)$$
+$$p(M = -2.0) = \Phi\left(\frac{-1.6449 - \sqrt{0.30} \times (-2.0)}{\sqrt{1 - 0.30}}\right) = \Phi\left(\frac{-1.644854 + 1.095445}{0.836660}\right) = \Phi\left(\frac{-0.549409}{0.836660}\right) = \Phi(-0.656669) \approx 0.2557 \quad (25.57\%)$$
 
 Conditional portfolio credit loss is $0.60 \times 25.57\% = 15.34\%$.
 
@@ -623,6 +619,91 @@ $$\text{P\&L}_{\text{Carry}} = +\$1,200$$
 
 $$\text{Total Predicted P\&L} = -\$280,000 + \$1,120 + \$1,200 = -\$277,680$$
 
+---
+
+### Problem 17: SABR Alpha from an ATM Quote
+
+The ATM lognormal vol of a 2-year option on a $3\%$ forward is $20\%$; with $\beta = 0.5$, $\rho = -0.30$, $\nu = 0.50$ fixed, find $\alpha$.
+
+**Solution:**
+
+Step 1: First guess ignoring the $O(T)$ term: $\alpha_0 = \sigma_{\text{ATM}} F^{1-\beta} = 0.20 \times \sqrt{0.03} = 0.034641$.
+
+Step 2: Solve $\frac{\alpha}{F^{1-\beta}}\left[1 + \Gamma(\alpha) T\right] = 0.20$ (the ATM cubic) by bisection or Newton: $\alpha = 0.033647$.
+
+Step 3: Check: at that $\alpha$, $1 + \Gamma T = 1.029543$, and $0.033647 \times 1.029543 / \sqrt{0.03} = 20\%$; the $O(T)$ term lowered $\alpha$ by about $3\%$ relative to the first guess.
+
+---
+
+### Problem 18: HJM and LMM Drifts
+
+1. In one-factor HJM with $\sigma(t, T) = 1\% \times e^{-0.05 (T - t)}$, what is the risk-neutral drift of the forward 5 years ahead?
+2. Under the terminal measure, forward $L_k$ (vol $25\%$) is followed by one more forward $L_{k+1} = 5\%$ with $\tau = 0.5$, vol $20\%$ and correlation $0.9$; what is the drift of $dL_k/L_k$?
+
+**Solution:**
+
+Step 1: $\alpha = \frac{\sigma^2}{a} e^{-a(T-t)}(1 - e^{-a(T-t)}) = \frac{0.0001}{0.05} e^{-0.25}(1 - e^{-0.25}) = 3.4454 \times 10^{-4}$, about $3.4$ bp per year.
+
+Step 2: $\mu_k = -\frac{\tau L_{k+1}}{1 + \tau L_{k+1}} \rho \sigma_k \sigma_{k+1} = -\frac{0.025}{1.025} \times 0.9 \times 0.25 \times 0.20 = -0.1098\%$ per year.
+
+---
+
+### Problem 19: Weighted Average Life at 200 PSA
+
+A new 30-year pool has a $6.0\%$ WAC and $5.5\%$ pass-through coupon. Find the SMM at month 30 and the WAL at 200 PSA.
+
+**Solution:**
+
+Step 1: At 200 PSA the CPR from month 30 is $2 \times 6\% = 12\%$, so $\text{SMM} = 1 - 0.88^{1/12} = 1.0596\%$.
+
+Step 2: Project month by month: level payment on the remaining term at the WAC, scheduled principal $=$ payment minus interest at the WAC, prepayment $=$ SMM times the balance after scheduled principal.
+
+Step 3: $\text{WAL} = \sum_t t P_t / \sum_t P_t = 7.67$ years over principal only (the coupon sets investor interest and does not enter the WAL), against $11.36$ years at 100 PSA in [Mortgages and Securitized Products](22-Mortgages-and-Securitized-Products.md).
+
+---
+
+### Problem 20: Asset Swap of a Premium Bond
+
+The swap curve is flat at a $3.50\%$ annual par rate. A 5-year $5.00\%$ annual bond yields $4.20\%$ on a coupon date. Find the par-par and market-value asset swap spreads.
+
+**Solution:**
+
+Step 1: Discount factors $d_i = 1.035^{-i}$, annuity $A = \sum d_i = 4.5151$.
+
+Step 2: Market price at $4.20\%$: $103.5415$; the same cash flows on the swap curve: $\sum 5 d_i + 100 d_5 = 106.7726$.
+
+Step 3: Par-par: $s = \frac{106.7726 - 103.5415}{100 \times 4.5151} = 71.56$ bp.
+
+Step 4: Market value: $s_{\text{MV}} = 71.56 \times 100 / 103.5415 = 69.11$ bp, below par-par because the bond is above par (the opposite of the discount bond in [Fixed Income P&L and Relative Value](24-Fixed-Income-PnL-and-Relative-Value.md)).
+
+---
+
+### Problem 21: Carry and Roll-Down Breakeven
+
+A 5-year note yields $4.00\%$ and is financed at $3.50\%$; its modified duration is $4.5$ and the curve around 5 years rises $10$ bp per year of maturity. How far can its yield rise over 3 months before the position loses money?
+
+**Solution:**
+
+Step 1: Carry in yield terms: $(4.00\% - 3.50\%) \times 0.25 / 4.5 = 2.78$ bp.
+
+Step 2: Roll-down: the bond becomes a $4.75$-year bond on a curve $10$ bp per year steeper, so its yield falls $10 \times 0.25 = 2.50$ bp.
+
+Step 3: Breakeven: $2.78 + 2.50 = 5.28$ bp of yield rise over the quarter (first order).
+
+---
+
+### Problem 22: Lognormal to Normal Volatility
+
+Convert a $25\%$ ATM lognormal vol on a $2\%$ forward with 4 years to expiry into a normal vol.
+
+**Solution:**
+
+Step 1: Zeroth order: $\sigma_B F = 0.25 \times 200 = 50.00$ bp.
+
+Step 2: Second order: $\sigma_N \approx \sigma_B F (1 - \sigma_B^2 T / 24) = 50 \times (1 - 0.0625 \times 4 / 24) = 49.48$ bp.
+
+Step 3: Exact: equate the ATM Black value $F(2\Phi(\sigma_B \sqrt{T}/2) - 1)$ with the Bachelier value $\sigma_N \sqrt{T / 2\pi}$: $49.48$ bp, so the second-order formula is accurate to the quoted precision.
+
 ## Pitfalls
 
 - **Ignoring Compounding Conventions:** Mixing semi-annual bond yields with continuously compounded forward rates creates significant pricing errors.
@@ -630,75 +711,116 @@ $$\text{Total Predicted P\&L} = -\$280,000 + \$1,120 + \$1,200 = -\$277,680$$
 - **Treating the Credit Triangle as an Exact Bootstrap:** $\lambda \approx S/(1 - R)$ ignores discounting and premium accrual and returns an average hazard rate to maturity, not a forward one.
 For a single flat 150 bp quote the error is small ($2.49\%$ exact versus $2.50\%$, Problem 10).
 On the upward-sloping 100/120/150 bp curve of [Credit and CDS](06-Credit-and-CDS.md), the bootstrapped $(3\text{y}, 5\text{y}]$ forward hazard is $3.37\%$, about $35\%$ above the shortcut.
-- **Assuming Gaussian Tail Dependence in Senior Tranches:** Relying on the Gaussian copula for super-senior tranches underestimates joint default clustering during systemic contagion.
+- **Relying on the Gaussian Copula for Senior Tranches:** its zero tail dependence understates joint default clustering, which matters most for senior and super-senior layers.
 - **Inconsistent Delivery Month Alignment in Futures Basis:** Comparing cash Treasury settlement against futures settlement without accounting for financing over the delivery window causes false arbitrage signals.
+- **Ranking CTD by Gross Basis Alone:** the gross basis ignores carry to delivery; use net basis or implied repo (Problem 11).
+- **Forgetting Which Way a Regression Hedge Leaves Risk:** regression-weighted butterflies are not parallel-neutral unless the betas sum to one.
 
 ## Interview questions
 
 > [!question]- fi-ps-bond-accrued-interest-actual | How is accrued interest calculated on US Treasury notes, and why is actual/actual day count preferred over 30/360?
-> US Treasury notes calculate accrued interest as the semi-annual coupon multiplied by actual elapsed days since the last coupon divided by the actual number of days in the current coupon period. Actual/actual eliminates distortions caused by 28, 29, 30, and 31-day months, providing exact pro-rata ownership of cash flows.
+> The semi-annual coupon times actual days since the last coupon over actual days in the current coupon period (Problem 1: $2.25 \times 61/184 = 0.745924$).
+> Actual/actual allocates each coupon in proportion to calendar time within its own period, so accrual matches the period the coupon pays for.
 
 > [!question]- fi-ps-modified-vs-macaulay-duration | What is the mathematical and economic relationship between Macaulay duration and Modified duration?
-> Macaulay duration is the weighted average maturity of a bond's cash flows measured in years. Modified duration equals Macaulay duration divided by $(1 + y/m)$ for a bond with compounding frequency $m$. Economically, modified duration measures the exact percentage price sensitivity of the bond with respect to a change in yield: $\frac{1}{P}\frac{\partial P}{\partial y} = -D_{\text{mod}}$.
+> Macaulay duration is the present-value-weighted average time of the cash flows; modified duration is Macaulay divided by $(1 + y/m)$ for compounding frequency $m$.
+> Modified duration is the relative price sensitivity to the bond's own yield, $-\frac{1}{P}\frac{\partial P}{\partial y}$: $2.8594 / 1.05 = 2.72325$ in Problem 2.
 
 > [!question]- fi-ps-par-swap-rate-formula | State the formula for a par interest rate swap rate in terms of discount factors, and explain why the principal does not exchange.
-> The par swap rate is $S_n = \frac{1 - P(0, T_n)}{\sum_{i=1}^n \tau_i P(0, T_i)}$. The principal does not exchange because both fixed and floating legs are referenced to the identical notional at inception and maturity, meaning hypothetical principal exchanges exactly cancel out.
+> With one curve for projection and discounting, $S_n = \frac{1 - P(0, T_n)}{\sum_i \tau_i P(0, T_i)}$, because a floating leg plus a notional exchange at maturity is worth par.
+> The notional is never paid because both legs reference the same notional, so hypothetical exchanges cancel; with separate projection and discounting curves the floating leg must be valued from projected forwards instead.
 
 > [!question]- fi-ps-vasicek-mean-reversion-property | In the Vasicek short-rate model, what is the role of the parameter $a$, and what happens as $a \to 0$?
-> Parameter $a$ is the speed of mean reversion, dictating how rapidly the short rate returns to its long-term mean $b$ with half-life $t_{1/2} = \ln(2)/a$. As $a \to 0$, mean reversion disappears, $B(t, T) \to T - t$, and the model reduces to Ho-Lee, where interest rate volatility grows linearly with maturity.
+> $a$ is the speed of mean reversion toward $b$, with half-life $\ln 2 / a$; it makes long yields less volatile than short ones because $B(t, T) = (1 - e^{-a(T-t)})/a$ saturates at $1/a$.
+> As $a \to 0$, $B(t, T) \to T - t$, the short rate becomes a Brownian motion with drift, every yield has the same volatility, and zero-bond price volatility $\sigma(T - t)$ grows linearly with maturity; with a time-dependent drift fitted to the curve this is Ho-Lee.
 
 > [!question]- fi-ps-bachelier-vs-black-swaptions | Why has the fixed income market largely transitioned from Black-76 lognormal models to Bachelier normal models for swaptions?
-> The Black-76 lognormal model requires strictly positive interest rates and breaks down mathematically when rates are negative or near zero, as log-volatilities explode to infinity. The Bachelier model assumes arithmetic Brownian motion, natively accommodates negative interest rates, and expresses volatility intuitively in basis points per year.
+> Black-76 needs positive forwards and strikes and its vol becomes unstable as rates approach zero, while Bachelier allows negative rates and quotes vol in bp, which is closer to how rate moves scale.
+> The two are linked by price: $25\%$ lognormal on a $2\%$ forward for 4 years is $49.48$ bp normal (Problem 22).
 
 > [!question]- fi-ps-ctd-implied-repo-rate | Define the Implied Repo Rate (IRR) for a deliverable Treasury bond and explain how it determines the Cheapest-to-Deliver (CTD).
-> The Implied Repo Rate is the theoretical rate of return earned by buying a cash Treasury bond, selling the corresponding Treasury futures contract, and delivering the bond into the contract at maturity. The Cheapest-to-Deliver (CTD) bond is the deliverable bond that maximizes the Implied Repo Rate.
+> The return from buying the bond, selling the future and delivering: invoice amount plus coupons received, over the purchase price, annualized.
+> The CTD is the bond with the highest implied repo rate, equivalently the lowest net basis; the gross basis of Problem 11 is only a first screen.
 
-> [!question]- fi-ps-sofr-convexity-adjustment-sign | Why does a forward SOFR rate paid in arrears require a positive convexity adjustment?
-> The forward $F$ is a martingale only under the $T_2$-forward measure, where a fixing paid at $T_2$ is discounted by $P(T_1, T_2) = 1/(1 + \tau R)$, which is low exactly when the fixing $R$ is high. Paying at $T_1$ removes that discounting, so high fixings are no longer offset by low discount factors. Removing this negative covariance between the rate and $P(T_1, T_2)$ makes the expected fixing under the $T_1$-forward measure exceed $F$, so the adjustment is positive.
+> [!question]- fi-ps-sofr-convexity-adjustment-sign | Why does a forward term rate paid at its fixing date (the classic in-arrears structure) require a positive convexity adjustment?
+> The forward $F$ is a martingale only under the $T_2$-forward measure, where a fixing paid at $T_2$ is discounted by $P(T_1, T_2) = 1/(1 + \tau R)$, which is low exactly when the fixing $R$ is high.
+> Paying at $T_1$ removes that discounting, so the expectation under the $T_1$-forward measure exceeds $F$: $0.63$ bp in Problem 12. (A compounded SOFR coupon paid at the end of its period needs no such adjustment.)
 
 > [!question]- fi-ps-sabr-rho-parameter | In the SABR volatility model, what market feature is controlled by the correlation parameter $\rho$?
-> Parameter $\rho$ represents the instantaneous correlation between the forward rate Brownian motion and the volatility Brownian motion. A negative $\rho$ produces a downward-sloping volatility skew (typical in rates, where yields drop as volatility rises during flight-to-safety), while $\rho = 0$ generates a symmetric smile.
+> The skew: $\rho$ is the correlation between forward and volatility shocks, and $\rho < 0$ makes vol rise as rates fall, lifting low strikes.
+> $\rho = 0$ removes only this part of the skew; with $\beta < 1$ the backbone still makes lognormal vols higher at low strikes.
 
 > [!question]- fi-ps-smm-vs-cpr-prepayment | What is the relationship between Single Monthly Mortality (SMM) and Constant Prepayment Rate (CPR)?
-> SMM is the percentage of outstanding mortgage pool principal prepaid in a single month. CPR is the annualized compound equivalent: $\text{CPR} = 1 - (1 - \text{SMM})^{12}$. Conversely, $\text{SMM} = 1 - (1 - \text{CPR})^{1/12}$.
+> $\text{CPR} = 1 - (1 - \text{SMM})^{12}$ and $\text{SMM} = 1 - (1 - \text{CPR})^{1/12}$.
+> $\text{SMM} = 0.5\%$ is $5.84\%$ CPR; $12\%$ CPR is an SMM of $1.0596\%$.
 
 > [!question]- fi-ps-pnl-attribution-gamma-term | In fixed income P&L attribution, what is the convexity (gamma) P&L term, and why is it always positive for long unhedged vanilla bond positions?
 > The convexity P&L term is $\frac{1}{2} C_{\$} (\Delta y)^2 = \frac{1}{2} P \cdot C \cdot (\Delta y)^2$.
-> Because vanilla non-callable bonds possess strictly positive convexity ($C > 0$) and $(\Delta y)^2 \ge 0$, this term is always non-negative, providing positive gamma gains regardless of whether yields rise or fall.
+> Option-free bonds have positive convexity and $(\Delta y)^2 \ge 0$, so the term is non-negative for a long position whichever way yields move ($\$1,120$ for an 8 bp move in Problem 16).
 
 > [!question]- fi-ps-tips-beir-derivation | Derive the exact Fisher relationship for the Breakeven Inflation Rate (BEIR) and compare it to the linear approximation.
-> The exact Fisher relation equates real and nominal purchasing power: $(1 + y_{\text{nom}}) = (1 + y_{\text{real}})(1 + \text{BEIR})$, which yields $\text{BEIR} = \frac{1 + y_{\text{nom}}}{1 + y_{\text{real}}} - 1$.
-> The standard linear approximation $\text{BEIR} \approx y_{\text{nom}} - y_{\text{real}}$ ignores the cross-product term $y_{\text{real}} \times \text{BEIR}$, systematically overstating inflation expectations by several basis points.
+> $(1 + y_{\text{nom}}) = (1 + y_{\text{real}})(1 + \text{BEIR})$ gives $\text{BEIR} = \frac{1 + y_{\text{nom}}}{1 + y_{\text{real}}} - 1$.
+> The difference $y_{\text{nom}} - y_{\text{real}} - \text{BEIR}$ equals $y_{\text{real}} \times \text{BEIR}$, so the linear form overstates when the real yield is positive and understates when it is negative.
 
 > [!question]- fi-ps-hull-white-analytical-bond-option | How does the Hull-White model achieve closed-form European bond option pricing without a tree?
-> Under the 1-factor Hull-White model, short rates are normally distributed, which implies that zero-coupon bond prices follow lognormal distributions under the forward measure.
-> Consequently, a European option on a zero-coupon bond evaluates analytically via a Black-76 type formula with deterministic integrated bond volatility $\sigma_P = \frac{\sigma}{a}(1 - e^{-a(T_2 - T_1)})\sqrt{\frac{1 - e^{-2a T_1}}{2a}}$.
+> Under one-factor Hull-White the short rate is Gaussian, so a zero-coupon bond price is lognormal under the forward measure of the option expiry.
+> The option is then a Black formula on the forward bond price with deterministic volatility $\sigma_P = \frac{\sigma}{a}(1 - e^{-a(T_2 - T_1)})\sqrt{\frac{1 - e^{-2a T_1}}{2a}}$ ($0.029610$ in Problem 7).
 
 > [!question]- fi-ps-butterfly-5050-vs-regression | Why does a 50-50 DV01 butterfly trade suffer from curve twist leakage, and how does regression weighting eliminate it?
-> A 50-50 DV01 weighting allocates equal DV01 to the short and long wings, immunizing only against parallel shifts.
-> Because yield volatility is higher at short tenors ($\sigma_2 > \sigma_{10}$), curve steepening or flattening causes the front wing to move by more basis points than the long wing, generating unhedged directional P&L.
-> Regression beta weighting weights wings according to historical yield sensitivity $\Delta y_2 = \beta_1 \Delta y_1 + \beta_3 \Delta y_3$, immunizing against both parallel shifts and slope rotation.
+> A 50-50 fly is neutral to parallel moves only; under a linear twist about the body it has P&L $-\frac{1}{2}\text{DV01}_b k (T_1 + T_3 - 2T_2)$, which is non-zero unless the body is the midpoint of the wings (2s5s10s is not).
+> Regression weighting sizes the wings at $\beta_1$ and $\beta_3$ times the body DV01 so the historical co-movement is hedged, at the cost of parallel exposure when $\beta_1 + \beta_3 \ne 1$.
 
 > [!question]- fi-ps-par-par-vs-market-value-asw | Distinguish between a par-par asset swap spread and a market-value asset swap spread.
-> In a par-par asset swap, swap notional equals the bond par value, requiring an upfront cash payment of $(100 - P)$ to reconcile any bond premium or discount to par.
-> In a market-value asset swap, swap notional equals the dirty market price of the bond, eliminating initial cash exchange but creating a terminal redemption mismatch when the bond matures at par.
+> Par-par: the investor pays 100 for bond plus swap (an upfront of $100 - P$) and the swap runs on 100; $s = (P_{\text{swap curve}} - P)/(100A)$.
+> Market value: the swap runs on the dirty price, no upfront, notionals exchanged at maturity, and $s_{\text{MV}} = s_{\text{par-par}} \times 100/P$ (Problem 20: $71.56$ bp par-par, $69.11$ bp market value for a bond at $103.54$).
 
-> [!question]- fi-ps-gaussian-copula-crisis-collapse | Explain why David Li's one-factor Gaussian copula failed to predict joint defaults during the 2008 subprime crisis.
-> The Gaussian copula exhibits zero asymptotic tail dependence ($\lim_{u \to 0} P(U_1 < u \mid U_2 < u) = 0$), treating defaults as asymptotically independent in extreme market downturns.
-> When nationwide housing prices dropped simultaneously, default correlations spiked toward 1, completely overwhelming subordination cushions and destroying AAA-rated super-senior tranches.
+> [!question]- fi-ps-gaussian-copula-crisis-collapse | Explain why the one-factor Gaussian copula failed to predict joint defaults during the 2008 subprime crisis.
+> It has zero tail dependence ($\lim_{u \to 0} P(U_1 < u \mid U_2 < u) = 0$), so beyond the pairwise correlation it adds no clustering of extreme defaults, and it was calibrated to benign data.
+> The heaviest senior losses were on ABS CDOs backed by correlated subprime mortgage bonds, where inputs and collateral concentration mattered as much as the copula.
+
+> [!question]- fi-ps-ytm-dirty-calc | A Treasury with a 4.5% coupon, 61 days into a 184-day coupon period and 10 coupons left, trades at 99.25 clean. What are the dirty price and yield?
+> Dirty $= 99.25 + 2.25 \times 61/184 = 99.995924$.
+> Discounting the 10 coupons from $123/184 = 0.668478$ periods out gives a yield of $4.674\%$ (semi-annual), above the coupon because the bond is below par.
+
+> [!question]- fi-ps-bootstrap-zero-rate | Par yields are 3.0%, 3.5% and 4.0% for 1 to 3 years (annual). What is the 3-year continuously compounded zero rate?
+> Bootstrapping gives $P(0, 1) = 0.970874$, $P(0, 2) = 0.933352$, $P(0, 3) = 0.888299$, so $z_3 = -\ln(0.888299)/3 = 3.948\%$.
+> It is above $3.922\%$, the continuously compounded equivalent of the 4% par yield, because on an upward-sloping curve the zero rate reflects only the final, highest-rate cash flow while the par yield averages over all of them.
+
+> [!question]- fi-ps-vasicek-bond-value | With Vasicek $a = 0.15$, $b = 5\%$, $\sigma = 1.5\%$, $r_0 = 3.5\%$, what is the 5-year zero-coupon bond price and yield?
+> $B = 3.517556$, $\ln A = -0.071350$, so $P(0, 5) = 0.82328$ and the yield is $3.889\%$.
+> The yield sits between $r_0$ and $b$ as mean reversion pulls the expected path up, minus a small convexity term from $\sigma^2$.
+
+> [!question]- fi-ps-caplet-value | Price a caplet: forward 4.50%, strike 4.25%, Black vol 22%, fixing in 1 year, accrual 0.5, discount factor 0.935, notional 10 million.
+> $d_1 = 0.3698$, $d_2 = 0.1498$, $F\Phi(d_1) - K\Phi(d_2) = 0.005210$, so the caplet is $10\text{m} \times 0.935 \times 0.5 \times 0.005210 = \$24,357.41$.
+
+> [!question]- fi-ps-cds-upfront-calc | A 5-year CDS trades at 150 bp with recovery 40% and rates 4%. What upfront does a 100 bp coupon contract need?
+> Solving the legs gives a flat hazard of $2.4875\%$ and RPV01 $4.2487$, so the upfront is $(150 - 100)\text{ bp} \times 4.2487 = 2.12\%$ of notional, paid by the protection buyer ($\$212,437$ on $\$10$ million).
+
+> [!question]- fi-ps-sabr-alpha-atm | Given a 20% ATM vol, a 3% forward, 2 years, $\beta = 0.5$, $\rho = -0.3$, $\nu = 0.5$, what SABR $\alpha$ fits?
+> $\alpha = 0.033647$, the root of the ATM cubic; the first guess $\sigma F^{1-\beta} = 0.034641$ is about $3\%$ too high because it ignores the $1 + \Gamma T = 1.029543$ factor.
+
+> [!question]- fi-ps-pool-wal | What is the WAL of a new 30-year 6% WAC pool at 200 PSA, and what is the SMM once the ramp is complete?
+> About $7.67$ years; from month 30 the CPR is $12\%$, an SMM of $1.0596\%$.
+> At 100 PSA the same pool's WAL is $11.36$ years, so doubling the speed cuts the WAL by about a third.
+
+> [!question]- fi-ps-asw-premium-bond | A 5-year 5% annual bond yields 4.20% on a flat 3.50% swap curve. What are its par-par and market-value asset swap spreads?
+> Par-par: $(106.7726 - 103.5415)/(100 \times 4.5151) = 71.56$ bp; market value: $71.56 \times 100/103.5415 = 69.11$ bp.
+> For a premium bond the market-value spread is the smaller of the two.
+
+> [!question]- fi-ps-carry-breakeven | A 5-year note yields 4.00%, repo is 3.50%, duration 4.5, and the curve rises 10 bp per year near 5 years. How much yield rise over 3 months does carry plus roll-down absorb?
+> About $5.28$ bp: carry $0.50\% \times 0.25 / 4.5 = 2.78$ bp of yield, roll-down $10 \times 0.25 = 2.50$ bp.
+
+> [!question]- fi-ps-normal-vol-conversion | Convert 25% lognormal ATM vol on a 2% forward with 4 years to expiry into normal vol.
+> $\sigma_B F = 50$ bp, times $(1 - \sigma_B^2 T/24) = 0.98958$, gives $49.48$ bp, which the exact ATM price inversion confirms to two decimals.
 
 ## Further reading
 
-- Bruce Tuckman and Angel Serrat, *Fixed Income Securities: Tools for Today's Markets*, Chapters 1-20.
-- John Hull, *Options, Futures, and Other Derivatives*, Chapters 28-34.
-- Moorad Choudhry, *The Repo and Modern Markets Handbook*.
-- Frank Fabozzi, *The Handbook of Fixed Income Securities*.
-- David X. Li (2000), "On Default Correlation: A Copula Approach", *Journal of Fixed Income*.
+- Bruce Tuckman and Angel Serrat, *Fixed Income Securities: Tools for Today's Markets*, 3rd edition, Wiley, 2012.
+- Damiano Brigo and Fabio Mercurio, *Interest Rate Models - Theory and Practice*, 2nd edition, Springer, 2006.
+- John Hull, *Options, Futures, and Other Derivatives*, Pearson (chapters on interest rate derivatives and credit).
+- David X. Li, *On Default Correlation: A Copula Function Approach*, Journal of Fixed Income, 2000.
 
 ## In this repo and SDE-Interview-Prep
 
-- Python problem set verification engine: [fi_problem_set.py](code/fi_problem_set.py).
-- Python reference models for bond pricing and duration: [bond_pricing.py](code/bond_pricing.py).
-- Multi-curve and swap bootstrapping: [curve_bootstrap.py](code/curve_bootstrap.py).
-- Short-rate, Hull-White, and SABR models: [rates_models.py](code/rates_models.py).
-- CDS, TIPS, MBS prepayments, and Gaussian copula: [credit_bootstrap.py](code/credit_bootstrap.py).
+- Problem set verification: [`code/fi_problem_set.py`](code/fi_problem_set.py) asserts every number in Problems 1 to 22 and the cards; the tranche expected losses quoted in Problem 16 are asserted in [`code/fi_credit_tranches.py`](code/fi_credit_tranches.py).
+- Topic notes behind the problems: [Rates Volatility and SABR](18-Rates-Volatility-and-SABR.md), [Term Structure Models](19-Term-Structure-Models-HJM-LGM-LMM.md), [Credit Advanced](23-Credit-Advanced-CDS-Indices-and-Tranches.md), [Mortgages](22-Mortgages-and-Securitized-Products.md), [P&L and Relative Value](24-Fixed-Income-PnL-and-Relative-Value.md).

@@ -5,310 +5,184 @@ tier: advanced
 status: solid
 prereqs: [bonds-duration-and-convexity, curve-risk-and-hedging]
 est_hours: 5
-sources: [Bruce Tuckman and Angel Serrat - Fixed Income Securities chapters 5 and 6, Moorad Choudhry - The Repo and Modern Markets Handbook, Antti Ilmanen - Expected Returns chapters 4 and 5]
+sources: [Bruce Tuckman and Angel Serrat - Fixed Income Securities 3rd edition - Wiley 2012 - chapters 3 5 and 6, Antti Ilmanen - Expected Returns - Wiley 2011]
 ---
 
 # Fixed Income P&L Attribution and Relative Value
 
 ## TL;DR
 
-Fixed income portfolio performance is decomposed into distinct, orthogonal risk drivers: carry, roll-down, parallel curve shift (delta), slope (twist), curvature (butterfly), spread/basis movements, and higher-order convexity (gamma) and time decay (theta).
-Relative value (RV) trading exploits pricing discrepancies along the yield curve rather than taking directional rate bets.
-Key RV structures include curve steepeners and flatteners (distinguished by bull and bear regimes) and butterfly spreads (weighting wings against the body via 50-50 DV01 or empirical regression betas).
-Asset swaps (ASW) package bonds with interest rate swaps to extract credit, funding, and repo mispricings across cash and synthetic markets.
-Rigorous daily P&L attribution reconciles realized trading gains against predicted risk-factor contributions, exposing unhedged residual curve risks and funding leakage.
+- Over a horizon, a financed bond earns carry (coupon income, pull to par, minus financing) and roll-down (repricing at the lower yield of a shorter maturity on an unchanged curve), then gains or loses from curve moves through delta and convexity; whatever full revaluation shows beyond these terms is the residual.
+- On a 1-month, $\$100$ million 10-year example, carry plus roll-down is $\$40,578$, enough to absorb a yield rise of only $0.50$ bp; a $+5$ bp move costs $\$402,306$, and DV01 plus convexity explain it to within $\$1.66$.
+- Curve trades are DV01-neutral; a 50-50 butterfly is neutral to parallel moves only, and a regression-weighted one is neutral to the fitted co-movement but not to parallel moves.
+- Asset swaps convert a fixed bond into a floater: par-par spread $= (P_{\text{swap curve}} - P_{\text{mkt}}) / (100 \times A)$, and the market-value spread is the par-par spread times $100/P$.
+- Mean reversion signals on curve spreads fail when regimes change; carry, financing (repo specials) and liquidity decide whether convergence pays.
 
 ## Learning objectives
 
-- Formulate the fixed income daily P&L attribution equation across carry, roll-down, delta, twist, butterfly, spread, and convexity components.
-- Calculate carry and roll-down returns under unchanged yield curve assumptions.
+- Formulate the fixed income P&L attribution equation across carry, roll-down, delta, twist, butterfly, spread, and convexity components.
+- Calculate carry and roll-down returns under unchanged yield curve assumptions, and check an attribution against full revaluation.
 - Construct curve steepener and flattener positions under bull and bear market regimes.
 - Design duration-neutral and regression-weighted butterfly trades (e.g., 2s-5s-10s and 5s-10s-30s).
 - Structure par-par and market-value asset swaps to isolate asset-swap spreads (ASW).
-- Compute empirical hedge ratios using PCA or yield regression beta to prevent curve twist leakage in butterfly portfolios.
+- Compute empirical hedge ratios using PCA or yield regression beta and quantify their residual exposures.
 
 ## Core concepts
 
-### The Fixed Income P&L Attribution Framework
+### 1. The attribution framework
 
-A comprehensive fixed income P&L attribution decomposes total dollar P&L over holding period $\Delta t$ into deterministic (time-driven) and stochastic (market-driven) components:
+For a position revalued from $t$ to $t + \Delta t$:
+$$\Delta \text{P\&L} = \underbrace{\text{coupon income} + \text{pull to par} - \text{financing}}_{\text{carry}} + \text{roll-down} + \underbrace{\sum_i -\text{DV01}_i \Delta y_i + \tfrac{1}{2}\text{Conv}_{\$} (\Delta y)^2}_{\text{curve moves}} + \text{spread} + \epsilon.$$
+- **Carry:** the P&L if yields stay where they are for the bond: coupon accrual, plus the move in clean price toward par at an unchanged yield, minus repo interest on the dirty price.
+- **Roll-down:** the gain from repricing at the yield of a shorter maturity on an unchanged curve, $\approx -\text{DV01} \times (y(T - \Delta t) - y(T))$ in bp; positive on an upward-sloping curve.
+- **Curve moves:** first-order key-rate (or factor) DV01s times yield changes, plus the convexity term; parallel, slope and curvature terms are a projection of the same key-rate changes onto factors, not separate risks.
+- **Spread:** for credit or swap-spread positions, $-\text{DV01} \times \Delta s$.
+- **Residual $\epsilon$:** full revaluation minus the sum of the terms; small and stable when the attribution is right, large when a risk is missing.
 
-$$\Delta \text{P\&L}_{\text{total}} = \text{Carry} + \text{Roll-down} + \text{Delta} + \text{Twist} + \text{Curvature} + \text{Convexity} + \text{Theta} + \text{Spread/Basis} + \epsilon$$
+For bonds the time effect is entirely carry plus roll-down; theta as a separate line belongs to options, where it must not double count the same passage of time.
+Carry plus roll-down divided by DV01 is the breakeven yield rise over the horizon, the standard way to compare positions.
 
-where:
+### 2. Curve trades
 
-1. **Carry:** The net cash flow earned over the holding period assuming static yield levels. For a financed bond position with coupon $c$, repo funding rate $r_{\text{repo}}$, and purchase price $P$:
+A curve trade weights the legs so that their DV01s offset, $N_1 \text{DV01}_1 = N_2 \text{DV01}_2$ per unit notional.
+- **Steepener:** long the short maturity, short the long maturity; it gains when $y(T_2) - y(T_1)$ rises.
+  A bull steepener (front yields fall more) typically comes with expected rate cuts; a bear steepener (long yields rise more) with rising term premium or inflation expectations.
+- **Flattener:** the opposite position; a bear flattener (front yields rise more) typically comes with expected hikes, a bull flattener (long yields fall more) with demand for duration or slowing growth.
 
-$$\text{Carry} = (c - r_{\text{repo}} \cdot P) \cdot \Delta t$$
+### 3. Butterflies
 
-2. **Roll-down:** The capital appreciation that occurs as the bond approaches maturity along an upward-sloping yield curve, assuming the spot curve remains unchanged:
+A butterfly trades a body $T_2$ against wings $T_1 < T_2 < T_3$, with fly spread $2y(T_2) - y(T_1) - y(T_3)$; a rising fly means the body cheapens against the wings.
+A long butterfly (long wings, short body) gains when the fly spread rises.
 
-$$\text{Roll-down} \approx -D_{\text{mod}} \cdot P \cdot (y(T - \Delta t) - y(T))$$
+**50-50 DV01 weighting:** each wing carries half of the body's DV01.
+It is neutral to parallel moves, but not to a twist unless the body sits at the midpoint of the wings: for a linear twist of $k$ bp per year of maturity about the body, the P&L is $-\frac{1}{2}\text{DV01}_b\, k\,(T_1 + T_3 - 2T_2)$, which for 2s5s10s ($2 + 10 - 10 = 2$) is not zero.
 
-If the curve is upward sloping, $y(T - \Delta t) < y(T)$, so the yield drops as the bond rolls down, generating positive capital gain.
-The combined metric **Carry + Roll-down** represents the expected horizon return under static market conditions:
+**Regression weighting:** estimate $\Delta y_2 = \beta_1 \Delta y_1 + \beta_3 \Delta y_3 + \epsilon$ from history and hold wing DV01s of $\beta_1 \text{DV01}_b$ and $\beta_3 \text{DV01}_b$; the trade then carries only the residual $\epsilon$ if the betas are stable.
+Unless $\beta_1 + \beta_3 = 1$ it is not neutral to a parallel move; PCA weighting instead neutralises the first two (or three) factors exactly.
 
-$$\text{Expected P\&L}_{\text{static}} = \text{Carry} + \text{Roll-down}$$
+### 4. Asset swaps
 
-3. **Delta (Parallel Shift):** The first-order P&L impact of a uniform shift $\Delta y_{\text{parallel}}$ across all key rate tenors:
+An asset swap packages a fixed-rate bond with a swap paying the bond's coupons and receiving floating plus a spread.
 
-$$\text{P\&L}_{\text{Delta}} = -\text{DV01}_{\text{portfolio}} \cdot \Delta y_{\text{parallel}} \times 10,000$$
+**Par-par:** the investor pays par for the package (the bond price plus an upfront of $100 - P$ to the swap counterparty) and receives floating plus $s$ on 100.
+At inception the swap's value to the investor must equal the upfront, which gives
+$$s_{\text{par-par}} = \frac{P_{\text{swap curve}} - P_{\text{mkt}}}{100 \times A},$$
+with $P_{\text{swap curve}}$ the bond's cash flows discounted on the swap curve and $A$ the floating-leg annuity.
+The spread measures how cheap the bond is relative to the swap curve, in running terms.
 
-4. **Slope / Twist:** The impact of curve steepening or flattening, typically defined by the change in the 2s10s or 5s30s spread:
+**Market-value (proceeds):** the swap notional equals the dirty price, so no upfront is exchanged; spreading the same price difference over a notional of $P$ gives $s_{\text{MV}} = s_{\text{par-par}} \times 100 / P$, and at maturity the notionals are exchanged back ($P$ against 100).
+The two differ in counterparty exposure: the par-par investor has prepaid $100 - P$ to the swap counterparty for a discount bond.
 
-$$\text{P\&L}_{\text{Twist}} = -\sum_{i} \text{DV01}_i \cdot \Delta y_{i, \text{slope}}$$
+### 5. Relative value signals and risks
 
-5. **Curvature / Butterfly:** The impact of intermediate tenors flexing relative to the curve wings (measured via principal component 3 or butterfly spreads):
-
-$$\text{P\&L}_{\text{Curvature}} = -\sum_{i} \text{DV01}_i \cdot \Delta y_{i, \text{curvature}}$$
-
-6. **Convexity (Gamma):** The second-order Taylor expansion term capturing non-linear yield sensitivity:
-
-$$\text{P\&L}_{\text{Convexity}} = \frac{1}{2} \cdot \text{Convexity}_{\$} \cdot (\Delta y)^2$$
-
-where $\text{Convexity}_{\$} = P \cdot \text{Convexity}$.
-
-7. **Theta:** The passage-of-time decay on embedded options or forward bond contracts:
-
-$$\text{P\&L}_{\text{Theta}} = \frac{\partial P}{\partial t} \cdot \Delta t$$
-
-8. **Spread / Basis:** The change in yield spread relative to the benchmark government or swap curve (e.g., Z-spread, OAS, or asset swap spread):
-
-$$\text{P\&L}_{\text{Spread}} = -\text{DV01} \cdot \Delta s \times 10,000$$
-
-### Curve Trading: Steepeners and Flatteners
-
-Curve trades take a view on the yield spread between two tenors $T_1$ and $T_2$ (where $T_1 < T_2$):
-
-$$\text{Spread} = y(T_2) - y(T_1)$$
-
-To construct a duration-neutral curve trade, positions are weighted inversely to their DV01:
-
-$$\text{DV01}_1 \cdot N_1 + \text{DV01}_2 \cdot N_2 = 0 \implies \frac{N_1}{N_2} = -\frac{\text{DV01}_2}{\text{DV01}_1}$$
-
-#### 1. Steepener Trade
-A curve steepener profits when $y(T_2) - y(T_1)$ increases (curve widens).
-The trader goes **Long Front End** ($T_1$) and **Short Back End** ($T_2$).
-Steepeners behave differently depending on the macro environment:
-- **Bull Steepener:** Driven by central bank rate cuts. Front-end yields fall faster than back-end yields ($y_1 \downarrow\downarrow, y_2 \downarrow$).
-- **Bear Steepener:** Driven by rising inflation expectations, expanding fiscal deficits, or term premium expansion. Back-end yields surge while the front end remains pinned by monetary policy ($y_1 \uparrow, y_2 \uparrow\uparrow$).
-
-#### 2. Flattener Trade
-A curve flattener profits when $y(T_2) - y(T_1)$ decreases (curve narrows or inverts).
-The trader goes **Short Front End** ($T_1$) and **Long Back End** ($T_2$).
-- **Bull Flattener:** Driven by a flight-to-safety bid or long-term growth slowdown. Long-end yields fall faster than front-end yields ($y_1 \downarrow, y_2 \downarrow\downarrow$).
-- **Bear Flattener:** Driven by central bank rate-hiking cycles. Front-end yields jump rapidly as short rates are raised, while long-end yields rise more slowly ($y_1 \uparrow\uparrow, y_2 \uparrow$).
-
-### Butterfly Spreads: Wings vs. Body
-
-A butterfly spread is a three-legged curve structure combining two outer tenors ("wings", $T_1$ and $T_3$) and an intermediate tenor ("body", $T_2$, where $T_1 < T_2 < T_3$).
-Common benchmark butterflies include 2s-5s-10s and 5s-10s-30s.
-The butterfly spread yield is defined as:
-
-$$\text{Fly Spread} = 2 \cdot y(T_2) - (y(T_1) + y(T_3))$$
-
-When the fly spread increases, the curve becomes more convex (the body cheapens relative to the wings).
-
-#### Weighting Schemes: 50-50 DV01 vs. Regression Beta
-A trader executing a long butterfly goes **Long the Wings and Short the Body**:
-
-1. **50-50 DV01 Weighting:**
-Each wing contributes exactly half of the total hedging DV01 of the body:
-
-$$\text{DV01}_{\text{wing 1}} = \frac{1}{2} \text{DV01}_{\text{body}}, \quad \text{DV01}_{\text{wing 2}} = \frac{1}{2} \text{DV01}_{\text{body}}$$
-
-While 50-50 DV01 weighting ensures zero exposure to a uniform parallel curve shift ($\Delta y_1 = \Delta y_2 = \Delta y_3$), it leaves significant residual exposure to curve rotation (twist).
-Because yield volatility is typically higher at the front end ($\sigma_1 > \sigma_3$), a parallel-neutral 50-50 butterfly incurs large directional P&L when the curve steepens or flattens.
-
-2. **Regression Beta Weighting (Duration-Weighted PCA / Regression):**
-To immunize against both parallel shift and curve slope, the trader estimates the historical beta of yield changes from a regression:
-
-$$\Delta y_2 = \beta_1 \Delta y_1 + \beta_3 \Delta y_3 + \epsilon$$
-
-The weights $(w_1, w_2, w_3)$ on notional are selected such that:
-
-$$\sum_{i=1}^3 w_i \cdot \text{DV01}_i = 0 \quad \text{and} \quad \sum_{i=1}^3 w_i \cdot \text{DV01}_i \cdot \text{Factor}_{\text{slope}, i} = 0$$
-
-Under regression weighting, the shorter wing typically receives a smaller DV01 allocation than the longer wing to offset the higher yield volatility of the front end.
-
-### Asset Swap Spreads (ASW)
-
-An asset swap transforms a fixed-rate bond into a synthetic floating-rate note (or vice versa), separating the issuer's credit and liquidity spread from underlying interest rate risk.
-
-#### 1. Par-Par Asset Swap
-In a par-par asset swap:
-- The investor purchases a fixed-rate bond at market price $P$.
-- Concurrently, the investor enters an interest rate swap paying the bond's fixed coupons and receiving floating SOFR/Euribor plus a constant spread $s_{\text{ASW}}$ on par notional.
-- At inception, if the bond trades at a discount or premium to par ($P \ne 100$), an upfront cash payment $(100 - P)$ is exchanged between the counterparties.
-
-The par-par asset swap spread $s_{\text{ASW}}$ satisfies:
-
-$$s_{\text{ASW}} \approx \frac{y_{\text{bond}} - y_{\text{swap}}}{1 + \frac{100 - P}{100 \cdot \text{PV01}_{\text{swap}}}}$$
-
-#### 2. Market-Value (Proceeds) Asset Swap
-To eliminate upfront cash exchange, the interest rate swap notional is set equal to the dirty price of the bond:
-
-$$\text{Swap Notional} = P_{\text{dirty}}$$
-
-The fixed leg pays the actual bond coupons, and the floating leg pays SOFR plus spread on $P_{\text{dirty}}$.
-At maturity, the floating leg settles par ($100$), creating a terminal notional mismatch if $P_{\text{dirty}} \ne 100$.
-
-### Relative Value Signals: Z-Score and Mean Reversion
-
-Relative value quants identify mispriced curve points by tracking the rolling time-series Z-score of butterfly spreads or asset swap spreads:
-
-$$Z(t) = \frac{\text{Fly Spread}(t) - \mu_{\text{rolling}}(t)}{\sigma_{\text{rolling}}(t)}$$
-
-- When $Z(t) > +2.0$, the body is unusually cheap relative to wings (fly spread too high). Quants execute a **Short Fly** (buy body, sell wings), which profits when the body richens and the fly spread mean-reverts down.
-- When $Z(t) < -2.0$, the body is rich relative to wings (fly spread too low). Quants execute a **Long Fly** (buy wings, sell body), which profits when the body cheapens and the fly spread mean-reverts up.
-- Key risk: Regime change. Macro rate cycles or Treasury auction supply can cause spreads to trend persistently, turning statistical RV mean-reversion trades into large drawdowns.
+$Z(t) = (\text{spread}(t) - \mu)/\sigma$ over a rolling window flags a fly or asset swap spread far from its recent average; a high fly Z-score means the body is cheap, and the trade is to buy the body against the wings.
+- **Regime change:** policy, supply or index changes can move the mean, so a Z-score keeps signalling as losses grow.
+- **Carry:** a mean-reversion trade that carries negatively must converge fast enough to pay for it; compare expected convergence with carry plus roll-down.
+- **Financing:** a bond that goes special in repo lowers financing cost for longs and raises the cost of shorts (the short lends cash at the low special rate to borrow the bond).
+- **Liquidity:** on-the-run issues trade rich to off-the-runs; spreads that cross a roll from one benchmark to the next are not like for like.
 
 ## Worked examples
 
-### Example 1: Daily Fixed Income P&L Attribution
+### Example 1: one month of P&L, attributed and revalued
+$\$100$ million face of a 10-year note, $4.25\%$ semi-annual coupon, bought on a coupon date at a $4.20\%$ yield (price $100.4049$), financed in repo at $4.00\%$ for 30 days; around 10 years the curve rises $4$ bp per year of maturity, so after one month the note rolls down to $4.1967\%$; then yields rise $5$ bp.
+- Coupon income $\$354,166.67$; pull to par at an unchanged yield $-\$5,785.64$ (a premium bond accretes toward par); financing $-\$334,682.89$; net carry $\$13,698.13$.
+- Roll-down $\$26,880.09$; carry plus roll-down $\$40,578.22$.
+- DV01 at the rolled-down point $\$80,653.08$ per bp, so carry plus roll-down covers a yield rise of only $0.50$ bp over the month.
+- Rate move by full revaluation $-\$402,306.10$; the attribution gives delta $-\$403,265.42$ plus convexity $\$960.98$, leaving an unexplained residual of $-\$1.66$ (third-order terms).
+- Total P&L $-\$361,727.88$, which equals the sum of the components.
 
-A fund holds $\$100,000,000$ notional of a 10-year Treasury bond trading at a clean price of $98.50$ (dirty price $99.20$).
-The bond has a modified duration of $D_{\text{mod}} = 8.20$ years and annual convexity of $C = 78.0$.
-The bond yield is $4.20\%$, and its 1-day repo financing rate is $4.00\%$.
-Over a 1-day holding period ($\Delta t = 1/360$), the yield curve experiences a parallel rise of $+5$ basis points ($\Delta y = +0.0005$), while the bond rolls down by $-0.3$ basis points along the static yield curve.
-Compute the detailed P&L attribution.
+### Example 2: 2s5s10s butterflies
+DV01 per $\$100,000$ notional: $\$19.50$ (2y), $\$44.20$ (5y), $\$81.50$ (10y); short $\$100$ million of the 5y body, DV01 $\$44,200$.
+- **50-50:** each wing $\$22,100$ of DV01: $\$113,333,333$ of 2y and $\$27,116,564$ of 10y; parallel DV01 zero.
+- **Twist:** a steepening of $1$ bp per year of maturity about the 5y moves the 2y by $-3$ bp and the 10y by $+5$ bp; the 2y wing makes $\$66,300$, the 10y wing loses $\$110,500$, net $-\$44,200$.
+- **Regression:** with illustrative betas $\beta_2 = 0.40$, $\beta_{10} = 0.65$ the wings carry $\$17,680$ and $\$28,730$ of DV01 ($\$90,666,667$ of 2y and $\$35,251,534$ of 10y), and the package has $\$2,210$ of net parallel DV01 because $0.40 + 0.65 \ne 1$.
 
-**Step 1: Compute portfolio DV01 and Dollar Convexity:**
-
-$$\text{Portfolio Value } P = \$100,000,000 \times 0.9920 = \$99,200,000$$
-
-$$\text{DV01} = P \times D_{\text{mod}} \times 0.0001 = \$99,200,000 \times 8.20 \times 0.0001 = \$81,344 \text{ per bp}$$
-
-$$\text{Dollar Convexity } C_{\$} = P \times C = \$99,200,000 \times 78.0 = \$7,737,600,000$$
-
-**Step 2: Carry P&L:**
-Assuming coupon $c = 4.10\%$ ($0.0410$):
-
-$$\text{Carry} = \frac{0.0410 \times \$100,000,000 - 0.0400 \times \$99,200,000}{360} = \frac{\$4,100,000 - \$3,968,000}{360} = \frac{\$132,000}{360} \approx +\$366.67$$
-
-**Step 3: Roll-down P&L:**
-The bond yield rolls down by $\Delta y_{\text{roll}} = -0.00003$ (-0.3 bps):
-
-$$\text{Roll-down} = -\text{DV01} \times (-0.3 \text{ bps}) \times 10,000 \times 0.0001 = \$81,344 \times 0.3 = +\$24,403.20$$
-
-Total static horizon return = $\text{Carry} + \text{Roll-down} = \$366.67 + \$24,403.20 = +\$24,769.87$.
-
-**Step 4: Delta P&L (from $+5$ bp shift):**
-
-$$\text{P\&L}_{\text{Delta}} = -\text{DV01} \times 5 = -\$81,344 \times 5 = -\$406,720.00$$
-
-**Step 5: Convexity P&L (Gamma gain):**
-
-$$\text{P\&L}_{\text{Convexity}} = \frac{1}{2} \times C_{\$} \times (\Delta y)^2 = \frac{1}{2} \times \$7,737,600,000 \times (0.0005)^2 = \frac{1}{2} \times \$7,737,600,000 \times 2.5 \times 10^{-7} = +\$967.20$$
-
-**Step 6: Total Predicted P&L:**
-
-$$\Delta \text{P\&L}_{\text{predicted}} = \$366.67 + \$24,403.20 - \$406,720.00 + \$967.20 = -\$380,982.93$$
-
-Our reference implementation [`fi_relative_value.py`](code/fi_relative_value.py) confirms:
-`pnl_attribution_1d(100_000_000, 99.20, 8.20, 78.0, 0.0410, 0.0400, 0.0005, -0.00003)` asserts each component to half a cent.
-The roll-down and positive convexity partially softened the $\$406,720$ delta loss.
-
-### Example 2: Structuring a 2s-5s-10s Butterfly Trade
-
-A trader constructs a duration-neutral 2s-5s-10s butterfly spread using Treasury notes with the following parameters:
-- 2-year note: $\text{DV01}_2 = \$19.50$ per $\$100,000$ notional.
-- 5-year note: $\text{DV01}_5 = \$44.20$ per $\$100,000$ notional.
-- 10-year note: $\text{DV01}_{10} = \$81.50$ per $\$100,000$ notional.
-
-The trader shorts $\$100,000,000$ notional of the 5-year body ($\text{DV01}_{\text{body}} = \$44,200$).
-Structure a 50-50 DV01 weighted long butterfly by computing the required notionals for the 2-year and 10-year wings.
-
-**Step 1: Allocate target DV01 to each wing:**
-Under 50-50 DV01 weighting:
-
-$$\text{Target DV01}_2 = 0.50 \times \text{DV01}_{\text{body}} = 0.50 \times \$44,200 = \$22,100$$
-
-$$\text{Target DV01}_{10} = 0.50 \times \text{DV01}_{\text{body}} = 0.50 \times \$44,200 = \$22,100$$
-
-**Step 2: Compute 2-year wing notional:**
-
-$$N_2 = \frac{\$22,100}{\$19.50} \times \$100,000 \approx \$113,333,333$$
-
-**Step 3: Compute 10-year wing notional:**
-
-$$N_{10} = \frac{\$22,100}{\$81.50} \times \$100,000 \approx \$27,116,564$$
-
-**Step 4: Check duration neutrality:**
-
-$$\text{Total Wing DV01} = \$22,100 + \$22,100 = \$44,200$$
-
-$$\text{Net DV01} = \text{Total Wing DV01} - \text{Body DV01} = \$44,200 - \$44,200 = \$0$$
-
-Our reference implementation [`fi_relative_value.py`](code/fi_relative_value.py) confirms:
-`butterfly_50_50_weighting(100_000_000.0, 19.50, 44.20, 81.50)` produces exact notionals $\$113,333,333$ and $\$27,116,564$ with net DV01 $\$0.00$.
-The trade is strictly immune to a parallel yield curve shift.
-
-### Example 3: Par-Par Asset Swap Spread Calculation
-
-A corporate bond with clean price $P = 98.00$ trades at an annual yield of $y_{\text{bond}} = 4.45\%$.
-The corresponding par swap rate is $y_{\text{swap}} = 4.10\%$, and the swap PV01 is $\text{PV01}_{\text{swap}} = 7.50$.
-Compute the par-par asset swap spread $s_{\text{ASW}}$.
-
-Using the upfront-adjusted par-par formula:
-$$s_{\text{ASW}} \approx \frac{y_{\text{bond}} - y_{\text{swap}}}{1 + \frac{100 - P}{100 \cdot \text{PV01}_{\text{swap}}}}$$
-Substitute values:
-$$100 - P = 100 - 98 = 2.00$$
-$$\text{Upfront Adjustment} = \frac{2.00}{100 \times 7.50} = \frac{2.00}{750.0} = 0.002667$$
-$$s_{\text{ASW}} = \frac{0.0445 - 0.0410}{1 + 0.002667} = \frac{0.0035}{1.002667} = 0.0034907 \implies 34.91\text{ bps}$$
-Our reference implementation [`fi_relative_value.py`](code/fi_relative_value.py) confirms:
-`par_par_asw_spread(0.0445, 0.0410, 98.00, 7.50) == 0.0034907` ($34.91\text{ bps}$).
+### Example 3: asset swap spreads
+Flat annual swap curve with a $4.10\%$ par rate (swap annuity $5.9799$); a 7-year $4.00\%$ annual bond at a $4.45\%$ yield, on a coupon date, so price $97.3434$; on the swap curve the same cash flows are worth $99.4020$.
+$$s_{\text{par-par}} = \frac{99.40201 - 97.34343}{100 \times 5.97994} = 34.42 \text{ bp}, \qquad s_{\text{MV}} = 34.42 \times \frac{100}{97.3434} = 35.36 \text{ bp},$$
+against a yield spread of $35.00$ bp.
+The script checks the par-par spread independently: projecting the floating leg from the curve's forwards, the swap is worth exactly the $100 - P$ upfront.
 
 ## Pitfalls
 
-- **Confusing Parallel DV01 Neutrality with Curve Neutrality:** A 50-50 DV01 butterfly is immunized against parallel shifts, but highly sensitive to curve twist (steepening/flattening) due to volatility asymmetry across tenors.
-- **Ignoring Negative Carry on Rich Butterflies:** Entering a butterfly trade with positive mean-reversion expectations can be unprofitable if financing costs and roll-down decay (negative carry) exceed the expected convergence gain.
-- **Repo Specialness Squeeze:** Relative value cash-bond legs can become "on special" in the repo market, dramatically lowering the repo rate earned and squeezing short financing.
-- **Settlement Lag Mismatch:** Mixing Treasury cash bonds (T+1 settlement) with interest rate swaps (T+2 spot start) creates unhedged overnight delta exposure unless forward start dates are synchronized.
-- **Neglecting On-The-Run Liquidity Premia:** Rolling from off-the-run to on-the-run benchmarks causes artificial jumps in yield spreads that do not represent genuine relative value mispricings.
+- **Parallel neutrality is not curve neutrality:** a 50-50 2s5s10s fly loses $\$44,200$ per $1$ bp per year of steepening about the body (Example 2).
+- **Regression hedges leave parallel risk:** wing betas that do not sum to one leave net DV01 ($\$2,210$ in Example 2) that must be hedged or accepted.
+- **Ignoring carry and roll-down:** a convergence trade with negative carry plus roll-down needs convergence faster than the bleed; quote both in bp of breakeven.
+- **Attribution without full revaluation:** a sum of Greeks that does not reconcile to the revalued P&L hides missing risks; track the residual daily.
+- **Repo specials:** shorting a special issue costs the difference between general collateral and special repo for as long as the short is held.
+- **Settlement mismatches:** US Treasuries settle T+1 and USD swaps start T+2; hedges must use matching start dates or carry an extra day of exposure.
+- **Benchmark rolls:** comparing an off-the-run with a new on-the-run issue mixes a liquidity premium into the spread.
 
 ## Interview questions
 
 > [!question]- fi-rv-pnl-carry-vs-rolldown | Explain the distinction between Carry and Roll-down in fixed income performance attribution.
-> Carry is the net cash flow earned over time assuming yield levels remain constant, consisting of coupon accrued minus the financing/repo cost. Roll-down is the price appreciation that occurs as the bond ages toward maturity along an upward-sloping yield curve, capturing the lower yield assigned to shorter maturities under an unchanged spot curve.
+> Carry is the P&L if the bond's own yield does not change: coupon income plus pull to par minus financing; roll-down is the extra gain from repricing at the lower yield of a shorter maturity when the curve itself does not change.
+> In Example 1 the month's carry is $\$13,698.13$ and the roll-down $\$26,880.09$.
 
 > [!question]- fi-rv-bull-vs-bear-steepeners | Contrast a Bull Steepener with a Bear Steepener in terms of macro drivers and relative yield shifts.
-> A Bull Steepener occurs when front-end yields decline faster than back-end yields, typically triggered by central bank rate cuts during monetary easing. A Bear Steepener occurs when long-end yields rise faster than short-end yields, driven by rising inflation expectations, supply pressures, or expanding fiscal deficits while short rates remain anchored.
+> Bull steepener: yields fall, front end more, typically when the market prices rate cuts.
+> Bear steepener: yields rise, long end more, typically with rising term premium, inflation expectations or supply, while the front end is anchored by policy.
 
 > [!question]- fi-rv-butterfly-spread-definition | Define a yield curve butterfly spread (body vs. wings) and explain what a widening butterfly indicates.
-> A butterfly spread combines two outer tenors ("wings", $T_1$ and $T_3$) and an intermediate tenor ("body", $T_2$): $\text{Fly} = 2 \cdot y(T_2) - (y(T_1) + y(T_3))$. A widening butterfly spread means the body yield is rising relative to the wings, indicating that intermediate maturities are cheapening and curve curvature is increasing.
+> $\text{Fly} = 2y(T_2) - y(T_1) - y(T_3)$ with body $T_2$ between wings $T_1$ and $T_3$.
+> A widening fly means the body yield rose relative to the wings: the body cheapened and the curve became more humped at the body.
 
 > [!question]- fi-rv-fifty-fifty-dv01-limitation | Why is a 50-50 DV01 weighted butterfly vulnerable to yield curve slope changes (twist risk)?
-> A 50-50 DV01 weighting allocates equal DV01 to the short and long wings. However, yield volatility is substantially higher at short tenors ($\sigma_2 > \sigma_{10}$). If the curve steepens, the front-end yield drops more than the long-end yield rises, causing the short wing to gain more than the long wing loses, leaving the portfolio exposed to directional curve tilt.
+> It is neutral only to equal yield changes; under a linear twist about the body the wings move by $k(T_1 - T_2)$ and $k(T_3 - T_2)$, which cancel only if the body is the midpoint of the wings.
+> For 2s5s10s ($T_1 + T_3 - 2T_2 = 2$) a 1 bp per year steepening about the 5y costs $\$44,200$ when the body DV01 is $\$44,200$.
 
 > [!question]- fi-rv-regression-beta-butterfly | How does regression beta weighting improve butterfly immunization compared to simple 50-50 DV01?
-> Regression beta weighting estimates the statistical sensitivity $\Delta y_2 = \beta_1 \Delta y_1 + \beta_3 \Delta y_3$ from historical data or principal component analysis. The wing notionals are weighted to simultaneously immunize against both a parallel shift ($\sum \text{DV01}_i = 0$) and a slope rotation ($\sum \text{DV01}_i \cdot \text{Slope}_i = 0$), eliminating first-order twist leakage.
+> Regress body yield changes on wing yield changes, $\Delta y_2 = \beta_1 \Delta y_1 + \beta_3 \Delta y_3 + \epsilon$, and hold wing DV01s of $\beta_1$ and $\beta_3$ times the body DV01, so the trade carries only $\epsilon$ if the betas hold.
+> The cost: unless $\beta_1 + \beta_3 = 1$ the trade has net parallel DV01 ($\$2,210$ with betas $0.40$ and $0.65$ in Example 2), and the betas themselves move.
 
 > [!question]- fi-rv-asset-swap-spread-asw | What is an Asset Swap Spread (ASW), and what risks does it isolate?
-> An asset swap combines a fixed-rate bond with an interest rate swap that pays the bond's fixed coupons and receives floating benchmark rates (SOFR/Euribor) plus a constant spread $s_{\text{ASW}}$. ASW isolates the credit risk, liquidity premium, and financing basis of the specific bond by stripping out underlying benchmark interest rate duration.
+> The spread over the floating index at which a bond swapped into a floater is fairly priced; par-par $s = (P_{\text{swap curve}} - P_{\text{mkt}}) / (100 A)$.
+> It measures the bond's value relative to the swap curve in running terms, mixing credit, liquidity and funding, with the rate risk hedged by the swap (Example 3: $34.42$ bp).
 
 > [!question]- fi-rv-par-par-vs-market-value-asw | Distinguish between a Par-Par Asset Swap and a Market-Value (Proceeds) Asset Swap.
-> In a par-par asset swap, the swap notional equals the bond par value, and an upfront cash exchange of $(100 - P)$ reconciles any bond price premium or discount. In a market-value asset swap, the swap notional equals the dirty purchase price of the bond, eliminating initial cash exchange but introducing a terminal notional mismatch at maturity when the bond redeems at par.
+> Par-par: the investor pays 100 for the package (price plus an upfront of $100 - P$) and the swap runs on 100; market value: the swap runs on the dirty price $P$, no upfront, and the notionals $P$ and 100 are exchanged at maturity.
+> The same price difference spread over $P$ instead of 100 gives $s_{\text{MV}} = s_{\text{par-par}} \times 100/P$: $35.36$ bp against $34.42$ bp for a bond at $97.34$.
 
 > [!question]- fi-rv-repo-specialness-impact | How does a bond trading "on special" in the repo market affect relative value trading strategies?
-> When a bond is on special, high demand to borrow it drives its repo financing rate well below general collateral (GC) rates (sometimes near zero or negative). A trader shorting the special bond must pay a punitive borrowing fee, which eats into trade profitability and can force premature liquidation of basis or relative value positions.
+> Demand to borrow the bond pushes its repo rate below general collateral; the short lends cash at that low rate, paying the difference for as long as the short is held, while longs finance cheaply.
+> Trades that short a special issue need the convergence to beat the specialness cost, and a squeeze can force them out early.
 
 > [!question]- fi-rv-zscore-relative-value-risks | Why can relying solely on rolling Z-scores of curve spreads be dangerous for relative value hedge funds?
-> Z-scores assume that curve spreads fluctuate around a stationary, mean-reverting mean. During macroeconomic regime shifts, central bank policy overhauls, or sovereign debt supply surges, spreads can trend structurally away from historical averages. A Z-score strategy will continue doubling down into widening divergence, causing severe drawdowns.
+> They assume a stationary mean; policy changes, supply or index events can move the mean, and the Z-score keeps signalling while the position loses.
+> Without carry, financing and liquidity in the decision, a statistically cheap trade can bleed for longer than capital allows.
 
 > [!question]- fi-rv-box-trade-mechanics | What is a yield curve box trade, and how is it used to exploit spread dislocations?
-> A box trade combines two curve spread trades across different tenor pairs (e.g., long 2s5s steepener and long 10s30s flattener). It isolates changes in the spread of spreads ($[y_5 - y_2] - [y_{30} - y_{10}]$), hedging out both level and general slope to capture localized curve kinks, supply imbalances, or segmented investor demand.
+> Two DV01-neutral curve trades on different tenor pairs, for example a 2s5s steepener with a 10s30s flattener, so the position is long $(y_5 - y_2) - (y_{30} - y_{10})$.
+> It isolates a local kink, from supply or demand for a sector, while hedging parallel moves; it is exposed to any move that reshapes the two segments differently.
+
+> [!question]- fi-rv-attribution-residual | Your P&L attribution shows a growing daily residual. What do you check?
+> That the full revaluation and the Greeks use the same curves and times, that the attribution includes every risk the position has (convexity, basis between curves, carry over weekends), and that sensitivities are recomputed at the current state.
+> A complete attribution leaves a small residual: in Example 1 a 5 bp move is explained by DV01 and convexity to within $\$1.66$ out of $\$402,306$.
+
+> [!question]- fi-rv-carry-breakeven | How do you express carry and roll-down so positions of different duration can be compared?
+> Divide by DV01: the result is the yield rise over the horizon that would wipe out the carry and roll-down.
+> In Example 1, $\$40,578.22$ over a DV01 of $\$80,653.08$ is a breakeven of $0.50$ bp for the month.
+
+> [!question]- fi-rv-pull-to-par | Why is the pull to par negative in Example 1, and is it part of carry?
+> The note was bought above par (coupon $4.25\%$ above the $4.20\%$ yield), so at an unchanged yield its clean price drifts toward par, $-\$5,785.64$ over the month.
+> Yes: carry at an unchanged yield is coupon income plus pull to par minus financing, which together equal the yield accrual on the dirty price minus financing.
+
+> [!question]- fi-rv-asw-mv-above-parpar | For a bond trading below par, is the market-value asset swap spread above or below the par-par spread, and why?
+> Above: the same present-value difference $P_{\text{swap curve}} - P_{\text{mkt}}$ is spread over a notional of $P < 100$ instead of 100, so $s_{\text{MV}} = s_{\text{par-par}} \times 100/P$.
+> For a premium bond the order reverses.
+
+> [!question]- fi-rv-twist-formula | Derive the twist exposure of a 50-50 butterfly.
+> With a twist $\Delta y(T) = k(T - T_2)$, the long wings each carry $\frac{1}{2}\text{DV01}_b$ and the body's yield does not move, so the P&L is $-\frac{1}{2}\text{DV01}_b k (T_1 - T_2) - \frac{1}{2}\text{DV01}_b k (T_3 - T_2) = -\frac{1}{2}\text{DV01}_b k (T_1 + T_3 - 2T_2)$.
+> It vanishes only for a body at the midpoint, for example 2s6s10s, not 2s5s10s.
 
 ## Further reading
 
-- Bruce Tuckman and Angel Serrat, *Fixed Income Securities: Tools for Today's Markets*, Chapter 5: "Yield Curve Trades" and Chapter 6: "Relative Value and Arbitrage".
-- Moorad Choudhry, *The Repo and Modern Markets Handbook: Master Guide to Repo, Derivatives, and Fixed Income Relative Value*.
-- Antti Ilmanen, *Expected Returns: An Investor's Guide to Harvesting Market Rewards*, Chapter 4: "Bond Risk Premia".
-- P. Veronesi, *Fixed Income Securities: Valuation, Risk, and Risk Management*, Chapter 8: "Trading and Hedging Strategies".
+- Bruce Tuckman and Angel Serrat, *Fixed Income Securities: Tools for Today's Markets*, 3rd edition, Wiley, 2012: chapter 3 (Returns, Spreads, and Yields), chapter 5 (Multi-Factor Risk Metrics and Hedges) and chapter 6 (Empirical Approaches to Risk Metrics and Hedging).
+- Antti Ilmanen, *Expected Returns: An Investor's Guide to Harvesting Market Rewards*, Wiley, 2011.
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/fi_relative_value.py`](code/fi_relative_value.py) (Daily P&L attribution, 50-50 DV01 butterfly weighting, and par-par asset swap spread calculation).
+- Code: [`code/fi_relative_value.py`](code/fi_relative_value.py) asserts every number here, including the full-revaluation check of the attribution and the leg-by-leg check of the asset swap spread.
 - Discounting and yield curve foundations: [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md).
 - Duration, convexity, and immunization mathematics: [Bonds, Duration, and Convexity](02-Bonds-Duration-and-Convexity.md).
-- Advanced credit indices and tranche trading: [Credit Advanced: CDS Indices and Tranches](23-Credit-Advanced-CDS-Indices-and-Tranches.md).
+- Key-rate and factor hedging: [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md).

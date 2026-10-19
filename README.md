@@ -69,7 +69,7 @@ Tracks: T = trader, R = researcher, D = developer, Q = risk and strats.
 | [Linear Algebra and Optimization](03-Linear-Algebra-and-Optimization/README.md) | 11 | 11 | 40 | 217 | TRDQ |
 | [Stochastic Calculus](04-Stochastic-Calculus/README.md) | 9 | 9 | 36 | 167 | TRDQ |
 | [Derivatives and Volatility](05-Derivatives-and-Volatility/README.md) | 16 | 16 | 66 | 275 | TRDQ |
-| [Fixed Income and Asset Classes](06-Fixed-Income-and-Asset-Classes/README.md) | 25 | 25 | 114 | 384 | TRDQ |
+| [Fixed Income and Asset Classes](06-Fixed-Income-and-Asset-Classes/README.md) | 25 | 25 | 114 | 429 | TRDQ |
 | [Market Microstructure](07-Market-Microstructure/README.md) | 12 | 12 | 41 | 200 | TRD |
 | [Market Making](08-Market-Making/README.md) | 12 | 12 | 44 | 187 | TRD |
 | [Alpha Research and Portfolio Construction](09-Alpha-Research-and-Portfolio/README.md) | 15 | 15 | 57 | 253 | TRDQ |

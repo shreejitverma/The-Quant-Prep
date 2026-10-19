@@ -5,252 +5,209 @@ tier: senior
 status: solid
 prereqs: [short-rate-models, rates-volatility-and-sabr]
 est_hours: 6
-sources: [Brigo and Mercurio - Interest Rate Models chapters 5 and 6, Leif Andersen and Vladimir Piterbarg - Interest Rate Modeling volume 2]
+sources: [David Heath - Robert Jarrow and Andrew Morton - Bond Pricing and the Term Structure of Interest Rates - Econometrica 1992, Damiano Brigo and Fabio Mercurio - Interest Rate Models 2nd edition chapters 5 and 6, Leif Andersen and Vladimir Piterbarg - Interest Rate Modeling volume 2 - 2010, Alan Brace - Dariusz Gatarek and Marek Musiela - The Market Model of Interest Rate Dynamics - Mathematical Finance 1997, Andrei Lyashenko and Fabio Mercurio - Looking Forward to Backward-Looking Rates - SSRN 2019]
 ---
 
 # Term Structure Models: HJM, LGM, and LMM
 
 ## TL;DR
 
-Single-factor short-rate models force 100% correlation across all bond yields, making them incapable of pricing or hedging multi-point curve risk.
-The Heath-Jarrow-Morton (HJM) framework resolves this by modeling the entire instantaneous forward rate curve $f(t, T)$ simultaneously, proving that no-arbitrage uniquely dictates forward rate drifts from their volatility structures.
-Because generic HJM models are non-Markovian and computationally intractable, practitioners rely on separable volatility kernels that collapse the term structure into finite-dimensional state models like the Linear Gauss-Markov (LGM) and Cheyette frameworks.
-For exotic multi-rate derivatives, the Libor Market Model (LMM / BGM) models observable discrete market forward rates directly, matching caplet and swaption volatility surfaces with rank-reduced correlation matrices.
-In post-LIBOR markets, these frameworks have adapted to backward-looking compounded risk-free rates (SOFR, ESTER).
+- HJM models the whole forward curve $f(t, T)$; absence of arbitrage fixes the risk-neutral drift as $\alpha(t, T) = \sigma(t, T) \cdot \int_t^T \sigma(t, u) du$, so only volatilities are modelling choices.
+- Generic HJM is path-dependent; separable (Ritchken-Sankarasubramanian or Cheyette) volatilities give a finite Markov state, and with deterministic volatility the one-factor case is Hull-White.
+- LGM (Hagan) writes the same Gaussian model as a driftless state $x(t)$ with variance $\zeta(t)$ and bond prices in closed form, which makes PDE and quadrature pricing of Bermudans simple.
+- The LIBOR (forward) market model makes each simple forward lognormal under its own forward measure, so Black's caplet formula holds exactly; under a common measure every rate picks up a state-dependent drift from its covariance with the numeraire.
+- Backward-looking RFR coupons (SOFR, ESTR, SONIA) are fixed only at the end of their accrual period, which the forward market model of Lyashenko and Mercurio (2019) handles by extending each rate's dynamics through its accrual period.
 
 ## Learning objectives
 
 - Formulate the Heath-Jarrow-Morton (HJM) framework and derive the no-arbitrage HJM drift condition under the risk-neutral measure.
 - Explain why generic HJM models are path-dependent (non-Markovian) and identify the separable volatility condition that yields Markovian representations.
-- Implement the Linear Gauss-Markov (LGM) / Cheyette model and evaluate zero-coupon bond pricing formulas in terms of state variables.
-- Formulate the Libor Market Model (LMM / BGM) and derive the drift change between forward measures and the terminal measure.
+- Implement the Linear Gauss-Markov (LGM) model and evaluate zero-coupon bond prices in terms of its state variable.
+- Formulate the LIBOR market model (LMM / BGM) and derive the drift under the terminal and spot measures.
 - Apply PCA and parametric correlation structures to reduce factor dimensionality in multi-rate models.
-- Contrast instantaneous forward models with modern post-LIBOR backward-looking compounded SOFR market models.
+- Contrast forward-looking LIBOR market models with backward-looking compounded RFR models.
 
 ## Core concepts
 
-### 1. The Heath-Jarrow-Morton (HJM) Framework
+### 1. The HJM framework
 
-David Heath, Robert Jarrow, and Andrew Morton (1992) revolutionized interest rate modeling by taking the entire observed initial forward curve $T \mapsto f(0, T)$ as a fundamental state variable.
-Instead of specifying a process for the short rate $r(t)$ and deducing bond prices, HJM models the continuous evolution of instantaneous forward rates $f(t, T)$ directly.
+Heath, Jarrow and Morton (Econometrica, 1992) take the initial forward curve $T \mapsto f(0, T)$ as given and model its evolution under the risk-neutral measure with a $d$-dimensional Brownian motion:
+$$df(t, T) = \alpha(t, T) dt + \sigma(t, T) \cdot dW(t), \qquad P(t, T) = \exp\left(-\int_t^T f(t, u) du\right), \qquad r(t) = f(t, t).$$
 
-Under the risk-neutral measure $\mathbb{Q}$ driven by a $d$-dimensional standard Brownian motion $W(t)$:
-$$df(t, T) = \alpha(t, T) dt + \sigma(t, T) \cdot dW(t)$$
-where:
-- $\alpha(t, T)$ is the forward rate drift.
-- $\sigma(t, T) = (\sigma_1(t, T), \dots, \sigma_d(t, T))$ is the volatility vector of the forward rate.
-- $f(0, T)$ is observed from the market at time 0.
+**Drift condition.**
+Let $X(t) = \ln P(t, T) = -\int_t^T f(t, u) du$.
+Differentiating (the lower limit contributes $+f(t, t) dt = r\, dt$):
+$$dX = \left(r(t) - \int_t^T \alpha(t, u) du\right) dt - \Sigma(t, T) \cdot dW, \qquad \Sigma(t, T) = \int_t^T \sigma(t, u) du.$$
+By Ito, $dP/P = dX + \frac{1}{2}|\Sigma|^2 dt$, so $d(P/B)/(P/B) = \left(-\int_t^T \alpha(t, u) du + \frac{1}{2}|\Sigma(t, T)|^2\right) dt - \Sigma \cdot dW$.
+The discounted bond is a martingale for every $T$ only if $\int_t^T \alpha(t, u) du = \frac{1}{2}|\Sigma(t, T)|^2$; differentiating in $T$:
+$$\alpha(t, T) = \sigma(t, T) \cdot \int_t^T \sigma(t, u) du.$$
+Under the risk-neutral measure the drift is not a free parameter: the volatility function determines the whole model, together with the initial curve, which is matched by construction.
 
-#### The No-Arbitrage HJM Drift Condition
-The money-market account is $B(t) = \exp(\int_0^t r(u) du)$, where the instantaneous short rate is $r(t) = f(t, t)$.
-The discounted price of any zero-coupon bond $Z(t, T) = \frac{P(t, T)}{B(t)}$ must be a martingale under the risk-neutral measure $\mathbb{Q}$.
-Using $P(t, T) = \exp(-\int_t^T f(t, u) du)$ and applying Ito's Lemma, setting the drift of $Z(t, T)$ to zero yields the fundamental **HJM drift condition**:
-$$\alpha(t, T) = \sigma(t, T) \cdot \int_t^T \sigma(t, u) du = \sum_{k=1}^d \sigma_k(t, T) \int_t^T \sigma_k(t, u) du$$
+### 2. The Markov problem and separable volatilities
 
-This result demonstrates that in an arbitrage-free market, the drift $\alpha(t, T)$ is not an independent parameter; it is completely and uniquely determined by the volatility structure $\sigma(t, T)$.
-Once the volatility surface is specified, the risk-neutral evolution of the entire yield curve is locked.
+Integrating, $r(t) = f(0, t) + \int_0^t \alpha(s, t) ds + \int_0^t \sigma(s, t) \cdot dW(s)$: for a general $\sigma(s, t)$ the short rate depends on the whole Brownian path, so a lattice or PDE would need an unbounded state.
 
-### 2. The Markovian Problem and Separable Volatilities
+Ritchken and Sankarasubramanian (Mathematical Finance, 1995) and Cheyette (Journal of Fixed Income, 1992) showed that one-factor volatilities of the form
+$$\sigma(t, T) = \sigma_r(t) \exp\left(-\int_t^T \kappa(u) du\right)$$
+(separable, $g(t) h(T)$) give a two-variable Markov state; with constant $\kappa = a$ and $x(t) = r(t) - f(0, t)$:
+$$dx = (y - a x) dt + \sigma_r dW, \qquad dy = (\sigma_r^2 - 2 a y) dt.$$
+If $\sigma_r$ is deterministic, $y$ is deterministic and the model is one-factor Hull-White; the auxiliary $y$ matters when $\sigma_r$ depends on the state (the quasi-Gaussian or Cheyette local-volatility models used to fit the skew).
+With $m$ separable terms the Gaussian state has $m$ components.
 
-Integrating the forward rate dynamics yields:
-$$f(t, T) = f(0, T) + \int_0^t \alpha(s, T) ds + \int_0^t \sigma(s, T) \cdot dW(s)$$
-Setting $T = t$ gives the short rate:
-$$r(t) = f(0, t) + \int_0^t \alpha(s, t) ds + \int_0^t \sigma(s, t) \cdot dW(s)$$
+### 3. The Linear Gauss-Markov (LGM) model
 
-For arbitrary volatility functions $\sigma(s, t)$, $r(t)$ cannot be evaluated from its own current value; it depends on the full path of the Brownian motion from $0$ to $t$.
-Generic HJM models are **non-Markovian**.
-Pricing exotic path-dependent derivatives or American/Bermudan options requires evaluating an infinite-dimensional state space, which rules out efficient partial differential equations (PDE) and tree algorithms.
+Hagan's LGM model uses a driftless Gaussian state under its own numeraire:
+$$dx(t) = \sigma(t) dW(t), \quad x(0) = 0, \qquad \zeta(t) = \int_0^t \sigma(s)^2 ds,$$
+$$N(t, x) = \frac{1}{P(0, t)} \exp\left( H(t) x + \frac{1}{2} H(t)^2 \zeta(t) \right), \qquad \frac{P(t, T)}{N(t, x)} = P(0, T) \exp\left( -H(T) x - \frac{1}{2} H(T)^2 \zeta(t) \right).$$
+The reduced bond price on the right is a martingale (it is the exponential martingale of a Gaussian), so
+$$P(t, T) = \frac{P(0, T)}{P(0, t)} \exp\left( -(H(T) - H(t)) x - \frac{1}{2} (H(T)^2 - H(t)^2) \zeta(t) \right).$$
+$H$ encodes mean reversion; constant reversion $a$ gives $H(T) = (1 - e^{-aT})/a$, and $\sigma(s) = \sigma_{HW} e^{as}$ gives $\zeta(t) = \sigma_{HW}^2 (e^{2at} - 1)/(2a)$, which is Hull-White with constant $(a, \sigma_{HW})$.
+LGM and one-factor Hull-White are the same model in different coordinates; the LGM coordinates make a Bermudan a sequence of Gaussian convolutions of $V/N$, used in [Callable and Bermudan Products](20-Callable-and-Bermudan-Products.md).
+LGM is invariant to two transformations ($H \to H + c$, and scaling $H$ by $k$ with $\zeta$ by $1/k^2$), so calibrations must fix a normalisation.
 
-#### Separable Volatility Kernels (Cheyette Condition)
-To restore a Markovian state representation, the volatility function must be separable:
-$$\sigma(t, T) = g(t) h(T)$$
-A widely used specification is the exponentially decaying kernel:
-$$\sigma(t, T) = \sigma(t) e^{-a(T - t)}$$
-When volatility is separable, the term structure can be reconstructed using a low-dimensional Markovian state vector $(x(t), y(t))$:
-$$dx(t) = (y(t) - a x(t)) dt + \sigma(t) dW(t)$$
-$$dy(t) = (\sigma(t)^2 - 2a y(t)) dt$$
-This formulation, developed by Cheyette (1992), enables fast 1D and 2D PDE solvers and recombining trees for Bermudan swaptions while maintaining exact calibration to the initial yield curve.
+### 4. The LIBOR market model
 
-### 3. The Linear Gauss-Markov (LGM) Model
+Brace, Gatarek and Musiela (Mathematical Finance, 1997), Jamshidian (Finance and Stochastics, 1997) and Miltersen, Sandmann and Sondermann (Journal of Finance, 1997) model the simple forwards $L_k(t) = L(t; T_{k-1}, T_k)$ on a tenor grid with accruals $\tau_k$.
+$L_k = \frac{1}{\tau_k}\left(\frac{P(t, T_{k-1})}{P(t, T_k)} - 1\right)$ is a ratio of a traded asset to $P(t, T_k)$, so it is a martingale under the $T_k$-forward measure:
+$$\frac{dL_k}{L_k} = \sigma_k(t) dW_k^{T_k}(t).$$
+With deterministic $\sigma_k$, $L_k(T_{k-1})$ is lognormal and Black's caplet formula is exact.
 
-The Linear Gauss-Markov (LGM) model, popularized by Patrick Hagan, is a practical parameterization of separable Gaussian HJM models.
-Instead of tracking instantaneous short rates, LGM defines a single Gaussian state variable $x(t)$ with zero mean and no drift:
-$$dx(t) = \sigma(t) dW(t), \quad x(0) = 0$$
-where $\sigma(t)$ is a deterministic volatility function.
+**Drift under a common measure.**
+Changing numeraire from $P(t, T_k)$ to $P(t, T_{k+1})$ adds $-\frac{\tau_{k+1} L_{k+1}}{1 + \tau_{k+1} L_{k+1}} \sigma_k \sigma_{k+1} \rho_{k,k+1} dt$, because $P(t, T_k)/P(t, T_{k+1}) = 1 + \tau_{k+1} L_{k+1}$ has relative volatility $\frac{\tau_{k+1} L_{k+1}}{1 + \tau_{k+1} L_{k+1}}\sigma_{k+1}$.
+Chaining to the terminal measure $\mathbb{Q}^{T_N}$:
+$$\frac{dL_k}{L_k} = -\sum_{j=k+1}^N \frac{\tau_j L_j}{1 + \tau_j L_j} \rho_{kj} \sigma_k \sigma_j\, dt + \sigma_k dW_k^{T_N}.$$
+Under the spot LIBOR measure (numeraire: roll over the front bond at each reset, $q(t)$ the index of the first rate not yet fixed) the drift is positive and sums over rates already in play:
+$$\frac{dL_k}{L_k} = \sum_{j=q(t)}^{k} \frac{\tau_j L_j}{1 + \tau_j L_j} \rho_{kj} \sigma_k \sigma_j\, dt + \sigma_k dW_k^{\text{spot}}.$$
+The drifts depend on the simulated rates, so the model is simulated by Monte Carlo; a log-Euler step that freezes the drift at the start of the step has a discretization error that grows with the step length, and predictor-corrector schemes (Hunter, Jaeckel and Joshi, Risk 2001) re-evaluate the drift at a predicted end state to reduce it.
 
-With numeraire $N(t) = \frac{1}{P(0, t)} \exp\left( H(t) x(t) + \frac{1}{2} H(t)^2 \zeta(t) \right)$, the reduced bond price $P(t, T)/N(t) = P(0, T) \exp\left( -H(T) x(t) - \frac{1}{2} H(T)^2 \zeta(t) \right)$ is a martingale, and all zero-coupon bond prices are expressed analytically in terms of $x(t)$:
-$$P(t, T) = \frac{P(0, T)}{P(0, t)} \exp\left( -\left(H(T) - H(t)\right) x(t) - \frac{1}{2} \left(H(T)^2 - H(t)^2\right) \zeta(t) \right)$$
-where:
-- $H(T)$ is a deterministic, increasing function of maturity alone that encodes mean reversion.
-For constant mean reversion $a$: $H(T) = \frac{1 - e^{-a T}}{a}$.
-- $\zeta(t) = \int_0^t \sigma(s)^2 ds$ is the variance of $x(t)$.
-Hull-White with constant $(a, \sigma_{HW})$ is recovered with $\sigma(s) = \sigma_{HW} e^{a s}$, so $\zeta(t) = \sigma_{HW}^2 \frac{e^{2 a t} - 1}{2 a}$.
+### 5. Factor reduction and correlation
 
-LGM is functionally equivalent to the 1-factor Hull-White model, but decouples the state variable $x(t)$ from the yield curve baseline $P(0, T)$.
-This separation simplifies numerical PDE grids and Monte Carlo simulation paths, making LGM the standard model of choice across Tier-1 investment bank fixed income desks for Bermudan swaptions and callable debt.
+Forty quarterly forwards have $\frac{40 \times 39}{2} = 780$ pairwise correlations, more than any history estimates reliably.
+Litterman and Scheinkman (Journal of Fixed Income, 1991) found that three factors, which they called level, steepness and curvature, explain most of the variation in US Treasury returns, which justifies low-rank models.
+A rank-$d$ correlation is built from unit-length loadings, $\rho_{kj} = \sum_{m=1}^d b_{km} b_{jm}$ with $\sum_m b_{km}^2 = 1$; this is positive semi-definite with a unit diagonal by construction (Rebonato's angle parametrization is one way to choose the $b$).
+Parametric full-rank forms such as $\rho_{kj} = \rho_\infty + (1 - \rho_\infty) e^{-\beta |T_k - T_j|}$, or the Schoenmakers-Coffey (2003) family, keep the matrix valid and smooth in a few parameters.
+Caplet prices depend only on the $\sigma_k$; swaption prices depend on the covariance $\sigma_k \sigma_j \rho_{kj}$, so the correlation is pinned (if at all) by swaptions, not caps.
 
-### 4. The Libor Market Model (LMM / BGM)
+### 6. Backward-looking RFR coupons
 
-While HJM models continuous instantaneous forward rates $f(t, T)$, real market options (caps, floors, European swaptions) depend on discrete, observable forward rates $L(t; T_{k-1}, T_k)$.
-Alan Brace, Dariusz Gatarek, and Marek Musiela (1997), along with Farshid Jamshidian (1997), developed the **Libor Market Model (LMM)** to model market-quoted forward rates directly.
-
-#### Dynamics Under Natural Measures
-Let $T_0, T_1, \dots, T_N$ be a discrete tenor structure with accrual fractions $\tau_k = T_k - T_{k-1}$.
-Define the forward rate $L_k(t) = L(t; T_{k-1}, T_k)$.
-Under its own forward measure $\mathbb{Q}^{T_k}$ (with zero-coupon bond numeraire $P(t, T_k)$), $L_k(t)$ is a martingale:
-$$\frac{dL_k(t)}{L_k(t)} = \sigma_k(t) \cdot dW^{T_k}(t)$$
-If volatility $\sigma_k(t)$ is deterministic, $L_k(T_{k-1})$ is lognormally distributed, replicating Black's caplet formula exactly by construction.
-
-#### Measure Changes and Terminal Measure Dynamics
-To price derivatives whose payoffs span multiple forward rates (such as swaptions, Bermudans, or ratchets), all forward rates $\{L_k(t)\}_{k=1}^N$ must be simulated simultaneously under a single common measure.
-Choosing the terminal measure $\mathbb{Q}^{T_N}$ (numeraire $P(t, T_N)$):
-The change of measure from $\mathbb{Q}^{T_k}$ to $\mathbb{Q}^{T_N}$ introduces an endogenous drift:
-$$\frac{dL_k(t)}{L_k(t)} = \mu_k(t) dt + \sigma_k(t) \cdot dW^{T_N}(t)$$
-where the drift is given by:
-$$\mu_k(t) = -\sum_{j=k+1}^N \frac{\tau_j L_j(t)}{1 + \tau_j L_j(t)} \sigma_k(t) \cdot \sigma_j(t) \rho_{kj}$$
-and $\rho_{kj}$ is the instantaneous correlation between Brownian motions $W_k$ and $W_j$.
-
-Notice that the drift $\mu_k(t)$ depends on the state of all future forward rates $\{L_j(t)\}_{j > k}$.
-In a Monte Carlo simulation, a simple Euler step discretizes this drift, but creates significant systemic bias unless a **predictor-corrector** scheme is implemented.
-
-### 5. Factor Reduction and Correlation Structures
-
-In an LMM with 40 quarterly forward rates (a 10-year horizon), a full correlation matrix contains $\frac{40 \times 39}{2} = 780$ pairwise correlations.
-Simulating 40 independent Brownian motions is computationally expensive and overfits market noise.
-
-#### Principal Component Analysis (PCA)
-Empirical analysis of global yield curves reveals that 3 factors explain over 99% of yield curve variance:
-1. **Level (First Principal Component, ~85-90%):** Parallel shift across all tenors.
-2. **Slope (Second Principal Component, ~8-12%):** Steepening or flattening of the curve.
-3. **Curvature (Third Principal Component, ~2-4%):** Butterfly twisting (short and long ends moving opposite to intermediate tenors).
-
-Practitioners reduce the rank of the correlation matrix to $d = 2$ or $d = 3$ factors:
-$$\rho_{kj} = \sum_{m=1}^d b_{km} b_{jm}$$
-where the factor loadings $b_{km}$ are normalized such that $\sum_{m=1}^d b_{km}^2 = 1$.
-This guarantees that the correlation matrix is positive semi-definite and drastically speeds up Monte Carlo simulations.
-
-#### Parametric Correlation Kernels
-A popular parametric correlation formulation is the Rebonato exponential kernel:
-$$\rho_{kj} = e^{-\beta |T_k - T_j|}$$
-or the two-parameter Schoenmakers-Coffey specification, which ensures that long-dated rates decorrelate smoothly without becoming negative.
-
-### 6. The Post-LIBOR Paradigm: Compounded SOFR Market Models
-
-With the cessation of USD LIBOR and the global adoption of Risk-Free Rates (SOFR, ESTER, SONIA), forward rates are no longer known in advance at $T_{k-1}$.
-Instead, floating coupons are determined by **backward-looking overnight compounding**:
-$$R_k = \frac{1}{\tau_k}\left( \prod_{d=1}^{M_k} \left(1 + r_d \Delta t_d\right) - 1 \right)$$
-Because the rate accumulates daily and is fully determined only at payment date $T_k$, modern market models define:
-1. Extended HJM models driven by overnight rate volatilities.
-2. Discrete Forward-Looking SOFR models calibrated directly to SOFR swaptions and SOFR futures.
-The absence of credit risk between banks also simplifies multi-curve discounting, unifying the pricing and discounting curves under the risk-free overnight index.
+A compounded RFR coupon $R_k = \frac{1}{\tau_k}\left(\prod_{d} (1 + r_d \Delta_d) - 1\right)$ is known only at the end of its accrual period $T_k$, unlike a LIBOR fixing known at $T_{k-1}$.
+Lyashenko and Mercurio (2019) define the forward $R_k(t)$ as the $T_k$-forward expectation of the compounded rate; it is a martingale under $\mathbb{Q}^{T_k}$ like a LIBOR forward, and their forward market model keeps it stochastic inside $[T_{k-1}, T_k]$ with a volatility that decays to zero at $T_k$.
+The LMM drift formulas carry over with that extended volatility; HJM and short-rate models need no change, because the compounded rate is a functional of the short-rate path.
 
 ## Worked examples
 
-### Example 1: Deriving the Ho-Lee HJM Drift
-Consider a 1-factor HJM model with constant volatility $\sigma(t, T) = \sigma$.
-Derive the no-arbitrage drift $\alpha(t, T)$ and show that it corresponds to the Ho-Lee model.
+### Example 1: the Ho-Lee drift
+With constant volatility $\sigma(t, T) = \sigma$, $\alpha(t, T) = \sigma \int_t^T \sigma du = \sigma^2 (T - t)$, so $df(t, T) = \sigma^2 (T - t) dt + \sigma dW$: the continuous-time Ho-Lee model.
+Every forward moves by the same $\sigma dW$ (parallel shifts only), and the drift grows linearly with maturity.
+With $\sigma = 1.5\%$ and $T - t = 2$: $\alpha = 0.015^2 \times 2 = 0.000450$, or $4.5$ bp per year.
 
-Apply the HJM drift condition:
-$$\alpha(t, T) = \sigma(t, T) \int_t^T \sigma(t, u) du$$
-Because $\sigma$ is constant:
-$$\alpha(t, T) = \sigma \int_t^T \sigma du = \sigma [\sigma (T - t)] = \sigma^2 (T - t)$$
-The forward rate dynamics are:
-$$df(t, T) = \sigma^2 (T - t) dt + \sigma dW(t)$$
-This is the continuous-time Ho-Lee term structure model.
-Notice that the drift grows linearly with time to maturity $T - t$, reflecting cumulative Jensen convexity.
+### Example 2: the Hull-White drift
+With $\sigma(t, T) = \sigma e^{-a(T - t)}$:
+$$\int_t^T \sigma e^{-a(u - t)} du = \frac{\sigma}{a}\left(1 - e^{-a(T - t)}\right), \qquad \alpha(t, T) = \frac{\sigma^2}{a} e^{-a(T - t)} \left(1 - e^{-a(T - t)}\right).$$
+With $\sigma = 1.2\%$, $a = 0.03$, $T - t = 2$: $\alpha = 0.000263$.
+Forward volatility decays with maturity: the forward 10 years ahead has $e^{-0.3} = 0.7408$ of the short-end volatility, so mean reversion lowers the vols of long-tenor swaptions relative to short-tenor ones.
 
-### Example 2: Deriving the Hull-White HJM Drift
-Consider an exponentially decaying volatility structure:
-$$\sigma(t, T) = \sigma e^{-a(T - t)}$$
-where $\sigma > 0$ and $a > 0$.
-Derive the HJM drift $\alpha(t, T)$.
+Independent check in [`code/fi_term_structure.py`](code/fi_term_structure.py): $\ln(P(t, T)/B(t))$ is Gaussian with mean $\ln P(0, T) - A$ and variance $V$, where $A$ integrates the drift and $V$ integrates the squared volatility; with the closed-form drift, nested Simpson quadrature gives $A = V/2 = 12.7973 \times 10^{-4}$ for $t = 1$, $T = 5$, so $E[P(t, T)/B(t)] = P(0, T)$, while pairing the Ho-Lee drift with this volatility breaks the equality.
 
-Apply the drift condition:
-$$\alpha(t, T) = \sigma e^{-a(T - t)} \int_t^T \sigma e^{-a(u - t)} du$$
-Evaluate the integral:
-$$\int_t^T e^{-a(u - t)} du = \left[ -\frac{e^{-a(u - t)}}{a} \right]_t^T = \frac{1 - e^{-a(T - t)}}{a}$$
-Multiply by the leading term:
-$$\alpha(t, T) = \sigma e^{-a(T - t)} \times \sigma \left(\frac{1 - e^{-a(T - t)}}{a}\right) = \frac{\sigma^2}{a} e^{-a(T - t)} \left(1 - e^{-a(T - t)}\right)$$
-This volatility structure corresponds to the 1-factor Hull-White (extended Vasicek) model.
-The forward rate volatility decays exponentially with maturity, preventing the explosive long-term variance seen in the Ho-Lee model.
+### Example 3: LGM bond price
+Flat 4% continuously compounded curve, $a = 0.03$, $\sigma_{HW} = 1.2\%$, $t = 1$, $T = 5$:
+$H(1) = 0.985149$, $H(5) = 4.643067$, $\zeta(1) = 1.4841 \times 10^{-4}$, $P(0, 5)/P(0, 1) = 0.852144$, and
+$$P(1, 5; x = 0) = 0.852144 \times \exp\left(-\tfrac{1}{2}(4.643067^2 - 0.985149^2) \times 1.4841 \times 10^{-4}\right) = 0.850843.$$
+The value at $x = 0$ is not the forward price: the forward price is the expectation of $P(1, 5)$ under the 1-year forward measure, not its value at one state.
+Integrating $P(1, 5; x)/N(1, x)$ over $x \sim N(0, \zeta(1))$ with 40-point Gauss-Hermite gives $0.818731 = P(0, 5)$, the martingale property in numbers.
 
-### Example 3: 2-Factor LMM Drift Calculation
-Consider an LMM with two quarterly forward rates $L_1$ and $L_2$ ($T_1 = 0.5\text{y}$, $T_2 = 0.75\text{y}$, $\tau_2 = 0.25$).
-Let $L_1(t) = L_2(t) = 4.0\% = 0.04$, with volatility $\sigma_1 = 20.0\%$ and $\sigma_2 = 18.0\%$.
-The correlation between $L_1$ and $L_2$ is $\rho_{12} = 0.85$.
-Calculate the drift of $L_1(t)$ under the terminal measure $\mathbb{Q}^{T_2}$.
+### Example 4: two-rate LMM drift
+Quarterly forwards $L_1$ (from $0.25$ to $0.5$ years) and $L_2$ (from $0.5$ to $0.75$, $\tau_2 = 0.25$), $L_1 = L_2 = 4\%$, $\sigma_1 = 20\%$, $\sigma_2 = 18\%$, $\rho_{12} = 0.85$, terminal measure $\mathbb{Q}^{T_2}$:
+$$\mu_1 = -\frac{0.25 \times 0.04}{1.01} \times 0.20 \times 0.18 \times 0.85 = -0.009901 \times 0.0306 = -0.000303 \text{ per year},$$
+an absolute drift of $0.04 \times (-0.000303)$, or $-0.12$ bp per year: negligible here, but it scales with $\tau L$, the vols and the number of later rates.
 
-Using the LMM drift formula:
-$$\mu_1(t) = -\frac{\tau_2 L_2(t)}{1 + \tau_2 L_2(t)} \sigma_1 \sigma_2 \rho_{12}$$
-Compute the denominator:
-$$1 + \tau_2 L_2(t) = 1 + 0.25 \times 0.04 = 1.01$$
-Compute the numerator:
-$$\tau_2 L_2(t) = 0.25 \times 0.04 = 0.01$$
-$$\sigma_1 \sigma_2 \rho_{12} = 0.20 \times 0.18 \times 0.85 = 0.0306$$
-Evaluate the drift:
-$$\mu_1(t) = -\frac{0.01}{1.01} \times 0.0306 = -0.009901 \times 0.0306 = -0.000303 \text{ per year}$$
-This is the drift of $dL_1 / L_1$; the absolute drift is $L_1(t) \mu_1(t) = 0.04 \times (-0.000303) = -0.0000121$, about $-0.12\text{ bps}$ per year.
-Under the terminal measure $\mathbb{Q}^{T_2}$, the forward rate $L_1(t)$ drifts downward at approximately $0.12\text{ bps}$ per annum due to the covariance with the discounting bond $P(t, T_2)$.
+Monte Carlo test of an LMM drift implementation: under $\mathbb{Q}^{T_2}$, $P(t, T_0)/P(t, T_2) = (1 + \tau L_1)(1 + \tau L_2)$ must keep its initial expectation.
+With exaggerated inputs ($\tau = 1$, $L = 10\%$, vols $50\%$, $\rho = 0.9$, horizon 2 years, 200,000 paths, 50 log-Euler steps, seed 1997) the target is $1.21$; with the drift the simulated mean is $-0.4$ standard errors from it, and without the drift it is $13.0$ standard errors too high.
 
 ## Pitfalls
 
-- **Euler simulation without predictor-corrector in LMM:** In the Libor Market Model, drifts depend on the state variables $L_j(t)$; standard Euler discretization evaluates drift only at the start of the step, introducing a persistent upward bias in simulated forward rates that misprices multi-callable derivatives.
-- **Path-dependent explosion in generic HJM:** Implementing an HJM model with non-separable volatility (e.g. power-law decay) forces simulation paths to retain the entire history of Brownian increments; calculating state transitions becomes computationally prohibitive ($O(N^2)$ memory and time).
-- **Inconsistent cap and swaption calibration:** Caplets depend on individual forward rate volatilities $\sigma_k$, while swaptions depend on the joint covariance matrix $\sigma_k \sigma_j \rho_{kj}$; calibrating LMM to caps without regularizing the correlation matrix produces negative eigenvalues and spurious correlation estimates.
-- **Ignoring negative rates in lognormal LMM:** Standard BGM assumes lognormal dynamics $\frac{dL}{L} = \dots$; in negative or near-zero rate environments, this produces division-by-zero errors; models must be reformulated as Displaced Diffusion LMM or Normal LMM.
-- **Confounding terminal measure with spot measure:** Simulating a 30-year swap under the terminal measure $\mathbb{Q}^{T_{120}}$ produces extreme variance in short-dated cash flows because numeraire volatility is high; simulating under the spot money-market measure $\mathbb{Q}^*$ stabilizes variance across all horizons.
+- **Large Euler steps in LMM:** freezing a state-dependent drift over a long step (for example one step to each exercise date) biases prices; use small steps or predictor-corrector, and test with the martingale check of Example 4.
+- **Non-separable HJM volatilities:** a general $\sigma(t, T)$ forces the simulation to carry the whole curve and rules out low-dimensional lattices and PDEs.
+- **Expecting caps to pin correlation:** caplets depend on each $\sigma_k$ alone; correlation enters only through swaptions and other multi-rate products, and a correlation matrix fitted entry by entry to swaptions can fail to be positive semi-definite.
+- **Lognormal LMM with low or negative rates:** $dL/L$ cannot produce negative forwards; use a displaced-diffusion or normal LMM.
+- **Measure choice without thought:** under the terminal measure every short-dated rate carries a drift summed over all later rates; the spot measure sums only over rates already set; both are arbitrage-free, but their discretization errors and Monte Carlo variances differ, so test the one you use.
+- **LGM normalisation:** $H$ and $\zeta$ are identified only up to the two LGM invariances; fix them before comparing calibrated parameters across systems.
 
 ## Interview questions
 
 > [!question]- fi-tsm-hjm-drift-condition | State the Heath-Jarrow-Morton (HJM) drift condition and explain its economic significance.
-> The condition is $\alpha(t, T) = \sigma(t, T) \cdot \int_t^T \sigma(t, u) du$.
-> It proves that in an arbitrage-free market, the drift of every instantaneous forward rate under the risk-neutral measure is completely determined by its volatility structure; quants do not calibrate drift independently.
+> $\alpha(t, T) = \sigma(t, T) \cdot \int_t^T \sigma(t, u) du$ under the risk-neutral measure.
+> It comes from requiring $P(t, T)/B(t)$ to be a martingale for every $T$: the drift integral $\int_t^T \alpha$ must equal half the squared bond volatility $\frac{1}{2}|\int_t^T \sigma|^2$, so once volatilities and the initial curve are chosen the model is fully specified.
 
 > [!question]- fi-tsm-hjm-non-markovian | Why is a generic HJM model non-Markovian?
-> Integrating forward rate dynamics reveals that the short rate $r(t) = f(t, t)$ depends on the entire path of Brownian motion from time $0$ to $t$.
-> Unless the volatility kernel is separable, $r(t)$ cannot be summarized by a finite number of state variables, preventing the use of standard PDEs or trees.
+> $r(t) = f(0, t) + \int_0^t \alpha(s, t) ds + \int_0^t \sigma(s, t) \cdot dW(s)$ weights past shocks by $\sigma(s, t)$, which in general cannot be updated from a finite set of current variables.
+> Unless the volatility is separable, the state is the whole curve, which rules out low-dimensional PDEs and recombining trees.
 
 > [!question]- fi-tsm-cheyette-separable | What condition on volatility makes an HJM model Markovian?
-> The volatility kernel must be separable: $\sigma(t, T) = \sum_{k=1}^m g_k(t) h_k(T)$.
-> Under this condition (such as exponential decay $\sigma e^{-a(T-t)}$), the term structure can be mapped to an $m$-dimensional Markovian state system (Cheyette / LGM model).
+> Separability: in one factor $\sigma(t, T) = \sigma_r(t) e^{-\int_t^T \kappa(u) du}$ (equivalently $g(t) h(T)$), which gives the two-variable Ritchken-Sankarasubramanian or Cheyette state $(x, y)$ with $dx = (y - a x)dt + \sigma_r dW$ and $dy = (\sigma_r^2 - 2 a y)dt$.
+> With deterministic $\sigma_r$, $y$ is deterministic and the model is Hull-White; $y$ is a genuine second state when $\sigma_r$ depends on the rate.
 
 > [!question]- fi-tsm-lmm-bgm-definition | What is the Libor Market Model (LMM / BGM) and what was its main advantage over HJM?
-> LMM models observable, discrete market forward rates $L(t; T_{k-1}, T_k)$ rather than continuous unobservable instantaneous rates.
-> Its main advantage is that under each rate's natural forward measure, the forward rate is lognormal, reproducing the standard Black-76 caplet formula by construction.
+> It models the market's discrete simple forwards $L(t; T_{k-1}, T_k)$ instead of unobservable instantaneous forwards.
+> Each $L_k$ is a martingale under its own $T_k$-forward measure, so with deterministic volatility it is lognormal and Black's caplet formula holds exactly, which makes calibration to caps immediate.
 
 > [!question]- fi-tsm-lmm-terminal-drift | Write the drift of forward rate $L_k(t)$ under the terminal measure $\mathbb{Q}^{T_N}$ in LMM.
-> $\mu_k(t) = -\sum_{j=k+1}^N \frac{\tau_j L_j(t)}{1 + \tau_j L_j(t)} \sigma_k(t) \cdot \sigma_j(t) \rho_{kj}$.
-> The drift is determined by the covariance of $L_k$ with all subsequent forward rates that enter the Radon-Nikodym derivative between measures.
+> $\mu_k = -\sum_{j=k+1}^N \frac{\tau_j L_j}{1 + \tau_j L_j} \rho_{kj} \sigma_k \sigma_j$.
+> Each term is the covariance of $L_k$ with $P(t, T_{j-1})/P(t, T_j) = 1 + \tau_j L_j$, the factors that link $L_k$'s own numeraire $P(t, T_k)$ to $P(t, T_N)$.
 
 > [!question]- fi-tsm-pca-three-factors | What are the three primary factors discovered by PCA on interest rate curves?
-> Level (parallel shift, ~85-90% of variance), Slope (steepening/flattening, ~8-12% of variance), and Curvature (butterfly twist, ~2-4% of variance).
+> Level (all yields move together), slope or steepness (short and long ends move in opposite directions), and curvature (the belly moves against both ends).
+> Litterman and Scheinkman (1991) found that these three explain most of the variation in US Treasury returns, with level by far the largest.
 
 > [!question]- fi-tsm-lgm-vs-hw | How does the Linear Gauss-Markov (LGM) model differ from the 1-factor Hull-White model?
-> Mathematically, both span the same Gaussian distribution of zero-coupon bond prices.
-> Functionally, LGM formulates the state variable $x(t)$ with zero drift and defines bond prices as closed-form functions of $x(t)$ and initial market discount factors, making numerical PDE boundaries and calibrations significantly simpler.
+> It is the same Gaussian model: $H(T) = (1 - e^{-aT})/a$ and $\zeta(t) = \sigma_{HW}^2 (e^{2at} - 1)/(2a)$ reproduce Hull-White.
+> LGM uses a driftless state $x$ with variance $\zeta(t)$ under the numeraire $N(t, x)$, so bond prices are closed-form in $x$ and pricing a Bermudan reduces to Gaussian convolutions of $V/N$, which is why it is convenient for PDE and quadrature engines.
 
 > [!question]- fi-tsm-predictor-corrector | Why is a predictor-corrector scheme necessary when simulating LMM?
-> The drift of each forward rate depends on the forward rates themselves.
-> A standard Euler step evaluates the drift only at the current state, accumulating large discretization errors over long paths; predictor-corrector computes an intermediate predicted state to average the drift, removing systemic pricing bias.
+> The drift depends on the forwards themselves, so a log-Euler step that freezes it at the start of the step makes an error that grows with the step size.
+> Predictor-corrector evaluates the drift again at a predicted end-of-step state and averages, which allows long steps (for example straight to each exercise date) with a much smaller bias.
 
 > [!question]- fi-tsm-rank-reduction-why | Why do quants reduce the rank of the correlation matrix in LMM?
-> Full correlation matrices for 40+ tenors are noisy, overfit historical data, and can fail to be positive semi-definite.
-> Reducing the rank to 2 or 3 factors preserves the dominant economic drivers (level, slope, curvature), enforces positive semi-definiteness, and drastically reduces Monte Carlo simulation runtime.
+> A full 40 by 40 matrix has 780 correlations that history cannot estimate reliably, and edits to it can break positive semi-definiteness.
+> A rank-2 or rank-3 structure with unit-length loadings is positive semi-definite by construction, captures level, slope and curvature, and cuts the number of Brownian motions per step.
 
 > [!question]- fi-tsm-sofr-vs-libor-modeling | How has term structure modeling changed in the post-LIBOR SOFR era?
-> LIBOR forward rates were known at the start of the accrual period (in advance).
-> SOFR coupons compound daily overnight in arrears, meaning the final fixing is unknown until the payment date.
-> Models now parameterize backward-looking compounded rates directly or use continuous HJM models calibrated to overnight index swaps.
+> A LIBOR fixing was known at the start of its period; a compounded SOFR coupon is known only at the end, so the forward rate keeps moving through its accrual period.
+> The forward market model of Lyashenko and Mercurio (2019) extends each LMM forward through its accrual period with a volatility decaying to zero at the period end; short-rate and HJM models need no change because the compounded rate is a function of the short-rate path.
+
+> [!question]- fi-tsm-hjm-ho-lee-numeric | In a one-factor HJM model with constant volatility 1.5%, what is the risk-neutral drift of the forward 2 years ahead?
+> $\sigma^2 (T - t) = 0.015^2 \times 2 = 0.00045$, or $4.5$ bp per year.
+> This is Ho-Lee: constant volatility, parallel moves, drift linear in maturity.
+
+> [!question]- fi-tsm-spot-vs-terminal-measure | How does the LMM drift of $L_k$ differ between the spot and the terminal measures?
+> Under the terminal measure it is $-\sum_{j > k} \frac{\tau_j L_j}{1 + \tau_j L_j}\rho_{kj}\sigma_k\sigma_j$, negative and summed over later rates; under the spot LIBOR measure it is $+\sum_{j=q(t)}^{k} \frac{\tau_j L_j}{1 + \tau_j L_j}\rho_{kj}\sigma_k\sigma_j$, positive and summed over earlier rates still alive.
+> Only the last rate is driftless under the terminal measure, and only the front rate under the spot measure.
+
+> [!question]- fi-tsm-lmm-drift-test | How would you unit-test the drift of an LMM Monte Carlo engine?
+> Check martingales: under $\mathbb{Q}^{T_N}$ every $P(t, T_i)/P(t, T_N) = \prod_{j > i}(1 + \tau_j L_j)$ must keep its initial expectation, within a few standard errors.
+> With exaggerated inputs (rates 10%, vols 50%, 2 years) the correct drift passes at $-0.4$ standard errors while omitting it fails at $13.0$, so the test has power.
+
+> [!question]- fi-tsm-hw-forward-vol-decay | In Hull-White with mean reversion 0.03, how volatile is the forward 10 years out relative to the short rate, and why does it matter?
+> $e^{-0.03 \times 10} = 0.7408$ of the short-rate volatility, since $\sigma(t, T) = \sigma e^{-a(T - t)}$.
+> Mean reversion sets how long-dated forwards move relative to short ones, so it controls the ratio of long-tenor to short-tenor swaption vols and the value of switching between exercise dates in a Bermudan.
+
+> [!question]- fi-tsm-lgm-martingale-check | In LGM, what identity would you check numerically to validate a bond pricing function, and what does it look like for $P(1, 5)$?
+> $E[P(t, T; x)/N(t, x)] = P(0, T)$ with $x(t) \sim N(0, \zeta(t))$.
+> On a flat 4% curve with $a = 0.03$ and $\sigma_{HW} = 1.2\%$, Gauss-Hermite integration gives $0.818731 = e^{-0.2}$, while the price at $x = 0$ alone is $0.850843$ against a forward price of $0.852144$.
 
 ## Further reading
 
 - David Heath, Robert Jarrow, and Andrew Morton, *Bond Pricing and the Term Structure of Interest Rates: A New Methodology for Contingent Claims Valuation*, Econometrica, 1992.
+- Peter Ritchken and L. Sankarasubramanian, *Volatility Structures of Forward Rates and the Valuation of Interest Rate Contingent Claims*, Mathematical Finance, 1995.
 - Alan Brace, Dariusz Gatarek, and Marek Musiela, *The Market Model of Interest Rate Dynamics*, Mathematical Finance, 1997.
-- Leif Andersen and Vladimir Piterbarg, *Interest Rate Modeling*, Volume 2: "Term Structure Models", Atlantic Financial Press, 2010.
-- Patrick Hagan, *Evaluating and Hedging Exotic Swap Instruments via LGM*, Wilmott Magazine, 2005.
+- Damiano Brigo and Fabio Mercurio, *Interest Rate Models - Theory and Practice*, 2nd edition, Springer, 2006, chapter 5 (HJM, including the Ritchken-Sankarasubramanian framework) and chapter 6 (LIBOR and swap market models).
+- Leif Andersen and Vladimir Piterbarg, *Interest Rate Modeling*, Volume 2: Term Structure Models, Atlantic Financial Press, 2010.
+- Patrick Hagan, *Evaluating and Hedging Exotic Swap Instruments via LGM*, unpublished manuscript.
+- Andrei Lyashenko and Fabio Mercurio, *Looking Forward to Backward-Looking Rates: A Modeling Framework for Term Rates Replacing LIBOR*, SSRN working paper, 2019.
+- Robert Litterman and Jose Scheinkman, *Common Factors Affecting Bond Returns*, Journal of Fixed Income, 1991.
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/fi_term_structure.py`](code/fi_term_structure.py) (numerical verification of HJM drifts, LGM bond pricing, and LMM dynamics), [`code/rates_models.py`](code/rates_models.py) (Hull-White 1F, Jamshidian swaption, and trinomial tree implementation).
+- Code: [`code/fi_term_structure.py`](code/fi_term_structure.py) asserts every number here, including the HJM quadrature check, the LGM Gauss-Hermite check and the LMM martingale test; [`code/rates_models.py`](code/rates_models.py) has Hull-White bond, Jamshidian swaption and trinomial tree pricers.
 - Prereq: [Short-Rate Models](04-Short-Rate-Models.md), [Rates Volatility and SABR](18-Rates-Volatility-and-SABR.md).
 - Next: [Callable and Bermudan Products](20-Callable-and-Bermudan-Products.md).
