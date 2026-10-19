@@ -314,6 +314,9 @@ def example_turn() -> None:
     quoted("1-week forward over year end, explicit jump (bp)", jump / (7.0 / 365.0) * 1e4, 28.57, 2)
     # Smeared evenly over the quarter, every week of the quarter (year-end week included) carries jump / 0.25.
     quoted("any week of the quarter if the turn is smeared over it (bp)", jump / 0.25 * 1e4, 2.19, 2)
+    weeks_in_quarter = math.floor(0.25 * 365.0 / 7.0)
+    quoted("whole weeks in the quarter", weeks_in_quarter, 13, 0)
+    quoted("weeks overpriced by smearing (all but the year-end week)", weeks_in_quarter - 1, 12, 0)
 
 
 def main() -> None:

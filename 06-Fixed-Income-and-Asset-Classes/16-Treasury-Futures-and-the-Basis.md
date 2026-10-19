@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [bonds-duration-and-convexity, money-markets-repo-and-overnight-rates]
 est_hours: 4
-sources: [CME Group - Calculating U.S. Treasury Futures Conversion Factors (brochure IR232 with five worked examples), CBOT Submission 22-468 to the CFTC - amendments to Rule 19101.A contract grade of the 10-Year Note futures (6 December 2022), CBOT filing to the CFTC - initial listing of Ultra 10-Year U.S. Treasury Note futures with Rulebook Chapter 26 (22 December 2015), Galen Burghardt Terrence Belton Morton Lane and John Papa - The Treasury Bond Basis: An In-Depth Analysis for Hedgers Speculators and Arbitrageurs 3rd ed. (McGraw-Hill 2005), Daniel Barth and R. Jay Kahn - Hedge Funds and the Treasury Cash-Futures Disconnect (OFR Working Paper 21-01 April 2021), FOMC statements of 15 March 2020 and 23 March 2020, Bruce Tuckman and Angel Serrat - Fixed Income Securities 3rd ed. (Wiley 2011)]
+sources: [CME Group - Calculating U.S. Treasury Futures Conversion Factors (brochure IR232 with five worked examples), CBOT Submission 22-468 to the CFTC - amendments to Rule 19101.A contract grade of the 10-Year Note futures (6 December 2022), CBOT filing to the CFTC - initial listing of Ultra 10-Year U.S. Treasury Note futures with Rulebook Chapter 26 (22 December 2015), CBOT Submission 10-132 to the CFTC - amendments to Rule 18101.A contract grade of U.S. Treasury Bond futures (21 May 2010), CBOT Submission 09-177 to the CFTC - initial listing of Long-Term U.S. Treasury Bond (Ultra Bond) futures (21 September 2009), Galen Burghardt Terrence Belton Morton Lane and John Papa - The Treasury Bond Basis: An In-Depth Analysis for Hedgers Speculators and Arbitrageurs 3rd ed. (McGraw-Hill 2005), Daniel Barth and R. Jay Kahn - Hedge Funds and the Treasury Cash-Futures Disconnect (OFR Working Paper 21-01 April 2021), FOMC statements of 15 March 2020 and 23 March 2020, Bruce Tuckman and Angel Serrat - Fixed Income Securities 3rd ed. (Wiley 2011)]
 ---
 
 # Treasury Futures and the Basis
@@ -31,7 +31,7 @@ sources: [CME Group - Calculating U.S. Treasury Futures Conversion Factors (broc
 
 ### 1. Contracts and delivery baskets
 
-Deliverable grades from the exchange's own documents (dated; grades change, so check the current CBOT rulebook):
+Deliverable grades from the exchange's own documents as filed with the CFTC, checked October 2026 (grades change, so check the current CBOT rulebook):
 
 | Contract (ticker, CME code) | Remaining term to maturity (as defined in each contract's rule) | Original term | Source |
 | :--- | :--- | :--- | :--- |
@@ -40,9 +40,11 @@ Deliverable grades from the exchange's own documents (dated; grades change, so c
 | 5-Year (FV, ZF) | at least 4y2m | at most 5y3m | CME conversion factor brochure |
 | 10-Year (TY, ZN) | 6y6m to 7y9m, rounded down to the quarter (from the September 2023 contract) | at most 10y | CBOT Submission 22-468, 6 Dec 2022 |
 | Ultra 10-Year (TN) | at least 9y5m, rounded down to the quarter | at most 10y | CBOT Rule 26101.A as filed 22 Dec 2015 |
-| Bond (US, ZB) | at least 15y | | CME conversion factor brochure |
+| Bond (US, ZB) | at least 15y and less than 25y, rounded down to the quarter (from the March 2011 contract) | | CBOT Rule 18101.A, Submission 10-132, 21 May 2010 |
+| Ultra Bond (UB) | at least 25y, rounded down to the quarter | | CBOT Ultra Bond Rule XX101.A (now Chapter 40), Submission 09-177, 21 Sep 2009 |
 
-The Ultra Bond (UB) and 20-year (TWE) contracts complete the curve.
+The 25-year boundary splits the long end: a bond leaves the UB basket and joins the ZB basket when its remaining term falls below 25 years.
+The 20-year (TWE) contract completes the curve.
 Mechanics in CBOT Chapter 26 (Ultra 10-Year, as filed in 2015), which the other note and bond contracts mirror: face value 100,000 USD; no trading in the last 7 business days of the delivery month; delivery on any business day of the month; invoice amount $= 1000 \times P \times c$ (rounded to the cent) plus accrued interest, with $P$ the settlement price on the day the short gives notice of intention; notices are due by 6:00 p.m. Chicago time.
 
 ### 2. The conversion factor
@@ -226,6 +228,8 @@ Barth and Kahn (2021) conclude the basis trade unwind was more a consequence of 
 - CME Group, "Calculating U.S. Treasury Futures Conversion Factors" (brochure IR232).
 - CBOT, Submission 22-468 to the CFTC, amendments to Rule 19101.A (Contract Grade), 6 December 2022.
 - CBOT, filing to the CFTC for the initial listing of Ultra 10-Year U.S. Treasury Note futures (Rulebook Chapter 26), 22 December 2015.
+- CBOT, Submission 10-132 to the CFTC, amendments to Rule 18101.A (Contract Grade) of U.S. Treasury Bond futures, 21 May 2010.
+- CBOT, Submission 09-177 to the CFTC, initial listing of Long-Term U.S. Treasury Bond (Ultra Bond) futures, 21 September 2009.
 - Galen Burghardt, Terrence Belton, Morton Lane and John Papa, *The Treasury Bond Basis: An In-Depth Analysis for Hedgers, Speculators, and Arbitrageurs*, 3rd edition (McGraw-Hill 2005).
 - Daniel Barth and R. Jay Kahn, "Hedge Funds and the Treasury Cash-Futures Disconnect", OFR Working Paper 21-01, April 2021.
 - Federal Open Market Committee, statements of 15 March 2020 and 23 March 2020.

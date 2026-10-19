@@ -122,7 +122,7 @@ Continuous zeros 3.00, 3.40, 3.70, 4.00, 4.15, 4.30% at 1, 2, 3, 5, 7, 10 years;
 | monotone convex | 0.0000 | 0.0000 | 4.5217 |
 | natural cubic spline on zeros | -0.0063 | 0.0357 | 4.1067 |
 
-An independent implementation (SciPy's natural `CubicSpline`) gives the same three spline numbers, and the bumped monotone convex curve still reprices every pillar.
+The changes are differences of the base and bumped forward curves, and Simpson quadrature of the bumped monotone convex forward still reprices every pillar.
 "A 7y quote should not move the 1.5y forward; with a spline it does, so bucketed risk leaks into tenors the trade does not touch."
 
 ### Example 4: the Jacobian and its inverse
@@ -144,7 +144,8 @@ Bumping each par quote and re-bootstrapping the bond's value gives the same thre
 
 A 2-day turn with a 100 bp premium: $\Delta = 0.01 \times 2/365 = 0.0000548$.
 As an explicit jump, the 1-week forward spanning year end is higher by $\Delta/(7/365) = 28.57$ bp and other weeks are untouched.
-Smeared across a quarter, every week of the quarter carries $\Delta/0.25 = 2.19$ bp: the year-end week is underpriced and eleven other weeks overpriced.
+Smeared across a quarter, every week of the quarter carries $\Delta/0.25 = 2.19$ bp.
+A quarter holds $\lfloor 0.25 \times 365/7 \rfloor = 13$ whole weeks, so the year-end week is underpriced and the other 12 weeks overpriced.
 
 ## Pitfalls
 
