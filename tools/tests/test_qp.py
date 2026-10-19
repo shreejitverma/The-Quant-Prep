@@ -644,6 +644,10 @@ class Index(TempRepo):
         if code == 0:
             (self.root / "README.md").write_text(merged, encoding="utf-8")
             self.assertNotIn(moc.ROOT, moc.update_all(self.vault(), apply=False), "a clean merge left the catalog stale")
+        else:
+            self.assertGreater(code, 0, f"git merge-file failed: {merged}")
+            block = merged[merged.index(moc.CATALOG_START) : merged.rindex(moc.CATALOG_END)]
+            self.assertIn("<<<<<<<", block, "a non-zero merge left no conflict in the catalog")
 
     def test_root_readme_without_catalog_markers_is_untouched(self):
         readme = self.root / "README.md"

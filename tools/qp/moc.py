@@ -79,8 +79,10 @@ def render_catalog(vault: Vault) -> str:
 
     There is deliberately no repo-wide total: a totals line would change in every content pull
     request, so two independently correct pull requests would leave it stale once both merged.
-    Each row changes only when its own section does, so they merge cleanly; ``./qp syllabus``
-    and ``./qp check`` report the totals.
+    Each row changes only when its own section does, so they merge cleanly, and each row carries
+    its own section's totals. ``./qp check`` prints repo-wide note and card counts (whole vault,
+    including library and private notes) and ``./qp syllabus`` prints per-topic hours; no summed
+    study-hours figure is published, by design.
     """
     rows = []
     for section in vault.sections:
