@@ -13,10 +13,10 @@ sources: [Basel Framework MAR31 Internal models approach model requirements (ver
 ## TL;DR
 
 - A risk model maps every position onto a finite set of risk factors (curve tenors, spreads, spots, vol-surface points), chooses a shock convention for each (log returns for prices, absolute changes for rates and spreads), and models the joint distribution of the shocks.
-- Basel internal models must include every factor used in pricing and every standardised-approach factor, at least six yield-curve factors per major currency, separate spread factors, and proxies only where they are supported and conservative (MAR31.2 to MAR31.9, MAR31.26(7)).
+- Basel internal models must include every factor used in pricing and every standardised-approach factor, at least six yield-curve factors per major currency, separate spread factors, and proxies only where they have a track record and are limited and empirically justified (MAR31.2 to MAR31.9, MAR31.26(7)).
 - Covariances are estimated with exponential weighting (RiskMetrics $\lambda = 0.94$ daily: half-life 11.2 days), shrinkage (Ledoit-Wolf) when the number of factors is large relative to the data, and repaired to the nearest valid correlation matrix (Higham) when built from inconsistent pieces.
 - PCA compresses a curve to level, slope and curvature; in the hypothetical 10-tenor model here they carry 85.5%, 7.2% and 3.3% of the variance, and Litterman and Scheinkman (1991) found that three such factors explain most of the variation of Treasury returns.
-- The silent killers are proxies and data: a beta proxy makes a beta-hedged stock position look riskless (a 366k one-day 99% VaR disappears), and non-synchronous closes cut a true correlation of 0.57 to a measured 0.34.
+- The silent killers are proxies and data: a beta proxy makes a beta-hedged stock position look riskless (a 366k one-day 99% VaR disappears), and non-synchronous closes cut a true correlation of 0.50 to a measured daily 0.34.
 
 ## Learning objectives
 
@@ -72,7 +72,7 @@ RiskMetrics updates the covariance as
 $$\Sigma_t = \lambda\Sigma_{t-1} + (1 - \lambda)r_{t-1}r_{t-1}^\top,$$
 
 with $\lambda = 0.94$ for daily data and $0.97$ for monthly data (RiskMetrics Technical Document, 1996, section 5.3.2).
-At 0.94 the weights halve every $\ln 0.5/\ln 0.94 = 11.2$ days, the effective number of observations is $(1 + \lambda)/(1 - \lambda) = 32.3$, and data older than 75 days carry $0.94^{75} = 0.97\%$ of the weight.
+At 0.94 the weights halve every $\ln 0.5/\ln 0.94 = 11.2$ days, the effective number of observations (the Kish size $1/\sum_k w_k^2$ for the normalised weights $w_k = (1 - \lambda)\lambda^k$) is $(1 + \lambda)/(1 - \lambda) = 32.3$, and data older than 75 days carry $0.94^{75} = 0.97\%$ of the weight.
 EWMA reacts to volatility changes and avoids the cliff when a large return leaves an equally weighted window, but 32 effective observations give a noisy correlation matrix in high dimension.
 
 ### Too many factors: noise, shrinkage and factor models
@@ -128,13 +128,17 @@ PCA factors are allowed in Basel internal models as long as they derive from mod
 ### Mapping and proxies
 
 - Vertex mapping: a cash flow at 7y is split onto the 5y and 10y vertices, linearly 0.6 and 0.4, so PV01 is preserved; the 7y-versus-vertex basis disappears from the model.
-- Beta proxies: a single stock mapped to its index as $\beta$ times the index (allowed by MAR31.9 as beta equivalents) loses its idiosyncratic risk. Long 10m of a stock with $\beta = 1.2$ and 25% idiosyncratic vol, short 12m of the index: the proxy model sees zero exposure and zero VaR, while the one-day 99% VaR including idiosyncratic risk is 366,365. Principle two of MAR31.26 requires both components to be captured.
+- Beta proxies: a single stock mapped to its index as $\beta$ times the index (allowed by MAR31.9 as beta equivalents) loses its idiosyncratic risk.
+  Long 10m of a stock with $\beta = 1.2$ and 25% idiosyncratic vol, short 12m of the index: the proxy model sees zero exposure and zero VaR, while the one-day 99% VaR including idiosyncratic risk is 366,365.
+  Principle two of MAR31.26 requires both components to be captured.
 - Missing history: new products are proxied by older ones; the basis is a risk factor in its own right, and under FRTB it is either modelled or charged as a non-modellable factor (MAR31.26(7)(b)).
 
 ### Data problems that look like risk
 
 Markets close at different times, so a common shock that arrives after one market closes shows up in the next day's return there.
-In a simulation where one asset sees 60% of the common factor on the day and 40% the day after, the daily correlation is 0.34 although the synchronous correlation is 0.57; two-day returns recover 0.43, and adding the lead-lag covariance recovers 0.57.
+In a simulation where both assets load fully on a common factor (each with equal idiosyncratic variance) but one sees 60% of it on the day and 40% the day after, the synchronous correlation is 0.50 and the daily close-to-close correlation is 0.34.
+Longer returns climb back toward 0.50: 0.43 at two days and 0.49 at ten.
+Adding the lead-lag covariance to the numerator alone overshoots to 0.57, because the lagged asset's own lag-1 autocovariance is left out of its variance; adding the lag-1 autocovariances to both variances as well (a long-run covariance estimate) recovers 0.50.
 Stale prices, holiday gaps, curve-building changes and spikes from bad ticks all distort covariances in the same silent way.
 
 ### Tails
@@ -225,7 +229,7 @@ In the interview: "a proxy is a model of the basis being zero; I would either mo
 > [!question]- risk-volatility-surface-risk-factor-grids | How are continuous implied volatility surfaces discretized into standardized risk factors?
 > As implied vols at fixed expiry tenors crossed with a moneyness axis (strike relative to forward, or delta buckets), interpolated from the market surface each day.
 > Fixed moneyness keeps a factor's meaning stable as spot moves, while fixed strikes follow individual options; the choice decides whether a spot move also moves "vol" in the model.
-> Basel's internal models must model the surface across both strike and tenor for large option books (MAR33.11(2)).
+> Basel internal models must model the volatility surface across both strike and tenor, with detailed specifications for large or complex option books (MAR33.11(2)).
 
 > [!question]- risk-extreme-value-theory-fat-tails | Why do risk managers fit Generalized Pareto Distributions (GPD) to empirical risk factor tails instead of assuming normal distributions?
 > Because the normal understates the tails of returns: a unit-variance $t_5$ has 99.9% quantile 4.57 against 3.09.
@@ -239,11 +243,11 @@ In the interview: "a proxy is a model of the basis being zero; I would either mo
 
 > [!question]- risk-async-correlation-bias | Why do daily correlations between Asian and US equities look low, and how do you fix it?
 > News after the Asian close appears in the next day's Asian return, so close-to-close returns are non-synchronous.
-> In a simulation with a 60/40 split of the common factor across days, the daily correlation is 0.34 against a synchronous 0.57.
-> Fix with multi-day returns (two-day gives 0.43 here), lead-lag covariance adjustments (recovers 0.57), or synchronised prices at a common time.
+> In a simulation with a 60/40 split of the common factor across days, the daily correlation is 0.34 against a synchronous 0.50.
+> Fix with multi-day returns (0.43 at two days, 0.49 at ten), a long-run covariance estimate that adds the lead-lag covariance and each asset's lag-1 autocovariance (recovers 0.50; adding the lead-lag term to the covariance alone overshoots to 0.57), or synchronised prices at a common time.
 
 > [!question]- risk-ewma-half-life | What is the half-life and the effective sample size of a RiskMetrics EWMA with lambda 0.94?
-> Half-life $\ln 0.5/\ln 0.94 = 11.2$ days; effective number of observations $(1 + \lambda)/(1 - \lambda) = 32.3$.
+> Half-life $\ln 0.5/\ln 0.94 = 11.2$ days; effective number of observations $1/\sum_k w_k^2 = (1 + \lambda)/(1 - \lambda) = 32.3$ for weights $w_k = (1 - \lambda)\lambda^k$.
 > Only $0.94^{75} = 0.97\%$ of the weight is older than 75 days.
 > RiskMetrics used 0.94 for daily and 0.97 for monthly data (Technical Document, 1996).
 
@@ -277,6 +281,13 @@ In the interview: "a proxy is a model of the basis being zero; I would either mo
 > It hides the 7y point's own moves relative to the vertices: a 7y bond hedged with 5s and 10s looks flat even though curve shape changes can hurt it.
 > Choose vertices dense enough where the book has risk, and test the residual with a finer curve.
 
+## In this repo and SDE-Interview-Prep
+
+- [risk_factors.py](code/risk_factors.py): conventions, EWMA and Cholesky, PCA, Ledoit-Wolf, Marchenko-Pastur, Higham, proxies, non-synchronous data, $t$ quantiles; every number above.
+- Linear algebra behind it: [Covariance Matrices and PSD](../03-Linear-Algebra-and-Optimization/04-Covariance-Matrices-and-PSD.md), [PCA and Factor Structure](../03-Linear-Algebra-and-Optimization/05-PCA-and-Factor-Structure.md); estimation for portfolios: [Covariance Estimation and Shrinkage](../09-Alpha-Research-and-Portfolio/11-Covariance-Estimation-and-Shrinkage.md).
+- Curve risk: [Curve Risk and Hedging](../06-Fixed-Income-and-Asset-Classes/15-Curve-Risk-and-Hedging.md); regulatory modellability: [FRTB Non-Modellable Risk Factors](../17-Regulatory-Capital-Basel-and-FRTB/11-FRTB-Non-Modellable-Risk-Factors.md).
+- Using the factors: [Scenario Generation](11-Scenario-Generation.md), [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md).
+
 ## Further reading
 
 - Basel Committee on Banking Supervision, Basel Framework MAR31 (version effective 1 January 2023), paragraphs 31.1 to 31.11 and 31.26.
@@ -286,10 +297,3 @@ In the interview: "a proxy is a model of the basis being zero; I would either mo
 - N. J. Higham, "Computing the nearest correlation matrix - a problem from finance", *IMA Journal of Numerical Analysis* 22(3), 329-343, 2002.
 - V. A. Marchenko and L. A. Pastur, "Distribution of eigenvalues for some sets of random matrices", *Mathematics of the USSR-Sbornik* 1(4), 457-483, 1967; L. Laloux, P. Cizeau, J.-P. Bouchaud and M. Potters, "Noise dressing of financial correlation matrices", *Physical Review Letters* 83(7), 1467-1470, 1999.
 - A. J. McNeil, R. Frey and P. Embrechts, *Quantitative Risk Management*, revised edition, Princeton 2015.
-
-## In this repo and SDE-Interview-Prep
-
-- [risk_factors.py](code/risk_factors.py): conventions, EWMA and Cholesky, PCA, Ledoit-Wolf, Marchenko-Pastur, Higham, proxies, non-synchronous data, $t$ quantiles; every number above.
-- Linear algebra behind it: [Covariance Matrices and PSD](../03-Linear-Algebra-and-Optimization/04-Covariance-Matrices-and-PSD.md), [PCA and Factor Structure](../03-Linear-Algebra-and-Optimization/05-PCA-and-Factor-Structure.md); estimation for portfolios: [Covariance Estimation and Shrinkage](../09-Alpha-Research-and-Portfolio/11-Covariance-Estimation-and-Shrinkage.md).
-- Curve risk: [Curve Risk and Hedging](../06-Fixed-Income-and-Asset-Classes/15-Curve-Risk-and-Hedging.md); regulatory modellability: [FRTB Non-Modellable Risk Factors](../17-Regulatory-Capital-Basel-and-FRTB/11-FRTB-Non-Modellable-Risk-Factors.md).
-- Using the factors: [Scenario Generation](11-Scenario-Generation.md), [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md).

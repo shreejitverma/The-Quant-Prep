@@ -121,8 +121,24 @@ def survival_mdd(h: float, t: float, mu: float, sigma: float) -> float:
     return min(max(total, 0.0), 1.0)
 
 
+def _composite_gauss_legendre(n_panels: int = 150, order: int = 20) -> tuple[np.ndarray, np.ndarray]:
+    """Nodes and weights on [0, 1]: `order`-point Gauss-Legendre on each of `n_panels` equal panels.
+
+    A composite rule resolves the up to 60 half-oscillations of the eigenfunctions as accurately as one
+    3000-point rule, without the 3000 x 3000 eigenvalue problem that numpy's leggauss would solve for it.
+    """
+    nodes, weights = np.polynomial.legendre.leggauss(order)
+    edges = np.linspace(0.0, 1.0, n_panels + 1)
+    half = 0.5 * (edges[1:] - edges[:-1])
+    mid = 0.5 * (edges[1:] + edges[:-1])
+    return (mid[:, None] + half[:, None] * nodes[None, :]).ravel(), (half[:, None] * weights[None, :]).ravel()
+
+
+_UNIT_NODES, _UNIT_WEIGHTS = _composite_gauss_legendre()
+
+
 def _survival_by_quadrature(h: float, t: float, mu: float, sigma: float, n_modes: int = 60) -> float:
-    """Slow reference for survival_mdd: the same eigenfunctions, coefficients by Gauss-Legendre (moderate inputs)."""
+    """Slow reference for survival_mdd: the same eigenfunctions, coefficients by composite Gauss-Legendre."""
     c = mu / sigma**2
     a = c * h
     lo = np.arange(n_modes, dtype=float) * math.pi
@@ -134,9 +150,8 @@ def _survival_by_quadrature(h: float, t: float, mu: float, sigma: float, n_modes
 
     valid = np.sign(g(lo)) != np.sign(g(hi))
     ks = list(_bisect(g, lo[valid], hi[valid]) / h)
-    nodes, weights = np.polynomial.legendre.leggauss(3000)
-    x = 0.5 * h * (nodes + 1.0)
-    w = 0.5 * h * weights
+    x = h * _UNIT_NODES
+    w = h * _UNIT_WEIGHTS
     total = 0.0
     for k in ks:
         psi = np.cos(k * x) - (c / k) * np.sin(k * x)
@@ -228,22 +243,25 @@ def mc_mdd(t: float, mu: float, sigma: float, steps_per_year: int, n_paths: int,
     return out
 
 
-def mc_terminal_drawdown(mu: float, sigma: float, years: float, steps_per_year: int, n_paths: int, seed: int) -> np.ndarray:
-    """Drawdown D_T = M_T - X_T at the horizon, for n_paths paths (close to stationary once T >> sigma^2 / mu^2)."""
+def exact_terminal_drawdown(mu: float, sigma: float, years: float, n_paths: int, seed: int) -> np.ndarray:
+    """D_T = M_T - X_T sampled exactly from the joint law of the endpoint and the running maximum.
+
+    X_T ~ N(mu T, sigma^2 T); given X_T = x the path is a Brownian bridge whatever the drift, and the reflection
+    principle gives M_T = (x + sqrt(x^2 + 2 sigma^2 T E)) / 2 with E ~ Exp(1).  No time grid, so no monitoring bias,
+    and the method does not use the stationary-law argument it is checked against.
+    """
     rng = np.random.default_rng(seed)
-    n = int(years * steps_per_year)
-    dt = 1.0 / steps_per_year
-    out = np.empty(n_paths)
-    batch = 500
-    for start in range(0, n_paths, batch):
-        m = min(batch, n_paths - start)
-        x = np.cumsum(mu * dt + sigma * math.sqrt(dt) * rng.standard_normal((m, n)), axis=1)
-        out[start : start + m] = np.maximum(np.max(x, axis=1), 0.0) - x[:, -1]
-    return out
+    x = mu * years + sigma * math.sqrt(years) * rng.standard_normal(n_paths)
+    m = 0.5 * (x + np.sqrt(x * x + 2.0 * sigma**2 * years * rng.standard_exponential(n_paths)))
+    return m - x
 
 
 def mc_ever_lose(h: float, mu: float, sigma: float, years: float, steps_per_year: int, n_paths: int, seed: int) -> float:
-    """P(min_t X_t <= -h) within `years`, with an exact Brownian-bridge crossing correction between steps."""
+    """P(min_t X_t <= -h) within `years`, with an exact Brownian-bridge crossing correction between steps.
+
+    Given both endpoints of a step above the barrier, the bridge crossing probability is exact for any step length
+    (the conditional bridge does not depend on the drift), so a coarse grid gives an unbiased estimate.
+    """
     rng = np.random.default_rng(seed)
     n = int(years * steps_per_year)
     dt = 1.0 / steps_per_year
@@ -357,6 +375,17 @@ def section_closed_forms() -> None:
     small = magdon_q(1e-4, positive=True)
     check("Q_p(1e-4) / (sqrt(pi/8) sqrt(2e-4)), small-x limit", small / (math.sqrt(math.pi / 8.0) * math.sqrt(2e-4)), 0.995, 1e-3)
     check("(ln 4 + Euler gamma) / 4, against the quoted 0.49088", (math.log(4.0) + EULER_GAMMA) / 4.0, 0.49088, 5e-6)
+    check("4 x 0.49088, the constant of the log form", 4.0 * MAGDON_QP_CONST, 1.96352, 1e-12)
+    check("zero-edge E[MDD], 10% vol, 1 year (card risk-mdd-zero-drift-closed-form)", expected_mdd(1.0, 0.0, 0.10), 0.125, 5e-4)
+    check("zero-edge E[MDD], 10% vol, 3 years", expected_mdd(3.0, 0.0, 0.10), 0.217, 5e-4)
+    # The exact Q_p(x) - ln(x) / 4 converges to (ln 4 + gamma) / 4 = 0.490878 as x grows.
+    limit = (math.log(4.0) + EULER_GAMMA) / 4.0
+    tails = {x: magdon_q(x, positive=True) - 0.25 * math.log(x) for x in (1e3, 1e4, 1e5)}
+    for x, v in tails.items():
+        print(f"  Q_p({x:g}) - ln(x)/4 = {v:.6f}, minus (ln 4 + gamma)/4 = {v - limit:.2e}")
+    check("Q_p(1e4) - ln(1e4)/4", tails[1e4], 0.49094, 5e-6)
+    check("Q_p(1e5) - ln(1e5)/4", tails[1e5], 0.490885, 5e-7)
+    assert tails[1e3] - limit > tails[1e4] - limit > tails[1e5] - limit > 0.0, "monotone convergence from above"
 
 
 def section_example_1() -> dict[str, float]:
@@ -396,10 +425,12 @@ def section_example_1() -> dict[str, float]:
     extrap = (fine.mean() * r - daily.mean()) / (r - 1.0)
     print(f"  MC daily {daily.mean():.5f} (s.e. {daily.std() / math.sqrt(daily.size):.5f}), "
           f"10x finer {fine.mean():.5f} (s.e. {fine.std() / math.sqrt(fine.size):.5f}), sqrt(dt) extrapolation {extrap:.5f}")  # fmt: skip
-    check("MC daily mean MDD, T = 3 (seed 5)", float(daily.mean()), 0.1049, 1e-3)
-    check("MC 10x finer mean MDD, T = 3 (seed 6)", float(fine.mean()), 0.1094, 1.5e-3)
-    check("sqrt(dt)-extrapolated MC, against the exact series", float(extrap), out["exact3"], 2.5e-3)
-    check("MC daily P(MDD_3y >= 15%)", float(np.mean(daily >= 0.15)), 0.105, 5e-3)
+    check("MC daily mean MDD, T = 3 (seed 5)", float(daily.mean()), 0.1049, 5e-5)
+    check("MC 10x finer mean MDD, T = 3 (seed 6)", float(fine.mean()), 0.1092, 5e-5)
+    check("sqrt(dt)-extrapolated MC (quoted value)", float(extrap), 0.1112, 5e-5)
+    se_extrap = math.hypot(r * fine.std() / math.sqrt(fine.size), daily.std() / math.sqrt(daily.size)) / (r - 1.0)
+    assert abs(extrap - out["exact3"]) < 3.0 * se_extrap, "the extrapolated MC must agree with the exact series"
+    check("MC daily P(MDD_3y >= 15%)", float(np.mean(daily >= 0.15)), 0.105, 5e-4)
     assert daily.mean() < fine.mean() < out["exact3"], "discrete monitoring can only miss drawdown"
     return out
 
@@ -433,18 +464,20 @@ def section_stationary_and_ruin() -> None:
     mu, sigma = 0.10, 0.10
     check("stationary mean drawdown sigma^2 / (2 mu)", sigma**2 / (2.0 * mu), 0.05, 1e-12)
     check("stationary P(D > 10%) = exp(-2 mu h / sigma^2)", math.exp(-2.0 * mu * 0.10 / sigma**2), 0.1353, 5e-5)
-    daily = mc_terminal_drawdown(mu, sigma, 20.0, TRADING_DAYS, 20_000, seed=11)
-    fine = mc_terminal_drawdown(mu, sigma, 10.0, 10 * TRADING_DAYS, 4_000, seed=12)
-    print(f"  MC D_T: daily T=20 mean {daily.mean():.5f}, P(D>10%) {np.mean(daily > 0.1):.4f}; "
-          f"10x finer T=10 mean {fine.mean():.5f}")  # fmt: skip
-    check("MC mean D_20y, daily (seed 11)", float(daily.mean()), 0.0465, 1e-3)
-    check("MC mean D_10y, 10x finer (seed 12)", float(fine.mean()), 0.0489, 1e-3)
-    check("MC P(D_20y > 10%), daily", float(np.mean(daily > 0.10)), 0.126, 1e-3)
+    exact = exact_terminal_drawdown(mu, sigma, 20.0, 400_000, seed=11)
+    se_mean = float(exact.std()) / math.sqrt(exact.size)
+    print(f"  exact sampling of D_20y, 400,000 paths: mean {exact.mean():.5f} (s.e. {se_mean:.5f}), "
+          f"P(D > 10%) {np.mean(exact > 0.1):.4f}")  # fmt: skip
+    check("sampled mean D_20y, card risk-stationary-drawdown-mean (seed 11)", float(exact.mean()), 0.0501, 5e-5)
+    check("sampled P(D_20y > 10%) (seed 11)", float(np.mean(exact > 0.10)), 0.1357, 5e-5)
+    assert abs(exact.mean() - sigma**2 / (2.0 * mu)) < 4.0 * se_mean, "exact sampling must agree with sigma^2 / (2 mu)"
     p_formula = math.exp(-2.0 * mu * 0.20 / sigma**2)
-    p_mc = mc_ever_lose(0.20, mu, sigma, 100.0, 12, 50_000, seed=13)
-    print(f"  P(ever lose 20% log): formula {p_formula:.5f}, bridge-corrected MC {p_mc:.5f}")
+    p_mc = mc_ever_lose(0.20, mu, sigma, 100.0, 1, 200_000, seed=13)
+    se_p = math.sqrt(p_formula * (1.0 - p_formula) / 200_000)
+    print(f"  P(ever lose 20% log): formula {p_formula:.5f}, bridge-corrected MC (yearly steps) {p_mc:.5f}")
     check("exp(-2 mu h / sigma^2) = exp(-4), card risk-probability-ever-losing-h", p_formula, 0.0183, 5e-5)
-    check("bridge-corrected MC over 100 years (seed 13)", p_mc, p_formula, 1.2e-3)
+    check("bridge-corrected MC over 100 years, 200,000 paths (seed 13)", p_mc, 0.0182, 5e-5)
+    assert abs(p_mc - p_formula) < 4.0 * se_p, "the bridge-corrected estimate must agree with exp(-2 mu h / sigma^2)"
 
 
 def section_recovery_and_ladder() -> None:
@@ -496,6 +529,7 @@ def section_limits() -> None:
     check("annualised", sig_a, 0.0682, 5e-5)
     check("P(MDD_1y >= 10%) at that vol, Sharpe 1", prob_mdd_at_least(0.10, 1.0, sig_a, sig_a), 0.0804, 5e-5)
     check("P(MDD_1y >= 10%) at that vol, Sharpe 0", prob_mdd_at_least(0.10, 1.0, 0.0, sig_a), 0.2856, 5e-5)
+    check("survival of a zero-Sharpe desk over the year, 1 - 0.2856", survival_mdd(0.10, 1.0, 0.0, sig_a), 0.714, 5e-4)
     print("\n[Core concepts: drawdown-control policy, m = 4, alpha = 0.8, sigma 20%, 5 years daily]")
     calm = simulate_drawdown_floor(4.0, 0.8, 0.08, 0.20, 5.0, TRADING_DAYS, 4000, seed=31, crash=None)
     gap = simulate_drawdown_floor(4.0, 0.8, 0.08, 0.20, 5.0, TRADING_DAYS, 4000, seed=31, crash=-0.30)

@@ -5,19 +5,18 @@ tier: advanced
 status: solid
 prereqs: [interest-rate-risk-in-the-banking-book-irrbb]
 est_hours: 4
-sources: [Board of Governors of the Federal Reserve System - Comprehensive Capital Analysis and Review: Assessment Framework and Results (2023), European Banking Authority - EU-Wide Stress Test Methodology (2023), Bank of England - The Financial Policy Committee approach to the bank capital framework (2022)]
+sources: [12 CFR 225.8(f)(2) stress capital buffer requirement, 12 CFR 252.44(c) capital action assumptions, Federal Reserve Board - Supervisory Stress Test Model Documentation - Aggregation Models (October 2025), Federal Reserve Board - 2026 Federal Reserve Stress Test Results (June 2026), Federal Reserve Board press releases of 4 February 2026 and 30 September 2026 and Board memo of 31 August 2026, EBA - 2025 EU-wide stress test Methodological Note and Results (1 August 2025), ECB Banking Supervision - Pillar 2 guidance, BCBS (2018) Stress testing principles (d450)]
 ---
 
 # Stress Testing: CCAR, DFAST, and EBA
 
 ## TL;DR
 
-Regulatory stress testing subjects bank portfolios to hypothetical macroeconomic and financial shocks to ensure capital adequacy during severe crises.
-In the United States, the Federal Reserve enforces the Comprehensive Capital Analysis and Review (CCAR) and Dodd-Frank Act Stress Testing (DFAST) across Baseline and Severely Adverse scenarios.
-In Europe, the European Banking Authority (EBA) and European Central Bank (ECB) conduct biennial EU-wide stress tests under static balance sheet assumptions and IFRS 9 staging rules.
-Under modern US rules, CCAR quantitative stress projections directly dictate the Stress Capital Buffer (SCB), bridging point-in-time stress losses with ongoing Pillar 1 minimums.
-In Europe, stress test outcomes directly inform Pillar 2 Guidance (P2G) and Pillar 2 Requirements (P2R).
-Accurate modeling requires projecting Pre-Provision Net Revenue (PPNR), credit loss migrations, trading book mark-to-market losses, and counterparty defaults across 9-quarter forecast horizons.
+- The Federal Reserve's supervisory stress test projects each large bank over nine quarters under a severely adverse scenario, holding the balance sheet and RWA constant and assuming no common dividends (Board aggregation-model documentation; 12 CFR 252.44(c)).
+- Its result sets the stress capital buffer: start CET1 ratio minus the lowest projected ratio, plus planned common dividends for quarters 4 to 7 over RWA in the trough quarter, floored at 2.5% (12 CFR 225.8(f)(2)).
+- As of 2026-10: the Board kept existing SCBs in place until 2027, moves the SCB effective date from 1 October to 1 January from 2028, and averages the last two tests' declines from the SCB effective 1 January 2029 (final rules of 30 September 2026).
+- The EBA's EU-wide test runs three years with a static balance sheet and no pass or fail mark; in the SSM the depletion places banks into P2G buckets, and P2G is non-binding and outside the MDA (ECB).
+- The mechanics interviewers probe: where the trough falls, why RWA in the denominator matters, how IFRS 9 stage migration (not PD alone) drives provisions, and why DTAs can deepen the trough.
 
 ## Learning objectives
 
@@ -30,219 +29,213 @@ Accurate modeling requires projecting Pre-Provision Net Revenue (PPNR), credit l
 
 ## Core concepts
 
-### 1. Regulatory Frameworks: CCAR, DFAST, and EBA
+### The two regimes side by side
 
-Regulatory stress testing tests whether large banks can survive severe economic distress while continuing to lend to creditworthy households and businesses.
-
-| Dimension | US CCAR / DFAST | European EBA / ECB |
+| Dimension | US supervisory stress test (DFAST) and capital plan (CCAR) | EU-wide stress test (EBA, run with the ECB and national supervisors) |
 | :--- | :--- | :--- |
-| **Primary Regulator** | Federal Reserve Board (FRB) | EBA and ECB Single Supervisory Mechanism (SSM) |
-| **Horizon** | 9 quarters forward | 3 years forward (annual steps) |
-| **Balance Sheet Assumption** | Dynamic balance sheet (constrained management actions) | Strict static balance sheet (constant volume, maturity, mix) |
-| **Capital Linkage** | Directly sets Stress Capital Buffer (SCB) added to Pillar 1 | Informs Pillar 2 Guidance (P2G, non-binding) and P2R (binding) |
-| **Accounting Standard** | US GAAP (CECL - Current Expected Credit Losses) | IFRS 9 (Stage 1, 2, and 3 credit migration) |
-| **Capital Distribution** | Planned capital actions evaluated; SCB sets payout limits | Hurdle rate assessment; dividend distribution restrictions |
+| Who projects | The Board, with its own models, on bank-submitted data; banks also run company-run tests | Banks, under binding EBA methodology ("constrained bottom-up"), with some top-down elements such as centralised NII and fee projections |
+| Horizon | Nine quarters (2026 test: 2026:Q1 to 2028:Q1) | Three years |
+| Balance sheet | Held constant: assets, RWA and leverage denominators unchanged except for regulatory-capital effects (Board aggregation models, October 2025) | Static: maturing positions replaced with like positions, no management actions (EBA 2025 methodology) |
+| Capital actions | No common dividends, no repurchases or issuance; AT1 and Tier 2 coupons paid (12 CFR 252.44(c)) | Not a distribution test; results inform SREP |
+| Capital linkage | Sets the stress capital buffer (12 CFR 225.8(f)(2)) | Quantitative input to Pillar 2 guidance (P2G) buckets; qualitative findings feed P2R (ECB) |
+| Pass or fail | All banks must stay above minimum requirements; the SCB is bank-specific | No predefined pass or fail threshold (EBA 2025 results) |
+| Accounting | US GAAP, CECL | IFRS 9 staging |
 
-### 2. Supervisory Macroeconomic Scenarios
+Both are deliberately "no shrink to health" designs.
+The Board says the constant balance sheet ensures firms "cannot assume they will shrink to health" and keeps them capitalised to meet credit demand in a downturn (aggregation-model documentation).
+Banks' own capital planning and the company-run tests may still model balance-sheet dynamics; the supervisory number does not.
 
-The Federal Reserve and EBA publish detailed macroeconomic scenarios annually or biennially:
-- **Baseline Scenario:** Tracks consensus economic forecasts (moderate growth, stable inflation and unemployment).
-- **Severely Adverse Scenario:** Severe global recession characterized by sharp contractions in real GDP (often 5% to 8% peak-to-trough), unemployment surges (spikes to 10% or higher), asset price deflation (commercial real estate down 35% to 40%, equities down 50%), and significant financial market volatility.
-- **Global Market Shock (GMS):** An instantaneous, comprehensive repricing shock applied to trading book positions and private equity holdings for institutions with substantial trading operations.
-- **Largest Counterparty Default (LCPD):** An instantaneous default of the single largest counterparty across derivatives and securities financing transactions, net of collateral recovery.
+### Scenarios and the 2026 test
 
-### 3. Balance Sheet Dynamics: Static vs. Dynamic Assumptions
+The Board's severely adverse scenario for 2026 raised unemployment by nearly 5.5 percentage points to a 10% peak, with house prices down about 30% and commercial real estate down 39% (press release of 4 February 2026).
+Banks with large trading operations also face a global market shock, and banks with large trading or custody operations a largest-counterparty-default component.
+Results (24 June 2026): 32 banks, more than USD 708 billion of losses, aggregate CET1 falling from 12.8% to a minimum of 11.2%, a decline of 1.6 points, and every bank above its minimum.
+From the 2027 test the Board expects to apply two global market shocks on the same as-of date and use whichever produces the larger loss for each firm (Board memo of 31 August 2026).
 
-The choice of balance sheet assumption alters bank survivability:
-- **Static Balance Sheet (EBA approach):**
-  Assets and liabilities that mature during the stress horizon are replaced with assets and liabilities having identical remaining maturity, credit quality, sector, and currency.
-  The bank cannot organically shrink its loan book, alter its business mix, or cut unprofitable lines to conserve capital.
-  This assumption ensures comparability across European institutions but ignores natural deleveraging.
-- **Dynamic Balance Sheet (US CCAR approach):**
-  Banks model loan demand contractions, drawdowns on committed lines of credit, deposit outflows, and changes in asset composition under economic stress.
-  However, regulators restrict speculative management interventions (such as massive fire sales of illiquid assets or unapproved cost cuts).
+The EBA 2025 exercise covered 64 banks and 75% of EU banking assets; the adverse scenario depleted CET1 by 370 basis points, to 12% at the end of the horizon (EBA, 1 August 2025).
 
-### 4. PPNR Modeling (Pre-Provision Net Revenue)
+### PPNR and losses
 
-PPNR is operating revenue before credit loss provisions and taxes:
+$$
+\text{PPNR} = \text{NII} + \text{non-interest income} - \text{non-interest expense},
+\qquad
+\Delta \text{CET1}_q = (1 - \tau)\,(\text{PPNR}_q - \text{provisions}_q - \text{trading and counterparty losses}_q) - \text{distributions}_q .
+$$
 
-$$\text{PPNR} = \text{Net Interest Income (NII)} + \text{Non-Interest Income} - \text{Non-Interest Expense}$$
+- NII depends on the rate path, deposit pricing (betas) and repricing gaps; the June 2026 results attribute part of the year-on-year change to higher interest income and smaller hypothetical rate declines.
+- Provisions under CECL and IFRS 9 are forward-looking, so deteriorating forecasts load provisions early; the trough often comes before the peak in defaults.
+- The global market shock and counterparty default are instantaneous and hit the first quarter.
+- Taxes: losses create deferred tax assets; DTAs from net operating loss carry-forwards are deducted from CET1 in full and DTAs from temporary differences above threshold (CAP30.9, CAP30.32 to CAP30.34), so the after-tax cushion is smaller than $(1 - \tau)$ suggests.
 
-- **Net Interest Income (NII):**
-  Product of stressed asset yields minus stressed funding costs across earning assets.
-  During severe recessions, central banks cut policy rates to zero (or hike aggressively in stagflation shocks), causing asset repricing mismatches, margin compression, and deposit beta distortions.
-- **Non-Interest Income:**
-  Investment banking fees, asset management fees, and trading commissions collapse due to depressed deal activity, market valuation declines, and reduced client trading flows.
-- **Non-Interest Expense:**
-  Operational costs, regulatory litigation reserves, and IT overhead remain sticky or increase due to workout and collections expenses on defaulted loans.
+### IFRS 9 staging under stress
 
-### 5. Credit Loss Modeling and Staging Under Stress
+Stage 1 carries 12-month expected credit loss, Stage 2 (significant increase in credit risk) carries lifetime loss, Stage 3 is credit-impaired.
+The provision jump under stress comes mostly from migration: a loan moving from Stage 1 to Stage 2 switches from a 12-month to a lifetime horizon and to stressed parameters at the same time.
 
-Credit stress modeling estimates credit impairments over the 9-quarter horizon:
-- **US CECL Framework:**
-  Requires reserving for lifetime expected credit losses at every stress quarter.
-  As macroeconomic forecasts deteriorate in Quarter 1 and Quarter 2, banks must book massive front-loaded provisions before actual defaults peak.
-- **European IFRS 9 Framework:**
-  Models migration of exposures across three stages:
-  - Stage 1: 12-month expected credit loss ($ECL_{12m}$) for performing assets without significant increase in credit risk (SICR).
-  - Stage 2: Lifetime expected credit loss ($ECL_{lifetime}$) upon SICR trigger (e.g., ratings downgrade, 30+ days past due, macroeconomic deterioration).
-  - Stage 3: Credit-impaired assets (defaulted, 90+ days past due).
-  Under the EBA scenario, large swathes of corporate and retail exposures migrate from Stage 1 to Stage 2, resulting in non-linear provision surges.
+### The stress capital buffer
 
-### 6. Capital Determination: The US Stress Capital Buffer (SCB)
+From 12 CFR 225.8(f)(2):
 
-Introduced in 2020, the SCB integrates CCAR stress projections into ongoing capital requirements:
+$$
+\text{SCB} = \max\left(2.5\%,\;
+\underbrace{\frac{\text{CET1}_0}{\text{RWA}_0} - \min_{q} \frac{\text{CET1}_q}{\text{RWA}_q}}_{\text{stress capital decline}}
++ \underbrace{\frac{\sum_{q=4}^{7} \text{Div}_q}{\text{RWA}_{q^*}}}_{\text{dividend add-on}}\right),
+$$
 
-$$\text{SCB} = \max\left(2.5\%, \left(\text{Starting CET1 Ratio} - \text{Minimum Stressed CET1 Ratio}\right) + \frac{4 \times \text{Planned Common Dividends}}{\text{Stressed RWA}}\right)$$
+where $q^*$ is the quarter with the lowest projected CET1 ratio and the planning horizon is at least nine quarters (225.8(d)).
+The projected $\text{CET1}_q$ assumes no common dividends (252.44(c)); the add-on then puts one year of planned dividends back, so a bank cannot fund its payout from the buffer.
+The CET1 requirement of a US G-SIB under the standardized approach is $4.5\% + \text{SCB} + \text{G-SIB surcharge} + \text{CCyB}$.
 
-Where:
-- Starting CET1 Ratio is the actual capital ratio at the projection base date (typically Q4).
-- Minimum Stressed CET1 Ratio is the lowest projected CET1 ratio reached across any of the 9 quarters under the Severely Adverse scenario.
-- $4 \times \text{Planned Common Dividends}$ represents the next four quarters of planned dividend payments.
-- The standard floor is $2.5\%$.
-- The total CET1 requirement for a Category I bank becomes:
+Changes finalised on 30 September 2026:
 
-$$\text{Total CET1 Minimum} = 4.5\% \text{ (Pillar 1)} + \text{SCB} + \text{G-SIB Surcharge} + \text{CCyB}$$
+- the SCB effective date moves from 1 October to 1 January of the year after the test, starting with the SCB effective 1 January 2028;
+- from the SCB effective 1 January 2029, the Board averages the stress capital declines of the two most recent tests, then adds the dividend add-on, then applies the floor, in that order;
+- the Board voted in February 2026 to keep the existing SCBs until 2027, so the June 2026 results did not change requirements.
+
+```mermaid
+flowchart TD
+    A["Jump-off balance sheet (31 December)"] --> B["Scenario: macro paths, global market shock, counterparty default"]
+    B --> C["Board models: PPNR, losses, provisions, taxes"]
+    C --> D["Quarterly CET1 with no common dividends (252.44(c)), constant RWA"]
+    D --> E["Stress capital decline = start ratio - minimum ratio"]
+    F["Planned dividends, quarters 4 to 7"] --> G["Dividend add-on over RWA at the trough quarter"]
+    E --> H["SCB = max(2.5%, decline + add-on)"]
+    G --> H
+    H --> I["CET1 requirement = 4.5% + SCB + G-SIB surcharge + CCyB"]
+```
+
+### Europe: from stress test to P2G
+
+The ECB allocates each bank to one of four P2G buckets according to its fully loaded CET1 depletion in the adverse scenario; P2G is not equal to the depletion, is not legally binding, and is not part of the MDA calculation, while qualitative stress-test findings feed P2R (ECB Banking Supervision, Pillar 2 guidance).
+Breaching the combined buffer, which sits above P1 and P2R, is what triggers the automatic MDA restrictions.
 
 ## Worked examples
 
-### Example 1: Full 9-Quarter CET1 Trajectory and SCB Calculation
+### Example 1: the SCB of a hypothetical bank
 
-A US Category I bank reports the following starting balance sheet and capital position at Q0:
-- Tier 1 Common Equity (CET1): $\$50,000\text{ million}$
-- Risk-Weighted Assets (RWA): $\$400,000\text{ million}$
-- Starting CET1 Ratio: $\frac{\$50,000}{\$400,000} = 12.50\%$
-- Planned Quarterly Common Stock Dividends: $\$500\text{ million}$ (total $\$2,000\text{ million}$ over 4 quarters)
-- Effective Corporate Tax Rate: $21\%$ (assuming immediate tax benefit offset against deferred tax liabilities)
+USD millions; CET1 50,000, RWA 400,000 held constant, so the start ratio is 12.50%; tax at 21% with the benefit recognised immediately (a simplification); planned dividends 500 a quarter.
+Quarterly pre-tax income under the severely adverse scenario: $-3{,}300, -3{,}900, -3{,}000, -1{,}650, -500, 380, 890, 1{,}140, 1{,}390$, a nine-quarter total of $-8{,}550$.
 
-Under the Federal Reserve Severely Adverse scenario, the 9-quarter stress model generates cumulative financial results:
-- Cumulative 9-Quarter PPNR: $+\$14,000\text{ million}$
-- Cumulative 9-Quarter Provisions for Loan Losses: $-\$22,000\text{ million}$
-- Instantaneous Global Market Shock (GMS) Pre-Tax Loss: $-\$6,000\text{ million}$
-- Largest Counterparty Default (LCPD) Pre-Tax Loss: $-\$2,000\text{ million}$
-- Cumulative Pre-Tax Net Income:
+1. After tax the nine-quarter total is $0.79 \times (-8{,}550) = -6{,}754.5$, but the trough comes earlier.
+2. Rolling capital forward quarter by quarter, the cumulative after-tax loss peaks at 9,756.5 in quarter 5, so the trough CET1 is 40,243.5.
+3. Minimum ratio $40{,}243.5 / 400{,}000 = 10.06\%$, decline $12.50\% - 10.06\% = 2.44\%$.
+4. Dividend add-on: quarters 4 to 7 total 2,000, over the trough-quarter RWA of 400,000, is 0.50%.
+5. $\text{SCB} = \max(2.5\%, 2.44\% + 0.50\%) = 2.94\%$.
+6. With a 2.0% G-SIB surcharge and no CCyB the CET1 requirement is $4.5\% + 2.94\% + 2.0\% = 9.44\%$, leaving a cushion of 3.06%.
+7. The end-of-horizon ratio is 10.81%: using the end point instead of the trough would understate the decline.
 
-$$\text{Pre-Tax Net Income} = 14,000 - 22,000 - 6,000 - 2,000 = -\$16,000\text{ million}$$
+If the same bank lost half as much, the decline would be 1.22%, decline plus add-on 1.72%, and the 2.5% floor would bind.
+Under averaging, a second test with a 1.60% decline gives an average of 2.02%, plus 0.50% is 2.52%, just above the floor; the floor is applied after averaging.
 
-- Cumulative After-Tax Loss (at 21%):
+### Example 2: IFRS 9 stage migration under stress
 
-$$\text{Net Loss} = -16,000 \times (1 - 0.21) = -\$12,640\text{ million}$$
+A EUR 10,000 million corporate book: 90% Stage 1 (12-month PD 0.8%, LGD 40%), 10% Stage 2 (lifetime PD 6.0%, LGD 45%).
+Simplified ECL = exposure x PD x LGD, undiscounted.
 
-Quarterly distribution of stress impacts:
-- In Quarter 3, cumulative after-tax losses reach $-\$9,500\text{ million}$.
-- Credit line drawdowns and market volatility expand RWA in Quarter 3 from $\$400,000\text{ million}$ to $\$425,000\text{ million}$.
-- Stressed CET1 Capital at Quarter 3:
+1. Baseline: Stage 1 $9{,}000 \times 0.008 \times 0.40 = 28.8$, Stage 2 $1{,}000 \times 0.060 \times 0.45 = 27.0$, total 55.8.
+2. Stress: 25% of Stage 1 (2,250) migrates to Stage 2; remaining Stage 1 PD doubles to 1.6%; Stage 2 lifetime PD rises to 14.0% and LGD to 50%.
+3. Stressed Stage 1 $6{,}750 \times 0.016 \times 0.40 = 43.2$; Stage 2 $3{,}250 \times 0.140 \times 0.50 = 227.5$; total 270.7.
+4. Increase 214.9, or 385.1% of the baseline.
+5. Attribution by loan group: loans that stay in Stage 1 add 21.6, the old Stage 2 book adds 43.0, and the migrated loans add 150.3, that is 69.9% of the increase.
 
-$$\text{Stressed CET1}_{\text{Q3}} = \$50,000 - \$9,500 = \$40,500\text{ million}$$
-
-- Minimum Stressed CET1 Ratio (reached at Q3 trough):
-
-$$\text{CET1 Ratio}_{\text{Q3}} = \frac{\$40,500}{\$425,000} = 9.5294\% \approx 9.53\%$$
-
-- Peak-to-Trough Capital Depletion:
-
-$$\text{Depletion} = \text{Starting CET1 Ratio} - \text{Minimum Stressed CET1 Ratio} = 12.50\% - 9.53\% = 2.97\%$$
-
-- Dividend Add-On Component (using Q3 RWA of $\$425,000\text{ million}$, the quarter with the lowest projected CET1 ratio, as required by 12 CFR 225.8):
-
-$$\text{Dividend Add-on} = \frac{4 \times \$500}{\$425,000} = \frac{\$2,000}{\$425,000} = 0.4706\% \approx 0.47\%$$
-
-- Calculated SCB:
-
-$$\text{SCB} = \max\left(2.5\%, 2.97\% + 0.47\%\right) = \max(2.5\%, 3.44\%) = 3.44\%$$
-
-The bank's new binding CET1 capital requirement (assuming a $2.0\%$ G-SIB surcharge and $0.0\%$ CCyB) is:
-
-$$\text{Required CET1} = 4.5\% + 3.44\% + 2.0\% + 0.0\% = 9.94\%$$
-
-With a starting capital ratio of $12.50\%$, the bank maintains a capital cushion of $12.50\% - 9.94\% = 2.56\%$ above its regulatory restriction threshold.
-
-### Example 2: EBA IFRS 9 Staging Transition Under Macroeconomic Stress
-
-A European commercial bank holds a $€10,000\text{ million}$ portfolio of corporate loans at Year 0.
-Under normal economic conditions:
-- $90\%$ of loans are in Stage 1 ($€9,000\text{ million}$), with 12-month $PD = 0.8\%$ and $LGD = 40\%$.
-- $10\%$ of loans are in Stage 2 ($€1,000\text{ million}$), with lifetime $PD = 6.0\%$ and $LGD = 45\%$.
-- Stage 1 Provisions: $9,000 \times 0.008 \times 0.40 = €28.8\text{ million}$.
-- Stage 2 Provisions: $1,000 \times 0.060 \times 0.45 = €27.0\text{ million}$.
-- Baseline Provisions: $28.8 + 27.0 = €55.8\text{ million}$.
-
-Under the EBA Severely Adverse 3-year scenario:
-- $25\%$ of Stage 1 loans experience a Significant Increase in Credit Risk (SICR) and migrate to Stage 2 ($€2,250\text{ million}$).
-- Remaining Stage 1 loans ($€6,750\text{ million}$) see 12-month $PD$ double to $1.6\%$.
-- Stressed Stage 2 loans ($€1,000 + €2,250 = €3,250\text{ million}$) see lifetime $PD$ rise to $14.0\%$ and stressed $LGD$ rise to $50\%$.
-- Stressed Stage 1 Provisions: $6,750 \times 0.016 \times 0.40 = €43.2\text{ million}$.
-- Stressed Stage 2 Provisions: $3,250 \times 0.140 \times 0.50 = €227.5\text{ million}$.
-- Total Stressed Provisions: $43.2 + 227.5 = €270.7\text{ million}$.
-- Net Provision Spike: $€270.7 - €55.8 = €214.9\text{ million}$ (a $385\%$ increase).
-Under the static balance sheet rule, the bank cannot resolve this capital drain by shrinking the corporate lending book.
+The lesson is the attribution: the staging threshold (the SICR trigger) matters more than the PD shock itself.
 
 ## Pitfalls
 
-- **Ignoring CECL Reserve Front-Loading:** Under US CECL, banks cannot recognize loan losses gradually as defaults occur.
-  Lifetime expected credit losses must be recognized when economic forecasts worsen in Q1, creating an early CET1 trough.
-- **Assuming Constant RWA Under Stress:** RWAs do not remain static during economic crises.
-  Corporate credit downgrades trigger higher regulatory risk weights, derivative netting sets suffer higher replacement costs, and drawn commitments increase total balance sheet assets.
-- **Double Counting GMS and Credit Losses:** If corporate bond trading positions suffer mark-to-market declines under the Global Market Shock, analysts must verify that the same corporate issuers are not double-counted in the banking book credit default module.
-- **Confusing DFAST with CCAR:** DFAST is purely a supervisory and company-run stress testing exercise using standardized capital distributions.
-  CCAR incorporates bank-proposed capital actions (dividends, share buybacks) and directly sets binding capital constraints via the SCB.
-- **Neglecting Tax Valuation Allowances:** In a severe stress scenario, accumulating pre-tax operating losses can create substantial Deferred Tax Assets (DTAs).
-  If the bank cannot demonstrate future profitability to realize these DTAs, supervisory rules require deducting them from CET1 capital, compounding capital depletion.
+- Reading the end-of-horizon ratio instead of the minimum: in Example 1 the trough is quarter 5 and the end ratio is 0.75 points higher.
+- Using a dynamic balance sheet for the supervisory number: the Board holds assets and RWA constant; shrinking in the projection is not allowed.
+- Putting the four quarters of dividends into projected capital and also into the add-on: the projection assumes no common dividends; the add-on is the only place they enter.
+- Taking the add-on denominator from the jump-off quarter: it is the RWA of the trough quarter (225.8(f)(2)(i)(C)(2)); with constant RWA they coincide, in a company-run projection they need not.
+- Applying the 2.5% floor before averaging two years of declines: the 2026 rule averages first, adds dividends, then floors.
+- Treating P2G as a hard minimum: it is non-binding and outside the MDA; the combined buffer is what triggers distribution limits.
+- Ignoring DTA deductions: loss carry-forward DTAs are deducted in full (CAP30.9), so a large pre-tax loss costs more CET1 than $(1 - \tau)$ times the loss.
+- Double counting trading losses: positions hit by the global market shock should not also take banking-book credit losses for the same names.
 
 ## Interview questions
 
 > [!question]- reg-17-01 | What is the primary difference between US CCAR and European EBA stress testing methodologies regarding balance sheet assumptions?
-> EBA enforces a strict static balance sheet assumption where maturing assets and liabilities are replaced with identical instruments, preventing banks from organically deleveraging or altering their business mix.
-> In contrast, US CCAR uses dynamic balance sheet modeling where banks project realistic loan contractions, commitment drawdowns, and deposit shifts, subject to supervisory validation.
+> Less than people think: both hold the balance sheet fixed for the supervisory number.
+> The Fed's supervisory test keeps assets and RWA constant over nine quarters (Board aggregation-model documentation), and the EBA uses a static balance sheet with like-for-like replacement over three years.
+> The differences are who runs the models (the Board's own models versus constrained bank projections) and how results are used (a mechanical SCB versus a P2G bucket in SREP).
 
 > [!question]- reg-17-02 | How is the Stress Capital Buffer (SCB) under the Federal Reserve framework calculated?
-> The SCB is calculated as $\max(2.5\%, \text{Peak-to-Trough CET1 Ratio Depletion} + \text{Four Quarters of Planned Dividends as \% of Stressed RWA})$.
-> It replaces the previous static $2.5\%$ capital conservation buffer for large US banks, tailoring ongoing capital requirements to specific stress losses.
+> $\max(2.5\%, \text{start CET1 ratio} - \text{minimum projected CET1 ratio} + \text{dividends in quarters 4 to 7} / \text{RWA in the trough quarter})$ (12 CFR 225.8(f)(2)).
+> The projection itself assumes no common dividends (252.44(c)).
+> The SCB replaces the fixed 2.5% conservation buffer in the standardized-approach CET1 requirement of firms subject to it.
 
 > [!question]- reg-17-03 | What constitutes the Pre-Provision Net Revenue (PPNR) in stress testing?
-> PPNR equals Net Interest Income plus Non-Interest Income minus Non-Interest Expense before deducting provisions for loan and lease losses and income taxes.
-> It measures the core operating earnings available to absorb credit and market losses during an economic crisis.
+> NII plus non-interest income minus non-interest expense, before provisions and taxes.
+> It is the earnings capacity that absorbs losses quarter by quarter; it can stay positive while provisions drive capital down.
 
 > [!question]- reg-17-04 | How does the CECL accounting standard affect the quarterly timing of credit loss recognition in CCAR?
-> CECL requires recognizing lifetime expected credit losses based on reasonable and supportable macroeconomic forecasts.
-> When the severe stress scenario is initiated, forward-looking macroeconomic deterioration causes a massive spike in loan loss allowances in Quarters 1 and 2, shifting the capital trough earlier compared to incurred loss models.
+> It front-loads provisions: lifetime expected losses are booked as soon as the scenario's forecasts deteriorate.
+> So the capital trough can arrive several quarters before defaults peak, which is why the SCB uses the minimum ratio rather than the end-of-horizon ratio.
 
 > [!question]- reg-17-05 | What is the Global Market Shock (GMS) component in supervisory stress tests?
-> The GMS is an instantaneous, comprehensive asset price and volatility repricing shock applied to the trading book and private equity portfolios of banks with significant trading operations.
-> Mark-to-market gains and losses are recognized in the first quarter of the projection horizon without any portfolio rebalancing.
+> An instantaneous set of market shocks applied to the trading and related positions of banks with large trading operations.
+> Losses hit the first projection quarter with no rebalancing; from the 2027 test the Board expects to run two shocks on the same as-of date and use the larger loss per firm (Board memo, 31 August 2026).
 
 > [!question]- reg-17-06 | What is the Largest Counterparty Default (LCPD) scenario?
-> The LCPD assumes the instantaneous and unexpected default of the bank's single largest counterparty across derivatives and securities financing transactions.
-> The net stressed exposure is calculated after applying stressed collateral haircuts, and the resulting uncollateralized loss is deducted in Quarter 1.
+> The unexpected default of the firm's largest counterparty amid an acute market shock, applied to banks with substantial trading or custodial operations (Board, 4 February 2026).
+> It tests concentration in derivative and securities-financing exposures that a diversified loss model would miss.
 
 > [!question]- reg-17-07 | How does RWA migration exacerbate capital depletion during stress periods?
-> During economic downturns, credit quality degrades, triggering borrower downgrades that elevate IRB risk weights.
-> Furthermore, off-balance sheet credit lines are drawn by liquidity-strained corporates, expanding total assets.
-> The expansion in the denominator (RWA) occurs simultaneously with the erosion of the numerator (CET1), driving a sharp drop in the capital ratio.
+> In a bank's own projection, RWA rises (downgrades, drawn lines, higher market-risk charges) while CET1 falls, so the ratio falls on both sides.
+> The Fed's supervisory test removes this channel by holding RWA constant; the effect matters in company-run tests and in reality.
+> A 10% RWA rise on a 10.06% trough ratio would push it to about 9.15%, so the denominator assumption is material.
 
 > [!question]- reg-17-08 | What is the difference between binding Pillar 2 Requirements (P2R) and non-binding Pillar 2 Guidance (P2G) in the ECB framework?
-> P2R is a legally binding capital requirement addressing risks underestimated or not covered by Pillar 1; breaching P2R restricts dividend distributions through the Maximum Distributable Amount (MDA).
-> P2G is supervisory capital guidance derived from stress test outcomes; breaching P2G does not trigger automatic legal restrictions on distributions but triggers intense supervisory intervention.
+> P2R is a legally binding own-funds requirement below the combined buffer; P2G is a non-binding expectation above it.
+> Falling into the combined buffer triggers the MDA; missing P2G does not, though supervisors may act (ECB).
+> The stress test's quantitative depletion places a bank in a P2G bucket, and its qualitative findings can raise P2R.
 
 > [!question]- reg-17-09 | Why do banks face DTA (Deferred Tax Asset) deduction hurdles during severe stress tests?
-> Accumulating net operating losses generate DTAs that depend on future profitability to be realized.
-> Under Basel III and US capital rules, DTAs that rely on future profitability and exceed statutory thresholds must be deducted 100% from CET1 capital, accelerating capital erosion right at the stress trough.
+> Because stress losses create DTAs that depend on future profits, and Basel deducts them from CET1.
+> DTAs from operating-loss carry-forwards are deducted in full; DTAs from temporary differences are deducted above the 10% and 15% thresholds (CAP30.9, CAP30.32 to CAP30.34).
+> The Board's capital model applies the same capital-rule deductions in its projections.
 
 > [!question]- reg-17-10 | How do deposit betas and non-maturity deposit behavior impact PPNR under rapid rate shock stress scenarios?
-> Rapid rate hikes or cuts alter the spread between earning assets and funding liabilities.
-> In a stagflation shock, deposit betas rise as depositors shift non-interest bearing balances into higher-yielding instruments, compressing net interest margins and sharply reducing PPNR.
+> Higher betas compress NII when rates rise because deposit costs follow market rates faster than asset yields reprice.
+> When rates fall, floors on deposit rates compress margins from the other side; the net effect depends on the repricing gap.
+> The June 2026 Fed results list higher interest income and smaller hypothetical rate declines among the three main drivers of the year's result.
+
+> [!question]- reg-17-11 | Which RWA goes in the denominator of the SCB dividend add-on, and why does it matter?
+> The projected RWA in the quarter with the lowest CET1 ratio (12 CFR 225.8(f)(2)(i)(C)(2)).
+> In the supervisory test RWA is constant, so it equals jump-off RWA; in a company-run projection with growing RWA the add-on is smaller in percentage terms, which is why the rule pins the quarter.
+
+> [!question]- reg-17-12 | Start CET1 13.0%, minimum projected 10.5%, planned dividends for quarters 4 to 7 of 1bn, trough RWA 200bn. What is the SCB?
+> $3.0\%$.
+> Decline 2.5% plus add-on $1 / 200 = 0.5\%$, total 3.0%, above the 2.5% floor.
+
+> [!question]- reg-17-13 | What changed in the SCB framework in 2026?
+> Final rules of 30 September 2026: the SCB takes effect on 1 January instead of 1 October from 2028, and from the SCB effective 1 January 2029 the Board averages the two most recent stress capital declines before adding dividends and applying the floor.
+> Separately, the Board voted in February 2026 to keep existing SCBs until 2027, so the 2026 results did not change requirements.
+
+> [!question]- reg-17-14 | In Example 1, why is the trough in quarter 5 and not quarter 9?
+> Because losses are front-loaded and PPNR turns positive later.
+> Cumulative after-tax loss peaks at 9,756.5 in quarter 5; by quarter 9 it has recovered to 6,754.5.
+> The SCB uses the minimum ratio, so the trough decline of 2.44%, not the end-point decline, sets the buffer.
+
+> [!question]- reg-17-15 | Why does a Stage 1 to Stage 2 migration move provisions so much more than a PD shock?
+> It changes the horizon from 12 months to lifetime and applies stressed parameters at the same time.
+> In Example 2 migrated loans contribute 150.3 of a 214.9 increase (69.9%), while doubling the Stage 1 PD on loans that stay adds only 21.6.
+
+> [!question]- reg-17-16 | Does the EBA stress test have a hurdle rate?
+> No: there is no predefined pass or fail threshold (EBA 2025 results).
+> The depletion feeds supervisory judgement; in the SSM it allocates a P2G bucket.
 
 ## Further reading
 
-- Federal Reserve Board. *Dodd-Frank Act Stress Testing (DFAST) and CCAR Supervisory Scenarios*. Published annually in February.
-- European Banking Authority (EBA). *Methodological Note: EU-wide Stress Test*. EBA guidelines.
-- Basel Committee on Banking Supervision. *Stress testing principles*. BCBS guidelines, October 2018. https://www.bis.org/bcbs/publ/d450.htm
-- Schuermann, Til. *Stress Testing Banks*. International Journal of Forecasting, 2014.
-- Federal Reserve Board. *Comprehensive Capital Analysis and Review: Summary Instructions and Results*. FRB Publications.
+- 12 CFR 225.8 (capital planning and stress capital buffer) and 12 CFR 252.44 (supervisory stress test conduct).
+- Federal Reserve Board, *2026 Federal Reserve Stress Test Results* (June 2026), the 2026 scenarios (4 February 2026), the supervisory model documentation (October 2025), and the final rules and Board memo on transparency and SCB volatility (30 September 2026).
+- European Banking Authority, *2025 EU-wide stress test: Methodological Note* and *Results* (1 August 2025).
+- ECB Banking Supervision, *Pillar 2 guidance* (bankingsupervision.europa.eu).
+- Basel Committee on Banking Supervision, *Stress testing principles* (d450, October 2018).
+- Til Schuermann, "Stress testing banks", *International Journal of Forecasting* 30(3), 2014.
 
 ## In this repo and SDE-Interview-Prep
 
-- 01-Capital-RWA-and-the-Basel-Framework.md - Basel capital definitions and minimums.
-- 03-Credit-Risk-Capital-SA-and-IRB.md - Standardised and IRB credit risk models.
-- 16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md - IRRBB principles and shocks.
-- `code/basel_stress_reg.py` - Reference implementation verifying SCB calculations and IFRS 9 stress staging.
+- [Capital, RWA and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) - buffers and the MDA.
+- [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) - risk weights that a company-run projection would migrate.
+- [IRRBB](16-Interest-Rate-Risk-in-the-Banking-Book-IRRBB.md) - rate shocks and NII.
+- [code/basel_stress_reg.py](code/basel_stress_reg.py) - asserts every number in this note (`check_note17`).

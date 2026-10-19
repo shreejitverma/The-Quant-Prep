@@ -5,18 +5,18 @@ tier: advanced
 status: solid
 prereqs: [stress-testing-ccar-dfast-and-eba]
 est_hours: 4
-sources: [Basel Committee on Banking Supervision - Principles for effective risk data aggregation and risk reporting (BCBS 239 2013), Basel Committee on Banking Supervision - Progress in adopting the Principles for effective risk data aggregation and risk reporting (2023), European Central Bank - Guide on effective risk data aggregation and risk reporting (2024)]
+sources: [BCBS (2013) Principles for effective risk data aggregation and risk reporting (BCBS 239), BCBS (28 November 2023) Progress in adopting the Principles for effective risk data aggregation and risk reporting (d559), ECB Banking Supervision (3 May 2024) Guide on effective risk data aggregation and risk reporting, Senior Supervisors Group (December 2010) Observations on Developments in Risk Appetite Frameworks and IT Infrastructure]
 ---
 
 # BCBS 239: Risk Data Aggregation and Reporting
 
 ## TL;DR
 
-Published in January 2013, BCBS 239 defines 14 mandatory principles to ensure Global Systemically Important Banks (G-SIBs) can rapidly and accurately aggregate risk data across legal entities, business units, and asset classes.
-During the 2008 financial collapse, major banks could not determine their aggregate counterparty exposures to Lehman Brothers or toxic mortgage pools because of fragmented systems, siloed databases, and pervasive manual spreadsheets.
-BCBS 239 spans four pillars: Governance and Infrastructure, Risk Data Aggregation Capabilities, Risk Reporting Practices, and Supervisory Review.
-Core technical requirements include automated data lineage, golden source identifiers (LEIs), strict elimination of unmonitored End-User Computing (EUC) tools, daily risk reporting, and rapid ad-hoc aggregation during market stress.
-Supervisors increasingly penalize non-compliance with capital add-ons and formal enforcement decrees.
+- BCBS 239 (January 2013) sets 14 principles in four groups: governance and infrastructure (1 to 2), risk data aggregation (3 to 6), risk reporting (7 to 11) and supervisory review, tools and cooperation (12 to 14).
+- G-SIBs designated in 2011 or 2012 had to comply by January 2016, later G-SIBs within three years of designation, and supervisors were "strongly" encouraged to apply it to D-SIBs three years after designation (paragraphs 14 and 15).
+- The engineering content is in Principles 2 to 6: one data architecture for normal and stress times, largely automated aggregation, reconciliation to accounting data, completeness across legal entities, speed for critical risks, and ad hoc slicing.
+- Compliance is poor and slow: of 31 G-SIBs assessed in 2022 only two were fully compliant with all principles, and no principle was fully implemented across all banks (BCBS, 28 November 2023).
+- Supervisors' tools under Principle 13 include remediation orders, more intense supervision, independent reviews and Pillar 2 capital add-ons (paragraph 79).
 
 ## Learning objectives
 
@@ -29,192 +29,178 @@ Supervisors increasingly penalize non-compliance with capital add-ons and formal
 
 ## Core concepts
 
-### 1. Historical Context: The 2008 Data Aggregation Crisis
+### Why it exists
 
-When Lehman Brothers declared bankruptcy on September 15, 2008, top global financial institutions spent days to weeks attempting to answer a fundamental question: "What is our total firm-wide exposure to Lehman Brothers?"
-The failure stemmed from:
-- **Disparate Legacy Systems:** Multiple trading systems (Murex, Calypso, Summit, bespoke in-house platforms) across disparate legal entities.
-- **Inconsistent Identifiers:** Lehman appeared under dozens of different counterparty names, tickers, and proprietary codes without Legal Entity Identifier (LEI) harmonization.
-- **Rampant End-User Computing (EUC):** Heavy reliance on uncontrolled desktop spreadsheets, manual copy-pasting, and fragile desktop macros that failed under market volume.
-- **Inability to Stress Aggregate:** Risk engines could generate standard overnight batch reports, but could not produce ad-hoc slices along emerging contagion channels.
+The Basel Committee's own diagnosis (paragraph 1): one of the most significant lessons of the crisis that began in 2007 was that banks' IT and data architectures "were inadequate to support the broad management of financial risks"; many banks could not aggregate exposures and identify concentrations quickly and accurately at group level, across business lines and between legal entities.
+The principles therefore target the bank's risk management data and group risk management processes, including key internal models, rather than regulatory reporting templates (paragraphs 16 to 18), and they also aim to improve resolvability (paragraph 3).
+The Legal Entity Identifier initiative is cited alongside as a building block for data quality (paragraph 6).
 
-### 2. The 14 Principles of BCBS 239
+### The fourteen principles
 
-BCBS 239 groups 14 principles into four operational domains:
+| Group | Principle | Core requirement (abridged from the text) |
+| :--- | :--- | :--- |
+| I. Overarching governance and infrastructure | 1 Governance | Strong governance over aggregation and reporting, owned by the board and senior management |
+| | 2 Data architecture and IT infrastructure | Architecture that fully supports aggregation and reporting in normal times and in stress or crisis |
+| II. Risk data aggregation capabilities | 3 Accuracy and integrity | Accurate, reliable data; aggregation on a largely automated basis |
+| | 4 Completeness | All material risk data across the group, by business line, legal entity, asset type, industry and region |
+| | 5 Timeliness | Aggregate, up-to-date data in time, with timing set by the nature and volatility of the risk |
+| | 6 Adaptability | Ad hoc, on-demand aggregation, including in stress and for supervisory queries |
+| III. Risk reporting practices | 7 Accuracy | Reports reconciled and validated |
+| | 8 Comprehensiveness | All material risk areas |
+| | 9 Clarity and usefulness | Clear, concise, balanced between data, analysis and interpretation |
+| | 10 Frequency | Set by the board and senior management, increased in stress |
+| | 11 Distribution | To the relevant parties, with confidentiality maintained |
+| IV. Supervisory review, tools and cooperation | 12 Review | Periodic supervisory review of Principles 1 to 11 |
+| | 13 Remedial actions and supervisory measures | Effective, timely remediation; a range of tools including Pillar 2 |
+| | 14 Home/host cooperation | Cooperation across jurisdictions |
 
+### What the text actually demands of engineers
+
+- Controls as robust as for accounting data, effective end-user computing controls where spreadsheets or desktop databases are used, reconciliation of risk data with the bank's sources including accounting data, and a single authoritative source per type of risk (paragraph 36).
+- A dictionary of concepts so data is defined consistently across the organisation (paragraph 37); several data models are acceptable if reconciled by robust automated procedures (footnote 16).
+- Documentation of all aggregation processes, automated or manual, with an explanation of any manual workarounds (paragraph 39).
+- Speed for critical risks in stress: aggregated credit exposure to a large corporate borrower, counterparty credit exposures including derivatives, trading exposures and limits, liquidity indicators, and time-critical operational risk indicators (paragraph 46).
+- In stress, all critical credit, market and liquidity reports available "within a very short period of time", some intraday (paragraph 71).
+- Note what is not there: BCBS 239 prescribes no T+1 deadline and no data quality index; the bank sets its own frequency and accuracy tolerances (Principles 5, 7 and 10) and must justify them.
+
+```mermaid
+flowchart LR
+    A["Trade capture systems"] --> B["Reference data: counterparties with LEI and parent hierarchy, products, books"]
+    A --> C["Risk engines: market, counterparty, credit, liquidity"]
+    B --> C
+    C --> D["Risk data store with lineage and data dictionary"]
+    E["General ledger"] --> F["Risk-finance reconciliation (paragraph 36)"]
+    D --> F
+    F --> G["Data quality controls and tolerances"]
+    G --> H["Board and management reports (Principles 7 to 11)"]
+    D --> I["Ad hoc aggregation in stress (Principle 6, paragraph 71)"]
 ```
-+---------------------------------------------------------------------------------------+
-|                               BCBS 239 FOUR PILLARS                                   |
-+---------------------------------------------------------------------------------------+
-|  1. Governance & Infrastructure      |  2. Risk Data Aggregation Capabilities         |
-|  - P1: Governance & Board Oversight  |  - P3: Accuracy and Integrity (automated)      |
-|  - P2: Data Architecture & IT        |  - P4: Completeness (all material entities)    |
-|                                      |  - P5: Timeliness (rapid & ad-hoc stress)      |
-|                                      |  - P6: Adaptability (flexible slicing)         |
-+--------------------------------------+------------------------------------------------+
-|  3. Risk Reporting Practices         |  4. Supervisory Review                         |
-|  - P7: Accuracy                      |  - P12: Supervisory Review & Evaluation        |
-|  - P8: Comprehensiveness             |  - P13: Remedial Actions & Capital Add-ons     |
-|  - P9: Clarity and Usefulness        |  - P14: Home / Host Cooperation                |
-|  - P10: Frequency (daily for G-SIBs) |                                                |
-|  - P11: Distribution to Key Execs    |                                                |
-+---------------------------------------------------------------------------------------+
-```
 
-### 3. Core Capability Requirements
+### The state of compliance
 
-#### Principle 3: Accuracy and Integrity
-- Risk aggregation must be largely automated, with manual interventions minimized, documented, and audited.
-- Risk data must be reconciled against accounting records (Finance General Ledger) to ensure financial truth matches risk exposures.
+The Basel Committee's November 2023 report on its 2022 assessment of 31 G-SIBs found that "only two banks are fully compliant with all the Principles" and "there is not a single Principle that has been fully implemented across all banks".
+More banks were fully compliant with Principles 1 and 2 than in 2019, but average ratings for Principles 5 (timeliness) and 7 (accuracy of reports) deteriorated and those for 4, 6 and 9 stagnated.
+Its recommendations: boards should take full responsibility for data governance, and supervisors should use more intensive targeted reviews and stronger measures against long-standing deficiencies.
+The ECB's guide of 3 May 2024 sets out its supervisory expectations for the euro area, building on BCBS 239 and its own earlier thematic review.
 
-#### Principle 4: Completeness
-- Aggregation must capture 100% of material risks across all on-balance sheet and off-balance sheet exposures, legal entities, branches, and geographies.
-- Data exclusions or approximations must be quantified, documented, and formally approved.
+### Enforcement
 
-#### Principle 5: Timeliness
-- The system must produce standard risk management reports on a timely basis (T+1 daily morning reporting for market and credit risk in normal times).
-- In times of stress or financial crisis, the architecture must support intraday and ad-hoc queries, generating aggregated cross-asset risk reports within hours rather than days.
-
-#### Principle 6: Adaptability
-- The underlying risk data model must be flexible enough to aggregate data across custom dimensions (e.g., country of incorporation, ultimate parent guarantor, industry sector, credit rating, collateral type).
-
-### 4. Technical Architecture: Data Lineage and Governance
-
-To fulfill BCBS 239, enterprise risk systems require:
-- **End-to-End Data Lineage:** Full backward and forward traceability from source front-office transaction capture, through middleware and pricing engines, to regulatory reports.
-  Every transformation, enrichment, and calculation rule must be cataloged in a machine-readable data dictionary.
-- **Enterprise Data Glossary:** Standardized business semantics.
-  For instance, defining precisely what "Exposure at Default" or "Notional" means across credit, rates, FX, and equity desks.
-- **Golden Source of Reference Data:** Centralized enterprise repository for counterparty hierarchies (mapped via ISO 17442 Legal Entity Identifiers - LEI), contract master agreements (ISDA/CSA terms), and market risk factor curves.
-- **Elimination and Remediation of EUCs:** High-risk desktop spreadsheets must be decommissioned and engineered into governed, version-controlled backend pipelines with automated regression testing.
-
-### 5. Regulatory Penalties for Non-Compliance
-
-Supervisors have escalated enforcement:
-- The European Central Bank (ECB) published an explicit *Guide on Effective Risk Data Aggregation and Risk Reporting* in 2024.
-- Regulators impose qualitative findings and, increasingly, quantitative Pillar 2 capital add-ons (P2R add-ons) on institutions failing to decommission legacy IT architectures or resolve chronic data quality gaps.
+Paragraph 79 lists the tools: requiring remediation, increasing the intensity of supervision, requiring an independent review (for example by external auditors), and "the possible use of capital add-ons as both a risk mitigant and incentive under Pillar 2"; paragraph 80 adds limits on risks or business growth.
 
 ## Worked examples
 
-### Example 1: Multi-Dimensional Data Quality Index (DQI) Calculation
+### Example 1: an internal data quality index and why one number hides the problem
 
-A risk operations department monitors enterprise credit risk data ingestion across five dimensions defined by BCBS 239:
-1. **Completeness ($C$):** Percentage of total active transactions in the front-office trade repository successfully ingested into the risk aggregation database.
-2. **Accuracy ($A$):** Percentage of ingested trades whose key attributes (notional, maturity date, counterparty LEI, MtM) match front-office books with zero discrepancy.
-3. **Timeliness ($T$):** Ratio of feeds delivered before the 04:00 UTC batch cutoff versus total scheduled feeds.
-4. **Consistency ($S$):** Percentage of counterparty entities whose credit ratings and ultimate parent mappings match between Credit Risk and the General Ledger.
-5. **Validity ($V$):** Percentage of records passing strict schema validation (e.g., valid LEI format, non-negative notionals, recognized ISO currency codes).
+BCBS 239 does not define a data quality index; many banks build one.
+Take five internally defined dimensions and weights: completeness 0.30, accuracy 0.25, timeliness 0.20, consistency with finance 0.15, validity 0.10.
+A month's controls show:
 
-The bank establishes supervisory target weights:
-- $w_C = 0.30$ (Completeness)
-- $w_A = 0.25$ (Accuracy)
-- $w_T = 0.20$ (Timeliness)
-- $w_S = 0.15$ (Consistency)
-- $w_V = 0.10$ (Validity)
+1. Completeness: 1,243,750 of 1,250,000 front-office trades reached the risk store (6,250 missing from an unmapped branch), 99.50%.
+2. Accuracy: 1,225,100 of the ingested trades match front office on key attributes, 98.50%.
+3. Timeliness: 45 of 50 feeds arrived before the cut-off, 90.00%.
+4. Consistency: 11,400 of 12,000 counterparties have the same parent in risk and finance, 95.00%.
+5. Validity: 12,438 ingested records fail schema checks, so 99.00% pass.
 
-For a critical monthly reporting cycle, an audit evaluates:
-- Front-office books contain $1,250,000$ active derivative contracts.
-- Ingested records: $1,243,750$ trades ($6,250$ missing due to an unmapped legacy branch).
-  $$C = \frac{1,243,750}{1,250,000} = 99.50\%$$
-- Of the ingested records, $1,225,100$ have exact attribute matches; $18,650$ have collateral or MtM valuation discrepancies.
-  $$A = \frac{1,225,100}{1,243,750} = 98.50\%$$
-- 45 out of 50 data feeds landed before 04:00 UTC (5 feeds arrived late due to batch bottlenecks).
-  $$T = \frac{45}{50} = 90.00\%$$
-- Across 12,000 unique counterparties, 11,400 have identical parent mappings between Risk and Finance; 600 have conflicting parent tags.
-  $$S = \frac{11,400}{12,000} = 95.00\%$$
-- Schema validation errors: 12,438 records failed currency or date format checks.
-  $$V = \frac{1,243,750 - 12,438}{1,243,750} = \frac{1,231,312}{1,243,750} = 99.00\%$$
+The weighted index is $0.30 \times 99.50 + 0.25 \times 98.50 + 0.20 \times 90.00 + 0.15 \times 95.00 + 0.10 \times 99.00 = 96.625\%$, which is 1.375 points under an internal 98% tolerance.
+Holding the others fixed, timeliness would have to reach 96.87%, that is at most one late feed in 50.
+The weakest dimension is 90.00%, and that is the number that matters in a crisis: Principle 5 is about timeliness for critical risks, and a weighted average lets strong completeness hide five late feeds.
+The 6,250 missing trades are a completeness failure by legal entity, which Principle 4 names explicitly.
 
-Composite Data Quality Index (DQI):
+### Example 2: a spreadsheet aggregation error
 
-$$\text{DQI} = (0.30 \times 99.50\%) + (0.25 \times 98.50\%) + (0.20 \times 90.00\%) + (0.15 \times 95.00\%) + (0.10 \times 99.00\%)$$
-$$\text{DQI} = 29.85\% + 24.625\% + 18.00\% + 14.25\% + 9.90\% = 96.625\%$$
+Three subsidiaries' exposures to one distressed counterparty are combined in a spreadsheet; a broken range drops one subsidiary's 150.
+True exposure is 480, reported exposure 330, against a single-name limit of 400.
 
-The supervisor sets a minimum DQI threshold of $98.00\%$ for automated supervisory reporting.
-Because the DQI is $96.63\%$ (driven down by the $90\%$ timeliness score and $95\%$ reconciliation consistency), the bank fails the standard, requiring formal remediation and triggering an escalated supervisory dialogue.
+1. Reported utilisation $330 / 400 = 82.5\%$, true utilisation $480 / 400 = 120\%$: the limit breach is invisible.
+2. The counterparty defaults with 20% recovery: management expected a loss of $330 \times 0.8 = 264$, the actual loss is $480 \times 0.8 = 384$, so 120 was unanticipated.
+3. Suppose the supervisor responds under paragraph 79 with a Pillar 2 add-on of 0.25% of RWA of 200,000: the bank must hold 500 of extra capital, which at a 10% cost of equity costs 50 a year until the add-on is lifted.
 
-### Example 2: Financial Impact of an EUC Manual Reconciliation Failure
-
-A desk trading structured credit products uses an uncontrolled Microsoft Excel workbook to aggregate counterparty netting sets across three regional subsidiaries:
-- True gross exposure across all three subsidiaries to a distressed corporate entity: $\$480\text{ million}$.
-- Subsidiary C holds $\$150\text{ million}$ of gross exposure, but its feed was manually copy-pasted into the workbook with a formula error that referenced the wrong cell range.
-- The reported aggregated exposure submitted to the Chief Risk Officer (CRO) and the board: $\$330\text{ million}$.
-- The counterparty defaults overnight, with an ultimate recovery rate of $20\%$.
-- Stressed loss expected by the CRO: $\$330\text{ million} \times (1 - 0.20) = \$264\text{ million}$.
-- Actual realized financial loss: $\$480\text{ million} \times (1 - 0.20) = \$384\text{ million}$.
-- Unanticipated capital loss: $\$384\text{ million} - \$264\text{ million} = \$120\text{ million}$.
-
-Following this failure, supervisory auditors discover that the desk relied on 14 separate spreadsheets without audit trails, user access controls, or change management.
-The supervisor levies a $0.25\%$ Pillar 2 operational risk capital add-on across the bank's $\$200\text{ billion}$ RWA:
-
-$$\text{Annual Capital Penalty} = \$200,000\text{ million} \times 0.0025 = \$500\text{ million in trapped CET1 capital}$$
-
-This capital penalty substantially outweighs the cost of building automated risk data pipelines.
+The control failures map one to one onto the text: manual process without effective end-user computing controls (paragraph 36(b)), no reconciliation to source (36(c)), and incomplete aggregation by legal entity (Principle 4).
 
 ## Pitfalls
 
-- **Confusing Reporting with Data Aggregation:** BCBS 239 is primarily an infrastructure and architecture mandate, not a dashboard design standard.
-  Beautiful BI reports that pull from fragmented, manually reconciled data silos violate the regulation.
-- **Relying on Manual Spreadsheet Patches:** Regulators view recurring manual journal entries and Excel reconciliation sheets as red flags proving underlying systemic architecture failure.
-- **Ignoring Legal Entity Hierarchy:** Counterparty exposures must aggregate up to the ultimate parent guarantor level.
-  Summing exposures only at the immediate booking entity level miscalculates true default risk.
-- **Neglecting Stress Adaptability:** Building an IT architecture that only executes rigid overnight batch jobs fails Principle 6 (Adaptability).
-  Systems must support flexible, parameter-driven slicing under crisis conditions.
-- **Treating BCBS 239 as a One-Time IT Project:** Compliance requires continuous operational governance, metadata maintenance, and ongoing automated reconciliation against general ledger feeds.
+- Treating BCBS 239 as a reporting or dashboard project: the principles are about the data and architecture behind the reports.
+- Reading "timeliness" as a fixed T+1 rule: the bank sets frequency by risk, and must show it can produce critical aggregates fast in stress (paragraphs 44 to 47, 71).
+- A composite score that averages away a failing dimension, as in Example 1.
+- Reconciling only totals: Principle 3 asks for reconciliation of risk data with sources, and Principle 7 for reports reconciled to risk data, which needs item-level breaks and explanations.
+- Rolling up exposures by booking entity instead of to the ultimate parent: concentration is a group-level question.
+- Declaring compliance on a project end date: the 2023 report notes banks that consider themselves "fully compliant" while supervisors disagree.
 
 ## Interview questions
 
 > [!question]- reg-18-01 | What market event triggered the creation of BCBS 239, and what core deficiency did it reveal?
-> The 2008 global financial crisis, particularly the collapse of Lehman Brothers, revealed that major banks could not quickly or accurately aggregate cross-entity credit and market risk exposures.
-> Siloed IT architectures, disparate counterparty naming conventions, and excessive reliance on manual spreadsheets prevented boards from understanding firm-wide counterparty risk during market stress.
+> The global financial crisis that began in 2007.
+> The Committee's own words: banks' IT and data architectures were inadequate to support broad management of financial risks, and many could not aggregate exposures or identify concentrations quickly and accurately across business lines and legal entities (paragraph 1).
 
 > [!question]- reg-18-02 | What are the four structural categories that organize the 14 principles of BCBS 239?
-> The four categories are:
-> 1. Governance and Infrastructure (Principles 1-2).
-> 2. Risk Data Aggregation Capabilities (Principles 3-6: Accuracy, Completeness, Timeliness, Adaptability).
-> 3. Risk Reporting Practices (Principles 7-11: Accuracy, Comprehensiveness, Clarity, Frequency, Distribution).
-> 4. Supervisory Review, Tools, and Cooperation (Principles 12-14).
+> I. Overarching governance and infrastructure (Principles 1 and 2).
+> II. Risk data aggregation capabilities (3 to 6: accuracy and integrity, completeness, timeliness, adaptability).
+> III. Risk reporting practices (7 to 11: accuracy, comprehensiveness, clarity and usefulness, frequency, distribution).
+> IV. Supervisory review, tools and cooperation (12 to 14).
 
 > [!question]- reg-18-03 | What is end-to-end data lineage, and why is it mandatory under BCBS 239?
-> Data lineage is the complete, documented trail tracing data from its front-office origin through middle-office enrichments, transformations, risk engines, and final regulatory reports.
-> It is mandatory because it ensures risk figures can be audited, validated, and debugged without mystery transformations or unapproved data adjustments.
+> The documented path of each risk number from source systems through every transformation to the report.
+> The text requires documentation of all aggregation processes, automated or manual, with manual workarounds explained (paragraph 39), and a consistent data dictionary (paragraph 37); lineage is how a bank meets both and answers "where did this number come from" in a crisis.
 
 > [!question]- reg-18-04 | Why do bank regulators treat End-User Computing (EUC) tools as high operational risks?
-> EUCs (such as desktop Excel spreadsheets and local user scripts) lack automated version control, access controls, audit logs, automated unit tests, and enterprise failover.
-> They are prone to formula corruption, unintended edits, data truncation, and key-person risk during crisis situations.
+> Spreadsheets and desktop databases lack the controls the text expects: version control, access control, testing and audit trails.
+> Paragraph 36(b) allows them only with effective mitigants such as end-user computing policies and controls applied consistently; a broken formula range can silently drop a legal entity, as in Example 2.
 
 > [!question]- reg-18-05 | What is the reconciliation requirement between Risk and Finance under BCBS 239?
-> Principle 3 requires that risk data be routinely reconciled with accounting data (the General Ledger).
-> Any variance between the financial valuations in accounting and the exposure balances used in risk models must be quantified, explained, and kept within tight supervisory tolerance thresholds.
+> Risk data should be reconciled with the bank's sources, including accounting data where appropriate (paragraph 36(c)), and reports should be reconciled to risk data (Principle 7).
+> Reconciliation means comparing items or outcomes and explaining the differences (the glossary), so totals that agree by offsetting errors are not enough.
 
 > [!question]- reg-18-06 | What does Principle 6 (Adaptability) require of a risk system?
-> Principle 6 requires risk architectures to generate ad-hoc risk aggregation reports for emerging, non-standard risk concentrations (e.g., specific industry stress, unexpected geopolitical events, novel asset classes) quickly during crises without waiting for months of IT software releases.
+> Aggregation on demand for ad hoc requests, including in stress, for changing internal needs and for supervisory queries.
+> In practice: granular, well-keyed data (counterparty hierarchy, industry, region, product) and query capability, not a fixed set of overnight reports.
 
 > [!question]- reg-18-07 | How does the Legal Entity Identifier (LEI) standard support BCBS 239 compliance?
-> ISO 17442 LEIs provide a 20-character, globally unique, standardized identifier for legal entities engaging in financial transactions.
-> LEIs eliminate naming ambiguities and provide verified parent-child corporate ownership structures, enabling automated roll-up of exposures to ultimate corporate parents.
+> It gives each legal entity a unique 20-character ISO 17442 identifier, and LEI reference data records parent relationships.
+> That makes it possible to roll exposures up to the ultimate parent automatically; BCBS 239 cites the LEI initiative as a building block for data quality (paragraph 6).
 
 > [!question]- reg-18-08 | What is the expected risk reporting frequency for G-SIBs under normal and stressed conditions?
-> Under normal conditions, G-SIBs must produce key risk metrics (market risk sensitivities, counterparty credit exposures, liquidity positions) on a daily T+1 morning schedule.
-> During market crises, systems must support intraday updates and generate bespoke ad-hoc aggregations within hours.
+> BCBS 239 sets no fixed frequency: the board and senior management set it by risk and recipient (Principle 10).
+> In stress, frequency must increase, and supervisors expect critical credit, market and liquidity reports within a very short period, some intraday (paragraph 71).
 
 > [!question]- reg-18-09 | What supervisory measures can regulators take against banks failing to comply with BCBS 239?
-> Supervisors can issue formal cease-and-desist orders, demand targeted remediation programs under independent monitors, restrict capital distributions (dividends and buybacks), and impose binding Pillar 2 operational risk capital add-ons.
+> Remediation requirements, more intense supervision, independent third-party review, Pillar 2 capital add-ons (paragraph 79), and limits on risks or business growth (paragraph 80).
+> The 2023 progress report asked supervisors to apply stronger measures to long-standing deficiencies.
 
 > [!question]- reg-18-10 | Why is data dictionary standardization essential for multi-asset risk aggregation?
-> Different desks often define terms like "notional," "maturity," or "exposure" differently across fixed income, equities, commodities, and derivatives.
-> An enterprise data dictionary defines canonical definitions and units across the organization, preventing inconsistent math when data is aggregated at the board level.
+> Because adding numbers that mean different things is silent error.
+> Paragraph 37 makes a dictionary of concepts a precondition, so terms like exposure, notional or maturity are defined consistently before they are aggregated.
+
+> [!question]- reg-18-11 | Which banks must comply with BCBS 239, and by when?
+> G-SIBs designated in November 2011 or 2012 by January 2016; later G-SIBs within three years of designation (paragraph 14).
+> National supervisors are strongly encouraged to apply it to D-SIBs three years after designation (paragraph 15).
+
+> [!question]- reg-18-12 | What did the Basel Committee's 2023 progress report find?
+> Of 31 G-SIBs assessed in 2022, only two were fully compliant with all principles, and no principle was fully implemented across all banks.
+> Ratings for timeliness (5) and report accuracy (7) deteriorated since 2019; completeness, adaptability and clarity stagnated.
+
+> [!question]- reg-18-13 | An internal DQI weights five dimensions and scores 96.625% against a 98% tolerance, with timeliness at 90%. What should the risk data officer report?
+> The failing dimension, not the composite.
+> Timeliness at 90% means 5 of 50 feeds late; to reach 98% with the rest unchanged it would need 96.87%, at most one late feed.
+> A weighted average lets strong dimensions hide a crisis-relevant failure.
+
+> [!question]- reg-18-14 | A spreadsheet drops a 150 exposure from a true 480 against a 400 limit. What does management see and what is the loss surprise at 20% recovery?
+> 82.5% limit use instead of 120%, and an unexpected loss of 120.
+> Expected loss on the reported 330 is 264, actual loss on 480 is 384.
+
+> [!question]- reg-18-15 | What critical risks does BCBS 239 say must be aggregated rapidly in stress?
+> Aggregated credit exposure to a large corporate borrower, counterparty credit exposures including derivatives, trading exposures, positions, limits and market concentrations, liquidity indicators such as cash flows and funding, and time-critical operational risk indicators (paragraph 46).
 
 ## Further reading
 
-- Basel Committee on Banking Supervision. *Principles for effective risk data aggregation and risk reporting*. BCBS Publication 239, 2013.
-- European Central Bank. *ECB Guide on effective risk data aggregation and risk reporting*. Published July 2024.
-- Financial Stability Board. *Thematic Review on Risk Data Aggregation and Reporting: Peer Review Report*. FSB, 2023.
-- Senior Supervisors Group. *Progress on the Implementation of Principles for Effective Risk Data Aggregation and Risk Reporting*. SSG Report.
+- Basel Committee on Banking Supervision, *Principles for effective risk data aggregation and risk reporting*, January 2013 (BCBS 239).
+- Basel Committee on Banking Supervision, *Progress in adopting the Principles for effective risk data aggregation and risk reporting*, 28 November 2023 (d559).
+- ECB Banking Supervision, *Guide on effective risk data aggregation and risk reporting*, 3 May 2024.
+- Senior Supervisors Group, *Observations on Developments in Risk Appetite Frameworks and IT Infrastructure*, December 2010 (cited in BCBS 239).
 
 ## In this repo and SDE-Interview-Prep
 
-- 01-Front-to-Back-Architecture.md - Front-to-back risk system architecture and lineage.
-- 03-Market-and-Reference-Data-Platform.md - Golden source data pipelines and LEI hierarchies.
-- 17-Stress-Testing-CCAR-DFAST-and-EBA.md - Stress testing data requirements and capital linkage.
-- `code/basel_stress_reg.py` - Reference implementation verifying Data Quality Index (DQI) and EUC failure losses.
+- [Front-to-Back Architecture](../18-Pricing-and-Risk-Systems/01-Front-to-Back-Architecture.md) - where lineage starts.
+- [Market and Reference Data Platform](../18-Pricing-and-Risk-Systems/03-Market-and-Reference-Data-Platform.md) - golden sources and counterparty hierarchies.
+- [Regulatory Reporting Pipeline](../18-Pricing-and-Risk-Systems/12-Regulatory-Reporting-Pipeline.md) - reconciliation and controls in production.
+- [Stress Testing](17-Stress-Testing-CCAR-DFAST-and-EBA.md) - the exercise that tests ad hoc aggregation hardest.
+- [code/basel_stress_reg.py](code/basel_stress_reg.py) - asserts every number in this note (`check_note18`).
