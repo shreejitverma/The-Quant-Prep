@@ -101,6 +101,7 @@ def render_catalog(vault: Vault) -> str:
         [
             CATALOG_START,
             "",
+            "Written = topics at `solid` or better.",
             "Tracks: T = trader, R = researcher, D = developer, Q = risk and strats.",
             "",
             "| Section | Topics | Written | Hours | Cards | Tracks |",
