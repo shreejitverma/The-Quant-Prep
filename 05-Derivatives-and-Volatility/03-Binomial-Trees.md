@@ -102,6 +102,8 @@ A discrete cash dividend breaks recombination if subtracted at nodes; the standa
 
 ## Worked examples
 
+Every number below is printed and asserted by [deriv_01_07_binomial.py](code/deriv_01_07_binomial.py): the one- and two-step examples in exact fractions, the CRR table by backward induction confirmed by the closed-form binomial sum, and the tree Greeks against Black-Scholes.
+
 ### Example 1: one step, replication by hand
 
 $S = 100$, $u = 1.2$, $d = 0.8$, $K = 100$ call, rates zero.
@@ -126,7 +128,7 @@ Terminal stock prices 121, 100, 82.64 give put payoffs 0, 0, 17.36.
 | root | 100.00 | $0.4190 \times 9.09/1.02 = 3.73$ | 0.00 | 3.73 |
 
 European put: $0.4190 \times 7.13/1.02 = 2.93$.
-Early-exercise premium: $3.73 - 2.93 = 0.81$.
+Early-exercise premium: $3.735 - 2.929 = 0.806$.
 Root hedge for the European put: $\Delta = (0 - 7.13)/(110 - 90.91) = -0.373$ and a bond position of $2.93 + 0.373 \times 100 = 40.28$ lent.
 Check the up state: $-0.373 \times 110 + 40.28 \times 1.02 = 0$.
 
@@ -147,7 +149,7 @@ Black-Scholes call: 10.4506.
 | 101 | 10.4680 | +0.0174 |
 | 1000 | 10.4486 | $-0.0020$ |
 
-The even-$N$ error halves when $N$ doubles ($O(1/N)$), and the sign alternates between odd and even.
+The even-$N$ error halves when $N$ doubles ($-0.0399$ at 50, $-0.0200$ at 100, a ratio of 2.0: $O(1/N)$), and the sign alternates between odd and even.
 Averaging $N = 100$ and $N = 101$ gives 10.4493, better than $N = 1000$ alone.
 For $N = 1$: $u = e^{0.2} = 1.2214$, $d = 0.8187$, $p = 0.5775$.
 
@@ -156,7 +158,13 @@ For $N = 1$: $u = e^{0.2} = 1.2214$, $d = 0.8187$, $p = 0.5775$.
 Same inputs, puts.
 Black-Scholes European put: 5.5735.
 CRR American put: 6.0824 at $N = 100$, 6.0888 at $N = 500$, 6.0900 at $N = 2000$.
-The early-exercise premium is about 0.52, roughly 9% of the option value, which is why pricing an American put with Black-Scholes is a real error at 5% rates.
+The early-exercise premium is about 0.52 ($6.0900 - 5.5735$), about 8.5% of the American value, which is why pricing an American put with Black-Scholes is a real error at 5% rates.
+
+### Example 5: Greeks off the tree
+
+Same inputs, call, $N = 500$.
+From the first two time steps: delta 0.6368 (Black-Scholes 0.6368), gamma 0.01879 (0.01876) and theta $-6.42$ per year ($-6.41$).
+These come free with the price, which is why trees report Greeks for American options where no closed form exists.
 
 ```python
 from math import exp, sqrt
@@ -238,8 +246,21 @@ print(crr(100, 100, 1, 0.05, 0.2, 500, call=False, american=True))   # 6.0888
 > Build the tree on $S - PV(\text{remaining dividends})$ with that process's volatility, and add back the PV of dividends not yet paid at each node.
 > Subtracting dividends from node prices directly makes up-then-down differ from down-then-up.
 
+> [!question]- deriv-binomial-rates-raise-call | One step, $S = 100$, up 120, down 80, $K = 100$ call, gross riskless return 1.05 per period. Price it, and why is it higher than at zero rates?
+> 11.90 (versus 10 at zero rates).
+> $p = (1.05 - 0.8)/0.4 = 0.625$ and $0.625 \times 20/1.05 = 11.90$; the hedge is still 0.5 shares, but the 40 borrowed costs only $40/1.05 = 38.10$ today.
+
+> [!question]- deriv-crr-one-step-call | Price a one-year ATM call on 100 with $r = 5\%$ and 20% vol on a one-step CRR tree. How far off is it?
+> 12.16 versus 10.45 Black-Scholes.
+> $u = e^{0.2} = 1.2214$, $d = 0.8187$, $p = (e^{0.05} - d)/(u - d) = 0.5775$, call $= e^{-0.05} \times 0.5775 \times 22.14 = 12.16$; one step puts all the mass on two points.
+
+> [!question]- deriv-binomial-average-odd-even | CRR gives 10.4306 at $N = 100$ and 10.4680 at $N = 101$ for a call worth 10.4506. What do you report?
+> The average, 10.4493, within 0.0013 of Black-Scholes and better than $N = 1000$ alone (10.4486).
+> The odd-even errors have opposite signs and similar size, so averaging cancels most of the oscillation.
+
 ## In this repo and SDE-Interview-Prep
 
+- Code: [deriv_01_07_binomial.py](code/deriv_01_07_binomial.py) prints and asserts every number in this note.
 - Prev: [Option Payoffs and Put-Call Parity](02-Option-Payoffs-and-Put-Call-Parity.md). Next: [Black-Scholes Formula and Intuition](04-Black-Scholes-Formula-and-Intuition.md).
 - The continuous-time limit: [Risk-Neutral Pricing and FTAP](../04-Stochastic-Calculus/04-Risk-Neutral-Pricing-and-FTAP.md) and [Black-Scholes Derivation](../04-Stochastic-Calculus/07-Black-Scholes-Derivation.md).
 - Lattice methods in general: [Finite Differences and Fourier Pricing](11-Finite-Differences-and-Fourier-Pricing.md).

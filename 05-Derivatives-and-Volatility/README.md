@@ -16,13 +16,13 @@ Options theory and practice: the core of every options market-making and volatil
 
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
-| 01 | [Forwards, Futures and Cost of Carry](01-Forwards-Futures-and-Carry.md) | TRDQ | core | 3 | solid | 12 |
-| 02 | [Option Payoffs and Put-Call Parity](02-Option-Payoffs-and-Put-Call-Parity.md) | TRDQ | core | 3 | solid | 14 |
-| 03 | [Binomial Trees](03-Binomial-Trees.md) | TRDQ | core | 3 | solid | 12 |
-| 04 | [Black-Scholes Formula and Intuition](04-Black-Scholes-Formula-and-Intuition.md) | TRDQ | core | 4 | solid | 13 |
-| 05 | [The Greeks](05-The-Greeks.md) | TRDQ | core | 5 | solid | 14 |
-| 06 | [Delta Hedging and Gamma Scalping P&L](06-Delta-Hedging-and-Gamma-Scalping.md) | TRQ | core | 4 | solid | 12 |
-| 07 | [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md) | TRQ | core | 4 | solid | 14 |
+| 01 | [Forwards, Futures and Cost of Carry](01-Forwards-Futures-and-Carry.md) | TRDQ | core | 3 | solid | 17 |
+| 02 | [Option Payoffs and Put-Call Parity](02-Option-Payoffs-and-Put-Call-Parity.md) | TRDQ | core | 3 | solid | 17 |
+| 03 | [Binomial Trees](03-Binomial-Trees.md) | TRDQ | core | 3 | solid | 15 |
+| 04 | [Black-Scholes Formula and Intuition](04-Black-Scholes-Formula-and-Intuition.md) | TRDQ | core | 4 | solid | 17 |
+| 05 | [The Greeks](05-The-Greeks.md) | TRDQ | core | 5 | solid | 16 |
+| 06 | [Delta Hedging and Gamma Scalping P&L](06-Delta-Hedging-and-Gamma-Scalping.md) | TRQ | core | 4 | solid | 15 |
+| 07 | [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md) | TRQ | core | 4 | solid | 17 |
 | 08 | [Volatility Surface Construction and Arbitrage](08-Volatility-Surface-Construction.md) | RDQ | advanced | 4 | solid | 19 |
 | 09 | [Stochastic Volatility: Heston and SABR](09-Stochastic-Volatility-Heston-and-SABR.md) | RQ | advanced | 5 | solid | 20 |
 | 10 | [Monte Carlo Pricing and Variance Reduction](10-Monte-Carlo-Pricing-and-Variance-Reduction.md) | RDQ | core | 5 | solid | 14 |

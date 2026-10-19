@@ -86,7 +86,8 @@ For European options with $C(K)$ and $P(K)$ as functions of strike:
 2. Monotonicity: $C(K)$ is non-increasing and $P(K)$ is non-decreasing in $K$.
 3. Slope: $0 \le C(K_1) - C(K_2) \le (K_2 - K_1)e^{-rT}$ for $K_1 < K_2$ (a call spread is between zero and a bond).
 4. Convexity: $C(K - h) - 2C(K) + C(K + h) \ge 0$ (a butterfly has non-negative payoff so non-negative price).
-5. Calendar: for American options, and for European options on a non-dividend stock with $r \ge 0$, longer expiry is worth at least as much.
+5. Calendar: American options, and European calls on a non-dividend stock with $r \ge 0$, are worth at least as much at a longer expiry.
+   European puts are not: a deep in-the-money European put is close to $K e^{-rT} - S$, which falls with $T$ (with $S = 50$, $K = 100$, $r = 5\%$ and 20% vol it is 45.13 at one year and 40.61 at two).
 
 Differentiating in strike gives the two most useful identities in options:
 
@@ -116,6 +117,8 @@ Exercising receives $K$ now and earns interest on it; the remaining optionality 
 There is an exercise boundary $S^*(t) < K$ below which you exercise; dividends push it lower (you wait to capture the price drop).
 
 ## Worked examples
+
+Every number below is printed and asserted by [deriv_01_07_parity_bounds.py](code/deriv_01_07_parity_bounds.py), which checks each replication by evaluating the portfolio on 40,001 terminal prices and confirms the Black-Scholes prices by integrating the payoff against the lognormal density.
 
 ### Example 1: a conversion arbitrage
 
@@ -150,7 +153,8 @@ Check the other constraint too: call spread 90/100 costs 6.00, within $[0, 10e^{
 $S = 10$, $K = 100$, $r = 5\%$, one year, no dividends.
 Exercising now yields 90.
 A European put is worth $K e^{-rT} - S + C$ by parity, and the call is worthless here (Black-Scholes at 20% volatility gives a put of 85.12 to the cent), so the European put is $95.12 - 10 = 85.12$.
-So the American put is worth 90 (exercise), and holding it would give up $90 - 85.12 = 4.88$ of interest on the strike.
+So the American put is worth 90 (exercise), and holding it would give up $90 - 85.12 = 4.88$, almost all of it interest on the strike, $100(1 - e^{-0.05}) = 4.88$.
+A 500-step CRR tree agrees: it exercises at the root and returns 90.00.
 
 ### Example 5: dividend and the American call
 
@@ -160,6 +164,14 @@ The dividend 2 exceeds 1.24, so early exercise just before the ex-date can be op
 To decide, compare exercising ($S - K$) with holding: after the ex-date the call is worth, by parity, $(S - D) - K e^{-r\tau} + P$, where $P$ is the European put on the ex-dividend stock.
 Exercise if and only if $P < D - K(1 - e^{-r\tau}) = 2 - 1.24 = 0.76$, which happens when the call is deep enough in the money that the put is cheap.
 With a dividend of 1 the right-hand side is negative and early exercise is never optimal.
+The script brute-forces the rule at 20% vol: on 241 spot levels from 80 to 200, exercising beats holding exactly when the ex-dividend put is below 0.76.
+
+### Example 6: digital and density from strikes
+
+Base case $S = K = 100$, $T = 1$, $r = 5\%$, 20% vol.
+The 99.99/100.01 call spread divided by its width prices the digital call at 0.5323, which is $e^{-0.05}N(d_2) = 0.9512 \times 0.5596$.
+The 99/100/101 butterfly costs 0.01876, and $e^{rT} \times 0.01876/1^2 = 0.01972$ is the risk-neutral density of $S_T$ at 100, matching the lognormal density to five decimals.
+The butterfly price equals the spot gamma here because $K^2\,\partial^2 C/\partial K^2 = S^2\,\partial^2 C/\partial S^2$ (homogeneity), so desks read strike convexity and spot convexity off the same numbers.
 
 ```python
 from math import exp, log
@@ -219,7 +231,7 @@ print(14.00 - 2 * 8.00 + 1.50)                        # butterfly -0.50: arbitra
 
 > [!question]- deriv-breeden-litzenberger | How do you extract the risk-neutral density from option prices?
 > $f_Q(K) = e^{rT}\,\partial^2 C/\partial K^2$ (Breeden-Litzenberger).
-> A butterfly centred at $K$ with wings $h$ and scaled by $1/h^2$ pays approximately a unit density at $K$.
+> A butterfly centred at $K$ with wings $h$, scaled by $1/h^2$, pays a tent of unit area around $K$ (approximately a Dirac delta), so its price is approximately $e^{-rT}f_Q(K)$; at the base case the 99/100/101 butterfly costs 0.01876, a density of 0.01972.
 
 > [!question]- deriv-american-call-no-early-exercise | Why is it never optimal to exercise an American call on a non-dividend stock early?
 > Because $C \ge S - K e^{-rT} > S - K$ when $r > 0$, so selling (or holding) the call is worth more than exercising.
@@ -241,8 +253,21 @@ print(14.00 - 2 * 8.00 + 1.50)                        # butterfly -0.50: arbitra
 > A short put at the same strike plus a bond paying $K$ (cash-secured short put).
 > By parity, $S - C = K e^{-rT} - P$; both pay $\min(S_T, K)$.
 
+> [!question]- deriv-box-implied-rate | A European 95/105 box with six months to expiry trades at 9.75. What rate does it imply, and who buys it if cash earns 4%?
+> 5.06%: $-\ln(9.75/10)/0.5$.
+> The buyer lends 9.75 today and receives 10 for sure, so a cash-rich desk earning 4% elsewhere buys it; a borrower sells it.
+
+> [!question]- deriv-european-put-calendar | Can a longer-dated European put be worth less than a shorter-dated one with the same strike?
+> Yes, when it is deep in the money and $r > 0$: its value is close to $K e^{-rT} - S$, which falls as $T$ grows.
+> With $S = 50$, $K = 100$, $r = 5\%$, 20% vol: 45.13 at one year, 40.61 at two; American puts cannot do this because they can be exercised now.
+
+> [!question]- deriv-digital-call-spread-number | $S = K = 100$, $T = 1$, $r = 5\%$, 20% flat vol. What does a 1-unit digital call cost, and how do you replicate it?
+> 0.5323, the price of a 99.99/100.01 call spread scaled by $1/0.02$.
+> It equals $e^{-rT}N(d_2) = 0.9512 \times 0.5596$; with a skew, add $-\text{vega}\,\partial\sigma/\partial K$.
+
 ## In this repo and SDE-Interview-Prep
 
+- Code: [deriv_01_07_parity_bounds.py](code/deriv_01_07_parity_bounds.py) prints and asserts every number in this note (parity, conversion, box and butterfly by construction, bounds, the American put on a CRR tree, the dividend-exercise rule, digital and density from strikes).
 - Prev: [Forwards, Futures and Carry](01-Forwards-Futures-and-Carry.md). Next: [Binomial Trees](03-Binomial-Trees.md).
 - Strategies built from these payoffs: [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md).
 

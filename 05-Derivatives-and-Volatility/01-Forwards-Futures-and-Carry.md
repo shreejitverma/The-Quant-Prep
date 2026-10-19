@@ -66,6 +66,10 @@ A long futures position rolled forward earns roll yield when the curve is backwa
 
 ### Futures versus forwards
 
+Why they are equal with deterministic rates (Cox, Ingersoll and Ross 1981): hold $e^{-r(T-t)}$ futures at each date $t$ and reinvest every margin payment to $T$.
+A price change $\delta\text{Fut}$ on day $t$ pays $e^{-r(T-t)}\delta\text{Fut}$, worth exactly $\delta\text{Fut}$ at $T$, so the rolled position delivers $S_T - \text{Fut}_0$ at $T$ for zero cost, the same as a forward struck at $\text{Fut}_0$; hence $\text{Fut}_0 = F_0$.
+With random rates the size $e^{-r(T-t)}$ is not known in advance and the argument breaks, which is where the correlation term comes from.
+
 - Futures are exchange-traded and standardised, cleared by a central counterparty, and marked to market daily: gains and losses are paid in cash as variation margin every day.
 - Forwards are OTC, bilateral, settle once at maturity and carry counterparty credit risk (mitigated today by collateral agreements).
 - Under the risk-neutral measure the futures price is a martingale, $\text{Fut}_t = E^Q[S_T \mid \mathcal{F}_t]$, while the forward price is the expectation under the $T$-forward measure.
@@ -83,12 +87,14 @@ $$
 \text{forward rate} = \text{futures rate} - \tfrac12 \sigma^2 T_1 T_2.
 $$
 
+Hull states it with continuously compounded rates; for Ho-Lee fitted to a flat curve it is exact, because the rate set at $T_1$ is $r(T_1) + \tfrac12\sigma^2 T_1(T_2 - T_1)$ and $E^Q[r(T_1)] = f_0 + \tfrac12\sigma^2 T_1^2$, which sum to $f_0 + \tfrac12\sigma^2 T_1 T_2$.
 The adjustment grows roughly with the square of maturity, which is why it matters for the back of the strip and not the front.
 
 ### Hedging with futures: tailing
 
 Because futures settle daily, a hedge that matches the forward exposure should be scaled down by the discount factor to the delivery date: hedge $N e^{-r(T-t)}$ futures instead of $N$.
 Daily variation margin on a gain of $\Delta$ is received now, not at $T$, so it is worth $e^{r(T-t)}$ times more than the same gain on a forward.
+Example: an exposure of 1,000,000 units deliverable in six months at $r = 4\%$ is hedged with $1{,}000{,}000\,e^{-0.02} = 980{,}199$ units of futures, and the tail is rolled toward 1,000,000 as delivery approaches.
 
 ### The basis and carry trades
 
@@ -101,6 +107,8 @@ Given a traded futures price, the carry relation can be inverted:
 - A basis trade (long cash index, short futures, or the reverse) is a bet on financing and dividends, not on direction.
 
 ## Worked examples
+
+Every number below is printed and asserted by [deriv_01_07_forwards_carry.py](code/deriv_01_07_forwards_carry.py), which also confirms each forward by an explicit replication (reinvested dividends, the carry trade's cash flows, or the Ho-Lee rate distribution).
 
 ### Example 1: forward on a dividend-paying stock
 
@@ -124,7 +132,7 @@ The futures is 27.94 rich, so:
 2. Sell the one-year futures at 2120.
 3. At expiry deliver the gold for 2120; repay the loan plus storage, which together cost 2092.06.
 
-Locked-in profit: $2120 - 2092.06 = 27.94$ per ounce at $T$.
+Locked-in profit: $2120 - 2092.06 = 27.94$ per ounce at $T$, the same whatever gold does: the script evaluates the three legs on 100,000 simulated terminal prices and the P&L does not move.
 If instead the futures were quoted at 2050, reverse: borrow and sell gold (or lend out existing inventory), invest the cash, buy the futures, profit $2092.06 - 2050 = 42.06$.
 For gold the reverse leg works because large holders lend gold; for crude oil it usually does not, which is why convenience yield exists.
 
@@ -181,7 +189,7 @@ print(0.05 - log(5030 / 5000) / 0.25)                 # implied q 0.0261
 
 - Treating the forward as the market's forecast of $S_T$; it is pinned by carry, whatever anyone expects.
 - Forgetting that the value of a forward at inception is zero, while its price (the delivery price) is not.
-- Mixing compounding conventions: $S(1 + rT)$ and $S e^{rT}$ differ, and FX desks quote money-market rates on act/360.
+- Mixing compounding conventions: $S(1 + rT)$ and $S e^{rT}$ differ, and most money-market rates (USD, EUR) are simple act/360 while GBP is act/365.
 - Applying cash-and-carry in reverse to consumption commodities; you cannot short physical crude, so only the upper bound binds.
 - Ignoring stock borrow cost: for hard-to-borrow names the forward (and hence put-call parity) embeds the borrow fee, and apparent "arbitrage" is just the fee.
 - Assuming futures equal forwards for long-dated rate contracts; the convexity adjustment is several basis points and grows with $T_1 T_2$.
@@ -223,7 +231,7 @@ print(0.05 - log(5030 / 5000) / 0.25)                 # implied q 0.0261
 > The short futures gains when rates rise and reinvests those gains at high rates, so the futures rate is biased up.
 
 > [!question]- deriv-implied-dividend-from-futures | Index 4000, six-month futures 4030, $r = 4\%$. What dividend yield is implied?
-> $q = r - \ln(4030/4000)/0.5 = 0.04 - 0.01496 = 2.50\%$.
+> $q = r - \ln(4030/4000)/0.5 = 0.04 - 0.01494 = 2.51\%$.
 > Invert $F = S e^{(r-q)T}$.
 
 > [!question]- deriv-futures-tailing-hedge | Why do you hedge a forward-dated exposure of $N$ units with only $N e^{-r(T-t)}$ futures?
@@ -232,18 +240,41 @@ print(0.05 - log(5030 / 5000) / 0.25)                 # implied q 0.0261
 
 > [!question]- deriv-covered-interest-parity | EURUSD spot 1.10, USD rate 5%, EUR rate 3% (continuous). What is the one-year forward?
 > $1.10 e^{0.05 - 0.03} = 1.1222$.
-> Covered interest parity: the currency with the higher interest rate trades at a forward discount, so the euro (lower rate) is at a forward premium.
+> EURUSD is quoted in USD per EUR, so USD (the quote currency) is domestic: $F = S e^{(r_{USD} - r_{EUR})T}$; replicate by borrowing $1.10 e^{-0.03}$ USD, buying $e^{-0.03}$ EUR and depositing it to grow to 1 EUR.
+> The currency with the higher interest rate trades at a forward discount, so the euro (lower rate) is at a forward premium.
 
 > [!question]- deriv-hard-to-borrow-forward | Why can a hard-to-borrow stock's forward sit well below $S e^{(r-q)T}$ without arbitrage?
 > Because the reverse cash-and-carry requires shorting the stock, which costs a borrow fee $b$, so the true carry is $r - q - b$.
 > The same fee shows up as puts looking rich versus calls in put-call parity.
 
+> [!question]- deriv-forward-discrete-dividend | Stock 100, $r = 5\%$, one-year forward, a cash dividend of 2 paid in six months. What is the forward price?
+> 103.08.
+> $(100 - 2e^{-0.025})e^{0.05} = (100 - 1.951) \times 1.05127$; equivalently $100e^{0.05} - 2e^{0.025}$, the financed share minus the dividend reinvested to delivery.
+
+> [!question]- deriv-implied-repo-rate | Index 5000, three-month futures 5030, expected dividend yield 2%. What financing rate does the futures imply, and what do you do if your funding costs 5%?
+> 4.39%: $r_{\text{impl}} = q + \ln(F/S)/T = 0.02 + 0.02393$.
+> The futures finances the basket at 4.39%, below your 5% funding, so the futures is cheap: a holder of the basket sells it and buys futures (or a desk funds the reverse basis trade), earning the 0.61% spread on the notional.
+
+> [!question]- deriv-reverse-cash-and-carry-gold | Gold spot 2000, $r = 4\%$, storage 0.5% a year, one-year futures 2050. What is the trade and the profit?
+> Reverse cash-and-carry: borrow (or sell existing) gold, invest the 2000 and save the storage, buy the futures; profit $2092.06 - 2050 = 42.06$ at $T$.
+> Fair value is $2000e^{0.045} = 2092.06$, so the futures is cheap; gold lending makes the short leg feasible.
+
+> [!question]- deriv-futures-tailing-number | You must hedge 1,000,000 units deliverable in six months with futures, $r = 4\%$. How many futures do you hold today?
+> 980,199: $1{,}000{,}000\,e^{-0.04 \times 0.5}$.
+> Futures P&L arrives daily and earns interest to delivery, so each futures unit is worth $e^{r(T-t)}$ forward units; increase the hedge toward 1,000,000 as delivery approaches.
+
+> [!question]- deriv-futures-forward-equal-deterministic | Prove that futures and forward prices are equal when interest rates are deterministic.
+> Hold $e^{-r(T-t)}$ futures on day $t$ and invest each margin flow to $T$: a move $\delta\text{Fut}$ pays $e^{-r(T-t)}\delta\text{Fut}$, worth $\delta\text{Fut}$ at $T$.
+> Summed, the zero-cost strategy pays $S_T - \text{Fut}_0$ at $T$, exactly a forward struck at $\text{Fut}_0$, so no arbitrage forces $\text{Fut}_0 = F_0$ (Cox, Ingersoll and Ross 1981).
+
 ## In this repo and SDE-Interview-Prep
 
+- Code: [deriv_01_07_forwards_carry.py](code/deriv_01_07_forwards_carry.py) prints and asserts every number in this note; run it with `uv run --no-project --with numpy python 05-Derivatives-and-Volatility/code/deriv_01_07_forwards_carry.py`.
 - Next: [Option Payoffs and Put-Call Parity](02-Option-Payoffs-and-Put-Call-Parity.md) uses the forward as the anchor for parity.
 - Related: [Commodities and Futures Curves](../06-Fixed-Income-and-Asset-Classes/09-Commodities-and-Futures-Curves.md), [FX Markets and Interest Rate Parity](../06-Fixed-Income-and-Asset-Classes/07-FX-Markets-and-Interest-Rate-Parity.md), [ETF and Futures Market Making](../08-Market-Making/08-ETF-and-Futures-Market-Making.md).
 
 ## Further reading
 
-- John Hull, *Options, Futures, and Other Derivatives*, chapters on futures markets, forward and futures pricing, and interest rate futures.
+- John Hull, *Options, Futures, and Other Derivatives*, chapters on futures markets, forward and futures pricing (basis, tailing the hedge), and interest rate futures (the Ho-Lee convexity adjustment).
+- CME Group, E-mini S&P 500 futures contract specifications ($50 times the index).
 - J. C. Cox, J. E. Ingersoll and S. A. Ross (1981), "The relation between forward prices and futures prices", *Journal of Financial Economics* 9(4).

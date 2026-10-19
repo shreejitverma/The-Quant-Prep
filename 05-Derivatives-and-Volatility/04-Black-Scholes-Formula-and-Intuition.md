@@ -51,7 +51,7 @@ Under the risk-neutral measure $\ln S_T \sim \mathcal{N}(\ln F - \tfrac12\sigma^
 - $S e^{-qT}N(d_1)$ is the price of an asset-or-nothing call (receive the share if $S_T > K$); $N(d_1)$ is the probability of exercise under the measure with the share as numeraire.
 - So the call is "receive the stock if in the money" minus "pay the strike if in the money".
 - $\partial C/\partial S = e^{-qT}N(d_1)$: the terms from differentiating $d_1$ and $d_2$ cancel because $F\varphi(d_1) = K\varphi(d_2)$.
-- $N(d_1) > N(d_2)$, so delta exceeds the probability of exercise: in the states where you exercise, the stock is higher, which the share measure overweights.
+- $N(d_1) > N(d_2)$: the exercise probability under the share measure exceeds the risk-neutral one, because the share measure overweights the high-price states where you exercise; with $q = 0$ this means delta exceeds the risk-neutral probability of exercise.
 - $\partial C/\partial K = -e^{-rT}N(d_2)$: moving the strike up by 1 costs the digital.
 
 ### Why the drift is missing
@@ -89,13 +89,15 @@ $$
 
 ### Mental maths kit
 
-- Time: $\sqrt{T}$ with $T$ in years; one month $\approx 0.29$, three months $0.5$, one week $\approx 0.139$, one trading day $1/15.87 \approx 0.063$.
+- Time: $\sqrt{T}$ with $T$ in years; one month $\approx 0.29$, three months $0.5$, one week $\sqrt{1/52} \approx 0.139$, one trading day $1/15.87 \approx 0.063$.
 - Daily standard deviation $\approx \sigma/16$; weekly $\approx \sigma/7.2$; monthly $\approx \sigma/3.5$.
 - Moneyness in standard deviations: $\ln(K/F)/(\sigma\sqrt{T})$; beyond about 2 standard deviations the option is worth very little.
 - ATM call delta is slightly above 0.5 ($N(\tfrac12\sigma\sqrt{T})$ with $r = 0$), and the ATM probability of exercise slightly below 0.5.
-- Near the money, strike by strike: $C(K + \delta K) \approx C(K) - N(d_2)\,\delta K$, with the correction $+\tfrac12\,\Gamma_K\,\delta K^2$ where $\Gamma_K = \partial^2 C/\partial K^2 > 0$.
+- Near the money, strike by strike: $C(K + \delta K) \approx C(K) - e^{-rT}N(d_2)\,\delta K$, with the correction $+\tfrac12\,\Gamma_K\,\delta K^2$ where $\Gamma_K = \partial^2 C/\partial K^2 > 0$.
 
 ## Worked examples
+
+Every number below is printed and asserted by [deriv_01_07_black_scholes.py](code/deriv_01_07_black_scholes.py), which also prices the base case and the Black-76 example by integrating the payoff against the lognormal density (and the base case on a 2000-step tree) to confirm the closed form.
 
 ### Example 1: the full formula
 
@@ -114,7 +116,8 @@ Straddle $\approx 0.8 \times 100 \times 0.30 \times 0.5 = 12.00$; exact 11.96.
 
 Stock 200, 25% vol, four months: $0.4 \times 200 \times 0.25 \times 0.577 = 11.55$; exact 11.51.
 
-At 80% vol and one year the shortcut gives 32.00 versus 31.08 exact, the $\sigma^2 T/24 \approx 2.7\%$ overestimate.
+At 80% vol and one year the shortcut gives 32.00 versus 31.08 exact.
+With the exact constant, $80/\sqrt{2\pi} = 31.92$ is 2.7% high, the $\sigma^2 T/24 = 0.64/24 = 2.7\%$ term; rounding $0.3989$ up to 0.4 adds the rest, for 2.9% in total.
 
 ### Example 3: earnings straddle and implied move
 
@@ -182,7 +185,7 @@ print(black(80, 75, 0.5, 0.04, 0.35))              # 10.1832
 > $e^{-rT}N(d_2)$ is the price of a digital call and equals $-\partial C/\partial K$.
 
 > [!question]- deriv-bs-nd1-meaning | What is $N(d_1)$, and why is it larger than $N(d_2)$?
-> It is the call delta (times $e^{-qT}$) and the exercise probability under the share measure.
+> It is the exercise probability under the share measure, and $e^{-qT}N(d_1)$ is the call delta.
 > The share measure reweights states by $S_T/F$, which overweights high-price states where the call is exercised.
 
 > [!question]- deriv-bs-no-drift | Why does the stock's expected return not appear in Black-Scholes?
@@ -225,8 +228,25 @@ print(black(80, 75, 0.5, 0.04, 0.35))              # 10.1832
 > For options on futures or forwards (commodities, rates, index options priced off futures), with the futures or forward price $F$ as the underlying and discounting at $r$.
 > It is Black-Scholes with carry folded into $F$, so no $q$ or cost-of-carry term is needed.
 
+> [!question]- deriv-bs-worked-numbers | Price a one-year ATM call: $S = K = 100$, $r = 5\%$, $\sigma = 20\%$, no dividends.
+> 10.45.
+> $d_1 = (0.05 + 0.02)/0.2 = 0.35$, $d_2 = 0.15$, $N(d_1) = 0.6368$, $N(d_2) = 0.5596$; $C = 63.68 - 95.123 \times 0.5596 = 63.68 - 53.23$; the put is $10.45 - 4.88 = 5.57$ by parity.
+
+> [!question]- deriv-black76-crude | Crude futures 80, strike 75 call, six months, $r = 4\%$, 35% vol. Black-76 price?
+> 10.18.
+> $d_1 = [\ln(80/75) + \tfrac12 \times 0.35^2 \times 0.5]/(0.35\sqrt{0.5}) = 0.385$, $d_2 = 0.137$, $C = e^{-0.02}[80 \times 0.6497 - 75 \times 0.5545]$.
+
+> [!question]- deriv-atm-approx-error | How accurate is $C \approx \sigma\sqrt{T}F e^{-rT}/\sqrt{2\pi}$ for an ATM-forward option, and in which direction is it wrong?
+> Too high by a relative $\sigma^2 T/24$ to leading order: 0.2% at $\sigma\sqrt{T} = 0.2$, 2.7% at 0.8.
+> $2N(x/2) - 1 = (x/\sqrt{2\pi})(1 - x^2/24 + \dots)$ with $x = \sigma\sqrt{T}$; using 0.4 instead of 0.3989 adds another 0.3% high.
+
+> [!question]- deriv-atm-straddle-mental | A 100 stock has 20% vol. Price the three-month ATM straddle in your head, zero rates.
+> About 8.0 (exact 7.98).
+> $0.8 \times 100 \times 0.2 \times \sqrt{0.25} = 8$; the straddle is the expected absolute move, $\sqrt{2/\pi}\,S\sigma\sqrt{T}$.
+
 ## In this repo and SDE-Interview-Prep
 
+- Code: [deriv_01_07_black_scholes.py](code/deriv_01_07_black_scholes.py) prints and asserts every number in this note.
 - Derivation: [Black-Scholes Derivation](../04-Stochastic-Calculus/07-Black-Scholes-Derivation.md). Discrete version: [Binomial Trees](03-Binomial-Trees.md).
 - Next: [The Greeks](05-The-Greeks.md); when one $\sigma$ is not enough: [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md).
 - Mental arithmetic drills: [Mental Math](../13-Interview-Playbook/02-Mental-Math.md).
