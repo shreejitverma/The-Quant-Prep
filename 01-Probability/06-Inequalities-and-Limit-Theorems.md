@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [expectation-variance-and-linearity]
 est_hours: 4
-sources: [Blitzstein and Hwang - Introduction to Probability 2nd ed ch 10, Grimmett and Stirzaker - Probability and Random Processes ch 5 and 7, Casella and Berger - Statistical Inference 2nd ed ch 5, Hoeffding 1963 - Probability inequalities for sums of bounded random variables]
+sources: [Blitzstein and Hwang - Introduction to Probability 2nd ed ch 10, Grimmett and Stirzaker - Probability and Random Processes ch 5 and 7, Casella and Berger - Statistical Inference 2nd ed ch 5, Hoeffding 1963 - Probability inequalities for sums of bounded random variables, Shevtsova 2011 - On the absolute constants in the Berry-Esseen type inequalities for identically distributed summands]
 ---
 
 # Inequalities and Limit Theorems
@@ -87,7 +87,7 @@ $$
 \frac{\sum_{i=1}^n X_i - n\mu}{\sigma\sqrt n}\ \Rightarrow\ N(0,1).
 $$
 
-Berry-Esseen bounds the CDF error by $C\,E\lvert X-\mu\rvert^3/(\sigma^3\sqrt n)$ with an absolute constant $C$ below $0.5$, so skewed summands need larger $n$.
+Berry-Esseen bounds the CDF error by $C\,E\lvert X-\mu\rvert^3/(\sigma^3\sqrt n)$ with an absolute constant $C$ (for iid summands Shevtsova 2011 proves $C<0.4748$), so skewed summands need larger $n$.
 For integer-valued sums use the continuity correction: $P(S\ge k)\approx P(Z\ge(k-\tfrac12-n\mu)/(\sigma\sqrt n))$.
 The same $\sqrt n$ scaling is why volatility scales with $\sqrt{\text{time}}$ for independent returns: 1% daily is about $1\%\cdot\sqrt{252}\approx15.9\%$ annualised.
 The random-walk and Brownian-motion limits are in [Random Walks and Gambler's Ruin](11-Random-Walks-and-Gamblers-Ruin.md) and [Brownian Motion](../04-Stochastic-Calculus/01-Brownian-Motion.md).
@@ -215,8 +215,8 @@ Leverage scales $\mu$ linearly but the drag quadratically, which is the root of 
 > Wins $\sim\text{Bin}(1000,18/38)$, mean 473.7, sd 15.8; need $\ge501$, $z\approx1.70$.
 
 > [!question]- prob-limit-hundred-dice-over-400 | 100 fair dice are rolled. Approximate the probability the sum exceeds 400.
-> About $0.15\%$.
-> Mean 350, sd $\sqrt{100\cdot35/12}\approx17.1$; $z = 50.5/17.1\approx2.96$; the exact value is $0.151\%$.
+> About $0.16\%$ by the normal approximation; the exact value is $0.151\%$.
+> Mean 350, sd $\sqrt{100\cdot35/12}\approx17.1$; "exceeds 400" means at least 401, so with the continuity correction $z = 50.5/17.1\approx2.96$ and the upper tail is about $0.0016$.
 
 > [!question]- prob-limit-sqrt-time-vol | Daily vol is 1% with independent returns. Annualised vol over 252 days?
 > About $15.9\%$.
@@ -238,10 +238,16 @@ Leverage scales $\mu$ linearly but the drag quadratically, which is the root of 
 > $P(S-E[S]\ge t)\le\exp\big(-2t^2/\sum_i(b_i-a_i)^2\big)$ for $X_i\in[a_i,b_i]$.
 > Chernoff bound with Hoeffding's lemma $E[e^{s(X-EX)}]\le e^{s^2(b-a)^2/8}$, optimised over $s$.
 
+## In this repo and SDE-Interview-Prep
+
+- Code: [`code/prob_06_limits.py`](code/prob_06_limits.py) prints and asserts every number on this page: exact binomial and 100-dice tails by integer arithmetic, normal tails by integrating the density, the extremal distributions that attain the Markov and Chebyshev bounds, and seeded simulations of the volatility standard error, volatility drag and the non-converging Cauchy sample mean.
+- Related notes: [Generating Functions](07-Generating-Functions.md) (MGFs and the CLT), [Random Walks and Gambler's Ruin](11-Random-Walks-and-Gamblers-Ruin.md), [Kelly Criterion and Position Sizing](../11-Risk-and-Trading/01-Kelly-Criterion-and-Position-Sizing.md).
+
 ## Further reading
 
 - Blitzstein and Hwang, *Introduction to Probability* (2nd ed.), chapter 10 (inequalities, LLN, CLT).
 - Geoffrey Grimmett and David Stirzaker, *Probability and Random Processes*, chapter 5 (generating functions and the CLT) and chapter 7 (convergence of random variables).
 - George Casella and Roger Berger, *Statistical Inference* (2nd ed.), chapter 5 (convergence concepts, delta method).
-- Wassily Hoeffding, "Probability inequalities for sums of bounded random variables", *Journal of the American Statistical Association* 58 (1963).
+- Wassily Hoeffding, "Probability inequalities for sums of bounded random variables", *Journal of the American Statistical Association* 58 (1963), 13-30.
+- Irina Shevtsova, "On the absolute constants in the Berry-Esseen type inequalities for identically distributed summands", arXiv:1111.6554 (2011).
 - Next: [Generating Functions](07-Generating-Functions.md) and [Heavy Tails and Extreme Value Theory](../02-Statistics-and-Econometrics/13-Heavy-Tails-and-Extreme-Value-Theory.md).
