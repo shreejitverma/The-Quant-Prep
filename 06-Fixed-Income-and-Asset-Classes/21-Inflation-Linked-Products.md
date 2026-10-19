@@ -5,18 +5,18 @@ tier: advanced
 status: solid
 prereqs: [swaps-and-curve-building]
 est_hours: 4
-sources: [Damiano Brigo and Fabio Mercurio - Interest Rate Models chapter 18, US Treasury TIPS Guidelines at treasurydirect.gov]
+sources: [31 CFR Part 356 Appendix B and 356.30 - TIPS index ratio and payments, Damiano Brigo and Fabio Mercurio - Interest Rate Models 2nd edition chapters 15 to 17, Robert Jarrow and Yildiray Yildirim - Pricing Treasury Inflation Protected Securities and Related Derivatives Using an HJM Model - JFQA 2003, Michael Fleming and John Sporn - Trading Activity and Price Transparency in the Inflation Swap Market - FRBNY Economic Policy Review 2013, BLS series CUUR0000SA0 CPI-U not seasonally adjusted]
 ---
 
 # Inflation-Linked Products
 
 ## TL;DR
 
-Inflation-linked debt and derivatives protect purchasing power by indexing cash flows to headline consumer price indices (such as US CPI-U or Eurozone HICP).
-Under the Fisher hypothesis, nominal yields decompose into real yields plus expected inflation and an inflation risk premium.
-Treasury Inflation-Protected Securities (TIPS) adjust bond principal daily via an index ratio with a 3-month publication lag, paying coupons on the adjusted principal and guaranteeing par redemption via an embedded deflation floor.
-Zero-Coupon Inflation Swaps (ZCIS) isolate pure market-implied cumulative inflation without liquidity distortions, establishing the zero-coupon inflation curve.
-The breakeven inflation rate measures the yield spread between nominal Treasuries and TIPS, capturing market inflation expectations adjusted for liquidity and risk premia.
+- Fisher: $1 + y_{\text{nom}} = (1 + y_{\text{real}})(1 + \pi)$; the nominal-real spread (breakeven) is expected inflation plus an inflation risk premium minus a TIPS liquidity premium, so it is not a pure forecast.
+- TIPS principal is indexed to non-seasonally adjusted CPI-U through a Ref CPI that lags three months and interpolates daily (31 CFR Part 356 Appendix B); coupons are paid on the adjusted principal, and at maturity the principal is floored at par (31 CFR 356.30).
+- A zero-coupon inflation swap exchanges $N[I(T)/I(0) - 1]$ for $N[(1 + K)^T - 1]$ at maturity; $(1 + K)^T$ is the $T$-forward expectation of the index ratio, which builds the inflation curve.
+- Year-on-year swaps pay ratios over intermediate periods and need a convexity adjustment relative to the zero-coupon curve; Jarrow-Yildirim prices them by treating the CPI as an exchange rate between a nominal and a real economy.
+- NSA CPI is strongly seasonal: from 2006 to 2024 it rose on average $0.54\%$ in March and fell on average $0.18\%$ in November, so short-dated inflation forwards must carry a seasonal adjustment.
 
 ## Learning objectives
 
@@ -29,212 +29,174 @@ The breakeven inflation rate measures the yield spread between nominal Treasurie
 
 ## Core concepts
 
-### 1. Nominal vs Real Interest Rates and the Fisher Equation
+### 1. Nominal and real rates
 
-Inflation erodes the purchasing power of money over time.
-An investor who receives a $5\%$ return in a $3\%$ inflation environment earns an effective purchasing power increase of approximately $2\%$.
+Fisher's relation, $1 + y_{\text{nom}} = (1 + y_{\text{real}})(1 + \pi)$, expands to $y_{\text{nom}} = y_{\text{real}} + \pi + y_{\text{real}} \pi$; dropping the cross term gives $y_{\text{nom}} \approx y_{\text{real}} + \pi$.
+The breakeven inflation rate (BEIR) is the inflation rate that equates the returns on a nominal and an inflation-linked bond; decomposed,
+$$\text{BEIR}(T) \approx \mathbb{E}^{\mathbb{P}}[\pi(T)] + \text{IRP}(T) - \text{LP}(T),$$
+with IRP the inflation risk premium nominal bondholders demand and LP the premium TIPS holders demand for TIPS being less liquid than nominal Treasuries.
+Both premia vary over time, so a fall in breakevens can be a rise in the liquidity premium rather than lower expected inflation.
 
-Irving Fisher (1930) formalized the relationship between nominal interest rate $y_{\text{nom}}$, real interest rate $y_{\text{real}}$, and inflation rate $\pi$:
-$$1 + y_{\text{nom}} = (1 + y_{\text{real}})(1 + \pi)$$
-Expanding the product:
-$$y_{\text{nom}} = y_{\text{real}} + \pi + y_{\text{real}} \pi$$
-For small rates, the cross-product $y_{\text{real}} \pi$ is negligible, yielding the standard first-order Fisher equation:
-$$y_{\text{nom}} \approx y_{\text{real}} + \pi$$
+### 2. TIPS mechanics (31 CFR Part 356)
 
-In market equilibrium, the spread between nominal and real bond yields contains additional risk premia:
-$$y_{\text{nom}}(T) - y_{\text{real}}(T) = \mathbb{E}[\pi(T)] + \text{IRP}(T) - \text{LP}(T)$$
-where:
-- $\mathbb{E}[\pi(T)]$ is the expected annualized inflation rate over horizon $T$.
-- $\text{IRP}(T)$ is the **Inflation Risk Premium** (compensation demanded by nominal bondholders for bearing uncertain future inflation).
-- $\text{LP}(T)$ is the **TIPS Liquidity Premium** (compensation demanded by TIPS holders because the TIPS market is less liquid than the nominal Treasury market).
+TIPS, first auctioned by the US Treasury in 1997, index principal to the CPI for All Urban Consumers (CPI-U), not seasonally adjusted.
 
-The difference $y_{\text{nom}}(T) - y_{\text{real}}(T)$ is termed the **Breakeven Inflation Rate (BEIR)**.
+**Ref CPI (Appendix B).**
+The Ref CPI for the first day of a month is the CPI of the third preceding month; for any other day it interpolates linearly toward the second preceding month:
+$$\text{Ref CPI}(t) = \text{CPI}_{m-3} + \frac{d - 1}{D} \left( \text{CPI}_{m-2} - \text{CPI}_{m-3} \right),$$
+with $d$ the calendar day and $D$ the number of days in month $m$.
+The rule truncates Ref CPI and the index ratio to six decimals and rounds to five.
+Because CPI for month $m - 2$ is published during month $m - 1$, both CPIs needed for any day of month $m$ are known before the month starts.
+Appendix B uses the CPI as first published (later revisions are ignored; the NSA series is normally not revised), keeps the base period in effect at issue if the BLS rebases, and specifies a fallback index if a month is not reported.
 
-### 2. Treasury Inflation-Protected Securities (TIPS) Mechanics
+**Index ratio, coupons and floor.**
+$$\text{Index Ratio}(t) = \frac{\text{Ref CPI}(t)}{\text{Ref CPI}(\text{dated date})}, \qquad \text{Coupon} = \frac{c}{2} \times \text{Par} \times \text{Index Ratio}(t_i).$$
+At maturity Treasury pays the inflation-adjusted principal, and if it is below par it pays an additional amount so the total equals par (31 CFR 356.30); the final coupon is still computed on the adjusted principal.
+The floor is a put on the cumulative index ratio struck at 1, paid only at maturity and only on principal.
+It is worth most for newly issued TIPS, whose index ratio is near 1, and little for seasoned TIPS that have accrued years of inflation.
 
-First issued by the US Treasury in 1997, TIPS are government bonds whose principal is indexed to the non-seasonally adjusted Consumer Price Index for All Urban Consumers (CPI-U).
+**Tax.**
+For US federal income tax, upward principal adjustments are taxable in the year they occur although they are paid only at maturity ("phantom income"), which is why TIPS are often held in tax-deferred accounts.
 
-#### The Index Ratio
-The inflation accrual of a TIPS bond on settlement date $t$ is governed by the **Index Ratio**:
-$$\text{Index Ratio}(t) = \frac{\text{Ref CPI}(t)}{\text{Base CPI}}$$
-where:
-- $\text{Base CPI}$ is the reference CPI value on the original dated date of the bond.
-- $\text{Ref CPI}(t)$ is the reference CPI for date $t$.
+### 3. Inflation swaps
 
-#### The 3-Month Indexation Lag
-Because monthly CPI numbers are published by the Bureau of Labor Statistics (BLS) roughly mid-month for the preceding month, cash flow amounts cannot rely on unreleased contemporaneous CPI data.
-TIPS utilize a standardized 3-month interpolation lag:
-- On the first day of calendar month $m$, the reference CPI equals the headline CPI published for month $m - 3$:
-$$\text{Ref CPI}(\text{First Day of Month } m) = \text{CPI}_{m-3}$$
-- For date $t$ falling on day $d$ of a month with $D$ calendar days, $\text{Ref CPI}(t)$ is linearly interpolated between $\text{CPI}_{m-3}$ and $\text{CPI}_{m-2}$:
-$$\text{Ref CPI}(t) = \text{CPI}_{m-3} + \frac{d - 1}{D} \left( \text{CPI}_{m-2} - \text{CPI}_{m-3} \right)$$
+**Zero-coupon inflation swap.**
+In the US the index is NSA CPI-U, the same as for TIPS, and the floating leg uses the index three months before the start and end dates (Fleming and Sporn 2013).
+At maturity only the net amount is paid:
+$$\text{Payoff to the inflation receiver} = N \left[ \frac{I(T)}{I(0)} - (1 + K)^T \right],$$
+the inflation receiver paying fixed and the inflation payer receiving fixed.
+With stochastic rates the fair $K$ comes from the $T$-forward measure:
+$$0 = P(0, T)\, \mathbb{E}^{\mathbb{Q}^T}\left[\frac{I(T)}{I(0)}\right] - P(0, T)(1 + K)^T \implies (1 + K)^T = \mathbb{E}^{\mathbb{Q}^T}\left[\frac{I(T)}{I(0)}\right].$$
+The left side is model-free: ZCIS quotes give the forward index $I(0) (1 + K_T)^T$ for each maturity directly, the inflation analogue of discount factors.
 
-#### Cash Flow Calculations
-1. **Semi-Annual Coupon Payments:** The fixed real coupon rate $c$ is paid semi-annually on the inflation-adjusted principal:
-$$\text{Coupon Payment}(t_i) = \frac{c}{2} \times \text{Base Principal} \times \text{Index Ratio}(t_i)$$
-When inflation occurs ($\text{Index Ratio} > 1.0$), dollar coupon payments increase proportionately.
-2. **Principal Redemption at Maturity:** At maturity $T$, the investor receives the adjusted principal, but protected by a **Deflation Floor**:
-$$\text{Redemption Payment}(T) = \text{Base Principal} \times \max\left(1.0, \text{Index Ratio}(T)\right)$$
-If cumulative inflation over the bond's lifetime is negative ($\text{Index Ratio} < 1.0$), the investor is guaranteed to receive 100% of the original par value.
-The deflation floor is an embedded European put option on the consumer price index with strike equal to the base CPI.
+**Year-on-year swap.**
+Each period pays $N[I(t_i)/I(t_{i-1}) - 1]$ at $t_i$.
+$\mathbb{E}^{\mathbb{Q}^{t_i}}[I(t_i)/I(t_{i-1})]$ is not the ratio of the two forward indices: $I(t_{i-1})$ is a $t_{i-1}$ quantity paid at $t_i$, so the expectation picks up a covariance between the index and real and nominal rates, a convexity adjustment that needs a model.
 
-### 3. Inflation Swaps
+### 4. The Jarrow-Yildirim model
 
-While TIPS combine real yield risk, nominal discount risk, and inflation optionality, inflation swaps isolate pure forward inflation expectations.
+Jarrow and Yildirim (2003) treat the CPI as the exchange rate between a nominal economy (domestic currency) and a real economy (foreign currency), with Gaussian (Hull-White type) nominal and real short rates $r_n$, $r_r$.
+Under the nominal risk-neutral measure:
+$$\frac{dI}{I} = (r_n - r_r) dt + \sigma_I dW_I, \qquad dr_r = \left[\theta_r(t) - a_r r_r - \rho_{r,I}\sigma_r \sigma_I\right] dt + \sigma_r dW_r.$$
+The index drift $r_n - r_r$ is the no-arbitrage drift of an exchange rate (the real bond converted to nominal must earn $r_n$), and the real rate picks up a quanto term $-\rho_{r,I}\sigma_r\sigma_I$ when written under the nominal measure.
+With correlations among $r_n$, $r_r$ and $I$, the model prices ZC and YoY swaps, caps and floors in closed form (Brigo and Mercurio, chapters 15 to 17).
 
-#### Zero-Coupon Inflation Swap (ZCIS)
-The Zero-Coupon Inflation Swap is the fundamental benchmark contract of the inflation derivatives market.
-At trade inception ($t = 0$), party A and party B agree on a fixed inflation rate $K$ for maturity $T$.
-No cash flows occur until maturity $T$.
+### 5. Seasonality
 
-At maturity $T$, a single net payment is exchanged on notional $N$:
-$$\text{Payoff}_{\text{Inflation Receiver}} = N \times \left[ \left(\frac{\text{CPI}(T)}{\text{CPI}(0)}\right) - (1 + K)^T \right]$$
-- **Inflation Receiver (fixed payer):** Pays the fixed compounded rate $(1 + K)^T - 1$ and receives realized inflation, so the payoff above is positive when realized inflation exceeds $K$.
-- **Inflation Payer (fixed receiver):** Pays the floating realized cumulative percentage inflation return $\frac{\text{CPI}(T)}{\text{CPI}(0)} - 1$; its payoff is the negative of the payoff above.
-
-The fair breakeven swap rate $K$ equates the present value of the two legs to zero:
-$$(1 + K)^T = \mathbb{E}_{\mathbb{Q}}\left[ \frac{\text{CPI}(T)}{\text{CPI}(0)} \right]$$
-The term structure of ZCIS rates directly establishes the zero-coupon market inflation curve.
-
-#### Year-on-Year (YoY) Inflation Swaps
-In a Year-on-Year inflation swap, cash flows occur annually.
-At each annual date $t_i$, the floating leg pays annual realized inflation:
-$$\text{Floating Payment}(t_i) = N \times \left[ \frac{\text{CPI}(t_i)}{\text{CPI}(t_{i-1})} - 1 \right]$$
-against a fixed rate $K_{\text{YoY}}$.
-Unlike ZCIS, which compounds the fixed rate annually to a single terminal payment, YoY swaps pay individual one-year forward inflation rates discounted on intermediate dates.
-Because the payment dates differ from the terminal measure, YoY swap rates require a convexity adjustment relative to forward rates extracted from ZCIS curves.
-
-### 4. The Jarrow-Yildirim (JY) Foreign-Currency Model
-
-Robert Jarrow and Yildiray Yildirim (2002) formulated a 3-factor term structure model by establishing a mathematical equivalence between inflation and foreign exchange:
-- **Nominal Economy:** Analogous to the domestic currency (US Dollars).
-- **Real Economy:** Analogous to a foreign currency (Goods / Baskets of consumption).
-- **Price Index $I(t)$:** Analogous to the nominal exchange rate (Dollars per basket of goods).
-
-Under the nominal risk-neutral measure $\mathbb{Q}$:
-1. The nominal short rate $r_n(t)$ follows Hull-White or HJM dynamics.
-2. The real short rate $r_r(t)$ follows Hull-White dynamics.
-3. The price index $I(t)$ evolves as a geometric process:
-$$\frac{dI(t)}{I(t)} = (r_n(t) - r_r(t)) dt + \sigma_I dW_I(t)$$
-This drift condition satisfies uncovered interest parity: the expected inflation rate under the nominal pricing measure equals the nominal interest rate minus the real interest rate.
-The model accounts for correlation between nominal rates, real rates, and the price index ($\rho_{n, r}, \rho_{n, I}, \rho_{r, I}$), providing the standard framework for pricing inflation caps, floors, and YoY options.
-
-### 5. CPI Seasonality
-
-Headline CPI exhibits strong seasonal patterns driven by consumer spending cycles, energy demand, and agriculture:
-- CPI rises rapidly in the spring (March, April, May) due to post-holiday price resets and summer travel demand.
-- CPI slows or contracts in the late autumn and winter (November, December, January).
-
-Because TIPS index to non-seasonally adjusted CPI, short-dated TIPS yields and inflation forwards are heavily distorted by seasonal swings:
-$$\text{CPI}(t) = \text{CPI}_{\text{trend}}(t) \times S(t)$$
-where $S(t)$ is a seasonal adjustment factor satisfying $\prod_{m=1}^{12} S(m) = 1$.
-Desks trading short-dated inflation swaps must strip out seasonal multipliers to prevent mispricing 6-month vs 12-month forward contracts.
+The NSA CPI has a stable seasonal pattern.
+From 2006 to 2024 the average month-on-month change was $0.42\%$ in January, $0.44\%$ in February and $0.54\%$ in March, against $-0.18\%$ in November and $-0.15\%$ in December; February never fell, while November fell in 14 of the 19 years and December in 13 (Example 6).
+Writing $\text{CPI}(t) = \text{CPI}_{\text{trend}}(t) \times S(t)$ with monthly factors whose product over a year is 1, an inflation curve built from annual ZCIS quotes is interpolated in the trend and multiplied back by $S$; without it, a 6-month forward from January and one from July imply the same inflation, which the data say they should not.
 
 ## Worked examples
 
-### Example 1: TIPS Cash Flow Calculation with Inflation Accrual
-An investor purchases $\$1,000$ base par value of a 10-year TIPS with a $2.0\%$ real coupon (paid semi-annually).
-At coupon date $t$, the reference CPI has risen from base value $300.0$ to $315.0$.
-Calculate the index ratio and the semi-annual coupon payment.
+### Example 1: Ref CPI and index ratio from published CPI-U
+CPI-U NSA was $314.540$ for July 2024 and $314.796$ for August 2024.
+For settlement on 16 October 2024 ($d = 16$, $D = 31$):
+$$\text{Ref CPI} = 314.540 + \frac{15}{31}(314.796 - 314.540) = 314.66387.$$
+For a TIPS dated 15 July 2024, the base is $313.548 + \frac{14}{31}(314.069 - 313.548) = 313.78329$ (April and May 2024 CPI), so the index ratio is $314.66387 / 313.78329 = 1.00281$ after Treasury's truncation and rounding.
+On 1 October 2024 the Ref CPI is exactly the July CPI, $314.54000$.
 
-1. Compute the Index Ratio:
-$$\text{Index Ratio} = \frac{\text{Ref CPI}}{\text{Base CPI}} = \frac{315.0}{300.0} = 1.0500 \quad (105\%)$$
-2. Compute the adjusted principal:
-$$\text{Adjusted Principal} = \$1,000 \times 1.0500 = \$1,050.00$$
-3. Compute the semi-annual coupon:
-$$\text{Coupon} = \frac{2.0\%}{2} \times \$1,050.00 = 1.0\% \times \$1,050.00 = \$10.50$$
-Our reference code [`code/fi_inflation.py`](code/fi_inflation.py) confirms:
-`tips_cash_flow(0.02, 1000.0, 1.05, is_maturity=False) == 10.50`.
-If the bond matured on this date, terminal cash flow would be $\$10.50 + \$1,050.00 = \$1,060.50$.
+### Example 2: coupon with inflation accrual
+$\$1,000$ par, $2.0\%$ real coupon, Ref CPI from $300.0$ at the dated date to $315.0$ on the coupon date: index ratio $1.0500$, adjusted principal $\$1,050.00$, coupon $1\% \times 1,050 = \$10.50$.
+If this were the maturity date the payment would be $\$10.50 + \$1,050.00 = \$1,060.50$.
 
-### Example 2: TIPS Deflation Floor Protection
-Consider the same TIPS bond as in Example 1, but assume severe deflation over the bond's life causes the terminal reference CPI to fall to $285.0$ at maturity.
-Calculate the final cash flow received by the investor.
+### Example 3: the deflation floor
+Same bond, Ref CPI $285.0$ at maturity: index ratio $0.9500$.
+The final coupon is on the adjusted principal, $1\% \times 950 = \$9.50$; the principal is floored, $\$1,000 \times \max(1, 0.95) = \$1,000.00$; the final payment is $\$1,009.50$.
 
-1. Compute the Index Ratio:
-$$\text{Index Ratio} = \frac{285.0}{300.0} = 0.9500 \quad (95\%)$$
-2. Compute the final coupon payment:
-$$\text{Coupon} = 1.0\% \times (\$1,000 \times 0.95) = 1.0\% \times \$950.00 = \$9.50$$
-3. Evaluate terminal principal redemption under the deflation floor:
-$$\text{Principal} = \$1,000 \times \max(1.0, 0.9500) = \$1,000.00$$
-4. Total terminal cash flow:
-$$\text{Total} = \$9.50 + \$1,000.00 = \$1,009.50$$
-Our reference implementation [`code/fi_inflation.py`](code/fi_inflation.py) verifies:
-`tips_cash_flow(0.02, 1000.0, 0.95, is_maturity=True) == 1009.50`.
-The deflation floor preserves full par value against cumulative deflation.
+### Example 4: breakeven
+Nominal 10-year yield $4.25\%$, TIPS real yield $1.85\%$:
+$$\text{BEIR}_{\text{exact}} = \frac{1.0425}{1.0185} - 1 = 2.3564\%, \qquad \text{BEIR}_{\text{approx}} = 4.25\% - 1.85\% = 2.4000\%.$$
+The approximation is higher by $4.36$ bp, which is exactly the cross term $y_{\text{real}} \times \text{BEIR}_{\text{exact}}$, so it overstates when both are positive and understates when real yields are negative.
 
-### Example 3: Breakeven Inflation Rate Calculation
-A 10-year nominal Treasury bond trades at a yield of $4.25\%$, while a 10-year TIPS trades at a real yield of $1.85\%$.
-Calculate the exact and approximate breakeven inflation rates.
+### Example 5: zero-coupon inflation swap
+$\$10$ million notional, 5 years, $K = 2.40\%$: the fixed leg compounds to $(1.024)^5 = 1.125900$.
+If the index ratio at maturity is $1.13$ the inflation receiver gets $10{,}000{,}000 \times (1.13 - 1.125900) = \$41,000.93$; at $1.10$ it pays $\$258,999.07$.
 
-1. Exact Fisher breakeven:
-$$\text{BEIR}_{\text{exact}} = \frac{1 + y_{\text{nom}}}{1 + y_{\text{real}}} - 1 = \frac{1 + 0.0425}{1 + 0.0185} - 1 = \frac{1.0425}{1.0185} - 1 = 1.023564 - 1 = 2.3564\% \quad (235.64 \text{ bps})$$
-2. Approximate breakeven:
-$$\text{BEIR}_{\text{approx}} = y_{\text{nom}} - y_{\text{real}} = 4.25\% - 1.85\% = 2.4000\% \quad (240.00 \text{ bps})$$
-Our reference implementation [`code/fi_inflation.py`](code/fi_inflation.py) yields:
-`breakeven_inflation_rate(0.0425, 0.0185) == 0.023564`.
-The approximation overstates the exact compound breakeven inflation rate by $4.36\text{ bps}$.
+### Example 6: seasonality in the data
+Using BLS series CUUR0000SA0 for December 2005 to December 2024, the mean month-on-month changes are $0.42\%$ (January), $0.44\%$ (February), $0.54\%$ (March), $-0.18\%$ (November) and $-0.15\%$ (December); November fell in 14 of 19 years, December in 13, February in none.
+The twelve monthly means sum to $2.50\%$, close to the $2.52\%$ annualized inflation of the period, so the seasonal swing within a year is large relative to the trend for any horizon under a year.
 
 ## Pitfalls
 
-- **Ignoring the 3-month CPI indexation lag:** Using contemporaneous CPI to price daily TIPS accrual introduces mark-to-market tracking errors; pricing engines must interpolate historical CPI numbers from months $m-3$ and $m-2$.
-- **Taxation of phantom income:** In taxable US accounts, annual upward principal adjustments on TIPS are taxed as ordinary income in the year they occur, even though the cash is locked until bond maturity.
-- **Conflating Breakeven Inflation with Inflation Forecasts:** Assuming the TIPS breakeven rate is a pure forecast of future inflation ignores the inflation risk premium and the TIPS liquidity premium; during market liquidity squeezes, breakeven rates plummet due to liquidity discounts rather than deflation expectations.
-- **Seasonality distortion in short-dated inflation:** Quoting 6-month or 1-year inflation forward rates without seasonal adjustment corrupts carry calculations, as non-seasonally adjusted CPI predictably peaks in early summer and dips in winter.
-- **Pricing YoY swaps directly from ZCIS curves without convexity corrections:** Year-on-Year inflation swaps pay individual forward inflation rates, requiring convexity adjustments analogous to CMS adjustments due to the change of numeraire.
+- **Ignoring the indexation lag:** a TIPS or ZCIS cash flow depends on CPI three months earlier; matching it to a contemporaneous inflation forecast misstates accrual and carry.
+- **Treating breakevens as forecasts:** breakevens include an inflation risk premium and a TIPS liquidity premium, both time-varying; in liquidity squeezes the liquidity premium can dominate the move.
+- **Forgetting the floor is on principal only, at maturity:** coupons are not floored, and the floor on a seasoned TIPS with an index ratio well above 1 is nearly worthless.
+- **No seasonal adjustment on short forwards:** the March and November mean changes differ by $0.72\%$ in our sample; unadjusted short-dated forwards and carry estimates inherit that error.
+- **Pricing YoY from the ZC curve without a convexity adjustment:** the YoY expectation differs from the ratio of forward indices by a model-dependent covariance term.
+- **Phantom income:** taxable holders owe tax on principal accretion before receiving it.
 
 ## Interview questions
 
 > [!question]- fi-inflation-fisher-equation | State the exact and approximate Fisher equations for interest rates.
-> Exact: $1 + y_{\text{nom}} = (1 + y_{\text{real}})(1 + \pi)$.
-> Approximate: $y_{\text{nom}} \approx y_{\text{real}} + \pi$.
-> The nominal rate equals the real rate plus inflation, plus a cross-product term $y_{\text{real}}\pi$ that is omitted in the linear approximation.
+> Exact: $1 + y_{\text{nom}} = (1 + y_{\text{real}})(1 + \pi)$; approximate: $y_{\text{nom}} \approx y_{\text{real}} + \pi$.
+> The approximation drops the cross term $y_{\text{real}}\pi$, $4.36$ bp in Example 4.
 
 > [!question]- fi-inflation-index-ratio | How is the TIPS index ratio defined?
-> $\text{Index Ratio}(t) = \frac{\text{Ref CPI}(t)}{\text{Base CPI}}$.
-> It is the ratio of the interpolated 3-month lagged reference CPI for date $t$ to the baseline CPI fixed at the bond's original dated date.
+> $\text{Ref CPI}(t) / \text{Ref CPI}(\text{dated date})$, where Ref CPI is the NSA CPI-U of the third preceding month interpolated daily toward the second preceding month, truncated to six decimals and rounded to five (31 CFR Part 356 Appendix B).
+> For 16 October 2024 against a 15 July 2024 base: $314.66387 / 313.78329 = 1.00281$.
 
 > [!question]- fi-inflation-deflation-floor | What is the TIPS deflation floor and when is it valuable?
-> The deflation floor guarantees that the redemption principal at maturity cannot fall below 100% of par: $\text{Redemption} = \text{Base Principal} \times \max(1.0, \text{Index Ratio}(T))$.
-> It acts as a free European put option on the price index with strike equal to base CPI, becoming valuable in prolonged deflationary environments.
+> At maturity Treasury pays the larger of the inflation-adjusted principal and par (31 CFR 356.30); coupons are not floored.
+> It is a put on the cumulative index ratio struck at 1, priced into the real yield rather than free, and valuable for new issues (index ratio near 1) when cumulative deflation over the remaining life is plausible.
 
 > [!question]- fi-inflation-breakeven-components | What economic components make up the Breakeven Inflation Rate (BEIR)?
-> $\text{BEIR} = y_{\text{nom}} - y_{\text{real}} = \mathbb{E}[\pi] + \text{Inflation Risk Premium} - \text{TIPS Liquidity Premium}$.
-> It reflects market expected inflation plus compensation for inflation volatility minus compensation for lower TIPS market liquidity.
+> Expected inflation, plus the inflation risk premium demanded by nominal bondholders, minus the liquidity premium demanded by TIPS holders.
+> Because both premia move, breakevens are not pure inflation forecasts.
 
 > [!question]- fi-inflation-zcis-structure | Describe the cash flow structure of a Zero-Coupon Inflation Swap (ZCIS).
-> A single net cash flow occurs at maturity $T$.
-> One party pays realized cumulative inflation $(\text{CPI}(T)/\text{CPI}(0) - 1) \times N$, while the counterparty pays a fixed compounded rate $((1 + K)^T - 1) \times N$.
+> One net payment at maturity: the inflation receiver gets $N[I(T)/I(0) - 1]$ and pays $N[(1 + K)^T - 1]$, with the index lagged three months in the US.
+> On $\$10$ million for 5 years at $K = 2.40\%$ and a realized ratio of $1.13$, the inflation receiver nets $\$41,000.93$.
 
 > [!question]- fi-inflation-lag-rationale | Why do TIPS use a 3-month indexation lag instead of contemporaneous CPI?
-> Monthly CPI is published with a delay (roughly mid-month for the prior month) and is subject to revisions.
-> The 3-month lag ensures that all parties know the exact coupon and settlement amounts well in advance of payment dates, eliminating settlement uncertainty.
+> CPI for a month is published in the following month, so a three-month lag with interpolation toward the second preceding month guarantees that both CPIs needed for every day of a month are known before that month starts.
+> Accrued interest and settlement amounts are therefore known in advance; the rule also uses CPI as first published, so revisions cannot change cash flows.
 
 > [!question]- fi-inflation-phantom-income | What is phantom income on TIPS and who is affected by it?
-> Phantom income is the taxable inflation adjustment applied to the bond principal each year.
-> In taxable retail or corporate accounts, investors must pay taxes on principal gains annually before any cash principal is disbursed.
+> The annual upward adjustment of TIPS principal, which is taxable for US federal income tax in the year it occurs although it is paid only at maturity.
+> Taxable holders pay tax before receiving the cash; tax-deferred accounts avoid the mismatch.
 
 > [!question]- fi-inflation-jy-model | What is the Jarrow-Yildirim (JY) model and what analogy does it use?
-> The JY model is a 3-factor term structure model that treats inflation using a foreign-currency analogy.
-> The nominal economy is the domestic currency, the real economy is the foreign currency, and the consumer price index acts as the exchange rate between the two.
+> A three-factor model in which the CPI is the exchange rate between a nominal (domestic) and a real (foreign) economy, with Gaussian nominal and real short rates and a lognormal index.
+> Under the nominal measure the index drifts at $r_n - r_r$ and the real short rate picks up a quanto term $-\rho_{r,I}\sigma_r\sigma_I$, exactly as a foreign rate does in an FX model.
 
 > [!question]- fi-inflation-seasonality-impact | Why does CPI seasonality matter for inflation derivatives?
-> Non-seasonally adjusted CPI predictably rises in the spring and falls in winter.
-> Derivatives expiring at different months (e.g. 6-month vs 12-month contracts) will misprice relative value unless seasonal multipliers are removed from the baseline inflation curve.
+> NSA CPI rises much more in some months than others: from 2006 to 2024 the mean change was $0.54\%$ in March and $-0.18\%$ in November.
+> A curve built from annual ZCIS quotes must be interpolated in trend inflation and multiplied by seasonal factors, or short-dated forwards, carry and fixings on different months are mispriced.
 
 > [!question]- fi-inflation-yoy-convexity | Why do Year-on-Year inflation swaps require a convexity adjustment?
-> YoY swaps pay individual annual inflation increments on intermediate payment dates rather than compounding to a single terminal date.
-> The change of numeraire between intermediate discount factors and the terminal measure induces a covariance term with interest rates.
+> Each YoY payment $I(t_i)/I(t_{i-1})$ at $t_i$ involves $I(t_{i-1})$, which is not a $t_i$-forward martingale quantity, so its expectation is not the ratio of forward indices from the ZC curve.
+> The difference is a covariance between the index and real and nominal rates over $[t_{i-1}, t_i]$, which models such as Jarrow-Yildirim quantify.
+
+> [!question]- fi-inflation-ref-cpi-calc | CPI-U was 314.540 for July 2024 and 314.796 for August 2024. What is the Ref CPI for 16 October 2024?
+> $314.540 + \frac{15}{31} \times 0.256 = 314.66387$.
+> October uses July (third preceding month) and August (second preceding), with weight $(d - 1)/D = 15/31$.
+
+> [!question]- fi-inflation-zcis-forward-measure | Why is the fair ZCIS rate an expectation under the $T$-forward measure rather than the risk-neutral measure?
+> The payoff is paid at $T$, so its value is $P(0, T) \mathbb{E}^{\mathbb{Q}^T}[\cdot]$; under the money-market measure the stochastic discount factor would multiply the index inside the expectation.
+> The forward index $I(0)(1 + K)^T$ is therefore $\mathbb{E}^{\mathbb{Q}^T}[I(T)]$, model-free, while YoY payments need a model.
+
+> [!question]- fi-inflation-breakeven-bias-sign | Does $y_{\text{nom}} - y_{\text{real}}$ overstate or understate the exact breakeven?
+> It differs by exactly $y_{\text{real}} \times \text{BEIR}_{\text{exact}}$: it overstates when the real yield and breakeven are both positive ($4.36$ bp at $4.25\%$ and $1.85\%$) and understates when real yields are negative.
+
+> [!question]- fi-inflation-floor-new-vs-seasoned | Two TIPS mature on the same date; one was issued last month, the other 10 years ago. Which has the more valuable deflation floor?
+> The new issue: its index ratio is near 1, so modest cumulative deflation puts the floor in the money.
+> The seasoned bond's index ratio already reflects 10 years of inflation, so prices would have to fall by that much before maturity for its floor to pay.
+
+> [!question]- fi-inflation-cpi-revisions | What happens to TIPS cash flows if the BLS revises a CPI number or rebases the index?
+> Nothing: 31 CFR Part 356 Appendix B uses the CPI as first published, and after a rebasing continues with the base period in effect when the security was issued.
+> If a month is not reported in time, Treasury announces a substitute index number based on the last available twelve-month change.
 
 ## Further reading
 
-- Damiano Brigo and Fabio Mercurio, *Interest Rate Models - Theory and Practice*, Chapter 18: "Inflation Models".
-- Robert Jarrow and Yildiray Yildirim, *Pricing Treasury Inflation Protected Securities and Related Derivative Contracts Using an HJM Model*, The Journal of Financial and Quantitative Analysis, 2003.
-- US Department of the Treasury, *TIPS: Treasury Inflation-Protected Securities - In Depth*, TreasuryDirect.
-- Frank Fabozzi, *Handbook of Fixed Income Securities*, Chapter on Inflation-Indexed Bonds.
+- 31 CFR Part 356, Appendix B (Methods for computing inflation-protected securities) and section 356.30 (payments), via the Electronic Code of Federal Regulations.
+- Robert Jarrow and Yildiray Yildirim, *Pricing Treasury Inflation Protected Securities and Related Derivatives Using an HJM Model*, Journal of Financial and Quantitative Analysis, 2003.
+- Damiano Brigo and Fabio Mercurio, *Interest Rate Models - Theory and Practice*, 2nd edition, Springer, 2006, chapters 15 (pricing of inflation-indexed derivatives), 16 (inflation-indexed swaps) and 17 (inflation-indexed caplets and floorlets).
+- Michael Fleming and John Sporn, *Trading Activity and Price Transparency in the Inflation Swap Market*, Federal Reserve Bank of New York Economic Policy Review, May 2013.
+- US Bureau of Labor Statistics, CPI-U all items, not seasonally adjusted, series CUUR0000SA0.
 
 ## In this repo and SDE-Interview-Prep
 
-- Code: [`code/fi_inflation.py`](code/fi_inflation.py) (numerical verification of TIPS index ratio, deflation floor, and breakeven inflation), [`code/credit_bootstrap.py`](code/credit_bootstrap.py) (TIPS index ratio, deflation floor, and breakeven inflation rate).
+- Code: [`code/fi_inflation.py`](code/fi_inflation.py) asserts every number here, including the Ref CPI rule on published CPI-U and the seasonality statistics computed from the embedded BLS series.
 - Prereqs: [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [Day Counts, Calendars and Schedules](11-Day-Counts-Calendars-and-Schedules.md).
 - Next: [Mortgages and Securitized Products](22-Mortgages-and-Securitized-Products.md).

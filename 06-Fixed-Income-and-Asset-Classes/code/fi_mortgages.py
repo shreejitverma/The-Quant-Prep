@@ -1,120 +1,242 @@
-"""Fixed Income Mortgages and Securitized Products Reference Engine.
+"""Mortgages and securitized products: SMM/CPR/PSA, pool cash flows, WAL, IO/PO, dollar roll, CMO waterfall, and OAS.
 
-Asserts every quantitative figure quoted in Note 22
-(22-Mortgages-and-Securitized-Products.md) to within half a unit
-in the last quoted decimal place using standard-library pure Python.
+Backs every number in `06-Fixed-Income-and-Asset-Classes/22-Mortgages-and-Securitized-Products.md`.
+- Examples 1 and 2 and cards fi-mbs-securitized-smm-to-cpr and fi-mbs-securitized-psa-benchmark: SMM, CPR and PSA.
+- Example 3 and card fi-mbs-securitized-wal-psa: month-1 cash flow and weighted average life at 50, 100 and 300 PSA.
+- Example 4 and card fi-mbs-securitized-io-duration: IO and PO values at two speeds.
+- Example 5 and card fi-mbs-securitized-dollar-roll: dollar roll implied financing rate.
+- Example 6: sequential CMO waterfall.
+- Example 7 and cards fi-mbs-securitized-oas-mechanics and fi-mbs-securitized-negative-convexity: Monte Carlo OAS,
+  zero-volatility spread, option cost, effective duration and convexity, under a labelled toy prepayment model, and
+  the range of the OAS and the convexity over seeds 2026 to 2030.
+Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
+Run it with `python 06-Fixed-Income-and-Asset-Classes/code/fi_mortgages.py`.
 """
+
+from __future__ import annotations
+
+import math
+
+import numpy as np
+
+QUOTED: list[str] = []
+
+
+def quoted(label: str, value: float, expected: float, decimals: int) -> float:
+    """Print a number the note quotes and assert it rounds to the quoted figure."""
+    tol = 0.5 * 10.0**-decimals + 1e-9
+    assert abs(value - expected) <= tol, f"{label}: computed {value!r}, quoted {expected}"
+    QUOTED.append(label)
+    print(f"    {label} = {value:,.{decimals}f}")
+    return value
 
 
 def smm_to_cpr(smm: float) -> float:
-    """Convert Single Monthly Mortality (SMM) to Constant Prepayment Rate (CPR)."""
     return 1.0 - (1.0 - smm) ** 12
 
 
 def cpr_to_smm(cpr: float) -> float:
-    """Convert Constant Prepayment Rate (CPR) to Single Monthly Mortality (SMM)."""
     return 1.0 - (1.0 - cpr) ** (1.0 / 12.0)
 
 
-def psa_cpr(month: int, psa_multiple: float = 100.0) -> float:
-    """Calculate projected CPR at loan age month for a given PSA benchmark speed."""
-    if month <= 0:
-        return 0.0
-    base_cpr = 0.06 * (month / 30.0) if month <= 30 else 0.06
-    return base_cpr * (psa_multiple / 100.0)
+def psa_cpr(age_month: int, psa: float) -> float:
+    """PSA benchmark: 0.2% CPR in month 1 rising 0.2% a month to 6% at month 30, flat after; scaled by psa / 100."""
+    return min(age_month, 30) * 0.002 * psa / 100.0
 
 
-def dollar_roll_implied_rate(
-    p_front: float,
-    p_back: float,
-    cash_flow_forgone: float,
-    days: int = 30,
-    day_count_basis: int = 360,
-) -> tuple[float, float, float]:
-    """Calculate dollar roll drop, net financing cost, and annualized implied rate.
+def project_pool(balance: float, wac: float, coupon: float, term: int, psa: float) -> list[tuple[float, float, float, float]]:
+    """Monthly (interest to investor, scheduled principal, prepayment, beginning balance) for a level-pay pool."""
+    rows = []
+    rate = wac / 12.0
+    for month in range(1, term + 1):
+        if balance <= 1e-12:
+            break
+        remaining = term - month + 1
+        payment = balance * rate / (1.0 - (1.0 + rate) ** -remaining)
+        sched = payment - balance * rate
+        prepay = cpr_to_smm(psa_cpr(month, psa)) * (balance - sched)
+        rows.append((balance * coupon / 12.0, sched, prepay, balance))
+        balance -= sched + prepay
+    return rows
 
-    Returns:
-        (drop, net_cost, implied_rate)
-    """
+
+def wal(rows: list[tuple[float, float, float, float]]) -> float:
+    principal = [s + p for _, s, p, _ in rows]
+    return sum((m + 1) / 12.0 * x for m, x in enumerate(principal)) / sum(principal)
+
+
+def pv(cash: list[float], annual_yield: float) -> float:
+    """Present value of monthly cash flows at a monthly-compounded yield."""
+    return sum(c / (1.0 + annual_yield / 12.0) ** (m + 1) for m, c in enumerate(cash))
+
+
+def example1_2_speeds() -> None:
+    print("  1. SMM, CPR and PSA (Examples 1 and 2)")
+    cpr = smm_to_cpr(0.005)
+    quoted("0.995^12", 0.995**12, 0.941623, 6)
+    quoted("CPR from SMM 0.50% (%)", cpr * 100.0, 5.8377, 4)
+    quoted("SMM back from that CPR (%)", cpr_to_smm(cpr) * 100.0, 0.5000, 4)
+    quoted("CPR at month 10, 100 PSA (%)", psa_cpr(10, 100.0) * 100.0, 2.00, 2)
+    quoted("CPR at month 30, 150 PSA (%)", psa_cpr(30, 150.0) * 100.0, 9.00, 2)
+    quoted("SMM at 6% CPR (%)", cpr_to_smm(0.06) * 100.0, 0.5143, 4)
+
+
+def example3_cash_flows() -> None:
+    print("  2. Pool cash flows and WAL (Example 3, card fi-mbs-securitized-wal-psa)")
+    rows = project_pool(100.0, 0.060, 0.055, 360, 100.0)
+    interest, sched, prepay, _ = rows[0]
+    quoted("month-1 scheduled payment at 6.0% WAC", 100.0 * 0.005 / (1.0 - 1.005**-360), 0.599551, 6)
+    quoted("month-1 interest to investors at 5.5%", interest, 0.458333, 6)
+    quoted("month-1 servicing and guarantee fee", 100.0 * (0.060 - 0.055) / 12.0, 0.041667, 6)
+    quoted("month-1 scheduled principal", sched, 0.099551, 6)
+    quoted("month-1 prepayment at 100 PSA", prepay, 0.016665, 6)
+    for psa, e in ((0.0, 19.31), (50.0, 14.53), (100.0, 11.36), (300.0, 5.74)):
+        quoted(f"WAL at {psa:.0f} PSA (years)", wal(project_pool(100.0, 0.060, 0.055, 360, psa)), e, 2)
+
+
+def example4_io_po() -> None:
+    print("  3. IO and PO strips (Example 4, card fi-mbs-securitized-io-duration)")
+    values = {}
+    for psa in (100.0, 300.0):
+        rows = project_pool(100.0, 0.060, 0.055, 360, psa)
+        values[psa] = (pv([i for i, _, _, _ in rows], 0.055), pv([s + p for _, s, p, _ in rows], 0.055))
+    quoted("IO value at 100 PSA", values[100.0][0], 41.80, 2)
+    quoted("PO value at 100 PSA", values[100.0][1], 58.20, 2)
+    quoted("IO value at 300 PSA", values[300.0][0], 25.08, 2)
+    quoted("PO value at 300 PSA", values[300.0][1], 74.92, 2)
+    quoted("value moved from IO to PO by 100 to 300 PSA", values[100.0][0] - values[300.0][0], 16.72, 2)
+    for psa in (100.0, 300.0):
+        assert abs(sum(values[psa]) - 100.0) < 1e-9, "IO + PO at the pass-through rate must equal par"
+
+
+def example5_dollar_roll() -> None:
+    print("  4. Dollar roll (Example 5, card fi-mbs-securitized-dollar-roll)")
+    p_front, p_back, carry_given_up, days = 101.50, 101.125, 0.480, 30
     drop = p_front - p_back
-    net_cost = cash_flow_forgone - drop
-    implied_rate = (net_cost / p_front) * (day_count_basis / days)
-    return drop, net_cost, implied_rate
+    quoted("drop", drop, 0.375, 3)
+    quoted("drop in 32nds", drop * 32.0, 12.0, 1)
+    implied = (p_back + carry_given_up - p_front) / p_front * 360.0 / days
+    quoted("implied financing rate (%)", implied * 100.0, 1.2414, 4)
+    quoted("advantage versus 4.50% repo (bp)", (0.045 - implied) * 1e4, 326.0, 0)
 
 
-def sequential_cmo_month_waterfall(
-    balances: list[float],
-    total_principal_cashflow: float,
-) -> tuple[list[float], list[float]]:
-    """Allocate total principal cash flow sequentially across tranches.
+def example6_cmo() -> None:
+    print("  5. Sequential CMO, month 1 (Example 6)")
+    balances, cash = [60_000_000.0, 40_000_000.0], 1_500_000.0
+    paid = []
+    for b in balances:
+        x = min(b, cash)
+        paid.append(x)
+        cash -= x
+    quoted("tranche A principal received ($)", paid[0], 1_500_000.0, 0)
+    quoted("tranche B principal received ($)", paid[1], 0.0, 0)
+    quoted("tranche A ending balance ($)", balances[0] - paid[0], 58_500_000.0, 0)
 
-    Returns:
-        (principal_received_by_tranche, ending_balances)
-    """
-    remaining_cf = total_principal_cashflow
-    received = []
-    ending = []
-    for bal in balances:
-        allocated = min(bal, remaining_cf)
-        received.append(allocated)
-        ending.append(bal - allocated)
-        remaining_cf -= allocated
-    return received, ending
+
+# Example 7 inputs: a labelled toy model, not a vendor prepayment model.
+F0, SIGMA, MTG_SPREAD = 0.04, 0.008, 0.015
+WAC, COUPON, TERM = 0.060, 0.055, 360
+TURNOVER, REFI_MAX, REFI_MID, REFI_WIDTH = 0.06, 0.40, 0.010, 0.0025
+
+
+def toy_cpr(incentive: np.ndarray, age: int) -> np.ndarray:
+    ramp = min(age, 30) / 30.0
+    return ramp * (TURNOVER + REFI_MAX / (1.0 + np.exp(-(incentive - REFI_MID) / REFI_WIDTH)))
+
+
+def simulate_pool(f0: float, sigma: float, n_pairs: int, seed: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Cash flows and path discount factors under Ho-Lee fitted to a flat curve f0 (monthly steps, antithetic)."""
+    dt = 1.0 / 12.0
+    rng = np.random.default_rng(seed)
+    z = rng.standard_normal((n_pairs, TERM))
+    z = np.vstack([z, -z])
+    n = z.shape[0]
+    w = np.zeros(n)
+    balance = np.full(n, 100.0)
+    log_df = np.zeros(n)
+    cash = np.zeros((n, TERM))
+    disc = np.zeros((n, TERM))
+    rate = WAC / 12.0
+    for k in range(TERM):
+        t = k * dt
+        short = f0 + 0.5 * sigma**2 * t * t + sigma * w
+        ten_year = f0 + sigma * w + sigma**2 * (0.5 * t * t + 5.0 * t)  # Ho-Lee 10y zero yield
+        incentive = WAC - (ten_year + MTG_SPREAD)
+        remaining = TERM - k
+        payment = balance * rate / (1.0 - (1.0 + rate) ** -remaining)
+        sched = payment - balance * rate
+        smm = 1.0 - (1.0 - toy_cpr(incentive, k + 1)) ** (1.0 / 12.0)
+        prepay = smm * (balance - sched)
+        log_df -= short * dt
+        cash[:, k] = balance * COUPON / 12.0 + sched + prepay
+        disc[:, k] = np.exp(log_df)
+        balance = balance - sched - prepay
+        w = w + math.sqrt(dt) * z[:, k]
+    times = (np.arange(TERM) + 1.0) / 12.0
+    return cash, disc, times
+
+
+def price_with_spread(cash: np.ndarray, disc: np.ndarray, times: np.ndarray, spread: float) -> float:
+    return float((cash * disc * np.exp(-spread * times)).sum(axis=1).mean())
+
+
+def solve_spread(cash: np.ndarray, disc: np.ndarray, times: np.ndarray, target: float) -> float:
+    lo, hi = -0.05, 0.05
+    for _ in range(100):
+        mid = 0.5 * (lo + hi)
+        if price_with_spread(cash, disc, times, mid) > target:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
+MARKET_PRICE, BUMP = 101.00, 0.0025
+
+
+def oas_duration_convexity(seed: int) -> tuple[float, float, float]:
+    """OAS, then effective duration and convexity from +-25 bp curve shifts with the OAS held."""
+    oas = solve_spread(*simulate_pool(F0, SIGMA, 2_000, seed), MARKET_PRICE)
+    p_up = price_with_spread(*simulate_pool(F0 + BUMP, SIGMA, 2_000, seed), oas)
+    p_dn = price_with_spread(*simulate_pool(F0 - BUMP, SIGMA, 2_000, seed), oas)
+    eff_dur = (p_dn - p_up) / (2.0 * MARKET_PRICE * BUMP)
+    eff_conv = (p_up + p_dn - 2.0 * MARKET_PRICE) / (MARKET_PRICE * BUMP * BUMP)
+    return oas, eff_dur, eff_conv
+
+
+def example7_oas() -> None:
+    print("  6. Monte Carlo OAS under a toy prepayment model (Example 7)")
+    _, disc, times = simulate_pool(F0, SIGMA, 2_000, 2026)
+    # The simulated discount factors must reprice the flat curve (Ho-Lee is fitted to it).
+    mean_df_10y = float(disc[:, 119].mean())
+    quoted("mean path discount factor to 10y", mean_df_10y, 0.670, 3)
+    quoted("curve discount factor exp(-0.4)", math.exp(-F0 * 10.0), 0.670, 3)
+    cash0, disc0, _ = simulate_pool(F0, 0.0, 1, 2026)
+    z_spread = solve_spread(cash0[:1], disc0[:1], times, MARKET_PRICE)
+    # Seed 2026 gives the quoted figures; seeds 2027 to 2030 measure the Monte Carlo noise.
+    runs = [oas_duration_convexity(seed) for seed in range(2026, 2031)]
+    oas, eff_dur, eff_conv = runs[0]
+    quoted("zero-volatility spread (bp)", z_spread * 1e4, 132.0, 0)
+    quoted("OAS (bp)", oas * 1e4, 64.0, 0)
+    quoted("option cost (bp)", (z_spread - oas) * 1e4, 68.0, 0)
+    quoted("effective duration", eff_dur, 4.2, 1)
+    quoted("effective convexity", eff_conv, -122.0, 0)
+    assert eff_conv < 0.0, "a premium pass-through should be negatively convex in this model"
+    quoted("lowest OAS over seeds 2026-2030 (bp)", min(r[0] for r in runs) * 1e4, 62.0, 0)
+    quoted("highest OAS over seeds 2026-2030 (bp)", max(r[0] for r in runs) * 1e4, 65.0, 0)
+    quoted("lowest effective convexity over seeds 2026-2030", min(r[2] for r in runs), -130.0, 0)
+    quoted("highest effective convexity over seeds 2026-2030", max(r[2] for r in runs), -120.0, 0)
 
 
 def main() -> None:
-    # 1. SMM to CPR conversion (Example 1)
-    smm = 0.0050  # 0.50%
-    cpr = smm_to_cpr(smm)
-    assert round(cpr * 100, 4) == 5.8377, f"Expected 5.8377%, got {cpr * 100}"
-    assert round(cpr * 100, 2) == 5.84, f"Expected 5.84%, got {cpr * 100}"
-
-    # Invert back to SMM
-    smm_back = cpr_to_smm(cpr)
-    assert round(smm_back * 100, 4) == 0.5000, f"Expected 0.5000%, got {smm_back * 100}"
-
-    # 2. PSA Benchmark Schedule (Example 2)
-    # Month 10 at 100% PSA
-    cpr_m10_100 = psa_cpr(10, 100.0)
-    assert round(cpr_m10_100 * 100, 2) == 2.00, f"Expected 2.00%, got {cpr_m10_100 * 100}"
-
-    # Month 20 at 100% PSA
-    cpr_m20_100 = psa_cpr(20, 100.0)
-    assert round(cpr_m20_100 * 100, 2) == 4.00, f"Expected 4.00%, got {cpr_m20_100 * 100}"
-
-    # Month 30 at 150% PSA
-    cpr_m30_150 = psa_cpr(30, 150.0)
-    assert round(cpr_m30_150 * 100, 2) == 9.00, f"Expected 9.00%, got {cpr_m30_150 * 100}"
-
-    # Month 60 at 150% PSA (flat post month 30)
-    cpr_m60_150 = psa_cpr(60, 150.0)
-    assert round(cpr_m60_150 * 100, 2) == 9.00, f"Expected 9.00%, got {cpr_m60_150 * 100}"
-
-    # 3. Dollar Roll Implied Financing Rate (Example 3)
-    p_front = 101.50
-    p_back = 101.125
-    cf_forgone = 0.480
-    drop, net_cost, implied_rate = dollar_roll_implied_rate(p_front, p_back, cf_forgone, days=30)
-    assert round(drop, 3) == 0.375, f"Expected drop 0.375, got {drop}"
-    assert round(net_cost, 3) == 0.105, f"Expected net cost 0.105, got {net_cost}"
-    assert round(implied_rate * 100, 4) == 1.2414, f"Expected 1.2414%, got {implied_rate * 100}"
-    assert round(implied_rate * 100, 2) == 1.24, f"Expected 1.24%, got {implied_rate * 100}"
-
-    gc_repo = 0.0450
-    specialness_bps = (gc_repo - implied_rate) * 10000
-    assert round(specialness_bps, 0) == 326.0, f"Expected 326 bps, got {specialness_bps}"
-
-    # 4. Sequential CMO Waterfall (Example 4)
-    # Tranche A ($60M), Tranche B ($40M)
-    init_balances = [60_000_000.0, 40_000_000.0]
-    total_principal_cf = 1_500_000.0
-    rec, end_bal = sequential_cmo_month_waterfall(init_balances, total_principal_cf)
-    assert rec[0] == 1_500_000.0, f"Tranche A should receive all $1.5M, got {rec[0]}"
-    assert rec[1] == 0.0, f"Tranche B should receive $0, got {rec[1]}"
-    assert end_bal[0] == 58_500_000.0, f"Tranche A balance should be $58.5M, got {end_bal[0]}"
-    assert end_bal[1] == 40_000_000.0, f"Tranche B balance should be $40.0M, got {end_bal[1]}"
-
-    print("All fi_mortgages assertions passed successfully.")
+    print("=== fi_mortgages: Mortgages and Securitized Products ===")
+    example1_2_speeds()
+    example3_cash_flows()
+    example4_io_po()
+    example5_dollar_roll()
+    example6_cmo()
+    example7_oas()
+    print(f"\nSuccessfully verified {len(QUOTED)} mortgage figures.")
 
 
 if __name__ == "__main__":

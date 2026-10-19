@@ -33,13 +33,13 @@ Enough of every major asset class to trade it or model it; deep rates knowledge 
 | 15 | [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md) | TRDQ | advanced | 5 | solid | 15 |
 | 16 | [Treasury Futures and the Basis](16-Treasury-Futures-and-the-Basis.md) | TRQ | advanced | 4 | solid | 15 |
 | 17 | [Convexity Adjustments](17-Convexity-Adjustments.md) | RQ | senior | 4 | solid | 15 |
-| 18 | [Rates Volatility and SABR](18-Rates-Volatility-and-SABR.md) | RQ | senior | 5 | solid | 10 |
-| 19 | [Term Structure Models: HJM, LGM, and LMM](19-Term-Structure-Models-HJM-LGM-LMM.md) | RQ | senior | 6 | solid | 10 |
-| 20 | [Callable and Bermudan Products](20-Callable-and-Bermudan-Products.md) | RQ | senior | 5 | solid | 10 |
-| 21 | [Inflation-Linked Products](21-Inflation-Linked-Products.md) | TRQ | advanced | 4 | solid | 10 |
-| 22 | [Mortgages and Securitized Products](22-Mortgages-and-Securitized-Products.md) | TRQ | advanced | 5 | solid | 10 |
-| 23 | [Credit Advanced: CDS Indices and Tranches](23-Credit-Advanced-CDS-Indices-and-Tranches.md) | TRQ | advanced | 5 | solid | 10 |
-| 24 | [Fixed Income P&L Attribution and Relative Value](24-Fixed-Income-PnL-and-Relative-Value.md) | TRQ | advanced | 5 | solid | 10 |
-| 25 | [Fixed Income Comprehensive Problem Set](25-Fixed-Income-Problem-Set.md) | TRQ | advanced | 8 | solid | 15 |
+| 18 | [Rates Volatility and SABR](18-Rates-Volatility-and-SABR.md) | RQ | senior | 5 | solid | 15 |
+| 19 | [Term Structure Models: HJM, LGM, and LMM](19-Term-Structure-Models-HJM-LGM-LMM.md) | RQ | senior | 6 | solid | 15 |
+| 20 | [Callable and Bermudan Products](20-Callable-and-Bermudan-Products.md) | RQ | senior | 5 | solid | 15 |
+| 21 | [Inflation-Linked Products](21-Inflation-Linked-Products.md) | TRQ | advanced | 4 | solid | 15 |
+| 22 | [Mortgages and Securitized Products](22-Mortgages-and-Securitized-Products.md) | TRQ | advanced | 5 | solid | 15 |
+| 23 | [Credit Advanced: CDS Indices and Tranches](23-Credit-Advanced-CDS-Indices-and-Tranches.md) | TRQ | advanced | 5 | solid | 15 |
+| 24 | [Fixed Income P&L Attribution and Relative Value](24-Fixed-Income-PnL-and-Relative-Value.md) | TRQ | advanced | 5 | solid | 15 |
+| 25 | [Fixed Income Comprehensive Problem Set](25-Fixed-Income-Problem-Set.md) | TRQ | advanced | 8 | solid | 25 |
 
 <!-- qp:moc:end -->
