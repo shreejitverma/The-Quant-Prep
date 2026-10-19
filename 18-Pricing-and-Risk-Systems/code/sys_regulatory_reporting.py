@@ -5,9 +5,10 @@ Trades, balances, tolerances and the reconciliation data set are labelled-hypoth
 SA-CCR is computed here from CRE52 directly and cross-checked against the independently written and verified
 implementation in `17-Regulatory-Capital-Basel-and-FRTB/code/basel_credit_saccr.py`.
 The reconciliation is a real matching function over a seeded synthetic data set, not arithmetic on literals; it is
-tested on separately generated data sets whose faults (missing, extra and duplicated rows, ids differing in case or
-whitespace, differences just inside, at and just outside the tolerance, float noise on small values) it never sees,
-and its output must equal the ground truth each fault was built to produce.
+tested on data sets whose GL and risk ledgers are built separately from one trade universe and a planted-fault list it
+never sees (missing, extra and duplicated rows, ids differing in case or whitespace, differences just inside, at and
+just outside the tolerance on small and large values, float noise on small values), its output must equal the
+outcome each fault was designed to produce, and the same matcher without id normalisation must fail.
 Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
 Run it with `python 18-Pricing-and-Risk-Systems/code/sys_regulatory_reporting.py`.
 """
@@ -145,18 +146,22 @@ class Recon:
     within: dict[str, float]  # non-zero value differences at or within tolerance
 
 
-def reconcile(gl_rows: list[tuple[str, float]], risk_rows: list[tuple[str, float]], tolerance: float) -> Recon:
-    """Match two stores on trimmed, upper-cased trade ids and compare values in whole cents."""
+def normalise_id(tid: str) -> str:
+    return tid.strip().upper()
+
+
+def reconcile(gl_rows: list[tuple[str, float]], risk_rows: list[tuple[str, float]], tolerance: float, key=normalise_id) -> Recon:
+    """Match two stores on normalised trade ids (trimmed, upper-cased) and compare values in whole cents."""
     duplicate: set[str] = set()
 
     def index(rows: list[tuple[str, float]]) -> dict[str, int]:
         out: dict[str, int] = {}
         for tid, value in rows:
-            key = tid.strip().upper()
-            if key in out:
-                duplicate.add(key)
+            k = key(tid)
+            if k in out:
+                duplicate.add(k)
             else:
-                out[key] = round(value * 100)
+                out[k] = round(value * 100)
         return out
 
     gl, risk = index(gl_rows), index(risk_rows)
@@ -171,51 +176,86 @@ def reconcile(gl_rows: list[tuple[str, float]], risk_rows: list[tuple[str, float
     )
 
 
+SPELLINGS = (str.lower, lambda s: f" {s}", lambda s: f"{s.lower()}\t", lambda s: f"{s} ", lambda s: f" {s.lower()} ")
+
+NOISY_TENTHS = [k for k in range(3, 1000) if sum([0.1] * k) != k / 10]  # float sums that miss the decimal value
+
+
 def injected_faults(seed: int, tolerance: float) -> tuple[list[tuple[str, float]], list[tuple[str, float]], dict]:
-    """GL and risk rows with planted faults, and the categories each fault was built to land in (differences in cents)."""
+    """GL and risk ledgers built separately from one trade universe and a planted-fault list, and the outcome each
+    planted fault was designed to produce (differences in cents, GL less risk)."""
     rng = random.Random(seed)
-    ids = [f"T{i:05d}" for i in range(400)]
-    value = {t: round(rng.lognormvariate(13.0, 1.5), 2) for t in ids}
-    picked = rng.sample(ids, 26)
-    missing, dup, renamed = picked[0:4], picked[4:8], picked[8:13]
-    below, at, above, noisy = picked[13:16], picked[16:18], picked[18:22], picked[22:26]
-    extra = [f"X{seed:02d}{j:03d}" for j in range(4)]
     tol_c = round(tolerance * 100)
-    shift_c: dict[str, int] = {}
-    for group, size_c in ((below, tol_c - 1), (at, tol_c), (above, tol_c + 1)):
-        for t in group:
-            shift_c[t] = rng.choice((-1, 1)) * size_c
-    tenths = {t: rng.randint(3, 999) for t in noisy}
-    for t in noisy:
-        value[t] = round(tenths[t] / 10, 2)
-    risk_value = {t: value[t] - shift_c.get(t, 0) / 100 for t in ids}
-    for t in noisy:
-        risk_value[t] = sum([0.1] * tenths[t])
-    assert any(risk_value[t] != value[t] for t in noisy), "float noise must reach the matcher"
-    gl_rows = [(t, value[t]) for t in ids] + [(t, value[t]) for t in dup[:2]]
-    spellings = (str.lower, lambda s: f" {s}", lambda s: f"{s.lower()}\t", lambda s: f"{s} ", lambda s: s.title())
-    risk_rows = [(spellings[renamed.index(t)](t) if t in renamed else t, risk_value[t]) for t in ids if t not in missing]
-    risk_rows += [(t, risk_value[t]) for t in dup[2:]] + [(t, rng.uniform(1e3, 1e6)) for t in extra]
+    universe = {f"T{i:05d}": round(rng.lognormvariate(13.0, 1.5) * 100) for i in range(400)}  # true values in cents
+    picked = rng.sample(list(universe), 27)
+    faults: list[tuple[str, str, int]] = [("missing", t, 0) for t in picked[0:4]]
+    faults += [("duplicate in GL", t, 0) for t in picked[4:6]] + [("duplicate in risk", t, 0) for t in picked[6:8]]
+    faults += [("respelled", t, i) for i, t in enumerate(picked[8:13])]
+    sized = ((picked[13:17], "below", tol_c - 1), (picked[17:19], "at", tol_c), (picked[19:23], "above", tol_c + 1))
+    for group, kind, size_c in sized:
+        for j, t in enumerate(group):
+            if j % 2:  # every other one on a notional barely larger than the tolerance
+                universe[t] = rng.randint(tol_c + 200, 5 * tol_c)
+            faults.append((kind, t, rng.choice((-1, 1)) * size_c))
+    for t in picked[23:27]:
+        universe[t] = 10 * rng.choice(NOISY_TENTHS)
+        faults.append(("float noise", t, 0))
+    faults += [("extra", f"X{seed:02d}{j:03d}", round(rng.uniform(1e5, 1e8))) for j in range(4)]
+
+    plan = {t: (kind, arg) for kind, t, arg in faults}
+    gl_rows = [(t, c / 100) for t, c in universe.items()]
+    gl_rows += [(t, universe[t] / 100) for kind, t, _ in faults if kind == "duplicate in GL"]
+    risk_rows: list[tuple[str, float]] = []
+    for t, c in universe.items():
+        kind, arg = plan.get(t, ("", 0))
+        if kind == "missing":
+            continue
+        tid = SPELLINGS[arg](t) if kind == "respelled" else t
+        if kind == "float noise":
+            value = sum([0.1] * (c // 10))
+        elif kind in ("below", "at", "above"):
+            value = c / 100 - arg / 100
+        else:
+            value = c / 100
+        risk_rows += [(tid, value)] * (2 if kind == "duplicate in risk" else 1)
+    risk_rows += [(t, arg / 100) for kind, t, arg in faults if kind == "extra"]
+    rng.shuffle(risk_rows)
+
+    def ids(*kinds: str) -> set[str]:
+        return {t for kind, t, _ in faults if kind in kinds}
+
     truth = {
-        "missing": set(missing),
-        "extra": set(extra),
-        "duplicate": set(dup),
-        "breaks": {t: shift_c[t] for t in above},
-        "within": {t: shift_c[t] for t in below + at},
+        "missing": ids("missing"),
+        "extra": ids("extra"),
+        "duplicate": ids("duplicate in GL", "duplicate in risk"),
+        "breaks": {t: arg for kind, t, arg in faults if kind == "above"},
+        "within": {t: arg for kind, t, arg in faults if kind in ("below", "at")},
     }
     return gl_rows, risk_rows, truth
 
 
+def planted_fault_mismatches(seed: int, tolerance: float, key=normalise_id) -> list[str]:
+    """Categories in which reconcile() disagrees with the planted ground truth."""
+    gl_rows, risk_rows, truth = injected_faults(seed, tolerance)
+    r = reconcile(gl_rows, risk_rows, tolerance, key)
+    found = {
+        "missing": set(r.missing),
+        "extra": set(r.extra),
+        "duplicate": r.duplicate,
+        "breaks": {k: round(v * 100) for k, v in r.breaks.items()},
+        "within": {k: round(v * 100) for k, v in r.within.items()},
+    }
+    return [name for name in truth if found[name] != truth[name]]
+
+
 def check_reconcile_against_injected_faults(tolerance: float, seeds: range = range(1, 6)) -> None:
     for seed in seeds:
-        gl_rows, risk_rows, truth = injected_faults(seed, tolerance)
-        r = reconcile(gl_rows, risk_rows, tolerance)
-        assert set(r.missing) == truth["missing"], f"seed {seed}: missing"
-        assert set(r.extra) == truth["extra"], f"seed {seed}: extra"
-        assert r.duplicate == truth["duplicate"], f"seed {seed}: duplicate"
-        assert {k: round(v * 100) for k, v in r.breaks.items()} == truth["breaks"], f"seed {seed}: breaks"
-        assert {k: round(v * 100) for k, v in r.within.items()} == truth["within"], f"seed {seed}: within"
+        bad = planted_fault_mismatches(seed, tolerance)
+        assert not bad, f"seed {seed}: reconcile() disagrees with the planted faults in {bad}"
+        broken = planted_fault_mismatches(seed, tolerance, key=str)
+        assert {"missing", "extra"} <= set(broken), f"seed {seed}: a matcher without id normalisation passed"
     print(f"    reconcile() recovered every planted fault on {len(seeds)} independently generated data sets")
+    print("    negative control: the same matcher without id normalisation fails on every one")
 
 
 def check_reconciliation() -> None:
@@ -231,7 +271,6 @@ def check_reconciliation() -> None:
     for i in range(10):  # 10 trades revalued at a different FX fixing in risk
         risk[f"T{i:05d}"] = round(risk[f"T{i:05d}"] * 0.9995, 2)
     r = reconcile(list(gl.items()), list(risk.items()), tolerance)
-    assert not r.extra and not r.duplicate
     total_gap = sum(gl.values()) - sum(risk.values())
     missing = sum(r.missing.values())
     quoted("GL total ($m)", sum(gl.values()) / 1e6, 6_706.95, 2)

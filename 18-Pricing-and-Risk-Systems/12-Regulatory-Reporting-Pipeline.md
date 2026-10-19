@@ -157,7 +157,8 @@ At month end, derivative asset fair values for 2,000 trades are reconciled betwe
 - After the missing trades are replayed, the residual is $12,507$, every dollar of it attributed to named trades and a named cause.
 
 The code's matching function keys trades on trimmed, upper-cased ids and compares values in whole cents, and reports missing, extra and duplicated trades and value breaks above and within tolerance.
-It is tested on five separately generated data sets with planted faults it never sees: ids differing only in case or whitespace (must match), duplicated rows (must be reported as duplicates, not value breaks), differences one cent inside, exactly at and one cent outside the tolerance, float noise on small values (must not break), and trades present only in risk; its output must equal the ground truth each fault was built to produce.
+It is tested on five data sets whose ledger and risk rows are built separately, in different order, from one trade universe and a list of planted faults the function never sees: ids differing only in case or whitespace (must match), duplicated rows (must be reported as duplicates, not value breaks), differences one cent inside, exactly at and one cent outside the tolerance on both small and large values, float noise on small values (must not break), trades missing from risk and trades present only in risk.
+Its output must equal the outcome each fault was designed to produce, and as a negative control the same matcher without id normalisation must fail.
 A reconciliation that leaves an unexplained residual has not finished.
 
 ## Pitfalls
