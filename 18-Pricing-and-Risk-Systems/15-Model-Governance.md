@@ -154,7 +154,7 @@ Contract: a one-year Bermudan put, strike 100, spot 100, exercisable at each of 
 - The candidate is Longstaff-Schwartz Monte Carlo (cubic polynomial in $S/K$ on in-the-money paths), with exercise rules fitted on 100,000 paths and the price computed on an independent 100,000 paths, giving 6.038 with a standard error of 0.023.
   Pricing on independent paths makes the estimate a lower bound in expectation (any exercise rule is sub-optimal), so a candidate far above the tree is suspicious.
 - The difference is $(6.038 - 6.042)/0.023$, about -0.2 standard errors: consistent.
-- A planted bug (cash flows not discounted between exercise dates) gives 6.220, 7.3 standard errors above the tree: the comparison flags it.
+- A planted bug (no discounting at all: every one-period discount factor set to 1) gives 6.220, 7.3 standard errors above the tree: the comparison flags it.
 
 The acceptance test is "difference within a few standard errors plus the challenger's discretisation error", stated before running, not "the numbers look close".
 
@@ -239,7 +239,7 @@ Governance lessons: a model whose approval would end a limit breach needs more s
 
 > [!question]- sys-15-13 | A Monte Carlo candidate prices a Bermudan at 6.038 with standard error 0.023; a converged tree gives 6.042. Pass or fail, and what if the candidate were 6.220?
 > Pass: the gap is about -0.2 standard errors, well within sampling noise once the tree's discretisation error (0.0001 on doubling the steps) is negligible.
-> At 6.220 the gap is 7.3 standard errors and above a price that out-of-sample Longstaff-Schwartz should only approach from below, so it is a finding; in the note it is a missing discount factor.
+> At 6.220 the gap is 7.3 standard errors and above a price that out-of-sample Longstaff-Schwartz should only approach from below, so it is a finding; in the note it is missing discounting (every one-period discount factor set to 1).
 
 > [!question]- sys-15-14 | Why price Longstaff-Schwartz on paths independent of those used to fit the exercise rule?
 > With independent paths the estimator applies a fixed, sub-optimal exercise rule, so it is biased low; reusing the fitting paths lets the regression peek at the future and can bias the price up.

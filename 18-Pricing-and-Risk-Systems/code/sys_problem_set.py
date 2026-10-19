@@ -200,7 +200,8 @@ def test_batch() -> None:
     quoted("amendments priced by", s2.ef["D2"], 104.5, 1)
     quoted("makespan with amendments", s2.makespan, 137, 0)
     quoted("delay caused by the amendments", s2.makespan - s.makespan, 2, 0)
-    quoted("naive serial estimate of the delay", 1.0 + 3.5 + 2.0 + 1.0, 7.5, 1)
+    naive = sum(late[n].duration for n in ("C2", "D2", "E2", "F2", "G2"))
+    quoted("naive serial estimate of the delay", naive, 8.5, 1)
     quoted("SLA headroom with amendments", 180 - s2.makespan, 43, 0)
 
 

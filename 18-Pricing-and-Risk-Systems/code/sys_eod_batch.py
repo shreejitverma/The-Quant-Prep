@@ -280,7 +280,7 @@ def test_late_trade() -> None:
     inc = dict(base)
     inc["L"] = Task("L", 0.75, ("B", "C"), arrival)  # sensitivities and scenario P&L vector for one trade (45 s)
     inc["F2"] = Task("F2", 1.0, ("F", "L"))  # add the trade's scenario vector, re-take the VaR and ES quantiles
-    inc["G2"] = Task("G2", 1.5, ("G", "L"))  # merge Greeks into P&L explain, re-run sign-off checks
+    inc["G2"] = Task("G2", 1.5, ("F2", "G", "L"))  # merge Greeks into P&L explain, re-run sign-off checks
     s = cpm(inc)
     quoted("trade priced at (minutes after start)", s.ef["L"], 95.75, 2)
     quoted("incremental completion (minutes after start)", s.makespan, 121.5, 1)
@@ -331,7 +331,8 @@ def test_failover() -> None:
     assert min(samples) >= best - 1e-9 and max(samples) <= worst + 1e-9
     sim_mean = sum(samples) / len(samples)
     assert abs(sim_mean - mean) < 0.05, sim_mean
-    print(f"    simulated mean failover = {sim_mean:.2f} s (min {min(samples):.2f}, max {max(samples):.2f})")
+    quoted("simulated mean failover (s)", sim_mean, 21.49, 2)
+    print(f"    simulated min {min(samples):.2f} s, max {max(samples):.2f} s")
 
 
 # ============================================================================

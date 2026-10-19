@@ -111,7 +111,7 @@ Hypothetical DAG (minutes): A market data snap 15; B curve calibration 20 (after
 - Critical path A-B-D-E-H, makespan 135 minutes; floats: C 10, F 15, G 10 (confirmed by enumerating every path); headroom against a 180-minute SLA is 45 minutes.
 - 500 amendments arrive at minute 100, while E, F and G are running.
   Sub-DAG: C2 extract them (1 minute, released at 100), D2 price them on a burst queue (3.5, after B and C2, done by 104.5), then merge into the running aggregates: E2 (2.0, after E and D2), F2 (1.0, after F and D2), G2 (1.0, after G and D2); H now waits for E2, F2 and G2.
-- New makespan 137 minutes: the amendments cost 2 minutes, because only E2 sits on the critical path; adding up the sub-DAG's durations (7.5 minutes) overstates the delay.
+- New makespan 137 minutes: the amendments cost 2 minutes, because only E2 sits on the critical path; adding up the sub-DAG's durations (8.5 minutes) overstates the delay.
   Headroom falls from 45 to 43 minutes.
 
 ### Case 4: curve snapshot reads
@@ -236,7 +236,7 @@ Deterministic service halves the queueing delay (Pollaczek-Khinchine), so variab
 > $EE = \mu \Phi(z) + \sigma \phi(z)$ with $z = \mu/\sigma$; $\partial EE/\partial \mu = \Phi(z)$ and $\partial EE/\partial \sigma = \phi(z)$.
 > It is a call on $V$ struck at zero, so these are its delta and its vega in the normal model; for $\mu = 15$m and $\sigma = 8$m, $EE = 15{,}094{,}345$.
 
-> [!question]- sys-18-19 | 500 amendments arrive 100 minutes into a 135-minute batch; pricing them takes 4.5 minutes and merging takes 1 to 2 minutes per aggregate. Is the delay 7.5 minutes?
+> [!question]- sys-18-19 | 500 amendments arrive 100 minutes into a 135-minute batch; pricing them takes 4.5 minutes and merging takes 1 to 2 minutes per aggregate. Is the delay 8.5 minutes?
 > No: scheduled with release times it is 2 minutes, because the amendments are priced by minute 104.5 while the aggregates are still running, and only the 2-minute VaR merge sits on the critical path.
 > Summing the sub-DAG's durations assumes it all lies on the critical path.
 

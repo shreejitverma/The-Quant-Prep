@@ -243,7 +243,7 @@ A trade executed before the cut-off is booked late and arrives 95 minutes into t
 
 - Full rerun: every task restarts at 95 and the batch completes at 215 minutes (21:35), a breach.
 - Incremental sub-DAG: one task L prices the trade alone against the already-calibrated curves and surfaces (needs B and C) and produces its sensitivities and its scenario P&L vector in 45 s, finishing at 95.75 minutes.
-  F2 adds the trade's scenario vector to the portfolio vector and re-takes the VaR and ES quantiles (1 minute, after F and L); G2 merges the trade's Greeks into the P&L explain and re-runs the sign-off checks (1.5 minutes, after G and L).
+  F2 adds the trade's scenario vector to the portfolio vector and re-takes the VaR and ES quantiles (1 minute, after F and L); G2 merges the trade's Greeks into the P&L explain and re-runs the sign-off checks (1.5 minutes, after F2, G and L).
   The batch now completes at 121.5 minutes: the late trade costs 1.5 minutes and leaves 28.5 minutes of headroom.
 
 The merge is valid only for additive quantities.
@@ -258,6 +258,7 @@ flowchart LR
     L --> F2
     G["G explain and sign-off (done)"] --> G2["G2 merge Greeks, re-run checks"]
     L --> G2
+    F2 --> G2
 ```
 
 ### Example 5: how long a scheduler failover takes

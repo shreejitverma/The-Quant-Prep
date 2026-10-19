@@ -9,7 +9,7 @@ Backs every number in `18-Pricing-and-Risk-Systems/15-Model-Governance.md`.
      checked for convergence by doubling the steps;
    - candidate: Longstaff-Schwartz Monte Carlo, with exercise rules fitted on one path set and priced on an independent
      set (seeds fixed), compared with the tree in units of its standard error;
-   - a candidate with a planted bug (no discounting between exercise dates), which the comparison must flag.
+   - a candidate with a planted bug (no discounting at all: every one-period discount factor set to 1), which the comparison must flag.
 3. The 2012 JPMorgan CIO VaR model: the published VaR figures (Senate PSI report) and the sum-versus-average error
    described in the JPMorgan Task Force report, reproduced on a hypothetical hazard-rate history.
 
@@ -170,7 +170,7 @@ def test_challenger() -> None:
     assert abs(z) < 3.0
     bug_price, bug_se = lsm_put(100_000, 100_000, 2026, discount_bug=True)
     z_bug = (bug_price - t2400) / bug_se
-    quoted("buggy candidate (no discounting between dates)", bug_price, 6.220, 3)
+    quoted("buggy candidate (no discounting at all, every one-period discount factor 1)", bug_price, 6.220, 3)
     quoted("buggy candidate difference in standard errors", z_bug, 7.3, 1)
     assert z_bug > 3.0  # the challenger flags the planted bug
 
