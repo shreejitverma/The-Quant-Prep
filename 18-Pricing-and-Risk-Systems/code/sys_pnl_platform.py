@@ -1,12 +1,17 @@
-"""PnL platform and attribution: Taylor Greek explain, PnL walk, and FRTB PLA metrics.
+"""P&L platform: Greek explain against full revaluation, a bond desk P&L walk, and a day-one reserve.
 
 Backs every number in `18-Pricing-and-Risk-Systems/09-PnL-Platform.md`.
-Greek sensitivities, option full revaluations, dirty/clean/actual PnL walks, and PLA statistics are verified.
+Books, market moves, trades, fees and reserve policies are labelled-hypothetical teaching inputs.
+Nothing is a plug: the option book is repriced with Black-Scholes, its Greeks are analytic and checked against
+finite differences, and the residual is whatever full revaluation leaves; the bond is priced from its yield, and the
+walk's total is checked against an independent cash-and-position account.
 Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
 Run it with `python 18-Pricing-and-Risk-Systems/code/sys_pnl_platform.py`.
 """
 
 from __future__ import annotations
+
+import math
 
 QUOTED: list[str] = []
 
@@ -20,95 +25,172 @@ def quoted(label: str, value: float, expected: float, decimals: int) -> float:
     return value
 
 
-def test_greek_pnl_explain() -> None:
-    print("  1. Greek PnL explain decomposition for equity option portfolio")
-    v_t0 = 12_500_000.0
-    v_t1 = 14_028_000.0
-    actual_pnl = v_t1 - v_t0
-    quoted("initial portfolio MTM ($)", v_t0, 12_500_000, 0)
-    quoted("final portfolio MTM ($)", v_t1, 14_028_000, 0)
-    quoted("actual mark-to-market PnL change ($)", actual_pnl, 1_528_000, 0)
-
-    # Market moves
-    s0 = 5000.00
-    s1 = 5040.00
-    ds = s1 - s0
-    vol0 = 18.00
-    vol1 = 17.50
-    dvol = vol1 - vol0  # -0.50%
-    dt = 1.0
-
-    quoted("S&P 500 spot move (points)", ds, 40.0, 1)
-    quoted("ATM implied volatility move (%)", dvol, -0.50, 2)
-
-    # Greeks
-    delta = 45_000.0
-    gamma = 120.0
-    vega = 350_000.0
-    theta = -18_000.0
-
-    delta_pnl = delta * ds
-    gamma_pnl = 0.5 * gamma * (ds**2)
-    vega_pnl = vega * dvol
-    theta_pnl = theta * dt
-    explained_pnl = delta_pnl + gamma_pnl + vega_pnl + theta_pnl
-    residual = actual_pnl - explained_pnl
-
-    quoted("delta PnL ($)", delta_pnl, 1_800_000, 0)
-    quoted("gamma PnL ($)", gamma_pnl, 96_000, 0)
-    quoted("vega PnL ($)", vega_pnl, -175_000, 0)
-    quoted("theta PnL ($)", theta_pnl, -18_000, 0)
-    quoted("total explained PnL ($)", explained_pnl, 1_703_000, 0)
-    quoted("unexplained residual PnL ($)", residual, -175_000, 0)
-
-    # Higher-order cross-Greek explain: Vanna
-    vanna = -8_500.0
-    vanna_pnl = vanna * ds * dvol
-    quoted("vanna PnL ($)", vanna_pnl, 170_000, 0)
-    explained_with_vanna = explained_pnl + vanna_pnl
-    residual_with_vanna = actual_pnl - explained_with_vanna
-    quoted("explained PnL with vanna ($)", explained_with_vanna, 1_873_000, 0)
-    quoted("residual with vanna ($)", residual_with_vanna, -345_000, 0)
-
-    # Higher-order adjustments (volga, discrete dividend)
-    higher_order_adj = -333_000.0
-    reconciled_residual = actual_pnl - (explained_with_vanna + higher_order_adj)
-    quoted("higher-order adjustments ($)", higher_order_adj, -333_000, 0)
-    quoted("final reconciled residual ($)", reconciled_residual, -12_000, 0)
+# ============================================================================
+# 1. Black-Scholes book and its Greeks
+# ============================================================================
 
 
-def test_pnl_walk() -> None:
-    print("  2. Clean vs dirty vs actual PnL walk for bond desk")
-    mtm_t0 = 85_000_000.0
-    mtm_t1_static = 85_450_000.0
-    clean_pnl = mtm_t1_static - mtm_t0
-    coupon = 65_000.0
-    intraday_gain = 10_000_000.0 * (0.9980 - 0.9950)
-    commissions = -8_000.0
-    fees = -4_500.0
-    funding = -12_500.0
+def n_cdf(x: float) -> float:
+    return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
-    dirty_pnl = clean_pnl + coupon
-    actual_pnl = clean_pnl + coupon + intraday_gain + commissions + fees + funding
 
-    quoted("static portfolio MTM at T-1 ($)", mtm_t0, 85_000_000, 0)
-    quoted("static portfolio MTM at T ($)", mtm_t1_static, 85_450_000, 0)
-    quoted("clean PnL / hypothetical PnL ($)", clean_pnl, 450_000, 0)
-    quoted("bond coupon cash received ($)", coupon, 65_000, 0)
-    quoted("intraday trading gain ($)", intraday_gain, 30_000, 0)
-    quoted("brokerage commissions ($)", commissions, -8_000, 0)
-    quoted("exchange & clearing fees ($)", fees, -4_500, 0)
-    quoted("overnight repo funding cost ($)", funding, -12_500, 0)
-    quoted("dirty PnL ($)", dirty_pnl, 515_000, 0)
-    quoted("actual PnL ($)", actual_pnl, 520_000, 0)
+def n_pdf(x: float) -> float:
+    return math.exp(-0.5 * x * x) / math.sqrt(2.0 * math.pi)
+
+
+def call(s: float, k: float, t: float, r: float, vol: float) -> float:
+    d1 = (math.log(s / k) + (r + 0.5 * vol * vol) * t) / (vol * math.sqrt(t))
+    return s * n_cdf(d1) - k * math.exp(-r * t) * n_cdf(d1 - vol * math.sqrt(t))
+
+
+def greeks(s: float, k: float, t: float, r: float, vol: float) -> dict[str, float]:
+    """Analytic Black-Scholes call Greeks; theta is dV/dt in calendar time (per year), vol in decimals."""
+    sq = math.sqrt(t)
+    d1 = (math.log(s / k) + (r + 0.5 * vol * vol) * t) / (vol * sq)
+    d2 = d1 - vol * sq
+    vega = s * n_pdf(d1) * sq
+    return {
+        "delta": n_cdf(d1),
+        "gamma": n_pdf(d1) / (s * vol * sq),
+        "vega": vega,
+        "theta": -s * n_pdf(d1) * vol / (2 * sq) - r * k * math.exp(-r * t) * n_cdf(d2),
+        "vanna": -n_pdf(d1) * d2 / vol,
+        "volga": vega * d1 * d2 / vol,
+    }
+
+
+def check_greeks_by_differences(s: float, k: float, t: float, r: float, vol: float) -> None:
+    g = greeks(s, k, t, r, vol)
+    hs, hv, ht = 0.01, 1e-4, 1e-6
+
+    def v(ss: float = s, vv: float = vol, tt: float = t) -> float:
+        return call(ss, k, tt, r, vv)
+
+    fd = {
+        "delta": (v(ss=s + hs) - v(ss=s - hs)) / (2 * hs),
+        "gamma": (v(ss=s + hs) - 2 * v() + v(ss=s - hs)) / hs**2,
+        "vega": (v(vv=vol + hv) - v(vv=vol - hv)) / (2 * hv),
+        "theta": -(v(tt=t + ht) - v(tt=t - ht)) / (2 * ht),
+        "vanna": (v(ss=s + hs, vv=vol + hv) - v(ss=s + hs, vv=vol - hv) - v(ss=s - hs, vv=vol + hv) + v(ss=s - hs, vv=vol - hv))
+        / (4 * hs * hv),
+        "volga": (v(vv=vol + hv) - 2 * v() + v(vv=vol - hv)) / hv**2,
+    }
+    for name, value in fd.items():
+        assert abs(value - g[name]) <= 1e-4 * max(1.0, abs(g[name])), f"{name}: {value} vs {g[name]}"
+
+
+def check_greek_explain() -> None:
+    print("  Example 1: Greek explain of a long index call book against full revaluation")
+    units = 10_000  # calls on 10,000 units of the index, hypothetical
+    s0, k, t0, r, vol0 = 5_000.0, 5_000.0, 1.0, 0.04, 0.18
+    s1, vol1, dt = 5_040.0, 0.175, 1.0 / 365.0
+    check_greeks_by_differences(s0, k, t0, r, vol0)
+    v0 = units * call(s0, k, t0, r, vol0)
+    v1 = units * call(s1, k, t0 - dt, r, vol1)
+    g = {name: units * x for name, x in greeks(s0, k, t0, r, vol0).items()}
+    ds, dvol = s1 - s0, vol1 - vol0
+    quoted("book value at T-1 ($)", v0, 4_581_801, 0)
+    quoted("book value at T ($)", v1, 4_732_380, 0)
+    full = quoted("full revaluation P&L ($)", v1 - v0, 150_579, 0)
+    quoted("book delta ($ per index point)", g["delta"], 6_226, 0)
+    quoted("book gamma ($ per point squared)", g["gamma"], 4.22, 2)
+    quoted("book vega ($ per vol point)", g["vega"] / 100, 189_982, 0)
+    quoted("book theta ($ per calendar day)", g["theta"] / 365, -7_594, 0)
+    quoted("book vanna ($ per point per vol point)", g["vanna"] / 100, -27.91, 2)
+    quoted("book volga ($ per vol point squared)", g["volga"] / 1e4, 435.72, 2)
+    terms = {
+        "theta": g["theta"] * dt,
+        "delta": g["delta"] * ds,
+        "gamma": 0.5 * g["gamma"] * ds * ds,
+        "vega": g["vega"] * dvol,
+        "vanna": g["vanna"] * ds * dvol,
+        "volga": 0.5 * g["volga"] * dvol * dvol,
+    }
+    # theta is dV/dt in calendar time (negative for a long call), so one day of decay is theta * dt
+    for name, q in (
+        ("theta", -7_594),
+        ("delta", 249_026),
+        ("gamma", 3_377),
+        ("vega", -94_991),
+        ("vanna", 558),
+        ("volga", 54.47),
+    ):
+        quoted(f"{name} P&L ($)", terms[name], q, 0 if name != "volga" else 2)
+    first = terms["theta"] + terms["delta"] + terms["vega"]
+    second = first + terms["gamma"]
+    full_explain = second + terms["vanna"] + terms["volga"]
+    quoted("explained by theta, delta, vega ($)", first, 146_441, 0)
+    quoted("unexplained after first order ($)", full - first, 4_138, 0)
+    quoted("unexplained after adding gamma ($)", full - second, 760, 0)
+    quoted("unexplained after adding vanna and volga ($)", full - full_explain, 148, 0)
+    quoted("unexplained as % of full P&L", (full - full_explain) / full * 100, 0.10, 2)
+    # one-step explain in the order that matches a risk system: move time first, then market at the new time
+    v_time = units * call(s0, k, t0 - dt, r, vol0)
+    quoted("P&L from time alone, full revaluation ($)", v_time - v0, -7_597, 0)
+    quoted("P&L from market moves at the new time ($)", v1 - v_time, 158_176, 0)
+
+
+# ============================================================================
+# 2. Bond desk P&L walk
+# ============================================================================
+
+
+def bond_dirty(face: float, coupon: float, y: float, years_to_next: float, n_coupons: int) -> float:
+    """Dirty value of an annual-coupon bond with n_coupons left, the next in years_to_next, yield y (annual comp)."""
+    pv = 0.0
+    for i in range(n_coupons):
+        tau = years_to_next + i
+        cf = face * coupon + (face if i == n_coupons - 1 else 0.0)
+        pv += cf / (1.0 + y) ** tau
+    return pv
+
+
+def check_pnl_walk() -> None:
+    print("  Example 2: bond desk P&L walk (hypothetical)")
+    face, cpn = 10_000_000.0, 0.05
+    # T-1: coupon due tomorrow (1/365 years), 5 coupons left; T: coupon paid, 4 left, next in 1 year
+    v_prev = bond_dirty(face, cpn, 0.0450, 1.0 / 365.0, 5)
+    v_now = bond_dirty(face, cpn, 0.0447, 1.0, 4)
+    coupon_cash = face * cpn
+    hpl = v_now + coupon_cash - v_prev
+    quoted("dirty value at T-1, coupon due tomorrow ($)", v_prev, 10_678_088, 0)
+    quoted("dirty value at T, ex-coupon ($)", v_now, 10_190_272, 0)
+    quoted("coupon received ($)", coupon_cash, 500_000, 0)
+    quoted("hypothetical P&L of the static position ($)", hpl, 12_184, 0)
+    carry = bond_dirty(face, cpn, 0.0450, 1.0, 4) + coupon_cash - v_prev
+    quoted("of which time at unchanged yield ($)", carry, 1_288, 0)
+    quoted("of which the 3 bp yield fall ($)", hpl - carry, 10_896, 0)
+    wrong = (v_now - v_prev) + coupon_cash + coupon_cash
+    quoted("P&L if the coupon is added again on top ($)", wrong, 512_184, 0)
+    new_trade = 5_000_000.0 * (0.9980 - 0.9950)
+    funding, commissions, clearing = -12_500.0, -8_000.0, -4_500.0
+    apl = hpl + new_trade + funding
+    reported = apl + commissions + clearing
+    quoted("new trade P&L, bought at 99.50, closed at 99.80 ($)", new_trade, 15_000, 0)
+    quoted("actual P&L, Basel definition, excluding fees and commissions ($)", apl, 14_684, 0)
+    quoted("reported daily P&L including fees and commissions ($)", reported, 2_184, 0)
+    # independent account: start with the T-1 position worth v_prev; end with both positions, cash flows and costs
+    start = v_prev
+    end = v_now + 5_000_000.0 * 0.9980
+    cash = coupon_cash - 5_000_000.0 * 0.9950 + funding + commissions + clearing
+    assert abs((end + cash - start) - reported) < 1e-6
+
+
+def check_day_one() -> None:
+    print("  Example 3: day-one gain on a Level 3 trade (hypothetical policy)")
+    gain, years = 1_200_000.0, 4.0
+    per_year = gain / years
+    quoted("deferred day-one gain released per year, straight line ($)", per_year, 300_000, 0)
+    quoted("remaining deferral recognised when inputs become observable after one year ($)", gain - per_year, 900_000, 0)
 
 
 def main() -> None:
-    print("PnL platform and attribution checks")
-    test_greek_pnl_explain()
-    test_pnl_walk()
+    print("P&L platform checks")
+    check_greek_explain()
+    check_pnl_walk()
+    check_day_one()
     print(f"  {len(QUOTED)} numbers computed, printed and asserted")
-    print("All PnL platform checks passed.")
+    print("All P&L platform checks passed.")
 
 
 if __name__ == "__main__":

@@ -5,239 +5,289 @@ tier: advanced
 status: solid
 prereqs: [risk-engine]
 est_hours: 4
-sources: [US Securities and Exchange Commission - 17 CFR Part 240 Risk Management Controls for Broker-Dealers with Market Access (Final Rule Release No. 34-63241 November 2010 effective January 2011), European Commission - Commission Delegated Regulation (EU) 2017/589 MiFID II RTS 6 Organisational requirements of investment firms engaged in algorithmic trading (July 2016 published OJ L 87 March 2017), US Securities and Exchange Commission - In the Matter of Knight Capital Americas LLC (Administrative Proceeding File No. 3-15570 October 16 2013), Martin Thompson Dave Farley Michael Barker Patricia Gee and Martin Rozmyslowicz - Disruptor: High performance alternative to bounded queues for concurrent programming (LMAX Whitepaper 2011), Commodity Futures Trading Commission - 17 CFR Part 1 Regulation Automated Trading (Proposed Rules December 2015 and November 2016)]
+sources: [SEC Rule 15c3-5 - 17 CFR 240.15c3-5 - Risk management controls for brokers or dealers with market access (adopting Release No. 34-63241 - 75 FR 69792 - November 15 2010), SEC Release No. 34-70694 - In the Matter of Knight Capital Americas LLC - Administrative Proceeding File No. 3-15570 (October 16 2013), Commission Delegated Regulation (EU) 2017/589 of 19 July 2016 (MiFID II RTS 6) on organisational requirements of investment firms engaged in algorithmic trading - OJ L 87 31.3.2017 p. 417, Commission Delegated Regulation (EU) 2017/566 of 18 May 2016 (MiFID II RTS 9) on the ratio of unexecuted orders to transactions, Martin Thompson Dave Farley Michael Barker Patricia Gee and Andrew Stewart - Disruptor - High performance alternative to bounded queues for exchanging data between concurrent threads (LMAX technical paper May 2011)]
 ---
 
 # Intraday Risk and Pre-Trade Limits
 
 ## TL;DR
 
-- Pre-trade risk controls and real-time intraday position monitoring protect financial institutions from catastrophic algorithmic runaway errors, disorderly markets, and counterparty defaults.
-- Under regulatory mandates including SEC Rule 15c3-5 (17 CFR 240.15c3-5) and MiFID II RTS 6 (Regulation EU 2017/589), broker-dealers must enforce automated, non-bypassable pre-trade controls under their direct control before routing orders to external market centers.
-- Mandatory controls encompass fat-finger price collars, maximum order sizes, aggregate notional throttles, counterparty credit reservations, and desk-level Greek limits ($\Delta$, $\text{DV01}$, $\text{CS01}$, $\text{Vega}$).
-- In high-frequency flow environments (Equities, FX, Listed Futures), risk evaluations execute in under 25 microseconds using kernel-bypass networking (Solarflare Onload, DPDK) and lock-free ring buffers (LMAX Disruptor).
-- For complex OTC derivatives, proxy engines evaluate incremental credit and market risk in under 15 milliseconds.
-- Automated kill switches provide programmatic circuit breakers when market volatility or algorithmic anomalies trigger loss velocity limits.
-- All numerical figures in this note are verified by [sys_intraday_limits.py](code/sys_intraday_limits.py).
+- Pre-trade controls sit in-line between the order source and the venue and reject an order before it leaves; intraday risk monitoring runs beside the flow on fills and positions and can stop it.
+- SEC Rule 15c3-5 requires broker-dealers with market access to have controls "reasonably designed" to prevent orders that exceed pre-set credit or capital thresholds and erroneous orders, under their "direct and exclusive control"; MiFID II RTS 6 (Regulation (EU) 2017/589) requires price collars, maximum order value and volume, maximum message limits (Article 15), a kill functionality (Article 12) and real-time alerts within five seconds (Article 16).
+- Limits must count working orders, not just fills: reserve credit when an order is sent, convert it to committed exposure on fills, release it only on a terminal FIX state (Canceled, Rejected, Expired, or the leaves of a Filled order), and keep it held while the status is unknown.
+- Latency budgets are design choices, not facts: a hypothetical 13.0 microsecond wire-to-wire budget with 5.3 microseconds on the gateway core loads one core to 0.53 at 100,000 orders per second.
+- Knight Capital (SEC Release No. 34-70694): on August 1, 2012, 212 parent orders produced more than 4 million executions in 154 stocks in about 45 minutes and a 460 million dollar loss, with capital thresholds that were not linked to order entry.
+- Every number on this page is produced and asserted by [sys_intraday_limits.py](code/sys_intraday_limits.py).
 
 ## Learning objectives
 
-- Map the regulatory mandates of SEC Rule 15c3-5 and MiFID II RTS 6 onto modern electronic trading gateways.
-- Construct low-latency in-line pre-trade risk check pipelines operating within strict microsecond and millisecond latency budgets.
-- Implement high-concurrency lock-free state management for real-time limit tracking using atomic compare-and-swap primitives and ring buffers.
-- Design optimistic credit reservation state machines with timeout handling to prevent double-spending and deadlocks during fill delays.
-- Evaluate the architectural root causes of the Knight Capital collapse (August 1, 2012) and identify required safeguards.
-- Quantify ring buffer memory footprints, Order-to-Trade Ratios (OTR), and price collar bandwidths.
+- Map SEC Rule 15c3-5 and MiFID II RTS 6 onto concrete gateway controls.
+- Construct in-line pre-trade check pipelines with explicit latency and capacity budgets.
+- Manage limit state with a single writer per partition and lock-free hand-off, and explain where atomics and ring buffers fit.
+- Design a credit reservation ledger driven by FIX order states, including partial fills, price improvement and unknown status.
+- Explain what the SEC found at Knight Capital (August 1, 2012) and the controls that would have stopped it.
+- Size ring buffers and compute order-to-trade ratios under RTS 9.
 
 ## Core concepts
 
-### 1. Regulatory Mandates: SEC Rule 15c3-5 and MiFID II RTS 6
+### 1. What the rules require
 
-Following rapid growth in automated and high-frequency trading, regulators eliminated unfiltered "naked" market access:
-- **SEC Rule 15c3-5 (Market Access Rule, 17 CFR 240.15c3-5):**
-  Broker-dealers providing market access must implement pre-set capital thresholds and financial risk controls on an automated, pre-trade basis.
-  Controls must prevent the entry of orders exceeding pre-set credit or capital limits, reject orders with erroneous prices or sizes (fat-finger controls), and block orders violating short-sale (Reg SHO Rule 203 locate) or wash-trade rules.
-  Crucially, controls must remain under the direct and exclusive operational control of the broker-dealer.
-- **MiFID II RTS 6 (Commission Delegated Regulation EU 2017/589):**
-  Mandates real-time price collars, maximum order value limits, maximum message rates per second, order-to-trade ratios (OTR), and automated emergency kill switches capable of halting trading within milliseconds.
+**SEC Rule 15c3-5** (17 CFR 240.15c3-5, adopted by Release No. 34-63241, published at 75 FR 69792 on November 15, 2010, effective 60 days after publication); text checked as of 2026-10, quoted in full in [Risk Checks and Order Management](../12-Quant-Development/13-Risk-Checks-and-Order-Management.md):
 
-### 2. In-Line Pre-Trade Gateway Architecture
+- (b) a broker-dealer with market access must "establish, document, and maintain a system of risk management controls and supervisory procedures reasonably designed to manage the financial, regulatory, and other risks" of market access.
+- (c)(1)(i) prevent orders that "exceed appropriate pre-set credit or capital thresholds in the aggregate for each customer and the broker or dealer".
+- (c)(1)(ii) prevent erroneous orders "that exceed appropriate price or size parameters, on an order-by-order basis or over a short period of time, or that indicate duplicative orders".
+- (c)(2) regulatory controls: pre-order-entry regulatory requirements (for example the Regulation SHO locate in Rule 203(b)), restricted persons and securities, access only for authorised persons, and immediate post-trade execution reports to surveillance staff.
+- (d) the controls must be "under the direct and exclusive control of the broker or dealer", with a narrow allowance to allocate specific regulatory controls to a broker-dealer customer by written contract.
+- (e) regular review, at least annually, and an annual CEO certification.
+
+The rule ended "unfiltered" or "naked" sponsored access, where a customer's orders reached the venue under the broker's identifier without the broker's own pre-trade controls.
+
+**MiFID II RTS 6**, Commission Delegated Regulation (EU) 2017/589 of 19 July 2016 (OJ L 87, 31.3.2017), applicable from 3 January 2018 (Article 29), for investment firms engaged in algorithmic trading:
+
+- Article 12: a kill functionality to "cancel immediately, as an emergency measure, any or all of its unexecuted orders" at any or all venues, including orders from individual traders, desks or clients.
+- Article 15(1): pre-trade controls on order entry for all financial instruments: price collars, maximum order values, maximum order volumes and maximum message limits; Article 15(2): every order sent counts immediately in the limits; Article 15(3): repeated automated execution throttles that disable a strategy after a set number of executions until a designated person re-enables it.
+- Article 16: real-time monitoring by the trader and by an independent risk function, with real-time alerts "generated within five seconds after the relevant event".
+- Article 17: continuous post-trade controls, including monitoring of market and credit risk in terms of effective exposure.
+
+**MiFID II RTS 9**, Commission Delegated Regulation (EU) 2017/566: trading venues (not the firms) calculate, at least at the end of each trading session, each member's ratio of unexecuted orders to transactions per instrument, by number and by volume (Article 3):
+
+$$\text{OTR}_{\text{number}} = \frac{\text{total number of orders}}{\text{total number of transactions}} - 1, \qquad \text{OTR}_{\text{volume}} = \frac{\text{total volume of orders}}{\text{total volume of transactions}} - 1,$$
+
+where an order is every submission, modification and cancellation and a transaction is a totally or partially executed order (Article 1); each venue sets the maximum ratio it enforces.
+
+### 2. Where the controls sit and what each component owns
+
+| Component | Responsibility | State it owns | Interface | Failure behaviour |
+| :--- | :--- | :--- | :--- | :--- |
+| Order source (strategy, OMS, client session) | decide and assign ClOrdID | its own orders | outbound NewOrderSingle, Cancel, Replace | none of the risk controls live here |
+| In-line pre-trade gateway | kill switch, collar, size, notional, duplicates, throttles, credit and position limits | working orders and reservations per account, limits, reference prices | synchronous accept or reject per message | fail closed: missing reference price, missing limit or unknown state rejects new risk; cancels always pass |
+| Venue session | FIX or native protocol to the venue | sequence numbers, session state | execution reports back to the gateway | cancel-on-disconnect where the venue offers it |
+| Intraday risk service | positions, Greeks (delta, DV01, CS01, vega), P&L velocity, soft and hard desk limits | positions from fills and drop copy, intraday market data | limit updates and kill commands to the gateway | stale inputs raise alerts; a breach can lower limits or engage the kill switch |
+| Post-trade monitor | independent reconciliation on the drop copy | positions per account from the venue's view | alerts, kill switch | a mismatch with the gateway's view latches the kill switch |
+| Limit administration | set and approve limits, audit changes | limit master with versions | publishes limit versions to the gateway | a limit change is effective only after the gateway acknowledges the version |
 
 ```mermaid
 flowchart LR
-    Client["Trading Algorithm /\nClient OMS"] -->|Order Request| Net["Kernel-Bypass NIC\n(Solarflare Onload / DPDK)"]
-    
-    subgraph Gateway["Pre-Trade Risk Gateway (< 25 us)"]
-        Parser["1. SBE / FIX Decoder\n(1.2 us)"]
-        FatFinger["2. Fat-Finger & Price Collar\n(0.4 us)"]
-        CreditCheck["3. Credit & Notional Reservation\n(1.8 us)"]
-        GreekCheck["4. Desk Net Notional & Short Check\n(1.1 us)"]
-        AuditLog["5. Lock-Free Audit Ring Buffer\n(0.8 us)"]
+    Client["Strategy or client session"] -->|"new, cancel, replace"| GW
+    subgraph GW["In-line pre-trade gateway, single writer per account partition"]
+        KS{"Kill switch latched?"}
+        Chk1["Duplicate ClOrdID, restricted list"]
+        Chk2["Collar, max quantity, max notional"]
+        Chk3["Throttle, position with open orders"]
+        Chk4["Credit reservation"]
+        Audit["Audit record to ring buffer"]
     end
-
-    Net --> Parser
-    Parser --> FatFinger
-    FatFinger -->|Pass| CreditCheck
-    CreditCheck -->|Pass| GreekCheck
-    GreekCheck -->|Pass| AuditLog
-    
-    AuditLog -->|Approved Order| Exchange["Exchange Matching Engine\n(Outbound 4.2 us)"]
-    FatFinger -->|Reject| RejectMsg["Reject Message to Client"]
-    CreditCheck -->|Reject| RejectMsg
-    GreekCheck -->|Reject| RejectMsg
+    KS -->|no| Chk1
+    KS -->|"yes: reject new orders, pass cancels"| Rej["Reject to sender"]
+    Chk1 --> Chk2 --> Chk3 --> Chk4 --> Audit
+    Chk1 -->|fail| Rej
+    Chk2 -->|fail| Rej
+    Chk3 -->|fail| Rej
+    Chk4 -->|fail| Rej
+    Audit --> Venue["Venue"]
+    Venue -->|"execution reports"| GW
+    Venue -->|"drop copy"| PT["Post-trade monitor"]
+    GW -->|"fills"| IR["Intraday risk service: Greeks, P&L velocity"]
+    IR -->|"limit changes, kill"| KS
+    PT -->|"mismatch, kill"| KS
 ```
 
-### 3. Check Categories: Microsecond Flow vs. Millisecond OTC
+### 3. Flow versus OTC checks
 
-| Check Category | Flow Trading (Equities, FX, Listed Futures) | OTC Derivatives (Swaps, Exotics) |
+The numbers below are labelled-hypothetical design budgets; real figures depend on hardware, protocol and product and are not published in a comparable way.
+
+| Aspect | Flow (cash equities, listed futures, spot FX) | OTC derivatives (swaps, options) |
 | :--- | :--- | :--- |
-| Latency Budget | 10 to 25 microseconds | 5 to 25 milliseconds |
-| Execution Location | In-line inside network gateway / FPGA | Distributed pre-trade microservice |
-| Price Collar | $\pm 2\%$ to $\pm 5\%$ of NBBO bid/ask | Comparison against live calibrated zero curve |
-| Size / Notional Cap | Maximum shares per order / maximum dollar value | Maximum gross notional / maturity tenor cap |
-| Credit Verification | Pre-allocated credit bucket in local CPU cache | SA-CCR marginal EAD proxy check |
-| Greek Limits | Cash Delta, Gross Open Notional | Bucket DV01, CS01, Vega limits |
-| Short-Sale Check | Verified borrow locate (Reg SHO Rule 203) | Bond borrow availability verification |
+| Budget (hypothetical) | microseconds per order, in-line | milliseconds to seconds, before the quote or the trade is booked |
+| Where it runs | gateway process, FPGA or venue-provided risk layer | pre-trade service called by the pricing or RFQ workflow |
+| Price check | collar against a trusted reference (NBBO, last trade, settlement) | price against the desk's own model mid and a tolerance |
+| Size check | maximum quantity and notional per order | maximum notional and tenor |
+| Credit | pre-allocated credit per account, reserved per order | counterparty limits on potential future exposure or SA-CCR-style add-ons, incremental XVA |
+| Market risk | gross and net position, cash delta | incremental DV01, CS01, vega by bucket against desk limits |
 
-### 4. Concurrency Control: Lock-Free Ring Buffers and Atomic Reservations
+### 4. Limit state: reservations driven by FIX order states
 
-In high-concurrency environments processing 100,000 orders/sec across multi-core servers, mutex locks cause severe thread convoying and context-switching jitter:
-- **Lock-Free Ring Buffers (LMAX Disruptor Pattern):**
-  Uses a circular array with power-of-two sizing ($2^{20} = 1,048,576$ slots) and monotonically increasing sequence counters.
-  Each slot is padded to 64 bytes (the standard x86 CPU cache line) to prevent false sharing across adjacent cores.
-  Producers claim sequence slots using atomic compare-and-swap (`CAS`) operations, and consumer threads process risk updates sequentially with cache-line prefetching.
-- **Optimistic Limit Reservation State Machine:**
+A limit check on fills alone lets many working orders each pass and then all fill.
+The gateway therefore holds a reservation for every working order, sized at the worst price the order can trade at, and moves it through the order's FIX states (ExecType (150) and OrdStatus (39), as in [Risk Checks and Order Management](../12-Quant-Development/13-Risk-Checks-and-Order-Management.md)):
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Available: Limit Initialized
-    Available --> Reserved: Inbound Order (Atomic Reservation)
-    Reserved --> Released: Order Rejected by Exchange / Cancelled
-    Reserved --> Reserved: Network Timeout (Query Status; Keep Held)
-    Reserved --> Committed: Terminal Fill Reconciled (Update Balance)
-    Committed --> Available: Position Settled / Closed Out
-    Released --> Available: Capacity Restored
+    [*] --> Reserved: checks pass, reserve qty x limit price, send 35=D
+    Reserved --> Reserved: 150=0 New acknowledged
+    Reserved --> PartlyCommitted: 150=F partial fill, commit fill qty x fill price, release fill qty x limit price
+    PartlyCommitted --> PartlyCommitted: further partial fills
+    Reserved --> Released: 150=8 Rejected, 150=4 Canceled or 150=C Expired, release all
+    PartlyCommitted --> Released: Canceled or Expired, release the leaves
+    PartlyCommitted --> Committed: 150=F to leaves 0
+    Reserved --> Committed: 150=F to leaves 0
+    Reserved --> Unknown: disconnect or timeout
+    PartlyCommitted --> Unknown: disconnect or timeout
+    Unknown --> Reserved: status reply, working with no fills
+    Unknown --> PartlyCommitted: status reply, working with fills
+    Unknown --> Released: order status reply, order ended
+    Released --> [*]
+    Committed --> [*]
 ```
+
+Rules that follow from the FIX races:
+
+- While a cancel is in flight (Pending Cancel) fills can still arrive, so nothing is released until the venue confirms the cancel.
+- While a replace is in flight (Pending Replace) either set of terms can execute, so the reservation is the larger of old and new leaves at the worse price.
+- Unknown status never releases capacity: the gateway queries order status, sends cancels, and keeps the reservation until a terminal state is reconciled.
+- Fills at a better price than the limit return the difference immediately, because the reservation was sized at the limit.
+
+### 5. Concurrency
+
+- Partition limit state by account (or by the limit's scope) and give each partition one writer thread; checks and updates for that partition then run in arrival order with no locks, and a check never sees a half-applied fill.
+- Hand messages between threads with bounded single-producer queues; the LMAX Disruptor (Thompson, Farley, Barker, Gee and Stewart, May 2011) is a ring buffer whose size is a power of two so the slot index is a bit mask, with no locks or CAS for a single producer and a CAS on the claim sequence for several producers; its paper warns that independently written variables must not share a cache line (false sharing).
+- A limit shared across partitions (a firm-wide gross limit) needs either a further owner thread that grants sub-allocations to partitions, or atomic fetch-and-add with a check of the result; a per-order global lock is the convoy that destroys tail latency.
+
+### 6. Kill switch and limit escalation
+
+- Soft limits (for example at a stated fraction of the hard limit) alert people and may require approval to continue; hard limits reject in the gateway.
+- The kill switch is latched: engaged automatically by P&L velocity, message-rate, reject-rate or reconciliation breaches, or by a person, and re-armed only by a person.
+- Engaging it blocks new orders and sends cancels for all working orders, which RTS 6 Article 12 requires to be possible immediately; cancels themselves are never throttled.
 
 ## Worked examples
 
-### Example 1: Latency Budget Breakdown of a Pre-Trade Flow Gateway
+All budgets, limits, orders and buffer sizes are labelled-hypothetical design inputs.
 
-An ultra-low latency gateway evaluates an inbound equity order against SEC Rule 15c3-5 controls:
-- **Component 1 (Physical Network & Kernel Bypass Ingestion):**
-  Packet enters the Solarflare / DPDK network interface card, bypasses the Linux kernel network stack, and lands directly in user-space memory: $3.5\text{ microseconds}$.
-- **Component 2 (SBE / FIX Parsing):**
-  Deserializes order into a C++ struct: $1.2\text{ microseconds}$.
-- **Component 3 (Fat-Finger Price Collar Check):**
-  Compares order price against current NBBO:
-  With $\text{NBBO}_{\text{bid}} = \$100.00$ and $\text{NBBO}_{\text{ask}} = \$100.05$ under a $3\%$ collar bandwidth, buy orders must satisfy $P_{\text{order}} \le \$100.05 \times 1.03 = \$103.0515$, and sell orders must satisfy $P_{\text{order}} \ge \$100.00 \times (1 - 0.03) = \$97.00$: $0.4\text{ microseconds}$.
-- **Component 4 (Atomic Credit Limit Reservation):**
-  Executes an atomic fetch-and-add on the counterparty's allocated credit balance: $1.8\text{ microseconds}$.
-- **Component 5 (Desk Net Notional and Short-Sale Check):**
-  Evaluates desk position boundary and verifies borrow locate: $1.1\text{ microseconds}$.
-- **Component 6 (Lock-Free Audit Trail Logging):**
-  Writes order event to pre-allocated shared memory ring buffer: $0.8\text{ microseconds}$.
-- **Component 7 (Outbound Serialization & Transmission):**
-  Transmits approved order onto exchange fiber link: $4.2\text{ microseconds}$.
-- **Total End-to-End Gateway Latency:**
+### Example 1: latency budget and per-core capacity
 
-$$\text{Total Latency} = 3.5 + 1.2 + 0.4 + 1.8 + 1.1 + 0.8 + 4.2 = 13.0\text{ microseconds}$$
+| Stage | Budget (microseconds) | On the gateway core |
+| :--- | :--- | :--- |
+| NIC to user space (kernel bypass) | 3.5 | no |
+| Decode order message | 1.2 | yes |
+| Price collar and size checks | 0.4 | yes |
+| Credit reservation | 1.8 | yes |
+| Position and short-sale checks | 1.1 | yes |
+| Audit record to ring buffer | 0.8 | yes |
+| Encode and send to venue | 4.2 | no |
 
-The entire pre-trade evaluation completes in $13.0\text{ microseconds}$, well within the $< 25\mu s$ high-frequency trading latency target.
+- Wire-to-wire budget: $13.0$ microseconds; gateway-core service time: $5.3$ microseconds.
+- At 100,000 orders per second one core is $0.53$ busy; its ceiling is $188,679$ orders per second.
+- Even at 53% load orders queue: for deterministic service and Poisson arrivals (M/D/1) the mean wait is $\rho s / (2(1-\rho)) = 2.99$ microseconds, which is why gateways partition by account across cores well before nominal saturation.
 
-### Example 2: Optimistic Credit Reservation State Machine
+### Example 2: credit reservation ledger
 
-A prime broker manages a $\$50,000,000$ intraday trading limit for an algorithmic trading fund:
-- Baseline utilized credit: $\$44,000,000$.
-- Baseline available capacity: $\$50,000,000 - \$44,000,000 = \$6,000,000$.
-- **Order 1 arrives at $t = 0\text{ ms}$:** Buy $100,000$ shares of AAPL at $\$200$ (Order Notional $= \$20,000,000$).
-  - Gateway check: $\$20,000,000 > \$6,000,000$ available capacity.
-  - Action: Immediately rejected ("Credit limit exceeded").
-- **Order 2 arrives at $t = 5\text{ ms}$:** Buy $20,000$ shares of AAPL at $\$200$ (Order Notional $= \$4,000,000$).
-  - Gateway check: $\$4,000,000 \le \$6,000,000$ available capacity.
-  - Action: Approved. The engine moves $\$4,000,000$ from `Available` to `Reserved`.
-  - Available capacity drops to $\$6,000,000 - \$4,000,000 = \$2,000,000$.
-- **Order 3 arrives at $t = 8\text{ ms}$:** Buy $15,000$ shares of AAPL at $\$200$ (Order Notional $= \$3,000,000$).
-  - Gateway check: $\$3,000,000 > \$2,000,000$ available capacity.
-  - Action: Rejected because Order 2's reservation is pending.
-- **Scenario Outcome A (Partial Fill Execution Report):**
-  At $t = 25\text{ ms}$, the exchange returns an execution report: Order 2 partially filled for $\$3,000,000$, and the remaining $\$1,000,000$ is cancelled.
-  - Reserved $\$4,000,000$ is cleared: $\$3,000,000$ is converted into permanent `Committed Position`, and $\$1,000,000$ unexecuted capacity is returned to `Available`.
-  - Final committed utilized credit: $\$44,000,000 + \$3,000,000 = \$47,000,000$.
-  - Final available capacity: $\$50,000,000 - \$47,000,000 = \$3,000,000$.
-- **Scenario Outcome B (Network Partition / Timeout):**
-  If the exchange connection drops and no fill report arrives within 500 ms, the reservation remains held while the engine issues an order status query and cancellation request.
-  Capacity is released only after a definitive terminal status is reconciled.
+A prime broker gives a client a 50,000,000 dollar intraday limit with 44,000,000 already committed, so 6,000,000 is available.
 
-### Example 3: The Knight Capital Catastrophe (August 1, 2012)
+1. Order 1: buy 100,000 at a 200 limit, 20,000,000; rejected.
+2. Order 2: buy 20,000 at 200, 4,000,000; accepted and reserved, leaving 2,000,000 available.
+3. Order 3: buy 15,000 at 200, 3,000,000; rejected because order 2's reservation is held.
+4. Outcome A: 15,000 shares of order 2 fill at 200 (3,000,000 committed, 1,000,000 still reserved), then the venue cancels the rest; committed becomes 47,000,000 and available 3,000,000.
+5. Outcome B: all 20,000 fill at 199.50; committed becomes 47,990,000 and the 10,000 price improvement returns to available.
+6. Outcome C: the session drops with order 2 working; available stays at 2,000,000 until an order status reply or cancel confirmation settles it.
 
-- **Context:** Knight Capital was the largest market maker in US equities, executing approximately $17\%$ of volume across NYSE and Nasdaq.
-- **Architectural Failure:**
-  During an overnight deployment of new software for the Retail Member Organization (RMO), an engineer failed to deploy the updated code to one of eight production servers.
-  The eighth server retained a dormant test code harness known as "SMARS" that repurposed an internal flag.
-  When trading opened at 09:30 EST, the rogue server began reading incoming parent retail orders and continuously splitting them into rapid child market orders without checking whether the parent was already filled.
-- **Absence of Pre-Trade Controls:**
-  The rogue server sent $4,000,000$ execution orders in 45 minutes across 154 stocks, executing $397,000,000$ shares.
-  This represents an average submission rate of $1,481.5\text{ orders/second}$.
-  The architecture lacked three fundamental SEC Rule 15c3-5 controls:
-  $1$. No cumulative fill throttle per parent order (the code bought millions of shares against small 100-share retail requests).
-  $2$. No aggregate dollar capital consumption limit at the gateway level.
-  $3$. No automated kill switch: it took technicians 45 minutes to locate and physically shut down the rogue server.
-- **Financial Consequence:**
-  Knight accumulated $\$7,000,000,000$ of unwanted gross positions ($3.5\text{ billion}$ long and $\$3.15\text{ billion}$ short).
-  Liquidating these positions into the market realized a net loss of **$\$440,000,000$** in 45 minutes, wiping out Knight Capital's equity capital and forcing a distressed acquisition by Getco.
+The code processes these events through a ledger that checks available plus reserved plus committed equals the limit after every event.
 
-### Example 4: Ring Buffer Sizing and MiFID II RTS 6 OTR
+### Example 3: what the SEC found at Knight Capital
 
-- **Ring Buffer Memory Footprint:**
-  A high-frequency trading gateway allocates a lock-free ring buffer of $2^{20} = 1,048,576\text{ slots}$.
-  To avoid false sharing across CPU cores, each slot is cache-line aligned to 64 bytes.
-  Total memory footprint: $1,048,576 \times 64\text{ bytes} = 67,108,864\text{ bytes} = 64.0\text{ MB}$.
-- **MiFID II RTS 6 Order-to-Trade Ratio (OTR):**
-  Under MiFID II RTS 6 Annex I, investment firms must monitor their Order-to-Trade Ratio:
+From SEC Release No. 34-70694 (October 16, 2013):
 
-$$\text{OTR}_{\text{number}} = \frac{N_{\text{orders}}}{N_{\text{trades}}} - 1$$
+- Knight's aggregate trading was about 10% of all trading in listed US equities in 2011 and 2012.
+- New Retail Liquidity Program code was deployed to seven of eight servers of SMARS, Knight's order router; the eighth still had "Power Peg", a function unused since 2003 whose cumulative-quantity tracking had been moved in 2005, and the new code repurposed the flag that used to activate it.
+- On August 1, 2012, the eighth server sent child orders continuously for 212 parent orders without regard to fills: more than 4 million executions in 154 stocks for more than 397 million shares in about 45 minutes, on average at least $1,481.5$ executions per second.
+- Knight was left with about 3.5 billion dollars net long in 80 stocks and 3.15 billion net short in 74, $6.65$ billion gross, and realised a 460 million dollar loss; it reported significant net capital problems, and its parent later combined with GETCO to form KCG Holdings on July 1, 2013.
+- Control findings: firm-wide capital thresholds were not linked to automated order entry; the main position monitor (PMON) was post-execution, relied on people and showed no limits; position limits did not count outstanding orders; 97 automated "Power Peg disabled" emails before the open were not treated as alerts; there were no written deployment procedures for SMARS or incident-response procedures, and uninstalling the new code from the seven good servers made things worse.
+- The SEC found violations of Rule 15c3-5 and Regulation SHO Rules 200(g) and 203(b), and imposed a 12 million dollar civil penalty.
 
-  For an algorithmic strategy sending $25,000$ order messages (new orders, modifications, cancellations) resulting in $500$ executed trades:
+### Example 4: ring buffer sizing and order-to-trade ratio
 
-$$\text{OTR}_{\text{number}} = \frac{25,000}{500} - 1 = 50 - 1 = 49.0$$
-
-  Trading venues enforce maximum OTR thresholds; exceeding this ratio triggers venue penalties or algorithmic throttling.
+- A ring of $2^{20} = 1,048,576$ slots of 64 bytes takes $64.0$ MiB; with a power-of-two size, the slot for sequence $n$ is $n \,\&\, (2^{20} - 1)$.
+- A member sends 10,000 new orders, 9,000 modifications and 6,000 cancellations ($25,000$ orders under RTS 9) and gets 500 transactions: $\text{OTR}_{\text{number}} = 25,000/500 - 1 = 49.0$.
+- By volume, 4,000,000 shares ordered against 250,000 executed gives $\text{OTR}_{\text{volume}} = 15.0$; the venue compares both with its own maximum.
 
 ## Pitfalls
 
-- **Asynchronous Limit Verification:** Placing risk checks on an asynchronous message queue after order routing allows thousands of unauthorized orders to reach the exchange before a violation signal is processed; pre-trade checks must be strictly in-line.
-- **Coarse Mutex Locks on Shared State:** Locking an entire counterparty account across multiple gateway threads creates severe thread convoying, spiking 99th-percentile order latency from microseconds to hundreds of milliseconds.
-- **Ignoring Working Order Commitments:** Calculating available credit using only completed fills while ignoring outstanding working orders in the market allows algorithms to over-commit balance sheet capital.
-- **Uncollared Market Orders:** Routing uncollared market orders into thin opening or closing auctions causes execution at non-economic prices during liquidity voids.
-- **Manual Kill Switch Workflows:** Requiring human risk officer approval to activate a kill switch during an algorithmic runaway ensures disaster; kill switches must trip programmatically on loss velocity breaches.
+- **Checking after routing.** A check on an asynchronous queue after the order has left lets every order through before the breach is seen; pre-trade means in-line and synchronous.
+- **Counting fills only.** Working orders can all fill; Knight's position limits did not account for outstanding orders.
+- **Releasing on timeout.** A reservation released because no answer arrived lets the same capacity be used twice if the order was in fact live.
+- **Monitors that are not controls.** A dashboard that people watch is not a pre-trade control; Knight's PMON showed the positions but could not stop order entry.
+- **One lock for a whole account across threads.** Convoys turn microsecond checks into millisecond tails; give each partition one writer instead.
+- **Throttling or blocking cancels.** During an incident, cancels reduce risk and must always pass the kill switch and throttles.
+- **Collars without a trusted reference.** If the reference price is missing or stale, the check must fail closed, not pass.
 
 ## Interview questions
 
-> [!question]- sys-08-01 | What is the fundamental mandate of SEC Rule 15c3-5?
-> SEC Rule 15c3-5 mandates that broker-dealers with market access must implement pre-set capital thresholds, credit limits, and financial risk controls on an automated, non-bypassable pre-trade basis.
-> It explicitly prohibits unfiltered or naked direct market access by clients and requires direct broker-dealer oversight.
+> [!question]- sys-08-01 | What does SEC Rule 15c3-5 require?
+> A broker-dealer with market access must have risk management controls and supervisory procedures reasonably designed to manage the risks of that access (paragraph (b)).
+> Financial controls must prevent orders that exceed pre-set credit or capital thresholds in the aggregate and erroneous orders that exceed price or size parameters or are duplicative ((c)(1)); regulatory controls cover pre-order-entry requirements, restricted securities, authorised access and immediate post-trade reports ((c)(2)).
+> They must be under the broker's direct and exclusive control ((d)), reviewed at least annually and certified by the CEO ((e)); this ended unfiltered "naked" access.
 
-> [!question]- sys-08-02 | How does kernel-bypass networking reduce pre-trade gateway latency?
-> Traditional networking requires the operating system kernel to handle network interrupts, context switch, and copy packet data from kernel buffers to application memory.
-> Kernel-bypass technologies (such as Solarflare Onload or DPDK) map the NIC ring buffer directly into user-space application memory, eliminating context switches and saving 5 to 10 microseconds per packet.
+> [!question]- sys-08-02 | How does kernel-bypass networking reduce gateway latency?
+> The NIC's receive and transmit rings are mapped into the application's memory and polled by a dedicated thread, so packets skip interrupts, kernel protocol processing, system calls and the copy from kernel to user buffers.
+> The saving depends on the NIC, kernel and workload, so quote it from your own measurements, not from a generic number.
 
-> [!question]- sys-08-03 | What is a "Fat-Finger" control and how is it mathematically defined?
-> A fat-finger control prevents orders with erroneous prices or quantities caused by human typing mistakes or software bugs.
-> It is defined via price collars (rejecting orders outside $P_{\text{ref}} \pm X\%$) and quantity/notional caps (rejecting single orders exceeding $N_{\text{max}}$ shares or $V_{\text{max}}$ dollars).
+> [!question]- sys-08-03 | What is a fat-finger control, formally?
+> Reject a buy above $P_{\text{ref}}(1 + c)$ or a sell below $P_{\text{ref}}(1 - c)$ for a collar $c$ around a trusted reference, and reject an order above a maximum quantity or a maximum notional.
+> With a 100.00 by 100.05 NBBO and a 3% collar, buys above 103.0515 and sells below 97.00 are rejected.
 
-> [!question]- sys-08-04 | What is the LMAX Disruptor pattern and why is it preferred over concurrent queues?
-> The Disruptor is a lock-free, circular ring-buffer architecture for inter-thread messaging.
-> It avoids expensive OS mutex locks and cache-line invalidations (false sharing) by using contiguous memory arrays with cache-line padding and sequence counters, achieving millions of operations per second with sub-microsecond latencies.
+> [!question]- sys-08-04 | What is the LMAX Disruptor and why use it instead of a locked queue?
+> A pre-allocated ring buffer with sequence counters: a single producer claims slots without locks or CAS, several producers use a CAS on the claim sequence, and consumers follow the published sequence; the power-of-two size makes the index a bit mask.
+> It avoids lock contention and allocation; the May 2011 LMAX paper reports over 25 million messages per second and a 52 ns mean latency per hop against 32,757 ns for Java's ArrayBlockingQueue on its 2011 test hardware.
 
-> [!question]- sys-08-05 | What is an algorithmic Kill Switch and what triggers it?
-> A kill switch is an automated circuit breaker that cancels all working orders and blocks new order submissions for a specific trading desk, algorithm, or firm-wide.
-> It is triggered when predefined risk thresholds are breached, such as maximum loss per minute, message rate spikes, or repeated exchange reject rates.
+> [!question]- sys-08-05 | What is a kill switch and what triggers it?
+> A latched control that blocks new orders and cancels all working orders for a scope (strategy, desk, account or firm); RTS 6 Article 12 requires the ability to cancel unexecuted orders immediately as an emergency measure.
+> Triggers include P&L velocity, message-rate or reject-rate breaches, reconciliation mismatches against the drop copy, and a human command; re-arming is manual.
 
-> [!question]- sys-08-06 | What is the difference between a Hard Limit and a Soft Limit?
-> A Hard Limit is non-bypassable: any order that would breach the limit is immediately rejected by the gateway.
-> A Soft Limit acts as an early warning threshold (e.g., at 80% or 90% of the hard limit), triggering automated alerts to traders and risk managers and prompting an electronic approval workflow.
+> [!question]- sys-08-06 | What is the difference between a hard limit and a soft limit?
+> A hard limit is enforced in the gateway: an order that would breach it is rejected.
+> A soft limit is a warning level below the hard limit that alerts the trader and risk managers and may require approval to continue.
 
-> [!question]- sys-08-07 | How does an optimistic credit reservation prevent double-spending in distributed gateways?
-> Before routing an order to an exchange, the gateway reserves the required credit from the counterparty's pool using an atomic operation.
-> A fill is committed, and a rejection or cancellation releases the reservation, only after its definitive terminal status is reconciled.
-> A timeout triggers a status query and cancellation request while the reservation remains held.
+> [!question]- sys-08-07 | How does credit reservation prevent double-spending?
+> The gateway reserves the order's worst-case notional when it sends the order, commits fills as they arrive and releases the rest only on a terminal state (Canceled, Rejected, Expired, or leaves 0).
+> On a timeout or disconnect it keeps the reservation, queries status and sends cancels, so the same capacity cannot be granted twice to an order that may still be live.
 
-> [!question]- sys-08-08 | What is Reg SHO Rule 203 (Locate Requirement) in equity pre-trade risk?
-> Reg SHO Rule 203 mandates that a broker-dealer cannot execute a short-sale order in an equity security unless it has borrowed the security or has reasonable grounds to believe the security can be borrowed and delivered by settlement date.
-> The pre-trade gateway must verify and decrement an active locate record before allowing the short sale.
+> [!question]- sys-08-08 | What is the Regulation SHO Rule 203(b) locate requirement and where does it sit?
+> A broker-dealer may not accept or effect a short sale in an equity security unless it has borrowed the security, has a bona fide arrangement to borrow it, or has reasonable grounds to believe it can be borrowed for delivery when due, and has documented this.
+> It is a pre-order-entry regulatory requirement under 15c3-5 (c)(2)(i), usually implemented as a locate record that the order flow checks and decrements; Knight was also found to have violated Rules 200(g) (marking) and 203(b).
 
-> [!question]- sys-08-09 | How does pre-trade risk checking differ between flow cash equities and bilateral OTC swaptions?
-> Cash equities require ultra-low latency ($< 25\mu s$) checking simple arithmetic rules (price collar, shares, cash balance).
-> Bilateral OTC swaptions tolerate higher latency ($< 15\text{ ms}$) but require complex mathematical evaluations: verifying ISDA master agreements, CSA collateral terms, SA-CCR marginal EAD, and portfolio DV01/Vega shifts.
+> [!question]- sys-08-09 | How does pre-trade checking differ between cash equities and OTC swaptions?
+> Equities need simple in-line arithmetic at very low latency on every order: collar, size, notional, credit, position.
+> OTC swaptions are checked once per trade in a pre-trade service with a looser budget but richer analytics: counterparty exposure and incremental XVA, legal and CSA terms, incremental DV01 and vega against bucket limits.
 
-> [!question]- sys-08-10 | Why did the lack of an order-fill throttle cause the Knight Capital bankruptcy?
-> The rogue server continuously submitted child orders to the market without checking whether the total executed quantity had already satisfied the parent order.
-> An order-fill throttle would have detected that the parent order was fully filled and automatically shut down further child order generation.
+> [!question]- sys-08-10 | What did the SEC find went wrong at Knight Capital, and what would have stopped it?
+> Defective code on one of eight servers sent child orders without regard to fills on 212 parent orders, producing more than 4 million executions and a 460 million dollar loss in about 45 minutes.
+> Capital thresholds were not linked to automated order entry and position limits ignored outstanding orders; an automated firm-wide credit or capital check in the order path, or a fill-aware throttle per parent order, would have stopped the flow.
+> Knight was not made bankrupt: it reported significant net capital problems and its parent later combined with GETCO to form KCG Holdings.
+
+> [!question]- sys-08-11 | Which pre-trade controls does MiFID II RTS 6 Article 15 list?
+> Price collars, maximum order values, maximum order volumes and maximum message limits, for all financial instruments; every order sent counts immediately in the limits (15(2)).
+> Article 15(3) adds repeated automated execution throttles that disable a strategy after a set number of executions until a designated person re-enables it.
+
+> [!question]- sys-08-12 | Who computes the MiFID II order-to-trade ratio, and how?
+> The trading venue, for each member and instrument, at least at the end of every trading session (RTS 9 Article 3): (orders / transactions) - 1 by number and by volume, where orders include submissions, modifications and cancellations.
+> 25,000 order messages against 500 transactions give 49.0.
+
+> [!question]- sys-08-13 | A replace is in flight. How much credit should the gateway hold for the order?
+> The larger of the old and new leaves quantity at the worse of the two prices, because until the venue confirms the replace either set of terms can execute.
+> Release the difference only after the Replaced report (150=5) arrives.
+
+> [!question]- sys-08-14 | One gateway core spends 5.3 microseconds per order. How loaded is it at 100,000 orders per second, and does it matter?
+> Utilisation is $100,000 \times 5.3 \times 10^{-6} = 0.53$, with a ceiling of 188,679 orders per second.
+> Queueing still adds delay: with deterministic service the mean wait is about 2.99 microseconds, and bursts are far worse than the average, so partition by account well before saturation.
+
+> [!question]- sys-08-15 | How quickly must RTS 6 real-time alerts fire, and who monitors?
+> Within five seconds of the relevant event (Article 16(5)).
+> Monitoring is by the trader running the algorithm and by the risk management function or an independent risk control function able to challenge the trader (Article 16(2)).
+
+> [!question]- sys-08-16 | Why must a missing reference price block an order rather than skip the collar check?
+> A collar with no reference cannot detect an erroneous price, so passing the order means running without the control exactly when the data feed is broken.
+> Fail closed: reject new orders for that instrument (cancels still pass) and alert.
+
+## In this repo and SDE-Interview-Prep
+
+- [sys_intraday_limits.py](code/sys_intraday_limits.py) computes, prints and asserts every number on this page; the credit example runs through a reservation ledger with a conservation check after each event.
+- [Risk Checks and Order Management](../12-Quant-Development/13-Risk-Checks-and-Order-Management.md) for the full 15c3-5 text, the FIX state machine and a C++ gateway; [Concurrency, Lock-Free and Memory Pools](../12-Quant-Development/04-Concurrency-Lock-Free-and-Memory-Pools.md) for ring buffers.
+- [Risk Engine](07-Risk-Engine.md) for the risk numbers intraday limits are set on, [Front-to-Back Architecture](01-Front-to-Back-Architecture.md) for where the gateway sits.
+- SDE-Interview-Prep: [Idempotency and Delivery](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).
 
 ## Further reading
 
-- US Securities and Exchange Commission. *Risk Management Controls for Broker-Dealers with Market Access*. SEC Release No. 34-63241, 17 CFR Part 240, November 2010.
-- European Commission. *Commission Delegated Regulation (EU) 2017/589 (MiFID II RTS 6)*. Official Journal of the European Union, L 87, March 2017.
-- US Securities and Exchange Commission. *In the Matter of Knight Capital Americas LLC*. SEC Administrative Proceeding File No. 3-15570, October 16, 2013.
-- Thompson, Martin, Farley, Dave, Barker, Michael, Gee, Patricia, and Rozmyslowicz, Martin. *Disruptor: High performance alternative to bounded queues for concurrent programming*. LMAX Whitepaper, 2011.
+- 17 CFR 240.15c3-5 and SEC Release No. 34-63241, *Risk Management Controls for Brokers or Dealers with Market Access*, 75 FR 69792, November 15, 2010.
+- SEC Release No. 34-70694, *In the Matter of Knight Capital Americas LLC*, File No. 3-15570, October 16, 2013.
+- Commission Delegated Regulation (EU) 2017/589 (RTS 6), OJ L 87, 31.3.2017, p. 417.
+- Commission Delegated Regulation (EU) 2017/566 (RTS 9) on the ratio of unexecuted orders to transactions.
+- Thompson, M., Farley, D., Barker, M., Gee, P. and Stewart, A., *Disruptor: High performance alternative to bounded queues for exchanging data between concurrent threads*, LMAX, May 2011, https://lmax-exchange.github.io/disruptor/disruptor.html.

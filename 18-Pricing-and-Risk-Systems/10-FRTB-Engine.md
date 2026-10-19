@@ -5,346 +5,311 @@ tier: senior
 status: solid
 prereqs: [pnl-platform]
 est_hours: 5
-sources: [Basel Committee on Banking Supervision - The Basel Framework MAR20 to MAR23 Standardised approach (BCBS d457 February 2019 effective January 2023), Basel Committee on Banking Supervision - The Basel Framework MAR30 to MAR33 Internal models approach (BCBS d457 February 2019 effective January 2023), European Central Bank - ECB Guide to internal models: Risk-weighted assets / market risk (ECB Banking Supervision October 2019), Antoine Savine - Modern Computational Finance: AAD and Parallel Simulations (John Wiley & Sons 2018)]
+sources: [Basel Committee on Banking Supervision - Basel Framework MAR20 to MAR23 Standardised approach (version effective 1 January 2023), Basel Committee on Banking Supervision - Basel Framework MAR30 to MAR33 Internal models approach (version effective 1 January 2023), Basel Committee on Banking Supervision - Minimum capital requirements for market risk (d457 14 January 2019 - corrected 25 February 2019), Antoine Savine - Modern Computational Finance - AAD and Parallel Simulations (Wiley 2018)]
 ---
 
 # FRTB Engine Architecture
 
 ## TL;DR
 
-- An enterprise Fundamental Review of the Trading Book (FRTB) engine executes two parallel capital tracks nightly: the Standardised Approach (SA, comprising SbM, DRC, and RRAO under MAR20) for all trading desks, and the Internal Models Approach (IMA, comprising Expected Shortfall with liquidity horizons, SES for non-modellable factors, and an internal default risk charge under MAR33) for accredited desks.
-- The Standardised Approach is a sensitivity aggregator across seven risk classes, three correlation scenarios (Medium, High, Low), a jump-to-default engine, and residual risk add-ons; the IMA is a distributed historical simulation revaluation grid evaluated across nested liquidity horizons and stress calibrations.
-- Desk eligibility is governed by quarterly control gates: the Risk Factor Eligibility Test (RFET under MAR31) classifies risk factors as modellable or non-modellable (NMRFs), while P&L Attribution (PLA) Spearman and Kolmogorov-Smirnov statistical tests decide whether a desk retains internal model approval.
-- Bank-level capital aggregation enforces the floor mechanism: $ACR_{\text{total}} = \min(IMA_{G,A} + \text{surcharge} + C_U, SA_{\text{all}}) + \max(0, IMA_{G,A} - SA_{G,A})$ (MAR33.43), requiring daily SA computation for every desk even when internal models are fully approved.
-- The dominant engineering bottlenecks are data lineage (reconciling front-office HPL and risk-theoretical RTPL pipelines) and distributed compute scale (executing nearly a billion scenario revaluations during a tight overnight batch window).
-- All numerical figures in this note are verified by [sys_frtb_engine.py](code/sys_frtb_engine.py).
+- An FRTB engine runs the standardised approach (SA: sensitivities-based method, default risk charge and residual risk add-on, MAR20.4) for every desk every day, and for internally modelled desks also the ES with liquidity horizons and stress calibration (MAR33.4 to MAR33.6), the stressed capital for non-modellable risk factors (MAR33.16, MAR33.17) and the internal default risk model (MAR33.18 to MAR33.39).
+- Quarterly gates decide what may be modelled: the risk factor eligibility test (MAR31.13), desk backtesting (more than 12 exceptions at 99% or 30 at 97.5% sends a desk to SA, MAR32.19) and the P&L attribution test (green needs Spearman above 0.80 and KS below 0.09; red is Spearman below 0.70 or KS above 0.12, MAR32.42).
+- Bank capital is $ACR_{total} = \min(IMA_{G,A} + \text{surcharge} + C_U, SA_{all}) + \max(0, IMA_{G,A} - SA_{G,A})$ (MAR33.43), so SA must be computed daily for all desks, for the approved desks together and for each desk standalone (for the amber surcharge factor).
+- Compute is dominated by ES revaluations: 15 scenario vectors per position per day (3 calibrations by 5 liquidity-horizon subsets) gave about 1.0 billion valuations for a hypothetical 250,000-position bank, 105 cores for a 2-hour window at 0.5 ms each with 50% headroom.
+- Data alignment between front-office HPL and risk-engine RTPL decides PLA outcomes: in the simulated desks an RTPL that under-scales vega P&L by half pushed KS to 0.116 (amber) with Spearman still at 0.846.
+- Every number on this page is produced and asserted by [sys_frtb_engine.py](code/sys_frtb_engine.py).
 
 ## Learning objectives
 
-- Construct the end-to-end FRTB architectural topology and map input streams, valuation engines, control gates, and capital aggregators.
-- Formalize the data model linking trades, sensitivities, risk factors, liquidity horizons, scenarios, desks, and regulatory capital results.
-- Quantify the compute grid capacity and CPU core sizing required to complete nightly IMA and SA batch runs within stated latency windows.
-- Implement the quarterly PLA testing state machine (Spearman rank correlation and Kolmogorov-Smirnov tests) and desk transition rules.
-- Derive bank-wide capital aggregation across approved green/amber desks, non-modellable risk factors, and fallback standardised charges under MAR33.
+- Construct the end-to-end FRTB architecture and map inputs, valuation engines, eligibility gates and capital aggregation.
+- Formalise the data model linking trades, sensitivities, risk factors, liquidity horizons, scenarios, desks and capital results.
+- Size the compute grid for nightly IMA and SA runs, and say which calculations may run weekly or quarterly.
+- Implement the PLA test (Spearman and KS on 250 days) and the desk state transitions, with independent checks of the statistics.
+- Aggregate bank capital across green, amber and out-of-scope desks under MAR33.41 to MAR33.45.
 
 ## Core concepts
 
-### 1. FRTB Architectural Topology
+### 1. Architecture
 
 ```mermaid
 flowchart TB
-    subgraph InputTier["Input & Data Layer"]
-        Trades[("Bitemporal Trade Store\n(250,000 active positions)")]
-        MarketSnap[("EOD Golden Market Snapshot\n(Curves, surfaces, fixings)")]
-        RealPrices[("Real Price Observations\n(Trades, committed quotes)")]
-        RefData[("Reference Data Golden Copy\n(Issuers, ratings, sectors, desks)")]
+    subgraph InputTier["Inputs, frozen per run"]
+        Trades[("Positions by trading desk, bitemporal")]
+        MarketSnap[("Market snapshot and historical risk factor series")]
+        RealPrices[("Real price observations: trades and committed quotes")]
+        RefData[("Reference data: issuers, ratings, sectors, buckets, desk mapping")]
     end
-
-    subgraph EligibilityLayer["Classification & Control Gates"]
-        RFETEngine["RFET Engine\n(MAR31.13: Modellable vs NMRF)"]
-        PLAEngine["PLA Testing Service\n(MAR32.42: Spearman & KS Tests)"]
-        BankBacktest["Bank-Wide Backtest\n(MAR32.9: 99% VaR -> sets m_c)"]
+    subgraph Gates["Eligibility gates, quarterly with monthly or daily monitoring"]
+        RFETEngine["RFET: modellable or NMRF (MAR31.13)"]
+        PLAEngine["PLA test: HPL against RTPL (MAR32.34 to MAR32.42)"]
+        DeskBT["Desk backtesting: 99% and 97.5% VaR (MAR32.19)"]
+        BankBT["Bank-wide backtesting: 99% VaR, sets m_c (MAR32.9)"]
     end
-
-    subgraph CapitalEngines["Analytical Compute Engines"]
-        SensWorker["SA Sensitivity Engine\n(AAD Delta & Vega)"]
-        SAEngine["SA Aggregator\n(SbM, DRC, RRAO: MAR20-MAR23)"]
-        RevalGrid["Historical Revaluation Grid\n(250 historical shock scenarios)"]
-        ESEngine["ES Engine\n(Liquidity cascade & 3 calibrations)"]
-        SESEngine["SES Engine\n(Stressed ES for NMRFs)"]
-        IDRCEngine["IMA Default Risk Charge\n(Two-factor credit migration)"]
+    subgraph SA["Standardised approach, daily, all desks"]
+        SensWorker["Sensitivities: delta, vega, curvature shocks"]
+        SAEngine["SbM in three correlation scenarios, DRC, RRAO"]
     end
-
-    subgraph CapitalAggregator["Enterprise Capital Aggregator (MAR33.43)"]
-        Agg["Capital Aggregator\n(C_A, Amber Surcharge, C_U, Floor)"]
+    subgraph IMA["Internal models, daily, approved desks"]
+        RevalGrid["Scenario revaluation grid: 10-day shocks, 5 LH subsets"]
+        ESEngine["ES: F,C and R,C and R,S calibrations, IMCC"]
+        SESEngine["Stress scenarios for NMRFs, SES"]
+        IDRCEngine["Default risk model: 99.9% one year, weekly"]
     end
-
+    PnL["P&L platform: APL and HPL"]
+    Agg["Capital aggregation: C_A, DRC, surcharge, C_U, ACR (MAR33.41 to MAR33.46)"]
     Trades --> SensWorker
     MarketSnap --> SensWorker
-    SensWorker --> SAEngine
     RefData --> SAEngine
-
+    SensWorker --> SAEngine
     Trades --> RevalGrid
     MarketSnap --> RevalGrid
     RealPrices --> RFETEngine
-
-    RFETEngine -->|"Modellable Factors"| ESEngine
-    RFETEngine -->|"Non-Modellable (NMRFs)"| SESEngine
+    RFETEngine -->|"modellable factors"| RevalGrid
+    RFETEngine -->|"NMRFs"| SESEngine
     RevalGrid --> ESEngine
-    RevalGrid --> SESEngine
+    RevalGrid -->|"RTPL and one-day VaR"| PLAEngine
+    RevalGrid --> DeskBT
+    RevalGrid --> BankBT
+    PnL -->|"HPL"| PLAEngine
+    PnL -->|"APL and HPL"| DeskBT
+    PnL -->|"APL and HPL"| BankBT
     Trades --> IDRCEngine
-
-    RevalGrid --> BankBacktest
-    RevalGrid --> PLAEngine
-    BankBacktest -->|"Sets multiplier m_c"| Agg
-    PLAEngine -->|"Green, Amber, or Out-of-Scope"| Agg
-
-    SAEngine --> Agg
-    ESEngine --> Agg
-    SESEngine --> Agg
-    IDRCEngine --> Agg
+    SAEngine -->|"SA_all, SA_G,A, SA per desk, C_U"| Agg
+    ESEngine -->|"IMCC"| Agg
+    SESEngine -->|"SES"| Agg
+    IDRCEngine -->|"DRC"| Agg
+    BankBT -->|"m_c"| Agg
+    PLAEngine -->|"green, amber, red"| Agg
+    DeskBT -->|"pass or fail"| Agg
 ```
 
-### 2. The Daily and Quarterly Operational Cycle
+Component contracts:
+
+| Component | Owns | Key output | Consistency requirement |
+| :--- | :--- | :--- | :--- |
+| Desk master | the regulatory desk structure (MAR12) and each desk's status | desk id, status (green, amber, out of scope) and effective date | status changes only at quarter-end test dates (MAR33.44) |
+| Risk factor master | risk factor definitions, buckets, liquidity horizons (MAR33.12), modellability | factor id, LH, bucket, RFET result | RTPL, ES and RFET use the same factor definitions (MAR31.16) |
+| SA engine | sensitivities, SbM, DRC, RRAO | SA per desk, per set of desks, for all desks | computed on the aggregated positions of each set, not summed from desks |
+| ES engine | scenario P&L vectors per calibration and LH subset | IMCC(C), IMCC(C_i), IMCC | the stress period is the same for the bank-wide and risk-class ES (MAR33.15) |
+| SES engine | NMRF stress scenarios | SES aggregated per MAR33.17 | stress period common within each risk class (MAR33.16) |
+| PLA and backtesting | the 250-day series | statistics, zones, exception counts | HPL identical to the HPL used for backtesting (MAR32.24) |
+| Aggregator | averages and the ACR formula | ACR and RWA | 60-day averages for IMCC and SES, 12-week average for DRC (MAR33.41, MAR33.22) |
+
+### 2. Daily and quarterly cycle
 
 ```mermaid
 sequenceDiagram
-    participant FO as Front Office Trading
-    participant MD as Market Data Platform
-    participant SA as SA Engine
-    participant Grid as Revaluation Grid
-    participant IMA as ES & SES Engines
-    participant PC as Product Control
-    participant Agg as Capital Aggregator
-
-    FO->>SA: EOD positions and AAD sensitivities
-    MD->>SA: Golden market snapshot
-    SA->>Agg: SA capital per desk and SA_all
-    FO->>Grid: EOD positions (250,000)
-    MD->>Grid: Current window (250d) & stress window scenarios
-    Grid->>IMA: Scenario P&L vectors per liquidity horizon
-    IMA->>Agg: IMCC, SES, and IMA DRC
-    Grid->>PC: Risk-Theoretical P&L (RTPL) and 1-day VaR
-    PC->>Agg: Hypothetical P&L (HPL) and Actual P&L (APL)
-    Agg->>Agg: Daily capital C_A with supervisory multiplier m_c
-    Note over PC,Agg: Quarterly Gate: 250-day PLA (Spearman, KS) sets desk eligibility
+    participant FO as Trade store
+    participant MD as Market data
+    participant SA as SA engine
+    participant Grid as Revaluation grid
+    participant IMA as ES and SES engines
+    participant PnL as P&L platform
+    participant Gate as PLA and backtesting
+    participant Agg as Capital aggregator
+    FO->>SA: positions by desk
+    MD->>SA: snapshot
+    SA->>Agg: SA per desk, per desk set, for all desks
+    FO->>Grid: positions of approved desks
+    MD->>Grid: current 12-month and stress-period shocks
+    Grid->>IMA: scenario P&L vectors per calibration and LH subset
+    IMA->>Agg: IMCC and SES
+    Grid->>Gate: RTPL and one-day VaR per desk
+    PnL->>Gate: APL and HPL per desk
+    Gate->>Agg: m_c from bank-wide exceptions
+    Agg->>Agg: daily C_A, DRC, ACR
+    Note over Gate,Agg: quarter-end: RFET, desk backtesting and PLA set desk status for the next quarter
 ```
 
-### 3. Standardised Approach (SA) Formulation
+### 3. Standardised approach
 
-The Standardised Approach aggregates three distinct risk components (MAR20.4):
+$K_{SA} = K_{SbM} + K_{DRC} + K_{RRAO}$ (MAR20.4), with RWA $= 12.5 \times K$.
 
-$$K_{\text{SA}} = K_{\text{SbM}} + K_{\text{DRC}} + K_{\text{RRAO}}$$
+- SbM, per risk class (GIRR, CSR non-securitisation, CSR securitisation non-CTP, CSR CTP, equity, commodity, FX) and per sensitivity type (delta, vega, curvature):
 
-1. **Sensitivities-Based Method ($K_{\text{SbM}}$):**
-   - Evaluated across seven regulatory risk classes: GIRR, CSR (non-sec), CSR (sec-ctp), CSR (sec-non-ctp), Equity, Commodity, and FX.
-   - For each risk class and sensitivity type (Delta, Vega, Curvature), bucket-level capital is computed:
+$$K_b = \sqrt{\max\Big(0, \sum_k WS_k^2 + \sum_k \sum_{l \ne k} \rho_{kl} WS_k WS_l\Big)}, \qquad K = \sqrt{\sum_b K_b^2 + \sum_b \sum_{c \ne b} \gamma_{bc} S_b S_c},$$
 
-$$K_b = \sqrt{\max\left(0, \sum_k WS_k^2 + \sum_k \sum_{l \ne k} \rho_{kl} WS_k WS_l\right)}$$
+  where $S_b = \sum_k WS_k$, replaced by $\max(\min(\sum_k WS_k, K_b), -K_b)$ if the sum under the square root is negative (the details are in [FRTB SbM Delta](../17-Regulatory-Capital-Basel-and-FRTB/07-FRTB-Sensitivities-Based-Method-Delta.md)).
+- Three correlation scenarios (MAR21.6): medium (the prescribed $\rho$, $\gamma$), high $\min(1.25\rho, 1)$ and low $\max(2\rho - 1, 0.75\rho)$; each scenario total is summed across risk classes and sensitivity types, and SbM is the largest scenario total (MAR21.7).
+- Curvature: for each factor, $CVR_k^{\pm} = -\big(V(x_k^{RW\pm}) - V(x_k) \mp RW_k^{curv} s_k\big)$, the loss beyond the delta prediction under an up and a down shock; the bucket takes the worse of the up and down aggregations (MAR21.5).
+- DRC: gross jump-to-default $\max(LGD \cdot N + P\&L, 0)$ for longs and $\min(LGD \cdot N + P\&L, 0)$ for shorts (MAR22.11), maturity-scaled below one year, netted per obligor only where the short is as junior as or more junior than the long, then risk-weighted by rating with a hedge benefit ratio (MAR22.15 to MAR22.24; see [DRC and RRAO](../17-Regulatory-Capital-Basel-and-FRTB/09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md)).
+- RRAO: gross notional times 1.0% for exotic underlyings (longevity, weather, natural disasters, future realised volatility) and 0.1% for other residual risks (gap risk, correlation risk in best-of or spread options, behavioural risk) (MAR23.3 to MAR23.8).
 
-   - Bucket charges are aggregated across buckets using regulatory correlation $\gamma_{bc}$:
+### 4. Internal models approach
 
-$$K_{\text{class}} = \sqrt{\sum_b K_b^2 + \sum_b \sum_{c \ne b} \gamma_{bc} S_b S_c}$$
+- ES at 97.5% (MAR33.3) on a 10-day base horizon with liquidity-horizon scaling (MAR33.4):
 
-   - Evaluated across three correlation scenarios (Medium, High $\min(1.25\rho, 1)$, Low $\max(2\rho - 1, 0.75\rho)$); SbM is the maximum total across scenarios:
+$$ES = \sqrt{ES_T(P)^2 + \sum_{j \ge 2} \left(ES_T(P, j) \sqrt{\frac{LH_j - LH_{j-1}}{T}}\right)^2}, \qquad T = 10, \quad LH_j \in \{10, 20, 40, 60, 120\},$$
 
-$$K_{\text{SbM}} = \max_{s \in \{\text{medium}, \text{high}, \text{low}\}} \sum_{\text{risk classes}} (\Delta_s + \mathcal{V}_s + \mathcal{C}_s)$$
+  where $ES_T(P, j)$ shocks only the factors whose liquidity horizon is at least $LH_j$.
+  Examples from MAR33.12: 10 days for specified-currency interest rates, large-cap equity prices and specified FX pairs; 20 for small-cap equity prices and energy prices; 40 for IG corporate credit spreads and FX volatility; 60 for HY corporate spreads and interest rate volatility; 120 for credit spread volatility and other commodity price volatility.
+- Stress calibration (MAR33.5, MAR33.6): $ES = ES_{R,S} \times ES_{F,C} / ES_{R,C}$, with the ratio floored at 1, where the reduced factor set $R$ must explain at least 75% of the full model on average over the preceding 12 weeks, and the stress period is the most severe 12 months in a history going back at least to 2007 (MAR33.7).
+- IMCC blends the unconstrained ES with the sum of risk-class ES: $IMCC = \rho\, IMCC(C) + (1 - \rho) \sum_i IMCC(C_i)$ with $\rho = 0.5$ (MAR33.15); the FAQ to MAR33.15 notes this could need up to 63 daily ES calculations and allows the undiversified-to-diversified ratio to be updated weekly while $ES_{R,S}$, $ES_{F,C}$ and $ES_{R,C}$ stay daily.
+- SES: each NMRF gets a stress scenario at least as prudent as the ES calibration, with liquidity horizon the larger of its MAR33.12 horizon and 20 days; idiosyncratic credit and equity NMRFs may be aggregated with zero correlation when justified, the rest with $\rho = 0.6$ (MAR33.16, MAR33.17).
+- DRC model: a two-type systematic factor default simulation, 99.9% one-year VaR computed weekly, PDs floored at 0.03% (MAR33.20, MAR33.24); the requirement is the larger of the latest and the 12-week average (MAR33.22).
+- Approved-desk capital: $C_A = \max(IMCC_{t-1} + SES_{t-1},\ m_c\,IMCC_{avg} + SES_{avg})$ with 60-day averages and $m_c = 1.5$ plus a backtesting add-on of 0 to 0.5 (MAR33.41, MAR33.42); $IMA_{G,A} = C_A + DRC$ (MAR33.43).
 
-2. **Default Risk Charge ($K_{\text{DRC}}$):**
-   - Position-level Jump-to-Default ($JTD = LGD \times \text{Notional} + \text{MtM}$).
-   - Short positions offset longs of equal or greater seniority within identical obligor buckets.
-3. **Residual Risk Add-On ($K_{\text{RRAO}}$):**
-   - $1.0\%$ of gross notional for exotic underlyings (such as longevity or weather derivatives).
-   - $0.1\%$ of gross notional for instruments with other residual risks (such as multi-asset barrier options).
+### 5. Gates
 
-### 4. Internal Models Approach (IMA) Formulation
-
-Under MAR33.4, Expected Shortfall at $97.5\%$ incorporates the liquidity horizon cascade:
-
-$$ES = \sqrt{ES_T(P)^2 + \sum_{j \ge 2} \left(ES_T(P, j) \sqrt{\frac{LH_j - LH_{j-1}}{T}}\right)^2}, \quad T = 10\text{ days}$$
-
-Liquidity horizons $LH \in \{10, 20, 40, 60, 120\text{ days}\}$:
-- $10\text{ days}$: Major currency GIRR, large-cap equity prices, specified major FX pairs.
-- $20\text{ days}$: Small-cap equity prices, energy commodities.
-- $40\text{ days}$: Investment-grade corporate credit spreads, FX volatility.
-- $60\text{ days}$: High-yield corporate credit spreads, interest rate swaption volatility.
-- $120\text{ days}$: Credit spread index tranches, exotic commodity volatility.
-
-Stress calibration scales the current full-factor ES by a historical stress ratio evaluated on a reduced risk factor set $R$ (MAR33.5):
-
-$$ES = ES_{R,S} \times \frac{ES_{F,C}}{ES_{R,C}}, \quad \text{with} \quad \frac{ES_{F,C}}{ES_{R,C}} \ge 1.0$$
-
-The reduced set $R$ must explain at least $75\%$ of the full-set current ES over a trailing 12-week average.
-
-### 5. Eligibility Logic: RFET and PLA Testing
-
-| Test | Unit | Frequency | Evaluation Window | Pass Criteria | Failure Consequence |
+| Test | Unit | Frequency | Window | Pass | Consequence |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **RFET (MAR31.13)** | Individual Risk Factor | Quarterly, monitored monthly | Trailing 12 months | $\ge 24$ verifiable prices/year (min 4 per 90d), or $\ge 100$ prices/year | Factor classified as Non-Modellable (NMRF); capitalized via SES |
-| **Bank-Wide Backtest (MAR32.9)** | Entire Institution | Daily | Trailing 250 business days | 99% 1-day VaR vs APL and HPL | Green (0-4 exceptions: $m_c = 1.50$), Amber (5-9: $m_c = 1.70-1.92$), Red ($\ge 10$: $m_c = 2.00$) |
-| **Desk Backtest (MAR32.19)** | Trading Desk | Quarterly | Trailing 250 business days | $\le 12$ exceptions at 99%, $\le 30$ at 97.5% | Desk demoted immediately to Fallback Standardised Approach ($C_U$) |
-| **PLA Testing (MAR32.42)** | Trading Desk | Quarterly | Trailing 250 business days | Spearman $r_S > 0.80$ and KS statistic $< 0.09$ (Green Zone) | Red ($r_S < 0.70$ or $KS > 0.12$) forces demotion to SA ($C_U$); Amber triggers capital surcharge |
+| RFET (MAR31.13) | risk factor | assessed quarterly, criterion 1 monitored monthly | 12 months | at least 24 real price observations a year with no 90-day period under 4, or at least 100 in 12 months, at most one counted per day | non-modellable factors go to SES |
+| Bank-wide backtesting (MAR32.5, MAR32.9) | bank | daily | 250 days | exceptions of 99% one-day VaR against APL and HPL, larger count | $m_c$ 1.50 for 0 to 4 exceptions, 1.70 to 1.92 for 5 to 9, 2.00 for 10 or more |
+| Desk backtesting (MAR32.16 to MAR32.19) | desk | daily, applied to desk status quarterly (MAR33.44) | 12 months | at most 12 exceptions at 99% and at most 30 at 97.5% (the text: "more than 12 exceptions at the 99th percentile or 30 exceptions at the 97.5th percentile") | desk capitalised under SA |
+| PLA (MAR32.35 to MAR32.44) | desk | quarterly (MAR33.44) | 250 days | green: Spearman above 0.80 and KS below 0.09 | amber: surcharge; red: desk goes to SA ($C_U$) |
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Green: Initial Approval
-    Green --> Amber: PLA Amber (0.70 <= r_S <= 0.80 or 0.09 <= KS <= 0.12)
-    Amber --> Green: PLA Green and Backtest Satisfied
-    Green --> OutOfScope: PLA Red (r_S < 0.70 or KS > 0.12) OR Backtest Fail (>12 exc at 99%)
-    Amber --> OutOfScope: PLA Red OR Backtest Fail
-    OutOfScope --> Green: PLA Green and Backtest Clean over 12 Months
+    [*] --> Green: approval
+    Green --> Amber: PLA amber, neither green nor red
+    Amber --> Green: PLA green and backtesting satisfied over the prior 12 months
+    Green --> OutOfScope: PLA red, or desk backtesting failed
+    Amber --> OutOfScope: PLA red, or desk backtesting failed
+    OutOfScope --> Green: PLA green and backtesting satisfied over the past 12 months
 ```
 
-### 6. Bank-Wide Capital Aggregation (MAR33.43)
+The PLA statistics (MAR32.36 to MAR32.41): Spearman correlation of the rank series of HPL and RTPL, and the KS statistic, the largest absolute difference between the two empirical CDFs, each defined as $0.004$ times the count of observations at or below a value.
+With 250 observations in each series, KS is always a whole multiple of $0.004$; $0.09$ is $22.5$ steps and cannot be hit exactly, but $0.12$ is exactly $30$ steps, so a KS of $0.12$ is attainable and, because red requires KS above 0.12, it is amber.
+MAR32.42 quotes p-values of 0.264 and 0.055 for the two KS thresholds; the asymptotic two-sample formula gives 0.2634 and 0.0546.
 
-Approved desk capital combines IMCC, SES, and the IMA default risk charge:
+### 6. Capital aggregation
 
-$$C_A = \max\left(IMCC_{t-1} + SES_{t-1}, \, m_c \cdot IMCC_{\text{avg}} + SES_{\text{avg}}\right)$$
+$$ACR_{total} = \min\left(IMA_{G,A} + \text{surcharge} + C_U,\ SA_{all}\right) + \max\left(0,\ IMA_{G,A} - SA_{G,A}\right)$$
 
-$$IMA_{G,A} = C_A + \max\left(DRC_{\text{latest}}, \, DRC_{\text{avg}}\right)$$
+$$\text{surcharge} = k \max(0, SA_{G,A} - IMA_{G,A}), \qquad k = 0.5 \frac{\sum_{i \in \text{amber}} SA_i}{\sum_{i \in \text{green, amber}} SA_i}$$
 
-Total Aggregate Capital Requirement ($ACR_{\text{total}}$):
-
-$$ACR_{\text{total}} = \min\left(IMA_{G,A} + \text{Surcharge} + C_U, \, SA_{\text{all}}\right) + \max\left(0, \, IMA_{G,A} - SA_{G,A}\right)$$
-
-Where $C_U$ is the SA capital of out-of-scope desks, and Surcharge is $k \max(0, SA_{G,A} - IMA_{G,A})$ with $k = 0.5 \sum_{\text{amber}} SA_i / \sum_{\text{green, amber}} SA_i$.
+where $C_U$ is SA on the positions of out-of-scope and ineligible desks (MAR33.40), $SA_{G,A}$ and $SA_{all}$ are SA computed on the combined positions of the approved desks and of all desks, and $SA_i$ is each approved desk's standalone SA (MAR33.43, MAR33.45).
+At least 10% of the bank's aggregate market risk capital must come from desks that qualify for the internal model, assessed quarterly (MAR32.2).
+RWA is $12.5 \times ACR_{total}$ (MAR33.46).
 
 ## Worked examples
 
-### Example 1: Sizing the Nightly FRTB Compute Grid
+All positions, unit costs, desk series and capital inputs are labelled-hypothetical.
 
-An investment bank sizes its overnight compute grid across an active trading portfolio:
-- Active positions: $250,000$.
-- Historical scenarios per ES window: $250$.
-- Liquidity horizon nested subsets: $5$.
-- ES calibrations ($ES_{F,C}$, $ES_{R,C}$, $ES_{R,S}$): $3$.
-- Non-Modellable Risk Factors (NMRFs): $3,500$ factors evaluated over $250$ stress scenarios.
-- Standardised Approach sensitivities: $250,000$ positions evaluated via Adjoint Algorithmic Differentiation (AAD) at a computational cost equivalent to $4$ base valuations per position.
-- Curvature risk: $50,000$ option positions depending on an average of $1.5$ curvature factors, requiring $2$ revaluations per factor (upward and downward shocks).
-- Single position pricing evaluation latency: $0.5\text{ ms} = 0.0005\text{ seconds}$.
+### Example 1: sizing the nightly run
 
-Revaluation breakdown:
-- ES revaluations: $250,000 \times 250 \times 5 \times 3 = 937,500,000\text{ evaluations}$.
-- SES factor-scenario evaluations: $3,500 \times 250 = 875,000\text{ evaluations}$.
-- SA sensitivity AAD evaluations: $250,000 \times 4 = 1,000,000\text{ evaluations}$.
-- SA curvature revaluations: $50,000 \times 1.5 \times 2 = 150,000\text{ evaluations}$.
-- **Total nightly revaluations:**
+Inputs: 250,000 positions on approved desks, 250 scenarios per ES window, 0.5 ms per valuation.
 
-$$\text{Total Evaluations} = 937,500,000 + 875,000 + 1,000,000 + 150,000 = 939,525,000$$
+- ES: 3 calibrations ($F,C$, $R,C$, $R,S$) by 5 liquidity-horizon subsets is $15$ scenario vectors per position, $937,500,000$ revaluations a day (an upper bound: a position has no factors in some subsets).
+- One-day VaR on current data for desk and bank backtesting: $62,500,000$; RTPL: one revaluation per position.
+- SA: adjoint sensitivities at a hypothetical cost of 4 valuations per position, $1,000,000$; curvature for 50,000 options with 1.5 factors and two shocks each, $150,000$.
+- NMRF stress scenarios: 3,500 scenarios each revaluing 40 exposed positions up and down, $280,000$.
+- Total $1,001,680,000$ valuations: $139.1$ CPU hours, $69.6$ cores for a 2-hour window, $105$ cores with 50% headroom.
+- Risk-class partial ES may move to a weekly cycle (MAR33.15 FAQ): only positions exposed to more than one risk class need extra revaluations; if 20% of positions span two classes, that is $375,000,000$ revaluations a week.
 
-Compute duration and core sizing:
-- Serial CPU execution time:
+The lesson for design: the ES vectors dominate, so the grid's unit of work is (position block, scenario set, LH subset), results are written as vectors keyed by those ids, and everything else (SA, NMRF, backtesting) is small beside it.
 
-$$\text{Serial CPU Time} = 939,525,000 \times 0.0005\text{ s} = 469,762.5\text{ seconds} = 130.5\text{ CPU hours}$$
+### Example 2: the PLA test on three desks
 
-- Target overnight batch window: $2.0\text{ hours} = 7,200\text{ seconds}$.
-- Minimum parallel CPU cores required:
+Each desk has 250 days of HPL and RTPL generated with a fixed seed; the RTPL misses a basis factor and, for two desks, mis-scales vega P&L.
 
-$$\text{Cores Required} = \frac{469,762.5\text{ s}}{7,200\text{ s}} = 65.24 \implies \ge 66\text{ dedicated cores}$$
+| Desk | What RTPL gets wrong | Spearman | KS (steps of 0.004) | Zone |
+| :--- | :--- | :--- | :--- | :--- |
+| Rates | small missing basis | $0.981$ | $0.060$ (15) | green |
+| FX options | basis plus vega P&L at half size | $0.846$ | $0.116$ (29) | amber |
+| Credit | large missing basis plus vega P&L at 40% | $0.707$ | $0.136$ (34) | red |
 
-Adding a $50\%$ operational headroom buffer for cluster skew, network I/O, and batch reruns requires provisioning at least $100$ compute nodes.
+Spearman is computed both from the rank-difference formula and as Pearson correlation of the ranks; KS both by a merge of the sorted series and by evaluating the MAR32.39 definition at every observation.
+The FX desk shows why both metrics exist: the ranks still agree (0.846) but the distributions differ in scale, which KS catches.
+The credit desk fails on KS alone; Spearman 0.707 is just above the red threshold.
 
-### Example 2: Quarterly PLA Testing Evaluation
+### Example 3: capital through three quarters
 
-An FX options desk generates 250 business days of HPL and RTPL.
-Because each sample contains $N = 250$ observations, the empirical cumulative distribution functions move in discrete steps:
+Inputs in millions of dollars; standalone SA of the approved desks: rates 120, FX 45, credit 35.
 
-$$\text{Step Size} = \frac{1}{250} = 0.004$$
-
-- The maximum vertical distance between empirical CDFs is observed at $16\text{ steps}$:
-
-$$KS = 16 \times 0.004 = 0.064$$
-
-- The Spearman rank correlation of daily P&L values is computed:
-
-$$r_S = 0.885$$
-
-- Evaluating regulatory thresholds under MAR32.42:
-  - $KS = 0.064 < 0.09$ (Passes KS Green Zone).
-  - $r_S = 0.885 > 0.80$ (Passes Spearman Green Zone).
-  - Outcome: The desk achieves **Green Zone** classification, maintaining full IMA status without capital surcharges.
-
-### Example 3: Capital Walk When a Trading Desk Leaves the IMA
-
-A desk operates under internal models with 60-day averages matching latest values:
-- Desk IMCC: $\$18.0\text{M}$.
-- Desk SES (Non-Modellable risk charge): $\$6.0\text{M}$.
-- Bank multiplier: $m_c = 1.50$.
-- Desk IMA Default Risk Charge: $\$7.0\text{M}$.
-- **Desk IMA Capital:**
-
-$$\text{IMA Capital} = 1.50 \times \$18.0\text{M} + \$6.0\text{M} + \$7.0\text{M} = \$40.0\text{M}$$
-$$\text{Desk IMA RWA} = \$40.0\text{M} \times 12.5 = \$500.0\text{M}$$
-
-During the next quarter, an uncoordinated pricing library upgrade causes front-office HPL and risk RTPL curves to diverge:
-- Desk PLA test degrades: Spearman $r_S = 0.620$ ($< 0.70$) and $KS = 0.148$ ($= 37 \times 0.004 > 0.12$).
-- Outcome: Desk breaches the Red Zone and is immediately demoted to the Fallback Standardised Approach ($C_U$).
-- **Desk Standalone Standardised Approach Evaluation:**
-  - Sensitivities-Based Method ($K_{\text{SbM}}$): $\$35.0\text{M}$.
-  - Default Risk Charge ($K_{\text{DRC}}$): $\$8.0\text{M}$.
-  - Residual Risk Add-On ($K_{\text{RRAO}}$): $0.1\%$ on $\$2,000\text{M}$ ($2\text{ billion}$) gross notional of exotic basket options:
-
-$$K_{\text{RRAO}} = 0.001 \times \$2,000\text{M} = \$2.0\text{M}$$
-
-$$\text{Total Standalone SA Capital} = \$35.0\text{M} + \$8.0\text{M} + \$2.0\text{M} = \$45.0\text{M}$$
-$$\text{Desk SA RWA} = \$45.0\text{M} \times 12.5 = \$562.5\text{M}$$
-
-- **Capital Impact:**
-  - Standalone capital increases by $\$45.0\text{M} - \$40.0\text{M} = +\$5.0\text{M}$ ($+12.5\%$).
-  - Standalone RWA increases by $\$562.5\text{M} - \$500.0\text{M} = +\$62.5\text{M}$.
-  - In addition, the desk loses diversification inside bank-level IMA aggregation, increasing total firm capital.
+1. Quarter 1, all green: $IMCC_{t-1} = 40$, $IMCC_{avg} = 38$, $SES_{t-1} = 8$, $SES_{avg} = 7.5$, $m_c = 1.5$, so $C_A = \max(48, 64.5) = 64.5$; DRC $\max(12, 11) = 12$; $IMA_{G,A} = 76.5$.
+   With $SA_{G,A} = 190$, $SA_{all} = 235$ and an out-of-scope desk $C_U = 50$: $ACR = \min(76.5 + 0 + 50, 235) + 0 = 126.5$, RWA $1,581.25$.
+2. Quarter 2, FX options amber (as in Example 2): $k = 0.5 \times 45/200 = 0.1125$, surcharge $0.1125 \times (190 - 76.5) = 12.77$, $ACR = 139.27$.
+3. Quarter 3, credit red: its positions join $C_U$, recomputed on the combined out-of-scope positions as 82 (not $50 + 35$: SA is not additive); the internal model is rerun on rates and FX: $C_A = \max(40, 55.0) = 55.0$, DRC 6, $IMA_{G,A} = 61.0$; $SA_{G,A} = 160$; $k = 0.5 \times 45/165 = 0.1364$; surcharge $13.50$; $ACR = \min(61 + 13.5 + 82, 235) = 156.50$, $30.00$ above quarter 1.
+4. The two edges of the formula: with $IMA_{G,A} = 155$ the first term would be $237.68$ and is capped at $SA_{all} = 235.0$; with $IMA_{G,A} = 170$ above $SA_{G,A} = 160$, the surcharge is zero and the excess is added back, $235 + 10 = 245.0$.
 
 ## Pitfalls
 
-- **P&L Pipeline Asynchrony:** Generating HPL using front-office market curves while RTPL uses middle-office risk factors with different interpolation methods is the single largest cause of artificial PLA test failures.
-- **Reporting Inadmissible KS Statistics:** In a 250-day PLA window, the KS statistic must be an exact multiple of $1/250 = 0.004$; reporting arbitrary decimals indicates data omissions or unequal sample sizes.
-- **Point-in-Time RFET Assessment:** Real price observation eligibility requires 24 observations annually with at least 4 in every 90-day window, or 100 observations; it must be monitored continuously rather than checked once at year-end.
-- **Confusing Bank-Wide and Desk Backtesting:** Bank-wide backtesting failures adjust the supervisory multiplier $m_c$ ($1.50$ to $2.00$); individual desk backtesting failures demote the desk directly to $C_U$ under the Standardised Approach.
-- **Omitting the IMA DRC:** Comparing IMA capital against SA without including the IMA default risk charge ($IMA_{G,A} = C_A + DRC$) severely underestimates internal model capital requirements.
+- **Summing desk SA.** $SA_{G,A}$, $SA_{all}$ and $C_U$ are SA computed on combined positions; diversification inside SbM and DRC netting make them different from sums of desk figures.
+- **HPL and RTPL from different snapshots or positions.** This is the commonest cause of artificial PLA failures; align RTPL input data to HPL where MAR32.30 to MAR32.32 allow, never the reverse.
+- **KS values that are not multiples of 0.004.** With two 250-day series that means missing or duplicated days or unequal samples.
+- **Treating KS 0.12 as red.** Red is strictly above 0.12, and 0.12 is attainable (30 steps).
+- **Point-in-time RFET.** Observation counts must be tracked continuously (monthly monitoring) so a factor's status does not flip unexpectedly at quarter-end.
+- **Confusing the two backtests.** Bank-wide exceptions set $m_c$; desk-level failures move the desk to SA.
+- **Forgetting DRC in IMA.** $IMA_{G,A} = C_A + DRC$; comparing $C_A$ alone with SA understates internal capital.
+- **One stress period per engine.** The risk-class ES must use the same stress period as the bank-wide ES (MAR33.15), so the stress-period search and the reduced factor set are bank-level reference data, updated at least quarterly (MAR33.7, MAR33.44).
 
 ## Interview questions
 
-> [!question]- sys-10-01 | What are the three core capital components of the FRTB Standardised Approach?
-> The Standardised Approach combines the Sensitivities-Based Method ($K_{\text{SbM}}$ across Delta, Vega, and Curvature), the Default Risk Charge ($K_{\text{DRC}}$ for jump-to-default risk), and the Residual Risk Add-On ($K_{\text{RRAO}}$ for non-linear exotic risks).
-> Capital requirements are directly summed: $K_{\text{SA}} = K_{\text{SbM}} + K_{\text{DRC}} + K_{\text{RRAO}}$, and RWA is $12.5 \times K_{\text{SA}}$.
+> [!question]- sys-10-01 | What are the components of the FRTB standardised approach?
+> The sensitivities-based method (delta, vega and curvature across seven risk classes), the default risk charge and the residual risk add-on, summed: $K_{SA} = K_{SbM} + K_{DRC} + K_{RRAO}$ (MAR20.4).
+> RWA is $12.5 \times K_{SA}$.
 
-> [!question]- sys-10-02 | Why must the SbM capital charge be evaluated across three correlation scenarios (Medium, High, Low)?
-> Correlations are unstable during market stress and can either spike toward unity or collapse.
-> Evaluating across Medium ($\rho$), High ($\min(1.25\rho, 1)$), and Low ($\max(2\rho - 1, 0.75\rho)$) correlations and taking the maximum total capital across scenarios protects against correlation breakdowns in hedged books and correlation spikes in directional books.
+> [!question]- sys-10-02 | Why is SbM computed under three correlation scenarios?
+> Correlations estimated in normal markets are unreliable in stress, and a hedged book is hurt by falling correlations while a directional book is hurt by rising ones.
+> SbM is computed with medium (prescribed), high $\min(1.25\rho, 1)$ and low $\max(2\rho - 1, 0.75\rho)$ correlations, each summed across risk classes, and the largest total is the charge (MAR21.6, MAR21.7).
 
-> [!question]- sys-10-03 | What is the Risk Factor Eligibility Test (RFET) for FRTB internal models?
-> RFET classifies risk factors as either modellable or non-modellable (NMRFs) based on real price observations.
-> A factor passes if it has at least 24 verifiable price observations in a year with no fewer than 4 in any 90-day period, or at least 100 observations over 12 months.
-> Non-modellable factors cannot enter the core Expected Shortfall model and must be capitalized via Stressed Expected Shortfall (SES).
+> [!question]- sys-10-03 | What is the risk factor eligibility test?
+> A risk factor is modellable if it has at least 24 real price observations a year with no 90-day period with fewer than 4, or at least 100 observations in 12 months, counting at most one a day (MAR31.13).
+> Factors that fail are non-modellable: they leave the ES model and are capitalised through stress scenarios (SES).
 
-> [!question]- sys-10-04 | How is capital calculated for Non-Modellable Risk Factors (NMRFs)?
-> Each NMRF is evaluated via Stressed Expected Shortfall ($SES$) over a liquidity horizon of at least 20 days calibrated to a historical stress period.
-> Factors are aggregated using a formula that allows zero correlation for verified idiosyncratic equity and credit factors, and a one-factor model with $0.6$ correlation for systematic factors.
-> SES enters bank capital directly without the supervisory multiplier $m_c$.
+> [!question]- sys-10-04 | How are non-modellable risk factors capitalised?
+> Each NMRF gets a stress scenario at least as prudent as the ES calibration, with a liquidity horizon of at least 20 days (MAR33.16).
+> Idiosyncratic credit and equity NMRFs may be aggregated with zero correlation when the bank shows that is appropriate; the rest aggregate with $\rho = 0.6$ (MAR33.17).
+> SES enters $C_A$ alongside IMCC but is not multiplied by $m_c$.
 
-> [!question]- sys-10-05 | What is the difference between the Kolmogorov-Smirnov test and the Spearman correlation test in FRTB PLA testing?
-> The Kolmogorov-Smirnov test measures the maximum distance between the empirical cumulative distribution functions of HPL and RTPL, detecting scale or variance mismatches.
-> The Spearman rank correlation measures whether the two series rank daily P&L in the same ordinal sequence, detecting attribution mismatches.
-> Desks must satisfy both thresholds ($r_S > 0.80$ and $KS < 0.09$) to remain in the Green Zone.
+> [!question]- sys-10-05 | What do the Spearman and KS metrics in the PLA test each detect?
+> Spearman, the correlation of the rank series of HPL and RTPL, detects whether the risk model orders days the same way, that is whether it captures the right drivers.
+> KS, the largest gap between the two empirical CDFs, detects whether the distributions agree, including scale; in Example 2 the FX desk kept Spearman at 0.846 but KS reached 0.116.
+> Green needs both: Spearman above 0.80 and KS below 0.09 (MAR32.42).
 
-> [!question]- sys-10-06 | What happens when a trading desk falls into the Amber Zone in PLA testing?
-> The desk remains in the Internal Models Approach, but the bank must pay a capital surcharge: $k \max(0, SA_{G,A} - IMA_{G,A})$, where $k = 0.5 \sum_{\text{amber}} SA_i / \sum_{\text{green, amber}} SA_i$.
-> The desk returns to the Green Zone only after achieving green test statistics in a subsequent quarterly review.
+> [!question]- sys-10-06 | What happens when a desk is in the PLA amber zone?
+> It stays on the internal model, but the bank pays a surcharge $k \max(0, SA_{G,A} - IMA_{G,A})$ with $k = 0.5 \sum_{amber} SA_i / \sum_{green, amber} SA_i$ (MAR33.45).
+> It returns to green only after a green PLA result and satisfactory backtesting over the prior 12 months (MAR32.44).
 
-> [!question]- sys-10-07 | What triggers immediate demotion of a trading desk to the Fallback Standardised Approach?
-> A desk is demoted to the Standardised Approach ($C_U$) if it breaches the PLA Red Zone ($r_S < 0.70$ or $KS > 0.12$) or if it fails desk-level backtesting ($\ge 12$ exceptions at 99% VaR or $\ge 30$ exceptions at 97.5% VaR over 250 days).
-> It must remain in the Standardised Approach for at least 12 months before re-applying for IMA approval.
+> [!question]- sys-10-07 | What sends a desk from the internal model to the standardised approach?
+> A PLA red result (Spearman below 0.70 or KS above 0.12, MAR32.43), or desk backtesting with more than 12 exceptions at 99% or 30 at 97.5% in the last 12 months (MAR32.19).
+> It stays out of scope until it produces a green PLA result and has satisfied backtesting over the past 12 months (MAR32.43).
 
-> [!question]- sys-10-08 | How does the liquidity horizon cascade operate in FRTB Expected Shortfall?
-> Risk factors are mapped to liquidity horizons of 10, 20, 40, 60, or 120 days based on asset class liquidity.
-> Expected Shortfall is evaluated across nested risk factor subsets, scaling each incremental subset by the square root of horizon duration: $ES = \sqrt{ES_T(P)^2 + \sum_{j \ge 2} (ES_T(P, j) \sqrt{(LH_j - LH_{j-1})/T})^2}$, ensuring illiquid factors are penalized.
+> [!question]- sys-10-08 | How does the liquidity-horizon cascade work in FRTB ES?
+> Each risk factor gets a liquidity horizon of 10, 20, 40, 60 or 120 days (MAR33.12); $ES_T(P, j)$ shocks only factors with horizon at least $LH_j$ over a 10-day base.
+> $ES = \sqrt{ES_T(P)^2 + \sum_{j \ge 2} (ES_T(P, j)\sqrt{(LH_j - LH_{j-1})/10})^2}$, so longer-horizon factors are counted again with weight growing with the extra time (MAR33.4).
 
-> [!question]- sys-10-09 | What is the purpose of the reduced set of risk factors in IMA Expected Shortfall calibration?
-> Full historical market data over a 10-year period is rarely available for every active risk factor.
-> The bank identifies a reduced set $R$ of liquid factors that explains at least $75\%$ of full-set current ES, evaluates $R$ during the historical stress period ($ES_{R,S}$), and scales by the current full-to-reduced ratio: $ES = ES_{R,S} \times (ES_{F,C} / ES_{R,C})$.
+> [!question]- sys-10-09 | Why use a reduced set of risk factors for the stress calibration?
+> The stress period must be found in a history going back at least to 2007 (MAR33.7), and many current factors have no data that far back.
+> The bank computes ES on a reduced set $R$ over the stress period and scales by the current full-to-reduced ratio, floored at 1: $ES = ES_{R,S} \times ES_{F,C}/ES_{R,C}$; $R$ must explain at least 75% of the full ES on average over the preceding 12 weeks (MAR33.5, MAR33.6).
 
-> [!question]- sys-10-10 | Why is Curvature risk in SbM non-linear, and how is it calculated?
-> Curvature risk captures non-linear price movement not explained by linear Delta.
-> For each curvature factor, the engine applies upward and downward shocks ($RW_k$) and subtracts the linear Delta prediction: $CVR_k^+ = -[V(x_k^+) - V(x_k) - RW_k \cdot s_k]$.
-> The bucket capital takes the worst-case scenario between upward and downward moves: $K_b = \max(K_b^+, K_b^-)$.
+> [!question]- sys-10-10 | How is SbM curvature computed?
+> For each factor, apply the curvature risk weight up and down and subtract the delta prediction: $CVR_k^{\pm} = -(V(x_k^{RW\pm}) - V(x_k) \mp RW_k s_k)$, the loss beyond what delta explains.
+> Aggregate within the bucket separately for up and down shocks and take the worse (MAR21.5); it costs two revaluations per curvature factor.
 
-> [!question]- sys-10-11 | Which daily SA numbers does an IMA bank's FRTB engine need, and why?
-> The engine must compute SA capital for all desks ($SA_{\text{all}}$), approved desks ($SA_{G,A}$), amber desks ($SA_{\text{amber}}$), and out-of-scope desks ($C_U$).
-> These values are required to evaluate the aggregate capital requirement floor ($ACR_{\text{total}}$), compute the amber surcharge factor $k$, and capitalize out-of-scope portfolios.
+> [!question]- sys-10-11 | Which SA numbers must an IMA bank compute daily, and why?
+> SA for all desks ($SA_{all}$), for the approved desks together ($SA_{G,A}$), for the out-of-scope desks ($C_U$), and for each approved desk standalone ($SA_i$).
+> The ACR formula needs the first three, the amber surcharge factor $k$ needs the standalone figures, and each is computed on the combined positions of its set, not summed.
 
-> [!question]- sys-10-12 | What steps can the KS statistic take in a 250-day PLA test, and why does it matter for engineering?
-> With 250 daily observations, the empirical CDF moves in discrete steps of $1/250 = 0.004$.
-> A reported KS statistic that is not a multiple of $0.004$ indicates missing days or sample misalignment bugs.
-> The regulatory thresholds ($0.09$ and $0.12$) sit between attainable step values, preventing boundary ties.
+> [!question]- sys-10-12 | What values can the KS statistic take in a 250-day PLA test, and why does it matter?
+> Each empirical CDF moves in steps of $1/250 = 0.004$, so KS is a whole number of steps; a value that is not means missing, duplicated or misaligned days.
+> 0.09 is 22.5 steps and cannot occur, but 0.12 is exactly 30 steps and can; since red requires KS above 0.12, a KS of exactly 0.12 is amber.
 
-> [!question]- sys-10-13 | In a desk's standalone IMA versus SA comparison, which IMA component is most often forgotten?
-> The IMA Default Risk Charge ($DRC$).
-> Total approved desk capital is $IMA_{G,A} = C_A + DRC$.
-> Omitting the internal default risk charge makes internal models appear artificially cheap and miscalculates the true capital impact of regulatory demotion.
+> [!question]- sys-10-13 | When comparing a desk's IMA and SA capital, which IMA component is most often forgotten?
+> The default risk charge from the internal DRC model: approved-desk capital is $IMA_{G,A} = C_A + DRC$ (MAR33.43).
+> Leaving it out makes the internal model look cheaper than it is.
+
+> [!question]- sys-10-14 | Size the daily ES revaluations for 250,000 positions with 250 scenarios.
+> Three calibrations ($F,C$; $R,C$; $R,S$) times five liquidity-horizon subsets is 15 scenario vectors per position, so $250,000 \times 250 \times 15 = 937.5$ million revaluations a day, an upper bound because some subsets are empty for a given position.
+> At 0.5 ms each, with backtesting VaR, SA and NMRFs added, that is 139.1 CPU hours, 69.6 cores for a 2-hour window.
+
+> [!question]- sys-10-15 | A desk moves from green to amber. Walk through the capital effect.
+> Nothing changes in $IMA_{G,A}$, but the surcharge appears: with standalone SA of 120, 45 and 35 and the 45 desk amber, $k = 0.5 \times 45/200 = 0.1125$; with $SA_{G,A} = 190$ and $IMA_{G,A} = 76.5$ the surcharge is 12.77 and ACR rises from 126.5 to 139.27.
+> The min with $SA_{all}$ caps the effect at SA for all desks.
+
+> [!question]- sys-10-16 | Which IMCC inputs must be daily and which may be weekly?
+> $ES_{R,S}$, $ES_{F,C}$ and $ES_{R,C}$ for the bank-wide model are daily; the ratio of the undiversified sum of risk-class ES to the diversified ES may be updated weekly under controls that prevent systematic underestimation (MAR33.15 FAQ1).
+> The DRC model is computed weekly (MAR33.20), and the 60-day and 12-week averages only need computing at quarter-end for the capital figure (MAR33.44).
+
+## In this repo and SDE-Interview-Prep
+
+- [sys_frtb_engine.py](code/sys_frtb_engine.py) computes, prints and asserts every number on this page, with Spearman and KS each computed two independent ways.
+- The rules in depth: [FRTB SbM Delta](../17-Regulatory-Capital-Basel-and-FRTB/07-FRTB-Sensitivities-Based-Method-Delta.md), [SbM Vega and Curvature](../17-Regulatory-Capital-Basel-and-FRTB/08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md), [DRC and RRAO](../17-Regulatory-Capital-Basel-and-FRTB/09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md), [IMA ES](../17-Regulatory-Capital-Basel-and-FRTB/10-FRTB-Internal-Model-Approach-ES.md), [NMRFs](../17-Regulatory-Capital-Basel-and-FRTB/11-FRTB-Non-Modellable-Risk-Factors.md), [Backtesting and PLA](../17-Regulatory-Capital-Basel-and-FRTB/12-FRTB-Backtesting-and-PLA-Testing.md).
+- [P&L Platform](09-PnL-Platform.md) for HPL and APL, [Pricing at Scale](06-Pricing-at-Scale.md) for the grid, [EOD Risk Batch](13-EOD-Risk-Batch.md) for scheduling.
 
 ## Further reading
 
-- Basel Committee on Banking Supervision. *The Basel Framework: Minimum capital requirements for market risk*. BCBS d457, February 2019.
-- European Central Bank. *ECB Guide to internal models: Risk-weighted assets / market risk*. ECB Banking Supervision, October 2019.
-- Savine, Antoine. *Modern Computational Finance: AAD and Parallel Simulations*. John Wiley & Sons, 2018.
-- Gregory, Jon. *The xVA Challenge: Counterparty Credit Risk, Funding, Collateral, and Capital*. 4th Edition, John Wiley & Sons, 2020.
+- Basel Committee on Banking Supervision, Basel Framework, MAR20 to MAR23 (standardised approach) and MAR30 to MAR33 (internal models approach), version effective 1 January 2023.
+- Basel Committee on Banking Supervision, *Minimum capital requirements for market risk*, d457, 14 January 2019, corrected version 25 February 2019.
+- Savine, A., *Modern Computational Finance: AAD and Parallel Simulations*, Wiley, 2018.

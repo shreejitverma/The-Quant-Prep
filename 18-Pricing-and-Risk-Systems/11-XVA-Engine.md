@@ -5,264 +5,273 @@ tier: senior
 status: solid
 prereqs: [frtb-engine]
 est_hours: 4
-sources: [Andrew Green - XVA: Credit Funding and Capital Valuation Adjustments (John Wiley & Sons 2015), Jon Gregory - The xVA Challenge: Counterparty Credit Risk Funding Collateral Capital and Initial Margin (4th Edition John Wiley & Sons 2020), Antoine Savine - Modern Computational Finance: AAD and Parallel Simulations (John Wiley & Sons 2018), Francis A. Longstaff and Eduardo S. Schwartz - Valuing American Options by Simulation: A Simple Least-Squares Approach (The Review of Financial Studies 2001), Damiano Brigo Massimo Morini and Andrea Pallavicini - Counterparty Credit Risk Collateral and Funding: With Pricing Cases for All Asset Classes (John Wiley & Sons 2013)]
+sources: [Jon Gregory - The xVA Challenge - Counterparty Risk Funding Collateral Capital and Initial Margin (4th edition Wiley 2020), Andrew Green - XVA - Credit Funding and Capital Valuation Adjustments (Wiley 2015), Antoine Savine - Modern Computational Finance - AAD and Parallel Simulations (Wiley 2018), Francis A. Longstaff and Eduardo S. Schwartz - Valuing American Options by Simulation - A Simple Least-Squares Approach (Review of Financial Studies 14(1) 2001), Damiano Brigo Massimo Morini and Andrea Pallavicini - Counterparty Credit Risk Collateral and Funding - With Pricing Cases for All Asset Classes (Wiley 2013), Basel Framework CAP30.15 CRE53.11 to CRE53.26 MGN20.41 (version effective 1 January 2023)]
 ---
 
 # XVA Engine Architecture
 
 ## TL;DR
 
-- The enterprise XVA engine calculates balance sheet valuation adjustments for counterparty credit, funding, and capital across bilateral and cleared derivative portfolios: Credit Valuation Adjustment (CVA), Debit Valuation Adjustment (DVA), Funding Valuation Adjustment (FVA), Margin Valuation Adjustment (MVA), and Capital Valuation Adjustment (KVA).
-- Unlike single-trade valuation, XVA must be evaluated across entire netting sets governed by ISDA Master Agreements and Credit Support Annexes (CSAs), accounting for contractual close-out netting, collateral thresholds, minimum transfer amounts, and Margin Period of Risk (MPOR) liquidation lags.
-- The simulation architecture combines multi-asset Monte Carlo path generation with forward portfolio revaluations using analytical formulas and American Monte Carlo (AMC / Longstaff-Schwartz) cross-sectional regressions.
-- Streaming aggregation reduces raw Monte Carlo trade valuation grids from hundreds of gigabytes down to compact megabyte-scale Expected Exposure vectors in resident memory.
-- Centralized XVA desks actively manage macro hedges (CDS indices, interest rate swaps, cross-currency basis) using Adjoint Algorithmic Differentiation (AAD) to extract thousands of cross-asset Greeks in a single reverse sweep.
-- All numerical figures in this note are verified by [sys_xva_engine.py](code/sys_xva_engine.py).
+- An XVA engine simulates market factors on a time grid, prices every trade on every path and date, nets by legal netting set, applies the collateral agreement, and integrates the resulting exposure profiles against default, funding, margin and capital curves: $V = V_{\text{rf}} - \text{CVA} + \text{DVA} - \text{FVA} - \text{MVA} - \text{KVA}$, with $\text{FVA} = \text{FCA} - \text{FBA}$ (the convention of [XVA](../11-Risk-and-Trading/15-XVA.md)).
+- The netting set, not the trade, is the unit of exposure: an engine that keeps only EE profiles cannot price a new trade incrementally, so production engines keep the netting-set path cube (28.8 GB in the hypothetical example) and throw away trade-level paths (768 GB).
+- In the simulated example a hedging trade with a standalone CVA of about 17,440 dollars reduced its netting set's CVA by about 7,440: incremental, not standalone, XVA is the price.
+- Discretisation is a convention to state: putting exposure and discounting at year end gave CVA 52,960.43, the exact integral with exposure constant within each year 54,038.41.
+- Callable and path-dependent trades are priced on paths by regression (American Monte Carlo, Longstaff and Schwartz 2001) rather than nested simulation, and sensitivities for hedging come from adjoint differentiation (Savine 2018).
+- Every number on this page is produced and asserted by [sys_xva_engine.py](code/sys_xva_engine.py).
 
 ## Learning objectives
 
-- Design an enterprise XVA simulation architecture integrating multi-asset Monte Carlo engines, dynamic CSA collateral logic, and regulatory capital models.
-- Implement pathwise portfolio revaluation using American Monte Carlo (AMC / Longstaff-Schwartz) regression to avoid nested simulation explosions.
-- Model realistic bilateral collateral cashflows incorporating Variation Margin (VM) thresholds, minimum transfer amounts, and Margin Period of Risk (MPOR) gap risk.
-- Formulate continuous and discrete numerical quadrature algorithms for CVA, DVA, FVA, MVA, and KVA.
-- Quantify compute grid requirements, pathwise memory footprints, and streaming aggregation savings across institutional netting set populations.
-- Implement Adjoint Algorithmic Differentiation (AAD) pipelines to compute real-time cross-asset sensitivity matrices for active XVA hedging.
+- Design an XVA simulation architecture: scenario generation, pathwise pricing, netting and collateral, exposure aggregation, adjustment calculators and sensitivities.
+- Price early-exercise and path-dependent trades on simulation paths with American Monte Carlo regression instead of nested simulation.
+- Model collateral with thresholds, minimum transfer amounts, independent amounts and the margin period of risk.
+- Compute CVA, DVA, FVA, MVA and KVA by numerical quadrature and state the discretisation convention.
+- Size storage and compute for the trade, netting-set and profile tiers, and explain which tier incremental pricing needs.
+- Explain how adjoint differentiation produces the sensitivities an XVA desk hedges.
 
 ## Core concepts
 
-### 1. The XVA Family of Valuation Adjustments
+### 1. The adjustments
 
-XVA encompasses the financial adjustments required to bridge idealized Black-Scholes risk-free pricing with real-world balance sheet realities:
-
-| Valuation Adjustment | Economic Driver | Primary Cashflow / Exposure Basis | Primary Hedge Instruments |
+| Adjustment | What it prices | Exposure input | Typical hedge or management |
 | :--- | :--- | :--- | :--- |
-| **CVA (Credit)** | Counterparty default risk | Expected Positive Exposure ($EPE$) | Single-name CDS, CDX / iTraxx indices |
-| **DVA (Debit)** | Own bank default risk (own credit benefit) | Expected Negative Exposure ($ENE$) | Bank's own debt buybacks (unhedgeable) |
-| **FVA (Funding)** | Uncollateralized borrowing and lending costs | Net funding balance $\times$ funding spread | Cross-currency basis swaps, repo financing |
-| **MVA (Margin)** | Financing cost of posting Initial Margin (IM) | Projected ISDA SIMM profile | Short-term financing, collateral optimization |
-| **KVA (Capital)** | Cost of holding regulatory capital (Basel RWA) | Projected regulatory RWA (SA-CCR / CVA) | Capital relief trades, synthetic securitizations |
+| CVA | expected loss from counterparty default | discounted EE profile | single-name CDS, indices, market risk hedges of the exposure |
+| DVA | the mirror for own default | discounted ENE profile | largely unhedgeable; derecognised from CET1 (CAP30.15) |
+| FCA, FBA | funding uncollateralised exposure or the margin on collateralised hedges | discounted EE (FCA) and ENE (FBA) | treasury funding policy |
+| MVA | funding initial margin posted | expected IM profile | margin optimisation: compression, clearing choice, collateral choice |
+| KVA | return required on regulatory capital held | expected capital profile | capital relief: netting, clearing, hedges that reduce capital |
 
-### 2. XVA Engine Architecture
+CVA and DVA are fair value adjustments under IFRS 13; whether FVA enters fair value is an accounting policy choice; KVA is a pricing and performance charge, not a market price ([XVA](../11-Risk-and-Trading/15-XVA.md)).
+
+Unilateral CVA with independence between exposure and default:
+
+$$\text{CVA} = \text{LGD} \int_0^T D(0, t)\, \text{EE}(t)\, dPD(t), \qquad \text{EE}(t) = \mathbb{E}^{\mathbb{Q}}\big[(V(t) - C(t))^+\big],$$
+
+where $V(t)$ is the netting set's value, $C(t)$ the collateral held, and $dPD(t) = \lambda(t) e^{-\int_0^t \lambda(s) ds} dt$.
+Funding, margin and capital (with spreads $s_b$, $s_l$, $s_{IM}$ and hurdle $h$; optionally weighted by both parties' survival):
+
+$$\text{FCA} = \int_0^T s_b\, D\, \text{EE}\, dt, \quad \text{FBA} = \int_0^T s_l\, D\, \text{ENE}\, dt, \quad \text{MVA} = \int_0^T s_{IM}\, D\, \mathbb{E}[\text{IM}]\, dt, \quad \text{KVA} = \int_0^T h\, D\, \mathbb{E}[K]\, dt.$$
+
+If the bank's lending spread is its own credit spread and FBA is weighted by own survival, FBA equals DVA, so booking both counts the same benefit twice ([XVA](../11-Risk-and-Trading/15-XVA.md)).
+Banks differ on whether they give credit for FBA at all; the engine must support both and the policy must be stated.
+
+Regulatory exposure measures use the same simulation: Effective EE is the running maximum of EE, Effective EPE its average over the first year, and IMM EAD is $1.4 \times$ Effective EPE (CRE53.11 to CRE53.14); see [Counterparty Credit Risk Analytics](../11-Risk-and-Trading/14-Counterparty-Credit-Risk-Analytics.md).
+
+### 2. Architecture and data contracts
+
+| Component | Responsibility | Key data contract | Failure to design for |
+| :--- | :--- | :--- | :--- |
+| Calibration and scenario generator | joint simulation of rates, FX, credit, equity, commodities on a time grid | run id binding market snapshot, calibrations, correlation matrix, time grid and random seeds | a recalibration between the base run and an incremental request |
+| Pathwise pricer | value of each trade on each path and date (closed forms, regression for callables) | (run id, trade id) to a paths-by-dates block | a trade type with no pathwise pricer silently dropped |
+| Netting and collateral engine | sum trades by legal netting set; apply CSA threshold, minimum transfer amount, independent amount and the margin period of risk lag | netting set id from the legal agreement store; CSA terms versioned | a trade with no netting set mapping (it must be flagged and treated as its own set, never dropped) |
+| Exposure store | netting-set path cube and EE, ENE, PFE profiles | (run id, netting set id) to paths-by-dates values | profiles kept without paths, which blocks incremental pricing |
+| Initial margin and capital projector | IM (a SIMM-style sensitivity formula) and capital (SA-CCR, CVA capital) on paths | sensitivities or regression proxies per path and date | nested simulation cost explosion |
+| XVA calculators | quadrature against credit, funding and hurdle curves | adjustment by netting set and counterparty | inconsistent survival weighting across adjustments |
+| Sensitivities | adjoint or bump sensitivities of each adjustment to curves and vols | sensitivity by risk factor for the XVA desk | bump noise from re-drawn random numbers |
+| Incremental pricing service | price a proposed trade against the stored netting set | same run id, same seeds, same paths as the stored cube | pricing on different paths, which mixes simulation noise into the price |
 
 ```mermaid
 flowchart TB
-    subgraph DataIngestion["Trade & Contractual Data"]
-        Trades[("Bitemporal Trade Store\n(120,000 active trades)")]
-        CSAStore[("ISDA / CSA Master Agreements\n(4,500 netting sets)")]
-        MarketData[("Market Curves & Volatility Surfaces\n(Rates, credit, FX, equities)")]
+    subgraph Inputs["Inputs bound to a run id"]
+        Trades[("Trades")]
+        Legal[("Netting agreements and CSA terms")]
+        Mkt[("Market snapshot and calibrations")]
+        Credit[("Credit, funding and capital curves")]
     end
-
-    subgraph SimulationCore["Monte Carlo Simulation Core"]
-        ScenarioGen["Multi-Asset Risk Simulator\n(Hull-White, CIR, Local Vol)"]
-        PathEngine["Pathwise Pricing Engine\n(Analytic + AMC Regression)"]
-        CollateralModel["Dynamic Collateral Engine\n(VM thresholds, MTA, MPOR, SIMM)"]
+    subgraph Sim["Simulation"]
+        Scen["Scenario generator: common seeds and time grid"]
+        Price["Pathwise pricer: closed forms, AMC regression"]
+        Net["Netting and collateral: threshold, MTA, IA, MPOR lag"]
     end
-
-    subgraph ProfileGeneration["Exposure Profile Generator"]
-        EEProfile["Expected Exposure Profiles\n(EE, EPE, ENE, PFE over 80 timesteps)"]
-        IMProfile["Initial Margin Trajectory\n(ISDA SIMM forward projection)"]
-        CapitalProfile["Regulatory Capital Trajectory\n(SA-CCR & CVA RWA projections)"]
+    subgraph Store["Exposure store"]
+        Cube[("Netting-set path cube")]
+        Prof[("EE, ENE, PFE, IM and capital profiles")]
     end
-
-    subgraph IntegrationAndGreeks["XVA Valuation & Adjoint Greeks"]
-        XVAIntegrator["Numerical Quadrature Engine\n(CVA, DVA, FVA, MVA, KVA)"]
-        AADTape["AAD Reverse Sweep Engine\n(CS01, DV01, Vega cross-asset matrix)"]
+    subgraph Calc["Adjustments"]
+        XVA["CVA, DVA, FCA, FBA, MVA, KVA by quadrature"]
+        Sens["Adjoint sensitivities"]
     end
-
-    subgraph Consumers["Downstream Consumers"]
-        XVADesk["Centralized XVA Desk\n(Real-time macro hedging UI)"]
-        SalesGateway["Pre-Deal Quoting API\n(< 50 ms incremental pricing)"]
-        FinanceGL["Product Control & General Ledger\n(Official fair value adjustments)"]
+    subgraph Users["Consumers"]
+        Desk["XVA desk: hedging and P&L explain"]
+        PreDeal["Pre-deal incremental pricing"]
+        Fin["Product Control and finance"]
     end
-
-    Trades --> PathEngine
-    CSAStore --> CollateralModel
-    MarketData --> ScenarioGen
-
-    ScenarioGen --> PathEngine
-    PathEngine --> CollateralModel
-    CollateralModel --> EEProfile
-    CollateralModel --> IMProfile
-    CollateralModel --> CapitalProfile
-
-    EEProfile --> XVAIntegrator
-    IMProfile --> XVAIntegrator
-    CapitalProfile --> XVAIntegrator
-
-    XVAIntegrator --> AADTape
-    AADTape --> XVADesk
-    XVAIntegrator --> SalesGateway
-    XVAIntegrator --> FinanceGL
+    Mkt --> Scen
+    Scen --> Price
+    Trades --> Price
+    Price --> Net
+    Legal --> Net
+    Net --> Cube
+    Cube --> Prof
+    Prof --> XVA
+    Credit --> XVA
+    XVA --> Sens
+    Sens --> Desk
+    XVA --> Fin
+    Cube --> PreDeal
+    Scen -->|"same paths for the new trade"| PreDeal
+    Credit --> PreDeal
 ```
 
-### 3. Mathematical Formulation of CVA, DVA, and FVA
+### 3. Collateral and the margin period of risk
 
-#### Bilateral Credit Valuation Adjustment (CVA)
-Under independent default assumptions:
+- With a CSA the collateral held at $t$ reflects the portfolio value at $t - \delta$, where $\delta$ is the margin period of risk: the time from the last successful margin call to close-out and re-hedging after a default.
+  Exposure is then roughly $\max(V(t) - V(t - \delta) + \text{threshold effects}, 0)$, a gap risk that grows like $\sqrt{\delta}$.
+- Regulatory MPOR floors under the internal models method: at least 5 business days for netting sets of only repo-style transactions and 10 for other netting sets with daily margining, 20 for netting sets above 5,000 trades or with illiquid collateral or hard-to-replace OTC derivatives, doubled after repeated margin disputes (CRE53.24, CRE53.25), plus $N - 1$ days when margining every $N$ days (CRE53.26).
+- Initial margin collected under the non-centrally cleared margin rules must not be rehypothecated, re-pledged or re-used except under the narrow conditions of MGN20.42 (MGN20.41), so posted IM must be funded: that is MVA.
+- Wrong-way risk (exposure rising as the counterparty weakens) breaks the independence assumption in the CVA formula; the engine needs either a joint model of exposure and default or a stressed add-on, and specific wrong-way trades are taken out of their netting set for regulatory exposure (CRE53.47, CRE53.48).
 
-$$\text{CVA} = (1 - R_{\text{cpty}}) \int_0^T D(0, t) \, \mathbb{E}^{\mathbb{Q}}\left[ (V(t) - C(t))^+ \right] dPD_{\text{cpty}}(t)$$
+### 4. American Monte Carlo
 
-Where:
-- $R_{\text{cpty}}$ is the counterparty recovery rate ($1 - R_{\text{cpty}} = \text{LGD}$).
-- $D(0, t) = e^{-\int_0^t r(s) ds}$ is the risk-free discount factor.
-- $\text{EE}^*(t) = \mathbb{E}^{\mathbb{Q}}[(V(t) - C(t))^+]$ is the Expected Positive Exposure accounting for collateral $C(t)$.
-- $dPD_{\text{cpty}}(t) = \lambda_C(t) e^{-\int_0^t \lambda_C(s) ds} dt$ is the marginal probability of counterparty default.
+- Nested simulation (an inner Monte Carlo at each outer node to value a callable trade) costs outer paths times inner paths per date: $10,000 \times 10,000 = 10^8$ valuations per date.
+- Longstaff and Schwartz (2001) regress discounted future cash flows on functions of the current state across all outer paths: $\mathbb{E}[V(t_{k+1}) \mid X_k] \approx \sum_{m=1}^M \beta_m \psi_m(X_k)$, an ordinary least squares fit costing $O(M^2 N)$ per date for $N$ paths and $M$ basis functions.
+- In XVA the same regression gives the trade's value on each path and date, so callables, Bermudans and path-dependent trades get exposures at roughly the cost of a forward simulation.
+- Regression values are biased and noisy at the tails of the state distribution; validate against nested simulation on a sample and watch for exposure profiles that are not smooth in time.
 
-#### Funding Valuation Adjustment (FVA)
-Decomposed into Funding Cost Adjustment (FCA) and Funding Benefit Adjustment (FBA):
+### 5. Sensitivities and hedging
 
-$$\text{FVA} = \int_0^T D(0, t) \left( s_{\text{borrow}}(t) \mathbb{E}^{\mathbb{Q}}[(V(t) - C(t))^+] - s_{\text{lend}}(t) \mathbb{E}^{\mathbb{Q}}[(C(t) - V(t))^+] \right) dt$$
-
-Under standard asymmetric funding conventions, excess cash earns the risk-free collateral rate ($s_{\text{lend}} = 0$), setting FBA to zero.
-
-### 4. American Monte Carlo (AMC) for Path-Dependent Portfolios
-
-Pricing early-exercise contracts (Bermudan swaptions, barrier options) at future simulation nodes $t_k$:
-- **Nested Monte Carlo (Brute Force):** Simulating $10,000$ secondary sub-paths from each of the $10,000$ primary nodes requires $10,000 \times 10,000 = 100,000,000$ valuations per timestep, which is computationally intractable.
-- **American Monte Carlo (Longstaff-Schwartz Regression):**
-  At each future time step $t_k$, the continuation value $C(t_k)$ is estimated across all simulation paths simultaneously by projecting realized discounted future cashflows onto a basis of cross-sectional state variables $\mathbf{X}_k$:
-
-$$\mathbb{E}\left[ V(t_{k+1}) \mid \mathbf{X}_k \right] \approx \sum_{m=1}^M \beta_m \, \psi_m(\mathbf{X}_k)$$
-
-Regression coefficients $\mathbf{\beta}$ are solved via Ordinary Least Squares (OLS) in $O(M^2 N)$ time, enabling pathwise portfolio revaluation at full Monte Carlo scale.
+- CVA depends on every curve and volatility that moves any trade in the netting set and on the counterparty's credit curve, often thousands of inputs.
+- Bump-and-revalue needs one or two full simulations per input with the same random numbers; adjoint algorithmic differentiation computes all first-order sensitivities of one output for a small constant multiple of one simulation's cost (Savine 2018), which is why XVA desks rely on it.
+- The XVA desk hedges credit with CDS and indices and the market risk of the exposure with swaps, FX and options; the regulatory CVA capital framework (MAR50) recognises eligible hedges, which ties the desk's hedging to capital.
 
 ## Worked examples
 
-### Example 1: Simulation Grid Sizing and Streaming Memory Optimization
+All portfolio sizes, profiles, spreads and hurdles are labelled-hypothetical.
 
-An enterprise XVA engine sizes its compute grid and memory architecture for a global dealer:
-- Total derivative portfolio: $120,000\text{ active trades}$.
-- Netting sets: $4,500\text{ legal agreements}$.
-- Monte Carlo paths: $10,000\text{ paths}$.
-- Time grid: $80\text{ discrete time buckets}$ spanning 30 years.
+### Example 1: storage tiers
 
-Grid Dimensions and Raw Trade Memory:
-- Number of simulated path-time points: $10,000 \times 80 = 800,000\text{ scenario points}$.
-- Storing raw trade mark-to-market values in double precision (`float64`, 8 bytes):
+A dealer with 120,000 trades in 4,500 netting sets simulates 10,000 paths on 80 dates (800,000 path-date points).
 
-$$\text{Raw Trade Data} = 120,000 \times 800,000 \times 8\text{ bytes} = 768,000,000,000\text{ bytes} \approx 768.0\text{ GB}$$
+| Tier | Size (float64) | Kept? |
+| :--- | :--- | :--- |
+| Trade-level values | $768.0$ GB | no: summed into the netting set as each trade is priced |
+| Netting-set path cube | $28.8$ GB ($14.4$ GB in float32) | yes: needed for incremental pricing, collateral changes and PFE quantiles |
+| One netting set's paths while it is processed | $6.4$ MB | in memory per worker |
+| EE and ENE profiles for all netting sets | $5.76$ MB | yes: reporting and quadrature |
 
-Streaming Aggregation Memory Optimization:
-- To eliminate the need for $768\text{ GB}$ of distributed memory, trades are partitioned by netting set:
-  $1$. Trade mark-to-market values are evaluated for netting set $k$.
-  $2$. Values are summed across trades within the netting set on-the-fly.
-  $3$. Dynamic CSA collateral rules ($C(t)$) are evaluated.
-  $4$. The netting set uncollateralized exposure array ($10,000\text{ paths} \times 80\text{ timesteps} \times 8\text{ bytes} = 6.4\text{ MB}$) is averaged across paths to generate a single scalar Expected Exposure vector ($80\text{ floats} = 640\text{ bytes}$).
-  $5$. Intermediate path matrices are immediately freed from RAM.
-- Total resident memory across all 4,500 netting sets:
+The ratio of the first two tiers is the average number of trades per netting set, $26.67$.
+A design that keeps only profiles saves 28.8 GB but forces a full rerun for every pre-deal quote.
 
-$$\text{Optimized Resident Memory} = 4,500 \times 640\text{ bytes} = 2,880,000\text{ bytes} \approx 2.88\text{ MB}$$
+### Example 2: CVA on annual buckets
 
-Streaming aggregation achieves a $266,666\times$ memory reduction, allowing the enterprise exposure database to fit in CPU cache.
+An uncollateralised 3-year swap; LGD 60%, CDS spread 150 bp, so $\lambda \approx 0.0150/0.60 = 2.50\%$ (the credit-triangle approximation for a flat curve); $r = 4\%$; EE of 1,200,000, 1,800,000 and 950,000 at the ends of years 1, 2 and 3.
 
-### Example 2: Bilateral CVA Calculation with Flat Hazard Rate
+| Year | $D(0, t)$ | Default probability in the year | CVA contribution |
+| :--- | :--- | :--- | :--- |
+| 1 | $0.9608$ | $1 - e^{-0.025} = 0.02469$ | $17,079.82$ |
+| 2 | $0.9231$ | $e^{-0.025} - e^{-0.05} = 0.02408$ | $24,007.42$ |
+| 3 | $0.8869$ | $e^{-0.05} - e^{-0.075} = 0.02349$ | $11,873.19$ |
 
-A bank holds an uncollateralized interest rate swap with a corporate counterparty:
-- Netting set maturity: $T = 3\text{ years}$.
-- Counterparty credit rating: BBB ($R_{\text{cpty}} = 40\% \implies \text{LGD} = 60\% = 0.60$).
-- Constant CDS spread: $S_{\text{cds}} = 150\text{ bps} = 0.0150$.
-- Implied hazard rate ($\lambda$):
+CVA with exposure and discounting at each year end is $52,960.43$.
+Holding EE constant within each year but integrating discounting and default exactly gives $54,038.41$, $1,077.98$ more, because defaults early in the year are discounted less; the code checks the exact integral numerically.
+Neither is "right": the time grid and the convention are model choices that must be stated and kept fixed for P&L explain.
 
-$$\lambda = \frac{S_{\text{cds}}}{1 - R} = \frac{0.0150}{0.60} = 0.0250\text{ per year (2.50\%)}$$
+### Example 3: FVA, MVA and KVA
 
-- Risk-free discount rate: flat $r = 4.0\%$.
-- The Monte Carlo engine evaluates Expected Exposure $\text{EE}(t)$ across 3 annual buckets:
+- With ENE of 400,000, 600,000 and 300,000 and an 80 bp funding spread both ways: FCA $29,257.05$, FBA $9,634.09$, FVA $19,622.96$; if excess cash earns no spread, FVA is the full FCA, $29,257.05$.
+- An uncleared trade with expected IM of 5.0m, 4.2m, 3.1m, 1.8m and 0.6m over five years and a 75 bp funding spread net of what posted IM earns: MVA $100,916.90$ (IM for each year discounted from its end).
+- Capital of 600,000, 450,000 and 200,000 at a 10% hurdle: KVA $116,926.01$, larger than the CVA here, as capital also dominates the swap example in [XVA](../11-Risk-and-Trading/15-XVA.md).
 
-| Year ($t_i$) | Discount Factor $D(0, t_i)$ | Expected Exposure $\text{EE}(t_i)$ | Marginal Default Prob $\Delta PD(t_i)$ | Discounted Expected Loss |
-| :--- | :--- | :--- | :--- | :--- |
-| **Year 1** | $e^{-0.04 \times 1} \approx 0.9608$ | $\$1,200,000$ | $1 - e^{-0.025 \times 1} \approx 0.02469$ | $0.60 \times e^{-0.04} \times 1,200,000 \times (1 - e^{-0.025}) = \$17,079.82$ |
-| **Year 2** | $e^{-0.04 \times 2} \approx 0.9231$ | $\$1,800,000$ | $e^{-0.025} - e^{-0.050} \approx 0.02408$ | $0.60 \times e^{-0.08} \times 1,800,000 \times (e^{-0.025} - e^{-0.050}) = \$24,007.42$ |
-| **Year 3** | $e^{-0.04 \times 3} \approx 0.8869$ | $\$950,000$ | $e^{-0.050} - e^{-0.075} \approx 0.02349$ | $0.60 \times e^{-0.12} \times 950,000 \times (e^{-0.050} - e^{-0.075}) = \$11,873.19$ |
+### Example 4: incremental CVA needs the netting set's paths
 
-Total Portfolio CVA:
+An existing netting set worth $500,000 + 1,000,000\, W_1(t)$ and a proposed trade worth $800,000\,(\rho W_1(t) + \sqrt{1 - \rho^2} W_2(t))$ with $\rho = -0.8$; LGD 60%, hazard 2.5%, annual buckets, 20,000 paths (seed 2026).
+The simulated EE of the existing set is within three standard errors of its closed form $a\Phi(a/\sigma_t) + \sigma_t\phi(a/\sigma_t)$ at each date.
 
-$$\text{CVA} = \$17,079.82 + \$24,007.42 + \$11,873.19 = \$52,960.43$$
+- CVA of the existing netting set: about $33,140$.
+- Standalone CVA of the new trade: about $17,440$.
+- CVA of the netting set with the new trade: about $25,700$.
+- Incremental CVA: about $-7,440$; the client should get a benefit, not a charge, because the trade offsets existing exposure.
 
-At trade execution, the sales desk charges the client an upfront CVA fee of $\$52,960.43$ (or widens the swap fixed rate) to compensate for default risk.
-
-### Example 3: MVA Calculation for Uncleared Swaps under ISDA SIMM
-
-A dealer executes an uncleared derivative subject to mandatory bilateral Initial Margin under Uncleared Margin Rules (UMR):
-- The bank must post bilateral Initial Margin (IM) calculated via the ISDA SIMM model over the 5-year trade lifespan.
-- Bank's unsecured funding spread for high-quality liquid assets (HQLA) posted as margin: $s_{\text{margin}} = 75\text{ bps} = 0.0075$ per year.
-- Projected Initial Margin trajectory $\mathbb{E}[\text{IM}(t_i)]$ across annual timesteps:
-  - Year 1: $\$5,000,000$
-  - Year 2: $\$4,200,000$
-  - Year 3: $\$3,100,000$
-  - Year 4: $\$1,800,000$
-  - Year 5: $\$600,000$
-- Discount factors: $D = [0.9608, 0.9231, 0.8869, 0.8521, 0.8187]$.
-
-Discrete MVA Formulation:
-
-$$\text{MVA} = \sum_{i=1}^5 D(0, t_i) \, s_{\text{margin}} \, \mathbb{E}[\text{IM}(t_i)] \, \Delta t_i$$
-
-Component breakdown:
-- Year 1: $0.9608 \times 0.0075 \times \$5,000,000 = \$36,030.00$.
-- Year 2: $0.9231 \times 0.0075 \times \$4,200,000 = \$29,077.65$.
-- Year 3: $0.8869 \times 0.0075 \times \$3,100,000 = \$20,620.42$.
-- Year 4: $0.8521 \times 0.0075 \times \$1,800,000 = \$11,503.35$.
-- Year 5: $0.8187 \times 0.0075 \times \$600,000 = \$3,684.15$.
-
-Total Margin Valuation Adjustment (MVA):
-
-$$\text{MVA} = \$36,030.00 + \$29,077.65 + \$20,620.42 + \$11,503.35 + \$3,684.15 = \$100,915.57$$
-
-Even though the counterparty exchanges daily Variation Margin (making CVA negligible), the segregated Initial Margin imposes $\$100,915.57$ in funding drag over the life of the swap.
+The incremental price must use the same paths as the stored cube: pricing the new trade on fresh random numbers adds simulation noise of the size of the whole netting set's error to a small difference.
 
 ## Pitfalls
 
-- **Neglecting Wrong-Way Risk (WWR):** Assuming independence between counterparty default probability and portfolio exposure severely underestimates CVA; buying protection on subprime mortgages from a monoline insurer creates massive specific WWR.
-- **Ignoring Margin Period of Risk (MPOR):** Assuming collateral completely eliminates exposure ignores the liquidation window; during the 10-to-20 business day MPOR, market prices continue to move while margin calls go unheeded.
-- **Double Counting DVA and Own Funding Benefits:** Booking positive DVA as distributable trading profit allows banks to report accounting profits when their own credit rating is downgraded; regulators strictly deduct DVA equity gains from Common Equity Tier 1 capital.
-- **Using Brute-Force Finite Differences for XVA Greeks:** Bumping thousands of market risk factors across full Monte Carlo XVA simulations is computationally impossible; engines must use AAD to extract the full sensitivity matrix in a single reverse sweep.
-- **Overlooking Rehypothecation Rules:** If a CSA permits rehypothecating client collateral, the bank can use received variation margin to fund outgoing margin calls, reducing FVA; assuming zero rehypothecation when legally permitted overstates funding costs.
+- **Pricing XVA trade by trade.** Exposure is non-linear in the netting set's value; standalone CVA overstates the charge for risk-reducing trades and understates it for concentrating ones.
+- **Keeping only profiles.** EE vectors cannot be re-aggregated with a new trade; keep the netting-set path cube for the run.
+- **Ignoring the margin period of risk.** Collateralised exposure is a gap risk over the MPOR, scaling roughly with $\sqrt{\delta}$; regulatory floors are 5, 10 or 20 business days and double after disputes (CRE53.24, CRE53.25).
+- **Wrong-way risk.** Independence between exposure and default understates CVA when the two move together, for example protection bought from a seller whose credit is tied to the reference entity.
+- **Booking FBA and DVA together.** When the funding spread is own credit, they are the same benefit.
+- **Bumping with new random numbers.** Finite-difference sensitivities on independent simulations are dominated by noise; use common random numbers or adjoint differentiation.
+- **Unmapped netting sets.** A trade without a legal agreement mapping must be treated as its own netting set and flagged; dropping it understates exposure and treating it as netted without legal support overstates the benefit.
+- **Rehypothecation assumptions.** Variation margin received may be reusable under the CSA, which reduces funding cost; initial margin collected under the margin rules may not be re-used except under MGN20.42.
 
 ## Interview questions
 
-> [!question]- sys-11-01 | What is the fundamental difference between CVA and DVA?
-> CVA is the expected cost of default losses caused by a counterparty defaulting while the portfolio is in-the-money to the bank.
-> DVA is the mirror image: the economic value to the bank of defaulting on its own obligations while the portfolio is out-of-the-money (in-the-money to the counterparty).
+> [!question]- sys-11-01 | What is the difference between CVA and DVA?
+> CVA is the expected discounted loss from the counterparty defaulting while the netting set is worth something to the bank, integrated against the counterparty's default density.
+> DVA is the mirror: the value to the bank of its own default while it owes the counterparty, computed from ENE and the bank's own default density.
+> DVA gains from own credit deterioration are derecognised from CET1 (CAP30.15).
 
-> [!question]- sys-11-02 | How does American Monte Carlo (Longstaff-Schwartz) overcome the computational intractability of pricing Bermudan options inside XVA?
-> Nested Monte Carlo requires simulating paths within paths at every time step ($O(N^2)$), which is computationally impossible for portfolios.
-> Longstaff-Schwartz uses cross-sectional Ordinary Least Squares (OLS) regression across all existing paths to estimate conditional continuation values, reducing complexity to $O(N)$.
+> [!question]- sys-11-02 | How does American Monte Carlo avoid nested simulation for callable trades in XVA?
+> Instead of an inner simulation at every outer node ($10,000 \times 10,000 = 10^8$ valuations per date), it regresses discounted future cash flows on basis functions of the current state across all outer paths (Longstaff and Schwartz 2001).
+> Each date costs one least-squares fit, $O(M^2 N)$ for $N$ paths and $M$ basis functions, so exposure for callables costs roughly a forward simulation.
 
-> [!question]- sys-11-03 | What is Margin Period of Risk (MPOR) and why is it critical in collateralized CVA?
-> MPOR is the time elapsed between the last successful collateral exchange and the final close-out and re-hedging of defaulting contracts (typically 10 to 20 business days).
-> It captures the uncollateralized market risk exposure that accumulates during default notice periods, legal grace periods, and market liquidation.
+> [!question]- sys-11-03 | What is the margin period of risk and why does it matter for collateralised CVA?
+> The time from the last successful margin call to close-out and re-hedging after a default, during which the portfolio moves but collateral does not.
+> Collateralised exposure is a gap risk over that period, scaling roughly with its square root; IMM floors are 5 business days for repo-only sets, 10 for other daily-margined sets and 20 for large or illiquid sets, doubled after repeated disputes (CRE53.24, CRE53.25).
 
-> [!question]- sys-11-04 | What is Margin Valuation Adjustment (MVA)?
-> MVA is the expected funding cost of posting bilateral Initial Margin (IM) required under Uncleared Margin Rules (UMR) or central clearing over the life of a transaction.
-> Because IM is segregated and cannot be rehypothecated, it creates an ongoing funding drag equal to the bank's unsecured spread.
+> [!question]- sys-11-04 | What is MVA?
+> The cost of funding initial margin posted over the life of the trade: $\int s_{IM} D\, \mathbb{E}[\text{IM}]\, dt$ with $s_{IM}$ the funding spread net of what posted IM earns.
+> IM collected under the margin rules cannot be re-used except under MGN20.42 (MGN20.41), so it must be funded; in Example 3 a 5.0m to 0.6m IM profile at 75 bp gave MVA of 100,916.90.
 
-> [!question]- sys-11-05 | What is Wrong-Way Risk (WWR) versus Right-Way Risk (RWR)?
-> Wrong-Way Risk occurs when exposure to a counterparty is positively correlated with the counterparty's probability of default (e.g., buying equity puts from an issuer on its own stock).
-> Right-Way Risk occurs when exposure is negatively correlated with default risk (e.g., selling oil protection to an oil producer).
+> [!question]- sys-11-05 | What are wrong-way and right-way risk?
+> Wrong-way risk: exposure tends to rise when the counterparty's credit worsens, for example buying protection from a seller whose own credit is linked to the reference entity, or a put on a company's shares bought from that company.
+> Right-way risk: exposure tends to fall as credit worsens, for example a hedge with a producer that owes the bank most when the commodity price, and so the producer's health, is high.
+> Both break the independence assumption behind the simple CVA integral.
 
-> [!question]- sys-11-06 | Why do banks operate a centralized XVA trading desk?
-> Flow trading desks specialize in specific assets (rates, equities, FX) and cannot manage cross-asset counterparty credit and funding risks effectively.
-> A centralized XVA desk aggregates netting sets firm-wide, prices incremental XVA to sales desks, and executes macro hedges (CDS indices, interest rate swaps) to neutralize firm-wide balance sheet drag.
+> [!question]- sys-11-06 | Why do banks run a central XVA desk?
+> Counterparty, funding and capital risks are properties of netting sets and the whole balance sheet, not of single trades or asset-class desks.
+> A central desk prices incremental XVA to sales, manages the aggregated credit and market sensitivities of the adjustments, and owns the XVA P&L and its explain.
 
-> [!question]- sys-11-07 | How does Adjoint Algorithmic Differentiation (AAD) enable active CVA hedging?
-> CVA depends on hundreds of risk factors across credit curves, yield curves, and volatility surfaces.
-> AAD computes sensitivities to all inputs in a single reverse sweep across the simulation paths, allowing the XVA desk to observe intraday Greeks and rebalance hedges in real time.
+> [!question]- sys-11-07 | How does adjoint algorithmic differentiation help XVA hedging?
+> An XVA number depends on thousands of curve, volatility and credit inputs; bump-and-revalue needs one or two full simulations per input.
+> AAD computes all first-order sensitivities of one output for a small constant multiple of a single simulation's cost, with no bump noise, so the desk gets a full sensitivity set in time to hedge.
 
-> [!question]- sys-11-08 | What is the relationship between FVA and DVA in asymmetric funding models?
-> If a bank can fund itself at its own credit spread, FVA and DVA partially offset.
-> However, under the asymmetric funding convention used here, the bank pays an unsecured borrowing spread ($s_{\text{borrow}} > 0$) on positive funding needs (FCA) and earns only risk-free rates on excess cash ($s_{\text{lend}} = 0$), so there is no spread-based FBA to offset DVA.
+> [!question]- sys-11-08 | How do FVA and DVA relate?
+> If the bank's lending spread equals its own credit spread and FBA is weighted by own survival, FBA and DVA are the same integral, so booking both double counts.
+> Banks either give no FBA credit (asymmetric funding: FVA equals FCA, 29,257.05 instead of 19,622.96 in Example 3) or adjust so the overlap is counted once, and must state which.
 
-> [!question]- sys-11-09 | What is the ISDA Standard Initial Margin Model (SIMM)?
-> ISDA SIMM is a standardized, sensitivity-based mathematical methodology used across global financial institutions to calculate bilateral Initial Margin for uncleared derivatives.
-> It aggregates Delta, Vega, and Curvature across asset classes using prescribed supervisory correlation matrices.
+> [!question]- sys-11-09 | What is ISDA SIMM?
+> The Standard Initial Margin Model is ISDA's industry methodology for calculating bilateral initial margin on uncleared derivatives from risk sensitivities (delta, vega, curvature, plus base correlation), with risk weights and correlations calibrated and published by ISDA.
+> Supervisory rules (MGN20) allow either a standardised schedule or an approved model such as SIMM; projecting SIMM along simulation paths is what makes MVA expensive.
 
-> [!question]- sys-11-10 | Why is DVA excluded from regulatory Common Equity Tier 1 (CET1) capital?
-> When a bank's own credit spread widens (its default probability rises), the accounting value of its liabilities falls, generating an accounting gain via DVA.
-> Regulators require deducting this gain from CET1 capital because a distressed bank cannot monetize its own credit deterioration to pay depositors or absorb losses as a going concern.
+> [!question]- sys-11-10 | Why is DVA excluded from CET1?
+> When the bank's own credit worsens, the fair value of its liabilities falls and DVA produces a gain, but a weakening bank cannot use that gain to absorb losses.
+> CAP30.15 derecognises from CET1 all unrealised gains and losses from own-credit changes on fair-valued liabilities and all own-credit valuation adjustments on derivative liabilities, with no offset against CVA.
+
+> [!question]- sys-11-11 | Why must an XVA engine keep netting-set paths and not just EE profiles?
+> CVA of a netting set with a new trade depends on $\mathbb{E}[(V_{\text{set}}(t) + V_{\text{new}}(t))^+]$, which needs the joint paths; EE profiles of the set and the trade cannot be combined.
+> In Example 1 that costs 28.8 GB against 768 GB for trade-level paths and 5.76 MB for profiles.
+
+> [!question]- sys-11-12 | A hedge has standalone CVA of 17,440 dollars. Should the client be charged that?
+> No: the price is the incremental CVA of the netting set, about -7,440 in Example 4, a benefit, because the trade offsets existing exposure.
+> Standalone pricing would overcharge risk-reducing trades and undercharge concentrating ones.
+
+> [!question]- sys-11-13 | Why must incremental XVA use the same random numbers as the stored run?
+> The incremental amount is a small difference of two large simulated numbers; with common random numbers their errors largely cancel, with fresh ones the difference carries the full simulation error of the netting set.
+> The run id therefore binds seeds, time grid and calibrations, and a recalibration invalidates the stored cube for incremental use.
+
+> [!question]- sys-11-14 | Your CVA changes by 2.0% when you move from year-end exposure points to an exact integral. Is one of them wrong?
+> No: it is a discretisation convention (52,960.43 against 54,038.41 in Example 2); both converge as the time grid is refined.
+> Choose the grid and the convention, document them, and keep them fixed so that day-on-day changes reflect markets and trades, not numerics.
+
+> [!question]- sys-11-15 | A trade arrives with no netting agreement mapping. What should the engine do?
+> Treat it as its own netting set (no netting benefit), flag it, and route it to the legal data owners; never drop it and never assume it nets with the counterparty's other trades.
+> Netting without legal support overstates the benefit; dropping the trade understates exposure.
+
+> [!question]- sys-11-16 | What is Effective EPE and how does it relate to the XVA simulation?
+> Effective EE is the running maximum of the EE profile and Effective EPE its average over the first year (or the maturity if shorter); IMM EAD is 1.4 times Effective EPE (CRE53.11 to CRE53.14).
+> The same simulated netting-set exposures feed both CVA and regulatory exposure, although the measure (risk-neutral or real-world) may differ and must be documented.
+
+## In this repo and SDE-Interview-Prep
+
+- [sys_xva_engine.py](code/sys_xva_engine.py) computes, prints and asserts every number on this page, with the exact CVA integral checked numerically and simulated exposure checked against its closed form.
+- [XVA](../11-Risk-and-Trading/15-XVA.md) for the adjustments in depth and [Counterparty Credit Risk Analytics](../11-Risk-and-Trading/14-Counterparty-Credit-Risk-Analytics.md) for exposure, collateral and CRE53.
+- [Pricing Library Architecture](05-Pricing-Library-Architecture.md) for AAD, [Pricing at Scale](06-Pricing-at-Scale.md) for the grid, [Regulatory Reporting Pipeline](12-Regulatory-Reporting-Pipeline.md) for SA-CCR.
 
 ## Further reading
 
-- Green, Andrew. *XVA: Credit, Funding and Capital Valuation Adjustments*. John Wiley & Sons, 2015.
-- Gregory, Jon. *The xVA Challenge: Counterparty Risk, Funding, Collateral, Capital and Initial Margin*. 4th Edition, John Wiley & Sons, 2020.
-- Longstaff, Francis A. and Schwartz, Eduardo S. *Valuing American Options by Simulation: A Simple Least-Squares Approach*. The Review of Financial Studies, 2001.
-- Brigo, Damiano, Morini, Massimo, and Pallavicini, Andrea. *Counterparty Credit Risk, Collateral and Funding: With Pricing Cases for All Asset Classes*. John Wiley & Sons, 2013.
+- Gregory, J., *The xVA Challenge: Counterparty Risk, Funding, Collateral, Capital and Initial Margin*, 4th edition, Wiley, 2020.
+- Green, A., *XVA: Credit, Funding and Capital Valuation Adjustments*, Wiley, 2015.
+- Longstaff, F. A. and Schwartz, E. S., "Valuing American Options by Simulation: A Simple Least-Squares Approach", *Review of Financial Studies* 14(1), 2001.
+- Brigo, D., Morini, M. and Pallavicini, A., *Counterparty Credit Risk, Collateral and Funding: With Pricing Cases for All Asset Classes*, Wiley, 2013.
+- Savine, A., *Modern Computational Finance: AAD and Parallel Simulations*, Wiley, 2018.

@@ -5,259 +5,265 @@ tier: senior
 status: solid
 prereqs: [intraday-risk-and-pre-trade-limits]
 est_hours: 4
-sources: [Basel Committee on Banking Supervision - The Basel Framework MAR32 Internal models approach: model validation (BCBS d457 February 2019 effective January 2023), International Accounting Standards Board - IFRS 13 Fair Value Measurement (IASB May 2011), Financial Accounting Standards Board - Accounting Standards Codification Topic 820 Fair Value Measurement (FASB ASC 820), Christian Voigt - Profit and Loss Architecture and Explain Systems (Palgrave Macmillan 2021), Moorad Choudhry - The Principles of Banking (John Wiley & Sons 2012)]
+sources: [Basel Committee on Banking Supervision - Basel Framework MAR32.4 to MAR32.42 Internal models approach - backtesting and P&L attribution test requirements (version effective 1 January 2023), Basel Committee on Banking Supervision - Basel Framework CAP50 Prudent valuation guidance, International Accounting Standards Board - IFRS 13 Fair Value Measurement (2011) - fair value hierarchy paragraphs 72 to 90, International Accounting Standards Board - IFRS 9 Financial Instruments paragraph B5.1.2A (day one gains and losses), Financial Accounting Standards Board - ASC 820-10-30-6 (transaction price differing from fair value at initial recognition)]
 ---
 
 # P&L Platform and Attribution
 
 ## TL;DR
 
-- The Profit and Loss (P&L) platform provides the authoritative financial scorecard of an investment bank, producing daily official revenues, balance sheet marks, and regulatory attribution metrics.
-- Product Control distinguishes between four core P&L measures: Actual P&L (APL, dynamic positions with all fees and new trades), Clean P&L (static $T-1$ positions revalued without fees), Hypothetical P&L (HPL, static $T-1$ positions revalued using the front-office pricing library), and Risk-Theoretical P&L (RTPL, static $T-1$ positions revalued using the middle-office risk engine).
-- The P&L Explain engine attributes daily mark-to-market changes to mathematical risk factors via multi-variable Taylor series expansions across Delta ($\Delta$), Gamma ($\Gamma$), Vega ($\mathcal{V}$), Theta ($\Theta$), Rho ($\rho$), and higher-order cross-Greeks (Vanna, Volga).
-- Under the FRTB P&L Attribution (PLA) framework (BCBS MAR32), trading desks must pass strict Spearman correlation and Kolmogorov-Smirnov distribution tests between HPL and RTPL to retain Internal Models Approach (IMA) eligibility.
-- Day 1 P&L accounting rules under IFRS 13 and ASC 820 prohibit immediate recognition of upfront inception profit for Level 3 unobservable derivatives, requiring deferral into unearned revenue reserves.
-- All numerical figures in this note are verified by [sys_pnl_platform.py](code/sys_pnl_platform.py).
+- The P&L platform produces the official daily P&L that Product Control signs off and Finance posts to the ledger, and the regulatory P&L series (actual, hypothetical, risk-theoretical) that market risk backtesting and the FRTB P&L attribution test consume.
+- Basel definitions (MAR32): hypothetical P&L (HPL) revalues the previous day's positions on today's market (MAR32.25); actual P&L (APL) also includes intraday trading and new or modified deals; both exclude fees and commissions (MAR32.26); risk-theoretical P&L (RTPL) is what the risk model's own valuation engine produces on its own risk factors (MAR32.22).
+- Backtesting compares one-day VaR with both APL and HPL (MAR32.4); the PLA test compares HPL with RTPL using Spearman correlation and a Kolmogorov-Smirnov statistic (MAR32.34 to MAR32.42).
+- P&L explain attributes the change in value to theta, delta, gamma, vega and cross terms; on a long index call book a 40-point rally with a half-point vol fall left 4,138 dollars unexplained after first order, 760 after gamma and 148 after vanna and volga.
+- Day-one gains on trades valued with significant unobservable inputs are deferred under IFRS 9 (B5.1.2A), while US GAAP (ASC 820-10-30-6) generally recognises them unless another topic says otherwise.
+- Every number on this page is produced and asserted by [sys_pnl_platform.py](code/sys_pnl_platform.py).
 
 ## Learning objectives
 
-- Distinguish the regulatory and accounting definitions of Actual P&L, Clean P&L, Hypothetical P&L (HPL), and Risk-Theoretical P&L (RTPL).
-- Formulate the multi-variable Taylor-series P&L explain decomposition across first-order, second-order, and cross-Greek sensitivities.
-- Quantify and investigate unexplained residual P&L resulting from missing risk factors, cross-Greeks (Vanna, Volga), and higher-order curvature.
-- Map the operational workflow of Product Control, including Independent Price Verification (IPV), Day 1 profit reserves, and General Ledger reconciliation.
-- Construct the data pipeline for FRTB backtesting and daily P&L Attribution monitoring.
-- Reconcile trading desk P&L walks from clean mark-to-market through fees, carry, and financing to posted General Ledger net income.
+- Distinguish actual, hypothetical and risk-theoretical P&L as Basel defines them, and the accounting daily P&L that Product Control reports.
+- Formulate the Taylor-series P&L explain across first-order, second-order and cross-Greek terms and say what the residual means.
+- Investigate unexplained P&L from missing risk factors, cross-Greeks, higher-order curvature and data mismatches.
+- Map Product Control's workflow: independent price verification (IPV), valuation reserves, day-one deferrals and ledger reconciliation.
+- Build the data pipeline that feeds backtesting and P&L attribution, with aligned snapshots and positions.
+- Walk a desk's P&L from static revaluation through new trades, funding, fees and coupons to the reported figure.
 
 ## Core concepts
 
-### 1. P&L Definitions Under Basel III / FRTB MAR32
+### 1. Which P&L is which
 
-Under Basel Committee guidelines (MAR32), regulatory capital backtesting and model validation require precise segregation of P&L definitions:
-
-| P&L Definition | Portfolio Composition | Pricing Library | Market Data & Feeds | Intraday Fees & Cashflows | Primary Surface |
+| Measure | Positions | Valuation | Fees and commissions | Time effects (theta, carry, funding) | Used for |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Actual P&L (APL)** | Dynamic (incorporates intraday fills and cancellations) | Front Office production models | EOD market close | Included (brokerage, clearing, financing, coupons) | General Ledger net income, official accounting |
-| **Clean P&L** | Static (frozen at previous close $T-1$) | Front Office production models | EOD market close | Excluded (pure market valuation change only) | Regulatory VaR/ES backtesting |
-| **Hypothetical P&L (HPL)** | Static (frozen at previous close $T-1$) | Front Office production models | EOD golden market close | Excluded (revaluation using front-office pricing stack) | FRTB backtesting and PLA testing baseline |
-| **Risk-Theoretical P&L (RTPL)** | Static (frozen at previous close $T-1$) | Middle Office risk engine models | Risk factor grid (binned or simplified curves) | Excluded (revaluation using risk engine representation) | FRTB PLA testing comparison |
+| Reported daily P&L (accounting) | actual, including new, amended and intraday trades | front-office models, after valuation adjustments and reserves | included | included | Product Control sign-off, general ledger |
+| Actual P&L, APL (MAR32) | actual, including intraday trading and new or modified deals | the same pricing models as reported P&L (MAR32.29) | excluded (MAR32.26) | included (MAR32.27) | backtesting |
+| Hypothetical P&L, HPL (MAR32.25) | static: positions at the end of the previous day | the same pricing models as reported P&L | excluded | treated consistently with RTPL | backtesting and the PLA test |
+| Risk-theoretical P&L, RTPL (MAR32.22) | static, as HPL | the risk model's valuation engine on the risk factors in the ES model and the NMRFs | excluded | consistent with HPL | the PLA test |
 
-### 2. Mathematical Formulation of P&L Explain (Taylor Expansion)
+Further rules the platform must implement:
 
-The daily mark-to-market change $\Delta V = V(t + \Delta t, \mathbf{S} + \Delta \mathbf{S}, \mathbf{\sigma} + \Delta \mathbf{\sigma}) - V(t, \mathbf{S}, \mathbf{\sigma})$ is decomposed via Taylor series:
+- Valuation adjustments that have their own capital treatment (CVA and its eligible hedges) or are deducted from CET1 (the DVA component) are excluded from APL and HPL (MAR32.26).
+- Other market-risk valuation adjustments go into APL whatever their update frequency, and into HPL only if updated daily; smoothing adjustments that are not computed daily is not allowed (MAR32.27).
+- APL and HPL must use the same pricing models, configurations, market data and systems as the reported daily P&L (MAR32.29); RTPL may align its input data to HPL's only under the documented conditions of MAR32.30 to MAR32.33, including snapshot-time alignment for desks in other time zones (MAR32.31 FAQ1), but never the other way round.
+- "Clean" and "dirty" P&L are internal terms whose meaning varies by bank; define them in the platform's data dictionary rather than assuming a market-wide meaning.
 
-$$\Delta V_{\text{explained}} = \text{Delta P&L} + \text{Gamma P&L} + \text{Vega P&L} + \text{Theta P&L} + \text{Cross-Greek P&L}$$
+### 2. P&L explain
 
-$$\text{Delta P&L} = \sum_i \Delta_i \, \Delta S_i = \sum_i \frac{\partial V}{\partial S_i} \Delta S_i$$
+The change in value $\Delta V = V(t + \Delta t, \mathbf{S} + \Delta \mathbf{S}, \boldsymbol{\sigma} + \Delta \boldsymbol{\sigma}) - V(t, \mathbf{S}, \boldsymbol{\sigma})$ is expanded to second order:
 
-$$\text{Gamma P&L} = \frac{1}{2} \sum_i \sum_j \Gamma_{ij} \, \Delta S_i \, \Delta S_j = \frac{1}{2} \sum_i \frac{\partial^2 V}{\partial S_i^2} (\Delta S_i)^2 + \sum_{i < j} \frac{\partial^2 V}{\partial S_i \partial S_j} \Delta S_i \, \Delta S_j$$
+$$\Delta V \approx \Theta\,\Delta t + \sum_i \Delta_i \Delta S_i + \frac{1}{2}\sum_{i,j} \Gamma_{ij} \Delta S_i \Delta S_j + \sum_k \mathcal{V}_k \Delta\sigma_k + \sum_{i,k} \frac{\partial^2 V}{\partial S_i \partial \sigma_k} \Delta S_i \Delta\sigma_k + \frac{1}{2}\sum_{k,l} \frac{\partial^2 V}{\partial \sigma_k \partial \sigma_l} \Delta\sigma_k \Delta\sigma_l$$
 
-$$\text{Vega P&L} = \sum_k \mathcal{V}_k \, \Delta \sigma_k = \sum_k \frac{\partial V}{\partial \sigma_k} \Delta \sigma_k$$
+The mixed spot-vol term (vanna) has coefficient 1, because the full double sum over the combined variables counts it twice with weight one half; the pure vol term (volga) keeps the one half.
+The unexplained P&L is $\epsilon = \Delta V_{\text{full}} - \Delta V_{\text{explained}}$.
+A small residual says the risk system's sensitivities describe what actually happened; a persistent residual points to missing risk factors (a basis, a dividend, a correlation), stale or inconsistent market data, higher-order effects in large moves, booking errors, or a model difference between the explain and the official valuation.
+Thresholds are set per desk by Product Control as an absolute amount and a fraction of P&L; there is no regulatory number for them.
 
-$$\text{Theta P&L (Carry \& Aging)} = \Theta \, \Delta t = \frac{\partial V}{\partial t} \Delta t$$
+Two ways to compute explain:
 
-$$\text{Cross-Greek P&L (Vanna)} = \sum_i \sum_k \frac{\partial^2 V}{\partial S_i \partial \sigma_k} \Delta S_i \, \Delta \sigma_k$$
+- Sensitivity-based: Greeks at $T-1$ times the observed moves, as above; cheap, but every unexplained piece is mixed into one residual.
+- Step-wise revaluation: reprice moving one group of inputs at a time (time first, then rates, then spot, then vol), so the steps add exactly to the full P&L and the "residual" becomes the ordering-dependent interaction; banks fix the order and document it.
 
-The **Unexplained Residual P&L** ($\epsilon$) is the difference between true full revaluation and explained P&L:
+### 3. Platform components and data flow
 
-$$\epsilon = \Delta V_{\text{actual}} - \Delta V_{\text{explained}}$$
+| Component | Responsibility | Inputs | Outputs | Failure to design for |
+| :--- | :--- | :--- | :--- | :--- |
+| Position service | static $T-1$ positions and today's actual positions, bitemporal | trade store | position set ids for HPL and APL | a late trade booked into yesterday's position set after HPL ran |
+| Valuation service | prices on $T-1$ and $T$ snapshots with the official models | position sets, market snapshots, model versions | trade-level values and Greeks | missing price silently treated as unchanged value |
+| Cash and fee service | coupons, dividends, fees, commissions, funding | settlement and fee systems | cash events by trade and date | estimated fees not trued up to invoices |
+| Explain engine | Greek and step-wise attribution | Greeks at $T-1$, market moves | explain by risk factor and residual | Greeks from a different snapshot than the valuation |
+| Adjustment and reserve service | IPV adjustments, bid-offer and model reserves, day-one deferrals | Product Control decisions | adjustments by book with approval trail | adjustments booked off-system |
+| Regulatory P&L service | APL, HPL and RTPL series per desk | the above and the risk engine's RTPL | daily series to backtesting and PLA | HPL and RTPL from different positions or snapshot times |
+| Sign-off and ledger feed | desk sign-off, prior-day adjustments, general ledger posting | official P&L | journal entries | changing a signed-off day in place |
 
-Product Control mandates that $|\epsilon|$ remain within strict tolerance bounds (typically $< 10\%$ of total P&L or below an absolute desk dollar threshold).
-
-### 3. P&L Platform Architecture and Pipeline
+A correction to a past day is posted as a prior-day adjustment on the day it is found, with a reference to the original date and reason, so the signed-off history stays reproducible and the regulatory series records the restated value with an audit trail.
 
 ```mermaid
 flowchart TB
-    subgraph Snapshots["End-of-Day Snapshots"]
-        FrozenTrades[("Static Positions T-1\n(Trade Golden Copy)")]
-        MarketT0[("Golden Market Data T-1")]
-        MarketT1[("Golden Market Data T")]
-        Events[("Intraday Fills & Fees\n(Commissions, Financing)")]
+    subgraph Inputs["Frozen inputs"]
+        PosT1[("Positions at T-1 close")]
+        PosT[("Actual positions at T, with intraday and new trades")]
+        MktT1[("Market snapshot T-1")]
+        MktT[("Market snapshot T")]
+        Cash[("Coupons, fees, commissions, funding")]
     end
-
-    subgraph Engines["Valuation & Attribution Engines"]
-        FOPricer["Front Office Pricing Stack"]
-        RiskPricer["Middle Office Risk Engine"]
-        TaylorEngine["Taylor Sensitivity Attribution Engine"]
+    subgraph Engines["Valuation"]
+        FO["Official pricing models"]
+        RiskVal["Risk model valuation engine"]
+        Explain["Explain engine: Greeks at T-1 and step-wise revaluation"]
     end
-
-    subgraph Metrics["P&L Output Streams"]
-        HPL["Hypothetical P&L (HPL)"]
-        RTPL["Risk-Theoretical P&L (RTPL)"]
-        APL["Actual P&L (APL)"]
-        Explain["Greek Explain Breakdown\n(Delta, Gamma, Vega, Theta, Vanna)"]
+    subgraph Series["P&L series"]
+        HPL["HPL: T-1 positions repriced on T market"]
+        APL["APL: actual positions, no fees or commissions"]
+        RTPL["RTPL: risk factors of the ES model"]
+        Reported["Reported daily P&L: APL plus fees, reserves"]
     end
-
-    subgraph Consumers["Downstream Systems"]
-        PLA["FRTB PLA Testing Service\n(Spearman & KS Tests)"]
-        ProdControl["Product Control Sign-Off Dashboard"]
-        GL["Finance General Ledger\n(SAP / Oracle Posting)"]
+    subgraph Consumers["Consumers"]
+        BT["Backtesting: VaR against APL and HPL"]
+        PLA["PLA test: HPL against RTPL"]
+        PC["Product Control sign-off"]
+        GL["General ledger"]
     end
-
-    FrozenTrades --> FOPricer
-    MarketT0 --> FOPricer
-    MarketT1 --> FOPricer
-    FOPricer --> HPL
-
-    FrozenTrades --> RiskPricer
-    MarketT0 --> RiskPricer
-    MarketT1 --> RiskPricer
-    RiskPricer --> RTPL
-
-    FrozenTrades --> APL
-    Events --> APL
-    MarketT1 --> APL
-
-    HPL --> TaylorEngine
-    TaylorEngine --> Explain
-    Explain --> ProdControl
-
+    PosT1 --> FO
+    MktT1 --> FO
+    MktT --> FO
+    FO --> HPL
+    PosT --> FO
+    FO --> APL
+    PosT1 --> RiskVal
+    MktT1 --> RiskVal
+    MktT --> RiskVal
+    RiskVal --> RTPL
+    Cash --> Reported
+    APL --> Reported
+    HPL --> Explain
+    Explain --> PC
+    Reported --> PC
+    PC --> GL
+    APL --> BT
+    HPL --> BT
     HPL --> PLA
     RTPL --> PLA
-
-    APL --> GL
 ```
 
-### 4. Product Control Governance: IPV and Day 1 P&L Reserves
+### 4. Product Control: fair value hierarchy, IPV and day-one P&L
 
-Under IFRS 13 and US GAAP ASC 820, financial assets and liabilities are categorized into a three-level fair value hierarchy:
-- **Level 1:** Unadjusted quoted prices in active markets for identical assets (e.g., exchange-traded equities, on-the-run US Treasuries). Profit is recognized immediately.
-- **Level 2:** Observable inputs other than Level 1 (e.g., standard interest rate swaps, liquid vanilla FX options). Profit is recognized on inception.
-- **Level 3:** Significant unobservable valuation inputs (e.g., bespoke correlation, long-dated exotic Bermudan swaptions).
-- **Day 1 Profit Recognition Rule:** Inception trading profit derived from Level 3 unobservable inputs cannot be booked immediately into net income; it must be deferred into an unearned revenue reserve and amortized over the transaction lifecycle or released when inputs become observable.
-- **Independent Price Verification (IPV):** Middle-office valuation control compares front-office marks against independent market consensus providers (e.g., Markit Totem, broker runs). Deviations exceeding statistical thresholds require booking fair value adjustments (FVA).
+- IFRS 13 (and ASC 820) classify fair value measurements by the lowest level input significant to the whole measurement: Level 1 unadjusted quoted prices for identical items in active markets, Level 2 other observable inputs, Level 3 significant unobservable inputs.
+- Day-one P&L under IFRS: if fair value at initial recognition is not evidenced by a Level 1 price or by a valuation using only observable market data, the difference between fair value and transaction price is deferred and recognised later only to the extent it arises from a change in a factor, including time, that market participants would consider (IFRS 9 B5.1.2A); straight-line release over the life and release when inputs become observable are common policies, and the policy must be stated.
+- Day-one P&L under US GAAP: when another topic requires initial fair value measurement and the transaction price differs, the gain or loss is recognised in earnings unless that topic specifies otherwise (ASC 820-10-30-6); there is no general Level 3 deferral.
+- Independent price verification: Product Control (independent of the desk) compares the desk's marks and model inputs with independent sources (broker quotes, consensus services, exchange settlements) and books IPV adjustments where they differ beyond tolerance; separately, prudent valuation for regulatory capital (CAP50) can require additional valuation adjustments deducted from CET1.
+  Avoid the abbreviation FVA here: in derivatives it means funding valuation adjustment.
 
 ## Worked examples
 
-### Example 1: Greek P&L Explain Decomposition of an Equity Option Portfolio
+All books, market moves, trades, fees and policies are labelled-hypothetical inputs.
 
-A trading desk holds a net long position in S&P 500 index options.
-At $T-1$ market close:
-- Portfolio Mark-to-Market: $V(T-1) = \$12,500,000$.
-- S&P 500 Index Level: $S_0 = 5,000.00$.
-- ATM Implied Volatility ($1\text{y}$): $\sigma_0 = 18.00\%$.
-- Portfolio Greeks calculated at $T-1$:
-  - Delta ($\Delta$): $+\$45,000\text{ per index point}$.
-  - Gamma ($\Gamma$): $+\$120\text{ per index point}^2$.
-  - Vega ($\mathcal{V}$): $+\$350,000\text{ per 1\% (100 bps) vol move}$.
-  - Theta ($\Theta$): $-\$18,000\text{ per business day}$.
+### Example 1: Greek explain against full revaluation
 
-Over trading day $T$:
-- S&P 500 advances from $5,000.00$ to $5,040.00$ ($\Delta S = +40.00\text{ points}$).
-- Implied Volatility drops from $18.00\%$ to $17.50\%$ ($\Delta \sigma = -0.50\% = -50\text{ bps}$).
-- Time elapsed: $\Delta t = 1.0\text{ day}$.
-- Official $T$ Close Full Revaluation: $V(T) = \$14,028,000$.
-- Actual Mark-to-Market Change:
+A long position in one-year at-the-money calls on 10,000 units of an equity index: $S = 5,000$, $K = 5,000$, $r = 4\%$, no dividends, implied vol $18\%$.
+At $T-1$ the book is worth $4,581,801$ with delta $6,226$ dollars per index point, gamma $4.22$ per point squared, vega $189,982$ per vol point, theta $-7,594$ per calendar day, vanna $-27.91$ per point per vol point and volga $435.72$ per vol point squared (all analytic, checked by finite differences).
+Over one calendar day the index rises 40 points to $5,040$ and vol falls half a point to $17.5\%$; full revaluation gives $4,732,380$, a P&L of $150,579$.
 
-$$\Delta V_{\text{actual}} = \$14,028,000 - \$12,500,000 = +\$1,528,000$$
+| Term | P&L |
+| :--- | :--- |
+| Theta, $\Theta\,\Delta t$ | $-7,594$ |
+| Delta, $\Delta \cdot 40$ | $249,026$ |
+| Vega, $\mathcal{V} \cdot (-0.5)$ | $-94,991$ |
+| Unexplained after first order | $4,138$ |
+| Gamma, $\tfrac12 \Gamma \cdot 40^2$ | $3,377$ |
+| Unexplained after gamma | $760$ |
+| Vanna, $\partial^2V/\partial S\partial\sigma \cdot 40 \cdot (-0.5)$ | $558$ |
+| Volga, $\tfrac12 \partial^2V/\partial\sigma^2 \cdot 0.25$ | $54.47$ |
+| Unexplained after vanna and volga | $148$, or $0.10\%$ of the P&L |
 
-#### P&L Explain Calculation:
-1. **Delta P&L:**
-   $$\text{Delta P&L} = \Delta \times \Delta S = \$45,000 \times 40 = +\$1,800,000$$
-2. **Gamma P&L:**
-   $$\text{Gamma P&L} = \frac{1}{2} \times \Gamma \times (\Delta S)^2 = 0.5 \times \$120 \times (40)^2 = 0.5 \times 120 \times 1,600 = +\$96,000$$
-3. **Vega P&L:**
-   $$\text{Vega P&L} = \mathcal{V} \times \Delta \sigma = \$350,000 \times (-0.50) = -\$175,000$$
-4. **Theta P&L:**
-   $$\text{Theta P&L} = \Theta \times 1 = -\$18,000$$
-5. **Total Explained P&L (First and Second Order):**
-   $$\Delta V_{\text{explained}} = \$1,800,000 + \$96,000 - \$175,000 - \$18,000 = +\$1,703,000$$
-6. **Unexplained Residual P&L ($\epsilon$):**
-   $$\epsilon = \Delta V_{\text{actual}} - \Delta V_{\text{explained}} = \$1,528,000 - \$1,703,000 = -\$175,000$$
+The residual shrinks with each order, which is what a healthy explain looks like; the last 148 dollars are third-order terms and the interaction of time decay with the market move.
+A step-wise revaluation that moves time first gives $-7,597$ for time alone and $158,176$ for the market move at the new time, adding exactly to $150,579$.
 
-#### Residual Investigation and Cross-Greeks:
-- The desk investigates the $-\$175,000$ break: the simultaneous spot rally and implied vol decline triggered cross-Greek Vanna ($\frac{\partial^2 V}{\partial S \partial \sigma}$).
-- Desk Vanna is calibrated at $-\$8,500\text{ per index point per 1\% vol move}$.
+### Example 2: bond desk P&L walk
 
-$$\text{Vanna P&L} = -\$8,500 \times 40 \times (-0.50) = +\$170,000$$
+A desk holds 10,000,000 face of a 5% annual-coupon bond with five coupons left, the next due tomorrow, at a 4.50% yield (annual compounding).
 
-- Including Vanna, total explained P&L rises to $\$1,703,000 + \$170,000 = \$1,873,000$, producing a residual of $\$1,528,000 - \$1,873,000 = -\$345,000$.
-- Product Control identifies higher-order Volga ($\frac{\partial^2 V}{\partial \sigma^2}$) and discrete dividend term adjustments of $-\$333,000$.
-- Reconciled residual:
+- Dirty value at $T-1$: $10,678,088$.
+- Day $T$: the coupon of $500,000$ is paid and the yield falls to 4.47%; the ex-coupon dirty value is $10,190,272$.
+- HPL $= 10,190,272 + 500,000 - 10,678,088 = 12,184$, of which $1,288$ is time at an unchanged yield and $10,896$ the 3 bp yield fall.
+- Adding the coupon a second time, as a walk that treats "clean P&L plus coupon" as dirty P&L would if its clean P&L were already on dirty values, gives $512,184$: the dirty value already fell by the coupon, so the cash is counted once.
+- New trade: 5,000,000 face bought at 99.50 and marked at 99.80 at the close, $15,000$.
+- Funding cost of $-12,500$ is a time effect and belongs in APL (MAR32.27); APL $= 12,184 + 15,000 - 12,500 = 14,684$.
+- Commissions of $8,000$ and clearing fees of $4,500$ are excluded from APL and HPL (MAR32.26) but are part of reported P&L: $14,684 - 12,500 = 2,184$.
 
-$$\epsilon_{\text{final}} = \$1,528,000 - (\$1,873,000 - \$333,000) = -\$12,000$$
+The code checks the walk against an independent account: starting value, ending positions, coupon received, purchase cash, funding and fees.
 
-The final unexplained residual of $-\$12,000$ represents only $0.79\%$ of total P&L, passing Product Control sign-off thresholds.
+### Example 3: deferring a day-one gain
 
-### Example 2: Clean vs. Dirty vs. Actual P&L Walk for a Bond Desk
-
-A corporate bond trading desk reports the following positions and activity over Day $T$:
-- Static Portfolio MTM at $T-1$: $\$85,000,000$.
-- Static Portfolio MTM at $T$ (revalued using $T$ close credit curves): $\$85,450,000$.
-- **Hypothetical P&L / Clean P&L:**
-
-$$\text{Clean P&L} = \$85,450,000 - \$85,000,000 = +\$450,000$$
-
-Intraday Trading Activity and Cashflows:
-- **Intraday Trading Gain:** Desk bought $\$10,000,000$ face value of Bond X at $99.50$ and market closed at $99.80$:
-  $$\text{Trading Gain} = \$10,000,000 \times (0.9980 - 0.9950) = +\$30,000$$
-- **Brokerage Commissions:** $-\$8,000$.
-- **Exchange & Clearing Fees:** $-\$4,500$.
-- **Overnight Repo Financing / Cost of Carry:** $-\$12,500$.
-- **Coupon Cashflow Received:** $+\$65,000$.
-
-PnL Walk Summary:
-- **Dirty P&L (Clean P&L + Accrued Coupon Cashflow):**
-  $$\text{Dirty P&L} = \$450,000 + \$65,000 = +\$515,000$$
-- **Actual P&L (Net Revenue including Intraday Trades and Fees):**
-  $$\text{Actual P&L} = \$450,000 + \$65,000 + \$30,000 - \$8,000 - \$4,500 - \$12,500 = +\$520,000$$
-
-Operational Routing:
-- Clean P&L ($+\$450,000$) routes to the Market Risk Engine for regulatory VaR/ES backtesting.
-- Actual P&L ($+\$520,000$) routes to the General Ledger Sub-Ledger for financial accounting and net income posting.
+A bespoke trade is executed at a price that gives a 1,200,000 dollar day-one gain against a model whose key input is unobservable.
+Under IFRS the gain is deferred; with a straight-line policy over four years, $300,000$ is released each year, and if the input becomes observable after one year the remaining $900,000$ is recognised then.
+Under US GAAP the same gain would generally be recognised on day one (ASC 820-10-30-6), so the platform must support both treatments by legal entity.
 
 ## Pitfalls
 
-- **Using Actual P&L for Regulatory VaR Backtesting:** Comparing Actual P&L (which includes intraday trading profits and fees) against an overnight VaR model violates Basel rules; backtesting must use Clean or Hypothetical P&L.
-- **Ignoring Higher-Order Cross-Greeks on Large Shocks:** In volatile markets, simple Delta-Gamma-Vega explain breaks down because cross-terms (Vanna, Volga, Charm) become dominant.
-- **Timestamp Asynchrony Between Front Office and Risk:** If Front Office prices HPL at 16:30 London close while the Risk Engine samples RTPL curves at 17:00, the resulting time misalignment creates artificial PLA test failures.
-- **Recognizing Day 1 Profit on Level 3 Derivatives:** Booking upfront trading profit on bespoke exotics priced using unobservable model parameters violates IFRS 13 / ASC 820, triggering accounting restatements.
-- **Treating Corporate Action Adjustments as Trading Profit:** A stock split or special dividend that shifts spot prices must be adjusted through corporate action reconciliation rather than recorded as market trading P&L.
+- **Thinking backtesting uses only one P&L.** Basel backtesting compares VaR with both APL and HPL and counts exceptions separately, taking the larger count (MAR32.4, MAR32.5); the PLA test uses HPL against RTPL.
+- **Fees in APL or HPL.** Fees and commissions are excluded from both (MAR32.26); including them creates spurious backtesting exceptions or hides real ones.
+- **Different snapshots for HPL and RTPL.** A front-office close at one time and a risk snapshot at another creates PLA failures that have nothing to do with the model; align snapshots where MAR32.31 allows, and never align HPL to RTPL.
+- **Explaining with stale Greeks.** Greeks from a run on a different snapshot or position set leave a residual that is a data error, not model risk.
+- **Double counting cash flows.** If positions are valued dirty, a coupon or dividend payment lowers the value by the amount received; add the cash once.
+- **Assuming one day-one rule.** IFRS defers Level 3 day-one gains, US GAAP generally does not; the reserve logic depends on the reporting entity's framework.
+- **Corporate actions as trading P&L.** A split or special dividend changes the reference price; adjust positions and prices through corporate-action processing, or the explain shows a large false delta P&L.
+- **Changing signed-off history.** Corrections are prior-day adjustments on the day found, not edits to signed-off days.
 
 ## Interview questions
 
-> [!question]- sys-09-01 | What is the difference between Hypothetical PnL (HPL) and Risk-Theoretical PnL (RTPL) under FRTB?
-> HPL is computed by the front-office pricing library using static $T-1$ positions revalued with full front-office pricing models and full market data.
-> RTPL is computed by the middle-office risk engine using the same static $T-1$ positions but valued using only the simplified risk factors modeled in the risk system.
+> [!question]- sys-09-01 | What is the difference between hypothetical P&L and risk-theoretical P&L under FRTB?
+> HPL revalues the previous day's positions on today's market with the bank's official pricing models and data (MAR32.25, MAR32.29).
+> RTPL is the P&L produced by the desk's risk management model on its own risk factors: those in the ES model plus the non-modellable ones, and nothing the model does not include (MAR32.22).
+> The PLA test measures how far RTPL departs from HPL.
 
-> [!question]- sys-09-02 | What is the purpose of the PnL Explain framework in Product Control?
-> PnL Explain attributes daily trading revenue to specific risk drivers (Delta, Gamma, Vega, Theta, Rho).
-> It verifies that traders are earning returns from approved risk mandates rather than unmonitored risk exposures, and confirms that pricing models adequately capture portfolio dynamics.
+> [!question]- sys-09-02 | What is P&L explain for in Product Control?
+> It attributes the day's P&L to risk drivers (theta, delta, gamma, vega, cross terms) so Product Control can see whether the P&L is consistent with the risk the desk reported.
+> A large or persistent unexplained amount points to missing risk factors, booking or data errors, or model differences, and is investigated before sign-off.
 
-> [!question]- sys-09-03 | What does a persistently large "Unexplained PnL" signify?
-> A large unexplained residual indicates model risk, missing risk factors, stale market curves, or uncaptured higher-order non-linearities in the risk engine.
-> In FRTB, it triggers P&L Attribution test failures, risking disqualification of internal models.
+> [!question]- sys-09-03 | What does a persistently large unexplained P&L signify?
+> The risk system's sensitivities do not describe what actually moves the book: a missing risk factor, stale or inconsistent market data, higher-order effects, booking errors, or a different model in the explain than in the official valuation.
+> If the same gap exists between HPL and RTPL, the desk is likely to fail the PLA test and lose IMA eligibility.
 
-> [!question]- sys-09-04 | What is the difference between Clean PnL and Dirty PnL?
-> Clean PnL measures the mark-to-market change of static $T-1$ positions, excluding intraday trades, transaction fees, and cashflow payments.
-> Dirty PnL includes accrued interest, coupon payments, dividend distributions, and intraday trading fees.
+> [!question]- sys-09-04 | What do "clean" and "dirty" P&L mean, and why be careful?
+> They are internal terms: commonly clean P&L is the market move on static positions, and dirty P&L adds new trades, cash flows and fees, but banks define them differently.
+> State the definition in the data dictionary; for regulation use the defined terms APL, HPL and RTPL, and with dirty valuations count coupons once.
 
-> [!question]- sys-09-05 | What is Day 1 PnL and how is it accounted for under IFRS 13 / US GAAP?
-> Day 1 PnL is the theoretical profit calculated at the inception of a trade based on the difference between the transaction price and the internal model fair value.
-> If the valuation relies on unobservable Level 3 inputs, Day 1 PnL cannot be recognized immediately in net income; it must be deferred into a reserve and amortized over time.
+> [!question]- sys-09-05 | What is day-one P&L and how is it accounted for?
+> The difference at inception between the transaction price and fair value from a model.
+> Under IFRS 9 B5.1.2A it is deferred unless fair value is evidenced by a Level 1 price or a valuation using only observable data, and recognised later as factors including time change; under US GAAP ASC 820-10-30-6 it is generally recognised unless another topic says otherwise.
 
-> [!question]- sys-09-06 | What is the Theta (Carry and Roll-Down) component in fixed income PnL explain?
-> Theta captures the change in bond or swap value due purely to the passage of time ($\Delta t$), holding yield curves constant.
-> In fixed income, this includes "carry" (accrued coupon interest earned) and "roll-down" (capital appreciation as a bond slides down an upward-sloping yield curve).
+> [!question]- sys-09-06 | What is the time component of a fixed income P&L explain?
+> The change in value from the passage of time at unchanged market data: coupon accrual (carry, net of funding) and roll-down along the curve.
+> In Example 2 the bond earned 1,288 dollars from one day at an unchanged yield; Basel requires time effects in APL and consistent treatment in HPL and RTPL (MAR32.27).
 
-> [!question]- sys-09-07 | How does cross-Greek Vanna affect PnL explain for option books?
-> Vanna $\frac{\partial^2 V}{\partial S \partial \sigma}$ measures the sensitivity of Delta to changes in volatility, or equivalently the sensitivity of Vega to changes in underlying price.
-> During market crashes where spot drops and implied vol surges simultaneously ($\Delta S < 0, \Delta \sigma > 0$), Vanna generates a significant compounding PnL effect that first-order Greeks miss.
+> [!question]- sys-09-07 | How does vanna enter P&L explain for an option book?
+> Vanna, $\partial^2 V / \partial S \partial \sigma$, is the change of delta with vol; its P&L is vanna times the spot move times the vol move, with coefficient 1.
+> It matters when spot and vol move together, as in a sell-off with rising vol; in Example 1 (spot up 40, vol down half a point) it contributed 558 dollars of the 760 left after gamma.
 
-> [!question]- sys-09-08 | What is the role of Independent Price Verification (IPV) in Product Control?
-> IPV is an independent middle-office verification process where front-office marks and curve parameters are compared against independent consensus data sources (such as Markit Totem or broker quotes).
-> Any valuation variance exceeding tolerance limits requires booking an IPV fair value reserve adjustment.
+> [!question]- sys-09-08 | What is independent price verification?
+> A control function independent of the desk compares the desk's marks and model inputs with independent evidence (broker quotes, consensus services, exchange settlements) and books adjustments where they differ beyond tolerance.
+> It is separate from prudent valuation for regulatory capital (CAP50), whose additional valuation adjustments reduce CET1.
 
-> [!question]- sys-09-09 | Why is fee reconciliation critical in the transition from Front Office to General Ledger?
-> Front-office trading desks often estimate brokerage, exchange, and clearing fees using standard schedules.
-> The back-office General Ledger reconciles these estimates against actual invoices received from clearing brokers and exchanges, posting accrual adjustments for fee variances.
+> [!question]- sys-09-09 | Why must fees be reconciled between the front office and the ledger?
+> Desks accrue fees from schedules; brokers, exchanges and clearing houses invoice actual amounts, and the ledger must reflect the actual cost.
+> The platform trues up accruals to invoices and keeps fees out of APL and HPL, where Basel excludes them (MAR32.26).
 
-> [!question]- sys-09-10 | How does the PnL platform handle cancelled or amended trades from prior business dates?
-> A back-dated cancellation or amendment is not overwritten in current PnL.
-> The system generates an explicit "Prior-Day Adjustment" (PDA) separating current-day economic market moves from retroactive corrections, ensuring clean audit trails for financial accounting.
+> [!question]- sys-09-10 | How does the P&L platform handle cancelled or amended trades from prior dates?
+> It does not rewrite signed-off days: the correction is posted as a prior-day adjustment on the day it is found, referencing the original date and reason.
+> Positions and P&L are bitemporal, so both "what we reported" and "what was true" can be reproduced.
+
+> [!question]- sys-09-11 | Which P&L series does Basel backtesting use, and how are exceptions counted?
+> One-day VaR is compared with both APL and HPL over the prior 12 months (MAR32.4); exceptions against each are counted separately and the overall count is the larger (MAR32.5, MAR32.18).
+> A missing P&L or VaR value counts as an exception.
+
+> [!question]- sys-09-12 | A desk's explain leaves 4,138 dollars after theta, delta and vega on a 150,579 dollar day. What do you add next?
+> Second-order terms: gamma (3,377 here) brings it to 760, then vanna (558) and volga (54) leave 148, about 0.10% of the P&L.
+> If adding the obvious Greeks does not shrink the residual, look for a missing factor or a data mismatch instead.
+
+> [!question]- sys-09-13 | Why may RTPL inputs be aligned to HPL but not the reverse?
+> HPL must be the official P&L built from the reported valuation (MAR32.29); RTPL may borrow HPL's input data where the difference is only provider, snapshot time or transformation, under documented conditions (MAR32.30 to MAR32.32).
+> Aligning HPL to RTPL would hide exactly the model simplifications the PLA test exists to measure (MAR32.33).
+
+> [!question]- sys-09-14 | Which valuation adjustments go into APL and HPL?
+> Exclude those with their own capital treatment (CVA and its eligible hedges) and those deducted from CET1 (the own-credit DVA component) (MAR32.26).
+> Include other market-risk valuation adjustments in APL whatever their frequency, and in HPL only those updated daily (MAR32.27).
+
+> [!question]- sys-09-15 | Why can step-wise revaluation explain add up exactly when Greek explain does not?
+> Each step reprices with one more group of inputs moved, so the steps telescope to the full P&L; in Example 1 time alone gives -7,597 and the market move at the new time 158,176, summing to 150,579.
+> The price is that the attribution depends on the order of the steps, which must be fixed and documented.
+
+> [!question]- sys-09-16 | A bond position is valued dirty and pays a 500,000 coupon today. How does the coupon enter the P&L?
+> Once: the dirty value falls by the coupon and the cash rises by it, so P&L is the change in dirty value plus the coupon cash, 12,184 dollars in Example 2.
+> Adding the coupon on top of a dirty-value change that already included it gives 512,184, a 500,000 dollar error.
+
+## In this repo and SDE-Interview-Prep
+
+- [sys_pnl_platform.py](code/sys_pnl_platform.py) computes, prints and asserts every number on this page; Greeks are checked against finite differences and the bond walk against an independent cash account.
+- [P&L Attribution and Greek Risk](../11-Risk-and-Trading/06-PnL-Attribution-and-Greek-Risk.md) for explain theory; [FRTB Backtesting and PLA Testing](../17-Regulatory-Capital-Basel-and-FRTB/12-FRTB-Backtesting-and-PLA-Testing.md) for the tests the regulatory series feed.
+- [FRTB Engine](10-FRTB-Engine.md) for how the PLA results drive desk eligibility, [Risk Engine](07-Risk-Engine.md) for the VaR being backtested, [Trade Representation and Lifecycle](02-Trade-Representation-and-Lifecycle.md) for bitemporal positions.
 
 ## Further reading
 
-- Basel Committee on Banking Supervision. *The Basel Framework: MAR32 Internal models approach: model validation*. BCBS d457, February 2019.
-- International Accounting Standards Board. *IFRS 13: Fair Value Measurement*. IASB Standard, May 2011.
-- European Central Bank. *ECB Guide to internal models: Risk-weighted assets / market risk*. ECB Banking Supervision, October 2019.
-- Voigt, Christian. *Profit and Loss Architecture and Explain Systems*. Palgrave Macmillan, 2021.
+- Basel Committee on Banking Supervision, Basel Framework, MAR32 (backtesting and P&L attribution test requirements) and CAP50 (prudent valuation guidance).
+- IFRS 13 *Fair Value Measurement*, IASB, 2011.
+- IFRS 9 *Financial Instruments*, IASB, application guidance B5.1.2A.
+- FASB Accounting Standards Codification 820-10-30-6.
