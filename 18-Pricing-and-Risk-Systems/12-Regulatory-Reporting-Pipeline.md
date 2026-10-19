@@ -156,7 +156,8 @@ At month end, derivative asset fair values for 2,000 trades are reconciled betwe
 - Of the matched trades, $3$ differ by more than a 1,000 dollar per-trade tolerance (together $10,112$) and $7$ differ by less, all from a different FX fixing used in risk.
 - After the missing trades are replayed, the residual is $12,507$, every dollar of it attributed to named trades and a named cause.
 
-The code matches the two stores without knowing which faults were injected, then asserts that the trades it reports as missing are exactly the 45 dropped and the trades with value breaks exactly the 10 revalued at the other FX fixing.
+The code's matching function keys trades on trimmed, upper-cased ids and compares values in whole cents, and reports missing, extra and duplicated trades and value breaks above and within tolerance.
+It is tested on five separately generated data sets with planted faults it never sees: ids differing only in case or whitespace (must match), duplicated rows (must be reported as duplicates, not value breaks), differences one cent inside, exactly at and one cent outside the tolerance, float noise on small values (must not break), and trades present only in risk; its output must equal the ground truth each fault was built to produce.
 A reconciliation that leaves an unexplained residual has not finished.
 
 ## Pitfalls
@@ -221,7 +222,7 @@ A reconciliation that leaves an unexplained residual has not finished.
 
 > [!question]- sys-12-13 | Why reconcile risk to the ledger by trade id rather than by total?
 > Offsetting breaks cancel in a total, so a small net difference can hide large errors; matching by trade id gives each break a category, owner and cause.
-> In Example 3 the 153.12m gap was 45 missing trades worth 153.11m plus FX-fixing differences, and each break category was checked against the faults injected into the data.
+> In Example 3 the 153.12m gap was 45 missing trades worth 153.11m plus FX-fixing differences, and the matching function was tested against separately generated data sets with planted faults.
 
 > [!question]- sys-12-14 | How should an SA-CCR calculation service be designed so that results are auditable?
 > Make it a deterministic function of a netting set id, snapshot ids for trades, collateral and legal terms, and a rule version; return RC, every add-on, the multiplier and EAD, not just EAD.
@@ -237,7 +238,7 @@ A reconciliation that leaves an unexplained residual has not finished.
 
 ## In this repo and SDE-Interview-Prep
 
-- [sys_regulatory_reporting.py](code/sys_regulatory_reporting.py) computes, prints and asserts every number on this page; SA-CCR is cross-checked against [basel_credit_saccr.py](../17-Regulatory-Capital-Basel-and-FRTB/code/basel_credit_saccr.py), and the reconciliation is a real matching run whose break categories are checked against the injected faults.
+- [sys_regulatory_reporting.py](code/sys_regulatory_reporting.py) computes, prints and asserts every number on this page; SA-CCR is cross-checked against [basel_credit_saccr.py](../17-Regulatory-Capital-Basel-and-FRTB/code/basel_credit_saccr.py), and the reconciliation's matching function is tested against planted faults it never sees.
 - [Counterparty Credit Risk: SA-CCR](../17-Regulatory-Capital-Basel-and-FRTB/04-Counterparty-Credit-Risk-SA-CCR.md) and [BCBS 239 Risk Data Aggregation](../17-Regulatory-Capital-Basel-and-FRTB/18-BCBS-239-Risk-Data-Aggregation.md) for the rules.
 - [Front-to-Back Architecture](01-Front-to-Back-Architecture.md) for transaction and trade reporting, [FRTB Engine](10-FRTB-Engine.md) and [XVA Engine](11-XVA-Engine.md) for the calculation services that feed returns.
 - SDE-Interview-Prep: [Idempotency and Delivery](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).

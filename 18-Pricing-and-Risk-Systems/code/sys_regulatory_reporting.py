@@ -4,8 +4,10 @@ Backs every number in `18-Pricing-and-Risk-Systems/12-Regulatory-Reporting-Pipel
 Trades, balances, tolerances and the reconciliation data set are labelled-hypothetical inputs.
 SA-CCR is computed here from CRE52 directly and cross-checked against the independently written and verified
 implementation in `17-Regulatory-Capital-Basel-and-FRTB/code/basel_credit_saccr.py`.
-The reconciliation is a real matching run over a seeded synthetic data set, not arithmetic on literals, and its
-break categories are checked against the faults injected into that data set.
+The reconciliation is a real matching function over a seeded synthetic data set, not arithmetic on literals; it is
+tested on separately generated data sets whose faults (missing, extra and duplicated rows, ids differing in case or
+whitespace, differences just inside, at and just outside the tolerance, float noise on small values) it never sees,
+and its output must equal the ground truth each fault was built to produce.
 Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
 Run it with `python 18-Pricing-and-Risk-Systems/code/sys_regulatory_reporting.py`.
 """
@@ -16,6 +18,7 @@ import importlib.util
 import math
 import random
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 QUOTED: list[str] = []
@@ -131,35 +134,114 @@ def check_ratio_validation() -> None:
 # ============================================================================
 
 
+@dataclass
+class Recon:
+    """Break categories keyed by normalised trade id; differences are GL less risk, in dollars."""
+
+    missing: dict[str, float]  # in the GL, not in risk
+    extra: dict[str, float]  # in risk, not in the GL
+    duplicate: set[str]  # booked more than once in one store; the first row is used
+    breaks: dict[str, float]  # value differences above tolerance
+    within: dict[str, float]  # non-zero value differences at or within tolerance
+
+
+def reconcile(gl_rows: list[tuple[str, float]], risk_rows: list[tuple[str, float]], tolerance: float) -> Recon:
+    """Match two stores on trimmed, upper-cased trade ids and compare values in whole cents."""
+    duplicate: set[str] = set()
+
+    def index(rows: list[tuple[str, float]]) -> dict[str, int]:
+        out: dict[str, int] = {}
+        for tid, value in rows:
+            key = tid.strip().upper()
+            if key in out:
+                duplicate.add(key)
+            else:
+                out[key] = round(value * 100)
+        return out
+
+    gl, risk = index(gl_rows), index(risk_rows)
+    tol = round(tolerance * 100)
+    diffs = {k: gl[k] - risk[k] for k in gl.keys() & risk.keys() if gl[k] != risk[k]}
+    return Recon(
+        missing={k: gl[k] / 100 for k in gl.keys() - risk.keys()},
+        extra={k: risk[k] / 100 for k in risk.keys() - gl.keys()},
+        duplicate=duplicate,
+        breaks={k: d / 100 for k, d in diffs.items() if abs(d) > tol},
+        within={k: d / 100 for k, d in diffs.items() if abs(d) <= tol},
+    )
+
+
+def injected_faults(seed: int, tolerance: float) -> tuple[list[tuple[str, float]], list[tuple[str, float]], dict]:
+    """GL and risk rows with planted faults, and the categories each fault was built to land in (differences in cents)."""
+    rng = random.Random(seed)
+    ids = [f"T{i:05d}" for i in range(400)]
+    value = {t: round(rng.lognormvariate(13.0, 1.5), 2) for t in ids}
+    picked = rng.sample(ids, 26)
+    missing, dup, renamed = picked[0:4], picked[4:8], picked[8:13]
+    below, at, above, noisy = picked[13:16], picked[16:18], picked[18:22], picked[22:26]
+    extra = [f"X{seed:02d}{j:03d}" for j in range(4)]
+    tol_c = round(tolerance * 100)
+    shift_c: dict[str, int] = {}
+    for group, size_c in ((below, tol_c - 1), (at, tol_c), (above, tol_c + 1)):
+        for t in group:
+            shift_c[t] = rng.choice((-1, 1)) * size_c
+    tenths = {t: rng.randint(3, 999) for t in noisy}
+    for t in noisy:
+        value[t] = round(tenths[t] / 10, 2)
+    risk_value = {t: value[t] - shift_c.get(t, 0) / 100 for t in ids}
+    for t in noisy:
+        risk_value[t] = sum([0.1] * tenths[t])
+    assert any(risk_value[t] != value[t] for t in noisy), "float noise must reach the matcher"
+    gl_rows = [(t, value[t]) for t in ids] + [(t, value[t]) for t in dup[:2]]
+    spellings = (str.lower, lambda s: f" {s}", lambda s: f"{s.lower()}\t", lambda s: f"{s} ", lambda s: s.title())
+    risk_rows = [(spellings[renamed.index(t)](t) if t in renamed else t, risk_value[t]) for t in ids if t not in missing]
+    risk_rows += [(t, risk_value[t]) for t in dup[2:]] + [(t, rng.uniform(1e3, 1e6)) for t in extra]
+    truth = {
+        "missing": set(missing),
+        "extra": set(extra),
+        "duplicate": set(dup),
+        "breaks": {t: shift_c[t] for t in above},
+        "within": {t: shift_c[t] for t in below + at},
+    }
+    return gl_rows, risk_rows, truth
+
+
+def check_reconcile_against_injected_faults(tolerance: float, seeds: range = range(1, 6)) -> None:
+    for seed in seeds:
+        gl_rows, risk_rows, truth = injected_faults(seed, tolerance)
+        r = reconcile(gl_rows, risk_rows, tolerance)
+        assert set(r.missing) == truth["missing"], f"seed {seed}: missing"
+        assert set(r.extra) == truth["extra"], f"seed {seed}: extra"
+        assert r.duplicate == truth["duplicate"], f"seed {seed}: duplicate"
+        assert {k: round(v * 100) for k, v in r.breaks.items()} == truth["breaks"], f"seed {seed}: breaks"
+        assert {k: round(v * 100) for k, v in r.within.items()} == truth["within"], f"seed {seed}: within"
+    print(f"    reconcile() recovered every planted fault on {len(seeds)} independently generated data sets")
+
+
 def check_reconciliation() -> None:
     print("  3. Month-end reconciliation of derivative asset fair values, GL against risk (seed 239)")
+    tolerance = 1_000.0  # per-trade tolerance, hypothetical
+    check_reconcile_against_injected_faults(tolerance)
     rng = random.Random(239)
     n = 2_000
     gl = {f"T{i:05d}": round(rng.lognormvariate(14.5, 1.0), 2) for i in range(n)}
     risk = dict(gl)
-    tokyo = [f"T{i:05d}" for i in range(n - 45, n)]  # 45 trades that never reached the risk store
-    for tid in tokyo:
-        risk.pop(tid)
-    fx_rate_gap = [f"T{i:05d}" for i in range(10)]  # 10 trades revalued at a different FX fixing in risk
-    for tid in fx_rate_gap:
-        risk[tid] = round(risk[tid] * 0.9995, 2)
-    tolerance = 1_000.0  # per-trade tolerance, hypothetical
-    missing = sum(gl[t] for t in gl if t not in risk)
-    diffs = {t: gl[t] - risk[t] for t in gl if t in risk and gl[t] != risk[t]}
-    over = {t: d for t, d in diffs.items() if abs(d) > tolerance}
-    under = {t: d for t, d in diffs.items() if abs(d) <= tolerance}
+    for i in range(n - 45, n):  # 45 trades that never reached the risk store
+        risk.pop(f"T{i:05d}")
+    for i in range(10):  # 10 trades revalued at a different FX fixing in risk
+        risk[f"T{i:05d}"] = round(risk[f"T{i:05d}"] * 0.9995, 2)
+    r = reconcile(list(gl.items()), list(risk.items()), tolerance)
+    assert not r.extra and not r.duplicate
     total_gap = sum(gl.values()) - sum(risk.values())
-    # the matching above never saw the fault lists; its categories must recover exactly the faults injected
-    assert {t for t in gl if t not in risk} == set(tokyo), "missing-trade breaks differ from the dropped trades"
-    assert set(diffs) == set(fx_rate_gap), "value breaks differ from the trades revalued at another FX fixing"
+    missing = sum(r.missing.values())
     quoted("GL total ($m)", sum(gl.values()) / 1e6, 6_706.95, 2)
     quoted("risk total before investigation ($m)", sum(risk.values()) / 1e6, 6_553.83, 2)
     quoted("total gap ($m)", total_gap / 1e6, 153.12, 2)
-    quoted("trades in GL but not in risk", sum(1 for t in gl if t not in risk), 45, 0)
+    quoted("trades in GL but not in risk", len(r.missing), 45, 0)
     quoted("value of trades missing from risk ($m)", missing / 1e6, 153.11, 2)
-    quoted("trades with value breaks above tolerance", len(over), 3, 0)
-    quoted("trades with value breaks within tolerance", len(under), 7, 0)
-    quoted("sum of breaks above tolerance ($)", sum(over.values()), 10_112, 0)
+    quoted("trades with value breaks above tolerance", len(r.breaks), 3, 0)
+    quoted("trades with value breaks within tolerance", len(r.within), 7, 0)
+    quoted("sum of breaks above tolerance ($)", sum(r.breaks.values()), 10_112, 0)
     quoted("residual after replaying the missing trades ($)", total_gap - missing, 12_507, 0)
 
 

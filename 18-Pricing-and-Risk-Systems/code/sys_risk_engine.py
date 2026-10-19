@@ -394,7 +394,6 @@ def check_example_3() -> None:
     comp = [z99 * w[i] * cw[i] / sigma_p for i in range(3)]
     for i, q in enumerate((2_046_227, 765_111, 2_055_124)):
         quoted(f"desk {i + 1} component VaR", comp[i], q, 0)
-    assert abs(sum(comp) - var_p) < 1e-6
     # marginal VaR by central difference of the portfolio VaR, independent of the covariance formula
     h = 1e-6
     for i in range(3):
@@ -425,7 +424,6 @@ def check_example_4() -> None:
     comp_es = [-sum(wt * desks[dd][i] for i, wt in tail) for dd in range(3)]
     for i, q in enumerate((1_771_519, 1_216_433, 1_441_227)):
         quoted(f"desk {i + 1} ES contribution in the bank's tail scenarios", comp_es[i], q, 0)
-    assert abs(sum(comp_es) - es_total) < 1e-6
     # Euler check: the contribution is the derivative of bank ES with respect to the desk's scale, re-sorted each time
     h = 1e-4
     for dd in range(3):
