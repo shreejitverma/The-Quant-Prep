@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [var-and-expected-shortfall]
 est_hours: 4
-sources: [Basel Framework MAR30 Internal models approach general provisions (version effective 1 January 2023) MAR30.11 MAR30.12 and MAR30.19 to MAR30.23, Basel Committee on Banking Supervision - Stress testing principles (d450 October 2018), Basel Committee on Banking Supervision - Principles for sound stress testing practices and supervision (BCBS 155 May 2009), Breuer Jandacka Rheinberger and Summer - How to Find Plausible Severe and Useful Stress Scenarios - International Journal of Central Banking 5(3) 205-224 (2009), Jorion - Value at Risk 3rd edition (McGraw-Hill 2007) chapter 14, Federal Reserve Board - 2026 Stress Test Scenarios and Dodd-Frank Act Stress Test results (2026), CFTC staff interim report on the 20 April 2020 WTI price movement (November 2020)]
+sources: [Basel Framework MAR30 Internal models approach general provisions (version effective 1 January 2023) MAR30.11 MAR30.12 and MAR30.19 to MAR30.23, Basel Committee on Banking Supervision - Stress testing principles (d450 October 2018), Basel Committee on Banking Supervision - Principles for sound stress testing practices and supervision (BCBS 155 May 2009), Breuer Jandacka Rheinberger and Summer - How to Find Plausible Severe and Useful Stress Scenarios - International Journal of Central Banking 5(3) 205-224 (2009), Jorion - Value at Risk 3rd edition (McGraw-Hill 2007) stress testing chapter, Basel Committee consolidated guidelines RMA30 Stress testing RMA30.2 and RMA30.30, Federal Reserve Board - 2026 Stress Test Scenarios and Dodd-Frank Act Stress Test results (2026), CFTC staff interim report on the 20 April 2020 WTI price movement (November 2020)]
 ---
 
 # Stress Testing and Scenario Analysis
@@ -114,8 +114,9 @@ Correlation stress is the cheapest second-order effect to quantify: ten equally 
 ### Governance and regulation
 
 - Basel internal models: a "routine and rigorous programme of stress testing" whose results are reviewed at least monthly by senior management, used in the internal assessment of capital adequacy and reflected in limits (MAR30.11); prompt mitigating action where tests reveal a vulnerability (MAR30.12); desk-level and bank-wide programmes covering linear and nonlinear positions (MAR30.19, MAR30.20); quantitative and qualitative elements including liquidity (MAR30.21); supervisory, historical and bank-designed scenarios (MAR30.23).
-- Basel principles: the 2009 sound stress testing principles were superseded by the October 2018 "Stress testing principles" (d450), whose consolidated version defines reverse stress tests as exploring scenarios that could lead a bank to fail.
-- United States (as of 2026-10): the Federal Reserve's supervisory stress test projects losses and capital over a nine-quarter horizon; it publishes a baseline and a severely adverse scenario, the separate adverse scenario having been removed from the 2020 cycle; results set each large bank's stress capital buffer, which first applied on 1 October 2020; a final rule announced on 30 September 2026 averages the results of the two most recent annual tests, starting in 2028. Details change with each cycle; see [Stress Testing: CCAR, DFAST and EBA](../17-Regulatory-Capital-Basel-and-FRTB/17-Stress-Testing-CCAR-DFAST-and-EBA.md).
+- Basel principles: the 2009 sound stress testing principles were replaced by the October 2018 "Stress testing principles" (d450), now consolidated as chapter RMA30 of the Basel Committee's guidelines; RMA30.2 defines a reverse stress test as assessing a pre-defined adverse outcome (a breach of regulatory ratios, insolvency or illiquidity) and identifying scenarios that could lead to it, and RMA30.30 says reverse stress tests explore scenarios that could potentially lead banks to fail.
+- United States (as of 2026-10): the Federal Reserve's supervisory stress test projects losses and capital over a nine-quarter horizon; it publishes a baseline and a severely adverse scenario, the separate adverse scenario having been removed from the 2020 cycle; results set each large bank's stress capital buffer, which first applied on 1 October 2020; a final rule announced on 30 September 2026 averages the results of the two most recent annual tests, starting in 2028 (Federal Reserve press release, 30 September 2026).
+  Details change with each cycle; see [Stress Testing: CCAR, DFAST and EBA](../17-Regulatory-Capital-Basel-and-FRTB/17-Stress-Testing-CCAR-DFAST-and-EBA.md).
 
 ## Worked examples
 
@@ -161,9 +162,10 @@ Probability statements: $P(\text{P\&L} \le -40\text{m}) = \Phi(-3.19) = 7.05 \ti
 Option book.
 A desk is short 100,000 one-month 95-puts and 100,000 105-calls (vol 20%), stock-hedged; factors are the 10-day equity log return (sd 3.98%) and the change in implied vol (sd 3 points), correlation $-0.7$; loss threshold 1.0m, full revaluation.
 
-1. Linear (delta-vega) answer: the hedged book has almost no delta (0.048m per unit log return) and vega $-1.079$m per unit vol, so the linear solution needs equity $-86\%$ and vol $+89$ points, distance 29.6, where full revaluation loses 5.31m. The linear model is useless here.
-2. Brute force over 1,440 whitened directions: the most plausible 1.0m loss is a rally of $+15.4\%$ with vol $-8.1$ points, distance 3.875.
-3. Fixed-point solver from three starts: one start finds the rally (3.875, matching brute force), two find a crash of $-17.1\%$ with vol $+9.1$ points at distance 4.285, a local optimum.
+1. Linear (delta-vega) answer: the hedged book has almost no delta (0.048m per unit log return) and vega $-1.078$m per unit vol, so the linear solution needs an equity log return of $-0.86$ (a 57.7% fall) and vol $+89$ points, distance 29.6, where full revaluation loses 5.31m.
+   The linear model is useless here.
+2. Brute force over 1,440 whitened directions: the most plausible 1.0m loss is a rally (log return $+0.154$, a 16.7% rise) with vol $-8.1$ points, distance 3.875.
+3. Fixed-point solver from three starts: one start finds the rally (3.875, matching brute force), two find a crash (log return $-0.171$, a 15.7% fall) with vol $+9.1$ points at distance 4.285, a local optimum.
 
 The rally wins because the negative spot-vol correlation makes "up and vol down" a likely direction, and the short call loses on the way up even with lower vol.
 Single-start local solvers would have reported the crash, which is the scenario everyone expects and the wrong answer.
@@ -197,7 +199,7 @@ The stress test must report the 5.25m cash outflow beside the gain, because the 
 > [!question]- risk-reverse-stress-testing-concept | What is Reverse Stress Testing, and how does it differ from traditional forward stress testing?
 > Forward: choose the scenario, compute the loss. Reverse: choose the loss (capital depletion, a liquidity shortfall, a limit) and find the scenarios that cause it.
 > Done quantitatively it is an optimisation: minimise the Mahalanobis distance $x^\top\Sigma^{-1}x$ subject to $\Delta V(x) \le -L$, which returns the most plausible failure scenario.
-> The Basel stress testing principles (d450, 2018) describe reverse stress tests as exploring scenarios that could lead a bank to fail.
+> The Basel stress testing principles (d450, 2018, consolidated as RMA30) define it as assessing a pre-defined adverse outcome such as a breach of regulatory ratios, insolvency or illiquidity, and identifying the scenarios that could lead to it (RMA30.2).
 
 > [!question]- risk-correlation-breakdown-crisis | Explain the phenomenon "in a crisis, all correlations go to 1" from a structural and liquidity perspective.
 > Leveraged holders facing margin calls and redemptions sell what they can, not what they want, so unrelated assets are sold together and their returns co-move.
@@ -232,7 +234,7 @@ The stress test must report the 5.25m cash outflow beside the gain, because the 
 > [!question]- risk-non-linear-payoff-stress-testing | Why do linear risk factor sensitivities (Delta) fail to predict stress test losses for portfolios containing options and mortgage-backed securities?
 > Losses on options and prepayable mortgages are curved in the factor move: gamma, vega that changes with spot, and prepayment behaviour all change with size.
 > In the stagflation example a put overlay turns a doubling of severity into a 39% larger loss (24.29m to 33.78m) instead of a doubled one.
-> In reverse stress tests the failure is worse: the linear model of a hedged short strangle needed a 86% fall and an 89-point vol rise to lose 1m, while full revaluation finds a 15% rally.
+> In reverse stress tests the failure is worse: the linear model of a hedged short strangle needed a 57.7% fall (log return $-0.86$) and an 89-point vol rise to lose 1m, while full revaluation finds a 16.7% rally.
 
 > [!question]- risk-macro-scenario-feedback-loops | What are secondary feedback loops in macroeconomic stress testing?
 > Reactions to the first shock that move prices again: margin calls and forced sales, wider haircuts and funding withdrawal, credit tightening that raises defaults, and rule-based de-risking by many holders at once.
@@ -280,17 +282,9 @@ The stress test must report the 5.25m cash outflow beside the gain, because the 
 > Use the first for loss probabilities and the second only as a plausibility label for scenarios.
 
 > [!question]- risk-reverse-stress-linear-proxy-failure | Why can a reverse stress test on Greeks give a nonsensical scenario for a hedged option book?
-> A delta-hedged book has nearly zero first-order spot exposure, so the linear model can only lose through vega and needs absurd moves: equity $-86\%$ and vol $+89$ points (distance 29.6) for a 1m loss in the strangle example.
-> The real risk is curvature: full revaluation finds a 1m loss at a 15.4% rally with vol down 8.1 points, distance 3.875.
+> A delta-hedged book has nearly zero first-order spot exposure, so the linear model can only lose through vega and needs absurd moves: an equity log return of $-0.86$ (a 57.7% fall) and vol $+89$ points (distance 29.6) for a 1m loss in the strangle example.
+> The real risk is curvature: full revaluation finds a 1m loss at a 16.7% rally (log return 0.154) with vol down 8.1 points, distance 3.875.
 > Reverse stress tests on nonlinear books need full revaluation (or at least delta-gamma with cross terms) inside the optimisation.
-
-## Further reading
-
-- Basel Committee on Banking Supervision, Basel Framework MAR30, paragraphs 30.11, 30.12 and 30.19 to 30.23 (version effective 1 January 2023).
-- Basel Committee on Banking Supervision, *Stress testing principles*, October 2018 (d450), replacing *Principles for sound stress testing practices and supervision*, May 2009 (BCBS 155).
-- T. Breuer, M. Jandacka, K. Rheinberger and M. Summer, "How to find plausible, severe, and useful stress scenarios", *International Journal of Central Banking* 5(3), 205-224, 2009.
-- P. Jorion, *Value at Risk: The New Benchmark for Managing Financial Risk*, 3rd edition, McGraw-Hill 2007, chapter 14 (stress testing).
-- Board of Governors of the Federal Reserve System, 2026 stress test scenarios and 2026 Dodd-Frank Act stress test results (federalreserve.gov), and the press release of 30 September 2026 on averaging stress capital buffer requirements.
 
 ## In this repo and SDE-Interview-Prep
 
@@ -298,3 +292,11 @@ The stress test must report the 5.25m cash outflow beside the gain, because the 
 - Loss quantiles and tails: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md); generating the scenarios: [Scenario Generation](11-Scenario-Generation.md).
 - Covariance and factor structure: [Risk Factor Modelling](10-Risk-Factor-Modelling.md); revaluation methods: [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md).
 - Supervisory programmes in detail: [Stress Testing: CCAR, DFAST and EBA](../17-Regulatory-Capital-Basel-and-FRTB/17-Stress-Testing-CCAR-DFAST-and-EBA.md); production systems: [Risk Engine](../18-Pricing-and-Risk-Systems/07-Risk-Engine.md).
+
+## Further reading
+
+- Basel Committee on Banking Supervision, Basel Framework MAR30, paragraphs 30.11, 30.12 and 30.19 to 30.23 (version effective 1 January 2023).
+- Basel Committee on Banking Supervision, *Stress testing principles*, October 2018 (d450), replacing *Principles for sound stress testing practices and supervision*, May 2009 (BCBS 155); consolidated as RMA30 (definitions in RMA30.2, reverse stress tests in RMA30.30).
+- T. Breuer, M. Jandacka, K. Rheinberger and M. Summer, "How to find plausible, severe, and useful stress scenarios", *International Journal of Central Banking* 5(3), 205-224, 2009.
+- P. Jorion, *Value at Risk: The New Benchmark for Managing Financial Risk*, 3rd edition, McGraw-Hill 2007, the stress testing chapter.
+- Board of Governors of the Federal Reserve System, 2026 stress test scenarios and 2026 Dodd-Frank Act stress test results (federalreserve.gov), and the press release of 30 September 2026 on averaging stress capital buffer requirements.

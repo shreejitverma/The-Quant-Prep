@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [the-greeks]
 est_hours: 4
-sources: [Basel Framework MAR32 Backtesting and profit and loss attribution test (version effective 1 January 2023) MAR32.20 to MAR32.45, Kamal and Derman - When You Cannot Hedge Continuously The Corrections to Black-Scholes - Goldman Sachs Quantitative Strategies Research Notes (1999), Ahmad and Wilmott - Which Free Lunch Would You Like Today Sir - Wilmott Magazine November 2005 pp 64-79, Carr and Madan - Towards a Theory of Volatility Trading - in Jarrow (ed.) Volatility Risk Books (1998) pp 417-427, Taleb - Dynamic Hedging (Wiley 1997)]
+sources: [Basel Framework MAR32 Backtesting and profit and loss attribution test (version effective 1 January 2023) MAR32.20 to MAR32.45, Kamal and Derman - When You Cannot Hedge Continuously The Corrections to Black-Scholes - Goldman Sachs Quantitative Strategies Research Notes (1998), Ahmad and Wilmott - Which Free Lunch Would You Like Today Sir - Wilmott Magazine November 2005 pp 64-79, Carr and Madan - Towards a Theory of Volatility Trading - in Jarrow (ed.) Volatility Risk Books (1998) pp 417-427, Taleb - Dynamic Hedging (Wiley 1997)]
 ---
 
 # P&L Attribution and Greek Risk
@@ -15,7 +15,7 @@ sources: [Basel Framework MAR32 Backtesting and profit and loss attribution test
 - Risk-based P&L explain is a Taylor expansion: $\Delta\Pi \approx \Delta\,\delta S + \tfrac12\Gamma\,\delta S^2 + \Theta\,\delta t + \mathcal V\,\delta\sigma + \text{Vanna}\,\delta S\,\delta\sigma + \tfrac12\text{Volga}\,\delta\sigma^2 + \rho\,\delta r$; the unexplained term is full revaluation minus that sum, and it is third order in the move.
 - Under Black-Scholes, $\Theta + \tfrac12\sigma^2S^2\Gamma + rS\Delta - rV = 0$; with $r = 0$ a delta-hedged option earns $\tfrac12\Gamma S^2\left((\delta S/S)^2 - \sigma^2\delta t\right)$ per step, so the daily break-even move is $\sigma S\sqrt{\delta t}$ ($\sigma S/16$ per trading day).
 - Hedged at implied vol, the cumulative P&L is $\tfrac12\int \Gamma S^2(\sigma_{\text{real}}^2 - \sigma_{\text{imp}}^2)\,dt$, path dependent; hedged at the realised vol it converges to $V(\sigma_{\text{real}}) - V(\sigma_{\text{imp}})$ (Ahmad and Wilmott 2005).
-- Discrete hedging adds noise with standard deviation about $\sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$ for $N$ rebalances (Kamal and Derman 1999); simulation confirms it to within 4% at $N = 21$.
+- Discrete hedging adds noise with standard deviation about $\sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$ for $N$ rebalances (Kamal and Derman 1998); simulation confirms it to within 4% at $N = 21$.
 - Full-revaluation "waterfall" attribution has no unexplained term but depends on the order of factors; on an earnings gap the order moved 20,930 of P&L between the spot and vol buckets.
 - Regulators run the same check: the FRTB PLA test compares risk-theoretical P&L with hypothetical P&L by Spearman correlation and KS distance (MAR32.34 to MAR32.42), and a desk whose model misses a material factor goes red.
 
@@ -114,11 +114,11 @@ Both means are close to $V(25\%) - V(20\%) = 0.5755$; the implied-vol hedge is a
 ### Discrete hedging error
 
 Rebalancing $N$ times instead of continuously adds a zero-mean error.
-Kamal and Derman (1999) give its standard deviation for an at-the-money option as approximately
+Kamal and Derman (1998) give its standard deviation as approximately
 
 $$\sigma_{\text{hedge}} \approx \sqrt{\pi/4}\;\frac{\mathcal V\,\sigma}{\sqrt N},$$
 
-with $\mathcal V$ the vega per unit volatility.
+with $\mathcal V$ the vega per unit volatility at inception; they check it against simulations of a one-month at-the-money option.
 For the 1-month ATM call at 20% ($\mathcal V = 11.512$), simulation against the formula:
 
 | $N$ | Monte Carlo sd | Formula | Ratio |
@@ -131,7 +131,8 @@ The formula is a leading-order result and slightly overstates the error at small
 
 ### Higher-order Greeks a desk watches
 
-- Vanna $= \partial^2V/\partial S\partial\sigma = -\phi(d_1)d_2/\sigma$, the same for a call and a put of the same strike: positive for out-of-the-money calls ($d_2 < 0$) and negative for out-of-the-money puts. When spot falls and vol rises together, vanna changes the delta that must be re-hedged.
+- Vanna $= \partial^2V/\partial S\partial\sigma = -\phi(d_1)d_2/\sigma$, the same for a call and a put of the same strike: positive for out-of-the-money calls ($d_2 < 0$) and negative for out-of-the-money puts.
+  When spot falls and vol rises together, vanna changes the delta that must be re-hedged.
 - Volga $= \partial^2V/\partial\sigma^2 = \mathcal V d_1 d_2/\sigma$: slightly negative at the money-forward ($d_1 > 0 > d_2$), positive in the wings; long wings gain from a vol explosion beyond what vega predicts.
 - Charm $= \partial\Delta/\partial t$: deltas drift with time even if spot does not, toward 1 or 0 for in- and out-of-the-money options, so a book that is flat on Friday is not flat on Monday.
 - Speed $= \partial\Gamma/\partial S$ and zomma $= \partial\Gamma/\partial\sigma$: the third-order terms that dominate the unexplained P&L on gap days; ATM gamma rises as vol falls, so a vol crush increases the gamma P&L earned on the same move.
@@ -155,7 +156,8 @@ For banks on the FRTB internal models approach, every desk runs a profit and los
 - metrics on the most recent 250 days: Spearman correlation of RTPL and HPL and the two-sample Kolmogorov-Smirnov statistic, with each empirical CDF stepping by 0.004 (MAR32.34 to MAR32.41);
 - zones: green if the correlation is above 0.80 and KS below 0.09, red if the correlation is below 0.70 or KS above 0.12, amber otherwise (MAR32.42); red desks move to the standardised approach (MAR32.43) and amber desks pay a capital surcharge (MAR32.44, MAR33.43).
 
-The quoted p-values 0.264 and 0.055 for KS thresholds 0.09 and 0.12 (MAR32.42) are the asymptotic Kolmogorov tail at $\lambda = D\sqrt{250 \cdot 250/500}$: 0.2634 and 0.0546.
+MAR32.42 quotes p-values 0.264 and 0.055 for the KS thresholds 0.09 and 0.12 without saying how they were computed.
+The asymptotic Kolmogorov tail at $\lambda = D\sqrt{250 \cdot 250/500}$ gives 0.2634 and 0.0546, close to (but at 0.09 not the same as) the quoted values.
 Because KS with 250 observations moves in steps of 0.004, "below 0.09" means at most 0.088; the exact two-sample probabilities are $P(D \ge 0.088) = 0.2881$, $P(D \ge 0.092) = 0.2409$ and $P(D \ge 0.120) = 0.0546$.
 The test is covered in depth in [FRTB Backtesting and PLA Testing](../17-Regulatory-Capital-Basel-and-FRTB/12-FRTB-Backtesting-and-PLA-Testing.md).
 
@@ -174,7 +176,7 @@ Overnight the stock gaps from 100 to 105 and implied vol is crushed from 40% to 
 3. Theta: $-5{,}557{,}020/365 = -15{,}225$.
 4. Vega: $2{,}283{,}707 \times (-0.10) = -228{,}371$.
 5. Vanna: $11{,}419 \times 5 \times (-0.10) = -5{,}709$; volga: $\tfrac12 \times (-18{,}770) \times 0.01 = -94$.
-6. Explained: $-162{,}570$. Full revaluation: $-134{,}085$. Unexplained: $+28{,}485$, 21% of the day's P&L.
+6. Explained: $-162{,}570$; full revaluation: $-134{,}085$; unexplained: $+28{,}485$, 21% of the day's P&L.
 
 Why so large: the third-order terms.
 Holding time fixed and scaling the (spot, vol) move by 0.25, 0.5, 1 and 2, the unexplained is 321, 2,683, 23,286 and 196,525, growing about $2^3$ per doubling (ratios 8.4, 8.7, 8.4).
@@ -203,7 +205,7 @@ The simulation above suggests the formula is a few percent high at these frequen
 ### Example 3: a PLA test with a missing factor
 
 A desk is short 50,000 three-month 100-strike calls and long 80,000 95-strike puts (vol 25%), delta-hedged.
-Over 250 simulated days, spot moves 1.5% a day and implied vol 1 point a day with correlation $-0.7$; HPL is full revaluation of spot and vol.
+Over 250 simulated days, spot moves 1.5% a day and implied vol 1 point a day with correlation $-0.7$; each day is revalued from the same starting book with no time step, and HPL is full revaluation of spot and vol.
 
 | RTPL model | Spearman | KS | Zone |
 | :--- | ---: | ---: | :--- |
@@ -268,7 +270,7 @@ A good Taylor approximation passes easily; a model that omits a material factor 
 > Third, operational mismatches: Greeks and P&L from different models, snapshots or theta conventions, and late or amended bookings.
 
 > [!question]- risk-derman-kamal-hedging-error | According to the Derman-Kamal formula, how does discrete hedging error scale with rebalancing frequency?
-> Standard deviation about $\sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$ (Kamal and Derman 1999): it falls like $1/\sqrt N$.
+> Standard deviation about $\sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$ (Kamal and Derman 1998): it falls like $1/\sqrt N$.
 > Doubling the frequency cuts it by $1 - 1/\sqrt2 = 29\%$; quadrupling halves it.
 > Simulated for a 1-month ATM call at 20% vol, the formula is within 4% at $N = 21$ (0.445 against about 0.429) and within 2% at $N = 252$.
 
@@ -310,7 +312,7 @@ A good Taylor approximation passes easily; a model that omits a material factor 
 > [!question]- risk-ks-discreteness-pla | The PLA green threshold is KS below 0.09. What KS values can occur with 250 observations, and what are the real p-values?
 > The empirical CDFs step by $1/250 = 0.004$, so KS is a multiple of 0.004 and "below 0.09" means at most 0.088.
 > Exact two-sample tail probabilities: $P(D \ge 0.088) = 0.288$, $P(D \ge 0.092) = 0.241$, $P(D \ge 0.120) = 0.0546$.
-> The p-values quoted in MAR32.42 (0.264, 0.055) match the asymptotic Kolmogorov tail at $\lambda = D\sqrt{125}$ (0.2634, 0.0546).
+> The p-values quoted in MAR32.42 (0.264, 0.055) are close to the asymptotic Kolmogorov tail at $\lambda = D\sqrt{125}$ (0.2634, 0.0546); the text does not say how they were computed.
 
 > [!question]- risk-theta-financing-term | Why is theta not equal to minus one half sigma squared S squared gamma on a real desk?
 > Because of rates and dividends: Black-Scholes gives $\Theta = -\tfrac12\sigma^2S^2\Gamma - rS\Delta + rV$ with $r > 0$.
@@ -332,14 +334,6 @@ A good Taylor approximation passes easily; a model that omits a material factor 
 > So the position needs a bigger up move than down move to pay its theta.
 > The effect grows with the size of the move relative to $\sigma\sqrt T$, which is why short-dated options show it most.
 
-## Further reading
-
-- Basel Committee on Banking Supervision, Basel Framework MAR32 (backtesting and PLA), paragraphs 32.20 to 32.45, version effective 1 January 2023.
-- M. Kamal and E. Derman, "When you cannot hedge continuously: the corrections to Black-Scholes", Goldman Sachs Quantitative Strategies Research Notes, 1999.
-- R. Ahmad and P. Wilmott, "Which free lunch would you like today, Sir?: Delta hedging, volatility arbitrage and optimal portfolios", *Wilmott Magazine*, November 2005, 64-79.
-- P. Carr and D. Madan, "Towards a theory of volatility trading", in R. Jarrow (ed.), *Volatility*, Risk Books, 1998, 417-427.
-- N. N. Taleb, *Dynamic Hedging: Managing Vanilla and Exotic Options*, Wiley, 1997.
-
 ## In this repo and SDE-Interview-Prep
 
 - [pnl_attribution.py](code/pnl_attribution.py): analytic Greeks checked against finite differences, Taylor and waterfall explain, break-even search, hedging simulations, PLA metrics; every number above.
@@ -347,3 +341,11 @@ A good Taylor approximation passes easily; a model that omits a material factor 
 - The regulatory test in full: [FRTB Backtesting and PLA Testing](../17-Regulatory-Capital-Basel-and-FRTB/12-FRTB-Backtesting-and-PLA-Testing.md).
 - Production P&L systems: [P&L Platform](../18-Pricing-and-Risk-Systems/09-PnL-Platform.md).
 - Sensitivity computation and revaluation: [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md); limits on Greeks: [Drawdowns and Risk Limits](05-Drawdowns-and-Risk-Limits.md).
+
+## Further reading
+
+- Basel Committee on Banking Supervision, Basel Framework MAR32 (backtesting and PLA), paragraphs 32.20 to 32.45, version effective 1 January 2023.
+- M. Kamal and E. Derman, "When you cannot hedge continuously: the corrections to Black-Scholes", Goldman Sachs Quantitative Strategies Research Notes, 1998 (the formula is their equation 1, with the prefactor $\sqrt{\pi/4} = 0.886$).
+- R. Ahmad and P. Wilmott, "Which free lunch would you like today, Sir?: Delta hedging, volatility arbitrage and optimal portfolios", *Wilmott Magazine*, November 2005, 64-79.
+- P. Carr and D. Madan, "Towards a theory of volatility trading", in R. Jarrow (ed.), *Volatility*, Risk Books, 1998, 417-427.
+- N. N. Taleb, *Dynamic Hedging: Managing Vanilla and Exotic Options*, Wiley, 1997.

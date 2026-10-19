@@ -22,7 +22,7 @@ Z99 = 2.3263478740408408
 
 def check(label: str, value: float, expected: float, tol: float) -> float:
     """Print a value and assert it matches the literal quoted in the note to within tol (absolute)."""
-    print(f"  {label}: {value:.6f}")
+    print(f"  {label}: {value:.8g}")
     assert abs(value - expected) <= tol, f"{label}: got {value}, note quotes {expected} (tol {tol})"
     return value
 
