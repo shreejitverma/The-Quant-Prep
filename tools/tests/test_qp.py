@@ -590,10 +590,60 @@ class Index(TempRepo):
         text = readme.read_text(encoding="utf-8")
         # Five topics (four seeds plus one solid), 4 + 6 + 3 + 2 + 5 hours, four public cards; the firm folder has no topics.
         self.assertIn("| [Alpha](01-Alpha/README.md) | 5 | 1 | 20 | 4 | TDQ |", text)
-        self.assertIn("| **Total** | **5** | **1** | **20** | **4** | |", text)
+        self.assertNotIn("Total", text)  # no repo-wide row: it would go stale when two PRs merge
         self.assertNotIn("Firms", text)
         self.assertTrue(text.startswith("# Repo\n\nBefore.\n\n") and text.endswith("\n\nAfter.\n"))
         self.assertEqual(moc.update_all(self.vault()), [])
+
+    def _merge_two_catalog_edits(self, first: str, second: str) -> tuple[int, str]:
+        """Index a base, then two branches that each add one topic to a different section, and
+        three-way merge their root READMEs with git. Returns git's exit code and the merged text,
+        leaving both new topics on disk so a fresh index reflects the merged repository."""
+        import subprocess
+
+        readme = self.root / "README.md"
+        readme.write_text(f"# Repo\n\n{moc.CATALOG_START}\n{moc.CATALOG_END}\n", encoding="utf-8")
+        for folder, title in (("03-Gamma", "Gamma"), ("04-Delta", "Delta")):
+            (self.root / folder).mkdir()
+            (self.root / folder / "README.md").write_text(f"---\ntype: moc\n---\n\n# {title}\n", encoding="utf-8")
+            write_note(self.root, f"{folder}/01-{title}-Base.md", f"{title} base", card(f"{folder[3]}-base".lower()))
+        moc.update_all(self.vault())
+        versions = {"base": readme.read_text(encoding="utf-8")}
+        for name, folder in (("ours", first), ("theirs", second)):
+            note = self.root / folder / f"09-{folder[3:]}-New.md"
+            write_note(self.root, f"{folder}/09-{folder[3:]}-New.md", "New", card(f"{folder[3]}-new".lower()), status="solid")
+            readme.write_text(versions["base"], encoding="utf-8")
+            moc.update_all(self.vault())
+            versions[name] = readme.read_text(encoding="utf-8")
+            note.unlink()
+        paths = {}
+        for name, text in versions.items():
+            paths[name] = self.root / f"{name}.txt"
+            paths[name].write_text(text, encoding="utf-8")
+        merged = subprocess.run(["git", "merge-file", "-p", paths["ours"], paths["base"], paths["theirs"]], capture_output=True, text=True)
+        for path in paths.values():
+            path.unlink()
+        for folder in (first, second):
+            write_note(self.root, f"{folder}/09-{folder[3:]}-New.md", "New", card(f"{folder[3]}-new".lower()), status="solid")
+        return merged.returncode, merged.stdout
+
+    @unittest.skipUnless(shutil.which("git"), "needs git for a three-way merge")
+    def test_root_catalog_merges_cleanly_for_separate_sections(self):
+        # Rows for 01-Alpha and 04-Delta are separated by the 03-Gamma row, so git merges the two
+        # edits without a conflict, and the result must equal a fresh index: nothing goes stale.
+        code, merged = self._merge_two_catalog_edits("01-Alpha", "04-Delta")
+        self.assertEqual(code, 0, "edits to separate catalog rows conflicted")
+        (self.root / "README.md").write_text(merged, encoding="utf-8")
+        self.assertNotIn(moc.ROOT, moc.update_all(self.vault(), apply=False), "the merged catalog is stale")
+
+    @unittest.skipUnless(shutil.which("git"), "needs git for a three-way merge")
+    def test_root_catalog_never_merges_silently_stale(self):
+        # Adjacent rows may conflict, which forces a re-index; what must never happen is a clean
+        # merge whose catalog no longer matches the notes.
+        code, merged = self._merge_two_catalog_edits("03-Gamma", "04-Delta")
+        if code == 0:
+            (self.root / "README.md").write_text(merged, encoding="utf-8")
+            self.assertNotIn(moc.ROOT, moc.update_all(self.vault(), apply=False), "a clean merge left the catalog stale")
 
     def test_root_readme_without_catalog_markers_is_untouched(self):
         readme = self.root / "README.md"

@@ -75,8 +75,14 @@ ROOT = "."  # the folder name update_all reports for the repo-root README
 
 
 def render_catalog(vault: Vault) -> str:
-    """The root README's syllabus-at-a-glance table: one row per section that has topics."""
-    rows, total = [], {"topics": 0, "written": 0, "hours": 0.0, "cards": 0}
+    """The root README's syllabus-at-a-glance table: one row per section that has topics.
+
+    There is deliberately no repo-wide total: a totals line would change in every content pull
+    request, so two independently correct pull requests would leave it stale once both merged.
+    Each row changes only when its own section does, so they merge cleanly; ``./qp syllabus``
+    and ``./qp check`` report the totals.
+    """
+    rows = []
     for section in vault.sections:
         if section.library or section.private:
             continue
@@ -89,25 +95,15 @@ def render_catalog(vault: Vault) -> str:
         tracks = "".join(a for t, a in TRACK_ABBR.items() if any(t in n.tracks for n in topics))
         link = f"[{section.title}]({section.folder}/README.md)"
         rows.append(f"| {link} | {len(topics)} | {written} | {hours:g} | {cards} | {tracks} |")
-        total["topics"] += len(topics)
-        total["written"] += written
-        total["hours"] += hours
-        total["cards"] += cards
-    summary = (
-        f"{total['topics']} topics, {total['written']} written to `solid` or better,"
-        f" about {total['hours']:g} study hours and {total['cards']} question cards."
-    )
     return "\n".join(
         [
             CATALOG_START,
             "",
-            summary,
             "Tracks: T = trader, R = researcher, D = developer, Q = risk and strats.",
             "",
             "| Section | Topics | Written | Hours | Cards | Tracks |",
             "| :--- | ---: | ---: | ---: | ---: | :---: |",
             *rows,
-            f"| **Total** | **{total['topics']}** | **{total['written']}** | **{total['hours']:g}** | **{total['cards']}** | |",
             "",
             CATALOG_END,
         ]
