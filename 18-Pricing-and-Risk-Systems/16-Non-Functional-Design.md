@@ -5,240 +5,256 @@ tier: senior
 status: solid
 prereqs: [model-governance]
 est_hours: 4
-sources: [Martin Kleppmann - Designing Data-Intensive Applications: The Big Ideas Behind Reliable Scalable and Maintainable Systems (O'Reilly Media 2017), David Goldberg - What Every Computer Scientist Should Know About Floating-Point Arithmetic (ACM Computing Surveys Vol 23 No 1 March 1991), Nicholas J. Higham - Accuracy and Stability of Numerical Algorithms (2nd Edition Society for Industrial and Applied Mathematics 2002), Board of Governors of the Federal Reserve System - Sound Practices to Strengthen Operational Resilience (SR Letter 20-24 November 2020), Betsy Beyer Chris Jones Jennifer Petoff and Niall Richard Murphy - Site Reliability Engineering: How Google Runs Production Systems (O'Reilly Media 2016)]
+sources: [David Goldberg - What Every Computer Scientist Should Know About Floating-Point Arithmetic (ACM Computing Surveys 23(1) 1991), Nicholas J. Higham - Accuracy and Stability of Numerical Algorithms (2nd edition SIAM 2002) chapter 4, William Kahan - Further remarks on reducing truncation errors (Communications of the ACM 8(1) 1965), John K. Salmon Mark A. Moraes Ron O. Dror and David E. Shaw - Parallel Random Numbers - As Easy as 1 2 3 (SC11 2011), Jeffrey Dean and Luiz Andre Barroso - The Tail at Scale (Communications of the ACM 56(2) 2013), John D. C. Little - A Proof for the Queuing Formula L = lambda W (Operations Research 9(3) 1961), Betsy Beyer Chris Jones Jennifer Petoff and Niall Richard Murphy - Site Reliability Engineering (O'Reilly 2016), Federal Reserve FDIC and OCC - Interagency Paper on Sound Practices to Strengthen Operational Resilience (SR 20-24 2 November 2020 revised 2 June 2026), Securities Exchange Act of 1934 Section 15(g) (15 U.S.C. 78o(g)), GCC and Clang manuals on -ffp-contract and -ffp-model (retrieved 2026-10), AWS EC2 User Guide - Spot Instance interruption notices (retrieved 2026-10)]
 ---
 
 # Non-Functional Architecture and Production Operations
 
 ## TL;DR
 
-- While functional software engineering produces mathematical pricing algorithms and risk aggregations, non-functional architecture determines whether enterprise trading platforms survive market volatility spikes, regulatory audits, and physical data center failures.
-- Non-functional pillars for mission-critical trading include: **Bit-Exact Determinism** (guaranteeing that identical portfolio runs produce identical binary outputs regardless of thread scheduling or compiler optimizations); **Bitemporality** (reconstructing historical book states as valid on any date); **Security and Information Barriers** (enforcing Chinese Walls separating public trading desks from private investment banking data); **Disaster Recovery (DR)** (enforcing Recovery Point Objective $\text{RPO} = 0$ for trade capture and Recovery Time Objective $\text{RTO} < 5\text{ minutes}$ across geographic data centers); and **Cloud FinOps** (optimizing unit economics per scenario evaluation via dynamic spot instance scheduling).
-- In multi-threaded numerical computing, non-associative floating-point addition causes phantom P&L discrepancies; deterministic reduction trees and Kahan compensated summation recover lost precision.
-- Synchronous transactional replication across dark-fiber links (such as New York Equinix NY4 to Chicago Equinix CH1) requires pipelined concurrent WAL streams to sustain thousands of transactions per second against speed-of-light propagation delays.
-- All numerical figures in this note are verified by [sys_non_functional.py](code/sys_non_functional.py).
+- Non-functional requirements (reproducibility, latency, availability, recoverability, security, cost) decide whether a correct pricing and risk platform is usable; each has arithmetic that interviews test.
+- Floating-point addition is not associative, so parallel sums depend on scheduling: fix the reduction order (fixed blocks and a fixed tree), use compensated or exact summation where needed, and control compiler contraction (FMA) and fast-math.
+- Monte Carlo is reproducible across any number of workers only if each path owns its random stream (counter-based generators keyed by path), not if workers share one sequential stream.
+- Latency percentiles do not add and do not bound: two stages with a p99 of 1 ms each can give a request p99 of 101 ms, and a fan-out to 100 leaves sees a leaf's 1% tail on 63.4% of requests.
+- Availability multiplies in series and complements multiply in parallel (under independence); RPO is set by how data reaches the other site, RTO by detection, decision and promotion; synchronous replication over 1,300 km of fibre costs at least 12.75 ms per commit.
+- Every number here is computed, printed and asserted by [sys_non_functional.py](code/sys_non_functional.py); prices, sizes and settings are hypothetical teaching inputs.
 
 ## Learning objectives
 
-- Guarantee bit-exact floating-point reproducibility across distributed multi-threaded CPU and GPU grids.
+- Guarantee bit-exact floating-point reproducibility across distributed multi-threaded CPU and GPU grids, and say which compiler settings break it.
 - Implement Kahan compensated summation to eliminate truncation error accumulation during multi-million-position portfolio roll-ups.
-- Construct counter-based pseudo-random number generator (PRNG) leapfrogging pipelines ensuring pathwise Monte Carlo determinism.
-- Design high-availability disaster recovery architectures achieving $\text{RPO} = 0$ and $\text{RTO} < 5\text{ minutes}$ across geographically separated metro data centers.
-- Implement Attribute-Based Access Control (ABAC) and Chinese Wall information barriers isolating flow market makers from private advisory divisions.
-- Formulate Cloud FinOps unit-cost frameworks evaluating on-demand infrastructure against spot-instance cluster bursting.
+- Construct counter-based pseudo-random number generator (PRNG) pipelines ensuring pathwise Monte Carlo determinism, and distinguish them from leapfrogging and block splitting.
+- Budget tail latency correctly for chained and fanned-out services.
+- Compute availability, recovery point and recovery time objectives for a design, and explain the physics that limits synchronous replication distance.
+- Design disaster recovery architectures that achieve $\text{RPO} = 0$ for trade capture with a bounded RTO across data centres.
+- Implement Attribute-Based Access Control (ABAC) and information barriers isolating public-side trading from private-side advisory data.
+- Formulate cost models comparing owned capacity with on-demand and spot cloud capacity by break-even utilisation.
 
 ## Core concepts
 
-### 1. Non-Functional Pillars for Capital Markets Infrastructure
+### 1. The non-functional checklist for a pricing and risk platform
 
-| Architectural Dimension | Engineering Mandate | Primary Failure Mode | Regulatory Reference |
+| Dimension | What to specify | Typical failure | Reference |
 | :--- | :--- | :--- | :--- |
-| **Bit-Exact Determinism** | IEEE 754 compliance, Kahan summation, counter-based PRNGs | Phantom P&L variance between consecutive batch runs | SR 11-7 / OCC 2011-12 |
-| **Bitemporal Lineage** | Explicit Valid Time vs. Transaction Time tracking | Inability to reproduce historical risk marks under audit | BCBS 239 Principle 3 |
-| **Information Barriers** | ABAC entitlements, mTLS encryption, network isolation | Chinese Wall leaks, illegal insider information sharing | SEC Rule 10b-5 / FINRA 2241 |
-| **Disaster Recovery** | Synchronous cross-region replication ($\text{RPO} = 0$) | Data loss or unacknowledged trades during site outages | Fed SR 20-24 Sound Practices |
-| **Distributed Observability** | OpenTelemetry tracing, Prometheus metrics, SLI/SLO alerts | Undetected message queue stalls or latency tail spikes | SRE Principles |
-| **Cloud FinOps** | Spot instance autoscaling, per-scenario cost tracking | Uncontrolled cloud budget overruns on compute grids | Enterprise Governance |
+| Reproducibility | same inputs and version give the same bits | reruns differ, golden tests flake, P&L explain breaks | Goldberg 1991; Higham 2002 |
+| Bitemporal lineage | valid time and transaction time on every fact | a past report cannot be reproduced after back-dated amendments | BCBS 239 Principle 3 |
+| Latency | percentile targets per path, end to end | p99 budgets summed per stage, tail amplification ignored | Dean and Barroso 2013 |
+| Availability and recovery | availability target, RPO, RTO per service | single points of failure, untested failover | SR 20-24 sound practices |
+| Information barriers | who may see which data, enforced in code | private-side information reaching public-side desks | Exchange Act Section 15(g) |
+| Observability | traces, metrics, logs with correlation ids | stalls and tail spikes found by users first | SRE book |
+| Cost | unit cost (per scenario, per path, per report) | idle owned capacity or uncontrolled cloud bursts | firm policy |
 
-### 2. High-Availability & Disaster Recovery Topology
+Section 15(g) of the Securities Exchange Act requires every registered broker or dealer to "establish, maintain, and enforce written policies and procedures reasonably designed ... to prevent the misuse ... of material, nonpublic information"; information barriers are how a platform implements that in entitlements, data stores and networks.
+SR 20-24 (the interagency sound-practices paper on operational resilience, November 2020, revised June 2026) frames resilience around critical operations, tolerances for disruption, mapped dependencies, testing and recovery.
+
+### 2. Floating-point reproducibility
+
+IEEE 754 addition is correctly rounded but not associative: $(a + b) + c$ and $a + (b + c)$ can differ in the last bits.
+A parallel reduction that combines partial sums in the order workers finish therefore produces run-to-run differences.
+In double precision the differences are tiny in money (Example 1 finds millionths of a dollar on a billion-dollar total), but they break bit-exact regression tests, checksums of risk files and "did anything change?" comparisons, and they can flip threshold decisions.
+Controls:
+
+1. Fix the reduction: partition by position into fixed blocks, sum each block in a fixed order, and combine block sums in a fixed tree, so the worker count and completion order cannot matter.
+2. Use compensated (Kahan) or exactly rounded summation (for example Python's `math.fsum`) where a correctly rounded total matters.
+3. Control the compiler: `-ffast-math` permits reassociation and assumes no NaNs or infinities; fused multiply-add contraction changes results between machines with and without FMA.
+   GCC's default is `-ffp-contract=fast` except for C in a strict standards mode, and Clang's default `-ffp-model=precise` still enables contraction (`-ffp-contract=on`); pass `-ffp-contract=off` when results must match across architectures.
+4. Pin library versions: vendor math libraries (exp, log, BLAS) may change results between releases.
+
+Kahan summation carries the rounding error of each addition in a compensation term; Higham (chapter 4) shows the error bound is $2u \sum |x_i|$ plus a term of order $n u^2 \sum |x_i|$, so to first order it does not grow with $n$, unlike naive summation's $n u \sum |x_i|$ bound.
+
+### 3. Parallel random numbers
+
+Three ways to give $W$ workers random numbers from one generator:
+
+- Block splitting (skip-ahead): worker $w$ takes a contiguous block of the stream, which needs a cheap jump-ahead.
+- Leapfrogging: worker $w$ takes draws $w, w + W, w + 2W, \dots$; results depend on $W$.
+- Counter-based generation (Salmon et al. 2011, the Philox and Threefry families): the output is a keyed bijection of a counter, $x = f_{\text{key}}(\text{counter})$, so any draw is computable directly.
+
+For Monte Carlo pricing the robust pattern is one stream per path: key (or counter block) derived from (run seed, path index), so path $p$ sees the same numbers whichever worker runs it and in whatever order, a single path can be replayed alone for debugging, and the result is identical for 1 or 50,000 workers once the reduction order is also fixed.
+
+### 4. Tail latency arithmetic
+
+Percentiles are quantiles, and quantiles are not additive: $\text{p99}(A + B)$ can be smaller than $\text{p99}(A) + \text{p99}(B)$ (independent, light tails) or larger (rare large delays, as in Example 3).
+So an end-to-end latency budget cannot be built by summing per-stage p99s; budget the end-to-end distribution (by measurement or simulation) and attribute per stage with tracing.
+Fan-out makes it worse: if a request waits for the slowest of $n$ independent leaves, the chance it hits at least one leaf's 1% tail is $1 - 0.99^n$ (Dean and Barroso 2013 use the 100-leaf case), so leaves need a much higher percentile target, or the request needs hedged requests, tied requests or partial results.
+Queueing adds the other half: by Little's law $L = \lambda W$, the number in system equals throughput times time in system, which sizes buffers, connection pools and in-flight commits.
+
+### 5. Availability, RPO and RTO
+
+- Availability $A$ is the fraction of time the service meets its objective; downtime per year is $(1 - A) \times 525{,}960$ minutes (365.25 days).
+- Components in series multiply: $A = \prod A_i$.
+- Independent redundant components in parallel: $A = 1 - \prod (1 - A_i)$; correlated failures (shared power, software, configuration pushes) break this, and a single shared component caps the whole chain.
+- Recovery point objective (RPO): how much committed data may be lost; it equals the replication lag or the interval between copies at the moment of failure.
+- Recovery time objective (RTO): how long until service is back; it is the sum of detection, the decision to fail over, promotion of the standby and client reconnection.
 
 ```mermaid
-flowchart TB
-    subgraph PrimaryDC["Primary Data Center (New York - Equinix NY4)"]
-        Ingress1["Active Order Gateway"]
-        PrimaryDB[("Primary Database\n(PostgreSQL / CockroachDB)")]
-        ComputeGrid1["Active Compute Grid\n(5,000 On-Premises Cores)"]
+flowchart LR
+    subgraph Metro["Primary metro region"]
+        P[("Primary database")]
+        S1[("Synchronous standby, about 50 km")]
+        P ==>|sync commit: RPO 0, about 0.5 ms round trip| S1
     end
-
-    subgraph SyncLink["Dedicated Ultra-Low Latency Dark Fiber Link"]
-        DirectConnect["Synchronous WAL Replication: RPO = 0\n(7.8 ms RTT New York to Chicago)"]
+    subgraph Remote["Remote region"]
+        S2[("Asynchronous standby")]
     end
-
-    subgraph SecondaryDC["Secondary DR Site (Chicago - Equinix CH1)"]
-        Ingress2["Standby Order Gateway"]
-        StandbyDB[("Standby Replica Database\n(Read-Only Hot Standby)")]
-        ComputeGrid2["Standby Compute Grid\n(Warm Reserve Capacity)"]
-    end
-
-    subgraph CloudBurst["Public Cloud Burst Tier (AWS / GCP)"]
-        SpotWorkers["Ephemeral Spot Compute Grid\n(50,000 vCPUs Burst Tier)"]
-        ObjectStore[("Encrypted Parquet Data Lake\n(Apache Iceberg on S3)")]
-    end
-
-    Ingress1 --> PrimaryDB
-    PrimaryDB --> ComputeGrid1
-    PrimaryDB ==>|Synchronous WAL Streaming| DirectConnect
-    DirectConnect ==> StandbyDB
-
-    StandbyDB -.->|Heartbeat Health Check| Ingress2
-    ComputeGrid1 -.->|EOD Intraday Burst| SpotWorkers
-    SpotWorkers --> ObjectStore
+    P -.->|async log shipping: RPO = lag| S2
+    App["Trade capture and pricing services"] --> P
+    App -.->|failover by runbook or automation| S1
+    App -.->|regional disaster| S2
 ```
 
-### 3. Floating-Point Non-Determinism and Reproducibility
+The common pattern is synchronous replication inside a metro area (RPO 0 at a small latency cost) plus asynchronous replication to a distant region (protection against a regional event, with a small RPO), because synchronous commits over long distances pay the speed of light on every transaction.
 
-In distributed parallel architectures, calculating a portfolio sum $S = \sum_{i=1}^N v_i$ using multi-threaded reductions creates non-deterministic results:
-- Floating-point addition is non-associative under IEEE 754 standards:
+### 6. Owned versus cloud capacity
 
-$$(a + b) + c \ne a + (b + c)$$
-
-- If thread 1 sums items $[1 \dots 10,000]$ and thread 2 sums $[10,001 \dots 20,000]$, microsecond differences in thread completion alter the sequence of addition, shifting the least-significant bits.
-- This creates "phantom P&L noise" where rerunning identical portfolio data yields discrepancies of thousands of dollars.
-- **Architectural Safeguards:**
-  1. Enforce deterministic reduction trees with static, pre-ordered binary summation topologies.
-  2. Implement **Kahan Compensated Summation** to capture discarded low-order bits.
-  3. Strictly disable non-IEEE compiler flags (avoid `-ffast-math`; enforce `-ffp-model=precise` in Clang/GCC).
-
-### 4. Deterministic Multi-Threaded Random Number Generation (Leapfrogging)
-
-Monte Carlo simulation grids require billions of pseudo-random numbers:
-- Drawing numbers from a single shared PRNG guarded by a mutex destroys parallel scalability due to lock contention.
-- Instantiating separate PRNGs without coordinated seeding risks overlapping random number sequences, introducing statistical correlation bias.
-- **Counter-Based PRNG Leapfrogging:**
-  Using counter-based generators (such as Philox) or Sobol quasi-random skip algorithms, worker thread $k$ evaluating path $p$ jumps directly to seed offset $p \times \text{Steps}$ in $O(1)$ time:
-
-$$\text{State}(p) = \text{State}(0) + p \times \text{Offset}$$
-
-  This guarantees bit-exact, identical Monte Carlo paths whether executed across 1 core or 50,000 cores.
+Owned capacity costs the same whether busy or idle; cloud capacity costs per hour used.
+The break-even utilisation is the owned cost per vCPU-hour at full utilisation divided by the cloud price per vCPU-hour: below it, renting is cheaper.
+Spot capacity is cheaper but can be reclaimed: AWS issues an interruption notice two minutes before stopping or terminating a Spot Instance (EC2 User Guide, retrieved 2026-10), so spot workers need small checkpointed tasks and a fallback when a batch deadline is at risk.
 
 ## Worked examples
 
-### Example 1: Kahan Compensated Summation Algorithm
+### Example 1: same data, different totals
 
-A risk engine sums $1,000,000$ small trade sensitivity contributions ($v_i = 0.0001$) into a large portfolio base ($S = 100,000.00$):
-- **Naive Summation in Single Precision (IEEE 754 32-Bit Float):**
-  - In single precision (24-bit significand), $100,000.0 \approx 2^{16.6}$ while $0.0001 \approx 2^{-13.3}$.
-  - The scale difference exceeds the 24-bit precision window, causing the addition to vanish: $100,000.0 + 0.0001 = 100,000.0$.
-  - After $1,000,000$ additions, the accumulated sum remains **$100,000.00$**, losing $\$100.00$ in true economic value.
-- **Kahan Compensated Summation:**
-  The algorithm tracks accumulated truncation error in a separate compensation variable $c$:
+One million position P&Ls of mixed magnitude (from cents to tens of millions of dollars, both signs, seed 2026) sum to $-1{,}012.773$ million dollars.
+Summing forward, backward, by ascending magnitude and in a shuffled order gives four different float64 totals, spread over 23 millionths of a dollar, which is 190 units in the last place of the total.
+Kahan summation lands exactly on the correctly rounded total from `math.fsum`.
+Combining 4,096-value block sums in completion order gives 10 distinct totals over 20 simulated runs; the fixed block-and-tree reduction gives one total for 1, 4, 16 and 64 workers.
 
-```cpp
-float sum = 100000.0f;
-float c = 0.0f;
+### Example 2: float32 and Kahan
 
-for (int i = 0; i < 1000000; ++i) {
-    float y = 0.0001f - c;
-    float t = sum + y;
-    c = (t - sum) - y;
-    sum = t;
-}
-```
+In float32 the spacing between representable numbers near 100,000 is 0.0078125, so adding 0.0001 (stored as the float32 nearest to it) to 100,000 rounds straight back: one million naive additions leave 100,000.00.
+Kahan summation carries the lost low-order part and returns 100,100.00.
+The exact sum of the float32 addends is 100,099.999997 (the float32 value of 0.0001 is slightly below 0.0001), whose nearest float32 is 100,100.00, so Kahan returns the correctly rounded answer here; "exact" would overstate it.
 
-- Result: Kahan summation preserves the low-order bits, producing an exact sum of **$100,100.00$** and recovering the entire $\$100.00$ precision loss.
+### Example 3: a p99 budget that lies
 
-### Example 2: Sizing Synchronous DR Replication Bandwidth (New York to Chicago)
+Each of two independent stages takes 1 ms, except 0.8% of the time when it takes 100 ms.
+Each stage's p99 is 1 ms, so summing gives a budget of 2 ms.
+But the request is slow whenever either stage is slow: probability $1 - 0.992^2 = 1.59\%$, above 1%, so the request's p99 is 101 ms.
+The script confirms by exact enumeration and by a million-sample simulation.
+With fan-out the effect compounds: the share of requests touching some leaf's 1% tail is 1.00% for one leaf, 9.56% for 10 and 63.40% for 100, and a fan-out-100 request p99 needs every leaf at about its 99.990th percentile.
 
-A Tier-1 broker-dealer enforces zero data loss ($\text{RPO} = 0$) for trade executions:
-- Primary Data Center: Equinix NY4 (Secaucus, NJ).
-- Disaster Recovery Site: Equinix CH1 (Chicago, IL).
-- Fiber distance: $\approx 750\text{ miles}$; round-trip speed-of-light propagation latency: $T_{\text{RTT}} = 7.8\text{ milliseconds} = 0.0078\text{ seconds}$.
-- Peak trading activity:
-  - Trade execution rate: $4,500\text{ transactions/second}$.
-  - Serialized Write-Ahead Log (WAL) payload size: $1.8\text{ KB/transaction}$.
-- Throughput and Bandwidth Sizing:
-  - Average data flow:
+### Example 4: availability of a chain
 
-$$\text{Data Flow} = 4,500 \times 1.8\text{ KB} = 8,100\text{ KB/sec} = 8.1\text{ MB/sec}$$
+Downtime per year is 525.96 minutes at 99.9%, 52.60 at 99.99% and 5.26 at 99.999%.
+Three 99.9% components in series give 99.7003%, about 26.27 hours down a year.
+Two independent 99.9% replicas in parallel give 99.9999%, about 0.53 minutes a year, but put that pair behind a single 99.99% load balancer and the chain is 99.9899%: the single point of failure dominates.
 
-  - Average network bandwidth:
+### Example 5: synchronous replication New York to Chicago
 
-$$\text{Bandwidth} = 8.1\text{ MB/sec} \times 8\text{ bits/byte} = 64.8\text{ Mbps}$$
+City-centre coordinates give a great-circle distance of 1,144 km.
+Light in vacuum needs 7.63 ms for the round trip; in fibre (group index about 1.47) along the great circle, 11.22 ms; on a hypothetical 1,300 km fibre route, 12.75 ms.
+So a synchronous commit across that link costs at least 12.75 ms before any disk or software time, and a claim of a 7.8 ms fibre round trip on this route would be physically impossible.
+At 4,500 commits per second, Little's law gives about 57.4 commits in flight, so the database needs at least that many concurrent sessions (group commit batches their log flushes).
+The log stream itself is small: 4,500 commits of 1.8 KB is 8.1 MB/s or 64.8 Mbit/s, 194.4 Mbit/s with a 3x burst allowance.
+Over 50 km of metro fibre the round trip is 0.49 ms, which is why synchronous replication is a metro design.
 
-  - Applying a $3.0\times$ burst multiplier for market opening/closing spikes:
+### Example 6: RPO and RTO for a trade store
 
-$$\text{Required Dedicated Bandwidth} = 64.8\text{ Mbps} \times 3.0 = 194.4\text{ Mbps}$$
+Hypothetical settings: hourly snapshots alone give a worst-case RPO of 60 minutes; adding log shipping every 5 minutes cuts it to 5 minutes; asynchronous streaming with a 2-second lag at 4,500 transactions per second leaves about 9,000 transactions at risk, which is why trade capture uses synchronous replication within the metro.
+RTO: detection 60 s, a human decision 300 s, promotion 120 s and client reconnection 180 s give 11.0 minutes; automating the decision gives 6.0 minutes, at the cost of a policy for when automation may fail over.
 
-- Concurrency and In-Flight Pipelines:
-  - Because replication is **synchronous** ($\text{RPO} = 0$), commits must wait for Chicago disk confirmation ($7.8\text{ ms}$).
-  - Number of parallel replication channels required:
+### Example 7: own or rent for a one-hour daily burst
 
-$$N_{\text{channels}} = 4,500\text{ commits/sec} \times 0.0078\text{ s} = 35.1 \implies \ge 40\text{ parallel streams}$$
-
-The institution provisions redundant $10\text{ Gbps}$ dark-fiber circuits with 40 parallel WAL streaming channels, guaranteeing $\text{RPO} = 0$ with sub-10ms commit confirmations.
-
-### Example 3: Cloud FinOps Unit Economics: On-Premises vs. AWS Spot Bursting
-
-A quantitative risk department evaluates the cloud infrastructure cost of running an intraday what-if pricing grid on AWS:
-- Workload: $50,000$ virtual cores required for an intense 1-hour intraday scenario simulation.
-- **Option A (On-Premises Dedicated Hardware):**
-  - Purchasing 390 128-core AMD EPYC servers: $\$3,500,000$ capital expenditure.
-  - Annual data center power, cooling, and maintenance: $\$450,000/\text{year}$.
-  - Total Year 1 on-premises cost: $\$3,500,000 + \$450,000 = \$3,950,000$.
-  - Average utilization: Used only 3 hours per day (12.5% utilization; 87.5% idle capacity).
-- **Option B (Dynamic Cloud Spot Bursting on AWS EC2 `c7i.16xlarge`, 64 vCPUs):**
-  - Instances required: $\frac{50,000}{64} = 781.25 \implies 782\text{ instances}$.
-  - On-Demand hourly rate: $\$3.57\text{ per instance-hour}$.
-  - Spot hourly rate (typical 68% discount): $\$1.14\text{ per instance-hour}$.
-  - Cost for 1-hour simulation:
-
-$$\text{Hourly Run Cost} = 782 \times \$1.14 = \$891.48\text{ per run}$$
-
-  - Annual run cost across 250 trading days:
-
-$$\text{Annual Run Cost} = \$891.48 \times 250 = \$222,870\text{ per year}$$
-
-- **Financial Comparison:**
-  - Cloud Spot bursting costs $\$222,870/\text{year}$ versus $\$3,950,000$ in Year 1 on-premises expenditure.
-  - **TCO Savings:**
-
-$$\text{TCO Savings} = \frac{\$3,950,000 - \$222,870}{\$3,950,000} \times 100\% = 94.4\%$$
-
-Dynamic cloud spot bursting delivers a $94.4\%$ reduction in total cost of ownership.
+Hypothetical prices: a 128-vCPU server costs 30,000 dollars, lasts 4 years and costs 40% of its price a year to run, so owned capacity costs about 0.0174 dollars per vCPU-hour at full utilisation.
+Against an on-demand price of 0.045 dollars per vCPU-hour, owning wins only above 38.6% utilisation; against a spot price of 0.015 the break-even is 115.9%, so spot is cheaper at any utilisation, interruptions aside.
+A one-hour burst each business day is 2.87% utilisation: owning 50,000 vCPUs for it costs about 7.62 million dollars a year against 0.57 million on demand.
+The answer flips for a 24-hour grid running near full load, which is why many banks own the base load and rent the peaks.
 
 ## Pitfalls
 
-- **Permitting `-ffast-math` in Production Pricing Libraries:** Enabling fast-math reorders floating-point operations and ignores NaNs, creating non-deterministic Greek sensitivities that vary across compiler versions.
-- **Assuming Cloud Multi-AZ is Sufficient for Disaster Recovery:** Hosting primary and backup nodes in the same AWS region protects against rack failures but fails completely if a regional network partition or natural disaster strikes; true DR requires multi-region separation ($> 250\text{ miles}$).
-- **Neglecting Bitemporal Schema Evolution:** Altering trade database schemas without migrating historical transaction-time audit logs prevents historical replays from parsing older serialized events.
-- **Allowing Chinese Wall Breaches via Shared Data Lakes:** Dumping front-office M&A advisory data and flow trading books into the same un-partitioned data lake violates SEC/FINRA information barrier rules, triggering criminal insider trading liability.
-- **Relying on Single-Threaded Seed Generators for Multi-Threaded Monte Carlo:** Having all worker threads read from a single shared PRNG instance creates severe lock contention, degrading parallel speedup to near-zero.
+- **Fast-math or FMA differences in production pricers:** reassociation and contraction change Greeks between builds and machines; pin the flags and test reproducibility across target hardware.
+- **Summing p99s per stage:** neither a valid budget nor an upper bound (Example 3).
+- **Multi-zone mistaken for disaster recovery:** zones in one region share regional dependencies; a regional event needs a second region, with the RPO of asynchronous replication.
+- **Synchronous replication over long distance:** every commit pays the round trip (Example 5); keep synchronous pairs within a metro area.
+- **Shared random streams:** results depend on scheduling, and one path cannot be replayed; give each path its own counter-based stream.
+- **Untested failover:** an RTO that has never been measured in a drill is a guess.
+- **Information barriers enforced only by convention:** a shared data lake with private-side deal data and public-side positions needs enforced entitlements and audit, not folder names.
+- **Spot capacity on the critical path without a fallback:** a two-minute interruption notice is too short to rescue a long task without checkpoints.
 
 ## Interview questions
 
 > [!question]- sys-16-01 | Why is floating-point arithmetic non-associative, and how does it threaten risk determinism?
-> Floating-point numbers have finite significand precision (53 bits in double precision).
-> Reordering additions changes where truncation occurs: $(a + b) + c \neq a + (b + c)$.
-> In distributed multi-threaded risk engines, non-deterministic addition order produces phantom PnL noise and breaks golden regression test suites.
+> Each addition rounds to the nearest representable number (53-bit significand in double), so the rounding depends on the order: $(a + b) + c \ne a + (b + c)$ in general.
+> Parallel reductions that combine partial results in completion order therefore change the last bits from run to run, which breaks bit-exact regression tests and file comparisons even when the dollar differences are tiny.
 
 > [!question]- sys-16-02 | What is Kahan Compensated Summation?
-> Kahan summation is an algorithm that tracks accumulated low-order numerical truncation errors in a separate compensation variable.
-> It recovers lost precision during summation, achieving error bounds independent of the number of additions $N$.
+> A summation that carries each addition's rounding error in a compensation variable and feeds it back into the next addition.
+> Its error bound is about $2u \sum |x_i|$ to first order, independent of $n$, against $n u \sum |x_i|$ for naive summation (Higham, chapter 4); in the note's float32 example it returns 100,100.00 where naive summation returns 100,000.00.
 
 > [!question]- sys-16-03 | What is the difference between Recovery Point Objective (RPO) and Recovery Time Objective (RTO)?
-> RPO is the maximum acceptable age of data lost when a disaster strikes (e.g., $\text{RPO} = 0$ means zero lost transactions).
-> RTO is the maximum acceptable duration of system downtime before service is restored (e.g., $\text{RTO} < 5\text{ minutes}$).
+> RPO is the maximum acceptable data loss, measured as time (or transactions) of committed data that may be lost; it is set by how data reaches the recovery site.
+> RTO is the maximum acceptable time to restore service; it is the sum of detection, decision, promotion and reconnection.
 
 > [!question]- sys-16-04 | How does synchronous replication achieve $\text{RPO} = 0$ and what is its performance penalty?
-> Synchronous replication requires the primary database to wait for confirmation that the transaction log has been written to the remote backup site before acknowledging a commit.
-> It guarantees zero data loss ($\text{RPO} = 0$), but penalizes latency by adding network round-trip time (e.g., 5-10ms) to every write transaction.
+> The primary acknowledges a commit only after the standby has durably received the log record, so no acknowledged transaction can be lost if the primary fails.
+> Every commit pays at least the network round trip: about 0.49 ms over 50 km of fibre but at least 12.75 ms over a 1,300 km New York to Chicago route, which is why synchronous pairs stay within a metro area.
 
 > [!question]- sys-16-05 | What is a "Chinese Wall" in capital markets technology?
-> A Chinese Wall is an information barrier that prevents confidential material non-public information (MNPI) held by private-side divisions (e.g., M&A, Corporate Underwriting) from leaking to public-side divisions (e.g., Flow Trading, Market Making).
-> It is enforced via strict Attribute-Based Access Control (ABAC), separate database instances, and network segmentation.
+> An information barrier that keeps material non-public information held by private-side functions (M&A advisory, underwriting) away from public-side functions (sales, trading, research).
+> Broker-dealers must have written policies to prevent misuse of such information (Exchange Act Section 15(g)); platforms enforce barriers with entitlements, separate stores, wall-crossing workflows and audit trails.
 
 > [!question]- sys-16-06 | What is the difference between Role-Based Access Control (RBAC) and Attribute-Based Access Control (ABAC)?
-> RBAC grants permissions based on static user job titles (e.g., "Trader").
-> ABAC evaluates dynamic contextual attributes: user role, booking entity, trading desk, time of day, client jurisdiction, and security classification, providing fine-grained access control required for regulatory compliance.
+> RBAC grants permissions to roles that users hold ("trader", "risk manager").
+> ABAC evaluates policies over attributes of the user, the resource and the context (desk, legal entity, data classification, wall-crossed status, location), which expresses rules like "public-side users may not read deals on the watch list" without a role per combination.
 
 > [!question]- sys-16-07 | How does leapfrogging enable deterministic random number generation across parallel threads?
-> In leapfrogging, a counter-based PRNG computes the random state for path $p$ and step $s$ directly from an index function: $\text{State} = f(\text{Seed}, p, s)$ without sequential iteration.
-> Threads can compute independent path blocks in any order while producing bit-exact identical outputs.
+> Leapfrogging gives worker $w$ draws $w, w + W, w + 2W, \dots$ of one stream, so it is deterministic only for a fixed worker count $W$.
+> For results that are identical across any number of workers, give each path its own stream from a counter-based generator keyed by (seed, path): path $p$'s numbers no longer depend on who runs it, and in the note's test changing the schedule changes 0.0% of path results against 99.9% with a shared stream.
 
 > [!question]- sys-16-08 | What is OpenTelemetry and how is it used in capital markets observability?
-> OpenTelemetry is an open-source observability framework providing vendor-neutral APIs, SDKs, and tooling to generate, collect, and export distributed traces, metrics, and logs.
-> It traces an order's lifecycle across microsecond network hops, pre-trade risk checks, and matching engines to isolate latency bottlenecks.
+> A vendor-neutral set of APIs, SDKs and a wire protocol for traces, metrics and logs.
+> A request carries a trace context across services (gateway, pre-trade risk, pricing, booking), so per-stage latency and failures can be attributed end to end instead of guessed from per-service averages.
 
 > [!question]- sys-16-09 | What is Cloud FinOps and why is it critical for quantitative analytics?
-> FinOps is the cultural and operational discipline of managing cloud operational costs.
-> It establishes unit economics (e.g., cost per Monte Carlo path or cost per risk report), monitors resource waste, and automates spot instance scheduling to prevent cloud compute budgets from escalating uncontrollably.
+> The practice of managing cloud spend with unit economics (cost per scenario, per path, per report), allocation to desks and continuous optimisation.
+> For risk grids the key numbers are break-even utilisation against owned capacity and the interruption risk of spot capacity; in the note a one-hour daily burst is 2.87% utilisation, far below the 38.6% break-even against on-demand prices.
 
 > [!question]- sys-16-10 | Why must regulatory audit stores enforce Write-Once-Read-Many (WORM) storage?
-> Under SEC Rule 17a-4 and international compliance rules, electronic records of financial transactions must be preserved in an immutable format that prevents altering, overwriting, or deleting historical records for statutory retention periods (typically 7 to 10 years).
+> They must preserve records so they cannot be silently altered or deleted for the retention period; for US broker-dealers, SEC Rule 17a-4 allows either WORM storage or, since the 2022 amendments, a system with a complete time-stamped audit trail that allows re-creation of the original.
+> Retention depends on record type (for example six years for some records and three years for others, the first two easily accessible).
+
+> [!question]- sys-16-11 | Two independent stages each have a p99 of 1 ms; can the request's p99 be 101 ms?
+> Yes, if each stage takes 100 ms with probability 0.8%: each stage's p99 is still 1 ms, but the request is slow with probability $1 - 0.992^2 = 1.59\%$, so its p99 is 101 ms.
+> Percentiles neither add nor bound; budget end-to-end distributions.
+
+> [!question]- sys-16-12 | A request fans out to 100 leaves and waits for all. What share of requests touch some leaf's 1% tail?
+> $63.4\%$, from $1 - 0.99^{100}$.
+> To get a request-level p99 from the leaves alone, each leaf needs to be at its 99.990th percentile; otherwise use hedged requests or accept partial results.
+
+> [!question]- sys-16-13 | Three 99.9% services in series and two 99.9% replicas in parallel: what availability do you get?
+> Series: $0.999^3 = 99.7003\%$, about 26.27 hours down a year.
+> Parallel: $1 - 0.001^2 = 99.9999\%$ if failures are independent; correlated failures and any shared component (a 99.99% load balancer gives 99.9899% for the chain) dominate in practice.
+
+> [!question]- sys-16-14 | What is the minimum round trip New York to Chicago, and what does it imply for synchronous replication?
+> At least 7.63 ms in vacuum over the 1,144 km great circle and 11.22 ms in fibre along it; a realistic fibre route is longer (12.75 ms at 1,300 km).
+> Every synchronous commit pays that, so long-distance links use asynchronous replication with a nonzero RPO, and RPO 0 comes from a metro-distance synchronous standby.
+
+> [!question]- sys-16-15 | Which compiler settings break bit-for-bit reproducibility of a C++ pricer across machines?
+> `-ffast-math` (reassociation, no-NaN assumptions) and fused multiply-add contraction: GCC defaults to `-ffp-contract=fast` outside strict C modes, and Clang's default `-ffp-model=precise` still allows contraction.
+> Use `-ffp-contract=off`, no fast-math, fixed reduction orders and pinned math libraries when results must match.
+
+> [!question]- sys-16-16 | Synchronous commits take 12.75 ms and the system must sustain 4,500 commits per second. How many commits are in flight?
+> About 57.4, by Little's law $L = \lambda W = 4{,}500 \times 0.01275$.
+> The database needs at least that many concurrent sessions; group commit lets one log flush acknowledge many of them.
+
+> [!question]- sys-16-17 | When is renting cloud capacity cheaper than owning it?
+> When utilisation is below the break-even: owned cost per vCPU-hour at full use divided by the rental price (38.6% against on-demand in the note's hypothetical prices).
+> Bursty workloads (a 2.87% daily burst) favour renting; steady base load favours owning; spot is cheaper still but needs checkpointing because of two-minute interruption notices.
+
+## In this repo and SDE-Interview-Prep
+
+- `code/sys_non_functional.py` computes, prints and asserts every number on this page: order-dependent sums and the fixed-tree fix, float32 Kahan, counter-based streams, percentile and fan-out arithmetic, availability, replication physics, RPO and RTO, and the cost break-even.
+- [Pricing at Scale](06-Pricing-at-Scale.md) for grid design, [The EOD Risk Batch](13-EOD-Risk-Batch.md) for failover and retries, and [Storage and Compute](14-Storage-and-Compute.md) for the stores being replicated.
+- SDE-Interview-Prep: [Backpressure and Tail Latency](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Backpressure-and-Tail-Latency.md), [Replication and Quorums](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Replication-and-Quorums.md), [Multi-Region Active-Active](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Multi-Region-Active-Active.md), [SLOs and Observability](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/SLOs-and-Observability.md).
 
 ## Further reading
 
-- Goldberg, David. *What Every Computer Scientist Should Know About Floating-Point Arithmetic*. ACM Computing Surveys, Vol. 23, No. 1, March 1991.
-- Board of Governors of the Federal Reserve System. *Sound Practices to Strengthen Operational Resilience*. SR Letter 20-24, November 2020.
-- Higham, Nicholas J. *Accuracy and Stability of Numerical Algorithms*. 2nd Edition, Society for Industrial and Applied Mathematics, 2002.
-- Beyer, Betsy, Jones, Chris, Petoff, Jennifer, and Murphy, Niall Richard. *Site Reliability Engineering: How Google Runs Production Systems*. O'Reilly Media, 2016.
+- Goldberg, David. "What Every Computer Scientist Should Know About Floating-Point Arithmetic." *ACM Computing Surveys* 23(1), 1991.
+- Higham, Nicholas J. *Accuracy and Stability of Numerical Algorithms*, 2nd edition. SIAM, 2002, chapter 4 (summation).
+- Kahan, William. "Further remarks on reducing truncation errors." *Communications of the ACM* 8(1), 1965.
+- Salmon, J. K., Moraes, M. A., Dror, R. O. and Shaw, D. E. "Parallel Random Numbers: As Easy as 1, 2, 3." *Proceedings of SC11*, 2011.
+- Dean, Jeffrey and Barroso, Luiz Andre. "The Tail at Scale." *Communications of the ACM* 56(2), 2013.
+- Little, John D. C. "A Proof for the Queuing Formula: L = lambda W." *Operations Research* 9(3), 1961.
+- Beyer, B., Jones, C., Petoff, J. and Murphy, N. R. *Site Reliability Engineering: How Google Runs Production Systems*. O'Reilly, 2016.
+- Board of Governors of the Federal Reserve System, FDIC and OCC. *Interagency Paper on Sound Practices to Strengthen Operational Resilience*, SR 20-24, 2 November 2020 (revised 2 June 2026).

@@ -1,7 +1,16 @@
-"""Industry landscape: Total Cost of Ownership (TCO) buy-vs-build, NPV, and hybrid architectures.
+"""Industry landscape: buy-versus-build cost arithmetic and XVA simulation sizing.
 
 Backs every number in `18-Pricing-and-Risk-Systems/17-Industry-Landscape.md`.
-Nominal 5-year cash flows, discounted net present values, hybrid tier economics, and ORE grid sizing are verified.
+
+1. Five-year cost of a vendor platform versus an in-house build versus a hybrid, from labelled-hypothetical cash flows:
+   upfront costs at time 0 and recurring costs at the end of each year; nominal totals, present values at 8%, and the
+   discount rate at which the vendor and in-house options cost the same (found by bisection and checked by
+   re-discounting).
+2. Sensitivity: how many in-house engineers make the build cost the same as the vendor at 8%.
+3. Monte Carlo exposure sizing for an XVA run: valuations, core-hours, wall time, and the memory of netting-set versus
+   trade-level exposure cubes, from labelled-hypothetical inputs.
+
+No figure here is a vendor price or a vendor performance number; all inputs are hypothetical teaching values.
 Every quoted number is printed as ``label = value`` and asserted to within half a unit of its last quoted decimal.
 Run it with `python 18-Pricing-and-Risk-Systems/code/sys_industry_landscape.py`.
 """
@@ -12,7 +21,7 @@ QUOTED: list[str] = []
 
 
 def quoted(label: str, value: float, expected: float, decimals: int) -> float:
-    """Print a number the note quotes and assert it rounds to the quoted figure."""
+    """Print a number the note quotes and assert it rounds to the quoted figure (half a unit in the last place)."""
     tol = 0.5 * 10.0**-decimals + 1e-9
     assert abs(value - expected) <= tol, f"{label}: computed {value!r}, quoted {expected}"
     QUOTED.append(label)
@@ -20,144 +29,112 @@ def quoted(label: str, value: float, expected: float, decimals: int) -> float:
     return value
 
 
-def test_nominal_tco() -> None:
-    print("  1. 5-Year Nominal Total Cost of Ownership: Vendor vs In-House")
-    # Option A: Commercial Vendor (Murex MX.3)
-    v_upfront_lic = 12_000_000.0
-    v_impl = 18_000_000.0
-    v_ann_lic = 4_500_000.0
-    v_dev_count = 15
-    v_dev_comp = 300_000.0
-    v_ann_dev = v_dev_count * v_dev_comp  # 4,500,000
-    v_ann_infra = 1_500_000.0
-
-    v_y1 = v_upfront_lic + v_impl + v_ann_lic + v_ann_dev + v_ann_infra  # 40,500,000
-    v_ann_recurring = v_ann_lic + v_ann_dev + v_ann_infra  # 10,500,000
-    v_y2_5 = 4.0 * v_ann_recurring  # 42,000,000
-    v_total_tco = v_y1 + v_y2_5  # 82,500,000
-
-    quoted("vendor year 1 cost ($)", v_y1, 40_500_000.0, 0)
-    quoted("vendor annual recurring cost ($)", v_ann_recurring, 10_500_000.0, 0)
-    quoted("vendor years 2 to 5 cost ($)", v_y2_5, 42_000_000.0, 0)
-    quoted("vendor 5-year total TCO ($)", v_total_tco, 82_500_000.0, 0)
-
-    # Option B: In-House Build (Athena / Quartz Style)
-    b_impl = 14_000_000.0
-    b_dev_count = 45
-    b_dev_comp = 300_000.0
-    b_ann_dev = b_dev_count * b_dev_comp  # 13,500,000
-    b_ann_infra = 2_000_000.0
-
-    b_y1 = b_impl + b_ann_dev + b_ann_infra  # 29,500,000
-    b_ann_recurring = b_ann_dev + b_ann_infra  # 15,500,000
-    b_y2_5 = 4.0 * b_ann_recurring  # 62,000,000
-    b_total_tco = b_y1 + b_y2_5  # 91,500,000
-
-    quoted("in-house year 1 cost ($)", b_y1, 29_500_000.0, 0)
-    quoted("in-house annual recurring cost ($)", b_ann_recurring, 15_500_000.0, 0)
-    quoted("in-house years 2 to 5 cost ($)", b_y2_5, 62_000_000.0, 0)
-    quoted("in-house 5-year total TCO ($)", b_total_tco, 91_500_000.0, 0)
-
-    # Cost differential
-    nominal_delta = b_total_tco - v_total_tco  # 9,000,000
-    nominal_pct = (nominal_delta / b_total_tco) * 100.0  # 9.836%
-
-    quoted("nominal TCO delta ($)", nominal_delta, 9_000_000.0, 0)
-    quoted("vendor savings relative to in-house (%)", nominal_pct, 9.8, 1)
+YEARS = 5
+ENGINEER_COST = 0.3  # $ million per engineer-year, fully loaded (hypothetical)
 
 
-def test_discounted_npv_tco() -> None:
-    print("  2. Discounted Net Present Value (NPV) TCO at 8% Discount Rate")
-    r = 0.08
-    df = [1.0 / ((1.0 + r) ** t) for t in range(1, 6)]
-
-    # Option A (Vendor) cash flows across Years 1 to 5:
-    v_cfs = [40_500_000.0, 10_500_000.0, 10_500_000.0, 10_500_000.0, 10_500_000.0]
-    v_npv = sum(cf * d for cf, d in zip(v_cfs, df, strict=True))
-
-    # Option B (In-House) cash flows across Years 1 to 5:
-    b_cfs = [29_500_000.0, 15_500_000.0, 15_500_000.0, 15_500_000.0, 15_500_000.0]
-    b_npv = sum(cf * d for cf, d in zip(b_cfs, df, strict=True))
-
-    npv_delta = b_npv - v_npv
-    npv_pct = (npv_delta / b_npv) * 100.0
-
-    quoted("vendor discounted TCO ($)", v_npv, 69_701_233.0, 0)
-    quoted("in-house discounted TCO ($)", b_npv, 74_849_969.0, 0)
-    quoted("discounted NPV delta ($)", npv_delta, 5_148_735.0, 0)
-    quoted("discounted vendor savings relative to in-house (%)", npv_pct, 6.9, 1)
+def option_cash_flows(upfront: float, recurring: float) -> list[float]:
+    """Cash outflows in $ million at t = 0, 1, ..., 5."""
+    return [upfront] + [recurring] * YEARS
 
 
-def test_hybrid_architecture_tco() -> None:
-    print("  3. Modern Hybrid Architecture TCO: Vendor Back-Office + Open-Source In-House Front-Office")
-    # Commodity Back-Office (Vendor Calypso for settlement/clearing):
-    h_back_lic = 1_200_000.0
-    h_back_dev = 4 * 300_000.0  # 1,200,000
-
-    # Proprietary Front-Office / XVA (QuantLib / ORE core):
-    h_front_impl_y1 = 5_000_000.0
-    h_front_dev = 20 * 300_000.0  # 6,000,000
-    h_front_infra = 1_200_000.0
-
-    h_y1 = h_front_impl_y1 + (h_back_lic + h_back_dev) + (h_front_dev + h_front_infra)  # 14,600,000
-    h_ann_recurring = (h_back_lic + h_back_dev) + (h_front_dev + h_front_infra)  # 9,600,000
-    h_y2_5 = 4.0 * h_ann_recurring  # 38,400,000
-    h_total_tco = h_y1 + h_y2_5  # 53,000,000
-
-    r = 0.08
-    df = [1.0 / ((1.0 + r) ** t) for t in range(1, 6)]
-    h_cfs = [h_y1] + [h_ann_recurring] * 4
-    h_npv = sum(cf * d for cf, d in zip(h_cfs, df, strict=True))
-
-    savings_vs_vendor = 82_500_000.0 - h_total_tco  # 29,500,000
-    savings_vs_inhouse = 91_500_000.0 - h_total_tco  # 38,500,000
-    savings_pct_vendor = (savings_vs_vendor / 82_500_000.0) * 100.0  # 35.8%
-    savings_pct_inhouse = (savings_vs_inhouse / 91_500_000.0) * 100.0  # 42.1%
-
-    quoted("hybrid year 1 cost ($)", h_y1, 14_600_000.0, 0)
-    quoted("hybrid annual recurring cost ($)", h_ann_recurring, 9_600_000.0, 0)
-    quoted("hybrid 5-year total TCO ($)", h_total_tco, 53_000_000.0, 0)
-    quoted("hybrid discounted TCO ($)", h_npv, 42_959_646.0, 0)
-    quoted("hybrid savings vs pure vendor ($)", savings_vs_vendor, 29_500_000.0, 0)
-    quoted("hybrid savings vs pure in-house ($)", savings_vs_inhouse, 38_500_000.0, 0)
-    quoted("hybrid savings relative to vendor (%)", savings_pct_vendor, 35.8, 1)
-    quoted("hybrid savings relative to in-house (%)", savings_pct_inhouse, 42.1, 1)
+def vendor() -> list[float]:
+    licence, implementation = 12.0, 18.0
+    maintenance, engineers, infra = 4.5, 15, 1.5
+    return option_cash_flows(licence + implementation, maintenance + engineers * ENGINEER_COST + infra)
 
 
-def test_ore_simulation_sizing() -> None:
-    print("  4. Open Risk Engine (ORE) Enterprise Simulation Grid Sizing")
-    trades = 5_000
-    netting_sets = 12
-    paths = 10_000
-    timesteps = 80
-    bytes_per_float = 8
+def in_house(engineers: float = 45) -> list[float]:
+    build, infra = 14.0, 2.0
+    return option_cash_flows(build, engineers * ENGINEER_COST + infra)
 
-    total_pricings = trades * paths * timesteps  # 4,000,000,000
-    pricing_micros = 50.0
-    total_cpu_seconds = (total_pricings * pricing_micros) / 1_000_000.0  # 200,000
-    total_cpu_hours = total_cpu_seconds / 3600.0  # 55.56 hours
 
-    cores = 128
-    wall_clock_minutes = (total_cpu_seconds / cores) / 60.0  # 26.04 minutes
+def hybrid() -> list[float]:
+    # Vendor platform for post-trade processing, in-house pricing and XVA on open-source libraries.
+    back_licence, back_engineers = 1.2, 4
+    front_build, front_engineers, front_infra = 5.0, 20, 1.2
+    recurring = back_licence + back_engineers * ENGINEER_COST + front_engineers * ENGINEER_COST + front_infra
+    return option_cash_flows(front_build, recurring)
 
-    # Exposure matrix storage: netting_sets x timesteps x paths x 8 bytes
-    exposure_bytes = netting_sets * timesteps * paths * bytes_per_float
-    exposure_mb = exposure_bytes / (1024.0 * 1024.0)  # 73.24 MB
 
-    quoted("total trade evaluations (billions)", total_pricings / 1e9, 4.0, 1)
-    quoted("total compute budget (core-seconds)", total_cpu_seconds, 200_000.0, 0)
-    quoted("total compute budget (core-hours)", total_cpu_hours, 55.6, 1)
-    quoted("parallel runtime on 128 cores (minutes)", wall_clock_minutes, 26.0, 1)
-    quoted("exposure matrix resident RAM (MB)", exposure_mb, 73.2, 1)
+def pv(cfs: list[float], r: float) -> float:
+    return sum(cf / (1.0 + r) ** t for t, cf in enumerate(cfs))
+
+
+def test_costs() -> None:
+    print("  1. Five-year cost ($ million; upfront at t = 0, recurring at year ends; hypothetical)")
+    options = {"vendor": vendor(), "in-house": in_house(), "hybrid": hybrid()}
+    expected = {
+        "vendor": (30.0, 10.5, 82.5, 71.92),
+        "in-house": (14.0, 15.5, 91.5, 75.89),
+        "hybrid": (5.0, 9.6, 53.0, 43.33),
+    }
+    for name, cfs in options.items():
+        up, rec, nominal, pv8 = expected[name]
+        quoted(f"{name}: upfront", cfs[0], up, 1)
+        quoted(f"{name}: recurring per year", cfs[1], rec, 1)
+        quoted(f"{name}: five-year nominal", sum(cfs), nominal, 1)
+        quoted(f"{name}: present value at 8%", pv(cfs, 0.08), pv8, 2)
+    v, b = options["vendor"], options["in-house"]
+    quoted("vendor minus in-house, upfront", v[0] - b[0], 16.0, 1)
+    quoted("in-house minus vendor, per year", b[1] - v[1], 5.0, 1)
+    quoted("in-house minus vendor, nominal", sum(b) - sum(v), 9.0, 1)
+    quoted("in-house minus vendor, present value at 8%", pv(b, 0.08) - pv(v, 0.08), 3.96, 2)
+    # Discount rate at which both cost the same: 16 more upfront for the vendor against 5 more a year in-house.
+    lo, hi = 0.0, 1.0
+    diff = [x - y for x, y in zip(b, v, strict=True)]
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        if pv(diff, mid) > 0.0:
+            lo = mid
+        else:
+            hi = mid
+    r_star = 0.5 * (lo + hi)
+    assert abs(pv(b, r_star) - pv(v, r_star)) < 1e-9  # re-discounting both options confirms the root
+    quoted("break-even discount rate (%)", 100.0 * r_star, 16.99, 2)
+    quoted("hybrid saving versus vendor, nominal", sum(v) - sum(options["hybrid"]), 29.5, 1)
+
+
+def test_engineer_sensitivity() -> None:
+    print("  2. In-house team size that matches the vendor's present value at 8%")
+    target = pv(vendor(), 0.08)
+    lo, hi = 0.0, 100.0
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        if pv(in_house(mid), 0.08) < target:
+            lo = mid
+        else:
+            hi = mid
+    n_star = 0.5 * (lo + hi)
+    assert abs(pv(in_house(n_star), 0.08) - target) < 1e-9
+    quoted("break-even in-house engineers", n_star, 41.7, 1)
+
+
+def test_xva_sizing() -> None:
+    print("  3. Monte Carlo exposure sizing (hypothetical portfolio and timings)")
+    trades, netting_sets, paths, dates = 5_000, 12, 10_000, 80
+    valuations = trades * paths * dates
+    quoted("trade valuations (billions)", valuations / 1e9, 4.0, 1)
+    micros = 50.0  # hypothetical average cost of one trade valuation on one core
+    core_seconds = valuations * micros / 1e6
+    quoted("core-seconds", core_seconds, 200_000, 0)
+    quoted("core-hours", core_seconds / 3600.0, 55.6, 1)
+    quoted("wall time on 128 cores (minutes)", core_seconds / 128 / 60.0, 26.0, 1)
+    quoted("wall time on 1,024 cores (minutes)", core_seconds / 1024 / 60.0, 3.3, 1)
+    ns_bytes = netting_sets * dates * paths * 8
+    quoted("netting-set exposure cube (MB, decimal)", ns_bytes / 1e6, 76.8, 1)
+    quoted("netting-set exposure cube (MiB)", ns_bytes / 2**20, 73.2, 1)
+    trade_bytes = trades * dates * paths * 8
+    quoted("trade-level exposure cube (GB, decimal)", trade_bytes / 1e9, 32.0, 1)
 
 
 def main() -> None:
-    print("=== sys_industry_landscape: Total Cost of Ownership and Open Source Architecture ===")
-    test_nominal_tco()
-    test_discounted_npv_tco()
-    test_hybrid_architecture_tco()
-    test_ore_simulation_sizing()
-    print(f"\nSuccessfully verified {len(QUOTED)} industry landscape figures.")
+    print("Industry landscape checks")
+    test_costs()
+    test_engineer_sensitivity()
+    test_xva_sizing()
+    print(f"  {len(QUOTED)} numbers computed, printed and asserted")
+    print("All industry landscape checks passed.")
 
 
 if __name__ == "__main__":

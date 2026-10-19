@@ -5,285 +5,364 @@ tier: senior
 status: solid
 prereqs: [regulatory-reporting-pipeline]
 est_hours: 4
-sources: [Christian Voigt - Batch Processing and High-Performance Compute in Financial Engineering (Palgrave Macmillan 2021), Martin Kleppmann - Designing Data-Intensive Applications: The Big Ideas Behind Reliable Scalable and Maintainable Systems (O'Reilly Media 2017), Gregor Hohpe and Bobby Woolf - Enterprise Integration Patterns: Designing Building and Deploying Messaging Solutions (Addison-Wesley 2003), Thomas H. Cormen Charles E. Leiserson Ronald L. Rivest and Clifford Stein - Introduction to Algorithms (4th Edition MIT Press 2022)]
+sources: [Basel Committee on Banking Supervision - Principles for effective risk data aggregation and risk reporting (BCBS 239 January 2013), Thomas H. Cormen Charles E. Leiserson Ronald L. Rivest and Clifford Stein - Introduction to Algorithms (4th edition MIT Press 2022) chapter 20 topological sort and chapter 22 shortest paths in DAGs, Martin Kleppmann - Designing Data-Intensive Applications (O'Reilly 2017) chapter 8 leases and fencing tokens and chapter 10 batch processing, Gregor Hohpe and Bobby Woolf - Enterprise Integration Patterns (Addison-Wesley 2003) Idempotent Receiver, NYSE - Hours and calendars (nyse.com retrieved 2026-10)]
 ---
 
 # The EOD Risk Batch
 
 ## TL;DR
 
-- The End-of-Day (EOD) risk batch is the central operational pipeline of capital markets technology, processing millions of positions and market scenarios overnight to generate official P&L, risk sensitivities, and regulatory capital figures.
-- The batch is organized as a Directed Acyclic Graph (DAG) of interdependent tasks executed across distributed compute clusters and orchestrated by enterprise schedulers (such as Apache Airflow, Dagster, or proprietary platforms like Goldman Sachs SecDB and J.P. Morgan Athena).
-- Execution timelines strictly follow regional market closes across a follow-the-sun architecture: Asia close by 18:00 JST, EMEA close by 20:00 GMT, and Americas close by 21:00 EST, culminating in global consolidated capital sign-off by 03:00 EST.
-- Critical Path Method (CPM) forward and backward passes identify zero-float tasks ($Float = 0$), directing compute infrastructure investments to tasks that directly dictate end-to-end batch duration.
-- Operational resiliency requires task-level idempotency, atomic partition swapping, automated checkpointing, and dynamic sub-DAG invalidation to backfill late-booked trades without restarting the entire multi-hour batch.
-- All numerical figures in this note are verified by [sys_eod_batch.py](code/sys_eod_batch.py).
+- The end-of-day (EOD) risk batch turns the day's trades and a closing market snapshot into official P&L, sensitivities, VaR/ES and capital inputs; it is a directed acyclic graph (DAG) of tasks run on a compute grid against a sign-off deadline.
+- The critical path method (CPM) finds the longest path through the DAG: its length is the minimum runtime, and only tasks with zero float shorten the batch when sped up, and only until a second path becomes critical.
+- Deterministic CPM is optimistic: with uncertain durations every path keeps its mean length but the expected makespan rises, because the makespan is a maximum over paths.
+- Late trades are absorbed by an incremental sub-DAG that prices only the new trade and merges additive vectors (scenario P&L, Greeks); non-additive outputs (VaR, ES, netting-set XVA) are recomputed from the merged vectors, never added.
+- Restartability rests on idempotent tasks (keyed upserts or atomic partition swaps) and on lease-based scheduler failover whose time is bounded by the lease TTL, the polling interval and the recovery scan.
+- Every number here is computed, printed and asserted by [sys_eod_batch.py](code/sys_eod_batch.py); all durations and settings are hypothetical teaching inputs.
 
 ## Learning objectives
 
 - Design an enterprise EOD risk batch pipeline modeled as a Directed Acyclic Graph (DAG) with explicit dependency barriers.
 - Apply the Critical Path Method (CPM) to calculate early/late start times, task slack (float), and batch duration.
+- Explain why crashing a critical task has diminishing returns and why deterministic CPM understates the expected makespan.
 - Implement task-level idempotency and atomic partition exchange patterns to guarantee restartability without duplicate records.
-- Architect dynamic sub-DAG invalidation and backfill workflows to process late trade amendments in minutes rather than hours.
-- Design high-availability scheduler failover protocols using distributed consensus leases and persistent task queues.
+- Architect dynamic sub-DAG invalidation and backfill workflows to process late trade amendments in minutes rather than hours, and state which outputs may be merged additively.
+- Design high-availability scheduler failover protocols using distributed consensus leases and persistent task queues, and bound the failover time.
 - Construct automated quality gates enforcing data integrity thresholds prior to downstream regulatory and financial ledger publication.
 
 ## Core concepts
 
-### 1. The Global Follow-the-Sun Batch Timeline
+### 1. What the batch produces and why it has a deadline
 
-Global investment banks operate trading hubs across three regional windows, leading to a coordinated chain of batch executions:
+The batch starts from two cut-offs: a trade population (everything booked by the cut-off, with its lifecycle events) and an official closing market snapshot.
+It produces the official books and records: end-of-day P&L and its explain, sensitivities, VaR and ES, FRTB inputs, counterparty exposures and the feeds for finance and regulatory reporting.
+The deadline is set by the consumers: the trading desks need signed-off P&L and risk before the next open, finance needs ledger feeds, and supervisors expect timely risk reports.
+BCBS 239 makes timeliness an explicit principle (Principle 5: risk data aggregation must be timely while meeting accuracy, integrity, completeness and adaptability), and Principle 3 requires the aggregation to be largely automated to minimise errors.
+A global bank runs one batch per region, each triggered by its own market close, then a consolidated run once the last region signs off; for US equities the trigger is the NYSE close at 16:00 ET (core session 9:30 a.m. to 4:00 p.m. ET, nyse.com as of 2026-10).
 
-```mermaid
-gantt
-    title Global EOD Batch Execution Windows (UTC)
-    dateFormat HH:mm
-    axisFormat %H:%M
-
-    section Asia-Pacific (Tokyo / HK / SG)
-    Market Close & Snapshot      :done, a1, 06:00, 07:00
-    Asia Curve Calibration       :done, a2, 07:00, 08:00
-    Asia Desk Pricing & PnL      :done, a3, 08:00, 10:30
-    Asia Risk Sign-off           :done, a4, 10:30, 11:30
-
-    section EMEA (London / Frankfurt)
-    Market Close & Snapshot      :done, e1, 16:30, 17:30
-    EMEA Curve & Surface Calib   :done, e2, 17:30, 18:30
-    EMEA Pricing & VaR Grid      :active, e3, 18:30, 21:30
-    EMEA Product Control Sign-off:e4, 21:30, 22:30
-
-    section Americas (New York)
-    Market Close & Snapshot      :m1, 21:00, 22:00
-    US Curve Calibration         :m2, 22:00, 23:00
-    US Pricing & Sensitivities   :m3, 23:00, 02:00
-    Global Consolidated Roll-up  :m4, 02:00, 03:30
-    Executive & Regulatory Sign-off:m5, 03:30, 04:30
-```
-
-### 2. The EOD Risk Batch Dependency Graph (DAG)
-
-Tasks execute according to topological dependency ordering:
+### 2. The batch as a DAG
 
 ```mermaid
 flowchart TB
-    subgraph MarketPhase["1. Market Data Phase"]
-        Snap["1.1 EOD Market Snapshot"]
-        Clean["1.2 Outlier Cleaning & Proxies"]
-        CurveCalib["1.3 Multi-Curve Calibration"]
-        VolCalib["1.4 Vol Surface Calibration"]
+    subgraph MarketPhase["1. Market data"]
+        Snap["1.1 EOD snapshot"]
+        Clean["1.2 Validation and proxies"]
+        CurveCalib["1.3 Curve calibration"]
+        VolCalib["1.4 Vol surface calibration"]
     end
-
-    subgraph TradePhase["2. Trade Extraction Phase"]
-        TradeExtract["2.1 Trade Store Extract"]
-        TradeValidate["2.2 Schema & Lifecycle Validation"]
-        NettingGroup["2.3 Group into Netting Sets"]
+    subgraph TradePhase["2. Trades"]
+        TradeExtract["2.1 Trade store extract"]
+        TradeValidate["2.2 Schema and lifecycle validation"]
+        NettingGroup["2.3 Netting set grouping"]
     end
-
-    subgraph PricingPhase["3. Distributed Pricing & Greeks"]
-        GridDispatch["3.1 Scenario Grid Dispatch"]
-        GreeksCalc["3.2 AAD Greek Matrix Evaluation"]
-        FullReval["3.3 Scenario Full Revaluation"]
+    subgraph PricingPhase["3. Pricing grid"]
+        GridDispatch["3.1 Task fan-out"]
+        GreeksCalc["3.2 Sensitivities"]
+        FullReval["3.3 Scenario full revaluation"]
     end
-
-    subgraph RiskAggregation["4. Risk & PnL Aggregation"]
-        PnLExplain["4.1 PnL Attribution & Explain"]
-        VaRCalc["4.2 Historical VaR / ES Engine"]
-        FRTBAgg["4.3 FRTB SA & IMA Aggregator"]
-        XVAEngine["4.4 XVA Portfolio Integration"]
+    subgraph RiskAggregation["4. Aggregation"]
+        PnLExplain["4.1 P&L explain"]
+        VaRCalc["4.2 VaR and ES"]
+        FRTBAgg["4.3 FRTB SA inputs"]
+        XVAEngine["4.4 Exposure and XVA"]
     end
-
-    subgraph SignoffPhase["5. Reporting & Sign-Off"]
-        ReconGL["5.1 General Ledger Reconciliation"]
-        QualityGates["5.2 Automated Quality Gates"]
-        PCSignoff["5.3 Product Control Sign-Off"]
+    subgraph SignoffPhase["5. Controls and sign-off"]
+        ReconGL["5.1 Ledger reconciliation"]
+        QualityGates["5.2 Quality gates"]
+        PCSignoff["5.3 Product control sign-off"]
     end
-
     Snap --> Clean
     Clean --> CurveCalib
     Clean --> VolCalib
-
+    CurveCalib --> VolCalib
     TradeExtract --> TradeValidate
     TradeValidate --> NettingGroup
-
     CurveCalib --> GridDispatch
     VolCalib --> GridDispatch
     NettingGroup --> GridDispatch
-
     GridDispatch --> GreeksCalc
     GridDispatch --> FullReval
-
     GreeksCalc --> PnLExplain
     FullReval --> PnLExplain
     FullReval --> VaRCalc
     GreeksCalc --> FRTBAgg
-    FullReval --> FRTBAgg
-    GreeksCalc --> XVAEngine
-
+    FullReval --> XVAEngine
     PnLExplain --> ReconGL
     VaRCalc --> QualityGates
     FRTBAgg --> QualityGates
+    XVAEngine --> QualityGates
     ReconGL --> QualityGates
     QualityGates --> PCSignoff
 ```
 
-### 3. Critical Path Method (CPM) Analysis
+The vol surfaces depend on the curves (forwards and discounting enter the implied-vol inversion), which is why the worked example below has the surface task after the curve task.
+A scheduler executes the graph in topological order: a task becomes runnable when all its predecessors succeeded, which is Kahn's algorithm run online.
+A cycle in the declared dependencies is a configuration error and must be rejected at load time, not discovered at 2 a.m.
 
-In any task dependency graph, the **Critical Path** is the longest path of sequential dependencies from batch start to completion:
-- **Early Start ($ES$):** Earliest time a task can begin once all predecessors complete.
-- **Early Finish ($EF$):** $EF = ES + \text{Duration}$.
-- **Late Finish ($LF$):** Latest time a task can complete without delaying the downstream project delivery deadline.
-- **Late Start ($LS$):** $LS = LF - \text{Duration}$.
-- **Total Float (Slack):** $\text{Float} = LS - ES = LF - EF$.
-Tasks on the critical path have strictly **$\text{Float} = 0$**. Any execution delay in a critical path task directly delays the entire EOD batch and threatens regulatory reporting SLAs.
+### 3. Critical path method
 
-### 4. Task State Machine and Idempotent Retry Logic
+For task $i$ with duration $d_i$, predecessors $P(i)$, successors $S(i)$ and an optional release time $r_i$ (the earliest moment its input exists):
+
+$$ES_i = \max\Big(r_i, \max_{j \in P(i)} EF_j\Big), \qquad EF_i = ES_i + d_i,$$
+
+$$T = \max_i EF_i, \qquad LF_i = \min_{k \in S(i)} LS_k \;(\text{or } T \text{ for a sink}), \qquad LS_i = LF_i - d_i,$$
+
+$$\text{Float}_i = LS_i - ES_i = LF_i - EF_i.$$
+
+Without release times, $T$ is the length of the longest source-to-sink path and $\text{Float}_i = T - (\text{longest path through } i)$; the forward pass is the longest-path dynamic programme on a DAG, $O(V + E)$ after a topological sort.
+The critical path is the set of zero-float tasks.
+Two consequences matter for capacity planning:
+
+- Speeding up a task with float does not move $T$ at all.
+- Speeding up a critical task moves $T$ one for one only until another path catches up; past that point the two paths must be crashed together.
+
+### 4. Uncertain durations: why the plan is optimistic
+
+Task durations vary night to night (market moves change calibration iterations, trade counts change grid size, nodes straggle).
+If each duration is multiplied by a mean-one noise factor, the expected length of every individual path is unchanged, but
+
+$$\mathbb{E}\big[\max(L_1, \dots, L_m)\big] \ge \max\big(\mathbb{E}[L_1], \dots, \mathbb{E}[L_m]\big)$$
+
+by Jensen's inequality, because the maximum is convex.
+The more near-critical paths a DAG has, the larger the gap, so an SLA plan must budget for the distribution of the makespan (a high percentile), not for the deterministic CPM number.
+
+### 5. Task states, retries and idempotency
 
 ```mermaid
 stateDiagram-v2
     [*] --> Scheduled
-    Scheduled --> Queued: Upstream Dependencies Succeeded
-    Queued --> Running: Worker Node Claims Lease
-    Running --> Success: Execution Completed Successfully
-    Running --> Failed: Exception / Node Crash
-    Failed --> Retrying: Retries Remaining (Count < Max)
-    Retrying --> Queued: Exponential Backoff with Jitter
-    Failed --> Quenched: Retries Exhausted (Alert Triggered)
-    Quenched --> ManualIntervention: On-Call Engineer Investigates
-    ManualIntervention --> Queued: Task Re-triggered Post-Fix
+    Scheduled --> Queued: all upstream tasks succeeded
+    Queued --> Running: worker claims a lease on the task
+    Running --> Success: output committed and acknowledged
+    Running --> Failed: exception, node loss or lease expiry
+    Failed --> Retrying: attempts remaining
+    Retrying --> Queued: backoff with jitter
+    Failed --> Exhausted: attempts used up, page on-call
+    Exhausted --> Queued: re-triggered after a fix
     Success --> [*]
 ```
 
-- **Idempotency Mandate:** A batch task must produce identical system state regardless of how many times it executes with the same inputs:
+Distributed task execution gives at-least-once semantics: a worker can commit its output and die before the acknowledgement, so the scheduler re-runs a task that already wrote.
+The task is safe to retry only if its effect is idempotent: running it twice with the same inputs leaves the same state as running it once.
+Two standard implementations:
 
-$$\text{Task}(S) = \text{Task}(\text{Task}(S))$$
+- Keyed upsert: every output row carries a natural key such as (business date, book, risk factor, run id), and the write is an upsert on that key (`INSERT ... ON CONFLICT ... DO UPDATE` in PostgreSQL); the Idempotent Receiver pattern of Hohpe and Woolf is the messaging form of the same idea.
+- Atomic partition swap: the task writes a complete staging table and the publish step swaps it in as the partition for that business date (`ALTER TABLE ... EXCHANGE PARTITION` in Oracle); readers see the old partition or the new one, never a half-written one.
 
-Database operations must use atomic partition swaps (`ALTER TABLE ... EXCHANGE PARTITION`) or upserts (`INSERT ... ON CONFLICT DO UPDATE`) to avoid inserting duplicate records during retries.
+### 6. Scheduler high availability with a lease
+
+```mermaid
+flowchart LR
+    S1["Scheduler A (leader)"] -->|renew lease every 5 s| L[("Consensus store: lease with TTL 15 s")]
+    S2["Scheduler B (standby)"] -->|poll every 2 s| L
+    S1 --> DB[("Metadata DB: task states, attempt ids")]
+    S2 -.->|on takeover: reconcile| DB
+    S1 --> Q[["Durable task queue"]]
+    Q --> W1["Worker"]
+    Q --> W2["Worker"]
+    W1 -->|commit with fencing token| OUT[("Result store")]
+    W2 -->|commit with fencing token| OUT
+```
+
+Only the lease holder may schedule.
+If the leader dies, the standby can take over only after the lease expires, so the TTL is a floor on detection time and a ceiling on how long a dead leader blocks the batch.
+A lease is not safe by itself: a leader paused by a long GC or a network partition may wake up after its lease expired and still act.
+The fix is a fencing token (a number that increases with every lease grant) attached to every write; the result store rejects writes carrying an older token (Kleppmann, chapter 8).
+Workers keep running through a scheduler failover because they pull from a durable queue; the new leader reconciles the metadata DB and re-queues only the tasks whose workers are gone.
 
 ## Worked examples
 
-### Example 1: Critical Path Analysis for a Fixed Income Risk Batch
+### Example 1: critical path of a fixed income batch
 
-A risk engineering team analyzes an Americas EOD fixed income batch consisting of seven primary task blocks:
+Hypothetical durations in minutes:
 
-| Task Code | Task Description | Predecessors | Duration ($D_i$) |
-| :--- | :--- | :--- | :--- |
-| **A** | Trade Ingestion & Normalization | None | $15\text{ minutes}$ |
-| **B** | Market Snapshot & Curve Calibration | None | $25\text{ minutes}$ |
-| **C** | Surface Calibration & SABR Fitting | Task B | $20\text{ minutes}$ |
-| **D** | Greek Sensitivity Grid Dispatch | Task A, Task B, Task C | $45\text{ minutes}$ |
-| **E** | Full Revaluation Scenario Simulation | Task A, Task B | $60\text{ minutes}$ |
-| **F** | VaR & Expected Shortfall Aggregation | Task E | $15\text{ minutes}$ |
-| **G** | PnL Explain & Product Control Sign-Off | Task D, Task F | $20\text{ minutes}$ |
+| Task | Description | Predecessors | Duration |
+| :--- | :--- | :--- | ---: |
+| A | Trade extract and normalisation | none | 15 |
+| B | Market snapshot and curve calibration | none | 25 |
+| C | Vol surface calibration | B | 20 |
+| D | Sensitivity grid | A, B, C | 45 |
+| E | Scenario full revaluation | A, B | 60 |
+| F | VaR and ES aggregation | E | 15 |
+| G | P&L explain and sign-off | D, F | 20 |
 
-#### Step 1: Forward Pass (Early Start and Early Finish)
-- Task A: $ES = 0$, $EF = 0 + 15 = 15\text{ min}$.
-- Task B: $ES = 0$, $EF = 0 + 25 = 25\text{ min}$.
-- Task C: $ES = EF(B) = 25$, $EF = 25 + 20 = 45\text{ min}$.
-- Task D: $ES = \max(EF(A), EF(B), EF(C)) = \max(15, 25, 45) = 45$, $EF = 45 + 45 = 90\text{ min}$.
-- Task E: $ES = \max(EF(A), EF(B)) = \max(15, 25) = 25$, $EF = 25 + 60 = 85\text{ min}$.
-- Task F: $ES = EF(E) = 85$, $EF = 85 + 15 = 100\text{ min}$.
-- Task G: $ES = \max(EF(D), EF(F)) = \max(90, 100) = 100$, $EF = 100 + 20 = 120\text{ min}$.
+Forward pass: $EF_A = 15$, $EF_B = 25$, $C$ runs 25 to 45, $D$ waits for $\max(15, 25, 45) = 45$ and ends at 90, $E$ waits for $\max(15, 25) = 25$ and ends at 85, $F$ runs 85 to 100, and $G$ waits for $\max(90, 100) = 100$ and ends at $T = 120$ minutes.
 
-Total minimum batch execution duration: **$120\text{ minutes}$ ($2.0\text{ hours}$)**.
+Backward pass from $LF_G = 120$:
 
-#### Step 2: Backward Pass (Late Start, Late Finish, and Float)
-Setting target completion $LF(G) = 120\text{ min}$:
-- Task G: $LF = 120$, $LS = 120 - 20 = 100\text{ min} \implies \text{Float} = 100 - 100 = 0$.
-- Task F: $LF = LS(G) = 100$, $LS = 100 - 15 = 85\text{ min} \implies \text{Float} = 85 - 85 = 0$.
-- Task E: $LF = LS(F) = 85$, $LS = 85 - 60 = 25\text{ min} \implies \text{Float} = 25 - 25 = 0$.
-- Task D: $LF = LS(G) = 100$, $LS = 100 - 45 = 55\text{ min} \implies \text{Float} = 55 - 45 = 10\text{ minutes}$.
-- Task C: $LF = LS(D) = 55$, $LS = 55 - 20 = 35\text{ min} \implies \text{Float} = 35 - 25 = 10\text{ minutes}$.
-- Task B: $LF = \min(LS(C), LS(D), LS(E)) = \min(35, 55, 25) = 25$, $LS = 25 - 25 = 0\text{ min} \implies \text{Float} = 0$.
-- Task A: $LF = \min(LS(D), LS(E)) = \min(55, 25) = 25$, $LS = 25 - 15 = 10\text{ min} \implies \text{Float} = 10\text{ minutes}$.
+| Task | ES | EF | LS | LF | Float |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+| A | 0 | 15 | 10 | 25 | 10 |
+| B | 0 | 25 | 0 | 25 | 0 |
+| C | 25 | 45 | 35 | 55 | 10 |
+| D | 45 | 90 | 55 | 100 | 10 |
+| E | 25 | 85 | 25 | 85 | 0 |
+| F | 85 | 100 | 85 | 100 | 0 |
+| G | 100 | 120 | 100 | 120 | 0 |
 
-Critical Path Identification and Resource Allocation:
-- The zero-float critical path is **$\text{B} \to \text{E} \to \text{F} \to \text{G}$**.
-- Allocating additional cluster cores to Task D (Greeks) yields zero runtime benefit because it possesses $10\text{ minutes}$ of slack float.
-- Adding compute nodes to Task E (Full Revaluation, taking $60\text{ minutes}$ on the critical path) directly reduces total batch duration.
+The critical path is B, E, F, G.
+The script confirms this by brute force: it enumerates all 5 source-to-sink paths, finds B-E-F-G as the only path of length 120, and recovers every float as 120 minus the longest path through the task.
 
-### Example 2: Handling Late Trade Bookings via Sub-DAG Invalidation
+```mermaid
+gantt
+    title Worked example schedule (start 18:00, hypothetical)
+    dateFormat YYYY-MM-DD HH:mm
+    axisFormat %H:%M
+    section Trades
+    A trade extract           :a, 2026-01-15 18:00, 2026-01-15 18:15
+    section Market data
+    B curves                  :crit, b, 2026-01-15 18:00, 2026-01-15 18:25
+    C vol surfaces            :c, 2026-01-15 18:25, 2026-01-15 18:45
+    section Grid
+    D sensitivities           :d, 2026-01-15 18:45, 2026-01-15 19:30
+    E scenario revaluation    :crit, e, 2026-01-15 18:25, 2026-01-15 19:25
+    section Aggregation
+    F VaR and ES              :crit, f, 2026-01-15 19:25, 2026-01-15 19:40
+    G explain and sign-off    :crit, g, 2026-01-15 19:40, 2026-01-15 20:00
+```
 
-At 22:30 EST, after the EOD risk batch has completed Task E and reached Task F (VaR calculation), a trader books a missing $\$500,000,000$ 10-year interest rate swap executed at 16:15 EST but omitted from the initial extract:
-- Rerunning the full batch from Task A would require another $120\text{ minutes}$, violating the 23:30 regulatory SLA.
-- Incremental sub-DAG resolution:
-  $1$. The orchestrator detects that Market Data (Tasks B and C) is unaffected.
-  $2$. An incremental extractor pulls only the missing trade.
-  $3$. The trade is routed to a high-priority worker node to evaluate its standalone sensitivity vector and scenario PnL vector ($45\text{ seconds}$).
-  $4$. The orchestrator invalidates only downstream aggregation tasks (Tasks F and G).
-  $5$. The trade's scenario vector is added directly into the pre-aggregated portfolio cube:
+### Example 2: where to spend compute
 
-$$\mathbf{P}_{\text{new\_portfolio}} = \mathbf{P}_{\text{existing\_cube}} + \mathbf{P}_{\text{late\_trade}}$$
+Halving D (doubling its cores) leaves the makespan at 120 minutes: D has 10 minutes of float.
+Crashing E pays one for one at first: E at 55 minutes gives 115.
+But the next-longest path B-C-D-G is 110 minutes, so E at 50 gives 110 and E at 40 or 30 still gives 110.
+At E = 50 every task except A is critical (B, C, D, E, F and G all have zero float), so further gains need D or C crashed as well.
+In an interview, say it as: "Find the critical path, crash it until the second path appears, then re-run CPM; the marginal value of cores is the float structure, not the task size."
 
-  $6$. Tasks F and G re-execute across pre-aggregated vectors in $2.5\text{ minutes}$.
-- Total recovery latency: $45\text{ s} / 60 + 2.5\text{ min} = 3.25\text{ minutes}$, avoiding the $120\text{ minute}$ full rerun and preserving the SLA.
+### Example 3: SLA headroom and the PERT bias
 
-### Example 3: Disaster Recovery via Active-Passive Scheduler Failover
+The batch starts at 18:00 and sign-off is due at 20:30, a 150-minute window, so the deterministic plan has 30 minutes of headroom.
+Now let every duration vary night to night by an independent lognormal factor with mean 1 and log-volatility 0.25.
+Over 200,000 simulated nights (seed 2026) the critical path B-E-F-G keeps its mean length of 120.0 minutes, but the mean makespan is 124.0 minutes, the 95th percentile is 153.0 minutes and the batch misses the 150-minute window on 6.6% of nights.
+A zero-noise control run reproduces the deterministic 120 minutes exactly, so the gap comes from the noise acting through the maximum over paths, not from any path getting longer on average.
+The planning lesson: quote and monitor a percentile of the makespan against the SLA, and treat near-critical paths as risk even when CPM says they have float.
 
-During the execution of Task E, the primary orchestrator host experiences a hardware kernel panic:
-- Schedulers operate in an active-passive cluster sharing a managed database and an etcd consensus distributed lock.
-- Compute worker nodes consume tasks independently from a persistent message queue.
-- Failover sequence:
-  $1$. Primary scheduler heartbeats cease.
-  $2$. After $15\text{ seconds}$ without heartbeat renewal, etcd releases the master lease.
-  $3$. The passive backup scheduler claims the lease and assumes master status.
-  $4$. The backup scheduler inspects the metadata database: tasks marked `Running` on healthy compute nodes continue execution uninterrupted.
-  $5$. Only tasks assigned to dead worker nodes are transitioned to `Retrying` and re-queued.
-  $6$. Total failover completes in $28\text{ seconds}$ without terminating ongoing grid simulations.
+### Example 4: a late trade
+
+A trade executed before the cut-off is booked late and arrives 95 minutes into the batch (19:35), while F is running.
+
+- Full rerun: every task restarts at 95 and the batch completes at 215 minutes (21:35), a breach.
+- Incremental sub-DAG: one task L prices the trade alone against the already-calibrated curves and surfaces (needs B and C) and produces its sensitivities and its scenario P&L vector in 45 s, finishing at 95.75 minutes.
+  F2 adds the trade's scenario vector to the portfolio vector and re-takes the VaR and ES quantiles (1 minute, after F and L); G2 merges the trade's Greeks into the P&L explain and re-runs the sign-off checks (1.5 minutes, after G and L).
+  The batch now completes at 121.5 minutes: the late trade costs 1.5 minutes and leaves 28.5 minutes of headroom.
+
+The merge is valid only for additive quantities.
+Scenario P&L, PVs and sensitivities add across trades; VaR, ES and exposure profiles of a netting set (with collateral and netting) do not, so they must be recomputed from the merged vectors.
+In the script's illustration the late trade is a partial hedge: the VaR of the book plus the trade is smaller than the VaR of the book alone, so adding a standalone "VaR increment" would have moved the number in the wrong direction.
+
+```mermaid
+flowchart LR
+    B["B curves (done)"] --> L["L price late trade: Greeks and scenario vector"]
+    C["C surfaces (done)"] --> L
+    F["F VaR and ES (done)"] --> F2["F2 merge vector, re-take quantiles"]
+    L --> F2
+    G["G explain and sign-off (done)"] --> G2["G2 merge Greeks, re-run checks"]
+    L --> G2
+```
+
+### Example 5: how long a scheduler failover takes
+
+Settings (hypothetical): lease TTL 15 s, the leader renews every 5 s, the standby polls every 2 s, and reconciling the metadata DB takes 8 s.
+If the leader crashes just before a renewal, the lease expires 10 s later; if just after, 15 s later.
+The standby then waits up to one polling interval and spends 8 s reconciling.
+Best case $10 + 0 + 8 = 18$ s, worst case $15 + 2 + 8 = 25$ s, and with a uniformly random crash phase the mean is $12.5 + 1 + 8 = 21.5$ s.
+The script simulates 100,000 crashes with independent leader and standby clocks and reproduces the bounds and a mean of 21.49 s.
+Shortening the TTL speeds failover but raises the risk of false failovers during GC pauses or network blips, which is why fencing tokens, not short TTLs, provide safety.
+
+### Example 6: why retries need idempotency
+
+A task writes three DV01 rows for a book (1,500, -700 and 2,200 dollars per basis point, total 3,000), commits, and dies before acknowledging, so the scheduler re-runs it.
+With an append-only table the book now shows 6,000: risk doubled silently.
+With an upsert keyed on (business date, book, risk factor) the second run overwrites the same three rows and the book still shows 3,000.
 
 ## Pitfalls
 
-- **Sleep-Based Polling:** Using hardcoded sleep delays (such as `sleep(1800)`) to await market data ensures failure when feeds arrive early or late; orchestrators must use deterministic event sensors.
-- **Non-Idempotent Database Appends:** Appending calculation rows directly to tables without transaction rollback ensures that retried tasks insert duplicate records, doubling reported risk and capital.
-- **Cascading Invalidation Deadlocks:** Updating a minor reference curve in a reactive DAG can inadvertently trigger an invalidation cascade that cancels hours of active Monte Carlo compute runs.
-- **Storage Bottlenecks on Shared Drives:** Having 5,000 distributed compute nodes read the same 50GB market snapshot simultaneously from a single NFS volume causes storage I/O collapse; use distributed object stores (S3) or localized SSD caches.
-- **Silent Quality Gate Bypasses:** Configuring data quality checks to emit warnings rather than hard task failures allows corrupted, zero-filled risk reports to be published automatically to regulators.
+- **Sleep-based waiting:** `sleep(1800)` before reading market data fails when the feed is early or late; use event sensors on the snapshot's completion marker.
+- **Non-idempotent appends:** retries after a commit-then-crash duplicate rows and double reported risk (Example 6).
+- **Over-eager invalidation:** a reactive DAG that invalidates everything downstream of a minor curve change can cancel hours of Monte Carlo; invalidation should follow true data dependencies and be throttled during the batch.
+- **Thundering reads of shared inputs:** thousands of workers reading the same snapshot file from one NFS volume saturate it; stage inputs to object storage or local caches before fan-out.
+- **Quality gates that only warn:** a gate that logs instead of failing lets a zero-filled sensitivity file reach regulators; gates must block publication and quarantine the run.
+- **Adding non-additive numbers:** merging a late trade by adding its standalone VaR or its standalone netting-set exposure instead of recomputing from vectors.
+- **Planning to the deterministic critical path:** the expected and high-percentile makespans exceed it (Example 3).
 
 ## Interview questions
 
 > [!question]- sys-13-01 | What is the Critical Path in an EOD risk batch and why is it essential for infrastructure capacity planning?
-> The Critical Path is the sequence of dependent tasks with zero float that requires the longest total time to complete from start to finish.
-> It determines the minimum possible batch runtime; optimizing non-critical tasks yields zero SLA improvement, so infrastructure investments must target critical path bottlenecks.
+> The longest source-to-sink path through the task DAG; its tasks have zero float and its length is the minimum batch runtime.
+> Only speeding up critical tasks shortens the batch, and only until another path becomes critical, so compute should be bought for the critical path and re-planned after each change.
 
 > [!question]- sys-13-02 | What does it mean for a batch calculation task to be idempotent?
-> An idempotent task produces the exact same system state and output regardless of whether it is executed once or multiple times with the same inputs: $f(x) = f(f(x))$.
-> Idempotency prevents duplicate records, double-counted risk, or corrupted balances when tasks fail and are retried.
+> Running it twice with the same inputs leaves the same persisted state as running it once.
+> It matters because distributed execution is at-least-once: a task can commit and die before acknowledging, and the retry must not duplicate rows or double count risk.
 
 > [!question]- sys-13-03 | How do modern orchestrators handle late-arriving trades without rerunning the entire batch?
-> They leverage incremental DAG evaluation: only the late trades are extracted and priced, and their resulting risk/PnL vectors are merged into the pre-calculated aggregation cubes.
-> Only downstream aggregation tasks (VaR, PnL explain, sign-off) are invalidated and rerun, completing in minutes rather than hours.
+> They add a small sub-DAG: price only the new trade against the already-built market data, then merge its additive outputs (scenario P&L vector, PV, Greeks) into the existing aggregates and re-run only the downstream steps.
+> Non-additive results (VaR, ES, netting-set exposure) are recomputed from the merged vectors, never added; in the worked example this costs 1.5 minutes, while a full rerun from the arrival time would finish at 215 minutes instead of 120.
 
 > [!question]- sys-13-04 | What is the difference between Early Start ($ES$) and Late Start ($LS$) in the Critical Path Method?
-> Early Start is the earliest possible time a task can begin once all predecessor tasks finish.
-> Late Start is the latest time a task can begin without delaying the final project completion date.
-> The difference ($LS - ES$) is the task's slack or float.
+> $ES$ is the earliest a task can start, once all predecessors (and its release time) allow; $LS = LF - d$ is the latest it can start without delaying the batch.
+> Their difference $LS - ES$ is the task's total float.
 
 > [!question]- sys-13-05 | What is an automated Quality Gate in an EOD batch pipeline?
-> A quality gate is an automated validation step that tests output data against pre-defined statistical rules (e.g., zero missing values, unexplained PnL $< 5\%$, risk changes within $3\sigma$ of historical moves).
-> If a gate fails, the batch is quarantined and prevented from publishing official reports until investigated.
+> A blocking check on batch outputs before publication: completeness (every book and risk factor present), validity (no NaN or zero-filled vectors), reconciliation (trade counts and PVs against source systems and the ledger) and plausibility (day-on-day changes within thresholds the firm calibrates).
+> A failure quarantines the run and stops downstream publication until someone signs off a fix or an override.
 
 > [!question]- sys-13-06 | How does a distributed scheduler prevent duplicate task execution across worker nodes?
-> Schedulers use distributed consensus locks (such as ZooKeeper, etcd, or database row-level locking via `SELECT FOR UPDATE SKIP LOCKED`).
-> A worker claims an exclusive lease on a task before execution, ensuring only one worker processes the job.
+> A worker claims a task atomically before running it (for example a row lock with `SELECT ... FOR UPDATE SKIP LOCKED`, or a lease in a consensus store such as etcd or ZooKeeper).
+> Claims can still overlap after a pause or partition, so outputs must also be idempotent or fenced with a monotonically increasing token that the result store checks.
 
 > [!question]- sys-13-07 | What is the "Follow-the-Sun" batch architecture?
-> Global banks execute localized EOD risk batches aligned with the market close of each successive time zone (Tokyo/Hong Kong, London/Frankfurt, New York).
-> Regional results are signed off locally and rolled up sequentially into a consolidated global capital report overnight.
+> Each region runs its own EOD batch triggered by its own market close and signs it off locally, so batches are staggered around the clock.
+> Regional results then feed a consolidated firm-wide run; the hard part is a consistent cut-off and snapshot policy for books traded in several regions.
 
 > [!question]- sys-13-08 | What causes the "thundering herd" problem in distributed risk grids and how is it resolved?
-> It occurs when thousands of worker tasks finish simultaneously and attempt to write results or query the master database at the exact same millisecond, overwhelming network and database connections.
-> It is resolved by adding randomized jitter to retry intervals, using message queues with backpressure, and applying hierarchical tree reductions.
+> Many workers hit the same resource at once: a shared input file at fan-out, the result store at fan-in, or a recovered service after a synchronised retry.
+> Fixes: stage inputs to caches before fan-out, aggregate hierarchically, apply backpressure, and retry with exponential backoff plus random jitter so retries de-synchronise.
 
 > [!question]- sys-13-09 | What is the purpose of checkpointing in long-running Monte Carlo batch tasks?
-> Checkpointing periodically serializes the state of a multi-hour simulation (e.g., completed path blocks) to durable storage.
-> If a compute node crashes halfway through, the replacement node resumes execution from the latest checkpoint rather than restarting from path zero.
+> To persist completed work (for example finished path blocks with their seeds or counters) so a replacement worker resumes from the last checkpoint instead of path zero.
+> With counter-based random numbers the resumed result is identical to an uninterrupted run, which keeps reruns reproducible.
 
 > [!question]- sys-13-10 | Why are atomic partition swaps preferred over row-by-row updates in enterprise risk data warehouses?
-> Row-by-row updates generate heavy database transaction locking, high write-ahead log (WAL) overhead, and leave tables in inconsistent states if aborted.
-> Atomic partition swaps write batch results to a temporary table and swap metadata pointers instantaneously (`ALTER TABLE ... EXCHANGE PARTITION`), ensuring atomic visibility.
+> The task loads a complete staging table and the publish step swaps it in as the business-date partition in one metadata operation, so readers see either the old or the new data, never a mix.
+> Row-by-row updates hold locks for longer, generate more log volume and expose half-written states if the task dies, and a retry of a swap is naturally idempotent.
+
+> [!question]- sys-13-11 | In the worked example (critical path B-E-F-G of 120 minutes, next path B-C-D-G of 110), what makespan do you get if E is cut from 60 to 40 minutes, and why?
+> $110$ minutes, not 100.
+> Cutting E by 20 shortens B-E-F-G to 100, but B-C-D-G at 110 becomes the critical path; only the first 10 minutes of crashing E pay off.
+
+> [!question]- sys-13-12 | Every task's duration gets mean-one noise. Does the expected batch makespan stay at the deterministic CPM value?
+> No, it rises: each path keeps its mean length, but the makespan is the maximum over paths and $\mathbb{E}[\max] \ge \max \mathbb{E}$ by Jensen's inequality.
+> In the worked example with log-volatility 0.25 the mean makespan is 124.0 minutes against 120, and the 95th percentile is 153.0 minutes.
+
+> [!question]- sys-13-13 | Why is a lease alone not enough to stop two schedulers acting as leader, and what fixes it?
+> A leader can pause (GC, VM stall, partition) past its lease expiry and resume believing it still leads, while the standby has taken over.
+> Each lease grant carries a fencing token that increases monotonically; every write includes it and storage rejects writes with an older token.
+
+> [!question]- sys-13-14 | Lease TTL 15 s, renewal every 5 s, standby polls every 2 s, takeover reconciliation 8 s: what are the best and worst failover times?
+> $18$ s and $25$ s.
+> Detection takes 10 s (crash just before a renewal) to 15 s (just after), plus 0 to 2 s of polling, plus 8 s of reconciliation.
+
+> [!question]- sys-13-15 | Which batch outputs can be updated for a late trade by adding the trade's contribution, and which cannot?
+> Additive: PV, P&L, sensitivities and the per-scenario P&L vector, because they are sums over trades.
+> Not additive: VaR, ES and other quantiles, netting-set exposures and XVA under netting and collateral, and capital formulas with square roots or floors; recompute these from the merged vectors.
+
+> [!question]- sys-13-16 | A task wrote its rows, committed, then crashed before acknowledging. What happens to reported DV01 on retry with an append-only table versus a keyed upsert?
+> Append-only doubles it (3,000 becomes 6,000 dollars per basis point in the example); a keyed upsert leaves it at 3,000.
+> At-least-once execution makes this retry normal, so the write path, not the scheduler, must guarantee correctness.
+
+> [!question]- sys-13-17 | Which BCBS 239 principles bear directly on the EOD batch design?
+> Principle 3 (accuracy and integrity, with aggregation largely automated) and Principle 5 (timeliness), with Principle 6 (adaptability) for ad hoc and stress requests.
+> They push towards automated, reconciled, restartable pipelines with predictable completion times rather than manual workarounds.
+
+## In this repo and SDE-Interview-Prep
+
+- `code/sys_eod_batch.py` computes, prints and asserts every number on this page: the CPM passes with a brute-force path check, crashing, the stochastic makespan, the late-trade sub-DAG, failover bounds with a simulation, and the retry example.
+- [Regulatory Reporting Pipeline](12-Regulatory-Reporting-Pipeline.md) for the consumers of the batch, [Risk Engine Architecture](07-Risk-Engine.md) for the computations inside it, and [Storage and Compute](14-Storage-and-Compute.md) for where its outputs live.
+- SDE-Interview-Prep: [Idempotency and Delivery](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md), [Consensus and Failure Detection](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Consensus-and-Failure-Detection.md), [MapReduce Architecture](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/MapReduce-Architecture.md).
 
 ## Further reading
 
-- Kleppmann, Martin. *Designing Data-Intensive Applications*. O'Reilly Media, 2017.
-- Basel Committee on Banking Supervision. *Principles for effective risk data aggregation and risk reporting*. BCBS 239, 2013.
-- Cormen, Thomas H., Leiserson, Charles E., Rivest, Ronald L., and Stein, Clifford. *Introduction to Algorithms*. 4th Edition, MIT Press, 2022.
-- Hohpe, Gregor and Woolf, Bobby. *Enterprise Integration Patterns*. Addison-Wesley, 2003.
+- Basel Committee on Banking Supervision. *Principles for effective risk data aggregation and risk reporting* (BCBS 239). January 2013.
+- Cormen, Leiserson, Rivest and Stein. *Introduction to Algorithms*, 4th edition, MIT Press, 2022: chapter 20 (topological sort) and chapter 22 (shortest paths in directed acyclic graphs; the longest path is the same algorithm with signs flipped).
+- Kleppmann, Martin. *Designing Data-Intensive Applications*. O'Reilly, 2017: chapter 8 (leases, process pauses and fencing tokens) and chapter 10 (batch processing).
+- Hohpe, Gregor and Woolf, Bobby. *Enterprise Integration Patterns*. Addison-Wesley, 2003: Idempotent Receiver and Guaranteed Delivery.

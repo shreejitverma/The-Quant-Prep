@@ -28,11 +28,11 @@ The architecture, design patterns, and production engineering behind quantitativ
 | 10 | [FRTB Engine Architecture](10-FRTB-Engine.md) | DQ | senior | 5 | solid | 16 |
 | 11 | [XVA Engine Architecture](11-XVA-Engine.md) | DQ | senior | 4 | solid | 16 |
 | 12 | [Regulatory Reporting Pipeline](12-Regulatory-Reporting-Pipeline.md) | DQ | advanced | 4 | solid | 16 |
-| 13 | [The EOD Risk Batch](13-EOD-Risk-Batch.md) | DQ | senior | 4 | solid | 10 |
-| 14 | [Storage and Compute for Quantitative Systems](14-Storage-and-Compute.md) | DQ | senior | 4 | solid | 10 |
-| 15 | [Model Governance and SR 11-7 Lifecycle](15-Model-Governance.md) | DQ | advanced | 4 | solid | 10 |
-| 16 | [Non-Functional Architecture and Production Operations](16-Non-Functional-Design.md) | DQ | senior | 4 | solid | 10 |
-| 17 | [Industry Landscape: Vendor Platforms and Open Source](17-Industry-Landscape.md) | DQ | advanced | 4 | solid | 10 |
-| 18 | [Systems Design Problem Set: Quantitative Financial Infrastructure](18-Systems-Design-Problem-Set.md) | DQ | senior | 4 | solid | 15 |
+| 13 | [The EOD Risk Batch](13-EOD-Risk-Batch.md) | DQ | senior | 4 | solid | 17 |
+| 14 | [Storage and Compute for Quantitative Systems](14-Storage-and-Compute.md) | DQ | senior | 4 | solid | 16 |
+| 15 | [Model Governance and Model Risk Management](15-Model-Governance.md) | DQ | advanced | 4 | solid | 17 |
+| 16 | [Non-Functional Architecture and Production Operations](16-Non-Functional-Design.md) | DQ | senior | 4 | solid | 17 |
+| 17 | [Industry Landscape: Vendor Platforms and Open Source](17-Industry-Landscape.md) | DQ | advanced | 4 | solid | 15 |
+| 18 | [Systems Design Problem Set: Quantitative Financial Infrastructure](18-Systems-Design-Problem-Set.md) | DQ | senior | 4 | solid | 27 |
 
 <!-- qp:moc:end -->
