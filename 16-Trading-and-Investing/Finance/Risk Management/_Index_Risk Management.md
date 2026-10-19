@@ -75,7 +75,7 @@ SORT file.name ASC
 - [Regulatory Reporting Pipeline](../../../18-Pricing-and-Risk-Systems/12-Regulatory-Reporting-Pipeline.md)
 - [The EOD Risk Batch](../../../18-Pricing-and-Risk-Systems/13-EOD-Risk-Batch.md)
 - [Storage and Compute for Quantitative Systems](../../../18-Pricing-and-Risk-Systems/14-Storage-and-Compute.md)
-- [Model Governance and SR 11-7 Lifecycle](../../../18-Pricing-and-Risk-Systems/15-Model-Governance.md)
+- [Model Governance and Model Risk Management](../../../18-Pricing-and-Risk-Systems/15-Model-Governance.md)
 - [Non-Functional Architecture and Production Operations](../../../18-Pricing-and-Risk-Systems/16-Non-Functional-Design.md)
 - [Industry Landscape: Vendor Platforms and Open Source](../../../18-Pricing-and-Risk-Systems/17-Industry-Landscape.md)
 - [Systems Design Problem Set](../../../18-Pricing-and-Risk-Systems/18-Systems-Design-Problem-Set.md)
