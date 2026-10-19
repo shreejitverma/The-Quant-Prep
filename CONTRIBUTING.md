@@ -74,7 +74,7 @@ The workflow:
 
 Never rename a published note file casually: the note id comes from the file name, and prerequisites, firm focus lists and learner progress refer to it.
 Never edit inside the `qp:moc` or `qp:catalog` markers by hand; `./qp index` owns those blocks.
-The root catalog counts the whole repo, so after rebasing onto `main` (or resolving a conflict in a generated block), run `./qp index` again and commit the result.
+Each row of the root catalog changes only with its own section, so pull requests on different sections merge cleanly; if a rebase or merge conflicts inside a generated block, resolve it by rerunning `./qp index`, never by picking one side.
 
 ## Question cards
 
