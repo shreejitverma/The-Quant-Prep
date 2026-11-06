@@ -190,10 +190,10 @@ Check the shadow price: the value as a function of the budget $c$ is $c^2/4$, wi
 > [!question]- la-ps-nilpotent | $N^k = 0$ for some $k$. What are the eigenvalues of $N$, and is $I - N$ invertible?
 > All eigenvalues are 0 ($Nv = \lambda v$ gives $\lambda^kv = 0$). $I - N$ is invertible with inverse $I + N + \dots + N^{k-1}$, a terminating geometric series.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [problem_set.py](code/problem_set.py) computes and asserts every number in the cards and worked examples, grouped by card id.
-- SDE bridge: [matrix exponentiation](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/03-Data-Structures-Algorithms/04-Gold-Standard-Cpp-Patterns/Math-and-Bit-Manipulation/matrix_exponentiation.cpp) for the Fibonacci card.
+- SDE bridge: [matrix exponentiation](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/03-Data-Structures-Algorithms/04-Gold-Standard-Cpp-Patterns/Math-and-Bit-Manipulation/matrix_exponentiation.cpp) for the Fibonacci card.
 - More drills: [Probability Problem Set](../01-Probability/15-Probability-Problem-Set.md), [Statistics Problem Set](../02-Statistics-and-Econometrics/14-Statistics-Problem-Set.md).
 
 ## Further reading

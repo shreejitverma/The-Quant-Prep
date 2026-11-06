@@ -326,7 +326,7 @@ The best rate when you insist on trading toward Markowitz (not the aim) is 0.106
 > A penalty prices each trade by its cost and benefit; a cap rations trading blindly.
 > The cap binds hardest exactly when the signal changes most, which is when trading is most valuable, and it treats a cheap liquid trade like an expensive illiquid one.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [costs_turnover.py](code/costs_turnover.py) backs every number in this note (cost model, execution horizon, cost shapes, quadratic-cost optimiser, Garleanu-Pedersen with value iteration and simulation).
 - Related notes: [Mean-Variance Portfolio Construction](10-Mean-Variance-Portfolio-Construction.md) for the linear-cost no-trade band, [Signals, Features and Alpha Decay](03-Signals-Features-and-Alpha-Decay.md) for turnover from signal autocorrelation and capacity, [Market Impact Models](../07-Market-Microstructure/06-Market-Impact-Models.md), [Optimal Execution Almgren-Chriss](../07-Market-Microstructure/07-Optimal-Execution-Almgren-Chriss.md).

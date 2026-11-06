@@ -193,7 +193,7 @@ The interval is asymmetric because the $\chi^2$ is skewed; with fat-tailed retur
 > Yes.
 > The SE of a difference of independent estimates is $\sqrt{s_a^2+s_b^2}$, smaller than $s_a+s_b$, so the difference test is stricter than the overlap check.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Inequalities and Limit Theorems](../01-Probability/06-Inequalities-and-Limit-Theorems.md) for the CLT behind Wald intervals.
 - [Hypothesis Testing and Multiple Comparisons](03-Hypothesis-Testing-and-Multiple-Comparisons.md) for tests built on these intervals.

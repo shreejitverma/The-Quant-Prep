@@ -260,7 +260,7 @@ The same firm's 1-year spread is 15.9 bp and its 3-month spread 0.022 bp.
 > [!question]- fi-cds-merton-numbers | In Merton with $V_0 = 100$, $D = 60$, $\sigma_V = 25\%$, $r = 4\%$, $T = 5$, what are equity, debt and the spread?
 > Equity 52.7205 (a call on the assets), debt 47.2795, risk-neutral default probability 16.06%, credit spread 77 bp.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_cds.py`](code/fi_cds.py) computes, prints and asserts every number on this page.
 - Prereq: [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md).

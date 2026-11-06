@@ -178,15 +178,15 @@ Close them visibly: a small C++ project with an order book, unit tests, sanitize
 > [!question]- qd-role-lock-free-judgement | A candidate says they would make every queue lock-free. What is the senior response?
 > Use lock-free structures only where contention or latency has been measured to matter and the design is simple and testable (an SPSC ring between two pinned threads). Elsewhere a mutex is simpler, correct and fast enough; the cost of a subtle memory-ordering bug is far higher than a few hundred nanoseconds.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Section map: [C++](02-Cpp-for-Trading-Systems.md), [low latency](03-Low-Latency-Engineering.md), [concurrency](04-Concurrency-Lock-Free-and-Memory-Pools.md), [DSA](05-Data-Structures-and-Algorithms-for-Quant-Interviews.md), [system design](06-System-Design-for-Trading.md), [order book](07-Order-Book-and-Matching-Engine.md).
 - Bank-side systems: [Pricing and Risk Systems](../18-Pricing-and-Risk-Systems/README.md).
 - Interview process: [How Quant Interviews Work](../13-Interview-Playbook/01-How-Quant-Interviews-Work.md).
-- [Quant developer role hub (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/16-Interview-Command-Center/01-Roles/Quant-Dev/_Hub.md)
-- [Quant developer skill matrix (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/16-Interview-Command-Center/01-Roles/Quant-Dev/Skill-Matrix.md)
-- [Quant developer question bank (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/16-Interview-Command-Center/01-Roles/Quant-Dev/Question-Bank.md)
-- [SDE roadmap (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/00-Start-Here/Roadmap.md)
+- [Quant developer role hub (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/16-Interview-Command-Center/01-Roles/Quant-Dev/_Hub.md)
+- [Quant developer skill matrix (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/16-Interview-Command-Center/01-Roles/Quant-Dev/Skill-Matrix.md)
+- [Quant developer question bank (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/16-Interview-Command-Center/01-Roles/Quant-Dev/Question-Bank.md)
+- [SDE roadmap (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/00-Start-Here/Roadmap.md)
 
 ## Further reading
 

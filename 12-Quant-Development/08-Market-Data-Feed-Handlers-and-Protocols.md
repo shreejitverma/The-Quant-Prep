@@ -410,18 +410,18 @@ The unit test `test_heartbeat_reveals_tail_gap` asserts this case.
 > [!question]- qd-feed-mdp3-seq | How does CME MDP 3.0 sequencing differ from MoldUDP64, and why does it matter for recovery?
 > MDP 3.0 numbers packets per channel (uint32 MsgSeqNum in a 12-byte packet header, reset weekly) and adds a per-instrument `RptSeq`; MoldUDP64 numbers messages and has no per-instrument counter. With `RptSeq` a handler can recover only the instruments that skipped, while an unrecoverable MoldUDP64 gap taints every instrument on the channel.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [itch50_feed_handler.hpp](code/cpp/itch50_feed_handler.hpp) (ITCH 5.0 decode and encode, MoldUDP64 framing, `LineArbitrator` with a bounded reorder buffer that reports `BufferFull` for escalation to a snapshot, `BookBuilder`), the worked session in [itch50_feed_handler.cpp](code/cpp/itch50_feed_handler.cpp), and tests including fuzzing in [test_itch50_feed_handler.cpp](code/cpp/tests/test_itch50_feed_handler.cpp).
 - Earlier code: [itch_parser_mock.py](code/python/itch_parser_mock.py) (a simplified mock format, not real ITCH) and [udp_receiver_mock.cpp](code/cpp/udp_receiver_mock.cpp).
 - Protocol guides in this repo: [ITCH](../08-Market-Making/Quant-Dev-MM-Guide/07_ITCH_Protocol_Mastery_Guide.md), [OUCH](../08-Market-Making/Quant-Dev-MM-Guide/08_OUCH_Protocol_Mastery_Guide.md), [FIX](../08-Market-Making/Quant-Dev-MM-Guide/09_FIX_Protocol_Mastery_Guide.md); specs in [protocol-specs](protocol-specs/).
 - Related notes: [Order Book and Matching Engine](07-Order-Book-and-Matching-Engine.md), [Low-Latency Engineering](03-Low-Latency-Engineering.md), [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md), [Quant Dev Problem Set](15-Quant-Dev-Problem-Set.md).
-- [UDP multicast and A/B arbitration (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/06%20-%20Networking/UDP%20Multicast%20Market%20Data%20and%20A-B%20Feed%20Arbitration.md)
-- [Lab: zero-loss multicast feed arbitrator (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/06%20-%20Networking/Lab%20-%2006%20Zero-Loss%20Multicast%20Feed%20Arbitrator.md)
-- [Lab: zero-copy ITCH parser (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/10%20-%20Protocols%20%26%20Codecs/Lab%20-%2010%20Zero-Copy%20NASDAQ%20ITCH%205.0%20Parser.md)
-- [CME MDP 3.0 and SBE (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/10%20-%20Protocols%20%26%20Codecs/CME%20MDP%203.0%20and%20Simple%20Binary%20Encoding%20SBE.md)
-- [FIX and FAST (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/10%20-%20Protocols%20%26%20Codecs/FIX%20Protocol%20and%20Fast%20Encoding%20FAST.md)
-- [Clock sources and hardware timestamping (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/07%20-%20Time%20%26%20Measurement/Clock%20Sources%20and%20Hardware%20Timestamping.md)
+- [UDP multicast and A/B arbitration (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/06%20-%20Networking/UDP%20Multicast%20Market%20Data%20and%20A-B%20Feed%20Arbitration.md)
+- [Lab: zero-loss multicast feed arbitrator (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/06%20-%20Networking/Lab%20-%2006%20Zero-Loss%20Multicast%20Feed%20Arbitrator.md)
+- [Lab: zero-copy ITCH parser (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/10%20-%20Protocols%20%26%20Codecs/Lab%20-%2010%20Zero-Copy%20NASDAQ%20ITCH%205.0%20Parser.md)
+- [CME MDP 3.0 and SBE (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/10%20-%20Protocols%20%26%20Codecs/CME%20MDP%203.0%20and%20Simple%20Binary%20Encoding%20SBE.md)
+- [FIX and FAST (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/10%20-%20Protocols%20%26%20Codecs/FIX%20Protocol%20and%20Fast%20Encoding%20FAST.md)
+- [Clock sources and hardware timestamping (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/07%20-%20Time%20%26%20Measurement/Clock%20Sources%20and%20Hardware%20Timestamping.md)
 
 ## Further reading
 

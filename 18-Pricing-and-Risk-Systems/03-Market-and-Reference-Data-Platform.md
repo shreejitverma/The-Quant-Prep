@@ -371,13 +371,13 @@ Only the price encoding changed between the two rows, so the difference is the c
 > Mark the instrument or channel as stale, request retransmission or recover from the venue's snapshot channel, and only then resume publishing.
 > Publishing a book built across a gap produces a plausible but wrong state that downstream validation cannot detect.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_market_reference_data.py` computes, prints and asserts every number on this page.
 - [Curve and Surface Service](04-Curve-and-Surface-Service.md) consumes the snapshots built here.
 - [Market Data Feed Handlers and Protocols](../12-Quant-Development/08-Market-Data-Feed-Handlers-and-Protocols.md) and [Tick Data Storage and Time Series Databases](../12-Quant-Development/12-Tick-Data-Storage-and-Time-Series-Databases.md) for the low-latency and storage detail.
 - [FRTB Non-Modellable Risk Factors](../17-Regulatory-Capital-Basel-and-FRTB/11-FRTB-Non-Modellable-Risk-Factors.md) and [BCBS 239 Risk Data Aggregation](../17-Regulatory-Capital-Basel-and-FRTB/18-BCBS-239-Risk-Data-Aggregation.md).
-- SDE-Interview-Prep: [Amazon S3 and Object Storage](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/05-Data-Stores/Amazon-S3-and-Object-Storage.md), [Caching and Invalidation](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Caching-and-Invalidation.md).
+- The-Distinguished-Engineer: [Amazon S3 and Object Storage](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/05-Data-Stores/Amazon-S3-and-Object-Storage.md), [Caching and Invalidation](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Caching-and-Invalidation.md).
 
 ## Further reading
 

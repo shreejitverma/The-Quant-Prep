@@ -293,13 +293,13 @@ The diff points straight at the cause: event ordering, not strategy logic.
 > [!question]- qd-testing-knight-response | During the incident Knight uninstalled the new code from seven servers. What happened, and what is the lesson?
 > Per the SEC order it made things worse: incoming parent orders then activated Power Peg on those servers too. Incident response needs procedures and a kill switch that stops order flow first, before diagnosis in a live market.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [testing_numerical_code.py](code/python/testing_numerical_code.py) (tolerances, summation order, seeds, Monte Carlo tolerance, property test with shrinking, metamorphic pricer tests, golden values, fuzzing, replay regression) and [test_itch50_feed_handler.cpp](code/cpp/tests/test_itch50_feed_handler.cpp) (spec conformance, property-based arbitration test, seeded fuzzing under sanitizers).
 - Related notes: [Market Data Feed Handlers and Protocols](08-Market-Data-Feed-Handlers-and-Protocols.md), [Backtester and Simulator Design](09-Backtester-and-Simulator-Design.md), [Risk Checks and Order Management](13-Risk-Checks-and-Order-Management.md), [Quant Dev Problem Set](15-Quant-Dev-Problem-Set.md).
-- [Deterministic replay and packet injection testing (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/13%20-%20Reliability%2C%20Ops%20%26%20Testing/Deterministic%20Replay%20and%20Packet%20Injection%20Testing.md)
-- [Exchange simulators and conformance harnesses (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/13%20-%20Reliability%2C%20Ops%20%26%20Testing/Exchange%20Simulators%20and%20Conformance%20Harnesses.md)
-- [War story: Knight Capital (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/War%20Story%20-%20The%202012%20Knight%20Capital%20Disaster.md)
+- [Deterministic replay and packet injection testing (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/13%20-%20Reliability%2C%20Ops%20%26%20Testing/Deterministic%20Replay%20and%20Packet%20Injection%20Testing.md)
+- [Exchange simulators and conformance harnesses (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/13%20-%20Reliability%2C%20Ops%20%26%20Testing/Exchange%20Simulators%20and%20Conformance%20Harnesses.md)
+- [War story: Knight Capital (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/War%20Story%20-%20The%202012%20Knight%20Capital%20Disaster.md)
 
 ## Further reading
 

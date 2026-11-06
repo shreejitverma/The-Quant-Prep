@@ -331,7 +331,7 @@ Adding a bucket 3 (industrials, IG 3%) counterparty with sensitivity 5,000 ($WS 
 - Gregory, J., *The xVA Challenge*, 4th edition, Wiley, 2020.
 - Green, A., *XVA: Credit, Funding and Capital Valuation Adjustments*, Wiley, 2015.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md) for the EAD that BA-CVA consumes.
 - [FRTB: Sensitivities-Based Method - Delta](07-FRTB-Sensitivities-Based-Method-Delta.md) for the market-risk method SA-CVA is adapted from.

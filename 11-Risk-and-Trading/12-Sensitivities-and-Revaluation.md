@@ -327,7 +327,7 @@ Reading it as in an interview:
 > High-degree interpolation on equally spaced points can diverge near the ends (Runge's phenomenon); Chebyshev points cluster towards the ends, their Lebesgue constant grows only logarithmically, and for analytic functions the error falls geometrically with the degree (Trefethen 2013).
 > On the reference call over spot 50 to 150 the max error was $9.38 \times 10^{-3}$ at degree 8 and $1.98 \times 10^{-6}$ at degree 16; equally spaced points are kept for low-order piecewise ladders, not global polynomials.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [risk_sensitivities.py](code/risk_sensitivities.py): finite-difference error table, optimal bumps, Monte Carlo bumping, a minimal AAD tape on Black-Scholes and a curve book, Hessian from the AAD gradient, full revaluation against proxies, barrier closed form and bridge Monte Carlo, Chebyshev grids; every number above except the short-put crash in card risk-taylor-proxy-tail-underestimation, which is Problem 11 of [risk_problem_set.py](code/risk_problem_set.py).
 - Greek definitions: [The Greeks](../05-Derivatives-and-Volatility/05-The-Greeks.md); Monte Carlo pricing: [Monte Carlo Pricing and Variance Reduction](../05-Derivatives-and-Volatility/10-Monte-Carlo-Pricing-and-Variance-Reduction.md); barriers: [Exotic Options](../05-Derivatives-and-Volatility/12-Exotic-Options.md).

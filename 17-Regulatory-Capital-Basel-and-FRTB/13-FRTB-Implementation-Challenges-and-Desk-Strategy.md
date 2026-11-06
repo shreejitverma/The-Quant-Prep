@@ -321,7 +321,7 @@ A desk business case must use the group's floor position at the date the saving 
 - Andreas Griewank and Andrea Walther, *Evaluating Derivatives: Principles and Techniques of Algorithmic Differentiation*, 2nd edition, SIAM, 2008, chapter 4 (complexity of the reverse mode).
 - Antoine Savine, *Modern Computational Finance: AAD and Parallel Simulations*, Wiley, 2018.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [FRTB: Internal Model Approach - ES](10-FRTB-Internal-Model-Approach-ES.md) - ES cascade, stress calibration, IMCC.
 - [FRTB: Non-Modellable Risk Factors](11-FRTB-Non-Modellable-Risk-Factors.md) - RFET and SES.

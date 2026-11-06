@@ -241,7 +241,7 @@ print(14.00 - 2 * 8.00 + 1.50)                        # butterfly -0.50: arbitra
 > A short put at the same strike plus a bond paying $K$ (cash-secured short put).
 > By parity, $S - C = K e^{-rT} - P$; both pay $\min(S_T, K)$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Prev: [Forwards, Futures and Carry](01-Forwards-Futures-and-Carry.md). Next: [Binomial Trees](03-Binomial-Trees.md).
 - Strategies built from these payoffs: [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md).

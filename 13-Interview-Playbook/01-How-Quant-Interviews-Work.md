@@ -157,10 +157,10 @@ The interviewer is scoring requirements gathering, correctness under edge cases 
 > [!question]- int-pipeline-superday | What is a superday and how should you prepare for it?
 > A final round of several consecutive interviews covering technical depth, role-specific exercises (games, design, research) and fit. Prepare stamina and consistency: each interviewer scores independently, so one weak round can sink the day.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Firm-specific pipeline reports: [14-Firms](../14-Firms/README.md).
-- Mock interview and behavioural material in SDE-Interview-Prep: [06-Interview-Prep](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/06-Interview-Prep/README.md).
+- Mock interview and behavioural material in The-Distinguished-Engineer: [06-Interview-Prep](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/06-Interview-Prep/README.md).
 
 ## Further reading
 

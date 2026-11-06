@@ -286,7 +286,7 @@ A down-and-out call ($S = K = 100$, barrier 90, $r = 5\%$, $\sigma = 20\%$, one 
 > Black-76 makes the futures price lognormal, so it can never reach zero and options struck at or below zero are worth nothing; Bachelier makes it normal, so negative prices and negative strikes are priced.
 > Calibrated to the same ATM price at futures 20 (Black 80%, Bachelier 15.96), a strike-10 put is 0.0012 against 0.0245; after WTI settled at $-37.63$ on 20 April 2020, CME moved certain energy options to Bachelier effective 22 April 2020 (Clearing Advisory 20-171).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [risk_liquidity_model.py](code/risk_liquidity_model.py): cost of liquidation, horizon multipliers with simulation checks, discrete Almgren-Chriss with a linear-system check and a price-process simulation, the margin spiral, Black against Bachelier, discrete barrier monitoring with the BGK correction; every number above.
 - Execution and impact: [Market Impact Models](../07-Market-Microstructure/06-Market-Impact-Models.md), [Optimal Execution: Almgren-Chriss](../07-Market-Microstructure/07-Optimal-Execution-Almgren-Chriss.md), [Kyle Model](../07-Market-Microstructure/04-Kyle-Model-and-Informed-Trading.md).

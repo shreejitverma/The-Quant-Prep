@@ -435,7 +435,7 @@ Capacity planning starts from this number times the scenario count, not from "on
 - Gneiting, "Making and evaluating point forecasts", *Journal of the American Statistical Association* 106(494), 2011.
 - McNeil, Frey and Embrechts, *Quantitative Risk Management*, revised edition, Princeton University Press, 2015.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [VaR and Expected Shortfall](../11-Risk-and-Trading/03-VaR-and-Expected-Shortfall.md) for the risk-measure foundations.
 - [FRTB SbM Delta](07-FRTB-Sensitivities-Based-Method-Delta.md) and [DRC and RRAO](09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md) for the standardised approach that caps and backs up IMA.

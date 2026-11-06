@@ -280,11 +280,11 @@ Model: first-release surprise $f \sim N(0,1)$; the restated value $e = f + 0.7v$
 > The statistics include future observations, so each historical score encodes where the series later went.
 > Use expanding or rolling windows that end at $t$, or cross-sectional normalisation at each date.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [pit_survivorship.py](code/pit_survivorship.py) reproduces every number above; [simple_event_driven.py](code/simple_event_driven.py) shows the fill-on-next-bar rule.
 - Related notes: [Backtesting Methodology and Pitfalls](07-Backtesting-Methodology-and-Pitfalls.md), [Signals, Features and Alpha Decay](03-Signals-Features-and-Alpha-Decay.md), [Alternative Data and Feature Engineering](14-Alternative-Data-and-Feature-Engineering.md), [Time-Series Cross-Validation, Purging and Embargo](../10-Machine-Learning-for-Finance/02-Time-Series-Cross-Validation-Purging-Embargo.md).
-- SDE-Interview-Prep event-driven backtester: [event_driven_backtester.py](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/05-Quantitative-Finance/03-Algo-Trading/Backtesting/event_driven_backtester.py).
+- The-Distinguished-Engineer event-driven backtester: [event_driven_backtester.py](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/03-Algo-Trading/Backtesting/event_driven_backtester.py).
 
 ## Further reading
 

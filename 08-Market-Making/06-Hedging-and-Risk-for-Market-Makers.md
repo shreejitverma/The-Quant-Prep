@@ -198,7 +198,7 @@ Real P&L has fat tails, so expect breaches more often than the normal model says
 > About once in 125 years (probability about $3.2 \times 10^{-5}$ per day).
 > It is 4 sd below the mean; fat tails make it more frequent, but repeated breaches signal a regime change.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Position-limit tiers in the systems companion: [Quantitative Models and Strategies](Quant-Dev-MM-Guide/03_Quantitative_Models_and_Strategies.md), section 2.3.
 - Engineering of pre-trade checks: [Risk Checks and Order Management](../12-Quant-Development/13-Risk-Checks-and-Order-Management.md).

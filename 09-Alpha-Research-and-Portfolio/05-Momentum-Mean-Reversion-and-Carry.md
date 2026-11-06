@@ -264,11 +264,11 @@ A 10-year sample with no crash in it would report roughly the second Sharpe; the
 > Both appear across stocks, country indices, bonds, currencies and commodities, and they are negatively correlated with each other (Asness, Moskowitz and Pedersen 2013).
 > Combining them gives a much higher Sharpe than either alone.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [momentum_carry.py](code/momentum_carry.py) reproduces every number above.
 - Related notes: [Signals, Features and Alpha Decay](03-Signals-Features-and-Alpha-Decay.md), [Cross-Sectional Factor Models](04-Cross-Sectional-Factor-Models.md), [Commodities and Futures Curves](../06-Fixed-Income-and-Asset-Classes/09-Commodities-and-Futures-Curves.md), [Drawdowns and Risk Limits](../11-Risk-and-Trading/05-Drawdowns-and-Risk-Limits.md).
-- SDE-Interview-Prep mean-reversion example: [bollinger_bands.py](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/05-Quantitative-Finance/03-Algo-Trading/Strategies/Mean-Reversion/bollinger_bands.py).
+- The-Distinguished-Engineer mean-reversion example: [bollinger_bands.py](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/03-Algo-Trading/Strategies/Mean-Reversion/bollinger_bands.py).
 
 ## Further reading
 

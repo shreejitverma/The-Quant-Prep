@@ -181,7 +181,7 @@ The script checks the par-par spread independently: projecting the floating leg 
 - Bruce Tuckman and Angel Serrat, *Fixed Income Securities: Tools for Today's Markets*, 3rd edition, Wiley, 2012: chapter 3 (Returns, Spreads, and Yields), chapter 5 (Multi-Factor Risk Metrics and Hedges) and chapter 6 (Empirical Approaches to Risk Metrics and Hedging).
 - Antti Ilmanen, *Expected Returns: An Investor's Guide to Harvesting Market Rewards*, Wiley, 2011.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_relative_value.py`](code/fi_relative_value.py) asserts every number here, including the full-revaluation check of the attribution and the leg-by-leg check of the asset swap spread.
 - Discounting and yield curve foundations: [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md).

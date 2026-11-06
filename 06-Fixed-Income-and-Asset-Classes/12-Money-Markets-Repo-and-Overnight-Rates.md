@@ -210,7 +210,7 @@ With every fixing at a hypothetical 4.30%, compounded SOFR is 4.32320%, and the 
 > Panel USD LIBOR ended after 30 June 2023, triggering ISDA fallbacks to compounded SOFR plus the 5 March 2021 spreads.
 > Synthetic 1, 3 and 6-month USD LIBOR for legacy cash contracts ceased after 30 September 2024.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_money_markets.py`](code/fi_money_markets.py) (repo, carry, specials and fails, compounded RFRs, fallbacks).
 - Related notes: [Day Counts, Calendars and Schedules](11-Day-Counts-Calendars-and-Schedules.md), [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [Treasury Futures and the Basis](16-Treasury-Futures-and-the-Basis.md).

@@ -299,7 +299,7 @@ With Tier 1 of 16,000 the limit to any counterparty group is 4,000, and to anoth
 > [!question]- reg-lcr-usable-in-stress | Is a bank in breach when its LCR falls below 100% during stress?
 > The standard intends the HQLA to be used in stress, so falling below 100% is expected then; the bank must notify the supervisor immediately and the supervisor responds proportionately, considering causes, magnitude and system-wide effects (LCR20.5 to LCR20.6, LCR20.8).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Capital, RWA, and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) for the leverage breakeven density and the G-SIB leverage MDA.
 - [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md) for the RC and PFE used in the leverage exposure.

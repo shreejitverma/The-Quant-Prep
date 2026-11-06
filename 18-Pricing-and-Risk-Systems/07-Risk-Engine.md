@@ -330,12 +330,12 @@ A hypothetical bank with 400,000 trades and 1,000 scenarios:
 > No: the population 97.5% ES of a unit-variance t(4) is 2.824 standard deviations, 20.8% above the normal 2.3378.
 > The rest is sampling noise in a tail of 12.5 observations; ES estimates from a year of data are noisy, which matters for backtesting and model validation.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [sys_risk_engine.py](code/sys_risk_engine.py) computes, prints and asserts every number on this page, with independent cross-checks (payoff integration, finite-difference Greeks and Euler derivatives, brute-force quantile integrals, closed-form against numerical t-quantiles).
 - [VaR and Expected Shortfall](../11-Risk-and-Trading/03-VaR-and-Expected-Shortfall.md) and [Risk Decomposition and Attribution](../11-Risk-and-Trading/13-Risk-Decomposition-and-Attribution.md) for the theory; [Sensitivities and Revaluation](../11-Risk-and-Trading/12-Sensitivities-and-Revaluation.md) for Greeks against full revaluation.
 - [Pricing at Scale](06-Pricing-at-Scale.md) for the grid, [FRTB Engine](10-FRTB-Engine.md) for the regulatory ES, [EOD Risk Batch](13-EOD-Risk-Batch.md) for scheduling.
-- SDE-Interview-Prep: [MapReduce Architecture](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/MapReduce-Architecture.md), [Idempotency and Delivery](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).
+- The-Distinguished-Engineer: [MapReduce Architecture](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/MapReduce-Architecture.md), [Idempotency and Delivery](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).
 
 ## Further reading
 

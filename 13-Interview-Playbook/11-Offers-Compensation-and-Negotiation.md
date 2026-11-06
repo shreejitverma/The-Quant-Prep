@@ -213,7 +213,7 @@ The extension is worth 6.67 U over accepting immediately, which is why asking fo
 > The industry is small and firms share information informally; reneging damages your reputation with both firms.
 > Negotiate and resolve competing processes before you accept.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [offer_math.py](code/offer_math.py) computes and asserts every number in the worked examples and cards.
 - Pipeline context: [How Quant Interviews Work](01-How-Quant-Interviews-Work.md); experienced hires: [Senior-Level Expectations](12-Senior-Level-Expectations.md).

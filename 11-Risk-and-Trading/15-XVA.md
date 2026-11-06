@@ -282,7 +282,7 @@ With $b = 40$ the CVA is 2.26 times the independent value although the counterpa
 > On default the CVA is replaced by a realised loss of $\text{LGD} \cdot \max(V_\tau, 0)$, a discrete jump that a hedge sized to small spread moves does not match.
 > A CDS bought to match CS01 pays LGD times its notional on default, which generally differs from the realised exposure loss; desks monitor and limit jump-to-default separately.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [risk_xva_pricing.py](code/risk_xva_pricing.py): semi-analytic and simulated CVA and DVA, first-to-default weighting, the credit-triangle shortcut, CS01, Hull-White wrong-way risk with recalibrated survival, FCA, FBA, the FBA-DVA overlap, delta-normal IM and MVA, SA-CCR and BA-CVA capital and KVA, incremental CVA; every number above. Exposures come from [risk_ccr_analytics.py](code/risk_ccr_analytics.py).
 - Exposure: [Counterparty Credit Risk Analytics](14-Counterparty-Credit-Risk-Analytics.md); capital: [CVA Capital Charge](../17-Regulatory-Capital-Basel-and-FRTB/05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md), [Counterparty Credit Risk: SA-CCR](../17-Regulatory-Capital-Basel-and-FRTB/04-Counterparty-Credit-Risk-SA-CCR.md), [Capital-Aware Trading, KVA and RWA Limits](../17-Regulatory-Capital-Basel-and-FRTB/20-Capital-Aware-Trading-KVA-and-RWA-Limits.md); production: [XVA Engine](../18-Pricing-and-Risk-Systems/11-XVA-Engine.md).

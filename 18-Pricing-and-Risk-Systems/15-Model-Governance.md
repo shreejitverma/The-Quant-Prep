@@ -257,11 +257,11 @@ Governance lessons: a model whose approval would end a limit breach needs more s
 > Per the ECB's 19 April 2021 press release: 200 on-site investigations at 65 significant banks, over 5,000 findings, and about a 12% (about 275 billion euros) increase in risk-weighted assets.
 > Banks could keep using internal models provided they remediated the findings by the deadlines set.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_model_governance.py` computes, prints and asserts every computed number on this page: the tiering enumeration, the tree and Longstaff-Schwartz challenger comparison including the planted bug, and the CIO arithmetic from the cited figures.
 - [Risk Engine Architecture](07-Risk-Engine.md) and [FRTB Engine Architecture](10-FRTB-Engine.md) for the models being governed, [Pricing Library Architecture](05-Pricing-Library-Architecture.md) for regression testing of pricers, and [Non-Functional Design](16-Non-Functional-Design.md) for reproducibility.
-- SDE-Interview-Prep: [SLOs and Observability](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/SLOs-and-Observability.md), [Schema Evolution and Migration](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Schema-Evolution-and-Migration.md).
+- The-Distinguished-Engineer: [SLOs and Observability](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/SLOs-and-Observability.md), [Schema Evolution and Migration](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Schema-Evolution-and-Migration.md).
 
 ## Further reading
 

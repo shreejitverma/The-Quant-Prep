@@ -205,7 +205,7 @@ def theo(mid, signals, betas, ages_ms, half_lives_ms):
 > 80.152.
 > Basket return is $0.0015 - 0.0006 + 0.0010 = 0.0019$ and $80 \times 1.0019 = 80.152$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Microstructure background: [Order Book Imbalance and Microprice](../07-Market-Microstructure/11-Order-Book-Imbalance-and-Microprice.md).
 - Signal section of the systems companion: [Quantitative Models and Strategies](Quant-Dev-MM-Guide/03_Quantitative_Models_and_Strategies.md).

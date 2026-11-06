@@ -285,7 +285,7 @@ No rebalancing frequency helps: the move happens between two hedge times, which 
 > Stationary independent increments force the smile to flatten too fast with maturity.
 > Fix with stochastic volatility plus jumps (Bates), or by running the Levy process on a stochastic clock (Carr-Geman-Madan-Yor, Carr-Wu).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [jump_levy_models.py](code/jump_levy_models.py) (Merton series, Fourier and simulation; Kou; variance gamma; Levy-Khintchine checks; gap risk).
 - Prev: [Black-Scholes Derivation](07-Black-Scholes-Derivation.md). Next: [Stochastic Calculus Problem Set](09-Stochastic-Calculus-Problem-Set.md).

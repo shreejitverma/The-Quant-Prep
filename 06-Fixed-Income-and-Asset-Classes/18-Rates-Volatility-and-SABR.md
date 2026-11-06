@@ -231,7 +231,7 @@ A risk system that differences these prices would report negative probabilities,
 - Louis Paulot, *Asymptotic Implied Volatility at the Second Order with Application to the SABR Model*, in Large Deviations and Asymptotic Methods in Finance, Springer, 2015 (arXiv:0906.0658).
 - Damiano Brigo and Fabio Mercurio, *Interest Rate Models - Theory and Practice*, 2nd edition, Springer, 2006, section 11.4 (the Hagan, Kumar, Lesniewski and Woodward model).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_sabr.py`](code/fi_sabr.py) asserts every number in this note: Hagan and Obloj vols, the ATM alpha solve, shifted and normal vols, the Monte Carlo check and the density scan.
 - Prereq: [Rates Options: Caps and Swaptions](05-Rates-Options-Caps-and-Swaptions.md).

@@ -351,7 +351,7 @@ If the credit desk returned to green, $k$ and the surcharge would be 0 and capit
 - Kupiec, "Techniques for verifying the accuracy of risk measurement models", *Journal of Derivatives* 3(2), 1995, for the proportion-of-failures test.
 - Christoffersen, "Evaluating interval forecasts", *International Economic Review* 39(4), 1998, for independence of exceptions, which the regulatory count ignores.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [VaR and Expected Shortfall](../11-Risk-and-Trading/03-VaR-and-Expected-Shortfall.md) for Kupiec and Christoffersen backtests.
 - [Internal Model Approach: Expected Shortfall](10-FRTB-Internal-Model-Approach-ES.md) for $m_c$, C_A and ACR.

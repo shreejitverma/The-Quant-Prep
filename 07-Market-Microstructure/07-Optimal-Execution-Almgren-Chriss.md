@@ -215,11 +215,11 @@ Under this cost model, equal slices (TWAP) would cost 1.1475 times as much as th
 > [!question]- ms-ac-transient | How does transient impact (Obizhaeva-Wang) change the optimal strategy?
 > It adds discrete block trades at the start and end, with continuous trading in between, because a block's impact partly decays before the next trades.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [almgren_chriss.py](code/almgren_chriss.py) reproduces every number above and checks the sinh solution against a direct linear solve (`python almgren_chriss.py`).
 - Code: [execution_algos.py](code/execution_algos.py) for TWAP, VWAP and POV schedules.
-- [Smart order routing and execution algorithms (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Smart%20Order%20Routing%20and%20Execution%20Algorithms.md)
+- [Smart order routing and execution algorithms (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Smart%20Order%20Routing%20and%20Execution%20Algorithms.md)
 
 ## Further reading
 

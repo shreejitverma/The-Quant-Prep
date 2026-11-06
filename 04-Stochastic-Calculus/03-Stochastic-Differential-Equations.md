@@ -240,7 +240,7 @@ It has the CIR shape with constant drift $a = 1$ in place of $\kappa(\theta - r)
 > [!question]- sc-sde-w-squared-sde | What SDE does $X_t = W_t^2$ satisfy?
 > $dX = dt + 2\sqrt{X}\,dB$ with $B = \int\text{sgn}(W)\,dW$ a Brownian motion (Levy). It is a squared Bessel process of dimension 1.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [sde_solver_euler_maruyama.py](code/sde_solver_euler_maruyama.py).
 

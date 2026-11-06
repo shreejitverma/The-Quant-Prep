@@ -330,7 +330,7 @@ The exception cannot be disregarded: the standalone desk-level NMRF requirement 
 - Basel Committee on Banking Supervision, *Minimum capital requirements for market risk*, BCBS d457, January 2019.
 - McNeil, Frey and Embrechts, *Quantitative Risk Management*, revised edition, Princeton University Press, 2015, for one-factor models and correlation structures.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Internal Model Approach: Expected Shortfall](10-FRTB-Internal-Model-Approach-ES.md) for IMCC and the capital formula SES feeds into.
 - [Backtesting and PLA Testing](12-FRTB-Backtesting-and-PLA-Testing.md) for RTPL and the NMRF exception rule.

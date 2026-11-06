@@ -289,12 +289,12 @@ The arithmetic is cheap either way; what costs time is evaluating $F$ and its de
 > Not in linear algebra: LU is about $2N^3/3 = 1.44 \times 10^8$ flops and a triangular solve $N^2 = 360{,}000$.
 > The cost is evaluating the instruments and their derivatives for each Newton iteration, so services exploit block-triangular structure, analytic or AAD Jacobians, warm starts from the previous solution and reuse of Jacobians for risk.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_curve_service.py` computes, prints and asserts every number on this page.
 - [Swaps and Curve Building](../06-Fixed-Income-and-Asset-Classes/03-Swaps-and-Curve-Building.md), [Multi-Curve and CSA Discounting](../06-Fixed-Income-and-Asset-Classes/13-Multi-Curve-and-CSA-Discounting.md), [Curve Construction Numerics](../06-Fixed-Income-and-Asset-Classes/14-Curve-Construction-Numerics.md) and [Curve Risk and Hedging](../06-Fixed-Income-and-Asset-Classes/15-Curve-Risk-and-Hedging.md) for the finance.
 - [Market and Reference Data Platform](03-Market-and-Reference-Data-Platform.md) for the snapshots this service consumes and [Pricing Library Architecture](05-Pricing-Library-Architecture.md) for the observer pattern it implements.
-- SDE-Interview-Prep: [Caching and Invalidation](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Caching-and-Invalidation.md), [Observer and Pub-Sub](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/01-LLD/03-Behavioral-Patterns/Observer-and-Pub-Sub.md).
+- The-Distinguished-Engineer: [Caching and Invalidation](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Caching-and-Invalidation.md), [Observer and Pub-Sub](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/01-LLD/03-Behavioral-Patterns/Observer-and-Pub-Sub.md).
 
 ## Further reading
 

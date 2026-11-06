@@ -218,7 +218,7 @@ Conclusion: six months cannot statistically reject the backtest; the decision sh
 > The effective number of independent trials, estimated from the correlation of the trial return series.
 > Cluster the trials (for example hierarchical clustering on return correlations) and count clusters; using 200 over-corrects, using 1 under-corrects.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Related notes: [Overfitting and Deflated Sharpe](08-Overfitting-and-Deflated-Sharpe.md), [Backtesting Methodology and Pitfalls](07-Backtesting-Methodology-and-Pitfalls.md), [Hypothesis Testing and Multiple Comparisons](../02-Statistics-and-Econometrics/03-Hypothesis-Testing-and-Multiple-Comparisons.md), [Research Case Studies and Take-Homes](../13-Interview-Playbook/08-Research-Case-Studies-and-Take-Homes.md).
 

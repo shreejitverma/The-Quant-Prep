@@ -38,7 +38,7 @@ Online assessments and first-round phone screens filter on speed and core probab
 - All of [Probability](../01-Probability/README.md) through [Classic Expectation Problems](../01-Probability/14-Classic-Expectation-Problems.md), then the [Probability Problem Set](../01-Probability/15-Probability-Problem-Set.md).
 - [Mental Math](../13-Interview-Playbook/02-Mental-Math.md) and [Brainteasers and Puzzles](../13-Interview-Playbook/03-Brainteasers-and-Puzzles.md).
 - [How Quant Interviews Work](../13-Interview-Playbook/01-How-Quant-Interviews-Work.md).
-- Developers: DSA from SDE-Interview-Prep in parallel (see the [link map](SDE-Link-Map.md)).
+- Developers: DSA from The-Distinguished-Engineer in parallel (see the [link map](TDE-Link-Map.md)).
 
 Exit bar: a consistent Zetamac-style score you are happy with, and the probability problem set answered cold.
 

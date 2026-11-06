@@ -301,7 +301,7 @@ The script finds the coefficients agree with the single-pass fit to better than 
 > You tend to get the shortest memory on the grid, because a shorter memory fits the recent past better in sample.
 > Choose $\lambda$ by one-step-ahead out-of-sample error, which is what the innovation sequence of RLS gives you for free.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [online_linear_models.py](code/online_linear_models.py) prints and asserts every number in this note (scalar RLS by hand, RLS against batch and weighted ridge, forgetting factor arithmetic, LMS mean and mean-square stability and misadjustment, the drifting-beta tracking study, sharded sufficient statistics and hashing collisions).
 - Related: [State-Space Models and the Kalman Filter](../02-Statistics-and-Econometrics/11-State-Space-Models-and-Kalman-Filter.md), [Regularization: Ridge and Lasso](../02-Statistics-and-Econometrics/06-Regularization-Ridge-Lasso.md), [ML Fundamentals and Generalization](01-ML-Fundamentals-and-Generalization.md).

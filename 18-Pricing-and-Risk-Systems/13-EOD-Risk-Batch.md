@@ -356,11 +356,11 @@ With an upsert keyed on (business date, book, risk factor) the second run overwr
 > Principle 3 (accuracy and integrity, with aggregation largely automated) and Principle 5 (timeliness), with Principle 6 (adaptability) for ad hoc and stress requests.
 > They push towards automated, reconciled, restartable pipelines with predictable completion times rather than manual workarounds.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_eod_batch.py` computes, prints and asserts every number on this page: the CPM passes with a brute-force path check, crashing, the stochastic makespan, the late-trade sub-DAG, failover bounds with a simulation, and the retry example.
 - [Regulatory Reporting Pipeline](12-Regulatory-Reporting-Pipeline.md) for the consumers of the batch, [Risk Engine Architecture](07-Risk-Engine.md) for the computations inside it, and [Storage and Compute](14-Storage-and-Compute.md) for where its outputs live.
-- SDE-Interview-Prep: [Idempotency and Delivery](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md), [Consensus and Failure Detection](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Consensus-and-Failure-Detection.md), [MapReduce Architecture](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/MapReduce-Architecture.md).
+- The-Distinguished-Engineer: [Idempotency and Delivery](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md), [Consensus and Failure Detection](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Consensus-and-Failure-Detection.md), [MapReduce Architecture](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/MapReduce-Architecture.md).
 
 ## Further reading
 

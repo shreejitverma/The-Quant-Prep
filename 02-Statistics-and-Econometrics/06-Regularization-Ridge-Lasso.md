@@ -195,7 +195,7 @@ Any OLS estimate smaller in magnitude than 0.035, a $t$-stat below $0.035\sqrt{4
 > When predictors are correlated in groups, or $p>n$ and you want more than $n$ features.
 > The $\ell_2$ term stabilises selection and makes correlated features enter together; the $\ell_1$ term still zeroes weak ones.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Linear Regression and OLS](04-Linear-Regression-OLS.md) for the unpenalised baseline and Gauss-Markov.
 - [SVD and Low-Rank Approximation](../03-Linear-Algebra-and-Optimization/03-SVD-and-Low-Rank-Approximation.md) and [PCA and Factor Structure](../03-Linear-Algebra-and-Optimization/05-PCA-and-Factor-Structure.md) for the eigenbasis view.

@@ -196,7 +196,7 @@ With a 10% prior and 80% power it rises to $0.08/(0.08+0.045) = 0.64$: better pr
 > Not on that basis: with huge $n$ a tiny, uneconomic effect becomes significant.
 > Check the effect size against costs and capacity, and its stability out of sample.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Confidence Intervals and Sampling](02-Confidence-Intervals-and-Sampling.md) for the standard errors used here.
 - [Research Process and Hypothesis Discipline](../09-Alpha-Research-and-Portfolio/01-Research-Process-and-Hypothesis-Discipline.md) and [Backtesting Methodology and Pitfalls](../09-Alpha-Research-and-Portfolio/07-Backtesting-Methodology-and-Pitfalls.md) for the workflow side.

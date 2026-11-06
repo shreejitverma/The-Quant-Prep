@@ -236,10 +236,10 @@ print(walk_book([(50.01, 300), (50.02, 500), (50.03, 400), (50.05, 1000)], 1000)
 > About 3 seconds: $3000 \times 0.6 / 600$.
 > This ignores the level being cleared or the price moving away, so it is a first estimate only.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
-- [Limit order book mechanics (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Limit%20Order%20Book%20Mechanics.md)
-- [Queue position (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Order%20Book%20Dynamics%20and%20Queue%20Position.md)
+- [Limit order book mechanics (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Limit%20Order%20Book%20Mechanics.md)
+- [Queue position (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Order%20Book%20Dynamics%20and%20Queue%20Position.md)
 
 ## Further reading
 

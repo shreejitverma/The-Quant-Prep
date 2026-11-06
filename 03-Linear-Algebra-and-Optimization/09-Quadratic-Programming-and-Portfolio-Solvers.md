@@ -217,7 +217,7 @@ The turnover cap binds exactly (turnover $0.2$) with shadow price $0.0165$ of ut
 > [!question]- la-qp-constraints-regularise | Why can long-only constraints improve out-of-sample minimum-variance performance?
 > They stop the optimiser from shorting assets whose covariances are underestimated by noise; Jagannathan and Ma (2003) show the constraint is equivalent to shrinking the sample covariance of the constrained assets.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [portfolio_optimization.py](code/portfolio_optimization.py) implements projected gradient (with simplex and budget-box projections), a primal active-set method and a primal-dual interior-point method, and computes and asserts every number above, including KKT residuals.
 - Related: [Convex Optimization and KKT](08-Convex-Optimization-and-KKT.md), [Transaction Costs and Turnover](../09-Alpha-Research-and-Portfolio/13-Transaction-Costs-and-Turnover.md), [Black-Litterman, Risk Parity and HRP](../09-Alpha-Research-and-Portfolio/12-Black-Litterman-Risk-Parity-and-HRP.md), [Risk Checks and Order Management](../12-Quant-Development/13-Risk-Checks-and-Order-Management.md).

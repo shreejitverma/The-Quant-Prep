@@ -228,7 +228,7 @@ The break-even spread is 0.580: below that, the curve is paying less than it cos
 > Demand peaks in winter and gas is stored from summer to meet it, so winter contracts price above summer by roughly the cost of storage.
 > The hump is storage economics priced in every year, not a forecast of a price rise.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [commodity_curves.py](code/commodity_curves.py) prints and asserts every number in the worked examples and cards.
 - Prerequisite: [Forwards, Futures and Carry](../05-Derivatives-and-Volatility/01-Forwards-Futures-and-Carry.md).

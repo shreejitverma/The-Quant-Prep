@@ -337,7 +337,7 @@ So $y_2$ leads $y_1$ in the predictive sense, which matches the true $A$; whethe
 > A VECM is best: it imposes the cointegrating rank and keeps the long-run information.
 > Levels are consistent but some tests are non-standard; differences are misspecified because they drop the error-correction term.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [cointegration_var.py](code/cointegration_var.py) computes and asserts every number in this note (spurious regression, Engle-Granger with MacKinnon critical values and a simulation check, ECM, power, Johansen trace and max-eigenvalue with simulated null quantiles, VAR estimation, Granger Wald tests, impulse responses).
 - [Time Series: Stationarity and ARMA](08-Time-Series-Stationarity-and-ARMA.md) for unit roots, ADF and half-lives.

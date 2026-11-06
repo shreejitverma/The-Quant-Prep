@@ -286,14 +286,14 @@ Ordering by decreasing alignment gives 8 + 8 + 3 = 19 bytes of data, padded to 2
 > [!question]- qd-cpp-constexpr-use | Give two uses of `constexpr` in a trading codebase.
 > Validating literals and configuration at compile time (`static_assert(parse_price("101.25")->raw == 1012500)`), and building lookup tables (tick tables, a normal CDF table) in read-only data so nothing is computed at startup or per message.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [cpp_idioms.hpp](code/cpp/cpp_idioms.hpp) (fixed-point prices, layout, move counting, RAII, CRTP and variant, `Expected`, `memcpy` and `bit_cast`, `pmr`), [cpp_idioms_demo.cpp](code/cpp/cpp_idioms_demo.cpp) (prints and checks every number above), [dispatch_bench.cpp](code/cpp/dispatch_bench.cpp) (dispatch and exception cost), tests in [tests/test_cpp_idioms.cpp](code/cpp/tests/test_cpp_idioms.cpp), and [compile_time_greeks.cpp](code/cpp/compile_time_greeks.cpp).
 - Next: [Low-Latency Engineering](03-Low-Latency-Engineering.md), [Concurrency, Lock-Free Queues and Memory Pools](04-Concurrency-Lock-Free-and-Memory-Pools.md), [Pricing Library Design](10-Pricing-Library-Design.md).
-- [Ultimate C++ advanced guide (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/02-Programming-Languages/C%2B%2B/Ultimate-CPP-Advanced-Guide.md)
-- [STL complete reference (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/02-Programming-Languages/C%2B%2B/stl_complete_reference.md)
-- [Static vs virtual dispatch in hot paths (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/04%20-%20Hardware%20Mechanical%20Sympathy/Static%20vs%20Virtual%20Dispatch%20in%20Hot%20Paths.md)
-- [Allocation-free steady state patterns (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/Allocation-Free%20Steady%20State%20Patterns.md)
+- [Ultimate C++ advanced guide (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/02-Programming-Languages/C%2B%2B/Ultimate-CPP-Advanced-Guide.md)
+- [STL complete reference (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/02-Programming-Languages/C%2B%2B/stl_complete_reference.md)
+- [Static vs virtual dispatch in hot paths (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/04%20-%20Hardware%20Mechanical%20Sympathy/Static%20vs%20Virtual%20Dispatch%20in%20Hot%20Paths.md)
+- [Allocation-free steady state patterns (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/Allocation-Free%20Steady%20State%20Patterns.md)
 
 ## Further reading
 

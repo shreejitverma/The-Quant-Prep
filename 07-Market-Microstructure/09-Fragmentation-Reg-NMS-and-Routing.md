@@ -255,14 +255,14 @@ With the NBB at 22.40, a short sale at 22.41 is permitted and one at 22.40 is no
 > [!question]- ms-nms-round-lot | What is a round lot for a stock averaging $600 under Rule 600(b)(93) as in effect since November 2025?
 > 40 shares: 100 for $250.00 or less, 40 for $250.01 to $1,000.00, 10 up to $10,000.00, then 1.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [routing_reg_nms.py](code/routing_reg_nms.py) reproduces every number above (`python routing_reg_nms.py`).
 - Deep dives in this repo: [Reg NMS and SHO, practical](Regulation/Reg-NMS-SHO-Practical.md) and [Reg NMS and SHO for market making](../08-Market-Making/Quant-Dev-MM-Guide/01_Regulatory_Framework_NMS_SHO.md).
-- [Market fragmentation and Reg NMS (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Market%20Fragmentation%20and%20Reg%20NMS.md)
-- [SIP vs direct market data feeds (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/SIP%20vs%20Direct%20Market%20Data%20Feeds.md)
-- [European market structure and MiFID II (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/European%20Market%20Structure%20and%20MiFID%20II.md)
-- [Smart order routing and execution algorithms (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Smart%20Order%20Routing%20and%20Execution%20Algorithms.md)
+- [Market fragmentation and Reg NMS (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Market%20Fragmentation%20and%20Reg%20NMS.md)
+- [SIP vs direct market data feeds (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/SIP%20vs%20Direct%20Market%20Data%20Feeds.md)
+- [European market structure and MiFID II (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/European%20Market%20Structure%20and%20MiFID%20II.md)
+- [Smart order routing and execution algorithms (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Smart%20Order%20Routing%20and%20Execution%20Algorithms.md)
 
 ## Further reading
 

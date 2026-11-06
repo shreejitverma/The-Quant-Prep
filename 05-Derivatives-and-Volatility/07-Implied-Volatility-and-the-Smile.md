@@ -256,7 +256,7 @@ If the one-month vol were 45% instead, forward variance would be $-0.0075 < 0$: 
 > No: index implied vol has on average exceeded subsequent realized vol, which is the variance risk premium sellers are paid for bearing crash risk.
 > Implied vol is a price, and it also moves with demand for protection; use it with a model of realized vol, not as one.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Prev: [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md). Next: [Volatility Surface Construction](08-Volatility-Surface-Construction.md).
 - Trading the smile: [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md).

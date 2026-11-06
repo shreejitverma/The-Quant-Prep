@@ -213,7 +213,7 @@ Daily P&L standard deviation per 1 USD of belly DV01 is 1.7529 USD for the 50/50
 > Loadings and variance shares are estimates that change with the sample and the regime, so yesterday's neutral fly can carry level or slope risk today.
 > PCA also ignores carry, and a PCA-neutral fly is not DV01-neutral, so its parallel risk must be monitored separately.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_curve_risk.py`](code/fi_curve_risk.py) (zero versus par DV01, key rates, curve trades, PCA); [`code/curve_bootstrap.py`](code/curve_bootstrap.py) (`map_zero_risk_to_par_risk`).
 - Related notes: [Curve Construction Numerics](14-Curve-Construction-Numerics.md), [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [Bonds, Duration and Convexity](02-Bonds-Duration-and-Convexity.md).

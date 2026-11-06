@@ -231,7 +231,7 @@ This is the FX "butterfly" trade, and why the quoted butterfly measures the mark
 > Long stock, long OTM put, short OTM call with premiums offsetting: downside floored at the put strike, upside capped at the call strike.
 > In vol terms the holder is short a risk reversal, so with equity skew the call strike is typically closer to spot than the put strike for zero cost.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Prev: [Exotic Options](12-Exotic-Options.md). Next: [Variance Swaps and Volatility Products](14-Variance-Swaps-and-Volatility-Products.md).
 - Greeks behind these tables: [The Greeks](05-The-Greeks.md); the smile being traded: [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md).

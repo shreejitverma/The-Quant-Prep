@@ -225,7 +225,7 @@ print(black(80, 75, 0.5, 0.04, 0.35))              # 10.1832
 > For options on futures or forwards (commodities, rates, index options priced off futures), with the futures or forward price $F$ as the underlying and discounting at $r$.
 > It is Black-Scholes with carry folded into $F$, so no $q$ or cost-of-carry term is needed.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Derivation: [Black-Scholes Derivation](../04-Stochastic-Calculus/07-Black-Scholes-Derivation.md). Discrete version: [Binomial Trees](03-Binomial-Trees.md).
 - Next: [The Greeks](05-The-Greeks.md); when one $\sigma$ is not enough: [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md).

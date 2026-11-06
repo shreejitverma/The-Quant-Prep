@@ -373,7 +373,7 @@ The equivalent continuous barrier is $90e^{-0.5826 \times 0.2\sqrt{1/252}} = 89.
 > [!question]- risk-erc-two-asset-any-correlation | Two assets have vols 15% and 25%. What equal-risk-contribution weights do correlations of -0.5, 0 and 0.8 give?
 > 0.625 and 0.375 in every case: with two assets equal contributions force $w_1\sigma_1 = w_2\sigma_2$, so correlation drops out.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [risk_problem_set.py](code/risk_problem_set.py): every problem above, reusing [drawdowns.py](code/drawdowns.py), [risk_sensitivities.py](code/risk_sensitivities.py), [risk_decomposition.py](code/risk_decomposition.py), [risk_ccr_analytics.py](code/risk_ccr_analytics.py) and [risk_liquidity_model.py](code/risk_liquidity_model.py).
 - Numbers quoted from other notes in the cards (the swap peak, DVA and FVA of the XVA example, KVA of the simulated swap, the barrier prices) are asserted by [risk_ccr_analytics.py](code/risk_ccr_analytics.py), [risk_xva_pricing.py](code/risk_xva_pricing.py), [risk_sensitivities.py](code/risk_sensitivities.py) and [risk_liquidity_model.py](code/risk_liquidity_model.py).

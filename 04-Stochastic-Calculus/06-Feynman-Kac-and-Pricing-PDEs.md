@@ -326,7 +326,7 @@ Each day's contribution is a double digital, so the accrual's Greeks are those o
 > With up to about three state variables, early exercise, or when you need smooth Greeks across all spots: grids handle these directly and converge fast.
 > Beyond that the grid cost explodes and Monte Carlo, dimension-free, wins.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [feynman_kac_pdes.py](code/feynman_kac_pdes.py) (PDE residuals, affine bond prices, images, perpetual options, range accrual).
 - Prev: [Change of Measure and Girsanov](05-Change-of-Measure-and-Girsanov.md). Next: [Black-Scholes Derivation](07-Black-Scholes-Derivation.md).

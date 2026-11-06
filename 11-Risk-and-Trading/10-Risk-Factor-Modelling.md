@@ -281,7 +281,7 @@ In the interview: "a proxy is a model of the basis being zero; I would either mo
 > It hides the 7y point's own moves relative to the vertices: a 7y bond hedged with 5s and 10s looks flat even though curve shape changes can hurt it.
 > Choose vertices dense enough where the book has risk, and test the residual with a finer curve.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [risk_factors.py](code/risk_factors.py): conventions, EWMA and Cholesky, PCA, Ledoit-Wolf, Marchenko-Pastur, Higham, proxies, non-synchronous data, $t$ quantiles; every number above.
 - Linear algebra behind it: [Covariance Matrices and PSD](../03-Linear-Algebra-and-Optimization/04-Covariance-Matrices-and-PSD.md), [PCA and Factor Structure](../03-Linear-Algebra-and-Optimization/05-PCA-and-Factor-Structure.md); estimation for portfolios: [Covariance Estimation and Shrinkage](../09-Alpha-Research-and-Portfolio/11-Covariance-Estimation-and-Shrinkage.md).

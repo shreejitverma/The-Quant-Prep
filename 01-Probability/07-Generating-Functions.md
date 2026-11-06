@@ -225,7 +225,7 @@ The same filter with cube roots of unity shows the sum of three dice is divisibl
 > $2/7$.
 > Renewal: $U(s) = 1/(1-G(s))$ has a simple pole at 1 with residue giving $u_n\to1/E[X] = 1/3.5$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/prob_07_generating_functions.py`](code/prob_07_generating_functions.py) prints and asserts every number on this page by a route other than the generating function: dice, parity and divisibility by enumeration, Sicherman uniqueness by exhaustive search with exact polynomial division, HH and HT moments and the renewal limit from exact distributions computed by dynamic programming, extinction probabilities by iterating $G$ from 0 and by simulation, and compound-Poisson moments by seeded simulation.
 - Related notes: [Expectation, Variance and Linearity](04-Expectation-Variance-and-Linearity.md) (random sums), [Inequalities and Limit Theorems](06-Inequalities-and-Limit-Theorems.md) (Chernoff and the CLT), [Classic Expectation Problems](14-Classic-Expectation-Problems.md) (pattern waiting times).

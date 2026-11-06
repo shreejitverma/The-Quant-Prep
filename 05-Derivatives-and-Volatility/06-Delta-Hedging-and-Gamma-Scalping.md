@@ -273,7 +273,7 @@ print(hedged_pnl(0.20, 0.20, 0.20, 52))    # about (0.0, 0.96)
 > Because implied vol tends to rise when spot falls, so a spot move carries a predictable vol move whose vega P&L offsets part of the delta P&L.
 > The minimum-variance delta is $\Delta_{BS} + \mathcal{V}\,E[\delta\sigma]/\delta S$, and with negative spot-vol correlation the second term is negative.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Prev: [The Greeks](05-The-Greeks.md). Next: [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md).
 - Applications: [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md), [Variance Swaps and Volatility Products](14-Variance-Swaps-and-Volatility-Products.md), [Hedging and Risk for Market Makers](../08-Market-Making/06-Hedging-and-Risk-for-Market-Makers.md).

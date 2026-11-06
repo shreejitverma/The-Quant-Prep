@@ -299,7 +299,7 @@ Any claim of "67% winners" from such a strategy says nothing about skill; compar
 > It uses ten future days, so the label width depends on future volatility and leaks information into features that correlate with it.
 > Use a trailing (EWMA) estimate known at the event time.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [triple_barrier_meta_labeling.py](code/triple_barrier_meta_labeling.py) prints and asserts every number in this note (CUSUM events, exact lattice barrier probabilities with gambler's-ruin, path-enumeration and Monte Carlo checks, fixed against scaled labels across regimes with two controls, uniqueness with a brute-force check, and the meta-labeling study with a threshold scan and bet sizing).
 - Related: [Time-Series Cross-Validation: Purging and Embargo](02-Time-Series-Cross-Validation-Purging-Embargo.md) for $t_1$-based purging, [Feature Importance and Interpretability](07-Feature-Importance-and-Interpretability.md) for what the secondary model uses, [Kelly Criterion and Position Sizing](../11-Risk-and-Trading/01-Kelly-Criterion-and-Position-Sizing.md) for sizing from an edge.

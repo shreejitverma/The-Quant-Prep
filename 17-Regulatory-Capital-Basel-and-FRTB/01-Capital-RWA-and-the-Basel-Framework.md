@@ -337,7 +337,7 @@ Note 02 works a full bank through the RBC90.1 phase-in years.
 > Full deductions take 1,700, 400 and 240, leaving 12,960; the 10% limit (1,296) cuts the investments and the 15% cap of $15/85 \times 10,360 = 1,828.24$ binds, so 771.76 more is deducted.
 > The recognised 1,828.24 is 15.00% of final CET1 and adds 4,570.59 of RWA at 250%.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Basel I, II, 2.5, III, and IV Evolution](02-Basel-I-II-2.5-III-IV-Evolution.md) for how each layer arrived and a phase-in example of the output floor.
 - [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) and [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md) for the credit RWA that dominates the denominator.

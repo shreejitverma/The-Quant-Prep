@@ -68,7 +68,7 @@ Notes under `16-Trading-and-Investing/Investing/` need only TL;DR, Learning obje
 6. `## Interview questions` - question cards (below).
 7. `## Further reading` - books, papers and links.
 
-A `## In this repo and SDE-Interview-Prep` section, when present, lists code in this repo and bridge links into SDE-Interview-Prep.
+A `## In this repo and The-Distinguished-Engineer` section, when present, lists code in this repo and bridge links into The-Distinguished-Engineer.
 
 ## Question cards
 
@@ -95,5 +95,5 @@ Each card is a collapsible Obsidian callout whose title line carries a stable id
 - One sentence per line in prose (enforced in review, and by `tools/qp/verify_markets.py` for section 16).
 - No emojis and no em dashes; use a plain `-`.
 - Link notes with relative Markdown links (`[Greeks](../05-Derivatives-and-Volatility/05-The-Greeks.md)`), not wikilinks, so the links work on GitHub too.
-- Link SDE-Interview-Prep with absolute GitHub URLs (`https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/...`); `./qp check` verifies each target exists in your local clone (`SDE_REPO`, default `../SDE-Interview-Prep`).
+- Link The-Distinguished-Engineer (TDE, formerly SDE-Interview-Prep) with absolute GitHub URLs (`https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/...`); `./qp check` verifies each target exists in your local clone (`TDE_REPO`, default `../The-Distinguished-Engineer`).
 - Firm guides state facts about a firm only with a source, and flag anything that may have changed.

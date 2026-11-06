@@ -301,7 +301,7 @@ Forward, $N = 1\text{m}$, $\sigma = 20\%$, $r = 0$, one-year horizon.
 > Without it an administrator could enforce the contracts in the defaulter's favour and default on the rest; close-out netting terminates everything into one net amount.
 > In Example 1, 13.5m of gross positive value becomes a 5m net claim (NGR 0.370370), and capital recognises the netting only with enforceable agreements and legal opinions (CRE52.7 to CRE52.8).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [risk_ccr_analytics.py](code/risk_ccr_analytics.py): forward EE and PFE in closed form and by simulation, Hull-White swap exposure checked against Jamshidian swaption prices, Effective EE and EPE, netting, MPOR and thresholds, SA-CCR comparison, NGR and standardised IM; every number above except the initial margin and MVA figures in card risk-isda-simm-mva-sensitivities-driver, which are asserted by [risk_xva_pricing.py](code/risk_xva_pricing.py).
 - Pricing the exposure: [XVA](15-XVA.md); capital: [Counterparty Credit Risk: SA-CCR](../17-Regulatory-Capital-Basel-and-FRTB/04-Counterparty-Credit-Risk-SA-CCR.md), [CVA Capital Charge](../17-Regulatory-Capital-Basel-and-FRTB/05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md); production: [XVA Engine](../18-Pricing-and-Risk-Systems/11-XVA-Engine.md).

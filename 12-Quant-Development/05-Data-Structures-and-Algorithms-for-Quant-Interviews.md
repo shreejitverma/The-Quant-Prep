@@ -271,14 +271,14 @@ The [problem set](15-Quant-Dev-Problem-Set.md) shows -170.67 for the sample vari
 > [!question]- qd-dsa-hash-worst-case | When is a hash map not O(1)?
 > Worst case O(n) per operation when many keys collide (adversarial input or a weak hash), and an O(n) pause when it rehashes on growth. On a hot path, reserve capacity at startup and use a good hash.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [qd_dsa_patterns.py](code/python/qd_dsa_patterns.py) (every example above, plus brute-force cross-checks on seeded random inputs).
 - Related: [Order Book and Matching Engine](07-Order-Book-and-Matching-Engine.md) (the trading data structure), [Coding Interviews for Quants](../13-Interview-Playbook/07-Coding-Interviews-for-Quants.md).
-- [DSA topics (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/03-Data-Structures-Algorithms/01-Topics/README.md)
-- [LeetCode quant set (C++) (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/02-Programming-Languages/C%2B%2B/LeetCode-Quant-Complete-CPP-Full.md)
-- [LeetCode quant set (Python) (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/02-Programming-Languages/Python/LeetCode-Quant-Complete-Python-Full.md)
-- [NeetCode 150 (C++) (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/02-Programming-Languages/C%2B%2B/NeetCode-150-CPP.md)
+- [DSA topics (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/03-Data-Structures-Algorithms/01-Topics/README.md)
+- [LeetCode quant set (C++) (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/02-Programming-Languages/C%2B%2B/LeetCode-Quant-Complete-CPP-Full.md)
+- [LeetCode quant set (Python) (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/02-Programming-Languages/Python/LeetCode-Quant-Complete-Python-Full.md)
+- [NeetCode 150 (C++) (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/02-Programming-Languages/C%2B%2B/NeetCode-150-CPP.md)
 
 ## Further reading
 

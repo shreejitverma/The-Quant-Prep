@@ -221,7 +221,7 @@ A quarter holds $\lfloor 0.25 \times 365/7 \rfloor = 13$ whole weeks, so the yea
 > Instruments whose cash flows fall between pillars or depend on forward shape: off-pillar swaps, short-dated forwards, FRAs, caplets.
 > Instruments on the pillars price identically, which is why interpolation risk hides until a book trades off-pillar dates.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_curve_numerics.py`](code/fi_curve_numerics.py), [`code/curve_bootstrap.py`](code/curve_bootstrap.py).
 - Related notes: [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [Multi-Curve and CSA Discounting](13-Multi-Curve-and-CSA-Discounting.md), [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md).

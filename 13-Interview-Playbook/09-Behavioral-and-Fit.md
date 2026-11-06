@@ -215,12 +215,12 @@ Why it works: the disagreement was settled with evidence, and the candidate show
 > Interviewers compare notes, and inconsistencies read as exaggeration.
 > Every claim should be one you can expand on in detail.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [track_record.py](code/track_record.py) section 5 computes and asserts the calibration and Brier numbers in this note.
 - Expected value and sizing behind the risk answers: [Expected Value and Betting Decisions](../11-Risk-and-Trading/02-Expected-Value-and-Betting-Decisions.md), [Trading Intuition and Judgement](../11-Risk-and-Trading/09-Trading-Intuition-and-Judgement.md).
 - Firm facts with sources: [14-Firms](../14-Firms/README.md).
-- [STAR method (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/06-Interview-Prep/01-Behavioral/star_method.md)
+- [STAR method (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/06-Interview-Prep/01-Behavioral/star_method.md)
 
 ## Further reading
 

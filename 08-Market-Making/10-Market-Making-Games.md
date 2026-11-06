@@ -220,7 +220,7 @@ print(float(10 * round_ev(12, 16, [])))  # 0.74
 > State fair value, uncertainty, market and size together, for example "fair 14, sd about 3.4, 12 at 16, ten up".
 > After each trade or reveal, say how fair value moved and why before giving the new market.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Practice: `./qp drill mm`, implemented in `tools/qp/drills.py` (`MarketMakingGame`).
 - Interview mechanics: [Trading Games in Interviews](../13-Interview-Playbook/05-Trading-Games-in-Interviews.md).

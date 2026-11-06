@@ -265,7 +265,7 @@ The multinomial route, $4!\,\binom{48}{12,12,12,12}\big/\binom{52}{13,13,13,13}$
 > At least one six in 4 rolls: $1-(5/6)^4 \approx 0.518$ versus $1-(35/36)^{24} \approx 0.491$.
 > Complementary counting; the naive "4/6 versus 24/36" proportionality argument is wrong because events overlap.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/prob_01_counting.py`](code/prob_01_counting.py) prints and asserts every count and probability on this page, each against an independent route: exhaustive enumeration (poker hands over all 6188 rank multisets, all $\binom{52}{4}$ ace placements, every ballot order, every parenthesis string, every permutation for derangements), a memoised recursion for the MISSISSIPPI count, exact `Fraction` arithmetic, and seeded simulation for the birthday and de Mere numbers.
 - Related notes: [Expectation, Variance and Linearity](04-Expectation-Variance-and-Linearity.md) (indicators), [Generating Functions](07-Generating-Functions.md) (counting with polynomials), [Random Walks and Gambler's Ruin](11-Random-Walks-and-Gamblers-Ruin.md) (reflection).

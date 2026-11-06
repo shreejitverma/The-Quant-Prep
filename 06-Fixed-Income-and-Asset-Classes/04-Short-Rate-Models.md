@@ -253,7 +253,7 @@ With $a = 0.03$, $\sigma = 1.2\%$ the instantaneous volatility of a 2-year zero 
 > The co-terminal European swaptions (1y into 9y, 2y into 8y, ..., 9y into 1y); a common setup fits a time-dependent $\sigma(t)$ to them with $a$ fixed or set from the volatility term structure.
 > Those are the options the Bermudan holder chooses among; calibrating to unrelated caplets would misprice the switch option, and the result should be checked against the most expensive co-terminal European, a lower bound.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_short_rate.py`](code/fi_short_rate.py) computes, prints and asserts every number on this page.
 - Prereqs: [Stochastic Differential Equations](../04-Stochastic-Calculus/03-Stochastic-Differential-Equations.md), [Feynman-Kac and Pricing PDEs](../04-Stochastic-Calculus/06-Feynman-Kac-and-Pricing-PDEs.md).

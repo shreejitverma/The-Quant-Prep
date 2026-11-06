@@ -222,7 +222,7 @@ If news raises the informed share to 30% and the jump to 4 ticks, break-even ris
 > Not necessarily: inventory P&L is directional exposure, not market-making edge.
 > Check whether it is repeatable (a real signal driving skew) or luck in a trending market, and whether the risk taken was within limits.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Systems and regulation companion: [Quant Dev Market Making Guide](Quant-Dev-MM-Guide/README.md), including [Quantitative Models and Strategies](Quant-Dev-MM-Guide/03_Quantitative_Models_and_Strategies.md).
 - Next: [Fair Value and Theoretical Pricing](02-Fair-Value-and-Theoretical-Pricing.md) and [Inventory Risk and Avellaneda-Stoikov](03-Inventory-Risk-and-Avellaneda-Stoikov.md).

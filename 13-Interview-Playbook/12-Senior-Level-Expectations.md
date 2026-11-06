@@ -196,7 +196,7 @@ What I can bring is the research process: how I would find and validate this kin
 > [!question]- int-senior-failed-strategies | Why mention strategies that failed?
 > They show the denominator: how many things you tried, how you decided to stop, and that the successful record is not the only survivor of many attempts.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [track_record.py](code/track_record.py) sections 1 to 4 compute and assert every number in this note.
 - Statistics and attribution in depth: [Performance Metrics and the Fundamental Law](../09-Alpha-Research-and-Portfolio/09-Performance-Metrics-and-Fundamental-Law.md), [Overfitting and Deflated Sharpe](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md), [PnL Attribution and Greek Risk](../11-Risk-and-Trading/06-PnL-Attribution-and-Greek-Risk.md).

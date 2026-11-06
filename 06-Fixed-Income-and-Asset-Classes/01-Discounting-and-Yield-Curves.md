@@ -259,7 +259,7 @@ Log-linear interpolation still works because $P > 0$; what breaks is code that f
 > Not necessarily.
 > The forward is a pricing-measure expectation, so relative to real-world expectations it also contains a term premium of unknown sign and size plus convexity; separating expected policy from premium needs a term-structure model or survey data, and the answer is model dependent.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_discounting.py`](code/fi_discounting.py) computes, prints and asserts every number on this page.
 - Next: [Bonds, Duration and Convexity](02-Bonds-Duration-and-Convexity.md), [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [Day Counts, Calendars and Schedules](11-Day-Counts-Calendars-and-Schedules.md), [Curve Construction Numerics](14-Curve-Construction-Numerics.md).

@@ -15,8 +15,8 @@ from urllib.parse import unquote
 
 from .vault import NOTE_TYPES, PRIVATE_DIR, STATUSES, TIERS, TRACKS, Vault
 
-SDE_URL = "https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/"
-SDE_ENV = "SDE_REPO"
+TDE_URL = "https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/"
+TDE_ENV = "TDE_REPO"
 LINK_RE = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 FENCE_RE = re.compile(r"^(```|~~~).*?^\1", re.MULTILINE | re.DOTALL)
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
@@ -38,9 +38,9 @@ class Finding:
         return f"{self.path}:{self.line}: [{self.rule}] {self.message}"
 
 
-def sde_root(root: Path) -> Path | None:
-    env = os.environ.get(SDE_ENV)
-    candidate = Path(env).expanduser() if env else root.parent / "SDE-Interview-Prep"
+def tde_root(root: Path) -> Path | None:
+    env = os.environ.get(TDE_ENV)
+    candidate = Path(env).expanduser() if env else root.parent / "The-Distinguished-Engineer"
     return candidate if (candidate / ".git").exists() or (candidate / "README.md").exists() else None
 
 
@@ -54,18 +54,18 @@ def line_of(text: str, index: int) -> int:
     return text.count("\n", 0, index) + 1
 
 
-def check_links(path: Path, source: Path, text: str, sde: Path | None) -> list[Finding]:
+def check_links(path: Path, source: Path, text: str, tde: Path | None) -> list[Finding]:
     out = []
     clean = strip_code(text)
     for m in LINK_RE.finditer(clean):
         target = m.group(1)
         line = line_of(clean, m.start())
-        if target.startswith(SDE_URL):
-            if sde is None:
-                continue  # SDE clone absent (e.g. CI); qp check --strict-sde turns this into an error
-            rel = unquote(target[len(SDE_URL) :].split("#", 1)[0])
-            if not (sde / rel).exists():
-                out.append(Finding(str(path), line, "sde-link", f"SDE-Interview-Prep has no {rel}"))
+        if target.startswith(TDE_URL):
+            if tde is None:
+                continue  # TDE clone absent (e.g. CI); qp check --strict-tde turns this into an error
+            rel = unquote(target[len(TDE_URL) :].split("#", 1)[0])
+            if not (tde / rel).exists():
+                out.append(Finding(str(path), line, "tde-link", f"The-Distinguished-Engineer has no {rel}"))
             continue
         if re.match(r"^[a-z]+:", target) or target.startswith("#"):
             continue
@@ -88,11 +88,11 @@ def check_style(path: Path, text: str) -> list[Finding]:
     return out
 
 
-def check_vault(vault: Vault, strict_sde: bool = False, files: list[Path] | None = None) -> list[Finding]:
+def check_vault(vault: Vault, strict_tde: bool = False, files: list[Path] | None = None) -> list[Finding]:
     findings = [Finding(e.split(":", 1)[0], 1, "parse", e.split(": ", 1)[-1]) for e in vault.errors]
-    sde = sde_root(vault.root)
-    if strict_sde and sde is None:
-        findings.append(Finding(".", 1, "sde-link", f"SDE-Interview-Prep clone not found; set {SDE_ENV}"))
+    tde = tde_root(vault.root)
+    if strict_tde and tde is None:
+        findings.append(Finding(".", 1, "tde-link", f"The-Distinguished-Engineer clone not found; set {TDE_ENV}"))
     for note in vault.notes.values():
         if note.id.startswith("moc:"):
             continue
@@ -156,7 +156,7 @@ def check_vault(vault: Vault, strict_sde: bool = False, files: list[Path] | None
     for rel in targets:
         source = sources.get(rel, vault.root / rel)
         text = source.read_text(encoding="utf-8")
-        findings += check_links(rel, source, text, sde)
+        findings += check_links(rel, source, text, tde)
         findings += check_style(rel, text)
     return sorted(findings, key=lambda f: (f.path, f.line, f.rule))
 

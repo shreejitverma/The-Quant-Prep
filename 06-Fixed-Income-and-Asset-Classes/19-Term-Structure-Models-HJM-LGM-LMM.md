@@ -208,7 +208,7 @@ With the front-rate drift $\frac{\tau L_1}{1 + \tau L_1}\sigma_1^2$ the simulate
 - Andrei Lyashenko and Fabio Mercurio, *Looking Forward to Backward-Looking Rates: A Modeling Framework for Term Rates Replacing LIBOR*, SSRN working paper, 2019.
 - Robert Litterman and Jose Scheinkman, *Common Factors Affecting Bond Returns*, Journal of Fixed Income, 1991.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_term_structure.py`](code/fi_term_structure.py) asserts every number here, including the HJM quadrature check, the LGM Gauss-Hermite check and the LMM martingale test; [`code/rates_models.py`](code/rates_models.py) has Hull-White bond, Jamshidian swaption and trinomial tree pricers.
 - Prereq: [Short-Rate Models](04-Short-Rate-Models.md), [Rates Volatility and SABR](18-Rates-Volatility-and-SABR.md).

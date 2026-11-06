@@ -263,7 +263,7 @@ The eigenvalue on $\mathbf{1}$ is $1 + 4\rho$: exactly 0 at $\rho = -0.25$ (the 
 > [!question]- la-cov-singular-cholesky | A correlation matrix is PSD but singular. How do you simulate from it?
 > Cholesky hits a zero pivot (and rounding can make it slightly negative). Use the eigen root $Q\Lambda^{1/2}$ with negatives clipped to 0, or pivoted Cholesky that stops at the numerical rank; both give $AA^\top = C$ with fewer factors than variables.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [covariance_pca.py](code/covariance_pca.py) implements Cholesky, eigenvalue clipping and Higham's algorithm and computes and asserts every number above.
 - Related: [Covariance Estimation and Shrinkage](../09-Alpha-Research-and-Portfolio/11-Covariance-Estimation-and-Shrinkage.md), [Risk Factor Modelling](../11-Risk-and-Trading/10-Risk-Factor-Modelling.md), [Dispersion and Correlation Trading](../05-Derivatives-and-Volatility/15-Dispersion-and-Correlation-Trading.md), [FRTB Sensitivities-Based Method: Delta](../17-Regulatory-Capital-Basel-and-FRTB/07-FRTB-Sensitivities-Based-Method-Delta.md).

@@ -270,10 +270,10 @@ Differencing twice on a strike grid and integrating $e^{rT}C_{KK}$ recovers tota
 > [!question]- la-calc-series-kx | Evaluate $\sum_{k \ge 1}k/2^k$.
 > $2$. Differentiate $\sum x^k = 1/(1 - x)$ to get $\sum kx^{k-1} = 1/(1 - x)^2$, multiply by $x$, and set $x = 1/2$: $(1/2)/(1/4) = 2$. It is the mean of a Geometric(1/2) number of trials.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [calculus_taylor.py](code/calculus_taylor.py) computes and asserts every number above (Greeks and the delta-gamma table, the quanto decomposition, bond duration and convexity, limits and series, the Breeden-Litzenberger and Gaussian quadratures).
-- SDE bridge: [Black-Scholes](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/05-Quantitative-Finance/01-Mathematics/Option-Pricing/black_scholes.py) and [Greeks](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/05-Quantitative-Finance/01-Mathematics/Option-Pricing/greeks.py) implementations.
+- SDE bridge: [Black-Scholes](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/01-Mathematics/Option-Pricing/black_scholes.py) and [Greeks](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/01-Mathematics/Option-Pricing/greeks.py) implementations.
 - Related: [The Greeks](../05-Derivatives-and-Volatility/05-The-Greeks.md), [PnL Attribution and Greek Risk](../11-Risk-and-Trading/06-PnL-Attribution-and-Greek-Risk.md), [Mental Math](../13-Interview-Playbook/02-Mental-Math.md).
 
 ## Further reading

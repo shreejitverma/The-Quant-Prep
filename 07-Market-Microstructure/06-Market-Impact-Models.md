@@ -240,7 +240,7 @@ If peak impact is 30 bp and impact accumulated as $\sqrt{q}$ along the order, th
 > $Q^* = (2\alpha/3k)^2$, from maximising $\alpha Q - kQ^{3/2}$.
 > This is the square-root law's capacity constraint.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [market_impact.py](code/market_impact.py) reproduces every number above (`python market_impact.py`).
 - Related in this repo: [Transaction Costs and Turnover](../09-Alpha-Research-and-Portfolio/13-Transaction-Costs-and-Turnover.md).

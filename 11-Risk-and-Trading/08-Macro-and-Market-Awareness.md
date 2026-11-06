@@ -248,7 +248,7 @@ If the desk's own regression said the 2-year moves 8 bp per 0.1 pp of core CPI s
 > Give the policy backdrop with a dated, sourced level, the key mechanism the market is trading, one view with a trade, size and risk, and what would change your mind.
 > Do not invent numbers; say you would check the level.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [macro_awareness.py](code/macro_awareness.py).
 - Related: [Bonds, Duration and Convexity](../06-Fixed-Income-and-Asset-Classes/02-Bonds-Duration-and-Convexity.md), [FX Markets and Interest Rate Parity](../06-Fixed-Income-and-Asset-Classes/07-FX-Markets-and-Interest-Rate-Parity.md), [Credit and CDS](../06-Fixed-Income-and-Asset-Classes/06-Credit-and-CDS.md), [Inflation-Linked Products](../06-Fixed-Income-and-Asset-Classes/21-Inflation-Linked-Products.md), [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md) and [Trading Intuition and Judgement](09-Trading-Intuition-and-Judgement.md).

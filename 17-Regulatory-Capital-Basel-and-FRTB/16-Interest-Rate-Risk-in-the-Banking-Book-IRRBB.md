@@ -267,7 +267,7 @@ A portfolio with duration 6.2 years loses about 12.4% of its value for a 200 bp 
 > About 12.4% of its value ($6.2 \times 2\%$), which HTM accounting kept out of the balance sheet value.
 > The review notes the portfolio was mostly agency MBS of ten years or more; a duration estimate ignores convexity, and for MBS the prepayment option makes convexity negative, so the first-order figure is not the full loss.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Leverage Ratio and Liquidity Ratios: LCR and NSFR](15-Leverage-Ratio-and-Liquidity-Ratios-LCR-and-NSFR.md) for SVB from the liquidity side.
 - [FRTB: Trading and Banking Book Boundary](06-FRTB-Trading-and-Banking-Book-Boundary.md) for interest rate risk transfers from the banking book to a trading desk.

@@ -258,7 +258,7 @@ The other coefficients move slightly and their SEs rise slightly, since one degr
 > All zero.
 > The normal equations say $X^\top e = 0$, and $\hat y$ is a linear combination of the columns of $X$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Estimation: MLE and Method of Moments](01-Estimation-MLE-and-Method-of-Moments.md): OLS is the Gaussian MLE.
 - [Vectors, Matrices and Linear Maps](../03-Linear-Algebra-and-Optimization/01-Vectors-Matrices-and-Linear-Maps.md) for projections, and [Numerical Linear Algebra](../03-Linear-Algebra-and-Optimization/06-Numerical-Linear-Algebra.md) for QR solves.
