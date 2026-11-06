@@ -273,7 +273,7 @@ Differencing twice on a strike grid and integrating $e^{rT}C_{KK}$ recovers tota
 ## In this repo and The-Distinguished-Engineer
 
 - Code: [calculus_taylor.py](code/calculus_taylor.py) computes and asserts every number above (Greeks and the delta-gamma table, the quanto decomposition, bond duration and convexity, limits and series, the Breeden-Litzenberger and Gaussian quadratures).
-- SDE bridge: [Black-Scholes](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/01-Mathematics/Option-Pricing/black_scholes.py) and [Greeks](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/01-Mathematics/Option-Pricing/greeks.py) implementations.
+- TDE bridge: [Black-Scholes](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/01-Mathematics/Option-Pricing/black_scholes.py) and [Greeks](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/01-Mathematics/Option-Pricing/greeks.py) implementations.
 - Related: [The Greeks](../05-Derivatives-and-Volatility/05-The-Greeks.md), [PnL Attribution and Greek Risk](../11-Risk-and-Trading/06-PnL-Attribution-and-Greek-Risk.md), [Mental Math](../13-Interview-Playbook/02-Mental-Math.md).
 
 ## Further reading

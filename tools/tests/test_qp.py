@@ -558,7 +558,7 @@ class Checks(TempRepo):
         self.assertEqual(len(cycles), 1)
         self.assertIn("base", cycles[0].message)
 
-    def test_sde_links(self):
+    def test_tde_links(self):
         url = check.TDE_URL + "04-System-Design/README.md"
         write_note(self.root, "01-Alpha/05-Tde.md", "Tde", f"[sd]({url}) [bad]({check.TDE_URL}nope%20here.md)")
         self.assertEqual({r for r in self.rules() if r[0] == "tde-link"}, set())  # no clone: skipped

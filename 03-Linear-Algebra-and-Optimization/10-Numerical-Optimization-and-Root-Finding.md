@@ -274,7 +274,7 @@ Generate yields from $\beta = (4\%, -2\%, 1\%)$, $\tau = 2$ on ten tenors (3-mon
 ## In this repo and The-Distinguished-Engineer
 
 - Code: [root_finding_optimization.py](code/root_finding_optimization.py) implements bisection, Newton, secant, Brent, plain and safeguarded implied-vol solvers, gradient descent, heavy ball, Newton and BFGS with backtracking, and Levenberg-Marquardt, and computes and asserts every number above except the $\sqrt2$ Newton iterates and the bisection counts, which [problem_set.py](code/problem_set.py) asserts.
-- SDE bridge: [binary search](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/03-Data-Structures-Algorithms/01-Topics/Searching/BinarySearch/README.md) is bisection on a sorted array; [Black-Scholes](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/01-Mathematics/Option-Pricing/black_scholes.py) gives the pricer an implied-vol solver inverts.
+- TDE bridge: [binary search](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/03-Data-Structures-Algorithms/01-Topics/Searching/BinarySearch/README.md) is bisection on a sorted array; [Black-Scholes](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/01-Mathematics/Option-Pricing/black_scholes.py) gives the pricer an implied-vol solver inverts.
 - Related: [Implied Volatility and the Smile](../05-Derivatives-and-Volatility/07-Implied-Volatility-and-the-Smile.md), [Volatility Surface Construction](../05-Derivatives-and-Volatility/08-Volatility-Surface-Construction.md), [Pricing Library Design](../12-Quant-Development/10-Pricing-Library-Design.md).
 
 ## Further reading

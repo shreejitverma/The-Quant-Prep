@@ -186,7 +186,7 @@ Close them visibly: a small C++ project with an order book, unit tests, sanitize
 - [Quant developer role hub (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/16-Interview-Command-Center/01-Roles/Quant-Dev/_Hub.md)
 - [Quant developer skill matrix (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/16-Interview-Command-Center/01-Roles/Quant-Dev/Skill-Matrix.md)
 - [Quant developer question bank (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/16-Interview-Command-Center/01-Roles/Quant-Dev/Question-Bank.md)
-- [SDE roadmap (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/00-Start-Here/Roadmap.md)
+- [TDE roadmap (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/00-Start-Here/Roadmap.md)
 
 ## Further reading
 

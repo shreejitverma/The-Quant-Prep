@@ -645,7 +645,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--new-cards", type=int)
     sp = add("check", cmd_check, "validate notes, cards, links and style (CI gate)")
     sp.add_argument("files", nargs="*")
-    sp.add_argument("--strict-tde", action="store_true", help="fail when the The-Distinguished-Engineer clone is missing")
+    sp.add_argument("--strict-tde", action="store_true", help="fail when the TDE clone is missing")
     add("index", cmd_index, "regenerate section README tables")
     sp = add("bank", cmd_bank, "import a firm/category/question TSV into the private overlay")
     sp.add_argument("folder", help="bank folder containing source.tsv, e.g. private/wsq-question-bank")

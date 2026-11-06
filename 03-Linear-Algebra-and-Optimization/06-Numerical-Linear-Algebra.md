@@ -248,7 +248,7 @@ For least squares with $m = 10{,}000$ and $n = 100$: normal equations $1.0033 \t
 ## In this repo and The-Distinguished-Engineer
 
 - Code: [numerical_linear_algebra.py](code/numerical_linear_algebra.py) implements LU with and without pivoting, Householder QR, classical and modified Gram-Schmidt, Thomas and conjugate gradients, and asserts every number above (exact values tightly, rounding-error magnitudes by bounds).
-- SDE bridge: [profiling guide](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/12-Performance-Engineering/02-Profiling/profiling_guide.md) for measuring where numerical code spends its time.
+- TDE bridge: [profiling guide](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/12-Performance-Engineering/02-Profiling/profiling_guide.md) for measuring where numerical code spends its time.
 - Related: [Numerical Python: NumPy and Numba](../12-Quant-Development/11-Numerical-Python-NumPy-and-Numba.md), [Testing Trading and Numerical Code](../12-Quant-Development/14-Testing-Trading-and-Numerical-Code.md).
 
 ## Further reading
