@@ -301,7 +301,7 @@ The value of being flat exceeds the value of holding $+3$ by about 2.439, the pr
 > The per-step penalty is additive over time, so the Bellman recursion and backward induction apply; for a deterministic schedule it sums to exactly $\lambda$ times the variance of total cost, the Almgren-Chriss objective.
 > Mean-variance of terminal wealth is not additive and is time-inconsistent for adaptive policies, so it cannot be solved by plain dynamic programming.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [rl_execution_q_learning.py](code/rl_execution_q_learning.py) prints and asserts every number in this note (Bellman by hand, the execution DP against TWAP and Almgren-Chriss, Q-learning and double Q-learning, maximisation bias, the simulator gap, and the market-making value iteration).
 - Related: [Optimal Execution: Almgren-Chriss](../07-Market-Microstructure/07-Optimal-Execution-Almgren-Chriss.md), [Inventory Risk and Avellaneda-Stoikov](../08-Market-Making/03-Inventory-Risk-and-Avellaneda-Stoikov.md), [Market Impact Models](../07-Market-Microstructure/06-Market-Impact-Models.md).

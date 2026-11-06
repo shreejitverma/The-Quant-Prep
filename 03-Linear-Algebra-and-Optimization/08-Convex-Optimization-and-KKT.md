@@ -237,7 +237,7 @@ Maximising over $\lambda \ge 0$ gives $\lambda^\ast = 2$ and $d^\ast = 1$, equal
 > [!question]- la-cvx-clip-not-optimal | Can you get the long-only minimum-variance portfolio by zeroing the negative GMV weights and renormalising?
 > No. Removing an asset changes the optimal weights of the others because of correlations; the correct answer satisfies KKT with a new free set, which an active-set or interior-point solver finds.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [portfolio_optimization.py](code/portfolio_optimization.py) computes and asserts every number above (closed forms, the KKT linear system, the shadow-price finite difference, the long-only multiplier and the dual toy).
 - Next: [Quadratic Programming and Portfolio Solvers](09-Quadratic-Programming-and-Portfolio-Solvers.md); related: [Mean-Variance Portfolio Construction](../09-Alpha-Research-and-Portfolio/10-Mean-Variance-Portfolio-Construction.md), [Black-Litterman, Risk Parity and HRP](../09-Alpha-Research-and-Portfolio/12-Black-Litterman-Risk-Parity-and-HRP.md).

@@ -312,12 +312,12 @@ The 193-parameter MLP in Example 2 already spreads across seeds by a factor of a
 > Yes: every training window uses statistics that include the future, which leaks level and volatility information.
 > Fit the scaler inside each training window (or with expanding, point-in-time statistics) and apply it forward.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [nn_backprop_lstm.py](code/nn_backprop_lstm.py) prints and asserts every computed number in this note (hand backprop, MLP and LSTM gradient checks, the low signal-to-noise study and its linear ceiling, RNN and LSTM gradient decay with their controls, attention scaling, the causal-mask test and parameter counts); the Gu, Kelly and Xiu figures are quoted from their Table 1.
 - Code: [lstm_price_prediction.ipynb](code/lstm_price_prediction.ipynb) is a PyTorch LSTM on a noiseless sine wave; it shows the mechanics, not a realistic financial result (a deterministic periodic series is perfectly predictable).
 - Related: [Tree Ensembles and Gradient Boosting](03-Tree-Ensembles-and-Gradient-Boosting.md), [Time-Series Cross-Validation: Purging and Embargo](02-Time-Series-Cross-Validation-Purging-Embargo.md).
-- SDE-Interview-Prep: [Perceptron](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/03-Data-Structures-Algorithms/01-Topics/Machine-Learning-Basics/Perceptron/README.md), [The Transformer From Scratch](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/13-Agentic-AI/Agentic_AI_Zero_to_Godhood/Volume_01_LLM_Foundations/Chapter_02_The_Transformer_From_Scratch.md).
+- The-Distinguished-Engineer: [Perceptron](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/03-Data-Structures-Algorithms/01-Topics/Machine-Learning-Basics/Perceptron/README.md), [The Transformer From Scratch](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/13-Agentic-AI/Agentic_AI_Zero_to_Godhood/Volume_01_LLM_Foundations/Chapter_02_The_Transformer_From_Scratch.md).
 
 ## Further reading
 

@@ -250,7 +250,7 @@ Simulating the average of 63 daily values of the Brownian path over the period (
 > The payoff is $A(T)(S_T - K)^+$; dividing by the numeraire $A(T)$ leaves $(S_T - K)^+$, and under $\mathbb{Q}^A$ every traded price divided by $A$ is a martingale.
 > All the stochastic discounting is absorbed into the numeraire, and only the distribution of $S_T$ under $\mathbb{Q}^A$ is needed.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_rates_options.py`](code/fi_rates_options.py) computes, prints and asserts every number on this page.
 - Prereqs: [Short-Rate Models](04-Short-Rate-Models.md), [Black-Scholes Formula and Intuition](../05-Derivatives-and-Volatility/04-Black-Scholes-Formula-and-Intuition.md).

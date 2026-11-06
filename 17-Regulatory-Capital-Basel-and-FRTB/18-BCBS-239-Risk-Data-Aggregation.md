@@ -197,7 +197,7 @@ The control failures map one to one onto the text: manual process without effect
 - ECB Banking Supervision, *Guide on effective risk data aggregation and risk reporting*, 3 May 2024.
 - Senior Supervisors Group, *Observations on Developments in Risk Appetite Frameworks and IT Infrastructure*, December 2010 (cited in BCBS 239).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Front-to-Back Architecture](../18-Pricing-and-Risk-Systems/01-Front-to-Back-Architecture.md) - where lineage starts.
 - [Market and Reference Data Platform](../18-Pricing-and-Risk-Systems/03-Market-and-Reference-Data-Platform.md) - golden sources and counterparty hierarchies.

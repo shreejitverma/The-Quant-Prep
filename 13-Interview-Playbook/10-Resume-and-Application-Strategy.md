@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 1
-sources: [Gayle Laakmann McDowell - Cracking the Coding Interview 6th ed (2015) chapter Before the Interview, Gayle Laakmann McDowell - The Google Resume (Wiley 2011), SDE-Interview-Prep - 06-Interview-Prep/02-Resume/resume_guide.md]
+sources: [Gayle Laakmann McDowell - Cracking the Coding Interview 6th ed (2015) chapter Before the Interview, Gayle Laakmann McDowell - The Google Resume (Wiley 2011), The-Distinguished-Engineer - 06-Interview-Prep/02-Resume/resume_guide.md]
 ---
 
 # Resume and Application Strategy
@@ -181,11 +181,11 @@ Cut in this order: objective statements and generic soft skills, coursework a gr
 > [!question]- int-resume-consistency | Why must your resume match your online profiles and application forms?
 > Recruiters and interviewers compare them; inconsistent dates, titles or claims read as exaggeration.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - The example bullets quote numbers asserted by [coding_problems.py](code/coding_problems.py) (8499 random orders) and [take_home_mini.py](code/take_home_mini.py) (IC 0.0263, $t$ = 5.96, turnover 1.34).
 - Pipeline and rounds: [How Quant Interviews Work](01-How-Quant-Interviews-Work.md); firm formats: [14-Firms](../14-Firms/README.md).
-- [Resume guide (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/06-Interview-Prep/02-Resume/resume_guide.md)
+- [Resume guide (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/06-Interview-Prep/02-Resume/resume_guide.md)
 
 ## Further reading
 

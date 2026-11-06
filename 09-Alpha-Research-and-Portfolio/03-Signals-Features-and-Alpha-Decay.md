@@ -229,7 +229,7 @@ Winsorise or rank the signal before trading it, or the book will be driven by th
 > $\alpha_i = \text{IC}\times\sigma_i\times z_i$.
 > This is the conditional mean of residual return given the score when score and return are jointly normal with correlation IC; it shrinks weak signals toward zero automatically.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Related notes: [Cross-Sectional Factor Models](04-Cross-Sectional-Factor-Models.md), [Transaction Costs and Turnover](13-Transaction-Costs-and-Turnover.md), [Linear Regression OLS](../02-Statistics-and-Econometrics/04-Linear-Regression-OLS.md).
 

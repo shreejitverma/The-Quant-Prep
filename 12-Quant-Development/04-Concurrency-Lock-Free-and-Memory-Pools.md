@@ -284,15 +284,15 @@ Because of the clamp no test can observe the wrap; the unit test only calls `siz
 > [!question]- qd-conc-core-to-core | How would you measure core-to-core latency, and what did it come to here?
 > Ping-pong a value between two threads through two SPSC rings and halve the round trip. In one session on an Apple M3 Pro, not asserted by CI, concurrency_bench.cpp measured a median round trip of 89.2 ns, about 45 ns one way, with thread placement changing it run to run (81.2 to 89.2 ns over five runs; reproduce from code/cpp with `clang++ -std=c++20 -O2 -pthread concurrency_bench.cpp -o /tmp/cb && /tmp/cb`).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [lock_free.hpp](code/cpp/lock_free.hpp) (`SpscQueue`, `MpmcQueue`, `TaggedIndexStack`, `SpinLock`, `Seqlock`), [memory_pool.hpp](code/cpp/memory_pool.hpp) (`ObjectPool`, `Arena`), demos [lock_free_spsc_queue.cpp](code/cpp/lock_free_spsc_queue.cpp) and [memory_pool.cpp](code/cpp/memory_pool.cpp), benchmark [concurrency_bench.cpp](code/cpp/concurrency_bench.cpp), tests [tests/test_lock_free.cpp](code/cpp/tests/test_lock_free.cpp) (CI runs them under TSan), and [multithreaded_monte_carlo.cpp](code/cpp/multithreaded_monte_carlo.cpp) (task-parallel Monte Carlo with one seeded engine per task and no shared mutable state, checked against Black-Scholes).
 - Related: [Low-Latency Engineering](03-Low-Latency-Engineering.md), [System Design for Trading](06-System-Design-for-Trading.md).
-- [C++ memory model and memory orders (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/C%2B%2B%20Memory%20Model%20and%20Memory%20Orders.md)
-- [Lock-free SPSC ring buffer design (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/Lock-Free%20SPSC%20Ring%20Buffer%20Design.md)
-- [Lock-free MPMC queue mechanics (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/Lock-Free%20MPMC%20Queue%20Mechanics.md)
-- [Atomic operations and lock-free primitives (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/Atomic%20Operations%20and%20Lock-Free%20Primitives.md)
-- [The LMAX Disruptor architecture (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/09%20-%20Messaging%20%26%20IPC/The%20LMAX%20Disruptor%20Architecture.md)
+- [C++ memory model and memory orders (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/C%2B%2B%20Memory%20Model%20and%20Memory%20Orders.md)
+- [Lock-free SPSC ring buffer design (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/Lock-Free%20SPSC%20Ring%20Buffer%20Design.md)
+- [Lock-free MPMC queue mechanics (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/Lock-Free%20MPMC%20Queue%20Mechanics.md)
+- [Atomic operations and lock-free primitives (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/08%20-%20Low-Latency%20Programming/Atomic%20Operations%20and%20Lock-Free%20Primitives.md)
+- [The LMAX Disruptor architecture (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/09%20-%20Messaging%20%26%20IPC/The%20LMAX%20Disruptor%20Architecture.md)
 
 ## Further reading
 

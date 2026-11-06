@@ -216,7 +216,7 @@ Rank 1 captures about $86.5\%$ of the energy, rank 2 about $95.6\%$ and rank 3 a
 > [!question]- la-svd-randomized | How do you get the top 10 singular vectors of a $10^6 \times 10^4$ matrix?
 > Randomised SVD: multiply by a random $10^4 \times (10 + p)$ matrix (oversampling $p$ around 10), orthonormalise the product with QR, project $A$ onto that basis and take a small SVD; a couple of power iterations sharpen the spectrum. Cost $O(mnk)$, versus $O(mn^2)$ for a full thin SVD.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [la_foundations.py](code/la_foundations.py) (SVD by hand, Eckart-Young check, pseudo-inverse, ridge filter) and [covariance_pca.py](code/covariance_pca.py) (low-rank yield-curve history) compute and assert every number above.
 - Related: [Regularization: Ridge and Lasso](../02-Statistics-and-Econometrics/06-Regularization-Ridge-Lasso.md), [Numerical Linear Algebra](06-Numerical-Linear-Algebra.md).

@@ -358,14 +358,14 @@ The conclusion survives either way: ten years of events is a few terabytes, so t
 > The bilateral trade with Bank B closes as novated and a new trade facing the CCP (or Bank A's clearing member if it clears as a client) is created with the same economics and lineage to the original.
 > The CCP's trade with Bank B is not in Bank A's store; modelling it there double-counts risk.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_trade_lifecycle.py` computes, prints and asserts every number on this page and runs both SQL queries.
 - [Front-to-Back Architecture](01-Front-to-Back-Architecture.md) for the event log and idempotent consumers that carry these events.
 - [Day Counts, Calendars and Schedules](../06-Fixed-Income-and-Asset-Classes/11-Day-Counts-Calendars-and-Schedules.md) for conventions.
 - [Swaps and Curve Building](../06-Fixed-Income-and-Asset-Classes/03-Swaps-and-Curve-Building.md) for what the streams mean economically.
 - [Regulatory Reporting Pipeline](12-Regulatory-Reporting-Pipeline.md) for UTI, UPI and trade repository reporting.
-- SDE-Interview-Prep: [Outbox, CDC and Event Sourcing](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Outbox-CDC-and-Event-Sourcing.md), [CockroachDB Distributed SQL](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/05-Data-Stores/CockroachDB-Distributed-SQL.md), [Saga Pattern](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/08-Distinguished-Engineering/05-Distributed-Transactions/saga_pattern.md).
+- The-Distinguished-Engineer: [Outbox, CDC and Event Sourcing](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Outbox-CDC-and-Event-Sourcing.md), [CockroachDB Distributed SQL](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/05-Data-Stores/CockroachDB-Distributed-SQL.md), [Saga Pattern](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/08-Distinguished-Engineering/05-Distributed-Transactions/saga_pattern.md).
 
 ## Further reading
 

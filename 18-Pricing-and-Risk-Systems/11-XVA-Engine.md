@@ -262,7 +262,7 @@ The incremental price must use the same paths as the stored cube: pricing the ne
 > Effective EE is the running maximum of the EE profile and Effective EPE its average over the first year (or the maturity if shorter); IMM EAD is 1.4 times Effective EPE (CRE53.11 to CRE53.14).
 > The same simulated netting-set exposures feed both CVA and regulatory exposure, although the measure (risk-neutral or real-world) may differ and must be documented.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [sys_xva_engine.py](code/sys_xva_engine.py) computes, prints and asserts every number on this page, with the exact CVA integral checked numerically and simulated exposure checked against its closed form.
 - [XVA](../11-Risk-and-Trading/15-XVA.md) for the adjustments in depth and [Counterparty Credit Risk Analytics](../11-Risk-and-Trading/14-Counterparty-Credit-Risk-Analytics.md) for exposure, collateral and CRE53.

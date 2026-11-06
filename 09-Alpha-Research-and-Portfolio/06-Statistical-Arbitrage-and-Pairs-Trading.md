@@ -276,11 +276,11 @@ The filter is therefore weak on its own; a longer window, out-of-window validati
 > Only roughly: in the note's simulation with a true half-life of 13.5 days, 1,000 days gave 14.9.
 > With shorter samples the error is larger and AR coefficients near 1 are biased; use it to size holding periods, not as a precise parameter.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [pairs_stat_arb.py](code/pairs_stat_arb.py) reproduces every number above; [pairs_trading_stat_arb.ipynb](code/pairs_trading_stat_arb.ipynb) is an exploratory notebook.
 - Related notes: [Cointegration and VAR](../02-Statistics-and-Econometrics/10-Cointegration-and-VAR.md), [Cross-Sectional Factor Models](04-Cross-Sectional-Factor-Models.md), [Transaction Costs and Turnover](13-Transaction-Costs-and-Turnover.md).
-- SDE-Interview-Prep mean-reversion example: [bollinger_bands.py](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/05-Quantitative-Finance/03-Algo-Trading/Strategies/Mean-Reversion/bollinger_bands.py).
+- The-Distinguished-Engineer mean-reversion example: [bollinger_bands.py](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/03-Algo-Trading/Strategies/Mean-Reversion/bollinger_bands.py).
 
 ## Further reading
 

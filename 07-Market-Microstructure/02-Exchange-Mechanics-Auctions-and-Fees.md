@@ -304,11 +304,11 @@ With the S&P 500 closing at 5,800 the day before, the Level 1, 2 and 3 threshold
 > It ignores the auction price, the published imbalance and rationing at the clearing price.
 > The error is largest on days with big imbalances, which are exactly the days that drive P&L.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [exchange_auctions.py](code/exchange_auctions.py) reproduces every number above (`python exchange_auctions.py`).
-- [Continuous trading vs auctions (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Continuous%20Trading%20vs%20Discrete%20Auctions.md)
-- [Maker-taker vs inverted fees (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Maker-Taker%20vs%20Inverted%20Fee%20Models.md)
+- [Continuous trading vs auctions (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Continuous%20Trading%20vs%20Discrete%20Auctions.md)
+- [Maker-taker vs inverted fees (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Maker-Taker%20vs%20Inverted%20Fee%20Models.md)
 
 ## Further reading
 

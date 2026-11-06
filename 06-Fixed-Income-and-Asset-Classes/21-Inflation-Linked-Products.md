@@ -195,7 +195,7 @@ The twelve monthly means sum to $2.50\%$, close to the $2.52\%$ annualized infla
 - Michael Fleming and John Sporn, *Trading Activity and Price Transparency in the Inflation Swap Market*, Federal Reserve Bank of New York Economic Policy Review, May 2013.
 - US Bureau of Labor Statistics, CPI-U all items, not seasonally adjusted, series CUUR0000SA0.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_inflation.py`](code/fi_inflation.py) asserts every number here, including the Ref CPI rule on published CPI-U and the seasonality statistics computed from the embedded BLS series.
 - Prereqs: [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [Day Counts, Calendars and Schedules](11-Day-Counts-Calendars-and-Schedules.md).

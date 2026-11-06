@@ -298,11 +298,11 @@ No rule detects a dead signal in less than a few weeks at this noise level, whic
 > It was superseded on 17 April 2026 by SR 26-2 (Federal Reserve, FDIC and OCC), which keeps those validation components, effective challenge and the inventory, asks for risk-based tailoring, and excludes generative and agentic AI (as of 2026-10).
 > For ML trading models this maps to independent review, drift and performance monitoring, and backtesting against realised outcomes.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [drift_monitoring.py](code/drift_monitoring.py) prints and asserts every number in this note (as-of joins, PSI by hand and under the null, KS critical values and power against fixed and calibrated PSI thresholds, the unit-bug example, and the CUSUM study with its Markov-chain run lengths).
 - Related: [System Design for Trading](../12-Quant-Development/06-System-Design-for-Trading.md), [Model Governance](../18-Pricing-and-Risk-Systems/15-Model-Governance.md), [Point-in-Time Data and Survivorship](../09-Alpha-Research-and-Portfolio/02-Point-in-Time-Data-and-Survivorship.md), [Online Learning and Linear Models at Scale](04-Online-Learning-and-Linear-Models-at-Scale.md).
-- SDE-Interview-Prep: [Evals, Reliability and Observability](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/13-Agentic-AI/Agentic-AI-Interview-Prep/04-Evals-Reliability-Observability.md).
+- The-Distinguished-Engineer: [Evals, Reliability and Observability](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/13-Agentic-AI/Agentic-AI-Interview-Prep/04-Evals-Reliability-Observability.md).
 
 ## Further reading
 

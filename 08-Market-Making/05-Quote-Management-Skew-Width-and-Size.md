@@ -222,7 +222,7 @@ def quotes(theo, q, h, s_max, beta, q_max):
 > No: the minimum half-width is about 0.0077, above the 0.005 available.
 > $0.0003 - 0.002 + 0.004 + 0.0054 = 0.0077$; quote selectively or one tick behind.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Skew and limit tiers in the systems companion: [Quantitative Models and Strategies](Quant-Dev-MM-Guide/03_Quantitative_Models_and_Strategies.md), section 2.
 - Microstructure background: [Order Book Imbalance and Microprice](../07-Market-Microstructure/11-Order-Book-Imbalance-and-Microprice.md).

@@ -224,7 +224,7 @@ The trap is to say "$E[N]$ times the conditional mean given not six", which igno
 > Expectation is a weighted sum over outcomes.
 > $\sum_\omega (X(\omega)+Y(\omega))P(\omega)$ splits into two sums; the joint distribution never enters, unlike $E[XY]$ or $\text{Var}(X+Y)$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/prob_04_expectation.py`](code/prob_04_expectation.py) prints and asserts every number on this page without using the indicator shortcuts the note teaches: it enumerates permutations, dice and coin sequences with exact `Fraction` arithmetic, builds the hypergeometric, random-sum and occupancy distributions exactly, computes the full coupon-collector distribution by dynamic programming, and checks the continuous and unbounded cases by seeded simulation.
 - Related notes: [Classic Expectation Problems](14-Classic-Expectation-Problems.md), [Martingales and Optional Stopping](12-Martingales-and-Optional-Stopping.md) (Wald), [Linear Regression and OLS](../02-Statistics-and-Econometrics/04-Linear-Regression-OLS.md).

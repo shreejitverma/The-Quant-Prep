@@ -203,11 +203,11 @@ With a 350-microsecond delay on takers only, the sniper's order arrives at 360 m
 > [!question]- ms-lat-quote-defence | Besides speed, how can a market maker reduce sniping losses?
 > Widen or reduce size when lead instruments are moving, use venues with protections (bumps, pegs that reprice on undelayed data), and skew quotes using lead-lag signals.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [latency_arb.py](code/latency_arb.py) reproduces every number above (`python latency_arb.py`).
-- [Colocation and physical layer (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/06%20-%20Networking/Colocation%20and%20Physical%20Layer%20Infrastructure.md)
-- [Continuous trading vs discrete auctions (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Continuous%20Trading%20vs%20Discrete%20Auctions.md)
+- [Colocation and physical layer (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/06%20-%20Networking/Colocation%20and%20Physical%20Layer%20Infrastructure.md)
+- [Continuous trading vs discrete auctions (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Continuous%20Trading%20vs%20Discrete%20Auctions.md)
 
 ## Further reading
 

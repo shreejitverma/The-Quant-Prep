@@ -238,7 +238,7 @@ Leverage scales $\mu$ linearly but the drag quadratically, which is the root of 
 > $P(S-E[S]\ge t)\le\exp\big(-2t^2/\sum_i(b_i-a_i)^2\big)$ for $X_i\in[a_i,b_i]$.
 > Chernoff bound with Hoeffding's lemma $E[e^{s(X-EX)}]\le e^{s^2(b-a)^2/8}$, optimised over $s$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/prob_06_limits.py`](code/prob_06_limits.py) prints and asserts every number on this page: exact binomial and 100-dice tails by integer arithmetic, normal tails by integrating the density, the extremal distributions that attain the Markov and Chebyshev bounds, and seeded simulations of the volatility standard error, volatility drag and the non-converging Cauchy sample mean.
 - Related notes: [Generating Functions](07-Generating-Functions.md) (MGFs and the CLT), [Random Walks and Gambler's Ruin](11-Random-Walks-and-Gamblers-Ruin.md), [Kelly Criterion and Position Sizing](../11-Risk-and-Trading/01-Kelly-Criterion-and-Position-Sizing.md).

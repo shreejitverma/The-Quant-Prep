@@ -269,7 +269,7 @@ The simulator's mid is an arithmetic random walk, matching the model, even thoug
 > Adverse selection: fills are independent of future price moves in the model.
 > Real width must also cover the expected post-fill move measured by markouts.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [avellaneda_stoikov_mm.py](code/avellaneda_stoikov_mm.py).
 - Systems companion with the same formulas: [Quantitative Models and Strategies](Quant-Dev-MM-Guide/03_Quantitative_Models_and_Strategies.md).

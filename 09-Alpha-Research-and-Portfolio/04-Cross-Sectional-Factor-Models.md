@@ -329,7 +329,7 @@ A sample covariance of 1,000 stocks has $1000\times1001/2 = 500{,}500$ free para
 > With the bias statistic: the standard deviation of $r_t/\hat\sigma_t$ over $T$ periods for each test portfolio, which should be 1 within roughly $1 \pm \sqrt{2/T}$.
 > Run it on optimised long-short portfolios as well as the market, since sample-based models underforecast the risk of the portfolios an optimiser builds.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [factor_models.py](code/factor_models.py) reproduces every number above.
 - Related notes: [Signals, Features and Alpha Decay](03-Signals-Features-and-Alpha-Decay.md), [Covariance Estimation and Shrinkage](11-Covariance-Estimation-and-Shrinkage.md), [Linear Regression OLS](../02-Statistics-and-Econometrics/04-Linear-Regression-OLS.md), [Risk Factor Modelling](../11-Risk-and-Trading/10-Risk-Factor-Modelling.md), [Statistical Arbitrage and Pairs Trading](06-Statistical-Arbitrage-and-Pairs-Trading.md).

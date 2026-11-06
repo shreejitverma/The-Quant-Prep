@@ -241,7 +241,7 @@ A ranked MDI chart is not evidence that anything is predictable; an out-of-sampl
 > With overlapping labels and autocorrelated features, an unpurged test row has near copies in training, so permuting a feature that encodes "where in time we are" destroys a leak and looks important.
 > Purging and embargo make the drop reflect generalisable reliance.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [feature_importance.py](code/feature_importance.py) prints and asserts every number in this note (a numpy random forest, MDI, MDA, drop-column, clustered MDA, SFI, exact interventional Shapley values with the efficiency check, Linear SHAP, the refit-without-the-copy control, the cardinality control and the pure-noise control).
 - Related: [Tree Ensembles and Gradient Boosting](03-Tree-Ensembles-and-Gradient-Boosting.md), [Labeling: Triple Barrier and Meta-Labeling](06-Labeling-Triple-Barrier-and-Meta-Labeling.md), [PCA and Factor Structure](../03-Linear-Algebra-and-Optimization/05-PCA-and-Factor-Structure.md) for orthogonalised features.

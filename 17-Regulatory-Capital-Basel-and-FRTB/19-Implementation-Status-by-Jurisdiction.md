@@ -194,7 +194,7 @@ During the Basel phase-in a supervisor may cap the floor's increase at 25% of pr
 - OSFI, *Capital Adequacy Requirements (CAR) (2026), Chapter 1*.
 - Financial Services Agency (Japan), *FSA Weekly Review No.582*, 11 April 2024.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Capital, RWA and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) - the output floor in RBC20.
 - [CVA Capital Charge](05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md) - BA-CVA and SA-CVA.

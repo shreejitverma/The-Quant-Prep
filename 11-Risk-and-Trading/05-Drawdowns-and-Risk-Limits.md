@@ -383,7 +383,7 @@ The desk will hit the stop in about one year in twelve even if it is as good as 
 > Formulas for Brownian motion give log drawdowns, while investors see percentage ones: at Sharpe 1.5, 10% vol and 3 years the expected MDD is 11.20% in log units but 10.54% in percentage terms.
 > Also check the drift convention: the log drift is the arithmetic mean return minus $\sigma^2/2$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [drawdowns.py](code/drawdowns.py): exact MDD distribution by eigenfunction expansion (checked against quadrature, the zero-drift closed form and a step-extrapolated Monte Carlo), the Magdon-Ismail asymptotes, exact endpoint-and-maximum sampling of the stationary drawdown, the ladder and drawdown-floor simulations; every number above.
 - Optimal sizing and growth: [Kelly Criterion and Position Sizing](01-Kelly-Criterion-and-Position-Sizing.md).

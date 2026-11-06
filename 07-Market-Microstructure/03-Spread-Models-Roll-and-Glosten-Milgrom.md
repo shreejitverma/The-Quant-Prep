@@ -248,10 +248,10 @@ A market maker facing this flow keeps $\phi$ per trade on average and loses $\th
 > When there are no quote data, for example historical, daily or OTC trade data, or as a cross-check.
 > It needs only transaction prices, but it is biased by persistent flow and adverse selection.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [spread_models.py](code/spread_models.py) reproduces every number above (`python spread_models.py`).
-- [Price discovery and microstructure noise (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Price%20Discovery%20and%20Microstructure%20Noise.md)
+- [Price discovery and microstructure noise (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Price%20Discovery%20and%20Microstructure%20Noise.md)
 
 ## Further reading
 

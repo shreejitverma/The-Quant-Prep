@@ -237,12 +237,12 @@ A reconciliation that leaves an unexplained residual has not finished.
 > Not a ban: where a bank relies on manual processes and desktop applications such as spreadsheets, it must have effective mitigants (for example end-user computing policies) and consistently applied controls (paragraph 36(b)).
 > Manual workarounds must be documented with their criticality and plans to reduce them (paragraph 39), and aggregation should be largely automated.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [sys_regulatory_reporting.py](code/sys_regulatory_reporting.py) computes, prints and asserts every number on this page; SA-CCR is cross-checked against [basel_credit_saccr.py](../17-Regulatory-Capital-Basel-and-FRTB/code/basel_credit_saccr.py), and the reconciliation's matching function is tested against planted faults it never sees.
 - [Counterparty Credit Risk: SA-CCR](../17-Regulatory-Capital-Basel-and-FRTB/04-Counterparty-Credit-Risk-SA-CCR.md) and [BCBS 239 Risk Data Aggregation](../17-Regulatory-Capital-Basel-and-FRTB/18-BCBS-239-Risk-Data-Aggregation.md) for the rules.
 - [Front-to-Back Architecture](01-Front-to-Back-Architecture.md) for transaction and trade reporting, [FRTB Engine](10-FRTB-Engine.md) and [XVA Engine](11-XVA-Engine.md) for the calculation services that feed returns.
-- SDE-Interview-Prep: [Idempotency and Delivery](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).
+- The-Distinguished-Engineer: [Idempotency and Delivery](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).
 
 ## Further reading
 

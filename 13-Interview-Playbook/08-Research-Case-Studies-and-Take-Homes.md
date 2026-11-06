@@ -284,7 +284,7 @@ A strategy with 8% gross alpha and annual turnover of 100 times capital breaks e
 > Then costs.
 > A Sharpe like that is a bug until each is ruled out.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [take_home_mini.py](code/take_home_mini.py) builds the synthetic panel, runs the mini take-home, and prints and asserts every number in this note.
 - Full research cases with deflated Sharpe and a flaw catalogue: [Alpha Research Case Studies](../09-Alpha-Research-and-Portfolio/15-Alpha-Research-Case-Studies.md).

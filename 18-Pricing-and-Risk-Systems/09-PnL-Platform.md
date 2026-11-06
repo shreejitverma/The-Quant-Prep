@@ -256,7 +256,7 @@ Under US GAAP the same gain would generally be recognised on day one (ASC 820-10
 > Once: the dirty value falls by the coupon and the cash rises by it, so P&L is the change in dirty value plus the coupon cash, 12,184 dollars in Example 2.
 > Adding the coupon on top of a dirty-value change that already included it gives 512,184, a 500,000 dollar error.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [sys_pnl_platform.py](code/sys_pnl_platform.py) computes, prints and asserts every number on this page; Greeks are checked against finite differences and the bond walk against a rebuild from position marks and a cash ledger that catches any flow booked twice.
 - [P&L Attribution and Greek Risk](../11-Risk-and-Trading/06-PnL-Attribution-and-Greek-Risk.md) for explain theory; [FRTB Backtesting and PLA Testing](../17-Regulatory-Capital-Basel-and-FRTB/12-FRTB-Backtesting-and-PLA-Testing.md) for the tests the regulatory series feed.

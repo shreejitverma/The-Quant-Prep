@@ -221,7 +221,7 @@ That threshold, not $0.6$, is the decision boundary, and saying it aloud shows y
 > About $28\%$.
 > Odds $1{:}999$ times $19.8^2 \approx 392$ give $392{:}999$; independence of test errors given status is the key assumption.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/prob_02_bayes.py`](code/prob_02_bayes.py) prints and asserts every posterior on this page by enumerating the joint sample space of each protocol with exact `Fraction` weights (never via the odds formula), checks the rule of succession by exact polynomial integration, and simulates the rare-condition test and both Monty Hall protocols with a fixed seed.
 - Related notes: [Counting and Combinatorics](01-Counting-and-Combinatorics.md), [Bayesian Inference](../02-Statistics-and-Econometrics/07-Bayesian-Inference.md), [Markov Chains](10-Markov-Chains.md) (first-step conditioning).

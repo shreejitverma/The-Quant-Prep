@@ -278,13 +278,13 @@ An 18 GB day fits in the memory of one large RDB host, the peak rate sets the in
 > [!question]- qd-tick-hdb-query-order | Why must a q query against a date-partitioned HDB put the date constraint first?
 > The where clause is applied left to right and the date constraint selects which partitions are mapped; putting it later makes q touch every partition before filtering.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [tick_storage_asof.py](code/python/tick_storage_asof.py), run with `uv run --no-project --with numpy python 12-Quant-Development/code/python/tick_storage_asof.py`.
 - Vectorised building blocks used here (`searchsorted`, dtypes, overflow): [Numerical Python](11-Numerical-Python-NumPy-and-Numba.md); the feed that produces the ticks: [Market Data Feed Handlers and Protocols](08-Market-Data-Feed-Handlers-and-Protocols.md); replaying them: [Backtester and Simulator Design](09-Backtester-and-Simulator-Design.md).
 - Enterprise storage for risk and pricing: [Storage and Compute](../18-Pricing-and-Risk-Systems/14-Storage-and-Compute.md).
-- [Object storage (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/05-Data-Stores/Amazon-S3-and-Object-Storage.md)
-- [Apache Spark (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/08-Big-Data/Apache-Spark.md)
+- [Object storage (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/05-Data-Stores/Amazon-S3-and-Object-Storage.md)
+- [Apache Spark (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/08-Big-Data/Apache-Spark.md)
 
 ## Further reading
 

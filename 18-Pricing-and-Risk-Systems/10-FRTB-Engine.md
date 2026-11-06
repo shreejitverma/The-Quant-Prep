@@ -303,7 +303,7 @@ Inputs in millions of dollars; standalone SA of the approved desks: rates 120, F
 > $ES_{R,S}$, $ES_{F,C}$ and $ES_{R,C}$ for the bank-wide model are daily; the ratio of the undiversified sum of risk-class ES to the diversified ES may be updated weekly under controls that prevent systematic underestimation (MAR33.15 FAQ1).
 > The DRC model is computed weekly (MAR33.20), and the 60-day and 12-week averages only need computing at quarter-end for the capital figure (MAR33.44).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [sys_frtb_engine.py](code/sys_frtb_engine.py) computes, prints and asserts every number on this page, with Spearman and KS each computed two independent ways.
 - The rules in depth: [FRTB SbM Delta](../17-Regulatory-Capital-Basel-and-FRTB/07-FRTB-Sensitivities-Based-Method-Delta.md), [SbM Vega and Curvature](../17-Regulatory-Capital-Basel-and-FRTB/08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md), [DRC and RRAO](../17-Regulatory-Capital-Basel-and-FRTB/09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md), [IMA ES](../17-Regulatory-Capital-Basel-and-FRTB/10-FRTB-Internal-Model-Approach-ES.md), [NMRFs](../17-Regulatory-Capital-Basel-and-FRTB/11-FRTB-Non-Modellable-Risk-Factors.md), [Backtesting and PLA](../17-Regulatory-Capital-Basel-and-FRTB/12-FRTB-Backtesting-and-PLA-Testing.md).

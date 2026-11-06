@@ -291,7 +291,7 @@ Setting $Q = 0$ turns the filter into recursive least squares, and its final sta
 > Extended Kalman filter (linearise), unscented filter (sigma points) or particle filter (sequential Monte Carlo).
 > The Kalman filter remains the best linear estimator without Gaussianity, but not the optimal one.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [kalman_filter.py](code/kalman_filter.py) computes and asserts every number in this note (generic filter, RTS smoother, vectorised grid likelihood, local level steady state, hedge-ratio simulation with a known path, recursive least squares check).
 - [Bayesian Inference](07-Bayesian-Inference.md) for the conjugate update that each Kalman step performs.

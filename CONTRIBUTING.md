@@ -25,7 +25,7 @@ Read [How Notes Are Verified](00-Start-Here/How-Notes-Are-Verified.md) first: it
 ```sh
 git clone https://github.com/shreejitverma/The-Quant-Prep.git
 cd The-Quant-Prep
-git clone https://github.com/shreejitverma/SDE-Interview-Prep.git ../SDE-Interview-Prep   # optional, for --strict-sde link checks
+git clone https://github.com/shreejitverma/The-Distinguished-Engineer.git ../The-Distinguished-Engineer   # optional, for --strict-tde link checks
 ```
 
 - **Platform:** Python 3.10 or later, standard library only; `./qp` runs straight from the checkout.
@@ -43,7 +43,7 @@ Keep your own study progress out of the repo: it lives in `$QP_HOME` (default `~
 Run all of these before a pull request; CI runs the same on Linux.
 
 ```sh
-./qp check                                        # schema, prerequisites, cards, links, style; add --strict-sde with SDE-Interview-Prep cloned
+./qp check                                        # schema, prerequisites, cards, links, style; add --strict-tde with The-Distinguished-Engineer cloned
 ./qp index                                        # regenerate the README tables (section topic tables and the root catalog)
 python3 -m unittest discover -s tools/tests -t .  # platform tests
 ruff check . && ruff format --check .             # Python lint and format
@@ -170,7 +170,7 @@ The `qp` platform in `tools/qp/` uses the Python standard library only, so learn
 - One sentence per line in Markdown prose.
 - Frontmatter is flat; list items must not contain commas.
 - Notes use `NN-Title-Case-With-Hyphens.md` so they sort in study order; code uses `snake_case`.
-- Link notes with relative Markdown links, not wikilinks; link SDE-Interview-Prep with absolute GitHub URLs.
+- Link notes with relative Markdown links, not wikilinks; link The-Distinguished-Engineer with absolute GitHub URLs.
 
 ## Code of conduct
 

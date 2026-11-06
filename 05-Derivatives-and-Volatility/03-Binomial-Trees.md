@@ -238,7 +238,7 @@ print(crr(100, 100, 1, 0.05, 0.2, 500, call=False, american=True))   # 6.0888
 > Build the tree on $S - PV(\text{remaining dividends})$ with that process's volatility, and add back the PV of dividends not yet paid at each node.
 > Subtracting dividends from node prices directly makes up-then-down differ from down-then-up.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Prev: [Option Payoffs and Put-Call Parity](02-Option-Payoffs-and-Put-Call-Parity.md). Next: [Black-Scholes Formula and Intuition](04-Black-Scholes-Formula-and-Intuition.md).
 - The continuous-time limit: [Risk-Neutral Pricing and FTAP](../04-Stochastic-Calculus/04-Risk-Neutral-Pricing-and-FTAP.md) and [Black-Scholes Derivation](../04-Stochastic-Calculus/07-Black-Scholes-Derivation.md).

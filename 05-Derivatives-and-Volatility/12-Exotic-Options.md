@@ -358,7 +358,7 @@ The near-zero net vega hides two offsetting exposures to forward volatility, so 
 > Each period is a forward-starting option whose value depends on the smile at the reset date, which today's surface does not fix.
 > Local volatility flattens the forward skew over time and misprices them; stochastic-volatility models are used, and Black-Scholes vega (here about $-0.0303$ from a $-0.1299$ strip and an about $+0.0996$ floor) hides the real exposure.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [exotic_options.py](code/exotic_options.py) asserts every number in this note (digitals, all eight barriers with simulations, Asians, lookbacks, the autocallable and the cliquet); it imports Black-Scholes from [pricing_core.py](code/pricing_core.py).
 - Simulation techniques used here: [Monte Carlo Pricing and Variance Reduction](10-Monte-Carlo-Pricing-and-Variance-Reduction.md); barrier PDEs with the barrier on a node: [Finite Differences and Fourier Pricing](11-Finite-Differences-and-Fourier-Pricing.md).

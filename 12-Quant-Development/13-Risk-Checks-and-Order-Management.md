@@ -382,18 +382,18 @@ Re-arming is a separate, deliberate human action.
 > [!question]- qd-oms-hot-path | How do you keep pre-trade checks fast enough for an HFT order path?
 > One thread owns the risk state and processes orders and execution reports in sequence, so there are no locks; integer arithmetic on preallocated per-symbol state; constant-time checks (running totals of open quantity and notional instead of scans); no allocation or I/O on the path, with logging off-thread. Hardware or venue-provided risk layers take the same checks further.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [pretrade_risk_oms.hpp](code/cpp/pretrade_risk_oms.hpp) (gateway, checks, state machine, idempotent reports, kill switch), [pretrade_risk_oms.cpp](code/cpp/pretrade_risk_oms.cpp) (every number above, printed and asserted), [tests/test_pretrade_risk_oms.cpp](code/cpp/tests/test_pretrade_risk_oms.cpp) (each check at its boundary, illegal transitions, duplicates, overfills, fill and cancel races, late acks, responses matched to the request ledger, contradictory answers, replace exposure, bad references, exposure overflow, kill switch, and a seeded model check that drives the gateway against an independently written venue with crossing messages, two-phase requests, replays and injected faults).
 - Intraday risk and pre-trade limits: [Intraday Risk and Pre-Trade Limits](../18-Pricing-and-Risk-Systems/08-Intraday-Risk-and-Pre-Trade-Limits.md).
 - Enterprise risk engine architecture: [Risk Engine Architecture](../18-Pricing-and-Risk-Systems/07-Risk-Engine.md).
 - Order types and venue mechanics: [Limit Order Books and Order Types](../07-Market-Microstructure/01-Limit-Order-Books-and-Order-Types.md).
-- [Order types and state transitions (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Order%20Types%20and%20State%20Transitions.md)
-- [Order state management and position tracking (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Order%20State%20Management%20and%20Position%20Tracking.md)
-- [Participant-side pre-trade risk gates (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Participant-Side%20Pre-Trade%20Risk%20Gates.md)
-- [Drop copy and clearing feeds (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/Drop%20Copy%20and%20Clearing%20Feeds.md)
-- [FIX protocol and FAST (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/10%20-%20Protocols%20%26%20Codecs/FIX%20Protocol%20and%20Fast%20Encoding%20FAST.md)
-- [War story: Knight Capital (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/War%20Story%20-%20The%202012%20Knight%20Capital%20Disaster.md)
+- [Order types and state transitions (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Order%20Types%20and%20State%20Transitions.md)
+- [Order state management and position tracking (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Order%20State%20Management%20and%20Position%20Tracking.md)
+- [Participant-side pre-trade risk gates (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Participant-Side%20Pre-Trade%20Risk%20Gates.md)
+- [Drop copy and clearing feeds (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/Drop%20Copy%20and%20Clearing%20Feeds.md)
+- [FIX protocol and FAST (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/10%20-%20Protocols%20%26%20Codecs/FIX%20Protocol%20and%20Fast%20Encoding%20FAST.md)
+- [War story: Knight Capital (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/War%20Story%20-%20The%202012%20Knight%20Capital%20Disaster.md)
 
 ## Further reading
 

@@ -70,7 +70,7 @@ class TempRepo(unittest.TestCase):
         self.root.mkdir()
         fixture_vault(self.root)
         self.home = Path(self.tmp.name) / "home"
-        self.env = mock.patch.dict(os.environ, {"QP_TODAY": "2026-01-10", "SDE_REPO": str(Path(self.tmp.name) / "sde")})
+        self.env = mock.patch.dict(os.environ, {"QP_TODAY": "2026-01-10", "TDE_REPO": str(Path(self.tmp.name) / "tde")})
         self.env.start()
 
     def tearDown(self):
@@ -558,16 +558,16 @@ class Checks(TempRepo):
         self.assertEqual(len(cycles), 1)
         self.assertIn("base", cycles[0].message)
 
-    def test_sde_links(self):
-        url = check.SDE_URL + "04-System-Design/README.md"
-        write_note(self.root, "01-Alpha/05-Sde.md", "Sde", f"[sd]({url}) [bad]({check.SDE_URL}nope%20here.md)")
-        self.assertEqual({r for r in self.rules() if r[0] == "sde-link"}, set())  # no clone: skipped
-        self.assertIn("sde-link", {r for r, _ in self.rules(strict_sde=True)})
-        sde = Path(os.environ["SDE_REPO"])
-        (sde / "04-System-Design").mkdir(parents=True)
-        (sde / "README.md").write_text("x")
-        (sde / "04-System-Design" / "README.md").write_text("x")
-        findings = [f for f in check.check_vault(self.vault()) if f.rule == "sde-link"]
+    def test_tde_links(self):
+        url = check.TDE_URL + "04-System-Design/README.md"
+        write_note(self.root, "01-Alpha/05-Tde.md", "Tde", f"[sd]({url}) [bad]({check.TDE_URL}nope%20here.md)")
+        self.assertEqual({r for r in self.rules() if r[0] == "tde-link"}, set())  # no clone: skipped
+        self.assertIn("tde-link", {r for r, _ in self.rules(strict_tde=True)})
+        tde = Path(os.environ["TDE_REPO"])
+        (tde / "04-System-Design").mkdir(parents=True)
+        (tde / "README.md").write_text("x")
+        (tde / "04-System-Design" / "README.md").write_text("x")
+        findings = [f for f in check.check_vault(self.vault()) if f.rule == "tde-link"]
         self.assertEqual(len(findings), 1)
         self.assertIn("nope here.md", findings[0].message)
 

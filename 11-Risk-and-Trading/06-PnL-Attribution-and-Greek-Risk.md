@@ -334,7 +334,7 @@ A good Taylor approximation passes easily; a model that omits a material factor 
 > So the position needs a bigger up move than down move to pay its theta.
 > The effect grows with the size of the move relative to $\sigma\sqrt T$, which is why short-dated options show it most.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [pnl_attribution.py](code/pnl_attribution.py): analytic Greeks checked against finite differences, Taylor and waterfall explain, break-even search, hedging simulations, PLA metrics; every number above.
 - Greek definitions and derivations: [The Greeks](../05-Derivatives-and-Volatility/05-The-Greeks.md); hedging mechanics: [Delta Hedging and Gamma Scalping](../05-Derivatives-and-Volatility/06-Delta-Hedging-and-Gamma-Scalping.md).

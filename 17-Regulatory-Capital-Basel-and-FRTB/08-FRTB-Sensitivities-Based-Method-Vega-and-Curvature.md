@@ -371,7 +371,7 @@ None of these is calibrated to that event; the point is that the SA charges shor
 - Antoine Savine, *Modern Computational Finance: AAD and Parallel Simulations*, Wiley, 2018, for adjoint sensitivities in production.
 - Credit Suisse, media release "Credit Suisse AG Announces Event Acceleration of its XIV ETNs", February 2018 (credit-suisse.com).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [FRTB: SbM Delta](07-FRTB-Sensitivities-Based-Method-Delta.md) - buckets, risk weights, aggregation and scenarios.
 - [FRTB: DRC and RRAO](09-FRTB-Default-Risk-Charge-and-Residual-Risk-Add-On.md) - jump-to-default and residual risk.

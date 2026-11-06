@@ -206,7 +206,7 @@ The first point's rank among the $n+1$ is uniform, so the number of heads is uni
 > Mean $k$, variance $2k$.
 > $E[Z^2]=1$ and $E[Z^4]=3$, so $\text{Var}(Z^2)=2$; it is $\text{Gamma}(k/2,1/2)$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/prob_03_distributions.py`](code/prob_03_distributions.py) prints and asserts every number on this page: it recomputes the mean and variance column of the table from each PMF by summation and each PDF by Simpson integration, builds the normal table and quantiles by integrating the density (not from `erf`), measures the Le Cam error of the Poisson approximation, and reproduces the exponential race, memorylessness, lognormal, thinning and Beta-binomial results by exact integration or seeded simulation.
 - Related notes: [Expectation, Variance and Linearity](04-Expectation-Variance-and-Linearity.md), [Poisson Processes](13-Poisson-Processes.md), [Order Statistics and Extremes](08-Order-Statistics-and-Extremes.md).

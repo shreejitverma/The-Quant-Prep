@@ -225,11 +225,11 @@ Mapping a vendor's trade export into such a schema, and reconciling PVs between 
 > Look for a dated primary source (the vendor's own statement, a filing or a regulator's document), quote it with the date and attribute it, and treat secondary rankings and hearsay as unverified.
 > Also check the current owner: ownership changes (for example Calypso to Nasdaq in 2023) change roadmaps and contracts.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_industry_landscape.py` computes, prints and asserts every number on this page: the cost table, present values, the break-even discount rate and headcount by bisection with a re-discounting check, and the XVA sizing.
 - [Pricing Library Architecture](05-Pricing-Library-Architecture.md) for library design, [Pricing at Scale](06-Pricing-at-Scale.md) for graph platforms, [XVA Engine Architecture](11-XVA-Engine.md) for the exposure engine, and [Trade Representation and Lifecycle](02-Trade-Representation-and-Lifecycle.md) for FpML and the ISDA CDM.
-- SDE-Interview-Prep: [Technology Comparison Matrix](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Technology-Comparison-Matrix.md), [Capacity Estimation](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Capacity-Estimation.md).
+- The-Distinguished-Engineer: [Technology Comparison Matrix](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Technology-Comparison-Matrix.md), [Capacity Estimation](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Capacity-Estimation.md).
 
 ## Further reading
 

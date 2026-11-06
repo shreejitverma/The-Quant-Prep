@@ -267,7 +267,7 @@ print(greeks(100, 100, 1.0, 0.05, 0.2))
 > About 25 contracts; vega only falls by about a quarter.
 > $50 \times 0.0198/0.0398 \approx 25$, and each three-month call has half the one-year vega ($\sqrt{0.25}$), so 25 of them cancel $25 \times 0.5 = 12.5$ of the 50 contracts' vega.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [greeks_visualization.ipynb](code/greeks_visualization.ipynb).
 - Uses: [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md), [PnL Attribution and Greek Risk](../11-Risk-and-Trading/06-PnL-Attribution-and-Greek-Risk.md), [Options Market Making](../08-Market-Making/07-Options-Market-Making.md).

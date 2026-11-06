@@ -207,7 +207,7 @@ This matters for risk: tail estimation belongs to [Heavy Tails and Extreme Value
 > Gumbel, Frechet and Weibull (Fisher-Tippett-Gnedenko).
 > Student-t has power-law tails, so its maxima are in the Frechet domain; normals and exponentials are Gumbel, bounded variables are Weibull.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/prob_08_order_statistics.py`](code/prob_08_order_statistics.py) prints and asserts every number on this page: dice maxima by enumeration, uniform order-statistic moments by exact polynomial integration of $P(\text{Bin}(n,x)<k)$ (not the Beta formula), exponential maxima by inclusion-exclusion integrals and simulation, records and the German tank estimator by enumerating every permutation or sample, and Gaussian maxima by numerical integration cross-checked by simulation.
 - Related notes: [Joint Distributions and Transformations](05-Joint-Distributions-and-Transformations.md), [Estimation, MLE and Method of Moments](../02-Statistics-and-Econometrics/01-Estimation-MLE-and-Method-of-Moments.md) (the German tank problem as estimation), [Heavy Tails and Extreme Value Theory](../02-Statistics-and-Econometrics/13-Heavy-Tails-and-Extreme-Value-Theory.md).

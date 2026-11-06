@@ -253,10 +253,10 @@ $\begin{pmatrix} 1 & 1 \\ 1 & 0\end{pmatrix}^{30}$ has $F_{30} = 832040$ off the
 > [!question]- la-eig-rating-generator | You have an annual rating transition matrix and need monthly ones. What can go wrong with $P^{1/12}$ or $\log P$?
 > The matrix root or logarithm may have negative entries or not be a valid generator (the embedding problem), because the empirical $P$ need not come from any continuous-time chain. Practitioners regularise, for example by setting negative rates to zero and rebalancing the diagonal, then check the fit to $P$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [la_foundations.py](code/la_foundations.py) computes and asserts every number above (powers, regime chain, power iteration, Gershgorin, equicorrelation, AR(2), Fibonacci) except the $2 \times 2$ and trace-determinant examples, which [problem_set.py](code/problem_set.py) asserts.
-- SDE bridge: [matrix exponentiation in C++](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/03-Data-Structures-Algorithms/04-Gold-Standard-Cpp-Patterns/Math-and-Bit-Manipulation/matrix_exponentiation.cpp) computes linear recurrences in $O(\log n)$ multiplications by repeated squaring, the integer version of $A^k$.
+- TDE bridge: [matrix exponentiation in C++](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/03-Data-Structures-Algorithms/04-Gold-Standard-Cpp-Patterns/Math-and-Bit-Manipulation/matrix_exponentiation.cpp) computes linear recurrences in $O(\log n)$ multiplications by repeated squaring, the integer version of $A^k$.
 - Related: [Markov Chains](../01-Probability/10-Markov-Chains.md), [PCA and Factor Structure](05-PCA-and-Factor-Structure.md), [Covariance Matrices and PSD](04-Covariance-Matrices-and-PSD.md).
 
 ## Further reading

@@ -820,7 +820,7 @@ On the upward-sloping 100/120/150 bp curve of [Credit and CDS](06-Credit-and-CDS
 - John Hull, *Options, Futures, and Other Derivatives*, Pearson (chapters on interest rate derivatives and credit).
 - David X. Li, *On Default Correlation: A Copula Function Approach*, Journal of Fixed Income, 2000.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Problem set verification: [`code/fi_problem_set.py`](code/fi_problem_set.py) asserts every number in Problems 1 to 22 and the cards; the tranche expected losses quoted in Problem 16 are asserted in [`code/fi_credit_tranches.py`](code/fi_credit_tranches.py).
 - Topic notes behind the problems: [Rates Volatility and SABR](18-Rates-Volatility-and-SABR.md), [Term Structure Models](19-Term-Structure-Models-HJM-LGM-LMM.md), [Credit Advanced](23-Credit-Advanced-CDS-Indices-and-Tranches.md), [Mortgages](22-Mortgages-and-Securitized-Products.md), [P&L and Relative Value](24-Fixed-Income-PnL-and-Relative-Value.md).

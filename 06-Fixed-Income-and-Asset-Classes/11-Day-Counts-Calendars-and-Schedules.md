@@ -262,7 +262,7 @@ Observation shift: the window is Thursday 29 Oct to Thursday 5 Nov, so the Frida
 > Each payment must settle in both currencies, so the payment date must be a business day in both centres.
 > With one centre's calendar, a payment can land on the other centre's holiday and fail to settle, creating fails and late-payment claims.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_day_counts.py`](code/fi_day_counts.py) (day counts, calendars, schedules, Treasury accrual and RFR observation conventions).
 - Related notes: [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md), [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [Money Markets, Repo and Overnight Rates](12-Money-Markets-Repo-and-Overnight-Rates.md).

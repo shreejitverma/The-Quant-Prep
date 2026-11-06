@@ -262,7 +262,7 @@ The risk lesson: duration hedges assume that both legs can be traded at model pr
 > As yields fall the issuer's call becomes valuable, capping the price near the call price, so the price-yield curve bends down and $d^2P/dy^2 < 0$ in that region.
 > Report effective duration and convexity from bumping the model's inputs and fully revaluing, with the option model stated.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_bonds.py`](code/fi_bonds.py) computes, prints and asserts every number on this page, including the Treasury's published examples.
 - Related: [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md), [Day Counts, Calendars and Schedules](11-Day-Counts-Calendars-and-Schedules.md), [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md), [Treasury Futures and the Basis](16-Treasury-Futures-and-the-Basis.md).

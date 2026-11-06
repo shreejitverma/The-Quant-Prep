@@ -388,7 +388,7 @@ Local vol predicts that in six months the 6-month skew will be about 38% flatter
 > The smile moves the opposite way to the spot move (Hagan et al. 2002), and the ATM vol moves by the time-averaged local skew: a skew stickiness ratio $R_T = 1 + \int_0^T\psi(t)\,dt/(T\psi(T))$ times the implied skew $\psi$ per unit of log spot.
 > That is 2 for a flat skew term structure and $(2 - \alpha)/(1 - \alpha)$ for skew decaying like $T^{-\alpha}$ (2.68 computed for $\alpha = 0.4$ at $T = 10^{-6}$); desks compare it with the ratio estimated from history.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Prev: [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md). Next: [Stochastic Volatility: Heston and SABR](09-Stochastic-Volatility-Heston-and-SABR.md).
 - Code: [vol_surface_svi_dupire.py](code/vol_surface_svi_dupire.py) (SVI fit, Durrleman and calendar checks, SSVI, Dupire both ways, local-vol Monte Carlo, forward smile), using [pricing_core.py](code/pricing_core.py).

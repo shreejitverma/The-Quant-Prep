@@ -272,11 +272,11 @@ Deterministic service halves the queueing delay (Pollaczek-Khinchine), so variab
 > Run both in parallel on the same frozen inputs, reconcile at trade, risk-factor and aggregate level with tolerances set per measure, and explain every break (data, model, numerical order).
 > Make the new engine reproducible first (fixed reduction order, counter-based random streams, pinned versions) so that remaining differences are real.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_problem_set.py` computes, prints and asserts every number on this page and imports the generic critical-path engine from `code/sys_eod_batch.py`.
 - [FRTB Engine Architecture](10-FRTB-Engine.md), [XVA Engine Architecture](11-XVA-Engine.md), [The EOD Risk Batch](13-EOD-Risk-Batch.md), [Curve and Surface Service](04-Curve-and-Surface-Service.md), [Intraday Risk and Pre-Trade Limits](08-Intraday-Risk-and-Pre-Trade-Limits.md) and [Non-Functional Design](16-Non-Functional-Design.md) for the underlying topics.
-- SDE-Interview-Prep: [Capacity Estimation](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Capacity-Estimation.md), [Backpressure and Tail Latency](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Backpressure-and-Tail-Latency.md), [Concurrency, Synchronization and CAS](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Concurrency-Synchronization-and-CAS.md), [Idempotency and Delivery](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).
+- The-Distinguished-Engineer: [Capacity Estimation](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Capacity-Estimation.md), [Backpressure and Tail Latency](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Backpressure-and-Tail-Latency.md), [Concurrency, Synchronization and CAS](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Concurrency-Synchronization-and-CAS.md), [Idempotency and Delivery](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).
 
 ## Further reading
 

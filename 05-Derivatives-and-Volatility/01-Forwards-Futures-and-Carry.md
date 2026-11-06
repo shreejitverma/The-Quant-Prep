@@ -238,7 +238,7 @@ print(0.05 - log(5030 / 5000) / 0.25)                 # implied q 0.0261
 > Because the reverse cash-and-carry requires shorting the stock, which costs a borrow fee $b$, so the true carry is $r - q - b$.
 > The same fee shows up as puts looking rich versus calls in put-call parity.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Next: [Option Payoffs and Put-Call Parity](02-Option-Payoffs-and-Put-Call-Parity.md) uses the forward as the anchor for parity.
 - Related: [Commodities and Futures Curves](../06-Fixed-Income-and-Asset-Classes/09-Commodities-and-Futures-Curves.md), [FX Markets and Interest Rate Parity](../06-Fixed-Income-and-Asset-Classes/07-FX-Markets-and-Interest-Rate-Parity.md), [ETF and Futures Market Making](../08-Market-Making/08-ETF-and-Futures-Market-Making.md).

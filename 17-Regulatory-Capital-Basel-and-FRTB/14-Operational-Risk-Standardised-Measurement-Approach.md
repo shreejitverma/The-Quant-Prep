@@ -262,7 +262,7 @@ An event with a 1,000,000 loss in 2010 (outside), 300,000 in 2013 and a 500,000 
 > Includes legal risk (fines, penalties, punitive damages, private settlements); excludes strategic and reputational risk (OPE10.1 and footnote 361).
 > Seven level 1 event types: internal fraud; external fraud; employment practices and workplace safety; clients, products and business practices; damage to physical assets; business disruption and system failures; execution, delivery and process management (OPE25.17 Table 2).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Capital, RWA, and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) for where operational RWA enter the ratios and the output floor.
 - [Basel I, II, 2.5, III, and IV Evolution](02-Basel-I-II-2.5-III-IV-Evolution.md) for the Basel II methods this replaced.

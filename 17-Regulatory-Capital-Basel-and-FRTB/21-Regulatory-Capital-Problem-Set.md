@@ -230,7 +230,7 @@ Delta convention: +1 when long the primary risk factor (rates), so pay fixed is 
 - Jon Gregory, *The xVA Challenge: Counterparty Risk, Funding, Collateral, Capital and Initial Margin*, 4th edition, Wiley, 2020.
 - Andrea Resti and Andrea Sironi, *Risk Management and Shareholders' Value in Banking*, Wiley, 2007.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Capital, RWA and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md), [Credit Risk Capital](03-Credit-Risk-Capital-SA-and-IRB.md), [SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md), [CVA](05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md).
 - [FRTB SbM Delta](07-FRTB-Sensitivities-Based-Method-Delta.md), [FRTB IMA](10-FRTB-Internal-Model-Approach-ES.md), [Backtesting and PLA](12-FRTB-Backtesting-and-PLA-Testing.md).

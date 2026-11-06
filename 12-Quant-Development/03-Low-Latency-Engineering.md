@@ -318,18 +318,18 @@ With a closed-loop tester, a 2 s freeze becomes one slow sample among 58,000; me
 > [!question]- qd-lowlat-smt | Why disable hyper-threading (SMT) on trading cores?
 > The sibling hardware thread shares the core's L1, L2, TLB and execution ports, so whatever runs there evicts your data and steals issue slots at random times: that is jitter. Turn SMT off or leave the sibling idle on isolated cores.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [latency_lab.cpp](code/cpp/latency_lab.cpp) (clock, cache ladder, false sharing, branches, jitter), [microbenchmark_utils.hpp](code/cpp/microbenchmark_utils.hpp) (portable counters, percentiles, `LatencyHistogram`) with [tests/test_microbenchmark_utils.cpp](code/cpp/tests/test_microbenchmark_utils.cpp), [qd_latency_budget.py](code/python/qd_latency_budget.py), [qd_coordinated_omission.py](code/python/qd_coordinated_omission.py).
 - Related: [Latency Arbitrage and Speed](../07-Market-Microstructure/10-Latency-Arbitrage-and-Speed.md), [Concurrency, Lock-Free Queues and Memory Pools](04-Concurrency-Lock-Free-and-Memory-Pools.md), [Market Data Feed Handlers and Protocols](08-Market-Data-Feed-Handlers-and-Protocols.md).
-- [Low-latency systems vault (home) (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/00%20Home.md)
-- [Latency numbers every trading engineer knows (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/04%20-%20Hardware%20Mechanical%20Sympathy/Latency%20Numbers%20Every%20Trading%20Engineer%20Knows.md)
-- [False sharing and cache contention (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/04%20-%20Hardware%20Mechanical%20Sympathy/False%20Sharing%20and%20Cache%20Contention.md)
-- [Kernel boot parameters for core isolation (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/05%20-%20OS%20%26%20Kernel%20Tuning/Kernel%20Boot%20Parameters%20for%20Core%20Isolation.md)
-- [Kernel bypass technologies overview (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/06%20-%20Networking/Kernel%20Bypass%20Technologies%20Overview.md)
-- [Clock sources and hardware timestamping (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/07%20-%20Time%20%26%20Measurement/Clock%20Sources%20and%20Hardware%20Timestamping.md)
-- [Coordinated omission (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/07%20-%20Time%20%26%20Measurement/Coordinated%20Omission%20in%20Low%20Latency%20Systems.md)
-- [Performance engineering (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/12-Performance-Engineering/README.md)
+- [Low-latency systems vault (home) (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/00%20Home.md)
+- [Latency numbers every trading engineer knows (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/04%20-%20Hardware%20Mechanical%20Sympathy/Latency%20Numbers%20Every%20Trading%20Engineer%20Knows.md)
+- [False sharing and cache contention (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/04%20-%20Hardware%20Mechanical%20Sympathy/False%20Sharing%20and%20Cache%20Contention.md)
+- [Kernel boot parameters for core isolation (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/05%20-%20OS%20%26%20Kernel%20Tuning/Kernel%20Boot%20Parameters%20for%20Core%20Isolation.md)
+- [Kernel bypass technologies overview (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/06%20-%20Networking/Kernel%20Bypass%20Technologies%20Overview.md)
+- [Clock sources and hardware timestamping (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/07%20-%20Time%20%26%20Measurement/Clock%20Sources%20and%20Hardware%20Timestamping.md)
+- [Coordinated omission (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/07%20-%20Time%20%26%20Measurement/Coordinated%20Omission%20in%20Low%20Latency%20Systems.md)
+- [Performance engineering (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/12-Performance-Engineering/README.md)
 
 ## Further reading
 

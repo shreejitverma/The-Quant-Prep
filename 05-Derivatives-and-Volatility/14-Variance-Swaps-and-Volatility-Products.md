@@ -265,7 +265,7 @@ The textbook sample standard deviation (mean removed, divisor $n - 1$) gives 21.
 > $\tfrac{252}{n}\sum\ln^2(S_i/S_{i-1})$ with no mean subtraction and divisor $n$.
 > On short windows the difference from the sample standard deviation is material: five sample returns give 19.7 vol by contract and 22.0 by the textbook formula.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Prev: [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md). Next: [Dispersion and Correlation Trading](15-Dispersion-and-Correlation-Trading.md).
 - Why constant dollar gamma earns variance: [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md).

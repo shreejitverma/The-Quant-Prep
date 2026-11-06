@@ -256,11 +256,11 @@ A text backtest with a Sharpe ratio like the first row is a timestamp bug until 
 > It can hallucinate or mis-scale numbers (millions versus billions) and confuse ranges with points.
 > Require the source sentence with each number, validate it against the transcript automatically, and route mismatches to review.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [text_signals.py](code/text_signals.py) prints and asserts every number in this note (dictionary tone, tf-idf checked against a hand-derived closed form and for log-base invariance, filing similarity with raw and sublinear tf, Jaccard deduplication, the random-embedding null, decayed aggregation and the timestamp-leakage experiment against its closed-form IC and Sharpe, within two standard errors).
 - Related: [Alternative Data and Feature Engineering](../09-Alpha-Research-and-Portfolio/14-Alternative-Data-and-Feature-Engineering.md), [Point-in-Time Data and Survivorship](../09-Alpha-Research-and-Portfolio/02-Point-in-Time-Data-and-Survivorship.md), [Neural Networks and Sequence Models](05-Neural-Networks-and-Sequence-Models.md).
-- SDE-Interview-Prep: [Embeddings](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/13-Agentic-AI/Agentic_AI_Zero_to_Godhood/Volume_02_Working_With_LLMs/Chapter_05_Embeddings.md), [RAG and Knowledge Systems](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/13-Agentic-AI/Agentic-AI-Interview-Prep/03-RAG-and-Knowledge-Systems.md).
+- The-Distinguished-Engineer: [Embeddings](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/13-Agentic-AI/Agentic_AI_Zero_to_Godhood/Volume_02_Working_With_LLMs/Chapter_05_Embeddings.md), [RAG and Knowledge Systems](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/13-Agentic-AI/Agentic-AI-Interview-Prep/03-RAG-and-Knowledge-Systems.md).
 
 ## Further reading
 

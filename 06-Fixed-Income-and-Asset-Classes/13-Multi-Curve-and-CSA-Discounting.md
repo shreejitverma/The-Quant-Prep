@@ -188,7 +188,7 @@ The option costs the receiver 0.3096 per 100 received in 5 years, a running 7.58
 > The discount rate is $\max_k \tilde c_k$, a convex function of the rates, so its expectation exceeds the max of expectations.
 > Any uncertainty in the spreads gives the poster positive option value, as in the toy example where the option is never in the money at the mean spread.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_multi_curve_csa.py`](code/fi_multi_curve_csa.py) (dual-curve par rates, tenor basis, FX-forward basis, collateral choice).
 - Related notes: [Swaps and Curve Building](03-Swaps-and-Curve-Building.md), [FX Markets and Interest Rate Parity](07-FX-Markets-and-Interest-Rate-Parity.md), [Curve Construction Numerics](14-Curve-Construction-Numerics.md).

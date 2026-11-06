@@ -61,7 +61,7 @@ Habits that make it stick:
 | [Roadmap](Roadmap.md) | Planning: phases, exit bars and the weekly rhythm. |
 | [Using the Platform](Using-the-Platform.md) | Setting up and using `qp`, the dashboard, drills, the lab and Obsidian. |
 | [How Notes Are Verified](How-Notes-Are-Verified.md) | Deciding how far to trust a note, or checking a number yourself. |
-| [SDE Link Map](SDE-Link-Map.md) | Pulling data structures, algorithms, C++ and system design from SDE-Interview-Prep. |
+| [TDE Link Map](TDE-Link-Map.md) | Pulling data structures, algorithms, C++ and system design from The-Distinguished-Engineer. |
 | [Note Conventions](Note-Conventions.md) | Writing or fixing notes and cards. |
 | [Dashboard](Dashboard.md) | Navigating the vault from Obsidian. |
 

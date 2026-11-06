@@ -406,7 +406,7 @@ Reordering corrupts state (a later amendment overwritten by an earlier one) and 
 > A cancellation voids a booking that should never have existed: its versions are kept for audit but it has no economic effect and no P&L.
 > A termination is a real economic event with an effective date and usually an unwind fee, so it produces P&L, cashflows, a confirmation and regulatory reports.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_front_to_back.py` computes, prints and asserts every number on this page.
 - [Trade Representation and Lifecycle](02-Trade-Representation-and-Lifecycle.md) for the event model, bitemporal storage and CDM.
@@ -414,7 +414,7 @@ Reordering corrupts state (a later amendment overwritten by an earlier one) and 
 - [Intraday Risk and Pre-Trade Limits](08-Intraday-Risk-and-Pre-Trade-Limits.md), [P&L Platform](09-PnL-Platform.md) and [Regulatory Reporting Pipeline](12-Regulatory-Reporting-Pipeline.md) for the downstream consumers.
 - [BCBS 239 Risk Data Aggregation](../17-Regulatory-Capital-Basel-and-FRTB/18-BCBS-239-Risk-Data-Aggregation.md) for the data governance principles that reconciliation enforces.
 - [System Design for Trading](../12-Quant-Development/06-System-Design-for-Trading.md) for the low-latency side of the front office.
-- SDE-Interview-Prep: [Apache Kafka](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/06-Messaging-and-Streaming/Apache-Kafka.md), [Idempotency and Delivery](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md), [Outbox, CDC and Event Sourcing](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Outbox-CDC-and-Event-Sourcing.md), [Consistency Models](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Consistency-Models.md).
+- The-Distinguished-Engineer: [Apache Kafka](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/06-Messaging-and-Streaming/Apache-Kafka.md), [Idempotency and Delivery](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md), [Outbox, CDC and Event Sourcing](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Outbox-CDC-and-Event-Sourcing.md), [Consistency Models](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Consistency-Models.md).
 
 ## Further reading
 

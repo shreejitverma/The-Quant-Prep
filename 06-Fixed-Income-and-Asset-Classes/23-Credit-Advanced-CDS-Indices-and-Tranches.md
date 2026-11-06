@@ -221,7 +221,7 @@ For the Gaussian copula with $\rho = 0.3$, $P(U_1 \le u \mid U_2 \le u)$ is $0.1
 - Bruce Tuckman and Angel Serrat, *Fixed Income Securities: Tools for Today's Markets*, 3rd edition, Wiley, 2012, chapter 19 (Corporate Bonds and Credit Default Swaps).
 - Damiano Brigo and Fabio Mercurio, *Interest Rate Models - Theory and Practice*, 2nd edition, Springer, 2006, section 21.1 (FtD, CDO tranches and copulas).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Single-name CDS mechanics and hazard rate bootstrapping: [Credit and CDS](06-Credit-and-CDS.md).
 - Code: [`code/fi_credit_tranches.py`](code/fi_credit_tranches.py) asserts every number here, with the LHP losses computed two independent ways and the finite pool by conditional binomial.

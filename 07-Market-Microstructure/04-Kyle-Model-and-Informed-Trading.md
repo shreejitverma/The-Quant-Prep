@@ -219,7 +219,7 @@ Simulating the insider against these $\lambda_n$ gives about 0.6205 for $N = 2$ 
 > It implies linear, permanent impact; measured metaorder impact is concave (roughly square-root in size) and partly decays after execution.
 > Use it for small flow and as a benchmark, not for sizing large orders.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [kyle_model.py](code/kyle_model.py) reproduces every number above, including the sequential-auction recursion (`python kyle_model.py`).
 

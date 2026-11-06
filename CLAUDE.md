@@ -19,7 +19,7 @@ Everything committed here is public.
 - Note id is the file name without its `NN-` prefix, lower-cased; `prereqs` and firm `focus` lists use ids.
 - Frontmatter is flat; list items must not contain commas (the parser splits on them).
 - Never change a published card id: learner history is keyed on it.
-- Link notes with relative Markdown links; link SDE-Interview-Prep with absolute GitHub URLs.
+- Link notes with relative Markdown links; link The-Distinguished-Engineer with absolute GitHub URLs.
 - Every number in a note or card must be computed, not recalled.
 - No emojis, no em dashes, one sentence per line.
 - Firm guides: sourced facts only; keep `status: draft` until a human verifies.
@@ -34,10 +34,10 @@ Everything committed here is public.
 ## Checks
 
 Run these before committing.
-`.no-mistakes.yaml` runs `./qp check` (which also flags a stale index), the secret scan, ruff and the unit tests; CI (`.github/workflows/ci.yml`) runs `./qp check --strict-sde`, the unit tests, ruff and every example, with the secret scan as its own job:
+`.no-mistakes.yaml` runs `./qp check` (which also flags a stale index), the secret scan, ruff and the unit tests; CI (`.github/workflows/ci.yml`) runs `./qp check --strict-tde`, the unit tests, ruff and every example, with the secret scan as its own job:
 
 ```sh
-./qp check              # add --strict-sde when ../SDE-Interview-Prep is cloned
+./qp check              # add --strict-tde when ../The-Distinguished-Engineer is cloned
 ./qp index              # regenerate section README tables and the root README catalog after adding or renaming notes
 python3 -m unittest discover -s tools/tests -t .
 tools/scan-secrets.sh   # secrets in the branch's commits vs origin/main; rules in .gitleaks.toml

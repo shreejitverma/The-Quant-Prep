@@ -230,7 +230,7 @@ Seeds 2026 to 2030 put the OAS between $62$ and $65$ bp and the effective convex
 - Bruce Tuckman and Angel Serrat, *Fixed Income Securities: Tools for Today's Markets*, 3rd edition, Wiley, 2012, chapter 20 (Mortgages and Mortgage-Backed Securities).
 - Andrew Davidson and Alexander Levin, *Mortgage Valuation Models: Embedded Options, Risk, and Uncertainty*, Oxford University Press, 2014.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_mortgages.py`](code/fi_mortgages.py) asserts every number here, including the pool projection, IO and PO, dollar roll, CMO waterfall and the Monte Carlo OAS.
 - Prereq: [Callable and Bermudan Products](20-Callable-and-Bermudan-Products.md).

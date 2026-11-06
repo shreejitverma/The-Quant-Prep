@@ -230,7 +230,7 @@ With only two in-the-money paths a linear fit would interpolate them exactly and
 - Damiano Brigo and Fabio Mercurio, *Interest Rate Models - Theory and Practice*, 2nd edition, Springer, 2006, sections 3.11.4 (Bermudan swaptions on a tree) and 13.15 (Bermudan swaptions in the LIBOR market model).
 - Mark Broadie and Paul Glasserman, *Pricing American-Style Securities Using Simulation*, Journal of Economic Dynamics and Control, 1997.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_callable_bermudan.py`](code/fi_callable_bermudan.py) asserts every number here (tree, Gaussian convolution, Jamshidian, exercise boundary, LSM, callable bond table); [`code/rates_models.py`](code/rates_models.py) holds the Hull-White tree and Jamshidian pricers.
 - Prereqs: [Term Structure Models: HJM, LGM, and LMM](19-Term-Structure-Models-HJM-LGM-LMM.md), [Short-Rate Models](04-Short-Rate-Models.md).
