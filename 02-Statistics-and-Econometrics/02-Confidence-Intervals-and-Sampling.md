@@ -87,7 +87,7 @@ Overlapping returns (a 20-day forward return sampled daily) are the classic case
 
 $\text{SE} = 4/\sqrt{60} = 0.516\%$ and $t_{59,0.975} = 2.001$.
 Interval: $1.0 \pm 2.001\times0.516 = [-0.03\%, 2.03\%]$, which just includes zero.
-The $t$-stat is $1.94$; equivalently the annualised Sharpe is $0.25\sqrt{12} = 0.866$ and $0.866\sqrt5 = 1.94$.
+The $t$-stat is $1.94$ (two-sided $p = 0.058$ from $t_{59}$); equivalently the annualised Sharpe is $0.25\sqrt{12} = 0.866$ and $0.866\sqrt5 = 1.94$.
 Five years of a Sharpe-0.87 strategy is not statistically distinguishable from luck at 5%.
 
 ### Example 2 - confidence interval for a Sharpe ratio
@@ -97,7 +97,7 @@ Five years of a Sharpe-0.87 strategy is not statistically distinguishable from l
 Daily Sharpe is $1.5/\sqrt{252} = 0.0945$ with $n = 756$.
 $\text{SE}_{\text{daily}} = \sqrt{(1+0.0945^2/2)/756} = 0.03645$, annualised $0.03645\sqrt{252} = 0.579$.
 Interval: $1.5\pm1.96\times0.579 = [0.37, 2.63]$.
-A simulation of 20,000 three-year paths gives a standard deviation of 0.580 for the annualised estimate.
+A seeded simulation of 20,000 three-year paths gives a standard deviation of about 0.58 for the annualised estimate.
 The shortcut $1/\sqrt{3} = 0.577$ is almost identical, because at daily frequency the volatility term $SR_d^2/2$ is negligible.
 
 ### Example 3 - how long to prove an edge
@@ -110,7 +110,7 @@ The shortcut $1/\sqrt{3} = 0.577$ is almost identical, because at daily frequenc
 | 1.0 | 4 | 7.85 |
 | 0.5 | 16 | 31.4 |
 
-This is why low-Sharpe strategies are judged on economic priors and out-of-sample consistency rather than on their own track record, and why high-frequency books with Sharpe above 5 can be validated in weeks.
+This is why low-Sharpe strategies are judged on economic priors and out-of-sample consistency rather than on their own track record, and why a book with Sharpe 5 reaches $t = 2$ in $(2/5)^2 = 0.16$ years, about 40 trading days.
 
 ### Example 4 - hit rate and the number of trades needed
 
@@ -118,7 +118,7 @@ This is why low-Sharpe strategies are judged on economic priors and out-of-sampl
 
 $\text{SE} = \sqrt{0.55\times0.45/400} = 0.0249$, interval $[0.501, 0.599]$; the $z$-stat against 50% is $0.05/\sqrt{0.25/400} = 2.0$.
 For 52%, reaching $z = 1.96$ at the observed rate needs $n = (1.96\times0.5/0.02)^2 = 2401$ trades.
-For 80% power: $n = \big((1.96\times0.5 + 0.8416\sqrt{0.52\times0.48})/0.02\big)^2 \approx 4904$ trades.
+For 80% power: $n = \big((1.96\times0.5 + 0.8416\sqrt{0.52\times0.48})/0.02\big)^2 = 4903.2$, so 4,904 trades after rounding up.
 Win rate alone is not edge: the payoff ratio matters as much, so test mean PnL per trade when you can.
 
 ### Example 5 - interval for a volatility
@@ -127,7 +127,8 @@ Win rate alone is not edge: the payoff ratio matters as much, so test mean PnL p
 
 $\chi^2_{29,0.025} = 16.05$ and $\chi^2_{29,0.975} = 45.72$.
 $\sigma\in\big[2\sqrt{29/45.72},\ 2\sqrt{29/16.05}\big] = [1.59\%, 2.69\%]$.
-The interval is asymmetric because the $\chi^2$ is skewed; with fat-tailed returns the true coverage is lower, so bootstrap it ([Bootstrap and Resampling](12-Bootstrap-and-Resampling.md)).
+The interval is asymmetric because the $\chi^2$ is skewed.
+It is exact only for normal data: a seeded simulation with Student-$t$ returns on 5 degrees of freedom puts the coverage of this nominal 95% interval at about 83%, so bootstrap it instead ([Bootstrap and Resampling](12-Bootstrap-and-Resampling.md)).
 
 ## Pitfalls
 
@@ -187,14 +188,23 @@ The interval is asymmetric because the $\chi^2$ is skewed; with fat-tailed retur
 
 > [!question]- stat-ci-effective-sample-size-ar1 | Returns follow AR(1) with rho 0.3. How much information is in 1000 observations for estimating the mean?
 > About 538 independent observations' worth.
-> The variance of the mean inflates by $(1+\rho)/(1-\rho) = 1.857$, so $n_{\text{eff}} = 1000/1.857$.
+> The variance of the mean inflates by $(1+\rho)/(1-\rho) = 1.857$ asymptotically, so $n_{\text{eff}} = 1000/1.857$; the exact factor at $n = 1000$ is 1.856.
 
 > [!question]- stat-ci-overlapping-intervals | Two strategies' 95% intervals for mean return overlap. Can their difference still be significant?
 > Yes.
 > The SE of a difference of independent estimates is $\sqrt{s_a^2+s_b^2}$, smaller than $s_a+s_b$, so the difference test is stricter than the overlap check.
 
+> [!question]- stat-ci-sharpe-skew-kurtosis | Per-period Sharpe 0.1 from returns with skewness -2 and kurtosis 9. How much wider is the Sharpe standard error than for normal returns?
+> About 10% wider.
+> Mertens gives variance $(1 - \gamma_3 SR + \frac{\gamma_4-1}{4}SR^2)/n = (1 + 0.2 + 0.02)/n = 1.22/n$ against Lo's $1.005/n$, and $\sqrt{1.22/1.005} = 1.10$.
+
+> [!question]- stat-ci-hft-sharpe-days | A strategy has annualised Sharpe 5. Roughly how long until its track record reaches a t-stat of 2?
+> About 40 trading days.
+> $T = (2/5)^2 = 0.16$ years, and $0.16\times252 = 40$ days; at Sharpe 1 the same test takes 4 years.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/stats_02_confidence_intervals.py`](code/stats_02_confidence_intervals.py) prints and asserts every number on this page: $t$ and $\chi^2$ quantiles by quadrature of the density and bisection (the $\chi^2$ ones also by simulation), Lo's and Mertens' Sharpe standard errors against seeded simulations of normal and skewed returns, the AR(1) inflation against the exact finite-sample variance, and interval coverage by simulation.
 - [Inequalities and Limit Theorems](../01-Probability/06-Inequalities-and-Limit-Theorems.md) for the CLT behind Wald intervals.
 - [Hypothesis Testing and Multiple Comparisons](03-Hypothesis-Testing-and-Multiple-Comparisons.md) for tests built on these intervals.
 - [Bootstrap and Resampling](12-Bootstrap-and-Resampling.md) when normality or independence fails.
@@ -204,6 +214,6 @@ The interval is asymmetric because the $\chi^2$ is skewed; with fat-tailed retur
 
 - Larry Wasserman, *All of Statistics*, chapter 6 (confidence sets) and chapter 10 (Wald and related intervals).
 - Casella and Berger, *Statistical Inference* (2nd ed.), chapter 5 (sampling distributions) and chapter 9 (interval estimation).
-- Andrew Lo (2002), "The Statistics of Sharpe Ratios", *Financial Analysts Journal*.
+- Andrew Lo (2002), "The Statistics of Sharpe Ratios", *Financial Analysts Journal* 58(4), 36-52.
 - Elmar Mertens (2002), "Comments on Variance of the IID Estimator in Lo (2002)", working paper.
 - David Bailey and Marcos Lopez de Prado (2012), "The Sharpe Ratio Efficient Frontier", *Journal of Risk*.

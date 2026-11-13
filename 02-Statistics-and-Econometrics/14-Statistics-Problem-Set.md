@@ -12,7 +12,7 @@ sources: [Joshi Denson and Downes - Quant Job Interview Questions and Answers, Z
 
 ## TL;DR
 
-- State the estimator, its standard error and the assumption behind that standard error before quoting any number; most interview traps are a wrong standard error, not a wrong point estimate.
+- State the estimator, its standard error and the assumption behind that standard error before quoting any number; a wrong standard error is easier to miss than a wrong point estimate.
 - Means are hard to estimate and volatilities are easy: the standard error of a mean falls with calendar time, the standard error of a volatility falls with the number of observations.
 - A $t$-stat of 2 means little after a search: count the trials, correct for them, and ask what fraction of ideas were real to begin with.
 - In regressions, know the four ways a slope lies: omitted variables, errors in variables, nonstationary levels and overlapping observations.
@@ -39,7 +39,7 @@ Numbers worth knowing cold:
 | SE of a correlation near zero | about $1/\sqrt n$ |
 | Efficiency of the median vs the mean (normal data) | $2/\pi = 0.64$ |
 | 95% upper bound with zero events in $n$ trials | about $3/n$ |
-| Dickey-Fuller 5% critical value, with constant | $-2.86$ |
+| Dickey-Fuller 5% critical value, with constant (MacKinnon 2010) | $-2.86$ |
 | Probability a point is in a bootstrap sample | 0.632 |
 
 Checklist for a research write-up:
@@ -93,10 +93,11 @@ A noisy signal (analyst estimates, sentiment scores) therefore understates its t
 
 ### 5. Annualising a Sharpe with autocorrelation
 
-Monthly returns have Sharpe 0.3 and AR(1) autocorrelation $\rho = 0.2$ (typical of smoothed hedge fund marks).
+Monthly returns have Sharpe 0.3 and AR(1) autocorrelation $\rho = 0.2$ (hypothetical inputs; Getmansky, Lo and Makarov 2004 show how smoothed marks in illiquid funds create positive autocorrelation).
 Naive: $0.3\sqrt{12} = 1.04$.
 Lo (2002): $SR_{12} = SR_1 \cdot 12\big/\sqrt{12 + 2\sum_{k=1}^{11}(12-k)\rho^k} = 0.3\times2.88 = 0.86$.
 Positive autocorrelation makes annual returns more volatile than $\sqrt{12}$ times monthly, so the naive figure overstates the Sharpe by 20%.
+Simulating AR(1) monthly returns with these inputs gives an annual Sharpe of about 0.86, confirming the formula.
 
 ### 6. Reviewing a write-up
 
@@ -106,8 +107,9 @@ A regression of the index level on the signal's cumulative PnL has $R^2 = 0.95$,
 
 Issues, in the order an interviewer expects:
 
-- Selection: $t = 3.1$ gives two-sided $p = 0.0019$; with 200 tests Bonferroni gives $200\times0.0019 = 0.39$ and the per-test threshold is $t \approx 3.66$.
-- Overlap: daily samples of 20-day returns overlap, so OLS standard errors are too small by about $\sqrt{20} = 4.5$; the honest $t$ is near 0.7.
+- Selection: $t = 3.1$ gives two-sided $p = 0.00194$; with 200 tests Bonferroni gives $200\times0.00194 = 0.39$ and the per-test threshold is $t \approx 3.66$.
+- Overlap: daily samples of 20-day returns overlap, so with a persistent signal OLS standard errors are too small by up to $\sqrt{20} = 4.5$; the honest $t$ is then near 0.7.
+  A seeded simulation with no predictability and a signal following AR(1) with coefficient 0.99 gives naive $t$-stats with standard deviation about 4.3 instead of 1.
 - Survivorship: today's constituents over 2005 to 2024 exclude firms that left the index, biasing any long signal upward.
 - Spurious regression: two trending levels give a high $R^2$ regardless of any relationship.
 - Missing: costs, turnover, out-of-sample period, subperiod stability.
@@ -260,7 +262,7 @@ Issues, in the order an interviewer expects:
 
 > [!question]- stat-ps-df-vs-t-critical | Your ADF $t$-stat is $-2.5$. Do you reject a unit root at 5%?
 > No: the 5% Dickey-Fuller critical value with a constant is $-2.86$.
-> The Student-$t$ value $-1.65$ is wrong because the regressor is nonstationary under the null.
+> The Student-$t$ (normal) value $-1.645$ is wrong because the regressor is nonstationary under the null.
 
 ### Volatility
 
@@ -297,7 +299,7 @@ Issues, in the order an interviewer expects:
 > The per-test threshold for 5% family-wise error across 200 tests is $|t| > 3.66$.
 
 > [!question]- stat-ps-flaw-overlapping-daily | "Daily regression of 20-day forward returns on a signal, $t = 3.1$." What is wrong?
-> Overlapping labels: adjacent observations share 19 of 20 returns, so OLS standard errors are too small by about $\sqrt{20}$.
+> Overlapping labels: adjacent observations share 19 of 20 returns, so with a persistent signal OLS standard errors are too small by up to $\sqrt{20}$.
 > Re-estimate with Hansen-Hodrick or Newey-West errors or non-overlapping samples; the $t$ falls to about 0.7.
 
 > [!question]- stat-ps-flaw-survivorship | "We backtested on the current S&P 500 members since 2005." What bias does this introduce?
@@ -308,6 +310,10 @@ Issues, in the order an interviewer expects:
 > The comparison is meaningless: $R^2$ depends on the variance of the dependent variable.
 > A level regression gets high $R^2$ from persistence alone; compare forecasts of the same target out of sample.
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/stats_14_problem_set.py`](code/stats_14_problem_set.py) prints and asserts every number on this page: quantiles from `statistics.NormalDist` and chi-square quadrature, the exact binomial p-value by integer summation, Lo's adjustment by simulating AR(1) monthly returns, the overlapping-label inflation by simulating a regression on a persistent signal, and the regression, GARCH and bootstrap answers by simulation or by iterating the recursions.
+
 ## Further reading
 
 - Joshi, Denson and Downes, *Quant Job Interview Questions and Answers*.
@@ -317,3 +323,5 @@ Issues, in the order an interviewer expects:
 - Andrew Lo (2002), The Statistics of Sharpe Ratios, Financial Analysts Journal.
 - Harvey, Liu and Zhu (2016), ... and the Cross-Section of Expected Returns, Review of Financial Studies.
 - John Ioannidis (2005), Why Most Published Research Findings Are False, PLoS Medicine.
+- Mila Getmansky, Andrew Lo and Igor Makarov (2004), An Econometric Model of Serial Correlation and Illiquidity in Hedge Fund Returns, Journal of Financial Economics 74(3).
+- James MacKinnon (2010), Critical Values for Cointegration Tests, Queen's Economics Department Working Paper 1227.

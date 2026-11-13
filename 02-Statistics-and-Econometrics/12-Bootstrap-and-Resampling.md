@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [confidence-intervals-and-sampling]
 est_hours: 3
-sources: [Wasserman - All of Statistics (2004) ch 8, Hastie Tibshirani and Friedman - The Elements of Statistical Learning (2nd ed.) sec 7.11 and 8.2, Efron (1979) - Bootstrap Methods - Another Look at the Jackknife - Annals of Statistics 7(1), Efron and Tibshirani - An Introduction to the Bootstrap (1993), Kunsch (1989) - The Jackknife and the Bootstrap for General Stationary Observations - Annals of Statistics 17(3), Politis and Romano (1994) - The Stationary Bootstrap - JASA 89(428), Politis and White (2004) - Automatic Block-Length Selection for the Dependent Bootstrap - Econometric Reviews 23(1), Athreya (1987) - Bootstrap of the Mean in the Infinite Variance Case - Annals of Statistics 15(2), White (2000) - A Reality Check for Data Snooping - Econometrica 68(5), Ledoit and Wolf (2008) - Robust Performance Hypothesis Testing with the Sharpe Ratio - Journal of Empirical Finance 15(5)]
+sources: [Wasserman - All of Statistics (2004) ch 8, Hastie Tibshirani and Friedman - The Elements of Statistical Learning (2nd ed.) sec 7.11 and 8.2, Efron (1979) - Bootstrap Methods - Another Look at the Jackknife - Annals of Statistics 7(1), Efron and Tibshirani - An Introduction to the Bootstrap (1993), Kunsch (1989) - The Jackknife and the Bootstrap for General Stationary Observations - Annals of Statistics 17(3), Politis and Romano (1994) - The Stationary Bootstrap - JASA 89(428), Politis and White (2004) - Automatic Block-Length Selection for the Dependent Bootstrap - Econometric Reviews 23(1), Athreya (1987) - Bootstrap of the Mean in the Infinite Variance Case - Annals of Statistics 15(2), White (2000) - A Reality Check for Data Snooping - Econometrica 68(5), Ledoit and Wolf (2008) - Robust Performance Hypothesis Testing with the Sharpe Ratio - Journal of Empirical Finance 15(5), Hall (1992) - The Bootstrap and Edgeworth Expansion - Springer]
 ---
 
 # Bootstrap and Resampling Methods
@@ -50,7 +50,9 @@ The number of distinct resamples is $\binom{2n-1}{n}$, which is 126 for $n = 5$ 
 | Bootstrap-$t$ | Quantiles of $(\hat\theta^* - \hat\theta)/\widehat{se}^*$ | Second-order accurate; needs an SE inside each resample |
 | BCa | Percentile with bias and skewness (acceleration) corrections | Second-order accurate, transformation-invariant |
 
-Studentized statistics are asymptotically pivotal, which is why bootstrap-$t$ and BCa have coverage error $O(1/n)$ against $O(1/\sqrt n)$ for percentile and normal intervals.
+Studentized statistics are asymptotically pivotal, which is why one-sided bootstrap-$t$ and BCa bounds have coverage error $O(1/n)$ against $O(1/\sqrt n)$ for percentile and normal bounds (Hall 1992).
+For two-sided equal-tailed intervals the leading errors of the two tails cancel, so all four have coverage error $O(1/n)$, and the gap shows up mainly in each endpoint.
+The percentile interval fails when the estimator's sampling distribution is skewed and its spread depends on the parameter: for the mean of 20 exponential observations, a seeded simulation of 4,000 data sets puts the coverage of a nominal 95% upper bound at about 88% for the percentile method and 93% for bootstrap-$t$.
 For a Sharpe ratio, Ledoit and Wolf (2008) recommend a studentized circular block bootstrap.
 
 ### When the iid bootstrap fails
@@ -59,18 +61,18 @@ For a Sharpe ratio, Ledoit and Wolf (2008) recommend a studentized circular bloc
 - Infinite variance: for the mean of a distribution with tail index $\alpha < 2$ the bootstrap distribution does not converge to the right limit (Athreya 1987); use subsampling ($m$ out of $n$).
 - Parameters on a boundary, such as a variance component at zero or a constrained weight at a bound.
 - Non-smooth statistics such as sample quantiles in very small samples.
-- Dependent data: resampling individual observations destroys autocorrelation and volatility clustering, so the SE of a mean is understated by $\sqrt{\sum_k \rho_k}$-type factors; for AR(1) the variance ratio is $(1+\phi)/(1-\phi)$.
+- Dependent data: resampling individual observations destroys autocorrelation and volatility clustering, so the SE of a mean is understated by the factor $\sqrt{1 + 2\sum_{k\ge1}\rho_k}$; for AR(1) the variance ratio is $(1+\phi)/(1-\phi)$.
 - Selection: bootstrapping the winner of a search does not account for the search unless the search is repeated inside every resample.
 
 ### Bootstraps for dependent data
 
 - Moving block bootstrap (Kunsch 1989): cut the series into overlapping blocks of length $\ell$, draw $n/\ell$ blocks with replacement and concatenate.
-- Circular block bootstrap: wrap the series so every point has equal chance of appearing.
+- Circular block bootstrap (Politis and Romano 1992): wrap the series so every point has equal chance of appearing.
 - Stationary bootstrap (Politis and Romano 1994): at each step start a new block at a random point with probability $p$, otherwise continue the current block; block lengths are Geometric with mean $1/p$ and the resampled series is stationary.
 
 Block length trades bias (too short breaks dependence) against variance (too long leaves few distinct blocks).
-The MSE-optimal length for variance estimation grows like $n^{1/3}$; Politis and White (2004) give a data-driven rule.
-White's (2000) Reality Check and Hansen's SPA test use the stationary bootstrap to test whether the best of many strategies beats a benchmark after accounting for the search.
+The MSE-optimal length for variance estimation grows like $n^{1/3}$ (Hall, Horowitz and Jing 1995); Politis and White (2004), as corrected by Patton, Politis and White (2009), give a data-driven rule.
+White's (2000) Reality Check and Hansen's (2005) SPA test use the stationary bootstrap to test whether the best of many strategies beats a benchmark after accounting for the search.
 
 ### Permutation tests
 
@@ -106,7 +108,7 @@ With $n = 5$ there are only 126 distinct resamples; the bootstrap cannot manufac
 Three years of daily returns ($T = 756$) with annualised Sharpe exactly 1.0 and roughly normal returns.
 
 - Analytic (Lo): se of annualised Sharpe $= \sqrt{252}\sqrt{(1 + SR_d^2/2)/(T-1)} = 0.578$, 95% CI $[-0.13, 2.13]$.
-- IID bootstrap with $B = 5000$ on a simulated series: se 0.59, percentile CI $[-0.14, 2.17]$, and 4.4% of resampled Sharpes are at or below zero.
+- IID bootstrap with $B = 5000$ on a seeded simulated series rescaled to Sharpe exactly 1.0: se 0.59, percentile CI $[-0.14, 2.16]$, and 4.6% of resampled Sharpes are at or below zero.
 - Both agree that three years of Sharpe 1 is only borderline significant: $t = 1.0\times\sqrt3 = 1.73$, one-sided $p \approx 0.04$.
 
 With autocorrelated or fat-tailed returns the analytic formula needs corrections, while a studentized block bootstrap handles both.
@@ -147,7 +149,8 @@ print(x.std() / np.sqrt(n),                      # naive iid formula: 0.034
 
 The true SE of the mean of an AR(1) with $\phi = 0.3$ and unit innovations is approximately $\frac{1}{\sqrt{1-\phi^2}}\sqrt{\frac{1+\phi}{1-\phi}}\big/\sqrt n = 0.045$.
 The iid bootstrap reproduces the naive formula (0.034) and so understates the SE by the factor $\sqrt{1.857} = 1.36$.
-The stationary bootstrap with mean block $10 \approx n^{1/3}$ recovers most of the gap (0.042); block methods are slightly biased down because they cut dependence at block joins.
+The stationary bootstrap with mean block $10 = n^{1/3}$ recovers most of the gap (0.042); block methods are slightly biased down because they cut dependence at block joins.
+The script re-runs this snippet with its seeds and asserts the three printed values, and checks 0.045 against the exact autocovariance sum and 20,000 simulated paths.
 
 ### 5. An exact permutation test for a signal
 
@@ -206,7 +209,7 @@ The true sampling distribution of the maximum is continuous and extends above th
 > The MSE-optimal length for variance estimation grows like $n^{1/3}$, and Politis-White give a data-driven choice.
 
 > [!question]- stat-boot-percentile-vs-t | Why is a bootstrap-$t$ interval usually more accurate than a percentile interval?
-> It bootstraps an asymptotically pivotal studentized statistic, giving coverage error $O(1/n)$ instead of $O(1/\sqrt n)$.
+> It bootstraps an asymptotically pivotal studentized statistic, giving one-sided coverage error $O(1/n)$ instead of $O(1/\sqrt n)$.
 > The cost is an inner standard error for every resample; BCa gets the same order with bias and acceleration corrections.
 
 > [!question]- stat-boot-permutation-pvalue | You run 999 random permutations and none beat the observed statistic. What $p$-value do you report?
@@ -222,12 +225,25 @@ The true sampling distribution of the maximum is continuous and extends above th
 > This keeps each series' own dependence (and the strategy's turnover) and destroys only their alignment, which is exactly the null.
 
 > [!question]- stat-boot-sharpe-3y | Three years of daily data give annualised Sharpe 1.0. Roughly what is the 95% bootstrap interval?
-> About $[-0.1, 2.1]$.
+> About $[-0.1, 2.2]$: a seeded iid bootstrap gives $[-0.14, 2.16]$, against the analytic $[-0.13, 2.13]$.
 > The SE of an annualised Sharpe is about $\sqrt{1/\text{years}} = 0.58$, and a bootstrap of normal-like returns agrees.
 
 > [!question]- stat-boot-bootstrap-vs-permutation | When do you use a permutation test rather than a bootstrap?
 > Permutation to test a sharp null of no relationship under exchangeability; bootstrap to estimate the size and uncertainty of an effect.
 > Permutation $p$-values are exact under exchangeability; bootstrap tests need resampling under an imposed null.
+
+> [!question]- stat-boot-percentile-skewed | When does the percentile bootstrap interval undercover, and what does better?
+> When the estimator's sampling distribution is skewed and its spread moves with the parameter, as for the mean of a few exponential draws.
+> With 20 exponential observations a seeded simulation gives about 88% coverage for a nominal 95% percentile upper bound and 93% for bootstrap-$t$, which studentizes each resample.
+
+> [!question]- stat-boot-distinct-resamples | How many distinct bootstrap resamples (as multisets) does a sample of n = 5 have?
+> $\binom{2n-1}{n} = \binom{9}{5} = 126$.
+> A resample is a multiset of size $n$ from $n$ points (stars and bars); for $n = 10$ there are 92,378.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/stats_12_bootstrap.py`](code/stats_12_bootstrap.py) prints and asserts every number on this page: inclusion probabilities and the ideal bootstrap SE by enumerating every resample, the permutation p-value by enumerating all 70 labellings with exact fractions, the AR(1) standard error from the exact autocovariance sum and simulation, the snippet re-run with its seeds, and percentile versus bootstrap-$t$ coverage by simulation.
+- Related notes: [Confidence Intervals and Sampling](02-Confidence-Intervals-and-Sampling.md), [Time Series: Stationarity and ARMA](08-Time-Series-Stationarity-and-ARMA.md), [Heavy Tails and Extreme Value Theory](13-Heavy-Tails-and-Extreme-Value-Theory.md), [Overfitting and Deflated Sharpe](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md).
 
 ## Further reading
 
@@ -238,3 +254,8 @@ The true sampling distribution of the maximum is continuous and extends above th
 - Kunsch (1989), The Jackknife and the Bootstrap for General Stationary Observations, Annals of Statistics.
 - White (2000), A Reality Check for Data Snooping, Econometrica.
 - Ledoit and Wolf (2008), Robust Performance Hypothesis Testing with the Sharpe Ratio, Journal of Empirical Finance.
+- Peter Hall (1992), *The Bootstrap and Edgeworth Expansion*, Springer, chapter 3 (coverage accuracy of bootstrap intervals).
+- Hall, Horowitz and Jing (1995), On Blocking Rules for the Bootstrap with Dependent Data, Biometrika 82(3).
+- Politis and Romano (1992), A Circular Block-Resampling Procedure for Stationary Data, in *Exploring the Limits of Bootstrap*, Wiley.
+- Patton, Politis and White (2009), Correction to Automatic Block-Length Selection for the Dependent Bootstrap, Econometric Reviews 28(4).
+- Peter Reinhard Hansen (2005), A Test for Superior Predictive Ability, Journal of Business and Economic Statistics 23(4).

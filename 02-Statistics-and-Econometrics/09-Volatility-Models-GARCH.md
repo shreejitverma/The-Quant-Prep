@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [time-series-stationarity-and-arma]
 est_hours: 4
-sources: [Tsay - Analysis of Financial Time Series (3rd ed.) ch 3, Engle (1982) - Autoregressive Conditional Heteroscedasticity - Econometrica 50(4), Bollerslev (1986) - Generalized Autoregressive Conditional Heteroskedasticity - Journal of Econometrics 31(3), J.P. Morgan and Reuters (1996) - RiskMetrics Technical Document (4th ed.), Glosten Jagannathan and Runkle (1993) - Journal of Finance 48(5), Nelson (1991) - Conditional Heteroskedasticity in Asset Returns - Econometrica 59(2), Parkinson (1980) - The Extreme Value Method for Estimating the Variance of the Rate of Return - Journal of Business 53(1), Garman and Klass (1980) - On the Estimation of Security Price Volatilities from Historical Data - Journal of Business 53(1), Andersen Bollerslev Diebold and Labys (2003) - Modeling and Forecasting Realized Volatility - Econometrica 71(2), Zhang Mykland and Ait-Sahalia (2005) - A Tale of Two Time Scales - JASA 100(472), Patton (2011) - Volatility Forecast Comparison Using Imperfect Volatility Proxies - Journal of Econometrics 160(1)]
+sources: [Tsay - Analysis of Financial Time Series (3rd ed.) ch 3, Engle (1982) - Autoregressive Conditional Heteroscedasticity - Econometrica 50(4), Bollerslev (1986) - Generalized Autoregressive Conditional Heteroskedasticity - Journal of Econometrics 31(3), J.P. Morgan and Reuters (1996) - RiskMetrics Technical Document (4th ed.), Glosten Jagannathan and Runkle (1993) - Journal of Finance 48(5), Nelson (1991) - Conditional Heteroskedasticity in Asset Returns - Econometrica 59(2), Parkinson (1980) - The Extreme Value Method for Estimating the Variance of the Rate of Return - Journal of Business 53(1), Garman and Klass (1980) - On the Estimation of Security Price Volatilities from Historical Data - Journal of Business 53(1), Andersen Bollerslev Diebold and Labys (2003) - Modeling and Forecasting Realized Volatility - Econometrica 71(2), Zhang Mykland and Ait-Sahalia (2005) - A Tale of Two Time Scales - JASA 100(472), Patton (2011) - Volatility Forecast Comparison Using Imperfect Volatility Proxies - Journal of Econometrics 160(1), Engle and Patton (2001) - What Good Is a Volatility Model - Quantitative Finance 1(2), Cont (2001) - Empirical Properties of Asset Returns - Quantitative Finance 1(2)]
 ---
 
 # Volatility Models: EWMA and GARCH
@@ -16,7 +16,7 @@ sources: [Tsay - Analysis of Financial Time Series (3rd ed.) ch 3, Engle (1982) 
 - EWMA: $\sigma_t^2 = \lambda\sigma_{t-1}^2 + (1-\lambda)r_{t-1}^2$ (RiskMetrics daily $\lambda = 0.94$, half-life 11.2 days); it has no long-run level, so its forecast term structure is flat.
 - GARCH(1,1): $\sigma_t^2 = \omega + \alpha r_{t-1}^2 + \beta\sigma_{t-1}^2$; persistence $\alpha+\beta$, long-run variance $\omega/(1-\alpha-\beta)$, shock half-life $\ln 0.5/\ln(\alpha+\beta)$, and forecasts revert geometrically to the long-run level.
 - The leverage effect (negative returns raise future volatility more than positive ones) is captured by GJR-GARCH or EGARCH.
-- Range estimators (Parkinson, Garman-Klass) are 5 to 7 times more efficient than close-to-close; realized variance from intraday returns is better still until microstructure noise, which biases it by $2n\,\text{Var}(\text{noise})$, dominates.
+- Range estimators are about 4.9 (Parkinson) and 7.4 (Garman-Klass) times more efficient than close-to-close; realized variance from intraday returns is better still until microstructure noise, which biases it by $2n\,\text{Var}(\text{noise})$, dominates.
 - Judge variance forecasts with MSE or QLIKE on a noisy proxy; both rank forecasts correctly, MAE on volatility does not.
 
 ## Learning objectives
@@ -29,10 +29,10 @@ sources: [Tsay - Analysis of Financial Time Series (3rd ed.) ch 3, Engle (1982) 
 
 ### Stylised facts
 
-- Volatility clustering: large moves follow large moves; the ACF of $r_t^2$ or $|r_t|$ is positive and decays slowly.
-- Fat tails: unconditional kurtosis well above 3, partly explained by time-varying variance (a mixture of normals is fat-tailed).
+- Volatility clustering: large moves follow large moves; the ACF of $r_t^2$ or $|r_t|$ is positive and decays slowly (Cont 2001).
+- Fat tails: unconditional kurtosis well above 3 (Cont 2001), partly explained by time-varying variance (a mixture of normals is fat-tailed).
 - Mean reversion of volatility: high-vol regimes decay toward a long-run level; implied vol term structures slope toward it.
-- Leverage effect: returns are negatively correlated with future volatility, strongest in equity indices.
+- Leverage effect: returns are negatively correlated with future volatility (Cont 2001).
 
 The modelling set-up is $r_t = \sigma_t z_t$ with $z_t$ iid, mean 0, variance 1, and $\sigma_t^2$ known at $t-1$.
 
@@ -59,7 +59,8 @@ $$
 - Rewriting with $\nu_t = r_t^2 - \sigma_t^2$ (a martingale difference) gives $r_t^2 = \omega + (\alpha+\beta)r_{t-1}^2 + \nu_t - \beta\nu_{t-1}$: squared returns follow an ARMA(1,1), so persistence $\alpha+\beta$ plays the role of the AR coefficient.
 - Forecast: $E_t[\sigma^2_{t+h}] = \bar\sigma^2 + (\alpha+\beta)^{h-1}(\sigma^2_{t+1} - \bar\sigma^2)$, with half-life $\ln 0.5/\ln(\alpha+\beta)$.
 - The variance forecast for a horizon $H$ is the sum of these daily forecasts, which gives a model term structure of volatility.
-- $\alpha$ is the reaction to news, $\beta$ is memory; typical daily equity fits have $\alpha \approx 0.05$ to $0.10$ and $\alpha + \beta \approx 0.97$ to $0.99$.
+- $\alpha$ is the reaction to news, $\beta$ is memory.
+  Engle and Patton (2001) fit daily Dow Jones returns from August 1988 to August 2000 and get $\alpha = 0.0399$ and $\beta = 0.9505$: persistence 0.9904 and a half-life of $\ln 0.5/\ln 0.9904 = 71.9$ days (they report about 73, counting the horizon from $t$ rather than $t+1$).
 - Gaussian-innovation kurtosis: $3\,[1-(\alpha+\beta)^2]/[1-(\alpha+\beta)^2-2\alpha^2]$, finite when the denominator is positive.
 
 ### Estimation
@@ -78,7 +79,7 @@ The likelihood surface is flat along $\alpha+\beta \approx$ const near 1, so ind
 
 - GJR-GARCH: $\sigma_t^2 = \omega + (\alpha + \gamma\,\mathbf 1_{r_{t-1}<0})r_{t-1}^2 + \beta\sigma_{t-1}^2$; persistence $\alpha + \gamma/2 + \beta$ for symmetric $z_t$.
 - EGARCH (Nelson 1991) models $\ln\sigma_t^2$, so no positivity constraints, with a term in $z_{t-1}$ for the sign effect.
-- The leverage story (falling equity raises financial leverage) explains only part of it; volatility feedback (rising risk premia push prices down) is the other explanation.
+- Black (1976) proposed the leverage explanation (falling equity raises financial leverage); Campbell and Hentschel (1992) model the alternative, volatility feedback (rising risk premia push prices down).
 
 ### Realized and range-based estimators
 
@@ -87,11 +88,13 @@ Per-day variance estimators, with $O,H,L,C$ the open, high, low and close:
 | Estimator | Formula | Efficiency vs close-to-close |
 | :--- | :--- | :--- |
 | Close-to-close | $\frac{1}{n-1}\sum (r_i - \bar r)^2$ | 1 |
-| Parkinson (1980) | $\frac{1}{4\ln 2}\,[\ln(H/L)]^2$ | about 5.2 |
+| Parkinson (1980) | $\frac{1}{4\ln 2}\,[\ln(H/L)]^2$ | 4.91 (exact) |
 | Garman-Klass (1980) | $\tfrac12[\ln(H/L)]^2 - (2\ln2-1)[\ln(C/O)]^2$ | about 7.4 |
 | Rogers-Satchell | $\ln\frac HC\ln\frac HO + \ln\frac LC\ln\frac LO$ | drift-robust |
 
-Efficiency means variance ratio: Parkinson over 20 days is roughly as precise as close-to-close over 100.
+Efficiency means variance ratio for a driftless Brownian motion: $\text{Var}(r^2)/\text{Var}(\hat\sigma^2)$ with $\text{Var}(r^2) = 2\sigma^4$.
+Parkinson's is exact from the range moments $E[R^2] = 4\ln 2\,\sigma^2$ and $E[R^4] = 9\zeta(3)\sigma^4$, giving $2/0.4073 = 4.91$; Garman-Klass's 7.4 is confirmed by simulating exact Brownian ranges.
+So Parkinson over 20 days is roughly as precise as close-to-close over 100.
 Range estimators ignore the overnight gap (add it separately, as Yang-Zhang does) and are biased down by discrete sampling of the path.
 
 Realized variance $RV_t = \sum_{i=1}^n r_{t,i}^2$ over intraday returns converges to integrated variance as $n \to \infty$ in a frictionless market (Andersen, Bollerslev, Diebold and Labys 2003).
@@ -102,6 +105,7 @@ Remedies are sparse sampling (5 minutes), the two-scales estimator of Zhang, Myk
 
 The true variance is unobserved, so forecasts $h_t$ are scored against a noisy proxy $\hat\sigma_t^2$ such as $r_t^2$ or RV.
 Patton (2011) shows MSE $(\hat\sigma^2 - h)^2$ and QLIKE $\hat\sigma^2/h - \ln(\hat\sigma^2/h) - 1$ give the same ranking as with the true variance; MAE and MSE on volatility (not variance) do not.
+With the proxy $r^2 = \sigma^2 z^2$, the expected MSE and QLIKE are both minimised at $h = \sigma^2$, but MAE on volatility is minimised at $h = 0.455\sigma^2$, the median of $z^2$, so it rewards forecasts that are far too low.
 QLIKE penalises under-forecasting more, which matches the risk manager's asymmetry.
 
 ## Worked examples
@@ -160,39 +164,10 @@ For ARCH(1) with $\alpha = 0.3$: $3(1-0.09)/(1-0.27) = 3.74$.
 
 ### 7. Fitting GARCH(1,1) by maximum likelihood
 
-```python
-import numpy as np
-from scipy.optimize import minimize
-
-def garch_filter(r, omega, alpha, beta):
-    s2 = np.empty_like(r)
-    s2[0] = r.var()                          # initialise at the sample variance
-    for t in range(1, len(r)):
-        s2[t] = omega + alpha * r[t - 1] ** 2 + beta * s2[t - 1]
-    return s2
-
-def neg_loglik(theta, r):
-    omega, alpha, beta = theta
-    if omega <= 0 or alpha < 0 or beta < 0 or alpha + beta >= 1:
-        return np.inf
-    s2 = garch_filter(r, omega, alpha, beta)
-    return 0.5 * np.sum(np.log(s2) + r**2 / s2)   # Gaussian, constants dropped
-
-rng = np.random.default_rng(1)
-T, (omega, alpha, beta) = 5000, (2e-6, 0.08, 0.90)
-r, s2 = np.empty(T), omega / (1 - alpha - beta)
-for t in range(T):
-    r[t] = np.sqrt(s2) * rng.standard_normal()
-    s2 = omega + alpha * r[t] ** 2 + beta * s2
-
-fit = minimize(neg_loglik, x0=[r.var() * 0.05, 0.05, 0.90], args=(r,), method="Nelder-Mead",
-               options={"xatol": 1e-10, "fatol": 1e-10, "maxiter": 5000})
-w, a, b = fit.x
-print(w, a, b, a + b, np.sqrt(252 * w / (1 - a - b)))
-# about 2.13e-06 0.084 0.895 0.979 0.160
-```
-
+Simulate 5,000 daily returns from the example 1 model with `numpy.random.default_rng(1)`, then maximise the Gaussian log-likelihood above over $(\omega,\alpha,\beta)$ subject to $\omega > 0$, $\alpha,\beta \ge 0$ and $\alpha+\beta < 1$, initialising $\sigma_1^2$ at the sample variance.
+The fit gives $\hat\omega = 2.13\times10^{-6}$, $\hat\alpha = 0.084$ and $\hat\beta = 0.895$.
 On 20 years of simulated daily data the fit recovers persistence 0.979 against a true 0.98 and long-run vol 16.0% against 15.9%.
+[`code/stats_09_garch.py`](code/stats_09_garch.py) runs this fit with a from-scratch Nelder-Mead and checks that no neighbouring parameter vector has a higher likelihood.
 
 ## Pitfalls
 
@@ -237,7 +212,7 @@ On 20 years of simulated daily data the fit recovers persistence 0.979 against a
 
 > [!question]- stat-garch-parkinson | Write the Parkinson estimator and say why it beats close-to-close.
 > $\hat\sigma^2 = [\ln(H/L)]^2/(4\ln2)$ per day.
-> The range uses the whole intraday path, giving about 5 times the efficiency of squared close-to-close returns for a driftless Brownian motion.
+> The range uses the whole intraday path, giving 4.91 times the efficiency of squared close-to-close returns for a driftless Brownian motion.
 
 > [!question]- stat-garch-rv-noise | Why does sampling realized variance every second give a worse estimate than every five minutes?
 > Microstructure noise adds $2n\omega^2$ to $E[RV]$, so bias grows linearly with the number of returns.
@@ -259,6 +234,19 @@ On 20 years of simulated daily data the fit recovers persistence 0.979 against a
 > When $\alpha + \beta < 1$.
 > Taking expectations, $E[\sigma^2] = \omega + (\alpha+\beta)E[\sigma^2]$, which has a finite positive solution only if $\alpha+\beta < 1$.
 
+> [!question]- stat-garch-engle-patton-half-life | Engle and Patton fit daily Dow Jones returns and get alpha = 0.0399 and beta = 0.9505. What is the half-life of a volatility shock?
+> About 72 days (71.9 counted from $t+1$; they report about 73, counting from $t$).
+> Persistence is $0.0399 + 0.9505 = 0.9904$ and the half-life is $\ln 0.5/\ln 0.9904$.
+
+> [!question]- stat-garch-range-efficiency | How much more efficient are the Parkinson and Garman-Klass estimators than squared close-to-close returns?
+> About 4.9 and 7.4 times, for a driftless Brownian motion with no overnight gap.
+> Parkinson: $\text{Var} = (9\zeta(3)/(4\ln 2)^2 - 1)\sigma^4 = 0.4073\sigma^4$ against $2\sigma^4$; Garman-Klass adds the open-to-close return to the range.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/stats_09_garch.py`](code/stats_09_garch.py) prints and asserts every number on this page: variance forecasts by iterating the expectation recursion and by Monte Carlo, kurtosis by solving the moment recursions, Parkinson efficiency exactly from the range moments and Garman-Klass by simulating exact Brownian ranges, the noise bias by simulating a noisy price path, Patton's loss result by minimising expected losses, and the GARCH fit by a from-scratch Nelder-Mead.
+- Related notes: [Variance Swaps and Volatility Products](../05-Derivatives-and-Volatility/14-Variance-Swaps-and-Volatility-Products.md), [VaR and Expected Shortfall](../11-Risk-and-Trading/03-VaR-and-Expected-Shortfall.md), [Heavy Tails and Extreme Value Theory](13-Heavy-Tails-and-Extreme-Value-Theory.md), [Time Series: Stationarity and ARMA](08-Time-Series-Stationarity-and-ARMA.md).
+
 ## Further reading
 
 - Ruey Tsay, *Analysis of Financial Time Series*, chapter 3.
@@ -269,4 +257,9 @@ On 20 years of simulated daily data the fit recovers persistence 0.979 against a
 - Parkinson (1980) and Garman and Klass (1980), Journal of Business.
 - Andersen, Bollerslev, Diebold and Labys (2003), Modeling and Forecasting Realized Volatility, Econometrica.
 - Patton (2011), Volatility Forecast Comparison Using Imperfect Volatility Proxies, Journal of Econometrics.
-- Related notes: [Variance Swaps and Volatility Products](../05-Derivatives-and-Volatility/14-Variance-Swaps-and-Volatility-Products.md), [VaR and Expected Shortfall](../11-Risk-and-Trading/03-VaR-and-Expected-Shortfall.md), [Heavy Tails and Extreme Value Theory](13-Heavy-Tails-and-Extreme-Value-Theory.md).
+- Robert Engle and Andrew Patton (2001), What Good Is a Volatility Model?, Quantitative Finance 1(2), 237-245.
+- Rama Cont (2001), Empirical Properties of Asset Returns: Stylized Facts and Statistical Issues, Quantitative Finance 1(2), 223-236.
+- Fischer Black (1976), Studies of Stock Price Volatility Changes, Proceedings of the American Statistical Association, Business and Economic Statistics Section.
+- John Campbell and Ludger Hentschel (1992), No News Is Good News: An Asymmetric Model of Changing Volatility in Stock Returns, Journal of Financial Economics 31(3).
+- L. C. G. Rogers and S. E. Satchell (1991), Estimating Variance from High, Low and Closing Prices, Annals of Applied Probability 1(4).
+- Dennis Yang and Qiang Zhang (2000), Drift-Independent Volatility Estimation Based on High, Low, Open, and Close Prices, Journal of Business 73(3).
