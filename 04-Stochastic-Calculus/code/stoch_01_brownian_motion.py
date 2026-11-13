@@ -104,24 +104,24 @@ def covariances(rng: np.random.Generator) -> None:
     s = w1 + w2
     m, se = mean_se((s - s.mean()) ** 2)
     simulated("Var(W_1 + W_2), simulated", m, se, 5.0)
-    # time inversion: Cov(s W_{1/s}, t W_{1/t}) = s t min(1/s, 1/t) = min(s, t), exact
-    for s_, t_ in ((Fraction(1, 3), Fraction(2)), (Fraction(5, 2), Fraction(7, 4))):
-        assert s_ * t_ * min(1 / s_, 1 / t_) == min(s_, t_)
-    print("    s t min(1/s, 1/t) = min(s, t) checked exactly at (1/3, 2) and (5/2, 7/4)")
-    # bridge B_t = W_t - (t/T) W_T: Var = t - 2 t^2/T + t^2/T = t(T - t)/T, exact for several t
-    T = Fraction(1)
-    for t in (Fraction(1, 4), Fraction(1, 2), Fraction(3, 5)):
-        v = t - 2 * (t / T) * t + (t / T) ** 2 * T
-        assert v == t * (T - t) / T
-    print("    Var(B_t) = t(T - t)/T exactly at t = 1/4, 1/2, 3/5 (T = 1)")
+    # time inversion: Cov(s W_{1/s}, t W_{1/t}) = s t min(1/s, 1/t) = min(s, t)
+    for s_, t_ in ((1 / 3, 2.0), (2.5, 1.75)):
+        lo, hi = sorted((1 / s_, 1 / t_))
+        zz = rng.standard_normal((1_000_000, 2))
+        w_lo = math.sqrt(lo) * zz[:, 0]
+        w_hi = w_lo + math.sqrt(hi - lo) * zz[:, 1]
+        m, se = mean_se(s_ * t_ * w_lo * w_hi)
+        simulated(f"Cov(s W_(1/s), t W_(1/t)) at (s, t) = ({s_:.4g}, {t_:g}), simulated, vs min(s, t)", m, se, min(s_, t_))
+    # bridge B_t = W_t - (t/T) W_T on a 400-step grid of [0, 1]: Var(B_t) = t(T - t)/T
     n = 400
     dw = rng.standard_normal((50_000, n)) * math.sqrt(1 / n)
     w = np.cumsum(dw, axis=1)
-    b = w[:, n // 2 - 1] - 0.5 * w[:, -1]
-    m, se = mean_se(b**2)
-    simulated("Var(B_{1/2}), simulated (exact 1/4, the maximum over t)", m, se, 0.25)
+    for t in (0.25, 0.5, 0.6):
+        b = w[:, round(t * n) - 1] - t * w[:, -1]
+        m, se = mean_se(b**2)
+        simulated(f"Var(B_{t:g}), simulated, vs t(T - t)/T (largest, 1/4, at t = 1/2)", m, se, t * (1 - t))
     m, se = mean_se(b * w[:, -1])
-    simulated("Cov(B_{1/2}, W_1), simulated (exact 0: independent of W_T)", m, se, 0.0)
+    simulated("Cov(B_0.6, W_1), simulated (exact 0: independent of W_T)", m, se, 0.0)
 
 
 def variation(rng: np.random.Generator) -> None:
@@ -269,15 +269,15 @@ def barriers(rng: np.random.Generator) -> None:
         s[hit_up], s[hit_dn] = 1.0, -1.0
         side[live] = s
         x[live] = x1
-    assert (side == 0).mean() < 1e-5
+    assert not (side == 0).any(), "every path exits within the simulated horizon"
     m, se = mean_se((side == 1).astype(float))
     simulated("P(hit +1 before -1), bridge-corrected simulation, step 0.01", m, se, p_fd)
     # driftless exit times: (1/2) u'' = -1 gives u(0) = ab
     for lo, hi, quoted in ((-1.0, 1.0, 1.0), (-2.0, 3.0, 6.0)):
         approx(f"E[exit time of ({lo:g}, {hi:g})] by finite differences", solve_bvp(0.0, 1.0, lo, hi, 0.0, 0.0, 1.0, 2000, 0.0), quoted, 6)
-    for a, b in ((Fraction(1), Fraction(1)), (Fraction(3), Fraction(2))):
-        assert a**2 * b / (a + b) + b**2 * a / (a + b) == a * b
-    print("    a^2 b/(a+b) + b^2 a/(a+b) = ab exactly")
+        p_hi = solve_bvp(0.0, 1.0, lo, hi, 0.0, 1.0, 0.0, 2000, 0.0)
+        wald = hi**2 * p_hi + lo**2 * (1 - p_hi)
+        approx("    and optional stopping E[W_tau^2] = b^2 P(hit b) + a^2 P(hit -a), P by finite differences", wald, quoted, 6)
     # negative drift, ever hit +1: X = -t + W, solve on (-L, 1) with L large
     p_ever = solve_bvp(-1.0, 1.0, -30.0, 1.0, 0.0, 1.0, 0.0, 62_000, 0.0)
     approx("P(X = -t + W ever hits +1) by finite differences on (-30, 1)", p_ever, 0.135, 3)

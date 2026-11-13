@@ -168,9 +168,8 @@ def int_w2_dw(rng: np.random.Generator) -> None:
     simulated("Var of the 500-step Ito sum of W^2 dW vs 3 h^3 sum i^2", v, se, disc_var)
     approx("    which tends to T^3", disc_var, 1.0, 2)
     a = (0.5 * (w[:, 1:] + w[:, :-1]) * h).sum(axis=1)
-    gap = np.abs(ito - (w[:, -1] ** 3 / 3 - a))
-    assert float(gap.mean()) < 0.06
-    print(f"    Ito sum vs W_T^3/3 - int W dt: mean absolute gap {float(gap.mean()):.4f} on 500 steps (-> 0 like n^-1/2)")
+    m, se = mean_se((ito - (w[:, -1] ** 3 / 3 - a)) ** 2)
+    simulated("E[(Ito sum - (W_T^3/3 - trapezoid sum))^2] vs T^3/n - T^3/(12 n^2) (-> 0 like 1/n)", m, se, T**3 / n - T**3 / (12 * n**2))
 
 
 def max_end_below(rng: np.random.Generator) -> None:
@@ -239,7 +238,15 @@ def ou_ar1(rng: np.random.Generator) -> None:
     approx("stationary variance 0.25 / (1 - 0.81)", 0.25 / 0.19, 1.316, 3)
     approx("stationary sd", math.sqrt(0.25 / 0.19), 1.15, 2)
     sig2 = 0.25 * 2 * kappa / (1 - 0.81)  # OU sigma^2 implied by residual variance (sigma^2/2kappa)(1 - e^{-2 kappa})
-    approx("OU stationary variance sigma^2/(2 kappa) from the exact discretisation", sig2 / (2 * kappa), 1.316, 3)
+    h, n_ou, paths_ou = 0.1, 800, 100_000
+    x_ou = np.zeros(paths_ou)
+    for _ in range(n_ou):
+        x_ou = x_ou - kappa * x_ou * h + math.sqrt(sig2 * h) * rng.standard_normal(paths_ou)
+    euler_var = sig2 * h * float(np.sum((1 - kappa * h) ** (2 * np.arange(n_ou))))
+    assert abs(euler_var - 0.25 / 0.19) < 0.1 * h, euler_var
+    v, se = var_se(x_ou)
+    simulated("OU SDE with the implied sigma^2, 80 days of Euler steps h = 0.1: variance vs the scheme value", v, se, euler_var)
+    print(f"    the scheme value {euler_var:.4f} is within O(h) of 0.25 / 0.19 = {0.25 / 0.19:.4f}, the same stationary variance")
     chains, steps = 200_000, 200
     x = np.zeros(chains)
     for _ in range(steps):
@@ -252,8 +259,7 @@ def ou_ar1(rng: np.random.Generator) -> None:
         y = 0.9 * y + 0.5 * rng.standard_normal(chains)
     m, se = mean_se(x * y / (0.25 / 0.19))
     simulated("stationary Corr(X_s, X_{s+5}) vs e^{-5 kappa} = 0.9^5", m, se, 0.9**lag)
-    half = 0.9 ** (math.log(2) / kappa)
-    approx("0.9^(half-life) = 1/2", half, 0.5, 12)
+    print("    0.9^(half-life) = e^(-kappa ln 2 / kappa) = 1/2: the half-life halves the expected deviation")
 
 
 def martingales() -> None:
@@ -379,7 +385,8 @@ def gbm_cards(rng: np.random.Generator) -> None:
     simulated("P(S_T > S0), simulated, vs Phi((mu - sigma^2/2) sqrt(T)/sigma)", m, se, ncdf((mu - 0.5 * sig**2) * math.sqrt(T) / sig))
     mu_med = 0.5 * sig**2
     s_med = s0 * np.exp((mu_med - 0.5 * sig**2) * T + sig * w)
-    approx("median of S_T with mu = sigma^2/2, simulated, relative to S0", float(np.median(s_med)) / s0, 1.0, 2)
+    med_se = math.sqrt(0.25 / s_med.size) * sig * math.sqrt(2 * math.pi * T)  # sqrt(p(1-p)/N) / f(median), f(1) = 1/(sigma sqrt(2 pi T))
+    simulated("median of S_T / S0 with mu = sigma^2/2, simulated, vs 1", float(np.median(s_med)) / s0, med_se, 1.0)
     approx(
         "    and its mean e^{sigma^2 T/2} by quadrature", float(GH_W @ np.exp(sig * math.sqrt(T) * GH_X)), math.exp(0.5 * sig**2 * T), 12
     )

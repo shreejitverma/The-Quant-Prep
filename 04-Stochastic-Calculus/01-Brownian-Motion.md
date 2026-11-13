@@ -251,7 +251,7 @@ With $\mu = 0$ this is $1/2$, the bound $P(\sup_t S_t \ge 2S_0) \le 1/2$ from Do
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/stoch_01_brownian_motion.py`](code/stoch_01_brownian_motion.py) prints and asserts every number on this page: covariances and the bridge variance in exact rational arithmetic, the reflection law by exact continuous-maximum (bridge) simulation, the hitting-time law by quadrature, the grid bias by Spitzer's identity with $\zeta(1/2)$ from Euler-Maclaurin, and every barrier probability and exit time by a finite-difference ODE solve and bridge-corrected simulation.
+- Code: [`code/stoch_01_brownian_motion.py`](code/stoch_01_brownian_motion.py) prints and asserts every number on this page: covariances in exact rational arithmetic, time inversion and the bridge variance by simulation, the reflection law by exact continuous-maximum (bridge) simulation, the hitting-time law by quadrature, the grid bias by Spitzer's identity with $\zeta(1/2)$ from Euler-Maclaurin, and every barrier probability and exit time by a finite-difference ODE solve and bridge-corrected simulation.
 - Related notes: [Martingales and Optional Stopping](../01-Probability/12-Martingales-and-Optional-Stopping.md), [Random Walks and Gambler's Ruin](../01-Probability/11-Random-Walks-and-Gamblers-Ruin.md), [Ito Integral and Ito's Lemma](02-Ito-Integral-and-Ito-Lemma.md).
 
 ## Further reading

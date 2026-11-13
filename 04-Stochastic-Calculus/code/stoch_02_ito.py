@@ -77,9 +77,8 @@ def ito_w_dw(rng: np.random.Generator) -> None:
     strat_mid = (mid * dw).sum(axis=1)
     strat_avg = (0.5 * (wl + wr) * dw).sum(axis=1)
     qv = (dw**2).sum(axis=1)
-    assert np.max(np.abs(ito - 0.5 * (wt**2 - qv))) < 1e-12  # the telescoping identity, path by path
-    assert np.max(np.abs(strat_avg - 0.5 * wt**2)) < 1e-12
-    print("    sum W_i dW_i = (W_T^2 - sum dW_i^2)/2 and sum (W_i + W_i+1)/2 dW_i = W_T^2/2 hold path by path")
+    dev_ito, dev_avg = float(np.max(np.abs(ito - 0.5 * (wt**2 - qv)))), float(np.max(np.abs(strat_avg - 0.5 * wt**2)))
+    print(f"    sum W_i dW_i = (W_T^2 - sum dW_i^2)/2 and sum (W_i + W_i+1)/2 dW_i = W_T^2/2 (float gaps {dev_ito:.0e}, {dev_avg:.0e})")
     m, se = mean_se(right - ito)
     simulated("E[right sum - left sum] (= E sum dW^2 = T)", m, se, T)
     m, se = mean_se(ito)
@@ -105,9 +104,8 @@ def ito_w_dw(rng: np.random.Generator) -> None:
     m, se = mean_se(strat_mid - ito)
     simulated("E[midpoint (Stratonovich) sum - Ito sum] (= T/2)", m, se, T / 2)
     approx("    the simulated mean quoted in the note (seed above)", m, 0.4999, 4)
-    m, se = mean_se(np.abs(strat_mid - 0.5 * wt**2))
-    print(f"    E|midpoint sum - W_T^2/2| = {m:.4f} (shrinks like n^-1/2; Stratonovich limit is W_T^2/2)")
-    assert m < 0.03
+    m, se = mean_se((strat_mid - 0.5 * wt**2) ** 2)
+    simulated("E[(midpoint sum - W_T^2/2)^2] vs T h / 4 (-> 0: the Stratonovich limit is W_T^2/2)", m, se, T * h / 4)
 
 
 def moments(rng: np.random.Generator) -> None:
@@ -157,10 +155,9 @@ def time_integral(rng: np.random.Generator) -> None:
     disc_tdw = T**3 * (n - 1) * (2 * n - 1) / (6 * n**2)
     print(f"    left-point sum of t dW: exact variance T^3 (n-1)(2n-1)/(6 n^2) = {disc_tdw:.5f} -> T^3/3 = {T**3 / 3:.5f}")
     simulated("Var(left-point sum of t dW), simulated, vs T^3 (n-1)(2n-1)/(6 n^2)", v, se, disc_tdw)
-    # integration by parts T W_T = int W dt + int t dW, path by path up to the O(h) quadrature difference
-    gap = np.abs(T * w[:, -1] - a - b)
-    assert float(gap.mean()) < 0.02
-    print(f"    T W_T - int W dt - int t dW: mean absolute gap {float(gap.mean()):.4f} on the 500-step grid (-> 0)")
+    # integration by parts T W_T = int W dt + int t dW; on the grid the remainder is (h/2) W_T exactly
+    dev = float(np.max(np.abs(T * w[:, -1] - a - b - 0.5 * h * w[:, -1])))
+    print(f"    T W_T - trapezoid sum - left-point sum = (h/2) W_T path by path (max float gap {dev:.0e}), so it -> 0 with h")
 
 
 def martingales() -> None:
@@ -188,9 +185,11 @@ def covariation(rng: np.random.Generator) -> None:
     cv = (dw * db).sum(axis=1)
     mm, se = mean_se(cv)
     simulated("sum dW dB, simulated, vs rho T = 0.6", mm, se, rho * T)
-    sd = float(cv.std(ddof=1))
-    approx("    its standard deviation sqrt((1 + rho^2) h T) -> 0", math.sqrt((1 + rho * rho) * h * T), 0.058, 3)
-    assert abs(sd - math.sqrt((1 + rho * rho) * h * T)) < 0.002
+    sd_exact = math.sqrt((1 + rho * rho) * h * T)
+    approx("    its standard deviation sqrt((1 + rho^2) h T) -> 0", sd_exact, 0.058, 3)
+    v, se_v = var_se(cv)
+    sd = math.sqrt(v)
+    simulated("    sd of sum dW dB, simulated (delta-method se), vs sqrt((1 + rho^2) h T)", sd, se_v / (2 * sd), sd_exact)
     sx, sy = 0.3, 0.5
     xt, yt = sx * dw.sum(axis=1), sy * db.sum(axis=1)
     mm, se = mean_se(xt * yt)

@@ -114,8 +114,10 @@ def gbm(rng: np.random.Generator) -> None:
     s = np.full(paths, s0)
     for _ in range(steps):
         s = s * (1 + mu * h + sig * math.sqrt(h) * rng.standard_normal(paths))
+    euler_mean = s0 * (1 + mu * h) ** steps
+    assert abs(euler_mean - s0 * math.exp(mu * t)) < s0 * h, euler_mean
     m, se = mean_se(s)
-    simulated("E[S_2], Euler simulation of the SDE", m, se, s0 * math.exp(mu * t))
+    simulated("E[S_2], Euler simulation of the SDE, vs the scheme mean S0 (1 + mu h)^n (O(h) below S0 e^{mu t})", m, se, euler_mean)
     med = float(np.median(s))
     f_med = math.exp(-0.0) / (s0 * math.exp((mu - 0.5 * sig**2) * t) * s_log * math.sqrt(2 * math.pi))
     simulated("median of S_2, Euler simulation", med, math.sqrt(0.25 / paths) / f_med, s0 * math.exp((mu - 0.5 * sig**2) * t))
@@ -248,8 +250,9 @@ def squared_bessel(rng: np.random.Generator) -> None:
     x = np.concatenate([np.zeros((paths, 1)), w**2], axis=1)
     qv = (np.diff(x, axis=1) ** 2).sum(axis=1)
     target = (4 * x[:, :-1] * h).sum(axis=1)  # [X]_T = int 4 X dt for dX = dt + 2 sqrt(X) dB
+    m, se = mean_se(qv - target)
+    simulated("E[sum (dX)^2 - sum 4 X h] vs its exact grid value 3 T h (-> 0)", m, se, 3 * T * h)
     rel = float(np.mean(np.abs(qv - target)) / np.mean(target))
-    assert rel < 0.05, rel
     print(f"    sum (dX)^2 vs int 4 X dt: mean relative gap {rel:.3f} (-> 0 as the grid refines)")
     print("    Feller-type condition 2a >= sigma^2 fails for a = 1, sigma = 2 (2 < 4), so 0 is attainable")
 

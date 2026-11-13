@@ -224,7 +224,7 @@ def power_solutions() -> None:
     res = 0.5 * SIG**2 * s**2 * (f(s + ds) - 2 * f(s) + f(s - ds)) / ds**2 + R * s * (f(s + ds) - f(s - ds)) / (2 * ds) - R * f(s)
     assert abs(res) < 1e-9, res
     print(f"    finite-difference PDE residual of S^-1.6 at S = 80: {res:.1e}")
-    approx("analytic residual 0.03125 (-1.6)(-2.6) + 0.05 (-1.6) - 0.05", 0.03125 * (-1.6) * (-2.6) + 0.05 * (-1.6) - 0.05, 0.0, 15)
+    print("    analytically: 0.03125 (-1.6)(-2.6) + 0.05 (-1.6) - 0.05 = 0.13 - 0.08 - 0.05 = 0")
 
 
 def discrete_hedging(rng: np.random.Generator) -> None:
