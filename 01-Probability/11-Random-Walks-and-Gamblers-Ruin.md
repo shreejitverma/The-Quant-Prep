@@ -101,7 +101,7 @@ This is the bridge to [Brownian Motion](../04-Stochastic-Calculus/01-Brownian-Mo
 
 "Same game but the house has an edge: $p = 0.49$. I start at 50 and target 100."
 "$r = 0.51/0.49$ and $h_{50} = (1 - r^{50})/(1 - r^{100}) = 1/(1 + r^{50}) \approx 0.119$."
-"A 1% edge per bet cuts my chance from $0.5$ to about $0.12$, because the edge compounds over roughly $N^2$ bets."
+"Shading the win probability by one point (an expected loss of 2 cents per \$1 bet, since $p - q = -0.02$) cuts my chance from $0.5$ to about $0.12$, because the drift compounds over a game that lasts on the order of $N^2$ bets."
 "Lesson for trading: tiny negative edges are fatal at small bet size relative to the target; bold play (few big bets) is optimal in a subfair game."
 "Conversely, from $p = 0.4$, $i = 5$, $N = 10$ the success probability is only $0.116$ and the expected length is about $19.2$ bets."
 
@@ -176,6 +176,15 @@ This is the bridge to [Brownian Motion](../04-Stochastic-Calculus/01-Brownian-Mo
 
 > [!question]- prob-rw-polya-recurrence | In which dimensions is the simple random walk recurrent?
 > Dimensions 1 and 2 (null recurrent); transient for $d \ge 3$, with return probability about $0.34$ in 3D. $P(S_{2n} = 0) \sim c n^{-d/2}$ is summable only for $d \ge 3$.
+
+> [!question]- prob-rw-biased-duration | Up-probability $0.4$, start at 5, absorbing barriers 0 and 10. Probability of reaching 10, and expected number of bets?
+> About $0.116$ and $19.2$. With $r = q/p = 1.5$: $h_5 = (1 - 1.5^5)/(1 - 1.5^{10}) = 32/275$, and $D_5 = 5/0.2 - (10/0.2) h_5 = 211/11$.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/prob_11_random_walks.py`](code/prob_11_random_walks.py) asserts every number in this note.
+  Ruin probabilities and durations come from an exact rational solve of the first-step equations (compared with the closed forms), infinite-wealth answers from the same solve with a far barrier, ballot and reflection counts from enumerating every vote order and every path, the Brownian running maximum from a simulation that samples the exact maximum of each Brownian bridge piece, the drifted Brownian ruin formula from a finite-difference solve of its ODE, and the 3D return probability from summing $P(S_{2n} = 0)$ exactly with an asymptotic tail.
+- Prereq: [Markov Chains](10-Markov-Chains.md); next: [Martingales and Optional Stopping](12-Martingales-and-Optional-Stopping.md).
 
 ## Further reading
 

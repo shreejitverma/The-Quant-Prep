@@ -100,7 +100,7 @@ $V_2 = 17/4 = 4.25$, $V_3 = 14/3 \approx 4.67$, $V_4 = 89/18 \approx 4.94$.
 
 "I need all six faces. The first roll always gives a new face. Then a new face comes with probability $5/6$, so I wait $6/5$ rolls on average, then $6/4$, and so on."
 "Total: $6(1 + 1/2 + 1/3 + 1/4 + 1/5 + 1/6) = 6 \times 49/20 = 14.7$."
-"Variance: each wait is geometric with variance $(1-p)/p^2$; summing gives $36 \times 5369/3600 - 14.7 = 38.99$, so the standard deviation is about 6."
+"Variance: each wait is geometric with variance $(1-p)/p^2$; summing gives $36 \times 5369/3600 - 14.7 = 38.99$, so the standard deviation is about 6.2."
 "Sanity check: $n \ln n + 0.577n \approx 10.75 + 3.46 = 14.2$, close."
 
 ### Hat check
@@ -211,6 +211,12 @@ $V_2 = 17/4 = 4.25$, $V_3 = 14/3 \approx 4.67$, $V_4 = 89/18 \approx 4.94$.
 
 > [!question]- prob-classic-permutation-cycles | Expected number of cycles in a uniform random permutation of $n$?
 > $H_n \approx \ln n$. Building the permutation by the Chinese restaurant process, element $k$ starts a new cycle with probability $1/k$.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/prob_14_classic_expectation.py`](code/prob_14_classic_expectation.py) asserts every number in this note.
+  The coupon-collector mean and variance come from inclusion-exclusion tail sums in exact rationals (not the geometric sum), hat-check moments, derangements, cycle counts and distinct faces from enumerating every permutation or sequence, the secretary formula from exhaustive enumeration of every arrival order for $n \le 8$ before it is used at $n = 10$ and $100$, the dice values from enumerating every threshold policy, and the empty-box count from an exact occupancy recursion.
+- Theory: [Expectation, Variance and Linearity](04-Expectation-Variance-and-Linearity.md); drill: [Probability Problem Set](15-Probability-Problem-Set.md).
 
 ## Further reading
 

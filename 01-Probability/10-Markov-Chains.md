@@ -190,6 +190,12 @@ The martingale "casino" method in [Martingales and Optional Stopping](12-Marting
 > [!question]- prob-mc-doubly-stochastic | What is the stationary distribution of an irreducible chain with a doubly stochastic transition matrix?
 > Uniform. If columns sum to 1 then $\mathbf{1}P = \mathbf{1}$, so the uniform vector is stationary and by uniqueness it is the one.
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/prob_10_markov_chains.py`](code/prob_10_markov_chains.py) asserts every number in this note by independent routes.
+  Stationary laws come from an exact rational solve of $\pi P = \pi$ and return times from a separate first-step solve, pattern waits from the suffix-prefix automaton (compared with the casino formula), Penney races from the joint automaton plus a simulation, knight and king return times from a first-step solve on all 64 squares, and the cycle's last-vertex law and cover time from an exact solve on (visited arc, position) states.
+- Next: [Random Walks and Gambler's Ruin](11-Random-Walks-and-Gamblers-Ruin.md) and [Martingales and Optional Stopping](12-Martingales-and-Optional-Stopping.md).
+
 ## Further reading
 
 - Blitzstein and Hwang, *Introduction to Probability* (2nd ed.), chapter 11.
