@@ -43,7 +43,8 @@ Useful facts: $E|X - Y| = 1/3$ on $[0,1]$, the distance from a uniform point in 
 ### Gaps on a circle
 
 Drop $n$ uniform points on a circle of circumference 1.
-They cut it into $n$ gaps that are exchangeable, each distributed like the min of $n-1$ uniforms (mean $1/n$).
+They cut it into $n$ gaps; labelled by the point each one follows clockwise, the gaps are exchangeable, each distributed like the min of $n-1$ uniforms (mean $1/n$).
+The labelling matters: the gap covering a fixed spot on the circle is length-biased, with mean $2/(n+1)$, the same inspection effect as in [Poisson Processes](13-Poisson-Processes.md).
 Many circle problems reduce to "is the largest gap bigger than $1/2$?".
 
 The semicircle result: all $n$ points lie in some semicircle iff some point $i$ has all others within the clockwise half-circle starting at $i$.
@@ -66,7 +67,7 @@ The interview proof pairs each point with its antipode (see the worked example).
 
 Break $[0,1]$ at $n-1$ uniform points into $n$ pieces.
 The pieces are exchangeable, with $E[\text{shortest}] = 1/n^2$ and $E[\text{longest}] = H_n / n$; for three pieces these are $1/9$ and $11/18$, with the middle piece $5/18$.
-A triangle needs every piece shorter than half the stick, which fails for exactly one piece at a time.
+A triangle needs every piece shorter than half the stick, and at most one piece can be half or longer, so the failure events are disjoint.
 
 ### Bertrand's paradox
 
@@ -184,9 +185,16 @@ The slick proof: by linearity, the expected number of crossings of any rigid cur
 > [!question]- prob-geo-closer-to-center-than-edge | A point is uniform in the unit square. Probability it is closer to the centre than to the boundary?
 > $(4\sqrt{2} - 5)/3 \approx 0.219$. By 8-fold symmetry work in one eighth, where the region is bounded by the parabola $x = 1/4 - y^2$ and the line $y = x$.
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/prob_09_geometric_probability.py`](code/prob_09_geometric_probability.py) asserts every number in this note.
+  Each closed form is checked against a seeded simulation of the actual experiment (cut the stick, drop the points, draw the chord by each Bertrand rule, drop the needle, test the tetrahedron by barycentric coordinates), with a five-standard-error tolerance, plus Simpson quadrature for the integrals.
+- Prereq: [Joint Distributions and Transformations](05-Joint-Distributions-and-Transformations.md).
+- Drill: the geometry cards in the [Probability Problem Set](15-Probability-Problem-Set.md).
+
 ## Further reading
 
-- Frederick Mosteller, *Fifty Challenging Problems in Probability*, problems on broken sticks, Buffon's needle and random chords.
+- Frederick Mosteller, *Fifty Challenging Problems in Probability with Solutions* (Dover reprint, 1987), problems on the broken bar, random chords and Buffon's needle.
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews*, chapter 4.
 - Blitzstein and Hwang, *Introduction to Probability* (2nd ed.), chapter 7 (joint distributions over regions).
 - J. G. Wendel, "A Problem in Geometric Probability", *Mathematica Scandinavica* 11 (1962).
