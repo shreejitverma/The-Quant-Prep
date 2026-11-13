@@ -39,7 +39,7 @@ Numbers worth knowing cold:
 | SE of a correlation near zero | about $1/\sqrt n$ |
 | Efficiency of the median vs the mean (normal data) | $2/\pi = 0.64$ |
 | 95% upper bound with zero events in $n$ trials | about $3/n$ |
-| Dickey-Fuller 5% critical value, with constant (MacKinnon 2010) | $-2.86$ |
+| Dickey-Fuller 5% critical value, with constant (MacKinnon 2010, re-simulated in [`code/stats_08_arma.py`](code/stats_08_arma.py)) | $-2.86$ |
 | Probability a point is in a bootstrap sample | 0.632 |
 
 Checklist for a research write-up:
@@ -312,7 +312,7 @@ Issues, in the order an interviewer expects:
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/stats_14_problem_set.py`](code/stats_14_problem_set.py) prints and asserts every number on this page: quantiles from `statistics.NormalDist` and chi-square quadrature, the exact binomial p-value by integer summation, Lo's adjustment by simulating AR(1) monthly returns, the overlapping-label inflation by simulating a regression on a persistent signal, and the regression, GARCH and bootstrap answers by simulation or by iterating the recursions.
+- Code: [`code/stats_14_problem_set.py`](code/stats_14_problem_set.py) prints and asserts every number on this page except the Dickey-Fuller critical value, which [`code/stats_08_arma.py`](code/stats_08_arma.py) checks against MacKinnon (2010) and re-simulates: quantiles from `statistics.NormalDist` and chi-square quadrature, the exact binomial p-value by integer summation, Lo's adjustment by simulating AR(1) monthly returns, the overlapping-label inflation by simulating a regression on a persistent signal, and the regression, GARCH and bootstrap answers by simulation or by iterating the recursions.
 
 ## Further reading
 

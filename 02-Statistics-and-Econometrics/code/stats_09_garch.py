@@ -298,13 +298,13 @@ def garch_mle() -> None:
 
     x = nelder_mead(scaled, np.array([r.var() * 0.05 * 1e6, 0.05, 0.90]), np.array([0.5, 0.02, 0.02]))
     best = scaled(x)
-    for i, step in enumerate((0.01, 1e-4, 1e-4)):
+    directions = [np.eye(3)[i] * step for i, step in enumerate((0.01, 1e-4, 1e-4))]
+    directions.append(np.array([0.0, 1e-4, -1e-4]))
+    for d in directions:
         for sgn in (-1, 1):
-            y = x.copy()
-            y[i] += sgn * step
-            assert scaled(y) >= best - 1e-9, "Nelder-Mead did not reach a local maximum"
+            assert scaled(x + sgn * d) >= best - 1e-9, "Nelder-Mead did not reach a local maximum"
     w, a, b = x[0] * 1e-6, x[1], x[2]
-    print("    local grid check passed: no neighbouring parameter vector has a higher likelihood")
+    print("    local check passed: no step along any single axis or along the alpha + beta ridge raises the likelihood")
     sci("omega_hat", w, 2.13e-6, 3)
     approx("alpha_hat", a, 0.084, 3)
     approx("beta_hat", b, 0.895, 3)

@@ -167,7 +167,7 @@ For ARCH(1) with $\alpha = 0.3$: $3(1-0.09)/(1-0.27) = 3.74$.
 Simulate 5,000 daily returns from the example 1 model with `numpy.random.default_rng(1)`, then maximise the Gaussian log-likelihood above over $(\omega,\alpha,\beta)$ subject to $\omega > 0$, $\alpha,\beta \ge 0$ and $\alpha+\beta < 1$, initialising $\sigma_1^2$ at the sample variance.
 The fit gives $\hat\omega = 2.13\times10^{-6}$, $\hat\alpha = 0.084$ and $\hat\beta = 0.895$.
 On 20 years of simulated daily data the fit recovers persistence 0.979 against a true 0.98 and long-run vol 16.0% against 15.9%.
-[`code/stats_09_garch.py`](code/stats_09_garch.py) runs this fit with a from-scratch Nelder-Mead and checks that no neighbouring parameter vector has a higher likelihood.
+[`code/stats_09_garch.py`](code/stats_09_garch.py) runs this fit with a from-scratch Nelder-Mead and checks that no small step along a single parameter axis, or along the $\alpha+\beta$ ridge (raising $\alpha$ and lowering $\beta$ by the same amount), raises the likelihood.
 
 ## Pitfalls
 

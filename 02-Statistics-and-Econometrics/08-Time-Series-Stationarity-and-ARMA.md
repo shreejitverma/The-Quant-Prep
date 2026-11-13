@@ -90,7 +90,7 @@ An MA($q$) forecast reverts to $\mu$ after $q$ steps.
 Rewrite the AR(1) as $\Delta x_t = \alpha + \gamma x_{t-1} + \varepsilon_t$ with $\gamma = \phi - 1$.
 The Dickey-Fuller test is the $t$-stat on $\hat\gamma$ for $H_0: \gamma = 0$ (unit root) against $\gamma < 0$.
 Under the null the statistic is not Student-$t$: its asymptotic 5% critical values are $-1.94$ (no constant), $-2.86$ (constant) and $-3.41$ (constant and trend), and the 1% values are $-2.57$, $-3.43$ and $-3.96$ (MacKinnon 2010, response-surface constants for one variable).
-Simulating 40,000 random walks of length 500 reproduces all six to within their simulation error.
+Simulating 40,000 random walks of length 500 reproduces MacKinnon's finite-sample response-surface values at $T = 500$ (for example $-2.87$ with a constant at 5%) to within simulation error.
 The augmented DF test adds lagged $\Delta x_{t-i}$ to whiten the residuals, with lag length chosen by AIC or Schwert's (1989) rule $\lfloor 12 (T/100)^{1/4} \rfloor$.
 KPSS reverses the null: $H_0$ is (level or trend) stationarity, tested with a statistic built from partial sums of residuals.
 

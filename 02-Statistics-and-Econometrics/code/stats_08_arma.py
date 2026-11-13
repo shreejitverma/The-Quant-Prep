@@ -191,6 +191,7 @@ def dickey_fuller(rng: np.random.Generator) -> None:
         target = mackinnon_cv(case, level, t_len)
         simulated(f"simulated {case} {level:.0%} quantile, T = 500 (MacKinnon finite-T {target:.3f})", sim, target, 4 * se)
     approx("Student-t (normal) one-sided 5% value", N01.inv_cdf(0.05), -1.645, 3)
+    approx("MacKinnon finite-sample 5% value with a constant at T = 500", mackinnon_cv("c", 0.05, t_len), -2.87, 2)
     approx("MacKinnon finite-sample 5% value with a constant at T = 250", mackinnon_cv("c", 0.05, 250), -2.87, 2)
     approx("Example 4: t = -0.02/0.009", -0.02 / 0.009, -2.22, 2)
     approx("Example 4: implied half-life at phi = 0.98", LN_HALF / math.log(0.98), 34, 0)

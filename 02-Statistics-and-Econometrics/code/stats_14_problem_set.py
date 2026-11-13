@@ -65,7 +65,6 @@ def numbers_table(rng: np.random.Generator) -> None:
     # exact null sd is 1/sqrt(n-1) = 0.1005; the SE of a sample sd is sd/sqrt(2N)
     simulated("sd of a sample correlation near zero, n = 100, vs 1/sqrt(n)", float(r.std()), 0.1, 4 * 0.1 / math.sqrt(40000) + 0.001)
     approx("-ln 0.05 (rule of three)", -math.log(0.05), 3.0, 1)
-    approx("MacKinnon (2010) asymptotic 5% DF value with constant", -2.86154, -2.86, 2)
     approx("1 - 1/e", 1 - math.exp(-1), 0.632, 3)
 
 
