@@ -5,18 +5,18 @@ tier: core
 status: solid
 prereqs: [market-making-games]
 est_hours: 3
-sources: [Agustin Lebron - The Laws of Trading (2019), Xinfeng Zhou - A Practical Guide to Quantitative Finance Interviews (2008), J. L. Kelly Jr. - A New Interpretation of Information Rate (Bell System Technical Journal 1956)]
+sources: [Agustin Lebron - The Laws of Trading (2019), Xinfeng Zhou - A Practical Guide to Quantitative Finance Interviews (2008), J. L. Kelly Jr. - A New Interpretation of Information Rate (Bell System Technical Journal 1956), W. Vickrey - Counterspeculation Auctions and Competitive Sealed Tenders (Journal of Finance 1961), W. Samuelson and M. Bazerman - The winner's curse in bilateral negotiations (MIT Sloan working paper 1984)]
 ---
 
 # Trading Games in Interviews
 
 ## TL;DR
 
-- Formats you should expect: make-a-market on an uncertain number, card and dice games with information revealed over time, auctions, and sequential betting.
+- Formats worth preparing for: make-a-market on an uncertain number, card and dice games with information revealed over time, auctions, and sequential betting.
 - Keep a written ledger every round: fair value, your quote, each fill, position, cash, and mark-to-fair P&L.
 - Fair value is the conditional expectation given everything revealed, including what the counterparty's trades tell you.
 - Quote around fair value, widen when the counterparty may be informed, and skew both sides away from your inventory.
-- P&L splits into edge captured at the fill and the mark-to-market of inventory afterwards; interviewers watch the first and your control of the second.
+- P&L splits into edge captured at the fill and the mark-to-market of inventory afterwards; aim to capture edge at each fill and keep the inventory under control.
 
 ## Learning objectives
 
@@ -25,10 +25,10 @@ sources: [Agustin Lebron - The Laws of Trading (2019), Xinfeng Zhou - A Practica
 
 ## Core concepts
 
-### Why firms run trading games
+### Why trading games are used
 
-Market-making firms commonly include a game in trader interviews because it tests, at once, expectation under uncertainty, fast arithmetic, risk control and communication.
-Formats and scoring vary by firm and change over time; see the firm guides in [14-Firms](../14-Firms/README.md) for what has been reported, and treat those reports as anecdotes.
+A trading game tests, at once, expectation under uncertainty, fast arithmetic, risk control and communication, which is why a trader interview may include one.
+Formats and scoring differ between firms and change over time; see the firm guides in [14-Firms](../14-Firms/README.md) for what has been reported, and treat those reports as anecdotes.
 The theory behind quoting, width and skew is in [Market Making Games and Trading Simulations](../08-Market-Making/10-Market-Making-Games.md); this note is the interview-room checklist.
 
 ### The formats
@@ -43,8 +43,8 @@ Fair value is known cards plus the expected value of the unknown ones, with draw
 
 **Auctions.**
 Sealed-bid or open auctions on an item of uncertain value.
-The key idea is the winner's curse: conditional on winning, your estimate was probably too high, so shade your bid.
-In a second-price (Vickrey) auction with private values, bidding your true value is a dominant strategy.
+The key idea is the winner's curse (named by Capen, Clapp and Campbell in 1971): when the item has a common value, winning means your estimate was probably among the highest, so shade your bid.
+In a second-price (Vickrey, 1961) auction with private values, bidding your true value is a weakly dominant strategy.
 
 **Sequential betting.**
 You are offered a series of favourable bets and choose stakes, or you choose when to stop.
@@ -56,7 +56,7 @@ Sizing is Kelly-like: bet a fraction of wealth that maximises expected log growt
   For $n$ fair dice with $k$ revealed summing to $s$: $s + 3.5(n-k)$.
 - Without replacement, the unseen cards shift the mean of the rest: after seeing a King in a 52-card deck with $A=1$ to $K=13$, each remaining card averages $(364-13)/51$.
 - The counterparty's actions are information: being lifted repeatedly means your ask is probably too low.
-  How much to move depends on how informed the counterparty is likely to be; in `./qp drill mm` half the counterparties know the answer.
+  How much to move depends on how informed the counterparty is likely to be; in `./qp drill mm` each counterparty knows the answer with probability $1/2$.
 
 ### Width and skew
 
@@ -77,7 +77,7 @@ $$
 \text{P\&L} = \underbrace{\sum_{\text{fills}} \pm(\text{price} - \text{FV at fill}) \times q}_{\text{edge}} + \underbrace{\sum_{\text{rounds}} \text{position} \times \Delta \text{FV}}_{\text{inventory}},
 $$
 with the sign positive for sells and negative for buys in the first term.
-The drill `./qp drill mm` reports exactly this split.
+The drill `./qp drill mm` reports the edge term and the remainder, which is exactly the inventory term.
 
 ### Practising with `./qp drill mm`
 
@@ -120,8 +120,9 @@ The first card is a King: FV $= 13 + 9 \times 351/51 = 1274/17 \approx 74.94$, n
 
 A company is worth $V \sim U(0,100)$ to its owner and $1.5V$ to you; the owner accepts any bid $b \ge V$; you bid once without knowing $V$.
 If accepted, $V$ is uniform on $[0, b]$, so $E[V \mid \text{accept}] = b/2$ and your value is $0.75 b$.
-Expected profit $= (b/100)(0.75 b - b) = -b^2/400 < 0$ for every $b > 0$.
+Expected profit $= (b/100)(0.75 b - b) = -b^2/400 < 0$ for every $0 < b \le 100$, and a bid above 100 is always accepted and loses $b - 75$ on average.
 Bid 0.
+This is the "Acquiring a Company" problem studied experimentally by Samuelson and Bazerman (1984).
 The naive answer ($1.5 \times 50 = 75$, so bid up to 75) ignores that acceptance is informative.
 
 ### Example 4: sequential betting and stopping
@@ -187,13 +188,25 @@ Kelly stake $f^* = p - q = 0.2$ of wealth, with expected log growth $0.6 \ln 1.2
 > [!question]- int-tg-pnl-decomposition | How do you split a market-making game P&L into skill and luck?
 > Edge at fill ($\pm$ price minus fair value at the time, times size) plus inventory P&L (position times each fair-value change). The first reflects quoting; the second is mostly the risk you chose to hold.
 
+> [!question]- int-tg-ten-cards-sd | What is the standard deviation of the sum of 10 cards drawn without replacement, $A=1$ to $K=13$?
+> About $10.7$.
+> One card has variance $14$, and two distinct cards have covariance $-14/51$, so the variance is $10 \times 14 + 90 \times (-14/51) = 10 \times 14 \times 42/51 \approx 115.3$.
+
+> [!question]- int-tg-three-dice-decomposition | In Example 1 you sell 1 at 11.5 before any reveal, buy 2 at 11.5 after a 5, and the dice end 5, 2, 6. Split the $+1.5$ P&L.
+> Edge $+2$ and inventory $-0.5$.
+> Edge is $11.5 - 10.5 = 1$ on the sale and $2 \times (12 - 11.5) = 1$ on the buys; inventory is $-1 \times 1.5$, then $+1 \times (-1.5)$, then $+1 \times 2.5$.
+
 ## In this repo and The-Distinguished-Engineer
 
-- `tools/qp/drills.py` implements `MarketMakingGame`, the engine behind `./qp drill mm`, including the edge and inventory split.
+- Code: [`code/interview_05_trading_games.py`](code/interview_05_trading_games.py) prints and asserts every number on this page: dice values by enumerating every outcome, the card-sum variance from the exact covariance of all ordered pairs of distinct cards plus seeded shuffles, the ledger by replaying fills with edge and inventory summed separately, the acquirer's auction by exact sums over a grid of values and a search over bids, Vickrey bidding by exhaustive comparison on a grid, the stopping games by optimising over every keep-set and by exact dynamic programming, and the Kelly fraction by grid search.
+- `tools/qp/drills.py` implements `MarketMakingGame`, the engine behind `./qp drill mm`, including the edge and inventory split; the script reads its parameters and rebuilds the split from 300 seeded games.
 
 ## Further reading
 
 - Agustin Lebron, *The Laws of Trading* (2019), on adverse selection, edge and risk.
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews* (2008), for dice and card expectation problems.
-- J. L. Kelly Jr., "A New Interpretation of Information Rate", *Bell System Technical Journal* (1956).
+- J. L. Kelly Jr., "A New Interpretation of Information Rate", *Bell System Technical Journal* 35 (1956), 917-926.
+- W. Vickrey, "Counterspeculation, Auctions, and Competitive Sealed Tenders", *Journal of Finance* 16 (1961), 8-37.
+- E. C. Capen, R. V. Clapp and W. M. Campbell, "Competitive Bidding in High-Risk Situations", *Journal of Petroleum Technology* 23 (1971), 641-653.
+- W. Samuelson and M. Bazerman, "The winner's curse in bilateral negotiations", MIT Sloan School working paper 1513-84 (1984).
 - [Market Making Games and Trading Simulations](../08-Market-Making/10-Market-Making-Games.md) and [Market Making Fundamentals](../08-Market-Making/01-Market-Making-Fundamentals.md).

@@ -15,7 +15,8 @@ sources: [The On-Line Encyclopedia of Integer Sequences - https://oeis.org/, Xin
 - Run a fixed checklist on any sequence: differences (repeat to second and third order), ratios, interleaved subsequences, known families (squares, cubes, primes, factorials, Fibonacci), then digit tricks.
 - A polynomial of degree $k$ has constant $k$-th differences; $n^3 + n^2$ has constant third differences of 6.
 - Mixed operations ($\times 2 - 1$, $+3$ then $-2$) show up as differences that are themselves a simple sequence.
-- In numerical reasoning tests, percentage change, compounding and ratio questions dominate; average growth rates compound geometrically, not arithmetically.
+- A finite list of terms never forces a unique next term: give the simplest rule that explains every term, name it, and mention a second rule if one is just as natural.
+- The recurring numerical-reasoning calculations are percentage change, compounding and ratios; average growth rates compound geometrically, not arithmetically.
 - Time is the binding constraint: budget per question, skip early, and guess only when the scoring makes guessing non-negative in expectation.
 
 ## Learning objectives
@@ -27,8 +28,8 @@ sources: [The On-Line Encyclopedia of Integer Sequences - https://oeis.org/, Xin
 
 ### Where this appears
 
-Online assessments for trading and some research roles commonly include next-term sequence questions and data-interpretation questions under tight time limits.
-Formats vary by firm and by year, and many firms use third-party test providers; treat any specific format you read about as a report rather than a fact.
+Timed online assessments can include next-term sequence questions and data-interpretation questions, so prepare for both.
+Formats differ between tests and change over time; treat any specific format you read about as a report rather than a fact.
 The arithmetic foundation is in [Mental Math](02-Mental-Math.md).
 
 ### The checklist
@@ -57,6 +58,20 @@ For $2, 12, 36, 80, 150$:
 
 Constant third differences mean a cubic; extend from the bottom: 3rd $6$, 2nd $32$, 1st $102$, next term $252$.
 The closed form is $n^3 + n^2$, which confirms $6^3 + 6^2 = 252$.
+The two equal third differences are what make this evidence: a cubic has four free coefficients, and five terms leave one check over.
+
+### When more than one rule fits
+
+Any $n$ terms followed by any chosen next term lie on a polynomial of degree at most $n$, so every next term can be "justified".
+The unique lowest-degree fit, of degree $n - 1$, gives one more competing answer.
+A rule is convincing only when it explains more terms than it has free parameters; say which rule you are using.
+
+- $1, 2, 4, 8, 16, ?$ has two natural answers: $32$ by doubling, and $31$ as the number of regions a circle is cut into by all chords between $n$ points in general position ($1, 2, 4, 8, 16, 31, 57$, which is $\binom{n}{4} + \binom{n}{2} + 1$).
+  The quartic through the five shown terms also gives $31$.
+- $4, 6, 9, 13.5, ?$ is geometric with ratio $1.5$, giving $20.25$; the cubic through the same four terms gives $20$, but it uses all four terms to fit four coefficients, so it explains nothing.
+- $3, 5, 9, 17, 33, ?$ gives $65$ by doubling the differences, while the quartic through the five terms gives $63$; a single fourth difference is no evidence, so $65$ is the answer.
+
+When a test offers both candidates, pick the rule with fewer parameters; in an interview, say both and why you prefer one.
 
 ### Numerical reasoning: the recurring calculations
 
@@ -86,7 +101,7 @@ Recognise it as $n^3 + n^2 = n^2(n+1)$ to confirm.
 
 ### Example 2: three sequences in 30 seconds
 
-- $3, 5, 9, 17, 33, ?$: differences $2, 4, 8, 16$ double, so the rule is $a_{n+1} = 2a_n - 1$ and the answer is $65$.
+- $3, 5, 9, 17, 33, ?$: differences $2, 4, 8, 16$ double, so the rule is $a_{n+1} = 2a_n - 1$ (equivalently $2^n + 1$) and the answer is $65$.
 - $1, 4, 9, 61, 52, 63, ?$: squares with digits reversed ($16 \to 61$, $25 \to 52$, $36 \to 63$), so $49 \to 94$.
 - $3, 4, 6, 8, 12, 16, 24, ?$: interleaved; odd positions $3, 6, 12, 24$ and even positions $4, 8, 16$ both double, so $32$.
 
@@ -95,12 +110,12 @@ Recognise it as $n^3 + n^2 = n^2(n+1)$ to confirm.
 Revenue is $100$ in year 1, $150$ in year 2 and $120$ in year 3.
 Yearly changes are $+50\%$ and $-20\%$, with arithmetic mean $+15\%$.
 The compound annual growth rate is $\sqrt{120/100} - 1 \approx 9.5\%$.
-A test that asks for "average annual growth" usually wants the compound rate; check the options, because the arithmetic mean is the classic trap answer.
+When a question asks for "average annual growth", give the compound rate; check the options, because the arithmetic mean is the trap answer.
 
 ### Example 4: when to guess
 
 A test has 5 options, $+1$ for correct and $-0.25$ for wrong.
-A blind guess scores $0.2 - 0.8 \times 0.25 = 0$ in expectation, so it is neutral; eliminating even one option makes guessing positive ($0.25 - 0.75 \times 0.25 \approx 0.06$).
+A blind guess scores $0.2 - 0.8 \times 0.25 = 0$ in expectation, so it is neutral; eliminating even one option makes guessing positive ($0.25 - 0.75 \times 0.25 = 1/16 \approx 0.06$).
 With no penalty, always answer every question before time runs out.
 
 ## Pitfalls
@@ -148,13 +163,31 @@ With no penalty, always answer every question before time runs out.
 > About $9.5\%$ compound, $\sqrt{1.2} - 1$. The arithmetic mean of $+50\%$ and $-20\%$ ($15\%$) overstates it because growth compounds.
 
 > [!question]- int-seq-percent-vs-points | A default rate rises from $4\%$ to $5\%$. By how much has it increased?
-> 1 percentage point, which is a $25\%$ relative increase. Tests often offer both to catch the confusion.
+> 1 percentage point, which is a $25\%$ relative increase. Check which one the question asks for before answering.
 
 > [!question]- int-seq-guessing-penalty | Five options, $+1$ right and $-0.25$ wrong. Should you guess blind?
 > It is neutral: expected score $0.2 - 0.8 \times 0.25 = 0$. Eliminate one option and guessing becomes positive.
 
+> [!question]- int-seq-circle-regions | Next term: $1, 2, 4, 8, 16, ?$
+> $32$ by doubling, but $31$ is just as defensible: it is the number of regions a circle is cut into by every chord between 6 points in general position, $\binom{6}{4} + \binom{6}{2} + 1 = 31$.
+> Say both and state which rule you are using.
+
+> [!question]- int-seq-any-next-term | Why can no list of five terms force a unique sixth term?
+> A polynomial of degree 5 passes through the five terms and any sixth value you choose.
+> A rule is evidence only when it explains more terms than it has free parameters, as constant third differences on five terms do.
+
+> [!question]- int-seq-geometric-or-cubic | For $4, 6, 9, 13.5, ?$ the cubic through the four terms gives 20. Why answer $20.25$?
+> The geometric rule uses two parameters to explain four terms; the cubic uses four parameters for four terms and explains nothing.
+> Ratios of $1.5$ at every step are the evidence, so the next term is $13.5 \times 1.5 = 20.25$.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/interview_06_sequences.py`](code/interview_06_sequences.py) prints and asserts every number on this page: each stated rule is coded as a generator that must reproduce every shown term, difference tables are built mechanically, every sequence is also extended by exact Lagrange extrapolation to flag a competing polynomial rule, circle regions are counted with Euler's formula on the chord arrangement, and growth and guessing values use exact `Fraction` arithmetic.
+- Related notes: [Mental Math](02-Mental-Math.md), [How Quant Interviews Work](01-How-Quant-Interviews-Work.md).
+
 ## Further reading
 
+- The circle-regions sequence is OEIS A000127 (https://oeis.org/A000127).
 - The On-Line Encyclopedia of Integer Sequences: https://oeis.org/ (look up any sequence you could not crack, then learn its rule).
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews* (2008).
 - [Mental Math](02-Mental-Math.md) and [Brainteasers and Puzzles](03-Brainteasers-and-Puzzles.md).
