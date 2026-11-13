@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [the-greeks]
 est_hours: 4
-sources: [Basel Framework MAR32 Backtesting and profit and loss attribution test (version effective 1 January 2023) MAR32.20 to MAR32.45, Kamal and Derman - When You Cannot Hedge Continuously The Corrections to Black-Scholes - Goldman Sachs Quantitative Strategies Research Notes (1998), Ahmad and Wilmott - Which Free Lunch Would You Like Today Sir - Wilmott Magazine November 2005 pp 64-79, Carr and Madan - Towards a Theory of Volatility Trading - in Jarrow (ed.) Volatility Risk Books (1998) pp 417-427, Taleb - Dynamic Hedging (Wiley 1997)]
+sources: [Basel Framework MAR32 Backtesting and profit and loss attribution test (version effective 1 January 2023) MAR32.20 to MAR32.45, Kamal - When You Cannot Hedge Continuously The Corrections to Black-Scholes - Goldman Sachs Equity Derivatives Research Quantitative Strategies Research Notes (1998), Ahmad and Wilmott - Which Free Lunch Would You Like Today Sir - Wilmott Magazine November 2005 pp 64-79, Carr and Madan - Towards a Theory of Volatility Trading - in Jarrow (ed.) Volatility Risk Books (1998) pp 417-427, Taleb - Dynamic Hedging (Wiley 1997)]
 ---
 
 # P&L Attribution and Greek Risk
@@ -15,7 +15,7 @@ sources: [Basel Framework MAR32 Backtesting and profit and loss attribution test
 - Risk-based P&L explain is a Taylor expansion: $\Delta\Pi \approx \Delta\,\delta S + \tfrac12\Gamma\,\delta S^2 + \Theta\,\delta t + \mathcal V\,\delta\sigma + \text{Vanna}\,\delta S\,\delta\sigma + \tfrac12\text{Volga}\,\delta\sigma^2 + \rho\,\delta r$; the unexplained term is full revaluation minus that sum, and it is third order in the move.
 - Under Black-Scholes, $\Theta + \tfrac12\sigma^2S^2\Gamma + rS\Delta - rV = 0$; with $r = 0$ a delta-hedged option earns $\tfrac12\Gamma S^2\left((\delta S/S)^2 - \sigma^2\delta t\right)$ per step, so the daily break-even move is $\sigma S\sqrt{\delta t}$ ($\sigma S/16$ per trading day).
 - Hedged at implied vol, the cumulative P&L is $\tfrac12\int \Gamma S^2(\sigma_{\text{real}}^2 - \sigma_{\text{imp}}^2)\,dt$, path dependent; hedged at the realised vol it converges to $V(\sigma_{\text{real}}) - V(\sigma_{\text{imp}})$ (Ahmad and Wilmott 2005).
-- Discrete hedging adds noise with standard deviation about $\sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$ for $N$ rebalances (Kamal and Derman 1998); simulation confirms it to within 4% at $N = 21$.
+- Discrete hedging adds noise with standard deviation about $\sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$ for $N$ rebalances (Kamal 1998); simulation confirms it to within 4% at $N = 21$.
 - Full-revaluation "waterfall" attribution has no unexplained term but depends on the order of factors; on an earnings gap the order moved 20,930 of P&L between the spot and vol buckets.
 - Regulators run the same check: the FRTB PLA test compares risk-theoretical P&L with hypothetical P&L by Spearman correlation and KS distance (MAR32.34 to MAR32.42), and a desk whose model misses a material factor goes red.
 
@@ -114,7 +114,7 @@ Both means are close to $V(25\%) - V(20\%) = 0.5755$; the implied-vol hedge is a
 ### Discrete hedging error
 
 Rebalancing $N$ times instead of continuously adds a zero-mean error.
-Kamal and Derman (1998) give its standard deviation as approximately
+Kamal (1998) gives its standard deviation as approximately
 
 $$\sigma_{\text{hedge}} \approx \sqrt{\pi/4}\;\frac{\mathcal V\,\sigma}{\sqrt N},$$
 
@@ -269,8 +269,8 @@ A good Taylor approximation passes easily; a model that omits a material factor 
 > Second, missing risk dimensions: skew and term-structure vol moves, cross-gammas, dividends or borrow changes that the Greek set does not include.
 > Third, operational mismatches: Greeks and P&L from different models, snapshots or theta conventions, and late or amended bookings.
 
-> [!question]- risk-derman-kamal-hedging-error | According to the Derman-Kamal formula, how does discrete hedging error scale with rebalancing frequency?
-> Standard deviation about $\sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$ (Kamal and Derman 1998): it falls like $1/\sqrt N$.
+> [!question]- risk-derman-kamal-hedging-error | According to the Kamal (1998) discrete-hedging rule, how does discrete hedging error scale with rebalancing frequency?
+> Standard deviation about $\sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$ (Kamal 1998): it falls like $1/\sqrt N$.
 > Doubling the frequency cuts it by $1 - 1/\sqrt2 = 29\%$; quadrupling halves it.
 > Simulated for a 1-month ATM call at 20% vol, the formula is within 4% at $N = 21$ (0.445 against about 0.429) and within 2% at $N = 252$.
 
@@ -345,7 +345,7 @@ A good Taylor approximation passes easily; a model that omits a material factor 
 ## Further reading
 
 - Basel Committee on Banking Supervision, Basel Framework MAR32 (backtesting and PLA), paragraphs 32.20 to 32.45, version effective 1 January 2023.
-- M. Kamal and E. Derman, "When you cannot hedge continuously: the corrections to Black-Scholes", Goldman Sachs Quantitative Strategies Research Notes, 1998 (the formula is their equation 1, with the prefactor $\sqrt{\pi/4} = 0.886$).
+- M. Kamal, "When you cannot hedge continuously: the corrections to Black-Scholes", Goldman Sachs Equity Derivatives Research, Quantitative Strategies Research Notes, 1998; the note states it "was prepared by Michael Kamal" (the formula is its equation 1, with the prefactor $\sqrt{\pi/4} = 0.886$).
 - R. Ahmad and P. Wilmott, "Which free lunch would you like today, Sir?: Delta hedging, volatility arbitrage and optimal portfolios", *Wilmott Magazine*, November 2005, 64-79.
 - P. Carr and D. Madan, "Towards a theory of volatility trading", in R. Jarrow (ed.), *Volatility*, Risk Books, 1998, 417-427.
 - N. N. Taleb, *Dynamic Hedging: Managing Vanilla and Exotic Options*, Wiley, 1997.

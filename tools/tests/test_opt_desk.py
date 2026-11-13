@@ -92,8 +92,8 @@ class TestOptionsDeskEngine(unittest.TestCase):
     def hedged_pnls(self, n_seeds: int, **kwargs) -> list[float]:
         return [self.engine.run(scenario="gamma_scalp", seed=seed, **kwargs).metrics["net_hedged_pnl"] for seed in range(n_seeds)]
 
-    def test_hedging_error_matches_derman_kamal_discrete_hedging_formula(self):
-        # Oracle: Derman-Kamal, the P&L of a straddle delta-hedged N times at realized = implied vol has
+    def test_hedging_error_matches_kamal_discrete_hedging_formula(self):
+        # Oracle: Kamal (1998, Goldman Sachs), the P&L of a straddle delta-hedged N times at realized = implied vol has
         # standard deviation sqrt(pi / 4) * vega * sigma / sqrt(N). Rejects an unhedged or mis-hedged book
         # (far wider spread) and a schedule that ignores hedge_frequency_hours=16 by hedging every 24 hours.
         s, sigma, r, days = 100.0, 0.25, 0.04, 32

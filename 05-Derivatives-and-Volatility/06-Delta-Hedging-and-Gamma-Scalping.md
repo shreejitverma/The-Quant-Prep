@@ -243,7 +243,7 @@ Leland at daily hedging: $2 \times 0.0005 \times 0.2 \times \sqrt{2 \times 252/\
 > $S\sigma_i\sqrt{\delta t}$, about $S\sigma_i/19$ on a calendar-day clock or $S\sigma_i/16$ on trading days; independent of the size of gamma.
 > Setting $\tfrac12\Gamma\,\delta S^2 = \tfrac12\sigma_i^2S^2\Gamma\,\delta t$ cancels $\Gamma$.
 
-> [!question]- deriv-discrete-hedging-error | Give the Derman-Kamal estimate of the P&L noise from hedging $N$ times, and evaluate it for a one-year ATM 100 call at 20% vol hedged weekly.
+> [!question]- deriv-discrete-hedging-error | Give the Kamal (1998) estimate of the P&L noise from hedging $N$ times, and evaluate it for a one-year ATM 100 call at 20% vol hedged weekly.
 > sd $\approx \sqrt{\pi/4}\,\mathcal{V}\sigma/\sqrt{N} = 0.886 \times 39.7 \times 0.2/\sqrt{52} = 0.98$.
 > A Monte Carlo gives 0.96; the noise halves when the hedge frequency quadruples.
 
