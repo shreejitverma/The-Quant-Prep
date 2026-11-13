@@ -251,7 +251,9 @@ def barriers(rng: np.random.Generator) -> None:
     approx("E[exit time] by finite differences", t_fd, 0.924, 3)
     approx("    and 2(2p - 1)", 2 * (2 * p_fd - 1), t_fd, 6)
     # bridge-corrected simulation of the exit side: exact up to a double crossing within one step
-    paths, h, steps = 400_000, 0.01, 1200
+    # horizon t = 30: survival in (-1, 1) decays like exp(-(pi^2/8 + mu^2/2) t), so P(any of 400,000 paths still
+    # inside) is about 400,000 e^{-40.8} = 8e-13 for every seed; the loop stops as soon as all paths have exited
+    paths, h, steps = 400_000, 0.01, 3000
     x = np.zeros(paths)
     side = np.zeros(paths)  # +1 upper, -1 lower, 0 still inside
     for _ in range(steps):
