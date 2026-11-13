@@ -16,12 +16,12 @@ Formats, drills and tactics for each round, from online assessment to superday.
 
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
-| 01 | [How Quant Interviews Work](01-How-Quant-Interviews-Work.md) | TRDQ | core | 2 | solid | 12 |
-| 02 | [Mental Math](02-Mental-Math.md) | T | core | 5 | solid | 14 |
+| 01 | [How Quant Interviews Work](01-How-Quant-Interviews-Work.md) | TRDQ | core | 2 | solid | 16 |
+| 02 | [Mental Math](02-Mental-Math.md) | T | core | 5 | solid | 17 |
 | 03 | [Brainteasers and Puzzles](03-Brainteasers-and-Puzzles.md) | TRDQ | core | 6 | solid | 33 |
-| 04 | [Estimation and Fermi Problems](04-Estimation-and-Fermi-Problems.md) | T | core | 2 | solid | 11 |
-| 05 | [Trading Games in Interviews](05-Trading-Games-in-Interviews.md) | T | core | 3 | solid | 14 |
-| 06 | [Sequences and Numerical Reasoning Tests](06-Sequences-and-Numerical-Reasoning.md) | T | advanced | 2 | solid | 13 |
+| 04 | [Estimation and Fermi Problems](04-Estimation-and-Fermi-Problems.md) | T | core | 2 | solid | 16 |
+| 05 | [Trading Games in Interviews](05-Trading-Games-in-Interviews.md) | T | core | 3 | solid | 16 |
+| 06 | [Sequences and Numerical Reasoning Tests](06-Sequences-and-Numerical-Reasoning.md) | T | advanced | 2 | solid | 16 |
 | 07 | [Coding Interviews for Quants](07-Coding-Interviews-for-Quants.md) | RDQ | core | 3 | solid | 18 |
 | 08 | [Research Case Studies and Take-Homes](08-Research-Case-Studies-and-Take-Homes.md) | R | core | 3 | solid | 28 |
 | 09 | [Behavioral and Fit for Trading Firms](09-Behavioral-and-Fit.md) | TRDQ | core | 2 | solid | 16 |

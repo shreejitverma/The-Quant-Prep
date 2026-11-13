@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 5
-sources: [Arthur Benjamin and Michael Shermer - Secrets of Mental Math (2006), Zetamac arithmetic game default settings - https://arithmetic.zetamac.com/, Xinfeng Zhou - A Practical Guide to Quantitative Finance Interviews (2008)]
+sources: [Arthur Benjamin and Michael Shermer - Secrets of Mental Math (2006), Zetamac arithmetic game default settings as of 2026-11-12 - https://arithmetic.zetamac.com/, Xinfeng Zhou - A Practical Guide to Quantitative Finance Interviews (2008)]
 ---
 
 # Mental Math
@@ -16,7 +16,7 @@ sources: [Arthur Benjamin and Michael Shermer - Secrets of Mental Math (2006), Z
 - Always anchor on the nearest easy number and correct: $68 \times 72 = 70^2 - 2^2 = 4896$, $96^2 = 92 \times 100 + 4^2 = 9216$.
 - Percentages are fractions in disguise, and $x\%$ of $y$ equals $y\%$ of $x$.
 - Estimate first, then compute; the estimate catches order-of-magnitude slips and tells you how many digits you need.
-- Relative errors add under multiplication and division, so round factors in opposite directions.
+- To first order, relative errors add under multiplication and subtract under division, so round the factors of a product in opposite directions and the two sides of a quotient in the same direction.
 - Practise daily with `./qp drill arith` and `./qp drill optiver`, and track scores; accuracy first, then speed.
 
 ## Learning objectives
@@ -87,14 +87,20 @@ Division is multiplication by a reciprocal, so memorising reciprocals turns most
 - Successive changes multiply: $+20\%$ then $-20\%$ is $1.2 \times 0.8 = 0.96$, a $4\%$ loss.
 - A fall of $p$ needs a rise of $p/(1-p)$ to recover: $-20\%$ needs $+25\%$, $-50\%$ needs $+100\%$.
 - Rule of 72: money at $r\%$ doubles in about $72/r$ periods ($1.07^{10} \approx 1.967$).
+  The exact time is $\ln 2 / \ln(1 + r/100)$: $35.00$ at $2\%$ (rule $36$), $11.90$ at $6\%$ (rule $12$), $9.01$ at $8\%$ (rule $9$) and $6.12$ at $12\%$ (rule $6$).
+  The rule is exact at about $7.85\%$, overstates below it and understates above it.
 
 ### Estimation and error control
 
 - Estimate before computing, so you know the magnitude and how many digits matter.
-- Relative errors add under multiplication and division: rounding one factor up $2\%$ and another down $2\%$ nearly cancels.
+- To first order, relative errors add under multiplication and subtract under division.
+  Rounding one factor of a product up $2\%$ and the other down $2\%$ leaves it only $0.04\%$ low ($1.02 \times 0.98 = 0.9996$).
+  For a quotient do the opposite: rounding the numerator up $2\%$ and the denominator down $2\%$ makes it $4.08\%$ too high ($1.02/0.98 = 1.0408$), while rounding both up $2\%$ leaves it unchanged.
 - $\pi \times 27.3$: $3 \times 27.3 = 81.9$, plus $0.14 \times 27.3 \approx 3.82$, so about $85.7$ (exact $85.77$).
-- Square roots by linearisation: $\sqrt{a^2 + e} \approx a + e/(2a)$, so $\sqrt{50} \approx 7 + 1/14 \approx 7.07$.
-- Last-digit and casting-out-nines checks catch most slips: the digit sum of a product is congruent mod 9 to the product of the digit sums.
+- Square roots by linearisation: $\sqrt{a^2 + e} \approx a + e/(2a)$, so $\sqrt{50} \approx 7 + 1/14 \approx 7.071$ against the true $7.0711$.
+  The approximation always overshoots, by about $e^2/(8a^3)$, which is $0.0004$ here.
+- Last-digit and casting-out-nines checks catch many slips: the digit sum of a product is congruent mod 9 to the product of the digit sums.
+  Casting out nines cannot see an error that is a multiple of 9, such as two transposed digits, so pair it with a magnitude check.
 
 ### Practice regimen
 
@@ -102,6 +108,7 @@ The repo's drills generate problems in the formats interviews commonly use.
 
 - `./qp drill arith` uses Zetamac default rules: 120 seconds of $a+b$ with $a,b \in [2,100]$, the matching subtractions, $a \times b$ with $a \in [2,12]$ and $b \in [2,100]$, and the matching divisions.
 - `./qp drill optiver` is 80 mixed questions in 8 minutes (6 seconds each on average): two-digit products, decimals, percentages, fraction-to-decimal conversions and fraction arithmetic.
+  The drill's name is the repo's label for the format, not a description of any firm's current test.
 - `./qp drill mm` is the market-making dice game; it trains arithmetic under the load of quoting and tracking a position (see [Trading Games in Interviews](05-Trading-Games-in-Interviews.md)).
 
 A regimen that works for most people:
@@ -111,7 +118,7 @@ A regimen that works for most people:
 3. Ongoing: one `mm` game a day, saying bid, ask, position and fair value aloud.
 
 Personal targets, set as goals rather than as any firm's cut-off: 40+ on the Zetamac-style sprint as a floor, 60+ as a comfortable level, and completing all 80 `optiver` questions with at most 2 or 3 errors.
-Firms do not publish thresholds, and figures quoted on forums vary; treat them as anecdotes.
+Cut-offs quoted on forums are anecdotes; do not plan around them.
 
 ## Worked examples
 
@@ -145,9 +152,9 @@ Before computing, ask whether an identity removes work; that habit saves more ti
 ### Example 5: estimate with error control
 
 "Roughly, $3.14159 \times 27.3$."
-Round $\pi$ down to $3$; since $\pi/3 \approx 1.047$, the product $81.9$ is about $4.7\%$ too low.
+Round $\pi$ down to $3$ to get $81.9$; since $\pi/3 \approx 1.047$, the true product is about $4.7\%$ larger.
 Add $4.7\%$ of $82 \approx 3.85$ for about $85.75$.
-The exact value is $85.77$, so the estimate is within $0.03\%$.
+The exact value is $85.77$, so the estimate is within $0.02\%$.
 
 ## Pitfalls
 
@@ -203,9 +210,27 @@ The exact value is $85.77$, so the estimate is within $0.03\%$.
 > [!question]- int-math-125-times-48 | Compute $125 \times 48$.
 > $6000$. $125 = 1000/8$, so $125 \times 48 = 1000 \times 6$.
 
+> [!question]- int-math-rule-of-72-accuracy | At what rate is the rule of 72 exact, and is it too high or too low at $2\%$ and $12\%$?
+> Exact at about $7.85\%$.
+> At $2\%$ it gives 36 years against the true $35.00$ (too high); at $12\%$ it gives 6 against $6.12$ (too low).
+> At low rates the exact time is close to $100 \ln 2 / r \approx 69.3/r$, so 72 is too high; as $r$ grows, $\ln(1+r)$ falls further below $r$, which lengthens the exact time until it overtakes $72/r$.
+
+> [!question]- int-math-sqrt-linearisation-error | You estimate $\sqrt{50} \approx 7 + 1/14$. Is that high or low, and by roughly how much?
+> High, by about $0.0004$.
+> The square root is concave, so the tangent line overshoots; the error is about $e^2/(8a^3) = 1/2744$ with $a = 7$, $e = 1$.
+
+> [!question]- int-math-rounding-a-quotient | To estimate $a/b$ quickly, should you round $a$ and $b$ in the same or opposite directions?
+> The same direction.
+> Relative errors subtract under division, so rounding both up $2\%$ cancels, while rounding $a$ up and $b$ down $2\%$ makes the result $4.08\%$ too high.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/interview_02_mental_math.py`](code/interview_02_mental_math.py) prints and asserts every number on this page: each shortcut is implemented as its digit procedure and checked against the integer product over its whole input range, the fraction table comes from long division with the repeating block found from the remainder cycle, percentages use exact `Fraction` arithmetic, and the approximation errors are measured against `math.log`, `math.sqrt` and `math.pi`, with the rule of 72's exact point found by bisection.
+- Drill engines: `tools/qp/drills.py` implements `./qp drill arith`, `./qp drill optiver` and `./qp drill mm`.
+
 ## Further reading
 
 - Arthur Benjamin and Michael Shermer, *Secrets of Mental Math* (2006): the standard reference for left-to-right methods and squaring tricks.
-- Zetamac arithmetic game: https://arithmetic.zetamac.com/ (the public tool `./qp drill arith` mirrors).
+- Zetamac arithmetic game: https://arithmetic.zetamac.com/ (the public tool `./qp drill arith` mirrors; default ranges and the 120-second timer checked on 2026-11-12).
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews* (2008), for how arithmetic appears inside interview problems.
 - [Sequences and Numerical Reasoning Tests](06-Sequences-and-Numerical-Reasoning.md) and [Estimation and Fermi Problems](04-Estimation-and-Fermi-Problems.md).

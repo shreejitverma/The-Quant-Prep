@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 6
-sources: [Xinfeng Zhou - A Practical Guide to Quantitative Finance Interviews (2008), Timothy Crack - Heard on the Street: Quantitative Questions from Wall Street Job Interviews, Peter Winkler - Mathematical Puzzles: A Connoisseur's Collection (2004)]
+sources: [Xinfeng Zhou - A Practical Guide to Quantitative Finance Interviews (2008), Timothy Crack - Heard on the Street: Quantitative Questions from Wall Street Job Interviews, Peter Winkler - Mathematical Puzzles: A Connoisseur's Collection (2004), F. J. Dyson - The problem of the pennies (Mathematical Gazette 30 1946)]
 ---
 
 # Brainteasers and Puzzles
@@ -25,11 +25,11 @@ sources: [Xinfeng Zhou - A Practical Guide to Quantitative Finance Interviews (2
 
 ## Core concepts
 
-### Why firms still ask them
+### Why interviewers ask them
 
 A brainteaser is a compressed test of structured thinking under mild pressure.
-The interviewer watches whether you clarify the rules, try small cases, notice structure, and communicate.
-Known puzzles are commonly followed by a variation, so memorising answers without the argument does not survive the follow-up.
+The interviewer can watch whether you clarify the rules, try small cases, notice structure, and communicate.
+Prepare for a variation on any puzzle you recognise: a memorised answer without the argument does not survive the follow-up.
 
 ### The toolbox
 
@@ -84,9 +84,11 @@ Weigh $\{1,2,3,4\}$ against $\{5,6,7,8\}$.
   Balanced leaves 4 heavy, 7 light or 8 light: weigh 7 against 8; the lighter is fake, and if they balance 4 is heavy.
   Left heavy leaves 1 heavy, 2 heavy or 6 light: weigh 1 against 2; the heavier is fake, or 6 is light if they balance.
   Right heavy leaves 3 heavy or 5 light: weigh 3 against a genuine coin.
+- **Right heavy.** The mirror image: one of 5-8 is heavy or one of 1-4 is light, and the same split works with the roles swapped.
 
 Each second weighing splits 8 cases into groups of at most 3, which one weighing resolves.
-In general $w$ weighings handle at most $(3^w - 3)/2$ coins when the direction is unknown and must be reported, which is 12 for $w=3$.
+In general $w$ weighings handle at most $(3^w - 3)/2$ coins when the direction is unknown, must be reported, and no extra coin is known to be genuine (Dyson, 1946).
+That is 3 coins for $w = 2$, 12 for $w = 3$ and 39 for $w = 4$.
 
 ### Example 2: five pirates and 100 coins
 
@@ -148,7 +150,7 @@ So it is impossible.
 ## Interview questions
 
 > [!question]- int-bt-twelve-coins-three-weighings | Twelve coins, one fake that is heavier or lighter. Can you find it and its direction in three weighings?
-> Yes. There are 24 cases and $3^3 = 27$ outcomes; weigh 4 against 4, then split each branch of 8 cases into groups of at most 3 (for example $\{1,2,5\}$ against $\{3,6,9\}$). Three weighings handle at most $(3^3-3)/2 = 12$ coins.
+> Yes. There are 24 cases and $3^3 = 27$ outcomes; weigh 4 against 4, then split each branch of 8 cases into groups of at most 3 (for example $\{1,2,5\}$ against $\{3,6,9\}$). With no spare genuine coin, three weighings handle at most $(3^3-3)/2 = 12$ coins.
 
 > [!question]- int-bt-eight-balls-two-weighings | Eight balls, one heavier. Minimum number of weighings to find it?
 > $2$. Weigh 3 against 3; if balanced it is among the other 2 (one more weighing), otherwise among the heavy 3 (weigh 1 against 1). Lower bound: 8 cases need $\lceil \log_3 8 \rceil = 2$.
@@ -246,8 +248,15 @@ So it is impossible.
 > [!question]- int-bt-staircase-one-or-two | In how many ways can you climb 10 stairs taking 1 or 2 steps at a time?
 > $89$. $f(n) = f(n-1) + f(n-2)$ with $f(1) = 1$, $f(2) = 2$ gives Fibonacci numbers, and $f(10) = 89$.
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/interview_03_brainteasers.py`](code/interview_03_brainteasers.py) prints and asserts every answer on this page by an independent route: the weighing trees replayed against every possible fake plus an exhaustive search over adaptive weighing strategies for the $(3^w-3)/2$ bound, every allocation enumerated at each pirate stage, every deterministic hat strategy for 3 prisoners, dynamic programming for the egg drop, Nim, coins in a row and stairs, state-space search for the chameleons, jugs and bridge, a domino-tiling count for the mutilated board, and event-driven simulation for the ants and ropes.
+- Related notes: [Sequences and Numerical Reasoning Tests](06-Sequences-and-Numerical-Reasoning.md), [Counting and Combinatorics](../01-Probability/01-Counting-and-Combinatorics.md).
+- Problem-solving practice in The-Distinguished-Engineer: [06-Interview-Prep](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/06-Interview-Prep/README.md).
+
 ## Further reading
 
+- F. J. Dyson, "The problem of the pennies", *The Mathematical Gazette* 30 (1946), the $(3^w - 3)/2$ bound for the counterfeit-coin problem.
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews* (2008), chapter 2 on brainteasers.
 - Timothy Crack, *Heard on the Street: Quantitative Questions from Wall Street Job Interviews*.
 - Peter Winkler, *Mathematical Puzzles: A Connoisseur's Collection* (2004).
