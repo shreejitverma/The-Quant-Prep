@@ -121,7 +121,7 @@ def trinomial() -> None:
         qd, qm = 2 * qu, 1 - 3 * qu
         assert qu * 120 + qm * 100 + qd * 90 == 100 and qu + qm + qd == 1
         prices.append(qu * 20)
-    exact("q_d = 2 q_u and q_m = 1 - 3 q_u satisfy both constraints", True, True)
+    print("    q_d = 2 q_u and q_m = 1 - 3 q_u satisfy both constraints at every grid point")
     exact("largest price on the grid q_u < 1/3", max(prices), Fraction(299 * 20, 900))
     exact("smallest price on the grid q_u > 0", min(prices), Fraction(20, 900))
 

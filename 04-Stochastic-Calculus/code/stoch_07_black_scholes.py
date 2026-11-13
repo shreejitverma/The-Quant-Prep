@@ -3,8 +3,9 @@
 Backs every number in `04-Stochastic-Calculus/07-Black-Scholes-Derivation.md`.
 Independent routes used here:
 - the call and put by quadrature of the payoff against the risk-neutral lognormal density, by seeded
-  simulation, and by a Crank-Nicolson solution of the PDE with the boundary conditions the note states
-  (so the boundary conditions themselves are tested), all against the closed form;
+  simulation, and by a Crank-Nicolson solution of the PDE on [0, S_max] with the boundary conditions the
+  note states, all against the closed form; S_max = 150 sits close enough to S0 that the upper boundary
+  binds, so replacing S - K e^{-r(T-t)} there by the wrong S - K moves the call by more than the tolerance;
 - the PDE, the heat-equation substitution and the Greeks identity by central finite differences;
 - the power solutions S^p by the roots of the quadratic and a finite-difference PDE residual;
 - the at-the-money approximation against quadrature;
@@ -78,35 +79,32 @@ def thomas(lower: np.ndarray, diag: np.ndarray, upper: np.ndarray, rhs: np.ndarr
     return x
 
 
-def crank_nicolson(payoff, bc_low, bc_high, n_x: int = 1200, n_t: int = 600) -> float:
-    """Solve V_tau = (sigma^2/2) V_xx + (r - sigma^2/2) V_x - r V in x = ln S, with Dirichlet boundaries.
+def crank_nicolson(payoff, bc_low, bc_high, s_max: float = 150.0, n_s: int = 600, n_t: int = 600) -> float:
+    """Solve V_tau = (sigma^2/2) S^2 V_SS + r S V_S - r V on S in [0, s_max] with Dirichlet boundaries.
 
-    bc_low(tau) and bc_high(tau, S_max) are the boundary values the note states; four fully implicit
-    half-steps first (Rannacher) damp the payoff kink. Returns V(0, S0).
+    bc_low(tau) is the value at S = 0 and bc_high(tau, s_max) the value at S = s_max; four fully implicit
+    half-steps first (Rannacher) damp the payoff kink. Returns V(0, S0), with S0 a grid node.
     """
-    width = 8 * SIG * math.sqrt(T)
-    x = np.linspace(math.log(S0) - width, math.log(S0) + width, n_x + 1)
-    h, dt = x[1] - x[0], T / n_t
-    a = 0.5 * SIG**2 / h**2 - (R - 0.5 * SIG**2) / (2 * h)
-    c = 0.5 * SIG**2 / h**2 + (R - 0.5 * SIG**2) / (2 * h)
-    b = -(SIG**2) / h**2 - R
-    v = payoff(np.exp(x))
+    s = np.linspace(0.0, s_max, n_s + 1)
+    i = np.arange(1, n_s)
+    a = 0.5 * SIG**2 * i**2 - 0.5 * R * i
+    b = -(SIG**2) * i**2 - R
+    c = 0.5 * SIG**2 * i**2 + 0.5 * R * i
+    v = payoff(s)
+    dt = T / n_t
     tau = 0.0
     steps = [(0.5 * dt, 1.0)] * 4 + [(dt, 0.5)] * (n_t - 2)
     for step, theta in steps:
         tau += step
-        m = n_x - 1
-        lo_v, hi_v = bc_low(tau), bc_high(tau, math.exp(x[-1]))
-        explicit = v[1:-1] + (1 - theta) * step * (a * v[:-2] + b * v[1:-1] + c * v[2:])
-        rhs = explicit.copy()
-        rhs[0] += theta * step * a * lo_v
-        rhs[-1] += theta * step * c * hi_v
-        lower = np.full(m, -theta * step * a)
-        diag = np.full(m, 1 - theta * step * b)
-        upper = np.full(m, -theta * step * c)
-        v = np.concatenate([[lo_v], thomas(lower, diag, upper, rhs), [hi_v]])
+        lo_v, hi_v = bc_low(tau), bc_high(tau, s_max)
+        rhs = v[1:-1] + (1 - theta) * step * (a * v[:-2] + b * v[1:-1] + c * v[2:])
+        rhs[0] += theta * step * a[0] * lo_v
+        rhs[-1] += theta * step * c[-1] * hi_v
+        v = np.concatenate([[lo_v], thomas(-theta * step * a, 1 - theta * step * b, -theta * step * c, rhs), [hi_v]])
     assert abs(tau - T) < 1e-12
-    return float(np.interp(math.log(S0), x, v))
+    node = round(S0 / (s[1] - s[0]))
+    assert abs(s[node] - S0) < 1e-9
+    return float(v[node])
 
 
 def prices(rng: np.random.Generator) -> None:
@@ -136,9 +134,12 @@ def prices(rng: np.random.Generator) -> None:
     simulated("call by simulation, 4e6 paths", m, se, c)
     # PDE with the stated boundary conditions, solved numerically
     cn_call = crank_nicolson(lambda s: np.maximum(s - K, 0.0), lambda tau: 0.0, lambda tau, smax: smax - K * math.exp(-R * tau))
-    approx("call by Crank-Nicolson with V(t,0) = 0 and V ~ S - K e^{-r(T-t)}", cn_call, c, 3)
+    approx("call by Crank-Nicolson on [0, 150] with V(t,0) = 0 and V(t,150) = 150 - K e^{-r(T-t)}", cn_call, c, 3)
     cn_put = crank_nicolson(lambda s: np.maximum(K - s, 0.0), lambda tau: K * math.exp(-R * tau), lambda tau, smax: 0.0)
-    approx("put by Crank-Nicolson with V(t,0) = K e^{-r(T-t)} and V -> 0", cn_put, p, 3)
+    approx("put by Crank-Nicolson on [0, 150] with V(t,0) = K e^{-r(T-t)} and V(t,150) = 0", cn_put, p, 3)
+    cn_wrong = crank_nicolson(lambda s: np.maximum(s - K, 0.0), lambda tau: 0.0, lambda tau, smax: smax - K)
+    assert abs(cn_wrong - c) > 0.5e-3, (cn_wrong, c)
+    approx("call shift from the wrong upper boundary S - K (outside the 0.0005 tolerance)", cn_wrong - cn_call, -0.014, 3)
 
 
 def boundary_conditions() -> None:
@@ -149,8 +150,7 @@ def boundary_conditions() -> None:
     for s in (300.0, 1000.0):
         approx(f"call at S = {s:g} minus (S - K e^(-r tau))", float(call(s, K, tau, R, SIG)) - (s - K * math.exp(-R * tau)), 0.0, 7)
         approx(f"put at S = {s:g} (-> 0)", float(put(s, K, tau, R, SIG)), 0.0, 7)
-    # at S = 0 the PDE degenerates to V_t = r V, which is what fixes V(t, 0) = V(T, 0) e^{-r (T - t)}
-    approx("PDE coefficients at S = 0: sigma^2 S^2 / 2 and r S", 0.5 * SIG**2 * 0.0**2 + R * 0.0, 0.0, 12)
+    print("    at S = 0 the coefficients sigma^2 S^2 / 2 and r S vanish, so the PDE is V_t = r V and V(t, 0) = V(T, 0) e^{-r (T - t)}")
 
 
 def pde_checks() -> None:

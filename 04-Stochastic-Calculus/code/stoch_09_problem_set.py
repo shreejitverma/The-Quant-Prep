@@ -74,6 +74,15 @@ def gauss2(g, s: float, t: float) -> float:
     return float(np.sum(GH_W[:, None] * GH_W[None, :] * g(a, b)))
 
 
+GL_X, GL_W = np.polynomial.legendre.leggauss(2)
+
+
+def legendre(f, lo: float, hi: float) -> float:
+    """Two-point Gauss-Legendre rule on [lo, hi]: exact for integrands of degree at most 3."""
+    half = 0.5 * (hi - lo)
+    return half * sum(w * f(lo + half * (x + 1)) for x, w in zip(GL_X, GL_W, strict=True))
+
+
 def log_quad(fun, lo: float, hi: float, n: int = 400_000) -> float:
     u = np.linspace(math.log(lo), math.log(hi), n + 1)
     s = np.exp(u)
@@ -129,7 +138,7 @@ def moments() -> None:
     for n in range(2, 13, 2):
         c[n] = Fraction(math.comb(n, 2)) * c[n - 2] / Fraction(n, 2)
     exact("E[W_t^n]/t^(n/2) for n = 2, 4, 6 by the Ito recursion", [c[2], c[4], c[6]], [1, 3, 15])
-    exact("6 * (1/2) and 15 * 3 * (1/3): the two integration steps", (Fraction(6, 2), Fraction(15 * 3, 3)), (Fraction(3), Fraction(15)))
+    print("    the integration steps are C(4, 2) c_2 / 2 = 6 * (1/2) = 3 and C(6, 2) c_4 / 3 = 15 * 3 * (1/3) = 15")
     mgf = [Fraction(math.factorial(2 * k), 2**k * math.factorial(k)) for k in range(1, 7)]
     exact("MGF coefficients (2k)!/(2^k k!) for k = 1..6", mgf, [c[2 * k] for k in range(1, 7)])
     exact("(n - 1)!! for n = 2..12 even", [math.prod(range(1, n, 2)) for n in range(2, 13, 2)], [int(c[n]) for n in range(2, 13, 2)])
@@ -139,14 +148,15 @@ def moments() -> None:
 
 def int_w2_dw(rng: np.random.Generator) -> None:
     print("int_0^T W^2 dW (worked example; cards sc-ps-ito-w-cubed, sc-ps-int-w-squared-dw, sc-ps-isometry-w-squared)")
-    var_cube = Fraction(15, 9)
-    var_a = Fraction(1, 3)
-    cov = Fraction(3, 2)
-    exact("Var(W_T^3 / 3) / T^3 = 15/9", var_cube, Fraction(5, 3))
-    exact("total (5/3 + 1/3 - 2 (1/3)(3/2)) T^3", var_cube + var_a - 2 * Fraction(1, 3) * cov, Fraction(1))
     for t in (0.3, 0.7):  # E[W_T^3 W_t] = 3 t T at T = 1
         approx(f"E[W_1^3 W_{t}] by quadrature vs 3 t T", gauss2(lambda a, b: b**3 * a, t, 1.0), 3 * t, 12)
-    approx("E[W_1^6] / 9 = 15/9", gauss(lambda x: x**6, 1.0) / 9, 15 / 9, 12)
+    var_cube = gauss(lambda x: x**6, 1.0) / 9
+    var_a = 2 * legendre(lambda t: legendre(lambda u: gauss2(lambda a, b: a * b, u, t), 0.0, t), 0.0, 1.0)
+    cov = legendre(lambda t: gauss2(lambda a, b: b**3 * a, t, 1.0), 0.0, 1.0)
+    approx("Var(W_1^3 / 3) = E[W_1^6] / 9 by quadrature vs 15/9", var_cube, 15 / 9, 12)
+    approx("Var(int_0^1 W dt) = 2 int int_{s<t} E[W_s W_t] by quadrature vs 1/3", var_a, 1 / 3, 12)
+    approx("E[W_1^3 int_0^1 W dt] = int_0^1 E[W_1^3 W_t] dt by quadrature vs 3/2", cov, 3 / 2, 12)
+    approx("total Var(W^3/3) + Var(int W dt) - 2 Cov(W^3/3, int W dt), per T^3", var_cube + var_a - 2 * cov / 3, 1.0, 12)
     approx("isometry int_0^1 E[W_t^4] dt = int 3 t^2 dt", 3 * float(np.mean(np.linspace(0, 1, 1_000_001) ** 2)), 1.0, 5)
     n, paths, T = 500, 50_000, 1.0
     h = T / n
@@ -197,8 +207,9 @@ def barriers() -> None:
     approx("P(X = t + W hits +1 before -1) by finite differences", p, 0.881, 3)
     approx("    and 1/(1 + e^-2)", 1 / (1 + math.exp(-2)), p, 6)
     approx("    and (e^2 - 1)/(e^2 - e^-2)", (math.exp(2) - 1) / (math.exp(2) - math.exp(-2)), p, 6)
-    approx("P(W hits +1 before -2) by finite differences", solve_bvp(0.0, 1.0, -2.0, 1.0, 0.0, 1.0, 0.0, 3000), 2 / 3, 6)
-    exact("p + (1 - p)(-2) = 0 at p = 2/3", Fraction(2, 3) - 2 * Fraction(1, 3), 0)
+    p_up = solve_bvp(0.0, 1.0, -2.0, 1.0, 0.0, 1.0, 0.0, 3000)
+    approx("P(W hits +1 before -2) by finite differences", p_up, 2 / 3, 6)
+    approx("    and optional stopping p + (1 - p)(-2) = 0 at that p", p_up + (1 - p_up) * (-2), 0.0, 6)
     approx("E[exit time of (-2, 3)] by finite differences", solve_bvp(0.0, 1.0, -2.0, 3.0, 0.0, 0.0, 1.0, 2000), 6.0, 6)
     p_ever = solve_bvp(-0.1, 0.2, -6.0, 0.1, 0.0, 1.0, 0.0, 61_000)
     approx("P(X = -0.1 t + 0.2 W ever hits 0.1) by finite differences on (-6, 0.1)", p_ever, 0.607, 3)
@@ -309,14 +320,15 @@ def gaussian_cards(rng: np.random.Generator) -> None:
     m, se = mean_se((w1 + w2 > 2).astype(float))
     simulated("P(W_1 + W_2 > 2), simulated", m, se, p)
     s, tt = 0.5, 2.0
-    approx(
-        "E[W_s^2 W_t^2] at s = 0.5, t = 2 by quadrature vs 2 s^2 + s t", gauss2(lambda a, b: a * a * b * b, s, tt), 2 * s * s + s * tt, 12
-    )
-    exact("3 s^2 + s (t - s) = 2 s^2 + s t (s = 1/2, t = 2)", Fraction(3, 4) + Fraction(1, 2) * Fraction(3, 2), Fraction(3, 2))
+    prod_sq = gauss2(lambda a, b: a * a * b * b, s, tt)
+    approx("E[W_s^2 W_t^2] at s = 0.5, t = 2 by quadrature vs 2 s^2 + s t", prod_sq, 2 * s * s + s * tt, 12)
+    approx("    and 3 s^2 + s (t - s) from independent increments", 3 * s * s + s * (tt - s), prod_sq, 12)
     ws = z[:, 0] * math.sqrt(0.3)
     wt = ws + z[:, 1] * math.sqrt(0.9)
     slope = float(ws @ wt / (wt @ wt))
-    simulated("regression slope of W_0.3 on W_1.2 vs s/t = 0.25", slope, 0.001, 0.25)
+    resid = ws - slope * wt
+    slope_se = math.sqrt(float(resid @ resid) / resid.size / float(wt @ wt))
+    simulated("regression slope of W_0.3 on W_1.2 vs s/t = 0.25", slope, slope_se, 0.25)
     T = 1.0
     g = np.linspace(0.0, T, 1501)
     ss, tt2 = np.meshgrid(g, g, indexing="ij")
@@ -344,7 +356,7 @@ def gaussian_cards(rng: np.random.Generator) -> None:
             6,
         )
     approx("    1/sqrt(0.6)", 1 / math.sqrt(0.6), 1.2910, 4)
-    exact("exponent 1 - 1/(2t) at t = 1/2 (boundary: integrand no longer decays)", 1 - 1 / (2 * Fraction(1, 2)), 0)
+    print("    at t = 1/2 the exponent 1 - 1/(2t) is 0, so the integrand no longer decays and E[e^(W_t^2)] is infinite")
 
 
 def gbm_cards(rng: np.random.Generator) -> None:
@@ -378,7 +390,9 @@ def gbm_cards(rng: np.random.Generator) -> None:
         s0 * (math.exp(mu * T) - 1) / (mu * T),
         8,
     )
-    approx("ever double with mu = 0: 2^(2 mu/sigma^2 - 1)", 2 ** (-1.0), 0.5, 12)
+    p_double = solve_bvp(-0.5 * sig**2, sig, -60.0, math.log(2), 0.0, 1.0, 0.0, 120_000)
+    approx("ever double with mu = 0: P(ln S - ln S0 hits ln 2) by finite differences on (-60, ln 2)", p_double, 0.5, 6)
+    approx("    and 2^(2 mu/sigma^2 - 1) at mu = 0", 2 ** (2 * 0.0 / sig**2 - 1), p_double, 6)
 
 
 def main() -> None:

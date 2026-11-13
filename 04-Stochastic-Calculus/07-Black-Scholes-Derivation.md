@@ -87,7 +87,8 @@ The terminal condition alone fixes the price among solutions of at most polynomi
 
 At $S = 0$ the coefficients $\tfrac12\sigma^2S^2$ and $rS$ vanish, so the PDE itself reduces to $V_t = rV$ and $V(t, 0) = \text{payoff}(0)\,e^{-r(T - t)}$: the boundary value is the discounted payoff of a stock stuck at 0, not a free choice.
 For large $S$ the call is exercised with probability close to 1 and is worth the forward $S - Ke^{-r(T - t)}$; note the discounted strike, not $K$.
-The script solves the PDE by Crank-Nicolson with exactly these conditions and recovers the closed-form call and put below to three decimals.
+The script solves the PDE by Crank-Nicolson on $[0, 150]$ with exactly these conditions and recovers the closed-form call and put below to three decimals.
+The upper edge is close enough to $S_0 = 100$ that its value matters: imposing $S - K$ there instead of $S - Ke^{-r(T - t)}$ lowers the call by $0.014$, well outside that tolerance.
 
 ### Reduction to the heat equation
 
