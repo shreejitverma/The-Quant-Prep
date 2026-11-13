@@ -11,7 +11,8 @@ Independent routes used here:
   zeta(3) summed as a series, and Garman-Klass by simulating finely discretised Brownian paths;
 - the microstructure-noise bias by simulating a noisy price path sampled at three frequencies;
 - Patton's loss-function result by minimising expected losses against a noisy proxy;
-- the GARCH maximum-likelihood fit by a from-scratch Nelder-Mead and a local grid check of the optimum.
+- the GARCH maximum-likelihood fit by a from-scratch Nelder-Mead and a local check that no single-axis
+  step or step along the alpha + beta ridge raises the likelihood.
 Every quoted number is printed as ``label = value`` and asserted.
 Run it with `python 02-Statistics-and-Econometrics/code/stats_09_garch.py`.
 """

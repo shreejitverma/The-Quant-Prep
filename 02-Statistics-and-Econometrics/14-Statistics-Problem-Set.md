@@ -312,7 +312,8 @@ Issues, in the order an interviewer expects:
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/stats_14_problem_set.py`](code/stats_14_problem_set.py) prints and asserts every number on this page except the Dickey-Fuller critical value, which [`code/stats_08_arma.py`](code/stats_08_arma.py) checks against MacKinnon (2010) and re-simulates: quantiles from `statistics.NormalDist` and chi-square quadrature, the exact binomial p-value by integer summation, Lo's adjustment by simulating AR(1) monthly returns, the overlapping-label inflation by simulating a regression on a persistent signal, and the regression, GARCH and bootstrap answers by simulation or by iterating the recursions.
+- Code: [`code/stats_14_problem_set.py`](code/stats_14_problem_set.py) prints and asserts every number on this page but one: quantiles from `statistics.NormalDist` and chi-square quadrature, the exact binomial p-value by integer summation, Lo's adjustment by simulating AR(1) monthly returns, the overlapping-label inflation by simulating a regression on a persistent signal, and the regression, GARCH and bootstrap answers by simulation or by iterating the recursions.
+  The remaining one, the Dickey-Fuller critical value, is checked against MacKinnon (2010) and re-simulated in [`code/stats_08_arma.py`](code/stats_08_arma.py).
 
 ## Further reading
 

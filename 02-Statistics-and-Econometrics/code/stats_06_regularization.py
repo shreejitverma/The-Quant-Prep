@@ -76,8 +76,9 @@ def orthonormal_example(rng: np.random.Generator) -> None:
     print("    KKT conditions hold at the quoted lasso solution")
     lam_max = float(np.max(np.abs(X.T @ y)))
     approx("lambda_max = max |x_j'y|", lam_max, 3, 10)
-    assert np.all(lasso_cd(X.T @ X, X.T @ y, 3.0) == 0) and np.any(lasso_cd(X.T @ X, X.T @ y, 2.999) != 0)
-    print("    all coefficients are zero at lambda = 3 and not at lambda = 2.999")
+    assert np.all(lasso_cd(X.T @ X, X.T @ y, lam_max * (1 + 1e-9)) == 0)
+    assert np.any(lasso_cd(X.T @ X, X.T @ y, 2.999) != 0)
+    print("    all coefficients are zero at lambda = lambda_max (1 + 1e-9) and not at lambda = 2.999")
 
 
 def collinear_example() -> None:

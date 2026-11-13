@@ -180,7 +180,7 @@ print(fit_ar1(x), df_tstat(x))    # phi 0.963, half-life 18.2, DF t -4.34
 ```
 
 The true half-life is 13.5 days, but this path estimates 18.2.
-With $T = 1000$ the standard error of $\hat\phi$ is $\sqrt{(1-\phi^2)/T} = 0.0099$, and $\phi \pm 2$ se $= [0.9303, 0.9697]$ maps to half-lives of 9.6 to 22.6 days.
+With $T = 1000$ the standard error of $\hat\phi$ is $\sqrt{(1-\phi^2)/T} = 0.0099$, and $\phi \pm 2$ se $= [0.9303, 0.96975]$ maps to half-lives of 9.6 to 22.6 days.
 Report half-lives with intervals; the map $\phi \mapsto \ln 0.5/\ln\phi$ explodes as $\phi \to 1$.
 
 ## Pitfalls

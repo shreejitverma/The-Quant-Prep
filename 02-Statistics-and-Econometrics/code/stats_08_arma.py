@@ -256,9 +256,11 @@ def snippet_and_bias(rng: np.random.Generator) -> None:
     se = math.sqrt((1 - 0.95**2) / 1000)
     approx("se of phi_hat at T = 1000", se, 0.0099, 4)
     approx("phi - 2 se", 0.95 - 2 * se, 0.9303, 4)
-    approx("phi + 2 se", 0.95 + 2 * se, 0.9697, 4)
+    approx("phi + 2 se", 0.95 + 2 * se, 0.96975, 5)
     approx("half-life at phi - 2 se", LN_HALF / math.log(0.95 - 2 * se), 9.6, 1)
     approx("half-life at phi + 2 se", LN_HALF / math.log(0.95 + 2 * se), 22.6, 1)
+    approx("half-life at the quoted lower bound 0.9303", LN_HALF / math.log(0.9303), 9.6, 1)
+    approx("half-life at the quoted upper bound 0.96975", LN_HALF / math.log(0.96975), 22.6, 1)
     print("Kendall bias of phi_hat with an estimated mean: -(1 + 3 phi)/T")
     reps, n, phi = 20000, 250, 0.95
     paths = ar1_paths(rng, phi, n, reps)
