@@ -157,6 +157,7 @@ def running_maximum(rng: np.random.Generator) -> None:
     m, se = mean_se((m_cont >= 1.0).astype(float))
     simulated("P(M_1 >= 1), exact continuous-maximum simulation", m, se, p_closed)
     approx("sqrt(2/pi)", math.sqrt(2 / math.pi), 0.798, 3)
+    approx("sqrt(2/pi) to four decimals (continuous E[M_1])", math.sqrt(2 / math.pi), 0.7979, 4)
     m, se = mean_se(m_cont)
     simulated("E[M_1], exact continuous-maximum simulation", m, se, math.sqrt(2 / math.pi))
     m, se = mean_se(m_cont**2)
