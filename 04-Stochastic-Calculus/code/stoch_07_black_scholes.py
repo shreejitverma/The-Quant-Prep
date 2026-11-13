@@ -9,8 +9,9 @@ Independent routes used here:
 - the PDE, the heat-equation substitution and the Greeks identity by central finite differences;
 - the power solutions S^p by the roots of the quadratic and a finite-difference PDE residual;
 - the at-the-money approximation against quadrature;
-- the discrete-hedging error by simulating the self-financing hedge, against the rule of M. Kamal (Goldman Sachs research note, 1998)
-  sqrt(pi/4) sigma vega / sqrt(N).
+- the discrete-hedging error by simulating the self-financing hedge, against its exact finite-N standard deviation by
+  quadrature (the P&L is a sum of orthogonal martingale increments C_{i+1} - C_i - Delta_i dS_i), and against the rule
+  of M. Kamal (Goldman Sachs research note, 1998) sqrt(pi/4) sigma vega / sqrt(N), which is asymptotic in N.
 Every quoted number is printed as ``label = value`` and asserted.
 Run it with `python 04-Stochastic-Calculus/code/stoch_07_black_scholes.py`.
 """
@@ -20,6 +21,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
+from numpy.lib.stride_tricks import sliding_window_view
 
 SEED = 20261116
 S0, K, T, R, SIG = 100.0, 105.0, 0.5, 0.05, 0.25
@@ -234,6 +236,40 @@ def power_solutions() -> None:
     print("    analytically: 0.03125 (-1.6)(-2.6) + 0.05 (-1.6) - 0.05 = 0.13 - 0.08 - 0.05 = 0")
 
 
+def hedge_sd_quadrature(s0: float, k: float, sig: float, tm: float, n: int, dx: float = 0.001) -> float:
+    """Exact sd of the P&L of a call sold at C0 and delta-hedged at N equal steps, r = 0, by quadrature.
+
+    The P&L is minus the sum of the increments C(t_{i+1}, S_{i+1}) - C(t_i, S_i) - Delta_i (S_{i+1} - S_i); each has
+    conditional mean zero, so they are orthogonal and Var(P&L) = sum_i E[(C_{i+1} - C_i - Delta_i dS_i)^2].
+    Both expectations are sums on one uniform ln S grid with ln K a node (the payoff kink): the outer one against the
+    lognormal density of S_i, the inner one against the one-step transition density, truncated at 8 step sds.
+    """
+    h = tm / n
+    half = round(10 * sig * math.sqrt(tm) / dx)
+    x = math.log(k) + dx * np.arange(-half, half + 1)
+    sx = np.exp(x)
+    b = math.ceil(8 * sig * math.sqrt(h) / dx)
+    step = dx * np.arange(-b, b + 1)
+    kernel = npdf((step + 0.5 * sig**2 * h) / (sig * math.sqrt(h))) * dx / (sig * math.sqrt(h))
+    var = 0.0
+    for i in range(n):
+        t, tau = i * h, tm - i * h
+        c_next = np.maximum(sx - k, 0.0) if i == n - 1 else call(sx, k, tau - h, 0.0, sig)
+        if i == 0:
+            j, w = np.array([round((math.log(s0) - x[0]) / dx)]), np.array([1.0])
+        else:
+            j = np.arange(b, x.size - b)
+            w = npdf((x[j] - math.log(s0) + 0.5 * sig**2 * t) / (sig * math.sqrt(t))) * dx / (sig * math.sqrt(t))
+        s = sx[j]
+        g = (
+            sliding_window_view(c_next, 2 * b + 1)[j - b]
+            - call(s, k, tau, 0.0, sig)[:, None]
+            - ncdf(d12(s, k, tau, 0.0, sig)[0])[:, None] * (sliding_window_view(sx, 2 * b + 1)[j - b] - s[:, None])
+        )
+        var += float(w @ ((g * g) @ kernel))
+    return math.sqrt(var)
+
+
 def discrete_hedging(rng: np.random.Generator) -> None:
     print(
         "Discrete delta hedging of a sold one-year ATM call, sigma = 20%, r = 0, S0 = 100, 40,000 paths (card sc-bs-discrete-hedge-error)"
@@ -261,13 +297,17 @@ def discrete_hedging(rng: np.random.Generator) -> None:
         simulated(f"mean P&L, N = {n} (zero within noise)", m, se, 0.0)
         approx(f"simulated sd, N = {n}", sd, q_sim, 2)
         approx(f"sqrt(pi/4) sigma vega / sqrt(N), N = {n}", rule, q_rule, 2)
-        print(f"    simulated sd / rule, N = {n}: {sd / rule:.3f}")
-        stats[n] = (sd, sd_se(pnl), rule)
-    (sd21, se21, rule21), (sd84, se84, rule84) = stats[21], stats[84]
+        exact = hedge_sd_quadrature(s0, k, sig, tm, n)
+        simulated(f"simulated sd vs exact sd by quadrature, N = {n}", sd, sd_se(pnl), exact)
+        approx(f"exact sd by quadrature, N = {n}", exact, q_sim, 2)
+        print(f"    exact sd / rule, N = {n}: {exact / rule:.3f} (the rule is asymptotic in N)")
+        stats[n] = (sd, sd_se(pnl), exact, rule)
+    (sd21, se21, exact21, rule21), (sd84, se84, exact84, rule84) = stats[21], stats[84]
     ratio = sd21 / sd84
     ratio_se = ratio * math.hypot(se21 / sd21, se84 / sd84)  # independent path sets for each N
-    label = "sd(N = 21) / sd(N = 84) vs the rule's ratio: quadrupling the frequency roughly halves the error"
-    simulated(label, ratio, ratio_se, rule21 / rule84)
+    print(f"    rule ratio sqrt(84/21) = {rule21 / rule84:.12g}")
+    approx("exact sd(N = 21) / sd(N = 84) by quadrature: quadrupling the frequency roughly halves the error", exact21 / exact84, 1.96, 2)
+    simulated("simulated sd(N = 21) / sd(N = 84) vs the exact ratio", ratio, ratio_se, exact21 / exact84)
     approx("    sd(N = 21) / sd(N = 84) at this seed", ratio, 1.98, 2)
     approx("sqrt(pi/4)", math.sqrt(math.pi / 4), 0.886, 3)
 

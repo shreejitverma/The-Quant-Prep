@@ -196,7 +196,8 @@ A 40,000-path simulation of the self-financing hedge (seed in the script) gives:
 | 252 | 0.44 | 0.44 |
 
 The mean P&L is zero within four standard errors, and the simulated standard deviation sits slightly below the approximation and closes on it as $N$ grows.
-Quadrupling the hedge frequency only roughly halves the error: the approximation's ratio is exactly $\sqrt{84/21} = 2$, and the simulated ratio of standard deviations is about 2 (this seed prints 1.98).
+The exact standard deviations of this discrete hedge, by quadrature over its orthogonal per-step errors, also round to 1.48, 0.75 and 0.44, and the simulation matches them within four standard errors.
+Quadrupling the hedge frequency only roughly halves the error: the approximation's ratio is exactly $\sqrt{84/21} = 2$, the exact ratio is 1.96, and this seed's simulated ratio is 1.98.
 That square-root law is the argument for spending rebalances where gamma is large (hedging on moves or bands) rather than on a fixed clock.
 
 ## Pitfalls
