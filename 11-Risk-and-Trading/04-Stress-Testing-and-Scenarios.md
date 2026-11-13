@@ -286,7 +286,7 @@ The stress test must report the 5.25m cash outflow beside the gain, because the 
 > The real risk is curvature: full revaluation finds a 1m loss at a 16.7% rally (log return 0.154) with vol down 8.1 points, distance 3.875.
 > Reverse stress tests on nonlinear books need full revaluation (or at least delta-gamma with cross terms) inside the optimisation.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [stress_testing.py](code/stress_testing.py): scenario P&L, Mahalanobis plausibility, conditional expansion, reverse stress tests (closed form, brute force, multi-start fixed point), margin and correlation stress; every number above.
 - Loss quantiles and tails: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md); generating the scenarios: [Scenario Generation](11-Scenario-Generation.md).

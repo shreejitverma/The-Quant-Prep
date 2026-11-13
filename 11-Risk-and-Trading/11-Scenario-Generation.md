@@ -279,7 +279,7 @@ Then look at timing: unconditional coverage cannot see that HS exceptions bunch 
 > FHS keeps the empirical residual shape and matched the 1% level as well as HS on the stationary sample.
 > Fix the tails (FHS, $t$ or EVT residuals), not the volatility.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [scenario_generation.py](code/scenario_generation.py): FHS and Cholesky examples, the HS/FHS/normal backtests, copula tail dependence, antithetics, Halton points, horizon scaling, overlapping windows, quantile error; every number above.
 - Inputs: [Risk Factor Modelling](10-Risk-Factor-Modelling.md); volatility models: [GARCH](../02-Statistics-and-Econometrics/09-Volatility-Models-GARCH.md); Monte Carlo techniques in pricing: [Monte Carlo Pricing and Variance Reduction](../05-Derivatives-and-Volatility/10-Monte-Carlo-Pricing-and-Variance-Reduction.md).

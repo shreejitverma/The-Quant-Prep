@@ -217,7 +217,7 @@ With the trades at par and one maturity bucket, EAD is proportional to the absol
 - Jon Gregory, *The xVA Challenge: Counterparty Risk, Funding, Collateral, Capital and Initial Margin*, 4th edition, Wiley, 2020.
 - Basel Committee on Banking Supervision, Basel Framework CRE52, CRE54 and MAR50.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md) - the EAD engine behind $K(t)$.
 - [CVA Capital Charge](05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md) - BA-CVA and SA-CVA.

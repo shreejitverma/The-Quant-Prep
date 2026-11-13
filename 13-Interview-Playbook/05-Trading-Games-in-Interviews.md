@@ -187,7 +187,7 @@ Kelly stake $f^* = p - q = 0.2$ of wealth, with expected log growth $0.6 \ln 1.2
 > [!question]- int-tg-pnl-decomposition | How do you split a market-making game P&L into skill and luck?
 > Edge at fill ($\pm$ price minus fair value at the time, times size) plus inventory P&L (position times each fair-value change). The first reflects quoting; the second is mostly the risk you chose to hold.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `tools/qp/drills.py` implements `MarketMakingGame`, the engine behind `./qp drill mm`, including the edge and inventory split.
 

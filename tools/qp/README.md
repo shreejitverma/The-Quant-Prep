@@ -255,7 +255,7 @@ Selecting an engine shows a quick client-side preview; **Run Simulation** calls 
 | `solid` | A `solid` or `canonical` topic has the required sections and at least 6 cards (15 for a problem set, 3 for a playbook). |
 | `card` | Empty answers, and single-line answers that start like a numbered list. |
 | `link` | Relative Markdown links resolve. |
-| `sde-link` | With `--strict-sde`, links into SDE-Interview-Prep point at files that exist in the local clone. |
+| `tde-link` | With `--strict-tde`, links into The-Distinguished-Engineer point at files that exist in the local clone. |
 | `style` | No em dashes and no emojis. |
 | `private` | Nothing under `private/` is tracked by git. |
 | `index` | No generated README block is stale. |
@@ -305,11 +305,11 @@ CI (`.github/workflows/ci.yml`) runs on every pull request and on `main`:
 
 | Job | Steps |
 | :--- | :--- |
-| `content-and-platform` | `./qp check --strict-sde` against a fresh SDE-Interview-Prep clone, the unit tests, ruff, and `tools/run_examples.py` over every curriculum example. |
+| `content-and-platform` | `./qp check --strict-tde` against a fresh The-Distinguished-Engineer clone, the unit tests, ruff, and `tools/run_examples.py` over every curriculum example. |
 | `secrets` | gitleaks over the commits the change adds (`tools/scan-secrets.sh`). |
 | `cpp-examples` (g++ and clang++) | Every C++ example and unit test built warning-free, then run under ASan and UBSan, and under TSan when it includes `<thread>`. |
 
-`.no-mistakes.yaml` runs the lint (`qp check`, the secret scan, ruff) and the unit tests as the local ship gate; CI adds the strict SDE link check and the examples.
+`.no-mistakes.yaml` runs the lint (`qp check`, the secret scan, ruff) and the unit tests as the local ship gate; CI adds the strict TDE link check and the examples.
 
 ## Extending
 

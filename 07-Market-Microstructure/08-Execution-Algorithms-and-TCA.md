@@ -223,11 +223,11 @@ Comparing two algorithms is harder: a two-sample test at the 5% level with 80% p
 > Randomly allocate comparable orders between them, measure arrival shortfall including opportunity cost, normalise by spread and volatility, control for size relative to volume, and test with enough orders for the noise.
 > Without randomisation, order selection biases the comparison.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [execution_algos.py](code/execution_algos.py) reproduces every number above (`python execution_algos.py`).
 - Code: [almgren_chriss.py](code/almgren_chriss.py) for the implementation-shortfall schedule.
-- [Smart order routing and execution algorithms (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Smart%20Order%20Routing%20and%20Execution%20Algorithms.md)
+- [Smart order routing and execution algorithms (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Smart%20Order%20Routing%20and%20Execution%20Algorithms.md)
 
 ## Further reading
 

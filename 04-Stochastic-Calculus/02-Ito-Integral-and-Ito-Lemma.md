@@ -227,7 +227,7 @@ Corollary: $E[\cos W_t] = e^{-t/2}$, which is also the real part of the characte
 > [!question]- sc-ito-local-martingale | When can a stochastic integral $\int H\,dW$ fail to have mean zero?
 > When $E\int H^2\,dt = \infty$: it is then only a local martingale (a strict local martingale can have decreasing mean). The isometry and zero-mean property need square integrability.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - See `02_quantitative_data_analysis/misc_notebooks/29. ito's lemma clearly and visually explained` in the legacy archive for a visual walkthrough.
 

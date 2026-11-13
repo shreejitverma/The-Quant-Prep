@@ -298,13 +298,13 @@ Resending the trades for every scenario costs 5.71 s of transfer before any arit
 > Give every task a deterministic id from (run id, trade set, scenario set, measure), make outputs idempotent writes keyed by that id, and treat retries and backup copies as duplicates resolved by keeping one.
 > Inputs are immutable snapshot ids and a rerun gets a new run id, so earlier results stay reproducible.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_pricing_at_scale.py` computes, prints and asserts every number on this page.
 - [EOD Risk Batch](13-EOD-Risk-Batch.md) and [Storage and Compute](14-Storage-and-Compute.md) for the batch and infrastructure built on these patterns.
 - [Pricing Library Architecture](05-Pricing-Library-Architecture.md) for AAD and determinism, [Curve and Surface Service](04-Curve-and-Surface-Service.md) for dependency graphs.
 - [VaR and Expected Shortfall](../11-Risk-and-Trading/03-VaR-and-Expected-Shortfall.md) for the quantile conventions.
-- SDE-Interview-Prep: [MapReduce Architecture](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/MapReduce-Architecture.md), [Caching and Invalidation](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Caching-and-Invalidation.md), [Idempotency and Delivery](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).
+- The-Distinguished-Engineer: [MapReduce Architecture](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/MapReduce-Architecture.md), [Caching and Invalidation](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Caching-and-Invalidation.md), [Idempotency and Delivery](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Idempotency-and-Delivery.md).
 
 ## Further reading
 

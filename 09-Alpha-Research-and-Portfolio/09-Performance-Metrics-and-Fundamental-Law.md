@@ -224,7 +224,7 @@ print((prices / prices.cummax() - 1).min(), r.mean() / downside * np.sqrt(252)) 
 > The expected maximum drawdown grows with the length of the path.
 > A longer record has more chances to hit a deep trough, so normalise by horizon or compare drawdown distributions from simulation.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [performance_metrics.py](code/performance_metrics.py).
 

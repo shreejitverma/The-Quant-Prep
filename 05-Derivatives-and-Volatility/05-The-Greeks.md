@@ -279,7 +279,7 @@ print(greeks(100, 100, 1.0, 0.05, 0.2))
 > $-6.414 + 3.752 + 3.184 - 0.523 = 0$ to rounding.
 > The terms are $\tfrac12\sigma^2S^2\Gamma = 0.02 \times 10^4 \times 0.01876$, $rS\Delta = 5 \times 0.6368$ and $rV = 0.05 \times 10.4506$; a risk system that fails this check has inconsistent Greeks.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [deriv_01_07_greeks.py](code/deriv_01_07_greeks.py) prints and asserts every number in this note; [greeks_visualization.ipynb](code/greeks_visualization.ipynb) plots delta, gamma, vega and theta against spot (it needs scipy and matplotlib and is not run by CI).
 - Uses: [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md), [PnL Attribution and Greek Risk](../11-Risk-and-Trading/06-PnL-Attribution-and-Greek-Risk.md), [Options Market Making](../08-Market-Making/07-Options-Market-Making.md).

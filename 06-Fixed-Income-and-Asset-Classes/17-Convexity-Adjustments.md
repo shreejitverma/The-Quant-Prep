@@ -201,7 +201,7 @@ This ignores the CMS adjustment of the EUR swap rate itself, which a full quanto
 > The far strikes carry a large share of the value, because the replication weight $h''(K)$ does not vanish there.
 > In the example the adjustment falls from 18.18 to 9.84 bp; with a fat-tailed smile the error is larger.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_convexity.py`](code/fi_convexity.py) (futures, CMS, in-arrears and quanto adjustments with independent checks); [`code/rates_models.py`](code/rates_models.py) also has `futures_rate_convexity_adjustment` (Ho-Lee), `cms_rate_annuity_adjustment` (the linear approximation) and `in_arrears_convexity_adjustment` (first order).
 - Prereqs: [Short-Rate Models](04-Short-Rate-Models.md), [Swaps and Curve Building](03-Swaps-and-Curve-Building.md).

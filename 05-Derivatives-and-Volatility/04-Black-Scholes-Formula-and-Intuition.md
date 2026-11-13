@@ -244,7 +244,7 @@ print(black(80, 75, 0.5, 0.04, 0.35))              # 10.1832
 > About 8.0 (exact 7.98).
 > $0.8 \times 100 \times 0.2 \times \sqrt{0.25} = 8$; the straddle is the expected absolute move, $\sqrt{2/\pi}\,S\sigma\sqrt{T}$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [deriv_01_07_black_scholes.py](code/deriv_01_07_black_scholes.py) prints and asserts every number in this note.
 - Derivation: [Black-Scholes Derivation](../04-Stochastic-Calculus/07-Black-Scholes-Derivation.md). Discrete version: [Binomial Trees](03-Binomial-Trees.md).

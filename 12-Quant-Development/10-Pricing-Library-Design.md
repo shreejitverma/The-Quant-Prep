@@ -386,7 +386,7 @@ The instrument repriced 4 times (the initial price plus one per step), each time
 > [!question]- qd-pricelib-calibration-graph | How does calibration fit into an observer-based design?
 > The solver sets model-parameter quotes; notifications invalidate the dependent process, engines and calibration instruments; the solver reads their repriced values and iterates. In the demo, Newton on the vol quote reaches $0.241117$ for a call price of 12 in 3 steps with 4 reprices.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [pricing_library.hpp](code/cpp/pricing_library.hpp) (observer graph, lazy instrument, three engines, bump and AAD Greeks, calibration), [pricing_library.cpp](code/cpp/pricing_library.cpp) (every number above, printed and asserted), [tests/test_pricing_library.cpp](code/cpp/tests/test_pricing_library.cpp) (known answers including the textbook $S = 42$, $K = 40$ case, parity, AAD vs FD vs analytic, cache invalidation, engine swaps, observer lifetime, calibration).
 - Code: [compile_time_greeks.cpp](code/cpp/compile_time_greeks.cpp) (compile-time normal CDF table for hot pricing paths).

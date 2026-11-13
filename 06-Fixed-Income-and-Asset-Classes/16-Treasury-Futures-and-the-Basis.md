@@ -217,7 +217,7 @@ Barth and Kahn (2021) conclude the basis trade unwind was more a consequence of 
 > About $DV01_{CTD}/CF$ per contract, because the futures price moves like the CTD's forward price over its CF.
 > For bond A, $59.37/0.8937 = 66.44$ USD per bp per contract; a CTD switch changes it.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_treasury_futures.py`](code/fi_treasury_futures.py) (CME conversion factors, basket basis, IRR, CTD, hedge).
 - Related notes: [Bonds, Duration and Convexity](02-Bonds-Duration-and-Convexity.md), [Money Markets, Repo and Overnight Rates](12-Money-Markets-Repo-and-Overnight-Rates.md), [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md).

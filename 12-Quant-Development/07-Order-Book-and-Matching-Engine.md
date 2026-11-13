@@ -343,15 +343,15 @@ The 268-byte stream applies 7 messages, skips 1 (other stock), with 0 errors; th
 > [!question]- qd-lobimpl-benchmark-numbers | What did the repo's engine measure, and what should you not conclude from it?
 > 60.3 ns per operation on average on an Apple M3 Pro for a synthetic flow, with p99.9 between 84 and 167 ns by operation type (machine-dependent). Do not conclude production latency: the clock was quantised to 42 ns, the machine untuned, the flow synthetic, and the book small and cache-resident.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [lob_engine.hpp](code/cpp/lob_engine.hpp) (engine), [lob_itch_book.hpp](code/cpp/lob_itch_book.hpp) (ITCH 5.0 book builder and encoders), [order_matching_engine.cpp](code/cpp/order_matching_engine.cpp) (the worked examples), [lob_bench.cpp](code/cpp/lob_bench.cpp) (throughput and level-container comparison), [tests/test_lob_engine.cpp](code/cpp/tests/test_lob_engine.cpp) (rules and differential test), and the spec [Nasdaq TotalView-ITCH 5.0](protocol-specs/NASDAQ-TotalView-ITCH-5.pdf).
 - Related: [Limit Order Books and Order Types](../07-Market-Microstructure/01-Limit-Order-Books-and-Order-Types.md), [Order Book Imbalance and Microprice](../07-Market-Microstructure/11-Order-Book-Imbalance-and-Microprice.md), [System Design for Trading](06-System-Design-for-Trading.md), [Backtester and Simulator Design](09-Backtester-and-Simulator-Design.md).
-- [Order book data structures (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/03%20-%20Matching%20Engine%20Internals/Order%20Book%20Data%20Structures.md)
-- [Matching algorithms (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/03%20-%20Matching%20Engine%20Internals/Matching%20Algorithms.md)
-- [Self-match prevention mechanisms (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/03%20-%20Matching%20Engine%20Internals/Self-Match%20Prevention%20Mechanisms.md)
-- [Lab: intrusive LOB (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/03%20-%20Matching%20Engine%20Internals/Lab%20-%2003%20High-Performance%20Intrusive%20LOB.md)
-- [Participant-side order book reconstructors (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/Participant-Side%20Order%20Book%20Reconstructors.md)
+- [Order book data structures (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/03%20-%20Matching%20Engine%20Internals/Order%20Book%20Data%20Structures.md)
+- [Matching algorithms (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/03%20-%20Matching%20Engine%20Internals/Matching%20Algorithms.md)
+- [Self-match prevention mechanisms (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/03%20-%20Matching%20Engine%20Internals/Self-Match%20Prevention%20Mechanisms.md)
+- [Lab: intrusive LOB (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/03%20-%20Matching%20Engine%20Internals/Lab%20-%2003%20High-Performance%20Intrusive%20LOB.md)
+- [Participant-side order book reconstructors (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/Participant-Side%20Order%20Book%20Reconstructors.md)
 
 ## Further reading
 

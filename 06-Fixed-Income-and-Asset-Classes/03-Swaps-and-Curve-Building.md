@@ -270,7 +270,7 @@ In USD, CME and LCH moved price alignment interest and discounting for cleared s
 > CME and LCH switched price alignment interest and discounting from EFFR to SOFR after the close (ARRC, September 2020), with cash compensation for the value change.
 > Every cleared swap's PV, its discounting risk, and hedges against EFFR-SOFR basis changed; a desk needed its curves, collateral rates and risk to switch the same day.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [`code/fi_swaps_ois.py`](code/fi_swaps_ois.py) computes, prints and asserts every number on this page.
 - Related notes: [Discounting and Yield Curves](01-Discounting-and-Yield-Curves.md), [Money Markets, Repo and Overnight Rates](12-Money-Markets-Repo-and-Overnight-Rates.md), [Multi-Curve and CSA Discounting](13-Multi-Curve-and-CSA-Discounting.md), [Curve Construction Numerics](14-Curve-Construction-Numerics.md), [Curve Risk and Hedging](15-Curve-Risk-and-Hedging.md).

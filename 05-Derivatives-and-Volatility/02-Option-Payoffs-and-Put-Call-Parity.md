@@ -265,7 +265,7 @@ print(14.00 - 2 * 8.00 + 1.50)                        # butterfly -0.50: arbitra
 > 0.5323, the price of a 99.99/100.01 call spread scaled by $1/0.02$.
 > It equals $e^{-rT}N(d_2) = 0.9512 \times 0.5596$; with a skew, add $-\text{vega}\,\partial\sigma/\partial K$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [deriv_01_07_parity_bounds.py](code/deriv_01_07_parity_bounds.py) prints and asserts every number in this note (parity, conversion, box and butterfly by construction, bounds, the American put on a CRR tree, the dividend-exercise rule, digital and density from strikes).
 - Prev: [Forwards, Futures and Carry](01-Forwards-Futures-and-Carry.md). Next: [Binomial Trees](03-Binomial-Trees.md).

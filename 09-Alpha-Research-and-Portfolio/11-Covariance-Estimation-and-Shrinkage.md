@@ -351,7 +351,7 @@ A 60-factor model has 184,830 parameters against 4,501,500, is full rank because
 > At the optimum $\Sigma w = \sigma^2_p\mathbf 1$, so $w_i(\Sigma w)_i = \sigma_p^2 w_i$.
 > Every asset has the same marginal risk, which is the first-order condition of minimising variance under a budget constraint.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [covariance_shrinkage.py](code/covariance_shrinkage.py) implements both Ledoit-Wolf estimators, eigenvalue clipping, the PCA factor model and EWMA, and runs the out-of-sample comparison.
 - Related notes: [Mean-Variance Portfolio Construction](10-Mean-Variance-Portfolio-Construction.md), [Black-Litterman, Risk Parity and HRP](12-Black-Litterman-Risk-Parity-and-HRP.md), [Cross-Sectional Factor Models](04-Cross-Sectional-Factor-Models.md), [Covariance Matrices and PSD](../03-Linear-Algebra-and-Optimization/04-Covariance-Matrices-and-PSD.md), [PCA and Factor Structure](../03-Linear-Algebra-and-Optimization/05-PCA-and-Factor-Structure.md), [Volatility Models and GARCH](../02-Statistics-and-Econometrics/09-Volatility-Models-GARCH.md).

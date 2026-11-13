@@ -375,7 +375,7 @@ The interview answer:
 > It depends on the market and the sample length.
 > In a simulated 50-asset block market HRP's variance was about 3.7 times optimal at every $T$, while the sample minimum-variance portfolio went from 6.28 at $T = 60$ to 1.11 at $T = 520$, and long-only minimum variance beat HRP throughout; HRP's robust advantages are stability, positivity and no inversion.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [black_litterman_model.ipynb](code/black_litterman_model.ipynb).
 - Code: [bl_risk_parity_hrp.py](code/bl_risk_parity_hrp.py) implements the BL posterior, the Spinu ERC solver, long-only minimum variance by an active-set method, HRP from scratch, and the out-of-sample comparison.

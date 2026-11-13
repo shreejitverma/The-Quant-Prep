@@ -402,7 +402,7 @@ The equity tranche is about 33 times as sensitive per unit of notional as the se
 - Basel Committee on Banking Supervision, *The standardised approach for measuring counterparty credit risk exposures*, BCBS 279, March 2014 (the original standard and its calibration rationale).
 - Gregory, J., *The xVA Challenge*, 4th edition, Wiley, 2020, chapters on exposure and regulatory capital.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) for the risk weights that EAD is multiplied by.
 - [CVA Capital Charge: SA-CVA and BA-CVA](05-CVA-Capital-Charge-SA-CVA-and-BA-CVA.md), which reuses this EAD.

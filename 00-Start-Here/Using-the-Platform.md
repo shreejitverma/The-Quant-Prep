@@ -27,7 +27,7 @@ cd The-Quant-Prep
 
 - **Tracks** are `quant-trader`, `quant-research`, `quant-dev` and `quant-risk`; pass several to study for more than one role.
 - **Runnable examples** in each section's `code/` folder need numpy, pandas and matplotlib: use `environment.yml` with conda, or `uv run --no-project --with numpy --with pandas --with matplotlib python <file>.py`.
-- **Cross-repo links:** keep SDE-Interview-Prep cloned next to this repo (`../SDE-Interview-Prep`) if you want `./qp check --strict-sde` to verify links into it.
+- **Cross-repo links:** keep The-Distinguished-Engineer cloned next to this repo (`../The-Distinguished-Engineer`) if you want `./qp check --strict-tde` to verify links into it.
 - **The dashboard** loads its Markdown, maths and diagram renderers from a CDN; without network access notes show as plain text.
 
 ## A typical day
@@ -87,7 +87,7 @@ See the [Markets Mastery OS hub](../16-Trading-and-Investing/MARKETS_HUB.md) for
 | Command | What it does |
 | :--- | :--- |
 | `./qp serve [--host 127.0.0.1] [--port 8765] [--open]` | The local dashboard; `--open` opens your browser. |
-| `./qp check [files ...] [--strict-sde]` | Validate notes, cards, links and style (CI runs this); file arguments limit the link and style checks. |
+| `./qp check [files ...] [--strict-tde]` | Validate notes, cards, links and style (CI runs this); file arguments limit the link and style checks. |
 | `./qp index` | Regenerate the generated tables in the section READMEs and the root README. |
 | `./qp bank <folder> [--prefix wsq] [--name WSQ]` | Import a private question bank into the overlay (see below). |
 

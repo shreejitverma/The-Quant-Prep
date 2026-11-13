@@ -38,4 +38,4 @@ Institutional sources you will meet on the job: CRSP and Compustat (via WRDS), B
 
 - A modern compiler (GCC or Clang) with C++20, CMake, and the sanitizers (ASan, UBSan, TSan).
 - Google Benchmark for microbenchmarks and `perf` or Instruments for profiling.
-- The [SDE Link Map](../00-Start-Here/SDE-Link-Map.md) points to the low-latency systems material.
+- The [TDE Link Map](../00-Start-Here/TDE-Link-Map.md) points to the low-latency systems material.

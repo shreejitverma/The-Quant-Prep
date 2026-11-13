@@ -221,7 +221,7 @@ The correction adds the average gap between observed serials, the discrete versi
 > With iid $N(0,\sigma^2)$ errors, $\ell(\beta) = -\frac{1}{2\sigma^2}\|y-X\beta\|^2 + \text{const}$.
 > Maximising it over $\beta$ is minimising the residual sum of squares; the variance MLE is then $\text{RSS}/n$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Random Variables and Distributions](../01-Probability/03-Random-Variables-and-Distributions.md) for the families used here.
 - [Confidence Intervals and Sampling](02-Confidence-Intervals-and-Sampling.md) turns these standard errors into intervals.

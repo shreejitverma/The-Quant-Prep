@@ -258,7 +258,7 @@ print(crr(100, 100, 1, 0.05, 0.2, 500, call=False, american=True))   # 6.0888
 > The average, 10.4493, within 0.0013 of Black-Scholes and better than $N = 1000$ alone (10.4486).
 > The odd-even errors have opposite signs and similar size, so averaging cancels most of the oscillation.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [deriv_01_07_binomial.py](code/deriv_01_07_binomial.py) prints and asserts every number in this note.
 - Prev: [Option Payoffs and Put-Call Parity](02-Option-Payoffs-and-Put-Call-Parity.md). Next: [Black-Scholes Formula and Intuition](04-Black-Scholes-Formula-and-Intuition.md).

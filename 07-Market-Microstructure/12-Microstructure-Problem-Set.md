@@ -184,10 +184,10 @@ $\kappa = \sqrt{2 \times 10^{-6} \times 0.25/10^{-6}} = 0.7071$ per day, and aft
 > [!question]- ms-ps-rule-status | As of 2026-10, which of these are in force: the 10-mil access fee cap, the half-penny tick, Rule 611?
 > Only Rule 611; compliance with the amended fee cap and tick is exempted until the first business day of November 2027, and the June 2026 proposal to rescind Rule 611 had not been adopted when this was written (check sec.gov).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [problem_set.py](code/problem_set.py) computes and asserts every number above (`python problem_set.py`).
-- [Microstructure and order matching drill (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Drill%20-%2001%20Microstructure%20and%20Order%20Matching%20Mechanics.md)
+- [Microstructure and order matching drill (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Drill%20-%2001%20Microstructure%20and%20Order%20Matching%20Mechanics.md)
 
 ## Further reading
 

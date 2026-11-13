@@ -319,13 +319,13 @@ Memory: 100,000 paths of 100 steps with 10 operations a step is 0.1 billion tape
 > Pin versions per run; run the new version against a reference portfolio and archived inputs; explain every price and sensitivity difference above tolerance by a documented change; obtain model validation sign-off where models changed; then switch with the ability to roll back.
 > The serialized inputs and pinned versions make the comparison reproducible.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_pricing_library.py` computes, prints and asserts every number on this page.
 - [Pricing Library Design](../12-Quant-Development/10-Pricing-Library-Design.md) for the C++ view of the same design.
 - [Curve and Surface Service](04-Curve-and-Surface-Service.md) for the Jacobian identity used for calibrated inputs, and [Pricing at Scale](06-Pricing-at-Scale.md) for running these libraries on a grid.
 - [Sensitivities and Revaluation](../11-Risk-and-Trading/12-Sensitivities-and-Revaluation.md) for how risk uses the sensitivities.
-- SDE-Interview-Prep: [Observer and Pub-Sub](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/01-LLD/03-Behavioral-Patterns/Observer-and-Pub-Sub.md), [Design Patterns Catalog](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/01-LLD/00-Foundations/Design-Patterns-Catalog-Staff-Reference.md).
+- The-Distinguished-Engineer: [Observer and Pub-Sub](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/01-LLD/03-Behavioral-Patterns/Observer-and-Pub-Sub.md), [Design Patterns Catalog](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/01-LLD/00-Foundations/Design-Patterns-Catalog-Staff-Reference.md).
 
 ## Further reading
 

@@ -245,11 +245,11 @@ Either way the archive fits comfortably in object storage; the design questions 
 > When the workload is aggregation or ad hoc slicing: summing over millions of keys becomes millions of lookups and network transfers.
 > Key-value stores fit point lookups of hot state (live marks, limits); aggregations belong in columnar engines, with results cached if needed.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_storage_compute.py` computes, prints and asserts every number on this page: a Gorilla encoder and decoder with round-trip checks, the synthetic series, scan ratios, byte-stream entropy and archive sizing.
 - [The EOD Risk Batch](13-EOD-Risk-Batch.md) for what writes these stores, [Market and Reference Data Platform](03-Market-and-Reference-Data-Platform.md) for tick and snapshot capture, and [Non-Functional Design](16-Non-Functional-Design.md) for replication and recovery.
-- SDE-Interview-Prep: [Indexing and Access Paths](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Indexing-and-Access-Paths.md), [RDBMS vs NoSQL](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/RDBMS-vs-NoSQL.md), [Partitioning and Sharding](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Partitioning-and-Sharding.md).
+- The-Distinguished-Engineer: [Indexing and Access Paths](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Indexing-and-Access-Paths.md), [RDBMS vs NoSQL](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/RDBMS-vs-NoSQL.md), [Partitioning and Sharding](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Partitioning-and-Sharding.md).
 
 ## Further reading
 

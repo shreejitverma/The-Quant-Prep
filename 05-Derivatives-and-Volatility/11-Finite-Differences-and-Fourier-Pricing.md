@@ -379,7 +379,7 @@ Two independent Fourier pricers agreeing within $3 \times 10^{-10}$ is how you v
 > Delta and gamma come from neighbouring nodes of the same solve at every spot, smooth and free; Monte Carlo Greeks of discontinuous payoffs are noisy and need likelihood-ratio or smoothing.
 > The price is that grid Greeks inherit any oscillation in the scheme, which is why Rannacher steps matter.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [fd_fourier_pricing.py](code/fd_fourier_pricing.py) (theta-scheme, PSOR, penalty, CRR tree, Carr-Madan, COS) asserts every number in this note; it imports Black-Scholes, Heston and Lewis from [pricing_core.py](code/pricing_core.py).
 - PDE derivation and boundary intuition: [Feynman-Kac and Pricing PDEs](../04-Stochastic-Calculus/06-Feynman-Kac-and-Pricing-PDEs.md); trees as explicit schemes: [Binomial Trees](03-Binomial-Trees.md).

@@ -264,7 +264,7 @@ If the one-month vol were 45% instead, forward variance would be $-0.0075 < 0$: 
 > It stops on a tolerance near machine precision (or counts iterations), so last-bit rounding differences change when it stops.
 > Stop on a price residual far above the noise (for example $10^{-10}$ on a price near 10) or a bracket width, check the residual before the bracket logic, and assert the vol, never the iteration count.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [deriv_01_07_implied_vol.py](code/deriv_01_07_implied_vol.py) prints and asserts every number in this note (safeguarded Newton, Newton iterates, smile-adjusted deltas, skewed digital, FX wings, forward variance).
 - Prev: [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md). Next: [Volatility Surface Construction](08-Volatility-Surface-Construction.md).

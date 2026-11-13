@@ -277,7 +277,7 @@ The optional 25% transitional cap would allow up to 350,000, so it does not bite
 > [!question]- reg-basel-iii-ghos-2010-calibration | What did the September 2010 GHOS agreement change in the capital minima?
 > Common equity from 2% (before adjustments) to 4.5% (after stricter adjustments), Tier 1 from 4% to 6%, plus a 2.5% conservation buffer and a 0% to 2.5% countercyclical buffer, with 4.5% and 6% to be met from 1 January 2015 and the buffer fully effective from 1 January 2019 (GHOS press release, 12 September 2010).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Capital, RWA, and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) for the current capital stack and buffers.
 - [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) for the IRB formula and today's SA weights.

@@ -252,7 +252,7 @@ Creating two units costs the basket half-spread plus 2 bp impact (about $\$4{,}9
 > Their baskets are costly and slow to trade, so the arbitrage band is wide, and their NAVs use evaluated prices that lag in stress.
 > The ETF price is often the better estimate of value then, not the NAV.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [etf_futures_mm.py](code/etf_futures_mm.py).
 - Related: [ETFs and Index Arbitrage](../06-Fixed-Income-and-Asset-Classes/08-ETFs-and-Index-Arbitrage.md), [Forwards, Futures and Cost of Carry](../05-Derivatives-and-Volatility/01-Forwards-Futures-and-Carry.md), [Hedging and Risk for Market Makers](06-Hedging-and-Risk-for-Market-Makers.md) and [Fair Value and Theoretical Pricing](02-Fair-Value-and-Theoretical-Pricing.md).

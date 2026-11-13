@@ -16,14 +16,14 @@ The single most tested subject in trader and researcher interviews. Fluency here
 
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
-| 01 | [Counting and Combinatorics](01-Counting-and-Combinatorics.md) | TRDQ | core | 4 | solid | 15 |
-| 02 | [Conditional Probability and Bayes](02-Conditional-Probability-and-Bayes.md) | TRDQ | core | 4 | solid | 14 |
-| 03 | [Random Variables and Distributions](03-Random-Variables-and-Distributions.md) | TRDQ | core | 5 | solid | 14 |
+| 01 | [Counting and Combinatorics](01-Counting-and-Combinatorics.md) | TRDQ | core | 4 | solid | 16 |
+| 02 | [Conditional Probability and Bayes](02-Conditional-Probability-and-Bayes.md) | TRDQ | core | 4 | solid | 16 |
+| 03 | [Random Variables and Distributions](03-Random-Variables-and-Distributions.md) | TRDQ | core | 5 | solid | 15 |
 | 04 | [Expectation, Variance and Linearity](04-Expectation-Variance-and-Linearity.md) | TRDQ | core | 5 | solid | 15 |
 | 05 | [Joint Distributions and Transformations](05-Joint-Distributions-and-Transformations.md) | TRQ | core | 4 | solid | 15 |
 | 06 | [Inequalities and Limit Theorems](06-Inequalities-and-Limit-Theorems.md) | TRQ | core | 4 | solid | 15 |
 | 07 | [Generating Functions](07-Generating-Functions.md) | TRQ | advanced | 3 | solid | 17 |
-| 08 | [Order Statistics and Extremes](08-Order-Statistics-and-Extremes.md) | TRQ | advanced | 3 | solid | 14 |
+| 08 | [Order Statistics and Extremes](08-Order-Statistics-and-Extremes.md) | TRQ | advanced | 3 | solid | 16 |
 | 09 | [Geometric Probability](09-Geometric-Probability.md) | TRQ | advanced | 3 | solid | 15 |
 | 10 | [Markov Chains](10-Markov-Chains.md) | TRDQ | core | 5 | solid | 16 |
 | 11 | [Random Walks and Gambler's Ruin](11-Random-Walks-and-Gamblers-Ruin.md) | TRQ | core | 4 | solid | 14 |

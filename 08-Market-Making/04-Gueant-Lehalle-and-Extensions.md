@@ -350,7 +350,7 @@ These are measured facts for this seed and this discretisation, not a proof of o
 > If only the risk check enforces them, quotes jump from normal to absent at the limit, so you oscillate and get picked off at the boundary.
 > In GLFT the skew steepens smoothly as $q \to Q$ and the bid disappears exactly at $Q$, so the limit is rarely hit.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [gueant_lehalle_glft.py](code/gueant_lehalle_glft.py) (exact solution, closed forms, drift, two assets, adverse selection, simulation) and [avellaneda_stoikov_mm.py](code/avellaneda_stoikov_mm.py) (the base model).
 - Prerequisite: [Inventory Risk and Avellaneda-Stoikov](03-Inventory-Risk-and-Avellaneda-Stoikov.md).

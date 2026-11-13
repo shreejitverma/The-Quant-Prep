@@ -329,7 +329,7 @@ Simulating $(S, X)$ under $Q^f$ and weighting by $dQ^d/dQ^f = e^{(r_d - r_f)T}X_
 > Use the asset the payoff is naturally measured in, so that payoff divided by numeraire is a simple function of one martingale: stock for asset-or-nothing and exchange legs, $P(t, T)$ for payments at $T$, annuity for swaptions.
 > Then a Black or Bachelier formula, or a lower-dimensional simulation, follows.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [girsanov_numeraire.py](code/girsanov_numeraire.py) (Girsanov density, importance sampling, Margrabe, Vasicek forward and annuity measures, quanto).
 - Prev: [Risk-Neutral Pricing and the FTAP](04-Risk-Neutral-Pricing-and-FTAP.md). Next: [Feynman-Kac and Pricing PDEs](06-Feynman-Kac-and-Pricing-PDEs.md).

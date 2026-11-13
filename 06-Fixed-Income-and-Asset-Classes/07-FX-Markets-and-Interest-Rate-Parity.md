@@ -277,7 +277,7 @@ Inverting the forward delta, $K = F\exp(\mp\sigma\sqrt{T}N^{-1}(0.25) + \tfrac12
 > T+2 business days for most pairs and T+1 for USDCAD, with holidays in either currency moving the value date.
 > Forward points are quoted from the spot date, not the trade date.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [fx_parity.py](code/fx_parity.py) prints and asserts every number in the worked examples and cards.
 - Prerequisite: [Forwards, Futures and Carry](../05-Derivatives-and-Volatility/01-Forwards-Futures-and-Carry.md) for cost of carry in continuous form.

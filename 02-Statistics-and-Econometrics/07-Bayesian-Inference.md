@@ -347,7 +347,7 @@ The answer depends on the prior because 12 observations carry little information
 > $1/14 = 0.071$ under a flat prior (Laplace's rule of succession), 0.038 under Jeffreys' Beta(1/2,1/2).
 > Never 0: posterior mean $(k+1)/(n+2)$; with so little data the prior matters, so use one from comparable strategies.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [bayesian_inference.py](code/bayesian_inference.py) computes and asserts every number in this note (beta and normal conjugate updates, predictive distributions, empirical Bayes and James-Stein simulation, ridge as a posterior mean, Metropolis samplers checked against exact answers).
 - [Conditional Probability and Bayes](../01-Probability/02-Conditional-Probability-and-Bayes.md) for Bayes' rule on events.

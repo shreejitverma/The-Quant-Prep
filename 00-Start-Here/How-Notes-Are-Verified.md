@@ -69,7 +69,7 @@ flowchart LR
 - **Independent verification.** A reviewer who did not write the note re-derives the formulas, recomputes at least five headline numbers per note with separate code, checks every citation against the source, and fixes what is wrong.
   The sections rebuilt in October 2026 went through this step.
 - **Automated gate.** Every pull request passes a review, test, lint and documentation gate before it can merge.
-- **CI.** `./qp check --strict-sde`, the platform tests, ruff, every Python example and every C++ example under sanitizers run on each pull request and on `main`.
+- **CI.** `./qp check --strict-tde`, the platform tests, ruff, every Python example and every C++ example under sanitizers run on each pull request and on `main`.
 
 ## What the status means
 

@@ -284,10 +284,10 @@ With payoff standard deviation 15 and 100,000 paths the standard error is 0.0474
 > [!question]- qd-ps-naive-sum-bound | Worst-case relative error bound of naive left-to-right summation of $10^6$ float64 terms of one sign?
 > About $nu = 10^6 \times 1.11 \times 10^{-16} = 1.11 \times 10^{-10}$ (Higham ch 4, with unit roundoff $u = \epsilon/2$). Pairwise summation, which `np.sum` uses, grows like $u\log_2 n$ instead.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [quant_dev_problem_set.py](code/python/quant_dev_problem_set.py) computes, prints and asserts every number above.
-- [LeetCode quant set (C++) (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/02-Programming-Languages/C%2B%2B/LeetCode-Quant-Complete-CPP-Full.md)
+- [LeetCode quant set (C++) (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/02-Programming-Languages/C%2B%2B/LeetCode-Quant-Complete-CPP-Full.md)
 - Concept notes: [08](08-Market-Data-Feed-Handlers-and-Protocols.md), [09](09-Backtester-and-Simulator-Design.md), [10](10-Pricing-Library-Design.md), [11](11-Numerical-Python-NumPy-and-Numba.md), [12](12-Tick-Data-Storage-and-Time-Series-Databases.md), [13](13-Risk-Checks-and-Order-Management.md), [14](14-Testing-Trading-and-Numerical-Code.md).
 
 ## Further reading

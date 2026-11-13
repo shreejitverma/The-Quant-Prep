@@ -267,7 +267,7 @@ print(0.05 - log(5030 / 5000) / 0.25)                 # implied q 0.0261
 > Hold $e^{-r(T-t)}$ futures on day $t$ and invest each margin flow to $T$: a move $\delta\text{Fut}$ pays $e^{-r(T-t)}\delta\text{Fut}$, worth $\delta\text{Fut}$ at $T$.
 > Summed, the zero-cost strategy pays $S_T - \text{Fut}_0$ at $T$, exactly a forward struck at $\text{Fut}_0$, so no arbitrage forces $\text{Fut}_0 = F_0$ (Cox, Ingersoll and Ross 1981).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [deriv_01_07_forwards_carry.py](code/deriv_01_07_forwards_carry.py) prints and asserts every number in this note; run it with `uv run --no-project --with numpy python 05-Derivatives-and-Volatility/code/deriv_01_07_forwards_carry.py`.
 - Next: [Option Payoffs and Put-Call Parity](02-Option-Payoffs-and-Put-Call-Parity.md) uses the forward as the anchor for parity.

@@ -374,7 +374,7 @@ Shifted vols are quotes in a different unit: they are not comparable with unshif
 > When $F$ moves the implied vol moves along the backbone, so $\Delta = \Delta_{Black} + \text{vega}\,\partial\sigma_B/\partial F$.
 > Bartlett's refinement also moves $\alpha$ by its expected change given $dF$ (through $\rho$), which reduces hedge P&L variance.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Prev: [Volatility Surface Construction](08-Volatility-Surface-Construction.md). Next: [Monte Carlo Pricing and Variance Reduction](10-Monte-Carlo-Pricing-and-Variance-Reduction.md).
 - Code: [heston_sabr.py](code/heston_sabr.py) asserts every number in this note (Heston Fourier and Monte Carlo, smile table, calibration, Hagan SABR, Monte Carlo SABR, density and shifted SABR); it imports [pricing_core.py](code/pricing_core.py) for Black-Scholes, implied vols, the Heston characteristic function and the Lewis integral.

@@ -203,7 +203,7 @@ The cost in data is small; skipping it lets the model memorise returns it will b
 > Locate availability, borrow fees, recall risk and short-sale rules.
 > Hard-to-borrow names often carry the strongest short signals and borrow fees of several percent a year, so ignoring them overstates short-leg alpha.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [simple_event_driven.py](code/simple_event_driven.py) and [performance_metrics.py](code/performance_metrics.py).
 

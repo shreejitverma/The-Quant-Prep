@@ -277,7 +277,7 @@ Leland at daily hedging: $2 \times 0.0005 \times 0.2 \times \sqrt{2 \times 252/\
 > Because implied vol tends to rise when spot falls, so a spot move carries a predictable vol move whose vega P&L offsets part of the delta P&L.
 > The minimum-variance delta is $\Delta_{BS} + \mathcal{V}\,E[\delta\sigma]/\delta S$, and with negative spot-vol correlation the second term is negative.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [deriv_01_07_hedging_pnl.py](code/deriv_01_07_hedging_pnl.py) prints and asserts every number in this note (straddle scalp, hedged-P&L Monte Carlo, the gamma-theta identity, discrete-hedging noise and the Goldman Sachs table, costs and Leland); run it with `uv run --no-project --with numpy python 05-Derivatives-and-Volatility/code/deriv_01_07_hedging_pnl.py`.
 - Prev: [The Greeks](05-The-Greeks.md). Next: [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md).

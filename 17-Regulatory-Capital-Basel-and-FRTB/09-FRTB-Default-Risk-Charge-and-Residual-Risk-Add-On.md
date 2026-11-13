@@ -381,7 +381,7 @@ The answer shows how much of the SA lives in FAQs: the main text never mentions 
 - Basel Committee on Banking Supervision, Basel Framework, CRE40 to CRE44, for the securitisation risk weights the DRC borrows.
 - John C. Hull, *Risk Management and Financial Institutions*, Wiley, chapters on the Fundamental Review of the Trading Book.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [FRTB: SbM Delta](07-FRTB-Sensitivities-Based-Method-Delta.md) and [FRTB: Vega and Curvature](08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md) - the SbM half of the SA.
 - [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) - the banking book treatment the DRC is calibrated to.

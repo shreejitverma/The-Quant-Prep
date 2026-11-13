@@ -468,7 +468,7 @@ The implementation date then moved from 1 January 2022 to 1 January 2023, which 
 - ISDA, *ISDA SIMM Methodology* (current version, isda.org), for the margin-model cousin of the SbM.
 - John C. Hull, *Risk Management and Financial Institutions*, Wiley, chapters on the Fundamental Review of the Trading Book.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [FRTB: Trading and Banking Book Boundary](06-FRTB-Trading-and-Banking-Book-Boundary.md) - scope and trading desks.
 - [FRTB: Vega and Curvature](08-FRTB-Sensitivities-Based-Method-Vega-and-Curvature.md) - the other two SbM risk measures.

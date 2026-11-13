@@ -252,7 +252,7 @@ Without pre-funded inventory the trade needs a blockchain transfer, and the gap 
 > AMM: you deposit into a curve that quotes for you, pay LVR to arbitrageurs, settle on-chain and face MEV.
 > On an AMM you cannot cancel quotes when you are informed against, which is why LPs need fees to exceed LVR.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [crypto_perps.py](code/crypto_perps.py) prints and asserts every number in the worked examples and cards.
 - Prerequisite: [Forwards, Futures and Carry](../05-Derivatives-and-Volatility/01-Forwards-Futures-and-Carry.md).

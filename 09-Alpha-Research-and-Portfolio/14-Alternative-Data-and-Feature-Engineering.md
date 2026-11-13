@@ -310,7 +310,7 @@ Smoothing helps only because the driver is slower than the noise; on a fast driv
 > The transfer coefficient: $\text{IR} = \text{TC}\cdot\text{IC}\sqrt{\text{BR}}$ (Clarke, de Silva and Thorley 2002).
 > TC is the correlation between risk-adjusted forecasts and risk-adjusted active weights; the long-only constraint blocks most underweights, so TC falls well below 1 and the forecasts are only partly transferred to the portfolio.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [alt_data_signal_eval.py](code/alt_data_signal_eval.py) backs every number in this note.
 - Related notes: [Signals, Features and Alpha Decay](03-Signals-Features-and-Alpha-Decay.md), [Performance Metrics and the Fundamental Law](09-Performance-Metrics-and-Fundamental-Law.md), [Point-in-Time Data and Survivorship](02-Point-in-Time-Data-and-Survivorship.md), [Time-Series Cross-Validation, Purging and Embargo](../10-Machine-Learning-for-Finance/02-Time-Series-Cross-Validation-Purging-Embargo.md), [NLP and LLMs for Finance](../10-Machine-Learning-for-Finance/09-NLP-and-LLMs-for-Finance.md).

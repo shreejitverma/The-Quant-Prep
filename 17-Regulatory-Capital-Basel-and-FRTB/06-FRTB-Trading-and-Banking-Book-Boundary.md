@@ -286,7 +286,7 @@ With the EUR 4,800 structural position the ratio stays at 12.00% after a 10% eur
 > The CVA side is excluded from market risk and included in CVA capital, the other side is in market risk, provided the IRT is documented against the CVA risk (RBC25.31 to RBC25.32).
 > Transfers involving curvature, default or residual risk need an exactly matching external hedge (RBC25.33), and eligible external CVA hedges are removed from market risk capital (RBC25.30).
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Capital, RWA, and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) for how the two books feed total RWA.
 - [Basel I, II, 2.5, III, and IV Evolution](02-Basel-I-II-2.5-III-IV-Evolution.md) for the 1996 and 2009 market risk regimes the boundary replaced.

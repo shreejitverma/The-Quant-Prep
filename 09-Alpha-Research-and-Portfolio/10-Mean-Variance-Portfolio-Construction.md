@@ -230,7 +230,7 @@ One asset, $\mu = 5\%$, $\sigma = 20\%$, $\lambda = 5$, linear cost $c = 1\%$ pe
 > With a risk-free asset every mean-variance investor holds the same tangency portfolio, levered or de-levered with cash.
 > The optimal risky holding $\lambda^{-1}\Sigma^{-1}\mu$ has direction independent of risk aversion; only its scale changes.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [black_litterman_model.ipynb](code/black_litterman_model.ipynb) for an equilibrium-prior alternative to raw means.
 - Related notes: [Covariance Estimation and Shrinkage](11-Covariance-Estimation-and-Shrinkage.md), [Black-Litterman, Risk Parity and HRP](12-Black-Litterman-Risk-Parity-and-HRP.md), [Quadratic Programming and Portfolio Solvers](../03-Linear-Algebra-and-Optimization/09-Quadratic-Programming-and-Portfolio-Solvers.md).

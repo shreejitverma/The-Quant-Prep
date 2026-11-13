@@ -296,12 +296,12 @@ The script asserts only that the vectorised version is at least 3 times faster, 
 > [!question]- qd-np-broadcast-memory | How much memory does `x[:, None, :] - x[None, :, :]` need for a `(100000, 3)` float64 array?
 > $10^5 \times 10^5 \times 3 \times 8 = 2.4 \times 10^{11}$ bytes (240 GB) for the temporary; at $n = 100$ it is 240,000 bytes. Chunk the rows or use $\lVert a - b\rVert^2 = \lVert a\rVert^2 + \lVert b\rVert^2 - 2a\cdot b$.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [numpy_numerics.py](code/python/numpy_numerics.py), run with `uv run --no-project --with numpy python 12-Quant-Development/code/python/numpy_numerics.py`.
 - Code: [benchmarking_python.ipynb](code/python/benchmarking_python.ipynb).
 - As-of joins with `searchsorted`: [Tick Data Storage and Time-Series Databases](12-Tick-Data-Storage-and-Time-Series-Databases.md); tolerance design for numerical tests: [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md).
-- [Ultimate Python advanced guide (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/02-Programming-Languages/Python/Ultimate-Python-Advanced-Guide.md)
+- [Ultimate Python advanced guide (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/02-Programming-Languages/Python/Ultimate-Python-Advanced-Guide.md)
 
 ## Further reading
 

@@ -236,7 +236,7 @@ That ratio, not the announcement itself, tells you the trade: someone must suppl
 > Tracking difference is the fund's return minus the index return over a period (fees, cash drag, sampling, securities lending); tracking error is the standard deviation of the periodic differences.
 > A fund can have a steady negative tracking difference (its fee) with near-zero tracking error.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [etf_index_arb.py](code/etf_index_arb.py) prints and asserts every number in the worked examples and cards.
 - Prerequisite: [Forwards, Futures and Carry](../05-Derivatives-and-Volatility/01-Forwards-Futures-and-Carry.md) for implied dividends and financing.

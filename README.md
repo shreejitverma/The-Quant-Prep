@@ -64,7 +64,7 @@ Tracks: T = trader, R = researcher, D = developer, Q = risk and strats.
 
 | Section | Topics | Written | Hours | Cards | Tracks |
 | :--- | ---: | ---: | ---: | ---: | :---: |
-| [Probability](01-Probability/README.md) | 15 | 15 | 65 | 264 | TRDQ |
+| [Probability](01-Probability/README.md) | 15 | 15 | 65 | 270 | TRDQ |
 | [Statistics and Econometrics](02-Statistics-and-Econometrics/README.md) | 14 | 14 | 57 | 257 | TRDQ |
 | [Linear Algebra and Optimization](03-Linear-Algebra-and-Optimization/README.md) | 11 | 11 | 40 | 217 | TRDQ |
 | [Stochastic Calculus](04-Stochastic-Calculus/README.md) | 9 | 9 | 36 | 167 | TRDQ |
@@ -105,7 +105,7 @@ Tracks: T = trader, R = researcher, D = developer, Q = risk and strats.
 | 15 | [Resources](15-Resources/README.md) | Books, papers, datasets and tools. |
 
 [17-CFA](17-CFA/README.md) is a separate CFA Level II study platform inside the vault, outside the `qp` syllabus.
-General software engineering (data structures and algorithms, C++, system design) lives in [SDE-Interview-Prep](https://github.com/shreejitverma/SDE-Interview-Prep) and is linked, not copied: see the [SDE Link Map](00-Start-Here/SDE-Link-Map.md).
+General software engineering (data structures and algorithms, C++, system design) lives in [The-Distinguished-Engineer](https://github.com/shreejitverma/The-Distinguished-Engineer) and is linked, not copied: see the [TDE Link Map](00-Start-Here/TDE-Link-Map.md).
 
 ## Pick your path
 
@@ -113,7 +113,7 @@ General software engineering (data structures and algorithms, C++, system design
 | :--- | :--- | :--- |
 | Quant trader (prop, market making, HFT) | Probability, mental math, brainteasers | Derivatives, market making, microstructure, trading games, Kelly sizing |
 | Quant researcher (hedge funds, systematic) | Probability, statistics, linear algebra | Alpha research, machine learning, portfolio construction, microstructure |
-| Quant developer (trading systems) | Quant development, DSA in SDE-Interview-Prep | Order books, feed handlers, backtesters, pricing libraries, systems design |
+| Quant developer (trading systems) | Quant development, DSA in The-Distinguished-Engineer | Order books, feed handlers, backtesters, pricing libraries, systems design |
 | Quant risk and strats (banks) | Probability, stochastic calculus, derivatives | Fixed income, VaR and ES, counterparty risk and XVA, Basel and FRTB, pricing and risk systems |
 
 [Tracks](00-Start-Here/Tracks.md) explains what each role does and what its interviews test, and the [Roadmap](00-Start-Here/Roadmap.md) turns it into phases and a weekly rhythm; `./qp plan` turns that into dated weeks.

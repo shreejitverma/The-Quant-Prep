@@ -396,7 +396,7 @@ The truth is $(1+0.5)/(1-0.5) = 3$, so the standard error is understated by a fa
 > You change the estimand: the slope now describes clipped returns and can be biased, and the tails you removed may be the economically important part.
 > Winsorise features cross-sectionally for stability; treat the target deliberately and report it.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [robust_inference.py](code/robust_inference.py) computes and asserts every number in this note (sandwich, HC, Newey-West, Hansen-Hodrick, cluster and Fama-MacBeth errors, leverage, Cook's distance, VIF, Huber IRLS).
 - [Linear Regression and OLS](04-Linear-Regression-OLS.md) for the estimator and Gauss-Markov assumptions this note relaxes.

@@ -345,7 +345,7 @@ for N in (52, 252):
 > Buy the risk reversal (sell OTM puts, buy OTM calls) and delta-hedge, or sell put spreads versus ATM on a vega-neutral basis.
 > You are paid if skew flattens or if realized spot-vol behaviour is milder than the skew implies; the risk is a crash, so size to the tail.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Prev: [Dispersion and Correlation Trading](15-Dispersion-and-Correlation-Trading.md).
 - Topic notes behind these questions: [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md), [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md), [Variance Swaps and Volatility Products](14-Variance-Swaps-and-Volatility-Products.md).

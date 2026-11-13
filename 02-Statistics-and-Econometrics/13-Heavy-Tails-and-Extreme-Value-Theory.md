@@ -316,7 +316,7 @@ Kurtosis alone adds under 10% to the monthly standard error; a short-volatility 
 > About 5.38, versus a true 13.03 for the $t_4$ data that generated the sample.
 > The variance is set by the body of the distribution; the far tail needs a tail model.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [extreme_value.py](code/extreme_value.py) computes and asserts every number in this note (exact Student-$t_4$ quantiles and ES with a numerical check, Hill estimator, GPD maximum likelihood by Grimshaw's profile, McNeil-Frey VaR and ES, GEV maximum likelihood by Nelder-Mead, Sharpe standard error simulation).
 - [Order Statistics and Extremes](../01-Probability/08-Order-Statistics-and-Extremes.md) for the distribution of the maximum.

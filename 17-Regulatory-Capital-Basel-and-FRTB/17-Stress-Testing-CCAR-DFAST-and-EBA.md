@@ -233,7 +233,7 @@ The lesson is the attribution: the staging threshold (the SICR trigger) matters 
 - Basel Committee on Banking Supervision, *Stress testing principles* (d450, October 2018).
 - Til Schuermann, "Stress testing banks", *International Journal of Forecasting* 30(3), 2014.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Capital, RWA and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) - buffers and the MDA.
 - [Credit Risk Capital: SA and IRB](03-Credit-Risk-Capital-SA-and-IRB.md) - risk weights that a company-run projection would migrate.

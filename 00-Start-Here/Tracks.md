@@ -48,10 +48,10 @@ What interviews test: coding (data structures and algorithms), C++ or the firm's
 
 Priorities, in order:
 
-1. Data structures and algorithms, and C++, from SDE-Interview-Prep (see the [link map](SDE-Link-Map.md)).
+1. Data structures and algorithms, and C++, from The-Distinguished-Engineer (see the [link map](TDE-Link-Map.md)).
 2. [Quant Development](../12-Quant-Development/README.md): order books, feed handlers, backtesters, risk checks, testing.
 3. [Market Microstructure](../07-Market-Microstructure/README.md) basics and [Market Making Systems Architecture](../08-Market-Making/11-Market-Making-Systems-Architecture.md).
-4. The [low-latency systems vault](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/00%20Home.md) for HFT roles.
+4. The [low-latency systems vault](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/00%20Home.md) for HFT roles.
 5. Probability basics: [Counting](../01-Probability/01-Counting-and-Combinatorics.md), [Conditional Probability](../01-Probability/02-Conditional-Probability-and-Bayes.md) and [Expectation](../01-Probability/04-Expectation-Variance-and-Linearity.md), which quant firms ask developers too.
 
 Senior developers are additionally asked to design whole systems (an exchange, a market data platform, a risk engine), reason about latency budgets and failure modes, and describe systems they owned in production (see [Pricing and Risk Systems](../18-Pricing-and-Risk-Systems/README.md) and [Regulatory Capital, Basel, and FRTB](../17-Regulatory-Capital-Basel-and-FRTB/README.md)).

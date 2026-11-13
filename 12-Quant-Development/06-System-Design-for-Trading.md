@@ -285,21 +285,21 @@ If retransmission is too slow or unavailable, rebuild from a snapshot and replay
 > [!question]- qd-sysdesign-storage | Estimate daily capture storage for 1 million 38-byte framed messages per second over a 6.5-hour session.
 > 23.4 billion messages x 38 bytes = 889.2 GB raw, 222.3 GB at 4x compression, about 56.0 TB per 252-day year.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [qd_system_design.py](code/python/qd_system_design.py) (capacity arithmetic and the sequenced, replayable state machine).
 - Related: [Order Book and Matching Engine](07-Order-Book-and-Matching-Engine.md), [Market Data Feed Handlers and Protocols](08-Market-Data-Feed-Handlers-and-Protocols.md), [Backtester and Simulator Design](09-Backtester-and-Simulator-Design.md), [Risk Checks and Order Management Systems](13-Risk-Checks-and-Order-Management.md).
 - Front-to-back trading and risk systems: [Front-to-Back Architecture](../18-Pricing-and-Risk-Systems/01-Front-to-Back-Architecture.md).
 - Senior systems design interview cases: [Systems Design Problem Set](../18-Pricing-and-Risk-Systems/18-Systems-Design-Problem-Set.md).
 - Market-making stack: [Market Making Systems Architecture](../08-Market-Making/11-Market-Making-Systems-Architecture.md).
-- [Sequenced-stream architecture (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/The%20Sequenced-Stream%20Architecture.md)
-- [Replicated state machines in exchanges (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/Replicated%20State%20Machine%20Pattern%20in%20Exchanges.md)
-- [Drop copy and clearing feeds (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/Drop%20Copy%20and%20Clearing%20Feeds.md)
-- [Pre-trade risk checks at wire speed (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/Pre-Trade%20Risk%20Checks%20at%20Wire%20Speed.md)
-- [The 2012 Knight Capital disaster (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/War%20Story%20-%20The%202012%20Knight%20Capital%20Disaster.md)
-- [UDP multicast market data and A-B feed arbitration (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/06%20-%20Networking/UDP%20Multicast%20Market%20Data%20and%20A-B%20Feed%20Arbitration.md)
-- [Deterministic replay and packet injection testing (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/13%20-%20Reliability%2C%20Ops%20%26%20Testing/Deterministic%20Replay%20and%20Packet%20Injection%20Testing.md)
-- [System design (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/README.md)
+- [Sequenced-stream architecture (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/The%20Sequenced-Stream%20Architecture.md)
+- [Replicated state machines in exchanges (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/Replicated%20State%20Machine%20Pattern%20in%20Exchanges.md)
+- [Drop copy and clearing feeds (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/Drop%20Copy%20and%20Clearing%20Feeds.md)
+- [Pre-trade risk checks at wire speed (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/Pre-Trade%20Risk%20Checks%20at%20Wire%20Speed.md)
+- [The 2012 Knight Capital disaster (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/War%20Story%20-%20The%202012%20Knight%20Capital%20Disaster.md)
+- [UDP multicast market data and A-B feed arbitration (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/06%20-%20Networking/UDP%20Multicast%20Market%20Data%20and%20A-B%20Feed%20Arbitration.md)
+- [Deterministic replay and packet injection testing (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/13%20-%20Reliability%2C%20Ops%20%26%20Testing/Deterministic%20Replay%20and%20Packet%20Injection%20Testing.md)
+- [System design (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/README.md)
 
 ## Further reading
 

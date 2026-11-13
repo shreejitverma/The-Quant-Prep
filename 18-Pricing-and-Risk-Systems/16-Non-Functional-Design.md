@@ -242,11 +242,11 @@ The answer flips for a 24-hour grid running near full load, which is why many ba
 > When utilisation is below the break-even: owned cost per vCPU-hour at full use divided by the rental price (38.6% against on-demand in the note's hypothetical prices).
 > Bursty workloads (a 2.87% daily burst) favour renting; steady base load favours owning; spot is cheaper still but needs checkpointing because of two-minute interruption notices.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - `code/sys_non_functional.py` computes, prints and asserts every number on this page: order-dependent sums and the fixed-tree fix, float32 Kahan, counter-based streams, percentile and fan-out arithmetic, availability, replication physics, RPO and RTO, and the cost break-even.
 - [Pricing at Scale](06-Pricing-at-Scale.md) for grid design, [The EOD Risk Batch](13-EOD-Risk-Batch.md) for failover and retries, and [Storage and Compute](14-Storage-and-Compute.md) for the stores being replicated.
-- SDE-Interview-Prep: [Backpressure and Tail Latency](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Backpressure-and-Tail-Latency.md), [Replication and Quorums](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Replication-and-Quorums.md), [Multi-Region Active-Active](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/Multi-Region-Active-Active.md), [SLOs and Observability](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/04-System-Design/00-Concepts/SLOs-and-Observability.md).
+- The-Distinguished-Engineer: [Backpressure and Tail Latency](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Backpressure-and-Tail-Latency.md), [Replication and Quorums](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Replication-and-Quorums.md), [Multi-Region Active-Active](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/Multi-Region-Active-Active.md), [SLOs and Observability](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/04-System-Design/00-Concepts/SLOs-and-Observability.md).
 
 ## Further reading
 

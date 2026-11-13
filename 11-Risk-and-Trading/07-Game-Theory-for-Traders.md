@@ -271,7 +271,7 @@ Bluffing with a pot-sized bet: bluffs should be 1/3 of the betting range and the
 > Condition on the offer: they chose to trade with you at that price, so price what they would need to know for it to be good for them.
 > It is the winner's curse and adverse selection in one; size small or ask for a two-way price.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [game_theory.py](code/game_theory.py) (support enumeration, auction simulations, winner's curse, bargaining, repeated games, puzzles).
 - Related: [Expected Value and Betting Decisions](02-Expected-Value-and-Betting-Decisions.md), [Trading Intuition and Judgement](09-Trading-Intuition-and-Judgement.md), [Market Making Games and Trading Simulations](../08-Market-Making/10-Market-Making-Games.md), [Exchange Mechanics, Auctions and Fees](../07-Market-Microstructure/02-Exchange-Mechanics-Auctions-and-Fees.md) and [Order Statistics and Extremes](../01-Probability/08-Order-Statistics-and-Extremes.md).

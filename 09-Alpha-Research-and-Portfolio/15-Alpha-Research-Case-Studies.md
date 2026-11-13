@@ -412,12 +412,12 @@ State what you would do with another week, which is how interviewers distinguish
 > It is the only way to verify that the pipeline recovers a planted effect and reports nothing when there is none.
 > Run it on pure noise first: any Sharpe it finds there is a bug or selection, as Case C shows.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [research_case_studies.py](code/research_case_studies.py) runs all three cases and asserts every number in this note; run it with `uv run --no-project --with numpy python 09-Alpha-Research-and-Portfolio/code/research_case_studies.py`.
 - Code: [simple_event_driven.py](code/simple_event_driven.py) is the event-driven counterpart of the vectorised backtests here, and [performance_metrics.py](code/performance_metrics.py) computes the reporting metrics.
 - Related notes: [Research Process and Hypothesis Discipline](01-Research-Process-and-Hypothesis-Discipline.md), [Point-in-Time Data and Survivorship](02-Point-in-Time-Data-and-Survivorship.md), [Signals, Features and Alpha Decay](03-Signals-Features-and-Alpha-Decay.md), [Cross-Sectional Factor Models](04-Cross-Sectional-Factor-Models.md), [Momentum, Mean Reversion and Carry](05-Momentum-Mean-Reversion-and-Carry.md), [Statistical Arbitrage and Pairs Trading](06-Statistical-Arbitrage-and-Pairs-Trading.md), [Backtesting Methodology and Pitfalls](07-Backtesting-Methodology-and-Pitfalls.md), [Overfitting and Deflated Sharpe](08-Overfitting-and-Deflated-Sharpe.md), [Performance Metrics and the Fundamental Law](09-Performance-Metrics-and-Fundamental-Law.md), [Transaction Costs and Turnover](13-Transaction-Costs-and-Turnover.md), [Alternative Data and Feature Engineering](14-Alternative-Data-and-Feature-Engineering.md), [Time-Series Cross-Validation, Purging and Embargo](../10-Machine-Learning-for-Finance/02-Time-Series-Cross-Validation-Purging-Embargo.md).
-- SDE-Interview-Prep: [event_driven_backtester.py](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/05-Quantitative-Finance/03-Algo-Trading/Backtesting/event_driven_backtester.py).
+- The-Distinguished-Engineer: [event_driven_backtester.py](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/05-Quantitative-Finance/03-Algo-Trading/Backtesting/event_driven_backtester.py).
 
 ## Further reading
 

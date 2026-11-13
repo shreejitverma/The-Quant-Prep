@@ -363,7 +363,7 @@ The framework's mitigants are the requirement that PD be a long-run average of o
 - Vasicek, O. A., "The distribution of loan portfolio value", *Risk* 15(12), 160-162, 2002.
 - Merton, R. C., "On the pricing of corporate debt: the risk structure of interest rates", *Journal of Finance* 29(2), 449-470, 1974.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [Capital, RWA and the Basel Framework](01-Capital-RWA-and-the-Basel-Framework.md) for the capital stack and buffers the RWA is measured against.
 - [Counterparty Credit Risk: SA-CCR](04-Counterparty-Credit-Risk-SA-CCR.md) for derivative EAD, which then goes through the risk weights on this page.

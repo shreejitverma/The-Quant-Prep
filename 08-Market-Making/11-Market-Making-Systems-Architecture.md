@@ -335,19 +335,19 @@ The handler detects 7 and 8 missing (2 messages to request from retransmission) 
 > Queueing delay grows like $\rho/(1 - \rho)$: from $\rho = 0.80$ to $0.95$ the M/D/1 mean wait goes from 800 ns to 3,800 ns.
 > Peak rates, not averages, set the utilisation that matters.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [mm_system_design.py](code/mm_system_design.py) (latency budget, queueing, bursts, races, risk gate, gap detection).
 - Deep dive in this repo: the [Quant Dev Market Making Guide](Quant-Dev-MM-Guide/README.md).
 - Related: [System Design for Trading](../12-Quant-Development/06-System-Design-for-Trading.md), [Market Data Feed Handlers and Protocols](../12-Quant-Development/08-Market-Data-Feed-Handlers-and-Protocols.md), [Risk Checks and Order Management](../12-Quant-Development/13-Risk-Checks-and-Order-Management.md), [Hedging and Risk for Market Makers](06-Hedging-and-Risk-for-Market-Makers.md) and [Latency Arbitrage and Speed](../07-Market-Microstructure/10-Latency-Arbitrage-and-Speed.md).
-- [Low-latency systems vault (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/00%20Home.md)
-- [Pre-trade risk checks at wire speed (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/Pre-Trade%20Risk%20Checks%20at%20Wire%20Speed.md)
-- [Participant-side pre-trade risk gates (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Participant-Side%20Pre-Trade%20Risk%20Gates.md)
-- [Tick-to-trade critical path optimization (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Tick-to-Trade%20Critical%20Path%20Optimization.md)
-- [Automated kill switches and risk circuit breakers (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/13%20-%20Reliability,%20Ops%20&%20Testing/Automated%20Kill%20Switches%20and%20Risk%20Circuit%20Breakers.md)
-- [Deterministic replay and packet injection testing (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/13%20-%20Reliability,%20Ops%20&%20Testing/Deterministic%20Replay%20and%20Packet%20Injection%20Testing.md)
-- [Coordinated omission in low latency systems (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/07%20-%20Time%20&%20Measurement/Coordinated%20Omission%20in%20Low%20Latency%20Systems.md)
-- [War story: the 2012 Knight Capital disaster (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/War%20Story%20-%20The%202012%20Knight%20Capital%20Disaster.md)
+- [Low-latency systems vault (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/00%20Home.md)
+- [Pre-trade risk checks at wire speed (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/Pre-Trade%20Risk%20Checks%20at%20Wire%20Speed.md)
+- [Participant-side pre-trade risk gates (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Participant-Side%20Pre-Trade%20Risk%20Gates.md)
+- [Tick-to-trade critical path optimization (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Tick-to-Trade%20Critical%20Path%20Optimization.md)
+- [Automated kill switches and risk circuit breakers (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/13%20-%20Reliability,%20Ops%20&%20Testing/Automated%20Kill%20Switches%20and%20Risk%20Circuit%20Breakers.md)
+- [Deterministic replay and packet injection testing (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/13%20-%20Reliability,%20Ops%20&%20Testing/Deterministic%20Replay%20and%20Packet%20Injection%20Testing.md)
+- [Coordinated omission in low latency systems (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/07%20-%20Time%20&%20Measurement/Coordinated%20Omission%20in%20Low%20Latency%20Systems.md)
+- [War story: the 2012 Knight Capital disaster (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/02%20-%20Exchange%20Architecture/War%20Story%20-%20The%202012%20Knight%20Capital%20Disaster.md)
 
 ## Further reading
 

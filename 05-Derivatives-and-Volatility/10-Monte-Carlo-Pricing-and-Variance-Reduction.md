@@ -266,7 +266,7 @@ Simulating on a daily grid with a continuous-barrier contract, you would instead
 > Weak order 1: price bias $O(\Delta t)$, while the statistical error is $O(N^{-1/2})$.
 > For a fixed budget, balance them so the bias is comparable to the standard error; for GBM use the exact log scheme and avoid the bias entirely.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Prev: [Stochastic Volatility: Heston and SABR](09-Stochastic-Volatility-Heston-and-SABR.md). Next: [Finite Differences and Fourier Pricing](11-Finite-Differences-and-Fourier-Pricing.md).
 - Payoffs priced this way: [Exotic Options](12-Exotic-Options.md).

@@ -285,14 +285,14 @@ That is the test to keep in CI: the cross-process replays catch iteration over s
 > [!question]- qd-bt-fees-config | Why should fees, tick sizes and lot sizes live in point-in-time configuration?
 > They change (fee tiers, tick-size regimes, round-lot definitions), so a backtest of 2019 must use 2019 values; hard-coding today's values is a form of look-ahead and silently changes PnL.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [event_backtester.py](code/python/event_backtester.py) (event heap, latency, FIFO queue model, book-walking fills, fees, known-answer, look-ahead and determinism tests) and [simple_event_driven.py](../09-Alpha-Research-and-Portfolio/code/simple_event_driven.py) (bar-level event loop skeleton).
 - Run: `uv run --no-project --with numpy python 12-Quant-Development/code/python/event_backtester.py`.
 - Research view: [Backtesting Methodology and Pitfalls](../09-Alpha-Research-and-Portfolio/07-Backtesting-Methodology-and-Pitfalls.md); testing the simulator itself: [Testing Trading and Numerical Code](14-Testing-Trading-and-Numerical-Code.md).
-- [Order queue position tracking and fill probability (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Order%20Queue%20Position%20Tracking%20and%20Fill%20Probability.md)
-- [Exchange simulators and conformance harnesses (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/13%20-%20Reliability%2C%20Ops%20%26%20Testing/Exchange%20Simulators%20and%20Conformance%20Harnesses.md)
-- [Deterministic replay and packet injection testing (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/14-Low-Latency-Systems/13%20-%20Reliability%2C%20Ops%20%26%20Testing/Deterministic%20Replay%20and%20Packet%20Injection%20Testing.md)
+- [Order queue position tracking and fill probability (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/11%20-%20Participant-Side%20Systems/Order%20Queue%20Position%20Tracking%20and%20Fill%20Probability.md)
+- [Exchange simulators and conformance harnesses (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/13%20-%20Reliability%2C%20Ops%20%26%20Testing/Exchange%20Simulators%20and%20Conformance%20Harnesses.md)
+- [Deterministic replay and packet injection testing (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/13%20-%20Reliability%2C%20Ops%20%26%20Testing/Deterministic%20Replay%20and%20Packet%20Injection%20Testing.md)
 
 ## Further reading
 

@@ -277,7 +277,7 @@ The simulated $t_4$ book of the core concepts (60m equities, 40m bonds, 10m gold
 > $\text{CES}_i = x_i\,\partial\text{ES}/\partial x_i = E[L_i \mid L \ge \text{VaR}_\alpha]$ (Scaillet 2004): the position's average loss in the tail scenarios, summing exactly to ES.
 > In the simulated book with a short put, the put's 97.5% contribution was about 824,000 of about 2,978,000, confirmed by brute-force differences of ES within 0.6%.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - [risk_decomposition.py](code/risk_decomposition.py): Examples 1 and 2 with brute-force gradients, simulated ES and VaR contributions with a short put, ERC by Newton and coordinate descent, factor decomposition; every number above.
 - Definitions and component VaR in brief: [VaR and Expected Shortfall](03-VaR-and-Expected-Shortfall.md); covariance inputs: [Risk Factor Modelling](10-Risk-Factor-Modelling.md); sensitivities for nonlinear books: [Sensitivities and Revaluation](12-Sensitivities-and-Revaluation.md).

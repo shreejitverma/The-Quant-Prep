@@ -372,7 +372,7 @@ The issuer who owns the worst-of put inside an autocallable, or who is short a w
 > Size on the joint stress (vols up, correlation to 1), not on vega or inception correlation sensitivity; cap single-name concentration; monitor correlation exposure as $N_IB_R$ in real time; and hedge the tail with index puts or short-dated index variance.
 > Report P&L split into vol and correlation terms so a vol trade is not mistaken for a correlation view.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Prev: [Variance Swaps and Volatility Products](14-Variance-Swaps-and-Volatility-Products.md). Next: [Options Problem Set](16-Options-Problem-Set.md).
 - Code: [dispersion_correlation.py](code/dispersion_correlation.py) prints and asserts every number in this note (it imports Black-Scholes helpers from [pricing_core.py](code/pricing_core.py)); run it with `uv run --no-project --with numpy python 05-Derivatives-and-Volatility/code/dispersion_correlation.py`.

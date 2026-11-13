@@ -301,14 +301,14 @@ Quote a simulation with its standard error, and fix the seed so the number is re
 > [!question]- int-code-numpy-vs-loop | When should a quant coding answer use a vectorised NumPy expression instead of a Python loop?
 > For batch transforms over arrays (returns, rolling sums with cumsum, Monte Carlo paths) vectorise, since the loop runs in C. For stateful streaming logic with branches per event (an order book, a parser) a clear loop is correct and the interviewer is scoring the data structure, not the constant factor.
 
-## In this repo and SDE-Interview-Prep
+## In this repo and The-Distinguished-Engineer
 
 - Code: [coding_problems.py](code/coding_problems.py) implements and tests every pattern above and asserts each number quoted in this note.
 - Data structures in depth: [Data Structures and Algorithms for Quant Interviews](../12-Quant-Development/05-Data-Structures-and-Algorithms-for-Quant-Interviews.md).
 - Production order books: [Order Book and Matching Engine](../12-Quant-Development/07-Order-Book-and-Matching-Engine.md); protocols: [Market Data Feed Handlers and Protocols](../12-Quant-Development/08-Market-Data-Feed-Handlers-and-Protocols.md).
 - Testing numerical code: [Testing Trading and Numerical Code](../12-Quant-Development/14-Testing-Trading-and-Numerical-Code.md).
-- [LeetCode quant set (C++) (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/02-Programming-Languages/C%2B%2B/LeetCode-Quant-Complete-CPP-Full.md)
-- [LeetCode quant set (Python) (SDE-Interview-Prep)](https://github.com/shreejitverma/SDE-Interview-Prep/blob/main/02-Programming-Languages/Python/LeetCode-Quant-Complete-Python-Full.md)
+- [LeetCode quant set (C++) (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/02-Programming-Languages/C%2B%2B/LeetCode-Quant-Complete-CPP-Full.md)
+- [LeetCode quant set (Python) (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/02-Programming-Languages/Python/LeetCode-Quant-Complete-Python-Full.md)
 
 ## Further reading
 
