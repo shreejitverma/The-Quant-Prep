@@ -187,6 +187,7 @@ def numeraire_prices(rng: np.random.Generator) -> None:
     approx("    the simulated deflator price quoted in the note (seed above)", m, 5.995, 3)
     approx("    its standard error", se, 0.004, 3)
     assert abs(m - call) <= 2 * se, "the note says within two standard errors of the formula price"
+    print(f"    distance to the formula price {call:.4f}: {abs(m - call) / se:.2f} standard errors (within two)")
     wq = rng.standard_normal(n) * math.sqrt(T)
     sq = S0 * np.exp((R - 0.5 * SIG**2) * T + SIG * wq)
     m, se = mean_se(disc * np.maximum(sq - K, 0.0))
