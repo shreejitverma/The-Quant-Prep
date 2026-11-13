@@ -266,7 +266,7 @@ That square-root law is the argument for spending rebalances where gamma is larg
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/stoch_07_black_scholes.py`](code/stoch_07_black_scholes.py) prints and asserts every number on this page: the call and put by closed form, quadrature, simulation and a Crank-Nicolson PDE solve with the stated boundary conditions, the PDE, heat-equation substitution and Greeks identity by finite differences, the power solutions by polynomial roots, and the discrete-hedging table by simulating the self-financing hedge against the rule of Kamal (1998).
+- Code: [`code/stoch_07_black_scholes.py`](code/stoch_07_black_scholes.py) prints and asserts every number on this page: the call and put by closed form, quadrature, simulation and a Crank-Nicolson PDE solve with the stated boundary conditions, the PDE, heat-equation substitution and Greeks identity by finite differences, the power solutions by polynomial roots, and the discrete-hedging table by simulating the self-financing hedge against its exact standard deviation by quadrature and the rule of Kamal (1998).
 - Related notes: [Risk-Neutral Pricing and the FTAP](04-Risk-Neutral-Pricing-and-FTAP.md), [Feynman-Kac and Pricing PDEs](06-Feynman-Kac-and-Pricing-PDEs.md), [Delta Hedging and Gamma Scalping](../05-Derivatives-and-Volatility/06-Delta-Hedging-and-Gamma-Scalping.md), [Finite Differences and Fourier Pricing](../05-Derivatives-and-Volatility/11-Finite-Differences-and-Fourier-Pricing.md).
 
 ## Further reading
