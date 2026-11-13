@@ -155,7 +155,8 @@ Monte Carlo, 20,000 paths, 365 daily rebalances, seed 11 (all three rows use the
 
 Each mean is within three standard errors of 1.98.
 Hedging at realised vol leaves only discrete-hedging noise (0.45); hedging at implied vol doubles the dispersion, because the payoff then depends on how much dollar gamma you held while the variance was realised.
-Adding a 10% drift with everything else fixed leaves the mean and the dispersion where they were, as the derivation says.
+Adding a 10% drift with everything else fixed moves the mean by only 0.015 (paired standard error 0.005, under 1% of the 1.98 edge) and the dispersion by 0.01.
+The drift drops out to first order, as the derivation says; what remains is second order, through where dollar gamma is held, since an upward drift carries spot away from the strike while the variance is realised.
 
 ### Example 3: the gamma-theta identity on simulated paths
 
@@ -223,7 +224,8 @@ Leland at daily hedging: $2 \times 0.0005 \times 0.2 \times \sqrt{2 \times 252/\
 
 > [!question]- deriv-drift-irrelevant-hedged | Does the stock's drift affect the P&L of a delta-hedged option?
 > No, to first order the drift drops out; only realised versus implied variance weighted by dollar gamma matters.
-> In the derivation the $dS$ terms cancel between option and hedge; a Monte Carlo with 0% and 10% drift gives the same mean P&L.
+> In the derivation the $dS$ terms cancel between option and hedge.
+> A Monte Carlo on the same random numbers with 0% and 10% drift moves the mean P&L by only about 0.015 out of 1.98, a second-order effect through where dollar gamma is held.
 
 > [!question]- deriv-hedge-at-implied-vs-realized | You buy at 20% implied and realised turns out 25%. Compare hedging at implied and at realised vol.
 > At realised you lock $V(25\%) - V(20\%)$ (about 1.98 on a one-year ATM 100 call) with noisy daily marks; at implied the expected P&L is similar but the total is path dependent with much wider dispersion.
@@ -288,7 +290,7 @@ Leland at daily hedging: $2 \times 0.0005 \times 0.2 \times \sqrt{2 \times 252/\
 - Euan Sinclair, *Volatility Trading*, chapters on hedging and volatility P&L.
 - Sheldon Natenberg, *Option Volatility and Pricing*, chapters on dynamic hedging.
 - R. Ahmad and P. Wilmott (2005), "Which free lunch would you like today, sir?: Delta hedging, volatility arbitrage and optimal portfolios", *Wilmott Magazine*.
-- M. Kamal (1998), "When you cannot hedge continuously: the corrections to Black-Scholes", Goldman Sachs Quantitative Strategies Research Notes (Equity Derivatives Research, Quantitative Insights), the $\sqrt{\pi/4}\,\kappa\sigma/\sqrt{N}$ rule and its Table 1; a copy is hosted at emanuelderman.com.
+- M. Kamal (1998), "When you cannot hedge continuously: the corrections to Black-Scholes", Goldman Sachs Quantitative Strategies Research Notes (Equity Derivatives Research, Quantitative Insights), the $\sqrt{\pi/4}\,\mathcal{V}\sigma/\sqrt{N}$ rule and its Table 1; a copy is hosted at emanuelderman.com.
 - Emanuel Derman and Michael B. Miller, *The Volatility Smile* (Wiley 2016), on hedging error from discrete rebalancing.
 - H. E. Leland (1985), "Option pricing and replication with transactions costs", *Journal of Finance* 40(5).
 - A. E. Whalley and P. Wilmott (1997), "An asymptotic analysis of an optimal hedging model for option pricing with transaction costs", *Mathematical Finance* 7(3).

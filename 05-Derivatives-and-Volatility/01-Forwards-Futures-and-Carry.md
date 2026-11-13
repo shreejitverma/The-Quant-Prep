@@ -253,7 +253,7 @@ print(0.05 - log(5030 / 5000) / 0.25)                 # implied q 0.0261
 
 > [!question]- deriv-implied-repo-rate | Index 5000, three-month futures 5030, expected dividend yield 2%. What financing rate does the futures imply, and what do you do if your funding costs 5%?
 > 4.39%: $r_{\text{impl}} = q + \ln(F/S)/T = 0.02 + 0.02393$.
-> The futures finances the basket at 4.39%, below your 5% funding, so the futures is cheap: a holder of the basket sells it and buys futures (or a desk funds the reverse basis trade), earning the 0.61% spread on the notional.
+> The futures finances the basket at 4.39%, below your 5% funding, so the futures is cheap: a holder of the basket sells it and buys futures (or a desk funds the reverse basis trade), earning the 0.61% a year spread, about 7.6 index points (0.15% of the 5000 notional) over the three months.
 
 > [!question]- deriv-reverse-cash-and-carry-gold | Gold spot 2000, $r = 4\%$, storage 0.5% a year, one-year futures 2050. What is the trade and the profit?
 > Reverse cash-and-carry: borrow (or sell existing) gold, invest the 2000 and save the storage, buy the futures; profit $2092.06 - 2050 = 42.06$ at $T$.

@@ -111,6 +111,13 @@ def main() -> None:
     r_impl = bisect(lambda x: forward_closed(5000, x, 0.25, q_=0.02) - 5030, -0.5, 0.5)
     q("card deriv-implied-repo-rate: implied repo with q = 2% (%)", 100 * r_impl, "4.39")
     q("card deriv-implied-repo-rate: saving versus 5% funding (%)", 5 - 100 * r_impl, "0.61")
+    s_T = 5000 * np.exp(rng.normal(0.0, 0.2, 100_000))  # any terminal index level: the locked-in P&L must not depend on it
+    # Sell e^{-qT} basket units (dividends reinvested they would grow to one unit), invest at 5%, buy one futures at 5030.
+    basis_pnl = 5000 * math.exp(-0.02 * 0.25) * math.exp(0.05 * 0.25) + (s_T - 5030) - s_T
+    assert float(np.ptp(basis_pnl)) < 1e-9, "reverse basis P&L should not depend on the terminal index"
+    q("card deriv-implied-repo-rate: three-month P&L in index points", float(basis_pnl.mean()), "7.6")
+    q("card deriv-implied-repo-rate: three-month P&L as % of 5000", 100 * float(basis_pnl.mean()) / 5000, "0.15")
+    close("basis P&L vs futures price grown at the funding gap", float(basis_pnl.mean()), 5030 * math.expm1((0.05 - r_impl) * 0.25), 1e-9)
 
     print("\nExample 5 and card deriv-convexity-adjustment-ho-lee: Ho-Lee convexity adjustment")
     for t1, t2, quoted in ((5.0, 5.25, "13.1"), (4.0, 4.25, "8.5")):

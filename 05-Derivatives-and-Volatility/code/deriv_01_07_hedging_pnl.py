@@ -20,8 +20,8 @@ import numpy as np
 from pricing_core import bs_price, bs_vega, norm_cdf, norm_pdf
 
 SEED_TABLE = 11  # Example 2
-SEED_NOISE = 12  # Examples 3 and 4 (common random numbers with and without costs)
-SEED_IDENTITY = 13  # gamma-theta identity
+SEED_NOISE = 12  # Examples 4 and 5 (common random numbers with and without costs)
+SEED_IDENTITY = 13  # Example 3, gamma-theta identity
 SEED_KAMAL = 14  # replication of the Goldman Sachs table
 
 
@@ -135,14 +135,21 @@ def main() -> None:
     q("vega x 0.05", vega * 0.05, "1.98")
     runs = [("hedge at realised 25%", 0.25, 0.0, "1.98", "0.45"), ("hedge at implied 20%", 0.20, 0.0, "2.00", "0.96")]
     runs.append(("hedge at implied 20%, drift 10%", 0.20, 0.10, "1.98", "0.95"))
+    table = {}
     for label, sh, mu, qm, qs in runs:
         pnl = hedge_sim(0.25, sh, 0.20, 365, 20_000, SEED_TABLE, mu=mu)
+        table[(sh, mu)] = pnl
         se = float(pnl.std(ddof=1)) / math.sqrt(len(pnl))
         q(f"{label}: mean P&L", float(pnl.mean()), qm)
         q(f"{label}: std of P&L", float(pnl.std(ddof=1)), qs)
         close(f"{label}: mean within 3 standard errors of V(25%) - V(20%)", float(pnl.mean()), v25 - v20, 3 * se)
+    paired = table[(0.20, 0.0)] - table[(0.20, 0.10)]  # same seed, so each path pairs a 0% and a 10% drift run
+    q("drift 0% minus 10%, hedged at implied: paired mean difference", float(paired.mean()), "0.015")
+    q("paired standard error", float(paired.std(ddof=1)) / math.sqrt(len(paired)), "0.005")
+    q("paired mean difference as a share of 1.98 (%)", 100 * float(paired.mean()) / (v25 - v20), "0.8")
+    q("drift 0% minus 10%: change in std of P&L", float(table[(0.20, 0.0)].std(ddof=1) - table[(0.20, 0.10)].std(ddof=1)), "0.01")
 
-    print(f"\nGamma-theta identity on hedged paths (realised 25%, hedged and marked at 20%, 252 steps, seed {SEED_IDENTITY})")
+    print(f"\nExample 3: gamma-theta identity on hedged paths (realised 25%, hedged and marked at 20%, 252 steps, seed {SEED_IDENTITY})")
     pnl, gt = hedge_sim(0.25, 0.20, 0.20, 252, 20_000, SEED_IDENTITY, track_identity=True)
     resid = pnl - gt
     corr = float(np.corrcoef(pnl, gt)[0, 1])
@@ -153,7 +160,7 @@ def main() -> None:
     q("std of the residual (higher-order terms)", float(resid.std(ddof=1)), "0.09")
     q("std of the hedged P&L", float(pnl.std(ddof=1)), "1.00")
 
-    print(f"\nExample 3: discrete hedging noise, realised = implied = 20%, 40,000 paths (seed {SEED_NOISE})")
+    print(f"\nExample 4: discrete hedging noise, realised = implied = 20%, 40,000 paths (seed {SEED_NOISE})")
     coef = q("sqrt(pi/4) x vega x sigma", math.sqrt(math.pi / 4) * vega * 0.2, "7.04")
     q("sqrt(pi/4)", math.sqrt(math.pi / 4), "0.886")
     noise = {}
@@ -170,16 +177,16 @@ def main() -> None:
     put0 = bs_price(100, 100, 1 / 12, 0.05, 0.2, call=False)
     q("Black-Scholes put (the note prints 2.512, which is the call)", put0, "2.096")
     q("Black-Scholes call", bs_price(100, 100, 1 / 12, 0.05, 0.2), "2.512")
-    kappa = bs_vega(100, 100, 1 / 12, 0.05, 0.2) / 100
-    q("vega per vol point", kappa, "0.115")
+    vega_pt = bs_vega(100, 100, 1 / 12, 0.05, 0.2) / 100
+    q("vega per vol point", vega_pt, "0.115")
     for n, qf, qt in ((21, "0.443", "0.43"), (84, "0.222", "0.22")):
-        q(f"N = {n}: formula sqrt(pi/4) kappa 20 / sqrt(N)", math.sqrt(math.pi / 4) * kappa * 20 / math.sqrt(n), qf)
+        q(f"N = {n}: formula sqrt(pi/4) vega 20 / sqrt(N)", math.sqrt(math.pi / 4) * vega_pt * 20 / math.sqrt(n), qf)
         # A short put hedged with the put delta has the same P&L distribution, up to sign, as a long put; parity makes
         # put = call - S + K e^{-rT}, so hedging the call with the call delta replicates it exactly.
         pnl = hedge_sim(0.2, 0.2, 0.2, n, 50_000, SEED_KAMAL, r=0.05, T=1 / 12, long_call=False)
         q(f"N = {n}: Monte Carlo sd (the note's Table 1 reports 0.41 and 0.20)", float(pnl.std(ddof=1)), qt)
 
-    print(f"\nExample 4: one-way cost 5bp, same paths as Example 3 (seed {SEED_NOISE}, common random numbers)")
+    print(f"\nExample 5: one-way cost 5bp, same paths as Example 4 (seed {SEED_NOISE}, common random numbers)")
     for n, qf, qmc, qsd in ((12, "0.05", "0.11", "1.93"), (52, "0.11", "0.17", "0.95"), (252, "0.25", "0.31", "0.45")):
         q(f"N = {n}: formula rebalancing cost kappa sqrt(2/pi) vega sqrt(N)", 0.0005 * math.sqrt(2 / math.pi) * vega * math.sqrt(n), qf)
         pnl_c = hedge_sim(0.2, 0.2, 0.2, n, 40_000, SEED_NOISE, cost=0.0005)
