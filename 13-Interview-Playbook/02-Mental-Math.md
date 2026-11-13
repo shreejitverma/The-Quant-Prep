@@ -31,7 +31,7 @@ sources: [Arthur Benjamin and Michael Shermer - Secrets of Mental Math (2006), Z
 ### Why it is tested
 
 Trading desks price things in seconds, and a candidate who stalls on $7 \times 13$ cannot think about edge, position and risk at the same time.
-Mental arithmetic appears in timed numerical tests, in phone screens and inside trading games, where the arithmetic is the overhead and the decision is what is being scored.
+Expect mental arithmetic in timed numerical tests, in phone screens and inside trading games, where the arithmetic is the overhead and the decision is what matters.
 The goal is to make arithmetic cost so little attention that the remaining attention goes to the problem.
 
 ### Addition and subtraction: complements and left-to-right
@@ -104,7 +104,7 @@ Division is multiplication by a reciprocal, so memorising reciprocals turns most
 
 ### Practice regimen
 
-The repo's drills generate problems in the formats interviews commonly use.
+The repo's drills generate timed practice in two formats.
 
 - `./qp drill arith` uses Zetamac default rules: 120 seconds of $a+b$ with $a,b \in [2,100]$, the matching subtractions, $a \times b$ with $a \in [2,12]$ and $b \in [2,100]$, and the matching divisions.
 - `./qp drill optiver` is 80 mixed questions in 8 minutes (6 seconds each on average): two-digit products, decimals, percentages, fraction-to-decimal conversions and fraction arithmetic.
@@ -158,7 +158,7 @@ The exact value is $85.77$, so the estimate is within $0.02\%$.
 
 ## Pitfalls
 
-- Chasing speed before accuracy; most timed tests and all trading games punish errors more than slowness.
+- Chasing speed before accuracy; in a trading game a wrong number loses money while a slow one only loses time.
 - Computing exactly when the question only needs a comparison or an order of magnitude.
 - Losing the decimal point in decimal division; clear decimals by scaling both numbers first.
 - Treating $+x\%$ and $-x\%$ as cancelling.

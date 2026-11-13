@@ -72,7 +72,7 @@ def main() -> None:
     approx("pi x 10^7 relative gap, %", 100 * abs(math.pi * 1e7 / 31_557_600 - 1), 0.4, 1)
     exact("hours in a 365-day year", 365 * 24, 8760)
     approx("sqrt(252)", math.sqrt(252), 15.9, 1)
-    sig("world population, UN WPP 2024 (cited, 2024)", 8.2e9, 8.2e9, 2)
+    sig("world population 8,162 million on 1 July 2024, UN WPP 2024 (cited)", 8_162e6, 8.2e9, 2)
     sig("US population 341,784,857 on 1 July 2025 (cited)", 341_784_857, 3.4e8, 2)
     sig("US population 341,784,857 in millions", 341_784_857 / 1e6, 341.8, 4)
     sig("US 2020 Census count 331,449,281 in millions (cited)", 331_449_281 / 1e6, 331.4, 4)

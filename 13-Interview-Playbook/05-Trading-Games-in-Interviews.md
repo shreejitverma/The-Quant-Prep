@@ -16,7 +16,7 @@ sources: [Agustin Lebron - The Laws of Trading (2019), Xinfeng Zhou - A Practica
 - Keep a written ledger every round: fair value, your quote, each fill, position, cash, and mark-to-fair P&L.
 - Fair value is the conditional expectation given everything revealed, including what the counterparty's trades tell you.
 - Quote around fair value, widen when the counterparty may be informed, and skew both sides away from your inventory.
-- P&L splits into edge captured at the fill and the mark-to-market of inventory afterwards; interviewers watch the first and your control of the second.
+- P&L splits into edge captured at the fill and the mark-to-market of inventory afterwards; aim to capture edge at each fill and keep the inventory under control.
 
 ## Learning objectives
 

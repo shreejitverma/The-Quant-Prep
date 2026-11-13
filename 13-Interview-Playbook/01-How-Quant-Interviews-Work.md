@@ -55,8 +55,8 @@ Hybrid roles mix these, and a first stage may be shared across roles.
 ### What each round is likely to score
 
 - **Online assessment:** raw accuracy and speed; there is no one to explain yourself to, so only the answer counts.
-- **Phone screen:** can you get to correct answers quickly while communicating clearly; the interviewer is deciding whether a full day is worth it.
-- **Technical rounds:** depth and robustness; interviewers push past the first answer with follow-ups and variations to find where understanding stops.
+- **Phone screen:** can you get to correct answers quickly while communicating clearly; treat it as the gate to the final round.
+- **Technical rounds:** depth and robustness; expect follow-ups and variations that push past the first answer to find where understanding stops.
 - **Trading games:** expected-value thinking, position and risk management, updating on information, and composure when losing.
 - **Research rounds:** framing a vague problem, choosing methods, spotting leakage and overfitting, and being honest about what does not work.
 - **Coding and design rounds:** working code, complexity, edge cases, testing and, for low-latency roles, awareness of memory and CPU costs.
@@ -134,21 +134,21 @@ Show requirements gathering, correctness under edge cases and performance awaren
 > Only the final answer, under strict time. There is no credit for reasoning, so accuracy and pacing are everything.
 
 > [!question]- int-pipeline-trader-vs-researcher | How do trader and researcher interviews differ in emphasis?
-> Traders are tested on speed, mental maths, expected value and decisions under uncertainty, often in games. Researchers are tested on depth in statistics, modelling, ML and coding for data, often with a case or project discussion.
+> Expect trader rounds to stress speed, mental maths, expected value and decisions under uncertainty, often in games. Expect researcher rounds to stress depth in statistics, modelling, ML and coding for data, often with a case or project discussion.
 
 > [!question]- int-pipeline-dev-rounds | What distinguishes quant developer rounds from generic software interviews?
 > More emphasis on C++ or Python depth, performance, memory and concurrency, and domain systems such as order books and market data handlers, alongside standard algorithms.
 
 > [!question]- int-pipeline-why-think-aloud | Why should you think out loud in a technical round?
-> The interviewer scores the reasoning, not just the result; talking lets them credit partial progress and give useful hints, and shows how you would work on a desk.
+> Talking shows the reasoning, not just the result; it lets the interviewer credit partial progress and give useful hints, and shows how you would work on a desk.
 
 > [!question]- int-pipeline-when-stuck | What should you do when stuck on an interview problem?
-> Say what you have tried and ruled out, solve a smaller or special case, and ask a clarifying question. A hint taken well is usually scored better than silence.
+> Say what you have tried and ruled out, solve a smaller or special case, and ask a clarifying question. Take a hint as information rather than sitting in silence.
 
 > [!question]- int-pipeline-wrong-answer | You realise an earlier answer was wrong. What do you do?
 > Say so immediately, correct it and explain the error. Self-correction signals reliability; defending a wrong answer is a strong negative.
 
-> [!question]- int-pipeline-trading-game-scored | In a trading game, what are interviewers usually scoring?
+> [!question]- int-pipeline-trading-game-scored | In a trading game, what should you show beyond P&L?
 > Expected-value reasoning, updating on information including the counterparty's trades, position and risk control, clear communication, and composure. P&L in a short game is mostly noise.
 
 > [!question]- int-pipeline-geometric-first-six | Expected number of die rolls until the first 6?

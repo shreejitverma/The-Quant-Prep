@@ -16,7 +16,7 @@ sources: [Xinfeng Zhou - A Practical Guide to Quantitative Finance Interviews (2
 - Count information before designing a strategy: $w$ weighings with three outcomes distinguish at most $3^w$ cases.
 - Solve the $n=1,2,3$ cases out loud, spot the pattern, then argue it by induction.
 - When a process looks complicated, look for a quantity it cannot change.
-- Answer first, then the shortest convincing argument, then a sanity check; interviewers score the reasoning as much as the answer.
+- Answer first, then the shortest convincing argument, then a sanity check; show the reasoning as clearly as the answer.
 
 ## Learning objectives
 
@@ -63,7 +63,7 @@ $n+1$ objects in $n$ boxes forces a shared box; it proves existence without cons
 2. Say which tool you are trying and why.
 3. Work a small case on paper where the interviewer can see it.
 4. State the answer, then verify it against a boundary or the small case.
-5. If stuck, say what you have ruled out; a hint taken well scores better than silence.
+5. If stuck, say what you have ruled out and use any hint rather than sitting in silence.
 
 ## Worked examples
 
@@ -103,7 +103,7 @@ Work backwards.
 - Five (A to E): A needs two more votes; C and E get 0 under B, so 1 coin each buys them: $(98, 0, 1, 0, 1)$.
 
 The answer is A keeps 98, C and E get 1 each.
-The follow-up usually changes the tie rule or the number of pirates; redo the backward induction rather than pattern-matching.
+Expect a follow-up that changes the tie rule or the number of pirates; redo the backward induction rather than pattern-matching.
 
 ### Example 3: 100 prisoners and hats
 

@@ -62,7 +62,8 @@ The two equal third differences are what make this evidence: a cubic has four fr
 
 ### When more than one rule fits
 
-Any $n$ terms are matched exactly by a polynomial of degree $n - 1$, so every next term can be "justified".
+Any $n$ terms followed by any chosen next term lie on a polynomial of degree at most $n$, so every next term can be "justified".
+The unique lowest-degree fit, of degree $n - 1$, gives one more competing answer.
 A rule is convincing only when it explains more terms than it has free parameters; say which rule you are using.
 
 - $1, 2, 4, 8, 16, ?$ has two natural answers: $32$ by doubling, and $31$ as the number of regions a circle is cut into by all chords between $n$ points in general position ($1, 2, 4, 8, 16, 31, 57$, which is $\binom{n}{4} + \binom{n}{2} + 1$).
@@ -109,7 +110,7 @@ Recognise it as $n^3 + n^2 = n^2(n+1)$ to confirm.
 Revenue is $100$ in year 1, $150$ in year 2 and $120$ in year 3.
 Yearly changes are $+50\%$ and $-20\%$, with arithmetic mean $+15\%$.
 The compound annual growth rate is $\sqrt{120/100} - 1 \approx 9.5\%$.
-A test that asks for "average annual growth" usually wants the compound rate; check the options, because the arithmetic mean is the classic trap answer.
+When a question asks for "average annual growth", give the compound rate; check the options, because the arithmetic mean is the trap answer.
 
 ### Example 4: when to guess
 
@@ -162,7 +163,7 @@ With no penalty, always answer every question before time runs out.
 > About $9.5\%$ compound, $\sqrt{1.2} - 1$. The arithmetic mean of $+50\%$ and $-20\%$ ($15\%$) overstates it because growth compounds.
 
 > [!question]- int-seq-percent-vs-points | A default rate rises from $4\%$ to $5\%$. By how much has it increased?
-> 1 percentage point, which is a $25\%$ relative increase. Tests often offer both to catch the confusion.
+> 1 percentage point, which is a $25\%$ relative increase. Check which one the question asks for before answering.
 
 > [!question]- int-seq-guessing-penalty | Five options, $+1$ right and $-0.25$ wrong. Should you guess blind?
 > It is neutral: expected score $0.2 - 0.8 \times 0.25 = 0$. Eliminate one option and guessing becomes positive.

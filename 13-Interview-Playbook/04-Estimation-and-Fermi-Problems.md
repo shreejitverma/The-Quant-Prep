@@ -25,10 +25,10 @@ sources: [Lawrence Weinstein and John A. Adam - Guesstimation (Princeton Univers
 
 ## Core concepts
 
-### What is being scored
+### What to show
 
 Nobody expects you to know the number of piano tuners in Chicago.
-The interviewer scores the structure of the decomposition, the reasonableness of each input, the arithmetic, and whether you know how uncertain you are.
+Show the structure of the decomposition, the reasonableness of each input, the arithmetic, and how uncertain you are.
 In a trading interview the question may arrive as "make me a market on X", which adds a second skill: quoting a width that will not be picked off.
 
 ### Decomposition
@@ -48,7 +48,7 @@ Doing two decompositions and seeing whether they agree within a factor of 2 or 3
 | Seconds in a year | $3.16 \times 10^7$, within about $0.4\%$ of $\pi \times 10^7$ | $365.25 \times 86{,}400$ |
 | Hours in a year | $8760$ | $365 \times 24$ |
 | Trading days in a year | $252$, and $\sqrt{252} \approx 15.9 \approx 16$ | A market convention for annualising; the actual count varies by year and exchange |
-| World population | about $8.2 \times 10^9$ (2024) | UN, *World Population Prospects 2024* |
+| World population | about $8.2 \times 10^9$ ($8{,}162$ million on 1 July 2024) | UN, *World Population Prospects 2024* |
 | US population | about $3.4 \times 10^8$ ($341.8$ million on 1 July 2025) | US Census Bureau, Vintage 2025 estimates |
 | Earth's circumference | about $40{,}000$ km ($40{,}075$ km at the equator) | $2\pi \times 6378.137$ km, the WGS 84 equatorial radius |
 | Life expectancy at birth, OECD average | about $81$ years (2023) | OECD, *Health at a Glance 2025* |
