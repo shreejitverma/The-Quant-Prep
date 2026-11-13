@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [ito-integral-and-ito-lemma]
 est_hours: 4
-sources: [Shreve - Stochastic Calculus for Finance II (Springer 2004) chapters 4 and 6, Oksendal - Stochastic Differential Equations (Springer 6th edition) chapter 5, Glasserman - Monte Carlo Methods in Financial Engineering (Springer 2003) chapters 3 and 6, Cox Ingersoll and Ross - A Theory of the Term Structure of Interest Rates (Econometrica 1985)]
+sources: [Shreve - Stochastic Calculus for Finance II (Springer 2004) chapters 4 and 6, Oksendal - Stochastic Differential Equations (Springer 6th edition) chapter 5, Glasserman - Monte Carlo Methods in Financial Engineering (Springer 2003) chapters 3 and 6, Cox Ingersoll and Ross - A Theory of the Term Structure of Interest Rates (Econometrica 1985), Feller - Two Singular Diffusion Problems (Annals of Mathematics 1951), Yamada and Watanabe - On the Uniqueness of Solutions of Stochastic Differential Equations (Journal of Mathematics of Kyoto University 1971)]
 ---
 
 # Stochastic Differential Equations
@@ -14,7 +14,7 @@ sources: [Shreve - Stochastic Calculus for Finance II (Springer 2004) chapters 4
 
 - GBM $dS = \mu S\,dt + \sigma S\,dW$ solves to $S_t = S_0\exp\big((\mu - \sigma^2/2)t + \sigma W_t\big)$: mean $S_0e^{\mu t}$, median $S_0e^{(\mu - \sigma^2/2)t}$.
 - OU $dX = \kappa(\theta - X)\,dt + \sigma\,dW$ solves with the integrating factor $e^{\kappa t}$: Gaussian, mean reverts at rate $\kappa$ (half-life $\ln 2/\kappa$), stationary law $N(\theta, \sigma^2/(2\kappa))$.
-- CIR $dr = \kappa(\theta - r)\,dt + \sigma\sqrt{r}\,dW$ has the OU mean, stays non-negative, and never hits 0 iff the Feller condition $2\kappa\theta \ge \sigma^2$ holds; its stationary law is Gamma.
+- CIR $dr = \kappa(\theta - r)\,dt + \sigma\sqrt{r}\,dW$ has the OU mean, stays non-negative, and (from $r_0 > 0$) never hits 0 iff the Feller condition $2\kappa\theta \ge \sigma^2$ holds; its stationary law is Gamma.
 - Euler-Maruyama has strong order 1/2 and weak order 1; Milstein adds $\tfrac12 bb'((\Delta W)^2 - \Delta t)$ and reaches strong order 1.
 
 ## Learning objectives
@@ -61,7 +61,7 @@ $$
 | $E\int_0^T S_t\,dt$ | $S_0(e^{\mu T} - 1)/\mu$ |
 
 Mode $<$ median $<$ mean: a typical path underperforms the average, and the gap $\sigma^2/2$ per unit time is volatility drag.
-With $\mu = 0$ and large $\sigma^2 t$, $E[S_t] = S_0$ while $S_t \to 0$ almost surely.
+With $\mu = 0$, $E[S_t] = S_0$ for every $t$, yet the median $S_0e^{-\sigma^2 t/2}$ tends to 0 and $S_t \to 0$ almost surely; at $\sigma = 30\%$ and $t = 100$ years the median is $0.011\,S_0$.
 
 ### Ornstein-Uhlenbeck and Vasicek
 
@@ -97,8 +97,9 @@ $$
 
 - The transition law is a scaled non-central chi-squared, so CIR can be simulated exactly.
 - Stationary law: Gamma with shape $2\kappa\theta/\sigma^2$ and scale $\sigma^2/(2\kappa)$, mean $\theta$, variance $\theta\sigma^2/(2\kappa)$.
-- Feller condition: if $2\kappa\theta \ge \sigma^2$ the process never reaches 0; otherwise 0 is hit but is reflecting, so $r_t \ge 0$ always.
-- The same SDE is the Heston variance process (see [Stochastic Volatility](../05-Derivatives-and-Volatility/09-Stochastic-Volatility-Heston-and-SABR.md)), where calibrated parameters often violate Feller.
+- Feller condition (Feller 1951): from $r_0 > 0$, if $2\kappa\theta \ge \sigma^2$ the process never reaches 0; if $0 < 2\kappa\theta < \sigma^2$, 0 is reached but is instantaneously reflecting, so $r_t \ge 0$ always.
+  Equivalently, the non-central chi-squared transition has $d = 4\kappa\theta/\sigma^2$ degrees of freedom and Feller holds iff $d \ge 2$, the squared-Bessel dimension at which 0 stops being hit.
+- The same SDE is the Heston variance process (see [Stochastic Volatility](../05-Derivatives-and-Volatility/09-Stochastic-Volatility-Heston-and-SABR.md)); nothing in a calibration to option prices enforces $2\kappa\theta \ge \sigma^2$, so Heston simulation schemes must handle the boundary at 0.
 
 ### Numerical schemes and convergence orders
 
@@ -127,21 +128,23 @@ Ito on $\log$: $dY = (\mu - \sigma^2/2)\,dt + \sigma\,dW$, which has constant co
 For the mean, $E[e^{\sigma W_t}] = e^{\sigma^2 t/2}$ cancels the $-\sigma^2/2$, so $E[S_t] = S_0e^{\mu t}$.
 For the median, the median of $Y_t$ is its mean, so the median of $S_t$ is $S_0e^{(\mu - \sigma^2/2)t}$."
 With $\mu = 10\%$, $\sigma = 30\%$, $t = 2$, $S_0 = 100$: mean $122.14$, median $111.63$, mode $93.24$, and $P(S_2 > 100) = \Phi(0.055\sqrt2/0.3) \approx 0.602$.
-A $2 \times 10^6$-path simulation reproduces all four to within $0.1$.
+A 200,000-path Euler simulation of the SDE itself, with 1,000 steps and no use of the solution, reproduces the mean, median and probability within four standard errors, and the mode is the argmax of the lognormal density on a fine grid.
 
 ### OU moments and half-life
 
 "A spread follows OU with $\kappa = 2$ per year, $\theta = 1$, $\sigma = 0.5$ and starts at $X_0 = 3$. Describe $X_{0.7}$."
 Mean: $1 + 2e^{-1.4} = 1.493$.
 Variance: $\frac{0.25}{4}(1 - e^{-2.8}) = 0.0587$, close to the stationary $0.0625$ because $2\kappa t = 2.8$ is already large.
-Half-life: $\ln 2/2 \approx 0.35$ years, so after $0.7$ years (two half-lives) a quarter of the initial deviation of 2 remains, matching $2e^{-1.4} = 0.493$.
+Half-life: $\ln 2/2 \approx 0.35$ years, so $0.7$ years is about two half-lives ($0.7/0.347 = 2.02$) and about a quarter of the initial deviation of 2 remains: $2e^{-1.4} = 0.493$.
+Integrating the moment ODEs $m' = \kappa(\theta - m)$ and $v' = -2\kappa v + \sigma^2$ numerically, and a 200,000-path Euler simulation, both reproduce the mean and variance.
 
 ### Feller condition for a short-rate model
 
 "CIR with $\kappa = 1.5$, $\theta = 4\%$, $\sigma = 0.2$. Can the rate hit zero? What is its long-run distribution?"
 Feller: $2\kappa\theta = 0.12 \ge \sigma^2 = 0.04$, so zero is never reached.
 Stationary law: Gamma with shape $2\kappa\theta/\sigma^2 = 3$ and scale $\sigma^2/(2\kappa) = 0.0133$, i.e. mean $4\%$ and standard deviation $\sqrt{0.04 \cdot 0.04/3} \approx 2.3\%$.
-Starting from $r_0 = 2\%$, after one year the mean is $4\% - 2\%e^{-1.5} = 3.55\%$ and the variance from the formula is $4.14 \times 10^{-4}$; an Euler simulation with 2000 steps gives $3.55\%$ and $4.16 \times 10^{-4}$.
+Starting from $r_0 = 2\%$, after one year the mean is $4\% - 2\%e^{-1.5} = 3.55\%$ and the variance from the formula is $4.14 \times 10^{-4}$.
+Two independent checks in the script: RK4 integration of the moment ODEs $m' = \kappa(\theta - m)$ and $q' = 2\kappa\theta m - 2\kappa q + \sigma^2 m$ for $q = E[r^2]$, and $2 \times 10^6$ exact draws from the non-central chi-squared transition ($d = 4\kappa\theta/\sigma^2 = 6$), which agree within four standard errors.
 
 ### Milstein for GBM and a convergence check
 
@@ -151,22 +154,7 @@ $$
 S_{n+1} = S_n\Big(1 + \mu\Delta + \sigma\Delta W_n + \tfrac12\sigma^2\big((\Delta W_n)^2 - \Delta\big)\Big).
 $$
 
-Compare both schemes with the exact solution driven by the same Brownian increments:
-
-```python
-import numpy as np
-rng = np.random.default_rng(3)
-mu, sig, T, N, nf = 0.05, 0.5, 1.0, 20_000, 2**10
-dWf = rng.standard_normal((N, nf)) * np.sqrt(T / nf)
-exact = np.exp((mu - sig**2 / 2) * T + sig * dWf.sum(1))
-for m in [8, 16, 32, 64, 128]:
-    dW, h = dWf.reshape(N, m, nf // m).sum(2), T / m
-    em = np.ones(N); mil = np.ones(N)
-    for i in range(m):
-        em *= 1 + mu * h + sig * dW[:, i]
-        mil *= 1 + mu * h + sig * dW[:, i] + 0.5 * sig**2 * (dW[:, i]**2 - h)
-    print(m, np.abs(em - exact).mean(), np.abs(mil - exact).mean())
-```
+Compare both schemes with the exact solution driven by the same Brownian increments ($\mu = 0.05$, $\sigma = 0.5$, $T = 1$, $S_0 = 1$, 20,000 paths built from $2^{10}$ fine increments and summed onto each coarser grid; seed 3 in the script):
 
 | Steps | EM strong error | Milstein strong error |
 | ---: | ---: | ---: |
@@ -176,7 +164,7 @@ for m in [8, 16, 32, 64, 128]:
 | 64 | 0.0186 | 0.00071 |
 | 128 | 0.0133 | 0.00036 |
 
-Halving the step divides the Euler error by about $\sqrt{2}$ (order 1/2) and the Milstein error by about 2 (order 1).
+Halving the step divides the Euler error by about $\sqrt{2}$ (ratios 1.38, 1.43, 1.41, 1.41; fitted order 0.50) and the Milstein error by about 2 (ratios 1.81, 1.87, 1.93, 1.96; fitted order 0.92 over all five grids and 0.96 over the finest three, approaching 1).
 
 ### $W_t^2$ as a CIR-type process
 
@@ -240,13 +228,24 @@ It has the CIR shape with constant drift $a = 1$ in place of $\kappa(\theta - r)
 > [!question]- sc-sde-w-squared-sde | What SDE does $X_t = W_t^2$ satisfy?
 > $dX = dt + 2\sqrt{X}\,dB$ with $B = \int\text{sgn}(W)\,dW$ a Brownian motion (Levy). It is a squared Bessel process of dimension 1.
 
+> [!question]- sc-sde-gbm-mode | Rank the mean, median and mode of GBM $S_t$, and give the mode.
+> Mode $S_0e^{(\mu - 3\sigma^2/2)t}$ < median $S_0e^{(\mu - \sigma^2/2)t}$ < mean $S_0e^{\mu t}$.
+> For a lognormal with log-mean $m$ and log-variance $s^2$ the mode is $e^{m - s^2}$; with $\mu = 10\%$, $\sigma = 30\%$, $t = 2$, $S_0 = 100$ the three are $93.24$, $111.63$ and $122.14$.
+
+> [!question]- sc-sde-cir-variance | How do you get $\text{Var}(r_t)$ for CIR without the non-central chi-squared law?
+> From the moment ODEs: $m' = \kappa(\theta - m)$ and, by Ito on $r^2$, $\frac{d}{dt}E[r^2] = 2\kappa\theta m - 2\kappa E[r^2] + \sigma^2 m$.
+> Solving gives $r_0\frac{\sigma^2}{\kappa}(e^{-\kappa t} - e^{-2\kappa t}) + \frac{\theta\sigma^2}{2\kappa}(1 - e^{-\kappa t})^2$, which is $4.14 \times 10^{-4}$ at $\kappa = 1.5$, $\theta = 4\%$, $\sigma = 0.2$, $r_0 = 2\%$, $t = 1$.
+
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [sde_solver_euler_maruyama.py](code/sde_solver_euler_maruyama.py).
+- Code: [`code/stoch_03_sde.py`](code/stoch_03_sde.py) prints and asserts every number on this page: GBM moments by a 1,000-step Euler simulation of the SDE (not its solution) and quadrature, OU and CIR moments by RK4 integration of the moment ODEs against the closed forms, CIR by exact non-central chi-squared sampling, the OU AR(1) coefficient by least squares, and the Euler and Milstein strong-error table with its convergence ratios.
+- Code: [sde_solver_euler_maruyama.py](code/sde_solver_euler_maruyama.py), a reusable Euler-Maruyama solver that plots one GBM and one Vasicek path.
 
 ## Further reading
 
 - Steven Shreve, *Stochastic Calculus for Finance II: Continuous-Time Models*, chapters 4 and 6.
 - Bernt Oksendal, *Stochastic Differential Equations*, chapter 5.
 - Paul Glasserman, *Monte Carlo Methods in Financial Engineering*, chapter 3 (exact simulation of OU and CIR) and chapter 6 (discretisation schemes and orders).
-- J. Cox, J. Ingersoll and S. Ross, "A Theory of the Term Structure of Interest Rates", *Econometrica* 53 (1985).
+- J. Cox, J. Ingersoll and S. Ross, "A Theory of the Term Structure of Interest Rates", *Econometrica* 53(2) (1985), 385-407.
+- W. Feller, "Two Singular Diffusion Problems", *Annals of Mathematics* 54(1) (1951), 173-182 (the boundary behaviour at 0 behind the Feller condition).
+- T. Yamada and S. Watanabe, "On the Uniqueness of Solutions of Stochastic Differential Equations", *Journal of Mathematics of Kyoto University* 11(1) (1971), 155-167.

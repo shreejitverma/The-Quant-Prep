@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [random-walks-and-gamblers-ruin, inequalities-and-limit-theorems]
 est_hours: 4
-sources: [Shreve - Stochastic Calculus for Finance II (Springer 2004) chapter 3, Karatzas and Shreve - Brownian Motion and Stochastic Calculus (Springer 1991) chapter 2, Zhou - A Practical Guide to Quantitative Finance Interviews chapter 5, Broadie Glasserman and Kou - A Continuity Correction for Discrete Barrier Options (Mathematical Finance 1997)]
+sources: [Shreve - Stochastic Calculus for Finance II (Springer 2004) chapter 3, Karatzas and Shreve - Brownian Motion and Stochastic Calculus (Springer 1991) chapter 2, Zhou - A Practical Guide to Quantitative Finance Interviews chapter 5, Broadie Glasserman and Kou - A Continuity Correction for Discrete Barrier Options (Mathematical Finance 7(4) 1997), Spitzer - A Combinatorial Lemma and its Application to Probability Theory (Transactions of the AMS 82 1956)]
 ---
 
 # Brownian Motion
@@ -121,21 +121,16 @@ $B$ is independent of $W_T$ (they are jointly Gaussian and uncorrelated), which 
 
 ### Simulation check
 
-```python
-import numpy as np
-from scipy.stats import norm
-rng = np.random.default_rng(0)
-N, n, T = 200_000, 400, 1.0
-dW = rng.standard_normal((N, n)) * np.sqrt(T / n)
-W = np.cumsum(dW, axis=1)
-print((dW**2).sum(1).mean())              # quadratic variation ~ 1.000
-M = np.maximum(W.max(1), 0)
-print((M >= 1).mean(), 2 * (1 - norm.cdf(1)))  # 0.304 vs 0.317
-print(M.mean(), np.sqrt(2 / np.pi))       # 0.770 vs 0.798
-```
+Simulating the running maximum on a grid is biased low, because the path can peak between grid points.
+The script [`code/stoch_01_brownian_motion.py`](code/stoch_01_brownian_motion.py) separates the two effects on $[0, 1]$:
 
-The simulated maximum is biased low because the path is only observed on a grid.
-Broadie, Glasserman and Kou show the discretely monitored maximum behaves like the continuous one shifted down by about $0.5826\,\sigma\sqrt{\Delta t}$, here $0.029$, which matches the gap.
+- Exact continuous maximum: between grid points, sample the maximum of the Brownian bridge from $x$ to $y$ over a step $h$ as $\tfrac12\big(x + y + \sqrt{(y - x)^2 - 2h\ln U}\big)$ with $U$ uniform.
+  This is exact for any step, and $10^6$ paths reproduce $P(M_1 \ge 1) = 2(1 - \Phi(1)) = 0.3173$, $E[M_1] = \sqrt{2/\pi} = 0.7979$ and $E[M_1^2] = 1$ within four standard errors.
+- Grid maximum with 400 steps: Spitzer's identity $E[\max_{0 \le k \le n} S_k] = \sum_{k=1}^n E[S_k^+]/k$ gives the exact grid mean $\frac{1}{\sqrt{2\pi n}}\sum_{k=1}^{n} k^{-1/2} = 0.7693$, below the continuous $0.7979$.
+
+Since $\sum_{k \le n} k^{-1/2} = 2\sqrt{n} + \zeta(1/2) + O(n^{-1/2})$, the gap is $\beta\sqrt{\Delta t}$ to leading order with $\beta = -\zeta(1/2)/\sqrt{2\pi} = 0.5826$, here $0.029$.
+Broadie, Glasserman and Kou use the same constant for discretely monitored barriers: a grid-monitored barrier at $a$ behaves like a continuous one at $a + \beta\sigma\sqrt{\Delta t}$.
+For the 400-step grid that predicts $P(\text{grid max} \ge 1) \approx 2\big(1 - \Phi(1 + 0.5826/20)\big) = 0.3034$ against the continuous $0.3173$, and a 100,000-path grid simulation agrees within four standard errors.
 
 ## Worked examples
 
@@ -153,8 +148,8 @@ Then $P(W_2 > 0 \mid W_1 > 0) = \frac{3/8}{1/2} = \frac34$.
 "What is $E[\max_{0 \le t \le T} W_t]$?
 By reflection, $P(M_T \ge a) = 2P(W_T \ge a) = P(\lvert W_T\rvert \ge a)$ for every $a \ge 0$, so $M_T$ has the law of $\lvert W_T \rvert$.
 Hence $E[M_T] = E\lvert W_T\rvert = \sqrt{T}\,E\lvert Z\rvert = \sqrt{2T/\pi} \approx 0.80\sqrt{T}$."
-A trader's reading: a driftless asset with 1% daily volatility has an expected 20-day high about $0.80 \times \sqrt{20} \approx 3.6\%$ above today's price.
-The probability it touches $+2$ standard deviations of the horizon move at some point is $2(1 - \Phi(2)) \approx 4.6\%$, double the terminal probability.
+A trader's reading: a driftless asset with 1% daily volatility (treated as arithmetic Brownian motion) has an expected 20-day high $\sqrt{2/\pi} \times \sqrt{20} = 3.57\%$ above today's price.
+The probability it touches $+2$ standard deviations of the horizon move at some point is $2(1 - \Phi(2)) = 4.55\%$, double the terminal probability of $2.28\%$.
 
 ### Two-sided barrier with drift
 
@@ -168,7 +163,8 @@ p = \frac{e - 1}{e - e^{-1}} = \frac{1}{1 + e^{-1}} \approx 0.731.
 $$
 
 For the time, $X_t - 0.5t$ is a martingale and the exit time has finite mean, so $0.5\,E[\tau] = E[X_\tau] = p - (1-p) = 2p - 1$, giving $E[\tau] = 2(2p-1) \approx 0.924$.
-A simulation with step $10^{-3}$ gives $p \approx 0.732$ and a mean exit time that drifts down to $0.924$ as the step shrinks (discrete monitoring detects exits late).
+Two independent checks in the script: a finite-difference solution of $\tfrac12 u'' + 0.5u' = 0$ (for $p$) and $= -1$ (for $E[\tau]$) on $(-1, 1)$ gives $0.731$ and $0.924$, and a 400,000-path simulation with step $0.01$ that detects crossings between grid points by the Brownian-bridge crossing probability $e^{-2(1 - x)(1 - y)/h}$ reproduces $p$ within four standard errors.
+Without that bridge correction a grid simulation detects exits late.
 
 ### Expected exit time of a symmetric interval
 
@@ -181,8 +177,8 @@ For the asymmetric interval $(-b, a)$ the same argument gives $E[\tau] = a^2\fra
 
 "Under the real measure a stock is GBM with $\mu = 2\%$ and $\sigma = 30\%$. What is the probability it ever doubles?"
 The log-price $\log(S_t/S_0) = \nu t + \sigma W_t$ has drift $\nu = \mu - \sigma^2/2 = -2.5\% < 0$.
-The probability of ever reaching $\log 2$ is $e^{2\nu \log 2/\sigma^2} = 2^{2\nu/\sigma^2} = 2^{2\mu/\sigma^2 - 1} \approx 0.680$.
-With $\mu = 0$ this is $1/2$, the Doob bound for a positive martingale, attained because paths are continuous.
+The probability of ever reaching $\log 2$ is $e^{2\nu \log 2/\sigma^2} = 2^{2\nu/\sigma^2} = 2^{2\mu/\sigma^2 - 1} \approx 0.680$, which a finite-difference solution of $\tfrac12\sigma^2u'' + \nu u' = 0$ on $(-60, \log 2)$ confirms.
+With $\mu = 0$ this is $1/2$, the bound $P(\sup_t S_t \ge 2S_0) \le 1/2$ from Doob's maximal inequality for a positive martingale, attained because paths are continuous.
 
 ## Pitfalls
 
@@ -192,7 +188,7 @@ With $\mu = 0$ this is $1/2$, the Doob bound for a positive martingale, attained
 - Using the reflection principle with drift; reflection needs symmetry, so for $\mu \ne 0$ use the exponential martingale or Girsanov.
 - Saying "the hitting time is finite, so its mean is finite": for driftless Brownian motion $E[\tau_a] = \infty$.
 - Treating "the time of the maximum" as a stopping time; it depends on the future.
-- Simulating barrier or maximum problems on a coarse grid and forgetting the $O(\sqrt{\Delta t})$ underestimation of the maximum.
+- Simulating barrier or maximum problems on a coarse grid and forgetting the $O(\sqrt{\Delta t})$ underestimation of the maximum; sample the bridge maximum between grid points or apply the Broadie-Glasserman-Kou shift.
 
 ## Interview questions
 
@@ -242,11 +238,26 @@ With $\mu = 0$ this is $1/2$, the Doob bound for a positive martingale, attained
 > $t(T-t)/T$. $\text{Var} = t - 2\frac{t}{T}t + \frac{t^2}{T^2}T = t - t^2/T$.
 
 > [!question]- sc-bm-discrete-monitoring-bias | You estimate $E[\max W]$ by simulating on a grid of step $\Delta t$. Which way is the bias, and how big?
-> Downward, of order $\sqrt{\Delta t}$: about $0.5826\sqrt{\Delta t}$ for standard Brownian motion (Broadie-Glasserman-Kou), because the true path peaks between grid points.
+> Downward, of order $\sqrt{\Delta t}$: about $0.5826\sqrt{\Delta t}$ for standard Brownian motion, because the true path peaks between grid points.
+> The constant is $-\zeta(1/2)/\sqrt{2\pi}$, from Spitzer's identity; with 400 steps on $[0, 1]$ the exact grid mean is $0.7693$ against $\sqrt{2/\pi} = 0.7979$.
+
+> [!question]- sc-bm-exact-max-simulation | How do you simulate the running maximum of Brownian motion without grid bias?
+> Sample the maximum of the Brownian bridge on each step exactly: between $x$ and $y$ over time $h$, $M = \tfrac12\big(x + y + \sqrt{(y - x)^2 - 2h\ln U}\big)$ with $U$ uniform.
+> It inverts $P(M \ge m \mid x, y) = e^{-2(m - x)(m - y)/h}$, so the path maximum is exact on any grid.
+
+> [!question]- sc-bm-hitting-laplace | What is $E[e^{-\lambda\tau_a}]$ for the first hitting time of $a > 0$ by standard Brownian motion?
+> $e^{-a\sqrt{2\lambda}}$.
+> Optional stopping on the bounded martingale $e^{\theta W_{t \wedge \tau_a} - \theta^2 (t \wedge \tau_a)/2}$ with $\theta = \sqrt{2\lambda}$ gives $E[e^{\theta a - \lambda\tau_a}] = 1$.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/stoch_01_brownian_motion.py`](code/stoch_01_brownian_motion.py) prints and asserts every number on this page: covariances and the bridge variance in exact rational arithmetic, the reflection law by exact continuous-maximum (bridge) simulation, the hitting-time law by quadrature, the grid bias by Spitzer's identity with $\zeta(1/2)$ from Euler-Maclaurin, and every barrier probability and exit time by a finite-difference ODE solve and bridge-corrected simulation.
+- Related notes: [Martingales and Optional Stopping](../01-Probability/12-Martingales-and-Optional-Stopping.md), [Random Walks and Gambler's Ruin](../01-Probability/11-Random-Walks-and-Gamblers-Ruin.md), [Ito Integral and Ito's Lemma](02-Ito-Integral-and-Ito-Lemma.md).
 
 ## Further reading
 
 - Steven Shreve, *Stochastic Calculus for Finance II: Continuous-Time Models*, chapter 3 (Brownian motion, quadratic variation, reflection).
 - Ioannis Karatzas and Steven Shreve, *Brownian Motion and Stochastic Calculus*, chapter 2.
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews*, chapter 5.
-- M. Broadie, P. Glasserman and S. Kou, "A Continuity Correction for Discrete Barrier Options", *Mathematical Finance* 7 (1997).
+- M. Broadie, P. Glasserman and S. Kou, "A Continuity Correction for Discrete Barrier Options", *Mathematical Finance* 7(4) (1997), 325-349.
+- F. Spitzer, "A Combinatorial Lemma and its Application to Probability Theory", *Transactions of the American Mathematical Society* 82 (1956), 323-339.

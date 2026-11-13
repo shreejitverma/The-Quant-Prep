@@ -64,7 +64,8 @@ The by-product $W_t^3 - 3\int_0^t W_s\,ds$ is a martingale.
 "Find $P(\max_{s \le 1} W_s \ge 1, W_1 \le 0)$."
 The joint reflection law is $P(M_t \ge a, W_t \le b) = P(W_t \ge 2a - b)$ for $b \le a$: reflecting after the first hit of $a$ maps endpoints $\le b$ to endpoints $\ge 2a - b$.
 With $a = 1$, $b = 0$: $P(W_1 \ge 2) = 1 - \Phi(2) \approx 0.0228$.
-Quadrature using the bridge crossing probability $e^{-2a(a - w)}$ gives the same value; a grid simulation gives about $0.021$ because it misses crossings between grid points.
+Quadrature using the bridge crossing probability $e^{-2a(a - w)}$ (given $W_1 = w$) gives the same value, and so does a 400,000-path simulation that samples the exact bridge maximum between grid points.
+A plain 100-step grid simulation gives about $0.017$ because it misses crossings between grid points; that matches the Broadie-Glasserman-Kou shifted value $1 - \Phi\big(2(1 + 0.5826/10)\big) = 0.0172$ (see [Brownian Motion](01-Brownian-Motion.md)).
 
 ### Barrier race with drift, and how long it takes
 
@@ -96,7 +97,7 @@ For $f(t, W_t)$ the drift is $f_t + \tfrac12 f_{xx}$.
 - $W^4 - 6tW^2 + 3t^2$: $(-6W^2 + 6t) + (6W^2 - 6t) = 0$, a martingale.
 - $e^{t/2}\sin W$: $\tfrac12 e^{t/2}\sin W - \tfrac12 e^{t/2}\sin W = 0$, a martingale (bounded diffusion coefficient on $[0, T]$).
 
-The polynomial ones are the Hermite polynomials $t^{n/2}He_n(W/\sqrt{t})$, the Taylor coefficients in $\theta$ of $e^{\theta W - \theta^2t/2}$.
+The polynomial ones are the Hermite polynomials $t^{n/2}He_n(W/\sqrt{t})$: $e^{\theta W - \theta^2t/2} = \sum_n \frac{\theta^n}{n!}\,t^{n/2}He_n(W/\sqrt{t})$, so they are $n!$ times the Taylor coefficients in $\theta$.
 
 ## Pitfalls
 
@@ -104,7 +105,7 @@ The polynomial ones are the Hermite polynomials $t^{n/2}He_n(W/\sqrt{t})$, the T
 - Calling $W_t^2$ or $e^{W_t}$ a martingale; they are submartingales.
 - Reflecting a drifted process; use the exponential martingale.
 - Applying optional stopping to an unbounded stopped process (first hit of $+1$ by driftless $W$).
-- Reading a simulated barrier probability as exact; grid monitoring biases it down.
+- Reading a simulated barrier probability as exact; grid monitoring biases it down (here $0.017$ against $0.0228$ on 100 steps).
 - Confusing $E[S_T]$ with the median for GBM, and $\sigma^2/(2\kappa)$ with the finite-horizon OU variance.
 
 ## Interview questions
@@ -156,7 +157,7 @@ The polynomial ones are the Hermite polynomials $t^{n/2}He_n(W/\sqrt{t})$, the T
 > $e^{W_t}\,dW_t + \tfrac12 e^{W_t}\,dt$. Taking expectations, $m' = m/2$ with $m(0) = 1$, so $E[e^{W_t}] = e^{t/2}$.
 
 > [!question]- sc-ps-d-inverse-gbm | For GBM $dS = \mu S\,dt + \sigma S\,dW$, find $d(1/S)$.
-> $\frac1S\big((\sigma^2 - \mu)\,dt - \sigma\,dW\big)$. Ito with $f' = -1/S^2$, $f'' = 2/S^3$. So $1/S$ is GBM with drift $\sigma^2 - \mu$: Siegel's paradox in FX.
+> $\frac1S\big((\sigma^2 - \mu)\,dt - \sigma\,dW\big)$. Ito with $f' = -1/S^2$, $f'' = 2/S^3$. So $1/S$ is GBM with drift $\sigma^2 - \mu$: Siegel's paradox in FX (J. Siegel, *Quarterly Journal of Economics* 86(2), 1972).
 
 > [!question]- sc-ps-cov-terminal-time-integral | Compute $\text{Cov}(W_T, \int_0^T W_t\,dt)$.
 > $T^2/2$. $\int_0^T \text{Cov}(W_T, W_t)\,dt = \int_0^T t\,dt$.
@@ -238,9 +239,14 @@ The polynomial ones are the Hermite polynomials $t^{n/2}He_n(W/\sqrt{t})$, the T
 > [!question]- sc-ps-ou-half-life-from-ar1 | A daily series has AR(1) coefficient 0.9. Mean-reversion speed and half-life?
 > $\kappa = -\ln 0.9 \approx 0.105$ per day, half-life $\ln 2/\kappa \approx 6.6$ days.
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/stoch_09_problem_set.py`](code/stoch_09_problem_set.py) prints and asserts every number on this page: moments by the Ito recursion and the MGF series in exact rationals, every Gaussian expectation by Gauss-Hermite quadrature, martingale claims by checking $E[f(t, W_t) \mid W_s] = f(s, W_s)$ with quadrature and by exact polynomial drift, barrier probabilities and exit times by finite-difference ODE solves, the reflection joint law by bridge quadrature and exact bridge-maximum simulation, and first-passage moments by quadrature of the inverse-Gaussian density.
+- Related notes: [Brownian Motion](01-Brownian-Motion.md), [Ito Integral and Ito's Lemma](02-Ito-Integral-and-Ito-Lemma.md), [Stochastic Differential Equations](03-Stochastic-Differential-Equations.md), [Black-Scholes Derivation](07-Black-Scholes-Derivation.md).
+
 ## Further reading
 
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews*, chapter 5.
-- Mark Joshi, Nick Denson and Andrew Downes, *Quant Job Interview Questions and Answers*, stochastic processes chapter.
+- Mark Joshi, Nick Denson and Andrew Downes, *Quant Job Interview Questions and Answers* (Pilot Whale Press, 2nd edition), the stochastic processes questions.
 - Steven Shreve, *Stochastic Calculus for Finance II: Continuous-Time Models*, chapters 3-4.
 - Ioannis Karatzas and Steven Shreve, *Brownian Motion and Stochastic Calculus*, chapter 2 (reflection principle and hitting times).

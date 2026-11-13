@@ -5,14 +5,15 @@ tier: core
 status: solid
 prereqs: [ito-integral-and-ito-lemma, risk-neutral-pricing-and-ftap]
 est_hours: 4
-sources: [Black and Scholes - The Pricing of Options and Corporate Liabilities (Journal of Political Economy 1973), Merton - Theory of Rational Option Pricing (Bell Journal of Economics and Management Science 1973), Shreve - Stochastic Calculus for Finance II (Springer 2004) chapters 4 and 5, Hull - Options Futures and Other Derivatives, Leland - Option Pricing and Replication with Transactions Costs (Journal of Finance 1985)]
+sources: [Black and Scholes - The Pricing of Options and Corporate Liabilities (Journal of Political Economy 1973), Merton - Theory of Rational Option Pricing (Bell Journal of Economics and Management Science 1973), Shreve - Stochastic Calculus for Finance II (Springer 2004) chapters 4 and 5, Hull - Options Futures and Other Derivatives, Leland - Option Pricing and Replication with Transactions Costs (Journal of Finance 1985), Kamal - When You Cannot Hedge Continuously - The Corrections to Black-Scholes (Goldman Sachs Quantitative Strategies Research Notes 1998)]
 ---
 
 # Black-Scholes Derivation
 
 ## TL;DR
 
-- Hold the option and short $\Delta = V_S$ shares; Ito's lemma shows the $dW$ terms cancel, so the portfolio is riskless and must earn $r$, which gives $V_t + \tfrac12\sigma^2S^2V_{SS} + rSV_S - rV = 0$.
+- Replicate the option with $\Delta = V_S$ shares and cash in a self-financing portfolio (equivalently, hold the option short $V_S$ shares); Ito's lemma shows the $dW$ terms cancel, so the position is riskless and must earn $r$, which gives $V_t + \tfrac12\sigma^2S^2V_{SS} + rSV_S - rV = 0$.
+- Terminal condition $V(T, S) = \text{payoff}(S)$; at $S = 0$ the PDE reduces to $V_t = rV$, so a call has $V(t, 0) = 0$ and $V \sim S - Ke^{-r(T - t)}$ as $S \to \infty$, a put $V(t, 0) = Ke^{-r(T - t)}$ and $V \to 0$.
 - The PDE has no $\mu$: the hedge removes all exposure to the stock's direction.
 - Feynman-Kac turns the PDE into $V_0 = e^{-rT}E^Q[\text{payoff}(S_T)]$ with $dS = rS\,dt + \sigma S\,dW^Q$.
 - Computing that expectation gives $C = S_0N(d_1) - Ke^{-rT}N(d_2)$, with $d_{1,2} = \frac{\ln(S_0/K) + (r \pm \sigma^2/2)T}{\sigma\sqrt{T}}$.
@@ -46,7 +47,23 @@ $$
 dV = \Big(V_t + \mu SV_S + \tfrac12\sigma^2S^2V_{SS}\Big)dt + \sigma SV_S\,dW.
 $$
 
-Form $\Pi = V - \Delta S$, holding $\Delta$ fixed over $dt$ (self-financing).
+Now build a replicating portfolio: hold $\Delta_t$ shares and put the rest of its value $X_t$ in the bank.
+Self-financing means no money enters or leaves after time 0, so every change in value comes from the shares and from interest:
+
+$$
+dX = \Delta\,dS + r(X - \Delta S)\,dt = \big(rX + (\mu - r)\Delta S\big)dt + \sigma\Delta S\,dW.
+$$
+
+Require $X_t = V(t, S_t)$ for every $t$ (Shreve II, section 4.5) and match the two differentials.
+The $dW$ terms give $\Delta = V_S$.
+The $dt$ terms give $V_t + \mu SV_S + \tfrac12\sigma^2S^2V_{SS} = rV + (\mu - r)SV_S$, in which the $\mu SV_S$ terms cancel:
+
+$$
+V_t + \tfrac12\sigma^2S^2V_{SS} + rSV_S - rV = 0, \qquad V(T, S) = \text{payoff}(S).
+$$
+
+The classical shortcut gives the same equation.
+Hold the option short $\Delta$ shares, $\Pi = V - \Delta S$, and count its gains over $dt$ as $d\Pi = dV - \Delta\,dS$: rebalancing trades happen at market prices, so they move value between shares and cash without creating any, and there is no $S\,d\Delta$ term.
 Then
 
 $$
@@ -54,15 +71,23 @@ d\Pi = \Big(V_t + \mu SV_S + \tfrac12\sigma^2S^2V_{SS} - \Delta\mu S\Big)dt + \s
 $$
 
 Choosing $\Delta = V_S$ kills the $dW$ term, and the $\mu$ terms cancel with it.
-The portfolio is now riskless over $dt$, so no arbitrage forces $d\Pi = r\Pi\,dt = r(V - SV_S)\,dt$.
-Equating the drifts:
+The position is now riskless over $dt$, so no arbitrage forces $d\Pi = r\Pi\,dt = r(V - SV_S)\,dt$, and equating drifts gives the PDE above.
 
-$$
-V_t + \tfrac12\sigma^2S^2V_{SS} + rSV_S - rV = 0, \qquad V(T, S) = \text{payoff}(S).
-$$
-
-The PDE is linear, so it prices any European payoff; only the terminal condition changes.
+The PDE is linear, so it prices any European payoff; only the terminal and boundary conditions change.
 Two quick solution checks: $V = S$ (the stock) and $V = Ke^{-r(T - t)}$ (a bond) both satisfy it.
+
+### Boundary conditions
+
+The terminal condition alone fixes the price among solutions of at most polynomial growth in $S$ (the Feynman-Kac uniqueness class), but a numerical solver on a truncated grid $[S_{\min}, S_{\max}]$ also needs values at the edges.
+
+| Contract | $S \to 0$ | $S \to \infty$ |
+| :--- | :--- | :--- |
+| Call | $V(t, 0) = 0$ | $V(t, S) - \big(S - Ke^{-r(T - t)}\big) \to 0$, so $V_S \to 1$ |
+| Put | $V(t, 0) = Ke^{-r(T - t)}$ | $V(t, S) \to 0$ |
+
+At $S = 0$ the coefficients $\tfrac12\sigma^2S^2$ and $rS$ vanish, so the PDE itself reduces to $V_t = rV$ and $V(t, 0) = \text{payoff}(0)\,e^{-r(T - t)}$: the boundary value is the discounted payoff of a stock stuck at 0, not a free choice.
+For large $S$ the call is exercised with probability close to 1 and is worth the forward $S - Ke^{-r(T - t)}$; note the discounted strike, not $K$.
+The script solves the PDE by Crank-Nicolson with exactly these conditions and recovers the closed-form call and put below to three decimals.
 
 ### Reduction to the heat equation
 
@@ -114,14 +139,14 @@ The P&L is path-dependent: it is weighted by $\Gamma S^2$, so realised volatilit
 
 | Assumption | Reality | Consequence |
 | :--- | :--- | :--- |
-| Constant $\sigma$ | Volatility is stochastic and differs by strike | Implied volatility smile and skew; one $\sigma$ cannot fit all strikes |
-| Continuous paths | Jumps and gaps | Unhedgeable gap risk; OTM puts richer than Black-Scholes |
-| Continuous hedging | Discrete rebalancing | Hedging error with standard deviation about $\sqrt{\pi/4}\,\sigma\,\text{vega}/\sqrt{N}$ for $N$ rebalances |
-| No transaction costs | Spreads and impact | Leland: effectively widen or narrow $\sigma$; trade off hedge frequency against cost |
+| Constant $\sigma$ | Volatility is stochastic | Implied volatility differs by strike and maturity (smile and skew); one $\sigma$ cannot fit all strikes |
+| Continuous paths | Jumps and gaps | Unhedgeable gap risk, and a skew that a diffusion with one $\sigma$ cannot produce (see [Jump Processes](08-Jump-Processes-and-Levy-Models.md)) |
+| Continuous hedging | Discrete rebalancing | Hedging error with standard deviation about $\sqrt{\pi/4}\,\sigma\,\text{vega}/\sqrt{N}$ for $N$ rebalances (Kamal 1998) |
+| No transaction costs | Spreads and impact | Leland: replicate with a volatility adjusted by a term in $k/(\sigma\sqrt{\Delta t})$ for proportional cost $k$; trade off hedge frequency against cost |
 | Constant $r$, free borrowing | Stochastic rates, borrow fees, funding spreads | Matters for long-dated options and hard-to-borrow names |
 | No dividends | Discrete dividends | Adjust the forward; early exercise of American calls |
 
-Despite this, the formula survives as a quoting convention: prices are quoted as implied volatilities, and the smile encodes everything the model misses.
+Despite this, the formula survives as a map between prices and implied volatilities, and the smile records everything the model misses.
 
 ## Worked examples
 
@@ -133,18 +158,8 @@ $d_1 = \frac{-0.0488 + (0.05 + 0.03125)(0.5)}{0.1768} = -0.0462$ and $d_2 = -0.2
 $N(d_1) = 0.4816$, $N(d_2) = 0.4118$, so $C = 48.16 - 105e^{-0.025}(0.4118) = 5.99$.
 Parity gives the put: $5.99 - 100 + 105e^{-0.025} = 8.40$.
 
-```python
-import numpy as np
-from scipy.stats import norm
-S, K, T, r, s = 100, 105, 0.5, 0.05, 0.25
-d1 = (np.log(S / K) + (r + s**2 / 2) * T) / (s * np.sqrt(T)); d2 = d1 - s * np.sqrt(T)
-print(S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2))       # 5.9885
-z = np.random.default_rng(4).standard_normal(4_000_000)
-ST = S * np.exp((r - s**2 / 2) * T + s * np.sqrt(T) * z)
-print(np.exp(-r * T) * np.maximum(ST - K, 0).mean())              # 5.984
-```
-
-A central finite-difference check of the PDE at $t = 0.1$ gives a residual of order $10^{-7}$.
+The script [`code/stoch_07_black_scholes.py`](code/stoch_07_black_scholes.py) reproduces $5.9885$ four ways: the closed form, quadrature of the payoff against the lognormal density, a $4 \times 10^6$-path simulation (within four standard errors), and a Crank-Nicolson solution of the PDE with the boundary conditions above.
+A central finite-difference check of the PDE at $t = 0.1$, $S = 100$ gives a residual below $10^{-6}$, which is finite-difference noise.
 
 ### At-the-money approximation
 
@@ -170,8 +185,8 @@ For $r = 5\%$, $\sigma = 25\%$, $p = -1.6$, and the residual is zero to machine 
 
 "You sell an at-the-money one-year call ($\sigma = 20\%$, $r = 0$, $S_0 = 100$) and delta-hedge $N$ times at the true volatility. How big is the hedging error?"
 Each rebalance leaves an error $\tfrac12\Gamma S^2((\Delta S/S)^2 - \sigma^2\Delta t)$, which has mean zero and standard deviation of order $\Gamma S^2\sigma^2\Delta t$.
-Summing $N$ independent errors gives a total of order $1/\sqrt{N}$; the standard approximation is $\sqrt{\pi/4}\,\sigma\,\text{vega}/\sqrt{N}$.
-A 40,000-path simulation gives:
+Summing $N$ independent errors gives a total of order $1/\sqrt{N}$; Kamal's approximation (Goldman Sachs, 1998) is $\sqrt{\pi/4}\,\sigma\,\text{vega}/\sqrt{N}$, with vega $= S_0\varphi(d_1)\sqrt{T} = 39.70$ per unit of volatility here.
+A 40,000-path simulation of the self-financing hedge (seed in the script) gives:
 
 | Rebalances $N$ | Simulated s.d. | $\sqrt{\pi/4}\,\sigma\,\text{vega}/\sqrt{N}$ |
 | ---: | ---: | ---: |
@@ -179,17 +194,19 @@ A 40,000-path simulation gives:
 | 84 | 0.75 | 0.77 |
 | 252 | 0.44 | 0.44 |
 
-The mean P&L is zero within noise; quadrupling the hedge frequency only halves the error, so option desks hedge on thresholds rather than on a clock.
+The mean P&L is zero within four standard errors, the simulated standard deviation is between 90% and 102% of the approximation, and quadrupling the hedge frequency only halves the error ($1.48/0.75 = 2.0$).
+That square-root law is the argument for spending rebalances where gamma is large (hedging on moves or bands) rather than on a fixed clock.
 
 ## Pitfalls
 
-- Treating $\Delta$ as varying during $dt$ in the derivation; the self-financing argument holds $\Delta$ fixed over each step, which is why $d\Pi$ has no $S\,d\Delta$ term.
+- Writing $d\Pi = dV - \Delta\,dS - S\,d\Delta$; self-financing means rebalancing at market prices creates no value, so the gains are $dV - \Delta\,dS$ (plus interest on the cash, in the replication version).
 - Saying the hedged portfolio is riskless forever; it is instantaneously riskless and must be rebalanced continuously.
 - Writing the PDE with $\mu$ in the $V_S$ term; after hedging the coefficient is $r$.
 - Confusing $N(d_2)$ (risk-neutral exercise probability) with the real-world probability, or $N(d_1)$ with an exercise probability under $Q$.
 - Using $\sigma$ as the annual volatility with $T$ in days; units must match.
 - Believing the smile means Black-Scholes is useless; the formula is a map from price to implied volatility, and hedging with implied volatility still works if realised volatility is close.
 - Forgetting that the PDE derivation needs $V \in C^{1,2}$; at expiry the payoff kink makes gamma explode, which is where discrete-hedging error concentrates.
+- Using $S - K$ instead of $S - Ke^{-r(T - t)}$ as the call's upper boundary in a PDE solver, or a non-zero call value at $S = 0$.
 
 ## Interview questions
 
@@ -235,10 +252,25 @@ The mean P&L is zero within noise; quadrupling the hedge frequency only halves t
 > [!question]- sc-bs-put-call-parity | Derive the Black-Scholes put from the call.
 > $P = Ke^{-rT}N(-d_2) - S_0N(-d_1)$. Parity $C - P = S_0 - Ke^{-rT}$ and $1 - N(x) = N(-x)$.
 
+> [!question]- sc-bs-boundary-conditions | What boundary conditions go with the Black-Scholes PDE for a European call and put, and why is $V(t, 0)$ not a free choice?
+> Call: $V(T, S) = (S - K)^+$, $V(t, 0) = 0$, $V \sim S - Ke^{-r(T-t)}$ as $S \to \infty$.
+> Put: $V(T, S) = (K - S)^+$, $V(t, 0) = Ke^{-r(T-t)}$, $V \to 0$ as $S \to \infty$.
+> At $S = 0$ the $S^2V_{SS}$ and $SV_S$ terms vanish, so the PDE becomes $V_t = rV$ and forces $V(t, 0) = \text{payoff}(0)e^{-r(T-t)}$.
+
+> [!question]- sc-bs-self-financing | In the replication derivation, what does self-financing mean, and what equation does it give?
+> No cash is added or withdrawn after time 0, so the portfolio of $\Delta$ shares and cash evolves as $dX = \Delta\,dS + r(X - \Delta S)\,dt$.
+> Matching $dX$ to $dV$ from Ito's lemma gives $\Delta = V_S$ from the $dW$ terms and the Black-Scholes PDE from the $dt$ terms; the $\mu$ terms cancel.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/stoch_07_black_scholes.py`](code/stoch_07_black_scholes.py) prints and asserts every number on this page: the call and put by closed form, quadrature, simulation and a Crank-Nicolson PDE solve with the stated boundary conditions, the PDE, heat-equation substitution and Greeks identity by finite differences, the power solutions by polynomial roots, and the discrete-hedging table by simulating the self-financing hedge against the rule of Kamal (1998).
+- Related notes: [Risk-Neutral Pricing and the FTAP](04-Risk-Neutral-Pricing-and-FTAP.md), [Feynman-Kac and Pricing PDEs](06-Feynman-Kac-and-Pricing-PDEs.md), [Delta Hedging and Gamma Scalping](../05-Derivatives-and-Volatility/06-Delta-Hedging-and-Gamma-Scalping.md), [Finite Differences and Fourier Pricing](../05-Derivatives-and-Volatility/11-Finite-Differences-and-Fourier-Pricing.md).
+
 ## Further reading
 
-- F. Black and M. Scholes, "The Pricing of Options and Corporate Liabilities", *Journal of Political Economy* 81 (1973).
-- R. Merton, "Theory of Rational Option Pricing", *Bell Journal of Economics and Management Science* 4 (1973).
+- F. Black and M. Scholes, "The Pricing of Options and Corporate Liabilities", *Journal of Political Economy* 81(3) (1973), 637-654.
+- R. Merton, "Theory of Rational Option Pricing", *Bell Journal of Economics and Management Science* 4(1) (1973), 141-183.
 - Steven Shreve, *Stochastic Calculus for Finance II: Continuous-Time Models*, sections 4.5 (PDE by hedging) and 5.2 (risk-neutral derivation).
 - John Hull, *Options, Futures, and Other Derivatives*, the Black-Scholes-Merton chapter.
-- H. Leland, "Option Pricing and Replication with Transactions Costs", *Journal of Finance* 40 (1985).
+- H. Leland, "Option Pricing and Replication with Transactions Costs", *Journal of Finance* 40(5) (1985), 1283-1301.
+- M. Kamal, "When You Cannot Hedge Continuously: The Corrections to Black-Scholes", Goldman Sachs Quantitative Strategies Research Notes (1998), equation (1) for $\sigma_{P\&L} \approx \sqrt{\pi/4}\,\sigma\kappa/\sqrt{N}$; [PDF](https://emanuelderman.com/wp-content/uploads/1998/12/risk-non_continuous_hedge.pdf) hosted by Emanuel Derman.
