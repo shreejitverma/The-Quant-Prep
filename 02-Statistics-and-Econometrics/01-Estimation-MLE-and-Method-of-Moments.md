@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [random-variables-and-distributions]
 est_hours: 4
-sources: [Casella and Berger - Statistical Inference 2nd ed ch 7 10, Wasserman - All of Statistics ch 6 9, Merton (1980) - On Estimating the Expected Return on the Market - Journal of Financial Economics, Hansen (1982) - Large Sample Properties of Generalized Method of Moments Estimators - Econometrica]
+sources: [Casella and Berger - Statistical Inference 2nd ed ch 7 10, Goodman (1952) - Serial Number Analysis - JASA 47, Wasserman - All of Statistics ch 6 9, Merton (1980) - On Estimating the Expected Return on the Market - Journal of Financial Economics, Hansen (1982) - Large Sample Properties of Generalized Method of Moments Estimators - Econometrica]
 ---
 
 # Estimation: MLE and Method of Moments
@@ -116,7 +116,7 @@ $P(M\le m) = (m/\theta)^n$ gives $E[M] = \frac{n}{n+1}\theta$ and $\text{Var}(M)
 $\text{MSE}(M) = \frac{1}{121} + \frac{10}{121\cdot12} = \frac{2\theta^2}{(n+1)(n+2)} = 0.0152$.
 The bias-corrected $\frac{n+1}{n}M$ is unbiased with variance $\frac{\theta^2}{n(n+2)} = 0.0083$, four times better than moments.
 Its variance is $O(1/n^2)$, below any "Cramer-Rao" rate, which is allowed because the support depends on $\theta$.
-A simulation with 400,000 samples reproduces 0.0333, 0.0152 and 0.0084.
+A seeded simulation of 400,000 samples reproduces all three mean squared errors to within three standard errors.
 
 ### Example 3 - which divisor for the sample variance?
 
@@ -174,7 +174,7 @@ The correction adds the average gap between observed serials, the discrete versi
 > $E[M] = \frac{n}{n+1}\theta$ from $P(M\le m) = (m/\theta)^n$; the likelihood $\theta^{-n}$ is decreasing on $\theta\ge M$.
 
 > [!question]- stat-mle-uniform-mom-vs-mle-variance | For uniform(0, theta), compare the variance of 2 x-bar with that of the unbiased max-based estimator.
-> $\theta^2/(3n)$ versus $\theta^2/(n(n+2))$; the max-based one is better by a factor of about $n/3$.
+> $\theta^2/(3n)$ versus $\theta^2/(n(n+2))$; the max-based one is better by the factor $(n+2)/3$, which is 4 at $n = 10$.
 > The max converges at rate $1/n$ because the support depends on $\theta$, so Cramer-Rao does not apply.
 
 > [!question]- stat-mle-normal-variance-divisor | For normal data, which divisor of the sum of squared deviations minimises MSE for sigma squared?
@@ -217,12 +217,17 @@ The correction adds the average gap between observed serials, the discrete versi
 > 71.
 > $m + m/k - 1 = 60 + 12 - 1$: add the average gap between observed serials to the maximum.
 
+> [!question]- stat-mle-delta-method-volatility | For normal data the MLE of the variance has variance $2\sigma^4/n$. Use the delta method to get the standard error of the volatility estimate.
+> $\text{SE}(\hat\sigma) \approx \sigma/\sqrt{2n}$, a relative error of $1/\sqrt{2n} = 4.45\%$ for one year of daily data ($n = 252$).
+> With $g(v) = \sqrt v$, $g'(\sigma^2) = 1/(2\sigma)$, so $\text{Var}(\hat\sigma) \approx \frac{1}{4\sigma^2}\cdot\frac{2\sigma^4}{n} = \frac{\sigma^2}{2n}$.
+
 > [!question]- stat-mle-gaussian-regression-is-ols | Why is OLS the maximum likelihood estimator in a linear model?
 > With iid $N(0,\sigma^2)$ errors, $\ell(\beta) = -\frac{1}{2\sigma^2}\|y-X\beta\|^2 + \text{const}$.
 > Maximising it over $\beta$ is minimising the residual sum of squares; the variance MLE is then $\text{RSS}/n$.
 
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/stats_01_estimation.py`](code/stats_01_estimation.py) prints and asserts every number on this page: Fisher information as the variance of the score by exact summation or quadrature, uniform and divisor mean squared errors by exact rational arithmetic and seeded simulation, the German tank estimator by summing the exact law of the maximum, and the volatility standard error by simulation.
 - [Random Variables and Distributions](../01-Probability/03-Random-Variables-and-Distributions.md) for the families used here.
 - [Confidence Intervals and Sampling](02-Confidence-Intervals-and-Sampling.md) turns these standard errors into intervals.
 - [Linear Regression and OLS](04-Linear-Regression-OLS.md) is Gaussian MLE for a linear mean.
@@ -232,5 +237,6 @@ The correction adds the average gap between observed serials, the discrete versi
 
 - Casella and Berger, *Statistical Inference* (2nd ed.), chapter 7 (point estimation, Cramer-Rao) and chapter 10 (asymptotics).
 - Larry Wasserman, *All of Statistics*, chapter 6 (estimation basics) and chapter 9 (MLE, Fisher information, delta method).
-- Robert Merton (1980), "On Estimating the Expected Return on the Market", *Journal of Financial Economics*.
-- Lars Peter Hansen (1982), "Large Sample Properties of Generalized Method of Moments Estimators", *Econometrica*.
+- Robert Merton (1980), "On Estimating the Expected Return on the Market: An Exploratory Investigation", *Journal of Financial Economics* 8(4), 323-361.
+- Lars Peter Hansen (1982), "Large Sample Properties of Generalized Method of Moments Estimators", *Econometrica* 50(4), 1029-1054.
+- Leo Goodman (1952), "Serial Number Analysis", *Journal of the American Statistical Association* 47, 622-634 (the German tank estimator).

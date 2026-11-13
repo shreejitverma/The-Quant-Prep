@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [linear-regression-ols]
 est_hours: 3
-sources: [Hastie Tibshirani and Friedman - The Elements of Statistical Learning 2nd ed ch 3 7, Hastie Tibshirani and Wainwright - Statistical Learning with Sparsity ch 2 4, Hoerl and Kennard (1970) - Ridge Regression - Technometrics, Tibshirani (1996) - Regression Shrinkage and Selection via the Lasso - JRSS B, Zou and Hastie (2005) - Regularization and Variable Selection via the Elastic Net - JRSS B]
+sources: [Hastie Tibshirani and Friedman - The Elements of Statistical Learning 2nd ed ch 3 7, Hastie Tibshirani and Wainwright - Statistical Learning with Sparsity ch 2 4, Hoerl and Kennard (1970) - Ridge Regression - Technometrics, Tibshirani (1996) - Regression Shrinkage and Selection via the Lasso - JRSS B, Zou and Hastie (2005) - Regularization and Variable Selection via the Elastic Net - JRSS B, Zou Hastie and Tibshirani (2007) - On the Degrees of Freedom of the Lasso - Annals of Statistics]
 ---
 
 # Regularization: Ridge, Lasso and Elastic Net
@@ -62,7 +62,7 @@ So all coefficients are zero once $\lambda\ge\lambda_{\max} = \max_j|x_j^\top y|
 For an orthonormal design each coordinate decouples and the solution is soft thresholding, $\text{sign}(\hat\beta_j)(|\hat\beta_j|-\lambda)_+$.
 Geometry: in constrained form, minimise RSS subject to $\|\beta\|_1\le t$; the RSS ellipses usually first touch the $\ell_1$ diamond at a corner, where some coordinates are zero, while the $\ell_2$ ball has no corners.
 With a group of highly correlated predictors lasso tends to pick one somewhat arbitrarily and its choice is unstable across samples.
-The number of non-zero coefficients is an unbiased estimate of the lasso's degrees of freedom.
+The number of non-zero coefficients is an unbiased estimate of the lasso's degrees of freedom (Zou, Hastie and Tibshirani 2007).
 
 ### Elastic net
 
@@ -106,6 +106,7 @@ With unit noise, the OLS standard error of each coefficient is $\sqrt{1/(250(1-0
 OLS gives $(0.8, 0)$: all weight on signal 1, driven by a difference that is mostly noise.
 Ridge shrinks the average direction by $487.5/500 = 0.975$ and the difference direction by $12.5/25 = 0.5$, giving $(0.59, 0.19)$ with $\text{df} = 1.475$.
 Lasso gives $(0.75, 0)$: it keeps one signal, and the KKT check for signal 2 is $|190 - 237.5\times0.75| = 11.9\le12.5$.
+The two $\lambda$s are on different scales, because the ridge objective has no $\frac12$ and the lasso one does.
 Ridge's blend is usually the more robust combination out of sample; lasso's choice would flip if the noise favoured signal 2.
 
 ### Example 3 - how much to shrink a noisy coefficient
@@ -125,7 +126,7 @@ In practice $\beta$ is unknown, so $\lambda$ is estimated by cross-validation or
 $\lambda = \sigma^2/\tau^2 = 1/0.01 = 100$.
 The single-regressor ridge estimate is $x^\top y/(400+100) = 0.8\,\hat\beta_{\text{OLS}}$.
 A Laplace prior with variance $2b^2 = 0.01$ has $b = 0.0707$, so $\lambda = \sigma^2/b = 14.1$ and the soft threshold on $\hat\beta_{\text{OLS}}$ is $\lambda/n = 0.035$.
-Any OLS estimate smaller in magnitude than 0.035, a $t$-stat below $0.035\sqrt{400} = 0.71$, is set to zero.
+Any OLS estimate smaller in magnitude than $0.0354$, a $t$-stat below $0.0354\sqrt{400} = 0.71$, is set to zero.
 
 ## Pitfalls
 
@@ -195,8 +196,13 @@ Any OLS estimate smaller in magnitude than 0.035, a $t$-stat below $0.035\sqrt{4
 > When predictors are correlated in groups, or $p>n$ and you want more than $n$ features.
 > The $\ell_2$ term stabilises selection and makes correlated features enter together; the $\ell_1$ term still zeroes weak ones.
 
+> [!question]- stat-ridge-prior-to-penalty | Prior N(0, 0.1^2) on a standardised coefficient, unit noise variance, n = 400. What ridge penalty does the prior imply and how much is OLS shrunk?
+> $\lambda = \sigma^2/\tau^2 = 100$, and the estimate is $0.8\,\hat\beta_{\text{OLS}}$.
+> With one regressor ridge gives $x^\top y/(x^\top x + \lambda) = \frac{400}{500}\hat\beta_{\text{OLS}}$; a tighter prior means a larger penalty.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/stats_06_regularization.py`](code/stats_06_regularization.py) prints and asserts every number on this page: ridge solutions from the normal equations on explicit designs and through the SVD, lasso solutions from a from-scratch coordinate-descent solver and the KKT conditions, the optimal shrinkage by grid search and simulation, the Laplace variance by quadrature, and the Hoerl-Kennard result on 200 random designs.
 - [Linear Regression and OLS](04-Linear-Regression-OLS.md) for the unpenalised baseline and Gauss-Markov.
 - [SVD and Low-Rank Approximation](../03-Linear-Algebra-and-Optimization/03-SVD-and-Low-Rank-Approximation.md) and [PCA and Factor Structure](../03-Linear-Algebra-and-Optimization/05-PCA-and-Factor-Structure.md) for the eigenbasis view.
 - [Bayesian Inference](07-Bayesian-Inference.md) for priors and posteriors.
@@ -209,4 +215,5 @@ Any OLS estimate smaller in magnitude than 0.035, a $t$-stat below $0.035\sqrt{4
 - Hastie, Tibshirani and Wainwright, *Statistical Learning with Sparsity*, chapters 2 and 4 (lasso, elastic net).
 - Arthur Hoerl and Robert Kennard (1970), "Ridge Regression: Biased Estimation for Nonorthogonal Problems", *Technometrics*.
 - Robert Tibshirani (1996), "Regression Shrinkage and Selection via the Lasso", *Journal of the Royal Statistical Society B*.
-- Hui Zou and Trevor Hastie (2005), "Regularization and Variable Selection via the Elastic Net", *Journal of the Royal Statistical Society B*.
+- Hui Zou and Trevor Hastie (2005), "Regularization and Variable Selection via the Elastic Net", *Journal of the Royal Statistical Society B* 67(2), 301-320.
+- Hui Zou, Trevor Hastie and Robert Tibshirani (2007), "On the Degrees of Freedom of the Lasso", *Annals of Statistics* 35(5), 2173-2192.
