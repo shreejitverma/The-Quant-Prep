@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [stochastic-differential-equations, conditional-probability-and-bayes]
 est_hours: 4
-sources: [Shreve - Stochastic Calculus for Finance I (Springer 2004) chapter 1, Shreve - Stochastic Calculus for Finance II (Springer 2004) chapters 5 and 9, Harrison and Pliska - Martingales and Stochastic Integrals in the Theory of Continuous Trading (Stochastic Processes and their Applications 1981), Delbaen and Schachermayer - A General Version of the Fundamental Theorem of Asset Pricing (Mathematische Annalen 1994), Geman El Karoui and Rochet - Changes of Numeraire Changes of Probability Measure and Option Pricing (Journal of Applied Probability 1995), Breeden and Litzenberger - Prices of State-Contingent Claims Implicit in Option Prices (Journal of Business 1978)]
+sources: [Shreve - Stochastic Calculus for Finance I (Springer 2004) chapter 1, Shreve - Stochastic Calculus for Finance II (Springer 2004) chapters 5 and 9, Harrison and Kreps - Martingales and Arbitrage in Multiperiod Securities Markets (Journal of Economic Theory 1979), Harrison and Pliska - Martingales and Stochastic Integrals in the Theory of Continuous Trading (Stochastic Processes and their Applications 1981), Harrison and Pliska - A Stochastic Calculus Model of Continuous Trading - Complete Markets (Stochastic Processes and their Applications 1983), Dalang Morton and Willinger - Equivalent Martingale Measures and No-Arbitrage in Stochastic Securities Market Models (Stochastics and Stochastic Reports 1990), Delbaen and Schachermayer - A General Version of the Fundamental Theorem of Asset Pricing (Mathematische Annalen 1994), Geman El Karoui and Rochet - Changes of Numeraire Changes of Probability Measure and Option Pricing (Journal of Applied Probability 1995), Breeden and Litzenberger - Prices of State-Contingent Claims Implicit in Option Prices (Journal of Business 1978)]
 ---
 
 # Risk-Neutral Pricing and the FTAP
@@ -13,7 +13,7 @@ sources: [Shreve - Stochastic Calculus for Finance I (Springer 2004) chapter 1, 
 ## TL;DR
 
 - If a payoff can be replicated by a self-financing portfolio, its price is the cost of that portfolio; anything else is an arbitrage.
-- First FTAP: no arbitrage (precisely, no free lunch with vanishing risk) iff there is an equivalent measure $Q$ under which discounted prices are martingales.
+- First FTAP: in discrete time, no arbitrage iff there is an equivalent measure $Q$ under which discounted prices are martingales; in continuous time, no free lunch with vanishing risk iff there is an equivalent measure under which they are local martingales (Delbaen-Schachermayer 1994, for locally bounded prices).
 - Second FTAP: the market is complete (every claim replicable) iff that measure is unique; otherwise no-arbitrage only gives a price interval.
 - Pricing rule with numeraire $N$: $V_0 = N_0\,E^{N}[V_T/N_T]$; with the bank account, $V_0 = E^Q[e^{-rT}V_T]$.
 - The real-world drift $\mu$ never enters: hedging removes exposure to it, and changing to $Q$ changes the drift to $r$ but leaves volatility (quadratic variation) untouched.
@@ -59,12 +59,17 @@ $$
 $$
 
 where $q_T$ is the risk-neutral density of $S_T$; a butterfly spread with wings $\pm h$ costs about $h^2 e^{-rT}q_T(K)$.
+In the Black-Scholes example below ($S_0 = 100$, $T = 0.5$, $r = 5\%$, $\sigma = 25\%$), $q_T(105) = 0.02097$, so $h^2e^{-rT}q_T(105) = 0.02045$ at $h = 1$, against a butterfly cost $C(104) - 2C(105) + C(106) = 0.02044$.
 
 ### The fundamental theorems
 
-- First FTAP: a market has no arbitrage iff there exists an equivalent martingale measure $Q \sim P$ under which every discounted traded price $S_t/B_t$ is a martingale.
-  In finite discrete time this is exact (Harrison-Pliska, Dalang-Morton-Willinger); in continuous time "no arbitrage" is strengthened to "no free lunch with vanishing risk" (Delbaen-Schachermayer).
+- First FTAP in discrete time: a market with finitely many trading dates has no arbitrage iff there exists an equivalent martingale measure $Q \sim P$ under which every discounted traded price $S_t/B_t$ is a martingale.
+  Harrison and Kreps (1979) first tied no arbitrage to equivalent martingale measures; Harrison and Pliska (1981) proved the theorem on a finite probability space, and Dalang, Morton and Willinger (1990) on an arbitrary one, with a $Q$ whose density $dQ/dP$ can be taken bounded.
+- First FTAP in continuous time: strategies are restricted to admissible ones (wealth bounded below, which rules out doubling strategies), and "no arbitrage" alone is too weak.
+  For locally bounded semimartingale prices, Delbaen and Schachermayer (1994) proved that no free lunch with vanishing risk (NFLVR) holds iff there is an equivalent local martingale measure: under $Q$ the discounted prices need only be local martingales.
+  For unbounded prices the conclusion weakens to an equivalent sigma-martingale measure (Delbaen and Schachermayer 1998).
 - Second FTAP: an arbitrage-free market is complete iff the equivalent martingale measure is unique.
+  Harrison and Pliska (1981) proved it for finite models and tied completeness to a martingale representation property in continuous trading; Harrison and Pliska (1983) proved the uniqueness characterisation for their continuous-trading model.
   In a tree, completeness means each node has at most as many branches as there are non-redundant traded assets.
 
 Equivalence ($Q$ and $P$ agree on which events have probability zero) is what makes the theorem economically meaningful: $Q$ can reweight scenarios but cannot invent or delete them.
@@ -80,7 +85,7 @@ $$
 $$
 
 and $dS_t = rS_t\,dt + \sigma S_t\,dW^Q_t$, so $e^{-rt}S_t$ is a $Q$-martingale.
-The self-financing hedge (martingale representation) replicates any $\mathcal{F}_T$-measurable payoff, so this $Q$ is unique and
+With the filtration generated by $W$, the martingale representation theorem gives a self-financing hedge for any square-integrable $\mathcal{F}_T$-measurable payoff, so the market is complete, this $Q$ is unique and
 
 $$
 V_t = E^Q\big[e^{-r(T - t)}V_T \mid \mathcal{F}_t\big].
@@ -155,19 +160,21 @@ The call payoff splits as $(S_T - K)^+ = S_T\mathbf{1}_{S_T > K} - K\mathbf{1}_{
 - Call: $48.16 - 105 \times 0.4016 = 5.99$, the [Black-Scholes](07-Black-Scholes-Derivation.md) price.
 
 With $\mu = 15\%$ the real-world probability of finishing in the money is $0.524$ versus the risk-neutral $0.412$; the price uses $0.412$.
-Discounting the $P$-expected payoff at $\mu$ instead gives $8.31$, which is wrong, while weighting $P$-paths by the deflator $e^{-rT}dQ/dP$ with $\lambda = 0.4$ recovers $5.98$ in a $4 \times 10^6$-path simulation.
+Discounting the $P$-expected payoff at $\mu$ instead gives $8.32$, which is wrong, while weighting $P$-paths by the deflator $e^{-rT}dQ/dP$ with $\lambda = 0.4$ gives $5.995$ (standard error $0.004$) in a $4 \times 10^6$-path simulation, within two standard errors of $5.99$.
+The script checks each leg three ways: quadrature against the lognormal density, simulation under $Q$, and the asset-or-nothing leg again under the share measure.
 
 ### Pricing a power claim
 
 "Price a claim paying $S_T^2$ in the Black-Scholes market."
 Under $Q$, $S_T = S_0\exp((r - \sigma^2/2)T + \sigma W^Q_T)$, so $E^Q[S_T^2] = S_0^2\exp(2rT - \sigma^2 T + 2\sigma^2 T) = S_0^2e^{(2r + \sigma^2)T}$.
 Price: $e^{-rT}E^Q[S_T^2] = S_0^2e^{(r + \sigma^2)T}$.
-With the numbers above: $10^4 e^{(0.05 + 0.0625) \times 0.5} = 10^4 e^{0.05625} = 10578.6$, matched by Monte Carlo.
-The claim is worth more than $S_0^2$ grown at $r$ because of convexity: it is long volatility.
+With the numbers above: $10^4 e^{(0.05 + 0.0625) \times 0.5} = 10^4 e^{0.05625} = 10578.6$, matched by quadrature and by a $2 \times 10^6$-path simulation.
+The claim is worth more than the $e^{-rT}(S_0e^{rT})^2 = 10253.2$ it would cost if $S_T$ were certain to equal its forward, because $x^2$ is convex: it is long volatility.
 
 ## Pitfalls
 
-- Reading $q$ as a forecast; it is a pricing weight that embeds risk aversion, and $Q$ probabilities of crashes are typically higher than $P$ probabilities.
+- Reading $q$ as a forecast; it is a pricing weight that embeds risk aversion.
+  In the Black-Scholes example with $\mu = 15\% > r$, $Q(S_T < 80) = 0.094$ against $P(S_T < 80) = 0.055$, and $Q(S_T < 90) = 0.258$ against $P(S_T < 90) = 0.176$: $Q$ puts more weight on the bad states.
 - Thinking "risk-neutral pricing" assumes investors are risk-neutral; it assumes only no arbitrage and replication.
 - Discounting expected payoffs under $P$ at $\mu$ or at a guessed risk-adjusted rate; the correct rate depends on the payoff and is not the stock's.
 - Forgetting that $Q$ depends on the numeraire: "the" risk-neutral measure means the bank-account numeraire.
@@ -184,7 +191,8 @@ The claim is worth more than $S_0^2$ grown at $r$ because of convexity: it is lo
 > $20/3 \approx 6.67$. Hedge with $2/3$ shares and $-60$ cash; equivalently $q = 1/3$ times payoff 20.
 
 > [!question]- sc-rn-ftap-first | State the first fundamental theorem of asset pricing.
-> No arbitrage (no free lunch with vanishing risk in continuous time) iff there is an equivalent measure under which discounted traded prices are martingales.
+> In discrete time: no arbitrage iff there is an equivalent measure under which discounted traded prices are martingales (Harrison-Pliska 1981 on finite spaces, Dalang-Morton-Willinger 1990 in general).
+> In continuous time with locally bounded prices: no free lunch with vanishing risk iff there is an equivalent local martingale measure (Delbaen-Schachermayer 1994).
 
 > [!question]- sc-rn-ftap-second | State the second fundamental theorem and give an incomplete example.
 > An arbitrage-free market is complete iff the equivalent martingale measure is unique. A trinomial step with only stock and cash has a one-parameter family of measures, so option prices lie in an interval.
@@ -213,17 +221,34 @@ The claim is worth more than $S_0^2$ grown at $r$ because of convexity: it is lo
 > [!question]- sc-rn-state-prices-positive | In a finite-state model, what condition on state prices is equivalent to no arbitrage?
 > All state prices strictly positive. Then normalising them by the riskless growth factor gives an equivalent martingale measure.
 
+> [!question]- sc-rn-trinomial-bounds | Stock 100 goes to 120, 100 or 90 with zero rates. What prices are arbitrage-free for the 100-strike call, and where do the ends come from?
+> Any price in $(0, 20/3)$.
+> Martingale measures are $q_u \in (0, 1/3)$ with $q_d = 2q_u$, $q_m = 1 - 3q_u$, and the call is worth $20q_u$; the upper end $20/3$ is the cheapest super-replication ($\tfrac23$ shares and $-60$ cash, paying $20$, $6.67$, $0$) and the lower end $0$ the best sub-replication.
+
+> [!question]- sc-rn-nflvr-local-martingale | Why does the continuous-time FTAP say "local martingale" and "no free lunch with vanishing risk" rather than "martingale" and "no arbitrage"?
+> Because with continuous trading, no arbitrage among admissible strategies does not by itself imply an equivalent martingale measure, and the measure that NFLVR delivers makes discounted prices only local martingales.
+> Delbaen and Schachermayer (1994) proved NFLVR iff an equivalent local martingale measure exists, for locally bounded semimartingale prices; with unbounded jumps it becomes a sigma-martingale measure (1998).
+
 > [!question]- sc-rn-deflator | Can you price under the real-world measure $P$? How?
 > Yes, with a stochastic discount factor: $V_0 = E^P[\xi_T V_T]$ with $\xi_T = e^{-rT}dQ/dP$. Discounting the $P$-expectation at a constant rate is wrong in general.
 
 > [!question]- sc-rn-dividend-drift | What is the risk-neutral drift of a stock with continuous dividend yield $q$, and of an FX rate?
 > $r - q$ for the stock, $r_d - r_f$ for the FX rate (domestic per foreign). The total return including dividends or foreign interest must earn $r$ (or $r_d$).
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/stoch_04_risk_neutral.py`](code/stoch_04_risk_neutral.py) prints and asserts every number on this page: binomial prices by solving the replication equations and, separately, by the risk-neutral expectation in exact rationals, trinomial bounds by enumerating martingale measures and by solving the super- and sub-replication linear programs, every Black-Scholes leg by quadrature, simulation under $Q$ and under the share measure, and the deflator price by simulation under $P$.
+- Related notes: [Change of Measure and Girsanov](05-Change-of-Measure-and-Girsanov.md), [Black-Scholes Derivation](07-Black-Scholes-Derivation.md), [Binomial Trees](../05-Derivatives-and-Volatility/03-Binomial-Trees.md).
+
 ## Further reading
 
 - Steven Shreve, *Stochastic Calculus for Finance I: The Binomial Asset Pricing Model*, chapter 1.
 - Steven Shreve, *Stochastic Calculus for Finance II: Continuous-Time Models*, chapter 5 (risk-neutral pricing and the FTAP) and chapter 9 (change of numeraire).
-- J. M. Harrison and S. Pliska, "Martingales and Stochastic Integrals in the Theory of Continuous Trading", *Stochastic Processes and their Applications* 11 (1981).
-- F. Delbaen and W. Schachermayer, "A General Version of the Fundamental Theorem of Asset Pricing", *Mathematische Annalen* 300 (1994).
+- J. M. Harrison and D. Kreps, "Martingales and Arbitrage in Multiperiod Securities Markets", *Journal of Economic Theory* 20(3) (1979), 381-408.
+- J. M. Harrison and S. Pliska, "Martingales and Stochastic Integrals in the Theory of Continuous Trading", *Stochastic Processes and their Applications* 11(3) (1981), 215-260.
+- J. M. Harrison and S. Pliska, "A Stochastic Calculus Model of Continuous Trading: Complete Markets", *Stochastic Processes and their Applications* 15(3) (1983), 313-316.
+- R. Dalang, A. Morton and W. Willinger, "Equivalent Martingale Measures and No-Arbitrage in Stochastic Securities Market Models", *Stochastics and Stochastic Reports* 29(2) (1990), 185-201.
+- F. Delbaen and W. Schachermayer, "A General Version of the Fundamental Theorem of Asset Pricing", *Mathematische Annalen* 300 (1994), 463-520.
+- F. Delbaen and W. Schachermayer, "The Fundamental Theorem of Asset Pricing for Unbounded Stochastic Processes", *Mathematische Annalen* 312 (1998).
 - H. Geman, N. El Karoui and J.-C. Rochet, "Changes of Numeraire, Changes of Probability Measure and Option Pricing", *Journal of Applied Probability* 32 (1995).
 - D. Breeden and R. Litzenberger, "Prices of State-Contingent Claims Implicit in Option Prices", *Journal of Business* 51 (1978).

@@ -12,7 +12,7 @@ sources: [Shreve - Stochastic Calculus for Finance II (Springer 2004) chapter 4,
 
 ## TL;DR
 
-- The Ito integral $\int_0^T H_t\,dW_t$ is the $L^2$ limit of left-endpoint sums $\sum H_{t_i}(W_{t_{i+1}} - W_{t_i})$ with $H$ adapted; the left endpoint makes it a mean-zero martingale.
+- The Ito integral $\int_0^T H_t\,dW_t$ is the $L^2$ limit of left-endpoint sums $\sum H_{t_i}(W_{t_{i+1}} - W_{t_i})$ with $H$ adapted; for $E\int_0^T H^2\,dt < \infty$ the left endpoint makes it a mean-zero martingale.
 - Ito isometry: $E\big[(\int_0^T H\,dW)^2\big] = E\big[\int_0^T H^2\,dt\big]$; for deterministic $f$, $\int_0^T f\,dW \sim N(0, \int_0^T f^2\,dt)$.
 - Ito's lemma: $df(t, X_t) = f_t\,dt + f_x\,dX_t + \tfrac12 f_{xx}\,(dX_t)^2$ with $dW\,dW = dt$ and $dt\,dW = dt\,dt = 0$.
 - $\int_0^T W\,dW = \tfrac12(W_T^2 - T)$, not $\tfrac12 W_T^2$; the $-T/2$ is quadratic variation.
@@ -102,23 +102,18 @@ A process is a martingale exactly when (under this integrability) its $dt$ term 
 
 ### Stratonovich integral
 
-The midpoint rule gives the Stratonovich integral $\int H \circ dW = \int H\,dW + \tfrac12 [H, W]_T$.
+The midpoint rule gives the Stratonovich integral $\int H \circ dW = \int H\,dW + \tfrac12 [H, W]_T$ (for a semimartingale integrand $H$).
 Ordinary calculus rules hold for it ($\int_0^T W \circ dW = \tfrac12 W_T^2$), which is why physicists use it, but it is not a martingale and it looks ahead within each step, so finance uses Ito.
+For $H = W$ the correction is $\tfrac12[W, W]_T = T/2$: on a 400-step grid the midpoint sum exceeds the Ito sum by $0.4999$ on average over 30,000 simulated paths, against the exact $0.5$.
 
 ### Simulation check
 
-```python
-import numpy as np
-rng = np.random.default_rng(0)
-N, n, T = 200_000, 400, 1.0
-dW = rng.standard_normal((N, n)) * np.sqrt(T / n)
-W = np.cumsum(dW, axis=1)
-W_left = np.hstack([np.zeros((N, 1)), W[:, :-1]])
-I = (W_left * dW).sum(1)                       # Ito sum for int W dW
-print(np.abs(I - (W[:, -1]**2 - T) / 2).mean())  # ~0.03, shrinks as n grows
-print(I.var(), T**2 / 2)                         # 0.498 vs 0.5
-print((W[:, -1]**4).mean(), 3 * T**2)            # 2.99 vs 3
-```
+The script [`code/stoch_02_ito.py`](code/stoch_02_ito.py) checks the integral on a 400-step grid of $[0, 1]$.
+
+- Path by path, the Ito sum equals $\tfrac12\big(W_T^2 - \sum(\Delta W_i)^2\big)$ exactly, so its distance from $\tfrac12(W_T^2 - T)$ is half the quadratic-variation error.
+  Its mean is $0.028$ exactly (from the chi-squared mean absolute deviation) and halves to $0.014$ when the number of steps quadruples.
+- The discrete Ito sum has variance $\sum_i E[W_{t_i}^2]\,\Delta t = T^2\frac{n - 1}{2n} = 0.49875$, which tends to the continuous $T^2/2$; the simulation agrees within four standard errors.
+- $E[W_t^4] = 3t^2$ and the higher moments are checked against Gauss-Hermite quadrature, which is exact for polynomials.
 
 ## Worked examples
 
@@ -225,11 +220,21 @@ Corollary: $E[\cos W_t] = e^{-t/2}$, which is also the real part of the characte
 > Ito gives $\tfrac12(W_T^2 - T)$, Stratonovich (midpoint) gives $\tfrac12 W_T^2$. They differ by $\tfrac12[W,W]_T = T/2$.
 
 > [!question]- sc-ito-local-martingale | When can a stochastic integral $\int H\,dW$ fail to have mean zero?
-> When $E\int H^2\,dt = \infty$: it is then only a local martingale (a strict local martingale can have decreasing mean). The isometry and zero-mean property need square integrability.
+> Only when $E\int H^2\,dt = \infty$: the integral is then guaranteed only to be a local martingale, and a strict local martingale can have a non-zero mean.
+> Square integrability is what gives the isometry and the zero mean; without it the zero mean may still hold, but it has to be proved.
+
+> [!question]- sc-ito-quadratic-covariation | Two Brownian motions have correlation $\rho$. What does $\sum \Delta W_i\,\Delta B_i$ converge to on $[0, T]$?
+> $\rho T$, the covariation $[W, B]_T$.
+> Each term has mean $\rho\,\Delta t$ and variance $(1 + \rho^2)\Delta t^2$, so the sum has mean $\rho T$ and variance $(1 + \rho^2)T\Delta t \to 0$; this is the $dW\,dB = \rho\,dt$ entry of the table.
+
+> [!question]- sc-ito-discrete-sum-variance | What is the exact variance of the $n$-step Ito sum $\sum_{i=0}^{n-1} W_{t_i}\Delta W_i$ on $[0, T]$?
+> $T^2(n - 1)/(2n)$, for example $0.49875$ at $n = 400$, $T = 1$.
+> The terms are uncorrelated with variances $E[W_{t_i}^2]\Delta t = i\Delta t^2$, and $\Delta t^2(0 + 1 + \dots + (n - 1)) = T^2(n - 1)/(2n) \to T^2/2$.
 
 ## In this repo and The-Distinguished-Engineer
 
-- See `02_quantitative_data_analysis/misc_notebooks/29. ito's lemma clearly and visually explained` in the legacy archive for a visual walkthrough.
+- Code: [`code/stoch_02_ito.py`](code/stoch_02_ito.py) prints and asserts every number on this page: Ito and Stratonovich sums by seeded simulation against the exact discrete variance $T^2(n-1)/(2n)$ and the exact chi-squared gap, moments from the Ito recursion in exact rationals against Gauss-Hermite quadrature, $\int_0^T W\,dt$ by 2-D quadrature of $\min(s, t)$, and the cosine and exponential martingales by quadrature.
+- Related notes: [Brownian Motion](01-Brownian-Motion.md), [Stochastic Differential Equations](03-Stochastic-Differential-Equations.md), [Stochastic Calculus Problem Set](09-Stochastic-Calculus-Problem-Set.md).
 
 ## Further reading
 
