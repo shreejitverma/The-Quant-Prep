@@ -50,14 +50,15 @@ The key simplification is $S e^{-q\tau}\varphi(d_1) = K e^{-r\tau}\varphi(d_2)$,
 
 - Delta: an S-curve in spot from 0 to $e^{-q\tau}$; it steepens toward a step at $K$ as expiry approaches.
   ATM delta is a little above 0.5 because of the $+\tfrac12\sigma^2$ drift in $d_1$.
-- Gamma: a bell centred just below the strike (the maximum in spot is at $S = K e^{-(r - q + 3\sigma^2/2)\tau}$).
+- Gamma: a bell centred just below the strike (the maximum in spot is at $S = K e^{-(r - q + 3\sigma^2/2)\tau}$, 89.58 for the one-year 100 strike at 5% rates and 20% vol).
   ATM gamma grows like $1/\sqrt{\tau}$ into expiry; OTM and ITM gamma fall to zero.
   Short-dated ATM options are where the gamma is, and where pin risk lives.
-- Vega: a bell in spot, maximal where $d_2 = 0$, and growing like $\sqrt{\tau}$; it vanishes at expiry.
+- Vega: a bell in spot, maximal where $d_2 = 0$, that is $S = K e^{-(r - q - \sigma^2/2)\tau}$ (97.04 in the same case), and growing like $\sqrt{\tau}$; it vanishes at expiry.
 - Theta: most negative ATM, and ATM theta grows like $1/\sqrt{\tau}$; deep ITM European puts (and calls with large $q$) can have positive theta because of carry on the strike.
 - Vanna: positive for OTM calls, negative for OTM puts (in the formula's sign convention, $-\varphi\,d_2/\sigma$), near zero around the forward; it tells you how delta shifts when vol moves, which matters for skew and for spot-vol correlation.
 - Volga: near zero ATM, positive in the wings; long wings are long vol-of-vol, the reason smiles exist.
 - Charm: delta decay, the overnight delta change with no spot move; OTM deltas drift to 0 and ITM deltas to 1, fastest near expiry.
+  A three-month 100 call with spot at 95, 20% vol and zero rates has charm $-0.40$ per year, about $-0.0011$ of delta per calendar day.
 
 ### Gamma-theta relationship
 
@@ -112,6 +113,9 @@ $$
 A large unexplained residual means a missing risk (a smile move, a dividend change, a wrong vol bump), a jump large enough that third-order terms matter, or a booking error.
 
 ## Worked examples
+
+Every number below is printed and asserted by [deriv_01_07_greeks.py](code/deriv_01_07_greeks.py), which also checks each closed-form Greek against a central finite difference of the Black-Scholes price and locates the gamma and vega peaks by grid search.
+The gamma-theta identity is tested on simulated hedged paths in [deriv_01_07_hedging_pnl.py](code/deriv_01_07_hedging_pnl.py) (see [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md)).
 
 ### Example 1: Greeks of a one-year ATM call
 
@@ -267,9 +271,17 @@ print(greeks(100, 100, 1.0, 0.05, 0.2))
 > About 25 contracts; vega only falls by about a quarter.
 > $50 \times 0.0198/0.0398 \approx 25$, and each three-month call has half the one-year vega ($\sqrt{0.25}$), so 25 of them cancel $25 \times 0.5 = 12.5$ of the 50 contracts' vega.
 
+> [!question]- deriv-gamma-peak-spot | Where in spot is the gamma of a one-year 100-strike call largest, with $r = 5\%$, $q = 0$, 20% vol?
+> At about 89.58, below the strike: $S^* = K e^{-(r - q + 3\sigma^2/2)\tau} = 100e^{-0.11}$.
+> Maximise $\varphi(d_1)/S$: setting the derivative of $\ln\varphi(d_1) - \ln S$ to zero gives $d_1 = -\sigma\sqrt{\tau}$.
+
+> [!question]- deriv-greeks-pde-check | Check the Black-Scholes PDE for the one-year ATM call ($r = 5\%$, 20% vol): $\Theta = -6.414$, $\Gamma = 0.01876$, $\Delta = 0.6368$, $V = 10.4506$.
+> $-6.414 + 3.752 + 3.184 - 0.523 = 0$ to rounding.
+> The terms are $\tfrac12\sigma^2S^2\Gamma = 0.02 \times 10^4 \times 0.01876$, $rS\Delta = 5 \times 0.6368$ and $rV = 0.05 \times 10.4506$; a risk system that fails this check has inconsistent Greeks.
+
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [greeks_visualization.ipynb](code/greeks_visualization.ipynb).
+- Code: [deriv_01_07_greeks.py](code/deriv_01_07_greeks.py) prints and asserts every number in this note; [greeks_visualization.ipynb](code/greeks_visualization.ipynb) plots delta, gamma, vega and theta against spot (it needs scipy and matplotlib and is not run by CI).
 - Uses: [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md), [PnL Attribution and Greek Risk](../11-Risk-and-Trading/06-PnL-Attribution-and-Greek-Risk.md), [Options Market Making](../08-Market-Making/07-Options-Market-Making.md).
 
 ## Further reading
