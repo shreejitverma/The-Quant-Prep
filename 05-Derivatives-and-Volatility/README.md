@@ -25,11 +25,11 @@ Options theory and practice: the core of every options market-making and volatil
 | 07 | [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md) | TRQ | core | 4 | solid | 14 |
 | 08 | [Volatility Surface Construction and Arbitrage](08-Volatility-Surface-Construction.md) | RDQ | advanced | 4 | solid | 19 |
 | 09 | [Stochastic Volatility: Heston and SABR](09-Stochastic-Volatility-Heston-and-SABR.md) | RQ | advanced | 5 | solid | 20 |
-| 10 | [Monte Carlo Pricing and Variance Reduction](10-Monte-Carlo-Pricing-and-Variance-Reduction.md) | RDQ | core | 5 | solid | 14 |
+| 10 | [Monte Carlo Pricing and Variance Reduction](10-Monte-Carlo-Pricing-and-Variance-Reduction.md) | RDQ | core | 5 | solid | 16 |
 | 11 | [Finite Differences and Fourier Pricing](11-Finite-Differences-and-Fourier-Pricing.md) | RDQ | advanced | 4 | solid | 19 |
 | 12 | [Exotic Options](12-Exotic-Options.md) | TRQ | advanced | 4 | solid | 20 |
-| 13 | [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md) | T | core | 4 | solid | 13 |
-| 14 | [Variance Swaps and Volatility Products](14-Variance-Swaps-and-Volatility-Products.md) | TRQ | advanced | 3 | solid | 14 |
+| 13 | [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md) | T | core | 4 | solid | 15 |
+| 14 | [Variance Swaps and Volatility Products](14-Variance-Swaps-and-Volatility-Products.md) | TRQ | advanced | 3 | solid | 16 |
 | 15 | [Dispersion and Correlation Trading](15-Dispersion-and-Correlation-Trading.md) | TRQ | senior | 3 | solid | 18 |
 | 16 | [Options Problem Set](16-Options-Problem-Set.md) | TRQ | core | 8 | solid | 47 |
 
