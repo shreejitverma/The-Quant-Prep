@@ -16,18 +16,18 @@ Estimation, inference, regression and time series: the working toolkit of a rese
 
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
-| 01 | [Estimation: MLE and Method of Moments](01-Estimation-MLE-and-Method-of-Moments.md) | TRQ | core | 4 | solid | 14 |
-| 02 | [Confidence Intervals and Sampling Distributions](02-Confidence-Intervals-and-Sampling.md) | TRQ | core | 3 | solid | 13 |
-| 03 | [Hypothesis Testing and Multiple Comparisons](03-Hypothesis-Testing-and-Multiple-Comparisons.md) | RQ | core | 4 | solid | 14 |
+| 01 | [Estimation: MLE and Method of Moments](01-Estimation-MLE-and-Method-of-Moments.md) | TRQ | core | 4 | solid | 15 |
+| 02 | [Confidence Intervals and Sampling Distributions](02-Confidence-Intervals-and-Sampling.md) | TRQ | core | 3 | solid | 15 |
+| 03 | [Hypothesis Testing and Multiple Comparisons](03-Hypothesis-Testing-and-Multiple-Comparisons.md) | RQ | core | 4 | solid | 16 |
 | 04 | [Linear Regression and OLS](04-Linear-Regression-OLS.md) | TRDQ | core | 6 | solid | 17 |
 | 05 | [Regression Diagnostics and Robust Inference](05-Regression-Diagnostics-and-Robust-Inference.md) | RQ | core | 4 | solid | 22 |
-| 06 | [Regularization: Ridge, Lasso and Elastic Net](06-Regularization-Ridge-Lasso.md) | RQ | core | 3 | solid | 14 |
+| 06 | [Regularization: Ridge, Lasso and Elastic Net](06-Regularization-Ridge-Lasso.md) | RQ | core | 3 | solid | 15 |
 | 07 | [Bayesian Inference](07-Bayesian-Inference.md) | RQ | advanced | 4 | solid | 20 |
-| 08 | [Time Series: Stationarity and ARMA](08-Time-Series-Stationarity-and-ARMA.md) | RQ | core | 5 | solid | 14 |
-| 09 | [Volatility Models: EWMA and GARCH](09-Volatility-Models-GARCH.md) | TRQ | core | 4 | solid | 13 |
+| 08 | [Time Series: Stationarity and ARMA](08-Time-Series-Stationarity-and-ARMA.md) | RQ | core | 5 | solid | 16 |
+| 09 | [Volatility Models: EWMA and GARCH](09-Volatility-Models-GARCH.md) | TRQ | core | 4 | solid | 15 |
 | 10 | [Cointegration and VAR Models](10-Cointegration-and-VAR.md) | RQ | advanced | 4 | solid | 22 |
 | 11 | [State-Space Models and the Kalman Filter](11-State-Space-Models-and-Kalman-Filter.md) | RQ | advanced | 4 | solid | 19 |
-| 12 | [Bootstrap and Resampling Methods](12-Bootstrap-and-Resampling.md) | RQ | core | 3 | solid | 13 |
+| 12 | [Bootstrap and Resampling Methods](12-Bootstrap-and-Resampling.md) | RQ | core | 3 | solid | 15 |
 | 13 | [Heavy Tails and Extreme Value Theory](13-Heavy-Tails-and-Extreme-Value-Theory.md) | TRQ | advanced | 3 | solid | 20 |
 | 14 | [Statistics Problem Set](14-Statistics-Problem-Set.md) | TRQ | core | 6 | solid | 42 |
 

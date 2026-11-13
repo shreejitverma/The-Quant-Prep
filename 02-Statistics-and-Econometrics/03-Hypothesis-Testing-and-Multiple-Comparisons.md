@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [confidence-intervals-and-sampling]
 est_hours: 4
-sources: [Wasserman - All of Statistics ch 10, Casella and Berger - Statistical Inference 2nd ed ch 8, Harvey Liu and Zhu (2016) - ... and the Cross-Section of Expected Returns - Review of Financial Studies, Benjamini and Hochberg (1995) - Controlling the False Discovery Rate - JRSS B, Holm (1979) - A Simple Sequentially Rejective Multiple Test Procedure - Scandinavian Journal of Statistics, White (2000) - A Reality Check for Data Snooping - Econometrica, Bailey and Lopez de Prado (2014) - The Deflated Sharpe Ratio - Journal of Portfolio Management, Ioannidis (2005) - Why Most Published Research Findings Are False - PLoS Medicine]
+sources: [Wasserman - All of Statistics ch 10, Casella and Berger - Statistical Inference 2nd ed ch 8, Harvey Liu and Zhu (2016) - ... and the Cross-Section of Expected Returns - Review of Financial Studies, Benjamini and Hochberg (1995) - Controlling the False Discovery Rate - JRSS B, Holm (1979) - A Simple Sequentially Rejective Multiple Test Procedure - Scandinavian Journal of Statistics, Benjamini and Yekutieli (2001) - The Control of the False Discovery Rate under Dependency - Annals of Statistics, White (2000) - A Reality Check for Data Snooping - Econometrica, Bailey and Lopez de Prado (2014) - The Deflated Sharpe Ratio - Journal of Portfolio Management, Ioannidis (2005) - Why Most Published Research Findings Are False - PLoS Medicine]
 ---
 
 # Hypothesis Testing and Multiple Comparisons
@@ -74,7 +74,9 @@ For correlated strategies, resampling methods (White's reality check, Hansen's S
 
 FDR is $E[V/\max(R,1)]$, the expected fraction of rejections that are false.
 Benjamini-Hochberg step-up at level $q$: find the largest $k$ with $p_{(k)}\le kq/m$ and reject $H_{(1)},\dots,H_{(k)}$, even those that individually miss their own threshold.
-BH controls FDR at $q\,m_0/m\le q$ for independent or positively dependent tests; Benjamini-Yekutieli divides by $\sum_{i=1}^m 1/i$ for arbitrary dependence.
+With continuous p-values, BH controls FDR at exactly $q\,m_0/m\le q$ when the test statistics are independent, and at no more than $q\,m_0/m$ under positive regression dependence on the true nulls (PRDS, Benjamini and Yekutieli 2001), which covers one-sided tests on positively correlated normal statistics.
+Benjamini-Yekutieli replaces $q$ by $q/\sum_{i=1}^m 1/i$ and controls FDR under arbitrary dependence.
+A seeded simulation with $m = 20$ one-sided tests, $m_0 = 15$ true nulls and $q = 5\%$ gives FDR about 0.037 under independence, matching $q\,m_0/m = 0.0375$, and about 0.033 when the statistics are equicorrelated at 0.5.
 Use FWER when one false positive is costly (a single flagship strategy); use FDR when screening many candidate signals for a combined book.
 
 ### Data snooping in research
@@ -82,7 +84,7 @@ Use FWER when one false positive is costly (a single flagship strategy); use FDR
 - Garden of forking paths: universe, lookback, rebalancing, winsorisation and neutralisation choices multiply the effective number of tests even when only one final backtest is "run".
 - Counting trials: record every variant tried (see [Overfitting and Deflated Sharpe](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md)).
 - Expected maximum: with $N$ independent null strategies each estimated over $T$ years, $E[\max\widehat{SR}]\approx E[\max_{i\le N}Z_i]/\sqrt{T}$, where $E[\max Z]$ is 1.54, 2.51 and 3.24 for $N = 10, 100, 1000$.
-- Harvey, Liu and Zhu (2016) count hundreds of published factors and argue a new factor needs $t > 3$ rather than $t > 2$.
+- Harvey, Liu and Zhu (2016) catalogue 316 factors from 313 published papers and selected working papers, apply Bonferroni, Holm and Benjamini-Hochberg-Yekutieli adjustments, and conclude that a newly discovered factor needs $t > 3.0$ rather than the usual $t > 2.0$.
 - A holdout period only helps if it is touched once; reusing it turns it into training data.
 
 ## Worked examples
@@ -166,7 +168,7 @@ With a 10% prior and 80% power it rises to $0.08/(0.08+0.045) = 0.64$: better pr
 
 > [!question]- stat-ht-benjamini-hochberg-procedure | Describe the Benjamini-Hochberg procedure.
 > Sort p-values, find the largest $k$ with $p_{(k)}\le kq/m$, reject the $k$ smallest.
-> It is step-up: a p-value above its own threshold is still rejected if a larger one qualifies; it controls FDR at $q$ under independence or positive dependence.
+> It is step-up: a p-value above its own threshold is still rejected if a larger one qualifies; it controls FDR at $q\,m_0/m\le q$ under independence or PRDS positive dependence.
 
 > [!question]- stat-ht-fdr-vs-fwer | When do you control FDR instead of FWER in research?
 > FDR when screening many signals where some false positives are tolerable; FWER when any single false positive is costly.
@@ -178,7 +180,7 @@ With a 10% prior and 80% power it rises to $0.08/(0.08+0.045) = 0.64$: better pr
 
 > [!question]- stat-ht-harvey-liu-zhu-threshold | What t-stat hurdle do Harvey, Liu and Zhu suggest for a new factor, and why?
 > About 3 rather than 2.
-> Hundreds of factors have been tested on the same data, so multiple-testing adjustments (Bonferroni, Holm, BHY) raise the hurdle.
+> They catalogue 316 factors tested on largely the same data, so multiple-testing adjustments (Bonferroni, Holm, BHY) raise the hurdle (Harvey, Liu and Zhu 2016, *Review of Financial Studies*).
 
 > [!question]- stat-ht-ppv-base-rate | 5% of ideas are real, power is 50%, alpha is 5%. What fraction of significant results are real?
 > About 34.5%.
@@ -188,16 +190,25 @@ With a 10% prior and 80% power it rises to $0.08/(0.08+0.045) = 0.64$: better pr
 > Trying many parameterisations and reporting the best; stopping or extending the sample once significant; reusing the holdout set.
 > Each raises the effective number of tests while the reported p-value assumes one.
 
-> [!question]- stat-ht-bh-step-up-example | p-values 0.001, 0.0052, 0.012, 0.021, 0.024, then all above 0.04, m = 10, q = 5%. How many BH rejections, and how many Holm?
+> [!question]- stat-ht-bh-step-up-example | p-values 0.001, 0.0052, 0.012, 0.021, 0.024, then five more all above 0.05, m = 10, q = 5%. How many BH rejections, and how many Holm?
 > BH rejects 5, Holm 2.
-> BH: $p_{(5)} = 0.024\le5\times0.005$; Holm stops at $0.012 > 0.05/8$.
+> BH: $p_{(5)} = 0.024\le5\times0.005$ and no larger p-value meets its threshold $k\times0.005\le0.05$; Holm stops at $0.012 > 0.05/8$.
 
 > [!question]- stat-ht-significant-vs-important | A signal has p = 1e-6 on 10 million observations. Should you trade it?
 > Not on that basis: with huge $n$ a tiny, uneconomic effect becomes significant.
 > Check the effect size against costs and capacity, and its stability out of sample.
 
+> [!question]- stat-ht-benjamini-yekutieli | The ten p-values 0.001, 0.0052, 0.012, 0.021, 0.024, 0.041, 0.09, 0.2, 0.5, 0.8 may be arbitrarily dependent. How many does Benjamini-Yekutieli reject at q = 5%?
+> One.
+> BY runs the BH step-up at $q/\sum_{i=1}^{10}1/i = 0.05/2.929$, so the thresholds are $k\times0.0017$; only $0.001\le0.0017$ passes, since $0.0052 > 0.0034$ and every later p-value misses too.
+
+> [!question]- stat-ht-years-for-t-three | How many years does a true Sharpe of 0.8 need before its expected t-stat clears the Harvey-Liu-Zhu hurdle of 3?
+> About 14 years.
+> $t = SR\sqrt T = 3$ gives $T = 9/0.64 = 14.1$.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/stats_03_hypothesis_testing.py`](code/stats_03_hypothesis_testing.py) prints and asserts every number on this page: normal tails from `statistics.NormalDist`, power by simulating daily return paths, the expected maximum of normals by quadrature and simulation, each multiple-testing procedure by its step-by-step definition and by adjusted p-values, and the FWER and FDR guarantees by simulation under independence and positive correlation.
 - [Confidence Intervals and Sampling](02-Confidence-Intervals-and-Sampling.md) for the standard errors used here.
 - [Research Process and Hypothesis Discipline](../09-Alpha-Research-and-Portfolio/01-Research-Process-and-Hypothesis-Discipline.md) and [Backtesting Methodology and Pitfalls](../09-Alpha-Research-and-Portfolio/07-Backtesting-Methodology-and-Pitfalls.md) for the workflow side.
 - [Overfitting and Deflated Sharpe](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md) for correcting the best-of-N Sharpe.
@@ -207,7 +218,8 @@ With a 10% prior and 80% power it rises to $0.08/(0.08+0.045) = 0.64$: better pr
 
 - Larry Wasserman, *All of Statistics*, chapter 10 (p-values, Wald and LR tests, multiple testing).
 - Casella and Berger, *Statistical Inference* (2nd ed.), chapter 8.
-- Campbell Harvey, Yan Liu and Heqing Zhu (2016), "... and the Cross-Section of Expected Returns", *Review of Financial Studies*.
+- Campbell Harvey, Yan Liu and Heqing Zhu (2016), "... and the Cross-Section of Expected Returns", *Review of Financial Studies* 29(1), 5-68.
+- Yoav Benjamini and Daniel Yekutieli (2001), "The Control of the False Discovery Rate in Multiple Testing under Dependency", *Annals of Statistics* 29(4), 1165-1188.
 - Yoav Benjamini and Yosef Hochberg (1995), "Controlling the False Discovery Rate", *Journal of the Royal Statistical Society B*.
 - Sture Holm (1979), "A Simple Sequentially Rejective Multiple Test Procedure", *Scandinavian Journal of Statistics*.
 - Halbert White (2000), "A Reality Check for Data Snooping", *Econometrica*.
