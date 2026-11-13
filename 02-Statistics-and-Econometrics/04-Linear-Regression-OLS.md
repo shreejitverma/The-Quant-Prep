@@ -139,7 +139,7 @@ Hedging the stock with 1.2 units of market minimises the hedged variance, leavin
 
 "Returns follow $r = 0.5\,s + 0.3\,m + \varepsilon$, where $s$ is your signal and $m$ the market factor, and the slope of $m$ on $s$ is 0.4. You regress $r$ on $s$ alone. What slope do you get?"
 
-$0.5 + 0.3\times0.4 = 0.62$, so 24% of the apparent signal loading is disguised market exposure.
+$0.5 + 0.3\times0.4 = 0.62$, so 0.12 of the apparent 0.62, about 19%, is disguised market exposure, and the true loading is overstated by 24%.
 Controlling for $m$ (or residualising $s$ on $m$, by Frisch-Waugh-Lovell) recovers 0.5.
 If instead the omitted variable were negatively related, the signal would look weaker than it is; the sign of $\beta_2\delta$ sets the direction.
 
@@ -152,21 +152,7 @@ $s^2_{\text{new}} = 2\,\text{RSS}/(2n-p)$ and $(X^\top X)^{-1}$ halves, so $\tex
 Every $t$-stat is inflated by $1.43$ with no new information.
 The same thing happens more subtly with overlapping returns or with a cross-section of highly correlated stocks treated as independent.
 
-```python
-import numpy as np
-rng = np.random.default_rng(0)
-x = rng.normal(size=50); y = 0.3 * x + rng.normal(size=50)
-X = np.c_[np.ones(50), x]
-
-def ols_se(X, y):
-    beta, rss, *_ = np.linalg.lstsq(X, y, rcond=None)
-    s2 = rss[0] / (len(y) - X.shape[1])
-    return beta, np.sqrt(np.diag(s2 * np.linalg.inv(X.T @ X)))
-
-b1, se1 = ols_se(X, y)
-b2, se2 = ols_se(np.r_[X, X], np.r_[y, y])
-print(np.allclose(b1, b2), se2 / se1)   # True [0.6999 0.6999]
-```
+[`code/stats_04_ols.py`](code/stats_04_ols.py) refits a simulated data set after stacking it on itself and asserts that both coefficients are unchanged and both standard errors fall to $0.700$ times their old size.
 
 ### Example 5 - adding a noise regressor
 
@@ -174,7 +160,7 @@ print(np.allclose(b1, b2), se2 / se1)   # True [0.6999 0.6999]
 
 $E[\Delta R^2] = (1-0.10)/(100-3) = 0.0093$, so $R^2$ rises to about $0.109$ on average and never falls.
 Adjusted $R^2$ before: $1 - 0.9\times99/97 = 0.0814$; after, at the average increase: $1 - 0.8907\times99/96 = 0.0814$, unchanged on average, because the expected increase corresponds to $|t| = 1$ exactly.
-A simulation of 20,000 draws gives a mean partial $R^2$ of $0.0103$ versus the theoretical $1/97 = 0.0103$.
+A seeded simulation of 20,000 noise regressors gives a mean partial $R^2$ within its standard error of the theoretical $1/97 = 0.0103$, and adjusted $R^2$ rises in exactly the draws with $|t| > 1$.
 The other coefficients move slightly and their SEs rise slightly, since one degree of freedom is spent.
 
 ## Pitfalls
@@ -260,6 +246,7 @@ The other coefficients move slightly and their SEs rise slightly, since one degr
 
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/stats_04_ols.py`](code/stats_04_ols.py) prints and asserts every number on this page: the hand fit by exact fractions and `lstsq` with the $t_3$ p-value from the closed-form CDF and quadrature, slopes both ways, omitted-variable bias and attenuation by simulating the stated models, the duplicated-data ratio by refitting, the noise-regressor $R^2$ and adjusted-$R^2$ rule by simulation, and Frisch-Waugh-Lovell and Gauss-Markov on random designs.
 - [Estimation: MLE and Method of Moments](01-Estimation-MLE-and-Method-of-Moments.md): OLS is the Gaussian MLE.
 - [Vectors, Matrices and Linear Maps](../03-Linear-Algebra-and-Optimization/01-Vectors-Matrices-and-Linear-Maps.md) for projections, and [Numerical Linear Algebra](../03-Linear-Algebra-and-Optimization/06-Numerical-Linear-Algebra.md) for QR solves.
 - [Regression Diagnostics and Robust Inference](05-Regression-Diagnostics-and-Robust-Inference.md) for robust standard errors and influential points.

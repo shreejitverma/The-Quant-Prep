@@ -5,7 +5,7 @@ tier: advanced
 status: solid
 prereqs: [delta-hedging-and-gamma-scalping]
 est_hours: 3
-sources: [Carr and Madan (1998) - Towards a theory of volatility trading - in Volatility (Risk Books), Demeterfi Derman Kamal and Zou (1999) - A guide to volatility and variance swaps - Journal of Derivatives 6(4), Jim Gatheral - The Volatility Surface - A Practitioner's Guide (Wiley 2006), Cboe - VIX White Paper (Cboe Volatility Index methodology), Sebastien Bossu - Introduction to Variance Swaps - Wilmott (2006)]
+sources: [Carr and Madan (1998) - Towards a theory of volatility trading - in Volatility (Risk Books), Demeterfi Derman Kamal and Zou (1999) - A guide to volatility and variance swaps - Journal of Derivatives 6(4), Jim Gatheral - The Volatility Surface - A Practitioner's Guide (Wiley 2006), Cboe - Cboe Volatility Index Mathematics Methodology (version 5.0 February 2026), Cboe - Cboe Volatility Index Methodology, Sebastien Bossu - Introduction to Variance Swaps - Wilmott (2006), Carr and Wu (2009) - Variance risk premiums - Review of Financial Studies 22(3)]
 ---
 
 # Variance Swaps and Volatility Products
@@ -73,27 +73,27 @@ A single option's P&L, in contrast, depends on where spot realises its variance.
 
 What moves the strike:
 
-- Skew: OTM puts carry both high vol and large weights $1/K^2$, so $K_{var}$ sits above ATM vol; for index options the gap is typically a few vol points at one year.
+- Skew: OTM puts carry both high vol and large weights $1/K^2$, so $K_{var}$ sits above ATM vol; in the SVI smile of Example 3 the gap is five vol points at one year.
 - Wings: the strip integrates to zero and infinity; listed strikes stop, so truncation biases a discrete estimate low, and coarse strike spacing biases it (here) high.
-- Jumps: the replication assumed continuous paths. A jump of return $J$ contributes $\ln^2(1+J)$ to realized variance but only $2(J - \ln(1+J))$ to the hedged strip; the difference is $-J^3/3$ to leading order, so down-jumps cost a short variance position hedged with the strip. Single-stock variance swaps are therefore usually capped (commonly at 2.5 times the strike in vol).
+- Jumps: the replication assumed continuous paths. A jump of return $J$ contributes $\ln^2(1+J)$ to realized variance but only $2(J - \ln(1+J))$ to the hedged strip; the difference is $-J^3/3$ to leading order, so down-jumps cost a short variance position hedged with the strip. Single-stock variance swaps are therefore usually capped; Risk.net ("SG CIB tries to fix variance swap flaws", after the 2008 losses) reports the usual cap on realized volatility as 2.5 times the volatility strike.
 
 ### VIX
 
-The Cboe VIX applies a discretised version of the strip to SPX options for two expiries bracketing 30 days:
+The Cboe VIX applies a discretised version of the strip to SPX options (AM-settled SPX and end-of-week PM-settled SPXW expiries) for a near and a next term bracketing 30 days (Cboe Volatility Index Mathematics Methodology, version 5.0, February 2026, equation 1; Cboe Volatility Index Methodology, section 2.1):
 
 $$
 \sigma^2 = \frac{2}{T}\sum_i \frac{\Delta K_i}{K_i^2}e^{rT}Q(K_i) - \frac{1}{T}\left(\frac{F}{K_0} - 1\right)^2,
 $$
 
-with $Q(K_i)$ the OTM mid quote (the average of call and put at $K_0$, the first strike at or below the forward), strikes truncated after two consecutive zero bids, and the two variances interpolated to a constant 30 days; VIX $= 100\sqrt{\sigma^2_{30}}$.
+with $Q(K_i)$ the OTM mid quote (the average of call and put at $K_0$, the first strike at or below the forward $F$), $\Delta K_i$ half the distance between the neighbouring strikes (one-sided at the ends), $T$ in minutes over 525,600, options with a zero bid or ask excluded and the strip stopped after two consecutive such strikes, and the two variances interpolated in total variance to a constant 30 days; VIX $= 100\sqrt{\sigma^2_{30}}$.
 The correction term fixes the use of an in-the-money call between $K_0$ and $F$.
 So VIX is the square root of a 30-day variance swap rate (up to discretisation and jumps), not an expected vol.
 
 VIX futures and options:
 
 - A VIX future settles on VIX at expiry, so its fair value is $E_Q[\text{VIX}_T] = E_Q[\sqrt{V_T}] \le \sqrt{E_Q[V_T]}$, the square root of forward 30-day variance from SPX options. The gap is a convexity adjustment set by vol-of-vol.
-- The futures curve is usually in contango (upward sloping) because vol mean-reverts up from low levels and sellers demand a premium; long VIX futures products lose the roll most of the time.
-- VIX options are priced off the VIX future for their own expiry (Black-76 on the future), not off spot VIX, and show upward (call) skew because vol spikes up.
+- When the futures curve is in contango (upward sloping), a product that holds a constant-maturity long position keeps selling cheaper near futures and buying dearer later ones, and each future rolls down toward spot VIX if the curve is unchanged, so the position loses the roll.
+- VIX options are priced off the VIX future for their own expiry (Black-76 on the future), not off spot VIX; their smile is usually upward sloping, the mirror image of SPX put skew, because volatility jumps up in sell-offs.
 
 ### Vol swaps and the convexity adjustment
 
@@ -110,10 +110,10 @@ Long variance against short vol swaps (same vega notional) is a long vol-of-vol 
 
 ### The variance risk premium
 
-Index implied variance has on average exceeded subsequent realized variance, so short variance earns a premium, paid for by large losses in crashes (the P&L is convex against the seller).
+Index implied variance has on average exceeded subsequent realized variance (Carr and Wu 2009 measure this with synthetic variance swap rates on five stock indexes and 35 stocks), so short variance earns a premium, paid for by large losses in crashes (the P&L is convex against the seller).
 Desks harvest it with defined tails (capped variance, corridors, spreads against VIX calls), and hedge funds use the relative value between variance strikes, VIX futures and forward variance.
 
-Related contracts: gamma swaps weight each squared return by $S_i/S_0$ (a strip weighted $1/K$, cheaper downside), corridor variance accrues only while spot is inside a band, and conditional variance only on down-days; each is a different strip.
+Related contracts: gamma swaps weight each squared return by $S_i/S_0$ (a strip weighted $1/K$, whose dollar gamma is proportional to spot, so downside variance counts less), corridor variance accrues only while spot is inside a band, and down variance only while spot is below a level; each is a different strip.
 
 ## Worked examples
 
@@ -149,47 +149,24 @@ Truncating the strip to strikes 50-150 drops the answer to 23.9, and to 70-130 t
 Thirty days, $S = 100$, $r = 3\%$, $F = 100.247$, $K_0 = 100$, same smile shape, strikes 60 to 140 every 2.5.
 The discrete formula gives 20.73, against 20.42 from the continuous strip and an ATM vol of 19.96.
 Refining the grid shows the bias: spacing 5 gives 21.63, 2.5 gives 20.73, 1 gives 20.47 and 0.25 gives 20.42.
-With a 30-day standard deviation of about 5.7 points, a 2.5 spacing is coarse, and the midpoint sum overweights the kinked region near the money.
+With a 30-day standard deviation of about 5.7 points, a 2.5 spacing is coarse.
+The error shrinks like the square of the spacing: halving it from 5 to 2.5 cuts the error by 3.9 times, and going from 2.5 to 1 cuts it by 6.2 times against $(2.5)^2 = 6.25$.
 
-```python
-import numpy as np
-from scipy.stats import norm
-
-def bs(S, K, T, r, sigma, cp):
-    sd = sigma * np.sqrt(T)
-    d1 = (np.log(S / K) + (r + 0.5 * sigma**2) * T) / sd
-    return cp * (S * norm.cdf(cp * d1) - K * np.exp(-r * T) * norm.cdf(cp * (d1 - sd)))
-
-def vix_style_variance(strikes, quotes, F, T, r):
-    """CBOE-style variance: OTM quotes, K0 = first strike at or below the forward."""
-    K0 = strikes[strikes <= F].max()
-    dK = np.gradient(strikes)                     # central differences, one-sided at the ends
-    contrib = dK / strikes**2 * np.exp(r * T) * quotes
-    return 2 / T * contrib.sum() - (F / K0 - 1) ** 2 / T
-
-S, r, T = 100.0, 0.03, 30 / 365
-F = S * np.exp(r * T)
-smile = lambda K: np.sqrt(0.03 + 0.1 * (-0.7 * np.log(K / 100) + np.sqrt(np.log(K / 100) ** 2 + 0.01)))
-K = np.arange(60.0, 142.5, 2.5)
-K0 = K[K <= F].max()
-Q = np.where(K < K0, bs(S, K, T, r, smile(K), -1), bs(S, K, T, r, smile(K), 1))
-Q[K == K0] = 0.5 * (bs(S, K0, T, r, smile(K0), -1) + bs(S, K0, T, r, smile(K0), 1))
-print(100 * np.sqrt(vix_style_variance(K, Q, F, T, r)))  # 20.73 on this grid; 20.42 continuous
-```
+[deriv_14_variance_swaps.py](code/deriv_14_variance_swaps.py) implements the Cboe formula on these strikes and asserts each figure against the continuous strip.
 
 ### Example 5: a crash against a strip-hedged short
 
 A trader is short a one-year variance swap ($N_{var} = 2{,}500$) and long the replicating strip.
 A single $-20\%$ day adds $\ln^2(0.8) = 0.04979$ to $\sum \ln^2$, that is 498 variance points on the annualised swap.
 The strip plus delta hedge delivers $2(J - \ln(1+J)) = 2(-0.2 + 0.2231) = 0.04629$, or 463 points.
-The 35-point shortfall costs $2{,}500 \times 35 = 87{,}650$ on top of the variance P&L.
+The 35.06-point shortfall costs $2{,}500 \times 35.06 = 87{,}650$ on top of the variance P&L.
 A $+20\%$ jump goes the other way (332 realized versus 354 replicated), so the error is the third moment: short variance is short the $-J^3/3$ skewness term.
 
 ### Example 6: vol swap convexity
 
 Variance strike 20 vol ($K_{var} = 400$) and a standard deviation of realized variance of 150 variance points.
 Adjustment: $150^2/(8 \times 400^{1.5}) = 22{,}500/64{,}000 = 0.35$, so the vol swap is worth about 19.65.
-If realized variance is lognormal with that mean and standard deviation, the exact $E[\sqrt{V}]$ is 19.67, so the second-order formula is good to 0.02 here.
+If realized variance is lognormal with that mean and standard deviation, the exact $E[\sqrt{V}]$ is 19.67, so the second-order formula is good to about 0.03 (19.674 against 19.648) here.
 
 ### Example 7: computing realized variance
 
@@ -201,7 +178,7 @@ The textbook sample standard deviation (mean removed, divisor $n - 1$) gives 21.
 
 - Treating variance and vol as interchangeable; a variance swap is convex in vol and its strike exceeds the vol swap strike.
 - Quoting P&L in variance notional when the trade was sized in vega notional, or forgetting the factor $2K_{vol}$ between them.
-- Pricing the strip on listed strikes without handling truncation and spacing; the two biases have opposite signs and depend on maturity.
+- Pricing the strip on listed strikes without handling truncation and spacing; in Examples 3 and 4 truncation biases the strike low and coarse spacing biases it high.
 - Believing the replication holds through jumps; it does not, and short variance is short the third moment, hence caps on single-stock swaps.
 - Treating VIX futures as forecasts of spot VIX, or pricing VIX options off spot VIX; each expiry has its own forward, below the square root of forward variance.
 - Computing realized variance with mean subtraction and $n - 1$ when the contract says neither; on short windows the difference is large.
@@ -242,7 +219,7 @@ The textbook sample standard deviation (mean removed, divisor $n - 1$) gives 21.
 > Variance swaps are special because realized variance equals a static log contract plus a delta hedge.
 
 > [!question]- deriv-varswap-vix-definition | What is the VIX, precisely?
-> $100$ times the square root of a 30-day variance swap rate computed from SPX option prices by the Cboe discretised strip formula, interpolating the two expiries that bracket 30 days.
+> $100$ times the square root of a 30-day variance swap rate computed from SPX option prices by the Cboe discretised strip formula, interpolating a near and a next term that bracket 30 days.
 > It is a variance-based index, not an expected vol, and it includes the variance risk premium.
 
 > [!question]- deriv-varswap-vix-futures-convexity | Is a VIX future equal to the square root of forward variance implied by SPX options?
@@ -257,16 +234,25 @@ The textbook sample standard deviation (mean removed, divisor $n - 1$) gives 21.
 > $0.25 \times 625 + 0.75 \times 484 - 400 = 119.25$ variance points (before discounting).
 > Realized and implied variance combine time-weighted because variance is additive.
 
-> [!question]- deriv-varswap-vix-etp-roll | Why do long VIX futures ETPs lose money most of the time?
-> The VIX futures curve is usually in contango, so the product keeps selling cheaper near futures and buying dearer later ones, and each future rolls down toward a lower spot VIX.
+> [!question]- deriv-varswap-vix-etp-roll | Why does a long VIX futures ETP lose money while the futures curve is in contango?
+> It keeps selling cheaper near futures and buying dearer later ones, and each future rolls down toward a lower spot VIX if the curve holds.
 > Holders pay the volatility risk premium in exchange for a payoff in sell-offs.
 
 > [!question]- deriv-varswap-realized-convention | How is realized variance computed in a variance swap confirmation, and why does it matter?
 > $\tfrac{252}{n}\sum\ln^2(S_i/S_{i-1})$ with no mean subtraction and divisor $n$.
 > On short windows the difference from the sample standard deviation is material: five sample returns give 19.7 vol by contract and 22.0 by the textbook formula.
 
+> [!question]- deriv-varswap-vega-to-variance-notional | A client wants 50,000 vega notional of a variance swap struck at 25 vol. What variance notional is that, and what is the P&L if realized is 30?
+> $N_{var} = 50{,}000/(2 \times 25) = 1{,}000$ per variance point, and the P&L is $1{,}000 \times (900 - 625) = 275{,}000$.
+> A vol swap of the same vega notional would make $50{,}000 \times 5 = 250{,}000$; the extra 25,000 is the convexity of variance.
+
+> [!question]- deriv-varswap-vix-k0 | In the VIX calculation, which strike is $K_0$ and why is there a correction term?
+> $K_0$ is the first listed strike at or below the option-implied forward $F$, and both the put and the call at $K_0$ enter, averaged.
+> Using the $K_0$ call means one in-the-money call between $K_0$ and $F$ is in the strip, and $-\frac{1}{T}(F/K_0 - 1)^2$ removes that excess (Cboe applies it in equation 1 of its methodology).
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [deriv_14_variance_swaps.py](code/deriv_14_variance_swaps.py) prints and asserts every number in this note: the fair strike as the $1/K^2$ strip and, independently, as Gatheral's integral of the smile over $z = -d_2$; the constant dollar gamma by integration over strikes; the Ito identity on simulated paths; the Cboe formula against the continuous strip and its convergence order; the vol-swap adjustment against the exact lognormal and a seeded simulation; notionals and forward variance in exact rationals; run it with `uv run --no-project --with numpy python 05-Derivatives-and-Volatility/code/deriv_14_variance_swaps.py`.
 - Prev: [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md). Next: [Dispersion and Correlation Trading](15-Dispersion-and-Correlation-Trading.md).
 - Why constant dollar gamma earns variance: [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md).
 
@@ -275,5 +261,6 @@ The textbook sample standard deviation (mean removed, divisor $n - 1$) gives 21.
 - P. Carr and D. Madan (1998), "Towards a theory of volatility trading", in *Volatility: New Estimation Techniques for Pricing Derivatives*, Risk Books.
 - K. Demeterfi, E. Derman, M. Kamal and J. Zou (1999), "A guide to volatility and variance swaps", *Journal of Derivatives* 6(4).
 - Jim Gatheral, *The Volatility Surface: A Practitioner's Guide*, chapter on variance and volatility swaps.
-- Cboe, *VIX White Paper*, for the index methodology.
-- Sebastien Bossu, "Introduction to variance swaps", *Wilmott* (2006).
+- Cboe Global Indices, *Cboe Volatility Index Mathematics Methodology* (version 5.0, last revised February 26, 2026) and *Cboe Volatility Index Methodology*, for the index formula, strike selection and the 30-day interpolation.
+- P. Carr and L. Wu (2009), "Variance risk premiums", *Review of Financial Studies* 22(3), 1311-1341.
+- Sebastien Bossu, "Introduction to variance swaps", *Wilmott* magazine (2006).
