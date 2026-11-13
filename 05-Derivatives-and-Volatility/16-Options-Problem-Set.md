@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [delta-hedging-and-gamma-scalping, option-strategies-and-volatility-trading]
 est_hours: 8
-sources: [Sheldon Natenberg - Option Volatility and Pricing, Xinfeng Zhou - A Practical Guide to Quantitative Finance Interviews (Chapter 6 finance), Joshi Denson and Downes - Quant Job Interview Questions and Answers (options chapter), Emanuel Derman and Michael Kamal (1999) - When you cannot hedge continuously - the corrections of Black-Scholes - Risk 12(1), John Hull - Options Futures and Other Derivatives]
+sources: [Sheldon Natenberg - Option Volatility and Pricing, Xinfeng Zhou - A Practical Guide to Quantitative Finance Interviews (Chapter 6 finance), Joshi Denson and Downes - Quant Job Interview Questions and Answers (options chapter), Michael Kamal (1998) - When you cannot hedge continuously - the corrections to Black-Scholes - Goldman Sachs Quantitative Strategies Research Notes, John Hull - Options Futures and Other Derivatives]
 ---
 
 # Options Problem Set
@@ -45,7 +45,7 @@ Black-Scholes Greeks with $r = q = 0$ ([The Greeks](05-The-Greeks.md)):
 | Volga | $\text{vega}\cdot d_1 d_2/\sigma$ | $\approx 0$ | positive in the wings |
 
 Rules of thumb: daily move $\approx \sigma/16$; straddle $\approx 0.8\,\sigma S\sqrt T$; gamma P&L $= \tfrac12\Gamma\,dS^2$ and the break-even move solves $\tfrac12\Gamma\,dS^2 = -\Theta_{day}$; theta and gamma of a delta-hedged option satisfy $\Theta = -\tfrac12\sigma^2 S^2\Gamma$ (with $r = 0$).
-Hedging error with $N$ rebalances (Derman-Kamal): standard deviation $\approx \sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$.
+Hedging error with $N$ rebalances (Kamal 1998, Goldman Sachs Quantitative Strategies): standard deviation $\approx \sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$.
 Smile dynamics ([Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md)): $\Delta = \Delta_{BS} + \mathcal V\,\partial\sigma/\partial S$, with $\partial\sigma/\partial S = 0$ (sticky strike), $\approx -\partial\sigma/\partial K$ (sticky delta) or $\approx +\partial\sigma/\partial K$ (local vol).
 
 ## Worked examples
@@ -83,8 +83,8 @@ Long one 30-day 100-strike straddle at 25% vol, delta-hedged at the close.
 Greeks: gamma 0.111, vega 0.229 per point, theta $-0.095$ per day, vanna 0.0011 per point and volga essentially zero (ATM).
 Overnight spot falls to 97 and implied vol rises 2 points.
 Taylor: gamma $\tfrac12 \times 0.111 \times 9 = 0.501$, vega $0.229 \times 2 = 0.457$, theta $-0.095$, vanna $0.0011 \times (-3) \times 2 = -0.007$, total $+0.856$ on the hedged position.
-Full revaluation gives $+0.820$.
-The 0.036 gap is higher order, chiefly zomma: ATM gamma scales like $1/\sigma$, so at the higher vol the move earns less gamma ($-\tfrac12 \times 9 \times 0.111/0.25 \times 0.02 = -0.040$).
+Full revaluation gives $+0.820$ ($+0.8205$ against the Taylor $+0.8557$, a gap of 0.035).
+The gap is higher order, chiefly zomma: ATM gamma scales like $1/\sigma$, so at the higher vol the move earns less gamma ($-\tfrac12 \times 9 \times 0.111/0.25 \times 0.02 = -0.040$ by that scaling, and $-0.037$ from the exact gamma at 27%).
 
 ### Example 5: when Taylor fails - a short straddle through a gap
 
@@ -97,41 +97,11 @@ The lesson for risk limits: use full revaluation on scenario grids, not Greeks, 
 ### Example 6: how noisy is discrete hedging?
 
 Sell a one-year ATM call at 20% vol on a 100 stock (price 7.97, vega 39.7 per unit vol), delta-hedge at 20% vol, and let the stock realise exactly 20%.
-The P&L has mean zero but is not zero: Derman-Kamal gives a standard deviation of $\sqrt{\pi/4} \times 39.7 \times 0.2/\sqrt N$, which is 0.44 for daily hedging ($N = 252$) and 0.98 for weekly ($N = 52$).
-Simulation agrees (0.44 and 0.96).
-So even with perfect vol, a daily-hedged option has P&L noise of about 5.5% of its premium, and halving it needs four times the rebalancing (and four times the transaction costs).
+The P&L has mean zero but is not zero: Kamal's rule gives a standard deviation of $\sqrt{\pi/4} \times 39.7 \times 0.2/\sqrt N$, which is 0.44 for daily hedging ($N = 252$) and 0.98 for weekly ($N = 52$).
+A seeded simulation agrees (about 0.44 and 0.96).
+So even with perfect vol, a daily-hedged option has P&L noise of about 5.6% of its premium ($0.443/7.97$), and halving it needs four times the rebalancing, which doubles the transaction costs because they grow like $\sqrt N$ ([Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md)).
 
-```python
-import numpy as np
-from scipy.stats import norm
-
-def call_delta_price(S, K, T, sigma):
-    sd = sigma * np.sqrt(T)
-    d1 = np.log(S / K) / sd + 0.5 * sd
-    return S * norm.cdf(d1) - K * norm.cdf(d1 - sd), norm.cdf(d1)
-
-def hedged_short_call(N, paths=20_000, S0=100.0, K=100.0, T=1.0, sigma=0.2, seed=1):
-    """Sell a call at sigma, delta-hedge N times at sigma, realised vol = sigma, r = 0."""
-    rng = np.random.default_rng(seed)
-    dt = T / N
-    price, pos = call_delta_price(S0, K, T, sigma)
-    S = np.full(paths, S0)
-    cash = price - pos * S
-    pos = np.full(paths, pos)
-    for i in range(1, N + 1):
-        S = S * np.exp(-0.5 * sigma**2 * dt + sigma * np.sqrt(dt) * rng.standard_normal(paths))
-        if i < N:
-            new = call_delta_price(S, K, T - i * dt, sigma)[1]
-            cash -= (new - pos) * S
-            pos = new
-    return cash + pos * S - np.maximum(S - K, 0.0)
-
-vega = 100 * norm.pdf(0.1)                        # ATM vega per unit vol, S = 100, T = 1
-for N in (52, 252):
-    pnl = hedged_short_call(N)
-    print(N, round(pnl.mean(), 3), round(pnl.std(), 3), round(np.sqrt(np.pi / 4) * vega * 0.2 / np.sqrt(N), 3))
-# 52: mean 0.01, sd 0.961 vs 0.976; 252: mean -0.002, sd 0.44 vs 0.443
-```
+[deriv_16_problem_set.py](code/deriv_16_problem_set.py) simulates the hedged short call (20,000 paths, seed 1, exact lognormal steps, hedge at the Black-Scholes delta) and asserts both standard deviations against the rule.
 
 ## Pitfalls
 
@@ -266,7 +236,7 @@ for N in (52, 252):
 > If the stock's daily standard deviation is below 2% (annual vol below about 32%), the book loses on average.
 
 > [!question]- deriv-ps-discrete-hedge-noise | You sell a one-year ATM call at 20% vol on a 100 stock and hedge daily; realized vol is exactly 20%. What is the standard deviation of your P&L?
-> About 0.44 (5.5% of the 7.97 premium), from $\sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$ with vega 39.7 and $N = 252$.
+> About 0.44 (5.6% of the 7.97 premium), from Kamal's rule $\sqrt{\pi/4}\,\mathcal V\sigma/\sqrt N$ with vega 39.7 and $N = 252$.
 > Weekly hedging roughly doubles it to about 0.98; the error falls only like $1/\sqrt N$.
 
 > [!question]- deriv-ps-hedge-at-which-vol | Should you delta-hedge at implied vol or at your forecast of realized vol?
@@ -286,7 +256,7 @@ for N in (52, 252):
 > With equity spot-vol correlation strongly negative, long vanna bleeds systematically, which is why it trades at a price.
 
 > [!question]- deriv-ps-weekend-theta | Should a short-gamma book collect three days of theta over a weekend?
-> In calendar-time pricing yes, but little variance is realised over the weekend, so markets price in trading-time: implied vols are lowered into Friday (or theta is spread over trading days).
+> In calendar-time pricing yes, but little variance is realised over the weekend, so a trading-time model is more realistic: either lower the implied vol used into Friday or spread theta over trading days.
 > Pricing the weekend theta as if it were free would overpay the short and misstate the break-even move.
 
 ### Strategies
@@ -347,6 +317,7 @@ for N in (52, 252):
 
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [deriv_16_problem_set.py](code/deriv_16_problem_set.py) prints and asserts every number in this problem set: arbitrage cash flows in exact rationals with the payoff checked on a fine grid, prices re-derived by quadrature, Greeks against finite differences, every scenario by full revaluation, the gamma peak by grid search, and Kamal's hedging rule against a seeded simulation; run it with `uv run --no-project --with numpy python 05-Derivatives-and-Volatility/code/deriv_16_problem_set.py`.
 - Prev: [Dispersion and Correlation Trading](15-Dispersion-and-Correlation-Trading.md).
 - Topic notes behind these questions: [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md), [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md), [Variance Swaps and Volatility Products](14-Variance-Swaps-and-Volatility-Products.md).
 
@@ -355,5 +326,5 @@ for N in (52, 252):
 - Sheldon Natenberg, *Option Volatility and Pricing*.
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews*
 - Joshi, Denson and Downes, *Quant Job Interview Questions and Answers*
-- E. Derman and M. Kamal (1999), "When you cannot hedge continuously: the corrections of Black-Scholes", *Risk* 12(1).
+- M. Kamal (1998), "When you cannot hedge continuously: the corrections to Black-Scholes", Goldman Sachs Quantitative Strategies Research Notes (Equity Derivatives Research, Quantitative Insights); a copy is hosted at emanuelderman.com.
 - John Hull, *Options, Futures, and Other Derivatives*.

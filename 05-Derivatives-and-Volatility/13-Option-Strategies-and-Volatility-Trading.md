@@ -54,7 +54,7 @@ $$
 
 - Directional: net delta, hedged away with the underlying or futures.
 - Realized vol: gamma, whose P&L against theta is $\tfrac12\Gamma S^2(\sigma_{real}^2 - \sigma_{imp}^2)\,dt$ (see [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md)).
-- Implied vol level: vega, bucketed by expiry because vols do not move in parallel. Short-dated vol moves more than long-dated, roughly in proportion to $1/\sqrt{T}$, so desks look at "weighted vega" $\mathcal V \sqrt{T_{ref}/T}$.
+- Implied vol level: vega, bucketed by expiry because vols do not move in parallel. A common rule of thumb scales vol moves by $1/\sqrt{T}$ (short-dated vol moves more than long-dated), and "weighted vega" $\mathcal V \sqrt{T_{ref}/T}$ applies it.
 - Skew: vega bucketed by strike or delta, or vanna ($\partial\Delta/\partial\sigma = \partial\mathcal V/\partial S$). A long 25-delta risk reversal is long skew: it gains when calls richen against puts.
 - Wings (smile curvature): volga ($\partial\mathcal V/\partial\sigma$). OTM options have positive volga, ATM options almost none, so a vega-neutral long strangle, short straddle position is long vol-of-vol.
 
@@ -95,35 +95,7 @@ Break-evens at expiry: 94.28 and 105.72.
 Greeks: delta $+0.029$ (ATM-spot, not ATM-forward, so slightly positive), gamma 0.111, vega 0.229 per vol point, theta $-0.095$ per calendar day.
 Daily break-even move: $\sqrt{2 \times 0.095/0.111} = 1.31$, which is $25\%/\sqrt{365}$; if weekends are quiet, you need about $25\%/\sqrt{252} = 1.57\%$ on each trading day.
 
-```python
-import numpy as np
-from scipy.stats import norm
-
-def greeks(S, K, T, sigma, cp, r=0.0):
-    """Black-Scholes price, delta, gamma, vega (per vol point), theta (per calendar day)."""
-    sd = sigma * np.sqrt(T)
-    d1 = (np.log(S / K) + (r + 0.5 * sigma**2) * T) / sd
-    d2 = d1 - sd
-    disc = np.exp(-r * T)
-    price = cp * (S * norm.cdf(cp * d1) - K * disc * norm.cdf(cp * d2))
-    delta = cp * norm.cdf(cp * d1)
-    gamma = norm.pdf(d1) / (S * sd)
-    vega = S * norm.pdf(d1) * np.sqrt(T) / 100
-    theta = (-S * norm.pdf(d1) * sigma / (2 * np.sqrt(T)) - cp * r * K * disc * norm.cdf(cp * d2)) / 365
-    return np.array([price, delta, gamma, vega, theta])
-
-def book(S, legs):
-    """legs: (quantity, strike, expiry in years, vol, +1 call / -1 put)."""
-    return sum(q * greeks(S, K, T, v, cp) for q, K, T, v, cp in legs)
-
-names = ["price", "delta", "gamma", "vega", "theta"]
-straddle = [(1, 100, 30 / 365, 0.25, 1), (1, 100, 30 / 365, 0.25, -1)]
-calendar = [(-1, 100, 1 / 12, 0.20, 1), (1, 100, 0.25, 0.20, 1)]
-for label, legs in [("straddle", straddle), ("calendar", calendar)]:
-    print(label, {n: round(float(x), 4) for n, x in zip(names, book(100.0, legs))})
-# straddle: price 5.7174 delta 0.0286 gamma 0.1113 vega 0.2286 theta -0.0952
-# calendar: price 1.6848 delta 0.0084 gamma -0.0292 vega 0.0841 theta 0.016
-```
+[deriv_13_option_strategies.py](code/deriv_13_option_strategies.py) computes these Greeks for any book of legs and checks each closed form against finite differences of the price; for the straddle it prints price 5.7174, delta 0.0286, gamma 0.1113, vega 0.2286 and theta $-0.0952$, and for the Example 5 calendar price 1.6848, delta 0.0084, gamma $-0.0292$, vega 0.0841 and theta 0.016.
 
 ### Example 2: realized versus implied
 
@@ -140,7 +112,7 @@ Subtracting removes the event: $\sigma_b^2 = (0.019048 - 0.014286) \times 252/20
 The event variance is $m^2 = 0.014286 - 0.06 \times 9/252 = 0.012143$, so $m = 11.0\%$ and the expected absolute move is $11.0\% \times 0.798 = 8.8\%$.
 On a 100 stock the front ATM straddle costs 9.53.
 If the stock does not move, it is worth 3.69 the next day at 24.5% vol with nine days left: the vol crush costs 5.84.
-The holder breaks even on a move of about 9.4, so buy it only if you think the name moves more than 9.4% more often than the market implies.
+The holder breaks even the next day on a move of about 9.4 up or 9.5 down, against an implied expected absolute event move of 8.8%, so the long straddle needs a move larger than the market's own estimate just to break even.
 
 ### Example 4: a 25-delta risk reversal
 
@@ -148,7 +120,7 @@ Three months, $S = 100$, $r = 0$; 25-delta put at 24% vol, 25-delta call at 18%.
 Strikes: put 92.89, call 106.69.
 Buy the call (1.284) and sell the put (1.903): a credit of 0.619.
 Greeks: delta $+0.50$, vega exactly zero (with $r = 0$, a 25-delta call and put share $\lvert d_1\rvert$ and so have equal vega, 0.159 each per point), vanna $+0.021$ delta per vol point.
-If skew steepens with the put vol up 1 and the call vol down 1, the position loses $2 \times 0.159 = 0.317$.
+If skew steepens with the put vol up 1 and the call vol down 1, the position loses 0.317 on full revaluation, close to twice the 0.159 leg vega.
 If spot drops 5 with vols sticky by strike, it loses 2.48, so the skew view comes with a large delta that must be hedged with 0.5 of stock per risk reversal to isolate the skew.
 Desks quote and hedge risk reversals delta-hedged for exactly this reason.
 
@@ -157,7 +129,7 @@ Desks quote and hedge risk reversals delta-hedged for exactly this reason.
 $S = K = 100$, 20% vol, $r = 0$: sell the one-month call (2.303), buy the three-month call (3.988), cost 1.685.
 Greeks: vega $+0.084$ per point, gamma $-0.029$, theta $+0.016$ per day.
 A parallel 1-point rise in vol makes 0.084.
-But if the one-month vol rises $\sqrt{3} = 1.73$ points while the three-month rises 1 (moves proportional to $1/\sqrt{T}$), the P&L is $-0.0002$, essentially zero: ATM vega scales with $\sqrt T$, so the vega ratio is exactly 1.73 and one-for-one ATM calendars are flat in weighted vega.
+But if the one-month vol rises $\sqrt{3} = 1.73$ points while the three-month rises 1 (moves proportional to $1/\sqrt{T}$), the P&L is $-0.0002$, essentially zero: ATM vega scales almost exactly with $\sqrt T$ (the ratio here is 1.731 against $\sqrt 3 = 1.732$), so one-for-one ATM calendars are nearly flat in weighted vega.
 The calendar is really a short-gamma, long-theta position with a bet that the term structure steepens, not a long-vol trade.
 
 ### Example 6: long wings through a vega-neutral fly
@@ -165,7 +137,7 @@ The calendar is really a short-gamma, long-theta position with a bet that the te
 Three months, flat 20% vol: the 25-delta strangle (strikes 93.95 and 107.51) has vega 0.318 per point and volga $+0.0072$ per point squared; the ATM straddle has vega 0.398 and volga essentially zero.
 Buy 1.254 strangles per straddle sold to be vega-neutral.
 A parallel vol move of $-5$ or $+5$ points makes $+0.144$ or $+0.094$: the position is long volga, a bet that vol-of-vol (and hence the smile's wings) is underpriced.
-This is the FX "butterfly" trade, and why the quoted butterfly measures the market price of wings.
+This is the vega-weighted butterfly of FX option markets, and why the quoted butterfly measures the market price of wings.
 
 ## Pitfalls
 
@@ -196,7 +168,7 @@ This is the FX "butterfly" trade, and why the quoted butterfly measures the mark
 > You profit if the stock stays still and far-dated vol holds or rises relative to near-dated vol; a big move near the short expiry hurts.
 
 > [!question]- deriv-strat-weighted-vega | Why do desks use weighted vega, and what does it imply for a 1-for-1 ATM calendar?
-> Short-dated vol moves more than long-dated, roughly in proportion to $1/\sqrt{T}$, so raw vega overstates the risk in long-dated options.
+> Short-dated vol moves more than long-dated, and a common rule of thumb scales the moves by $1/\sqrt{T}$, so raw vega overstates the risk in long-dated options.
 > ATM vega scales with $\sqrt{T}$, so under that rule a 1-for-1 ATM calendar has about zero weighted vega.
 
 > [!question]- deriv-strat-risk-reversal-exposure | What does a long 25-delta risk reversal (long call, short put) expose you to?
@@ -213,7 +185,7 @@ This is the FX "butterfly" trade, and why the quoted butterfly measures the mark
 
 > [!question]- deriv-strat-vol-crush | Why can a long straddle lose money over earnings even when the stock moves?
 > The front implied vol collapses to the ex-event level after the announcement, so the straddle loses its event premium; it only profits if the move exceeds the implied move.
-> In the worked example the straddle drops from 9.53 to 3.69 with no move, and the break-even is about a 9.4% move.
+> In the worked example the straddle drops from 9.53 to 3.69 with no move, and the next-day break-even is a move of about 9.4% up or 9.5% down.
 
 > [!question]- deriv-strat-gamma-vs-vega-tenor | Which options would you trade to express a view on realized vol, and which for implied vol?
 > Short-dated options for realized vol (gamma is large, scaling like $1/\sqrt T$), long-dated options for implied vol (vega is large, scaling like $\sqrt T$).
@@ -231,8 +203,17 @@ This is the FX "butterfly" trade, and why the quoted butterfly measures the mark
 > Long stock, long OTM put, short OTM call with premiums offsetting: downside floored at the put strike, upside capped at the call strike.
 > In vol terms the holder is short a risk reversal, so with equity skew the call strike is typically closer to spot than the put strike for zero cost.
 
+> [!question]- deriv-strat-straddle-expected-move | Why is an ATM straddle worth about $0.8\,\sigma S\sqrt T$, and what does that number mean?
+> With zero rates, $C + P = 2S[2N(\tfrac12\sigma\sqrt T) - 1] \approx 2\varphi(0)\sigma S\sqrt T = 0.798\,\sigma S\sqrt T$.
+> For a normal move $X$ with standard deviation $\sigma S\sqrt T$, $E\lvert X\rvert = \sqrt{2/\pi}\,\sigma S\sqrt T$, the same 0.798, so the straddle is the market's price of the expected absolute move.
+
+> [!question]- deriv-strat-skew-steepening-pnl | You are long a three-month 25-delta risk reversal (put at 24%, call at 18%). The put vol rises 1 point and the call vol falls 1. What happens?
+> You lose about 0.32 per risk reversal on $S = 100$, roughly twice the 0.159 vega of each leg (0.317 on full revaluation): the short put loses as its vol rises and the long call loses as its vol falls.
+> A long risk reversal is long skew in the sense of gaining when calls richen against puts, so a steeper put skew hurts it.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [deriv_13_option_strategies.py](code/deriv_13_option_strategies.py) prints and asserts every number in this note: prices re-derived by quadrature, every Greek checked against finite differences of the price, strikes from deltas by bisection, the event split as a linear solve, and every scenario by full revaluation; run it with `uv run --no-project --with numpy python 05-Derivatives-and-Volatility/code/deriv_13_option_strategies.py`.
 - Prev: [Exotic Options](12-Exotic-Options.md). Next: [Variance Swaps and Volatility Products](14-Variance-Swaps-and-Volatility-Products.md).
 - Greeks behind these tables: [The Greeks](05-The-Greeks.md); the smile being traded: [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md).
 
