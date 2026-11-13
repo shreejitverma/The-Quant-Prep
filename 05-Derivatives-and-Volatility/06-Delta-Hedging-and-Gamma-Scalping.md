@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [the-greeks]
 est_hours: 4
-sources: [Euan Sinclair - Volatility Trading (hedging and volatility P&L chapters), Sheldon Natenberg - Option Volatility and Pricing (dynamic hedging chapters), Ahmad and Wilmott (2005) - Which free lunch would you like today sir? Delta hedging volatility arbitrage and optimal portfolios - Wilmott Magazine, Emanuel Derman and Michael Miller - The Volatility Smile (discrete hedging error), Leland (1985) - Option pricing and replication with transactions costs - Journal of Finance 40(5), Hull and White (2017) - Optimal delta hedging for options - Journal of Banking and Finance 82]
+sources: [Euan Sinclair - Volatility Trading (hedging and volatility P&L chapters), Sheldon Natenberg - Option Volatility and Pricing (dynamic hedging chapters), Ahmad and Wilmott (2005) - Which free lunch would you like today sir? Delta hedging volatility arbitrage and optimal portfolios - Wilmott Magazine, Michael Kamal (1998) - When you cannot hedge continuously - the corrections to Black-Scholes - Goldman Sachs Quantitative Strategies Research Notes, Emanuel Derman and Michael Miller - The Volatility Smile (discrete hedging error), Leland (1985) - Option pricing and replication with transactions costs - Journal of Finance 40(5), Hull and White (2017) - Optimal delta hedging for options - Journal of Banking and Finance 82]
 ---
 
 # Delta Hedging and Gamma Scalping P&L
@@ -16,7 +16,7 @@ sources: [Euan Sinclair - Volatility Trading (hedging and volatility P&L chapter
 - Summed over the life: P&L $= \tfrac12\int_0^T e^{-rt}\,\Gamma_t S_t^2(\sigma_r^2 - \sigma_i^2)\,dt$ when hedging at implied vol; to first order the expected profit is vega $\times (\sigma_r - \sigma_i)$.
 - Hedging at the implied vol gives smooth daily P&L but a path-dependent total (it depends on where spot was when variance was realised); hedging at the (unknown) realised vol locks $V(\sigma_r) - V(\sigma_i)$ but gives noisy daily marks.
 - Gamma scalping: long gamma sells rallies and buys dips, locking $\tfrac12\Gamma\,\delta S^2$ per move against theta; short gamma does the opposite and loses on big moves.
-- Discrete hedging adds noise with standard deviation about $\sqrt{\pi/4}\,\mathcal{V}\sigma/\sqrt{N}$ for $N$ rebalances (Derman-Kamal), while transaction costs grow like $\sqrt{N}$; the hedge frequency trades one against the other.
+- Discrete hedging adds noise with standard deviation about $\sqrt{\pi/4}\,\mathcal{V}\sigma/\sqrt{N}$ for $N$ rebalances (Kamal, Goldman Sachs 1998), while transaction costs grow like $\sqrt{N}$; the hedge frequency trades one against the other.
 
 ## Learning objectives
 
@@ -84,7 +84,7 @@ Rehedging sells into rallies and buys dips, which mechanically realises the conv
 
 ### Discrete hedging error
 
-With $N$ equally spaced rebalances and $\sigma_r = \sigma_i$, the hedged P&L has mean near zero and standard deviation (Kamal and Derman; see Derman and Miller, *The Volatility Smile*)
+With $N$ equally spaced rebalances and $\sigma_r = \sigma_i$, the hedged P&L has mean near zero and standard deviation (Kamal 1998, a Goldman Sachs Quantitative Strategies note; also in Derman and Miller, *The Volatility Smile*)
 
 $$
 \text{sd} \approx \sqrt{\frac{\pi}{4}}\,\frac{\mathcal{V}\,\sigma}{\sqrt{N}},
@@ -122,6 +122,9 @@ Getting this wrong shows up as systematic delta P&L in the attribution.
 
 ## Worked examples
 
+Every number below is printed and asserted by [deriv_01_07_hedging_pnl.py](code/deriv_01_07_hedging_pnl.py).
+Simulations use exact lognormal steps and numpy's `default_rng` with the seed named in each example, so they are quoted as "about" the printed value.
+
 ### Example 1: a two-day gamma scalp
 
 Long one one-month ATM straddle: $S = K = 100$, $\sigma_i = 20\%$, zero rates, price 4.61.
@@ -135,83 +138,73 @@ Breakeven daily move: $100 \times 0.2/\sqrt{365} = 1.05$.
 Scalp profit $0.276 \times 2 = 0.55$, against two days of theta, $2 \times 0.0757 = 0.15$: net about $+0.40$.
 Same answer from the formula: two moves of $\tfrac12 \times 0.138 \times 2^2 = 0.276$ each.
 If instead spot had drifted 0.5 each day, gamma would have earned $2 \times \tfrac12 \times 0.138 \times 0.25 = 0.035$ against 0.15 of theta.
-(Exact revaluation gives a day-1 delta of 0.294 rather than 0.276 because gamma itself rises as spot moves and time passes; the logic is unchanged.)
+Exact revaluation: the straddle delta goes from 0.023 at 100 to 0.294 at 102 a day later, a change of 0.271 rather than 0.276, and the exact two-day hedged P&L (straddle revalued, hedge reset to the exact delta each day) is 0.39 against the 0.40 estimate.
 
 ### Example 2: right on volatility, and how you hedge
 
 Buy a one-year ATM call ($S = K = 100$, zero rates) at $\sigma_i = 20\%$, price 7.97; the stock then realises $\sigma_r = 25\%$.
 Value at 25% is 9.95, so the target profit is $V(25\%) - V(20\%) = 1.98$, and vega $\times$ 5 vol points $= 39.7 \times 0.05 = 1.98$.
 
-Monte Carlo, 20,000 paths, 365 daily rebalances:
+Monte Carlo, 20,000 paths, 365 daily rebalances, seed 11 (all three rows use the same random numbers, so each row changes one thing):
 
 | Hedge vol | Mean P&L | Std of P&L |
 | :--- | ---: | ---: |
-| Realised (25%) | 1.98 | 0.46 |
-| Implied (20%) | 1.99 | 0.96 |
+| Realised (25%) | 1.98 | 0.45 |
+| Implied (20%) | 2.00 | 0.96 |
 | Implied (20%), stock drift 10% | 1.98 | 0.95 |
 
-Hedging at realised removes the path dependence; the remaining 0.46 is discrete-hedging noise.
-Hedging at implied doubles the dispersion because the payoff depends on where spot sat while variance was realised.
-The drift changes nothing on average, as the derivation promised.
+Each mean is within three standard errors of 1.98.
+Hedging at realised vol leaves only discrete-hedging noise (0.45); hedging at implied vol doubles the dispersion, because the payoff then depends on how much dollar gamma you held while the variance was realised.
+Adding a 10% drift with everything else fixed moves the mean by only 0.015 (paired standard error 0.005, under 1% of the 1.98 edge) and the dispersion by 0.01.
+The drift drops out to first order, as the derivation says; what remains is second order, through where dollar gamma is held, since an upward drift carries spot away from the strike while the variance is realised.
 
-### Example 3: discrete hedging error
+### Example 3: the gamma-theta identity on simulated paths
+
+Same trade, 252 daily rebalances, 20,000 paths, seed 13.
+For each path the script computes the actual hedged P&L and, separately, $\sum_i \tfrac12\Gamma_i S_i^2\left[(\delta S_i/S_i)^2 - \sigma_i^2\,\delta t\right]$ with $\Gamma_i$ the Black-Scholes gamma at 20% at the start of each day.
+
+| Quantity | Value |
+| :--- | ---: |
+| Mean hedged P&L | 1.98 |
+| Mean of the gamma-theta sum | 1.98 |
+| Correlation across paths | 0.996 |
+| Std of hedged P&L | 1.00 |
+| Std of the difference | 0.09 |
+
+The identity explains the P&L path by path, not just on average: 99.2% of the variance ($0.996^2$), with the remainder from the higher-order terms (third order in each day's move and the cross terms with time) that the second-order expansion drops.
+
+### Example 4: discrete hedging error
 
 One-year ATM call, $S = K = 100$, $\sigma_r = \sigma_i = 20\%$, zero rates, vega $\mathcal{V} = 39.7$.
-Derman-Kamal: $\sqrt{\pi/4} \times 39.7 \times 0.2/\sqrt{N} = 7.03/\sqrt{N}$.
+The rule: $\sqrt{\pi/4} \times 39.7 \times 0.2/\sqrt{N} = 7.04/\sqrt{N}$.
 
-| Rebalances $N$ | Formula sd | Monte Carlo sd (40,000 paths) |
+| Rebalances $N$ | Formula sd | Monte Carlo sd (40,000 paths, seed 12) |
 | ---: | ---: | ---: |
-| 12 (monthly) | 2.03 | 1.95 |
+| 12 (monthly) | 2.03 | 1.93 |
 | 52 (weekly) | 0.98 | 0.96 |
 | 252 (daily) | 0.44 | 0.44 |
 
 On a 7.97 option, weekly hedging leaves a one-standard-deviation P&L noise of about 12% of premium, or about 2.4 vol points of vega-equivalent ($0.96/39.7$).
+The rule comes from Kamal's 1998 Goldman Sachs note, whose Table 1 (one-month ATM option, $r = 5\%$, 20% vol, 50,000 paths) reports 0.41 and 0.20 for 21 and 84 rebalances against 0.443 and 0.222 from the formula with vega 0.115 per vol point.
+The script reruns that case (seed 14) and gets about 0.43 and 0.22.
+(The note quotes the option value as 2.512, which is the one-month call; the put is 2.096 by parity, and the hedging-error distribution is the same for both.)
 
-### Example 4: choosing the hedge frequency with costs
+### Example 5: choosing the hedge frequency with costs
 
-Same option, one-way cost $\kappa = 5$bp.
-Formula cost $0.0005 \times 0.798 \times 39.7 \times \sqrt{N}$, plus about 0.06 for the entry and exit trades:
+Same option, one-way cost $\kappa = 5$bp, same paths as Example 4 with and without costs, so the difference is exactly the cost.
+Formula rebalancing cost $0.0005 \times 0.798 \times 39.7 \times \sqrt{N}$:
 
 | $N$ | Formula rebalancing cost | Monte Carlo total cost | Hedge noise sd |
 | ---: | ---: | ---: | ---: |
-| 12 | 0.05 | 0.12 | 1.94 |
-| 52 | 0.11 | 0.18 | 0.95 |
-| 252 | 0.25 | 0.31 | 0.44 |
+| 12 | 0.05 | 0.11 | 1.93 |
+| 52 | 0.11 | 0.17 | 0.95 |
+| 252 | 0.25 | 0.31 | 0.45 |
 
-Going from weekly to daily costs about 0.13 more and cuts the noise from 0.95 to 0.44.
+The gap of about 0.05 between the two cost columns is the entry trade ($0.0005 \times 0.540 \times 100 = 0.027$) plus the unwind at expiry.
+Going from weekly to daily costs about 0.14 more and cuts the noise from 0.95 to 0.45.
 A single large position with an edge of a vol point or two needs daily hedging, or the noise swamps the edge.
 A market maker hedges net book delta, so per-line noise partly diversifies and wider bands (fewer trades) are affordable.
 Leland at daily hedging: $2 \times 0.0005 \times 0.2 \times \sqrt{2 \times 252/\pi} = 0.00253$, so $\tilde\sigma = \sqrt{0.04 \pm 0.00253}$ is 20.62% or 19.36%: hedging costs alone justify about 0.6 vol points either side of mid.
-
-```python
-import numpy as np
-from scipy.stats import norm
-
-def call_delta(S, K, tau, sig):
-    sd = sig * np.sqrt(tau)
-    d1 = (np.log(S / K) + 0.5 * sd * sd) / sd
-    return S * norm.cdf(d1) - K * norm.cdf(d1 - sd), norm.cdf(d1)
-
-def hedged_pnl(sig_real, sig_hedge, sig_implied, n_steps, paths=20000,
-               T=1.0, S0=100.0, K=100.0, cost=0.0, seed=1):
-    """Long one call bought at sig_implied, delta-hedged at sig_hedge, zero rates."""
-    rng = np.random.default_rng(seed)
-    dt = T / n_steps
-    price, _ = call_delta(S0, K, T, sig_implied)
-    S = np.full(paths, S0)
-    _, delta = call_delta(S, K, T, sig_hedge)
-    cash = -price + delta * S - cost * delta * S
-    for i in range(1, n_steps + 1):
-        S = S * np.exp(-0.5 * sig_real**2 * dt + sig_real * np.sqrt(dt) * rng.standard_normal(paths))
-        new = call_delta(S, K, T - i * dt, sig_hedge)[1] if i < n_steps else np.zeros(paths)
-        cash += (new - delta) * S - cost * np.abs(new - delta) * S
-        delta = new
-    pnl = cash + np.maximum(S - K, 0.0)
-    return pnl.mean(), pnl.std()
-
-print(hedged_pnl(0.25, 0.20, 0.20, 365))   # about (1.99, 0.96)
-print(hedged_pnl(0.20, 0.20, 0.20, 52))    # about (0.0, 0.96)
-```
 
 ## Pitfalls
 
@@ -231,7 +224,8 @@ print(hedged_pnl(0.20, 0.20, 0.20, 52))    # about (0.0, 0.96)
 
 > [!question]- deriv-drift-irrelevant-hedged | Does the stock's drift affect the P&L of a delta-hedged option?
 > No, to first order the drift drops out; only realised versus implied variance weighted by dollar gamma matters.
-> In the derivation the $dS$ terms cancel between option and hedge; a Monte Carlo with 0% and 10% drift gives the same mean P&L.
+> In the derivation the $dS$ terms cancel between option and hedge.
+> A Monte Carlo on the same random numbers with 0% and 10% drift moves the mean P&L by only about 0.015 out of 1.98, a second-order effect through where dollar gamma is held.
 
 > [!question]- deriv-hedge-at-implied-vs-realized | You buy at 20% implied and realised turns out 25%. Compare hedging at implied and at realised vol.
 > At realised you lock $V(25\%) - V(20\%)$ (about 1.98 on a one-year ATM 100 call) with noisy daily marks; at implied the expected P&L is similar but the total is path dependent with much wider dispersion.
@@ -269,12 +263,25 @@ print(hedged_pnl(0.20, 0.20, 0.20, 52))    # about (0.0, 0.96)
 > About $+0.40$: scalp $0.138 \times 2 \times 2 = 0.55$ minus two days of theta 0.15.
 > Sell 0.276 shares at 102 and buy them back at 100.
 
+> [!question]- deriv-gamma-theta-simulation | How would you test, on simulated paths, that delta-hedged P&L really is $\sum \tfrac12\Gamma S^2[(\delta S/S)^2 - \sigma_i^2\delta t]$?
+> Simulate the stock at the realised vol, hedge daily at the implied-vol delta, and compare each path's actual P&L with the gamma-theta sum computed from the same moves.
+> On 20,000 paths (realised 25%, implied 20%, daily, seed 13) both average 1.98, the correlation is 0.996 and the difference has std 0.09 against 1.00 for the P&L: the identity holds path by path, up to higher-order terms.
+
+> [!question]- deriv-hedge-cost-weekly-daily | One-year ATM 100 call at 20%, one-way cost 5bp. What does moving from weekly to daily hedging cost, and what does it buy?
+> About 0.14 more in costs (0.17 to 0.31 in total) for a cut in P&L noise from 0.95 to 0.45.
+> Rebalancing cost grows like $\kappa\sqrt{2/\pi}\,\mathcal{V}\sqrt{N}$ (0.11 to 0.25) and the noise falls like $1/\sqrt{N}$; the rest of the cost is the entry and unwind trades.
+
+> [!question]- deriv-hedge-noise-vol-points | Weekly hedging of a one-year ATM 100 call at 20% vol leaves P&L noise of about 0.96. Express that in vol points and as a share of premium.
+> About 2.4 vol points ($0.96/39.7$ per unit vol) and 12% of the 7.97 premium.
+> P&L $\approx$ vega $\times$ vol error, so an edge smaller than about 2.4 vol points is not reliably captured with weekly hedging.
+
 > [!question]- deriv-sticky-strike-delta | Why might an equity-index desk hedge with less than the Black-Scholes delta?
 > Because implied vol tends to rise when spot falls, so a spot move carries a predictable vol move whose vega P&L offsets part of the delta P&L.
 > The minimum-variance delta is $\Delta_{BS} + \mathcal{V}\,E[\delta\sigma]/\delta S$, and with negative spot-vol correlation the second term is negative.
 
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [deriv_01_07_hedging_pnl.py](code/deriv_01_07_hedging_pnl.py) prints and asserts every number in this note (straddle scalp, hedged-P&L Monte Carlo, the gamma-theta identity, discrete-hedging noise and the Goldman Sachs table, costs and Leland); run it with `uv run --no-project --with numpy python 05-Derivatives-and-Volatility/code/deriv_01_07_hedging_pnl.py`.
 - Prev: [The Greeks](05-The-Greeks.md). Next: [Implied Volatility and the Smile](07-Implied-Volatility-and-the-Smile.md).
 - Applications: [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md), [Variance Swaps and Volatility Products](14-Variance-Swaps-and-Volatility-Products.md), [Hedging and Risk for Market Makers](../08-Market-Making/06-Hedging-and-Risk-for-Market-Makers.md).
 
@@ -283,7 +290,8 @@ print(hedged_pnl(0.20, 0.20, 0.20, 52))    # about (0.0, 0.96)
 - Euan Sinclair, *Volatility Trading*, chapters on hedging and volatility P&L.
 - Sheldon Natenberg, *Option Volatility and Pricing*, chapters on dynamic hedging.
 - R. Ahmad and P. Wilmott (2005), "Which free lunch would you like today, sir?: Delta hedging, volatility arbitrage and optimal portfolios", *Wilmott Magazine*.
-- Emanuel Derman and Michael B. Miller, *The Volatility Smile*, on hedging error from discrete rebalancing.
+- M. Kamal (1998), "When you cannot hedge continuously: the corrections to Black-Scholes", Goldman Sachs Quantitative Strategies Research Notes (Equity Derivatives Research, Quantitative Insights), the $\sqrt{\pi/4}\,\mathcal{V}\sigma/\sqrt{N}$ rule and its Table 1; a copy is hosted at emanuelderman.com.
+- Emanuel Derman and Michael B. Miller, *The Volatility Smile* (Wiley 2016), on hedging error from discrete rebalancing.
 - H. E. Leland (1985), "Option pricing and replication with transactions costs", *Journal of Finance* 40(5).
 - A. E. Whalley and P. Wilmott (1997), "An asymptotic analysis of an optimal hedging model for option pricing with transaction costs", *Mathematical Finance* 7(3).
 - J. Hull and A. White (2017), "Optimal delta hedging for options", *Journal of Banking and Finance* 82.
