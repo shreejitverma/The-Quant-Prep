@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 2
-sources: [Lawrence Weinstein and John A. Adam - Guesstimation (Princeton University Press 2008), Sanjoy Mahajan - Street-Fighting Mathematics (MIT Press 2010), Agustin Lebron - The Laws of Trading (2019), US Census Bureau QuickFacts Chicago city Illinois - https://www.census.gov/quickfacts/chicagocityillinois, US Census Bureau Vintage 2025 population estimates, UN World Population Prospects 2024, OECD Health at a Glance 2025, USGA and R&A Equipment Rules Appendix III, G. D. Scott and D. M. Kilgour - The density of random close packing of spheres (J. Phys. D 1969)]
+sources: [Lawrence Weinstein and John A. Adam - Guesstimation (Princeton University Press 2008), Sanjoy Mahajan - Street-Fighting Mathematics (MIT Press 2010), Agustin Lebron - The Laws of Trading (2019), US Census Bureau QuickFacts Chicago city Illinois - https://www.census.gov/quickfacts/chicagocityillinois, US Census Bureau Vintage 2025 population estimates, US Census Bureau 2020 Census apportionment results (April 26 2021) - https://www.census.gov/newsroom/press-releases/2021/2020-census-apportionment-results.html, UN World Population Prospects 2024, OECD Health at a Glance 2025, USGA and R&A Equipment Rules Appendix III, G. D. Scott and D. M. Kilgour - The density of random close packing of spheres (J. Phys. D 1969)]
 ---
 
 # Estimation and Fermi Problems
@@ -182,7 +182,7 @@ On a $50$ stock that is about $1$ per day, and a $3$ move would be a 3-standard-
 
 > [!question]- int-est-us-population-anchor | What is the US population to two significant figures, and why should you date it?
 > About $3.4 \times 10^8$: the Census Bureau's Vintage 2025 estimate is $341.8$ million on 1 July 2025.
-> Populations change every year, so an anchor should carry its year; the 2020 Census count was $331.4$ million.
+> Populations change every year, so an anchor should carry its year; the 2020 Census counted $331.4$ million residents on April 1 2020 (US Census Bureau apportionment release, April 26 2021).
 
 ## In this repo and The-Distinguished-Engineer
 
