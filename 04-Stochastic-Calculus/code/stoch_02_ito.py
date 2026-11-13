@@ -147,13 +147,16 @@ def time_integral(rng: np.random.Generator) -> None:
     w = np.concatenate([np.zeros((paths, 1)), np.cumsum(dw, axis=1)], axis=1)
     a = (0.5 * (w[:, 1:] + w[:, :-1]) * h).sum(axis=1)
     v, se = var_se(a)
-    simulated("Var(int_0^2 W dt), simulated, vs T^3/3 = 8/3", v, se, T**3 / 3)
+    disc_a = T**3 / 3 - T**3 / (12 * n**2)
+    simulated("Var(int_0^2 W dt), simulated trapezoid sum, vs its exact variance T^3/3 - T^3/(12 n^2)", v, se, disc_a)
     mm, se = mean_se(a * w[:, -1])
     simulated("Cov(W_2, int_0^2 W dt), simulated, vs T^2/2 = 2", mm, se, T**2 / 2)
     tl = np.arange(n) * h
     b = (tl * dw).sum(axis=1)
     v, se = var_se(b)
-    simulated("Var(int_0^2 t dW), simulated, vs T^3/3", v, se, T**3 / 3, k=5.0)
+    disc_tdw = T**3 * (n - 1) * (2 * n - 1) / (6 * n**2)
+    print(f"    left-point sum of t dW: exact variance T^3 (n-1)(2n-1)/(6 n^2) = {disc_tdw:.5f} -> T^3/3 = {T**3 / 3:.5f}")
+    simulated("Var(left-point sum of t dW), simulated, vs T^3 (n-1)(2n-1)/(6 n^2)", v, se, disc_tdw)
     # integration by parts T W_T = int W dt + int t dW, path by path up to the O(h) quadrature difference
     gap = np.abs(T * w[:, -1] - a - b)
     assert float(gap.mean()) < 0.02
