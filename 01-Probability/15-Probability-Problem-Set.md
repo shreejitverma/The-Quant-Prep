@@ -257,7 +257,7 @@ Topic notes: [Counting](01-Counting-and-Combinatorics.md), [Bayes](02-Conditiona
 > $1/2$. The first random choice of seat 1 or seat 100 decides it, and the two are symmetric.
 
 > [!question]- prob-ps-hundred-prisoners | 100 prisoners each open 50 of 100 boxes to find their number, all must succeed. Best success probability?
-> About $0.312$ with the cycle-following strategy: succeed iff no cycle exceeds 50, and $P = 1 - \sum_{k=51}^{100} 1/k$.
+> About $0.312$ with the cycle-following strategy: succeed iff no cycle exceeds 50, and $P = 1 - \sum_{k=51}^{100} 1/k$. Curtin and Warshauer (2006) proved no strategy does better.
 
 > [!question]- prob-ps-uniforms-first-decrease | Draw uniforms until one is smaller than its predecessor. Expected number of draws?
 > $e$. The first $n$ draws are increasing with probability $1/n!$, so $E[N] = \sum_{n \ge 0} P(N > n) = \sum 1/n!$.
@@ -268,10 +268,18 @@ Topic notes: [Counting](01-Counting-and-Combinatorics.md), [Bayes](02-Conditiona
 > [!question]- prob-ps-closer-to-centre | Uniform point in the unit square. Probability it is closer to the centre than to the boundary?
 > $(4\sqrt2 - 5)/3 \approx 0.219$. In one eighth of the square the region is bounded by the parabola $x = 1/4 - y^2$; integrate to $y = (\sqrt2 - 1)/2$ and multiply by 8.
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/prob_15_problem_set.py`](code/prob_15_problem_set.py) asserts every number in the worked examples and cards.
+  Finite questions are settled by enumerating the whole sample space in exact rationals (all 2,598,960 poker hands, every two-card deal, all 196 Tuesday-boy families, every revolver chamber, all $6^7$ roll sequences), Markov and pattern questions by exact automaton solves, the airplane puzzle by enumerating every random choice for $n \le 8$ plus an exact recursion at $n = 100$, the prisoners by enumerating every permutation for $n = 6$ and $8$ plus a simulation at $n = 100$, and continuous questions by seeded simulation or numerical integration.
+- Topic notes for each section are linked under Core concepts.
+
 ## Further reading
 
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews*, chapters 2 and 4.
 - Timothy Crack, *Heard on the Street: Quantitative Questions from Wall Street Job Interviews*.
 - Joshi, Denson and Downes, *Quant Job Interview Questions and Answers*, probability chapter.
 - Frederick Mosteller, *Fifty Challenging Problems in Probability*.
-- Peter Winkler, *Mathematical Puzzles: A Connoisseur's Collection* (airplane seat, prisoners and boxes).
+- Peter Winkler, *Mathematical Puzzles: A Connoisseur's Collection* (2004), the lost boarding pass puzzle.
+- Anna Gal and Peter Bro Miltersen, "The Cell Probe Complexity of Succinct Data Structures", ICALP 2003, where the boxes puzzle first appeared; Peter Winkler's prisoner version is in *Mathematical Mind-Benders* (2007).
+- Eugene Curtin and Max Warshauer, "The Locker Puzzle", *The Mathematical Intelligencer* 28 (2006), the optimality proof for the cycle-following strategy.

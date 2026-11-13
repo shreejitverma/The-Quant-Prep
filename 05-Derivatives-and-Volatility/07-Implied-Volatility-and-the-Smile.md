@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [black-scholes-formula-and-intuition, numerical-optimization-and-root-finding]
 est_hours: 4
-sources: [Jim Gatheral - The Volatility Surface - A Practitioner's Guide (Wiley 2006), Sheldon Natenberg - Option Volatility and Pricing (volatility skews chapter), Emanuel Derman (1999) - Regimes of volatility - Risk 12(4), Manaster and Koehler (1982) - The calculation of implied variances from the Black-Scholes model - Journal of Finance 37(1), Brenner and Subrahmanyam (1988) - A simple formula to compute the implied standard deviation - Financial Analysts Journal 44(5), Peter Jaeckel (2015) - Let's be rational - Wilmott 2015(75), Roger Lee (2004) - The moment formula for implied volatility at extreme strikes - Mathematical Finance 14(3), Lorenzo Bergomi - Stochastic Volatility Modeling (CRC 2016), Uwe Wystup - FX Options and Structured Products (Wiley 2006)]
+sources: [Jim Gatheral - The Volatility Surface - A Practitioner's Guide (Wiley 2006), Sheldon Natenberg - Option Volatility and Pricing (volatility skews chapter), Emanuel Derman (1999) - Regimes of volatility - Risk 12(4), Manaster and Koehler (1982) - The calculation of implied variances from the Black-Scholes model - Journal of Finance 37(1), Brenner and Subrahmanyam (1988) - A simple formula to compute the implied standard deviation - Financial Analysts Journal 44(5), Peter Jaeckel (2015) - Let's be rational - Wilmott 2015(75), Roger Lee (2004) - The moment formula for implied volatility at extreme strikes - Mathematical Finance 14(3), Lorenzo Bergomi - Stochastic Volatility Modeling (CRC 2016), Uwe Wystup - FX Options and Structured Products (Wiley 2006), Carr and Wu (2009) - Variance risk premiums - Review of Financial Studies 22(3), Gatheral Jaisson and Rosenbaum (2018) - Volatility is rough - Quantitative Finance 18(6)]
 ---
 
 # Implied Volatility and the Smile
@@ -33,10 +33,11 @@ Because vega $= S e^{-qT} \varphi(d_1)\sqrt{T} > 0$, the Black-Scholes price is 
 So a solution exists and is unique if and only if the price lies strictly inside those bounds.
 By put-call parity a put and a call with the same strike and expiry have the same implied vol, provided you use the right forward; desks back the forward out of the call-put pairs first, then compute vols.
 A mismatch between call and put vols at the same strike is a wrong forward (dividend, borrow) or an arbitrage, never a "put vol" and a "call vol".
+Example: price a one-year ATM call and put at 25% with $r = 5\%$ and a 2% dividend yield, then invert both ignoring the dividend; the call comes back at 21.8% and the put at 27.0%, a 5.2-point "skew" made entirely by the wrong forward.
 
 Implied vol is a price in different units.
 It embeds the expected realized vol, a variance risk premium (sellers of options want paying for negatively skewed P&L), and supply and demand.
-Index implied vol has on average exceeded subsequent realized vol, which is the premium systematic option sellers harvest.
+Index implied vol has on average exceeded subsequent realized vol (Carr and Wu 2009 document negative average variance risk premiums on the major US indices), which is the premium systematic option sellers harvest.
 
 ### Computing it
 
@@ -46,9 +47,28 @@ It fails for strikes far from the forward, where vega is tiny at low $\sigma$ an
 
 Three facts make it robust:
 
-1. Start at the inflection point. $C(\sigma)$ is convex below and concave above $\sigma^* = \sqrt{2\lvert\ln(F/K)\rvert / T}$ (where $d_1 d_2 = 0$, so volga is zero). Manaster and Koehler show Newton from $\sigma^*$ converges monotonically.
+1. Start at the inflection point. $C(\sigma)$ is convex below and concave above $\sigma^* = \sqrt{2\lvert\ln(F/K)\rvert / T}$ (where $d_1 d_2 = 0$, so volga is zero).
+   Manaster and Koehler show Newton from $\sigma^*$ converges monotonically.
 2. Keep a bracket $[\sigma_{lo}, \sigma_{hi}]$ that you shrink with each evaluation, and take a bisection step whenever Newton would leave it.
-3. For deep wings, solve in log price or use Jaeckel's "Let's be rational" algorithm, which reaches machine precision in two iterations for any strike; production libraries use it.
+3. For deep wings, solve in log price or use Jaeckel's "Let's be rational" algorithm, which reaches machine precision in two iterations for any strike; the open-source py_vollib package is built on it.
+
+The safeguarded solver as a decision loop:
+
+```mermaid
+flowchart TD
+    A["Market price C"] --> B{"Inside the bounds<br/>e^-rT (F - K)+ < C < S e^-qT ?"}
+    B -- no --> X["Reject: no implied vol"]
+    B -- yes --> C["Start at the inflection point<br/>sigma* = sqrt(2 abs(ln F/K) / T)<br/>bracket lo = 0, hi = large"]
+    C --> D["Price at sigma; residual = C(sigma) - C"]
+    D --> E{"abs(residual) below 1e-10?"}
+    E -- yes --> Z["Return sigma"]
+    E -- no --> F["Shrink the bracket:<br/>residual above 0 sets hi, below 0 sets lo"]
+    F --> G{"Newton step inside the bracket?"}
+    G -- yes --> H["sigma = Newton step"]
+    G -- no --> I["sigma = bracket midpoint"]
+    H --> D
+    I --> D
+```
 
 A quick ATM approximation (Brenner-Subrahmanyam): for an ATM-forward option $C \approx 0.4\,\sigma\,S\sqrt{T}$ (since $1/\sqrt{2\pi} \approx 0.3989$), so $\sigma \approx C / (0.4\,S\sqrt{T})$ and an ATM straddle is about $0.8\,\sigma S \sqrt{T}$.
 
@@ -62,7 +82,9 @@ Plot $\sigma_{imp}$ against strike, log-moneyness $k = \ln(K/F)$, or delta.
 - Commodities: often upside (call) skew where supply shocks drive prices up (natural gas, grains).
 
 Term structure: ATM vol mean-reverts, so the curve slopes up when vol is low and inverts in a crisis; scheduled events (earnings, central banks) add bumps.
-Skew is steepest at short maturities and decays roughly like $T^{-1/2}$ in index options (jump and stochastic-vol models give $T^{-1}$ and roughly flat-then-decaying shapes respectively; empirically between the two).
+Skew is steepest at short maturities and flattens with $T$.
+In SPX the at-the-money skew $\lvert\partial\sigma/\partial k\rvert$ is well fitted over a wide range of expiries by a power law $T^{-\alpha}$ with $\alpha$ around 0.3 to 0.5 (Gatheral, Jaisson and Rosenbaum 2018), so $1/\sqrt{T}$ is a usable rule of thumb.
+Classical models miss this shape: Heston-type stochastic vol gives a skew roughly flat at short expiries and decaying like $1/T$ at long ones, and jump models also decay like $1/T$ at long expiries.
 
 ### Smile and the risk-neutral density
 
@@ -80,7 +102,7 @@ No-arbitrage constraints on a surface:
 
 - Butterfly (strike) arbitrage: call prices convex in $K$, so the implied density is non-negative.
 - Calendar arbitrage: total implied variance $w(k, T) = \sigma^2(k, T)\,T$ is non-decreasing in $T$ at fixed forward moneyness $k$.
-- Wings: Lee's moment formula bounds the asymptotic slope, $w(k) \le 2\lvert k\rvert$ for large $\lvert k\rvert$, so implied vol can grow at most like $\sqrt{\lvert k\rvert}$.
+- Wings: Lee's moment formula bounds the asymptotic slope, $\limsup_{\lvert k\rvert\to\infty} w(k)/\lvert k\rvert \le 2$, with the exact slope set by which moments of $S_T$ are finite, so implied vol can grow at most like $\sqrt{\lvert k\rvert}$.
 
 A useful heuristic (Derman, Gatheral): implied vol at strike $K$ is roughly the average of local vol over the path from spot to $K$, so for a linear local-vol skew the implied skew is half the local skew.
 
@@ -108,13 +130,15 @@ The choice matters for P&L attribution and for hedging: the minimum-variance del
 
 ## Worked examples
 
+Every number below is printed and asserted by [deriv_01_07_implied_vol.py](code/deriv_01_07_implied_vol.py), which also confirms each smile-adjusted delta by a finite difference of the price under that regime's rule for $\sigma(K, S)$ and the skewed digital by a call spread on the smile.
+
 ### Example 1: Newton for an at-the-money option
 
 $S = K = 100$, $T = 0.5$, $r = 3\%$, no dividends, call price 7.00.
 Initial guess from Brenner-Subrahmanyam, ignoring carry: $\sigma_0 = \sqrt{2\pi/T}\,C/S = 24.81\%$.
 At $\sigma_0$ the price is 7.7087 and vega is 27.79 (per unit vol), so $\sigma_1 = 0.2481 - 0.7087/27.79 = 22.264\%$.
 At $\sigma_1$ the price is 7.00003; one more step gives $\sigma = 22.2641\%$ to eight digits.
-The guess was 2.5 vols high because it treated the whole premium as time value: with $r > 0$ an ATM-spot call is in the money forward ($S - Ke^{-rT} = 1.49$), and about half of that, 0.72, is carry rather than volatility ($0.3989 \times 0.2226 \times 100 \times \sqrt{0.5} = 6.28$).
+The guess was 2.55 vols high because it treated the whole premium as time value: with $r > 0$ an ATM-spot call is in the money forward ($S - Ke^{-rT} = 1.49$), and about half of that, 0.72, is carry rather than volatility ($0.3989 \times 0.2226 \times 100 \times \sqrt{0.5} = 6.28$).
 The shortcut is accurate only for ATM-forward options.
 
 ### Example 2: why plain Newton fails in the wing
@@ -123,39 +147,10 @@ $S = 100$, $K = 150$, $T = 0.25$, $r = 0$, call price 0.01 (true implied vol 28.
 From $\sigma_0 = 20\%$: price $6.9 \times 10^{-5}$, vega 0.0066, so the Newton step lands at $\sigma_1 = 171\%$, where the price is 20.64.
 Newton then crawls back (68%, 48%, ...) and in a less friendly case would go negative.
 From the Manaster-Koehler start $\sigma^* = \sqrt{2\ln 1.5/0.25} = 180\%$ Newton decreases monotonically: 68%, 48%, 39%, 33%, 30.2%, 28.6%, 28.19%, converging but slowly because vega shrinks with the price.
-The safeguarded solver below handles both cases; for sub-cent wing options use a log-price objective or Jaeckel's method.
-
-```python
-import numpy as np
-from scipy.stats import norm
-
-def bs_call(S, K, T, r, sigma, q=0.0):
-    F = S * np.exp((r - q) * T)
-    sd = sigma * np.sqrt(T)
-    d1 = np.log(F / K) / sd + 0.5 * sd
-    return np.exp(-r * T) * (F * norm.cdf(d1) - K * norm.cdf(d1 - sd))
-
-def implied_vol(price, S, K, T, r, q=0.0, tol=1e-10, max_iter=100):
-    """Safeguarded Newton: Newton steps inside a bisection bracket that always shrinks."""
-    F, df = S * np.exp((r - q) * T), np.exp(-r * T)
-    lower, upper = df * max(F - K, 0.0), df * F          # no-arbitrage bounds for a call
-    if not lower < price < upper:
-        raise ValueError("price outside no-arbitrage bounds")
-    lo, hi = 1e-6, 5.0
-    sigma = np.sqrt(2 * abs(np.log(F / K)) / T) or 0.2  # Manaster-Koehler start (inflection point)
-    for _ in range(max_iter):
-        diff = bs_call(S, K, T, r, sigma, q) - price
-        if abs(diff) < tol:
-            return sigma
-        lo, hi = (lo, sigma) if diff > 0 else (sigma, hi)  # price increases in sigma
-        vega = df * F * norm.pdf(np.log(F / K) / (sigma * np.sqrt(T)) + 0.5 * sigma * np.sqrt(T)) * np.sqrt(T)
-        step = sigma - diff / vega if vega > 1e-12 else -1.0
-        sigma = step if lo < step < hi else 0.5 * (lo + hi)  # fall back to bisection
-    raise RuntimeError("no convergence")
-
-print(implied_vol(7.00, 100, 100, 0.5, 0.03))   # 0.22264
-print(implied_vol(0.01, 100, 150, 0.25, 0.0))   # 0.28162
-```
+The safeguarded solver in [deriv_01_07_implied_vol.py](code/deriv_01_07_implied_vol.py) handles both cases: it starts at $\sigma^*$, shrinks a bisection bracket with every price evaluation, and takes the Newton step only when it lands inside the bracket.
+It stops when the price residual is below $10^{-10}$ or the bracket is narrower than $10^{-12}$, tolerances far above double-precision noise, so the answer does not depend on the machine's last-bit rounding; it checks the residual before touching the bracket, and rejects prices on or outside the no-arbitrage bounds.
+An independent 80-step bisection (`implied_vol` in [pricing_core.py](code/pricing_core.py)) agrees to $10^{-8}$ on both examples.
+For sub-cent wing options use a log-price objective or Jaeckel's method.
 
 ### Example 3: smile-adjusted delta of an OTM put
 
@@ -166,7 +161,8 @@ Black-Scholes: put 1.319, delta $-0.183$, vega 13.24 per unit vol (0.132 per vol
 - Sticky moneyness: $\partial\sigma/\partial S = -(K/S)\beta = +0.0036$, so $\Delta = -0.183 + 13.24 \times 0.0036 = -0.135$. When spot falls the 90 strike becomes "less OTM" in moneyness terms and takes a lower vol, so the put gains less.
 - Local vol: $\partial\sigma/\partial S \approx \beta = -0.004$, so $\Delta = -0.183 - 13.24 \times 0.004 = -0.236$. When spot falls the 90 strike's vol rises, so the put gains more.
 
-The three regimes differ by 0.10 of delta on a 0.18-delta option: on 10,000 puts on a 100 stock (multiplier 100) that is 10,000 shares of hedge disagreement.
+The three regimes differ by 0.10 of delta on a 0.18-delta option: on 1,000 contracts (multiplier 100) that is 10,062 shares of hedge disagreement.
+A finite difference of the put price with the vol moving by each regime's rule gives the same three deltas, which confirms the vega-adjustment formula.
 
 ### Example 4: a digital priced off the skew
 
@@ -256,8 +252,21 @@ If the one-month vol were 45% instead, forward variance would be $-0.0075 < 0$: 
 > No: index implied vol has on average exceeded subsequent realized vol, which is the variance risk premium sellers are paid for bearing crash risk.
 > Implied vol is a price, and it also moves with demand for protection; use it with a model of realized vol, not as one.
 
+> [!question]- deriv-iv-wrong-forward-split | You invert a one-year ATM call and put on a stock with a 2% dividend yield but forget the dividend ($r = 5\%$, true vol 25%). What do you see?
+> A call vol of 21.8% and a put vol of 27.0%.
+> Ignoring the dividend overstates the forward, which raises the model call and lowers the model put at every vol, so matching the market needs a lower call vol and a higher put vol; with the right forward both invert to 25%.
+
+> [!question]- deriv-iv-forward-vol | One-month ATM vol 30%, three-month 25%. What one-to-three-month forward vol do they imply?
+> 22.08%.
+> Total variances add: $(0.25^2 \times 0.25 - 0.30^2/12)/(0.25 - 1/12) = 0.04875$, and $\sqrt{0.04875} = 0.2208$.
+
+> [!question]- deriv-iv-solver-stopping | Your implied-vol solver passes on a laptop and fails a test in CI on another platform. What is wrong with its stopping rule, and how do you fix it?
+> It stops on a tolerance near machine precision (or counts iterations), so last-bit rounding differences change when it stops.
+> Stop on a price residual far above the noise (for example $10^{-10}$ on a price near 10) or a bracket width, check the residual before the bracket logic, and assert the vol, never the iteration count.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [deriv_01_07_implied_vol.py](code/deriv_01_07_implied_vol.py) prints and asserts every number in this note (safeguarded Newton, Newton iterates, smile-adjusted deltas, skewed digital, FX wings, forward variance).
 - Prev: [Delta Hedging and Gamma Scalping](06-Delta-Hedging-and-Gamma-Scalping.md). Next: [Volatility Surface Construction](08-Volatility-Surface-Construction.md).
 - Trading the smile: [Option Strategies and Volatility Trading](13-Option-Strategies-and-Volatility-Trading.md).
 
@@ -270,5 +279,7 @@ If the one-month vol were 45% instead, forward variance would be $-0.0075 < 0$: 
 - M. Brenner and M. Subrahmanyam (1988), "A simple formula to compute the implied standard deviation", *Financial Analysts Journal* 44(5).
 - Peter Jaeckel (2015), "Let's be rational", *Wilmott*.
 - Roger Lee (2004), "The moment formula for implied volatility at extreme strikes", *Mathematical Finance* 14(3).
+- P. Carr and L. Wu (2009), "Variance risk premiums", *Review of Financial Studies* 22(3).
+- J. Gatheral, T. Jaisson and M. Rosenbaum (2018), "Volatility is rough", *Quantitative Finance* 18(6).
 - Lorenzo Bergomi, *Stochastic Volatility Modeling*, chapter on the skew stickiness ratio.
 - Uwe Wystup, *FX Options and Structured Products*, on delta and strangle quoting conventions.

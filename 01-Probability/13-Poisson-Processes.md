@@ -15,7 +15,7 @@ sources: [Blitzstein and Hwang - Introduction to Probability (2nd ed.), Grimmett
 - A rate-$\lambda$ Poisson process has independent increments with $N(t+s) - N(t) \sim \text{Poisson}(\lambda s)$, and i.i.d. $\text{Exp}(\lambda)$ gaps between events.
 - Superposition adds rates; thinning with probability $p$ gives independent processes of rates $p\lambda$ and $(1-p)\lambda$.
 - Given $N(t) = n$, the event times are $n$ i.i.d. uniforms on $[0,t]$, sorted.
-- Inspection paradox: the gap covering a fixed time has mean $2/\lambda$, twice the average gap, because long gaps are more likely to be sampled.
+- Inspection paradox: the gap covering a fixed time far from 0 has mean $2/\lambda$, twice the average gap, because long gaps are more likely to be sampled.
 - Compound Poisson $\sum_{k \le N(t)} Y_k$ has mean $\lambda t E[Y]$ and variance $\lambda t E[Y^2]$; it is the jump part of every Levy model.
 
 ## Learning objectives
@@ -89,7 +89,7 @@ This is the jump component of Merton's model; see [Jump Processes and Levy Model
 
 ### Order-flow modelling
 
-Market orders arriving at rate $\lambda$ and each hitting the bid with probability $p$ give independent buy and sell streams, which is the starting point of Glosten-Milgrom and Avellaneda-Stoikov fill models ([Avellaneda-Stoikov](../08-Market-Making/03-Inventory-Risk-and-Avellaneda-Stoikov.md) uses fill intensity $\lambda(\delta) = A e^{-k\delta}$ at quote distance $\delta$).
+Market orders arriving at rate $\lambda$ and each hitting the bid with probability $p$ give independent buy and sell streams, the null model behind Poisson fill models: [Avellaneda and Stoikov](../08-Market-Making/03-Inventory-Risk-and-Avellaneda-Stoikov.md) (Quantitative Finance, 2008) model fills at quote distance $\delta$ as a Poisson process with intensity $\lambda(\delta) = A e^{-k\delta}$.
 Real order flow is clustered and self-exciting, so Poisson is the null model; Hawkes processes are the standard extension.
 
 ## Worked examples
@@ -177,6 +177,15 @@ Real order flow is clustered and self-exciting, so Poisson is the null model; Ha
 
 > [!question]- prob-pp-binomial-limit | 1000 independent trades each fail with probability $0.001$. Probability of no failures, and why is Poisson accurate?
 > About $e^{-1} \approx 0.368$ (exactly $0.999^{1000} \approx 0.3677$). $\text{Bin}(n, \lambda/n) \to \text{Poisson}(\lambda)$ when $n$ is large and $p$ small.
+
+> [!question]- prob-pp-uniform-gap-wait | Buses run with i.i.d. gaps uniform on $[0, 20]$ minutes (mean 10). Arriving at a random time, what is your mean wait?
+> $20/3 \approx 6.67$ minutes. $E[L^2]/(2E[L]) = (400/3)/20$: between the 5 of a fixed schedule and the 10 of Poisson buses, because the gap variance $100/3$ is between 0 and 100.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/prob_13_poisson_processes.py`](code/prob_13_poisson_processes.py) asserts every number in this note.
+  Closed forms are checked against seeded simulations built from exponential inter-arrival times (never from the Poisson pmf being checked), with independent bus processes for the inspection paradox, numerical integration for $E[\max]$, and the cumulants $\kappa_m = \lambda t E[Y^m]$ for the compound-Poisson kurtosis.
+- Next: [Jump Processes and Levy Models](../04-Stochastic-Calculus/08-Jump-Processes-and-Levy-Models.md) and [Avellaneda-Stoikov](../08-Market-Making/03-Inventory-Risk-and-Avellaneda-Stoikov.md).
 
 ## Further reading
 
