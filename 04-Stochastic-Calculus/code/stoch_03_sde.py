@@ -18,7 +18,6 @@ Run it with `python 04-Stochastic-Calculus/code/stoch_03_sde.py`.
 from __future__ import annotations
 
 import math
-from fractions import Fraction
 
 import numpy as np
 
@@ -145,10 +144,15 @@ def ou(rng: np.random.Generator) -> None:
     x = np.full(paths, x0)
     for _ in range(steps):
         x = x + k * (th - x) * h + sig * math.sqrt(h) * rng.standard_normal(paths)
+    damp = 1 - k * h
+    euler_m = th + (x0 - th) * damp**steps
+    euler_v = sig**2 * h * float(np.sum(damp ** (2 * np.arange(steps))))
+    assert abs(euler_m - m) < h and abs(euler_v - v) < h, (euler_m - m, euler_v - v)
+    print(f"    Euler-scheme moments minus the ODE moments: mean {euler_m - m:.1e}, variance {euler_v - v:.1e} (O(h), h = {h:g})")
     mm, se = mean_se(x)
-    simulated("E[X_0.7], Euler simulation (bias O(h) = O(1e-3) relative)", mm, se + 2e-3, m)
+    simulated("E[X_0.7], Euler simulation, vs the scheme mean theta + (X0 - theta)(1 - kappa h)^n", mm, se, euler_m)
     vv, se = var_se(x)
-    simulated("Var(X_0.7), Euler simulation", vv, se + 1e-4, v)
+    simulated("Var(X_0.7), Euler simulation, vs the scheme variance sigma^2 h sum (1 - kappa h)^(2i)", vv, se, euler_v)
     # AR(1): sample the exact transition and regress
     dt, n = 0.01, 400_000
     phi = math.exp(-k * dt)
@@ -167,7 +171,6 @@ def ou(rng: np.random.Generator) -> None:
 def cir(rng: np.random.Generator) -> None:
     print("CIR, kappa = 1.5, theta = 4%, sigma = 0.2, r0 = 2% (cards sc-sde-cir-feller, sc-sde-cir-stationary, sc-sde-cir-variance)")
     k, th, sig, r0, t = 1.5, 0.04, 0.2, 0.02, 1.0
-    exact("2 kappa theta (in hundredths)", Fraction(2) * Fraction(15, 10) * Fraction(4), Fraction(12))
     approx("2 kappa theta", 2 * k * th, 0.12, 12)
     approx("sigma^2", sig**2, 0.04, 12)
     assert 2 * k * th >= sig**2
@@ -199,8 +202,10 @@ def cir(rng: np.random.Generator) -> None:
     simulated("long-run mean (t = 20), exact sampling, vs theta", mm, se, th)
     vv, se = var_se(r_inf)
     simulated("long-run variance (t = 20), exact sampling, vs theta sigma^2/(2 kappa)", vv, se, th * sig**2 / (2 * k))
-    sk = float(((r_inf - r_inf.mean()) ** 3).mean() / r_inf.var() ** 1.5)
-    simulated("long-run skewness vs Gamma(shape 3): 2/sqrt(3)", sk, 0.01, 2 / math.sqrt(3))
+    z = (r_inf - r_inf.mean()) / r_inf.std()
+    sk = float((z**3).mean())
+    sk_se = float((z**3 - 3 * z - 1.5 * sk * (z**2 - 1)).std() / math.sqrt(z.size))  # delta method (influence function)
+    simulated("long-run skewness vs Gamma(shape 3): 2/sqrt(3)", sk, sk_se, 2 / math.sqrt(3))
 
 
 def milstein_table() -> None:
@@ -246,7 +251,7 @@ def squared_bessel(rng: np.random.Generator) -> None:
     rel = float(np.mean(np.abs(qv - target)) / np.mean(target))
     assert rel < 0.05, rel
     print(f"    sum (dX)^2 vs int 4 X dt: mean relative gap {rel:.3f} (-> 0 as the grid refines)")
-    exact("Feller-type check 2a >= sigma^2 with a = 1, sigma = 2: 2 >= 4", 2 * 1 >= 2**2, False)
+    print("    Feller-type condition 2a >= sigma^2 fails for a = 1, sigma = 2 (2 < 4), so 0 is attainable")
 
 
 def main() -> None:

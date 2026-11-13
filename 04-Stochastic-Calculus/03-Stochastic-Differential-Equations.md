@@ -136,7 +136,8 @@ A 200,000-path Euler simulation of the SDE itself, with 1,000 steps and no use o
 Mean: $1 + 2e^{-1.4} = 1.493$.
 Variance: $\frac{0.25}{4}(1 - e^{-2.8}) = 0.0587$, close to the stationary $0.0625$ because $2\kappa t = 2.8$ is already large.
 Half-life: $\ln 2/2 \approx 0.35$ years, so $0.7$ years is about two half-lives ($0.7/0.347 = 2.02$) and about a quarter of the initial deviation of 2 remains: $2e^{-1.4} = 0.493$.
-Integrating the moment ODEs $m' = \kappa(\theta - m)$ and $v' = -2\kappa v + \sigma^2$ numerically, and a 200,000-path Euler simulation, both reproduce the mean and variance.
+Integrating the moment ODEs $m' = \kappa(\theta - m)$ and $v' = -2\kappa v + \sigma^2$ numerically reproduces the mean and variance.
+A 200,000-path, 700-step Euler simulation matches the scheme's own exact moments, mean $\theta + (X_0 - \theta)(1 - \kappa h)^n$ and variance $\sigma^2 h \sum_{i<n}(1 - \kappa h)^{2i}$, within four standard errors, and those differ from the ODE values only by the $O(h)$ discretisation bias.
 
 ### Feller condition for a short-rate model
 

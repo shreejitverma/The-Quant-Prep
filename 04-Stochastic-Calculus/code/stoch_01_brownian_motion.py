@@ -234,7 +234,7 @@ def worked_examples() -> None:
     p = trapezoid(phi * big_phi, x)  # P(W_1 > 0, Z > -W_1) = int_0^inf phi(x) Phi(x) dx
     approx("P(W_1 > 0, W_2 > 0) by quadrature of phi(x) Phi(x)", p, 0.375, 9)
     approx("1/4 + arcsin(1/sqrt 2)/(2 pi) (Sheppard)", 0.25 + math.asin(1 / math.sqrt(2)) / (2 * math.pi), 0.375, 12)
-    exact("P(W_2 > 0 | W_1 > 0) = (3/8)/(1/2)", Fraction(3, 8) / Fraction(1, 2), Fraction(3, 4))
+    approx("P(W_2 > 0 | W_1 > 0) = quadrature / P(W_1 > 0)", p / 0.5, 0.75, 9)
 
 
 def barriers(rng: np.random.Generator) -> None:

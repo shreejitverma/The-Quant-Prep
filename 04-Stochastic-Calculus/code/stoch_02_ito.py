@@ -122,7 +122,9 @@ def moments(rng: np.random.Generator) -> None:
     t = 0.7
     for m in (2, 4, 6, 8):
         approx(f"E[W_0.7^{m}] by Gauss-Hermite vs recursion", gauss(lambda x, m=m: x**m, t), float(c[m]) * t ** (m // 2), 10)
-    exact("int_0^t 6 s ds = 3 t^2: coefficient", Fraction(6) * Fraction(1, 2), Fraction(3))
+    g = np.linspace(0.0, t, 701)
+    coef = float(np.sum(3 * (g[1:] + g[:-1]) * np.diff(g))) / t**2
+    approx("int_0^t 6 s ds / t^2 by the trapezoid rule (exact for a linear integrand)", coef, 3.0, 12)
     w = rng.standard_normal(2_000_000) * math.sqrt(t)
     mm, se = mean_se(w**4)
     simulated("E[W_0.7^4], simulated, vs 3 t^2", mm, se, 3 * t * t)
