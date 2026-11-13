@@ -101,7 +101,7 @@ Assume seats and fittings take a quarter of the space, giving about $470{,}000$,
 
 Cross-check with a different decomposition: stack balls in a cubic grid.
 Along the edges fit $187$, $58$ and $46$ whole balls, so $498{,}916$ in total, at a packing fraction of $\pi/6 \approx 0.524$.
-Random packing is $0.64 / 0.524 \approx 1.22$ times denser, giving about $610{,}000$, within $3\%$ of the first route.
+Random packing is $0.64 / 0.524 \approx 1.22$ times denser, giving about $610{,}000$, about $3.1\%$ below the first route.
 
 ### Example 3: a market on heartbeats in a lifetime
 
@@ -170,7 +170,7 @@ On a $50$ stock that is about $1$ per day, and a $3$ move would be a 3-standard-
 
 > [!question]- int-est-golf-ball-lattice-check | Cross-check a golf-balls-in-a-bus estimate of 630,000 without reusing the packing-fraction division.
 > Count a cubic grid: $187 \times 58 \times 46 = 498{,}916$ whole balls of $4.267$ cm fit along the edges of an $8 \times 2.5 \times 2$ m box.
-> Cubic stacking fills $\pi/6 \approx 0.524$ of space and random packing about $0.64$, so scale by $1.22$ to about $610{,}000$, within $3\%$.
+> Cubic stacking fills $\pi/6 \approx 0.524$ of space and random packing about $0.64$, so scale by $1.22$ to about $610{,}000$, about $3.1\%$ below the first route.
 
 > [!question]- int-est-packing-fractions | What fraction of space do randomly packed equal spheres fill, and what is the densest possible?
 > About $0.64$ for random close packing (Scott and Kilgour measured $0.637$ in 1969).

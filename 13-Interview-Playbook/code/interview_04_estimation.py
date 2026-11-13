@@ -136,7 +136,7 @@ def main() -> None:
     approx("random close packing over cubic", phi / (math.pi / 6), 1.22, 2)
     lattice_route = cubic * phi / (math.pi / 6)
     sig("lattice route, random packing", lattice_route, 610_000, 2)
-    approx("gap between the two routes, %", 100 * (1 - lattice_route / balls), 3, 0)
+    approx("gap between the two routes, %", 100 * (1 - lattice_route / balls), 3.1, 1)
     approx("densest sphere packing pi/(3 sqrt 2)", math.pi / (3 * math.sqrt(2)), 0.7405, 4)
 
     print("Example 3: heartbeats in a lifetime")
