@@ -383,10 +383,10 @@ def section_hedging() -> None:
             f", formula {dk:.4f}, ratio {res['pnl'].std() / dk:.4f}"
         )
         check(f"MC sd of hedging P&L, N = {n} (seed {50 + n})", float(res["pnl"].std()), want_sd, 5e-4)
-        assert abs(res["pnl"].std() / dk - 1.0) < 0.05, "Derman-Kamal must hold to within 5% here"
+        assert abs(res["pnl"].std() / dk - 1.0) < 0.05, "the Kamal (1998) rule must hold to within 5% here"
         assert abs(res["pnl"].mean()) < 3.0 * res["pnl"].std() / math.sqrt(8000), "hedging at the true vol has zero mean P&L"
     check("formula, N = 21", math.sqrt(math.pi / 4.0) * vega * 0.20 / math.sqrt(21), 0.4452, 5e-5)
-    check("prefactor sqrt(pi / 4) (Kamal and Derman, equation 1)", math.sqrt(math.pi / 4.0), 0.886, 5e-4)
+    check("prefactor sqrt(pi / 4) (Kamal 1998, equation 1)", math.sqrt(math.pi / 4.0), 0.886, 5e-4)
     print("  worked example 2 (vega 100,000 per unit vol, sigma 30%):")
     for n, want in ((21, 5801.71), (84, 2900.86)):
         check(f"sqrt(pi/4) x 100,000 x 0.30 / sqrt({n})", math.sqrt(math.pi / 4.0) * 100_000.0 * 0.30 / math.sqrt(n), want, 0.01)
