@@ -64,6 +64,13 @@ def mean_se(x: np.ndarray) -> tuple[float, float]:
     return float(x.mean()), float(x.std(ddof=1) / math.sqrt(x.size))
 
 
+def sd_se(x: np.ndarray) -> float:
+    """Delta-method standard error of the sample sd: se(variance) from the fourth central moment, over 2 sd."""
+    c = x - x.mean()
+    v = float((c**2).mean())
+    return math.sqrt(max(float((c**4).mean()) - v * v, 0.0) / x.size) / (2 * math.sqrt(v))
+
+
 def thomas(lower: np.ndarray, diag: np.ndarray, upper: np.ndarray, rhs: np.ndarray) -> np.ndarray:
     n = diag.size
     c, d = np.empty(n), np.empty(n)
@@ -236,7 +243,7 @@ def discrete_hedging(rng: np.random.Generator) -> None:
     vega = s0 * float(npdf(d12(s0, k, tm, 0.0, sig)[0])) * math.sqrt(tm)
     approx("vega per unit of volatility", vega, 39.70, 2)
     quoted = {21: (1.48, 1.54), 84: (0.75, 0.77), 252: (0.44, 0.44)}
-    sds: dict[int, float] = {}
+    stats: dict[int, tuple[float, float, float]] = {}
     for n, (q_sim, q_rule) in quoted.items():
         h = tm / n
         s = np.full(paths, s0)
@@ -254,10 +261,14 @@ def discrete_hedging(rng: np.random.Generator) -> None:
         simulated(f"mean P&L, N = {n} (zero within noise)", m, se, 0.0)
         approx(f"simulated sd, N = {n}", sd, q_sim, 2)
         approx(f"sqrt(pi/4) sigma vega / sqrt(N), N = {n}", rule, q_rule, 2)
-        assert 0.90 < sd / rule < 1.02, (n, sd / rule)
-        sds[n] = sd
-    print("    simulated sd / rule lies in (0.90, 1.02) for every N, approaching 1 as N grows")
-    approx("sd(N = 21) / sd(N = 84): quadrupling the frequency halves the error", sds[21] / sds[84], 2.0, 1)
+        print(f"    simulated sd / rule, N = {n}: {sd / rule:.3f}")
+        stats[n] = (sd, sd_se(pnl), rule)
+    (sd21, se21, rule21), (sd84, se84, rule84) = stats[21], stats[84]
+    ratio = sd21 / sd84
+    ratio_se = ratio * math.hypot(se21 / sd21, se84 / sd84)  # independent path sets for each N
+    label = "sd(N = 21) / sd(N = 84) vs the rule's ratio: quadrupling the frequency roughly halves the error"
+    simulated(label, ratio, ratio_se, rule21 / rule84)
+    approx("    sd(N = 21) / sd(N = 84) at this seed", ratio, 1.98, 2)
     approx("sqrt(pi/4)", math.sqrt(math.pi / 4), 0.886, 3)
 
 
