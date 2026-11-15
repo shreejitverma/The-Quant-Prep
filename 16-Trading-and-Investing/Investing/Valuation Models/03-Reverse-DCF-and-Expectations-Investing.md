@@ -14,7 +14,7 @@ sources: [Mauboussin and Rappaport (2021) - Expectations Investing: Reading Stoc
 
 - Traditional DCF models are notoriously fragile because small tweaks to speculative growth rates or margins produce wildly divergent valuations that often merely confirm an analyst's cognitive biases.
 - Expectations Investing, pioneered by Alfred Rappaport and Michael Mauboussin, inverts the analytical process: rather than forecasting the future, start with the current stock price and reverse-engineer what expectations the market is pricing in.
-- Investment edge does not come from knowing whether a business is great or terrible; edge comes exclusively from having a Variant Perception: identifying where future economic performance will deviate from embedded market expectations.
+- In this framework, edge does not come from knowing whether a business is great or terrible; it comes from a Variant Perception: identifying where future economic performance will deviate from the expectations embedded in the price.
 - A Reverse DCF solves for the implied revenue growth rate ($g_{\text{implied}}$), terminal growth, or operating margin required to justify the prevailing market capitalization.
 - When market-implied growth requires capturing more than 100% of an industry's addressable market, the stock is priced for perfection and offers severe downside asymmetry.
 
@@ -74,9 +74,9 @@ Current Stock Price + WACC + Balance Sheet ----> Root Finder ----> Output: Marke
                                                           Sanity Check against Industry TAM & Physics!
 ```
 
-In a traditional DCF, an analyst who loves a stock subconsciously increases growth from 12% to 16% to force the model to spit out a higher target price.
-A Reverse DCF eliminates this cognitive trap.
-It presents an objective mirror, for example: *"At $150 per share, the market requires this company to grow revenue at 24.5% annually for 10 years and expand margins from 15% to 28%."*
+In a traditional DCF, an analyst who loves a stock can nudge growth upward (say from 12% to 16%) until the model produces a higher target price.
+A Reverse DCF reduces this trap by fixing the output (the price) and asking what inputs it requires.
+It presents a mirror, for example (hypothetical figures): *"At $150 per share, the market requires this company to grow revenue at 24.5% annually for 10 years and expand margins from 15% to 28%."*
 The analyst's only job is then to ask: *"Is that realistic?"*
 
 ### 3. Mathematical Mechanics of the Reverse DCF
@@ -93,7 +93,7 @@ The Reverse DCF solves for $g^*$ such that:
 
 $$f(g^*) = \text{EV}(g^*) - \text{EV}_{\text{market}} = 0$$
 
-Because $\text{EV}(g)$ is strictly monotonic with respect to $g$ under standard economic reinvestment conditions, $g^*$ is solved efficiently using numerical root-finding algorithms (such as the Bisection Method, Secant Method, or Newton-Raphson):
+When free cash flow is a fixed positive share of revenue, $\text{EV}(g)$ is strictly increasing in $g$, so the root $g^*$ is unique and bisection always finds it; the Secant Method and Newton-Raphson converge faster from a good starting guess:
 
 $$g_{k+1} = g_k - \frac{f(g_k)}{f'(g_k)}$$
 
@@ -106,18 +106,19 @@ A robust Reverse DCF constructs an **Expectations Matrix**:
 ```
 +-----------------------------------------------------------------------+
 |                    THE 2-WAY EXPECTATIONS GRID                        |
-|              (Market Price: $100 | Target WACC: 8.5%)                 |
+|         (CyberShield case below: $120 per share, WACC 9.0%)           |
 +----------------------+---------+---------+---------+---------+--------+
-| Terminal EBIT Margin | 15.0%   | 18.0%   | 20.0%   | 22.0%   | 25.0%  |
+| Operating Margin     | 15.0%   | 18.0%   | 20.0%   | 22.0%   | 25.0%  |
 +----------------------+---------+---------+---------+---------+--------+
-| Implied 10-Yr Sales  |         |         |         |         |        |
-| Growth Rate (CAGR)   | 28.4%   | 21.2%   | 17.5%   | 14.1%   | 10.2%  |
+| Implied 7-Yr Sales   |         |         |         |         |        |
+| Growth Rate (CAGR)   | 33.19%  | 29.52%  | 27.43%  | 25.56%  | 23.08% |
 +----------------------+---------+---------+---------+---------+--------+
 ```
 
 Analysis of the Grid:
-- If an investor believes the company can achieve a 20% EBIT margin, the market is pricing in a 17.5% revenue CAGR over the next decade.
-- If the broader industry is growing at 6%, a 17.5% CAGR requires massive market share gains.
+- Each cell holds every other input of the CyberShield case fixed (25% tax, reinvestment of 15% of NOPAT, 2.5% terminal growth) and solves for the growth that equates EV to the market's $6,200M.
+- If an investor believes the company can achieve only a 20% operating margin, the market is pricing in a 27.43% revenue CAGR over the next seven years.
+- If the broader industry is growing at a hypothetical 12%, a 27.43% CAGR requires large market share gains.
 - The analyst now focuses all research on market share dynamics rather than guessing abstract valuation multiples.
 
 ### 5. Auditing Market Expectations: The Total Addressable Market (TAM) Sanity Test
@@ -129,11 +130,11 @@ The ultimate failure mode of high-flying growth stocks is the **TAM Collision**:
    $$\text{TAM}_{10} = \text{TAM}_0 \times (1 + g_{\text{industry}})^{10}$$
 3. Compute the implied future market share:
    $$\text{Implied Market Share}_{10} = \frac{R_{10}}{\text{TAM}_{10}}$$
-4. **The Red Flag**: If the implied market share exceeds 40% in a fragmented industry, or exceeds 100% of the entire global market, the stock is indisputably overvalued regardless of how revolutionary its technology may be.
+4. **The Red Flag**: An implied share above 100% of the whole market is impossible, so the price cannot be justified by that story; an implied share far above what any firm in the industry has ever held is a strong warning that needs explicit evidence.
 
 ## Worked numerical case study
 
-Analyze CyberShield Inc:
+Analyze CyberShield Inc (a hypothetical company; every input below is hypothetical):
 - Current Share Price: $120.00
 - Diluted Shares Outstanding: 50.0M
 - Market Capitalization: $\$120.00 \times 50.0\text{M} = \$6,000.0\text{M}$
@@ -173,17 +174,19 @@ Let us test trial values of constant annual revenue growth ($g$):
   - PV of Terminal Value: $9,587.2 \times 0.54703 = \$5,244.5\text{M}$
   - Total Enterprise Value: $1,602.2 + 5,244.5 = \$6,846.7\text{M}$ (Too high).
 
-- **Exact Solution via Bisection** (linear interpolation between the two trials gives only a first guess of 22.43%, because EV is convex in $g$):
+- **Exact Solution via Bisection** (linear interpolation between the two trials gives only a first guess of 22.43%, because EV is convex in $g$; Newton-Raphson started from that guess lands on the same root):
   $$g_{\text{implied}}^* = 23.08\% \text{ per annum for 7 consecutive years}$$
+- **Consistency check**: reinvesting only 15% of NOPAT while growing 23.08% a year implies a return on new capital of $23.08\% / 15\% = 153.9\%$.
+  Tying explicit-period reinvestment to growth at a still-generous 30% return on new capital (reinvestment rate $g / 30\%$, terminal assumptions unchanged) raises the implied growth to 27.51%.
 
 ### Step 3: The Sanity Test & Variant Perception
 The current $120 stock price demands that CyberShield grow revenue at **23.08% annually** for the next 7 years, expanding sales from $800M to $3,422.9M, while maintaining a 25% operating margin.
-- Industry cybersecurity market growth: 12.0% annually.
-- To grow at 23.08%, CyberShield must outgrow the market by nearly 2x every year, taking market share from Microsoft, Palo Alto Networks, and CrowdStrike.
-- If proprietary checks show that customer acquisition costs are rising and competition is intensifying, revenue will likely grow at 15%, not 23.08%.
+- Industry market growth: 12.0% annually (hypothetical).
+- To grow at 23.08%, CyberShield must grow 1.92 times as fast as its market every year, taking share from incumbents.
+- Suppose research shows customer acquisition costs rising and competition intensifying, so the analyst's own estimate is 15% growth, not 23.08%.
 - At 15% growth, enterprise value is $1,112.2M (explicit FCFF) + $2,925.6M (PV of terminal value) = $4,037.8M.
 - Equity value is $4,037.8M - $400.0M debt + $200.0M cash = $3,837.8M, or $76.76 per share on 50.0M shares, 36.0% below the $120 price.
-- Conclusion: CyberShield is priced for perfection with massive downside asymmetry.
+- Conclusion: on these inputs, the price embeds growth the analyst does not believe, and the 15% case implies 36.0% downside.
 
 ## Practice questions
 
@@ -278,14 +281,26 @@ The current $120 stock price demands that CyberShield grow revenue at **23.08% a
 > The positive surprise was already priced in by sophisticated market participants through whisper numbers, leaving no residual expectation gap.
 
 > [!question]- mkt-val-095 | How does the script `quant_reverse_dcf.py` calculate implied growth?
-> It takes historical free cash flows, current net debt, and market cap, and numerically iterates to find the growth rate equating discounted cash flows to enterprise value.
+> It works per share at the equity level: from free cash flow per share (live data, or the stored FCF yield in a stock note) and the share price, it bisects for the 10-year growth rate at which FCF per share, discounted at 10% with 3% terminal growth, equals the price.
+> Those constants are `DCF_DISCOUNT_RATE`, `DCF_TERMINAL_GROWTH` and `DCF_YEARS` in `16-Trading-and-Investing/scripts/stock_notes.py`; it does not use net debt.
 
 > [!question]- mkt-val-096 | What is the ultimate goal of an Expectations Investor?
 > To identify large, unpriced expectation revisions where the market's implied probability distribution deviates significantly from objective operational reality.
 
+> [!question]- mkt-val-261 | CyberShield's price implies 23.08% growth while reinvesting only 15% of NOPAT; what return on new capital does that combination assume, and what does it tell you?
+> Growth = RONIC x reinvestment rate, so RONIC = 23.08% / 15% = 153.9%.
+> The inputs are internally inconsistent; setting explicit-period reinvestment to g / 30% instead raises the implied growth to 27.51%, so the price is more demanding than the headline 23.08% suggests.
+
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_val_03_reverse_dcf.py`](../../code/mkt_val_03_reverse_dcf.py) prints and asserts every number on this page: explicit present values as a year-by-year sum against the closed-form growing annuity, the implied growth rate by bisection against Newton-Raphson and a zero-residual check, the expectations grid by both root-finders, and the 15% downside case.
+- Repo tool: [`../../scripts/quant_reverse_dcf.py`](../../scripts/quant_reverse_dcf.py) runs a per-share reverse DCF for the stock research notes.
+- Related notes: [DCF First Principles and Cash Flow Forecasting](01-DCF-First-Principles-and-Cash-Flow-Forecasting.md), [Narrative and Numbers](08-Narrative-and-Numbers-Valuation-Synthesis.md).
 
 ## Further reading
 
 - Mauboussin, M. J., & Rappaport, A. (2021). *Expectations Investing: Reading Stock Prices for Better Returns* (Revised and Updated ed.). Columbia Business School Publishing.
+- Rappaport, A., & Mauboussin, M. J. (2001). *Expectations Investing: Reading Stock Prices for Better Returns*. Harvard Business School Press.
 - Rappaport, A. (1986). *Creating Shareholder Value: The New Standard for Business Performance*. Free Press.

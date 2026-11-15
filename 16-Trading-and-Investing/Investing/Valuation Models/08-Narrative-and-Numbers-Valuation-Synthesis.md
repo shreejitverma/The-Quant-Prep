@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Damodaran (2017) - Narrative and Numbers: The Light and the Dark in Valuation, Kahneman (2011) - Thinking Fast and Slow, Klein (2007) - Performing a Project Premortem, Mauboussin and Callahan (2015) - Numbers and Narrative: Modeling the Future]
+sources: [Damodaran (2017) - Narrative and Numbers: The Value of Stories in Business, Kahneman (2011) - Thinking Fast and Slow, Klein (2007) - Performing a Project Premortem, Mauboussin Callahan and Majd (2016) - The Base Rate Book]
 ---
 
 # Narrative and Numbers: Valuation Synthesis and Pre-Mortems
@@ -14,9 +14,9 @@ sources: [Damodaran (2017) - Narrative and Numbers: The Light and the Dark in Va
 
 - Valuation is neither pure mathematics nor creative storytelling; it is the rigorous synthesis of qualitative business narrative with quantitative financial constraints.
 - A financial model without a business narrative is sterile spreadsheet manipulation; a narrative without numbers is unconstrained fantasy fiction.
-- Every line item in a financial forecast must trace directly to a strategic business narrative, and every narrative claim must be bounded by the "Three P's" filter: Is it Possible, Plausible, and Probable?
+- Every line item in a financial forecast should trace to the business narrative, and Damodaran (2017) tests every narrative with three questions: is it possible, is it plausible, and is it probable?
 - Valuation models fail when analysts ignore macro and competitive limits, projecting market shares that exceed industry capacity or margins that violate economic gravity.
-- The Pre-Mortem technique protects capital by assuming the investment has failed catastrophically three years into the future, forcing the analyst to identify hidden structural vulnerabilities before risking capital.
+- The Pre-Mortem (Klein 2007) assumes the investment has already failed at a future date and asks why, forcing the analyst to name vulnerabilities before risking capital.
 
 ## Learning objectives
 
@@ -30,7 +30,7 @@ sources: [Damodaran (2017) - Narrative and Numbers: The Light and the Dark in Va
 
 ### 1. The Duality of Valuation: Storytellers vs Number Crunchers
 
-Aswath Damodaran (2017) observed that investors generally split into two opposing tribes:
+Damodaran (2017) contrasts two caricatures of valuation practitioners:
 1. **The Storytellers (Narrative Lovers)**: Creative thinkers who view companies as sweeping epics of technological revolution, visionary founders, and infinite markets. They ignore balance sheets, dismiss cash flow constraints, and rely on arbitrary storytelling.
 2. **The Number Crunchers (Model Builders)**: Financial engineers who build 50-tab financial models with hundreds of micro-inputs. They plug in mechanical percentage formulas, oblivious to competitive dynamics, consumer psychology, or industry disruption.
 
@@ -64,8 +64,8 @@ Aswath Damodaran (2017) observed that investors generally split into two opposin
 +-----------------------------------+-----------------------------------+
                                     |
                                     v
-| 2. AUDIT AGAINST THE THREE P's:                                       |
-|    Filter the story: Is it Possible? Is it Plausible? Is it Probable? |
+| 2. TEST THE NARRATIVE:                                                |
+|    Is it Possible? Is it Plausible? Is it Probable?                   |
 +-----------------------------------+-----------------------------------+
                                     |
                                     v
@@ -77,7 +77,7 @@ Aswath Damodaran (2017) observed that investors generally split into two opposin
 +-----------------------------------+-----------------------------------+
                                     |
                                     v
-| 4. VALUE THE ENTERPRISE:                                              |
+| 4. CONNECT THE DRIVERS TO A VALUATION:                                |
 |    Synthesize drivers into an explicit cash flow model.               |
 +-----------------------------------+-----------------------------------+
                                     |
@@ -98,14 +98,13 @@ To prevent corporate optimism from inflating valuation models, every strategic t
 | Filter Level  | Analytical Test & Economic Constraint                 |
 +---------------+-------------------------------------------------------+
 | 1. POSSIBLE   | Does the narrative violate physical laws, legal       |
-|               | statutes, or absolute mathematical realities?         |
-|               | (e.g. projecting revenue growth faster than light, or |
-|               | assuming 120% global market share is impossible).     |
+|               | statutes, or arithmetic? (e.g. a 120% share of the    |
+|               | global market is impossible).                         |
 +---------------+-------------------------------------------------------+
-| 2. PLAUSIBLE  | Has any company in corporate history ever achieved   |
-|               | this outcome under similar competitive conditions?    |
-|               | (e.g. maintaining 65% operating margins in commodity  |
-|               | manufacturing is implausible).                        |
+| 2. PLAUSIBLE  | Has any company achieved this outcome under similar   |
+|               | competitive conditions? (e.g. sustaining a 65%        |
+|               | operating margin in commodity manufacturing is        |
+|               | implausible).                                         |
 +---------------+-------------------------------------------------------+
 | 3. PROBABLE   | Given existing competitors, substitutes, and human    |
 |               | incentives, what is the realistic likelihood of this  |
@@ -143,7 +142,7 @@ The model must be rebuilt from scratch under the new, diminished narrative.
 ### 5. Gary Klein's Valuation Pre-Mortem
 
 Traditional post-mortems happen after an investment has blown up and capital is lost.
-Psychologist Gary Klein (2007) and Daniel Kahneman (2011) developed the **Pre-Mortem** to eliminate confirmation bias before capital is deployed:
+Psychologist Gary Klein (2007) proposed the **Pre-Mortem**, and Daniel Kahneman (2011, chapter 24) popularized it as a partial remedy for overconfidence before a commitment is made:
 
 ```
 +-----------------------------------------------------------------------+
@@ -151,7 +150,7 @@ Psychologist Gary Klein (2007) and Daniel Kahneman (2011) developed the **Pre-Mo
 +-----------------------------------------------------------------------+
 | 1. THE TIME MACHINE HYPOTHESIS:                                       |
 |    Assume today is exactly three years in the future. The investment  |
-|    has been a catastrophic, total disaster (stock collapsed 75%).     |
+|    has been a disaster (for example, the stock fell 75%).             |
 +-----------------------------------+-----------------------------------+
                                     |
                                     v
@@ -180,7 +179,7 @@ Psychologist Gary Klein (2007) and Daniel Kahneman (2011) developed the **Pre-Mo
 
 ## Worked numerical case study
 
-Conduct a Narrative-to-Numbers synthesis and Pre-Mortem for AeroVolt Robotics:
+Conduct a Narrative-to-Numbers synthesis and Pre-Mortem for AeroVolt Robotics (a hypothetical company; every figure below is hypothetical unless a filing is cited):
 - Current Stock Price: $45.00
 - Market Capitalization: $4,500M (100M shares)
 - Current Base Revenue ($R_0$): $200M (Commercial delivery drones)
@@ -195,17 +194,17 @@ Conduct a Narrative-to-Numbers synthesis and Pre-Mortem for AeroVolt Robotics:
    - $15B revenue from a $50B market is mathematically possible (30% share).
 2. **Plausible?**
    - A physical manufacturing hardware robotics company achieving 35% operating margins.
-   - Historical check: Top industrial aerospace companies (Boeing, Airbus, Lockheed) achieve 10% to 14% operating margins. Highly specialized hardware like Apple achieves 28% to 30%.
-   - Verdict: 35% margin for a commercial drone logistics hardware fleet is **implausible**. A realistic best-in-class hardware/service margin is 18.0%.
+   - Historical check from filings: Lockheed Martin's 2024 Form 10-K reports operating profit of $7,013M on net sales of $71,043M (9.9%); Apple's fiscal 2024 Form 10-K reports operating income of $123,216M on net sales of $391,035M (31.5%), with a software and services business no drone fleet has.
+   - Verdict: a 35% margin for a commercial drone logistics hardware fleet is **implausible**; this analysis assumes 18.0% as an optimistic but defensible best case (an analyst judgment).
 3. **Probable?**
-   - Competitors: Amazon Prime Air, Alphabet Wing, UPS Flight Forward, DJI, Zipline.
-   - Capturing 30% against multi-trillion dollar incumbents with sovereign regulatory ties is **highly improbable**. A realistic probability-weighted share is 10.0% ($5B revenue).
+   - Competitors include large, well-funded drone delivery programs at established firms.
+   - Capturing 30% against such incumbents is **improbable**; this analysis assumes 10.0% ($5B revenue).
 
 ### Step 3: Translate Synthesized Narrative into Valuation Drivers
 
 | Driver | Management Fantasy Story | Disciplined Synthesized Narrative |
 |---|---|---|
-| Year 10 Revenue | $15,000M (54.0% CAGR) | $5,000M (38.0% CAGR) |
+| Year 10 Revenue | $15,000M (54.0% CAGR) | $5,000M (37.97% CAGR) |
 | Operating Margin | 35.0% | 18.0% |
 | Year 10 EBIT | $5,250M | $900M |
 | Capital Efficiency (Sales/Capital) | 3.0x | 1.5x (Hardware manufacturing capex) |
@@ -219,14 +218,16 @@ Conduct a Narrative-to-Numbers synthesis and Pre-Mortem for AeroVolt Robotics:
 - Year 11 Terminal FCFF: $\$675\text{M} \times (1 + 0.025) \times (1 - 1/6) = \$576.6\text{M}$.
 - Terminal Value at Year 10: $\frac{\$576.6\text{M}}{0.105 - 0.025} = \frac{576.6}{0.08} = \$7,207.0\text{M}$.
 - PV of Terminal Value at Year 0 ($1 / 1.105^{10} = 0.36845$): $\$2,655.4\text{M}$.
-- Sum of Explicit 10-Year PV of Cash Flows (accounting for heavy early hardware capex): -$450.0M.
-- Total Enterprise Value: $\$2,655.4\text{M} - \$450.0\text{M} = \$2,205.4\text{M}$.
+- Explicit years 1-10: revenue compounds at 37.97% a year, operating margin rises by 3.8 points a year from -20% to 18%, tax is 25% of positive EBIT only (no loss carryforwards), and reinvestment is the revenue increase divided by the 1.5 sales-to-capital ratio (3,200 in total).
+- EBIT turns positive in year 6, but free cash flow stays negative through year 10 (from -95.3 in year 1 to -242.4 in year 10) because growth reinvestment exceeds NOPAT.
+- Sum of Explicit 10-Year PV of Cash Flows: -$1,094.5M.
+- Total Enterprise Value: $\$2,655.4\text{M} - \$1,094.5\text{M} = \$1,560.9\text{M}$.
 - Plus Net Cash: +$300.0M.
-- Fair Equity Value: $\$2,505.4\text{M}$.
-- Fair Value Per Share: $\frac{\$2,505.4\text{M}}{100\text{M shares}} = \mathbf{\$25.05}$.
+- Fair Equity Value: $\$1,860.9\text{M}$.
+- Fair Value Per Share: $\frac{\$1,860.9\text{M}}{100\text{M shares}} = \mathbf{\$18.61}$.
 
 ### Step 5: The Gary Klein Pre-Mortem
-Imagine it is 2029 and AeroVolt has collapsed from $45 to $8 per share.
+Imagine it is 2029 and AeroVolt has collapsed from $45 to $8 per share (a hypothetical pre-mortem narrative; none of the events below has happened).
 Then ask: "What killed the company?"
 - **Forensic Failure Analysis**:
   1. The FAA kept strict visual-line-of-sight rules for urban flights and withheld beyond-visual-line-of-sight (BVLOS) approvals, delaying commercial airspace rollouts by five years.
@@ -237,8 +238,8 @@ Then ask: "What killed the company?"
   - Sell immediately if drone fleet manufacturing cost exceeds $8,000 per unit at scale.
 
 Synthesis Verdict:
-At $45.00, AeroVolt is pricing in the impossible management fantasy.
-Under disciplined economic constraints, fair value is $25.05.
+At $45.00, the price sits far above what the disciplined narrative supports.
+Under disciplined economic constraints, fair value is $18.61, 58.6% below the price.
 The stock is an avoid or short candidate with severe structural downside.
 
 ## Practice questions
@@ -247,7 +248,7 @@ The stock is an avoid or short candidate with severe structural downside.
 > Valuation must bridge qualitative storytelling with quantitative financial discipline; stories provide the soul, while numbers provide the tether to reality.
 
 > [!question]- mkt-val-226 | What are the Three P's of narrative validation?
-> Possible (does not violate physical or legal reality), Plausible (has historical precedent), and Probable (has a realistic likelihood of unfolding).
+> Damodaran's (2017) test of a narrative: is it Possible (does not violate physical, legal or arithmetic limits), Plausible (has precedent under similar conditions), and Probable (likely enough to be the base case)?
 
 > [!question]- mkt-val-227 | What is the danger of relying on pure quantitative financial modeling without a qualitative narrative?
 > Models become sterile spreadsheet exercises with arbitrary mechanical formulas disconnected from competitive dynamics and operational reality.
@@ -280,7 +281,7 @@ The stock is an avoid or short candidate with severe structural downside.
 > The inside view focuses on the unique details of the specific company; the outside view benchmarks the company against broad historical base-rate distributions.
 
 > [!question]- mkt-val-237 | How does base-rate neglect distort growth forecasts?
-> Analysts assume a company will grow at 30% for a decade, ignoring base rates showing less than 1% of firms maintain 30% growth at scale.
+> Analysts project the company's own story (say 30% growth for a decade) without asking how often firms of that size have ever done it; Mauboussin, Callahan and Majd's Base Rate Book (2016) tabulates such sales-growth base rates by starting size.
 
 > [!question]- mkt-val-238 | What is corporate lifecycle transition modeling?
 > Adjusting valuation drivers as a firm moves from startup (high risk, negative cash) to growth (scaling), maturity (cash cows), and decline (fade).
@@ -289,7 +290,7 @@ The stock is an avoid or short candidate with severe structural downside.
 > Startups carry high beta and distress risk; as businesses mature with diversified cash flows and debt capacity, cost of capital declines toward market averages.
 
 > [!question]- mkt-val-240 | What is the 'halo effect' in corporate narrative evaluation?
-> The cognitive bias where an investor views all aspects of a company positively because its recent stock price performance has been strong.
+> The tendency for one strong impression, often recent financial or share-price performance, to colour judgments of a company's strategy, management and culture; Rosenzweig (2007) documents it in business writing.
 
 > [!question]- mkt-val-241 | How should an analyst respond when a company changes its narrative to justify poor numbers?
 > Recognize the pivot as a severe red flag, indicating management has lost control of the original core thesis.
@@ -319,7 +320,8 @@ The stock is an avoid or short candidate with severe structural downside.
 > Unit economics prove whether individual customer transactions are fundamentally profitable before factoring in corporate overhead scale.
 
 > [!question]- mkt-val-250 | How did Uber's valuation narrative evolve from 2014 to 2024?
-> From a speculative narrative of swallowing global ground logistics and food delivery to a disciplined duopoly ride-hailing business focused on cash flow.
+> In June 2014 Damodaran valued Uber at about $5.9 billion as an urban car-service business; in July 2014 Bill Gurley argued the market was far larger than that story assumed.
+> By its 2023 Form 10-K Uber reported income from operations of $1,110M after a $1,832M operating loss in 2022, so the debate moved from market size to sustained profitability.
 
 > [!question]- mkt-val-251 | What is the 'curse of capital' for visionary narrative companies?
 > Abundant cheap capital allows unprofitable companies to avoid operational discipline, masking fatal unit economic flaws until funding freezes.
@@ -339,11 +341,24 @@ The stock is an avoid or short candidate with severe structural downside.
 > [!question]- mkt-val-256 | What is the final golden rule of valuation synthesis?
 > Never fall in love with a story; let the numbers challenge the story, and let the story explain the numbers.
 
+> [!question]- mkt-val-266 | In the AeroVolt disciplined case, why does fair value fall to $18.61 even though the terminal value is worth $2,655.4M today?
+> Growing revenue 37.97% a year at a 1.5 sales-to-capital ratio needs reinvestment above NOPAT every year, so free cash flow is negative through year 10 and the explicit years are worth -$1,094.5M.
+> EV is 2,655.4 - 1,094.5 = 1,560.9, plus 300 of cash gives 1,860.9, or $18.61 per share.
+
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_val_08_narrative.py`](../../code/mkt_val_08_narrative.py) prints and asserts every number on this page: the CAGRs in closed form and by bisection, the ten explicit free cash flows by forward sum and backward induction, the terminal value against a 3,000-year explicit sum, and the filing-based operating margins in exact fractions.
+- Related notes: [Reverse DCF and Expectations Investing](03-Reverse-DCF-and-Expectations-Investing.md), [Cost of Capital, WACC, and Terminal Value Traps](02-Cost-of-Capital-WACC-and-Terminal-Value-Traps.md).
 
 ## Further reading
 
-- Damodaran, A. (2017). *Narrative and Numbers: The Light and the Dark in Valuation*. Columbia Business School Publishing.
-- Kahneman, D. (2011). *Thinking, Fast and Slow*. Farrar, Straus and Giroux.
-- Klein, G. (2007). *Performing a Project Premortem*. Harvard Business Review, 85(9), 18-19.
-- Mauboussin, M. J., & Callahan, D. (2015). *Numbers and Narrative: Modeling the Future*. Credit Suisse Global Financial Strategies.
+- Apple Inc. Form 10-K for fiscal 2024; Lockheed Martin Corporation Form 10-K for 2024; Uber Technologies Form 10-K for 2023. SEC EDGAR.
+- Damodaran, A. (2014, June 9). A disruptive cab ride to riches: The Uber payoff. *Musings on Markets* blog.
+- Damodaran, A. (2017). *Narrative and Numbers: The Value of Stories in Business*. Columbia Business School Publishing.
+- Gurley, B. (2014, July 11). How to miss by a mile: An alternative look at Uber's potential market size. *Above the Crowd*.
+- Kahneman, D. (2011). *Thinking, Fast and Slow*. Farrar, Straus and Giroux. Ch. 23 (the outside view), Ch. 24 (the engine of capitalism).
+- Klein, G. (2007). Performing a project premortem. *Harvard Business Review*, 85(9), 18-19.
+- Mauboussin, M. J., Callahan, D., & Majd, D. (2016). *The Base Rate Book: Integrating the Past to Better Anticipate the Future*. Credit Suisse Global Financial Strategies.
+- Rosenzweig, P. (2007). *The Halo Effect*. Free Press.
