@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [convex-optimization-and-kkt, covariance-matrices-and-psd]
 est_hours: 4
-sources: [Markowitz (1952) - Portfolio Selection - Journal of Finance 7(1), Grinold and Kahn - Active Portfolio Management 2nd ed (1999), Boyd and Vandenberghe - Convex Optimization (2004), Michaud (1989) - The Markowitz Optimization Enigma - Financial Analysts Journal 45(1), Chopra and Ziemba (1993) - The Effect of Errors in Means Variances and Covariances on Optimal Portfolio Choice - Journal of Portfolio Management 19(2), Jagannathan and Ma (2003) - Risk Reduction in Large Portfolios - Journal of Finance 58(4), Kan and Zhou (2007) - Optimal Portfolio Choice with Parameter Uncertainty - Journal of Financial and Quantitative Analysis 42(3), DeMiguel Garlappi and Uppal (2009) - Optimal Versus Naive Diversification - Review of Financial Studies 22(5)]
+sources: [Markowitz (1952) - Portfolio Selection - Journal of Finance 7(1) 77-91, Grinold and Kahn - Active Portfolio Management 2nd ed (1999), Boyd and Vandenberghe - Convex Optimization (2004), Michaud (1989) - The Markowitz Optimization Enigma - Financial Analysts Journal 45(1) 31-42, Chopra and Ziemba (1993) - The Effect of Errors in Means Variances and Covariances on Optimal Portfolio Choice - Journal of Portfolio Management 19(2) 6-11, Jagannathan and Ma (2003) - Risk Reduction in Large Portfolios - Journal of Finance 58(4) 1651-1683, Kan and Zhou (2007) - Optimal Portfolio Choice with Parameter Uncertainty - Journal of Financial and Quantitative Analysis 42(3) 621-656, DeMiguel Garlappi and Uppal (2009) - Optimal Versus Naive Diversification - Review of Financial Studies 22(5) 1915-1953, Merton (1980) - On Estimating the Expected Return on the Market - Journal of Financial Economics 8(4) 323-361]
 ---
 
 # Mean-Variance Portfolio Construction
@@ -77,16 +77,16 @@ Constraints added in practice: dollar and beta neutrality, sector and factor exp
 ### Why naive mean-variance is unstable
 
 - **Amplification by $\Sigma^{-1}$.** With eigendecomposition $\Sigma = \sum_k d_k v_kv_k^\top$, the optimal direction is $\Sigma^{-1}\mu = \sum_k (v_k^\top\mu/d_k)v_k$, so directions with tiny eigenvalues (long-short spreads between highly correlated assets) get huge weight, and those are exactly the directions where $\mu$ is least reliable.
-- **Errors in means dominate.** Chopra and Ziemba (1993) find errors in means are roughly an order of magnitude more costly than errors in variances, which in turn cost more than errors in covariances; means are also far harder to estimate (standard error of an annual mean is $\sigma/\sqrt{Y}$).
-- **Michaud's "error maximisation".** The optimiser overweights assets with overestimated returns and underestimated risk, so optimised portfolios systematically underperform their in-sample promise (Michaud 1989).
+- **Errors in means dominate.** Chopra and Ziemba (1993) find errors in means are over ten times as damaging as errors in variances and over twenty times as damaging as errors in covariances, with the gap widening at higher risk tolerance; means are also far harder to estimate (the standard error of an annual mean is $\sigma/\sqrt{Y}$, and Merton 1980 shows that sampling more often does not help, only a longer history does).
+- **Michaud's "error maximisation".** Michaud (1989) describes mean-variance optimisation's tendency to maximise the effects of errors in the input assumptions: the optimiser overweights assets whose returns are overestimated and risks underestimated, so optimised portfolios systematically underperform their in-sample promise.
 - **In-sample Sharpe bias.** With $\Sigma$ known and sample mean $\hat\mu$ from $T$ periods, $E[\hat\mu^\top\Sigma^{-1}\hat\mu] = \mu^\top\Sigma^{-1}\mu + N/T$; with the sample covariance (divisor $T-1$) the expectation is further multiplied by $(T-1)/(T-N-2)$ (Kan and Zhou 2007 analyse the consequences).
-- **Naive diversification benchmark.** DeMiguel, Garlappi and Uppal (2009) show that with realistic estimation windows, $1/N$ is hard to beat out of sample for many sample-based optimisers.
+- **Naive diversification benchmark.** DeMiguel, Garlappi and Uppal (2009) find that none of the 14 models they evaluate across seven datasets is consistently better than $1/N$ out of sample, and estimate that about 3000 months of data would be needed for sample mean-variance to beat it with 25 assets.
 
 ### Remedies
 
 1. **Better $\mu$:** IC-scaled alphas, Bayesian shrinkage toward an equilibrium prior (Black-Litterman), or dropping $\mu$ entirely (GMV, risk parity); see [Black-Litterman, Risk Parity and HRP](12-Black-Litterman-Risk-Parity-and-HRP.md).
 2. **Better $\Sigma$:** a factor model (few parameters, well conditioned) or Ledoit-Wolf shrinkage ([Covariance Estimation and Shrinkage](11-Covariance-Estimation-and-Shrinkage.md)).
-3. **Constraints:** Jagannathan and Ma (2003) show a no-short-sale constraint in the minimum-variance problem is equivalent to shrinking the covariance matrix, which explains why "wrong" constraints often help out of sample.
+3. **Constraints:** Jagannathan and Ma (2003) show a no-short-sale constraint in the minimum-variance problem is equivalent to using the sample covariance with its large elements reduced: when the constraint binds for asset $i$ with multiplier $\lambda_i$, its covariances are reduced by $\lambda_i + \lambda_j$ and its variance by $2\lambda_i$, which explains why "wrong" constraints often help out of sample.
 4. **Regularisation:** add $\gamma\|w - w_{\text{ref}}\|_2^2$ (ridge toward a reference portfolio) or an $\ell_1$ penalty.
 5. **Resampling or robust optimisation:** average weights across bootstrap samples, or optimise against the worst case in an uncertainty set for $\mu$.
 
@@ -134,7 +134,7 @@ Two assets with 20% volatility and correlation 0.9; eigenvalues of $\Sigma$ are 
 | (6%, 6%) | $(0.50, 0.50)$ | 0.308 |
 
 A one-point change in one expected return swings the weights by 72 points per asset, although the difference is far inside the estimation error of any mean.
-Under a long-only constraint the first case becomes $(0, 1)$ with Sharpe 0.300, only 0.003 below the unconstrained 0.303: the objective is flat along the spread direction, so the constraint costs almost nothing in-sample and removes the noisiest bet.
+Under a long-only constraint the first case becomes $(0, 1)$ with Sharpe 0.300, only 0.0035 below the unconstrained 0.303: the objective is flat along the spread direction, so the constraint costs almost nothing in-sample and removes the noisiest bet.
 
 ### 4. In-sample Sharpe inflation
 
@@ -143,23 +143,9 @@ $N = 50$ assets, $T = 60$ monthly observations, true maximum Sharpe 0.2 monthly 
 - $E[\hat\theta^2] = 0.2^2 + 50/60 = 0.873$, so the in-sample tangency Sharpe is about $\sqrt{0.873} = 0.93$ monthly, 3.2 annualised.
 - With the sample covariance too, the expectation is multiplied by $(T-1)/(T-N-2) = 59/8$, giving $\hat\theta^2 \approx 6.4$.
 
-A simulation with $N = 10$, $T = 60$ confirms both formulas (known $\Sigma$: 0.206 simulated versus 0.207; estimated $\Sigma$: 0.253 versus 0.254).
-The out-of-sample Sharpe of the estimated tangency portfolio is below the true 0.2, not above it.
-
-```python
-import numpy as np
-rng = np.random.default_rng(0)
-N, T, theta = 10, 60, 0.2
-mu = np.full(N, theta / np.sqrt(N))                   # identity covariance, so true max Sharpe^2 = theta^2
-known, est = [], []
-for _ in range(20_000):
-    X = rng.standard_normal((T, N)) + mu
-    m = X.mean(0)
-    known.append(m @ m)
-    est.append(m @ np.linalg.solve(np.cov(X, rowvar=False), m))
-print(np.mean(known), theta**2 + N / T)                               # 0.206 0.207
-print(np.mean(est), (T - 1) / (T - N - 2) * (theta**2 + N / T))       # 0.253 0.254
-```
+With $N = 10$ and $T = 60$ the formulas give $0.2^2 + 10/60 = 0.207$ (known $\Sigma$) and $\tfrac{59}{48}\times0.207 = 0.254$ (estimated $\Sigma$).
+The script simulates 20,000 samples with identity covariance for both cases and matches each formula within four standard errors; it also checks $N = 50$ with known $\Sigma$.
+The true (out-of-sample) Sharpe of the estimated tangency portfolio averages about 0.08 in that simulation, far below the true 0.2, and by construction it can never exceed 0.2.
 
 ### 5. A no-trade band from linear costs
 
@@ -207,8 +193,8 @@ One asset, $\mu = 5\%$, $\sigma = 20\%$, $\lambda = 5$, linear cost $c = 1\%$ pe
 > $\Sigma^{-1}\mu = \sum_k(v_k^\top\mu/d_k)v_k$, with eigenvalues $d_k$, loads heavily on small-eigenvalue directions, where mean estimates are least reliable, so estimation noise becomes large positions.
 
 > [!question]- alpha-mv-means-vs-cov | Which estimation errors hurt mean-variance portfolios most?
-> Errors in expected returns, by roughly an order of magnitude over errors in variances (Chopra and Ziemba 1993).
-> Means are also the hardest to estimate: the standard error of an annual mean is $\sigma/\sqrt{Y}$, comparable to the mean itself for decades of data.
+> Errors in expected returns: over ten times as damaging as errors in variances and over twenty times as damaging as errors in covariances (Chopra and Ziemba 1993).
+> Means are also the hardest to estimate: the standard error of an annual mean is $\sigma/\sqrt{Y}$, so with a hypothetical 16% volatility even 30 years of data leave a standard error of $16\%/\sqrt{30} = 2.9\%$.
 
 > [!question]- alpha-mv-insample-bias | With known $\Sigma$, how biased is the in-sample squared Sharpe of the estimated tangency portfolio?
 > Upward by $N/T$: $E[\hat\mu^\top\Sigma^{-1}\hat\mu] = \mu^\top\Sigma^{-1}\mu + N/T$.
@@ -216,7 +202,7 @@ One asset, $\mu = 5\%$, $\sigma = 20\%$, $\lambda = 5$, linear cost $c = 1\%$ pe
 
 > [!question]- alpha-mv-long-only-shrinkage | Why do long-only constraints often improve out-of-sample minimum-variance portfolios?
 > They act like covariance shrinkage.
-> Jagannathan and Ma (2003) show a binding no-short constraint is equivalent to reducing the estimated covariances of the assets the optimiser wanted to short; those large estimated covariances are likely to be partly estimation error.
+> Jagannathan and Ma (2003) show a binding no-short constraint is equivalent to reducing the estimated covariances of the assets the optimiser wanted to short (by $\lambda_i + \lambda_j$, with $\lambda$ the constraint multipliers); those large estimated covariances are likely to be partly estimation error.
 
 > [!question]- alpha-mv-no-trade-band | How do linear transaction costs change the optimal rebalancing rule?
 > They create a no-trade band around the frictionless target.
@@ -230,17 +216,32 @@ One asset, $\mu = 5\%$, $\sigma = 20\%$, $\lambda = 5$, linear cost $c = 1\%$ pe
 > With a risk-free asset every mean-variance investor holds the same tangency portfolio, levered or de-levered with cash.
 > The optimal risky holding $\lambda^{-1}\Sigma^{-1}\mu$ has direction independent of risk aversion; only its scale changes.
 
+> [!question]- alpha-mv-insample-50-60 | 50 assets, 60 monthly observations, true maximum Sharpe 0.2 monthly, covariance known. What in-sample tangency Sharpe should you expect?
+> About 0.93 monthly, 3.2 annualised, against a true 0.69.
+> $E[\hat\theta^2] = 0.2^2 + 50/60 = 0.873$; with an estimated covariance the expectation is multiplied again by $(T-1)/(T-N-2) = 59/8$.
+
+> [!question]- alpha-mv-no-trade-numeric | One asset, $\mu = 5\%$, $\sigma = 20\%$, $\lambda = 5$, linear cost 1% per unit traded. What is the no-trade band, and what do you do from a 10% holding?
+> The band is $[0.20, 0.30]$ around the target 0.25; from 0.10 buy up to 0.20, not 0.25.
+> Do not trade while $|\mu - \lambda\sigma^2 w_0| \le c$, so the edges are $(\mu \mp c)/(\lambda\sigma^2) = 0.04/0.2$ and $0.06/0.2$.
+
+> [!question]- alpha-mv-long-only-cost | Two assets with 20% vol and correlation 0.9 have expected returns 5% and 6%. How much Sharpe does a long-only constraint cost?
+> About 0.0035: Sharpe 0.300 for $(0, 1)$ against 0.303 unconstrained at $(-0.36, 1.36)$.
+> The objective is flat along the long-short spread direction, so the constraint removes the noisiest bet almost for free.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/alpha_10_mean_variance.py`](code/alpha_10_mean_variance.py) prints and asserts every number on this page: minimum-variance, tangency and utility-optimal weights by brute-force grid search, the frontier formula against a direct KKT solve, the in-sample Sharpe bias by simulation, the Jagannathan-Ma shrinkage equivalence by exact active-set enumeration, and the no-trade band by maximising the cost-adjusted utility from each starting weight.
 - Code: [black_litterman_model.ipynb](code/black_litterman_model.ipynb) for an equilibrium-prior alternative to raw means.
 - Related notes: [Covariance Estimation and Shrinkage](11-Covariance-Estimation-and-Shrinkage.md), [Black-Litterman, Risk Parity and HRP](12-Black-Litterman-Risk-Parity-and-HRP.md), [Quadratic Programming and Portfolio Solvers](../03-Linear-Algebra-and-Optimization/09-Quadratic-Programming-and-Portfolio-Solvers.md).
 
 ## Further reading
 
-- Grinold and Kahn, *Active Portfolio Management*
-- Boyd and Vandenberghe, *Convex Optimization*
-- Markowitz (1952), Portfolio Selection, Journal of Finance.
-- Michaud (1989), The Markowitz Optimization Enigma: Is Optimized Optimal?, Financial Analysts Journal.
-- Chopra and Ziemba (1993), The Effect of Errors in Means, Variances and Covariances on Optimal Portfolio Choice, Journal of Portfolio Management.
-- Jagannathan and Ma (2003), Risk Reduction in Large Portfolios: Why Imposing the Wrong Constraints Helps, Journal of Finance.
-- DeMiguel, Garlappi and Uppal (2009), Optimal Versus Naive Diversification, Review of Financial Studies.
+- Richard C. Grinold and Ronald N. Kahn, *Active Portfolio Management* (2nd ed., 1999).
+- Stephen Boyd and Lieven Vandenberghe, *Convex Optimization* (2004).
+- Harry Markowitz, "Portfolio Selection", *Journal of Finance* 7(1) (1952), 77-91.
+- Richard O. Michaud, "The Markowitz Optimization Enigma: Is 'Optimized' Optimal?", *Financial Analysts Journal* 45(1) (1989), 31-42.
+- Vijay K. Chopra and William T. Ziemba, "The Effect of Errors in Means, Variances, and Covariances on Optimal Portfolio Choice", *Journal of Portfolio Management* 19(2) (1993), 6-11.
+- Ravi Jagannathan and Tongshu Ma, "Risk Reduction in Large Portfolios: Why Imposing the Wrong Constraints Helps", *Journal of Finance* 58(4) (2003), 1651-1683.
+- Raymond Kan and Guofu Zhou, "Optimal Portfolio Choice with Parameter Uncertainty", *Journal of Financial and Quantitative Analysis* 42(3) (2007), 621-656.
+- Victor DeMiguel, Lorenzo Garlappi and Raman Uppal, "Optimal Versus Naive Diversification: How Inefficient is the 1/N Portfolio Strategy?", *Review of Financial Studies* 22(5) (2009), 1915-1953.
+- Robert C. Merton, "On Estimating the Expected Return on the Market: An Exploratory Investigation", *Journal of Financial Economics* 8(4) (1980), 323-361.

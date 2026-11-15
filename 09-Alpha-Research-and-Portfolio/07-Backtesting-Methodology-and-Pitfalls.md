@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [point-in-time-data-and-survivorship]
 est_hours: 5
-sources: [Lopez de Prado - Advances in Financial Machine Learning (2018) ch 7 11 12, Chan - Algorithmic Trading Winning Strategies and Their Rationale (2013) ch 1, Isichenko - Quantitative Portfolio Management (2021), Bailey Borwein Lopez de Prado and Zhu (2014) - Pseudo-Mathematics and Financial Charlatanism - Notices of the AMS 61(5)]
+sources: [Lopez de Prado - Advances in Financial Machine Learning (2018) ch 7 11 12, Chan - Algorithmic Trading Winning Strategies and Their Rationale (2013) ch 1, Isichenko - Quantitative Portfolio Management (2021), Bailey Borwein Lopez de Prado and Zhu (2014) - Pseudo-Mathematics and Financial Charlatanism - Notices of the AMS 61(5) 458-471, D'Avolio (2002) - The Market for Borrowing Stock - Journal of Financial Economics 66(2-3) 271-306]
 ---
 
 # Backtesting Methodology and Pitfalls
@@ -58,7 +58,8 @@ Fill-model realism by order type:
 
 - Market orders: fill at the touch plus impact; never at mid, never at the close print you used for the signal.
 - Limit orders: you fill only when the market trades through your price or you reach the front of the queue, and fills are adversely selected (you get filled when the price is about to move against you); assuming fills whenever the price touches your level is a large, systematic bias.
-- Shorts: need locate and borrow cost; hard-to-borrow names can cost many percent per year and may be recalled.
+- Shorts: need locate and borrow cost, and loans can be recalled.
+  D'Avolio (2002) finds that 91% of the stocks lent out in his sample cost less than 1% a year (value-weighted mean fee 17 bp), while the 9% "specials" averaged 4.3% a year, so a short book concentrated in hard-to-borrow names pays far more than general-collateral rates.
 
 ### Walk-forward evaluation
 
@@ -74,10 +75,10 @@ Walk-forward tests a single historical path, so its Sharpe is noisy and easy to 
 ### Purging and embargo
 
 When labels span time (for example a 10-day forward return), a training sample near the test block shares return days with test samples, which leaks information.
-Lopez de Prado's remedy in *Advances in Financial Machine Learning* chapter 7:
+Lopez de Prado's remedy in *Advances in Financial Machine Learning* chapter 7 ("Cross-Validation in Finance"):
 
 - **Purge:** drop training samples whose label interval overlaps any test label interval, on both sides of the test block.
-- **Embargo:** also drop a buffer of training samples immediately after the test block (for example 1% of the sample), because features such as moving averages carry test-period information forward.
+- **Embargo:** also drop a buffer of training samples immediately after the test block (this note uses 1% of the sample as an example), because features such as moving averages carry test-period information forward.
 
 Details and code are in [Time-Series Cross-Validation, Purging and Embargo](../10-Machine-Learning-for-Finance/02-Time-Series-Cross-Validation-Purging-Embargo.md).
 
@@ -104,6 +105,7 @@ Gross annual return 15%, volatility 10% (gross Sharpe 1.5), daily turnover 30% o
 - Cost sensitivity: at 2 bp the net Sharpe is 1.35, at 6 bp 1.05, at 8 bp 0.90.
 
 A 4 bp error in the cost model moves the Sharpe by 0.3; report net results under a range of costs and state the assumed participation rate.
+Simulating 4,000 years of daily gross returns and charging $0.30\times4$ bp each day gives the same net Sharpe within sampling error.
 
 ### 2. The missing shift
 
@@ -121,7 +123,8 @@ print(sharpe(pos.shift(1) * ret))    # correct: noise, 0.25 in this draw
 
 The look-ahead version earns $|r_t|$ every day.
 For Gaussian returns $E|r|/\text{sd}(|r|) = \sqrt{2/\pi}/\sqrt{1-2/\pi} = 1.32$, so its Sharpe is $1.32\sqrt{252} = 21.0$.
-Real look-ahead bugs are subtler (a full-sample z-score, a same-day fundamental join) and give Sharpes of 2 to 4 instead of 21, which is why they survive review.
+The script checks 21.0 by quadrature and by a 10-million-day simulation, and runs the snippet above exactly as printed.
+Real look-ahead bugs are subtler (a full-sample z-score, a same-day fundamental join) and give plausible-looking Sharpes rather than 21, which is why they survive review.
 
 ### 3. Survivorship bias in an equal-weight backtest
 
@@ -130,15 +133,20 @@ Each year 5% of the universe delists after a final-year return of $-60\%$; survi
 - True equal-weight return: $0.95 \times 10\% + 0.05 \times (-60\%) = 6.5\%$.
 - A survivors-only database reports 10%, a bias of $0.05 \times (10\% + 60\%) = 3.5\%$ per year.
 
-For a strategy that buys recent losers (reversal, deep value), delisting names are concentrated in the long leg and the bias is several times larger.
+For a strategy that buys recent losers (reversal, deep value), delisting names are concentrated in the long leg and the bias is larger than the universe-wide figure.
 
 ### 4. How much data purging and embargo cost
 
-Daily data, $T = 2500$ samples, 5-fold purged cross-validation, labels are 10-day forward returns, embargo 1% of $T$.
+Daily data, $T = 2500$ samples, 5-fold purged cross-validation, labels are 10-day forward returns (sample $t$ uses the returns of days $t+1$ to $t+10$), embargo 1% of $T$.
 
 - Each test fold has 500 samples; the embargo is $0.01 \times 2500 = 25$ samples.
-- For an interior test fold, purge 10 training samples before and 10 after the fold, then embargo 25 more after it: 45 samples lost.
-- Training set for an interior fold: $2500 - 500 - 45 = 1955$ samples instead of 2000.
+- A test fold starting at sample $s$ has labels covering return days $s+1$ to $s+509$.
+  Training samples $s-9$ to $s-1$ share return days with it, and so do samples $s+500$ to $s+508$ after it, so purging drops 9 on each side.
+  Sample $s-10$ uses days $s-9$ to $s$ and does not overlap; counting it would be an off-by-one error.
+- Embargo 25 more samples after the purged ones: $9 + 9 + 25 = 43$ samples lost.
+- Training set for an interior fold: $2500 - 500 - 43 = 1957$ samples instead of 2000; the first fold keeps 1966 and the last 1991, since each loses only one side.
+
+The script enumerates every sample's return days and tests overlap directly, so the count does not depend on this hand reasoning.
 
 The cost in data is small; skipping it lets the model memorise returns it will be tested on.
 
@@ -201,15 +209,29 @@ The cost in data is small; skipping it lets the model memorise returns it will b
 
 > [!question]- alpha-bt-short-constraints | Which frictions on the short side do naive backtests ignore?
 > Locate availability, borrow fees, recall risk and short-sale rules.
-> Hard-to-borrow names often carry the strongest short signals and borrow fees of several percent a year, so ignoring them overstates short-leg alpha.
+> Specials are a minority of loaned stocks but cost far more (in D'Avolio's 2002 sample, a 4.3% mean fee against 17 bp for general collateral), so ignoring borrow overstates the net return of any short book concentrated in such names.
+
+> [!question]- alpha-bt-purge-count | 2,500 daily samples, 5 folds, 10-day forward-return labels, embargo 1%. How many training samples does an interior fold keep?
+> 1957.
+> Purging drops the 9 samples on each side whose label windows share return days with the test fold, and the embargo drops 25 more after it: $2500 - 500 - 43$.
+
+> [!question]- alpha-bt-cost-sensitivity | A strategy has 15% gross return, 10% volatility and 30% daily turnover. What is its net Sharpe at 8 bp one-way cost?
+> About 0.90.
+> Annual cost is $0.30\times252\times8$ bp $= 6.05\%$, so the net Sharpe is $(15 - 6.05)/10$; each basis point of cost removes 0.076 of Sharpe.
+
+> [!question]- alpha-bt-survivorship-direction | Why does survivorship bias hurt a reversal or deep-value backtest more than the market average?
+> Those strategies buy recent losers, and in the example the delisting names are exactly the ones that fell 60% in their final year.
+> A survivors-only database drops those long-leg names with the worst final returns, so the bias in the long leg exceeds the universe-wide figure.
 
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/alpha_07_backtesting.py`](code/alpha_07_backtesting.py) prints and asserts every number on this page: cost drag and survivorship in exact fractions and the cost drag again by simulating daily returns, the look-ahead Sharpe by quadrature and a large simulation (plus the snippet run as printed), and purging and embargo by enumerating every sample's return days.
 - Code: [simple_event_driven.py](code/simple_event_driven.py) and [performance_metrics.py](code/performance_metrics.py).
 
 ## Further reading
 
-- Marcos Lopez de Prado, *Advances in Financial Machine Learning*
-- Ernest Chan, *Algorithmic Trading: Winning Strategies and Their Rationale*
+- Marcos Lopez de Prado, *Advances in Financial Machine Learning* (2018), chapters 7 ("Cross-Validation in Finance"), 11 ("The Dangers of Backtesting") and 12 ("Backtesting through Cross-Validation").
+- Ernest Chan, *Algorithmic Trading: Winning Strategies and Their Rationale* (2013).
 - Michael Isichenko, *Quantitative Portfolio Management* (2021).
-- Bailey, Borwein, Lopez de Prado and Zhu (2014), Pseudo-Mathematics and Financial Charlatanism, Notices of the AMS.
+- David H. Bailey, Jonathan Borwein, Marcos Lopez de Prado and Qiji Jim Zhu, "Pseudo-Mathematics and Financial Charlatanism: The Effects of Backtest Overfitting on Out-of-Sample Performance", *Notices of the AMS* 61(5) (2014), 458-471.
+- Gene D'Avolio, "The Market for Borrowing Stock", *Journal of Financial Economics* 66(2-3) (2002), 271-306.

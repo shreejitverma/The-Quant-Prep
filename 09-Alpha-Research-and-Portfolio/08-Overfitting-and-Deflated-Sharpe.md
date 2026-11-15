@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [backtesting-methodology-and-pitfalls, hypothesis-testing-and-multiple-comparisons]
 est_hours: 4
-sources: [Bailey and Lopez de Prado (2014) - The Deflated Sharpe Ratio - Journal of Portfolio Management 40(5), Bailey and Lopez de Prado (2012) - The Sharpe Ratio Efficient Frontier - Journal of Risk 15(2), Bailey Borwein Lopez de Prado and Zhu (2017) - The Probability of Backtest Overfitting - Journal of Computational Finance 20(4), Bailey Borwein Lopez de Prado and Zhu (2014) - Pseudo-Mathematics and Financial Charlatanism - Notices of the AMS 61(5), Harvey and Liu (2015) - Backtesting - Journal of Portfolio Management 42(1), Harvey Liu and Zhu (2016) - and the Cross-Section of Expected Returns - Review of Financial Studies 29(1), Lopez de Prado - Advances in Financial Machine Learning (2018) ch 11 12 14, Lo (2002) - The Statistics of Sharpe Ratios - Financial Analysts Journal 58(4), Mertens (2002) - Comments on Variance of the IID Estimator in Lo (2002) - research note]
+sources: [Bailey and Lopez de Prado (2014) - The Deflated Sharpe Ratio - Journal of Portfolio Management 40(5) 94-107, Bailey and Lopez de Prado (2012) - The Sharpe Ratio Efficient Frontier - Journal of Risk 15(2) 3-44, Bailey Borwein Lopez de Prado and Zhu (2017) - The Probability of Backtest Overfitting - Journal of Computational Finance 20(4), Bailey Borwein Lopez de Prado and Zhu (2014) - Pseudo-Mathematics and Financial Charlatanism - Notices of the AMS 61(5) 458-471, Harvey and Liu (2015) - Backtesting - Journal of Portfolio Management 42(1) 13-28, Harvey Liu and Zhu (2016) - and the Cross-Section of Expected Returns - Review of Financial Studies 29(1) 5-68, Lopez de Prado - Advances in Financial Machine Learning (2018) ch 11 12 14, Lo (2002) - The Statistics of Sharpe Ratios - Financial Analysts Journal 58(4) 36-52, Mertens (2002) - Variance of the IID Estimator in Lo (2002) - working paper University of Basel]
 ---
 
 # Overfitting, Deflated Sharpe and Multiple Testing
@@ -48,8 +48,9 @@ $$
 \text{Var}(\widehat{SR}) \approx \frac{1 - \gamma_3 SR + \frac{\gamma_4 - 1}{4}SR^2}{T-1},
 $$
 
-the non-normal extension of Lo (2002) due to Mertens (2002); for normal returns the numerator is $1 + SR^2/2$.
-Bailey and Lopez de Prado (2012) define the probability that the true Sharpe exceeds a benchmark $SR^*$:
+the non-normal extension of Lo (2002) due to Mertens (2002), as quoted in Bailey and Lopez de Prado (2012, equation 8); for normal returns the numerator is $1 + SR^2/2$.
+A simulation of 1,260 returns from a two-normal mixture with skewness $-1$ and kurtosis 6 at a daily Sharpe of 0.126 reproduces $(T-1)\text{Var}(\widehat{SR}) = 1.146$ and rejects the normal-returns value 1.008.
+Bailey and Lopez de Prado (2012, equation 11) define the probability that the true Sharpe exceeds a benchmark $SR^*$:
 
 $$
 \widehat{\text{PSR}}(SR^*) = \Phi\left[\frac{(\widehat{SR} - SR^*)\sqrt{T-1}}{\sqrt{1 - \hat\gamma_3\widehat{SR} + \frac{\hat\gamma_4 - 1}{4}\widehat{SR}^2}}\right].
@@ -60,7 +61,7 @@ Negative skew and fat tails widen the denominator and lower PSR, which is exactl
 
 ### Deflated Sharpe ratio
 
-Bailey and Lopez de Prado (2014) set the benchmark to the Sharpe you expect from the best of $N$ skill-less trials:
+Bailey and Lopez de Prado (2014, equation 2) set the benchmark to the Sharpe you expect from the best of $N$ skill-less trials:
 
 $$
 SR_0 = \sqrt{V\big[\{\widehat{SR}_n\}\big]}\left[(1-\gamma)\Phi^{-1}\Big(1-\frac1N\Big) + \gamma\,\Phi^{-1}\Big(1-\frac1N e^{-1}\Big)\right], \qquad \text{DSR} = \widehat{\text{PSR}}(SR_0).
@@ -72,7 +73,7 @@ Inputs, and how each is abused:
 - $V$: the variance of the Sharpe estimates across trials, in the same per-period units as $\widehat{SR}$.
 - $T$, $\hat\gamma_3$, $\hat\gamma_4$: sample length and higher moments of the selected strategy.
 
-DSR is a probability: 0.95 is the usual bar, read as "95% confidence the true Sharpe exceeds what selection alone would produce".
+DSR is a probability; a common bar is 0.95, read as "95% confidence the true Sharpe exceeds what selection alone would produce".
 
 ### Probability of backtest overfitting (CSCV)
 
@@ -84,8 +85,10 @@ Combinatorially symmetric cross-validation (CSCV):
 3. For each of the $\binom{S}{S/2}$ ways to choose half the blocks as the training set $J$ (complement $\bar J$ is the test set): find the in-sample winner $n^* = \arg\max_n SR_n(J)$, compute its relative rank $\bar\omega \in (0,1)$ among all $N$ configurations on $\bar J$, and the logit $\lambda = \ln\big(\bar\omega/(1-\bar\omega)\big)$.
 4. $\text{PBO} = \Pr(\lambda \le 0)$, the fraction of splits in which the in-sample winner is at or below the out-of-sample median.
 
+The paper writes the relative rank as $\bar\omega = \bar r/(N+1)$ with $\bar r$ the winner's out-of-sample rank, and PBO as $\int_{-\infty}^{0} f(\lambda)\,d\lambda$.
+
 PBO near 0 means in-sample ranking carries over; near 0.5 means selection is noise; above 0.5 means the procedure systematically picks configurations that do worse than a random one out of sample.
-The same machinery gives the regression of OOS on IS performance (performance degradation) and the probability that the winner loses money out of sample.
+The same machinery gives the regression of OOS on IS performance (performance degradation), the probability that the winner loses money out of sample, and a stochastic-dominance test.
 
 ### Combinatorial purged cross-validation (CPCV)
 
@@ -102,19 +105,19 @@ The output is a distribution of path Sharpes whose dispersion shows how much of 
 
 ### Multiple-testing haircuts (Harvey and Liu)
 
-Harvey and Liu (2015) turn a Sharpe into a $t$-stat, adjust its $p$-value for the number of tests $M$, and convert back:
+Harvey and Liu (2015) note that practitioners commonly discount backtested Sharpes by 50% as a rule of thumb, and replace that with a haircut derived from multiple testing: turn a Sharpe into a $t$-stat, adjust its $p$-value for the number of tests $M$, and convert back:
 
 1. $t = \widehat{SR}_{\text{ann}}\sqrt{Y}$ for $Y$ years of iid returns (adjust for autocorrelation if needed); two-sided $p = 2(1-\Phi(t))$.
 2. Adjusted $p$: Bonferroni $p^{M} = \min(Mp, 1)$; Holm is a step-down version that is uniformly more powerful; BHY (Benjamini-Hochberg-Yekutieli) controls the false discovery rate under arbitrary dependence, rejecting the $k$-th smallest of $M$ $p$-values when $p_{(k)} \le \frac{k}{M c(M)}\alpha$ with $c(M) = \sum_{j=1}^M 1/j$.
 3. Haircut $t^{M} = \Phi^{-1}(1 - p^{M}/2)$, haircut Sharpe $= t^{M}/\sqrt Y$, haircut $= 1 - \widehat{SR}^{M}/\widehat{SR}$.
 
-Harvey, Liu and Zhu (2016) apply this logic to the hundreds of published equity factors and conclude that a new factor should clear $t > 3.0$ rather than 2.0.
+Harvey, Liu and Zhu (2016) apply this logic to the 316 factors they catalogue and conclude that a new factor needs a $t$-statistic greater than 3.0 rather than 2.0.
 The general hypothesis-testing background is in [Hypothesis Testing and Multiple Comparisons](../02-Statistics-and-Econometrics/03-Hypothesis-Testing-and-Multiple-Comparisons.md).
 
 ### Minimum backtest length
 
 If each annualised Sharpe estimate over $Y$ years is $N(0, 1/Y)$ under the null, the expected best of $N$ is $\text{bracket}(N)/\sqrt Y$.
-Setting it equal to a target Sharpe $E[\max_N]$ and solving gives the minimum backtest length of Bailey et al. (2014):
+Setting it equal to a target Sharpe $E[\max_N]$ and solving gives the minimum backtest length of Bailey, Borwein, Lopez de Prado and Zhu (2014, theorem 2):
 
 $$
 \text{MinBTL} \approx \frac{\big[(1-\gamma)\Phi^{-1}(1-\frac1N) + \gamma\Phi^{-1}(1-\frac1{Ne})\big]^2}{E[\max_N]^2} < \frac{2\ln N}{E[\max_N]^2}\ \text{years}.
@@ -136,22 +139,8 @@ The winner has annualised Sharpe 2.0 over 5 years of daily data ($T = 1260$), sk
 
 Compare $\text{PSR}(0) = \Phi(4.18) \approx 1.0000$: the undeflated test calls it a certainty, the deflated one falls just short of 0.95.
 With $N = 1000$, $SR_0$ rises to 1.63 annualised and DSR drops to 0.78; a winner with Sharpe 1.5 and $N = 100$ gets DSR 0.69.
-
-```python
-import numpy as np
-from scipy.stats import norm
-
-def expected_max(n):
-    g = 0.5772156649
-    return (1 - g) * norm.ppf(1 - 1 / n) + g * norm.ppf(1 - 1 / (n * np.e))
-
-def psr(sr, sr_star, T, skew, kurt):  # per-period Sharpe; kurt is non-excess (normal = 3)
-    return norm.cdf((sr - sr_star) * np.sqrt(T - 1) / np.sqrt(1 - skew * sr + (kurt - 1) / 4 * sr**2))
-
-sr, V = 2 / np.sqrt(252), 0.25 / 252
-sr0 = np.sqrt(V) * expected_max(100)
-print(sr0 * np.sqrt(252), psr(sr, sr0, 1260, -1, 6))  # 1.265 0.9375
-```
+The `bracket` and `psr` functions in the script compute all of these with the standard library's `NormalDist` (DSR 0.9375 at four decimals).
+The bracket is itself an approximation: the exact expected maximum of 100 standard normals is 2.508, not 2.531, so $SR_0$ is about 1% conservative.
 
 ### 2. Harvey-Liu haircut
 
@@ -163,7 +152,8 @@ A strategy has annualised Sharpe 1.0 over 10 years.
 - A Sharpe 2.0 strategy with $M = 100$: $t = 6.32$, $p = 2.5\times10^{-10}$, $p^M = 2.5\times10^{-8}$, $t^M = 5.57$, haircut Sharpe 1.76, haircut only 12%.
 - A Sharpe 0.5 strategy: $t = 1.58$, $p = 0.114$, and with $M = 100$ the adjusted $p$ caps at 1: haircut 100%.
 
-The haircut is nonlinear: marginal results are wiped out, strong ones barely touched; Holm and BHY give smaller haircuts than Bonferroni.
+The haircut is nonlinear: marginal results are wiped out, strong ones barely touched.
+Holm's adjusted $p$-value is never larger than Bonferroni's, so its haircut is never larger; BHY controls the false discovery rate instead, and its haircut depends on the whole set of $p$-values tested.
 
 ### 3. Minimum backtest length
 
@@ -172,13 +162,13 @@ Target: do not let noise produce an annualised Sharpe of 1.
 - $N = 45$: bracket $= 2.236$, MinBTL $= 2.236^2/1 = 5.0$ years (bound $2\ln45 = 7.6$).
 - $N = 100$: 6.4 years; $N = 1000$: 10.6 years.
 
-So with 5 years of data, trying more than about 45 independent configurations makes a Sharpe of 1 the expected best result from pure noise.
+So with 5 years of data, trying more than about 45 independent configurations makes a Sharpe of 1 the expected best result from pure noise; this is the paper's own example ("if only five years of data are available, no more than forty-five independent model configurations should be tried").
 
 ### 4. CPCV bookkeeping
 
 $N = 6$ groups, $k = 2$ test groups: $\binom62 = 15$ train/test splits and $\varphi = \tfrac26\times15 = \binom51 = 5$ full backtest paths.
 With $N = 10$, $k = 2$: 45 splits and 9 paths.
-CSCV with $S = 16$ blocks evaluates $\binom{16}{8} = 12{,}870$ splits; $S = 10$ gives 252.
+CSCV with $S = 16$ blocks evaluates $\binom{16}{8} = 12{,}870$ splits (the PBO paper prints 12,780, a typo); $S = 10$ gives 252.
 
 ### 5. PBO by simulation
 
@@ -202,8 +192,9 @@ def pbo(M: np.ndarray, S: int = 10) -> float:
     return float(np.mean(np.array(logits) <= 0))
 ```
 
-With 50 pure-noise configurations over 1000 days, PBO averaged 0.48 across 20 simulated datasets, but individual datasets ranged from 0.05 to 0.76.
-Adding a daily mean of 0.15 standard deviations (annualised Sharpe about 2.4) to one configuration dropped the average PBO to 0.09.
+With 50 pure-noise configurations over 1000 days and $S = 10$, PBO averaged 0.48 across 100 simulated datasets (the null expectation is 0.5), but individual datasets ranged from 0.10 to 0.96.
+Adding a daily mean of 0.15 standard deviations (annualised Sharpe about 2.4) to one configuration dropped the average PBO to 0.08.
+The script reproduces this with a seeded, block-statistics implementation of CSCV and checks that the snippet above returns identical values on the same data.
 Lesson: PBO is itself a noisy statistic on one dataset; read it together with DSR and the OOS-versus-IS degradation plot.
 
 ## Pitfalls
@@ -261,11 +252,11 @@ Lesson: PBO is itself a noisy statistic on one dataset; read it together with DS
 
 > [!question]- alpha-haircut-nonlinear | Why is a flat 50% Sharpe haircut wrong?
 > Multiple-testing haircuts are nonlinear in the Sharpe.
-> With $M = 100$ over 10 years, Sharpe 2.0 is haircut only 12% while Sharpe 1.0 is haircut 55% and Sharpe 0.5 is wiped out.
+> With $M = 100$ over 10 years, Sharpe 2.0 is haircut only 12% while Sharpe 1.0 is haircut 55% and Sharpe 0.5 is wiped out; Harvey and Liu (2015) call the 50% haircut only a rule of thumb for this reason.
 
 > [!question]- alpha-hlz-t3 | What $t$-stat hurdle do Harvey, Liu and Zhu propose for new equity factors, and why?
 > About 3.0.
-> Hundreds of factors have been tested on the same data, and adjusting for that many tests (Bonferroni, Holm, BHY) pushes the significance threshold well above the single-test 2.0.
+> Harvey, Liu and Zhu (2016) catalogue 316 factors tested on largely the same data, and adjusting for that many tests (Bonferroni, Holm, BHY) pushes the significance threshold well above the single-test 2.0.
 
 > [!question]- alpha-minbtl | With 5 years of data, how many independent trials make a Sharpe of 1 the expected best from pure noise?
 > About 45.
@@ -275,12 +266,26 @@ Lesson: PBO is itself a noisy statistic on one dataset; read it together with DS
 > It treats the winner as if it were the only strategy tested.
 > Under selection even zero-skill strategies produce a maximum Sharpe well above zero; DSR replaces the zero benchmark with that expected maximum.
 
+> [!question]- alpha-dsr-more-trials | The DSR example (annualised Sharpe 2.0, 5 years daily, cross-trial sd 0.5, skew $-1$, kurtosis 6) used $N = 100$. What happens with $N = 1000$?
+> DSR falls from 0.94 to about 0.78.
+> The bracket grows from 2.531 to 3.255, so $SR_0$ rises from 1.27 to 1.63 annualised and the gap to the observed 2.0 shrinks.
+
+> [!question]- alpha-haircut-holm-vs-bonferroni | For the same set of tests, can Holm's haircut ever exceed Bonferroni's?
+> No.
+> Holm multiplies the $k$-th smallest $p$-value by $M - k + 1 \le M$ (then enforces monotonicity), so its adjusted $p$-value is never above Bonferroni's $Mp$ and its haircut is never larger.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/alpha_08_deflated_sharpe.py`](code/alpha_08_deflated_sharpe.py) prints and asserts every number on this page: the Euler-Mascheroni bracket against quadrature and simulation, the non-normal Sharpe variance by simulating a skewed fat-tailed mixture, DSR and PSR with the standard library, Harvey-Liu haircuts with $p$-values from `math.erfc` and $t$-stats by bisection, MinBTL by direct search over $N$, CPCV paths by enumerating and stitching every split, and PBO by a block-statistics CSCV that must equal the snippet above.
+- Related notes: [Research Process and Hypothesis Discipline](01-Research-Process-and-Hypothesis-Discipline.md), [Backtesting Methodology and Pitfalls](07-Backtesting-Methodology-and-Pitfalls.md), [Performance Metrics and the Fundamental Law](09-Performance-Metrics-and-Fundamental-Law.md), [Order Statistics and Extremes](../01-Probability/08-Order-Statistics-and-Extremes.md).
+
 ## Further reading
 
-- Bailey and Lopez de Prado (2014), The Deflated Sharpe Ratio
-- Harvey, Liu and Zhu (2016), ... and the Cross-Section of Expected Returns
-- Marcos Lopez de Prado, *Advances in Financial Machine Learning*
-- Bailey and Lopez de Prado (2012), The Sharpe Ratio Efficient Frontier, Journal of Risk.
-- Bailey, Borwein, Lopez de Prado and Zhu (2017), The Probability of Backtest Overfitting, Journal of Computational Finance.
-- Bailey, Borwein, Lopez de Prado and Zhu (2014), Pseudo-Mathematics and Financial Charlatanism, Notices of the AMS.
-- Harvey and Liu (2015), Backtesting, Journal of Portfolio Management.
+- David H. Bailey and Marcos Lopez de Prado, "The Deflated Sharpe Ratio: Correcting for Selection Bias, Backtest Overfitting and Non-Normality", *Journal of Portfolio Management* 40(5) (2014), 94-107.
+- David H. Bailey and Marcos Lopez de Prado, "The Sharpe Ratio Efficient Frontier", *Journal of Risk* 15(2) (2012), 3-44 (PSR, the Mertens variance and minimum track record length).
+- David H. Bailey, Jonathan Borwein, Marcos Lopez de Prado and Qiji Jim Zhu, "The Probability of Backtest Overfitting", *Journal of Computational Finance* 20(4) (2017).
+- David H. Bailey, Jonathan Borwein, Marcos Lopez de Prado and Qiji Jim Zhu, "Pseudo-Mathematics and Financial Charlatanism: The Effects of Backtest Overfitting on Out-of-Sample Performance", *Notices of the AMS* 61(5) (2014), 458-471.
+- Campbell R. Harvey and Yan Liu, "Backtesting", *Journal of Portfolio Management* 42(1) (2015), 13-28.
+- Campbell R. Harvey, Yan Liu and Heqing Zhu, "... and the Cross-Section of Expected Returns", *Review of Financial Studies* 29(1) (2016), 5-68.
+- Andrew W. Lo, "The Statistics of Sharpe Ratios", *Financial Analysts Journal* 58(4) (2002), 36-52.
+- Marcos Lopez de Prado, *Advances in Financial Machine Learning* (2018), chapters 11, 12 and 14.

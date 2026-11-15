@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 3
-sources: [Lopez de Prado - Advances in Financial Machine Learning (2018) ch 7 11 12, Isichenko - Quantitative Portfolio Management (2021) ch 2, Bailey and Lopez de Prado (2014) - The Deflated Sharpe Ratio - Journal of Portfolio Management 40(5), Harvey Liu and Zhu (2016) - and the Cross-Section of Expected Returns - Review of Financial Studies 29(1), Ioannidis (2005) - Why Most Published Research Findings Are False - PLoS Medicine 2(8), Harvey (2017) - The Scientific Outlook in Financial Economics - Journal of Finance 72(4)]
+sources: [Lopez de Prado - Advances in Financial Machine Learning (2018) ch 7 11 12, Isichenko - Quantitative Portfolio Management (2021) ch 2, Bailey and Lopez de Prado (2014) - The Deflated Sharpe Ratio - Journal of Portfolio Management 40(5) 94-107, Harvey Liu and Zhu (2016) - and the Cross-Section of Expected Returns - Review of Financial Studies 29(1) 5-68, Ioannidis (2005) - Why Most Published Research Findings Are False - PLoS Medicine 2(8) e124, Harvey (2017) - Presidential Address - The Scientific Outlook in Financial Economics - Journal of Finance 72(4) 1399-1440]
 ---
 
 # Research Process and Hypothesis Discipline
@@ -46,7 +46,7 @@ Those auxiliary predictions are cheap, independent tests: if the mechanism's sid
 A hypothesis is useful only if some outcome would refute it.
 "Momentum works in some regime" is not falsifiable; "the 12-1 month cross-sectional momentum decile spread in US large caps has a positive mean excess return, $t > 3$, over 2005-2020 after 10 bp one-way costs" is.
 Pre-registration fixes the researcher degrees of freedom (the choices that could otherwise be tuned to the data): lookback, skip period, universe filters, winsorisation, rebalance day, cost model and the metric.
-Harvey (2017) calls tuning these after seeing the data "p-hacking"; the published $t$-stat is then conditional on a search it does not report.
+Harvey (2017) discusses tuning these after seeing the data as direct and indirect "p-hacking"; the published $t$-stat is then conditional on a search it does not report.
 
 ### Selection bias from the search itself
 
@@ -57,7 +57,7 @@ $$
 E\Big[\max_n \widehat{SR}_n\Big] \approx \sqrt{\tfrac{1}{Y}}\Big[(1-\gamma)\Phi^{-1}\big(1-\tfrac1N\big) + \gamma\,\Phi^{-1}\big(1-\tfrac1{Ne}\big)\Big],
 $$
 
-with $\gamma \approx 0.5772$ the Euler-Mascheroni constant (Bailey and Lopez de Prado 2014).
+with $\gamma \approx 0.5772$ the Euler-Mascheroni constant (Bailey and Lopez de Prado 2014, where it sets the benchmark $SR_0$ of the deflated Sharpe ratio).
 The bracket grows like $\sqrt{2\ln N}$: 1.57 for $N=10$, 2.28 for $N=50$, 2.53 for $N=100$.
 This is why the research log matters: the reported Sharpe is only interpretable next to the number of trials and the dispersion of their Sharpes, which are exactly the inputs of the deflated Sharpe ratio ([Overfitting and Deflated Sharpe](08-Overfitting-and-Deflated-Sharpe.md)).
 
@@ -76,7 +76,8 @@ $$
 \text{PPV} = \frac{\pi(1-\beta)}{\pi(1-\beta) + (1-\pi)\alpha}.
 $$
 
-This is the argument of Ioannidis (2005), and Harvey, Liu and Zhu (2016) use the multiple-testing version of it to argue that new equity factors should clear $t > 3$ rather than $t > 2$.
+This is the argument of Ioannidis (2005), who writes it with the pre-study odds $R = \pi/(1-\pi)$ as $\text{PPV} = (1-\beta)R/(R - \beta R + \alpha)$, the same expression.
+Harvey, Liu and Zhu (2016) catalogue 316 published factors and use the multiple-testing version of the argument to conclude that a new factor needs a $t$-statistic above 3.0 rather than 2.
 Low priors are the norm in alpha research: most ideas are variations on crowded themes or pure data mining.
 Two levers raise PPV: a stronger prior (a real mechanism, out-of-sample evidence in another market) and a stricter threshold.
 
@@ -101,7 +102,7 @@ Practical rules:
 Write kill criteria into the specification, in three families.
 
 - **Evidence against the mechanism.** Side predictions fail, the effect lives entirely in microcaps or untradeable names, or it disappears once point-in-time data replaces restated data ([Point-in-Time Data and Survivorship](02-Point-in-Time-Data-and-Survivorship.md)).
-- **Economics.** Net-of-cost Sharpe below the hurdle, capacity below the minimum the desk can run, or the signal is more than about 0.7 correlated with an existing book so its marginal contribution is small.
+- **Economics.** Net-of-cost Sharpe below the hurdle, capacity below the minimum the desk can run, or the signal so correlated with an existing book (pick the threshold in advance, for example 0.7) that its marginal contribution is small.
 - **Live divergence.** A drawdown or tracking error band stated before launch, sized from the backtest distribution, not an ad hoc reaction to a bad month.
 
 Because Sharpe estimates are so noisy over short windows (worked example 4), statistical evidence alone rarely justifies killing a strategy after a few months; process evidence (a data bug, a fill-model error, a crowding event) usually does.
@@ -117,7 +118,7 @@ Setup: 10% of the ideas you test are real, your test has 80% power at $\alpha = 
   An effect with 80% power at 1.96 has non-centrality $\delta = 1.96 + 0.8416 = 2.80$, so power at 3 is $\Phi(2.80 - 3) = 0.421$.
 - PPV at $t > 3$: $\frac{0.1\times0.421}{0.1\times0.421 + 0.9\times0.0027} = 0.945$.
 
-Interview point: the stricter threshold roughly halves power but cuts the false discovery share from 36% to 5.5%; the cure for lost power is more data or better priors, not a looser threshold.
+Interview point: the stricter threshold roughly halves power (0.80 to 0.421, confirmed by simulating the test statistic) but cuts the false discovery share from 36% to 5.5%; the cure for lost power is more data or better priors, not a looser threshold.
 
 ### 2. How long must a strategy run before you believe it?
 
@@ -127,14 +128,15 @@ Target: annualised Sharpe $S = 0.8$, iid returns.
 - Years for 80% power at one-sided 5%: $Y = \big((1.645 + 0.842)/0.8\big)^2 = 9.7$.
 - Two-sided 5% with 80% power: $\big((1.960+0.842)/0.8\big)^2 = 12.3$ years.
 
-For $S = 2$ the same power needs only about 1.5 to 2 years, which is why high-Sharpe, high-frequency strategies can be validated quickly and slow factors cannot.
+For $S = 2$ the same power needs only about 1.5 years one-sided or 2.0 years two-sided, which is why high-Sharpe, high-frequency strategies can be validated quickly and slow factors cannot.
+Simulating 20,000 daily return paths confirms the rule: at $S = 0.8$ the mean $t$-stat after 6.25 years is 2.0, and after 12.3 years 80% of paths clear $t = 1.96$.
 
 ### 3. The best of 50 random strategies
 
 Setup: 50 variants, all with zero true Sharpe, evaluated on 5 years of daily data.
 
 - Standard error of an annualised Sharpe estimate: $\sqrt{1/5} = 0.447$ (the $S^2/2$ term is zero at $S = 0$).
-- Expected maximum of 50 standard normals: $(1-\gamma)\Phi^{-1}(0.98) + \gamma\Phi^{-1}(1 - 1/(50e)) = 2.276$ (simulation gives 2.25).
+- Expected maximum of 50 standard normals: $(1-\gamma)\Phi^{-1}(0.98) + \gamma\Phi^{-1}(1 - 1/(50e)) = 2.276$; the exact value, by quadrature or simulation, is 2.25, so the approximation is about 1% high.
 - Expected best Sharpe: $2.276 \times 0.447 = 1.02$.
 
 A Sharpe of 1 after 50 unlogged tries on 5 years is exactly what pure noise produces.
@@ -147,6 +149,8 @@ sr_hat = rng.standard_normal((n_sims, n_trials)) / np.sqrt(years)  # annualised 
 print(sr_hat.max(axis=1).mean())  # about 1.01
 ```
 
+The script runs this snippet exactly as printed and asserts its output.
+
 ### 4. Should we kill it after six bad months?
 
 Setup: haircut backtest Sharpe 1.0, live for 6 months with realised annualised Sharpe $-0.5$.
@@ -156,6 +160,7 @@ Setup: haircut backtest Sharpe 1.0, live for 6 months with realised annualised S
 - Even if the strategy is exactly as good as claimed, a negative 6-month Sharpe has probability $\Phi(-1.0/1.41) = 0.24$.
 
 The same shortfall after 2 years gives $z = -1.5/0.707 = -2.12$, $p = 0.017$, which is real evidence.
+Simulating 400,000 six-month paths of daily returns with true Sharpe 1 gives the same 0.24 and 0.144.
 Conclusion: six months cannot statistically reject the backtest; the decision should come from pre-registered drawdown limits and a check of the process (fills, costs, data), not from the realised Sharpe alone.
 
 ## Pitfalls
@@ -218,15 +223,28 @@ Conclusion: six months cannot statistically reject the backtest; the decision sh
 > The effective number of independent trials, estimated from the correlation of the trial return series.
 > Cluster the trials (for example hierarchical clustering on return correlations) and count clusters; using 200 over-corrects, using 1 under-corrects.
 
+> [!question]- alpha-research-ppv-t3 | Same pipeline (10% of ideas real, 80% power at $t > 1.96$), but you now require $t > 3$. What share of discoveries is false?
+> About 5.5%.
+> Power falls to $\Phi(2.80 - 3) = 0.421$ while $\alpha$ falls to 0.0027, so PPV $= 0.0421/(0.0421 + 0.9\times0.0027) = 0.945$.
+
+> [!question]- alpha-research-power-years | How many years of iid data does a true Sharpe 0.8 strategy need for 80% power at two-sided 5%?
+> About 12.3 years.
+> $Y = \big((z_{0.975} + z_{0.80})/S\big)^2 = \big((1.960 + 0.842)/0.8\big)^2$; reaching $t = 2$ on average takes only $(2/0.8)^2 = 6.25$ years, but that is a coin flip.
+
+> [!question]- alpha-research-negative-six-months | A strategy truly has annualised Sharpe 1. How likely is a negative Sharpe over its first 6 months?
+> About 24%.
+> The realised Sharpe is roughly $N(1, 1/0.5)$, so $P(\widehat{SR} < 0) = \Phi(-1/1.41) = 0.24$; for Gaussian returns this is exact, because the Sharpe is negative exactly when the mean is.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/alpha_01_research_process.py`](code/alpha_01_research_process.py) prints and asserts every number on this page: base rates by counting a population of ideas in exact fractions, power at $t > 3$ by simulating the test statistic, years to significance by simulating daily return paths, the expected maximum of $N$ normals by quadrature and simulation against the Euler-Mascheroni approximation, and the six-month kill test by simulating realised Sharpe ratios.
 - Related notes: [Overfitting and Deflated Sharpe](08-Overfitting-and-Deflated-Sharpe.md), [Backtesting Methodology and Pitfalls](07-Backtesting-Methodology-and-Pitfalls.md), [Hypothesis Testing and Multiple Comparisons](../02-Statistics-and-Econometrics/03-Hypothesis-Testing-and-Multiple-Comparisons.md), [Research Case Studies and Take-Homes](../13-Interview-Playbook/08-Research-Case-Studies-and-Take-Homes.md).
 
 ## Further reading
 
 - Marcos Lopez de Prado, *Advances in Financial Machine Learning* (2018), chapters 7, 11 and 12.
 - Michael Isichenko, *Quantitative Portfolio Management* (2021).
-- Bailey and Lopez de Prado (2014), The Deflated Sharpe Ratio, Journal of Portfolio Management.
-- Harvey, Liu and Zhu (2016), ... and the Cross-Section of Expected Returns, Review of Financial Studies.
-- Harvey (2017), The Scientific Outlook in Financial Economics, Journal of Finance.
-- Ioannidis (2005), Why Most Published Research Findings Are False, PLoS Medicine.
+- David H. Bailey and Marcos Lopez de Prado, "The Deflated Sharpe Ratio: Correcting for Selection Bias, Backtest Overfitting and Non-Normality", *Journal of Portfolio Management* 40(5) (2014), 94-107.
+- Campbell R. Harvey, Yan Liu and Heqing Zhu, "... and the Cross-Section of Expected Returns", *Review of Financial Studies* 29(1) (2016), 5-68.
+- Campbell R. Harvey, "Presidential Address: The Scientific Outlook in Financial Economics", *Journal of Finance* 72(4) (2017), 1399-1440.
+- John P. A. Ioannidis, "Why Most Published Research Findings Are False", *PLoS Medicine* 2(8) (2005), e124.

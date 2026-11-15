@@ -5,14 +5,14 @@ tier: core
 status: solid
 prereqs: [linear-regression-ols, point-in-time-data-and-survivorship]
 est_hours: 4
-sources: [Grinold and Kahn - Active Portfolio Management 2nd ed (1999), Isichenko - Quantitative Portfolio Management (2021), Qian Hua and Sorensen - Quantitative Equity Portfolio Management (2007), Almgren Thum Hauptmann and Li (2005) - Direct Estimation of Equity Market Impact - Risk 18(7)]
+sources: [Grinold and Kahn - Active Portfolio Management 2nd ed (1999), Isichenko - Quantitative Portfolio Management (2021), Qian Hua and Sorensen - Quantitative Equity Portfolio Management (2007), Almgren Thum Hauptmann and Li (2005) - Equity Market Impact - Risk 18(7), Toth Lemperiere Deremble de Lataillade Kockelkoren and Bouchaud (2011) - Anomalous Price Impact and the Critical Nature of Liquidity in Financial Markets - Physical Review X 1 021006]
 ---
 
 # Signals, Features and Alpha Decay
 
 ## TL;DR
 
-- The information coefficient (IC) is the cross-sectional correlation between a signal at $t$ and returns after $t$; rank IC (Spearman) is the robust default, and typical daily equity ICs are 0.01 to 0.05.
+- The information coefficient (IC) is the cross-sectional correlation between a signal at $t$ and returns after $t$; rank IC (Spearman) is the robust default, and useful ICs are small (the examples here use 0.03).
 - A signal-weighted book earns roughly $\text{IC}\times\sigma_{cs}\times(\text{scaling})$ per period, and its Sharpe is $\overline{\text{IC}}/\text{sd}(\text{IC})\times\sqrt{\text{periods per year}}$, so IC stability matters as much as its mean.
 - IC decay $\text{IC}(k) = \text{corr}(s_t, r_{t+k})$ sets the natural horizon; the IC against $h$-period cumulative returns peaks at an intermediate $h$.
 - Signal autocorrelation $\rho$ sets turnover: a signal-proportional book trades about $\sqrt{2(1-\rho)}$ of its gross per rebalance, which with the alpha per period fixes the break-even cost.
@@ -64,7 +64,7 @@ Two consequences an interviewer will probe:
 
 - Expected PnL scales with IC and with cross-sectional dispersion, which is regime dependent (high in crises, low in quiet markets).
 - The Sharpe of the book is approximately $\overline{\text{IC}}/\text{sd}(\text{IC}) \times \sqrt{252}$ for daily rebalancing.
-  The fundamental-law value $\text{IC}\sqrt{N}$ is an upper bound that assumes uncorrelated residuals and constant IC; common factors and time variation in IC make realised $\text{sd}(\text{IC})$ far larger than $1/\sqrt{N}$ ([Performance Metrics and the Fundamental Law](09-Performance-Metrics-and-Fundamental-Law.md)).
+  The fundamental-law value $\text{IC}\sqrt{N}$ is the best case, which assumes uncorrelated residuals and constant IC, so that $\text{sd}(\text{IC}) \approx 1/\sqrt{N}$; common factors and time variation in IC make realised $\text{sd}(\text{IC})$ far larger ([Performance Metrics and the Fundamental Law](09-Performance-Metrics-and-Fundamental-Law.md)).
 
 ### IC decay and horizon
 
@@ -89,7 +89,8 @@ Smoothing the signal (exponential moving average) or trading only partway toward
 
 ### Capacity
 
-Square-root impact (Almgren et al. 2005): trading $Q$ dollars in a name with daily volume $V$ costs a fraction of about $Y\sigma\sqrt{Q/V}$, with $\sigma$ daily volatility and $Y$ of order one.
+Square-root impact (documented and explained by Toth et al. 2011): trading $Q$ dollars in a name with daily volume $V$ moves the price by a fraction of about $Y\sigma\sqrt{Q/V}$, with $\sigma$ daily volatility and $Y$ of order one.
+It is an empirical approximation, not a law of nature: Almgren, Thum, Hauptmann and Li (2005) fit a 3/5 power for temporary impact on their execution data and reject the square root, and Toth et al. report exponents between about 0.4 and 0.7 across studies.
 A book of size $A$ with daily turnover $T$ trades $TA$ per day and earns $\alpha A$, so
 
 $$
@@ -121,12 +122,13 @@ Setup: 2,000 names, daily rank IC 0.03, cross-sectional return dispersion 2% per
 - Expected return on gross: $0.03 \times 0.02 / 0.798 = 0.075\%$ per day, about 19% of gross per year before costs.
 - If $\text{sd}(\text{IC}) = 0.10$ day to day, the gross Sharpe is $0.03/0.10\times\sqrt{252} = 4.8$.
 - The naive $\text{IC}\sqrt{N\cdot252} = 0.03\sqrt{504{,}000} = 21$ is what you would get if residuals were independent and IC constant; a simulation with iid residuals reproduces about 21, real data never does.
+- Simulating the 2,000-name book with a true daily IC that varies so that the realised $\text{sd}(\text{IC})$ is 0.10 gives a book Sharpe equal to $\overline{\text{IC}}/\text{sd}(\text{IC})\times\sqrt{252}$ on the same panel and within sampling error of 4.8.
 
 ### 2. Turnover from autocorrelation
 
 The same signal has day-to-day autocorrelation $\rho = 0.9$.
 
-- Daily turnover: $\sqrt{2(1-0.9)} = 0.447$ of gross (simulation: 0.446).
+- Daily turnover: $\sqrt{2(1-0.9)} = 0.447$ of gross (a seeded simulation of a 2,000-name signal-proportional book agrees within 0.003).
 - At 5 bp one-way cost, daily cost is $0.447 \times 5 = 2.24$ bp against 7.5 bp of alpha, leaving 5.3 bp.
 - Break-even cost: $7.52/0.447 = 16.8$ bp per unit traded.
 - At $\rho = 0.99$ turnover falls to $0.141$; the question is how much IC the slower version keeps.
@@ -137,7 +139,8 @@ Marginal IC decays geometrically: $\text{IC}(1) = 0.03$, $\delta = 0.8$.
 
 - Half-life: $\ln 2/\ln 1.25 = 3.1$ days.
 - Cumulative-horizon IC: $h=1$: 0.030; $h=2$: $0.054/\sqrt2 = 0.038$; $h=5$: $0.1008/\sqrt5 = 0.045$; $h=10$: $0.1339/\sqrt{10} = 0.042$; $h=20$: 0.033.
-- The IC is maximised near $h = 5$, and the total harvestable IC is $0.03/0.2 = 0.15$.
+- The IC peaks at $h = 6$ (0.0452), essentially tied with $h = 5$ (0.0451), and the total harvestable IC is $0.03/0.2 = 0.15$.
+- Simulating a signal against twenty independent lagged returns with these marginal ICs reproduces the cumulative-horizon ICs within sampling error.
 
 So target a roughly weekly holding period and check that the implied turnover leaves positive net alpha.
 
@@ -229,13 +232,27 @@ Winsorise or rank the signal before trading it, or the book will be driven by th
 > $\alpha_i = \text{IC}\times\sigma_i\times z_i$.
 > This is the conditional mean of residual return given the score when score and return are jointly normal with correlation IC; it shrinks weak signals toward zero automatically.
 
+> [!question]- alpha-signal-ic-daily-return | 2,000 names, daily IC 0.03, cross-sectional return dispersion 2% a day, book $w = z/\sum|z|$. Expected daily return on gross?
+> About 0.075% a day, roughly 19% a year before costs.
+> $R \approx \text{IC}\times\sigma_{cs}/E|z| = 0.03\times0.02/0.798$, with $E|z| = \sqrt{2/\pi}$ for Gaussian scores.
+
+> [!question]- alpha-signal-horizon-peak-numeric | Marginal IC is $0.03\times0.8^{k-1}$ at lag $k$. Which holding horizon $h$ maximises the IC against $h$-day cumulative returns?
+> $h = 6$, with IC 0.0452.
+> $\text{IC}_{[1,h]} = 0.15(1 - 0.8^h)/\sqrt h$ gives 0.0451 at $h = 5$, 0.0452 at $h = 6$ and 0.0448 at $h = 7$, so roughly a weekly horizon.
+
+> [!question]- alpha-signal-profit-max-size | Under square-root impact, what book size maximises net PnL relative to the break-even size?
+> $4/9$ of break-even.
+> Net PnL is $\alpha A - kA^{3/2}$; it is zero at $A = (\alpha/k)^2$ and maximal where $\alpha = \tfrac32 kA^{1/2}$, at $A = (2\alpha/3k)^2$.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/alpha_03_signals.py`](code/alpha_03_signals.py) prints and asserts every number on this page: book return and Sharpe by simulating a 2,000-name cross-section, turnover by simulating an AR(1) signal, horizon ICs by enumeration in exact fractions and by simulation, the neutralisation regression by solving the normal equations in exact rational arithmetic, Pearson and Spearman ICs exactly, and capacity by bisection and golden-section search on the net-PnL curve.
 - Related notes: [Cross-Sectional Factor Models](04-Cross-Sectional-Factor-Models.md), [Transaction Costs and Turnover](13-Transaction-Costs-and-Turnover.md), [Linear Regression OLS](../02-Statistics-and-Econometrics/04-Linear-Regression-OLS.md).
 
 ## Further reading
 
-- Grinold and Kahn, *Active Portfolio Management*
-- Michael Isichenko, *Quantitative Portfolio Management*
+- Richard C. Grinold and Ronald N. Kahn, *Active Portfolio Management* (2nd ed., 1999).
+- Michael Isichenko, *Quantitative Portfolio Management* (2021).
 - Qian, Hua and Sorensen, *Quantitative Equity Portfolio Management* (2007).
-- Almgren, Thum, Hauptmann and Li (2005), Direct Estimation of Equity Market Impact, Risk.
+- Robert Almgren, Chee Thum, Emmanuel Hauptmann and Hong Li, "Equity Market Impact", *Risk* 18(7) (2005) (temporary impact fitted with a 3/5 power).
+- Bence Toth, Yves Lemperiere, Cyril Deremble, Joachim de Lataillade, Julien Kockelkoren and Jean-Philippe Bouchaud, "Anomalous Price Impact and the Critical Nature of Liquidity in Financial Markets", *Physical Review X* 1 (2011), 021006 (the square-root law).
