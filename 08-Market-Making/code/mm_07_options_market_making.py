@@ -176,8 +176,10 @@ def example3() -> None:
     approx("shown working: book delta from the rounded table deltas", 100 * (200 * 0.526 - 300 * 0.372 + 100 * 0.360), 2960, 0)
     approx("book gamma (shares per dollar)", total("gamma"), -484, 0)
     approx("book vega (dollars per point)", total("vega"), -4336, 0)
+    approx("book vega, hundreds of dollars (card: short about 4,300)", total("vega") / 100, -43, 0)
     approx("3-month vega", total("vega", slice(0, 2)), -1690, 0)
     approx("6-month vega", total("vega", slice(2, 3)), -2646, 0)
+    assert abs(total("vega", slice(2, 3))) > abs(total("vega", slice(0, 2))), "card: mostly in 6 months"
     approx("book theta (dollars per day)", total("theta"), 413, 0)
     approx("shown working: one-dollar move cost 0.5 x 484", 0.5 * 484 * 1.0**2, 242, 0)
     approx("shown working: break-even daily move sqrt(2 x 413 / 484)", math.sqrt(2 * 413 / 484), 1.31, 2)
