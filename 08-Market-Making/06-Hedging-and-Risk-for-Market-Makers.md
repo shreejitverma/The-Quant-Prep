@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [quote-management-skew-width-and-size, the-greeks]
 est_hours: 3
-sources: [Lebron (2019) The Laws of Trading. Wiley, Sinclair (2013) Volatility Trading. 2nd edition. Wiley, Hull. Options Futures and Other Derivatives. Pearson (minimum-variance hedge ratio), Whalley and Wilmott (1997) An asymptotic analysis of an optimal hedging model for option pricing with transaction costs. Mathematical Finance 7(3) 307-324, SEC Rule 15c3-5 (17 CFR 240.15c3-5) Risk management controls for brokers or dealers with market access, SEC (2013) In the Matter of Knight Capital Americas LLC. Release No. 34-70694]
+sources: [Lebron (2019) The Laws of Trading. Wiley, Sinclair (2013) Volatility Trading. 2nd edition. Wiley, Hull (2021) Options Futures and Other Derivatives 11th edition. Pearson chapter 3 (minimum-variance hedge ratio), Whalley and Wilmott (1997) An asymptotic analysis of an optimal hedging model for option pricing with transaction costs. Mathematical Finance 7(3) 307-324, SEC Rule 15c3-5 (17 CFR 240.15c3-5) Risk management controls for brokers or dealers with market access, SEC (2013) In the Matter of Knight Capital Americas LLC. Release No. 34-70694, Epps (1979) Comovements in stock prices in the very short run. Journal of the American Statistical Association 74(366) 291-298]
 ---
 
 # Hedging and Risk for Market Makers
@@ -49,7 +49,7 @@ $$
 That is the regression beta of $A$ on $H$.
 The fraction of volatility removed is $1 - \sqrt{1 - \rho^2}$, which is small unless $\rho$ is high: 20% at $\rho = 0.6$, 56% at 0.9, 69% at 0.95 and 86% at 0.99.
 With several hedge instruments the ratios come from a multiple regression, $h^* = \Sigma_{HH}^{-1}\Sigma_{HA}$.
-Estimate on returns sampled slowly enough to avoid asynchronous-price bias, and re-estimate: correlations fall in some stress regimes, exactly when you need the hedge.
+Estimate on returns sampled slowly enough to avoid asynchronous-price bias, and re-estimate and stress the ratio regularly: a ratio fitted in calm markets is not guaranteed to hold in stress, exactly when you need the hedge.
 
 ### Passive versus aggressive hedging
 
@@ -63,7 +63,7 @@ $$
 
 Because the risk term grows with $n^2$, small positions are hedged passively or by skewing and large ones aggressively.
 Most desks use a band: do nothing inside $|\Delta| < b$, skew quotes as $|\Delta|$ approaches $b$, and hedge back toward the band edge (not to zero) when outside it.
-Whalley and Wilmott (1997) show that for an option hedger with proportional costs the optimal no-trade band scales with the cube root of the transaction cost, so doubling costs widens the band by only about 26%.
+Whalley and Wilmott (1997) show that for an option hedger with proportional costs the optimal no-trade band around the Black-Scholes delta scales with the cube root of the transaction cost (and widens where gamma is large), so doubling costs widens the band by only about 26%.
 
 ### Limits
 
@@ -93,8 +93,8 @@ Common triggers:
 - High reject rate from the venue.
 
 Design rules: the switch runs outside the strategy process (in a risk gateway or separate service) so a bug in the strategy cannot disable it; it fails closed (if the risk service cannot confirm state, orders stop); it uses exchange-side tools where available (mass cancel, cancel-on-disconnect); and it needs deliberate human action to reset.
-In the US, SEC Rule 15c3-5 (the market access rule, adopted in 2010) requires broker-dealers with market access to maintain pre-trade risk controls such as credit and capital thresholds and erroneous-order checks.
-The standard cautionary case is Knight Capital in August 2012: the SEC's 2013 order describes a deployment error that sent millions of unintended orders in about 45 minutes and a loss of more than 460 million dollars, with inadequate automated controls to stop it.
+In the US (as of November 2026), SEC Rule 15c3-5 (the market access rule, adopted on November 3, 2010 in Release No. 34-63241) requires brokers or dealers with market access to have pre-trade controls that reject orders exceeding pre-set credit or capital thresholds and erroneous orders that exceed price or size parameters.
+The standard cautionary case is Knight Capital on August 1, 2012: the SEC's order (Release No. 34-70694, October 16, 2013) describes how, while processing 212 small retail orders, Knight's router sent millions of orders into the market over a 45-minute period, obtained over 4 million executions in 154 stocks for more than 397 million shares, and lost over 460 million dollars, and it found that Knight violated Rule 15c3-5.
 See [Risk Checks and Order Management](../12-Quant-Development/13-Risk-Checks-and-Order-Management.md).
 
 ## Worked examples
@@ -109,7 +109,7 @@ The hedge removes only a fifth of the risk; the remaining 16,000 dollars is idio
 
 ### Example 2: when to cross to hedge
 
-You need to sell 10,000 shares of a one-cent-wide 40 dollar stock with per-second volatility 0.00392 dollars.
+You need to sell 10,000 shares of a one-cent-wide 40 dollar stock with per-second volatility 0.00392 dollars (the stock of Example 1 in [Quote Management](05-Quote-Management-Skew-Width-and-Size.md); the fees, rebate and risk aversion here are hypothetical).
 Aggressive: pay the half-spread 0.005 plus a 0.003 taker fee, 80 dollars.
 Passive: earn the 0.005 half-spread plus a 0.002 rebate but lose 0.004 of adverse selection on the passive fill, a net 30 dollars.
 The swing between the two is 110 dollars.
@@ -135,13 +135,13 @@ Maximum position: $50{,}000 / (2.326 \times 1) \approx 21{,}500$ shares; set the
 
 A strategy's daily P&L has mean 20,000 dollars and standard deviation 15,000 dollars.
 A stop at $-40{,}000$ is 4 standard deviations below the mean; under a normal model that happens with probability about $3.2 \times 10^{-5}$, once in roughly 125 years of 252 trading days.
-A stop at $-25{,}000$ is 3 standard deviations below: probability about 0.135%, roughly once every 740 trading days.
+A stop at $-25{,}000$ is 3 standard deviations below: probability about 0.135%, roughly once every 741 trading days.
 Real P&L has fat tails, so expect breaches more often than the normal model says; but if the $-40{,}000$ stop fires twice in a quarter, assume the strategy or its environment has changed, not bad luck.
 
 ## Pitfalls
 
 - Hedging a single stock with index futures and believing the risk is gone; at $\rho = 0.6$ 80% of the volatility remains.
-- Estimating hedge ratios on tick data, where asynchronous prices bias correlations toward zero.
+- Estimating hedge ratios on tick data, where asynchronous prices bias correlations toward zero (the Epps effect: Epps 1979 found correlations between stocks shrink as the return interval shortens).
 - Rebalancing continuously; transaction costs dominate, and bands are cheaper for the same risk.
 - Hedging every option fill in the underlying and ignoring gamma and vega accumulation.
 - Kill switches inside the strategy process, or switches that fail open when the risk service is unreachable.
@@ -198,16 +198,34 @@ Real P&L has fat tails, so expect breaches more often than the normal model says
 > About once in 125 years (probability about $3.2 \times 10^{-5}$ per day).
 > It is 4 sd below the mean; fat tails make it more frequent, but repeated breaches signal a regime change.
 
+> [!question]- mm-hedge-rho-09-reduction | How much of a position's volatility does the best single hedge remove at correlations 0.9 and 0.99?
+> About 56% and 86%.
+> The residual is $\sqrt{1 - \rho^2}$ of the original: 0.436 at 0.9 and 0.141 at 0.99, so only very close hedges remove most of the risk.
+
+> [!question]- mm-hedge-breakeven-wait | Crossing costs 80 dollars, posting earns a net 30, and holding 10,000 shares costs $\frac12\gamma n^2\sigma^2 = 0.77$ dollars a second. How long can you wait for a passive fill?
+> About 143 seconds.
+> The swing between crossing and posting is 110 dollars, and $110/0.77 \approx 143$; beyond that, cross.
+
+> [!question]- mm-hedge-bandwidth-cost-doubling | Under Whalley and Wilmott's asymptotics, how much wider should the no-trade band be when proportional costs double?
+> About 26% wider.
+> The band scales with the cube root of the cost, and $2^{1/3} \approx 1.26$.
+
+> [!question]- mm-hedge-stop-3sd | Daily P&L has mean 20,000 and sd 15,000. How often does a -25,000 stop fire under normality?
+> About 0.135% of days, once in roughly 741 trading days.
+> The stop is 3 sd below the mean and $P(Z < -3) \approx 0.00135$.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/mm_06_hedging_and_risk.py`](code/mm_06_hedging_and_risk.py) prints and asserts every number on this page: the hedge ratio by grid search and by regression on seeded simulated returns, the break-even wait by bisection, normal quantiles and tail probabilities by quadrature of the density, and limits by brute force over positions.
 - Position-limit tiers in the systems companion: [Quantitative Models and Strategies](Quant-Dev-MM-Guide/03_Quantitative_Models_and_Strategies.md), section 2.3.
 - Engineering of pre-trade checks: [Risk Checks and Order Management](../12-Quant-Development/13-Risk-Checks-and-Order-Management.md).
 
 ## Further reading
 
 - Agustin Lebron, *The Laws of Trading* (2019).
-- Euan Sinclair, *Volatility Trading*, 2nd edition (2013), chapters on hedging and risk management.
-- John Hull, *Options, Futures, and Other Derivatives*, chapter on hedging strategies using futures.
-- Whalley and Wilmott (1997), An asymptotic analysis of an optimal hedging model for option pricing with transaction costs, *Mathematical Finance* 7(3).
-- SEC Rule 15c3-5, Risk management controls for brokers or dealers with market access.
-- SEC (2013), In the Matter of Knight Capital Americas LLC, Release No. 34-70694.
+- Euan Sinclair, *Volatility Trading*, 2nd edition (2013), chapters 6 (Hedging) and 8 (Money Management).
+- John Hull, *Options, Futures, and Other Derivatives*, 11th edition (2021), chapter 3 (Hedging Strategies Using Futures).
+- A. E. Whalley and P. Wilmott (1997), An asymptotic analysis of an optimal hedging model for option pricing with transaction costs, *Mathematical Finance* 7(3), 307-324.
+- T. W. Epps (1979), Comovements in stock prices in the very short run, *Journal of the American Statistical Association* 74(366), 291-298.
+- SEC Rule 15c3-5 (17 CFR 240.15c3-5), Risk management controls for brokers or dealers with market access, Release No. 34-63241 (November 3, 2010), as of November 2026.
+- SEC (2013), In the Matter of Knight Capital Americas LLC, Release No. 34-70694 (October 16, 2013).
