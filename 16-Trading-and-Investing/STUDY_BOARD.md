@@ -19,7 +19,7 @@ Run `python3 16-Trading-and-Investing/scripts/mastery.py` to write your live boa
 
 The Markets Mastery OS study board quantifies learner readiness through transparent mathematical formulas.
 Mastery integrates spaced-repetition retention, interactive lab simulation sessions, and disciplined stage gate progression.
-Overall curriculum scope encompasses 2248 cards, 11 pure-Python simulation engines, and a verifiable 100-trade capital gate.
+Overall curriculum scope encompasses 2260 cards, 11 pure-Python simulation engines, and a verifiable 100-trade capital gate.
 
 ---
 
@@ -28,7 +28,7 @@ Overall curriculum scope encompasses 2248 cards, 11 pure-Python simulation engin
 | Metric | Target | Actual State | Status |
 | :--- | :--- | :--- | :--- |
 | **Overall Composite Score** | >= 80.0% | 0.0% | Novice / Foundations |
-| **Card Retention & Mastery** | >= 80.0% | 0.0% (0/2248 cards, 0 mature) | In Progress |
+| **Card Retention & Mastery** | >= 80.0% | 0.0% (0/2260 cards, 0 mature) | In Progress |
 | **Simulation Engine Execution** | 11/11 Engines | 0/11 engines executed | In Progress |
 | **Automated Stage Gates** | 39 Gates | 0/39 gates passed | In Progress |
 | **Capital Gate Eligibility** | 100 trades, PF >= 1.50, DD <= 10R | Pending Paper Sample | PENDING |
@@ -60,7 +60,7 @@ Learners can orient their progression toward one of four distinct market archety
 | `track_pf` | Portfolio Management & Risk Allocation | `mkt-pf-` | 256 | 0 | 0 | 0.0% | F: Pend / C: Pend |
 | `track_opt` | Options & Volatility Trading | `mkt-opt-` | 128 | 0 | 0 | 0.0% | F: Pend / C: Pend |
 | `track_ta` | Technical Analysis & Market Profile | `mkt-ta-` | 256 | 0 | 0 | 0.0% | F: Pend / C: Pend |
-| `track_sys` | Systematic Trading Systems | `mkt-sys-` | 256 | 0 | 0 | 0.0% | F: Pend / C: Pend |
+| `track_sys` | Systematic Trading Systems | `mkt-sys-` | 268 | 0 | 0 | 0.0% | F: Pend / C: Pend |
 | `track_ind` | Indian Markets Microstructure & F&O | `mkt-ind-` | 32 | 0 | 0 | 0.0% | F: Pend / C: Pend |
 | `track_mac` | Macro Rates & FX Dynamics | `mkt-mac-` | 32 | 0 | 0 | 0.0% | F: Pend / C: Pend |
 | `track_cmd` | Commodity Term Structures & Storage | `mkt-cmd-` | 32 | 0 | 0 | 0.0% | F: Pend / C: Pend |
