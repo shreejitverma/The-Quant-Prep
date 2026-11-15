@@ -26,7 +26,11 @@ class Param:
     def cast(self, raw_val: Any) -> Any:
         if raw_val is None:
             return self.default
+        if self.param_type in ("int", "float") and isinstance(raw_val, bool):
+            raise ValueError(f"Param '{self.name}' must be a number, got {raw_val!r}")
         if self.param_type == "int":
+            if isinstance(raw_val, float) and not raw_val.is_integer():
+                raise ValueError(f"Param '{self.name}' must be a whole number, got {raw_val!r}")
             val = int(raw_val)
             if self.min_val is not None and val < self.min_val:
                 raise ValueError(f"Param '{self.name}' must be >= {self.min_val}, got {val}")
@@ -47,7 +51,12 @@ class Param:
         if self.param_type == "bool":
             if isinstance(raw_val, bool):
                 return raw_val
-            return str(raw_val).lower() in ("true", "1", "yes")
+            text = str(raw_val).strip().lower()
+            if text in ("true", "1", "yes"):
+                return True
+            if text in ("false", "0", "no"):
+                return False
+            raise ValueError(f"Param '{self.name}' must be true or false, got {raw_val!r}")
         if self.param_type == "str":
             val = str(raw_val)
             if self.choices and val not in self.choices:
@@ -153,7 +162,12 @@ class TradingLabEngine(ABC):
         final_equity = equity_curve[-1]
         start_equity = equity_curve[0]
 
-        cagr = (final_equity / start_equity) ** (1.0 / years) - 1.0 if years > 0 and final_equity > 0 else 0.0
+        if final_equity <= 0:
+            cagr = -1.0  # a wiped-out account lost everything: (0 / V0)^(1 / years) - 1
+        elif years > 0:
+            cagr = (final_equity / start_equity) ** (1.0 / years) - 1.0
+        else:
+            cagr = 0.0
 
         # Mean and standard deviation
         mean_r = sum(returns) / n_periods

@@ -166,6 +166,9 @@ TRACK_METADATA = {
     },
 }
 
+GAMES_GATE_MIN_ROUNDS = 100
+GAMES_GATE_RUNS = 3
+
 LAB_ENGINES = {
     "games": "Mental Math & Market Making Games",
     "lob_sim": "Limit Order Book & Execution (TCA) Simulator",
@@ -315,9 +318,13 @@ def evaluate_gate(
             # Default target to 64 if vault cards aren't fully loaded
             target_count = max(64, total_cards) if total_cards > 0 else 64
 
-            # Check lab games
-            game_sessions = [s for s in lab_history if s.get("engine") == "games"]
-            best_score = max((s.get("metrics", {}).get("performance_score", 0.0) for s in game_sessions), default=0.0)
+            game_sessions = [
+                s
+                for s in lab_history
+                if s.get("engine") == "games" and s.get("metrics", {}).get("rounds_completed", 0) >= GAMES_GATE_MIN_ROUNDS
+            ]
+            recent_scores = [s["metrics"].get("performance_score", 0.0) for s in game_sessions[-GAMES_GATE_RUNS:]]
+            mean_score = sum(recent_scores) / len(recent_scores) if recent_scores else 0.0
 
             reqs = [
                 GateRequirement(
@@ -328,9 +335,14 @@ def evaluate_gate(
                 ),
                 GateRequirement(
                     name="Interview Trading Games Practice",
-                    target="Performance score >= 60.0",
-                    actual=f"{best_score:.1f} score",
-                    passed=best_score >= 60.0,
+                    target=f"Mean performance score >= 60.0 over the last {GAMES_GATE_RUNS} runs of >= {GAMES_GATE_MIN_ROUNDS} rounds",
+                    actual=(
+                        f"{mean_score:.1f} mean over the last {len(recent_scores)} of {len(game_sessions)} qualifying runs "
+                        f"({GAMES_GATE_RUNS} needed)"
+                        if recent_scores
+                        else f"0 qualifying runs ({GAMES_GATE_RUNS} needed)"
+                    ),
+                    passed=len(recent_scores) == GAMES_GATE_RUNS and mean_score >= 60.0,
                 ),
             ]
             return StageGate(track_id, stage, "Pro Quant Foundations Gate", reqs)

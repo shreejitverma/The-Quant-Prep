@@ -61,7 +61,7 @@ It combines cash equity execution with high-volume index and stock derivatives, 
 ## Trading Lab Engines
 
 - `opt_desk`: Real-time Greeks and PnL attribution calibrated to NSE lot sizes and strike intervals.
-- `pos_sizing`: Dynamic position sizing engine accounting for SEBI peak margin rules and asymmetric option buying vs writing risk.
+- `pos_sizing`: Kelly and fixed-fraction sizing with Monte Carlo drawdown, ruin probability and time under water, for Bernoulli or fat-tailed trade outcomes; it does not model SEBI peak margin.
 - `fut_desk`: Futures calendar spreads, cost-of-carry, and cash-and-carry basis arbitrage engine.
 
 ---

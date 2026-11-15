@@ -108,9 +108,18 @@ class LimitOrderBook:
         return True
 
     def insert_order(self, order: Order) -> list[tuple[Order, Order, float, int]]:
-        """Process order against book using price-time priority. Returns list of (maker, taker, price, size) fills."""
+        """Process order against book using price-time priority. Returns list of (maker, taker, price, size) fills.
+
+        A post-only order only ever adds liquidity: one that would cross the opposite best is rejected
+        whole (no fill, nothing rests) instead of trading as a taker.
+        """
         fills: list[tuple[Order, Order, float, int]] = []
         order.price = self.round_tick(order.price)
+
+        if order.order_type == "post_only":
+            opposite = self.best_ask() if order.side == "buy" else self.best_bid()
+            if opposite is not None and (order.price >= opposite if order.side == "buy" else order.price <= opposite):
+                return fills
 
         if order.side == "buy":
             # Match against asks
@@ -133,9 +142,6 @@ class LimitOrderBook:
 
             # Unfilled remainder
             if order.size > 0 and order.order_type not in ("market", "ioc"):
-                if order.order_type == "post_only" and fills:
-                    # Post-only crossed; cancel remainder
-                    return fills
                 queue = self.bids.setdefault(order.price, deque())
                 queue.append(order)
                 self.orders[order.order_id] = order
@@ -159,8 +165,6 @@ class LimitOrderBook:
                     self._remove_level("buy", best_bid)
 
             if order.size > 0 and order.order_type not in ("market", "ioc"):
-                if order.order_type == "post_only" and fills:
-                    return fills
                 queue = self.asks.setdefault(order.price, deque())
                 queue.append(order)
                 self.orders[order.order_id] = order

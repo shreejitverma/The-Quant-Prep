@@ -241,7 +241,8 @@ The **dashboard** (`web/`) is a dependency-free single-page app with hash routes
 Markdown, maths and diagrams use marked, DOMPurify, KaTeX and Mermaid from jsDelivr, each pinned to a version with a Subresource Integrity hash.
 
 The **Trading Lab** page (`/lab/`) lists the eleven engines.
-Selecting an engine shows a quick client-side preview; **Run Simulation** calls `POST /api/lab/run`, shows the server's metrics, and records the run for the Markets mastery score.
+Selecting an engine shows its form and posts nothing; **Run Simulation** calls `POST /api/lab/run`, shows the server's metrics, summary and a chart of the engine's own series, and records the run for the Markets mastery score.
+The page computes no numbers itself: if the server is unreachable it says so instead of estimating, so it never shows results that disagree with the engines.
 
 ## Validation
 
@@ -273,6 +274,8 @@ Selecting an engine shows a quick client-side preview; **Run Simulation** calls 
 - **Stage gates:** `foundations` and `core` for every track, plus a `capital_gate` on the trading track, each requiring reviewed stage cards, lab runs or journal statistics.
   A card's stage comes from the note it lives in, never from its id: the first half of a track's notes in syllabus order (rounded down) are `foundations` and the rest `core`, and a one-note track splits that note's cards in half by position (`track_stage_cards`).
   So a card appended to a note joins that note's stage and raises its target, and any card id works.
+  The Track 0 `foundations` gate also needs a mean `performance_score >= 60` over the learner's last three `games` runs of at least 100 rounds (`rounds_completed`), and with fewer than three such runs it does not pass.
+  Shorter runs do not count, because over 5 rounds naive play clears 60 in about a third of seeds by luck, and the mean of three stops a lucky single 100-round run from passing.
 - **Mastery score:** per track `100 * (0.6 * coverage + 0.4 * retention)`; overall `0.5 * cards + 0.3 * lab + 0.2 * gates`, mapped to a readiness level.
 
 `./qp markets [status|gates|mastery] --persona P` reports them, and `python3 16-Trading-and-Investing/scripts/mastery.py` writes the live study board to `$QP_HOME/STUDY_BOARD.md`.
@@ -286,7 +289,7 @@ Engines register themselves at import through `lab/registry.py`.
 | :--- | :--- |
 | `event_study` | Historical event case files: abnormal returns, liquidity slippage, pre-mortem hedges. |
 | `fut_desk` | Futures, basis and carry: term structures, calendar spreads, roll yield, basis arbitrage. |
-| `games` | Interview trading games in the style of dice and card quoting rounds. |
+| `games` | Interview trading games: dice and card quoting against informed and noise counterparties, scored as the share of the optimal edge captured. |
 | `journal_stats` | Trade journal analytics: R expectancy, MAE and MFE, setup attribution, tilt detection, the capital gate. |
 | `lob_sim` | Limit order book and execution: price-time priority with Poisson flow and Almgren-Chriss benchmarks. |
 | `mm_quote` | Two-sided market making: Avellaneda-Stoikov quoting, adverse selection, P&L attribution. |
@@ -325,7 +328,7 @@ CI (`.github/workflows/ci.yml`) runs on every pull request and on `main`:
 ## Known limitations
 
 - The dashboard needs network access for its renderers; offline, notes render as escaped plain text.
-- The Trading Lab's client-side preview is unseeded and is not recorded; only **Run Simulation** uses the engines and records the run.
+- The Trading Lab needs `./qp serve`; opened as a static file it refuses to run.
 - The Trading Lab's **Study Board** link opens the tracked empty template; the live board is the file `mastery.py` writes to `$QP_HOME`.
 - `state.json` locking is in-process only on Windows.
 - CI tests Python 3.12; the platform targets 3.10 and later.

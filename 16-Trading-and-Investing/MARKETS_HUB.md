@@ -96,7 +96,7 @@ Each engine runs locally via the `./qp lab run <engine>` CLI or via the web dash
 
 | Engine ID | Name | Core Focus | Command |
 |---|---|---|---|
-| `games` | Interview Trading Games | Mental arithmetic, market making game, Bayesian probability updates | `./qp lab run games` |
+| `games` | Interview Trading Games | Dice and card quoting against informed and noise traders, posterior-mean updating, score = share of the optimal edge captured | `./qp lab run games` |
 | `lob_sim` | Limit Order Book & Execution (TCA) Simulator | Price-time priority matching, queue position, Almgren-Chriss execution, slippage, and a time-and-sales tape of recent fills | `./qp lab run lob_sim` |
 | `mm_quote` | Two-Sided Market Maker | Avellaneda-Stoikov inventory control, reservation price, skew | `./qp lab run mm_quote` |
 | `pos_sizing` | Position Sizing and Ruin | Kelly criterion, optimal f, Monte Carlo drawdown risk | `./qp lab run pos_sizing` |

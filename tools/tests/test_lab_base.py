@@ -44,6 +44,14 @@ class TestTradingLabBase(unittest.TestCase):
         dd_metrics = TradingLabEngine.calculate_returns_metrics(dd_curve, risk_free_rate=0.0, periods_per_year=2)
         self.assertAlmostEqual(dd_metrics["max_drawdown"], 0.20, places=2)
 
+    def test_wiped_out_equity_compounds_at_minus_100_pct(self):
+        # Oracle: CAGR = (V_end / V_0)^(1 / years) - 1, which is -1 when V_end = 0; reporting 0 would
+        # say the account broke even. The drawdown of a wiped-out account is the whole peak.
+        metrics = TradingLabEngine.calculate_returns_metrics([100.0, 50.0, 0.0, 0.0], risk_free_rate=0.0, periods_per_year=12)
+        self.assertEqual(metrics["cagr"], -1.0)
+        self.assertEqual(metrics["max_drawdown"], 1.0)
+        self.assertEqual(metrics["calmar"], -1.0)
+
     def test_calculate_trade_metrics(self):
         pnls = [100.0, -50.0, 150.0, -50.0]
         metrics = TradingLabEngine.calculate_trade_metrics(pnls)
@@ -57,6 +65,28 @@ class TestTradingLabBase(unittest.TestCase):
     def test_trade_expectancy_counts_breakevens_as_zero(self):
         # Mean of [10, 0, -10] is 0; treating the breakeven as a loss would give -3.33.
         self.assertEqual(TradingLabEngine.calculate_trade_metrics([10.0, 0.0, -10.0])["expectancy"], 0.0)
+
+    def test_param_cast_rejects_values_it_would_silently_change(self):
+        # A typo such as simulate_tilt=ture used to read as False, and n_steps=100.7 ran 100 steps.
+        p_bool = Param("flag", "bool", False, "desc")
+        for raw, expected in (("TRUE", True), ("yes", True), ("1", True), ("False", False), ("no", False), ("0", False)):
+            self.assertIs(p_bool.cast(raw), expected)
+        for raw in ("ture", "maybe", ""):
+            with self.assertRaises(ValueError):
+                p_bool.cast(raw)
+        p_int = Param("steps", "int", 10, "desc", min_val=1)
+        self.assertEqual(p_int.cast(100.0), 100)
+        with self.assertRaises(ValueError):
+            p_int.cast(100.7)
+
+    def test_numeric_params_reject_booleans(self):
+        # A JSON true is not a number: seed=true used to run silently as seed 1.
+        games = get_engine("games")
+        pos_sizing = get_engine("pos_sizing")
+        for engine, name in ((games, "seed"), (games, "num_rounds"), (pos_sizing, "win_rate")):
+            for raw in (True, False):
+                with self.subTest(engine=engine.engine_id, param=name, raw=raw), self.assertRaises(ValueError):
+                    engine.run(**{name: raw})
 
     def test_param_cast_rejects_non_finite_floats(self):
         p = Param(name="x", param_type="float", default=0.5, description="x", min_val=0.0, max_val=1.0)

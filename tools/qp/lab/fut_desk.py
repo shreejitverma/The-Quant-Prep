@@ -176,6 +176,7 @@ class FuturesDeskEngine(TradingLabEngine):
             net_carry_rate = (r - q + c) - y
 
         term_structure = []
+        market_futures = []
         for days in days_list:
             t = days / 365.0
             # Continuous cost-of-carry model: F = S * exp(net_carry * T)
@@ -183,6 +184,7 @@ class FuturesDeskEngine(TradingLabEngine):
             # Add small microstructure basis noise (+- 5 to 15 bps)
             noise_pct = rng.uniform(-0.0015, 0.0015)
             f_market = f_theo * (1.0 + noise_pct)
+            market_futures.append(f_market)
 
             basis_dollar = f_market - spot
             basis_pct = (basis_dollar / spot) * 100.0
@@ -202,6 +204,7 @@ class FuturesDeskEngine(TradingLabEngine):
 
         # Front month (T1) and next month (T2) calendar spread
         front_contract = term_structure[0]
+        front_market_future = market_futures[0]
         next_contract = term_structure[1] if len(term_structure) > 1 else term_structure[0]
         calendar_spread = next_contract["market_future"] - front_contract["market_future"]
         calendar_spread_pct = (calendar_spread / front_contract["market_future"]) * 100.0
@@ -213,16 +216,13 @@ class FuturesDeskEngine(TradingLabEngine):
         )
 
         # Cash-and-carry arbitrage simulation on front contract
-        # Strategy: Buy Spot with borrowed capital at rate r, Short Future at F_market
-        front_t = front_contract["years"]
+        # Strategy: Buy Spot with borrowed capital at rate r, Short Future at F_market. Financing at r, storage
+        # at c and income at q compound together, so delivering at T leaves units * (F - S * exp((r + c - q) T));
+        # the convenience yield is not cash and does not enter. Unrounded T and F keep the P&L exact.
+        front_t = front_contract["days"] / 365.0
         units = capital / spot
-        borrowed_cost = capital * (math.exp(r * front_t) - 1.0)
-        dividend_collected = capital * (math.exp(q * front_t) - 1.0)
-        storage_paid = capital * (math.exp(c * front_t) - 1.0)
-
-        # At expiration T: Spot converges to Future
-        revenue_from_short = units * front_contract["market_future"]
-        net_repayment = capital + borrowed_cost + storage_paid - dividend_collected
+        revenue_from_short = units * front_market_future
+        net_repayment = capital * math.exp((r + c - q) * front_t)
         arb_net_pnl = revenue_from_short - net_repayment
         arb_annualized_roi = (arb_net_pnl / capital) * (1.0 / front_t) * 100.0
 

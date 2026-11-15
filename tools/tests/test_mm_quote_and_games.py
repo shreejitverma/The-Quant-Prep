@@ -1,11 +1,13 @@
 """Unit tests for tools/qp/lab/mm_quote.py and games.py."""
 
+import itertools
 import math
 import unittest
 
 from tools.qp.lab.games import InterviewTradingGamesEngine
 from tools.qp.lab.mm_quote import MarketMakerEngine
 from tools.qp.lab.registry import get_engine
+from tools.qp.markets import evaluate_gate
 
 LOT = 100
 
@@ -185,6 +187,179 @@ class TestMarketMakerAndGames(unittest.TestCase):
                 self.assertEqual(res.metrics["pricing_accuracy_pct"], expected)
                 checked += len(trades) < res.metrics["total_quoting_stages"]
         self.assertGreater(checked, 0, "no run had unfilled quotes, so the denominator went untested")
+
+
+def _mean_and_se(values: list[float]) -> tuple[float, float]:
+    n = len(values)
+    mean = sum(values) / n
+    sd = math.sqrt(sum((v - mean) ** 2 for v in values) / (n - 1))
+    return mean, sd / math.sqrt(n)
+
+
+class TestInterviewGamesFairness(unittest.TestCase):
+    """Seeds 0-299 (0-899 for the gate's seed triples) are fixed in advance.
+
+    Every claim is a mean or share with three computed standard errors.
+    """
+
+    SEEDS = range(300)
+    GATE_SEEDS = range(900)
+
+    @classmethod
+    def setUpClass(cls):
+        engine = get_engine("games")
+        cls.runs = {
+            (game, style, 20): [engine.run(game_type=game, quoting_style=style, num_rounds=20, seed=s) for s in cls.SEEDS]
+            for game in ("dice_sum", "card_sum")
+            for style in ("optimal", "wide_conservative", "naive_static")
+        }
+        cls.runs.update(
+            {
+                (game, style, 100): [engine.run(game_type=game, quoting_style=style, num_rounds=100, seed=s) for s in cls.GATE_SEEDS]
+                for game in ("dice_sum", "card_sum")
+                for style in ("optimal", "wide_conservative", "naive_static")
+            }
+        )
+        for game in ("dice_sum", "card_sum"):
+            cls.runs[(game, "naive_static", 5)] = [
+                engine.run(game_type=game, quoting_style="naive_static", num_rounds=5, seed=s) for s in cls.SEEDS
+            ]
+
+    def test_cards_are_drawn_without_replacement_from_a_52_card_deck(self):
+        # Oracle: enumerate the deck. After c1 the other 51 cards hold 364 - c1 points, so
+        # E[c2 | c1] = (364 - c1) / 51, and a pair of equal ranks has probability 3/51 (1/13 with replacement).
+        deck = [rank for rank in range(1, 14) for _ in range(4)]
+        pairs = 0
+        same_rank = 0
+        for res in self.runs[("card_sum", "optimal", 20)]:
+            for rnd in res.data["rounds"]:
+                c1, c2 = rnd["cards"]
+                rest = list(deck)
+                rest.remove(c1)
+                enumerated = c1 + sum(rest) / len(rest)
+                self.assertAlmostEqual(enumerated, c1 + (364 - c1) / 51, places=12)
+                self.assertAlmostEqual(rnd["quotes"][0]["fair_value"], 14.0, places=6)
+                self.assertAlmostEqual(rnd["quotes"][1]["fair_value"], enumerated, places=6)
+                pairs += 1
+                same_rank += c1 == c2
+        share = same_rank / pairs
+        se = math.sqrt((3 / 51) * (48 / 51) / pairs)
+        self.assertLess(abs(share - 3 / 51), 3 * se)
+        self.assertGreater(abs(share - 1 / 13), 3 * se)
+
+    def test_dice_fair_value_is_the_posterior_mean_of_the_revealed_dice(self):
+        for res in self.runs[("dice_sum", "optimal", 20)][:20]:
+            for rnd in res.data["rounds"]:
+                dice = rnd["dice"]
+                for stage, quote in enumerate(rnd["quotes"]):
+                    unknown = 3 - stage
+                    outcomes = [sum(dice[:stage]) + sum(rest) for rest in itertools.product(range(1, 7), repeat=unknown)]
+                    self.assertAlmostEqual(quote["fair_value"], sum(outcomes) / len(outcomes), places=6)
+
+    def test_optimal_style_has_positive_edge_and_beats_the_wide_style(self):
+        # The counterparty must not see hidden dice or cards: against one that does, no width makes money.
+        for game in ("dice_sum", "card_sum"):
+            with self.subTest(game=game):
+                opt = [r.metrics["total_pnl"] for r in self.runs[(game, "optimal", 20)]]
+                wide = [r.metrics["total_pnl"] for r in self.runs[(game, "wide_conservative", 20)]]
+                mean_opt, se_opt = _mean_and_se(opt)
+                mean_wide, se_wide = _mean_and_se(wide)
+                self.assertGreater(mean_opt - 3 * se_opt, 0.0)
+                self.assertGreater(mean_opt - mean_wide, 3 * math.sqrt(se_opt**2 + se_wide**2))
+                # The exact enumerated expectation the score is normalized by agrees with the simulation.
+                expected = self.runs[(game, "optimal", 20)][0].data["expected_optimal_pnl"]
+                self.assertLess(abs(mean_opt - expected), 3 * se_opt)
+
+    def test_optimal_width_maximizes_the_enumerated_edge(self):
+        # Oracle: enumerate every information state and outcome. A quote of half-width h around the posterior
+        # mean earns h from a noise trader whose N(0, s) valuation error exceeds h (either side), and loses the
+        # overshoot (X - h)^+ or (-X - h)^+ to an informed trader, X being the true sum minus the posterior mean.
+        engine = get_engine("games")
+        deck = [rank for rank in range(1, 14) for _ in range(4)]
+
+        def states(game):
+            if game == "dice_sum":
+                for k in range(3):
+                    for rolls in itertools.product(range(1, 7), repeat=k):
+                        yield 6.0**-k, [sum(rolls) + sum(rest) for rest in itertools.product(range(1, 7), repeat=3 - k)]
+            else:
+                yield 1.0, [deck[i] + deck[j] for i in range(52) for j in range(52) if i != j]
+                for c1 in range(1, 14):
+                    rest = list(deck)
+                    rest.remove(c1)
+                    yield 4 / 52, [c1 + c for c in rest]
+
+        def edge_per_round(game, k, p_informed, noise_multiple):
+            total = 0.0
+            for prob, outcomes in states(game):
+                mean = sum(outcomes) / len(outcomes)
+                sd = math.sqrt(sum((o - mean) ** 2 for o in outcomes) / len(outcomes))
+                h = k * sd
+                lost = sum(max(0.0, o - mean - h) + max(0.0, mean - o - h) for o in outcomes) / len(outcomes)
+                gained = 2.0 * h * 0.5 * math.erfc(h / (noise_multiple * sd) / math.sqrt(2.0))
+                total += prob * ((1.0 - p_informed) * gained - p_informed * lost)
+            return total
+
+        for game in ("dice_sum", "card_sum"):
+            with self.subTest(game=game):
+                res = engine.run(game_type=game, num_rounds=5)
+                p_informed = res.data["informed_fraction"]
+                quote = res.data["rounds"][0]["quotes"][0]
+                outcomes = next(states(game))[1]
+                mean = sum(outcomes) / len(outcomes)
+                k = (quote["ask"] - quote["fair_value"]) / math.sqrt(sum((o - mean) ** 2 for o in outcomes) / len(outcomes))
+                exact = edge_per_round(game, k, p_informed, 0.6)
+                self.assertAlmostEqual(res.data["theoretical_edge_per_round"], exact, places=3)
+                grid = [edge_per_round(game, j / 100, p_informed, 0.6) for j in range(10, 200, 5)]
+                self.assertGreaterEqual(exact, max(grid) - 1e-3)
+                self.assertGreater(exact, 0.0)
+
+    @staticmethod
+    def games_requirement(runs):
+        history = [{"engine": "games", "metrics": dict(metrics)} for metrics in runs]
+        gate = evaluate_gate("track_0_pqt", "foundations", None, {"lab_history": history})
+        return next(r for r in gate.requirements if r.name == "Interview Trading Games Practice")
+
+    def test_track_0_gate_is_reachable_by_optimal_play_and_not_by_naive_play(self):
+        # The gate passes on a mean score >= 60 over the last three runs of >= 100 rounds. Each style plays
+        # 300 disjoint seed triples (3i, 3i + 1, 3i + 2) from seeds 0-899, each triple judged by the gate itself.
+        # With no passing triple the binomial standard error is zero, so it is floored at that of one pass in 300.
+        for game in ("dice_sum", "card_sum"):
+            for style, reachable in (("optimal", True), ("naive_static", False), ("wide_conservative", False)):
+                with self.subTest(game=game, style=style):
+                    runs = [r.metrics for r in self.runs[(game, style, 100)]]
+                    self.assertTrue(all(0.0 <= m["performance_score"] <= 100.0 for m in runs))
+                    triples = [runs[k : k + 3] for k in range(0, len(runs), 3)]
+                    self.assertEqual(len(triples), 300)
+                    share = sum(self.games_requirement(t).passed for t in triples) / len(triples)
+                    se = math.sqrt(max(share * (1 - share), 1.0 / len(triples)) / len(triples))
+                    if reachable:
+                        self.assertGreaterEqual(share - 3 * se, 0.85)
+                    else:
+                        self.assertLessEqual(share, 0.005)
+                        self.assertLess(share + 3 * se, 0.02)
+
+    def test_track_0_gate_ignores_short_runs_and_lucky_single_runs(self):
+        for game in ("dice_sum", "card_sum"):
+            with self.subTest(game=game):
+                short = [r.metrics for r in self.runs[(game, "naive_static", 5)]]
+                lucky_short = [m for m in short if m["performance_score"] >= 60.0]
+                # Five-round runs are noisy enough that naive play often scores >= 60 by luck; they must not count.
+                self.assertGreater(len(lucky_short), 0.1 * len(self.SEEDS))
+                self.assertFalse(self.games_requirement(lucky_short).passed)
+                unrecorded = [{k: v for k, v in m.items() if k != "rounds_completed"} for m in lucky_short]
+                self.assertFalse(self.games_requirement(unrecorded).passed)
+
+                optimal = [r.metrics for r in self.runs[(game, "optimal", 100)] if r.metrics["performance_score"] >= 60.0]
+                self.assertFalse(self.games_requirement(optimal[:2]).passed)
+                self.assertTrue(self.games_requirement([*lucky_short, *optimal[:3]]).passed)
+
+                naive = [r.metrics for r in self.runs[(game, "naive_static", 100)]]
+                self.assertFalse(self.games_requirement([*optimal[:3], *naive[:3]]).passed)
+                # A single lucky full-length naive run, which the best of all runs would have accepted, must not pass.
+                lucky = next(m for m in naive if m["performance_score"] >= 60.0)
+                ordinary = [m for m in naive if m["performance_score"] < 60.0]
+                self.assertFalse(self.games_requirement([*ordinary[:2], lucky]).passed)
 
 
 if __name__ == "__main__":

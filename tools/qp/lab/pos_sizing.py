@@ -18,6 +18,17 @@ from .registry import register
 EQUITY_CEILING = 1e15
 LOG_EQUITY_CEILING = math.log(EQUITY_CEILING)
 
+# Fat-tailed losses: a losing trade is a gap or slippage loss of FAT_TAIL_LOSS_MULTIPLE stakes with this probability.
+FAT_TAIL_PROB = 0.05
+FAT_TAIL_LOSS_MULTIPLE = 2.5
+
+
+def loss_outcomes(distribution: str) -> list[tuple[float, float]]:
+    """(probability given a loss, loss in stakes) pairs of the simulated losing trade."""
+    if distribution == "fat_tailed":
+        return [(1.0 - FAT_TAIL_PROB, 1.0), (FAT_TAIL_PROB, FAT_TAIL_LOSS_MULTIPLE)]
+    return [(1.0, 1.0)]
+
 
 class PositionSizingEngine(TradingLabEngine):
     @property
@@ -109,15 +120,46 @@ class PositionSizingEngine(TradingLabEngine):
         }
 
     @staticmethod
-    def calculate_growth_rate(f: float, p: float, b: float) -> float:
-        """Geometric compound growth rate: g(f) = p * ln(1 + b*f) + (1 - p) * ln(1 - f)."""
+    def calculate_growth_rate(f: float, p: float, b: float, distribution: str = "bernoulli") -> float:
+        """Expected log growth per trade: g(f) = p * ln(1 + b*f) + (1 - p) * sum_k pi_k * ln(1 - m_k*f).
+
+        Bernoulli losses are one stake (m = 1); fat-tailed losses are 1 stake with probability 0.95 and
+        2.5 stakes with probability 0.05, matching the Monte Carlo below.
+        """
         if f <= 0.0:
             return 0.0
-        if f >= 1.0:
+        outcomes = loss_outcomes(distribution)
+        if f * max(m for _, m in outcomes) >= 1.0:
             return -float("inf")
         term_win = p * math.log(1.0 + b * f)
-        term_loss = (1.0 - p) * math.log(1.0 - f)
+        term_loss = (1.0 - p) * sum(pi * math.log(1.0 - m * f) for pi, m in outcomes)
         return term_win + term_loss
+
+    @staticmethod
+    def kelly_fraction(p: float, b: float, distribution: str = "bernoulli") -> float:
+        """Growth-optimal fraction: the root of g'(f) = p*b / (1 + b*f) - (1 - p) * sum_k pi_k*m_k / (1 - m_k*f).
+
+        g is strictly concave on -1/b < f < 1/max(m), so the root is unique; for Bernoulli trades it is the
+        closed form p - (1 - p) / b, and a negative root flags a negative edge just as that formula does.
+        """
+        if distribution == "bernoulli":
+            return p - (1.0 - p) / b
+        outcomes = loss_outcomes(distribution)
+
+        def slope(f: float) -> float:
+            return p * b / (1.0 + b * f) - (1.0 - p) * sum(pi * m / (1.0 - m * f) for pi, m in outcomes)
+
+        lo = -1.0 / b
+        hi = 1.0 / max(m for _, m in outcomes)
+        for _ in range(200):
+            mid = 0.5 * (lo + hi)
+            if not lo < mid < hi:  # bracket at float resolution; never evaluate a domain endpoint
+                break
+            if slope(mid) > 0.0:
+                lo = mid
+            else:
+                hi = mid
+        return 0.5 * (lo + hi)
 
     def run(self, **kwargs: Any) -> LabResult:
         p = self.validate_params(kwargs)
@@ -131,18 +173,20 @@ class PositionSizingEngine(TradingLabEngine):
         ruin_thresh = float(p["ruin_drawdown_pct"])
         seed = int(p["seed"])
 
-        # Kelly Formula: f* = p - (1 - p) / b = (p*(b + 1) - 1) / b
-        f_kelly = p_win - (1.0 - p_win) / b
+        # Kelly fraction of the simulated distribution; Bernoulli: f* = p - (1 - p) / b = (p*(b + 1) - 1) / b
+        f_kelly = self.kelly_fraction(p_win, b, dist_mode)
         f_half_kelly = 0.5 * f_kelly
+        max_loss_multiple = max(m for _, m in loss_outcomes(dist_mode))
 
         # Calculate Growth Rate Curve points across fractions
         growth_curve: list[dict[str, float]] = []
         if f_kelly > 0:
-            max_eval_f = min(0.90, max(0.10, f_kelly * 2.5))
+            # Stay inside the domain f < 1 / max_loss_multiple, where a worst-case loss leaves equity positive
+            max_eval_f = min(0.90 / max_loss_multiple, max(0.10, f_kelly * 2.5))
             steps = 25
             for i in range(1, steps + 1):
                 f_val = round((max_eval_f / steps) * i, 4)
-                g_val = self.calculate_growth_rate(f_val, p_win, b)
+                g_val = self.calculate_growth_rate(f_val, p_win, b, dist_mode)
                 growth_curve.append({"f": f_val, "growth_rate": round(g_val, 6)})
 
         # Monte Carlo Simulation
@@ -167,9 +211,9 @@ class PositionSizingEngine(TradingLabEngine):
             for trade_idx in range(n_trades):
                 if rng.random() < p_win:
                     growth = 1.0 + f_risk * b
-                elif dist_mode == "fat_tailed" and rng.random() < 0.05:
+                elif dist_mode == "fat_tailed" and rng.random() < FAT_TAIL_PROB:
                     # 5% probability of gap/slippage causing 2.5x standard loss
-                    growth = 1.0 - f_risk * 2.5
+                    growth = 1.0 - f_risk * FAT_TAIL_LOSS_MULTIPLE
                 else:
                     growth = 1.0 - f_risk
 

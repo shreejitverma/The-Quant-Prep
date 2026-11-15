@@ -112,7 +112,7 @@ This pillar directly operationalizes theoretical research across the Quant Prep 
 
 - `overfit_trap`: Backtest Overfitting Trap, Deflated Sharpe Ratio (DSR), Harvey-Liu haircuts, and CSCV PBO simulator.
 - `pos_sizing`: Dynamic position sizing engine evaluating ruin probabilities under Kelly and leverage constraints.
-- `port_alloc`: Multi-asset portfolio allocator (Risk Parity, Black-Litterman, HRP).
+- `port_alloc`: Multi-asset allocator: equal-risk-contribution risk parity, long-only minimum variance, 60/40, equal weight and All Weather, with Euler risk contributions and macro regime stress.
 
 ---
 
