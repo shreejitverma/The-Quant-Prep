@@ -79,6 +79,15 @@ class TestTradingLabBase(unittest.TestCase):
         with self.assertRaises(ValueError):
             p_int.cast(100.7)
 
+    def test_numeric_params_reject_booleans(self):
+        # A JSON true is not a number: seed=true used to run silently as seed 1.
+        games = get_engine("games")
+        pos_sizing = get_engine("pos_sizing")
+        for engine, name in ((games, "seed"), (games, "num_rounds"), (pos_sizing, "win_rate")):
+            for raw in (True, False):
+                with self.subTest(engine=engine.engine_id, param=name, raw=raw), self.assertRaises(ValueError):
+                    engine.run(**{name: raw})
+
     def test_param_cast_rejects_non_finite_floats(self):
         p = Param(name="x", param_type="float", default=0.5, description="x", min_val=0.0, max_val=1.0)
         for raw in ("nan", float("nan"), "inf", float("-inf")):

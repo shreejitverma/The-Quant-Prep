@@ -26,6 +26,8 @@ class Param:
     def cast(self, raw_val: Any) -> Any:
         if raw_val is None:
             return self.default
+        if self.param_type in ("int", "float") and isinstance(raw_val, bool):
+            raise ValueError(f"Param '{self.name}' must be a number, got {raw_val!r}")
         if self.param_type == "int":
             if isinstance(raw_val, float) and not raw_val.is_integer():
                 raise ValueError(f"Param '{self.name}' must be a whole number, got {raw_val!r}")
