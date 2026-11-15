@@ -89,8 +89,32 @@ class TestFuturesDeskEngine(unittest.TestCase):
 
         # Buy capital / S units of spot with money borrowed at r, deliver them into the short future.
         front = res.data["term_structure"][0]
-        expected_pnl = capital / spot * front["market_future"] - capital * math.exp(r * front["years"])
+        expected_pnl = capital / spot * front["market_future"] - capital * math.exp(r * front["days"] / 365.0)
         self.assertAlmostEqual(res.metrics["arb_net_pnl"], expected_pnl, delta=0.05)
+
+    def test_cash_and_carry_pnl_is_the_futures_mispricing(self):
+        # Hull: buying N = capital / S units financed at r, paying storage c and earning yield q, and delivering
+        # them into a short future at F leaves N * (F - S * exp((r + c - q) * T)) at T. A future at its
+        # theoretical price is no arbitrage at any maturity; the convenience yield is not cash, so it is excluded.
+        cases = [
+            ("equity_index", dict(risk_free_rate=0.05, dividend_yield=0.02), 0.05 - 0.02),
+            ("contango", dict(risk_free_rate=0.045, storage_cost=0.06), 0.045 + 0.06),
+            ("backwardation", dict(risk_free_rate=0.045, convenience_yield=0.15), 0.045 + 0.01),
+        ]
+        spot, capital = 100.0, 100000.0
+        for regime, rates, cash_carry in cases:
+            for days in (30, 360, 3650):
+                with self.subTest(regime=regime, days=days):
+                    res = self.engine.run(
+                        spot_price=spot, arbitrage_capital=capital, sim_regime=regime, maturities_days=str(days), seed=7, **rates
+                    )
+                    front = res.data["term_structure"][0]
+                    units = capital / spot
+                    expected = units * (front["market_future"] - spot * math.exp(cash_carry * days / 365.0))
+                    # market_future is rounded to 4 dp, so the oracle carries up to units * 5e-5 of rounding
+                    self.assertAlmostEqual(res.metrics["arb_net_pnl"], expected, delta=units * 5e-5 + 0.01)
+                    roi = expected / capital * 365.0 / days * 100.0
+                    self.assertAlmostEqual(res.metrics["arb_annualized_roi_pct"], roi, delta=0.01)
 
     def test_rejects_invalid_maturities(self):
         # A zero maturity divided by zero, junk silently fell back to the default curve,
@@ -134,6 +158,58 @@ class TestPortfolioAllocatorEngine(unittest.TestCase):
         self.assertEqual(res.metrics["strategy"], "risk_parity")
         # In risk parity, equity risk is balanced down significantly compared to 60/40
         self.assertLess(res.metrics["equity_risk_contribution_pct"], 40.0)
+
+    def test_risk_parity_equalizes_euler_risk_contributions(self):
+        # Maillard, Roncalli and Teiletche (2010): the equal-risk-contribution portfolio has w_i (Sigma w)_i
+        # equal for every asset, so each of the 7 assets carries 100 / 7 % of the risk. Inverse-volatility
+        # weights meet that only when all correlations are equal, which no scenario here has.
+        for scenario in ("baseline", "stagflation", "liquidity_crisis", "recession"):
+            with self.subTest(scenario=scenario):
+                res = self.engine.run(strategy="risk_parity", macro_scenario=scenario, n_years=1)
+                rows = res.data["asset_breakdown"]
+                self.assertTrue(all(row["weight_pct"] > 0.0 for row in rows))
+                for row in rows:
+                    self.assertAlmostEqual(row["trc_pct"], 100.0 / 7.0, delta=0.01)
+
+    def test_min_variance_satisfies_the_long_only_kkt_conditions(self):
+        # Minimizing w' Sigma w subject to sum(w) = 1, w >= 0 is convex, so a point is the optimum iff
+        # (Sigma w)_i is one common value for every held asset and no smaller for any asset left out.
+        # The engine reports MCR_i = (Sigma w)_i / sigma_p, so the conditions read off the MCR column.
+        for scenario in ("baseline", "stagflation", "liquidity_crisis", "recession"):
+            with self.subTest(scenario=scenario):
+                res = self.engine.run(strategy="min_variance", macro_scenario=scenario, vol_target=0.0, n_years=1)
+                rows = res.data["asset_breakdown"]
+                self.assertAlmostEqual(sum(row["weight_pct"] for row in rows), 100.0, delta=0.02)
+                held = [row["mcr"] for row in rows if row["weight_pct"] > 0.005]
+                self.assertTrue(all(row["weight_pct"] >= 0.0 for row in rows))
+                self.assertLess(max(held) - min(held), 2e-4)
+                for row in rows:
+                    if row["weight_pct"] <= 0.005:
+                        self.assertGreaterEqual(row["mcr"], min(held) - 2e-4)
+                # Every risk contribution is then w_i * lambda / sigma_p = w_i, the weight itself.
+                for row in rows:
+                    self.assertAlmostEqual(row["trc_pct"], row["weight_pct"], delta=0.02)
+
+    def test_wiped_out_account_stays_at_zero(self):
+        # 3x gross with annual rebalancing through a liquidity crisis loses more than the equity on this path.
+        # A wiped-out account cannot keep trading on negative equity (negative capital times the target weights
+        # silently flips every position short), and its CAGR is -100%, not the 0% of an account that broke even.
+        res = self.engine.run(
+            strategy="equal_weight",
+            macro_scenario="liquidity_crisis",
+            leverage=3.0,
+            vol_target=0.0,
+            rebalance_freq="annual",
+            n_years=20,
+            seed=43,
+        )
+        curve = res.data["equity_curve"]
+        first_zero = curve.index(0.0)
+        self.assertTrue(all(value > 0.0 for value in curve[:first_zero]))
+        self.assertTrue(all(value == 0.0 for value in curve[first_zero:]))
+        self.assertEqual(res.metrics["cagr_pct"], -100.0)
+        self.assertEqual(res.metrics["max_drawdown_pct"], 100.0)
+        self.assertEqual(res.data["monthly_returns"][first_zero - 1], -1.0)
 
     def test_all_weather_stagflation_stress(self):
         res = self.engine.run(

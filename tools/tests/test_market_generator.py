@@ -1,5 +1,6 @@
 """Unit tests for tools/qp/lab/market.py and upgraded pos_sizing."""
 
+import json
 import math
 import statistics
 import unittest
@@ -79,6 +80,14 @@ class TestSyntheticMarketGenerator(unittest.TestCase):
         prob_bull = gen.oracle_probability_higher(100.0, horizon_steps=10, mu=0.50, sigma=0.20)
         self.assertGreater(prob_bull, 0.60)
 
+    def test_oracle_probability_without_randomness_is_certain(self):
+        # With no volatility the log return is the deterministic drift, so S_h > S_0 is certain when it
+        # is positive and impossible otherwise; a zero horizon leaves S_h = S_0, which is not higher.
+        gen = SyntheticMarketGenerator(seed=1)
+        self.assertEqual(gen.oracle_probability_higher(100.0, horizon_steps=10, mu=0.05, sigma=0.0), 1.0)
+        self.assertEqual(gen.oracle_probability_higher(100.0, horizon_steps=10, mu=-0.05, sigma=0.0), 0.0)
+        self.assertEqual(gen.oracle_probability_higher(100.0, horizon_steps=0, mu=0.05, sigma=0.20), 0.0)
+
     def test_kelly_growth_peak(self):
         p_win = 0.60
         b = 1.5
@@ -123,6 +132,32 @@ class TestSyntheticMarketGenerator(unittest.TestCase):
         self.assertIn("growth_curve", res_normal.data)
         # Fat-tailed distribution should yield higher average drawdown due to negative jump risk
         self.assertGreaterEqual(res_fat.metrics["mean_max_drawdown"], res_normal.metrics["mean_max_drawdown"])
+
+    def test_fat_tailed_kelly_maximizes_the_simulated_growth_rate(self):
+        # The fat-tailed simulator loses 1x the stake on 95% of losses and 2.5x on 5%, so the expected log
+        # growth is g(f) = p ln(1 + b f) + q (0.95 ln(1 - f) + 0.05 ln(1 - 2.5 f)). Oracle: its maximizer on
+        # a 1e-5 grid, and g itself at every reported growth-curve point; p - q/b is the Bernoulli answer.
+        p_win, b = 0.55, 1.5
+        q = 1.0 - p_win
+
+        def g(f: float) -> float:
+            return p_win * math.log(1.0 + b * f) + q * (0.95 * math.log(1.0 - f) + 0.05 * math.log(1.0 - 2.5 * f))
+
+        f_star = max((i / 100000 for i in range(1, 40000)), key=g)
+        res = PositionSizingEngine().run(win_rate=p_win, win_loss_ratio=b, distribution="fat_tailed", num_simulations=50)
+        self.assertAlmostEqual(res.metrics["kelly_fraction"], f_star, delta=1e-4)
+        self.assertAlmostEqual(res.metrics["half_kelly_fraction"], 0.5 * f_star, delta=1e-4)
+        self.assertLess(res.metrics["kelly_fraction"], p_win - q / b)
+        curve = res.data["growth_curve"]
+        self.assertEqual(len(curve), 25)
+        for point in curve:
+            self.assertAlmostEqual(point["growth_rate"], g(point["f"]), places=6)
+        json.dumps(res.to_dict(), allow_nan=False)  # every point is inside the domain f < 1 / 2.5
+
+        # With no positive edge the root of g'(f) = 0 is negative, as p - q/b is for Bernoulli trades.
+        res = PositionSizingEngine().run(win_rate=0.40, win_loss_ratio=1.5, distribution="fat_tailed", num_simulations=50)
+        self.assertLess(res.metrics["kelly_fraction"], 0.0)
+        self.assertEqual(res.data["growth_curve"], [])
 
 
 if __name__ == "__main__":

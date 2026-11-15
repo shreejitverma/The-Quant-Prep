@@ -222,7 +222,8 @@ class SyntheticMarketGenerator:
         drift = (mu - 0.5 * sigma**2) * total_dt
         total_vol = sigma * math.sqrt(total_dt)
         if total_vol <= 0:
-            return 1.0 if drift > 0 else 0.5
+            # A deterministic log return: higher is certain for a positive drift, impossible otherwise
+            return 1.0 if drift > 0 else 0.0
 
         # Normal CDF using erf
         d = drift / total_vol

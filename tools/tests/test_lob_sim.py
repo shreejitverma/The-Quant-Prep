@@ -1,6 +1,7 @@
 """Unit tests for tools/qp/lab/lob_sim.py Limit Order Book matching engine."""
 
 import math
+import random
 import unittest
 
 from tools.qp.lab.lob_sim import AC_KAPPA, LimitOrderBook, LimitOrderBookEngine, Order, almgren_chriss_schedule
@@ -56,18 +57,69 @@ class TestLimitOrderBook(unittest.TestCase):
         lob = LimitOrderBook(tick_size=0.01)
         lob.insert_order(Order(1, "sell", 100.05, 100, 1))
 
-        # Post-only buy order at 100.10 crosses the ask; should NOT rest in book
+        # Post-only buy order at 100.10 crosses the ask. A post-only order only ever adds liquidity, so it is
+        # rejected whole: no fill, nothing rests, and the 100-share ask is untouched.
         post_only_order = Order(2, "buy", 100.10, 50, 2, order_type="post_only")
-        lob.insert_order(post_only_order)
-        # Should not be in orders dict
+        self.assertEqual(lob.insert_order(post_only_order), [])
         self.assertNotIn(2, lob.orders)
+        self.assertEqual(lob.orders[1].size, 100)
+
+        # A post-only order that does not cross rests like a limit order.
+        self.assertEqual(lob.insert_order(Order(4, "buy", 100.00, 30, 4, order_type="post_only")), [])
+        self.assertEqual(lob.best_bid(), 100.00)
 
         # IOC order for 200 shares (only 100 available)
         ioc_order = Order(3, "buy", 100.05, 200, 3, order_type="ioc")
         fills = lob.insert_order(ioc_order)
         self.assertEqual(len(fills), 1)
-        self.assertEqual(fills[0][3], 50)  # takes remaining 50 from order 1
-        self.assertNotIn(3, lob.orders)  # remaining 150 cancelled
+        self.assertEqual(fills[0][3], 100)  # takes all 100 from order 1
+        self.assertNotIn(3, lob.orders)  # remaining 100 cancelled
+
+    def test_matching_agrees_with_a_brute_force_book(self):
+        # Oracle: a list of resting orders matched by sorting the crossing ones on (price, arrival); a
+        # post-only order that would cross is rejected, market and IOC remainders are dropped.
+        def reference_insert(book, oid, side, price, size, kind):
+            def crosses(o):
+                return kind == "market" or (o["price"] <= price if side == "buy" else o["price"] >= price)
+
+            crossing = [o for o in book if o["side"] != side and crosses(o)]
+            crossing.sort(key=lambda o: (o["price"] if side == "buy" else -o["price"], o["id"]))
+            if kind == "post_only" and crossing:
+                return []
+            fills = []
+            for o in crossing:
+                if size == 0:
+                    break
+                qty = min(size, o["size"])
+                fills.append((o["id"], oid, o["price"], qty))
+                size -= qty
+                o["size"] -= qty
+                if o["size"] == 0:
+                    book.remove(o)
+            if size > 0 and kind in ("limit", "post_only"):
+                book.append({"id": oid, "side": side, "price": price, "size": size})
+            return fills
+
+        for trial in range(60):
+            rng = random.Random(trial)
+            lob = LimitOrderBook(tick_size=0.01)
+            book: list[dict] = []
+            for oid in range(1, 150):
+                if rng.random() < 0.15 and book:
+                    victim = rng.choice(book)
+                    book.remove(victim)
+                    self.assertTrue(lob.cancel(victim["id"]))
+                    continue
+                side = rng.choice(["buy", "sell"])
+                kind = rng.choices(["limit", "market", "ioc", "post_only"], [0.55, 0.15, 0.15, 0.15])[0]
+                price = round(100.0 + rng.randint(-5, 5) * 0.01, 2)
+                size = rng.randint(1, 50)
+                fills = lob.insert_order(Order(oid, side, price, size, oid, order_type=kind))
+                got = [(m.order_id, t.order_id, px, qty) for m, t, px, qty in fills]
+                where = f"trial {trial}, order {oid} ({kind} {side} {size} @ {price})"
+                self.assertEqual(got, reference_insert(book, oid, side, price, size, kind), where)
+                resting = sorted((o.side, o.price, o.order_id, o.size) for o in lob.orders.values())
+                self.assertEqual(resting, sorted((o["side"], o["price"], o["id"], o["size"]) for o in book), where)
 
     def test_lob_engine_run(self):
         engine = get_engine("lob_sim")

@@ -15,6 +15,75 @@ from .base import LabResult, Param, TradingLabEngine
 from .registry import register
 
 
+def solve_linear(a: list[list[float]], rhs: list[float]) -> list[float]:
+    """Solve a x = rhs by Gaussian elimination with partial pivoting; raises on a singular matrix."""
+    n = len(rhs)
+    m = [row[:] + [rhs[i]] for i, row in enumerate(a)]
+    for col in range(n):
+        pivot = max(range(col, n), key=lambda r: abs(m[r][col]))
+        if abs(m[pivot][col]) < 1e-15:
+            raise ValueError("covariance matrix is singular")
+        m[col], m[pivot] = m[pivot], m[col]
+        for r in range(col + 1, n):
+            factor = m[r][col] / m[col][col]
+            for c in range(col, n + 1):
+                m[r][c] -= factor * m[col][c]
+    x = [0.0] * n
+    for r in range(n - 1, -1, -1):
+        x[r] = (m[r][n] - sum(m[r][c] * x[c] for c in range(r + 1, n))) / m[r][r]
+    return x
+
+
+def min_variance_weights(cov: list[list[float]]) -> list[float]:
+    """Long-only, fully invested minimum-variance weights: min w' Sigma w s.t. sum(w) = 1, w >= 0.
+
+    The optimum is the equality-constrained solution Sigma_A^-1 1 / (1' Sigma_A^-1 1) on its own support A
+    with every weight positive, so the least-variance such candidate over all supports is exact (2^n - 1
+    supports, 127 for this 7-asset universe).
+    """
+    n = len(cov)
+    best: list[float] | None = None
+    best_var = math.inf
+    for mask in range(1, 1 << n):
+        support = [i for i in range(n) if mask >> i & 1]
+        x = solve_linear([[cov[i][j] for j in support] for i in support], [1.0] * len(support))
+        total = sum(x)
+        if total <= 0.0 or min(x) <= 0.0:
+            continue
+        w = [0.0] * n
+        for i, xi in zip(support, x, strict=True):
+            w[i] = xi / total
+        var = sum(w[i] * w[j] * cov[i][j] for i in range(n) for j in range(n))
+        if var < best_var:
+            best, best_var = w, var
+    if best is None:
+        raise ValueError("no long-only minimum-variance portfolio found")
+    return best
+
+
+def equal_risk_contribution_weights(cov: list[list[float]], tol: float = 1e-14, max_sweeps: int = 100000) -> list[float]:
+    """Equal-risk-contribution weights (Maillard, Roncalli and Teiletche 2010): w_i (Sigma w)_i equal for all i.
+
+    Cyclical coordinate descent on min 1/2 y' Sigma y - (1/n) sum ln y_i (Griveau-Billion, Richard and Roncalli
+    2013), whose unique positive minimizer normalizes to the ERC portfolio; each coordinate step solves
+    Sigma_ii y_i^2 + c_i y_i - 1/n = 0 with c_i = sum_{j != i} Sigma_ij y_j.
+    """
+    n = len(cov)
+    budget = 1.0 / n
+    y = [1.0 / math.sqrt(cov[i][i]) for i in range(n)]
+    for _ in range(max_sweeps):
+        biggest_step = 0.0
+        for i in range(n):
+            c = sum(cov[i][j] * y[j] for j in range(n) if j != i)
+            new = (-c + math.sqrt(c * c + 4.0 * cov[i][i] * budget)) / (2.0 * cov[i][i])
+            biggest_step = max(biggest_step, abs(new - y[i]) / y[i])
+            y[i] = new
+        if biggest_step < tol:
+            total = sum(y)
+            return [v / total for v in y]
+    raise ValueError("equal-risk-contribution solver did not converge")
+
+
 class PortfolioAllocatorEngine(TradingLabEngine):
     """Engine for multi-asset allocation, risk parity decomposition, and regime simulation."""
 
@@ -187,10 +256,8 @@ class PortfolioAllocatorEngine(TradingLabEngine):
             # 1/7 across all assets
             raw_weights = [1.0 / n_assets] * n_assets
         elif strategy == "risk_parity":
-            # Equal risk contribution approximation: weight inversely proportional to volatility
-            inv_vols = [1.0 / v for v in vols]
-            total_inv = sum(inv_vols)
-            raw_weights = [iv / total_inv for iv in inv_vols]
+            # Equal risk contribution; inverse-volatility weights match it only when all correlations are equal
+            raw_weights = equal_risk_contribution_weights(cov)
         elif strategy == "all_weather":
             # Bridgewater template:
             # 30% Equities (SPY), 40% Long Bonds (TLT), 15% Interm Bonds (IEF), 7.5% Commodities (DBC), 7.5% Gold (GLD)
@@ -200,10 +267,8 @@ class PortfolioAllocatorEngine(TradingLabEngine):
             raw_weights[4] = 0.075
             raw_weights[5] = 0.075
         elif strategy == "min_variance":
-            # Simple analytical inverse-variance heuristic
-            inv_var = [1.0 / (v * v) for v in vols]
-            total_inv_var = sum(inv_var)
-            raw_weights = [iv / total_inv_var for iv in inv_var]
+            # Long-only minimum variance; inverse-variance weights match it only when all correlations are zero
+            raw_weights = min_variance_weights(cov)
 
         # Calculate portfolio volatility before scaling
         def calc_port_vol(w_vec: list[float]) -> float:
@@ -268,8 +333,15 @@ class PortfolioAllocatorEngine(TradingLabEngine):
         borrow_rate = (drifts[6] + 0.005) / 12.0
 
         total_turnover = 0.0
+        ruined = False
 
         for m in range(1, n_months + 1):
+            if ruined:
+                # A wiped-out account holds nothing and stays at zero
+                monthly_returns.append(0.0)
+                equity_curve.append(0.0)
+                continue
+
             # Generate correlated standard normal shocks
             z_uncorr = [rng.gauss(0.0, 1.0) for _ in range(n_assets)]
             z_corr = [sum(L[i][k] * z_uncorr[k] for k in range(i + 1)) for i in range(n_assets)]
@@ -292,13 +364,18 @@ class PortfolioAllocatorEngine(TradingLabEngine):
                 cash_balance -= abs(cash_balance) * borrow_rate
 
             total_val = new_holdings_sum + cash_balance
+            if total_val <= 0.0:
+                # Losses exceeded the equity: the account is liquidated at zero and stops trading, since
+                # rebalancing negative capital to the target weights would flip every position short
+                total_val = 0.0
+                ruined = True
             month_ret = (total_val - capital) / capital if capital > 0 else 0.0
             monthly_returns.append(month_ret)
             capital = total_val
             equity_curve.append(round(capital, 2))
 
             # Periodic rebalancing
-            if m % monthly_rebalance_interval == 0:
+            if not ruined and m % monthly_rebalance_interval == 0:
                 target_holdings = [capital * w for w in final_weights]
                 turnover_this_month = sum(abs(target_holdings[i] - holdings[i]) for i in range(n_assets))
                 total_turnover += turnover_this_month
