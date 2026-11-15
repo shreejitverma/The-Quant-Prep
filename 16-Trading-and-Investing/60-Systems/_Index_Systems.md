@@ -25,7 +25,7 @@ It ensures every strategy is subjected to rigorous out-of-sample stress testing,
 
 ## Systematic Trading Curriculum Map
 
-The core curriculum comprises eight comprehensive concept notes with 256 verified interview questions and problem cards:
+The core curriculum comprises eight comprehensive concept notes with 268 verified interview questions and problem cards:
 
 1. [[16-Trading-and-Investing/60-Systems/01-Strategy-Architecture-and-Universe-Selection|01. Strategy Architecture and Universe Selection]]
    - The four-layer pipeline (Universe, Signals, Portfolio, Execution).
@@ -41,7 +41,7 @@ The core curriculum comprises eight comprehensive concept notes with 256 verifie
    - Performance evaluation: Pearson IC, Spearman Rank IC, and IC Information Ratio (ICIR).
    - Signal half-life and autocorrelation decay modeling.
    - Grinold's Fundamental Law ($IR = IC \times \sqrt{BR}$) and the Transfer Coefficient (TC) constraint penalty.
-   - Cards: `mkt-sys-033` through `mkt-sys-064`.
+   - Cards: `mkt-sys-033` through `mkt-sys-064`, plus `mkt-sys-257`.
 
 3. [[16-Trading-and-Investing/60-Systems/03-Portfolio-Construction-and-Risk-Parity|03. Portfolio Construction and Risk Parity]]
    - Markowitz mean-variance optimization and Michaud's "error maximization" curse.
@@ -49,7 +49,7 @@ The core curriculum comprises eight comprehensive concept notes with 256 verifie
    - Equal Risk Contribution (ERC) risk parity: marginal and total risk contribution derivations.
    - Hierarchical Risk Parity (HRP, Lopez de Prado 2016): tree clustering, quasi-diagonalization, and recursive bisection.
    - Real-world portfolio constraints: turnover penalties, leverage caps, and sector bounds.
-   - Cards: `mkt-sys-065` through `mkt-sys-096`.
+   - Cards: `mkt-sys-065` through `mkt-sys-096`, plus `mkt-sys-258`.
 
 4. [[16-Trading-and-Investing/60-Systems/04-Backtest-Overfitting-and-Multiple-Testing|04. Backtest Overfitting and Multiple Testing]]
    - Statistical mechanism of selection bias under the null hypothesis (Extreme Value Theory).
@@ -58,7 +58,7 @@ The core curriculum comprises eight comprehensive concept notes with 256 verifie
    - Deflated Sharpe Ratio (DSR, Bailey & Lopez de Prado 2014) setting benchmarks to null selection maxima.
    - Harvey, Liu, and Zhu (2016) multiple-testing haircuts (Bonferroni, Holm, BHY FDR) and the $t > 3.0$ factor threshold.
    - Minimum Backtest Length (MinBTL) in years.
-   - Cards: `mkt-sys-097` through `mkt-sys-128`.
+   - Cards: `mkt-sys-097` through `mkt-sys-128`, plus `mkt-sys-259` and `mkt-sys-260`.
 
 5. [[16-Trading-and-Investing/60-Systems/05-Combinatorial-Purged-Cross-Validation|05. Combinatorial Purged Cross-Validation]]
    - Failure of standard k-fold cross-validation on financial time series due to non-iid serial correlation.
@@ -66,7 +66,7 @@ The core curriculum comprises eight comprehensive concept notes with 256 verifie
    - Data embargoing: removing post-test buffers to eliminate autoregressive persistence.
    - Combinatorial Purged Cross-Validation (CPCV): generating $\binom{N-1}{k-1}$ out-of-sample backtest paths from $\binom{N}{k}$ splits.
    - Combinatorially Symmetric Cross-Validation (CSCV) and Probability of Backtest Overfitting (PBO).
-   - Cards: `mkt-sys-129` through `mkt-sys-160`.
+   - Cards: `mkt-sys-129` through `mkt-sys-160`, plus `mkt-sys-261`.
 
 6. [[16-Trading-and-Investing/60-Systems/06-Execution-Slippage-and-Cost-Models|06. Execution Slippage and Cost Models]]
    - Complete transaction cost taxonomy: explicit fees, bid-ask spread, delay cost, and opportunity cost.
@@ -75,7 +75,7 @@ The core curriculum comprises eight comprehensive concept notes with 256 verifie
    - The universal square-root law of market impact ($I = Y \cdot \sigma \sqrt{Q / V_{\text{ADV}}}$).
    - Strategy capacity estimation and the Sharpe ratio decay curve ($R_{\text{net}} = \alpha_0 - c \cdot \tau \sqrt{A}$).
    - Algorithmic execution benchmarks: TWAP, VWAP, POV, and Almgren-Chriss optimal execution.
-   - Cards: `mkt-sys-161` through `mkt-sys-192`.
+   - Cards: `mkt-sys-161` through `mkt-sys-192`, plus `mkt-sys-262` through `mkt-sys-264`.
 
 7. [[16-Trading-and-Investing/60-Systems/07-Volatility-Targeting-and-Dynamic-Leverage|07. Volatility Targeting and Dynamic Leverage]]
    - Dynamic gross exposure scaling inversely to rolling realized volatility ($k_t = \sigma_{\text{target}} / \hat{\sigma}_t$).
@@ -83,7 +83,7 @@ The core curriculum comprises eight comprehensive concept notes with 256 verifie
    - Realized volatility estimators: Close-to-Close EWMA, Parkinson high-low, Garman-Klass, and Rogers-Satchell.
    - Leverage caps, unencumbered cash buffers, margin haircuts, and financing spread drag.
    - Multi-tiered systematic drawdown governors and circuit breakers (Tier 1 warning, Tier 2 throttle, Tier 3 nuclear flatten).
-   - Cards: `mkt-sys-193` through `mkt-sys-224`.
+   - Cards: `mkt-sys-193` through `mkt-sys-224`, plus `mkt-sys-265` and `mkt-sys-266`.
 
 8. [[16-Trading-and-Investing/60-Systems/08-Production-Architecture-and-Decision-Ledger|08. Production Architecture and Decision Ledger]]
    - Four-tier production architecture: Market data, strategy state, pre-trade risk, and OMS/EMS.
@@ -91,7 +91,7 @@ The core curriculum comprises eight comprehensive concept notes with 256 verifie
    - The Decision Ledger: immutable, append-only audit trail logging inputs, parameters, weights, and telemetry.
    - Hardware and daemon kill-switch architecture with heartbeat dead-man switches.
    - Post-trade Transaction Cost Analysis (TCA) and Brinson-Fachler performance attribution.
-   - Cards: `mkt-sys-225` through `mkt-sys-256`.
+   - Cards: `mkt-sys-225` through `mkt-sys-256`, plus `mkt-sys-267` and `mkt-sys-268`.
 
 ---
 
