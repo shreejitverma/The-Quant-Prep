@@ -38,7 +38,7 @@ Two regimes matter in practice.
 - Large-tick instruments: the spread is almost always one tick and queues are long relative to typical trade size, so price is nearly fixed and competition happens in queue position.
 - Small-tick instruments: the spread is several ticks wide, queues are short, and participants compete by improving price.
 
-Bouchaud, Bonart, Donier and Gould use the ratio of the average spread to the tick to separate the two regimes.
+Bouchaud, Bonart, Donier and Gould devote chapters 6 and 7 to the queue dynamics of large-tick stocks, where this distinction drives the modelling.
 
 ### Matching
 
@@ -69,12 +69,13 @@ A size decrease usually keeps priority.
 | Marketable limit | A limit order priced through the touch, so it trades now but never beyond its limit | Aggressive execution with a price cap |
 | IOC (immediate or cancel) | Fills what it can now, cancels the rest | Taking liquidity without leaving a resting order |
 | FOK (fill or kill) | Fills the full size now or does nothing | All-or-nothing hedges |
-| Post-only (add-liquidity-only) | Rejected, or repriced one tick away, if it would trade on arrival | Guaranteeing maker fees and rebates |
+| Post-only (add-liquidity-only) | Rejected, or repriced one tick away, if it would trade on arrival; the rule is venue-specific | Guaranteeing maker fees and rebates |
 | Hidden | Rests but is not displayed; usually behind displayed orders at the same price | Hiding intent at a priority cost |
 | Iceberg (reserve) | Displays a tip; when the tip fills, a new tip is shown with new time priority | Working a large order with partial display |
 | Pegged | Price tracks a reference such as the primary touch or the mid | Midpoint liquidity, passive tracking |
 | Stop | Becomes a market or limit order once a trigger price trades | Loss limits; can add to momentum |
 
+Nasdaq, for example, reprices a post-only buy that would lock or cross the book to one tick below the best offer, executing it instead only when the price improvement is large enough (Rule 4702(b)(4)(A), as described in the SEC's approval order, 81 FR, 17 November 2016); check the current rulebook of each venue.
 Time in force (day, good-till-cancelled, IOC) is a separate dimension from the order type on many venues.
 In US equities, an intermarket sweep order lets a router trade through a protected quote while simultaneously sending orders to take it; see [Fragmentation, Reg NMS and Routing](09-Fragmentation-Reg-NMS-and-Routing.md).
 
@@ -92,7 +93,7 @@ Both factors depend on queue position.
 - At the front, small routine trades fill you; these carry little information, so the conditional adverse move is small.
 - At the back, you fill only when enough volume trades to clear everyone ahead of you, often a large aggressor that is about to move the price through the level, so the conditional adverse move is large.
 
-Moallemi and Yuan model this explicitly and argue that in large-tick stocks the value of a good queue position can be of the same order as the half-spread.
+Moallemi and Yuan model this explicitly and find that for some large-tick stocks queue value can be of the same order of magnitude as the bid-ask spread.
 This is why market makers keep orders resting at levels near the touch, avoid unnecessary cancel-replace, and invest in speed to be first when a new price level forms.
 
 A useful rough estimate of time to fill is the queue ahead that will actually trade divided by the rate of aggressive volume at that level:
@@ -106,6 +107,8 @@ It ignores the chance that the level is cleared or the price moves away before y
 
 ## Worked examples
 
+All books, orders and probabilities below are hypothetical inputs; [micro_01_limit_order_books.py](code/micro_01_limit_order_books.py) asserts every number.
+
 ### Example 1: walking the book, IOC and FOK
 
 The book is bid 49.99 and asks 50.01 x 300, 50.02 x 500, 50.03 x 400, 50.05 x 1,000.
@@ -114,7 +117,7 @@ The average price is $(300 \cdot 50.01 + 500 \cdot 50.02 + 200 \cdot 50.03)/1000
 Against the mid of 50.00 that is 0.019 per share, or 19 dollars of cost, of which 9 dollars is walking beyond the best ask.
 A buy IOC for 1,000 with limit 50.02 fills 800 and cancels 200.
 A buy FOK for 1,000 with limit 50.02 does nothing, because only 800 is available within the limit.
-A post-only buy at 50.01 would cross the ask, so it is rejected, or on a venue that reprices it, placed at 50.00.
+A post-only buy at 50.01 would cross the ask, so it is rejected, or on a venue that reprices it, placed one tick below the ask at 50.00.
 
 ### Example 2: pro-rata allocation and over-quoting
 
@@ -145,7 +148,7 @@ V_{\text{back}} = 0.20 \times (0.5 + 0.2 - 0.85) = -0.03 \text{ ticks}.
 $$
 
 The back-of-queue order loses money on average even though it rests at the same price.
-The difference, about 0.28 ticks per share per interval, is what speed and queue management buy.
+The difference, $0.2475 + 0.03 = 0.2775$ or about 0.28 ticks per share per interval, is what speed and queue management buy.
 
 ### Example 5: rough time to fill
 
@@ -153,23 +156,7 @@ You join a bid with 3,000 shares ahead; about 40% of those will cancel before yo
 $\mathbb{E}[T_{\text{fill}}] \approx 3000 \times 0.6 / 600 = 3$ seconds.
 If the mid typically moves within 2 seconds, most of your fills will come from the level being swept, which is the adverse case in Example 4.
 
-```python
-def walk_book(levels, qty):
-    """levels: list of (price, size) sorted from best. Returns fills and average price."""
-    fills, left = [], qty
-    for price, size in levels:
-        take = min(left, size)
-        if take:
-            fills.append((price, take))
-            left -= take
-        if left == 0:
-            break
-    done = qty - left
-    avg = sum(p * s for p, s in fills) / done if done else float("nan")
-    return fills, avg
-
-print(walk_book([(50.01, 300), (50.02, 500), (50.03, 400), (50.05, 1000)], 1000))
-```
+A share-by-share price-time matching engine that reproduces Examples 1 to 3 is in [micro_01_limit_order_books.py](code/micro_01_limit_order_books.py).
 
 ## Pitfalls
 
@@ -236,14 +223,27 @@ print(walk_book([(50.01, 300), (50.02, 500), (50.03, 400), (50.05, 1000)], 1000)
 > About 3 seconds: $3000 \times 0.6 / 600$.
 > This ignores the level being cleared or the price moving away, so it is a first estimate only.
 
+> [!question]- ms-lob-pro-rata-rounding | Orders of 500, 300 and 200 rest under pure pro-rata with floor rounding. A 333-lot sell arrives. Who gets what?
+> 166, 99 and 66, total 331.
+> The exact shares are 166.5, 99.9 and 66.6; the 2 leftover lots go by the venue's residual rule, often time priority.
+
+> [!question]- ms-lob-queue-value-numeric | Half-spread 0.5 ticks, net rebate 0.2. Front of queue fills 55% of the time with a 0.25-tick adverse move; back fills 20% with 0.85. Value of each?
+> Front $0.55 \times (0.5 + 0.2 - 0.25) = 0.2475$ ticks; back $0.20 \times (0.5 + 0.2 - 0.85) = -0.03$ ticks.
+> Same price, opposite signs: the back of the queue is filled mainly when the level is about to be swept.
+
+> [!question]- ms-lob-iceberg-numeric | At one bid level the queue is an iceberg showing 100 of 1,000, then 300, then 200. A 700-lot sell arrives. How much does the iceberg get?
+> 200.
+> Its first tip of 100 fills, then 300 and 200 fill, and the refreshed 100-lot tip queues behind them and takes the last 100; a fully displayed 1,000-lot at the front would have taken all 700.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/micro_01_limit_order_books.py`](code/micro_01_limit_order_books.py) prints and asserts every number on this page: market, IOC, FOK and post-only orders through a share-by-share price-time matching engine in integer cents, pro-rata allocations in exact rational arithmetic checked against a lot-by-lot allocation, the iceberg by replaying the queue, and the queue values and time to fill by exact arithmetic and seeded simulation.
 - [Limit order book mechanics (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Limit%20Order%20Book%20Mechanics.md)
 - [Queue position (The-Distinguished-Engineer)](https://github.com/shreejitverma/The-Distinguished-Engineer/blob/main/14-Low-Latency-Systems/01%20-%20Market%20%26%20Microstructure%20Fundamentals/Order%20Book%20Dynamics%20and%20Queue%20Position.md)
 
 ## Further reading
 
 - Larry Harris, *Trading and Exchanges: Market Microstructure for Practitioners* (2003).
-- Bouchaud, Bonart, Donier and Gould, *Trades, Quotes and Prices* (2018).
-- Moallemi and Yuan (2017), A Model for Queue Position Valuation in a Limit Order Book, working paper.
+- Bouchaud, Bonart, Donier and Gould, *Trades, Quotes and Prices* (Cambridge University Press, 2018), chapters 4 (empirical properties of limit order books), 6 and 7 (queue dynamics for large-tick stocks).
+- Moallemi and Yuan, A Model for Queue Position Valuation in a Limit Order Book, Columbia Business School working paper (December 2016, revised June 2017).
 - Related notes: [Exchange Mechanics, Auctions and Fees](02-Exchange-Mechanics-Auctions-and-Fees.md), [Order Book and Matching Engine](../12-Quant-Development/07-Order-Book-and-Matching-Engine.md), [Market Making Fundamentals](../08-Market-Making/01-Market-Making-Fundamentals.md).

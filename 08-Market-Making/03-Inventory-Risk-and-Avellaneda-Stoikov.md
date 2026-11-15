@@ -15,8 +15,9 @@ sources: [Avellaneda and Stoikov (2008) High-frequency trading in a limit order 
 - Avellaneda-Stoikov (2008) is the canonical model of a risk-averse market maker: arithmetic Brownian mid, fills arriving at Poisson rate $A e^{-k\delta}$ at distance $\delta$ from the mid, CARA utility with risk aversion $\gamma$.
 - The reservation price is $r = s - q\gamma\sigma^2(T-t)$: long inventory lowers the price at which you are indifferent to trading, so you quote both sides lower.
 - The optimal total spread is $\gamma\sigma^2(T-t) + \frac{2}{\gamma}\ln\left(1 + \frac{\gamma}{k}\right)$, centred on $r$ and independent of inventory.
+  Both closed forms come from an approximation (second order in $q$, arrival term linearised); the step from reservation prices to quotes is exact.
 - The first term is an inventory-risk charge; the second is a market-power markup that tends to $2/k$ as $\gamma \to 0$.
-- Compared with symmetric quoting at the same spread, the strategy gives up a little mean P&L for a much smaller P&L and inventory variance.
+- Compared with symmetric quoting at the same average spread, the strategy gives up about 5% of mean P&L to halve the P&L standard deviation on the paper's parameters.
 
 ## Learning objectives
 
@@ -35,7 +36,8 @@ sources: [Avellaneda and Stoikov (2008) High-frequency trading in a limit order 
 - Cash and inventory: each bid fill pays $p^b$ and adds one unit, each ask fill receives $p^a$ and removes one unit.
 - Objective: maximise $\mathbb{E}\left[-e^{-\gamma(X_T + q_T S_T)}\right]$, CARA utility of terminal wealth, with risk aversion $\gamma > 0$.
 
-The paper motivates the exponential intensity from a power-law distribution of market order sizes combined with a logarithmic price impact; for interviews treat it as the modelling assumption.
+The paper (section 2.5) motivates the exponential intensity from a power-law distribution of market order sizes combined with the logarithmic price impact that Potters and Bouchaud (2003) fit; a power-law impact would give a power-law intensity instead.
+For interviews treat the exponential form as the modelling assumption.
 There is no adverse selection in the model: fills are independent of future price moves.
 See [Stochastic Differential Equations](../04-Stochastic-Calculus/03-Stochastic-Differential-Equations.md) for the dynamics and [Poisson Processes](../01-Probability/13-Poisson-Processes.md) for the fill model.
 
@@ -99,10 +101,15 @@ $$
 
 The trade-off is visible in $g$: quoting further out earns more per fill (the bracket) but fills less often (the exponential).
 
+Given the true reservation prices, this step is exact: with $\lambda = A e^{-k\delta}$ and CARA utility the distance beyond the reservation price is always $\frac1\gamma\ln(1 + \gamma/k)$.
+The hard part is $\theta$ itself.
+
 ### Step 4: close the approximation and combine
 
-Avellaneda and Stoikov substitute the exponential intensity into the equation for $\theta$ and expand in powers of $q$.
-To the order they keep, $\theta$ matches the frozen-inventory value, so the reservation prices are those of Step 2.
+Avellaneda and Stoikov (section 3.2) expand $\theta$ in powers of the inventory and take a first-order (linear) approximation of the order-arrival term $\frac{A}{k+\gamma}(e^{-k\delta^a} + e^{-k\delta^b})$, whose linear part does not depend on $q$.
+Writing $\theta = \theta^0 + q\theta^1 + q^2\theta^2 + \dots$, the order-$q$ equation gives $\theta^1 = s$ and the order-$q^2$ equation gives $\theta^2 = -\frac12\gamma\sigma^2(T-t)$, so $r = \theta^1 + 2q\theta^2 = s - q\gamma\sigma^2(T-t)$ and the reservation prices coincide with the frozen-inventory values of Step 2.
+They note that a quadratic approximation of the arrival term would leave $\theta^2$ solving a nonlinear PDE.
+The exact finite-inventory solution is the subject of [Gueant-Lehalle and Extensions](04-Gueant-Lehalle-and-Extensions.md).
 Adding the two distances,
 
 $$
@@ -118,7 +125,8 @@ So the recipe is: compute $r$, then place a symmetric spread of that total width
   It vanishes at $T$.
 - Liquidity term $\frac{2}{\gamma}\ln(1 + \gamma/k)$: as $\gamma \to 0$ it tends to $2/k$, the spread of a risk-neutral monopolist who maximises $\delta A e^{-k\delta}$ on each side (optimum $\delta = 1/k$).
   Large $k$ means fill probability collapses quickly away from the mid, as in a competitive book, so the spread is tight.
-- $A$ does not appear in the quotes; it only scales how often you trade.
+- $A$ does not appear in the approximate quotes; it only scales how often you trade.
+  In the exact solution it does matter, because it sets how fast inventory can be traded away.
 - The spread does not depend on $q$ in this approximation; inventory only moves the centre.
   The skew is linear in $q$.
 - Units: $\gamma$ is per dollar, $\sigma^2(T-t)$ is dollars squared, $k$ is per dollar.
@@ -127,7 +135,7 @@ So the recipe is: compute $r$, then place a symmetric spread of that total width
 ### Limitations that interviewers probe
 
 - The finite horizon $T$ is artificial: skew and the inventory term shrink to zero at $T$, so behaviour depends on a parameter with no economic meaning for a continuous business.
-  Practitioners often freeze $T - t$ at a constant.
+  The paper's section 2.3 offers a stationary version with a discount rate $\omega$ instead; another workaround is to freeze $T - t$ at a constant.
 - No inventory bounds; the Gueant-Lehalle-Fernandez-Tapia solution adds them and gives an asymptotic spread and skew that do not depend on $T$.
   See [Gueant-Lehalle and Extensions](04-Gueant-Lehalle-and-Extensions.md).
 - No adverse selection: fills are independent of future moves, which is exactly what markouts show to be false.
@@ -136,13 +144,14 @@ So the recipe is: compute $r$, then place a symmetric spread of that total width
 
 ## Worked examples
 
-All examples use the defaults of the repo simulator [avellaneda_stoikov_mm.py](code/avellaneda_stoikov_mm.py): $s = 100$, $\sigma = 2$, $\gamma = 0.1$, $k = 1.5$, $A = 140$, and $T - t = 1$ unless stated.
+All examples use the simulation parameters of the paper (section 3.3), which are also the defaults of the repo simulator [avellaneda_stoikov_mm.py](code/avellaneda_stoikov_mm.py): $s = 100$, $\sigma = 2$, $\gamma = 0.1$, $k = 1.5$, $A = 140$, time step $dt = 0.005$, and $T - t = 1$ unless stated.
+[mm_03_avellaneda_stoikov.py](code/mm_03_avellaneda_stoikov.py) asserts every number below.
 
 ### Example 1: flat inventory
 
 With $q = 0$, $r = 100$.
 Inventory term: $0.1 \times 4 \times 1 = 0.4$.
-Liquidity term: $20 \ln(1 + 0.1/1.5) = 20 \ln(1.0667) \approx 1.2908$.
+Liquidity term: $20 \ln(1 + 0.1/1.5) = 20 \ln(16/15) \approx 1.2908$.
 Total spread $\approx 1.6908$, so bid $\approx 99.1546$ and ask $\approx 100.8454$.
 Each side sits 0.8454 from the mid and fills at intensity $140 e^{-1.5 \times 0.8454} \approx 39.39$ per unit time.
 
@@ -183,32 +192,25 @@ Higher risk aversion shrinks the liquidity term slightly and inflates the invent
 
 ### Example 5: checking the first-order condition numerically
 
-With $c = 0.3$, maximising $g(\delta) = 140 e^{-1.5\delta}(1 - e^{-0.1(\delta - 0.3)})$ on a grid or with a bounded optimiser gives $\delta \approx 0.94539$, matching $0.3 + 10\ln(1.0667) \approx 0.94539$.
+With $c = 0.3$, maximising $g(\delta) = 140 e^{-1.5\delta}(1 - e^{-0.1(\delta - 0.3)})$ on a grid or with a bounded optimiser gives $\delta \approx 0.94539$, matching $0.3 + 10\ln(16/15) \approx 0.94539$.
+Rounding $16/15$ to 1.0667 first would give 0.9457, so keep the fraction.
 
-### Example 6: simulation against symmetric quoting
+### Example 6: inventory strategy against symmetric quoting
 
-Run the repo simulator for 1,000 paths and compare it with a strategy that uses the same spread but centres it on the mid instead of $r$.
-With `np.random.seed(7)` before each batch, one run gave:
+The paper's benchmark (section 3.3) quotes a constant spread equal to the time-average spread of the inventory strategy, centred on the mid instead of on $r$.
+On the paper's grid of 200 steps that average is $1.2908 + 0.4 \times 0.5025 \approx 1.4918$ (the paper prints 1.49).
+Because the quotes depend only on $(q, t)$, inventory is a Markov chain independent of the mid, and terminal P&L is spread income plus $\sum_i q_i (S_i - S_{i-1})$.
+That makes the mean and standard deviation of P&L computable exactly by a forward recursion over the inventory distribution, with no sampling error:
 
 | Strategy | mean terminal P&L | sd of P&L | sd of final inventory |
 | :--- | ---: | ---: | ---: |
-| Avellaneda-Stoikov | 65.03 | 6.86 | 2.87 |
-| Symmetric around mid | 67.73 | 13.44 | 8.16 |
+| Avellaneda-Stoikov | 64.89 | 6.54 | 2.93 |
+| Symmetric around mid | 68.22 | 13.46 | 8.40 |
 
-The inventory strategy gives up about 4% of mean P&L to halve the P&L standard deviation, the same qualitative result as the paper's table.
-Exact numbers depend on the seed.
-
-```python
-import numpy as np
-from avellaneda_stoikov_mm import AvellanedaStoikovSimulator  # needs numpy and matplotlib
-
-np.random.seed(7)
-final = [AvellanedaStoikovSimulator().run()[3][-1] for _ in range(1000)]
-print(np.mean(final), np.std(final, ddof=1))
-```
-
-The symmetric variant is the same loop with `bid = S[i-1] - spread/2` and `ask = S[i-1] + spread/2`.
-The simulator's mid is an arithmetic random walk, matching the model, even though a comment in the file mentions geometric Brownian motion.
+The inventory strategy gives up about 5% of mean P&L and has 0.49 times the P&L standard deviation.
+A seeded 20,000-path simulation and 400 seeded paths of the repo simulator agree with these values within four standard errors.
+The paper's Table 1 (one run of 1,000 paths) reports 65.0, 6.6, 2.9 and 68.4, 12.7, 8.4; every figure is within three standard errors of the exact values, the largest gap being the symmetric P&L standard deviation, 2.5 standard errors low.
+Its Tables 2 and 3 show the same ordering at $\gamma = 0.01$ (the strategies nearly coincide) and at $\gamma = 1$ (the inventory strategy's mean falls to 31.4 against 44.0).
 
 ## Pitfalls
 
@@ -250,8 +252,8 @@ The simulator's mid is an arithmetic random walk, matching the model, even thoug
 > $r = 100 - 3 \times 0.4 = 98.8$ and the spread is $0.4 + 20\ln(1 + 1/15) \approx 1.691$, so quotes are $98.8 \pm 0.845$.
 
 > [!question]- mm-as-role-of-A | Why does the base intensity A not appear in the optimal quotes?
-> Because it multiplies the whole objective term for each side and cancels in the first-order condition.
-> It changes how often you trade, not where you should quote.
+> In the AS approximation it multiplies the whole objective term for each side and cancels in the first-order condition, and the approximate reservation prices do not contain it.
+> It changes how often you trade, not where you quote; in the exact solution it does enter, because faster fills make inventory less risky.
 
 > [!question]- mm-as-k-interpretation | What does a larger k mean, and how does it change the spread?
 > Fill probability decays faster with distance from the mid, as in a competitive book, so the optimal spread is tighter.
@@ -263,21 +265,39 @@ The simulator's mid is an arithmetic random walk, matching the model, even thoug
 
 > [!question]- mm-as-vs-symmetric | How does Avellaneda-Stoikov compare with symmetric quoting at the same spread?
 > Slightly lower mean P&L, much lower P&L and inventory variance.
-> Skewing mean-reverts inventory, trading a little expected profit for less risk; in a 1,000-path run of the repo simulator the P&L sd fell from about 13.4 to 6.9 with mean 65.0 versus 67.7.
+> Skewing mean-reverts inventory, trading a little expected profit for less risk.
+> On the paper's parameters, against a symmetric quote at the average spread of 1.4918, the exact P&L sd falls from 13.46 to 6.54 while the mean falls from 68.22 to 64.89.
 
 > [!question]- mm-as-no-adverse-selection | Which real-world effect is missing from Avellaneda-Stoikov that dominates actual market-making P&L?
 > Adverse selection: fills are independent of future price moves in the model.
 > Real width must also cover the expected post-fill move measured by markouts.
 
+> [!question]- mm-as-closed-form-approximation | Which parts of the Avellaneda-Stoikov quotes are exact and which are approximate?
+> The map from reservation prices to quotes, $\delta^a = r^a - s + \frac1\gamma\ln(1 + \gamma/k)$, is exact for exponential intensity and CARA utility.
+> The closed-form reservation prices come from expanding $\theta$ to second order in $q$ and linearising the arrival term, which reproduces the frozen-inventory values.
+
+> [!question]- mm-as-long-inventory-rates | With q = 3 on the paper's parameters the quotes are 97.9546 and 99.6454 around a mid of 100. How do the fill rates compare?
+> The ask fills at about $140 e^{1.5 \times 0.3546} \approx 238.3$ and the bid at about $140 e^{-1.5 \times 2.0454} \approx 6.51$ per unit time, so buys arrive about 37 times more slowly than sells.
+> The ask has crossed the mid, a known artefact of the unconstrained model.
+
+> [!question]- mm-as-exact-pnl-moments | Why can the mean and variance of Avellaneda-Stoikov P&L be computed exactly without simulation?
+> The quotes depend only on inventory and time, so inventory is a Markov chain independent of the mid.
+> P&L is spread income plus $\sum_i q_i \Delta S_i$, and each increment $\Delta S_i$ is independent of $q_i$, so a forward recursion over the inventory distribution gives both moments.
+
+> [!question]- mm-as-exponential-intensity-origin | Where does the exponential fill intensity A e^{-k delta} come from in the paper?
+> From combining a power-law density of market order sizes with a logarithmic temporary price impact, so the chance that an order reaches distance $\delta$ decays exponentially in $\delta$.
+> A power-law impact would instead give a power-law intensity.
+
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [avellaneda_stoikov_mm.py](code/avellaneda_stoikov_mm.py).
+- Code: [`code/mm_03_avellaneda_stoikov.py`](code/mm_03_avellaneda_stoikov.py) prints and asserts every number on this page: reservation prices by bisection on the frozen-inventory indifference condition with Gauss-Hermite quadrature (not the closed forms), optimal distances by golden-section maximisation of $g(\delta)$ (not the log formula), and the strategy comparison by an exact recursion over the inventory distribution, checked against a seeded simulation, the repo simulator and the paper's Tables 1 to 3.
+- Simulator: [avellaneda_stoikov_mm.py](code/avellaneda_stoikov_mm.py), seeded per instance with `AvellanedaStoikovSimulator(seed=...)`.
 - Systems companion with the same formulas: [Quantitative Models and Strategies](Quant-Dev-MM-Guide/03_Quantitative_Models_and_Strategies.md).
-  Its section 1.1 writes the quotes with inventory terms $(2q - 1)$ and $(2q + 1)$ of the wrong sign.
   With $\delta^* = \frac{2}{\gamma}\ln(1 + \gamma/k)$ the quotes derived above are $p^a = s + \frac{\delta^*}{2} + (1 - 2q)\frac{\gamma\sigma^2(T-t)}{2}$ and $p^b = s - \frac{\delta^*}{2} - (1 + 2q)\frac{\gamma\sigma^2(T-t)}{2}$, which reproduce Example 2.
 
 ## Further reading
 
-- Avellaneda and Stoikov (2008), High-frequency trading in a limit order book, *Quantitative Finance* 8(3).
-- Gueant, Lehalle and Fernandez-Tapia (2013), Dealing with the inventory risk: a solution to the market making problem, *Mathematics and Financial Economics* 7(4).
+- Avellaneda and Stoikov (2008), High-frequency trading in a limit order book, *Quantitative Finance* 8(3), 217-224 (sections 2.2 and 3.2 for the formulas, section 3.3 and Tables 1 to 3 for the simulations).
+- Potters and Bouchaud (2003), More statistical properties of order books and price impact, *Physica A* 324, 133-140 (the logarithmic impact behind the exponential intensity).
+- Gueant, Lehalle and Fernandez-Tapia (2013), Dealing with the inventory risk: a solution to the market making problem, *Mathematics and Financial Economics* 7(4), 477-507 (Theorem 2 for the $T \to \infty$ limit and its closed-form approximation).
 - Cartea, Jaimungal and Penalva, *Algorithmic and High-Frequency Trading* (2015), chapter on market making.
