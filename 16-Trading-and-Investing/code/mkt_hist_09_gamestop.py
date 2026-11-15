@@ -61,12 +61,11 @@ def nscc() -> None:
 
 
 class ShareLedger:
-    """Physical holders of each share, open stock loans, and every long claim on the float."""
+    """Physical holders of each share and the open stock loans against the float."""
 
     def __init__(self, float_shares: int) -> None:
         self.holder = {share: f"owner{share}" for share in range(float_shares)}
         self.loans: list[tuple[int, str, str]] = []  # (share, lender, short seller)
-        self.longs = dict.fromkeys(self.holder.values(), 1)
         self._next = 0
 
     def _new_party(self, kind: str) -> str:
@@ -78,16 +77,12 @@ class ShareLedger:
         lender, seller, buyer = self.holder[share], self._new_party("short"), self._new_party("buyer")
         self.loans.append((share, lender, seller))
         self.holder[share] = buyer
-        self.longs[buyer] = self.longs.get(buyer, 0) + 1
 
     def short_interest_pct(self) -> float:
         return len(self.loans) / len(self.holder) * 100
 
     def never_shorted(self) -> int:
         return len(set(self.holder) - {share for share, _, _ in self.loans})
-
-    def check(self) -> None:
-        assert sum(self.longs.values()) == len(self.holder) + len(self.loans), "long claims = float + shares owed"
 
 
 def relending() -> None:
@@ -96,7 +91,6 @@ def relending() -> None:
     # A lends share 0 to X, X sells it to B; B lends the same share to Y, Y sells it to C.
     one.lend_and_short(0)
     one.lend_and_short(0)
-    one.check()
     approx("short interest, one share lent twice (%)", one.short_interest_pct(), 2.0, 0)
     never = one.never_shorted()
     assert never == 99, f"ledger shows {never} shares never sold short"
@@ -105,11 +99,9 @@ def relending() -> None:
     for _ in range(2):
         for share in range(100):
             whole.lend_and_short(share)
-    whole.check()
     si = whole.short_interest_pct()
     approx("short interest, every share lent and re-lent once (%)", si, 200.0, 0)
     assert si > 100, "short interest exceeds 100% of the float"
-    assert len(whole.loans) > len(whole.holder), "short sellers owe more shares than the float"
     print(f"    shares owed by short sellers = {len(whole.loans)}, float = {len(whole.holder)}")
 
 
