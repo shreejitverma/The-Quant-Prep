@@ -15,7 +15,8 @@ sources: [Lebron (2019) The Laws of Trading. Wiley, Zhou (2008) A Practical Guid
 - A make-a-market game tests four things: a calibrated fair value, a width that reflects both uncertainty and the risk that your counterparty knows more, updating on every piece of information (including the trades themselves), and managing your position.
 - Start with the expectation and standard deviation; say both out loud, then quote around the expectation with a width you can defend.
 - Assume the interviewer is informed: being lifted is evidence the value is higher, being hit is evidence it is lower, and even no trade is evidence it is near your mid.
-- In `./qp drill mm` (sum of 4 hidden dice, width 1 to 4, half the counterparties know the total) the widest allowed market centred on the dice-only fair value is the best quote in every round, for every set of revealed dice.
+- In `./qp drill mm` (sum of 4 hidden dice, width 1 to 4, half the counterparties know the total) the widest allowed market, centred on your best estimate of the total, is the best quote in every round.
+  Before any trade or pass is observed that estimate is the dice-only fair value; after one, it also conditions on that trade or pass (Example 3).
 - Narrate: "Fair is 14, standard deviation about 3.4; I'm 12 at 16, ten up."
 
 ## Learning objectives
@@ -113,7 +114,7 @@ The best opening is 12 at 16.
 
 ### Example 2: later rounds
 
-The best quotes as dice are revealed (dice 6, then 2, then 5):
+The best quotes on dice-only information, before conditioning on any trade or pass, as dice are revealed (dice 6, then 2, then 5):
 
 | Revealed | Fair value | Best quote | EV (10 lots) |
 | :--- | ---: | :--- | ---: |
@@ -220,7 +221,7 @@ print(round(float(10 * round_ev(12, 16, [])), 2))  # 0.74
 > State fair value, uncertainty, market and size together, for example "fair 14, sd about 3.4, 12 at 16, ten up".
 > After each trade or reveal, say how fair value moved and why before giving the new market.
 
-> [!question]- mm-game-later-round | In qp drill mm the first two dice show 6 and 2. What is fair, the best quote, and its expected P&L per 10 lots?
+> [!question]- mm-game-later-round | In qp drill mm the first two dice show 6 and 2. Ignoring earlier trades, what is fair, the best quote, and its expected P&L per 10 lots?
 > Fair 15; quote 13 at 17 for about +3.89.
 > Two unknown dice add 7 on average; the width-4 market centred on 15 beats every other quote by exact enumeration.
 
@@ -234,7 +235,7 @@ print(round(float(10 * round_ev(12, 16, [])), 2))  # 0.74
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/mm_10_market_making_games.py`](code/mm_10_market_making_games.py) prints and asserts every number on this page: quote values by walking the drill's game tree over every dice outcome and counterparty action, the best quote by brute force over every quote in all 259 reachable states, and the opening EV and the lift posterior again by seeded Monte Carlo through the real `MarketMakingGame` engine.
+- Code: [`code/mm_10_market_making_games.py`](code/mm_10_market_making_games.py) prints and asserts every number on this page: quote values by walking the drill's game tree over every dice outcome and counterparty action, the best quote by brute force over every quote in all 259 revealed-dice states before any trade is observed, and the opening EV and the lift posterior again by seeded Monte Carlo through the real `MarketMakingGame` engine.
 - Practice: `./qp drill mm`, implemented in `tools/qp/drills.py` (`MarketMakingGame`).
 - Interview mechanics: [Trading Games in Interviews](../13-Interview-Playbook/05-Trading-Games-in-Interviews.md).
 - Theory behind the width: [Market Making Fundamentals](01-Market-Making-Fundamentals.md) and [Spread Models: Roll and Glosten-Milgrom](../07-Market-Microstructure/03-Spread-Models-Roll-and-Glosten-Milgrom.md).

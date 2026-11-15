@@ -130,9 +130,10 @@ def example1() -> dict[str, float]:
     approx("price width", ask - bid, 0.19, 2)
     close("price width vs vega x 1 point", ask - bid, g["vega"], 0.001)
     tick = 0.05
-    approx("bid rounded down to 0.05", math.floor(bid / tick) * tick, 2.85, 2)
-    approx("ask rounded up to 0.05", math.ceil(ask / tick) * tick, 3.10, 2)
-    approx("half-width of the rounded market", (3.10 - 2.85) / 2, 0.125, 3)
+    bid_q, ask_q = math.floor(bid / tick) * tick, math.ceil(ask / tick) * tick
+    approx("bid rounded down to 0.05", bid_q, 2.85, 2)
+    approx("ask rounded up to 0.05", ask_q, 3.10, 2)
+    approx("half-width of the rounded market", (ask_q - bid_q) / 2, 0.125, 3)
     approx("hedge cost |delta| x 0.005", g["delta"] * 0.005, 0.002, 3)
     return g
 
@@ -172,14 +173,14 @@ def example3() -> None:
         return sum(q * g[key] * 100 for q, g, _ in rows[sel])
 
     approx("book delta (shares)", total("delta"), 2974, 0)
-    approx("book delta from the rounded table deltas", 100 * (200 * 0.526 - 300 * 0.372 + 100 * 0.360), 2960, 0)
+    approx("shown working: book delta from the rounded table deltas", 100 * (200 * 0.526 - 300 * 0.372 + 100 * 0.360), 2960, 0)
     approx("book gamma (shares per dollar)", total("gamma"), -484, 0)
     approx("book vega (dollars per point)", total("vega"), -4336, 0)
     approx("3-month vega", total("vega", slice(0, 2)), -1690, 0)
     approx("6-month vega", total("vega", slice(2, 3)), -2646, 0)
     approx("book theta (dollars per day)", total("theta"), 413, 0)
-    approx("one-dollar move cost 0.5 x 484", 0.5 * 484 * 1.0**2, 242, 0)
-    approx("break-even daily move sqrt(2 x 413 / 484)", math.sqrt(2 * 413 / 484), 1.31, 2)
+    approx("shown working: one-dollar move cost 0.5 x 484", 0.5 * 484 * 1.0**2, 242, 0)
+    approx("shown working: break-even daily move sqrt(2 x 413 / 484)", math.sqrt(2 * 413 / 484), 1.31, 2)
     # gamma-theta identity at r = 0: theta = -0.5 gamma S^2 sigma^2 (per year), from finite differences only
     g = rows[1][1]
     close("theta x 365 vs -0.5 gamma S^2 sigma^2", g["theta"] * 365, -0.5 * g["gamma"] * 100**2 * 0.25**2, 1e-4)
@@ -204,8 +205,9 @@ def example4() -> None:
 
 def example5() -> None:
     print("Example 5: pin risk (card mm-options-pin-risk)")
+    shares = 1000 * 100
     approx("2% of 50.02", 0.02 * 50.02, 1.0, 2)
-    approx("P&L swing on 100,000 unknown shares", 100_000 * 1.0, 100_000, 0)
+    approx("shown working: P&L swing at 1 dollar a share", shares * 1.0, 100_000, 0)
 
 
 def example6() -> None:
@@ -223,7 +225,7 @@ def example6() -> None:
     approx("exercise value", S - K, 10.00, 2)
     approx("gain from exercising", (S - K) - hold[1], 0.33, 2)
     close("gain vs D - threshold", (S - K) - hold[1], D - (interest + put), 2e-4)
-    approx("0.50 - (0.164 + 0.007)", 0.50 - (0.164 + 0.007), 0.33, 2)
+    approx("shown working: 0.50 - (0.164 + 0.007)", 0.50 - (0.164 + 0.007), 0.33, 2)
 
     print("Early exercise of a put: the parity condition is necessary, not sufficient (card mm-options-early-exercise-put)")
     for spot, decision in ((35.0, "hold"), (34.0, "exercise")):

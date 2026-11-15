@@ -66,10 +66,12 @@ def min_variance(rng: np.random.Generator) -> None:
     se_beta = math.sqrt(1 - rho * rho) * s_a / (s_h * math.sqrt(n))
     simulated("regression beta of stock on futures", beta, 1.2, 3 * se_beta)
     resid = stock - beta * hedge
-    simulated("residual daily sd", float(resid.std(ddof=1)), 0.016, 3 * 0.016 / math.sqrt(2 * n))
-    approx("futures to short (dollars)", 1.2 * 1_000_000, 1_200_000, 0)
-    approx("unhedged daily sd (dollars)", 0.02 * 1_000_000, 20_000, 0)
-    approx("hedged daily sd (dollars)", 0.02 * math.sqrt(1 - 0.36) * 1_000_000, 16_000, 0)
+    resid_sd = float(resid.std(ddof=1))
+    simulated("residual daily sd", resid_sd, 0.016, 3 * resid_sd / math.sqrt(2 * n))
+    notional = 1_000_000
+    approx("futures to short (dollars), rho sigma_A / sigma_H x notional", rho * s_a / s_h * notional, 1_200_000, 0)
+    approx("unhedged daily sd (dollars)", s_a * notional, 20_000, 0)
+    approx("hedged daily sd (dollars)", s_a * math.sqrt(1 - rho * rho) * notional, 16_000, 0)
 
 
 def bands() -> None:
@@ -93,7 +95,7 @@ def example2() -> None:
             mid = 0.5 * (lo + hi)
             lo, hi = (mid, hi) if rate * mid < aggressive + passive else (lo, mid)
         approx(f"break-even wait by bisection (sigma = {sigma:.6f})", lo, 143, 0)
-    approx("110 / 0.77 as in the card", 110 / 0.77, 143, 0)
+    approx("shown working: 110 / 0.77 as in the card", 110 / 0.77, 143, 0)
     approx("risk cost ratio for a ten-times position", (0.5 * gamma * (10 * n) ** 2) / (0.5 * gamma * n**2), 100, 0)
 
 
@@ -117,7 +119,7 @@ def example4() -> None:
     approx("one-day sd per share", sd, 1.0, 2)
     limit = max(q for q in range(0, 40_000) if q * z * sd <= 50_000)
     approx("maximum position (hundreds of shares)", limit / 100, 215, 0)
-    approx("50,000 / (2.326 x 1)", 50_000 / 2.326, 21_496, 0)
+    approx("shown working: 50,000 / (2.326 x 1)", 50_000 / 2.326, 21_496, 0)
 
 
 def example5() -> None:
