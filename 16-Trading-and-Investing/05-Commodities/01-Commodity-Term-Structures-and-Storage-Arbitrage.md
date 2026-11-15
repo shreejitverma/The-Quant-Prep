@@ -101,7 +101,7 @@ Because the drag compounds every cycle, a long-only front-month fund in persiste
 
 ### 3. The Negative Pricing Anomaly: April 20, 2020
 
-On April 20, 2020, the May 2020 NYMEX WTI Crude Oil futures contract settled at **-$37.63 per barrel**, down from $17.73 the previous day (CFTC press release 8315-20, November 23, 2020); EIA noted it was the first negative price since the contract began trading in 1983:
+On April 20, 2020, the May 2020 NYMEX WTI Crude Oil futures contract fell from $17.73 at the April 20 open to a **-$37.63 per barrel** settlement (CFTC Release 8315-20, November 23, 2020); EIA noted it was the first negative price since the contract began trading in 1983:
 
 ```
 +-----------------------------------------------------------------------+

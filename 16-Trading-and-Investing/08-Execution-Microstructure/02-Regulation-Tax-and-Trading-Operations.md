@@ -265,8 +265,9 @@ Turnover is the sum of the absolute differences, Rs 45,000, even though the net 
 > A risk-based framework under FINRA Rule 4210(g) that sets margin from the largest loss across a range of price moves, using theoretical prices from an SEC-approved model (in practice values supplied by the OCC).
 
 > [!question]- mkt-reg-029 | What is the minimum account equity typically required by US brokers to qualify for Portfolio Margin?
-> There is no single regulatory figure to quote: brokers set house minimums for portfolio margin, so check the broker's disclosure.
-> FINRA Rule 4210(g) as of November 2026 sets a $5 million threshold only for specific cases such as accounts holding unlisted derivatives.
+> There is no single regulatory figure to quote: brokers may set higher house minimums for portfolio margin, so check the broker's disclosure.
+> As of November 2026, FINRA Rule 4210(g)(4)(C) bars positions in unlisted derivatives unless the account establishes and maintains equity of at least $5 million.
+> As of November 2026, FINRA Rule 4210(g)(1)(K) requires each portfolio margin account with less than $5 million in equity to maintain margin for intraday risk.
 
 > [!question]- mkt-reg-030 | What is CFTC Rule 1.20 regarding futures customer funds?
 > It requires futures commission merchants (FCMs) to separately account for and segregate futures customer funds, holding enough at all times to cover their total obligations to customers, at permitted depositories with written acknowledgments.

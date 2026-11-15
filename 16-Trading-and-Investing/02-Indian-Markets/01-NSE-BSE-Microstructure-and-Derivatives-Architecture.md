@@ -97,7 +97,9 @@ Its equity session, as of November 2026, is (NSE circulars on the pre-open revis
 - SEBI's circular SEBI/HO/MRD/TPD-1/P/CIR/2025/76 (May 26, 2025) limits each exchange to Tuesday or Thursday expiries; NSE moved to Tuesday and BSE to Thursday for contracts expiring from September 1, 2025.
 
 Index options are cash-settled against the final settlement price of the index.
-From December 7, 2026 (SEBI circular of October 15, 2026), that price is an index value computed from each constituent's VWAP over the last 30 minutes of continuous trading; a constituent's VWAP over that window is:
+From December 7, 2026 (SEBI circular of October 15, 2026), that price is an index value computed from each constituent's VWAP over the last 30 minutes of continuous trading.
+For expiries from August 3 to December 6, 2026, the final settlement price follows the NSE closing auction session circular NSE/CMTR/75479.
+A constituent's VWAP over the last 30 minutes is:
 
 $$\text{VWAP} = \frac{\sum_{i=1}^M P_i \cdot V_i}{\sum_{i=1}^M V_i}$$
 
@@ -184,7 +186,7 @@ A stock trades in three clusters during the last 30 minutes (hypothetical data):
 The 30-minute VWAP is:
 $$\text{VWAP} = \frac{(2,451.00 \times 10) + (2,449.50 \times 15) + (2,452.00 \times 25)}{10 + 15 + 25} = \frac{24,510 + 36,742.5 + 61,300}{50} = \frac{122,552.5}{50} = \text{Rs } 2,451.05$$
 
-The index's final settlement value is built from every constituent's VWAP this way and then aggregated by the index methodology.
+From December 7, 2026, the index's final settlement value is built from every constituent's VWAP this way and then aggregated by the index methodology.
 Suppose the NIFTY 50 final settlement value is 24,510.50.
 A 24,500 CE then expires in the money and settles in cash at $24,510.50 - 24,500 = \text{Rs } 10.50$ per unit, or Rs 682.50 per lot of 65 units.
 At an index level of 24,500, one lot is worth $65 \times 24,500 = \text{Rs } 15.93$ lakh, just above SEBI's Rs 15 lakh minimum; the lot would fall below it if the index were under about 23,077.
