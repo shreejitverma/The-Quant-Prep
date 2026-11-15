@@ -378,7 +378,9 @@ function formatMetric(key, value) {
   if (typeof value !== "number") return String(value);
   if (INTEGER_METRICS.has(key)) return formatFixed(value, 0);
   if (key.endsWith("_pct")) return formatFixed(value, 2) + "%";
-  if (key.endsWith("_dollars")) return (value < 0 ? "-$" : "$") + formatFixed(Math.abs(value), 2);
+  // Account equity and capital are dollar amounts even without a _dollars suffix.
+  const isDollars = key.endsWith("_dollars") || key.endsWith("_equity") || key === "initial_capital";
+  if (isDollars) return (value < 0 ? "-$" : "$") + formatFixed(Math.abs(value), 2);
   return formatFixed(value, 3);
 }
 

@@ -108,7 +108,7 @@ Output is designed to be read by people and by agents: tables print as `name[N]{
 | Firms | Readiness per firm and each firm's focus topics. |
 
 The Trading Lab is at `http://127.0.0.1:8765/lab/`.
-Selecting an engine shows a quick preview computed in the browser; **Run Simulation** runs the real engine on the server and records the run.
+Selecting an engine shows its form; **Run Simulation** runs the real engine on the server and records the run, and without `./qp serve` the page refuses rather than estimating.
 
 The server listens only on your machine and rejects requests from other sites, so another web page cannot change your progress.
 

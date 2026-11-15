@@ -105,6 +105,14 @@ class LabMetricFormatTest(unittest.TestCase):
         self.assertEqual(self.fmt("net_pnl_dollars", 26928.42), "$26,928.42")
         self.assertEqual(self.fmt("net_pnl_dollars", -1500.5), "-$1,500.50")
 
+    def test_equity_and_capital_metrics_render_as_dollars(self):
+        # pos_sizing and event_study return account equity and capital in dollars without a _dollars suffix.
+        self.assertEqual(self.fmt("median_final_equity", 204748.52), "$204,748.52")
+        self.assertEqual(self.fmt("mean_final_equity", 0.0), "$0.00")
+        self.assertEqual(self.fmt("final_equity", 98250.0), "$98,250.00")
+        self.assertEqual(self.fmt("initial_capital", 100000), "$100,000.00")
+        self.assertEqual(self.fmt("equity_risk_contribution_pct", 40.0), "40.00%")
+
     def test_engine_integer_metrics_render_without_decimals(self):
         # Oracle: the Python type of each metric from a default run of every engine.
         int_metrics = {}
