@@ -9,6 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from .vault import Vault
+
 
 @dataclass(frozen=True)
 class GateRequirement:
@@ -252,14 +254,54 @@ def get_card_count_for_prefix(cards: dict[str, Any], prefix: str) -> int:
     return sum(1 for cid in cards if cid.startswith(prefix))
 
 
+def track_stage_cards(vault: Vault | None, prefix: str) -> dict[str, list[str]]:
+    """Card ids of one track (cards whose id starts with ``prefix``) split into its two card stages.
+
+    A card's stage is set by the note it lives in, never by its id, so a card appended to a note
+    later, or one whose id does not end in a number, lands in that note's stage. The track's notes
+    are taken in syllabus order (``Vault.sections``, sorted by filename prefix): the first half of
+    them (rounded down) are ``foundations`` and the rest ``core``. A track held in a single note
+    splits that note's cards in half by position instead, the first half (rounded down, at least
+    one card) being ``foundations``. A private note that ``extends`` a topic is skipped, because
+    its cards already sit in the topic it extends.
+    """
+    notes: list[list[str]] = []
+    if vault is not None:
+        for section in vault.sections:
+            for note in section.notes:
+                if note.extends:
+                    continue
+                # vault.cards keeps only the first card of a duplicated id; count that one only.
+                ids = [c.id for c in note.cards if c.id.startswith(prefix) and vault.cards.get(c.id) is c]
+                if ids:
+                    notes.append(ids)
+    if len(notes) == 1:
+        split = max(1, len(notes[0]) // 2)
+        return {"foundations": notes[0][:split], "core": notes[0][split:]}
+    half = len(notes) // 2
+    return {
+        "foundations": [cid for ids in notes[:half] for cid in ids],
+        "core": [cid for ids in notes[half:] for cid in ids],
+    }
+
+
+def _stage_card_counts(vault: Vault | None, prefix: str, stage: str, reviewed_cards: dict[str, Any]) -> tuple[int, int]:
+    """(cards in the stage, cards of the stage the learner has reviewed at least once)."""
+    ids = track_stage_cards(vault, prefix)[stage]
+    return len(ids), sum(1 for cid in ids if reviewed_cards.get(cid, {}).get("reps", 0) > 0)
+
+
 def evaluate_gate(
     track_id: str,
     stage: str,
-    vault_cards: dict[str, Any] | None = None,
+    vault: Vault | None = None,
     store_state: dict[str, Any] | None = None,
 ) -> StageGate:
-    """Evaluate whether a learner meets the criteria for a specific track and stage."""
-    vault_cards = vault_cards or {}
+    """Evaluate whether a learner meets the criteria for a specific track and stage.
+
+    Card requirements count the cards of the stage's notes (see ``track_stage_cards``).
+    """
+    vault_cards = vault.cards if vault is not None else {}
     store_state = store_state or {}
 
     # Extract learner state metrics
@@ -269,17 +311,9 @@ def evaluate_gate(
     if track_id == "track_0_pqt":
         if stage == "foundations":
             prefix = "mkt-pqt-"
-            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 64)
+            total_cards, passed_cards = _stage_card_counts(vault, prefix, "foundations", reviewed_cards)
             # Default target to 64 if vault cards aren't fully loaded
             target_count = max(64, total_cards) if total_cards > 0 else 64
-            passed_cards = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and int(cid.split("-")[-1]) <= 64
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
 
             # Check lab games
             game_sessions = [s for s in lab_history if s.get("engine") == "games"]
@@ -303,16 +337,8 @@ def evaluate_gate(
 
         if stage == "core":
             prefix = "mkt-pqt-"
-            total_core_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and 64 < int(cid.split("-")[-1]) <= 128)
+            total_core_cards, passed_core = _stage_card_counts(vault, prefix, "core", reviewed_cards)
             target_core = max(64, total_core_cards) if total_core_cards > 0 else 64
-            passed_core = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and 64 < int(cid.split("-")[-1]) <= 128
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
 
             # LOB and MM executions
             lob_runs = sum(1 for s in lab_history if s.get("engine") == "lob_sim")
@@ -343,16 +369,8 @@ def evaluate_gate(
     elif track_id == "track_6_trd":
         if stage == "foundations":
             prefix = "mkt-trd-"
-            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 64)
+            total_cards, passed_cards = _stage_card_counts(vault, prefix, "foundations", reviewed_cards)
             target_count = max(64, total_cards) if total_cards > 0 else 64
-            passed_cards = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and int(cid.split("-")[-1]) <= 64
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
 
             # Sizing sessions
             sizing_runs = sum(1 for s in lab_history if s.get("engine") == "pos_sizing")
@@ -375,16 +393,8 @@ def evaluate_gate(
 
         if stage == "core":
             prefix = "mkt-trd-"
-            total_core_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and 64 < int(cid.split("-")[-1]) <= 128)
+            total_core_cards, passed_core = _stage_card_counts(vault, prefix, "core", reviewed_cards)
             target_core = max(64, total_core_cards) if total_core_cards > 0 else 64
-            passed_core = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and 64 < int(cid.split("-")[-1]) <= 128
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
 
             journal_trades = store_state.get("journal_trades", [])
             logged_count = len(journal_trades)
@@ -458,16 +468,8 @@ def evaluate_gate(
     elif track_id == "track_fa":
         prefix = "mkt-fa-"
         if stage == "foundations":
-            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            total_cards, passed_cards = _stage_card_counts(vault, prefix, "foundations", reviewed_cards)
             target_count = max(128, total_cards) if total_cards > 0 else 128
-            passed_cards = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and int(cid.split("-")[-1]) <= 128
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             reqs = [
                 GateRequirement(
                     name="Track FA Foundations Cards Mastered",
@@ -485,16 +487,8 @@ def evaluate_gate(
             return StageGate(track_id, stage, "Fundamental Analysis Foundations Gate", reqs)
 
         if stage == "core":
-            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            total_core, passed_core = _stage_card_counts(vault, prefix, "core", reviewed_cards)
             target_core = max(128, total_core) if total_core > 0 else 128
-            passed_core = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and 128 < int(cid.split("-")[-1]) <= 256
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             total_fa_reviewed = sum(
                 1 for cid in reviewed_cards if cid.startswith(prefix) and cid in vault_cards and reviewed_cards[cid].get("reps", 0) > 0
             )
@@ -517,16 +511,8 @@ def evaluate_gate(
     elif track_id == "track_val":
         prefix = "mkt-val-"
         if stage == "foundations":
-            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            total_cards, passed_cards = _stage_card_counts(vault, prefix, "foundations", reviewed_cards)
             target_count = max(128, total_cards) if total_cards > 0 else 128
-            passed_cards = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and int(cid.split("-")[-1]) <= 128
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             reqs = [
                 GateRequirement(
                     name="Track Valuation Foundations Cards Mastered",
@@ -544,16 +530,8 @@ def evaluate_gate(
             return StageGate(track_id, stage, "Valuation Foundations Gate", reqs)
 
         if stage == "core":
-            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            total_core, passed_core = _stage_card_counts(vault, prefix, "core", reviewed_cards)
             target_core = max(128, total_core) if total_core > 0 else 128
-            passed_core = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and 128 < int(cid.split("-")[-1]) <= 256
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             total_val_reviewed = sum(
                 1 for cid in reviewed_cards if cid.startswith(prefix) and cid in vault_cards and reviewed_cards[cid].get("reps", 0) > 0
             )
@@ -576,16 +554,8 @@ def evaluate_gate(
     elif track_id == "track_vi":
         prefix = "mkt-vi-"
         if stage == "foundations":
-            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            total_cards, passed_cards = _stage_card_counts(vault, prefix, "foundations", reviewed_cards)
             target_count = max(128, total_cards) if total_cards > 0 else 128
-            passed_cards = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and int(cid.split("-")[-1]) <= 128
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             reqs = [
                 GateRequirement(
                     name="Track Value Foundations Cards Mastered",
@@ -603,16 +573,8 @@ def evaluate_gate(
             return StageGate(track_id, stage, "Value Investing Foundations Gate", reqs)
 
         if stage == "core":
-            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            total_core, passed_core = _stage_card_counts(vault, prefix, "core", reviewed_cards)
             target_core = max(128, total_core) if total_core > 0 else 128
-            passed_core = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and 128 < int(cid.split("-")[-1]) <= 256
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             total_vi_reviewed = sum(
                 1 for cid in reviewed_cards if cid.startswith(prefix) and cid in vault_cards and reviewed_cards[cid].get("reps", 0) > 0
             )
@@ -635,16 +597,8 @@ def evaluate_gate(
     elif track_id == "track_pf":
         prefix = "mkt-pf-"
         if stage == "foundations":
-            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            total_cards, passed_cards = _stage_card_counts(vault, prefix, "foundations", reviewed_cards)
             target_count = max(128, total_cards) if total_cards > 0 else 128
-            passed_cards = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and int(cid.split("-")[-1]) <= 128
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             reqs = [
                 GateRequirement(
                     name="Track Portfolio Foundations Cards Mastered",
@@ -662,16 +616,8 @@ def evaluate_gate(
             return StageGate(track_id, stage, "Portfolio Management Foundations Gate", reqs)
 
         if stage == "core":
-            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            total_core, passed_core = _stage_card_counts(vault, prefix, "core", reviewed_cards)
             target_core = max(128, total_core) if total_core > 0 else 128
-            passed_core = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and 128 < int(cid.split("-")[-1]) <= 256
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             total_pf_reviewed = sum(
                 1 for cid in reviewed_cards if cid.startswith(prefix) and cid in vault_cards and reviewed_cards[cid].get("reps", 0) > 0
             )
@@ -694,16 +640,8 @@ def evaluate_gate(
     elif track_id == "track_opt":
         prefix = "mkt-opt-"
         if stage == "foundations":
-            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 64)
+            total_cards, passed_cards = _stage_card_counts(vault, prefix, "foundations", reviewed_cards)
             target_count = max(64, total_cards) if total_cards > 0 else 64
-            passed_cards = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and int(cid.split("-")[-1]) <= 64
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             reqs = [
                 GateRequirement(
                     name="Options Foundations Cards Mastered",
@@ -715,16 +653,8 @@ def evaluate_gate(
             return StageGate(track_id, stage, "Options & Volatility Foundations Gate", reqs)
 
         if stage == "core":
-            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 64 < int(cid.split("-")[-1]) <= 128)
+            total_core, passed_core = _stage_card_counts(vault, prefix, "core", reviewed_cards)
             target_core = max(64, total_core) if total_core > 0 else 64
-            passed_core = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and 64 < int(cid.split("-")[-1]) <= 128
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             opt_runs = sum(1 for s in lab_history if s.get("engine") == "opt_desk")
             reqs = [
                 GateRequirement(
@@ -745,16 +675,8 @@ def evaluate_gate(
     elif track_id == "track_ta":
         prefix = "mkt-ta-"
         if stage == "foundations":
-            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            total_cards, passed_cards = _stage_card_counts(vault, prefix, "foundations", reviewed_cards)
             target_count = max(128, total_cards) if total_cards > 0 else 128
-            passed_cards = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and int(cid.split("-")[-1]) <= 128
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             reqs = [
                 GateRequirement(
                     name="Technical Analysis Foundations Cards Mastered",
@@ -766,16 +688,8 @@ def evaluate_gate(
             return StageGate(track_id, stage, "Technical Analysis Foundations Gate", reqs)
 
         if stage == "core":
-            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            total_core, passed_core = _stage_card_counts(vault, prefix, "core", reviewed_cards)
             target_core = max(128, total_core) if total_core > 0 else 128
-            passed_core = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and 128 < int(cid.split("-")[-1]) <= 256
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             chart_runs = sum(1 for s in lab_history if s.get("engine") == "replay_chart")
             reqs = [
                 GateRequirement(
@@ -796,16 +710,8 @@ def evaluate_gate(
     elif track_id == "track_sys":
         prefix = "mkt-sys-"
         if stage == "foundations":
-            total_cards = sum(1 for cid in vault_cards if cid.startswith(prefix) and int(cid.split("-")[-1]) <= 128)
+            total_cards, passed_cards = _stage_card_counts(vault, prefix, "foundations", reviewed_cards)
             target_count = max(128, total_cards) if total_cards > 0 else 128
-            passed_cards = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and int(cid.split("-")[-1]) <= 128
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             reqs = [
                 GateRequirement(
                     name="Systematic Strategy Foundations Cards Mastered",
@@ -817,16 +723,8 @@ def evaluate_gate(
             return StageGate(track_id, stage, "Systematic Trading Foundations Gate", reqs)
 
         if stage == "core":
-            total_core = sum(1 for cid in vault_cards if cid.startswith(prefix) and 128 < int(cid.split("-")[-1]) <= 256)
+            total_core, passed_core = _stage_card_counts(vault, prefix, "core", reviewed_cards)
             target_core = max(128, total_core) if total_core > 0 else 128
-            passed_core = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and 128 < int(cid.split("-")[-1]) <= 256
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             trap_runs = sum(1 for s in lab_history if s.get("engine") == "overfit_trap")
             reqs = [
                 GateRequirement(
@@ -848,19 +746,14 @@ def evaluate_gate(
     elif track_id in TRACK_METADATA:
         prefix = TRACK_METADATA[track_id]["card_prefix"]
         t_name = TRACK_METADATA[track_id]["name"]
-        total_in_vault = sum(1 for cid in vault_cards if cid.startswith(prefix))
-        split_point = max(1, total_in_vault // 2) if total_in_vault > 0 else 16
+        total_found, passed_cards = _stage_card_counts(vault, prefix, "foundations", reviewed_cards)
+        total_core, passed_core = _stage_card_counts(vault, prefix, "core", reviewed_cards)
+        total_in_vault = total_found + total_core
+        # Without any cards of the track each stage targets 16; a stage left empty targets the other's size.
+        target_count = total_found if total_in_vault > 0 else 16
+        target_core = total_core if total_core > 0 else target_count
 
         if stage == "foundations":
-            target_count = split_point
-            passed_cards = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and int(cid.split("-")[-1]) <= split_point
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             reqs = [
                 GateRequirement(
                     name=f"{t_name} Foundations Cards",
@@ -872,15 +765,6 @@ def evaluate_gate(
             return StageGate(track_id, stage, f"{t_name} Foundations Gate", reqs)
 
         if stage == "core":
-            target_core = total_in_vault - split_point if total_in_vault > split_point else split_point
-            passed_core = sum(
-                1
-                for cid in reviewed_cards
-                if cid.startswith(prefix)
-                and cid in vault_cards
-                and int(cid.split("-")[-1]) > split_point
-                and reviewed_cards[cid].get("reps", 0) > 0
-            )
             reqs = [
                 GateRequirement(
                     name=f"{t_name} Core Cards",
@@ -904,29 +788,29 @@ def evaluate_gate(
 
 
 def evaluate_all_markets_gates(
-    vault_cards: dict[str, Any] | None = None,
+    vault: Vault | None = None,
     store_state: dict[str, Any] | None = None,
 ) -> dict[str, dict[str, StageGate]]:
     """Evaluate all implemented stage gates across Tracks."""
     out: dict[str, dict[str, StageGate]] = {}
     for tid in TRACK_METADATA:
         gates = {
-            "foundations": evaluate_gate(tid, "foundations", vault_cards, store_state),
-            "core": evaluate_gate(tid, "core", vault_cards, store_state),
+            "foundations": evaluate_gate(tid, "foundations", vault, store_state),
+            "core": evaluate_gate(tid, "core", vault, store_state),
         }
         if tid == "track_6_trd":
-            gates["capital_gate"] = evaluate_gate(tid, "capital_gate", vault_cards, store_state)
+            gates["capital_gate"] = evaluate_gate(tid, "capital_gate", vault, store_state)
         out[tid] = gates
     return out
 
 
 def calculate_markets_mastery(
-    vault_cards: dict[str, Any] | None = None,
+    vault: Vault | None = None,
     store_state: dict[str, Any] | None = None,
     persona: str = "holistic",
 ) -> dict[str, Any]:
     """Calculate holistic mastery across all pillars, engines, and gates for a given persona."""
-    vault_cards = vault_cards or {}
+    vault_cards = vault.cards if vault is not None else {}
     store_state = store_state or {}
     reviewed_cards = store_state.get("cards", {})
     lab_history = store_state.get("lab_history", [])
@@ -1002,7 +886,7 @@ def calculate_markets_mastery(
     lab_score = round(0.70 * req_pct + 0.30 * all_pct, 1)
 
     # Gates evaluation
-    all_gates = evaluate_all_markets_gates(vault_cards, store_state)
+    all_gates = evaluate_all_markets_gates(vault, store_state)
     relevant_tracks = [t for t in TRACK_METADATA if weights.get(t, 0.0) > 0]
     total_gates_count = 0
     passed_gates_count = 0
@@ -1017,7 +901,7 @@ def calculate_markets_mastery(
     gate_score = round((passed_gates_count / total_gates_count * 100.0), 1) if total_gates_count > 0 else 0.0
 
     # Capital Gate
-    cap_gate = evaluate_gate("track_6_trd", "capital_gate", vault_cards, store_state)
+    cap_gate = evaluate_gate("track_6_trd", "capital_gate", vault, store_state)
 
     # Overall Mastery Composite
     overall_score = round(0.50 * card_score + 0.30 * lab_score + 0.20 * gate_score, 1)
