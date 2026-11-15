@@ -12,10 +12,10 @@ sources: [Helmer (2016) - 7 Powers: The Foundations of Business Strategy, Maubou
 
 ## TL;DR
 
-- Industry structure accounts for a substantial proportion of cross-sectional variation in corporate profitability; a mediocre company in a structurally advantaged industry regularly outperforms a brilliant operator in a viciously competitive industry.
+- Industry structure explains a meaningful share of the variation in business profitability (19% in McGahan and Porter 1997), though business-specific effects explain more (32%).
 - Michael Porter's Five Forces framework provides the foundational diagnostic for aggregate industry profitability and collective pricing power.
 - Hamilton Helmer's 7 Powers framework isolates company-specific persistent competitive advantages that shield high ROIC from competitive arbitrage.
-- An economic moat exists if and only if a business possesses at least one of the 7 Powers, enabling pricing power or cost asymmetry that competitors cannot replicate.
+- Helmer argues that the 7 Powers are the only sources of persistent differential returns, so in his framework a durable moat requires at least one of them.
 - Valuation models fail when analysts assume static ROIC; fundamental analysis must estimate the Competitive Advantage Period (CAP) and the structural fade rate towards the cost of capital.
 
 ## Learning objectives
@@ -30,25 +30,13 @@ sources: [Helmer (2016) - 7 Powers: The Foundations of Business Strategy, Maubou
 
 ### 1. Structure Trumps Execution: The Economics of Industry Attractiveness
 
-Warren Buffett famously observed that when a management team with a reputation for brilliance tackles a business with a reputation for bad economics, the reputation of the business remains intact.
-Empirical research confirms that industry membership explains roughly 20% of the variance in firm profitability, with operating returns clustering heavily by structural characteristics:
-
-```
-+-----------------------------------------------------------------------+
-|                    STRUCTURAL INDUSTRY PROFITABILITY                  |
-+-----------------------------------------------------------------------+
-| STRUCTURALLY ATTRACTIVE (High ROIC)   STRUCTURALLY UNATTRACTIVE (Low) |
-| - Software / Enterprise Platforms     - Commercial Airlines           |
-| - Specialized Medical Devices         - Commodity Steel & Metals      |
-| - Spirits & Confectionery             - Automobile Manufacturing      |
-| - Credit Rating Agencies              - Retail Banking & Brokerage    |
-| (High barriers, low capital, pricing) (Heavy capex, price competition)|
-+-----------------------------------------------------------------------+
-```
+Warren Buffett, in his 1985 Berkshire Hathaway letter: "When a management with a reputation for brilliance tackles a business with a reputation for poor fundamental economics, it is the reputation of the business that remains intact."
+McGahan and Porter (1997) decomposed the variance of business-segment profitability among US public corporations into year, industry, corporate-parent and business-specific effects of 2%, 19%, 4% and 32% respectively, and found that the shares differ substantially across sectors.
+Industry matters, but the business itself matters more, so structure and execution both need analysis.
 
 ### 2. Michael Porter's Five Forces Framework
 
-Michael Porter (1979, 2008) established that industry profitability is not determined by product sophistication or industry growth, but by five underlying microeconomic competitive forces:
+Michael Porter (1979, 2008) argues that an industry's long-run profit potential is set by the strength of five competitive forces, and that factors such as the industry growth rate or whether the product is high-tech are not forces in themselves:
 
 ```
                                +-----------------------------+
@@ -100,7 +88,7 @@ Michael Porter (1979, 2008) established that industry profitability is not deter
 ### 3. Hamilton Helmer's 7 Powers
 
 Operational effectiveness (benchmarking, lean manufacturing, upgrading IT systems) is necessary to stay in business, but it is easily matched and copied.
-Hamilton Helmer (2016) demonstrated that an enduring business must achieve **Power**, defined as a set of conditions creating persistent differential returns accompanied by a barrier to imitation.
+Hamilton Helmer (2016) argues that an enduring business must achieve **Power**, the set of conditions creating the potential for persistent differential returns, which requires both a benefit and a barrier that stops competitors from arbitraging it away.
 
 ```
 +-----------------------------------------------------------------------+
@@ -142,21 +130,21 @@ Hamilton Helmer (2016) demonstrated that an enduring business must achieve **Pow
 4. **Switching Costs**:
    - The customer expects the costs of switching to an alternate supplier to exceed the anticipated benefits.
    - Types: procedural (retraining staff), financial (contract termination fees), relational (trusted integration).
-   - Example: Enterprise ERP systems (SAP, Oracle) where ripping out infrastructure risks operational paralysis.
+   - Illustration: enterprise ERP systems, where ripping out embedded infrastructure risks operational disruption.
 
 5. **Branding**:
    - An objective price premium or cognitive reassurance arising from cumulative historical exposure and consistent positive customer experience.
-   - Types: affective valence (status brands like Hermès) and uncertainty reduction (B2B trust: nobody gets fired for buying IBM).
+   - Types: affective valence (positive feelings toward the brand, as with luxury houses such as Tiffany or Hermès) and uncertainty reduction (the buyer's confidence that the product will be as expected).
 
 6. **Cornered Resource**:
-   - Preferential access to a coveted asset that independently enhances value.
-   - Requirements: must be idiosyncratic, non-transferable, and deliver sustained economic surplus.
-   - Examples: Qualcomm's foundational CDMA/5G patent portfolio, TSMC's ASML extreme ultraviolet (EUV) priority allocation.
+   - Preferential access, at attractive terms, to a coveted asset that independently enhances value.
+   - The resource must be specific to the firm rather than available to rivals at a fair price; a strong team that could leave together is not cornered.
+   - Examples: a key patent, licence or location; Helmer's case is the creative team at early Pixar.
 
 7. **Process Power**:
    - Embedded company-wide processes that are organizationally complex, highly evolved, and tacitly held.
    - Barrier: The process cannot be bought or reverse-engineered by hiring a handful of executives.
-   - Example: Toyota Production System (TPS) during the 1970s-1990s.
+   - Example: the Toyota Production System (TPS), which rivals studied openly for decades yet struggled to replicate.
 
 ### 4. The Competitive Advantage Period (CAP) and Value Fade
 
@@ -182,14 +170,15 @@ The **Competitive Advantage Period (CAP)**, or **fade period**, is the duration 
 +-----------------------------------------------------------------------+
 ```
 
-Empirical reality of fade:
-- On average, high-ROIC companies fade towards the median cost of capital within 10 to 15 years.
-- Companies with structural Powers (Network Effects, Switching Costs) exhibit significantly slower fade rates, sustaining CAPs of 20+ years.
-- In financial modeling (DCF), assuming a permanent perpetual ROIC of 30% in terminal value is the most common valuation error.
+How to use fade in practice:
+- Returns above the cost of capital tend to decline over time as competitors respond, but the speed varies widely by company and industry; estimate it from the company's own history and its Powers rather than from a fixed rule of thumb.
+- Companies with structural Powers (Network Effects, Switching Costs) should fade more slowly, which is the economic content of a long CAP.
+- In a DCF, a terminal value that holds a high ROIC on all new investment forever implies a permanent advantage; make that assumption explicit, or let returns on new capital converge to WACC.
 
 ## Worked numerical case study
 
-Evaluate two enterprise software competitors:
+Evaluate two hypothetical enterprise software competitors.
+Lifetime value (LTV) here is undiscounted gross profit per account over the expected customer life, $\text{LTV} = \text{ARPA} \times \text{Gross Margin} / \text{Churn}$, ignoring expansion revenue and the time value of money:
 
 | Metric | Competitor A: CloudOS | Competitor B: ToolBox |
 |---|---|---|
@@ -200,25 +189,26 @@ Evaluate two enterprise software competitors:
 | Customer Acquisition Cost (CAC) | $12,000 | $10,000 |
 | Average Revenue Per Account (ARPA) | $40,000 / year | $15,000 / year |
 | Average Customer Lifetime (1 / Churn) | 28.6 years | 5.6 years |
-| Customer Lifetime Value (LTV) | $938,000 | $57,000 |
-| LTV / CAC Ratio | 78.2x | 5.7x |
+| Customer Lifetime Value (LTV) | $937,143 | $56,667 |
+| LTV / CAC Ratio | 78.1x | 5.7x |
 | Core Power Profile | Switching Costs + Scale | Weak / No Power |
 
 ### Economic Analysis:
 1. **Competitor A (CloudOS)** exhibits massive Switching Costs:
    - Annual churn is only 3.5%, implying a customer lifespan of 28.6 years.
-   - Net Revenue Retention of 124% means existing cohorts expand spend by 24% annually without new marketing expense.
-   - LTV/CAC ratio of 78.2x generates staggering incremental ROIC, allowing aggressive growth reinvestment.
+   - Net Revenue Retention of 124% means a cohort's revenue grows 24% a year after churn and contraction, before any new customers.
+   - Annual gross profit per account is $\$40,000 \times 82\% = \$32,800$, so LTV is $\$32,800 / 0.035 = \$937,143$ and LTV/CAC is $78.1\text{x}$ (rounding the lifetime to 28.6 years first would give $78.2\text{x}$).
+   - A high LTV/CAC means each dollar of acquisition spend returns many dollars of gross profit, which supports aggressive reinvestment.
 
 2. **Competitor B (ToolBox)** operates without Power:
-   - 18% annual churn forces the company to replace nearly its entire customer base every 5.5 years.
+   - 18% annual churn means the average customer stays $1/0.18 = 5.6$ years, so the company must keep replacing its base; LTV is $\$15,000 \times 68\% / 0.18 = \$56,667$.
    - NRR of 94% indicates net cohort contraction.
    - ToolBox operates on a treadmill: high marketing spend is consumed just to stay flat, driving ROIC towards WACC.
 
 ## Practice questions
 
 > [!question]- mkt-fa-193 | What proportion of cross-sectional corporate profitability is explained by structural industry characteristics?
-> Approximately 20%, demonstrating that structural industry forces heavily constrain company-level returns.
+> McGahan and Porter (1997) attribute 19% of the variance in business-segment profitability to industry effects, against 32% to business-specific effects, 4% to the corporate parent and 2% to the year.
 
 > [!question]- mkt-fa-194 | What are Michael Porter's Five Forces?
 > Threat of New Entrants, Bargaining Power of Buyers, Bargaining Power of Suppliers, Threat of Substitutes, and Competitive Rivalry.
@@ -239,7 +229,7 @@ Evaluate two enterprise software competitors:
 > A newcomer adopting an attractive business model that the incumbent cannot replicate because doing so would cannibalize its existing core profit streams.
 
 > [!question]- mkt-fa-200 | What is a classic real-world example of Counter-Positioning?
-> Vanguard offering at-cost mutual funds and ETFs, which traditional active managers charging 1.5% management fees could not match without destroying their business.
+> Helmer's example is Vanguard's low-cost index funds: incumbent active managers such as Fidelity could have launched index funds but held back, because doing so would have cannibalized the high fees on their active funds.
 
 > [!question]- mkt-fa-201 | What is the barrier to entry in Scale Economies?
 > A competitor must capture equivalent unit volume to match production costs; attempting to do so requires massive, loss-making capital deployment.
@@ -284,7 +274,7 @@ Evaluate two enterprise software competitors:
 > Direct effects increase value as more users of the same type join (telephones); indirect effects occur when more users on one side attract more users on another (credit card holders and merchants).
 
 > [!question]- mkt-fa-215 | Why does high industry concentration not always guarantee high profitability?
-> If products are commoditized, fixed costs are high, and exit barriers are elevated, even a duopoly can engage in mutually destructive price wars (e.g. memory chips).
+> If products are commoditized, fixed costs are high, and exit barriers are elevated, even a few large competitors can fall into mutually destructive price wars.
 
 > [!question]- mkt-fa-216 | What are exit barriers and how do they impact industry health?
 > Specialized assets, labor agreements, and regulatory closure costs that prevent failing capacity from leaving the market, prolonging industry price depression.
@@ -296,28 +286,40 @@ Evaluate two enterprise software competitors:
 > Customization increases customer switching costs and reduces product comparability, directly suppressing buyer bargaining power.
 
 > [!question]- mkt-fa-219 | What is the capital cycle theory in cyclical industries (Edward Chancellor)?
-> High industry profits attract excessive capital investment, creating future overcapacity that collapses prices and profits, which eventually forces bankruptcies and sets up the next upcycle.
+> High industry profits attract heavy capital investment, creating future overcapacity that drives down prices and profits; the resulting exits and consolidation set up the next upcycle (Marathon Asset Management's framework, collected in Chancellor 2015).
 
 > [!question]- mkt-fa-220 | What is the difference between static scale economies and dynamic scale (learning curve)?
 > Static scale reduces per-unit costs with higher current production volume; dynamic scale reduces per-unit costs as cumulative historical volume increases over time.
 
 > [!question]- mkt-fa-221 | Can a company possess multiple Helmer Powers simultaneously?
-> Yes; the most powerful compounders (e.g. Apple, Amazon, Microsoft) combine multiple powers, such as Scale Economies, Network Effects, and high Switching Costs.
+> Yes; a business can hold several Powers at once, for example scale economies together with switching costs, and each additional Power adds a separate barrier.
 
 > [!question]- mkt-fa-222 | What is the "curse of the core" in competitive strategy?
-> Incumbents overinvest in defending mature, low-power legacy products against counter-positioning challengers instead of reallocating capital to new growth vectors.
+> The phrase has no standard source, so treat it as shorthand for the incumbent's dilemma behind Helmer's counter-positioning: copying the challenger's model would damage the incumbent's profitable core business, so the incumbent rationally declines to respond until the core is already shrinking.
 
 > [!question]- mkt-fa-223 | How does technological disruption alter the Competitive Advantage Period?
 > It sharply compresses the CAP by rendering historical switching costs, scale advantages, and physical cornered resources obsolete.
 
 > [!question]- mkt-fa-224 | What is the single best empirical test that a company possesses an economic moat?
-> The persistence of a high ROIC over multiple complete business cycles despite aggressive competitive entry and technological evolution.
+> There is no single agreed test; a strong practical one is ROIC that stays well above the cost of capital across complete business cycles despite competitive entry, together with an identifiable Power that explains it.
+
+> [!question]- mkt-fa-262 | A software customer pays $40,000 a year at an 82% gross margin with 3.5% annual churn, and costs $12,000 to acquire. What are its undiscounted lifetime value and LTV/CAC?
+> Expected life is $1/0.035 = 28.6$ years, so LTV is $\$40,000 \times 0.82 / 0.035 = \$937,143$ and LTV/CAC is $78.1\text{x}$.
+> Use the unrounded lifetime: multiplying by 28.6 gives $78.2\text{x}$.
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_fa_07_competitive_dynamics.py`](../../code/mkt_fa_07_competitive_dynamics.py) prints and asserts every number in the case study: expected customer lifetime in closed form, as a survival series and by seeded simulation, lifetime value two ways, and LTV/CAC from the unrounded lifetime; the McGahan-Porter shares are cited constants.
+- Related notes: [ROIC Decomposition and DuPont Analysis](04-ROIC-Decomposition-and-DuPont-Analysis.md), [Financial Filings Forensics, 10-K Footnotes, and Governance Red Flags](08-Financial-Filings-Forensics-10K-Footnotes-and-Red-Flags.md).
 
 ## Further reading
 
 - Chancellor, E. (2015). *Capital Returns: Investing Through the Capital Cycle: A Money Manager's Reports 2002-15*. Palgrave Macmillan.
 - Helmer, H. (2016). *7 Powers: The Foundations of Business Strategy*. Deep Strategy.
 - Mauboussin, M. J., & Callahan, D. (2013). *Measuring the Moat: Assessing the Magnitude and Sustainability of Value Creation*. Credit Suisse Global Financial Strategies.
+- Porter, M. E. (1979). How Competitive Forces Shape Strategy. *Harvard Business Review*, 57(2), 137-145.
 - Porter, M. E. (2008). *The Five Competitive Forces That Shape Strategy*. Harvard Business Review, 86(1), 78-93.
+- McGahan, A. M., & Porter, M. E. (1997). How Much Does Industry Matter, Really? *Strategic Management Journal*, 18(S1), 15-30.
+- Buffett, W. E. (1985). *Chairman's Letter to the Shareholders of Berkshire Hathaway Inc.*

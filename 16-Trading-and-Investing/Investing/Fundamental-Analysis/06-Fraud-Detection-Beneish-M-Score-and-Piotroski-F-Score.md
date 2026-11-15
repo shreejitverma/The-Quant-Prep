@@ -12,10 +12,10 @@ sources: [Altman (1968) - Financial Ratios Discriminant Analysis and the Predict
 
 ## TL;DR
 
-- The Beneish M-Score is an empirical 8-variable probabilistic model designed to detect corporate earnings manipulation before public restatements occur.
-- A Beneish M-Score greater than -1.78 signals a high probability of accounting manipulation; the model successfully flagged Enron (-0.24) years before its bankruptcy.
-- The Piotroski F-Score is a 9-point binary fundamental momentum framework that separates resilient value companies from bankrupt value traps.
-- Applying the Piotroski F-Score to the highest Book-to-Market (value) decile historically boosted annual investment returns by 7.5% by systematically eliminating deteriorating businesses.
+- The Beneish M-Score is an 8-variable probit model, estimated by Beneish (1999) on firms caught manipulating earnings, that screens for manipulation before it is publicly discovered; the paper reports that it identifies about half of the manipulators before discovery.
+- An M-Score above -1.78 is the cost-weighted cut-off for the eight-variable model; the -2.22 cut-off seen on many screening sites is a looser screen that this note could not trace to the paper's tables.
+- The Piotroski F-Score is a 9-point binary score of financial strength that separates stronger from weaker firms among high book-to-market (value) stocks.
+- Piotroski (2000) reports that selecting financially strong firms within the highest book-to-market quintile raised the mean return by at least 7.5% a year over 1976-1996.
 - Altman Z-Score predicts financial distress and insolvency risk, whereas Beneish M-Score detects active managerial fraud and Piotroski F-Score measures operational trajectory.
 
 ## Learning objectives
@@ -30,8 +30,8 @@ sources: [Altman (1968) - Financial Ratios Discriminant Analysis and the Predict
 
 ### 1. The Beneish M-Score: Architecture and Mathematical Specification
 
-Messod Beneish (1999) developed a probit regression model to identify firms systematically inflating reported earnings.
-The complete 8-variable model is specified as:
+Messod Beneish (1999) estimated a probit model on a sample of known manipulators and Compustat control firms to identify firms inflating reported earnings.
+The 8-variable model is:
 
 $$\begin{aligned}
 M = &-4.84 + 0.920 \times \text{DSRI} + 0.528 \times \text{GMI} + 0.404 \times \text{AQI} + 0.892 \times \text{SGI} \\
@@ -74,8 +74,8 @@ M = &-4.84 + 0.920 \times \text{DSRI} + 0.528 \times \text{GMI} + 0.404 \times \
    A ratio > 1.0 indicates deteriorating gross margins, increasing executive pressure to engage in earnings management.
 
 3. **Asset Quality Index (AQI)**:
-   $$\text{Non-Current Assets ex PP&E} = 1 - \left( \frac{\text{Current Assets}_t + \text{Net PP&E}_t}{\text{Total Assets}_t} \right)$$
-   $$\text{AQI} = \frac{1 - (\text{Current Assets}_t + \text{Net PP&E}_t + \text{Securities}_t) / \text{Total Assets}_t}{1 - (\text{Current Assets}_{t-1} + \text{Net PP&E}_{t-1} + \text{Securities}_{t-1}) / \text{Total Assets}_{t-1}}$$
+   $$\text{AQI} = \frac{1 - (\text{Current Assets}_t + \text{Net PP&E}_t) / \text{Total Assets}_t}{1 - (\text{Current Assets}_{t-1} + \text{Net PP&E}_{t-1}) / \text{Total Assets}_{t-1}}$$
+   Some later implementations also exclude securities from the numerator's asset set; use one definition consistently.
    A ratio > 1.0 indicates a growing proportion of assets are capitalized deferred costs and intangibles rather than physical plant.
 
 4. **Sales Growth Index (SGI)**:
@@ -83,37 +83,42 @@ M = &-4.84 + 0.920 \times \text{DSRI} + 0.528 \times \text{GMI} + 0.404 \times \
    Fast-growing firms face intense pressure to maintain high price-to-earnings multiples.
 
 5. **Depreciation Index (DEPI)**:
-   $$\text{Depreciation Rate} = \frac{\text{Depreciation}}{\text{Gross PP&E} + \text{Depreciation}}$$
+   $$\text{Depreciation Rate} = \frac{\text{Depreciation}}{\text{Depreciation} + \text{Net PP&E}}$$
    $$\text{DEPI} = \frac{\text{Depreciation Rate}_{t-1}}{\text{Depreciation Rate}_t}$$
    A ratio > 1.0 indicates that depreciation rates have slowed, suggesting extended asset lives to lower expense.
 
 6. **Sales, General, and Administrative Expenses Index (SGAI)**:
    $$\text{SGAI} = \frac{\text{SG&A}_t / \text{Sales}_t}{\text{SG&A}_{t-1} / \text{Sales}_{t-1}}$$
    A ratio > 1.0 reflects declining marketing and administrative efficiency.
+   Beneish expected a positive relation with manipulation, but the estimated coefficient (-0.172) is negative.
 
 7. **Leverage Index (LVGI)**:
    $$\text{Leverage} = \frac{\text{Current Liabilities} + \text{Long-Term Debt}}{\text{Total Assets}}$$
    $$\text{LVGI} = \frac{\text{Leverage}_t}{\text{Leverage}_{t-1}}$$
    A ratio > 1.0 indicates rising leverage, heightening risk of debt covenant violations.
-   In the estimated model LVGI carries a negative coefficient (-0.327), so rising leverage on its own lowers the M-Score.
+   Beneish expected rising leverage to raise the incentive to manipulate, but in the estimated model LVGI carries a negative coefficient (-0.327), so rising leverage on its own lowers the M-Score.
 
 8. **Total Accruals to Total Assets (TATA)**:
-   $$\text{TATA} = \frac{\text{Net Income}_t - \text{Operating Cash Flow}_t}{\text{Total Assets}_t}$$
+   Beneish (1999) measured total accruals from the balance sheet, as the change in working capital accounts other than cash less depreciation, scaled by total assets.
+   Most screening tools now use the cash flow version, which this note's example uses:
+   $$\text{TATA} = \frac{\text{Income from Continuing Operations}_t - \text{Operating Cash Flow}_t}{\text{Total Assets}_t}$$
    Higher accruals reflect lower earnings quality and cash conversion.
 
 #### M-Score Decision Thresholds
 
-```
-M-Score Value:
- < -2.22 : Normal accounting; extremely low probability of manipulation.
- -2.22 to -1.78 : Moderate risk zone; warrants forensic footnote review.
- > -1.78 : HIGH PROBABILITY OF MANIPULATION (Statistically Significant Flag).
-```
+The M-Score is a probit index, so $\Phi(M)$ (the standard normal distribution function) converts it to a model probability.
+Because the model was fitted on a sample that over-represents manipulators, $\Phi(M)$ is a ranking device rather than a population probability.
+Beneish chose cut-offs that minimize the expected cost of misclassification for different ratios of the cost of missing a manipulator to the cost of a false alarm.
+Across those cut-offs, secondary summaries of the paper report that the model identifies 38% to 76% of manipulators while misclassifying 3.5% to 17.5% of non-manipulators.
+
+- $M > -1.78$, that is $\Phi(M) > 3.75\%$: the cut-off used with the eight-variable model; flag for forensic review.
+- $M > -2.22$, that is $\Phi(M) > 1.32\%$: a looser screen widely quoted online and often attached to five-variable versions of the model; it flags more firms, including many false positives.
+- A flag starts an investigation of the footnotes; it is not evidence of fraud on its own.
 
 ### 2. The Piotroski F-Score: Fundamental Momentum Scoring
 
-Joseph Piotroski (2000) created a discrete 9-point fundamental score designed specifically to evaluate high book-to-market (low valuation) equities.
-Each metric is scored as a binary value: 1 point if positive/improving, 0 points if negative/deteriorating.
+Joseph Piotroski (2000) built a 9-point score from binary signals of financial strength and applied it to firms in the highest book-to-market quintile.
+Each signal scores 1 if its realization is good and 0 if bad; ROA, CFO and ACCRUAL are scaled by beginning-of-year total assets and asset turnover uses beginning-of-year assets.
 
 $$\text{Piotroski F-Score} = \sum_{i=1}^9 F_i \quad \in [0, 9]$$
 
@@ -122,15 +127,15 @@ $$\text{Piotroski F-Score} = \sum_{i=1}^9 F_i \quad \in [0, 9]$$
 |                    PIOTROSKI 9-POINT SCORING RUBRIC                   |
 +-----------------------------------------------------------------------+
 | GROUP 1: PROFITABILITY SIGNALS (4 Points Max)                         |
-|   F1 (ROA)      : Return on Assets > 0                                |
-|   F2 (CFO)      : Cash Flow from Operations > 0                       |
+|   F1 (ROA)      : NI before extraordinary items / assets > 0         |
+|   F2 (CFO)      : Cash Flow from Operations / assets > 0              |
 |   F3 (Delta ROA): ROA(t) > ROA(t-1)                                   |
 |   F4 (ACCRUAL)  : CFO(t) > ROA(t) (Cash flow exceeds net income)      |
 +-----------------------------------------------------------------------+
 | GROUP 2: LEVERAGE, LIQUIDITY, AND DILUTION (3 Points Max)             |
-|   F5 (Delta LEV): Long-Term Debt / Assets(t) < Debt / Assets(t-1)     |
+|   F5 (Delta LEV): LT Debt / Avg Assets fell versus the prior year     |
 |   F6 (Delta LIQ): Current Ratio(t) > Current Ratio(t-1)               |
-|   F7 (EQ DILUT) : Common Shares Outstanding(t) <= Shares(t-1)         |
+|   F7 (EQ_OFFER) : No common equity issued in the prior year           |
 +-----------------------------------------------------------------------+
 | GROUP 3: OPERATING EFFICIENCY SIGNALS (2 Points Max)                  |
 |   F8 (Delta MAR): Gross Margin(t) > Gross Margin(t-1)                 |
@@ -140,11 +145,11 @@ $$\text{Piotroski F-Score} = \sum_{i=1}^9 F_i \quad \in [0, 9]$$
 
 #### Portfolio Implementation and Excess Returns
 
-Piotroski demonstrated that value stocks are heavily populated by financially distressed companies (value traps).
-A quantitative screen combining value with F-Score generates powerful risk-adjusted alpha:
-- **F-Score 8 to 9 (Strong Fundamentals)**: High historical outperformance, robust balance sheets, accelerating cash flows.
-- **F-Score 0 to 2 (Weak Fundamentals)**: High probability of bankruptcy, dilutive share issuances, deteriorating margins.
-- A long/short strategy (Long Top Quintile BM with F-Score 8-9, Short Top Quintile BM with F-Score 0-2) generated 23% annualized returns between 1976 and 1996.
+Piotroski notes that the average high book-to-market firm is financially distressed, and his results (1976-1996, 14,043 high book-to-market firm-years) show:
+- **High F-Score (8 or 9)**: the "expected winners"; selecting them raised the mean return of a high book-to-market investor by at least 7.5% a year.
+- **Low F-Score (0 or 1)**: the "expected losers".
+- Buying expected winners and shorting expected losers generated a 23% annual return between 1976 and 1996.
+- The benefits were concentrated in small and medium-sized firms, firms with low share turnover and firms with no analyst following.
 
 ### 3. Comparing Fraud, Distress, and Quality Frameworks
 
@@ -152,19 +157,20 @@ A quantitative screen combining value with F-Score generates powerful risk-adjus
 |---|---|---|---|
 | **Primary Objective** | Detect accounting manipulation & fraud | Measure operational momentum & value quality | Predict bankruptcy & insolvency probability |
 | **Statistical Technique** | Probit regression (continuous score) | Binary scoring heuristic (integer 0-9) | Multiple discriminant analysis (MDA) |
-| **Key Risk Flag** | Score > -1.78 | Score $\le$ 3 | Score < 1.81 (Distress Zone) |
+| **Key Risk Flag** | Score > -1.78 | Score 0 or 1 (Piotroski's low group) | Score < 1.81 (Distress Zone) |
 | **Primary Data Source** | 2 years of Income Statement & Balance Sheet | 2 years of 3 Financial Statements | Balance Sheet, Income Statement, Market Cap |
 | **Market Role** | Short screening & forensic risk audit | Long value screening & fundamental quality filter | Credit risk, debt covenants, distress shorting |
 
 ```
-Altman Z-Score Formula (Manufacturing):
-Z = 1.2*(Working Capital/Assets) + 1.4*(Retained Earnings/Assets) + 3.3*(EBIT/Assets) + 0.6*(Market Cap/Total Debt) + 0.999*(Sales/Assets)
-Thresholds: Z < 1.81 (Distress Zone), 1.81 <= Z <= 2.99 (Grey Zone), Z > 2.99 (Safe Zone)
+Altman (1968) Z-Score (public manufacturing firms), ratios as decimals:
+Z = 1.2*(Working Capital/Assets) + 1.4*(Retained Earnings/Assets) + 3.3*(EBIT/Assets) + 0.6*(Market Value of Equity/Book Value of Total Debt) + 0.999*(Sales/Assets)
+Altman printed the first four weights as 0.012, 0.014, 0.033 and 0.006 with those ratios entered in percent.
+In his sample every firm below 1.81 went bankrupt and every firm above 2.99 did not; 1.81 to 2.99 was his "zone of ignorance" (grey zone).
 ```
 
 ## Worked numerical example
 
-Evaluate Apex Logistics across two fiscal years:
+Evaluate a hypothetical Apex Logistics across two fiscal years (income from continuing operations equals net income):
 
 | Account ($ Millions) | Year 1 ($t-1$) | Year 2 ($t$) |
 |---|---|---|
@@ -203,8 +209,8 @@ Evaluate Apex Logistics across two fiscal years:
    $$\text{SGI} = \frac{1040}{800} = 1.3000$$
 
 5. **DEPI**:
-   $$\text{Gross PP&E approx} = 300 + 30 = 330; \quad \text{Dep Rate}_{t-1} = \frac{30}{330} = 0.0909$$
-   $$\text{Gross PP&E approx}_t = 350 + 25 = 375; \quad \text{Dep Rate}_t = \frac{25}{375} = 0.0667$$
+   $$\text{Dep} + \text{Net PP&E}_{t-1} = 30 + 300 = 330; \quad \text{Dep Rate}_{t-1} = \frac{30}{330} = 0.0909$$
+   $$\text{Dep} + \text{Net PP&E}_t = 25 + 350 = 375; \quad \text{Dep Rate}_t = \frac{25}{375} = 0.0667$$
    $$\text{DEPI} = \frac{30/330}{25/375} = \frac{0.09091}{0.06667} = 1.3636$$
 
 6. **SGAI**:
@@ -227,8 +233,8 @@ M = &-1.458
 \end{aligned}$$
 
 M-Score Verdict:
-Apex Logistics yields an M-Score of -1.458, well above the critical threshold of -1.78.
-This signals a high statistical probability of accounting manipulation, driven by extreme receivables expansion (DSRI = 1.54) and slowing depreciation (DEPI = 1.36).
+Apex Logistics yields an M-Score of -1.458, above the -1.78 cut-off, so it is flagged for forensic review.
+The model probability is $\Phi(-1.458) = 7.24\%$, about twice the $3.75\%$ at the cut-off; the largest contributions come from receivables growing far faster than sales (DSRI = 1.54) and sales growth itself (SGI = 1.30), with slowing depreciation (DEPI = 1.36) adding a little.
 
 ### Part 2: Compute Piotroski F-Score
 
@@ -244,18 +250,21 @@ This signals a high statistical probability of accounting manipulation, driven b
 
 F-Score Total = 2 / 9 Points.
 Piotroski Verdict:
-Apex Logistics scores a dismal 2 out of 9, placing it squarely in the distress / short candidate category with deteriorating profitability, declining liquidity, shareholder dilution, and high accruals.
+Apex Logistics scores 2 out of 9, one point above Piotroski's low group (0 or 1), with falling profitability, weaker liquidity, new shares issued (a 4% rise in the share count, used here as a proxy for an equity offering) and high accruals.
+The example scales by year-end assets for simplicity; Piotroski scales ROA, CFO and accruals by beginning-of-year assets, which would need year-0 data here.
 
 ## Practice questions
 
 > [!question]- mkt-fa-161 | What is the primary purpose of the Beneish M-Score?
-> To calculate the empirical statistical probability that a company is manipulating its reported accounting earnings.
+> To screen for companies likely to be manipulating reported earnings, using eight financial-statement indices combined in a probit model; $\Phi(M)$ ranks firms but is not a population probability.
 
 > [!question]- mkt-fa-162 | What is the critical threshold for the Beneish M-Score indicating manipulation?
-> An M-Score greater than -1.78 indicates a statistically significant probability of earnings manipulation.
+> -1.78 for the eight-variable model, the cost-weighted cut-off ($\Phi(-1.78) = 3.75\%$); a score above it flags the firm for forensic review.
+> The -2.22 figure quoted on many websites ($\Phi = 1.32\%$) is a looser screen, usually attached to five-variable versions.
 
 > [!question]- mkt-fa-163 | What famous corporate collapse did the Beneish M-Score identify prior to public revelation?
-> Enron Corporation, which had a glaringly flagged M-Score of -0.24 in 1999 and 2000.
+> Enron is the story usually told: in spring 1998 a team of Cornell Johnson School MBA students recommended selling Enron and suggested it might be manipulating earnings (Cornell Daily Sun, 29 January 2007), and secondary accounts say the Beneish model was among their tools.
+> No verified M-Score figure for Enron is quoted here.
 
 > [!question]- mkt-fa-164 | What does a Days Sales in Receivables Index (DSRI) > 1.0 indicate in the M-Score?
 > Receivables grew faster than sales, indicating accelerating credit terms, uncollected billings, or premature revenue recognition.
@@ -273,7 +282,8 @@ Apex Logistics scores a dismal 2 out of 9, placing it squarely in the distress /
 > The degree to which reported accounting net income is supported by non-cash accruals rather than physical operating cash flow.
 
 > [!question]- mkt-fa-169 | What is the 5-variable version of the Beneish M-Score?
-> A truncated specification omitting SGI, DEPI, and SGAI, used when detailed footnote data or multi-year historical series are unavailable.
+> A reduced model built from five of the indices; versions circulating online differ in which five they keep and in their coefficients, so check the source before using one.
+> Never apply the eight-variable model's -1.78 cut-off to a five-variable score.
 
 > [!question]- mkt-fa-170 | What is the primary design goal of the Piotroski F-Score?
 > To separate winning high-quality value stocks from value traps among companies trading at high book-to-market valuations.
@@ -285,19 +295,19 @@ Apex Logistics scores a dismal 2 out of 9, placing it squarely in the distress /
 > Profitability signals (4 points), Leverage/Liquidity/Dilution signals (3 points), and Operating Efficiency signals (2 points).
 
 > [!question]- mkt-fa-173 | How does Piotroski score the accrual relationship in test F_ACCRUAL?
-> 1 point if Operating Cash Flow exceeds Return on Assets (CFO > ROA); 0 points if net income exceeds cash flow.
+> 1 point if CFO scaled by beginning-of-year assets exceeds ROA (net income before extraordinary items over beginning-of-year assets), that is when accruals are negative; 0 otherwise.
 
 > [!question]- mkt-fa-174 | How is equity dilution tested in the Piotroski F-Score?
-> 1 point if common shares outstanding in the current year are less than or equal to the prior year (no dilutive equity issued).
+> EQ_OFFER scores 1 if the firm did not issue common equity in the year before portfolio formation, 0 otherwise; a non-increasing share count is a common proxy.
 
 > [!question]- mkt-fa-175 | What is considered a high (strong) Piotroski F-Score?
 > An F-Score of 8 or 9, signifying exceptional financial health and operating momentum.
 
 > [!question]- mkt-fa-176 | What is considered a low (distressed) Piotroski F-Score?
-> An F-Score of 0, 1, or 2, identifying financially deteriorating companies and prime short candidates.
+> Piotroski's low group is an F-Score of 0 or 1, the "expected losers" that formed the short side of his strategy.
 
 > [!question]- mkt-fa-177 | What historical annualized excess return did Piotroski find by buying high F-Score value stocks and shorting low F-Score value stocks?
-> Approximately 23% annualized spread between 1976 and 1996.
+> A 23% annual return between 1976 and 1996 for buying high-score (8 or 9) and shorting low-score (0 or 1) firms within the highest book-to-market quintile (Piotroski 2000, abstract).
 
 > [!question]- mkt-fa-178 | What is the primary difference between Altman Z-Score and Beneish M-Score?
 > Altman Z-Score evaluates bankruptcy and default probability, while Beneish M-Score specifically evaluates fraud and accounting manipulation.
@@ -306,7 +316,7 @@ Apex Logistics scores a dismal 2 out of 9, placing it squarely in the distress /
 > A Z-Score below 1.81 places the company in the bankruptcy Distress Zone.
 
 > [!question]- mkt-fa-180 | What is the safe zone threshold for the Altman Z-Score?
-> A Z-Score above 2.99 indicates negligible insolvency probability.
+> Above 2.99: in Altman's (1968) sample no firm above 2.99 went bankrupt; it is a low-risk zone, not a guarantee.
 
 > [!question]- mkt-fa-181 | Why can a fraudulent company have an apparently safe Altman Z-Score?
 > Because fabricated earnings and overstated assets artificially boost working capital, EBIT, and equity book values in the Z-Score equation.
@@ -315,10 +325,11 @@ Apex Logistics scores a dismal 2 out of 9, placing it squarely in the distress /
 > Yes; a distressed firm with honest, deteriorating accounting will show an unmanipulated M-Score despite collapsing fundamentals.
 
 > [!question]- mkt-fa-183 | What does the Leverage Index (LVGI) > 1.0 capture in the Beneish model?
-> Increasing total financial debt relative to assets, which escalates default risk and creates incentives to inflate earnings.
+> Rising leverage (current liabilities plus long-term debt over total assets), which Beneish expected to raise covenant pressure and the incentive to inflate earnings.
+> In the estimated model its coefficient is negative (-0.327), so LVGI above 1 actually lowers M.
 
 > [!question]- mkt-fa-184 | What does a negative coefficient on SGAI in the Beneish model signify?
-> Abnormally aggressive cuts to SG&A relative to sales can signal desperation to manufacture operating margins.
+> That the estimate went the opposite way from Beneish's hypothesis (he expected falling SG&A efficiency to raise manipulation risk); in the fitted model a rising SGAI slightly lowers M, so treat it as a weak variable rather than a signal in either direction.
 
 > [!question]- mkt-fa-185 | How does the Piotroski F-Score define improvement in liquidity?
 > Current Ratio in the current fiscal year exceeding the Current Ratio in the preceding fiscal year.
@@ -327,13 +338,14 @@ Apex Logistics scores a dismal 2 out of 9, placing it squarely in the distress /
 > Asset Turnover (Revenue / Total Assets) in the current year exceeding Asset Turnover in the preceding year.
 
 > [!question]- mkt-fa-187 | Why is the Piotroski F-Score particularly effective on small-cap equities?
-> Small caps receive less analyst coverage and institutional scrutiny, allowing fundamental mispricings to persist longer.
+> Piotroski found the benefits of the score concentrated in small and medium-sized firms, firms with low share turnover and firms with no analyst following, consistent with slower information flow in those firms.
 
 > [!question]- mkt-fa-188 | How does the Beneish M-Score perform on financial institutions and banks?
-> Poorly; bank balance sheets do not distinguish operating from financing working capital, requiring specialized credit models.
+> It does not apply: Beneish's sample excluded financial firms, and their sales, receivables and working-capital lines do not mean what the indices assume.
 
 > [!question]- mkt-fa-189 | What is the false positive rate of the Beneish M-Score at the -1.78 threshold?
-> Approximately 8.8% in Beneish's original sample, while correctly identifying 76% of known accounting manipulators.
+> Beneish reports rates by cut-off; across his cut-offs the model misclassifies 3.5% to 17.5% of non-manipulators while catching 38% to 76% of manipulators, and the paper's abstract summarizes it as identifying about half of manipulators before public discovery.
+> No single verified false-positive figure for -1.78 is quoted here.
 
 > [!question]- mkt-fa-190 | How does high Sales Growth Index (SGI) elevate manipulation risk?
 > When growth decelerates, growth-oriented managers face intense valuation penalties, driving aggressive revenue recognition to preserve multiples.
@@ -342,9 +354,18 @@ Apex Logistics scores a dismal 2 out of 9, placing it squarely in the distress /
 > It filters out value traps that are cheap for structural solvency reasons, retaining only underpriced companies with operational tailwinds.
 
 > [!question]- mkt-fa-192 | What is the optimal quantitative workflow combining Beneish, Piotroski, and Altman?
-> Screen for value or growth, filter out bankruptcy risk (Z < 1.81), eliminate manipulation risk (M > -1.78), and rank longs by fundamental momentum (F >= 8).
+> One reasonable workflow (an analyst's design, not a published result): screen for value, drop firms in Altman's distress zone (Z < 1.81), send firms with M > -1.78 to forensic review, and favour high F-Scores (8 or 9) among the rest.
+
+> [!question]- mkt-fa-261 | An M-Score is -1.458. What is the model probability, and how does it compare with the -1.78 cut-off?
+> $\Phi(-1.458) = 7.24\%$, against $\Phi(-1.78) = 3.75\%$ at the cut-off, so the firm is flagged.
+> Because the probit was fitted on a sample rich in manipulators, read the number as a ranking, not a population probability.
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_fa_06_beneish_piotroski.py`](../../code/mkt_fa_06_beneish_piotroski.py) prints and asserts every number on this page: the eight Beneish indices in exact fractions, the M-Score as an exact sum and as the sum of the rounded terms shown, $\Phi(M)$ by the error function and by numerical integration of the normal density, and the nine Piotroski signals from the raw lines.
+- Related notes: [Forensic Accounting, Sloan Accruals, and Earnings Quality](05-Forensic-Accounting-Sloan-Accruals-and-Earnings-Quality.md), [Financial Filings Forensics, 10-K Footnotes, and Governance Red Flags](08-Financial-Filings-Forensics-10K-Footnotes-and-Red-Flags.md).
 
 ## Further reading
 
@@ -352,3 +373,4 @@ Apex Logistics scores a dismal 2 out of 9, placing it squarely in the distress /
 - Beneish, M. D. (1999). *The Detection of Earnings Manipulation*. Financial Analysts Journal, 55(5), 24-36.
 - Dechow, P. M., Ge, W., Larson, C. R., & Sloan, R. G. (2011). *Predicting Material Accounting Misstatements*. Contemporary Accounting Research, 28(1), 17-82.
 - Piotroski, J. D. (2000). *Value Investing: The Use of Historical Financial Statement Information to Separate Winners from Losers*. Journal of Accounting Research, 38, 1-41.
+- The Cornell Daily Sun (29 January 2007). *Business School Students Caught Enron Early*.
