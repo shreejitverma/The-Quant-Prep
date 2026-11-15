@@ -154,7 +154,7 @@ def theo(mid, signals, betas, ages_ms, half_lives_ms):
 ## Pitfalls
 
 - Quoting around the mid in a lopsided one-tick book; the side with the thin queue is the one that gets picked off.
-- Treating the weighted mid as exact; it overreacts to single orders and is not a martingale.
+- Treating the weighted mid as exact; it overreacts to single orders and is assumed linear in $I$ rather than estimated, so it is not the expected future mid.
 - Adding correlated signals as if they were independent; fit them jointly or you double count the same information.
 - Using a related instrument's last trade instead of its current fair value, or ignoring its own latency and tick size.
 - Estimating a lead-lag beta on the same horizon as the lag; asynchronous prices bias it toward zero, the effect Epps (1979) documented for correlations measured over short intervals.

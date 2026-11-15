@@ -75,7 +75,7 @@ A size decrease usually keeps priority.
 | Pegged | Price tracks a reference such as the primary touch or the mid | Midpoint liquidity, passive tracking |
 | Stop | Becomes a market or limit order once a trigger price trades | Loss limits; can add to momentum |
 
-Nasdaq, for example, reprices a post-only buy that would lock or cross the book to one tick below the best offer, executing it instead only when the price improvement is large enough (Rule 4702(b)(4)(A), as described in the SEC's approval order, 81 FR, 17 November 2016); check the current rulebook of each venue.
+Nasdaq, for example, reprices a post-only buy that would lock or cross the book to one tick below the best offer, executing it instead only when the price improvement is large enough (Rule 4702(b)(4)(A), as described in the SEC's approval order, Release No. 34-79290, published in the Federal Register on 17 November 2016 as FR Doc. 2016-27600); check the current rulebook of each venue.
 Time in force (day, good-till-cancelled, IOC) is a separate dimension from the order type on many venues.
 In US equities, an intermarket sweep order lets a router trade through a protected quote while simultaneously sending orders to take it; see [Fragmentation, Reg NMS and Routing](09-Fragmentation-Reg-NMS-and-Routing.md).
 

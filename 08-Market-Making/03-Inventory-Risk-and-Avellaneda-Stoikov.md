@@ -251,7 +251,7 @@ Its Tables 2 and 3 show the same ordering at $\gamma = 0.01$ (the strategies nea
 > About 97.95 bid, 99.65 ask.
 > $r = 100 - 3 \times 0.4 = 98.8$ and the spread is $0.4 + 20\ln(1 + 1/15) \approx 1.691$, so quotes are $98.8 \pm 0.845$.
 
-> [!question]- mm-as-role-of-A | Why does the base intensity A not appear in the optimal quotes?
+> [!question]- mm-as-role-of-a | Why does the base intensity A not appear in the optimal quotes?
 > In the AS approximation it multiplies the whole objective term for each side and cancels in the first-order condition, and the approximate reservation prices do not contain it.
 > It changes how often you trade, not where you quote; in the exact solution it does enter, because faster fills make inventory less risky.
 
