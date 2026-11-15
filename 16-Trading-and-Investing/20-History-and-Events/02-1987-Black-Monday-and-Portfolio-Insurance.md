@@ -11,55 +11,54 @@ tags: [market-history, 1987-crash, black-monday, portfolio-insurance, dynamic-he
 
 ## Executive Summary
 
-On Monday, October 19, 1987, the Dow Jones Industrial Average plunged 508 points (-22.61%) and the S&P 500 fell 57.86 points (-20.47%), marking the largest single-day percentage decline in US stock market history.
-The collapse was ignited by mechanical feedback loops created by "Portfolio Insurance", a quantitative algorithmic hedging technique popularized by Hayne Leland and Mark Rubinstein.
-Portfolio insurance models dictated selling S&P 500 index futures automatically whenever equity markets fell, aiming to synthetically replicate a protective put option.
-When selling hit the Chicago Mercantile Exchange (CME) futures pit, index arbitrageurs attempted to buy discounted futures and short physical stocks on the New York Stock Exchange (NYSE).
-This tidal wave of sell orders overwhelmed the NYSE Designated Order Turnaround (DOT) routing system, breaking cross-market arbitrage, causing futures to trade at an unprecedented 25-point discount to cash, and triggering a systemic market-wide liquidity failure.
+On Monday, October 19, 1987, the Dow Jones Industrial Average fell 508 points, from 2,246.74 to 1,738.74, a one-day decline of 22.61% on New York Stock Exchange volume of 604 million shares; the S&P 500 fell about 20 percent and S&P 500 futures fell 29 percent.
+Federal Reserve History describes it as the largest one-day stock market decline in history.
+The Brady Report (January 1988) found that the selling began with mechanical, price-insensitive selling by institutions using portfolio insurance and by a few mutual fund groups meeting redemptions, and that index arbitrage carried futures selling into the stock market.
+Portfolio insurance replicates a protective put by selling stock index futures as prices fall, and $60 to $90 billion of equity assets were under portfolio insurance administration when the market broke.
+Order-handling systems were overwhelmed: some NYSE DOT orders backed up for up to one and one quarter hours, and late on October 19 the S&P 500 futures traded at a discount of 20 index points to the cash index.
 
 ---
 
 ## Primary Sources and Chronology
 
-- **August 25, 1987**: The Dow Jones Industrial Average peaks at 2,722.42, having advanced 44% year-to-date amid a dollar depreciation spiral and rising long-term Treasury yields.
-- **Wednesday, October 14, 1987**: US House Ways and Means Committee introduces legislation eliminating tax deductions for debt used in corporate takeover bids; Dow drops 95.46 points (-3.81%).
-- **Friday, October 16, 1987 (Triple Witching Expiry)**:
-  - Heavy selling causes the Dow to drop 108.35 points (-4.60%) on record volume of 338 million shares.
-  - Institutional portfolio insurers enter the weekend carrying an unhedged overhang of tens of billions in equity assets requiring mandatory Monday morning futures sales.
+Sources used on this page: *Report of the Presidential Task Force on Market Mechanisms* (the Brady Report, January 1988), chapters 1 and 3, Study III and Study VI; Mark Carlson, "A Brief History of the 1987 Stock Market Crash with a Discussion of the Federal Reserve Response", Federal Reserve Board FEDS 2007-13 (2007); Donald Bernhardt and Marshall Eckblad, "Stock Market Crash of 1987", Federal Reserve History (2013); SEC Release 34-67090 (May 31, 2012) on market-wide circuit breakers.
+
+- **August 25, 1987**: The Dow reaches a record close of 2,722 (Brady Report, Study III), after gaining 44 percent in seven months (Federal Reserve History).
+- **Wednesday, October 14, 1987**: News that the House Ways and Means Committee had filed legislation to remove tax benefits of merger financing, and a worse-than-expected trade deficit, start the decline (Carlson 2007); the Dow falls 95 points on volume of 207 million shares (Brady Report).
+- **Friday, October 16, 1987**: Stock index options expire; the Dow falls 108 points (4.6 percent), then the largest one-day point drop ever, on volume of 338 million shares, and the S&P 500 is down over nine percent for the week (Brady Report; Carlson 2007).
 - **Monday, October 19, 1987 (Black Monday)**:
-  - 09:30 AM EST: NYSE opening is chaotic; dozens of blue-chip stocks fail to open as specialist order books are swamped with sell imbalances.
-  - 10:00 AM EST: Huge waves of automated futures selling hit the CME S&P 500 pit; futures price drops far faster than cash equities, opening a massive discount.
-  - 12:00 PM EST: NYSE DOT system printers jam and queue delays stretch beyond 75 minutes, paralyzing index arbitrageurs.
-  - 02:00 PM EST: SEC Chairman David Ruder remarks at a lunch that market halts may be necessary, accelerating the panic liquidation.
-  - 04:00 PM EST: Dow closes at 1,738.74 (-22.61%) on 604 million shares; S&P 500 drops -20.47%.
+  - Many NYSE stocks do not open in the first hour; by 10:00 a.m. 95 S&P 500 stocks representing 30% of the index value had still not opened (SEC report quoted in Carlson 2007).
+  - Shortly after 1:00 p.m., a news report of SEC Chairman David Ruder's remarks about a possible "very temporary" halt in trading spreads rumours of an NYSE closure (Carlson 2007; Ruder later testified that he had been misinterpreted).
+  - In the last hour and one quarter of stock trading the Dow falls almost 300 points to close at 1,738.74, down 508 points.
 - **Tuesday, October 20, 1987**:
-  - Before market open, newly appointed Federal Reserve Chairman Alan Greenspan issues a historic one-sentence statement: "The Federal Reserve, consistent with its responsibilities as the Nation's central bank, affirmed today its readiness to serve as a source of liquidity to support the economic and financial system."
-  - Fed floods the repo market with reserves, leaning heavily on major banks (Citibank, Chase Manhattan) to extend credit lines to clearing firms and specialist market makers.
+  - At 8:41 a.m., before markets open, the Federal Reserve issues its statement: "The Federal Reserve, consistent with its responsibilities as the Nation's central bank, affirmed today its readiness to serve as a source of liquidity to support the economic and financial system" (Carlson 2007).
+  - The Fed's open market operations push the federal funds rate down to around 7 percent from over 7.5 percent, and the 10 largest New York banks nearly double their lending to securities firms that week (Carlson 2007; Federal Reserve History).
+  - The CBOE suspends stock index options trading at 11:45 a.m. and the CME suspends S&P 500 futures at 12:15 p.m.; at the CME closing the futures discount was more than 46 points, the largest ever (Brady Report, Study III).
 
 ---
 
 ## Market Backdrop and Structural Vulnerabilities
 
 ### 1. The Portfolio Insurance Boom
-By late 1987, institutional pension funds had entrusted over $60 billion in assets (and an additional $40 billion in dynamic asset allocation strategies) to portfolio insurance programs designed by Leland O'Brien Rubinstein Associates (LOR) and major investment banks.
-These strategies promised pension trustees that they could enjoy bull market upside while mathematically capping maximum drawdown to a pre-set floor (such as 5% or 10%).
+Portfolio insurance used computer models to compute optimal stock-to-cash ratios at each market level, cutting the stock weight as prices fell (Brady Report; Carlson 2007).
+The replication idea is in Mark Rubinstein and Hayne Leland, "Replicating Options with Positions in Stock and Cash", *Financial Analysts Journal* 37(4), 1981, and their firm Leland O'Brien Rubinstein Associates was a leading vendor.
+Most insurers traded index futures rather than stocks, because futures were cheaper and several vendors were authorised to trade only futures for their clients (Brady Report).
+The Brady Report states that $60 to $90 billion of equity assets were under portfolio insurance administration at the time of the market break, an amount that had more than quadrupled during 1987.
 
 ### 2. The Theoretical Premise vs Operational Reality
-Portfolio insurance was built on the Black-Scholes-Merton (1973) continuous-time dynamic delta-hedging framework.
-To synthetically replicate a put option with delta $\Delta(S, t)$, the algorithm must sell stock (or short index futures) as the stock price $S$ declines:
+Portfolio insurance follows the Black-Scholes-Merton (1973) logic of dynamic delta hedging.
+To replicate a put option with delta $\Delta(S, t)$, the hedger must sell stock (or short index futures) as the price $S$ falls:
 $$\Delta_{\text{put}}(S) = N(d_1) - 1 < 0$$
 $$\frac{\partial |\Delta_{\text{put}}|}{\partial S} < 0$$
-Because the put delta becomes more negative as prices fall, the hedge ratio requires continuous, pro-cyclical selling into declining markets.
-Crucially, Black-Scholes mathematics assumes:
-- Infinite market depth with zero price impact.
-- Continuous trading with zero gap risk between sequential price prints.
-- Unconstrained execution and routing capacity.
-In reality, when multiple institutional funds running identical algorithms attempt to execute simultaneously, their collective selling represents a dominant fraction of total market liquidity.
+Because the put delta becomes more negative as prices fall, the hedge requires selling into a declining market.
+The replication argument assumes continuous trading, no price impact and no gaps between prices.
+When many institutions run the same rule at once, their combined selling becomes a large share of the market and moves the price they are reacting to.
+The Brady Report notes that the typical model called for stock sales of more than 20 percent of a portfolio in response to a 10 percent market decline.
 
 ### 3. NYSE DOT System Bottlenecks
-Orders from institutional brokers were routed to floor specialists through the Designated Order Turnaround (DOT) electronic system.
-The system had a design throughput limit far below the volume demands of October 19.
-System memory queues backed up, message delays exceeded an hour, and confirmation reports failed to return, leaving traders unable to ascertain their open positions.
+The Designated Order Turnaround (DOT) system routed member firms' orders electronically to the specialist posts, which made program trading practical (Carlson 2007).
+On October 19, orders for 396 million shares were entered into DOT, and the mechanical printers at some posts were overwhelmed (Brady Report).
+DOT limit orders to some posts backed up for up to one and one quarter hours at the worst time, and trade executions were reported more than an hour late (Brady Report, Study VI; Carlson 2007).
 
 ---
 
@@ -70,73 +69,84 @@ System memory queues backed up, message delays exceeded an hour, and confirmatio
 |               1987 PORTFOLIO INSURANCE CASCADE FEEDBACK LOOP          |
 +-----------------------------------------------------------------------+
 | 1. Equity Market Declines                                             |
-|    Dow opens down 50 points; hedge algorithms calculate delta deficit |
+|    Insurance models call for a lower stock weight                     |
 |                                                                       |
-| 2. Automated S&P 500 Futures Selling                                  |
-|    Insurers dump tens of thousands of CME futures contracts           |
+| 2. Futures Selling                                                    |
+|    Insurers sell S&P 500 futures to cut exposure                      |
 |                                                                       |
-| 3. Futures Discount Blowout                                           |
-|    Futures trade 20 to 25 points below fair value cash equivalent     |
+| 3. Futures Discount Widens                                            |
+|    Futures trade well below the cash index                            |
 |                                                                       |
-| 4. Index Arbitrage Dislocation                                        |
-|    Arbs buy futures and sell cash basket via NYSE DOT routing         |
+| 4. Index Arbitrage                                                    |
+|    Arbitrageurs buy futures and sell stocks through DOT               |
 |                                                                       |
-| 5. DOT System Queue Jam                                               |
-|    Specialists receive deluge of sell orders; cash stocks halt trading|
+| 5. DOT and Specialist Overload                                        |
+|    Order backlogs; stocks open late or halt                           |
 |                                                                       |
-| 6. Complete Liquidity Evaporation                                     |
-|    Arbs withdraw bids; futures drop into a vacuum, triggering MORE    |
-|    portfolio insurance selling in a self-reinforcing downward spiral  |
+| 6. Linkage Breaks                                                     |
+|    Arbitrage stops; the futures discount signals further declines     |
+|    and the insurance models call for more selling                     |
 +-----------------------------------------------------------------------+
 ```
 
-When index arbitrageurs could not confirm cash execution on the NYSE, they stopped bidding in the CME futures pit.
-The S&P 500 futures pit was suddenly forced to absorb all portfolio insurance supply without index arbitrage absorption, resulting in price freefalls and negative basis spreads unseen in derivatives history.
+On the afternoon of October 19, with some index arbitrageurs unwilling to sell stock through DOT, they also stopped buying futures, and the futures fell to a discount of 20 index points (Brady Report).
+The large discount itself discouraged buyers in the stock market, and the Dow fell almost 300 points in the last hour and one quarter of trading.
+In the futures market, portfolio insurers sold the equivalent of $4 billion of stocks on October 19, over 40 percent of futures volume excluding locals (Brady Report).
 
 ---
 
 ## Quantitative Autopsy
 
-Under the Black-Scholes model, the delta of a protective put option with strike $K$ and maturity $T$ is:
+The overhang is the gap between what the models demanded and what had been sold.
+With the market already down 10 percent by Friday, October 16, the models dictated that at least $12 billion (20 percent of $60 billion) of equities should already have been sold, but less than $4 billion had in fact been sold (Brady Report).
+
+The convexity of the hedge can be seen with a hypothetical put: strike $K = 95$, volatility $\sigma = 20\%$, maturity $T = 0.5$ years and zero interest rate, under Black-Scholes:
 $$\Delta(S) = N\left(\frac{\ln(S/K) + (r + \frac{1}{2}\sigma^2)T}{\sigma\sqrt{T}}\right) - 1$$
-The required short futures hedge position $H$ for an institutional portfolio of size $V$ is:
+At $S_0 = 100$ the put delta is $-0.3324$, and at $S_1 = 90$ it is $-0.6223$.
+A 10% fall in the index therefore raises the hedge from 33.24% to 62.23% of the portfolio, close to double, exactly as liquidity is draining.
+The required short futures position for a portfolio of value $V$ is:
 $$H(S) = |N(d_1) - 1| \times \frac{V}{S \times \text{Multiplier}}$$
-As price $S$ drops from $S_0 = 100$ to $S_1 = 90$, the delta magnitude $|N(d_1) - 1|$ shifts from 0.30 to 0.60.
-The algorithm is mathematically forced to double its short futures contracts precisely as liquidity is draining from the order book.
-Because $N$ institutional players held over $100 billion subject to these exact rules, the aggregate marginal selling volume was:
-$$\sum_{i=1}^N \frac{\partial H_i}{\partial S} \Delta S \gg \text{Total Market Bid Depth}$$
-The selling pressure overwhelmed the total available buying capacity of market makers by a factor of 10x to 20x.
+so every institution running the same rule must add short futures at the same moment.
+
+The headline moves follow from the cited closes: $508.00/2{,}246.74 = 22.61\%$ on October 19, and from the October 13 close of 2,505 to 1,738 is a fall of 30.62%, which the Brady Report (Study III) gives as 30.6 percent.
 
 ---
 
 ## Regulatory and Structural Legacy
 
-The 1987 crash generated the modern market architecture governing exchanges today:
-1. **Coordinated Circuit Breakers (Rule 80B)**: The Brady Commission established mandatory market-wide trading halts (originally set at 100, 250, and 400 Dow points; later revised to 7%, 13%, and 20% drops in the S&P 500) to interrupt algorithmic feedback loops and give market participants time to calculate accurate values.
-2. **Cross-Market Clearing Synchronization**: Cross-margining and shared credit clearing facilities were established between CME and NYSE clearinghouses to prevent settlement gridlocks.
-3. **The 'Greenspan Put' and Central Bank Liquidity Anchoring**: Alan Greenspan's immediate liquidity injection established the market expectation that the Federal Reserve would intervene aggressively to backstop financial asset prices during systemic sell-offs.
-4. **The End of Unhedged Portfolio Insurance**: Mechanical dynamic hedging was widely abandoned by pension funds in favor of exchange-traded protective puts, collars, and structural equity dispersion options.
+1. **Circuit breakers**: The Brady Report recommended that circuit breaker mechanisms (such as price limits and coordinated trading halts) be formulated and implemented, and after the market breaks of October 1987 and October 1989 the NYSE instituted market-wide circuit breakers (Federal Reserve History).
+   By 2012 the halts were triggered by declines of 10%, 20% and 30% in the Dow; SEC Release 34-67090 (May 31, 2012) replaced these with declines of 7%, 13% and 20% in the S&P 500.
+2. **Unified clearing and consistent margins**: The Brady Report recommended that clearing systems be unified across marketplaces and that margins be made consistent across marketplaces.
+3. **Central bank liquidity**: The Federal Reserve's October 20 statement and open market operations, and its encouragement of bank lending to securities firms, became a model for crisis liquidity support (Carlson 2007).
+4. **One coordinating agency**: The Brady Report recommended that one agency coordinate the few critical regulatory issues that cut across the stock, options and futures markets.
 
 ---
 
 ## Lessons for Traders and Risk Managers
 
-- **Endogenous Feedback Loops**: Market liquidity is endogenous; when algorithms respond to market prices by submitting orders in the direction of the trend, they destroy the very liquidity they rely on.
-- **Dynamic Hedging Cannot Handle Gap Risk**: Delta hedging only works if prices move continuously; in a discontinuous gap, options cannot be hedged at theoretical prices, exposing the hedger to catastrophic slippage.
-- **Arbitrage Requires Operational Pipeline Reliability**: When order routing pipelines jam, arbitrage boundaries break down and synthetic equivalence relationships collapse.
+- **Endogenous Feedback Loops**: When many participants follow rules that sell into falling prices, their selling becomes the price move they react to.
+- **Dynamic Hedging Cannot Handle Gap Risk**: Delta hedging only works if prices move continuously; in a gap, the hedge cannot be rebalanced at model prices.
+- **Arbitrage Requires Working Plumbing**: When order routing jams, arbitrage stops and the price link between futures and cash breaks.
 
 ---
 
 ## Case Study Drills and Review Questions
 
 > [!question]- mkt-his-005 | What was the percentage decline of the Dow Jones Industrial Average on Black Monday (October 19, 1987)?
-> 22.61%, or 508.00 points from 2,246.74 to 1,738.74, the largest single-day percentage drop in US market history.
+> 22.61%, or 508.00 points from 2,246.74 to 1,738.74, which Federal Reserve History calls the largest one-day stock market decline in history.
 
 > [!question]- mkt-his-006 | What was the mathematical flaw in the Portfolio Insurance strategy developed by Leland and Rubinstein?
-> It assumed continuous pricing and infinite market depth for delta-hedging; in reality, collective selling caused discontinuous price gaps and evaporated market liquidity.
+> It relied on continuous trading with no price impact; when many insurers sold together, their selling moved prices, gaps appeared, and the hedge could not be rebalanced at model prices.
 
 > [!question]- mkt-his-007 | How did the NYSE DOT system queue congestion amplify the 1987 crash?
-> Sell orders backed up for over an hour, preventing index arbitrageurs from executing offsetting cash equity trades, which caused futures to collapse at a massive discount.
+> DOT orders backed up for up to one and one quarter hours and executions were reported more than an hour late, so index arbitrageurs could not execute or confirm the stock side of their trades, they stopped buying futures, and the futures fell to a 20-point discount.
 
-> [!question]- mkt-his-008 | What major structural reform was instituted directly as a result of the Brady Commission report?
-> Coordinated market-wide circuit breakers across both cash equity exchanges and derivatives futures venues.
+> [!question]- mkt-his-008 | What major structural reform did the Brady Commission report recommend that markets later adopted?
+> Coordinated circuit breakers (price limits and trading halts) across markets, which the NYSE instituted as market-wide circuit breakers after the 1987 and 1989 market breaks.
+
+---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_hist_02_1987_crash.py`](../code/mkt_hist_02_1987_crash.py) prints and asserts every number on this page: the index moves are recomputed from the cited closes and checked against the Brady Report's rounded figures, the overhang is checked as stated, and the put deltas come from the closed-form $N(d_1)$ checked against a central finite difference of a put price obtained by numerical integration of the payoff over the lognormal density.
+- Related notes: [Case File 01: 1929 Crash](01-1929-Wall-Street-Crash-and-Great-Depression.md), [Case File 06: 2010 Flash Crash](06-2010-Flash-Crash-and-LOB-Evaporation.md).

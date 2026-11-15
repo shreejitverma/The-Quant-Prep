@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Damodaran (2012) - Investment Valuation, Koller Goedhart and Wessels (2020) - Valuation: Measuring and Managing the Value of Companies, Mauboussin and Rappaport (2016) - Expectations Investing]
+sources: [Damodaran (2012) - Investment Valuation, Koller Goedhart and Wessels (2020) - Valuation: Measuring and Managing the Value of Companies, Mauboussin and Rappaport (2021) - Expectations Investing (Revised and Updated edition of Rappaport and Mauboussin 2001)]
 ---
 
 # Valuation Rebuild Drills
@@ -13,7 +13,7 @@ sources: [Damodaran (2012) - Investment Valuation, Koller Goedhart and Wessels (
 ## Overview
 
 The Valuation Rebuild Drills bank provides rigorous mathematical exercises designed to build proficiency in corporate valuation modeling.
-Each drill presents financial inputs from real-world corporate situations.
+Each drill presents hypothetical financial inputs for an unnamed company; the inputs are illustrative and no figure describes a real firm.
 Calculate the intermediate metrics, build the valuation bridge, and derive the intrinsic value or implied market expectation before checking the hidden solution.
 
 ---
@@ -80,29 +80,31 @@ $$\text{NWC}_t = \text{Revenue}_t \times 0.10 \implies \Delta \text{NWC}_t = \te
 #### Step 2: Discounting Discrete Cash Flows (WACC = 8.5%)
 $$\text{Discount Factor}_t = \frac{1}{(1.085)^t}$$
 
-- Year 1: $199.2 / 1.085^1 = \$183.59 \text{ million}$
-- Year 2: $223.8 / 1.085^2 = \$190.11 \text{ million}$
-- Year 3: $251.4 / 1.085^3 = \$196.82 \text{ million}$
-- Year 4: $282.3 / 1.085^4 = \$203.70 \text{ million}$
-- Year 5: $317.0 / 1.085^5 = \$210.82 \text{ million}$
+The table rounds to one decimal; the present values below use the unrounded FCFF, shown to two decimals.
 
-$$\text{PV of Discrete FCFF} = 183.59 + 190.11 + 196.82 + 203.70 + 210.82 = \$985.04 \text{ million}$$
+- Year 1: $199.20 / 1.085^1 = \$183.59 \text{ million}$
+- Year 2: $223.80 / 1.085^2 = \$190.11 \text{ million}$
+- Year 3: $251.40 / 1.085^3 = \$196.82 \text{ million}$
+- Year 4: $282.33 / 1.085^4 = \$203.73 \text{ million}$
+- Year 5: $317.03 / 1.085^5 = \$210.84 \text{ million}$
+
+$$\text{PV of Discrete FCFF} = 183.59 + 190.11 + 196.82 + 203.73 + 210.84 = \$985.09 \text{ million}$$
 
 #### Step 3: Terminal Value Calculation
-$$\text{Terminal FCFF}_{\text{Year 6}} = \text{FCFF}_5 \times (1 + g) = 317.0 \times 1.025 = \$324.93 \text{ million}$$
+$$\text{Terminal FCFF}_{\text{Year 6}} = \text{FCFF}_5 \times (1 + g) = 317.03 \times 1.025 = \$324.95 \text{ million}$$
 
-$$\text{Terminal Value}_5 = \frac{\text{Terminal FCFF}_6}{\text{WACC} - g} = \frac{324.93}{0.085 - 0.025} = \frac{324.93}{0.060} = \$5,415.50 \text{ million}$$
+$$\text{Terminal Value}_5 = \frac{\text{Terminal FCFF}_6}{\text{WACC} - g} = \frac{324.95}{0.085 - 0.025} = \frac{324.95}{0.060} = \$5,415.85 \text{ million}$$
 
-$$\text{PV of Terminal Value} = \frac{5,415.50}{(1.085)^5} = \frac{5,415.50}{1.50366} = \$3,601.55 \text{ million}$$
+$$\text{PV of Terminal Value} = \frac{5,415.85}{(1.085)^5} = \frac{5,415.85}{1.50366} = \$3,601.78 \text{ million}$$
 
 #### Step 4: Enterprise Value to Equity Value Bridge
 $$\text{Enterprise Value (EV)} = \text{PV of Discrete Cash Flows} + \text{PV of Terminal Value}$$
-$$\text{EV} = 985.04 + 3,601.55 = \$4,586.59 \text{ million}$$
+$$\text{EV} = 985.09 + 3,601.78 = \$4,586.87 \text{ million}$$
 
 $$\text{Equity Value} = \text{EV} + \text{Cash} - \text{Debt}$$
-$$\text{Equity Value} = 4,586.59 + 150.0 - 300.0 = \$4,436.59 \text{ million}$$
+$$\text{Equity Value} = 4,586.87 + 150.0 - 300.0 = \$4,436.87 \text{ million}$$
 
-$$\text{Intrinsic Value per Share} = \frac{\$4,436.59 \text{ million}}{50.0 \text{ million shares}} = \$88.73 \text{ per share}$$
+$$\text{Intrinsic Value per Share} = \frac{\$4,436.87 \text{ million}}{50.0 \text{ million shares}} = \$88.74 \text{ per share}$$
 
 </details>
 
@@ -111,12 +113,12 @@ $$\text{Intrinsic Value per Share} = \frac{\$4,436.59 \text{ million}}{50.0 \tex
 ## Drill 2: Hamada Equation and WACC Parameter Rebuild
 
 ### Scenario
-An analyst is calculating the Weighted Average Cost of Capital (WACC) for a private medical device company (Company Beta).
-Company Beta has a capital structure with 40% debt and 60% equity ($D/E = 0.667$).
+An analyst is calculating the Weighted Average Cost of Capital (WACC) for a hypothetical private medical device company (Company Beta).
+Company Beta has a capital structure with 40% debt and 60% equity ($D/E = 40/60 = 2/3 \approx 0.667$).
 Its corporate marginal tax rate is 25%.
 The yield on 10-year US Treasuries (risk-free rate $R_f$) is 4.0%, and the market risk premium (ERP) is 5.5%.
 Company Beta can borrow long-term debt at an interest rate of 6.5%.
-Three publicly traded peer companies exhibit the following parameters:
+Three hypothetical peer companies exhibit the following parameters:
 
 ```
 +-----------------------------------------------------------------------+
@@ -132,7 +134,7 @@ Three publicly traded peer companies exhibit the following parameters:
 1. Un-lever the equity betas of all three peers using the Hamada equation:
    $$\beta_U = \frac{\beta_L}{1 + (1 - T)(D/E)}$$
 2. Compute the industry average unlevered asset beta ($\beta_U$).
-3. Re-lever the industry asset beta to Company Beta's target capital structure ($D/E = 0.667$).
+3. Re-lever the industry asset beta to Company Beta's target capital structure ($D/E = 2/3$).
 4. Compute Company Beta's Cost of Equity ($K_e$) using the CAPM.
 5. Calculate Company Beta's Cost of Debt after tax ($K_d(1-T)$) and final WACC.
 
@@ -150,13 +152,13 @@ $$\text{MedTech C}: \beta_U = \frac{1.55}{1 + (1 - 0.25)(0.80)} = \frac{1.55}{1 
 $$\bar{\beta}_U = \frac{0.9818 + 0.9565 + 0.9688}{3} = \frac{2.9071}{3} = 0.9690$$
 
 #### Step 3: Re-levering to Target Capital Structure
-Company Beta has $D/E = 0.667$ and tax rate $T = 25\%$:
+Company Beta has $D/E = 2/3$ exactly and tax rate $T = 25\%$:
 $$\beta_{L, \text{target}} = \bar{\beta}_U \times [1 + (1 - T)(D/E)]$$
-$$\beta_{L, \text{target}} = 0.9690 \times [1 + (1 - 0.25)(0.667)] = 0.9690 \times [1 + 0.500] = 0.9690 \times 1.50 = 1.4535$$
+$$\beta_{L, \text{target}} = 0.9690 \times [1 + (1 - 0.25)(2/3)] = 0.9690 \times [1 + 0.500] = 0.9690 \times 1.50 = 1.4535$$
 
 #### Step 4: Cost of Equity Calculation (CAPM)
 $$K_e = R_f + \beta_L \times \text{ERP}$$
-$$K_e = 4.0\% + 1.4535 \times 5.5\% = 4.0\% + 7.994\% = 11.994\% \approx 12.00\%$$
+$$K_e = 4.0\% + 1.4535 \times 5.5\% = 4.0\% + 7.994\% = 11.994\% \approx 11.99\%$$
 
 #### Step 5: After-Tax Cost of Debt and WACC
 $$\text{After-Tax Cost of Debt} = K_d \times (1 - T) = 6.5\% \times (1 - 0.25) = 4.875\%$$
@@ -164,7 +166,7 @@ $$\text{After-Tax Cost of Debt} = K_d \times (1 - T) = 6.5\% \times (1 - 0.25) =
 With Capital Weights: Equity = 60%, Debt = 40%:
 $$\text{WACC} = \left(\frac{E}{V}\right) K_e + \left(\frac{D}{V}\right) K_d (1 - T)$$
 $$\text{WACC} = (0.60 \times 11.994\%) + (0.40 \times 4.875\%)$$
-$$\text{WACC} = 7.196\% + 1.950\% = 9.146\% \approx 9.15\%$$
+$$\text{WACC} = 7.197\% + 1.950\% = 9.147\% \approx 9.15\%$$
 
 </details>
 
@@ -173,7 +175,7 @@ $$\text{WACC} = 7.196\% + 1.950\% = 9.146\% \approx 9.15\%$$
 ## Drill 3: Reverse DCF Expectations Inversion
 
 ### Scenario
-Company Gamma trades at a stock price of $120.00 with 100 million shares outstanding (Market Cap = $12.0 billion).
+Hypothetical Company Gamma trades at a stock price of $120.00 with 100 million shares outstanding (Market Cap = $12.0 billion).
 The balance sheet holds $500 million in cash and $1.5 billion in debt (Enterprise Value = $13.0 billion).
 Base year trailing revenue is $2.0 billion.
 An analyst assumes:
@@ -216,9 +218,9 @@ $$\text{EV} = \sum_{t=1}^{10} \frac{\text{FCF}_t}{(1.09)^t} + \frac{\text{TV}_{1
   - PV of 10-yr cash flows: $\approx \$2,482 \text{M}$
   - Total EV $\approx 4,439 + 2,482 = \$6,921 \text{M}$ (Much too low; market is pricing significantly higher growth).
 
-- At $g = 18.31\%$ (solved by bisection so that EV equals the market's $13,000 \text{M}$):
-  - Year 10 Revenue: $2,000 \times (1.18307)^{10} = 2,000 \times 5.3716 = \$10,743 \text{M}$
-  - Year 10 FCF: $10,743 \times 0.1180 = \$1,267.7 \text{M}$
+- At $g = 18.31\%$ (solved by bisection so that EV equals the market's $13,000 \text{M}$; the unrounded root is $g = 18.3074\%$):
+  - Year 10 Revenue: $2,000 \times (1.183074)^{10} = 2,000 \times 5.3718 = \$10,744 \text{M}$
+  - Year 10 FCF: $10,744 \times 0.1180 = \$1,267.7 \text{M}$
   - $\text{TV}_{10} = 1,267.7 \times 17.167 = \$21,763 \text{M}$
   - PV of TV: $21,763 / 2.3674 = \$9,193 \text{M}$
   - PV of 10-yr cash flows: $\approx \$3,807 \text{M}$
@@ -235,13 +237,13 @@ If the underlying addressable market cannot support a 5.4x expansion in company 
 ## Drill 4: Net-Net Liquidation (NCAV) Asset Haircut Audit
 
 ### Scenario
-Company Delta is a micro-cap industrial manufacturer undergoing operational distress.
+Hypothetical Company Delta is a micro-cap industrial manufacturer undergoing operational distress.
 Its common shares trade at $6.00 with 10.0 million shares outstanding (Market Cap = $60.0 million).
 The most recent balance sheet reports the following book values (figures in millions):
 
 ```
 +-----------------------------------------------------------------------+
-| Balance Sheet Item                       | Book Value | Graham Haircut|
+| Balance Sheet Item                       | Book Value | Assumed Cut   |
 |------------------------------------------+------------+---------------|
 | Cash and Short-Term Investments          | $25.0      | 0% (100% val) |
 | Accounts Receivable                      | $30.0      | 25% (75% val) |
@@ -259,9 +261,9 @@ The most recent balance sheet reports the following book values (figures in mill
 ```
 
 ### Questions to Solve
-1. Calculate Benjamin Graham's Net Current Asset Value (NCAV):
+1. Calculate Net Current Asset Value (NCAV), the measure Benjamin Graham described in his 1976 Financial Analysts Journal interview ("A Conversation with Benjamin Graham") as current assets less all liabilities, with no weight given to fixed assets:
    $$\text{NCAV} = \text{Current Assets} - \text{Total Liabilities and Off-Balance Sheet Claims}$$
-2. Calculate the Liquidation Value using the conservative asset haircut percentages.
+2. Calculate the Liquidation Value using the assumed haircut percentages in the table (drill inputs, not Graham's published figures).
 3. Compare the current market price ($6.00) against NCAV per share and Liquidation Value per share.
 4. Assess whether Company Delta provides an adequate margin of safety.
 
@@ -296,9 +298,16 @@ $$\text{Net Liquidation Value per Share} = \frac{\$7.5 \text{ million}}{10.0 \te
 - Conservative Liquidation Value per share: $0.75 (Stock trades at 8x liquidation value)
 
 #### Conclusion:
-Company Delta fails Benjamin Graham's Net-Net rule completely.
-Graham required buying at less than two-thirds of NCAV ($P \le \frac{2}{3} \text{NCAV} = \$2.20$).
+Company Delta trades well above NCAV, so it is not a net-net at all.
+A stricter screen (a drill input) that buys only at two-thirds of NCAV or less would require $P \le \frac{2}{3} \text{NCAV} = \$2.20$.
 At $6.00, investors are relying on an ongoing business turnaround.
 If the company burns cash while attempting to liquidate, equity will be wiped out by debt and pension claims.
 
 </details>
+
+---
+
+## In this repo and The-Distinguished-Engineer
+
+- Every number in the four solutions is printed and asserted by [`mkt_drill_01_valuation_rebuild.py`](../code/mkt_drill_01_valuation_rebuild.py).
+  Independent routes: an exact-fraction projection loop against closed-form geometric-series present values, the Gordon value against a 3,000-year direct sum, and the implied growth by bisection on the explicit sum against a secant solve on the closed-form annuity.

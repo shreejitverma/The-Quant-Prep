@@ -11,141 +11,128 @@ tags: [market-history, flash-crash-2010, hft, limit-order-book, stub-quotes, cro
 
 ## Executive Summary
 
-On the afternoon of Thursday, May 6, 2010, US equity markets experienced the most rapid and severe intraday dislocation in history.
-Between 02:40 PM and 03:00 PM EST, the Dow Jones Industrial Average plummeted nearly 1,000 points (-9.2%), with 600 points of that collapse occurring within just five minutes, evaporating approximately $1 trillion in market value before recovering almost all of the loss by 03:08 PM.
-The disruption originated in the CME E-mini S&P 500 futures market, triggered by a mutual fund management firm (Waddell & Reed) executing an automated algorithmic sell program for 75,000 E-mini contracts ($4.1 billion notional) programmed to target volume participation without regard to price or market impact.
-As the selling overwhelmed the order book, High-Frequency Trading (HFT) firms rapidly hit internal inventory risk limits, flipped from market making to aggressive short selling, and withdrew liquidity quotes altogether.
-Cross-market arbitrage transmitted the futures crash instantly into cash equity exchanges, where fragmented routing and liquidity voids caused hundreds of securities to trade at absurd "stub quotes" (such as blue-chip consulting giant Accenture trading at $0.01 per share, and Apple trading at $100,000 per share).
-The event demonstrated that in algorithmic electronic markets, liquidity is transient, non-linear, and capable of vanishing in milliseconds under systemic adverse selection.
+On the afternoon of Thursday, May 6, 2010, major US equity indices in both futures and securities markets, already down over 4% from the prior close, fell a further 5-6% in a matter of minutes before rebounding almost as quickly (SEC-CFTC staff report, September 30, 2010).
+At 2:32 p.m. a large fundamental trader, a mutual fund complex, began selling 75,000 E-Mini S&P 500 futures contracts (about $4.1 billion) through an algorithm set to execute at 9% of the previous minute's volume without regard to price or time.
+High-frequency traders first absorbed the selling and then passed contracts back and forth, buy-side depth in the E-Mini fell to about $58 million, less than 1% of its morning level, and the CME Stop Logic Functionality paused the E-Mini for five seconds at 2:45:28 p.m.
+In individual stocks, liquidity providers paused, internalizers routed orders to the exchanges, and over 20,000 trades across more than 300 securities executed more than 60% away from their prices moments before, some at a penny or less and some as high as $100,000.
+By the close, the major indices had recovered to losses of about 3% for the day.
 
 ---
 
 ## Primary Sources and Chronology
 
-- **Macro Backdrop (May 6, 2010)**: Global markets trade nervously over the European sovereign debt crisis; street protests and riots in Athens over Greek austerity measures dominate headlines.
-- **02:32 PM EST**:
-  - Mutual fund firm Waddell & Reed initiates an automated algorithmic sell program to hedge equity portfolio risk by selling 75,000 E-mini S&P 500 futures contracts (representing roughly 9% of total daily E-mini volume).
-  - The algorithm is programmed to execute via a simple percentage-of-volume (POV) parameter: targeting a constant 9% of the trading volume executed over the previous minute, with no price boundaries or time limits.
-- **02:41 PM EST**:
-  - The massive influx of sell contracts rapidly consumes all available passive resting buy limit orders in the CME E-mini order book.
-  - High-frequency market-making algorithms buy from the mutual fund and immediately turn around to sell to other market participants; this rapid churning artificially inflates total market volume, deceiving the POV algorithm into accelerating its selling rate even faster.
-- **02:45:13 - 02:45:28 PM EST**:
-  - E-mini market depth falls from approximately $6 billion to under $40 million (a 99% collapse in resting bid liquidity).
-  - The E-mini contract drops 3% in four seconds.
-  - At 02:45:27 PM, the CME Stop Logic Function automatically halts trading in the E-mini for five seconds to allow incoming orders to replenish the depleted book.
-- **02:45:28 - 02:47:00 PM EST**:
-  - While the CME futures market pauses for five seconds, the wave of panic selling spreads across the fragmented cash equity landscape (NASDAQ, NYSE Arca, BATS, Direct Edge).
-  - Internalizers and dark pools divert order flow to public lit exchanges; automated routing algorithms send market orders into empty order books.
-  - Over 20,000 trades execute at prices more than 60% away from fair value; roughly 30 stocks and 160 ETFs trade down to $0.01.
-  - Accenture, an investment-grade firm capitalized at $30 billion, trades down from $40.00 to $0.01 across thousands of shares.
-  - Sotheby's and Apple experience trades at $100,000 per share as market buy orders match against dormant stub asks.
-- **02:48 - 03:08 PM EST**:
-  - The CME futures market resumes trading with fresh liquidity; quantitative statistical arbitrage algorithms detect historic cash-futures valuation discrepancies and step in with massive buy orders.
-  - By 03:08 PM, the market recovers roughly 600 points of the intraday drop.
-- **September 30, 2010**: The Joint CFTC-SEC Advisory Committee issues its definitive 104-page investigation: *Findings Regarding the Market Events of May 6, 2010*.
-- **April 21, 2015**: The US Department of Justice arrests British day trader Navinder Singh Sarao in London, charging him with wire fraud and market manipulation for placing massive phantom "spoofing" sell orders in the E-mini order book on May 6, 2010.
+Sources used on this page: *Findings Regarding the Market Events of May 6, 2010*, Report of the Staffs of the CFTC and SEC to the Joint Advisory Committee on Emerging Regulatory Issues (September 30, 2010); SEC Release 34-67091 (May 31, 2012) approving the Limit Up-Limit Down plan; SEC Rule 15c3-5 (adopted November 2010); SEC Rule 613 (adopted July 2012); Dodd-Frank Act section 747; US Department of Justice press release of April 21, 2015 on Navinder Singh Sarao.
+The report names the seller only as "a large fundamental trader (a mutual fund complex)"; press reports at the time identified it as Waddell & Reed.
+
+- **Morning, May 6, 2010**: Trading opens to unsettling political and economic news from Europe about the debt crisis; by 2:30 p.m. the Dow Jones Industrial Average is down about 2.5%.
+- **2:32 p.m.**: The mutual fund complex starts its sell program of 75,000 E-Mini contracts to hedge an existing equity position.
+- **2:32 to 2:45 p.m.**: The Sell Algorithm sells about 35,000 contracts (about $1.9 billion); all fundamental sellers combined sell more than 80,000 contracts net against about 50,000 bought net by fundamental buyers.
+- **2:41 to 2:44 p.m.**: High-frequency traders, after accumulating a net long position of about 3,300 contracts, sell about 2,000 contracts to cut it while trading nearly 140,000 contracts, over 33% of volume; the E-Mini falls about 3% in four minutes.
+- **2:45:13 to 2:45:27 p.m.**: HFTs trade over 27,000 contracts, about 49% of volume, while buying only about 200 contracts net, the "hot-potato" effect; the E-Mini falls a further 1.7% in 15 seconds to its intraday low of 1056.
+- **2:45:28 p.m.**: Fewer than 1,050 contracts of buy-side resting orders remain, and the CME Stop Logic Functionality pauses the E-Mini for five seconds; trading resumes at 2:45:33 p.m. and prices begin to recover.
+- **About 2:51 p.m.**: The Sell Algorithm finishes its program as prices rise.
+- **2:40 to 3:00 p.m.**: Over 20,000 trades in more than 300 securities, many of them ETFs, execute 60% or more away from their 2:40 p.m. prices; the exchanges later break trades more than 60% away from the reference price.
+- **April 21, 2015**: The US Department of Justice announces charges against Navinder Singh Sarao, a London-based futures trader, for manipulating the E-Mini market by spoofing, including on May 6, 2010.
 
 ---
 
 ## Market Backdrop and Structural Vulnerabilities
 
-### 1. High-Frequency Trading (HFT) and Automated Market Making
-By 2010, electronic high-frequency trading firms (such as Citadel Securities, Getco, Virtu, and Tradebot) had largely replaced traditional exchange specialists.
-HFTs operated on market-making algorithms that held virtually zero overnight inventory, capturing fractions of a penny on the bid-ask spread across millions of trades.
-These algorithms were governed by strict intraday inventory constraints: if net position exposure exceeded a tight threshold (e.g. $5 million or 200 contracts), the algorithm instantly stopped quoting passive bids and aggressively unloaded inventory using aggressive market orders.
+### 1. Execution by Volume Alone
+The report contrasts the May 6 program with an earlier sell program by the same trader, which used a mix of manual trading and algorithms that took price, time and volume into account and took more than 5 hours to sell its first 75,000 contracts.
+On May 6 the algorithm targeted only volume, and it executed the program in about 20 minutes.
+The report adds that the sell program was the largest net change in daily E-Mini position of any trader since the start of 2010.
 
-### 2. The Algorithmic Feedback Loop of Volume-Targeted Orders
-Waddell & Reed's execution algorithm was fundamentally flawed for large-order execution.
-Standard institutional execution of a 75,000-contract parent order typically spans several hours or days, incorporating price-limit floors to pause execution if price impact becomes severe.
-Waddell & Reed's POV algorithm had no price limit; it simply executed 9% of the volume traded in the trailing 60 seconds:
+### 2. High-Frequency Intermediaries
+HFTs bought the first batches of the sell program and then sold to reduce their inventory, consistent with their typical practice of trading very large volumes without holding more than three to four thousand contracts in either direction (SEC-CFTC report).
+Their rapid trading raised reported volume, and the Sell Algorithm, which keyed off volume, increased its selling rate even though earlier orders had not been absorbed by fundamental buyers.
+The report concludes that in times of significant volatility, high trading volume is not necessarily a reliable indicator of market liquidity.
 
 ```
 +-----------------------------------------------------------------------+
-|                 FLASH CRASH HFT RECYCLING FEEDBACK LOOP               |
+|                 FLASH CRASH HOT-POTATO FEEDBACK LOOP                  |
 +-----------------------------------------------------------------------+
-| 1. Mutual Fund Algorithm Sells 75,000 Contracts at 9% POV             |
+| 1. Sell Algorithm Targets 9% of Last Minute's Volume                  |
 |                                                                       |
-| 2. HFT Market Makers Buy Contracts from Algorithm                     |
+| 2. HFTs and Intermediaries Buy the First Orders                       |
 |                                                                       |
-| 3. HFTs Immediately Sell Contracts into the Book to Shed Inventory   |
+| 3. HFTs Resell to Cut Inventory                                       |
 |                                                                       |
-| 4. Total Trading Volume Spikes Dramatically                           |
+| 4. Contracts Pass Back and Forth; Reported Volume Rises               |
 |                                                                       |
-| 5. POV Algorithm Observes Higher Volume and ACCELERATES Selling Rate  |
+| 5. Higher Volume Makes the Algorithm Sell Faster                      |
 |                                                                       |
-| 6. HFTs Hit Risk Limits, Pull All Bids, and Become Net Sellers       |
+| 6. Fundamental Buyers and Arbitrageurs Cannot Keep Up                 |
 |                                                                       |
-| 7. Order Book Depth Evaporates -> Discontinuous Price Freefall        |
+| 7. Buy-Side Depth Falls Below 1% of Morning Level -> Price Gap        |
 +-----------------------------------------------------------------------+
 ```
 
-Between 02:41 PM and 02:44 PM, HFTs bought 264,000 contracts and sold 270,000 contracts, rapidly trading the same inventory back and forth.
-This hot-potato volume illusion tricked the POV algorithm into dumping more than 35,000 contracts in just four minutes.
-
-### 3. Stub Quotes and Market Order Vulnerability
-Market maker regulations required registered market makers to maintain continuous two-sided quotes in assigned stocks.
-To satisfy this regulatory quotation obligation while minimizing inventory exposure during extreme market volatility, market makers posted dummy placeholder quotes known as **stub quotes** (such as a bid of $0.01 and an ask of $100,000.00).
-These quotes were never intended to execute; they were legal fictions.
-However, when automated stop-loss orders and retail market-sell orders arrived during the liquidity void, matching engines paired incoming market orders against the nearest available quote: the $0.01 stub bids.
+### 3. Stub Quotes and Market Orders
+Stub quotes are quotes at unrealistically low or high prices that fulfil a market maker's quoting obligation without any intention to trade (SEC-CFTC report).
+When liquidity providers withdrew, market orders and stop orders that reached empty books executed against these quotes, which is how trades printed at a penny or at $100,000.
 
 ---
 
 ## Microstructure Breakdown and Liquidity Evaporation
 
-The breakdown illustrated the fragmentation of the US equity market under Regulation NMS:
-1. **Cross-Market Contagion**: Index arbitrageurs and high-frequency statistical arbitrage algorithms continuously hedge the price relationship between the CME E-mini futures and the 500 underlying S&P cash equities.
-   When the E-mini price collapsed, arbitrage algorithms automatically dumped physical equities across all 13 US equity exchanges.
-2. **Internalizer Ejection**: Broker-dealers that internalize retail order flow typically execute orders against their own internal balance sheets.
-   When volatility surged beyond internal risk limits, internalizers abruptly routed all incoming retail market orders onto lit public exchanges, overwhelming lit books with aggressive sell volume.
-3. **Information Uncertainty**: Because trade reporting feeds lagged and crossed prices flashed across disparate venues, market-making algorithms shut down entirely, choosing to take zero risk until pricing consensus was restored.
+1. **Cross-market transmission**: Cross-market arbitrageurs who bought the E-Mini sold equivalent amounts in the equity markets, such as SPY or baskets of S&P 500 stocks, so SPY also fell about 3% from 2:41 to 2:44 p.m.
+2. **Liquidity providers pause**: Automated systems at many liquidity providers paused when prices moved beyond pre-set limits, and firms then weighed data reliability, risk limits, P&L and the chance of trades being broken before resuming.
+3. **Internalizers route to the exchanges**: Some internalizers reduced or halted internalization of sell orders as their limits were reached and sent the orders to the public exchanges, adding to the selling there.
 
 ---
 
 ## Quantitative Autopsy
 
-Let limit order book depth $D(p)$ represent the cumulative resting buy limit orders within distance $\Delta p$ of the mid-price $P_0$.
-Under normal conditions, depth is thick:
-$$D(P_0 - 0.01) \approx \$50,000,000$$
-An aggressive sell order of $Q \approx \$4.1 \text{ billion}$ ($75,000$ contracts $\times$ the $\$50$ multiplier at an average index level of $4.1 \text{ billion} / 3.75 \text{ million} \approx 1,093$) arrives at rate $\lambda_{\text{sell}}$.
-Its market impact $\Delta P$ is governed by the exhaustion of order book depth:
-$$\int_{P_{\text{low}}}^{P_0} D(p) dp = Q$$
-During the panic, the effective market-making supply rate $\lambda_{\text{MM}}$ dropped to zero as HFT algorithms withdrew:
-$$\lambda_{\text{net}} = \lambda_{\text{sell}} - \lambda_{\text{MM}} \gg 0$$
-When depth $D(p) \to 0$, the marginal price impact per contract sold diverges:
-$$\frac{\partial P}{\partial Q} = \frac{1}{D(p)} \to \infty$$
-The price function transitions from a smooth, continuous curve to a discontinuous cliff, dropping until it hits the artificial boundary condition of the $0.01 stub quote.
+The report's figures fix the price level: 75,000 contracts at the E-Mini multiplier of $50 per index point worth about $4.1 billion implies an average index level of $4.1 \text{ billion} / (75{,}000 \times 50) = 1{,}093.33$.
+The other cited pairs agree: 35,000 contracts for $1.9 billion implies 1,085.71 and 40,000 contracts for $2.2 billion implies 1,100.00, all close to the intraday low of 1056 and the pre-crash levels.
+
+Let $D(p)$ be the resting buy depth per unit of price below the mid-price $P_0$.
+A sell order of size $Q$ walks the book down to the price $P_{\text{low}}$ where:
+$$\int_{P_{\text{low}}}^{P_0} D(p)\, dp = Q$$
+so the marginal price impact is:
+$$\frac{\partial P}{\partial Q} = \frac{1}{D(p)}$$
+When liquidity providers withdraw, $D(p) \to 0$ over a range of prices and the impact per contract becomes very large, so the price jumps until it reaches the next resting orders, which on May 6 were sometimes stub quotes.
+On the report's numbers, buy-side depth falling from its morning level to less than 1% of it multiplies the price impact of each contract sold by more than 100 times.
 
 ---
 
 ## Regulatory and Structural Legacy
 
-The 2010 Flash Crash revolutionized electronic trading oversight and market microstructure rules:
-1. **Limit-Up / Limit-Down (LULD) Mechanism**: Implemented in 2012 to replace individual stock circuit breakers; establishes dynamic price bands (typically 5%, 10%, or 20% around the trailing 5-minute average price) preventing trades outside the band and triggering automatic 5-minute pauses if the band is tested for 15 seconds.
-2. **Elimination of Stub Quotes**: The SEC banned stub quotes in 2010, mandating that registered market makers maintain quotes within specified percentages (e.g. 8% or 20%) of the National Best Bid and Offer (NBBO).
-3. **Consolidated Audit Trail (CAT)**: The SEC mandated the creation of CAT, a massive tracking system tracking every quote, order, modification, cancellation, and trade across all US equity and options exchanges from inception to execution.
-4. **SEC Rule 15c3-5 (Market Access Rule)**: Required broker-dealers to implement pre-trade risk controls and capital limits on all algorithms, strictly prohibiting unfiltered, direct "naked" sponsored access to exchange matching engines.
-5. **Anti-Spoofing Enforcement (Dodd-Frank Section 747)**: Made spoofing (bidding or offering with the intent to cancel before execution) an explicit federal crime, culminating in the criminal prosecution of Sarao and institutional algorithmic trading desks.
+1. **Single-stock circuit breakers and Limit Up-Limit Down**: The SEC approved single-stock circuit breakers as a pilot in 2010 and, on May 31, 2012 (Release 34-67091), the Limit Up-Limit Down plan, which prevents trades outside price bands (generally 5%, 10% or 20%, depending on the stock and price) around a reference price based on the average price over the preceding five minutes and pauses trading for five minutes if a stock stays at the band limit for 15 seconds.
+2. **Market-wide circuit breakers**: On the same date the SEC approved revised market-wide halts at declines of 7%, 13% and 20% in the S&P 500 (Release 34-67090), citing the May 6 events and the Joint Advisory Committee's recommendations.
+3. **Stub quotes**: In November 2010 the SEC approved exchange rules requiring market makers to quote within set percentages of the national best bid or offer, ending the practice of stub quotes.
+4. **Consolidated Audit Trail**: SEC Rule 613 (July 2012) required the exchanges and FINRA to build a consolidated audit trail of orders and trades across US equity and options markets.
+5. **Market Access Rule**: SEC Rule 15c3-5 (adopted November 2010) requires broker-dealers with market access to have pre-trade risk controls, ending unfiltered "naked" sponsored access.
+6. **Spoofing**: Section 747 of the Dodd-Frank Act (2010) made spoofing (bidding or offering with the intent to cancel before execution) a prohibited practice under the Commodity Exchange Act.
 
 ---
 
 ## Lessons for Traders and Risk Managers
 
-- **Never Use Unconstrained Market Orders**: In an illiquid electronic market, a market order or stop-market order is an open check; always use limit orders or marketable stop-limit orders with explicit maximum slippage tolerances.
-- **Liquidity Is Endogenous and Transient**: High-frequency market makers provide liquidity in calm regimes but systematically withdraw in stressful regimes; advertised order book depth can vanish within milliseconds.
-- **Volume-Participation Algorithms Can Become Destructive**: POV algorithms can create positive feedback loops when interacting with high-frequency market participants, artificially inflating market volume and driving prices into vacuums.
+- **Avoid Unconstrained Market Orders**: In a thin electronic market a market or stop-market order has no price limit; use limit or stop-limit orders with an explicit maximum slippage.
+- **Liquidity Is Endogenous and Transient**: Intermediaries supply liquidity in calm markets and pause when prices move beyond their limits, so displayed depth can vanish in seconds.
+- **Volume Is Not Liquidity**: An algorithm that keys only off volume can accelerate into a market where the volume is intermediaries trading with each other.
 
 ---
 
 ## Case Study Drills and Review Questions
 
 > [!question]- mkt-his-021 | What specific algorithmic order triggered the initial liquidity collapse during the May 6, 2010 Flash Crash?
-> A mutual fund (Waddell & Reed) sell program executing 75,000 E-mini S&P 500 contracts via a 9% percentage-of-volume (POV) algorithm without price limits.
+> A mutual fund complex's program to sell 75,000 E-Mini S&P 500 contracts (about $4.1 billion) through an algorithm targeting 9% of the previous minute's volume without regard to price or time (SEC-CFTC report).
 
 > [!question]- mkt-his-022 | What was a 'stub quote' in the pre-2010 US equity market?
-> An artificial placeholder quote (such as $0.01 bid or $100,000 ask) posted by market makers solely to satisfy nominal regulatory quoting obligations.
+> A quote at an unrealistically low or high price, such as a penny bid, posted by a market maker to meet its quoting obligation without intending to trade; on May 6 some market orders executed against them.
 
-> [!question]- mkt-his-023 | What regulatory mechanism was implemented in 2012 to prevent single-stock flash crashes like Accenture trading at $0.01?
-> The Limit-Up / Limit-Down (LULD) mechanism, which halts trading if prices breach dynamic percentage bands.
+> [!question]- mkt-his-023 | What regulatory mechanism was approved in 2012 to prevent single-stock flash crashes like trades printing at a penny?
+> The Limit Up-Limit Down plan (SEC approval May 31, 2012), which blocks trades outside price bands around a five-minute reference price and pauses trading if a stock stays at the band limit.
 
 > [!question]- mkt-his-024 | What was the key finding of the CFTC-SEC joint report regarding High-Frequency Traders during the Flash Crash?
-> HFTs rapidly hit internal inventory limits and began aggressively dumping contracts back into the book, recycling inventory and withdrawing passive liquidity.
+> HFTs first absorbed the selling, then sold to cut their inventory and traded contracts back and forth (over 27,000 contracts in 15 seconds while buying only about 200 net), which inflated volume, fed the volume-based Sell Algorithm, and did not add buy-side depth.
+
+---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_hist_06_flash_crash.py`](../code/mkt_hist_06_flash_crash.py) prints and asserts every number on this page: the implied index levels are computed from three separately cited contract-value pairs and checked against each other and against the intraday low, the sell program's pieces are checked to add up, and the depth-impact multiple is computed from the report's depth figure.
+- Related notes: [Case File 02: 1987 Black Monday](02-1987-Black-Monday-and-Portfolio-Insurance.md), [Case File 09: 2021 GameStop](09-2021-GameStop-Meme-Squeeze-and-DTCC-Margin-Halt.md).

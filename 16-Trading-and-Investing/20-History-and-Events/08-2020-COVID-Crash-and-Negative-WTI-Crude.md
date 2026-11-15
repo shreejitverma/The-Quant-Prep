@@ -11,59 +11,51 @@ tags: [market-history, covid-crash-2020, negative-oil, wti-crude, cushing-storag
 
 ## Executive Summary
 
-On Monday, April 20, 2020, the May 2020 West Texas Intermediate (WTI) Light Sweet Crude Oil futures contract (CLK20) traded on the New York Mercantile Exchange (NYMEX) collapsed into negative territory for the first time in history, plunging to an intraday low of -$40.32 per barrel and settling at -$37.63 per barrel.
-The event was driven by a collision between unprecedented physical market reality and financial derivatives mechanics.
-The onset of the global COVID-19 pandemic and government-mandated travel lockdowns eradicated approximately 30 million barrels per day (30%) of global oil demand.
-Concurrently, an ill-timed price war between Saudi Arabia and Russia flooded the world with excess physical crude, rapidly filling commercial storage facilities.
-Because the NYMEX WTI contract requires physical delivery of 1,000 barrels of crude oil at Cushing, Oklahoma, financial traders holding expiring contracts faced a binary choice on the penultimate day of trading: sell the contract at any price or take physical delivery of railcars and pipelines of crude oil.
-With commercial storage at Cushing 100% booked by midstream pipeline operators, financial market participants were physically unable to store the oil.
-Selling turned into a panic rout into an empty bid book, forcing sellers to pay buyers $37.63 per barrel to take the oil off their hands.
-The event broke automated trading systems and brokerage software worldwide (including Interactive Brokers, which absorbed a $104 million customer deficit loss because its systems could not display or execute negative asset prices).
+On Monday, April 20, 2020, the penultimate trading day of the May 2020 NYMEX WTI Light Sweet Crude Oil futures contract, the price traded below zero for the first time, reached an intraday low of -$40.32 per barrel at 2:29 p.m. ET, and settled at -$37.63, down $55.90 from the previous settlement of $18.27.
+The CFTC staff's interim report (November 23, 2020) points to an oversupplied global market, an unprecedented fall in demand from the COVID-19 pandemic, and concern about storage at Cushing, Oklahoma, the delivery point of the physically settled contract, where working storage was near capacity by March 2020.
+A holder of a long May contract at expiry must take delivery of crude at Cushing, so a long without storage had to sell before expiry at whatever price was bid.
+Systems that assumed positive prices failed: the CFTC found that Interactive Brokers did not display negative prices to customers and that customers could not place orders in negative-priced contracts, and in September 2021 ordered it to pay $82.57 million in restitution and a $1.75 million penalty.
 
 ---
 
 ## Primary Sources and Chronology
 
-- **January - February 2020**: COVID-19 virus spreads globally; Chinese manufacturing halts and international commercial aviation contracts sharply.
-- **March 6, 2020**: OPEC+ negotiations in Vienna collapse when Russia refuses to agree to Saudi Arabia's proposed production cuts; Saudi Arabia responds by slashing official selling prices and announcing maximum production capacity increases.
-- **Monday, March 9, 2020 (Black Monday 2020)**: WTI crude prices plunge 24.6% in a single session; US equity markets trigger Level 1 circuit breakers minutes after the opening bell.
-- **March 11 - 18, 2020**: Global financial panic triggers four separate NYSE market-wide circuit breaker halts in eight trading sessions; S&P 500 bottoms on March 23, down 35.4% in 22 trading days.
-- **Mid-April 2020**:
-  - Global oil demand drops by 30 million barrels per day as billions of people are placed under lockdown.
-  - The United States Oil Fund (USO), a $4 billion retail ETF, accumulates up to 25% of the entire outstanding open interest in front-month WTI contracts.
-  - Cushing, Oklahoma (the designated physical delivery hub for NYMEX WTI) reaches maximum operational working storage capacity.
-- **Thursday, April 16, 2020**: CME Group issues an urgent advisory notice (Notice 20-160) alerting market participants that its trading and clearing systems have been updated to support negative prices and negative strike options.
-- **Monday, April 20, 2020 (Penultimate Day of Trading for May 2020 Contract)**:
-  - 09:00 AM EST: May contract trades at $10.01 per barrel.
-  - 01:00 PM EST: The contract breaches $5.00, and commercial storage operators confirm that zero spot storage is available in Cushing at any price.
-  - 02:00 PM EST: May WTI contract trades at $0.00; algorithmic stop-loss and margin liquidation orders trigger simultaneously across retail and institutional brokerages.
-  - 02:08 PM EST: Price drops below zero for the first time in petroleum history, hitting -$1.00.
-  - 02:29 PM EST: Contract trades at its all-time intraday low of -$40.32 per barrel.
-  - 02:30 PM EST: NYMEX settlement window closes; the official daily settlement price is established at -$37.63 per barrel (down $55.90, or -306% on the day).
-- **Tuesday, April 21, 2020 (Expiration Day)**: May 2020 contract expires quietly at +$10.01 per barrel as remaining positions settle; June 2020 contract trades at $11.57.
-- **November 2020**: The US Commodity Futures Trading Commission (CFTC) releases its *Interim Staff Report on Trading in the May 2020 WTI Crude Oil Futures Contract*.
+Sources used on this page: CFTC staff, *Interim Staff Report: Trading in NYMEX WTI Crude Oil Futures Contract Leading up to, on, and around April 20, 2020* (November 23, 2020); CME Group notices of April 3, April 8 (Clearing Advisory 20-152) and April 13, 2020, as cited in that report; International Energy Agency, *Oil Market Report*, April 2020; CFTC Release 8432-21 (September 28, 2021) on Interactive Brokers; Interactive Brokers press release of April 21, 2020; S&P 500 closes of February 19 and March 23, 2020.
+
+- **Early March 2020**: OPEC Plus members fail to agree on production cuts and dissolve their existing agreement, adding to downward pressure on prices (CFTC).
+- **March 2020**: US equities fall sharply; market-wide circuit breakers halt trading on March 9, 12, 16 and 18, and the S&P 500 falls from its record close of 3,386.15 on February 19 to 2,237.40 on March 23, a decline of 33.92% in 23 trading days.
+- **By March 2020**: Working storage available at Cushing is near capacity (CFTC).
+- **April 3, 8 and 13, 2020**: CME flags WTI contracts for potential negative-price trading, announces that its clearing house will switch options valuation to the Bachelier model on one day's notice if negative prices occur (Clearing Advisory 20-152), and opens testing of negative and zero prices (CFTC).
+- **April 13, 2020**: OPEC Plus announces a cut of 9.7 million barrels per day, the largest single production cut in history, to begin on May 1 (CFTC).
+- **Friday, April 17, 2020**: The May contract settles at $18.27 per barrel.
+- **Monday, April 20, 2020**:
+  - The May contract opens the session at $17.73.
+  - At about 2:08 p.m. ET it trades below $0 for the first time, and the fall is most pronounced in the 20 minutes from 2:08 to 2:28 p.m.
+  - At 2:29 p.m. ET it reaches its all-time low of -$40.32.
+  - It settles at -$37.63 at the end of the 2:28 to 2:30 p.m. settlement period.
+- **Tuesday, April 21, 2020**: The May contract expires at a settlement price of $10.01.
+- **September 28, 2021**: The CFTC orders Interactive Brokers to pay $82.57 million in restitution to customers and a $1.75 million civil penalty over its systems failures on April 20, 2020.
 
 ---
 
 ## Market Backdrop and Structural Vulnerabilities
 
 ### 1. Physical Delivery vs Cash Settlement
-Unlike financial futures (such as S&P 500 E-mini or Eurodollar futures) which settle in cash, NYMEX WTI Crude Oil (symbol CL) is a **physical delivery contract**:
-- Each contract represents 1,000 barrels (42,000 gallons) of light sweet crude oil.
-- Delivery must take place Free-on-Board (FOB) at any pipeline or storage facility in Cushing, Oklahoma with pipeline access to Enterprise, Enbridge, or Plains All American terminals.
-- If a market participant holds an open long contract past the close of trading on the third business day prior to the 25th calendar day of the month, they are legally obligated to receive 1,000 physical barrels of crude.
-Financial traders (hedge funds, retail commodity investors, index funds) have no intention of ever taking physical delivery.
-They must roll their positions forward to the next contract month prior to expiration.
+Unlike cash-settled financial futures such as the E-Mini S&P 500, NYMEX WTI crude oil futures (symbol CL) are physically settled:
+- Each contract is for 1,000 barrels of light sweet crude oil.
+- Delivery is at Cushing, Oklahoma.
+- Trading in a contract month ends three business days before the 25th calendar day of the month before the contract month, or four business days before it if the 25th is not a business day (CME contract specifications, as of November 2026), so a long still open at that point must accept delivery.
+  For the May 2020 contract, April 25, 2020 was a Saturday, so trading ended four business days earlier, on Tuesday, April 21.
+Financial holders who do not want oil must close or roll their positions before expiry.
 
-### 2. Physical Storage Saturation at Cushing
-Cushing, Oklahoma is the pipeline crossroads of North America, possessing approximately 76 million barrels of working storage capacity.
-By mid-April 2020, Cushing tanks held over 60 million barrels of physical oil, with the remaining 16 million barrels 100% leased under long-term commercial contracts to oil refiners and physical traders.
-If a financial trader without a pre-existing leased storage contract was assigned physical oil on expiration, pipeline operators would physically refuse the barrels, and the buyer would face catastrophic demurrage and environmental regulatory penalties exceeding hundreds of thousands of dollars per day.
+### 2. Storage Saturation at Cushing
+According to EIA figures cited by the CFTC, Cushing has 75.8 million barrels of storage capacity, about 44% of the crude oil working storage capacity in the Midwest (PADD 2) and about 11% of all US commercial crude storage.
+By March 2020 the available working storage was near capacity, and some reports indicated that most, if not all, of the empty space had already been committed (CFTC).
+A long holder with no access to storage at Cushing cannot take delivery, which makes the last days of trading a forced sale for anyone without storage.
 
-### 3. The USO Retail ETF Inflow Distortion
-Retail investors seeking to "buy the dip" in cheap oil poured billions of dollars into the United States Oil Fund (USO).
-USO's prospectus mandated investing exclusively in the front-month NYMEX contract and rolling to the next month two weeks prior to expiration.
-By mid-April, USO held over 150,000 contracts of front-month WTI, representing a dangerous concentration of financial capital in a physical market facing immediate physical storage gridlock.
+### 3. Demand Collapse
+The IEA's April 2020 *Oil Market Report* estimated that April demand would be 29 million barrels per day lower than a year earlier.
+The OPEC Plus cut announced on April 13 was not due to start until May 1, so in the near term production continued into a market whose demand had fallen sharply (CFTC).
 
 ---
 
@@ -73,77 +65,81 @@ By mid-April, USO held over 150,000 contracts of front-month WTI, representing a
 +-----------------------------------------------------------------------+
 |                 NEGATIVE OIL LIQUIDATION FEEDBACK LOOP                |
 +-----------------------------------------------------------------------+
-| 1. COVID Lockdowns Collapse Demand (-30M bpd)                         |
-|    Refineries slash crude runs; storage tanks fill globally           |
+| 1. Demand Collapses                                                   |
+|    Lockdowns cut fuel use; inventories build                          |
 |                                                                       |
-| 2. Cushing Commercial Storage 100% Exhausted                          |
-|    Storage owners refuse to rent capacity at any cost                 |
+| 2. Cushing Storage Near Capacity                                      |
+|    Little uncommitted storage at the delivery point                   |
 |                                                                       |
-| 3. Mandatory Physical Delivery Approaching (April 21 Expiry)          |
-|    Financial longs must liquidate May contract before 02:30 PM        |
+| 3. Expiry Approaches (Last Trade April 21)                            |
+|    Longs without storage must sell before settlement                  |
 |                                                                       |
-| 4. Bids Evaporate from Commercial Refiners                            |
-|    Refiners cannot take more oil; bid side of the order book vanishes |
+| 4. Bids Thin Out                                                      |
+|    Buyers with storage are few                                        |
 |                                                                       |
-| 5. Financial Sellers Face Binary Choice:                              |
-|    Accept physical delivery (ruin) OR sell at ANY price               |
+| 5. Sellers Face a Binary Choice                                       |
+|    Take delivery they cannot store, or sell at any price              |
 |                                                                       |
-| 6. Price Drops Below Zero (-$37.63/bbl)                               |
-|    Financial longs pay physical operators $37.63/bbl to take barrels  |
+| 6. Price Below Zero (settles at -$37.63/bbl)                          |
+|    Sellers pay buyers to take the contract                            |
 +-----------------------------------------------------------------------+
 ```
 
-As the price dropped through $0.00, broker risk engines experienced software errors.
-Many algorithmic models were coded with log-normal asset price assumptions:
+Valuation models built on lognormal prices cannot handle a negative underlying:
 $$S(t) = S_0 e^{(\mu - \frac{1}{2}\sigma^2)t + \sigma W_t} > 0$$
-Because the natural logarithm $\ln(S)$ is undefined for $S \le 0$, valuation engines crashed, automated margin liquidation bots failed to execute, and trading screens displayed blank lines.
+The CFTC report notes that the Black-Merton-Scholes model relies on logarithms and cannot price an option on a negative underlying, which is why CME Clearing planned to switch to the Bachelier model, which does not.
+Software built on the same assumption failed in the same way: the CFTC found that Interactive Brokers' platform did not display negative prices and did not accept orders at negative prices on April 20.
 
 ---
 
 ## Quantitative Autopsy
 
-Under the classic Theory of Storage (Kaldor 1939, Working 1949), the futures price $F(t, T)$ is linked to spot price $S(t)$ by:
+The theory of storage (Kaldor 1939; Working 1949) links the futures price $F(t, T)$ to the spot price $S(t)$ through the cost of carry:
 $$F(t, T) = S(t) e^{(r + u - y)(T - t)}$$
-where $r$ is the interest rate, $u$ is the marginal physical storage and insurance cost per unit time, and $y$ is the convenience yield.
-When storage tanks are plentiful, storage cost $u$ is a modest, bounded percentage (e.g. $0.30 per barrel per month, or ~5% annualized).
-However, when available physical storage approaches 100% capacity:
-$$u \to \infty$$
-The convenience yield $y$ (the economic benefit of holding physical inventory) collapses to zero:
-$$y = 0$$
-If storage capacity is exhausted and a producer has no operational ability to shut down a flowing oil well without permanently damaging the geological reservoir formation, the marginal physical disposal cost is positive and extreme:
-$$S_{\text{physical}} = -\text{Disposal Cost} < 0$$
-The negative price of -$37.63 represented the economic cost of leasing temporary physical storage on floating supertankers (VLCCs) or railcars, plus the severe penalty charged by physical traders to absorb the delivery obligation.
+where $r$ is the interest rate, $u$ the storage and insurance cost per unit time, and $y$ the convenience yield.
+When storage is plentiful, $u$ is small and stable; as storage approaches capacity, the marginal cost of storing one more barrel rises steeply, and for a holder with no storage at all the effective cost of holding to delivery is unbounded.
+A seller who must dispose of a barrel it cannot store will pay up to that disposal cost to be rid of it, so the price of the expiring contract can be negative:
+$$S_{\text{expiring}} = -\text{(cost of disposal)} < 0$$
+The next contract month, with time to arrange storage, stayed positive: only the May contract showed negative prices (CFTC).
+
+The settlement arithmetic from the CFTC's figures: from the April 17 settlement of $18.27 to the April 20 settlement of -$37.63 is a fall of $55.90, or 305.97% of the starting price; from the April 20 opening price of $17.73 to the low of -$40.32 is a fall of $58.05, as the CFTC reports.
 
 ---
 
 ## Regulatory and Structural Legacy
 
-The negative oil event forced lasting structural modifications in commodity derivatives:
-1. **Model Upgrades to Bachelier Arithmetic Pricing**: Futures exchanges and risk clearinghouses migrated options and futures models from Black-Scholes log-normal pricing to the Bachelier (1900) normal model, which natively supports zero and negative underlying asset prices.
-2. **Retail Commodity ETF Structural Revisions**: USO and other commodity funds restructured their prospectuses, abandoning 100% front-month concentration in favor of spreading assets across 12 forward contract months.
-3. **CME Dynamic Price Limits and Circuit Breakers**: CME implemented stricter intraday circuit breaker collars on expiring physical commodity contracts to prevent discontinuous price collapses.
-4. **Broker Software Remediation**: Interactive Brokers paid over $104 million to compensate customers whose accounts suffered catastrophic losses due to platform software bugs that prevented customers from closing positions when prices went negative.
+1. **Negative-price readiness**: CME prepared its trading and clearing systems for negative prices in early April 2020 and planned a switch to Bachelier option pricing for affected energy options (CFTC, citing CME notices).
+2. **Broker systems**: The CFTC's 2021 order against Interactive Brokers found failures to deploy system changes before negative prices occurred and a margin-calculation failure for WTI contracts.
+3. **Interactive Brokers' losses**: On April 21, 2020, Interactive Brokers reported a provisional loss of approximately $88 million from meeting variation margin on behalf of customers whose accounts went into deficit.
+4. **Commodity funds near expiry**: Funds that hold front-month futures must roll before expiry, and the May 2020 contract showed that the roll date itself carries risk when storage is scarce.
 
 ---
 
 ## Lessons for Traders and Risk Managers
 
-- **Physical Contracts Carry Physical Obligations**: A trader must never trade a physically deliverable futures contract into its expiration cycle without the operational infrastructure and commercial licenses required to receive physical delivery.
-- **Asset Prices Can Go Below Zero**: Whenever an asset has physical holding, environmental disposal, or storage costs that exceed its economic value, prices can trade into deep negative territory.
-- **Software Architecture Is a Source of Risk**: Mathematical assumptions hardcoded into software (such as assuming prices are strictly positive) become fatal points of failure during extreme regime shifts.
+- **Physical Contracts Carry Physical Obligations**: Do not hold a physically delivered future into its delivery window without the means to take delivery.
+- **Prices Can Go Below Zero**: When holding an asset carries storage or disposal costs that exceed its value, the price can be negative.
+- **Software Assumptions Are Risks**: Code that assumes positive prices is a single point of failure in an extreme market.
 
 ---
 
 ## Case Study Drills and Review Questions
 
 > [!question]- mkt-his-029 | What was the official daily settlement price of the May 2020 WTI crude oil futures contract on April 20, 2020?
-> -$37.63 per barrel (an unprecedented single-day decline of $55.90, or -306%).
+> -$37.63 per barrel, down $55.90 from the April 17 settlement of $18.27, a fall of 305.97%; the intraday low was -$40.32 (CFTC interim staff report).
 
 > [!question]- mkt-his-030 | Why could financial traders not simply hold their expiring May 2020 WTI crude oil contracts to maturity?
-> Because NYMEX WTI is a physically deliverable contract requiring FOB delivery at Cushing, Oklahoma, and all commercial storage capacity was 100% booked.
+> NYMEX WTI is physically settled at Cushing, Oklahoma, and working storage there was near capacity and largely committed, so a long without storage could not take delivery and had to sell before expiry.
 
 > [!question]- mkt-his-031 | What pricing model did derivatives exchanges adopt following the negative oil event to handle zero and negative prices?
-> The Bachelier normal model, which allows asset prices and strike prices to assume negative values.
+> The Bachelier (normal) model, which does not use logarithms and allows negative underlying prices; CME Clearing announced on April 8, 2020 (Clearing Advisory 20-152) that it would switch affected energy options to it if negative prices occurred.
 
-> [!question]- mkt-his-032 | Why did Interactive Brokers absorb a $104 million customer loss following the April 20, 2020 oil crash?
-> Its trading software was hardcoded to assume asset prices could not go below zero, preventing customers from viewing negative quotes or closing positions.
+> [!question]- mkt-his-032 | Why did Interactive Brokers absorb customer losses following the April 20, 2020 oil crash?
+> Its systems did not display negative prices or accept orders at negative prices, and customers' accounts went into deficit; it reported a provisional loss of about $88 million on April 21, 2020, and the CFTC later ordered $82.57 million in restitution and a $1.75 million penalty.
+
+---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_hist_08_negative_wti.py`](../code/mkt_hist_08_negative_wti.py) prints and asserts every number on this page: the WTI changes are recomputed from the CFTC's settlement, opening and low prices in exact decimal arithmetic and checked against the CFTC's stated $58.05 fall, the S&P 500 drawdown is recomputed from the cited closes, and the trading-day count is computed with the NumPy business-day calendar and checked by an explicit loop over calendar dates.
+- Related notes: [Case File 07: 2015 SNB Unpeg](07-2015-Swiss-Franc-Unpeg-and-Broker-Insolvency.md).

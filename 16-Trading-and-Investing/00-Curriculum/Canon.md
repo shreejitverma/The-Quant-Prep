@@ -10,8 +10,9 @@ tags: [curriculum, canon, bibliography, books, papers, primary-sources]
 # Markets Mastery OS - Foundational Canon and Bibliography
 
 The Foundational Canon defines the primary literature, academic studies, and practitioner treatises that underpin Markets Mastery OS.
-Every entry represents a verified, seminal work in market microstructure, derivatives pricing, systematic strategy design, forensic valuation, monetary plumbing, or behavioral decision science.
-No second-hand summaries or unverified pop-finance titles are included.
+Entries cover market microstructure, derivatives pricing, systematic strategy design, forensic valuation, monetary plumbing, and behavioral decision science.
+Authors, titles, publishers, years and journal citations were checked against publisher pages, library catalogue records or the papers themselves (as of November 2026).
+The one-line descriptions are this curriculum's summaries of what each work covers, not quotations.
 The bibliography is organized into three progressive tiers: Gateway Canon (foundations and core intuition), Core Practitioner Canon (institutional mechanics and quantitative methodologies), and Capstone Research Canon (empirical papers, stochastic modeling, and advanced architecture).
 
 ---
@@ -33,7 +34,7 @@ The Gateway Canon establishes foundational domain language, intuitive mental mod
   - The standard floor-trader manual for Greeks dynamics, implied versus realized volatility, dynamic delta hedging, and multi-leg risk management.
 - **Hull, John C. (2017)**. *Options, Futures, and Other Derivatives* (10th Edition). Pearson.
   - Comprehensive reference covering continuous-time derivatives math, Black-Scholes-Merton derivation, exotic options, credit derivatives, and swap pricing.
-- **McMillan, Lawrence G. (2002)**. *Options as a Strategic Investment* (4th Edition). New York Institute of Finance.
+- **McMillan, Lawrence G. (2002)**. *Options as a Strategic Investment* (4th Edition). New York Institute of Finance / Prentice Hall Press.
   - Exhaustive reference guide detailing retail and institutional option structures, spread payoffs, and volatility skew strategies.
 
 ### 3. Systematic Strategy Design and Factor Investing
@@ -53,11 +54,11 @@ The Gateway Canon establishes foundational domain language, intuitive mental mod
   - Comprehensive corporate valuation framework: Free Cash Flow to Firm (FCFF), Free Cash Flow to Equity (FCFE), cost of capital (WACC), and terminal value modeling.
 - **Fisher, Philip A. (1958 / 2003)**. *Common Stocks and Uncommon Profits and Other Writings*. John Wiley & Sons.
   - Pioneer treatise on qualitative fundamental research, channel checks, management integrity assessment, and high-growth compounder analysis.
-- **Greenblatt, Joel (1999)**. *You Can Be a Stock Market Genius: Uncover the Secret Hiding Places of Stock Market Profits*. Simon & Schuster.
+- **Greenblatt, Joel (1997)**. *You Can Be a Stock Market Genius (Even If You're Not Too Smart): Uncover the Secret Hiding Places of Stock Market Profits*. Simon & Schuster.
   - Practical masterclass in corporate spin-offs, restructurings, recapitalizations, stub equities, and special situations investing.
 
 ### 5. Global Macro, Sovereign Rates, and Monetary Architecture
-- **Dalio, Ray (2018)**. *Big Debt Crises: Principles for Navigating Big Debt Crises*. Bridgewater Associates.
+- **Dalio, Ray (2018)**. *A Template for Understanding Big Debt Crises*. Bridgewater Associates (republished in 2022 by Avid Reader Press as *Principles for Navigating Big Debt Crises*).
   - Historical macroeconomic analysis of deflationary and inflationary deleveraging cycles, debt-to-GDP dynamics, and central bank monetization limits.
 - **Stigum, Marcia, and Anthony Crescenzi (2007)**. *Stigum's Money Market* (4th Edition). McGraw-Hill.
   - The standard reference manual for money market instruments, Treasury bills, commercial paper, federal funds, and repo transactions.
@@ -93,17 +94,17 @@ The Core Practitioner Canon equips quantitative researchers and institutional tr
 ### 2. Options, Volatility Surfaces, and Derivatives
 - **Sinclair, Euan (2008)**. *Volatility Trading*. John Wiley & Sons.
   - Quantitative options trading from a professional market-maker perspective: variance risk premia, volatility forecasting, delta-hedging transaction costs, and edge extraction.
-- **Sinclair, Euan (2013)**. *Positional Option Trading*. John Wiley & Sons.
-  - Practical trade structuring framework focusing on directional options trades, earnings volatility crush, calendar rolls, and margin capital efficiency.
+- **Sinclair, Euan (2020)**. *Positional Option Trading: An Advanced Guide*. John Wiley & Sons.
+  - Practitioner guide to finding an edge in option positions held for days to weeks, and to sizing and managing those positions.
 - **Gatheral, Jim (2006)**. *The Volatility Surface: A Practitioner's Guide*. John Wiley & Sons.
   - Advanced geometric and mathematical modeling of the implied volatility smile, local volatility (Dupire), stochastic volatility (Heston), and the asymptotic behavior of skew.
 - **Taleb, Nassim Nicholas (1997)**. *Dynamic Hedging: Managing Vanilla and Exotic Options*. John Wiley & Sons.
   - Institutional trader handbook detailing discrete-time hedging hazards, smile dynamics, higher-order Greeks (vanna, volga), and barrier option management.
 - **Derman, Emanuel (2004)**. *My Life as a Quant: Reflections on Physics and Finance*. John Wiley & Sons.
-  - Memoir and epistemological analysis of financial modeling limitations, implied volatility smile discovery, and local volatility surface calibration.
+  - Memoir of a physicist turned quant, covering the limits of financial models and his work on interest-rate models and the volatility smile.
 
 ### 3. Systematic Strategy Design and Factor Investing
-- **Grinold, Richard C., and Ronald N. Kahn (1999)**. *Active Portfolio Management: A Quantitative Approach for Providing Superior Returns and Controlling Risk* (2nd Edition). McGraw-Hill.
+- **Grinold, Richard C., and Ronald N. Kahn (1999)**. *Active Portfolio Management: A Quantitative Approach for Producing Superior Returns and Controlling Risk* (2nd Edition). McGraw-Hill.
   - The fundamental law of active management: Information Ratio, Information Coefficient, breadth, residual risk, and risk-adjusted alpha optimization.
 - **Ilmanen, Antti (2011)**. *Expected Returns: An Investor's Guide to Harvesting Market Rewards*. John Wiley & Sons.
   - Exhaustive cross-asset guide analyzing the empirical historical performance of equity risk premia, duration, credit spreads, carry, momentum, and volatility.
@@ -117,11 +118,11 @@ The Core Practitioner Canon equips quantitative researchers and institutional tr
   - The definitive institutional corporate finance manual: Return on Invested Capital (ROIC), economic profit, reinvestment rates, and the mathematical decomposition of value creation.
 - **Schilit, Howard M., Jeremy Perler, and Yoni Engelhart (2018)**. *Financial Shenanigans: How to Detect Accounting Gimmicks and Fraud in Financial Reports* (4th Edition). McGraw-Hill.
   - Forensic accounting techniques for identifying earnings manipulation, aggressive revenue recognition, shifting expenses to later periods, and cash flow obfuscation.
-- **Helmer, W. Hamilton (2016)**. *7 Powers: The Foundations of Business Strategy*. Hamilton Books.
+- **Helmer, W. Hamilton (2016)**. *7 Powers: The Foundations of Business Strategy*. Deep Strategy.
   - Structural economic moat framework: Scale Economies, Network Economies, Counter-Positioning, Switching Costs, Branding, Cornered Resource, and Process Power.
-- **Penman, Stephen H. (2012)**. *Financial Statement Analysis and Security Valuation* (5th Edition). McGraw-Hill.
+- **Penman, Stephen H. (2013)**. *Financial Statement Analysis and Security Valuation* (5th Edition). McGraw-Hill.
   - Rigorous accounting-based valuation linking balance sheet clean surplus accounting, residual earnings models, and growth-pricing skepticism.
-- **Mauboussin, Michael J., and Dan Callahan (2020)**. *Expectations Investing: Reading Stock Prices for Better Returns* (2nd Edition). Columbia Business Press.
+- **Mauboussin, Michael J., and Alfred Rappaport (2021)**. *Expectations Investing: Reading Stock Prices for Better Returns* (Revised and Updated Edition; first edition 2001). Columbia Business School Publishing.
   - Reverse-engineering framework that unpacks stock prices to discover implied market expectations of sales growth, operating margin, and investment efficiency.
 - **Klarman, Seth A. (1991)**. *Margin of Safety: Risk-Averse Value Investing Strategies for the Thoughtful Investor*. HarperCollins.
   - Institutional guide to distressed debt, corporate spin-offs, liquidations, and deep value discipline under extreme market pessimism.
@@ -130,7 +131,7 @@ The Core Practitioner Canon equips quantitative researchers and institutional tr
 - **Tuckman, Bruce, and Angel Serrat (2011)**. *Fixed Income Securities: Tools for Today's Markets* (3rd Edition). John Wiley & Sons.
   - Institutional fixed income pricing: yield curve geometry, key rate duration, convexity hedging, repo mechanics, and interest rate swaps.
 - **Pozsar, Zoltán (2014)**. *Shadow Banking: The Money View*. Office of Financial Research (OFR) Working Paper.
-  - Deconstruction of the global wholesale funding market: Eurodollars, FX swap lines, collateral velocity, and central bank liquidity plumbing.
+  - Maps the money-like claims of the shadow banking system (repo, money market fund shares and other short-term instruments) and the cash-pool, dealer and central bank balance sheets behind them.
 - **Gorton, Gary B. (2010)**. *Slapped by the Invisible Hand: The Panic of 2007*. Oxford University Press.
   - Structural analysis of the 2008 financial crisis as a classic banking panic within the repo and securitization wholesale funding infrastructure.
 - **Reinhart, Carmen M., and Kenneth S. Rogoff (2009)**. *This Time Is Different: Eight Centuries of Financial Folly*. Princeton University Press.
@@ -140,7 +141,7 @@ The Core Practitioner Canon equips quantitative researchers and institutional tr
 - **Steenbarger, Brett N. (2006)**. *Enhancing Trader Performance: Proven Strategies from the Cutting Edge of Trading Psychology*. John Wiley & Sons.
   - Performance psychology for professional traders: structured deliberate practice, pattern recognition, emotion regulation, and trade review routines.
 - **Thorp, Edward O. (2017)**. *A Man for All Markets: From Las Vegas to Wall Street, How I Beat the Dealer and the Market*. Random House.
-  - Quantitative autobiography detailing the invention of card counting, early convertible bond arbitrage, and the mathematical implementation of the Kelly criterion.
+  - Autobiography covering his blackjack card-counting research, warrant and convertible hedging, and his use of the Kelly criterion for sizing.
 - **Taleb, Nassim Nicholas (2001)**. *Fooled by Randomness: The Hidden Role of Chance in Life and in the Markets*. Texere.
   - Epistemological treatise on survivorship bias, alternative histories, non-linear black swan events, and the illusion of pattern recognition in financial time series.
 
@@ -153,10 +154,10 @@ The Capstone Research Canon contains the primary peer-reviewed academic papers a
 ### 1. Market Microstructure, Order Flow, and Execution
 - **Almgren, Robert, and Neil Chriss (2000)**. *Optimal Execution of Portfolio Transactions*. Journal of Risk, 3(2), 5-39.
   - The foundational mathematical paper deriving the mean-variance optimal liquidation trajectory, balancing temporary and permanent market impact against volatility inventory risk.
-- **Kyle, Albert S. (1985)**. *Continuous Auctions and Informed Trader*. Econometrica, 53(6), 1315-1335.
+- **Kyle, Albert S. (1985)**. *Continuous Auctions and Insider Trading*. Econometrica, 53(6), 1315-1335.
   - Seminal market microstructure paper introducing Kyle lambda, order flow price impact, and the strategic trading rate of an informed insider against noise traders.
 - **Glosten, Lawrence R., and Paul R. Milgrom (1985)**. *Bid, Ask and Transaction Prices in a Specialist Market with Heterogeneously Informed Traders*. Journal of Financial Economics, 14(1), 71-100.
-  - Bayesian sequential trade model proving that the bid-ask spread is an informational phenomenon arising from adverse selection even in risk-neutral markets.
+  - Bayesian sequential trade model showing that a competitive, risk-neutral specialist sets a positive bid-ask spread purely because of adverse selection by informed traders.
 - **Bouchaud, Jean-Philippe, Julius Bonart, Jonathan Donier, and Martin Gould (2018)**. *Trades, Quotes and Prices: Financial Markets Under the Microscope*. Cambridge University Press.
   - Comprehensive statistical physics treatment of order book dynamics, square-root market impact laws, order book queues, and market liquidity phase transitions.
 - **Cont, Rama, Sasha Stoikov, and Rishi Talreja (2010)**. *A Stochastic Model for Order Book Dynamics*. Operations Research, 58(3), 549-563.
@@ -166,7 +167,7 @@ The Capstone Research Canon contains the primary peer-reviewed academic papers a
 - **Black, Fischer, and Myron Scholes (1973)**. *The Pricing of Options and Corporate Liabilities*. Journal of Political Economy, 81(3), 637-654.
   - Landmark continuous-time arbitrage-free option pricing paper deriving the Black-Scholes partial differential equation and analytical call/put formulas.
 - **Merton, Robert C. (1973)**. *Theory of Rational Option Pricing*. Bell Journal of Economics and Management Science, 4(1), 141-183.
-  - Rigorous mathematical extension of continuous-time option pricing incorporating dividend payments, stochastic interest rates, and non-lognormal jump processes.
+  - Rigorous extension of continuous-time option pricing to dividends, stochastic interest rates, American options and down-and-out barrier options; jump processes came later, in Merton (1976).
 - **Dupire, Bruno (1994)**. *Pricing with a Smile*. Risk, 7(1), 18-20.
   - Groundbreaking formulation of the local volatility model, deriving unique deterministic diffusion coefficients directly from European option market prices.
 - **Heston, Steven L. (1993)**. *A Closed-Form Solution for Options with Stochastic Volatility with Applications to Bond and Currency Options*. Review of Financial Studies, 6(2), 327-343.
@@ -178,9 +179,9 @@ The Capstone Research Canon contains the primary peer-reviewed academic papers a
 - **Lopez de Prado, Marcos (2018)**. *Advances in Financial Machine Learning*. John Wiley & Sons.
   - Groundbreaking techniques for quantitative financial engineering: Combinatorial Purged Cross-Validation (CPCV), fractional differentiation, triple-barrier labeling, and feature importance.
 - **Lopez de Prado, Marcos (2020)**. *Machine Learning for Asset Managers*. Cambridge University Press.
-  - Mathematical defense against backtest overfitting: Deflated Sharpe Ratio (DSR), Probability of Backtest Overfitting (PBO), and Hierarchical Risk Parity (HRP).
+  - Cambridge Element covering denoising and detoning of covariance matrices, distance metrics and optimal clustering, financial labels, feature importance, portfolio construction, and testing set overfitting (the False Strategy theorem).
 - **Fama, Eugene F., and Kenneth R. French (1993)**. *Common Risk Factors in the Returns on Stocks and Bonds*. Journal of Financial Economics, 33(1), 3-56.
-  - Foundational empirical paper establishing the three-factor model (Market, SMB size, HML value) that replaced the single-factor CAPM.
+  - Foundational empirical paper introducing the three stock-market factors (Market, SMB size, HML value) alongside two bond-market factors (term and default).
 - **Jegadeesh, Narasimhan, and Sheridan Titman (1993)**. *Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency*. Journal of Finance, 48(1), 65-91.
   - Empirical proof of intermediate-horizon cross-sectional equity momentum, demonstrating persistent abnormal returns over 3 to 12 month holding periods.
 - **Asness, Clifford S., Tobias J. Moskowitz, and Lasse Heje Pedersen (2013)**. *Value and Momentum Everywhere*. Journal of Finance, 68(3), 929-985.
@@ -206,7 +207,7 @@ The Capstone Research Canon contains the primary peer-reviewed academic papers a
 - **Kahneman, Daniel, and Amos Tversky (1979)**. *Prospect Theory: An Analysis of Decision under Risk*. Econometrica, 47(2), 263-291.
   - The foundational paper of behavioral economics introducing S-shaped value functions, loss aversion, and non-linear decision weights for probabilities.
 - **Brier, Glenn W. (1950)**. *Verification of Forecasts Expressed in Terms of Probability*. Monthly Weather Review, 78(1), 1-3.
-  - The mathematical definition of the Brier score, providing a strictly proper scoring rule to evaluate probabilistic accuracy, resolution, and reliability.
+  - Defines the Brier score, the mean squared error of probability forecasts; the reliability and resolution decomposition came later (Murphy 1973).
 
 ---
 
