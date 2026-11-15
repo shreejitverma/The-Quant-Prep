@@ -342,8 +342,7 @@ class TestInterviewGamesFairness(unittest.TestCase):
     def test_track_0_gate_ignores_short_runs_and_lucky_single_runs(self):
         for game in ("dice_sum", "card_sum"):
             with self.subTest(game=game):
-                engine = get_engine("games")
-                short = [engine.run(game_type=game, quoting_style="naive_static", num_rounds=5, seed=s).metrics for s in self.SEEDS]
+                short = [r.metrics for r in self.runs[(game, "naive_static", 5)]]
                 lucky_short = [m for m in short if m["performance_score"] >= 60.0]
                 # Five-round runs are noisy enough that naive play often scores >= 60 by luck; they must not count.
                 self.assertGreater(len(lucky_short), 0.1 * len(self.SEEDS))
