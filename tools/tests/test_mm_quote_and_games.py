@@ -197,19 +197,29 @@ def _mean_and_se(values: list[float]) -> tuple[float, float]:
 
 
 class TestInterviewGamesFairness(unittest.TestCase):
-    """Seeds 0-299 are fixed in advance; every claim is a mean or share with three computed standard errors."""
+    """Seeds 0-299 (0-899 for the gate's seed triples) are fixed in advance.
+
+    Every claim is a mean or share with three computed standard errors.
+    """
 
     SEEDS = range(300)
+    GATE_SEEDS = range(900)
 
     @classmethod
     def setUpClass(cls):
         engine = get_engine("games")
         cls.runs = {
-            (game, style, rounds): [engine.run(game_type=game, quoting_style=style, num_rounds=rounds, seed=s) for s in cls.SEEDS]
+            (game, style, 20): [engine.run(game_type=game, quoting_style=style, num_rounds=20, seed=s) for s in cls.SEEDS]
             for game in ("dice_sum", "card_sum")
             for style in ("optimal", "wide_conservative", "naive_static")
-            for rounds in (20, 100)
         }
+        cls.runs.update(
+            {
+                (game, style, 100): [engine.run(game_type=game, quoting_style=style, num_rounds=100, seed=s) for s in cls.GATE_SEEDS]
+                for game in ("dice_sum", "card_sum")
+                for style in ("optimal", "wide_conservative", "naive_static")
+            }
+        )
         for game in ("dice_sum", "card_sum"):
             cls.runs[(game, "naive_static", 5)] = [
                 engine.run(game_type=game, quoting_style="naive_static", num_rounds=5, seed=s) for s in cls.SEEDS
@@ -304,41 +314,53 @@ class TestInterviewGamesFairness(unittest.TestCase):
                 self.assertGreaterEqual(exact, max(grid) - 1e-3)
                 self.assertGreater(exact, 0.0)
 
+    @staticmethod
+    def games_requirement(runs):
+        history = [{"engine": "games", "metrics": dict(metrics)} for metrics in runs]
+        gate = evaluate_gate("track_0_pqt", "foundations", None, {"lab_history": history})
+        return next(r for r in gate.requirements if r.name == "Interview Trading Games Practice")
+
     def test_track_0_gate_is_reachable_by_optimal_play_and_not_by_naive_play(self):
-        # markets.py passes the games requirement at performance_score >= 60 in a run of >= 100 rounds.
+        # The gate passes on a mean score >= 60 over the last three runs of >= 100 rounds. Each style plays
+        # 300 disjoint seed triples (3i, 3i + 1, 3i + 2) from seeds 0-899, each triple judged by the gate itself.
+        # With no passing triple the binomial standard error is zero, so it is floored at that of one pass in 300.
         for game in ("dice_sum", "card_sum"):
             for style, reachable in (("optimal", True), ("naive_static", False), ("wide_conservative", False)):
                 with self.subTest(game=game, style=style):
-                    scores = [r.metrics["performance_score"] for r in self.runs[(game, style, 100)]]
-                    self.assertTrue(all(0.0 <= s <= 100.0 for s in scores))
-                    share = sum(s >= 60.0 for s in scores) / len(scores)
-                    se = math.sqrt(max(share * (1 - share), 1.0 / len(scores)) / len(scores))
+                    runs = [r.metrics for r in self.runs[(game, style, 100)]]
+                    self.assertTrue(all(0.0 <= m["performance_score"] <= 100.0 for m in runs))
+                    triples = [runs[k : k + 3] for k in range(0, len(runs), 3)]
+                    self.assertEqual(len(triples), 300)
+                    share = sum(self.games_requirement(t).passed for t in triples) / len(triples)
+                    se = math.sqrt(max(share * (1 - share), 1.0 / len(triples)) / len(triples))
                     if reachable:
-                        self.assertGreaterEqual(share, 0.85)
-                        self.assertGreater(share - 3 * se, 0.8)
+                        self.assertGreaterEqual(share - 3 * se, 0.85)
                     else:
-                        self.assertLessEqual(share, 0.02)
-                        self.assertLess(share + 3 * se, 0.05)
+                        self.assertLessEqual(share, 0.005)
+                        self.assertLess(share + 3 * se, 0.02)
 
-    def test_track_0_gate_ignores_short_games_runs(self):
-        # Five-round runs are noisy enough that naive play often scores >= 60 by luck; they must not count.
-        def games_requirement(runs):
-            history = [{"engine": "games", "metrics": dict(metrics)} for metrics in runs]
-            gate = evaluate_gate("track_0_pqt", "foundations", None, {"lab_history": history})
-            return next(r for r in gate.requirements if r.name == "Interview Trading Games Practice")
-
+    def test_track_0_gate_ignores_short_runs_and_lucky_single_runs(self):
         for game in ("dice_sum", "card_sum"):
             with self.subTest(game=game):
-                lucky = [r.metrics for r in self.runs[(game, "naive_static", 5)] if r.metrics["performance_score"] >= 60.0]
-                self.assertGreater(len(lucky), 0.1 * len(self.SEEDS))
-                self.assertFalse(games_requirement(lucky).passed)
-                unrecorded = {k: v for k, v in lucky[0].items() if k != "rounds_completed"}
-                self.assertFalse(games_requirement([unrecorded]).passed)
+                engine = get_engine("games")
+                short = [engine.run(game_type=game, quoting_style="naive_static", num_rounds=5, seed=s).metrics for s in self.SEEDS]
+                lucky_short = [m for m in short if m["performance_score"] >= 60.0]
+                # Five-round runs are noisy enough that naive play often scores >= 60 by luck; they must not count.
+                self.assertGreater(len(lucky_short), 0.1 * len(self.SEEDS))
+                self.assertFalse(self.games_requirement(lucky_short).passed)
+                unrecorded = [{k: v for k, v in m.items() if k != "rounds_completed"} for m in lucky_short]
+                self.assertFalse(self.games_requirement(unrecorded).passed)
 
-                full = next(r.metrics for r in self.runs[(game, "optimal", 100)] if r.metrics["performance_score"] >= 60.0)
-                self.assertTrue(games_requirement([*lucky, full]).passed)
-                naive_full = [r.metrics for r in self.runs[(game, "naive_static", 100)] if r.metrics["performance_score"] < 60.0]
-                self.assertFalse(games_requirement([*lucky, *naive_full]).passed)
+                optimal = [r.metrics for r in self.runs[(game, "optimal", 100)] if r.metrics["performance_score"] >= 60.0]
+                self.assertFalse(self.games_requirement(optimal[:2]).passed)
+                self.assertTrue(self.games_requirement([*lucky_short, *optimal[:3]]).passed)
+
+                naive = [r.metrics for r in self.runs[(game, "naive_static", 100)]]
+                self.assertFalse(self.games_requirement([*optimal[:3], *naive[:3]]).passed)
+                # A single lucky full-length naive run, which the best of all runs would have accepted, must not pass.
+                lucky = next(m for m in naive if m["performance_score"] >= 60.0)
+                ordinary = [m for m in naive if m["performance_score"] < 60.0]
+                self.assertFalse(self.games_requirement([*ordinary[:2], lucky]).passed)
 
 
 if __name__ == "__main__":

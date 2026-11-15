@@ -31,7 +31,7 @@ class TestMarketsGates(TempMarketsVault):
         fake_vault_cards = self.track_vault(("07-Trading-Styles/Quant-Prop-Trading", "mkt-pqt-", 4))
         fake_store = {
             "cards": {f"mkt-pqt-{i:03d}": {"reps": 1} for i in range(1, 65)},
-            "lab_history": [{"engine": "games", "metrics": {"performance_score": 75.0, "rounds_completed": 100}}],
+            "lab_history": [{"engine": "games", "metrics": {"performance_score": 75.0, "rounds_completed": 100}}] * 3,
         }
         gate_passed = evaluate_gate("track_0_pqt", "foundations", fake_vault_cards, fake_store)
         self.assertTrue(gate_passed.passed)

@@ -167,6 +167,7 @@ TRACK_METADATA = {
 }
 
 GAMES_GATE_MIN_ROUNDS = 100
+GAMES_GATE_RUNS = 3
 
 LAB_ENGINES = {
     "games": "Mental Math & Market Making Games",
@@ -322,7 +323,8 @@ def evaluate_gate(
                 for s in lab_history
                 if s.get("engine") == "games" and s.get("metrics", {}).get("rounds_completed", 0) >= GAMES_GATE_MIN_ROUNDS
             ]
-            best_score = max((s["metrics"].get("performance_score", 0.0) for s in game_sessions), default=0.0)
+            recent_scores = [s["metrics"].get("performance_score", 0.0) for s in game_sessions[-GAMES_GATE_RUNS:]]
+            mean_score = sum(recent_scores) / len(recent_scores) if recent_scores else 0.0
 
             reqs = [
                 GateRequirement(
@@ -333,9 +335,9 @@ def evaluate_gate(
                 ),
                 GateRequirement(
                     name="Interview Trading Games Practice",
-                    target=f"Performance score >= 60.0 in a games run of >= {GAMES_GATE_MIN_ROUNDS} rounds",
-                    actual=f"{best_score:.1f} best score over {len(game_sessions)} qualifying runs",
-                    passed=best_score >= 60.0,
+                    target=f"Mean performance score >= 60.0 over the last {GAMES_GATE_RUNS} runs of >= {GAMES_GATE_MIN_ROUNDS} rounds",
+                    actual=f"{mean_score:.1f} mean score over the last {len(recent_scores)} of {GAMES_GATE_RUNS} qualifying runs",
+                    passed=len(recent_scores) == GAMES_GATE_RUNS and mean_score >= 60.0,
                 ),
             ]
             return StageGate(track_id, stage, "Pro Quant Foundations Gate", reqs)

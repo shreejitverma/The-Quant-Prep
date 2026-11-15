@@ -274,7 +274,8 @@ The page computes no numbers itself: if the server is unreachable it says so ins
 - **Stage gates:** `foundations` and `core` for every track, plus a `capital_gate` on the trading track, each requiring reviewed stage cards, lab runs or journal statistics.
   A card's stage comes from the note it lives in, never from its id: the first half of a track's notes in syllabus order (rounded down) are `foundations` and the rest `core`, and a one-note track splits that note's cards in half by position (`track_stage_cards`).
   So a card appended to a note joins that note's stage and raises its target, and any card id works.
-  The Track 0 `foundations` gate also needs a `games` run of at least 100 rounds (`rounds_completed`) with `performance_score >= 60`; shorter runs do not count, because over 5 rounds naive play clears 60 in about a third of seeds by luck.
+  The Track 0 `foundations` gate also needs a mean `performance_score >= 60` over the learner's last three `games` runs of at least 100 rounds (`rounds_completed`), and with fewer than three such runs it does not pass.
+  Shorter runs do not count, because over 5 rounds naive play clears 60 in about a third of seeds by luck, and the mean of three stops a lucky single 100-round run from passing.
 - **Mastery score:** per track `100 * (0.6 * coverage + 0.4 * retention)`; overall `0.5 * cards + 0.3 * lab + 0.2 * gates`, mapped to a readiness level.
 
 `./qp markets [status|gates|mastery] --persona P` reports them, and `python3 16-Trading-and-Investing/scripts/mastery.py` writes the live study board to `$QP_HOME/STUDY_BOARD.md`.
