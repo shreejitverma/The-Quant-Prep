@@ -149,7 +149,8 @@ A researcher runs a parameter sweep testing $N = 200$ parameter combinations of 
 
 **Verdict**: Because $\text{DSR} = 78.5\% < 95.0\%$, the strategy fails a 95% deflated Sharpe test.
 Under the PSR approximation there is a $21.5\%$ probability that its true Sharpe ratio is no better than the best of 200 skill-less trials would show.
-The approximation is close: the exact expected best daily Sharpe of 200 null trials is $0.0774$ (confirmed by seeded simulation), about $0.7\%$ below $SR_0$, because the bracket slightly overstates the exact expected maximum.
+The approximation is close: treating each sample Sharpe ratio as $N(0, V)$, the expected best daily Sharpe of 200 null trials is $\sqrt{V}\,E[\max Z] = 0.0774$, about $0.7\%$ below $SR_0$, because the bracket slightly overstates the exact $E[\max Z]$.
+The exact finite-sample value, with $\sqrt{T}\,\widehat{SR}$ distributed as Student-$t$ with $1259$ degrees of freedom, is $E[\max t_{1259}] / \sqrt{1260} = 0.0775$, and the seeded simulation is consistent with it.
 
 ### Example 2: Harvey-Liu Bonferroni Haircut Calculation
 
@@ -298,7 +299,7 @@ BHY is no kinder here: if this is the most significant of the 50 tests, its BHY 
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../code/mkt_sys_04_overfitting.py`](../code/mkt_sys_04_overfitting.py) prints and asserts every number on this page: the inverse normal by bisection on `erfc`, the expected maximum against exact numerical integration, the best null Sharpe ratio by seeded simulation of exact sample-Sharpe draws, the Mertens variance by simulating skewed returns, and the DSR, Bonferroni and MinBTL arithmetic.
+- Code: [`../code/mkt_sys_04_overfitting.py`](../code/mkt_sys_04_overfitting.py) prints and asserts every number on this page: the inverse normal by bisection on `erfc`, the expected maximum against exact numerical integration, the exact finite-sample expected best null Sharpe ratio as the expected maximum of Student-$t$ variables, checked by seeded simulation of exact sample-Sharpe draws, the Mertens variance by simulating skewed returns, and the DSR, Bonferroni and MinBTL arithmetic.
 - Related notes: [Overfitting and Deflated Sharpe](../../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md), [Combinatorial Purged Cross-Validation](05-Combinatorial-Purged-Cross-Validation.md).
 
 ## Further reading

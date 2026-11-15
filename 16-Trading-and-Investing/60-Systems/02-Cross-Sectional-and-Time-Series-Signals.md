@@ -296,7 +296,7 @@ A seeded simulation of 500 assets with IC $0.03$, 12 rebalances a year, confirms
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../code/mkt_sys_02_signals.py`](../code/mkt_sys_02_signals.py) prints and asserts every number on this page: Pearson IC from explicit sums, rank IC two ways (ranks and the d-squared formula), the MAD constant by bisection checked by simulation, the fundamental law by seeded simulation of 500 assets, and effective breadth from the full correlation matrix.
+- Code: [`../code/mkt_sys_02_signals.py`](../code/mkt_sys_02_signals.py) prints and asserts every number on this page: Pearson IC from explicit sums, rank IC two ways (ranks and the d-squared formula), the MAD constant by bisection checked by simulation, the fundamental law by seeded simulation of 500 assets, effective breadth from the full correlation matrix, and the 5-day half-life recovered from a seeded AR(1) signal by its lag-5 autocorrelation and its fitted decay rate.
 - Related notes: [Signals, Features and Alpha Decay](../../09-Alpha-Research-and-Portfolio/03-Signals-Features-and-Alpha-Decay.md), [Performance Metrics and the Fundamental Law](../../09-Alpha-Research-and-Portfolio/09-Performance-Metrics-and-Fundamental-Law.md).
 
 ## Further reading

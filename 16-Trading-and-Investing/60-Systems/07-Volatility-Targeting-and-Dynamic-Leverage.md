@@ -324,7 +324,7 @@ The gain comes entirely from expected returns not keeping pace with variance, wh
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../code/mkt_sys_07_vol_targeting.py`](../code/mkt_sys_07_vol_targeting.py) prints and asserts every number on this page: exposure multipliers in exact fractions, the Garman-Klass example, Parkinson efficiency exactly from the range moments, Garman-Klass and Rogers-Satchell efficiency by simulating Brownian days with exact bridge extremes, and the two-regime Sharpe ratios and kurtosis from Gaussian moments checked by simulation.
+- Code: [`../code/mkt_sys_07_vol_targeting.py`](../code/mkt_sys_07_vol_targeting.py) prints and asserts every number on this page: exposure multipliers in exact fractions, the Garman-Klass example, Parkinson efficiency exactly from the range moments, Garman-Klass and Rogers-Satchell efficiency by simulating Brownian days with exact per-step bridge extremes (tolerances of four computed standard errors), and the two-regime Sharpe ratios and kurtosis from Gaussian moments checked by simulation.
 - Related notes: [Volatility Models: EWMA and GARCH](../../02-Statistics-and-Econometrics/09-Volatility-Models-GARCH.md).
 
 ## Further reading

@@ -168,13 +168,15 @@ def dsr_example(rng: np.random.Generator) -> None:
     approx("DSR (percent)", 100 * dsr, 78.5, 1)
     approx("1 - DSR (percent)", 100 * (1 - dsr), 21.5, 1)
     # Interpretation check: SR_0 approximates the expected best daily Sharpe of 200 skill-less trials.
-    approx("exact expected best daily Sharpe of 200 null trials", exact_expected_max(n) * math.sqrt(v), 0.0774, 4)
+    normal_best = exact_expected_max(n) * math.sqrt(v)
+    approx("normal-approximation expected best daily Sharpe of 200 null trials, sqrt(V) E[max Z]", normal_best, 0.0774, 4)
     reps = 6000
     best = null_max_sharpe(rng, n, t_days, reps)
     se = float(best.std(ddof=1)) / math.sqrt(reps)
     expected_best = expected_max_t(n, t_days - 1) / math.sqrt(t_days)
+    approx("exact expected best daily Sharpe of 200 null trials, E[max t_1259] / sqrt(1260)", expected_best, 0.0775, 4)
     simulated("simulated best daily Sharpe of 200 null trials", float(best.mean()), expected_best, 4 * se)
-    approx("approximation error of the bracket vs exact E[max] (percent)", 100 * (b / exact_expected_max(n) - 1), 0.7, 1)
+    approx("approximation error of the bracket vs exact E[max Z] (percent)", 100 * (b / exact_expected_max(n) - 1), 0.7, 1)
 
 
 def haircut_example() -> None:

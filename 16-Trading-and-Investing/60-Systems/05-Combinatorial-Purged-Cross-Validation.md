@@ -112,7 +112,7 @@ The complement $\bar{J}$ of $S/2$ blocks serves as the out-of-sample (OOS) testi
 **Interpreting PBO**:
 - $\text{PBO} \approx 0.0$: In-sample ranking translates strongly to out-of-sample performance (high generalization).
 - $\text{PBO} \approx 0.50$: The in-sample winner ranks like a random pick out of sample; when no strategy has skill, the out-of-sample rank of the in-sample winner is uniform on $1, \dots, M$, so the expected PBO is $\lfloor (M+1)/2 \rfloor / M$, which is exactly $0.50$ for an even number $M$ of configurations and $(M+1)/(2M)$ for odd $M$, for example $6/11 = 0.545$ at $M = 11$ (seeded simulation in the script: $0.49$ over 400 skill-less universes with $M = 50$).
-- $\text{PBO} > 0.50$: The in-sample winner tends to land below the median out of sample, for example when in-sample performance mean-reverts.
+- PBO above the skill-less value $\lfloor (M+1)/2 \rfloor / M$ ($0.50$ for an even number $M$ of configurations): The in-sample winner tends to land below the median out of sample, for example when in-sample performance mean-reverts.
 
 ---
 
@@ -292,7 +292,7 @@ The test fold is days $400$ to $599$, so test labels span days $400$ to $604$.
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../code/mkt_sys_05_cpcv.py`](../code/mkt_sys_05_cpcv.py) prints and asserts every number on this page: split and path counts by enumerating every CPCV split and stitching paths, purge and embargo counts by testing every label window, the PBO table by counting, and the null PBO of one half by seeded CSCV simulation against the exchangeability argument.
+- Code: [`../code/mkt_sys_05_cpcv.py`](../code/mkt_sys_05_cpcv.py) prints and asserts every number on this page: split and path counts by enumerating every CPCV split and stitching paths, purge and embargo counts by testing every label window, the PBO table by counting, and the null PBO $\lfloor (M+1)/2 \rfloor / M$ by enumerating the uniform out-of-sample rank for $M = 10$, $11$ and $50$ and by seeded CSCV simulation for $M = 50$ and the odd $M = 11$.
 - Related notes: [Backtest Overfitting and Multiple Testing](04-Backtest-Overfitting-and-Multiple-Testing.md), [Backtesting Methodology and Pitfalls](../../09-Alpha-Research-and-Portfolio/07-Backtesting-Methodology-and-Pitfalls.md).
 
 ## Further reading
