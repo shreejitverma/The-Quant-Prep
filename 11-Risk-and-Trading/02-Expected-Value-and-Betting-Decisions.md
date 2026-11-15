@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [kelly-criterion-and-position-sizing]
 est_hours: 3
-sources: [Lebron (2019) The Laws of Trading. Wiley, Zhou (2008) A Practical Guide to Quantitative Finance Interviews, Feller (1968) An Introduction to Probability Theory and Its Applications Vol 1 3rd ed. Wiley (gambler's ruin), Thorp (2006) The Kelly criterion in blackjack sports betting and the stock market. Handbook of Asset and Liability Management Vol 1]
+sources: [Lebron (2019) The Laws of Trading. Wiley, Zhou (2008) A Practical Guide to Quantitative Finance Interviews, Feller (1968) An Introduction to Probability Theory and Its Applications Vol 1 3rd ed. Wiley ch XIV (gambler's ruin), Thorp (2006) The Kelly criterion in blackjack sports betting and the stock market. Handbook of Asset and Liability Management Vol 1]
 ---
 
 # Expected Value and Betting Decisions
@@ -13,7 +13,7 @@ sources: [Lebron (2019) The Laws of Trading. Wiley, Zhou (2008) A Practical Guid
 ## TL;DR
 
 - First question for any bet: what is the expected value per unit risked, and against whom are you betting (if they offered it, why)?
-- Second question: how big is the variance relative to your bankroll; a positive-EV bet sized too large can still ruin you, and the long-run growth rate of a small bet is about $\text{edge}^2/(2\,\text{variance})$.
+- Second question: how big is the variance relative to your bankroll; a positive-EV bet sized too large can still ruin you, and the long-run growth rate of an optimally sized small bet is about $\text{edge}^2/(2\,\text{variance})$.
 - Risk of ruin with a fixed bet size and edge $\mu$, standard deviation $\sigma$ per bet and a bankroll of $B$ is about $e^{-2\mu B/\sigma^2}$; with a 51% even-money bet and 50 units it is 13.5%.
 - Sequential games are solved by backward induction: continue while the value of continuing exceeds the value of stopping, and write down the recursion before guessing.
 - Fair games stay fair under any bounded stopping rule (optional stopping), so edge comes from the odds, never from when you quit.
@@ -32,7 +32,7 @@ The expected value of a bet is $\sum_i p_i x_i$; its edge is EV divided by the a
 Compute it with linearity and indicator variables (see [Expectation, Variance and Linearity](../01-Probability/04-Expectation-Variance-and-Linearity.md)) and say it out loud before anything else.
 Then ask why the bet exists.
 If a counterparty offers you a bet, their willingness is information: in a market, the price you can trade at is conditioned on someone else choosing to trade with you (adverse selection, see [Market Making Games](../08-Market-Making/10-Market-Making-Games.md)).
-Lebron frames this as knowing why you are doing a trade; the interview version is "what does the other side know that I do not?"
+Lebron's first law of trading is "know why you are doing a trade before you trade"; the interview version is "what does the other side know that I do not?"
 
 ### Edge versus variance
 
@@ -95,6 +95,7 @@ The stake at each node is half the difference between the target values in the t
 With no rerolls, 3.5.
 With one reroll left, keep a first roll only if it beats 3.5, so keep 4, 5, 6: $V_1 = \frac{3.5 \times 3 + 4 + 5 + 6}{6} = 4.25$.
 With two rerolls left, keep a roll only if it beats 4.25, so keep 5 and 6: $V_2 = \frac{4.25 \times 4 + 5 + 6}{6} = 14/3 \approx 4.67$.
+A third reroll still keeps only 5 and 6, since $14/3 < 5$: $V_3 = \frac{(14/3) \times 4 + 11}{6} = 89/18 \approx 4.94$.
 The threshold is always the value of continuing; say that sentence and the recursion writes itself.
 
 ### Example 2: accumulate or lose everything
@@ -102,15 +103,19 @@ The threshold is always the value of continuing; say that sentence and the recur
 "Roll a die repeatedly. Each roll of 2 to 6 adds its face value to your total; a 1 wipes the total to zero and ends the game. You may stop at any time. When do you stop?"
 With current total $S$, one more roll changes the expected total by $\frac56 \times 4 - \frac16 S = \frac{20 - S}{6}$.
 Keep rolling while $S < 20$ and stop at 20 or more (at exactly 20 you are indifferent).
-The problem is monotone (the total only grows until a wipe), so the one-step rule is optimal.
+The problem is monotone (the total only grows until a wipe), so the one-step rule is optimal; value iteration over every total up to 400 confirms that rolling is strictly better exactly at totals 0 to 19.
+Played this way from zero, the game is worth about 8.14.
 
 ### Example 3: risk of ruin on a small edge
 
 "You bet one unit at a time at even money with a 51% win probability, starting with 50 units. What is the chance you ever go broke?"
 Exact: $(0.49/0.51)^{50} \approx 0.135$.
 Diffusion: $\mu = 0.02$, $\sigma^2 \approx 1$, $e^{-2 \times 0.02 \times 50} = e^{-2} \approx 0.135$.
+Solving the absorbing Markov chain directly, with a far upper boundary standing in for the unlimited opponent, gives the same 0.135.
 For a 1% ruin probability you need $B = \frac{\ln 100}{2 \times 0.02} \approx 115$ units.
-And to be 95% sure of being ahead you need $n$ with $0.02\sqrt{n} = 1.645$, about 6,800 bets: a 2% edge is real money but slow to show.
+And to be 95% sure of being ahead you need $n$ with $0.02\sqrt{n} = 1.6449\,\sigma$, where $\sigma = \sqrt{1 - 0.02^2} = 0.9998$: $n \approx 6{,}761$.
+The exact binomial probability of being strictly ahead first reaches 95% at $n = 6{,}763$, dips below at even $n$ (where a tie counts as not ahead) and stays at or above 95% from $n = 6{,}861$.
+That is about 6,800 bets: a 2% edge is real money but slow to show.
 
 ### Example 4: which bet would you rather have?
 
@@ -138,7 +143,7 @@ V(r, b) = \max\!\Big(0,\; \tfrac{r}{r+b}\big(1 + V(r-1, b)\big) + \tfrac{b}{r+b}
 $$
 
 with $V(0, b) = 0$ and $V(r, 0) = r$.
-$V(1,1) = 1/2$, $V(2,2) = 2/3$, and $V(26,26) \approx 2.62$.
+$V(1,1) = 1/2$, $V(2,2) = 2/3$, and $V(26,26) \approx 2.62$; a brute-force search over every stop-or-continue rule confirms the small cases.
 Contrast the related game "stop at any time and bet that the next card is red": that one is worth exactly its starting fair value, because the fraction of reds remaining is a martingale.
 
 ```python
@@ -156,6 +161,8 @@ def value(r, b):
 
 print(float(value(26, 26)))  # 2.6245
 ```
+
+The script asserts this value, and playing its policy on 400,000 seeded shuffles averages 2.63 with a standard error of 0.003, consistent with it.
 
 ### Example 7: a million on a coin or 400,000 for sure
 
@@ -217,15 +224,37 @@ Same bet, opposite answers: size relative to bankroll decides.
 
 > [!question]- risk-ev-bets-to-show-edge | How many even-money bets with a 2% edge do you need to be 95% sure of being ahead?
 > About 6,800.
-> Need $0.02\sqrt{n} \ge 1.645$, so $n \ge (1.645/0.02)^2 \approx 6{,}765$.
+> Need $0.02\sqrt{n} \ge 1.6449\sigma$ with $\sigma = 0.9998$, so $n \ge (1.6449 \times 0.9998/0.02)^2 \approx 6{,}761$.
+> The exact binomial probability first reaches 95% at 6,763 bets and, because ties at even $n$ count as not ahead, stays there from 6,861.
 
 > [!question]- risk-ev-who-offers | Someone offers you a bet that looks positive EV. What do you ask first?
 > Why they are offering it: what they know, and whether the price already reflects information you lack.
 > Condition on the offer itself; a bet chosen by an informed counterparty is adversely selected.
 
+> [!question]- risk-ev-reroll-three | The die game now allows up to three rerolls, keeping the last roll. What is it worth?
+> $89/18 \approx 4.94$.
+> With three rerolls left the continuation value is $V_2 = 14/3 < 5$, so keep only 5 or 6: $V_3 = (4 \times 14/3 + 11)/6$.
+
+> [!question]- risk-ev-pig-value | In the accumulate-or-wipe die game played with the stop-at-20 rule, roughly what is the game worth from a total of zero?
+> About 8.14.
+> Value iteration on $V(S) = \max(S, \frac16\sum_{k=2}^{6} V(S+k))$ gives it, and seeded simulation of the rule agrees.
+
+> [!question]- risk-ev-bankroll-one-percent | Even-money unit bets win with probability 0.51. What bankroll keeps the probability of ever going broke at 1%?
+> About 115 units.
+> $(0.49/0.51)^B = 0.01$ gives $B = \ln 100/\ln(51/49) \approx 115.1$, and the diffusion formula $\frac{\sigma^2}{2\mu}\ln 100$ gives 115 as well.
+
+> [!question]- risk-ev-red-black-small | Two red cards (+1) and two black cards (-1) are turned one at a time, and you may stop any time. What is the game worth?
+> $2/3$.
+> Backward induction on (reds left, blacks left) gives $V(2,2) = 2/3$, and a brute-force search over every stopping rule agrees.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/risk_02_expected_value.py`](code/risk_02_expected_value.py) prints and asserts every number on this page: reroll values by exhaustive search over keep-sets, the stopping threshold by value iteration and simulation, ruin by solving the absorbing Markov chain, bets-to-show-edge by the exact binomial tail, the series stake by backward induction on the series tree, the red-black game by brute force over every stopping rule and by simulation, certainty equivalents by root-finding, and the doubling strategy by enumerating every coin path.
+- Related notes: [Kelly Criterion and Position Sizing](01-Kelly-Criterion-and-Position-Sizing.md), [Random Walks and Gambler's Ruin](../01-Probability/11-Random-Walks-and-Gamblers-Ruin.md), [Martingales and Optional Stopping](../01-Probability/12-Martingales-and-Optional-Stopping.md).
+
 ## Further reading
 
 - Agustin Lebron, *The Laws of Trading* (2019).
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews* (2008), the chapters on probability games and dynamic programming.
-- William Feller, *An Introduction to Probability Theory and Its Applications*, Vol 1, on gambler's ruin.
-- Edward Thorp (2006), The Kelly criterion in blackjack, sports betting and the stock market.
+- William Feller, *An Introduction to Probability Theory and Its Applications*, Vol 1 (3rd ed., 1968), chapter XIV on random walks and ruin problems.
+- Edward Thorp (2006), The Kelly criterion in blackjack, sports betting and the stock market, chapter 9 of *Handbook of Asset and Liability Management*, Vol 1, Elsevier.
