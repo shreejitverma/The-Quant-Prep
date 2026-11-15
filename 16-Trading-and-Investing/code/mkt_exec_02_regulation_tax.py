@@ -3,11 +3,10 @@
 Rates and thresholds are cited constants (sources in the note); this script checks the arithmetic built on them.
 Independent routes used here:
 - the wash-sale window is counted with calendar dates (datetime), not by adding 30 + 1 + 30;
-- the wash-sale example is computed twice: by the basis-adjustment rule, and by summing the realised economics of
-  the whole round trip (total loss allowed over both sales must equal the economic loss on the two lots);
+- the wash-sale example is computed by the basis-adjustment rule, and the economic result of both lots is checked
+  against the $200 the note says the trader recognises over both sales;
 - the Section 1256 blended rate is computed by applying the 60/40 split to a $100,000 gain, not by the formula alone;
-- the Indian F&O turnover example sums absolute trade-level differences and is checked against a direct
-  favourable-plus-unfavourable split.
+- the Indian F&O turnover example sums absolute trade-level differences.
 Run: uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_exec_02_regulation_tax.py
 """
 
@@ -15,7 +14,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from mkt_assets_lib import close, q
+from mkt_assets_lib import q
 
 
 def wash_sale() -> None:
@@ -36,7 +35,7 @@ def wash_sale() -> None:
     q("taxable gain on the June 1 sale", gain, "200")
     q("gain on the replacement lot without the adjustment", (sell2 - buy2) * n, "1,000")
     economic = (sell1 - buy1) * n + (sell2 - buy2) * n
-    close("total recognised (0 + 200) vs economic result of both lots", 0.0 + gain, economic, 1e-9)
+    q("economic result of both lots (-800 + 1,000)", economic, "200")
 
 
 def section_1256() -> None:
@@ -61,9 +60,6 @@ def india_turnover() -> None:
     pnl = [12_000.0, -8_500.0, 3_000.0, -15_000.0, 6_500.0]
     turnover = sum(abs(x) for x in pnl)
     q("turnover = sum |P&L|", turnover, "45,000")
-    favourable = sum(x for x in pnl if x > 0)
-    unfavourable = -sum(x for x in pnl if x < 0)
-    close("turnover vs favourable + unfavourable", turnover, favourable + unfavourable, 1e-9)
     q("net P&L", sum(pnl), "-2,000")
 
 

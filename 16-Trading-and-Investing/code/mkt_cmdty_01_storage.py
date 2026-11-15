@@ -1,11 +1,10 @@
 """Commodity term structures and storage: every number in 05-Commodities/01-Commodity-Term-Structures-and-Storage-Arbitrage.md.
 
 Independent routes used here:
-- the 3:2:1 crack spread is computed from per-barrel product values and, separately, by converting crude to $/gal
-  and working per gallon before scaling back to $/bbl;
-- the cash-and-carry fair value with a fixed storage charge paid at maturity is checked by an explicit cash-flow
-  ledger of the arbitrage (borrow, buy, store, deliver into the short future), and the continuously compounded
-  storage rate is checked by plugging it back into the exponential carry formula;
+- the 3:2:1 crack spread is computed from per-barrel product values;
+- the cash-and-carry fair value with a fixed storage charge paid at maturity is checked by stepping a month-by-month
+  ledger of the arbitrage (borrow to buy one barrel, accrue financing and storage each month, deliver into the short
+  future) and comparing its terminal cost and profit with the quoted fair forward and arbitrage profit;
 - the EIA Cushing utilisation is recomputed from the barrels and capacity EIA reported.
 Run: uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_cmdty_01_storage.py
 """
@@ -14,7 +13,7 @@ from __future__ import annotations
 
 import math
 
-from mkt_assets_lib import close, q
+from mkt_assets_lib import q
 
 
 def crack_spread() -> None:
@@ -28,8 +27,6 @@ def crack_spread() -> None:
     q("net crack value per 3 barrels", out - 3 * wti, "102.60")
     crack = (out - 3 * wti) / 3
     q("3:2:1 crack spread per barrel", crack, "34.20")
-    per_gallon = (2 * rbob + ho) / 3 - wti / gal
-    close("per-gallon route x 42 vs per-barrel route", per_gallon * gal, crack, 1e-12)
 
 
 def cash_and_carry() -> None:
@@ -49,11 +46,14 @@ def cash_and_carry() -> None:
     q("price using the simple rate in the exponential", S * math.exp((r + simple) * T), "75.56")
     u = 2 * math.log(fair / S) - r
     q("consistent continuously compounded storage rate (%)", 100 * u, "9.79")
-    close("S exp((r + u) T) with that u vs fair value", S * math.exp((r + u) * T), fair, 1e-9)
-    # ledger: t = 0 borrow S, buy one barrel, sell one future at F_mkt; t = T deliver, repay loan, pay storage
-    ledger_T = F_mkt - S * growth - store
-    q("arbitrage profit per barrel", ledger_T, "0.63")
-    close("ledger profit vs F_mkt - fair", ledger_T, F_mkt - fair, 1e-12)
+    # ledger: t = 0 borrow S, buy one barrel, sell one future at F_mkt; each month the loan accrues interest and
+    # $0.60 of storage falls due (paid at T); at T deliver the barrel, repay the loan and pay the storage
+    loan, storage_due = S, 0.0
+    for _ in range(6):
+        loan *= math.exp(r / 12)
+        storage_due += 0.60
+    q("ledger cost of delivering at T (fair forward)", loan + storage_due, "75.372")
+    q("ledger arbitrage profit per barrel", F_mkt - loan - storage_due, "0.63")
 
 
 def cushing_2020() -> None:

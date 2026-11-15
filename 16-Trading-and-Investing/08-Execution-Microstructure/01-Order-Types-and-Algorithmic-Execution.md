@@ -265,7 +265,7 @@ Relative to the $1,000,000 paper notional, the total implementation friction is 
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [mkt_exec_01_execution.py](../code/mkt_exec_01_execution.py) prints and asserts every number in this note; implementation shortfall is computed by components and by the direct cash formula, and the Almgren-Chriss schedule is solved as a linear system and compared with the closed-form hyperbolic sine; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_exec_01_execution.py`.
+- Code: [mkt_exec_01_execution.py](../code/mkt_exec_01_execution.py) prints and asserts every number in this note; implementation shortfall is computed by components and its direct-formula terms are checked against the quoted figures, and the Almgren-Chriss schedule is solved as a linear system and compared with the closed-form hyperbolic sine; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_exec_01_execution.py`.
 - Syllabus: [Market Impact Models](../../07-Market-Microstructure/06-Market-Impact-Models.md), [Optimal Execution: Almgren-Chriss](../../07-Market-Microstructure/07-Optimal-Execution-Almgren-Chriss.md), [Execution Algorithms and TCA](../../07-Market-Microstructure/08-Execution-Algorithms-and-TCA.md).
 
 ---

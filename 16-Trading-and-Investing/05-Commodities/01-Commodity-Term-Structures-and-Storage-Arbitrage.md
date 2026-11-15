@@ -296,7 +296,7 @@ By leasing storage capacity and shorting the futures, the trader locks in $0.63 
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [mkt_cmdty_01_storage.py](../code/mkt_cmdty_01_storage.py) prints and asserts every number in this note; the crack spread is computed per barrel and per gallon, and the carry arbitrage by an explicit cash-flow ledger; event facts are cited to CFTC, EIA and IEA; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_cmdty_01_storage.py`.
+- Code: [mkt_cmdty_01_storage.py](../code/mkt_cmdty_01_storage.py) prints and asserts every number in this note; the crack spread is computed from per-barrel product values, and the carry arbitrage by a month-by-month cash-and-carry ledger; event facts are cited to CFTC, EIA and IEA; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_cmdty_01_storage.py`.
 - Syllabus: [Commodities and Futures Curves](../../06-Fixed-Income-and-Asset-Classes/09-Commodities-and-Futures-Curves.md).
 
 ---

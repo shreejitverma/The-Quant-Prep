@@ -140,8 +140,7 @@ The Income-tax Act, 2025 replaced the Income-tax Act, 1961 from April 1, 2026 (t
    - Futures: 0.05% on the sell side (0.02% from October 1, 2024 to March 31, 2026, and 0.0125% before that).
    - Options: 0.15% of the premium on the sell side (previously 0.1%), and 0.15% of the intrinsic value for options exercised (previously 0.125%).
 3. **Turnover for the Tax Audit (section 44AB of the 1961 Act)**:
-   - ICAI's Guidance Note on Tax Audit (revised 2025 and 2026 editions, paragraph 5.11(b)) computes derivatives turnover as the total of favourable and unfavourable differences on each trade, i.e. the sum of absolute trade-level P&L.
-   - For options, premium received on sale is also included, unless it is already part of the reported net profit (no double counting).
+   - ICAI's Guidance Note on Tax Audit (2026 edition) computes derivatives turnover as the total of favourable and unfavourable differences on each trade, i.e. the sum of absolute trade-level P&L.
    - A tax audit is required when business turnover exceeds Rs 1 crore, or Rs 10 crore when cash receipts and cash payments are each no more than 5% of the totals.
 
 ---
@@ -173,7 +172,7 @@ Turnover is the sum of the absolute differences, Rs 45,000, even though the net 
 - **Assuming Your Broker Has Already Dropped the PDT Rule**: FINRA's intraday margin standards took effect on June 4, 2026, but brokers may phase them in until October 20, 2027, so a broker can still enforce the old four-trades and $25,000 rule in November 2026.
 - **Failing to Make Section 475(f) Election in Timely Manner**: Attempting to claim ordinary loss deductions without filing the Section 475(f) election with the IRS by the due date of the prior year's tax return (April 15).
 - **Ignoring Locate Borrow Fees on Hard-to-Borrow (HTB) Shorts**: Shorting heavily shorted stocks without monitoring the borrow fee, which is reset daily and can become a large annualised cost.
-- **Miscalculating F&O Turnover in Indian Markets**: Calculating turnover as gross trade value rather than the sum of absolute trade-level differences (plus option-sale premium per ICAI), wrongly concluding that a tax audit is required.
+- **Miscalculating F&O Turnover in Indian Markets**: Calculating turnover as gross trade value rather than the sum of absolute trade-level differences, wrongly concluding that a tax audit is required.
 
 ---
 
@@ -265,8 +264,8 @@ Turnover is the sum of the absolute differences, Rs 45,000, even though the net 
 > A risk-based framework under FINRA Rule 4210(g) that sets margin from the largest loss across a range of price moves, using theoretical prices from an SEC-approved model (in practice values supplied by the OCC).
 
 > [!question]- mkt-reg-029 | What is the minimum account equity typically required by US brokers to qualify for Portfolio Margin?
-> There is no single regulatory figure to quote: brokers may set higher house minimums for portfolio margin, so check the broker's disclosure.
-> As of November 2026, FINRA Rule 4210(g)(4)(C) bars positions in unlisted derivatives unless the account establishes and maintains equity of at least $5 million.
+> As of November 2026, FINRA Rule 4210(g) sets no general minimum equity for portfolio margin: brokers set their own house minimums, so check the broker's disclosure.
+> As of November 2026, FINRA Rule 4210(g)(4)(C) bars an eligible participant from establishing or maintaining positions in unlisted derivatives unless minimum equity of at least $5 million is established and maintained with the member.
 > As of November 2026, FINRA Rule 4210(g)(1)(K) requires each portfolio margin account with less than $5 million in equity to maintain margin for intraday risk.
 
 > [!question]- mkt-reg-030 | What is CFTC Rule 1.20 regarding futures customer funds?
@@ -280,7 +279,7 @@ Turnover is the sum of the absolute differences, Rs 45,000, even though the net 
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [mkt_exec_02_regulation_tax.py](../code/mkt_exec_02_regulation_tax.py) prints and asserts every computed number in this note; the wash-sale window is counted with calendar dates, the basis example is checked against the economics of both lots, and the 60/40 rate by taxing a stated gain; rules and rates are cited constants with their sources and dates; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_exec_02_regulation_tax.py`.
+- Code: [mkt_exec_02_regulation_tax.py](../code/mkt_exec_02_regulation_tax.py) prints and asserts every computed number in this note; the wash-sale window is counted with calendar dates, the basis example and the economic result of both lots are checked against the quoted figures, and the 60/40 rate by taxing a stated gain; rules and rates are cited constants with their sources and dates; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_exec_02_regulation_tax.py`.
 - Syllabus: [Fragmentation, Reg NMS and Routing](../../07-Market-Microstructure/09-Fragmentation-Reg-NMS-and-Routing.md).
 
 ---

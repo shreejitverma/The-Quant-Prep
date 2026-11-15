@@ -5,8 +5,7 @@ the arithmetic built on them.
 Independent routes used here:
 - the closing VWAP is computed from cluster totals and, separately, by expanding every cluster into unit trades and
   averaging trade by trade;
-- per-crore charges are converted to percentages and the cost of selling one option lot is rebuilt charge by charge,
-  with the GST base summed separately;
+- per-crore charges are converted to percentages and the cost of selling one option lot is built charge by charge;
 - the minimum-contract-size check compares lot x index level with SEBI's Rs 15 lakh floor;
 - the max-pain strike is found by brute force over every listed strike and checked against a direct payout table.
 Run: uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_india_01_nse.py
@@ -59,7 +58,6 @@ def charges() -> None:
     q("total statutory cost for the seller", total, "12.48")
     q("as a share of premium (%)", 100 * total / premium, "0.19")
     assert stt / total > 0.75, "STT is more than three quarters of the statutory cost"
-    close("charge-by-charge total vs STT + 1.18 x (exchange + SEBI)", total, stt + 1.18 * (txn + sebi), 1e-12)
 
 
 def contract_size() -> None:

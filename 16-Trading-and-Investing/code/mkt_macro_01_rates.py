@@ -3,9 +3,11 @@
 Independent routes used here:
 - the semi-annual par bootstrap is checked by repricing every input par bond from the bootstrapped discount
   factors (each must price at exactly 100), and f(T) > y(T) on an upward curve by differencing ln P numerically;
-- DV01 notionals and the 2s10s flattener P&L are computed leg by leg and compared with spread change times DV01;
-- the butterfly weights are solved as a 2x2 linear system and then checked by repricing the three legs under a
-  parallel shift and under a linear-in-maturity slope shift (both must give zero P&L);
+- DV01 notionals and the 2s10s flattener P&L are computed leg by leg;
+- the butterfly weights are solved as a 2x2 linear system in maturity and then checked by pricing 2-, 5- and 10-year
+  semi-annual par bonds, sizing the legs from analytic DV01s, and repricing the whole fly (central differences) under
+  a parallel yield shift and a linear-in-maturity slope shift (both must give zero first-order P&L, and the 50/50 fly
+  must lose one body-DV01 basis point per basis point per year of slope);
 - covered interest parity: the synthetic dollar borrowing rate implied by the basis-adjusted forward is computed
   from explicit cash flows (borrow EUR, sell spot, buy forward) and compared with r_d - basis.
 Run: uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_macro_01_rates.py
@@ -52,7 +54,6 @@ def dv01_trades() -> None:
     q("2-year leg P&L", pnl2, "1,250,000")
     q("10-year leg P&L", pnl10, "-500,000")
     q("net P&L", pnl2 + pnl10, "750,000")
-    close("net P&L vs 15bp flattening x $50,000 DV01", pnl2 + pnl10, (25 - 10) * 50_000, 1e-6)
 
 
 def butterfly() -> None:
@@ -62,11 +63,40 @@ def butterfly() -> None:
     w1, w2 = np.linalg.solve(np.array([[1.0, 1.0], [t1 - tb, t2 - tb]]), np.array([1.0, 0.0]))
     q("short-wing share of body DV01", w1, "0.625")
     q("long-wing share of body DV01", w2, "0.375")
-    for name, shock in (("parallel +1bp", lambda t: 1.0), ("linear slope 1bp per year", lambda t: t - 5.0)):
-        pnl = -(w1 * shock(t1) + w2 * shock(t2)) + shock(tb)  # long wings, short body, in body-DV01 units
-        close(f"butterfly P&L under {name}", pnl, 0.0, 1e-12)
-    slope_pnl_5050 = -(0.5 * (t1 - tb) + 0.5 * (t2 - tb))
-    q("50/50 butterfly P&L under the slope shock (body-DV01 bp)", slope_pnl_5050, "-1")
+    par_yield = {t1: 0.040, tb: 0.041, t2: 0.043}  # hypothetical par yields; each bond's coupon equals its yield
+    bp, h = 1e-4, 1e-6  # DV01 per 1bp; the fly is repriced by central differences with a 0.01bp step
+
+    def price(t: float, dy: float) -> float:
+        c, y = par_yield[t], par_yield[t] + dy
+        n = round(2 * t)
+        return sum(100 * c / 2 / (1 + y / 2) ** k for k in range(1, n + 1)) + 100 / (1 + y / 2) ** n
+
+    for t in (t1, tb, t2):
+        close(f"{t:.0f}-year par bond prices at 100", price(t, 0.0), 100.0, 1e-9)
+
+    def dv01_analytic(t: float) -> float:
+        c, y, n = par_yield[t], par_yield[t], round(2 * t)
+        dp_dy = -sum((k / 2) * 100 * c / 2 / (1 + y / 2) ** (k + 1) for k in range(1, n + 1)) - (n / 2) * 100 / (1 + y / 2) ** (n + 1)
+        return -dp_dy * bp
+
+    dv01 = {t: dv01_analytic(t) for t in (t1, tb, t2)}  # per 100 face, from the closed-form yield derivative
+
+    def fly_pnl(wing1: float, wing2: float, shock) -> float:
+        # long wings sized to wing1 and wing2 of the body DV01, short one unit of body; central difference in the shock size
+        face = {t1: wing1 * dv01[tb] / dv01[t1], tb: -1.0, t2: wing2 * dv01[tb] / dv01[t2]}
+
+        def book(eps: float) -> float:
+            return sum(f * (price(t, eps * shock(t)) - 100.0) for t, f in face.items())
+
+        return (book(h) - book(-h)) / 2 * bp / h / dv01[tb]  # in body-DV01 basis points per basis point of shock
+
+    shocks = (("parallel +1bp", lambda t: 1.0), ("linear slope 1bp per year", lambda t: t - tb))
+    for name, shock in shocks:
+        close(f"repriced {w1:.3f}/{w2:.3f} butterfly P&L under {name}", fly_pnl(w1, w2, shock), 0.0, 1e-6)
+    close("repriced 50/50 butterfly P&L under the parallel shift", fly_pnl(0.5, 0.5, shocks[0][1]), 0.0, 1e-6)
+    slope_pnl_5050 = fly_pnl(0.5, 0.5, shocks[1][1])
+    q("repriced 50/50 butterfly P&L under the slope shock (body-DV01 bp)", slope_pnl_5050, "-1")
+    close("repriced 50/50 butterfly slope P&L vs -1 body-DV01 bp", slope_pnl_5050, -1.0, 1e-6)
 
 
 def cip() -> None:

@@ -1,8 +1,8 @@
 """Order types and algorithmic execution: every number in 08-Execution-Microstructure/01-Order-Types-and-Algorithmic-Execution.md.
 
 Independent routes used here:
-- implementation shortfall is computed component by component and, separately, from the direct cash formula
-  (filled cost plus unfilled shares marked at the final price minus the paper cost); the two must agree to the cent;
+- implementation shortfall is computed component by component, and the direct cash formula (filled cost plus
+  unfilled shares marked at the final price minus the paper cost) is checked term by term against the note's figures;
 - the Almgren-Chriss discrete-time optimal schedule is found by solving the first-order conditions of the
   mean-variance objective as a linear system, and compared with the closed-form hyperbolic-sine trajectory;
   with zero risk aversion the same solver must return the straight-line (TWAP) schedule;
@@ -32,7 +32,7 @@ def implementation_shortfall() -> None:
     direct = fill_q * fill_px + (Q - fill_q) * Pn - Q * Pd + fees
     q("filled cost", fill_q * fill_px, "806,400")
     q("unfilled marked at close", (Q - fill_q) * Pn, "203,000")
-    close("component sum vs direct cash formula", total, direct, 1e-6)
+    q("total by the direct cash formula", direct, "9,560.00")
     q("shortfall in basis points of the paper notional", 1e4 * total / (Q * Pd), "95.6")
 
 

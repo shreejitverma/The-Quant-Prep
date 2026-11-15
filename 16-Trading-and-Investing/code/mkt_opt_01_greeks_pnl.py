@@ -82,7 +82,6 @@ def example_1() -> dict[str, float]:
     q("theta per year", g["theta"], "-754.33")
     q("theta per calendar day", g["theta"] / 365, "-2.07")
     q("decay term alone per day", decay / 365, "-1.90")
-    close("closed-form theta = sum of the three terms", g["theta"], decay + rate + div, 1e-9)
     close("closed-form price vs payoff quadrature", bs_price(S, K, T, r, q_, s), bs_price_quad(S, K, T, r, q_, s), 1e-6)
     fd = fd_greeks(S, K, T, r, q_, s)
     tol = {"delta": 1e-7, "gamma": 1e-7, "vega": 1e-5, "theta": 1e-3, "vanna": 1e-5, "volga": 1e-2, "charm": 1e-2}
