@@ -285,6 +285,9 @@ def cards_hedging(rng: np.random.Generator) -> None:
     for label, ratio, se in (("hedging error sd", err_ratio, err_se), ("shares traded", cost_ratio, cost_se)):
         approx(f"{label} ratio, lower 4-SE bound, at one decimal", ratio - 4 * se, 1.4, 1)
         approx(f"{label} ratio, upper 4-SE bound, at one decimal", ratio + 4 * se, 1.4, 1)
+    excess = (cost_ratio - math.sqrt(2)) / cost_se
+    assert excess > 2, excess
+    print(f"    shares traded ratio above sqrt(2) by {excess:.1f} standard errors (finite-N excess)")
     assert cost_ratio < 1.6, cost_ratio
     print("    proportional cost rises by about sqrt(2), far from doubling")
 

@@ -99,7 +99,7 @@ Displayed size also leaks information and affects how others trade against you, 
 
 Every cancel-replace loses queue priority and costs messages.
 Use thresholds and hysteresis: only move a quote when theo has moved by more than a set fraction of a tick, and cancel immediately only when edge turns negative.
-Venues police message traffic: in the EU, MiFID II (Directive 2014/65/EU, Article 48(6)) requires trading venues to have systems that limit each member's ratio of unexecuted orders to transactions, and Commission Delegated Regulation (EU) 2017/566 (RTS 9) sets how that ratio is calculated and when a venue's maximum is exceeded.
+Venues police message traffic: in the EU (as of November 2026), MiFID II (Directive 2014/65/EU, Article 48(6)) requires trading venues to have systems that limit each member's ratio of unexecuted orders to transactions, and Commission Delegated Regulation (EU) 2017/566 (RTS 9) sets how that ratio is calculated and when a venue's maximum is exceeded.
 Churn therefore has a direct cost as well as the lost queue position.
 
 ## Worked examples
@@ -257,4 +257,4 @@ def quotes(theo, q, h, s_max, beta, q_max):
 - Cartea, Jaimungal and Penalva, *Algorithmic and High-Frequency Trading* (2015), chapter 10 (Market Making).
 - Agustin Lebron, *The Laws of Trading* (2019).
 - Avellaneda and Stoikov (2008), High-frequency trading in a limit order book, *Quantitative Finance* 8(3), 217-224.
-- Directive 2014/65/EU (MiFID II), Article 48(6), and Commission Delegated Regulation (EU) 2017/566 (RTS 9) on the ratio of unexecuted orders to transactions.
+- Directive 2014/65/EU (MiFID II), Article 48(6), and Commission Delegated Regulation (EU) 2017/566 (RTS 9) on the ratio of unexecuted orders to transactions, as of November 2026.

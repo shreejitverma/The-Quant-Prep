@@ -93,7 +93,7 @@ Common triggers:
 - High reject rate from the venue.
 
 Design rules: the switch runs outside the strategy process (in a risk gateway or separate service) so a bug in the strategy cannot disable it; it fails closed (if the risk service cannot confirm state, orders stop); it uses exchange-side tools where available (mass cancel, cancel-on-disconnect); and it needs deliberate human action to reset.
-In the US, SEC Rule 15c3-5 (the market access rule, adopted on November 3, 2010 in Release No. 34-63241) requires brokers or dealers with market access to have pre-trade controls that reject orders exceeding pre-set credit or capital thresholds and erroneous orders that exceed price or size parameters.
+In the US (as of November 2026), SEC Rule 15c3-5 (the market access rule, adopted on November 3, 2010 in Release No. 34-63241) requires brokers or dealers with market access to have pre-trade controls that reject orders exceeding pre-set credit or capital thresholds and erroneous orders that exceed price or size parameters.
 The standard cautionary case is Knight Capital on August 1, 2012: the SEC's order (Release No. 34-70694, October 16, 2013) describes how, while processing 212 small retail orders, Knight's router sent millions of orders into the market over a 45-minute period, obtained over 4 million executions in 154 stocks for more than 397 million shares, and lost over 460 million dollars, and it found that Knight violated Rule 15c3-5.
 See [Risk Checks and Order Management](../12-Quant-Development/13-Risk-Checks-and-Order-Management.md).
 
@@ -227,5 +227,5 @@ Real P&L has fat tails, so expect breaches more often than the normal model says
 - John Hull, *Options, Futures, and Other Derivatives*, 11th edition (2021), chapter 3 (Hedging Strategies Using Futures).
 - A. E. Whalley and P. Wilmott (1997), An asymptotic analysis of an optimal hedging model for option pricing with transaction costs, *Mathematical Finance* 7(3), 307-324.
 - T. W. Epps (1979), Comovements in stock prices in the very short run, *Journal of the American Statistical Association* 74(366), 291-298.
-- SEC Rule 15c3-5 (17 CFR 240.15c3-5), Risk management controls for brokers or dealers with market access, Release No. 34-63241 (November 3, 2010).
+- SEC Rule 15c3-5 (17 CFR 240.15c3-5), Risk management controls for brokers or dealers with market access, Release No. 34-63241 (November 3, 2010), as of November 2026.
 - SEC (2013), In the Matter of Knight Capital Americas LLC, Release No. 34-70694 (October 16, 2013).
