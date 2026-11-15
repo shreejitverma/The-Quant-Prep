@@ -7,6 +7,7 @@ import unittest
 from tools.qp.lab.games import InterviewTradingGamesEngine
 from tools.qp.lab.mm_quote import MarketMakerEngine
 from tools.qp.lab.registry import get_engine
+from tools.qp.markets import evaluate_gate
 
 LOT = 100
 
@@ -207,10 +208,12 @@ class TestInterviewGamesFairness(unittest.TestCase):
             (game, style, rounds): [engine.run(game_type=game, quoting_style=style, num_rounds=rounds, seed=s) for s in cls.SEEDS]
             for game in ("dice_sum", "card_sum")
             for style in ("optimal", "wide_conservative", "naive_static")
-            for rounds in (20,)
+            for rounds in (20, 100)
         }
         for game in ("dice_sum", "card_sum"):
-            cls.runs[(game, "optimal", 100)] = [engine.run(game_type=game, num_rounds=100, seed=s) for s in cls.SEEDS]
+            cls.runs[(game, "naive_static", 5)] = [
+                engine.run(game_type=game, quoting_style="naive_static", num_rounds=5, seed=s) for s in cls.SEEDS
+            ]
 
     def test_cards_are_drawn_without_replacement_from_a_52_card_deck(self):
         # Oracle: enumerate the deck. After c1 the other 51 cards hold 364 - c1 points, so
@@ -302,18 +305,40 @@ class TestInterviewGamesFairness(unittest.TestCase):
                 self.assertGreater(exact, 0.0)
 
     def test_track_0_gate_is_reachable_by_optimal_play_and_not_by_naive_play(self):
-        # markets.py passes the games requirement at performance_score >= 60.
+        # markets.py passes the games requirement at performance_score >= 60 in a run of >= 100 rounds.
         for game in ("dice_sum", "card_sum"):
-            for style, rounds, reachable in (("optimal", 20, True), ("optimal", 100, True), ("naive_static", 20, False)):
-                with self.subTest(game=game, style=style, rounds=rounds):
-                    scores = [r.metrics["performance_score"] for r in self.runs[(game, style, rounds)]]
+            for style, reachable in (("optimal", True), ("naive_static", False), ("wide_conservative", False)):
+                with self.subTest(game=game, style=style):
+                    scores = [r.metrics["performance_score"] for r in self.runs[(game, style, 100)]]
                     self.assertTrue(all(0.0 <= s <= 100.0 for s in scores))
                     share = sum(s >= 60.0 for s in scores) / len(scores)
                     se = math.sqrt(max(share * (1 - share), 1.0 / len(scores)) / len(scores))
                     if reachable:
-                        self.assertGreater(share - 3 * se, 0.5)
+                        self.assertGreaterEqual(share, 0.85)
+                        self.assertGreater(share - 3 * se, 0.8)
                     else:
-                        self.assertLess(share + 3 * se, 0.5)
+                        self.assertLessEqual(share, 0.02)
+                        self.assertLess(share + 3 * se, 0.05)
+
+    def test_track_0_gate_ignores_short_games_runs(self):
+        # Five-round runs are noisy enough that naive play often scores >= 60 by luck; they must not count.
+        def games_requirement(runs):
+            history = [{"engine": "games", "metrics": dict(metrics)} for metrics in runs]
+            gate = evaluate_gate("track_0_pqt", "foundations", None, {"lab_history": history})
+            return next(r for r in gate.requirements if r.name == "Interview Trading Games Practice")
+
+        for game in ("dice_sum", "card_sum"):
+            with self.subTest(game=game):
+                lucky = [r.metrics for r in self.runs[(game, "naive_static", 5)] if r.metrics["performance_score"] >= 60.0]
+                self.assertGreater(len(lucky), 0.1 * len(self.SEEDS))
+                self.assertFalse(games_requirement(lucky).passed)
+                unrecorded = {k: v for k, v in lucky[0].items() if k != "rounds_completed"}
+                self.assertFalse(games_requirement([unrecorded]).passed)
+
+                full = next(r.metrics for r in self.runs[(game, "optimal", 100)] if r.metrics["performance_score"] >= 60.0)
+                self.assertTrue(games_requirement([*lucky, full]).passed)
+                naive_full = [r.metrics for r in self.runs[(game, "naive_static", 100)] if r.metrics["performance_score"] < 60.0]
+                self.assertFalse(games_requirement([*lucky, *naive_full]).passed)
 
 
 if __name__ == "__main__":

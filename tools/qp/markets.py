@@ -166,6 +166,8 @@ TRACK_METADATA = {
     },
 }
 
+GAMES_GATE_MIN_ROUNDS = 100
+
 LAB_ENGINES = {
     "games": "Mental Math & Market Making Games",
     "lob_sim": "Limit Order Book & Execution (TCA) Simulator",
@@ -315,9 +317,12 @@ def evaluate_gate(
             # Default target to 64 if vault cards aren't fully loaded
             target_count = max(64, total_cards) if total_cards > 0 else 64
 
-            # Check lab games
-            game_sessions = [s for s in lab_history if s.get("engine") == "games"]
-            best_score = max((s.get("metrics", {}).get("performance_score", 0.0) for s in game_sessions), default=0.0)
+            game_sessions = [
+                s
+                for s in lab_history
+                if s.get("engine") == "games" and s.get("metrics", {}).get("rounds_completed", 0) >= GAMES_GATE_MIN_ROUNDS
+            ]
+            best_score = max((s["metrics"].get("performance_score", 0.0) for s in game_sessions), default=0.0)
 
             reqs = [
                 GateRequirement(
@@ -328,8 +333,8 @@ def evaluate_gate(
                 ),
                 GateRequirement(
                     name="Interview Trading Games Practice",
-                    target="Performance score >= 60.0",
-                    actual=f"{best_score:.1f} score",
+                    target=f"Performance score >= 60.0 in a games run of >= {GAMES_GATE_MIN_ROUNDS} rounds",
+                    actual=f"{best_score:.1f} best score over {len(game_sessions)} qualifying runs",
                     passed=best_score >= 60.0,
                 ),
             ]
