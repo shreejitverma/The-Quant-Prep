@@ -113,7 +113,7 @@ $$
 
 For a market maker the risk is the counterparty's decision.
 If you are short in-the-money calls before an ex-date you should expect assignment; if you are long them and fail to exercise, you give away the dividend.
-OCC assigns exercise notices to clearing members at random (Options Industry Council exercise FAQ), and FINRA Rule 2360(b)(23)(C) requires brokers to pass them on to customers first in first out or by random selection.
+As of November 2026, OCC Rule 803 assigns exercise notices to clearing members at random under OCC's procedures, and FINRA Rule 2360(b)(23)(C) requires brokers to pass them on to customers first in first out or by random selection.
 Assignments therefore land across all short positions in proportion on average, so a trader who buys and sells a large equal number of deep in-the-money calls and exercises the long side before the ex-date is assigned on only part of the short side, and keeps the dividends that non-exercising holders leave behind.
 Pool, Stoll and Whaley (2008) found that more than half of the long positions that should have been exercised went unexercised, costing call holders over 491 million dollars over ten years, and that market makers captured most of it with these dividend spread trades.
 
@@ -290,7 +290,7 @@ print(round(bid, 3), round(ask, 3))  # 2.897 3.086
 - Euan Sinclair, *Volatility Trading* (2nd edition, 2013).
 - John Hull, *Options, Futures, and Other Derivatives*, 11th edition (2021), chapter 11 (Properties of Stock Options: early exercise and dividends).
 - Emanuel Derman (1999), Regimes of volatility, *Risk*, April 1999 (sticky strike, sticky delta and sticky implied tree).
-- Joseph Pool, Hans Stoll and Robert Whaley (2008), Failure to exercise call options: an anomaly and a trading game, *Journal of Financial Markets* 11(1), 1-35.
-- OCC Rules, Rule 805 (exercise by exception), and FINRA Rule 2360(b)(23) (exercise deadlines and allocation of assignments), both as of November 2026.
+- Veronika Krepely Pool, Hans R. Stoll and Robert E. Whaley (2008), Failure to exercise call options: an anomaly and a trading game, *Journal of Financial Markets* 11(1), 1-35.
+- OCC Rules, Rule 803 (assignment of exercise notices) and Rule 805 (exercise by exception), and FINRA Rule 2360(b)(23) (exercise deadlines and allocation of assignments), both as of November 2026.
 - Cboe Exchange Rules, Rule 5.52 (Market-Maker quoting obligations), as of November 2026.
 - Related notes: [Implied Volatility and the Smile](../05-Derivatives-and-Volatility/07-Implied-Volatility-and-the-Smile.md), [The Greeks](../05-Derivatives-and-Volatility/05-The-Greeks.md), [Hedging and Risk for Market Makers](06-Hedging-and-Risk-for-Market-Makers.md), [Market Making P&L Attribution and Markouts](09-Market-Making-PnL-Attribution-and-Markouts.md).
