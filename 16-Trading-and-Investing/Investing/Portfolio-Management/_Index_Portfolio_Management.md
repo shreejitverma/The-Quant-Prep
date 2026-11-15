@@ -77,12 +77,12 @@ The portfolio management track comprises eight comprehensive concept notes conta
    - The risk concentration fallacy of the traditional 60/40 equity/bond portfolio.
    - Euler's homogeneous function decomposition of portfolio risk into Marginal and Total Risk Contributions.
    - Equal Risk Contribution (ERC) formulation and convex optimization.
-   - Bridgewater's 4-quadrant All Weather macro framework matching asset classes to growth and inflation regimes.
+   - Bridgewater's All Weather framework: four growth and inflation environments with 25% of risk in each.
    - Leverage implementation mechanics, repo financing drag, and simultaneous stock-bond crash vulnerabilities (such as 2022).
    - Cards: `mkt-pf-161` through `mkt-pf-192`.
 
 7. [[16-Trading-and-Investing/Investing/Portfolio-Management/07-Macro-Regimes-and-Debt-Cycles|07. Macro Regimes and Debt Cycles]]
-   - Ray Dalio's three-force economic machine: productivity drift, short-term debt cycles, and long-term debt super-cycles.
+   - Ray Dalio's debt-cycle template: productivity growth, short-term debt cycles, and the long-term debt cycle they add up to.
    - Hyman Minsky's Financial Instability Hypothesis: Hedge, Speculative, and Ponzi financing stages.
    - Debt sustainability dynamics: the $r - g$ differential and primary budget balances.
    - Deleveraging mechanics: the four levers (austerity, defaults, wealth transfers, and debt monetization) and "Beautiful Deleveraging".
@@ -91,7 +91,7 @@ The portfolio management track comprises eight comprehensive concept notes conta
    - Cards: `mkt-pf-193` through `mkt-pf-224`.
 
 8. [[16-Trading-and-Investing/Investing/Portfolio-Management/08-Behavioral-Portfolio-Management-and-Decision-Rules|08. Behavioral Portfolio Management and Decision Rules]]
-   - Kahneman and Tversky's Prospect Theory: reference dependence, loss aversion ($\lambda \approx 2.25$), and the S-shaped value function.
+   - Kahneman and Tversky's Prospect Theory: reference dependence, loss aversion ($\lambda = 2.25$ in Tversky and Kahneman 1992), and the S-shaped value function.
    - Shefrin and Statman's Disposition Effect and Odean's empirical quantification (PGR vs PLR).
    - Institutional agency friction: career risk, Keynesian conventional failure, closet indexing, and window dressing.
    - Decision quality versus outcome quality: Annie Duke's "resulting" matrix.

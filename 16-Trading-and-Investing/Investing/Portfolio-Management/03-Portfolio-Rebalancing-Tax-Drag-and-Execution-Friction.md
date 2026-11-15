@@ -5,23 +5,23 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Arnott Berkin and Bouchey (2011) - Is Your Alpha Big Enough to Cover Its Taxes?, Daryanani (2007) - Opportunistic Rebalancing: A New Paradigm for Wealth Managers, Leland (1999) - Optimal Portfolio Management with Transactions Costs and Capital Gains Taxes, Vanguard (2015) - Best Practices for Portfolio Rebalancing]
+sources: [Zilbering Jaconetti and Kinniry (2015) - Best Practices for Portfolio Rebalancing, Daryanani (2008) - Opportunistic Rebalancing: A New Paradigm for Wealth Managers, Perold and Sharpe (1988) - Dynamic Strategies for Asset Allocation, Booth and Fama (1992) - Diversification Returns and Asset Contributions, Jeffrey and Arnott (1993) - Is Your Alpha Big Enough to Cover Its Taxes?, Leland (1999) - Optimal Portfolio Management with Transactions Costs and Capital Gains Taxes, IRS Revenue Procedure 2025-32]
 ---
 
 # Portfolio Rebalancing, Tax Drag, and Execution Friction
 
 ## TL;DR
 
-- Portfolio rebalancing is primarily a risk-control mechanism designed to prevent asset drift from transforming a conservative portfolio into an unintentional, high-volatility equity fund.
-- The "Rebalancing Bonus" (volatility harvesting) mathematically generates incremental return in oscillating, mean-reverting markets, but produces a return penalty during persistent, momentum-driven bull trends.
-- Tolerance-band (corridor) rebalancing systematically outperforms rigid calendar-based rebalancing by trading only when asset weights deviate beyond defined thresholds, slashing unnecessary turnover.
-- Tax drag is the single largest friction eroding long-term compounding in taxable accounts, consuming between 1.0% and 2.5% in annualized returns under high turnover.
-- Strategic asset location separates tax-inefficient assets (taxable bonds, REITs, high-turnover factor strategies) into tax-deferred accounts, placing tax-efficient broad equity index funds in taxable accounts.
+- Portfolio rebalancing is primarily a risk-control mechanism: Vanguard's research (Zilbering, Jaconetti and Kinniry 2015) frames its goal as minimizing risk relative to the target allocation, not maximizing return.
+- A rebalanced portfolio grows faster than the weighted average of its assets' own growth rates by the diversification return $\tfrac12 w_1 w_2(\sigma_1^2 + \sigma_2^2 - 2\sigma_{12})$, but relative to buy-and-hold it wins in oscillating markets and loses in persistent trends (Perold and Sharpe 1988).
+- Vanguard found no optimal rebalancing frequency or threshold and suggests annual or semiannual monitoring with 5% thresholds; Daryanani (2008) found that looking often (every two weeks) but trading only outside 20% relative bands roughly doubled the rebalancing benefit of annual rebalancing in his 1992-2004 sample.
+- Taxes compound like fees: in a hypothetical 10%-return, 25%-tax, 30-year example, paying tax every year instead of once at the end costs 1.52 percentage points of annual after-tax return.
+- Asset location puts tax-inefficient assets (taxable bonds, REITs, high-turnover strategies) in tax-deferred accounts and tax-efficient broad equity index funds in taxable accounts.
 
 ## Learning objectives
 
 - Contrast calendar-based rebalancing with opportunistic tolerance-band (corridor) rebalancing strategies.
-- Derive the mathematical formula for the Rebalancing Bonus (volatility harvesting) between uncorrelated volatile assets.
+- Derive the mathematical formula for the Rebalancing Bonus (volatility harvesting) between volatile assets.
 - Quantify transaction cost friction: bid-ask spread, broker commissions, exchange fees, and market impact.
 - Measure the cumulative compounding damage of capital gains tax drag over multi-decade horizons.
 - Implement systematic tax-loss harvesting while navigating the 30-day IRS Wash Sale Rule.
@@ -32,32 +32,38 @@ sources: [Arnott Berkin and Bouchey (2011) - Is Your Alpha Big Enough to Cover I
 ### 1. The Purpose of Rebalancing: Risk Control vs Return
 
 Over time, higher-returning risky assets (equities) outgrow lower-returning defensive assets (bonds).
-Without rebalancing, a prudent 60/40 equity/bond portfolio drifts relentlessly:
+Without rebalancing, a 60/40 equity/bond portfolio drifts toward equities.
+In a hypothetical example with equities returning 10% a year and bonds 2% a year, and volatilities of 16% and 5% at zero correlation:
 
 ```
 +-----------------------------------------------------------------------+
 |                    THE DANGER OF UNCHECKED ASSET DRIFT                |
 +-----------------------------------------------------------------------+
 | Year 0 (Target Policy):         Year 10 (Unchecked Market Drift):     |
-| 60% Equities / 40% Bonds        84% Equities / 16% Bonds              |
-| Portfolio Volatility: 10.5%     Portfolio Volatility: 15.8% (+50% Risk)
-| Max Drawdown Risk: -24%         Max Drawdown Risk: -46% (Catastrophic)|
+| 60% Equities / 40% Bonds        76.1% Equities / 23.9% Bonds          |
+| Portfolio Volatility: 9.81%     Portfolio Volatility: 12.24% (+25%)   |
 +---------------------------------+-------------------------------------+
 ```
 
-Rebalancing is not a return-enhancement tool; it is a **risk-governance protocol**.
-It forces an investor to systematically execute the core mandate of investing: trimming assets that have appreciated above fair value and redeploying capital into assets that have lagged.
+Rebalancing is first a **risk-governance protocol**: it keeps the portfolio's risk where the policy put it.
+As a side effect it trims assets that have risen relative to the others and adds to those that have lagged.
 
 ### 2. The Rebalancing Bonus: Volatility Harvesting Mathematics
 
-When two uncorrelated assets oscillate with high volatility around a stable mean, systematic rebalancing extracts a mathematical return bonus exceeding the weighted average return of the buy-and-hold assets:
+For lognormal assets, a portfolio rebalanced to fixed weights grows at $\sum_i w_i \mu_i - \tfrac12 \sigma_p^2$, while each asset grows at $\mu_i - \tfrac12 \sigma_i^2$.
+The difference between the rebalanced portfolio's growth rate and the weighted average of the assets' growth rates is the diversification return (Booth and Fama 1992):
 
-$$\text{Rebalancing Bonus} \approx \frac{1}{2} w_1 w_2 \left( \sigma_1^2 + \sigma_2^2 - 2 \sigma_{12} \right)$$
+$$\text{Rebalancing Bonus} = \frac{1}{2}\left(\sum_i w_i \sigma_i^2 - \sigma_p^2\right) = \frac{1}{2} w_1 w_2 \left( \sigma_1^2 + \sigma_2^2 - 2 \sigma_{12} \right)$$
 
 Where:
-- $w_1, w_2$: Asset allocation weights.
+- $w_1, w_2$: Asset allocation weights, with $w_1 + w_2 = 1$.
 - $\sigma_1, \sigma_2$: Asset volatilities.
 - $\sigma_{12} = \rho \sigma_1 \sigma_2$: Covariance between the assets.
+
+For a hypothetical 50/50 mix of two assets with 20% volatility each, the bonus is 1.00% a year at zero correlation and 0.50% a year at a correlation of 0.5.
+
+The formula compares against the assets' own growth rates, not against a buy-and-hold portfolio.
+Against buy-and-hold, Perold and Sharpe (1988) show that a constant-mix (rebalancing) strategy does better when prices oscillate and worse when one asset trends persistently:
 
 ```
 +-----------------------------------------------------------------------+
@@ -65,11 +71,11 @@ Where:
 +-----------------------------------------------------------------------+
 | MARKET REGIME          | REBALANCING EFFECT    | WHY IT HAPPENS       |
 +------------------------+-----------------------+----------------------+
-| Mean-Reverting / Range | POSITIVE RETURN       | Buys low and sells   |
-| Bound (Volatile Chop)  | (Volatility Harvest)  | high automatically.  |
+| Mean-Reverting / Range | POSITIVE vs           | Buys low and sells   |
+| Bound (Volatile Chop)  | buy-and-hold          | high automatically.  |
 +------------------------+-----------------------+----------------------+
-| Strong Sustained Trend | NEGATIVE DRAG         | Sells winners early; |
-| (Multi-Year Momentum)  | (Momentum Penalty)    | buys structural decay|
+| Strong Sustained Trend | NEGATIVE vs           | Sells winners early; |
+| (Multi-Year Momentum)  | buy-and-hold          | buys the laggard.    |
 +------------------------+-----------------------+----------------------+
 ```
 
@@ -91,14 +97,16 @@ Where:
 |    (Absolute)      | e.g. 60% Eq rebalances    | scales poorly across |
 |                    | if < 55% or > 65%.        | small allocations.   |
 +--------------------+---------------------------+----------------------+
-| 3. Relative Band   | Relative corridor trigger | Optimal across all   |
-|    (Proportional)  | (Target +/- 20% relative) | asset sizes; e.g. 5% |
-|                    | e.g. 60% Eq triggers at   | gold triggers at     |
-|                    | 48% or 72%; 5% gold at 4% | 4% or 6% (+/- 1%).   |
+| 3. Relative Band   | Relative corridor trigger | Scales with asset    |
+|    (Proportional)  | (Target +/- 20% relative) | size; e.g. 5% gold   |
+|                    | e.g. 60% Eq triggers at   | triggers at 4% or 6% |
+|                    | 48% or 72%; 5% gold at 4% | (+/- 1%).            |
 +--------------------+---------------------------+----------------------+
 ```
 
-Vanguard (2015) empirical research demonstrates that **Opportunistic Relative Tolerance Bands (e.g. Target $\pm 20\%$ relative)** capture virtually all diversification benefits while reducing transaction costs and tax events by over 50% compared to monthly calendar rebalancing.
+The evidence on which rule is best is mixed, and depends on the sample:
+- Zilbering, Jaconetti and Kinniry (Vanguard Research, November 2015) find no optimal frequency or threshold, because risk-adjusted returns do not differ meaningfully across strategies, and conclude that annual or semiannual monitoring with 5% thresholds is a reasonable balance of risk control and cost for most broadly diversified portfolios.
+- Daryanani (Journal of Financial Planning, January 2008) tested daily to annual "looking" frequencies on a multi-asset portfolio over 1992-2004 and favored 20% relative bands with frequent (up to biweekly) looking, rebalancing only the asset classes that are out of band.
 
 ### 4. The Friction of Execution: Trading Costs
 
@@ -108,23 +116,30 @@ $$\text{Total Transaction Cost} = \text{Commissions} + \text{Exchange Fees} + \t
 
 ```
 +-----------------------------------------------------------------------+
-|                    MARKET IMPACT: ALMGREN-CHRISS LAW                  |
+|                    MARKET IMPACT: THE SQUARE-ROOT LAW                 |
 +-----------------------------------------------------------------------+
-| Market Impact scales non-linearly with trade size relative to volume: |
+| Empirically, the impact of a large order grows roughly with the       |
+| square root of its size relative to volume:                           |
 |                                                                       |
-|                     I = gamma * sigma * sqrt(Q / V)                   |
+|                     I = Y * sigma * sqrt(Q / V)                       |
 |                                                                       |
-| Where Q = Order Size, V = Average Daily Volume, sigma = Volatility.   |
-| For large portfolios, executing rebalancing in single market blocks   |
-| causes severe price depression (slippage), destroying portfolio alpha.|
+| Where Q = Order Size, V = Daily Volume, sigma = Daily Volatility,     |
+| and Y is a constant of order one fitted to data.                      |
+| Large portfolios therefore split rebalancing trades over time.        |
 +-----------------------------------------------------------------------+
 ```
 
+The square-root law is an empirical regularity documented across markets (Bouchaud, Bonart, Donier and Gould 2018, *Trades, Quotes and Prices*).
+It is distinct from Almgren and Chriss (2000), whose optimal-execution model assumes linear temporary and permanent impact and trades off impact cost against price risk.
+
 ### 5. Tax Drag: The Silent Wealth Destroyer
 
-In taxable investment accounts, realized capital gains incur immediate tax liabilities:
-- Short-term capital gains (assets held $\le 1$ year): Taxed at ordinary income rates (up to 37% federal + state).
-- Long-term capital gains (assets held $> 1$ year): Taxed at preferential rates (typically 15% or 20% + 3.8% NIIT).
+US federal rates, as of November 2026 (tax year 2026, IRS Revenue Procedure 2025-32 and the Internal Revenue Code):
+- Short-term capital gains (assets held one year or less) are taxed at ordinary income rates; the top rate is 37%, which the One Big Beautiful Bill Act made permanent.
+- Long-term capital gains (held more than one year) are taxed at 0%, 15% or 20%; for 2026 the 0% rate applies up to $49,450 of taxable income for single filers ($98,900 married filing jointly) and the 20% rate above $545,500 ($613,700 joint).
+- The 3.8% Net Investment Income Tax (IRC section 1411) applies above modified adjusted gross income of $200,000 single or $250,000 joint; these thresholds are not indexed.
+
+A hypothetical example shows the compounding effect of paying tax every year:
 
 ```
 +-----------------------------------------------------------------------+
@@ -132,7 +147,7 @@ In taxable investment accounts, realized capital gains incur immediate tax liabi
 +-----------------------------------------------------------------------+
 | Initial Capital: $1,000,000 | Gross Return: 10.0% | Horizon: 30 Years |
 +-----------------------------------------------------------------------+
-| SCENARIO A: 100% Annual Turnover in Taxable Account (25% Blended Tax) |
+| SCENARIO A: All Gains Realized Every Year (25% Blended Tax)           |
 | - Net Annual Return = 10.0% * (1 - 0.25) = 7.50%                      |
 | - Terminal Wealth = $1,000,000 * (1.075)^30 = $8,754,955              |
 +-----------------------------------------------------------------------+
@@ -140,15 +155,18 @@ In taxable investment accounts, realized capital gains incur immediate tax liabi
 | - Compounding at 10.0% with zero annual tax leakage                   |
 | - Pre-tax Terminal Wealth = $1,000,000 * (1.10)^30 = $17,449,402      |
 | - After paying 25% tax on total gains at Year 30:                     |
-|   After-Tax Terminal Wealth = $13,337,052                             |
+|   After-Tax Terminal Wealth = $13,337,052 (9.02% a year)              |
 +-----------------------------------------------------------------------+
-| TAX DRAG PENALTY: Turnover destroyed $4,582,097 (34.4% of total wealth)|
+| TAX DRAG PENALTY: $4,582,097 (34.4% of Scenario B's after-tax wealth) |
+| or 1.52 percentage points of after-tax return a year                  |
 +-----------------------------------------------------------------------+
 ```
 
+Jeffrey and Arnott (1993) made the same point for active managers: realized gains from turnover can consume more than the alpha a manager adds, so a taxable investor needs a larger alpha than a tax-exempt one to break even.
+
 ### 6. Strategic Asset Location Framework
 
-Asset Location optimizes after-tax returns by placing specific asset classes into their mathematically optimal tax environment:
+Asset Location optimizes after-tax returns by placing specific asset classes into their most tax-efficient account type:
 
 ```
 +-----------------------------------------------------------------------+
@@ -162,26 +180,26 @@ Asset Location optimizes after-tax returns by placing specific asset classes int
 |                    | capital gains rates.      | - Tax-Loss Harvesters|
 +--------------------+---------------------------+----------------------+
 | 2. Tax-Deferred    | Contributions pre-tax;    | - High-Yield Bonds   |
-|    (Traditional    | gains compound tax-free;  | - REITs (Ordinary Div|
+|    (Traditional    | growth tax-deferred;      | - REITs (Ordinary Div|
 |    IRA / 401k)     | withdrawals taxed as      | - Emerging Mkt Debt  |
 |                    | ordinary income.          | - High-Turnover Quant|
 +--------------------+---------------------------+----------------------+
 | 3. Tax-Exempt      | Contributions post-tax;   | - Highest Expected   |
-|    (Roth IRA /     | gains compound tax-free;  |   Return Equities    |
-|    Roth 401k)      | withdrawals 100% TAX-FREE.| - Small-Cap Value    |
-|                    | Never subject to RMDs.    | - Emerging Mkt Equity|
+|    (Roth IRA /     | qualified withdrawals are |   Return Equities    |
+|    Roth 401k)      | tax-free; no lifetime RMDs| - Small-Cap Value    |
+|                    | (Roth 401k from 2024).    | - Emerging Mkt Equity|
 +--------------------+---------------------------+----------------------+
 ```
 
 #### Tax-Loss Harvesting and the Wash Sale Rule
-Tax-loss harvesting involves selling an asset at an unrealized loss to offset taxable realized capital gains and up to $3,000 of ordinary income.
-- **The IRS Wash Sale Rule (IRC Section 1091)**: Disallows the tax loss deduction if the investor purchases a "substantially identical" security within 30 days before or 30 days after the sale date (a 61-day window).
-- **The Execution Solution**: Sell an S&P 500 ETF (e.g. VOO) at a loss and immediately purchase a Russell 1000 or Total Stock Market ETF (e.g. VTI).
-- The two funds are not "substantially identical" under IRS definitions, yet maintain 99% correlation, preserving market exposure while capturing the tax deduction.
+Tax-loss harvesting sells a position at an unrealized loss to offset realized capital gains and up to $3,000 a year of ordinary income ($1,500 if married filing separately, IRC section 1211(b)), carrying any excess forward.
+- **The Wash Sale Rule (IRC section 1091)**: Disallows the loss if the investor acquires a "substantially identical" security within 30 days before or 30 days after the sale, a 61-day window counting the sale date; the disallowed loss is added to the basis of the replacement shares, so it is deferred rather than lost.
+- **The Execution Solution**: Sell the losing fund and buy a fund that tracks a different index, for example an S&P 500 fund replaced with a total-market fund.
+- The IRS has not defined "substantially identical" for funds; practitioners generally treat funds tracking different indexes as not substantially identical, but this is a judgment to confirm with a tax adviser, and the two funds will not track each other perfectly.
 
 ## Worked numerical case study
 
-Manage a $2,000,000 balanced portfolio using Rebalancing Tolerance Bands:
+Manage a hypothetical $2,000,000 balanced portfolio using Rebalancing Tolerance Bands:
 - Policy Target SAA:
   - 60% Global Equities ($1,200,000 target)
   - 30% Fixed Income ($600,000 target)
@@ -216,8 +234,8 @@ Where does the $170,000 come from?
   $$\text{Equity Trim} = \$1,550,000 - \$1,380,000 = -\$170,000$$
 
 Operational Efficiency Finding:
-Under a calendar rebalancing rule, an investor would trade all three asset classes (buying and selling gold, bonds, and equities).
-Under the relative tolerance band, the investor executes zero trades in gold, executing only the specific trade required to restore fixed income risk parameters, cutting transaction costs and potential capital gains taxes.
+Gold happens to sit exactly at target here, so no rule would trade it.
+The difference from a calendar rule is timing: the corridor rule trades only when a band is breached, whenever that happens, while a calendar rule trades on fixed dates whether or not the drift matters, which tends to add turnover, transaction costs and taxable realizations.
 
 ## Practice questions
 
@@ -225,7 +243,7 @@ Under the relative tolerance band, the investor executes zero trades in gold, ex
 > Risk control: preventing asset drift from increasing the portfolio's risk profile beyond the investor's strategic tolerance.
 
 > [!question]- mkt-pf-066 | What is the Rebalancing Bonus (volatility harvesting)?
-> The mathematical return earned by systematically rebalancing between volatile, uncorrelated, mean-reverting assets above their buy-and-hold average.
+> The extra growth of a portfolio rebalanced to fixed weights over the weighted average of its assets' own growth rates: 0.5 w1 w2 (sigma1^2 + sigma2^2 - 2 sigma12) for two lognormal assets, e.g. 1.00% a year for a 50/50 mix of two uncorrelated 20%-volatility assets.
 
 > [!question]- mkt-pf-067 | In what market environment does rebalancing create a return drag?
 > During sustained, multi-year momentum trends, where rebalancing prematurely trims winning momentum assets to buy lagging assets.
@@ -243,19 +261,19 @@ Under the relative tolerance band, the investor executes zero trades in gold, ex
 > Brokerage commissions, exchange/regulatory fees, bid-ask half-spread, and market impact (slippage).
 
 > [!question]- mkt-pf-072 | What is the Almgren-Chriss square-root law of market impact?
-> Market impact price concession scales proportionally with volatility and the square root of order size divided by average daily volume.
+> The square-root law is an empirical regularity, not an Almgren-Chriss result: impact grows roughly as volatility times the square root of order size over volume (Bouchaud et al. 2018); Almgren and Chriss (2000) is an optimal-execution model that assumes linear impact.
 
 > [!question]- mkt-pf-073 | What is tax drag in a taxable investment portfolio?
 > The reduction in compound portfolio growth caused by paying annual taxes on interest, non-qualified dividends, and realized capital gains.
 
 > [!question]- mkt-pf-074 | What is the difference between short-term and long-term capital gains tax rates in the United States?
-> Short-term gains (held <= 1 year) are taxed at ordinary income rates (up to 37%); long-term gains (held > 1 year) receive preferential rates (typically 15% or 20%).
+> As of tax year 2026, short-term gains (held one year or less) are taxed at ordinary rates up to 37%; long-term gains (held more than one year) are taxed at 0%, 15% or 20%, plus the 3.8% NIIT for high incomes (IRS Rev. Proc. 2025-32).
 
 > [!question]- mkt-pf-075 | What is the IRS Wash Sale Rule (IRC Section 1091)?
-> A tax rule that disallows a capital loss deduction if a substantially identical security is purchased within 30 days before or after the sale date.
+> A tax rule that disallows a capital loss if a substantially identical security is acquired within 30 days before or after the sale date; the disallowed loss is added to the replacement shares' basis.
 
 > [!question]- mkt-pf-076 | How do quantitative investors harvest tax losses without violating the Wash Sale Rule?
-> By selling the loss-making security and immediately purchasing a highly correlated substitute ETF from a different index family (e.g. S&P 500 vs Russell 1000).
+> By selling the losing fund and buying a fund that tracks a different index (e.g. an S&P 500 fund replaced by a total-market fund), keeping market exposure; the IRS has not defined "substantially identical" for funds, so this is a judgment call.
 
 > [!question]- mkt-pf-077 | What is Strategic Asset Location?
 > Distributing asset classes across Taxable, Tax-Deferred (Traditional IRA/401k), and Tax-Exempt (Roth) accounts to maximize overall after-tax compound wealth.
@@ -276,16 +294,16 @@ Under the relative tolerance band, the investor executes zero trades in gold, ex
 > Higher turnover accelerates capital gains realization, transforming deferred tax liabilities into immediate tax cash outflows and destroying compounding.
 
 > [!question]- mkt-pf-083 | What is a Required Minimum Distribution (RMD)?
-> Mandatory statutory annual withdrawals that retirees must take from traditional tax-deferred accounts starting at age 73, taxed as ordinary income.
+> Mandatory annual withdrawals from traditional tax-deferred accounts, taxed as ordinary income; under SECURE 2.0 they start at age 73 (rising to 75 for those born in 1960 or later), as of 2026.
 
 > [!question]- mkt-pf-084 | Why are municipal bonds uniquely suited for taxable accounts of high-earning investors?
-> Municipal bond interest is 100% exempt from federal income taxes (and often state taxes), providing attractive tax-equivalent yields.
+> Interest on most municipal bonds is exempt from regular federal income tax (and often from the issuing state's tax), which is worth most to investors in high brackets.
 
 > [!question]- mkt-pf-085 | What is the tax-equivalent yield formula for a tax-exempt municipal bond?
-> Tax-Equivalent Yield = Municipal Yield / (1 - Marginal Tax Rate).
+> Tax-Equivalent Yield = Municipal Yield / (1 - Marginal Tax Rate); e.g. a 3.5% muni at a 37% rate is worth 5.56% taxable.
 
 > [!question]- mkt-pf-086 | How does a step-up in cost basis at death eliminate capital gains taxes?
-> Under US tax law, the cost basis of inherited assets is stepped up to the fair market value on the date of death, erasing all accumulated lifetime capital gains.
+> Under IRC section 1014 the basis of most inherited assets is reset to fair market value at the date of death, so gains accrued during the owner's life are never taxed as capital gains.
 
 > [!question]- mkt-pf-087 | What is an 'in-kind' transfer in ETF mechanics?
 > Authorized Participants swap baskets of underlying stocks for ETF shares, allowing the ETF issuer to eliminate low-cost-basis shares without realizing capital gains.
@@ -309,7 +327,7 @@ Under the relative tolerance band, the investor executes zero trades in gold, ex
 > Large institutional portfolios cannot rebalance instantaneously without moving market prices, requiring algorithmic execution (TWAP/VWAP) over multiple trading sessions.
 
 > [!question]- mkt-pf-094 | What is the Net Investment Income Tax (NIIT)?
-> A 3.8% surtax in the United States applied to net investment income (dividends, capital gains, interest) for high-income taxpayers.
+> A 3.8% US surtax (IRC section 1411) on net investment income such as dividends, capital gains and interest, applied above modified adjusted gross income of $200,000 single or $250,000 joint.
 
 > [!question]- mkt-pf-095 | How does an investor handle illiquid assets (like private equity or real estate) in a rebalancing program?
 > Rebalance around the illiquid allocation using public liquid asset classes (equities, bonds) as the dynamic adjustment buffer.
@@ -319,9 +337,19 @@ Under the relative tolerance band, the investor executes zero trades in gold, ex
 
 ---
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_pm_03_rebalancing_tax.py`](../../code/mkt_pm_03_rebalancing_tax.py) prints and asserts every computed number on this page: the drift example compounded year by year in exact fractions, volatilities against a seeded simulation, the rebalancing bonus against a seeded simulation of daily-rebalanced geometric Brownian motion, the corridor trades in exact fractions, and the tax example compounded year by year in exact fractions with the after-tax growth rate found by bisection.
+- Related notes: [Asset Allocation and The Benchmark to Beat](01-Asset-Allocation-and-The-Benchmark-to-Beat.md) (fee drag compounds the same way as tax drag), [Kelly Criterion and Capital Growth Theory](05-Kelly-Criterion-and-Capital-Growth-Theory.md) (growth rate equals mean minus half variance).
+
 ## Further reading
 
-- Arnott, R. D., Berkin, A. L., & Bouchey, P. C. (2011). *Is Your Alpha Big Enough to Cover Its Taxes?* The Journal of Portfolio Management, 37(3), 96-111.
-- Daryanani, G. (2007). *Opportunistic Rebalancing: A New Paradigm for Wealth Managers*. Journal of Financial Planning, 20(1), 48-55.
-- Leland, H. E. (1999). *Optimal Portfolio Management with Transactions Costs and Capital Gains Taxes*. Quantitative Analysis in Financial Markets, 147-176.
-- Vanguard Research. (2015). *Best Practices for Portfolio Rebalancing*. The Vanguard Group.
+- Almgren, R., & Chriss, N. (2000). *Optimal Execution of Portfolio Transactions*. Journal of Risk, 3(2), 5-39.
+- Booth, D. G., & Fama, E. F. (1992). *Diversification Returns and Asset Contributions*. Financial Analysts Journal, 48(3), 26-32.
+- Bouchaud, J.-P., Bonart, J., Donier, J., & Gould, M. (2018). *Trades, Quotes and Prices: Financial Markets Under the Microscope*. Cambridge University Press.
+- Daryanani, G. (2008). *Opportunistic Rebalancing: A New Paradigm for Wealth Managers*. Journal of Financial Planning, January 2008.
+- Internal Revenue Service (2025). *Revenue Procedure 2025-32* (inflation-adjusted 2026 tax brackets and capital gains thresholds).
+- Jeffrey, R. H., & Arnott, R. D. (1993). *Is Your Alpha Big Enough to Cover Its Taxes?* The Journal of Portfolio Management, 19(3).
+- Leland, H. E. (1999). *Optimal Portfolio Management with Transactions Costs and Capital Gains Taxes*. Research Program in Finance Working Paper, Haas School of Business, University of California, Berkeley.
+- Perold, A. F., & Sharpe, W. F. (1988). *Dynamic Strategies for Asset Allocation*. Financial Analysts Journal, 44(1), 16-27.
+- Zilbering, Y., Jaconetti, C. M., & Kinniry, F. M. (2015). *Best Practices for Portfolio Rebalancing*. Vanguard Research, November 2015.
