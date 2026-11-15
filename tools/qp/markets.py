@@ -336,7 +336,12 @@ def evaluate_gate(
                 GateRequirement(
                     name="Interview Trading Games Practice",
                     target=f"Mean performance score >= 60.0 over the last {GAMES_GATE_RUNS} runs of >= {GAMES_GATE_MIN_ROUNDS} rounds",
-                    actual=f"{mean_score:.1f} mean score over the last {len(recent_scores)} of {GAMES_GATE_RUNS} qualifying runs",
+                    actual=(
+                        f"{mean_score:.1f} mean over the last {len(recent_scores)} of {len(game_sessions)} qualifying runs "
+                        f"({GAMES_GATE_RUNS} needed)"
+                        if recent_scores
+                        else f"0 qualifying runs ({GAMES_GATE_RUNS} needed)"
+                    ),
                     passed=len(recent_scores) == GAMES_GATE_RUNS and mean_score >= 60.0,
                 ),
             ]

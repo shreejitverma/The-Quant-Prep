@@ -36,6 +36,22 @@ class TestMarketsGates(TempMarketsVault):
         gate_passed = evaluate_gate("track_0_pqt", "foundations", fake_vault_cards, fake_store)
         self.assertTrue(gate_passed.passed)
 
+    def test_pqt_games_requirement_reports_qualifying_runs(self):
+        def games_actual(scores):
+            history = [{"engine": "games", "metrics": {"performance_score": sc, "rounds_completed": 100}} for sc in scores]
+            history.append({"engine": "games", "metrics": {"performance_score": 99.0, "rounds_completed": 20}})
+            gate = evaluate_gate("track_0_pqt", "foundations", None, {"lab_history": history})
+            return next(r for r in gate.requirements if r.name == "Interview Trading Games Practice")
+
+        self.assertEqual(games_actual([]).actual, "0 qualifying runs (3 needed)")
+        one = games_actual([75.0])
+        self.assertEqual(one.actual, "75.0 mean over the last 1 of 1 qualifying runs (3 needed)")
+        self.assertFalse(one.passed)
+        # Last three of ten are 70, 50 and 66, mean 62.0; the 20-round run does not count.
+        ten = games_actual([10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 0.0, 70.0, 50.0, 66.0])
+        self.assertEqual(ten.actual, "62.0 mean over the last 3 of 10 qualifying runs (3 needed)")
+        self.assertTrue(ten.passed)
+
     def test_trd_foundations_gate_evaluation(self):
         fake_vault_cards = self.track_vault(("07-Trading-Styles/Discretionary-Trading", "mkt-trd-", 4))
         fake_store = {
