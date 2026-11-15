@@ -6,7 +6,9 @@ Independent routes used here:
 - the Garman-Klass example with ``math.log`` and again from log prices via ``math.log1p``;
 - range-estimator efficiency: Parkinson exactly from the Brownian range moments E[R^2] = 4 ln 2 and
   E[R^4] = 9 zeta(3) (zeta(3) summed as a series), Garman-Klass and Rogers-Satchell by seeded simulation of
-  Brownian days whose highs and lows are sampled exactly within each step from the Brownian-bridge law;
+  Brownian days whose per-step high and low each follow the exact Brownian-bridge law (drawn separately, which
+  departs from their joint law only when one step spans most of the day's range), the simulator validated
+  against the exact Parkinson efficiency, every tolerance 4 computed standard errors;
 - the two-regime volatility-management example: Sharpe ratios and kurtosis exactly from Gaussian moments
   per regime, checked by seeded simulation, and the effect isolated by changing only the risk-return link.
 Every quoted number is printed as ``label = value`` and asserted.
@@ -108,7 +110,8 @@ def range_efficiency(rng: np.random.Generator) -> None:
         cc.append(close**2)
     est = {name: np.concatenate(v) for name, v in (("park", park), ("gk", gk), ("rs", rs), ("cc", cc))}
     for name in est:
-        assert abs(est[name].mean() - 1.0) < 0.01, (name, est[name].mean())
+        x = est[name]
+        assert abs(x.mean() - 1.0) <= 4 * x.std(ddof=1) / math.sqrt(len(x)), (name, x.mean())
     effs = {}
     for name in ("park", "gk", "rs"):
         x = est[name]
@@ -118,12 +121,12 @@ def range_efficiency(rng: np.random.Generator) -> None:
         se_v = math.sqrt((m4 - v * v) / len(x))
         effs[name] = (2 / v, 2 / v * se_v / v)
     e, se = effs["park"]
-    simulated("Parkinson efficiency, simulated (validates the simulator)", e, round(eff_park, 2), 4 * se + 0.05)
+    simulated("Parkinson efficiency, simulated (validates the simulator)", e, eff_park, 4 * se)
     e, se = effs["gk"]
-    simulated("Garman-Klass efficiency, simulated", e, 7.4, 4 * se + 0.1)
+    simulated("Garman-Klass efficiency, simulated", e, 7.4, 4 * se)
     e, se = effs["rs"]
-    simulated("Rogers-Satchell efficiency, simulated", e, 6.0, 4 * se + 0.1)
-    print(f"    (seed {SEED}, {days} days of {steps} steps; tolerance adds 0.05-0.1 for discrete sampling)")
+    simulated("Rogers-Satchell efficiency, simulated", e, 6.0, 4 * se)
+    print(f"    (seed {SEED}, {days} days of {steps} bridge steps; tolerance 4 standard errors)")
 
 
 def gaussian_moments(a: float, b: float) -> tuple[float, float, float, float]:
@@ -166,8 +169,12 @@ def vol_management(rng: np.random.Generator) -> None:
     r = mu + sig * rng.standard_normal(n)
     for w, sr_exact, name in ((np.ones(n), sr_u, "unmanaged"), (1 / sig**2, sr_m, "variance-managed")):
         x = w * r
-        sr_sim = x.mean() / x.std(ddof=1)
-        simulated(f"{name} monthly Sharpe, simulated", float(sr_sim), sr_exact, 4 * math.sqrt((1 + 0.5 * sr_exact**2) * 3 / n))
+        sd = x.std(ddof=1)
+        sr_sim = x.mean() / sd
+        z = (x - x.mean()) / sd
+        skew, kurt = float(np.mean(z**3)), float(np.mean(z**4))
+        se = math.sqrt((1 - skew * sr_sim + (kurt - 1) / 4 * sr_sim**2) / n)
+        simulated(f"{name} monthly Sharpe, simulated", float(sr_sim), sr_exact, 4 * se)
     # Change one thing: make the expected return proportional to variance (a risk-return trade-off).
     a = mu / (0.5 * (vols[0] ** 2 + vols[1] ** 2))
     prop = lambda s: a * s * s  # noqa: E731

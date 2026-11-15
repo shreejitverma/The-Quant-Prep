@@ -6,7 +6,8 @@ Independent routes used here:
 - Spearman rank IC as the Pearson correlation of ranks and again from the 1 - 6 sum d^2 / (n(n^2-1)) formula;
 - the MAD consistency constant by bisection for the normal quartile, then checked by seeded simulation;
 - the fundamental law by seeded simulation of a signal with known IC across 500 assets and 12 periods a year;
-- effective breadth from the variance of an equal-weighted basket built from the full correlation matrix.
+- effective breadth from the variance of an equal-weighted basket built from the full correlation matrix;
+- the half-life recovered from a seeded AR(1) signal, by its lag-5 autocorrelation and its fitted decay rate.
 Every quoted number is printed as ``label = value`` and asserted.
 Run it with `python 16-Trading-and-Investing/code/mkt_sys_02_signals.py`.
 """
@@ -65,9 +66,13 @@ def mad_constant(rng: np.random.Generator) -> None:
     q75 = 0.5 * (lo + hi)
     approx("Phi^-1(0.75)", q75, 0.6745, 4)
     approx("1 / Phi^-1(0.75)", 1 / q75, 1.4826, 4)
-    x = rng.standard_normal(1_000_001) * 2.0
+    n = 1_000_001
+    x = rng.standard_normal(n) * 2.0
     mad = float(np.median(np.abs(x - np.median(x))))
-    simulated("1.4826 x MAD of N(0, 2^2) draws, divided by 2", 1.4826 * mad / 2.0, 1.0, 0.005)
+    # Asymptotic SE of MAD / (sigma q75): the median of |Z| has density 2 phi(q75) there, so Var = 1 / (16 n phi^2 q75^2).
+    phi_q = math.exp(-0.5 * q75 * q75) / math.sqrt(2 * math.pi)
+    se = 1 / (4 * phi_q * q75 * math.sqrt(n))
+    simulated("1.4826 x MAD of N(0, 2^2) draws, divided by 2", 1.4826 * mad / 2.0, 1.0, 4 * se)
 
 
 def fundamental_law(rng: np.random.Generator) -> None:
@@ -103,11 +108,27 @@ def breadth() -> None:
     approx("N / (1 + (N - 1) rho)", n / (1 + (n - 1) * rho), 1.996, 3)
 
 
-def half_life() -> None:
-    print("Half-life (card mkt-sys-042)")
+def half_life(rng: np.random.Generator) -> None:
+    print("Half-life (Core concepts 5, card mkt-sys-042)")
     lam = math.log(2) / 5
     approx("decay rate for a 5-day half-life", lam, 0.1386, 4)
-    approx("autocorrelation after one half-life", math.exp(-lam * 5), 0.5, 12)
+    # Simulate an AR(1) signal with daily autocorrelation exp(-lam) and recover the half-life from the data.
+    phi, n = math.exp(-lam), 400_000
+    eps = rng.standard_normal(n) * math.sqrt(1 - phi * phi)
+    x = np.empty(n)
+    x[0] = rng.standard_normal()
+    for t in range(1, n):
+        x[t] = phi * x[t - 1] + eps[t]
+    lag = 5
+    rho5 = float(np.corrcoef(x[:-lag], x[lag:])[0, 1])
+    # Bartlett variance of the lag-k sample autocorrelation of an AR(1).
+    p2k = phi ** (2 * lag)
+    se_rho = math.sqrt(((1 + phi * phi) * (1 - p2k) / (1 - phi * phi) - 2 * lag * p2k) / n)
+    simulated("sample autocorrelation at a lag of one half-life", rho5, 0.5, 4 * se_rho)
+    phi_hat = float(x[:-1] @ x[1:] / (x[:-1] @ x[:-1]))
+    hl_hat = math.log(2) / -math.log(phi_hat)
+    se_hl = math.log(2) / (phi * math.log(phi) ** 2) * math.sqrt((1 - phi * phi) / n)
+    simulated("half-life ln 2 / -ln(phi_hat) from the fitted AR(1) (days)", hl_hat, 5.0, 4 * se_hl)
 
 
 if __name__ == "__main__":
@@ -116,5 +137,5 @@ if __name__ == "__main__":
     mad_constant(rng)
     fundamental_law(rng)
     breadth()
-    half_life()
+    half_life(rng)
     print("all signal numbers check out")

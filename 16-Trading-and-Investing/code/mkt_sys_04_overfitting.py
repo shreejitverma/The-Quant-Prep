@@ -6,7 +6,8 @@ Independent routes used here:
 - the expected maximum of N standard normals by numerical integration of x n phi(x) Phi(x)^(n-1), against
   which the Bailey-Lopez de Prado approximation is compared (the note quotes the approximation);
 - the expected best null Sharpe ratio by seeded simulation of N skill-less strategies, drawing each
-  sample Sharpe ratio exactly from its (mean, standard deviation) sampling distribution;
+  sample Sharpe ratio exactly from its (mean, standard deviation) sampling distribution, against the
+  expected maximum of N Student-t(T-1) variables by numerical integration;
 - the Mertens (2002) variance of the Sharpe estimator by seeded simulation of skewed, fat-tailed returns;
 - the Bonferroni haircut, MinBTL and BHY constant by direct arithmetic on the stated inputs.
 Every quoted number is printed as ``label = value`` and asserted.
@@ -68,11 +69,22 @@ def exact_expected_max(n: int) -> float:
     return float(np.sum(0.5 * (f[1:] + f[:-1]) * np.diff(x)))
 
 
+def expected_max_t(n: int, df: int) -> float:
+    """E[max of n iid Student-t(df)] by trapezoidal integration, the CDF built by cumulating the density."""
+    x = np.linspace(-14.0, 14.0, 280_001)
+    log_c = math.lgamma((df + 1) / 2) - math.lgamma(df / 2) - 0.5 * math.log(df * math.pi)
+    pdf = np.exp(log_c - (df + 1) / 2 * np.log1p(x * x / df))
+    cdf = np.concatenate([[0.0], np.cumsum(0.5 * (pdf[1:] + pdf[:-1]) * np.diff(x))])
+    assert abs(cdf[-1] - 1.0) < 1e-9, cdf[-1]
+    f = x * n * pdf * cdf ** (n - 1)
+    return float(np.sum(0.5 * (f[1:] + f[:-1]) * np.diff(x)))
+
+
 def null_max_sharpe(rng: np.random.Generator, n_trials: int, t_days: int, reps: int) -> np.ndarray:
     """Max of n_trials sample daily Sharpe ratios of iid N(0,1) returns, drawn exactly.
 
     The sample mean is N(0, 1/T) and the sample variance is chi2(T-1)/(T-1), independent (normal theory),
-    so the sample Sharpe ratio is drawn without generating T returns per trial.
+    so the sample Sharpe ratio is drawn without generating T returns per trial; sqrt(T) times it is Student-t(T-1).
     """
     mean = rng.standard_normal((reps, n_trials)) / math.sqrt(t_days)
     sd = np.sqrt(rng.chisquare(t_days - 1, size=(reps, n_trials)) / (t_days - 1))
@@ -99,10 +111,10 @@ def expected_max(rng: np.random.Generator) -> None:
     simulated(
         "simulated best of 1000 null strategies over 1260 days, annualized",
         float(best.mean()),
-        exact_expected_max(1000) * se_ann,
-        4 * se + 0.005,
+        expected_max_t(1000, 1259) * se_ann,
+        4 * se,
     )
-    print(f"    (seed {SEED}, {reps} replications, standard error {se:.4f}; tolerance adds 0.005 for t-sampling effects)")
+    print(f"    (seed {SEED}, {reps} replications, standard error {se:.4f}; expected value is E[max of 1000 Student-t(1259)] / sqrt(5))")
 
 
 def mertens_variance(rng: np.random.Generator) -> None:
@@ -160,7 +172,8 @@ def dsr_example(rng: np.random.Generator) -> None:
     reps = 6000
     best = null_max_sharpe(rng, n, t_days, reps)
     se = float(best.std(ddof=1)) / math.sqrt(reps)
-    simulated("simulated best daily Sharpe of 200 null trials", float(best.mean()), exact_expected_max(n) * math.sqrt(v), 4 * se + 0.0003)
+    expected_best = expected_max_t(n, t_days - 1) / math.sqrt(t_days)
+    simulated("simulated best daily Sharpe of 200 null trials", float(best.mean()), expected_best, 4 * se)
     approx("approximation error of the bracket vs exact E[max] (percent)", 100 * (b / exact_expected_max(n) - 1), 0.7, 1)
 
 

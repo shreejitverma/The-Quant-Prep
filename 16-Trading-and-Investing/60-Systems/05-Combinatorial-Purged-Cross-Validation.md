@@ -111,7 +111,7 @@ The complement $\bar{J}$ of $S/2$ blocks serves as the out-of-sample (OOS) testi
 
 **Interpreting PBO**:
 - $\text{PBO} \approx 0.0$: In-sample ranking translates strongly to out-of-sample performance (high generalization).
-- $\text{PBO} \approx 0.50$: The in-sample winner ranks like a random pick out of sample; when no strategy has skill, the out-of-sample rank of the in-sample winner is uniform, so PBO is exactly $0.50$ in expectation (seeded simulation in the script: $0.49$ over 400 skill-less universes).
+- $\text{PBO} \approx 0.50$: The in-sample winner ranks like a random pick out of sample; when no strategy has skill, the out-of-sample rank of the in-sample winner is uniform on $1, \dots, M$, so the expected PBO is $\lfloor (M+1)/2 \rfloor / M$, which is exactly $0.50$ for an even number $M$ of configurations and $(M+1)/(2M)$ for odd $M$, for example $6/11 = 0.545$ at $M = 11$ (seeded simulation in the script: $0.49$ over 400 skill-less universes with $M = 50$).
 - $\text{PBO} > 0.50$: The in-sample winner tends to land below the median out of sample, for example when in-sample performance mean-reverts.
 
 ---
@@ -213,10 +213,10 @@ The test fold is days $400$ to $599$, so test labels span days $400$ to $604$.
 
 > [!question]- mkt-sys-138 | What does a PBO value of approximately 0.50 signify?
 > A PBO of 0.50 signifies that in-sample optimization has no predictive power; the selected strategy ranks like a random draw out of sample.
-> When no configuration has skill, the out-of-sample rank of the in-sample winner is uniform, so PBO is 0.50 in expectation.
+> When no configuration has skill, the out-of-sample rank of the in-sample winner is uniform on 1..M, so the expected PBO is floor((M+1)/2)/M: exactly 0.50 for an even number M of configurations and (M+1)/(2M) for odd M, for example 6/11 = 0.545 at M = 11.
 
 > [!question]- mkt-sys-139 | What does a PBO value greater than 0.50 signify?
-> A PBO > 0.50 indicates structural overfitting where in-sample optimization actively selects strategies that underperform the out-of-sample median due to noise chasing.
+> A PBO above the skill-less value floor((M+1)/2)/M (0.50 for an even number M of configurations) indicates structural overfitting where in-sample optimization actively selects strategies that underperform the out-of-sample median due to noise chasing.
 
 > [!question]- mkt-sys-140 | What is the logit transformation in CSCV?
 > lambda = ln(omega_bar / (1 - omega_bar)), where omega_bar is the relative out-of-sample rank; lambda <= 0 exactly when omega_bar <= 0.50.
@@ -282,7 +282,7 @@ The test fold is days $400$ to $599$, so test labels span days $400$ to $604$.
 
 > [!question]- mkt-sys-160 | What is the minimum acceptable PBO for institutional strategy approval?
 > There is no published industry standard.
-> Set the threshold before the search, well below the 0.50 of a skill-less selection, and report it alongside the number of configurations tried and the probability of loss.
+> Set the threshold before the search, well below the skill-less value floor((M+1)/2)/M (0.50 for even M), and report it alongside the number of configurations tried and the probability of loss.
 
 > [!question]- mkt-sys-261 | With T = 1000 daily observations, 5-day forward labels, test fold days 400-599 and embargo h = 0.01T, how many training observations remain?
 > $780$.

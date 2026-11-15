@@ -6,8 +6,8 @@ Independent routes used here:
   the test groups into complete paths, never by evaluating the binomial formula alone;
 - the purge and embargo counts by testing every observation's label window against the test span;
 - the PBO of the worked example by counting the table rows;
-- PBO under the null by seeded simulation of CSCV on skill-less strategies, against the exact value 1/2
-  implied by exchangeability (the out-of-sample rank of the in-sample winner is uniform).
+- PBO under the null by enumerating the uniform out-of-sample rank of the in-sample winner (exchangeability),
+  which gives floor((M+1)/2)/M, and by seeded simulation of CSCV on skill-less strategies for even and odd M.
 Every quoted number is printed as ``label = value`` and asserted.
 Run it with `python 16-Trading-and-Investing/code/mkt_sys_05_cpcv.py`.
 """
@@ -129,17 +129,39 @@ def cscv_pbo(returns: np.ndarray, s_blocks: int) -> float:
     return below / len(combos)
 
 
+def null_pbo(m: int) -> Fraction:
+    """Exact null PBO: share of the M equally likely OOS ranks of the IS winner with a non-positive logit."""
+    return Fraction(sum(1 for r in range(1, m + 1) if math.log(r / (m + 1 - r)) <= 0), m)
+
+
 def pbo_null(rng: np.random.Generator) -> None:
-    print("PBO under the null is one half (Core concepts 4, card mkt-sys-138)")
-    m, t_obs, s_blocks, reps = 50, 600, 6, 400
-    # Exchangeability: the OOS rank of the IS winner is uniform on 1..M, so P(rank <= 25) = 25/50.
-    exact("exact null PBO for M = 50", Fraction(sum(1 for r in range(1, m + 1) if r / (m + 1) <= 0.5), m), Fraction(1, 2))
-    pbos = np.array([cscv_pbo(rng.standard_normal((t_obs, m)), s_blocks) for _ in range(reps)])
-    se = float(pbos.std(ddof=1)) / math.sqrt(reps)
-    simulated(f"mean CSCV PBO over {reps} skill-less universes (seed {SEED})", float(pbos.mean()), 0.5, 4 * se)
+    print("PBO under the null is floor((M+1)/2)/M (Core concepts 4, cards mkt-sys-138, mkt-sys-139, mkt-sys-160)")
+    # Exchangeability: the OOS rank of the IS winner is uniform on 1..M.
+    exact("exact null PBO for M = 10", null_pbo(10), Fraction(1, 2))
+    exact("exact null PBO for M = 11", null_pbo(11), Fraction(6, 11))
+    exact("exact null PBO for M = 50", null_pbo(50), Fraction(1, 2))
+    for m in range(1, 60):
+        assert null_pbo(m) == Fraction((m + 1) // 2, m) == (Fraction(1, 2) if m % 2 == 0 else Fraction(m + 1, 2 * m))
+    print("    null PBO = floor((M+1)/2)/M = 1/2 for even M and (M+1)/(2M) for odd M, every 1 <= M < 60")
+    odd = float(null_pbo(11))
+    assert round(odd, 3) == 0.545
+    print(f"    6/11 = {odd:.3f}")
+    mean, _ = simulated_null_pbo(rng, 50, 400)
     quoted = 0.49  # the seeded run as quoted in the note, two decimals
-    assert abs(float(pbos.mean()) - quoted) <= 0.005, pbos.mean()
-    print(f"    seeded mean PBO to two decimals = {float(pbos.mean()):.2f}")
+    assert abs(mean - quoted) <= 0.005, mean
+    print(f"    seeded mean PBO to two decimals = {mean:.2f}")
+    mean, se = simulated_null_pbo(rng, 11, 4000)
+    assert abs(mean - 0.5) > 4 * se, "the odd-M simulation must separate 6/11 from 1/2"
+    print(f"    M = 11 simulation is {abs(mean - 0.5) / se:.1f} standard errors from 1/2")
+
+
+def simulated_null_pbo(rng: np.random.Generator, m: int, reps: int) -> tuple[float, float]:
+    """Mean CSCV PBO over seeded skill-less T x M universes, checked against the exact null PBO."""
+    t_obs, s_blocks = 600, 6
+    pbos = np.array([cscv_pbo(rng.standard_normal((t_obs, m)), s_blocks) for _ in range(reps)])
+    mean, se = float(pbos.mean()), float(pbos.std(ddof=1)) / math.sqrt(reps)
+    simulated(f"mean CSCV PBO, M = {m}, over {reps} skill-less universes (seed {SEED})", mean, float(null_pbo(m)), 4 * se)
+    return mean, se
 
 
 if __name__ == "__main__":

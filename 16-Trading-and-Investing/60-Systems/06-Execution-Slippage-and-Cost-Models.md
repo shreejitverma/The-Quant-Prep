@@ -250,7 +250,7 @@ The manager's profit-maximizing size is far above the size that maximizes the in
 > [!question]- mkt-sys-163 | What is the difference between temporary and permanent market impact?
 > Temporary impact is a transitory price concession caused by immediate liquidity demand that decays as the book refills; permanent impact is the persistent price shift reflecting information content.
 
-> [!question]- mkt-sys-164 | State the universal square-root law of market impact.
+> [!question]- mkt-sys-164 | State the empirical square-root law of market impact.
 > The average impact of a metaorder scales with daily volatility and the square root of its size relative to daily volume: I = Y * sigma_{daily} * sqrt(Q / V_{ADV}), with Y of order one (Toth et al. 2011).
 > It is empirical: fitted exponents range from about 0.4 to 0.7, and Almgren et al. (2005) fit 0.6 for US equities.
 

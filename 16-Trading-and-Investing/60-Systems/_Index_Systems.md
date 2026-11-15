@@ -56,7 +56,7 @@ The core curriculum comprises eight comprehensive concept notes with 268 verifie
    - Expected maximum Sharpe of $N$ null trials scaling with $\sqrt{2 \ln N}$.
    - Probabilistic Sharpe Ratio (PSR) adjusting for sample length, negative skewness, and fat-tailed kurtosis.
    - Deflated Sharpe Ratio (DSR, Bailey & Lopez de Prado 2014) setting benchmarks to null selection maxima.
-   - Harvey, Liu, and Zhu (2016) multiple-testing haircuts (Bonferroni, Holm, BHY FDR) and the $t > 3.0$ factor threshold.
+   - Harvey and Liu (2015) multiple-testing haircuts (Bonferroni, Holm, BHY FDR) and the Harvey, Liu, and Zhu (2016) $t > 3.0$ factor threshold.
    - Minimum Backtest Length (MinBTL) in years.
    - Cards: `mkt-sys-097` through `mkt-sys-128`, plus `mkt-sys-259` and `mkt-sys-260`.
 
@@ -72,22 +72,22 @@ The core curriculum comprises eight comprehensive concept notes with 268 verifie
    - Complete transaction cost taxonomy: explicit fees, bid-ask spread, delay cost, and opportunity cost.
    - Implementation Shortfall (Perold 1988) formulation and component attribution.
    - Temporary vs permanent market impact dynamics.
-   - The universal square-root law of market impact ($I = Y \cdot \sigma \sqrt{Q / V_{\text{ADV}}}$).
-   - Strategy capacity estimation and the Sharpe ratio decay curve ($R_{\text{net}} = \alpha_0 - c \cdot \tau \sqrt{A}$).
+   - The empirical square-root law of market impact ($I = Y \cdot \sigma \sqrt{Q / V_{\text{ADV}}}$), with fitted exponents of about 0.4 to 0.7 (Toth et al. 2011).
+   - Strategy capacity estimation and the Sharpe ratio decay curve ($R_{\text{net}} = \alpha_0 - k \sqrt{A}$, with $k \propto \sigma \tau^{3/2}$).
    - Algorithmic execution benchmarks: TWAP, VWAP, POV, and Almgren-Chriss optimal execution.
    - Cards: `mkt-sys-161` through `mkt-sys-192`, plus `mkt-sys-262` through `mkt-sys-264`.
 
 7. [[16-Trading-and-Investing/60-Systems/07-Volatility-Targeting-and-Dynamic-Leverage|07. Volatility Targeting and Dynamic Leverage]]
    - Dynamic gross exposure scaling inversely to rolling realized volatility ($k_t = \sigma_{\text{target}} / \hat{\sigma}_t$).
    - Statistical edge: exploiting volatility clustering (Engle 1982) and the risk-return disconnect (Moreira & Muir 2017).
-   - Realized volatility estimators: Close-to-Close EWMA, Parkinson high-low, Garman-Klass, and Rogers-Satchell.
+   - Realized volatility estimators: Close-to-Close EWMA, Parkinson high-low, Garman-Klass, Rogers-Satchell, and Yang-Zhang.
    - Leverage caps, unencumbered cash buffers, margin haircuts, and financing spread drag.
-   - Multi-tiered systematic drawdown governors and circuit breakers (Tier 1 warning, Tier 2 throttle, Tier 3 nuclear flatten).
+   - Multi-tiered systematic drawdown governors and circuit breakers (an illustrative Tier 1 warning, Tier 2 throttle, and Tier 3 circuit breaker that flattens to cash).
    - Cards: `mkt-sys-193` through `mkt-sys-224`, plus `mkt-sys-265` and `mkt-sys-266`.
 
 8. [[16-Trading-and-Investing/60-Systems/08-Production-Architecture-and-Decision-Ledger|08. Production Architecture and Decision Ledger]]
    - Four-tier production architecture: Market data, strategy state, pre-trade risk, and OMS/EMS.
-   - SEC Rule 15c3-5 (Market Access Rule) mandatory pre-trade price collar bands and capital throttles.
+   - SEC Rule 15c3-5 (Market Access Rule) pre-trade controls that block orders breaching credit or capital thresholds or price and size parameters, with price collars and order-rate throttles as typical implementations.
    - The Decision Ledger: immutable, append-only audit trail logging inputs, parameters, weights, and telemetry.
    - Hardware and daemon kill-switch architecture with heartbeat dead-man switches.
    - Post-trade Transaction Cost Analysis (TCA) and Brinson-Fachler performance attribution.
