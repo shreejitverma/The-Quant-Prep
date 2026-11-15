@@ -29,12 +29,12 @@ It combines cash equity execution with high-volume index and stock derivatives, 
 
 ### 1. Market Architecture and Microstructure
 - **Exchange Infrastructure**: NSE NEAT and BSE BOLT systems, multicast market data (TBT), co-location facilities at BKC Mumbai, and sponsored direct market access (DMA).
-- **Trading Hours and Sessions**: Pre-open auction session (09:00 to 09:15 IST) with equilibrium price determination, continuous trading (09:15 to 15:30 IST), and post-close session (15:40 to 16:00 IST).
-- **Circuit Breakers and Price Bands**: Nationwide market-wide index circuit breakers (10%, 15%, 20%) with trading halts, individual stock dynamic price bands, and absence of price bands for F&O-traded securities.
+- **Trading Hours and Sessions**: Pre-open auction session (09:00 to 09:15 IST) with equilibrium price determination, continuous trading from 09:15 IST, a closing auction for stocks with derivatives (from August 3, 2026), and the post-close session (15:50 to 16:00 IST); timings as of November 2026, with changes from December 7, 2026.
+- **Circuit Breakers and Price Bands**: Market-wide index circuit breakers (10%, 15%, 20%) with trading halts, fixed daily price bands for stocks without derivatives, and dynamic flexing bands for stocks with derivatives.
 
 ### 2. Derivatives Contracts and Specifications
-- **Index Options and Futures**: NIFTY 50, BANKNIFTY, and FINNIFTY index futures and options, lot size revisions, tick size (0.05 INR), and cash settlement against the 30-minute volume-weighted average price (VWAP).
-- **Stock Derivatives**: European-style single stock options with physical delivery on expiration for in-the-money (ITM) options, and stock futures with physical delivery obligations.
+- **Index Options and Futures**: NIFTY 50, BANKNIFTY, and FINNIFTY index futures and options, lot size revisions (NIFTY 65 and BANKNIFTY 30 as of November 2026), Rs 0.05 option ticks, one weekly-expiry index per exchange, and cash settlement against the index's final settlement value.
+- **Stock Derivatives**: European-style single stock options with physical delivery on expiration for in-the-money (ITM) options, and stock futures with physical delivery obligations (all stock derivatives since the October 2019 expiry).
 - **Weekly vs Monthly Expiration Cycles**: Expiration schedule dynamics across exchange offerings, weekend theta decay, and concentrated institutional liquidity on expiration days.
 
 ### 3. Open Interest (OI) and Derivatives Analytics

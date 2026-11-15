@@ -29,7 +29,7 @@ It provides the macroeconomic anchor for cross-asset valuation, liquidity transm
 ### 1. Yield Curve Mechanics and Term Structure Models
 - **Sovereign Debt Instruments**: Treasury bills, notes, and bonds; Treasury Inflation-Protected Securities (TIPS); Indian Government Securities (G-Secs).
 - **Yield Curve Geometry**: Cash curves, zero-coupon curves, par curves, and forward rate curves; Nelson-Siegel and Svensson parameterizations.
-- **Principal Component Analysis (PCA)**: Statistical decomposition of curve shifts into Level (parallel shift, ~85% of variance), Slope (steepening/flattening, ~10%), and Curvature (~3%).
+- **Principal Component Analysis (PCA)**: Statistical decomposition of curve shifts into Level (parallel shift, the largest share; about 89.5% on average in Litterman and Scheinkman 1991), Slope (steepening/flattening), and Curvature.
 - **Curve Trades**: Flattener versus steepener trades (2s10s, 5s30s), barbell versus bullet portfolio construction, and butterfly spread trading.
 
 ### 2. Central Banking and Monetary Plumbing
