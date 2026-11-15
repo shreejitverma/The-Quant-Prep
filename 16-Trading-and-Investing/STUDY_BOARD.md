@@ -19,7 +19,7 @@ Run `python3 16-Trading-and-Investing/scripts/mastery.py` to write your live boa
 
 The Markets Mastery OS study board quantifies learner readiness through transparent mathematical formulas.
 Mastery integrates spaced-repetition retention, interactive lab simulation sessions, and disciplined stage gate progression.
-Overall curriculum scope encompasses 2260 cards, 11 pure-Python simulation engines, and a verifiable 100-trade capital gate.
+Overall curriculum scope encompasses 2277 cards, 11 pure-Python simulation engines, and a verifiable 100-trade capital gate.
 
 ---
 
@@ -28,7 +28,7 @@ Overall curriculum scope encompasses 2260 cards, 11 pure-Python simulation engin
 | Metric | Target | Actual State | Status |
 | :--- | :--- | :--- | :--- |
 | **Overall Composite Score** | >= 80.0% | 0.0% | Novice / Foundations |
-| **Card Retention & Mastery** | >= 80.0% | 0.0% (0/2260 cards, 0 mature) | In Progress |
+| **Card Retention & Mastery** | >= 80.0% | 0.0% (0/2277 cards, 0 mature) | In Progress |
 | **Simulation Engine Execution** | 11/11 Engines | 0/11 engines executed | In Progress |
 | **Automated Stage Gates** | 39 Gates | 0/39 gates passed | In Progress |
 | **Capital Gate Eligibility** | 100 trades, PF >= 1.50, DD <= 10R | Pending Paper Sample | PENDING |
@@ -54,8 +54,8 @@ Learners can orient their progression toward one of four distinct market archety
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `track_0_pqt` | Professional Quant Trading | `mkt-pqt-` | 128 | 0 | 0 | 0.0% | F: Pend / C: Pend |
 | `track_6_trd` | Trading (Discretionary & Systematic) | `mkt-trd-` | 128 | 0 | 0 | 0.0% | F: Pend / C: Pend / Cap: Pend |
-| `track_fa` | Fundamental Analysis & Forensics | `mkt-fa-` | 256 | 0 | 0 | 0.0% | F: Pend / C: Pend |
-| `track_val` | Valuation & Financial Modeling | `mkt-val-` | 256 | 0 | 0 | 0.0% | F: Pend / C: Pend |
+| `track_fa` | Fundamental Analysis & Forensics | `mkt-fa-` | 263 | 0 | 0 | 0.0% | F: Pend / C: Pend |
+| `track_val` | Valuation & Financial Modeling | `mkt-val-` | 266 | 0 | 0 | 0.0% | F: Pend / C: Pend |
 | `track_vi` | Value Investing & Security Analysis | `mkt-vi-` | 256 | 0 | 0 | 0.0% | F: Pend / C: Pend |
 | `track_pf` | Portfolio Management & Risk Allocation | `mkt-pf-` | 256 | 0 | 0 | 0.0% | F: Pend / C: Pend |
 | `track_opt` | Options & Volatility Trading | `mkt-opt-` | 128 | 0 | 0 | 0.0% | F: Pend / C: Pend |

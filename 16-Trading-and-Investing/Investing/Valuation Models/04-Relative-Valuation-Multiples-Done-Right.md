@@ -15,7 +15,7 @@ sources: [Damodaran (2012) - Investment Valuation: Tools and Techniques for Dete
 - Multiples are not an alternative to discounted cash flow models; every valuation multiple is an algebraic simplification of a DCF model reflecting specific growth, risk, and reinvestment drivers.
 - The Cardinal Sin of relative valuation is mismatched numerators and denominators: Enterprise Value must strictly pair with pre-interest operating metrics (EBIT, EBITDA, Sales), while Equity Value must strictly pair with after-interest equity metrics (Net Income, Book Value).
 - Enterprise multiples (EV/EBIT, EV/NOPAT) are structurally superior to equity multiples (P/E) because they are independent of capital structure and leverage distortions.
-- Warren Buffett and Charlie Munger famously critiqued EBITDA as a dangerous fiction because depreciation represents real, unavoidable cash expenditures required to replace aging assets.
+- Warren Buffett has criticized EBITDA in Berkshire Hathaway's shareholder letters (for example 2000 and 2002) because depreciation reflects real capital spending required to replace aging assets.
 - A high Price-to-Book (P/B) ratio is economically justified if and only if Return on Equity (ROE) substantially exceeds the Cost of Equity ($K_e$); low P/B paired with sub-hurdle ROE is the classic recipe for a value trap.
 
 ## Learning objectives
@@ -42,7 +42,8 @@ Dividing both sides by next year's earnings ($\text{EPS}_1$) yields the **Intrin
 
 $$\frac{P_0}{\text{EPS}_1} = \frac{1 - b}{K_e - g} = \frac{\text{Payout Ratio}}{K_e - g}$$
 
-This simple equation reveals that a company's P/E multiple is not an arbitrary market mood; it is governed strictly by three variables:
+For a hypothetical firm with ROE 15%, $K_e$ 9% and $g$ 4%, the sustainable payout is $1 - g / \text{ROE} = 73.33\%$, so the justified forward P/E is $0.7333 / 0.05 = 14.67\times$.
+This simple equation reveals that a company's P/E multiple is not an arbitrary market mood; in this steady state it is governed by three variables:
 1. **Growth ($g$)**: Higher expected growth drives higher multiples, provided reinvestment earns above the cost of capital.
 2. **Cost of Equity ($K_e$)**: Higher risk and higher interest rates depress multiples.
 3. **Reinvestment Needs ($b$)**: Higher capital intensity (lower payout ratio) depresses multiples for any given growth rate.
@@ -112,15 +113,15 @@ EBITDA does not include the affiliate's operating profits; therefore, the affili
 
 ### 4. EBITDA: The Good, The Bad, and The Dangerous
 
-EBITDA (Earnings Before Interest, Taxes, Depreciation, and Amortization) became popular in leveraged buyouts (LBOs) during the 1980s as a measure of raw operating cash generation available to service debt.
+EBITDA (Earnings Before Interest, Taxes, Depreciation, and Amortization) is widely used in leveraged lending as a rough measure of operating cash available to service debt.
 
 ```
 +-----------------------------------------------------------------------+
 |                        THE DANGERS OF EBITDA                          |
 +-----------------------------------------------------------------------+
-| "Does management think the tooth fairy pays for capital expenditures? |
-| We won't buy into companies where someone's talking about EBITDA."    |
-|                                    - Warren Buffett                   |
+| "References to EBITDA make us shudder - does management think the    |
+| tooth fairy pays for capital expenditures?"                           |
+|     - Warren Buffett, Berkshire Hathaway 2000 shareholder letter      |
 +-----------------------------------------------------------------------+
 ```
 
@@ -129,7 +130,7 @@ EBITDA (Earnings Before Interest, Taxes, Depreciation, and Amortization) became 
 2. **Favors Capital-Intensive Over Capital-Light Firms**:
    - Company A (Software): $100M EBITDA, $5M Capex -> True Cash Flow = $95M.
    - Company B (Trucking): $100M EBITDA, $60M Capex -> True Cash Flow = $40M.
-   - Both trade at $10\times$ EV/EBITDA ($1,000M EV). Company A is massively cheaper on true cash flow ($10.5\times$ vs $25\times$ EV/EBITA).
+   - Both trade at $10\times$ EV/EBITDA ($1,000M EV). Company A is far cheaper on cash flow after capex: EV/(EBITDA - Capex) is $10.5\times$ vs $25.0\times$.
 3. **Susceptible to Working Capital Distortions**: EBITDA completely ignores cash consumed by swelling accounts receivable or inventory.
 
 **The Solution**: Use **EV/EBIT** or **EV/EBITA** (EBITA adds back acquired intangible amortization but preserves physical plant depreciation).
@@ -154,12 +155,12 @@ $$\frac{P_0}{B_0} = \frac{\text{ROE} - g}{K_e - g} = 1 + \frac{\text{ROE} - K_e}
 
 The Value Trap Warning:
 A stock trading at $0.6\times$ Book Value is not necessarily cheap.
-If the company earns an ROE of 4% while its cost of equity is 10%, its justified economic multiple is below $0.6\times$.
+If the company earns an ROE of 4% while its cost of equity is 10%, its justified multiple is $0.04 / 0.10 = 0.40\times$ at zero growth, and $0.25\times$ at 2% growth, because growth destroys value when ROE is below $K_e$.
 Buying low P/B without verifying that ROE exceeds $K_e$ is the fastest way to purchase decaying assets.
 
 ### 6. The PEG Ratio: Heuristic vs Reality
 
-Popularized by Peter Lynch, the PEG ratio compares P/E to annual growth:
+Popularized by Peter Lynch in *One Up on Wall Street* (1989), the PEG ratio compares P/E to annual growth:
 
 $$\text{PEG} = \frac{\text{P/E Ratio}}{\text{Annual Earnings Growth Rate } (g \times 100)}$$
 
@@ -171,7 +172,7 @@ However, the PEG heuristic makes flawed implicit assumptions:
 
 ## Worked numerical case study
 
-Compare two competitors in the industrial equipment sector:
+Compare two competitors in the industrial equipment sector (hypothetical companies; every figure below is hypothetical):
 
 | Financial Metric | Precision Corp (A) | Heavy Gear Inc (B) |
 |---|---|---|
@@ -213,14 +214,14 @@ Compare two competitors in the industrial equipment sector:
    On an EV/EBITDA basis, both companies appear identical, trading at exactly $10.00\times$.
    A superficial analyst would conclude that Company B is equally attractive or even cheaper because its EV/Sales is lower ($1.97\times$ vs $2.20\times$).
 2. **The EV/EBIT Reality**:
-   Company B requires massive capital reinvestment, consuming $290M in depreciation (almost 10% of revenue) compared to Company A's $90M (4.5% of revenue).
+   Company B requires heavy capital reinvestment, consuming $290M in depreciation (9.7% of revenue) compared to Company A's $90M (4.5% of revenue).
    On EV/EBIT, Company A trades at **12.57x**, while Company B trades at a staggering **19.67x** (56% more expensive!).
 3. **The Debt & P/E Distortion**:
    Company B carries $2,400M in net debt ($4.07\times$ EBITDA), consuming half of its operating profit in interest ($150M).
    This collapses Net Income to $112.5M, driving its P/E multiple to **31.11x**, while Company A trades at **16.67x**.
 4. **ROE & P/B Audit**:
    Company A earns an ROE of 12.0% with minimal debt; Company B earns an ROE of only 7.5% despite extreme financial leverage.
-   Verdict: Precision Corp (A) is dramatically cheaper and far higher quality across all economic metrics.
+   Verdict: Precision Corp (A) is cheaper on EV/EBIT, P/E and P/B, level on EV/EBITDA and dearer only on EV/Sales, and earns a higher ROE with far less leverage.
 
 ## Practice questions
 
@@ -270,7 +271,7 @@ Compare two competitors in the industrial equipment sector:
 > Because trough earnings are depressed; the market anticipates future economic recovery and prices in the upcoming rebound in operating cash flows.
 
 > [!question]- mkt-val-112 | What is the Shiller CAPE ratio?
-> The Cyclically Adjusted Price-to-Earnings ratio, which divides current price by the 10-year rolling average of inflation-adjusted earnings to smooth cycles.
+> The Cyclically Adjusted Price-to-Earnings ratio (Campbell and Shiller 1998), which divides the real (inflation-adjusted) price by the 10-year average of real earnings to smooth the business cycle.
 
 > [!question]- mkt-val-113 | How does financial leverage artificially inflate Return on Equity (ROE)?
 > By funding assets with low-cost debt, shrinking the equity denominator; however, it elevates financial risk and the required cost of equity (Ke).
@@ -282,7 +283,7 @@ Compare two competitors in the industrial equipment sector:
 > A company with a 20% gross margin trading at 2x sales is far more expensive than a company with an 80% gross margin trading at 2x sales.
 
 > [!question]- mkt-val-116 | What is EV/Invested Capital and what does it measure?
-> It compares the market enterprise value to the historical capital invested in operating assets; under clean accounting, EV/IC is analogous to Tobin's Q.
+> It compares the market enterprise value to the capital invested in operating assets; it is a rough analogue of Tobin's q, which divides by replacement cost rather than book capital.
 
 > [!question]- mkt-val-117 | How does a company's ROIC dictate its justified EV/Invested Capital multiple?
 > EV/IC = (ROIC - g) / (WACC - g); when ROIC exceeds WACC, justified EV/IC is greater than 1.0.
@@ -306,7 +307,8 @@ Compare two competitors in the industrial equipment sector:
 > Multiple expansion occurs when market valuation multiples increase (e.g. P/E from 15x to 22x); contraction occurs when multiples shrink, reducing returns.
 
 > [!question]- mkt-val-124 | What proportion of long-term equity returns is driven by multiple expansion versus fundamental earnings growth?
-> Over 10-to-20-year horizons, fundamental earnings growth and dividends drive >85% of returns, while multiple expansion mean-reverts toward historical averages.
+> Annual return is roughly dividend yield plus earnings growth plus the annualized change in the multiple, and the multiple term shrinks with the horizon.
+> A re-rating from 15x to 22x adds 46.67% in one year but only 3.90% a year over 10 years and 1.93% a year over 20, so over long horizons earnings growth and dividends dominate unless multiples trend.
 
 > [!question]- mkt-val-125 | How does working capital intensity affect the justified EV/EBIT multiple?
 > High working capital intensity requires more cash reinvestment per dollar of EBIT, depressing free cash flow conversion and reducing justified multiples.
@@ -320,11 +322,23 @@ Compare two competitors in the industrial equipment sector:
 > [!question]- mkt-val-128 | What is the ultimate rule for conducting peer multiple benchmarking?
 > Benchmark only against peers with comparable return on capital, margin structure, capital intensity, and structural competitive advantages.
 
+> [!question]- mkt-val-262 | A stock re-rates from 15x to 22x earnings. How much does that add to annual return over 1, 10 and 20 years?
+> (22 / 15)^(1/T) - 1: 46.67% over one year, 3.90% a year over 10 years, and 1.93% a year over 20 years.
+> A one-off re-rating matters a lot for short holding periods and little for long ones.
+
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_val_04_multiples.py`](../../code/mkt_val_04_multiples.py) prints and asserts every number on this page: the comparative multiples table in exact fractions, justified P/B and forward P/E against a year-by-year clean-surplus dividend simulation, the PEG and EBITDA examples, and the re-rating contribution by bisection against its closed form.
+- Related notes: [Cost of Capital, WACC, and Terminal Value Traps](02-Cost-of-Capital-WACC-and-Terminal-Value-Traps.md), [Specialized Valuation](07-Specialized-Valuation-Financials-Cyclicals-and-Loss-Makers.md).
 
 ## Further reading
 
-- Damodaran, A. (2012). *Investment Valuation: Tools and Techniques for Determining the Value of Any Asset* (3rd ed.). John Wiley & Sons.
+- Berkshire Hathaway. Shareholder letters, 2000 and 2002. berkshirehathaway.com/letters.
+- Campbell, J. Y., & Shiller, R. J. (1998). Valuation ratios and the long-run stock market outlook. *Journal of Portfolio Management*, 24(2), 11-26.
+- Damodaran, A. (2012). *Investment Valuation: Tools and Techniques for Determining the Value of Any Asset* (3rd ed.). John Wiley & Sons. Ch. 17 (relative valuation), Ch. 18 (earnings multiples), Ch. 19 (book value multiples).
 - Fernandez, P. (2002). *Valuation Methods and Shareholder Value Creation*. Academic Press.
-- Koller, T., Goedhart, M., & Wessels, D. (2020). *Valuation: Measuring and Managing the Value of Companies* (7th ed.). John Wiley & Sons.
+- Koller, T., Goedhart, M., & Wessels, D. (2020). *Valuation: Measuring and Managing the Value of Companies* (7th ed.). John Wiley & Sons. Ch. 18 (using multiples).
+- Lynch, P. (1989). *One Up on Wall Street*. Simon & Schuster.
 - Shiller, R. J. (2000). *Irrational Exuberance*. Princeton University Press.

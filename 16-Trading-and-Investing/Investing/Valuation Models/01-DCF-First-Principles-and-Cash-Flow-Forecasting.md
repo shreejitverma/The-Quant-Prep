@@ -16,8 +16,8 @@ sources: [Damodaran (2012) - Investment Valuation: Tools and Techniques for Dete
 - Free Cash Flow to Firm (FCFF) values the entire operating enterprise independent of capital structure and discounts at the Weighted Average Cost of Capital (WACC).
 - Free Cash Flow to Equity (FCFE) values equity claims directly after debt service and discounts at the Cost of Equity ($K_e$).
 - Cash flow forecasting requires modeling revenue drivers (volume $\times$ price), operating leverage, working capital intensity, and capex requirements.
-- The mid-year discounting convention accurately reflects that cash flows accrue continuously throughout the operating year rather than as a lump sum on December 31.
-- Terminal value typically accounts for 60% to 80% of total DCF value, making sensitivity analysis and explicit fade modeling mandatory.
+- The mid-year discounting convention approximates cash flows that arrive through the operating year rather than as a lump sum on the last day of the fiscal year.
+- In the worked case below, terminal value is 78.2% of enterprise value, so sensitivity analysis and explicit fade modeling are mandatory.
 
 ## Learning objectives
 
@@ -31,13 +31,16 @@ sources: [Damodaran (2012) - Investment Valuation: Tools and Techniques for Dete
 
 ### 1. The Philosophical Foundations of DCF
 
-The value of any financial asset is governed by John Burr Williams' (1938) Law of Conservation of Value:
+John Burr Williams (1938) defined the investment value of a stock as the present worth of its expected future dividends.
+Applied to a whole business, value is the present value of the cash flows it is expected to generate:
 
 $$V_0 = \sum_{t=1}^{\infty} \frac{\text{CF}_t}{(1 + r)^t}$$
 
+Williams also stated a law of the conservation of investment value: the value of an enterprise does not depend on how its capitalization is split between debt and equity, an idea Modigliani and Miller (1958) later proved under explicit assumptions.
+
 In corporate valuation, cash flows do not extend uniformly into infinity under static assumptions.
 Modern DCF splits valuation into two distinct regimes:
-1. **The Explicit Forecast Period ($t = 1 \dots N$)**: Detailed line-by-line operating forecasts during the company's Competitive Advantage Period (CAP), typically 5 to 10 years.
+1. **The Explicit Forecast Period ($t = 1 \dots N$)**: Detailed line-by-line operating forecasts during the company's Competitive Advantage Period (CAP), whose length is a judgment about how long returns above the cost of capital can last.
 2. **Terminal Value ($t > N$)**: The present value of all cash flows beyond year $N$, assuming the business matures into stable growth at or below nominal GDP expansion.
 
 ```
@@ -122,7 +125,8 @@ $$\text{End-of-Year PV Factor}: \quad \text{DF}_t = \frac{1}{(1 + \text{WACC})^t
 
 $$\text{Mid-Year PV Factor}: \quad \text{DF}_{t, \text{mid}} = \frac{1}{(1 + \text{WACC})^{t - 0.5}}$$
 
-For a company with an 8% WACC, mid-year discounting increases explicit present value by approximately $(1 + 0.08)^{0.5} - 1 \approx 3.92\%$.
+For a company with an 8% WACC, mid-year discounting increases explicit present value by $(1 + 0.08)^{0.5} - 1 = 3.92\%$.
+A cash flow spread evenly through each year is worth 3.95% more than the same cash at year end, so the mid-year factor is a close approximation to continuous receipt.
 
 ### 5. Terminal Value Formulations
 
@@ -134,8 +138,9 @@ Assumes the business reaches a steady state growing at a constant long-term rate
 $$\text{TV}_N = \frac{\text{FCFF}_{N+1}}{\text{WACC} - g} = \frac{\text{FCFF}_N \times (1 + g)}{\text{WACC} - g}$$
 
 Constraints on $g$:
-- $g$ cannot exceed the nominal risk-free rate of the economy in which the firm operates; assuming $g > \text{GDP growth}$ implies the company will eventually swallow the entire global economy.
-- Typically, $g$ is set between 2.0% and 3.0% for developed economies.
+- A firm cannot grow faster than the economy forever: if $g$ exceeds the nominal growth rate of the economy, the firm eventually becomes larger than the economy itself.
+- Damodaran (2012, Ch. 12) uses the risk-free rate as a practical cap on stable growth, because in the long run nominal growth of the economy and the nominal risk-free rate should be close.
+- There is no universal value; choose $g$ for the currency and economy of the cash flows and test its sensitivity.
 
 #### Method 2: The Exit Multiple Method
 Applies an EV/EBITDA multiple to final-year normalized earnings:
@@ -143,15 +148,16 @@ Applies an EV/EBITDA multiple to final-year normalized earnings:
 $$\text{TV}_N = \text{Normalized EBITDA}_N \times \text{Exit Multiple}$$
 
 Cross-check invariant:
-Every exit multiple implies an exact perpetuity growth rate:
+Every exit multiple implies a perpetuity growth rate, because the Gordon value divided by final-year EBITDA is
 
-$$\text{Exit Multiple} = \frac{(1 - \text{Reinvestment Rate})}{\text{WACC} - g}$$
+$$\frac{\text{TV}_N}{\text{EBITDA}_N} = \frac{\text{FCFF}_N}{\text{EBITDA}_N} \times \frac{1 + g}{\text{WACC} - g}$$
 
-If an analyst assumes an exit multiple of $15\times$ EBITDA with an 8% WACC, they are implicitly assuming an aggressive perpetuity growth rate that must be checked for sanity.
+In the worked case below, FCFF is 0.584 of year-5 EBITDA, so the Gordon terminal value is $9.98\times$ EBITDA.
+An exit multiple of $15\times$ EBITDA at the same 8.5% WACC implies perpetual growth of 4.43%, which must be checked against the economy's nominal growth.
 
 ## Worked numerical case study
 
-Build an explicit 5-year DCF model for Horizon Software Inc:
+Build an explicit 5-year DCF model for Horizon Software Inc (a hypothetical company; every input below is hypothetical):
 - Year 0 Revenue: $1,000M
 - Year 0 EBIT: $200M (Operating margin: 20.0%)
 - Tax rate ($t$): 25.0%
@@ -172,7 +178,7 @@ Build an explicit 5-year DCF model for Horizon Software Inc:
 +------------------------+---------+---------+---------+---------+---------+--------+
 | Metric                 | Year 0  | Year 1  | Year 2  | Year 3  | Year 4  | Year 5 |
 +------------------------+---------+---------+---------+---------+---------+--------+
-| Revenue                | 1,000.0 | 1,150.0 | 1,288.0 | 1,416.8 | 1,530.1 | 1,621.9|
+| Revenue                | 1,000.0 | 1,150.0 | 1,288.0 | 1,416.8 | 1,530.1 | 1,622.0|
 | Revenue Growth         | -       | 15.0%   | 12.0%   | 10.0%   | 8.0%    | 6.0%   |
 | EBIT Margin            | 20.0%   | 21.0%   | 22.0%   | 23.0%   | 24.0%   | 25.0%  |
 | EBIT                   | 200.0   | 241.5   | 283.4   | 325.9   | 367.2   | 405.5  |
@@ -182,28 +188,32 @@ Build an explicit 5-year DCF model for Horizon Software Inc:
 | - Capex (6% Rev)       | 60.0    | 69.0    | 77.3    | 85.0    | 91.8    | 97.3   |
 | - Delta OWC (4% dRev)  | -       | 6.0     | 5.5     | 5.2     | 4.5     | 3.7    |
 +------------------------+---------+---------+---------+---------+---------+--------+
-| FCFF                   | -       | 163.6   | 194.1   | 225.0   | 255.6   | 284.2  |
+| FCFF                   | -       | 163.6   | 194.1   | 225.1   | 255.6   | 284.2  |
 +------------------------+---------+---------+---------+---------+---------+--------+
 | Mid-Year Period (t-0.5)| -       | 0.5     | 1.5     | 2.5     | 3.5     | 4.5    |
 | Discount Factor (8.5%) | -       | 0.9600  | 0.8848  | 0.8155  | 0.7516  | 0.6927 |
-| Present Value of FCFF  | -       | 157.1   | 171.7   | 183.5   | 192.1   | 196.9  |
+| Present Value of FCFF  | -       | 157.1   | 171.8   | 183.6   | 192.1   | 196.9  |
 +------------------------+---------+---------+---------+---------+---------+--------+
 ```
 
 ### Step 1: Sum Explicit PV of Cash Flows
-$$\text{PV(Explicit FCFF)} = 157.1 + 171.7 + 183.5 + 192.1 + 196.9 = \$901.3\text{M}$$
+$$\text{PV(Explicit FCFF)} = 157.1 + 171.8 + 183.6 + 192.1 + 196.9 = \$901.4\text{M}$$
 
 ### Step 2: Compute Terminal Value
-Year 6 FCFF = $\text{FCFF}_5 \times (1 + g) = 284.2 \times (1 + 0.025) = \$291.31\text{M}$
+Year 6 FCFF = $\text{FCFF}_5 \times (1 + g) = 284.224 \times (1 + 0.025) = \$291.33\text{M}$, using the unrounded year-5 FCFF.
 
-$$\text{Terminal Value at Year 5} = \frac{291.31}{\text{WACC} - g} = \frac{291.31}{0.085 - 0.025} = \frac{291.31}{0.060} = \$4,855.17\text{M}$$
+$$\text{Terminal Value at Year 5} = \frac{291.33}{\text{WACC} - g} = \frac{291.33}{0.085 - 0.025} = \frac{291.33}{0.060} = \$4,855.5\text{M}$$
 
-Discount Terminal Value to present (using end of Year 5 discount factor, $1 / (1.085)^5 = 0.6651$):
-$$\text{PV of Terminal Value} = 4,855.17 \times 0.6651 = \$3,229.17\text{M}$$
+Discount Terminal Value to present (using end of Year 5 discount factor, $1 / (1.085)^5 = 0.66505$):
+$$\text{PV of Terminal Value} = 4,855.5 \times 0.66505 = \$3,229.1\text{M}$$
+
+The end-of-year factor treats the Gordon cash flows as arriving at years 6, 7 and so on, while the explicit flows sit mid-year.
+Applying the mid-year convention to the terminal flows too multiplies the terminal value by $1.085^{0.5}$, giving a PV of \$3,363.6M, an enterprise value of \$4,265.0M and \$40.65 per share.
+State which convention you use; mixing them silently moves value per share by \$1.34 here.
 
 ### Step 3: Compute Enterprise Value and Bridge to Equity
-$$\text{Enterprise Value} = \text{PV(Explicit)} + \text{PV(TV)} = 901.3 + 3,229.2 = \$4,130.5\text{M}$$
-(Notice: Terminal Value represents $3,229.2 / 4,130.5 = 78.2\%$ of total Enterprise Value).
+$$\text{Enterprise Value} = \text{PV(Explicit)} + \text{PV(TV)} = 901.4 + 3,229.1 = \$4,130.5\text{M}$$
+(Notice: Terminal Value represents $3,229.1 / 4,130.5 = 78.2\%$ of total Enterprise Value).
 
 Equity Bridge:
 - Less Total Debt: -$300.0M
@@ -241,10 +251,12 @@ $$\text{Value Per Share} = \frac{\$3,930.5\text{M}}{100\text{M shares}} = \$39.3
 > TV_N = [FCFF_N * (1 + g)] / (WACC - g), where g is the perpetual organic growth rate.
 
 > [!question]- mkt-val-009 | What is the absolute economic ceiling on the perpetuity growth rate (g)?
-> The sustainable nominal GDP growth rate of the economy in which the company operates (typically 2% to 3%).
+> The long-run nominal growth rate of the economy whose currency the cash flows are in; a firm growing faster forever would outgrow the economy.
+> Damodaran (2012, Ch. 12) uses the risk-free rate as a practical cap.
 
 > [!question]- mkt-val-010 | What typical percentage of Enterprise Value is represented by Terminal Value in a 5-year DCF?
-> Between 60% and 80%, highlighting the critical importance of terminal growth and discount rate assumptions.
+> There is no fixed share; it depends on growth, margins and the forecast length.
+> In this note's Horizon Software case it is 78.2% (PV of TV 3,229.1 of EV 4,130.5), which is why terminal growth and discount rate assumptions need sensitivity tests.
 
 > [!question]- mkt-val-011 | What is operating leverage in cash flow forecasting?
 > The degree to which revenue growth translates into operating income growth, determined by the ratio of fixed costs to variable costs.
@@ -289,7 +301,7 @@ $$\text{Value Per Share} = \frac{\$3,930.5\text{M}}{100\text{M shares}} = \$39.3
 > TTM numbers often contain one-off working capital swings, non-recurring legal charges, or cyclical peak earnings that must be normalized.
 
 > [!question]- mkt-val-025 | What is capital intensity in long-range DCF modeling?
-> The amount of capital expenditure and working capital required to generate each incremental dollar of revenue ($Delta Capital / Delta Revenue).
+> The amount of capital expenditure and working capital required to generate each incremental dollar of revenue (Delta Capital / Delta Revenue).
 
 > [!question]- mkt-val-026 | If a company has zero debt, what is the mathematical relationship between FCFF and FCFE?
 > FCFF equals FCFE exactly, and WACC equals the Cost of Equity.
@@ -298,7 +310,10 @@ $$\text{Value Per Share} = \frac{\$3,930.5\text{M}}{100\text{M shares}} = \$39.3
 > Interest expense is tax-deductible, reducing corporate income tax liability, which is incorporated directly into the lower after-tax cost of debt in WACC.
 
 > [!question]- mkt-val-028 | How should operating leases be incorporated into Enterprise Value?
-> Under ASC 842, present value of operating leases is recognized on the balance sheet as lease liabilities and must be included as debt in the equity bridge.
+> Under ASC 842, operating-lease liabilities are recognized on the balance sheet, but operating-lease cost stays inside operating expenses.
+> Treat leases consistently: either keep lease cost in FCFF and leave the liability out of debt, or capitalize the leases and subtract the lease liability in the equity bridge.
+> Capitalizing means adding back lease expense, deducting right-of-use depreciation and treating new and renewed leases as capex, which in steady state amounts to adding back only the interest component of lease cost.
+> Subtracting the liability while keeping lease cost in FCFF double-counts, and adding back the full lease cost values every future leased asset as free because the liability covers only existing leases.
 
 > [!question]- mkt-val-029 | What is scenario analysis in DCF modeling?
 > Evaluating valuation outcomes under discrete macro and operational narratives (e.g. Bull, Base, Bear) with correlated assumptions.
@@ -312,11 +327,25 @@ $$\text{Value Per Share} = \frac{\$3,930.5\text{M}}{100\text{M shares}} = \$39.3
 > [!question]- mkt-val-032 | What is the ultimate limitation of a standalone DCF valuation?
 > It is extremely sensitive to long-term terminal value assumptions, requiring triangulation with reverse DCF and market expectations.
 
+> [!question]- mkt-val-257 | In the Horizon Software case (FCFF5 284.2, EBITDA5 486.6, WACC 8.5%, g 2.5%), what exit EV/EBITDA does the Gordon value imply, and what growth would a 15x exit imply?
+> The Gordon value of 4,855.5 is 9.98x year-5 EBITDA.
+> Solving 15 x 486.6 = 284.2 (1 + g) / (0.085 - g) gives g = 4.43%, a perpetual growth rate that must be defended against the economy's nominal growth.
+
+> [!question]- mkt-val-258 | Why is discounting a Gordon terminal value with the end-of-year factor inconsistent with mid-year discounting of the explicit flows, and how much does it matter in the Horizon case?
+> The Gordon formula places the first terminal cash flow at the end of year 6, while the explicit flows sit mid-year.
+> Moving the terminal flows to mid-year multiplies the terminal value by 1.085^0.5, raising value per share from $39.31 to $40.65.
+
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_val_01_dcf.py`](../../code/mkt_val_01_dcf.py) prints and asserts every number on this page: the five-year forecast in exact rational arithmetic, the explicit present value by a forward mid-year sum and by backward induction, the Gordon terminal value against a 3,000-year explicit sum, the exit-multiple growth rate by bisection against its closed form, and the mid-year uplift against a trapezoid-rule integral of an evenly spread cash flow.
+- Related notes: [Cost of Capital, WACC, and Terminal Value Traps](02-Cost-of-Capital-WACC-and-Terminal-Value-Traps.md), [Reverse DCF and Expectations Investing](03-Reverse-DCF-and-Expectations-Investing.md).
 
 ## Further reading
 
-- Damodaran, A. (2012). *Investment Valuation: Tools and Techniques for Determining the Value of Any Asset* (3rd ed.). John Wiley & Sons.
-- Koller, T., Goedhart, M., & Wessels, D. (2020). *Valuation: Measuring and Managing the Value of Companies* (7th ed.). John Wiley & Sons.
+- Damodaran, A. (2012). *Investment Valuation: Tools and Techniques for Determining the Value of Any Asset* (3rd ed.). John Wiley & Sons. Ch. 12 (terminal value), Ch. 15 (firm valuation), Ch. 16 (equity value per share).
+- Koller, T., Goedhart, M., & Wessels, D. (2020). *Valuation: Measuring and Managing the Value of Companies* (7th ed.). John Wiley & Sons. Ch. 10 (frameworks for valuation), Ch. 14 (continuing value), Ch. 16 (enterprise value to value per share).
+- Modigliani, F., & Miller, M. H. (1958). The cost of capital, corporation finance and the theory of investment. *American Economic Review*, 48(3), 261-297.
 - Penman, S. H. (2013). *Financial Statement Analysis and Security Valuation* (5th ed.). McGraw-Hill.
 - Williams, J. B. (1938). *The Theory of Investment Value*. Harvard University Press.

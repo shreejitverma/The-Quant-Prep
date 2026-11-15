@@ -22,7 +22,8 @@ It tells you whether the market expects this company to grow at 10% or 30%, and 
 - **WACC Sensitivity:** Small changes in the discount rate (e.g., 8% vs 10%) can radically change the implied growth rate.
 
 ## Practical Application
-- **Calculation:** If a stock is trading at $100 and a Reverse DCF shows an implied growth of 25% for the next 10 years, but the industry is only growing at 5%, the stock is likely **Overvalued**.
+- **Calculation:** If a stock is trading at $100 and a Reverse DCF shows an implied growth of 25% for the next 10 years, but the industry is only growing at 5% (hypothetical figures), the price requires large share gains and the stock is likely **Overvalued**.
+- **Worked case:** [Reverse DCF and Expectations Investing](03-Reverse-DCF-and-Expectations-Investing.md) solves a full example by bisection, with every number asserted by `code/mkt_val_03_reverse_dcf.py`.
 
 ---
 [[16-Trading-and-Investing/Investing/Stock Research/_Index_Stock Research|Back to Stock Research]] | [[00-Start-Here/Dashboard|Back to Dashboard]]
