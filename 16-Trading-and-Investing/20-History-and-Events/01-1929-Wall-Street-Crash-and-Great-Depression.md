@@ -11,48 +11,44 @@ tags: [market-history, 1929-crash, great-depression, margin-calls, leverage, tic
 
 ## Executive Summary
 
-Between September 3 and November 13, 1929, the Dow Jones Industrial Average collapsed by 48%, initiating a devastating deflationary bear market that ultimately bottomed in July 1932 at an 89.2% cumulative peak-to-trough decline.
-The crash was driven by extreme broker loan credit expansion (10% upfront margin requirements), widespread retail leverage, speculative investment trusts, and a catastrophic microstructural breakdown in information dissemination caused by mechanical ticker tape lag.
-The ensuing banking panic destroyed 9,000 commercial banks, collapsed the money supply by one-third, and prompted the foundational modern regulatory architecture of American finance: the Glass-Steagall Act of 1933, the Securities Act of 1933, the Securities Exchange Act of 1934, and the creation of the SEC.
+The Dow Jones Industrial Average closed at a peak of 381.17 on September 3, 1929, and by its November 13 close of 198.69 it had lost 47.87% of its value.
+The decline continued until July 8, 1932, when the Dow closed at 41.22, a peak-to-trough fall of 89.19%; it did not regain its 1929 high until November 23, 1954.
+Stock purchases on margin, where buyers typically put down 10 percent and borrowed the rest, turned the price fall into forced selling and losses for the lenders.
+The crash was followed by waves of bank failures (about 9,000 bank suspensions in 1930 to 1933 by the FDIC's count) and a fall in the money supply of nearly 30 percent from the fall of 1930 to the winter of 1933.
+The policy response built the modern US framework: the Banking Act of 1933 (Glass-Steagall, which created the FDIC), the Securities Act of 1933, and the Securities Exchange Act of 1934, which created the SEC and gave the Federal Reserve authority over margin requirements.
 
 ---
 
 ## Primary Sources and Chronology
 
-- **September 3, 1929**: The Dow Jones Industrial Average peaks at 381.17 following an unprecedented six-year bull market fueled by cheap call-money lending.
-- **September 5, 1929**: Roger Babson delivers his famous "Babson Break" speech at the National Business Conference, warning that a crash of 60 to 80 points is imminent.
-- **October 24, 1929 (Black Thursday)**:
-  - Opening volume overwhelms the floor, with ticker tape lagging actual floor transactions by more than 90 minutes.
-  - At 12:00 PM, Richard Whitney (Vice President of the NYSE and floor broker for J.P. Morgan & Co.) walks onto the floor and visibly places orders to buy 10,000 shares of US Steel at $205, temporarily arresting the panic.
-  - Record volume of 12,894,650 shares trades in a single session.
-- **October 28, 1929 (Black Monday)**:
-  - Massive margin calls go unanswered over the weekend as commercial banks and regional brokers refuse to extend call-money loans.
-  - The Dow Jones Industrial Average plunges 38.33 points (-12.82%), closing at 260.64 on 9,212,800 shares.
-- **October 29, 1929 (Black Tuesday)**:
-  - Complete panic liquidation takes hold with 16,410,030 shares traded, a volume record that stands unbroken for nearly 40 years until May 1968.
-  - The Dow falls another 30.57 points (-11.73%), closing at 230.07 with leading blue chips trading at price discounts exceeding 40%.
-- **November 13, 1929**: The initial crash sequence bottoms temporarily at 198.69 before an intermediate bear market rally.
-- **July 8, 1932**: The multi-year bear market reaches its ultimate depression nadir with the Dow closing at 41.22, erasing three decades of capital accumulation.
+Sources used on this page: Gary Richardson, Alejandro Komai, Michael Gou and Daniel Park, "Stock Market Crash of 1929", Federal Reserve History (written as of November 22, 2013); Gary Richardson, "The Great Depression" and "Banking Panics of 1930-31", Federal Reserve History (2013); FDIC, *A Brief History of Deposit Insurance in the United States* (1998), chapter 3; the Brady Report (Report of the Presidential Task Force on Market Mechanisms, January 1988), chapter 1; NBER US business cycle chronology; Federal Reserve Regulation T, 12 CFR 220.12; J. K. Galbraith, *The Great Crash, 1929* (1955); Dow closes of October 26 to 29, 1929 and July 8, 1932, and NYSE volume, as reported at the time (contemporary press reports).
+
+- **August 1929**: The NBER dates the business-cycle peak of the Great Depression contraction to August 1929; the trough is March 1933.
+- **September 3, 1929**: The Dow closes at its peak of 381.17, a six-fold rise from 63 in August 1921 (Federal Reserve History).
+- **September 5, 1929**: The forecaster Roger Babson predicts a crash at the Annual National Business Conference (Federal Reserve History, endnote).
+- **October 24, 1929 (Black Thursday)**: Heavy selling; a coalition of bankers attempts to restore confidence by publicly buying blocks of shares (Federal Reserve History).
+- **October 28, 1929 (Black Monday)**: The Dow falls 38.33 points from the Saturday October 26 close of 298.97 to 260.64, a decline of 12.82% (closes from contemporary press reports; the Brady Report rounds the fall to 12.8 percent).
+- **October 29, 1929 (Black Tuesday)**: The Dow falls another 30.57 points to 230.07, a decline of 11.73% (Brady Report: 11.7 percent), on New York Stock Exchange volume of about 16.4 million shares, a record at the time (contemporary press reports).
+- **November 13, 1929**: The Dow closes at 198.69, "almost half" below its peak (Federal Reserve History).
+- **July 8, 1932**: The Dow closes at 41.22, its lowest value of the twentieth century (contemporary press reports).
+- **March 1933**: The commercial banking system collapses and the President declares a bank holiday on March 6 (FDIC).
 
 ---
 
 ## Market Backdrop and Structural Vulnerabilities
 
-### 1. Excessive Margin Lending (10% Down)
-In 1929, retail investors could purchase equities with as little as 10% equity collateral, borrowing the remaining 90% from brokerage houses via broker loans (call money).
-Brokers financed these loans by borrowing directly from commercial banks and non-financial corporations (such as Standard Oil of New Jersey and Bethlehem Steel), who deposited billions in cash into the New York call money market to earn 12% to 20% annualized overnight interest.
-Total broker loans peaked at $8.54 billion in October 1929, representing an astonishing proportion of total US bank credit and rendering the entire market hyper-vulnerable to price drawdowns.
+### 1. Margin Lending
+Investors bought stock on margin: "Purchasers put down a fraction of the price, typically 10 percent, and borrowed the rest" (Federal Reserve History).
+The borrowing was funded through loans to brokers and call loans, so a fall in stock prices threatened both the investor's equity and the lender's collateral.
+At 10% down a buyer holds ten times leverage, so a 10% price fall wipes out the buyer's entire stake (see the Quantitative Autopsy).
 
-### 2. Ticker Tape Lag and Information Asymmetry
-Stock prices were communicated to regional brokerage offices and the public via the Western Union and New York Quotation Company telegraphic ticker tapes.
-The electromechanical ticker machines could print at a maximum speed of roughly 285 characters per minute.
-On Black Thursday and Black Tuesday, trading volume exceeded printer bandwidth by an order of magnitude, causing the tape to lag floor trading by up to two and a half hours.
-Traders outside the physical exchange floor had no accurate knowledge of prevailing bid-ask prices, sparking blind panic selling to exit positions before collateral was completely wiped out.
+### 2. Ticker Tape Lag and Information Delay
+Prices reached brokerage offices by telegraphic ticker, and on the heaviest days the ticker ran far behind trading on the floor (Galbraith 1955).
+Investors away from the floor therefore traded on stale prices, which made it hard to know whether a margin account was still solvent.
 
-### 3. Investment Trust Pyramiding
-The late 1920s witnessed the explosion of leveraged closed-end investment trusts (such as Goldman Sachs Trading Corporation and Shenandoah Corporation).
-Trusts issued debt, preferred stock, and common stock to purchase shares of other investment trusts, creating extreme structural leverage.
-When underlying equity values declined by 10%, the equity tranches of these layered investment pyramids suffered 100% total losses.
+### 3. Leveraged Investment Trusts
+Closed-end investment trusts, including the Goldman Sachs Trading Corporation and its offshoots Shenandoah and Blue Ridge, issued debt and preferred stock and bought shares of other trusts, layering leverage on leverage (Galbraith 1955, chapter "In Goldman, Sachs We Trust").
+Layered leverage multiplies a fall in the underlying portfolio into a much larger fall in the common stock of the top trust.
 
 ---
 
@@ -62,70 +58,82 @@ When underlying equity values declined by 10%, the equity tranches of these laye
 +-----------------------------------------------------------------------+
 |                 1929 LIQUIDATION CASCADE FEEDBACK LOOP                |
 +-----------------------------------------------------------------------+
-| 1. Modest Price Drop (e.g. -5%)                                       |
-|    Triggers maintenance margin breaches on 10%-margin retail accounts |
+| 1. Price Drop                                                         |
+|    Margin accounts at 10% down lose equity ten times as fast          |
 |                                                                       |
-| 2. Unanswered Margin Calls                                            |
-|    Brokers issue telegram margin calls; borrowers fail to deliver cash|
+| 2. Margin Calls                                                       |
+|    Borrowers who cannot post cash are sold out by their brokers       |
 |                                                                       |
 | 3. Forced Market Sell Orders                                          |
-|    Brokers seize collateral and dump market-on-open orders on NYSE    |
+|    Liquidation orders arrive regardless of price                      |
 |                                                                       |
-| 4. Information Blackout (Ticker Tape 150 Minutes Late)                |
-|    Floor specialists retreat bids; market orders execute into air     |
+| 4. Information Delay                                                  |
+|    The ticker runs behind the floor; investors trade on stale prices  |
 |                                                                       |
-| 5. Severe Price Collapse (-12% in hours)                              |
-|    Breaches higher-margin institutional and banking tiers (Contagion) |
+| 5. Further Price Falls                                                |
+|    Losses spread to the lenders that financed the margin loans        |
 +-----------------------------------------------------------------------+
 ```
 
-Because specialist market makers on the NYSE had limited personal balance sheet capital, they could not absorb the millions of forced market sell orders arriving simultaneously.
-Bid quotes collapsed downward in huge discontinuous gaps, clearing trades only at catastrophic discounts.
+Forced sellers do not choose their price, so each round of margin calls adds sell orders exactly when buyers are scarce.
 
 ---
 
 ## Quantitative Autopsy
 
-Let initial stock price be $S_0 = 100$, purchased on 10% margin with $10 equity collateral and $90 borrowed call loan debt:
+The numbers below are a hypothetical illustration of 10% margin.
+Let the initial stock price be $S_0 = 100$, bought with $10$ of equity and $90$ of borrowed money:
 $$\text{Account Equity} = E(S) = S - \text{Debt} = S - 90$$
 $$\text{Margin Percentage} = M(S) = \frac{S - 90}{S}$$
-When the stock drops by just 10% to $S_1 = 90$, equity drops to:
+When the stock drops by 10% to $S_1 = 90$, equity drops to:
 $$E(90) = 90 - 90 = 0$$
-The investor suffers a 100% loss of initial capital on a mere 10% market drawdown.
-If the broker is unable to execute a sale immediately due to ticker lag and floor congestion, selling instead at $S_2 = 82$, the account finishes in a deficit balance:
+The investor loses 100% of the initial capital on a 10% price fall.
+If the broker cannot sell immediately and the position is closed at $S_2 = 82$, the account finishes in deficit:
 $$E(82) = 82 - 90 = -8$$
-The broker absorbs an unsecured credit loss of $8 per share, which is immediately transmitted to the commercial bank that provided the overnight broker loan.
+The lender now has an unsecured loss of $8$ per share, which is how margin losses pass from investors to brokers and their banks.
+
+The headline index moves are computed from the cited Dow closes:
+- Peak to November 13, 1929: $1 - 198.69/381.17 = 47.87\%$.
+- Peak to July 8, 1932: $1 - 41.22/381.17 = 89.19\%$.
+- October 28: $38.33/298.97 = 12.82\%$; October 29: $30.57/260.64 = 11.73\%$.
+- Bank suspensions by year (FDIC, 1998): 1,350 (1930), 2,293 (1931), 1,453 (1932) and about 4,000 (1933), a total of 9,096 for 1930 to 1933.
 
 ---
 
 ## Regulatory and Structural Legacy
 
-The 1929 crash fundamentally reshaped global financial architecture:
-1. **Federal Reserve Regulation T (1934)**: Granted the Federal Reserve Board authority to mandate minimum initial margin requirements, raising margin from 10% to 50% (and periodically up to 100%).
-2. **Glass-Steagall Banking Act of 1933**: Strictly separated commercial banking (deposit taking) from investment banking (equity underwriting and speculation) and established the FDIC.
-3. **Securities Act of 1933 & Securities Exchange Act of 1934**: Mandated standardized registration statements, audited financial reporting, continuous 10-K/10-Q disclosures, and created the Securities and Exchange Commission (SEC).
-4. **Pecora Commission Investigation**: Publicly exposed rampant insider market manipulation, pool syndicates, and fraudulent investment trust valuations.
+1. **Margin regulation**: Section 7 of the Securities Exchange Act of 1934 gave the Federal Reserve Board authority to set margin requirements, which it exercises through Regulation T; as of November 2026 the initial margin for a margin equity security is 50 percent of current market value (12 CFR 220.12).
+2. **Banking Act of 1933 (Glass-Steagall)**: Separated commercial banking from investment banking and created the FDIC.
+3. **Securities Act of 1933 and Securities Exchange Act of 1934**: Required registration and periodic disclosure for public securities and created the Securities and Exchange Commission.
+4. **Pecora investigation**: The Senate Banking Committee inquiry of 1932 to 1934 into stock exchange practices exposed pools and abuses that shaped this legislation.
 
 ---
 
 ## Lessons for Traders and Risk Managers
 
-- **Leverage Inverts Probability**: High leverage turns survivable drawdowns into fatal bankruptcies; any strategy requiring more than 2x leverage to generate acceptable returns possesses negative convexity.
-- **Microstructural Bandwidth Bottlenecks**: In severe crises, market data feeds lag, order entry systems reject orders, and market participants trade blind.
-- **Credit Contagion Across Asset Classes**: Equity collateral liquidations instantly freeze wholesale short-term money market lending.
+- **Leverage converts drawdowns into ruin**: At $L$ times leverage a price fall of $1/L$ wipes out the equity; size positions so that the worst plausible gap does not reach that threshold.
+- **Data lags in a crisis**: Feeds and order systems slow down exactly when volume peaks, so plan for trading on stale information.
+- **Credit losses travel**: Losses on collateralised lending pass from borrowers to lenders, so equity stress becomes funding stress.
 
 ---
 
 ## Case Study Drills and Review Questions
 
-> [!question]- mkt-his-001 | What was the standard retail margin requirement in the US equity markets leading up to the 1929 crash?
-> Roughly 10% upfront equity collateral, allowing 10x effective leverage.
+> [!question]- mkt-his-001 | What was the typical down payment for buying stock on margin in the US leading up to the 1929 crash?
+> Typically 10 percent, with the rest borrowed (Federal Reserve History), which is ten times leverage.
 
-> [!question]- mkt-his-002 | How did the electromechanical ticker tape lag amplify the panic during Black Thursday and Black Tuesday?
-> The ticker ran up to 150 minutes late, preventing traders outside the floor from knowing real-time prices and triggering blind panic liquidation.
+> [!question]- mkt-his-002 | How did ticker tape lag amplify the panic during Black Thursday and Black Tuesday?
+> On the heaviest days the ticker ran far behind floor trading, so investors away from the floor did not know current prices or whether their margin accounts were still solvent, and sold on stale information.
 
-> [!question]- mkt-his-003 | What regulatory authority did the Federal Reserve receive under Regulation T of 1934?
-> The authority to set and enforce mandatory minimum initial margin requirements for securities purchases.
+> [!question]- mkt-his-003 | What authority over margin did the Federal Reserve receive after the 1929 crash?
+> Section 7 of the Securities Exchange Act of 1934 gave the Federal Reserve Board authority to set margin requirements, exercised through Regulation T.
 
 > [!question]- mkt-his-004 | What happened to the Dow Jones Industrial Average between its September 1929 peak and July 1932 trough?
-> It dropped from 381.17 to 41.22, representing an 89.2% cumulative decline.
+> It fell from 381.17 (September 3, 1929) to 41.22 (July 8, 1932), a decline of 89.19%.
+
+---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_hist_01_1929_crash.py`](../code/mkt_hist_01_1929_crash.py) prints and asserts every number on this page: each percentage decline is recomputed from the cited closes in exact decimal arithmetic and checked against the cited point changes and the Brady Report's rounded figures, and printed beside Federal Reserve History's wording, the FDIC suspension total is summed from the yearly counts, and the margin example is evaluated on an explicit balance sheet.
+- Related notes: [Case File 02: 1987 Black Monday](02-1987-Black-Monday-and-Portfolio-Insurance.md), [Case File 05: 2008 Global Financial Crisis](05-2008-Global-Financial-Crisis-and-Lehman-Collapse.md).

@@ -11,61 +11,45 @@ tags: [market-history, swiss-franc-2015, snb-unpeg, currency-pegs, fxcm, alpari,
 
 ## Executive Summary
 
-On the morning of Thursday, January 15, 2015, the Swiss National Bank (SNB) stunned global financial markets by abruptly abandoning its three-year-old minimum exchange rate ceiling of 1.20 Swiss Francs per Euro (EUR/CHF).
-Within thirteen minutes of the 09:30 AM CET announcement, the Swiss Franc appreciated by over 30% against the Euro, briefly spiking to parity (1.00) and reaching an extreme low of 0.85 EUR/CHF.
-The sudden policy reversal vaporized global foreign exchange liquidity: major Tier-1 interbank liquidity providers (Deutsche Bank, UBS, Barclays, Citigroup) pulled all electronic bid quotes, leaving the EUR/CHF order book completely devoid of pricing between 1.1990 and 1.0000.
-Stop-loss orders submitted by thousands of leveraged retail traders and institutional funds failed to execute anywhere near their invalidation prices, suffering catastrophic gap slippage of 1,500 to 2,500 pips.
-Because retail FX brokers offered leverage ratios ranging from 100-to-1 to 400-to-1, client account balances blew through zero and deep into negative territory within seconds.
-The resulting bad-debt shortfalls caused the immediate insolvency and bankruptcy of major retail brokers (including Alpari UK and Excel Markets), while FXCM (the largest retail broker in the US) required an emergency $300 million high-interest rescue loan from Leucadia National to avoid liquidation.
+On Thursday, January 15, 2015, at 10:30 CET (Central European Time), the Swiss National Bank (SNB) announced that it was discontinuing the minimum exchange rate of CHF 1.20 per euro that it had enforced since September 6, 2011, and cut its interest rate on sight deposits above the exemption threshold to -0.75%.
+EUR/CHF immediately fell nearly 30 percent before partly recovering over the following days (Federal Reserve Bank of New York); a 30% fall in EUR/CHF is a 42.86% rise in the franc against the euro.
+Liquidity in the franc collapsed, and stop-loss orders placed just below 1.20 were filled far below their trigger prices.
+Leveraged retail clients lost more than their deposits: FXCM reported client debit balances of about $225 million and took a $300 million rescue loan from Leucadia National on January 16, and Alpari (UK) Limited entered special administration on January 19.
+European and UK regulators later capped retail leverage on contracts for difference (CFDs), including FX, and required negative balance protection.
 
 ---
 
 ## Primary Sources and Chronology
 
-- **September 6, 2011**: The Swiss National Bank introduces a mandatory floor of 1.20 Francs per Euro, declaring it will enforce this minimum exchange rate with "utmost determination" and is prepared to buy foreign currency in unlimited quantities to prevent the deflationary overvaluation of the Franc during the European sovereign debt crisis.
-- **December 18, 2014**: The SNB introduces negative interest rates (-0.25% on sight deposit balances exceeding exemption thresholds) to discourage international Franc hoarding.
-- **January 12, 2015**: SNB Vice President Jean-Pierre Danthine reaffirms in an interview with Swiss television that the 1.20 floor remains "the cornerstone" of SNB monetary policy.
-- **Thursday, January 15, 2015**:
-  - 09:30 AM CET (03:30 AM EST): The SNB issues a brief three-paragraph press release: *Swiss National Bank Discontinues Minimum Exchange Rate and Lowers Interest Rate to -0.75%*.
-  - 09:30:15 CET: Algorithmic news scanners read the announcement; automated buy orders for CHF hit the interbank electronic matching networks (EBS and Reuters Matching).
-  - 09:31:00 CET: The SNB's massive standing limit order buying EUR/CHF at 1.2000 disappears from EBS; interbank market-making algorithms immediately freeze and withdraw all bids.
-  - 09:33:00 CET: EBS trading records reveal a complete liquidity void: between 1.1500 and 1.0200, there are zero bids on the order book.
-  - 09:43:00 CET: EUR/CHF prints an extreme low of 0.8500 (an intraday currency spike of 41.2%), before stabilizing around 1.0200-1.0400.
-  - 03:00 PM EST: Major global investment banks tally massive trading losses: Citigroup loses over $150 million, Deutsche Bank loses $150 million, and Barclays loses over $100 million in unhedged client and prop exposures.
-- **Friday, January 16, 2015**:
-  - Alpari (UK) Limited officially enters insolvency administration, reporting that catastrophic client negative balances wiped out firm equity.
-  - Excel Markets in New Zealand announces it has suffered total loss of operating capital and ceases operations.
-  - FXCM announces that retail clients suffered negative balances exceeding $225 million, creating a regulatory net capital deficit; shares plunge 88% before trading is halted.
-  - Leucadia National Corporation structures an emergency $300 million secured credit facility with a 10% to 20% coupon to recapitalize FXCM and save it from regulatory shutdown.
+Sources used on this page: SNB press releases of September 6, 2011, December 18, 2014 and January 15, 2015; Federal Reserve Bank of New York, *Foreign Exchange Operations* quarterly report for January to March 2015; Bank of England, *Gauging Market Dynamics Using Trade Repository Data* (Financial Stability Paper, 2017), for the time of the announcement; FXCM Inc. announcements and Form 8-K of January 2015; FCA statement "News for customers of Alpari (UK) Limited" (January 2015); ESMA product intervention decision on CFDs (March 27, 2018); FCA Policy Statement PS19/18 (2019); ECB press release of January 22, 2015.
+
+- **September 6, 2011**: The SNB sets a minimum exchange rate of CHF 1.20 per euro, stating that it "will enforce this minimum rate with the utmost determination and is prepared to buy foreign currency in unlimited quantities".
+- **December 18, 2014**: The SNB imposes an interest rate of -0.25% on sight deposit balances above an exemption threshold and reaffirms the minimum exchange rate as "the key instrument" of its policy.
+- **Thursday, January 15, 2015, 10:30 a.m. CET**: The SNB announces that it is discontinuing the minimum exchange rate, lowering the sight deposit rate to -0.75%, and moving the three-month Libor target range to between -1.25% and -0.25%.
+  - EUR/CHF immediately depreciates nearly 30 percent before partly recovering (New York Fed).
+  - FXCM announces that client debit balances of about $225 million have left it short of regulatory capital.
+- **Friday, January 16, 2015**: Leucadia National agrees a $300 million two-year term loan to FXCM.
+- **Monday, January 19, 2015**: Alpari (UK) Limited enters special administration, with KPMG partners appointed as joint special administrators (FCA).
+- **January 22, 2015**: The ECB announces an expanded asset purchase programme of €60 billion a month.
 
 ---
 
 ## Market Backdrop and Structural Vulnerabilities
 
-### 1. The "Free Money" Peg Illusion
-For over three years, market participants treated the 1.2000 EUR/CHF floor as a quasi-sovereign guarantee.
-Retail traders and systematic algorithmic funds established massive carry trades:
-- Buying EUR/CHF at 1.2005 or 1.2010.
-- Setting stop-losses tightly at 1.1990 (risking only 15 to 20 pips).
-- Collecting the interest rate differential with high leverage (often 200:1 or 400:1).
-Traders believed the downside was capped at 1.1990 because the Swiss National Bank was legally committed to buying unlimited Euros at 1.2000.
-This moral hazard encouraged unprecedented concentration of long EUR/CHF positions across retail brokers worldwide.
+### 1. The Peg Illusion
+With the SNB committed to buying "foreign currency in unlimited quantities" at 1.20, many traders treated the floor as a hard limit on the downside of a long EUR/CHF position.
+A common retail trade was to buy EUR/CHF just above 1.20 with a tight stop just below it, which looks like a small, well-defined risk.
+That risk was only small while the floor held; once it was removed, the stop became a trigger to sell into a market with almost no bids.
 
-### 2. The SNB's Expanding Balance Sheet Trap
-To defend the 1.20 floor throughout 2014, the SNB was forced to print hundreds of billions of Swiss Francs to purchase Euros.
-By late 2014, the European Central Bank (ECB), led by Mario Draghi, was preparing to announce a massive sovereign Quantitative Easing (QE) program, which would print over €1 trillion to buy European government bonds.
-The SNB realized that maintaining the 1.20 floor against the ECB's incoming QE tidal wave would require purchasing hundreds of billions of additional depreciating Euros.
-The SNB's foreign currency reserves had already swelled to 480 billion CHF (nearly 80% of Switzerland's entire annual GDP).
-Fearing catastrophic future balance sheet losses, the SNB Governing Board decided to abandon the peg unilaterally before the ECB's formal QE announcement on January 22.
+### 2. The SNB's Reasons
+The January 15, 2015 press release explains the decision directly: the minimum rate was introduced during a period of exceptional overvaluation, the overvaluation had decreased, and "divergences between the monetary policies of the major currency areas have increased significantly"; with the euro weakening against the dollar, the SNB concluded that "enforcing and maintaining the minimum exchange rate ... is no longer justified".
+The rate cut to -0.75% was intended to keep the move from tightening monetary conditions too much.
 
-### 3. Retail Broker Asymmetry and Negative Balance Risk
-Most retail FX brokers operated as Market Makers (B-Book) or Straight-Through Processors (A-Book / STP):
-- In an STP model, the broker executes client orders directly against Tier-1 bank liquidity providers.
-- When client stop-loss orders are triggered, the broker closes the client's trade and simultaneously liquidates its corresponding hedge with the liquidity provider.
-- Brokers offered leverage up to 400:1 (requiring only 0.25% margin).
-If an asset gaps down by 15% or 20% in seconds, the client's loss is not limited to their account balance; the loss extends to the full gap price:
+### 3. Retail Broker Leverage and Negative Balances
+Retail FX brokers offered leverage of up to several hundred to one, and some passed client orders to bank liquidity providers while others took the other side themselves.
+If the price gaps through a client's stop, the loss is the full gap times the notional, which can far exceed the margin deposited:
 $$\text{Realized Loss} = \text{Notional} \times \Delta P$$
-Because retail clients cannot be forced to pay hundreds of thousands of dollars in deficit balances, the broker absorbs the unpaid bad debt as an immediate deduction against regulatory capital.
+When clients cannot or will not pay the deficit, the broker bears it, and a large enough total destroys the broker's capital.
 
 ---
 
@@ -75,84 +59,81 @@ Because retail clients cannot be forced to pay hundreds of thousands of dollars 
 +-----------------------------------------------------------------------+
 |                    THE 2015 EUR/CHF LIQUIDITY EVAPORATION             |
 +-----------------------------------------------------------------------+
-| 1. SNB Press Release (09:30 AM CET)                                  |
-|    SNB terminates 1.20 floor; cancels standing bids on EBS            |
+| 1. SNB Press Release (10:30 a.m. CET)                                 |
+|    The 1.20 floor is discontinued with immediate effect               |
 |                                                                       |
-| 2. Complete Order Book Vacuum                                         |
-|    Tier-1 banks pull algorithmic quotes; bids drop from 1.20 to 1.00  |
+| 2. Order Book Vacuum                                                  |
+|    Bids below 1.20 thin out as liquidity providers step back          |
 |                                                                       |
-| 3. Massive Gap Execution Slippage                                     |
-|    Stop orders set at 1.1990 fail to execute until 1.0000 or 0.9500   |
-|    (producing 2,000 pips of unintended adverse slippage)              |
+| 3. Gap Execution                                                      |
+|    Stops just below 1.20 fill far lower                               |
 |                                                                       |
-| 4. Catastrophic Retail Deficits                                       |
-|    A 200:1 leveraged position losing 20% loses 40x the deposit,       |
+| 4. Retail Deficits                                                    |
+|    A 200:1 position losing 20% loses 40x the deposit,                 |
 |    leaving a deficit equal to 39x the client's deposited capital      |
 |                                                                       |
-| 5. Broker Balance Sheet Obliteration                                  |
-|    Brokers owe liquidity providers hundreds of millions for executed  |
-|    hedges, while clients default on negative balances                 |
+| 5. Broker Losses                                                      |
+|    Brokers must settle their hedges while clients owe deficits        |
 |                                                                       |
-| 6. Immediate Insolvency and Bankruptcy                                |
-|    Alpari UK files for administration; FXCM requires emergency loan   |
+| 6. Insolvency or Rescue                                               |
+|    Alpari UK enters special administration; FXCM needs a loan         |
 +-----------------------------------------------------------------------+
 ```
 
-On Electronic Broking Services (EBS), the primary institutional interbank platform for EUR/CHF, order books became completely "one-sided".
-Traders were attempting to sell Euros, but there were no buyers at any price.
-Market spreads that typically measured 1 pip (0.0001) widened to over 1,000 pips (0.1000).
-Trades executed at wildly disparate prices across different platforms depending entirely on when the first brave human trader entered a manual bid.
+The Bank of England's 2017 study of trade repository data notes that trading in the Swiss franc options market practically stopped after the floor was removed, and the New York Fed reports the near-30 percent immediate move.
 
 ---
 
 ## Quantitative Autopsy
 
-Consider a retail trader with a Swiss-franc account, equity $E_0 = \text{CHF } 10,000$, using 200:1 leverage to buy EUR/CHF at $P_0 = 1.2005$ (CHF per EUR):
-$$\text{Position Notional} = \text{CHF } 10,000 \times 200 = \text{CHF } 2,000,000 \approx €1,666,000 \quad (2,000,000 / 1.2005)$$
-$$\text{Required Initial Margin } (0.50\%) = \text{CHF } 10,000$$
-The trader sets a tight stop-loss at $P_{\text{stop}} = 1.1985$ (20 pips risk).
-Because P&L on a EUR/CHF position accrues in Swiss francs, the loss at the stop is:
-$$\text{Expected Loss at Stop} = €1,666,000 \times (1.2005 - 1.1985) = \text{CHF } 3,332 \quad (33.3\% \text{ of account})$$
-Even a 20-pip stop risks a third of the account at 200:1 leverage.
-However, when the peg breaks, there are zero bids in the interbank market until $P_{\text{fill}} = 1.0200$.
-The broker's automated liquidation engine finally executes the sell order at 1.0200:
-$$\text{Realized Loss} = €1,666,000 \times (1.2005 - 1.0200) = €1,666,000 \times 0.1805 = \text{CHF } 300,713$$
-The net account balance after liquidation is:
-$$\text{Account Equity} = \text{CHF } 10,000 - \text{CHF } 300,713 = -\text{CHF } 290,713$$
-The retail trader owes the broker CHF 290,713, about 29 times the deposited capital, from a 15.0% price move ($0.1805 / 1.2005$).
-When thousands of clients simultaneously incur six-figure negative balances, the broker faces aggregate claims from its liquidity providers (who executed the other side of the trade at 1.0200) totaling hundreds of millions of dollars.
-Because client bad debt is uncollectible, broker equity is destroyed instantly.
+This is a hypothetical account.
+A trader with a Swiss franc account of $E_0 = \text{CHF } 10{,}000$ uses 200:1 leverage to buy EUR/CHF at $P_0 = 1.2005$ (CHF per EUR):
+$$\text{Position Notional} = \text{CHF } 10{,}000 \times 200 = \text{CHF } 2{,}000{,}000 = €1{,}665{,}972.51 \quad (2{,}000{,}000 / 1.2005)$$
+$$\text{Required Margin } (1/200 = 0.50\%) = \text{CHF } 10{,}000$$
+The stop is at $P_{\text{stop}} = 1.1985$, 20 pips below entry, and P&L accrues in Swiss francs:
+$$\text{Loss at Stop} = €1{,}665{,}972.51 \times (1.2005 - 1.1985) = \text{CHF } 3{,}331.95 \quad (33.32\% \text{ of the account})$$
+Even a 20-pip stop risks a third of the account at 200:1.
+Suppose instead the stop is filled at $P_{\text{fill}} = 1.0200$:
+$$\text{Realized Loss} = €1{,}665{,}972.51 \times (1.2005 - 1.0200) = €1{,}665{,}972.51 \times 0.1805 = \text{CHF } 300{,}708.04$$
+$$\text{Account Equity} = \text{CHF } 10{,}000 - \text{CHF } 300{,}708.04 = -\text{CHF } 290{,}708.04$$
+The trader owes the broker CHF 290,708.04, 29.07 times the deposit, after a price move of 15.04% ($0.1805 / 1.2005$).
+In general, at leverage $L$ a gap of $x$ loses $Lx$ times the deposit, so at $L = 200$ a 20% gap loses 40 times the deposit and leaves a deficit of 39 times it.
 
 ---
 
 ## Regulatory and Structural Legacy
 
-The 2015 Swiss Franc crisis forced global regulators to crack down on retail derivative leverage:
-1. **ESMA Leverage Restrictions (2018)**: The European Securities and Markets Authority (ESMA) capped maximum retail FX leverage at 30:1 for major currency pairs and 20:1 for non-major pairs, eliminating 200:1 and 400:1 leverage across the European Union.
-2. **Mandatory Negative Balance Protection**: Regulators in the UK (FCA), Europe (ESMA), and Australia (ASIC) made Negative Balance Protection legally mandatory for retail brokers; brokers can no longer pursue retail clients for losses exceeding their deposited capital.
-3. **Re-evaluation of Sovereign Peg Risk**: Institutional risk managers reclassified sovereign currency pegs from "low-volatility anchors" to "extreme non-linear tail-risk binaries".
-4. **Stricter Broker Capital Requirements**: Regulators substantially increased minimum regulatory net capital requirements for OTC retail derivatives dealers.
+1. **ESMA product intervention (2018)**: ESMA's decision of March 27, 2018, applying to CFDs sold to retail clients from August 1, 2018, capped initial leverage at 30:1 for major currency pairs and 20:1 for non-major pairs, gold and major indices, and required negative balance protection and a margin close-out rule.
+2. **UK permanent rules (2019)**: The FCA made equivalent rules permanent for CFDs sold to UK retail clients in Policy Statement PS19/18, effective August 1, 2019.
+3. **Peg risk**: A currency floor or peg is a policy choice, and its removal is a jump risk that a volatility estimate from the pegged period cannot capture.
 
 ---
 
 ## Lessons for Traders and Risk Managers
 
-- **Never Trust a Sovereign Peg**: A currency peg is not a market equilibrium; it is a political price-fixing mechanism that will be abandoned the instant its maintenance becomes economically unbearable for the central bank.
-- **Stop Losses Do Not Protect Against Discontinuous Gaps**: A stop loss is simply a trigger to submit an order; if no liquidity exists at your stop price, your order will execute at the first available bid, regardless of how catastrophic the price may be.
-- **Leverage Compounds Gap Risk Exponentially**: In continuous markets, leverage amplifies returns linearly; in gapping markets, high leverage guarantees immediate, unrecoverable account insolvency.
+- **Do Not Treat a Peg as a Price Floor**: A central bank can abandon a peg whenever maintaining it becomes too costly.
+- **Stop Losses Do Not Protect Against Discontinuous Gaps**: A stop is a trigger to submit an order, and the order fills at the first available bid.
+- **Leverage Multiplies Gap Risk**: At leverage $L$, a gap larger than $1/L$ leaves a negative balance.
 
 ---
 
 ## Case Study Drills and Review Questions
 
 > [!question]- mkt-his-025 | What minimum exchange rate floor did the Swiss National Bank maintain from September 2011 to January 2015?
-> A floor of 1.20 Swiss Francs per Euro (EUR/CHF).
+> A minimum of CHF 1.20 per euro, set on September 6, 2011 and discontinued on January 15, 2015.
 
 > [!question]- mkt-his-026 | Why did retail FX brokers like Alpari UK collapse following the SNB unpeg event?
-> Extreme gap slippage caused client stop-loss orders to execute at massive losses, creating millions in uncollectible negative client balances that wiped out broker capital.
+> Client stops gapped far below their trigger prices, leveraged clients ended with negative balances the brokers could not collect, and the losses exceeded broker capital; Alpari (UK) entered special administration on January 19, 2015, and FXCM needed a $300 million loan.
 
 > [!question]- mkt-his-027 | How much did the Swiss Franc appreciate intraday against the Euro on January 15, 2015?
-> Over 30% within thirteen minutes, briefly spiking more than 40% to an extreme low of 0.85 EUR/CHF.
+> EUR/CHF immediately fell nearly 30 percent (New York Fed), which is a rise of about 43 percent in the franc against the euro, since $1/(1 - 0.30) - 1 = 42.86\%$.
 
 > [!question]- mkt-his-028 | What major retail regulatory reform did ESMA implement in 2018 as a direct consequence of the 2015 Swiss Franc shock?
-> Capping retail foreign exchange leverage at 30:1 and mandating negative balance protection for all retail client accounts.
+> Leverage caps on retail CFDs of 30:1 for major currency pairs (20:1 for non-majors), with mandatory negative balance protection and margin close-out, applying from August 1, 2018.
+
+---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_hist_07_snb_unpeg.py`](../code/mkt_hist_07_snb_unpeg.py) prints and asserts every number on this page: the account example is computed in exact rational arithmetic with the leverage identity $Lx$ evaluated at a 200:1 example, and the franc's appreciation is computed from the EUR/CHF fall.
+- Related notes: [Case File 08: 2020 Negative WTI](08-2020-COVID-Crash-and-Negative-WTI-Crude.md), [Case File 06: 2010 Flash Crash](06-2010-Flash-Crash-and-LOB-Evaporation.md).

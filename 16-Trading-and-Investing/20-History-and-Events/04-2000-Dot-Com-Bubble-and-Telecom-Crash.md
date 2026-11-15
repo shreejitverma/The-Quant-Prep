@@ -11,55 +11,48 @@ tags: [market-history, dot-com-bubble, tech-crash, telecom-debt, lockup-expirati
 
 ## Executive Summary
 
-Between March 10, 2000, and October 9, 2002, the NASDAQ Composite Index collapsed from an all-time peak of 5,048.62 to a trough of 1,114.11, suffering a devastating 77.93% decline that wiped out approximately $5 trillion in market capitalization.
-The bubble was fueled by extreme speculative mania surrounding the commercialization of the internet, unanchored venture capital financing, and investment bank IPO spinning.
-Valuations decoupled completely from traditional fundamentals: unprofitable internet firms traded at price-to-sales multiples exceeding 100x based on speculative metrics such as "eyeballs", "page views", and "mindshare".
-Simultaneously, the telecommunications sector accumulated over $1 trillion in debt to finance a massive speculative overbuild of transcontinental fiber-optic networks.
-The crash was catalyzed by aggressive Federal Reserve interest rate hikes (raising the Fed Funds rate from 4.75% to 6.50%), an avalanche of insider share sales following the expiration of 180-day IPO lockups, and the sudden cessation of venture capital cash burn financing.
+The Nasdaq Composite closed at a record 5,048.62 on March 10, 2000, after an intraday high of 5,132.52, and fell to a closing low of 1,114.11 on October 9, 2002, a decline of 77.93%.
+It did not close above its March 2000 record until April 23, 2015.
+The bubble rested on expectations for internet companies, many of which had no profits, and on a market for initial public offerings that rewarded growth narratives over cash flow.
+Between June 1999 and May 2000 the Federal Reserve raised the federal funds target six times, from 4.75% to 6.50%, and as funding markets closed, companies that burned cash had to raise capital or fail.
+The aftermath produced the Sarbanes-Oxley Act of 2002 after the Enron and WorldCom frauds, and the 2003 Global Research Analyst Settlement separating research from investment banking.
 
 ---
 
 ## Primary Sources and Chronology
 
-- **August 9, 1995**: Netscape Communications completes its initial public offering; shares priced at $28 open at $71 and close at $58.25 ($2.9 billion market cap on zero profits), igniting the modern dot-com gold rush.
-- **December 5, 1996**: Federal Reserve Chairman Alan Greenspan delivers his famous "Irrational Exuberance" speech at the American Enterprise Institute, questioning whether stock market valuations reflected unsustainable investor optimism; markets briefly stumble before surging higher for another three years.
-- **November 1999**: The Federal Reserve injects massive liquidity into the banking system via repo operations to preempt anticipated "Y2K bug" computer disruptions, flooding financial markets with speculative credit.
-- **January 10, 2000**: America Online (AOL), an internet service provider, announces a $165 billion mega-merger to acquire traditional media giant Time Warner, marking the absolute zenith of dot-com paper equity purchasing power.
-- **March 10, 2000**: The NASDAQ Composite reaches an intraday all-time high of 5,132.52 and closes at 5,048.62, having appreciated by more than 85% in the preceding twelve months.
-- **March 20, 2000**: *Barron's* publishes a landmark cover story titled "Burning Up", analyzing 207 internet companies and revealing that 51 would completely run out of cash within twelve months at their current burn rates.
-- **April 3, 2000**: US District Judge Thomas Penfield Jackson issues his ruling in *United States v. Microsoft*, finding Microsoft guilty of violating the Sherman Antitrust Act; tech stocks plunge.
-- **April 14, 2000 (Black Friday)**:
-  - The NASDAQ Composite suffers its worst weekly decline in history, dropping 355.49 points (-9.67%) on the day to close down 25.3% for the week.
-  - Retail margin calls force widespread broker liquidations.
-- **May 16, 2000**: The Federal Reserve raises the federal funds rate by 50 basis points to 6.50%, its sixth consecutive rate hike to combat asset inflation.
-- **November 2000 - July 2001**: Prominent dot-com icons fail within months of their IPOs, having incinerated billions in venture capital: Pets.com announces its liquidation in November 2000, eToys files for bankruptcy in March 2001 and Webvan files in July 2001.
-- **October 9, 2002**: The bear market finally reaches its bottom with the NASDAQ closing at 1,114.11; it takes fifteen years (until April 2015) for the index to reclaim its March 2000 high.
+Sources used on this page: Nasdaq Composite closes as reported at the time (for example *Fortune*, April 23, 2015, on the first close above 5,048.62); Federal Reserve FOMC statements of 1999 and 2000; Alan Greenspan, "The Challenge of Central Banking in a Democratic Society", speech at the American Enterprise Institute, December 5, 1996; *United States v. Microsoft*, Conclusions of Law, April 3, 2000; SEC Release 33-7881 (August 2000) adopting Regulation FD and Rule 10b5-1; SEC press release 2003-54 (April 28, 2003); Sarbanes-Oxley Act of 2002.
+
+- **August 9, 1995**: Netscape Communications goes public; shares offered at $28 open at $71 after a delay of nearly two hours and close at $58.25, a market value of more than $2 billion (contemporary press reports).
+- **December 5, 1996**: Alan Greenspan asks in his American Enterprise Institute speech how we would know when "irrational exuberance has unduly escalated asset values".
+- **June 30, 1999**: The FOMC raises the federal funds target by 25 basis points to 5.00%, the first of six increases.
+- **January 10, 2000**: America Online announces an all-stock agreement to combine with Time Warner.
+- **March 10, 2000**: The Nasdaq Composite reaches an intraday high of 5,132.52 and a record close of 5,048.62.
+- **March 20, 2000**: *Barron's* publishes "Burning Up" by Jack Willoughby, reporting a Pegasus Research International study of 207 internet companies that found at least 51 would run out of cash within twelve months.
+- **April 3, 2000**: Judge Thomas Penfield Jackson rules in *United States v. Microsoft* that Microsoft violated sections 1 and 2 of the Sherman Act.
+- **May 16, 2000**: The FOMC raises the federal funds target by 50 basis points to 6.50%, the sixth increase since June 1999.
+- **November 2000 to July 2001**: Pets.com announces its liquidation (November 2000), eToys files for bankruptcy (March 2001) and Webvan files for bankruptcy (July 2001).
+- **October 9, 2002**: The Nasdaq Composite closes at 1,114.11, its bear-market low.
 
 ---
 
 ## Market Backdrop and Structural Vulnerabilities
 
-### 1. Rejection of Fundamental Valuation Metrics
-During the 1998-2000 mania, traditional valuation metrics (Price-to-Earnings, Free Cash Flow Yield, Return on Equity) were dismissed by Wall Street analysts as relics of the "Old Economy".
-Sell-side research departments (led by analysts like Mary Meeker at Morgan Stanley and Henry Blodget at CIBC Oppenheimer/Merrill Lynch) popularized novel non-GAAP metrics:
-- Price-to-Pageviews
-- Price-to-Eyeballs
-- Price-to-Click-Through-Rate
-- Gross Merchandising Volume (GMV) with negative gross margins
-Companies such as Commerce One, Inktomi, and Akamai traded at Enterprise Value-to-Revenue multiples between 80x and 250x, requiring decades of 100% annual compound revenue growth with 50% net margins to justify their share prices.
+### 1. Valuation Without Earnings
+Many internet companies went public with little revenue and no profits, and analysts and investors leaned on traffic and user-growth measures instead of earnings or free cash flow.
+A company valued on a distant cash flow is a long-duration asset, so its price is very sensitive to the discount rate and to the growth assumed (see the Quantitative Autopsy).
 
-### 2. The 180-Day IPO Lockup Tsunami
-Investment banks structured dot-com IPOs with tiny float allocations (often selling only 5% to 10% of total shares outstanding to the public).
-This severe float scarcity created artificial supply constraints that produced massive first-day "pops" (e.g. VA Linux soaring 698% on its first day of trading).
-However, pre-IPO venture capitalists, founders, and employees were bound by standard 180-day lockup agreements.
-Between March and November 2000, over $250 billion worth of insider shares unlocked across hundreds of newly public dot-com firms.
-Insiders raced to liquidate their stock before cash burn depleted company balance sheets, flooding illiquid secondary markets with relentless supply.
+### 2. Small Floats and Lockups
+Many IPOs sold only a small share of the company to the public, while insiders and venture investors agreed to lockups (commonly 180 days) before they could sell.
+A small float limits the supply of shares at first and can produce large first-day gains; when lockups expire, the supply of tradable shares rises.
 
-### 3. The Telecom Debt Overhang and Vendor Financing
-Beneath the dot-com consumer web sat the physical telecommunications network buildout.
-Telecommunications providers (WorldCom, Global Crossing, Qwest, Lucent, Nortel) borrowed over $1 trillion in bond and bank debt to lay millions of miles of dark fiber cables, forecasting infinite exponential internet traffic growth.
-Equipment manufacturers (Cisco, Lucent, Nortel) engaged in aggressive "vendor financing": lending billions of dollars directly to startup telecom carriers so that the startups could purchase equipment from the manufacturers, booking non-cash revenue that artificially inflated manufacturing earnings.
-When internet traffic growth fell far short of projections, fiber utilization dropped below 5%, triggering the largest corporate debt defaults and accounting fraud scandals (WorldCom) in financial history.
+### 3. Cash Burn and Closing Funding Markets
+The Barron's study of March 20, 2000 is a direct measure of the vulnerability: at least 51 of 207 internet companies, about a quarter, were on course to exhaust their cash within twelve months.
+Companies with negative operating cash flow depend on new equity or debt, so when IPO and follow-on markets closed, many could not survive.
+
+### 4. Telecom Overbuild and Accounting Fraud
+Telecom carriers borrowed heavily to build fibre networks ahead of demand, and several later failed.
+WorldCom, the largest of the failures, overstated its earnings by classifying operating costs as capital expenditure, which the SEC charged in its civil complaint of June 26, 2002.
 
 ---
 
@@ -69,74 +62,78 @@ When internet traffic growth fell far short of projections, fiber utilization dr
 +-----------------------------------------------------------------------+
 |                    THE DOT-COM CASH BURN DEATH SPIRAL                 |
 +-----------------------------------------------------------------------+
-| 1. Fed Tightening (4.75% -> 6.50%)                                    |
-|    Higher discount rates crush long-duration speculative assets       |
+| 1. Fed Tightening (4.75% -> 6.50%, June 1999 to May 2000)             |
+|    Higher discount rates hit long-duration growth stocks hardest      |
 |                                                                       |
 | 2. Capital Market Window Closes                                       |
-|    Venture debt and secondary equity follow-on offerings dry up       |
+|    IPOs and follow-on offerings dry up                                |
 |                                                                       |
-| 3. High Operational Cash Burn Rate                                    |
-|    Startups burning $10M-$50M per quarter on Super Bowl advertising   |
-|    and infrastructure find treasuries completely empty                |
+| 3. Cash Burn                                                          |
+|    Companies with negative operating cash flow run down their cash    |
 |                                                                       |
-| 4. 180-Day Lockup Expirations                                         |
-|    Founders and VCs dump millions of unlocked shares into weak bids   |
+| 4. Lockup Expirations                                                 |
+|    Insider shares become saleable into falling prices                 |
 |                                                                       |
-| 5. Sudden Corporate Insolvency                                        |
-|    Firms file Chapter 7 bankruptcy; equity values collapse to zero    |
+| 5. Corporate Failure                                                  |
+|    Liquidation or bankruptcy; equity goes to zero                     |
 +-----------------------------------------------------------------------+
 ```
 
-Unlike cyclical recessions where companies experience earnings declines, hundreds of dot-com companies possessed structural negative unit economics.
-Every marginal sale generated an operating cash loss.
-When capital markets refused to provide follow-on equity financing, the companies did not merely suffer a price decline; they underwent complete corporate extinction.
+A company whose every sale loses cash does not suffer a recession-style earnings dip when funding stops; it runs out of cash and fails.
 
 ---
 
 ## Quantitative Autopsy
 
-Under the standard Discounted Cash Flow (DCF) Gordon Growth formula, equity value is:
+The Gordon growth formula values a cash flow stream growing at $g$ forever and discounted at $r > g$:
 $$P_0 = \frac{\text{FCF}_1}{r - g}$$
-where $r$ is the cost of equity (discount rate) and $g$ is the perpetual growth rate.
-In 1999, market participants priced tech stocks assuming $g \approx 15\%$ and discount rates $r \approx 16\%$, creating a narrow spread $(r - g) \approx 1.0\%$:
+The inputs below are hypothetical, chosen to show the sensitivity, not estimates of 1999 market expectations.
+With $r = 16\%$ and $g = 15\%$ the spread is $1.0\%$:
 $$P_0 = \frac{\text{FCF}_1}{0.01} = 100 \times \text{FCF}_1$$
-When the Federal Reserve raised the policy rate from 4.75% to 6.50%, the risk-free rate surged, while credit spreads on speculative debt blew out by 400 basis points.
-The required cost of equity $r$ expanded from 16% to 20%, while long-term sustainable growth expectations $g$ were revised downward from 15% to 8%:
-$$(r - g) \text{ expanded from } 1.0\% \text{ to } (0.20 - 0.08) = 12.0\%$$
-The valuation multiple suffered an 91.7% contraction:
+If the required return rises to $r = 20\%$ and expected growth falls to $g = 8\%$, the spread becomes:
+$$(r - g) = 0.20 - 0.08 = 12.0\%$$
+and the multiple collapses:
 $$\frac{P_{\text{new}}}{P_{\text{old}}} = \frac{1 / 0.12}{1 / 0.01} = \frac{8.33}{100.0} = 0.0833 \quad (-91.67\%)$$
-Even for blue-chip technology firms whose revenues continued to grow steadily (such as Cisco Systems and Microsoft), the mechanical expansion of $(r - g)$ resulted in equity drawdowns exceeding 70% to 85%.
+No change in the current cash flow is needed for a fall of this size; a narrow $(r - g)$ spread is what makes long-duration equity fragile.
+
+The headline numbers follow from the cited data: $1 - 1{,}114.11/5{,}048.62 = 77.93\%$; the six FOMC moves (25, 25, 25, 25, 25 and 50 basis points) total 175 basis points, from 4.75% to 6.50%; and Netscape's first-day close of $58.25 was 108.04% above the $28 offer price.
 
 ---
 
 ## Regulatory and Structural Legacy
 
-The wreckage of the dot-com crash led directly to major structural transformations:
-1. **Sarbanes-Oxley Act of 2002 (SOX)**: Mandated strict internal accounting controls, personal CEO/CFO certification of financial statements (Section 302/404), and heavy criminal penalties for financial fraud following the Enron and WorldCom bankruptcies.
-2. **Global Research Analyst Settlement (2003)**: The SEC, NY Attorney General Eliot Spitzer, and major Wall Street investment banks signed a $1.4 billion settlement legally separating research departments from investment banking underwriting to eliminate fraudulent promotional stock recommendations.
-3. **Regulation Fair Disclosure (Reg FD, 2000)**: Prohibited public companies from selectively disclosing material non-public information to favored Wall Street analysts before releasing it to the general public.
-4. **SEC Rule 10b5-1 Plans**: Formalized pre-scheduled insider trading plans to govern insider equity sales following lockup expirations.
+1. **Sarbanes-Oxley Act of 2002**: Enacted after the Enron and WorldCom frauds; section 302 requires CEO and CFO certification of periodic reports and section 404 requires management's assessment of internal control over financial reporting.
+2. **Global Research Analyst Settlement (2003)**: On April 28, 2003, the SEC, NASD, NYSE and state regulators announced settlements with ten investment firms totalling about $1.4 billion, with reforms separating research from investment banking (SEC press release 2003-54).
+3. **Regulation FD (2000)**: Adopted by the SEC in August 2000 to stop issuers disclosing material non-public information selectively to analysts and investors before the public.
+4. **Rule 10b5-1 (2000)**: Adopted in the same release, it provides an affirmative defence for insiders trading under a plan set up before they had material non-public information.
 
 ---
 
 ## Lessons for Traders and Risk Managers
 
-- **Narrative Is Not Cash Flow**: A transformative technological revolution does not guarantee equity returns; the companies that build the initial infrastructure frequently go bankrupt, leaving the residual assets to be acquired for pennies on the dollar by second-generation operators.
-- **Float Scarcity Creates False Signals**: Low-float IPOs are microstructurally prone to short-term upward price squeezes that completely misrepresent the long-term equilibrium valuation of the underlying enterprise.
-- **Discount Rate Sensitivity of Long-Duration Assets**: High-growth companies whose cash flows lie ten to twenty years in the future possess extremely long (high positive) equity duration; small increases in the benchmark discount rate cause catastrophic multiple compression.
+- **Narrative Is Not Cash Flow**: A real technological change does not guarantee returns to the first companies that build it.
+- **Float Scarcity Creates False Signals**: Low-float IPOs can trade far above long-run value until supply arrives.
+- **Discount Rate Sensitivity of Long-Duration Assets**: When value depends on cash flows far in the future, small changes in $r$ or $g$ move the price a great deal.
 
 ---
 
 ## Case Study Drills and Review Questions
 
 > [!question]- mkt-his-013 | What was the total percentage decline in the NASDAQ Composite Index from its March 2000 peak to its October 2002 trough?
-> A 77.93% decline (dropping from 5,048.62 to 1,114.11).
+> 77.93%, from the record close of 5,048.62 on March 10, 2000 to the close of 1,114.11 on October 9, 2002.
 
 > [!question]- mkt-his-014 | What role did 180-day IPO lockup expirations play in the dot-com crash?
-> They released an avalanche of insider and venture capital shares into low-float secondary markets, overwhelming remaining buyer liquidity.
+> Lockups kept insider and venture shares off the market after IPOs; as they expired, the supply of tradable shares rose into a falling market for companies whose small floats had supported high prices.
 
 > [!question]- mkt-his-015 | What was vendor financing in the late-1990s telecommunications equipment sector?
-> Equipment manufacturers lent billions directly to speculative startup telecom operators to fund purchases of their own equipment, manufacturing artificial revenue.
+> Equipment makers lending to, or extending credit to, carriers so that the carriers could buy the makers' equipment, which booked sales whose collection depended on the customers' own fragile funding.
 
 > [!question]- mkt-his-016 | How did the 2003 Global Research Analyst Settlement alter Wall Street operations?
-> It legally separated equity research analysts from investment banking divisions and banned linking analyst compensation to investment banking deal flow.
+> It required ten firms to pay about $1.4 billion and to separate research from investment banking, so that analysts' pay and coverage were insulated from banking business (SEC press release 2003-54).
+
+---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_hist_04_dot_com.py`](../code/mkt_hist_04_dot_com.py) prints and asserts every number on this page: the Nasdaq decline and the Netscape gain are recomputed from the cited prices in exact decimal arithmetic, the FOMC moves are summed from the individual decisions, and the Gordon multiples are checked against an explicit sum of the discounted growing cash flows.
+- Related notes: [Case File 05: 2008 Global Financial Crisis](05-2008-Global-Financial-Crisis-and-Lehman-Collapse.md).

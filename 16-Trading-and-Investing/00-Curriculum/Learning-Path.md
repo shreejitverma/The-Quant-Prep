@@ -12,6 +12,8 @@ tags: [curriculum, learning-path, stages, gates, progression]
 Markets Mastery OS is organized as a deliberate progression through four rigorous skill stages.
 Learners advance based on measurable evidence gates rather than passive reading completion.
 Every stage requires demonstration of conceptual mastery in Spaced Repetition (SRS), timed arithmetic or market-making drills, and verified simulation execution in the Trading Lab.
+`qp` enforces the per-track foundations and core gates and the Capital Gate in code (`tools/qp/markets.py`); run `./qp markets gates` to see them and `./qp journal` for the Capital Gate.
+The Stage 1 to Stage 3 gates below are self-assessed curriculum targets that sit alongside those coded gates.
 
 ---
 
@@ -59,7 +61,7 @@ flowchart TD
 ### Stage 1: Foundations (The Floor)
 - **Primary Focus**: Mechanical fluency, mathematical arithmetic, order qualifiers, and financial literacy.
 - **Key Modules**:
-  - Daily Volatility Rule of 16 ($\sigma_{\text{daily}} \approx \sigma_{\text{ann}} / 16$) and annualization factors ($\sqrt{252}$).
+  - Daily Volatility Rule of 16 ($\sigma_{\text{daily}} \approx \sigma_{\text{ann}} / 16$), which rounds the annualization factor $\sqrt{252} = 15.87$; a 16% annual volatility is exactly $16 / 15.87 = 1.01\%$ a day.
   - Exchange order types: Limit, Market, Stop-Loss, Stop-Limit, Iceberg, Post-Only, IOC, FOK.
   - Three financial statements linkages: Cash Flow statement reconciliation from Operating Income.
   - Probability fundamentals: Expected Value, geometric variance drag, and Kelly criterion derivation.
@@ -89,7 +91,7 @@ flowchart TD
   - Sovereign yield curve decomposition via PCA (Level, Slope, Curvature) and cross-currency basis.
 - **Stage 3 Gate**:
   - Detect overfitting traps across synthetic strategies in `overfit_trap`.
-  - Conduct forensic audits of two historical corporate failures (e.g. Enron, GE) isolating balance sheet manipulation.
+  - Conduct forensic audits of two historical accounting failures (e.g. Enron, WorldCom) isolating the balance sheet and cash flow manipulation.
   - Execute a simulated dispersion trade in `opt_desk` decomposing index vs component volatility.
 
 ### Stage 4: Mastery (The Practitioner)
@@ -99,11 +101,12 @@ flowchart TD
   - Multi-asset portfolio allocation: Hierarchical Risk Parity (HRP) and macroeconomic regime rotation.
   - Historical market crisis case audits: 1987 Black Monday, 1998 LTCM, 2008 GFC, 2015 CHF de-pegging, 2020 COVID crash.
   - The Verifiable 100-Trade Capital Gate.
-- **Stage 4 Gate (The Capital Gate)**:
-  - 100 logged simulated or paper trades adhering to a documented playbook setup.
-  - Profit Factor >= 1.50 across the 100-trade sample.
-  - Maximum peak-to-trough realized drawdown <= 10.0%.
-  - Execution rule adherence >= 95% (no revenge trades, no moved stops, no uncalculated sizing).
+- **Stage 4 Gate (The Capital Gate)**, as coded in `tools/qp/markets.py` and shown by `./qp journal`:
+  - At least 100 logged simulated or paper trades adhering to a documented playbook setup.
+  - Profit Factor >= 1.50 across the sample.
+  - Maximum peak-to-trough drawdown <= 10.0R, measured in R-multiples (risk units), not percent of equity.
+  - Execution rule adherence >= 95.0% with zero revenge trades and zero moved stops.
+  - MAE calibration: at least 70.0% of winning trades with Maximum Adverse Excursion <= 0.5R.
 
 ---
 
@@ -111,7 +114,7 @@ flowchart TD
 
 To build lasting market competence, practice must be structured across recurring intervals:
 
-- **Daily Rhythm (45 to 90 minutes)**:
+- **Daily Rhythm (55 to 85 minutes)**:
   - 10 minutes: Review due cards in Spaced Repetition (`./qp review --track quant-trader`).
   - 10 minutes: Speed drill warmup (`./qp drill arith` or `./qp drill mm`).
   - 30 to 60 minutes: Interactive Trading Lab session or deep concept note study.
@@ -122,12 +125,19 @@ To build lasting market competence, practice must be structured across recurring
   - Audit Maximum Adverse Excursion (MAE) and Maximum Favorable Excursion (MFE) on all logged trades.
 - **Monthly Rhythm**:
   - Review macroeconomic regime shifts and yield curve shape transitions.
-  - Evaluate rolling drawdown against the 10.0% capital gate ceiling.
+  - Evaluate rolling drawdown against the 10.0R Capital Gate ceiling.
   - Update watchlist priorities and reverse DCF implied growth baselines.
 
 ---
 
-## 4. Navigation
+## 4. In this repo and The-Distinguished-Engineer
+
+- Backing script: [mkt_hist_00_curriculum.py](../code/mkt_hist_00_curriculum.py) computes $\sqrt{252}$ by integer bisection and checks the Rule of 16 against a seeded simulation of 252 iid daily returns, asserting 15.87 and 1.01%; it also sums the daily rhythm blocks (10, 10, 30 to 60 and 5 minutes) to the stated 55 to 85 minutes.
+- Capital Gate thresholds are defined in `tools/qp/markets.py` and computed from the trade journal by `tools/qp/lab/journal_stats.py`.
+
+---
+
+## 5. Navigation
 
 - **Master Hub**: [[16-Trading-and-Investing/MARKETS_HUB|Markets Mastery OS Master Hub]]
 - **Foundational Canon**: [[16-Trading-and-Investing/00-Curriculum/Canon|Foundational Canon]]

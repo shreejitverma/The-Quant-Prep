@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Beneish (1999) - The Detection of Earnings Manipulation, Sloan (1996) - Do Stock Prices Fully Reflect Information in Accruals, Schilit (2010) - Financial Shenanigans: How to Detect Accounting Gimmicks]
+sources: [Beneish (1999) - The Detection of Earnings Manipulation (Financial Analysts Journal 55(5)), Sloan (1996) - Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings (The Accounting Review 71(3)), Schilit and Perler (2010) - Financial Shenanigans 3rd edition]
 ---
 
 # Statement Forensics Drills
@@ -13,7 +13,7 @@ sources: [Beneish (1999) - The Detection of Earnings Manipulation, Sloan (1996) 
 ## Overview
 
 The Statement Forensics Drills bank trains financial analysts and quantitative researchers to detect aggressive accounting practices, earnings manipulation, and hidden balance sheet hazards.
-Each drill presents a realistic financial data set from corporate filings.
+Each drill presents a hypothetical data set for an unnamed company; the figures are illustrative inputs, not taken from any filing.
 Analyze the indicators, identify the forensic red flags, calculate the relevant accounting metrics, and formulate your audit conclusion before revealing the detailed solution.
 
 ---
@@ -48,7 +48,9 @@ Company Alpha reports the following trailing two-year balance sheet and income s
 <summary>Reveal Forensic Audit & Solution</summary>
 
 #### Step 1: Balance Sheet Accrual Calculation
-$$\Delta \text{NOA} = \Delta \text{Current Assets} - \Delta \text{Cash} - (\Delta \text{Current Liabilities} - \Delta \text{Short-Term Debt}) - \text{Depreciation}$$
+$$\text{Accruals}_{BS} = (\Delta \text{Current Assets} - \Delta \text{Cash}) - (\Delta \text{Current Liabilities} - \Delta \text{Short-Term Debt}) - \text{Depreciation}$$
+
+Sloan (1996) also subtracts the change in income taxes payable; the drill sets it to zero.
 
 $$\Delta \text{Current Assets} = 520 - 350 = +170$$
 $$\Delta \text{Cash} = 90 - 100 = -10$$
@@ -68,10 +70,10 @@ $$\text{Scaled Accrual Ratio}_{BS} = \frac{120}{1,125} = +10.67\%$$
 $$\text{Scaled Accrual Ratio}_{CF} = \frac{80}{1,125} = +7.11\%$$
 
 #### Step 4: Forensic Audit Interpretation
-Scaled accruals above +10% place Company Alpha in the highest accrual decile documented by Richard Sloan (1996).
-Net Income surged by 75% while physical cash flow from operations fell by 20%.
+Scaled balance-sheet accruals of +10.67% of average assets are large: most of the year's earnings are accruals rather than cash.
+Net Income surged by 75% while cash flow from operations fell by 20%.
 The explosion in working capital ($\Delta \text{Non-Cash Current Assets} = +180$) indicates massive uncollected receivables or unsold inventory build-up.
-Future earnings reversal and multiple compression are statistically imminent within 12 to 24 months.
+Sloan (1996) found that the accrual component of earnings is less persistent than the cash component and that stock prices did not fully reflect this, so high-accrual firms had lower subsequent earnings and returns; treat the result as a reason to dig into receivables and inventory, not as a timed forecast.
 
 </details>
 
@@ -80,7 +82,7 @@ Future earnings reversal and multiple compression are statistically imminent wit
 ## Drill 2: Days Sales Outstanding (DSO) Channel Stuffing Audit
 
 ### Scenario
-Company Beta operates in the enterprise hardware sector.
+Hypothetical Company Beta operates in the enterprise hardware sector.
 Over four quarters, it reports the following revenue and Accounts Receivable balances (figures in millions):
 
 ```
@@ -108,17 +110,18 @@ $$\text{DSO}_{Q3} = \frac{185}{220} \times 90 = 75.7 \text{ days}$$
 $$\text{DSO}_{Q4} = \frac{270}{280} \times 90 = 86.8 \text{ days}$$
 
 #### Step 2: Year-over-Year Growth Comparison
-Assuming Q4 of the prior year had revenue of \$215 million and AR of \$135 million:
+The trailing-twelve-month row implies prior-year Q4 revenue: $\text{TTM}_{Q4} - \text{TTM}_{Q3} = \text{Q4} - \text{prior Q4}$, so prior Q4 revenue $= 280 - (910 - 850) = \$220$ million.
+Assume prior-year Q4 AR was \$135 million (a drill input).
 Revenue grew at:
-$$\frac{280 - 215}{215} = +30.2\%$$
+$$\frac{280 - 220}{220} = +27.3\%$$
 Accounts Receivable grew at:
 $$\frac{270 - 135}{135} = +100.0\%$$
 
 #### Step 3: Forensic Conclusion
-Receivables grew more than three times faster than revenue, driving DSO from 58.5 days to 86.8 days.
-This pattern is a classic signature of end-of-year channel stuffing.
-Management offered extended payment terms, deep off-book discounts, or right-of-return concessions to distributors to meet consensus sales targets.
-Q1 of the following year will experience severe revenue collapse and cash collection deficits as channels digest excess inventory.
+Receivables grew about 3.7 times as fast as revenue (100.0% against 27.3%), and DSO rose from 58.5 days in Q1 to 86.8 days in Q4.
+This pattern is consistent with end-of-year channel stuffing, for example extended payment terms, discounts or right-of-return concessions to distributors to pull sales forward.
+It is a red flag to investigate, not proof: check the revenue-recognition note, distributor terms and the allowance for doubtful accounts.
+If sales were pulled forward, the following quarters should show weaker revenue and weaker collections as distributors work through excess inventory.
 
 </details>
 
@@ -127,7 +130,7 @@ Q1 of the following year will experience severe revenue collapse and cash collec
 ## Drill 3: Capitalized Operating Expenses Shenanigans
 
 ### Scenario
-Company Gamma is an optical telecommunications provider expanding its fiber network.
+Hypothetical Company Gamma is an optical telecommunications provider expanding its fiber network.
 Over three years, the company reports the following financial figures (figures in millions):
 
 ```
@@ -154,7 +157,7 @@ Over three years, the company reports the following financial figures (figures i
 #### Step 1: Anomaly Identification
 Reported gross margin expanded from 56.0% to 77.8% while line costs on the income statement dropped from $220 million to $120 million.
 Simultaneously, Capital Expenditures exploded from $80 million to $230 million, and PP&E grew by 70%.
-This is the classic WorldCom playbook: shifting routine network maintenance operating expenses off the income statement and capitalizing them as long-term assets on the balance sheet.
+This is the pattern the SEC alleged against WorldCom in its civil complaint of June 26, 2002 (SEC v. WorldCom, Inc.): line costs that should have been expensed were transferred to capital asset accounts.
 
 #### Step 2: Cash Flow and Income Statement Mechanics
 Capitalizing operating costs:
@@ -175,7 +178,7 @@ Adjusted Free Cash Flow (FCF = CFO - Capex):
 $$\text{Adjusted Capex} = 230 - 117.6 = \$112.4 \text{ million}$$
 $$\text{Adjusted FCF} = 122.4 - 112.4 = \$10.0 \text{ million}$$
 Reported FCF was $240 - 230 = \$10.0 \text{ million}$.
-While total FCF remains identical, reported CFO was overstated by nearly 100%, and future periods will suffer massive non-cash asset impairment charges.
+While total FCF remains identical, reported CFO was overstated by 96.1% ($240 / 122.4 - 1$), and the improperly capitalised costs sit in PP&E, to be depreciated or written down in later periods.
 
 </details>
 
@@ -184,27 +187,27 @@ While total FCF remains identical, reported CFO was overstated by nearly 100%, a
 ## Drill 4: Beneish M-Score Component Diagnostics
 
 ### Scenario
-An automated quantitative forensic screen flags Company Delta with the following trailing metrics:
+An automated quantitative forensic screen flags hypothetical Company Delta with the following trailing metrics:
 
 ```
 +-----------------------------------------------------------------------+
-| Beneish Variable                           | Value   | Safe Threshold |
-|--------------------------------------------+---------+----------------|
-| Days Sales in Receivables Index (DSRI)    | 1.45    | <= 1.05        |
-| Gross Margin Index (GMI)                   | 1.28    | <= 1.02        |
-| Asset Quality Index (AQI)                  | 1.35    | <= 1.04        |
-| Sales Growth Index (SGI)                   | 1.32    | <= 1.15        |
-| Depreciation Index (DEPI)                  | 0.82    | <= 1.00        |
-| Sales, General & Admin Index (SGAI)        | 1.18    | <= 1.03        |
-| Leverage Index (LVGI)                      | 1.12    | <= 1.05        |
-| Total Accruals to Total Assets (TATA)      | 0.08    | <= 0.02        |
+| Beneish Variable                           | Value   |
+|--------------------------------------------+---------|
+| Days Sales in Receivables Index (DSRI)    | 1.45    |
+| Gross Margin Index (GMI)                   | 1.28    |
+| Asset Quality Index (AQI)                  | 1.35    |
+| Sales Growth Index (SGI)                   | 1.32    |
+| Depreciation Index (DEPI)                  | 0.82    |
+| Sales, General & Admin Index (SGAI)        | 1.18    |
+| Leverage Index (LVGI)                      | 1.12    |
+| Total Accruals to Total Assets (TATA)      | 0.08    |
 +-----------------------------------------------------------------------+
 ```
 
 ### Questions to Solve
 1. Using the 8-variable Beneish M-Score formula, compute the composite M-Score:
    $$\text{M-Score} = -4.84 + 0.920 \cdot \text{DSRI} + 0.528 \cdot \text{GMI} + 0.404 \cdot \text{AQI} + 0.892 \cdot \text{SGI} + 0.115 \cdot \text{DEPI} - 0.172 \cdot \text{SGAI} + 4.679 \cdot \text{TATA} - 0.327 \cdot \text{LVGI}$$
-2. Determine whether Company Delta is flagged as an earnings manipulator (threshold: $M > -1.78$).
+2. Determine whether Company Delta is flagged as a likely earnings manipulator (the cut-off commonly used with this model is $M > -1.78$).
 3. Detail which three individual components contribute the most risk to the score.
 
 <details>
@@ -221,16 +224,19 @@ $$-0.172 \times 1.18 = -0.2030$$
 $$4.679 \times 0.08 = +0.3743$$
 $$-0.327 \times 1.12 = -0.3662$$
 
-$$\text{M-Score} = -4.84 + 1.3340 + 0.6758 + 0.5454 + 1.1774 + 0.0943 - 0.2030 + 0.3743 - 0.3662 = -1.2080$$
+$$\text{M-Score} = -4.84 + 0.920(1.45) + 0.528(1.28) + 0.404(1.35) + 0.892(1.32) + 0.115(0.82) - 0.172(1.18) + 4.679(0.08) - 0.327(1.12) = -1.2079$$
+
+Adding the terms as rounded above gives $-1.2080$; the unrounded terms sum to exactly $-1.2079$.
 
 #### Step 2: Evaluation Against Critical Threshold
-The critical cutoff is $-1.78$.
-A score greater than $-1.78$ indicates a high probability of accounting manipulation.
+The cut-off commonly used with the eight-variable model is $-1.78$.
+A score greater than $-1.78$ classifies the firm as a likely manipulator.
 Here, $-1.21 > -1.78$.
-Company Delta is strongly flagged as a probable financial statement manipulator.
+Company Delta is flagged as a likely manipulator; the score is a screen that tells you where to look, not evidence of fraud.
 
 #### Step 3: Primary Risk Drivers
-1. **DSRI (1.45)**: Receivables grew 45% faster than sales, signaling unearned revenue recognition or uncollected billings.
+The three largest weighted terms are DSRI (+1.3340), SGI (+1.1774) and GMI (+0.6758).
+1. **DSRI (1.45)**: The receivables-to-sales ratio rose 45% year over year, consistent with aggressive revenue recognition or uncollected billings.
 2. **SGI (1.32)**: Rapid sales growth (+32%) puts enormous pressure on management to continue hitting targets.
 3. **GMI (1.28)**: Prior year gross margins were higher than current year margins, showing deteriorating underlying fundamentals that management is incentivized to mask.
 
@@ -241,7 +247,7 @@ Company Delta is strongly flagged as a probable financial statement manipulator.
 ## Drill 5: Inventory Valuation and Gross Margin Distortion
 
 ### Scenario
-Company Epsilon manufactures specialty semiconductors.
+Hypothetical Company Epsilon manufactures specialty semiconductors.
 Over two periods, the company faces declining consumer demand, but reports higher operating profits.
 Filings reveal the following data:
 
@@ -298,7 +304,7 @@ When the company eventually slows production to liquidate inventory, unabsorbed 
 ## Drill 6: The Deferred Tax Valuation Allowance Cushion
 
 ### Scenario
-Company Zeta has generated cumulative pre-tax operating losses of $200 million over the past three years.
+Hypothetical Company Zeta has generated cumulative pre-tax operating losses of $200 million over the past three years.
 It has accumulated $50 million of Gross Deferred Tax Assets (DTAs) with a 25% statutory tax rate.
 At Year t-1, the Valuation Allowance against DTAs was $50 million (carrying value of DTAs = $0).
 In Year t, pre-tax operating income is $15 million.
@@ -325,16 +331,23 @@ However, management lowers the Valuation Allowance from $50 million to $20 milli
 
 #### Step 1: Accounting Mechanism
 Management released $30 million of its previously established Valuation Allowance against Deferred Tax Assets.
-Under GAAP/IFRS, reversing a valuation allowance passes directly through the tax provision line on the income statement as a negative tax expense (tax benefit).
-This non-cash, purely discretionary accounting estimate generated $30 million of reported Net Income without a single dollar of cash generation.
+Under US GAAP (ASC 740), releasing a valuation allowance passes through the income tax provision as a deferred tax benefit; IFRS (IAS 12) has no valuation allowance but reaches the same result when a previously unrecognised deferred tax asset is recognised.
+This non-cash accounting estimate, which rests on management's judgement about future taxable profit, generated $30 million of reported Net Income without any cash inflow.
 
 #### Step 2: Effective Tax Rate Calculation
 $$\text{Effective Tax Rate} = \frac{\text{Reported Tax Provision}}{\text{Pre-Tax Income}} = \frac{-\$30,000,000}{\$15,000,000} = -200.0\%$$
 
 #### Step 3: Earnings Quality Assessment
-Earnings quality is near zero.
-$30 million out of the $45 million in reported Net Income (66.7%) is a one-time non-cash paper gain that cannot recur.
-Operating earnings power is only $15 million, yet algorithmic screeners will see a trailing P/E ratio based on $45 million of earnings.
+Earnings quality is poor.
+$30 million out of the $45 million in reported Net Income (66.7%) is a non-cash gain from an accounting estimate, and at most the remaining $20 million of allowance could be released later.
+Operating earnings power is only $15 million, yet a screen on trailing P/E sees $45 million of earnings.
 Analysts must strip out the valuation allowance reversal to reflect true ongoing earning power.
 
 </details>
+
+---
+
+## In this repo and The-Distinguished-Engineer
+
+- Every number in the six solutions is printed and asserted by [`mkt_drill_02_statement_forensics.py`](../code/mkt_drill_02_statement_forensics.py).
+  Independent routes: exact-fraction arithmetic throughout, accruals from line-item deltas against the change in working-capital levels, the prior-year quarter implied by differencing the trailing-twelve-month row, and absorption-costing profit against both production cost less ending inventory and variable-costing profit plus deferred overhead.
