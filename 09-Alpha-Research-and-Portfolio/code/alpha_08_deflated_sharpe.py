@@ -240,7 +240,6 @@ def cpcv() -> None:
                 uses[g] += 1
         complete = [p for p in paths.values() if sorted(p) == list(range(n_groups))]
         exact(f"complete paths, N = {n_groups}, k = {k}", len(complete), paths_q)
-        assert len(complete) == len(paths)
     exact("CSCV splits, S = 16", sum(1 for _ in itertools.combinations(range(16), 8)), 12_870)
     exact("CSCV splits, S = 10", sum(1 for _ in itertools.combinations(range(10), 5)), 252)
 

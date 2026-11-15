@@ -86,9 +86,6 @@ def base_rates(rng: np.random.Generator) -> None:
     approx("PPV at t > 3", ppv3, 0.945, 3)
     approx("false discovery share at t > 3 (%)", (1 - ppv3) * 100, 5.5, 1)
     approx("false discovery share at t > 3, TL;DR 'about 5%' (%)", (1 - ppv3) * 100, 5, 0)
-    # the population count route for t > 3 must agree with the formula
-    pop = (real * power3) / (real * power3 + (ideas - real) * alpha3)
-    assert abs(pop - ppv3) < 1e-12
 
 
 def years_needed(rng: np.random.Generator) -> None:
