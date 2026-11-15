@@ -65,22 +65,23 @@ See [Tree Ensembles and Gradient Boosting](03-Tree-Ensembles-and-Gradient-Boosti
 
 OLS with $p = 50$ standardised features on $n = 2{,}520$ daily observations (10 years), where one feature carries a true $R^2$ of 0.5% and 49 are noise.
 In-sample $R^2$ is about $0.005 + p/n \approx 0.025$: five times the truth.
-For Gaussian features the expected out-of-sample $R^2$ is about
+For Gaussian features (no intercept, zero-forecast benchmark) the expected out-of-sample $R^2$ is
 
 $$
 R^2_{\text{true}} - (1 - R^2_{\text{true}})\frac{p}{n - p - 1} = 0.005 - 0.995 \times \frac{50}{2469} \approx -0.015.
 $$
 
-A simulation with 200 repetitions gives in-sample 0.024 and out-of-sample $-0.0152$.
-The estimation noise in 50 coefficients costs three times the signal: worse than predicting zero.
+A simulation with 2,000 repetitions, each fit scored by its exact population test error, gives in-sample 0.025 and out-of-sample $-0.0151$.
+The estimation noise in 50 coefficients, $0.995 \times 50/2469 = 0.020$, costs four times the signal: worse than predicting zero.
 Remedies: fewer features chosen on prior grounds, ridge shrinkage, or a larger cross-section.
 
 ### Example 2: overlapping labels inflate t-statistics
 
 You regress 20-day forward returns, sampled daily over 1,000 days, on a signal.
 Adjacent labels share 19 of 20 daily returns, so the effective number of independent observations is about $1000/20 = 50$.
-For i.i.d. daily returns, the autocorrelations of the overlapping sums are $(h - k)/h$ at lag $k$, which sum to a variance inflation of $h = 20$, so naive standard errors are too small by $\sqrt{20} \approx 4.5$.
-A null signal then produces naive t-statistics with a standard deviation of about 4.5 instead of 1 (a simulation gives 4.57): a naive $t = 3$ means nothing.
+For i.i.d. daily returns, the autocorrelations of the overlapping sums are $(h - k)/h$ at lag $k$, which sum to a variance inflation of $h = 20$ (19.87 exactly for $T = 1000$), so naive standard errors are too small by $\sqrt{20} \approx 4.5$.
+That full factor applies to a test of the mean and to a signal that is persistent over the 20 days; an i.i.d. signal would leave the naive slope $t$ nearly right.
+In the persistent limit (a constant regressor) a simulation of 10,000 null samples gives naive t-statistics with a standard deviation of 4.6 instead of 1, slightly above $\sqrt{19.87} = 4.46$ because the naive standard deviation is itself estimated from overlapping data: a naive $t = 3$ means nothing.
 Use Newey-West or Hansen-Hodrick standard errors, non-overlapping samples, or sample weights by label uniqueness.
 
 ### Example 3: purging and embargo in a concrete split
@@ -95,7 +96,7 @@ The training set is days 0 to 494 and 629 onward.
 
 You test 200 candidate features, all with zero true predictive power, each at the 5% level.
 You expect 10 false discoveries, and the probability of at least one is $1 - 0.95^{200} \approx 1$.
-The largest absolute t-statistic among 200 independent nulls is about 2.97 on average.
+The largest absolute t-statistic among 200 independent nulls (treated as standard normal) is about 2.97 on average.
 Bonferroni at a 5% family-wise level needs $|t| > 3.66$ (two-sided $p < 0.00025$).
 The same logic applies to strategies: report the number of trials and use the deflated Sharpe ratio (see [Overfitting and the Deflated Sharpe Ratio](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md)).
 
@@ -104,7 +105,7 @@ The same logic applies to strategies: report the number of trials and use the de
 One standardised feature with $\sum x_i^2 = n = 1{,}000$ and $\sum x_i y_i = 30$, so $\hat\beta_{\text{OLS}} = 0.03$, with residual variance 1.
 Ridge gives $\hat\beta = \sum x_i y_i / (\sum x_i^2 + \lambda)$.
 Ridge is the posterior mean under a prior $\beta \sim N(0, \tau^2)$ with $\lambda = \sigma^2/\tau^2$.
-If you believe true coefficients are about $\tau = 0.02$, then $\lambda = 1/0.0004 = 2{,}500$ and the shrinkage factor is $1000/3500 \approx 0.29$: $\hat\beta \approx 0.0086$.
+If you believe true coefficients are about $\tau = 0.02$, then $\lambda = 1/0.0004 = 2{,}500$ and the shrinkage factor is $1000/3500 = 0.2857$: $\hat\beta = 30/3500 \approx 0.0086$.
 Heavy shrinkage is correct when the prior says effects are tiny, which in return prediction they are.
 
 ### Example 6: is 54% accuracy good?
@@ -227,8 +228,8 @@ An IC that looks negligible can be valuable with enough genuine breadth, and a h
 > It compares the observed Sharpe with the expected maximum Sharpe of that many unskilled trials rather than with zero.
 
 > [!question]- ml-pset-overlap-tstat | You regress overlapping 20-day returns sampled daily. By how much are naive standard errors wrong?
-> Too small by about $\sqrt{20} \approx 4.5$.
-> Overlapping sums of i.i.d. returns have variance inflation equal to the overlap $h$; use Newey-West or Hansen-Hodrick errors or non-overlapping samples.
+> Too small by about $\sqrt{20} \approx 4.5$ when the signal is persistent over the 20 days (or for a test of the mean).
+> Overlapping sums of i.i.d. returns have long-run variance inflation equal to the overlap $h$; use Newey-West or Hansen-Hodrick errors or non-overlapping samples.
 
 > [!question]- ml-pset-backtest-too-good | A new ML strategy backtests at Sharpe 4 on daily data. What do you check first?
 > Leakage: timestamps and point-in-time data, preprocessing fitted on the full sample, label overlap with the test set, and survivorship.
@@ -264,7 +265,7 @@ An IC that looks negligible can be valuable with enough genuine breadth, and a h
 
 > [!question]- ml-pset-ridge-shrink | One standardised feature, n = 1,000, OLS beta 0.03, noise variance 1, prior sd of beta 0.02. What is the ridge estimate?
 > About 0.0086.
-> $\lambda = 1/0.02^2 = 2500$, shrinkage $1000/(1000 + 2500) \approx 0.29$, so $0.03 \times 0.29$.
+> $\lambda = 1/0.02^2 = 2500$, shrinkage $1000/(1000 + 2500) = 0.2857$, so $0.03 \times 0.2857 = 0.00857$.
 
 > [!question]- ml-pset-early-stopping | Why is early stopping a form of regularisation, and how should you set it up in finance?
 > Stopping before convergence limits how far the model moves from its simple starting point, much like a norm penalty.
@@ -292,12 +293,18 @@ An IC that looks negligible can be valuable with enough genuine breadth, and a h
 > If its forecasts change faster, turnover and costs can consume the extra edge.
 > Evaluate net-of-cost P&L and capacity, or penalise turnover when fitting.
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/ml_11_problem_set.py`](code/ml_11_problem_set.py) prints and asserts every number on this page: the useless-feature OLS by simulation against the closed forms, the overlap inflation by the exact covariance sum and by simulation with a known-variance control, the purge and embargo sets by a brute-force loop over return windows, false discoveries with exact arithmetic, the expected largest $|t|$ by quadrature and simulation, the Bonferroni threshold by bisection, the ridge estimate as a posterior mean by numerical integration, and CPCV by enumerating every split.
+- The iid-regressor control for overlapping labels is in [`code/ml_02_purged_cv.py`](code/ml_02_purged_cv.py), which backs [Time-Series Cross-Validation: Purging and Embargo](02-Time-Series-Cross-Validation-Purging-Embargo.md).
+- Related notes: [ML Fundamentals and Generalization](01-ML-Fundamentals-and-Generalization.md), [Tree Ensembles and Gradient Boosting](03-Tree-Ensembles-and-Gradient-Boosting.md), [Overfitting and the Deflated Sharpe Ratio](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md).
+
 ## Further reading
 
 - Marcos Lopez de Prado, *Advances in Financial Machine Learning* (2018), chapters 4, 7, 8, 11 and 12.
 - Hastie, Tibshirani and Friedman, *The Elements of Statistical Learning* (2nd ed., 2009), chapters 3 and 7.
-- Bailey and Lopez de Prado (2014), The deflated Sharpe ratio, *Journal of Portfolio Management* 40(5).
-- Bailey, Borwein, Lopez de Prado and Zhu (2017), The probability of backtest overfitting, *Journal of Computational Finance* 20(4).
-- Gu, Kelly and Xiu (2020), Empirical asset pricing via machine learning, *Review of Financial Studies* 33(5).
+- Bailey and Lopez de Prado (2014), The deflated Sharpe ratio: correcting for selection bias, backtest overfitting and non-normality, *Journal of Portfolio Management* 40(5), 94-107.
+- Bailey, Borwein, Lopez de Prado and Zhu (2017), The probability of backtest overfitting, *Journal of Computational Finance* 20(4), 39-69.
+- Gu, Kelly and Xiu (2020), Empirical asset pricing via machine learning, *Review of Financial Studies* 33(5), 2223-2273.
 - Grinold and Kahn, *Active Portfolio Management* (2nd ed., 2000).
 - Strobl, Boulesteix, Zeileis and Hothorn (2007), Bias in random forest variable importance measures, *BMC Bioinformatics* 8.

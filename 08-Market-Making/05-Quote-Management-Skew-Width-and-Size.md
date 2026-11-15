@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [inventory-risk-and-avellaneda-stoikov]
 est_hours: 3
-sources: [Cartea Jaimungal and Penalva (2015) Algorithmic and High-Frequency Trading. Cambridge University Press, Lebron (2019) The Laws of Trading. Wiley, Avellaneda and Stoikov (2008) High-frequency trading in a limit order book. Quantitative Finance 8(3) 217-224, Glosten and Milgrom (1985) Journal of Financial Economics 14(1) 71-100]
+sources: [Cartea Jaimungal and Penalva (2015) Algorithmic and High-Frequency Trading. Cambridge University Press, Lebron (2019) The Laws of Trading. Wiley, Avellaneda and Stoikov (2008) High-frequency trading in a limit order book. Quantitative Finance 8(3) 217-224, Glosten and Milgrom (1985) Journal of Financial Economics 14(1) 71-100, Directive 2014/65/EU (MiFID II) Article 48(6), Commission Delegated Regulation (EU) 2017/566 (RTS 9) Articles 2-3]
 ---
 
 # Quote Management: Skew, Width and Size
@@ -68,7 +68,7 @@ $$
 \text{skew}(q) = S_{\max} \tanh\left(\beta \frac{q}{Q_{\max}}\right),
 $$
 
-which is steeper than linear near zero (for $\beta > 1$) and saturates at $S_{\max}$.
+which near zero is $\beta$ times as steep as the linear rule $S_{\max} q/Q_{\max}$ that reaches the cap at the limit, and saturates at $S_{\max}$.
 There are two ways to implement skew:
 
 - Price skew: move both prices, which changes fill probabilities on both sides.
@@ -99,12 +99,14 @@ Displayed size also leaks information and affects how others trade against you, 
 
 Every cancel-replace loses queue priority and costs messages.
 Use thresholds and hysteresis: only move a quote when theo has moved by more than a set fraction of a tick, and cancel immediately only when edge turns negative.
-Venues monitor message traffic and some apply order-to-trade ratio limits or fees, so churn has a direct cost.
+Venues police message traffic: in the EU (as of November 2026), MiFID II (Directive 2014/65/EU, Article 48(6)) requires trading venues to have systems that limit each member's ratio of unexecuted orders to transactions, and Commission Delegated Regulation (EU) 2017/566 (RTS 9) sets how that ratio is calculated and when a venue's maximum is exceeded.
+Churn therefore has a direct cost as well as the lost queue position.
 
 ## Worked examples
 
 ### Example 1: is a one-tick market worth quoting?
 
+All inputs in these examples are hypothetical.
 A 40 dollar stock has 1.5% daily volatility over a 6.5 hour session, so per-second volatility is $40 \times 0.015 / \sqrt{23400} \approx 0.00392$ dollars.
 You expect to hold a fill for 30 seconds, so $\sigma\sqrt{30} \approx 0.0215$ dollars, and you charge $\kappa = 0.25$ of that: about 0.0054.
 Fees are 0.0003, the rebate is 0.0020 and the 1-second markout says adverse selection is 0.0040 per share.
@@ -132,6 +134,7 @@ Joining the bid at 99.98 gives a 2-tick half-spread, a 30% chance of a fill in t
 Improving to 99.99 gives a 1-tick half-spread, an 80% fill chance and a 0.9-tick adverse move: EV $= 0.8 \times (1 - 0.9) = 0.08$ ticks.
 Join.
 If the improved quote's adverse move were only 0.5 ticks, its EV would be $0.8 \times 0.5 = 0.40$ ticks, and improving would win.
+Improving ties with joining when $0.8 \times (1 - x) = 0.24$, an adverse move of $x = 0.7$ ticks on the improved fills.
 The decision is driven by how much worse the selection gets inside the spread, not by the fill probability.
 
 ### Example 4: sizing from a loss budget
@@ -140,7 +143,8 @@ You accept at most 5,000 dollars of loss from a single adverse event, and the pl
 Loss budget allows $5000 / 0.25 = 20{,}000$ shares.
 You are long 3,000 against a 10,000 limit, so the bid can show at most 7,000 shares.
 Show $\min(20{,}000, 7{,}000) = 7{,}000$ on the bid.
-The ask can show up to the loss-budget size, since selling reduces the position; if a full ask fill would flip you to a large short, cap it at $3{,}000 + 10{,}000 = 13{,}000$ shares.
+The ask is not limited by headroom until a fill would push you beyond the short limit: a full fill of $n$ leaves you at $3{,}000 - n \ge -10{,}000$, so $n \le 13{,}000$.
+Show $\min(20{,}000, 13{,}000) = 13{,}000$ on the ask.
 
 ### Example 5: width against toxicity
 
@@ -222,13 +226,35 @@ def quotes(theo, q, h, s_max, beta, q_max):
 > No: the minimum half-width is about 0.0077, above the 0.005 available.
 > $0.0003 - 0.002 + 0.004 + 0.0054 = 0.0077$; quote selectively or one tick behind.
 
+> [!question]- mm-quote-holding-risk-charge | A 40 dollar stock has 1.5% daily volatility over a 6.5-hour session. You hold a fill for 30 seconds and charge 0.25 of the price risk. What is the risk charge per share?
+> About 0.0054 dollars.
+> Per-second volatility is $40 \times 0.015/\sqrt{23{,}400} \approx 0.00392$, over 30 seconds $0.00392\sqrt{30} \approx 0.0215$, and a quarter of that is 0.0054.
+
+> [!question]- mm-quote-damped-skew-value | Maximum skew 2 ticks, $\beta = 1.5$, limit 10,000 shares. What skew does the tanh rule give at a 6,000 position, against the linear rule?
+> About 1.43 ticks against 1.20.
+> $2\tanh(1.5 \times 0.6) = 2\tanh(0.9) \approx 1.43$ and $2 \times 0.6 = 1.20$; the tanh rule leans harder until the two cross near 8,600 shares, then flattens.
+
+> [!question]- mm-quote-improve-breakeven | Joining earns $0.3 \times (2 - 1.2) = 0.24$ ticks. Improving gives an 80% fill chance at a 1-tick half-spread. At what adverse move on improved fills do the two tie?
+> 0.7 ticks.
+> $0.8 \times (1 - x) = 0.24$ gives $x = 0.7$; improve only if markouts of improved fills show less than that.
+
+> [!question]- mm-quote-ask-cap | You are long 3,000 against a 10,000 limit and the loss budget allows 20,000 shares per event. What is the largest ask size?
+> 13,000 shares.
+> A full fill of $n$ leaves $3{,}000 - n$, which must stay at or above $-10{,}000$; the loss budget does not bind.
+
+> [!question]- mm-quote-toxicity-table | Informed traders move the price 3 ticks; uninformed fills per hour are 100, 30 and 10 at half-spreads of 1, 2 and 3 ticks; informed fills are 60 per hour. Which half-spread earns most?
+> 3 ticks, 30 ticks per hour.
+> Edge is uninformed fills times $h$ plus 60 times $(h - 3)$: $-20$, 0 and 30; with 20 informed fills an hour the order reverses and 1 tick earns 60.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/mm_05_quote_management.py`](code/mm_05_quote_management.py) prints and asserts every number on this page: the square-root-of-time risk charge against a seeded per-second simulation, quote values in exact fractions with the break-even adverse move by bisection, quote sizes by brute force over every size, and the toxicity table with its best width by enumeration.
 - Skew and limit tiers in the systems companion: [Quantitative Models and Strategies](Quant-Dev-MM-Guide/03_Quantitative_Models_and_Strategies.md), section 2.
 - Microstructure background: [Order Book Imbalance and Microprice](../07-Market-Microstructure/11-Order-Book-Imbalance-and-Microprice.md).
 
 ## Further reading
 
-- Cartea, Jaimungal and Penalva, *Algorithmic and High-Frequency Trading* (2015), chapters on market making with inventory and adverse selection.
+- Cartea, Jaimungal and Penalva, *Algorithmic and High-Frequency Trading* (2015), chapter 10 (Market Making).
 - Agustin Lebron, *The Laws of Trading* (2019).
-- Avellaneda and Stoikov (2008), High-frequency trading in a limit order book, *Quantitative Finance* 8(3).
+- Avellaneda and Stoikov (2008), High-frequency trading in a limit order book, *Quantitative Finance* 8(3), 217-224.
+- Directive 2014/65/EU (MiFID II), Article 48(6), and Commission Delegated Regulation (EU) 2017/566 (RTS 9) on the ratio of unexecuted orders to transactions, as of November 2026.

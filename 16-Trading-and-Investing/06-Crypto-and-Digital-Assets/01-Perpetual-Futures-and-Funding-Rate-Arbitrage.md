@@ -5,22 +5,22 @@ tier: advanced
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Hayes (2016) - Introducing the Bitcoin / USD Perpetual Contract, Adams et al. (2021) - Uniswap v3 Core Whitepaper, Angeris and Chitra (2020) - Improved Price Oracles: Constant Function Market Makers, Daian et al. (2020) - Flash Boys 2.0: Frontrunning in Decentralized Exchanges]
+sources: [BitMEX (2016) - Announcing the Launch of the Perpetual XBTUSD Leveraged Swap, Shiller (1993) - Measuring Asset Values for Cash Settlement in Derivative Markets, Binance - Introduction to Binance Futures Funding Rates, Adams et al. (2021) - Uniswap v3 Core, Angeris and Chitra (2020) - Improved Price Oracles: Constant Function Market Makers, Daian et al. (2020) - Flash Boys 2.0]
 ---
 
 # Perpetual Futures and Funding Rate Arbitrage
 
 ## TL;DR
 
-- Invented by Arthur Hayes and BitMEX in 2016, the Perpetual Futures contract ("perp") is a synthetic derivative that never expires, maintaining price peg to the underlying spot index through periodic funding payments between longs and shorts.
-- The 8-hour Funding Rate is determined by the Premium Index between the contract's Mark Price and the spot Index Price; when perps trade above spot, longs pay shorts, and when perps trade below spot, shorts pay longs.
-- Exchange risk engines decouple trade execution from liquidation by calculating unrealized PnL using a manipulation-resistant Mark Price (Index Price plus an exponential moving average of the basis) rather than Last Traded Price.
-- Market-neutral quantitative traders execute Cash-and-Carry Funding Arbitrage by purchasing spot crypto and shorting an equivalent nominal value of perpetual futures, harvesting annualized yields that historically average 10% to 40% during crypto bull regimes.
+- The crypto perpetual futures contract ("perp") was launched by BitMEX as the XBTUSD perpetual swap on May 13, 2016; the idea of a perpetual future goes back to Shiller (1993); a perp never expires and is held near the spot index by periodic funding payments between longs and shorts.
+- The funding rate is driven by a premium index that compares the perp's order-book prices with the spot Index Price; when perps trade above spot, longs pay shorts, and when perps trade below spot, shorts pay longs.
+- Exchange risk engines evaluate unrealized PnL and liquidations against an index-anchored Mark Price rather than the Last Traded Price, so a brief move in one order book does not by itself trigger liquidations.
+- Cash-and-Carry Funding Arbitrage buys spot crypto and shorts an equal notional of perpetual futures to collect funding while it is positive; the yield varies widely with market conditions and turns negative when funding does.
 - When an account breaches its maintenance margin, liquidation engines trigger aggressive automated market orders, creating violent liquidation cascades and auto-deleveraging (ADL) events during flash crashes.
 
 ## Learning objectives
 
-- Formulate the mathematical mechanics of the 8-hour funding rate and Premium Index clamp function.
+- Formulate the mathematical mechanics of the funding rate and the Premium Index clamp function.
 - Distinguish between Last Traded Price, Index Price, and Mark Price in centralized exchange risk engines.
 - Calculate annualized yields and margin liquidation distance for market-neutral cash-and-carry basis trades.
 - Model the dynamics of exchange Insurance Funds and Auto-Deleveraging (ADL) priority queues.
@@ -31,7 +31,7 @@ sources: [Hayes (2016) - Introducing the Bitcoin / USD Perpetual Contract, Adams
 ### 1. Perpetual Contract Mechanics and Funding Rate Formulation
 
 Traditional futures contracts converge to spot prices at contract maturity through physical delivery or mandatory cash settlement.
-Because cryptocurrency traders preferred to hold leveraged positions without rolling monthly contracts, BitMEX introduced the **Perpetual Contract**:
+To let traders hold leveraged positions without rolling dated contracts, BitMEX launched the **Perpetual Contract** (XBTUSD, May 13, 2016); BitMEX itself delisted its remaining contracts on September 16, 2026, ahead of closing the exchange (BitMEX blog, September 4, 2026), but the design is now standard across venues:
 
 ```
 +-----------------------------------------------------------------------+
@@ -40,52 +40,57 @@ Because cryptocurrency traders preferred to hold leveraged positions without rol
 | Market Condition                      Funding Transfer Mechanism      |
 |---------------------------------------+-------------------------------|
 | PERPETUAL TRADES AT PREMIUM TO SPOT   | POSITIVE FUNDING RATE         |
-| (Bullish Speculation: Perp > Spot)    | Longs PAY Shorts every 8h     |
+| (Bullish Speculation: Perp > Spot)    | Longs PAY Shorts each interval|
 | Incentive: Traders sell perp, buy spot| Perp price pushed DOWN to Spot|
 |---------------------------------------+-------------------------------|
 | PERPETUAL TRADES AT DISCOUNT TO SPOT  | NEGATIVE FUNDING RATE         |
-| (Bearish Speculation: Perp < Spot)    | Shorts PAY Longs every 8h     |
+| (Bearish Speculation: Perp < Spot)    | Shorts PAY Longs each interval|
 | Incentive: Traders buy perp, sell spot| Perp price pushed UP to Spot  |
 +-----------------------------------------------------------------------+
 ```
 
+The formulas below follow Binance's USD-M futures documentation (as of November 2026); other venues use the same structure with different parameters.
 The Funding Rate consists of two components: the **Interest Rate (I)** and the **Premium Index (P)**:
 
 $$\text{Premium Index (P)} = \frac{\max(0, \text{Impact Bid Price} - \text{Index Price}) - \max(0, \text{Index Price} - \text{Impact Ask Price})}{\text{Index Price}}$$
 
-where Impact Bid and Impact Ask represent the average execution price to fill a predefined notional margin depth (typically $200,000 USD).
-The final Funding Rate ($F$) applied over each 8-hour funding window (00:00, 08:00, 16:00 UTC) is:
+where Impact Bid and Impact Ask are the average fill prices for a market order of the Impact Margin Notional (Binance sets it at 200 USDT divided by the initial margin rate at maximum leverage, so it differs by contract).
+The premium index is sampled through the interval and averaged, and the Funding Rate ($F$) for an 8-hour interval is:
 
 $$F = P + \text{clamp}(I - P, -0.05\%, +0.05\%)$$
 
-The base interest rate $I$ is conventionally fixed at $0.01\%$ per 8 hours (0.03% daily or 10.95% annualized), reflecting the USD borrow-versus-crypto borrow spread.
+Binance's default settlement times are 00:00, 08:00 and 16:00 UTC, but some contracts use 4-hour or 1-hour intervals (with the rate scaled to the interval), and BitMEX settled at 04:00, 12:00 and 20:00 UTC.
+The interest component $I$ is $0.01\%$ per 8 hours ($0.03\%$ per day, $10.95\%$ a year simple); BitMEX derived it as a quote-currency rate of $0.06\%$ per day minus a base-currency rate of $0.03\%$ per day, divided by three intervals.
 The funding payment received or paid by a trader holding position notional $N$ is:
 
 $$\text{Payment} = N \times F$$
 
 ### 2. The Three-Price Risk Engine: Mark Price vs Index Price
 
-To prevent predatory market manipulation ("wicks" or "scam wicks" designed to trigger liquidations by briefly moving thin order books), centralized exchanges (Binance, Bybit, OKX) operate a three-tier pricing architecture:
+To keep a brief spike in one thin order book from triggering liquidations, centralized exchanges separate three prices:
 
 ```
 +-----------------------------------------------------------------------+
 |                    CENTRALIZED EXCHANGE PRICING ARCHITECTURE          |
 +-----------------------------------------------------------------------+
-| 1. Index Price: Volume-weighted composite of spot prices across major |
-|    external spot exchanges (Coinbase, Kraken, Bitstamp, Binance Spot).|
-| 2. Mark Price: Fair price calculated as:                              |
-|    Mark Price = Index Price * (1 + 30-min EMA of Basis Spread)        |
-|    Used exclusively for Unrealized PnL and LIQUIDATION TRIGGERS.      |
-| 3. Last Traded Price: Immediate price inside the local matching engine|
-|    Used exclusively for Realized PnL and order fills.                 |
+| 1. Index Price: weighted composite of spot prices on several external |
+|    spot exchanges (constituents and weights set by each venue).       |
+| 2. Mark Price: index-anchored fair price, for example:                |
+|    BitMEX: Index x (1 + Funding Rate x time to funding / interval)    |
+|    Binance: median of Index x (1 + last funding x time left/period),  |
+|    Index + 30-second moving average of the basis, and the contract    |
+|    price                                                              |
+|    Used for Unrealized PnL and LIQUIDATION TRIGGERS.                  |
+| 3. Last Traded Price: latest fill in the venue's own order book.      |
+|    Used for order fills and Realized PnL.                             |
 +-----------------------------------------------------------------------+
 ```
 
-Because liquidations are evaluated solely against the **Mark Price**, a rogue trader cannot trigger customer margin calls by dumping large market orders into the perpetual order book unless they simultaneously move the multi-billion-dollar global spot market.
+Because liquidations are evaluated against the **Mark Price**, a large market order in the perpetual order book alone moves the liquidation trigger only partly (through the contract-price component, where a venue includes one); moving it fully requires moving the spot index.
 
 ### 3. Systematic Cash-and-Carry Funding Arbitrage
 
-When perpetual contracts trade at persistent premiums during bull markets, quantitative funds capture high risk-adjusted yields through market-neutral cash-and-carry basis arbitrage:
+When perpetual contracts trade at a persistent premium, a market-neutral cash-and-carry position collects the funding:
 
 ```
         CASH-AND-CARRY BASIS ARBITRAGE STRUCTURE
@@ -106,7 +111,7 @@ Investor Capital ($100,000)
 ```
 
 #### Annualized Yield Calculation
-Let $F_{\text{avg}}$ be the average 8-hour funding rate.
+Let $F_{\text{avg}}$ be the average 8-hour funding rate (three intervals a day, $3 \times 365 = 1,095$ a year).
 The annualized simple yield is:
 
 $$\text{APY}_{\text{simple}} = F_{\text{avg}} \times 3 \times 365 = 1,095 \times F_{\text{avg}}$$
@@ -124,15 +129,15 @@ Although delta-neutral, the strategy is exposed to severe operational hazards:
 
 ### 4. Liquidation Engines, Insurance Funds, and Auto-Deleveraging (ADL)
 
-When an account's equity falls below its **Maintenance Margin Requirement (MMR)**, the exchange liquidation engine seizes the account:
+When an account's equity falls below its **Maintenance Margin Requirement (MMR)**, the exchange liquidation engine takes over the position; details differ by venue, but the waterfall is:
 
 ```
 +-----------------------------------------------------------------------+
 |                    THE THREE-STAGE LIQUIDATION WATERFALL              |
 +-----------------------------------------------------------------------+
 | 1. Order Book Liquidation:                                            |
-|    The engine takes over position and liquidates it via market orders |
-|    at Bankruptcy Price (Price where Account Equity = 0).              |
+|    The engine takes over the position and closes it in the book;      |
+|    the Bankruptcy Price is where account equity would reach zero.     |
 |                                                                       |
 | 2. Insurance Fund Absorption:                                         |
 |    If liquidation fills at a price worse than Bankruptcy Price        |
@@ -140,7 +145,7 @@ When an account's equity falls below its **Maintenance Margin Requirement (MMR)*
 |                                                                       |
 | 3. Auto-Deleveraging (ADL):                                           |
 |    If the Insurance Fund is exhausted, the engine involuntarily      |
-|    liquidates opposing profitable traders ranked by leverage & profit.|
+|    closes opposing profitable traders ranked by profit and leverage.  |
 +-----------------------------------------------------------------------+
 ```
 
@@ -158,16 +163,18 @@ The marginal spot price of token $x$ in terms of token $y$ is:
 
 $$P = \frac{y}{x}$$
 
-When the external market price moves from $P_0$ to $P_1$ by ratio $k = \frac{P_1}{P_0}$, arbitrageurs trade with the pool until the pool price matches the market.
+When the external market price moves from $P_0$ to $P_1$ by ratio $R = \frac{P_1}{P_0}$ (a different symbol from the invariant $k$), arbitrageurs trade with the pool until the pool price matches the market, leaving reserves $x_1 = \sqrt{k / P_1}$ and $y_1 = \sqrt{k P_1}$.
 The Liquidity Provider (LP) incurs **Impermanent Loss (IL)** relative to simply holding the tokens in a static wallet:
 
-$$\text{Impermanent Loss (IL)} = \frac{2 \sqrt{k}}{1 + k} - 1$$
+$$\text{Impermanent Loss (IL)} = \frac{2 \sqrt{R}}{1 + R} - 1$$
+
+The backing script reproduces every row of the table below by simulating the pool's reserves, not from this formula.
 
 ```
 +-----------------------------------------------------------------------+
 |                    IMPERMANENT LOSS AS A FUNCTION OF PRICE RATIO      |
 +-----------------------------------------------------------------------+
-| Price Change (k) | Asset Shift       | Impermanent Loss (%)           |
+| Price Ratio (R)  | Asset Shift       | Impermanent Loss (%)           |
 |------------------+-------------------+--------------------------------|
 | 1.25x            | +25% Move         | -0.62%                         |
 | 1.50x            | +50% Move         | -2.02%                         |
@@ -177,27 +184,28 @@ $$\text{Impermanent Loss (IL)} = \frac{2 \sqrt{k}}{1 + k} - 1$$
 +-----------------------------------------------------------------------+
 ```
 
-Impermanent Loss is non-linear and strictly negative whenever price diverges in either direction ($k \ne 1$).
-To be profitable, the trading fee yield earned by the liquidity pool must exceed the impermanent loss incurred.
+Impermanent Loss is non-linear, negative whenever price diverges in either direction ($R \ne 1$), and identical for $R$ and $1/R$.
+For the LP to beat holding, the trading fees earned must exceed the impermanent loss incurred.
 
 ---
 
 ## Worked examples
 
 ### Example 1: Cash-and-Carry Funding Arbitrage with Margin Buffer
-Suppose a desk deploys $1,000,000 of capital into a BTC cash-and-carry funding rate arbitrage trade when BTC trades at $60,000.
-The desk allocates $500,000 to buy 8.333 BTC on the spot exchange and deposits the remaining $500,000 into a derivatives exchange as USD collateral.
-The desk shorts 8.333 BTC worth of perpetual futures contracts at $60,000, establishing a net delta of 0.0 with 1x leverage on the perpetual account ($500,000 collateral backing $500,000 notional) and 1x gross exposure on the $1,000,000 of capital.
+Suppose a desk deploys $1,000,000 of capital into a BTC cash-and-carry funding rate arbitrage trade when BTC trades at $60,000 (all inputs hypothetical).
+The desk allocates $500,000 to buy $500,000 / $60,000 = 8.3333 BTC on the spot exchange and deposits the remaining $500,000 into a derivatives exchange as USD collateral.
+The desk shorts the same 8.3333 BTC of perpetual futures at $60,000, establishing a net delta of 0.0 with 1x leverage on the perpetual account ($500,000 collateral backing $500,000 notional) and 1x gross exposure on the $1,000,000 of capital.
 Over the next 30 days, the average 8-hour funding rate remains steady at +0.025% (2.5 bps per 8 hours, or 7.5 bps per day).
 The total funding cash flow collected over 30 days (90 funding intervals) is:
-$$\text{Cash Flow} = 8.333 \times \$60,000 \times 0.00025 \times 90 = \$500,000 \times 0.0225 = \$11,250$$
+$$\text{Cash Flow} = 8.3333 \times \$60,000 \times 0.00025 \times 90 = \$500,000 \times 0.0225 = \$11,250$$
+For simplicity the funding is computed on the entry notional; in practice each payment is charged on the notional at the mark price of that interval.
 On an annualized basis relative to the entire $1,000,000 deployed capital, the realized simple yield is:
 $$\text{APY}_{\text{net}} = \frac{\$11,250}{\$1,000,000} \times \frac{365}{30} = 1.125\% \times 12.167 = 13.69\%$$
 If the perpetual contract maintenance margin requirement is 0.50% of the position value at the mark price, the short leg is liquidated when its equity falls to that requirement:
 $$\text{Collateral} - Q (P_{\text{liq}} - P_{\text{entry}}) = \text{MMR} \times Q \times P_{\text{liq}}$$
 $$P_{\text{liq}} = P_{\text{entry}} \times \frac{1 + \text{Collateral} / \text{Notional}}{1 + \text{MMR}} = \$60,000 \times \frac{1 + 1.0}{1.005} = \$119,402.99$$
 Charging the maintenance margin on entry notional instead, $\$60,000 \times (1 + 1.0 - 0.005) = \$119,700$, overstates the buffer by about $\$297$.
-BTC would need to appreciate by about 99.0% before the short leg reaches liquidation, providing ample time for the desk to transfer spot assets into collateral if a rapid rally occurs.
+BTC would need to appreciate by about 99.0% before the short leg reaches liquidation, which gives the desk room to move spot BTC or cash into the derivatives account during a rally, provided transfers are not delayed.
 
 ---
 
@@ -214,13 +222,14 @@ BTC would need to appreciate by about 99.0% before the short leg reaches liquida
 ## Interview questions
 
 > [!question]- mkt-cry-001 | Who invented the Perpetual Futures contract and in what year?
-> Arthur Hayes and the founding team at BitMEX in 2016.
+> BitMEX, whose co-founders included Arthur Hayes, launched the first crypto perpetual, the XBTUSD perpetual swap, on May 13, 2016.
+> The concept of a perpetual future is older: Robert Shiller proposed perpetual futures in the Journal of Finance in 1993.
 
 > [!question]- mkt-cry-002 | How does a Perpetual Futures contract maintain its peg to spot price without an expiration date?
 > Through periodic funding rate cash transfers exchanged directly between long and short contract holders.
 
 > [!question]- mkt-cry-003 | How frequently are funding rate payments typically exchanged on major crypto exchanges?
-> Every 8 hours (at 00:00, 08:00, and 16:00 UTC).
+> Every 8 hours is the common default (Binance: 00:00, 08:00 and 16:00 UTC; BitMEX used 04:00, 12:00 and 20:00 UTC), but as of November 2026 some venues and contracts use 4-hour or 1-hour intervals, so check each contract.
 
 > [!question]- mkt-cry-004 | What occurs when the crypto perpetual funding rate is positive?
 > Long position holders pay funding to short position holders, incentivizing traders to sell the perpetual down toward spot.
@@ -229,13 +238,14 @@ BTC would need to appreciate by about 99.0% before the short leg reaches liquida
 > Short position holders pay funding to long position holders, incentivizing traders to buy the perpetual up toward spot.
 
 > [!question]- mkt-cry-006 | What is the Premium Index in crypto perpetual contracts?
-> The percentage difference between the perpetual contract's price (Impact Mid) and the spot Index Price.
+> The premium of the perp's order book over the spot index: [max(0, Impact Bid - Index) - max(0, Index - Impact Ask)] / Index, sampled through the funding interval and averaged.
 
 > [!question]- mkt-cry-007 | What is the Index Price on a centralized crypto derivatives exchange?
-> A volume-weighted composite spot price calculated across major external spot exchanges to represent true fair value.
+> A weighted composite of spot prices from several external spot exchanges, with constituents and weights chosen by the venue, used as the reference for funding and the mark price.
 
 > [!question]- mkt-cry-008 | What is the Mark Price and why is it used for margin liquidation calculations?
-> A composite price calculated as Index Price plus an exponential moving average of basis, preventing stop-hunting manipulation.
+> An index-anchored fair price (for example BitMEX: Index x (1 + funding rate x time to next funding / interval); Binance: a median of index-based estimates and the contract price).
+> Liquidations use it rather than the last trade so that a brief spike in one order book cannot by itself trigger them.
 
 > [!question]- mkt-cry-009 | What is Last Traded Price in crypto trading?
 > The most recent price at which an order matched inside the specific exchange's order book.
@@ -259,7 +269,7 @@ BTC would need to appreciate by about 99.0% before the short leg reaches liquida
 > An automated emergency mechanism that involuntarily closes opposing profitable positions when an exchange's insurance fund is exhausted.
 
 > [!question]- mkt-cry-016 | How are traders ranked in the Auto-Deleveraging (ADL) priority queue?
-> Ranked in descending order by profit percentage and effective leverage (highest leverage and highest profit liquidated first).
+> By a score combining profit and leverage; Binance, for example, ranks profitable positions by PnL% x effective leverage, so the most profitable, most leveraged opposing positions are deleveraged first.
 
 > [!question]- mkt-cry-017 | What is a liquidation cascade in crypto markets?
 > A self-reinforcing chain reaction where forced market liquidations push prices down, breaching lower margin thresholds and triggering further liquidations.
@@ -270,11 +280,11 @@ BTC would need to appreciate by about 99.0% before the short leg reaches liquida
 > [!question]- mkt-cry-019 | What is Impermanent Loss (IL) in decentralized liquidity pools?
 > The difference in portfolio value between providing liquidity to an AMM pool versus simply holding the underlying tokens in a wallet.
 
-> [!question]- mkt-cry-020 | What is the formula for Impermanent Loss as a function of the price ratio k = P_1 / P_0?
-> IL(k) = (2 * sqrt(k)) / (1 + k) - 1.
+> [!question]- mkt-cry-020 | What is the formula for Impermanent Loss as a function of the price ratio R = P_1 / P_0?
+> IL(R) = (2 * sqrt(R)) / (1 + R) - 1, which is the same for R and 1 / R.
 
 > [!question]- mkt-cry-021 | If the price of an asset doubles (2x, k = 2), what is the resulting Impermanent Loss?
-> Exactly -5.72%.
+> About -5.72%: 2 * sqrt(2) / 3 - 1 = -0.0572.
 
 > [!question]- mkt-cry-022 | What is Concentrated Liquidity as introduced in Uniswap v3?
 > Allowing liquidity providers to allocate capital within customized, bounded price ranges [p_a, p_b] rather than across 0 to infinity.
@@ -289,13 +299,14 @@ BTC would need to appreciate by about 99.0% before the short leg reaches liquida
 > An MEV bot detects a victim's pending swap, buys before it (front-runs) to push the price up, and immediately sells after it (back-runs) for profit.
 
 > [!question]- mkt-cry-026 | What is Flashbots in the Ethereum ecosystem?
-> A private communication channel and block builder auction designed to democratize MEV and eliminate public mempool gas auctions.
+> A research and development organisation formed to mitigate the negative externalities of MEV (its stated mission); its tools include a private transaction channel to block builders and the MEV-Boost relay software, which move MEV competition out of public mempool gas auctions.
 
 > [!question]- mkt-cry-027 | What is the difference between coin-margined (inverse) and USDT-margined (linear) perpetual contracts?
 > Linear contracts use stablecoins (USDT/USDC) as collateral and quote PnL in dollars; inverse contracts use the underlying cryptocurrency as collateral.
 
 > [!question]- mkt-cry-028 | Why do coin-margined (inverse) contracts have non-linear PnL profiles?
-> Because the collateral itself fluctuates in value against the US dollar, compounding profits on the downside and muting profits on the upside.
+> Because the contract is worth a fixed number of US dollars but settles in coin, P&L in coin is N * (1/P0 - 1/P1) for a long, which is non-linear in the price.
+> A long's coin gain is capped at N / P0 however far the price rises, while its coin loss grows without bound as the price falls; the short is the mirror image.
 
 > [!question]- mkt-cry-029 | What is 'slippage' in an Automated Market Maker trade?
 > The difference between the expected execution price based on current reserves and the realized execution price after large order execution.
@@ -304,10 +315,15 @@ BTC would need to appreciate by about 99.0% before the short leg reaches liquida
 > The minimum account equity required to keep a leveraged position open without triggering automatic liquidation.
 
 > [!question]- mkt-cry-031 | What is the 'kimchi premium'?
-> The persistent price spread where Bitcoin and cryptocurrencies trade higher on South Korean exchanges due to strict capital controls.
+> The premium of crypto prices on South Korean exchanges over prices elsewhere; it varies over time, and Choi, Lehar and Stauffer (working paper, SSRN 3189051) report bitcoin traded 2.27% higher in Korea than in the US on average from January 2016 to January 2020 and attribute the gap to capital controls that limit arbitrage.
 
 > [!question]- mkt-cry-032 | What is the primary golden rule of cryptocurrency basis trading?
 > Always maintain dynamic margin rebalancing buffers to survive parabolic squeeze spikes without triggering premature liquidation.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [mkt_crypto_01_perps.py](../code/mkt_crypto_01_perps.py) prints and asserts every number in this note; funding is accumulated interval by interval, the liquidation price is found by bisection on account equity, and impermanent loss by simulating the constant-product pool; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_crypto_01_perps.py`.
+- Syllabus: [Crypto Market Structure](../../06-Fixed-Income-and-Asset-Classes/10-Crypto-Market-Structure.md).
 
 ---
 
@@ -315,5 +331,9 @@ BTC would need to appreciate by about 99.0% before the short leg reaches liquida
 
 - Adams, H., Zinsmeister, N., Salem, M., Keefer, R., & Robinson, D. (2021). *Uniswap v3 Core*. Uniswap Whitepaper.
 - Angeris, G., & Chitra, T. (2020). *Improved Price Oracles: Constant Function Market Makers*. Proceedings of the 2nd ACM Conference on Advances in Financial Technologies, 80-91.
-- Daian, P., Goldfeder, S., Kell, T., Li, Z., Zhao, X., Bentov, I., Breidenbach, L., & Juels, A. (2020). *Flash Boys 2.0: Frontrunning in Decentralized Exchanges, Arbitrage, and Miner-Extractable Value*. IEEE Symposium on Security and Privacy, 910-927.
-- Hayes, A. (2016). *Introducing the Bitcoin / USD Perpetual Contract*. BitMEX Research.
+- Binance. *Introduction to Binance Futures Funding Rates* and *Mark Price* (support FAQs, as of November 2026).
+- BitMEX. (2016). *Announcing the Launch of the Perpetual XBTUSD Leveraged Swap*. BitMEX Blog, May 13, 2016.
+- BitMEX. (2026). *Setting the Remaining Contracts on the BitMEX Platform to Reduce Only from 7th September, and Delisting on 16th September*. BitMEX Blog, September 4, 2026.
+- Choi, K. J., Lehar, A., & Stauffer, R. *Bitcoin Microstructure and the Kimchi Premium*. Working paper, SSRN 3189051.
+- Daian, P., Goldfeder, S., Kell, T., Li, Y., Zhao, X., Bentov, I., Breidenbach, L., & Juels, A. (2020). *Flash Boys 2.0: Frontrunning in Decentralized Exchanges, Miner Extractable Value, and Consensus Instability*. IEEE Symposium on Security and Privacy, 910-927.
+- Shiller, R. J. (1993). *Measuring Asset Values for Cash Settlement in Derivative Markets: Hedonic Repeated Measures Indices and Perpetual Futures*. Journal of Finance, 48(3), 911-931.

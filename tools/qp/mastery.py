@@ -233,8 +233,8 @@ def write_study_board(output_path: Path | None = None, store: Store | None = Non
         store_data = store.data
         target = output_path or (store.home / "STUDY_BOARD.md")
 
-    all_gates = evaluate_all_markets_gates(vault.cards, store_data)
-    personas = {p_id: calculate_markets_mastery(vault.cards, store_data, p_id) for p_id in PERSONA_CONFIGS}
+    all_gates = evaluate_all_markets_gates(vault, store_data)
+    personas = {p_id: calculate_markets_mastery(vault, store_data, p_id) for p_id in PERSONA_CONFIGS}
     holistic = personas["holistic"]
 
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -253,7 +253,7 @@ def main(argv: list[str] | None = None) -> int:
 
     store = Store()
     target = write_study_board(store=store)
-    holistic = calculate_markets_mastery(load_vault(REPO_ROOT).cards, store.data, "holistic")
+    holistic = calculate_markets_mastery(load_vault(REPO_ROOT), store.data, "holistic")
 
     print(f"study_board: wrote {target}")
     print(f"Overall Score: {holistic['overall_score']:.1f}% ({holistic['readiness_level']})")
