@@ -49,13 +49,13 @@ Its weakness is that it is noisy: in a one-tick market, a single order changing 
 
 Stoikov (2018) defines the micro-price as the limit of the expected mid after successive future mid changes, conditional on the current imbalance and spread.
 It is estimated from data by discretising imbalance and spread into states, fitting a Markov chain on how states evolve and how the mid jumps, and solving for the limit.
-By construction it is a martingale, and in the paper it forecasts short-horizon prices better than the mid or weighted mid.
+In the paper it predicts short-term prices better than the mid or the weighted mid.
 The practical lesson for interviews: the weighted mid is the first-order idea, the micro-price is the calibrated version, and both are small adjustments that normally stay inside the spread.
 See [Order Book Imbalance and Microprice](../07-Market-Microstructure/11-Order-Book-Imbalance-and-Microprice.md).
 
 ### Related instruments and lead-lag
 
-Most instruments have a more liquid relative whose price discovery happens first.
+Many instruments have a more liquid relative whose price discovery tends to happen first.
 
 - Index futures versus the stocks and ETFs that track the index.
 - An option's underlying versus the option: option theo is a model value given the underlying price, vol surface and rates.
@@ -94,6 +94,8 @@ A theo that ignores a relationship produces a hedge that ignores it, so errors i
 See [Hedging and Risk for Market Makers](06-Hedging-and-Risk-for-Market-Makers.md).
 
 ## Worked examples
+
+All books, prices, rates and signal parameters below are hypothetical inputs; [mm_02_fair_value.py](code/mm_02_fair_value.py) asserts every number.
 
 ### Example 1: weighted mid
 
@@ -152,10 +154,10 @@ def theo(mid, signals, betas, ages_ms, half_lives_ms):
 ## Pitfalls
 
 - Quoting around the mid in a lopsided one-tick book; the side with the thin queue is the one that gets picked off.
-- Treating the weighted mid as exact; it overreacts to single orders and is not a martingale.
+- Treating the weighted mid as exact; it overreacts to single orders and is assumed linear in $I$ rather than estimated, so it is not the expected future mid.
 - Adding correlated signals as if they were independent; fit them jointly or you double count the same information.
 - Using a related instrument's last trade instead of its current fair value, or ignoring its own latency and tick size.
-- Estimating a lead-lag beta on the same horizon as the lag; the beta will be biased toward zero by asynchronous prices.
+- Estimating a lead-lag beta on the same horizon as the lag; asynchronous prices bias it toward zero, the effect Epps (1979) documented for correlations measured over short intervals.
 - Forgetting to remove a signal after the move it predicted has happened.
 - Using one theo for quoting and a different, inconsistent model for hedging.
 
@@ -170,7 +172,7 @@ def theo(mid, signals, betas, ages_ms, half_lives_ms):
 > $I = 0.8$, so $0.8 \times 50.01 + 0.2 \times 50.00 = 50.008$, versus a mid of 50.005.
 
 > [!question]- mm-fv-microprice-vs-weighted-mid | How does Stoikov's micro-price improve on the weighted mid?
-> It is the limit of the expected future mid conditional on imbalance and spread, estimated from a Markov chain on the order-book state, so it is a martingale and does not overreact.
+> It is the limit of the expected future mid conditional on imbalance and spread, estimated from a Markov chain on the order-book state, so it is calibrated to how the book actually evolves; Stoikov finds it the better short-term predictor.
 > The weighted mid is a noisy first-order version that can move a large fraction of a tick on a single order.
 
 > [!question]- mm-fv-inverse-variance-blend | Two unbiased theo estimates have error sd 0.02 and 0.01. What weights, and what is the combined sd?
@@ -205,13 +207,35 @@ def theo(mid, signals, betas, ages_ms, half_lives_ms):
 > 80.152.
 > Basket return is $0.0015 - 0.0006 + 0.0010 = 0.0019$ and $80 \times 1.0019 = 80.152$.
 
+> [!question]- mm-fv-edge-each-side | Book is 50.00 x 800 bid, 50.01 x 200 offered, theo is the weighted mid. How much edge does each side have?
+> The ask is 0.2 cents above theo and the bid 0.8 cents below it.
+> Theo is 50.008, so joining the bid earns four times the edge of joining the ask.
+
+> [!question]- mm-fv-blend-theo | Estimate A is 100.004 with sd 0.02 and estimate B is 100.012 with sd 0.01. What is the blended theo?
+> 100.0104.
+> Inverse-variance weights are 0.2 and 0.8, so $0.2 \times 100.004 + 0.8 \times 100.012 = 100.0104$.
+
+> [!question]- mm-fv-consumed-signal | A signal predicted a 2-tick up-move and the mid has just risen 2 ticks. What should the signal contribute to theo now?
+> Nothing.
+> The price already reflects the forecast; keeping it would double count the move and skew quotes the wrong way.
+
+> [!question]- mm-fv-correlated-error-weights | How do the blending weights change when the estimates' errors are correlated?
+> They become $w \propto \Sigma^{-1}\mathbf{1}$, normalised to sum to one, with $\Sigma$ the error covariance matrix.
+> It is the minimum-variance portfolio algebra; with independent errors it reduces to inverse-variance weights.
+
+> [!question]- mm-fv-lead-lag-horizon | Why estimate a lead-lag beta on a horizon longer than the lag you trade?
+> Over very short intervals asynchronous prices bias measured co-movement toward zero (the Epps effect).
+> A longer horizon lets both prices catch up, so the beta reflects the true relationship.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/mm_02_fair_value.py`](code/mm_02_fair_value.py) prints and asserts every number on this page: weighted mids, the futures-implied move and the ETF basket in exact rational arithmetic, inverse-variance weights by numerically minimising the blend variance (checked by simulation), the carry price by an exact Taylor series of the exponential, and the decay factor by solving $x^5 = 1/4$.
 - Microstructure background: [Order Book Imbalance and Microprice](../07-Market-Microstructure/11-Order-Book-Imbalance-and-Microprice.md).
 - Signal section of the systems companion: [Quantitative Models and Strategies](Quant-Dev-MM-Guide/03_Quantitative_Models_and_Strategies.md).
 
 ## Further reading
 
-- Sasha Stoikov (2018), The micro-price: a high-frequency estimator of future prices, *Quantitative Finance* 18(12).
+- Sasha Stoikov (2018), The micro-price: a high-frequency estimator of future prices, *Quantitative Finance* 18(12), 1959-1966.
 - Cartea, Jaimungal and Penalva, *Algorithmic and High-Frequency Trading* (2015).
-- John Hull, *Options, Futures, and Other Derivatives*, chapter on forward and futures prices.
+- John Hull, *Options, Futures, and Other Derivatives* (10th or 11th edition), chapter 5, Determination of Forward and Futures Prices.
+- T. W. Epps (1979), Comovements in stock prices in the very short run, *Journal of the American Statistical Association* 74(366), 291-298.

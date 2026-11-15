@@ -552,6 +552,22 @@ class Checks(TempRepo):
         findings = [f for f in check.check_vault(self.vault()) if f.rule == "card"]
         self.assertEqual(len(findings), 0)
 
+    def test_unparseable_card_callout_is_reported(self):
+        body = card("good-card") + "\n" + card("bad-Upper") + "\n```markdown\n" + card("Fenced-Example") + "```\n"
+        write_note(self.root, "01-Alpha/05-Callouts.md", "Callouts", body)
+        note = self.vault().notes["callouts"]
+        self.assertEqual([c.id for c in note.cards], ["good-card"])
+        findings = check.check_vault(self.vault())
+        self.assertEqual(len(findings), 1)
+        self.assertEqual((findings[0].rule, Path(findings[0].path).name, findings[0].line), ("card", "05-Callouts.md", 16))
+        self.assertIn("bad-Upper", findings[0].message)
+
+    def test_callout_swallowed_into_previous_answer_is_reported(self):
+        write_note(self.root, "01-Alpha/05-Callouts.md", "Callouts", card("first") + card("second"))
+        findings = check.check_vault(self.vault())
+        self.assertEqual([(f.rule, f.line) for f in findings], [("card", 15)])
+        self.assertIn("second", findings[0].message)
+
     def test_prereq_cycle(self):
         write_note(self.root, "01-Alpha/01-Base.md", "Base", prereqs="top")
         cycles = [f for f in check.check_vault(self.vault()) if "cycle" in f.message]

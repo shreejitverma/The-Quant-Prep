@@ -18,9 +18,9 @@ The [Quant Dev Market Making Guide](Quant-Dev-MM-Guide/README.md) is the systems
 
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
-| 01 | [Market Making Fundamentals](01-Market-Making-Fundamentals.md) | TRD | core | 3 | solid | 12 |
-| 02 | [Fair Value and Theoretical Pricing](02-Fair-Value-and-Theoretical-Pricing.md) | TR | core | 3 | solid | 11 |
-| 03 | [Inventory Risk and Avellaneda-Stoikov](03-Inventory-Risk-and-Avellaneda-Stoikov.md) | TR | core | 5 | solid | 11 |
+| 01 | [Market Making Fundamentals](01-Market-Making-Fundamentals.md) | TRD | core | 3 | solid | 15 |
+| 02 | [Fair Value and Theoretical Pricing](02-Fair-Value-and-Theoretical-Pricing.md) | TR | core | 3 | solid | 16 |
+| 03 | [Inventory Risk and Avellaneda-Stoikov](03-Inventory-Risk-and-Avellaneda-Stoikov.md) | TR | core | 5 | solid | 16 |
 | 04 | [Gueant-Lehalle-Fernandez-Tapia and Extensions](04-Gueant-Lehalle-and-Extensions.md) | R | senior | 3 | solid | 16 |
 | 05 | [Quote Management: Skew, Width and Size](05-Quote-Management-Skew-Width-and-Size.md) | T | core | 3 | solid | 11 |
 | 06 | [Hedging and Risk for Market Makers](06-Hedging-and-Risk-for-Market-Makers.md) | T | core | 3 | solid | 12 |
