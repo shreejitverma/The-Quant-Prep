@@ -80,10 +80,11 @@ Each card is a collapsible Obsidian callout whose title line carries a stable id
 > $1/6$. Six of the 36 equally likely ordered outcomes sum to 7: (1,6), (2,5), ..., (6,1).
 ```
 
-- The id is kebab-case, unique across the whole repo, and starts with the section prefix: `prob`, `stat`, `la`, `sc`, `deriv`, `fi`, `ms`, `mm`, `alpha`, `ml`, `risk`, `qd`, `int`, `reg`, `sys`, and `mkt-<track>` in the Markets Mastery OS.
+- The id is lower-case kebab-case (`a-z`, `0-9` and `-` only), unique across the whole repo, and starts with the section prefix: `prob`, `stat`, `la`, `sc`, `deriv`, `fi`, `ms`, `mm`, `alpha`, `ml`, `risk`, `qd`, `int`, `reg`, `sys`, and `mkt-<track>` in the Markets Mastery OS.
 - Never change an id once published: review history is keyed on it.
 - The prompt stays on the title line; the answer is every following line that starts with `>`.
 - Leave a blank line between cards, or Markdown merges them into one quote.
+- `./qp check` reports any `> [!question]` callout outside a code fence that does not parse as a card, including one swallowed into the previous card's answer.
 - Answers give the result first, then the shortest convincing argument.
 - Wrap a standalone numeric result in inline maths (for example, `$6$.`) so it is not parsed as a list item.
 - For a multi-item answer, put each numbered item on its own quoted line; `./qp check` rejects a single-line answer that starts with `N. ` unless a later numbered item follows.

@@ -82,11 +82,13 @@ This is the maker's markout seen from the taker's side.
 ### PIN
 
 Easley, Kiefer, O'Hara and Paperman model each day as having an information event with probability $\alpha$; on event days informed traders arrive at rate $\mu$ on the informed side, while uninformed buyers and sellers arrive at rates $\varepsilon_b$ and $\varepsilon_s$ every day.
-The probability that a given trade is informed is
+With equal uninformed rates $\varepsilon_b = \varepsilon_s = \varepsilon$ (the form Easley, Lopez de Prado and O'Hara restate as their equation 6), the probability that a given trade is informed is
 
 $$
-\text{PIN} = \frac{\alpha \mu}{\alpha \mu + \varepsilon_b + \varepsilon_s}.
+\text{PIN} = \frac{\alpha \mu}{\alpha \mu + 2\varepsilon},
 $$
+
+and with unequal rates the denominator becomes $\alpha\mu + \varepsilon_b + \varepsilon_s$, the expected arrival rate of all orders.
 
 The parameters are estimated by maximum likelihood from daily buy and sell counts, which makes PIN slow and unsuited to intraday use.
 
@@ -95,19 +97,19 @@ The parameters are estimated by maximum likelihood from daily buy and sell count
 Easley, Lopez de Prado and O'Hara (2012) proposed a volume-clock version.
 
 1. Split the tape into buckets of equal volume $V$.
-2. Classify volume as buys or sells by bulk volume classification: in a bar with standardised price change $\Delta P / \sigma_{\Delta P}$, the buy volume is $V_B = V \, \Phi(\Delta P / \sigma_{\Delta P})$ and $V_S = V - V_B$.
+2. Classify volume as buys or sells by bulk volume classification over the one-minute time bars $i$ inside bucket $\tau$: $V_\tau^B = \sum_i V_i \, \Phi(\Delta P_i / \sigma_{\Delta P})$ and $V_\tau^S = V - V_\tau^B$.
 3. Average the absolute imbalance over the last $n$ buckets:
 
 $$
 \text{VPIN} = \frac{1}{nV} \sum_{\tau=1}^{n} \big| V_\tau^S - V_\tau^B \big|.
 $$
 
-The authors report that VPIN rose ahead of the 6 May 2010 flash crash and propose it as a toxicity warning.
+The authors report that the CDF of VPIN crossed 0.9, an extreme reading, at least two hours before the 6 May 2010 flash crash, and propose it as a toxicity warning.
 
 Critiques that interviewers expect you to know:
 
-- Andersen and Bondarenko (2014) find VPIN is strongly driven by trading volume and volatility, and that after controlling for them it adds little forecasting power for future volatility.
-- They also report that its behaviour around the flash crash depends on implementation choices such as bucket size, bar length and the start of the sample, so it is not a robust early warning.
+- Andersen and Bondarenko (2014) find VPIN a poor predictor of short-run volatility, find that it reached its all-time high after, not before, the flash crash, and attribute its predictive content mainly to a mechanical relation with trading intensity.
+- In their reply, "Reflecting on the VPIN dispute", they report no incremental predictive power for future volatility once volume and volatility are controlled for, and show that VPIN's properties depend strongly on the trade classification; the main paper also shows sensitivity to the starting point of the sample.
 - Bulk volume classification can misclassify trade direction compared with signing trades against the prevailing quote, and the imbalance measure mixes informed flow with plain liquidity demand.
 
 In practice VPIN-style imbalance is one feature among many; the ground truth for a market maker remains the markouts of its own fills.
@@ -118,20 +120,22 @@ The blended markout hides a mixture.
 Segment fills along any dimension you can observe at quote time, estimate the markout curve for each, and price each segment to its own adverse selection.
 
 - Counterparty or client, where it is disclosed (RFQ platforms, bilateral streams, retail wholesaling).
-- Venue and order type (IOC sweeps across several venues at once are usually more informed than a resting order that gets lifted).
+- Venue and order type, for example separating IOC sweeps that hit several venues at once from single-venue fills, and comparing their markouts.
 - Order size relative to displayed depth.
 - Market state: signal value, time since the last price change, moves in a leading instrument, time of day, proximity to scheduled news.
 
 In an anonymous order book you cannot price by counterparty, but you can condition width, skew and size on market state, which is the lit-market version of segmentation.
-Where flow is disclosed, dealers commonly tier pricing by client, and FX venues have used last-look windows, a practice the FX Global Code addresses.
+Where flow is disclosed, dealers can tier pricing by client, and FX liquidity providers have used last-look windows, which Principle 17 of the FX Global Code (version updated December 2024) requires them to disclose: "Market Participants employing last look should be transparent regarding its use and provide appropriate disclosures to Clients."
 
 ### Statistics of markouts
 
 A 60-second markout is dominated by price noise: its standard deviation per fill is roughly $\sigma\sqrt{\tau}$, often many times the mean you are trying to detect.
-Detecting a mean of size $\Delta$ with per-fill standard deviation $s$ at two standard errors needs about $n \approx (1.96\, s / \Delta)^2$ fills.
+For a mean of size $\Delta$ with per-fill standard deviation $s$ to sit 1.96 standard errors from zero (the two-sided 5% level), you need about $n \approx (1.96\, s / \Delta)^2$ fills.
 Fills that are close in time share the same future price path, so they are not independent: cluster standard errors by time bucket or bootstrap by day.
 
 ## Worked examples
+
+All fills, prices and model parameters below are hypothetical inputs; [micro_05_adverse_selection.py](code/micro_05_adverse_selection.py) asserts every number.
 
 ### Example 1: a markout table
 
@@ -182,7 +186,7 @@ In the Glosten-Milgrom approximation, a value uncertainty of plus or minus 1 dol
 
 ### Example 5: VPIN on five buckets
 
-Bucket volume $V = 10{,}000$; standardised price changes per bucket $0.5, -0.2, 1.5, 0.1, 2.0$.
+Bucket volume $V = 10{,}000$; for simplicity each bucket is one bar, with standardised price changes $0.5, -0.2, 1.5, 0.1, 2.0$.
 Buy volumes $V\Phi(z)$: 6,915, 4,207, 9,332, 5,398, 9,772.
 Absolute imbalances $|2V_B - V|$: 3,829, 1,585, 8,664, 797, 9,545.
 $\text{VPIN} = 24{,}420 / 50{,}000 \approx 0.488$.
@@ -190,7 +194,7 @@ Notice the input is only the price change: large moves raise VPIN mechanically, 
 
 ### Example 6: how many fills to trust a markout
 
-The 60-second markout has a per-fill standard deviation of 3 ticks and you want to detect a mean of 0.1 ticks at two standard errors.
+The 60-second markout has a per-fill standard deviation of 3 ticks and you want a mean of 0.1 ticks to sit 1.96 standard errors from zero.
 $n \approx (1.96 \times 3 / 0.1)^2 \approx 3{,}457$ independent fills.
 To detect a 0.3-tick difference between two venues, each with standard deviation 3, you need about $(1.96 \times 3\sqrt{2} / 0.3)^2 \approx 768$ fills per venue.
 Correlated fills in bursts make the effective sample smaller, so these are lower bounds.
@@ -202,16 +206,9 @@ Half-spread 0.5 ticks and a net rebate of 0.1 ticks give 0.6 ticks of gross edge
 Blended adverse selection $= 0.7 \times 0.1 + 0.3 \times 1.6 = 0.55$, net edge $+0.05$ ticks per fill.
 By segment: A earns $0.6 - 0.1 = 0.5$, B loses $0.6 - 1.6 = -1.0$.
 If you can identify B at quote time, widening or declining B raises edge per fill from 0.05 to 0.5 at the cost of 30% of volume.
-If you cannot identify B, the blended number is the right one, but it is fragile: a small rise in B's share turns the whole book negative.
+If you cannot identify B, the blended number is the right one, but it is fragile: break-even is at a B share of $(0.6 - 0.1)/(1.6 - 0.1) = 1/3$, so a rise from 30% to 33.3% turns the whole book negative.
 
-```python
-import numpy as np
-
-def markouts(side, size, price, mid_path, horizons):
-    """side, size, price: arrays per fill; mid_path[h]: array of mids at t_i + h."""
-    w = size / size.sum()
-    return {h: float(np.sum(w * side * (mid_path[h] - price))) for h in horizons}
-```
+The markout, Glosten-Milgrom, PIN and VPIN calculations are in [micro_05_adverse_selection.py](code/micro_05_adverse_selection.py).
 
 ## Pitfalls
 
@@ -247,7 +244,7 @@ def markouts(side, size, price, mid_path, horizons):
 > The posterior on $V_H$ becomes 0.6, and the next ask is $E[V \mid \text{two buys}] = 99 + 2 \times 0.36/0.52$.
 
 > [!question]- ms-tox-pin-formula | Write PIN and compute it for $\alpha = 0.4$, $\mu = 50$, $\varepsilon_b = \varepsilon_s = 100$.
-> $\text{PIN} = \alpha\mu/(\alpha\mu + \varepsilon_b + \varepsilon_s) = 20/220 \approx 0.091$.
+> $\text{PIN} = \alpha\mu/(\alpha\mu + \varepsilon_b + \varepsilon_s) = 20/220 \approx 0.091$, which is $\alpha\mu/(\alpha\mu + 2\varepsilon)$ with equal rates.
 > It is the expected share of trades that come from informed traders.
 
 > [!question]- ms-tox-vpin-definition | How is VPIN computed?
@@ -255,11 +252,11 @@ def markouts(side, size, price, mid_path, horizons):
 > It is a volume-clock order imbalance measure.
 
 > [!question]- ms-tox-vpin-critique | What are the main critiques of VPIN?
-> It is largely explained by volume and volatility and adds little beyond them, and its flash-crash signal depends on implementation choices.
+> Andersen and Bondarenko find it a poor predictor of short-run volatility with no incremental power once volume and volatility are controlled for, and that it peaked after rather than before the flash crash; its properties depend on the trade classification and the sample start.
 > Bulk volume classification also misclassifies trade direction and cannot separate informed flow from liquidity demand.
 
-> [!question]- ms-tox-markout-sample-size | Per-fill 60 s markout standard deviation is 3 ticks. How many fills to detect a 0.1-tick mean at two standard errors?
-> About 3,500: $(1.96 \times 3 / 0.1)^2 \approx 3{,}457$.
+> [!question]- ms-tox-markout-sample-size | Per-fill 60 s markout standard deviation is 3 ticks. How many fills for a 0.1-tick mean to sit 1.96 standard errors from zero?
+> About 3,500: $(1.96 \times 3 / 0.1)^2 \approx 3{,}457$, the count at which 0.1 ticks is 1.96 standard errors.
 > More if fills cluster in time, because clustered fills share the same price path.
 
 > [!question]- ms-tox-segment-blended | 70% of fills mark out at -0.1 ticks and 30% at -1.6; gross edge is 0.6 ticks. What is the net edge and what do you do?
@@ -278,10 +275,29 @@ def markouts(side, size, price, mid_path, horizons):
 > Trade prices bounce between bid and ask, which creates spurious reversion and noise.
 > The microprice is better still in large-tick names where the mid moves in half-tick jumps.
 
+> [!question]- ms-tox-markout-table-60s | Fills of 200, 100, 300, 200 and 200 shares mark out at -1, -1, +1, -1 and -2 cents at 60 s. Size-weighted and unweighted averages?
+> Size-weighted $-6$ dollars over 1,000 shares, or $-0.6$ cents per share; unweighted $-0.8$ cents.
+> Use size weights for P&L and report both when sizes differ a lot.
+
+> [!question]- ms-tox-vpin-bvc-example | A bucket of 10,000 has a standardised price change of 2.0. What buy volume and imbalance does bulk volume classification assign?
+> Buy volume $10{,}000\,\Phi(2.0) \approx 9{,}772$ and imbalance $|2V_B - V| \approx 9{,}545$.
+> Only the price change enters, so a large move mechanically looks like one-sided flow.
+
+> [!question]- ms-tox-segment-break-even | Segment A marks out at -0.1 ticks and B at -1.6 against 0.6 ticks of gross edge. At what share of B does the blended book break even?
+> One third.
+> $(1 - x)(0.1) + x(1.6) = 0.6$ gives $x = 0.5/1.5$, so moving from 30% to 33.3% B flow erases the edge.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/micro_05_adverse_selection.py`](code/micro_05_adverse_selection.py) prints and asserts every number on this page: markouts in exact rational arithmetic, Glosten-Milgrom quotes by enumerating every trader type and order path (not the closed-form half-spread), PIN exactly and by simulating Poisson trade counts, the normal CDF for bulk volume classification by Simpson integration, and the sample-size rule by simulating the sampling distribution of the mean.
+- Related notes: [Spread Models: Roll and Glosten-Milgrom](03-Spread-Models-Roll-and-Glosten-Milgrom.md), [Order Book Imbalance and the Microprice](11-Order-Book-Imbalance-and-Microprice.md).
+
 ## Further reading
 
-- Easley, Lopez de Prado and O'Hara (2012), Flow Toxicity and Liquidity in a High-Frequency World, *Review of Financial Studies* 25(5).
-- Andersen and Bondarenko (2014), VPIN and the Flash Crash, *Journal of Financial Markets* 17.
-- Easley, Kiefer, O'Hara and Paperman (1996), Liquidity, Information, and Infrequently Traded Stocks, *Journal of Finance* 51(4).
+- Easley, Lopez de Prado and O'Hara (2012), Flow Toxicity and Liquidity in a High-Frequency World, *Review of Financial Studies* 25(5), 1457-1493 (equations 7 and 9 for bulk classification and VPIN).
+- Andersen and Bondarenko (2014), VPIN and the Flash Crash, *Journal of Financial Markets* 17, 1-46, and Reflecting on the VPIN dispute, *Journal of Financial Markets* 17, 53-64.
+- Easley, Kiefer, O'Hara and Paperman (1996), Liquidity, Information, and Infrequently Traded Stocks, *Journal of Finance* 51(4), 1405-1436.
+- Glosten and Milgrom (1985), Bid, ask and transaction prices in a specialist market with heterogeneously informed traders, *Journal of Financial Economics* 14(1), 71-100.
+- Global Foreign Exchange Committee, *FX Global Code* (updated December 2024), Principle 17.
 - Cartea, Jaimungal and Penalva, *Algorithmic and High-Frequency Trading* (2015).
 - Related notes: [Market Making P&L Attribution and Markouts](../08-Market-Making/09-Market-Making-PnL-Attribution-and-Markouts.md), [Quote Management: Skew, Width and Size](../08-Market-Making/05-Quote-Management-Skew-Width-and-Size.md).
