@@ -121,9 +121,13 @@ def frontier_formula(rng: np.random.Generator) -> None:
         w = sol[:n]
         assert abs(w @ cov @ w - (a * m * m - 2 * bb * m + c) / d) < 1e-12
         assert abs(sol[n] - (a * m - bb) / d) < 1e-12 and abs(sol[n + 1] - (c - bb * m) / d) < 1e-12
-    w_gmv = inv @ one / a
+    budget = np.zeros((n + 1, n + 1))
+    budget[:n, :n] = 2 * cov
+    budget[:n, n] = one
+    budget[n, :n] = one
+    w_gmv = np.linalg.solve(budget, np.concatenate([np.zeros(n), [1.0]]))[:n]
     assert abs(w_gmv @ cov @ w_gmv - 1 / a) < 1e-12 and abs(w_gmv @ mu - bb / a) < 1e-12
-    print("    sigma^2(m), l1 and l2 match a direct KKT solve at three targets; GMV variance 1/A and mean B/A")
+    print("    sigma^2(m), l1 and l2 match a direct KKT solve at three targets; budget-only KKT gives GMV variance 1/A and mean B/A")
 
 
 def instability() -> None:
