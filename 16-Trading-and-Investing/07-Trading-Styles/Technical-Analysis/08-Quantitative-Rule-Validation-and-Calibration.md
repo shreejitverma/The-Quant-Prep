@@ -100,24 +100,24 @@ A trader who predicts $99\%$ confidence on a coin toss that happens to win is un
 
 ```
 +---------------------------------------------------------------------------------+
-|                       PROBABILITY CALIBRATION CURVE (RELIABILITY)               |
+|                   PROBABILITY CALIBRATION CURVE (RELIABILITY)                   |
 +---------------------------------------------------------------------------------+
 |  Observed Relative Frequency                                                    |
-|  1.0 |                                                     / (Perfect Line)     |
-|      |                                                 *  /                     |
-|  0.8 |                                               *   /                      |
-|      |                                             *    /                       |
-|  0.6 |                                           *     /                        |
-|      |                                         *      /                         |
-|  0.4 |                                       *       /                          |
-|      |                                     *        /                           |
-|  0.2 |                                   *         /                            |
-|      |                           *      /                                       |
-|  0.0 |__________________________*______/__________________________              |
+|  1.0 |                                             (Perfect Line) /             |
+|      |                                                      /                   |
+|  0.8 |                                                /           *             |
+|      |                                          /           *                   |
+|  0.6 |                                    /           *                         |
+|      |                              /     *     *                               |
+|  0.4 |                        /     *                                           |
+|      |                  /     *                                                 |
+|  0.2 |            /     *                                                       |
+|      |      /                                                                   |
+|  0.0 |/____________________________________________________________             |
 |      0.0   0.1   0.2   0.3   0.4   0.5   0.6   0.7   0.8   0.9   1.0            |
-|                       Forecasted Probability Bin                                |
+|                            Forecasted Probability Bin                           |
 +---------------------------------------------------------------------------------+
-|  Overconfidence curve (*, illustrative): an 80% forecast comes true only 60%    |
+|  Over-forecasting curve (*, illustrative): an 80% forecast comes true only 60%  |
 |  of the time. ECE = weighted average vertical gap to the 45 degree line.        |
 +---------------------------------------------------------------------------------+
 ```
@@ -210,7 +210,7 @@ A quantitative analyst evaluates $1,000$ machine learning breakout forecasts acr
 
 2. **Compute Expected Calibration Error**:
    $$\text{ECE} = 0.020 + 0.040 + 0.040 = 0.100 = 10.0\%$$
-   Every bucket is overconfident, so the signed gap is also $10$ percentage points: the mean forecast is $0.49$ against an observed frequency of $0.39$.
+   Every bucket over-forecasts, so the signed gap is also $10$ percentage points: the mean forecast is $0.49$ against an observed frequency of $0.39$.
    Platt scaling or isotonic regression, fitted on held-out data, is the standard fix.
 
 ---

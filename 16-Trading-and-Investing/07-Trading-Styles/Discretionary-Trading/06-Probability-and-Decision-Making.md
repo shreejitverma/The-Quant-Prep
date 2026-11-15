@@ -39,9 +39,9 @@ $$E = (W \times \bar{R}_w) - (L \times |\bar{R}_l|)$$
 For a trade setup to have statistical edge, its Expectancy must be strictly positive: $E > 0$.
 
 ```
-+-----------------------------------------------------------------------+
-|                    EXPECTANCY MATRIX (WIN RATE VS PAYOFF)             |
-+-----------------------------------------------------------------------+
++---------------------------------------------------------------------------+
+|                   EXPECTANCY MATRIX (WIN RATE VS PAYOFF)                  |
++---------------------------------------------------------------------------+
 | Win Rate (W) | Avg Win (R) | Avg Loss (R) | Expectancy (E) | Break-even W |
 |--------------+-------------+--------------+----------------+--------------|
 | 30% (Trend)  | 4.0R        | 1.0R         | +0.50R         | 20.00%       |
@@ -49,7 +49,7 @@ For a trade setup to have statistical edge, its Expectancy must be strictly posi
 | 50% (Equiv)  | 1.5R        | 1.0R         | +0.25R         | 40.00%       |
 | 70% (Scalp)  | 0.5R        | 1.0R         | +0.05R         | 66.67%       |
 | 90% (Option) | 0.1R        | 1.5R         | -0.06R         | 93.75%       |
-+-----------------------------------------------------------------------+
++---------------------------------------------------------------------------+
 ```
 
 The rows are hypothetical; the last column is the win rate at which each payoff pair breaks even, $|\bar{R}_l| / (\bar{R}_w + |\bar{R}_l|)$, and the margin between it and the actual win rate shows how fragile each edge is.
@@ -78,7 +78,7 @@ The term $\frac{1}{2}\sigma^2$ is known as **Variance Drag** or **Volatility Dra
 |                                                                       |
 | Sequence C: Extreme Return (+100%, -50%)                              |
 | Arithmetic Return = (+100% - 50%) / 2 = +25.0%                        |
-| Final Wealth = 1.00 * 2.00 * 0.50 = 1.000 (0.0% Break-even)          |
+| Final Wealth = 1.00 * 2.00 * 0.50 = 1.000 (0.0% Break-even)           |
 +-----------------------------------------------------------------------+
 ```
 
@@ -123,7 +123,7 @@ $$f^* = 0.60 - 0.40 = 0.20 \quad (20\% \text{ of equity})$$
 |       |     *       *                    *                            |
 |       |   *                                *                          |
 |   ----+--------------------------------------+--------------------> f |
-|   0.0 |                                      | ~2*f* (Zero Growth)   |
+|   0.0 |                                      | ~2*f* (Zero Growth)    |
 |       v                                      v                        |
 +-----------------------------------------------------------------------+
 ```

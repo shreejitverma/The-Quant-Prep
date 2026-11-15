@@ -17,6 +17,7 @@ Run it with `python 16-Trading-and-Investing/code/mkt_trd_05_psychology.py`.
 from __future__ import annotations
 
 import math
+from decimal import Decimal, localcontext
 from fractions import Fraction
 
 import numpy as np
@@ -33,14 +34,22 @@ def check(label: str, value: float, expected: str) -> None:
 
 
 def prospect_values() -> None:
-    alpha, lam, x = 0.88, 2.25, 1000.0
-    gain = math.exp(alpha * math.log(x))
-    loss = -lam * math.exp(alpha * math.log(x))
-    assert abs(gain - x**alpha) < 1e-9 and abs(loss + lam * x**alpha) < 1e-9
+    alpha, beta, lam, x = 0.88, 0.88, 2.25, 1000.0
+    x_loss = -x
+    gain = x**alpha
+    loss = -lam * (-x_loss) ** beta
+    with localcontext() as ctx:
+        ctx.prec = 40
+        gain_dec = Decimal(10) ** (3 * Decimal("0.88"))
+        loss_dec = -Decimal("2.25") * Decimal(10) ** (3 * Decimal("0.88"))
+    assert abs(gain - float(gain_dec)) < 1e-9 and abs(loss - float(loss_dec)) < 1e-9
     check("V(1,000)", gain, "436.5")
     check("V(-1,000)", loss, "-982.2")
     # With alpha = beta the ratio is lambda by definition, so it is printed as a cited constant, not asserted.
     print(f"cited: loss-aversion coefficient lambda = {lam} (Tversky and Kahneman 1992)")
+    print(f"cited: curvature alpha = beta = {alpha} (Tversky and Kahneman 1992)")
+    print("cited: Odean (1998) 10,000 discount-brokerage accounts, 1987-1993")
+    print("input: equity-curve filter moving average = 20 trades; Example 1 = 100 trades at a 50% win rate")
 
 
 def disposition(rng: np.random.Generator) -> None:
@@ -55,11 +64,13 @@ def disposition(rng: np.random.Generator) -> None:
         sample = np.where(wins, float(win), float(loss))
         se = sample.std(ddof=1) / math.sqrt(n)
         assert abs(sample.mean() - float(ev)) < 5 * se, (name, sample.mean(), float(ev), se)
+        check(f"win term, {name} (R)", float(half * win), {"disciplined": "1.0", "distorted": "0.5"}[name])
         check(f"loss term, {name} (R)", float(half * loss), {"disciplined": "-0.50", "distorted": "-0.90"}[name])
         check(f"expected R per trade, {name}", float(ev), quoted[name][0])
         check(f"expected R over 100 trades, {name}", float(100 * ev), quoted[name][1])
         totals[name] = 100 * ev
     check("swing over 100 trades (R)", float(totals["disciplined"] - totals["distorted"]), "90")
+    check("disciplined total over 100 trades, one decimal (R)", float(totals["disciplined"]), "50.0")
 
 
 def equity_curve_filter(rng: np.random.Generator) -> None:

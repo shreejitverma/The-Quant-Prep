@@ -84,6 +84,10 @@ def value_area() -> None:
     blo, bhi, bv = brute_force(VOLUME, target)
     assert (blo, bhi, bv) == (lo, hi, v), "single-level rule should give the narrowest range here"
     lo2, hi2, v2, steps2 = expand(VOLUME, target, rows=2)
+    vol_at = dict(zip(LEVELS, VOLUME, strict=True))
+    check("two-row pair above (120 + 125)", vol_at[120] + vol_at[125], "12,000")
+    check("two-row pair below (110 + 105)", vol_at[110] + vol_at[105], "10,000")
+    check("two-row level above after the pair (130)", vol_at[130], "2,000")
     check("two-row step 1 running volume", steps2[1], "27,000")
     check("two-row running volume at stop", v2, "37,000")
     check("two-row VAL", LEVELS[lo2], "105")
@@ -131,6 +135,9 @@ def anchored_vwap() -> None:
     weighted_var = sum(v * (float(p) - float(avwap)) ** 2 for p, v in zip(prices, volumes, strict=True)) / sum(volumes)
     assert abs(weighted_var - per_share.var()) < 1e-9, "band sigma must equal the per-share standard deviation"
     print(f"volume-weighted sigma since anchor = {math.sqrt(weighted_var):.4f}")
+    print("cited: Example 2 pullback level $203.00 (hypothetical input, near the anchored VWAP)")
+    print("cited: Market Profile conventions, 30-minute TPO brackets, the '80% Rule' (a name, not a tested probability)")
+    print("cited: 24-hour electronic sessions; Market Profile chart price ladder 101.00 to 104.50 is illustrative")
 
 
 if __name__ == "__main__":

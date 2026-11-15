@@ -231,7 +231,8 @@ Correlation $\rho = 0.90$, which with $\beta = 1.35$ implies the stock's volatil
 
 > [!question]- mkt-pqt-100 | What role does the parameter gamma play in the Avellaneda-Stoikov framework?
 > Gamma represents the market maker's constant absolute risk aversion (CARA) parameter.
-> Higher gamma increases the inventory penalty, forcing faster quote skewing and wider defensive spreads.
+> Higher gamma raises the inventory term gamma * sigma^2 * (T - t) and the reservation-price skew per unit of inventory, but shrinks the liquidity term (2 / gamma) * ln(1 + gamma / kappa), so the total spread need not widen.
+> With Example 1's sigma^2 = 0.25, T - t = 1 and kappa = 1.5 the spread narrows from 1.3241 at gamma = 0.05 to 1.2717 at gamma = 1.0.
 
 > [!question]- mkt-pqt-101 | What role does kappa play in the Avellaneda-Stoikov model?
 > Kappa measures the price sensitivity of order arrivals: lambda(delta) = A * exp(-kappa * delta).

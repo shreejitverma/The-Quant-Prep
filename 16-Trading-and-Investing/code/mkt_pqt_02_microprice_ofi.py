@@ -40,9 +40,14 @@ def example_1() -> None:
     micro = (qb * pa + qa * pb) / (qb + qa)
     rounded("quoted mid", mid, "50.0100")
     rounded("imbalance I", imbalance, "0.60")
+    rounded("quoted spread", pa - pb, "0.02")
+    rounded("I x half-spread", imbalance * (pa - pb) / 2, "0.0060")
     rounded("microprice", micro, "50.0160")
     rounded("microprice minus mid (cents)", (micro - mid) * 100, "0.6")
     assert micro == Fraction("50.016")
+    rounded("skewed bid one tick above the bid", pb + Fraction(1, 100), "50.01")
+    print("    cited: one tick = $0.01; Rule 612 increments $0.01 (>= $1.00), $0.0001 (< $1.00), 2024 amendment $0.005")
+    print("    cited: $0.015 time-weighted average quoted spread threshold for the $0.005 increment")
 
 
 def snapshot_ofi(prev: tuple, cur: tuple) -> float:
@@ -64,6 +69,10 @@ def example_2() -> None:
     ]
     sign = {"limit": +1, "limit_improve": +1, "market_buy": +1}
     ofi_events = [sum(sign[k] * s for _, k, s in step) for step in events]
+    (pb0, qb0, pa0, qa0), (pb1_, qb1_, pa1_, qa1_) = snaps[0], snaps[1]
+    assert pb1_ == pb0 and pa1_ == pa0
+    rounded("e_b,1 = Q_b,1 - Q_b,0 (bid unchanged)", qb1_ - qb0, "400")
+    rounded("e_a,1 = Q_a,1 - Q_a,0 (ask unchanged)", qa1_ - qa0, "0")
     rounded("OFI_1, snapshot formula", ofi[0], "400")
     rounded("OFI_1, events", ofi_events[0], "400")
     rounded("OFI_2, snapshot formula", ofi[1], "700")

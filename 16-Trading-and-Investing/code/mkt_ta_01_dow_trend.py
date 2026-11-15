@@ -98,6 +98,8 @@ if __name__ == "__main__":
         "Lo-Mamaysky-Wang sample": "US stocks 1962-1996, 10 patterns",
         "Brown-Goetzmann-Kumar Hamilton period": "1902-1929",
         "Rhea secondary reaction": "retraces 33% to 66%, lasts three weeks to three months",
+        "Example 2 March retracements (hypothetical inputs)": "DJIA 36,800, DJTA 15,200",
+        "Wilder ATR default period": "14",
     }
     for key, val in cited.items():
         print(f"cited: {key} = {val}")

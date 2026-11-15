@@ -59,7 +59,13 @@ def expectancy_matrix() -> None:
         assert abs(be - float(loss / (win + loss))) < 1e-12
         check(f"expectancy at {name} (R)", float(e), e_lit)
         check(f"break-even win rate at {name} payoffs (%)", 100 * be, be_lit)
+    check("card 003 win term (R)", float(Fraction(4, 10) * 3), "1.2")
+    check("card 003 loss term (R)", float(Fraction(6, 10) * 1), "0.6")
     check("card 003 EV (R)", float(Fraction(4, 10) * 3 - Fraction(6, 10) * 1), "0.60")
+    capital = Fraction(100)
+    after_loss = capital * (1 - Fraction(1, 2))
+    check("card 005 capital after a 50% loss ($)", float(after_loss), "50")
+    check("card 005 gain needed to return to $100 (%)", float(100 * (capital / after_loss - 1)), "100")
     be5 = bisect(lambda p: 5 * p - (1 - p), 0.0, 1.0)
     check("card 015 break-even at 5R (%)", 100 * be5, "16.7")
     check("card 015 EV at 20% win rate (R)", float(Fraction(1, 5) * 5 - Fraction(4, 5)), "0.20")
@@ -85,6 +91,10 @@ def variance_drag() -> None:
         results[name] = (mean, var, geo)
         check(f"sequence {name} final wealth", wealth, quoted_wealth[name])
     check("sequence A total return (%)", 100 * (1.10 * 1.10 - 1), "21.0")
+    check("sequence A arithmetic mean (%)", 100 * results["A"][0], "10.0")
+    check("sequence A variance", results["A"][1], "0.0")
+    check("sequence B total return (%)", 100 * (1.50 * 0.70 - 1), "5.0")
+    check("sequence C total return (%)", 100 * (2.00 * 0.50 - 1), "0.0")
     check("sequence B arithmetic mean (%)", 100 * results["B"][0], "10.0")
     check("sequence B half variance", results["B"][1] / 2, "0.08")
     check("sequence C arithmetic mean (%)", 100 * results["C"][0], "25.0")
@@ -142,6 +152,7 @@ def growth_ledger(wins: int, losses: int, f: float) -> float:
 def kelly() -> None:
     p = 0.60
     check("Kelly fraction 2p - 1", 2 * p - 1, "0.20")
+    check("Kelly fraction (% of equity)", 100 * (2 * p - 1), "20")
     check("g(0.20) from a 60/40 ledger", growth_ledger(60, 40, 0.20), "0.0201")
     check("0.60 ln(1.40)", p * math.log(1.40), "0.2019")
     check("0.40 |ln(0.60)|", -(1 - p) * math.log(0.60), "0.2043")

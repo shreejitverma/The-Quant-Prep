@@ -44,6 +44,7 @@ def sizing() -> None:
     # Example 1: price 80, volatility 30%.
     notional = sleeve * target / 0.30
     check("vol scalar 0.12 / 0.30", target / 0.30, "0.40")
+    check("notional as a share of the allocation, percent", 100 * target / 0.30, "40")
     check("target notional at 30% vol", notional, "200,000.00")
     check("contract notional at $80", 80 * multiplier, "80,000.00")
     contracts = notional / (80 * multiplier)
@@ -99,6 +100,7 @@ def ewma_centre_of_mass() -> None:
         assert abs(com - delta / (1 - delta)) < 1e-6
         check(f"centre of mass of EWMA weights, delta = {delta:.5f}, days", com, quoted)
     check("delta for a 60-day centre of mass (60 / 61)", 60 / 61, "0.9836")
+    check("RiskMetrics 1 - lambda", 1 - 0.94, "0.06")
 
 
 def trend_t_identity(rng: np.random.Generator) -> None:
@@ -124,6 +126,11 @@ def cited_counts() -> None:
     check("years in 1880 to 2016 inclusive", 2016 - 1880 + 1, "137")
     check("years in the MOP strategy sample, 1985 to 2009 inclusive", 2009 - 1985 + 1, "25")
     print("cited: MOP 52 of 58 significant at 5%, TSMOM alpha on XSMOM t = 5.90; HOP 10% vol target, 2-and-20 fees")
+    print("cited: MOP diversified TSMOM alpha over cross-sectional momentum 76 bp a month (t = 5.90)")
+    print("cited: HOP positive in 8 of the 10 largest US 60/40 drawdowns since 1880, which lasted about 15 months on average")
+    print("cited: HOP gross Sharpe ratio per market about 0.4")
+    print("cited: Lemperiere et al. (2014) trend t-statistic about 5 since 1960 and about 10 since 1800")
+    print("cited: trailing 12-month crude oil return +35.0% (Example 1 input), US portfolio 60/40, S&P 500")
 
 
 if __name__ == "__main__":

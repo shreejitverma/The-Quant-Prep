@@ -59,6 +59,7 @@ def example_1_ledger() -> None:
     per_trade_formula = 2 * (spread / 2) * shares + slippage * shares + fees
     check("round trips per year", trips, "1,260")
     check("gross market value", shares * mid, "50,000")
+    check("leverage (gross market value / equity)", shares * mid / equity, "2")
     check("spread cost per round trip", 2 * (spread / 2) * shares, "10.00")
     check("slippage cost per round trip", slippage * shares, "5.00")
     check("friction per round trip, ledger", -cash / trips, "16.50")
@@ -84,6 +85,10 @@ def example_2_expectancy() -> None:
         check(f"loss term at p = {float(p)}", float(1 - p), lit_loss)
     check("break-even win rate, no friction (%)", 100 * be0, "33.33")
     check("break-even win rate, with friction (%)", 100 * be1, "35.67")
+    p_hi, p_lo = Fraction(40, 100), Fraction(35, 100)
+    check("win-rate drop from 40% to 35% (percentage points)", float(100 * (p_hi - p_lo)), "5")
+    assert e_r(float(p_hi), float(cost)) > 0 > e_r(float(p_lo), float(cost))
+    assert float(p_lo) < be1 < float(p_hi), "the friction break-even must sit inside the 5-point drop"
     for wins, quoted_e, quoted_total, quoted_dollars in ((80, "0.13", "26", "13,000"), (70, "-0.02", "-4", "-2,000")):
         trades = [win_r - cost] * wins + [Fraction(-1) - cost] * (200 - wins)
         total = sum(trades)
@@ -155,6 +160,25 @@ def cited_arithmetic() -> None:
     check("Barber-Odean top-quintile shortfall (points)", 17.9 - 11.4, "6.5")
     check("SEBI FY 2022 profitable share (%)", 100 - 89, "11")
     check("SEBI FY 2022 traders (lakh -> million)", 45.2 * 100_000 / 1e6, "4.5")
+    check("SEBI average loss per loss-maker (lakh -> rupees)", 1.1 * 100_000, "110,000")
+    check("SEBI follow-up traders (crore -> million)", 1 * 10_000_000 / 1e6, "10")
+    check("Example 1 round trips, 5 a day for 252 days", 5 * 252, "1,260")
+    print("cited: Barber-Odean (2000) households = 66,465, 1991-1996; average turnover 75% a year")
+    print("cited: Barber-Odean (2000) net returns: average 16.4%, market 17.9%, most active 11.4%")
+    print("cited: Barber-Lee-Liu-Odean (2009) Taiwan 1995-1999: losses 2.2% of GDP, 2.8% of personal income")
+    print("cited: Barber-Lee-Liu-Odean (2009) institutional gain about 1.5 points a year")
+    print("cited: Chague-De-Losso-Giovannetti (2019) 2013-2015 cohort, at least 300 days: 97% lost money")
+    print("cited: Chague-De-Losso-Giovannetti (2019) 0.4% beat USD 54 a day; best USD 310 a day, sd USD 2,560")
+    print("cited: SEBI (January 2023) FY 2022: 45.2 lakh traders, top 10 brokers, 89% loss-makers")
+    print("cited: SEBI (January 2023) average loss about 1.1 lakh, average profit about 1.5 lakh rupees")
+    print("cited: SEBI (January 2023) costs: 28% extra on losses, 15% to 50% of profits")
+    print("cited: SEBI PR 37/2024 (23 September 2024) FY 2022-FY 2024: 93% of over 1 crore lost, about 2 lakh each")
+    print("cited: India STT as of November 2026: delivery 0.1% a side, futures 0.05% of sale, options 0.15% of premium")
+    print("cited: US tax as of November 2026: top rate 37%, NIIT 3.8%, loss offset USD 3,000 (USD 1,500 separate)")
+    print("cited: FINRA Notice 26-10: old PDT rule 4 day trades in 5 business days, USD 25,000 minimum")
+    print("cited: Odean (1998) 10,000 accounts, 1987-1993; wash-sale window 30 days")
+    print("cited: Barber-Odean (2001) men traded 45% more; net return cost 2.65 points men, 1.72 points women")
+    print("input: zero-commission example order fee = 20 rupees per order (illustrative)")
 
 
 if __name__ == "__main__":

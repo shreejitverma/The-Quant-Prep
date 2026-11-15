@@ -82,6 +82,7 @@ def rsi_examples() -> None:
     rsi = wilder_rsi(prices, 14)
     avg_u, avg_d = Fraction(120, 100), Fraction(40, 100)
     check("RS = 1.20 / 0.40", float(avg_u / avg_d), "3.00")
+    check("100 / (1 + RS)", float(Fraction(100) / (1 + avg_u / avg_d)), "25.00")
     check("RSI from the hand formula 100 - 100 / (1 + RS)", float(100 - Fraction(100) / (1 + avg_u / avg_d)), "75.00")
     check("RSI from the generic Wilder implementation, day 14", rsi[0], "75.00")
     next_u = (13 * avg_u + 1) / 14
@@ -138,7 +139,12 @@ def expected_max_normal(n: int) -> float:
 
 
 def deflated_sharpe(rng: np.random.Generator) -> None:
-    n_trials, t_obs = 500, 1260
+    n_trials, years, var_sr = 500, 5, 0.25
+    t_obs = years * 252
+    check("T = 5 years x 252 days", t_obs, "1,260")
+    check("T - 1", t_obs - 1, "1,259")
+    sigma_sr = math.sqrt(var_sr)
+    check("sigma_SR = sqrt(0.25)", sigma_sr, "0.50")
     z1 = phi_inv(1 - 1 / n_trials)
     z2 = phi_inv(1 - 1 / (n_trials * math.e))
     check("Phi^-1(1 - 1/500)", z1, "2.8782")
@@ -151,7 +157,7 @@ def deflated_sharpe(rng: np.random.Generator) -> None:
     assert abs(sims.mean() - exact) < 5 * se, f"simulated max {sims.mean()} vs quadrature {exact}"
     check("exact E[max of 500 standard normals] by quadrature", exact, "3.04")
     print(f"simulated E[max of 500] (seed {SEED}) = {sims.mean():.4f} +/- {se:.4f}")
-    sr_star_ann = 0.50 * approx
+    sr_star_ann = sigma_sr * approx
     check("SR* annualized = 0.50 x 3.0525", sr_star_ann, "1.526")
     check("SR* annualized, rounded", sr_star_ann, "1.53")
     sr_star = sr_star_ann / math.sqrt(252)
@@ -159,6 +165,7 @@ def deflated_sharpe(rng: np.random.Generator) -> None:
     check("daily SR* = 1.526 / sqrt(252)", sr_star, "0.0961")
     check("daily SR-hat = 1.40 / sqrt(252)", sr_hat, "0.0882")
     g3, g4 = -0.60, 4.50 + 3.0
+    check("raw kurtosis = 4.50 + 3", g4, "7.50")
     denom = math.sqrt(1 - g3 * sr_hat + (g4 - 1) / 4 * sr_hat**2)
     check("DSR denominator", denom, "1.0323")
     stat = (sr_hat - sr_star) * math.sqrt(t_obs - 1) / denom
@@ -166,6 +173,8 @@ def deflated_sharpe(rng: np.random.Generator) -> None:
     dsr = phi_cdf_quad(stat)
     assert abs(dsr - phi_cdf(stat)) < 1e-8
     check("DSR = Phi(statistic)", dsr, "0.39")
+    assert dsr < 0.95
+    check("Euler-Mascheroni constant", EULER_GAMMA, "0.5772")
     # The denominator is the standard error of a Sharpe estimate; for normal returns the (g4 - 1) / 4 term is 1/2.
     sr_true, t_sim = 0.0882, 1260
     rets = rng.normal(sr_true, 1.0, size=(20_000, t_sim))
@@ -175,6 +184,21 @@ def deflated_sharpe(rng: np.random.Generator) -> None:
     sd_se = sd / math.sqrt(2 * (est.size - 1))
     assert abs(sd - formula_sd) < 5 * sd_se, f"simulated SD of SR-hat {sd} vs formula {formula_sd}"
     print(f"SD of daily SR estimates for normal returns, simulated {sd:.5f} vs formula {formula_sd:.5f}")
+
+
+def cited_conventions() -> None:
+    check("hypothetical rally from 100 to 140, percent", 100 * (140 / 100 - 1), "40")
+    conventions = {
+        "RSI oversold / overbought lines": (30, 70),
+        "practitioner bull-market RSI band": (40, 80),
+        "MACD fast / slow EMA lengths (days)": (12, 26),
+        "practitioner ADX filter threshold": 25,
+        "fragile lookback change (illustrative)": (14, 15),
+        "stable lookback plateau (illustrative)": (12, 18),
+        "DSR confidence level (percent)": 95,
+    }
+    for key, value in conventions.items():
+        print(f"cited: {key} = {value}")
 
 
 def cci_scaling(rng: np.random.Generator) -> None:
@@ -196,4 +220,5 @@ if __name__ == "__main__":
     multiple_testing()
     deflated_sharpe(rng)
     cci_scaling(rng)
+    cited_conventions()
     print("all oscillator and multiple-testing numbers check out")

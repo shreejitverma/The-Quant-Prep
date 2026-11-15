@@ -90,6 +90,12 @@ def kelly_example(rng: np.random.Generator) -> None:
     check("zero-growth crossing", cross, "0.331")
     check("crossing / f*", cross / f_star, "2.07")
     check("continuous share of max growth at half Kelly (%)", 100 * (2 * 0.5 - 0.5**2), "75")
+
+    def trade_variance(f: float) -> float:
+        mean = p * b * f - (1 - p) * f
+        return p * (b * f - mean) ** 2 + (1 - p) * (-f - mean) ** 2
+
+    check("half Kelly variance / full Kelly variance (%)", 100 * trade_variance(0.08) / trade_variance(0.16), "25")
     # Each ln term and weighted term quoted in the worked example.
     terms = {
         0.16: ("0.3365", "-0.1744", "0.1346", "0.1046"),
@@ -187,7 +193,9 @@ def recovery_table() -> None:
 
 
 def atr_example() -> None:
-    budget, entry, atr = 1500, 150.00, 3.50
+    equity, risk_pct, entry, atr = 100_000, 1.5, 150.00, 3.50
+    budget = equity * risk_pct / 100
+    check("risk budget, 1.5% of 100,000", budget, "1,500")
     stop = entry - 2 * atr
     check("stop price", stop, "143.00")
     check("stop distance", entry - stop, "7.00")
@@ -198,7 +206,9 @@ def atr_example() -> None:
     check("position value", shares * entry, "32,100")
     check("position share of equity (%)", 100 * shares * entry / 100_000, "32.1")
     check("dollar risk at the stop", shares * (entry - stop), "1,498.00")
+    check("gap loss per share (open at 130)", entry - 130.00, "20")
     check("gap loss in R (open at 130)", (entry - 130.00) / (entry - stop), "2.86")
+    print("input: worst-case gap example = 20%; ATR period = 14")
     check("static sizing risk, $20 stock, $0.50 stop", 1000 * 0.50, "500")
     check("static sizing risk, $400 stock, $10 stop", 1000 * 10, "10,000")
     check("five correlated 1.5% risks (%)", 5 * 1.5, "7.5")
@@ -235,6 +245,13 @@ def cards() -> None:
     w = np.array([0.5, 0.5])
     check("equal-weight vol of two uncorrelated assets / sigma", math.sqrt(w @ cov @ w), "0.707")
     check("break-even win rate at 2R (%)", float(100 * Fraction(1, 3)), "33.3")
+    for w in (Fraction(35, 100), Fraction(45, 100)):
+        assert w * 2 - (1 - w) > 0, "card 053: 35% to 45% at 2R must be profitable before costs"
+    for d, lit in ((Fraction(1, 10), "11.1"), (Fraction(1, 5), "25"), (Fraction(1, 2), "100")):
+        check(f"card 064 recovery after a {float(100 * d):.0f}% drawdown (%)", float(100 * (1 / (1 - d) - 1)), lit)
+    print("cited: US market-wide circuit breakers: 7% (Level 1) and 13% (Level 2) halt 15 minutes before 3:25 pm")
+    print("cited: Level 3 at 20% halts for the day (NYSE Rule 7.12); LULD single-stock pauses (NYSE Rule 7.11), 2013")
+    print("input: hypothetical ADV participation cap = 1%; accounting-stop examples USD 500 and 2%")
 
 
 if __name__ == "__main__":

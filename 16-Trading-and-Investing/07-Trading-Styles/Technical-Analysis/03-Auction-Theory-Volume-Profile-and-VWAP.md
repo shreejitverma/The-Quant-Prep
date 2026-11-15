@@ -145,10 +145,10 @@ where $P_i$ is the typical price $\frac{H_i + L_i + C_i}{3}$ and $V_i$ is the vo
 |  1. Berkowitz, Logue, and Noser (1988, Journal of Finance):                     |
 |     - Proposed VWAP as a benchmark for measuring institutional execution        |
 |       cost, the basis of modern transaction cost analysis (TCA).                |
-|  2. Jain and Joh (1988, JFQA); Admati and Pfleiderer (1988, RFS):              |
+|  2. Jain and Joh (1988, JFQA); Admati and Pfleiderer (1988, RFS):               |
 |     - Intraday NYSE volume is higher near the open and close (U-shape);         |
 |       Admati-Pfleiderer model why discretionary trading concentrates.           |
-|     - VWAP schedules follow this profile; they do not create it.               |
+|     - VWAP schedules follow this profile; they do not create it.                |
 |  3. Steidlmayer and Koy (1986, Markets and Market Logic):                       |
 |     - The original statement of Market Profile and its rotation rules; a        |
 |       method book, not a statistical test.                                      |
@@ -158,8 +158,8 @@ where $P_i$ is the typical price $\frac{H_i + L_i + C_i}{3}$ and $V_i$ is the vo
 |     - On trend days (initiative auction), fading the +2 sigma VWAP band loses   |
 |       as price keeps extending; the bands are not confidence intervals.         |
 |  2. Profile Subjectivity in Non-Clearing Windows:                               |
-|     - 24-hour electronic markets (crypto, FX, Globex) blur traditional RTH session |
-|       boundaries, requiring adaptive session filtering.                         |
+|     - 24-hour electronic markets (crypto, FX, Globex) blur traditional RTH      |
+|       session boundaries, requiring adaptive session filtering.                 |
 +---------------------------------------------------------------------------------+
 ```
 

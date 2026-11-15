@@ -85,7 +85,8 @@ Where:
 - **Adverse Selection (inside inventory PnL)**:
   Split each fill's inventory PnL at a post-trade horizon $\tau$:
   $$\text{PnL}_{\text{inv}} = \underbrace{\sum_{i} n_i \, (S_{t_i + \tau} - S_{t_i})}_{-\text{Adverse Selection}(\tau)} + \underbrace{\sum_{i} n_i \, (S_T - S_{t_i + \tau})}_{\text{later drift}}$$
-  The first sum is the short-horizon markout; it is negative when the desk trades against informed flow.
+  The first sum is the mid-to-mid adverse selection component; it is negative when the desk trades against informed flow.
+  Adding each fill's spread capture $n_i (S_{t_i} - P_i)$ to its adverse selection component gives the fill-price markout of Section 3.
   Reporting adverse selection as a separate cost is fine only if the later drift is reported next to it, otherwise the same mid moves are counted twice.
 - **Rebates and Fees**:
   Exchange access fees paid on aggressive fills and liquidity rebates earned on passive fills.
@@ -138,8 +139,9 @@ The position is marked at $t = 40\text{s}$, immediately after Trade 3, at the $\
 - Gross Spread Capture: $+\$20.00 + \$20.00 - \$20.00 = +\$20.00$.
 - Net Exchange Fees: $+\$2.00 + \$2.00 - \$3.00 = +\$1.00$.
 - Inventory Drift: the long 1,000 shares was held from mid $\$100.00$ (Trade 1) to mid $\$100.00$ (Trade 2), so $1,000 \times (\$100.00 - \$100.00) = \$0.00$.
-- Adverse Selection split of that $\$0.00$ at $\tau = 1\text{s}$: the one-second markouts are $-\$40.00$ (Trade 1), $\$0.00$ (Trade 2) and $\$0.00$ (Trade 3, marked at once), and the later drift is $+1,000 \times (\$99.97 - \$99.96) - 1,000 \times (\$99.97 - \$100.00) = +\$10.00 + \$30.00 = +\$40.00$.
+- Adverse Selection split of that $\$0.00$ at $\tau = 1\text{s}$: the one-second adverse selection components are $-\$40.00$ (Trade 1), $\$0.00$ (Trade 2) and $\$0.00$ (Trade 3, marked at once), and the later drift is $+1,000 \times (\$99.97 - \$99.96) - 1,000 \times (\$99.97 - \$100.00) = +\$10.00 + \$30.00 = +\$40.00$.
   The $-\$40.00$ of adverse selection reversed before the position was closed, so here it is a toxicity diagnostic, not a realized loss.
+  Adding each fill's spread capture gives the one-second fill-price markouts of Section 3: $-\$20.00$ (Trade 1), $+\$20.00$ (Trade 2) and $-\$20.00$ (Trade 3).
 - Cash from trades: $-\$99,980 + \$100,020 + \$99,950 = +\$99,990$.
 - Inventory: initial 0, final $0 + 1,000 - 1,000 - 1,000 = -1,000$ shares.
 - Mark-to-Market PnL at the $\$99.97$ mid: $+\$99,990 - 1,000 \times \$99.97 + \$1.00 = +\$21.00$.

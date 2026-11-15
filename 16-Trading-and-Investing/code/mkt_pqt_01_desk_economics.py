@@ -4,7 +4,7 @@ Backs every number in
 `16-Trading-and-Investing/07-Trading-Styles/Quant-Prop-Trading/01-Desk-Roles-and-Economics.md`.
 Independent routes used here:
 - Example 1 total PnL from a cash-and-inventory ledger (cash flows plus the final inventory marked at the
-  mid), against the sum of the attribution terms (spread capture, one-second markouts, later drift, fees)
+  mid), against the sum of the attribution terms (spread capture, one-second adverse selection components, later drift, fees)
   computed from the mid path; the two routes share only the inputs;
 - the attribution identity PnL = spread + inventory PnL + fees on 2,000 random sessions with random fills
   and a random mid path, where inventory PnL is accumulated step by step as q_t * dS_t (not from the
@@ -45,6 +45,8 @@ def example_1() -> None:
     fees = sum(abs(n) * (rebate if passive else -taker) for _, n, _, _, passive in fills)
     inventory = sum(n for _, n, _, _, _ in fills)
     ledger_pnl = cash + inventory * s_mark + fees
+    for i, (lit, (_, n, p, _, _)) in enumerate(zip(("-99,980.00", "100,020.00", "99,950.00"), fills, strict=True), 1):
+        rounded(f"cash leg, trade {i}", -n * p, lit)
     rounded("cash from trades", cash, "99,990.00")
     rounded("final inventory (shares)", inventory, "-1,000")
     rounded("net fees and rebates", fees, "1.00")
@@ -59,16 +61,21 @@ def example_1() -> None:
         markouts.append(n * (mid_path[t_tau] - s))
         later.append(n * (s_mark - mid_path[t_tau]))
     for i, m in enumerate(markouts, 1):
-        print(f"    one-second markout, trade {i} = {m + 0.0:.2f}")
+        print(f"    one-second adverse selection component, trade {i} = {m + 0.0:.2f}")
     assert [round(m, 6) for m in markouts] == [-40.0, 0.0, 0.0]
-    rounded("adverse selection markout total", sum(markouts), "-40.00")
+    rounded("adverse selection component total", sum(markouts), "-40.00")
+    for i, (lit, (t, n, p, s, _), adverse) in enumerate(zip(("-20.00", "20.00", "-20.00"), fills, markouts, strict=True), 1):
+        fill_markout = n * (mid_path[min(t + tau, t_mark)] - p)
+        rounded(f"one-second fill-price markout, trade {i}", fill_markout, lit)
+        assert abs(fill_markout - (n * (s - p) + adverse)) < 1e-9
     rounded("later drift total", sum(later), "40.00")
     rounded("later drift, trade 1", later[0], "10.00")
     rounded("later drift, trade 2", later[1], "30.00")
     inventory_pnl = sum(markouts) + sum(later)
-    rounded("inventory drift (markout + later drift)", inventory_pnl, "0.00")
+    rounded("inventory drift (adverse selection + later drift)", inventory_pnl, "0.00")
     rounded("gross spread capture", spread, "20.00")
     rounded("spread capture, trade 1", fills[0][1] * (fills[0][3] - fills[0][2]), "20.00")
+    rounded("spread capture, trade 2", fills[1][1] * (fills[1][3] - fills[1][2]), "20.00")
     rounded("spread cost, trade 3", fills[2][1] * (fills[2][3] - fills[2][2]), "-20.00")
     rounded("mark-to-market PnL, attribution", spread + inventory_pnl + fees, "21.00")
     round_trip = sum(-n * p for _, n, p, _, _ in fills[:2]) + 2 * 1000 * rebate
@@ -112,6 +119,7 @@ def example_2(rng: np.random.Generator) -> None:
     mu = pnl / equity
     sig = sd_d * n.sqrt()
     down = down_d * n.sqrt()
+    print(f"    input: equity $5,000,000, GMV $20,000,000, PnL ${pnl:,}, daily sd 0.75%, downside sd {down_d * 100:.2f}%")
     rounded("leverage (GMV / equity)", 20_000_000 / 5_000_000, "4")
     rounded("annual return (%)", mu * 100, "30.0")
     rounded("drawdown on equity (%)", dd / equity * 100, "5.0")
@@ -133,9 +141,20 @@ def example_2(rng: np.random.Generator) -> None:
     assert abs(sd_sim - float(sig)) < 5 * se
 
 
+def cards() -> None:
+    print("Cards")
+    print("    cited: Rule 610(c) access-fee cap $0.003 per share; 2024 amendment $0.001 (Release 34-101070)")
+    print("    cited: IEX speed bump 350 microseconds")
+    sizes = np.array([1.0, 2.0, 4.0, 8.0])
+    total_cost = sizes * np.sqrt(sizes)
+    slope = np.polyfit(np.log(sizes), np.log(total_cost), 1)[0]
+    rounded("square-root impact: exponent of total liquidation cost in size", slope, "1.5")
+
+
 if __name__ == "__main__":
     rng = np.random.default_rng(SEED)
     example_1()
     attribution_identity(rng)
     example_2(rng)
+    cards()
     print("all desk-economics numbers check out")

@@ -95,6 +95,8 @@ def head_and_shoulders_example() -> None:
 def double_bottom_example() -> None:
     e1, e2, e3 = Fraction(100), Fraction(115), Fraction("100.50")
     mismatch = abs(e1 - e3) / e1
+    check("double-bottom trough gap ($)", float(abs(e1 - e3)), "0.50")
+    check("double-bottom trough mismatch (ratio)", float(mismatch), "0.005")
     check("double-bottom trough mismatch (%)", float(100 * mismatch), "0.5")
     assert mismatch <= Fraction(2, 100)
     breakout = Fraction(116)

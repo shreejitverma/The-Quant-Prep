@@ -63,11 +63,11 @@ The $12-1$ window below is the later convention used for the UMD factor and by C
 |                         CROSS-SECTIONAL MOMENTUM FORMULATION                    |
 |                                                                                 |
 |  [ Month t-12 ] ------------ Lookback Window (11 Months) ------------> [ t-1 ]  |
-|                                                                        | Skip |
-|                                                                        v  1M  |
+|                                                                        | Skip | |
+|                                                                        v  1M  | |
 |  Sort Stocks by Cumulative Return ---> Long Top 10% / Short Bottom 10% [ t ]    |
 |                                                                                 |
-|  Hold Portfolio for Subsequent 3 to 12 Months (Jegadeesh-Titman horizons)      |
+|  Hold Portfolio for Subsequent 3 to 12 Months (Jegadeesh-Titman horizons)       |
 +---------------------------------------------------------------------------------+
 ```
 
@@ -123,15 +123,15 @@ Market breadth monitors the broad underlying distribution of equities to detect 
 |                       EVIDENCE LEDGER: MOMENTUM & BREADTH                       |
 +---------------------------------------------------------------------------------+
 |  Phenomenon: Cross-Sectional Momentum & Market Breadth Divergence               |
-|  Evidence Grade: STRONG for momentum, WEAK/UNTESTED for breadth timing         |
+|  Evidence Grade: STRONG for momentum, WEAK/UNTESTED for breadth timing          |
 +---------------------------------------------------------------------------------+
 |  Key Empirical Studies:                                                         |
 |  1. Jegadeesh and Titman (1993, Journal of Finance):                            |
 |     - Buying 3-12 month winners and selling losers earns significant returns    |
 |       over 3-12 month holds, not explained by systematic risk.                  |
 |  2. Asness, Moskowitz, and Pedersen (2013, Journal of Finance):                 |
-|     - "Value and Momentum Everywhere": premia in 8 markets and asset classes.  |
-|     - Value and momentum are negatively correlated, so a combination           |
+|     - "Value and Momentum Everywhere": premia in 8 markets and asset classes.   |
+|     - Value and momentum are negatively correlated, so a combination            |
 |       diversifies.                                                              |
 |  3. Daniel and Moskowitz (2016, Journal of Financial Economics):                |
 |     - "Momentum Crashes": isolated the structural left-tail risk of momentum.   |

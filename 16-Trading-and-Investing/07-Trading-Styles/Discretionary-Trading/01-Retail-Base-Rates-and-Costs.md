@@ -68,7 +68,7 @@ Studies of complete broker or exchange datasets reach the same conclusion across
    - **89%** of individual traders incurred net losses; the average loss among loss-makers was about ₹1.1 lakh (₹110,000).
    - For active traders excluding outliers, loss-makers spent an additional 28% of their net trading losses on transaction costs, and profit-makers spent between 15% and 50% of their profits on transaction costs.
    - The remaining $100\% - 89\% = 11\%$ of individual traders were net profitable, with an average profit of about ₹1.5 lakh.
-   - A follow-up study (SEBI press release 22/2024, 23 September 2024) found that 93% of more than 1 crore (10 million) individual F&O traders made losses over FY 2022 to FY 2024, averaging about ₹2 lakh per loss-maker including transaction costs.
+   - A follow-up study (SEBI press release 37/2024, 23 September 2024) found that 93% of more than 1 crore (10 million) individual F&O traders made losses over FY 2022 to FY 2024, averaging about ₹2 lakh per loss-maker including transaction costs.
 
 ### 2. The All-In Transaction Friction Waterfall
 
@@ -336,5 +336,5 @@ Round-trip execution friction is $\$35$ ($c_R = \frac{\$35}{\$500} = 0.07R$).
 - Osler, C. L. (2003). *Currency orders and exchange rate dynamics: An explanation for the predictive success of technical analysis*. The Journal of Finance, 58(5), 1791-1819.
 - Perold, A. F. (1988). *The implementation shortfall: Paper versus reality*. The Journal of Portfolio Management, 14(3), 4-9.
 - Securities and Exchange Board of India (SEBI). (2023). *Analysis of Profit and Loss of Individual Traders dealing in Equity F&O Segment* (published 25 January 2023). SEBI Research Study.
-- Securities and Exchange Board of India (SEBI). (2024). *Updated SEBI Study Reveals 93% of Individual Traders Incurred Losses in Equity F&O between FY22 and FY24*. Press Release No. 22/2024, 23 September 2024.
+- Securities and Exchange Board of India (SEBI). (2024). *Updated SEBI Study Reveals 93% of Individual Traders Incurred Losses in Equity F&O between FY22 and FY24*. Press Release No. 37/2024, 23 September 2024.
 - Thaler, R. H., & Johnson, E. J. (1990). *Gambling with the house money and trying to break even: The effects of prior outcomes on risky choice*. Management Science, 36(6), 643-660.

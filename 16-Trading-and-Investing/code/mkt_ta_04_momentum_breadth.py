@@ -62,7 +62,18 @@ def long_short() -> None:
     check("spread return per dollar long and short (%)", float(100 * spread), "26.0")
 
 
+def ranking() -> None:
+    formation = {"A": Fraction(45, 100), "B": Fraction(12, 100), "C": Fraction(-28, 100)}
+    print("cited: Example 1 inputs, 12-1 returns A +45.0%, B +12.0%, C -28.0%, benchmark +10.0%")
+    order = sorted(formation, key=formation.get, reverse=True)
+    assert order == ["A", "B", "C"], order
+    print(f"winner, middle, loser = {order}")
+    top = sum(1 for rank in range(1, 100) if rank >= 80)
+    check("share of the 1 to 99 ranks rated 80 or higher (%)", 100 * top / 99, "20")
+
+
 def breadth() -> None:
+    print("cited: Example 2 inputs, stocks above the 200-day SMA 72.0% in month 1 and 38.0% in month 3")
     check("S&P 500 change month 1 to month 3 (%)", float(100 * (Fraction(5100, 4800) - 1)), "6.25")
     check("month 1 net advances", 2_200 - 800, "1,400")
     check("A/D line change over the quarter", 96_500 - 100_000, "-3,500")
@@ -92,8 +103,14 @@ def mcclellan() -> None:
 
 if __name__ == "__main__":
     formation_window()
+    ranking()
     long_short()
     breadth()
     mcclellan()
+    print("cited: Asness, Moskowitz and Pedersen (2013) value and momentum premia in 8 markets and asset classes")
+    print("cited: De Bondt and Thaler (1985) 36-month formation and 36-month holding periods")
+    print("cited: Bernard and Thomas (1989) drift over the 60 trading days after the announcement")
+    print("cited: Moskowitz, Ooi and Pedersen (2012) 58 instruments; O'Neil RS rating 80 or higher on a 1 to 99 scale")
+    print("cited: conventions, 52-week highs and lows, 200-day SMA, 52-week Mansfield lookback")
     print("cited: Zweig breadth thrust = 10-day average of advances / (advances + declines) from below 40% to above 61.5%")
     print("all momentum and breadth numbers check out")

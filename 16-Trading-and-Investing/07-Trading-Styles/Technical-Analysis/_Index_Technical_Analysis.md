@@ -10,7 +10,7 @@ tags: [technical-analysis, price-action, momentum, evidence-based, volume-profil
 # Technical Analysis Track Index
 
 The Technical Analysis track provides an evidence-based, quantitative evaluation of price action, chart geometry, market microstructure, and momentum phenomena.
-Rather than taking technical indicators on faith, Markets Mastery OS checks every pattern, oscillator, and trend-following rule against the peer-reviewed evidence, and every number on the track's pages is asserted by a script in [`../../code/`](../../code/) (`mkt_ta_NN_*.py`).
+Rather than taking technical indicators on faith, Markets Mastery OS checks every pattern, oscillator, and trend-following rule against the peer-reviewed evidence, and every number on the track's pages is either computed and asserted or printed as a cited input by a script in [`../../code/`](../../code/) (`mkt_ta_NN_*.py`).
 Each module pairs classical chartist observations with peer-reviewed literature, establishing where genuine structural edge exists and where data-snooping bias creates illusory patterns.
 
 ---
@@ -27,7 +27,7 @@ Each module pairs classical chartist observations with peer-reviewed literature,
 
 ## Evidence Ledger Hierarchy
 
-Every technical pattern in this track carries an explicit empirical evidence grade.
+Notes 01-04 grade their main claims on the scale below; notes 05-08 weigh the evidence in prose without a grade label.
 The grades are this curriculum's own convention, defined in [Setup Taxonomy and Evidence](../Discretionary-Trading/04-Setup-Taxonomy-and-Evidence.md):
 
 - **STRONG**: Validated across multiple independent asset classes and decadal timeframes in peer-reviewed academic literature with controls for transaction costs and multiple testing.

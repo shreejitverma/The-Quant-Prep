@@ -77,7 +77,10 @@ def golden_max(f, lo: float, hi: float) -> float:
 def example_1() -> None:
     print("Example 1: Avellaneda-Stoikov quotes")
     s, gamma, sigma, tau, kappa = 100.0, 0.1, 0.5, 1.0, 1.5
+    print(f"    input: S = {s}, gamma = {gamma}, sigma = {sigma}, T - t = {tau}, kappa = {kappa}")
     rounded("sigma^2", sigma**2, "0.25")
+    rounded("2 / gamma", 2 / gamma, "20")
+    rounded("1 + gamma / kappa", 1 + gamma / kappa, "1.0667")
     rounded("ln(1 + gamma / kappa)", np.log1p(gamma / kappa), "0.06454")
     d_star = golden_max(lambda d: np.exp(-kappa * d) * (1 - np.exp(-gamma * d)), 0.0, 20.0)
     liquidity = 2 * d_star
@@ -88,8 +91,18 @@ def example_1() -> None:
     spread = risk + liquidity
     rounded("optimal total spread", spread, "1.3158")
     rounded("half-spread", spread / 2, "0.6579")
+    print("  card mkt-pqt-100: total spread across gamma at Example 1's sigma, T - t and kappa")
+    grid = {0.05: "1.3241", 0.1: "1.3158", 0.2: "1.3016", 0.5: "1.2757", 1.0: "1.2717"}
+    spreads = []
+    for g, lit in grid.items():
+        d_g = golden_max(lambda d, g=g: np.exp(-kappa * d) * (1 - np.exp(-g * d)), 0.0, 40.0)
+        s_g = g * sigma**2 * tau + 2 * d_g
+        assert abs(s_g - (g * sigma**2 * tau + 2 / g * np.log1p(g / kappa))) < 1e-6
+        rounded(f"spread at gamma = {g}", s_g, lit)
+        spreads.append(s_g)
+    assert all(a > b for a, b in zip(spreads, spreads[1:], strict=False))
     quoted = {
-        0: ("100.0000", "99.3421", "100.6579"),
+        0: ("100.00", "99.3421", "100.6579"),
         10: ("99.7500", "99.0921", "100.4079"),
         -10: ("100.2500", "99.5921", "100.9079"),
     }
@@ -104,6 +117,10 @@ def example_1() -> None:
         rounded("optimal bid", r - spread / 2, b_lit)
         rounded("optimal ask", r + spread / 2, a_lit)
     rounded("inventory penalty for |q| = 10", 10 * gamma * sigma**2 * tau, "0.2500")
+    shift_long = 100 * (float(quoted[0][1]) - float(quoted[10][1]))
+    shift_short = 100 * (float(quoted[-10][2]) - float(quoted[0][2]))
+    rounded("quote drop at q = +10 (cents)", shift_long, "25")
+    rounded("quote rise at q = -10 (cents)", shift_short, "25")
 
 
 def inventory_drift(rng: np.random.Generator) -> None:
@@ -144,6 +161,8 @@ def hedging(rng: np.random.Generator) -> None:
 
     print("Example 2: proxy hedge with NQ")
     gmv, limit, beta, corr = 10_000_000, 2_000_000, Fraction(135, 100), Fraction(90, 100)
+    print(f"    input: beta = {float(beta)}, rho = {float(corr)}, NQ multiplier $20 (cited: CME contract spec), index 18,000")
+    rounded("GMV of 50,000 shares at $200.00", 50_000 * 200, "10,000,000")
     contract = 18_000 * 20
     excess = gmv - limit
     rounded("excess value", excess, "8,000,000")
@@ -151,6 +170,7 @@ def hedging(rng: np.random.Generator) -> None:
     rounded("beta x excess value", beta * excess, "10,800,000")
     n_fut = -beta * excess / contract
     rounded("contracts", n_fut, "-30.0")
+    rounded("NQ contracts sold short", -n_fut, "30")
     rounded("variance removed on the hedged slice (%)", corr**2 * 100, "81")
     vol_ratio = beta / corr
     rounded("stock vol / index vol", vol_ratio, "1.5")

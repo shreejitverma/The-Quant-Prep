@@ -83,6 +83,7 @@ def example_2(rng: np.random.Generator) -> None:
     print(f"    P(L | 6), simulation (seed {SEED}) = {est:.4f} +/- {se:.4f}")
     assert abs(est - 0.5) < 5 * se
     rounded("edge per contract bought at 0.47", Fraction(1, 2) - Fraction(47, 100), "0.03")
+    print("    input: illustrative quotes 47 at 53 (0.47 / 0.53), size 10, lowered to 45 at 51")
 
 
 def gamblers_ruin(rng: np.random.Generator) -> None:
@@ -128,10 +129,13 @@ def example_3() -> None:
     rounded("padding bytes", 64 - ctypes.sizeof(ctypes.c_uint64), "56")
     rounded("sizeof(CoreStats)", ctypes.sizeof(CoreStats), "64")
     rounded("sizeof(OptimizedDeskStats)", ctypes.sizeof(OptimizedDeskStats), "256")
-    # every core's counter sits in a distinct 64-byte line when the array starts on a line boundary
-    lines = {(i * ctypes.sizeof(CoreStats)) // 64 for i in range(4)}
-    assert len(lines) == 4
     assert len({o // 64 for o in offsets}) == 1
+
+
+def cited() -> None:
+    print("Cited constants")
+    print("    cited: Apple M-series cache line 128 bytes; IEX speed bump 350 microseconds")
+    print("    cited: California Business and Professions Code section 16600; 99.9th percentile latency is a label")
 
 
 if __name__ == "__main__":
@@ -140,4 +144,5 @@ if __name__ == "__main__":
     example_2(rng)
     gamblers_ruin(rng)
     example_3()
+    cited()
     print("all careers-note numbers check out")

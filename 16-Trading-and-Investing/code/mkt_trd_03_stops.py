@@ -92,6 +92,12 @@ def styles() -> tuple[np.ndarray, np.ndarray]:
     check("style A net ($)", float(sum(a) * risk), "20,000")
     check("style B reversing trades ($)", float(sum(b[:40]) * risk), "20,000")
     check("style B trending trades ($)", float(sum(b[40:60]) * risk), "40,000")
+    check("style A per trending trade ($)", float(a[40] * risk), "3,000")
+    check("style A per failing trade ($)", float(a[60] * risk), "-1,000")
+    half = Fraction(1, 2)
+    check("style B half closed at +1R ($)", float(half * 1 * risk), "500")
+    check("style B half closed at +3R ($)", float(half * 3 * risk), "1,500")
+    check("style B per reversing trade ($)", float(b[0] * risk), "500")
     check("style B per trending trade ($)", float(b[40] * risk), "2,000")
     check("style B net ($)", float(sum(b) * risk), "20,000")
     for name, book in (("A", a), ("B", b)):

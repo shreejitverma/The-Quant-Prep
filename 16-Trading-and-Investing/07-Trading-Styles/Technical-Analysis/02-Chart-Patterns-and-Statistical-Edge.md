@@ -23,7 +23,8 @@ This note separates chartist folklore from empirical reality, examines algorithm
 Classical geometric chart patterns describe consolidation zones bounded by trendlines, support, and resistance.
 Reversal patterns (Head and Shoulders, Double Tops/Bottoms) signify exhaustion of directional momentum, while continuation patterns (Flags, Pennants, Triangles) represent pauses within an existing trend.
 The evidence is mixed: Lo, Mamaysky, and Wang (2000) found that several algorithmically detected patterns shift the distribution of subsequent returns on US stocks (1962-1996), but they did not show profits after costs.
-Large multi-rule studies that correct for data-snooping (Sullivan, Timmermann, and White 1999; Aronson 2006, whose 6,402 rules were indicator rules rather than visual patterns) found no rule that is significant out of sample or after the correction.
+Sullivan, Timmermann, and White (1999) found that the best rule survived the data-snooping correction in 1897-1986 but did not outperform out of sample in 1987-1996.
+Aronson (2006), whose 6,402 rules were indicator rules rather than visual patterns, found no rule significant after the correction.
 Practitioner setups such as the Volatility Contraction Pattern (VCP) have no peer-reviewed test cited here; treat them as hypotheses to backtest.
 
 ---
@@ -49,11 +50,11 @@ Edwards and Magee (1948) partitioned geometric patterns into two primary structu
 |                       GEOMETRIC CHART PATTERN TAXONOMY                          |
 +---------------------------------------------------------------------------------+
 |  REVERSAL PATTERNS                              CONTINUATION PATTERNS           |
-|  - Head and Shoulders (Top / Inverse)          - Bull / Bear Flags             |
-|  - Double / Triple Tops and Bottoms            - Pennants                      |
-|  - Rising / Falling Wedges                     - Symmetrical Triangles         |
-|  - Broadening Formations                       - Ascending / Descending Triangles|
-|  - Rounding Tops and Bottoms (Saucers)         - Rectangles / Consolidations   |
+|  - Head and Shoulders (Top / Inverse)          - Bull / Bear Flags              |
+|  - Double / Triple Tops and Bottoms            - Pennants                       |
+|  - Rising / Falling Wedges                     - Symmetrical Triangles          |
+|  - Broadening Formations                       - Ascending/Descending Triangles |
+|  - Rounding Tops and Bottoms (Saucers)         - Rectangles / Consolidations    |
 +---------------------------------------------------------------------------------+
 ```
 
@@ -115,12 +116,12 @@ To test pattern validity objectively, Lo, Mamaysky, and Wang (2000) formulated a
 |     - 10 patterns detected by kernel regression in US stocks, 1962-1996.        |
 |     - Goodness-of-fit and Kolmogorov-Smirnov tests: returns after several       |
 |       patterns differ from the unconditional distribution.                      |
-|     - Conclusion: some indicators give incremental information; no test of     |
+|     - Conclusion: some indicators give incremental information; no test of      |
 |       profits net of costs.                                                     |
 |  2. Curcio, Goodhart, Guillaume, and Payne (1997, Int. J. Finance & Econ.):     |
 |     - Intraday FX filter rules built on support and resistance levels that      |
 |       technical analysts reported to Reuters.                                   |
-|     - Profitable in some trending periods but not on average; the result is    |
+|     - Profitable in some trending periods but not on average; the result is     |
 |       stronger once transaction costs are included.                             |
 +---------------------------------------------------------------------------------+
 |  Counter-Evidence & Failure Modes:                                              |

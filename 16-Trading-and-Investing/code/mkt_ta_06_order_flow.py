@@ -141,6 +141,15 @@ def classification() -> None:
     check("net delta of the four trades", sum(s * q for s, q in zip(signs, sizes, strict=True)), "0")
 
 
+def cited_constants() -> None:
+    print("cited: Lee and Ready (1991) compare each trade with the quote at least 5 seconds earlier")
+    print("cited: Odders-White (2000) Lee-Ready classified about 85% of NYSE (TORQ) trades correctly")
+    print("cited: CME Rule 526 (block trades) and CME Rule 538 (EFRPs); Dodd-Frank (2010) section 747")
+    print("cited: Regulation NMS Rule 600(b) and Rule 611 for intermarket sweep orders")
+    print("cited: hypothetical scenario sizes, 500,000 shares bought at $150.00 and a drop to $149.20")
+    print("cited: hypothetical iceberg sizes, 100,000 shares showing 500 and 50,000 shares showing 100")
+
+
 def absorption_trade() -> None:
     entry, stop, target = Fraction(449700, 100), Fraction(450400, 100), Fraction(447500, 100)
     risk, reward = stop - entry, entry - target
@@ -150,7 +159,11 @@ def absorption_trade() -> None:
     breakeven = risk / (risk + reward)
     # Break-even hit rate p solves p x reward = (1 - p) x risk; check by expectancy, not by the same ratio.
     assert breakeven * reward - (1 - breakeven) * risk == 0
+    check("risk + reward, points", float(risk + reward), "29")
     check("break-even hit rate before costs, percent", 100 * float(breakeven), "24.1")
+    check("wave 2 close below the 4,500.00 breakout level, points", 4498 - 4500, "-2")
+    print("cited: Example 2 inputs, prior high 4,500.00, wave 1 pullback to 4,492.00, wave 2 close 4,498.00")
+    print("cited: Example 2 trade plan, entry 4,497.00, stop 4,504.00, target 4,475.00")
     check("wave 2 delta added (17,000 - 5,000)", 17_000 - 5_000, "12,000")
     check("wave 2 new high above the prior high, points", 4503 - 4500, "3")
 
@@ -161,4 +174,5 @@ if __name__ == "__main__":
     footprint(rng)
     classification()
     absorption_trade()
+    cited_constants()
     print("all order-flow numbers check out")

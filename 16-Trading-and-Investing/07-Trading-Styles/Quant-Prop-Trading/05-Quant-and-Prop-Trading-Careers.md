@@ -303,6 +303,7 @@ struct OptimizedDeskStats {
    - Their next access misses and must fetch the line from another core's cache, so the line ping-pongs between cores and every increment pays a coherence miss instead of an L1 hit; measure the cost with `perf` on the target machine rather than assuming a number.
 2. **Analysis of the Cache-Aligned Layout**:
    - `alignas(64)` makes each `CoreStats` start on its own 64-byte boundary, and the padding makes it fill the line.
+   - The 64-byte alignment is a compiler guarantee that the `ctypes` script cannot check; it checks only the sizes and offsets.
    - Each core writes only its own line, so the counters no longer invalidate each other: false sharing is gone.
 
 ---

@@ -49,10 +49,18 @@ def phi_inv(p: float) -> float:
     return 0.5 * (lo + hi)
 
 
+def brier_score(f: np.ndarray, o: np.ndarray) -> float:
+    return float(np.mean((f - o) ** 2))
+
+
+def brier_two_class(f: np.ndarray, o: np.ndarray) -> float:
+    return float(np.mean((f - o) ** 2 + ((1 - f) - (1 - o)) ** 2))
+
+
 def brier() -> None:
     f = np.array([0.8] * 5 + [0.3] * 5)
     o = np.array([1, 1, 1, 0, 1, 0, 0, 1, 0, 0])
-    direct = float(np.mean((f - o) ** 2))
+    direct = brier_score(f, o)
     base = o.mean()
     rel = res = 0.0
     for value in np.unique(f):
@@ -67,13 +75,12 @@ def brier() -> None:
     check("Brier score, Murphy partition", rel - res + unc, "0.1650")
     check("Brier score, direct mean squared error", direct, "0.1650")
     check("Brier skill score against always 0.5", 1 - direct / 0.25, "0.34")
-    check("Brier score of always forecasting 0.5", float(np.mean((0.5 - o) ** 2)), "0.25")
-    check("Brier score of perfect foresight", float(np.mean((o - o) ** 2)), "0.0")
-    check("Brier score of complete inversion", float(np.mean(((1 - o) - o) ** 2)), "1.0")
-    # Brier's 1950 score sums over both classes (event and non-event), which doubles the one-class score.
-    two_class = float(np.mean((f - o) ** 2 + ((1 - f) - (1 - o)) ** 2))
-    check("Brier's original two-class score of the same forecasts", two_class, "0.3300")
-    check("two-class score of complete inversion (the upper bound)", float(np.mean(2 * ((1 - o) - o) ** 2)), "2.0")
+    f_half, f_perfect, f_inverse = np.full(o.size, 0.5), o.astype(float), 1.0 - o
+    check("Brier score of always forecasting 0.5", brier_score(f_half, o), "0.25")
+    check("Brier score of perfect foresight", brier_score(f_perfect, o), "0.0")
+    check("Brier score of complete inversion", brier_score(f_inverse, o), "1.0")
+    check("Brier's original two-class score of the same forecasts", brier_two_class(f, o), "0.3300")
+    check("two-class score of complete inversion (the upper bound)", brier_two_class(f_inverse, o), "2.0")
     check("log loss of f = 0.99 on an event that fails", -math.log(0.01), "4.605")
 
 
@@ -189,4 +196,7 @@ if __name__ == "__main__":
     track_record(rng)
     rsi_correlation(rng)
     expectancy()
+    print("cited: Aronson (2006) tested 6,402 rules on the S&P 500, 1980 to 2005")
+    print("cited: rule-spec inputs, 5-bar swing low, retest within 0.5%, volume above 1.25 x SMA_50(volume)")
+    print("cited: illustrative forecasts, 70% over 5 days, a 99% coin-toss call, an 80% forecast true 60% of the time")
     print("all rule-validation numbers check out")

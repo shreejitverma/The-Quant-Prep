@@ -81,11 +81,11 @@ How these findings map onto individual bad trades is not established, so treat t
 +-----------------------------------------------------------------------+
 |                         THE TRADING TILT CYCLE                        |
 +-----------------------------------------------------------------------+
-| 1. Painful Event: Unexpected loss, bad fill, or stopped at the exact low|
+| 1. Painful Event: Unexpected loss, bad fill, or stopped at the low    |
 |                                                                       |
 | 2. Cognitive Frustration: Feelings of injustice, anger, or violation  |
 |                                                                       |
-| 3. Impaired Control: Deliberate, rule-based judgment weakens        |
+| 3. Impaired Control: Deliberate, rule-based judgment weakens          |
 |                                                                       |
 | 4. Impulsive Violation: Doubling position size, removing stop loss    |
 |                                                                       |
