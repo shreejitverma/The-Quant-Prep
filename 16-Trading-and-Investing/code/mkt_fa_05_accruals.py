@@ -120,7 +120,7 @@ def accruals() -> None:
     exact("CFO from net income, depreciation and working capital alone", cfo_without_other, 31)
     other_noncash = Y2["cfo"] - cfo_without_other
     exact("other non-cash charges implied by the reported CFO", other_noncash, 14)
-    exact("balance sheet minus cash flow accruals", bs - cf2, other_noncash)
+    exact("balance sheet minus cash flow accruals", bs - cf2, 14)
 
 
 def activity() -> None:

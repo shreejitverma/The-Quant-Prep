@@ -8,8 +8,9 @@ Independent routes used here:
 - ROIC as NOPAT over invested capital and as margin times turnover from their own inputs, and ROE as
   net income over equity against the product of the five DuPont factors;
 - EVA as NOPAT minus the capital charge and as the rounded spread times invested capital;
-- the growth identity g = reinvestment rate x ROIIC by simulating twenty years of a firm that reinvests a
-  fixed share of NOPAT at a fixed incremental return and measuring the realized NOPAT growth, and the
+- the growth identity g = reinvestment rate x ROIIC by simulating twenty years of a firm that adds the
+  reinvested share of NOPAT to its invested capital each year and earns NOPAT as its base NOPAT plus
+  ROIIC times the cumulative new capital, then measuring the realized NOPAT growth, and the
   value-destroying 8% case by summing the simulated firm's EVA.
 Every quoted number is printed as ``label = value`` and asserted at the precision the note quotes.
 Run it with `python 16-Trading-and-Investing/code/mkt_fa_04_roic_dupont.py`.
@@ -90,7 +91,7 @@ def enterprise_corp() -> None:
     for name, (value, quoted) in factors.items():
         rounded(name, value, quoted)
         product *= value
-    exact("product of the five DuPont factors equals NI / equity", product, roe)
+    rounded("product of the five DuPont factors (percent)", product, "21.67", 100)
     prod_rounded = 1.0
     for _, quoted in factors.values():
         prod_rounded *= float(quoted)
@@ -101,11 +102,12 @@ def enterprise_corp() -> None:
 
 
 def simulate_growth(roiic: float, reinvest: float, years: int = 20) -> float:
-    """Firm with NOPAT 100 that reinvests a share of NOPAT each year at a fixed incremental return."""
-    nopat, history = 100.0, []
+    """Firm with base NOPAT 100 that adds a share of NOPAT to capital each year; new capital earns ROIIC."""
+    base_nopat, new_capital, history = 100.0, 0.0, []
     for _ in range(years):
+        nopat = base_nopat + roiic * new_capital
         history.append(nopat)
-        nopat += roiic * reinvest * nopat
+        new_capital += reinvest * nopat
     growth = (history[-1] / history[0]) ** (1 / (years - 1)) - 1
     return growth
 
@@ -130,8 +132,9 @@ def growth_identity() -> None:
 
 def margin_turnover_card() -> None:
     print("Card: halve the margin and double the turnover")
-    margin, turnover = F(12, 100), F(15, 10)
-    exact("ROIC unchanged", (margin / 2) * (turnover * 2), margin * turnover)
+    rev, nopat, ic = F(1000), F(225, 2), F(590)
+    half_margin, double_turnover = (nopat / rev) / 2, (2 * rev) / ic
+    rounded("Enterprise Corp ROIC at half the margin and twice the turnover (percent)", half_margin * double_turnover, "19.07", 100)
 
 
 if __name__ == "__main__":

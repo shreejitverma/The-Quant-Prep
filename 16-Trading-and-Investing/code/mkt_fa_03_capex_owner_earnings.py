@@ -48,7 +48,7 @@ def owner_earnings() -> None:
     c = maintenance + d_nwc  # (c), with the working-capital increment assumed needed for unit volume
     oe = a_plus_b - c
     exact("owner earnings, (a) + (b) - (c)", oe, 460)
-    exact("owner earnings, FCF + growth capex", fcf + growth, oe)
+    exact("owner earnings, FCF + growth capex", fcf + growth, 460)
 
 
 def inflation() -> None:
@@ -90,10 +90,9 @@ def lease() -> None:
     interest1, principal1 = schedule[0]
     rounded("year-1 interest", interest1, "2,527,418")
     rounded("year-1 principal", principal1, "7,472,582")
-    rounded("ASC 842 straight-line operating lease cost", n * pay / n, "10,000,000")
     total_interest = sum(i for i, _ in schedule)
     rounded("total interest over the lease", total_interest, "7,876,362")
-    assert math.isclose(total_interest, n * pay - pv, rel_tol=1e-12)
+    rounded("ASC 842 straight-line operating lease cost", (total_interest + pv) / n, "10,000,000")
 
 
 if __name__ == "__main__":

@@ -272,7 +272,7 @@ This zero-cost vendor float sits in yield-bearing cash equivalents or funds ware
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../../code/mkt_fa_02_working_capital.py`](../../code/mkt_fa_02_working_capital.py) prints and asserts every number on this page: each day count in exact fractions and again by simulating a steady-state firm that holds each daily flow for the quoted number of days (the simulated balance must reproduce the stated balance), and the cash conversion cycle by following one unit through purchase, payment, sale and collection.
+- Code: [`../../code/mkt_fa_02_working_capital.py`](../../code/mkt_fa_02_working_capital.py) prints and asserts every number on this page: each day count in exact fractions and again by simulating a steady-state firm that holds each daily flow for the quoted number of days (the simulated balance must reproduce the stated balance), and the cash conversion cycle again by simulating dated supplier payments and customer collections for a unit bought each day and measuring the average cash tied up in days of purchases.
 - Related notes: [Three-Statement Linkages and Cash Flow Dynamics](01-Three-Statement-Linkages-and-Cash-Flow-Dynamics.md), [Forensic Accounting, Sloan Accruals, and Earnings Quality](05-Forensic-Accounting-Sloan-Accruals-and-Earnings-Quality.md).
 
 ## Further reading

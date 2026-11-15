@@ -346,7 +346,7 @@ The company's strong ROE of 21.67% is primarily driven by solid underlying opera
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../../code/mkt_fa_04_roic_dupont.py`](../../code/mkt_fa_04_roic_dupont.py) prints and asserts every number on this page: invested capital from both sides of a balance sheet that is checked to balance, ROIC as a ratio and as margin times turnover, ROE against the product of the five DuPont factors, EVA two ways, and the growth identity by simulating a firm that reinvests at a fixed incremental return.
+- Code: [`../../code/mkt_fa_04_roic_dupont.py`](../../code/mkt_fa_04_roic_dupont.py) prints and asserts every number on this page: invested capital from both sides of a balance sheet that is checked to balance, ROIC as a ratio and as margin times turnover, ROE against the product of the five DuPont factors, EVA two ways, and the growth identity by simulating a firm that adds the reinvested NOPAT to its capital each year and earns its base NOPAT plus ROIIC on the cumulative new capital.
 - Related notes: [Capex: Maintenance vs Growth and Owner Earnings](03-Capex-Maintenance-vs-Growth-and-Owner-Earnings.md), [Industry Competitive Dynamics, Porter's Five Forces, and Helmer's 7 Powers](07-Industry-Competitive-Dynamics-and-Porter-Helmer.md).
 
 ## Further reading
