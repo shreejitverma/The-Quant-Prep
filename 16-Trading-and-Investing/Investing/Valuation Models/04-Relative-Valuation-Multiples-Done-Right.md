@@ -221,7 +221,7 @@ Compare two competitors in the industrial equipment sector (hypothetical compani
    This collapses Net Income to $112.5M, driving its P/E multiple to **31.11x**, while Company A trades at **16.67x**.
 4. **ROE & P/B Audit**:
    Company A earns an ROE of 12.0% with minimal debt; Company B earns an ROE of only 7.5% despite extreme financial leverage.
-   Verdict: Precision Corp (A) is cheaper on every multiple except EV/Sales, and earns a higher ROE with far less leverage.
+   Verdict: Precision Corp (A) is cheaper on EV/EBIT, P/E and P/B, level on EV/EBITDA and dearer only on EV/Sales, and earns a higher ROE with far less leverage.
 
 ## Practice questions
 

@@ -107,8 +107,9 @@ def worked_case() -> None:
     for _ in range(200):
         mid = (lo + hi) / 2
         lo, hi = (mid, hi) if ev_linked(mid) < EV_MARKET else (lo, mid)
-    g_lin = lo
-    for _ in range(50):  # Newton-Raphson from the bisection bracket midpoint as an independent check
+    assert abs(ev_linked(lo) - EV_MARKET) < 1e-6
+    g_lin = g_star
+    for _ in range(50):  # Newton-Raphson started from the headline root g*, independent of the bisection
         h = 1e-6
         g_lin -= (ev_linked(g_lin) - EV_MARKET) / ((ev_linked(g_lin + h) - ev_linked(g_lin - h)) / (2 * h))
     approx("implied growth with reinvestment g / 30% (bisection, percent)", 100 * lo, 27.51, 2)
