@@ -508,7 +508,7 @@ def cmd_markets(vault: Vault, store: Store | None, args) -> int:
 
     sub = args.markets_subcommand or "status"
     state = store.data if store else {}
-    all_gates = markets.evaluate_all_markets_gates(vault.cards, state)
+    all_gates = markets.evaluate_all_markets_gates(vault, state)
 
     if sub == "gates":
         rows = []
@@ -523,7 +523,7 @@ def cmd_markets(vault: Vault, store: Store | None, args) -> int:
 
     if sub == "mastery":
         persona = getattr(args, "persona", "holistic")
-        mastery = markets.calculate_markets_mastery(vault.cards, state, persona)
+        mastery = markets.calculate_markets_mastery(vault, state, persona)
         summary_rows = [
             ["Persona", f"{mastery['persona_name']} ({mastery['persona']})"],
             ["Overall Score", f"{mastery['overall_score']:.1f}%"],
