@@ -120,19 +120,25 @@ def expected_max(rng: np.random.Generator) -> None:
 def mertens_variance(rng: np.random.Generator) -> None:
     print("Variance of the Sharpe estimator (Core concepts 2, cards mkt-sys-100, mkt-sys-101)")
     # Returns r = mu - (G - k)/sqrt(k), G ~ Gamma(k, 1): unit variance, skewness -2/sqrt(k), kurtosis 3 + 6/k.
-    k, mu, t_days, reps = 16.0, 0.10, 1260, 4000
+    k, mu, t_days, reps = 1.0, 0.10, 1260, 8000
     skew, kurt = -2 / math.sqrt(k), 3 + 6 / k
-    approx("skewness of the simulated return law", skew, -0.50, 2)
-    approx("kurtosis of the simulated return law", kurt, 3.375, 3)
+    approx("skewness of the simulated return law", skew, -2.0, 1)
+    approx("kurtosis of the simulated return law", kurt, 9.0, 1)
     srs = np.empty(reps)
     for i in range(reps):
         r = mu - (rng.gamma(k, 1.0, size=t_days) - k) / math.sqrt(k)
         srs[i] = r.mean() / r.std(ddof=1)
     var_sim = float(srs.var(ddof=1))
-    var_formula = (1 - skew * mu + (kurt - 1) / 4 * mu * mu) / (t_days - 1)
-    # The sample variance of reps draws has relative standard error about sqrt(2/(reps-1)).
-    rel_se = math.sqrt(2 / (reps - 1))
-    simulated("simulated Var(SR_hat) / Mertens formula", var_sim / var_formula, 1.0, 4 * rel_se)
+    mertens = 1 - skew * mu + (kurt - 1) / 4 * mu * mu
+    approx("Mertens numerator 1 - g3 SR + (g4 - 1)/4 SR^2", mertens, 1.22, 2)
+    # Relative standard error of a sample variance: sqrt((kurtosis of the draws - 1) / reps).
+    z = (srs - srs.mean()) / math.sqrt(var_sim)
+    band = 4 * math.sqrt((float(np.mean(z**4)) - 1) / reps)
+    simulated("simulated Var(SR_hat) / Mertens formula", var_sim * (t_days - 1) / mertens, 1.0, band)
+    for name, num in (("Lo iid-normal numerator 1 + SR^2/2", 1 + 0.5 * mu * mu), ("numerator 1", 1.0)):
+        ratio = var_sim * (t_days - 1) / num
+        assert abs(ratio - 1) > band, f"{name}: ratio {ratio} is not rejected by the simulation"
+        print(f"    simulated Var(SR_hat) / formula with {name} ~ {ratio:.4f}, rejected (outside 1 +/- {band:.3f})")
 
 
 def dsr_example(rng: np.random.Generator) -> None:

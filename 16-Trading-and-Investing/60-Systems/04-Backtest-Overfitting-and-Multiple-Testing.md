@@ -299,7 +299,7 @@ BHY is no kinder here: if this is the most significant of the 50 tests, its BHY 
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../code/mkt_sys_04_overfitting.py`](../code/mkt_sys_04_overfitting.py) prints and asserts every number on this page: the inverse normal by bisection on `erfc`, the expected maximum against exact numerical integration, the exact finite-sample expected best null Sharpe ratio as the expected maximum of Student-$t$ variables, checked by seeded simulation of exact sample-Sharpe draws, the Mertens variance by simulating skewed returns, and the DSR, Bonferroni and MinBTL arithmetic.
+- Code: [`../code/mkt_sys_04_overfitting.py`](../code/mkt_sys_04_overfitting.py) prints and asserts every number on this page: the inverse normal by bisection on `erfc`, the expected maximum against exact numerical integration, the exact finite-sample expected best null Sharpe ratio as the expected maximum of Student-$t$ variables, checked by seeded simulation of exact sample-Sharpe draws, the Mertens variance by simulating returns with skewness $-2$ and kurtosis $9$, a test that also rejects the iid-normal Lo variance, and the DSR, Bonferroni and MinBTL arithmetic.
 - Related notes: [Overfitting and Deflated Sharpe](../../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md), [Combinatorial Purged Cross-Validation](05-Combinatorial-Purged-Cross-Validation.md).
 
 ## Further reading
