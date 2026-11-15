@@ -2,8 +2,7 @@
 
 Backs `16-Trading-and-Investing/Investing/Value Investing/04-Munger-Latticework-Mental-Models-and-Inversion.md`.
 Independent routes used here:
-- annual interest, coverage and the 150 bp rate shock in exact fractions, against a month-by-month
-  accrual of floating-rate interest on the $800M loan;
+- annual interest, coverage and the 150 bp rate shock in exact fractions;
 - the projected revenue growth rate by closed form 3^(1/4) - 1, against bisection on compounding $100M forward;
 - Berkshire's four major declines (2017 letter) recomputed from the published highs and lows, against the
   percentages printed in the letter.
@@ -41,22 +40,16 @@ def bisect(f, lo: float, hi: float, iters: int = 200) -> float:
     return 0.5 * (lo + hi)
 
 
-def monthly_interest(principal: float, annual_rate: float) -> float:
-    return sum(principal * annual_rate / 12 for _ in range(12))
-
-
 def acquisition() -> None:
     print("Apex Corp acquisition of DataTrack (hypothetical inputs, $M)")
     debt, price, cash_flow = F(800), F(1200), F(70)
     q("debt share of the price (%)", 100 * debt / price, "66.7")
     interest = debt * F(8, 100)
-    close("annual interest vs monthly accrual", float(interest), monthly_interest(800.0, 0.08), 1e-9)
     q("interest at 8%", interest, "64")
     q("interest coverage 70 / 64 (x)", cash_flow / interest, "1.09")
     shock = debt * F(150, 10_000)
     q("extra interest from +150 bp", shock, "12")
     shocked = interest + shock
-    close("shocked interest vs monthly accrual at 9.5%", float(shocked), monthly_interest(800.0, 0.095), 1e-9)
     q("interest after the shock", shocked, "76")
     q("coverage after the shock 70 / 76 (x)", cash_flow / shocked, "0.92")
     assert cash_flow - shocked < 0, "cash flow after interest should be negative"

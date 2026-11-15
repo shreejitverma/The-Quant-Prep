@@ -133,8 +133,8 @@ The book's motto is *"Heads, I win; tails, I don't lose much!"*
 | 8. Look for low-risk, high-uncertainty businesses:                    |
 |    - Uncertainty: Future outcomes have a wide range of paths.         |
 |    - Risk: The probability of permanent capital loss.                 |
-| 9. It is better to be a copycat than an innovator (in practice,       |
-|    studying other investors' disclosed holdings such as 13F filings). |
+| 9. Invest in the copycats rather than the innovators: buy businesses  |
+|    that copy ideas already proven elsewhere.                          |
 +-----------------------------------------------------------------------+
 ```
 
@@ -271,7 +271,7 @@ Recommendation: Immediate avoid or short candidate.
 > Risk is the probability of permanent capital loss; uncertainty is a wide dispersion of future outcomes where even the pessimistic path preserves capital.
 
 > [!question]- mkt-vi-232 | What is 'cloning' in value investing?
-> Studying and selectively copying the high-conviction holdings of skilled investors, for example from quarterly SEC Form 13F filings; Pabrai's version is that it is better to be a copycat than an innovator.
+> Studying and selectively copying the high-conviction holdings of skilled investors, for example from quarterly SEC Form 13F filings; it is distinct from the Dhandho copycat pillar, which is about buying businesses that copy proven ideas.
 
 > [!question]- mkt-vi-233 | What are Peter Lynch's six categories of stocks?
 > Slow Growers, Stalwarts, Fast Growers, Cyclicals, Turnarounds, and Asset Plays.

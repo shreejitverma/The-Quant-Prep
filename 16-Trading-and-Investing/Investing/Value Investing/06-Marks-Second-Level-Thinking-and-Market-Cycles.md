@@ -233,7 +233,7 @@ Global credit markets enter an inflection point:
 > [!question]- mkt-vi-172 | What is the concept of 'winning by not losing'?
 > Focusing on risk control, avoiding unforced errors, eliminating low-quality debt, and avoiding overpriced fads so the portfolio compounds safely over decades.
 
-> [!question]- mkt-vi-173 | What is Oaktree Capital's primary investment philosophy motto?
+> [!question]- mkt-vi-173 | What does Howard Marks put ahead of return-seeking in The Most Important Thing?
 > Risk control first: avoid the big losers, and a portfolio that survives will collect its share of winners; Marks puts risk control ahead of return-seeking throughout The Most Important Thing.
 
 > [!question]- mkt-vi-174 | How does an investor create positive asymmetry in a portfolio?

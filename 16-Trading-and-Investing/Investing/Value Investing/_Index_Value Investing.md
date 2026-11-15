@@ -96,7 +96,7 @@ The value investing track comprises eight comprehensive concept notes containing
 8. [[16-Trading-and-Investing/Investing/Value Investing/08-Modern-Value-Masters-Capital-Cycles-and-Value-Traps|08. Modern Value Masters, Capital Cycles, and Value Traps]]
    - Edward Chancellor and Marathon Asset Management: the four-stage supply-side Capital Cycle framework.
    - Nick Sleep and Nomad: Scale Economies Shared and the perpetual low-price flywheel (Costco, Amazon).
-   - Mohnish Pabrai's Dhandho framework: low-risk, high-uncertainty bets and shameless 13F cloning.
+   - Mohnish Pabrai's Dhandho framework: low-risk, high-uncertainty bets and investing in copycat businesses rather than innovators.
    - Peter Lynch's six equity categories and avoiding corporate diworsification.
    - Terry Smith's quality compounding rules and Li Lu's Asian value insights.
    - The post-2007 weakness of book-to-market value and its debated explanations (intangibles, low rates, winner-take-all technology).

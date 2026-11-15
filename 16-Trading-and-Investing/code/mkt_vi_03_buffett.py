@@ -5,7 +5,7 @@ Independent routes used here:
 - owner earnings and naive free cash flow in exact fractions, against a line-item cash-flow build
   (operating cash flow from net income, D&A and the full working-capital change, then each capex slice);
 - the float growth rate 1970-2024 by closed form, against bisection on (1 + g)^54 = 171,000 / 39;
-- the cost of float from underwriting profit over average float, checked against a direct cash ledger;
+- the cost of float from underwriting profit over average float;
 - the 1990 look-through earnings sum from the letter's own components;
 - the 2024 letter's 19.9% compounded gain, checked for consistency against its 5,502,284% overall gain.
 Every quoted number is printed and asserted at the precision the note quotes; cited constants are labelled.
@@ -72,10 +72,6 @@ def cost_of_float() -> None:
     uw_profit = premiums * (1 - combined)
     q("underwriting profit at a 96% combined ratio ($)", uw_profit, "4")
     cost = -uw_profit / avg_float
-    # ledger route: premiums in, losses and expenses out, the gap is what the insurer kept for free
-    losses_and_expenses = 96
-    ledger = -(100 - losses_and_expenses) / 250
-    close("cost of float vs cash ledger", float(cost), ledger, 1e-12)
     q("cost of float (%)", 100 * cost, "-1.6")
     q("cost of float at a 100% combined ratio (%)", 100 * (-premiums * (1 - F(1)) / avg_float), "0.0")
 

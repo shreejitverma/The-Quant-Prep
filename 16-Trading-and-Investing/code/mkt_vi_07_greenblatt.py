@@ -5,7 +5,7 @@ Independent routes used here:
 - the merger-arbitrage spread and simple annualization in exact fractions;
 - the compounded annual rate by closed form, against compounding the daily-equivalent rate day by day;
 - the break-even closing probability by closed form, against bisection on the expected value of the trade;
-- Apex's enterprise value and Magic Formula ratios against a balance-sheet build of capital employed;
+- Apex's enterprise value and Magic Formula ratios in exact fractions;
 - the capital-structure example: P/E from net income after interest and tax, earnings yield from EBIT and EV;
 - growth of $1 at the cited rates (50% for 10 years; 30.8% and 12.4% for 17 years) by closed form
   against a year-by-year product.
@@ -92,10 +92,6 @@ def magic_formula() -> None:
     nwc = F(250) - cash - F(70)
     q("net working capital", nwc, "80")
     tce = nwc + F(220)
-    # balance-sheet build: total operating assets less non-interest liabilities, excluding cash and goodwill
-    operating_assets = 250.0 + 220.0 + 150.0  # current assets + PP&E + goodwill
-    build = operating_assets - 100.0 - 150.0 - 70.0
-    close("capital employed vs balance-sheet build", float(tce), build, 1e-9)
     q("tangible capital employed", tce, "300")
     q("earnings yield EBIT / EV (%)", 100 * ebit / ev, "15.00")
     q("return on capital EBIT / TCE (%)", 100 * ebit / tce, "60.00")

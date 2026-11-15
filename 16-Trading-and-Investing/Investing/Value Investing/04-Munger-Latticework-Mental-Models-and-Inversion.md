@@ -293,7 +293,7 @@ Under Munger's checklist, this transaction is rejected: an acquisition that need
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/mkt_vi_04_munger.py`](../../code/mkt_vi_04_munger.py) prints and asserts every computed number on this page: the acquisition's interest, coverage and rate-shock arithmetic in exact fractions against a month-by-month accrual, the projected revenue growth rate by closed form against bisection, and the 2017 letter's four Berkshire declines recomputed from the published highs and lows.
+- Code: [`code/mkt_vi_04_munger.py`](../../code/mkt_vi_04_munger.py) prints and asserts every computed number on this page: the acquisition's interest, coverage and rate-shock arithmetic in exact fractions, the projected revenue growth rate by closed form against bisection, and the 2017 letter's four Berkshire declines recomputed from the published highs and lows.
 - Related notes: [Howard Marks](06-Marks-Second-Level-Thinking-and-Market-Cycles.md) (second-level thinking as a cousin of inversion), [Buffett's Evolution](03-Buffett-Evolution-From-Cigar-Butts-to-Quality-Compounders.md) (the partnership with Buffett).
 
 ## Further reading

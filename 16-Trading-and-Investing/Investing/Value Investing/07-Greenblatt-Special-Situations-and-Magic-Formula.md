@@ -310,7 +310,7 @@ In a systematic universe ranking, both ratios would place it well up the Magic F
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/mkt_vi_07_greenblatt.py`](../../code/mkt_vi_07_greenblatt.py) prints and asserts every computed number on this page: the merger-arbitrage spread and annualization in exact fractions, the compounded rate by closed form against day-by-day compounding, the break-even closing probability by closed form against bisection on expected value, the Apex enterprise value and Magic Formula ratios against a balance-sheet build, the capital-structure P/E example, and the growth of $1 at the cited back-test rates.
+- Code: [`code/mkt_vi_07_greenblatt.py`](../../code/mkt_vi_07_greenblatt.py) prints and asserts every computed number on this page: the merger-arbitrage spread and annualization in exact fractions, the compounded rate by closed form against day-by-day compounding, the break-even closing probability by closed form against bisection on expected value, the Apex enterprise value and Magic Formula ratios, the capital-structure P/E example, and the growth of $1 at the cited back-test rates.
 - Related notes: [Klarman](05-Klarman-Margin-of-Safety-and-Distressed-Debt-Discipline.md) (special situations and distressed debt), [Graham Foundations](01-Graham-Foundations-Margin-of-Safety-and-Mr-Market.md) (earnings yield against bond yields).
 
 ## Further reading

@@ -310,7 +310,7 @@ Check before crediting management: part of a market value change can come from a
 > [!question]- mkt-vi-094 | How does Buffett view cash holdings during bull markets?
 > As a necessary safety margin and as ammunition: holding it costs return in good times, but it lets Berkshire act when others are forced to sell, as the 2017 letter describes for the 2008-2009 crisis.
 
-> [!question]- mkt-vi-095 | What is the 'tapeworm' of corporate America according to Warren Buffett?
+> [!question]- mkt-vi-095 | What did Warren Buffett mean when he called rising US healthcare costs a tapeworm in 2018?
 > Buffett's description of rising US healthcare costs as a drain on the economy and on American business competitiveness, from his 2018 public remarks rather than a shareholder letter.
 
 > [!question]- mkt-vi-096 | What is Warren Buffett's ultimate secret of compounding?

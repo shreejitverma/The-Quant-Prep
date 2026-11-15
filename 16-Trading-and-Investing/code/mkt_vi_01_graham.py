@@ -107,6 +107,7 @@ def pioneer() -> None:
 def net_net_exit() -> None:
     print("Net-net exit arithmetic")
     gain = 1 / F(2, 3) - 1
+    q("two-thirds of NCAV as a percentage", 100 * F(2, 3), "66.7")
     q("gain from 2/3 of NCAV to full NCAV (%)", 100 * gain, "50")
     for years, quoted in ((2, "22.47"), (3, "14.47")):
         closed = 1.5 ** (1 / years) - 1
