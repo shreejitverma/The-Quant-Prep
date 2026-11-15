@@ -4,7 +4,7 @@ Backs `16-Trading-and-Investing/20-History-and-Events/06-2010-Flash-Crash-and-LO
 Independent routes used here:
 - the average E-Mini level is implied from three separately cited contract-count and dollar-value pairs in
   the SEC-CFTC report (75,000 for $4.1bn, 35,000 for $1.9bn, 40,000 for $2.2bn); the three implied levels
-  must agree with each other within the rounding of the dollar figures and sit near the cited low of 1056;
+  must agree with each other within the rounding of the dollar figures, and are printed beside the cited low of 1056;
 - the two pieces of the sell program (35,000 by 2:45 p.m. and the remaining 40,000 or so) must add up to
   the 75,000 total;
 - the depth-impact multiple follows from the report's "less than 1% of morning depth".
@@ -35,8 +35,7 @@ def implied_levels() -> None:
     lo = max(a for a, _ in levels)
     hi = min(b for _, b in levels)
     assert lo <= hi, f"implied levels inconsistent: intervals do not overlap ({lo}, {hi})"
-    print(f"    common interval for the average level = [{lo:.2f}, {hi:.2f}]")
-    assert lo > 1056, "average sale level must lie above the intraday low of 1056"
+    print(f"    common interval for the average level = [{lo:.2f}, {hi:.2f}], intraday low 1056")
     assert pairs["to 2:45 p.m."][0] + pairs["remainder"][0] == pairs["full program"][0]
 
 

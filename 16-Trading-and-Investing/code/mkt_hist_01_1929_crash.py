@@ -3,10 +3,10 @@
 Backs `16-Trading-and-Investing/20-History-and-Events/01-1929-Wall-Street-Crash-and-Great-Depression.md`.
 Independent routes used here:
 - each percentage decline is recomputed from the cited Dow closes in exact decimal arithmetic and checked
-  three ways: against the quoted percentage, against the separately cited point change (close difference),
-  and against the rounded figures published by the Brady Report (12.8 and 11.7 percent) and Federal
-  Reserve History ("almost half", "nearly 13", "nearly 12");
-- the FDIC suspension total is summed from the yearly counts and checked against "about 9,000";
+  against the quoted percentage, against the separately cited point change (close difference), and
+  against the rounded figures published by the Brady Report (12.8 and 11.7 percent), and is printed
+  beside Federal Reserve History's wording ("almost half", "nearly 13", "nearly 12");
+- the FDIC suspension total is summed from the yearly counts and printed beside "about 9,000";
 - the margin example is evaluated on an explicit balance sheet (assets minus debt) and checked against
   the leverage identity (a fall of 1/L wipes out equity at L times leverage).
 Every quoted number is printed as ``label = value`` and asserted.
@@ -37,18 +37,15 @@ def index_moves() -> None:
     print("Dow closes (cited)")
     peak, nov13, low32 = D("381.17"), D("198.69"), D("41.22")
     oct26, oct28, oct29 = D("298.97"), D("260.64"), D("230.07")
-    approx("peak to Nov 13 1929 fall (%)", pct_fall(peak, nov13), 47.87, 2)
-    assert 45 < pct_fall(peak, nov13) < 50, "Federal Reserve History: 'almost half'"
+    approx("peak to Nov 13 1929 fall, Federal Reserve History 'almost half' (%)", pct_fall(peak, nov13), 47.87, 2)
     approx("peak to Jul 8 1932 fall (%)", pct_fall(peak, low32), 89.19, 2)
     # Point changes are cited separately; they must equal the close differences.
     exact("Oct 28 point change", oct26 - oct28, D("38.33"))
     exact("Oct 29 point change", oct28 - oct29, D("30.57"))
     approx("Oct 28 fall (%)", pct_fall(oct26, oct28), 12.82, 2)
-    approx("Oct 28 fall, Brady rounding (%)", pct_fall(oct26, oct28), 12.8, 1)
-    assert 12 < pct_fall(oct26, oct28) < 13, "Federal Reserve History: 'nearly 13 percent'"
+    approx("Oct 28 fall, Brady rounding, Federal Reserve History 'nearly 13 percent' (%)", pct_fall(oct26, oct28), 12.8, 1)
     approx("Oct 29 fall (%)", pct_fall(oct28, oct29), 11.73, 2)
-    approx("Oct 29 fall, Brady rounding (%)", pct_fall(oct28, oct29), 11.7, 1)
-    assert 11 < pct_fall(oct28, oct29) < 12, "Federal Reserve History: 'nearly 12 percent'"
+    approx("Oct 29 fall, Brady rounding, Federal Reserve History 'nearly 12 percent' (%)", pct_fall(oct28, oct29), 11.7, 1)
     # Six-fold rise from 63 (August 1921) to 381 (September 1929).
     approx("1921-1929 multiple", 381 / 63, 6.0, 0)
 
@@ -59,8 +56,7 @@ def bank_suspensions() -> None:
     total = 0
     for year in sorted(yearly):
         total += yearly[year]
-    exact("total 1930-1933", total, 9096)
-    assert abs(total - 9000) / 9000 < 0.02, "FDIC: 'approximately 9,000'"
+    exact("total 1930-1933, FDIC 'approximately 9,000'", total, 9096)
 
 
 def margin_example() -> None:

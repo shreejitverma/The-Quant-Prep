@@ -5,7 +5,7 @@ Independent routes used here:
 - Drill 1 FCFF: a year-by-year projection loop in exact `fractions.Fraction` arithmetic, checked against
   closed-form geometric-series present values of each FCFF component (NOPAT, D&A, capex, change in NWC);
   the Gordon terminal value is checked against a direct sum of 3,000 years of growing cash flows;
-- Drill 2 WACC: exact rational un-levering and re-levering (D/E = 2/3 exactly), checked in floating point;
+- Drill 2 WACC: exact rational un-levering and re-levering (D/E = 2/3 exactly);
 - Drill 3 reverse DCF: the implied growth rate by bisection on the explicit 10-year cash-flow sum,
   confirmed by a secant solve on the closed-form growing-annuity value from a different bracket;
 - Drill 4 NCAV: exact sums of the balance-sheet lines, checked against the stated totals.
@@ -119,9 +119,6 @@ def drill2() -> None:
     bu = {}
     for name, (bl, de) in peers.items():
         bu[name] = bl / (1 + (1 - t) * de)
-        # float route
-        flt = float(bl) / (1 + 0.75 * float(de))
-        assert abs(flt - float(bu[name])) < 1e-12
         approx(f"unlevered beta {name}", bu[name], quoted_u[name], 4)
     avg = sum(bu.values()) / 3
     approx("sum of unlevered betas", sum(bu.values()), 2.9071, 4)

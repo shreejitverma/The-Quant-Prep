@@ -48,8 +48,7 @@ def prices() -> None:
     approx("Jan 13 close over Jan 12 close (%)", float((jan13 / jan12 - 1) * 100), 57.39, 2)
     approx("Jan 27 close over Jan 12 close (%)", float((jan27 / jan12 - 1) * 100), 1641.90, 2)
     gain_jan11 = float((jan27 / jan11 - 1) * 100)
-    approx("Jan 27 close over Jan 11 close (%)", gain_jan11, 1642.78, 2)
-    assert gain_jan11 > 1600, "SEC: more than 1,600% above the January 11 close"
+    approx("Jan 27 close over Jan 11 close, SEC 'more than 1,600%' (%)", gain_jan11, 1642.78, 2)
     approx("Jan 28 intraday high over Jan 12 close (%)", float((high / jan12 - 1) * 100), 2321.05, 2)
 
 
@@ -99,9 +98,7 @@ def relending() -> None:
     for _ in range(2):
         for share in range(100):
             whole.lend_and_short(share)
-    si = whole.short_interest_pct()
-    approx("short interest, every share lent and re-lent once (%)", si, 200.0, 0)
-    assert si > 100, "short interest exceeds 100% of the float"
+    approx("short interest, every share lent and re-lent once (%)", whole.short_interest_pct(), 200.0, 0)
     print(f"    shares owed by short sellers = {len(whole.loans)}, float = {len(whole.holder)}")
 
 

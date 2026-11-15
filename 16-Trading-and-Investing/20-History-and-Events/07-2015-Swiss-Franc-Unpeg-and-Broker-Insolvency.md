@@ -135,5 +135,5 @@ In general, at leverage $L$ a gap of $x$ loses $Lx$ times the deposit, so at $L 
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/mkt_hist_07_snb_unpeg.py`](../code/mkt_hist_07_snb_unpeg.py) prints and asserts every number on this page: the account example is computed in exact rational arithmetic and checked against the leverage identity $Lx$, and the franc's appreciation is computed from the EUR/CHF fall and checked by converting the rate both ways.
+- Code: [`code/mkt_hist_07_snb_unpeg.py`](../code/mkt_hist_07_snb_unpeg.py) prints and asserts every number on this page: the account example is computed in exact rational arithmetic with the leverage identity $Lx$ evaluated at a 200:1 example, and the franc's appreciation is computed from the EUR/CHF fall.
 - Related notes: [Case File 08: 2020 Negative WTI](08-2020-COVID-Crash-and-Negative-WTI-Crude.md), [Case File 06: 2010 Flash Crash](06-2010-Flash-Crash-and-LOB-Evaporation.md).

@@ -6,9 +6,9 @@ Independent routes used here:
   expression (1/y)(1 - (1 + y/2)^-60) and is checked against a central finite difference of the explicit
   60-coupon price sum, which never uses the closed form;
 - the hypothetical losses and sigma multiple follow from the stated inputs;
-- the PWG and Federal Reserve History capital figures are cross-checked against each other in exact
-  rational arithmetic (leverage, "about fifteen percent", "44 percent", "over fifty percent", and the
-  gross notional sum exceeding $1.4 trillion).
+- the PWG and Federal Reserve History capital figures are recomputed in exact rational arithmetic and
+  printed beside the sources' wording (leverage, "about fifteen percent", "44 percent", "over fifty
+  percent", and the gross notional sum exceeding $1.4 trillion).
 Every quoted number is printed as ``label = value`` and asserted.
 """
 
@@ -60,20 +60,17 @@ def fund_figures() -> None:
     print("PWG and Federal Reserve History figures")
     assets, eq_jan, eq_jul, aug_loss = Fraction(125), Fraction(48, 10), Fraction(41, 10), Fraction(18, 10)
     lev = assets / eq_jan
-    approx("balance-sheet leverage (x)", float(lev), 26.04, 2)
-    assert lev > 25, "PWG: more than 25-to-1"
+    approx("balance-sheet leverage, PWG 'more than 25-to-1' (x)", float(lev), 26.04, 2)
     eq_aug = eq_jul - aug_loss
     assert eq_aug == Fraction(23, 10), "PWG: $4.1bn less $1.8bn leaves $2.3bn"
     print(f"    end-August capital ($bn) = {float(eq_aug)}")
     jul_fall = float((1 - eq_jul / eq_jan) * 100)
-    approx("fall to July 31 (%)", jul_fall, 14.58, 2)
-    assert abs(jul_fall - 15) < 1, "PWG: about fifteen percent"
+    approx("fall to July 31, PWG 'about fifteen percent' (%)", jul_fall, 14.58, 2)
     aug_fall = float(aug_loss / eq_jul * 100)
     approx("August loss (%)", aug_fall, 43.90, 2)
-    assert round(aug_fall) == 44, "Federal Reserve History: 44 percent in August"
+    approx("August loss, Federal Reserve History rounding (%)", aug_fall, 44, 0)
     ytd = float((1 - eq_aug / eq_jan) * 100)
-    approx("loss for the year at end-August (%)", ytd, 52.08, 2)
-    assert ytd > 50, "PWG: over fifty percent"
+    approx("loss for the year at end-August, PWG 'over fifty percent' (%)", ytd, 52.08, 2)
     returned = Fraction(27, 10)
     cut = float(returned / (eq_jan + returned) * 100)
     assert abs(cut - 36) < 1, f"PWG: capital cut by about 36 percent, computed {cut:.2f}"

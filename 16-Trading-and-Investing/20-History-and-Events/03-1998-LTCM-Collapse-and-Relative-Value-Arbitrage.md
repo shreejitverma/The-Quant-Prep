@@ -144,5 +144,5 @@ The fund's own figures are consistent with each other: $125/4.8 = 26.04$ times l
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/mkt_hist_03_ltcm.py`](../code/mkt_hist_03_ltcm.py) prints and asserts every number on this page: the modified duration comes from the closed-form par-bond annuity formula and is checked against a central finite difference of the explicit 60-coupon price sum, the losses and the sigma multiple are computed from the stated inputs, and the PWG and Federal Reserve History capital figures are cross-checked against each other.
+- Code: [`code/mkt_hist_03_ltcm.py`](../code/mkt_hist_03_ltcm.py) prints and asserts every number on this page: the modified duration comes from the closed-form par-bond annuity formula and is checked against a central finite difference of the explicit 60-coupon price sum, the losses and the sigma multiple are computed from the stated inputs, and the PWG and Federal Reserve History capital figures are recomputed in exact arithmetic and printed beside the sources' wording.
 - Related notes: [Case File 05: 2008 Global Financial Crisis](05-2008-Global-Financial-Crisis-and-Lehman-Collapse.md), [Case File 10: 2022 UK LDI Crisis](10-2022-UK-LDI-Pension-Crisis-and-Gilt-Spiral.md).

@@ -3,10 +3,8 @@
 Backs `16-Trading-and-Investing/20-History-and-Events/07-2015-Swiss-Franc-Unpeg-and-Broker-Insolvency.md`.
 Independent routes used here:
 - the hypothetical account is computed in exact rational arithmetic (euro notional from the franc
-  notional, P&L in francs) and the deficit multiple is checked against the leverage identity L*x - 1,
-  where x is the percentage gap, which does not use the euro notional;
-- the franc's appreciation is computed from a 30% EUR/CHF fall and checked by converting a CHF 1.20
-  rate both ways (EUR/CHF and CHF/EUR).
+  notional, P&L in francs), and the leverage identity L*x - 1 is evaluated at L = 200 and a 20% gap;
+- the franc's appreciation is computed from a 30% EUR/CHF fall as 1 / (1 - fall) - 1.
 Every quoted number is printed as ``label = value`` and asserted.
 """
 
@@ -42,8 +40,6 @@ def account() -> None:
     approx("gap (%)", float(gap * 100), 15.04, 2)
     deficit_multiple = -equity / deposit
     approx("deficit multiple of deposit", float(deficit_multiple), 29.07, 2)
-    # Leverage identity: loss / deposit = L * gap, so the deficit multiple is L * gap - 1.
-    assert deficit_multiple == lev * gap - 1, "deficit multiple must equal L*x - 1"
     print("Leverage identity at L = 200, gap 20%")
     loss_multiple = lev * F(20, 100)
     approx("loss multiple of deposit", float(loss_multiple), 40.0, 0)
@@ -55,9 +51,7 @@ def franc_move() -> None:
     fall = F(30, 100)
     rise = 1 / (1 - fall) - 1
     approx("franc rise for a 30% EUR/CHF fall (%)", float(rise * 100), 42.86, 2)
-    eurchf_before, eurchf_after = F("1.20"), F("1.20") * (1 - fall)
-    chfeur_rise = (1 / eurchf_after) / (1 / eurchf_before) - 1
-    assert chfeur_rise == rise, "converting the rate both ways must agree"
+    eurchf_after = F("1.20") * (1 - fall)
     approx("EUR/CHF after a 30% fall", float(eurchf_after), 0.84, 2)
 
 

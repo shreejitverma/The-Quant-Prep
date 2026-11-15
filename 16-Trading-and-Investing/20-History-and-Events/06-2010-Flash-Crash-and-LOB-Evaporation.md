@@ -134,5 +134,5 @@ On the report's numbers, buy-side depth falling from its morning level to less t
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/mkt_hist_06_flash_crash.py`](../code/mkt_hist_06_flash_crash.py) prints and asserts every number on this page: the implied index levels are computed from three separately cited contract-value pairs and checked against each other and against the intraday low, the sell program's pieces are checked to add up, and the depth-impact multiple is computed from the report's depth figure.
+- Code: [`code/mkt_hist_06_flash_crash.py`](../code/mkt_hist_06_flash_crash.py) prints and asserts every number on this page: the implied index levels are computed from three separately cited contract-value pairs and checked against each other and printed beside the intraday low, the sell program's pieces are checked to add up, and the depth-impact multiple is computed from the report's depth figure.
 - Related notes: [Case File 02: 1987 Black Monday](02-1987-Black-Monday-and-Portfolio-Insurance.md), [Case File 09: 2021 GameStop](09-2021-GameStop-Meme-Squeeze-and-DTCC-Margin-Halt.md).

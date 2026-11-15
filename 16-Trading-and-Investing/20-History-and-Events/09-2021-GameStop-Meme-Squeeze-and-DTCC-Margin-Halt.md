@@ -25,7 +25,7 @@ Sources used on this page: SEC staff, *Staff Report on Equity and Options Market
 
 - **April 2020**: A GME short interest ratio of 84% is reportedly noted on Reddit (SEC report).
 - **December 31, 2020**: GME short interest reaches 109.26% (SEC report).
-- **January 11, 2021**: GameStop announces that Ryan Cohen, of Chewy, will join its board; GME reaches an intraday high of $20.65, about 17% above the prior close.
+- **January 11, 2021**: GameStop announces that Ryan Cohen, of Chewy, will join its board; GME reaches an intraday high of $20.65, about 17% above the prior close (SEC report, section 3.2).
 - **January 13, 2021**: GME closes at $31.40, up from $19.95 the day before, on about 144 million shares against about 7 million the day before.
 - **January 22, 2021**: GME rises from $43 to $72 in about three hours; 197.2 million shares trade, the highest volume of the month.
 - **January 27, 2021**: GME closes at $347.51, more than 1,600% above its January 11 close (SEC report) of $19.94 (contemporary press reports); NSCC makes intraday margin calls of $6.9 billion on 36 members, bringing total required margin to $25.5 billion, and both NSCC and OCC clear record volumes.

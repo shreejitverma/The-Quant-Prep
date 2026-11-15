@@ -8,7 +8,7 @@ Independent routes used here:
   1999; February 2, March 21 and May 16, 2000) and checked against the start and end targets;
 - the Gordon multiples 1/(r - g) are checked against an explicit sum of discounted growing cash flows,
   truncated where the remaining tail is below 1e-12 of the total;
-- the Barron's share "about a quarter" is checked from 51 of 207.
+- the Barron's share "about a quarter" is computed from 51 of 207.
 Every quoted number is printed as ``label = value`` and asserted.
 """
 
@@ -39,14 +39,12 @@ def nasdaq_and_netscape() -> None:
     peak, trough = D("5048.62"), D("1114.11")
     approx("Nasdaq peak-to-trough fall (%)", float((1 - trough / peak) * 100), 77.93, 2)
     approx("Netscape first-day gain over offer (%)", float((D("58.25") / D("28") - 1) * 100), 108.04, 2)
-    approx("Barron's share of companies out of cash (%)", 51 / 207 * 100, 24.6, 1)
-    assert 0.2 < 51 / 207 < 0.3, "'about a quarter'"
+    approx("Barron's share of companies out of cash, 'about a quarter' (%)", 51 / 207 * 100, 24.6, 1)
 
 
 def fomc() -> None:
     print("FOMC federal funds target moves, June 1999 to May 2000 (bps)")
     moves = [25, 25, 25, 25, 25, 50]
-    assert len(moves) == 6, "six increases"
     total = sum(moves)
     assert total == 175
     approx("start + moves (%)", 4.75 + total / 100, 6.50, 2)

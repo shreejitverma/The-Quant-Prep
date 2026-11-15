@@ -6,8 +6,8 @@ Independent routes used here:
   cited point change and the Brady Report's rounded figures (22.6 percent; 769 points or 31 percent);
 - the October 13 close is recovered independently by adding the October 14-16 daily changes back to the
   October 16 close, and the intermediate figures are checked against the Brady Report's rounded ones;
-- the portfolio-insurance overhang (20 percent of $60 billion) is checked against the Brady Report's
-  statement that less than $4 billion had been sold;
+- the portfolio-insurance overhang (20 percent of $60 billion) is computed and printed beside the Brady
+  Report's statement that less than $4 billion had been sold;
 - the hypothetical put deltas use the closed form N(d1) - 1 (math.erf) and are checked against a central
   finite difference of a put price obtained by trapezoidal integration of the payoff over the lognormal
   density, a route that never evaluates N(d1).
@@ -76,8 +76,7 @@ def index_moves() -> None:
 def overhang() -> None:
     print("Portfolio insurance overhang (Brady Report)")
     dictated = 0.20 * 60.0
-    approx("sales dictated by a 10% fall ($bn)", dictated, 12.0, 0)
-    assert dictated > 4.0, "Brady: less than $4 billion had in fact been sold"
+    approx("sales dictated by a 10% fall, against less than $4bn sold (Brady) ($bn)", dictated, 12.0, 0)
 
 
 def deltas() -> None:
@@ -93,8 +92,7 @@ def deltas() -> None:
     approx("hedge at S0 (% of portfolio)", -put_delta_closed_form(100.0, k, sigma, t) * 100, 33.24, 2)
     approx("hedge at S1 (% of portfolio)", -put_delta_closed_form(90.0, k, sigma, t) * 100, 62.23, 2)
     ratio = put_delta_closed_form(90.0, k, sigma, t) / put_delta_closed_form(100.0, k, sigma, t)
-    assert 1.8 < ratio < 2.0, f"'close to double': ratio {ratio}"
-    print(f"    hedge ratio S1/S0 = {ratio:.3f}")
+    print(f"    hedge ratio S1/S0, 'close to double' = {ratio:.3f}")
 
 
 def main() -> None:

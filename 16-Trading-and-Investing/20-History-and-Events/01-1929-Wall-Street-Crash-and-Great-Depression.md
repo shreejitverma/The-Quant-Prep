@@ -135,5 +135,5 @@ The headline index moves are computed from the cited Dow closes:
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/mkt_hist_01_1929_crash.py`](../code/mkt_hist_01_1929_crash.py) prints and asserts every number on this page: each percentage decline is recomputed from the cited closes in exact decimal arithmetic and checked against the cited point changes and the Brady Report's and Federal Reserve History's rounded figures, the FDIC suspension total is summed from the yearly counts, and the margin example is evaluated on an explicit balance sheet.
+- Code: [`code/mkt_hist_01_1929_crash.py`](../code/mkt_hist_01_1929_crash.py) prints and asserts every number on this page: each percentage decline is recomputed from the cited closes in exact decimal arithmetic and checked against the cited point changes and the Brady Report's rounded figures, and printed beside Federal Reserve History's wording, the FDIC suspension total is summed from the yearly counts, and the margin example is evaluated on an explicit balance sheet.
 - Related notes: [Case File 02: 1987 Black Monday](02-1987-Black-Monday-and-Portfolio-Insurance.md), [Case File 05: 2008 Global Financial Crisis](05-2008-Global-Financial-Crisis-and-Lehman-Collapse.md).

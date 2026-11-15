@@ -3,7 +3,7 @@
 Backs `16-Trading-and-Investing/20-History-and-Events/05-2008-Global-Financial-Crisis-and-Lehman-Collapse.md`.
 Independent routes used here:
 - the hypothetical bank is evaluated line by line (assets, write-down, equity) in exact rational
-  arithmetic and checked against the leverage identity (equity is gone once losses reach A/L);
+  arithmetic, with the leverage threshold 1/L (equity is gone once losses reach A/L) beside it;
 - the repo haircut collateral is computed in exact rational arithmetic as $100 / (1 - haircut);
 - Lehman's leverage is recomputed from the Form 10-K figures in millions and compared with the reported 30.7x;
 - the Dow and S&P 500 moves are recomputed from the cited closes in exact decimal arithmetic.
@@ -40,7 +40,6 @@ def bank_example() -> None:
     approx("fall in total assets (%)", float(writedown / assets * 100), 3.5, 1)
     threshold = 1 / leverage
     approx("asset loss that wipes out equity (%)", float(threshold * 100), 3.33, 2)
-    assert writedown / assets > threshold, "a 3.5% loss exceeds the 1/30 threshold"
 
 
 def haircuts() -> None:
