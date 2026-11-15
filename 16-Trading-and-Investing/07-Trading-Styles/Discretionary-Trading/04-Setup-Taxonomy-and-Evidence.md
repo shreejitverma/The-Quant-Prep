@@ -226,9 +226,9 @@ A quantitative discretionary desk audits four proposed trading setups:
 > Leading models attribute it to under-reaction from conservatism (Barberis, Shleifer and Vishny 1998), overconfidence and biased self-attribution followed by later correction (Daniel, Hirshleifer and Subrahmanyam 1998), or slow diffusion of information across investors (Hong and Stein 1999).
 > All three predict continuation over months followed by partial long-run reversal, which matches the evidence.
 
-> [!question]- mkt-trd-108 | Why do breakout setups have low win rates (30% to 40%) but high profitability?
+> [!question]- mkt-trd-108 | Why can a breakout setup with a low win rate still have positive expectancy?
 > False breakouts are frequent, so most trades are small 1R losses; the few that become sustained trends produce large multiples of R.
-> Profitability needs the average win to clear the break-even ratio: at a 35% win rate the average win must exceed 0.65 / 0.35 = 1.86R before costs.
+> Positive expectancy needs the average win to clear the break-even ratio: at a 35% win rate the average win must exceed 0.65 / 0.35 = 1.86R before costs.
 
 > [!question]- mkt-trd-109 | What is Post-Earnings Announcement Drift (PEAD) discovered by Ball and Brown (1968)?
 > The tendency of a stock's cumulative abnormal returns to drift in the direction of an earnings surprise for weeks or months following the announcement date.

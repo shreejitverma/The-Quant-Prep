@@ -295,7 +295,7 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 
 > [!question]- mkt-ta-170 | What are trapped buyers in market microstructure?
 > Aggressive market participants who bought at the extreme top of a move right into passive institutional limit sell orders.
-> When price reverses downward, their stop-loss selling accelerates the subsequent drop.
+> If they exit with stop-market orders, that selling can add to the drop; whether it does depends on where their stops sit, and no study cited here measures it.
 
 > [!question]- mkt-ta-171 | What is an iceberg order?
 > A large limit order that displays only a small fraction of its total quantity in the public order book (e.g. displaying 100 shares out of a 50,000 share order).

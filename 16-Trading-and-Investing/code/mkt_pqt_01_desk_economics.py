@@ -145,9 +145,15 @@ def cards() -> None:
     print("Cards")
     print("    cited: Rule 610(c) access-fee cap $0.003 per share; 2024 amendment $0.001 (Release 34-101070)")
     print("    cited: IEX speed bump 350 microseconds")
-    sizes = np.array([1.0, 2.0, 4.0, 8.0])
-    total_cost = sizes * np.sqrt(sizes)
+    sizes, child_fills = np.array([1.0, 2.0, 4.0, 8.0]), 20_000
+    total_cost = []
+    for q in sizes:
+        dq = q / child_fills
+        executed = (np.arange(child_fills) + 0.5) * dq
+        total_cost.append(float(np.sum(np.sqrt(executed) * dq)))
     slope = np.polyfit(np.log(sizes), np.log(total_cost), 1)[0]
+    print(f"    exponent fitted to {child_fills:,} child fills with marginal impact sqrt(executed) = {slope:.6f}")
+    assert abs(slope - 1.5) < 1e-3
     rounded("square-root impact: exponent of total liquidation cost in size", slope, "1.5")
 
 

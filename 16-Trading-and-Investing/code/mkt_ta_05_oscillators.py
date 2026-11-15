@@ -174,7 +174,10 @@ def deflated_sharpe(rng: np.random.Generator) -> None:
     assert abs(dsr - phi_cdf(stat)) < 1e-8
     check("DSR = Phi(statistic)", dsr, "0.39")
     assert dsr < 0.95
-    check("Euler-Mascheroni constant", EULER_GAMMA, "0.5772")
+    n_h = 1_000_000
+    gamma_harmonic = float(np.sum(1.0 / np.arange(1, n_h + 1))) - math.log(n_h) - 1 / (2 * n_h)
+    assert abs(gamma_harmonic - EULER_GAMMA) < 1e-9
+    check("Euler-Mascheroni constant from H_n - ln n", gamma_harmonic, "0.5772")
     # The denominator is the standard error of a Sharpe estimate; for normal returns the (g4 - 1) / 4 term is 1/2.
     sr_true, t_sim = 0.0882, 1260
     rets = rng.normal(sr_true, 1.0, size=(20_000, t_sim))

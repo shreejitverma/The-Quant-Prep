@@ -23,7 +23,7 @@ This note formalizes oscillator mathematics, demonstrates how to condition mean 
 ## TL;DR
 
 Oscillators quantify where current price sits relative to its recent range (Stochastics), relative price changes (RSI), or moving average spreads (MACD).
-Static threshold rules (e.g. buy when RSI $< 30$, sell when RSI $> 70$) have no published support as a stand-alone edge, and a drifting price keeps RSI above 50 for as long as the drift lasts.
+Static threshold rules (e.g. buy when RSI $< 30$, sell when RSI $> 70$) have no published support as a stand-alone edge, and a drifting price centres RSI above 50 (about 62.3 for normal changes with mean 0.2 sigma) for as long as the drift lasts.
 Regime filters (low ADX, a variance ratio below one, a Hurst exponent $H < 0.5$) are hypotheses to test, and every filter and threshold tried counts as another trial.
 Furthermore, backtesting thousands of indicator lookback combinations without adjusting for multiple testing creates illusory alpha; frameworks such as White's Reality Check, Hansen's SPA, and the Deflated Sharpe Ratio (DSR) must be applied to penalize data-mined parameter fits.
 
