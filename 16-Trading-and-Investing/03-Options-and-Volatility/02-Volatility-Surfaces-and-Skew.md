@@ -13,7 +13,7 @@ prereqs: []
 
 In the classical Black-Scholes-Merton model, volatility is assumed to be a constant parameter across all strike prices and expiration dates.
 Empirical financial markets severely violate this assumption.
-Following the October 1987 stock market crash, options markets price out-of-the-money (OTM) puts at a substantial implied volatility premium relative to at-the-money (ATM) and out-of-the-money calls.
+Since the October 1987 stock market crash, equity index options have priced out-of-the-money (OTM) puts at an implied volatility premium to at-the-money (ATM) and out-of-the-money calls (Rubinstein 1994 documents the change).
 This persistent non-flat relationship across strike prices forms the implied volatility smile or skew, while variation across maturities generates the volatility term structure.
 Together, moneyness and maturity span the two-dimensional volatility surface $\sigma_{IV}(K, T)$.
 
@@ -23,10 +23,10 @@ Together, moneyness and maturity span the two-dimensional volatility surface $\s
 
 The volatility surface models implied volatility as a function of strike $K$ and expiration $T$.
 Equity index options exhibit a persistent downward-sloping "smirk" or "skew" driven by downside crash hedging demand and structural leverage.
-Commodity and FX options frequently display symmetric "smiles" reflecting fat-tailed jump risks.
+Many FX options, especially between currencies of similar standing, display more symmetric "smiles", while commodity smiles can tilt toward upside strikes when supply shocks dominate.
 The term structure reflects market expectations of forward volatility, trading in contango during quiet bull regimes and backwardation during market panics.
 Desks model surface dynamics under two primary delta-hedging conventions: sticky strike (implied volatility remains constant at a fixed strike) and sticky delta / sticky moneyness (implied volatility shifts with the underlying asset price).
-Parametric models such as Gatheral's SVI (Stochastic Volatility Inspired) and the Hagan SABR model calibrate the surface while enforcing absence of static arbitrage (butterfly and calendar arbitrage).
+Parametric models such as Gatheral's SVI (Stochastic Volatility Inspired) and the Hagan SABR model fit the surface smoothly, but neither is arbitrage-free for every parameter set, so butterfly and calendar arbitrage must still be checked after calibration.
 
 ---
 
@@ -54,9 +54,9 @@ $$C_{\text{market}}(K, T) = C_{\text{BSM}}(S, K, T, r, q, \sigma_{IV}(K, T))$$
 
 1. **The Strike Dimension (Skew and Smile)**:
    - **Equity Index Skew (Smirk)**: Out-of-the-money puts ($K < S$) trade at significantly higher implied volatilities than ATM or OTM calls.
-   - This asymmetry originated following the October 19, 1987 crash, reflecting institutional demand for portfolio insurance ("crash-phobia") and the leverage effect (falling equity prices increase corporate debt-to-equity ratios, boosting equity volatility).
-   - **FX Smiles**: Currency options typically display symmetric smiles centered near ATM, driven by leptokurtic return distributions (fat tails) and two-sided central bank intervention risk.
-   - **Commodity Inverted Skews**: Agricultural and energy options (e.g., natural gas, crude oil) frequently exhibit positive skew (OTM calls trade at higher IV than OTM puts) due to physical supply shortages and upside price spikes.
+   - The asymmetry became persistent after the October 19, 1987 crash (Rubinstein 1994); the usual explanations are demand for downside protection ("crash-o-phobia") and the leverage effect (falling equity prices raise debt-to-equity ratios, raising equity volatility).
+   - **FX Smiles**: Options on pairs of similar-standing currencies tend to show more symmetric smiles, reflecting fat tails in both directions; pairs with a safe-haven or emerging-market leg are often skewed toward one side.
+   - **Commodity Call Skews**: Options on commodities exposed to supply shocks (natural gas and many agricultural contracts, for example) can show positive skew (OTM calls above OTM puts), because shortages produce upside price spikes; the sign of a commodity's skew is not fixed and should be read from the market.
 
 2. **The Time Dimension (Term Structure)**:
    - **Contango**: In normal, calm market environments, short-dated implied volatility is lower than long-dated implied volatility ($\frac{\partial \sigma_{IV}}{\partial T} > 0$).
@@ -110,7 +110,7 @@ Quantitative desks model this behavior under two competing operational regimes:
 A valid implied volatility surface must be free from static arbitrage opportunities:
 
 1. **Calendar Spread Arbitrage (Time Direction)**:
-   - Call prices must be monotonic non-decreasing in maturity for zero interest rates:
+   - With zero interest rates and dividends, call prices at a fixed strike must be non-decreasing in maturity (in general the statement holds at fixed forward moneyness):
      $$\frac{\partial C(K, T)}{\partial T} \ge 0$$
    - In terms of total implied variance $w(K, T) = \sigma_{IV}^2(K, T) T$, absence of calendar arbitrage requires:
      $$\partial_T w(K, T) \ge 0$$
@@ -136,7 +136,7 @@ To interpolate and extrapolate the volatility surface smoothly while preventing 
      - $\rho \in [-1, 1]$: Orientation and skewness of the smile (negative for equities).
      - $m \in \mathbb{R}$: Horizontal translation of the minimum.
      - $\sigma > 0$: Smoothness of the vertex roundness.
-   - SVI guarantees strictly hyperbolic asymptotes, matching Roger Lee's Moment Formula for extreme strike tails.
+   - SVI is a hyperbola in $k$, so its wings are asymptotically linear with slopes $b(1 + \rho)$ and $b(1 - \rho)$, the shape Roger Lee's moment formula allows; Lee's bound $\limsup w(k)/|k| \le 2$ then requires $b(1 + |\rho|) \le 2$.
 
 2. **Hagan's SABR Model**:
    - A stochastic volatility model governed by forward price $F_t$ and stochastic vol $\alpha_t$:
@@ -150,7 +150,7 @@ To interpolate and extrapolate the volatility surface smoothly while preventing 
 
 ### Example 1: Forward Implied Volatility and Calendar Arbitrage Check
 
-An options quantitative analyst extracts at-the-money implied volatilities for two maturities on the S&P 500 index:
+An options quantitative analyst extracts at-the-money implied volatilities for two maturities on an equity index (hypothetical inputs):
 - 30-day maturity ($T_1 = 30 / 365 = 0.08219$ years): $\sigma_1 = 18.0\%$ ($0.18$).
 - 90-day maturity ($T_2 = 90 / 365 = 0.24658$ years): $\sigma_2 = 22.0\%$ ($0.22$).
 
@@ -166,11 +166,12 @@ An options quantitative analyst extracts at-the-money implied volatilities for t
    $$\Delta T = T_2 - T_1 = 0.24658 - 0.08219 = 0.16438\text{ years}$$
    $$\sigma_{\text{fwd}}^2 = \frac{w_2 - w_1}{\Delta T} = \frac{0.009271}{0.16438} = 0.05640$$
    $$\sigma_{\text{fwd}} = \sqrt{0.05640} = 0.2375 = 23.75\%$$
-   The market is pricing expected annualized volatility of $23.75\%$ between day 30 and day 90.
+   The market is pricing annualized volatility of $23.75\%$ between day 30 and day 90, in the risk-neutral sense of variance-swap strikes.
+   The backing script reaches the same $23.75\%$ independently, by replicating each maturity's variance swap with a quadrature over a strip of out-of-the-money option prices.
 
 ### Example 2: Skew-Adjusted Delta Under Sticky Moneyness
 
-A market maker is hedging a 25-delta OTM European put on an index:
+A market maker is hedging a roughly 25-delta OTM European put on an index (hypothetical inputs):
 - Spot: $S = \$5,000.00$.
 - Strike: $K = \$4,750.00$ ($m = K / S = 0.95$).
 - Time to Expiration: $T = 0.10$ years ($\sqrt{T} = 0.31623$).
@@ -225,8 +226,8 @@ A market maker is hedging a 25-delta OTM European put on an index:
 > Equities display a downward-sloping smirk (skew), while FX markets typically display a symmetric smile.
 
 > [!question]- mkt-opt-035 | Why did the equity index volatility skew emerge after October 1987?
-> Before the 1987 crash, options traded at relatively flat implied volatilities across strikes.
-> Post-1987, intense institutional demand for downside portfolio insurance (crash-phobia) permanently bid up out-of-the-money put implied volatility.
+> Rubinstein (1994, Journal of Finance) shows S&P 500 index option smiles were close to flat before October 1987 and persistently skewed afterward, and calls the leading explanation "crash-o-phobia".
+> The usual reading is that the crash taught investors to pay up for downside protection, so out-of-the-money puts have carried higher implied volatility since.
 
 > [!question]- mkt-opt-036 | What is the leverage hypothesis explaining equity volatility skew?
 > When a company's stock price falls, its debt-to-equity ratio increases, making the equity riskier.
@@ -282,7 +283,7 @@ A market maker is hedging a 25-delta OTM European put on an index:
 
 > [!question]- mkt-opt-049 | In Gatheral's SVI model, what is the role of parameter rho?
 > rho controls the skewness and orientation of the smile wings.
-> For equity index markets, rho is strongly negative (-0.7 to -0.9), producing a steep downside put wing.
+> For equity index smiles the fitted rho is negative, which makes the downside (put) wing steeper than the upside wing.
 
 > [!question]- mkt-opt-050 | In Gatheral's SVI model, what does parameter b control?
 > b controls the angle and steepness of the asymptotic wings as log-moneyness approaches +/- infinity.
@@ -297,23 +298,23 @@ A market maker is hedging a 25-delta OTM European put on an index:
 > It generates a state-dependent diffusion process that perfectly reprices the entire market surface.
 
 > [!question]- mkt-opt-053 | What is a major limitation of Dupire's local volatility model?
-> Local volatility predicts that the implied volatility surface flattens as the underlying moves, contradicting empirical sticky delta behavior.
-> It systematically underestimates forward volatility smile dynamics.
+> Hagan, Kumar, Lesniewski and Woodward (2002) show that local volatility predicts the smile moves in the opposite direction to the underlying, whereas markets see it move with the underlying, so local-vol deltas and hedges are wrong.
+> Local volatility also produces forward smiles that are too flat, which misprices forward-starting and cliquet products.
 
 > [!question]- mkt-opt-054 | What are the core parameters of Hagan's SABR model?
 > Alpha (initial volatility), Beta (CEV exponent linking spot to volatility), Rho (spot-vol correlation), and Nu (volatility of volatility).
 > SABR is widely used to calibrate interest rate swaptions and FX options smiles.
 
 > [!question]- mkt-opt-055 | Why do commodity markets often exhibit positive volatility skew?
-> Supply constraints cannot be solved instantaneously; physical inventory shortages create explosive upside price spikes.
-> OTM calls trade at a premium to OTM puts in energy, metals, and agricultural options.
+> Supply cannot respond instantly, so inventory shortages produce upside price spikes and buyers pay up for upside protection.
+> When that dominates, OTM calls trade above OTM puts; it is common in natural gas and many agricultural options, but the sign varies by commodity and regime.
 
 > [!question]- mkt-opt-056 | What is the variance risk premium (VRP)?
-> The persistent structural spread between implied volatility and subsequent realized volatility: VRP = sigma_implied - sigma_realized.
-> In equity indices, implied volatility trades on average 2-4 points above realized volatility, compensating options sellers for crash risk.
+> The difference between risk-neutral and physical expected variance, VRP = E^Q[realized variance] - E^P[realized variance], often approximated as implied minus subsequently realized volatility.
+> For equity indices it has been positive on average, the compensation option sellers earn for bearing crash risk; its size varies by sample period, so quote it only with a source and date.
 
-> [!question]- mkt-opt-057 | What is the ATM 30-day implied volatility index (VIX)?
-> A model-free calculation developed by the CBOE that aggregates a continuous strip of OTM SPX calls and puts to estimate 30-day expected variance.
+> [!question]- mkt-opt-057 | What is the VIX, and is it an ATM implied volatility?
+> No: it is Cboe's model-free 30-day volatility index, computed from a strip of OTM SPX calls and puts across strikes, not from ATM options alone, to estimate 30-day risk-neutral expected variance.
 > It computes: sigma_VIX^2 = (2 / T) * sum_i (Delta K_i / K_i^2) * exp(r*T) * Q(K_i) - (1 / T) * (F / K_0 - 1)^2.
 
 > [!question]- mkt-opt-058 | How does earnings announcement uncertainty distort the short-dated volatility surface?
@@ -321,8 +322,8 @@ A market maker is hedging a 25-delta OTM European put on an index:
 > Term structure heavily inverts (backwardation) and ATM strike volatility elevates relative to farther expiries.
 
 > [!question]- mkt-opt-059 | What is the implied move derived from an ATM straddle prior to earnings?
-> Implied Move ~ 0.8 * Straddle_Price / Spot_Price.
-> It approximates the one-standard-deviation price move expected by options market makers over the announcement.
+> The ATM straddle price is the risk-neutral expected absolute move, so Expected |Move| / Spot ~ Straddle / Spot.
+> Under a normal approximation the straddle is sqrt(2/pi) ~ 0.80 times the one-standard-deviation move, so the one-sd move is about Straddle / 0.80 ~ 1.25 * Straddle (not 0.8 * Straddle).
 
 > [!question]- mkt-opt-060 | What happens to implied volatility immediately following an earnings release?
 > Implied volatility collapses violently across strikes, a phenomenon known as volatility crush.
@@ -341,8 +342,13 @@ A market maker is hedging a 25-delta OTM European put on an index:
 > It isolates exposure to Volga (d Vega / d sigma) and fat-tailed kurtosis moves.
 
 > [!question]- mkt-opt-064 | What is the consequence of calibrating an option model to market quotes with calendar arbitrage?
-> Numerical PDE and Monte Carlo engines generate negative probabilities or infinite discounting, causing simulation blowups.
+> Calendar arbitrage means negative forward variance, so local volatility (Dupire's numerator dC/dT) turns negative and the local-vol PDE or Monte Carlo has no valid diffusion coefficient; the engine fails or prices nonsense.
 > Surfaces must be smoothed and arbitrage-free before running pricing algorithms.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [mkt_opt_02_vol_surface.py](../code/mkt_opt_02_vol_surface.py) prints and asserts every number in this note; forward volatility is re-derived from variance swaps replicated by quadrature over an option strip, the sticky-moneyness delta by a finite difference that moves the smile with spot, and Breeden-Litzenberger, Dupire and the straddle constant by independent numerical routes; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_opt_02_vol_surface.py`.
+- Syllabus: [Implied Volatility and the Smile](../../05-Derivatives-and-Volatility/07-Implied-Volatility-and-the-Smile.md), [Volatility Surface Construction](../../05-Derivatives-and-Volatility/08-Volatility-Surface-Construction.md).
 
 ---
 
@@ -351,6 +357,8 @@ A market maker is hedging a 25-delta OTM European put on an index:
 - Breeden, D. T., & Litzenberger, R. H. (1978). *Prices of state-contingent claims implicit in option prices*. Journal of Business, 51(4), 621-651.
 - Dupire, B. (1994). *Pricing with a smile*. Risk, 7(1), 18-20.
 - Hagan, P. S., Kumar, D., Lesniewski, A. S., & Woodward, D. E. (2002). *Managing smile risk*. Wilmott Magazine, 1, 84-108.
-- Gatheral, J. (2004). *A parsimonious fitting of volatility smiles*. Merrill Lynch Presentation, NYU Courant.
+- Gatheral, J. (2004). *A parsimonious arbitrage-free implied volatility parameterization with application to the valuation of volatility derivatives*. Presentation, Global Derivatives & Risk Management, Madrid, May 2004.
+- Gatheral, J., & Jacquier, A. (2014). *Arbitrage-free SVI volatility surfaces*. Quantitative Finance, 14(1), 59-71.
 - Lee, R. (2004). *The moment formula for implied volatility at extreme strikes*. Mathematical Finance, 14(3), 469-480.
+- Rubinstein, M. (1994). *Implied binomial trees*. Journal of Finance, 49(3), 771-818.
 - Gatheral, J. (2006). *The Volatility Surface: A Practitioner's Guide*. John Wiley & Sons.

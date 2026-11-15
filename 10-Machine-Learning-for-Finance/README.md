@@ -16,9 +16,9 @@ ML where the signal-to-noise ratio is tiny and the data is non-stationary.
 
 | # | Topic | Tracks | Tier | Hours | Status | Cards |
 | ---: | :--- | :---: | :--- | ---: | :--- | ---: |
-| 01 | [ML Fundamentals and Generalization](01-ML-Fundamentals-and-Generalization.md) | RD | core | 4 | solid | 12 |
-| 02 | [Time-Series Cross-Validation: Purging and Embargo](02-Time-Series-Cross-Validation-Purging-Embargo.md) | R | core | 3 | solid | 12 |
-| 03 | [Tree Ensembles and Gradient Boosting](03-Tree-Ensembles-and-Gradient-Boosting.md) | R | core | 4 | solid | 13 |
+| 01 | [ML Fundamentals and Generalization](01-ML-Fundamentals-and-Generalization.md) | RD | core | 4 | solid | 16 |
+| 02 | [Time-Series Cross-Validation: Purging and Embargo](02-Time-Series-Cross-Validation-Purging-Embargo.md) | R | core | 3 | solid | 16 |
+| 03 | [Tree Ensembles and Gradient Boosting](03-Tree-Ensembles-and-Gradient-Boosting.md) | R | core | 4 | solid | 16 |
 | 04 | [Online Learning and Linear Models at Scale](04-Online-Learning-and-Linear-Models-at-Scale.md) | R | advanced | 3 | solid | 19 |
 | 05 | [Neural Networks and Sequence Models](05-Neural-Networks-and-Sequence-Models.md) | R | advanced | 4 | solid | 21 |
 | 06 | [Labeling: Triple Barrier and Meta-Labeling](06-Labeling-Triple-Barrier-and-Meta-Labeling.md) | R | advanced | 3 | solid | 20 |

@@ -14,15 +14,15 @@ sources: [Brennan (1958) - The Supply of Storage, Working (1949) - The Theory of
 
 - Unlike financial securities, physical commodities are consumption and production assets governed by the Theory of Storage: the forward price relationship is $F(t, T) = S(t) e^{(r + u - y)(T - t)}$, where $r$ is interest, $u$ is physical storage/insurance, and $y$ is the convenience yield.
 - Contango ($F > S$) indicates physical inventory abundance and creates negative roll yield for long futures holders, while Backwardation ($F < S$) reflects physical scarcity, yielding a high convenience yield and positive roll yield.
-- Total return for an unlevered commodity futures strategy decomposes into three additive components: Spot Return, Roll Return, and Collateral Yield.
-- Continuous rolling in contango creates severe compounding decay in passive retail commodity ETFs (such as USO or UNG), causing long-term investment performance to decouple dramatically from underlying spot commodity prices.
+- Total return for a fully collateralised commodity futures position is conventionally decomposed into Spot Return, Roll Return, and Collateral Yield (see Erb and Harvey 2006).
+- Rolling long futures through contango charges a roll cost every cycle, so the returns of front-month commodity funds (such as USO or UNG) can diverge widely from the spot price over long holding periods.
 - Energy processing margins are modeled via refinery Crack Spreads (such as the 3:2:1 spread between Crude Oil, Gasoline, and Heating Oil), reflecting the net processing margin of modern cracking facilities.
 
 ## Learning objectives
 
 - Formulate the cost-of-carry model for storable commodities including physical warehousing, insurance, and convenience yields.
 - Deconstruct commodity futures total returns into spot return, roll yield, and collateral yield.
-- Analyze the physical mechanics that triggered negative WTI crude oil futures prices (-$37.63/bbl) on April 20, 2020.
+- Analyze the physical mechanics behind the negative settlement of the May 2020 WTI crude oil futures contract (-$37.63/bbl) on April 20, 2020.
 - Calculate refinery processing margins using the 3:2:1 Crack Spread formula.
 - Design cash-and-carry and reverse cash-and-carry spatial and temporal commodity storage arbitrage trades.
 
@@ -30,7 +30,7 @@ sources: [Brennan (1958) - The Supply of Storage, Working (1949) - The Theory of
 
 ### 1. The Theory of Storage and Cost-of-Carry Model
 
-The modern Theory of Storage was established by Holbrook Working (1949) and Michael Brennan (1958).
+The Theory of Storage was developed by Holbrook Working (1949) and Michael Brennan (1958), among others.
 The relationship between current spot price $S(t)$ and the futures price $F(t, T)$ for delivery at time $T$ is governed by three carrying costs:
 
 $$F(t, T) = S(t) e^{(r + u - y)(T - t)}$$
@@ -67,13 +67,13 @@ Price ($)
 ```
 
 In deep contango, the futures price is capped by the **Cash-and-Carry Arbitrage Bound**:
-If $F(T) > S e^{(r + u) T}$, a trader buys physical commodity, stores it in an accredited warehouse, and sells the forward contract, locking in risk-free profit.
+If $F(T) > S e^{(r + u) T}$, a trader buys physical commodity, stores it in an accredited warehouse, and sells the forward contract, locking in a profit that is riskless apart from storage, delivery and counterparty risk.
 However, in backwardation, an inverted arbitrage bound does not exist: if physical inventories are exhausted, one cannot borrow physical crude or wheat from the future to sell short today.
 Consequently, backwardation can reach extreme price dislocations.
 
 ### 2. The Decomposition of Commodity Returns
 
-Gorton and Rouwenhorst (2006) proved that the total return of a fully collateralized long commodity futures position decomposes into three distinct sources:
+The total return of a fully collateralised long commodity futures position is conventionally split into three sources (Erb and Harvey 2006 discuss the decomposition; Gorton and Rouwenhorst 2006 study the returns of such positions):
 
 $$R_{\text{total}} = R_{\text{spot}} + R_{\text{roll}} + R_{\text{collateral}}$$
 
@@ -97,35 +97,39 @@ When the curve is in contango ($F_2 > F_1$), the fund sells cheap and buys expen
 
 $$\text{Roll Drag per Cycle} = \frac{F_1 - F_2}{F_1} < 0$$
 
-Over multiple years, persistent contango roll drag can completely destroy investor capital even if spot commodity prices double.
+Because the drag compounds every cycle, a long-only front-month fund in persistent contango can lose money even over periods when the spot price rises.
 
 ### 3. The Negative Pricing Anomaly: April 20, 2020
 
-On April 20, 2020, the May 2020 WTI Crude Oil futures contract settled at **-$37.63 per barrel**, the first negative price in commodity market history:
+On April 20, 2020, the May 2020 NYMEX WTI Crude Oil futures contract fell from $17.73 at the April 20 open to a **-$37.63 per barrel** settlement (CFTC Release 8315-20, November 23, 2020); EIA noted it was the first negative price since the contract began trading in 1983:
 
 ```
 +-----------------------------------------------------------------------+
 |                    ANATOMY OF THE APRIL 2020 WTI COLLAPSE             |
 +-----------------------------------------------------------------------+
-| 1. Demand Destruction: COVID-19 lockdowns eliminated 30M bpd of demand|
-| 2. Physical Delivery Point: WTI settles via mandatory physical delivery|
-|    at pipeline terminals in Cushing, Oklahoma                         |
-| 3. Storage Tank Capacity: Cushing storage tanks reached 100% capacity |
-| 4. Contract Expiration: Speculative financial longs faced physical    |
-|    delivery within 24 hours without storage tanks or pipeline access  |
-| 5. Forced Liquidation: Commercial storage operators demanded $30-$40  |
-|    per barrel to take delivery, forcing sellers to pay to shed crude  |
+| 1. Demand Destruction: the IEA (April 2020 Oil Market Report)        |
+|    estimated April 2020 demand 29 mb/d below a year earlier          |
+| 2. Physical Delivery Point: WTI futures are physically delivered at   |
+|    pipeline and storage facilities in Cushing, Oklahoma               |
+| 3. Storage Tightness: EIA put Cushing tank farms at about 76% of      |
+|    working capacity on April 17, 2020 (58 of 76 million barrels),     |
+|    with much of the rest already contracted                           |
+| 4. Contract Expiration: the May contract expired on April 21, so      |
+|    longs without storage or pipeline access had one day to exit       |
+| 5. Low Liquidity: with few buyers able to take barrels, longs paid    |
+|    to close, and the price fell through zero                          |
 +-----------------------------------------------------------------------+
 ```
 
+The contract terms matter here: per CME Group's NYMEX WTI Light Sweet Crude Oil (CL) specifications (as of November 2026), one contract is 1,000 barrels, the minimum tick is $0.01 per barrel ($10 per contract), delivery is physical at Cushing, and trading ends three business days before the 25th calendar day of the month before delivery (four if the 25th is not a business day).
 Because financial futures contracts with physical delivery require actual pipeline off-take, an absolute physical constraint overrides financial arbitrage.
 The cost-of-carry formula $F(T) = S e^{(r + u - y) T}$ cannot produce a negative price, because it assumes storage is available at some finite cost.
-When no storage is available at all, a long holding an expiring contract must instead pay someone to take the barrels, so the expiring futures price falls to minus that disposal cost.
+When a long without storage access cannot find anyone to take the barrels at a positive price, it must pay to be relieved of them, so the expiring futures price can fall below zero; storage need not be physically full for this, only unavailable to the marginal seller.
 
 ### 4. Refinery Crack Spreads: The 3:2:1 Model
 
 Refineries operate by purchasing raw crude oil and refining it into refined petroleum products: gasoline and distillate fuels (diesel and heating oil).
-The industry-standard metric for refinery gross margin is the **3:2:1 Crack Spread**:
+A widely used benchmark for refinery gross margin is the **3:2:1 Crack Spread**:
 
 $$\text{Inputs}: 3 \text{ barrels of Crude Oil} \implies \text{Outputs}: 2 \text{ barrels of Gasoline} + 1 \text{ barrel of Distillate}$$
 
@@ -156,7 +160,7 @@ When crack spreads collapse below operating costs, refineries curtail utilizatio
 ## Worked examples
 
 ### Example 1: Cash-and-Carry Storage Arbitrage in Crude Oil
-Suppose spot crude oil is trading at $70.00 per barrel.
+Suppose spot crude oil is trading at $70.00 per barrel (all inputs hypothetical).
 The 6-month forward futures contract ($T = 0.5$ years) trades at $76.00 per barrel.
 Financing interest rate is $r = 5.0\%$ annually (continuously compounded), and physical storage plus insurance costs a fixed $\$0.60$ per barrel per month, invoiced at maturity ($U_T = 6 \times \$0.60 = \$3.60$).
 Convenience yield is $y = 0.0\%$ due to physical inventory surplus.
@@ -176,7 +180,7 @@ $$\text{Principal + Interest} = 70.00 \times e^{0.05 \times 0.5} = \$71.77$$
 $$\text{Storage Outflow} = \$3.60$$
 $$\text{Total Cost} = 71.77 + 3.60 = \$75.37$$
 $$\text{Arbitrage Net Profit} = \$76.00 - \$75.37 = +\$0.63 \text{ per barrel}$$
-By leasing storage capacity and shorting forward futures, the trader locks in a riskless annualized return above the risk-free benchmark.
+By leasing storage capacity and shorting the futures, the trader locks in $0.63 per barrel above financing and storage costs, exposed only to storage, delivery and counterparty risk.
 
 ---
 
@@ -185,7 +189,7 @@ By leasing storage capacity and shorting forward futures, the trader locks in a 
 - **Ignoring Negative Roll Drag in Long Commodity ETFs**: Holding passive long commodity ETFs during sustained contango regimes erodes portfolio capital through continuous negative roll yield.
 - **Underestimating Storage Bottlenecks During Physical Delivery**: Assuming financial arbitrage can always bridge futures and spot prices, even when physical pipeline and tank capacity are exhausted (such as April 2020 WTI).
 - **Neglecting Quality Grade Differentials in Agricultural Contracts**: Failing to account for protein discounts, moisture penalties, and delivery elevator basis risk when trading grains.
-- **Confusing Nominal Gold Prices with Real Gold Drivers**: Treating gold as a generic inflation hedge rather than recognizing its tight structural inverse relationship with real Treasury yields.
+- **Assuming a Stable Gold Driver**: Treating gold as a generic inflation hedge, or assuming its often-cited inverse relation with real Treasury yields is stable; the relation varies over time and should be measured, not assumed.
 - **Treating Crack Spreads as Symmetrical Arbitrage**: Overlooking refinery maintenance outages, environmental regulations, and seasonal fuel blending mandates that decouple product margins.
 
 ---
@@ -226,7 +230,8 @@ By leasing storage capacity and shorting forward futures, the trader locks in a 
 > Cushing, Oklahoma.
 
 > [!question]- mkt-cmd-012 | Why did WTI Crude Oil futures trade at negative $37.63 per barrel on April 20, 2020?
-> Physical storage capacity at Cushing was completely full, forcing financial longs facing physical delivery to pay to unload contracts.
+> With the May contract expiring the next day and Cushing storage tight (EIA: tank farms about 76% of working capacity on April 17, much of the rest committed), longs who could not take delivery had to pay buyers to take their contracts.
+> Storage did not have to be literally full; it only had to be unavailable to the longs who needed to exit.
 
 > [!question]- mkt-cmd-013 | What is a Crack Spread?
 > The pricing spread simulating the gross refining margin earned by converting raw crude oil into refined petroleum products.
@@ -247,22 +252,23 @@ By leasing storage capacity and shorting forward futures, the trader locks in a 
 > Brent Crude, sourced from the North Sea.
 
 > [!question]- mkt-cmd-019 | Why does Gold typically trade in a permanent contango market structure?
-> Gold is a monetary store of value with virtually zero industrial consumption, low storage costs, and zero convenience yield.
+> Gold stocks are huge relative to annual consumption and cheap to store, so its convenience yield (the gold lease rate) is usually small relative to interest rates and the curve sits near full carry.
+> "Permanent" overstates it: when lease rates rise above interest rates the gold curve can briefly backwardate.
 
 > [!question]- mkt-cmd-020 | What macro factor exhibits the strongest negative correlation with the price of Gold?
-> Real interest rates (TIPS yields).
+> Real interest rates (TIPS yields) are the most commonly cited driver, with higher real yields raising the opportunity cost of holding gold; the strength of the relation varies across periods, so measure it rather than assume it.
 
 > [!question]- mkt-cmd-021 | What is the Gold-to-Silver Ratio?
 > The price of an ounce of gold divided by the price of an ounce of silver, tracking monetary hedge demand versus industrial demand.
 
 > [!question]- mkt-cmd-022 | What commodity is known as 'Doctor Copper' and why?
-> Copper, because its widespread industrial use makes its price a reliable diagnostic of global manufacturing and GDP health.
+> Copper, because its wide industrial use makes its price sensitive to global manufacturing and construction activity; the nickname overstates its reliability as a forecaster.
 
 > [!question]- mkt-cmd-023 | What is Henry Hub?
-> The pipeline distribution hub in Erath, Louisiana, that serves as the official delivery point for NYMEX Natural Gas futures.
+> The Sabine Pipe Line Henry Hub in Erath, Louisiana, the delivery point for NYMEX Henry Hub Natural Gas futures (10,000 MMBtu per contract).
 
 > [!question]- mkt-cmd-024 | What is the injection season versus withdrawal season for US Natural Gas storage?
-> Injection occurs during mild weather from April to October; withdrawal occurs during winter heating demand from November to March.
+> By EIA convention the injection season runs April to October and the withdrawal season November to March; actual weekly flows can deviate at either end.
 
 > [!question]- mkt-cmd-025 | What are Heating Degree Days (HDD) and Cooling Degree Days (CDD)?
 > Weather metrics measuring the extent to which daily temperatures deviate from 65 degrees Fahrenheit, driving natural gas and electricity demand.
@@ -283,16 +289,24 @@ By leasing storage capacity and shorting forward futures, the trader locks in a 
 > The theoretical gross margin of a gas-fired power plant from selling wholesale electricity and purchasing natural gas fuel.
 
 > [!question]- mkt-cmd-031 | What is Keynes's Theory of Normal Backwardation?
-> The proposition that commodity producers sell forward futures at a discount to induce risk-bearing speculators to provide insurance.
+> Keynes's proposition (A Treatise on Money, 1930) that hedgers who are net short futures pay speculators a risk premium, so futures trade below the expected future spot price and drift up toward it.
 
 > [!question]- mkt-cmd-032 | What is the primary operational lesson for commodity portfolio allocation?
 > Never hold passive long commodity futures without factoring in the drag of term structure contango and roll yield.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [mkt_cmdty_01_storage.py](../code/mkt_cmdty_01_storage.py) prints and asserts every number in this note; the crack spread is computed from per-barrel product values, and the carry arbitrage by a month-by-month cash-and-carry ledger; event facts are cited to CFTC, EIA and IEA; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_cmdty_01_storage.py`.
+- Syllabus: [Commodities and Futures Curves](../../06-Fixed-Income-and-Asset-Classes/09-Commodities-and-Futures-Curves.md).
 
 ---
 
 ## Further reading
 
 - Brennan, M. J. (1958). *The Supply of Storage*. American Economic Review, 48(1), 50-72.
+- Commodity Futures Trading Commission. (2020). *Interim Staff Report: Trading in NYMEX WTI Crude Oil Futures Contract Leading up to, on, and around April 20, 2020*. CFTC, November 2020.
+- Energy Information Administration. (2020). *Low liquidity and limited available storage pushed WTI crude oil futures prices below zero*. Today in Energy, April 27, 2020.
 - Erb, C. B., & Harvey, C. R. (2006). *The Strategic and Tactical Value of Commodity Futures*. Financial Analysts Journal, 62(2), 69-97.
+- International Energy Agency. (2020). *Oil Market Report - April 2020*. IEA.
 - Gorton, G., & Rouwenhorst, K. G. (2006). *Facts and Fantasies about Commodity Futures*. Financial Analysts Journal, 62(2), 47-68.
 - Working, H. (1949). *The Theory of the Price of Storage*. American Economic Review, 39(6), 1254-1262.

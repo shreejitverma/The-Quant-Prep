@@ -22,7 +22,9 @@ About 150 wikilinks point at concept notes that are not written yet; they are th
 - [Finance index](Finance/_Index_Finance.md): asset pricing, corporate finance, fixed income, microstructure, portfolio theory, risk, trading.
 - [Investing index](Investing/_Index_Investing.md): value, growth, valuation models, macro, capital allocation, hedge funds, private equity, venture capital, real estate, stock research.
 - [Build prompt](Investing/_PROMPT_Markets_Mastery_OS_Build.md): the phased plan for turning this library into a practice-first markets platform.
+- `code/`: the `mkt_*` verification scripts (numpy and the standard library) that compute and assert every number the options, execution, India, macro, commodity and crypto notes quote; `python3 tools/run_examples.py` runs them, and `ruff` must be pointed at the folder explicitly because the repo config excludes `16-Trading-and-Investing`.
 - `scripts/`: the stock and macro data pipeline (Yahoo Finance via yfinance). Run from the repo root; the scripts rewrite notes in place, so commit or stash first. `generate_stocks.py` skips existing notes unless given `--force`.
+- `code/`: seeded numpy scripts that compute and assert every number in the curriculum notes (`mkt_pm_01` to `mkt_pm_08` back `Investing/Portfolio-Management/`). `python3 tools/run_examples.py` runs them; the repo ruff config excludes this section, so lint them with `ruff check 16-Trading-and-Investing/code`.
 
 ## Private journals
 

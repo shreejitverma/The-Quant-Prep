@@ -45,7 +45,7 @@ It examines order types, algorithmic execution schedules, transaction cost analy
 - **Almgren-Chriss Framework**: Formulating the execution trajectory as a mean-variance optimization problem:
   $$\min_{\mathbf{n}} \left( E[x] + \lambda V[x] \right)$$
   where $\lambda$ represents the trader's risk aversion parameter, balancing market impact costs against the risk of adverse price movement while holding unexecuted shares.
-- **Square-Root Law of Market Impact**: Empirical universal scaling where permanent price impact scales with volatility and the square root of normalized trade volume:
+- **Square-Root Law of Market Impact**: Empirical scaling, reported across many markets, in which the peak impact of a metaorder grows with volatility and the square root of normalized trade volume (part of it decays after the order completes):
   $$I \approx Y \cdot \sigma \cdot \sqrt{\frac{Q}{V}}$$
   where $Q$ is order size, $V$ is average daily volume, $\sigma$ is daily volatility, and $Y$ is a dimensionless constant near unity.
 

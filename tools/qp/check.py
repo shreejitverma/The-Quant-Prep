@@ -132,6 +132,10 @@ def check_vault(vault: Vault, strict_tde: bool = False, files: list[Path] | None
             need = MIN_CARDS.get(note.type, 0)
             if len(note.cards) < need:
                 findings.append(Finding(p, 1, "solid", f"status {note.status} needs at least {need} cards, has {len(note.cards)}"))
+        for line, callout in note.malformed_cards:
+            findings.append(
+                Finding(p, line, "card", f"callout {callout!r} is not a card; use '> [!question]- <id> | <prompt>' with a lower-case id")
+            )
         for card in note.cards:
             if not card.answer:
                 findings.append(Finding(p, card.line, "card", f"card {card.id!r} has no answer"))

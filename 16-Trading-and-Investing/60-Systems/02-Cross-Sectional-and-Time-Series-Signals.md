@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Asness Moskowitz and Pedersen (2013) - Value and Momentum Everywhere - Journal of Finance 68(3), Grinold and Kahn (2000) - Active Portfolio Management, Moskowitz Ooi and Pedersen (2012) - Time Series Momentum - Journal of Financial Economics 104(2), Qian Hua and Sorensen (2007) - Quantitative Equity Portfolio Management]
+sources: [Asness Moskowitz and Pedersen (2013) - Value and Momentum Everywhere - Journal of Finance 68(3), Grinold and Kahn (2000) - Active Portfolio Management, Moskowitz Ooi and Pedersen (2012) - Time Series Momentum - Journal of Financial Economics 104(2), Qian Hua and Sorensen (2007) - Quantitative Equity Portfolio Management, Grinold (1989) - The Fundamental Law of Active Management - Journal of Portfolio Management 15(3), Clarke de Silva and Thorley (2002) - Portfolio Constraints and the Fundamental Law of Active Management - Financial Analysts Journal 58(5), Jegadeesh and Titman (1993) - Returns to Buying Winners and Selling Losers - Journal of Finance 48(1)]
 ---
 
 # Cross-Sectional and Time-Series Signals
@@ -13,11 +13,11 @@ sources: [Asness Moskowitz and Pedersen (2013) - Value and Momentum Everywhere -
 ## TL;DR
 
 - Quantitative alpha signals classify fundamentally into cross-sectional relative signals and time-series absolute signals.
-- Cross-sectional signals rank assets relative to peer universe distributions at timestamp $t$, enforcing zero net dollar or beta exposure by construction.
+- Cross-sectional signals rank assets relative to their peers at timestamp $t$; a long-short implementation is dollar neutral by construction and beta neutral only if it is also hedged for beta.
 - Time-series signals evaluate each asset against its own historical trajectory, capturing directional momentum or trend without reference to other assets.
 - Raw signal values must be normalized via Winsorization, cross-sectional z-scoring, or uniform rank transforms to prevent outlier domination.
 - Signal efficacy is measured by the Information Coefficient (IC), Rank IC (Spearman correlation), and the Information Ratio of the IC (ICIR).
-- Grinold's Fundamental Law dictates that active management performance scales with skill (IC) and breadth (BR), modified by implementation constraints (Transfer Coefficient TC).
+- Grinold's Fundamental Law says that the information ratio scales with skill (IC) and the square root of breadth (BR), reduced by implementation constraints through the Transfer Coefficient (TC).
 
 ## Learning objectives
 
@@ -41,23 +41,25 @@ The quantitative taxonomy distinguishes between two distinct paradigms of signal
 +-------------------------+------------------------+--------------------+
 | Perspective             | Relative to peers      | Relative to self   |
 | Evaluation axis         | Space (Assets at t)    | Time (History of i)|
-| Market exposure         | Net neutral (Beta ~ 0) | Directional beta   |
+| Market exposure         | Dollar neutral         | Directional        |
 | Primary archetype       | Equity Market Neutral  | Managed Futures/CTA|
-| Key literature          | Jegadeesh-Titman (1993)| Moskowitz et al.(12|
+| Key literature          | Jegadeesh-Titman 1993  | Moskowitz et al.   |
+|                         |                        | 2012               |
 | Normalization           | Cross-sectional z/rank | Rolling z-score    |
-| Typical universe size   | Large (500 - 3000)     | Moderate (50 - 150)|
+| Typical universe        | Many single stocks     | Tens of futures    |
 +-----------------------------------------------------------------------+
 ```
 
 Cross-sectional momentum goes long the top decile and short the bottom decile at each rebalance date $t$.
-Even if the entire market is collapsing, the cross-sectional strategy maintains equal long and short gross exposure.
+Even if the entire market is collapsing, the cross-sectional strategy keeps equal long and short gross exposure.
+Moskowitz, Ooi, and Pedersen (2012) apply time-series momentum to 58 liquid futures and forwards.
 In contrast, time-series momentum evaluates whether an individual asset's return over lookback $L$ is positive or negative ($S_{i, t} = \text{sign}(R_{i, t-L, t})$).
 If all global assets trend downward, time-series momentum holds 100% short positions across the entire portfolio.
 
 ### 2. Signal Normalization and Winsorization
 
 Raw quantitative features (e.g. Price-to-Earnings ratios, analyst revision scores, cash flow yields) exhibit severe skewness and extreme outliers.
-Passing raw features directly into portfolio optimizers causes capital to concentrate excessively in pathological names.
+Passing raw features directly into portfolio optimizers concentrates capital in the outliers.
 
 Standard normalization workflow:
 1. **Outlier Mitigation (Winsorization)**:
@@ -65,7 +67,8 @@ Standard normalization workflow:
    - Modified z-score using MAD:
      $$\text{MAD}_t = \text{Median}_i(|x_{i, t} - \text{Median}_j(x_{j, t})|)$$
      $$z_{i, t}^{\text{MAD}} = \frac{x_{i, t} - \text{Median}_j(x_{j, t})}{1.4826 \times \text{MAD}_t}$$
-   - Values exceeding $\pm 3.0$ are truncated to $\pm 3.0$.
+   - The constant $1.4826 = 1/\Phi^{-1}(0.75)$ makes $1.4826 \times \text{MAD}$ a consistent estimate of the standard deviation for normal data.
+   - A common choice is to truncate values beyond $\pm 3.0$ to $\pm 3.0$.
 2. **Cross-Sectional Z-Scoring**:
    - Standardize to zero mean and unit variance across active universe $U_t$:
      $$\tilde{z}_{i, t} = \frac{x_{i, t} - \mu_{x, t}}{\sigma_{x, t}}$$
@@ -84,11 +87,12 @@ The predictive power of an alpha signal is quantified by its correlation with fo
   Rank IC is preferred in equity research because it is robust to return outliers and non-linear monotonic relationships.
 - **IC Information Ratio (ICIR)**:
   $$\text{ICIR} = \frac{\text{Mean}(\text{IC}_t)}{\text{StdDev}(\text{IC}_t)}$$
-  In institutional quantitative equity, an annualized IC of $0.03$ to $0.06$ is commercially viable, while an $\text{ICIR} \ge 0.50$ represents institutional-grade consistency.
+  IC is a per-period correlation and is not annualized; ICIR can be annualized by $\sqrt{\text{periods per year}}$ if the per-period ICs are roughly independent.
+  Which IC is commercially viable depends on breadth, turnover and costs, so judge a signal by its net information ratio rather than a fixed IC cutoff.
 
 ### 4. Grinold's Fundamental Law of Active Management
 
-Richard Grinold (1989) formulated the theoretical relationship governing active portfolio performance:
+Richard Grinold (1989) formulated the fundamental law of active management:
 
 $$\text{IR} \approx \text{IC} \times \sqrt{\text{BR}}$$
 
@@ -101,8 +105,8 @@ Clarke, de Silva, and Thorley (2002) generalized the law by introducing the **Tr
 
 $$\text{IR} = \text{TC} \times \text{IC} \times \sqrt{\text{BR}}$$
 
-Where $\text{TC} = \text{Corr}(w_i^*, \frac{\alpha_i}{\sigma_i^2})$ measures how closely the constrained portfolio weights $w_i^*$ match the unconstrained theoretical alpha bets.
-Long-only constraints, sector neutrality bounds, turnover caps, and lot size minimums degrade TC from its unconstrained maximum of $1.0$ down to $0.30 - 0.50$.
+Where $\text{TC} = \text{Corr}\left(\sigma_i \Delta w_i, \frac{\alpha_i}{\sigma_i}\right)$ is the cross-sectional correlation between risk-adjusted active weights and risk-adjusted forecasts ($\sigma_i$ the residual volatility of asset $i$).
+An unconstrained mean-variance portfolio has $\text{TC} = 1$; long-only constraints, sector bounds, turnover caps and lot sizes push it below 1, and Clarke, de Silva, and Thorley (2002) show long-only constraints can lower it substantially.
 
 ### 5. Signal Decay and Autocorrelation Half-Life
 
@@ -115,10 +119,8 @@ The half-life $t_{1/2}$ is the elapsed time required for signal autocorrelation 
 
 $$t_{1/2} = \frac{\ln(2)}{\lambda}$$
 
-- High-frequency microstructure order flow signals: half-life of seconds to minutes.
-- Short-term mean-reversion signals: half-life of 2 to 5 days.
-- Medium-term momentum signals: half-life of 1 to 3 months.
-- Fundamental value and quality signals: half-life of 6 to 12 months.
+For example, a 5-day half-life means $\lambda = \ln 2 / 5 = 0.1386$ per day.
+Typical half-lives order from shortest to longest: microstructure order-flow signals, short-term reversal, medium-term momentum, then fundamental value and quality; measure each signal's own decay rather than assume a number.
 
 ---
 
@@ -126,8 +128,8 @@ $$t_{1/2} = \frac{\ln(2)}{\lambda}$$
 
 ### Example 1: Calculating Pearson IC, Rank IC, and ICIR
 
-A quantitative researcher tests a short-term momentum signal across an 8-stock universe over three daily rebalance periods.
-Below are signal z-scores and forward 1-day realized returns for Day 1:
+A quantitative researcher tests a short-term momentum signal across an 8-stock universe (hypothetical data).
+Below are signal z-scores and forward 1-day realized returns for one day:
 
 | Asset | Signal Score $s_i$ | Realized Return $R_{i, t+1}$ | Signal Rank | Return Rank |
 |:---|:---:|:---:|:---:|:---:|
@@ -140,20 +142,22 @@ Below are signal z-scores and forward 1-day realized returns for Day 1:
 | G | $-0.90$ | $-1.8\%$ | 2 | 1 |
 | H | $-1.20$ | $-1.2\%$ | 1 | 2 |
 
-Calculating metrics for Day 1:
+Calculating metrics for the day:
 - Pearson correlation $\text{IC}_1 = 0.957$.
-- Spearman rank correlation $\text{Rank IC}_1 = 0.952$.
+- Spearman rank correlation: the rank differences are $0, 0, 1, -1, 0, 0, 1, -1$, so $\sum d^2 = 4$ and $\text{Rank IC}_1 = 1 - \frac{6 \times 4}{8 \times 63} = 0.952$.
 
-Suppose across a 252-day testing sample:
+One day with eight stocks is only an illustration; real ICs are far lower, as below.
+
+Suppose across a 252-day testing sample (hypothetical):
 - $\text{Mean}(\text{Rank IC}) = 0.045$.
 - $\text{StdDev}(\text{Rank IC}) = 0.110$.
 - Daily $\text{ICIR} = \frac{0.045}{0.110} = 0.409$.
 - Annualized $\text{ICIR} = 0.409 \times \sqrt{252} = 6.49$.
-This indicates strong statistical stability across the trading year.
+Annualizing this way assumes daily ICs are independent; overlapping forward returns or persistent signals make them autocorrelated and the annualized figure overstated.
 
 ### Example 2: Fundamental Law and Transfer Coefficient Penalty
 
-An asset manager operates an unconstrained long-short equity fund across 500 independent stocks, rebalancing monthly ($12 \times 500 = 6000$ independent bets per year).
+An asset manager operates an unconstrained long-short equity fund across 500 stocks, rebalancing monthly, and treats this as $12 \times 500 = 6000$ independent bets per year (hypothetical; real bets are correlated).
 - Skill: $\text{IC} = 0.03$.
 - Breadth: $\text{BR} = 6000$.
 - Unconstrained Information Ratio:
@@ -164,9 +168,10 @@ Now, institutional client constraints are imposed:
 2. Maximum single stock weight: $3.0\%$.
 3. Benchmark tracking error limit: $4.0\%$.
 
-The empirical Transfer Coefficient drops to $\text{TC} = 0.42$:
+Suppose the Transfer Coefficient drops to $\text{TC} = 0.42$ (hypothetical):
 $$\text{IR}_{\text{constrained}} = 0.42 \times 0.03 \times \sqrt{6000} = 0.98$$
-Portfolio constraints reduce realized performance by more than $57\%$ despite identical forecasting skill.
+Portfolio constraints cut the expected information ratio by $58\%$ despite identical forecasting skill.
+A seeded simulation of 500 assets with IC $0.03$, 12 rebalances a year, confirms the unconstrained law: the model's exact IR is $0.03\sqrt{6000}/\sqrt{1 + 0.03^2} = 2.32$.
 
 ---
 
@@ -189,7 +194,8 @@ Portfolio constraints reduce realized performance by more than $57\%$ despite id
 > The Fundamental Law states that Information Ratio is approximately equal to Information Coefficient times the square root of Breadth: IR = IC * sqrt(BR).
 
 > [!question]- mkt-sys-035 | What is the Transfer Coefficient (TC) in active portfolio management?
-> TC measures the cross-sectional correlation between risk-adjusted alpha forecasts and actual active portfolio weights, quantifying performance loss from portfolio constraints.
+> TC is the cross-sectional correlation between risk-adjusted forecasts alpha_i / sigma_i and risk-adjusted active weights sigma_i * Delta w_i (Clarke, de Silva and Thorley 2002).
+> It enters as IR = TC * IC * sqrt(BR) and measures the loss from constraints.
 
 > [!question]- mkt-sys-036 | Define the Information Coefficient (IC) in quantitative research.
 > The IC is the correlation between an alpha signal's cross-sectional predictions at time t and the forward realized asset returns over the holding period t to t + Delta t.
@@ -204,10 +210,11 @@ Portfolio constraints reduce realized performance by more than $57\%$ despite id
 > Winsorization caps extreme feature values at specified percentiles or MAD limits, preventing severe outliers from dominating cross-sectional z-scores and optimizer weights.
 
 > [!question]- mkt-sys-040 | How is Median Absolute Deviation (MAD) defined and why is it superior to sample variance?
-> MAD = Median(|x_i - Median(x)|); it is a non-parametric dispersion measure that is insensitive to extreme outliers, unlike sample variance which squares extreme values.
+> MAD = Median(|x_i - Median(x)|); it is a robust dispersion measure that outliers barely move, unlike the sample variance, which squares them.
+> Multiply by 1.4826 = 1 / Phi^-1(0.75) to estimate the standard deviation of normal data.
 
 > [!question]- mkt-sys-041 | What is uniform rank standardization of an alpha signal?
-> Uniform rank standardization maps asset values to evenly spaced scores across [-0.5, +0.5] by sorting, eliminating distribution skewness and kurtosis.
+> Uniform rank standardization maps asset values to evenly spaced scores across [-0.5, +0.5] by sorting: r_i = (Rank_i - 1)/(N - 1) - 0.5, which removes skewness and outliers from the score distribution.
 
 > [!question]- mkt-sys-042 | What is signal half-life and how does it relate to exponential decay?
 > Signal half-life is the time horizon over which signal predictive correlation decays by 50%, derived as t_{1/2} = ln(2) / lambda from exponential decay exp(-lambda * t).
@@ -216,16 +223,18 @@ Portfolio constraints reduce realized performance by more than $57\%$ despite id
 > Rebalancing should be aligned with signal half-life; rebalancing too frequently incurs unnecessary transaction costs, while rebalancing too slowly allows alpha to decay uncaptured.
 
 > [!question]- mkt-sys-044 | Why does a long-only constraint significantly reduce the Transfer Coefficient?
-> Because an unconstrained optimizer wants to take large short positions in low-alpha names; a long-only constraint truncates underweighting to at most the benchmark weight.
+> Because an unconstrained optimizer wants large underweights in negative-alpha names; long-only caps each underweight at the benchmark weight, which is tiny for most names, so the negative forecasts barely reach the portfolio.
 
 > [!question]- mkt-sys-045 | What is the cross-sectional z-score formula?
 > z_{i, t} = (x_{i, t} - mu_{x, t}) / sigma_{x, t}, standardizing features to zero cross-sectional mean and unit variance across the universe at timestamp t.
 
 > [!question]- mkt-sys-046 | Why does cross-sectional momentum have zero market beta by design?
-> Because it enters long positions in top-ranked stocks and equally weighted short positions in bottom-ranked stocks, neutralizing broad market exposure if betas are symmetric.
+> It is not zero beta by design, only dollar neutral: long the top-ranked and short the bottom-ranked in equal dollars.
+> Beta is zero only if the two legs have equal betas or the portfolio is explicitly beta-hedged; momentum legs often differ in beta after market moves.
 
 > [!question]- mkt-sys-047 | What is the 12-minus-1 month momentum rule (Jegadeesh-Titman)?
-> It measures price return from 12 months ago to 1 month ago, skipping the most recent month to avoid short-term liquidity-driven microstructure reversal.
+> It measures the return from 12 months ago to 1 month ago, skipping the most recent month to avoid the short-term reversal effect.
+> Jegadeesh and Titman (1993) studied 3- to 12-month formation periods; the 12-minus-1 convention is the one used in common factor definitions such as Carhart's (1997) momentum factor.
 
 > [!question]- mkt-sys-048 | Why do high-frequency signals have much higher breadth BR than fundamental signals?
 > High-frequency signals generate trading decisions thousands of times per day across many assets, whereas quarterly fundamental signals update only a few times per year.
@@ -234,7 +243,7 @@ Portfolio constraints reduce realized performance by more than $57\%$ despite id
 > Orthogonalization strips overlapping linear factor exposures (e.g. market, size, industry) from an alpha signal via regression, isolating pure idiosyncratic forecasting power.
 
 > [!question]- mkt-sys-050 | How does cross-sectional correlation among assets reduce effective breadth BR?
-> If 500 stocks move together with an average correlation of 0.50, they do not represent 500 independent bets; effective breadth is much lower: N / (1 + (N - 1) * rho).
+> If 500 stocks have a common pairwise correlation of 0.50, they do not represent 500 independent bets; the effective number is N / (1 + (N - 1) * rho), here about 2.
 
 > [!question]- mkt-sys-051 | What is sign transformation in trend following?
 > Mapping raw momentum or return values to a ternary signal {-1, 0, +1} or sign(R), focusing solely on trend direction rather than trend magnitude.
@@ -243,7 +252,7 @@ Portfolio constraints reduce realized performance by more than $57\%$ despite id
 > It occurs when features incorporate data published after the trade decision timestamp, such as using un-lagged financial statement releases or end-of-day prices for open orders.
 
 > [!question]- mkt-sys-053 | What is the information coefficient of an efficient market under the EMH?
-> Under the semi-strong efficient market hypothesis, public information has zero predictive power for future returns, implying expected IC = 0.0.
+> Under the semi-strong efficient market hypothesis, public information has no predictive power for risk-adjusted future returns, implying an expected IC of 0 for signals built from public data.
 
 > [!question]- mkt-sys-054 | What is a rolling z-score in time-series momentum?
 > Standardizing an asset's current return or price against its own historical mean and standard deviation over lookback window L: z_{i, t} = (x_{i, t} - mu_{i, L}) / sigma_{i, L}.
@@ -263,26 +272,39 @@ Portfolio constraints reduce realized performance by more than $57\%$ despite id
 > [!question]- mkt-sys-059 | What is the difference between equal-weighted and market-cap-weighted IC?
 > Equal-weighted IC correlates signals and returns across all names equally, while market-cap-weighted IC weights large liquid names more heavily to reflect institutional implementability.
 
-> [!question]- mkt-sys-060 | What is the role of neutralizating a signal against industry sectors?
+> [!question]- mkt-sys-060 | What is the role of neutralizing a signal against industry sectors?
 > Industry neutralization ensures the signal bets strictly on intra-industry stock selection rather than unintended, uncompensated macro sector bets.
 
 > [!question]- mkt-sys-061 | How does survivorship bias distort signal IC estimation?
 > If bankrupt losers are dropped from historical data, the negative returns that would validate a low-ranked signal are removed, artificially deflating or warping IC.
 
 > [!question]- mkt-sys-062 | What is Grinold's rule of thumb for Information Ratio quality?
-> IR = 0.50 is good, IR = 0.75 is very good, and IR = 1.00 is exceptional for institutional quantitative investment strategies.
+> Grinold and Kahn (2000, chapter 5) give an empirical distribution of active managers' information ratios in which about 0.5 is top quartile and about 1.0 is top decile.
+> Treat these as historical benchmarks for long-only managers, not as targets.
 
 > [!question]- mkt-sys-063 | How does asset universe volatility dispersion affect cross-sectional signal PnL?
 > Cross-sectional long-short spread PnL expands when cross-sectional return dispersion is high and compresses when market correlation spikes towards 1.0.
 
 > [!question]- mkt-sys-064 | What is the transfer coefficient of an unconstrained long-short portfolio?
-> In an idealized unconstrained frictionless portfolio with no borrowing or leverage limits, the Transfer Coefficient TC equals 1.0.
+> In an unconstrained mean-variance portfolio with no frictions, active weights are proportional to alpha_i / sigma_i^2, so TC equals 1.0.
+
+> [!question]- mkt-sys-257 | Eight stocks have signal ranks 8..1 and return ranks 8, 7, 5, 6, 4, 3, 1, 2. What is the rank IC?
+> $0.952$.
+> The rank differences are 0, 0, 1, -1, 0, 0, 1, -1, so sum d^2 = 4 and rho = 1 - 6 x 4 / (8 x 63) = 0.952.
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../code/mkt_sys_02_signals.py`](../code/mkt_sys_02_signals.py) prints and asserts every number on this page: Pearson IC from explicit sums, rank IC two ways (ranks and the d-squared formula), the MAD constant by bisection checked by simulation, the fundamental law by seeded simulation of 500 assets, effective breadth from the full correlation matrix, and the 5-day half-life recovered from a seeded AR(1) signal by its lag-5 autocorrelation and its fitted decay rate.
+- Related notes: [Signals, Features and Alpha Decay](../../09-Alpha-Research-and-Portfolio/03-Signals-Features-and-Alpha-Decay.md), [Performance Metrics and the Fundamental Law](../../09-Alpha-Research-and-Portfolio/09-Performance-Metrics-and-Fundamental-Law.md).
 
 ## Further reading
 
 - Asness, C. S., Moskowitz, T. J., & Pedersen, L. H. (2013). Value and momentum everywhere. *The Journal of Finance*, 68(3), 929-985.
+- Clarke, R., de Silva, H., & Thorley, S. (2002). Portfolio constraints and the fundamental law of active management. *Financial Analysts Journal*, 58(5), 48-66.
+- Grinold, R. C. (1989). The fundamental law of active management. *The Journal of Portfolio Management*, 15(3), 30-37.
 - Grinold, R. C., & Kahn, R. N. (2000). *Active Portfolio Management: A Quantitative Approach for Producing Superior Returns and Controlling Risk*. McGraw-Hill.
+- Jegadeesh, N., & Titman, S. (1993). Returns to buying winners and selling losers: Implications for stock market efficiency. *The Journal of Finance*, 48(1), 65-91.
 - Moskowitz, T. J., Ooi, Y. H., & Pedersen, L. H. (2012). Time series momentum. *Journal of Financial Economics*, 104(2), 228-250.
 - Qian, E. E., Hua, R. H., & Sorensen, E. H. (2007). *Quantitative Equity Portfolio Management: Modern Techniques and Applications*. Chapman and Hall/CRC.

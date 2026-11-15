@@ -15,7 +15,7 @@ sources: [Hastie Tibshirani and Friedman (2009) The Elements of Statistical Lear
 - A single deep tree has low bias and high variance; bagging and random forests average many decorrelated trees to cut variance, and boosting adds many shallow trees sequentially to cut bias.
 - The variance of an average of $B$ trees with pairwise correlation $\rho$ is $\rho\sigma^2 + (1-\rho)\sigma^2/B$, so beyond a few hundred trees only lowering $\rho$ (random feature subsets) helps.
 - Gradient boosting fits each new tree to the negative gradient of the loss; XGBoost uses second-order information, giving leaf weight $-G/(H+\lambda)$.
-- On low signal-to-noise financial data, default boosted trees overfit badly: in a simulation with true $R^2$ of 1%, a depth-6, 500-tree model had in-sample $R^2$ of 0.90 and out-of-sample $-0.13$.
+- On low signal-to-noise financial data, default boosted trees overfit badly: in a seeded simulation with true $R^2$ of 1%, a depth-6, 500-tree model had in-sample $R^2$ of 0.90 and out-of-sample $-0.13$.
 - Regularise hard (shallow trees, large leaves, small learning rate with early stopping on a time-ordered validation set), and do not trust out-of-bag scores when labels overlap in time.
 
 ## Learning objectives
@@ -51,7 +51,7 @@ The second term vanishes as $B$ grows; the first is a floor set by how correlate
 ### Random forests
 
 Random forests (Breiman 2001) lower $\rho$ by considering only a random subset of $m$ of the $p$ features at each split.
-Common defaults from ESL: $m = \lfloor\sqrt p\rfloor$ for classification and $m = \lfloor p/3 \rfloor$ for regression, with minimum leaf sizes of 1 and 5 respectively; on noisy data much larger leaves are better.
+Common defaults from ESL (section 15.3): $m = \lfloor\sqrt p\rfloor$ for classification and $m = \lfloor p/3 \rfloor$ for regression, with minimum leaf sizes of 1 and 5 respectively; on noisy data much larger leaves are better.
 Main hyperparameters:
 
 - `n_estimators`: more trees never overfit; they only reduce Monte Carlo noise, with diminishing returns.
@@ -72,7 +72,7 @@ fit a small tree $h_m$ to them, and add it scaled by the learning rate $\eta$ (F
 For squared loss the pseudo-residuals are ordinary residuals $y_i - F(x_i)$; for log-loss with $p = \sigma(F)$ they are $y_i - p_i$.
 Subsampling rows each round (stochastic gradient boosting, Friedman 2002) adds randomness that regularises and speeds things up.
 
-XGBoost (Chen and Guestrin 2016) takes a second-order Taylor step with gradients $g_i$ and Hessians $h_i$, and an L2 penalty $\lambda$ on leaf weights.
+XGBoost (Chen and Guestrin 2016, section 2.2) takes a second-order Taylor step with gradients $g_i$ and Hessians $h_i$, and an L2 penalty $\lambda$ on leaf weights.
 With $G$ and $H$ the sums of $g_i$ and $h_i$ over the samples in a leaf,
 
 $$
@@ -82,7 +82,7 @@ $$
 and a split is made only if the gain is positive, so $\gamma$ is a minimum-gain threshold that prunes weak splits.
 LightGBM (Ke et al. 2017) bins features into histograms and grows trees leaf-wise, which is faster and fits more aggressively, so `num_leaves` and `min_data_in_leaf` matter more than depth.
 
-Boosting hyperparameters, from most to least important on noisy data:
+Boosting hyperparameters, in a practical order of priority on noisy data:
 
 - learning rate $\eta$ and number of rounds, set jointly with early stopping; smaller $\eta$ with more rounds generalises better;
 - tree size (`max_depth` 2 to 4, or `num_leaves`) and minimum leaf size or `min_child_weight`;
@@ -113,7 +113,7 @@ On low signal-to-noise financial returns, a well-regularised linear model is oft
 
 A node has 10 samples: 6 up days and 4 down days, Gini $1 - 0.6^2 - 0.4^2 = 0.48$.
 Split A sends 4 samples left (4 up, 0 down) and 6 right (2 up, 4 down).
-Weighted child Gini is $0.4 \times 0 + 0.6 \times (1 - (1/3)^2 - (2/3)^2) = 0.6 \times 0.444 = 0.267$, a decrease of 0.213.
+Weighted child Gini is $0.4 \times 0 + 0.6 \times (1 - (1/3)^2 - (2/3)^2) = 0.6 \times 4/9 = 0.267$, a decrease of 0.213.
 Split B sends 4 left (3 up, 1 down) and 6 right (3 up, 3 down): $0.4 \times 0.375 + 0.6 \times 0.5 = 0.45$, a decrease of only 0.03.
 The tree takes split A.
 
@@ -122,7 +122,7 @@ The tree takes split A.
 Each tree's prediction has variance 1.
 With $\rho = 0.3$: 10 trees give $0.3 + 0.7/10 = 0.37$ and 500 trees give $0.3014$, so going from 10 to 500 trees cuts variance by less than a fifth.
 Lowering the correlation to 0.1 with smaller `max_features` gives a floor of about 0.1 at 500 trees, if individual trees do not get much worse.
-With $\rho = 0.8$, typical of trees trained on heavily overlapping financial labels, 500 trees still leave 0.80: the ensemble barely helps.
+With $\rho = 0.8$ (a hypothetical level for trees trained on heavily overlapping labels), 500 trees still leave 0.80: the ensemble barely helps.
 
 ### Example 3: boosting by hand with squared loss
 
@@ -153,31 +153,18 @@ Splitting $\{1, 2, 4\}$ from $\{3\}$ gives gain $\frac12\left[\frac{2.25}{1.75} 
 ### Example 5: overfitting a weak signal
 
 Simulate 10 features, of which only the first matters: $y = 0.1\,x_1 + \varepsilon$ with standard normal $x$ and $\varepsilon$, so the best possible $R^2$ is $0.01/1.01 \approx 0.0099$.
-Train on 5,000 rows and test on 5,000 new rows (seed 42, scikit-learn 1.9):
+Train on the first 5,000 rows of `np.random.default_rng(42)` draws and test on the next 5,000, with least-squares regression trees written in numpy (the script named below; no ML library):
 
 | Model | Train $R^2$ | Test $R^2$ |
 | :--- | ---: | ---: |
-| Boosting, depth 6, 500 rounds, $\eta = 0.1$ | 0.904 | -0.127 |
-| Boosting, depth 2, 100 rounds, $\eta = 0.05$, subsample 0.5 | 0.051 | 0.004 |
-| Random forest, defaults (full depth) | 0.862 | -0.016 |
-| Random forest, min leaf 200, 30% of features | 0.033 | 0.008 |
+| Boosting, depth 6, 500 rounds, $\eta = 0.1$ | 0.904 | -0.129 |
+| Boosting, depth 2, 100 rounds, $\eta = 0.05$, subsample 0.5 | 0.051 | 0.003 |
+| Random forest, 100 trees, full depth, all features | 0.858 | -0.023 |
+| Random forest, 100 trees, min leaf 200, 3 of 10 features | 0.046 | 0.007 |
 
-The default models fit the noise and lose to predicting the mean; the heavily regularised forest recovers most of the attainable 0.0099.
+The true function $0.1\,x_1$ itself scores 0.012 on this test sample (sampling noise around the population 0.0099).
+The default models fit the noise and lose to predicting the mean; the heavily regularised forest captures about 60% of what the true function scores.
 A train $R^2$ far above any plausible true $R^2$ is the diagnostic.
-
-```python
-import numpy as np
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.metrics import r2_score
-
-rng = np.random.default_rng(42)
-X = rng.standard_normal((10_000, 10))
-y = 0.1 * X[:, 0] + rng.standard_normal(10_000)
-Xtr, ytr, Xte, yte = X[:5000], y[:5000], X[5000:], y[5000:]
-deep = GradientBoostingRegressor(max_depth=6, n_estimators=500, learning_rate=0.1, random_state=0)
-deep.fit(Xtr, ytr)
-print(r2_score(ytr, deep.predict(Xtr)), r2_score(yte, deep.predict(Xte)))  # about 0.90, -0.13
-```
 
 ## Pitfalls
 
@@ -220,7 +207,7 @@ print(r2_score(ytr, deep.predict(Xtr)), r2_score(yte, deep.predict(Xte)))  # abo
 > A split is kept only if its gain exceeds $\gamma$, which prunes weak splits that mostly fit noise.
 
 > [!question]- ml-trees-lr-rounds | How do learning rate and number of rounds interact?
-> They trade off: halving the learning rate needs roughly twice the rounds for the same fit, and usually generalises better.
+> They trade off: a smaller learning rate needs more rounds to reach the same training fit, and usually generalises better (ESL section 10.12.1 on shrinkage).
 > Fix a small rate and choose the rounds by early stopping on a later-in-time validation block.
 
 > [!question]- ml-trees-low-snr-overfit | Your boosted model has train R-squared 0.9 on daily returns. What do you conclude?
@@ -243,12 +230,29 @@ print(r2_score(ytr, deep.predict(Xtr)), r2_score(yte, deep.predict(Xte)))  # abo
 > Split A, with weighted Gini 0.267 against 0.45 for B.
 > The parent Gini is 0.48, so A reduces impurity by 0.213 and B by only 0.03.
 
+> [!question]- ml-trees-boosting-by-hand | Data $x = (1,2,3,4)$, $y = (1,3,2,6)$, squared loss, $F_0 = \bar y$. Which stump does the first round pick, and what is the squared error after a step with $\eta = 0.1$?
+> The split $x \le 3.5$ (leaf means $-1$ and $+3$), leaving squared error 11.72 from 14.
+> $F_1 = (2.9, 2.9, 2.9, 3.3)$ and the residuals $(-1.9, 0.1, -0.9, 2.7)$ square to 11.72; a full step $\eta = 1$ would reach 2 at once.
+
+> [!question]- ml-trees-averaging-floor | Trees have prediction variance 1 and pairwise correlation 0.3. What do 10 and 500 trees give?
+> $0.37$ and $0.3014$.
+> $\rho + (1-\rho)/B$: going from 10 to 500 trees cuts variance by only 18.5%, because the floor $\rho = 0.3$ remains; only decorrelating the trees lowers it.
+
+> [!question]- ml-trees-xgb-gain-example | Labels $(1,1,0,1)$ at $p = 0.5$, $\lambda = 1$, $\gamma = 0.1$. Is the split $\{1,2,4\}$ versus $\{3\}$ kept?
+> Yes: its gain is about 0.493, above $\gamma$.
+> $G_L = -1.5$, $H_L = 0.75$, $G_R = 0.5$, $H_R = 0.25$, so the gain is $\frac12\left[\frac{2.25}{1.75} + \frac{0.25}{1.25} - \frac{1}{2}\right]$; the split $\{1,2\}$ versus $\{3,4\}$ gains only 0.083 and would be pruned.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/ml_03_trees.py`](code/ml_03_trees.py) prints and asserts every number on this page: Gini impurities with exact fractions, the averaging variance by summing the covariance matrix and by simulation, the out-of-bag fraction by simulated bootstraps, the boosting stump by brute force over every split, the XGBoost leaf and gains by grid-minimising the second-order objective, and the weak-signal table with numpy trees whose splits are first checked against an independent recursive builder.
+- Related notes: [Feature Importance and Interpretability](07-Feature-Importance-and-Interpretability.md) (its script grows a numpy random forest too), [Time-Series Cross-Validation: Purging and Embargo](02-Time-Series-Cross-Validation-Purging-Embargo.md), [ML Fundamentals and Generalization](01-ML-Fundamentals-and-Generalization.md).
+
 ## Further reading
 
-- Hastie, Tibshirani and Friedman, *The Elements of Statistical Learning* (2nd ed., 2009), chapters 9, 10 and 15.
-- Breiman (1996), Bagging predictors, *Machine Learning* 24(2); Breiman (2001), Random forests, *Machine Learning* 45(1).
-- Friedman (2001), Greedy function approximation: a gradient boosting machine, *Annals of Statistics* 29(5); Friedman (2002), Stochastic gradient boosting.
-- Chen and Guestrin (2016), XGBoost: a scalable tree boosting system, KDD.
-- Ke et al. (2017), LightGBM: a highly efficient gradient boosting decision tree, NeurIPS.
+- Hastie, Tibshirani and Friedman, *The Elements of Statistical Learning* (2nd ed., 2009), chapters 9, 10 and 15 (section 15.3 for the random forest defaults).
+- Breiman (1996), Bagging predictors, *Machine Learning* 24(2), 123-140; Breiman (2001), Random forests, *Machine Learning* 45(1), 5-32.
+- Friedman (2001), Greedy function approximation: a gradient boosting machine, *Annals of Statistics* 29(5), 1189-1232; Friedman (2002), Stochastic gradient boosting, *Computational Statistics and Data Analysis* 38(4), 367-378.
+- Chen and Guestrin (2016), XGBoost: a scalable tree boosting system, *Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining*, 785-794.
+- Ke et al. (2017), LightGBM: a highly efficient gradient boosting decision tree, *Advances in Neural Information Processing Systems* 30 (NeurIPS 2017).
 - Marcos Lopez de Prado, *Advances in Financial Machine Learning* (2018), chapters 6 to 8.
-- Strobl, Boulesteix, Zeileis and Hothorn (2007), Bias in random forest variable importance measures, *BMC Bioinformatics* 8.
+- Strobl, Boulesteix, Zeileis and Hothorn (2007), Bias in random forest variable importance measures: illustrations, sources and a solution, *BMC Bioinformatics* 8, article 25.

@@ -3,9 +3,16 @@
 import unittest
 
 from tools.qp.markets import TRACK_METADATA, evaluate_all_markets_gates, evaluate_gate
+from tools.tests.test_markets_stages import TempMarketsVault, bulk_notes, write_track
 
 
-class TestMarketsGates(unittest.TestCase):
+class TestMarketsGates(TempMarketsVault):
+    def track_vault(self, *tracks: tuple[str, str, int]):
+        """A vault of bulk-built tracks: (folder, card prefix, notes), each note holding 32 cards."""
+        for folder, prefix, n_notes in tracks:
+            write_track(self.root, folder, bulk_notes(prefix, n_notes, 32))
+        return self.vault()
+
     def test_track_metadata(self):
         self.assertIn("track_0_pqt", TRACK_METADATA)
         self.assertIn("track_6_trd", TRACK_METADATA)
@@ -16,12 +23,12 @@ class TestMarketsGates(unittest.TestCase):
 
     def test_pqt_foundations_gate_evaluation(self):
         # Empty state should be pending
-        gate_empty = evaluate_gate("track_0_pqt", "foundations", {}, {})
+        gate_empty = evaluate_gate("track_0_pqt", "foundations", None, {})
         self.assertFalse(gate_empty.passed)
         self.assertEqual(len(gate_empty.requirements), 2)
 
         # Passing state
-        fake_vault_cards = {f"mkt-pqt-{i:03d}": {} for i in range(1, 65)}
+        fake_vault_cards = self.track_vault(("07-Trading-Styles/Quant-Prop-Trading", "mkt-pqt-", 4))
         fake_store = {
             "cards": {f"mkt-pqt-{i:03d}": {"reps": 1} for i in range(1, 65)},
             "lab_history": [{"engine": "games", "metrics": {"performance_score": 75.0}}],
@@ -30,7 +37,7 @@ class TestMarketsGates(unittest.TestCase):
         self.assertTrue(gate_passed.passed)
 
     def test_trd_foundations_gate_evaluation(self):
-        fake_vault_cards = {f"mkt-trd-{i:03d}": {} for i in range(1, 65)}
+        fake_vault_cards = self.track_vault(("07-Trading-Styles/Discretionary-Trading", "mkt-trd-", 4))
         fake_store = {
             "cards": {f"mkt-trd-{i:03d}": {"reps": 2} for i in range(1, 65)},
             "lab_history": [{"engine": "pos_sizing", "metrics": {"kelly_fraction": 0.12}}],
@@ -39,7 +46,7 @@ class TestMarketsGates(unittest.TestCase):
         self.assertTrue(gate.passed)
 
     def test_fa_gates_evaluation(self):
-        fake_vault_cards = {f"mkt-fa-{i:03d}": {} for i in range(1, 257)}
+        fake_vault_cards = self.track_vault(("Investing/Fundamental-Analysis", "mkt-fa-", 8))
         gate_empty = evaluate_gate("track_fa", "foundations", fake_vault_cards, {})
         self.assertFalse(gate_empty.passed)
 
@@ -56,8 +63,12 @@ class TestMarketsGates(unittest.TestCase):
         self.assertTrue(gate_c_passed.passed)
 
     def test_val_vi_pf_gates_evaluation(self):
-        for tid, pfx in [("track_val", "mkt-val-"), ("track_vi", "mkt-vi-"), ("track_pf", "mkt-pf-")]:
-            fake_vault = {f"{pfx}{i:03d}": {} for i in range(1, 257)}
+        for tid, pfx, folder in [
+            ("track_val", "mkt-val-", "Valuation Models"),
+            ("track_vi", "mkt-vi-", "Value Investing"),
+            ("track_pf", "mkt-pf-", "Portfolio-Management"),
+        ]:
+            fake_vault = self.track_vault((f"Investing/{folder}", pfx, 8))
             fake_store = {
                 "cards": {f"{pfx}{i:03d}": {"reps": 1} for i in range(1, 129)},
             }
@@ -71,7 +82,7 @@ class TestMarketsGates(unittest.TestCase):
             self.assertTrue(gate_c.passed)
 
     def test_evaluate_all_markets_gates(self):
-        all_gates = evaluate_all_markets_gates({}, {})
+        all_gates = evaluate_all_markets_gates(None, {})
         self.assertIn("track_0_pqt", all_gates)
         self.assertIn("track_6_trd", all_gates)
         self.assertIn("track_fa", all_gates)
@@ -114,7 +125,7 @@ class TestMarketsGates(unittest.TestCase):
     def test_calculate_markets_mastery_empty(self):
         from tools.qp.markets import calculate_markets_mastery
 
-        res = calculate_markets_mastery({}, {}, "holistic")
+        res = calculate_markets_mastery(None, {}, "holistic")
         self.assertEqual(res["overall_score"], 0.0)
         self.assertEqual(res["readiness_level"], "Novice / Foundations")
         self.assertEqual(res["lab_stats"]["completed_engines"], 0)
@@ -123,8 +134,10 @@ class TestMarketsGates(unittest.TestCase):
     def test_calculate_markets_mastery_populated(self):
         from tools.qp.markets import calculate_markets_mastery
 
-        fake_vault = {f"mkt-pqt-{i:03d}": {} for i in range(1, 129)}
-        fake_vault.update({f"mkt-opt-{i:03d}": {} for i in range(1, 129)})
+        fake_vault = self.track_vault(
+            ("07-Trading-Styles/Quant-Prop-Trading", "mkt-pqt-", 4),
+            ("03-Options-and-Volatility", "mkt-opt-", 4),
+        )
 
         fake_store = {
             "cards": {f"mkt-pqt-{i:03d}": {"reps": 3, "interval": 25} for i in range(1, 129)},
@@ -175,7 +188,7 @@ class TestMarketsGates(unittest.TestCase):
                 store.record_lab_run("pos_sizing", {"median_final_equity": float("nan")})
             self.assertEqual(len(store.data["lab_history"]), 2)
 
-            fake_opt_vault = {f"mkt-opt-{i:03d}": {} for i in range(1, 129)}
+            fake_opt_vault = self.track_vault(("03-Options-and-Volatility", "mkt-opt-", 4))
             store.data["cards"] = {f"mkt-opt-{i:03d}": {"reps": 1} for i in range(65, 129)}
             gate = evaluate_gate("track_opt", "core", fake_opt_vault, store.data)
             self.assertTrue(gate.passed)

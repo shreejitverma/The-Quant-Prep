@@ -15,7 +15,7 @@ sources: [Hastie Tibshirani and Friedman - The Elements of Statistical Learning 
 - Expected squared prediction error $=$ irreducible noise $+$ bias$^2$ $+$ variance; regularisation trades a little bias for a large cut in variance.
 - In finance the noise term dominates: a daily return predictor with $R^2 = 0.25\%$ (correlation 0.05) is already worth an annualised Sharpe of about 0.8 when traded.
 - At that signal-to-noise ratio the variance term decides everything, so heavy shrinkage, few effective parameters, simple models and ensembles win; even predicting zero can beat an unbiased estimator.
-- Pure-noise features give in-sample $R^2 \approx p/(n-1)$ and out-of-sample $R^2 \approx -(1-R^2)\,p/(n-p-1)$ for OLS; with 50 features and 500 observations that is $+10\%$ in sample and $-10\%$ out.
+- Pure-noise features give in-sample $R^2 \approx p/(n-1)$ and out-of-sample $R^2 \approx -(1-R^2)\,p/(n-p-1)$ for OLS; with 50 pure-noise features and 500 observations that is $+10\%$ in sample and $-11\%$ out.
 - Pick the loss to match the use: MSE for sizing continuous forecasts (robustified for fat tails), ranking losses and IC for cross-sectional selection; judge by out-of-sample $R^2$ against a zero forecast, IC and the Sharpe of the implied portfolio, not accuracy.
 
 ## Learning objectives
@@ -31,7 +31,7 @@ sources: [Hastie Tibshirani and Friedman - The Elements of Statistical Learning 
 With data $(x, y) \sim P$ and loss $L$, the goal is low risk $R(f) = E[L(y, f(x))]$.
 Training minimises empirical risk $\hat R_n(f) = \frac1n\sum_i L(y_i, f(x_i))$ over a model class, so $\hat R_n(\hat f)$ is biased downward: the fit has seen the noise.
 The generalisation gap $R(\hat f) - \hat R_n(\hat f)$ grows with model flexibility and shrinks with $n$.
-For OLS with Gaussian noise the expected optimism of training error is $2p\sigma^2/n$, the correction behind Mallows' $C_p$ and AIC (ESL chapter 7).
+For OLS with $p$ parameters the expected optimism of training error (in-sample prediction error, same $x$ with fresh noise, minus training error) is $2p\sigma^2/n$, the correction behind Mallows' $C_p$ and AIC (ESL section 7.4); with $n = 500$, $p = 50$ and $\sigma = 1$ it is $0.2$.
 
 ### Bias-variance decomposition
 
@@ -42,25 +42,26 @@ E\big[(y - \hat f(x))^2\big] = \underbrace{\sigma^2}_{\text{noise}} + \underbrac
 $$
 
 Proof: expand around $E\hat f(x)$; cross terms vanish because $\varepsilon$ is independent of the training sample and $\hat f - E\hat f$ has mean zero.
+A check by enumeration: with $y = \tfrac12 + \varepsilon$, $\varepsilon = \pm1$ equally likely, and $\hat f = \tfrac12\bar y$ over $n = 3$ draws, averaging the loss over all $2^3$ training samples and both test draws gives exactly $55/48$, which is $1 + (\tfrac14)^2 + \tfrac1{12}$: noise plus bias squared plus variance.
 Flexible models lower bias and raise variance; regularisation (ridge, lasso, early stopping, pruning, dropout) and averaging (bagging, ensembles) lower variance.
 
 ### Low signal-to-noise changes the answer
 
-Financial returns are mostly noise: monthly stock-level out-of-sample $R^2$ in Gu, Kelly and Xiu (2020) is well under 1% even for their best models.
+Financial returns are mostly noise: monthly stock-level out-of-sample $R^2$ in Gu, Kelly and Xiu (2020, Table 1) peaks at $0.40\%$, for their three-layer neural network.
 Consequences:
 
 - The variance term dominates bias, so the optimal model is far more regularised than in vision or language tasks.
 - The best shrinkage target is often zero: an estimate that is unbiased but noisy loses to one that shrinks hard toward "no predictability".
 - Nonstationarity shortens the useful history, so the effective $n$ is smaller than the row count, and overlapping labels shrink it further ([Purging and Embargo](02-Time-Series-Cross-Validation-Purging-Embargo.md)).
 - Every hyperparameter search is a multiple test ([Overfitting and Deflated Sharpe](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md)).
-- Tiny $R^2$ is still valuable: if forecast $f$ and return $r$ are standard bivariate normal with correlation $\rho$ and you hold position $f$, the per-period Sharpe is $E[fr]/\text{sd}(fr) = \rho/\sqrt{1+\rho^2} \approx \rho$.
+- Tiny $R^2$ is still valuable: if forecast $f$ and return $r$ are standard bivariate normal with correlation $\rho$ and you hold position $f$, the per-period Sharpe is $E[fr]/\text{sd}(fr) = \rho/\sqrt{1+\rho^2} \approx \rho$, because $E[f^2r^2] = 1 + 2\rho^2$ (Isserlis) and so $\text{Var}(fr) = 1 + \rho^2$.
 
 ### Regularisation
 
 - Ridge: $\hat\beta = (X^\top X + \lambda I)^{-1}X^\top y$, shrinks along small-singular-value directions; effective degrees of freedom $\sum_j d_j^2/(d_j^2 + \lambda)$.
 - Lasso: $\ell_1$ penalty, sparse solutions, unstable with correlated features; elastic net mixes both.
 - Early stopping, weight decay, dropout and tree depth or leaf-size limits play the same role for nonlinear models.
-- For a random Gaussian design with isotropic signal, the MSE-optimal ridge penalty is $\lambda^* = p\sigma^2/\|\beta\|^2$, which is huge when signal is weak.
+- For a random Gaussian design and a rotation-invariant signal, the MSE-optimal ridge penalty on unscaled $X^\top X$ is $\lambda^* = p\sigma^2/\|\beta\|^2$, the posterior mean under the prior $\beta \sim N(0, I\|\beta\|^2/p)$; it is huge when signal is weak.
 
 See [Regularization: Ridge and Lasso](../02-Statistics-and-Econometrics/06-Regularization-Ridge-Lasso.md) for the derivations.
 
@@ -80,7 +81,7 @@ Rules of thumb:
 - IC is scale-free, so a forecast can have good IC and terrible MSE; sizing needs calibration, selection does not.
 - MSE is dominated by the few largest returns; winsorise or vol-scale targets, or use Huber loss.
 - Evaluate net of costs and turnover; a model that flips signs daily can win on IC and lose on PnL.
-- The standard error of an IC over $N$ independent observations is about $1/\sqrt N$, so a single-date IC across 500 stocks has se 0.045.
+- The standard error of an IC over $N$ independent observations is about $1/\sqrt N$, so a single-date IC across 500 stocks has se 0.045 under the null.
 
 ### Validation discipline
 
@@ -114,47 +115,31 @@ So an $R^2$ that would be rejected as useless in most ML settings is a good stra
 $n = 500$ observations, $p = 50$ features.
 
 - If all features are noise, in-sample $R^2$ has a Beta$(p/2, (n-p-1)/2)$ distribution with mean $p/(n-1) = 0.100$.
-- If the true population $R^2$ is 1%, the expected OLS out-of-sample $R^2$ (Gaussian random design) is about $R^2 - (1-R^2)\,p/(n-p-1) = 0.01 - 0.99\times50/449 = -0.100$.
-- OLS breaks even only when $n > p + 1 + p(1-R^2)/R^2 = 5001$ observations.
+- If all features are noise, the expected out-of-sample $R^2$ against a zero forecast is $-p/(n-p-1) = -50/449 \approx -11\%$.
+- If the true population $R^2$ is 1%, the expected OLS out-of-sample $R^2$ (Gaussian random design, no intercept) is $R^2 - (1-R^2)\,p/(n-p-1) = 0.01 - 0.99\times50/449 = -0.100$, because $E\|\hat\beta - \beta\|^2 = \sigma^2 p/(n-p-1)$.
+- OLS breaks even at $n = p + 1 + p(1-R^2)/R^2 = 5001$ observations and beats the zero forecast only beyond that; at $n = 5001$ a simulation of 300 training sets gives an out-of-sample $R^2$ of zero within its standard error.
 
 A 10% in-sample $R^2$ on 50 features is therefore not evidence of anything.
 
 ### 4. Ridge at low signal-to-noise
 
-```python
-import numpy as np
-
-def ridge(X, y, lam):
-    p = X.shape[1]
-    return np.linalg.solve(X.T @ X + lam * np.eye(p), X.T @ y)
-
-def r2_oos(y, yhat):                     # benchmark forecast is zero, as for returns
-    return 1 - np.sum((y - yhat) ** 2) / np.sum(y ** 2)
-
-rng = np.random.default_rng(0)
-n_train, n_test, p = 500, 100_000, 50
-beta = rng.standard_normal(p)
-beta *= np.sqrt(0.01 / 0.99) / np.linalg.norm(beta)   # population R^2 = 1%
-X, Xt = rng.standard_normal((n_train, p)), rng.standard_normal((n_test, p))
-y, yt = X @ beta + rng.standard_normal(n_train), Xt @ beta + rng.standard_normal(n_test)
-
-for lam in [0, 100, 1_000, 10_000, 100_000]:
-    b = ridge(X, y, lam)
-    print(lam, round(r2_oos(y, X @ b), 4), round(r2_oos(yt, Xt @ b), 4))
-```
-
-Averaged over 200 simulated training sets (population $R^2 = 1\%$):
+Set-up: $n = 500$ training rows, $p = 50$ standard normal features, unit noise, and $\|\beta\|^2 = 1/99$, so the population $R^2$ is exactly 1%.
+Fit ridge $\hat\beta = (X^\top X + \lambda I)^{-1}X^\top y$ and score against a zero forecast, as for returns.
+With a Gaussian test design the out-of-sample MSE of $\hat\beta$ is exactly $\sigma^2 + \|\beta - \hat\beta\|^2$, so no test sample is needed.
+Averaged over 2,000 simulated training sets (seed 20261119 in the script named below):
 
 | $\lambda$ | In-sample $R^2$ | Out-of-sample $R^2$ |
 | :--- | :--- | :--- |
-| 0 (OLS) | 10.8% | $-10.0\%$ |
-| 100 | 10.5% | $-6.2\%$ |
-| 1,000 | 5.9% | $-0.54\%$ |
-| 5,000 | 1.9% | $+0.08\%$ |
+| 0 (OLS) | 11.0% | $-10.0\%$ |
+| 100 | 10.6% | $-6.2\%$ |
+| 1,000 | 6.0% | $-0.52\%$ |
+| 5,000 | 1.9% | $+0.09\%$ |
 | 10,000 | 1.0% | $+0.07\%$ |
 | 100,000 | 0.1% | $+0.01\%$ |
 
-The best penalty is near the theoretical $\lambda^* = p\sigma^2/\|\beta\|^2 = 4950$, so large that in-sample fit almost vanishes, and even then only 0.08 of the achievable 1 percentage point of $R^2$ is captured.
+The OLS row matches the closed forms: in sample about $1 - (1-R^2)(n-p)/n = 10.9\%$, out of sample $-10.0\%$.
+The best penalty, on this grid and on a fine grid from 500 to 50,000, is 5,000, next to the theoretical $\lambda^* = p\sigma^2/\|\beta\|^2 = 4950$.
+It is so large that in-sample fit almost vanishes, and even then only 0.09 of the achievable 1 percentage point of $R^2$ is captured.
 In-sample $R^2$ moves in the wrong direction as a model selection criterion.
 
 ### 5. Hit rate is not the objective
@@ -195,15 +180,15 @@ Train with sample weights proportional to $|r|$, or regress on returns directly,
 
 > [!question]- ml-fundamentals-noise-r2 | You regress returns on 50 pure-noise features with 500 observations. Expected in-sample $R^2$?
 > About $p/(n-1) = 0.10$.
-> Under the null $R^2 \sim \text{Beta}(p/2, (n-p-1)/2)$; OLS out of sample would be about $-10\%$.
+> Under the null (with an intercept) $R^2 \sim \text{Beta}(p/2, (n-p-1)/2)$; out of sample against a zero forecast it would be about $-p/(n-p-1) = -11\%$.
 
 > [!question]- ml-fundamentals-ols-breakeven | Population $R^2$ is 1% with 50 features. Roughly how many observations before OLS beats a zero forecast out of sample?
 > About 5,000.
-> Expected $R^2_{OS} \approx R^2 - (1-R^2)p/(n-p-1)$, which is positive only for $n > p + 1 + p(1-R^2)/R^2 = 5001$.
+> Expected $R^2_{OS} = R^2 - (1-R^2)p/(n-p-1)$ for a Gaussian design, which is positive only for $n > p + 1 + p(1-R^2)/R^2 = 5001$.
 
 > [!question]- ml-fundamentals-ridge-lambda | For isotropic Gaussian features, what ridge penalty minimises out-of-sample MSE, and what does it imply at low SNR?
 > $\lambda^* = p\sigma^2/\|\beta\|^2$, the noise-to-signal ratio times the number of features.
-> With $R^2 = 1\%$, $p = 50$, it is about 4950 on unscaled $X^\top X$, far larger than defaults tuned for high-SNR problems.
+> With $R^2 = 1\%$, $p = 50$, it is $50 \times 99 = 4950$ on unscaled $X^\top X$, far larger than defaults tuned for high-SNR problems.
 
 > [!question]- ml-fundamentals-hit-rate | A model has a 55% hit rate. Is it profitable?
 > Not necessarily; profitability depends on payoff sizes.
@@ -225,11 +210,32 @@ Train with sample weights proportional to $|r|$, or regress on returns directly,
 > Information from the test folds leaks into training, and in time series it is look-ahead.
 > Fit every transform inside each training fold and apply it to the test fold.
 
+> [!question]- ml-fundamentals-optimism | For OLS with $p$ parameters and noise variance $\sigma^2$, how much lower is training error than in-sample prediction error on average?
+> By $2p\sigma^2/n$, the optimism (ESL section 7.4).
+> The fit's summed covariance with the noise is $\sigma^2\operatorname{tr}(H) = p\sigma^2$ for the hat matrix $H$; with $n = 500$, $p = 50$ and $\sigma = 1$ it is $0.2$, which $C_p$ and AIC add back.
+
+> [!question]- ml-fundamentals-sharpe-derivation | Forecast $f$ and return $r$ are standard bivariate normal with correlation $\rho$. Derive the Sharpe of holding $f$.
+> $\rho/\sqrt{1+\rho^2}$ per period.
+> $E[fr] = \rho$ and, by Isserlis, $E[f^2r^2] = 1 + 2\rho^2$, so $\text{Var}(fr) = 1 + \rho^2$; at $\rho = 0.10$ that is $1.58$ annualised over 252 days.
+
+> [!question]- ml-fundamentals-noise-oos-r2 | 50 pure-noise features, 500 observations, OLS without intercept. What out-of-sample $R^2$ against a zero forecast do you expect?
+> $-p/(n-p-1) = -50/449 \approx -11\%$.
+> The test MSE is $\sigma^2 + \|\hat\beta\|^2$ and $E\|\hat\beta\|^2 = \sigma^2p/(n-p-1)$ for a Gaussian design.
+
+> [!question]- ml-fundamentals-ic-standard-error | What is the standard error of a single-date IC across 500 stocks under the null?
+> About $1/\sqrt{500} = 0.045$.
+> So a single-date IC of 0.05 is about one standard error; only an average over many dates can establish a signal of that size.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/ml_01_generalization.py`](code/ml_01_generalization.py) prints and asserts every number on this page: the bias-variance identity by exhaustive enumeration with exact fractions and by simulation for ridge, the optimism by simulation against the hat-matrix trace, the forecast Sharpe by Gauss-Hermite quadrature and simulation, the shrunk mean by simulation and a golden-section search, the noise-feature and break-even results by simulation against the closed forms, and the ridge table by simulation cross-checked against the expected loss with the noise integrated exactly.
+- Related notes: [Regularization: Ridge and Lasso](../02-Statistics-and-Econometrics/06-Regularization-Ridge-Lasso.md), [Time-Series Cross-Validation](02-Time-Series-Cross-Validation-Purging-Embargo.md), [Tree Ensembles and Gradient Boosting](03-Tree-Ensembles-and-Gradient-Boosting.md).
+
 ## Further reading
 
-- Hastie, Tibshirani and Friedman, *The Elements of Statistical Learning*, chapters 2, 3 and 7.
-- Kevin Murphy, *Probabilistic Machine Learning: An Introduction*.
-- Gu, Kelly and Xiu (2020), Empirical Asset Pricing via Machine Learning, Review of Financial Studies.
-- Campbell and Thompson (2008), Predicting Excess Stock Returns Out of Sample, Review of Financial Studies.
+- Hastie, Tibshirani and Friedman, *The Elements of Statistical Learning* (2nd ed., 2009), chapters 2, 3 and 7 (section 7.4 for the optimism).
+- Kevin Murphy, *Probabilistic Machine Learning: An Introduction* (2022).
+- Gu, Kelly and Xiu (2020), Empirical Asset Pricing via Machine Learning, *Review of Financial Studies* 33(5), 2223-2273; Table 1 for out-of-sample $R^2$ by model.
+- Campbell and Thompson (2008), Predicting Excess Stock Returns Out of Sample: Can Anything Beat the Historical Average?, *Review of Financial Studies* 21(4), 1509-1531.
 - Grinold and Kahn, *Active Portfolio Management*, on IC and the fundamental law ([Performance Metrics and Fundamental Law](../09-Alpha-Research-and-Portfolio/09-Performance-Metrics-and-Fundamental-Law.md)).
 - Marcos Lopez de Prado, *Advances in Financial Machine Learning*.

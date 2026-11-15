@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Magdon-Ismail et al. (2004) - On the Maximum Drawdown of a Brownian Motion, Taleb (2007) - The Black Swan, Vince (1992) - The Mathematics of Money Management, Feller (1968) - An Introduction to Probability Theory and Its Applications]
+sources: [Magdon-Ismail Atiya Pratap and Abu-Mostafa (2004) - On the Maximum Drawdown of a Brownian Motion, Feller (1968) - An Introduction to Probability Theory and Its Applications Vol 1, Black and Perold (1992) - Theory of Constant Proportion Portfolio Insurance, Young (1991) - Calmar Ratio: A Smoother Tool, Vince (1992) - The Mathematics of Money Management]
 ---
 
 # Drawdown Mathematics and Risk of Ruin
@@ -14,9 +14,9 @@ sources: [Magdon-Ismail et al. (2004) - On the Maximum Drawdown of a Brownian Mo
 
 - Loss asymmetry is non-linear: a 50% drawdown requires a 100% gain to break even, while a 90% drawdown requires a 900% gain, making capital preservation the mathematical prerequisite for compounding.
 - Sequence of returns risk (SRR) dictates that the timing of losses matters decisively when external cash flows or withdrawals occur; early drawdowns permanently impair long-term terminal capital.
-- The classical probability of gambler's ruin in a biased random walk is $P(\text{ruin}) = ((1-p)/p)^k$, demonstrating that even positive-expectancy systems face mathematical certainty of ruin when position sizing is reckless.
-- In continuous diffusion models with drift $\mu > 0$ and volatility $\sigma$, the probability of hitting an absorbing barrier at drawdown level $D$ scales as $\exp(-2\mu D / \sigma^2)$.
-- Leverage creates path-dependent volatility drag through variance decay ($-\frac{1}{2}\sigma^2$), ensuring that levered volatility without sufficient drift erodes capital over time.
+- With unit bets, no profit target and win probability $p > 1/2$, the classical probability of gambler's ruin from $k$ units is $((1-p)/p)^k$; for $p \le 1/2$ ruin is certain, so a small edge only protects you if the bet is small relative to capital.
+- For log wealth following Brownian motion with drift $\alpha > 0$ and volatility $\sigma$, the probability of ever falling by $D$ (in log terms) is exactly $\exp(-2\alpha D / \sigma^2)$.
+- Leverage scales volatility drag quadratically: the log growth rate is $\mu - \frac{1}{2}\sigma^2$, so levered volatility without enough drift erodes capital over time.
 
 ## Learning objectives
 
@@ -30,7 +30,7 @@ sources: [Magdon-Ismail et al. (2004) - On the Maximum Drawdown of a Brownian Mo
 
 ### 1. The Asymmetry of Losses and Mathematical Non-Linearity
 
-Portfolio drawdowns exhibit strict mathematical asymmetry governed by the harmonic relation:
+Portfolio drawdowns exhibit strict mathematical asymmetry:
 
 $$R_{\text{rec}} = \frac{D}{1 - D}$$
 
@@ -40,25 +40,25 @@ where $D \in [0, 1)$ is the percentage drawdown from the peak, and $R_{\text{rec
 +-----------------------------------------------------------------------+
 |                    THE NON-LINEAR RECOVERY TRAP                       |
 +-----------------------------------------------------------------------+
-| Drawdown (D)  | Loss Factor | Required Gain (R_rec) | Relative Effort |
+| Drawdown (D)  | Loss Factor | Required Gain (R_rec) | 1 / (1 - D)     |
 |---------------+-------------+-----------------------+-----------------|
-| -10.0%        | 0.90x       | +11.11%               | 1.1x            |
+| -10.0%        | 0.90x       | +11.11%               | 1.11x           |
 | -20.0%        | 0.80x       | +25.00%               | 1.25x           |
 | -30.0%        | 0.70x       | +42.86%               | 1.43x           |
 | -40.0%        | 0.60x       | +66.67%               | 1.67x           |
-| -50.0%        | 0.50x       | +100.00%              | 2.0x            |
-| -60.0%        | 0.40x       | +150.00%              | 2.5x            |
-| -75.0%        | 0.25x       | +300.00%              | 4.0x            |
-| -90.0%        | 0.10x       | +900.00%              | 10.0x           |
-| -95.0%        | 0.05x       | +1,900.00%            | 20.0x           |
-| -99.0%        | 0.01x       | +9,900.00%            | 100.0x          |
+| -50.0%        | 0.50x       | +100.00%              | 2.00x           |
+| -60.0%        | 0.40x       | +150.00%              | 2.50x           |
+| -75.0%        | 0.25x       | +300.00%              | 4.00x           |
+| -90.0%        | 0.10x       | +900.00%              | 10.00x          |
+| -95.0%        | 0.05x       | +1,900.00%            | 20.00x          |
+| -99.0%        | 0.01x       | +9,900.00%            | 100.00x         |
 +-----------------------------------------------------------------------+
 ```
 
 Between 0% and 20% drawdown, the recovery curve appears roughly linear.
-Beyond 30%, the second derivative $\frac{d^2 R_{\text{rec}}}{dD^2} = \frac{2}{(1 - D)^3}$ explodes.
+The curvature $\frac{d^2 R_{\text{rec}}}{dD^2} = \frac{2}{(1 - D)^3}$ grows without bound as $D \to 1$: it is 5.83 at $D = 30\%$ and 16 at $D = 50\%$.
 Once a fund enters a 50% drawdown, it must double its remaining equity merely to break even.
-At an annualized return of 10%, recovering from a 50% loss takes approximately 7.27 years of flawless compounding without subsequent setbacks.
+At an annualized return of 10%, recovering from a 50% loss takes $\ln 2 / \ln 1.1 = 7.27$ years of uninterrupted compounding.
 
 ### 2. Maximum Drawdown and Path-Dependent Risk Metrics
 
@@ -81,11 +81,12 @@ Key drawdown-adjusted performance ratios include:
 
 1. **Calmar Ratio**:
    $$\text{Calmar} = \frac{\text{CAGR}}{\text{MDD}}$$
-   Measures annualized compound return relative to historical maximum peak-to-trough drawdown over a specified window (typically 36 months).
+   Measures annualized compound return relative to the maximum peak-to-trough drawdown over a window; Young (1991, Futures) originally used the trailing 36 months.
 
 2. **Sterling Ratio**:
-   $$\text{Sterling} = \frac{\text{CAGR}}{\text{Average Annual Drawdown} - 10\%}$$
-   Normalizes return by average annual drawdowns rather than a single outlier event.
+   $$\text{Sterling} = \frac{\text{CAGR}}{|\text{Average Annual Maximum Drawdown}| + 10\%}$$
+   Normalizes return by the average of the yearly maximum drawdowns rather than a single outlier event.
+   It is often written as "average drawdown minus 10%" with drawdowns as negative numbers, which is the same thing; variants exist, so state the one you use.
 
 3. **Burke Ratio**:
    $$\text{Burke} = \frac{R_p - R_f}{\sqrt{\sum_{i=1}^n D_i^2}}$$
@@ -93,7 +94,7 @@ Key drawdown-adjusted performance ratios include:
 
 4. **Ulcer Index (UI)**:
    $$\text{UI} = \sqrt{\frac{1}{N} \sum_{t=1}^N (100 \times D(t))^2}$$
-   Measures the quadratic mean of percentage drawdowns across every single trading day, capturing the psychological stress and capital impairment of being underwater.
+   Measures the quadratic mean of percentage drawdowns across every observation, capturing both the depth and the duration of time spent underwater.
 
 ### 3. Continuous Brownian Motion Drawdown Dynamics
 
@@ -102,16 +103,17 @@ Consider a portfolio value $W(t)$ following Geometric Brownian Motion with drift
 $$d\ln W(t) = \left(\mu - \frac{1}{2}\sigma^2\right)dt + \sigma dZ(t)$$
 
 Let $\alpha = \mu - \frac{1}{2}\sigma^2$ be the geometric drift.
-Magdon-Ismail et al. (2004) proved that for an arithmetic Brownian motion with drift $\alpha$ and diffusion $\sigma$, the expected maximum drawdown over time $T$ behaves asymptotically:
+Magdon-Ismail, Atiya, Pratap and Abu-Mostafa (2004) derived the expected maximum drawdown over time $T$ of a Brownian motion with drift $\alpha$ and diffusion $\sigma$; for log wealth this is the maximum drawdown measured in log terms:
 
-- When $\alpha = 0$ (zero drift):
-  $$\mathbb{E}[\text{MDD}(T)] \approx 1.2533 \sigma \sqrt{T}$$
+- When $\alpha = 0$ (zero drift), exactly:
+  $$\mathbb{E}[\text{MDD}(T)] = \sqrt{\pi/2}\, \sigma \sqrt{T} = 1.2533 \sigma \sqrt{T}$$
 
-- When $\alpha > 0$ (positive drift):
+- When $\alpha > 0$ (positive drift), as $T \to \infty$:
   $$\mathbb{E}[\text{MDD}(T)] \approx \frac{\sigma^2}{2\alpha} \left( \ln\left(\frac{2\alpha^2 T}{\sigma^2}\right) + 0.5772 \right)$$
+  where 0.5772 is the Euler-Mascheroni constant; for example $\alpha = \sigma = 1$ and $T = 50$ gives 2.591.
 
-This demonstrates that even with positive expected return ($\alpha > 0$), maximum drawdown grows logarithmically with time.
-In the absence of positive drift, drawdown scales with $\sqrt{T}$, guaranteeing that unhedged zero-alpha trading systems eventually suffer unbounded drawdowns.
+Even with positive drift ($\alpha > 0$), the expected maximum drawdown keeps growing, but only logarithmically in time.
+With zero drift it grows like $\sqrt{T}$ without bound, so a zero-edge strategy run long enough will eventually see arbitrarily deep drawdowns.
 
 ### 4. Classical Gambler's Ruin and Finite Capital Boundaries
 
@@ -140,21 +142,21 @@ $$P(\text{Ruin} \mid C) = \begin{cases} 1 & \text{if } p \le \frac{1}{2} \\ \lef
 | 0.48         | 1.0833      | 100.00%      | 100.00%      | 100.00%      |
 | 0.50         | 1.0000      | 100.00%      | 100.00%      | 100.00%      |
 | 0.52         | 0.9231      | 44.91%       | 13.52%       | 1.83%        |
-| 0.55         | 0.8182      | 13.44%       | 0.66%        | 0.004%       |
-| 0.60         | 0.6667      | 1.73%        | 0.004%       | ~0.00%       |
+| 0.55         | 0.8182      | 13.44%       | 0.66%        | 0.0044%      |
+| 0.60         | 0.6667      | 1.73%        | 0.0040%      | 0.00%        |
 +-----------------------------------------------------------------------+
 ```
 
 When $p \le 0.50$, the probability of ruin is exactly 1.0 (certainty), regardless of starting capital.
 When $p > 0.50$, ruin probability decays exponentially with starting capital $C$.
-However, if the bet size is variable or proportional to wealth, the continuous boundary condition shifts.
+If instead the bet is a fixed fraction of current wealth, wealth can never reach exactly zero, and the relevant question becomes the probability of ever falling to a given fraction of current wealth, which for log wealth with drift $\alpha > 0$ and volatility $\sigma$ is $\exp(-2\alpha D / \sigma^2)$ for a log decline $D$ (see the TL;DR and the Kelly note).
 
 ### 5. Sequence of Returns Risk (SRR)
 
 Sequence of returns risk is the danger that the order of returns impairs portfolio longevity, even when long-term average returns match expectations.
 SRR becomes destructive when capital is being withdrawn (e.g., retirement decumulation, hedge fund redemptions, management fee extractions).
 
-Consider two portfolios starting with $1,000,000 with annual withdrawals of $60,000 (adjusted 2% for inflation):
+Consider two hypothetical portfolios starting with $1,000,000, with $60,000 withdrawn at the end of the first year and the withdrawal raised 2% a year for inflation:
 
 ```
 +-----------------------------------------------------------------------+
@@ -171,12 +173,12 @@ Consider two portfolios starting with $1,000,000 with annual withdrawals of $60,
 +-----------------------------------------------------------------------+
 ```
 
-Although both sequences have the exact same geometric compound return before withdrawals (-1.49% annualized), Portfolio A is crippled by withdrawing capital while asset prices are depressed.
-The liquidated units can never recover during the subsequent bull market.
+Both sequences contain the same six returns, so without withdrawals they would end at the same wealth (a geometric mean of -1.49% a year).
+Portfolio A ends with $420,053 against $637,969 for Portfolio B because it sells assets to fund withdrawals while prices are depressed, and the units sold cannot share in the later recovery.
 
 ### 6. Constant Proportion Portfolio Insurance (CPPI)
 
-CPPI is a dynamic hedging algorithm designed to guarantee a capital floor $F(t)$ while maintaining upside equity participation.
+CPPI (Black and Perold 1992) is a dynamic allocation rule designed to protect a capital floor $F(t)$ while keeping upside equity participation.
 
 Let total portfolio wealth be $W(t)$ and guaranteed minimum floor be $F(t)$.
 The cushion $C(t)$ is defined as:
@@ -205,11 +207,12 @@ Total Wealth W(t) --------------------------->
       Equity E(t) = m*C   Bonds B(t) = W - E
 ```
 
-To guarantee that wealth never breaches floor $F(t)$, the maximum sudden market drop $\Delta S / S$ between rebalancing intervals must not exceed $1/m$:
+To keep wealth at or above the floor $F(t)$, the largest sudden market drop $\Delta S / S$ between rebalancing intervals must not exceed $1/m$:
 
 $$\Delta S_{\text{crash}} \le \frac{1}{m}$$
 
-If multiplier $m = 4$, the floor is preserved as long as the market does not gap down by more than $25\%$ before the manager can rebalance.
+In a hypothetical example with $W = 100$, $F = 80$ and $m = 4$, the equity exposure is $4 \times 20 = 80$.
+A 25% gap ($1/m$) takes wealth to $100 - 0.25 \times 80 = 80$, exactly the floor, while a 30% gap takes it to 76, below the floor.
 If cushion $C(t) \to 0$, the portfolio shifts 100% to risk-free cash/bonds, triggering the "cash lock" trap where the portfolio can never recover if equity markets subsequently rally.
 
 ---
@@ -220,7 +223,7 @@ If cushion $C(t) \to 0$, the portfolio shifts 100% to risk-free cash/bonds, trig
 > R_rec = D / (1 - D).
 
 > [!question]- mkt-pf-098 | Why is a 50% drawdown fundamentally more dangerous than two consecutive 25% drawdowns?
-> Two 25% drawdowns compound to a 43.75% cumulative loss (1 - 0.75 * 0.75), which requires a 77.8% recovery, whereas a single 50% loss requires a 100% recovery.
+> Two 25% drawdowns compound to a 43.75% cumulative loss (1 - 0.75 * 0.75), which requires a 77.8% recovery, whereas a single 50% loss requires a 100% recovery; the deeper single loss sits further up the convex recovery curve.
 
 > [!question]- mkt-pf-099 | What is a high-water mark (HWM) in portfolio management?
 > The highest historical peak value achieved by a portfolio or fund, used as the baseline for calculating drawdowns and incentive fees.
@@ -229,7 +232,7 @@ If cushion $C(t) \to 0$, the portfolio shifts 100% to risk-free cash/bonds, trig
 > The maximum observed peak-to-trough percentage decline in portfolio equity over a specified historical horizon.
 
 > [!question]- mkt-pf-101 | How is the Calmar ratio calculated?
-> Annualized Compound Growth Rate (CAGR) divided by Maximum Drawdown (MDD) over a specified period.
+> Annualized Compound Growth Rate (CAGR) divided by Maximum Drawdown (MDD) over a specified period (originally the trailing 36 months).
 
 > [!question]- mkt-pf-102 | What is the Ulcer Index?
 > A path-dependent volatility metric that computes the quadratic mean (RMS) of percentage drawdowns from the high-water mark across all time steps.
@@ -238,7 +241,7 @@ If cushion $C(t) \to 0$, the portfolio shifts 100% to risk-free cash/bonds, trig
 > The total length of time a portfolio spends below its previous peak before establishing a new high-water mark.
 
 > [!question]- mkt-pf-104 | What is the Sterling ratio?
-> CAGR divided by the average annual drawdown minus an arbitrary threshold (conventionally 10%).
+> CAGR divided by the magnitude of the average annual maximum drawdown plus 10 percentage points (written "average drawdown minus 10%" when drawdowns are negative numbers).
 
 > [!question]- mkt-pf-105 | What is the Burke ratio?
 > Excess portfolio return divided by the square root of the sum of squared drawdowns.
@@ -250,10 +253,10 @@ If cushion $C(t) \to 0$, the portfolio shifts 100% to risk-free cash/bonds, trig
 > P(Ruin) = (q / p)^C, where q = 1 - p.
 
 > [!question]- mkt-pf-108 | In continuous geometric Brownian motion, how does expected MDD scale with time T when drift is zero?
-> It scales proportionally to sigma * sqrt(T).
+> Exactly sqrt(pi / 2) * sigma * sqrt(T), about 1.2533 sigma sqrt(T) (Magdon-Ismail et al. 2004).
 
 > [!question]- mkt-pf-109 | How does expected MDD scale with time T when geometric drift is positive (alpha > 0)?
-> It scales logarithmically with time: proportional to (sigma^2 / (2 * alpha)) * ln(T).
+> Logarithmically: for large T it is about (sigma^2 / (2 alpha)) (ln(2 alpha^2 T / sigma^2) + 0.5772).
 
 > [!question]- mkt-pf-110 | What is Sequence of Returns Risk (SRR)?
 > The risk that the chronological ordering of investment returns negatively impacts terminal wealth when capital withdrawals or additions occur.
@@ -262,7 +265,7 @@ If cushion $C(t) \to 0$, the portfolio shifts 100% to risk-free cash/bonds, trig
 > Because portfolio compounding without cash flows is commutative: multiplication of returns yields the identical final wealth regardless of order.
 
 > [!question]- mkt-pf-112 | What is variance decay or volatility drag in levered instruments?
-> The mathematical reduction in compound growth caused by volatility: geometric growth rate equals arithmetic mean minus one-half variance (mu - 0.5 * sigma^2).
+> The reduction in compound growth caused by volatility: for lognormal returns the log growth rate is the arithmetic mean minus half the variance (mu - 0.5 * sigma^2), and leverage L scales the variance term by L^2.
 
 > [!question]- mkt-pf-113 | In Constant Proportion Portfolio Insurance (CPPI), what is the cushion C(t)?
 > Total portfolio wealth minus the predetermined guaranteed capital floor: C(t) = max(0, W(t) - F(t)).
@@ -271,7 +274,7 @@ If cushion $C(t) \to 0$, the portfolio shifts 100% to risk-free cash/bonds, trig
 > A constant scaling factor applied to the cushion to determine the dollar equity allocation: E(t) = m * C(t).
 
 > [!question]- mkt-pf-115 | What is the maximum market gap drop a CPPI portfolio can tolerate before breaching its floor?
-> Delta S / S <= 1 / m.
+> Delta S / S <= 1 / m; e.g. 25% for m = 4.
 
 > [!question]- mkt-pf-116 | What is the 'cash lock' problem in CPPI structures?
 > If asset prices drop so severely that the cushion hits zero, the algorithm shifts 100% into cash and bonds, preventing participation in subsequent market recoveries.
@@ -280,10 +283,10 @@ If cushion $C(t) \to 0$, the portfolio shifts 100% to risk-free cash/bonds, trig
 > By dynamically scaling position leverage inversely to forecasted volatility, reducing risk exposure when market volatility spikes.
 
 > [!question]- mkt-pf-118 | Why does a fixed-fraction position sizing model prevent absolute mathematical ruin in discrete terms?
-> Because risking a fixed fraction f of equity mathematically never reaches zero in continuous theory (W_n = W_0 * (1 - f)^n > 0 for all finite n).
+> Because losing a fixed fraction f of current equity on each loss never reaches exactly zero: after n straight losses W_n = W_0 * (1 - f)^n > 0, although it can fall to a fraction that is ruin in practice.
 
 > [!question]- mkt-pf-119 | What is 'effective ruin' in commercial quantitative management?
-> Reaching a drawdown threshold (e.g., -25% or -30%) where investors redeem capital and the fund is involuntarily liquidated, regardless of theoretical asymptotic survival.
+> Reaching a drawdown at which investors redeem or lenders pull financing and the fund is forced to stop (the threshold varies by fund and mandate), regardless of theoretical asymptotic survival.
 
 > [!question]- mkt-pf-120 | What is the difference between a trailing stop-loss and a hard price stop?
 > A hard stop executes at a fixed nominal price, while a trailing stop moves upward with the high-water mark, locking in gains and capping peak-to-trough drawdowns.
@@ -314,9 +317,15 @@ If cushion $C(t) \to 0$, the portfolio shifts 100% to risk-free cash/bonds, trig
 
 ---
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_pm_04_drawdown_ruin.py`](../../code/mkt_pm_04_drawdown_ruin.py) prints and asserts every computed number on this page: recovery returns in exact fractions against bisection, the ruin table against an exact rational solve with a far barrier, a numerical solve of the difference equation and a seeded simulation, the Magdon-Ismail drawdown formulas against a seeded simulation extrapolated to zero step size, the sequence-of-returns table by recursion against a closed-form sum, and the CPPI gap test.
+- Related notes: [Kelly Criterion and Capital Growth Theory](05-Kelly-Criterion-and-Capital-Growth-Theory.md) (drawdown probabilities under fractional Kelly), [Portfolio Rebalancing, Tax Drag, and Execution Friction](03-Portfolio-Rebalancing-Tax-Drag-and-Execution-Friction.md).
+
 ## Further reading
 
-- Feller, W. (1968). *An Introduction to Probability Theory and Its Applications* (Vol. 1, 3rd ed.). John Wiley & Sons.
+- Black, F., & Perold, A. F. (1992). *Theory of Constant Proportion Portfolio Insurance*. Journal of Economic Dynamics and Control, 16(3-4), 403-426.
+- Feller, W. (1968). *An Introduction to Probability Theory and Its Applications* (Vol. 1, 3rd ed.), chapter XIV (random walk and ruin problems). John Wiley & Sons.
 - Magdon-Ismail, M., Atiya, A. F., Pratap, A., & Abu-Mostafa, Y. S. (2004). *On the Maximum Drawdown of a Brownian Motion*. Journal of Applied Probability, 41(1), 147-161.
-- Taleb, N. N. (2007). *The Black Swan: The Impact of the Highly Improbable*. Random House.
 - Vince, R. (1992). *The Mathematics of Money Management: Risk Analysis Techniques for Traders*. John Wiley & Sons.
+- Young, T. W. (1991). *Calmar Ratio: A Smoother Tool*. Futures, October 1991.

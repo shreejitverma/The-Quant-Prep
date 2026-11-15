@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Brinson Hood and Beebower (1986) - Determinants of Portfolio Performance - Financial Analysts Journal 42(4), Harris (2003) - Trading and Exchanges: Market Microstructure for Practitioners, Lopez de Prado (2018) - Advances in Financial Machine Learning ch 19 20, SEC (2010) - Risk Management Controls for Brokers or Dealers with Market Access - Rule 15c3-5]
+sources: [Brinson Hood and Beebower (1986) - Determinants of Portfolio Performance - Financial Analysts Journal 42(4), Harris (2003) - Trading and Exchanges: Market Microstructure for Practitioners, Lopez de Prado (2018) - Advances in Financial Machine Learning ch 19 20, SEC (2010) - Risk Management Controls for Brokers or Dealers with Market Access - Rule 15c3-5 - Release 34-63241, Brinson and Fachler (1985) - Measuring Non-US Equity Portfolio Performance - Journal of Portfolio Management 11(3), Commission Delegated Regulation (EU) 2017/574 - RTS 25 clock synchronisation, FINRA Rule 4590 - Synchronization of Member Business Clocks]
 ---
 
 # Production Architecture and Decision Ledger
@@ -13,9 +13,9 @@ sources: [Brinson Hood and Beebower (1986) - Determinants of Portfolio Performan
 ## TL;DR
 
 - Institutional systematic trading systems bridge quantitative strategy research and physical exchange matching engines via a modular, resilient production stack.
-- Real-time market access requires strict pre-trade risk controls (SEC Rule 15c3-5) enforcing credit limits, capital thresholds, price sanity bands, and fat-finger checks before orders reach an exchange.
-- The Decision Ledger maintains an immutable, cryptographically verifiable audit trail recording strategy state, raw alpha signals, optimizer inputs, target allocations, and execution telemetry.
-- Fail-safe architecture demands deterministic state recovery, redundant message queues, and automated multi-level kill switches to halt rogue algorithms instantaneously.
+- Broker-dealers with market access must apply pre-trade risk controls (SEC Rule 15c3-5) that block orders exceeding credit or capital thresholds or erroneous price and size parameters before they reach an exchange.
+- The Decision Ledger is an append-only, hash-verifiable audit trail recording strategy state, raw alpha signals, optimizer inputs, target allocations, and execution telemetry.
+- Fail-safe architecture needs deterministic state recovery, redundant message queues, and automated multi-level kill switches to halt a misbehaving algorithm quickly.
 - Post-trade analytics require automated Transaction Cost Analysis (TCA) and performance attribution (Brinson-Fachler and multi-factor decomposition) to isolate true alpha from factor beta.
 
 ## Learning objectives
@@ -37,7 +37,8 @@ A production quantitative trading architecture translates mathematical signals i
 |                    PRODUCTION SYSTEMATIC TRADING STACK                |
 +-----------------------------------------------------------------------+
 |  1. MARKET DATA INGESTION & NORMALIZATION                             |
-|     Direct exchange feeds (ITCH/OUCH, Multicast), tick normalization, |
+|     Direct exchange feeds (e.g. Nasdaq ITCH over multicast), tick     |
+|     normalization,                                                    |
 |     point-in-time corporate action alignment, order book building.     |
 +-----------------------------------------------------------------------+
                                   |
@@ -58,20 +59,25 @@ A production quantitative trading architecture translates mathematical signals i
                                   v
 +-----------------------------------------------------------------------+
 |  4. ORDER MANAGEMENT (OMS) & EXECUTION (EMS)                          |
-|     Smart Order Routing (SOR), FIX 4.2/4.4 protocol, child slicing,   |
+|     Smart Order Routing (SOR), FIX 4.2/4.4 or native order entry      |
+|     (e.g. Nasdaq OUCH), child slicing,                                |
 |     fill reconciliation, post-trade Transaction Cost Analysis (TCA).  |
 +-----------------------------------------------------------------------+
 ```
 
-Each component operates in an isolated failure domain.
-If the strategy calculation crashes, open exchange orders remain safely governed by the independent execution gateway and pre-trade risk engine.
+Each component should run in an isolated failure domain.
+If the strategy process crashes, open exchange orders stay under the control of the independent execution gateway and pre-trade risk engine.
 
 ### 2. Pre-Trade Risk Controls and SEC Rule 15c3-5
 
-The SEC Market Access Rule (Rule 15c3-5) mandates that broker-dealers and proprietary trading desks implement documented, automated, and tamper-resistant pre-trade risk controls.
-Trading systems cannot rely on post-trade risk reviews to catch runaway algorithms.
+The SEC Market Access Rule (Rule 15c3-5, adopted in Release 34-63241, November 2010) applies to broker-dealers with market access, including those that give customers access to an exchange or ATS.
+As of November 2026 it requires risk management controls, under the broker-dealer's direct and exclusive control, reasonably designed to:
+- prevent orders that exceed appropriate pre-set credit or capital thresholds, per customer and for the firm (paragraph (c)(1)(i));
+- prevent erroneous orders by rejecting orders that exceed appropriate price or size parameters, order by order or over a short period, or that are duplicative (paragraph (c)(1)(ii));
+- prevent orders unless pre-order regulatory requirements are met, block restricted securities and unauthorized users, and give surveillance staff immediate post-trade execution reports (paragraph (c)(2)).
 
-Mandatory pre-trade risk gates include:
+The rule sets outcomes, not numbers; firms choose the specific gates and limits.
+A typical implementation, with illustrative limits, includes:
 1. **Price Collar Bands**: Rejecting any limit or market order whose price deviates by more than a set threshold (e.g. $\pm 3.0\%$ or $\pm 5.0\%$) from the prevailing National Best Bid and Offer (NBBO).
 2. **Maximum Single-Order Size and Notional**: Capping maximum shares (e.g. 10,000 shares) and maximum dollar notional (e.g. $\$1,000,000$) per child order to prevent "fat-finger" keystroke or code errors.
 3. **Credit and Capital Thresholds**: Enforcing real-time limits on aggregate gross notional exposure and daily buying power across all strategies.
@@ -91,7 +97,7 @@ The **Decision Ledger** is an immutable, append-only log capturing the complete 
   "strategy_id": "stat_arb_equity_us_v3",
   "decision_id": "dec_8f7b2c91a0",
   "universe_size": 500,
-  "raw_features_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "parameters_hash": "0856a9e158520eafc41bf4bd9de82a8ac9a9789f73a29e5cd7ec42baad482289",
   "model_parameters": {
     "vol_target": 0.10,
     "max_single_weight": 0.03,
@@ -116,8 +122,11 @@ The **Decision Ledger** is an immutable, append-only log capturing the complete 
 }
 ```
 
-Maintaining this immutable ledger enables:
-- **Exact Counterfactual Replay**: Re-running the optimizer years later with historical inputs to verify deterministic reproducibility.
+The record above is hypothetical; `parameters_hash` is the SHA-256 of the canonical JSON of `model_parameters` (keys sorted, no spaces), `{"max_single_weight":0.03,"turnover_penalty":0.0005,"vol_target":0.1}`, so anyone can recompute it.
+Hashing each record together with the previous record's hash chains the log, so an edit to any past record breaks every later hash.
+
+Maintaining this append-only ledger enables:
+- **Exact Replay**: Re-running the optimizer years later with the recorded inputs to verify deterministic reproducibility.
 - **Slippage Attribution**: Separating alpha model decay from execution router degradation.
 - **Regulatory Audit Readiness**: Providing instant compliance proof of pre-trade risk adherence and order origin.
 
@@ -125,19 +134,19 @@ Maintaining this immutable ledger enables:
 
 A kill switch is an emergency shutdown mechanism designed to neutralize portfolio risk instantaneously when an anomaly is detected.
 
-Institutional kill switches implement three operational tiers:
+A common design uses three operational tiers (illustrative):
 - **Tier 1 (Order Throttle / Pause)**: Cancels all working unexecuted child orders and temporarily halts new order submission, leaving current positions untouched while the system evaluates state.
 - **Tier 2 (Passive Unwind / De-risk)**: Halts new entries and systematically executes passive limit orders or TWAP slices to reduce gross exposure by 50% over a 30-minute window.
 - **Tier 3 (Nuclear Emergency Flatten)**: Aggressively executes market orders to liquidate 100% of open positions immediately, disconnects all exchange FIX sessions, and drops database connection pools.
 
-Kill-switch triggers must be hardware- or independent-daemon-monitored:
+Kill-switch triggers should be monitored by an independent process or hardware (thresholds below are illustrative):
 - Daily PnL loss limit breach (e.g. daily loss $> 3.0\%$ of NAV).
 - Heartbeat timeout: if the strategy daemon fails to send a health ping within 5 seconds, the execution gateway automatically executes Tier 1.
 - Exchange disconnect or feed corruption.
 
 ### 5. Post-Trade Performance Attribution (Brinson-Fachler)
 
-To confirm whether a live strategy is performing as engineered, quantitative desks perform Brinson, Hood, and Beebower (1986) / Brinson-Fachler attribution against benchmark sectors:
+To confirm whether a live strategy is performing as engineered, desks run Brinson attribution against benchmark sectors: Brinson, Hood, and Beebower (1986) measure allocation against raw sector returns, and Brinson and Fachler (1985) measure it against sector returns relative to the total benchmark return, as below:
 
 $$\text{Active Return} = R_p - R_b = \sum_j (w_{p, j} R_{p, j} - w_{b, j} R_{b, j})$$
 
@@ -201,7 +210,8 @@ Decomposing the active return:
    $$\text{Total Interaction Effect} = +0.60\%$$
 
 Total Attributed Return $= +1.60\% + 0.50\% + 0.60\% = +2.70\%$.
-The portfolio generated $1.60\%$ from sector allocation and $0.50\%$ from stock selection.
+The portfolio generated $1.60\%$ from sector allocation, $0.50\%$ from stock selection and $0.60\%$ from their interaction.
+Brinson-Hood-Beebower allocation gives $+2.00\%$ for Technology and $-0.40\%$ for Healthcare: the same $1.60\%$ total, split differently across sectors.
 
 ---
 
@@ -209,19 +219,21 @@ The portfolio generated $1.60\%$ from sector allocation and $0.50\%$ from stock 
 
 - **Coupling Strategy Code to Exchange FIX Sessions**: Embedding network socket logic directly in research scripts; a network timeout hangs the alpha optimizer.
 - **Bypassing Pre-Trade Risk for "Internal" Orders**: Allowing algorithmic rebalancing or hedging orders to circumvent price collars, leading to runaway liquidity depletion.
-- **Relying on Mutable Database Logs**: Logging execution states in editable SQL tables without cryptographic hashing; logs can be altered or truncated during post-incident investigations.
+- **Relying on Mutable Database Logs**: Logging execution states in editable SQL tables without hash chaining; logs can be altered or truncated without detection.
+- **Hashing an Empty Input**: `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` is the SHA-256 of zero bytes; if it appears as a feature or file hash in a ledger, the hashed input was empty.
 - **Neglecting Heartbeat Timeout Mechanisms**: Failing to implement dead-man switches; if the alpha server loses power, working orders remain live and exposed on exchange books.
-- **Conflating Beta with Alpha in Performance Reviews**: Celebrating a $15\%$ strategy return during an equity bull market without realizing that $14\%$ was pure market beta and selection alpha was negative.
+- **Conflating Beta with Alpha in Performance Reviews**: Celebrating a $15\%$ strategy return in an equity bull market without checking how much was market beta; if beta explained more than all of it, selection alpha was negative (hypothetical numbers).
 
 ---
 
 ## Interview questions
 
 > [!question]- mkt-sys-225 | What is SEC Rule 15c3-5 (The Market Access Rule)?
-> An SEC rule requiring broker-dealers with market access to implement automated, programmatic pre-trade risk controls and supervisory procedures to prevent erroneous or runaway orders.
+> An SEC rule (17 CFR 240.15c3-5, adopted 2010) requiring broker-dealers with market access, or that provide it to customers, to maintain risk management controls and supervisory procedures, under their direct and exclusive control, that block orders breaching credit or capital thresholds, erroneous orders and orders that fail regulatory requirements.
 
 > [!question]- mkt-sys-226 | State the key mandatory pre-trade risk controls under SEC Rule 15c3-5.
-> Controls include maximum single-order size and dollar notional, price collar bands relative to NBBO, gross credit and capital limits, order rate message throttles, and locate verification.
+> The rule requires controls reasonably designed to prevent orders exceeding pre-set credit or capital thresholds, erroneous orders exceeding price or size parameters (order by order or over short periods, or duplicative), and orders failing pre-order regulatory requirements, plus restricted access and immediate post-trade reports to surveillance.
+> Collar widths, size caps and message throttles are how firms implement it; the rule does not set their values.
 
 > [!question]- mkt-sys-227 | What is a price collar band in order routing?
 > A rule rejecting any order priced outside a defined percentage band (e.g. +/- 3% or 5%) from the prevailing National Best Bid and Offer (NBBO) to prevent fat-finger errors.
@@ -272,7 +284,8 @@ The portfolio generated $1.60\%$ from sector allocation and $0.50\%$ from stock 
 > Ensuring that every piece of market data, fundamental factor, and borrow list used in decision making carries timestamps prior to the exact decision time.
 
 > [!question]- mkt-sys-243 | How does cryptographic hashing enhance Decision Ledger integrity?
-> Generating SHA-256 hashes of input state vectors and chaining ledger blocks guarantees that logs cannot be altered, forged, or back-dated after execution.
+> Hashing each record's canonical content together with the previous record's hash (a hash chain) makes any later edit detectable, because every subsequent hash changes.
+> It detects tampering rather than preventing it, so anchor the latest hash somewhere the writer cannot change.
 
 > [!question]- mkt-sys-244 | What is trade break reconciliation?
 > The post-trade process of comparing internal fill records against clearing broker and exchange clearinghouse records to identify mismatches in quantity, price, or ticker.
@@ -299,7 +312,8 @@ The portfolio generated $1.60\%$ from sector allocation and $0.50\%$ from stock 
 > Pre-trade filters that intercept orders with unrealistically large quantities, erroneous decimal points, or upside-down limit prices before they reach the market.
 
 > [!question]- mkt-sys-252 | What is clock synchronization and why is PTP (Precision Time Protocol) used?
-> PTP synchronizes server clocks to sub-microsecond precision across trading clusters, required by regulators (e.g. FINRA, MiFID II) for chronological audit trails.
+> Regulators set maximum divergence from UTC, not a protocol: as of November 2026, MiFID II RTS 25 (Delegated Regulation (EU) 2017/574) requires 100 microseconds with 1 microsecond timestamps for high-frequency trading, and FINRA Rule 4590 requires 50 milliseconds of the NIST clock for computer clocks in US equity reporting.
+> NTP over a network struggles to stay well inside 100 microseconds, so firms use PTP (IEEE 1588) with hardware timestamping.
 
 > [!question]- mkt-sys-253 | What is cold-start recovery in trading systems?
 > The protocol for recovering strategy state, cash positions, and open orders after an unexpected hardware crash, restoring clean operational state without re-trading.
@@ -311,13 +325,29 @@ The portfolio generated $1.60\%$ from sector allocation and $0.50\%$ from stock 
 > A systematic review comparing realized live performance against model expectations, tracking slippage, factor tilts, trade rule adherence, and unexpected residual variance.
 
 > [!question]- mkt-sys-256 | What defines institutional-grade production readiness?
-> Complete modular decoupling, automated pre-trade risk compliance, sub-microsecond fail-safes, immutable decision auditability, and deterministic reproducibility.
+> There is no formal definition; a useful checklist is modular decoupling, automated pre-trade risk controls, tested kill switches and heartbeats, an append-only decision ledger, and deterministic reproducibility of every decision.
+
+> [!question]- mkt-sys-267 | A ledger shows feature hash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 on every record. What happened?
+> The hashed input was empty: that value is the SHA-256 of zero bytes.
+> The feature snapshot was not written (or not read) before hashing, so the record proves nothing about the inputs.
+
+> [!question]- mkt-sys-268 | In the Technology/Healthcare example, how do BHB and Brinson-Fachler allocation effects differ by sector?
+> BHB uses (w_p - w_b) R_b,j: +2.00% for Technology and -0.40% for Healthcare; Brinson-Fachler uses (w_p - w_b)(R_b,j - R_b): +0.80% each.
+> Both total 1.60%, because the active weights sum to zero.
 
 ---
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../code/mkt_sys_08_production.py`](../code/mkt_sys_08_production.py) prints and asserts every number on this page: the price collar in exact decimals with the approve and reject decisions, Brinson-Fachler effects in exact fractions checked against the directly computed active return and the BHB allocation total, and the ledger hash recomputed from the canonical parameters.
+- Related notes: [Execution Algorithms and TCA](../../07-Market-Microstructure/08-Execution-Algorithms-and-TCA.md), [Execution Slippage and Cost Models](06-Execution-Slippage-and-Cost-Models.md).
+
 ## Further reading
 
+- Brinson, G. P., & Fachler, N. (1985). Measuring non-U.S. equity portfolio performance. *The Journal of Portfolio Management*, 11(3), 73-76.
 - Brinson, G. P., Hood, L. R., & Beebower, G. L. (1986). Determinants of portfolio performance. *Financial Analysts Journal*, 42(4), 39-44.
+- European Commission. Commission Delegated Regulation (EU) 2017/574 (RTS 25) on the level of accuracy of business clocks.
+- FINRA. Rule 4590, Synchronization of Member Business Clocks.
 - Harris, L. (2003). *Trading and Exchanges: Market Microstructure for Practitioners*. Oxford University Press.
 - Lopez de Prado, M. (2018). *Advances in Financial Machine Learning*. John Wiley & Sons.
 - Securities and Exchange Commission (SEC). (2010). *Risk Management Controls for Brokers or Dealers with Market Access*, 17 CFR Part 240, Release No. 34-63241 (Rule 15c3-5).

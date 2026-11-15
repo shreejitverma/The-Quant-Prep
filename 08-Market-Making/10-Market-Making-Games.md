@@ -15,7 +15,8 @@ sources: [Lebron (2019) The Laws of Trading. Wiley, Zhou (2008) A Practical Guid
 - A make-a-market game tests four things: a calibrated fair value, a width that reflects both uncertainty and the risk that your counterparty knows more, updating on every piece of information (including the trades themselves), and managing your position.
 - Start with the expectation and standard deviation; say both out loud, then quote around the expectation with a width you can defend.
 - Assume the interviewer is informed: being lifted is evidence the value is higher, being hit is evidence it is lower, and even no trade is evidence it is near your mid.
-- In `./qp drill mm` (sum of 4 hidden dice, width 1 to 4, half the counterparties know the total) the widest allowed market centred on your best estimate is the best quote in every round.
+- In `./qp drill mm` (sum of 4 hidden dice, width 1 to 4, half the counterparties know the total) the widest allowed market, centred on your best estimate of the total, is the best quote in every round.
+  Before any trade or pass is observed that estimate is the dice-only fair value; after one, it also conditions on that trade or pass (Example 3).
 - Narrate: "Fair is 14, standard deviation about 3.4; I'm 12 at 16, ten up."
 
 ## Learning objectives
@@ -46,7 +47,7 @@ Quoting an honest centre matters more than any other decision: a mid that is off
 
 Width protects you from two things: uncertainty about the value and a counterparty who may know it.
 Against uninformed flow, a width of a fraction of a standard deviation earns edge.
-Against a fully informed counterparty, any width loses: they trade only when the value is outside your market.
+Against a fully informed counterparty no width wins: they trade only when the value is outside your market, so the best you can do is break even with a market so wide that they never trade.
 The Glosten-Milgrom logic applies directly: with a fraction $\pi$ of informed counterparties, you need uninformed edge $(1-\pi)\times$ half-width to exceed $\pi\times$ the expected amount by which the value lies beyond your quote.
 Too wide looks unhelpful and the interviewer may push you to tighten; too tight looks naive.
 Tighten as information arrives and uncertainty shrinks.
@@ -56,12 +57,12 @@ Tighten as information arrives and uncertainty shrinks.
 Treat the counterparty's action as data and apply Bayes (see [Conditional Probability and Bayes](../01-Probability/02-Conditional-Probability-and-Bayes.md)).
 If they lift your ask, raise your estimate; if they hit your bid, lower it; if they pass, the value is more likely inside your market.
 The size of the update depends on how likely they are to be informed.
-Forgetting to update on trades is the most common mistake candidates make in these games.
+Forgetting to update on trades is a costly mistake: the informed counterparty keeps trading with you at the stale price.
 
 ### Position management
 
 Know your worst case at every point: position times the distance to the extreme possible value.
-Skew your market against your position when counterparties respond to price (real markets and most interviewers do).
+Skew your market against your position when counterparties respond to price, as they do in real markets.
 Do not let the position grow to the point where one more fill makes the worst case unacceptable; reduce size or step back.
 In a game where counterparties do not respond to price (like the drill below), skewing away from fair value only gives away edge, so centre on your best estimate and control risk with size instead.
 
@@ -69,7 +70,7 @@ In a game where counterparties do not respond to price (like the drill below), s
 
 Say the fair value, the uncertainty, the market and the size in one breath.
 After each trade or reveal, say how your fair value moved and why, then give the new market.
-Interviewers score reasoning as much as P&L.
+Treat the reasoning as part of the answer: an interviewer cannot credit a decision you do not explain.
 
 ### The repo game: `./qp drill mm`
 
@@ -113,7 +114,7 @@ The best opening is 12 at 16.
 
 ### Example 2: later rounds
 
-The best quotes as dice are revealed (dice 6, then 2, then 5):
+The best quotes on dice-only information, before conditioning on any trade or pass, as dice are revealed (dice 6, then 2, then 5):
 
 | Revealed | Fair value | Best quote | EV (10 lots) |
 | :--- | ---: | :--- | ---: |
@@ -123,7 +124,7 @@ The best quotes as dice are revealed (dice 6, then 2, then 5):
 | 6, 2, 5 | 16.5 | 15 / 19 or 14 / 18 | +5.83 |
 
 The best width is the maximum, 4, in every round: noise traders here trade regardless of width, so widening gains noise edge and loses less to informed traders at the same time.
-The edge rises as uncertainty falls because the informed counterparty's advantage shrinks.
+The edge rises as uncertainty falls because the informed counterparty's advantage shrinks: the noise edge of a width-4 quote is the same every round, and the informed loss per lot at the best quote falls from 1.185 to 0.907, 0.556 and 0.167.
 With a half-integer fair value, the two width-4 markets straddling it are equally good.
 In the last round, width 3 at 15 / 18 earns +3.33 and width 2 at 16 / 18 earns exactly 0.
 
@@ -157,7 +158,7 @@ def round_ev(bid, ask, known, n=4, p_informed=Fraction(1, 2)):
     informed_loss = sum(p * (max(t - ask, 0) + max(bid - t, 0)) for t in outcomes)
     return (1 - p_informed) * Fraction(ask - bid, 3) - p_informed * informed_loss
 
-print(float(10 * round_ev(12, 16, [])))  # 0.74
+print(round(float(10 * round_ev(12, 16, [])), 2))  # 0.74
 ```
 
 ## Pitfalls
@@ -220,8 +221,21 @@ print(float(10 * round_ev(12, 16, [])))  # 0.74
 > State fair value, uncertainty, market and size together, for example "fair 14, sd about 3.4, 12 at 16, ten up".
 > After each trade or reveal, say how fair value moved and why before giving the new market.
 
+> [!question]- mm-game-later-round | In qp drill mm the first two dice show 6 and 2. Ignoring earlier trades, what is fair, the best quote, and its expected P&L per 10 lots?
+> Fair 15; quote 13 at 17 for about +3.89.
+> Two unknown dice add 7 on average; the width-4 market centred on 15 beats every other quote by exact enumeration.
+
+> [!question]- mm-game-lift-then-reveal | You are lifted at 16 in round 1 of qp drill mm, then the first die shows 3. Where do you centre the round-2 market?
+> Near 15 (about 14.97), not at the dice-only 13.5.
+> The lift still carries information about the three hidden dice: totals of 17 or more were four times as likely to produce it.
+
+> [!question]- mm-game-off-centre-cost | In round 1 of qp drill mm, what does quoting 13 at 17 instead of 12 at 16 cost?
+> About 0.48 per 10 lots: +0.26 against +0.74.
+> The noise edge is the same at any centre, but the off-centre market loses more to informed traders on the side nearer the mean.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/mm_10_market_making_games.py`](code/mm_10_market_making_games.py) prints and asserts every number on this page: quote values by walking the drill's game tree over every dice outcome and counterparty action, the best quote by brute force over every quote in all 259 revealed-dice states before any trade is observed, and the opening EV and the lift posterior again by seeded Monte Carlo through the real `MarketMakingGame` engine.
 - Practice: `./qp drill mm`, implemented in `tools/qp/drills.py` (`MarketMakingGame`).
 - Interview mechanics: [Trading Games in Interviews](../13-Interview-Playbook/05-Trading-Games-in-Interviews.md).
 - Theory behind the width: [Market Making Fundamentals](01-Market-Making-Fundamentals.md) and [Spread Models: Roll and Glosten-Milgrom](../07-Market-Microstructure/03-Spread-Models-Roll-and-Glosten-Milgrom.md).
@@ -230,4 +244,4 @@ print(float(10 * round_ev(12, 16, [])))  # 0.74
 
 - Agustin Lebron, *The Laws of Trading* (2019).
 - Xinfeng Zhou, *A Practical Guide to Quantitative Finance Interviews* (2008).
-- Glosten and Milgrom (1985), Bid, ask and transaction prices in a specialist market with heterogeneously informed traders, *Journal of Financial Economics* 14(1).
+- Glosten and Milgrom (1985), Bid, ask and transaction prices in a specialist market with heterogeneously informed traders, *Journal of Financial Economics* 14(1), 71-100.

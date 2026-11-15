@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [signals-features-and-alpha-decay]
 est_hours: 3
-sources: [Grinold and Kahn - Active Portfolio Management 2nd ed (1999), Grinold (1989) - The Fundamental Law of Active Management - Journal of Portfolio Management 15(3), Clarke de Silva and Thorley (2002) - Portfolio Constraints and the Fundamental Law of Active Management - Financial Analysts Journal 58(5), Lo (2002) - The Statistics of Sharpe Ratios - Financial Analysts Journal 58(4), Mertens (2002) - Comments on Variance of the IID Estimator in Lo (2002) - research note, Bailey and Lopez de Prado (2012) - The Sharpe Ratio Efficient Frontier - Journal of Risk 15(2)]
+sources: [Grinold and Kahn - Active Portfolio Management 2nd ed (1999), Grinold (1989) - The Fundamental Law of Active Management - Journal of Portfolio Management 15(3) 30-37, Clarke de Silva and Thorley (2002) - Portfolio Constraints and the Fundamental Law of Active Management - Financial Analysts Journal 58(5) 48-66, Lo (2002) - The Statistics of Sharpe Ratios - Financial Analysts Journal 58(4) 36-52, Mertens (2002) - Variance of the IID Estimator in Lo (2002) - working paper University of Basel, Bailey and Lopez de Prado (2012) - The Sharpe Ratio Efficient Frontier - Journal of Risk 15(2) 3-44, Merton (1980) - On Estimating the Expected Return on the Market - Journal of Financial Economics 8(4) 323-361]
 ---
 
 # Performance Metrics and the Fundamental Law
@@ -59,7 +59,7 @@ $$
 $$
 
 Derivation sketch: $\text{Var}(\hat\mu) = \sigma^2/T$, $\text{Var}(\hat\sigma) \approx \sigma^2/(2T)$ for normal data, they are independent, and $\partial SR/\partial\mu = 1/\sigma$, $\partial SR/\partial\sigma = -\mu/\sigma^2$, so $\text{Var} \approx \frac1T + \frac{\mu^2}{\sigma^4}\frac{\sigma^2}{2T}$.
-For non-normal iid returns with skewness $\gamma_3$ and kurtosis $\gamma_4$ (normal $=3$), $\hat\mu$ and $\hat\sigma$ are correlated and $\hat\sigma$ is noisier, giving Mertens' (2002) form
+For non-normal iid returns with skewness $\gamma_3$ and kurtosis $\gamma_4$ (normal $=3$), $\hat\mu$ and $\hat\sigma$ are correlated and $\hat\sigma$ is noisier, giving Mertens' (2002) form, as quoted in Bailey and Lopez de Prado (2012, equation 8)
 
 $$
 \text{Var}(\widehat{SR}) \approx \frac{1 + \tfrac12 SR^2 - \gamma_3 SR + \tfrac{\gamma_4 - 3}{4}SR^2}{T} = \frac{1 - \gamma_3 SR + \tfrac{\gamma_4-1}{4}SR^2}{T},
@@ -74,7 +74,7 @@ To annualise the standard error, multiply by $\sqrt q$: with daily data the $SR^
 - **Sortino:** $(\bar r - \tau)/\text{DD}_\tau$ with downside deviation $\text{DD}_\tau = \sqrt{\frac1T\sum_t \min(r_t - \tau, 0)^2}$ over all $T$ observations and target $\tau$ (often 0 or $r_f$).
 - **Information ratio:** $\text{IR} = \bar a/\sigma_a$ where $a_t = r_{p,t} - r_{b,t}$ is active return against a benchmark and $\sigma_a$ is tracking error; for a market-neutral book with a cash benchmark, IR and Sharpe coincide.
 - **Maximum drawdown:** $\text{MDD} = \min_t \big(V_t/\max_{s\le t}V_s - 1\big)$ on the compounded equity curve; it is path dependent and grows with sample length, so compare drawdowns only over equal horizons ([Drawdowns and Risk Limits](../11-Risk-and-Trading/05-Drawdowns-and-Risk-Limits.md)).
-- **Calmar:** annualised return divided by $|\text{MDD}|$, conventionally over 36 months.
+- **Calmar:** annualised return divided by $|\text{MDD}|$ over a stated window; state the window, because the drawdown grows with it.
 - **Turnover:** traded value over capital, either $\sum_i|w_{i,t} - w_{i,t-1}|$ (two-sided) or half of that (one-sided, "fraction of the book replaced"); always state which, because cost per unit turnover depends on it.
 - **Hit rate and payoff ratio:** win fraction $p$ and average win over average loss $b$; expectancy per trade is $p\,\bar W - (1-p)\bar L$.
 
@@ -97,11 +97,13 @@ with breadth BR the number of independent forecasts per year (assets times indep
 4. The risk model is correct.
 5. IC is small (the law is a first-order approximation).
 
-**Transfer coefficient.** Clarke, de Silva and Thorley (2002) show that with constraints $\text{IR} \approx \text{TC}\cdot\text{IC}\sqrt{\text{BR}}$, where TC is the cross-sectional correlation between the risk-adjusted forecasts and the risk-adjusted active weights actually held; long-only constraints typically push TC well below 1.
+**Transfer coefficient.** Clarke, de Silva and Thorley (2002) generalise the law to constrained portfolios, $\text{IR} \approx \text{TC}\cdot\text{IC}\sqrt{\text{BR}}$, where TC is the cross-sectional correlation between the risk-adjusted forecasts $\alpha_i/\sigma_i$ and the risk-adjusted active weights $h_i\sigma_i$ actually held.
+Unconstrained mean-variance weights give $\text{TC} = 1$; any constraint that stops the weights following the forecasts (long-only, position caps, turnover limits) lowers it.
 
 **Breadth is the fragile input.**
-Rebalancing monthly does not create 12 independent bets per stock if the signal changes slowly, and 500 stocks are not 500 bets if their residuals share industry and style factors.
-A useful heuristic is the variance-of-a-mean formula: $N$ bets with pairwise correlation $\rho$ act like $N/(1 + (N-1)\rho)$ independent bets.
+Rebalancing monthly does not create 12 independent bets per stock if the signal changes slowly, and 500 stocks are not 500 bets if the positions load on shared industry and style factors, so that the bet payoffs (position times residual return) are correlated.
+A useful heuristic is the variance-of-a-mean formula: $N$ bets whose payoffs have pairwise correlation $\rho$ act like $N/(1 + (N-1)\rho)$ independent bets.
+Correlated residuals alone do not do this damage: in a dollar-neutral book built from a demeaned signal the common component cancels, which is why neutralisation ([Signals, Features and Alpha Decay](03-Signals-Features-and-Alpha-Decay.md)) protects breadth.
 
 ## Worked examples
 
@@ -111,7 +113,7 @@ Daily mean return 0.05%, daily standard deviation 1%.
 
 - Sharpe: $0.0005/0.01\times\sqrt{252} = 0.794$.
 - Annualised arithmetic return $252\times0.05\% = 12.6\%$, volatility $1\%\sqrt{252} = 15.9\%$.
-- Compound growth is roughly $12.6\% - 15.9\%^2/2 = 11.3\%$ per year.
+- The log (continuously compounded) growth rate is roughly $12.6\% - 15.9\%^2/2 = 11.3\%$ per year; integrating $E[\ln(1 + r)]$ for normal daily returns gives the same 11.3%.
 
 ### 2. How precise is a 3-year Sharpe of 1.5?
 
@@ -124,7 +126,8 @@ Daily returns for 3 years ($T = 756$), annualised Sharpe 1.5, skewness $-1$, kur
 
 Trap: plugging the annualised Sharpe into $\sqrt{(1 + SR^2/2)/Y}$ with $Y = 3$ gives 0.84.
 That formula is correct only if you actually observe 3 annual returns; the $SR^2$ term must use the per-period Sharpe at the sampling frequency.
-With 36 monthly returns the answer is 0.60, close to the daily one, because precision comes from the length of history, not the sampling frequency.
+Simulating 756 daily returns reproduces both standard errors: normal returns give 0.579, and a two-normal mixture with skewness $-1$ and kurtosis 8 gives 0.608, a difference the simulation resolves.
+With 36 monthly returns the asymptotic formula gives 0.60 (a simulation of 36 normal monthly returns gives about 0.62, the small-sample excess), close to the daily 0.579, because precision of the mean comes from the length of history, not the sampling frequency (Merton 1980 makes this point for the expected market return, while variances do sharpen with finer sampling).
 
 ### 3. Autocorrelated monthly returns
 
@@ -133,14 +136,17 @@ Monthly Sharpe 0.3 and first-order autocorrelation 0.2 (higher lags zero).
 - Naive: $0.3\sqrt{12} = 1.04$.
 - Lo: $\eta(12) = 12/\sqrt{12 + 2\times11\times0.2} = 12/\sqrt{16.4} = 2.963$, so $SR_{\text{ann}} = 0.3\times2.963 = 0.89$.
 
-A 15% overstatement from one modest autocorrelation; smoothed-NAV funds often show larger ones.
+Naive annualisation overstates the Sharpe by 17% ($1.04/0.89$) from one modest autocorrelation; simulating monthly MA(1) returns with lag-1 autocorrelation 0.2 and taking the Sharpe of annual sums reproduces 0.89.
 
 ### 4. The fundamental law in numbers
 
 - Equity stat arb: IC 0.02 on 500 stocks rebalanced monthly with a signal that fully refreshes each month: $\text{BR} = 6000$, $\text{IR} = 0.02\sqrt{6000} = 1.55$.
 - Same book long-only with $\text{TC} = 0.5$: $\text{IR} = 0.77$.
-- If residual bets within each month have average pairwise correlation 0.05, effective breadth per month is $500/(1 + 499\times0.05) = 19.3$, so $\text{IR} = 0.02\sqrt{12\times19.3} = 0.30$.
+- If the 500 bet payoffs within each month have average pairwise correlation 0.05, effective breadth per month is $500/(1 + 499\times0.05) = 19.3$, so $\text{IR} = 0.02\sqrt{12\times19.3} = 0.30$.
+- Contrast: if instead only the residual returns share a common component with correlation 0.05 and the signal is demeaned each month, the common part cancels and the simulated IR stays near $0.02\sqrt{6000/0.95} = 1.59$, slightly above 1.55 because the remaining idiosyncratic variance is 0.95.
 - A trader making 10 independent even-money bets a day with a 52% hit rate: for a binary forecast $\text{IC} = 2p - 1 = 0.04$ and $\text{BR} = 2520$, so $\text{IR} = 0.04\sqrt{2520} = 2.0$.
+
+Simulating 20,000 months of a 500-name book reproduces the first three lines within sampling error: IR 1.55 for weights $h = \alpha/\sigma^2$, 0.77 when the held risk-adjusted weights have correlation 0.5 with the forecasts, and 0.30 when the bet payoffs are equicorrelated at 0.05.
 
 ### 5. Drawdown and Sortino done right
 
@@ -148,7 +154,7 @@ Prices from the demo in [performance_metrics.py](code/performance_metrics.py): 1
 
 - Returns: $2.00\%, 1.96\%, -0.96\%, 1.94\%, 2.86\%, -6.48\%, 1.98\%$; mean 0.471%, standard deviation 3.29%.
 - Max drawdown: peak 108 to trough 101, $101/108 - 1 = -6.48\%$.
-- Downside deviation with $\tau = 0$ over all 7 returns: $\sqrt{(0.0096^2 + 0.0648^2)/7} = 2.48\%$, so annualised Sortino $= 0.00471/0.0248\times\sqrt{252} = 3.02$.
+- Downside deviation with $\tau = 0$ over all 7 returns: $\sqrt{(0.0096^2 + 0.0648^2)/7} = 2.48\%$ (2.4766% unrounded), so annualised Sortino $= 0.004710/0.024766\times\sqrt{252} = 3.02$; with the inputs rounded to 0.00471 and 0.0248 the product is 3.01.
 - The demo's `sortino_ratio` computes exactly this and prints 3.0189. A common bug is to divide by the sample standard deviation of the two negative returns instead (3.90% here), which reports 1.92; that measures dispersion among losses, not downside risk, and it is undefined with fewer than two losing periods.
 
 ```python
@@ -210,28 +216,38 @@ print((prices / prices.cummax() - 1).min(), r.mean() / downside * np.sqrt(252)) 
 
 > [!question]- alpha-perf-transfer-coefficient | What is the transfer coefficient?
 > The correlation between risk-adjusted forecasts and risk-adjusted active weights actually held.
-> It enters as $\text{IR} \approx \text{TC}\cdot\text{IC}\sqrt{\text{BR}}$ (Clarke, de Silva and Thorley 2002); long-only and other constraints push it well below 1.
+> It enters as $\text{IR} \approx \text{TC}\cdot\text{IC}\sqrt{\text{BR}}$ (Clarke, de Silva and Thorley 2002); it is 1 for unconstrained mean-variance weights, and long-only and other constraints push it below 1.
 
 > [!question]- alpha-perf-hit-rate-ic | A trader wins 52% of even-money bets and makes 10 independent bets a day. What IR does the fundamental law imply?
 > About 2.0.
 > For a binary forecast $\text{IC} = 2p - 1 = 0.04$, breadth is $10\times252 = 2520$, and $0.04\sqrt{2520} = 2.0$.
 
 > [!question]- alpha-perf-effective-breadth | Why can 500 stocks give far fewer than 500 independent bets?
-> Residual returns share industry and style factors, so bets are correlated.
-> With average pairwise correlation $\rho$ the effective number is about $N/(1 + (N-1)\rho)$; $\rho = 0.05$ turns 500 into about 19.
+> When the positions load on shared industry and style factors, the bet payoffs are correlated.
+> With average pairwise payoff correlation $\rho$ the effective number is about $N/(1 + (N-1)\rho)$; $\rho = 0.05$ turns 500 into about 19, while correlated residuals under a demeaned, neutralised signal largely cancel.
 
 > [!question]- alpha-perf-mdd-horizon | Why should you not compare maximum drawdowns across track records of different lengths?
 > The expected maximum drawdown grows with the length of the path.
 > A longer record has more chances to hit a deep trough, so normalise by horizon or compare drawdown distributions from simulation.
 
+> [!question]- alpha-perf-se-nonnormal-numeric | 3 years of daily returns, annualised Sharpe 1.5, skewness $-1$, kurtosis 8. Annualised standard error of the Sharpe?
+> About 0.61 (0.608), against 0.579 for normal returns.
+> Per-period Sharpe $0.0945$: $\sqrt{(1 + 0.0945 + \tfrac74\times0.0945^2)/756}\times\sqrt{252} = 0.608$, so the 95% interval is roughly $[0.31, 2.69]$.
+
+> [!question]- alpha-perf-log-growth | Daily mean 0.05% and daily volatility 1%. What are the annualised arithmetic return and the log growth rate?
+> 12.6% arithmetic and about 11.3% log growth.
+> The drag is $\sigma^2/2 = 0.159^2/2 = 1.26\%$ a year; integrating $E[\ln(1 + r)]$ over normal daily returns confirms 11.3%.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/alpha_09_performance_metrics.py`](code/alpha_09_performance_metrics.py) prints and asserts every number on this page: the log growth rate by quadrature, Sharpe standard errors by simulating normal and skewed fat-tailed daily returns, Lo's correction by simulating MA(1) monthly returns, the fundamental law, transfer coefficient and effective breadth by simulating 500-name books, the binary-forecast IC by exact enumeration, and the drawdown and Sortino demo in exact fractions and through `performance_metrics.py`.
 - Code: [performance_metrics.py](code/performance_metrics.py).
 
 ## Further reading
 
-- Grinold and Kahn, *Active Portfolio Management*
-- Grinold (1989), The Fundamental Law of Active Management, Journal of Portfolio Management.
-- Clarke, de Silva and Thorley (2002), Portfolio Constraints and the Fundamental Law of Active Management, Financial Analysts Journal.
-- Lo (2002), The Statistics of Sharpe Ratios, Financial Analysts Journal.
-- Bailey and Lopez de Prado (2012), The Sharpe Ratio Efficient Frontier, Journal of Risk.
+- Richard C. Grinold and Ronald N. Kahn, *Active Portfolio Management* (2nd ed., 1999).
+- Richard C. Grinold, "The Fundamental Law of Active Management", *Journal of Portfolio Management* 15(3) (1989), 30-37.
+- Roger Clarke, Harindra de Silva and Steven Thorley, "Portfolio Constraints and the Fundamental Law of Active Management", *Financial Analysts Journal* 58(5) (2002), 48-66.
+- Andrew W. Lo, "The Statistics of Sharpe Ratios", *Financial Analysts Journal* 58(4) (2002), 36-52 (equations 8-9 for the iid standard error, equation 20 for $\eta(q)$).
+- David H. Bailey and Marcos Lopez de Prado, "The Sharpe Ratio Efficient Frontier", *Journal of Risk* 15(2) (2012), 3-44.
+- Robert C. Merton, "On Estimating the Expected Return on the Market: An Exploratory Investigation", *Journal of Financial Economics* 8(4) (1980), 323-361.

@@ -253,7 +253,7 @@ Selecting an engine shows a quick client-side preview; **Run Simulation** calls 
 | `schema` | Required `type`, `track`, `tier`, `status`; valid values; trackable notes need `est_hours`. |
 | `prereq` | Unknown prerequisite or firm focus ids, and prerequisite cycles. |
 | `solid` | A `solid` or `canonical` topic has the required sections and at least 6 cards (15 for a problem set, 3 for a playbook). |
-| `card` | Empty answers, and single-line answers that start like a numbered list. |
+| `card` | Empty answers, single-line answers that start like a numbered list, and `> [!question]` callouts outside fences that do not parse as a card (an id with characters outside `a-z0-9-`, a missing ` \| ` separator, or a callout swallowed into the previous card's answer). |
 | `link` | Relative Markdown links resolve. |
 | `tde-link` | With `--strict-tde`, links into The-Distinguished-Engineer point at files that exist in the local clone. |
 | `style` | No em dashes and no emojis. |
@@ -270,7 +270,9 @@ Selecting an engine shows a quick client-side preview; **Run Simulation** calls 
 `markets.py` adds a second, practice-first model on top of the cards in `16-Trading-and-Investing`:
 
 - **19 tracks** with card prefixes `mkt-<track>-`, and **5 personas** (`holistic`, `quant_trader`, `quant_researcher`, `macro_derivatives_trader`, `retail_algorithmic_trader`) that weight the tracks and name the lab engines they require.
-- **Stage gates:** `foundations` and `core` for every track, plus a `capital_gate` on the trading track, each requiring reviewed card ranges, lab runs or journal statistics.
+- **Stage gates:** `foundations` and `core` for every track, plus a `capital_gate` on the trading track, each requiring reviewed stage cards, lab runs or journal statistics.
+  A card's stage comes from the note it lives in, never from its id: the first half of a track's notes in syllabus order (rounded down) are `foundations` and the rest `core`, and a one-note track splits that note's cards in half by position (`track_stage_cards`).
+  So a card appended to a note joins that note's stage and raises its target, and any card id works.
 - **Mastery score:** per track `100 * (0.6 * coverage + 0.4 * retention)`; overall `0.5 * cards + 0.3 * lab + 0.2 * gates`, mapped to a readiness level.
 
 `./qp markets [status|gates|mastery] --persona P` reports them, and `python3 16-Trading-and-Investing/scripts/mastery.py` writes the live study board to `$QP_HOME/STUDY_BOARD.md`.
