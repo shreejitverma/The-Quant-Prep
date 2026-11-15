@@ -186,6 +186,7 @@ def case6_apple() -> None:
     approx("market cap at $20.00 ($M)", mcap, 7355, 0)
     cash, debt = F(4566), F(304)
     approx("cash / market cap at $20.00 (percent)", pct(cash, mcap), 62.1, 1)
+    approx("net cash / market cap at $20.00 (percent)", pct(cash - debt, mcap), 57.9, 1)
     ev = mcap + debt - cash
     approx("enterprise value at $20.00 ($M)", ev, 3093, 0)
     approx("EV / FY2003 sales at $20.00", ev / sales[2003], 0.50, 2)

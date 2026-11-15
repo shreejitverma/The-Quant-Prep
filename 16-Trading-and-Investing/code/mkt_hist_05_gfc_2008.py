@@ -4,7 +4,7 @@ Backs `16-Trading-and-Investing/20-History-and-Events/05-2008-Global-Financial-C
 Independent routes used here:
 - the hypothetical bank is evaluated line by line (assets, write-down, equity) in exact rational
   arithmetic and checked against the leverage identity (equity is gone once losses reach A/L);
-- the repo haircut collateral is checked by reconstructing the cash loan from the collateral and haircut;
+- the repo haircut collateral is computed in exact rational arithmetic as $100 / (1 - haircut);
 - Lehman's leverage is recomputed from the Form 10-K figures in millions and compared with the reported 30.7x;
 - the Dow and S&P 500 moves are recomputed from the cited closes in exact decimal arithmetic.
 Every quoted number is printed as ``label = value`` and asserted.
@@ -47,8 +47,6 @@ def haircuts() -> None:
     print("Repo haircut collateral per $100 borrowed")
     for haircut, quoted in ((Fraction(25, 100), 133.33), (Fraction(2, 100), 102.04)):
         collateral = Fraction(100) / (1 - haircut)
-        # Reconstruct the loan: collateral value less the haircut on it must be the $100 cash.
-        assert collateral * (1 - haircut) == 100
         approx(f"collateral at {float(haircut) * 100:g}% haircut", float(collateral), quoted, 2)
 
 

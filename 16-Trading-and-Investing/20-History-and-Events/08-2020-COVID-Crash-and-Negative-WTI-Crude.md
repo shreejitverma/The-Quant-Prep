@@ -20,13 +20,13 @@ Systems that assumed positive prices failed: the CFTC found that Interactive Bro
 
 ## Primary Sources and Chronology
 
-Sources used on this page: CFTC staff, *Interim Staff Report: Trading in NYMEX WTI Crude Oil Futures Contract Leading up to, on, and around April 20, 2020* (November 23, 2020); CME Group notices of April 3, April 8 (Clearing Advisory 20-152) and April 13, 2020, as cited in that report; International Energy Agency, *Oil Market Report*, April 2020; CFTC Release 8432-21 (September 28, 2021) on Interactive Brokers; Interactive Brokers press release of April 21, 2020; S&P 500 closes of February 19 and March 23, 2020.
+Sources used on this page: CFTC staff, *Interim Staff Report: Trading in NYMEX WTI Crude Oil Futures Contract Leading up to, on, and around April 20, 2020* (November 23, 2020); CME Group notices of April 3, April 8 (Clearing Advisory 20-152) and April 13, 2020, as cited in that report; International Energy Agency, *Oil Market Report*, April 2020; CFTC Release 8432-21 (September 28, 2021) on Interactive Brokers; Interactive Brokers press release of April 21, 2020; S&P 500 closes of February 19 and March 23, 2020, as reported at the time (contemporary press reports).
 
 - **Early March 2020**: OPEC Plus members fail to agree on production cuts and dissolve their existing agreement, adding to downward pressure on prices (CFTC).
-- **March 2020**: US equities fall sharply; market-wide circuit breakers halt trading on March 9, 12, 16 and 18, and the S&P 500 falls from its record close of 3,386.15 on February 19 to 2,237.40 on March 23, a decline of 33.92% in 23 trading days.
+- **March 2020**: US equities fall sharply; market-wide circuit breakers halt trading on March 9, 12, 16 and 18, and the S&P 500 falls from its record close of 3,386.15 on February 19 to 2,237.40 on March 23 (contemporary press reports), a decline of 33.92% in 23 trading days.
 - **By March 2020**: Working storage available at Cushing is near capacity (CFTC).
 - **April 3, 8 and 13, 2020**: CME flags WTI contracts for potential negative-price trading, announces that its clearing house will switch options valuation to the Bachelier model on one day's notice if negative prices occur (Clearing Advisory 20-152), and opens testing of negative and zero prices (CFTC).
-- **April 13, 2020**: OPEC Plus announces a cut of 9.7 million barrels per day, the largest single production cut in history, to begin on May 1 (CFTC).
+- **April 13, 2020**: Before crude oil markets open, OPEC Plus announces its agreement to cut output by 9.7 million barrels per day, the largest single production cut in history, to begin on May 1 (CFTC).
 - **Friday, April 17, 2020**: The May contract settles at $18.27 per barrel.
 - **Monday, April 20, 2020**:
   - The May contract opens the session at $17.73.
@@ -55,7 +55,7 @@ A long holder with no access to storage at Cushing cannot take delivery, which m
 
 ### 3. Demand Collapse
 The IEA's April 2020 *Oil Market Report* estimated that April demand would be 29 million barrels per day lower than a year earlier.
-The OPEC Plus cut announced on April 13 was not due to start until May 1, so in the near term production continued into a market whose demand had fallen sharply (CFTC).
+The OPEC Plus cut announced before the market opened on April 13 was not due to start until May 1, so in the near term production continued into a market whose demand had fallen sharply (CFTC).
 
 ---
 

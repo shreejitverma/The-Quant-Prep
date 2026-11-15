@@ -28,7 +28,7 @@ Sources used on this page: SEC staff, *Staff Report on Equity and Options Market
 - **January 11, 2021**: GameStop announces that Ryan Cohen, of Chewy, will join its board; GME reaches an intraday high of $20.65, about 17% above the prior close.
 - **January 13, 2021**: GME closes at $31.40, up from $19.95 the day before, on about 144 million shares against about 7 million the day before.
 - **January 22, 2021**: GME rises from $43 to $72 in about three hours; 197.2 million shares trade, the highest volume of the month.
-- **January 27, 2021**: GME closes at $347.51, more than 1,600% above its January 11 close (SEC report); NSCC makes intraday margin calls of $6.9 billion on 36 members, bringing total required margin to $25.5 billion, and both NSCC and OCC clear record volumes.
+- **January 27, 2021**: GME closes at $347.51, more than 1,600% above its January 11 close (SEC report) of $19.94 (contemporary press reports); NSCC makes intraday margin calls of $6.9 billion on 36 members, bringing total required margin to $25.5 billion, and both NSCC and OCC clear record volumes.
 - **January 28, 2021**: GME reaches an intraday high of $483.00; NSCC waives the excess capital premium charge for all members; one broker-dealer described in the SEC report puts new customer purchases in eight securities (AMC, BlackBerry, Bed Bath & Beyond, Express, GME, Koss, Naked Brand and Nokia) on position-closing-only status, and Robinhood and Interactive Brokers state that in some cases customers can only sell certain securities.
 - **February 2, 2021**: NSCC removes the excess capital premium waiver.
 - **February 5, 2021**: That broker-dealer removes its remaining limits (SEC report).
@@ -45,7 +45,7 @@ Short interest can exceed 100% when the same shares are lent multiple times by s
 - Lender A lends 1 share to short seller X, who sells it to buyer B.
 - Buyer B lends the same share to short seller Y, who sells it to buyer C.
 - One share has now been sold short twice, so on a 100-share float the short interest is 2%, although 99 of the 100 shares have never been sold short.
-Repeated enough times, the measured short interest exceeds 100%, and the short sellers together owe more shares than the float.
+If every share in the float is lent and sold short, and every buyer lends again once, the short interest is 200%, and the short sellers together owe 200 shares against a float of 100.
 
 ### 2. The Gamma Squeeze Hypothesis
 A gamma squeeze occurs when market makers buy a stock to hedge the risk of calls they have written, putting further upward pressure on the price (SEC report).
@@ -85,6 +85,7 @@ Near the money, gamma grows roughly like $1/\sqrt{\tau}$ as expiry approaches (t
 If market makers are instead long calls, as the SEC staff found for GME, their hedging works the other way and dampens moves.
 
 The headline changes follow from the SEC report's prices: from $19.95 to the $347.51 close is a rise of 1,641.90%, and to the $483.00 intraday high is 2,321.05%.
+From the January 11 close of $19.94 the rise to $347.51 is 1,642.78%, the SEC report's "more than 1,600%".
 
 ---
 
@@ -122,5 +123,5 @@ The headline changes follow from the SEC report's prices: from $19.95 to the $34
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/mkt_hist_09_gamestop.py`](../code/mkt_hist_09_gamestop.py) prints and asserts every number on this page: the price changes are recomputed from the SEC report's prices and checked against its "more than 1,600%" statement, the NSCC call is checked against its two components, the re-lending example is kept as explicit bookkeeping, and the hedge figures use the closed-form gamma checked against a finite difference of the delta.
+- Code: [`code/mkt_hist_09_gamestop.py`](../code/mkt_hist_09_gamestop.py) prints and asserts every number on this page: the price changes are recomputed from the SEC report's prices and checked against its "more than 1,600%" statement, the NSCC call is checked against its two components, the re-lending examples run on a share ledger of loan records that counts the short interest and the shares never sold short, and the hedge figures use the closed-form gamma checked against a finite difference of the delta.
 - Related notes: [Case File 06: 2010 Flash Crash](06-2010-Flash-Crash-and-LOB-Evaporation.md), [Case File 02: 1987 Black Monday](02-1987-Black-Monday-and-Portfolio-Insurance.md).

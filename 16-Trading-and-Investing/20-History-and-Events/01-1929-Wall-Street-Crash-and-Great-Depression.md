@@ -21,16 +21,16 @@ The policy response built the modern US framework: the Banking Act of 1933 (Glas
 
 ## Primary Sources and Chronology
 
-Sources used on this page: Gary Richardson, Alejandro Komai, Michael Gou and Daniel Park, "Stock Market Crash of 1929", Federal Reserve History (written as of November 22, 2013); Gary Richardson, "The Great Depression" and "Banking Panics of 1930-31", Federal Reserve History (2013); FDIC, *A Brief History of Deposit Insurance in the United States* (1998), chapter 3; the Brady Report (Report of the Presidential Task Force on Market Mechanisms, January 1988), chapter 1; NBER US business cycle chronology; Federal Reserve Regulation T, 12 CFR 220.12; J. K. Galbraith, *The Great Crash, 1929* (1955).
+Sources used on this page: Gary Richardson, Alejandro Komai, Michael Gou and Daniel Park, "Stock Market Crash of 1929", Federal Reserve History (written as of November 22, 2013); Gary Richardson, "The Great Depression" and "Banking Panics of 1930-31", Federal Reserve History (2013); FDIC, *A Brief History of Deposit Insurance in the United States* (1998), chapter 3; the Brady Report (Report of the Presidential Task Force on Market Mechanisms, January 1988), chapter 1; NBER US business cycle chronology; Federal Reserve Regulation T, 12 CFR 220.12; J. K. Galbraith, *The Great Crash, 1929* (1955); Dow closes of October 26 to 29, 1929 and July 8, 1932, and NYSE volume, as reported at the time (contemporary press reports).
 
 - **August 1929**: The NBER dates the business-cycle peak of the Great Depression contraction to August 1929; the trough is March 1933.
 - **September 3, 1929**: The Dow closes at its peak of 381.17, a six-fold rise from 63 in August 1921 (Federal Reserve History).
 - **September 5, 1929**: The forecaster Roger Babson predicts a crash at the Annual National Business Conference (Federal Reserve History, endnote).
 - **October 24, 1929 (Black Thursday)**: Heavy selling; a coalition of bankers attempts to restore confidence by publicly buying blocks of shares (Federal Reserve History).
-- **October 28, 1929 (Black Monday)**: The Dow falls 38.33 points from the Saturday October 26 close of 298.97 to 260.64, a decline of 12.82% (the Brady Report rounds it to 12.8 percent).
-- **October 29, 1929 (Black Tuesday)**: The Dow falls another 30.57 points to 230.07, a decline of 11.73% (Brady Report: 11.7 percent), on New York Stock Exchange volume of about 16.4 million shares, a record at the time.
+- **October 28, 1929 (Black Monday)**: The Dow falls 38.33 points from the Saturday October 26 close of 298.97 to 260.64, a decline of 12.82% (closes from contemporary press reports; the Brady Report rounds the fall to 12.8 percent).
+- **October 29, 1929 (Black Tuesday)**: The Dow falls another 30.57 points to 230.07, a decline of 11.73% (Brady Report: 11.7 percent), on New York Stock Exchange volume of about 16.4 million shares, a record at the time (contemporary press reports).
 - **November 13, 1929**: The Dow closes at 198.69, "almost half" below its peak (Federal Reserve History).
-- **July 8, 1932**: The Dow closes at 41.22, its lowest value of the twentieth century.
+- **July 8, 1932**: The Dow closes at 41.22, its lowest value of the twentieth century (contemporary press reports).
 - **March 1933**: The commercial banking system collapses and the President declares a bank holiday on March 6 (FDIC).
 
 ---

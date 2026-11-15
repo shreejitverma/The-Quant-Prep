@@ -339,7 +339,7 @@ Equity holders in a Chapter 11 case are last in line, and in May 2020 there was 
 - **Balance Sheet**: $4,566 million of cash and short-term investments against $304 million of debt ($300 million of 6.5% notes maturing in February 2004).
 - **Hidden Growth Catalyst**: The company's portable music player sold 939,000 units in Year t, up 146.5%; in April of Year t it launched an online music store for its own computers, and in October, just after the fiscal year-end, it released its music software and store for Windows.
 - **Valuation**: The stock closed between $19.06 and $23.10 in the last quarter of Year t, with 367.7 million shares outstanding.
-At a hypothetical entry price of $20.00, market value is $7,355 million, cash is 62.1% of it, net cash is $11.59 per share, and enterprise value is $3,093 million, or 0.50x Year t sales.
+At a hypothetical entry price of $20.00, market value is $7,355 million, cash is 62.1% of it (net cash 57.9%, or $11.59 per share), and enterprise value is $3,093 million, or 0.50x Year t sales.
 
 ### Questions to Solve
 1. Calculate enterprise value at the hypothetical entry price and evaluate the downside protection from net cash.
@@ -350,7 +350,7 @@ At a hypothetical entry price of $20.00, market value is $7,355 million, cash is
 <summary>Reveal True Identity & Historical Outcome</summary>
 
 #### Fundamental Analysis
-1. At $20.00, net cash covers 62.1% of the market value, so the market values the operating business at about half a year of sales.
+1. At $20.00, cash covers 62.1% of the market value and net cash 57.9%, so the market values the operating business at about half a year of sales.
 2. The core business is at operating breakeven (an operating loss of $1 million) but generates operating cash ($289 million in Year t), so the cash pile is not being consumed.
 3. Opening the music player and store to Windows users multiplies the addressable market, and the cash balance means the company can fund that growth without outside capital.
 

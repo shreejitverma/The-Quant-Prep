@@ -3,7 +3,9 @@
 Backs `16-Trading-and-Investing/20-History-and-Events/02-1987-Black-Monday-and-Portfolio-Insurance.md`.
 Independent routes used here:
 - index moves are recomputed from the cited closes in exact decimal arithmetic and checked against the
-  cited point change and the Brady Report's rounded figures (22.6 percent, 30.6 percent);
+  cited point change and the Brady Report's rounded figures (22.6 percent; 769 points or 31 percent);
+- the October 13 close is recovered independently by adding the October 14-16 daily changes back to the
+  October 16 close, and the intermediate figures are checked against the Brady Report's rounded ones;
 - the portfolio-insurance overhang (20 percent of $60 billion) is checked against the Brady Report's
   statement that less than $4 billion had been sold;
 - the hypothetical put deltas use the closed form N(d1) - 1 (math.erf) and are checked against a central
@@ -45,16 +47,30 @@ def put_price_by_quadrature(s: float, k: float, sigma: float, t: float, r: float
 
 
 def index_moves() -> None:
-    print("Index moves (cited closes)")
-    prev, close = D("2246.74"), D("1738.74")
-    assert prev - close == D("508.00"), "cited 508-point fall must equal the close difference"
-    print(f"    Oct 19 point fall = {prev - close}")
-    fall = float((prev - close) / prev * 100)
+    print("Index moves (Dow closes and daily changes as reported at the time)")
+    oct13, oct16, oct19 = D("2508.16"), D("2246.74"), D("1738.74")
+    changes = {"Oct 14": D("-95.46"), "Oct 15": D("-57.61"), "Oct 16": D("-108.35")}
+    recovered = oct16 - sum(changes.values())
+    assert recovered == oct13, f"Oct 16 close less the Oct 14-16 changes gives {recovered}, not the cited Oct 13 close"
+    print(f"    Oct 13 close recovered from the Oct 16 close = {recovered}")
+    oct15 = oct16 - changes["Oct 16"]
+    approx("Oct 14 fall, Brady 95 points", float(-changes["Oct 14"]), 95, 0)
+    approx("Oct 15 close, Brady 2,355", float(oct15), 2355, 0)
+    approx("Oct 16 fall, Brady 108 points", float(-changes["Oct 16"]), 108, 0)
+    approx("Oct 16 fall (%)", float(-changes["Oct 16"] / oct15 * 100), 4.6, 1)
+    assert oct16 - oct19 == D("508.00"), "cited 508-point fall must equal the close difference"
+    print(f"    Oct 19 point fall = {oct16 - oct19}")
+    fall = float((oct16 - oct19) / oct16 * 100)
     approx("Oct 19 Dow fall (%)", fall, 22.61, 2)
     approx("Oct 19 Dow fall, Brady rounding (%)", fall, 22.6, 1)
-    week = float((D("2505") - D("1738")) / D("2505") * 100)
-    approx("Oct 13 to Oct 19 fall (%)", week, 30.62, 2)
-    approx("Oct 13 to Oct 19 fall, Brady Study III (%)", week, 30.6, 1)
+    week_points = float(oct13 - oct19)
+    approx("Oct 13 to Oct 19 fall (points)", week_points, 769.42, 2)
+    approx("Oct 13 to Oct 19 fall, Brady chapter 1 (points)", week_points, 769, 0)
+    week = float((oct13 - oct19) / oct13 * 100)
+    approx("Oct 13 to Oct 19 fall (%)", week, 30.68, 2)
+    approx("Oct 13 to Oct 19 fall, Brady chapter 1 (%)", week, 31, 0)
+    study3 = float((D("2505") - D("1738")) / D("2505") * 100)
+    approx("Brady Study III fall from its rounded levels 2,505 and 1,738 (%)", study3, 30.6, 1)
 
 
 def overhang() -> None:

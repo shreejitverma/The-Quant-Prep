@@ -21,7 +21,7 @@ Order-handling systems were overwhelmed: some NYSE DOT orders backed up for up t
 
 ## Primary Sources and Chronology
 
-Sources used on this page: *Report of the Presidential Task Force on Market Mechanisms* (the Brady Report, January 1988), chapters 1 and 3, Study III and Study VI; Mark Carlson, "A Brief History of the 1987 Stock Market Crash with a Discussion of the Federal Reserve Response", Federal Reserve Board FEDS 2007-13 (2007); Donald Bernhardt and Marshall Eckblad, "Stock Market Crash of 1987", Federal Reserve History (2013); SEC Release 34-67090 (May 31, 2012) on market-wide circuit breakers.
+Sources used on this page: *Report of the Presidential Task Force on Market Mechanisms* (the Brady Report, January 1988), chapters 1 and 3, Study III and Study VI; Mark Carlson, "A Brief History of the 1987 Stock Market Crash with a Discussion of the Federal Reserve Response", Federal Reserve Board FEDS 2007-13 (2007); Donald Bernhardt and Marshall Eckblad, "Stock Market Crash of 1987", Federal Reserve History (2013); SEC Release 34-67090 (May 31, 2012) on market-wide circuit breakers; Dow closes and daily point changes for October 13 to 19, 1987, as reported at the time (contemporary press reports).
 
 - **August 25, 1987**: The Dow reaches a record close of 2,722 (Brady Report, Study III), after gaining 44 percent in seven months (Federal Reserve History).
 - **Wednesday, October 14, 1987**: News that the House Ways and Means Committee had filed legislation to remove tax benefits of merger financing, and a worse-than-expected trade deficit, start the decline (Carlson 2007); the Dow falls 95 points on volume of 207 million shares (Brady Report).
@@ -108,7 +108,10 @@ The required short futures position for a portfolio of value $V$ is:
 $$H(S) = |N(d_1) - 1| \times \frac{V}{S \times \text{Multiplier}}$$
 so every institution running the same rule must add short futures at the same moment.
 
-The headline moves follow from the cited closes: $508.00/2{,}246.74 = 22.61\%$ on October 19, and from the October 13 close of 2,505 to 1,738 is a fall of 30.62%, which the Brady Report (Study III) gives as 30.6 percent.
+The headline moves follow from the cited closes: $508.00/2{,}246.74 = 22.61\%$ on October 19.
+Adding the daily falls of 108.35 (October 16), 57.61 (October 15) and 95.46 (October 14) points back to the October 16 close of 2,246.74 recovers the October 13 close of 2,508.16 (contemporary press reports).
+From 2,508.16 to 1,738.74 is a fall of 769.42 points, or 30.68%, which the Brady Report gives as 769 points or 31 percent (chapter 1, p. 1).
+Its Study III (p. III-1) works from rounded levels of 2,505 and 1,738 and gives 30.6 percent.
 
 ---
 
@@ -148,5 +151,5 @@ The headline moves follow from the cited closes: $508.00/2{,}246.74 = 22.61\%$ o
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/mkt_hist_02_1987_crash.py`](../code/mkt_hist_02_1987_crash.py) prints and asserts every number on this page: the index moves are recomputed from the cited closes and checked against the Brady Report's rounded figures, the overhang is checked as stated, and the put deltas come from the closed-form $N(d_1)$ checked against a central finite difference of a put price obtained by numerical integration of the payoff over the lognormal density.
+- Code: [`code/mkt_hist_02_1987_crash.py`](../code/mkt_hist_02_1987_crash.py) prints and asserts every number on this page: the index moves are recomputed from the cited closes and checked against the Brady Report's rounded figures, the October 13 close is recovered from the October 14 to 16 daily changes, the overhang is checked as stated, and the put deltas come from the closed-form $N(d_1)$ checked against a central finite difference of a put price obtained by numerical integration of the payoff over the lognormal density.
 - Related notes: [Case File 01: 1929 Crash](01-1929-Wall-Street-Crash-and-Great-Depression.md), [Case File 06: 2010 Flash Crash](06-2010-Flash-Crash-and-LOB-Evaporation.md).

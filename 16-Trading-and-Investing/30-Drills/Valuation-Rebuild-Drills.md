@@ -299,7 +299,7 @@ $$\text{Net Liquidation Value per Share} = \frac{\$7.5 \text{ million}}{10.0 \te
 
 #### Conclusion:
 Company Delta trades well above NCAV, so it is not a net-net at all.
-A stricter screen (a drill input) that buys only at two-thirds of NCAV or less would require $P \le \frac{2}{3} \text{NCAV} = \$2.20$.
+Graham's bargain-issue rule, buying only at two-thirds of NCAV or less (*The Intelligent Investor*, chapter 15), would require $P \le \frac{2}{3} \text{NCAV} = \$2.20$.
 At $6.00, investors are relying on an ongoing business turnaround.
 If the company burns cash while attempting to liquidate, equity will be wiped out by debt and pension claims.
 

@@ -2,13 +2,15 @@
 
 Backs `16-Trading-and-Investing/20-History-and-Events/09-2021-GameStop-Meme-Squeeze-and-DTCC-Margin-Halt.md`.
 Independent routes used here:
-- price changes are recomputed from the SEC staff report's cited prices in exact decimal arithmetic and
-  checked against the report's own "more than 1,600%" statement;
+- price changes are recomputed from the SEC staff report's cited prices in exact decimal arithmetic, and
+  its "more than 1,600%" statement is checked against the January 11 close as reported at the time, which
+  must also lie below the report's January 11 intraday high;
 - the NSCC January 27 margin call is checked to equal the sum of its two cited components;
 - the hypothetical dealer hedge uses the closed-form Black-Scholes gamma and is checked against a central
   finite difference of the closed-form delta, and the 1/sqrt(tau) scaling is checked by comparing two
   expiries;
-- the re-lending example (short interest above 100%) is checked by explicit bookkeeping of loans.
+- the re-lending example (short interest above 100%) is run on a share ledger of loan records, and the
+  short interest and the shares never sold short are counted from those records.
 Every quoted number is printed as ``label = value`` and asserted.
 """
 
@@ -41,10 +43,13 @@ def call_gamma(s: float, k: float, sigma: float, tau: float) -> float:
 def prices() -> None:
     print("GME prices (SEC staff report, October 14, 2021)")
     jan12, jan13, jan27, high = D("19.95"), D("31.40"), D("347.51"), D("483.00")
+    jan11, jan11_high = D("19.94"), D("20.65")  # close as reported at the time; intraday high from the SEC
+    assert jan11 <= jan11_high, "a close cannot exceed the day's intraday high"
     approx("Jan 13 close over Jan 12 close (%)", float((jan13 / jan12 - 1) * 100), 57.39, 2)
-    gain_close = float((jan27 / jan12 - 1) * 100)
-    approx("Jan 27 close over Jan 12 close (%)", gain_close, 1641.90, 2)
-    assert gain_close > 1600, "SEC: more than 1,600%"
+    approx("Jan 27 close over Jan 12 close (%)", float((jan27 / jan12 - 1) * 100), 1641.90, 2)
+    gain_jan11 = float((jan27 / jan11 - 1) * 100)
+    approx("Jan 27 close over Jan 11 close (%)", gain_jan11, 1642.78, 2)
+    assert gain_jan11 > 1600, "SEC: more than 1,600% above the January 11 close"
     approx("Jan 28 intraday high over Jan 12 close (%)", float((high / jan12 - 1) * 100), 2321.05, 2)
 
 
@@ -55,15 +60,57 @@ def nscc() -> None:
     print(f"    intraday margin calls = {mtm + special}")
 
 
+class ShareLedger:
+    """Physical holders of each share, open stock loans, and every long claim on the float."""
+
+    def __init__(self, float_shares: int) -> None:
+        self.holder = {share: f"owner{share}" for share in range(float_shares)}
+        self.loans: list[tuple[int, str, str]] = []  # (share, lender, short seller)
+        self.longs = dict.fromkeys(self.holder.values(), 1)
+        self._next = 0
+
+    def _new_party(self, kind: str) -> str:
+        self._next += 1
+        return f"{kind}{self._next}"
+
+    def lend_and_short(self, share: int) -> None:
+        """The holder lends the share to a short seller, who sells it to a new buyer."""
+        lender, seller, buyer = self.holder[share], self._new_party("short"), self._new_party("buyer")
+        self.loans.append((share, lender, seller))
+        self.holder[share] = buyer
+        self.longs[buyer] = self.longs.get(buyer, 0) + 1
+
+    def short_interest_pct(self) -> float:
+        return len(self.loans) / len(self.holder) * 100
+
+    def never_shorted(self) -> int:
+        return len(set(self.holder) - {share for share, _, _ in self.loans})
+
+    def check(self) -> None:
+        assert sum(self.longs.values()) == len(self.holder) + len(self.loans), "long claims = float + shares owed"
+
+
 def relending() -> None:
-    print("Re-lending bookkeeping: 100 shares, one share lent twice")
-    shares_outstanding = 100
-    short_positions = 0
-    # A lends its share to X, X sells it to B; B lends the same share to Y, Y sells it to C.
+    print("Re-lending ledger: 100-share float")
+    one = ShareLedger(100)
+    # A lends share 0 to X, X sells it to B; B lends the same share to Y, Y sells it to C.
+    one.lend_and_short(0)
+    one.lend_and_short(0)
+    one.check()
+    approx("short interest, one share lent twice (%)", one.short_interest_pct(), 2.0, 0)
+    never = one.never_shorted()
+    assert never == 99, f"ledger shows {never} shares never sold short"
+    print(f"    shares never sold short = {never}")
+    whole = ShareLedger(100)
     for _ in range(2):
-        short_positions += 1
-    approx("short interest (%)", short_positions / shares_outstanding * 100, 2.0, 0)
-    assert short_positions > 1, "one share sold short twice counts twice"
+        for share in range(100):
+            whole.lend_and_short(share)
+    whole.check()
+    si = whole.short_interest_pct()
+    approx("short interest, every share lent and re-lent once (%)", si, 200.0, 0)
+    assert si > 100, "short interest exceeds 100% of the float"
+    assert len(whole.loans) > len(whole.holder), "short sellers owe more shares than the float"
+    print(f"    shares owed by short sellers = {len(whole.loans)}, float = {len(whole.holder)}")
 
 
 def dealer_hedge() -> None:

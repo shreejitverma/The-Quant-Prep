@@ -44,7 +44,8 @@ def ldi_example() -> None:
     exact_loss = n - zero_value(n, dur, dy)
     approx("exact repricing loss (GBP m)", exact_loss / 1e6, 281.1, 1)
     approx("collateral after exact loss (GBP m)", (collateral - exact_loss) / 1e6, -81.1, 1)
-    approx("shortfall after GBP 30m of liquid assets (GBP m)", (130e6 - 30e6) / 1e6, 100.0, 0)
+    liquid = 30e6
+    approx("shortfall after GBP 30m of liquid assets (GBP m)", (-(collateral + linear) - liquid) / 1e6, 100.0, 0)
 
 
 def boe_stylised() -> None:
@@ -52,7 +53,7 @@ def boe_stylised() -> None:
     gilts = D(100)
     borrowing = gilts / 2  # 2x leverage: half the gilts funded by repo
     cushion = gilts - borrowing
-    assert cushion == gilts / 2, "cushion is half the gilt holdings"
+    print(f"    leverage (gilts / cushion) = {gilts / cushion}")
     fall = D("0.30")
     new_cushion = gilts * (1 - fall) - borrowing
     approx("cushion lost (%)", float((1 - new_cushion / cushion) * 100), 60.0, 0)
@@ -71,8 +72,9 @@ def boe_operation() -> None:
     print(f"    weekday auctions = {days}")
     approx("initial capacity at GBP 5bn per auction (GBP bn)", 5 * days, 65.0, 0)
     print("Yield moves cited in the letter (bps)")
-    friday, monday = 30, 50  # long gilts on Sep 23, 30-year gilts on Sep 26 ("around")
-    assert friday + monday == 80, "Sep 26 left 30-year yields 'more than 80 bps' above the Sep 23 open"
+    print("    Sep 23 rise in long gilt yields (Cunliffe letter, input) = 30")
+    print("    Sep 26 rise in 30-year gilt yields (Cunliffe letter, input, 'around') = 50")
+    print("    Sep 26 level above the start of Sep 23 (Cunliffe letter wording) = more than 80")
     morning_fall, evening_rise = 20, 67  # Sep 27: fall in the morning, rise by the evening vs the morning
     approx("Sep 27 net move vs the previous close (bps)", float(evening_rise - morning_fall), 47.0, 0)
 

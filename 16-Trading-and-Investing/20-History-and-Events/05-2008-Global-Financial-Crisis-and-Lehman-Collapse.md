@@ -21,7 +21,7 @@ The government response included the conservatorship of Fannie Mae and Freddie M
 
 ## Primary Sources and Chronology
 
-Sources used on this page: Financial Crisis Inquiry Commission, *The Financial Crisis Inquiry Report* (January 2011); Report of Anton R. Valukas, Examiner, *In re Lehman Brothers Holdings Inc.* (March 11, 2010), volume 3, section III.A.4 (Repo 105); Lehman Brothers Holdings Inc., Form 10-K for fiscal 2007 (Selected Financial Data) and Form 10-Q for the quarter ended May 31, 2008; SEC litigation release LR-21025 (Reserve Primary Fund); Federal Reserve Board press releases of March 2008 and September 16, 2008; Emergency Economic Stabilization Act of 2008; Gary Gorton and Andrew Metrick, "Securitized Banking and the Run on Repo", *Journal of Financial Economics* 104(3), 2012; David X. Li, "On Default Correlation: A Copula Function Approach", *Journal of Fixed Income* 9(4), 2000.
+Sources used on this page: Financial Crisis Inquiry Commission, *The Financial Crisis Inquiry Report* (January 2011); Report of Anton R. Valukas, Examiner, *In re Lehman Brothers Holdings Inc.* (March 11, 2010), volume 3, section III.A.4 (Repo 105); Lehman Brothers Holdings Inc., Form 10-K for fiscal 2007 (Selected Financial Data) and Form 10-Q for the quarter ended May 31, 2008; SEC litigation release LR-21025 (Reserve Primary Fund); Federal Reserve Board press releases of March 2008 and September 16, 2008; Emergency Economic Stabilization Act of 2008; Gary Gorton and Andrew Metrick, "Securitized Banking and the Run on Repo", *Journal of Financial Economics* 104(3), 2012; David X. Li, "On Default Correlation: A Copula Function Approach", *Journal of Fixed Income* 9(4), 2000; Dow Jones Industrial Average and S&P 500 closes as reported at the time (contemporary press reports).
 
 - **April 2007**: Subprime lender New Century Financial files for bankruptcy as delinquencies on recent subprime loans rise.
 - **August 9, 2007**: BNP Paribas suspends the calculation of net asset value for three funds (Parvest Dynamic ABS, BNP Paribas ABS EURIBOR and BNP Paribas ABS EONIA), citing the impossibility of valuing their US asset-backed holdings (FCIC, citing the BNP Paribas press release).
@@ -31,12 +31,12 @@ Sources used on this page: Financial Crisis Inquiry Commission, *The Financial C
 - **Monday, September 15, 2008**:
   - Lehman Brothers Holdings Inc. files for Chapter 11 bankruptcy.
   - Bank of America announces an agreement to acquire Merrill Lynch in an all-stock transaction valued at about $50 billion.
-  - The Dow Jones Industrial Average falls 504.48 points, from 11,421.99 to 10,917.51, or 4.42%.
+  - The Dow Jones Industrial Average falls 504.48 points, from 11,421.99 to 10,917.51, or 4.42% (contemporary press reports).
 - **Tuesday, September 16, 2008**:
   - After the close, Reserve Management announces that the Primary Fund's $785 million of Lehman paper is valued at zero, and the fund breaks the buck at a net asset value of 97 cents (FCIC; SEC).
   - The Federal Reserve authorises the New York Fed to lend up to $85 billion to AIG, in exchange for a 79.9 percent equity interest.
 - **October 3, 2008**: The Emergency Economic Stabilization Act of 2008 is signed into law, authorising the $700 billion TARP.
-- **March 9, 2009**: The S&P 500 closes at 676.53, its crisis low, 56.78% below its October 9, 2007 record close of 1,565.15.
+- **March 9, 2009**: The S&P 500 closes at 676.53, its crisis low, 56.78% below its October 9, 2007 record close of 1,565.15 (contemporary press reports).
 
 ---
 
@@ -160,5 +160,5 @@ Lehman's leverage is $691{,}063 / 22{,}490 = 30.73$ from the 10-K figures in mil
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/mkt_hist_05_gfc_2008.py`](../code/mkt_hist_05_gfc_2008.py) prints and asserts every number on this page: the balance-sheet example is evaluated line by line and checked against the leverage identity, the haircut arithmetic is checked by reconstructing the loan from the collateral, Lehman's leverage is recomputed from the 10-K figures, and the index changes are recomputed from the cited closes in exact decimal arithmetic.
+- Code: [`code/mkt_hist_05_gfc_2008.py`](../code/mkt_hist_05_gfc_2008.py) prints and asserts every number on this page: the balance-sheet example is evaluated line by line and checked against the leverage identity, the haircut arithmetic is computed in exact rational arithmetic, Lehman's leverage is recomputed from the 10-K figures, and the index changes are recomputed from the cited closes in exact decimal arithmetic.
 - Related notes: [Case File 03: LTCM](03-1998-LTCM-Collapse-and-Relative-Value-Arbitrage.md), [Case File 10: 2022 UK LDI Crisis](10-2022-UK-LDI-Pension-Crisis-and-Gilt-Spiral.md).
