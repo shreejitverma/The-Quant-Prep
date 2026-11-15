@@ -77,7 +77,7 @@ Tracks: T = trader, R = researcher, D = developer, Q = risk and strats.
 | [Risk and Trading](11-Risk-and-Trading/README.md) | 17 | 17 | 70 | 343 | TRDQ |
 | [Quant Development](12-Quant-Development/README.md) | 15 | 15 | 86 | 347 | RDQ |
 | [Interview Playbook](13-Interview-Playbook/README.md) | 12 | 12 | 32 | 225 | TRDQ |
-| [Trading and Investing Library](16-Trading-and-Investing/README.md) | 69 | 69 | 223.5 | 2248 | TRDQ |
+| [Trading and Investing Library](16-Trading-and-Investing/README.md) | 69 | 69 | 223.5 | 2260 | TRDQ |
 | [Regulatory Capital, Basel, and FRTB](17-Regulatory-Capital-Basel-and-FRTB/README.md) | 21 | 21 | 99 | 360 | TDQ |
 | [Pricing and Risk Systems](18-Pricing-and-Risk-Systems/README.md) | 18 | 18 | 73 | 308 | DQ |
 

@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Ledoit and Wolf (2004) - A Well-Conditioned Estimator for Large-Dimensional Covariance Matrices - Journal of Multivariate Analysis 88(2), Lopez de Prado (2016) - Building Diversified Portfolios that Outperform Out of Sample - Journal of Portfolio Management 42(4), Markowitz (1952) - Portfolio Selection - Journal of Finance 7(1), Michaud (1989) - The Markowitz Optimization Enigma: Is 'Optimized' Optimal? - Financial Analysts Journal 45(1), Roncalli (2013) - Introduction to Risk Parity and Budgeting]
+sources: [Ledoit and Wolf (2004) - A Well-Conditioned Estimator for Large-Dimensional Covariance Matrices - Journal of Multivariate Analysis 88(2), Lopez de Prado (2016) - Building Diversified Portfolios that Outperform Out of Sample - Journal of Portfolio Management 42(4), Markowitz (1952) - Portfolio Selection - Journal of Finance 7(1), Michaud (1989) - The Markowitz Optimization Enigma: Is 'Optimized' Optimal? - Financial Analysts Journal 45(1), Roncalli (2013) - Introduction to Risk Parity and Budgeting, Ledoit and Wolf (2003) - Improved Estimation of the Covariance Matrix of Stock Returns - Journal of Empirical Finance 10(5), Ledoit and Wolf (2004) - Honey I Shrunk the Sample Covariance Matrix - Journal of Portfolio Management 30(4), Maillard Roncalli and Teiletche (2010) - The Properties of Equally Weighted Risk Contribution Portfolios - Journal of Portfolio Management 36(4), DeMiguel Garlappi and Uppal (2009) - Optimal Versus Naive Diversification - Review of Financial Studies 22(5), Choueifaty and Coignard (2008) - Toward Maximum Diversification - Journal of Portfolio Management 35(1)]
 ---
 
 # Portfolio Construction and Risk Parity
@@ -13,10 +13,10 @@ sources: [Ledoit and Wolf (2004) - A Well-Conditioned Estimator for Large-Dimens
 ## TL;DR
 
 - Portfolio construction transforms raw alpha signals and risk forecasts into executable capital allocations while obeying real-world constraints.
-- Unconstrained Mean-Variance Optimization (MVO) acts as an "error maximizer", overweighting securities with overstated expected returns or understated risk.
-- Sample covariance matrices for large asset universes ($N > T$) are singular or ill-conditioned; Ledoit-Wolf shrinkage stabilizes inversion by pulling sample covariance toward structured targets.
-- Equal Risk Contribution (Risk Parity) sizes assets so each constituent contributes identically to total portfolio volatility, eliminating equity-dominated risk concentration.
-- Hierarchical Risk Parity (HRP) utilizes machine learning tree clustering to allocate capital across hierarchical asset clusters without requiring covariance matrix inversion.
+- Unconstrained Mean-Variance Optimization (MVO) acts as an "error maximizer" (Michaud 1989), overweighting securities with overstated expected returns or understated risk.
+- Sample covariance matrices for large asset universes are singular when $N \ge T$ and ill-conditioned when $N$ is close to $T$; Ledoit-Wolf shrinkage stabilizes inversion by pulling the sample covariance toward a structured target.
+- Equal Risk Contribution (Risk Parity) sizes assets so each contributes the same amount to total portfolio volatility, removing equity-dominated risk concentration.
+- Hierarchical Risk Parity (HRP) uses hierarchical clustering to allocate capital across asset clusters without inverting the covariance matrix.
 - Real-world production optimizers enforce linear factor bounds, minimum lot constraints, and turnover penalties directly within quadratic programming objectives.
 
 ## Learning objectives
@@ -37,9 +37,9 @@ $$\min_{\mathbf{w}} \frac{1}{2} \mathbf{w}^T \mathbf{\Sigma} \mathbf{w} - \lambd
 
 Where $\boldsymbol{\mu}$ is the vector of expected asset returns, $\mathbf{\Sigma}$ is the asset return covariance matrix, and $\lambda$ is risk aversion.
 
-Richard Michaud (1989) proved that standard MVO acts as an "error maximizer".
+Richard Michaud (1989) argued that standard MVO acts as an "error maximizer".
 Because the optimizer treats sample estimates $\hat{\boldsymbol{\mu}}$ and $\hat{\mathbf{\Sigma}}$ as ground truth without estimation error, it systematically over-allocates capital to assets whose expected returns are overestimated and whose risks or correlations are underestimated.
-In out-of-sample testing, unconstrained MVO frequently underperforms a naive equal-weighted $1/N$ benchmark (DeMiguel, Garlappi, and Uppal, 2009).
+DeMiguel, Garlappi, and Uppal (2009) found that none of the 14 sample-based optimizers they tested consistently beat the naive equal-weighted $1/N$ portfolio out of sample.
 
 ### 2. Covariance Matrix Estimation and Ledoit-Wolf Shrinkage
 
@@ -47,20 +47,20 @@ When universe size $N$ approaches or exceeds sample length $T$ ($N \ge T$), the 
 Even when $T > N$, sample covariance matrices suffer from extreme eigenvalue dispersion: small eigenvalues are underestimated and large eigenvalues are overestimated.
 
 The condition number $\kappa(\mathbf{\Sigma}) = \frac{\lambda_{\max}}{\lambda_{\min}}$ quantifies matrix inversion sensitivity.
-A high condition number ($\kappa > 1000$) implies that small estimation errors in returns produce massive wild swings in optimal portfolio weights.
+A high condition number means small estimation errors in the inputs produce large swings in optimal portfolio weights.
 
-Ledoit and Wolf (2004) introduced linear shrinkage to guarantee a well-conditioned, invertible covariance matrix:
+Ledoit and Wolf introduced linear shrinkage, which gives a well-conditioned, invertible covariance matrix:
 
 $$\mathbf{\Sigma}_{\text{LW}} = (1 - \delta^*) \mathbf{S} + \delta^* \mathbf{F}$$
 
 Where:
 - $\mathbf{S}$: Sample covariance matrix.
-- $\mathbf{F}$: Highly structured shrinkage target (e.g. constant correlation model or single-factor diagonal matrix).
-- $\delta^* \in [0, 1]$: Analytically derived optimal shrinkage intensity that minimizes quadratic loss under Frobenius norm.
+- $\mathbf{F}$: Structured shrinkage target: a single-index (market model) covariance (Ledoit and Wolf 2003), the constant-correlation matrix (Ledoit and Wolf 2004, *Journal of Portfolio Management*), or a scaled identity (Ledoit and Wolf 2004, *Journal of Multivariate Analysis*).
+- $\delta^* \in [0, 1]$: Shrinkage intensity estimated from the data to minimize the expected squared Frobenius distance to the true covariance.
 
 ### 3. Risk Parity and Equal Risk Contribution (ERC)
 
-Traditional "60/40" asset allocation (60% equities, 40% bonds) appears balanced in dollar terms, but because equity volatility ($\sim 16\%$) dwarfs bond volatility ($\sim 5\%$), equities contribute over 90% of total portfolio risk.
+Traditional "60/40" asset allocation (60% equities, 40% bonds) looks balanced in dollar terms, but with illustrative volatilities of $16\%$ for equities and $5\%$ for bonds, equities contribute $95.8\%$ of portfolio risk at zero correlation and $90.9\%$ at a correlation of $0.3$.
 
 Risk Parity re-conceptualizes allocation in units of risk rather than units of capital.
 Total portfolio volatility is:
@@ -81,23 +81,24 @@ $$\text{TRC}_i = \text{TRC}_j = \frac{\sigma_p}{N} \quad \forall i, j$$
 
 $$w_i (\mathbf{\Sigma} \mathbf{w})_i = w_j (\mathbf{\Sigma} \mathbf{w})_j \quad \forall i, j$$
 
-Because lower-volatility assets (e.g. government bonds) receive larger capital allocations to match the risk of volatile assets (e.g. equities), Risk Parity portfolios typically apply modest portfolio leverage to achieve institutional equity-like return targets while maintaining balanced risk diversification.
+Because lower-volatility assets (e.g. government bonds) receive larger capital allocations to match the risk of volatile assets (e.g. equities), unlevered risk parity has low volatility, so risk parity funds typically apply leverage to reach a return target (Maillard, Roncalli, and Teiletche 2010 study the properties of ERC portfolios).
 
 ### 4. Hierarchical Risk Parity (HRP)
 
-Marcos Lopez de Prado (2016) invented Hierarchical Risk Parity (HRP) to address both the instability of MVO and the naive assumptions of standard risk parity.
-HRP operates directly on the correlation distance matrix without requiring matrix inversion ($\mathbf{\Sigma}^{-1}$), rendering it completely immune to singularity and ill-conditioning.
+Marcos Lopez de Prado (2016) introduced Hierarchical Risk Parity (HRP) to address both the instability of MVO and the way standard risk parity ignores the correlation structure.
+HRP never inverts the full covariance matrix ($\mathbf{\Sigma}^{-1}$), so it works even when $\mathbf{\Sigma}$ is singular.
 
 HRP executes in three sequential stages:
 1. **Tree Clustering**:
    - Define correlation distance: $d_{i, j} = \sqrt{\frac{1}{2}(1 - \rho_{i, j})}$.
-   - Apply hierarchical agglomerative clustering using single linkage or Ward's method to construct a dendrogram tree of asset similarities.
+   - Apply hierarchical agglomerative clustering (the paper uses single linkage on distances between the columns of $d$) to build a dendrogram.
 2. **Quasi-Diagonalization**:
    - Reorder the rows and columns of the covariance matrix so that highly correlated assets are grouped adjacently along the primary diagonal.
 3. **Recursive Bisection**:
-   - Recursively split the clustered asset tree into left and right sub-clusters.
-   - Allocate capital between the two sub-clusters inversely proportional to their cluster variances ($\alpha_1 = 1 - \frac{V_1}{V_1 + V_2}$ and $\alpha_2 = \frac{V_1}{V_1 + V_2}$).
-   - Continue bisection until each individual asset is assigned an exact portfolio weight.
+   - Split the quasi-diagonally ordered list of assets into two halves (the paper bisects the ordered list, not the dendrogram's own branches).
+   - Compute each half's variance $V_j$ using inverse-variance weights within the half.
+   - Allocate capital between the two halves inversely to their variances ($\alpha_1 = 1 - \frac{V_1}{V_1 + V_2}$ and $\alpha_2 = \frac{V_1}{V_1 + V_2}$).
+   - Repeat within each half until every asset has a weight.
 
 ---
 
@@ -147,16 +148,18 @@ For the two assets above ($\sigma_E = 20\%$, $\sigma_B = 5\%$):
   $$w_B = \frac{0.20}{0.05 + 0.20} = 80.0\%$$
 
 Each asset now contributes exactly $50.0\%$ to total portfolio volatility.
+For two assets this holds at any correlation: the script solves the ERC equations numerically at $\rho = -0.3, 0, 0.1, 0.5$ and gets $20\%$ and $80\%$ each time, because the cross term $w_E w_B \sigma_{E,B}$ appears in both assets' contributions.
+With three or more assets, inverse volatility equals ERC only when all pairwise correlations are equal.
 
 ---
 
 ## Pitfalls
 
-- **Ignoring Leverage Costs in Risk Parity**: Achieving equity-like returns from a bond-heavy risk parity portfolio requires borrowing cash; rising financing rates (e.g. SOFR increases) directly erode net excess returns.
+- **Ignoring Leverage Costs in Risk Parity**: Achieving equity-like returns from a bond-heavy risk parity portfolio requires leverage; higher financing rates erode net excess returns.
 - **Inverting Ill-Conditioned Covariance Matrices**: Attempting raw inversion $\mathbf{\Sigma}^{-1}$ without shrinkage when $N \approx T$, generating extreme exploding weights and catastrophic out-of-sample turnover.
-- **Correlation Regimes and Risk Parity Concentration**: In 2022, simultaneous stock and bond selloffs ($\rho_{E, B} > 0.50$) shattered historical diversification assumptions, causing standard risk parity funds to suffer severe drawdowns.
+- **Correlation Regimes and Risk Parity Concentration**: Risk parity assumes the stock-bond correlation it estimated; in 2022 US stocks and bonds both fell for the calendar year, so the bond allocation that was meant to diversify added to losses.
 - **Assuming Expected Returns Equal Zero in MVO**: Running minimum variance without expected return inputs produces concentrated allocations in low-beta, low-volatility sectors (utilities, REITs) that can carry structural business risks.
-- **Omitting Turnover Penalty in Rebalancing**: Re-optimizing portfolio weights continuously without a quadratic turnover penalty $\lambda_{\text{turn}} \|\mathbf{w}_t - \mathbf{w}_{t-1}\|_1$, transferring alpha entirely to brokers via slippage.
+- **Omitting Turnover Penalty in Rebalancing**: Re-optimizing weights without a turnover penalty, either linear $\lambda_{\text{turn}} \|\mathbf{w}_t - \mathbf{w}_{t-1}\|_1$ for spread-like costs or quadratic for impact-like costs, which hands much of the alpha to trading costs.
 
 ---
 
@@ -181,19 +184,20 @@ Each asset now contributes exactly $50.0\%$ to total portfolio volatility.
 > ERC requires that every constituent asset contributes an identical amount of volatility to the portfolio: w_i * (Sigma * w)_i = w_j * (Sigma * w)_j for all i, j.
 
 > [!question]- mkt-sys-071 | Why does a traditional 60/40 equity-bond portfolio have equity-dominated risk?
-> Because equity volatility (~16%) is over three times bond volatility (~5%); when squared in portfolio variance, equities account for approximately 90% to 95% of total portfolio risk.
+> Because equity volatility (say 16%) is more than three times bond volatility (say 5%), and variance scales with its square.
+> With 60/40 weights, equities carry 95.8% of the risk at zero correlation and 90.9% at a correlation of 0.3.
 
 > [!question]- mkt-sys-072 | How does Risk Parity achieve competitive equity-like returns if heavily weighted in bonds?
-> Risk Parity applies structural portfolio leverage to borrow cash at low financing rates, scaling up the low-risk diversified portfolio to meet target return levels.
+> It applies leverage, typically through futures or borrowing, scaling up the low-volatility diversified portfolio to the target volatility or return; the excess return must exceed the financing cost.
 
 > [!question]- mkt-sys-073 | What is Hierarchical Risk Parity (HRP) and who invented it?
-> Invented by Marcos Lopez de Prado (2016), HRP uses machine learning tree clustering to allocate capital across hierarchical asset clusters without requiring covariance matrix inversion.
+> Introduced by Marcos Lopez de Prado (2016, Journal of Portfolio Management), HRP clusters assets hierarchically on correlation distance and allocates top-down by inverse cluster variance, without inverting the covariance matrix.
 
 > [!question]- mkt-sys-074 | State the three stages of the Hierarchical Risk Parity algorithm.
-> The three stages are Tree Clustering (hierarchical grouping via correlation distance), Quasi-Diagonalization (reordering covariance matrix along the diagonal), and Recursive Bisection (allocating inverse variance weights).
+> The three stages are Tree Clustering (hierarchical grouping via correlation distance), Quasi-Diagonalization (reordering the covariance matrix so similar assets sit together), and Recursive Bisection (splitting the ordered list in halves and allocating by inverse cluster variance).
 
 > [!question]- mkt-sys-075 | Why is HRP immune to the singularity problems of Markowitz MVO?
-> Because HRP does not invert the covariance matrix (no Sigma^{-1}); it allocates weights top-down using recursive bisection based only on sub-cluster variances.
+> Because HRP does not invert the covariance matrix (no Sigma^{-1}); it allocates weights top-down using recursive bisection based only on sub-cluster variances, which exist even when Sigma is singular.
 
 > [!question]- mkt-sys-076 | What is correlation distance in hierarchical clustering?
 > Correlation distance is defined as d_{i, j} = sqrt(0.5 * (1 - rho_{i, j})), which forms a true metric space satisfying non-negativity, symmetry, and triangle inequality.
@@ -226,7 +230,7 @@ Each asset now contributes exactly $50.0\%$ to total portfolio volatility.
 > The portfolio on the efficient frontier that achieves the absolute lowest variance regardless of expected return: w_{MVP} = Sigma^{-1} * 1 / (1^T * Sigma^{-1} * 1).
 
 > [!question]- mkt-sys-086 | Why does equal-weighting (1/N) often beat sample MVO out of sample (DeMiguel et al. 2009)?
-> Because 1/N has zero estimation error; sample MVO's severe parameter estimation errors frequently outweigh its theoretical efficiency advantages.
+> Because 1/N has no estimation error, while sample MVO's estimation errors, especially in expected returns, outweigh its theoretical advantage unless the estimation window is very long; DeMiguel et al. found none of 14 models consistently beat 1/N out of sample.
 
 > [!question]- mkt-sys-087 | How does the Frobenius norm evaluate shrinkage intensity?
 > The Frobenius norm measures matrix distance: ||Sigma - Target||_F^2 = sum_{i, j} (Sigma_{i, j} - Target_{i, j})^2; optimal shrinkage minimizes the expected Frobenius loss.
@@ -238,7 +242,7 @@ Each asset now contributes exactly $50.0\%$ to total portfolio volatility.
 > Reordering rows and columns of the covariance matrix according to dendrogram leaf order so that correlated assets cluster together along the diagonal, revealing tree hierarchy.
 
 > [!question]- mkt-sys-090 | What is recursive bisection in HRP?
-> Dividing an asset cluster into two sub-clusters, assigning capital between them based on inverse cluster variance, and repeating recursively until all individual asset weights are set.
+> Splitting the quasi-diagonally ordered asset list into two halves, assigning capital between them by inverse cluster variance (each half's variance computed with inverse-variance weights inside it), and repeating until every asset has a weight.
 
 > [!question]- mkt-sys-091 | How does portfolio volatility behave when all asset correlations equal 1.0?
 > Portfolio volatility equals the weighted sum of individual asset volatilities: sigma_p = sum_i w_i * sigma_i; all diversification benefits completely vanish.
@@ -258,12 +262,26 @@ Each asset now contributes exactly $50.0\%$ to total portfolio volatility.
 > [!question]- mkt-sys-096 | Why is quadratic programming used to solve constrained portfolio optimization?
 > Because portfolio variance is a quadratic function of weights (w^T * Sigma * w) while common real-world constraints (budget, sector bounds, leverage) are linear, fitting quadratic programming algorithms.
 
+> [!question]- mkt-sys-258 | For two assets with volatilities 20% and 5%, does the ERC weighting depend on their correlation?
+> No: it is 20% and 80%, inverse volatility, at any correlation.
+> Each asset's contribution is w_i^2 sigma_i^2 + w_E w_B sigma_EB, so equal contributions need only w_E sigma_E = w_B sigma_B.
+
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../code/mkt_sys_03_portfolio.py`](../code/mkt_sys_03_portfolio.py) prints and asserts every number on this page: variance by scalar expansion and matrix product, risk contributions by finite differences of portfolio volatility, ERC weights by a cyclical Newton solver, the minimum-variance and tangency formulas against a random search, the correlation-distance triangle inequality, and sample-covariance rank.
+- Related notes: [Mean-Variance Portfolio Construction](../../09-Alpha-Research-and-Portfolio/10-Mean-Variance-Portfolio-Construction.md), [Covariance Estimation and Shrinkage](../../09-Alpha-Research-and-Portfolio/11-Covariance-Estimation-and-Shrinkage.md), [Black-Litterman, Risk Parity and HRP](../../09-Alpha-Research-and-Portfolio/12-Black-Litterman-Risk-Parity-and-HRP.md).
 
 ## Further reading
 
+- Choueifaty, Y., & Coignard, Y. (2008). Toward maximum diversification. *The Journal of Portfolio Management*, 35(1), 40-51.
+- DeMiguel, V., Garlappi, L., & Uppal, R. (2009). Optimal versus naive diversification: How inefficient is the 1/N portfolio strategy? *The Review of Financial Studies*, 22(5), 1915-1953.
+- Ledoit, O., & Wolf, M. (2003). Improved estimation of the covariance matrix of stock returns with an application to portfolio selection. *Journal of Empirical Finance*, 10(5), 603-621.
+- Ledoit, O., & Wolf, M. (2004). Honey, I shrunk the sample covariance matrix. *The Journal of Portfolio Management*, 30(4), 110-119.
 - Ledoit, O., & Wolf, M. (2004). A well-conditioned estimator for large-dimensional covariance matrices. *Journal of Multivariate Analysis*, 88(2), 365-411.
 - Lopez de Prado, M. (2016). Building diversified portfolios that outperform out of sample. *The Journal of Portfolio Management*, 42(4), 59-69.
 - Markowitz, H. (1952). Portfolio selection. *The Journal of Finance*, 7(1), 77-91.
+- Maillard, S., Roncalli, T., & Teiletche, J. (2010). The properties of equally weighted risk contribution portfolios. *The Journal of Portfolio Management*, 36(4), 60-70.
 - Michaud, R. O. (1989). The Markowitz optimization enigma: Is 'optimized' optimal? *Financial Analysts Journal*, 45(1), 31-42.
 - Roncalli, T. (2013). *Introduction to Risk Parity and Budgeting*. Chapman and Hall/CRC.
