@@ -5,8 +5,10 @@ Independent routes used here:
   annualised yield is recomputed from the cash flow rather than from 1,095 x rate;
 - the liquidation price of the short perpetual is found by bisection on the account-equity function (equity minus
   maintenance margin at the mark price) and compared with the closed form;
-- impermanent loss is computed by simulating the constant-product pool: arbitrageurs trade the reserves to the new
-  price along x y = k, and the LP's holdings are valued against simply holding the initial tokens;
+- impermanent loss is computed by simulating the constant-product pool: an arbitrageur's swap through the x y = k
+  swap formula is sized by bisection to move the pool to the new price, the LP's holdings are valued against simply
+  holding the initial tokens, and the result is compared with 2 sqrt(R) / (1 + R) - 1; a second simulation at 1/R
+  checks the symmetry;
 - the inverse-contract P&L bound is checked numerically as the price grows without limit.
 Run: uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_crypto_01_perps.py
 """
@@ -64,16 +66,34 @@ def example_1() -> None:
 def impermanent_loss() -> None:
     print("Impermanent loss from a simulated constant-product pool")
     x0, y0 = 100.0, 100.0 * 2_000.0  # 100 ETH and 200,000 USDC at a price of 2,000
-    k, p0 = x0 * y0, y0 / x0
-    for ratio, quoted in ((1.25, "-0.62"), (1.5, "-2.02"), (2.0, "-5.72"), (3.0, "-13.40"), (5.0, "-25.46")):
+    p0 = y0 / x0
+
+    def arbitrage(p_target: float) -> tuple[float, float]:
+        # no-fee swap: dy in gives x dy / (y + dy) out (and dx in gives y dx / (x + dx) out); size it so the pool price hits p_target
+        if p_target >= p0:
+
+            def gap_up(dy: float) -> float:
+                return (y0 + dy) / (x0 - x0 * dy / (y0 + dy)) - p_target
+
+            dy = bisect(gap_up, 0.0, 100 * y0, tol=1e-9)
+            return x0 - x0 * dy / (y0 + dy), y0 + dy
+
+        def gap_down(dx: float) -> float:
+            return (y0 - y0 * dx / (x0 + dx)) / (x0 + dx) - p_target
+
+        dx = bisect(gap_down, 0.0, 100 * x0, tol=1e-12)
+        return x0 + dx, y0 - y0 * dx / (x0 + dx)
+
+    def il_sim(ratio: float) -> float:
         p1 = p0 * ratio
-        x1, y1 = math.sqrt(k / p1), math.sqrt(k * p1)  # reserves after arbitrage to the new price
-        assert abs(x1 * y1 - k) <= 1e-6 * k and abs(y1 / x1 - p1) <= 1e-9 * p1
-        lp, hold = x1 * p1 + y1, x0 * p1 + y0
-        il = lp / hold - 1
+        x1, y1 = arbitrage(p1)
+        return (x1 * p1 + y1) / (x0 * p1 + y0) - 1
+
+    for ratio, quoted in ((1.25, "-0.62"), (1.5, "-2.02"), (2.0, "-5.72"), (3.0, "-13.40"), (5.0, "-25.46")):
+        il = il_sim(ratio)
         q(f"impermanent loss at price ratio {ratio} (%)", 100 * il, quoted)
-        close(f"pool simulation vs 2 sqrt(R) / (1 + R) - 1 at R = {ratio}", il, 2 * math.sqrt(ratio) / (1 + ratio) - 1, 1e-12)
-        close(f"loss symmetric in R and 1/R at R = {ratio}", 2 * math.sqrt(1 / ratio) / (1 + 1 / ratio) - 1, il, 1e-12)
+        close(f"pool simulation vs 2 sqrt(R) / (1 + R) - 1 at R = {ratio}", il, 2 * math.sqrt(ratio) / (1 + ratio) - 1, 1e-10)
+        close(f"pool simulation at 1/R vs pool simulation at R = {ratio}", il_sim(1 / ratio), il, 1e-10)
 
 
 def inverse_contract() -> None:

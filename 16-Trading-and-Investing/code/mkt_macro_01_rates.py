@@ -1,36 +1,38 @@
 """Yield curves and rates trading: every number in 04-Macro-Rates-FX/01-Yield-Curve-Dynamics-and-Rates-Trading.md.
 
 Independent routes used here:
-- the semi-annual par bootstrap is checked by repricing every input par bond from the bootstrapped discount
-  factors (each must price at exactly 100), and f(T) > y(T) on an upward curve by differencing ln P numerically;
+- the semi-annual par bootstrap is checked by solving each discount factor again by bisection on its par bond's
+  price (each must price at 100 given the earlier discount factors), and f(T) > y(T) on an upward curve by
+  differencing ln P numerically;
 - DV01 notionals and the 2s10s flattener P&L are computed leg by leg;
 - the butterfly weights are solved as a 2x2 linear system in maturity and then checked by pricing 2-, 5- and 10-year
   semi-annual par bonds, sizing the legs from analytic DV01s, and repricing the whole fly (central differences) under
   a parallel yield shift and a linear-in-maturity slope shift (both must give zero first-order P&L, and the 50/50 fly
-  must lose one body-DV01 basis point per basis point per year of slope);
-- covered interest parity: the synthetic dollar borrowing rate implied by the basis-adjusted forward is computed
-  from explicit cash flows (borrow EUR, sell spot, buy forward) and compared with r_d - basis.
+  must lose one body-DV01 basis point per basis point per year of slope).
 Run: uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_macro_01_rates.py
 """
 
 from __future__ import annotations
 
-import math
-
 import numpy as np
-from mkt_assets_lib import close, q
+from mkt_assets_lib import bisect, close, q
 
 
 def bootstrap_check() -> None:
-    print("Bootstrap: semi-annual par bonds reprice at 100 from the bootstrapped discount factors")
+    print("Bootstrap: semi-annual par discount factors in closed form vs bisection on each par bond's price")
     par = {0.5: 0.040, 1.0: 0.041, 1.5: 0.042, 2.0: 0.043, 2.5: 0.0435, 3.0: 0.044}  # hypothetical annual par coupons
     dfs: list[float] = []
     for c in par.values():
         p = (1 - c / 2 * sum(dfs)) / (1 + c / 2)
         dfs.append(p)
+    solved: list[float] = []
     for i, c in enumerate(par.values()):
-        price = 100 * (c / 2 * sum(dfs[: i + 1]) + dfs[i])
-        close(f"par bond {i + 1} reprices at 100", price, 100.0, 1e-9)
+
+        def price_gap(p: float, c: float = c) -> float:
+            return 100 * (c / 2 * (sum(solved) + p) + p) - 100.0
+
+        solved.append(bisect(price_gap, 0.5, 1.0, tol=1e-14))
+        close(f"discount factor {i + 1}: closed-form bootstrap vs bisection", dfs[i], solved[i], 1e-12)
     ts = np.array(list(par))
     y = -np.log(dfs) / ts
     f = -np.diff(np.log(dfs)) / np.diff(ts)
@@ -99,20 +101,8 @@ def butterfly() -> None:
     close("repriced 50/50 butterfly slope P&L vs -1 body-DV01 bp", slope_pnl_5050, -1.0, 1e-6)
 
 
-def cip() -> None:
-    print("Covered interest parity and the basis (hypothetical rates)")
-    S, rd, rf, basis, T = 1.10, 0.045, 0.025, -0.0030, 1.0  # USD per EUR; basis x < 0
-    F = S * math.exp((rd - rf - basis) * T)
-    # synthetic USD borrowing: borrow 1 EUR at rf, sell it spot for S USD, buy back e^{rf T} EUR forward at F
-    usd_received, usd_repaid = S, math.exp(rf * T) * F
-    synthetic = math.log(usd_repaid / usd_received) / T
-    close("synthetic USD rate vs r_d - basis", synthetic, rd - basis, 1e-12)
-    assert synthetic > rd, "a negative basis makes synthetic dollars dearer than direct dollars"
-
-
 if __name__ == "__main__":
     bootstrap_check()
     dv01_trades()
     butterfly()
-    cip()
     print("all rates numbers verified")

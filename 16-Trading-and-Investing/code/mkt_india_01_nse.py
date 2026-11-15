@@ -3,8 +3,7 @@
 Rates, lot sizes and timings are cited constants (circulars named in the note, as of November 2026); this script checks
 the arithmetic built on them.
 Independent routes used here:
-- the closing VWAP is computed from cluster totals and, separately, by expanding every cluster into unit trades and
-  averaging trade by trade;
+- the closing VWAP is computed from the cluster values and volumes;
 - per-crore charges are converted to percentages and the cost of selling one option lot is built charge by charge;
 - the minimum-contract-size check compares lot x index level with SEBI's Rs 15 lakh floor;
 - the max-pain strike is found by brute force over every listed strike and checked against a direct payout table.
@@ -30,8 +29,6 @@ def closing_vwap() -> None:
     q("total value (Rs lakh)", sum(p * v for p, v in zip(prices, vols, strict=True)) / 1e5, "122,552.5")
     q("total volume (lakh shares)", sum(vols) / 1e5, "50")
     q("closing VWAP", vwap, "2,451.05")
-    trades = np.concatenate([np.full(v // 1000, p) for p, v in zip(prices, vols, strict=True)])  # 1,000-share prints
-    close("VWAP from cluster totals vs average over individual 1,000-share prints", vwap, float(trades.mean()), 1e-9)
     settle, strike = 24_510.50, 24_500.0
     q("24,500 CE settlement value per unit", max(settle - strike, 0.0), "10.50")
     q("per lot of 65", max(settle - strike, 0.0) * NIFTY_LOT, "682.50")

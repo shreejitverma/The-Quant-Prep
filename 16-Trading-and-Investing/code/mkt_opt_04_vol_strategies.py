@@ -1,8 +1,8 @@
 """Volatility trading strategies: every number in 03-Options-and-Volatility/04-Volatility-Trading-Strategies.md.
 
 Independent routes used here:
-- straddle gamma and theta come from the closed-form Greeks and are checked against finite differences of the price,
-  and the zero-rate identity theta = -0.5 Gamma S^2 sigma^2 is checked against the closed-form theta;
+- straddle gamma and theta come from the closed-form Greeks and are checked against central finite differences of the
+  straddle price in spot and in time to expiry;
 - the scalping hedge P&L is computed from the explicit trade blotter (cash flows of each whole-unit hedge) and compared
   with the leg-by-leg gamma sum 0.5 Gamma sum(dS^2);
 - implied correlation is solved from the index-variance identity and checked by a seeded simulation of two correlated
@@ -46,7 +46,13 @@ def example_1() -> None:
     close("straddle gamma vs finite difference", g_unit, fd_gamma, 1e-8)
     theta_day = n * (c["theta"] + p["theta"]) / 365
     q("position theta per day (closed form)", theta_day, "-3,049.15")
-    close("theta = -0.5 Gamma S^2 sigma^2 at zero rates", theta_day, -0.5 * g * S * S * s * s / 365, 1e-6)
+    ht = 1e-6
+
+    def straddle(T_: float) -> float:
+        return bs_price(S, K, T_, 0, 0, s) + bs_price(S, K, T_, 0, 0, s, False)
+
+    fd_theta_day = -n * (straddle(T + ht) - straddle(T - ht)) / (2 * ht) / 365
+    close("position theta per day vs finite difference of the straddle price in T", theta_day, fd_theta_day, 1e-4)
     q("theta with gamma rounded to 3.478 first", -0.5 * 3.478 * S * S * s * s / 365, "-3,049.21")
     q("entry delta 1000 x (2N(d1) - 1)", n * (2 * norm_cdf(c["d1"]) - 1), "18.3")
 

@@ -317,7 +317,7 @@ There it is $100 \times 30 + 200 \times 15 + 100 \times 35 + 200 \times 20 = 13,
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [mkt_india_01_nse.py](../code/mkt_india_01_nse.py) prints and asserts every computed number in this note; the VWAP is rebuilt from individual prints, the option-selling cost is computed charge by charge, and max pain by brute force over every strike, while rates, lots and timings are cited constants; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_india_01_nse.py`.
+- Code: [mkt_india_01_nse.py](../code/mkt_india_01_nse.py) prints and asserts every computed number in this note; the VWAP is computed from the trade clusters, the option-selling cost charge by charge, and max pain by brute force over every strike, while rates, lots and timings are cited constants; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_india_01_nse.py`.
 - Related: [Regulation, Tax, and Trading Operations](../08-Execution-Microstructure/02-Regulation-Tax-and-Trading-Operations.md) for Indian F&O taxation and the audit turnover rule.
 
 ---

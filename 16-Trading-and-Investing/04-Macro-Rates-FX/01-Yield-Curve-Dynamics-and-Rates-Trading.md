@@ -327,7 +327,7 @@ The trade earned $750,000 from 15 bps of flattening on $50,000 DV01 ($15 \times 
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [mkt_macro_01_rates.py](../code/mkt_macro_01_rates.py) prints and asserts every number in this note; the bootstrap is checked by repricing the par bonds, the flattener P&L leg by leg, the butterfly weights by repricing 2-, 5- and 10-year par bonds under parallel and slope yield shocks, and CIP from explicit swap cash flows; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_macro_01_rates.py`.
+- Code: [mkt_macro_01_rates.py](../code/mkt_macro_01_rates.py) prints and asserts every number in this note; the bootstrap is checked by solving each discount factor again by bisection on its par bond's price, the flattener P&L is computed leg by leg, and the butterfly weights are checked by repricing 2-, 5- and 10-year par bonds under parallel and slope yield shocks; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_macro_01_rates.py`.
 - Syllabus: [Discounting and Yield Curves](../../06-Fixed-Income-and-Asset-Classes/01-Discounting-and-Yield-Curves.md), [Curve Risk and Hedging](../../06-Fixed-Income-and-Asset-Classes/15-Curve-Risk-and-Hedging.md), [FX Markets and Interest Rate Parity](../../06-Fixed-Income-and-Asset-Classes/07-FX-Markets-and-Interest-Rate-Parity.md).
 
 ---
