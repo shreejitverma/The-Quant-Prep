@@ -12,11 +12,11 @@ sources: [Greenblatt (1997) - You Can Be a Stock Market Genius: Uncover the Secr
 
 ## TL;DR
 
-- Joel Greenblatt achieved one of the greatest documented performance track records in financial history, compounding Gotham Capital at 50.0% annualized gross returns (40.0% net) from 1985 to 1994.
+- Joel Greenblatt's Gotham Capital reported returns of about 50% a year from 1985 to 1994 before the general partner's share of profits (the record given in *You Can Be a Stock Market Genius*, 1997); a dollar compounding at 50% for ten years becomes $57.67.
 - Greenblatt's initial edge was derived from catalyst-driven "Special Situations": corporate spinoffs, rights offerings, risk arbitrage, stub equities, and recapitalizations where institutional friction causes extreme mispricing.
-- Corporate spinoffs represent the premier institutional mispricing engine: index funds and institutional managers are legally forced to dump shares of newly spun-off subsidiaries regardless of price, creating massive, temporary liquidity dislocations.
+- Corporate spinoffs are a classic source of mispricing: many holders who receive the new shares do not want them or cannot hold them under their mandates, and sell regardless of price.
 - The "Magic Formula" systematized value investing into a two-factor quantitative algorithm: ranking stocks simultaneously by Earnings Yield ($\text{EBIT} / \text{EV}$) and Return on Capital ($\text{EBIT} / [\text{Net Working Capital} + \text{Net PP\&E}]$).
-- The Magic Formula outperforms precisely because it frequently fails for two to three consecutive years, triggering institutional career risk and flushing out weak-handed investors.
+- Greenblatt argues the Magic Formula keeps working because it can lag the market for years at a time, which drives away impatient investors and career-minded managers.
 
 ## Learning objectives
 
@@ -30,7 +30,7 @@ sources: [Greenblatt (1997) - You Can Be a Stock Market Genius: Uncover the Secr
 
 ### 1. Special Situations: Where Edge Originates
 
-In *You Can Be a Stock Market Genius* (1997), Joel Greenblatt laid out the operational blueprint that generated Gotham Capital's 50% compound returns:
+In *You Can Be a Stock Market Genius* (1997), Joel Greenblatt described the special situations behind Gotham Capital's record:
 
 ```
 +-----------------------------------------------------------------------+
@@ -51,11 +51,11 @@ In *You Can Be a Stock Market Genius* (1997), Joel Greenblatt laid out the opera
 ```
 
 The Common Thread:
-Every special situation features an **institutional forced seller** (an index fund, trust department, or mutual fund barred by charter from holding the security) or a **complexity barrier** that prevents Wall Street sell-side analysts from publishing coverage.
+Most special situations feature an **institutional forced seller** (an index fund, trust department, or mutual fund whose mandate rules out holding the security) or a **complexity barrier** that keeps analysts and investors away.
 
 ### 2. Spinoff Forensics: Mining the SEC Form 10
 
-When a corporation spins off a business unit, it files an **SEC Form 10** (Information Statement).
+When a corporation spins off a business unit, the new company registers its shares on **SEC Form 10**, with the information statement for shareholders attached as an exhibit.
 Key audit items inside the Form 10:
 
 ```
@@ -80,9 +80,9 @@ Key audit items inside the Form 10:
 |      giving them a perverse incentive to depress initial prices.      |
 |                                                                       |
 | 4. Indiscriminate Institutional Dumping:                              |
-|    - If a $50B S&P 500 company spins off a $600M small-cap division,  |
-|      S&P 500 index funds MUST sell 100% of their shares immediately,  |
-|      regardless of value.                                             |
+|    - If a $50B S&P 500 company spins off a $600M small-cap division   |
+|      that the index provider drops, S&P 500 index funds sell their    |
+|      shares when it leaves the index, regardless of value.            |
 +-----------------------------------------------------------------------+
 ```
 
@@ -92,17 +92,19 @@ Merger arbitrage involves buying the target company stock after a definitive mer
 
 $$\text{Gross Deal Spread} = \frac{\text{Offer Price} - \text{Current Market Price}}{\text{Current Market Price}}$$
 
-$$\text{Annualized Return} = \text{Gross Spread} \times \left( \frac{365}{\text{Expected Days to Closing}} \right)$$
+$$\text{Annualized Return (simple)} = \text{Gross Spread} \times \left( \frac{365}{\text{Expected Days to Closing}} \right)$$
+
+Compounding instead gives $(1 + \text{Gross Spread})^{365/\text{Days}} - 1$, which is higher whenever the deal closes in under a year.
 
 Risks to Audit in Merger Arbitrage:
 - **Antitrust Regulatory Approval**: FTC / DOJ / EU European Commission merger challenges.
 - **Financing Contingencies**: Does the acquirer have committed debt financing or a financing out?
 - **Material Adverse Effect (MAE) Clauses**: Can the buyer walk away if the target's earnings dip?
-- **Downside Break Price**: If the deal collapses, where will the target trade on standalone fundamentals? (Downside is often 5x to 10x the spread, demanding high closing certainty).
+- **Downside Break Price**: If the deal collapses, where will the target trade on standalone fundamentals? (The downside is usually several times the spread, 5.0x in the case study, demanding high closing certainty.)
 
 ### 4. The Magic Formula: Systematic Quantitative Value
 
-In *The Little Book That Beats the Market* (2005), Greenblatt proved that value investing could be distilled into two simple, robust financial ratios:
+In *The Little Book That Beats the Market* (2005), Greenblatt argued, with a back-test, that value investing could be distilled into two simple financial ratios:
 
 ```
 +-----------------------------------------------------------------------+
@@ -116,19 +118,21 @@ In *The Little Book That Beats the Market* (2005), Greenblatt proved that value 
                                    |
                                    v
 +-----------------------------------------------------------------------+
-| RANK ENTIRE UNIVERSE (e.g. Top 3,500 US Stocks by Market Cap > $50M)  |
+| RANK A UNIVERSE (the book tests the largest 3,500 US stocks; the     |
+| practical screen uses a minimum market cap such as $50M; no utilities |
+| or financial stocks)                                                  |
 | 1. Rank by Earnings Yield: 1 (Cheapest) to 3,500 (Most Expensive)     |
 | 2. Rank by Return on Capital: 1 (Highest ROC) to 3,500 (Lowest ROC)   |
 | 3. Combined Magic Rank = Rank(Earnings Yield) + Rank(Return on Capital)|
-| 4. BUY THE TOP 30 COMBINED STOCKS (Hold for 1 year; rebalance).       |
+| 4. BUY 20 TO 30 TOP-RANKED STOCKS (Hold each 1 year; rebalance).      |
 +-----------------------------------------------------------------------+
 ```
 
 #### Factor 1: Earnings Yield ($\text{EBIT} / \text{EV}$)
 Why Greenblatt uses $\text{EBIT} / \text{EV}$ instead of P/E:
-- Compares operating earnings before interest and taxes to Enterprise Value (Debt + Equity - Cash).
+- Compares operating earnings before interest and taxes to Enterprise Value (market value of equity plus net interest-bearing debt).
 - Eliminates differences in corporate tax rates and capital structure leverage.
-- Company A and Company B with identical operations but different debt loads will have wildly different P/E ratios, but identical $\text{EBIT}/\text{EV}$ yields.
+- Hypothetical check: two companies with the same $100M EBIT, the same $1,000M enterprise value and a 25% tax rate, one debt-free and one with $500M of debt at 6%, both have a 10.0% earnings yield, but P/E ratios of 13.3x and 9.5x.
 
 #### Factor 2: Return on Capital (ROC)
 Why Greenblatt uses $\frac{\text{EBIT}}{\text{Net Working Capital} + \text{Net PP\&E}}$ instead of ROE or ROA:
@@ -139,29 +143,29 @@ Why Greenblatt uses $\frac{\text{EBIT}}{\text{Net Working Capital} + \text{Net P
 
 ### 5. Why the Magic Formula Works (and Why Most Investors Fail)
 
-Between 1988 and 2004, Greenblatt's Magic Formula returned **30.8% annualized**, compared to **12.4% for the S&P 500**.
-Yet, almost no professional money manager follows it:
+Greenblatt's back-test in the book reports **30.8% a year** for the formula on the 3,500-stock universe from 1988 to 2004, against **12.4% for the S&P 500**; compounded over those 17 years, $1 would grow to $96.01 against $7.30.
+A back-test is not a live record: it is exposed to data-mining, survivorship and trading-cost assumptions.
+Greenblatt's own explanation of why few professionals follow it:
 
 ```
 +-----------------------------------------------------------------------+
 |                    WHY SYSTEMATIC VALUE IS SO HARD                    |
 +-----------------------------------------------------------------------+
-| "The Magic Formula doesn't work all the time. It often underperforms  |
-| for two or three consecutive years. And that's precisely why it works |
-| in the long run: if it worked every year, everyone would do it, and   |
-| the anomaly would be completely arbitraged away."                     |
-|                                    - Joel Greenblatt                  |
+| The formula does not work all the time and can lag the market for     |
+| several years in a row; if it worked every year, everyone would use   |
+| it and the advantage would be competed away.                          |
+|                       (paraphrase of Greenblatt 2005, not a quotation)|
 +-----------------------------------------------------------------------+
 ```
 
 Career Risk:
-A fund manager who lags the benchmark for three consecutive years gets fired by institutional clients.
-Therefore, institutional managers abandon the strategy precisely at the cyclical bottom, guaranteeing that value anomalies persist for disciplined, patient investors.
+A fund manager who lags the benchmark for several years running risks losing clients.
+So institutional managers tend to abandon such strategies after bad stretches, which is one reason value-type anomalies can persist for patient investors.
 
 ## Worked numerical case study
 
 ### Part 1: Merger Arbitrage Spread Calculation
-Conglomerate Alpha agrees to acquire BioCore Labs in an all-cash transaction:
+Conglomerate Alpha agrees to acquire BioCore Labs in an all-cash transaction (hypothetical inputs):
 - Agreed Acquisition Price: $50.00 cash per share
 - Current BioCore Market Price: $47.50
 - Expected Closing Date: Exactly 90 days from today
@@ -171,7 +175,9 @@ Conglomerate Alpha agrees to acquire BioCore Labs in an all-cash transaction:
 $$\text{Gross Spread} = \frac{\$50.00 - \$47.50}{\$47.50} = \frac{\$2.50}{\$47.50} = 5.263\%$$
 
 #### Step 2: Annualize the Spread
-$$\text{Annualized Return} = 5.263\% \times \left( \frac{365}{90} \right) = 5.263\% \times 4.0556 = \mathbf{21.34\% \text{ annualized}}$$
+$$\text{Annualized Return} = 5.263\% \times \left( \frac{365}{90} \right) = 5.263\% \times 4.0556 = \mathbf{21.35\% \text{ annualized (simple)}}$$
+
+Compounded, the same spread is $(1.05263)^{4.0556} - 1 = 23.12\%$ a year.
 
 #### Step 3: Risk/Reward Asymmetry Audit
 - Upside if Deal Closes: $+\$2.50$ per share.
@@ -179,9 +185,9 @@ $$\text{Annualized Return} = 5.263\% \times \left( \frac{365}{90} \right) = 5.26
 - Downside-to-Upside Ratio: $\frac{\$12.50}{\$2.50} = 5.0\times$.
 - Break-Even Probability of Deal Closing ($p$):
   $$p \times (2.50) - (1 - p) \times (12.50) = 0 \implies 15.0 \times p = 12.50 \implies p = \mathbf{83.3\%}$$
-Verdict: If antitrust regulatory probability of completion is evaluated at 96%, this trade offers an exceptional 21.3% annualized return with an asymmetric edge.
+Verdict: If the probability of completion is judged to be 96% (a hypothetical estimate), the expected gain is $0.96 \times 2.50 - 0.04 \times 12.50 = \$1.90$ a share, 4.00% over 90 days, well above the 83.3% break-even; the 21.35% headline assumes the deal closes.
 
-### Part 2: Magic Formula Metric Calculation for Apex Corp
+### Part 2: Magic Formula Metric Calculation for Apex Corp (hypothetical inputs)
 - Stock Price: $40.00; Shares: 25.0M (Market Cap: $1,000M)
 - Cash & Equivalents: $100M; Total Debt: $300M (Net Debt = $200M)
 - Enterprise Value (EV): $\$1,000\text{M} + \$200\text{M} = \$1,200\text{M}$
@@ -199,22 +205,22 @@ Verdict: If antitrust regulatory probability of completion is evaluated at 96%, 
    $$\text{Return on Capital} = \frac{\text{EBIT}}{\text{OWC} + \text{Net PP\&E}} = \frac{\$180.0\text{M}}{\$300.0\text{M}} = \mathbf{60.00\%}$$
 
 Verdict:
-Apex Corp possesses staggering capital efficiency (60% Return on Tangible Capital) paired with an exceptional 15.0% EBIT Earnings Yield.
-In a systematic universe ranking, Apex would rank near the very top of the Magic Formula screen.
+Apex Corp combines high capital efficiency (60% return on tangible capital) with a 15.0% EBIT earnings yield.
+In a systematic universe ranking, both ratios would place it well up the Magic Formula screen.
 
 ## Practice questions
 
 > [!question]- mkt-vi-193 | What was the documented annualized performance of Joel Greenblatt's Gotham Capital from 1985 to 1994?
-> 50.0% annualized gross returns (40.0% net to limited partners).
+> About 50% a year before the general partner's share of profits, per the record in You Can Be a Stock Market Genius (1997); net-to-partner figures quoted elsewhere disagree with one another, so none is given here.
 
 > [!question]- mkt-vi-194 | What is a corporate spinoff under US tax law?
 > A transaction where a parent company separates a division by distributing 100% of subsidiary shares to parent shareholders, typically tax-free under IRC Section 355.
 
 > [!question]- mkt-vi-195 | Why do newly spun-off companies frequently suffer massive initial price declines?
-> Institutional shareholders and index funds that receive the shares are often legally forced or mandated to sell them immediately due to market-cap or benchmark restrictions.
+> Many holders who receive the shares do not want them or cannot hold them under market-cap, index or sector restrictions, so they sell regardless of price.
 
 > [!question]- mkt-vi-196 | What SEC filing provides the definitive financial and strategic blueprint for a corporate spinoff?
-> SEC Form 10 (Registration Statement).
+> SEC Form 10 (the registration statement, with the information statement for shareholders attached).
 
 > [!question]- mkt-vi-197 | What is the executive compensation clue in Form 10 filings that signals high insider alignment?
 > When top parent executives resign to run the spinoff, receiving large equity options struck at initial post-spin market prices.
@@ -223,13 +229,13 @@ In a systematic universe ranking, Apex would rank near the very top of the Magic
 > Annualized Return = [(Offer Price - Current Price) / Current Price] * (365 / Expected Days to Close).
 
 > [!question]- mkt-vi-199 | What is the primary asymmetric risk in risk arbitrage?
-> Downside loss if the deal collapses is typically 5x to 10x larger than the remaining spread upside, requiring high closing probability.
+> The loss if the deal collapses is usually several times the remaining spread (5.0x in the case study), so the break-even closing probability is high (83.3% there).
 
 > [!question]- mkt-vi-200 | What is a stub equity?
 > The remaining, highly leveraged common stock of a company that has paid a massive debt-funded cash dividend or completed a partial carve-out.
 
 > [!question]- mkt-vi-201 | What are LEAPs and how did Greenblatt use them in special situations?
-> Long-Term Equity Anticipation Securities (call options with maturities of 1-3 years), used to gain defined-downside, leveraged exposure to high-conviction catalysts.
+> Long-Term Equity AnticiPation Securities: listed options with expirations up to about three years, used to gain defined-downside, leveraged exposure to high-conviction catalysts.
 
 > [!question]- mkt-vi-202 | What two quantitative factors comprise Joel Greenblatt's Magic Formula?
 > Earnings Yield (EBIT / Enterprise Value) and Return on Capital (EBIT / Tangible Capital Employed).
@@ -238,22 +244,22 @@ In a systematic universe ranking, Apex would rank near the very top of the Magic
 > It measures operating profitability relative to total enterprise purchase price independent of capital structure and tax rates.
 
 > [!question]- mkt-vi-204 | How does Greenblatt calculate Tangible Capital Employed in Return on Capital?
-> Net Working Capital + Net PP&E, explicitly excluding goodwill, intangibles, and cash.
+> Net Working Capital (excluding excess cash and short-term interest-bearing debt) + Net Fixed Assets, excluding goodwill and intangibles.
 
 > [!question]- mkt-vi-205 | Why is Goodwill excluded from Tangible Capital in the Magic Formula?
 > Because goodwill represents historical accounting premiums paid for past acquisitions, which obscures the current operational productivity of physical plant and working capital.
 
 > [!question]- mkt-vi-206 | What was the historical return of the Magic Formula tested from 1988 to 2004?
-> 30.8% annualized, compared to 12.4% for the S&P 500 index.
+> 30.8% a year in the book's back-test on the 3,500-stock universe, compared to 12.4% for the S&P 500; a back-test, not a live record.
 
 > [!question]- mkt-vi-207 | Why do most institutional investors fail to stick with the Magic Formula?
-> Because it regularly underperforms the broader market for two to three consecutive years, triggering client redemptions and career risk.
+> Because it can underperform the broader market for several years in a row, which triggers client redemptions and career risk.
 
 > [!question]- mkt-vi-208 | What is the standard rebalancing rule in Greenblatt's systematic Magic Formula strategy?
-> Hold a portfolio of 20 to 30 top-ranked stocks, rebalancing each position after holding it for exactly one year.
+> Build a portfolio of 20 to 30 top-ranked stocks a few at a time over the year, and replace each position after holding it about one year.
 
 > [!question]- mkt-vi-209 | What is the tax optimization rule for selling winners and losers in taxable accounts?
-> Sell losers slightly before the one-year mark (short-term capital loss deduction) and sell winners slightly after the one-year mark (long-term capital gains rate).
+> Under US tax rules, sell losers slightly before the one-year mark (short-term losses) and winners slightly after it (long-term gains rate).
 
 > [!question]- mkt-vi-210 | What sectors are typically excluded from Magic Formula screening?
 > Financial institutions (banks/insurers) and regulated public utilities, because their balance sheet structures and capital requirements distort EBIT and capital employed.
@@ -268,7 +274,7 @@ In a systematic universe ranking, Apex would rank near the very top of the Magic
 > When a parent company loads an uncompetitive subsidiary with excess debt and legal liabilities before spinning it off to insulate parent balance sheets.
 
 > [!question]- mkt-vi-214 | What is an equity carve-out followed by a spinoff?
-> Selling a 20% stake in a subsidiary via IPO to establish a transparent market price, followed months later by a tax-free distribution of the remaining 80% to parent owners.
+> Selling a minority stake (often up to 20%) in a subsidiary via IPO to establish a market price, then distributing the rest to parent owners; keeping at least 80% until the distribution preserves the control needed for a tax-free spinoff under IRC Section 355.
 
 > [!question]- mkt-vi-215 | Why are micro-cap and small-cap spinoffs particularly attractive?
 > Because the institutional selling pressure is disproportionately violent relative to the small liquidity float of the spun-off company.
@@ -276,17 +282,17 @@ In a systematic universe ranking, Apex would rank near the very top of the Magic
 > [!question]- mkt-vi-216 | What is a 'material adverse change' (MAC) clause in a merger agreement?
 > A contractual clause allowing an acquirer to walk away from a deal if catastrophic, unforeseen operational events impair the target business.
 
-> [!question]- mkt-vi-217 | How does Greenblatt suggest retail investors evaluate risk?
-> In terms of permanent capital loss over a multi-year horizon, completely ignoring short-term price volatility and tracking error.
+> [!question]- mkt-vi-217 | How should a retail investor using Greenblatt's methods evaluate risk?
+> Advice in Greenblatt's spirit: in terms of permanent capital loss over a multi-year horizon, rather than short-term price volatility and tracking error.
 
 > [!question]- mkt-vi-218 | What is a recapitalization in special situations?
 > Restructuring corporate capital by issuing massive debt to repurchase shares or pay a special dividend, radically increasing equity leverage.
 
 > [!question]- mkt-vi-219 | Why does the Magic Formula purchase high-ROIC companies at cheap valuations?
-> Because combining high return on capital (buffett-style quality) with high earnings yield (graham-style value) systematically buys great businesses on sale.
+> Because combining high return on capital (Buffett-style quality) with high earnings yield (Graham-style value) aims to buy good businesses at bargain prices.
 
 > [!question]- mkt-vi-220 | What is the minimum market capitalization Greenblatt recommended for practical Magic Formula execution?
-> Typically $50 million, to filter out completely illiquid micro-caps with wide bid-ask execution spreads.
+> The book's practical screen uses a minimum market capitalization of $50 million or higher, to filter out illiquid micro-caps with wide bid-ask spreads.
 
 > [!question]- mkt-vi-221 | Why is a spinoff often motivated by removing conglomerate discount?
 > Pure-play divisions receive higher specialized valuation multiples from dedicated industry analysts than when buried in a conglomerate.
@@ -294,13 +300,18 @@ In a systematic universe ranking, Apex would rank near the very top of the Magic
 > [!question]- mkt-vi-222 | What is a hostile tender offer in risk arbitrage?
 > An offer made directly to target shareholders without the approval of the target company's board of directors, carrying high legal and poison pill risks.
 
-> [!question]- mkt-vi-223 | How does Joel Greenblatt define an 'unforced error' in special situations?
-> Investing in complex restructurings where management incentives are misaligned and balance sheet debt leaves zero margin of safety.
+> [!question]- mkt-vi-223 | What is an 'unforced error' in special-situations investing?
+> Advice, not Greenblatt's wording: investing in complex restructurings where management incentives are misaligned and balance sheet debt leaves no margin of safety.
 
 > [!question]- mkt-vi-224 | What is the ultimate lesson of Joel Greenblatt's career?
 > Individual investors can achieve world-class returns by exploiting structural institutional blind spots, catalyst-driven spinoffs, and systematic value disciplines.
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_vi_07_greenblatt.py`](../../code/mkt_vi_07_greenblatt.py) prints and asserts every computed number on this page: the merger-arbitrage spread and annualization in exact fractions, the compounded rate by closed form against day-by-day compounding, the break-even closing probability by closed form against bisection on expected value, the Apex enterprise value and Magic Formula ratios against a balance-sheet build, the capital-structure P/E example, and the growth of $1 at the cited back-test rates.
+- Related notes: [Klarman](05-Klarman-Margin-of-Safety-and-Distressed-Debt-Discipline.md) (special situations and distressed debt), [Graham Foundations](01-Graham-Foundations-Margin-of-Safety-and-Mr-Market.md) (earnings yield against bond yields).
 
 ## Further reading
 

@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Chancellor (2015) - Capital Returns: Investing Through the Capital Cycle, Lynch (1989) - One Up On Wall Street, Pabrai (2007) - The Dhandho Investor: The Low-Risk Value Method to High Returns, Sleep and Zakaria (2001-2014) - Nomad Investment Partnership Letters]
+sources: [Chancellor (2015) - Capital Returns: Investing Through the Capital Cycle, Lynch (1989) - One Up On Wall Street, Pabrai (2007) - The Dhandho Investor: The Low-Risk Value Method to High Returns, Sleep and Zakaria (2001-2014) - Nomad Investment Partnership Letters, Buffett (1984) - The Superinvestors of Graham-and-Doddsville, Fama and French (1992 and 1993), Lakonishok Shleifer and Vishny (1994)]
 ---
 
 # Modern Value Masters, Capital Cycles, and Value Traps
@@ -14,8 +14,8 @@ sources: [Chancellor (2015) - Capital Returns: Investing Through the Capital Cyc
 
 - Modern value investing has expanded far beyond Grahamite net-nets into sophisticated supply-side dynamics, structural capital cycles, and business models that share scale economies with customers.
 - Edward Chancellor and Marathon Asset Management formulate the Capital Cycle: high industry returns attract excess capital expenditures that create destructive oversupply, while capital starvation and bankruptcies set up explosive multi-year cyclical recoveries.
-- Nick Sleep and Zakaria's "Scale Economies Shared" model proves that companies which systematically return scale efficiencies back to consumers in the form of lower prices (e.g. Costco, Amazon, GEICO) build unassailable, self-reinforcing moats.
-- The prolonged underperformance of traditional book-to-price value factors since 2007 stems from technological disruption and the rise of intangible assets that GAAP accounting expenses immediately.
+- Nick Sleep and Qais Zakaria's "Scale Economies Shared" model argues that companies which pass scale savings back to customers as lower prices (their central examples were Costco and Amazon) build self-reinforcing moats.
+- Book-to-market value strategies had a long weak stretch after 2007; proposed explanations include intangible assets that GAAP expenses immediately, low interest rates, and winner-take-all technology, and they remain debated.
 - A Value Trap is a statistically cheap stock whose underlying economic moat and cash flows are suffering irreversible structural obsolescence.
 
 ## Learning objectives
@@ -24,8 +24,8 @@ sources: [Chancellor (2015) - Capital Returns: Investing Through the Capital Cyc
 - Model Nick Sleep's Scale Economies Shared flywheel and contrast it with traditional profit-maximizing pricing.
 - Execute Mohnish Pabrai's Dhandho framework to identify low-risk, high-uncertainty asymmetric bets.
 - Classify companies into Peter Lynch's six equity categories (Slow Growers, Stalwarts, Fast Growers, Cyclicals, Turnarounds, Asset Plays).
-- Audit the post-2007 structural value factor drawdown and explain why simple Price-to-Book screens failed.
-- Apply an 8-point diagnostic checklist to identify and eliminate terminal value traps.
+- Weigh the proposed explanations for the post-2007 weakness of book-to-market value and why simple Price-to-Book screens struggled.
+- Apply a diagnostic checklist to identify and eliminate terminal value traps.
 
 ## Core concepts
 
@@ -51,14 +51,14 @@ In *Capital Returns* (2015), Edward Chancellor synthesized the investment approa
 +-----------------------------------+-----------------------------------+
                                     |
                                     v
-|  STAGE 3: CAPITAL STARVATION                                          |
+|  STAGE 3: CAPITAL STARVATION (THE USUAL BUY ZONE)                     |
 |  - Severe distress; bankruptcies, restructurings, and plant closures. |
 |  - Wall Street cuts off all funding; capex is slashed below D&A.      |
 |  - Industry consolidation leaves surviving operators with discipline. |
 +-----------------------------------+-----------------------------------+
                                     |
                                     v
-|  STAGE 4: THE CYCLICAL RECOVERY (THE BUY ZONE)                        |
+|  STAGE 4: THE CYCLICAL RECOVERY                                       |
 |  - Modest demand growth hits restricted, starved supply.              |
 |  - Prices spike; surviving low-cost operators generate surging ROIC.  |
 |  - Cycle restarts at Stage 1.                                         |
@@ -68,11 +68,12 @@ In *Capital Returns* (2015), Edward Chancellor synthesized the investment approa
 Capital Cycle Axiom:
 Demand is fickle, behavioral, and nearly impossible to forecast.
 Supply, however, is governed by physical capital expenditures, lead times, and regulatory permitting.
-By tracking capital commitments (industry capex-to-depreciation ratios), an investor can predict future returns on capital with high fidelity.
+By tracking capital commitments (for example industry capex-to-depreciation ratios), an investor can anticipate turns in returns on capital more reliably than by forecasting demand.
 
 ### 2. Nick Sleep: Scale Economies Shared
 
-Nick Sleep and Qais Zakaria ran the legendary Nomad Investment Partnership from 2001 to 2014, generating 921% cumulative returns (compared to 117% for the MSCI World Index).
+Nick Sleep and Qais Zakaria ran the Nomad Investment Partnership from September 2001 until they wound it up in 2014.
+Nomad's 2013 annual letter reports a cumulative return of 921.1% before fees from inception (September 10, 2001) to December 31, 2013, against 116.9% for the MSCI World Index (net, US$): 20.8% a year before performance fees and 18.4% after, against 6.5% for the index.
 Their core insight was **Scale Economies Shared**:
 
 ```
@@ -107,36 +108,39 @@ Their core insight was **Scale Economies Shared**:
 ```
 
 Traditional business doctrine dictates that as a company grows, it should raise prices to maximize short-term accounting margins.
-Companies practicing Scale Economies Shared (Costco, Amazon, GEICO, Southwest Airlines) do the exact opposite:
+Companies practicing Scale Economies Shared (Nomad's letters discuss Costco and Amazon at length) do the opposite:
 - They treat cost savings as an asset belonging to the customer.
 - By continuously lowering prices and gross margins, they create a widening gap between their unit costs and those of sub-scale rivals.
-- Competitors who attempt to match their prices bleed cash and collapse; competitors who price normally lose all market share.
+- Competitors who match their prices earn less on smaller volume; competitors who price normally lose share.
 
 ### 3. Mohnish Pabrai: The Dhandho Investor
 
-Mohnish Pabrai formulated the Dhandho framework, modeled after the immigrant Patels from Gujarat who acquired dominance in the US motel industry:
-*"Heads, I win; tails, I don't lose much!"*
+Mohnish Pabrai formulated the Dhandho framework in *The Dhandho Investor* (2007), opening with the Gujarati Patel families who came to own a large share of US motels.
+The book's motto is *"Heads, I win; tails, I don't lose much!"*
 
 ```
 +-----------------------------------------------------------------------+
 |                    THE DHANDHO FRAMEWORK PILLARS                      |
 +-----------------------------------------------------------------------+
-| 1. Focus on an existing, simple, low-tech business with slow change.  |
-| 2. Invest in distressed businesses in distressed industries.          |
-| 3. High Uncertainty is NOT High Risk:                                 |
+| 1. Focus on buying an existing business.                              |
+| 2. Buy simple businesses in industries with an ultra-slow rate of     |
+|    change.                                                            |
+| 3. Buy distressed businesses in distressed industries.                |
+| 4. Buy businesses with a durable moat.                                |
+| 5. Bet heavily when the odds are overwhelmingly in your favor.        |
+| 6. Focus on arbitrage.                                                |
+| 7. Buy businesses at big discounts to their intrinsic value.          |
+| 8. Look for low-risk, high-uncertainty businesses:                    |
 |    - Uncertainty: Future outcomes have a wide range of paths.         |
 |    - Risk: The probability of permanent capital loss.                 |
-|    - The best trades feature high uncertainty and near-zero risk.     |
-| 4. Invest at a massive discount to conservatively appraised assets.   |
-| 5. Shamelessly clone the high-conviction ideas of verified super-     |
-|    investors via SEC Form 13F filings.                                |
-| 6. Always maintain a margin of safety.                                |
+| 9. It is better to be a copycat than an innovator (in practice,       |
+|    studying other investors' disclosed holdings such as 13F filings). |
 +-----------------------------------------------------------------------+
 ```
 
 ### 4. Peter Lynch: Six Categories of Stocks
 
-In *One Up On Wall Street* (1989), Peter Lynch categorized equity opportunities into six functional buckets, each demanding distinct valuation and holding criteria:
+In *One Up On Wall Street* (1989), Peter Lynch sorted stocks into six categories, each demanding distinct valuation and holding criteria (growth rates are Lynch's; the strategy column paraphrases him and adds common heuristics):
 
 ```
 +-----------------------------------------------------------------------+
@@ -144,15 +148,15 @@ In *One Up On Wall Street* (1989), Peter Lynch categorized equity opportunities 
 +-------------------+-----------------------+---------------------------+
 | Category          | Growth & Characteristics| Strategy & Valuation    |
 +-------------------+-----------------------+---------------------------+
-| 1. Slow Growers   | 2% to 4% growth; high | Buy for high dividend     |
-|    (Utilities)    | regular cash dividend | yield; sell when yield    |
-|                   | payout.               | compresses or debt rises. |
+| 1. Slow Growers   | Slightly faster than  | Buy for high dividend     |
+|    (Utilities)    | GNP; regular, often   | yield; sell when yield    |
+|                   | generous dividends.   | compresses or debt rises. |
 +-------------------+-----------------------+---------------------------+
-| 2. Stalwarts      | 8% to 12% growth;     | Buy at reasonable P/E;    |
-|    (P&G, Coke)    | recession-resistant   | take 30% to 50% profits   |
-|                   | compounders.          | and rotate into bargains. |
+| 2. Stalwarts      | 10% to 12% growth;    | Buy at reasonable P/E;    |
+|    (P&G, Coke)    | recession-resistant   | take moderate profits     |
+|                   | large companies.      | and rotate into bargains. |
 +-------------------+-----------------------+---------------------------+
-| 3. Fast Growers   | 20% to 30%+ growth;   | The 10-bagger engine; hold|
+| 3. Fast Growers   | 20% to 25% growth;    | The 10-bagger engine; hold|
 |    (Early Tech)   | small aggressive      | until growth decelerates  |
 |                   | expansion runway.     | or TAM saturates.         |
 +-------------------+-----------------------+---------------------------+
@@ -182,8 +186,8 @@ A Value Trap is an equity that looks statistically cheap on historical accountin
 |                    | telecom). Free cash flow is a melting ice cube.  |
 +--------------------+--------------------------------------------------+
 | 2. High Financial  | Low P/E caused by massive debt leverage. When    |
-|    Leverage        | operating earnings drop 15%, debt service wipes  |
-|                    | out 100% of common equity net income.            |
+|    Leverage        | interest takes 85% of EBIT, a 15% EBIT drop wipes|
+|                    | out 100% of pre-tax income (hypothetical).       |
 +--------------------+--------------------------------------------------+
 | 3. High Unfunded   | Off-balance-sheet pension liabilities or pending |
 |    Liabilities     | environmental litigation dwarf market cap.       |
@@ -191,32 +195,35 @@ A Value Trap is an equity that looks statistically cheap on historical accountin
 | 4. Capital-Heavy   | Low margins require heavy ongoing capex just to  |
 |    Treadmill       | maintain flat capacity (e.g. auto manufacturers).|
 +--------------------+--------------------------------------------------+
-| 5. Customer Churn  | Falling Net Revenue Retention (<90%) and losing  |
+| 5. Customer Churn  | Falling Net Revenue Retention (<100%) and losing |
 |    & Share Loss    | core pricing power to aggressive new entrants.   |
 +--------------------+--------------------------------------------------+
 ```
 
 ### 6. Why Traditional Value Struggled Post-2007
 
-From 2007 to 2021, traditional Fama-French Book-to-Market value factors suffered their longest and deepest drawdown in 200 years of recorded financial history.
-Key Structural Causes:
-1. **Intangible Capital Blind Spot**: Under GAAP accounting, intangible investments (R&D, brand building, customer acquisition, software engineering) are expensed immediately, whereas physical factories are capitalized onto the balance sheet. Consequently, high-ROIC software compounders have low book values (appearing artificially "expensive"), while dying asset-heavy industrial firms have high book values (appearing "cheap").
-2. **Secular Zero Interest Rate Policy (ZIRP)**: Extremely low discount rates mathematically rewarded ultra-long-duration, speculative cash flows while penalizing current cash-generative value firms.
-3. **Winner-Take-All Network Economics**: Digital platforms with zero marginal cost of distribution displaced regional sub-scale incumbents.
+The value premium is documented by Fama and French (1992, Journal of Finance; 1993, Journal of Financial Economics) and by Lakonishok, Shleifer and Vishny (1994, Journal of Finance), who found that stocks with high book-to-market and similar value ratios earned higher average returns than glamour stocks in US data.
+After 2007, book-to-market value strategies went through a long weak stretch.
+How deep and how long depends on the definition, the dataset and the end date, so quote a drawdown only from a named dataset with an as-of date (for example the HML series in the Kenneth French data library).
+Proposed explanations, which remain debated:
+1. **Intangible Capital Blind Spot**: Under GAAP, intangible investments (R&D, brand building, customer acquisition, software) are expensed immediately, whereas factories are capitalized. Consequently, intangible-heavy firms show low book values (looking "expensive"), while asset-heavy firms in decline show high book values (looking "cheap").
+2. **Low Interest Rates**: Low discount rates raise the present value of distant cash flows more than near ones, favoring long-duration growth stocks.
+3. **Winner-Take-All Network Economics**: Digital platforms with near-zero marginal cost of distribution displaced sub-scale incumbents.
+Arnott, Harvey, Kalesnik and Linnainmaa (2021, Financial Analysts Journal) examine these explanations, including book values adjusted for intangibles.
 
 ## Worked numerical case study
 
-Evaluate a semiconductor packaging provider:
+Evaluate a semiconductor packaging provider (hypothetical company and inputs):
 - Ticker: PackCorp
-- Current Price: $18.00 (Market Cap: $1,800M)
+- Current Price: $18.00 (Market Cap: $1,800M, so 100M shares)
 - Trailing P/E: 7.2x (Trailing EPS = $2.50)
 - Price-to-Book: 0.85x (BVPS = $21.18)
-- Dividend Yield: 5.5% ($1.00 / share)
-- Trailing Free Cash Flow: $220M
+- Dividend Yield: 5.6% ($1.00 / share)
+- Trailing Free Cash Flow: $220M (a 12.2% free cash flow yield)
 
 ### Forensic Audit for Value Trap vs Mispriced Bargain:
 1. **Capital Cycle & Capex Trends**:
-   - Capex in Year 1: $100M; Capex in Year 3: $180M; Capex in Year 5: $290M.
+   - Capex in Year 1: $100M; Capex in Year 3: $180M; Capex in Year 5: $290M (30.5% a year from Year 1 to Year 5).
    - Industry packaging competitors announced a combined $12 Billion in new greenfield packaging fabrication plants coming online over the next 18 months.
    - Finding: Industry is squarely in **Stage 2 of the Capital Cycle (Oversupply)**.
 2. **Technological Disruption**:
@@ -233,11 +240,11 @@ Evaluate a semiconductor packaging provider:
 - Normalized mid-cycle EPS is estimated at **$0.80**, not $2.50.
 - Normalized P/E is actually:
   $$\text{Normalized P/E} = \frac{\$18.00}{\$0.80} = \mathbf{22.5\times} \quad (\text{Not 7.2x!})$$
-- At $0.80 in earnings, the $1.00 dividend cannot be sustained and will be slashed by 50%.
+- At $0.80 in earnings, the $1.00 dividend is a 125% payout and cannot be sustained; even a 50% cut to $0.50 would still pay out 62.5% of normalized EPS.
 
 Forensic Verdict:
-PackCorp is a classic, lethal **Value Trap**.
-Low P/E (7.2x) and low P/B (0.85x) are cyclical illusions masking a massive capital cycle oversupply wave and structural technological disruption.
+On these assumptions PackCorp is a classic **Value Trap**.
+Low P/E (7.2x) and low P/B (0.85x) are cyclical illusions masking a capital cycle oversupply wave and structural technological disruption.
 Recommendation: Immediate avoid or short candidate.
 
 ## Practice questions
@@ -252,28 +259,28 @@ Recommendation: Immediate avoid or short candidate.
 > Sharing operational scale cost savings directly with customers through permanently lower prices, creating a widening competitive moat that compounds market share.
 
 > [!question]- mkt-vi-228 | Which famous corporate compounders exemplify Scale Economies Shared?
-> Costco, Amazon, GEICO, and Southwest Airlines.
+> Costco and Amazon, the companies Nomad's letters discuss most under this heading.
 
 > [!question]- mkt-vi-229 | What was the documented performance of Nick Sleep's Nomad Investment Partnership?
-> 921% cumulative return from 2001 to 2014, compared to 117% for the MSCI World Index.
+> Per the 2013 annual letter, 921.1% before fees from September 10, 2001 to December 31, 2013, against 116.9% for the MSCI World Index; 20.8% a year before performance fees and 18.4% after.
 
 > [!question]- mkt-vi-230 | What is Mohnish Pabrai's Dhandho investment philosophy?
-> 'Heads I win, tails I don't lose much': asymmetric, low-risk, high-uncertainty investments bought at deep discounts to replacement value.
+> 'Heads, I win; tails, I don't lose much': asymmetric, low-risk, high-uncertainty investments bought at big discounts to intrinsic value.
 
 > [!question]- mkt-vi-231 | What is the critical difference between High Risk and High Uncertainty in Pabrai's framework?
 > Risk is the probability of permanent capital loss; uncertainty is a wide dispersion of future outcomes where even the pessimistic path preserves capital.
 
 > [!question]- mkt-vi-232 | What is 'cloning' in value investing?
-> Systematically analyzing and replicating the highest-conviction holdings of verified super-investors disclosed in quarterly SEC Form 13F filings.
+> Studying and selectively copying the high-conviction holdings of skilled investors, for example from quarterly SEC Form 13F filings; Pabrai's version is that it is better to be a copycat than an innovator.
 
 > [!question]- mkt-vi-233 | What are Peter Lynch's six categories of stocks?
 > Slow Growers, Stalwarts, Fast Growers, Cyclicals, Turnarounds, and Asset Plays.
 
 > [!question]- mkt-vi-234 | What is a 'Stalwart' stock in Peter Lynch's taxonomy?
-> A large, well-established multi-billion dollar company (e.g. Procter & Gamble) growing earnings at 8% to 12%, offering recession-resistant defense.
+> A large, well-established multi-billion dollar company (e.g. Procter & Gamble) growing earnings at about 10% to 12% a year, offering some protection in recessions.
 
 > [!question]- mkt-vi-235 | What is a 'Fast Grower' in Lynch's terminology?
-> A small, aggressive growth company expanding earnings at 20% to 30%+ annually, representing the primary source of 10-bagger to 50-bagger investment returns.
+> A small, aggressive new enterprise growing at about 20% to 25% a year, the category where Lynch looked for his tenbaggers.
 
 > [!question]- mkt-vi-236 | What is 'diworsification' according to Peter Lynch?
 > When a successful business squanders high-return cash flow by acquiring unrelated, low-return businesses outside its core competence.
@@ -282,10 +289,10 @@ Recommendation: Immediate avoid or short candidate.
 > A stock that appears statistically cheap on historical multiples (low P/E, low P/B), but whose underlying economic moat and cash flows are suffering irreversible structural decay.
 
 > [!question]- mkt-vi-238 | What is the primary accounting reason traditional Book-to-Price value factors struggled post-2007?
-> GAAP requires expensing intangible investments (R&D, software, brand building) immediately, severely understating the true book value of modern high-ROIC firms.
+> The leading proposed reason: GAAP expenses intangible investments (R&D, software, brand building) immediately, understating the economic book value of intangible-heavy firms; the explanation is debated.
 
 > [!question]- mkt-vi-239 | How did Zero Interest Rate Policy (ZIRP) disadvantage value stocks relative to growth?
-> Ultra-low discount rates mathematically expanded the present value of distant, speculative long-duration cash flows while discounting near-term value cash flows.
+> A proposed explanation: low discount rates raise the present value of distant cash flows proportionally more than near ones, which favors long-duration growth stocks over value stocks.
 
 > [!question]- mkt-vi-240 | What is the difference between cyclical earnings compression and structural business impairment?
 > Cyclical compression rebounds as industry supply normalizes; structural impairment represents permanent demand erosion due to technological substitution.
@@ -297,10 +304,10 @@ Recommendation: Immediate avoid or short candidate.
 > Because capital-intensive firms regularly destroy economic value over full business cycles by reinvesting large capex at returns below their cost of capital.
 
 > [!question]- mkt-vi-243 | What is the role of Net Revenue Retention (NRR) in detecting software value traps?
-> An NRR falling below 100% proves that existing customers are spending less or churning, revealing that low multiples reflect terminal customer defection.
+> An NRR below 100% means existing customers are spending less or leaving, a warning that a low multiple may reflect lasting customer defection rather than a bargain.
 
 > [!question]- mkt-vi-244 | What is Li Lu's background and contribution to value investing?
-> Founder of Himalaya Capital, who successfully applied Graham-and-Munger principles to emerging Asian markets and introduced Charlie Munger to BYD.
+> Founder of Himalaya Capital, who applies Graham, Buffett and Munger principles largely to Chinese and other Asian companies.
 
 > [!question]- mkt-vi-245 | What is the 'insider ownership' test in value trap diagnostics?
 > If management owns negligible equity and sells shares into buybacks, they have zero skin in the game and will not defend shareholder interests.
@@ -318,7 +325,7 @@ Recommendation: Immediate avoid or short candidate.
 > When a company trading below book value burns through cash and liquid assets to cover ongoing operating losses, wiping out equity before catalysts hit.
 
 > [!question]- mkt-vi-250 | Why did traditional value managers underperform by shorting high-multiple tech giants in the 2010s?
-> They failed to recognize that platform scale and network effects allowed tech leaders to compound incremental capital at 40%+ ROIC for decades.
+> They underestimated how platform scale and network effects let the leading technology companies reinvest at high returns on capital for many years.
 
 > [!question]- mkt-vi-251 | What is the primary characteristic of a 'Turnaround' stock according to Peter Lynch?
 > A company whose survival hinges on resolving a specific liquidity crisis or operational failure, offering massive upside if bankruptcy is averted.
@@ -330,7 +337,7 @@ Recommendation: Immediate avoid or short candidate.
 > If a cheap company relies on one or two dominant clients, the loss of a single contract instantly converts paper operating profits into catastrophic losses.
 
 > [!question]- mkt-vi-254 | What is Walter Schloss's historical record and style?
-> A legendary Graham disciple who compounded capital at 21% annualized over 47 years by holding a widely diversified basket of 100+ low-P/B asset bargains.
+> A Graham disciple whose partnership, per Buffett's 1984 Superinvestors essay, compounded at 21.3% a year (16.1% to limited partners) from 1956 to 1984 against 8.4% for the S&P 500, while owning well over 100 stocks; the 2006 Berkshire letter says he ran it until 2002.
 
 > [!question]- mkt-vi-255 | Why is intellectual flexibility essential for modern value investors?
 > Rigidity around historical book value leads to value traps; investors must evaluate intangible moats, software economics, and capital cycle realities.
@@ -340,9 +347,20 @@ Recommendation: Immediate avoid or short candidate.
 
 ---
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_vi_08_value_traps.py`](../../code/mkt_vi_08_value_traps.py) prints and asserts every computed number on this page: the PackCorp multiples, yields and payout in exact fractions against numpy floats, the capex growth rate by closed form against bisection, the leverage-trap condition, Nomad's 921.1% recomputed by compounding the letter's calendar-year returns and its 20.8% annual rate from the inception date, and the consistency of the Superinvestors S&P 500 figures.
+- Related notes: [Greenblatt](07-Greenblatt-Special-Situations-and-Magic-Formula.md) (systematic value), [Graham Foundations](01-Graham-Foundations-Margin-of-Safety-and-Mr-Market.md) (the net-net roots of value traps).
+
 ## Further reading
 
+- Arnott, R. D., Harvey, C. R., Kalesnik, V., & Linnainmaa, J. T. (2021). *Reports of Value's Death May Be Greatly Exaggerated*. Financial Analysts Journal, 77(1), 44-67.
+- Buffett, W. E. (1984). *The Superinvestors of Graham-and-Doddsville*. Hermes, Columbia Business School Magazine, Fall 1984, 4-15.
+
 - Chancellor, E. (2015). *Capital Returns: Investing Through the Capital Cycle: A Money Manager's Reports 2002-15*. Palgrave Macmillan.
+- Fama, E. F., & French, K. R. (1992). *The Cross-Section of Expected Stock Returns*. Journal of Finance, 47(2), 427-465.
+- Fama, E. F., & French, K. R. (1993). *Common Risk Factors in the Returns on Stocks and Bonds*. Journal of Financial Economics, 33(1), 3-56.
+- Lakonishok, J., Shleifer, A., & Vishny, R. W. (1994). *Contrarian Investment, Extrapolation, and Risk*. Journal of Finance, 49(5), 1541-1578.
 - Lynch, P. (1989). *One Up On Wall Street: How to Use What You Already Know to Make Money in the Market*. Simon & Schuster.
 - Pabrai, M. (2007). *The Dhandho Investor: The Low-Risk Value Method to High Returns*. John Wiley & Sons.
 - Sleep, N., & Zakaria, Q. (2001-2014). *Nomad Investment Partnership Letters*. Nomad Investment Partnership.
