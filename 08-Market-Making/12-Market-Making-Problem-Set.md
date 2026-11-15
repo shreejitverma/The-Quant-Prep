@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [quote-management-skew-width-and-size, market-making-games]
 est_hours: 5
-sources: [Lebron (2019) The Laws of Trading. Wiley, Cartea Jaimungal and Penalva (2015) Algorithmic and High-Frequency Trading. Cambridge University Press, Avellaneda and Stoikov (2008) High-frequency trading in a limit order book. Quantitative Finance 8(3) 217-224, Glosten and Milgrom (1985) Journal of Financial Economics 14(1) 71-100, Natenberg (2015) Option Volatility and Pricing 2nd edition. McGraw-Hill, Sinclair (2013) Volatility Trading 2nd edition. Wiley]
+sources: [Lebron (2019) The Laws of Trading. Wiley, Cartea Jaimungal and Penalva (2015) Algorithmic and High-Frequency Trading. Cambridge University Press, Avellaneda and Stoikov (2008) High-frequency trading in a limit order book. Quantitative Finance 8(3) 217-224, Glosten and Milgrom (1985) Journal of Financial Economics 14(1) 71-100, Natenberg (2015) Option Volatility and Pricing 2nd edition. McGraw-Hill, Sinclair (2013) Volatility Trading 2nd edition. Wiley, Hasbrouck (2003) Intraday price formation in U.S. equity index markets. Journal of Finance 58(6) 2375-2400, Kamal (1998) When you cannot hedge continuously. Goldman Sachs Quantitative Strategies Research Notes]
 ---
 
 # Market Making Problem Set
@@ -38,6 +38,8 @@ The interview habit that matters most: state the fair value, state the width and
 
 ## Worked examples
 
+All inputs in these examples and in the cards are hypothetical.
+
 ### Example 1: a market on the maximum of two dice, with a counterparty who may have peeked
 
 Make a market on the maximum of two fair dice.
@@ -55,7 +57,7 @@ An informed counterparty buys at 5 when $x \in \{5, 6\}$ and sells at 4 when $x 
 Your expected P&L per interaction is $-\frac{1}{6}(0.167 + 1 + 0.5 + 0.333) = -1/3$.
 Against an uninformed counterparty who buys or sells with equal probability you earn $\frac{1}{2}(5 - 4.47) + \frac{1}{2}(4.47 - 4) = 0.5$.
 Break-even informed share: $(1 - \pi) \times 0.5 = \pi \times \frac{1}{3}$, so $\pi = 0.6$.
-Against a pure informed trader no finite width wins: you only break even by quoting 3.5 / 6, where nobody trades.
+Against a counterparty who is always informed no market earns money: the best you can do is break even with a market at least as wide as 3.5 / 6, where they never trade.
 
 Now you are lifted at 5 and believe half your counterparties are informed.
 A buy has probability $\frac{1}{2} \cdot \mathbb{1}\{x \ge 5\} + \frac{1}{4}$ given $x$: 0.25 for $x \le 4$ and 0.75 for $x \ge 5$.
@@ -91,9 +93,9 @@ The threshold falls with the square of volatility: if $\sigma$ doubles, $q^*$ fa
 Others show 8,000 lots at the bid.
 Aggressors are 200 lots 80% of the time and 5,000 lots 20% of the time.
 You never want more than 1,500 lots from a single aggressor.
-With your size $S$, a 5,000-lot fills $5000 S/(S + 8000)$, so $5000 S \le 1500(S + 8000)$ gives $S \le 3{,}428$.
+With your size $S$, a 5,000-lot fills $5000 S/(S + 8000)$, so $5000 S \le 1500(S + 8000)$ gives $S \le 12{,}000{,}000/3{,}500 \approx 3{,}428.6$, at most 3,428 lots.
 Show 3,400: a 200-lot fills you about 60 lots and a 5,000-lot about 1,491 lots, an average of about 346 per aggressor.
-Quoting 1,500 would have been safe but earned far fewer fills; the pro-rata rule rewards size up to the point where the tail fill hits your limit.
+Quoting 1,500 would have been safe but earned about 183 lots per aggressor instead of 346; the pro-rata rule rewards size up to the point where the tail fill hits your limit.
 
 ### Example 5: gamma scalping P&L
 
@@ -119,7 +121,7 @@ Each stale quote is 500 shares and is 0.5 cents per share wrong when picked off.
 You lose the cancel race 30% of the time.
 Expected cost $= 1000 \times 20 \times 0.3 \times 500 \times 0.005 = 15{,}000$ dollars a day.
 Cutting the race-loss rate to 10% saves 10,000 dollars a day, about 2.5 million dollars a year over 250 days: that is the budget for the latency work.
-Widening every quote to compensate would cost far more in lost edge on benign fills.
+Before widening every quote instead, compare this cost with the edge that wider quotes would give up on benign fills.
 
 ```python
 from fractions import Fraction as F
@@ -166,8 +168,8 @@ print(sum(cond.values()) / 6, sum(w[x] * cond[x] for x in cond) / sum(w.values()
 > Each side must clear the minimum edge against theo on its own.
 
 > [!question]- mm-pset-quoting-prorata-size | Others show 8,000 at a pro-rata level; the largest aggressor is 5,000 and you accept at most 1,500 from one trade. Maximum size to show?
-> About 3,428.
-> $5000 S/(S + 8000) \le 1500$ gives $S \le 12{,}000{,}000/3500$.
+> 3,428 lots.
+> $5000 S/(S + 8000) \le 1500$ gives $S \le 12{,}000{,}000/3{,}500 \approx 3{,}428.6$.
 
 ### Inventory
 
@@ -211,14 +213,15 @@ print(sum(cond.values()) / 6, sum(w[x] * cond[x] for x in cond) / sum(w.values()
 
 > [!question]- mm-pset-as-sweep | An IOC sweeps your quote and the same price on three other venues in the same microsecond. How do you react?
 > Treat it as informed: fade and widen on your remaining quotes and move theo toward the sweep's side.
-> Multi-venue sweeps are expensive to send and usually carry short-horizon information.
+> A trader who pays to take every venue at once is showing urgency, so assume short-horizon information until your markouts for sweeps say otherwise.
 
 > [!question]- mm-pset-as-better-client | Client A pays you 1 tick of spread and marks out -2 ticks at a minute; client B pays 0.3 ticks and marks out -0.1. Who is the better client?
 > B: +0.2 ticks per trade against -1 for A.
 > Net edge is spread paid plus markout, not spread paid alone.
 
 > [!question]- mm-pset-as-latency-pickoff | Why do ETF quotes get picked off when the index future moves?
-> The future often leads; until your quote updates, it is priced off a stale theo, and faster traders take it.
+> The future usually leads: Hasbrouck (2003) finds that most price discovery for the S&P 500 and Nasdaq-100 happens in the E-mini futures.
+> Until your quote updates it is priced off a stale theo, and faster traders take it.
 > The cost is the probability of losing the cancel race times size times the stale amount.
 
 ### Hedging
@@ -236,8 +239,8 @@ print(sum(cond.values()) / 6, sum(w[x] * cond[x] for x in cond) / sum(w.values()
 > Passive saves the spread but extends holding time, and its fills are themselves adversely selected.
 
 > [!question]- mm-pset-hedging-frequency | You double the frequency of delta rehedging. What happens to hedging error and cost?
-> Hedging error standard deviation falls by about $\sqrt{2}$; transaction costs roughly double.
-> The variance of discrete-hedging error scales with the rebalancing interval, so frequency has diminishing returns.
+> Hedging error standard deviation falls by about $\sqrt{2}$, and with proportional costs (spread, fees per share) total cost rises by about $\sqrt{2}$, not 2; with a fixed fee per trade it doubles.
+> The variance of discrete-hedging error scales with the rebalancing interval (Kamal 1998), and each rebalance trades about $\sqrt{2}$ times fewer shares because the stock moves less in half the time; a seeded simulation of 32 and 64 rebalances gives ratios of about 1.39 and 1.43.
 
 > [!question]- mm-pset-hedging-basis | What risks remain when you hedge a stock position with index futures?
 > Idiosyncratic risk, basis risk between future and cash, beta estimation error, and roll risk.
@@ -247,11 +250,11 @@ print(sum(cond.values()) / 6, sum(w[x] * cond[x] for x in cond) / sum(w.values()
 
 > [!question]- mm-pset-options-straddle-approx | Approximate the price of a 3-month ATM straddle on a 100 stock at 20% vol.
 > About 8.
-> $0.8\,\sigma\sqrt{T}\,S = 0.8 \times 0.2 \times 0.5 \times 100$.
+> $0.8\,\sigma\sqrt{T}\,S = 0.8 \times 0.2 \times 0.5 \times 100$; Black-Scholes with zero rates gives 7.98.
 
 > [!question]- mm-pset-options-gamma-scalp | Position gamma is 3,984 shares per dollar on a 100 stock; implied 20%, realised 30%. Daily hedged P&L?
-> About +3,950 dollars.
-> $\tfrac{1}{2}\Gamma S^2(\sigma_r^2 - \sigma_i^2)/252 = \tfrac{1}{2} \times 3984 \times 10^4 \times 0.05/252$.
+> About +3,952 dollars.
+> $\tfrac{1}{2}\Gamma S^2(\sigma_r^2 - \sigma_i^2)/252 = \tfrac{1}{2} \times 3984 \times 10^4 \times 0.05/252$ (3,953 with the unrounded gamma).
 
 > [!question]- mm-pset-options-breakeven-move | Break-even daily move for a delta-hedged long option at 20% implied on a 100 stock?
 > About 1.26 dollars.
@@ -289,7 +292,8 @@ print(sum(cond.values()) / 6, sum(w[x] * cond[x] for x in cond) / sum(w.values()
 
 > [!question]- mm-pset-markouts-sharpe | Daily P&L averages 20,000 with a standard deviation of 10,000. Annualised Sharpe?
 > About 32.
-> $2 \times \sqrt{252} \approx 31.7$; Sharpe ratios this high are plausible for diversified high-turnover market making, where capacity rather than Sharpe is usually the binding constraint.
+> $2 \times \sqrt{252} \approx 31.7$, assuming independent days.
+> Before believing a figure this high, check that the daily P&L is marked correctly and that it would survive more size.
 
 > [!question]- mm-pset-markouts-queue-segment | Which segment of your passive fills do you expect to mark out worst, by queue position?
 > Fills that happen when you were at the back of the queue.
@@ -325,6 +329,11 @@ print(sum(cond.values()) / 6, sum(w[x] * cond[x] for x in cond) / sum(w.values()
 > Self-match prevention, at the exchange or in your gateway.
 > Trading with yourself pays fees for nothing and can look like wash trading to regulators.
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mm_12_problem_set.py`](code/mm_12_problem_set.py) prints and asserts every number on this page: dice markets by enumerating outcomes and counterparty actions, Glosten-Milgrom quotes by Bayes, the Avellaneda-Stoikov reservation price as a CARA indifference price by quadrature and its liquidity term by grid maximisation, thresholds and sizes by bisection and brute force, gamma by finite differences, and the gamma-scalping and hedging-frequency results by seeded simulation.
+- Models behind the set: [`code/avellaneda_stoikov_mm.py`](code/avellaneda_stoikov_mm.py) simulates the Avellaneda-Stoikov quoter, and [Market Making Games](10-Market-Making-Games.md) has the `./qp drill mm` game.
+
 ## Further reading
 
 - Agustin Lebron, *The Laws of Trading* (2019).
@@ -332,4 +341,6 @@ print(sum(cond.values()) / 6, sum(w[x] * cond[x] for x in cond) / sum(w.values()
 - Avellaneda and Stoikov (2008), High-frequency trading in a limit order book, *Quantitative Finance* 8(3).
 - Sheldon Natenberg, *Option Volatility and Pricing* (2nd edition, 2015).
 - Euan Sinclair, *Volatility Trading* (2nd edition, 2013).
+- Joel Hasbrouck (2003), Intraday price formation in U.S. equity index markets, *Journal of Finance* 58(6), 2375-2400.
+- M. Kamal (1998), "When you cannot hedge continuously: the corrections to Black-Scholes", Goldman Sachs Quantitative Strategies Research Notes (the discrete-hedging error rule; see [Delta Hedging and Gamma Scalping](../05-Derivatives-and-Volatility/06-Delta-Hedging-and-Gamma-Scalping.md)).
 - Related notes: [Market Making Games](10-Market-Making-Games.md), [Market Making Systems Architecture](11-Market-Making-Systems-Architecture.md).

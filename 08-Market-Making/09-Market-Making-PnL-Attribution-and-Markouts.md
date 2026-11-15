@@ -98,6 +98,7 @@ See [Options Market Making](07-Options-Market-Making.md) and [P&L Attribution an
 
 ### Example 1: attributing a short session
 
+All inputs in these examples are hypothetical.
 Theo path: 100.00 at $t = 0$, 99.99 at 1 s, 99.97 at 5 s, 99.975 at 6 s, 99.96 from 10 s to the close. Markout horizon $\tau = 1$ s.
 
 | Trade | Type | Edge at fill | Adverse selection | Inventory drift | Fee |
@@ -122,15 +123,16 @@ Markouts in ticks per fill, before fees:
 | B | 10,000 | +0.5 | 0.0 | -0.4 | -0.6 | -0.10 | -0.50 |
 
 Venue A earns $40{,}000 \times 0.15 = 6{,}000$ ticks; venue B loses $10{,}000 \times 0.5 = 5{,}000$ ticks.
-Both earn the same half-tick at fill; the difference is what happens in the next ten seconds.
+Both mark out the same half-tick at 100 ms; the difference is what happens in the next ten seconds.
 Before cutting B, check whether B fills are concentrated in one signal state or queue position that could be avoided instead.
 
 ### Example 3: is the venue difference real?
 
 Per-fill 10-second markout standard deviation is 4 ticks.
-Fills come in bursts: about 4,000 independent clusters on A and 1,000 on B.
+Fills come in bursts: about 4,000 independent clusters on A and 1,000 on B, and fills inside a burst share one outcome.
 Standard errors: $4/\sqrt{4000} \approx 0.063$ and $4/\sqrt{1000} \approx 0.126$; the difference's standard error is $\sqrt{0.063^2 + 0.126^2} \approx 0.141$.
-The 0.65-tick difference is about 4.6 standard errors: real.
+The 0.65-tick net difference is about 4.6 standard errors: real.
+The fee gap of 0.35 ticks is known exactly; the uncertain part is the 0.3-tick gap in markouts before fees, which is only about 2.1 standard errors on its own.
 Had you treated all 10,000 B fills as independent, the standard error would have looked about three times smaller than it is, and small differences would have looked significant.
 
 ### Example 4: an options day
@@ -155,21 +157,20 @@ The curve is already falling before the fill: theo moved 0.4 ticks toward your p
 The intended half-tick of edge was lost because the quote was late to update, not because the counterparty knew something you could not have known.
 The fix is in update latency or thresholds, not in wider quotes for everyone.
 
-```python
-import pandas as pd
+The as-of join is one line in numpy (`pandas.merge_asof(..., direction="backward")` does the same on data frames); this snippet reproduces the first two rows of Example 1:
 
-def markout_curve(fills, mids, horizons, by):
-    """fills: ts, side (+1 buy), size, price, segment columns; mids: ts, mid sorted by ts."""
-    out = []
-    for h in horizons:
-        look = fills.assign(ts_h=fills["ts"] + h).sort_values("ts_h")
-        # last reference value at or before t + h, never after
-        j = pd.merge_asof(look, mids, left_on="ts_h", right_on="ts",
-                          suffixes=("", "_mid"), direction="backward")
-        j["pnl"] = j["side"] * (j["mid"] - j["price"]) * j["size"]
-        g = j.groupby(by)[["pnl", "size"]].sum()
-        out.append((g["pnl"] / g["size"]).rename(h))
-    return pd.concat(out, axis=1)
+```python
+import numpy as np
+
+theo_t = np.array([0.0, 1.0, 5.0, 6.0, 10.0])
+theo = np.array([100.00, 99.99, 99.97, 99.975, 99.96])
+
+def theo_at(t):
+    """Last theo at or before t, never after."""
+    return theo[np.searchsorted(theo_t, t, side="right") - 1]
+
+for t, d, n, p in [(0.0, +1, 100, 99.98), (5.0, -1, 50, 99.99)]:  # time, side, size, price
+    print(round(n * d * (theo_at(t) - p), 2), round(n * d * (theo_at(t + 1.0) - theo_at(t)), 2))  # 2.0 -1.0, then 1.0 -0.25
 ```
 
 ## Pitfalls
@@ -237,10 +238,27 @@ def markout_curve(fills, mids, horizons, by):
 > Take the last reference value at or before $t_i + \tau$ with synchronised clocks, and never use a value built from data after that time.
 > A forward-looking join or clock skew biases every markout.
 
+> [!question]- mm-pnl-prefee-significance | Venue A marks out at -0.1 ticks and B at -0.4 at 10 s, with a standard error of the difference of 0.141 ticks. Is the markout gap itself significant?
+> Marginally: 0.3 ticks is about 2.1 standard errors.
+> The fee gap (a 0.25 rebate against a 0.10 fee) adds 0.35 ticks with no uncertainty, so the net gap of 0.65 is 4.6 standard errors.
+
+> [!question]- mm-pnl-gamma-line | You are short 100 calls (multiplier 100) with gamma 0.0302 and rehedge four times, each after a 0.60 move. What is the gamma line of the day's attribution?
+> About -217 dollars.
+> Position gamma is $-302$ shares per dollar, and $-\tfrac12 \times 302 \times 4 \times 0.60^2 \approx -217$.
+
+> [!question]- mm-pnl-cash-check | Buy 100 at 99.98, sell 50 at 99.99 and 50 at 99.95, with fees net +0.15. What must the attribution buckets sum to?
+> $-0.85$.
+> The position is flat, so P&L is cash: $-9{,}998 + 4{,}999.50 + 4{,}997.50 = -1.00$, plus 0.15 of fees; any other total means the attribution is broken.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mm_09_pnl_attribution.py`](code/mm_09_pnl_attribution.py) prints and asserts every number on this page: the attribution buckets from an as-of lookup on the theo path in exact fractions, reconciled against the cash-flow P&L that never uses theo, clustered standard errors against a seeded simulation of bursts that share one outcome, and the venue and options arithmetic.
+- Related notes: [P&L Attribution and Greek Risk](../11-Risk-and-Trading/06-PnL-Attribution-and-Greek-Risk.md), [Options Market Making](07-Options-Market-Making.md).
+
 ## Further reading
 
-- Cartea, Jaimungal and Penalva, *Algorithmic and High-Frequency Trading* (2015), chapters on market making and adverse selection.
-- Larry Harris, *Trading and Exchanges* (2003), chapters on dealers and the components of the spread.
-- Euan Sinclair, *Volatility Trading* (2nd edition, 2013), on option P&L and hedging.
+- Cartea, Jaimungal and Penalva, *Algorithmic and High-Frequency Trading* (2015), chapter 10 (Market Making).
+- Larry Harris, *Trading and Exchanges* (2003), chapters 13 (Dealers) and 14 (Bid/Ask Spreads).
+- Euan Sinclair, *Volatility Trading* (2nd edition, 2013), chapters 6 (Hedging) and 7 (Distribution of Hedged Option Positions).
 - pandas documentation, [merge_asof](https://pandas.pydata.org/docs/reference/api/pandas.merge_asof.html).
 - Related notes: [Adverse Selection and Flow Toxicity](../07-Market-Microstructure/05-Adverse-Selection-and-Flow-Toxicity.md), [Inventory Risk and Avellaneda-Stoikov](03-Inventory-Risk-and-Avellaneda-Stoikov.md).
