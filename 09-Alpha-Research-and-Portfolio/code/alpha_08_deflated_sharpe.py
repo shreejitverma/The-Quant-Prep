@@ -297,8 +297,8 @@ def pbo_simulation(rng: np.random.Generator) -> None:
     signal = np.array(signal)
     simulated("mean PBO under the null", float(null.mean()), 0.5, 4 * null.std(ddof=1) / math.sqrt(datasets))
     approx("mean PBO under the null (quoted)", float(null.mean()), 0.48, 2)
-    approx("smallest null PBO", float(null.min()), 0.10, 2)
-    approx("largest null PBO", float(null.max()), 0.96, 2)
+    approx("smallest null PBO", float(null.min()), 0.04, 2)
+    approx("largest null PBO", float(null.max()), 0.92, 2)
     approx("mean PBO with one configuration at 0.15 sd per day", float(signal.mean()), 0.08, 2)
     approx("annualised Sharpe of that configuration", 0.15 * math.sqrt(252), 2.4, 1)
 
@@ -311,5 +311,6 @@ if __name__ == "__main__":
     haircuts()
     min_btl()
     cpcv()
-    pbo_simulation(rng)
+    # Worked example 5 draws from its own stream, so edits to the sections above never shift its numbers.
+    pbo_simulation(np.random.default_rng([SEED, 5]))
     print("All deflated-Sharpe numbers check.")

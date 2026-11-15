@@ -192,7 +192,7 @@ def pbo(M: np.ndarray, S: int = 10) -> float:
     return float(np.mean(np.array(logits) <= 0))
 ```
 
-With 50 pure-noise configurations over 1000 days and $S = 10$, PBO averaged 0.48 across 100 simulated datasets (the null expectation is 0.5), but individual datasets ranged from 0.10 to 0.96.
+With 50 pure-noise configurations over 1000 days and $S = 10$, PBO averaged 0.48 across 100 simulated datasets (the null expectation is 0.5), but individual datasets ranged from 0.04 to 0.92.
 Adding a daily mean of 0.15 standard deviations (annualised Sharpe about 2.4) to one configuration dropped the average PBO to 0.08.
 The script reproduces this with a seeded, block-statistics implementation of CSCV and checks that the snippet above returns identical values on the same data.
 Lesson: PBO is itself a noisy statistic on one dataset; read it together with DSR and the OOS-versus-IS degradation plot.
