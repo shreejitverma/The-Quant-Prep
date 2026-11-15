@@ -149,7 +149,7 @@ $$P(\text{Ruin} \mid C) = \begin{cases} 1 & \text{if } p \le \frac{1}{2} \\ \lef
 
 When $p \le 0.50$, the probability of ruin is exactly 1.0 (certainty), regardless of starting capital.
 When $p > 0.50$, ruin probability decays exponentially with starting capital $C$.
-If instead the bet is a fixed fraction of current wealth, wealth can never reach exactly zero, and the relevant question becomes the probability of falling to a given fraction of the peak, which is the diffusion formula above (see the Kelly note).
+If instead the bet is a fixed fraction of current wealth, wealth can never reach exactly zero, and the relevant question becomes the probability of ever falling to a given fraction of current wealth, which for log wealth with drift $\alpha > 0$ and volatility $\sigma$ is $\exp(-2\alpha D / \sigma^2)$ for a log decline $D$ (see the TL;DR and the Kelly note).
 
 ### 5. Sequence of Returns Risk (SRR)
 

@@ -165,11 +165,13 @@ def simulated_mdd(rng: np.random.Generator, mu: float, sig: float, horizon: floa
 def brownian_drawdown() -> None:
     print("Expected maximum drawdown of Brownian motion (Magdon-Ismail et al. 2004)")
     q("sqrt(pi / 2)", math.sqrt(math.pi / 2), "1.2533")
-    q("Euler-Mascheroni constant", 0.5772156649, "0.5772")
+    n_h = 100_000
+    euler_gamma = math.fsum(1.0 / k for k in range(1, n_h + 1)) - math.log(n_h) - 1 / (2 * n_h) + 1 / (12 * n_h**2)
+    q("Euler-Mascheroni constant, H_n - ln n - 1/(2n) + 1/(12n^2)", euler_gamma, "0.5772")
     rng = np.random.default_rng(SEED + 1)
     sim, se = simulated_mdd(rng, 0.0, 1.0, 1.0, 4000, 20_000)
     close("simulated E[MDD], zero drift, sigma = 1, T = 1 (5 standard errors)", sim, math.sqrt(math.pi / 2), 5 * se)
-    asym = 0.5 * (math.log(2 * 1.0 * 50.0) + 0.5772156649)
+    asym = 0.5 * (math.log(2 * 1.0 * 50.0) + euler_gamma)
     sim, se = simulated_mdd(rng, 1.0, 1.0, 50.0, 20_000, 4_000)
     close("simulated E[MDD], alpha = 1, sigma = 1, T = 50 (5 standard errors)", sim, asym, 5 * se)
     q("asymptotic E[MDD] at alpha = 1, sigma = 1, T = 50", asym, "2.591")

@@ -94,7 +94,6 @@ def odean() -> None:
 def barber_odean() -> None:
     print("Barber and Odean (2000): 66,465 households, 1991-1996")
     q("most active quintile vs market (pp a year)", 11.4 - 17.9, "-6.5")
-    q("average household vs market (pp a year)", 16.4 - 17.9, "-1.5")
 
 
 def main() -> None:

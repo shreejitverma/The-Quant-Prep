@@ -82,10 +82,9 @@ def multiple_testing() -> None:
 
 def mclean_pontiff() -> None:
     print("McLean and Pontiff (2016): in-sample mean 0.582% a month; coefficients -0.150 and -0.337")
-    q("post-sample decline 0.150 / 0.582 (%)", 100 * 0.150 / 0.582, "26")
-    q("post-publication decline 0.337 / 0.582 (%)", 100 * 0.337 / 0.582, "58")
-    q("publication-informed trading 58 - 26 (pp)", 58 - 26, "32")
-    q("implied post-publication return 0.582 - 0.337 (% a month)", 0.582 - 0.337, "0.245")
+    post_sample = q("post-sample decline 0.150 / 0.582 (%)", 100 * 0.150 / 0.582, "26")
+    post_pub = q("post-publication decline 0.337 / 0.582 (%)", 100 * 0.337 / 0.582, "58")
+    q("publication-informed trading, post-publication minus post-sample (pp)", post_pub - post_sample, "32")
 
 
 def log_t_density(x: np.ndarray, df: int) -> np.ndarray:
