@@ -161,7 +161,7 @@ Five trades cannot establish calibration: a true 70% setup wins at least 4 of 5 
 - **Neglecting Base Rates**: Forecasting trade success from a vivid chart pattern while ignoring the setup's measured historical hit rate.
 - **Full Kelly Over-Betting**: Sizing positions at 100% of the theoretical Kelly formula, exposing capital to catastrophic drawdown when edge parameters are estimated with error.
 - **Ignoring Compounding Asymmetry**: Forgetting that recovering from a 50% loss requires a 100% gain, while recovering from a 90% loss requires a 900% gain.
-- **Confusing Probability with PnL Expectation**: Assuming a 90% win rate strategy is safe: with hypothetical wins of 0.5R, one 20R tail loss in 20 trades (5%) leaves the other 19 trades, at most $9.5R$, short of covering it.
+- **Confusing Probability with PnL Expectation**: Assuming a 95% win rate strategy is safe: with hypothetical wins of 0.5R, one 20R tail loss in 20 trades (5%) leaves the other 19 trades, at most $9.5R$, short of covering it.
 - **Treating Market Draws as Independent Coin Tosses**: Failing to model the reality that financial market returns exhibit volatility clustering and autocorrelation.
 
 ---

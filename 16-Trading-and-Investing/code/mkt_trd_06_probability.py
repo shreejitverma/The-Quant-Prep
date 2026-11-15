@@ -63,7 +63,12 @@ def expectancy_matrix() -> None:
     be5 = bisect(lambda p: 5 * p - (1 - p), 0.0, 1.0)
     check("card 015 break-even at 5R (%)", 100 * be5, "16.7")
     check("card 015 EV at 20% win rate (R)", float(Fraction(1, 5) * 5 - Fraction(4, 5)), "0.20")
-    check("pitfall: 19 wins of 0.5R (R)", 19 * 0.5, "9.5")
+    trades, tail_losses, win_r, tail_r = 20, 1, Fraction(1, 2), Fraction(20)
+    check("pitfall: win rate (%)", 100 * (trades - tail_losses) / trades, "95")
+    check("pitfall: tail loss share (%)", 100 * tail_losses / trades, "5")
+    wins_total = (trades - tail_losses) * win_r
+    check("pitfall: 19 wins of 0.5R (R)", float(wins_total), "9.5")
+    assert wins_total < tail_r * tail_losses
 
 
 def variance_drag() -> None:

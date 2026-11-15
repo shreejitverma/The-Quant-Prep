@@ -49,6 +49,9 @@ def example_1() -> None:
     rounded("net economic PnL", net, "11,200,000")
     pool = max(Decimal(0), Decimal("0.20") * net)
     rounded("bonus pool", pool, "2,240,000")
+    gross, fees, overhead, salaries = Decimal(18_500_000), Decimal(3_200_000), Decimal(1_100_000), Decimal(600_000)
+    formula = Decimal("0.20") * (gross - fees - overhead - salaries - Decimal("0.06") * Decimal(40_000_000))
+    assert formula == pool, "Section 3 bonus-pool formula disagrees with the Example 1 ledger"
     rounded("total desk compensation", pool + 600_000, "2,840,000")
 
 

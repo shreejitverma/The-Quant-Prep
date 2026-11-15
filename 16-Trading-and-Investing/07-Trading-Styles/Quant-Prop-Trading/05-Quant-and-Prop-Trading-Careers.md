@@ -143,11 +143,12 @@ Compensation structures in quantitative finance vary substantially based on whet
 
 #### Formulaic Payout Economics
 Where pay is formulaic, the bonus pool is a contractual share of desk PnL after deductions:
-$$\text{Bonus Pool} = \max\left(0, \;\; \phi \cdot \left(\text{Gross PnL} - \text{Exchange Fees} - \text{Desk Overhead} - c_{\text{cap}} \cdot \text{Capital}\right)\right)$$
+$$\text{Bonus Pool} = \max\left(0, \;\; \phi \cdot \left(\text{Gross PnL} - \text{Exchange Fees} - \text{Desk Overhead} - \text{Base Salaries} - c_{\text{cap}} \cdot \text{Capital}\right)\right)$$
 Where:
 - $\phi$: The contractual payout share; it varies by firm, seat and seniority, and many firms pay discretionary rather than formulaic bonuses.
 - $\text{Exchange Fees}$: Transaction costs passed through to the desk, and possibly colocation and connectivity charges.
 - $\text{Desk Overhead}$: Software licenses, market data, hardware; which items are charged to the desk is a negotiated term.
+- $\text{Base Salaries}$: The fixed pay of the desk's staff, deducted before the payout share is applied.
 - $c_{\text{cap}}$: An internal charge on capital or balance sheet used, set by the firm.
 
 #### Pod Shop Pass-Through Economics
@@ -335,7 +336,7 @@ struct OptimizedDeskStats {
 
 > [!question]- mkt-car-004 | What is a formulaic payout compensation model in a proprietary trading firm, and how is the bonus pool calculated?
 > A formulaic payout model awards the desk a contractual percentage of net trading profits; the percentage is negotiated and varies by firm and seat, and many firms pay discretionary bonuses instead.
-> The bonus pool equals max(0, payout_pct * (Gross PnL - Exchange Fees - Infrastructure Overhead - Capital Charges)).
+> The bonus pool equals max(0, payout_pct * (Gross PnL - Exchange Fees - Infrastructure Overhead - Base Salaries - Capital Charges)).
 
 > [!question]- mkt-car-005 | In a multi-manager pod shop, how do drawdown limits work, and what should a PM candidate ask about them?
 > Pods typically face a tiered stop: a first drawdown level that cuts allocated capital and a deeper level at which the pod is closed and its book liquidated.

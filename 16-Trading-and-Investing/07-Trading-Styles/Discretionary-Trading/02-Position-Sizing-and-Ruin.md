@@ -299,7 +299,7 @@ The trader enters stock XYZ at $\$150.00$.
 > A structural stop is placed at a technical market invalidation level (e.g. below a swing low or support shelf); position size is derived from this distance.
 
 > [!question]- mkt-trd-059 | What is a circuit breaker in exchange trading?
-> A rule that halts trading after an extreme move; in the US (as of November 2026) the market-wide circuit breakers halt all equity trading for 15 minutes when the S&P 500 falls 7% (Level 1) or 13% (Level 2) from the prior close before 3:25 pm, and for the rest of the day at 20% (Level 3), with single stocks governed by Limit Up-Limit Down pauses (NYSE Rule 7.12, in this form since 2013).
+> A rule that halts trading after an extreme move; in the US (as of November 2026) the market-wide circuit breakers halt all equity trading for 15 minutes when the S&P 500 falls 7% (Level 1) or 13% (Level 2) from the prior close before 3:25 pm, and for the rest of the day at 20% (Level 3) under NYSE Rule 7.12, with single stocks governed by Limit Up-Limit Down pauses (NYSE Rule 7.11, in this form since 2013).
 > It is intended to interrupt panic cascades and give order books time to refill.
 
 > [!question]- mkt-trd-060 | What is the relationship between the Sharpe Ratio and the optimal Kelly fraction?
