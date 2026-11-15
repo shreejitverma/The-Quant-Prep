@@ -68,7 +68,7 @@ Graham (1976) said of buying below net current asset value that "over a 30-odd y
 
 To protect against distressed inventory and uncollectible receivables, a common modern convention takes the low end of Graham and Dodd's ranges for receivables and inventory:
 
-$$\text{NNWC} = (\text{Cash} \times 1.0) + (\text{Receivables} \times 0.75) + (\text{Inventory} \times 0.50) - \text{Total Liabilities} - \text{Off-Balance-Sheet Claims}$$
+$$\text{NNWC} = (\text{Cash} \times 1.0) + (\text{Receivables} \times 0.75) + (\text{Inventory} \times 0.50) - \text{Total Liabilities}$$
 
 ```
 +-----------------------------------------------------------------------+

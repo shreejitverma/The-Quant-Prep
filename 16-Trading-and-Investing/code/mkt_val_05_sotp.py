@@ -1,10 +1,11 @@
 """Sum-of-the-parts and conglomerates: every number in the note, by an independent route.
 
 Backs every number in `16-Trading-and-Investing/Investing/Valuation Models/05-Sum-of-the-Parts-and-Corporate-Conglomerates.md`.
-Independent routes used here:
+Routes used here:
 - the Titan Holdings SOTP in exact rational arithmetic (fractions.Fraction), with the capitalized overhead
-  computed twice: as overhead x EBITDA-weighted multiple, and by charging each segment its EBITDA share
-  of the overhead and valuing the net segment EBITDA at its own peer multiple;
+  as overhead x EBITDA-weighted multiple; the note's statement that charging each segment its EBITDA share
+  of the overhead at its own peer multiple gives the same net EV is an algebraic identity of that route,
+  so it is asserted against the quoted net EV as a statement check, not as an independent route;
 - the 3Com / Palm per-share stub value from the closing prices and exchange ratio in Lamont and Thaler (2003);
   the -$22 billion total stub is quoted from the paper, not recomputed.
 Every quoted number is printed as ``label = value`` and asserted at the rounding the note quotes.
@@ -49,7 +50,6 @@ def titan() -> None:
     approx("EBITDA-weighted multiple", w, 9.97, 2)
     approx("EBITDA-weighted multiple (four decimals)", w, 9.9667, 4)
     overhead = 40 * w
-    # Independent route: charge each segment its EBITDA share of overhead, value the remainder at its own multiple.
     net_by_segment = sum((e - 40 * e / ebitda) * m for e, m in seg)
     approx("net EV by charging overhead segment by segment", net_by_segment, 4086.3, 1)
     approx("capitalized overhead", overhead, 398.7, 1)

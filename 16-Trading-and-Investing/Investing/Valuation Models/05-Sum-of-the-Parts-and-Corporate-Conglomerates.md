@@ -300,7 +300,7 @@ Titan Holdings is trading at a **23.1% premium** to its clean SOTP value, so on 
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../../code/mkt_val_05_sotp.py`](../../code/mkt_val_05_sotp.py) prints and asserts every number on this page: the Titan Holdings SOTP in exact fractions with the overhead capitalized two ways (weighted multiple, and segment by segment at each segment's own multiple), and the 3Com / Palm per-share stub value from the closing prices in Lamont and Thaler (2003); the -$22 billion total is quoted from the paper.
+- Code: [`../../code/mkt_val_05_sotp.py`](../../code/mkt_val_05_sotp.py) prints and asserts every number on this page: the Titan Holdings SOTP in exact fractions with the overhead capitalized at the EBITDA-weighted multiple and the segment-by-segment equivalence checked against the same net EV, and the 3Com / Palm per-share stub value from the closing prices in Lamont and Thaler (2003); the -$22 billion total is quoted from the paper.
 - Related notes: [Relative Valuation and Multiples Done Right](04-Relative-Valuation-Multiples-Done-Right.md).
 
 ## Further reading
