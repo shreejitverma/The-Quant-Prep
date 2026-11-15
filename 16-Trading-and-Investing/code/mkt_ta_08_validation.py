@@ -146,12 +146,12 @@ def track_record(rng: np.random.Generator) -> None:
     print(f"simulated share of positive Sharpe estimates at MinTRL (seed {SEED}) = {share:.4f} +/- {se:.4f}")
     n_skew = min_trl(sr_d, -1.0, 6.0)
     check("MinTRL with skew -1 and kurtosis 6, daily, years", n_skew / 252, "2.89")
-    check("increase from non-normality on daily data, percent", 100 * ((n_skew - 1) / (n_norm - 1) - 1), "6.6")
+    check("increase from non-normality on daily data, percent", 100 * (n_skew / n_norm - 1), "6.6")
     sr_m = 1 / math.sqrt(12)
     m_norm, m_skew = min_trl(sr_m, 0.0, 3.0), min_trl(sr_m, -1.0, 6.0)
     check("MinTRL monthly, normal, years", m_norm / 12, "2.90")
     check("MinTRL monthly, skew -1 and kurtosis 6, years", m_skew / 12, "3.85")
-    check("increase from non-normality on monthly data, percent", 100 * ((m_skew - 1) / (m_norm - 1) - 1), "33.7")
+    check("increase from non-normality on monthly data, percent", 100 * (m_skew / m_norm - 1), "32.7")
 
 
 def wilder_rsi(prices: np.ndarray, n: int) -> np.ndarray:

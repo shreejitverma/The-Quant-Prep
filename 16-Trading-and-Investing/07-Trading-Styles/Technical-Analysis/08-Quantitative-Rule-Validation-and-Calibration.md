@@ -296,7 +296,7 @@ A quantitative analyst evaluates $1,000$ machine learning breakout forecasts acr
 
 > [!question]- mkt-ta-240 | How long a daily track record is needed for confidence that an annualized Sharpe ratio of 1.0 is above zero?
 > Bailey and Lopez de Prado's (2012) minimum track record length at 95% one-sided confidence is 2.71 years of normal daily returns; reaching t = 2.0 takes about 4.0 years (t is roughly SR times the square root of years).
-> Non-normality matters little for daily data (skew -1 and kurtosis 6 raise it to 2.89 years, +6.6%) but more for monthly data (2.90 to 3.85 years, +33.7%).
+> Non-normality matters little for daily data (skew -1 and kurtosis 6 raise it to 2.89 years, +6.6%) but more for monthly data (2.90 to 3.85 years, +32.7%).
 
 > [!question]- mkt-ta-241 | What is trade expectancy in R-multiples?
 > Expectancy = (Win Rate * Average Win in R) - (Loss Rate * Average Loss in R).
