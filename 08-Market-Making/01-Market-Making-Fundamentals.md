@@ -31,8 +31,8 @@ sources: [Harris (2003) Trading and Exchanges: Market Microstructure for Practit
 Buyers and sellers rarely arrive at the same moment.
 A market maker bridges that gap by standing ready to trade on both sides, holding inventory in between.
 The service is immediacy, and its price is the bid-ask spread.
-Harris frames the spread as compensation for three costs: order-processing costs, inventory (risk-bearing) costs, and adverse-selection costs from trading against better-informed traders.
-In modern electronic markets the order-processing component is small, so competition compresses spreads until they roughly cover adverse selection and inventory risk net of exchange fees and rebates.
+The classical decomposition (Stoll 1989) treats the spread as compensation for three costs: order-processing costs, inventory-holding (risk-bearing) costs, and adverse-information costs from trading against better-informed traders.
+Where order-processing costs are small, competition compresses spreads until they roughly cover adverse selection and inventory risk net of exchange fees and rebates.
 
 ### The counterparties
 
@@ -102,8 +102,9 @@ Queue position matters for the same reason: being first in the queue at a price 
 
 Exchanges run programmes for designated or registered market makers.
 The common pattern is obligations (maintain continuous two-sided quotes for a minimum fraction of the session, within a maximum width or a percentage band around the national best bid and offer, at a minimum size) in exchange for benefits (lower fees, higher rebates, allocation preferences in some options markets, or a special role in opening and closing auctions).
-In US equities, after the May 2010 flash crash, the SEC approved exchange rules that ended "stub quotes" by requiring registered market makers to keep quotes within a set percentage of the NBBO.
-The exact parameters differ by venue and change over time, so check the current rulebook before quoting a number in an interview.
+In US equities, after the May 2010 flash crash, the SEC approved exchange rules that ended "stub quotes" (Release 34-63255, 5 November 2010, effective 6 December 2010).
+Registered market makers must quote within 8% of the NBBO in stocks covered by the circuit-breaker pilot (the S&P 500, the Russell 1000 and certain exchange-traded products), 20% for those stocks near the open and close when circuit breakers do not apply, and 30% in other exchange-listed equities.
+Venue parameters change over time, so check the current rulebook before quoting a number in an interview.
 The economic point is that obligations force you to quote when you would rather step away, which is when adverse selection is highest, so the benefits must pay for that option you have given up.
 
 ### Fees and rebates
@@ -111,13 +112,17 @@ The economic point is that obligations force you to quote when you would rather 
 Many equity venues are maker-taker: the passive side earns a rebate and the aggressive side pays a fee.
 Some are inverted (taker-maker), paying the aggressor and charging the passive side, which attracts orders that want queue priority.
 For a market maker the rebate is part of $h$ and can be the whole edge in one-tick-wide names.
+Rebates are bounded by the access-fee cap of Reg NMS Rule 610(c): since 2005 it has been 0.30 cents per share for protected quotations priced at 1 dollar or more (0.3% of the price below 1 dollar).
+The SEC's September 2024 amendments (Release 34-101070) lower it to 0.10 cents per share (0.1% below 1 dollar), but as of November 2026 compliance has been postponed to the first business day of November 2027 (Release 34-105656, June 2026).
 See [Exchange Mechanics, Auctions and Fees](../07-Market-Microstructure/02-Exchange-Mechanics-Auctions-and-Fees.md).
 
 ## Worked examples
 
+All tapes, fees and flow statistics below are hypothetical inputs; [mm_01_market_making_fundamentals.py](code/mm_01_market_making_fundamentals.py) asserts every number.
+
 ### Example 1: decomposing a three-fill tape
 
-Quotes are 99.99 / 100.01 around a 100.00 mid; each fill is 100 shares; the markout horizon is 1 second; the session ends with the mid at 99.99.
+Initial quotes are 99.99 / 100.01 around a 100.00 mid, and they move with the mid; each fill is 100 shares; the markout horizon is 1 second; the session ends with the mid at 99.99.
 
 | Fill | Side | Price | Mid at fill | Mid 1 s later |
 | :--- | :--- | ---: | ---: | ---: |
@@ -192,7 +197,7 @@ If news raises the informed share to 30% and the jump to 4 ticks, break-even ris
 
 > [!question]- mm-fund-why-spread-exists | Name the three classical components of the bid-ask spread.
 > Order-processing costs, inventory (risk-bearing) costs and adverse-selection costs.
-> In electronic markets processing costs are small, so competition pushes the spread towards adverse selection plus inventory risk net of fees.
+> This is Stoll's (1989) decomposition; where processing costs are small, competition pushes the spread towards adverse selection plus inventory risk net of fees.
 
 > [!question]- mm-fund-telescoping-identity | Why does spread capture plus adverse selection plus inventory P&L exactly equal trading P&L?
 > Because $d(m_t - p) + d(m_{t+\tau} - m_t) + d(m_T - m_{t+\tau}) = d(m_T - p)$ for each fill, and summing $d(m_T - p)$ over fills is cash plus final position marked at $m_T$.
@@ -222,14 +227,29 @@ If news raises the informed share to 30% and the jump to 4 ticks, break-even ris
 > Not necessarily: inventory P&L is directional exposure, not market-making edge.
 > Check whether it is repeatable (a real signal driving skew) or luck in a trending market, and whether the risk taken was within limits.
 
+> [!question]- mm-fund-three-fill-tape | You buy 100 at 99.99 (mid 100.00), buy 100 at 99.98 (mid 99.99) and sell 100 at 100.00 (mid 99.99); 1 s later the mids are 99.995, 99.985 and 99.995 and the close is 99.99. Decompose the P&L.
+> Spread capture $+3.00$, adverse selection $-1.50$, inventory $+0.50$, total $+2.00$ dollars.
+> Check: cash is $-9997$ and the long 100 shares are worth 9999 at the close.
+
+> [!question]- mm-fund-day-pnl-with-rebate | 100,000 passive shares at a 1-cent half-spread, 0.6-cent adverse move, 0.20-cent rebate, 0.05-cent costs and a 150-dollar inventory loss. Net P&L?
+> 400 dollars, or 0.4 cents per share.
+> $1000 - 600 + 200 - 50 - 150 = 400$; the rebate is half of the result.
+
+> [!question]- mm-fund-news-break-even | 30% of fills become informed and the post-fill jump is 4 ticks. Is a 2-tick-wide market with no rebate still profitable?
+> No: the break-even half-spread is $0.3 \times 4 = 1.2$ ticks, so a 1-tick half-spread loses $0.2$ ticks per fill.
+> Widen, reduce size or pull until the flow normalises.
+
 ## In this repo and The-Distinguished-Engineer
 
+- Code: [`code/mm_01_market_making_fundamentals.py`](code/mm_01_market_making_fundamentals.py) prints and asserts every number on this page: the tape decomposition fill by fill in exact rational arithmetic against the direct cash-plus-position P&L, the telescoping identity on a seeded random tape, and break-even half-spreads by bisection on the enumerated expected P&L with a simulation check.
 - Systems and regulation companion: [Quant Dev Market Making Guide](Quant-Dev-MM-Guide/README.md), including [Quantitative Models and Strategies](Quant-Dev-MM-Guide/03_Quantitative_Models_and_Strategies.md).
 - Next: [Fair Value and Theoretical Pricing](02-Fair-Value-and-Theoretical-Pricing.md) and [Inventory Risk and Avellaneda-Stoikov](03-Inventory-Risk-and-Avellaneda-Stoikov.md).
 
 ## Further reading
 
-- Larry Harris, *Trading and Exchanges: Market Microstructure for Practitioners* (2003), chapters on dealers and bid-ask spreads.
+- Larry Harris, *Trading and Exchanges: Market Microstructure for Practitioners* (2003), chapters 13 (Dealers) and 14 (Bid/Ask Spreads).
+- Hans Stoll (1989), Inferring the components of the bid-ask spread: theory and empirical tests, *Journal of Finance* 44(1), 115-134.
+- SEC press release 2010-216 (8 November 2010) on the stub-quote rules; SEC Release 34-101070 (18 September 2024) and Release 34-105656 (June 2026) on the Rule 610(c) access-fee cap.
 - Cartea, Jaimungal and Penalva, *Algorithmic and High-Frequency Trading* (2015), chapters on market making.
-- Glosten and Milgrom (1985), Bid, ask and transaction prices in a specialist market with heterogeneously informed traders, *Journal of Financial Economics* 14(1).
+- Glosten and Milgrom (1985), Bid, ask and transaction prices in a specialist market with heterogeneously informed traders, *Journal of Financial Economics* 14(1), 71-100.
 - Agustin Lebron, *The Laws of Trading* (2019).

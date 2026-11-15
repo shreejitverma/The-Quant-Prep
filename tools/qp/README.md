@@ -253,7 +253,7 @@ Selecting an engine shows a quick client-side preview; **Run Simulation** calls 
 | `schema` | Required `type`, `track`, `tier`, `status`; valid values; trackable notes need `est_hours`. |
 | `prereq` | Unknown prerequisite or firm focus ids, and prerequisite cycles. |
 | `solid` | A `solid` or `canonical` topic has the required sections and at least 6 cards (15 for a problem set, 3 for a playbook). |
-| `card` | Empty answers, and single-line answers that start like a numbered list. |
+| `card` | Empty answers, single-line answers that start like a numbered list, and `> [!question]` callouts outside fences that do not parse as a card (an id with characters outside `a-z0-9-`, a missing ` \| ` separator, or a callout swallowed into the previous card's answer). |
 | `link` | Relative Markdown links resolve. |
 | `tde-link` | With `--strict-tde`, links into The-Distinguished-Engineer point at files that exist in the local clone. |
 | `style` | No em dashes and no emojis. |

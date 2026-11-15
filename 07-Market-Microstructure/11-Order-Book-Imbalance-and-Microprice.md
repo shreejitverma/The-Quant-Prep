@@ -13,8 +13,8 @@ sources: [Stoikov (2018) The micro-price: a high-frequency estimator of future p
 ## TL;DR
 
 - Queue imbalance $I = Q^b/(Q^b + Q^a)$ at the touch is the simplest and one of the strongest short-horizon predictors: a small ask queue tends to be depleted first, so the next mid move tends to be up.
-- The weighted mid $I P^a + (1 - I) P^b$ uses that fact but is noisy and not a martingale, so it is a poor fair value.
-- Stoikov's microprice is the limit of expected future mids given the current imbalance and spread, $P^{\text{micro}} = M + g(I, S)$, estimated as a Markov chain; by construction it is a martingale-style estimator of where the mid is heading.
+- The weighted mid $I P^a + (1 - I) P^b$ uses that fact but is noisy and is not the expected future mid, so it is a poor fair value.
+- Stoikov's microprice is the limit of expected future mids given the current imbalance and spread, $P^{\text{micro}} = M + g(I, S)$, estimated as a Markov chain; Stoikov reports that it predicts short-term prices better than the mid or the weighted mid.
 - Order flow imbalance (OFI), the net change in queue sizes at the touch, explains contemporaneous price changes almost linearly, with a slope that falls as depth rises.
 - Judge these signals by the markouts of the fills they would have changed, not by raw correlation with returns.
 
@@ -45,8 +45,8 @@ P^{w} = I P^a + (1 - I) P^b = M + \left(I - \tfrac{1}{2}\right) S
 $$
 
 (with $M$ the mid and $S$ the spread) puts fair value closer to the side that is about to be taken out.
-Its problems: it jumps whenever a single order is added or cancelled, it depends mechanically on the spread, and it is not a martingale, so its own future changes are predictable.
-A fair value whose changes are predictable leaves edge on the table and pays it to faster traders.
+Its problems: it jumps whenever a single order is added or cancelled, it depends mechanically on the spread, and it is assumed linear in $I$ rather than estimated, so it is not the expected future mid (Example 2 shows gaps of up to 0.038 ticks in a toy book).
+A fair value with predictable errors leaves edge on the table and pays it to faster traders.
 
 ### The microprice
 
@@ -60,7 +60,7 @@ Discretise imbalance into buckets and spreads into a few ticks; the state is $x 
 From event data estimate:
 
 - $Q$: transition probabilities between states with no mid change;
-- $T$: transition probabilities into a new state at the moment the mid changes;
+- $T$: transition probabilities into a new state at the moment the mid changes (the author's slides and companion code call this matrix $R^2$);
 - $R$: the corresponding mid changes (for example $\pm$ half a tick when a queue empties and the spread opens).
 
 The first correction is the expected size of the next mid move,
@@ -70,11 +70,11 @@ g_1 = (\mathbf{1} - Q)^{-1} R_1, \qquad R_1(x) = \mathbb{E}[\Delta M \,\mathbb{1
 $$
 
 and later corrections follow from $g_{k+1} = B g_k$ with $B = (\mathbf{1} - Q)^{-1} T$.
-Stoikov symmetrises the data (swapping bid and ask flips the sign of the adjustment) and shows conditions under which the series converges.
-The result depends only on the current state, is cheap to evaluate from a lookup table, and is, by construction, the best estimate of the mid after its next few moves.
+Stoikov's companion code symmetrises the data by adding a mirror copy with bid and ask swapped, which flips the sign of each mid change, so the adjustment is antisymmetric in imbalance.
+The result depends only on the current state, is cheap to evaluate from a lookup table, and is, by construction, the expected mid after many future mid changes given that state.
 
 Why it beats the mid: the mid ignores the queues entirely, so in a one-tick market it is stale by up to half a tick whenever the book is lopsided.
-Why it beats the weighted mid: it is estimated from how the book actually evolves rather than assumed linear in $I$, and it is designed so that its future changes are unpredictable from the same state.
+Why it beats the weighted mid: it is estimated from how the book actually evolves rather than assumed linear in $I$; empirically Stoikov finds it the better short-term predictor of the two.
 
 ### Order flow imbalance
 
@@ -91,7 +91,8 @@ $$
 \Delta P_k = \beta_k \, \text{OFI}_k + \varepsilon_k
 $$
 
-fits well, with $\beta$ roughly inversely proportional to average depth; their stylised model gives $\Delta P \approx \delta \cdot \text{OFI} / (2D)$ for tick $\delta$ and depth $D$ per level.
+fits well, with $\beta$ roughly inversely proportional to average depth; their stylised model gives $\Delta P \approx \text{OFI}/(2D)$ ticks for depth $D$ per level (their equation 1 measures $\Delta P$ in ticks), or $\delta \cdot \text{OFI}/(2D)$ in price units for tick $\delta$.
+They report an average $R^2$ of 65%.
 This is a contemporaneous relation: it explains the price change over the same interval.
 Using it to trade requires lagged OFI, which predicts far less.
 
@@ -108,6 +109,8 @@ For the signal in isolation, regress future microprice or mid changes on the sig
 The out-of-sample test is the markout improvement, not $R^2$.
 
 ## Worked examples
+
+All books, transition probabilities and fill counts below are hypothetical inputs; [micro_11_imbalance_microprice.py](code/micro_11_imbalance_microprice.py) asserts every number.
 
 ### Example 1: imbalance and weighted mid
 
@@ -135,22 +138,12 @@ Solving $g_1 = (\mathbf{1} - Q)^{-1} (u - d) \cdot 0.5$:
 | Microprice minus mid (ticks) | -0.362 | -0.219 | 0 | +0.219 | +0.362 |
 | Weighted mid minus mid (ticks) | -0.4 | -0.2 | 0 | +0.2 | +0.4 |
 
-The microprice is steeper than the weighted mid near balance and flatter at the extremes, where it is capped by the half-tick size of the next move and by the chance that imbalance mean-reverts first.
+The microprice is steeper than the weighted mid near balance and flatter at the extremes.
+At the extremes it cannot exceed half a tick, the size of the next move, and mean reversion in imbalance pulls it in further: with the same $u_i$ and $d_i$ but imbalance frozen until the mid moves, the $I = 0.9$ value would be $0.5 \times 0.28/0.32 = 0.4375$ ticks instead of 0.362.
+A simulation of the chain through four mid changes, restarting imbalance from a symmetric distribution each time, gives the same values within five standard errors, which confirms that the later terms vanish.
 With real data the table has spread states and many more buckets, but the calculation is the same linear solve.
 
-```python
-import numpy as np
-
-u = np.array([0.02, 0.05, 0.10, 0.18, 0.30]); d = u[::-1]
-Q = np.zeros((5, 5))
-for i in range(5):
-    rest = 1 - u[i] - d[i]
-    Q[i, i] += 0.5 * rest
-    for j in (i - 1, i + 1):
-        Q[i, j if 0 <= j < 5 else i] += 0.25 * rest
-g1 = np.linalg.solve(np.eye(5) - Q, 0.5 * (u - d))
-print(g1.round(3))  # [-0.362 -0.219  0.     0.219  0.362]
-```
+The linear solve, the equivalent Neumann series $\sum_n Q^n R_1$ and the simulation are in [micro_11_imbalance_microprice.py](code/micro_11_imbalance_microprice.py).
 
 ### Example 3: computing OFI
 
@@ -180,7 +173,8 @@ You bucket 10,000 bid fills by bid-side imbalance at quote time, with 5-second m
 
 Total edge is $+500$ ticks.
 Pulling the bid when $I < 0.3$ removes the $-1{,}200$ bucket and would raise the total to $+1{,}700$ ticks, if the other buckets' fills are unaffected.
-Before shipping, check what cancelling costs in queue position when imbalance recovers, and whether the bucket's markout is stable across days; with a per-fill standard deviation of a few ticks, 2,000 fills give a standard error of about 0.05 to 0.1 ticks, so the $-0.6$ is clearly real.
+Before shipping, check what cancelling costs in queue position when imbalance recovers, and whether the bucket's markout is stable across days.
+With a per-fill standard deviation of 2 to 4 ticks, 2,000 independent fills give a standard error of $s/\sqrt{2000}$, about 0.045 to 0.089 ticks, so the $-0.6$ is at least 6.7 standard errors from zero; fills clustered in time make the effective sample smaller.
 
 ## Pitfalls
 
@@ -204,7 +198,7 @@ Before shipping, check what cancelling costs in queue position when imbalance re
 > $I = 0.8$, so $0.8 \times 100.01 + 0.2 \times 100.00$; the bid size weights the ask price.
 
 > [!question]- ms-obi-weighted-mid-flaws | Why is the weighted mid a poor fair value?
-> It jumps on single adds and cancels, depends mechanically on the spread, and is not a martingale, so its future changes are predictable.
+> It jumps on single adds and cancels, depends mechanically on the spread, and is assumed linear in imbalance rather than estimated, so it is not the expected future mid and its errors are predictable.
 > Predictable fair-value changes are edge given away to faster traders.
 
 > [!question]- ms-obi-microprice-definition | How does Stoikov define the microprice?
@@ -224,7 +218,7 @@ Before shipping, check what cancelling costs in queue position when imbalance re
 > Summed over an interval it explains that interval's price change almost linearly.
 
 > [!question]- ms-obi-ofi-depth | How does the OFI price-impact slope depend on depth?
-> It falls roughly in inverse proportion to depth; the stylised model gives $\Delta P \approx \delta\,\text{OFI}/(2D)$.
+> It falls roughly in inverse proportion to depth; the stylised model gives $\Delta P \approx \text{OFI}/(2D)$ in ticks, $\delta\,\text{OFI}/(2D)$ in price.
 > Deeper books need more net flow to move the price.
 
 > [!question]- ms-obi-ofi-contemporaneous | A colleague reports $R^2$ of 60% for price change on OFI. Can you trade it?
@@ -243,9 +237,26 @@ Before shipping, check what cancelling costs in queue position when imbalance re
 > Weight displayed size by how long it has rested, ignore size that appears and cancels quickly, and combine with trade-based flow.
 > Spoofed size is placed to be cancelled, so age and fill behaviour reveal it.
 
+> [!question]- ms-obi-weighted-mid-jump | Bid 100.00 x 800, ask 100.01 x 200. A 600-lot bid cancels. What happens to imbalance and the weighted mid?
+> $I$ falls from 0.8 to $200/400 = 0.5$ and the weighted mid falls from 100.008 to the mid, 100.005.
+> No trade happened; a single cancel moved the fair-value estimate 0.3 ticks, which is why the weighted mid is too jumpy to be a theo.
+
+> [!question]- ms-obi-ofi-numeric | Over four snapshots the bid grows by 200, the ask shrinks by 300, the last 100 at the ask clears and a new better bid of 200 appears. OFI, and the stylised price change with depth 1,000 per level?
+> OFI is $200 + 300 + 100 + 200 = 800$.
+> The stylised relation gives $800/(2 \times 1000) = 0.4$ ticks; the mid in the example actually moved a full tick, so one interval is noisy.
+
+> [!question]- ms-obi-toy-microprice-shape | In a toy one-tick chain the microprice adjustment at I = 0.9 is 0.362 ticks while the weighted mid gives 0.4. Why is the microprice flatter at the extremes?
+> The adjustment is the expected next mid move, so it can never exceed half a tick, and imbalance can mean-revert before the mid moves.
+> Freezing imbalance until the mid moves would raise the value to $0.5 \times 0.28/0.32 = 0.4375$ ticks.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/micro_11_imbalance_microprice.py`](code/micro_11_imbalance_microprice.py) prints and asserts every number on this page: weighted mids in exact rational arithmetic, the toy microprice by linear solve, Neumann series and a seeded simulation of the imbalance chain, OFI from the Cont-Kukanov-Stoikov indicator formula and from an explicit list of book events, and the markout standard errors by simulation.
+- Related notes: [Adverse Selection and Flow Toxicity](05-Adverse-Selection-and-Flow-Toxicity.md), [Fair Value and Theoretical Pricing](../08-Market-Making/02-Fair-Value-and-Theoretical-Pricing.md).
+
 ## Further reading
 
-- Sasha Stoikov (2018), The micro-price: a high-frequency estimator of future prices, *Quantitative Finance* 18(12).
-- Cont, Kukanov and Stoikov (2014), The Price Impact of Order Book Events, *Journal of Financial Econometrics* 12(1).
+- Sasha Stoikov (2018), The micro-price: a high-frequency estimator of future prices, *Quantitative Finance* 18(12), 1959-1966; companion code at https://github.com/sstoikov/microprice.
+- Cont, Kukanov and Stoikov (2014), The Price Impact of Order Book Events, *Journal of Financial Econometrics* 12(1), 47-88.
 - Cartea, Jaimungal and Penalva, *Algorithmic and High-Frequency Trading* (2015).
 - Related notes: [Fair Value and Theoretical Pricing](../08-Market-Making/02-Fair-Value-and-Theoretical-Pricing.md), [Limit Order Books and Order Types](01-Limit-Order-Books-and-Order-Types.md).

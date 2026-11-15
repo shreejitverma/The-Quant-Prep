@@ -16,6 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SECTION_RE = re.compile(r"^(\d\d)-[A-Za-z0-9-]+$")
 ORDER_RE = re.compile(r"^(\d\d)-(.+)$")
 CARD_RE = re.compile(r"^> \[!question\]-?\s+([a-z0-9][a-z0-9-]*)\s*\|\s*(.+?)\s*$")
+CALLOUT_PREFIX = "> [!question]"
 HEADING_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
 FENCE_OPEN_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 
@@ -62,6 +63,7 @@ class Note:
     body: str
     source: Path  # the file on disk; differs from root / path for an external $QP_PRIVATE overlay
     cards: list[Card] = field(default_factory=list)
+    malformed_cards: list[tuple[int, str]] = field(default_factory=list)  # (line, callout) that CARD_RE rejects
 
     @property
     def type(self) -> str:
@@ -182,8 +184,11 @@ def split_frontmatter(text: str) -> tuple[dict, str, int]:
     return meta, body, body_start
 
 
-def parse_cards(body: str, note_id: str, first_line: int) -> list[Card]:
-    """Question callouts in the body; examples inside fenced code blocks are not cards."""
+def parse_cards(body: str, note_id: str, first_line: int, malformed: list[tuple[int, str]] | None = None) -> list[Card]:
+    """Question callouts in the body; examples inside fenced code blocks are not cards.
+
+    Unfenced ``> [!question]`` lines that are not well-formed cards go to ``malformed`` as (line, text).
+    """
     cards: list[Card] = []
     lines = body.splitlines()
     fence = ""
@@ -202,12 +207,16 @@ def parse_cards(body: str, note_id: str, first_line: int) -> list[Card]:
             continue
         m = CARD_RE.match(lines[i])
         if not m:
+            if malformed is not None and lines[i].startswith(CALLOUT_PREFIX):
+                malformed.append((first_line + i, lines[i]))
             i += 1
             continue
         start = i
         answer_lines = []
         i += 1
         while i < len(lines) and lines[i].startswith(">"):
+            if malformed is not None and lines[i].startswith(CALLOUT_PREFIX):
+                malformed.append((first_line + i, lines[i]))
             answer_lines.append(lines[i][2:] if lines[i].startswith("> ") else lines[i][1:])
             i += 1
         cards.append(Card(m.group(1), m.group(2), "\n".join(answer_lines).strip(), note_id, first_line + start))
@@ -231,7 +240,7 @@ def load_note(root: Path, rel: Path, section: str, source: Path | None = None, n
     heading = HEADING_RE.search(body)
     title = heading.group(1) if heading else rel.stem.replace("-", " ")
     note = Note(nid, rel, section, int(m.group(1)) if m else 99, title, meta, body, source)
-    note.cards = parse_cards(body, nid, body_start)
+    note.cards = parse_cards(body, nid, body_start, note.malformed_cards)
     return note
 
 
