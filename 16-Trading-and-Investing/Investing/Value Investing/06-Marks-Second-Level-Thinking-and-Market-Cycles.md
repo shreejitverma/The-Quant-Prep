@@ -5,18 +5,18 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Marks (2011) - The Most Important Thing: Uncommon Sense for the Thoughtful Investor, Marks (2018) - Mastering the Market Cycle: Getting the Odds on Your Side, Oaktree Capital (1990-2023) - Client Memos by Howard Marks]
+sources: [Marks (2011) - The Most Important Thing: Uncommon Sense for the Thoughtful Investor, Marks (2018) - Mastering the Market Cycle: Getting the Odds on Your Side, Marks (2006) - It Is What It Is (Oaktree memo), Ellis (1975) - The Loser's Game]
 ---
 
 # Howard Marks: Second-Level Thinking and Market Cycles
 
 ## TL;DR
 
-- Howard Marks, co-founder of Oaktree Capital Management, establishes that superior investment returns require "Second-Level Thinking": a thought process that is both fundamentally different from consensus and analytically superior.
+- Howard Marks, co-founder of Oaktree Capital Management, argues that superior investment returns require "Second-Level Thinking": a thought process that is both different from consensus and better.
 - First-level thinkers focus on superficial, obvious attributes ("It's a great company; let's buy the stock"); second-level thinkers evaluate embedded expectations, probability distributions, consensus sentiment, and asset pricing.
 - The psychological pendulum swings perpetually between extremes of euphoria and despair, greed and fear, credulity and skepticism, and risk tolerance and risk aversion.
-- The Credit Cycle is the most volatile and powerful engine of modern capitalism, creating devastating financial collapses and extraordinary distressed buying opportunities.
-- True risk is not price volatility or statistical beta; risk is exclusively the probability of permanent capital loss, and the greatest risk arises precisely when market consensus believes risk has been eliminated.
+- Marks treats the credit cycle as the most volatile of the cycles he studies, the source of both financial collapses and distressed buying opportunities.
+- For Marks, the risk that matters is not price volatility but the probability of permanent capital loss, and risk is greatest when the consensus believes it has gone away.
 
 ## Learning objectives
 
@@ -49,9 +49,9 @@ Howard Marks argues that because financial markets aggregate the collective opin
 |                                        | far below liquidation value; |
 |                                        | bad news is priced in; buy." |
 +----------------------------------------+------------------------------+
-| "Interest rates are rising; bond       | "Yield spreads have exploded |
-| prices will collapse; stay away."      | to 1,200 bps; default risk is|
-|                                        | vastly overstated; buy debt."|
+| "Interest rates are rising; bond       | "Spreads have widened to     |
+| prices will collapse; stay away."      | 1,200 bps (hypothetical);    |
+|                                        | default risk is overpriced."|
 +----------------------------------------+------------------------------+
 ```
 
@@ -86,7 +86,7 @@ The pendulum rarely pauses at the happy medium of rational valuation; it rushes 
 +-----------------------------------------------------------------------+
 ```
 
-The Three Stages of a Bull Market (Marks):
+The Three Stages of a Bull Market (Marks, *The Most Important Thing*, retelling a lesson he learned early in his career):
 1. **Stage 1**: When a few forward-looking people begin to believe things will get better.
 2. **Stage 2**: When most investors realize improvement is actually taking place.
 3. **Stage 3**: When everyone concludes that things will get better forever (Peak Euphoria; time to sell).
@@ -116,14 +116,14 @@ Marks identifies the Credit Cycle as the most extreme and dynamic cycle in econo
 +-----------------------------------------------------------------------+
 ```
 
-*"The worst loans are made at the best of times."*
-When risk aversion evaporates, capital providers abandon diligence, underwriting "covenant-lite" debt.
+Marks's summary of the cycle is that the worst loans tend to be made at the best of times.
+When risk aversion evaporates, capital providers relax diligence and underwrite "covenant-lite" debt.
 This creates the toxic corporate balance sheets that fuel the next tidal wave of distress.
 
 ### 4. Taking the Temperature of the Market
 
-Marks rejects macroeconomic timing: *"We may never know where we're going, but we'd better have a good idea where we are."*
-Investors must calibrate portfolio aggressiveness by taking the market's temperature:
+Marks rejects macroeconomic forecasting but not judgment about the present; in his March 2006 memo "It Is What It Is" he writes: *"We may never know where we're going, but we'd better have a good idea where we are."*
+Investors calibrate portfolio aggressiveness by taking the market's temperature (the thresholds below are illustrative, not Marks's):
 
 ```
 +-----------------------------------------------------------------------+
@@ -144,10 +144,10 @@ Investors must calibrate portfolio aggressiveness by taking the market's tempera
 
 Academic finance equates risk with volatility ($\sigma$, standard deviation).
 Marks rejects this completely:
-- Volatility is a statistical convenience invented by professors who needed a quantifiable metric to run mathematical equations.
-- Investors do not fear volatility; they fear **permanent capital loss**.
-- A volatile stock that falls 30% and then rebounds to 3x intrinsic value poses zero risk to a patient value investor.
-- An overleveraged stock that goes bankrupt poses terminal risk, regardless of whether its daily price swings were smooth.
+- Academics adopted volatility as the measure of risk largely because it is quantifiable and convenient to use in models.
+- Investors do not fear volatility as such; they fear **permanent capital loss**.
+- A patient holder of a sound business whose price falls 30% and later recovers, and who is never forced to sell, suffers no permanent loss.
+- An overleveraged company that goes bankrupt destroys capital, however smooth its daily price swings were.
 
 The Paradox of Risk:
 - Risk is highest when broad market consensus believes there is no risk, because investors bid up prices, eliminate cash buffers, and use excessive leverage.
@@ -155,23 +155,23 @@ The Paradox of Risk:
 
 ### 6. Asymmetric Risk/Reward: Winning by Not Losing
 
-In the classic paper *The Loser's Game* (Ellis 1975), tennis matches are categorized into:
+In *The Loser's Game* (Ellis 1975, Financial Analysts Journal), drawing on Simon Ramo's analysis of tennis, games are categorized into:
 - **Professional Tennis**: Players win points by hitting unreturnable winners (active skill).
 - **Amateur Tennis**: Players lose points by committing unforced errors into the net; the player who avoids mistakes wins.
 
 Investing in public markets is an amateur's game:
 - Trying to hit miraculous 10x speculative winners regularly results in unforced errors, catastrophic drawdowns, and ruin.
 - By systematically avoiding bad credits, avoiding overpriced momentum favorites, eliminating debt leverage, and maintaining strict valuation discipline, the investor wins by not losing.
-- Oaktree's foundational motto: *"If we avoid the losers, the winners will take care of themselves."*
+- Oaktree's emphasis follows: control risk and avoid the big losers first, and let the winners come from a portfolio that survives.
 
 ## Worked numerical case study
 
-Evaluate a portfolio allocation decision across the credit cycle:
+Evaluate a portfolio allocation decision across the credit cycle (all market inputs below are hypothetical):
 Global credit markets enter an inflection point:
-- 10-Year High-Yield Credit Spreads: Have compressed to 285 bps over Treasuries (historical 5th percentile, historical median is 450 bps).
-- Default Rate over past 12 months: 1.2% (Historical average is 3.5%).
+- High-Yield Credit Spreads: Have compressed to 285 bps over Treasuries (assume this is near the bottom of the spread's history, with a long-run median of 450 bps).
+- Default Rate over past 12 months: 1.2% (assumed long-run average 3.5%).
 - Issuance Structure: 85% of newly issued junk bonds feature "covenant-lite" indentures.
-- Retail Inflows: High-yield mutual funds and ETFs recorded 12 consecutive weeks of record inflows.
+- Retail Inflows: High-yield mutual funds and ETFs recorded 12 consecutive weeks of inflows.
 
 ### Step 1: Execute Second-Level Analysis
 1. **First-Level View**:
@@ -180,13 +180,14 @@ Global credit markets enter an inflection point:
    - Defaults are low precisely because credit was cheap and easily refinanced over the past three years.
    - A spread of 285 bps provides zero cushion for credit degradation; if defaults merely mean-revert to 3.5% with a 40% recovery rate, the annual default loss is $3.5\% \times (1 - 0.40) = 2.10\%$.
    - Net expected spread above Treasuries is only $2.85\% - 2.10\% = 0.75\%$ (75 bps), offering negligible compensation for illiquidity and severe credit risk.
+   - Put the other way, the 285 bps spread is used up entirely once defaults reach $2.85\% / 0.60 = 4.75\%$ a year at the same recovery rate.
    - Covenant-lite issuance indicates lenders have abandoned underwriting discipline.
 
 ### Step 2: Calibrate Portfolio Temperature and Action
 - Market Diagnostic: The credit market is in Stage 3 Euphoria; the pendulum is at an extreme of greed and risk tolerance.
-- Capital Allocation Action:
+- Capital Allocation Action (an illustrative plan, not Oaktree's):
   1. Liquidate high-yield corporate credit holdings.
-  2. Transition capital into short-term US Treasury Bills (yielding 3.65% with zero credit risk).
+  2. Transition capital into short-term US Treasury Bills (yielding 3.65%, with negligible credit risk).
   3. Build unallocated cash reserves to 35% of the portfolio.
   4. Wait patiently for the credit window to slam shut and spreads to widen past 800 bps before deploying capital into distressed debt.
 
@@ -232,8 +233,8 @@ Global credit markets enter an inflection point:
 > [!question]- mkt-vi-172 | What is the concept of 'winning by not losing'?
 > Focusing on risk control, avoiding unforced errors, eliminating low-quality debt, and avoiding overpriced fads so the portfolio compounds safely over decades.
 
-> [!question]- mkt-vi-173 | What is Oaktree Capital's primary investment philosophy motto?
-> 'If we avoid the losers, the winners will take care of themselves.'
+> [!question]- mkt-vi-173 | What does Howard Marks put ahead of return-seeking in The Most Important Thing?
+> Risk control first: avoid the big losers, and a portfolio that survives will collect its share of winners; Marks puts risk control ahead of return-seeking throughout The Most Important Thing.
 
 > [!question]- mkt-vi-174 | How does an investor create positive asymmetry in a portfolio?
 > Generating performance that captures significant upside in bull markets while suffering far less downside in bear markets.
@@ -242,7 +243,7 @@ Global credit markets enter an inflection point:
 > Because accurate consensus forecasts are already priced in, and non-consensus forecasts are rarely correct enough to generate reliable edge.
 
 > [!question]- mkt-vi-176 | What should an investor do when high-yield credit spreads compress below 300 bps?
-> Reduce credit risk, eliminate low-grade debt, accumulate cash, and adopt a strictly defensive portfolio posture.
+> In this note's illustrative scheme, tight spreads mean thin compensation for default risk: reduce credit risk, cut low-grade debt, and build cash.
 
 > [!question]- mkt-vi-177 | What should an investor do when high-yield credit spreads widen past 1,000 bps during a panic?
 > Aggressively deploy dry powder into senior secured and fulcrum distressed debt, capturing equity-like returns with structural debt protections.
@@ -257,7 +258,7 @@ Global credit markets enter an inflection point:
 > It compels investors to abandon risk control and buy overvalued securities at cyclical tops simply because they see peers getting rich.
 
 > [!question]- mkt-vi-181 | What is the difference between risk control and risk avoidance?
-> Risk avoidance means holding only Treasury bills, achieving zero real return; risk control means consciously taking mispriced risks where you are compensated.
+> Risk avoidance means holding only Treasury bills and accepting a low, sometimes negative, real return; risk control means consciously taking risks for which you are well compensated.
 
 > [!question]- mkt-vi-182 | How does Howard Marks view diversification across asset classes?
 > Diversification protects against ignorance, but true risk control comes from knowing individual securities deeply and refusing to overpay.
@@ -275,7 +276,7 @@ Global credit markets enter an inflection point:
 > A value investor can correctly identify a bubble, but if market euphoria persists for three more years, the investor faces career risk from impatient clients.
 
 > [!question]- mkt-vi-187 | How did Oaktree Capital navigate the 2008 Global Financial Crisis?
-> Having built massive cash reserves by avoiding subprime debt, Oaktree deployed $500 million per week into distressed debt during the panic, reaping huge gains.
+> Oaktree had raised a large distressed-debt fund before the crisis and bought distressed debt heavily in the weeks after Lehman's September 2008 bankruptcy; published figures for the weekly pace differ, so none is quoted here.
 
 > [!question]- mkt-vi-188 | What is the 'cost of being wrong' in second-level analysis?
 > Evaluating the catastrophic downside if your non-consensus thesis fails, ensuring that survival is guaranteed regardless of outcome.
@@ -294,9 +295,15 @@ Global credit markets enter an inflection point:
 
 ---
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_vi_06_marks.py`](../../code/mkt_vi_06_marks.py) prints and asserts every computed number on this page: the spread, expected default loss and net spread in exact fractions, the break-even default rate by closed form against bisection, and the expected loss against a seeded simulation of defaults with a computed standard error.
+- Related notes: [Klarman](05-Klarman-Margin-of-Safety-and-Distressed-Debt-Discipline.md) (what to buy when spreads blow out), [Munger](04-Munger-Latticework-Mental-Models-and-Inversion.md) (psychology of misjudgment).
+
 ## Further reading
 
 - Ellis, C. D. (1975). *The Loser's Game*. Financial Analysts Journal, 31(4), 19-26.
 - Marks, H. (2011). *The Most Important Thing: Uncommon Sense for the Thoughtful Investor*. Columbia University Press.
 - Marks, H. (2018). *Mastering the Market Cycle: Getting the Odds on Your Side*. Houghton Mifflin Harcourt.
-- Oaktree Capital Management. (1990-2023). *Memos from Howard Marks*. Oaktree Capital Library.
+- Marks, H. (2006). *It Is What It Is*. Memo to Oaktree Clients, March 27, 2006.
+- Oaktree Capital Management. *Memos from Howard Marks*. oaktreecapital.com/insights.

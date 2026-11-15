@@ -19,7 +19,7 @@ It traces the living history of value investing from Benjamin Graham's balance s
 - Internalize Benjamin Graham's definition of true investment, the Margin of Safety, and emotional autonomy from Mr. Market.
 - Execute Philip Fisher's Scuttlebutt primary channel checks and audit companies against the 15-Point qualitative growth framework.
 - Trace Warren Buffett's evolution from cigar butts to economic moats, calculate Owner Earnings, and audit Look-Through earnings.
-- Synthesize Charlie Munger's multidisciplinary Latticework of Mental Models, apply algebraic Inversion, and audit the 25 cognitive biases.
+- Synthesize Charlie Munger's multidisciplinary Latticework of Mental Models, apply algebraic Inversion, and audit the 25 psychological tendencies of his 2005 revised talk.
 - Execute distressed debt fulcrum security waterfall analysis and exploit institutional forced selling under Seth Klarman's framework.
 - Master Howard Marks' Second-Level Thinking, calibrate portfolio posture against credit cycles, and implement asymmetric risk control.
 - Profit from catalyst-driven special situations (spinoffs, merger arbitrage, rights offerings) and calculate Joel Greenblatt's Magic Formula.
@@ -36,7 +36,7 @@ The value investing track comprises eight comprehensive concept notes containing
    - The Margin of Safety as an intellectual shock absorber for errors and recessions.
    - The parable of Mr. Market and the short-run voting machine versus long-run weighing machine.
    - Quantitative screening rules for the defensive investor: current ratio, debt caps, dividend records, and the Graham Number.
-   - Enterprising investor net-net working rules and statistical basket diversification.
+   - Enterprising investor net-net rules: two-thirds of NCAV, diversified groups, and Graham's 1976 profit objective and two-to-three-year time stop.
    - Cards: `mkt-vi-001` through `mkt-vi-032`.
 
 2. [[16-Trading-and-Investing/Investing/Value Investing/02-Fisher-Scuttlebutt-and-Qualitative-Growth-Investing|02. Fisher Scuttlebutt and Qualitative Growth Investing]]
@@ -45,7 +45,7 @@ The value investing track comprises eight comprehensive concept notes containing
    - Fisher's 15-Point qualitative checklist: TAM runway, R&D productivity, sales power, labor relations, and executive integrity.
    - Commercial R&D productivity versus accounting expense.
    - Holding discipline and the three strict conditions for selling a common stock.
-   - The synthesis of Graham asset protection and Fisher compounding excellence in Warren Buffett.
+   - The synthesis of Graham asset protection and Fisher business quality in Warren Buffett, with See's Candies (1972) as the turning point.
    - Cards: `mkt-vi-033` through `mkt-vi-064`.
 
 3. [[16-Trading-and-Investing/Investing/Value Investing/03-Buffett-Evolution-From-Cigar-Butts-to-Quality-Compounders|03. Buffett's Evolution: From Cigar Butts to Quality Compounders]]
@@ -60,9 +60,9 @@ The value investing track comprises eight comprehensive concept notes containing
 4. [[16-Trading-and-Investing/Investing/Value Investing/04-Munger-Latticework-Mental-Models-and-Inversion|04. Munger's Latticework: Mental Models, Inversion, and Misjudgment]]
    - Charlie Munger's multidisciplinary Latticework of Mental Models versus the 'man with a hammer' syndrome.
    - The power of algebraic and operational Inversion: avoiding stupidity and mapping catastrophic failure modes.
-   - The Psychology of Human Misjudgment: the 25 standard cognitive biases distorting professional judgment.
+   - The Psychology of Human Misjudgment: the 25 psychological tendencies of the 2005 revised version, distorting professional judgment.
    - The Lollapalooza Effect: non-linear exponential extremes produced by multi-bias confluence.
-   - Incentive-Caused Bias as the supreme behavioral force in corporate finance.
+   - Incentive-caused bias as one of the most powerful behavioral forces in corporate finance.
    - Intellectual honesty, circle of competence boundaries, and two-track decision analysis.
    - Cards: `mkt-vi-097` through `mkt-vi-128`.
 
@@ -85,21 +85,21 @@ The value investing track comprises eight comprehensive concept notes containing
    - Cards: `mkt-vi-161` through `mkt-vi-192`.
 
 7. [[16-Trading-and-Investing/Investing/Value Investing/07-Greenblatt-Special-Situations-and-Magic-Formula|07. Greenblatt: Special Situations, Spinoffs, and the Magic Formula]]
-   - Joel Greenblatt and Gotham Capital: compounding capital at 50% gross returns via special situations.
+   - Joel Greenblatt and Gotham Capital: about 50% a year from 1985 to 1994, before the general partner's share, via special situations.
    - Corporate spinoff forensics: mining SEC Form 10 disclosures, debt allocations, and insider option alignment.
    - Merger arbitrage spread mathematics, annualized returns, and downside break-risk asymmetry.
    - The Magic Formula quantitative algorithm: ranking universes by Earnings Yield (EBIT/EV) and Return on Capital.
    - Why EBIT/EV and tangible capital employed are structurally superior to standard P/E and ROE.
-   - The institutional career risk paradox: why systematic value outperformance persists by occasionally failing.
+   - The institutional career risk paradox: why a strategy that can lag for years may keep its edge.
    - Cards: `mkt-vi-193` through `mkt-vi-224`.
 
 8. [[16-Trading-and-Investing/Investing/Value Investing/08-Modern-Value-Masters-Capital-Cycles-and-Value-Traps|08. Modern Value Masters, Capital Cycles, and Value Traps]]
    - Edward Chancellor and Marathon Asset Management: the four-stage supply-side Capital Cycle framework.
    - Nick Sleep and Nomad: Scale Economies Shared and the perpetual low-price flywheel (Costco, Amazon).
-   - Mohnish Pabrai's Dhandho framework: low-risk, high-uncertainty bets and shameless 13F cloning.
+   - Mohnish Pabrai's Dhandho framework: low-risk, high-uncertainty bets and investing in copycat businesses rather than innovators.
    - Peter Lynch's six equity categories and avoiding corporate diworsification.
    - Terry Smith's quality compounding rules and Li Lu's Asian value insights.
-   - The post-2007 value factor drawdown: intangible asset expensing and ZIRP distortions.
+   - The post-2007 weakness of book-to-market value and its debated explanations (intangibles, low rates, winner-take-all technology).
    - The Value Trap Diagnostic Matrix: technological disruption, excessive debt, customer defection, and dividend traps.
    - Cards: `mkt-vi-225` through `mkt-vi-256`.
 
