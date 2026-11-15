@@ -5,22 +5,22 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Dalio (2018) - Principles for Navigating Big Debt Crises, Fisher (1933) - The Debt-Deflation Theory of Great Depressions, Minsky (1986) - Stabilizing an Unstable Economy, Reinhart and Rogoff (2009) - This Time Is Different: Eight Centuries of Financial Folly]
+sources: [Dalio (2018) - Principles for Navigating Big Debt Crises Part 1, Fisher (1933) - The Debt-Deflation Theory of Great Depressions, Minsky (1986) - Stabilizing an Unstable Economy, Minsky (1992) - The Financial Instability Hypothesis, Estrella and Trubin (2006) - The Yield Curve as a Leading Indicator: Some Practical Issues, Reinhart and Rogoff (2010) - Growth in a Time of Debt, Herndon Ash and Pollin (2014) - Does High Public Debt Consistently Stifle Economic Growth?]
 ---
 
 # Macro Regimes and Debt Cycles
 
 ## TL;DR
 
-- Economies function through three primary forces: long-term productivity growth (smooth upward trend), the short-term business/debt cycle (5-8 years), and the long-term debt super-cycle (50-75 years).
-- Hyman Minsky's Financial Instability Hypothesis proves that prolonged economic stability breeds speculative complacency, transitioning financial structures from Hedge finance to Speculative finance and ultimately Ponzi finance.
-- When debt-to-GDP reaches unsustainable extremes and interest rates hit the Zero Lower Bound (ZLB), traditional monetary policy (MP1) becomes impotent, forcing central banks into Quantitative Easing (MP2) and direct fiscal monetization (MP3).
-- Deleveragings are managed through four policy levers: austerity (deflationary), debt write-downs (deflationary), wealth transfers (deflationary), and debt monetization (inflationary).
-- A "beautiful deleveraging" achieves economic balance by printing sufficient money so that the nominal economic growth rate exceeds the nominal interest rate ($g > i$), reducing the debt burden without triggering hyperinflation.
+- In Dalio's template (*Principles for Navigating Big Debt Crises*, 2018, Part 1), borrowing lifts spending above the economy's productivity trend, a series of short-term debt cycles (business cycles) ratchets debt up relative to income, and together they add up to a long-term debt cycle whose upswing "typically goes on for decades".
+- Hyman Minsky's Financial Instability Hypothesis argues that prolonged prosperity moves the financing structure of the economy from hedge toward speculative and Ponzi finance, making the system more fragile.
+- In Dalio's terms, when interest-rate policy (MP1) runs out near 0%, central banks turn to quantitative easing (MP2) and then to coordinated monetary and fiscal policy that puts money directly into the hands of spenders (MP3).
+- Dalio lists four levers for reducing debt burdens: austerity and defaults or restructurings (deflationary), money printing (inflationary), and transfers from those who have more to those who have less.
+- A "beautiful deleveraging" balances these levers so that debt-to-income ratios fall with acceptable growth and inflation, which Dalio describes as bringing the nominal growth rate above the nominal interest rate.
 
 ## Learning objectives
 
-- Dissect the mechanical interactions between productivity growth, short-term business cycles, and long-term debt super-cycles.
+- Dissect the mechanical interactions between productivity growth, short-term business cycles, and long-term debt cycles.
 - Analyze Minsky's three-stage taxonomy of financial vulnerability: Hedge, Speculative, and Ponzi financing.
 - Quantify the mathematical condition for debt sustainability: the $r - g$ differential (interest rate versus economic growth rate).
 - Classify central bank monetary policy regimes: Interest Rate Policy (MP1), Quantitative Easing (MP2), and Fiscal-Monetary Coordination (MP3).
@@ -28,51 +28,52 @@ sources: [Dalio (2018) - Principles for Navigating Big Debt Crises, Fisher (1933
 
 ## Core concepts
 
-### 1. The Three Primary Economic Forces
+### 1. Productivity, Short-Term Debt Cycles and the Long-Term Debt Cycle
 
-Ray Dalio's macroeconomic template models the macroeconomy as a mechanical engine driven by three distinct forces:
+Ray Dalio's template (*Principles for Navigating Big Debt Crises*, Part 1, "How I Think about Credit and Debt" and "The Template for the Archetypal Long-Term/Big Debt Cycle") describes three interacting forces:
 
 ```
 +-----------------------------------------------------------------------+
 |                    THE THREE-FORCE ECONOMIC ENGINE                    |
 +-----------------------------------------------------------------------+
-| 1. Long-Term Productivity Growth (1-2% Annual Drift, Continuous)      |
+| 1. Productivity Growth (the underlying trend)                         |
 |    /                                                                  |
 |   /                                                                   |
 |  /                                                                    |
 |                                                                       |
-| 2. Long-Term Debt Super-Cycle (50-75 Years: Super-Accumulation & ZLB) |
+| 2. Long-Term Debt Cycle (an upswing lasting decades, then a           |
+|    deleveraging)                                                      |
 |      /\                                                               |
 |     /  \                                                              |
 |    /    \                                                             |
 |                                                                       |
-| 3. Short-Term Debt Cycle (5-8 Years: Central Bank Business Cycle)    |
+| 3. Short-Term Debt Cycles (business cycles driven by central-bank     |
+|    tightening and easing)                                             |
 |     /\    /\    /\    /\    /\                                        |
 |    /  \  /  \  /  \  /  \  /  \                                       |
 +-----------------------------------------------------------------------+
 ```
 
 1. **Productivity Growth**:
-   Knowledge and technological innovation compound slowly and steadily, increasing real living standards by 1% to 2% annually.
-   Productivity is not cyclical; people do not forget how to manufacture microchips or build software during a recession.
+   Knowledge and technology raise output per worker slowly and steadily; Dalio describes borrowing as lifting spending and incomes above "the consistent productivity growth of the economy", which cannot continue indefinitely.
 
-2. **The Short-Term Debt Cycle (5-8 Years)**:
+2. **The Short-Term Debt Cycle**:
    Driven by central bank interest rate policy:
    - **Expansion**: Low interest rates stimulate credit growth. Spending exceeds production, raising output and employment.
    - **Peak**: Capacity constraints emerge, wage pressures rise, and inflation heats up.
    - **Tightening**: Central banks hike interest rates. Borrowing costs rise, debt service increases, and credit growth slows.
    - **Trough / Easing**: Recession sets in. Central banks cut rates to re-stimulate credit, starting the next cycle.
 
-3. **The Long-Term Debt Cycle (50-75 Years)**:
-   Because human psychology is inherently short-sighted and debt relief in each short-term cycle leaves debt-to-GDP at a higher starting baseline, debt accumulates faster than income over multiple decades.
-   Eventually, debt service burdens consume all incremental cash flow, and policy interest rates reach 0% (the Zero Lower Bound).
-   At this point, cutting rates can no longer stimulate credit, triggering a systemic deleveraging.
+3. **The Long-Term Debt Cycle**:
+   In Dalio's account each short-term cyclical high and low has a higher debt-to-income ratio than the one before, and central banks progressively lower interest rates to keep debt service manageable.
+   The up-wave "typically goes on for decades" until debt service payments become equal to or larger than what debtors can borrow and rates cannot be cut further, which triggers a deleveraging.
+   Dalio notes that the US went through a long-term debt crisis twice in the last century: the 1920s boom and the Great Depression of the 1930s, and the boom of the early 2000s and the crisis that began in 2008.
+   Part 1 does not give fixed lengths for either cycle.
 
 ### 2. Minsky's Financial Instability Hypothesis
 
-In 1986, economist Hyman Minsky published his groundbreaking taxonomy of financial fragility.
-His core axiom was: "Stability breeds instability."
-Prolonged periods of economic stability lead borrowers and lenders to underestimate tail risk, increasing leverage until the financial system becomes fragile.
+Hyman Minsky set out the hypothesis in *Stabilizing an Unstable Economy* (1986) and summarized it in "The Financial Instability Hypothesis" (Levy Economics Institute Working Paper 74, 1992).
+His central claim is that stability is itself destabilizing: over a prolonged period of prosperity, borrowers and lenders accept more leverage and more refinancing risk, so the financial structure drifts from stable to fragile.
 
 Minsky categorized borrower cash flow profiles into three distinct stages:
 
@@ -100,10 +101,10 @@ Minsky categorized borrower cash flow profiles into three distinct stages:
 
 3. **Ponzi Finance**:
    Operating cash flows are insufficient to pay even the periodic interest.
-   The borrower must borrow additional cash or sell appreciating assets simply to service existing debt.
-   The entity is completely reliant on perpetual asset price inflation; the moment asset prices stall, the entity defaults.
+   The borrower must borrow additional cash or sell assets simply to service existing debt.
+   The entity depends on rising asset prices or easy refinancing; when either stops, it is exposed to default.
 
-The "Minsky Moment" occurs when Ponzi borrowers are forced to sell assets to meet debt service, triggering a self-reinforcing asset price collapse and liquidity panic across the entire banking system.
+The term "Minsky moment" is used for the point at which over-leveraged borrowers are forced to sell assets to meet debt service, triggering a self-reinforcing fall in asset prices and a liquidity panic.
 
 ### 3. The Mathematics of Debt Sustainability: The r - g Dynamic
 
@@ -111,9 +112,13 @@ Let $D_t$ be total government or corporate debt, and $Y_t$ be nominal Gross Dome
 Let $d_t = \frac{D_t}{Y_t}$ be the debt-to-income ratio.
 Let $i$ be the nominal interest rate on debt, $g$ be the nominal growth rate of GDP, and $pb_t$ be the primary budget surplus (revenues minus non-interest spending as a fraction of GDP).
 
-The dynamic equation governing the evolution of the debt-to-GDP ratio is:
+The exact law of motion is $d_t = d_{t-1} \frac{1 + i}{1 + g} - pb_t$, and its linear approximation is:
 
 $$d_t - d_{t-1} \approx (i - g) d_{t-1} - pb_t$$
+
+The ratio is stable when the primary surplus equals $d_{t-1}(i - g)/(1 + g)$.
+In a hypothetical example with debt at 100% of GDP, $i = 5\%$ and $g = 3\%$, a zero primary balance raises the ratio by 1.94 percentage points in a year (the approximation gives 2.00), so a primary surplus of 1.94% of GDP is needed to hold it steady.
+With $g > i$ the ratio converges instead of exploding: at $i = 3\%$, $g = 5\%$ and a permanent primary deficit of 2% of GDP, it converges to $0.02 \times 1.05 / 0.02 = 105\%$ of GDP, rising by 0.86 points in the first year from 60%.
 
 ```
 +-----------------------------------------------------------------------+
@@ -121,36 +126,36 @@ $$d_t - d_{t-1} \approx (i - g) d_{t-1} - pb_t$$
 +-----------------------------------------------------------------------+
 | Regime          | Differential | Debt-to-GDP Path   | Policy Response |
 |-----------------+--------------+--------------------+-----------------|
-| Sustainable     | i < g        | Naturally Declines | Normal MP       |
+| Sustainable     | i < g        | Converges          | Normal MP       |
 | Unstable Growth | i > g        | Compounds Upward   | Austerity/Print |
-| Debt Spiral     | i >> g       | Hyperbolic Surge   | Default / Restr |
+| Debt Spiral     | i >> g       | Compounds Rapidly  | Default / Restr |
 +-----------------------------------------------------------------------+
 ```
 
-If nominal economic growth exceeds the nominal interest rate ($g > i$), the economy can "grow its way out of debt" even while running modest primary deficits.
-If nominal interest rates exceed nominal growth ($i > g$), the compounding debt service burden outpaces income, causing the debt-to-GDP ratio to explode unless massive austerity is imposed.
+If nominal economic growth exceeds the nominal interest rate ($g > i$), the debt ratio converges to a finite level even with a modest permanent primary deficit.
+If nominal interest rates exceed nominal growth ($i > g$), the ratio compounds upward unless the primary surplus is large enough to offset $(i - g)$ times the debt ratio.
 
 ### 4. Deleveraging Mechanics: The Four Levers
 
 When an economy hits the end of a long-term debt cycle, it must deleverage.
-Policymakers have four primary levers to reduce debt-to-income ratios:
+Dalio (Part 1, "How I Think about Credit and Debt" and "The Depression") lists four types of levers that bring debt and debt service down relative to income:
 
 1. **Austerity (Spending Cuts)**:
    Individuals, corporations, and governments cut spending to service debt.
-   *Consequence*: Deflationary and painful.
-   One person's spending is another person's income; cutting spending causes GDP to fall faster than debt is repaid, temporarily worsening the debt-to-GDP ratio.
+   *Consequence*: Deflationary.
+   Dalio stresses that one person's spending is another person's income, so cutting spending cuts incomes too, and austerity alone does not bring debt and income back into balance.
 
 2. **Debt Restructuring and Defaults**:
    Creditors accept write-downs, haircuts, and extended maturities.
    *Consequence*: Deflationary.
    Bank capital is destroyed, credit availability contracts, and wealth is obliterated.
 
-3. **Wealth Transfers (Taxation)**:
-   Taxing high-net-worth individuals and capital to fund social safety nets.
-   *Consequence*: Politically contentious and slow; often triggers capital flight and tax avoidance.
+3. **Transfers (Redistribution)**:
+   Transfers of money and credit from those who have more than they need to those who have less, typically through taxes.
+   *Consequence*: Dalio notes that transfers rarely occur in amounts large enough to contribute meaningfully to a deleveraging.
 
-4. **Debt Monetization (Money Creation)**:
-   The central bank creates currency to purchase government debt and private assets.
+4. **Central Bank Money Printing and Purchases**:
+   The central bank creates money to buy financial assets (or provides guarantees).
    *Consequence*: Inflationary and stimulative.
 
 ```
@@ -160,31 +165,30 @@ Policymakers have four primary levers to reduce debt-to-income ratios:
 | DEFLATIONARY LEVERS                   INFLATIONARY LEVERS             |
 | [Austerity]                           [Central Bank Money Printing]   |
 | [Debt Write-downs / Restructuring]    [Debt Monetization]             |
-| [Wealth Redistribution]                                               |
+|                                                                       |
+| TRANSFERS: politically hard, rarely large enough to matter            |
 |                                                                       |
 |              STABILITY EQUILIBRIUM: NOMINAL g > NOMINAL i             |
 +-----------------------------------------------------------------------+
 ```
 
-A **Beautiful Deleveraging** occurs when the central bank prints enough money to offset the deflationary forces of austerity and debt restructuring, keeping nominal growth above the nominal interest rate ($g > i$) while keeping the currency stable.
+Dalio (Part 1, "The 'Beautiful Deleveraging'") defines it as the case where the four levers are moved in a balanced way, with enough stimulation through money printing and currency devaluation to offset the deflationary forces and bring the nominal growth rate above the nominal interest rate, but not so much that inflation accelerates, the currency is devalued and a new debt bubble arises.
 
 ### 5. Monetary Policy Evolution: MP1, MP2, and MP3
 
-As economic regimes evolve, central banking transitions across three distinct policy frameworks:
+Dalio (Part 1, "Pushing on a String") names three successive forms of monetary policy:
 
 1. **Monetary Policy 1 (MP1: Interest Rate Policy)**:
-   The central bank adjusts short-term policy interest rates (e.g., Federal Funds rate) to influence commercial bank lending.
-   *Limitation*: Fails when short-term interest rates reach 0.0% (Zero Lower Bound).
+   The central bank cuts short-term interest rates, which raises asset values, makes buying on credit cheaper and reduces debt-service burdens.
+   *Limitation*: It stops working effectively when short-term rates hit around 0%.
 
-2. **Monetary Policy 2 (MP2: Quantitative Easing / Asset Purchases)**:
-   The central bank purchases long-term government bonds and mortgage-backed securities using newly created electronic reserves.
-   This lowers long-term yields, compresses risk premiums, and inflates financial asset prices.
-   *Limitation*: Primarily benefits asset owners, exacerbating wealth inequality; diminishing returns occur when long-term bond yields reach zero.
+2. **Monetary Policy 2 (MP2: Quantitative Easing)**:
+   The central bank prints money to buy financial assets, typically debt, which works through investors and savers rather than borrowers and spenders.
+   *Limitation*: It benefits owners of financial assets much more than others, widening the wealth gap, and loses effectiveness as risk premiums are pushed down and asset prices up.
 
-3. **Monetary Policy 3 (MP3: Fiscal-Monetary Coordination / Helicopter Money)**:
-   The central bank directly finances government fiscal spending (stimulus checks, infrastructure programs, direct debt cancellation) through unsterilized money creation.
-   *Consequence*: Directly puts purchasing power into the hands of mass consumers, bypassing the commercial banking channel.
-   Highly effective at reversing deflation, but carries significant risk of currency debasement and runaway consumer price inflation (as seen in 2021-2022).
+3. **Monetary Policy 3 (MP3: Fiscal-Monetary Coordination)**:
+   Money is put more directly into the hands of spenders, along a continuum from debt-financed fiscal spending supported by central-bank purchases to "helicopter money" sent directly to citizens.
+   *Consequence*: It bypasses the investor channel that limits MP2, at the cost of closer coordination between central banks and fiscal authorities.
 
 ### 6. Yield Curve Regime Taxonomy
 
@@ -194,34 +198,35 @@ The yield curve reflects market expectations for growth, inflation, and monetary
 +-----------------------------------------------------------------------+
 |                    YIELD CURVE DYNAMICS TAXONOMY                      |
 +-----------------------------------------------------------------------+
-| Regime          | Short Rate | Long Rate  | Macro Meaning             |
+| Regime          | Short Rate | Long Rate  | Typical reading           |
 |-----------------+------------+------------+---------------------------|
 | Bull Steepener  | Falls Fast | Falls Slow | Early Recovery / Aggressive Cuts|
 | Bear Steepener  | Rises Slow | Rises Fast | Inflation Surge / Supply Shock |
 | Bull Flattener  | Falls Slow | Falls Fast | Growth Slowdown / Disinflation|
 | Bear Flattener  | Rises Fast | Rises Slow | Late-Cycle Central Bank Hikes |
-| Inversion       | Short > Long            | Impending Recession Signal |
+| Inversion       | Short > Long            | Recession Signal           |
 +-----------------------------------------------------------------------+
 ```
 
-An inverted yield curve (where 3-month or 2-year yields exceed 10-year yields) has preceded every United States recession for six decades.
-Inversion signals that tight monetary policy has pushed short-term borrowing costs above the long-term sustainable growth rate of the economy, restricting bank credit creation and presaging economic contraction.
+Estrella and Trubin (2006, Federal Reserve Bank of New York *Current Issues in Economics and Finance* 12(5)) report that each of the six NBER recessions from 1968 to 2005 was preceded by at least three months of negative monthly-average spread between the 10-year and 3-month Treasury yields in the twelve months before it, and that inversion on a monthly-average basis gave no false signals over that period.
+They also caution that inversions seen only in daily or intraday data often prove to be false signals.
+A common interpretation is that tight monetary policy has pushed short rates above where markets expect them to settle, which tends to restrict credit.
 
 ---
 
 ## Flashcard drill bank
 
 > [!question]- mkt-pf-193 | What are the three primary economic forces in Ray Dalio's macroeconomic template?
-> Long-term productivity growth, the short-term debt cycle (business cycle), and the long-term debt super-cycle.
+> Productivity growth (the trend), short-term debt cycles (business cycles), and the long-term debt cycle that a sequence of short-term cycles adds up to.
 
 > [!question]- mkt-pf-194 | How long does a typical short-term debt cycle last?
-> Approximately 5 to 8 years, driven by central bank interest rate policy.
+> Dalio's Big Debt Crises (Part 1) gives no fixed length: short-term debt cycles are business cycles driven by central-bank tightening and easing, typically several years each.
 
 > [!question]- mkt-pf-195 | How long does a typical long-term debt super-cycle last?
-> Approximately 50 to 75 years, culminating when debt burdens become unsustainable and interest rates hit zero.
+> Part 1 gives no fixed length; Dalio says its up-wave "typically goes on for decades" and that the US had two long-term debt crises in the last century (the 1930s and the one starting in 2008).
 
 > [!question]- mkt-pf-196 | What is Hyman Minsky's core axiom regarding financial stability?
-> Stability breeds instability: prolonged economic calm encourages complacency, excessive leverage, and eventual crisis.
+> Stability is destabilizing: prolonged prosperity moves the financing structure from hedge toward speculative and Ponzi finance, which sets up the next crisis (Minsky 1986; Levy Working Paper 74, 1992).
 
 > [!question]- mkt-pf-197 | What defines Minsky's Hedge Finance stage?
 > Operating cash flows are sufficient to meet both principal and interest obligations on debt.
@@ -236,10 +241,10 @@ Inversion signals that tight monetary policy has pushed short-term borrowing cos
 > The tipping point where over-leveraged borrowers must sell assets to service debt, triggering a self-reinforcing market crash.
 
 > [!question]- mkt-pf-201 | What is the mathematical condition for sovereign debt sustainability?
-> The nominal economic growth rate g must exceed the nominal interest rate on debt i (g > i).
+> The debt ratio is stable when the primary surplus covers the interest-growth gap, pb = d (i - g) / (1 + g); with g > i the ratio converges even under a modest primary deficit, and with i > g it needs a primary surplus.
 
 > [!question]- mkt-pf-202 | What are the four primary policy levers used to manage a systemic deleveraging?
-> Austerity, debt restructuring/defaults, wealth transfers/taxes, and central bank debt monetization (money printing).
+> Austerity, debt defaults/restructurings, central bank money printing, and transfers from those who have more to those who have less (Dalio 2018).
 
 > [!question]- mkt-pf-203 | Why is austerity alone insufficient to resolve a debt crisis?
 > Cutting spending reduces economic activity, causing GDP to contract faster than debt is repaid and worsening the debt-to-GDP ratio.
@@ -263,10 +268,10 @@ Inversion signals that tight monetary policy has pushed short-term borrowing cos
 > Direct fiscal-monetary coordination ('helicopter money') where central bank money creation directly funds government spending and cash transfers.
 
 > [!question]- mkt-pf-210 | What is the primary inflation risk of Monetary Policy 3?
-> Putting newly created purchasing power directly into consumer bank accounts can trigger severe consumer price inflation and currency debasement.
+> Because the new money is spent on goods and services rather than on financial assets, doing too much of it risks higher consumer price inflation and a weaker currency.
 
 > [!question]- mkt-pf-211 | What does an inverted yield curve historically indicate?
-> That monetary policy is excessively tight, and a recession is likely to occur within 6 to 18 months.
+> A higher chance of recession: Estrella and Trubin (2006) report that all six US recessions from 1968 to 2005 were preceded by at least three months of negative monthly-average 10-year minus 3-month spread in the prior twelve months, with no false signals on that monthly-average basis.
 
 > [!question]- mkt-pf-212 | What is a Bull Steepener in the yield curve?
 > Short-term rates fall faster than long-term rates, typically occurring when central banks rapidly ease monetary policy in a recession.
@@ -284,7 +289,7 @@ Inversion signals that tight monetary policy has pushed short-term borrowing cos
 > Falling prices increase the real purchasing power value of debt, making debts more burdensome even as nominal loan balances stay fixed.
 
 > [!question]- mkt-pf-217 | What is the 'Liquidity Trap' described by John Maynard Keynes?
-> A situation where interest rates are near zero and injections of cash by the central bank fail to stimulate borrowing or spending.
+> A situation where interest rates are near zero and injections of cash by the central bank fail to stimulate borrowing or spending; Keynes discussed the possibility in the General Theory (1936), and the name "liquidity trap" was attached later.
 
 > [!question]- mkt-pf-218 | How does credit creation expand aggregate purchasing power?
 > Credit allows a borrower to spend money they do not possess, raising current spending at the expense of requiring lower future spending to repay debt.
@@ -299,7 +304,7 @@ Inversion signals that tight monetary policy has pushed short-term borrowing cos
 > Government policies (caps on interest rates, capital controls, captive regulatory bond holdings) keeping nominal rates below inflation to erode real debt.
 
 > [!question]- mkt-pf-222 | What is the historical debt-to-GDP threshold identified by Reinhart and Rogoff where economic growth slows?
-> Approximately 90% debt-to-GDP, though the precise threshold varies based on currency sovereignty and growth potential.
+> Reinhart and Rogoff (2010, American Economic Review Papers and Proceedings, "Growth in a Time of Debt", not their 2009 book) reported markedly lower growth above 90% public debt to GDP; Herndon, Ash and Pollin (2014) found coding and weighting errors and no sharp break at 90% once corrected.
 
 > [!question]- mkt-pf-223 | What is the difference between a cyclical bear market and a structural debt deleveraging?
 > A cyclical bear market is resolved by routine central bank rate cuts; a structural deleveraging requires restructuring and currency monetization.
@@ -309,9 +314,18 @@ Inversion signals that tight monetary policy has pushed short-term borrowing cos
 
 ---
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_pm_07_debt_dynamics.py`](../../code/mkt_pm_07_debt_dynamics.py) prints and asserts every computed number on this page: the one-year change in the debt ratio from the exact law of motion in exact fractions against the linear approximation, the debt-stabilizing primary surplus checked by stepping the law of motion, and the steady state under $g > i$ against 3,000 years of iteration.
+- Related notes: [Risk Parity and The All-Weather Framework](06-Risk-Parity-and-The-All-Weather-Framework.md) (positioning across growth and inflation environments).
+
 ## Further reading
 
-- Dalio, R. (2018). *Principles for Navigating Big Debt Crises*. Bridgewater Associates.
+- Dalio, R. (2018). *Principles for Navigating Big Debt Crises*, Part 1: The Archetypal Big Debt Cycle (sections "How I Think about Credit and Debt", "The 'Beautiful Deleveraging'" and "Pushing on a String"). Bridgewater Associates.
+- Estrella, A., & Trubin, M. R. (2006). *The Yield Curve as a Leading Indicator: Some Practical Issues*. Federal Reserve Bank of New York, Current Issues in Economics and Finance, 12(5).
 - Fisher, I. (1933). *The Debt-Deflation Theory of Great Depressions*. Econometrica, 1(4), 337-357.
+- Herndon, T., Ash, M., & Pollin, R. (2014). *Does High Public Debt Consistently Stifle Economic Growth? A Critique of Reinhart and Rogoff*. Cambridge Journal of Economics, 38(2), 257-279.
 - Minsky, H. P. (1986). *Stabilizing an Unstable Economy*. Yale University Press.
+- Minsky, H. P. (1992). *The Financial Instability Hypothesis*. Levy Economics Institute Working Paper No. 74.
 - Reinhart, C. M., & Rogoff, K. S. (2009). *This Time Is Different: Eight Centuries of Financial Folly*. Princeton University Press.
+- Reinhart, C. M., & Rogoff, K. S. (2010). *Growth in a Time of Debt*. American Economic Review, 100(2), 573-578.

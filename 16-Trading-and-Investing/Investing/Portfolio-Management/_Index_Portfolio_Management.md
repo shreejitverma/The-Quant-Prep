@@ -18,7 +18,7 @@ It bridges theoretical portfolio optimization with execution reality, covering s
 
 - Quantify the primacy of Strategic Asset Allocation (SAA) and prove Sharpe's Arithmetic of Active Management.
 - Audit the empirical persistence, replication robustness, and post-publication decay of Fama-French and AQR factor premiums.
-- Design optimal portfolio rebalancing policies that balance tracking error against transaction friction and capital gains taxes.
+- Design rebalancing policies that balance risk control against transaction friction and capital gains taxes.
 - Model path-dependent drawdown dynamics, sequence of returns risk, and gambler's ruin probabilities.
 - Derive the continuous and discrete Kelly Criterion to maximize long-term logarithmic wealth while mitigating estimation risk.
 - Construct Equal Risk Contribution (ERC) and Bridgewater All Weather portfolios across distinct macroeconomic growth and inflation quadrants.
@@ -42,16 +42,17 @@ The portfolio management track comprises eight comprehensive concept notes conta
 2. [[16-Trading-and-Investing/Investing/Portfolio-Management/02-Factor-Investing-Evidence-Replication-and-Decay|02. Factor Investing: Evidence, Replication, and Decay]]
    - The Capital Asset Pricing Model (CAPM) and the emergence of the Multi-Factor "Factor Zoo".
    - The canonical academic factor premiums: Value (HML), Size (SMB), Momentum (UMD), Profitability (RMW), Investment (CMA), and Low Volatility (BAB).
-   - McLean and Pontiff's empirical findings on post-publication factor return decay and crowd arbitrage.
-   - Methodological replication requirements: cross-sectional sorting, value weighting, and delisting bias correction.
-   - Multi-factor portfolio integration: sequential screening versus unified cross-sectional composite scoring.
+   - McLean and Pontiff's empirical findings on post-publication factor return decay and publication-informed trading.
+   - Multiple-testing haircuts: the Harvey, Liu and Zhu (2016) t-hurdle and the Hou, Xue and Zhang (2020) replication with NYSE breakpoints and value weights.
+   - The value-momentum negative correlation (Asness, Moskowitz and Pedersen 2013) and the Sharpe gain from combining factors; factor combination versus integration.
    - Cards: `mkt-pf-033` through `mkt-pf-064`.
 
 3. [[16-Trading-and-Investing/Investing/Portfolio-Management/03-Portfolio-Rebalancing-Tax-Drag-and-Execution-Friction|03. Portfolio Rebalancing, Tax Drag, and Execution Friction]]
    - Calendar-based periodic rebalancing versus opportunistic tolerance band corridor rebalancing.
-   - The mathematics of the "rebalancing bonus" in uncorrelated volatile assets.
-   - Calculating optimal corridor widths using asset volatility, transaction costs, and tracking error budgets.
-   - Tax-aware rebalancing: cash flow directing, Specific Lot Identification (SpecID), and tax-loss harvesting.
+   - The mathematics of the "rebalancing bonus" (diversification return) for two lognormal assets: $\frac{1}{2} w_1 w_2 (\sigma_1^2 + \sigma_2^2 - 2\sigma_{12})$.
+   - Vanguard (2015) finding no optimal frequency or threshold, and Daryanani's (2008) opportunistic rebalancing with frequent looks and wide relative bands.
+   - Execution friction: commissions, bid-ask spreads, and square-root market impact.
+   - Tax drag on annual realization, US 2026 capital gains brackets from IRS Rev. Proc. 2025-32, cash-flow rebalancing, and tax-loss harvesting under the wash sale rule.
    - Asset location optimization across taxable, tax-deferred, and tax-exempt accounts.
    - Cards: `mkt-pf-065` through `mkt-pf-096`.
 
@@ -65,24 +66,24 @@ The portfolio management track comprises eight comprehensive concept notes conta
    - Cards: `mkt-pf-097` through `mkt-pf-128`.
 
 5. [[16-Trading-and-Investing/Investing/Portfolio-Management/05-Kelly-Criterion-and-Capital-Growth-Theory|05. Kelly Criterion and Capital Growth Theory]]
-   - Information theoretic origins and Shannon channel capacity equivalence.
+   - Information theoretic origins: Kelly (1956) growth at the rate of a noisy channel's information rate.
    - Mathematical derivation of single-period and continuous Gaussian Kelly leverage: $f^* = (\mu - r) / \sigma^2$.
-   - The capital growth curve $g(f)$, Double Kelly parity, and variance decay ruin.
+   - The capital growth curve $g(f)$, Double Kelly parity with the risk-free rate, and below-risk-free growth beyond $2f^*$.
    - Full Kelly versus Fractional Kelly trade-offs between growth rate and drawdown risk.
    - Multi-asset matrix Kelly optimization: $\mathbf{f}^* = \mathbf{\Sigma}^{-1}(\boldsymbol{\mu} - r\mathbf{1})$.
-   - Epistemic uncertainty, parameter estimation error, and Bayesian shrinkage.
+   - Epistemic uncertainty, parameter estimation error, shrinkage of estimated means, and fractional Kelly.
    - Cards: `mkt-pf-129` through `mkt-pf-160`.
 
 6. [[16-Trading-and-Investing/Investing/Portfolio-Management/06-Risk-Parity-and-The-All-Weather-Framework|06. Risk Parity and The All-Weather Framework]]
    - The risk concentration fallacy of the traditional 60/40 equity/bond portfolio.
    - Euler's homogeneous function decomposition of portfolio risk into Marginal and Total Risk Contributions.
    - Equal Risk Contribution (ERC) formulation and convex optimization.
-   - Bridgewater's 4-quadrant All Weather macro framework matching asset classes to growth and inflation regimes.
+   - Bridgewater's All Weather framework: four growth and inflation environments with 25% of risk in each.
    - Leverage implementation mechanics, repo financing drag, and simultaneous stock-bond crash vulnerabilities (such as 2022).
    - Cards: `mkt-pf-161` through `mkt-pf-192`.
 
 7. [[16-Trading-and-Investing/Investing/Portfolio-Management/07-Macro-Regimes-and-Debt-Cycles|07. Macro Regimes and Debt Cycles]]
-   - Ray Dalio's three-force economic machine: productivity drift, short-term debt cycles, and long-term debt super-cycles.
+   - Ray Dalio's debt-cycle template: productivity growth, short-term debt cycles, and the long-term debt cycle they add up to.
    - Hyman Minsky's Financial Instability Hypothesis: Hedge, Speculative, and Ponzi financing stages.
    - Debt sustainability dynamics: the $r - g$ differential and primary budget balances.
    - Deleveraging mechanics: the four levers (austerity, defaults, wealth transfers, and debt monetization) and "Beautiful Deleveraging".
@@ -91,7 +92,7 @@ The portfolio management track comprises eight comprehensive concept notes conta
    - Cards: `mkt-pf-193` through `mkt-pf-224`.
 
 8. [[16-Trading-and-Investing/Investing/Portfolio-Management/08-Behavioral-Portfolio-Management-and-Decision-Rules|08. Behavioral Portfolio Management and Decision Rules]]
-   - Kahneman and Tversky's Prospect Theory: reference dependence, loss aversion ($\lambda \approx 2.25$), and the S-shaped value function.
+   - Kahneman and Tversky's Prospect Theory: reference dependence, loss aversion ($\lambda = 2.25$ in Tversky and Kahneman 1992), and the S-shaped value function.
    - Shefrin and Statman's Disposition Effect and Odean's empirical quantification (PGR vs PLR).
    - Institutional agency friction: career risk, Keynesian conventional failure, closet indexing, and window dressing.
    - Decision quality versus outcome quality: Annie Duke's "resulting" matrix.

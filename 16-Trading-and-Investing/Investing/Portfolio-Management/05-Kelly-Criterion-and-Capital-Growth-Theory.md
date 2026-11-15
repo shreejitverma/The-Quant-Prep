@@ -5,24 +5,24 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Kelly (1956) - A New Interpretation of Information Rate, Thorp (1969) - Optimal Gambling Systems for Favorable Games, MacLean Ziemba and Blazenko (1992) - Growth Versus Security, Breiman (1961) - Investment Policies for Expanding Capital]
+sources: [Kelly (1956) - A New Interpretation of Information Rate, Breiman (1961) - Optimal Gambling Systems for Favorable Games, Thorp (1969) - Optimal Gambling Systems for Favorable Games, Thorp (2006) - The Kelly Criterion in Blackjack Sports Betting and the Stock Market, MacLean Ziemba and Blazenko (1992) - Growth Versus Security in Dynamic Investment Analysis, Chopra and Ziemba (1993) - The Effect of Errors in Means Variances and Covariances on Optimal Portfolio Choice]
 ---
 
 # Kelly Criterion and Capital Growth Theory
 
 ## TL;DR
 
-- Developed by Bell Labs physicist John L. Kelly Jr. in 1956, the Kelly Criterion determines the exact fraction of capital to wager on favorable gambles to maximize long-term logarithmic capital growth.
+- John L. Kelly Jr., a physicist at Bell Telephone Laboratories, showed in 1956 how to size repeated favorable bets to maximize the long-run growth rate of capital, by maximizing the expected logarithm of wealth.
 - The single-period Bernoulli Kelly fraction is $f^* = \frac{b p - q}{b}$, where $p$ is win probability, $q = 1 - p$ is loss probability, and $b$ is the net payoff odds.
-- In continuous diffusion markets, the Kelly optimal leverage fraction simplifies directly to the Merton fraction with logarithmic utility: $f^* = \frac{\mu - r}{\sigma^2}$.
-- Full Kelly sizing exhibits extreme volatility, with a 33% probability of suffering a 50% drawdown before doubling capital; practical quantitative managers universally deploy Fractional Kelly (typically $0.3f^*$ to $0.5f^*$).
-- Exceeding the optimal allocation ($f > 2f^*$) produces negative expected compound growth, turning a positive-expectancy edge into mathematical ruin through variance decay.
+- In continuous diffusion markets, the Kelly fraction is the Merton fraction for logarithmic utility: $f^* = \frac{\mu - r}{\sigma^2}$, with maximum growth $r + \tfrac12 \text{SR}^2$.
+- Full Kelly is volatile: the probability of ever falling to half of current wealth is 50%, and of halving before doubling is one-third; Thorp (2006) reports that most bettors and investors prefer half Kelly or nearby, which keeps 75% of the growth rate.
+- In the continuous model, betting more than twice Kelly ($f > 2f^*$) makes the growth rate fall below the risk-free rate, so an overestimated edge turns a profitable strategy into a losing one.
 
 ## Learning objectives
 
 - Derive the Kelly Criterion from first principles by maximizing expected logarithmic wealth $\mathbb{E}[\ln(W_T)]$.
 - Prove that the continuous Kelly fraction equals the Sharpe ratio divided by volatility: $f^* = \frac{\text{SR}}{\sigma}$.
-- Analyze the capital growth curve $g(f)$ and prove that growth becomes strictly negative when allocation exceeds double Kelly ($f > 2f^*$).
+- Analyze the capital growth curve $g(f)$ and prove that excess growth over the risk-free rate becomes negative when allocation exceeds double Kelly ($f > 2f^*$).
 - Generalize the Kelly criterion to multiple correlated assets using the covariance inversion matrix $\mathbf{f}^* = \mathbf{\Sigma}^{-1}(\boldsymbol{\mu} - r\mathbf{1})$.
 - Formulate Fractional Kelly strategies to balance terminal growth rate against drawdown tolerance and parameter estimation error.
 
@@ -30,8 +30,8 @@ sources: [Kelly (1956) - A New Interpretation of Information Rate, Thorp (1969) 
 
 ### 1. Information Theoretic Foundations and Derivation
 
-In 1956, John L. Kelly Jr. applied Claude Shannon's Information Theory to the transmission of information over noisy communication channels.
-He demonstrated that the maximum transmission rate over a binary symmetric channel corresponds mathematically to the maximum compound growth rate of a gambler reinvesting winnings.
+Kelly (1956, Bell System Technical Journal) connected Shannon's information theory to betting.
+A gambler who receives tips over a noisy communication channel and reinvests his winnings can make his capital grow at an exponential rate equal to the channel's information rate; for a binary symmetric channel that rate is the channel capacity.
 
 Consider an investor with wealth $W_0$ facing a repeated game with win probability $p$ and loss probability $q = 1 - p$.
 On each trial, the investor allocates fraction $f$ of current wealth.
@@ -65,7 +65,8 @@ When payoffs are symmetric ($b = 1$ to 1 odds):
 
 $$f^* = p - q = 2p - 1$$
 
-If an edge is $p = 0.55$ with even money payoffs, the Kelly allocation is exactly $2(0.55) - 1 = 0.10$ (10% of portfolio equity).
+If an edge is $p = 0.55$ with even money payoffs, the Kelly allocation is exactly $2(0.55) - 1 = 0.10$ (10% of portfolio equity), and the growth rate is $g(0.10) = 50.08 \times 10^{-4}$ per bet.
+In this discrete game the growth curve is not exactly symmetric: $g(0.20) = -1.38 \times 10^{-4}$ per bet, and growth turns negative at $f = 0.1987$, just below $2f^*$.
 
 ```
 +-----------------------------------------------------------------------+
@@ -114,6 +115,7 @@ $$g(f^*) = r + \frac{(\mu - r)^2}{2\sigma^2} = r + \frac{1}{2} \text{SR}^2$$
 
 where $\text{SR} = \frac{\mu - r}{\sigma}$ is the Sharpe ratio of the asset.
 Continuous Kelly demonstrates that the asymptotic growth rate depends quadratically on the Sharpe ratio.
+For a hypothetical asset with $\mu - r = 10\%$ and $\sigma = 20\%$, $f^* = 2.5$ and the maximum excess growth is 12.5% a year.
 
 ### 3. The Hazard of Overbetting: Double Kelly and Variance Decay
 
@@ -124,6 +126,8 @@ Evaluating the growth rate function at multiples of $f^*$:
 - **Full Kelly ($f = f^*$)**: $g(f^*) = r + \frac{1}{2} \frac{(\mu - r)^2}{\sigma^2}$
 - **Double Kelly ($f = 2 f^*$)**: $g(2 f^*) = r + 2\frac{(\mu - r)^2}{\sigma^2} - \frac{1}{2}(4)\frac{(\mu - r)^2}{\sigma^2} = r$
 - **Over-Kelly ($f > 2 f^*$)**: $g(f) < r$; compound growth is less than the risk-free rate and becomes negative for large $f$.
+
+In general, at $f = c f^*$ the excess growth is $(2c - c^2)$ times its maximum.
 
 ```
 +-----------------------------------------------------------------------+
@@ -140,11 +144,11 @@ Evaluating the growth rate function at multiples of $f^*$:
 +-----------------------------------------------------------------------+
 ```
 
-For a Kelly fraction $c = f / f^*$, log wealth in excess of the risk-free growth path is a Brownian motion with $2 \times \text{drift} / \text{variance} = a = 2/c - 1$, so the probability of ever falling to half of the current wealth is $0.5^{a}$.
+For a Kelly fraction $c = f / f^*$, log wealth in excess of the risk-free growth path is a Brownian motion with $2 \times \text{drift} / \text{variance} = a = 2/c - 1$, so the probability of ever falling to half of the current wealth is $0.5^{a}$ (Thorp 2006, section 7.3).
 The probability of halving before doubling is $(1 - 2^{-a}) / (2^{a} - 2^{-a})$, which is one-third at Full Kelly and tends to one-half as $c \to 2$.
 
-Notice that Half Kelly achieves 75% of the theoretical maximum growth rate with only 50% of the volatility and a dramatic reduction in drawdown severity (12.5% versus 50% chance of ever halving).
-Conversely, betting at $1.5 f^*$ delivers the exact same growth rate as Half Kelly while raising the chance of ever halving from 12.5% to 79.4%, more than six times higher.
+Notice that Half Kelly achieves 75% of the theoretical maximum growth rate with only 50% of the volatility and a dramatic reduction in drawdown severity (12.5% versus 50% chance of ever halving, and an 8/9 chance of doubling before halving).
+Conversely, betting at $1.5 f^*$ delivers the exact same growth rate as Half Kelly while raising the chance of ever halving from 12.5% to 79.37%, 6.35 times higher.
 
 ### 4. Multi-Asset Matrix Kelly Optimization
 
@@ -161,18 +165,18 @@ $$\nabla_{\mathbf{f}} g = (\boldsymbol{\mu} - r\mathbf{1}) - \mathbf{\Sigma} \ma
 
 $$\mathbf{f}^* = \mathbf{\Sigma}^{-1} (\boldsymbol{\mu} - r\mathbf{1})$$
 
-The unconstrained multi-asset Kelly vector is identical to the Markowitz tangent portfolio weights scaled to an absolute leverage level corresponding to logarithmic utility ($\gamma = 1$).
+The unconstrained multi-asset Kelly vector is the tangency (maximum Sharpe) portfolio scaled to the leverage chosen by an investor with logarithmic utility, i.e. constant relative risk aversion $\gamma = 1$.
 
 ### 5. Parameter Estimation Risk and Epistemic Shrinkage
 
 In real-world quantitative trading, parameters $\mu$ and $\mathbf{\Sigma}$ are not known; they must be estimated from finite, non-stationary historical data.
 
-If true drift is $\mu_{\text{true}}$ but estimated as $\hat{\mu} > \mu_{\text{true}}$, the trader unknowingly overbets:
+If true drift is $\mu_{\text{true}}$ but estimated as $\hat{\mu} > \mu_{\text{true}}$, the trader unknowingly overbets (writing $\mu$ for the excess return over $r$):
 
 $$\hat{f} = \frac{\hat{\mu}}{\sigma^2} > \frac{\mu_{\text{true}}}{\sigma^2} = f^*$$
 
-If $\hat{\mu} > 2 \mu_{\text{true}}$, the trader allocates beyond Double Kelly ($f > 2 f^*$), converting a genuinely profitable trading edge into mathematical capital destruction.
-Because return estimation error is typically an order of magnitude larger than covariance estimation error, institutional quants apply aggressive Bayesian shrinkage to $\hat{\boldsymbol{\mu}}$ and enforce Fractional Kelly sizing.
+If $\hat{\mu} > 2 \mu_{\text{true}}$, the trader allocates beyond Double Kelly ($f > 2 f^*$), converting a genuinely profitable trading edge into growth below the risk-free rate.
+Chopra and Ziemba (1993) find that errors in estimated means do far more damage to mean-variance portfolios than errors in variances or covariances, so practitioners shrink $\hat{\boldsymbol{\mu}}$ toward a prior and size below full Kelly; Thorp (2006) makes the same argument for fractional Kelly when the edge is uncertain.
 
 ---
 
@@ -197,10 +201,10 @@ Because return estimation error is typically an order of magnitude larger than c
 > g(f*) = r + 0.5 * SR^2.
 
 > [!question]- mkt-pf-135 | What happens to the compound growth rate if an investor sizes positions at Double Kelly (2 * f*)?
-> The expected compound growth rate drops to zero (equal to the risk-free rate), providing zero reward for massive risk.
+> In the continuous model the growth rate falls back to the risk-free rate: excess growth is zero, so the extra risk earns nothing.
 
 > [!question]- mkt-pf-136 | What occurs when position sizing exceeds Double Kelly (f > 2 * f*)?
-> The compound growth rate becomes negative due to variance decay, guaranteeing long-term mathematical ruin.
+> The growth rate falls below the risk-free rate, and becomes negative for large enough f, so log wealth drifts down relative to cash despite a genuine edge.
 
 > [!question]- mkt-pf-137 | Why do professional hedge funds use Fractional Kelly rather than Full Kelly?
 > To protect against parameter estimation error, model misspecification, and extreme drawdowns.
@@ -224,19 +228,19 @@ Because return estimation error is typically an order of magnitude larger than c
 > Gamma = 1.
 
 > [!question]- mkt-pf-144 | How does Ed Thorp's application of Kelly at Princeton Newport Partners illustrate practical sizing?
-> Thorp deployed fractional Kelly (typically 0.25 to 0.5) to account for correlation spikes and liquidity constraints.
+> Thorp's public writing does not give a Princeton Newport sizing rule; what he does report (Thorp 2006, section 7.3) is that most bettors and investors prefer half Kelly or nearby, giving up a quarter of the growth rate for a much lower chance of a large loss, and that fractional Kelly is prudent when the edge is uncertain.
 
 > [!question]- mkt-pf-145 | Why does the arithmetic mean return mislead investors compared to the geometric mean return?
 > Arithmetic mean ignores the compounding penalty of volatility; geometric mean measures the actual path-dependent wealth accumulation.
 
 > [!question]- mkt-pf-146 | In the Kelly framework, what is the asymptotic relationship between time to reach a target wealth and bet size?
-> Full Kelly minimizes the expected time required to reach any predetermined high wealth threshold.
+> Full Kelly minimizes the expected time required to reach any predetermined high wealth threshold, asymptotically as the threshold grows (Breiman 1961).
 
 > [!question]- mkt-pf-147 | What is the Breiman (1961) theorem regarding the Kelly criterion?
 > Kelly betting asymptotically outperforms any essentially different strategy with probability 1 as the number of trials approaches infinity.
 
 > [!question]- mkt-pf-148 | If a quantitative trader estimates Sharpe ratio as 1.0 but true Sharpe is 0.4, what happens under Full Kelly?
-> Sizing at estimated Kelly puts the trader at 2.5 times the true optimal fraction (over Double Kelly), causing negative compound growth.
+> With volatility known, sizing at the estimated Kelly fraction puts the trader at 2.5 times the true optimal fraction (over Double Kelly), so excess growth is (2c - c^2) = -1.25 times the true maximum: below the risk-free rate.
 
 > [!question]- mkt-pf-149 | What is 'optimal f' as defined by Ralph Vince?
 > The fixed fraction of account equity to risk on a trade that maximizes the terminal wealth relative (TWR) for empirical trade distributions.
@@ -251,7 +255,7 @@ Because return estimation error is typically an order of magnitude larger than c
 > Borrowing costs increase the hurdle rate and introduce non-linear financing spreads, lowering the optimal leverage fraction.
 
 > [!question]- mkt-pf-153 | What is the relationship between the Kelly Criterion and the Markowitz efficient frontier?
-> The Kelly portfolio is the single point on the capital allocation line (tangency portfolio) corresponding to a risk tolerance coefficient of gamma = 1.
+> The Kelly portfolio is the point on the capital allocation line through the tangency portfolio chosen by an investor with log utility (relative risk aversion gamma = 1).
 
 > [!question]- mkt-pf-154 | What happens to Kelly leverage when asset volatility doubles while drift remains constant?
 > The optimal Kelly fraction is cut by a factor of 4 (inversely proportional to variance, sigma^2).
@@ -276,9 +280,17 @@ Because return estimation error is typically an order of magnitude larger than c
 
 ---
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/mkt_pm_05_kelly.py`](../../code/mkt_pm_05_kelly.py) prints and asserts every computed number on this page: the Bernoulli Kelly fraction by golden-section maximization and the zero of the discrete growth curve by bisection, the share of maximum growth by Gauss-Hermite quadrature of a rebalanced position checked against a seeded simulation, the halving probabilities by a finite-difference solve of the boundary-value problem against the closed forms, and the matrix Kelly vector by gradient ascent.
+- Related notes: [Drawdown Mathematics and Risk of Ruin](04-Drawdown-Mathematics-and-Risk-of-Ruin.md) (ruin with fixed bets), [Risk Parity and The All-Weather Framework](06-Risk-Parity-and-The-All-Weather-Framework.md) (leverage choice for a risk-balanced portfolio).
+
 ## Further reading
 
-- Breiman, L. (1961). *Investment Policies for Expanding Capital in a Negatively Biased Environment*. Proceedings of the Fourth Berkeley Symposium on Mathematical Statistics and Probability, 1, 65-68.
+- Breiman, L. (1961). *Optimal Gambling Systems for Favorable Games*. Proceedings of the Fourth Berkeley Symposium on Mathematical Statistics and Probability, Vol. 1. University of California Press.
+- Chopra, V. K., & Ziemba, W. T. (1993). *The Effect of Errors in Means, Variances, and Covariances on Optimal Portfolio Choice*. The Journal of Portfolio Management, 19(2), 6-11.
 - Kelly, J. L. (1956). *A New Interpretation of Information Rate*. Bell System Technical Journal, 35(4), 917-926.
 - MacLean, L. C., Ziemba, W. T., & Blazenko, G. (1992). *Growth Versus Security in Dynamic Investment Analysis*. Management Science, 38(11), 1562-1585.
 - Thorp, E. O. (1969). *Optimal Gambling Systems for Favorable Games*. Review of the International Statistical Institute, 37(3), 273-293.
+- Thorp, E. O. (2006). *The Kelly Criterion in Blackjack, Sports Betting, and the Stock Market*. In S. A. Zenios and W. T. Ziemba (eds.), Handbook of Asset and Liability Management, Vol. 1, chapter 9. Elsevier.
+- Vince, R. (1992). *The Mathematics of Money Management: Risk Analysis Techniques for Traders*. John Wiley & Sons.
