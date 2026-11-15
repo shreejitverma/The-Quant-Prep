@@ -51,7 +51,7 @@ def example1(rng: np.random.Generator) -> None:
     approx("risk charge kappa x sigma sqrt(tau)", charge, 0.0054, 4)
     h_min = 0.0003 - 0.0020 + 0.0040 + charge
     approx("h_min", h_min, 0.0077, 4)
-    approx("h_min from the rounded charge", 0.0003 - 0.002 + 0.004 + 0.0054, 0.0077, 4)
+    approx("shown working: h_min from the rounded charge", 0.0003 - 0.002 + 0.004 + 0.0054, 0.0077, 4)
     assert h_min > 0.005
     print("    half-spread 0.005 < h_min: quoting both sides at the touch loses on average")
 

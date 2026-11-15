@@ -3,6 +3,8 @@
 Independent routes used here:
 - the attribution buckets from an as-of lookup on the theo path (`numpy.searchsorted`, last value at or
   before the time) in exact cents, reconciled against the cash-flow P&L computed without any theo;
+- the note's pandas `markout_curve` run verbatim on Example 1 (`pandas.merge_asof`, backward) and compared,
+  segment by segment and horizon by horizon, with the exact-fraction as-of lookup;
 - clustered standard errors by a seeded simulation of bursts of fills that share one outcome, compared
   with the closed-form cluster count and with the naive per-fill formula;
 - venue and options attribution arithmetic recomputed from the stated inputs.
@@ -16,6 +18,7 @@ import math
 from fractions import Fraction as F
 
 import numpy as np
+import pandas as pd
 
 SEED = 20261114
 
@@ -36,6 +39,19 @@ def simulated(label: str, estimate: float, expected: float, tol: float) -> None:
     print(f"    {label} ~ {estimate:.4f} (expected {expected:.4f}, tolerance {tol:.4f})")
 
 
+def markout_curve(fills, mids, horizons, by):
+    """fills: ts, side (+1 buy), size, price, segment columns; mids: ts, mid sorted by ts."""
+    out = []
+    for h in horizons:
+        look = fills.assign(ts_h=fills["ts"] + h).sort_values("ts_h")
+        # last reference value at or before t + h, never after
+        j = pd.merge_asof(look, mids, left_on="ts_h", right_on="ts", suffixes=("", "_mid"), direction="backward")
+        j["pnl"] = j["side"] * (j["mid"] - j["price"]) * j["size"]
+        g = j.groupby(by)[["pnl", "size"]].sum()
+        out.append((g["pnl"] / g["size"]).rename(h))
+    return pd.concat(out, axis=1)
+
+
 # theo path of Example 1, in dollars as exact fractions
 THEO_T = np.array([0.0, 1.0, 5.0, 6.0, 10.0])
 THEO = [F(10000, 100), F(9999, 100), F(9997, 100), F(99975, 1000), F(9996, 100)]
@@ -48,15 +64,18 @@ def theo_at(t: float) -> F:
     return THEO[i]
 
 
+# Example 1 fills: time, side (+1 buy), size, price, passive?, fee per share (+ rebate)
+FILLS = [
+    (0.0, +1, 100, F(9998, 100), True, F(2, 1000)),
+    (5.0, -1, 50, F(9999, 100), True, F(2, 1000)),
+    (10.0, -1, 50, F(9995, 100), False, F(-3, 1000)),
+]
+
+
 def example1() -> None:
     print("Example 1: attributing a short session (cards mm-pnl-attribution-identity, mm-pnl-numeric-session)")
     tau, close_t = 1.0, 60.0
-    # time, side (+1 buy), size, price, passive?, fee per share (+ rebate)
-    fills = [
-        (0.0, +1, 100, F(9998, 100), True, F(2, 1000)),
-        (5.0, -1, 50, F(9999, 100), True, F(2, 1000)),
-        (10.0, -1, 50, F(9995, 100), False, F(-3, 1000)),
-    ]
+    fills = FILLS
     rows = []
     for t, d, n, p, passive, fee in fills:
         edge = n * d * (theo_at(t) - p)
@@ -109,6 +128,28 @@ def snippet() -> None:
     exact("printed pairs", out, [(2.0, -1.0), (1.0, -0.25)])
 
 
+def markout_function() -> None:
+    print("The note's pandas markout_curve on Example 1, against the exact as-of lookup")
+    fills = pd.DataFrame(
+        [(t, d, n, float(p), passive) for t, d, n, p, passive, _ in FILLS],
+        columns=["ts", "side", "size", "price", "passive"],
+    ).iloc[::-1]
+    mids = pd.DataFrame({"ts": THEO_T, "mid": [float(x) for x in THEO]})
+    horizons = [0.0, 1.0, 60.0]
+    curve = markout_curve(fills, mids, horizons, "passive")
+    exact("segments", sorted(curve.index.tolist()), [False, True])
+    exact("horizons", curve.columns.tolist(), horizons)
+    for seg in (True, False):
+        rows = [(t, d, n, p) for t, d, n, p, passive, _ in FILLS if passive == seg]
+        for h in horizons:
+            want = sum(n * d * (theo_at(t + h) - p) for t, d, n, p in rows) / sum(n for _, _, n, _ in rows)
+            got = float(curve.loc[seg, h])
+            assert abs(got - float(want)) < 1e-9, (seg, h, got, want)
+            print(f"    passive = {seg}, horizon {h:g} s: {got:+.6f} per share (exact {want})")
+    passive_size = sum(n for _, _, n, _, passive, _ in FILLS if passive)
+    approx("passive markout at 1 s x passive size (quotes net of selection)", float(curve.loc[True, 1.0]) * passive_size, 1.75, 2)
+
+
 def example2() -> None:
     print("Example 2: venue curves net of fees (card mm-pnl-venue-net-of-fees)")
     a, b = F(-1, 10) + F(25, 100), F(-4, 10) - F(10, 100)
@@ -143,7 +184,8 @@ def example3(rng: np.random.Generator) -> None:
     m = np.concatenate(means)
     true_se = float(m.std(ddof=1))
     simulated("true SE of B's mean markout", true_se, se_b, 4 * se_b / math.sqrt(2 * reps))
-    simulated("average naive SE", float(np.concatenate(naive).mean()), 0.04, 0.001)
+    naive_all = np.concatenate(naive)
+    simulated("average naive SE", float(naive_all.mean()), 0.04, 4 * float(naive_all.std(ddof=1)) / math.sqrt(reps))
 
 
 def example4() -> None:
@@ -172,6 +214,7 @@ if __name__ == "__main__":
     rng = np.random.default_rng(SEED)
     example1()
     snippet()
+    markout_function()
     example2()
     example3(rng)
     example4()

@@ -157,7 +157,25 @@ The curve is already falling before the fill: theo moved 0.4 ticks toward your p
 The intended half-tick of edge was lost because the quote was late to update, not because the counterparty knew something you could not have known.
 The fix is in update latency or thresholds, not in wider quotes for everyone.
 
-The as-of join is one line in numpy (`pandas.merge_asof(..., direction="backward")` does the same on data frames); this snippet reproduces the first two rows of Example 1:
+A markout curve across several horizons and segments (venue, client or queue position) is one backward as-of join per horizon:
+
+```python
+import pandas as pd
+
+def markout_curve(fills, mids, horizons, by):
+    """fills: ts, side (+1 buy), size, price, segment columns; mids: ts, mid sorted by ts."""
+    out = []
+    for h in horizons:
+        look = fills.assign(ts_h=fills["ts"] + h).sort_values("ts_h")
+        # last reference value at or before t + h, never after
+        j = pd.merge_asof(look, mids, left_on="ts_h", right_on="ts", suffixes=("", "_mid"), direction="backward")
+        j["pnl"] = j["side"] * (j["mid"] - j["price"]) * j["size"]
+        g = j.groupby(by)[["pnl", "size"]].sum()
+        out.append((g["pnl"] / g["size"]).rename(h))
+    return pd.concat(out, axis=1)
+```
+
+The same as-of lookup is one line in numpy; this snippet reproduces the first two rows of Example 1:
 
 ```python
 import numpy as np
@@ -252,7 +270,7 @@ for t, d, n, p in [(0.0, +1, 100, 99.98), (5.0, -1, 50, 99.99)]:  # time, side, 
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`code/mm_09_pnl_attribution.py`](code/mm_09_pnl_attribution.py) prints and asserts every number on this page: the attribution buckets from an as-of lookup on the theo path in exact fractions, reconciled against the cash-flow P&L that never uses theo, clustered standard errors against a seeded simulation of bursts that share one outcome, and the venue and options arithmetic.
+- Code: [`code/mm_09_pnl_attribution.py`](code/mm_09_pnl_attribution.py) prints and asserts every number on this page: the attribution buckets from an as-of lookup on the theo path in exact fractions, reconciled against the cash-flow P&L that never uses theo, the `markout_curve` function above run on Example 1 against that exact lookup, clustered standard errors against a seeded simulation of bursts that share one outcome, and the venue and options arithmetic.
 - Related notes: [P&L Attribution and Greek Risk](../11-Risk-and-Trading/06-PnL-Attribution-and-Greek-Risk.md), [Options Market Making](07-Options-Market-Making.md).
 
 ## Further reading

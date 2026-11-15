@@ -104,7 +104,7 @@ def example1() -> None:
     approx("posterior fair value", float(post), 4.92, 2)
     w = {x: F(1, 2) * (x >= 5) + F(1, 4) for x in cond}
     exact("snippet output", (sum(cond.values()) / 6, sum(w[x] * cond[x] for x in cond) / sum(w.values())), (F(161, 36), F(59, 12)))
-    exact("ratio of buy likelihoods, x >= 5 against x <= 4", F(3, 4) / F(1, 4), 3)
+    exact("ratio of buy likelihoods, x >= 5 against x <= 4", like[5] / like[4], 3)
 
 
 def cara_value(x: float, q: float, s: float, gamma: float, var: float) -> float:
@@ -151,7 +151,6 @@ def example3() -> None:
     for sigma, lit, dec in ((0.004, 521, 0), (0.008, 130, 0)):
         q_star = bisect(lambda qq, sg=sigma: 0.5 * gamma * sg * sg * qq * qq * t - c * qq, 1.0, 1e5)
         approx(f"threshold at sigma = {sigma}", q_star, lit, dec)
-    approx("sigma^2", 0.004**2 * 1e5, 1.6, 6)
 
 
 def example4() -> None:
@@ -159,7 +158,7 @@ def example4() -> None:
     others = 8000
     s_max = max(s for s in range(0, 20_000) if 5000 * s / (s + others) <= 1500)
     exact("maximum size", s_max, 3428)
-    approx("12,000,000 / 3,500", 12_000_000 / 3500, 3428.6, 1)
+    approx("shown working: 12,000,000 / 3,500", 12_000_000 / 3500, 3428.6, 1)
     for size, small_lit, big_lit, avg_lit in ((3400, 60, 1491, 346), (1500, 32, 789, 183)):
         small, big = 200 * size / (size + others), 5000 * size / (size + others)
         approx(f"fill from a 200-lot at {size}", small, small_lit, 0)
@@ -180,7 +179,7 @@ def example5(rng: np.random.Generator) -> None:
     gamma_pnl = 0.5 * pos * S**2 * 0.30**2 / 252
     approx("daily gamma P&L at 30% realised", gamma_pnl, 7115, 0)
     approx("net", gamma_pnl - theta, 3953, 0)
-    approx("card: 0.5 x 3984 x 1e4 x 0.05 / 252", 0.5 * 3984 * 1e4 * 0.05 / 252, 3952, 0)
+    approx("shown working: 0.5 x 3984 x 1e4 x 0.05 / 252", 0.5 * 3984 * 1e4 * 0.05 / 252, 3952, 0)
     n = 1_000_000
     moves = S * 0.30 / math.sqrt(252) * rng.standard_normal(n)
     sample = 0.5 * pos * moves**2
@@ -237,11 +236,15 @@ def cards_adverse_selection() -> None:
     exact("client B net", F(3, 10) + F(-1, 10), F(2, 10))
 
 
-def hedging_frequency(rng: np.random.Generator) -> tuple[float, float]:
-    """Discrete delta hedge of a short ATM call; returns (error sd ratio N/2N, traded-shares ratio 2N/N)."""
+def hedging_frequency(rng: np.random.Generator) -> tuple[float, float, float, float]:
+    """Discrete delta hedge of a short ATM call.
+
+    Returns the error sd ratio N/2N and the traded-shares ratio 2N/N, each with its standard error from
+    40 independent batches of paths.
+    """
     S0, T, vol, paths = 100.0, 0.25, 0.20, 40_000
 
-    def run(steps: int, z: np.ndarray) -> tuple[float, float]:
+    def run(steps: int, z: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         dt = T / steps
         s = np.full(paths, S0)
         cash = np.full(paths, bs_call(S0, S0, T, vol))
@@ -257,32 +260,37 @@ def hedging_frequency(rng: np.random.Generator) -> tuple[float, float]:
             held = delta
             s = s * np.exp(-0.5 * vol * vol * dt + vol * math.sqrt(dt) * z[:, i])
         pnl = cash + held * s - np.maximum(s - S0, 0.0)
-        return float(pnl.std(ddof=1)), float(traded.mean())
+        return pnl, traded
 
     z_fine = rng.standard_normal((paths, 64))
     z_coarse = (z_fine[:, 0::2] + z_fine[:, 1::2]) / math.sqrt(2.0)  # same paths, half the rebalances
-    sd_c, vol_c = run(32, z_coarse)
-    sd_f, vol_f = run(64, z_fine)
-    return sd_c / sd_f, vol_f / vol_c
+    pnl_c, traded_c = run(32, z_coarse)
+    pnl_f, traded_f = run(64, z_fine)
+    batches = 40
+    err_b = [c.std(ddof=1) / f.std(ddof=1) for c, f in zip(np.split(pnl_c, batches), np.split(pnl_f, batches), strict=True)]
+    cost_b = [f.mean() / c.mean() for c, f in zip(np.split(traded_c, batches), np.split(traded_f, batches), strict=True)]
+    err = float(pnl_c.std(ddof=1) / pnl_f.std(ddof=1))
+    cost = float(traded_f.mean() / traded_c.mean())
+    return err, float(np.std(err_b, ddof=1)) / math.sqrt(batches), cost, float(np.std(cost_b, ddof=1)) / math.sqrt(batches)
 
 
 def cards_hedging(rng: np.random.Generator) -> None:
     print("Hedging cards")
     approx("futures contracts", 1.2 * 1_000_000 / (50 * 5000), 4.8, 1)
     approx("residual vol (percent)", 30 * math.sqrt(1 - 0.36), 24, 0)
-    err_ratio, cost_ratio = hedging_frequency(rng)
+    err_ratio, err_se, cost_ratio, cost_se = hedging_frequency(rng)
     # Kamal (1998) gives sd proportional to 1/sqrt(N); with proportional costs each trade shrinks by sqrt(2)
-    simulated("hedging error sd, 32 over 64 rebalances", err_ratio, 1.41, 0.05)
-    simulated("shares traded, 64 over 32 rebalances", cost_ratio, 1.41, 0.05)
+    simulated("hedging error sd, 32 over 64 rebalances", err_ratio, 1.39, 4 * err_se + 0.005)
+    simulated("shares traded, 64 over 32 rebalances", cost_ratio, 1.43, 4 * cost_se + 0.005)
+    approx("hedging error sd ratio, about sqrt(2) at one decimal", err_ratio, round(math.sqrt(2), 1), 1)
+    approx("shares traded ratio, about sqrt(2) at one decimal", cost_ratio, round(math.sqrt(2), 1), 1)
     assert cost_ratio < 1.6, cost_ratio
-    approx("seeded error-sd ratio as quoted", err_ratio, 1.39, 2)
-    approx("seeded traded-shares ratio as quoted", cost_ratio, 1.43, 2)
     print("    proportional cost rises by about sqrt(2), far from doubling")
 
 
 def cards_options() -> None:
     print("Options cards")
-    approx("straddle approximation 0.8 x 0.2 x 0.5 x 100", 0.8 * 0.2 * 0.5 * 100, 8, 0)
+    approx("shown working: straddle approximation 0.8 x 0.2 x 0.5 x 100", 0.8 * 0.2 * 0.5 * 100, 8, 0)
     exact_straddle = 2 * bs_call(100, 100, 0.25, 0.2)  # r = 0, so put = call at the money
     approx("exact Black-Scholes straddle", exact_straddle, 7.98, 2)
     terminal = np.linspace(0.0, 300.0, 3001)

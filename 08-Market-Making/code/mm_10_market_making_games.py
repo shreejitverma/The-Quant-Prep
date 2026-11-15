@@ -4,8 +4,8 @@ Independent routes used here:
 - quote values by walking the game tree of `./qp drill mm` (every dice outcome with `fractions.Fraction`,
   every counterparty type and action with its probability, P&L as cash plus position marked at the total),
   never via the closed-form EV formula the note states;
-- the maker's best response by brute force over every integer quote of width 1 to 4, in every reachable
-  state (every prefix of revealed dice), which backs the "in every round" claims;
+- the maker's best response by brute force over every integer quote of width 1 to 4, in every revealed-dice
+  state, before any trade is observed (dice-only information), which backs the "in every round" claims;
 - the quoted EVs and the lift posterior again by seeded Monte Carlo through the real game engine
   `tools.qp.drills.MarketMakingGame`, with tolerances of four standard errors;
 - dice moments and the maximum of two dice by enumeration.
@@ -115,7 +115,8 @@ def example1() -> None:
     n = sum(d.values())
     loss = F(sum(w * (max(t - 16, 0) + max(12 - t, 0)) for t, w in d.items()), n)
     approx("informed loss per lot at 12 / 16", float(loss), 1.185, 3)
-    approx("noise edge per lot at width 4", float(F(4, 3)), 1.333, 3)
+    noise = F(sum(w * (THIRD * (16 - t) + THIRD * (t - 12)) for t, w in d.items()), n)
+    approx("noise edge per lot at width 4", float(noise), 1.333, 3)
     approx("EV per lot at 12 / 16", float(tree_ev(12, 16, ()) / LOT), 0.074, 3)
     for bid, ask in ((13, 17), (11, 15)):
         approx(f"EV of off-centre {bid} / {ask}", float(tree_ev(bid, ask, ())), 0.26, 2)
@@ -149,7 +150,7 @@ def example2() -> None:
     approx("last round, 15 / 18", float(tree_ev(15, 18, (6, 2, 5))), 3.33, 2)
     exact("last round, 16 / 18", tree_ev(16, 18, (6, 2, 5)), 0)
 
-    print("Every reachable state: the best quote has width 4 and every width-1 quote loses")
+    print("Every revealed-dice state, before any trade is observed: the best quote has width 4 and every width-1 quote loses")
     states = 0
     for r in range(4):
         for known in itertools.product(range(1, 7), repeat=r):
@@ -181,7 +182,7 @@ def example3() -> None:
     approx("shift from the prior", float(post - 14), 1.9, 1)
     rest = [3 + sum(r) for r in itertools.product(range(1, 7), repeat=3)]
     post3 = F(sum(like(t) * t for t in rest), sum(like(t) for t in rest))
-    exact("dice-only fair value after a 3", F(3) + 3 * F(7, 2), F(27, 2))
+    exact("dice-only fair value after a 3", F(sum(rest), len(rest)), F(27, 2))
     approx("E[T | lift, first die 3]", float(post3), 14.97, 2)
 
 
@@ -189,7 +190,7 @@ def engine_monte_carlo() -> None:
     print("Monte Carlo through tools.qp.drills.MarketMakingGame (seeds 0..N-1)")
     n = 200_000
     pnl_sum = pnl_sq = 0.0
-    lifts = lift_total = informed_lifts = 0
+    lifts = lift_total = lift_sq = informed_lifts = 0
     for seed in range(n):
         g = MarketMakingGame(seed=seed)
         ev = g.quote(12, 16)
@@ -201,6 +202,7 @@ def engine_monte_carlo() -> None:
             if trade["side"] == "sell":
                 lifts += 1
                 lift_total += t
+                lift_sq += t * t
                 informed_lifts += trade["counterparty"] == "informed"
         pnl_sum += pnl
         pnl_sq += pnl * pnl
@@ -209,16 +211,21 @@ def engine_monte_carlo() -> None:
     simulated("engine EV of 12 / 16 per 10 lots", mean, 0.74, 4 * se)
     p_inf = informed_lifts / lifts
     simulated("engine P(informed | lift)", p_inf, 0.42, 4 * math.sqrt(p_inf * (1 - p_inf) / lifts) + 0.005)
-    simulated("engine E[T | lift]", lift_total / lifts, 15.87, 4 * 3.0 / math.sqrt(lifts) + 0.005)
+    lift_mean = lift_total / lifts
+    lift_sd = math.sqrt((lift_sq - lifts * lift_mean * lift_mean) / (lifts - 1))
+    simulated("engine E[T | lift]", lift_mean, 15.87, 4 * lift_sd / math.sqrt(lifts) + 0.005)
 
 
 def example4() -> None:
     print("Example 4: a verbal game with position risk (cards mm-game-max-two-dice, mm-game-position-risk)")
     rolls = list(itertools.product(range(1, 7), repeat=2))
-    exact("E[max of two dice]", F(sum(max(r) for r in rolls), 36), F(161, 36))
-    approx("E[max of two dice]", 161 / 36, 4.47, 2)
+    e_max = F(sum(max(r) for r in rolls), len(rolls))
+    exact("E[max of two dice]", e_max, F(161, 36))
+    approx("E[max of two dice]", float(e_max), 4.47, 2)
     exact("P(max = 6)", F(sum(max(r) == 6 for r in rolls), 36), F(11, 36))
-    approx("20 x sd of one die", 20 * math.sqrt(35 / 12), 34.2, 1)
+    faces = range(1, 7)
+    one = F(sum(k * k for k in faces), 6) - F(sum(faces), 6) ** 2
+    approx("20 x sd of one die", 20 * math.sqrt(one), 34.2, 1)
 
 
 if __name__ == "__main__":
