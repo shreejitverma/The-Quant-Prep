@@ -240,7 +240,7 @@ print(sum(cond.values()) / 6, sum(w[x] * cond[x] for x in cond) / sum(w.values()
 
 > [!question]- mm-pset-hedging-frequency | You double the frequency of delta rehedging. What happens to hedging error and cost?
 > Hedging error standard deviation falls by about $\sqrt{2}$, and with proportional costs (spread, fees per share) total cost rises by about $\sqrt{2}$, not 2; with a fixed fee per trade it doubles.
-> The variance of discrete-hedging error scales with the rebalancing interval (Kamal 1998), and each rebalance trades about $\sqrt{2}$ times fewer shares because the stock moves less in half the time; a seeded simulation of 32 and 64 rebalances gives ratios of about 1.39 and 1.43.
+> The variance of discrete-hedging error scales with the rebalancing interval (Kamal 1998), and each rebalance trades about $\sqrt{2}$ times fewer shares because the stock moves less in half the time, so proportional cost scales by $\sqrt{2} \approx 1.41$; a seeded simulation of 32 against 64 rebalances gives ratios of about 1.4 for both the hedging-error sd and the shares traded.
 
 > [!question]- mm-pset-hedging-basis | What risks remain when you hedge a stock position with index futures?
 > Idiosyncratic risk, basis risk between future and cash, beta estimation error, and roll risk.

@@ -280,10 +280,11 @@ def cards_hedging(rng: np.random.Generator) -> None:
     approx("residual vol (percent)", 30 * math.sqrt(1 - 0.36), 24, 0)
     err_ratio, err_se, cost_ratio, cost_se = hedging_frequency(rng)
     # Kamal (1998) gives sd proportional to 1/sqrt(N); with proportional costs each trade shrinks by sqrt(2)
-    simulated("hedging error sd, 32 over 64 rebalances", err_ratio, 1.39, 4 * err_se + 0.005)
-    simulated("shares traded, 64 over 32 rebalances", cost_ratio, 1.43, 4 * cost_se + 0.005)
-    approx("hedging error sd ratio, about sqrt(2) at one decimal", err_ratio, round(math.sqrt(2), 1), 1)
-    approx("shares traded ratio, about sqrt(2) at one decimal", cost_ratio, round(math.sqrt(2), 1), 1)
+    approx("sqrt(2)", math.sqrt(2), 1.41, 2)
+    simulated("hedging error sd, 32 over 64 rebalances, against sqrt(2)", err_ratio, math.sqrt(2), 4 * err_se)
+    for label, ratio, se in (("hedging error sd", err_ratio, err_se), ("shares traded", cost_ratio, cost_se)):
+        approx(f"{label} ratio, lower 4-SE bound, at one decimal", ratio - 4 * se, 1.4, 1)
+        approx(f"{label} ratio, upper 4-SE bound, at one decimal", ratio + 4 * se, 1.4, 1)
     assert cost_ratio < 1.6, cost_ratio
     print("    proportional cost rises by about sqrt(2), far from doubling")
 
