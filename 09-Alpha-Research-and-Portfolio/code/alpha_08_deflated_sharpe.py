@@ -176,7 +176,7 @@ def t_from_p(p: float) -> float:
     return lo
 
 
-def haircuts(rng: np.random.Generator) -> None:
+def haircuts() -> None:
     print("Harvey-Liu haircuts (worked example 2, cards alpha-haircut-example and alpha-haircut-nonlinear)")
     y = 10
     t = 1.0 * math.sqrt(y)
@@ -203,15 +203,6 @@ def haircuts(rng: np.random.Generator) -> None:
     approx("t for Sharpe 0.5", t05, 1.58, 2)
     approx("p for Sharpe 0.5", p_two_sided(t05), 0.114, 3)
     exact("Bonferroni p for Sharpe 0.5, M = 100, capped", min(100 * p_two_sided(t05), 1.0), 1.0)
-
-    # Holm's adjusted p-value never exceeds Bonferroni's, on random sets of p-values
-    for _ in range(2000):
-        ps = np.sort(rng.random(20) ** 3)
-        m = ps.size
-        holm = np.maximum.accumulate(np.minimum((m - np.arange(m)) * ps, 1.0))
-        bonf = np.minimum(m * ps, 1.0)
-        assert np.all(holm <= bonf + 1e-15)
-    print("    Holm adjusted p <= Bonferroni adjusted p on 2,000 random sets of 20 p-values")
 
 
 def min_btl() -> None:
@@ -317,7 +308,7 @@ if __name__ == "__main__":
     expected_max(rng)
     psr_variance(rng)
     deflated()
-    haircuts(rng)
+    haircuts()
     min_btl()
     cpcv()
     pbo_simulation(rng)

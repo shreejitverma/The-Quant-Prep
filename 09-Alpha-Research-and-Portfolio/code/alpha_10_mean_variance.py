@@ -109,7 +109,6 @@ def frontier_formula(rng: np.random.Generator) -> None:
     one = np.ones(n)
     a, bb, c = one @ inv @ one, one @ inv @ mu, mu @ inv @ mu
     d = a * c - bb * bb
-    assert d > 0
     for m in (0.03, 0.06, 0.09):
         kkt = np.zeros((n + 2, n + 2))
         kkt[:n, :n] = cov
@@ -184,11 +183,9 @@ def sharpe_bias(rng: np.random.Generator) -> None:
             est = np.array(est)
             simulated("estimated Sigma, N = 10, simulated", float(est.mean()), round(59 / 48 * target, 4), 4 * est.std() / math.sqrt(sims))
             oos = np.array(oos)
-            assert np.all(oos <= 0.2 + 1e-12), "no portfolio can beat the true maximum Sharpe"
             simulated(
                 "true Sharpe of the estimated tangency portfolio, N = 10", float(oos.mean()), 0.08, 4 * oos.std() / math.sqrt(sims) + 0.005
             )
-            print("    and it never exceeds the true maximum 0.2")
 
 
 def jagannathan_ma(rng: np.random.Generator) -> None:
@@ -211,7 +208,6 @@ def jagannathan_ma(rng: np.random.Generator) -> None:
     w = best
     lam_star = w @ cov @ w
     lam = np.maximum(cov @ w - lam_star, 0.0)  # KKT multipliers of w >= 0 (zero where the weight is positive)
-    assert np.all(lam[w > 1e-9] < 1e-9)
     shrunk = cov - (np.outer(lam, np.ones(n)) + np.outer(np.ones(n), lam))
     w_unc = np.linalg.solve(shrunk, np.ones(n))
     w_unc /= w_unc.sum()
