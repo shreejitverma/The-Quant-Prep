@@ -57,23 +57,26 @@ $$\text{Total Capex} = \text{Maintenance Capex} + \text{Growth Capex}$$
 Because companies rarely disclose exact maintenance capex figures in SEC filings, fundamental analysts employ three estimation methods:
 1. **Depreciation Benchmark**: In low-inflation environments, maintenance capex is often approximated by tangible asset depreciation ($\text{Maintenance Capex} \approx \text{Depreciation}$).
 2. **Unit / Capacity Scaling**: Estimating capex per unit of production (e.g. per retail store or per barrel of oil) and multiplying by existing baseline units.
-3. **Greenwald Growth Ratio Method**: Bruce Greenwald (2001) estimates growth capex by tracking changes in revenue relative to gross plant assets:
-   $$\text{Capital-to-Sales Ratio} = \frac{\text{Gross PP&E}}{\text{Revenue}}$$
-   $$\text{Growth Capex}_t = \Delta \text{Revenue}_t \times \left(\frac{\text{Gross PP&E}}{\text{Revenue}}\right)$$
+3. **Greenwald Growth Ratio Method**: Greenwald, Kahn, Sonkin and van Biema (2001) estimate growth capex as the capital needed to support the year's sales growth at the firm's historical ratio of plant to sales:
+   $$\text{Capital-to-Sales Ratio} = \frac{\text{PP&E}}{\text{Revenue}} \quad \text{(averaged over several years)}$$
+   $$\text{Growth Capex}_t = \Delta \text{Revenue}_t \times \left(\frac{\text{PP&E}}{\text{Revenue}}\right)$$
    $$\text{Maintenance Capex}_t = \text{Total Capex}_t - \text{Growth Capex}_t$$
 
 ### 2. Warren Buffett's Owner Earnings Formulation
 
-In his 1986 Berkshire Hathaway shareholder letter, Warren Buffett critiqued standard accounting metrics like Net Income and cash flow metrics like EBITDA, introducing **Owner Earnings**:
+In the appendix to his 1986 Berkshire Hathaway shareholder letter ("Purchase-Price Accounting Adjustments and the 'Cash Flow' Fallacy"), Warren Buffett defined **Owner Earnings** as (a) reported earnings plus (b) depreciation, depletion, amortization and certain other non-cash charges, less (c) the average annual capitalized expenditure for plant and equipment that the business requires to fully maintain its long-term competitive position and its unit volume.
+If the business also needs additional working capital to maintain its competitive position and unit volume, Buffett adds that increment to (c):
 
-$$\text{Owner Earnings} = \text{Reported Net Income} + \text{D&A} + \text{Other Non-Cash Charges} - \text{Average Maintenance Capex} \pm \Delta \text{Working Capital}$$
+$$\text{Owner Earnings} = \text{Reported Earnings} + \text{D&A and Other Non-Cash Charges} - \text{Average Maintenance Capex} - \Delta \text{Working Capital Needed to Hold Unit Volume}$$
+
+The same appendix calls the "cash flow" numbers in Wall Street reports, which add (a) and (b) but do not subtract (c), absurd.
 
 Buffett's argument, paraphrased rather than quoted:
 - If a company must spend $\$100\text{M}$ annually simply to replace trucks, machines, and software to maintain unit volume, that $\$100\text{M}$ can never be distributed to owners.
 - It is a mandatory cost of staying in business, so it must be deducted before any earnings are called distributable.
 
-EBITDA completely ignores capex, treating cash spent on replacement machinery as if it were distributable profit.
-For capital-intensive companies (railroads, utilities, airlines), Owner Earnings is often less than half of reported EBITDA.
+EBITDA ignores capex in the same way, treating cash spent on replacement machinery as if it were distributable profit.
+Buffett made that point directly in his 2000 letter: "References to EBITDA make us shudder - does management think the tooth fairy pays for capital expenditures?"
 
 ### 3. Depreciation Inadequacy in Inflationary Regimes
 
@@ -81,10 +84,10 @@ Standard GAAP accounting computes depreciation on the **historical acquisition c
 
 $$\text{Depreciation}_t = \frac{\text{Historical Purchase Price}}{\text{Useful Life}}$$
 
-During sustained inflation:
+During sustained inflation (hypothetical numbers):
 - A factory asset purchased 10 years ago for $\$10,000,000$ depreciates at $\$1,000,000$ per year on financial statements.
-- When the machine reaches the end of its useful life, replacing it today costs $\$25,000,000$ due to cumulative inflation.
-- The $\$1,000,000$ annual depreciation tax shield and cash reserve falls disastrously short of funding the $\$25,000,000$ replacement cost.
+- When the machine reaches the end of its useful life, replacing it costs $\$25,000,000$, which implies inflation of about $9.6\%$ a year in its price ($2.5^{1/10} - 1$).
+- Ten years of depreciation charged only $\$10,000,000$ against earnings, so reported profits over the life overstated the cost of staying in business by the $\$15,000,000$ replacement shortfall (depreciation is an expense allocation, not a cash reserve).
 
 Historical cost accounting creates **phantom profits**: reported Net Income appears high because depreciation expense is artificially depressed by outdated historical prices.
 When the asset must finally be replaced, the company is forced to borrow debt or issue shares simply to maintain existing output.
@@ -94,18 +97,18 @@ When the asset must finally be replaced, the company is forced to borrow debt or
 To evaluate a company's capital allocation efficiency:
 - **Capex-to-Revenue Ratio**:
   $$\text{Capital Intensity} = \frac{\text{Capex}}{\text{Revenue}}$$
-  Software and asset-light platforms operate at $2\% - 5\%$; semiconductor fabrication plants, telecommunication networks, and pipelines operate at $15\% - 30\%$.
+  Asset-light businesses such as software run low ratios; semiconductor fabrication, telecommunication networks and pipelines run high ones; compare a company with its own history and its direct peers rather than with a rule-of-thumb range.
 - **Capex-to-D&A Ratio**:
   $$\frac{\text{Capex}}{\text{D&A}}$$
-  A ratio $> 1.0$ indicates aggressive balance sheet expansion (Growth Capex); a ratio $< 1.0$ indicates capital underinvestment, where assets are wearing out faster than they are being replaced.
+  A ratio $> 1.0$ suggests the asset base is growing (Growth Capex); a ratio persistently $< 1.0$ can signal underinvestment, where assets wear out faster than they are replaced, though amortization of acquired intangibles also depresses it.
 - **Fundamental Reinvestment Rate**:
   $$\text{Reinvestment Rate} = \frac{\text{Net Capex} + \Delta \text{Working Capital}}{\text{NOPAT}}$$
   Determines the proportion of after-tax operating profit plowed back into operations to drive organic earnings growth.
 
 ### 5. Lease Accounting: IFRS 16 and ASC 842
 
-Prior to 2019, companies categorized leases as either capital leases (on balance sheet) or operating leases (off balance sheet in footnotes).
-Retailers and airlines hid tens of billions in lease debt off their balance sheets, recognizing rent as a simple operating expense.
+Before IFRS 16 (annual periods beginning on or after 1 January 2019) and ASC 842 (public companies, fiscal years beginning after 15 December 2018), lessees classified leases as either capital or finance leases (on balance sheet) or operating leases (disclosed only in the footnotes).
+Lease-heavy companies such as retailers and airlines therefore carried large lease obligations off their balance sheets and recognized rent as an operating expense.
 
 Under ASC 842 and IFRS 16:
 - All leases longer than 12 months are capitalized on the balance sheet (IFRS 16 also exempts low-value assets):
@@ -123,10 +126,10 @@ Under ASC 842 and IFRS 16:
 
 ### Example 1: Calculating Warren Buffett's Owner Earnings
 
-A regional freight rail operator reports the following financials for the fiscal year:
+A hypothetical regional freight rail operator reports the following financials for the fiscal year:
 - Reported Net Income: $\$450,000,000$
 - Depreciation & Amortization: $\$320,000,000$
-- Other Non-Cash Charges (SBC and impairments): $\$30,000,000$
+- Other Non-Cash Charges (impairments): $\$30,000,000$
 - Total Capital Expenditures: $\$480,000,000$
 - Increase in Non-Cash Operating Working Capital: $\$40,000,000$
 
@@ -137,7 +140,7 @@ The remaining $\$180,000,000$ was spent laying new double-track routes to expand
    $$\text{CFO} = \text{Net Income} + \text{D&A} + \text{Non-Cash} - \Delta \text{NWC}$$
    $$\text{CFO} = \$450\text{M} + \$320\text{M} + \$30\text{M} - \$40\text{M} = \$760,000,000$$
    $$\text{Standard FCF} = \text{CFO} - \text{Total Capex} = \$760\text{M} - \$480\text{M} = \$280,000,000$$
-2. **Calculate Warren Buffett's Owner Earnings**:
+2. **Calculate Warren Buffett's Owner Earnings** (assume, conservatively, that the whole working-capital increase is needed to hold unit volume, so it belongs in Buffett's item (c)):
    $$\text{Owner Earnings} = \text{Net Income} + \text{D&A} + \text{Non-Cash} - \text{Maintenance Capex} - \Delta \text{NWC}$$
    $$\text{Owner Earnings} = \$450\text{M} + \$320\text{M} + \$30\text{M} - \$300\text{M} - \$40\text{M} = \$460,000,000$$
 
@@ -161,7 +164,8 @@ A national retail chain enters into a 5-year operating lease for store locations
      - Straight-line ROU Depreciation: $\frac{\$42,123,638}{5} = \$8,424,728$ (Operating D&A).
      - Year 1 Interest Expense: $\$42,123,638 \times 6.0\% = \$2,527,418$ (Financing Expense).
      - **EBITDA Impact**: EBITDA increases by the full $+\$10,000,000$ because rent is eliminated from operating costs.
-     - **CFO Impact**: The Year 1 principal repayment of $\$10,000,000 - \$2,527,418 = \$7,472,582$ is classified in CFF, inflating CFO by that amount.
+     - **CFO Impact**: The principal portion, $\$10,000,000 - \$2,527,418 = \$7,472,582$ in Year 1, is a financing outflow (IFRS 16 paragraph 50), so CFO rises by that amount if the company reports interest paid in CFO, and by the full $\$10,000,000$ if it reports interest paid in CFF (IAS 7 allows either until IFRS 18 takes effect in 2027).
+     - Interest is front-loaded: it totals $\$7,876,362$ over the five years, highest in Year 1, so IFRS 16 lease expense is higher early in a lease than the level rent it replaces.
    - Under ASC 842 (operating lease):
      - Single straight-line lease cost: $\frac{5 \times \$10,000,000}{5} = \$10,000,000$ in operating expenses.
      - **EBITDA Impact**: None; EBITDA still deducts the $\$10,000,000$, and only the balance sheet gains the ROU asset and lease liability.
@@ -185,10 +189,12 @@ A national retail chain enters into a 5-year operating lease for store locations
 > Maintenance capex is non-discretionary capital required to replace aging assets and maintain existing output; growth capex is discretionary capital invested to expand capacity and revenue.
 
 > [!question]- mkt-fa-066 | Define Warren Buffett's Owner Earnings (1986).
-> Owner Earnings = Reported Net Income + D&A + Non-Cash Charges - Average Maintenance Capex +/- Delta Working Capital; representing true distributable cash flow.
+> Owner Earnings = (a) reported earnings + (b) depreciation, depletion, amortization and certain other non-cash charges - (c) the average annual capex needed to fully maintain long-term competitive position and unit volume.
+> Any extra working capital needed to hold competitive position and unit volume is added to (c) (1986 Berkshire Hathaway letter, appendix).
 
 > [!question]- mkt-fa-067 | Why did Warren Buffett criticize EBITDA as an investment metric?
-> Because EBITDA ignores capital expenditures; treating cash required to replace worn assets as if it were free cash available for distribution to owners is a dangerous delusion.
+> Because EBITDA ignores capital expenditures, treating the cash needed to replace worn assets as if it were available to owners.
+> His 2000 letter: "References to EBITDA make us shudder - does management think the tooth fairy pays for capital expenditures?"
 
 > [!question]- mkt-fa-068 | How does inflation create phantom profits under historical cost depreciation accounting?
 > Historical depreciation is based on outdated original purchase prices; when replacing assets costs significantly more due to inflation, real economic capital is consumed despite positive accounting profits.
@@ -200,7 +206,7 @@ A national retail chain enters into a 5-year operating lease for store locations
 > It indicates capital underinvestment, where a company is deferring maintenance and allowing its physical asset base to depreciate without adequate replacement.
 
 > [!question]- mkt-fa-071 | How does Bruce Greenwald's method estimate growth capex?
-> By multiplying incremental revenue growth by the historical capital-to-sales ratio (Gross PP&E / Revenue), then subtracting that growth capex from total capex to yield maintenance capex.
+> By multiplying the year's revenue increase by the historical ratio of PP&E to sales (Greenwald, Kahn, Sonkin and van Biema 2001), then subtracting that growth capex from total capex to yield maintenance capex.
 
 > [!question]- mkt-fa-072 | How are operating leases accounted for on the balance sheet under ASC 842 / IFRS 16?
 > Leases are recognized on the balance sheet as Right-of-Use (ROU) assets offset by matching lease liabilities equal to the present value of future lease payments.
@@ -224,10 +230,11 @@ A national retail chain enters into a 5-year operating lease for store locations
 > Depreciation applies to physical assets (buildings, machinery, servers); amortization applies to acquired intangible assets (patents, customer lists, software licenses).
 
 > [!question]- mkt-fa-079 | Why is goodwill not amortized under US GAAP and IFRS?
-> Goodwill has an indefinite useful life and is not systematically amortized; instead, it is tested annually for impairment and written down only if fair value falls below book value.
+> Both standard setters chose an impairment-only model for goodwill: it is not amortized but tested at least annually, at the reporting unit under US GAAP (ASC 350, loss = carrying amount minus fair value) and at the cash-generating unit under IFRS (IAS 36, recoverable amount).
+> US private companies may elect to amortize goodwill over up to 10 years (ASU 2014-02).
 
 > [!question]- mkt-fa-080 | What is capital intensity and which sectors have the highest capital intensity?
-> Capital intensity is the ratio of capital investment to revenue (Capex / Sales); utilities, telecommunications, energy pipelines, and semiconductor fabrication have the highest.
+> Capital intensity is the ratio of capital investment to revenue (Capex / Sales); utilities, telecommunications, energy pipelines and semiconductor fabrication are typically among the most capital-intensive sectors.
 
 > [!question]- mkt-fa-081 | Why do asset-light businesses often command higher valuation multiples than asset-heavy businesses?
 > Asset-light businesses require minimal maintenance capex to grow, allowing a larger percentage of operating income to convert directly into distributable free cash flow.
@@ -245,7 +252,7 @@ A national retail chain enters into a 5-year operating lease for store locations
 > Tax rules allowing companies to deduct a larger portion of asset cost in the early years of asset life, deferring cash tax payments and creating Deferred Tax Liabilities.
 
 > [!question]- mkt-fa-086 | How does capitalized interest affect financial statements during construction?
-> Interest incurred to finance construction of major PP&E is added to asset cost on the balance sheet rather than expensed, temporarily boosting Net Income during construction.
+> Interest incurred to finance construction of qualifying assets is added to asset cost (ASC 835-20, IAS 23) rather than expensed, raising Net Income during construction and lowering it later through higher depreciation.
 
 > [!question]- mkt-fa-087 | What is the difference between straight-line depreciation and units-of-production depreciation?
 > Straight-line deducts equal expense per time period; units-of-production deducts expense proportional to actual asset utilization (e.g. flight hours or tons extracted).
@@ -254,10 +261,11 @@ A national retail chain enters into a 5-year operating lease for store locations
 > Because it treats voluntary, high-ROIC growth capex that expands future earnings identically to defensive maintenance capex that merely preserves current operations.
 
 > [!question]- mkt-fa-089 | What is asset impairment and under what condition is it triggered?
-> An impairment charge is recognized when an asset's carrying book value exceeds its undiscounted expected future cash flows (GAAP) or recoverable amount (IFRS).
+> Under US GAAP (ASC 360) a long-lived asset group is impaired when its carrying amount exceeds its undiscounted expected future cash flows, and the loss is the excess of carrying amount over fair value.
+> Under IFRS (IAS 36) the asset is written down to its recoverable amount, the higher of fair value less costs of disposal and value in use.
 
 > [!question]- mkt-fa-090 | How does asset aging affect the maintenance capex required to preserve operations?
-> As physical assets exceed their median design life, maintenance repair expenses and maintenance capex escalate non-linearly to prevent operational downtime.
+> As physical assets age past their design life, repair expense and maintenance capex tend to rise, so a fleet's age profile belongs in any maintenance capex estimate.
 
 > [!question]- mkt-fa-091 | What is the replacement cost approach to business valuation?
 > Valuing a company based on the total capital expenditure required today to replicate its physical asset footprint, distribution network, and productive capacity from scratch.
@@ -277,11 +285,22 @@ A national retail chain enters into a 5-year operating lease for store locations
 > [!question]- mkt-fa-096 | What is the ultimate test of whether growth capex was well-spent?
 > Whether the incremental capital deployed generated a Return on Incremental Invested Capital (ROIIC) comfortably exceeding the company's Weighted Average Cost of Capital (WACC).
 
+> [!question]- mkt-fa-258 | In Buffett's 1986 owner-earnings definition, when does working capital enter the calculation?
+> Only when the business needs additional working capital to maintain its competitive position and unit volume; that increment is added to item (c), the maintenance spending.
+> Buffett noted that LIFO businesses usually need no extra working capital if unit volume does not change.
+
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_fa_03_capex_owner_earnings.py`](../../code/mkt_fa_03_capex_owner_earnings.py) prints and asserts every number on this page: owner earnings from Buffett's (a) + (b) - (c) and again as free cash flow plus growth capex, the implied inflation rate in closed form and by bisection, and the lease by annuity factor, explicit discounting and a full amortization schedule that must reach zero.
+- Related notes: [ROIC Decomposition and DuPont Analysis](04-ROIC-Decomposition-and-DuPont-Analysis.md), [Three-Statement Linkages and Cash Flow Dynamics](01-Three-Statement-Linkages-and-Cash-Flow-Dynamics.md).
 
 ## Further reading
 
-- Buffett, W. E. (1986). *Berkshire Hathaway Shareholder Letter: Appendix on Owner Earnings*. Berkshire Hathaway Inc.
+- Buffett, W. E. (1986). *Chairman's Letter to the Shareholders of Berkshire Hathaway Inc.*, Appendix: Purchase-Price Accounting Adjustments and the "Cash Flow" Fallacy.
+- Buffett, W. E. (2000). *Chairman's Letter to the Shareholders of Berkshire Hathaway Inc.*
+- FASB Accounting Standards Codification: ASC 350, ASC 360, ASC 835-20, ASC 842; IASB: IAS 7, IAS 23, IAS 36, IFRS 16.
 - Damodaran, A. (2012). *Investment Valuation: Tools and Techniques for Determining the Value of Any Asset*. John Wiley & Sons.
 - Greenwald, B. C., Kahn, J., Sonkin, P. D., & van Biema, M. (2001). *Value Investing: From Graham to Buffett and Beyond*. John Wiley & Sons.
 - Koller, T., Goedhart, M., & Wessels, D. (2020). *Valuation: Measuring and Managing the Value of Companies* (7th ed.). John Wiley & Sons.

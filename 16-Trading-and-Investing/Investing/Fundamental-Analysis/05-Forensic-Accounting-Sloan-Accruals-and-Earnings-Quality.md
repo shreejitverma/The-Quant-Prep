@@ -13,8 +13,8 @@ sources: [Dechow Sloan and Sweeney (1995) - Detecting Earnings Management, Jones
 ## TL;DR
 
 - Accounting earnings consist of two distinct components: physical cash flows and non-cash accounting accruals.
-- Sloan (1996) empirically demonstrated the "Accrual Anomaly": earnings driven by cash flows exhibit high persistence, whereas earnings driven by high accruals rapidly mean-revert.
-- Market participants systematically fixate on headline Net Income, overvaluing high-accrual firms and undervaluing low-accrual or high-cash-flow firms.
+- Sloan (1996) documented the "Accrual Anomaly": the cash flow component of earnings is more persistent than the accrual component, so high-accrual earnings revert faster.
+- Stock prices behaved as if investors fixated on total earnings, so high-accrual firms earned lower and low-accrual firms higher subsequent abnormal returns in Sloan's 1962-1991 sample.
 - Forensic accounting isolates abnormal discretionary accruals using the Modified Jones Model, separating normal business expansion from aggressive managerial manipulation.
 - Key earnings quality red flags include DSO expanding faster than sales, unbilled receivables surges, capitalizing normal operating costs, and sudden depletion of reserve accounts.
 
@@ -47,12 +47,15 @@ $$\text{Net Income} = \text{Cash Flow Component} + \text{Accrual Component}$$
 +-----------------------------------------------------------------------+
 ```
 
-Richard Sloan's seminal 1996 paper demonstrated that the accrual component of earnings is significantly less persistent than the cash flow component:
+Richard Sloan's 1996 paper showed that the accrual component of earnings is less persistent than the cash flow component.
+With earnings measured as income from continuing operations over average total assets, he estimated:
 
-$$\text{Earnings}_{t+1} = \alpha + \beta_1 \text{Cash Flow}_t + \beta_2 \text{Accruals}_t + \epsilon_{t+1}$$
+$$\text{Earnings}_{t+1} = \gamma_0 + \gamma_1 \text{Accruals}_t + \gamma_2 \text{Cash Flows}_t + \upsilon_{t+1}$$
 
-Empirical findings show $\beta_1 \approx 0.85$ while $\beta_2 \approx 0.65$.
-Earnings driven by cash flow persist year after year; earnings driven by accruals decay rapidly because accruals must eventually reverse or be written off.
+The pooled estimates in Sloan's Table 3 (40,679 firm-years, 1962-1991) are $\gamma_1 = 0.765$ on accruals and $\gamma_2 = 0.855$ on cash flows, and the F-test rejects equality.
+Earnings driven by cash flow persist more; earnings driven by accruals revert faster because accruals must eventually reverse or be written off.
+
+Sloan then sorted firms into accrual deciles: a hedge portfolio long the lowest-accrual decile and short the highest earned size-adjusted returns of $10.4\%$, $4.8\%$ and $2.9\%$ in the first, second and third years after portfolio formation (Table 6; the third-year figure is not statistically significant).
 
 ### 2. Measuring Accruals: Two Methodologies
 
@@ -68,51 +71,40 @@ $$\text{Accrual Ratio}_{BS} = \frac{\text{Accruals}_{BS}}{\text{Average Total As
 
 #### Method 2: The Cash Flow Statement Approach
 
-Mergers, acquisitions, divestitures, and foreign currency translations distort balance sheet account differences.
-Collins and Hribar (2002) proved that the Cash Flow Statement approach provides a cleaner, non-distorted measure:
+Mergers, acquisitions, divestitures, and foreign currency translations change balance sheet accounts without passing through operating accruals.
+Collins and Hribar (2002) showed that these non-articulation events contaminate balance sheet accrual estimates, and recommended measuring accruals from the cash flow statement:
 
 $$\text{Accruals}_{CF} = \text{Net Income} - \text{Operating Cash Flow (CFO)}$$
 
 $$\text{Accrual Ratio}_{CF} = \frac{\text{Net Income} - \text{CFO}}{\text{Average Total Assets}}$$
 
-A large positive accrual ratio indicates poor earnings quality (earnings far exceed cash generated).
-A negative accrual ratio indicates exceptional earnings quality (cash generated exceeds reported net income).
-
-```
-+-----------------------------------------------------------------------+
-|                    ACCRUAL BENCHMARK THRESHOLDS                       |
-+-----------------------------------------------------------------------+
-| Accrual Ratio (Scaled) | Earnings Quality Category   | Action         |
-+------------------------+-----------------------------+----------------+
-| < -5%                  | Superior Quality            | Long candidate |
-| -5% to +5%             | Normal Operating Range      | Neutral        |
-| +5% to +10%            | Elevated Accruals           | Watchlist      |
-| > +10%                 | High Earnings Quality Risk  | Short candidate|
-+-----------------------------------------------------------------------+
-```
+A large positive accrual ratio indicates weaker earnings quality (earnings far exceed cash generated).
+A negative accrual ratio indicates cash generation above reported net income.
+There is no universal cut-off: Sloan ranked firms into deciles each year, so judge a ratio against the same year's cross-section and the company's own history rather than a fixed threshold.
 
 ### 3. Discretionary vs Non-Discretionary Accruals: The Modified Jones Model
 
 Total accruals naturally rise as a business grows.
 To detect accounting manipulation, forensic analysts isolate **discretionary accruals** (managerial choice) from **non-discretionary accruals** (driven by economic growth and capital intensity).
 
-The **Modified Jones Model** (Dechow, Sloan, and Sweeney 1995) models non-discretionary accruals as a function of revenue growth, uncollected credit sales, and fixed asset depreciation:
+The **Jones (1991) model** explains a firm's normal accruals with revenue growth and gross property, plant and equipment, estimated over a period with no presumed manipulation.
+The **Modified Jones Model** (Dechow, Sloan, and Sweeney 1995) keeps the parameters estimated from the original Jones model in the estimation period, then computes event-period non-discretionary accruals with revenue growth reduced by the growth in receivables:
 
 $$\frac{\text{Total Accruals}_t}{\text{Assets}_{t-1}} = \alpha_1 \left( \frac{1}{\text{Assets}_{t-1}} \right) + \alpha_2 \left( \frac{\Delta \text{Revenue}_t - \Delta \text{Receivables}_t}{\text{Assets}_{t-1}} \right) + \alpha_3 \left( \frac{\text{Gross PP&E}_t}{\text{Assets}_{t-1}} \right) + \epsilon_t$$
 
 Where:
 - $\Delta \text{Revenue}_t - \Delta \text{Receivables}_t$ assumes that any revenue increase tied up in uncollected receivables at year-end represents managerial discretion.
 - $\text{Gross PP&E}_t$ controls for natural depreciation expenses.
-- The residual term $\epsilon_t$ represents **Discretionary Accruals**.
+- Event-period discretionary accruals are total accruals minus the fitted non-discretionary accruals (the residual $\epsilon_t$ in the equation).
 - A statistically significant positive $\epsilon_t$ indicates aggressive earnings inflation.
 
 ### 4. Anatomy of Classical Financial Shenanigans
 
-Forensic accountants classify earnings manipulations into five primary categories (Schilit and Perler):
+The grouping below is this note's own summary of techniques that Schilit and Perler (2010) catalogue in far more detail:
 
 ```
 +-----------------------------------------------------------------------+
-|                    THE 5 CLASSIC SHENANIGAN FAMILIES                  |
+|           FIVE GROUPS OF SHENANIGANS (THIS NOTE'S SUMMARY)            |
 +-----------------------------------------------------------------------+
 | 1. Premature / Fabricated Revenue:                                    |
 |    - Channel stuffing (shipping goods before purchase order)          |
@@ -124,7 +116,7 @@ Forensic accountants classify earnings manipulations into five primary categorie
 |    - Failing to write down impaired inventory or goodwill             |
 | 3. Concealing Liabilities and Expenses:                               |
 |    - Off-balance-sheet special purpose vehicles (SPVs)                |
-|    - Capitalizing operating lease obligations (historical)            |
+|    - Structuring leases to stay off balance sheet (pre-ASC 842)       |
 | 4. Boosting Current Income with One-Off Gains:                        |
 |    - Selling appreciated assets and burying gain inside revenue       |
 |    - Releasing cookie-jar restructuring reserves                      |
@@ -137,8 +129,8 @@ Forensic accountants classify earnings manipulations into five primary categorie
 
 | Balance Sheet Item | Manipulation Technique | Forensic Diagnostic Test |
 |---|---|---|
-| **Accounts Receivable** | Channel stuffing; fictitious billing. | Days Sales Outstanding (DSO) expands by >15% year-over-year while peers remain flat. |
-| **Unbilled Receivables** | Recognizing revenue on milestone estimates before invoicing. | Unbilled AR / Total AR exceeds 25%, signaling unratified progress billing. |
+| **Accounts Receivable** | Channel stuffing; fictitious billing. | Days Sales Outstanding (DSO) jumps against the company's history while peers stay flat. |
+| **Unbilled Receivables** | Recognizing revenue on milestone estimates before invoicing. | Unbilled AR rises as a share of total AR without a matching change in contract mix. |
 | **Inventory** | Capitalizing production variances; overstating inventory value to lower COGS. | Days Inventory Outstanding (DIO) increases while Gross Margin unexpectedly expands. |
 | **Prepaid Assets / Other** | Parking deferred operating expenses to avoid income statement recognition. | Other Current Assets growing significantly faster than total revenues. |
 | **Capitalized Software** | Capitalizing maintenance software engineers as balance sheet intangibles. | Capitalized Software Additions / R&D Expense ratio rises above historical baseline. |
@@ -146,7 +138,7 @@ Forensic accountants classify earnings manipulations into five primary categorie
 
 ## Worked numerical example
 
-Consider Titan Technologies over two consecutive years:
+Consider a hypothetical Titan Technologies over two consecutive years (taxes payable are included in accrued expenses and assumed unchanged):
 
 | Metric ($ Millions) | Year 1 ($t-1$) | Year 2 ($t$) |
 |---|---|---|
@@ -172,18 +164,18 @@ Consider Titan Technologies over two consecutive years:
 
 ### Step 1: Diagnose Net Income vs CFO Divergence
 In Year 2, Net Income surged from $75M to $120M (+60%), yet Operating Cash Flow collapsed from $80M to $45M (-43.8%).
-This massive divergence is the classic indicator of low earnings quality.
+This divergence is the classic first sign of low earnings quality.
 
 ### Step 2: Compute Sloan Accruals (Cash Flow Method)
 Average Total Assets = $\frac{440.0 + 590.0}{2} = \$515.0\text{M}$
 
 Year 1 Accruals:
 $$\text{Accruals}_{CF, 1} = \text{Net Income}_1 - \text{CFO}_1 = 75.0 - 80.0 = -\$5.0\text{M}$$
-$$\text{Accrual Ratio}_{CF, 1} = \frac{-5.0}{440.0} = -1.14\% \quad (\text{Sound quality})$$
+$$\text{Accrual Ratio}_{CF, 1} = \frac{-5.0}{440.0} = -1.14\% \quad (\text{Year 0 assets unknown, so Year 1 ending assets})$$
 
 Year 2 Accruals:
 $$\text{Accruals}_{CF, 2} = \text{Net Income}_2 - \text{CFO}_2 = 120.0 - 45.0 = +\$75.0\text{M}$$
-$$\text{Accrual Ratio}_{CF, 2} = \frac{+75.0}{515.0} = +14.56\% \quad (\text{Severe Warning Threshold } > 10\%)$$
+$$\text{Accrual Ratio}_{CF, 2} = \frac{+75.0}{515.0} = +14.56\%$$
 
 ### Step 3: Compute Sloan Accruals (Balance Sheet Method)
 $$\Delta \text{Current Assets (ex cash)} = (310 - 35) - (190 - 40) = 275 - 150 = +\$125.0\text{M}$$
@@ -193,7 +185,10 @@ $$\text{Depreciation} = \$28.0\text{M}$$
 $$\text{Accruals}_{BS} = 125.0 - 8.0 - 28.0 = +\$89.0\text{M}$$
 $$\text{Accrual Ratio}_{BS} = \frac{+89.0}{515.0} = +17.28\%$$
 
-### Step 4: Investigate Specific Forensic Drivers
+The two methods differ by $89.0 - 75.0 = \$14.0\text{M}$.
+The reported CFO of $\$45.0\text{M}$ is $\$14.0\text{M}$ above the $120.0 + 28.0 - (125.0 - 8.0) = \$31.0\text{M}$ that net income, depreciation and working capital alone would give, so the company must have $\$14.0\text{M}$ of other non-cash charges (stock-based compensation, for example), which the cash flow method nets out and Sloan's balance sheet method does not.
+
+### Step 4: Investigate Specific Forensic Drivers (year-end balances)
 - Days Sales Outstanding (DSO):
   - Year 1: $\frac{60}{500} \times 365 = 43.8\text{ days}$
   - Year 2: $\frac{135}{650} \times 365 = 75.8\text{ days} \quad (+32.0\text{ days, } +73\%)$
@@ -202,27 +197,28 @@ $$\text{Accrual Ratio}_{BS} = \frac{+89.0}{515.0} = +17.28\%$$
   - Year 2: $\frac{110}{338} \times 365 = 118.8\text{ days} \quad (+25.9\text{ days, } +28\%)$
 
 Forensic verdict:
-Titan Technologies displays classic channel stuffing.
-Revenue expanded 30%, but Accounts Receivable exploded 125%, driving DSO from 43.8 to 75.8 days.
-Gross margin artificially expanded from 45% to 48% despite inventory piling up (DIO expanding 26 days), suggesting overhead costs were capitalized into inventory.
-With an accrual ratio exceeding 14%, earnings are unsustainable and mean reversion or write-downs are imminent.
+The pattern is consistent with channel stuffing, though the numbers alone cannot prove it.
+Revenue expanded 30%, but Accounts Receivable grew 125%, driving DSO from 43.8 to 75.8 days.
+Gross margin rose from 45% to 48% while inventory piled up (DIO up 26 days), which is consistent with fixed overhead being absorbed into inventory.
+An accrual ratio of 14.56%, up from -1.14%, means most of the profit growth has not yet turned into cash; the next step is the receivables aging, revenue recognition and inventory footnotes.
 
 ## Practice questions
 
 > [!question]- mkt-fa-129 | What is the fundamental insight of Richard Sloan's 1996 Accrual Anomaly?
-> The cash flow component of earnings is significantly more persistent than the accrual component, yet stock markets systematically misprice high-accrual firms by fixating on headline net income.
+> The cash flow component of earnings is more persistent than the accrual component (pooled coefficients 0.855 against 0.765), yet stock prices behaved as if investors fixated on total earnings, so high-accrual firms subsequently earned negative abnormal returns.
 
 > [!question]- mkt-fa-130 | How is the Cash Flow Statement Accrual calculated?
 > Accruals = Net Income - Operating Cash Flow (CFO), scaled by average total assets.
 
-> [!question]- mkt-fa-131 | What does a high positive accrual ratio (>10%) indicate about corporate earnings?
-> It indicates poor earnings quality, where reported profits are driven by non-cash working capital expansion rather than cash collections, forecasting earnings mean reversion.
+> [!question]- mkt-fa-131 | What does a high positive accrual ratio indicate about corporate earnings?
+> It indicates weaker earnings quality: reported profits are driven by non-cash working capital expansion rather than cash collections, so earnings are less persistent.
+> Judge "high" against the same year's cross-section (Sloan used deciles), not a fixed cut-off.
 
 > [!question]- mkt-fa-132 | What does a negative accrual ratio indicate about corporate earnings?
 > It indicates superior earnings quality, where actual operating cash collections exceed reported accounting net income.
 
 > [!question]- mkt-fa-133 | Why is the Cash Flow Statement method of measuring accruals preferred over the Balance Sheet method?
-> The Cash Flow method is immune to balance sheet distortions caused by corporate acquisitions, divestitures, and foreign currency translation adjustments.
+> Collins and Hribar (2002) showed that acquisitions, divestitures and foreign currency translation move balance sheet accounts without passing through operating accruals, contaminating the balance sheet estimate; the cash flow statement method avoids those errors.
 
 > [!question]- mkt-fa-134 | What is the core objective of the Modified Jones Model?
 > To decompose total accruals into normal non-discretionary accruals driven by business scale and abnormal discretionary accruals driven by managerial manipulation.
@@ -240,7 +236,7 @@ With an accrual ratio exceeding 14%, earnings are unsustainable and mean reversi
 > Recognizing revenue on merchandise that has been billed to a customer but remains physically stored in the seller's warehouse prior to shipment.
 
 > [!question]- mkt-fa-139 | When is bill-and-hold revenue recognition permitted under GAAP?
-> Only under strict criteria where the buyer explicitly requests the arrangement, has a legitimate business purpose, the goods are segregated, and payment is non-contingent.
+> Under ASC 606-10-55-83 (and IFRS 15 paragraph B81) all four criteria must hold: the reason for the arrangement is substantive (for example, the customer requested it), the product is identified separately as the customer's, it is ready for physical transfer, and the seller cannot use it or direct it to another customer.
 
 > [!question]- mkt-fa-140 | How can a company use inventory valuation to artificially inflate current gross margins?
 > By allocating excessive fixed manufacturing overhead into ending inventory on the balance sheet, reducing the Cost of Goods Sold expensed on the income statement.
@@ -249,7 +245,7 @@ With an accrual ratio exceeding 14%, earnings are unsustainable and mean reversi
 > Gross margins unexpectedly expand while Days Inventory Outstanding (DIO) surges and finished goods inventory piles up.
 
 > [!question]- mkt-fa-142 | What is cookie-jar reserve accounting?
-> Overstating expense reserves in highly profitable years and subsequent releasing those reserves into income in down years to artificially smooth earnings.
+> Overstating expense reserves in highly profitable years and later releasing them into income in weak years to smooth earnings.
 
 > [!question]- mkt-fa-143 | How does reducing the warranty provision percentage boost operating earnings?
 > Reducing the percentage of sales accrued for future warranty repairs lowers operating expenses, increasing operating income without generating cash.
@@ -273,7 +269,7 @@ With an accrual ratio exceeding 14%, earnings are unsustainable and mean reversi
 > Selling an asset to a counterparty while simultaneously buying back an equivalent asset from the same counterparty at an inflated price to book synthetic revenue.
 
 > [!question]- mkt-fa-150 | What forensic ratio compares revenue growth to cash collections growth?
-> The ratio of Revenue Growth Rate to Operating Cash Flow Growth Rate; a persistent ratio > 1.0 indicates deteriorating earnings quality.
+> Compare revenue growth with cash collected from customers (revenue minus the change in receivables plus the change in deferred revenue); revenue that persistently grows faster than collections signals deteriorating earnings quality.
 
 > [!question]- mkt-fa-151 | What is the impact of an asset impairment write-down on subsequent year ROE and ROA?
 > An impairment reduces equity and total assets immediately; in subsequent years, lower asset values and reduced depreciation inflate calculated ROE and ROA.
@@ -297,15 +293,23 @@ With an accrual ratio exceeding 14%, earnings are unsustainable and mean reversi
 > Companies often hide uncollectible operating costs, disputed payments, or deferred charges in miscellaneous asset buckets to avoid income statement expensing.
 
 > [!question]- mkt-fa-158 | What is the role of auditor tenure in earnings quality?
-> Abnormally long auditor tenure can foster complacency, while abrupt, unexplained auditor resignations are one of the strongest statistical indicators of accounting fraud.
+> Very long tenure raises independence concerns, while an abrupt auditor resignation or dismissal is a serious red flag that a US registrant must disclose on Form 8-K Item 4.01, together with any disagreements with the auditor.
 
 > [!question]- mkt-fa-159 | How does stock-based compensation (SBC) interact with the Sloan accrual calculation?
 > SBC is added back to CFO under GAAP; failing to adjust for SBC makes CFO appear artificially robust, understating the true economic accrual burden.
 
+> [!question]- mkt-fa-260 | What did Sloan's (1996) accrual hedge portfolio earn?
+> Long the lowest and short the highest accrual decile, it earned size-adjusted returns of $10.4\%$, $4.8\%$ and $2.9\%$ in the first three years after formation (Table 6), with the third year not statistically significant.
+
 > [!question]- mkt-fa-160 | What is the ultimate market outcome for companies in the highest decile of accruals?
-> Statistically significant negative alpha and risk-adjusted underperformance over the subsequent 1 to 3 years as accruals reverse into earnings disappointments.
+> In Sloan (1996) the highest-accrual decile earned size-adjusted returns of $-5.5\%$, $-3.2\%$ and $-2.2\%$ in the three years after formation, significant in the first two years only (Table 6).
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_fa_05_accruals.py`](../../code/mkt_fa_05_accruals.py) prints and asserts every number on this page: the Titan table re-summed line by line, accruals by the cash flow and balance sheet methods with the $\$14.0\text{M}$ gap reconciled to other non-cash charges, and DSO and DIO with their changes from unrounded values; Sloan's coefficients and hedge returns are cited constants from the paper.
+- Related notes: [Three-Statement Linkages and Cash Flow Dynamics](01-Three-Statement-Linkages-and-Cash-Flow-Dynamics.md), [Fraud Detection, Beneish M-Score, and Piotroski F-Score](06-Fraud-Detection-Beneish-M-Score-and-Piotroski-F-Score.md).
 
 ## Further reading
 

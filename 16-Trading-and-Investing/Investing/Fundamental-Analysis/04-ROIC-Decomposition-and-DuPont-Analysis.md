@@ -60,12 +60,12 @@ Mathematical definition:
 $$\text{ROIC} = \frac{\text{NOPAT}}{\text{Invested Capital}} = \left( \frac{\text{NOPAT}}{\text{Revenue}} \right) \times \left( \frac{\text{Revenue}}{\text{Invested Capital}} \right)$$
 
 Where:
-- $\text{NOPAT} = \text{Operating Income (EBIT)} \times (1 - t_{\text{marginal}})$
+- $\text{NOPAT} = \text{Operating Income (EBIT)} \times (1 - t)$, where Koller, Goedhart and Wessels use operating cash taxes (the statutory rate on EBIT adjusted for operating tax items); the simple version uses the marginal rate.
 - $\text{Invested Capital}$ can be calculated via the Operating Approach or Financing Approach.
 
 ### 2. Operating Approach vs Financing Approach to Invested Capital
 
-Both approaches are mathematically identical under clean balance sheet reconciliation:
+Both approaches give the same number whenever the balance sheet balances, because they sum the two sides of the same balance sheet net of non-operating items:
 
 ```
 OPERATING APPROACH:
@@ -76,10 +76,10 @@ Invested Capital = Total Debt (Short-Term + Long-Term + Capital Leases) + Shareh
 ```
 
 Operating Net Working Capital (OWC) is defined as:
-$$\text{OWC} = (\text{Operating Current Assets} - \text{Excess Cash}) - (\text{Operating Current Liabilities} - \text{Short-Term Debt})$$
+$$\text{OWC} = (\text{Current Assets} - \text{Excess Cash}) - (\text{Current Liabilities} - \text{Short-Term Debt})$$
 
 Operating liabilities that carry no explicit interest charge are referred to as Non-Interest-Bearing Current Liabilities (NIBCL), such as accounts payable and accrued expenses.
-Excess cash is non-operating cash not required for day-to-day liquidity, typically estimated as cash exceeding 2% of annual sales.
+Excess cash is non-operating cash not required for day-to-day liquidity; the operating cash requirement is a judgment (for example a share of revenue based on the company's own history or its peers), and the result should be tested for sensitivity to it.
 
 ### 3. DuPont Analysis: 3-Stage and 5-Stage Decompositions
 
@@ -140,7 +140,9 @@ Future value creation depends entirely on Return on Incremental Invested Capital
 
 $$\text{ROIIC} = \frac{\Delta \text{NOPAT}_{t}}{\Delta \text{Invested Capital}_{t-1}} = \frac{\text{NOPAT}_{t} - \text{NOPAT}_{t-1}}{\text{Invested Capital}_{t-1} - \text{Invested Capital}_{t-2}}$$
 
-The intrinsic growth rate of operating profits ($g$) without leverage is mathematically constrained:
+The one-year lag lets new capital start earning before its return is measured; one-year ROIIC is noisy, so analysts usually measure it over rolling multi-year windows.
+
+If incremental capital keeps earning ROIIC and a constant share of NOPAT is reinvested, operating profit grows at:
 
 $$g = \text{Reinvestment Rate} \times \text{ROIIC}$$
 
@@ -153,8 +155,8 @@ Conversely, a company with 8% ROIIC that reinvests 100% of NOPAT grows at 8.0%, 
 ### 6. Forensic Balance Sheet Adjustments
 
 #### Capitalizing Research & Development (R&D)
-GAAP requires expensing R&D immediately, treating innovation investments as current-year operating costs.
-This understates current earnings for heavy R&D spenders and severely understates Invested Capital.
+US GAAP requires most R&D to be expensed as incurred (ASC 730), treating innovation investments as current-year operating costs.
+This leaves the knowledge asset out of Invested Capital and, for a company whose R&D is growing, understates current earnings; the net effect on ROIC can go either way.
 To correct this:
 1. Estimate the amortizable economic life of R&D assets ($N$ years).
 2. Capitalize historical R&D spend and amortize using straight-line amortization over $N$ years.
@@ -170,7 +172,7 @@ Prior to this standard (or when analyzing historical filings):
 
 ## Worked numerical example
 
-Consider Enterprise Corp with the following reported figures:
+Consider a hypothetical Enterprise Corp with the following reported figures (the 25% rate is also the marginal rate used for NOPAT):
 - Revenue: $1,000M
 - Operating Income (EBIT): $150M
 - Interest Expense: $20M
@@ -291,7 +293,8 @@ The company's strong ROE of 21.67% is primarily driven by solid underlying opera
 > Intrinsic growth rate g = 50% * 30% = 15.0% per annum.
 
 > [!question]- mkt-fa-114 | Why does expensing R&D under GAAP distort ROIC for knowledge-based companies?
-> Expensing R&D understates current operating earnings while omitting valuable intangible assets from Invested Capital, causing ROIC to appear artificially volatile.
+> Expensing R&D omits the knowledge asset from Invested Capital and, while R&D is growing, understates operating earnings, so reported ROIC can be either too high (missing capital) or too low (expensed investment).
+> Capitalizing and amortizing R&D puts both numerator and denominator on an economic footing.
 
 > [!question]- mkt-fa-115 | How is R&D capitalized for forensic ROIC calculation?
 > Historical R&D expenditures are capitalized as an intangible asset and amortized over their economic useful life, adding unamortized balances to Invested Capital.
@@ -303,10 +306,10 @@ The company's strong ROE of 21.67% is primarily driven by solid underlying opera
 > Operating leases were kept off-balance-sheet, understating Invested Capital and hiding debt obligations while rent expense depressed operating margins.
 
 > [!question]- mkt-fa-118 | What is the difference between Return on Assets (ROA) and ROIC?
-> ROA uses total assets and net income, penalizing firms with cash holdings and mixing operating results with capital structure; ROIC isolates operational capital and after-tax operating profit.
+> ROA uses total assets and net income, so cash holdings dilute it and interest expense mixes capital structure into it; ROIC isolates operating capital and after-tax operating profit.
 
 > [!question]- mkt-fa-119 | What is Return on Capital Employed (ROCE)?
-> ROCE = EBIT / Capital Employed (Total Assets - Current Liabilities), commonly used in European markets as a pre-tax proxy for operating capital productivity.
+> ROCE = EBIT / Capital Employed (Total Assets - Current Liabilities), a pre-tax measure of operating capital productivity that many companies report as a headline metric.
 
 > [!question]- mkt-fa-120 | Why is pre-tax ROCE less comprehensive than after-tax ROIC across multinational companies?
 > ROCE ignores corporate tax variations and tax shielding strategies, failing to account for true after-tax cash returns available to investors.
@@ -332,10 +335,19 @@ The company's strong ROE of 21.67% is primarily driven by solid underlying opera
 > [!question]- mkt-fa-127 | How does asset age distort accounting ROIC?
 > Older, highly depreciated plant assets reduce the denominator (Net PP&E), making historical accounting ROIC appear artificially high compared to replacement cost economics.
 
+> [!question]- mkt-fa-259 | A company reinvests 60% of NOPAT at a 25% incremental return. How fast does operating profit grow, and does the growth create value?
+> $15\%$ a year, since g = reinvestment rate x ROIIC = 0.60 x 25%.
+> It creates value only because 25% exceeds the cost of capital; reinvesting 100% at 8% against a 9% WACC grows NOPAT 8% a year while destroying value.
+
 > [!question]- mkt-fa-128 | What is the ultimate test of sustainable competitive advantage according to Michael Porter and Warren Buffett?
-> The persistent ability to earn an ROIC substantially higher than the cost of capital over multi-decade economic cycles without reversion to the mean.
+> Neither gives a single numeric test, so treat this as an analyst's rule rather than a quotation: an advantage shows up as ROIC that stays well above the cost of capital across full economic cycles instead of reverting to it.
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_fa_04_roic_dupont.py`](../../code/mkt_fa_04_roic_dupont.py) prints and asserts every number on this page: invested capital from both sides of a balance sheet that is checked to balance, ROIC as a ratio and as margin times turnover, ROE against the product of the five DuPont factors, EVA two ways, and the growth identity by simulating a firm that reinvests at a fixed incremental return.
+- Related notes: [Capex: Maintenance vs Growth and Owner Earnings](03-Capex-Maintenance-vs-Growth-and-Owner-Earnings.md), [Industry Competitive Dynamics, Porter's Five Forces, and Helmer's 7 Powers](07-Industry-Competitive-Dynamics-and-Porter-Helmer.md).
 
 ## Further reading
 

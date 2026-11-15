@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: []
 est_hours: 4
-sources: [Berman and Knight (2013) - Financial Intelligence for Entrepreneurs, Koller Goedhart and Wessels (2020) - Valuation (McKinsey), Penman (2013) - Financial Statement Analysis and Security Valuation, Schilit and Perler (2010) - Financial Shenanigans]
+sources: [Berman and Knight (2013) - Financial Intelligence, Koller Goedhart and Wessels (2020) - Valuation (McKinsey), Penman (2013) - Financial Statement Analysis and Security Valuation, Schilit and Perler (2010) - Financial Shenanigans]
 ---
 
 # Working Capital Cycles and Cash Conversion
@@ -23,7 +23,7 @@ sources: [Berman and Knight (2013) - Financial Intelligence for Entrepreneurs, K
 
 - Calculate Days Sales Outstanding (DSO), Days Inventory Outstanding (DIO), and Days Payable Outstanding (DPO).
 - Formulate the Cash Conversion Cycle (CCC) and analyze structural business model drivers.
-- Contrast positive working capital businesses against negative working capital float models (Amazon, Dell).
+- Contrast positive working capital businesses against negative working capital float models.
 - Audit working capital forensic red flags: channel stuffing, bill-and-hold transactions, and inventory obsolescence.
 - Assess working capital intensity as a percentage of revenue across industry sectors.
 
@@ -64,17 +64,17 @@ The net time elapsed from spending cash on raw materials to collecting cash from
 $$\text{CCC} = \text{DIO} + \text{DSO} - \text{DPO}$$
 
 - **Positive CCC**: The company must fund its operational gap using internal cash reserves, revolving bank credit facilities, or expensive commercial paper.
-A company with $\text{DIO} = 60$, $\text{DSO} = 45$, and $\text{DPO} = 35$ has $\text{CCC} = 70\text{ days}$.
-It must finance 70 days of operating expenses with external capital.
+A hypothetical company with $\text{DIO} = 60$, $\text{DSO} = 45$, and $\text{DPO} = 35$ has $\text{CCC} = 70\text{ days}$.
+It must finance 70 days of its cost of goods from its own cash or from lenders.
 - **Negative CCC**: The company collects cash from customers weeks before it pays its suppliers.
-Amazon and Dell pioneered models where $\text{DSO} \approx 15$, $\text{DIO} \approx 25$, and $\text{DPO} \approx 75 \implies \text{CCC} = -35\text{ days}$.
-Suppliers provide zero-interest working capital that finances corporate expansion.
+A hypothetical retailer with $\text{DSO} = 15$, $\text{DIO} = 25$, and $\text{DPO} = 75$ has $\text{CCC} = -35\text{ days}$.
+Suppliers then provide interest-free working capital that funds expansion; check any real company's cycle in its own 10-K, because it moves from year to year.
 
 ### 3. Forensic Working Capital Diagnostics: DSO Spikes
 
 A sudden divergence where Accounts Receivable growth outpaces Revenue growth indicates deteriorating earnings quality:
 
-$$\frac{\Delta \text{Accounts Receivable}}{\Delta \text{Revenue}} \gg 1.0$$
+$$\%\Delta \text{Accounts Receivable} \gg \%\Delta \text{Revenue}$$
 
 Forensic mechanisms behind DSO expansion:
 1. **Channel Stuffing**: Shipping excess products to distributors at quarter-end with lenient return rights or extended payment terms to hit consensus Wall Street revenue estimates.
@@ -85,7 +85,7 @@ Forensic mechanisms behind DSO expansion:
 
 When inventory grows faster than sales or Cost of Goods Sold:
 
-$$\frac{\Delta \text{Inventory}}{\Delta \text{COGS}} \gg 1.0$$
+$$\%\Delta \text{Inventory} \gg \%\Delta \text{COGS}$$
 
 Risks indicated by rising DIO:
 1. **Inventory Obsolescence**: Goods in the warehouse have been superseded by competitor technology or changing consumer preferences, requiring large non-cash inventory write-downs.
@@ -123,7 +123,7 @@ An industrial machinery manufacturer reports the following figures for the year:
 2. **Calculate Activity Ratios**:
    $$\text{DSO} = \frac{\$130,000,000}{\$730,000,000} \times 365 = 0.17808 \times 365 = 65.0 \text{ days}$$
    $$\text{DIO} = \frac{\$100,000,000}{\$438,000,000} \times 365 = 0.22831 \times 365 = 83.3 \text{ days}$$
-   $$\text{DPO} = \frac{\$60,000,000}{\$438,000,000} \times 365 = 0.13698 \times 365 = 50.0 \text{ days}$$
+   $$\text{DPO} = \frac{\$60,000,000}{\$438,000,000} \times 365 = 0.13699 \times 365 = 50.0 \text{ days}$$
 3. **Calculate Cash Conversion Cycle**:
    $$\text{CCC} = \text{DSO} + \text{DIO} - \text{DPO} = 65.0 + 83.3 - 50.0 = 98.3 \text{ days}$$
 
@@ -183,7 +183,8 @@ This zero-cost vendor float sits in yield-bearing cash equivalents or funds ware
 > A negative CCC occurs when DPO exceeds DSO + DIO, meaning the company collects cash from sales before paying suppliers, generating interest-free operational float.
 
 > [!question]- mkt-fa-038 | Name two iconic companies that built dominant business models around negative working capital float.
-> Dell (direct-to-consumer custom PC assembly with rapid customer payment) and Amazon (instant consumer credit card checkout with 60-90 day supplier terms).
+> Commonly cited examples are Dell's direct build-to-order PC model (customers paid before suppliers were paid) and Amazon's online retail business (card settlement in days, suppliers paid later).
+> Check the cycle in the company's own 10-K before quoting a figure, because it varies from year to year.
 
 > [!question]- mkt-fa-039 | Why does a sudden increase in DSO signal potential channel stuffing?
 > Channel stuffing pushes excess inventory onto distributors with lenient terms; sales spike immediately on the income statement while unpaid receivables surge, expanding DSO.
@@ -207,7 +208,7 @@ This zero-cost vendor float sits in yield-bearing cash equivalents or funds ware
 > Billing a customer for a sale while retaining the goods in the seller's warehouse; recognizing revenue before delivery violates transfer of control under ASC 606.
 
 > [!question]- mkt-fa-046 | Why does stretching DPO create supply chain fragility?
-> Forcing suppliers to wait 120+ days strains vendor solvency, prompting suppliers to prioritize competitors, reduce quality, demand cash-on-delivery (COD), or cut off supplies.
+> Forcing suppliers to wait well beyond agreed terms strains vendor solvency, prompting suppliers to prioritize competitors, reduce quality, demand cash-on-delivery (COD), or cut off supplies.
 
 > [!question]- mkt-fa-047 | What is the difference between Net Working Capital (NWC) and Operating Working Capital?
 > NWC is Current Assets minus Current Liabilities; Operating Working Capital excludes non-operating cash, marketable securities, and short-term debt, isolating operating accounts.
@@ -219,19 +220,22 @@ This zero-cost vendor float sits in yield-bearing cash equivalents or funds ware
 > Inventory Turnover = COGS / Average Inventory = 365 / DIO; it measures how many times total inventory is sold and replaced over a year.
 
 > [!question]- mkt-fa-050 | Why do luxury goods companies typically have very high DIO?
-> Luxury manufacturers intentionally maintain low inventory turnover (high DIO) to preserve exclusivity, accommodate complex craftsmanship, and avoid discounted clearance.
+> Luxury manufacturers often carry slow-turning inventory (high DIO) because of long craft production, deliberate scarcity and a reluctance to clear stock at discounts.
 
 > [!question]- mkt-fa-051 | What is a LIFO liquidation?
 > When a company using Last-In, First-Out inventory accounting sells more units than it produces, liquidating older, lower-cost inventory layers that artificially inflate gross profit.
 
 > [!question]- mkt-fa-052 | Why does IFRS prohibit the LIFO inventory accounting method?
-> Because LIFO allows management to manipulate reported earnings through inventory timing and results in outdated, artificially low inventory values on the balance sheet.
+> The IASB removed LIFO when it revised IAS 2 in 2003, concluding that LIFO is not a faithful representation of actual inventory flows and can leave balance sheet inventory at long-outdated costs.
+> LIFO also lets management move profit between periods by choosing when to dip into old cost layers.
 
 > [!question]- mkt-fa-053 | What is vendor financing (supply chain finance / reverse factoring)?
-> A financial intermediary pays suppliers early at a small discount on behalf of the buyer, while the buyer repays the bank later; often masked as operating payables rather than bank debt.
+> A financial intermediary pays suppliers early at a small discount on behalf of the buyer, while the buyer repays the intermediary later; the obligation usually stays in accounts payable rather than bank debt.
+> Since fiscal years beginning after 15 December 2022, US GAAP requires buyers to disclose the key terms and outstanding amounts of supplier finance programs (ASU 2022-04).
 
 > [!question]- mkt-fa-054 | How did Greensill Capital collapse relate to supply chain finance?
-> Greensill securitized and sold future, uncommitted receivables (prospective inventory purchases that had not occurred), concealing massive unbacked loans to distressed firms.
+> Greensill Capital, whose UK company entered administration in March 2021, financed so-called future or prospective receivables, invoices that did not yet exist, so its supply chain finance was in substance unsecured lending to the buyer.
+> The UK House of Commons Treasury Committee report *Lessons from Greensill Capital* (July 2021) describes the episode.
 
 > [!question]- mkt-fa-055 | What is the allowance for doubtful accounts?
 > A contra-asset account offsetting Accounts Receivable on the balance sheet, representing management's estimate of credit sales that will ultimately prove uncollectible.
@@ -240,13 +244,13 @@ This zero-cost vendor float sits in yield-bearing cash equivalents or funds ware
 > Classifying receivables into time buckets (0-30 days, 31-60 days, 90+ days); an expanding proportion in the 90+ days bucket indicates rising bad debts before formal write-offs.
 
 > [!question]- mkt-fa-057 | Why does seasonal working capital expansion create intra-year cash flow deficits?
-> Retailers must spend massive cash building inventory during Q3 ahead of holiday sales; operating cash flow is deeply negative in Q3 and surges positively in Q4 upon cash collection.
+> A calendar-year retailer with a holiday peak builds inventory in the third quarter, so operating cash flow is weak or negative then and recovers in the fourth quarter as the stock is sold and collected.
 
 > [!question]- mkt-fa-058 | What is the working capital intensity ratio?
 > Operating Working Capital as a percentage of Annual Revenue: NWC / Revenue; lower ratios indicate superior asset efficiency and less capital required to scale.
 
 > [!question]- mkt-fa-059 | What is Just-In-Time (JIT) inventory management?
-> Aligning raw material orders directly with production schedules to minimize inventory on hand, driving DIO toward single digits but introducing supply shock vulnerability.
+> Aligning raw material orders directly with production schedules to minimize inventory on hand, which lowers DIO but leaves little buffer against supply shocks.
 
 > [!question]- mkt-fa-060 | What happens to working capital when a company writes off bad debt?
 > Gross Accounts Receivable decreases and the Allowance for Doubtful Accounts decreases by an equal amount; Net Accounts Receivable and total assets remain completely unchanged.
@@ -258,12 +262,18 @@ This zero-cost vendor float sits in yield-bearing cash equivalents or funds ware
 > In inflation, replacing sold inventory costs significantly more cash than historical inventory, requiring expanding working capital investment simply to maintain unit volume.
 
 > [!question]- mkt-fa-063 | What is customer concentration risk in Accounts Receivable?
-> When a large percentage of receivables (e.g. > 20%) is owed by a single customer; customer insolvency can trigger an existential liquidity crisis.
+> When a large share of receivables is owed by one customer, whose insolvency can trigger a liquidity crisis.
+> US GAAP requires disclosure of any single customer that provides 10% or more of revenue (ASC 280-10-50-42), which is where to look first.
 
 > [!question]- mkt-fa-064 | What is the trade-off between maximizing DPO and maintaining supplier relationships?
 > Maximizing DPO frees up cash flow but strains supplier goodwill, leading vendors to raise prices, withdraw volume discounts, or withhold scarce inventory during shortages.
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_fa_02_working_capital.py`](../../code/mkt_fa_02_working_capital.py) prints and asserts every number on this page: each day count in exact fractions and again by simulating a steady-state firm that holds each daily flow for the quoted number of days (the simulated balance must reproduce the stated balance), and the cash conversion cycle by following one unit through purchase, payment, sale and collection.
+- Related notes: [Three-Statement Linkages and Cash Flow Dynamics](01-Three-Statement-Linkages-and-Cash-Flow-Dynamics.md), [Forensic Accounting, Sloan Accruals, and Earnings Quality](05-Forensic-Accounting-Sloan-Accruals-and-Earnings-Quality.md).
 
 ## Further reading
 
@@ -271,3 +281,5 @@ This zero-cost vendor float sits in yield-bearing cash equivalents or funds ware
 - Koller, T., Goedhart, M., & Wessels, D. (2020). *Valuation: Measuring and Managing the Value of Companies* (7th ed.). John Wiley & Sons.
 - Penman, S. H. (2013). *Financial Statement Analysis and Security Valuation*. McGraw-Hill.
 - Schilit, H. M., & Perler, J. (2010). *Financial Shenanigans: How to Detect Accounting Gimmicks and Fraud in Financial Reports*. McGraw-Hill.
+- UK House of Commons Treasury Committee (2021). *Lessons from Greensill Capital*. House of Commons.
+- FASB (2022). Accounting Standards Update 2022-04, *Liabilities - Supplier Finance Programs (Subtopic 405-50)*.
