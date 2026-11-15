@@ -12,18 +12,18 @@ prereqs: []
 # Auction Market Theory, Volume Profile, and Anchored VWAP
 
 Traditional technical analysis focuses almost exclusively on price and time, largely neglecting the critical third dimension of market data: transaction volume.
-Developed in the 1980s by J. Peter Steidlmayer at the Chicago Board of Trade (CBOT), Auction Market Theory (AMT) and the Market Profile conceptualize financial markets as continuous two-way double auctions whose primary purpose is to facilitate trade between buyers and sellers.
+Developed in the 1980s by J. Peter Steidlmayer, a Chicago Board of Trade (CBOT) floor trader, Auction Market Theory (AMT) and the Market Profile conceptualize financial markets as continuous two-way double auctions whose primary purpose is to facilitate trade between buyers and sellers.
 In this framework, price is merely an advertising mechanism, time regulates opportunity, and volume measures market acceptance or rejection.
-By mapping volume against price rather than time, Volume Profile and Anchored Volume-Weighted Average Price (AVWAP) reveal the structural liquidity landscape and institutional fair-value consensus.
+By mapping volume against price rather than time, Volume Profile and Anchored Volume-Weighted Average Price (AVWAP) show where trading concentrated and the average price paid since a chosen event.
 
 ---
 
 ## TL;DR
 
 Auction Market Theory models markets as a dual search process for fair value: exploring higher prices until buyers refuse to transact (buying exhaustion) and exploring lower prices until sellers dry up (selling exhaustion).
-Market Profile visualizes this distribution via Time Price Opportunities (TPOs), defining the Point of Control (POC, price with maximum time spent) and the Value Area (the price range containing approximately $70\%$ of trade activity, mirroring one standard deviation in a Gaussian distribution).
+Market Profile visualizes this distribution via Time Price Opportunities (TPOs), defining the Point of Control (POC, price with maximum time spent) and the Value Area (by convention the range holding $70\%$ of activity, loosely motivated by the $68.27\%$ of a normal distribution within one standard deviation).
 Volume Profile measures actual executed shares at price, revealing High Volume Nodes (HVNs, fair-value consolidation zones) and Low Volume Nodes (LVNs, rapid price rejection or liquidity voids).
-Volume-Weighted Average Price (VWAP) serves as the primary execution benchmark for institutional order flow; Anchored VWAP (anchored to significant swing lows, highs, earnings gaps, or session opens) acts as dynamic, volume-weighted support and resistance.
+Volume-Weighted Average Price (VWAP) is a standard benchmark for institutional execution cost (Berkowitz, Logue, and Noser 1988); Anchored VWAP (anchored to swing lows, highs, earnings gaps, or session opens) is used by practitioners as a reference level for support and resistance, a use without peer-reviewed tests cited here.
 
 ---
 
@@ -79,16 +79,18 @@ Market Profile plots price vertically and time horizontally using 30-minute lett
 
 1. **Initial Balance (IB)**:
    - The price range established during the first hour of regular trading (typically brackets A and B).
-   - The width of the IB indicates expected session volatility: a wide IB suggests a range-bound, rotation day; a narrow IB suggests an impending explosive trend day.
+   - In the Market Profile day-type taxonomy (Dalton, Jones, and Dalton), a wide IB is typical of range-bound Normal days and a narrow IB leaves room for range extension or a trend day; these are classification heuristics, not measured probabilities.
 
 2. **Point of Control (POC)**:
    - The single price level where the most time (TPO POC) or trading volume (Volume POC / VPOC) was transacted during the session.
-   - Acts as a powerful gravitational magnet for price retests in subsequent sessions.
+   - Profile traders treat prior POCs as levels price is likely to revisit; no peer-reviewed test of that "magnet" claim is cited here.
 
 3. **Value Area (VA)**:
-   - The price range surrounding the POC containing approximately $68.2\%$ to $70.0\%$ of total session volume (mirroring $\pm 1\sigma$ in a normal distribution).
+   - The price range surrounding the POC containing $70\%$ of session volume (or TPOs) by convention.
+   - The convention is loosely motivated by the normal distribution, but $\pm 1\sigma$ holds $68.27\%$ and $70\%$ needs $\pm 1.04\sigma$; real profiles are rarely normal, so the band is a convention, not a standard deviation.
    - Bounded by **Value Area High (VAH)** and **Value Area Low (VAL)**.
-   - The **80% Rule**: If price opens or penetrates outside the Value Area and accepts within it for two consecutive 30-minute brackets, there is an $80\%$ probability of rotating entirely through the Value Area to the opposite boundary.
+   - The **80% Rule** (Market Profile literature, Dalton, Jones, and Dalton): if price opens outside the prior Value Area and then trades back inside it for two consecutive 30-minute brackets, the rule expects price to rotate through to the opposite boundary.
+   - The "80%" is the rule's name; no published statistical test establishing that probability is cited here, so measure it on your own market before relying on it.
 
 ### 3. Volume Profile: High Volume Nodes vs Low Volume Nodes
 
@@ -97,17 +99,16 @@ While Market Profile measures time spent, **Volume Profile** measures actual tra
 1. **High Volume Node (HVN)**:
    - A price zone characterized by a wide peak in the volume histogram.
    - Represents an area of intense two-way agreement where buyers and sellers transacted large size (fair-value consensus).
-   - Price behaves "sluggishly" inside an HVN, exhibiting high friction and mean reversion.
-   - Serves as formidable support or resistance on subsequent approaches.
+   - Profile traders expect price to move slowly inside an HVN and treat it as support or resistance on later approaches; this is practitioner interpretation, not a tested result.
 
 2. **Low Volume Node (LVN)**:
    - A price zone characterized by a thin valley or liquidity void in the volume histogram.
    - Represents an area of rapid price rejection where the auction moved swiftly without finding two-way trade facilitation.
-   - When price re-enters an LVN, it encounters minimal resting liquidity and slices through rapidly toward the next HVN.
+   - Profile traders expect price re-entering an LVN to move through it quickly toward the next HVN; low past volume at a price does not by itself imply thin resting depth now.
 
 ### 4. Volume-Weighted Average Price (VWAP)
 
-VWAP is the benchmark execution reference utilized by institutional algorithms to minimize market impact:
+VWAP is a standard execution benchmark: Berkowitz, Logue, and Noser (1988) proposed it for measuring the cost of institutional trades, and VWAP algorithms slice orders in proportion to expected volume:
 
 $$\text{VWAP}_t = \frac{\sum_{i=1}^t P_i \times V_i}{\sum_{i=1}^t V_i}$$
 
@@ -118,7 +119,8 @@ where $P_i$ is the typical price $\frac{H_i + L_i + C_i}{3}$ and $V_i$ is the vo
    - $\text{Upper Band}_k = \text{VWAP}_t + k \times \sigma_t$.
    - $\text{Lower Band}_k = \text{VWAP}_t - k \times \sigma_t$.
    - For $k = 1, 2, 3$, the bands correspond to volume-weighted standard deviation boundaries.
-   - In mean-reverting sessions, moves beyond $\pm 2\sigma$ represent statistical overextension; in trend days, price rides the $\pm 1\sigma$ band as dynamic support/resistance.
+   - The bands measure the volume-weighted dispersion of trade prices since the anchor; they are not confidence intervals for the next price, because prices are serially dependent.
+   - Practitioners fade moves beyond $\pm 2\sigma$ in range-bound sessions and use $\pm 1\sigma$ as a trend channel; both are heuristics.
 
 2. **Anchored VWAP (AVWAP)**:
    - Classical intraday VWAP resets every morning at market open.
@@ -127,8 +129,8 @@ where $P_i$ is the typical price $\frac{H_i + L_i + C_i}{3}$ and $V_i$ is the vo
      - Earnings announcement gap.
      - Central bank interest rate release.
      - Year-to-date (YTD) or month-to-date (MTD) boundary.
-   - Represents the exact volume-weighted average price paid by all market participants since that critical inflection point.
-   - When an asset tests its AVWAP from above, former buyers are at their average cost basis, providing powerful structural support.
+   - It is the volume-weighted average price of all trades since that event, so on average buyers since the anchor are at breakeven when price returns to it.
+   - The practitioner claim is that this average cost basis acts as support when tested from above; no peer-reviewed test of AVWAP support is cited here.
 
 ### 5. Empirical Evidence Ledger
 
@@ -137,24 +139,24 @@ where $P_i$ is the typical price $\frac{H_i + L_i + C_i}{3}$ and $V_i$ is the vo
 |                        EVIDENCE LEDGER: AUCTION THEORY & VWAP                   |
 +---------------------------------------------------------------------------------+
 |  Phenomenon: Volume Profile, VWAP Benchmark & Institutional Absorption          |
-|  Evidence Grade: STRONG (Execution & Microstructure), MIXED (Directional Edge)  |
+|  Evidence Grade: STRONG (VWAP as execution benchmark), UNTESTED (profile rules) |
 +---------------------------------------------------------------------------------+
-|  Key Empirical Studies:                                                         |
+|  Key Sources:                                                                   |
 |  1. Berkowitz, Logue, and Noser (1988, Journal of Finance):                     |
 |     - Proposed VWAP as a benchmark for measuring institutional execution        |
 |       cost, the basis of modern transaction cost analysis (TCA).                |
-|  2. Madhavan (2000, Journal of Financial Markets):                              |
-|     - Evaluated VWAP execution strategies and institutional order flow.         |
-|     - Showed institutional desks systematically execute orders using VWAP       |
-|       schedules, creating predictable intraday volume smiles (U-shaped volume). |
+|  2. Jain and Joh (1988, JFQA); Admati and Pfleiderer (1988, RFS):              |
+|     - Intraday NYSE volume is higher near the open and close (U-shape);         |
+|       Admati-Pfleiderer model why discretionary trading concentrates.           |
+|     - VWAP schedules follow this profile; they do not create it.               |
 |  3. Steidlmayer and Koy (1986, Markets and Market Logic):                       |
-|     - Documented empirical distribution of CBOT futures prices conforming to    |
-|       value area boundaries and rotation rules.                                 |
+|     - The original statement of Market Profile and its rotation rules; a        |
+|       method book, not a statistical test.                                      |
 +---------------------------------------------------------------------------------+
 |  Counter-Evidence & Caveats:                                                    |
 |  1. Failure of Static Bands in Momentum Regimes:                                |
-|     - In strong institutional trend days (Initiative auction), fade strategies   |
-|       at the +2 sigma VWAP band suffer catastrophic short squeeze losses.       |
+|     - On trend days (initiative auction), fading the +2 sigma VWAP band loses   |
+|       as price keeps extending; the bands are not confidence intervals.         |
 |  2. Profile Subjectivity in Non-Clearing Windows:                               |
 |     - 24-hour electronic markets (crypto, FX, Globex) blur traditional RTH session |
 |       boundaries, requiring adaptive session filtering.                         |
@@ -167,7 +169,7 @@ where $P_i$ is the typical price $\frac{H_i + L_i + C_i}{3}$ and $V_i$ is the vo
 
 ### Example 1: Calculating Value Area from a Discrete Volume Histogram
 
-An exchange specialist evaluates the volume distribution of a mini-futures contract across seven 5-point price buckets:
+An analyst evaluates the (hypothetical) volume distribution of a mini-futures contract across seven 5-point price buckets:
 - Level 1 ($100$): $1,000\text{ contracts}$
 - Level 2 ($105$): $3,000\text{ contracts}$
 - Level 3 ($110$): $7,000\text{ contracts}$
@@ -182,9 +184,9 @@ An exchange specialist evaluates the volume distribution of a mini-futures contr
 2. **Target Value Area Volume ($70\%$)**:
    $$V_{\text{target}} = 0.70 \times 40,000 = 28,000\text{ contracts}$$
 
-3. **Iterative Value Area Expansion**:
+3. **Iterative Value Area Expansion (single-level rule)**:
    - Start at the POC ($115$): Volume $= 15,000$.
-   - Compare two levels immediately above and below:
+   - Compare the next level above with the next level below and add the larger:
      - Above ($120$): $8,000$.
      - Below ($110$): $7,000$.
      - Because $8,000 > 7,000$, add Level 5 ($120$).
@@ -199,10 +201,17 @@ An exchange specialist evaluates the volume distribution of a mini-futures contr
      - $\text{Value Area Low (VAL)} = 110$.
      - $\text{Point of Control (POC)} = 115$.
      - $\text{Value Area High (VAH)} = 120$.
+   - Brute force agrees: $110$ to $120$ is the narrowest contiguous range around the POC that holds at least $28,000$ contracts.
+
+4. **The Two-Row Rule Gives a Different Answer**:
+   - The CBOT procedure taught with Market Profile compares the sum of the next two levels above with the next two below.
+   - Above ($120 + 125$): $12,000$; below ($110 + 105$): $10,000$; add above, running volume $27,000 < 28,000$.
+   - Above ($130$): $2,000$; below ($110 + 105$): $10,000$; add below, running volume $37,000$.
+   - Value Area $= 105$ to $125$: the rule you choose changes the levels, so state it when you quote a value area.
 
 ### Example 2: Computing Anchored VWAP from an Earnings Announcement
 
-An algorithmic trader anchors VWAP to an earnings breakout bar that opened with high volume:
+An algorithmic trader anchors VWAP to an earnings breakout bar that opened with high volume (hypothetical daily prices and volumes):
 - Day 1 (Earnings): Price $= \$200.00$, Volume $= 5,000,000\text{ shares}$.
   $$P_1 \times V_1 = \$200.00 \times 5,000,000 = \$1,000,000,000$$
 - Day 2: Price $= \$208.00$, Volume $= 2,500,000\text{ shares}$.
@@ -218,16 +227,16 @@ An algorithmic trader anchors VWAP to an earnings breakout bar that opened with 
 
 3. **Compute Anchored VWAP**:
    $$\text{AVWAP} = \frac{\$1,826,000,000}{9,000,000} = \$202.89$$
-   The aggregate volume-weighted average price paid by institutional market participants since the earnings release is $\$202.89$.
-   If the stock pulls back to $\$203.00$, it tests institutional breakeven, representing a high-probability support zone.
+   The volume-weighted average price of all trades since the earnings release is $\$202.89$.
+   If the stock pulls back to $\$203.00$, it is at roughly the average cost of everyone who traded since the release; practitioners watch it as support, but no tested probability attaches to that.
 
 ---
 
 ## Pitfalls
 
 - **Fading the +2 Sigma VWAP Band on Trend Days**:
-  On a strong initiative trend day, institutional algorithms buy continuously throughout the session.
-  Treating $+2\sigma$ as an overbought mean-reversion signal results in catastrophic losses as price rides the upper band into the close.
+  On a strong initiative trend day, buying persists throughout the session.
+  Treating $+2\sigma$ as an overbought mean-reversion signal then loses repeatedly as price keeps extending along the upper band.
 - **Confusing TPO Profile with Volume Profile**:
   TPO Profile measures time spent at price; Volume Profile measures actual shares transacted.
   A market may spend three hours at a quiet consolidation on tiny volume (high TPO, low volume) and twenty minutes absorbing a massive block trade (low TPO, huge volume).
@@ -257,14 +266,15 @@ An algorithmic trader anchors VWAP to an earnings breakout bar that opened with 
 
 > [!question]- mkt-ta-068 | What is the Point of Control (POC)?
 > The single price level where the greatest amount of time (TPO POC) or volume (Volume POC) was transacted during the session.
-> It represents the consensus price of maximum fair-value agreement between buyers and sellers.
+> In auction terms it is the price of greatest two-way agreement in the session.
 
 > [!question]- mkt-ta-069 | What is the Value Area in Market Profile?
-> The price range surrounding the POC that encompasses approximately 70% (one standard deviation) of total trading activity.
-> It is bounded by the Value Area High (VAH) and Value Area Low (VAL).
+> The price range surrounding the POC that holds 70% of trading activity by convention.
+> It is bounded by the Value Area High (VAH) and Value Area Low (VAL); the 70% only loosely echoes a normal's one standard deviation, which holds 68.27% (70% needs 1.04 sigma).
 
 > [!question]- mkt-ta-070 | Explain the Market Profile "80% Rule".
-> If the market opens or penetrates outside the prior session's Value Area and then accepts back inside for two consecutive 30-minute brackets, there is an 80% statistical probability of rotating completely to the opposite Value Area boundary.
+> If the market opens outside the prior session's Value Area and then trades back inside it for two consecutive 30-minute brackets, the rule expects a rotation to the opposite Value Area boundary.
+> The "80%" is the rule's name in the Market Profile literature, not a probability established by a published test; measure it before trading it.
 
 > [!question]- mkt-ta-071 | Contrast responsive trading with initiative trading.
 > Responsive trading acts counter to price extremes, buying below fair value or selling above it to return price to the value area.
@@ -272,27 +282,27 @@ An algorithmic trader anchors VWAP to an earnings breakout bar that opened with 
 
 > [!question]- mkt-ta-072 | What is a High Volume Node (HVN) in Volume Profile?
 > A price zone exhibiting a prominent peak in traded volume, indicating extensive fair-value agreement and two-way trade facilitation.
-> Price moves slowly through an HVN, acting as high-friction support or resistance on retests.
+> Profile traders expect price to move slowly through an HVN and treat it as support or resistance on retests (practitioner interpretation).
 
 > [!question]- mkt-ta-073 | What is a Low Volume Node (LVN) in Volume Profile?
 > A price zone exhibiting a sharp valley in traded volume, representing rapid price rejection and liquidity voids.
-> When price re-enters an LVN, it traverses the zone rapidly due to minimal resting order book resistance.
+> Profile traders expect price re-entering an LVN to traverse it quickly; low past volume at a price does not by itself prove thin resting depth now.
 
 > [!question]- mkt-ta-074 | State the formula for Volume-Weighted Average Price (VWAP).
 > VWAP = sum(Price_i * Volume_i) / sum(Volume_i).
 > It computes the true volume-weighted average price of all transactions executed from the anchor point to time t.
 
 > [!question]- mkt-ta-075 | What is Anchored VWAP (AVWAP) and who popularized it?
-> A methodology popularized by Brian Shannon that calculates VWAP starting from a specific, user-defined historical event rather than the daily open.
+> A method popularized by Brian Shannon (2023, *Maximum Trading Gains with Anchored VWAP*) that calculates VWAP starting from a specific, user-defined event rather than the daily open.
 > Common anchors include major swing lows, swing highs, earnings announcement gaps, and year-to-date opens.
 
 > [!question]- mkt-ta-076 | Why does an Anchored VWAP from an earnings release act as strong support on pullbacks?
-> It represents the exact breakeven price for all institutional participants who bought or sold stock since the fundamental catalyst.
-> Institutional buyers defend their average cost basis by placing supporting limit orders at the AVWAP.
+> It is the volume-weighted average price of all trades since the catalyst, so the average buyer since then is at breakeven there.
+> The practitioner argument is that buyers defend that cost basis; it is a hypothesis, and no peer-reviewed test of AVWAP support is cited here.
 
 > [!question]- mkt-ta-077 | What are VWAP standard deviation bands?
 > Symmetrical envelopes plotted at 1, 2, and 3 volume-weighted standard deviations above and below the VWAP line: Upper_k = VWAP + k * sigma.
-> They identify statistical overextension in range-bound markets and dynamic trend channels in momentum markets.
+> Practitioners use them to flag overextension in range-bound sessions and as trend channels in trending ones; they are dispersion measures, not confidence intervals.
 
 > [!question]- mkt-ta-078 | What is a Trend Day in Market Profile classification?
 > A session characterized by strong directional conviction where price opens near one extreme, expands continuously in one direction, and closes at the opposite extreme.
@@ -303,20 +313,20 @@ An algorithmic trader anchors VWAP to an earnings breakout bar that opened with 
 > Subsequent trading consists of responsive rotational auctions within the established extremes.
 
 > [!question]- mkt-ta-080 | What is a Normal Variation Day?
-> A session where early trading establishes an Initial Balance, followed by a moderate initiative range extension (typically about 0.5x to 1.0x the IB width) during later brackets.
+> A session where early trading establishes an Initial Balance, followed by a moderate initiative range extension beyond it in later brackets.
 > Activity then settles into rotational balance around the new price level.
 
 > [!question]- mkt-ta-081 | What is a Neutral Day?
 > A session where initiative activity expands price beyond both the top and bottom of the Initial Balance, but closes near the center.
-> It indicates an aggressive battle between buyers and sellers with no definitive winner, signaling balanced two-way trade.
+> In auction terms neither side won the session.
 
 > [!question]- mkt-ta-082 | What is a Non-Trend Day?
 > A session with a tiny Initial Balance and virtually zero subsequent range expansion, forming a narrow, compressed profile on low volume.
-> It reflects extreme market indecision, typically preceding major macro announcements or holidays.
+> It reflects a lack of initiative participation, as before a major announcement or holiday.
 
 > [!question]- mkt-ta-083 | What is an Open-Drive in Market Profile opening types?
 > Price opens, aggressively prints in one direction without retracing, and violently drives away from the prior session's value area.
-> It reflects massive institutional initiative conviction and signals a high probability of a Trend Day.
+> Profile traders read it as strong initiative conviction and a candidate Trend Day (classification heuristic, not a measured probability).
 
 > [!question]- mkt-ta-084 | What is an Open-Test-Drive?
 > Price opens, briefly tests in one direction to probe for responsive liquidity, finds strong rejection, and then drives aggressively in the opposite direction.
@@ -324,59 +334,67 @@ An algorithmic trader anchors VWAP to an earnings breakout bar that opened with 
 
 > [!question]- mkt-ta-085 | What is an Open-Rejection-Reverse?
 > Price opens, probes beyond the prior session's range, encounters fierce responsive counter-orders, and violently reverses back through the open and into the prior value area.
-> It represents a classic failed auction and false breakout setup.
+> Profile traders read it as a failed auction outside value.
 
 > [!question]- mkt-ta-086 | What is an Open-Auction?
 > Price opens inside the prior session's value area and oscillates aimlessly with no directional initiative.
-> It signals low conviction and favors responsive, mean-reverting scalp strategies.
+> Profile traders read it as low conviction, which favors responsive, mean-reverting trade inside value.
 
 > [!question]- mkt-ta-087 | What is a single print in Market Profile?
 > A price level occupied by only one 30-minute letter bracket during the entire trading session.
-> Single prints indicate rapid price rejection and directional velocity, functioning as LVNs that price quickly traverses on retests.
+> Single prints mark prices the market moved through quickly; profile traders treat them like LVNs.
 
 > [!question]- mkt-ta-088 | What is a buying tail or selling tail in Market Profile?
 > A vertical sequence of at least two consecutive single prints at the extreme low (buying tail) or extreme high (selling tail) of a session profile.
-> It confirms aggressive responsive participation and marks strong institutional support or resistance.
+> Profile traders read a tail as strong responsive activity at the extreme and watch it as support or resistance.
 
 > [!question]- mkt-ta-089 | What is poor high or poor low in Market Profile?
 > An extreme price level lacking single prints, ending abruptly with two or more adjacent TPOs at the high or low.
-> It indicates that the auction was halted mechanically rather than through natural buyer/seller exhaustion, leaving unfinished business to be repaired.
+> Profile traders read it as an auction that stopped without a clear rejection, "unfinished business" they expect price to revisit (a heuristic, not a tested result).
 
 > [!question]- mkt-ta-090 | What is a naked POC (virgin POC)?
 > A Point of Control from a prior session that has not been tested or touched by price in any subsequent trading session.
-> Naked POCs represent unvisited fair-value nodes that act as strong magnet targets during future market rotations.
+> Profile traders use naked POCs as targets on the view that price tends to revisit them; that tendency is not established by a test cited here.
 
 > [!question]- mkt-ta-091 | Why do institutional execution desks target VWAP as a transaction benchmark?
-> Executing large parent orders in proportion to historical intraday volume profiles minimizes market impact and prevents adverse selection.
-> Portfolio managers evaluate broker performance by comparing execution prices to the full-day VWAP.
+> Trading a large parent order in proportion to the expected intraday volume profile spreads its impact and makes the fill comparable to the day's average price.
+> Berkowitz, Logue, and Noser (1988) proposed VWAP for measuring execution cost; VWAP ignores the price at the time of the decision, which is why implementation shortfall (Perold 1988) is also used.
 
 > [!question]- mkt-ta-092 | What is the U-shaped intraday volume smile?
-> The empirical tendency for equity and futures trading volume to concentrate heavily in the first hour of trading and the final hour of trading, with lower volume during midday.
-> VWAP execution algorithms allocate higher order slices to the market open and close.
+> The tendency for trading volume to be higher near the open and close than at midday, documented for NYSE stocks by Jain and Joh (1988) and modelled by Admati and Pfleiderer (1988).
+> VWAP algorithms follow this profile by allocating larger slices near the open and close; they do not create it.
 
 > [!question]- mkt-ta-093 | How does Anchored VWAP help identify trapped short sellers after an earnings gap?
-> If price gaps up on earnings and continues to hold above the AVWAP anchored to the gap, every short seller who initiated positions after earnings is underwater.
-> Any subsequent test of the AVWAP triggers short-covering and dip-buying.
+> If price holds above the AVWAP anchored to the earnings gap, the average short seller since the gap is underwater (individual shorts may not be).
+> The practitioner expectation is short covering and dip buying on later tests of the AVWAP; that is a hypothesis to test.
 
 > [!question]- mkt-ta-094 | What is composite Volume Profile?
 > An aggregated Volume Profile constructed by combining multiple weeks, months, or years of price and volume data into a single master histogram.
-> It reveals multi-year structural support, resistance, and secular fair-value nodes.
+> Practitioners use it to find long-horizon high- and low-volume price zones.
 
 > [!question]- mkt-ta-095 | What is developing POC (d-POC)?
 > The continuous real-time calculation of the Point of Control as volume accumulates throughout an active trading session.
 > Shifts in the d-POC indicate intraday price acceptance migrating higher or lower.
 
-> [!question]- mkt-ta-096 | Why is trading Volume Profile superior to traditional horizontal support and resistance lines?
-> Traditional support lines rely on subjective visual peaks and ignore transaction size.
-> Volume Profile maps exactly where billions of dollars in real institutional capital transacted, removing chartist subjectivity.
+> [!question]- mkt-ta-096 | What does Volume Profile add over drawing support and resistance lines by eye, and what does it not prove?
+> It replaces subjective visual peaks with a measured histogram of where volume traded, so levels are reproducible from the data.
+> It does not prove those levels predict future reversals; that still needs an out-of-sample test with costs, and the levels depend on the lookback and bucket size chosen.
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_ta_03_auction_vwap.py`](../../code/mkt_ta_03_auction_vwap.py) prints and asserts every number on this page: the value area stepped out by the single-level rule and checked against a brute-force search over every contiguous range around the POC, the two-row rule's different answer, the normal-distribution masses by the error function and by Simpson quadrature (with the 70% quantile by bisection), and the anchored VWAP in exact rational arithmetic and as a share-by-share average.
+- Related notes: [Order Flow, Tape Reading and Footprint](06-Order-Flow-Tape-Reading-and-Footprint.md), [Dow Theory and Trend Evidence](01-Dow-Theory-and-Trend-Evidence.md).
 
 ## Further reading
 
 - Steidlmayer, J. P., & Koy, K. (1986). *Markets and Market Logic*. Porcupine Press.
 - Berkowitz, S. A., Logue, D. E., & Noser, E. A. (1988). *The total cost of transactions on the NYSE*. The Journal of Finance, 43(1), 97-112.
-- Dalton, J. F., Jones, E. T., & Dalton, R. B. (1993). *Mind Over Markets: Power Trading with Market Generated Information*. Probus Publishing Co.
-- Madhavan, A. (2000). *Market microstructure: A survey*. Journal of Financial Markets, 3(3), 205-258.
+- Dalton, J. F., Jones, E. T., & Dalton, R. B. (1990). *Mind Over Markets: Power Trading with Market Generated Information*. Probus Publishing Co. (updated edition, Wiley, 2013).
+- Jain, P. C., & Joh, G.-H. (1988). *The dependence between hourly prices and trading volume*. Journal of Financial and Quantitative Analysis, 23(3), 269-283.
+- Perold, A. F. (1988). *The implementation shortfall: Paper versus reality*. The Journal of Portfolio Management, 14(3), 4-9.
+- Admati, A. R., & Pfleiderer, P. (1988). *A theory of intraday patterns: Volume and price variability*. The Review of Financial Studies, 1(1), 3-40.
+- Madhavan, A. (2000). *Market microstructure: A survey*. Journal of Financial Markets, 3(3), 205-258 (background on execution and price formation).
 - Dalton, J. F., Jones, E. T., & Dalton, R. B. (2007). *Markets in Profile: Ways to Profit from the New Auction Market Science*. John Wiley & Sons.
 - Shannon, B. (2023). *Maximum Trading Gains with Anchored VWAP*. Alpha Trends.

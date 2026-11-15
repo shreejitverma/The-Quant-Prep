@@ -10,16 +10,16 @@ tags: [technical-analysis, price-action, momentum, evidence-based, volume-profil
 # Technical Analysis Track Index
 
 The Technical Analysis track provides an evidence-based, quantitative evaluation of price action, chart geometry, market microstructure, and momentum phenomena.
-Rather than treating technical indicators as mystical rituals or self-fulfilling prophecies, Markets Mastery OS subjects every pattern, oscillator, and trend-following rule to academic empirical rigor.
+Rather than taking technical indicators on faith, Markets Mastery OS checks every pattern, oscillator, and trend-following rule against the peer-reviewed evidence, and every number on the track's pages is asserted by a script in [`../../code/`](../../code/) (`mkt_ta_NN_*.py`).
 Each module pairs classical chartist observations with peer-reviewed literature, establishing where genuine structural edge exists and where data-snooping bias creates illusory patterns.
 
 ---
 
 ## Learning Objectives
 
-- Distinguish statistically validated technical phenomena (e.g., time-series momentum, post-earnings announcement drift, institutional volume absorption) from refuted chartist folklore.
+- Distinguish replicated phenomena (e.g., time-series momentum, cross-sectional momentum, post-earnings announcement drift) from untested or refuted chartist folklore.
 - Quantify the statistical significance of support, resistance, and geometric chart patterns using kernel regression and objective boundary algorithms.
-- Interpret Auction Market Theory, Volume Profile, and Anchored VWAP to identify institutional accumulation and distribution zones.
+- Interpret Auction Market Theory, Volume Profile, and Anchored VWAP, and state which of their claims are practitioner hypotheses rather than tested results.
 - Evaluate momentum, relative strength, and market breadth divergences to detect underlying regime transitions.
 - Apply proper scoring rules (Brier scores, log loss, Murphy decomposition) and blind chart replays to calibrate subjective probability forecasting.
 
@@ -27,7 +27,8 @@ Each module pairs classical chartist observations with peer-reviewed literature,
 
 ## Evidence Ledger Hierarchy
 
-Every technical pattern in this track carries an explicit empirical evidence grade:
+Every technical pattern in this track carries an explicit empirical evidence grade.
+The grades are this curriculum's own convention, defined in [Setup Taxonomy and Evidence](../Discretionary-Trading/04-Setup-Taxonomy-and-Evidence.md):
 
 - **STRONG**: Validated across multiple independent asset classes and decadal timeframes in peer-reviewed academic literature with controls for transaction costs and multiple testing.
 - **MIXED**: Statistically significant in specific historical sub-periods or asset classes (e.g. commodities, small caps), but decayed post-publication or heavily sensitive to transaction friction.
