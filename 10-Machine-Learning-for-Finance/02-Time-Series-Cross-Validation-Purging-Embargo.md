@@ -16,7 +16,7 @@ sources: [Lopez de Prado - Advances in Financial Machine Learning (2018) ch 4 7 
 - Give every sample an information interval $[t_0, t_1]$ from feature time to label end; purging removes training samples whose interval overlaps the test set's span, and an embargo also drops training samples that start just after the test span.
 - Lopez de Prado's purged k-fold uses contiguous test folds, purges on both sides, and embargoes after the test fold by about $0.01T$.
 - Walk-forward (expanding or rolling) with a gap of at least the label horizon is the deployment-faithful scheme, but gives one path; purged k-fold and CPCV use more data and give more paths.
-- $h$-day labels sampled daily share up to $(h-1)/h$ of their returns: effective sample size is about $T/h$, naive $t$-stats are inflated by about $\sqrt h$, and uniqueness weights correct the training loss.
+- $h$-day labels sampled daily share up to $(h-1)/h$ of their returns: effective sample size is about $T/h$, naive $t$-stats on the mean (or on a regressor that is persistent over the horizon) are inflated by about $\sqrt h$, and uniqueness weights correct the training loss.
 
 ## Learning objectives
 
@@ -57,7 +57,7 @@ With fixed horizon $h$ and one sample per bar, purging removes about $h$ samples
 
 Features are often serially correlated beyond the label horizon (for instance a 60-day moving average), so training samples soon after the test fold still carry information about it.
 The embargo drops training samples with $t_{0,j} \in (\max_{\text{test}} t_1,\ \max_{\text{test}} t_1 + e]$.
-Lopez de Prado applies it only after the test fold, because training rows before the test fold cannot see test-period information through backward-looking features, and suggests $e \approx 0.01T$ as a default; make it at least the longest feature lookback that could straddle the boundary.
+Lopez de Prado (AFML section 7.4.2) applies it only after the test fold, because training rows before the test fold cannot see test-period information through backward-looking features, and suggests $e \approx 0.01T$ as a default; make it at least the longest feature lookback that could straddle the boundary.
 
 ### Walk-forward
 
@@ -67,12 +67,13 @@ Lopez de Prado applies it only after the test fold, because training rows before
 - Walk-forward mirrors live deployment, and is the right final check, but tests each period only once, uses little data early on, and gives a single path that is easy to overfit by repeated tweaking.
 
 Purged k-fold tests every period with a model trained on the rest (including the future), which is fine for estimating the skill of a stationary relationship but is not a simulation of history.
-CPCV generalises it to many test-group combinations and yields $\binom{N-1}{k-1}$ full backtest paths ([Overfitting and Deflated Sharpe](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md)).
+CPCV (AFML chapter 12) splits the sample into $N$ groups and tests on every choice of $k$ of them, giving $\binom{N}{k}$ splits and $\varphi = \frac{k}{N}\binom{N}{N-k} = \binom{N-1}{k-1}$ full backtest paths, because each group is tested in $\binom{N-1}{k-1}$ splits; $N = 6$, $k = 2$ gives 15 splits and 5 paths ([Overfitting and Deflated Sharpe](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md)).
 
 ### Overlapping labels in estimation and training
 
 If daily returns are iid with variance $\sigma^2$, the $h$-day overlapping label $y_t = \sum_{j=1}^h r_{t+j}$ has lag-$k$ autocorrelation $(h-k)/h$ for $k < h$.
-The long-run variance of $\bar y$ is about $h$ times the naive one, so naive standard errors are too small by $\sqrt h$; use Hansen-Hodrick or Newey-West with at least $h-1$ lags, or subsample non-overlapping labels.
+The long-run variance of $\bar y$ is about $1 + 2\sum_{k=1}^{h-1}(h-k)/h = h$ times the naive one, so naive standard errors of the mean are too small by $\sqrt h$.
+A regression slope inherits the factor $1 + 2\sum_k \rho_x(k)\rho_y(k)$, so the full $\sqrt h$ applies when the regressor is persistent over the horizon (valuations, slow averages) and almost none when it is close to iid; use Hansen-Hodrick or Newey-West with at least $h-1$ lags, or subsample non-overlapping labels.
 In training, Lopez de Prado's uniqueness weights down-weight crowded samples: with concurrency $c_t$ = number of labels whose interval contains bar $t$, the uniqueness of sample $i$ is the average of $1/c_t$ over its interval, and the average uniqueness estimates how many effectively independent labels there are.
 Sequential bootstrap and bagging with `max_samples` set to average uniqueness use the same idea.
 
@@ -121,7 +122,7 @@ def shuffled_kfold(n, n_splits=5, seed=0):
 
 def knn_predict(x_train, y_train, x_test, k=10):
     d = np.abs(x_test[:, None] - x_train[None, :])
-    return y_train[np.argsort(d, axis=1)[:, :k]].mean(axis=1)
+    return y_train[np.argpartition(d, k, axis=1)[:, :k]].mean(axis=1)
 
 def cv_ic(x, y, splits):
     pred, true = [], []
@@ -145,10 +146,12 @@ print("purged + embargo IC:", round(cv_ic(x, y, purged_kfold(t0, t1, embargo=20)
 ```
 
 Returns are iid, so the true IC is zero.
-Over 100 simulated datasets, shuffled k-fold reported a mean IC of 0.12 and was positive in 98 of them; purged k-fold with embargo averaged $-0.02$ with a standard deviation of 0.08 across datasets.
+Over 100 further simulated datasets (seeded in `code/ml_02_purged_cv.py`), shuffled k-fold reported a mean IC of 0.12 and was positive in all 100; purged k-fold with embargo averaged $-0.03$ with a standard deviation of 0.07 across datasets.
 The nearest neighbours of a test row in feature space are its neighbours in time, whose 20-day labels share most of its returns.
-Here plain contiguous folds are already close to purged ones, because only the fold edges leak; the gap widens with longer horizons, more folds and models that can isolate those edge samples.
-The 0.08 spread of honest ICs is itself a lesson: with a persistent feature and 2000 rows, the effective sample is small.
+The small negative mean of the honest scheme is an artefact of pooling predictions across folds: each fold's predictions lean toward the labels of the other folds, whose average moves against the test fold's own mean.
+Changing only that, by demeaning predictions and labels within each fold before pooling, gives a mean IC of $-0.002$ (standard error 0.006), consistent with zero, while the shuffled IC stays at 0.12.
+Here plain contiguous folds are already close to purged ones (mean $-0.03$ as well), because only the few rows at each fold edge leak; purging is what makes that guarantee hold whatever the model and horizon.
+The 0.07 spread of honest ICs is itself a lesson: with a persistent feature and 2000 rows, the effective sample is small.
 
 ### 3. Standard errors with overlapping labels
 
@@ -156,8 +159,8 @@ Ten years of daily data ($T = 2520$) with 21-day forward-return labels.
 
 - Non-overlapping labels available: $2520/21 = 120$.
 - Adjacent labels share $20/21$ of their returns; labels 5 days apart share $16/21 = 76\%$.
-- The variance of the mean of overlapping labels is about $h = 21$ times the naive iid formula, so naive $t$-stats are inflated by $\sqrt{21} = 4.6$.
-- A reported $t = 6$ from an OLS regression on overlapping monthly returns is roughly $t = 1.3$ after the correction.
+- The variance of the mean of overlapping labels is about $h = 21$ times the naive iid formula (summing the exact covariances over $T = 2520$ gives 20.9), so naive $t$-stats on the mean are inflated by $\sqrt{21} = 4.6$; in a simulation of 4,000 null samples, the $t$ computed with the iid formula (and the true label variance) has a standard deviation matching $\sqrt{20.9}$ within four standard errors, instead of 1.
+- A reported $t = 6$ from an OLS regression of overlapping monthly returns on a persistent signal is roughly $t = 1.3$ after the correction; on an iid regressor the naive $t$ would be nearly right.
 
 ### 4. Uniqueness weights
 
@@ -214,8 +217,8 @@ Ten years of daily data, 21-day labels, rolling three-year training window, six-
 > They share 15 of 20 daily returns; in general $\rho_k = (h-k)/h$ for $k < h$.
 
 > [!question]- ml-cv-overlap-tstat | You regress overlapping 21-day returns sampled daily and get $t = 6$ with OLS errors. Roughly what is the honest $t$?
-> About $6/\sqrt{21} \approx 1.3$.
-> Overlap inflates the long-run variance by about $h$; use Hansen-Hodrick or Newey-West with at least $h-1$ lags.
+> About $6/\sqrt{21} \approx 1.3$, if the regressor is persistent over the 21 days.
+> Overlap inflates the long-run variance of the slope by about $h$ when the regressor barely changes between adjacent rows; use Hansen-Hodrick or Newey-West with at least $h-1$ lags.
 
 > [!question]- ml-cv-uniqueness | Define average uniqueness of a label.
 > The mean of $1/c_t$ over the bars in the label's interval, where $c_t$ counts labels active at bar $t$.
@@ -231,7 +234,7 @@ Ten years of daily data, 21-day labels, rolling three-year training window, six-
 
 > [!question]- ml-cv-knn-leak | A kNN model on a slow-moving noise feature scores IC 0.12 in shuffled 5-fold CV on 20-day labels. Explain.
 > Leakage: feature neighbours are time neighbours, whose overlapping labels contain most of the test label.
-> With purged k-fold and an embargo the IC falls to about zero, the true value for iid returns.
+> With purged k-fold and an embargo the IC falls to about zero, the true value for iid returns ($-0.03$ pooled across folds, $-0.002$ once each fold is demeaned).
 
 > [!question]- ml-cv-panel-split | In a cross-sectional stock model, why split folds by date rather than by row?
 > Returns on the same date share a common market component, so a row from date $t$ in training leaks the test rows on date $t$.
@@ -241,10 +244,31 @@ Ten years of daily data, 21-day labels, rolling three-year training window, six-
 > By timestamps: store $t_0$ and $t_1$ for each sample and purge on interval overlap, not on row counts.
 > Row-count purging assumes one sample per unit of time and a fixed horizon.
 
+> [!question]- ml-cv-cpcv-paths | Combinatorial purged CV with $N = 10$ groups and $k = 2$ test groups: how many splits and how many backtest paths?
+> 45 splits and 9 paths.
+> $\binom{10}{2} = 45$, and each group is tested in $\binom{9}{1} = 9$ of them, which is $\varphi = \frac{k}{N}\binom{N}{N-k} = \frac{2}{10}\times45$.
+
+> [!question]- ml-cv-uniqueness-example | Labels A on bars 1 to 3, B on 2 to 4 and C on 4 to 5. What are their uniquenesses and the average?
+> $2/3$, $1/2$ and $3/4$; the average is $23/36 \approx 0.64$.
+> Concurrency is $(1, 2, 2, 2, 1)$ on bars 1 to 5, and each uniqueness is the mean of $1/c_t$ over the label's bars, so the three labels are worth about 1.9 independent ones.
+
+> [!question]- ml-cv-effective-sample | Ten years of daily data with 21-day forward-return labels sampled daily. How many independent labels do you really have?
+> About $2520/21 = 120$.
+> Adjacent labels share $20/21$ of their returns, and in steady state each label's uniqueness is $1/21$.
+
+> [!question]- ml-cv-embargo-after-only | Why does Lopez de Prado embargo only after the test fold and not before it?
+> Training rows before the test fold have backward-looking features that cannot contain test-period information once their labels are purged.
+> Rows just after the test fold have features built from test-period data (a 60-day average, say), so they are dropped for a further period $e$.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/ml_02_purged_cv.py`](code/ml_02_purged_cv.py) prints and asserts every number on this page: purge and embargo counts from the splitter checked against a brute-force loop over every pair of intervals, the kNN leak rerun exactly as printed and over 100 seeded datasets with a within-fold demeaning control, overlap correlations by counting shared returns and by simulation, the variance inflation from the exact covariance sum and a null simulation with an iid-regressor control, uniqueness with exact fractions, and CPCV splits and paths by enumerating every combination.
+- Related notes: [Labeling: Triple Barrier and Meta-Labeling](06-Labeling-Triple-Barrier-and-Meta-Labeling.md) for $t_1$ from barriers, [Overfitting and Deflated Sharpe](../09-Alpha-Research-and-Portfolio/08-Overfitting-and-Deflated-Sharpe.md), [ML Fundamentals and Generalization](01-ML-Fundamentals-and-Generalization.md).
+
 ## Further reading
 
-- Marcos Lopez de Prado, *Advances in Financial Machine Learning*, chapters 4 (sample weights), 7 (cross-validation in finance) and 12 (CPCV).
-- Bailey, Borwein, Lopez de Prado and Zhu (2017), The Probability of Backtest Overfitting, Journal of Computational Finance.
-- Hastie, Tibshirani and Friedman, *The Elements of Statistical Learning*, section 7.10.
-- Arlot and Celisse (2010), A Survey of Cross-Validation Procedures for Model Selection, Statistics Surveys.
-- Hansen and Hodrick (1980), Journal of Political Economy, and Newey and West (1987), Econometrica, for standard errors with overlapping observations.
+- Marcos Lopez de Prado, *Advances in Financial Machine Learning* (Wiley, 2018), chapters 4 (sample weights and uniqueness), 7 (cross-validation in finance; section 7.4 on purging and the embargo) and 12 (backtesting through cross-validation; CPCV).
+- Bailey, Borwein, Lopez de Prado and Zhu (2017), The Probability of Backtest Overfitting, *Journal of Computational Finance* 20(4), 39-69.
+- Hastie, Tibshirani and Friedman, *The Elements of Statistical Learning* (2nd ed., 2009), section 7.10.
+- Arlot and Celisse (2010), A Survey of Cross-Validation Procedures for Model Selection, *Statistics Surveys* 4, 40-79.
+- Hansen and Hodrick (1980), *Journal of Political Economy* 88(5), 829-853, and Newey and West (1987), *Econometrica* 55(3), 703-708, for standard errors with overlapping observations.

@@ -51,14 +51,14 @@ Most trading profit falls into a few families:
 - Risk premia: being paid to hold a risk others want to shed (carry, volatility selling); this is compensation, not free edge, and it comes with crash risk.
 
 Harris's taxonomy is a useful lens: utilitarian traders trade for reasons other than profit (hedging, investing, liquidity needs) and are the natural counterparties of profit-motivated traders.
-A central theme of Lebron's *The Laws of Trading* is knowing why you are doing a trade and which risks you are being paid to take.
+Two of Lebron's laws in *The Laws of Trading* carry this: the first, "know why you are doing a trade before you trade", and the third, "take only the risks you're being paid to take. Hedge the others."
 If you cannot name why the other side is trading, assume the answer is that they know more than you (see [Market Making Games](../08-Market-Making/10-Market-Making-Games.md) on adverse selection).
 
 ### Sizing and risk
 
 Use the tools from [Kelly Criterion and Position Sizing](01-Kelly-Criterion-and-Position-Sizing.md) and [Expected Value and Betting Decisions](02-Expected-Value-and-Betting-Decisions.md).
 Size proportional to expected edge divided by variance, take a fraction of Kelly because the edge is an estimate, and then apply hard caps: risk limits (see [Drawdowns and Risk Limits](05-Drawdowns-and-Risk-Limits.md)), stress loss (see [Stress Testing and Scenario Analysis](04-Stress-Testing-and-Scenarios.md)) and liquidity (a position you cannot exit in a few days of normal volume is a different trade).
-State the worst case in money and check correlation with what you already hold: two "independent" long-volatility-selling trades are one trade.
+State the worst case in money and check correlation with what you already hold: two "independent" short-volatility trades are one trade.
 
 ### Exits
 
@@ -105,8 +105,9 @@ What would change my mind: the stock already trading well above pre-announcement
 ### Example 2: is a 55% win rate skill?
 
 A trader has won 55 of 100 trades of similar size.
-The standard error of the win rate under a fair coin is $\sqrt{0.25/100} = 0.05$, so $z = 0.05/0.05 = 1$, one-sided p-value about 0.16: not evidence of skill.
-Over 1,000 trades the same rate gives $z = 0.05/\sqrt{0.25/1000} \approx 3.2$: now it is.
+The standard error of the win rate under a fair coin is $\sqrt{0.25/100} = 0.05$, so $z = 0.05/0.05 = 1$, one-sided normal p-value about 0.16: not evidence of skill.
+The exact binomial probability of 55 or more wins from a fair coin is 0.184 (the normal approximation with a continuity correction, $z = 4.5/5 = 0.9$, agrees).
+Over 1,000 trades the same rate gives $z = 0.05/\sqrt{0.25/1000} \approx 3.2$, and an exact p-value of about 0.09%: now it is.
 Win rate alone is also the wrong metric: a 40% win rate with winners three times the size of losers has EV $0.4 \times 3 - 0.6 = 0.6$ per unit risked, with break-even win rate $1/(1+3) = 25\%$.
 
 ### Example 3: how long to trust a Sharpe ratio
@@ -124,8 +125,8 @@ This is why high-frequency strategies (high Sharpe, many independent bets) can b
 ### Example 4: the best of 100 lucky traders
 
 100 traders with zero skill each run a strategy for one year; their realised annual Sharpe ratios are roughly independent standard normals.
-The probability that a given trader shows a Sharpe above 2 is 2.3%, but the probability that at least one of the 100 does is $1 - 0.9772^{100} \approx 90\%$.
-The expected best Sharpe is about 2.51.
+The probability that a given trader shows a Sharpe above 2 is 2.3%, but the probability that at least one of the 100 does is $1 - 0.97725^{100} \approx 90\%$.
+The expected best Sharpe is about 2.51, from integrating $x \cdot 100\,\Phi(x)^{99}\varphi(x)$, and a seeded simulation of 200,000 groups agrees.
 When you see the best record in a large group, shrink it heavily toward zero, and ask how many records were looked at.
 
 ### Example 5: updating on an adverse move
@@ -164,7 +165,7 @@ Because the 40% is an estimate, run half Kelly or less, risking about 10% of the
 > If you cannot name a non-informational motive, assume adverse selection and your apparent edge is illusory.
 
 > [!question]- risk-judgement-edge-sources | Name the main sources of trading edge.
-> Liquidity provision and risk transfer, structural or constraint-driven flow, better information or analysis, and speed.
+> Liquidity provision and risk transfer, structural or constraint-driven flow, and better information or analysis (including faster processing of public news).
 > Risk premia such as carry are compensation for bearing risk rather than free edge.
 
 > [!question]- risk-judgement-win-rate | A trader wins 55 of 100 trades. Is that evidence of skill?
@@ -203,9 +204,30 @@ Because the 40% is an estimate, run half Kelly or less, risking about 10% of the
 > Crowding: much of the move may already be priced, and many holders exiting together create a sharp reversal.
 > Check the price and volume since the event became known, and size smaller with a clear exit.
 
+> [!question]- risk-judgement-win-rate-exact | What is the exact probability that a fair coin wins 55 or more of 100 trades, and how good is the normal approximation?
+> 0.184.
+> The plain normal approximation gives 0.16; with a continuity correction ($z = 4.5/5 = 0.9$) it also gives 0.184.
+
+> [!question]- risk-judgement-losing-streak | A trade loses with probability 0.6. How likely are six losses in a row, and why does it matter for sizing?
+> About 4.7%, since $0.6^6 = 0.046656$.
+> At half Kelly, risking 10% of current capital each time, six straight losses cost $1 - 0.9^6 \approx 47\%$ of the allocation, so check that against the drawdown limit before trading.
+
+> [!question]- risk-judgement-inclusion-sharpe | An index-inclusion trade has an expected residual move of 2% with 1.5% daily idiosyncratic volatility over five days. What is its Sharpe per trade?
+> About 0.6.
+> The five-day standard deviation is $1.5\%\sqrt5 \approx 3.4\%$, and $2/3.354 \approx 0.6$.
+
+> [!question]- risk-judgement-break-even-win-rate | Winners are three times the size of losers. What win rate breaks even?
+> 25%.
+> Break-even solves $3p = 1 - p$, so $p = 1/(1+3)$; a 40% win rate then earns 0.6 per unit risked.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/risk_09_trading_judgement.py`](code/risk_09_trading_judgement.py) prints and asserts every number on this page: win-rate significance from the exact binomial tail beside the normal approximation, normal quantiles and tails by bisection on erfc, the best of 100 zero-skill Sharpe ratios by numerical integration and seeded simulation, the Bayes update by exact fractions and simulation, and the Kelly fraction by numerically maximising expected log growth.
+- Related notes: [Kelly Criterion and Position Sizing](01-Kelly-Criterion-and-Position-Sizing.md), [Expected Value and Betting Decisions](02-Expected-Value-and-Betting-Decisions.md), [Order Statistics and Extremes](../01-Probability/08-Order-Statistics-and-Extremes.md) (the expected maximum of normals).
+
 ## Further reading
 
 - Agustin Lebron, *The Laws of Trading* (2019).
 - Larry Harris, *Trading and Exchanges: Market Microstructure for Practitioners* (2003), the chapters on why people trade.
 - Annie Duke, *Thinking in Bets* (2018).
-- Bailey and Lopez de Prado (2014), The deflated Sharpe ratio, *Journal of Portfolio Management* 40(5).
+- Bailey and Lopez de Prado (2014), The deflated Sharpe ratio: correcting for selection bias, backtest overfitting and non-normality, *Journal of Portfolio Management* 40(5), 94-107.

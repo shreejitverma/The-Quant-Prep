@@ -73,8 +73,8 @@ Tracks: T = trader, R = researcher, D = developer, Q = risk and strats.
 | [Market Microstructure](07-Market-Microstructure/README.md) | 12 | 12 | 41 | 200 | TRD |
 | [Market Making](08-Market-Making/README.md) | 12 | 12 | 44 | 187 | TRD |
 | [Alpha Research and Portfolio Construction](09-Alpha-Research-and-Portfolio/README.md) | 15 | 15 | 57 | 253 | TRDQ |
-| [Machine Learning for Finance](10-Machine-Learning-for-Finance/README.md) | 11 | 11 | 38 | 209 | RD |
-| [Risk and Trading](11-Risk-and-Trading/README.md) | 17 | 17 | 70 | 329 | TRDQ |
+| [Machine Learning for Finance](10-Machine-Learning-for-Finance/README.md) | 11 | 11 | 38 | 220 | RD |
+| [Risk and Trading](11-Risk-and-Trading/README.md) | 17 | 17 | 70 | 343 | TRDQ |
 | [Quant Development](12-Quant-Development/README.md) | 15 | 15 | 86 | 347 | RDQ |
 | [Interview Playbook](13-Interview-Playbook/README.md) | 12 | 12 | 32 | 225 | TRDQ |
 | [Trading and Investing Library](16-Trading-and-Investing/README.md) | 69 | 69 | 223.5 | 2248 | TRDQ |

@@ -5,7 +5,7 @@ tier: core
 status: solid
 prereqs: [expectation-variance-and-linearity]
 est_hours: 3
-sources: [Kelly (1956) A New Interpretation of Information Rate. Bell System Technical Journal 35(4) 917-926, Thorp (2006) The Kelly criterion in blackjack sports betting and the stock market. Handbook of Asset and Liability Management Vol 1, MacLean Thorp and Ziemba (eds.) (2011) The Kelly Capital Growth Investment Criterion. World Scientific, Merton (1969) Lifetime portfolio selection under uncertainty. Review of Economics and Statistics 51(3)]
+sources: [Kelly (1956) A New Interpretation of Information Rate. Bell System Technical Journal 35(4) 917-926, Thorp (2006) The Kelly criterion in blackjack sports betting and the stock market. Handbook of Asset and Liability Management Vol 1 (Zenios and Ziemba eds.) Elsevier ch 9, MacLean Thorp and Ziemba (eds.) (2011) The Kelly Capital Growth Investment Criterion. World Scientific, Merton (1969) Lifetime portfolio selection under uncertainty. Review of Economics and Statistics 51(3) 247-257]
 ---
 
 # Kelly Criterion and Position Sizing
@@ -76,10 +76,12 @@ $$
 | 2 | 0% | 200% |
 
 The parabola is flat at the top, so under-betting costs little growth and removes a lot of risk, while over-betting costs growth and adds risk.
-That asymmetry, plus estimation error, is why practitioners run half Kelly or less.
+That asymmetry, plus estimation error, is why practitioners run half Kelly or less; Thorp (2006, section 7.3) makes this case for fractional Kelly from his own betting and investing experience.
 
-A clean drawdown result: in the continuous model with fraction $c$ of Kelly, the probability that wealth ever falls to a fraction $x$ of its starting value is $x^{2/c - 1}$.
+A clean drawdown result (Thorp 2006, section 7.3, equation 7.13): in the continuous model with fraction $c$ of Kelly, the probability that wealth ever falls to a fraction $x$ of its starting value is $x^{2/c - 1}$.
+It follows because log wealth is a Brownian motion with drift $c(1 - c/2)\,\text{SR}^2$ and volatility $c\,\text{SR}$, and such a motion ever falls by $a$ with probability $e^{-2\,\text{drift}\,a/\text{vol}^2} = e^{-(2/c - 1)a}$.
 Full Kelly halves your capital at some point with probability 1/2; half Kelly with probability $0.5^3 = 12.5\%$.
+The same model gives the chance of doubling before halving: 2/3 at full Kelly and 8/9 at half Kelly.
 Full Kelly is a very volatile ride even when the model is right.
 
 ### Parameter uncertainty
@@ -170,17 +172,7 @@ $$
 
 Sized one at a time, the assets would get $0.05/0.04 = 1.25$ and $0.03/0.0225 = 1.33$, total leverage 2.58 instead of 1.67.
 Portfolio Sharpe is $\sqrt{\mu^\top\Sigma^{-1}\mu} = \sqrt{0.07} \approx 0.265$ and maximal excess growth is $0.035$.
-
-```python
-import numpy as np
-
-mu = np.array([0.05, 0.03])
-vol = np.array([0.20, 0.15])
-corr = np.array([[1.0, 0.5], [0.5, 1.0]])
-cov = np.outer(vol, vol) * corr
-f = np.linalg.solve(cov, mu)          # [1.0, 0.667]
-growth = 0.5 * mu @ f                 # 0.035
-```
+The exact solution is $f^* = (1, 2/3)$; the script solves it by Cramer's rule in rational arithmetic and again by gradient ascent.
 
 ## Pitfalls
 
@@ -242,9 +234,30 @@ growth = 0.5 * mu @ f                 # 0.035
 > It falls to a quarter, because $f^* = \mu/\sigma^2$.
 > Volatility-targeting rules that scale by $1/\sigma$ cut only by half, so they are less aggressive than Kelly in response to a vol spike.
 
+> [!question]- risk-kelly-zero-growth-fraction | A 60% coin pays even money. Above what fraction of wealth does betting make the median player poorer?
+> About 38.9% of wealth, where $0.6\ln(1+f) + 0.4\ln(1-f)$ crosses zero.
+> The continuous model would say exactly $2f^* = 40\%$; the discrete log penalty is slightly harsher.
+
+> [!question]- risk-kelly-double-before-halve | In the continuous model, what is the probability of doubling your capital before halving it at full Kelly and at half Kelly?
+> 2/3 at full Kelly and 8/9 at half Kelly.
+> Log wealth is a drifted Brownian motion with $2\,\text{drift}/\text{vol}^2 = 2/c - 1$, so with $\theta = 2/c - 1$ the probability is $1/(1 + 2^{-\theta})$ (Thorp 2006, section 7.3).
+
+> [!question]- risk-kelly-shrink-four-years | A strategy with true Sharpe 1 ($\mu = \sigma = 20\%$) has four years of data. What multiple of plug-in Kelly maximises expected growth?
+> 0.8.
+> The drift estimate has standard error $0.2/\sqrt 4 = 10\%$, so $k^* = \mu^2/(\mu^2 + s^2) = 0.04/0.05$.
+
+> [!question]- risk-kelly-standalone-overbet | Two assets have excess returns 5% and 3%, volatilities 20% and 15% and correlation 0.5. What total leverage does joint Kelly give, and what does sizing each alone give?
+> Joint Kelly is $1 + 2/3 \approx 1.67$; sizing each alone gives $1.25 + 1.33 = 2.58$.
+> $f^* = \Sigma^{-1}\mu$ accounts for the positive correlation; standalone $\mu_i/\sigma_i^2$ double-counts the shared risk.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`code/risk_01_kelly.py`](code/risk_01_kelly.py) prints and asserts every number on this page: Kelly fractions by numerically maximising the growth function, median wealth from the exact binomial law of the number of heads, fractional-Kelly growth by Gauss-Hermite quadrature of $\mathbb{E}[\log(1 + fR)]$ for frequently rebalanced wealth (no Ito correction assumed) with volatility by simulation, drawdown and double-before-halve probabilities by a finite-difference solve of the hitting-probability equation, the drawdown law also by simulating log wealth with a Brownian-bridge correction and by simulating daily-rebalanced wealth directly, the estimation-error shrinkage by simulating daily-return histories and their drift estimates, and the two-asset weights by exact rational algebra and gradient ascent.
+- Related notes: [Expected Value and Betting Decisions](02-Expected-Value-and-Betting-Decisions.md), [Drawdowns and Risk Limits](05-Drawdowns-and-Risk-Limits.md), [Mean-Variance Portfolio Construction](../09-Alpha-Research-and-Portfolio/10-Mean-Variance-Portfolio-Construction.md).
+
 ## Further reading
 
-- John Kelly (1956), A New Interpretation of Information Rate, *Bell System Technical Journal* 35(4).
-- Edward Thorp (2006), The Kelly criterion in blackjack, sports betting and the stock market, in *Handbook of Asset and Liability Management*.
+- John Kelly (1956), A New Interpretation of Information Rate, *Bell System Technical Journal* 35(4), 917-926.
+- Edward Thorp (2006), The Kelly criterion in blackjack, sports betting and the stock market, chapter 9 of *Handbook of Asset and Liability Management*, Vol 1, ed. S. A. Zenios and W. T. Ziemba, Elsevier; section 7.3 is the case for fractional Kelly and equation 7.13 the drawdown law.
 - MacLean, Thorp and Ziemba (eds.), *The Kelly Capital Growth Investment Criterion* (2011).
-- Robert Merton (1969), Lifetime portfolio selection under uncertainty: the continuous-time case, *Review of Economics and Statistics* 51(3).
+- Robert Merton (1969), Lifetime portfolio selection under uncertainty: the continuous-time case, *Review of Economics and Statistics* 51(3), 247-257.
