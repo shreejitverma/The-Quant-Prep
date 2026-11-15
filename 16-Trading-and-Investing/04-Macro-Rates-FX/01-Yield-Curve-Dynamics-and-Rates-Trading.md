@@ -13,9 +13,9 @@ sources: [Litterman and Scheinkman (1991) - Common Factors Affecting Bond Return
 ## TL;DR
 
 - The sovereign yield curve is the foundational discount mechanism for global capital markets; its shape reflects market expectations of future short-term interest rates, inflation risk premiums, and term premiums.
-- Litterman and Scheinkman (1991) proved via Principal Component Analysis (PCA) that three orthogonal factors explain over 98% of yield curve variations: Level (parallel shift, ~85-90%), Slope (steepening/flattening, ~8-12%), and Curvature (hump, ~2-4%).
-- Rates traders construct DV01-neutral relative-value trades across the curve, including 2s10s steepeners/flatteners, box spreads, and barbell-bullet butterfly spreads (e.g., 2Y/5Y/10Y).
-- Covered Interest Parity (CIP) has persistently failed since the 2008 financial crisis, giving rise to the cross-currency basis spread driven by bank regulatory balance sheet constraints (Supplementary Leverage Ratio) and non-US dollar demand.
+- Litterman and Scheinkman (1991) found that three factors, level, steepness (slope) and curvature, explain most of the variation in US Treasury returns, with the level factor alone explaining on average about 89.5% (as summarised by Bliss 1997).
+- Rates traders construct DV01-neutral relative-value trades across the curve, including 2s10s steepeners and flatteners and barbell-versus-bullet butterflies (e.g., 2Y/5Y/10Y).
+- Du, Tepper and Verdelhan (2018) document persistent deviations from Covered Interest Parity (CIP) since the 2008 financial crisis, the cross-currency basis, and link them to bank balance-sheet costs from post-crisis regulation (such as leverage ratio requirements) together with demand for dollar hedging.
 - Systematic FX carry trades harvest structural interest rate differentials by borrowing low-yielding funding currencies (such as JPY or CHF) to purchase high-yielding target currencies, but remain exposed to sudden flight-to-safety liquidation crashes.
 
 ## Learning objectives
@@ -46,9 +46,10 @@ The yield curve can be represented in three mathematically distinct forms:
 
 To extract pure zero-coupon discount factors $P(0, T)$ from coupon-paying bonds trading at par, quants deploy sequential bootstrapping:
 
-$$P(0, T) = \frac{1 - c \sum_{i=1}^{n-1} P(0, t_i)}{1 + c}$$
+$$P(0, T) = \frac{1 - \frac{c}{2} \sum_{i=1}^{n-1} P(0, t_i)}{1 + \frac{c}{2}}$$
 
-where $c$ is the semi-annual coupon rate of the maturing par bond.
+where $c$ is the annual coupon rate of the maturing par bond, paid as two semi-annual coupons of $c/2$ per unit of face.
+The backing script bootstraps a hypothetical par curve this way and confirms that every input bond reprices at exactly 100.
 Continuous spot yields $y(T)$ are obtained via:
 
 $$y(T) = -\frac{\ln P(0, T)}{T}$$
@@ -61,17 +62,18 @@ When the spot yield curve is upward-sloping ($\frac{\partial y}{\partial T} > 0$
 
 ### 2. PCA Decomposition: Level, Slope, and Curvature
 
-In their seminal 1991 paper, Robert Litterman and José Scheinkman conducted Principal Component Analysis on daily Treasury yield changes across maturities from 1 to 30 years:
+In their 1991 paper, Robert Litterman and José Scheinkman extracted common factors from US Treasury returns and named the three largest level, steepness and curvature; the level factor alone explained on average about 89.5% of the variation (Bliss 1997).
+The exact shares depend on the sample, the maturities and whether yields or returns are used, so the table below gives only the ranking:
 
 ```
 +-----------------------------------------------------------------------+
 |                    THE THREE PCA FACTORS OF THE YIELD CURVE           |
 +-----------------------------------------------------------------------+
-| Factor    | Variance Expl | Geometric Shape  | Economic Driver        |
+| Factor    | Variance Rank | Geometric Shape  | Common Interpretation  |
 |-----------+---------------+------------------+------------------------|
-| PC1: Level| ~85.0% - 90%  | Flat Shift (+,+) | Inflation / Fed Stance |
-| PC2: Slope| ~8.0% - 12%   | Rotation (+, -)  | Growth Cycle / Hikes   |
-| PC3: Curve| ~2.0% - 4%    | Hump (+, -, +)   | Term Premium / Liquidity|
+| PC1: Level| Largest       | Flat Shift (+,+) | Policy and inflation   |
+| PC2: Slope| Second        | Rotation (+, -)  | Policy cycle vs growth |
+| PC3: Curve| Third         | Hump (+, -, +)   | Belly vs wings         |
 +-----------------------------------------------------------------------+
 ```
 
@@ -79,14 +81,14 @@ In their seminal 1991 paper, Robert Litterman and José Scheinkman conducted Pri
 Factor Loadings across Maturity (Years):
 Loadings
    ^
-   |  [PC1: Level]  ---------------------------------- (+0.40)
+   |  [PC1: Level]  ---------------------------------- (same sign)
    |
    |  [PC2: Slope]  \
    |                 \
    |                  \
    |  -----------------\-----------------------------> Maturity
    |                    \
-   |                     \  (-0.40)
+   |                     \  (opposite sign)
    |
    |  [PC3: Curvature]   /\
    |                    /  \
@@ -94,11 +96,10 @@ Loadings
    +------------------/------\------------------------
 ```
 
-1. **PC1 (Level)**: A parallel shock across all maturities.
-   A 50 bps surprise in macroeconomic inflation raises short, intermediate, and long yields uniformly.
-2. **PC2 (Slope)**: Short-end yields move in the opposite direction of long-end yields.
-   Central bank rate hikes raise short rates while lowering long rates due to expected future growth slowdown (flattening the curve).
-3. **PC3 (Curvature)**: Intermediate maturities (3-7 years) move while short and long ends remain anchored, altering the hump of the curve.
+1. **PC1 (Level)**: A roughly parallel move across all maturities, with loadings of the same sign everywhere.
+2. **PC2 (Slope)**: Short-end and long-end yields move in opposite directions relative to each other, steepening or flattening the curve.
+   A hiking cycle that lifts short rates more than long rates is one source of flattening; the long end need not fall.
+3. **PC3 (Curvature)**: Intermediate maturities move against both the short and long ends, altering the hump of the curve.
 
 ### 3. Rates Trading: DV01-Neutral Spreads and Butterflies
 
@@ -118,38 +119,40 @@ $$\frac{\text{Notional}_{2Y}}{\text{Notional}_{10Y}} = \frac{\text{DV01}_{10Y}}{
 To execute a **Bull Steepener** (expecting the Fed to slash short rates):
 - Long $43.2 million 2-year notes.
 - Short $10.0 million 10-year bonds.
-The net portfolio has zero exposure to parallel level shifts ($\text{DV01}_{\text{net}} = 0$), but generates pure alpha if the 2s10s spread widens.
+The net portfolio has zero first-order exposure to parallel level shifts ($\text{DV01}_{\text{net}} = 0$) and profits if the 2s10s spread widens.
 
 #### The 2s5s10s Butterfly Spread
 Butterfly trades isolate pure curvature (PC3) while hedging both Level (PC1) and Slope (PC2).
 A butterfly consists of two "wings" (2Y and 10Y) and a "body" (5Y):
 - Long Wing 1 (2Y) + Long Wing 2 (10Y) vs Short Body (5Y).
 
-Weights $w_1, w_2, w_3$ satisfy:
-$$\text{DV01}_1 + \text{DV01}_2 = \text{DV01}_{\text{body}}$$
-$$\text{Slope Weighting}: \text{DV01}_1 \cdot \Delta y_1 + \text{DV01}_2 \cdot \Delta y_2 = \text{DV01}_{\text{body}} \cdot \Delta y_{\text{body}}$$
+The wing DV01s, as fractions $w_1$ and $w_2$ of the body DV01, are chosen so the fly has zero P&L under both a parallel shift and a slope shift:
+$$w_1 + w_2 = 1 \quad \text{(parallel neutral)}$$
+$$w_1 \, \Delta y_1 + w_2 \, \Delta y_2 = \Delta y_{\text{body}} \quad \text{(neutral to the chosen slope shock)}$$
+For a slope shock linear in maturity ($\Delta y(t) \propto t - 5$), the solution is $w_1 = 0.625$ on the 2-year and $w_2 = 0.375$ on the 10-year.
+The common 50/50 DV01 split is parallel neutral but not slope neutral for 2s5s10s, because the 5-year is not midway between 2 and 10 years: it loses one body-DV01 basis point per basis point per year of that slope shock.
+In practice desks estimate the slope shock from PCA or regression instead of assuming it is linear.
 
 ```
 +-----------------------------------------------------------------------+
 |                    YIELD CURVE BUTTERFLY STRUCTURE                    |
 +-----------------------------------------------------------------------+
-| Wing 1 (2-Year): Long $25M DV01                                       |
-| Body (5-Year):   Short $50M DV01  <--- Belly of the Curve             |
-| Wing 2 (10-Year): Long $25M DV01                                      |
+| Wing 1 (2-Year):  Long  $25k DV01 (50/50 split)                       |
+| Body (5-Year):    Short $50k DV01  <--- Belly of the Curve            |
+| Wing 2 (10-Year): Long  $25k DV01 (50/50 split)                       |
 +-----------------------------------------------------------------------+
 ```
 
 ### 4. Covered Interest Parity (CIP) and The Cross-Currency Basis
 
-Covered Interest Parity states that the forward exchange rate $F$ between domestic currency $d$ and foreign currency $f$ must equate synthetic borrowing costs:
+Covered Interest Parity states that, with $S$ and $F$ quoted in units of domestic currency $d$ per unit of foreign currency $f$, the forward rate must equate direct and synthetic borrowing costs:
 
 $$\frac{F}{S} = \frac{1 + r_d}{1 + r_f}$$
 
 In continuous compounding:
 $$F = S \cdot e^{(r_d - r_f) T}$$
 
-Prior to 2008, CIP held to within transaction costs.
-However, since 2008, significant and persistent deviations have existed, measured by the **Cross-Currency Basis Spread ($\Delta$)**:
+Du, Tepper and Verdelhan (2018) report that before 2008 CIP held closely for major currencies, and that since 2008 large and persistent deviations have existed, measured by the **Cross-Currency Basis ($\Delta$)**:
 
 $$F = S \cdot e^{(r_d - r_f - \Delta) T}$$
 
@@ -157,8 +160,8 @@ $$F = S \cdot e^{(r_d - r_f - \Delta) T}$$
 +-----------------------------------------------------------------------+
 |                    WHY COVERED INTEREST PARITY FAILS POST-2008        |
 +-----------------------------------------------------------------------+
-| 1. Basel III Supplementary Leverage Ratio (SLR):                      |
-|    Banks are penalized on total balance sheet size, regardless of risk|
+| 1. Leverage ratio rules (Basel III; the SLR in the US):               |
+|    Banks are charged on total balance sheet size, regardless of risk  |
 | 2. Non-US Dollar Demand: Global corporates and foreign central banks  |
 |    need USD funding to service USD-denominated debt                   |
 | 3. Limited Arbitrage Capital: Hedge funds cannot borrow unlimited cash|
@@ -166,7 +169,8 @@ $$F = S \cdot e^{(r_d - r_f - \Delta) T}$$
 +-----------------------------------------------------------------------+
 ```
 
-A negative EUR/USD cross-currency basis indicates that non-US institutions are willing to pay a premium to borrow US dollars via FX swaps, offering fixed income quants an arbitrage premium.
+With domestic $d$ = USD, borrowing dollars synthetically (borrow EUR, sell it spot, buy it back forward) costs $r_d - \Delta$, so a negative EUR/USD basis means synthetic dollars cost more than direct dollars: non-US institutions pay a premium to borrow dollars through FX swaps.
+A bank that can borrow dollars directly and lend them through the swap earns that premium, but only by using balance sheet, which is why the gap persists.
 
 ### 5. Systematic Foreign Exchange Carry Trades
 
@@ -186,16 +190,16 @@ $$\text{Strategy}: \text{Long Currencies with } r_i > r_{\text{median}} \quad \t
 ```
 
 #### The Volatility Asymmetry and "Going Up the Stairs, Coming Down the Elevator"
-Carry strategies exhibit steady positive returns during periods of low market volatility, but suffer catastrophic, non-linear drawdowns during global liquidity squeezes (Brunnermeier et al. 2008).
+Brunnermeier, Nagel and Pedersen (2008) find that carry-trade currencies have negatively skewed returns (crash risk): steady gains in calm periods and sharp losses when funding liquidity dries up.
 When global risk appetite collapses, investors unwind carry trades simultaneously, driving rapid appreciation in funding currencies (e.g., JPY short-covering surges).
-Modern systematic managers apply dynamic volatility targeting: scaling position sizes inversely to realized currency basket volatility and liquidating carry exposure when the VIX breaches threshold barriers.
+A common risk control is volatility targeting: scaling positions inversely to realized currency volatility and cutting carry exposure when risk indicators such as the VIX spike.
 
 ---
 
 ## Worked examples
 
 ### Example 1: DV01-Neutral 2s10s Flattener Sizing
-A fixed income quant expects the Federal Reserve to implement unexpected policy rate hikes, causing a bear flattening of the yield curve.
+A fixed income quant expects unexpected Federal Reserve hikes to cause a bear flattening of the yield curve (all inputs hypothetical).
 The trader wants to short 2-year Treasury notes and go long 10-year Treasury notes in a DV01-neutral ratio with a total target risk of $50,000 per basis point.
 Market parameters:
 - 2-Year Treasury Note: Price = $100.00, Modified Duration = 1.90 years $\implies \text{DV01} = \$1.90$ per $10,000 notional (0.0190% of notional).
@@ -209,7 +213,7 @@ If the 2-year yield rises by 25 bps while the 10-year yield rises by only 10 bps
 $$\Delta \text{PnL}_{2Y} = \text{Notional}_{2Y} \times \text{DV01\%} \times \Delta y_{2Y} = \$263.16\text{M} \times 0.000190 \times 25 = +\$1,250,000$$
 $$\Delta \text{PnL}_{10Y} = \text{Notional}_{10Y} \times \text{DV01\%} \times (-\Delta y_{10Y}) = \$60.98\text{M} \times 0.000820 \times (-10) = -\$500,000$$
 $$\text{Net Trade PnL} = \$1,250,000 - \$500,000 = +\$750,000$$
-The trade successfully generated $750,000 of profit by capturing 15 bps of flattening on $50,000 DV01 ($15 \times \$50,000 = \$750,000$), completely immune to the parallel level shift.
+The trade earned $750,000 from 15 bps of flattening on $50,000 DV01 ($15 \times \$50,000 = \$750,000$); the 10 bps parallel component of the move cancels across the two legs to first order.
 
 ---
 
@@ -241,10 +245,10 @@ The trade successfully generated $750,000 of profit by capturing 15 bps of flatt
 > Forward rates sit strictly above spot rates: f(T) > y(T).
 
 > [!question]- mkt-mac-006 | What did Litterman and Scheinkman (1991) prove regarding yield curve dynamics?
-> That three principal component factors (Level, Slope, and Curvature) account for over 98% of total yield curve variance.
+> That three common factors, level, steepness and curvature, explain most of the variation in Treasury returns, with level alone explaining on average about 89.5% (Bliss 1997 summary); they found, not proved, this empirically.
 
 > [!question]- mkt-mac-007 | What proportion of yield curve variance is typically explained by the Level factor (PC1)?
-> Approximately 85% to 90% of total variance.
+> In Litterman and Scheinkman (1991) the level factor explained on average about 89.5%; the exact share depends on sample period, maturities and whether yields or returns are analysed.
 
 > [!question]- mkt-mac-008 | What is the geometric movement of the yield curve represented by the Slope factor (PC2)?
 > A rotation where short-term yields and long-term yields move in opposite directions (steepening or flattening).
@@ -292,7 +296,7 @@ The trade successfully generated $750,000 of profit by capturing 15 bps of flatt
 > The empirical premium or discount added to foreign currency rates in the FX swap market, reflecting deviations from pure CIP.
 
 > [!question]- mkt-mac-023 | Why has the cross-currency basis spread persisted since the 2008 financial crisis?
-> Post-crisis banking regulations (such as the Supplementary Leverage Ratio) penalize bank balance sheet expansion, restricting arbitrage capital.
+> Du, Tepper and Verdelhan (2018) link it to post-crisis bank balance-sheet costs (leverage ratio requirements, visible in quarter-end spikes) that make the arbitrage costly, together with persistent demand for dollar hedging.
 
 > [!question]- mkt-mac-024 | What does a negative cross-currency basis for EUR/USD signify?
 > Non-US institutions are paying a premium above normal CIP rates to borrow US dollars through the foreign exchange swap market.
@@ -310,7 +314,7 @@ The trade successfully generated $750,000 of profit by capturing 15 bps of flatt
 > Severe crash risk: sudden global market panics trigger rapid unwinding of short funding positions, causing steep liquidation drawdowns.
 
 > [!question]- mkt-mac-029 | What are the classic funding currencies historically used in global carry trades?
-> The Japanese Yen (JPY) and Swiss Franc (CHF), due to their multi-decade near-zero or negative interest rate policies.
+> The Japanese Yen (JPY) and Swiss Franc (CHF), because both had long periods of near-zero or negative policy rates.
 
 > [!question]- mkt-mac-030 | How do quantitative carry managers protect against sudden carry crashes?
 > By dynamically reducing leverage when market volatility (e.g. VIX, FX implied volatility) spikes.
@@ -321,11 +325,17 @@ The trade successfully generated $750,000 of profit by capturing 15 bps of flatt
 > [!question]- mkt-mac-032 | What is the primary golden rule of rates and macro trading?
 > Always isolate the exact factor exposure (Level, Slope, or Curvature) using DV01 weighting before deploying capital.
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [mkt_macro_01_rates.py](../code/mkt_macro_01_rates.py) prints and asserts every number in this note; the bootstrap is checked by solving each discount factor again by bisection on its par bond's price, the flattener P&L is computed leg by leg, and the butterfly weights are checked by repricing 2-, 5- and 10-year par bonds under parallel and slope yield shocks; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_macro_01_rates.py`.
+- Syllabus: [Discounting and Yield Curves](../../06-Fixed-Income-and-Asset-Classes/01-Discounting-and-Yield-Curves.md), [Curve Risk and Hedging](../../06-Fixed-Income-and-Asset-Classes/15-Curve-Risk-and-Hedging.md), [FX Markets and Interest Rate Parity](../../06-Fixed-Income-and-Asset-Classes/07-FX-Markets-and-Interest-Rate-Parity.md).
+
 ---
 
 ## Further reading
 
 - Brunnermeier, M. K., Nagel, S., & Pedersen, L. H. (2008). *Carry Trades and Currency Crashes*. NBER Macroeconomics Annual, 23(1), 313-347.
 - Du, W., Tepper, A., & Verdelhan, A. (2018). *Deviations from Covered Interest Rate Parity*. Journal of Finance, 73(3), 915-957.
+- Bliss, R. R. (1997). *Movements in the Term Structure of Interest Rates*. Federal Reserve Bank of Atlanta Economic Review, Fourth Quarter 1997.
 - Litterman, R., & Scheinkman, J. (1991). *Common Factors Affecting Bond Returns*. Journal of Fixed Income, 1(1), 54-61.
 - Nelson, C. R., & Siegel, A. F. (1987). *Parsimonious Modeling of Yield Curves*. Journal of Business, 60(4), 473-489.

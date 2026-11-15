@@ -38,7 +38,7 @@ Unlike financial assets, commodities are consumption assets defined by physical 
 - **Natural Gas (Henry Hub)**: Extreme weather sensitivity (heating degree days vs cooling degree days), storage injection (April-October) versus withdrawal seasons (November-March), and pipeline compression constraints.
 
 ### 3. Precious and Industrial Metals
-- **Precious Metals (Gold, Silver, Platinum)**: Gold as a monetary asset with negligible convenience yield and low storage costs; inverse correlation with real Treasury yields and dollar strength.
+- **Precious Metals (Gold, Silver, Platinum)**: Gold as a monetary asset with a small convenience yield (the lease rate) and low storage costs; its often-cited inverse relation with real Treasury yields and the dollar varies over time.
 - **Gold-to-Silver Ratio**: Historical relative-value indicator tracking cyclical industrial activity (silver) versus monetary fear (gold).
 - **Industrial Metals (Copper, Aluminum, Zinc)**: Copper ("Doctor Copper") as a leading indicator of global capital expenditure, electrification demand, and Chinese manufacturing cycles.
 

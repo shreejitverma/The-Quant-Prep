@@ -21,7 +21,7 @@ Mastering analytical Greek formulas, second-order cross sensitivities, and Taylo
 
 The Greeks measure the partial derivatives of an option's theoretical pricing model with respect to its underlying parameters.
 Delta ($\Delta$) and Gamma ($\Gamma$) govern directional and curvature risk; Theta ($\Theta$) measures time decay; Vega ($\mathcal{V}$) quantifies volatility sensitivity.
-Second-order cross Greeks - Vanna ($\frac{\partial \Delta}{\partial \sigma}$) and Volga ($\frac{\partial \mathcal{V}}{\partial \sigma}$) - dictate risk during extreme volatility spikes.
+Second-order volatility Greeks - the cross Greek Vanna ($\frac{\partial \Delta}{\partial \sigma}$) and Volga ($\frac{\partial \mathcal{V}}{\partial \sigma}$) - dominate the risk of large volatility moves.
 The PnL of an options book decomposes via Taylor expansion into:
 $$\Delta \text{PnL} \approx \Delta \cdot \Delta S + \frac{1}{2} \Gamma (\Delta S)^2 + \mathcal{V} \cdot \Delta \sigma + \Theta \cdot \Delta t + \text{Vanna} \cdot \Delta S \Delta \sigma + \frac{1}{2} \text{Volga} (\Delta \sigma)^2$$
 
@@ -62,7 +62,7 @@ $$d_1 = \frac{\ln(S / K) + (r - q + \frac{1}{2}\sigma^2)T}{\sigma \sqrt{T}}, \qu
    - Measures sensitivity to changes in implied volatility:
      $$\mathcal{V} = S e^{-q T} \phi(d_1) \sqrt{T}$$
    - Identical for European calls and puts.
-   - Highest for at-the-money (ATM) options with long maturities.
+   - Highest near the money and growing with maturity; over strikes it peaks where $d_1 = 0$, at $K = S e^{(r - q + \sigma^2/2) T}$, slightly above the forward.
 
 4. **Rho ($\rho = \frac{\partial V}{\partial r}$)**:
    - Measures sensitivity to the risk-free interest rate:
@@ -87,12 +87,12 @@ $$d_1 = \frac{\ln(S / K) + (r - q + \frac{1}{2}\sigma^2)T}{\sigma \sqrt{T}}, \qu
 3. **Volga / Vomma ($\frac{\partial^2 V}{\partial \sigma^2} = \frac{\partial \mathcal{V}}{\partial \sigma}$)**:
    - Convexity of option price with respect to implied volatility:
      $$\text{Volga} = \mathcal{V} \frac{d_1 d_2}{\sigma}$$
-   - Positive for OTM options; explains why OTM tail hedges expand in value non-linearly during severe volatility spikes.
+   - Positive away from the money (where $d_1$ and $d_2$ share a sign) and close to zero at the money, so out-of-the-money options gain vega as volatility rises and their value grows faster than linearly in volatility.
 
 4. **Charm ($\frac{\partial \Delta}{\partial t} = -\frac{\partial \Delta}{\partial T}$)**:
    - Rate of Delta decay over time:
      $$\text{Charm}_{\text{call}} = q e^{-q T} N(d_1) - e^{-q T} \phi(d_1) \left(\frac{2(r - q)T - d_2 \sigma \sqrt{T}}{2 T \sigma \sqrt{T}}\right)$$
-   - Drives systematic dealer delta rebalancing flows into expiration Fridays.
+   - Charm is why a hedged book's delta drifts even when spot and volatility are unchanged, most visibly for near-dated options approaching expiry.
 
 ### 3. Taylor Series PnL Decomposition
 
@@ -112,7 +112,7 @@ If the realized price change $|\Delta S|$ generates gamma gains exceeding theta 
 
 ### Example 1: Calculating Greeks for an ATM Index Option
 
-An options trader evaluates a 30-day European call on an index:
+An options trader evaluates a 30-day European call on an index (hypothetical inputs):
 - Spot: $S = \$5,000.00$.
 - Strike: $K = \$5,000.00$ (ATM).
 - Time to Expiry: $T = 30 / 365 = 0.08219$ years ($\sqrt{T} = 0.28669$).
@@ -123,8 +123,9 @@ An options trader evaluates a 30-day European call on an index:
 1. **Calculate $d_1$ and $d_2$**:
    $$\ln(S / K) = \ln(1.0) = 0.0000$$
    $$r - q + 0.5 \sigma^2 = 0.04 - 0.015 + 0.5(0.04) = 0.025 + 0.020 = 0.045$$
-   $$d_1 = \frac{0.045 \times 0.08219}{0.20 \times 0.28669} = \frac{0.0036986}{0.057338} = +0.0645$$
-   $$d_2 = 0.0645 - 0.057338 = +0.00716$$
+   $$d_1 = \frac{0.045 \times 0.08219}{0.20 \times 0.28669} = \frac{0.0036986}{0.057338} = +0.064505$$
+   $$d_2 = 0.064505 - 0.057338 = +0.007167$$
+   Rounding $d_1$ to $0.0645$ before subtracting would give $0.00716$, one unit off in the last place.
 
 2. **Evaluate Standard Normal Functions**:
    $$N(d_1) = N(0.0645) = 0.5257$$
@@ -140,7 +141,7 @@ An options trader evaluates a 30-day European call on an index:
      $$\mathcal{V}_{\text{unit}} = 5000 \times 0.99877 \times 0.39811 \times 0.28669 = 569.97$$
      $$\mathcal{V}_{1\%} = \frac{569.97}{100} = \$5.70\text{ per option contract}$$
    - **Theta (Daily Calendar Decay)**:
-     All three terms of the call theta formula are needed; with $N(d_2) = N(0.00716) = 0.50286$ and $e^{-r T} = e^{-0.04 \times 0.08219} = 0.99672$:
+     All three terms of the call theta formula are needed; with $N(d_2) = N(0.007167) = 0.50286$ and $e^{-r T} = e^{-0.04 \times 0.08219} = 0.99672$:
      $$\text{Decay term} = -\frac{5000 \times 0.99877 \times 0.39811 \times 0.20}{2 \times 0.28669} = -\frac{397.62}{0.57338} = -\$693.47$$
      $$\text{Rate term} = -0.04 \times 5000 \times 0.99672 \times 0.50286 = -\$100.24$$
      $$\text{Dividend term} = +0.015 \times 5000 \times 0.99877 \times 0.5257 = +\$39.38$$
@@ -150,9 +151,10 @@ An options trader evaluates a 30-day European call on an index:
 
 ### Example 2: Discrete Delta Hedging PnL Attribution
 
-A trader sells 100 call contracts ($10,000$ shares equivalent) with the parameters above.
-- Initial Position Delta: $-10,000 \times 0.5251 = -5,251\text{ shares}$.
-- Initial Hedge: Buy $5,251$ shares of index stock at $\$5,000.00$ to achieve zero net delta.
+A trader sells calls on $10,000$ index units (for example 100 contracts with a multiplier of 100) with the parameters above.
+Each line below uses the unrounded per-unit Greeks from Example 1, so totals can differ by a dollar from products of the rounded figures.
+- Initial Position Delta: $-10,000 \times 0.52507 = -5,251\text{ units}$.
+- Initial Hedge: Buy $5,251$ units of the index (or futures) at $\$5,000.00$ to achieve zero net delta.
 - Over the next 24 hours ($\Delta t = 1/365$):
   - Spot price rallies to $\$5,050.00$ ($\Delta S = +\$50.00$).
   - Implied volatility drops from $20\%$ to $19\%$ ($\Delta \sigma = -1.0\%$).
@@ -161,18 +163,22 @@ A trader sells 100 call contracts ($10,000$ shares equivalent) with the paramete
 1. **Delta Contribution**:
    $$\text{PnL}_{\Delta} = \Delta_{\text{net}} \times \Delta S = 0 \times \$50.00 = \$0.00$$
 2. **Gamma Contribution**:
-   $$\Gamma_{\text{position}} = -10,000 \times 0.001387 = -13.87$$
-   $$\text{PnL}_{\Gamma} = \frac{1}{2} \Gamma (\Delta S)^2 = \frac{1}{2} \times (-13.87) \times (50.00)^2 = -6.935 \times 2,500 = -\$17,337.50$$
+   $$\Gamma_{\text{position}} = -10,000 \times 0.0013869 = -13.87$$
+   $$\text{PnL}_{\Gamma} = \frac{1}{2} \Gamma (\Delta S)^2 = \frac{1}{2} \times (-13.869) \times (50.00)^2 = -\$17,337$$
 3. **Theta Contribution**:
-   $$\Theta_{\text{position}} = -10,000 \times (-\$2.07) = +\$20,700\text{ per day}$$
-   $$\text{PnL}_{\Theta} = +\$20,700.00$$
+   $$\Theta_{\text{position}} = -10,000 \times (-\$2.06666) = +\$20,667\text{ per day}$$
+   $$\text{PnL}_{\Theta} = +\$20,667$$
 4. **Vega Contribution**:
    The short option position has negative vega:
-   $$\mathcal{V}_{\text{net}} = -10,000 \times \$5.70 = -\$57,000\text{ per 1%}$$
-   $$\text{PnL}_{\mathcal{V}} = -\$57,000 \times (-1.0\%) = +\$57,000.00$$
+   $$\mathcal{V}_{\text{net}} = -10,000 \times \$5.69974 = -\$56,997\text{ per vol point}$$
+   $$\text{PnL}_{\mathcal{V}} = -\$56,997 \times (-1) = +\$56,997$$
 5. **Total Attributed PnL**:
-   $$\Delta \text{PnL} \approx \$0.00 - \$17,337.50 + \$20,700.00 + \$57,000.00 = +\$60,362.50$$
-   The massive gain from implied volatility crush ($+\$57,000$) and theta decay ($+\$20,700$) easily absorbed the gamma loss ($-\$17,338$) from the spot rally.
+   $$\Delta \text{PnL} \approx \$0 - \$17,337 + \$20,667 + \$56,997 = +\$60,327$$
+   Adding the two second-order volatility terms, Vanna ($-\$71$) and Volga ($-\$0.66$), gives $+\$60,255$.
+6. **Check Against Full Revaluation**:
+   Repricing the call at $S = 5,050$, $\sigma = 19\%$ and one day less to expiry, and adding the hedge gain $5,250.68 \times 50$, gives $+\$58,615$ (hedge financing and dividends ignored).
+   The $\$1,640$ gap is third- and higher-order terms; the zomma term $-\frac{1}{2} \times 10,000 \times \frac{\partial \Gamma}{\partial \sigma} (\Delta S)^2 \Delta \sigma$ alone is about $-\$866$, because gamma rises as volatility falls for this ATM option.
+   The volatility drop ($+\$56,997$) and theta ($+\$20,667$) still easily absorb the gamma loss ($-\$17,337$) from the rally.
 
 ---
 
@@ -180,14 +186,16 @@ A trader sells 100 call contracts ($10,000$ shares equivalent) with the paramete
 
 - **The Discrete Rebalancing Gamma Leak**:
   Theoretical delta hedging assumes continuous trading; in reality, hedges are rebalanced discretely (e.g. hourly or daily).
-  Discrete rebalancing creates an unhedged residual tracking error that scales with $\Gamma \sigma^2 \Delta t$.
+  Each rebalancing interval leaves an error of size about $\frac{1}{2} \Gamma S^2 \sigma^2 \Delta t$, so the standard deviation of the total hedging error scales with $\sqrt{\Delta t}$.
+  In the backing script's seeded simulation of a short 30-day ATM call, quadrupling the number of rebalances from 50 to 200 roughly halves the error standard deviation (a ratio of about 2 with seed 20261114 and 20,000 paths).
 - **Ignoring Higher-Order Greeks in Large Market Moves**:
-  Second-order delta-gamma approximations fail during market gap openings ($> 3\sigma$).
-  Third-order Greeks (Speed $\frac{\partial \Gamma}{\partial S}$, Zomma $\frac{\partial \Gamma}{\partial \sigma}$) must be incorporated during crash modeling.
+  Second-order delta-gamma approximations degrade as moves grow, and Example 2 already shows a $\$1,640$ gap for a one-day $1\%$ move with a one-point volatility drop.
+  Stress tests should use full revaluation, or at least third-order Greeks (Speed $\frac{\partial \Gamma}{\partial S}$, Zomma $\frac{\partial \Gamma}{\partial \sigma}$).
 - **The Weekend Theta Trap**:
-  Theta does not decay linearly over weekends; market makers price in weekend decay by closing Friday afternoon, causing implied volatility to drop before the weekend rather than Monday morning.
+  Calendar-day theta charges three days of decay over a weekend, but little variance is realised while the market is closed.
+  Desks that measure time in trading days or with weighted calendars show different theta and implied volatility into a weekend, so compare numbers only under the same time convention.
 - **Pin Risk Near Expiration**:
-  For near-expiry options trading within pennies of the strike, Gamma approaches infinity and Delta oscillates violently between 0.0 and 1.0.
+  For near-expiry options trading within pennies of the strike, Gamma grows without bound and Delta swings between 0.0 and 1.0 on small moves.
   Holding unclosed short options through expiration creates extreme overnight assignment uncertainty.
 
 ---
@@ -224,15 +232,15 @@ A trader sells 100 call contracts ($10,000$ shares equivalent) with the paramete
 
 > [!question]- mkt-opt-008 | Define Volga (Vomma) and explain why out-of-the-money tail options have high Volga.
 > Volga is the second derivative of option price with respect to volatility: dVega / dsigma = Vega * (d1 * d2 / sigma).
-> Far OTM options have low initial Vega but high Volga, causing their prices to explode non-linearly during sudden volatility spikes.
+> It is near zero at the money (d1 * d2 close to 0) and positive away from it, so an OTM option gains vega as volatility rises and its price grows faster than linearly in a volatility spike.
 
 > [!question]- mkt-opt-009 | What is Charm and how does it influence market-on-close dealer rebalancing?
 > Charm is the rate of Delta decay over time: -dDelta / dT.
-> As expiration approaches, OTM options bleed Delta toward zero, forcing options dealers to unwind underlying stock hedges before the close.
+> As expiration approaches, OTM option deltas decay toward zero, so a desk that hedged them must unwind part of its stock hedge even if spot does not move; whether that adjustment is done with closing-auction orders is a desk choice, not a rule.
 
 > [!question]- mkt-opt-010 | What is Vega and at what moneyness strike is it maximized?
-> Vega measures the change in option price per 1% change in implied volatility: Vega = S * exp(-q*T) * phi(d1) * sqrt(T).
-> Vega is strictly maximized for at-the-money (ATM) options where d1 is close to zero.
+> Vega = S * exp(-q*T) * phi(d1) * sqrt(T) per unit of volatility (divide by 100 for one vol point).
+> Over strikes it peaks where d1 = 0, at K = S * exp((r - q + sigma^2 / 2) * T), slightly above the forward, so near-the-money options carry the most vega.
 
 > [!question]- mkt-opt-011 | Why does Vega increase with time to maturity while Gamma decreases?
 > Vega scales with sqrt(T), meaning long-dated options have greater cumulative sensitivity to volatility uncertainty.
@@ -266,9 +274,9 @@ A trader sells 100 call contracts ($10,000$ shares equivalent) with the paramete
 > Dividends reduce the forward price of the underlying asset by exp(-q * T).
 > Dividend yield q decreases Call Delta and increases Put Delta (makes put delta more negative).
 
-> [!question]- mkt-opt-019 | What is the Carr-Madan formula for the variance of hedging error?
-> It shows that the cumulative PnL of a delta-hedged option equals the integrated path: Integral_0^T exp(-r*t) * 0.5 * Gamma_t * S_t^2 * (sigma_realized^2 - sigma_implied^2) dt.
-> Delta-hedged options PnL is purely a bet on realized volatility versus implied volatility.
+> [!question]- mkt-opt-019 | What is the Carr-Madan formula for the P&L of a delta-hedged option?
+> For an option delta-hedged at the implied volatility the P&L is Integral_0^T exp(-r*t) * 0.5 * Gamma_t * S_t^2 * (sigma_realized^2 - sigma_implied^2) dt (Carr and Madan 1998; also El Karoui, Jeanblanc-Picque and Shreve 1998).
+> The P&L is a gamma-weighted bet on realized versus implied variance along the path, so it depends on where spot travels, not only on the average realized volatility.
 
 > [!question]- mkt-opt-020 | What is pin risk in options market making?
 > The risk that the underlying asset closes exactly at the strike price on expiration Friday.
@@ -276,27 +284,27 @@ A trader sells 100 call contracts ($10,000$ shares equivalent) with the paramete
 
 > [!question]- mkt-opt-021 | What is implied dividend yield and how can it be extracted from option chains?
 > The dividend yield priced into option contracts derived from European Put-Call parity: C - P = S * exp(-q*T) - K * exp(-r*T).
-> If options trade at a discount to theoretical forward parity, the market is pricing in an imminent dividend hike.
+> If the forward implied by C - P is below S * exp((r - q) * T) at the assumed q, the market is pricing a higher dividend (or a higher borrow cost) than assumed.
 
 > [!question]- mkt-opt-022 | What is a shadow Greek?
-> Sensitivity of an option model's output to parameters that are not directly observable in market quotes, such as jump intensity or correlation.
-> Desks manage shadow Greeks to prevent model misspecification during regime shifts.
+> A sensitivity computed by bumping one input and letting the inputs that move with it move too, rather than holding them fixed; shadow gamma, for example, reprices with the implied volatility that the skew assigns to each new spot.
+> It differs from the model Greek whenever the surface moves with spot, so desks compare the two to see how much risk the sticky-strike assumption hides.
 
 > [!question]- mkt-opt-023 | Why does a short gamma position experience negative convexity?
 > As the underlying price falls, short gamma forces the desk's delta to become increasingly long, compounding losses.
 > As the price rises, delta becomes increasingly short, guaranteeing that the desk sells at the bottom and buys at the top.
 
 > [!question]- mkt-opt-024 | What is the Bleed of an options book?
-> The total daily carrying cost combining theta time decay, cash financing margin, and stock borrow fees.
+> Desk slang (not a formal definition) for the daily carrying cost of a long-options book: theta plus financing and any stock borrow fees on the hedge.
 > A long options book must generate sufficient realized gamma scalping gains to exceed its daily bleed rate.
 
 > [!question]- mkt-opt-025 | What is smile curvature and how is it related to Volga?
 > Smile curvature is the second derivative of implied volatility with respect to strike: d^2 sigma_IV / dK^2.
-> High Volga in OTM options directly drives the steepness of the volatility smile curvature.
+> In the vanna-volga view the market charges for volga, and the butterfly (wings over ATM) is roughly that price, so a smile with more curvature is one where volga is more expensive.
 
 > [!question]- mkt-opt-026 | How does a finite difference grid verify an analytical Greek implementation?
 > By computing two-sided central differences: Delta_FD = (V(S + eps) - V(S - eps)) / (2 * eps).
-> If analytical Greek code differs from finite difference estimates by more than machine epsilon tolerances, a derivation bug exists.
+> A central difference has truncation error of order eps^2 plus rounding error of order machine epsilon / eps, so compare at a tolerance set by those two terms; a gap far above it signals a derivation or coding bug.
 
 > [!question]- mkt-opt-027 | Why can deep in-the-money (ITM) European puts carry positive Theta under high interest rates?
 > A deep ITM put has virtually zero time premium and is worth K * exp(-r*T) - S.
@@ -307,8 +315,8 @@ A trader sells 100 call contracts ($10,000$ shares equivalent) with the paramete
 > It quantifies the change in dollar delta (Delta * S) for a 1% move in the underlying asset, enabling direct comparison across multi-price assets.
 
 > [!question]- mkt-opt-029 | What is Vega weighted by time to maturity (Weighted Vega)?
-> Weighting Vega by 1 / sqrt(T) to normalize volatility exposure across contracts with differing maturities.
-> It prevents long-dated LEAPS from dominating risk reports when near-dated contracts carry far higher immediate realized volatility risk.
+> Scaling each maturity's vega by a factor such as sqrt(T_ref / T), one common convention, to reflect that short-dated implied volatilities move more than long-dated ones.
+> It stops long-dated options from dominating a vega report when near-dated implied volatility is the more volatile risk factor.
 
 > [!question]- mkt-opt-030 | Explain the term "Delta bleed" in a trending market.
 > The continuous shift in a portfolio's net delta caused by the underlying price moving across the gamma curvature.
@@ -322,11 +330,17 @@ A trader sells 100 call contracts ($10,000$ shares equivalent) with the paramete
 > Stock has zero Gamma (linear delta of 1.0), meaning stock trades can only neutralize Delta, leaving Gamma exposure unchanged.
 > To neutralize Gamma, the desk must trade other options contracts with offsetting second-order curvature.
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [mkt_opt_01_greeks_pnl.py](../code/mkt_opt_01_greeks_pnl.py) prints and asserts every number in this note; the closed-form price is checked against payoff quadrature, every Greek against finite differences of the price, the Taylor attribution against full revaluation, and the square-root-of-interval hedging claim by a seeded simulation that changes only the rebalancing frequency; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_opt_01_greeks_pnl.py`.
+- Syllabus: [The Greeks](../../05-Derivatives-and-Volatility/05-The-Greeks.md), [Delta Hedging and Gamma Scalping](../../05-Derivatives-and-Volatility/06-Delta-Hedging-and-Gamma-Scalping.md).
+
 ---
 
 ## Further reading
 
 - Black, F., & Scholes, M. (1973). *The pricing of options and corporate liabilities*. Journal of Political Economy, 81(3), 637-654.
-- Merton, R. C. (1973). *Theory of rational option pricing*. The Bell Journal of Economics and Management Science, 141-183.
-- Carr, P., & Madan, D. (1998). *Towards a theory of volatility trading*. Volatility: New Estimation Techniques for Pricing and Risk Management, 29(1), 417-427.
+- Merton, R. C. (1973). *Theory of rational option pricing*. The Bell Journal of Economics and Management Science, 4(1), 141-183.
+- Carr, P., & Madan, D. (1998). *Towards a theory of volatility trading*. In R. Jarrow (Ed.), Volatility: New Estimation Techniques for Pricing Derivatives. Risk Books; reprinted in Option Pricing, Interest Rates and Risk Management (Cambridge University Press, 2001), 458-476.
+- El Karoui, N., Jeanblanc-Picque, M., & Shreve, S. E. (1998). *Robustness of the Black and Scholes formula*. Mathematical Finance, 8(2), 93-126.
 - Natenberg, S. (2014). *Option Volatility and Pricing: Advanced Trading Strategies and Techniques*. McGraw-Hill Education.

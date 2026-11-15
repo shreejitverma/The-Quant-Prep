@@ -28,10 +28,10 @@ It analyzes centralized exchanges (CEXs), decentralized automated market makers 
 
 ### 1. Derivatives Architecture and Perpetual Futures
 - **Perpetual Contract Mechanics**: Innovation of non-expiring futures contracts anchored to spot prices via periodic funding payments between longs and shorts.
-- **Funding Rate Formulation**: The funding payment formula $F = P_{\text{clamp}}\left(\text{Premium Index} + \text{Interest Rate}, -0.05\%, 0.05\%\right)$, where Premium Index reflects the gap between Perpetual Mark Price and Spot Index Price.
+- **Funding Rate Formulation**: The funding rate $F = P + \text{clamp}(I - P, -0.05\%, 0.05\%)$, where $P$ is the premium index (the perp's impact bid and ask against the spot Index Price) and $I$ the interest component, as documented by Binance (as of November 2026).
 - **Price Benchmarks**:
-  - Index Price: Volume-weighted composite of spot prices across multiple major exchanges.
-  - Mark Price: Fair price based on Index Price plus an exponential moving average (EMA) of the basis; used for unrealized PnL and liquidation triggers to prevent manipulation.
+  - Index Price: Weighted composite of spot prices across several external exchanges.
+  - Mark Price: Index-anchored fair price (each venue publishes its own formula); used for unrealized PnL and liquidation triggers so that a spike in one order book cannot alone trigger liquidations.
   - Last Traded Price: Immediate matching engine execution price.
 
 ### 2. Systematic Basis and Funding Arbitrage

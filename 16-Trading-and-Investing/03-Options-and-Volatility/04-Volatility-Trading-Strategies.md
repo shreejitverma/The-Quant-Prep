@@ -21,8 +21,8 @@ This note formalizes the primary institutional volatility trading strategies: dy
 
 Volatility strategies monetize discrepancies between priced implied volatility and subsequent realized volatility.
 Gamma scalping holds long options, maintains delta neutrality through continuous underlying rebalancing, and profits when realized volatility exceeds implied volatility ($\sigma_{\text{realized}} > \sigma_{\text{implied}}$).
-The Variance Risk Premium (VRP) strategy systematically sells implied volatility (via delta-hedged straddles, variance swaps, or options collars) to harvest the historical $2\%$ to $4\%$ premium of implied over realized volatility, managing severe negative skew and tail-risk blowups.
-Dispersion trading exploits the structural mispricing between index implied volatility and component stock implied volatilities, selling expensive index options while buying cheap component options to trade implied correlation.
+The Variance Risk Premium (VRP) strategy systematically sells implied volatility (via delta-hedged straddles or variance swaps) to harvest the average excess of implied over subsequently realized variance, while managing severe negative skew and tail-risk losses.
+Dispersion trading sells index volatility and buys constituent volatility, a bet that realized correlation will come in below the correlation implied by index and constituent option prices.
 Event-driven earnings strategies monetize pre-announcement volatility run-up and post-announcement volatility crush, calibrated against the ATM straddle implied move.
 
 ---
@@ -44,7 +44,7 @@ Event-driven earnings strategies monetize pre-announcement volatility run-up and
 Gamma scalping is the process of holding a long options position (positive Gamma $\Gamma$, negative Theta $\Theta$), neutralizing Delta with underlying stock, and dynamically trading the underlying asset as spot moves to capture realized price oscillations.
 
 1. **The Fundamental PnL Equation**:
-   As proved by Carr and Madan (1998), the cumulative mark-to-market PnL of a delta-hedged option position over horizon $[0, T]$ with zero interest rates expands to:
+   Carr and Madan (1998) and El Karoui, Jeanblanc-Picque and Shreve (1998) show that, for an option delta-hedged at the implied volatility with zero interest rates, the cumulative P&L over $[0, T]$ is:
    $$\text{PnL} = \frac{1}{2} \int_0^T \Gamma_t S_t^2 (\sigma_{\text{realized}, t}^2 - \sigma_{\text{implied}, t}^2) dt - \text{Transaction Costs}$$
    - If realized volatility along the actual asset path exceeds the implied volatility paid to enter the position ($\sigma_{\text{realized}} > \sigma_{\text{implied}}$), gross gamma gains exceed theta decay costs, producing positive net PnL.
    - If realized volatility falls short of implied volatility ($\sigma_{\text{realized}} < \sigma_{\text{implied}}$), daily theta bleed exceeds gamma gains, resulting in an overall loss.
@@ -55,24 +55,26 @@ Gamma scalping is the process of holding a long options position (positive Gamma
    - **Threshold Rebalancing (Band Hedging)**: The desk defines a tolerance band $[-\bar{\Delta}, +\bar{\Delta}]$.
    - Stock is traded only when portfolio delta breaches the band:
      $$\Delta S_{\text{trigger}} = \pm \frac{\bar{\Delta}}{\Gamma}$$
-   - This discipline minimizes transaction costs while guaranteeing that stock is bought or sold only after meaningful price oscillations occur.
+   - This discipline trades less often than fixed-interval hedging in choppy markets, at the cost of larger delta drift between trades.
 
 ### 2. Harvesting the Variance Risk Premium (VRP)
 
-The Variance Risk Premium is the structural spread between implied volatility and realized volatility:
+The Variance Risk Premium is the gap between risk-neutral and physical expected realized variance:
 
-$$\text{VRP} = \mathbb{E}^{\mathbb{Q}}[\sigma] - \mathbb{E}^{\mathbb{P}}[\sigma] \approx \sigma_{\text{implied}} - \sigma_{\text{realized}}$$
+$$\text{VRP} = \mathbb{E}^{\mathbb{Q}}[\sigma^2_{\text{realized}}] - \mathbb{E}^{\mathbb{P}}[\sigma^2_{\text{realized}}]$$
+
+In practice it is often proxied by implied volatility (or the variance-swap rate) minus subsequently realized volatility.
 
 1. **Economic Origin**:
    - Institutional portfolio managers pay an insurance premium to hedge equity market crashes.
    - Market makers and volatility sellers require an expected positive return to bear catastrophic left-tail jump risk.
-   - Empirically, in the S&P 500, implied volatility exceeds subsequent realized volatility in approximately $85\%$ of rolling 30-day periods, averaging a premium of $2.0\%$ to $4.5\%$ volatility points.
+   - For equity indices the premium has been positive on average; its size depends on the sample period and the measure, so quote a figure only with its source and dates.
 
 2. **Payoff Profile and Left-Tail Catastrophe Risk**:
-   - Systematically selling ATM straddles or variance swaps generates a high Sharpe ratio (often $> 1.2$) characterized by steady daily theta accrual.
-   - However, the strategy exhibits massive negative skewness and extreme excess kurtosis.
-   - Unhedged volatility selling funds face catastrophic liquidation during sudden market panics (e.g., Black Monday 1987, Volmageddon in February 2018, COVID-19 crash in March 2020).
-   - Institutional VRP funds implement strict tail-risk overlays: buying far-out-of-the-money (5-delta) puts, utilizing dynamic leverage caps, and maintaining stop-out triggers based on VIX term structure inversion.
+   - Systematically selling ATM straddles or variance swaps produces steady accrual in calm periods, so its Sharpe ratio measured over a calm sample can look high.
+   - The return distribution has strong negative skewness and excess kurtosis, which a Sharpe ratio does not capture.
+   - Short-volatility positions take their largest losses in sudden volatility spikes such as October 1987, February 2018 and March 2020.
+   - Common risk controls include buying far-out-of-the-money puts as a tail overlay, capping leverage and cutting exposure when the term structure inverts.
 
 ### 3. Dispersion Trading (Correlation Trading)
 
@@ -90,9 +92,9 @@ $$\sigma_I^2 \approx \bar{\sigma}_{\text{comp}}^2 \left(\frac{1 - \bar{\rho}}{N}
    - **Delta Neutrality**: Both index and component positions are delta-hedged.
 
 2. **The Economic Rationale**:
-   - Index options carry an enormous correlation premium because institutional investors hedge portfolios at the macro index level rather than buying individual single-stock puts.
-   - Consequently, implied correlation $\bar{\rho}_{\text{implied}}$ systematically exceeds realized correlation $\bar{\rho}_{\text{realized}}$.
-   - When constituent stocks move independently (idiosyncratic earnings dispersion), single-stock gamma gains explode while index gamma remains subdued, generating substantial net profit.
+   - Index options embed a correlation risk premium: Driessen, Maenhout and Vilkov (2009) find that index options are expensive relative to constituent options, which they attribute to a priced correlation risk.
+   - Implied correlation has therefore tended to exceed subsequently realized correlation, which is what the trade harvests.
+   - When constituent stocks move independently (idiosyncratic earnings dispersion), the long single-stock gamma earns while the short index gamma costs little, so the trade profits.
    - **The Crisis Failure Mode**: During a systemic market crash, all constituent stocks drop simultaneously ($\rho_{\text{realized}} \to 1.0$).
    - The short index options position loses heavily, while single-stock diversification benefits vanish.
 
@@ -103,16 +105,17 @@ Corporate quarterly earnings announcements introduce discrete event jump risk in
 1. **Pre-Earnings Volatility Run-Up**:
    - In the weeks preceding earnings, uncertainty intensifies while speculative options buying surges.
    - Near-term implied volatility inflates steadily, peaking on the final trading session prior to the release.
-   - Pre-earnings strategy: Buy options 14 to 21 days before earnings and exit immediately before the announcement to capture the pure vega expansion without holding through the earnings gap.
+   - One pre-earnings approach is to buy options some weeks before the release and sell them before the announcement, aiming to capture the rise in implied volatility without holding through the gap; the entry timing is a choice to backtest, not a rule.
 
 2. **The ATM Straddle Implied Move**:
-   - The market's expectation of the earnings price move is derived from the front-month at-the-money straddle:
-     $$\text{Implied Move} \approx \frac{\text{Call}_{\text{ATM}} + \text{Put}_{\text{ATM}}}{S} \approx 0.8 \times \frac{\text{Straddle Price}}{S}$$
-   - Over large historical samples, actual post-earnings stock moves fall inside this implied move approximately $65\%$ to $70\%$ of the time.
+   - The front-month at-the-money straddle prices the risk-neutral expected absolute move:
+     $$\frac{\mathbb{E}|S_T - S|}{S} \approx \frac{\text{Call}_{\text{ATM}} + \text{Put}_{\text{ATM}}}{S}$$
+   - Under a normal approximation the straddle equals $\sqrt{2/\pi} \approx 0.80$ times the one-standard-deviation move, so the one-sd move is about $1.25$ times the straddle.
+   - Under that same normal model a move smaller than the straddle happens $57.5\%$ of the time and a move within one standard deviation $68.3\%$ of the time; real earnings moves are fat-tailed, so check the hit rate on your own sample.
 
 3. **Post-Earnings Volatility Crush**:
    - Once earnings are released and the forward guidance is public, event uncertainty instantly drops to zero.
-   - Front-month implied volatility collapses by $30\%$ to $60\%$ within minutes of market open.
+   - Front-month implied volatility typically falls sharply at the first trade after the release, by an amount that depends on how much event variance was priced.
    - Option sellers monetizing the crush sell short iron condors, straddles, or calendars, profiting when the actual move is less than the priced straddle.
 
 ### 5. Skew and Term Structure Relative-Value Trades
@@ -135,7 +138,7 @@ Corporate quarterly earnings announcements introduce discrete event jump risk in
 
 ### Example 1: Gamma Scalping PnL Attribution Under Realized Volatility Outperformance
 
-A quantitative options trader purchases $1,000$ units of an ATM straddle on an index (for example $10$ contracts with a $100$ multiplier):
+A quantitative options trader purchases $1,000$ units of an ATM straddle on an index (for example $10$ contracts with a $100$ multiplier; all inputs hypothetical):
 - Spot Price: $S = \$5,000.00$.
 - Strike: $K = \$5,000.00$.
 - Maturity: $T = 30\text{ days} = 0.08219\text{ years}$ ($\sqrt{T} = 0.28669$).
@@ -143,37 +146,39 @@ A quantitative options trader purchases $1,000$ units of an ATM straddle on an i
 - Daily Holding Period: $\Delta t = 1\text{ day} = 1/365\text{ years}$.
 
 1. **Compute the Straddle Greeks**:
-   $$d_1 = 0.5 \sigma \sqrt{T} = 0.5 \times 0.16 \times 0.28669 = 0.02293, \quad \phi(d_1) = 0.39884$$
-   $$\Gamma_{\text{unit}} = \frac{2 \phi(d_1)}{S \sigma \sqrt{T}} = \frac{0.79768}{229.35} = 0.003478, \quad \Gamma_{\text{position}} = 1,000 \times 0.003478 = 3.478$$
+   $$d_1 = 0.5 \sigma \sqrt{T} = 0.5 \times 0.16 \times 0.28669 = 0.02294, \quad \phi(d_1) = 0.39884$$
+   $$\Gamma_{\text{unit}} = \frac{2 \phi(d_1)}{S \sigma \sqrt{T}} = \frac{0.79767}{229.35} = 0.0034779, \quad \Gamma_{\text{position}} = 1,000 \times 0.0034779 = 3.4779$$
    With zero rates, theta is exactly the gamma rent at implied volatility:
-   $$\Theta_{\text{daily}} = -\frac{1}{2} \Gamma_{\text{position}} S^2 \sigma_{\text{implied}}^2 \Delta t = -0.5 \times 3.478 \times 5000^2 \times 0.0256 / 365 = -\$3,049.21$$
+   $$\Theta_{\text{daily}} = -\frac{1}{2} \Gamma_{\text{position}} S^2 \sigma_{\text{implied}}^2 \Delta t = -0.5 \times 3.4779 \times 5000^2 \times 0.0256 / 365 = -\$3,049.15$$
+   Rounding gamma to $3.478$ first would give $-\$3,049.21$; the closed-form theta agrees with the unrounded figure.
    The entry delta of $1,000 \times (2 N(d_1) - 1) = 18.3$ is neutralized at entry, so later hedges only offset the gamma-driven delta $\Gamma_{\text{position}} \times (S - 5000)$.
 
 Over the subsequent 24-hour trading session, the market experiences high intraday volatility:
 - The trader rebalances to delta-neutral at $\$5,050.00$, at $\$4,960.00$ and at the close of $\$5,060.00$.
-  1. At $\$5,050.00$ the straddle delta is $3.478 \times 50 = +173.9$, so the trader sells $174$ units.
-  2. At $\$4,960.00$ it is $3.478 \times (-40) = -139.1$ against a hedge of $-174$, so the trader buys $313$ units.
-  3. At the close of $\$5,060.00$ it is $3.478 \times 60 = +208.7$ against a hedge of $+139$, so the trader sells $348$ units, ending short $209$ units.
+  1. At $\$5,050.00$ the straddle delta is $3.4779 \times 50 = +173.9$, so the trader sells $174$ units.
+  2. At $\$4,960.00$ it is $3.4779 \times (-40) = -139.1$ against a hedge of $-174$, so the trader buys $313$ units.
+  3. At the close of $\$5,060.00$ it is $3.4779 \times 60 = +208.7$ against a hedge of $+139$, so the trader sells $348$ units, ending short $209$ units.
 - Transaction costs (fees and bid-ask slippage): $-\$120.00$.
 
 2. **Evaluate the Hedge and Option Legs**:
    $$\text{Hedge Cash} = 174 \times 5050 - 313 \times 4960 + 348 \times 5060 = 878,700 - 1,552,480 + 1,760,880 = +\$1,087,100$$
    $$\text{Hedge PnL} = 1,087,100 - 209 \times 5060 = 1,087,100 - 1,057,540 = +\$29,560$$
-   $$\text{Option Convexity on the Net Move} = 0.5 \times 3.478 \times 60^2 = +\$6,260.40$$
-   $$\text{Gross Gamma Gains} = 29,560 + 6,260.40 = +\$35,820.40$$
-   This matches the leg-by-leg sum $0.5 \times 3.478 \times (50^2 + 90^2 + 100^2) = 0.5 \times 3.478 \times 20,600 = \$35,823.40$ to within the $\$3$ lost by rounding hedges to whole units.
+   $$\text{Option Convexity on the Net Move} = 0.5 \times 3.4779 \times 60^2 = +\$6,260.29$$
+   $$\text{Gross Gamma Gains} = 29,560 + 6,260.29 = +\$35,820.29$$
+   This matches the leg-by-leg sum $0.5 \times 3.4779 \times (50^2 + 90^2 + 100^2) = 0.5 \times 3.4779 \times 20,600 = \$35,822.75$ to within the $\$2.46$ lost by rounding hedges to whole units.
+   Both are the second-order (gamma) approximation; the option's own theta for the day is charged separately below.
 
 3. **Evaluate Net Daily Strategy PnL**:
-   $$\text{Net Session PnL} = 35,820.40 - 120.00 - 3,049.21 = +\$32,651.19$$
+   $$\text{Net Session PnL} = 35,820.29 - 120.00 - 3,049.15 = +\$32,651.14$$
 
 4. **Analyze Implied vs Realized Volatility**:
    - The hedged path has $\sum (\Delta S)^2 = 20,600$, an annualized realized volatility of $\sqrt{20,600 \times 365} / 5000 = 54.8\%$.
    - The breakeven daily move at $16\%$ implied is $S \sigma \sqrt{\Delta t} = 5000 \times 0.16 \times \sqrt{1/365} = 41.87$ points.
-   - Because realized volatility ($54.8\%$) far exceeded implied volatility ($16\%$), gamma scalping gains were more than ten times the theta paid.
+   - Because realized volatility ($54.8\%$) far exceeded implied volatility ($16\%$), gamma scalping gains were $11.7$ times the theta paid.
 
 ### Example 2: Pricing and Weighting a Dispersion Trade
 
-A desk structures a dispersion trade on an index consisting of two equal-weighted mega-cap stocks ($w_1 = 0.5$, $w_2 = 0.5$):
+A desk structures a dispersion trade on an index consisting of two equal-weighted stocks ($w_1 = 0.5$, $w_2 = 0.5$; all inputs hypothetical):
 - Component 1 Implied Volatility: $\sigma_1 = 30\%$ ($0.30$).
 - Component 2 Implied Volatility: $\sigma_2 = 30\%$ ($0.30$).
 - Index Implied Volatility: $\sigma_I = 24\%$ ($0.24$).
@@ -188,19 +193,20 @@ A desk structures a dispersion trade on an index consisting of two equal-weighte
    $$\rho_{\text{implied}} = \frac{0.0126}{0.0450} = 0.28 = 28.0\%$$
 
 2. **Trade Execution and Outcome**:
-   - The desk determines that fundamental pairwise correlation is historically $12\%$.
-   - The market is overpricing correlation at $28\%$.
+   - The desk's own forecast of realized correlation is $12\%$ (a hypothetical input).
+   - If that forecast is right, the market is overpricing correlation at $28\%$.
+   - The backing script confirms the implied correlation independently: simulating two $30\%$-volatility stocks with correlation $0.28$ gives an equal-weight index volatility of $24\%$ within four standard errors.
    - The desk sells index straddles and buys component straddles weighted to achieve vega-neutrality.
    - Over the subsequent month, single stocks move idiosyncratically on earnings while the index remains flat ($\rho_{\text{realized}} = 10\%$).
-   - The single-stock options explode in value while index straddles bleed theta, delivering a profitable dispersion harvest.
+   - The long single-stock straddles earn more gamma than their theta while the short index straddles lose less gamma than the theta they collect, so the trade profits.
 
 ---
 
 ## Pitfalls
 
 - **The Negative Skew Trap in Naked Volatility Selling**:
-  Selling ATM straddles to harvest VRP generates attractive Sharpe ratios during calm regimes but guarantees catastrophic drawdown during market jumps.
-  A single $4\sigma$ gap event can completely erase multiple years of accumulated theta gains.
+  Selling ATM straddles to harvest VRP can show attractive Sharpe ratios over calm samples but exposes the book to large drawdowns in market jumps.
+  A single gap can erase many months of accumulated theta, because losses grow with the square of the move while theta accrues linearly in time.
 - **Over-Hedging Friction in Gamma Scalping**:
   Hedging delta too frequently in choppy sideways markets causes transaction costs and bid-ask spread friction to consume all theoretical gamma gains.
   Desks must calibrate hedging thresholds to market microstructure noise and tick sizes.
@@ -209,8 +215,8 @@ A desk structures a dispersion trade on an index consisting of two equal-weighte
   In a macro liquidity crisis, all asset correlations jump toward $1.0$.
   The short index position blows up, while component stock hedges fail to provide offsetting gains.
 - **Holding Short Options Through Binary Earnings Gaps**:
-  Selling earnings volatility without defined-risk boundaries exposes the trader to ruinous post-earnings gap moves ($> 20\%$).
-  Even if the stock price does not move, an unexpectedly wide earnings range can cause Vega to spike rather than crush.
+  Selling earnings volatility without defined-risk boundaries exposes the trader to post-earnings gaps far larger than the implied move.
+  Implied volatility can also stay high after the release if the report raises uncertainty (for example vague guidance) instead of resolving it.
 
 ---
 
@@ -229,7 +235,7 @@ A desk structures a dispersion trade on an index consisting of two equal-weighte
 > Threshold hedging rebalances only when position delta breaches a predetermined tolerance band, reducing unnecessary turnover in choppy markets.
 
 > [!question]- mkt-opt-100 | What is the Variance Risk Premium (VRP)?
-> The structural empirical spread where implied volatility exceeds subsequent realized volatility: VRP = sigma_implied - sigma_realized.
+> The gap between risk-neutral and physical expected realized variance, often proxied by implied minus subsequently realized volatility.
 > It reflects an insurance risk premium paid by hedgers to options sellers for taking on left-tail disaster risk.
 
 > [!question]- mkt-opt-101 | Why is systematic unhedged VRP harvesting considered a "picking up nickels in front of a steamroller" strategy?
@@ -238,7 +244,7 @@ A desk structures a dispersion trade on an index consisting of two equal-weighte
 
 > [!question]- mkt-opt-102 | What is a dispersion trade in equity options?
 > A relative-value volatility strategy that sells index options and buys a basket of underlying constituent stock options.
-> It monetizes the structural overpricing of index implied correlation relative to realized correlation.
+> It profits when realized correlation comes in below the correlation implied by index and constituent options, which on average has been the case (Driessen, Maenhout and Vilkov 2009).
 
 > [!question]- mkt-opt-103 | How does the mathematical relationship between index volatility and component volatility define implied correlation?
 > sigma_Index^2 ~ sum w_i^2 * sigma_i^2 + sum_{i!=j} w_i * w_j * sigma_i * sigma_j * rho_implied.
@@ -249,16 +255,16 @@ A desk structures a dispersion trade on an index consisting of two equal-weighte
 > The short index options position suffers massive losses that exceed the gains on component long options.
 
 > [!question]- mkt-opt-105 | What is the formula for the ATM straddle implied earnings move?
-> Implied Move ~ (Call_ATM + Put_ATM) / Spot ~ 0.8 * Straddle_Price / Spot.
-> It estimates the one-standard-deviation price move expected by options markets over the corporate earnings release.
+> Expected |Move| / Spot ~ (Call_ATM + Put_ATM) / Spot: the straddle prices the risk-neutral expected absolute move.
+> Under a normal approximation the one-standard-deviation move is about Straddle / 0.80 ~ 1.25 * Straddle, so 0.8 * Straddle understates it.
 
 > [!question]- mkt-opt-106 | What is post-earnings volatility crush?
 > The immediate, violent collapse in front-month implied volatility once earnings figures are publicly announced.
 > The event jump risk premium drops to zero, dramatically deflating option prices.
 
 > [!question]- mkt-opt-107 | How can a trader profit from pre-earnings implied volatility run-up without taking earnings gap risk?
-> By buying options 2 to 3 weeks prior to the earnings date and selling them immediately before the announcement.
-> The trader captures pure Vega expansion while avoiding overnight gap risk.
+> By buying options some weeks before the earnings date and selling them before the announcement (the exact entry is a backtested choice, not a rule).
+> The trader aims to capture the rise in implied volatility while avoiding the gap, paying theta and bearing the risk that the run-up does not happen.
 
 > [!question]- mkt-opt-108 | What is a risk reversal options structure?
 > An options strategy combining a long out-of-the-money call and a short out-of-the-money put (or vice versa).
@@ -270,7 +276,7 @@ A desk structures a dispersion trade on an index consisting of two equal-weighte
 
 > [!question]- mkt-opt-110 | What is the primary tail risk of a 1x2 ratio put spread?
 > If the underlying asset drops far below the short put strikes, the position exhibits naked short put exposure.
-> Losses accelerate linearly toward catastrophic levels as the stock approaches zero.
+> Below the lower breakeven the position loses one extra unit per point of decline, linearly, all the way to the underlying reaching zero.
 
 > [!question]- mkt-opt-111 | What is a calendar spread (time spread)?
 > Selling a short-dated option and buying a long-dated option with the same strike price.
@@ -289,16 +295,16 @@ A desk structures a dispersion trade on an index consisting of two equal-weighte
 > Unlike standard options, a variance swap provides pure exposure to volatility without requiring delta hedging.
 
 > [!question]- mkt-opt-115 | How is the strike of a variance swap replicated using vanilla options?
-> By holding a static, continuous strip of OTM calls and puts weighted inversely by strike squared (1 / K^2): K_var = (2 / T) * Integral (1 / K^2) * Option(K) dK.
-> This replicates the log-contract payoff derived by Neuberger (1994) and Demeterfi et al. (1999).
+> By holding a static strip of OTM puts and calls weighted by 1 / K^2: K_var = (2 / T) * exp(r * T) * Integral Option_OTM(K) / K^2 dK (with the forward as the dividing strike).
+> The strip replicates the log contract (Neuberger 1994; Demeterfi, Derman, Kamal and Zou 1999); with a flat volatility surface it returns K_var = sigma^2, which the backing script checks by quadrature.
 
 > [!question]- mkt-opt-116 | What is a volatility swap and how does it differ from a variance swap?
 > A contract whose payoff is linear in volatility (sigma_realized - K_vol) rather than variance.
-> Replicating a volatility swap requires dynamic trading because volatility is non-linear in options prices.
+> Volatility is a concave function of variance, so a volatility swap cannot be replicated statically with vanilla options; its fair strike sits below the square root of the variance-swap strike by a convexity adjustment that depends on the volatility of volatility.
 
 > [!question]- mkt-opt-117 | What is convexity in variance swaps?
 > Because variance is volatility squared (sigma^2), a variance swap has positive convexity with respect to volatility.
-> Large volatility spikes produce exponential profits for the long variance holder.
+> Payoff grows with the square of realized volatility, so a volatility spike pays the long variance holder more than proportionally (quadratically, not exponentially).
 
 > [!question]- mkt-opt-118 | What is the correlation swap?
 > An over-the-counter derivative with a payoff proportional to the difference between realized average pairwise correlation and a fixed strike correlation.
@@ -325,8 +331,8 @@ A desk structures a dispersion trade on an index consisting of two equal-weighte
 > Scalping inside bid-ask noise burns capital on bid-ask spreads without generating true gamma alpha.
 
 > [!question]- mkt-opt-124 | What is the Derman-Kani volatility smile model?
-> An implied tree algorithm that constructs a discrete binomial/trinomial tree matching market smile prices without continuous diffusion assumptions.
-> It represents the first discrete-time implementation of local volatility theory.
+> An implied binomial tree (Derman and Kani 1994) whose node probabilities are fitted so the tree reprices the market smile.
+> It is a discrete counterpart of Dupire's (1994) continuous local volatility model; Rubinstein (1994) published a related implied-tree method the same year.
 
 > [!question]- mkt-opt-125 | What is smile roll-down in calendar spread trading?
 > As time passes, back-month options roll down the term structure and smile curve toward near-dated expiries.
@@ -334,22 +340,30 @@ A desk structures a dispersion trade on an index consisting of two equal-weighte
 
 > [!question]- mkt-opt-126 | What is a volatility surface arbitrage engine?
 > An automated algorithmic monitor that scans option chains across strikes and expiries for calendar or butterfly arbitrage violations.
-> Upon detecting negative butterfly prices, it executes risk-free box or butterfly arbitrage trades.
+> When a butterfly or calendar trades below zero after fees and spreads, it flags an arbitrage that the desk can try to capture, subject to execution and margin risk.
 
 > [!question]- mkt-opt-127 | What is forward-starting option and where is it used?
 > An option whose strike price is determined at a specified future date (e.g., ATM on day T1) and expires at T2.
 > It is used to hedge forward implied volatility and forms a core component of cliquet structures.
 
 > [!question]- mkt-opt-128 | How do institutional desks hedge the tail risk of an active VRP short-volatility strategy?
-> By allocating 10% to 15% of accumulated premium into continuous rolling deep out-of-the-money (5-delta to 10-delta) put options.
-> This caps maximum catastrophic drawdown during sudden market crashes while preserving net positive carry.
+> A common approach spends a fixed budget out of collected premium on rolling far-out-of-the-money puts, alongside leverage caps.
+> The overlay limits crash losses at the cost of lower carry; the budget is a design choice to test, not a standard percentage.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [mkt_opt_04_vol_strategies.py](../code/mkt_opt_04_vol_strategies.py) prints and asserts every number in this note; the scalping P&L is rebuilt from the explicit trade blotter, the implied correlation is confirmed by a seeded simulation, and the variance-swap replication by quadrature over an option strip; run it with `uv run --no-project --with numpy python 16-Trading-and-Investing/code/mkt_opt_04_vol_strategies.py`.
+- Syllabus: [Option Strategies and Volatility Trading](../../05-Derivatives-and-Volatility/13-Option-Strategies-and-Volatility-Trading.md), [Variance Swaps and Volatility Products](../../05-Derivatives-and-Volatility/14-Variance-Swaps-and-Volatility-Products.md), [Dispersion and Correlation Trading](../../05-Derivatives-and-Volatility/15-Dispersion-and-Correlation-Trading.md).
 
 ---
 
 ## Further reading
 
-- Carr, P., & Madan, D. (1998). *Towards a theory of volatility trading*. Volatility: New Estimation Techniques for Pricing and Risk Management, 29(1), 417-427.
-- Demeterfi, K., Derman, E., Kamal, M., & Zou, J. (1999). *A guide to variance swaps*. Quantitative Strategies Research Notes, Goldman Sachs.
+- Carr, P., & Madan, D. (1998). *Towards a theory of volatility trading*. In R. Jarrow (Ed.), Volatility: New Estimation Techniques for Pricing Derivatives. Risk Books; reprinted in Option Pricing, Interest Rates and Risk Management (Cambridge University Press, 2001), 458-476.
+- El Karoui, N., Jeanblanc-Picque, M., & Shreve, S. E. (1998). *Robustness of the Black and Scholes formula*. Mathematical Finance, 8(2), 93-126.
+- Demeterfi, K., Derman, E., Kamal, M., & Zou, J. (1999). *A guide to volatility and variance swaps*. Journal of Derivatives, 6(4), 9-32; the Goldman Sachs research note version is *More than you ever wanted to know about volatility swaps*.
+- Derman, E., & Kani, I. (1994). *Riding on a smile*. Risk, 7(2), 32-39.
+- Neuberger, A. (1994). *The log contract*. Journal of Portfolio Management, 20(2), 74-80.
 - Bakshi, G., & Madan, D. (2000). *Spanning and derivative-security valuation*. Journal of Financial Economics, 55(2), 205-238.
 - Driessen, J., Maenhout, P. J., & Vilkov, G. (2009). *The price of correlation risk: Evidence from equity options*. The Journal of Finance, 64(3), 1377-1406.
 - Natenberg, S. (2014). *Option Volatility and Pricing: Advanced Trading Strategies and Techniques*. McGraw-Hill Education.
