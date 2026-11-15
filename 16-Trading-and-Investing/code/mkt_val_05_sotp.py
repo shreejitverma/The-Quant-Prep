@@ -5,7 +5,8 @@ Independent routes used here:
 - the Titan Holdings SOTP in exact rational arithmetic (fractions.Fraction), with the capitalized overhead
   computed twice: as overhead x EBITDA-weighted multiple, and by charging each segment its EBITDA share
   of the overhead and valuing the net segment EBITDA at its own peer multiple;
-- the 3Com / Palm stub value from the closing prices and exchange ratio in Lamont and Thaler (2003).
+- the 3Com / Palm per-share stub value from the closing prices and exchange ratio in Lamont and Thaler (2003);
+  the -$22 billion total stub is quoted from the paper, not recomputed.
 Every quoted number is printed as ``label = value`` and asserted at the rounding the note quotes.
 Run it with `python 16-Trading-and-Investing/code/mkt_val_05_sotp.py`.
 """

@@ -310,7 +310,7 @@ Zero reinvestment is the limit of an infinite RONIC, which is why the naive valu
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../../code/mkt_val_02_wacc.py`](../../code/mkt_val_02_wacc.py) prints and asserts every number on this page: the relevered beta, cost of equity and WACC in exact fractions (with the beta unlevered back as a check), each value-driver terminal value against a year-by-year simulation of the reinvestment rule over 3,000 years, the exit-multiple growth rate by bisection against a quadratic, and the beta standard error against a seeded Monte Carlo.
+- Code: [`../../code/mkt_val_02_wacc.py`](../../code/mkt_val_02_wacc.py) prints and asserts every number on this page: the relevered beta, cost of equity and WACC in exact fractions, each value-driver terminal value against a year-by-year simulation of the reinvestment rule over 3,000 years, the exit-multiple growth rate by bisection against a quadratic, and the beta standard error against a seeded Monte Carlo.
 - Related notes: [DCF First Principles and Cash Flow Forecasting](01-DCF-First-Principles-and-Cash-Flow-Forecasting.md), [Relative Valuation and Multiples Done Right](04-Relative-Valuation-Multiples-Done-Right.md).
 
 ## Further reading

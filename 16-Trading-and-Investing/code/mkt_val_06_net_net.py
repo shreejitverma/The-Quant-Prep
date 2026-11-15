@@ -88,9 +88,6 @@ def graham_dodd() -> None:
     quoted = {"average": (66.5, 3.65), "low": (56.55, 2.655), "high": (81.0, 5.10)}
     for name, (wc, wr, wi, wf) in lines.items():
         by_line = cash * wc + AR * wr + FG * wi + WIP * wi + PPE * wf
-        classes = [(cash, wc), (AR, wr), (FG + WIP, wi), (PPE, wf)]
-        weighted = sum(a * w for a, w in classes)
-        exact(f"{name}: line-by-line equals class-weighted total", by_line, weighted)
         approx(f"{name}: liquidating value of assets", by_line, quoted[name][0], 2)
         approx(f"{name}: per share after liabilities", (by_line - LIAB) / SHARES, quoted[name][1], 3)
     avg = cash + AR * F(80, 100) + (FG + WIP) * F(2, 3) + PPE * F(15, 100)

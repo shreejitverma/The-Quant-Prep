@@ -311,7 +311,9 @@ $$\text{Value Per Share} = \frac{\$3,930.5\text{M}}{100\text{M shares}} = \$39.3
 
 > [!question]- mkt-val-028 | How should operating leases be incorporated into Enterprise Value?
 > Under ASC 842, operating-lease liabilities are recognized on the balance sheet, but operating-lease cost stays inside operating expenses.
-> Treat leases consistently: either keep lease cost in FCFF and leave the liability out of debt, or add lease cost back to FCFF (capitalizing the leases) and subtract the lease liability in the equity bridge; doing only the second half double-counts.
+> Treat leases consistently: either keep lease cost in FCFF and leave the liability out of debt, or capitalize the leases and subtract the lease liability in the equity bridge.
+> Capitalizing means adding back lease expense, deducting right-of-use depreciation and treating new and renewed leases as capex, which in steady state amounts to adding back only the interest component of lease cost.
+> Subtracting the liability while keeping lease cost in FCFF double-counts, and adding back the full lease cost values every future leased asset as free because the liability covers only existing leases.
 
 > [!question]- mkt-val-029 | What is scenario analysis in DCF modeling?
 > Evaluating valuation outcomes under discrete macro and operational narratives (e.g. Bull, Base, Bear) with correlated assumptions.

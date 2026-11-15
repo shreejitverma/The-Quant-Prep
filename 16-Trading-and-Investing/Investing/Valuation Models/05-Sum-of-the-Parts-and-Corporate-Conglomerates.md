@@ -276,7 +276,7 @@ Titan Holdings is trading at a **23.1% premium** to its clean SOTP value, so on 
 
 > [!question]- mkt-val-154 | What famous historical trade exemplified negative stub value?
 > 3Com and Palm: on 2 March 2000 3Com sold part of Palm in an IPO and kept 95%, planning to distribute about 1.525 Palm shares per 3Com share.
-> Palm closed at $95.06, worth about $145 per 3Com share, yet 3Com closed at $81.81, a stub of about -$63 per share or roughly -$22 billion in total (Lamont and Thaler 2003).
+> Palm closed at $95.06, worth about $145 per 3Com share, yet 3Com closed at $81.81, a stub of about -$63 per share; Lamont and Thaler (2003) put the total stub at roughly -$22 billion.
 
 > [!question]- mkt-val-155 | How does conglomerate restructuring affect customer and supplier relationships?
 > Separation can eliminate internal conflicts of interest where a division was previously prevented from selling to parent competitors.
@@ -300,7 +300,7 @@ Titan Holdings is trading at a **23.1% premium** to its clean SOTP value, so on 
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../../code/mkt_val_05_sotp.py`](../../code/mkt_val_05_sotp.py) prints and asserts every number on this page: the Titan Holdings SOTP in exact fractions with the overhead capitalized two ways (weighted multiple, and segment by segment at each segment's own multiple), and the 3Com / Palm stub value from the closing prices in Lamont and Thaler (2003).
+- Code: [`../../code/mkt_val_05_sotp.py`](../../code/mkt_val_05_sotp.py) prints and asserts every number on this page: the Titan Holdings SOTP in exact fractions with the overhead capitalized two ways (weighted multiple, and segment by segment at each segment's own multiple), and the 3Com / Palm per-share stub value from the closing prices in Lamont and Thaler (2003); the -$22 billion total is quoted from the paper.
 - Related notes: [Relative Valuation and Multiples Done Right](04-Relative-Valuation-Multiples-Done-Right.md).
 
 ## Further reading

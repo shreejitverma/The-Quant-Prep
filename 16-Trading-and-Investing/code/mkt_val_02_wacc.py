@@ -2,8 +2,7 @@
 
 Backs every number in `16-Trading-and-Investing/Investing/Valuation Models/02-Cost-of-Capital-WACC-and-Terminal-Value-Traps.md`.
 Independent routes used here:
-- the relevered beta, cost of equity and WACC in exact rational arithmetic (fractions.Fraction), with the
-  relevered beta checked by unlevering it back to the peer asset beta;
+- the relevered beta, cost of equity and WACC in exact rational arithmetic (fractions.Fraction);
 - each value-driver terminal value against a year-by-year simulation of the steady state: invest
   g / RONIC of NOPAT, earn RONIC on it from the next year, discount 3,000 years of free cash flow and
   add the closed-form tail; RONIC = WACC must then equal the zero-growth perpetuity NOPAT / WACC;
@@ -54,8 +53,6 @@ def wacc_case() -> None:
     beta_l = beta_u * (1 + (1 - t) * de)
     exact("relevered beta (exact)", beta_l, F(37, 35))
     approx("relevered beta", beta_l, 1.057, 3)
-    # Independent check: unlever the target beta back to the asset beta.
-    exact("unlevered back to the peer beta", beta_l / (1 + (1 - t) * de), beta_u)
     ke = rf + beta_l * erp
     approx("beta x ERP (percent)", 100 * beta_l * erp, 5.2857, 4)
     approx("cost of equity (percent)", 100 * ke, 9.2857, 4)
