@@ -204,7 +204,8 @@ At 99% the VaR differs by 14%, but ES differs by 39%: ES sees the shape of the t
 
 > [!question]- risk-var-coherence-axioms | What are the four coherence axioms and which one does VaR violate?
 > Monotonicity, translation invariance, positive homogeneity and subadditivity; VaR can violate subadditivity.
-> It holds for elliptical distributions like the normal but fails for discrete or strongly skewed losses.
+> Subadditivity is guaranteed under sufficient conditions (Embrechts, McNeil and Straumann 2002, Theorem 1): linear portfolios of one elliptically distributed vector with finite variances, such as the multivariate normal, at a confidence level $\alpha \ge 0.5$.
+> It can fail for discrete or strongly skewed losses.
 
 > [!question]- risk-var-es-backtest-hard | Why is expected shortfall harder to backtest than VaR?
 > ES is not elicitable: no scoring function is minimised in expectation by the true ES, and each test depends on the few tail observations.
