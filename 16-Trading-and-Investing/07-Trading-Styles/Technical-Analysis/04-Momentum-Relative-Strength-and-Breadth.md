@@ -62,9 +62,9 @@ The $12-1$ window below is the later convention used for the UMD factor and by C
 +---------------------------------------------------------------------------------+
 |                         CROSS-SECTIONAL MOMENTUM FORMULATION                    |
 |                                                                                 |
-|  [ Month t-12 ] ------------ Lookback Window (11 Months) ------------> [ t-1 ]  |
-|                                                                        | Skip | |
-|                                                                        v  1M  | |
+|  [ Month t-12 ] ------ Lookback Window (11 Months) ------> [ t-2 ]     [ t-1 ]  |
+|                                                                         skip    |
+|                                                                          v      |
 |  Sort Stocks by Cumulative Return ---> Long Top 10% / Short Bottom 10% [ t ]    |
 |                                                                                 |
 |  Hold Portfolio for Subsequent 3 to 12 Months (Jegadeesh-Titman horizons)       |
@@ -236,7 +236,7 @@ A chief investment officer assesses market internals during a quarterly S&P 500 
 
 > [!question]- mkt-ta-099 | What was the key finding of Asness, Moskowitz, and Pedersen (2013) in "Value and Momentum Everywhere"?
 > Value and momentum premia appear in all eight markets and asset classes they study, with a strong common factor structure.
-> Value and momentum are negatively correlated within and across asset classes, so combining them improves risk-adjusted returns.
+> Value and momentum are negatively correlated within and across asset classes, and in their sample a value-momentum combination had a higher Sharpe ratio than either alone.
 
 > [!question]- mkt-ta-100 | What is a momentum crash and under what market conditions does it occur?
 > A violent, multi-month drawdown in a long-short momentum portfolio where shorted "losers" rally explosively while long "winners" lag.
@@ -268,7 +268,7 @@ A chief investment officer assesses market internals during a quarterly S&P 500 
 
 > [!question]- mkt-ta-107 | What is a bearish market breadth divergence?
 > A condition where major capitalization-weighted indexes (e.g. S&P 500) reach new record highs while breadth indicators (A/D line, Net New Highs) decline.
-> It reveals that the rally is being driven by a narrowing band of mega-caps while the majority of equities are deteriorating.
+> It shows that fewer stocks are carrying the index higher; chartists read the divergence as a warning, but no peer-reviewed test of it as a timing signal is cited here.
 
 > [!question]- mkt-ta-108 | What is the McClellan Oscillator?
 > The difference between the 19-day EMA and the 39-day EMA of net advancing issues on an exchange (smoothing constants 0.10 and 0.05).
@@ -280,14 +280,14 @@ A chief investment officer assesses market internals during a quarterly S&P 500 
 
 > [!question]- mkt-ta-110 | What is the New Highs - New Lows (NH-NL) Index?
 > The daily count of stocks reaching new 52-week highs minus those reaching new 52-week lows.
-> Expanding new highs confirms broad market strength; expanding new lows in a rising market warns of impending distribution.
+> Chartists read expanding new highs as broad participation and expanding new lows in a rising market as a warning of distribution; no peer-reviewed test of these readings is cited here.
 
 > [!question]- mkt-ta-111 | Why does an equal-weighted index (e.g. RSP) outperforming a cap-weighted index (e.g. SPY) signal healthy breadth?
 > An equal-weighted index gives every constituent the same weight at each rebalance (1/500 = 0.2% in a 500-stock index), so its return reflects the average stock rather than the largest ones.
 > Equal-weight beating cap-weight means the average constituent is outperforming the mega-caps, a sign of broader participation.
 
 > [!question]- mkt-ta-112 | What is the percentage of stocks trading above their 200-day moving average indicator?
-> A structural breadth gauge measuring what percentage of an index's components are in secular uptrends.
+> A breadth gauge measuring what percentage of an index's components trade above their own 200-day moving average, a common proxy for a long-term uptrend (not a secular, multi-cycle trend).
 > Very low readings are read as washed-out conditions and a falling reading during index highs as narrowing participation; the cut-offs are parameters to test, not known constants.
 
 > [!question]- mkt-ta-113 | What is behavioral under-reaction and how does it explain the momentum anomaly?
@@ -300,7 +300,7 @@ A chief investment officer assesses market internals during a quarterly S&P 500 
 
 > [!question]- mkt-ta-115 | How does factor crowding impact quantitative momentum funds?
 > When many funds simultaneously pile into identical top-momentum names, positions become illiquid.
-> An unexpected shock forces simultaneous liquidations, triggering sudden cascading momentum drawdowns.
+> An unexpected shock can force simultaneous liquidations, which can deepen a momentum drawdown as funds sell the same names.
 
 > [!question]- mkt-ta-116 | What is residual momentum?
 > Momentum computed from residual returns after regressing stock returns on the Fama-French three factors.
@@ -308,7 +308,7 @@ A chief investment officer assesses market internals during a quarterly S&P 500 
 
 > [!question]- mkt-ta-117 | How does the Arms Index (TRIN) measure market internals?
 > TRIN = (Advancing Issues / Declining Issues) / (Advancing Volume / Declining Volume).
-> A TRIN below 1.0 indicates strong buying pressure (volume disproportionately in advancing stocks); TRIN above 1.0 indicates selling pressure.
+> A TRIN below 1.0 means volume per advancing issue exceeds volume per declining issue, which practitioners read as buying pressure; above 1.0 is read as selling pressure.
 
 > [!question]- mkt-ta-118 | What is a TRIN capitulation signal?
 > An extreme spike in the Arms Index accompanied by heavy downside volume.

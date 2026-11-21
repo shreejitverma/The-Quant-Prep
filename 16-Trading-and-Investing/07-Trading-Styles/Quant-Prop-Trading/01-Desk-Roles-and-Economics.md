@@ -20,7 +20,7 @@ Mastery of trading requires an exact understanding of desk economics, revenue st
 ## TL;DR
 
 Trading desks generate revenue through four distinct mechanisms: spread capture, structural arbitrage, risk warehousing, and directional forecasting.
-Gross trading revenue is always eroded by adverse selection, queue slippage, exchange fees, and financing costs.
+Gross trading revenue is eroded by adverse selection, queue slippage, exchange fees, and financing costs.
 Quantitative performance measurement relies on post-trade markout curves and attribution rather than gross daily returns.
 Mark-to-market PnL splits exactly into spread capture, inventory PnL, net fees and financing:
 $$\text{Total PnL} = \text{Spread Capture} + \text{Inventory PnL} + \text{Net Rebates and Fees} - \text{Financing}$$
@@ -189,8 +189,8 @@ Over 252 trading days, the desk generates:
 ## Interview questions
 
 > [!question]- mkt-pqt-001 | What are the primary revenue drivers of an automated market making desk?
-> Market makers earn the bid-ask half-spread on paired transactions and collect exchange maker rebates.
-> They maximize order turnover while minimizing inventory holding duration and adverse selection from informed trades.
+> Market makers earn about half the spread per fill (the full spread on a round trip that buys at the bid and sells at the ask) and collect exchange maker rebates.
+> They aim for high turnover with short inventory holding times and little adverse selection from informed trades.
 
 > [!question]- mkt-pqt-002 | State the fundamental quantitative PnL attribution identity.
 > Total PnL = Spread Capture + Inventory PnL + Rebates - Fees - Financing, where spread capture is sum of n_i * (mid at fill - fill price) and inventory PnL is the integral of q dS.
@@ -206,7 +206,7 @@ Over 252 trading days, the desk generates:
 
 > [!question]- mkt-pqt-005 | How does maker-taker pricing differ from taker-maker (inverted) pricing?
 > In maker-taker venues, liquidity providers receive a rebate for resting orders while liquidity takers pay a fee.
-> In inverted venues, liquidity providers pay a fee to rest orders, while liquidity takers receive a rebate, attracting aggressive retail flow.
+> In inverted venues, liquidity providers pay a fee to rest orders, while liquidity takers receive a rebate, which draws fee-sensitive takers and keeps resting queues shorter.
 
 > [!question]- mkt-pqt-006 | What is the economic rationale for quoting on inverted exchanges despite paying maker fees?
 > Queue position: because posting costs a fee instead of earning a rebate, queues on inverted venues are shorter, so a resting order fills sooner and more often.
@@ -238,7 +238,7 @@ Over 252 trading days, the desk generates:
 
 > [!question]- mkt-pqt-013 | What is a toxic order flow sweep?
 > A large aggressive order that crosses the spread and sweeps multiple price levels simultaneously across fragmented venues.
-> Resting limit orders filled during a sweep suffer immediate, severe adverse selection as the price punches through them.
+> Resting limit orders filled during a sweep are adversely selected: the price moves through them right after the fill.
 
 > [!question]- mkt-pqt-014 | What are exchange access fee caps under US SEC Regulation NMS Rule 610?
 > As of November 2026, Rule 610(c) caps the fee for accessing a protected quotation at $0.003 (30 mils) per share for NMS stocks priced at $1.00 or more.
@@ -251,7 +251,7 @@ Over 252 trading days, the desk generates:
 
 > [!question]- mkt-pqt-016 | What is basis risk in cross-asset proxy hedging?
 > Basis risk is the variance of the spread between the primary asset and the hedging proxy.
-> During market stress, historical correlations decouple, causing both legs of the hedged trade to lose money simultaneously.
+> During market stress, historical correlations can break down, and both legs of the hedged trade can lose money at once.
 
 > [!question]- mkt-pqt-017 | Explain the concept of internal crossing on a multi-strategy desk.
 > Matching offsetting buy and sell orders from different internal strategies without routing to an external exchange.
@@ -267,7 +267,7 @@ Over 252 trading days, the desk generates:
 
 > [!question]- mkt-pqt-020 | How does a hard-to-borrow (HTB) fee impact short directional prop trading?
 > Prime brokers charge an annualized borrow fee on short equity positions that are in short supply.
-> A 25% HTB borrow rate creates an overnight hurdle cost that severely reduces net statistical arbitrage profits.
+> A hypothetical 25% annual borrow rate is a carrying cost that the short's expected return must exceed before the trade makes money.
 
 > [!question]- mkt-pqt-021 | What is the difference between Gross Market Value (GMV) and Net Market Value (NMV)?
 > GMV is the sum of the absolute value of all long and short positions: GMV = |Long| + |Short|.
@@ -279,11 +279,11 @@ Over 252 trading days, the desk generates:
 
 > [!question]- mkt-pqt-023 | What is a mark-to-market (MTM) margin call?
 > A demand by a clearing broker or exchange for additional collateral when adverse price movements reduce account equity below maintenance margin requirements.
-> Failure to satisfy an MTM call results in forced liquidation of desk positions at fire-sale prices.
+> Failure to satisfy an MTM call can lead to forced liquidation of desk positions, often at unfavourable prices.
 
 > [!question]- mkt-pqt-024 | What is capacity of a quantitative strategy?
 > The maximum capital a strategy can deploy before market impact and slippage erode alpha below the cost of capital.
-> High-frequency market-making strategies have high Sharpe ratios but strictly limited dollar capacity.
+> High-frequency market-making strategies often have high Sharpe ratios but limited dollar capacity.
 
 > [!question]- mkt-pqt-025 | Explain the difference between primary and secondary market liquidity in ETFs.
 > Primary liquidity occurs through Authorized Participants creating or redeeming ETF creation units directly with the issuer at NAV.
@@ -299,7 +299,7 @@ Over 252 trading days, the desk generates:
 
 > [!question]- mkt-pqt-028 | What is the bid-ask bounce effect and how does it distort return autocorrelation?
 > Successive transactions bouncing between bid and ask prices create negative first-order serial correlation in observed price returns.
-> Quantitative researchers must filter out bounce noise using mid-prices rather than transaction prices.
+> Researchers commonly remove bounce noise by using mid-prices rather than transaction prices.
 
 > [!question]- mkt-pqt-029 | What is Transaction Cost Analysis (TCA) Implementation Shortfall?
 > The difference between the paper return of a portfolio decided at time t0 and the actual realized return after all execution costs and delays.
@@ -309,13 +309,13 @@ Over 252 trading days, the desk generates:
 > An automated hardware or software breaker that immediately cancels all open resting orders and blocks new outbound order routing.
 > It triggers when hard limits on loss thresholds, max position size, consecutive stale quotes, or exchange socket disconnects are breached.
 
-> [!question]- mkt-pqt-031 | Why does market maker profitability decline during volatility spikes despite wider spreads?
-> Wider spreads are overwhelmed by severe adverse selection, violent inventory revaluation losses, and rapid correlation breakdown in hedging instruments.
-> Volume sweeps easily breach inventory limits, forcing market makers to liquidate at the worst prices.
+> [!question]- mkt-pqt-031 | When does market maker profitability decline during volatility spikes despite wider spreads?
+> Only when adverse selection, inventory revaluation losses and hedge breakdowns outweigh the wider spreads and higher volume; sweeps that breach inventory limits and force liquidation add to the losses.
+> It need not decline: Virtu Financial reported a record first quarter of 2020 and attributed it to heightened volatility, bid-ask spreads and trading volumes (Form 8-K, May 2020).
 
 > [!question]- mkt-pqt-032 | What is return on max drawdown (RoMaD) and why is it crucial for prop firms?
 > RoMaD = Net Cumulative Return / Maximum Peak-to-Trough Drawdown.
-> It measures capital efficiency relative to the survival boundary, ensuring traders do not blow past their mandatory capital stop.
+> It measures return relative to the worst loss the trader actually took, which a prop firm compares with the trader's capital stop.
 
 ---
 
@@ -328,6 +328,7 @@ Over 252 trading days, the desk generates:
 
 - Battalio, R., Corwin, S. A., & Jennings, R. (2016). *Can brokers have it all? On the relation between make-take fees and limit order execution quality*. The Journal of Finance, 71(5).
 - Grinold, R. C. (1989). *The fundamental law of active management*. The Journal of Portfolio Management, 15(3), 30-37.
+- Virtu Financial, Inc. (2020). Form 8-K, Exhibit 99.1, first quarter 2020 results press release, May 2020.
 - Securities and Exchange Commission (2026). *Order granting temporary exemptive relief from compliance with Rule 600(b)(89)(i)(F), Rule 610(c) and Rule 612 of Regulation NMS, as amended*. Release No. 34-105656, June 11, 2026.
 - Glosten, L. R., & Milgrom, P. R. (1985). *Bid, ask and transaction prices in a specialist market with heterogeneously informed traders*. Journal of Financial Economics, 14(1), 71-100.
 - Perold, A. F. (1988). *The implementation shortfall: Paper versus reality*. The Journal of Portfolio Management, 14(3), 4-9.

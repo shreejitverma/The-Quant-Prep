@@ -13,7 +13,7 @@ prereqs: []
 
 Every serious market participant must begin by confronting the empirical base rates of trading outcomes.
 Brokerage marketing and trading-course promotion present discretionary trading as accessible, low-friction wealth generation.
-Studies of complete account-level datasets in the US, Taiwan, Brazil and India find the opposite: most active individual traders lose money once transaction costs are counted.
+Studies of complete account-level datasets find the opposite: the most active US households earned well below the market, individual investors in Taiwan lost money to institutions as a group, and most active individual traders in Brazil and India lost money once transaction costs were counted.
 Understanding these base rates and the arithmetic of all-in trading frictions is the prerequisite for designing a system with positive net expectancy.
 
 ---

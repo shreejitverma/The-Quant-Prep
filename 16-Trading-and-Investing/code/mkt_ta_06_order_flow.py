@@ -5,12 +5,14 @@ Backs every number in
 Independent routes used here:
 - the order-book sweep by a price-time matching routine run on the displayed ask ladder, against the
   stated fills, new best ask, last price and average fill price;
-- the footprint bar rebuilt from a shuffled tape of one-lot prints, each classified by comparing its
-  aggressor price with the bid and ask, then re-aggregated into the bid x ask matrix, totals, delta,
-  delta percent, point of control and diagonal imbalance ratios;
+- the footprint totals in exact integer arithmetic from the bid x ask table: row deltas, bid and ask
+  column totals, bar volume and delta are each checked against the figure the note quotes, so the quoted
+  row and column numbers must agree with one another, and the delta percent, point of control and
+  diagonal imbalance ratios follow from the same table;
 - the Lee-Ready (1991) classification by the quote rule with a tick-rule fallback that looks back to the
   last different trade price (not to the previous classification), applied to the four-trade example;
-- the risk-reward ratio of the absorption example as an exact fraction.
+- the risk-reward ratio of the absorption example as an exact fraction, and its break-even hit rate by
+  bisection on the expectancy against the closed form risk / (risk + reward).
 Every quoted number is printed as ``label = value`` and asserted at the precision the note quotes.
 Run it with `python 16-Trading-and-Investing/code/mkt_ta_06_order_flow.py`.
 """
@@ -18,10 +20,6 @@ Run it with `python 16-Trading-and-Investing/code/mkt_ta_06_order_flow.py`.
 from __future__ import annotations
 
 from fractions import Fraction
-
-import numpy as np
-
-SEED = 6
 
 
 def check(label: str, value: float, expected: str) -> None:
@@ -69,34 +67,22 @@ FOOTPRINT = {  # price: (volume sold at the bid, volume bought at the ask)
 }
 
 
-def footprint(rng: np.random.Generator) -> None:
-    # Rebuild the bar from a tape: one print per lot with the bid and ask that stood when it traded.
-    tape = []
-    for price, (at_bid, at_ask) in FOOTPRINT.items():
-        tape += [(price, round(price, 2), round(price + 0.01, 2))] * at_bid  # sell hits a bid at this price
-        tape += [(price, round(price - 0.01, 2), round(price, 2))] * at_ask  # buy lifts an ask at this price
-    order = rng.permutation(len(tape))
-    bid_vol: dict[float, int] = {}
-    ask_vol: dict[float, int] = {}
-    for i in order:
-        price, bid, ask = tape[i]
-        if price >= ask:
-            ask_vol[price] = ask_vol.get(price, 0) + 1
-        elif price <= bid:
-            bid_vol[price] = bid_vol.get(price, 0) + 1
-    for price, (at_bid, at_ask) in FOOTPRINT.items():
-        assert bid_vol.get(price, 0) == at_bid and ask_vol.get(price, 0) == at_ask
-    row_delta = {p: ask_vol.get(p, 0) - bid_vol.get(p, 0) for p in FOOTPRINT}
+def footprint() -> None:
+    print("input: footprint bar, (sold at the bid, bought at the ask) by price, 100.05 down to 100.00")
+    print(f"input: {list(FOOTPRINT.items())}")
+    bid_vol = {p: at_bid for p, (at_bid, _) in FOOTPRINT.items()}
+    ask_vol = {p: at_ask for p, (_, at_ask) in FOOTPRINT.items()}
+    row_delta = {p: ask_vol[p] - bid_vol[p] for p in FOOTPRINT}
     assert [row_delta[p] for p in FOOTPRINT] == [128, 475, 570, 60, -385, -630]
     print("row deltas, 100.05 down to 100.00 = +128, +475, +570, +60, -385, -630")
-    total = len(tape)
-    delta = sum(1 if tape[i][0] >= tape[i][2] else -1 for i in order)
+    total = sum(at_bid + at_ask for at_bid, at_ask in FOOTPRINT.values())
+    delta = sum(row_delta.values())
     check("total bar volume", total, "3,312")
     check("volume sold at the bid", sum(bid_vol.values()), "1,547")
     check("volume bought at the ask", sum(ask_vol.values()), "1,765")
     check("bar delta", delta, "218")
     check("delta percent of volume", 100 * delta / total, "6.58")
-    level_total = {p: bid_vol.get(p, 0) + ask_vol.get(p, 0) for p in FOOTPRINT}
+    level_total = {p: bid_vol[p] + ask_vol[p] for p in FOOTPRINT}
     poc = max(level_total, key=level_total.get)
     check("bar point of control", poc, "100.03")
     check("volume at the point of control", level_total[poc], "790")
@@ -157,11 +143,13 @@ def absorption_trade() -> None:
     check("risk, points", float(risk), "7.00")
     check("reward, points", float(reward), "22.00")
     check("reward / risk", float(reward / risk), "3.14")
-    breakeven = risk / (risk + reward)
-    # Break-even hit rate p solves p x reward = (1 - p) x risk; check by expectancy, not by the same ratio.
-    assert breakeven * reward - (1 - breakeven) * risk == 0
+    lo, hi = Fraction(0), Fraction(1)
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if mid * reward - (1 - mid) * risk < 0 else (lo, mid)
     check("risk + reward, points", float(risk + reward), "29")
-    check("break-even hit rate before costs, percent", 100 * float(breakeven), "24.1")
+    check("break-even hit rate by bisection on the expectancy, percent", 100 * float(lo), "24.1")
+    check("break-even hit rate from risk / (risk + reward), percent", 100 * float(risk / (risk + reward)), "24.1")
     check("wave 2 close below the 4,500.00 breakout level, points", 4498 - 4500, "-2")
     print("cited: Example 2 inputs, prior high 4,500.00, wave 1 pullback to 4,492.00, wave 2 close 4,498.00")
     print("cited: Example 2 trade plan, entry 4,497.00, stop 4,504.00, target 4,475.00")
@@ -170,9 +158,8 @@ def absorption_trade() -> None:
 
 
 if __name__ == "__main__":
-    rng = np.random.default_rng(SEED)
     order_book()
-    footprint(rng)
+    footprint()
     classification()
     absorption_trade()
     cited_constants()

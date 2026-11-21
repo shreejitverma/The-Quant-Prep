@@ -75,6 +75,7 @@ def turtle_replay(units_to_add: int) -> float:
 
 
 def turtle() -> None:
+    print("cited: Faith (2007) Turtle rules: initial stop 2N, add a unit every +0.5N, cap of 4 units, N = ATR")
     check("unit 2 stop, in N below P0", -(0.5 - 2.0), "1.5")
     check("loss after unit 3 reverses (N)", turtle_replay(3), "4.5")
     check("loss after unit 4 reverses (N)", turtle_replay(4), "5.0")
@@ -85,6 +86,7 @@ def turtle() -> None:
 
 def styles() -> tuple[np.ndarray, np.ndarray]:
     risk = 1000
+    print(f"input: Example 2 100 trades split 40 reversing, 20 trending, 40 failing; R = ${risk:,}")
     a = [Fraction(0)] * 40 + [Fraction(3)] * 20 + [Fraction(-1)] * 40
     b = [Fraction(1, 2)] * 40 + [Fraction(2)] * 20 + [Fraction(-1)] * 40
     check("style A reversing trades ($)", float(sum(a[:40]) * risk), "0")
@@ -139,6 +141,10 @@ def cards() -> None:
     print("input: card mkt-trd-076 hypothetical 90% of winners within 1.5 x ATR, stop at 1.8 x ATR")
     print("input: card mkt-trd-077 hypothetical MFE stall near 2.5R, target 2.3R")
     print("input: card mkt-trd-089 runner 25% to 33% of the position; card mkt-trd-095 daily loss limit 3R")
+    print("input: card mkt-trd-075 buffer k = 0.5 to 1.0 x ATR; stop multiplier examples k = 1.0 and 2.0 to 3.0")
+    print("input: volatility stop example 2.0 x ATR14; accounting stop examples 2% and $500; trailing example 5%")
+    print("input: scale-out example 50% at T1 = +1R; widened-stop examples 3R and 5R")
+    print("cited: Wilder (1978) true range and ATR; Osler (2003) stop clusters beyond round numbers")
     check("card 091 gap loss / intended loss", (100 - 80) / (100 - 95), "4")
     check("card 093 5% stop in daily sigmas, 1% vol stock", 5 / 1, "5")
     check("card 093 5% stop in daily sigmas, 10% vol asset", 5 / 10, "0.5")

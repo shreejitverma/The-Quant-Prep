@@ -61,7 +61,7 @@ Edwards and Magee (1948) partitioned geometric patterns into two primary structu
 1. **Head and Shoulders (Top and Bottom)**:
    - **Structure**: A Left Shoulder peak, followed by a higher Head peak, and a lower Right Shoulder peak.
    - The swing lows between the shoulders define the **Neckline** (horizontal or slanted).
-   - **Economic Interpretation**: The rally to the Head represents the final primary push; the failure of the Right Shoulder to reach the Head signals exhaustion of buying demand.
+   - **Chartist Interpretation**: Chartists read the rally to the Head as the final primary push and the failure of the Right Shoulder to reach the Head as exhaustion of buying demand; this is an interpretation, not a tested result.
    - The breakdown below the Neckline confirms the structural shift from higher highs to lower lows.
    - **Measured Move Target**:
      $$\text{Target} = P_{\text{neckline}} - (P_{\text{head}} - P_{\text{neckline}})$$
@@ -231,7 +231,7 @@ A quantitative research engine analyzes local price extrema identified by Gaussi
 
 > [!question]- mkt-ta-033 | What is a Head and Shoulders top pattern and what does it signify?
 > A three-peak reversal formation where the central peak (Head) is highest, flanked by two lower peaks (Shoulders).
-> It signals the transition from an uptrend (higher highs) to a downtrend (failure to make a higher high, followed by a neckline break).
+> Chartists read it as a transition from an uptrend (higher highs) to a downtrend (failure to make a higher high, followed by a neckline break); Lo, Mamaysky and Wang (2000) found pattern-conditional returns differ from unconditional ones, not that the pattern predicts a downtrend.
 
 > [!question]- mkt-ta-034 | What is the Neckline in a Head and Shoulders formation?
 > The support trendline drawn through the two intervening reaction troughs between the left shoulder, head, and right shoulder.
@@ -239,11 +239,11 @@ A quantitative research engine analyzes local price extrema identified by Gaussi
 
 > [!question]- mkt-ta-035 | How is the measured move price target calculated for a Head and Shoulders pattern?
 > The vertical distance from the peak of the Head to the Neckline, subtracted from the Neckline breakout point: Target = Neckline - (Head - Neckline).
-> It provides an objective minimum expectation for the subsequent move.
+> It is a mechanical projection, not a minimum the move is expected to reach; in this note's double-bottom example the move captures only 86.7% of its measured target.
 
 > [!question]- mkt-ta-036 | What is an Inverse Head and Shoulders pattern?
 > A bullish reversal pattern featuring three troughs where the central trough is lowest, flanked by two higher troughs.
-> It indicates exhaustion of selling pressure and signals an impending primary uptrend.
+> Chartists read it as exhaustion of selling pressure and expect an uptrend to follow; no peer-reviewed test of that expectation is cited here.
 
 > [!question]- mkt-ta-037 | What did Lo, Mamaysky, and Wang (2000) discover regarding algorithmic pattern recognition?
 > By smoothing prices with kernel regression and detecting extrema, they showed pattern-conditional return distributions were statistically distinct from unconditional distributions.
@@ -257,9 +257,9 @@ A quantitative research engine analyzes local price extrema identified by Gaussi
 > A reversal formation featuring two price peaks testing the same general resistance level separated by a trough.
 > It is confirmed only when price closes below the central intervening trough (neckline).
 
-> [!question]- mkt-ta-040 | Why do unconfirmed double tops carry high failure rates?
-> Until the neckline is broken, the price is simply oscillating in a trading range or healthy consolidation.
-> Entering short before the neckline break results in frequent short squeeze losses when the range resolves upward.
+> [!question]- mkt-ta-040 | Why do chartists wait for the neckline break before trading a double top?
+> Until the neckline is broken, the price may simply be oscillating in a trading range or consolidation.
+> A short entered before the break loses if the range resolves upward; no study cited here measures how often that happens.
 
 > [!question]- mkt-ta-041 | What is an Ascending Triangle and what is its typical directional bias?
 > A consolidation pattern formed by horizontal upper resistance and rising lower swing lows.
@@ -275,7 +275,7 @@ A quantitative research engine analyzes local price extrema identified by Gaussi
 
 > [!question]- mkt-ta-044 | What is a Pennant pattern?
 > A small symmetrical triangle continuation pattern, a few weeks at most by chartist convention, that forms after a vertical price advance.
-> It reflects brief volatility compression before trend resumption.
+> Chartists read it as a brief pause in volatility before the trend resumes; no peer-reviewed test of that reading is cited here.
 
 > [!question]- mkt-ta-045 | What is a Volatility Contraction Pattern (VCP)?
 > Minervini's term for a sequence of consolidation swings whose pullbacks and volume contract in turn (a hypothetical example: 20%, then 10%, then 5%).
@@ -295,7 +295,7 @@ A quantitative research engine analyzes local price extrema identified by Gaussi
 
 > [!question]- mkt-ta-049 | What is a Cup and Handle pattern?
 > A bullish continuation pattern popularized by William O'Neil consisting of a rounded U-shaped base (Cup) followed by a shallow downward drift (Handle).
-> The handle represents a final shakeout of weak holders on low volume prior to breakout.
+> O'Neil reads the handle as a final shakeout of weak holders on low volume before a breakout; no peer-reviewed test of the pattern is cited here.
 
 > [!question]- mkt-ta-050 | Why is the U-shaped cup preferred over a V-shaped recovery in Cup and Handle patterns?
 > O'Neil's argument: a rounded U-shape means price spent time at the bottom, shaking out weak holders, while a V-shape has no base and meets overhead supply sooner.

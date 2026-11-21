@@ -266,7 +266,7 @@ You are required to make a two-sided market on the probability that the chosen d
 
 5. **Construct the Market**:
    - The fair mathematical expectation of the event indicator is exactly $0.50$ (or $50\%$).
-   - In the market making game, quoting with zero spread guarantees being adversely selected.
+   - In the market making game, quoting 0.50 with zero spread leaves no edge, and the interviewer, who saw which die was chosen, can trade against it profitably every time.
    - A candidate might quote: "I am $47$ at $53$, $10$ up" (meaning willing to buy at $0.47$ and sell at $0.53$, size 10 contracts).
    - If the interviewer hits the bid at $0.47$ (selling to the candidate), the candidate is long 10 contracts at an edge of $0.50 - 0.47 = +0.03$ per contract against the public posterior.
    - The interviewer saw which die was chosen, so the sale is itself evidence that the die is fair; the candidate should lower the quote (e.g., $45$ at $51$) to discourage further selling and attract buyers.
@@ -317,7 +317,7 @@ struct OptimizedDeskStats {
 - **Overlooking Non-Compete Scope and Enforceability**: Signing a long non-compete without checking whether, and how much, you are paid during the restricted period and whether it is enforceable where you work.
 - **Neglecting Transaction Costs and Latency Slippage in Alpha Research**: Presenting a high-turnover model whose backtest looks strong before costs, without showing that it survives realistic half-spreads, exchange fees, and queue position.
 - **Failing to Skew During Market Making Games**: Maintaining stationary symmetric spreads when an interviewer repeatedly trades on one side of the market.
-  Repeatedly buying without lowering quotes signals severe adverse selection blindness.
+  Repeatedly buying without lowering quotes shows the candidate is ignoring the information in the trades.
 - **Premature C++ Optimization Without Hardware Benchmarking**: Writing obscure low-level assembly or bit-manipulation tricks without measuring hardware performance counters via tools like `perf`, resulting in branch mispredictions or instruction cache thrashing.
 
 ---
@@ -352,7 +352,7 @@ struct OptimizedDeskStats {
 > A non-compete is a post-termination restrictive covenant prohibiting the former employee from working for a competing entity for a specified duration; whether that period is paid is set by the contract, and enforceability depends on the jurisdiction.
 
 > [!question]- mkt-car-008 | Why do quantitative trading firms assess an internal "cost of capital" charge against desk PnL?
-> An internal cost of capital charge reflects the firm treasury's opportunity cost and funding hurdle rate for extending balance sheet liquidity and margin to a desk, ensuring trading strategies deliver returns exceeding risk-free money market yields or corporate funding costs.
+> An internal cost of capital charge reflects the firm treasury's opportunity cost and funding hurdle rate for extending balance sheet liquidity and margin to a desk, so a strategy is credited only with returns above risk-free money market yields or corporate funding costs.
 
 > [!question]- mkt-car-009 | In an interactive market making interview game, why must a candidate immediately widen their spread and skew quotes after a trade?
 > A trade execution signals potential adverse selection, indicating the counterparty may possess superior information or toxic order flow.
@@ -387,7 +387,7 @@ struct OptimizedDeskStats {
 
 > [!question]- mkt-car-017 | How does survivorship bias distort historical quantitative equity backtests?
 > Survivorship bias occurs when a backtest includes only companies that currently exist, excluding firms that went bankrupt, merged, or were delisted over the historical period.
-> This artificially inflates simulated returns and understates tail risk and maximum drawdowns.
+> This usually inflates simulated returns and understates tail risk and maximum drawdowns.
 
 > [!question]- mkt-car-018 | What is the role of memory ordering semantics like std::memory_order_relaxed vs std::memory_order_acquire/release in C++ lock-free queues?
 > `memory_order_relaxed` makes the operation itself atomic but imposes no ordering on other memory operations and creates no synchronization between threads.
@@ -398,19 +398,21 @@ struct OptimizedDeskStats {
 > An MPMC queue requires atomic compare-and-swap (CAS) loops or ticket schemes to handle contention across threads, incurring higher latency and cache synchronization overhead.
 
 > [!question]- mkt-car-020 | What is the purpose of CPU core pinning and thread affinity in electronic market making infrastructure?
-> Thread affinity binds critical execution threads to designated physical CPU cores using system calls like `pthread_setaffinity_np`, preventing the operating system scheduler from migrating threads between cores, which preserves L1/L2 cache warmth and eliminates context switching penalties.
+> Thread affinity binds critical execution threads to designated physical CPU cores using system calls like `pthread_setaffinity_np`, preventing the operating system scheduler from migrating threads between cores, which keeps its L1/L2 caches warm.
+> Pinning alone does not stop other threads or interrupts from running on that core, so latency-sensitive setups also isolate the cores (for example with `isolcpus` or cpusets and IRQ affinity) to avoid context switches.
 
 > [!question]- mkt-car-021 | Why do hedge fund pod shops mandate factor neutrality (e.g., zero beta to market, value, momentum)?
-> Pod shops require alpha that is uncorrelated with broad asset classes and systemic risk premia.
-> If a pod holds unhedged beta or style tilts, its performance reflects systemic market risk rather than idiosyncratic skill, exposing the fund to severe systemic drawdowns that cannot be leveraged safely.
+> Pod shops typically want alpha that is uncorrelated with broad asset classes and systematic risk premia.
+> If a pod holds unhedged beta or style tilts, its performance reflects market risk rather than idiosyncratic skill, and the fund's leverage amplifies market drawdowns instead of diversified idiosyncratic returns.
 
 > [!question]- mkt-car-022 | What is a post-trade markout curve, and what does a decaying markout signify to a quantitative trader?
 > A markout curve measures the cumulative price movement of an instrument relative to the execution price at discrete intervals (e.g., 1ms, 10ms, 1s, 10s) following a trade.
-> A markout that quickly drifts against the trader's position indicates toxic informed counterparty flow and adverse selection.
+> A markout that quickly drifts against the trader's position suggests informed counterparty flow and adverse selection.
 
 > [!question]- mkt-car-023 | In statistical arbitrage, what is cointegration, and how does it differ from simple correlation?
 > Correlation measures the linear co-movement of periodic returns, which can be transient or spurious.
-> Cointegration indicates that a linear combination of non-stationary asset price series is stationary, confirming a true long-run economic equilibrium spread that mean-reverts over time.
+> Cointegration means that a linear combination of non-stationary asset price series is stationary, so the spread mean-reverts in the estimation sample.
+> It is a statistical property of that sample, not proof of a permanent economic equilibrium, and the relation can break.
 
 > [!question]- mkt-car-024 | What is the significance of non-allocatable overhead in desk PnL accounting?
 > Non-allocatable overhead includes firm-wide executive salaries, central legal/compliance budgets, and enterprise facilities costs.
@@ -424,7 +426,7 @@ struct OptimizedDeskStats {
 > The ruin probability is therefore 1 - k / A, which falls linearly as starting capital k rises toward the target A; in a fair game, deeper capital buys survival odds but never positive expectancy.
 
 > [!question]- mkt-car-027 | What is the significance of cache warming in algorithmic trading systems?
-> Cache warming involves pre-loading instructions and lookup table data into CPU L1 instruction and data caches prior to anticipated market events (e.g., scheduled macroeconomic releases), preventing initial cold-cache misses when execution signals trigger.
+> Cache warming involves pre-loading instructions and lookup table data into CPU L1 instruction and data caches prior to anticipated market events (e.g., scheduled macroeconomic releases), reducing cold-cache misses when execution signals trigger.
 
 > [!question]- mkt-car-028 | Why is lookahead bias prevalent in machine learning models trained on financial statement data?
 > Lookahead bias occurs when corporate earnings or fundamental ratios are stamped with their fiscal quarter end date rather than the actual subsequent date and time when the regulatory SEC 10-Q/10-K report was publicly released, allowing models to trade on unreleased historical information.

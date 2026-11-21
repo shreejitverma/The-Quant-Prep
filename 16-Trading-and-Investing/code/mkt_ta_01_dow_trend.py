@@ -11,7 +11,9 @@ Independent routes used here:
   of the SMA behind a linear price ramp;
 - the EMA smoothing constant alpha = 2 / (N + 1) as the value whose mean lag (1 - alpha) / alpha, summed from
   the explicit geometric weights, equals the SMA lag;
-- the Dow confirmation percentages in exact rational arithmetic.
+- the Dow confirmation percentages in exact rational arithmetic;
+- the bull-trend chart rendered from an explicit swing list on which the higher-high, higher-low rule is
+  asserted swing by swing.
 Study dates (Brock, Lakonishok and LeBaron 1992; Sullivan, Timmermann and White 1999; Lo, Mamaysky and Wang
 2000; Brown, Goetzmann and Kumar 1998) are cited constants printed for reference.
 Every quoted number is printed as ``label = value`` and asserted at the precision the note quotes.
@@ -20,6 +22,7 @@ Run it with `python 16-Trading-and-Investing/code/mkt_ta_01_dow_trend.py`.
 
 from __future__ import annotations
 
+import itertools
 from fractions import Fraction
 
 import numpy as np
@@ -35,6 +38,7 @@ def check(label: str, value: float, expected: str) -> None:
 def sma_example() -> None:
     close = Fraction(4950)
     window_sum = Fraction(980_000)
+    print("input: Example 1 close 4,950, sum of the last 200 closes 980,000, 2.0% drop, re-entry close 4,920")
     sma_exact = window_sum / 200
     check("SMA_200", float(sma_exact), "4,900.00")
     gap = close / sma_exact - 1
@@ -79,11 +83,41 @@ def ema_matching_alpha(n: int) -> float:
 
 
 def dow_confirmation() -> None:
+    print("input: Example 2 January peaks DJIA 38,000 and DJTA 16,000; May closes DJIA 39,200 and DJTA 15,750")
     djia = Fraction(39_200, 38_000) - 1
     djta = Fraction(15_750, 16_000) - 1
     check("DJIA May close vs January peak (%)", float(100 * djia), "3.16")
     check("DJTA May close vs January peak (%)", float(100 * djta), "-1.56")
     assert djia > 0 > djta, "non-confirmation needs a new high in one average and not the other"
+
+
+SWINGS = [("", 0), ("HH1", 5), ("HL1", 2), ("HH2", 8), ("HL2", 5), ("HH3", 11), ("", 8)]
+
+
+def dow_chart(left: int = 26, width: int = 81) -> list[str]:
+    highs = [v for name, v in SWINGS if name.startswith("HH")]
+    lows = [v for name, v in SWINGS if name.startswith("HL")]
+    assert all(b > a for a, b in itertools.pairwise(highs)), "each swing high must exceed the prior one"
+    assert all(b > a for a, b in itertools.pairwise(lows)), "each swing low must exceed the prior one"
+    assert SWINGS[-1][1] > lows[-1], "the last leg must stay above the latest swing low (no trend break)"
+    top = max(v for _, v in SWINGS)
+    rows = [[" "] * width for _ in range(top + 1)]
+    col, labels = left, []
+    for (_, a), (name, b) in zip(SWINGS[:-1], SWINGS[1:], strict=True):
+        step, ys = ("/", range(a, b)) if b > a else ("\\", range(a - 1, b - 1, -1))
+        for y in ys:
+            rows[y][col] = step
+            col += 1
+        if name:
+            labels.append((b if b > a else b - 1, col, name))
+    for row, centre, name in labels:
+        start = centre - len(name) // 2
+        assert all(rows[row][start + k] == " " for k in range(len(name))), f"label {name} overlaps the line"
+        rows[row][start : start + len(name)] = list(name)
+    lines = ["".join(r) for r in reversed(rows)]
+    for line in lines:
+        print(f"chart |{line}|")
+    return lines
 
 
 if __name__ == "__main__":
@@ -92,6 +126,8 @@ if __name__ == "__main__":
     for n in (10, 50, 200):
         print(f"EMA alpha matching SMA({n}) lag = {ema_matching_alpha(n):.4f}")
     dow_confirmation()
+    dow_chart()
+    print("input: card mkt-ta-020 stop distance example 2x ATR")
     cited = {
         "Brock-Lakonishok-LeBaron DJIA sample": "1897-1986, 26 rules, 4 null models",
         "Sullivan-Timmermann-White universe": "7,846 rules, post-sample 1987-1996",

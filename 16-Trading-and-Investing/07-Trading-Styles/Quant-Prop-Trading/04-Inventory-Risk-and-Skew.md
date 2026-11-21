@@ -203,12 +203,12 @@ Correlation $\rho = 0.90$, which with $\beta = 1.35$ implies the stock's volatil
 
 - **Setting Risk Aversion $\gamma$ Too Low**:
   If $\gamma$ is under-calibrated, the reservation price barely moves as inventory accumulates.
-  In a strong trending market, the desk will continuously buy all the way down, suffering devastating drawdowns (inventory runaway).
+  In a strong trending market, the desk can keep buying as the price falls and accumulate a large losing position (inventory runaway).
 - **Quote Crossing Under Extreme Inventory**:
-  If $\gamma$ or inventory $q$ is extremely large, the calculated bid $P_b^*$ can exceed the market best offer, resulting in an immediate unintentional crossed order.
-  Production quoting engines must enforce hard boundary clamps: $P_b^* \le P_a^{\text{NBBO}} - \text{tick}$.
+  Because $r = s - q\gamma\sigma^2(T-t)$, a large short inventory ($q \ll 0$) with a large $\gamma$ can push the calculated bid $P_b^*$ above the market best offer, resulting in an immediate unintentional crossed order; a large long inventory can likewise push the ask $P_a^*$ below the best bid.
+  Production quoting engines enforce clamps on both sides: $P_b^* \le P_a^{\text{NBBO}} - \text{tick}$ and $P_a^* \ge P_b^{\text{NBBO}} + \text{tick}$.
 - **Assuming Static Volatility**:
-  Volatility $\sigma$ typically spikes precisely when inventory accumulates during a one-sided market selloff.
+  Volatility $\sigma$ often rises when inventory accumulates during a one-sided market selloff.
   Failing to scale $\sigma^2$ dynamically in real time leaves the reservation price under-penalized during panics.
 - **Basis Breakdown in Proxy Hedging**:
   Hedging single-stock inventory with broad index futures leaves the desk exposed to idiosyncratic earnings gap risk and borrow recall costs.
@@ -260,11 +260,11 @@ Correlation $\rho = 0.90$, which with $\beta = 1.35$ implies the stock's volatil
 
 > [!question]- mkt-pqt-107 | What is basis risk in a proxy-hedged market-making book?
 > The risk that the spread between the primary asset and the proxy hedge widens due to idiosyncratic shocks.
-> While market risk is eliminated, residual basis variance remains: Var(residual) = sigma_primary^2 * (1 - rho^2).
+> The hedge removes only the variance explained by the proxy; residual basis variance remains: Var(residual) = sigma_primary^2 * (1 - rho^2).
 
 > [!question]- mkt-pqt-108 | Why does correlation breakdown during market crashes impair proxy hedging?
-> During liquidity crises, idiosyncratic liquidations cause historical correlations rho to decouple toward zero or flip sign.
-> The market maker's long inventory drops while the short hedge rises, compounding losses across both legs.
+> During liquidity crises, idiosyncratic liquidations can push historical correlations rho toward zero or flip their sign.
+> If the long inventory then drops while the short hedge rises, both legs lose money.
 
 > [!question]- mkt-pqt-109 | What is inventory runaway and what causes it?
 > The continuous accumulation of inventory in one direction as an asset trends persistently through quoted price levels.
@@ -272,7 +272,7 @@ Correlation $\rho = 0.90$, which with $\beta = 1.35$ implies the stock's volatil
 
 > [!question]- mkt-pqt-110 | How do hard inventory boundaries (position limits) modify the Avellaneda-Stoikov problem?
 > When inventory reaches the maximum limit +Q_max, the market maker completely withdraws its bid quote (setting P_b = -infinity).
-> The desk only quotes an ask, eliminating the risk of accumulating further inventory.
+> The desk only quotes an ask, so passive fills can no longer add to the long position.
 
 > [!question]- mkt-pqt-111 | Explain the concept of asymmetric spread quoting.
 > Setting the bid distance delta_b and ask distance delta_a unequally relative to mid: delta_b != delta_a.
@@ -280,7 +280,7 @@ Correlation $\rho = 0.90$, which with $\beta = 1.35$ implies the stock's volatil
 
 > [!question]- mkt-pqt-112 | What is an internalizer's inventory netting benefit across multiple market makers?
 > An internalizer matching flow across multiple internal prop desks nets offsetting inventories before routing residual risk to the street.
-> Netting dramatically reduces external exchange execution fees and gross collateral requirements.
+> Netting reduces external exchange execution fees and gross collateral requirements.
 
 > [!question]- mkt-pqt-113 | Why does the Avellaneda-Stoikov spread widen when volatility sigma increases?
 > Spread s* contains the term gamma * sigma^2 * (T - t).
@@ -295,12 +295,12 @@ Correlation $\rho = 0.90$, which with $\beta = 1.35$ implies the stock's volatil
 > Financing drag creates a daily hurdle rate that penalizes slow-moving or low-turnover inventory.
 
 > [!question]- mkt-pqt-116 | What is the difference between active inventory shedding and passive quote shading?
-> Passive shading adjusts limit quotes to entice incoming retail orders to trade at favorable prices over time.
-> Active shedding aggressively crosses the spread with market orders, paying taker fees to eliminate risk instantly.
+> Passive shading adjusts limit quotes to attract incoming orders on the side that reduces inventory, at favorable prices but with uncertain timing.
+> Active shedding crosses the spread with market orders, paying the spread and taker fees to cut risk immediately.
 
 > [!question]- mkt-pqt-117 | When should a market maker transition from passive shading to active aggressive liquidation?
 > When inventory breaches critical stop limits, when inventory half-life exceeds time to close, or when market volatility spikes abruptly.
-> Active liquidation pays guaranteed spread costs to prevent catastrophic ruin from overnight gap risk.
+> Active liquidation pays a known spread cost now instead of carrying the position through overnight gap risk.
 
 > [!question]- mkt-pqt-118 | What is the impact of dividend ex-dates on equity market maker inventory?
 > A desk short over the ex-dividend date owes the share lender a manufactured payment equal to the dividend; a desk long over it receives the dividend.
@@ -312,7 +312,7 @@ Correlation $\rho = 0.90$, which with $\beta = 1.35$ implies the stock's volatil
 
 > [!question]- mkt-pqt-120 | What is gamma scalping in the context of options inventory management?
 > Dynamically buying underlying stock when it falls and selling when it rises to maintain delta neutrality on a long gamma options position.
-> Realized gamma scalping gains offset the continuous theta time decay of the options inventory.
+> Gamma scalping gains offset the theta decay of the options only if realized volatility exceeds the implied volatility paid for them.
 
 > [!question]- mkt-pqt-121 | Why is inventory risk non-linear in total position size?
 > The variance of the inventory's value scales with q^2, so the risk penalty is quadratic: Cost ~ 0.5 * gamma * q^2 * sigma^2 * (T - t).
@@ -328,15 +328,15 @@ Correlation $\rho = 0.90$, which with $\beta = 1.35$ implies the stock's volatil
 
 > [!question]- mkt-pqt-124 | What is queue priority jumping via quote improvement?
 > Bidding one tick above the existing NBBO bid to establish a new price priority tier and jump ahead of a long queue.
-> The market maker sacrifices one tick of spread to guarantee immediate execution on incoming seller flow.
+> The market maker gives up one tick of spread for first place in the new price level, which raises the chance of filling against the next incoming seller but does not guarantee it.
 
 > [!question]- mkt-pqt-125 | How does high book depth at the NBBO influence optimal reservation price skew?
 > In deep books, incoming orders rarely sweep past the best quote, making it harder to attract rebalancing flow by shading.
 > The market maker must either join the front of the queue early or shade quotes across multiple ticks into Level 2 depth.
 
 > [!question]- mkt-pqt-126 | What is liquidity black hole risk in inventory management?
-> A catastrophic feedback loop where falling prices force multiple market makers to shed long inventory simultaneously.
-> Mutual aggressive selling exhausts all available bids, causing prices to collapse vertically without liquidity.
+> A feedback loop where falling prices push several market makers to shed long inventory at the same time.
+> Their combined selling can exhaust the available bids and make the price gap down until new buyers arrive.
 
 > [!question]- mkt-pqt-127 | Explain the difference between portfolio-level VAR and asset-level inventory limits.
 > Asset-level limits cap the maximum position in each individual stock to protect against idiosyncratic firm-specific news.
@@ -344,7 +344,7 @@ Correlation $\rho = 0.90$, which with $\beta = 1.35$ implies the stock's volatil
 
 > [!question]- mkt-pqt-128 | Why do many intraday market-making desks flatten inventory before the close?
 > The overnight session is thin or closed, so the desk cannot rebalance or hedge dynamically while earnings releases and macro news can gap the price at the open.
-> Complete flattening resets inventory to zero, ensuring that daily PnL reflects pure intraday statistical edge.
+> Complete flattening resets inventory to zero, so daily PnL carries no overnight inventory risk.
 
 ---
 

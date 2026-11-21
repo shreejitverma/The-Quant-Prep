@@ -209,9 +209,9 @@ Hypothetical setup distribution:
 > A stop-market order triggers a market order when the stop price is touched, guaranteeing execution but leaving fill price vulnerable to slippage.
 > A stop-limit order triggers a limit order, guaranteeing price boundary but risking non-execution if the market gaps past the limit.
 
-> [!question]- mkt-trd-073 | Why is a stop-market order mandatory for catastrophe protection rather than a stop-limit?
+> [!question]- mkt-trd-073 | Why is a stop-market order usually preferred over a stop-limit for catastrophe protection?
 > During rapid market panics or gap openings, price can jump completely past the limit price.
-> A stop-limit order then remains unfilled and the loss keeps growing, whereas a stop-market order exits, although possibly far below the stop.
+> A stop-limit order can then remain unfilled while the loss keeps growing, whereas a stop-market order exits, although possibly far below the stop.
 
 > [!question]- mkt-trd-074 | What is a liquidity sweep (stop run) and how do institutional algorithms execute it?
 > A move through a level where stop-loss orders are concentrated, which triggers them and briefly accelerates price; Osler (2003, Journal of Finance) documented such clusters just beyond round numbers in FX and faster trends after those levels were crossed.

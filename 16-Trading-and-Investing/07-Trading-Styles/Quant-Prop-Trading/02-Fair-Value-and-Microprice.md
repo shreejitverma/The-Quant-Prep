@@ -161,7 +161,7 @@ Track three consecutive market updates for a security (hypothetical inputs):
 
 > [!question]- mkt-pqt-033 | Why is the arithmetic mid-price an inadequate estimator of instantaneous fair value?
 > It weights the best bid and ask equally regardless of the volume of resting liquidity at each level.
-> When order queues are heavily asymmetric, the probability of an immediate tick in the direction of the thinner side is significantly higher.
+> When order queues are heavily asymmetric, the next mid change tends to be toward the thinner side, which an equal-weight mid ignores.
 
 > [!question]- mkt-pqt-034 | State the formula for the classical volume-weighted microprice.
 > P_micro = (Q_b * P_a + Q_a * P_b) / (Q_b + Q_a), which equals Mid + ((Q_b - Q_a) / (Q_b + Q_a)) * (Spread / 2).
@@ -201,7 +201,7 @@ Track three consecutive market updates for a security (hypothetical inputs):
 
 > [!question]- mkt-pqt-043 | How do iceberg orders undermine the predictive power of the volume-weighted microprice?
 > Iceberg orders conceal substantial non-displayed size, making a queue appear artificially thin.
-> The microprice predicts a price break toward the thin side, only for aggressive orders to be repeatedly absorbed by the hidden tranche.
+> The microprice then points toward the thin side, while aggressive orders can keep being absorbed by the hidden tranche.
 
 > [!question]- mkt-pqt-044 | What is the Cancel-to-Trade Ratio (CTR) and what does a high ratio signify?
 > CTR is the number of order cancellations divided by the number of executed trades.
@@ -221,11 +221,11 @@ Track three consecutive market updates for a security (hypothetical inputs):
 
 > [!question]- mkt-pqt-048 | What is VPIN (Volume-Synchronized Probability of Toxicity)?
 > VPIN measures the historical imbalance between buyer-initiated and seller-initiated volume across equal-volume clock bars.
-> Developed by Easley, Lopez de Prado, and O'Hara (2012), it serves as a real-time toxicity gauge for market makers.
+> Easley, Lopez de Prado, and O'Hara (2012) proposed it as a real-time toxicity gauge for market makers; Andersen and Bondarenko (2014) dispute its power to predict toxicity events.
 
 > [!question]- mkt-pqt-049 | Why do volume clock bars improve toxicity estimation compared to chronological time bars?
 > Trade arrivals are clustered and non-stationary; chronological time bins over-sample quiet periods and under-sample volatile panics.
-> Volume clocks sample the market at a rate proportional to trading intensity, normalizing the information arrival rate.
+> Volume clocks sample the market at a rate proportional to trading intensity, which evens out information arrival to the extent that information arrives with volume.
 
 > [!question]- mkt-pqt-050 | How does a quantitative desk use the microprice to shade its quoting spreads?
 > When the microprice is above mid, the desk skews its quotes upward by raising both its bid and ask.
@@ -238,18 +238,18 @@ Track three consecutive market updates for a security (hypothetical inputs):
 
 > [!question]- mkt-pqt-052 | How does dark pool midpoint crossing interact with the lit exchange microprice?
 > Dark pools execute trades at the lit NBBO midpoint, providing price improvement over lit quotes.
-> However, if the lit microprice is skewed, executing at the simple midpoint transfers economic edge to the informed counterparty.
+> However, if the lit microprice is skewed, a fill at the simple midpoint can transfer edge to the counterparty that traded on the skew.
 
 > [!question]- mkt-pqt-053 | What is quote stuffing in high-frequency market microstructure?
 > Flooding an exchange with massive volumes of rapid limit orders and immediate cancellations to congest competitor order processing engines.
-> The resulting latency delay allows the offending firm to trade on price changes before competitors process the book update.
+> The alleged aim is to delay competitors' processing so the sender can trade on price changes before they see the book update.
 
 > [!question]- mkt-pqt-054 | Explain the concept of book skewness across multiple price levels (Level 2/3).
 > Book skewness evaluates the volume profile slope across levels 1 through 5 on both sides of the book.
-> If the cumulative depth on the bid decays slower than the ask, institutional demand extends deeper into the book.
+> If the cumulative depth on the bid decays slower than the ask, displayed buying interest extends deeper into the book than selling interest.
 
 > [!question]- mkt-pqt-055 | What is a phantom liquidity trap?
-> Liquidity displayed by latency arbitrageurs across multiple venues that is cancelled the microsecond a market order hits the first venue.
+> Displayed liquidity, often from fast market makers quoting on several venues, that is cancelled as soon as a market order hits the first venue.
 > An execution algorithm attempting to sweep the displayed size receives fills on only a fraction of the quoted depth.
 
 > [!question]- mkt-pqt-056 | How does a market maker measure the information content of a trade fill?
@@ -303,4 +303,5 @@ Track three consecutive market updates for a security (hypothetical inputs):
 - Cont, R., Kukanov, A., & Stoikov, S. (2014). *The price impact of order book events*. Journal of Financial Econometrics, 12(1), 47-88.
 - Stoikov, S. (2018). *The micro-price: a high-frequency estimator of future prices*. Quantitative Finance, 18(12), 1959-1966.
 - Easley, D., López de Prado, M. M., & O'Hara, M. (2012). *Flow toxicity and liquidity in a high-frequency world*. The Review of Financial Studies, 25(5), 1457-1493.
+- Andersen, T. G., & Bondarenko, O. (2014). *VPIN and the flash crash*. Journal of Financial Markets, 17, 1-46.
 - Gould, M. D., Porter, M. A., Williams, S., McDonald, M., Fenn, D. J., & Howison, S. D. (2013). *Limit order books*. Quantitative Finance, 13(11), 1709-1742.

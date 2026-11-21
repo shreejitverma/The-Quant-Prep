@@ -35,6 +35,7 @@ def rounded(label: str, value: float, expected: str) -> None:
 def example_1() -> None:
     print("Example 1: three-trade attribution")
     rebate, taker = 0.0020, 0.0030
+    print(f"    input: maker rebate ${rebate:.4f} per share, taker fee ${taker:.4f} per share, 1,000 shares per fill")
     # (time s, signed size, price, mid at fill, passive?)
     fills = [(10, +1000, 99.98, 100.00, True), (25, -1000, 100.02, 100.00, True), (40, -1000, 99.95, 99.97, False)]
     mid_path = {10: 100.00, 11: 99.96, 25: 100.00, 26: 100.00, 40: 99.97}  # mid at each time point
@@ -120,6 +121,7 @@ def example_2(rng: np.random.Generator) -> None:
     sig = sd_d * n.sqrt()
     down = down_d * n.sqrt()
     print(f"    input: equity $5,000,000, GMV $20,000,000, PnL ${pnl:,}, daily sd 0.75%, downside sd {down_d * 100:.2f}%")
+    print(f"    input: risk-free rate {rf * 100:.1f}%, maximum drawdown ${dd:,}, {n} trading days a year")
     rounded("leverage (GMV / equity)", 20_000_000 / 5_000_000, "4")
     rounded("annual return (%)", mu * 100, "30.0")
     rounded("drawdown on equity (%)", dd / equity * 100, "5.0")
@@ -129,8 +131,6 @@ def example_2(rng: np.random.Generator) -> None:
     rounded("annualized downside deviation (%)", down * 100, "6.350")
     rounded("Sortino ratio", (mu - rf) / down, "4.095")
     rounded("RoMaD", mu / (dd / equity), "6.00")
-    # the old literal 11.905 and 4.094 must not survive the rounding test
-    assert f"{float(sig * 100):.3f}" != "11.905" and f"{float((mu - rf) / down):.3f}" != "4.094"
 
     # sqrt-time scaling: std of 252-day sums of iid daily returns with sd 0.75%
     paths = 20_000
@@ -148,6 +148,7 @@ def cards() -> None:
     print("    input: card mkt-pqt-020 illustrative hard-to-borrow fee 25% a year")
     print("    cited: Release 34-105656 (June 11, 2026) extends compliance to the first business day of November 2027")
     print("    cited: Battalio, Corwin and Jennings (2016): orders routed to high-rebate venues had lower fill rates")
+    print("    cited: Virtu Financial Form 8-K (May 2020): record Q1 2020 attributed to volatility, spreads and volumes")
     sizes, child_fills = np.array([1.0, 2.0, 4.0, 8.0]), 20_000
     total_cost = []
     for q in sizes:

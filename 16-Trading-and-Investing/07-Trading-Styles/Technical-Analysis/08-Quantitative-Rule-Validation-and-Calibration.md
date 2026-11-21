@@ -344,11 +344,11 @@ A quantitative analyst evaluates $1,000$ machine learning breakout forecasts acr
 
 > [!question]- mkt-ta-252 | What is Monte Carlo trade sequence resampling?
 > Randomly shuffling the sequential order of realized trade returns thousands of times to generate a distribution of simulated equity curves.
-> It reveals the true range of potential drawdowns that could occur under different sequencing of wins and losses.
+> It shows the range of drawdowns the same trades could have produced in a different order; it assumes trades are independent, so it understates drawdowns when losses cluster.
 
 > [!question]- mkt-ta-253 | What is a trading rule parameter plateau?
 > A wide, continuous range of adjacent parameter values that all produce stable, profitable performance.
-> True structural market edges manifest as parameter plateaus, whereas overfitted noise manifests as sharp, isolated parameter spikes.
+> A plateau is consistent with a real effect and a sharp, isolated spike is a warning sign of fitting to noise, but neither proves it; both still need an out-of-sample test.
 
 > [!question]- mkt-ta-254 | How does the Brier Skill Score (BSS) evaluate a forecaster against a benchmark?
 > BSS = 1 - (Brier_forecaster / Brier_reference).

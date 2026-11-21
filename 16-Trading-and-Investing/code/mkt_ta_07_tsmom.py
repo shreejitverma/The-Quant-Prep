@@ -36,6 +36,9 @@ def check(label: str, value: float, expected: str) -> None:
 
 def sizing() -> None:
     capital, n_instr, target = 10_000_000, 20, 0.12
+    print(f"input: capital ${capital:,}, {n_instr} instruments, {100 * target:.0f}% volatility target per sleeve")
+    print("input: Example 1 crude oil at $80 with 30% volatility; Example 2 at $100 with 60% volatility")
+    print("cited: NYMEX CL contract = 1,000 barrels")
     sleeve = capital / n_instr
     budget = sleeve * target  # dollar volatility the crude-oil sleeve may carry
     check("capital per instrument", sleeve, "500,000.00")
@@ -129,6 +132,7 @@ def cited_counts() -> None:
     print("cited: MOP diversified TSMOM alpha over cross-sectional momentum 76 bp a month (t = 5.90)")
     print("cited: HOP positive in 8 of the 10 largest US 60/40 drawdowns since 1880, which lasted about 15 months on average")
     print("cited: HOP gross Sharpe ratio per market about 0.4")
+    print("cited: MOP diversified TSMOM portfolio Sharpe ratio above one, 1985 to 2009")
     print("cited: MOP size each instrument to 40% annualized ex-ante volatility; HOP combined portfolio 10%")
     print("cited: Lemperiere et al. (2014) trend t-statistic about 5 since 1960 and about 10 since 1800")
     print("cited: trailing 12-month crude oil return +35.0% (Example 1 input), US portfolio 60/40, S&P 500")

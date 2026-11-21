@@ -36,6 +36,7 @@ def rounded(label: str, value: float, expected: str) -> None:
 def example_1() -> None:
     print("Example 1: desk bonus pool")
     print("    input: $50,000,000 balance-sheet equity, 4x intraday leverage, 3 team members (hypothetical)")
+    print("    input: gross $18.5m, fees $3.2m, overhead $1.1m, salaries $0.6m, capital charge 6% on $40m, payout 20%")
     ledger = [
         ("gross trading profits", Decimal(18_500_000)),
         ("exchange fees, clearing, brokerage", Decimal(-3_200_000)),
@@ -85,6 +86,8 @@ def example_2(rng: np.random.Generator) -> None:
     assert abs(est - 0.5) < 5 * se
     rounded("edge per contract bought at 0.47", Fraction(1, 2) - Fraction(47, 100), "0.03")
     print("    input: illustrative quotes 47 at 53 (0.47 / 0.53), size 10, lowered to 45 at 51")
+    print("    input: loaded die P(6) = 0.50, each of 1 to 5 = 0.10; prior P(L) = 1/4")
+    rounded("loaded die P(face 1..5) from the remaining mass", (1 - l6) / 5, "0.10")
 
 
 def gamblers_ruin(rng: np.random.Generator) -> None:
@@ -117,8 +120,11 @@ def example_3() -> None:
     class BadDeskStats(ctypes.Structure):
         _fields_ = [(f"fills_core{i}", ctypes.c_uint64) for i in range(4)]
 
+    line = 64
+    pad = (-ctypes.sizeof(ctypes.c_uint64)) % line
+
     class CoreStats(ctypes.Structure):
-        _fields_ = [("fills", ctypes.c_uint64), ("padding", ctypes.c_char * 56)]
+        _fields_ = [("fills", ctypes.c_uint64), ("padding", ctypes.c_char * pad)]
 
     class OptimizedDeskStats(ctypes.Structure):
         _fields_ = [("cores", CoreStats * 4)]
@@ -127,9 +133,10 @@ def example_3() -> None:
     print(f"    BadDeskStats offsets = {offsets}")
     assert offsets == [0, 8, 16, 24]
     rounded("sizeof(BadDeskStats)", ctypes.sizeof(BadDeskStats), "32")
-    rounded("padding bytes", 64 - ctypes.sizeof(ctypes.c_uint64), "56")
-    rounded("sizeof(CoreStats)", ctypes.sizeof(CoreStats), "64")
-    rounded("sizeof(OptimizedDeskStats)", ctypes.sizeof(OptimizedDeskStats), "256")
+    print(f"    cited: x86-64 cache line = {line} bytes")
+    rounded("padding bytes to fill a line after one uint64_t", pad, "56")
+    starts = [OptimizedDeskStats.cores.offset + i * ctypes.sizeof(CoreStats) for i in range(4)]
+    print(f"    OptimizedDeskStats counter offsets = {starts}; alignas(64) placement is a compiler guarantee, not checked")
     # Cache-line placement over every base address the struct's natural 8-byte alignment allows.
     align = ctypes.alignment(BadDeskStats)
     rounded("alignof(BadDeskStats)", align, "8")

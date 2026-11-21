@@ -235,7 +235,7 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 ## Interview questions
 
 > [!question]- mkt-pqt-065 | What is the fundamental conclusion of the Glosten-Milgrom (1985) model?
-> The bid-ask spread is fundamentally an information asymmetry cost rather than an operational processing fee.
+> In the model the bid-ask spread is purely an information asymmetry cost, not an operational processing fee.
 > A positive spread exists in equilibrium even under zero transaction costs and perfect market maker competition to offset losses to informed traders.
 
 > [!question]- mkt-pqt-066 | How does an increase in the proportion of informed traders alpha affect the bid-ask spread?
@@ -263,7 +263,7 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 > This bounce creates negative serial correlation even if the underlying fundamental value follows a pure random walk.
 
 > [!question]- mkt-pqt-072 | What is the primary limitation of Roll's effective spread estimator in empirical data?
-> Empirical price change autocovariance is frequently positive in trending markets or during institutional sweeps.
+> Empirical price change autocovariance can be positive in trending markets or during institutional sweeps.
 > When Cov(Delta P_t, Delta P_{t-1}) > 0, the term under the square root is negative, causing the basic Roll formula to fail.
 
 > [!question]- mkt-pqt-073 | Explain the two rules comprising the Lee-Ready (1991) trade classification algorithm.
@@ -292,12 +292,12 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 > It is an empirical regularity reported across many asset classes (see Bouchaud, Bonart, Donier and Gould, Trades, Quotes and Prices, 2018), not a law that holds for every order.
 
 > [!question]- mkt-pqt-079 | Why does the Square-Root Law exhibit sub-linear rather than linear price impact?
-> Large institutional orders are executed via endogenous algorithmic scheduling that slows down execution when liquidity is scarce.
-> Furthermore, latent supply and demand in the broader market enters the book non-linearly as prices reach attractive levels.
+> One proposed explanation is that large institutional orders are scheduled by algorithms that slow down when liquidity is scarce.
+> Another is that latent supply and demand enters the book as prices reach attractive levels, so impact grows less than linearly; neither is settled.
 
 > [!question]- mkt-pqt-080 | How does high market fragmentation (many US equity exchanges plus ATSs) impact adverse selection?
-> Fragmentation increases adverse selection risk for passive market makers.
-> An informed trader sweeps liquidity across all venues simultaneously, filling resting limit orders on every exchange before quotes can cancel.
+> Fragmentation can increase adverse selection risk for passive market makers.
+> An informed trader can sweep liquidity across all venues at once, filling resting limit orders on every exchange before quotes can cancel.
 
 > [!question]- mkt-pqt-081 | What is a trade-through and which SEC regulation prohibits it?
 > A trade-through occurs when a trading center executes an order at a price inferior to a protected quotation displayed on another venue.
@@ -333,7 +333,7 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 
 > [!question]- mkt-pqt-089 | What is the realized half-spread and how does it measure market maker profit?
 > Realized Half-Spread = q_t * (P_t - S_{t + tau}), where tau is a post-trade horizon (for example 1 minute).
-> It subtracts the adverse selection price drift (S_{t + tau} - S_t) from the effective spread, isolating the net revenue retained by the liquidity provider.
+> It equals the effective half-spread q_t * (P_t - S_t) minus the signed drift q_t * (S_{t + tau} - S_t), which is the adverse selection component, so it measures the revenue the liquidity provider keeps after the price moves.
 
 > [!question]- mkt-pqt-090 | What is price discovery and where does it primarily occur in fragmented equity markets?
 > Price discovery is the process through which new information is incorporated into the equilibrium market clearing price.
@@ -344,16 +344,16 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 > Because retail orders carry little adverse selection on average, the internalizer can give up part of the spread and still expect to earn the rest, though not risk-free: it still carries inventory risk.
 
 > [!question]- mkt-pqt-092 | What is the inventory effect on quote positioning in market microstructure?
-> A market maker with excessive long inventory lowers both its bid and ask quotes below fair value.
+> A market maker with excessive long inventory lowers both its bid and ask, shifting its reservation price below the mid.
 > This discourages incoming sellers while incentivizing incoming buyers to relieve the desk of its inventory risk.
 
 > [!question]- mkt-pqt-093 | How does high-frequency trading (HFT) affect the adverse selection component of the spread?
-> HFT market makers update quotes within microseconds of information arrivals, reducing their vulnerability to stale quote snipes.
-> This allows them to quote narrower spreads during calm regimes, though spreads widen abruptly when volatility surges.
+> HFT market makers can update quotes within microseconds of information arrivals, reducing their vulnerability to stale quote snipes.
+> That lets them quote narrower spreads in calm regimes, though their spreads can widen abruptly when volatility surges.
 
 > [!question]- mkt-pqt-094 | What is the Campbell-Grossman-Wang (1993) model of volume and return autocorrelation?
 > It shows that stock returns accompanied by high trading volume exhibit greater negative first-order serial correlation (reversal).
-> Volume-driven price moves reflect liquidity provision by risk-averse investors who demand price discounts that subsequently mean-revert.
+> Their explanation is that volume-driven price moves reflect liquidity provision by risk-averse investors who demand price discounts that subsequently mean-revert.
 
 > [!question]- mkt-pqt-095 | Explain the difference between lit market depth and dark pool crossing volume.
 > Lit market depth consists of publicly displayed, binding limit orders that establish the NBBO and contribute directly to price discovery.
@@ -361,7 +361,7 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 
 > [!question]- mkt-pqt-096 | How do market makers detect that a single large institutional parent order is active in the market?
 > By observing persistent, one-sided Order Flow Imbalance, abnormal fill rates at the ask across multiple venues, and lack of mid-price mean reversion.
-> Upon detecting an active institutional algorithm, market makers pull resting passive quotes and shade prices defensively.
+> Market makers that suspect an active institutional algorithm may pull resting passive quotes and shade prices defensively.
 
 ---
 

@@ -70,6 +70,9 @@ def brute_force(vol: list[int], target: float) -> tuple[int, int, int]:
 
 
 def value_area() -> None:
+    print(f"input: Example 1 price ladder {LEVELS}")
+    print(f"input: Example 1 volume at each level {VOLUME}")
+    print("input: value area convention = 70% of session volume")
     total = sum(VOLUME)
     check("total session volume", total, "40,000")
     target = 0.70 * total
@@ -165,6 +168,7 @@ def normal_facts() -> None:
 def anchored_vwap() -> None:
     prices = [Fraction(200), Fraction(208), Fraction(204)]
     volumes = [5_000_000, 2_500_000, 1_500_000]
+    print("input: Example 2 anchored VWAP days, prices $200, $208, $204 on 5,000,000, 2,500,000 and 1,500,000 shares")
     dollars = [p * v for p, v in zip(prices, volumes, strict=True)]
     check("day 1 dollar volume", float(dollars[0]), "1,000,000,000")
     check("day 2 dollar volume", float(dollars[1]), "520,000,000")

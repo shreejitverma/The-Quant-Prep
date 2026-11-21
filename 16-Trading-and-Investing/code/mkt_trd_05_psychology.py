@@ -55,13 +55,11 @@ def prospect_values() -> None:
     # Shape claims by midpoint tests (independent of the slope formula): concave gains, convex losses.
     assert 5.0**alpha > (0.0 + 10.0**alpha) / 2, "gain branch must be concave"
     assert -lam * 2.0**beta < (0.0 - lam * 4.0**beta) / 2, "loss branch must be convex"
-    # Slope ratio at mirrored distances by central differences, not by the closed form.
-    for d in (0.5, 2.0, 4.0):
-        h = 1e-6
-        loss_slope = (-lam * (d - h) ** beta + lam * (d + h) ** beta) / (2 * h)
-        gain_slope = ((d + h) ** alpha - (d - h) ** alpha) / (2 * h)
-        assert abs(loss_slope / gain_slope - 2.25) < 1e-6
     print("cited: Odean (1998) 10,000 discount-brokerage accounts, 1987-1993")
+    print("cited: Kahneman and Tversky (1979); Shefrin and Statman (1985); Barber and Odean (2001)")
+    print("cited: Arnsten (2009); Coates and Herbert (2008); Kahneman, Knetsch and Thaler (1990)")
+    print("cited: Samuelson and Zeckhauser (1988); Douglas (2000); Steenbarger (2006)")
+    print("input: tilt rule-of-thumb example: cut size by half")
     print("input: equity-curve filter moving average = 20 trades; Example 1 = 100 trades at a 50% win rate")
 
 

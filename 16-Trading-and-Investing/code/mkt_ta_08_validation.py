@@ -60,6 +60,8 @@ def brier_two_class(f: np.ndarray, o: np.ndarray) -> float:
 def brier() -> None:
     f = np.array([0.8] * 5 + [0.3] * 5)
     o = np.array([1, 1, 1, 0, 1, 0, 0, 1, 0, 0])
+    print("input: Example 1 forecasts, five at 0.8 and five at 0.3")
+    print(f"input: Example 1 outcomes = {o.tolist()}")
     direct = brier_score(f, o)
     base = o.mean()
     rel = res = 0.0
@@ -86,6 +88,8 @@ def brier() -> None:
 
 def ece() -> None:
     buckets = [(0.25, 400, 0.20), (0.55, 400, 0.45), (0.85, 200, 0.65)]
+    print(f"input: Example 2 buckets (mean forecast, count, observed frequency) = {buckets}")
+    print("input: Example 2 bucket edges 0.0, 0.4, 0.7, 1.0")
     forecasts, outcomes = [], []
     for fbar, n, obar in buckets:
         forecasts += [fbar] * n
@@ -185,6 +189,7 @@ def rsi_correlation(rng: np.random.Generator) -> None:
 
 
 def expectancy() -> None:
+    print("input: high win-rate example, 85% wins of 1R and 15% losses of 10R")
     check("expectancy at 85% wins of 1R and losses of 10R, R", 0.85 * 1 - 0.15 * 10, "-0.65")
 
 

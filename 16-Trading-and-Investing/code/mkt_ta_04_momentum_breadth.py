@@ -112,5 +112,8 @@ if __name__ == "__main__":
     print("cited: Bernard and Thomas (1989) drift over the 60 trading days after the announcement")
     print("cited: Moskowitz, Ooi and Pedersen (2012) 58 instruments; O'Neil RS rating 80 or higher on a 1 to 99 scale")
     print("cited: conventions, 52-week highs and lows, 200-day SMA, 52-week Mansfield lookback")
+    print("cited: IBD RS rating, the 40% / 20% / 20% / 20% quarterly weighting quoted online is a third-party approximation")
+    print("cited: Jegadeesh and Titman (1993) 3- to 12-month formation and holding periods; long top 10%, short bottom 10%")
+    print("input: high-beta pitfall, a 2.0 beta stock against a 1.0 beta index")
     print("cited: Zweig breadth thrust = 10-day average of advances / (advances + declines) from below 40% to above 61.5%")
     print("all momentum and breadth numbers check out")

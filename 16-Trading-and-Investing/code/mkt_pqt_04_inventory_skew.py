@@ -106,9 +106,11 @@ def example_1() -> None:
         10: ("99.7500", "99.0921", "100.4079"),
         -10: ("100.2500", "99.5921", "100.9079"),
     }
+    r_by_q = {}
     for q, (r_lit, b_lit, a_lit) in quoted.items():
         r_bid, r_ask = reservation_prices(q, s, gamma, sigma, tau)
         r = 0.5 * (r_bid + r_ask)
+        r_by_q[q] = r
         assert abs(r - (s - q * gamma * sigma**2 * tau)) < 1e-6
         assert abs(r_ask - (s + (1 - 2 * q) * gamma * sigma**2 * tau / 2)) < 1e-6
         assert abs(r_bid - (s - (1 + 2 * q) * gamma * sigma**2 * tau / 2)) < 1e-6
@@ -117,8 +119,8 @@ def example_1() -> None:
         rounded("optimal bid", r - spread / 2, b_lit)
         rounded("optimal ask", r + spread / 2, a_lit)
     rounded("inventory penalty for |q| = 10", 10 * gamma * sigma**2 * tau, "0.2500")
-    shift_long = 100 * (float(quoted[0][1]) - float(quoted[10][1]))
-    shift_short = 100 * (float(quoted[-10][2]) - float(quoted[0][2]))
+    shift_long = 100 * (r_by_q[0] - r_by_q[10])
+    shift_short = 100 * (r_by_q[-10] - r_by_q[0])
     rounded("quote drop at q = +10 (cents)", shift_long, "25")
     rounded("quote rise at q = -10 (cents)", shift_short, "25")
 
@@ -173,9 +175,11 @@ def hedging(rng: np.random.Generator) -> None:
     n_fut = -beta * excess / contract
     rounded("contracts", n_fut, "-30.0")
     rounded("NQ contracts sold short", -n_fut, "30")
-    rounded("variance removed on the hedged slice (%)", corr**2 * 100, "81")
     vol_ratio = beta / corr
     rounded("stock vol / index vol", vol_ratio, "1.5")
+    slice_var = vol_ratio**2
+    slice_hedged = slice_var - 2 * beta * corr * vol_ratio + beta**2
+    rounded("variance removed on the hedged slice (%)", (1 - slice_hedged / slice_var) * 100, "81")
     pos, hedge = Fraction(10), beta * 8  # $ millions
     rounded("hedge notional ($m)", hedge, "10.8")
     unhedged = pos**2 * vol_ratio**2

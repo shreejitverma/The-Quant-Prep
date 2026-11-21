@@ -35,6 +35,7 @@ def example_1() -> None:
     print("Example 1: volume-weighted microprice")
     pb, pa = Fraction("50.00"), Fraction("50.02")
     qb, qa = 8000, 2000
+    print(f"    input: bid ${float(pb):.2f} x {qb:,}, ask ${float(pa):.2f} x {qa:,}")
     mid = (pa + pb) / 2
     imbalance = Fraction(qb - qa, qb + qa)
     micro = (qb * pa + qa * pb) / (qb + qa)
@@ -51,6 +52,7 @@ def example_1() -> None:
     print("    cited: Cont, Kukanov and Stoikov (2014) OFI sample, TAQ data for 50 US stocks")
     print("    cited: Release 34-105656 (June 11, 2026) defers compliance to the first business day of November 2027")
     print("    cited: Release 34-105655 (June 11, 2026, File S7-2026-20) proposes rescinding Rules 611 and 610(e)")
+    print("    cited: Andersen and Bondarenko (2014) dispute VPIN's power to predict toxicity events")
 
 
 def snapshot_ofi(prev: tuple, cur: tuple) -> float:
@@ -64,6 +66,8 @@ def snapshot_ofi(prev: tuple, cur: tuple) -> float:
 def example_2() -> None:
     print("Example 2: OFI across three book updates")
     snaps = [(100.00, 500, 100.05, 500), (100.00, 900, 100.05, 500), (100.05, 200, 100.10, 600)]
+    for t, (pb_t, qb_t, pa_t, qa_t) in enumerate(snaps):
+        print(f"    input: t={t} bid ${pb_t:.2f} x {qb_t}, ask ${pa_t:.2f} x {qa_t}")
     ofi = [snapshot_ofi(snaps[i - 1], snaps[i]) for i in (1, 2)]
     # event route: (side, kind, size) with signs fixed by the event type, not by the snapshot formula
     events = [

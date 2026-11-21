@@ -108,6 +108,8 @@ def variance_drag() -> None:
 
 
 def brier() -> None:
+    print("input: Example forecast f = 0.70 for 5 trades with outcomes 1, 1, 0, 1, 1")
+    print("cited: Brier (1950) score; Murphy (1973) decomposition")
     forecasts = np.full(5, 0.70)
     outcomes = np.array([1, 1, 0, 1, 1])
     errors = (forecasts - outcomes) ** 2
@@ -151,6 +153,8 @@ def growth_ledger(wins: int, losses: int, f: float) -> float:
 
 def kelly() -> None:
     p = 0.60
+    print(f"input: even-money Kelly example p = {p:.2f}; fractional Kelly range 0.25 f* to 0.50 f*")
+    print("cited: Kelly (1956); Thorp (1969, 2006); Knight (1921); Peters (2019)")
     check("Kelly fraction 2p - 1", 2 * p - 1, "0.20")
     check("Kelly fraction (% of equity)", 100 * (2 * p - 1), "20")
     check("g(0.20) from a 60/40 ledger", growth_ledger(60, 40, 0.20), "0.0201")
@@ -180,6 +184,7 @@ def ruin_markov(p: float, units: int, upper: int = 3000) -> float:
 
 
 def ruin() -> None:
+    print("input: ruin examples p = 0.55, risking 2% and 10% of capital per bet")
     for frac, lit in ((0.02, "0.0044"), (0.10, "13.4")):
         units = round(1 / frac)
         markov = ruin_markov(0.55, units)
@@ -189,17 +194,19 @@ def ruin() -> None:
 
 
 def leveraged_etf() -> None:
-    index_moves = [0.10, 1 / 1.10 - 1]
-    index = fund = 1.0
+    up, leverage = 0.10, 3
+    print(f"input: card mkt-dec-024 index +{up:.0%} then back to its start, {leverage}x daily fund")
+    back = bisect(lambda r: (1 + up) * (1 + r) - 1, -0.5, 0.0)
+    index_moves = [up, back]
+    fund = 1.0
     for r in index_moves:
-        index *= 1 + r
-        fund *= 1 + 3 * r
-    assert abs(index - 1.0) < 1e-12
+        fund *= 1 + leverage * r
     check("index second-day move (%)", 100 * index_moves[1], "-9.09")
     check("3x fund two-day return (%)", 100 * (fund - 1), "-5.45")
     for d, lit in ((Fraction(1, 2), "100"), (Fraction(9, 10), "900")):
         gain = 1 / (1 - d) - 1
-        assert (1 - d) * (1 + gain) == 1
+        root = bisect(lambda g, d=float(d): (1 - d) * (1 + g) - 1, 0.0, 100.0)
+        assert abs(root - float(gain)) < 1e-9
         check(f"drawdown {float(d):.0%} needs gain (%)", float(100 * gain), lit)
 
 

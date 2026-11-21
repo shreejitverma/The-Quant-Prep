@@ -206,7 +206,7 @@ The trader enters stock XYZ at $\$150.00$.
 > For a discrete bet the exact zero crossing sits near but not at 2 * f* (about 0.331 versus 2 * f* = 0.32 for p = 0.40 and b = 2.50).
 > Past the crossing, despite a positive edge per trade, wealth converges to zero with probability 1 because variance drag outweighs the edge.
 
-> [!question]- mkt-trd-036 | Why do quantitative prop desks deploy Fractional Kelly (e.g. Half-Kelly or Quarter-Kelly)?
+> [!question]- mkt-trd-036 | Why might a trader size at Fractional Kelly (e.g. Half-Kelly or Quarter-Kelly) rather than Full Kelly?
 > Real-world win rates and payoff ratios are estimated with statistical uncertainty, and market returns exhibit fat-tailed jump risks.
 > In the continuous approximation Half-Kelly keeps 75% of maximum growth while halving return volatility, and it cuts the probability of ever halving wealth from 50% to 12.5%.
 

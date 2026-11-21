@@ -61,11 +61,11 @@ Textbook summaries condense the writings of Dow, Hamilton (1922), and Rhea (1932
 4. **The Averages Must Confirm Each Other**:
    - In Dow's era, industrial companies manufactured physical goods, while railroads transported them to markets.
    - A healthy economic expansion required that the Dow Jones Railroad (Transportation) Average confirm a new high set by the Dow Jones Industrial Average.
-   - A divergence - where Industrials make a new high while Transports fail to confirm - signals a structural economic bottleneck and impending primary reversal.
+   - Dow theorists read a divergence (Industrials make a new high while Transports fail to confirm) as a warning that the primary trend may reverse; it is a warning to test, not a forecast with a measured hit rate.
 
 5. **Volume Must Confirm the Trend**:
    - Volume should expand in the direction of the primary trend and contract during counter-trend secondary pullbacks.
-   - In a primary bull market, volume increases on advancing sessions and diminishes on down days; diminishing volume on new price highs signals underlying exhaustion.
+   - In a primary bull market, Dow theorists expect volume to rise on advancing sessions and fall on down days, and they read falling volume on new price highs as exhaustion; that reading is a hypothesis, not a tested result.
 
 6. **A Trend Remains in Effect Until Definite Reversal Signals Occur**:
    - The theory presumes a trend persists until the averages give a reversal signal; it does not estimate how likely continuation is.
@@ -75,17 +75,20 @@ Textbook summaries condense the writings of Dow, Hamilton (1922), and Rhea (1932
 +---------------------------------------------------------------------------------+
 |                       DOW THEORY PRIMARY BULL TREND STRUCTURE                   |
 |                                                                                 |
-|                      (HH2) High 2               (HH3) High 3                    |
-|                         /\                         /\                           |
-|                        /  \                       /  \                          |
-|         (HH1) High 1  /    \                     /    \                         |
-|            /\        /      \   (HL2) Low 2     /      \                        |
-|           /  \      /        \      /\         /        \                       |
-|          /    \    /          \    /  \       /                                 |
-|         /      \  /            \  /    \     /                                  |
-|        /     (HL1) Low 1        \/      \   /                                   |
-|       /                                  \ /                                    |
-|      /                                                                          |
+|                                                HH3                              |
+|                                                /\                               |
+|                                               /  \                              |
+|                                       HH2    /    \                             |
+|                                       /\    /                                   |
+|                                      /  \  /                                    |
+|                              HH1    /    \/                                     |
+|                              /\    /     HL2                                    |
+|                             /  \  /                                             |
+|                            /    \/                                              |
+|                           /     HL1                                             |
+|                          /                                                      |
+|                                                                                 |
+|  HH = swing high above the prior high; HL = swing low above the prior low       |
 |  Accumulation ---> Public Participation ---> Distribution / Climax              |
 +---------------------------------------------------------------------------------+
 ```
@@ -357,7 +360,7 @@ A macro strategist assesses market health using closing prices across two consec
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../../code/mkt_ta_01_dow_trend.py`](../../code/mkt_ta_01_dow_trend.py) prints and asserts every number on this page: the SMA, the price gap, the 2% drop and the Dow confirmation percentages in exact rational arithmetic, the whipsaw loss by simulating the sell-and-rebuy account (cross-checked by log returns), the SMA lag both as the window's weighted age and as the measured delay behind a linear ramp, and the EMA smoothing constant whose explicit geometric weights give the same mean lag; study samples are cited constants.
+- Code: [`../../code/mkt_ta_01_dow_trend.py`](../../code/mkt_ta_01_dow_trend.py) prints and asserts every number on this page: the SMA, the price gap, the 2% drop and the Dow confirmation percentages in exact rational arithmetic, the whipsaw loss by simulating the sell-and-rebuy account (cross-checked by log returns), the SMA lag both as the window's weighted age and as the measured delay behind a linear ramp, and the EMA smoothing constant whose explicit geometric weights give the same mean lag, and the bull-trend chart rendered from a swing list on which the higher-high, higher-low rule is asserted; study samples are cited constants.
 - Related notes: [Chart Patterns and Statistical Edge](02-Chart-Patterns-and-Statistical-Edge.md), [Time-Series Momentum and Trend Following](07-Time-Series-Momentum-and-Trend-Following.md).
 
 ## Further reading

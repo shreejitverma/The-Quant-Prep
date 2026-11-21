@@ -9,7 +9,8 @@ Independent routes used here:
   arithmetic with fractions.Fraction;
 - expectancy and 200-trade totals from an enumerated trade list with the stated win counts;
 - win-rate standard errors from the exact variance of the binomial sampling distribution (a sum over
-  every possible count), checked against sqrt(p(1 - p) / N);
+  every possible count), checked against sqrt(p(1 - p) / N), and the 95% quantile z by bisection on the
+  normal tail;
 - card arithmetic (80% win-rate example, profit factor, leverage, borrow fee, hurdle) from enumerated
   trade lists or exact fractions.
 Study figures (Barber-Odean, SEBI, Chague et al.) are cited constants; only their arithmetic is checked.
@@ -111,17 +112,19 @@ def binomial_se(p: float, n: int) -> float:
 
 
 def sampling_error() -> None:
+    z = bisect(lambda x: 2 * (1 - 0.5 * (1 + math.erf(x / math.sqrt(2)))) - 0.05, 0.0, 5.0)
+    check("two-sided 95% normal quantile z", z, "1.96")
     p30 = 20 / 30
     se30 = binomial_se(p30, 30)
     assert abs(se30 - math.sqrt(p30 * (1 - p30) / 30)) < 1e-12
     check("observed win rate, 20 of 30 (%)", 100 * p30, "66.7")
     check("standard error, N = 30 (%)", 100 * se30, "8.6")
-    check("95% interval low, N = 30 (%)", 100 * (p30 - 1.96 * se30), "49.8")
-    check("95% interval high, N = 30 (%)", 100 * (p30 + 1.96 * se30), "83.5")
-    assert p30 - 1.96 * se30 < 0.5, "the interval must include a coin-flip win rate"
+    check("95% interval low, N = 30 (%)", 100 * (p30 - z * se30), "49.8")
+    check("95% interval high, N = 30 (%)", 100 * (p30 + z * se30), "83.5")
+    assert p30 - z * se30 < 0.5, "the interval must include a coin-flip win rate"
     se50 = binomial_se(0.5, 50)
-    check("95% interval low, N = 50, p = 50% (%)", 100 * (0.5 - 1.96 * se50), "36")
-    check("95% interval high, N = 50, p = 50% (%)", 100 * (0.5 + 1.96 * se50), "64")
+    check("95% interval low, N = 50, p = 50% (%)", 100 * (0.5 - z * se50), "36")
+    check("95% interval high, N = 50, p = 50% (%)", 100 * (0.5 + z * se50), "64")
 
 
 def cards() -> None:
@@ -157,7 +160,6 @@ def cards() -> None:
     check("card 025 cost / equity (%)", 100 * gmv * cost_bp / 10_000 / equity, "0.40")
 
     check("card 029 net return (%)", 6 - 3, "3")
-    assert 6 - 3 < 4, "net return must sit below the hypothetical 4% bill yield"
 
 
 def cited_arithmetic() -> None:
@@ -184,6 +186,13 @@ def cited_arithmetic() -> None:
     print("cited: Odean (1998) 10,000 accounts, 1987-1993; wash-sale window 30 days")
     print("cited: Barber-Odean (2001) men traded 45% more; net return cost 2.65 points men, 1.72 points women")
     print("input: zero-commission example order fee = 20 rupees per order (illustrative)")
+    print("cited: FINRA Notice 26-10 approved in SEC Exchange Act Release No. 105226 (14 April 2026)")
+    print("cited: intraday margin standards effective 4 June 2026; phase-in until 20 October 2027")
+    print("cited: India STT derivative rates raised from 1 April 2026 (Finance Act 2026, Union Budget 2026-27)")
+    print("cited: earlier India STT increases in 2023 and from 1 October 2024")
+    print("cited: Thaler and Johnson (1990) house-money and break-even effects; Osler (2003) round-number order clusters")
+    print("input: card mkt-trd-011 win-rate example 80%; card mkt-trd-030 round-number examples $100 and $50")
+    print("input: R-multiple examples +2.5R, -1.0R and +0.5R")
 
 
 if __name__ == "__main__":

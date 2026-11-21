@@ -12,7 +12,9 @@ Independent routes used here:
 - the Bailey-Lopez de Prado expected maximum Sharpe ratio against the exact expected maximum of N normals
   by quadrature and a seeded simulation, and the Sharpe-ratio standard error in the DSR denominator against
   the simulated spread of Sharpe estimates for normal returns;
-- Lambert's CCI scaling from the normal mean absolute deviation, checked by simulation.
+- Lambert's CCI scaling from the normal mean absolute deviation, checked by simulation;
+- the trend-trap chart drawn from a hypothetical price path whose RSI comes from the same generic Wilder
+  implementation, with the short points found as local price peaks.
 Every quoted number is printed as ``label = value`` and asserted at the precision the note quotes.
 Run it with `python 16-Trading-and-Investing/code/mkt_ta_05_oscillators.py`.
 """
@@ -140,6 +142,8 @@ def expected_max_normal(n: int) -> float:
 
 def deflated_sharpe(rng: np.random.Generator) -> None:
     n_trials, years, var_sr = 500, 5, 0.25
+    print("input: DSR example, 500 trials, 5 years of daily returns, variance of trial Sharpe ratios 0.25")
+    print("input: DSR example, observed annual Sharpe 1.40, skewness -0.60, excess kurtosis 4.50")
     t_obs = years * 252
     check("T = 5 years x 252 days", t_obs, "1,260")
     check("T - 1", t_obs - 1, "1,259")
@@ -189,8 +193,51 @@ def deflated_sharpe(rng: np.random.Generator) -> None:
     print(f"SD of daily SR estimates for normal returns, simulated {sd:.5f} vs formula {formula_sd:.5f}")
 
 
+TRAP_WARMUP = [1.0, -1.0] * 7
+TRAP_LEGS = [(3.0, 5), (-2.5, 2), (3.0, 5), (-2.5, 2), (3.0, 5), (-2.5, 2), (2.5, 4)]
+
+
+def trend_trap() -> None:
+    print("input: trend trap, 14 alternating +1 / -1 days at 100 seed the RSI, then legs (daily change, days)")
+    print(f"input: trend trap legs = {TRAP_LEGS}")
+    changes = TRAP_WARMUP + [step for step, days in TRAP_LEGS for _ in range(days)]
+    prices = 100.0 + np.concatenate([[0.0], np.cumsum(changes)])
+    rsi = wilder_rsi(prices, 14)
+    path = prices[len(TRAP_WARMUP) :]
+    assert len(path) == len(rsi)
+    check("trend trap start price", path[0], "100")
+    check("trend trap end price", path[-1], "140")
+    check("hypothetical rally from 100 to 140, percent", 100 * (path[-1] / path[0] - 1), "40")
+    peaks = [i for i in range(1, len(path) - 1) if path[i - 1] < path[i] > path[i + 1]]
+    assert len(peaks) == 3, peaks
+    for k, (i, quoted) in enumerate(zip(peaks, ("78.7", "79.2", "79.4"), strict=True), 1):
+        assert rsi[i] > 70, "each short must sit above the overbought line"
+        check(f"RSI at short {k} (price {path[i]:.0f})", rsi[i], quoted)
+    check("lowest RSI after the first short", rsi[peaks[0] :].min(), "63.1")
+    width = 74
+    price_rows = {level: [" "] * width for level in range(140, 95, -5)}
+    rsi_rows = {level: [" "] * width for level in (80, 70, 60, 50)}
+    for c in range(0, 54, 2):
+        rsi_rows[70][c] = "-"
+    rsi_rows[70][56:71] = list("70 = overbought")
+    marks, names = [" "] * width, [" "] * width
+    for day, (price, r) in enumerate(zip(path, rsi, strict=True)):
+        col = 1 + 2 * day
+        price_rows[5 * math.floor(price / 5 + 0.5)][col] = "*"
+        rsi_rows[10 * math.floor(r / 10 + 0.5)][col] = "*"
+    for k, i in enumerate(peaks, 1):
+        col = 1 + 2 * i
+        marks[col] = "X"
+        label = f"[Short {k}]"
+        names[col - 4 : col - 4 + len(label)] = list(label)
+    lines = [f"  {level:>3} |{''.join(row)}" for level, row in price_rows.items()]
+    lines += [f"   {level} |{''.join(row)}" for level, row in rsi_rows.items()]
+    lines += [f"      |{''.join(marks)}", f"      |{''.join(names)}"]
+    for line in lines:
+        print(f"chart {line.rstrip()}")
+
+
 def cited_conventions() -> None:
-    check("hypothetical rally from 100 to 140, percent", 100 * (140 / 100 - 1), "40")
     conventions = {
         "RSI oversold / overbought lines": (30, 70),
         "practitioner bull-market RSI band": (40, 80),
@@ -198,6 +245,7 @@ def cited_conventions() -> None:
         "practitioner ADX filter threshold": 25,
         "fragile lookback change (illustrative)": (14, 15),
         "stable lookback plateau (illustrative)": (12, 18),
+        "hypothetical in-sample edge of a 13-day over a 14-day RSI (percent)": 2,
         "DSR confidence level (percent)": 95,
     }
     for key, value in conventions.items():
@@ -223,5 +271,6 @@ if __name__ == "__main__":
     multiple_testing()
     deflated_sharpe(rng)
     cci_scaling(rng)
+    trend_trap()
     cited_conventions()
     print("all oscillator and multiple-testing numbers check out")

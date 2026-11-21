@@ -11,7 +11,10 @@ Independent routes used here:
   linear system, against the closed form (q / p)^C;
 - the continuous-time Kelly drawdown law P(wealth ever hits x) = x^(2 / c - 1) by a finite-difference
   solution of the hitting-probability equation (s^2 / 2) u'' + m u' = 0;
-- recovery gains in exact fractions, recovery years by bisection on (1.1)^t (1 - D) = 1;
+- the continuous half-Kelly growth share by Gauss-Hermite quadrature of E[ln(1 + f X)] for a small
+  Gaussian step X and a numerical argmax over f;
+- recovery gains in exact fractions checked by bisection on (1 - D)(1 + g) = 1, recovery years by
+  bisection on (1.1)^t (1 - D) = 1;
 - the martingale losing-streak probability by dynamic programming over run lengths, checked by a seeded
   simulation within five standard errors.
 Run it with `python 16-Trading-and-Investing/code/mkt_trd_02_sizing_ruin.py`.
@@ -63,6 +66,7 @@ def growth_ledger(wins: int, losses: int, b: float, f: float) -> float:
 def kelly_example(rng: np.random.Generator) -> None:
     p, b = 0.40, 2.50
     print(f"input: Example 1 win rate p = {p:.2f}, payoff ratio b = {b:.2f}")
+    print("cited: Kelly (1956); card mkt-trd-036 Half-Kelly 0.5 f* and Quarter-Kelly 0.25 f*")
     grid = np.linspace(0.0005, 0.9, 900_000)
     g_grid = p * np.log1p(b * grid) + (1 - p) * np.log1p(-grid)
     f_grid = float(grid[np.argmax(g_grid)])
@@ -90,7 +94,20 @@ def kelly_example(rng: np.random.Generator) -> None:
     cross = bisect(lambda f: growth_formula(p, b, f), 0.2, 0.9)
     check("zero-growth crossing", cross, "0.331")
     check("crossing / f*", cross / f_star, "2.07")
-    check("continuous share of max growth at half Kelly (%)", 100 * (2 * 0.5 - 0.5**2), "75")
+    mu, sigma, dt = 0.08, 0.20, 1e-4
+    print(f"input: continuous-approximation check, drift {mu}, volatility {sigma}, step {dt} years")
+    nodes, weights = np.polynomial.hermite_e.hermegauss(40)
+    weights = weights / weights.sum()
+    step = mu * dt + sigma * math.sqrt(dt) * nodes
+
+    def g_cont(frac: float) -> float:
+        return float(weights @ np.log1p(frac * step)) / dt
+
+    fracs = np.linspace(0.0, 4.0, 40_001)
+    growth = np.array([g_cont(x) for x in fracs])
+    f_cont = float(fracs[np.argmax(growth)])
+    check("continuous Kelly fraction mu / sigma^2, numerical argmax", f_cont, "2.00")
+    check("continuous share of max growth at half Kelly (%)", 100 * g_cont(f_cont / 2) / g_cont(f_cont), "75")
 
     def trade_variance(f: float) -> float:
         mean = p * b * f - (1 - p) * f
@@ -186,7 +203,8 @@ def recovery_table() -> None:
     for pct, (gain_lit, years_lit) in rows.items():
         d = Fraction(int(pct), 100)
         gain = 1 / (1 - d) - 1
-        assert (1 - d) * (1 + gain) == 1
+        root = bisect(lambda g, d=float(d): (1 - d) * (1 + g) - 1, 0.0, 100.0)
+        assert abs(root - float(gain)) < 1e-9
         years = bisect(lambda t, d=float(d): 1.1**t * (1 - d) - 1, 0.0, 100.0)
         check(f"recovery gain after {pct}% drawdown (%)", float(100 * gain), gain_lit)
         check(f"years to recover {pct}% at 10% a year", years, years_lit)
@@ -255,6 +273,7 @@ def cards() -> None:
     print("cited: US market-wide circuit breakers: 7% (Level 1) and 13% (Level 2) halt 15 minutes before 3:25 pm")
     print("cited: Level 3 at 20% halts for the day (NYSE Rule 7.12); LULD single-stock pauses (NYSE Rule 7.11), 2013")
     print("input: hypothetical ADV participation cap = 1%; accounting-stop examples USD 500 and 2%")
+    print("input: recovery table steady return 10% a year; volatility sizing example 14-day ATR; reward targets 2R or 3R")
 
 
 if __name__ == "__main__":

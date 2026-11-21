@@ -59,6 +59,7 @@ def gm_closed_form(vl, vh, p0, alpha):
 def glosten_milgrom(rng: np.random.Generator) -> None:
     print("Glosten-Milgrom example")
     vl, vh, p0, alpha = Fraction(80), Fraction(120), Fraction(1, 2), Fraction(1, 4)
+    print(f"    input: V_L = ${float(vl):.2f}, V_H = ${float(vh):.2f}, p0 = {float(p0):.2f}, alpha = {float(alpha):.2f}")
     ask, bid = gm_enumerate(vl, vh, p0, alpha)
     rounded("S0", p0 * vh + (1 - p0) * vl, "100.00")
     rounded("P(buy | V_H)", alpha + (1 - alpha) / 2, "0.625")
@@ -155,6 +156,7 @@ def kyle(rng: np.random.Generator) -> None:
 def roll(rng: np.random.Generator) -> None:
     print("Roll estimator")
     prices = np.array([100.00, 100.05, 100.00, 100.05, 100.00])
+    print(f"    input: trade prices {', '.join(f'${p:.2f}' for p in prices)}")
     dp = np.diff(prices)
     rounded("mean price change", dp.mean() + 0.0, "0.00")
     products = dp[1:] * dp[:-1]
@@ -162,8 +164,11 @@ def roll(rng: np.random.Generator) -> None:
     rounded("sample serial covariance", cov, "-0.0025")
     s_roll = 2 * np.sqrt(-cov)
     rounded("Roll spread", s_roll, "0.10")
-    rounded("expected covariance with s = 0.05", -(0.05**2) / 4, "-0.000625")
-    rounded("ratio of sample to expected covariance", cov / (-(0.05**2) / 4), "4")
+    quoted = prices.max() - prices.min()
+    rounded("quoted spread in the sample (cents)", 100 * quoted, "5")
+    rounded("Roll spread / quoted spread", s_roll / quoted, "2")
+    rounded("expected covariance with s = 0.05", -(quoted**2) / 4, "-0.000625")
+    rounded("ratio of sample to expected covariance", cov / (-(quoted**2) / 4), "4")
 
     s, sigma, n, reps = 0.05, 0.02, 2000, 400
     est_ind, est_alt = [], []

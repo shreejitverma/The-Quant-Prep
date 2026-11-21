@@ -294,7 +294,7 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 > High volume prints at the level without price advancement.
 
 > [!question]- mkt-ta-170 | What are trapped buyers in market microstructure?
-> Aggressive market participants who bought at the extreme top of a move right into passive institutional limit sell orders.
+> Aggressive buyers who bought at or near the top of a move, into resting limit sell orders whose owners the tape does not identify.
 > If they exit with stop-market orders, that selling can add to the drop; whether it does depends on where their stops sit, and no study cited here measures it.
 
 > [!question]- mkt-ta-171 | What is an iceberg order?
@@ -363,7 +363,7 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 
 > [!question]- mkt-ta-187 | How does tape reading detect an institutional iceberg order?
 > By observing continuous large volume transactions printing at the ask (or bid) on the Time and Sales feed while the displayed order size on Level 2 never decreases.
-> The constant replenishment of displayed size reveals a hidden iceberg order.
+> Constant replenishment of displayed size is consistent with a hidden iceberg order, though a series of new limit orders at the same price looks the same on public data.
 
 > [!question]- mkt-ta-188 | What is an unfinished business (unmatched auction) in footprint charts?
 > A footprint term for a bar extreme that traded on both the bid and the ask, rather than one side going to zero.
@@ -387,7 +387,7 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../../code/mkt_ta_06_order_flow.py`](../../code/mkt_ta_06_order_flow.py) prints and asserts every number on this page: the sweep by a price-time matching routine on the ask ladder, the footprint bar rebuilt from a shuffled tape of classified one-lot prints (totals, delta, delta percent, point of control and diagonal ratios), the Lee-Ready example with a tick rule that looks back to the last different price, and the absorption trade's risk and reward as exact fractions.
+- Code: [`../../code/mkt_ta_06_order_flow.py`](../../code/mkt_ta_06_order_flow.py) prints and asserts every number on this page: the sweep by a price-time matching routine on the ask ladder, the footprint bar's totals, delta, delta percent, point of control and diagonal ratios in exact integer arithmetic from the bid x ask table, the Lee-Ready example with a tick rule that looks back to the last different price, and the absorption trade's risk and reward as exact fractions with its break-even hit rate by bisection on the expectancy.
 - Related notes: [Auction Theory, Volume Profile and VWAP](03-Auction-Theory-Volume-Profile-and-VWAP.md).
 
 ---

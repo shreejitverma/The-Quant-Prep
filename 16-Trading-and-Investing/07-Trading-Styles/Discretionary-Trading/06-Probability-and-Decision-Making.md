@@ -135,7 +135,7 @@ For this bet the growth rate is $g(f) = 0.60 \ln(1 + f) + 0.40 \ln(1 - f)$, whic
 Betting twice Kelly gives $g(0.40) = 0.60 \ln(1.40) + 0.40 \ln(0.60) = 0.2019 - 0.2043 = -0.0024$, and the exact zero crossing is $f \approx 0.389$.
 The continuous approximation puts that crossing at exactly $2f^*$; for discrete bets it sits near, not at, $2f^*$.
 Past the crossing, log wealth drifts downward and wealth converges to zero with probability 1 even though each bet has a positive edge.
-**Fractional Kelly** (for example $0.25f^*$ to $0.50f^*$) is the standard remedy for parameter estimation error and non-stationary markets (Thorp 2006; see [Position Sizing and Ruin](02-Position-Sizing-and-Ruin.md)).
+**Fractional Kelly** (for example $0.25f^*$ to $0.50f^*$) is a common remedy for parameter estimation error and non-stationary markets (Thorp 2006; see [Position Sizing and Ruin](02-Position-Sizing-and-Ruin.md)).
 
 ---
 
@@ -204,7 +204,7 @@ Five trades cannot establish calibration: a true 70% setup wins at least 4 of 5 
 > Expected log growth falls to about zero: exactly zero in the continuous approximation, slightly negative or positive for a discrete bet (g(0.40) = -0.0024 for an even-money bet with p = 0.60).
 > The investor takes double Kelly's volatility for no compound growth, and any fraction past the zero crossing drives wealth to zero with probability 1.
 
-> [!question]- mkt-dec-012 | Why do quantitative funds deploy Fractional Kelly (such as Half-Kelly) rather than Full Kelly?
+> [!question]- mkt-dec-012 | Why might a fund size at Fractional Kelly (such as Half-Kelly) rather than Full Kelly?
 > To buffer against parameter estimation errors, market regime shifts, and non-Gaussian fat-tailed drawdowns.
 
 > [!question]- mkt-dec-013 | What is Base Rate Neglect in probabilistic reasoning?

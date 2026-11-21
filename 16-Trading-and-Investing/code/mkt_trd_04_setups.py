@@ -105,6 +105,15 @@ def cited() -> None:
     print("cited: Jegadeesh-Titman 6/6 strategy compounded excess return = 12.01% per year")
     print("cited: Aronson (2006) rules tested = 6,402; Sullivan-Timmermann-White (1999) universe = 7,846 rules")
     print("cited: Moskowitz-Ooi-Pedersen (2012) instruments = 58; Brock-Lakonishok-LeBaron (1992) rules = 26")
+    print("cited: Jegadeesh-Titman (1993) 3-to-12 month formation and holding, 1965-1989, top and bottom deciles")
+    print("cited: Rouwenhorst (1998) 12 European markets; Asness-Moskowitz-Pedersen (2013); Hurst-Ooi-Pedersen (2017) back to 1880")
+    print("cited: Brock-Lakonishok-LeBaron (1992) DJIA 1897-1986; Sullivan-Timmermann-White (1999) out of sample 1987-1996")
+    print("cited: Lo-Mamaysky-Wang (2000) ten patterns, US stocks 1962-1996")
+    print("cited: Aronson (2006) S&P 500 1980-2005, 5% level; Harvey-Liu-Zhu (2016) t >= 3.0")
+    print("cited: Lehmann (1990) weekly and Jegadeesh (1990) monthly reversal; Connors and Alvarez (2008)")
+    print("cited: Weinstein (1988) Stage 2 above a rising 30-week moving average; Faith (2007) Turtle System 1 and 2")
+    print("cited: Minervini (2013) VCP; Darvas (1960); Madhavan (2003) reconstitution price pressure; Roberts (1959)")
+    print("input: Example 2 Setup B 2-day RSI < 10 on S&P 500 stocks; Setup C 5-minute FX charts")
 
 
 if __name__ == "__main__":

@@ -71,6 +71,8 @@ def is_head_and_shoulders(e: list[tuple[str, float]], eps: float) -> bool:
 
 def head_and_shoulders_example() -> None:
     ls, lt, head, rt, rs = (Fraction(x) for x in (150, 135, 165, 135, 148))
+    print("input: Example 1 H&S pivots, left shoulder 150, troughs 135 and 135, head 165, right shoulder 148")
+    print("input: Example 1 neckline 135, short entry 134, stop at the right shoulder")
     neckline = Fraction(135)
     height = head - neckline
     target = neckline - height
@@ -94,6 +96,8 @@ def head_and_shoulders_example() -> None:
 
 def double_bottom_example() -> None:
     e1, e2, e3 = Fraction(100), Fraction(115), Fraction("100.50")
+    print("input: Example 2 extrema E1 = 100.00, E2 = 115.00, E3 = 100.50; breakout close 116.00; next peak 128.00")
+    print("input: Example 2 trough tolerance epsilon = 0.02")
     mismatch = abs(e1 - e3) / e1
     check("double-bottom trough gap ($)", float(abs(e1 - e3)), "0.50")
     check("double-bottom trough mismatch (ratio)", float(mismatch), "0.005")
@@ -134,4 +138,5 @@ if __name__ == "__main__":
     noise_patterns()
     print("cited: Aronson (2006) = 6,402 rules, S&P 500 Nov 1980 to Jul 2005, none significant at 0.05")
     print("cited: Lo-Mamaysky-Wang (2000) = 10 patterns, US stocks 1962-1996")
+    print("input: VCP illustration (card mkt-ta-045), pullbacks of 20%, then 10%, then 5%")
     print("all chart-pattern numbers check out")

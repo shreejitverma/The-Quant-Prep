@@ -84,26 +84,33 @@ Furthermore, backtesting thousands of indicator lookback combinations without ad
 +---------------------------------------------------------------------------------+
 |                       THE STATIC OSCILLATOR TREND TRAP                          |
 +---------------------------------------------------------------------------------+
-|  Price ($)                                                                      |
-|  140 |                                                       / (Parabolic Rally)|
-|  130 |                                               /\     /                   |
-|  120 |                                       /\     /  \   /                    |
-|  110 |                               /\     /  \   /    \ /                     |
-|  100 |                       /\     /  \   /    \ /                             |
-|   90 |               /\     /  \   /    \ /                                     |
+|  Price ($), one '*' per day at the nearest 5                                    |
+|  140 |                                                 * *                      |
+|  135 |                                       * *   * *                          |
+|  130 |                                   * *     *                              |
+|  125 |                         * *   * *                                        |
+|  120 |                     * *     *                                            |
+|  115 |           * *   * *                                                      |
+|  110 |       * *     *                                                          |
+|  105 |   * *                                                                    |
+|  100 | *                                                                        |
 +---------------------------------------------------------------------------------+
-|  RSI                                                                            |
-|   80 |               ---\---/-------\---/---------\---/----- (Pinned > 70)      |
-|   70 | - - - - - - - - - X - - - - - X - - - - - - X - - - - Overbought Line    |
-|      |                  [Short 1]   [Short 2]     [Short 3]                     |
-|   30 | - - - - - - - - - - - - - - - - - - - - - - - - - - - Oversold Line      |
+|  RSI (14-day Wilder), one '*' per day at the nearest 10                         |
+|   80 |         * *           * *         * * *           *                      |
+|   70 |- - -*-*- - -*- -*-*-*- - -*-*-*-*- - - -*-*-*-*-*- -   70 = overbought   |
+|   60 |   *           *                                                          |
+|   50 | *                                                                        |
+|      |           X             X             X                                  |
+|      |       [Short 1]     [Short 2]     [Short 3]                              |
+|   30 | - - - - - - - - - - - - - - - - - - - - - - - - - -   30 = oversold      |
 +---------------------------------------------------------------------------------+
 |  Outcome (hypothetical): a trader who shorts each 'overbought' signal is run    |
-|  over as price rallies from 100 to 140 (+40%) while RSI stays near 80.          |
+|  over as price rallies from 100 to 140 (+40%); RSI is 78.7, 79.2 and 79.4       |
+|  at the three shorts and never falls below 63.1 after the first.                |
 +---------------------------------------------------------------------------------+
 ```
 
-- In a persistent uptrend, up moves outweigh down moves in Wilder's averages, so RSI stays high, and closes near the top of the range keep Stochastics near $100$.
+- In a persistent uptrend, up moves outweigh down moves in Wilder's averages, so RSI centres above 50 and, in a steep trend like this one, keeps returning above 70, while closes near the top of the range push Stochastics toward $100$.
 - A high reading therefore describes the trend that has already happened; it is not by itself evidence of a coming reversal.
 
 ### 3. Regime Conditioning: Restoring Mean-Reversion Edge
@@ -307,19 +314,19 @@ A quantitative trader backtests $N = 500$ parameter variations of an RSI and Bol
 
 > [!question]- mkt-ta-152 | What is survivorship bias and how does it distort technical backtests?
 > Testing technical rules only on stocks that currently exist in an index, ignoring companies that went bankrupt or were delisted.
-> It creates a massive positive performance bias by omitting catastrophic failure cases.
+> It biases backtest returns upward because the failures that would have produced losses are missing from the sample; the size of the bias depends on the universe and period.
 
 > [!question]- mkt-ta-153 | What is a parameter cliff in technical strategy optimization?
 > When a slight change in an indicator parameter (e.g. changing lookback from 14 to 15) causes backtest performance to collapse.
-> Parameter cliffs indicate extreme overfitting to historical noise rather than robust edge.
+> A cliff is a warning that the result may be fitted to noise; it is not proof, so test the chosen value out of sample.
 
 > [!question]- mkt-ta-154 | What is a parameter plateau?
 > A broad region of neighboring parameter values (e.g. lookbacks from 12 to 18) that all yield consistent, stable profitability.
-> Plateaus signal a robust structural phenomenon rather than an overfitted artifact.
+> A plateau is consistent with a real effect and is less fragile than an isolated peak, but it does not prove one: a plateau can also come from a common bias, so it still needs an out-of-sample test.
 
 > [!question]- mkt-ta-155 | How does bid-ask spread friction impact mean-reversion strategies?
 > Mean-reversion oscillators trigger high trading frequency with small average profits per trade.
-> Paying the bid-ask spread on every entry and exit rapidly consumes all theoretical gross alpha.
+> The spread and fees are paid on every entry and exit, so a small average gross gain per trade can turn negative after costs; compare the two in the backtest.
 
 > [!question]- mkt-ta-156 | What is the Connors RSI (CRSI)?
 > A composite oscillator from Connors Research: the average of a 3-period RSI of price, a 2-period RSI of the current up/down streak length, and the percent rank of the 1-day return over the last 100 days.
@@ -343,7 +350,7 @@ A quantitative trader backtests $N = 500$ parameter variations of an RSI and Bol
 
 ## In this repo and The-Distinguished-Engineer
 
-- Code: [`../../code/mkt_ta_05_oscillators.py`](../../code/mkt_ta_05_oscillators.py) prints and asserts every number on this page: the RSI example by a generic Wilder implementation on a constructed price series against exact fractions, the drift-shifted RSI level from normal partial moments checked by simulation, false-positive counts by the binomial pmf and the normal CDF by erf and quadrature, the expected maximum Sharpe ratio against the exact expected maximum of 500 normals by quadrature and simulation, the Sharpe standard error in the DSR denominator against simulated Sharpe estimates, and the CCI scaling by simulation.
+- Code: [`../../code/mkt_ta_05_oscillators.py`](../../code/mkt_ta_05_oscillators.py) prints and asserts every number on this page: the RSI example by a generic Wilder implementation on a constructed price series against exact fractions, the drift-shifted RSI level from normal partial moments checked by simulation, false-positive counts by the binomial pmf and the normal CDF by erf and quadrature, the expected maximum Sharpe ratio against the exact expected maximum of 500 normals by quadrature and simulation, the Sharpe standard error in the DSR denominator against simulated Sharpe estimates, the CCI scaling by simulation, and the trend-trap chart drawn from a hypothetical price path with the RSI at each short from the same Wilder implementation.
 - Related notes: [Quantitative Rule Validation and Calibration](08-Quantitative-Rule-Validation-and-Calibration.md) (PBO, CSCV and minimum track record length).
 
 ---

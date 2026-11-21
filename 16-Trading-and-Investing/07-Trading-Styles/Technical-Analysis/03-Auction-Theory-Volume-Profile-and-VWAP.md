@@ -47,14 +47,14 @@ Auction Market Theory treats financial markets through the lens of continuous di
    - **Price Advertises Opportunity**: Price moves up to discover if buyers are willing to transact at higher levels, and moves down to seek sellers.
    - **Time Regulates Opportunity**: The duration price spends at a particular level indicates market acceptance or rejection.
    - Brief time implies unfair value (rejection); extended time implies consensus (acceptance).
-   - **Volume Measures Acceptance**: High volume validates fair value, confirming that two-way trade facilitation is robust.
-   - Low volume indicates price rejection and lack of market participant interest.
+   - **Volume Measures Acceptance**: Auction theorists read high volume at a price as acceptance of that price as fair value, because two-way trade took place there.
+   - They read low volume as rejection of the price and a lack of participant interest; both readings are interpretations, not tested results.
 
 2. **Responsive vs Initiative Activity**:
    - **Responsive Activity**: Market participants act counter to an extreme move, returning price to perceived fair value.
    - Example: Buying below the Value Area Low (VAL) or selling above the Value Area High (VAH).
    - **Initiative Activity**: Market participants aggressively buy at or above previous fair value, forcing price to discover a new, higher value area.
-   - Initiative buying above resistance signals a structural regime shift.
+   - Auction theorists read initiative buying above resistance as a shift to a higher value area; no peer-reviewed test of that reading is cited here.
 
 ### 2. Market Profile Architecture
 
@@ -142,7 +142,8 @@ where $P_i$ is the typical price $\frac{H_i + L_i + C_i}{3}$ and $V_i$ is the vo
 |                        EVIDENCE LEDGER: AUCTION THEORY & VWAP                   |
 +---------------------------------------------------------------------------------+
 |  Phenomenon: Volume Profile, VWAP Benchmark & Institutional Absorption          |
-|  Evidence Grade: STRONG (VWAP as execution benchmark), UNTESTED (profile rules) |
+|  Evidence Grade: UNTESTED (profile rules); VWAP as a benchmark is a definition, |
+|  not an anomaly, so it is not graded                                            |
 +---------------------------------------------------------------------------------+
 |  Key Sources:                                                                   |
 |  1. Berkowitz, Logue, and Noser (1988, Journal of Finance):                     |
@@ -299,7 +300,7 @@ An algorithmic trader anchors VWAP to an earnings breakout bar that opened with 
 > A method popularized by Brian Shannon (2023, *Maximum Trading Gains with Anchored VWAP*) that calculates VWAP starting from a specific, user-defined event rather than the daily open.
 > Common anchors include major swing lows, swing highs, earnings announcement gaps, and year-to-date opens.
 
-> [!question]- mkt-ta-076 | Why does an Anchored VWAP from an earnings release act as strong support on pullbacks?
+> [!question]- mkt-ta-076 | Why do practitioners expect an Anchored VWAP from an earnings release to act as support on pullbacks?
 > It is the volume-weighted average price of all trades since the catalyst, so the average buyer since then is at breakeven there.
 > The practitioner argument is that buyers defend that cost basis; it is a hypothesis, and no peer-reviewed test of AVWAP support is cited here.
 
@@ -333,7 +334,7 @@ An algorithmic trader anchors VWAP to an earnings breakout bar that opened with 
 
 > [!question]- mkt-ta-084 | What is an Open-Test-Drive?
 > Price opens, briefly tests in one direction to probe for responsive liquidity, finds strong rejection, and then drives aggressively in the opposite direction.
-> The initial test confirms lack of counterparty participation, unleashing directional conviction.
+> Profile traders read the failed initial test as a lack of counterparties in that direction and expect the drive to continue; that reading is not a tested result.
 
 > [!question]- mkt-ta-085 | What is an Open-Rejection-Reverse?
 > Price opens, probes beyond the prior session's range, encounters fierce responsive counter-orders, and violently reverses back through the open and into the prior value area.
