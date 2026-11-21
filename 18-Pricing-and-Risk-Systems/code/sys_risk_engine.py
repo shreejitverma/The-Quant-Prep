@@ -338,6 +338,36 @@ def check_subadditivity() -> None:
     assert es_two <= 2 * es_one
 
 
+def var_of_normal_sum(alpha: float, n: int = 4_000) -> float:
+    """alpha-quantile of Z1 + Z2 for independent standard normals, by bisection on the convolution integral.
+
+    P(Z1 + Z2 <= x) = integral of phi(z) Phi(x - z) dz, by Simpson's rule; this does not use the fact that the
+    sum is N(0, 2), so it checks the sqrt(2) scale independently.
+    """
+
+    def cdf(x: float) -> float:
+        return simpson(lambda z: norm_pdf(z) * norm_cdf(x - z), -12.0, 12.0, n)
+
+    lo, hi = -10.0, 10.0
+    for _ in range(80):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if cdf(mid) < alpha else (lo, mid)
+    return 0.5 * (lo + hi)
+
+
+def check_elliptical_subadditivity() -> None:
+    print("  Elliptical VaR (Embrechts, McNeil and Straumann 2002, Theorem 1): two independent standard normals")
+    for alpha, each, summed, of_sum in ((0.25, -0.6745, -1.3490, -0.9539), (0.99, 2.3263, 4.6527, 3.2900)):
+        v1 = norm_ppf(alpha)
+        v12 = var_of_normal_sum(alpha)
+        assert abs(v12 - math.sqrt(2.0) * v1) < 1e-6, "convolution quantile must match the sqrt(2) scale"
+        quoted(f"VaR_{alpha} of each normal", v1, each, 4)
+        quoted(f"sum of the two VaR_{alpha}", 2 * v1, summed, 4)
+        quoted(f"VaR_{alpha} of the sum", v12, of_sum, 4)
+        # Theorem 1 needs alpha >= 0.5: subadditive above, superadditive below.
+        assert (v12 <= 2 * v1) == (alpha >= 0.5)
+
+
 def check_example_2() -> None:
     print("  Example 2: VaR and ES conventions on a 500-scenario P&L vector (Student-t 4 df, sd 1m, seed 7)")
     pnl = student_t_pnl(500, 4, 1.0e6, 7)
@@ -455,6 +485,7 @@ def run_tests() -> None:
     print("Risk engine checks")
     check_example_1()
     check_subadditivity()
+    check_elliptical_subadditivity()
     check_example_2()
     check_example_3()
     check_example_4()

@@ -5,7 +5,7 @@ tier: senior
 status: solid
 prereqs: [pricing-at-scale]
 est_hours: 4
-sources: [Philippe Artzner Freddy Delbaen Jean-Marc Eber and David Heath - Coherent Measures of Risk (Mathematical Finance 9(3) 1999), Carlo Acerbi and Dirk Tasche - On the coherence of expected shortfall (Journal of Banking and Finance 26(7) 2002), Dirk Tasche - Risk contributions and performance measurement (working paper TU Munich 1999), Alexander J. McNeil Rüdiger Frey and Paul Embrechts - Quantitative Risk Management - Concepts Techniques and Tools (Princeton University Press revised edition 2015), Philippe Jorion - Value at Risk - The New Benchmark for Managing Financial Risk (3rd edition McGraw-Hill 2006), Basel Committee on Banking Supervision - Basel Framework MAR33.1 to MAR33.4 (version effective 1 January 2023)]
+sources: [Philippe Artzner Freddy Delbaen Jean-Marc Eber and David Heath - Coherent Measures of Risk (Mathematical Finance 9(3) 1999), Carlo Acerbi and Dirk Tasche - On the coherence of expected shortfall (Journal of Banking and Finance 26(7) 2002), Dirk Tasche - Risk contributions and performance measurement (working paper TU Munich 1999), Paul Embrechts Alexander McNeil and Daniel Straumann - Correlation and dependence in risk management - properties and pitfalls (in Risk Management - Value at Risk and Beyond ed. M.A.H. Dempster Cambridge University Press 2002 pp. 176-223), Alexander J. McNeil Rüdiger Frey and Paul Embrechts - Quantitative Risk Management - Concepts Techniques and Tools (Princeton University Press revised edition 2015), Philippe Jorion - Value at Risk - The New Benchmark for Managing Financial Risk (3rd edition McGraw-Hill 2006), Basel Committee on Banking Supervision - Basel Framework MAR33.1 to MAR33.4 (version effective 1 January 2023)]
 ---
 
 # Risk Engine Architecture
@@ -143,7 +143,12 @@ A risk measure $\rho$ is coherent (Artzner, Delbaen, Eber and Heath 1999) if it 
 4. Translation equivariant: $\rho(L + c) = \rho(L) + c$.
 
 ES, defined by the quantile integral, is coherent for every loss distribution with a finite mean (Acerbi and Tasche 2002).
-VaR satisfies 1, 3 and 4 but not subadditivity in general; it is subadditive for elliptical distributions such as the multivariate normal (McNeil, Frey and Embrechts 2015), and fails for skewed or discrete losses like defaults.
+VaR satisfies 1, 3 and 4 but not subadditivity in general, and fails it for skewed or discrete losses like defaults.
+The elliptical exception has precise conditions (Embrechts, McNeil and Straumann 2002, Theorem 1): if the risk-factor vector $X = (X_1, \dots, X_n)$ is elliptically distributed with every $\sigma^2[X_i] < \infty$ (the multivariate normal qualifies, and so does the multivariate Student-t with more than 2 degrees of freedom), then $\text{VaR}_\alpha(Z_1 + Z_2) \le \text{VaR}_\alpha(Z_1) + \text{VaR}_\alpha(Z_2)$ for any two linear portfolios $Z = \sum_i \lambda_i X_i$ of that same vector and any $0.5 \le \alpha < 1$.
+The proof writes each portfolio's VaR as its mean plus its scale times the standardised quantile $q_\alpha$, and the scale of a sum is at most the sum of the scales, so the inequality needs $q_\alpha \ge 0$, which is $\alpha \ge 0.5$.
+Below that level it can fail: for two independent standard normals at $\alpha = 0.25$ each VaR is $-0.6745$, so the sum of VaRs is $-1.3490$, while the VaR of the sum is $-0.9539$.
+At $\alpha = 0.99$ the inequality holds: $2.3263$ each, $4.6527$ summed, against $3.2900$ for the sum.
+A book whose P&L is nonlinear in $X$ (options), or whose factors are not jointly elliptical, is outside the theorem, so a real portfolio's VaR can still be superadditive.
 
 Counterexample: two independent bonds, each losing 100 with probability $p = 0.04$.
 
@@ -262,7 +267,8 @@ A hypothetical bank with 400,000 trades and 1,000 scenarios:
 > [!question]- sys-07-01 | What is a coherent risk measure, and why is Expected Shortfall coherent while Value-at-Risk is not?
 > Coherent means monotone, subadditive, positively homogeneous and translation equivariant (Artzner, Delbaen, Eber and Heath 1999).
 > ES defined as $\frac{1}{1-\alpha}\int_\alpha^1 \text{VaR}_u\,du$ satisfies all four for any loss with a finite mean (Acerbi and Tasche 2002).
-> VaR satisfies all but subadditivity: it can fail for skewed or discrete losses such as defaults, though it is subadditive for elliptical distributions like the normal.
+> VaR satisfies all but subadditivity: it can fail for skewed or discrete losses such as defaults.
+> Embrechts, McNeil and Straumann (2002, Theorem 1) give sufficient conditions for subadditivity: linear portfolios of one elliptically distributed vector with finite variances, at a confidence level $\alpha \ge 0.5$.
 
 > [!question]- sys-07-02 | Why did the Basel Committee move from 99% VaR to 97.5% Expected Shortfall for internal models?
 > VaR says nothing about losses beyond the quantile, so two books with the same VaR can have very different tails; ES averages the tail.
@@ -342,6 +348,7 @@ A hypothetical bank with 400,000 trades and 1,000 scenarios:
 - Artzner, P., Delbaen, F., Eber, J.-M. and Heath, D., "Coherent Measures of Risk", *Mathematical Finance* 9(3), 1999.
 - Acerbi, C. and Tasche, D., "On the coherence of expected shortfall", *Journal of Banking and Finance* 26(7), 2002.
 - Tasche, D., "Risk contributions and performance measurement", working paper, TU Munich, 1999.
+- Embrechts, P., McNeil, A. and Straumann, D., "Correlation and dependence in risk management: properties and pitfalls", in M. A. H. Dempster (ed.), *Risk Management: Value at Risk and Beyond*, Cambridge University Press, 2002, pp. 176-223 (Theorem 1; section 3.4 of the authors' preprint).
 - McNeil, A. J., Frey, R. and Embrechts, P., *Quantitative Risk Management: Concepts, Techniques and Tools*, revised edition, Princeton University Press, 2015.
 - Jorion, P., *Value at Risk: The New Benchmark for Managing Financial Risk*, 3rd edition, McGraw-Hill, 2006.
 - Basel Committee on Banking Supervision, Basel Framework, MAR33 (internal models approach: capital requirements calculation).
