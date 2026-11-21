@@ -94,6 +94,50 @@ def value_area() -> None:
     check("two-row VAH", LEVELS[hi2], "125")
 
 
+# Market Profile chart in the note: each 30-minute bracket trades one contiguous price range (low, high).
+CHART_TICKS = [101.0 + 0.5 * i for i in range(9)]
+CHART_BRACKETS = {
+    "A": (103.5, 105.0),
+    "B": (102.5, 104.5),
+    "C": (101.0, 104.0),
+    "D": (102.0, 104.0),
+    "E": (102.0, 103.5),
+    "F": (102.5, 103.5),
+    "G": (102.5, 103.0),
+    "H": (102.5, 103.0),
+    "I": (103.0, 103.0),
+}
+
+
+def tpo_chart() -> None:
+    letters = {p: [b for b, (lo, hi) in CHART_BRACKETS.items() if lo <= p <= hi] for p in CHART_TICKS}
+    for p in reversed(CHART_TICKS):
+        print(f"chart row {p:.2f}: {' '.join(letters[p])}")
+    counts = [len(letters[p]) for p in CHART_TICKS]
+    # Independent count: one TPO per (bracket, tick) pair inside the bracket's range, tallied per bracket.
+    per_bracket = sum(round((hi - lo) / 0.5) + 1 for lo, hi in CHART_BRACKETS.values())
+    assert per_bracket == sum(counts)
+    check("chart total TPOs", sum(counts), "33")
+    target = 0.70 * sum(counts)
+    check("chart 70% target (TPOs)", target, "23.1")
+    poc = int(np.argmax(counts))
+    assert counts.count(counts[poc]) == 1, "the chart POC must be unique"
+    check("chart POC price", CHART_TICKS[poc], "103.00")
+    check("chart POC TPOs", counts[poc], "8")
+    lo, hi, v, steps = expand(counts, target, rows=1)
+    assert [steps[i + 1] - steps[i] for i in range(len(steps) - 1)] == [7, 6, 4]
+    check("chart value-area TPOs", v, "25")
+    check("chart value-area share (%)", 100 * v / sum(counts), "75.8")
+    check("chart VAL", CHART_TICKS[lo], "102.50")
+    check("chart VAH", CHART_TICKS[hi], "104.00")
+    assert brute_force(counts, target) == (lo, hi, v), "chart value area must be the narrowest range"
+    tail = 0
+    while counts[tail] == 1:
+        tail += 1
+    check("chart buying-tail single prints", tail, "2")
+    assert counts[-1] == 1 and counts[-2] > 1, "the chart's top is one single print, not a tail"
+
+
 def normal_mass(z: float) -> float:
     return math.erf(z / math.sqrt(2))
 
@@ -137,11 +181,12 @@ def anchored_vwap() -> None:
     print(f"volume-weighted sigma since anchor = {math.sqrt(weighted_var):.4f}")
     print("cited: Example 2 pullback level $203.00 (hypothetical input, near the anchored VWAP)")
     print("cited: Market Profile conventions, 30-minute TPO brackets, the '80% Rule' (a name, not a tested probability)")
-    print("cited: 24-hour electronic sessions; Market Profile chart price ladder 101.00 to 104.50 is illustrative")
+    print("cited: 24-hour electronic sessions; Market Profile chart price ladder 101.00 to 105.00 is illustrative")
 
 
 if __name__ == "__main__":
     value_area()
+    tpo_chart()
     normal_facts()
     anchored_vwap()
     print("all auction-theory numbers check out")

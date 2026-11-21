@@ -187,6 +187,7 @@ if __name__ == "__main__":
     print("Card mkt-pqt-091: internalizer price improvement")
     rounded("midpoint of $100.00 x $100.01", (Fraction("100.00") + Fraction("100.01")) / 2, "100.005")
     print("    cited: card mkt-pqt-084, Tick Size Pilot (2016) raised the increment from $0.01 to $0.05")
+    print("    cited: Lee and Ready (1991) compare each trade with the quote in effect 5 seconds earlier")
     kyle(rng)
     roll(rng)
     print("all adverse-selection numbers check out")

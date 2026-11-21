@@ -48,6 +48,19 @@ def prospect_values() -> None:
     # With alpha = beta the ratio is lambda by definition, so it is printed as a cited constant, not asserted.
     print(f"cited: loss-aversion coefficient lambda = {lam} (Tversky and Kahneman 1992)")
     print(f"cited: curvature alpha = beta = {alpha} (Tversky and Kahneman 1992)")
+    # Value-function chart: drawn to scale over x in [-4, 10].
+    print("input: value-function chart range x = -4 to 10")
+    check("chart V(10)", 10.0**alpha, "7.6")
+    check("chart V(-4)", -lam * 4.0**beta, "-7.6")
+    # Shape claims by midpoint tests (independent of the slope formula): concave gains, convex losses.
+    assert 5.0**alpha > (0.0 + 10.0**alpha) / 2, "gain branch must be concave"
+    assert -lam * 2.0**beta < (0.0 - lam * 4.0**beta) / 2, "loss branch must be convex"
+    # Slope ratio at mirrored distances by central differences, not by the closed form.
+    for d in (0.5, 2.0, 4.0):
+        h = 1e-6
+        loss_slope = (-lam * (d - h) ** beta + lam * (d + h) ** beta) / (2 * h)
+        gain_slope = ((d + h) ** alpha - (d - h) ** alpha) / (2 * h)
+        assert abs(loss_slope / gain_slope - 2.25) < 1e-6
     print("cited: Odean (1998) 10,000 discount-brokerage accounts, 1987-1993")
     print("input: equity-curve filter moving average = 20 trades; Example 1 = 100 trades at a 50% win rate")
 

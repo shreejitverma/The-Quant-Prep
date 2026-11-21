@@ -146,6 +146,7 @@ def cited_constants() -> None:
     print("cited: Odders-White (2000) Lee-Ready classified about 85% of NYSE (TORQ) trades correctly")
     print("cited: CME Rule 526 (block trades) and CME Rule 538 (EFRPs); Dodd-Frank (2010) section 747")
     print("cited: Regulation NMS Rule 600(b) and Rule 611 for intermarket sweep orders")
+    print("cited: footprint imbalance ratio is user-chosen; charting packages often default to 3 or 4 times")
     print("cited: hypothetical scenario sizes, 500,000 shares bought at $150.00 and a drop to $149.20")
     print("cited: hypothetical iceberg sizes, 100,000 shares showing 500 and 50,000 shares showing 100")
 

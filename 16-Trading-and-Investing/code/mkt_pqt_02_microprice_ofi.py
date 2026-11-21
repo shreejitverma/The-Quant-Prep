@@ -48,6 +48,7 @@ def example_1() -> None:
     rounded("skewed bid one tick above the bid", pb + Fraction(1, 100), "50.01")
     print("    cited: one tick = $0.01; Rule 612 increments $0.01 (>= $1.00), $0.0001 (< $1.00), 2024 amendment $0.005")
     print("    cited: $0.015 time-weighted average quoted spread threshold for the $0.005 increment")
+    print("    cited: Cont, Kukanov and Stoikov (2014) OFI sample, TAQ data for 50 US stocks")
 
 
 def snapshot_ofi(prev: tuple, cur: tuple) -> float:

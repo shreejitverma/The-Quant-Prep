@@ -108,7 +108,8 @@ And the informed trader's optimal trading strategy is linear in their private in
 $$x(v) = \beta (v - p_0), \quad \text{where } \beta = \frac{\sigma_u}{\sqrt{\Sigma_0}}$$
 
 **Key Microstructure Insights from Kyle's Lambda**:
-- **Market Depth**: Defined as $1 / \lambda = 2 \sigma_u / \sqrt{\Sigma_0}$. Deep markets accommodate large orders with minimal price impact.
+- **Market Depth**: Defined as $1 / \lambda = 2 \sigma_u / \sqrt{\Sigma_0}$.
+  Deep markets accommodate large orders with minimal price impact.
 - **Informed Trading Intensity**: When private information uncertainty $\Sigma_0$ is high, $\lambda$ increases, causing steeper price impact.
 - **Noise Trader Protection**: Higher noise trading volume $\sigma_u$ dilutes informed flow, reducing $\lambda$ and narrowing price impact.
 

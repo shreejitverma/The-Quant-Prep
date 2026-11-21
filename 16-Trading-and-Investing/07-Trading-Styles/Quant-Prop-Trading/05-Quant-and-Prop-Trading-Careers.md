@@ -298,7 +298,8 @@ struct OptimizedDeskStats {
 
 1. **Analysis of Cache Contention**:
    - Current Intel and AMD x86-64 CPUs use 64-byte cache lines (some other CPUs, such as Apple's M-series, use 128 bytes; C++17 exposes `std::hardware_destructive_interference_size` for this).
-   - In `BadDeskStats`, the four uint64_t fields share one cache line.
+   - In `BadDeskStats`, the four uint64_t fields share one cache line whenever the 32-byte struct does not straddle a 64-byte boundary, which a 32-byte alignment guarantees.
+   - With only its natural 8-byte alignment it can split across two lines, but some pair of counters still shares a line at every placement, so false sharing remains either way.
    - When Core 0 writes `fills_core0`, the coherence protocol (MESI or a variant) invalidates the copies of that line held by Cores 1, 2, and 3.
    - Their next access misses and must fetch the line from another core's cache, so the line ping-pongs between cores and every increment pays a coherence miss instead of an L1 hit; measure the cost with `perf` on the target machine rather than assuming a number.
 2. **Analysis of the Cache-Aligned Layout**:

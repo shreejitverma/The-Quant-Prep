@@ -62,20 +62,23 @@ Market Profile plots price vertically and time horizontally using 30-minute lett
 
 ```
 +---------------------------------------------------------------------------------+
-|                       MARKET PROFILE & VALUE AREA STRUCTURE                     |
+|                      MARKET PROFILE & VALUE AREA STRUCTURE                      |
 +---------------------------------------------------------------------------------+
 |  Price                                                                          |
-|  105.00 |  A                                   (Single Print / Rejection Wick)  |
+|  105.00 |  A                 (Single Print / Rejection Wick)                    |
 |  104.50 |  A B                                                                  |
-|  104.00 |  A B C D           <--- Value Area High (VAH, ~70% Upper Bound)       |
-|  103.50 |  A B C D E F G                                                        |
-|  103.00 |  A B C D E F G H I <--- Point of Control (POC, Maximum Time/Volume)   |
-|  102.50 |  B C D E F G H                                                        |
-|  102.00 |  C D E F           <--- Value Area Low (VAL, ~70% Lower Bound)        |
-|  101.50 |  D E                                                                  |
-|  101.00 |  E                 (Single Print / Buying Tail)                       |
+|  104.00 |  A B C D           <--- Value Area High (VAH)                         |
+|  103.50 |  A B C D E F                                                          |
+|  103.00 |  B C D E F G H I   <--- Point of Control (POC, most TPOs)             |
+|  102.50 |  B C D E F G H     <--- Value Area Low (VAL)                          |
+|  102.00 |  C D E                                                                |
+|  101.50 |  C                 (Buying Tail: two single prints)                   |
+|  101.00 |  C                                                                    |
 +---------------------------------------------------------------------------------+
 ```
+
+The drawn profile holds 33 TPOs, so the 70% target is 23.1 TPOs.
+The single-level rule below starts at the 103.00 POC (8 TPOs) and adds 102.50 (7), then 103.50 (6), then 104.00 (4), stopping at 25 TPOs (75.8%), so VAL = 102.50 and VAH = 104.00.
 
 1. **Initial Balance (IB)**:
    - The price range established during the first hour of regular trading (typically brackets A and B).

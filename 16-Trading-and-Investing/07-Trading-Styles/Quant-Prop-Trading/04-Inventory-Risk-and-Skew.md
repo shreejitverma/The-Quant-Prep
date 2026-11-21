@@ -100,7 +100,7 @@ The operational mechanics of Avellaneda-Stoikov quote shading behave as follows:
   The reservation price shifts downward ($r < s$).
   Both quotes drop:
   - $P_b$ moves further away from mid, drastically reducing the probability of receiving another buy fill.
-  - $P_a$ moves closer to mid (or inside mid), making the desk's ask the most competitive quote in the market and accelerating an inventory-reducing sale.
+  - $P_a$ moves closer to mid, raising the probability of an inventory-reducing sale.
 - **Short Inventory ($q < 0$)**:
   The reservation price shifts upward ($r > s$).
   Both quotes rise:

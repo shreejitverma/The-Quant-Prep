@@ -35,23 +35,30 @@ Daniel Kahneman and Amos Tversky (1979) showed experimentally that people evalua
 
 ```
 +-----------------------------------------------------------------------+
-|                    PROSPECT THEORY VALUE FUNCTION                     |
+|               PROSPECT THEORY VALUE FUNCTION (TO SCALE)               |
 +-----------------------------------------------------------------------+
-|                       Value V(x)                                      |
-|                           ^                                           |
-|                           |            / (Concave in Gains)           |
-|                           |          /                                |
-|                           |        /                                  |
-|                           |      /                                    |
-|   Losses (-x)             |    /               Gains (+x)             |
-|   <-----------------------+------------------------>                  |
-|               |         /                                             |
-|               |       /                                               |
-|               |     /                                                 |
-|               |    / (Convex in Losses: STEEPER SLOPE)                |
-|               v                                                       |
+|                     Value V(x)  ^                                 *   |
+|                                 |                            *****    |
+|                                 |                       *****         |
+|                                 |                  *****              |
+|                                 |              ****                   |
+|                                 |         *****                       |
+|                                 |     ****                            |
+|  Losses (-x)                    | ****                                |
+|<--------------------------------+*----------------------------------->|
+|                               **|                        Gains (+x)   |
+|                              *  |                                     |
+|                            **   |     Gains: V = x^0.88 (concave)     |
+|                          **     |                                     |
+|                        **       |     Losses: V = -2.25 (-x)^0.88     |
+|                      **         |     (convex; 2.25x as steep)        |
+|                    **           |                                     |
+|                   *             v                                     |
 +-----------------------------------------------------------------------+
 ```
+
+The chart is drawn to scale from the 1992 median estimates (gains to $x = 10$, losses to $x = -4$, both reaching about $\pm 7.6$).
+With $\alpha = \beta = 0.88$ the curvature is mild, so the visible feature is the kink at the reference point: at every distance from it, the loss branch is 2.25 times as steep as the gain branch.
 
 The mathematical value function $V(x)$ possesses three core characteristics:
 1. **Reference Dependence**: Gains and losses are measured against a status quo reference point rather than absolute terminal wealth.

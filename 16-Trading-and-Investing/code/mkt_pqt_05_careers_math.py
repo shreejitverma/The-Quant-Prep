@@ -35,6 +35,7 @@ def rounded(label: str, value: float, expected: str) -> None:
 
 def example_1() -> None:
     print("Example 1: desk bonus pool")
+    print("    input: $50,000,000 balance-sheet equity, 4x intraday leverage, 3 team members (hypothetical)")
     ledger = [
         ("gross trading profits", Decimal(18_500_000)),
         ("exchange fees, clearing, brokerage", Decimal(-3_200_000)),
@@ -129,13 +130,25 @@ def example_3() -> None:
     rounded("padding bytes", 64 - ctypes.sizeof(ctypes.c_uint64), "56")
     rounded("sizeof(CoreStats)", ctypes.sizeof(CoreStats), "64")
     rounded("sizeof(OptimizedDeskStats)", ctypes.sizeof(OptimizedDeskStats), "256")
-    assert len({o // 64 for o in offsets}) == 1
+    # Cache-line placement over every base address the struct's natural 8-byte alignment allows.
+    align = ctypes.alignment(BadDeskStats)
+    rounded("alignof(BadDeskStats)", align, "8")
+    lines_touched = {}
+    for base in range(0, 64, align):
+        lines = [(base + o) // 64 for o in offsets]
+        lines_touched[base] = len(set(lines))
+        assert len(lines) > len(set(lines)), "some pair of counters must share a line at every base"
+    one_line = [b for b, n in lines_touched.items() if n == 1]
+    print(f"    bases (mod 64) where all four counters share one line = {one_line}")
+    assert one_line == [0, 8, 16, 24, 32], "one line iff the 32-byte struct does not straddle a boundary"
+    assert max(lines_touched.values()) == 2
 
 
 def cited() -> None:
     print("Cited constants")
     print("    cited: Apple M-series cache line 128 bytes; IEX speed bump 350 microseconds")
     print("    cited: California Business and Professions Code section 16600; 99.9th percentile latency is a label")
+    print("    cited: Zetamac arithmetic game default round 120 seconds")
 
 
 if __name__ == "__main__":

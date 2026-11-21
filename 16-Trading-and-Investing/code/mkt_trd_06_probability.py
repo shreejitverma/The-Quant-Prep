@@ -159,6 +159,11 @@ def kelly() -> None:
     check("g(0.40) from a 60/40 ledger", growth_ledger(60, 40, 0.40), "-0.0024")
     cross = bisect(lambda f: p * math.log1p(f) + (1 - p) * math.log1p(-f), 0.25, 0.9)
     check("zero-growth crossing", cross, "0.389")
+    # Kelly chart labels: half-Kelly growth as a share of the peak, and the crossing in units of f*.
+    half_ratio = growth_ledger(60, 40, 0.10) / growth_ledger(60, 40, 0.20)
+    check("chart half-Kelly f", (2 * p - 1) / 2, "0.10")
+    check("chart g(f*/2) / g(f*)", half_ratio, "0.75")
+    check("chart zero crossing / f*", cross / (2 * p - 1), "1.95")
 
 
 def ruin_markov(p: float, units: int, upper: int = 3000) -> float:

@@ -198,5 +198,6 @@ if __name__ == "__main__":
     expectancy()
     print("cited: Aronson (2006) tested 6,402 rules on the S&P 500, 1980 to 2005")
     print("cited: rule-spec inputs, 5-bar swing low, retest within 0.5%, volume above 1.25 x SMA_50(volume)")
+    print("cited: rule-spec inputs, stop 1.0 x ATR_14 below support, target +2.0R, trailing stop below the 10-day EMA")
     print("cited: illustrative forecasts, 70% over 5 days, a 99% coin-toss call, an 80% forecast true 60% of the time")
     print("all rule-validation numbers check out")
