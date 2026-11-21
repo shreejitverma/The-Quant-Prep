@@ -87,7 +87,21 @@ def vcp_and_breakouts() -> None:
     check("intraday net edge (bp)", 8 - 10, "-2")
 
 
+def inputs() -> None:
+    print("input: VCP Example 1 trend filter, price within 15% of the 52-week high, P > SMA50 > SMA150 > SMA200")
+    print("input: VCP waves 20% to 25%, 10% to 12%, then 3% to 5% over 3 to 7 days")
+    print("input: VCP range contraction ATR14(t) <= 0.50 x ATR14(t - 30); terminal volume < 0.50 x 50-day average")
+    print("input: VCP buy trigger volume > 1.50 x 50-day average; stop at the terminal low; targets 3R to 5R")
+    print("input: intraday pitfall gross gain 8 bp, round-trip spread and clearing cost 10 bp")
+    print("input: breakout win rate 35% (card mkt-trd-108 example)")
+    print("input: card mkt-trd-112 hypothetical bull flag, retracement <= 50% of the pole, volume below its 20-day average")
+    print("input: card mkt-trd-115 Donchian lookbacks 20 and 55 days")
+    print("input: card mkt-trd-122 Darvas Box ceiling and floor hold for three days")
+    print("input: card mkt-trd-125 opening range of the first 15 or 30 minutes; initial balance the first hour")
+
+
 def cited() -> None:
+    print("cited: FTSE Russell 1 September 2026 announcement, first December reconstitution effective after the close on 11 December 2026")
     print("cited: Jegadeesh-Titman 6/6 strategy compounded excess return = 12.01% per year")
     print("cited: Aronson (2006) rules tested = 6,402; Sullivan-Timmermann-White (1999) universe = 7,846 rules")
     print("cited: Moskowitz-Ooi-Pedersen (2012) instruments = 58; Brock-Lakonishok-LeBaron (1992) rules = 26")
@@ -98,5 +112,6 @@ if __name__ == "__main__":
     harvey_liu_zhu()
     best_of_null_rules(rng)
     vcp_and_breakouts()
+    inputs()
     cited()
     print("all setup-evidence numbers check out")

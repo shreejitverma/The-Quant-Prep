@@ -62,6 +62,7 @@ def growth_ledger(wins: int, losses: int, b: float, f: float) -> float:
 
 def kelly_example(rng: np.random.Generator) -> None:
     p, b = 0.40, 2.50
+    print(f"input: Example 1 win rate p = {p:.2f}, payoff ratio b = {b:.2f}")
     grid = np.linspace(0.0005, 0.9, 900_000)
     g_grid = p * np.log1p(b * grid) + (1 - p) * np.log1p(-grid)
     f_grid = float(grid[np.argmax(g_grid)])
@@ -194,6 +195,8 @@ def recovery_table() -> None:
 
 def atr_example() -> None:
     equity, risk_pct, entry, atr = 100_000, 1.5, 150.00, 3.50
+    print(f"input: Example 2 equity ${equity:,}, risk {risk_pct}%, entry ${entry:.2f}, ATR ${atr:.2f}, stop 2 x ATR")
+    print("input: gap open $130.00; fixed-dollar sizing example $10,000 per trade; fixed-fraction example f = 1.0%")
     budget = equity * risk_pct / 100
     check("risk budget, 1.5% of 100,000", budget, "1,500")
     stop = entry - 2 * atr

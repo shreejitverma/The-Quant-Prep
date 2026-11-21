@@ -301,11 +301,11 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 
 > [!question]- mkt-pqt-081 | What is a trade-through and which SEC regulation prohibits it?
 > A trade-through occurs when a trading center executes an order at a price inferior to a protected quotation displayed on another venue.
-> Regulation NMS Rule 611 (Order Protection Rule) requires trading centers to maintain policies reasonably designed to prevent trade-throughs, with exceptions such as intermarket sweep orders; as of November 2026 it is in force, and the SEC proposed rescinding it on June 11, 2026.
+> Regulation NMS Rule 611 (Order Protection Rule) requires trading centers to maintain policies reasonably designed to prevent trade-throughs, with exceptions such as intermarket sweep orders; as of November 2026 it is in force, and on June 11, 2026 the SEC proposed rescinding it in Release 34-105655 (a proposal, not a final rule).
 
 > [!question]- mkt-pqt-082 | What is a locked or crossed market and why is it unstable?
 > A locked market occurs when the best bid equals the best offer on different venues; a crossed market occurs when the best bid exceeds the best offer.
-> A crossed market is an arbitrage before fees and is traded away quickly; a locked market offers no profit before fees but confuses price priority, which is why Regulation NMS Rule 610(e) requires venues to have rules against displaying locking or crossing quotes (also proposed for rescission on June 11, 2026).
+> A crossed market is an arbitrage before fees and is traded away quickly; a locked market offers no profit before fees but confuses price priority, which is why Regulation NMS Rule 610(e) requires venues to have rules against displaying locking or crossing quotes (also proposed for rescission on June 11, 2026, in Release 34-105655).
 
 > [!question]- mkt-pqt-083 | What is a toxic quote snipe?
 > An aggressive marketable order sent to pick off a stale resting limit order that has not yet updated to reflect new external information.
@@ -382,3 +382,4 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 - Kyle, A. S. (1985). *Continuous auctions and insider trading*. Econometrica, 53(6), 1315-1335.
 - Roll, R. (1984). *A simple implicit measure of the effective bid-ask spread in an efficient market*. The Journal of Finance, 39(4), 1127-1139.
 - Lee, C. M., & Ready, M. J. (1991). *Inferring trade direction from intraday data*. The Journal of Finance, 46(2), 733-746.
+- Securities and Exchange Commission (2026). *The Trade-Through Rule and Locked and Crossed Markets Provisions of Regulation NMS*. Proposed rule, Release No. 34-105655, File No. S7-2026-20, June 11, 2026, https://www.sec.gov/files/rules/proposed/2026/34-105655.pdf.

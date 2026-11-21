@@ -49,6 +49,8 @@ def example_1() -> None:
     print("    cited: one tick = $0.01; Rule 612 increments $0.01 (>= $1.00), $0.0001 (< $1.00), 2024 amendment $0.005")
     print("    cited: $0.015 time-weighted average quoted spread threshold for the $0.005 increment")
     print("    cited: Cont, Kukanov and Stoikov (2014) OFI sample, TAQ data for 50 US stocks")
+    print("    cited: Release 34-105656 (June 11, 2026) defers compliance to the first business day of November 2027")
+    print("    cited: Release 34-105655 (June 11, 2026, File S7-2026-20) proposes rescinding Rules 611 and 610(e)")
 
 
 def snapshot_ofi(prev: tuple, cur: tuple) -> float:

@@ -46,6 +46,8 @@ def example_1_ledger() -> None:
     days, trips_per_day, shares = 252, 5, 500
     mid, spread, slippage, fees = 100.00, 0.02, 0.01, 1.50
     equity = 25_000.0
+    print(f"input: Example 1 equity ${equity:,.0f}, mid ${mid:.2f}, spread ${spread:.2f}, slippage ${slippage:.2f}, fees ${fees:.2f}")
+    print(f"input: Example 1 {shares} shares, {trips_per_day} round trips a day, {days} days")
     cash = 0.0
     trips = 0
     for _day in range(days):
@@ -123,6 +125,9 @@ def sampling_error() -> None:
 
 
 def cards() -> None:
+    print("input: card mkt-trd-021 hypothetical 50% annual borrow fee; card mkt-trd-024 40% wins at 1.65R, 1.0R losses")
+    print("input: card mkt-trd-025 $100,000 GMV on $25,000 equity, 10 bp round trip")
+    print("input: card mkt-trd-029 hypothetical 4% bill yield, 6% gross return, 3% fees and taxes")
     trades = [100] * 8 + [-500] * 2
     check("card 011 gross wins ($)", sum(t for t in trades if t > 0), "800")
     check("card 011 gross losses ($)", -sum(t for t in trades if t < 0), "1,000")

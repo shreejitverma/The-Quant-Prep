@@ -53,7 +53,7 @@ Every valid trade setup operates on one of four underlying market mechanisms:
    - **Mechanism**: Liquidity replenishment inside an established higher-timeframe trend.
    - **Market Context**: Counter-trend retracement toward institutional support zones (e.g. 20-day EMA, anchored VWAP, prior breakout retest).
    - **Classic Examples**: Bull flags, flat base retests, high-tight flags, moving average pullbacks.
-   - **Payoff Profile**: Between the other two archetypes: a tighter stop near the pullback low gives a higher reward-to-risk than mean reversion, with a higher win rate than raw breakouts if the trend persists.
+   - **Payoff Profile**: Usually between the other two archetypes: a tighter stop near the pullback low can give a higher reward-to-risk than mean reversion and a higher win rate than raw breakouts if the trend persists; measure the actual numbers on your own trades.
 
 3. **Mean Reversion / Range Trading**:
    - **Mechanism**: Compensation for liquidity provision during transient order flow imbalances or inventory exhaustion.
@@ -63,7 +63,7 @@ Every valid trade setup operates on one of four underlying market mechanisms:
 
 4. **Event-Driven Catalysts / Structural Arbitrage**:
    - **Mechanism**: Liquidity demand created by mandatory institutional mandates or binary information disclosures.
-   - **Classic Examples**: Post-Earnings Announcement Drift (PEAD), Russell 2000 annual rebalancing, S&P 500 additions/deletions, biotech PDUFA approvals.
+   - **Classic Examples**: Post-Earnings Announcement Drift (PEAD), Russell 2000 reconstitution, S&P 500 additions/deletions, biotech PDUFA approvals.
    - **Payoff Profile**: Event-specific and often asymmetric, requiring fundamental and regulatory modeling of the event itself.
 
 ### 2. The Five-Tier Evidence Grading Framework
@@ -262,7 +262,7 @@ A quantitative discretionary desk audits four proposed trading setups:
 > Breakout setups earn most of their profit in persistent trends.
 > In choppy, range-bound regimes, breakouts suffer whipsaws as prices revert from channel boundaries, so evaluate them over samples that contain both regimes.
 
-> [!question]- mkt-trd-117 | What is the Russell 2000 annual rebalancing anomaly?
+> [!question]- mkt-trd-117 | What is the Russell 2000 reconstitution anomaly?
 > The Russell US indexes reconstitute membership from updated market capitalizations; the event was annual in June, and from 2026 it is semi-annual, in June and December (the first December reconstitution is effective after the close on 11 December 2026, per FTSE Russell's 1 September 2026 announcement).
 > Index funds must buy additions and sell deletions on a known date, and Madhavan (2003, Financial Analysts Journal) documented the resulting price pressure around reconstitution, which traders try to anticipate.
 

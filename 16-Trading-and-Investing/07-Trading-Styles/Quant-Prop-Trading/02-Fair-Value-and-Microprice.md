@@ -140,7 +140,7 @@ Track three consecutive market updates for a security (hypothetical inputs):
   $$\text{OFI}_{\text{total}} = +400 + 700 = +1,100\text{ shares}$$
   Mid-price moved from $\$100.025$ to $\$100.075$ ($\Delta S = +\$0.050$).
   The ratio $\frac{\$0.050}{1,100} = \$0.00004545$ per share ($4.55\text{ cents per 1,000 shares}$) is a one-observation illustration of $\beta$; in practice $\beta$ is estimated by regressing many interval price changes on their OFI.
-  In event terms, $t=1$ added 400 shares of bid limit orders and $t=2$ added a new 200-share bid one tick higher and a 500-share buy that emptied the ask queue, so OFI counts $400 + 200 + 500 = 1,100$ shares of net buying pressure.
+  In event terms, $t=1$ added 400 shares of bid limit orders and $t=2$ added a new 200-share bid at $\$100.05$, where the swept ask used to be, and a 500-share buy that emptied the ask queue, so OFI counts $400 + 200 + 500 = 1,100$ shares of net buying pressure.
 
 ---
 
@@ -266,7 +266,7 @@ Track three consecutive market updates for a security (hypothetical inputs):
 
 > [!question]- mkt-pqt-059 | What is the Trade-Through Rule (Rule 611 of Regulation NMS)?
 > Rule 611 requires trading centers to maintain written policies reasonably designed to prevent trade-throughs of protected quotations on other venues, with exceptions such as intermarket sweep orders.
-> As of November 2026 it is in force, but on June 11, 2026 the SEC proposed rescinding Rule 611 and the locked-and-crossed-markets rule, Rule 610(e).
+> As of November 2026 it is in force, but on June 11, 2026 the SEC proposed rescinding Rule 611 and the locked-and-crossed-markets rule, Rule 610(e), in Release 34-105655 (a proposal, not a final rule).
 
 > [!question]- mkt-pqt-060 | How does an inverted exchange exploit queue priority?
 > Traders who do not want to wait at the back of a long queue on a maker-taker exchange post the same price on an inverted venue, where queues are shorter.
@@ -299,6 +299,7 @@ Track three consecutive market updates for a security (hypothetical inputs):
 
 - Hasbrouck, J. (2003). *Intraday price formation in U.S. equity index markets*. The Journal of Finance, 58(6), 2375-2400.
 - Securities and Exchange Commission (2026). Release No. 34-105656 (June 11, 2026), temporary exemptive relief from the amended Rules 610(c) and 612 of Regulation NMS until the first business day of November 2027.
+- Securities and Exchange Commission (2026). *The Trade-Through Rule and Locked and Crossed Markets Provisions of Regulation NMS*. Proposed rule, Release No. 34-105655, File No. S7-2026-20, June 11, 2026, https://www.sec.gov/files/rules/proposed/2026/34-105655.pdf.
 - Cont, R., Kukanov, A., & Stoikov, S. (2014). *The price impact of order book events*. Journal of Financial Econometrics, 12(1), 47-88.
 - Stoikov, S. (2018). *The micro-price: a high-frequency estimator of future prices*. Quantitative Finance, 18(12), 1959-1966.
 - Easley, D., López de Prado, M. M., & O'Hara, M. (2012). *Flow toxicity and liquidity in a high-frequency world*. The Review of Financial Studies, 25(5), 1457-1493.

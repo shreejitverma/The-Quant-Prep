@@ -146,6 +146,8 @@ def cards() -> None:
     print("    cited: Rule 610(c) access-fee cap $0.003 per share; 2024 amendment $0.001 (Release 34-101070)")
     print("    cited: IEX speed bump 350 microseconds")
     print("    input: card mkt-pqt-020 illustrative hard-to-borrow fee 25% a year")
+    print("    cited: Release 34-105656 (June 11, 2026) extends compliance to the first business day of November 2027")
+    print("    cited: Battalio, Corwin and Jennings (2016): orders routed to high-rebate venues had lower fill rates")
     sizes, child_fills = np.array([1.0, 2.0, 4.0, 8.0]), 20_000
     total_cost = []
     for q in sizes:

@@ -216,7 +216,7 @@ A quantitative trader backtests $N = 500$ parameter variations of an RSI and Bol
 > It bounds momentum on a 0 to 100 scale, measuring relative internal price change velocity.
 
 > [!question]- mkt-ta-130 | Why do static overbought (> 70) and oversold (< 30) RSI rules fail in trending markets?
-> A drift makes average up moves larger than average down moves, so Wilder's averages keep RSI high (or low) for as long as the trend lasts.
+> A drift makes average up moves larger than average down moves, so Wilder's averages centre RSI above 50 (or below it in a downtrend) for as long as the drift lasts.
 > Fading each extreme bets against the drift that produced it; with normal daily changes of mean 0.2 sigma, RSI centres near 62.3, not 50.
 
 > [!question]- mkt-ta-131 | What is the RSI range shift, and which part of it is mechanical rather than folklore?

@@ -188,6 +188,7 @@ if __name__ == "__main__":
     rounded("midpoint of $100.00 x $100.01", (Fraction("100.00") + Fraction("100.01")) / 2, "100.005")
     print("    cited: card mkt-pqt-084, Tick Size Pilot (2016) raised the increment from $0.01 to $0.05")
     print("    cited: Lee and Ready (1991) compare each trade with the quote in effect 5 seconds earlier")
+    print("    cited: Release 34-105655 (June 11, 2026, File S7-2026-20) proposes rescinding Rules 611 and 610(e)")
     kyle(rng)
     roll(rng)
     print("all adverse-selection numbers check out")

@@ -126,6 +126,7 @@ def example_1() -> None:
 def inventory_drift(rng: np.random.Generator) -> None:
     print("Inventory drift under AS quotes")
     A, kappa, gamma, sigma, tau = 140.0, 1.5, 0.1, 0.5, 1.0
+    print(f"    input: A = {A:.0f}, kappa = {kappa}, gamma = {gamma}, sigma = {sigma}, T - t = {tau}")
     c = gamma * sigma**2 * tau
     s_star = c + 2 / gamma * np.log1p(gamma / kappa)
     for q in (2, 10):
@@ -162,6 +163,7 @@ def hedging(rng: np.random.Generator) -> None:
     print("Example 2: proxy hedge with NQ")
     gmv, limit, beta, corr = 10_000_000, 2_000_000, Fraction(135, 100), Fraction(90, 100)
     print(f"    input: beta = {float(beta)}, rho = {float(corr)}, NQ multiplier $20 (cited: CME contract spec), index 18,000")
+    print(f"    input: GMV limit ${limit:,}, 50,000 shares at $200.00")
     rounded("GMV of 50,000 shares at $200.00", 50_000 * 200, "10,000,000")
     contract = 18_000 * 20
     excess = gmv - limit

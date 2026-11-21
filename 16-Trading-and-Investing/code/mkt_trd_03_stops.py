@@ -41,6 +41,7 @@ def wilder_recursion(highs, lows, closes, n: int, seed_atr: float) -> float:
 
 
 def atr_example() -> None:
+    print("input: Example 1 C(t-1) = $105.00, H = $108.50, L = $103.00, prior 14-period ATR = $4.00, entry $107.00")
     prev_close, high, low = Fraction("105.00"), Fraction("108.50"), Fraction("103.00")
     parts = (high - low, abs(high - prev_close), abs(low - prev_close))
     for label, part, lit in zip(("H - L", "|H - C_prev|", "|L - C_prev|"), parts, ("5.50", "3.50", "2.00"), strict=True):
@@ -133,6 +134,11 @@ def drawdowns(a: np.ndarray, b: np.ndarray, rng: np.random.Generator) -> None:
 
 
 def cards() -> None:
+    print("input: time stop example M = 5 trading days; stop buffer example 0.5 x ATR")
+    print("input: slippage pitfall stop $50.00, hypothetical fill $48.50")
+    print("input: card mkt-trd-076 hypothetical 90% of winners within 1.5 x ATR, stop at 1.8 x ATR")
+    print("input: card mkt-trd-077 hypothetical MFE stall near 2.5R, target 2.3R")
+    print("input: card mkt-trd-089 runner 25% to 33% of the position; card mkt-trd-095 daily loss limit 3R")
     check("card 091 gap loss / intended loss", (100 - 80) / (100 - 95), "4")
     check("card 093 5% stop in daily sigmas, 1% vol stock", 5 / 1, "5")
     check("card 093 5% stop in daily sigmas, 10% vol asset", 5 / 10, "0.5")
